@@ -51,7 +51,7 @@ ClipboardMac::ClipboardMac() : current_change_count_(0) {
 ClipboardMac::~ClipboardMac() {
   // In it2me the destructor is not called in the same thread that the timer is
   // created. Thus the timer must have already been destroyed by now.
-  DCHECK(clipboard_polling_timer_.get() == NULL);
+  DCHECK(clipboard_polling_timer_.get() == nullptr);
 }
 
 void ClipboardMac::Start(scoped_ptr<protocol::ClipboardStub> client_clipboard) {

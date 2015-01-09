@@ -16,7 +16,7 @@ namespace protocol {
 
 HostEventDispatcher::HostEventDispatcher()
     : ChannelDispatcherBase(kEventChannelName),
-      input_stub_(NULL) {
+      input_stub_(nullptr) {
 }
 
 HostEventDispatcher::~HostEventDispatcher() {

@@ -24,7 +24,7 @@ const char* ValueToName(const NameMapElement<T> (&map)[N], T value) {
       return map[i].name;
   }
   NOTREACHED();
-  return NULL;
+  return nullptr;
 }
 
 template <typename T, size_t N>

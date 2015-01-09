@@ -17,7 +17,7 @@ bool MakePipe(base::File* read_file,
 #if defined(OS_WIN)
   base::PlatformFile read_handle;
   base::PlatformFile write_handle;
-  if (!CreatePipe(&read_handle, &write_handle, NULL, 0))
+  if (!CreatePipe(&read_handle, &write_handle, nullptr, 0))
     return false;
   *read_file = base::File(read_handle);
   *write_file = base::File(write_handle);

@@ -48,13 +48,13 @@ bool InitializeComSecurity(const std::string& security_descriptor,
   HRESULT result = CoInitializeSecurity(
       absolute_sd.get(),
       -1,       // Let COM choose which authentication services to register.
-      NULL,     // See above.
-      NULL,     // Reserved, must be NULL.
+      nullptr,     // See above.
+      nullptr,     // Reserved, must be nullptr.
       RPC_C_AUTHN_LEVEL_PKT_PRIVACY,
       RPC_C_IMP_LEVEL_IDENTIFY,
-      NULL,     // Default authentication information is not provided.
+      nullptr,     // Default authentication information is not provided.
       capabilities,
-      NULL);    /// Reserved, must be NULL
+      nullptr);    /// Reserved, must be nullptr
   if (FAILED(result)) {
     LOG(ERROR) << "CoInitializeSecurity() failed, result=0x"
                << std::hex << result << std::dec << ".";

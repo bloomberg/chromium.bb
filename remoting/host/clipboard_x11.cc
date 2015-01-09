@@ -52,7 +52,7 @@ class ClipboardX11 : public Clipboard,
 };
 
 ClipboardX11::ClipboardX11()
-    : display_(NULL) {
+    : display_(nullptr) {
 }
 
 ClipboardX11::~ClipboardX11() {
@@ -62,7 +62,7 @@ ClipboardX11::~ClipboardX11() {
 void ClipboardX11::Start(
     scoped_ptr<protocol::ClipboardStub> client_clipboard) {
   // TODO(lambroslambrou): Share the X connection with InputInjector.
-  display_ = XOpenDisplay(NULL);
+  display_ = XOpenDisplay(nullptr);
   if (!display_) {
     LOG(ERROR) << "Couldn't open X display";
     return;
@@ -93,7 +93,7 @@ void ClipboardX11::Stop() {
 
   if (display_) {
     XCloseDisplay(display_);
-    display_ = NULL;
+    display_ = nullptr;
   }
 }
 

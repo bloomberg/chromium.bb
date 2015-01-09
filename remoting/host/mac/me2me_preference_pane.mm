@@ -102,7 +102,7 @@ namespace mac {
 
 // MessageForJob sends a single message to launchd with a simple dictionary
 // mapping |operation| to |job_label|, and returns the result of calling
-// launch_msg to send that message. On failure, returns NULL. The caller
+// launch_msg to send that message. On failure, returns nullptr. The caller
 // assumes ownership of the returned launch_data_t object.
 launch_data_t MessageForJob(const std::string& job_label,
                             const char* operation) {
@@ -110,7 +110,7 @@ launch_data_t MessageForJob(const std::string& job_label,
   ScopedLaunchData message(launch_data_alloc(LAUNCH_DATA_DICTIONARY));
   if (!message) {
     NSLog(@"launch_data_alloc");
-    return NULL;
+    return nullptr;
   }
 
   // launch_data_new_string returns something that needs to be freed, but
@@ -120,13 +120,13 @@ launch_data_t MessageForJob(const std::string& job_label,
   ScopedLaunchData job_label_launchd(launch_data_new_string(job_label.c_str()));
   if (!job_label_launchd) {
     NSLog(@"launch_data_new_string");
-    return NULL;
+    return nullptr;
   }
 
   if (!launch_data_dict_insert(message,
                                job_label_launchd.release(),
                                operation)) {
-    return NULL;
+    return nullptr;
   }
 
   return launch_msg(message);
@@ -167,8 +167,8 @@ OSStatus ExecuteWithPrivilegesAndGetPID(AuthorizationRef authorization,
                                         const char** arguments,
                                         FILE** pipe,
                                         pid_t* pid) {
-  // pipe may be NULL, but this function needs one.  In that case, use a local
-  // pipe.
+  // pipe may be nullptr, but this function needs one.  In that case, use a
+  // local pipe.
   FILE* local_pipe;
   FILE** pipe_pointer;
   if (pipe) {
@@ -202,7 +202,7 @@ OSStatus ExecuteWithPrivilegesAndGetPID(AuthorizationRef authorization,
     std::string line(line_c, line_length);
 
     // The version in base/mac used base::StringToInt() here.
-    line_pid = strtol(line.c_str(), NULL, 10);
+    line_pid = strtol(line.c_str(), nullptr, 10);
     if (line_pid == 0) {
       NSLog(@"ExecuteWithPrivilegesAndGetPid: funny line: %s", line.c_str());
       line_pid = -1;
@@ -553,8 +553,8 @@ std::string JsonHostConfig::GetSerializedData() const {
   // TODO(lambroslambrou): Replace the deprecated ExecuteWithPrivileges
   // call with a launchd-based helper tool, which is more secure.
   // http://crbug.com/120903
-  const char* arguments[] = { command, NULL };
-  FILE* pipe = NULL;
+  const char* arguments[] = { command, nullptr };
+  FILE* pipe = nullptr;
   pid_t pid;
   OSStatus status = base::mac::ExecuteWithPrivilegesAndGetPID(
       authorization,
@@ -576,7 +576,7 @@ std::string JsonHostConfig::GetSerializedData() const {
     return NO;
   }
   if (!pipe) {
-    NSLog(@"Unexpected NULL pipe");
+    NSLog(@"Unexpected nullptr pipe");
     return NO;
   }
 

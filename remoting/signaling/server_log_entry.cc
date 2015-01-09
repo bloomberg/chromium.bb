@@ -47,7 +47,7 @@ void ServerLogEntry::AddCpuField() {
 }
 
 void ServerLogEntry::AddModeField(ServerLogEntry::Mode mode) {
-  const char* mode_value = NULL;
+  const char* mode_value = nullptr;
   switch (mode) {
     case IT2ME:
       mode_value = kValueModeIt2Me;

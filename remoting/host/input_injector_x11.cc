@@ -56,8 +56,8 @@ bool FindKeycodeForKeySym(Display* display,
   // TODO(sergeyu): Is there a better way to find modifiers state?
   for (size_t i = 0; i < arraysize(kModifiersToTry); ++i) {
     unsigned long key_sym_with_mods;
-    if (XkbLookupKeySym(
-            display, *keycode, kModifiersToTry[i], NULL, &key_sym_with_mods) &&
+    if (XkbLookupKeySym(display, *keycode, kModifiersToTry[i], nullptr,
+                        &key_sym_with_mods) &&
         key_sym_with_mods == key_sym) {
       *modifiers = kModifiersToTry[i];
       return true;
@@ -230,7 +230,7 @@ InputInjectorX11::Core::Core(
       latest_mouse_position_(-1, -1),
       wheel_ticks_x_(0.0f),
       wheel_ticks_y_(0.0f),
-      display_(XOpenDisplay(NULL)),
+      display_(XOpenDisplay(nullptr)),
       root_window_(BadValue),
       saved_auto_repeat_enabled_(false) {
 }
@@ -500,7 +500,7 @@ void InputInjectorX11::Core::InitMouseButtonMap() {
   // Instead, try to work around it by reversing the mapping.
   // Note that if a user has a global mapping that completely disables a button
   // (by assigning 0 to it), we won't be able to inject it.
-  int num_buttons = XGetPointerMapping(display_, NULL, 0);
+  int num_buttons = XGetPointerMapping(display_, nullptr, 0);
   scoped_ptr<unsigned char[]> pointer_mapping(new unsigned char[num_buttons]);
   num_buttons = XGetPointerMapping(display_, pointer_mapping.get(),
                                    num_buttons);
@@ -556,7 +556,8 @@ void InputInjectorX11::Core::InitMouseButtonMap() {
     return;
   }
 
-  int num_device_buttons = XGetDeviceButtonMapping(display_, device, NULL, 0);
+  int num_device_buttons =
+      XGetDeviceButtonMapping(display_, device, nullptr, 0);
   scoped_ptr<unsigned char[]> button_mapping(new unsigned char[num_buttons]);
   for (int i = 0; i < num_device_buttons; i++) {
     button_mapping[i] = i + 1;

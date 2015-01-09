@@ -168,7 +168,7 @@ base::LazyInstance<base::WeakPtr<ChromotingInstance> >::Leaky
     g_logging_instance = LAZY_INSTANCE_INITIALIZER;
 base::LazyInstance<base::Lock>::Leaky
     g_logging_lock = LAZY_INSTANCE_INITIALIZER;
-logging::LogMessageHandlerFunction g_logging_old_handler = NULL;
+logging::LogMessageHandlerFunction g_logging_old_handler = nullptr;
 
 }  // namespace
 
@@ -299,9 +299,9 @@ void ChromotingInstance::HandleMessage(const pp::Var& message) {
   scoped_ptr<base::Value> json(
       base::JSONReader::Read(message.AsString(),
                              base::JSON_ALLOW_TRAILING_COMMAS));
-  base::DictionaryValue* message_dict = NULL;
+  base::DictionaryValue* message_dict = nullptr;
   std::string method;
-  base::DictionaryValue* data = NULL;
+  base::DictionaryValue* data = nullptr;
   if (!json.get() ||
       !json->GetAsDictionary(&message_dict) ||
       !message_dict->GetString("method", &method) ||
@@ -950,7 +950,7 @@ void ChromotingInstance::Disconnect() {
   VLOG(0) << "Disconnecting from host.";
 
   // Disconnect the input pipeline and teardown the connection.
-  mouse_input_filter_.set_input_stub(NULL);
+  mouse_input_filter_.set_input_stub(nullptr);
   client_.reset();
   video_renderer_.reset();
 }
@@ -1046,7 +1046,7 @@ void ChromotingInstance::UnregisterLoggingInstance() {
   // Unregister this instance for logging.
   g_has_logging_instance = false;
   g_logging_instance.Get().reset();
-  g_logging_task_runner.Get() = NULL;
+  g_logging_task_runner.Get() = nullptr;
 
   VLOG(1) << "Unregistering global log handler";
 }

@@ -23,7 +23,7 @@ JniFrameConsumer::JniFrameConsumer(
     scoped_refptr<ChromotingJniInstance> jni_instance)
     : jni_runtime_(jni_runtime),
       jni_instance_(jni_instance),
-      frame_producer_(NULL) {
+      frame_producer_(nullptr) {
 }
 
 JniFrameConsumer::~JniFrameConsumer() {

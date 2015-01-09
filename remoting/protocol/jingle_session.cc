@@ -71,7 +71,7 @@ ErrorCode AuthRejectionReasonToErrorCode(
 
 JingleSession::JingleSession(JingleSessionManager* session_manager)
     : session_manager_(session_manager),
-      event_handler_(NULL),
+      event_handler_(nullptr),
       state_(INITIALIZING),
       error_(OK),
       config_is_set_(false),
@@ -342,7 +342,7 @@ void JingleSession::OnMessageResponse(
 
   std::string type_str = JingleMessage::GetActionName(request_type);
 
-  // |response| will be NULL if the request timed out.
+  // |response| will be nullptr if the request timed out.
   if (!response) {
     LOG(ERROR) << type_str << " request timed out.";
     CloseInternal(SIGNALING_TIMEOUT);

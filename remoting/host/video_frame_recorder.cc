@@ -160,8 +160,8 @@ void VideoFrameRecorder::DetachVideoEncoderWrapper() {
   }
 
   // Detach this recorder from the calling and encode threads.
-  caller_task_runner_ = NULL;
-  encoder_task_runner_ = NULL;
+  caller_task_runner_ = nullptr;
+  encoder_task_runner_ = nullptr;
 }
 
 void VideoFrameRecorder::SetEnableRecording(bool enable_recording) {

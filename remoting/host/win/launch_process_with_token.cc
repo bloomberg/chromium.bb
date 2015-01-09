@@ -41,13 +41,13 @@ const int kPipeConnectMaxAttempts = 3;
 void CloseHandlesAndTerminateProcess(PROCESS_INFORMATION* process_information) {
   if (process_information->hThread) {
     CloseHandle(process_information->hThread);
-    process_information->hThread = NULL;
+    process_information->hThread = nullptr;
   }
 
   if (process_information->hProcess) {
     TerminateProcess(process_information->hProcess, CONTROL_C_EXIT);
     CloseHandle(process_information->hProcess);
-    process_information->hProcess = NULL;
+    process_information->hProcess = nullptr;
   }
 }
 
@@ -91,10 +91,10 @@ bool ConnectToExecutionServer(uint32 session_id,
     pipe.Set(CreateFile(pipe_name.c_str(),
                         GENERIC_READ | GENERIC_WRITE,
                         0,
-                        NULL,
+                        nullptr,
                         OPEN_EXISTING,
                         0,
-                        NULL));
+                        nullptr));
     if (pipe.IsValid()) {
       break;
     }
@@ -134,7 +134,7 @@ bool CopyProcessToken(DWORD desired_access, ScopedHandle* token_out) {
 
   if (!DuplicateTokenEx(process_token.Get(),
                         desired_access,
-                        NULL,
+                        nullptr,
                         SecurityImpersonation,
                         TokenPrimary,
                         &temp_handle)) {
@@ -159,13 +159,13 @@ bool CreatePrivilegedToken(ScopedHandle* token_out) {
   TOKEN_PRIVILEGES state;
   state.PrivilegeCount = 1;
   state.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
-  if (!LookupPrivilegeValue(NULL, SE_TCB_NAME, &state.Privileges[0].Luid)) {
+  if (!LookupPrivilegeValue(nullptr, SE_TCB_NAME, &state.Privileges[0].Luid)) {
     PLOG(ERROR) << "Failed to lookup the LUID for the SE_TCB_NAME privilege";
     return false;
   }
 
   // Enable the SE_TCB_NAME privilege.
-  if (!AdjustTokenPrivileges(privileged_token.Get(), FALSE, &state, 0, NULL,
+  if (!AdjustTokenPrivileges(privileged_token.Get(), FALSE, &state, 0, nullptr,
                              0)) {
     PLOG(ERROR) << "Failed to enable SE_TCB_NAME privilege in a token";
     return false;
@@ -263,7 +263,7 @@ bool ReceiveCreateProcessResponse(
 
   DWORD bytes;
   CreateProcessResponse response;
-  if (!ReadFile(pipe, &response, sizeof(response), &bytes, NULL)) {
+  if (!ReadFile(pipe, &response, sizeof(response), &bytes, nullptr)) {
     PLOG(ERROR) << "Failed to receive CreateProcessAsUser response";
     return false;
   }
@@ -318,7 +318,7 @@ bool SendCreateProcessRequest(
     desktop = desktop_name;
 
   // Allocate a large enough buffer to hold the CreateProcessRequest structure
-  // and three NULL-terminated string parameters.
+  // and three nullptr-terminated string parameters.
   size_t size = sizeof(CreateProcessRequest) + sizeof(wchar_t) *
       (application_name.size() + command_line.size() + desktop.size() + 3);
   scoped_ptr<char[]> buffer(new char[size]);
@@ -357,7 +357,7 @@ bool SendCreateProcessRequest(
 
   // Pass the request to create a process in the target session.
   DWORD bytes;
-  if (!WriteFile(pipe, buffer.get(), size, &bytes, NULL)) {
+  if (!WriteFile(pipe, buffer.get(), size, &bytes, nullptr)) {
     PLOG(ERROR) << "Failed to send CreateProcessAsUser request";
     return false;
   }
@@ -473,8 +473,8 @@ bool LaunchProcessWithToken(const base::FilePath& binary,
                                     thread_attributes,
                                     inherit_handles,
                                     creation_flags,
-                                    NULL,
-                                    NULL,
+                                    nullptr,
+                                    nullptr,
                                     &startup_info,
                                     &temp_process_info);
 

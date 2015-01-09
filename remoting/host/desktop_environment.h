@@ -66,7 +66,7 @@ class DesktopEnvironmentFactory {
  public:
   virtual ~DesktopEnvironmentFactory() {}
 
-  // Creates an instance of |DesktopEnvironment|. Returns a NULL pointer if
+  // Creates an instance of |DesktopEnvironment|. Returns a nullptr pointer if
   // the desktop environment could not be created for any reason (if the curtain
   // failed to active for instance). |client_session_control| must outlive
   // the created desktop environment.

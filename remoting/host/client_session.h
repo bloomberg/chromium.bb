@@ -219,8 +219,8 @@ class ClientSession
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
 
   // Schedulers for audio and video capture.
-  // |video_scheduler_| may be NULL if the video channel is not required - see
-  // ResetVideoPipeline().
+  // |video_scheduler_| may be nullptr if the video channel is not required -
+  // see ResetVideoPipeline().
   scoped_refptr<AudioScheduler> audio_scheduler_;
   scoped_refptr<VideoScheduler> video_scheduler_;
 

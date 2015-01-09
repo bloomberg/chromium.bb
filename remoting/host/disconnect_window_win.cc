@@ -106,7 +106,7 @@ bool GetControlTextWidth(HWND control,
 }
 
 DisconnectWindowWin::DisconnectWindowWin()
-    : hwnd_(NULL),
+    : hwnd_(nullptr),
       has_hotkey_(false),
       border_pen_(CreatePen(PS_SOLID, 5,
                             RGB(0.13 * 255, 0.69 * 255, 0.11 * 255))) {
@@ -134,7 +134,7 @@ INT_PTR CALLBACK DisconnectWindowWin::DialogProc(HWND hwnd,
                                                  UINT message,
                                                  WPARAM wparam,
                                                  LPARAM lparam) {
-  LONG_PTR self = NULL;
+  LONG_PTR self = 0;
   if (message == WM_INITDIALOG) {
     self = lparam;
 
@@ -176,7 +176,7 @@ BOOL DisconnectWindowWin::OnDialogMessage(HWND hwnd,
 
     // Ensure we don't try to use the HWND anymore.
     case WM_DESTROY:
-      hwnd_ = NULL;
+      hwnd_ = nullptr;
 
       // Ensure that the disconnect callback is invoked even if somehow our
       // window gets destroyed.
@@ -229,7 +229,7 @@ bool DisconnectWindowWin::BeginDialog() {
   DCHECK(!hwnd_);
 
   HMODULE module = base::GetModuleFromAddress(&DialogProc);
-  hwnd_ = CreateDialogParam(module, MAKEINTRESOURCE(IDD_DISCONNECT), NULL,
+  hwnd_ = CreateDialogParam(module, MAKEINTRESOURCE(IDD_DISCONNECT), nullptr,
                             DialogProc, reinterpret_cast<LPARAM>(this));
   if (!hwnd_)
     return false;
@@ -258,7 +258,7 @@ void DisconnectWindowWin::EndDialog() {
 
   if (hwnd_) {
     DestroyWindow(hwnd_);
-    hwnd_ = NULL;
+    hwnd_ = nullptr;
   }
 
   if (client_session_control_)
@@ -283,7 +283,7 @@ void DisconnectWindowWin::SetDialogPosition() {
 
   // Try to center the window above the task-bar. If that fails, use the
   // primary monitor. If that fails (very unlikely), use the default position.
-  HWND taskbar = FindWindow(kShellTrayWindowName, NULL);
+  HWND taskbar = FindWindow(kShellTrayWindowName, nullptr);
   HMONITOR monitor = MonitorFromWindow(taskbar, MONITOR_DEFAULTTOPRIMARY);
   MONITORINFO monitor_info = {sizeof(monitor_info)};
   RECT window_rect;
@@ -294,7 +294,7 @@ void DisconnectWindowWin::SetDialogPosition() {
     int top = monitor_info.rcWork.bottom - window_height;
     int left = (monitor_info.rcWork.right + monitor_info.rcWork.left -
         window_width) / 2;
-    SetWindowPos(hwnd_, NULL, left, top, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+    SetWindowPos(hwnd_, nullptr, left, top, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
   }
 }
 
@@ -318,7 +318,7 @@ bool DisconnectWindowWin::SetStrings() {
   // Format and truncate "Your desktop is shared with ..." message.
   message_text = ReplaceStringPlaceholders(message_text,
                                            base::UTF8ToUTF16(username_),
-                                           NULL);
+                                           nullptr);
   if (message_text.length() > kMaxSharingWithTextLength)
     message_text.erase(kMaxSharingWithTextLength);
 
@@ -342,7 +342,7 @@ bool DisconnectWindowWin::SetStrings() {
     return false;
   message_rect.right = message_rect.left + control_width + margin;
 
-  if (!SetWindowPos(hwnd_message, NULL,
+  if (!SetWindowPos(hwnd_message, nullptr,
                     message_rect.left, message_rect.top,
                     message_rect.right - message_rect.left,
                     message_rect.bottom - message_rect.top,
@@ -360,7 +360,7 @@ bool DisconnectWindowWin::SetStrings() {
 
   button_rect.left = message_rect.right;
   button_rect.right = button_rect.left + control_width + margin * 2;
-  if (!SetWindowPos(hwnd_button, NULL,
+  if (!SetWindowPos(hwnd_button, nullptr,
                     button_rect.left, button_rect.top,
                     button_rect.right - button_rect.left,
                     button_rect.bottom - button_rect.top,
@@ -374,7 +374,7 @@ bool DisconnectWindowWin::SetStrings() {
     return false;
   int width = button_rect.right + margin;
   int height = window_rect.bottom - window_rect.top;
-  if (!SetWindowPos(hwnd_, NULL, 0, 0, width, height,
+  if (!SetWindowPos(hwnd_, nullptr, 0, 0, width, height,
                     SWP_NOMOVE | SWP_NOZORDER)) {
     return false;
   }

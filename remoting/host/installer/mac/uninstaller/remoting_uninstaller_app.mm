@@ -40,7 +40,7 @@
     NSLog(@"Chrome Remote Desktop Host uninstall complete.");
 
     bool success = false;
-    NSString* message = NULL;
+    NSString* message = nullptr;
     if (status == errAuthorizationSuccess) {
       success = true;
       message = @"Chrome Remote Desktop Host successfully uninstalled.";
@@ -53,7 +53,7 @@
                   format:@"Error during AuthorizationCopyRights status=%d",
                              static_cast<int>(status)];
     }
-    if (message != NULL) {
+    if (message != nullptr) {
       NSLog(@"Uninstall %s: %@", success ? "succeeded" : "failed", message);
       [self showSuccess:success withMessage:message];
     }

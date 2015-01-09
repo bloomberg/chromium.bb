@@ -96,7 +96,7 @@ ConfigFileWatcher::ConfigFileWatcher(
 
 ConfigFileWatcher::~ConfigFileWatcher() {
   impl_->StopWatching();
-  impl_ = NULL;
+  impl_ = nullptr;
 }
 
 void ConfigFileWatcher::Watch(ConfigWatcher::Delegate* delegate) {
@@ -109,7 +109,7 @@ ConfigFileWatcherImpl::ConfigFileWatcherImpl(
     const base::FilePath& config_path)
     : config_path_(config_path),
       retries_(0),
-      delegate_(NULL),
+      delegate_(nullptr),
       main_task_runner_(main_task_runner),
       io_task_runner_(io_task_runner),
       weak_factory_(this) {

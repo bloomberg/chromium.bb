@@ -20,7 +20,7 @@ class AudioCapturer {
   virtual ~AudioCapturer() {}
 
   // Returns true if audio capturing is supported on this platform. If this
-  // returns true, then Create() must not return NULL.
+  // returns true, then Create() must not return nullptr.
   static bool IsSupported();
   static scoped_ptr<AudioCapturer> Create();
 

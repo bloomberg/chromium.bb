@@ -64,7 +64,7 @@ bool CreateConnectedIpcChannel(
 
   SECURITY_ATTRIBUTES security_attributes = {0};
   security_attributes.nLength = sizeof(security_attributes);
-  security_attributes.lpSecurityDescriptor = NULL;
+  security_attributes.lpSecurityDescriptor = nullptr;
   security_attributes.bInheritHandle = TRUE;
 
   // Create the client end of the channel. This code should match the code in
@@ -76,7 +76,7 @@ bool CreateConnectedIpcChannel(
                                OPEN_EXISTING,
                                SECURITY_SQOS_PRESENT | SECURITY_IDENTIFICATION |
                                    FILE_FLAG_OVERLAPPED,
-                               NULL));
+                               nullptr));
   if (!client.IsValid()) {
     PLOG(ERROR) << "Failed to connect to '" << pipe_name << "'";
     return false;

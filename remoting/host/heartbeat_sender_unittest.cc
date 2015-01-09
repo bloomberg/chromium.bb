@@ -101,7 +101,7 @@ class HeartbeatSenderTest
 
 // Call Start() followed by Stop(), and make sure a valid heartbeat is sent.
 TEST_F(HeartbeatSenderTest, DoSendStanza) {
-  XmlElement* sent_iq = NULL;
+  XmlElement* sent_iq = nullptr;
   EXPECT_CALL(signal_strategy_, GetLocalJid())
       .WillRepeatedly(Return(kTestJid));
   EXPECT_CALL(signal_strategy_, GetNextId())
@@ -115,7 +115,7 @@ TEST_F(HeartbeatSenderTest, DoSendStanza) {
   base::RunLoop().RunUntilIdle();
 
   scoped_ptr<XmlElement> stanza(sent_iq);
-  ASSERT_TRUE(stanza != NULL);
+  ASSERT_TRUE(stanza != nullptr);
   ValidateHeartbeatStanza(stanza.get(), "0", nullptr);
 
   heartbeat_sender_->OnSignalStrategyStateChange(SignalStrategy::DISCONNECTED);
@@ -125,7 +125,7 @@ TEST_F(HeartbeatSenderTest, DoSendStanza) {
 // Call Start() followed by Stop(), twice, and make sure two valid heartbeats
 // are sent, with the correct sequence IDs.
 TEST_F(HeartbeatSenderTest, DoSendStanzaTwice) {
-  XmlElement* sent_iq = NULL;
+  XmlElement* sent_iq = nullptr;
   EXPECT_CALL(signal_strategy_, GetLocalJid())
       .WillRepeatedly(Return(kTestJid));
   EXPECT_CALL(signal_strategy_, GetNextId())
@@ -139,7 +139,7 @@ TEST_F(HeartbeatSenderTest, DoSendStanzaTwice) {
   base::RunLoop().RunUntilIdle();
 
   scoped_ptr<XmlElement> stanza(sent_iq);
-  ASSERT_TRUE(stanza != NULL);
+  ASSERT_TRUE(stanza != nullptr);
   ValidateHeartbeatStanza(stanza.get(), "0", nullptr);
 
   heartbeat_sender_->OnSignalStrategyStateChange(SignalStrategy::DISCONNECTED);
@@ -166,7 +166,7 @@ TEST_F(HeartbeatSenderTest, DoSendStanzaTwice) {
 // reply with an expected sequence ID, and make sure two valid heartbeats
 // are sent, with the correct sequence IDs.
 TEST_F(HeartbeatSenderTest, DoSendStanzaWithExpectedSequenceId) {
-  XmlElement* sent_iq = NULL;
+  XmlElement* sent_iq = nullptr;
   EXPECT_CALL(signal_strategy_, GetLocalJid())
       .WillRepeatedly(Return(kTestJid));
   EXPECT_CALL(signal_strategy_, GetNextId())
@@ -180,10 +180,10 @@ TEST_F(HeartbeatSenderTest, DoSendStanzaWithExpectedSequenceId) {
   base::RunLoop().RunUntilIdle();
 
   scoped_ptr<XmlElement> stanza(sent_iq);
-  ASSERT_TRUE(stanza != NULL);
+  ASSERT_TRUE(stanza != nullptr);
   ValidateHeartbeatStanza(stanza.get(), "0", nullptr);
 
-  XmlElement* sent_iq2 = NULL;
+  XmlElement* sent_iq2 = nullptr;
   EXPECT_CALL(signal_strategy_, GetLocalJid())
       .WillRepeatedly(Return(kTestJid));
   EXPECT_CALL(signal_strategy_, GetNextId())
@@ -201,11 +201,11 @@ TEST_F(HeartbeatSenderTest, DoSendStanzaWithExpectedSequenceId) {
   result->AddElement(expected_sequence_id);
   const int kExpectedSequenceId = 456;
   expected_sequence_id->AddText(base::IntToString(kExpectedSequenceId));
-  heartbeat_sender_->ProcessResponse(false, NULL, response.get());
+  heartbeat_sender_->ProcessResponse(false, nullptr, response.get());
   base::RunLoop().RunUntilIdle();
 
   scoped_ptr<XmlElement> stanza2(sent_iq2);
-  ASSERT_TRUE(stanza2 != NULL);
+  ASSERT_TRUE(stanza2 != nullptr);
   ValidateHeartbeatStanza(stanza2.get(),
                           base::IntToString(kExpectedSequenceId).c_str(),
                           nullptr);
@@ -231,7 +231,7 @@ void HeartbeatSenderTest::ProcessResponseWithInterval(
   set_interval->AddText(base::IntToString(interval));
 
   heartbeat_sender_->ProcessResponse(
-      is_offline_heartbeat_response, NULL, response.get());
+      is_offline_heartbeat_response, nullptr, response.get());
 }
 
 // Verify that ProcessResponse parses set-interval result.
@@ -245,7 +245,7 @@ TEST_F(HeartbeatSenderTest, ProcessResponseSetInterval) {
 
 // Make sure SetHostOfflineReason sends a correct stanza.
 TEST_F(HeartbeatSenderTest, DoSetHostOfflineReason) {
-  XmlElement* sent_iq = NULL;
+  XmlElement* sent_iq = nullptr;
   EXPECT_CALL(signal_strategy_, GetLocalJid())
       .WillRepeatedly(Return(kTestJid));
   EXPECT_CALL(signal_strategy_, GetNextId())
@@ -263,7 +263,7 @@ TEST_F(HeartbeatSenderTest, DoSetHostOfflineReason) {
   base::RunLoop().RunUntilIdle();
 
   scoped_ptr<XmlElement> stanza(sent_iq);
-  ASSERT_TRUE(stanza != NULL);
+  ASSERT_TRUE(stanza != nullptr);
   ValidateHeartbeatStanza(stanza.get(), "0", "test_error");
 
   heartbeat_sender_->OnSignalStrategyStateChange(SignalStrategy::DISCONNECTED);
@@ -327,7 +327,7 @@ void HeartbeatSenderTest::ValidateHeartbeatStanza(
   EXPECT_EQ(stanza->Attr(buzz::QName(std::string(), "type")), "set");
   XmlElement* heartbeat_stanza =
       stanza->FirstNamed(QName(kChromotingXmlNamespace, "heartbeat"));
-  ASSERT_TRUE(heartbeat_stanza != NULL);
+  ASSERT_TRUE(heartbeat_stanza != nullptr);
   EXPECT_EQ(expected_sequence_id, heartbeat_stanza->Attr(
       buzz::QName(kChromotingXmlNamespace, "sequence-id")));
   if (expected_host_offline_reason == nullptr) {
@@ -342,8 +342,8 @@ void HeartbeatSenderTest::ValidateHeartbeatStanza(
 
   QName signature_tag(kChromotingXmlNamespace, "signature");
   XmlElement* signature = heartbeat_stanza->FirstNamed(signature_tag);
-  ASSERT_TRUE(signature != NULL);
-  EXPECT_TRUE(heartbeat_stanza->NextNamed(signature_tag) == NULL);
+  ASSERT_TRUE(signature != nullptr);
+  EXPECT_TRUE(heartbeat_stanza->NextNamed(signature_tag) == nullptr);
 
   scoped_refptr<RsaKeyPair> key_pair = RsaKeyPair::FromString(kTestRsaKeyPair);
   ASSERT_TRUE(key_pair.get());

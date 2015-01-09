@@ -24,7 +24,7 @@ class ChromotingHostContext {
   // Create threads and URLRequestContextGetter for use by a host.
   // During shutdown the caller should tear-down the ChromotingHostContext and
   // then continue to run until |ui_task_runner| is no longer referenced.
-  // NULL is returned if any threads fail to start.
+  // nullptr is returned if any threads fail to start.
   static scoped_ptr<ChromotingHostContext> Create(
       scoped_refptr<AutoThreadTaskRunner> ui_task_runner);
 

@@ -17,7 +17,7 @@ const int kUrlPollIntervalMs = 100;
 namespace remoting {
 
 AuthCodeGetter::AuthCodeGetter() :
-    browser_(NULL),
+    browser_(nullptr),
     timer_interval_(base::TimeDelta::FromMilliseconds(kUrlPollIntervalMs)) {
 }
 
@@ -32,7 +32,7 @@ void AuthCodeGetter::GetAuthCode(
     return;
   }
   on_auth_code_ = on_auth_code;
-  HRESULT hr = browser_.CreateInstance(CLSID_InternetExplorer, NULL,
+  HRESULT hr = browser_.CreateInstance(CLSID_InternetExplorer, nullptr,
                                        CLSCTX_LOCAL_SERVER);
   if (FAILED(hr)) {
     on_auth_code_.Run("");

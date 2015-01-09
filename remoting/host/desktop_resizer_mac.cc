@@ -75,7 +75,7 @@ void DesktopResizerMac::SetResolution(const ScreenResolution& resolution) {
   // There may be many modes with the requested resolution. Pick the one with
   // the highest color depth.
   int index = 0, best_depth = 0;
-  CGDisplayModeRef best_mode = NULL;
+  CGDisplayModeRef best_mode = nullptr;
   for (std::list<ScreenResolution>::const_iterator i = resolutions.begin();
        i != resolutions.end(); ++i, ++index) {
     if (i->Equals(resolution)) {
@@ -109,7 +109,7 @@ void DesktopResizerMac::SetResolution(const ScreenResolution& resolution) {
               << "x" << resolution.dimensions().height() << "x"
               << best_depth << " @ "
               << resolution.dpi().x() << "x" << resolution.dpi().y() << " dpi)";
-    CGDisplaySetDisplayMode(display, best_mode, NULL);
+    CGDisplaySetDisplayMode(display, best_mode, nullptr);
   }
 }
 
@@ -126,12 +126,12 @@ void DesktopResizerMac::GetSupportedModesAndResolutions(
   }
 
   base::ScopedCFTypeRef<CFArrayRef> all_modes(
-      CGDisplayCopyAllDisplayModes(display, NULL));
+      CGDisplayCopyAllDisplayModes(display, nullptr));
   if (!all_modes) {
     return;
   }
 
-  modes->reset(CFArrayCreateMutableCopy(NULL, 0, all_modes));
+  modes->reset(CFArrayCreateMutableCopy(nullptr, 0, all_modes));
   CFIndex count = CFArrayGetCount(*modes);
   for (CFIndex i = 0; i < count; ++i) {
     CGDisplayModeRef mode = const_cast<CGDisplayModeRef>(

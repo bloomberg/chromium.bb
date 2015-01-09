@@ -9,13 +9,13 @@
 namespace remoting {
 
 WindowStationAndDesktop::WindowStationAndDesktop()
-    : desktop_(NULL),
-      window_station_(NULL) {
+    : desktop_(nullptr),
+      window_station_(nullptr) {
 }
 
 WindowStationAndDesktop::~WindowStationAndDesktop() {
-  SetDesktop(NULL);
-  SetWindowStation(NULL);
+  SetDesktop(nullptr);
+  SetWindowStation(nullptr);
 }
 
 void WindowStationAndDesktop::SetDesktop(HDESK desktop) {

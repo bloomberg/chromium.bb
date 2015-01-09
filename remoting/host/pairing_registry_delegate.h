@@ -15,7 +15,7 @@ class SingleThreadTaskRunner;
 
 namespace remoting {
 // Returns a platform-specific pairing registry delegate that will save to
-// permanent storage. Returns NULL on platforms that don't support pairing.
+// permanent storage. Returns nullptr on platforms that don't support pairing.
 scoped_ptr<protocol::PairingRegistry::Delegate>
 CreatePairingRegistryDelegate();
 

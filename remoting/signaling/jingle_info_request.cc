@@ -58,7 +58,7 @@ void JingleInfoRequest::OnResponse(IqRequest* request,
 
   const buzz::XmlElement* query =
       stanza->FirstNamed(buzz::QN_JINGLE_INFO_QUERY);
-  if (query == NULL) {
+  if (query == nullptr) {
     LOG(WARNING) << "No Jingle info found in Jingle Info query response."
                  << stanza->Str();
     on_jingle_info_cb_.Run(relay_token, relay_hosts, stun_hosts);
@@ -69,7 +69,7 @@ void JingleInfoRequest::OnResponse(IqRequest* request,
   if (stun) {
     for (const buzz::XmlElement* server =
          stun->FirstNamed(buzz::QN_JINGLE_INFO_SERVER);
-         server != NULL;
+         server != nullptr;
          server = server->NextNamed(buzz::QN_JINGLE_INFO_SERVER)) {
       std::string host = server->Attr(buzz::QN_JINGLE_INFO_HOST);
       std::string port_str = server->Attr(buzz::QN_JINGLE_INFO_UDP);
@@ -90,7 +90,7 @@ void JingleInfoRequest::OnResponse(IqRequest* request,
     relay_token = relay->TextNamed(buzz::QN_JINGLE_INFO_TOKEN);
     for (const buzz::XmlElement* server =
          relay->FirstNamed(buzz::QN_JINGLE_INFO_SERVER);
-         server != NULL;
+         server != nullptr;
          server = server->NextNamed(buzz::QN_JINGLE_INFO_SERVER)) {
       std::string host = server->Attr(buzz::QN_JINGLE_INFO_HOST);
       if (host != buzz::STR_EMPTY)

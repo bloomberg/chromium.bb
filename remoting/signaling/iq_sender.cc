@@ -146,7 +146,7 @@ void IqRequest::CallCallback(const buzz::XmlElement* stanza) {
 }
 
 void IqRequest::OnTimeout() {
-  CallCallback(NULL);
+  CallCallback(nullptr);
 }
 
 void IqRequest::OnResponse(const buzz::XmlElement* stanza) {

@@ -62,7 +62,7 @@ void SignalListener::OnFileCanReadWithoutBlocking(int fd) {
   }
 }
 
-SignalListener* g_signal_listener = NULL;
+SignalListener* g_signal_listener = nullptr;
 int g_write_fd = 0;
 
 void GlobalSignalHandler(int signal) {

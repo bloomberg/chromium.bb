@@ -113,7 +113,7 @@ TEST_F(IqSenderTest, Timeout) {
 
   request_->SetTimeout(base::TimeDelta::FromMilliseconds(2));
 
-  EXPECT_CALL(callback_, OnReply(request_.get(), NULL))
+  EXPECT_CALL(callback_, OnReply(request_.get(), nullptr))
       .WillOnce(InvokeWithoutArgs(&message_loop_, &base::MessageLoop::Quit));
   message_loop_.Run();
 }

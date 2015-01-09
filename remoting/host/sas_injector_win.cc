@@ -131,7 +131,7 @@ class SasInjectorXp : public SasInjector {
   virtual bool InjectSas() override;
 };
 
-SasInjectorWin::SasInjectorWin() : send_sas_(NULL) {
+SasInjectorWin::SasInjectorWin() : send_sas_(nullptr) {
 }
 
 SasInjectorWin::~SasInjectorWin() {
@@ -148,7 +148,7 @@ bool SasInjectorWin::InjectSas() {
     }
 
     sas_dll_.Reset(base::LoadNativeLibrary(dir_path.Append(kSasDllFileName),
-                                           NULL));
+                                           nullptr));
   }
   if (!sas_dll_.is_valid()) {
     LOG(ERROR) << "Failed to load '" << kSasDllFileName << "'";
@@ -156,11 +156,11 @@ bool SasInjectorWin::InjectSas() {
   }
 
   // Get the pointer to sas!SendSAS().
-  if (send_sas_ == NULL) {
+  if (send_sas_ == nullptr) {
     send_sas_ = reinterpret_cast<SendSasFunc>(
         sas_dll_.GetFunctionPointer(kSendSasName));
   }
-  if (send_sas_ == NULL) {
+  if (send_sas_ == nullptr) {
     LOG(ERROR) << "Failed to retrieve the address of '" << kSendSasName
                << "()'";
     return false;

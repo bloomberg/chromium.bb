@@ -176,7 +176,7 @@ void RegisterSupportHostRequest::CallCallback(
   request_.reset();
   iq_sender_.reset();
   signal_strategy_->RemoveListener(this);
-  signal_strategy_ = NULL;
+  signal_strategy_ = nullptr;
 
   RegisterCallback callback = callback_;
   callback_.Reset();

@@ -51,7 +51,7 @@ bool AudioCapturerWin::Start(const PacketCapturedCallback& callback) {
   DCHECK(!audio_capture_client_.get());
   DCHECK(!audio_client_.get());
   DCHECK(!mm_device_.get());
-  DCHECK(static_cast<PWAVEFORMATEX>(wave_format_ex_) == NULL);
+  DCHECK(static_cast<PWAVEFORMATEX>(wave_format_ex_) == nullptr);
   DCHECK(thread_checker_.CalledOnValidThread());
 
   callback_ = callback;
@@ -80,7 +80,7 @@ bool AudioCapturerWin::Start(const PacketCapturedCallback& callback) {
   // Get an audio client.
   hr = mm_device_->Activate(__uuidof(IAudioClient),
                             CLSCTX_ALL,
-                            NULL,
+                            nullptr,
                             audio_client_.ReceiveVoid());
   if (FAILED(hr)) {
     LOG(ERROR) << "Failed to get an IAudioClient. Error " << hr;
@@ -88,7 +88,7 @@ bool AudioCapturerWin::Start(const PacketCapturedCallback& callback) {
   }
 
   REFERENCE_TIME device_period;
-  hr = audio_client_->GetDevicePeriod(&device_period, NULL);
+  hr = audio_client_->GetDevicePeriod(&device_period, nullptr);
   if (FAILED(hr)) {
     LOG(ERROR) << "IAudioClient::GetDevicePeriod failed. Error " << hr;
     return false;
@@ -169,7 +169,7 @@ bool AudioCapturerWin::Start(const PacketCapturedCallback& callback) {
       k100nsPerMillisecond,
       0,
       wave_format_ex_,
-      NULL);
+      nullptr);
   if (FAILED(hr)) {
     LOG(ERROR) << "Failed to initialize IAudioClient. Error " << hr;
     return false;
@@ -208,14 +208,14 @@ void AudioCapturerWin::Stop() {
   mm_device_.Release();
   audio_client_.Release();
   audio_capture_client_.Release();
-  wave_format_ex_.Reset(NULL);
+  wave_format_ex_.Reset(nullptr);
 
   thread_checker_.DetachFromThread();
 }
 
 bool AudioCapturerWin::IsStarted() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return capture_timer_.get() != NULL;
+  return capture_timer_.get() != nullptr;
 }
 
 void AudioCapturerWin::DoCapture() {
@@ -238,7 +238,8 @@ void AudioCapturerWin::DoCapture() {
     BYTE* data;
     UINT32 frames;
     DWORD flags;
-    hr = audio_capture_client_->GetBuffer(&data, &frames, &flags, NULL, NULL);
+    hr = audio_capture_client_->GetBuffer(&data, &frames, &flags, nullptr,
+                                          nullptr);
     if (FAILED(hr))
       break;
 

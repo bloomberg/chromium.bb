@@ -121,7 +121,7 @@ scoped_ptr<webrtc::DesktopFrame> DefaultFrameGenerator::GenerateFrame(
 }  // namespace
 
 FakeDesktopCapturer::FakeDesktopCapturer()
-    : callback_(NULL) {
+    : callback_(nullptr) {
   frame_generator_ = base::Bind(&DefaultFrameGenerator::GenerateFrame,
                                 new DefaultFrameGenerator());
 }

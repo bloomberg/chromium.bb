@@ -81,11 +81,11 @@ void DesktopProcess::OnChannelError() {
   daemon_channel_.reset();
   if (desktop_agent_.get()) {
     desktop_agent_->Stop();
-    desktop_agent_ = NULL;
+    desktop_agent_ = nullptr;
   }
 
-  caller_task_runner_ = NULL;
-  input_task_runner_ = NULL;
+  caller_task_runner_ = nullptr;
+  input_task_runner_ = nullptr;
   desktop_environment_factory_.reset();
 }
 
@@ -131,9 +131,9 @@ bool DesktopProcess::Start(
   // Start the agent and create an IPC channel to talk to it.
   IPC::PlatformFileForTransit desktop_pipe;
   if (!desktop_agent_->Start(AsWeakPtr(), &desktop_pipe)) {
-    desktop_agent_ = NULL;
-    caller_task_runner_ = NULL;
-    input_task_runner_ = NULL;
+    desktop_agent_ = nullptr;
+    caller_task_runner_ = nullptr;
+    input_task_runner_ = nullptr;
     desktop_environment_factory_.reset();
     return false;
   }

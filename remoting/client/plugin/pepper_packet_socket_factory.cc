@@ -413,7 +413,7 @@ rtc::AsyncPacketSocket* PepperPacketSocketFactory::CreateUdpSocket(
       uint16 max_port) {
   scoped_ptr<UdpPacketSocket> result(new UdpPacketSocket(pp_instance_));
   if (!result->Init(local_address, min_port, max_port))
-    return NULL;
+    return nullptr;
   return result.release();
 }
 
@@ -424,7 +424,7 @@ rtc::AsyncPacketSocket* PepperPacketSocketFactory::CreateServerTcpSocket(
     int opts) {
   // We don't use TCP sockets for remoting connections.
   NOTREACHED();
-  return NULL;
+  return nullptr;
 }
 
 rtc::AsyncPacketSocket* PepperPacketSocketFactory::CreateClientTcpSocket(
@@ -435,7 +435,7 @@ rtc::AsyncPacketSocket* PepperPacketSocketFactory::CreateClientTcpSocket(
       int opts) {
   // We don't use TCP sockets for remoting connections.
   NOTREACHED();
-  return NULL;
+  return nullptr;
 }
 
 rtc::AsyncResolverInterface*

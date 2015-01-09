@@ -212,7 +212,7 @@ rtc::AsyncPacketSocket* FakePacketSocketFactory::CreateUdpSocket(
       }
     }
     if (port < 0)
-      return NULL;
+      return nullptr;
   } else {
     do {
       port = next_port_;
@@ -237,7 +237,7 @@ rtc::AsyncPacketSocket* FakePacketSocketFactory::CreateServerTcpSocket(
     const rtc::SocketAddress& local_address,
     uint16 min_port, uint16 max_port,
     int opts) {
-  return NULL;
+  return nullptr;
 }
 
 rtc::AsyncPacketSocket* FakePacketSocketFactory::CreateClientTcpSocket(
@@ -246,12 +246,12 @@ rtc::AsyncPacketSocket* FakePacketSocketFactory::CreateClientTcpSocket(
     const rtc::ProxyInfo& proxy_info,
     const std::string& user_agent,
     int opts) {
-  return NULL;
+  return nullptr;
 }
 
 rtc::AsyncResolverInterface*
 FakePacketSocketFactory::CreateAsyncResolver() {
-  return NULL;
+  return nullptr;
 }
 
 const scoped_refptr<base::SingleThreadTaskRunner>&

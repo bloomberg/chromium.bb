@@ -12,7 +12,7 @@
 namespace remoting {
 
 ScopedSd ConvertSddlToSd(const std::string& sddl) {
-  PSECURITY_DESCRIPTOR raw_sd = NULL;
+  PSECURITY_DESCRIPTOR raw_sd = nullptr;
   ULONG length = 0;
   if (!ConvertStringSecurityDescriptorToSecurityDescriptor(
           base::UTF8ToUTF16(sddl).c_str(), SDDL_REVISION_1, &raw_sd, &length)) {
@@ -28,7 +28,7 @@ ScopedSd ConvertSddlToSd(const std::string& sddl) {
 
 // Converts a SID into a text string.
 std::string ConvertSidToString(SID* sid) {
-  base::char16* c_sid_string = NULL;
+  base::char16* c_sid_string = nullptr;
   if (!ConvertSidToStringSid(sid, &c_sid_string))
     return std::string();
 
@@ -37,11 +37,11 @@ std::string ConvertSidToString(SID* sid) {
   return base::UTF16ToUTF8(sid_string);
 }
 
-// Returns the logon SID of a token. Returns NULL if the token does not specify
-// a logon SID or in case of an error.
+// Returns the logon SID of a token. Returns nullptr if the token does not
+// specify a logon SID or in case of an error.
 ScopedSid GetLogonSid(HANDLE token) {
   DWORD length = 0;
-  if (GetTokenInformation(token, TokenGroups, NULL, 0, &length) ||
+  if (GetTokenInformation(token, TokenGroups, nullptr, 0, &length) ||
       GetLastError() != ERROR_INSUFFICIENT_BUFFER) {
     return ScopedSid();
   }
@@ -78,15 +78,15 @@ bool MakeScopedAbsoluteSd(const ScopedSd& relative_sd,
   DWORD owner_size = 0;
   DWORD sacl_size = 0;
   if (MakeAbsoluteSD(relative_sd.get(),
-                     NULL,
+                     nullptr,
                      &absolute_sd_size,
-                     NULL,
+                     nullptr,
                      &dacl_size,
-                     NULL,
+                     nullptr,
                      &sacl_size,
-                     NULL,
+                     nullptr,
                      &owner_size,
-                     NULL,
+                     nullptr,
                      &group_size) ||
       GetLastError() != ERROR_INSUFFICIENT_BUFFER) {
     return false;

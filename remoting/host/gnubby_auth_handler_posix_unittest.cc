@@ -103,7 +103,7 @@ TEST_F(GnubbyAuthHandlerPosixTest, HostDataMessageDelivered) {
 TEST_F(GnubbyAuthHandlerPosixTest, DidClose) {
   net::StreamListenSocket* socket = new MockStreamListenSocket(delegate_);
 
-  delegate_->DidAccept(NULL, make_scoped_ptr(socket));
+  delegate_->DidAccept(nullptr, make_scoped_ptr(socket));
   ASSERT_TRUE(auth_handler_posix_->HasActiveSocketForTesting(socket));
 
   delegate_->DidClose(socket);
@@ -115,7 +115,7 @@ TEST_F(GnubbyAuthHandlerPosixTest, DidRead) {
 
   net::StreamListenSocket* socket = new MockStreamListenSocket(delegate_);
 
-  delegate_->DidAccept(NULL, make_scoped_ptr(socket));
+  delegate_->DidAccept(nullptr, make_scoped_ptr(socket));
   delegate_->DidRead(socket,
                      reinterpret_cast<const char*>(request_data),
                      sizeof(request_data));
@@ -126,7 +126,7 @@ TEST_F(GnubbyAuthHandlerPosixTest, DidReadByteByByte) {
 
   net::StreamListenSocket* socket = new MockStreamListenSocket(delegate_);
 
-  delegate_->DidAccept(NULL, make_scoped_ptr(socket));
+  delegate_->DidAccept(nullptr, make_scoped_ptr(socket));
   for (unsigned int i = 0; i < sizeof(request_data); ++i) {
     delegate_->DidRead(
         socket, reinterpret_cast<const char*>(request_data + i), 1);
@@ -136,7 +136,7 @@ TEST_F(GnubbyAuthHandlerPosixTest, DidReadByteByByte) {
 TEST_F(GnubbyAuthHandlerPosixTest, DidReadTimeout) {
   net::StreamListenSocket* socket = new MockStreamListenSocket(delegate_);
 
-  delegate_->DidAccept(NULL, make_scoped_ptr(socket));
+  delegate_->DidAccept(nullptr, make_scoped_ptr(socket));
   ASSERT_TRUE(auth_handler_posix_->HasActiveSocketForTesting(socket));
 
   base::MockTimer* mock_timer = new base::MockTimer(false, false);
@@ -151,7 +151,7 @@ TEST_F(GnubbyAuthHandlerPosixTest, DidReadTimeout) {
 TEST_F(GnubbyAuthHandlerPosixTest, ClientErrorMessageDelivered) {
   net::StreamListenSocket* socket = new MockStreamListenSocket(delegate_);
 
-  delegate_->DidAccept(NULL, make_scoped_ptr(socket));
+  delegate_->DidAccept(nullptr, make_scoped_ptr(socket));
 
   std::string error_json = base::StringPrintf(
       "{\"type\":\"error\",\"connectionId\":%d}",

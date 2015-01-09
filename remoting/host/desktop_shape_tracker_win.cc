@@ -67,7 +67,7 @@ void DesktopShapeTrackerWin::RefreshDesktopShape() {
     old_desktop_region_.Set(shape_data->desktop_region.release());
 
     // Determine the size of output buffer required to receive the region.
-    DWORD bytes_size = GetRegionData(old_desktop_region_, 0, NULL);
+    DWORD bytes_size = GetRegionData(old_desktop_region_, 0, nullptr);
     CHECK(bytes_size != 0);
 
     // Fetch the Windows RECTs that comprise the region.

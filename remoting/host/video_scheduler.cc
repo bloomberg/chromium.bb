@@ -76,7 +76,7 @@ VideoScheduler::VideoScheduler(
 // Public methods --------------------------------------------------------------
 
 webrtc::SharedMemory* VideoScheduler::CreateSharedMemory(size_t size) {
-  return NULL;
+  return nullptr;
 }
 
 void VideoScheduler::OnCaptureCompleted(webrtc::DesktopFrame* frame) {
@@ -91,7 +91,7 @@ void VideoScheduler::OnCaptureCompleted(webrtc::DesktopFrame* frame) {
         base::TimeDelta::FromMilliseconds(owned_frame->capture_time_ms()));
   }
 
-  // Even when |frame| is NULL we still need to post it to the encode thread
+  // Even when |frame| is nullptr we still need to post it to the encode thread
   // to make sure frames are freed in the same order they are received and
   // that we don't start capturing frame n+2 before frame n is freed.
   encode_task_runner_->PostTask(
@@ -155,8 +155,8 @@ void VideoScheduler::Stop() {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
 
   // Clear stubs to prevent further updates reaching the client.
-  cursor_stub_ = NULL;
-  video_stub_ = NULL;
+  cursor_stub_ = nullptr;
+  video_stub_ = nullptr;
 
   keep_alive_timer_.reset();
 
@@ -270,7 +270,7 @@ void VideoScheduler::ScheduleNextCapture() {
 void VideoScheduler::CaptureNextFrame() {
   DCHECK(capture_task_runner_->BelongsToCurrentThread());
 
-  // If we are stopping (|capturer_| is NULL), or paused, then don't capture.
+  // If we are stopping (|capturer_| is nullptr), or paused, then don't capture.
   if (!capturer_ || is_paused_)
     return;
 

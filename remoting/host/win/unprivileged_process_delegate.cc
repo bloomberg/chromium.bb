@@ -76,8 +76,9 @@ const char kWorkerThreadSd[] = "O:SYG:SYD:(A;;GA;;;SY)(A;;0x120801;;;BA)";
 bool CreateRestrictedToken(ScopedHandle* token_out) {
   // Create a token representing LocalService account.
   HANDLE temp_handle;
-  if (!LogonUser(L"LocalService", L"NT AUTHORITY", NULL, LOGON32_LOGON_SERVICE,
-                 LOGON32_PROVIDER_DEFAULT, &temp_handle)) {
+  if (!LogonUser(L"LocalService", L"NT AUTHORITY", nullptr,
+                 LOGON32_LOGON_SERVICE, LOGON32_PROVIDER_DEFAULT,
+                 &temp_handle)) {
     return false;
   }
   ScopedHandle token(temp_handle);
@@ -87,7 +88,7 @@ bool CreateRestrictedToken(ScopedHandle* token_out) {
     return false;
 
   // Remove all privileges in the token.
-  if (restricted_token.DeleteAllPrivileges(NULL) != ERROR_SUCCESS)
+  if (restricted_token.DeleteAllPrivileges(nullptr) != ERROR_SUCCESS)
     return false;
 
   // Set low integrity level if supported by the OS.
@@ -192,8 +193,8 @@ bool CreateWindowStationAndDesktop(ScopedSid logon_sid,
   // The default desktop of the interactive window station is called "Default".
   // Name the created desktop the same way in case any code relies on that.
   // The desktop name should not make any difference though.
-  handles.SetDesktop(CreateDesktop(L"Default", NULL, NULL, 0, desired_access,
-                                   &security_attributes));
+  handles.SetDesktop(CreateDesktop(L"Default", nullptr, nullptr, 0,
+                                   desired_access, &security_attributes));
 
   // Switch back to the original window station.
   if (!SetProcessWindowStation(current_window_station)) {
@@ -216,7 +217,7 @@ UnprivilegedProcessDelegate::UnprivilegedProcessDelegate(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     scoped_ptr<base::CommandLine> target_command)
     : io_task_runner_(io_task_runner),
-      event_handler_(NULL),
+      event_handler_(nullptr),
       target_command_(target_command.Pass()) {
 }
 
@@ -311,7 +312,7 @@ void UnprivilegedProcessDelegate::LaunchProcess(
                                 &thread_attributes,
                                 true,
                                 0,
-                                NULL,
+                                nullptr,
                                 &worker_process,
                                 &worker_thread)) {
       ReportFatalError();
@@ -343,7 +344,7 @@ void UnprivilegedProcessDelegate::KillProcess() {
   DCHECK(CalledOnValidThread());
 
   channel_.reset();
-  event_handler_ = NULL;
+  event_handler_ = nullptr;
 
   if (worker_process_.IsValid()) {
     TerminateProcess(worker_process_.Get(), CONTROL_C_EXIT);
@@ -385,7 +386,7 @@ void UnprivilegedProcessDelegate::ReportFatalError() {
   channel_.reset();
 
   WorkerProcessLauncher* event_handler = event_handler_;
-  event_handler_ = NULL;
+  event_handler_ = nullptr;
   event_handler->OnFatalError();
 }
 

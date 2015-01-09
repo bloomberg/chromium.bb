@@ -115,7 +115,7 @@ LibjingleTransport::LibjingleTransport(cricket::PortAllocator* port_allocator,
                                        const NetworkSettings& network_settings)
     : port_allocator_(port_allocator),
       network_settings_(network_settings),
-      event_handler_(NULL),
+      event_handler_(nullptr),
       ice_username_fragment_(
           rtc::CreateRandomString(cricket::ICE_UFRAG_LENGTH)),
       ice_password_(rtc::CreateRandomString(cricket::ICE_PWD_LENGTH)),
@@ -178,7 +178,7 @@ void LibjingleTransport::DoStart() {
   // Create P2PTransportChannel, attach signal handlers and connect it.
   // TODO(sergeyu): Specify correct component ID for the channel.
   channel_.reset(new cricket::P2PTransportChannel(
-      std::string(), 0, NULL, port_allocator_));
+      std::string(), 0, nullptr, port_allocator_));
   channel_->SetIceProtocolType(cricket::ICEPROTO_GOOGLE);
   channel_->SetIceCredentials(ice_username_fragment_, ice_password_);
   channel_->SignalRequestSignaling.connect(

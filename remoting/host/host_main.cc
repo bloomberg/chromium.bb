@@ -135,7 +135,7 @@ int RunElevated() {
 
 // Select the entry point corresponding to the process type.
 MainRoutineFn SelectMainRoutine(const std::string& process_type) {
-  MainRoutineFn main_routine = NULL;
+  MainRoutineFn main_routine = nullptr;
 
   if (process_type == kProcessTypeHost) {
     main_routine = &HostProcessMain;

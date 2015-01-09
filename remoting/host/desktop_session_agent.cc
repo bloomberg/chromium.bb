@@ -371,7 +371,7 @@ void DesktopSessionAgent::ProcessAudioPacket(scoped_ptr<AudioPacket> packet) {
 bool DesktopSessionAgent::Start(const base::WeakPtr<Delegate>& delegate,
                                 IPC::PlatformFileForTransit* desktop_pipe_out) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
-  DCHECK(delegate_.get() == NULL);
+  DCHECK(delegate_.get() == nullptr);
 
   delegate_ = delegate;
 

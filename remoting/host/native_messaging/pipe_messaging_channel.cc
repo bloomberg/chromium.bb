@@ -49,7 +49,7 @@ PipeMessagingChannel::PipeMessagingChannel(
     : native_messaging_reader_(DuplicatePlatformFile(input.Pass())),
       native_messaging_writer_(new NativeMessagingWriter(
           DuplicatePlatformFile(output.Pass()))),
-      event_handler_(NULL),
+      event_handler_(nullptr),
       weak_factory_(this) {
   weak_ptr_ = weak_factory_.GetWeakPtr();
 }
@@ -95,12 +95,13 @@ void PipeMessagingChannel::Shutdown() {
   DCHECK(CalledOnValidThread());
 
   if (event_handler_) {
-    // Set event_handler_ to NULL to indicate the object is in a shutdown cycle.
-    // Since event_handler->OnDisconnect() will destroy the current object,
-    // |event_handler_| will become a dangling pointer after OnDisconnect()
-    // returns. Therefore, we set |event_handler_| to NULL beforehand.
+    // Set |event_handler_| to nullptr to indicate the object is in a shutdown
+    // cycle. Since event_handler->OnDisconnect() will destroy the current
+    // object, |event_handler_| will become a dangling pointer after
+    // OnDisconnect() returns. Therefore, we set |event_handler_| to nullptr
+    // beforehand.
     EventHandler* handler = event_handler_;
-    event_handler_ = NULL;
+    event_handler_ = nullptr;
     handler->OnDisconnect();
   }
 }

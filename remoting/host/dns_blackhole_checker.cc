@@ -39,7 +39,7 @@ void DnsBlackholeChecker::OnURLFetchComplete(const net::URLFetcher* source) {
   } else {
     HOST_LOG << "Unable to connect to host talkgadget (" << response << ")";
   }
-  url_fetcher_.reset(NULL);
+  url_fetcher_.reset(nullptr);
   callback_.Run(allow);
   callback_.Reset();
 }

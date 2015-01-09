@@ -23,8 +23,8 @@ namespace protocol {
 JingleSessionManager::JingleSessionManager(
     scoped_ptr<TransportFactory> transport_factory)
     : transport_factory_(transport_factory.Pass()),
-      signal_strategy_(NULL),
-      listener_(NULL),
+      signal_strategy_(nullptr),
+      listener_(nullptr),
       ready_(false) {
 }
 
@@ -63,11 +63,11 @@ void JingleSessionManager::Close() {
   // Close() can be called only after all sessions are destroyed.
   DCHECK(sessions_.empty());
 
-  listener_ = NULL;
+  listener_ = nullptr;
 
   if (signal_strategy_) {
     signal_strategy_->RemoveListener(this);
-    signal_strategy_ = NULL;
+    signal_strategy_ = nullptr;
   }
 }
 

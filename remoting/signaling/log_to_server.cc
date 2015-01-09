@@ -50,7 +50,7 @@ void LogToServer::Log(const ServerLogEntry& entry) {
 }
 
 void LogToServer::SendPendingEntries() {
-  if (iq_sender_ == NULL) {
+  if (iq_sender_ == nullptr) {
     return;
   }
   if (pending_entries_.empty()) {

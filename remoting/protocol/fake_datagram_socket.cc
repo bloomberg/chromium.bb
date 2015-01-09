@@ -34,7 +34,7 @@ void FakeDatagramSocket::AppendInputPacket(const std::string& data) {
   if (!read_callback_.is_null()) {
     DCHECK_EQ(input_pos_, static_cast<int>(input_packets_.size()) - 1);
     int result = CopyReadData(read_buffer_.get(), read_buffer_size_);
-    read_buffer_ = NULL;
+    read_buffer_ = nullptr;
 
     net::CompletionCallback callback = read_callback_;
     read_callback_.Reset();
@@ -110,7 +110,7 @@ FakeDatagramChannelFactory::FakeDatagramChannelFactory()
 FakeDatagramChannelFactory::~FakeDatagramChannelFactory() {
   for (ChannelsMap::iterator it = channels_.begin(); it != channels_.end();
        ++it) {
-    EXPECT_TRUE(it->second == NULL);
+    EXPECT_TRUE(it->second == nullptr);
   }
 }
 
@@ -128,7 +128,7 @@ FakeDatagramSocket* FakeDatagramChannelFactory::GetFakeChannel(
 void FakeDatagramChannelFactory::CreateChannel(
     const std::string& name,
     const ChannelCreatedCallback& callback) {
-  EXPECT_TRUE(channels_[name] == NULL);
+  EXPECT_TRUE(channels_[name] == nullptr);
 
   scoped_ptr<FakeDatagramSocket> channel(new FakeDatagramSocket());
   channels_[name] = channel->GetWeakPtr();

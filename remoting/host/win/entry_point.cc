@@ -10,7 +10,7 @@
 // order to be really small the app doesn't link against the CRT.
 void HostEntryPoint() {
   // CommandLine::Init() ignores the passed parameters on Windows, so it is safe
-  // to pass NULL here.
-  int exit_code = remoting::HostMain(0, NULL);
+  // to pass nullptr here.
+  int exit_code = remoting::HostMain(0, nullptr);
   ExitProcess(exit_code);
 }

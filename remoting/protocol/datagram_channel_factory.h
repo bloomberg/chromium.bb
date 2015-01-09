@@ -24,10 +24,11 @@ class DatagramChannelFactory {
   DatagramChannelFactory() {}
 
   // Creates new channels and calls the |callback| when then new channel is
-  // created and connected. The |callback| is called with NULL if channel setup
-  // failed for any reason. Callback may be called synchronously, before the
-  // call returns. All channels must be destroyed, and CancelChannelCreation()
-  // called for any pending channels, before the factory is destroyed.
+  // created and connected. The |callback| is called with nullptr if channel
+  // setup failed for any reason. Callback may be called synchronously, before
+  // the call returns. All channels must be destroyed, and
+  // CancelChannelCreation() called for any pending channels, before the factory
+  // is destroyed.
   virtual void CreateChannel(const std::string& name,
                              const ChannelCreatedCallback& callback) = 0;
 

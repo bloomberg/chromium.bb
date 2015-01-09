@@ -111,14 +111,14 @@ class ProtocolPerfTest
   void SetPairingResponse(
       const protocol::PairingResponse& pairing_response) override {}
   void DeliverHostMessage(const protocol::ExtensionMessage& message) override {}
-  protocol::ClipboardStub* GetClipboardStub() override { return NULL; }
+  protocol::ClipboardStub* GetClipboardStub() override { return nullptr; }
   protocol::CursorShapeStub* GetCursorShapeStub() override {
     return &cursor_shape_stub_;
   }
 
   // VideoRenderer interface.
   void OnSessionConfig(const protocol::SessionConfig& config) override {}
-  ChromotingStats* GetStats() override { return NULL; }
+  ChromotingStats* GetStats() override { return nullptr; }
   void ProcessVideoPacket(scoped_ptr<VideoPacket> video_packet,
                           const base::Closure& done) override {
     if (video_packet->data().empty()) {
@@ -270,7 +270,7 @@ class ProtocolPerfTest
     host_secret.value = "123456";
     scoped_ptr<protocol::AuthenticatorFactory> auth_factory =
         protocol::Me2MeHostAuthenticatorFactory::CreateWithSharedSecret(
-            true, kHostOwner, host_cert, key_pair, host_secret, NULL);
+            true, kHostOwner, host_cert, key_pair, host_secret, nullptr);
     host_->SetAuthenticatorFactory(auth_factory.Pass());
 
     host_->AddStatusObserver(this);
@@ -405,7 +405,7 @@ TEST_P(ProtocolPerfTest, StreamFrameRate) {
 
   ReceiveFrame(&latency);
   LOG(INFO) << "First frame latency: " << latency.InMillisecondsF() << "ms";
-  ReceiveFrames(20, NULL);
+  ReceiveFrames(20, nullptr);
 
   base::TimeTicks started = base::TimeTicks::Now();
   ReceiveFrames(40, &latency);
@@ -465,7 +465,7 @@ TEST_P(ProtocolPerfTest, IntermittentChanges) {
   StartHostAndClient(protocol::ChannelConfig::CODEC_VERBATIM);
   ASSERT_NO_FATAL_FAILURE(WaitConnected());
 
-  ReceiveFrame(NULL);
+  ReceiveFrame(nullptr);
 
   base::TimeDelta expected = GetParam().latency_average;
   if (GetParam().bandwidth > 0) {

@@ -42,7 +42,7 @@ class ShapedDesktopCapturerTest : public testing::Test,
  public:
   // webrtc::DesktopCapturer::Callback interface
   webrtc::SharedMemory* CreateSharedMemory(size_t size) override {
-    return NULL;
+    return nullptr;
   }
 
   void OnCaptureCompleted(webrtc::DesktopFrame* frame) override {

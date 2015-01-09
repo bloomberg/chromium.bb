@@ -88,9 +88,9 @@ class SslHmacChannelAuthenticatorTest : public testing::Test {
     int callback_counter = 2;
 
     if (expected_fail) {
-      EXPECT_CALL(client_callback_, OnDone(net::ERR_FAILED, NULL))
+      EXPECT_CALL(client_callback_, OnDone(net::ERR_FAILED, nullptr))
           .WillOnce(QuitThreadOnCounter(&callback_counter));
-      EXPECT_CALL(host_callback_, OnDone(net::ERR_FAILED, NULL))
+      EXPECT_CALL(host_callback_, OnDone(net::ERR_FAILED, nullptr))
           .WillOnce(QuitThreadOnCounter(&callback_counter));
     } else {
       EXPECT_CALL(client_callback_, OnDone(net::OK, NotNull()))
@@ -151,8 +151,8 @@ TEST_F(SslHmacChannelAuthenticatorTest, SuccessfulAuth) {
 
   RunChannelAuth(false);
 
-  ASSERT_TRUE(client_socket_.get() != NULL);
-  ASSERT_TRUE(host_socket_.get() != NULL);
+  ASSERT_TRUE(client_socket_.get() != nullptr);
+  ASSERT_TRUE(host_socket_.get() != nullptr);
 
   StreamConnectionTester tester(host_socket_.get(), client_socket_.get(),
                                 100, 2);
@@ -171,7 +171,7 @@ TEST_F(SslHmacChannelAuthenticatorTest, InvalidChannelSecret) {
 
   RunChannelAuth(true);
 
-  ASSERT_TRUE(host_socket_.get() == NULL);
+  ASSERT_TRUE(host_socket_.get() == nullptr);
 }
 
 }  // namespace protocol

@@ -53,7 +53,7 @@ XmppSignalStrategy::XmppSignalStrategy(
     : socket_factory_(socket_factory),
       request_context_getter_(request_context_getter),
       resource_name_(kDefaultResourceName),
-      xmpp_client_(NULL),
+      xmpp_client_(nullptr),
       xmpp_server_config_(xmpp_server_config),
       state_(DISCONNECTED),
       error_(OK) {
@@ -138,9 +138,9 @@ void XmppSignalStrategy::Disconnect() {
 
     xmpp_client_->Disconnect();
 
-    // |xmpp_client_| should be set to NULL in OnConnectionStateChanged()
+    // |xmpp_client_| should be set to nullptr in OnConnectionStateChanged()
     // in response to Disconnect() call above.
-    DCHECK(xmpp_client_ == NULL);
+    DCHECK(xmpp_client_ == nullptr);
   }
 }
 
@@ -195,7 +195,7 @@ bool XmppSignalStrategy::HandleStanza(const buzz::XmlElement* stanza) {
   DCHECK(CalledOnValidThread());
   ObserverListBase<Listener>::Iterator it(listeners_);
   Listener* listener;
-  while ((listener = it.GetNext()) != NULL) {
+  while ((listener = it.GetNext()) != nullptr) {
     if (listener->OnSignalStrategyIncomingStanza(stanza))
       return true;
   }
@@ -236,7 +236,7 @@ void XmppSignalStrategy::OnConnectionStateChanged(
 
     // Client is destroyed by the TaskRunner after the client is
     // closed. Reset the pointer so we don't try to use it later.
-    xmpp_client_ = NULL;
+    xmpp_client_ = nullptr;
 
     switch (error) {
       case buzz::XmppEngine::ERROR_UNAUTHORIZED:

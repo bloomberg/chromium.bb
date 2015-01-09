@@ -151,8 +151,8 @@ class JingleSessionTest : public testing::Test {
     NetworkSettings network_settings(NetworkSettings::NAT_TRAVERSAL_OUTGOING);
 
     scoped_ptr<TransportFactory> host_transport(new LibjingleTransportFactory(
-        NULL,
-        ChromiumPortAllocator::Create(NULL, network_settings).Pass(),
+        nullptr,
+        ChromiumPortAllocator::Create(nullptr, network_settings).Pass(),
         network_settings));
     host_server_.reset(new JingleSessionManager(host_transport.Pass()));
     host_server_->Init(host_signal_strategy_.get(), &host_server_listener_);
@@ -165,8 +165,8 @@ class JingleSessionTest : public testing::Test {
     EXPECT_CALL(client_server_listener_, OnSessionManagerReady())
         .Times(1);
     scoped_ptr<TransportFactory> client_transport(new LibjingleTransportFactory(
-        NULL,
-        ChromiumPortAllocator::Create(NULL, network_settings).Pass(),
+        nullptr,
+        ChromiumPortAllocator::Create(nullptr, network_settings).Pass(),
         network_settings));
     client_server_.reset(
         new JingleSessionManager(client_transport.Pass()));
@@ -506,7 +506,7 @@ TEST_F(JingleSessionTest, TestFailedChannelAuth) {
 
   // Terminate the message loop when we get rejection notification
   // from the host.
-  EXPECT_CALL(host_channel_callback_, OnDone(NULL))
+  EXPECT_CALL(host_channel_callback_, OnDone(nullptr))
       .WillOnce(QuitThread());
   ExpectRouteChange(kChannelName);
 

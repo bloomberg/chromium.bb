@@ -220,7 +220,7 @@ void HostService::CreateLauncher(
 int HostService::RunAsService() {
   SERVICE_TABLE_ENTRYW dispatch_table[] = {
     { const_cast<LPWSTR>(kWindowsServiceName), &HostService::ServiceMain },
-    { NULL, NULL }
+    { nullptr, nullptr }
   };
 
   if (!StartServiceCtrlDispatcherW(dispatch_table)) {

@@ -80,7 +80,7 @@ TEST_F(LocalInputMonitorTest, Basic) {
                                   task_runner_,
                                   task_runner_,
                                   client_session_control_factory_.GetWeakPtr());
-    task_runner_ = NULL;
+    task_runner_ = nullptr;
   }
 
   run_loop_.Run();

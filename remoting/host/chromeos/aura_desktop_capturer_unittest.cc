@@ -64,7 +64,7 @@ void AuraDesktopCapturerTest::SetUp() {
 }
 
 TEST_F(AuraDesktopCapturerTest, ConvertSkBitmapToDesktopFrame) {
-  webrtc::DesktopFrame* captured_frame = NULL;
+  webrtc::DesktopFrame* captured_frame = nullptr;
 
   EXPECT_CALL(*this, OnCaptureCompleted(_)).Times(1).WillOnce(
       SaveArg<0>(&captured_frame));
@@ -72,7 +72,7 @@ TEST_F(AuraDesktopCapturerTest, ConvertSkBitmapToDesktopFrame) {
 
   SimulateFrameCapture();
 
-  ASSERT_TRUE(captured_frame != NULL);
+  ASSERT_TRUE(captured_frame != nullptr);
   uint8_t* captured_data = captured_frame->data();
   EXPECT_EQ(
       0,

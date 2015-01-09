@@ -61,7 +61,7 @@ WorkerProcessLauncher::WorkerProcessLauncher(
       kill_process_timeout_(
           base::TimeDelta::FromSeconds(kKillProcessTimeoutSeconds)),
       launch_backoff_(&kDefaultBackoffPolicy) {
-  DCHECK(ipc_handler_ != NULL);
+  DCHECK(ipc_handler_ != nullptr);
 
   LaunchWorker();
 }
@@ -69,7 +69,7 @@ WorkerProcessLauncher::WorkerProcessLauncher(
 WorkerProcessLauncher::~WorkerProcessLauncher() {
   DCHECK(CalledOnValidThread());
 
-  ipc_handler_ = NULL;
+  ipc_handler_ = nullptr;
   StopWorker();
 }
 

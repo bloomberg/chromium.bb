@@ -197,7 +197,7 @@ void SessionInputInjectorWin::Core::SwitchToInputDesktop() {
   // one.
   scoped_ptr<webrtc::Desktop> input_desktop(
       webrtc::Desktop::GetInputDesktop());
-  if (input_desktop.get() != NULL && !desktop_.IsSame(*input_desktop)) {
+  if (input_desktop.get() != nullptr && !desktop_.IsSame(*input_desktop)) {
     // If SetThreadDesktop() fails, the thread is still assigned a desktop.
     // So we can continue capture screen bits, just from a diffected desktop.
     desktop_.SetThreadDesktop(input_desktop.release());

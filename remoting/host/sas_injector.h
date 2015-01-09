@@ -19,7 +19,7 @@ class SasInjector {
   virtual bool InjectSas() = 0;
 
   // Creates an instance of SasInjector if supported by the OS, otherwise
-  // returns NULL.
+  // returns nullptr.
   static scoped_ptr<SasInjector> Create();
 };
 

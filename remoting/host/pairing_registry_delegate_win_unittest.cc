@@ -112,7 +112,7 @@ TEST_F(PairingRegistryDelegateWinTest, Unprivileged) {
   // Strip the delegate from write access and validate that it still can be used
   // to read the pairings.
   delegate.reset(new PairingRegistryDelegateWin());
-  delegate->SetRootKeys(NULL, unprivileged_.Handle());
+  delegate->SetRootKeys(nullptr, unprivileged_.Handle());
 
   PairingRegistry::Pairing unprivileged_pairing =
       delegate->Load(pairing.client_id());

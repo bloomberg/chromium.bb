@@ -57,7 +57,7 @@ class ChannelMultiplexer : public StreamChannelFactory {
   bool DoWrite(scoped_ptr<MultiplexPacket> packet,
                const base::Closure& done_task);
 
-  // Factory used to create |base_channel_|. Set to NULL once creation is
+  // Factory used to create |base_channel_|. Set to nullptr once creation is
   // finished or failed.
   StreamChannelFactory* base_channel_factory_;
 

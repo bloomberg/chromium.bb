@@ -86,7 +86,7 @@ static CGEventRef LocalMouseMoved(CGEventTapProxy proxy, CGEventType type,
     webrtc::DesktopVector mousePos(cgMousePos.x, cgMousePos.y);
     [static_cast<LocalInputMonitorManager*>(context) localMouseMoved:mousePos];
   }
-  return NULL;
+  return nullptr;
 }
 
 @implementation LocalInputMonitorManager
@@ -111,7 +111,7 @@ static CGEventRef LocalMouseMoved(CGEventTapProxy proxy, CGEventType type,
         1 << kCGEventMouseMoved, LocalMouseMoved, self));
     if (mouseMachPort_) {
       mouseRunLoopSource_ = CFMachPortCreateRunLoopSource(
-          NULL, mouseMachPort_, 0);
+          nullptr, mouseMachPort_, 0);
       CFRunLoopAddSource(
           CFRunLoopGetMain(), mouseRunLoopSource_, kCFRunLoopCommonModes);
     } else {
@@ -138,7 +138,7 @@ static CGEventRef LocalMouseMoved(CGEventTapProxy proxy, CGEventType type,
     GTMCarbonEventDispatcherHandler* handler =
         [GTMCarbonEventDispatcherHandler sharedEventDispatcherHandler];
     [handler unregisterHotKey:hotKey_];
-    hotKey_ = NULL;
+    hotKey_ = nullptr;
   }
   if (mouseRunLoopSource_) {
     CFMachPortInvalidate(mouseMachPort_);
@@ -146,7 +146,7 @@ static CGEventRef LocalMouseMoved(CGEventTapProxy proxy, CGEventType type,
         CFRunLoopGetMain(), mouseRunLoopSource_, kCFRunLoopCommonModes);
     CFRelease(mouseRunLoopSource_);
     mouseMachPort_.reset(0);
-    mouseRunLoopSource_ = NULL;
+    mouseRunLoopSource_ = nullptr;
   }
 }
 

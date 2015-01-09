@@ -151,18 +151,18 @@ int StartMe2MeNativeMessagingHost() {
     std::wstring output_pipe_name =
       command_line->GetSwitchValueNative(kOutputSwitchName);
 
-    // A NULL SECURITY_ATTRIBUTES signifies that the handle can't be inherited
-    read_file = base::File(CreateFile(
-        input_pipe_name.c_str(), GENERIC_READ, 0, NULL, OPEN_EXISTING,
-        FILE_ATTRIBUTE_NORMAL, NULL));
+    // A NULL SECURITY_ATTRIBUTES signifies that the handle can't be inherited.
+    read_file =
+        base::File(CreateFile(input_pipe_name.c_str(), GENERIC_READ, 0, nullptr,
+                              OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr));
     if (!read_file.IsValid()) {
       PLOG(ERROR) << "CreateFile failed on '" << input_pipe_name << "'";
       return kInitializationFailed;
     }
 
     write_file = base::File(CreateFile(
-        output_pipe_name.c_str(), GENERIC_WRITE, 0, NULL, OPEN_EXISTING,
-        FILE_ATTRIBUTE_NORMAL, NULL));
+        output_pipe_name.c_str(), GENERIC_WRITE, 0, nullptr, OPEN_EXISTING,
+        FILE_ATTRIBUTE_NORMAL, nullptr));
     if (!write_file.IsValid()) {
       PLOG(ERROR) << "CreateFile failed on '" << output_pipe_name << "'";
       return kInitializationFailed;
@@ -183,8 +183,8 @@ int StartMe2MeNativeMessagingHost() {
     // the STD* handles at startup. So any LoadLibrary request can potentially
     // be blocked. To prevent that from happening we close STDIN and STDOUT
     // handles as soon as we retrieve the corresponding file handles.
-    SetStdHandle(STD_INPUT_HANDLE, NULL);
-    SetStdHandle(STD_OUTPUT_HANDLE, NULL);
+    SetStdHandle(STD_INPUT_HANDLE, nullptr);
+    SetStdHandle(STD_OUTPUT_HANDLE, nullptr);
   }
 #elif defined(OS_POSIX)
   // The files will be automatically closed.

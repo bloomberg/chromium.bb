@@ -43,7 +43,7 @@ class ContinueWindowWin : public ContinueWindow {
 };
 
 ContinueWindowWin::ContinueWindowWin()
-    : hwnd_(NULL) {
+    : hwnd_(nullptr) {
 }
 
 ContinueWindowWin::~ContinueWindowWin() {
@@ -55,7 +55,7 @@ void ContinueWindowWin::ShowUi() {
   DCHECK(!hwnd_);
 
   HMODULE instance = base::GetModuleFromAddress(&DialogProc);
-  hwnd_ = CreateDialogParam(instance, MAKEINTRESOURCE(IDD_CONTINUE), NULL,
+  hwnd_ = CreateDialogParam(instance, MAKEINTRESOURCE(IDD_CONTINUE), nullptr,
                             (DLGPROC)DialogProc, (LPARAM)this);
   if (!hwnd_) {
     LOG(ERROR) << "Unable to create Disconnect dialog for remoting.";
@@ -73,7 +73,7 @@ void ContinueWindowWin::HideUi() {
 
 BOOL CALLBACK ContinueWindowWin::DialogProc(HWND hwnd, UINT msg,
                                             WPARAM wParam, LPARAM lParam) {
-  ContinueWindowWin* win = NULL;
+  ContinueWindowWin* win = nullptr;
   if (msg == WM_INITDIALOG) {
     win = reinterpret_cast<ContinueWindowWin*>(lParam);
     CHECK(win);
@@ -82,7 +82,7 @@ BOOL CALLBACK ContinueWindowWin::DialogProc(HWND hwnd, UINT msg,
     LONG_PTR lp = GetWindowLongPtr(hwnd, DWLP_USER);
     win = reinterpret_cast<ContinueWindowWin*>(lp);
   }
-  if (win == NULL)
+  if (win == nullptr)
     return FALSE;
   return win->OnDialogMessage(hwnd, msg, wParam, lParam);
 }
@@ -97,19 +97,19 @@ BOOL ContinueWindowWin::OnDialogMessage(HWND hwnd, UINT msg,
       return TRUE;
     case WM_DESTROY:
       // Ensure we don't try to use the HWND anymore.
-      hwnd_ = NULL;
+      hwnd_ = nullptr;
       return TRUE;
     case WM_COMMAND:
       switch (LOWORD(wParam)) {
         case IDC_CONTINUE_DEFAULT:
           ContinueSession();
           ::EndDialog(hwnd, LOWORD(wParam));
-          hwnd_ = NULL;
+          hwnd_ = nullptr;
           return TRUE;
         case IDC_CONTINUE_CANCEL:
           DisconnectSession();
           ::EndDialog(hwnd, LOWORD(wParam));
-          hwnd_ = NULL;
+          hwnd_ = nullptr;
           return TRUE;
       }
   }
@@ -121,7 +121,7 @@ void ContinueWindowWin::EndDialog() {
 
   if (hwnd_) {
     ::DestroyWindow(hwnd_);
-    hwnd_ = NULL;
+    hwnd_ = nullptr;
   }
 }
 

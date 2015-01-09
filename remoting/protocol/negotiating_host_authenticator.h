@@ -30,7 +30,7 @@ class NegotiatingHostAuthenticator : public NegotiatingAuthenticatorBase {
   ~NegotiatingHostAuthenticator() override;
 
   // Creates a host authenticator, using a fixed shared secret/PIN hash.
-  // If |pairing_registry| is non-NULL then the Spake2Pair method will
+  // If |pairing_registry| is non-nullptr then the Spake2Pair method will
   // be offered, supporting PIN-less authentication.
   static scoped_ptr<Authenticator> CreateWithSharedSecret(
       const std::string& local_cert,

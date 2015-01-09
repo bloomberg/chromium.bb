@@ -448,7 +448,7 @@ DesktopSessionProxy::GetSharedBufferCore(int id) {
     return i->second;
   } else {
     LOG(ERROR) << "Failed to find the shared buffer " << id;
-    return NULL;
+    return nullptr;
   }
 }
 
@@ -478,7 +478,7 @@ void DesktopSessionProxy::OnCreateSharedBuffer(
   scoped_refptr<IpcSharedBufferCore> shared_buffer =
       new IpcSharedBufferCore(id, handle, desktop_process_, size);
 
-  if (shared_buffer->memory() != NULL &&
+  if (shared_buffer->memory() != nullptr &&
       !shared_buffers_.insert(std::make_pair(id, shared_buffer)).second) {
     LOG(ERROR) << "Duplicate shared buffer id " << id << " encountered";
   }

@@ -29,7 +29,7 @@ class StreamChannelFactory : public base::NonThreadSafe {
   StreamChannelFactory() {}
 
   // Creates new channels and calls the |callback| when then new channel is
-  // created and connected. The |callback| is called with NULL if connection
+  // created and connected. The |callback| is called with nullptr if connection
   // failed for any reason. Callback may be called synchronously, before the
   // call returns. All channels must be destroyed, and CancelChannelCreation()
   // called for any pending channels, before the factory is destroyed.

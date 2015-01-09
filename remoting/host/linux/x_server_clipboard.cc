@@ -15,7 +15,7 @@
 namespace remoting {
 
 XServerClipboard::XServerClipboard()
-    : display_(NULL),
+    : display_(nullptr),
       clipboard_window_(BadValue),
       xfixes_event_base_(-1),
       clipboard_atom_(None),

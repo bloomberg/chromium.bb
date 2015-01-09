@@ -19,8 +19,8 @@ namespace protocol {
 
 HostControlDispatcher::HostControlDispatcher()
     : ChannelDispatcherBase(kControlChannelName),
-      clipboard_stub_(NULL),
-      host_stub_(NULL) {
+      clipboard_stub_(nullptr),
+      host_stub_(nullptr) {
 }
 
 HostControlDispatcher::~HostControlDispatcher() {

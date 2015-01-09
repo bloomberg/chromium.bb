@@ -205,8 +205,8 @@ class HostProcess
     //   STOPPING->STOPPED
     //   STOPPED->STARTED
     //
-    // |host_| must be NULL in INITIALIZING and STOPPED states and not-NULL in
-    // all other states.
+    // |host_| must be nullptr in INITIALIZING and STOPPED states and not
+    // nullptr in all other states.
   };
 
   friend class base::RefCountedThreadSafe<HostProcess>;
@@ -385,7 +385,7 @@ HostProcess::HostProcess(scoped_ptr<ChromotingHostContext> context,
       enable_window_capture_(false),
       window_id_(0),
 #if defined(REMOTING_MULTI_PROCESS)
-      desktop_session_connector_(NULL),
+      desktop_session_connector_(nullptr),
 #endif  // defined(REMOTING_MULTI_PROCESS)
       self_(this),
       exit_code_out_(exit_code_out),
@@ -782,14 +782,14 @@ void HostProcess::ShutdownOnUiThread() {
   desktop_environment_factory_.reset();
 
   // It is now safe for the HostProcess to be deleted.
-  self_ = NULL;
+  self_ = nullptr;
 
 #if defined(OS_LINUX)
   // Cause the global AudioPipeReader to be freed, otherwise the audio
   // thread will remain in-use and prevent the process from exiting.
   // TODO(wez): DesktopEnvironmentFactory should own the pipe reader.
   // See crbug.com/161373 and crbug.com/104544.
-  AudioCapturerLinux::InitializePipeReader(NULL, base::FilePath());
+  AudioCapturerLinux::InitializePipeReader(nullptr, base::FilePath());
 #endif
 }
 
@@ -833,7 +833,7 @@ void HostProcess::InitializePairingRegistry(
     IPC::PlatformFileForTransit privileged_key,
     IPC::PlatformFileForTransit unprivileged_key) {
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
-  // |privileged_key| can be NULL but not |unprivileged_key|.
+  // |privileged_key| can be nullptr but not |unprivileged_key|.
   DCHECK(unprivileged_key);
   // |pairing_registry_| should only be initialized once.
   DCHECK(!pairing_registry_);
@@ -1510,7 +1510,7 @@ int HostProcessMain() {
   // Required for any calls into GTK functions, such as the Disconnect and
   // Continue windows, though these should not be used for the Me2Me case
   // (crbug.com/104377).
-  gtk_init(NULL, NULL);
+  gtk_init(nullptr, nullptr);
 #endif
 
   // Enable support for SSL server sockets, which must be done while still

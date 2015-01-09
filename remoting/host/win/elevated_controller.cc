@@ -70,7 +70,7 @@ bool IsClientAdmin() {
   }
 
   SID_IDENTIFIER_AUTHORITY nt_authority = SECURITY_NT_AUTHORITY;
-  PSID administrators_group = NULL;
+  PSID administrators_group = nullptr;
   BOOL result = AllocateAndInitializeSid(&nt_authority,
                                          2,
                                          SECURITY_BUILTIN_DOMAIN_RID,
@@ -78,7 +78,7 @@ bool IsClientAdmin() {
                                          0, 0, 0, 0, 0, 0,
                                          &administrators_group);
   if (result) {
-    if (!CheckTokenMembership(NULL, administrators_group, &result)) {
+    if (!CheckTokenMembership(nullptr, administrators_group, &result)) {
       result = false;
     }
     FreeSid(administrators_group);
@@ -100,10 +100,10 @@ HRESULT ReadConfig(const base::FilePath& filename,
       CreateFileW(filename.value().c_str(),
                   GENERIC_READ,
                   FILE_SHARE_READ | FILE_SHARE_WRITE,
-                  NULL,
+                  nullptr,
                   OPEN_EXISTING,
                   FILE_FLAG_SEQUENTIAL_SCAN,
-                  NULL));
+                  nullptr));
 
   if (!file.IsValid()) {
     DWORD error = GetLastError();
@@ -113,7 +113,7 @@ HRESULT ReadConfig(const base::FilePath& filename,
 
   scoped_ptr<char[]> buffer(new char[kMaxConfigFileSize]);
   DWORD size = kMaxConfigFileSize;
-  if (!::ReadFile(file.Get(), &buffer[0], size, &size, NULL)) {
+  if (!::ReadFile(file.Get(), &buffer[0], size, &size, nullptr)) {
     DWORD error = GetLastError();
     PLOG(ERROR) << "Failed to read '" << filename.value() << "'";
     return HRESULT_FROM_WIN32(error);
@@ -125,7 +125,7 @@ HRESULT ReadConfig(const base::FilePath& filename,
       base::JSONReader::Read(file_content, base::JSON_ALLOW_TRAILING_COMMAS));
 
   base::DictionaryValue* dictionary;
-  if (value.get() == NULL || !value->GetAsDictionary(&dictionary)) {
+  if (value.get() == nullptr || !value->GetAsDictionary(&dictionary)) {
     LOG(ERROR) << "Failed to read '" << filename.value() << "'.";
     return E_FAIL;
   }
@@ -167,7 +167,7 @@ HRESULT WriteConfigFileToTemp(const base::FilePath& filename,
                   &security_attributes,
                   CREATE_ALWAYS,
                   FILE_FLAG_SEQUENTIAL_SCAN,
-                  NULL));
+                  nullptr));
 
   if (!file.IsValid()) {
     DWORD error = GetLastError();
@@ -177,7 +177,7 @@ HRESULT WriteConfigFileToTemp(const base::FilePath& filename,
 
   DWORD written;
   if (!WriteFile(file.Get(), content, static_cast<DWORD>(length), &written,
-                 NULL)) {
+                 nullptr)) {
     DWORD error = GetLastError();
     PLOG(ERROR) << "Failed to write to '" << filename.value() << "'";
     return HRESULT_FROM_WIN32(error);
@@ -214,7 +214,7 @@ HRESULT WriteConfig(const char* content, size_t length, HWND owner_window) {
   if (!config_value.get()) {
     return E_FAIL;
   }
-  base::DictionaryValue* config_dict = NULL;
+  base::DictionaryValue* config_dict = nullptr;
   if (!config_value->GetAsDictionary(&config_dict)) {
     return E_FAIL;
   }
@@ -294,7 +294,7 @@ HRESULT WriteConfig(const char* content, size_t length, HWND owner_window) {
 
 } // namespace
 
-ElevatedController::ElevatedController() : owner_window_(NULL) {
+ElevatedController::ElevatedController() : owner_window_(nullptr) {
 }
 
 HRESULT ElevatedController::FinalConstruct() {
@@ -320,7 +320,7 @@ STDMETHODIMP ElevatedController::GetConfig(BSTR* config_out) {
   base::JSONWriter::Write(config.get(), &file_content);
 
   *config_out = ::SysAllocString(base::UTF8ToUTF16(file_content).c_str());
-  if (config_out == NULL) {
+  if (config_out == nullptr) {
     return E_OUTOFMEMORY;
   }
 
@@ -341,7 +341,7 @@ STDMETHODIMP ElevatedController::GetVersion(BSTR* version_out) {
   }
 
   *version_out = ::SysAllocString(version.c_str());
-  if (version_out == NULL) {
+  if (version_out == nullptr) {
     return E_OUTOFMEMORY;
   }
 
@@ -378,13 +378,13 @@ STDMETHODIMP ElevatedController::StartDaemon() {
                               SERVICE_NO_CHANGE,
                               SERVICE_AUTO_START,
                               SERVICE_NO_CHANGE,
-                              NULL,
-                              NULL,
-                              NULL,
-                              NULL,
-                              NULL,
-                              NULL,
-                              NULL)) {
+                              nullptr,
+                              nullptr,
+                              nullptr,
+                              nullptr,
+                              nullptr,
+                              nullptr,
+                              nullptr)) {
     DWORD error = GetLastError();
     PLOG(ERROR) << "Failed to change the '" << kWindowsServiceName
                 << "'service start type to 'auto'";
@@ -392,7 +392,7 @@ STDMETHODIMP ElevatedController::StartDaemon() {
   }
 
   // Start the service.
-  if (!StartService(service.Get(), 0, NULL)) {
+  if (!StartService(service.Get(), 0, nullptr)) {
     DWORD error = GetLastError();
     if (error != ERROR_SERVICE_ALREADY_RUNNING) {
       PLOG(ERROR) << "Failed to start the '" << kWindowsServiceName
@@ -417,13 +417,13 @@ STDMETHODIMP ElevatedController::StopDaemon() {
                               SERVICE_NO_CHANGE,
                               SERVICE_DEMAND_START,
                               SERVICE_NO_CHANGE,
-                              NULL,
-                              NULL,
-                              NULL,
-                              NULL,
-                              NULL,
-                              NULL,
-                              NULL)) {
+                              nullptr,
+                              nullptr,
+                              nullptr,
+                              nullptr,
+                              nullptr,
+                              nullptr,
+                              nullptr)) {
     DWORD error = GetLastError();
     PLOG(ERROR) << "Failed to change the '" << kWindowsServiceName
                 << "'service start type to 'manual'";
@@ -452,7 +452,7 @@ STDMETHODIMP ElevatedController::UpdateConfig(BSTR config) {
   if (!config_value.get()) {
     return E_FAIL;
   }
-  base::DictionaryValue* config_dict = NULL;
+  base::DictionaryValue* config_dict = nullptr;
   if (!config_value->GetAsDictionary(&config_dict)) {
     return E_FAIL;
   }
@@ -503,7 +503,7 @@ HRESULT ElevatedController::OpenService(ScopedScHandle* service_out) {
   DWORD error;
 
   ScopedScHandle scmanager(
-      ::OpenSCManagerW(NULL, SERVICES_ACTIVE_DATABASE,
+      ::OpenSCManagerW(nullptr, SERVICES_ACTIVE_DATABASE,
                        SC_MANAGER_CONNECT | SC_MANAGER_ENUMERATE_SERVICE));
   if (!scmanager.IsValid()) {
     error = GetLastError();

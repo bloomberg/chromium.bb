@@ -33,7 +33,7 @@ STDMETHODIMP RdpDesktopSession::Connect(
 
 STDMETHODIMP RdpDesktopSession::Disconnect() {
   client_.reset();
-  event_handler_ = NULL;
+  event_handler_ = nullptr;
   return S_OK;
 }
 

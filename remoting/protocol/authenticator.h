@@ -79,7 +79,7 @@ class Authenticator {
   static scoped_ptr<buzz::XmlElement> CreateEmptyAuthenticatorMessage();
 
   // Finds Authenticator message among child elements of |message|, or
-  // returns NULL otherwise.
+  // returns nullptr otherwise.
   static const buzz::XmlElement* FindAuthenticatorMessage(
       const buzz::XmlElement* message);
 
@@ -125,7 +125,7 @@ class AuthenticatorFactory {
   // authenticator for the new session. |first_message| specifies
   // authentication part of the session-initiate stanza so that
   // appropriate type of Authenticator can be chosen for the session
-  // (useful when multiple authenticators is supported). Returns NULL
+  // (useful when multiple authenticators is supported). Returns nullptr
   // if the |first_message| is invalid and the session should be
   // rejected. ProcessMessage() should be called with |first_message|
   // for the result of this method.

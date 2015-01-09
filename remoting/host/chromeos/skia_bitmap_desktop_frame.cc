@@ -29,7 +29,7 @@ SkiaBitmapDesktopFrame::SkiaBitmapDesktopFrame(webrtc::DesktopSize size,
                                                int stride,
                                                uint8_t* data,
                                                scoped_ptr<SkBitmap> bitmap)
-    : DesktopFrame(size, stride, data, NULL), bitmap_(bitmap.Pass()) {
+    : DesktopFrame(size, stride, data, nullptr), bitmap_(bitmap.Pass()) {
 }
 
 SkiaBitmapDesktopFrame::~SkiaBitmapDesktopFrame() {

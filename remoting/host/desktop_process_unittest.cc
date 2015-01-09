@@ -225,7 +225,7 @@ webrtc::DesktopCapturer* DesktopProcessTest::CreateVideoCapturer() {
 void DesktopProcessTest::DisconnectChannels() {
   daemon_channel_.reset();
   network_channel_.reset();
-  io_task_runner_ = NULL;
+  io_task_runner_ = nullptr;
 }
 
 void DesktopProcessTest::PostDisconnectChannels() {
@@ -264,7 +264,7 @@ void DesktopProcessTest::RunDesktopProcess() {
   DesktopProcess desktop_process(ui_task_runner, io_task_runner_, channel_name);
   EXPECT_TRUE(desktop_process.Start(desktop_environment_factory.Pass()));
 
-  ui_task_runner = NULL;
+  ui_task_runner = nullptr;
   run_loop.Run();
 }
 

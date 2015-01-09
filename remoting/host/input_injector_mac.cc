@@ -36,7 +36,7 @@ void CreateAndPostKeyEvent(int keycode,
                            int flags,
                            const base::string16& unicode) {
   base::ScopedCFTypeRef<CGEventRef> eventRef(
-      CGEventCreateKeyboardEvent(NULL, keycode, pressed));
+      CGEventCreateKeyboardEvent(nullptr, keycode, pressed));
   if (eventRef) {
     CGEventSetFlags(eventRef, flags);
     if (!unicode.empty())
@@ -303,7 +303,7 @@ void InputInjectorMac::Core::InjectMouseEvent(const MouseEvent& event) {
     int delta_x = static_cast<int>(event.wheel_delta_x());
     int delta_y = static_cast<int>(event.wheel_delta_y());
     base::ScopedCFTypeRef<CGEventRef> event(CGEventCreateScrollWheelEvent(
-        NULL, kCGScrollEventUnitPixel, 2, delta_y, delta_x));
+        nullptr, kCGScrollEventUnitPixel, 2, delta_y, delta_x));
     if (event)
       CGEventPost(kCGSessionEventTap, event);
   }

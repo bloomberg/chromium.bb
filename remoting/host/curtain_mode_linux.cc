@@ -47,7 +47,7 @@ bool CurtainModeLinux::IsXvfbSession() {
   // Try to identify an Xvfb session. There's no way to query what X server we
   // are running under, so we check for the Xvfb input devices.
   // TODO(rmsousa): Find a similar way to determine that the *output* is secure.
-  Display* display = XOpenDisplay(NULL);
+  Display* display = XOpenDisplay(nullptr);
   int opcode, event, error;
   if (!XQueryExtension(display, "XInputExtension", &opcode, &event, &error)) {
     // If XInput is not available, assume it is not an Xvfb session.

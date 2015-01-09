@@ -26,11 +26,11 @@ namespace remoting {
 namespace protocol {
 
 ConnectionToHost::ConnectionToHost()
-    : event_callback_(NULL),
-      client_stub_(NULL),
-      clipboard_stub_(NULL),
-      audio_stub_(NULL),
-      signal_strategy_(NULL),
+    : event_callback_(nullptr),
+      client_stub_(nullptr),
+      clipboard_stub_(nullptr),
+      audio_stub_(nullptr),
+      signal_strategy_(nullptr),
       state_(INITIALIZING),
       error_(OK) {
 }
@@ -287,8 +287,8 @@ void ConnectionToHost::CloseOnError(ErrorCode error) {
 void ConnectionToHost::CloseChannels() {
   control_dispatcher_.reset();
   event_dispatcher_.reset();
-  clipboard_forwarder_.set_clipboard_stub(NULL);
-  event_forwarder_.set_input_stub(NULL);
+  clipboard_forwarder_.set_clipboard_stub(nullptr);
+  event_forwarder_.set_input_stub(nullptr);
   video_dispatcher_.reset();
   audio_reader_.reset();
 }

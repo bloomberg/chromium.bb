@@ -191,7 +191,7 @@ ChannelMultiplexer::MuxChannel::MuxChannel(
       send_id_(send_id),
       id_sent_(false),
       receive_id_(kChannelIdUnknown),
-      socket_(NULL) {
+      socket_(nullptr) {
 }
 
 ChannelMultiplexer::MuxChannel::~MuxChannel() {
@@ -227,7 +227,7 @@ void ChannelMultiplexer::MuxChannel::OnWriteFailed() {
 
 void ChannelMultiplexer::MuxChannel::OnSocketDestroyed() {
   DCHECK(socket_);
-  socket_ = NULL;
+  socket_ = nullptr;
 }
 
 bool ChannelMultiplexer::MuxChannel::DoWrite(
@@ -335,7 +335,7 @@ void ChannelMultiplexer::MuxSocket::OnWriteFailed() {
 void ChannelMultiplexer::MuxSocket::OnPacketReceived() {
   if (!read_callback_.is_null()) {
     int result = channel_->DoRead(read_buffer_.get(), read_buffer_size_);
-    read_buffer_ = NULL;
+    read_buffer_ = nullptr;
     DCHECK_GT(result, 0);
     net::CompletionCallback cb;
     std::swap(cb, read_callback_);
@@ -395,7 +395,7 @@ void ChannelMultiplexer::CancelChannelCreation(const std::string& name) {
 
 void ChannelMultiplexer::OnBaseChannelReady(
     scoped_ptr<net::StreamSocket> socket) {
-  base_channel_factory_ = NULL;
+  base_channel_factory_ = nullptr;
   base_channel_ = socket.Pass();
 
   if (base_channel_.get()) {
@@ -472,7 +472,7 @@ void ChannelMultiplexer::OnIncomingPacket(scoped_ptr<MultiplexPacket> packet,
   }
 
   int receive_id = packet->channel_id();
-  MuxChannel* channel = NULL;
+  MuxChannel* channel = nullptr;
   std::map<int, MuxChannel*>::iterator it =
       channels_by_receive_id_.find(receive_id);
   if (it != channels_by_receive_id_.end()) {

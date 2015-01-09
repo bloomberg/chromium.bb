@@ -148,7 +148,7 @@ void LocalInputMonitorWin::Core::StopOnUiThread() {
     device.dwFlags = RIDEV_REMOVE;
     device.usUsagePage = kGenericDesktopPage;
     device.usUsage = kMouseUsage;
-    device.hwndTarget = NULL;
+    device.hwndTarget = nullptr;
 
     // The error is harmless, ignore it.
     RegisterRawInputDevices(&device, 1, sizeof(device));
@@ -164,7 +164,7 @@ LRESULT LocalInputMonitorWin::Core::OnInput(HRAWINPUT input_handle) {
   UINT size = 0;
   UINT result = GetRawInputData(input_handle,
                                 RID_INPUT,
-                                NULL,
+                                nullptr,
                                 &size,
                                 sizeof(RAWINPUTHEADER));
   if (result == -1) {
@@ -188,7 +188,7 @@ LRESULT LocalInputMonitorWin::Core::OnInput(HRAWINPUT input_handle) {
   // Notify the observer about mouse events generated locally. Remote (injected)
   // mouse events do not specify a device handle (based on observed behavior).
   if (input->header.dwType == RIM_TYPEMOUSE &&
-      input->header.hDevice != NULL) {
+      input->header.hDevice != nullptr) {
     POINT position;
     if (!GetCursorPos(&position)) {
       position.x = 0;

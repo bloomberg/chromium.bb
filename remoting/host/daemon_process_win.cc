@@ -237,7 +237,7 @@ scoped_ptr<DaemonProcess> DaemonProcess::Create(
 
 void DaemonProcessWin::DisableAutoStart() {
   ScopedScHandle scmanager(
-      OpenSCManager(NULL, SERVICES_ACTIVE_DATABASE,
+      OpenSCManager(nullptr, SERVICES_ACTIVE_DATABASE,
                     SC_MANAGER_CONNECT | SC_MANAGER_ENUMERATE_SERVICE));
   if (!scmanager.IsValid()) {
     PLOG(INFO) << "Failed to connect to the service control manager";
@@ -253,19 +253,19 @@ void DaemonProcessWin::DisableAutoStart() {
     return;
   }
 
-  // Change the service start type to 'manual'. All |NULL| parameters below mean
-  // that there is no change to the corresponding service parameter.
+  // Change the service start type to 'manual'. All |nullptr| parameters below
+  // mean that there is no change to the corresponding service parameter.
   if (!ChangeServiceConfig(service.Get(),
                            SERVICE_NO_CHANGE,
                            SERVICE_DEMAND_START,
                            SERVICE_NO_CHANGE,
-                           NULL,
-                           NULL,
-                           NULL,
-                           NULL,
-                           NULL,
-                           NULL,
-                           NULL)) {
+                           nullptr,
+                           nullptr,
+                           nullptr,
+                           nullptr,
+                           nullptr,
+                           nullptr,
+                           nullptr)) {
     PLOG(INFO) << "Failed to change the '" << kWindowsServiceName
                << "'service start type to 'manual'";
   }
@@ -358,7 +358,7 @@ bool DaemonProcessWin::OpenPairingRegistry() {
     security_attributes.lpSecurityDescriptor = sd.get();
     security_attributes.bInheritHandle = FALSE;
 
-    HKEY key = NULL;
+    HKEY key = nullptr;
     result = ::RegCreateKeyEx(
         root.Handle(), kPairingRegistrySecretsKeyName, 0, nullptr, 0,
         KEY_READ | KEY_WRITE, &security_attributes, &key, &disposition);

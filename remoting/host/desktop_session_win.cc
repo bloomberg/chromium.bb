@@ -334,7 +334,7 @@ STDMETHODIMP RdpSession::EventHandler::QueryInterface(REFIID riid, void** ppv) {
     return S_OK;
   }
 
-  *ppv = NULL;
+  *ppv = nullptr;
   return E_NOINTERFACE;
 }
 

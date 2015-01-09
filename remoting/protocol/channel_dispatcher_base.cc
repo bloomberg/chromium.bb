@@ -15,7 +15,7 @@ namespace protocol {
 
 ChannelDispatcherBase::ChannelDispatcherBase(const char* channel_name)
     : channel_name_(channel_name),
-      channel_factory_(NULL) {
+      channel_factory_(nullptr) {
 }
 
 ChannelDispatcherBase::~ChannelDispatcherBase() {
@@ -55,7 +55,7 @@ void ChannelDispatcherBase::OnChannelReady(
     return;
   }
 
-  channel_factory_ = NULL;
+  channel_factory_ = nullptr;
   channel_ = socket.Pass();
 
   OnInitialized();

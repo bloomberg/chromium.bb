@@ -180,7 +180,8 @@ class WorkerProcessLauncherTest
   ScopedHandle worker_process_;
 };
 
-WorkerProcessLauncherTest::WorkerProcessLauncherTest() : event_handler_(NULL) {
+WorkerProcessLauncherTest::WorkerProcessLauncherTest()
+    : event_handler_(nullptr) {
 }
 
 WorkerProcessLauncherTest::~WorkerProcessLauncherTest() {
@@ -259,7 +260,7 @@ void WorkerProcessLauncherTest::FailLaunchAndStopWorker(
 }
 
 void WorkerProcessLauncherTest::KillProcess() {
-  event_handler_ = NULL;
+  event_handler_ = nullptr;
 
   if (worker_process_.IsValid()) {
     TerminateProcess(worker_process_.Get(), CONTROL_C_EXIT);
@@ -323,7 +324,7 @@ void WorkerProcessLauncherTest::StopWorker() {
   DisconnectClient();
   channel_name_.clear();
   channel_server_.reset();
-  task_runner_ = NULL;
+  task_runner_ = nullptr;
 }
 
 void WorkerProcessLauncherTest::QuitMainMessageLoop() {
@@ -342,14 +343,14 @@ void WorkerProcessLauncherTest::DoLaunchProcess() {
   startup_info.cb = sizeof(startup_info);
 
   PROCESS_INFORMATION temp_process_info = {};
-  ASSERT_TRUE(CreateProcess(NULL,
+  ASSERT_TRUE(CreateProcess(nullptr,
                             notepad,
-                            NULL,   // default process attibutes
-                            NULL,   // default thread attibutes
+                            nullptr,   // default process attibutes
+                            nullptr,   // default thread attibutes
                             FALSE,  // do not inherit handles
                             CREATE_SUSPENDED,
-                            NULL,   // no environment
-                            NULL,   // default current directory
+                            nullptr,   // no environment
+                            nullptr,   // default current directory
                             &startup_info,
                             &temp_process_info));
   base::win::ScopedProcessInformation process_information(temp_process_info);

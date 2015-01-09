@@ -10,8 +10,8 @@ namespace remoting {
 namespace protocol {
 
 ClipboardEchoFilter::ClipboardEchoFilter()
-  : host_stub_(NULL),
-    client_stub_(NULL),
+  : host_stub_(nullptr),
+    client_stub_(nullptr),
     client_filter_(this),
     host_filter_(this) {
 }

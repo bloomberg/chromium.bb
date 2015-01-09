@@ -43,18 +43,18 @@ int32_t PPP_InitializeModule(PP_Module module_id,
 
 void PPP_ShutdownModule() {
   delete pp::Module::Get();
-  pp::InternalSetModuleSingleton(NULL);
+  pp::InternalSetModuleSingleton(nullptr);
 }
 
 const void* PPP_GetInterface(const char* interface_name) {
   if (!pp::Module::Get())
-    return NULL;
+    return nullptr;
   return pp::Module::Get()->GetPluginInterface(interface_name);
 }
 
 const void* PPP_GetBrowserInterface(const char* interface_name) {
   if (!pp::Module::Get())
-    return NULL;
+    return nullptr;
   return pp::Module::Get()->GetBrowserInterface(interface_name);
 }
 

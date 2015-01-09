@@ -25,7 +25,7 @@ NSArray* convertToNSArray(const char** array) {
   NSMutableArray* ns_array = [[[NSMutableArray alloc] init] autorelease];
   int i = 0;
   const char* element = array[i++];
-  while (element != NULL) {
+  while (element != nullptr) {
     [ns_array addObject:[NSString stringWithUTF8String:element]];
     element = array[i++];
   }
@@ -85,7 +85,7 @@ const char kKeystonePID[] = "com.google.chrome_remote_desktop";
   NSArray* arg_array = convertToNSArray(args);
   NSLog(@"Executing (as Admin): %s %@", cmd,
         [arg_array componentsJoinedByString:@" "]);
-  FILE* pipe = NULL;
+  FILE* pipe = nullptr;
   OSStatus status;
   status = AuthorizationExecuteWithPrivileges(authRef, cmd,
                                               kAuthorizationFlagDefaults,
@@ -101,31 +101,31 @@ const char kKeystonePID[] = "com.google.chrome_remote_desktop";
     logOutput(pipe);
   }
 
-  if (pipe != NULL)
+  if (pipe != nullptr)
     fclose(pipe);
 }
 
 - (void)sudoDelete:(const char*)filename
          usingAuth:(AuthorizationRef)authRef  {
-  const char* args[] = { "-rf", filename, NULL };
+  const char* args[] = { "-rf", filename, nullptr };
   [self sudoCommand:"/bin/rm" withArguments:args usingAuth:authRef];
 }
 
 - (void)shutdownService {
   const char* launchCtl = "/bin/launchctl";
-  const char* argsStop[] = { "stop", remoting::kServiceName, NULL };
+  const char* argsStop[] = { "stop", remoting::kServiceName, nullptr };
   [self runCommand:launchCtl withArguments:argsStop];
 
   if ([[NSFileManager defaultManager] fileExistsAtPath:
        [NSString stringWithUTF8String:remoting::kServicePlistPath]]) {
     const char* argsUnload[] = { "unload", "-w", "-S", "Aqua",
-                                remoting::kServicePlistPath, NULL };
+                                remoting::kServicePlistPath, nullptr };
     [self runCommand:launchCtl withArguments:argsUnload];
   }
 }
 
 - (void)keystoneUnregisterUsingAuth:(AuthorizationRef)authRef {
-  const char* args[] = { "--delete", "--productid", kKeystonePID, "-S", NULL };
+  const char* args[] = {"--delete", "--productid", kKeystonePID, "-S", nullptr};
   [self sudoCommand:kKeystoneAdmin withArguments:args usingAuth:authRef];
 }
 
@@ -152,7 +152,7 @@ const char kKeystonePID[] = "com.google.chrome_remote_desktop";
 
 - (OSStatus)remotingUninstall {
   base::mac::ScopedAuthorizationRef authRef;
-  OSStatus status = AuthorizationCreate(NULL, kAuthorizationEmptyEnvironment,
+  OSStatus status = AuthorizationCreate(nullptr, kAuthorizationEmptyEnvironment,
                                         kAuthorizationFlagDefaults, &authRef);
   if (status != errAuthorizationSuccess) {
     [NSException raise:@"AuthorizationCreate Failure"
@@ -160,13 +160,13 @@ const char kKeystonePID[] = "com.google.chrome_remote_desktop";
                            static_cast<int>(status)];
   }
 
-  AuthorizationItem right = {kAuthorizationRightExecute, 0, NULL, 0};
+  AuthorizationItem right = {kAuthorizationRightExecute, 0, nullptr, 0};
   AuthorizationRights rights = {1, &right};
   AuthorizationFlags flags = kAuthorizationFlagDefaults |
                              kAuthorizationFlagInteractionAllowed |
                              kAuthorizationFlagPreAuthorize |
                              kAuthorizationFlagExtendRights;
-  status = AuthorizationCopyRights(authRef, &rights, NULL, flags, NULL);
+  status = AuthorizationCopyRights(authRef, &rights, nullptr, flags, nullptr);
   if (status == errAuthorizationSuccess) {
     RemotingUninstaller* uninstaller =
         [[[RemotingUninstaller alloc] init] autorelease];

@@ -71,7 +71,7 @@ void VerifyGetDaemonConfigResponse(scoped_ptr<base::DictionaryValue> response) {
   std::string value;
   EXPECT_TRUE(response->GetString("type", &value));
   EXPECT_EQ("getDaemonConfigResponse", value);
-  const base::DictionaryValue* config = NULL;
+  const base::DictionaryValue* config = nullptr;
   EXPECT_TRUE(response->GetDictionary("config", &config));
   EXPECT_TRUE(base::DictionaryValue().Equals(config));
 }
@@ -343,7 +343,7 @@ void Me2MeNativeMessagingHostTest::StopHost() {
   base::RunLoop().RunUntilIdle();
 
   // Trigger a test shutdown via ExitTest().
-  host_task_runner_ = NULL;
+  host_task_runner_ = nullptr;
 }
 
 void Me2MeNativeMessagingHostTest::ExitTest() {
@@ -513,7 +513,7 @@ TEST_F(Me2MeNativeMessagingHostTest, All) {
     verify_routines[id](response.Pass());
 
     // Clear the pointer so that the routine cannot be called the second time.
-    verify_routines[id] = NULL;
+    verify_routines[id] = nullptr;
   }
 }
 

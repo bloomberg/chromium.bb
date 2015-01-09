@@ -10,7 +10,7 @@ namespace protocol {
 const char kTestJid[] = "host1@gmail.com/chromoting123";
 
 FakeSession::FakeSession()
-    : event_handler_(NULL),
+    : event_handler_(nullptr),
       candidate_config_(CandidateSessionConfig::CreateDefault()),
       config_(SessionConfig::ForTest()),
       jid_(kTestJid),

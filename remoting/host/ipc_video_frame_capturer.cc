@@ -11,7 +11,7 @@ namespace remoting {
 
 IpcVideoFrameCapturer::IpcVideoFrameCapturer(
     scoped_refptr<DesktopSessionProxy> desktop_session_proxy)
-    : callback_(NULL),
+    : callback_(nullptr),
       desktop_session_proxy_(desktop_session_proxy),
       capture_pending_(false),
       weak_factory_(this) {

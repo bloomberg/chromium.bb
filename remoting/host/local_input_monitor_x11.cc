@@ -125,14 +125,14 @@ LocalInputMonitorX11::Core::Core(
       client_session_control_(client_session_control),
       alt_pressed_(false),
       ctrl_pressed_(false),
-      display_(NULL),
-      x_record_display_(NULL),
+      display_(nullptr),
+      x_record_display_(nullptr),
       x_record_context_(0) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
   DCHECK(client_session_control_.get());
 
-  x_record_range_[0] = NULL;
-  x_record_range_[1] = NULL;
+  x_record_range_[0] = nullptr;
+  x_record_range_[1] = nullptr;
 }
 
 void LocalInputMonitorX11::Core::Start() {
@@ -170,8 +170,8 @@ void LocalInputMonitorX11::Core::StartOnInputThread() {
   // and both channels are used from a separate thread, we'll need to duplicate
   // them with something like the following:
   //   XOpenDisplay(DisplayString(display));
-  display_ = XOpenDisplay(NULL);
-  x_record_display_ = XOpenDisplay(NULL);
+  display_ = XOpenDisplay(nullptr);
+  x_record_display_ = XOpenDisplay(nullptr);
   if (!display_ || !x_record_display_) {
     LOG(ERROR) << "Couldn't open X display";
     return;
@@ -245,11 +245,11 @@ void LocalInputMonitorX11::Core::StopOnInputThread() {
 
   if (x_record_range_[0]) {
     XFree(x_record_range_[0]);
-    x_record_range_[0] = NULL;
+    x_record_range_[0] = nullptr;
   }
   if (x_record_range_[1]) {
     XFree(x_record_range_[1]);
-    x_record_range_[1] = NULL;
+    x_record_range_[1] = nullptr;
   }
   if (x_record_context_) {
     XRecordFreeContext(x_record_display_, x_record_context_);
@@ -257,11 +257,11 @@ void LocalInputMonitorX11::Core::StopOnInputThread() {
   }
   if (x_record_display_) {
     XCloseDisplay(x_record_display_);
-    x_record_display_ = NULL;
+    x_record_display_ = nullptr;
   }
   if (display_) {
     XCloseDisplay(display_);
-    display_ = NULL;
+    display_ = nullptr;
   }
 }
 

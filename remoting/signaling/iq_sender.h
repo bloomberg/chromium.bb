@@ -33,7 +33,7 @@ class SignalStrategy;
 class IqSender : public SignalStrategy::Listener {
  public:
   // Callback that is called when an Iq response is received. Called
-  // with the |response| set to NULL in case of a timeout.
+  // with the |response| set to nullptr in case of a timeout.
   typedef base::Callback<void(IqRequest* request,
                               const buzz::XmlElement* response)> ReplyCallback;
 
@@ -85,7 +85,7 @@ class IqRequest : public  base::SupportsWeakPtr<IqRequest> {
   ~IqRequest();
 
   // Sets timeout for the request. When the timeout expires the
-  // callback is called with the |response| set to NULL.
+  // callback is called with the |response| set to nullptr.
   void SetTimeout(base::TimeDelta timeout);
 
  private:

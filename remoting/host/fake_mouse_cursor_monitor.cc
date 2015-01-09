@@ -12,7 +12,7 @@
 
 namespace remoting {
 
-FakeMouseCursorMonitor::FakeMouseCursorMonitor() : callback_(NULL) {}
+FakeMouseCursorMonitor::FakeMouseCursorMonitor() : callback_(nullptr) {}
 
 FakeMouseCursorMonitor::~FakeMouseCursorMonitor() {}
 

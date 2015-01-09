@@ -29,7 +29,7 @@ using remoting::HostStarter;
 bool g_started = false;
 
 // The main message loop.
-base::MessageLoop* g_message_loop = NULL;
+base::MessageLoop* g_message_loop = nullptr;
 
 // Lets us hide the PIN that a user types.
 void SetEcho(bool echo) {
@@ -185,12 +185,12 @@ int main(int argc, char** argv) {
   base::RunLoop run_loop;
   run_loop.Run();
 
-  g_message_loop = NULL;
+  g_message_loop = nullptr;
 
   // Destroy the HostStarter and URLRequestContextGetter before stopping the
   // IO thread.
   host_starter.reset();
-  url_request_context_getter = NULL;
+  url_request_context_getter = nullptr;
 
   io_thread.Stop();
 

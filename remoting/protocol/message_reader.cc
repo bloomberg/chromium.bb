@@ -22,7 +22,7 @@ namespace protocol {
 static const int kReadBufferSize = 4096;
 
 MessageReader::MessageReader()
-    : socket_(NULL),
+    : socket_(nullptr),
       read_pending_(false),
       pending_messages_(0),
       closed_(false),

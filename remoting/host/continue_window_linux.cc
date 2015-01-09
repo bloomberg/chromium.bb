@@ -35,13 +35,13 @@ class ContinueWindowGtk : public ContinueWindow {
 };
 
 ContinueWindowGtk::ContinueWindowGtk()
-    : continue_window_(NULL) {
+    : continue_window_(nullptr) {
 }
 
 ContinueWindowGtk::~ContinueWindowGtk() {
   if (continue_window_) {
     gtk_widget_destroy(continue_window_);
-    continue_window_ = NULL;
+    continue_window_ = nullptr;
   }
 }
 
@@ -59,7 +59,7 @@ void ContinueWindowGtk::HideUi() {
 
   if (continue_window_) {
     gtk_widget_destroy(continue_window_);
-    continue_window_ = NULL;
+    continue_window_ = nullptr;
   }
 }
 
@@ -69,13 +69,13 @@ void ContinueWindowGtk::CreateWindow() {
 
   continue_window_ = gtk_dialog_new_with_buttons(
       l10n_util::GetStringUTF8(IDS_PRODUCT_NAME).c_str(),
-      NULL,
+      nullptr,
       static_cast<GtkDialogFlags>(GTK_DIALOG_MODAL | GTK_DIALOG_NO_SEPARATOR),
       l10n_util::GetStringUTF8(IDS_STOP_SHARING_BUTTON).c_str(),
       GTK_RESPONSE_CANCEL,
       l10n_util::GetStringUTF8(IDS_CONTINUE_BUTTON).c_str(),
       GTK_RESPONSE_OK,
-      NULL);
+      nullptr);
 
   gtk_dialog_set_default_response(GTK_DIALOG(continue_window_),
                                   GTK_RESPONSE_OK);

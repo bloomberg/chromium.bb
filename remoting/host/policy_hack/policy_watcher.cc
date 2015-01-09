@@ -40,7 +40,7 @@ scoped_ptr<base::DictionaryValue> CopyGoodValuesAndAddDefaults(
   for (base::DictionaryValue::Iterator i(*default_values);
        !i.IsAtEnd(); i.Advance()) {
 
-    const base::Value* value = NULL;
+    const base::Value* value = nullptr;
 
     // If the policy isn't in |from|, use the default.
     if (!from->Get(i.key(), &value)) {

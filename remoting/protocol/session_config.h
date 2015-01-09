@@ -138,7 +138,7 @@ class CandidateSessionConfig {
   }
 
   // Selects session configuration that is supported by both participants.
-  // NULL is returned if such configuration doesn't exist. When selecting
+  // nullptr is returned if such configuration doesn't exist. When selecting
   // channel configuration priority is given to the configs listed first
   // in |client_config|.
   bool Select(const CandidateSessionConfig* client_config,
@@ -150,7 +150,8 @@ class CandidateSessionConfig {
   // Extracts final protocol configuration. Must be used for the description
   // received in the session-accept stanza. If the selection is ambiguous
   // (e.g. there is more than one configuration for one of the channel)
-  // or undefined (e.g. no configurations for a channel) then NULL is returned.
+  // or undefined (e.g. no configurations for a channel) then nullptr is
+  // returned.
   bool GetFinalConfig(SessionConfig* result) const;
 
   scoped_ptr<CandidateSessionConfig> Clone() const;

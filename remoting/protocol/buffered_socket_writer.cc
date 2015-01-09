@@ -27,10 +27,10 @@ struct BufferedSocketWriterBase::PendingPacket {
 
 BufferedSocketWriterBase::BufferedSocketWriterBase()
     : buffer_size_(0),
-      socket_(NULL),
+      socket_(nullptr),
       write_pending_(false),
       closed_(false),
-      destroyed_flag_(NULL) {
+      destroyed_flag_(nullptr) {
 }
 
 void BufferedSocketWriterBase::Init(net::Socket* socket,
@@ -115,7 +115,7 @@ void BufferedSocketWriterBase::HandleWriteResult(int result,
       // Stop doing anything if we've been destroyed by the callback.
       return;
     }
-    destroyed_flag_ = NULL;
+    destroyed_flag_ = nullptr;
   }
 
   *write_again = true;
@@ -177,7 +177,7 @@ void BufferedSocketWriter::GetNextPacket(
     net::IOBuffer** buffer, int* size) {
   if (!current_buf_.get()) {
     if (queue_.empty()) {
-      *buffer = NULL;
+      *buffer = nullptr;
       return;  // Nothing to write.
     }
     current_buf_ = new net::DrainableIOBuffer(queue_.front()->data.get(),
@@ -193,14 +193,14 @@ base::Closure BufferedSocketWriter::AdvanceBufferPosition(int written) {
   current_buf_->DidConsume(written);
 
   if (current_buf_->BytesRemaining() == 0) {
-    current_buf_ = NULL;
+    current_buf_ = nullptr;
     return PopQueue();
   }
   return base::Closure();
 }
 
 void BufferedSocketWriter::OnError(int result) {
-  current_buf_ = NULL;
+  current_buf_ = nullptr;
 }
 
 BufferedSocketWriter::~BufferedSocketWriter() {
@@ -212,7 +212,7 @@ BufferedDatagramWriter::BufferedDatagramWriter() {
 void BufferedDatagramWriter::GetNextPacket(
     net::IOBuffer** buffer, int* size) {
   if (queue_.empty()) {
-    *buffer = NULL;
+    *buffer = nullptr;
     return;  // Nothing to write.
   }
   *buffer = queue_.front()->data.get();

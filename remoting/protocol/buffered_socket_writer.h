@@ -73,7 +73,7 @@ class BufferedSocketWriterBase : public base::NonThreadSafe {
   // Following three methods must be implemented in child classes.
 
   // Returns next packet that needs to be written to the socket. Implementation
-  // must set |*buffer| to NULL if there is nothing left in the queue.
+  // must set |*buffer| to nullptr if there is nothing left in the queue.
   virtual void GetNextPacket(net::IOBuffer** buffer, int* size) = 0;
 
   // Returns closure that must be executed or null closure if the last write

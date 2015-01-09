@@ -39,7 +39,7 @@ CompoundBuffer* MessageDecoder::GetNextMessage() {
   // If the next payload size is still not known or we don't have enough
   // data for parsing then exit.
   if (!next_payload_known_ || buffer_.total_bytes() < next_payload_)
-    return NULL;
+    return nullptr;
 
   CompoundBuffer* message_buffer = new CompoundBuffer();
   message_buffer->CopyFrom(buffer_, 0, next_payload_);

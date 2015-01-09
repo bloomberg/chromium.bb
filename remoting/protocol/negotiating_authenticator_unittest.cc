@@ -70,7 +70,7 @@ class NegotiatingAuthenticatorTest : public AuthenticatorTestBase {
       methods.push_back(AuthenticationMethod::Spake2(
           AuthenticationMethod::NONE));
     }
-    bool pairing_expected = pairing_registry_.get() != NULL;
+    bool pairing_expected = pairing_registry_.get() != nullptr;
     FetchSecretCallback fetch_secret_callback =
         base::Bind(&NegotiatingAuthenticatorTest::FetchSecret,
                    client_interactive_pin,
@@ -122,8 +122,8 @@ class NegotiatingAuthenticatorTest : public AuthenticatorTestBase {
     host_auth_ = host_->CreateChannelAuthenticator();
     RunChannelAuth(false);
 
-    EXPECT_TRUE(client_socket_.get() != NULL);
-    EXPECT_TRUE(host_socket_.get() != NULL);
+    EXPECT_TRUE(client_socket_.get() != nullptr);
+    EXPECT_TRUE(host_socket_.get() != nullptr);
 
     StreamConnectionTester tester(host_socket_.get(), client_socket_.get(),
                                   kMessageSize, kMessages);

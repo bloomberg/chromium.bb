@@ -86,7 +86,7 @@ class ConnectionToClient : public base::NonThreadSafe,
   // Get the stubs used by the host to transmit messages to the client.
   // The stubs must not be accessed before OnConnectionAuthenticated(), or
   // after OnConnectionClosed().
-  // Note that the audio stub will be NULL if audio is not enabled.
+  // Note that the audio stub will be nullptr if audio is not enabled.
   virtual VideoStub* video_stub();
   virtual AudioStub* audio_stub();
   virtual ClientStub* client_stub();

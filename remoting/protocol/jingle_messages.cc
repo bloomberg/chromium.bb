@@ -126,7 +126,7 @@ JingleMessage::NamedCandidate::NamedCandidate(
 bool JingleMessage::IsJingleMessage(const buzz::XmlElement* stanza) {
   return stanza->Name() == QName(kJabberNamespace, "iq") &&
          stanza->Attr(QName(std::string(), "type")) == "set" &&
-         stanza->FirstNamed(QName(kJingleNamespace, "jingle")) != NULL;
+         stanza->FirstNamed(QName(kJingleNamespace, "jingle")) != nullptr;
 }
 
 // static
@@ -194,7 +194,7 @@ bool JingleMessage::ParseXml(const buzz::XmlElement* stanza,
       // session-info is allowed to be empty.
       info.reset(new XmlElement(*child));
     } else {
-      info.reset(NULL);
+      info.reset(nullptr);
     }
     return true;
   }
@@ -224,7 +224,7 @@ bool JingleMessage::ParseXml(const buzz::XmlElement* stanza,
     return false;
   }
 
-  description.reset(NULL);
+  description.reset(nullptr);
   if (action == SESSION_INITIATE || action == SESSION_ACCEPT) {
     const XmlElement* description_tag = content_tag->FirstNamed(
         QName(kChromotingXmlNamespace, "description"));
@@ -247,7 +247,7 @@ bool JingleMessage::ParseXml(const buzz::XmlElement* stanza,
     QName qn_candidate(kP2PTransportNamespace, "candidate");
     for (const XmlElement* candidate_tag =
              transport_tag->FirstNamed(qn_candidate);
-         candidate_tag != NULL;
+         candidate_tag != nullptr;
          candidate_tag = candidate_tag->NextNamed(qn_candidate)) {
       NamedCandidate candidate;
       if (!ParseCandidate(candidate_tag, &candidate)) {
@@ -363,7 +363,7 @@ scoped_ptr<buzz::XmlElement> JingleMessageReply::ToXml(
   iq->SetAttr(QName(kEmptyNamespace, "type"), "error");
 
   for (const buzz::XmlElement* child = request_stanza->FirstElement();
-       child != NULL; child = child->NextElement()) {
+       child != nullptr; child = child->NextElement()) {
     iq->AddElement(new buzz::XmlElement(*child));
   }
 

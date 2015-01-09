@@ -16,11 +16,11 @@ extern const char kJabberClientNamespace[];
 extern const char kChromotingNamespace[];
 
 // Verifies that |stanza| contains a <log> element and returns it. Otherwise
-// returns NULL and records a test failure.
+// returns nullptr and records a test failure.
 buzz::XmlElement* GetLogElementFromStanza(buzz::XmlElement* stanza);
 
 // Verifies that |stanza| contains only 1 log entry, and returns the <entry>
-// element. Otherwise returns NULL and records a test failure.
+// element. Otherwise returns nullptr and records a test failure.
 buzz::XmlElement* GetSingleLogEntryFromStanza(buzz::XmlElement* stanza);
 
 // Verifies a logging stanza.

@@ -23,7 +23,7 @@ class ServiceClient::Core
   Core(const std::string& chromoting_hosts_url,
        net::URLRequestContextGetter* request_context_getter)
            : request_context_getter_(request_context_getter),
-             delegate_(NULL),
+             delegate_(nullptr),
              pending_request_type_(PENDING_REQUEST_NONE),
              chromoting_hosts_url_(chromoting_hosts_url) {
   }

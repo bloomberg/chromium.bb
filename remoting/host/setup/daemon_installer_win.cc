@@ -135,7 +135,7 @@ void DaemonComInstallerWin::Install() {
   }
 
   hr = dispatch::Invoke(V_DISPATCH(&bundle_), L"initialize", DISPATCH_METHOD,
-                        NULL);
+                        nullptr);
   if (FAILED(hr)) {
     Done(hr);
     return;
@@ -146,14 +146,14 @@ void DaemonComInstallerWin::Install() {
   ScopedVariant empty(kOmahaEmpty);
   ScopedVariant language(kOmahaLanguage);
   hr = dispatch::Invoke(V_DISPATCH(&bundle_), L"createApp", DISPATCH_METHOD,
-                        appid, empty, language, empty, NULL);
+                        appid, empty, language, empty, nullptr);
   if (FAILED(hr)) {
     Done(hr);
     return;
   }
 
   hr = dispatch::Invoke(V_DISPATCH(&bundle_), L"checkForUpdate",
-                        DISPATCH_METHOD, NULL);
+                        DISPATCH_METHOD, nullptr);
   if (FAILED(hr)) {
     Done(hr);
     return;
@@ -214,7 +214,7 @@ void DaemonComInstallerWin::PollInstallationStatus() {
 
     case STATE_UPDATE_AVAILABLE:
       hr = dispatch::Invoke(V_DISPATCH(&bundle_), L"download",
-                            DISPATCH_METHOD, NULL);
+                            DISPATCH_METHOD, nullptr);
       if (FAILED(hr)) {
         Done(hr);
         return;
@@ -226,7 +226,7 @@ void DaemonComInstallerWin::PollInstallationStatus() {
     case STATE_APPLYING_DIFFERENTIAL_PATCH:
     case STATE_READY_TO_INSTALL:
       hr = dispatch::Invoke(V_DISPATCH(&bundle_), L"install",
-                            DISPATCH_METHOD, NULL);
+                            DISPATCH_METHOD, nullptr);
       if (FAILED(hr)) {
         Done(hr);
         return;
@@ -352,7 +352,7 @@ scoped_ptr<DaemonInstallerWin> DaemonInstallerWin::Create(
     result = CLSIDFromProgID(kGoogleUpdate, &class_id);
     if (SUCCEEDED(result)) {
       result = CoCreateInstance(class_id,
-                                NULL,
+                                nullptr,
                                 CLSCTX_LOCAL_SERVER,
                                 IID_IDispatch,
                                 update3.ReceiveVoid());
@@ -389,8 +389,8 @@ scoped_ptr<DaemonInstallerWin> DaemonInstallerWin::Create(
 }
 
 HWND GetTopLevelWindow(HWND window) {
-  if (window == NULL) {
-    return NULL;
+  if (window == nullptr) {
+    return nullptr;
   }
 
   for (;;) {
@@ -401,7 +401,7 @@ HWND GetTopLevelWindow(HWND window) {
     }
 
     HWND parent = GetAncestor(window, GA_PARENT);
-    if (parent == NULL) {
+    if (parent == nullptr) {
       return window;
     }
 

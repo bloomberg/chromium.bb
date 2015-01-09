@@ -138,7 +138,7 @@ void SslHmacChannelAuthenticator::SecureAndAuthenticate(
 }
 
 bool SslHmacChannelAuthenticator::is_ssl_server() {
-  return local_key_pair_.get() != NULL;
+  return local_key_pair_.get() != nullptr;
 }
 
 void SslHmacChannelAuthenticator::OnConnected(int result) {
@@ -192,8 +192,8 @@ void SslHmacChannelAuthenticator::WriteAuthenticationBytes(
 void SslHmacChannelAuthenticator::OnAuthBytesWritten(int result) {
   DCHECK(CalledOnValidThread());
 
-  if (HandleAuthBytesWritten(result, NULL))
-    WriteAuthenticationBytes(NULL);
+  if (HandleAuthBytesWritten(result, nullptr))
+    WriteAuthenticationBytes(nullptr);
 }
 
 bool SslHmacChannelAuthenticator::HandleAuthBytesWritten(
@@ -210,7 +210,7 @@ bool SslHmacChannelAuthenticator::HandleAuthBytesWritten(
   if (auth_write_buf_->BytesRemaining() > 0)
     return true;
 
-  auth_write_buf_ = NULL;
+  auth_write_buf_ = nullptr;
   CheckDone(callback_called);
   return false;
 }
@@ -254,8 +254,8 @@ bool SslHmacChannelAuthenticator::HandleAuthBytesRead(int read_result) {
     return false;
   }
 
-  auth_read_buf_ = NULL;
-  CheckDone(NULL);
+  auth_read_buf_ = nullptr;
+  CheckDone(nullptr);
   return false;
 }
 
@@ -275,8 +275,8 @@ bool SslHmacChannelAuthenticator::VerifyAuthBytes(
 }
 
 void SslHmacChannelAuthenticator::CheckDone(bool* callback_called) {
-  if (auth_write_buf_.get() == NULL && auth_read_buf_.get() == NULL) {
-    DCHECK(socket_.get() != NULL);
+  if (auth_write_buf_.get() == nullptr && auth_read_buf_.get() == nullptr) {
+    DCHECK(socket_.get() != nullptr);
     if (callback_called)
       *callback_called = true;
 

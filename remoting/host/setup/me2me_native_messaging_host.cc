@@ -53,7 +53,7 @@ const char* kSupportedFeatures[] = {
 };
 
 // Helper to extract the "config" part of a message as a DictionaryValue.
-// Returns NULL on failure, and logs an error message.
+// Returns nullptr on failure, and logs an error message.
 scoped_ptr<base::DictionaryValue> ConfigDictionaryFromMessage(
     scoped_ptr<base::DictionaryValue> message) {
   scoped_ptr<base::DictionaryValue> result;
@@ -505,7 +505,7 @@ void Me2MeNativeMessagingHost::SendCredentialsResponse(
 }
 
 void Me2MeNativeMessagingHost::OnError() {
-  // Trigger a host shutdown by sending a NULL message.
+  // Trigger a host shutdown by sending a nullptr message.
   channel_->SendMessage(nullptr);
 }
 
@@ -544,7 +544,7 @@ bool Me2MeNativeMessagingHost::DelegateToElevatedHost(
   if (elevated_channel_)
     elevated_channel_->SendMessage(message.Pass());
 
-  return elevated_channel_ != NULL;
+  return elevated_channel_ != nullptr;
 }
 
 void Me2MeNativeMessagingHost::EnsureElevatedHostCreated() {
@@ -667,7 +667,7 @@ void Me2MeNativeMessagingHost::EnsureElevatedHostCreated() {
     return;
   }
 
-  if (!::ConnectNamedPipe(delegate_write_handle.Get(), NULL)) {
+  if (!::ConnectNamedPipe(delegate_write_handle.Get(), nullptr)) {
     DWORD error = ::GetLastError();
     if (error != ERROR_PIPE_CONNECTED) {
       PLOG(ERROR) << "Unable to connect '" << input_pipe_name << "'";
@@ -676,7 +676,7 @@ void Me2MeNativeMessagingHost::EnsureElevatedHostCreated() {
     }
   }
 
-  if (!::ConnectNamedPipe(delegate_read_handle.Get(), NULL)) {
+  if (!::ConnectNamedPipe(delegate_read_handle.Get(), nullptr)) {
     DWORD error = ::GetLastError();
     if (error != ERROR_PIPE_CONNECTED) {
       PLOG(ERROR) << "Unable to connect '" << output_pipe_name << "'";

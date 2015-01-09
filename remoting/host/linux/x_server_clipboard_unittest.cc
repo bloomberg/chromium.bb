@@ -20,7 +20,7 @@ namespace {
 
 class ClipboardTestClient {
  public:
-  ClipboardTestClient() : display_(NULL) {}
+  ClipboardTestClient() : display_(nullptr) {}
   ~ClipboardTestClient() {}
 
   void Init(Display* display) {
@@ -71,10 +71,10 @@ class XServerClipboardTest : public testing::Test {
   void SetUp() override {
     // XSynchronize() ensures that PumpXEvents() fully processes all X server
     // requests and responses before returning to the caller.
-    Display* display1 = XOpenDisplay(NULL);
+    Display* display1 = XOpenDisplay(nullptr);
     XSynchronize(display1, True);
     client1_.Init(display1);
-    Display* display2 = XOpenDisplay(NULL);
+    Display* display2 = XOpenDisplay(nullptr);
     XSynchronize(display2, True);
     client2_.Init(display2);
   }

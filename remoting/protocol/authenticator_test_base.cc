@@ -151,8 +151,8 @@ void AuthenticatorTestBase::RunChannelAuth(bool expected_fail) {
   testing::Mock::VerifyAndClearExpectations(&host_callback_);
 
   if (!expected_fail) {
-    ASSERT_TRUE(client_socket_.get() != NULL);
-    ASSERT_TRUE(host_socket_.get() != NULL);
+    ASSERT_TRUE(client_socket_.get() != nullptr);
+    ASSERT_TRUE(host_socket_.get() != nullptr);
   }
 }
 

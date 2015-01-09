@@ -168,7 +168,7 @@ LONG ChromotingModule::Unlock() {
     CHECK(SUCCEEDED(hr));
 
     // Release the message loop reference, causing the message loop to exit.
-    g_module_task_runner.Get() = NULL;
+    g_module_task_runner.Get() = nullptr;
   }
 
   return count;

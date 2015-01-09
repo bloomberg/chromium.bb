@@ -16,7 +16,7 @@ namespace protocol {
 AudioReader::AudioReader(AudioPacket::Encoding encoding)
     : ChannelDispatcherBase(kAudioChannelName),
       encoding_(encoding),
-      audio_stub_(NULL) {
+      audio_stub_(nullptr) {
 }
 
 AudioReader::~AudioReader() {

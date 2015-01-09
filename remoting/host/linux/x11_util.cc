@@ -8,7 +8,7 @@
 
 namespace remoting {
 
-static ScopedXErrorHandler* g_handler = NULL;
+static ScopedXErrorHandler* g_handler = nullptr;
 
 ScopedXErrorHandler::ScopedXErrorHandler(const Handler& handler):
     handler_(handler),
@@ -17,13 +17,13 @@ ScopedXErrorHandler::ScopedXErrorHandler(const Handler& handler):
   // where a mix of ScopedXErrorHandler and raw XSetErrorHandler calls are used,
   // and it disallows nested ScopedXErrorHandlers on the same thread, despite
   // these being perfectly safe.
-  DCHECK(g_handler == NULL);
+  DCHECK(g_handler == nullptr);
   g_handler = this;
   previous_handler_ = XSetErrorHandler(HandleXErrors);
 }
 
 ScopedXErrorHandler::~ScopedXErrorHandler() {
-  g_handler = NULL;
+  g_handler = nullptr;
   XSetErrorHandler(previous_handler_);
 }
 
@@ -37,7 +37,7 @@ ScopedXErrorHandler::Handler ScopedXErrorHandler::Ignore() {
 }
 
 int ScopedXErrorHandler::HandleXErrors(Display* display, XErrorEvent* error) {
-  DCHECK(g_handler != NULL);
+  DCHECK(g_handler != nullptr);
   g_handler->ok_ = false;
   g_handler->handler_.Run(display, error);
   return 0;

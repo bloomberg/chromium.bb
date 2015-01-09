@@ -166,7 +166,7 @@ void RdpClient::Core::Disconnect() {
 
   // The caller does not expect any notifications to be delivered after this
   // point.
-  event_handler_ = NULL;
+  event_handler_ = nullptr;
 
   // Gracefully shutdown the RDP connection.
   if (rdp_client_window_) {
@@ -200,7 +200,7 @@ void RdpClient::Core::OnDisconnected() {
 
   // Delay window destruction until no ActiveX control's code is on the stack.
   ui_task_runner_->DeleteSoon(FROM_HERE, rdp_client_window_.release());
-  self_ = NULL;
+  self_ = nullptr;
 }
 
 RdpClient::Core::~Core() {
@@ -228,7 +228,7 @@ void RdpClient::Core::NotifyClosed() {
 
   if (event_handler_) {
     RdpClient::EventHandler* event_handler = event_handler_;
-    event_handler_ = NULL;
+    event_handler_ = nullptr;
     event_handler->OnRdpClosed();
   }
 }

@@ -60,7 +60,7 @@ protocol::MouseEvent MakeMouseEvent(const pp::MouseInputEvent& pp_mouse_event,
 }  // namespace
 
 PepperInputHandler::PepperInputHandler()
-    : input_stub_(NULL),
+    : input_stub_(nullptr),
       has_focus_(false),
       send_mouse_input_when_unfocused_(false),
       send_mouse_move_deltas_(false),

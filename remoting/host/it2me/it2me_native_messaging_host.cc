@@ -44,7 +44,7 @@ const remoting::protocol::NameMapElement<It2MeHostState> kIt2MeHostStates[] = {
 It2MeNativeMessagingHost::It2MeNativeMessagingHost(
     scoped_ptr<ChromotingHostContext> context,
     scoped_ptr<It2MeHostFactory> factory)
-    : client_(NULL),
+    : client_(nullptr),
       host_context_(context.Pass()),
       factory_(factory.Pass()),
       weak_factory_(this) {
@@ -69,7 +69,7 @@ It2MeNativeMessagingHost::~It2MeNativeMessagingHost() {
 
   if (it2me_host_.get()) {
     it2me_host_->Disconnect();
-    it2me_host_ = NULL;
+    it2me_host_ = nullptr;
   }
 }
 
@@ -219,7 +219,7 @@ void It2MeNativeMessagingHost::ProcessDisconnect(
 
   if (it2me_host_.get()) {
     it2me_host_->Disconnect();
-    it2me_host_ = NULL;
+    it2me_host_ = nullptr;
   }
   SendMessageToClient(response.Pass());
 }

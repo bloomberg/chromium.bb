@@ -155,9 +155,9 @@ class CastExtensionSession : public HostExtensionSession,
 
   // Creates the jingle wrapper for the current thread, sets send to allowed,
   // and saves a pointer to the relevant thread pointer in ptr. If |event|
-  // is not NULL, signals the event on completion.
+  // is not nullptr, signals the event on completion.
   void EnsureTaskAndSetSend(rtc::Thread** ptr,
-                            base::WaitableEvent* event = NULL);
+                            base::WaitableEvent* event = nullptr);
 
   // Wraps each task runner in JingleThreadWrapper using EnsureTaskAndSetSend(),
   // returning true if successful. Wrapping the task runners allows them to be

@@ -66,7 +66,7 @@ void AddRoundRectPath(cairo_t* cairo_context, int width, int height,
 }
 
 DisconnectWindowGtk::DisconnectWindowGtk()
-    : disconnect_window_(NULL),
+    : disconnect_window_(nullptr),
       current_width_(0),
       current_height_(0) {
 }
@@ -76,7 +76,7 @@ DisconnectWindowGtk::~DisconnectWindowGtk() {
 
   if (disconnect_window_) {
     gtk_widget_destroy(disconnect_window_);
-    disconnect_window_ = NULL;
+    disconnect_window_ = nullptr;
   }
 }
 
@@ -145,7 +145,7 @@ void DisconnectWindowGtk::Start(
 
   g_signal_connect(button_, "clicked", G_CALLBACK(OnClickedThunk), this);
 
-  message_ = gtk_label_new(NULL);
+  message_ = gtk_label_new(nullptr);
   gtk_box_pack_end(GTK_BOX(button_row), message_, FALSE, FALSE, 0);
 
   // Override any theme setting for the text color, so that the text is
@@ -196,8 +196,8 @@ gboolean DisconnectWindowGtk::OnConfigure(GtkWidget* widget,
   current_height_ = event->height;
 
   // Create the depth 1 pixmap for the window shape.
-  GdkPixmap* shape_mask = gdk_pixmap_new(NULL, current_width_, current_height_,
-                                         1);
+  GdkPixmap* shape_mask =
+      gdk_pixmap_new(nullptr, current_width_, current_height_, 1);
   cairo_t* cairo_context = gdk_cairo_create(shape_mask);
 
   // Set the arc radius for the corners.
@@ -221,8 +221,8 @@ gboolean DisconnectWindowGtk::OnConfigure(GtkWidget* widget,
   g_object_unref(shape_mask);
 
   // Create a full-color pixmap for the window background image.
-  GdkPixmap* background = gdk_pixmap_new(NULL, current_width_, current_height_,
-                                         24);
+  GdkPixmap* background =
+      gdk_pixmap_new(nullptr, current_width_, current_height_, 24);
   cairo_context = gdk_cairo_create(background);
 
   // Paint the whole bitmap one color.
@@ -267,7 +267,7 @@ gboolean DisconnectWindowGtk::OnConfigure(GtkWidget* widget,
 
   gdk_window_set_back_pixmap(widget->window, background, FALSE);
   g_object_unref(background);
-  gdk_window_invalidate_rect(widget->window, NULL, TRUE);
+  gdk_window_invalidate_rect(widget->window, nullptr, TRUE);
 
   return FALSE;
 }

@@ -128,7 +128,7 @@ DaemonController::~DaemonController() {
   delegate_task_runner_->DeleteSoon(FROM_HERE, delegate_.release());
 
   // Stop the thread.
-  delegate_task_runner_ = NULL;
+  delegate_task_runner_ = nullptr;
   caller_task_runner_->DeleteSoon(FROM_HERE, delegate_thread_.release());
 }
 

@@ -60,10 +60,10 @@ class PolicyWatcherMac : public PolicyWatcher {
         if (i.value().GetType() == base::DictionaryValue::TYPE_STRING) {
           base::ScopedCFTypeRef<CFPropertyListRef> property_list(
               CFPreferencesCopyAppValue(policy_key, policy_bundle_id));
-          if (property_list.get() != NULL) {
+          if (property_list.get() != nullptr) {
             CFStringRef policy_value = base::mac::CFCast<CFStringRef>(
                 property_list.get());
-            if (policy_value != NULL) {
+            if (policy_value != nullptr) {
               policy.SetString(policy_name,
                                base::SysCFStringRefToUTF8(policy_value));
             }

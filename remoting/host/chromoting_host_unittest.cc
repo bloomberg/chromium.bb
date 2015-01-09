@@ -196,7 +196,7 @@ class ChromotingHostTest : public testing::Test {
         connection.Pass(),
         desktop_environment_factory_.get(),
         base::TimeDelta(),
-        NULL,
+        nullptr,
         std::vector<HostExtension*>()));
 
     connection_ptr->set_host_stub(client.get());
@@ -227,7 +227,7 @@ class ChromotingHostTest : public testing::Test {
 
   void TearDown() override {
     // Make sure that the host has been properly deleted.
-    DCHECK(host_.get() == NULL);
+    DCHECK(host_.get() == nullptr);
   }
 
   // Change the session route for |client1_|.
@@ -322,7 +322,7 @@ class ChromotingHostTest : public testing::Test {
 
   void StopAndReleaseTaskRunner() {
     host_.reset();
-    task_runner_ = NULL;
+    task_runner_ = nullptr;
     desktop_environment_factory_.reset();
   }
 

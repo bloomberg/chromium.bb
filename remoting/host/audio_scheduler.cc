@@ -46,7 +46,7 @@ void AudioScheduler::Stop() {
   DCHECK(audio_stub_);
 
   // Clear |audio_stub_| to prevent audio packets being delivered to the client.
-  audio_stub_ = NULL;
+  audio_stub_ = nullptr;
 
   audio_task_runner_->PostTask(
       FROM_HERE,
@@ -89,7 +89,7 @@ void AudioScheduler::EncodeAudioPacket(scoped_ptr<AudioPacket> packet) {
   scoped_ptr<AudioPacket> encoded_packet =
       audio_encoder_->Encode(packet.Pass());
 
-  // The audio encoder returns a NULL audio packet if there's no audio to send.
+  // The audio encoder returns a null audio packet if there's no audio to send.
   if (encoded_packet.get()) {
     network_task_runner_->PostTask(
         FROM_HERE, base::Bind(&AudioScheduler::SendAudioPacket,

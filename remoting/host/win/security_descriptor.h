@@ -23,8 +23,8 @@ ScopedSd ConvertSddlToSd(const std::string& sddl);
 // Converts a SID into a text string.
 std::string ConvertSidToString(SID* sid);
 
-// Returns the logon SID of a token. Returns NULL if the token does not specify
-// a logon SID or in case of an error.
+// Returns the logon SID of a token. Returns nullptr if the token does not
+// specify a logon SID or in case of an error.
 ScopedSid GetLogonSid(HANDLE token);
 
 // Converts a security descriptor in self-relative format to a security

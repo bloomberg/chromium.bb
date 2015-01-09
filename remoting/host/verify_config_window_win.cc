@@ -36,7 +36,7 @@ void VerifyConfigWindowWin::OnClose() {
 LRESULT VerifyConfigWindowWin::OnInitDialog(HWND wparam, LPARAM lparam) {
   // Set the small window icon.
   if (icon_.LoadIcon(IDD, ::GetSystemMetrics(SM_CXSMICON),
-                     ::GetSystemMetrics(SM_CYSMICON)) != NULL) {
+                     ::GetSystemMetrics(SM_CYSMICON)) != nullptr) {
     SetIcon(icon_, FALSE);
   }
 
@@ -64,24 +64,24 @@ void VerifyConfigWindowWin::CenterWindow() {
 
   // Center against the owner window unless it is minimized or invisible.
   HWND owner = ::GetWindow(m_hWnd, GW_OWNER);
-  if (owner != NULL) {
+  if (owner != nullptr) {
     DWORD style = ::GetWindowLong(owner, GWL_STYLE);
     if ((style & WS_MINIMIZE) != 0 || (style & WS_VISIBLE) == 0) {
-      owner = NULL;
+      owner = nullptr;
     }
   }
 
   // Make sure that the window will not end up split by a monitor's boundary.
   RECT area_rect;
-  if (!::SystemParametersInfo(SPI_GETWORKAREA, NULL, &area_rect, NULL)) {
+  if (!::SystemParametersInfo(SPI_GETWORKAREA, 0, &area_rect, 0)) {
     return;
   }
 
   // On a multi-monitor system use the monitor where the owner window is shown.
   RECT owner_rect = area_rect;
-  if (owner != NULL && ::GetWindowRect(owner, &owner_rect)) {
+  if (owner != nullptr && ::GetWindowRect(owner, &owner_rect)) {
     HMONITOR monitor = ::MonitorFromRect(&owner_rect, MONITOR_DEFAULTTONEAREST);
-    if (monitor != NULL) {
+    if (monitor != nullptr) {
       MONITORINFO monitor_info = {0};
       monitor_info.cbSize = sizeof(monitor_info);
       if (::GetMonitorInfo(monitor, &monitor_info)) {
@@ -100,7 +100,8 @@ void VerifyConfigWindowWin::CenterWindow() {
   y = std::max(y, area_rect.top);
   y = std::min(y, area_rect.bottom - width);
 
-  SetWindowPos(NULL, x, y, -1, -1, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
+  SetWindowPos(nullptr, x, y, -1, -1,
+               SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
 }
 
 bool VerifyConfigWindowWin::VerifyHostSecretHash() {
@@ -110,7 +111,7 @@ bool VerifyConfigWindowWin::VerifyHostSecretHash() {
   int pin_length = pin_edit.GetWindowTextLength();
   scoped_ptr<base::char16[]> pin(new base::char16[pin_length + 1]);
 
-  // Get the PIN making sure it is NULL terminated even if an error occurs.
+  // Get the PIN making sure it is nullptr terminated even if an error occurs.
   int result = pin_edit.GetWindowText(pin.get(), pin_length + 1);
   pin[std::min(result, pin_length)] = 0;
 

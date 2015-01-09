@@ -56,7 +56,7 @@ const char* GetValueSessionState(ConnectionToHost::State state) {
       return kValueSessionStateClosed;
     default:
       NOTREACHED();
-      return NULL;
+      return nullptr;
   }
 }
 
@@ -86,7 +86,7 @@ const char* GetValueError(ErrorCode error) {
       return "unknown-error";
     default:
       NOTREACHED();
-      return NULL;
+      return nullptr;
   }
 }
 

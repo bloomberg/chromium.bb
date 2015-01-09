@@ -19,10 +19,10 @@ namespace remoting {
 namespace protocol {
 
 ConnectionToClient::ConnectionToClient(protocol::Session* session)
-    : handler_(NULL),
-      clipboard_stub_(NULL),
-      host_stub_(NULL),
-      input_stub_(NULL),
+    : handler_(nullptr),
+      clipboard_stub_(nullptr),
+      host_stub_(nullptr),
+      input_stub_(nullptr),
       session_(session) {
   session_->SetEventHandler(this);
 }

@@ -149,8 +149,8 @@ WtsSessionProcessDelegate::Core::Core(
     : caller_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       io_task_runner_(io_task_runner),
       channel_security_(channel_security),
-      event_handler_(NULL),
-      get_named_pipe_client_pid_(NULL),
+      event_handler_(nullptr),
+      get_named_pipe_client_pid_(nullptr),
       launch_elevated_(launch_elevated),
       launch_pending_(false),
       target_command_(target_command.Pass()) {
@@ -166,15 +166,15 @@ bool WtsSessionProcessDelegate::Core::Initialize(uint32 session_id) {
   if (launch_elevated_) {
     // GetNamedPipeClientProcessId() is available starting from Vista.
     HMODULE kernel32 = ::GetModuleHandle(L"kernel32.dll");
-    CHECK(kernel32 != NULL);
+    CHECK(kernel32 != nullptr);
 
     get_named_pipe_client_pid_ =
         reinterpret_cast<GetNamedPipeClientProcessIdFn>(
             GetProcAddress(kernel32, "GetNamedPipeClientProcessId"));
-    CHECK(get_named_pipe_client_pid_ != NULL);
+    CHECK(get_named_pipe_client_pid_ != nullptr);
 
     ScopedHandle job;
-    job.Set(CreateJobObject(NULL, NULL));
+    job.Set(CreateJobObject(nullptr, nullptr));
     if (!job.IsValid()) {
       PLOG(ERROR) << "Failed to create a job object";
       return false;
@@ -255,7 +255,7 @@ void WtsSessionProcessDelegate::Core::KillProcess() {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   channel_.reset();
-  event_handler_ = NULL;
+  event_handler_ = nullptr;
   launch_pending_ = false;
   pipe_.Close();
 
@@ -395,8 +395,8 @@ void WtsSessionProcessDelegate::Core::DoLaunchProcess() {
   if (!LaunchProcessWithToken(command_line.GetProgram(),
                               command_line.GetCommandLineString(),
                               session_token_.Get(),
-                              NULL,
-                              NULL,
+                              nullptr,
+                              nullptr,
                               false,
                               CREATE_SUSPENDED | CREATE_BREAKAWAY_FROM_JOB,
                               base::UTF8ToUTF16(kDefaultDesktopName).c_str(),
@@ -496,7 +496,7 @@ void WtsSessionProcessDelegate::Core::ReportFatalError() {
   pipe_.Close();
 
   WorkerProcessLauncher* event_handler = event_handler_;
-  event_handler_ = NULL;
+  event_handler_ = nullptr;
   event_handler->OnFatalError();
 }
 

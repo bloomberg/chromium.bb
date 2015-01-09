@@ -26,7 +26,7 @@ const long kDisconnectReasonLocalNotError = 1;
 const long kDisconnectReasonRemoteByUser = 2;
 const long kDisconnectReasonByServer = 3;
 
-// Maximum length of a window class name including the terminating NULL.
+// Maximum length of a window class name including the terminating nullptr.
 const int kMaxWindowClassLength = 256;
 
 // Each member of the array returned by GetKeyboardState() contains status data
@@ -57,15 +57,15 @@ base::LazyInstance<base::ThreadLocalPointer<RdpClientWindow::WindowHook> >
 
 // Finds a child window with the class name matching |class_name|. Unlike
 // FindWindowEx() this function walks the tree of windows recursively. The walk
-// is done in breadth-first order. The function returns NULL if the child window
-// could not be found.
+// is done in breadth-first order. The function returns nullptr if the child
+// window could not be found.
 HWND FindWindowRecursively(HWND parent, const base::string16& class_name) {
   std::list<HWND> windows;
   windows.push_back(parent);
 
   while (!windows.empty()) {
-    HWND child = FindWindowEx(windows.front(), NULL, NULL, NULL);
-    while (child != NULL) {
+    HWND child = FindWindowEx(windows.front(), nullptr, nullptr, nullptr);
+    while (child != nullptr) {
       // See if the window class name matches |class_name|.
       WCHAR name[kMaxWindowClassLength];
       int length = GetClassName(child, name, arraysize(name));
@@ -76,13 +76,13 @@ HWND FindWindowRecursively(HWND parent, const base::string16& class_name) {
       windows.push_back(child);
 
       // Go to the next child.
-      child = FindWindowEx(windows.front(), child, NULL, NULL);
+      child = FindWindowEx(windows.front(), child, nullptr, nullptr);
     }
 
     windows.pop_front();
   }
 
-  return NULL;
+  return nullptr;
 }
 
 }  // namespace
@@ -131,7 +131,7 @@ bool RdpClientWindow::Connect(const webrtc::DesktopSize& screen_size) {
 
   screen_size_ = screen_size;
   RECT rect = { 0, 0, screen_size_.width(), screen_size_.height() };
-  bool result = Create(NULL, rect, NULL) != NULL;
+  bool result = Create(nullptr, rect, nullptr) != nullptr;
 
   // Hide the window since this class is about establishing a connection, not
   // about showing a UI to the user.
@@ -245,8 +245,9 @@ LRESULT RdpClientWindow::OnCreate(CREATESTRUCT* create_struct) {
 
   // Create the child window that actually hosts the ActiveX control.
   RECT rect = { 0, 0, screen_size_.width(), screen_size_.height() };
-  activex_window.Create(m_hWnd, rect, NULL, WS_CHILD | WS_VISIBLE | WS_BORDER);
-  if (activex_window.m_hWnd == NULL) {
+  activex_window.Create(m_hWnd, rect, nullptr,
+                        WS_CHILD | WS_VISIBLE | WS_BORDER);
+  if (activex_window.m_hWnd == nullptr) {
     result = HRESULT_FROM_WIN32(GetLastError());
     goto done;
   }
@@ -254,8 +255,8 @@ LRESULT RdpClientWindow::OnCreate(CREATESTRUCT* create_struct) {
   // Instantiate the RDP ActiveX control.
   result = activex_window.CreateControlEx(
       OLESTR("MsTscAx.MsTscAx"),
-      NULL,
-      NULL,
+      nullptr,
+      nullptr,
       control.Receive(),
       __uuidof(mstsc::IMsTscAxEvents),
       reinterpret_cast<IUnknown*>(static_cast<RdpEventsSink*>(this)));
@@ -399,7 +400,7 @@ HRESULT RdpClientWindow::OnAuthenticationWarningDisplayed() {
 HRESULT RdpClientWindow::OnAuthenticationWarningDismissed() {
   LOG(WARNING) << "RDP: authentication warning has been dismissed.";
 
-  window_activate_hook_ = NULL;
+  window_activate_hook_ = nullptr;
   return S_OK;
 }
 
@@ -469,7 +470,7 @@ void RdpClientWindow::NotifyConnected() {
 void RdpClientWindow::NotifyDisconnected() {
   if (event_handler_) {
     EventHandler* event_handler = event_handler_;
-    event_handler_ = NULL;
+    event_handler_ = nullptr;
     event_handler->OnDisconnected();
   }
 }
@@ -484,13 +485,13 @@ RdpClientWindow::WindowHook::Create() {
   return window_hook;
 }
 
-RdpClientWindow::WindowHook::WindowHook() : hook_(NULL) {
+RdpClientWindow::WindowHook::WindowHook() : hook_(nullptr) {
   DCHECK(!g_window_hook.Pointer()->Get());
 
   // Install a window hook to be called on window activation.
   hook_ = SetWindowsHookEx(WH_CBT,
                            &WindowHook::CloseWindowOnActivation,
-                           NULL,
+                           nullptr,
                            GetCurrentThreadId());
   // Without the hook installed, RdpClientWindow will not be able to cancel
   // modal UI windows. This will block the UI message loop so it is better to
@@ -504,7 +505,7 @@ RdpClientWindow::WindowHook::WindowHook() : hook_(NULL) {
 RdpClientWindow::WindowHook::~WindowHook() {
   DCHECK(g_window_hook.Pointer()->Get() == this);
 
-  g_window_hook.Pointer()->Set(NULL);
+  g_window_hook.Pointer()->Set(nullptr);
 
   BOOL result = UnhookWindowsHookEx(hook_);
   DCHECK(result);

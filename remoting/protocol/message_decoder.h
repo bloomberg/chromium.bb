@@ -40,7 +40,7 @@ class MessageDecoder {
   void AddData(scoped_refptr<net::IOBuffer> data, int data_size);
 
   // Returns next message from the stream. Ownership of the result is
-  // passed to the caller. Returns NULL if there are no complete
+  // passed to the caller. Returns nullptr if there are no complete
   // messages yet, otherwise returns a buffer that contains one
   // message.
   CompoundBuffer* GetNextMessage();

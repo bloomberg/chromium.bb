@@ -171,14 +171,14 @@ void DaemonControllerDelegateMac::RegisterForPreferencePaneNotifications(
       this,
       &DaemonControllerDelegateMac::PreferencePaneCallback,
       CFSTR(UPDATE_SUCCEEDED_NOTIFICATION_NAME),
-      NULL,
+      nullptr,
       CFNotificationSuspensionBehaviorDeliverImmediately);
   CFNotificationCenterAddObserver(
       CFNotificationCenterGetDistributedCenter(),
       this,
       &DaemonControllerDelegateMac::PreferencePaneCallback,
       CFSTR(UPDATE_FAILED_NOTIFICATION_NAME),
-      NULL,
+      nullptr,
       CFNotificationSuspensionBehaviorDeliverImmediately);
 }
 
@@ -187,12 +187,12 @@ void DaemonControllerDelegateMac::DeregisterForPreferencePaneNotifications() {
       CFNotificationCenterGetDistributedCenter(),
       this,
       CFSTR(UPDATE_SUCCEEDED_NOTIFICATION_NAME),
-      NULL);
+      nullptr);
   CFNotificationCenterRemoveObserver(
       CFNotificationCenterGetDistributedCenter(),
       this,
       CFSTR(UPDATE_FAILED_NOTIFICATION_NAME),
-      NULL);
+      nullptr);
 }
 
 void DaemonControllerDelegateMac::PreferencePaneCallbackDelegate(
@@ -251,7 +251,7 @@ bool DaemonControllerDelegateMac::DoShowPreferencePane(
     LOG(ERROR) << "Failed to create FSRef";
     return false;
   }
-  OSStatus status = LSOpenFSRef(&pane_path_ref, NULL);
+  OSStatus status = LSOpenFSRef(&pane_path_ref, nullptr);
   if (status != noErr) {
     OSSTATUS_LOG(ERROR, status) << "LSOpenFSRef failed for path: "
                                 << pane_path.value();
@@ -262,7 +262,7 @@ bool DaemonControllerDelegateMac::DoShowPreferencePane(
       CFNotificationCenterGetDistributedCenter();
   base::ScopedCFTypeRef<CFStringRef> service_name(CFStringCreateWithCString(
       kCFAllocatorDefault, remoting::kServiceName, kCFStringEncodingUTF8));
-  CFNotificationCenterPostNotification(center, service_name, NULL, NULL,
+  CFNotificationCenterPostNotification(center, service_name, nullptr, nullptr,
                                        TRUE);
   return true;
 }
@@ -277,7 +277,7 @@ void DaemonControllerDelegateMac::PreferencePaneCallback(
   DaemonControllerDelegateMac* self =
       reinterpret_cast<DaemonControllerDelegateMac*>(observer);
   if (!self) {
-    LOG(WARNING) << "Ignoring notification with NULL observer: " << name;
+    LOG(WARNING) << "Ignoring notification with nullptr observer: " << name;
     return;
   }
 

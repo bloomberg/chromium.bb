@@ -60,8 +60,8 @@ bool CursorShapeIsValid(const CursorShapeInfo& cursor_shape) {
 
 ClientControlDispatcher::ClientControlDispatcher()
     : ChannelDispatcherBase(kControlChannelName),
-      client_stub_(NULL),
-      clipboard_stub_(NULL) {
+      client_stub_(nullptr),
+      clipboard_stub_(nullptr) {
 }
 
 ClientControlDispatcher::~ClientControlDispatcher() {

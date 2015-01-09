@@ -38,8 +38,8 @@ class ChromotingModule : public ATL::CAtlModuleT<ChromotingModule> {
                    ATL::_ATL_OBJMAP_ENTRY* classes_end);
   virtual ~ChromotingModule();
 
-  // Returns the task runner used by the module. Returns NULL if the task runner
-  // hasn't been registered yet or if the server is shutting down.
+  // Returns the task runner used by the module. Returns nullptr if the task
+  // runner hasn't been registered yet or if the server is shutting down.
   static scoped_refptr<AutoThreadTaskRunner> task_runner();
 
   // Registers COM classes and runs the main message loop until there are

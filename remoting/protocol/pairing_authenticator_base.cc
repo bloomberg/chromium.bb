@@ -117,7 +117,7 @@ bool PairingAuthenticatorBase::HasErrorMessage(
     std::string error = pairing_failed_tag->Attr(kPairingErrorAttribute);
     LOG(ERROR) << "Pairing failed: " << error;
   }
-  return pairing_failed_tag != NULL;
+  return pairing_failed_tag != nullptr;
 }
 
 void PairingAuthenticatorBase::CheckForFailedSpakeExchange(
@@ -131,7 +131,7 @@ void PairingAuthenticatorBase::CheckForFailedSpakeExchange(
     using_paired_secret_ = false;
     error_message_ = "invalid-shared-secret";
     v2_authenticator_.reset();
-    buzz::XmlElement* no_message = NULL;
+    buzz::XmlElement* no_message = nullptr;
     SetAuthenticatorCallback set_authenticator = base::Bind(
         &PairingAuthenticatorBase::SetAuthenticatorAndProcessMessage,
         weak_factory_.GetWeakPtr(), no_message, resume_callback);

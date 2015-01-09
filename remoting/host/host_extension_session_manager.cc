@@ -16,7 +16,7 @@ HostExtensionSessionManager::HostExtensionSessionManager(
     const std::vector<HostExtension*>& extensions,
     ClientSessionControl* client_session_control)
     : client_session_control_(client_session_control),
-      client_stub_(NULL),
+      client_stub_(nullptr),
       extensions_(extensions) {
 }
 

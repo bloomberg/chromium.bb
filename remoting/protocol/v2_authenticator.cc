@@ -31,7 +31,7 @@ const buzz::StaticQName kCertificateTag = { kChromotingXmlNamespace,
 
 // static
 bool V2Authenticator::IsEkeMessage(const buzz::XmlElement* message) {
-  return message->FirstNamed(kEkeTag) != NULL;
+  return message->FirstNamed(kEkeTag) != nullptr;
 }
 
 // static
@@ -200,7 +200,7 @@ V2Authenticator::CreateChannelAuthenticator() const {
 }
 
 bool V2Authenticator::is_host_side() const {
-  return local_key_pair_.get() != NULL;
+  return local_key_pair_.get() != nullptr;
 }
 
 }  // namespace protocol

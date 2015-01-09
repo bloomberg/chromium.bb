@@ -21,16 +21,16 @@ const char kChromotingNamespace[] = "google:remoting";
 XmlElement* GetLogElementFromStanza(XmlElement* stanza) {
   if (stanza->Name() != QName(kJabberClientNamespace, "iq")) {
     ADD_FAILURE() << "Expected element 'iq'";
-    return NULL;
+    return nullptr;
   }
   XmlElement* log_element = stanza->FirstChild()->AsElement();
   if (log_element->Name() != QName(kChromotingNamespace, "log")) {
     ADD_FAILURE() << "Expected element 'log'";
-    return NULL;
+    return nullptr;
   }
   if (log_element->NextChild()) {
     ADD_FAILURE() << "Expected only 1 child of 'iq'";
-    return NULL;
+    return nullptr;
   }
   return log_element;
 }
@@ -38,17 +38,17 @@ XmlElement* GetLogElementFromStanza(XmlElement* stanza) {
 XmlElement* GetSingleLogEntryFromStanza(XmlElement* stanza) {
   XmlElement* log_element = GetLogElementFromStanza(stanza);
   if (!log_element) {
-    // Test failure already recorded, so just return NULL here.
-    return NULL;
+    // Test failure already recorded, so just return nullptr here.
+    return nullptr;
   }
   XmlElement* entry = log_element->FirstChild()->AsElement();
   if (entry->Name() != QName(kChromotingNamespace, "entry")) {
     ADD_FAILURE() << "Expected element 'entry'";
-    return NULL;
+    return nullptr;
   }
   if (entry->NextChild()) {
     ADD_FAILURE() << "Expected only 1 child of 'log'";
-    return NULL;
+    return nullptr;
   }
   return entry;
 }
@@ -59,7 +59,7 @@ bool VerifyStanza(
     const XmlElement* elem,
     std::string* error) {
   int attrCount = 0;
-  for (const XmlAttr* attr = elem->FirstAttr(); attr != NULL;
+  for (const XmlAttr* attr = elem->FirstAttr(); attr != nullptr;
        attr = attr->NextAttr(), attrCount++) {
     if (attr->Name().Namespace().length() != 0) {
       *error = "attribute has non-empty namespace " +

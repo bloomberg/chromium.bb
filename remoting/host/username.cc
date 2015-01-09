@@ -24,7 +24,7 @@ std::string GetUsername() {
 
   std::vector<char> buf(buf_size);
   struct passwd passwd;
-  struct passwd* passwd_result = NULL;
+  struct passwd* passwd_result = nullptr;
   getpwuid_r(getuid(), &passwd, &(buf[0]), buf_size, &passwd_result);
   return passwd_result ? passwd_result->pw_name : std::string();
 #else  // !defined(OS_POSIX)

@@ -100,7 +100,7 @@ class FakeDatagramChannelFactory : public DatagramChannelFactory {
 
   // Can be used to retrieve FakeDatagramSocket created by this factory, e.g. to
   // feed data into it. The caller doesn't get ownership of the result. Returns
-  // NULL if the socket doesn't exist.
+  // nullptr if the socket doesn't exist.
   FakeDatagramSocket* GetFakeChannel(const std::string& name);
 
   // DatagramChannelFactory interface.

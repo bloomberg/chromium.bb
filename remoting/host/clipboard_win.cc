@@ -88,7 +88,7 @@ class ScopedClipboard {
   HANDLE GetData(UINT format) {
     if (!opened_) {
       NOTREACHED();
-      return NULL;
+      return nullptr;
     }
     return ::GetClipboardData(format);
   }
@@ -134,8 +134,8 @@ class ClipboardWin : public Clipboard {
 };
 
 ClipboardWin::ClipboardWin()
-    : add_clipboard_format_listener_(NULL),
-      remove_clipboard_format_listener_(NULL) {
+    : add_clipboard_format_listener_(nullptr),
+      remove_clipboard_format_listener_(nullptr) {
 }
 
 void ClipboardWin::Start(

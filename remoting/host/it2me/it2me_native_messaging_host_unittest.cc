@@ -462,7 +462,7 @@ void It2MeNativeMessagingHostTest::StopHost() {
   base::RunLoop().RunUntilIdle();
 
   // Trigger a test shutdown via ExitTest().
-  host_task_runner_ = NULL;
+  host_task_runner_ = nullptr;
 }
 
 void It2MeNativeMessagingHostTest::ExitTest() {

@@ -22,7 +22,7 @@ class ChromiumSocketFactoryTest : public testing::Test,
 
     socket_.reset(socket_factory_->CreateUdpSocket(
         rtc::SocketAddress("127.0.0.1", 0), 0, 0));
-    ASSERT_TRUE(socket_.get() != NULL);
+    ASSERT_TRUE(socket_.get() != nullptr);
     EXPECT_EQ(socket_->GetState(), rtc::AsyncPacketSocket::STATE_BOUND);
     socket_->SignalReadPacket.connect(
         this, &ChromiumSocketFactoryTest::OnPacket);
@@ -71,7 +71,7 @@ TEST_F(ChromiumSocketFactoryTest, SendAndReceive) {
   scoped_ptr<rtc::AsyncPacketSocket> sending_socket(
       socket_factory_->CreateUdpSocket(
           rtc::SocketAddress("127.0.0.1", 0), 0, 0));
-  ASSERT_TRUE(sending_socket.get() != NULL);
+  ASSERT_TRUE(sending_socket.get() != nullptr);
   EXPECT_EQ(sending_socket->GetState(),
             rtc::AsyncPacketSocket::STATE_BOUND);
 
@@ -88,7 +88,7 @@ TEST_F(ChromiumSocketFactoryTest, PortRange) {
   const uint16 kMaxPort = 12410;
   socket_.reset(socket_factory_->CreateUdpSocket(
       rtc::SocketAddress("127.0.0.1", 0), kMaxPort, kMaxPort));
-  ASSERT_TRUE(socket_.get() != NULL);
+  ASSERT_TRUE(socket_.get() != nullptr);
   EXPECT_EQ(socket_->GetState(), rtc::AsyncPacketSocket::STATE_BOUND);
   EXPECT_GE(socket_->GetLocalAddress().port(), kMinPort);
   EXPECT_LE(socket_->GetLocalAddress().port(), kMaxPort);

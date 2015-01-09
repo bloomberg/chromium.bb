@@ -15,7 +15,7 @@ ShapedDesktopCapturer::ShapedDesktopCapturer(
     scoped_ptr<DesktopShapeTracker> shape_tracker)
     : desktop_capturer_(desktop_capturer.Pass()),
       shape_tracker_(shape_tracker.Pass()),
-      callback_(NULL) {
+      callback_(nullptr) {
 }
 
 ShapedDesktopCapturer::~ShapedDesktopCapturer() {}

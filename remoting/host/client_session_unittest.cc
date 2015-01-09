@@ -224,7 +224,7 @@ void ClientSessionTest::SetUp() {
 void ClientSessionTest::TearDown() {
   // Clear out |task_runner_| reference so the loop can quit, and run it until
   // it does.
-  task_runner_ = NULL;
+  task_runner_ = nullptr;
   run_loop_.Run();
 }
 
@@ -236,9 +236,9 @@ void ClientSessionTest::CreateClientSession() {
   EXPECT_CALL(*session, SetEventHandler(_));
 
   // Mock protocol::ConnectionToClient APIs called directly by ClientSession.
-  // HostStub is not touched by ClientSession, so we can safely pass NULL.
+  // HostStub is not touched by ClientSession, so we can safely pass nullptr.
   scoped_ptr<MockConnectionToClient> connection(
-      new MockConnectionToClient(session, NULL));
+      new MockConnectionToClient(session, nullptr));
   EXPECT_CALL(*connection, session()).WillRepeatedly(Return(session));
   EXPECT_CALL(*connection, client_stub())
       .WillRepeatedly(Return(&client_stub_));
@@ -257,7 +257,7 @@ void ClientSessionTest::CreateClientSession() {
       connection.Pass(),
       desktop_environment_factory_.get(),
       base::TimeDelta(),
-      NULL,
+      nullptr,
       extensions_));
 }
 

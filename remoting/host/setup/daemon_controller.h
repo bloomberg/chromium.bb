@@ -74,7 +74,7 @@ class DaemonController : public base::RefCountedThreadSafe<DaemonController> {
   // Callback type for GetConfig(). If the host is configured then a dictionary
   // is returned containing host_id and xmpp_login, with security-sensitive
   // fields filtered out. An empty dictionary is returned if the host is not
-  // configured, and NULL if the configuration is corrupt or cannot be read.
+  // configured, and nullptr if the configuration is corrupt or cannot be read.
   typedef base::Callback<void (scoped_ptr<base::DictionaryValue> config)>
       GetConfigCallback;
 

@@ -41,7 +41,7 @@ class ChannelDispatcherBase {
             const InitializedCallback& callback);
 
   // Returns true if the channel is currently connected.
-  bool is_connected() { return channel() != NULL; }
+  bool is_connected() { return channel() != nullptr; }
 
  protected:
   explicit ChannelDispatcherBase(const char* channel_name);

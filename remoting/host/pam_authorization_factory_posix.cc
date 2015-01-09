@@ -111,8 +111,8 @@ bool PamAuthorizer::IsLocalLoginAllowed() {
   if (username.empty()) {
     return false;
   }
-  struct pam_conv conv = { PamConversation, NULL };
-  pam_handle_t* handle = NULL;
+  struct pam_conv conv = { PamConversation, nullptr };
+  pam_handle_t* handle = nullptr;
   int result = pam_start("chrome-remote-desktop", username.c_str(),
                          &conv, &handle);
   if (result == PAM_SUCCESS) {

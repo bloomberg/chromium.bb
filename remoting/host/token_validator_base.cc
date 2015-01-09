@@ -122,7 +122,7 @@ void TokenValidatorBase::OnCertificateRequested(
   client_cert_store = new net::ClientCertStoreMac();
 #elif defined(USE_OPENSSL)
     // OpenSSL does not use the ClientCertStore infrastructure.
-  client_cert_store = NULL;
+  client_cert_store = nullptr;
 #else
 #error Unknown platform.
 #endif
@@ -150,7 +150,7 @@ void TokenValidatorBase::OnCertificatesSelected(
         return;
       }
     }
-    request_->ContinueWithCertificate(NULL);
+    request_->ContinueWithCertificate(nullptr);
   }
 }
 

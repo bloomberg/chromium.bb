@@ -147,7 +147,7 @@ void DesktopResizerWin::SetResolution(const ScreenResolution& resolution) {
 
 void DesktopResizerWin::RestoreResolution(const ScreenResolution& original) {
   // Restore the display mode based on the registry configuration.
-  DWORD result = ChangeDisplaySettings(NULL, 0);
+  DWORD result = ChangeDisplaySettings(nullptr, 0);
   if (result != DISP_CHANGE_SUCCESSFUL)
     LOG(ERROR) << "RestoreResolution failed: " << result;
 }
@@ -163,7 +163,7 @@ bool DesktopResizerWin::GetPrimaryDisplayMode(
     DWORD mode_number, DWORD flags, DEVMODE* mode) {
  memset(mode, 0, sizeof(DEVMODE));
  mode->dmSize = sizeof(DEVMODE);
- if (!EnumDisplaySettingsEx(NULL, mode_number, mode, flags))
+ if (!EnumDisplaySettingsEx(nullptr, mode_number, mode, flags))
    return false;
  return true;
 }

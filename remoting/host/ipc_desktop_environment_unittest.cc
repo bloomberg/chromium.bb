@@ -221,8 +221,8 @@ class IpcDesktopEnvironmentTest : public testing::Test {
 
 IpcDesktopEnvironmentTest::IpcDesktopEnvironmentTest()
     : client_jid_("user@domain/rest-of-jid"),
-      clipboard_stub_(NULL),
-      remote_input_injector_(NULL),
+      clipboard_stub_(nullptr),
+      remote_input_injector_(nullptr),
       terminal_id_(-1),
       client_session_control_factory_(&client_session_control_) {
 }
@@ -345,7 +345,7 @@ DesktopEnvironment* IpcDesktopEnvironmentTest::CreateDesktopEnvironment() {
 }
 
 InputInjector* IpcDesktopEnvironmentTest::CreateInputInjector() {
-  EXPECT_TRUE(remote_input_injector_ == NULL);
+  EXPECT_TRUE(remote_input_injector_ == nullptr);
   remote_input_injector_ = new testing::StrictMock<MockInputInjector>();
 
   EXPECT_CALL(*remote_input_injector_, StartPtr(_));
@@ -411,7 +411,7 @@ void IpcDesktopEnvironmentTest::DestoyDesktopProcess() {
     desktop_process_->OnChannelError();
     desktop_process_.reset();
   }
-  remote_input_injector_ = NULL;
+  remote_input_injector_ = nullptr;
 }
 
 void IpcDesktopEnvironmentTest::OnDisconnectCallback() {
@@ -442,8 +442,8 @@ TEST_F(IpcDesktopEnvironmentTest, Basic) {
   // Stop the test.
   DeleteDesktopEnvironment();
 
-  task_runner_ = NULL;
-  io_task_runner_ = NULL;
+  task_runner_ = nullptr;
+  io_task_runner_ = nullptr;
   main_run_loop_.Run();
 }
 
@@ -471,8 +471,8 @@ TEST_F(IpcDesktopEnvironmentTest, CaptureFrame) {
   // Capture a single frame.
   video_capturer_->Capture(webrtc::DesktopRegion());
 
-  task_runner_ = NULL;
-  io_task_runner_ = NULL;
+  task_runner_ = nullptr;
+  io_task_runner_ = nullptr;
   main_run_loop_.Run();
 }
 
@@ -499,8 +499,8 @@ TEST_F(IpcDesktopEnvironmentTest, Reattach) {
   // Stop the test.
   DeleteDesktopEnvironment();
 
-  task_runner_ = NULL;
-  io_task_runner_ = NULL;
+  task_runner_ = nullptr;
+  io_task_runner_ = nullptr;
   main_run_loop_.Run();
 }
 
@@ -535,8 +535,8 @@ TEST_F(IpcDesktopEnvironmentTest, InjectClipboardEvent) {
   event.set_data("a");
   input_injector_->InjectClipboardEvent(event);
 
-  task_runner_ = NULL;
-  io_task_runner_ = NULL;
+  task_runner_ = nullptr;
+  io_task_runner_ = nullptr;
   main_run_loop_.Run();
 }
 
@@ -566,8 +566,8 @@ TEST_F(IpcDesktopEnvironmentTest, InjectKeyEvent) {
   event.set_pressed(true);
   input_injector_->InjectKeyEvent(event);
 
-  task_runner_ = NULL;
-  io_task_runner_ = NULL;
+  task_runner_ = nullptr;
+  io_task_runner_ = nullptr;
   main_run_loop_.Run();
 }
 
@@ -596,8 +596,8 @@ TEST_F(IpcDesktopEnvironmentTest, InjectTextEvent) {
   event.set_text("hello");
   input_injector_->InjectTextEvent(event);
 
-  task_runner_ = NULL;
-  io_task_runner_ = NULL;
+  task_runner_ = nullptr;
+  io_task_runner_ = nullptr;
   main_run_loop_.Run();
 }
 
@@ -627,8 +627,8 @@ TEST_F(IpcDesktopEnvironmentTest, InjectMouseEvent) {
   event.set_y(0);
   input_injector_->InjectMouseEvent(event);
 
-  task_runner_ = NULL;
-  io_task_runner_ = NULL;
+  task_runner_ = nullptr;
+  io_task_runner_ = nullptr;
   main_run_loop_.Run();
 }
 
@@ -656,8 +656,8 @@ TEST_F(IpcDesktopEnvironmentTest, SetScreenResolution) {
       webrtc::DesktopSize(100, 100),
       webrtc::DesktopVector(96, 96)));
 
-  task_runner_ = NULL;
-  io_task_runner_ = NULL;
+  task_runner_ = nullptr;
+  io_task_runner_ = nullptr;
   main_run_loop_.Run();
 }
 

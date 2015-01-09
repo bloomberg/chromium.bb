@@ -67,7 +67,7 @@ int DesktopProcessMain() {
     return kInitializationFailed;
 
   // Run the UI message loop.
-  ui_task_runner = NULL;
+  ui_task_runner = nullptr;
   run_loop.Run();
 
   return kSuccessExitCode;

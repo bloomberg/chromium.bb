@@ -8,7 +8,7 @@ namespace pp {
 
 // Factory function for your specialization of the Module object.
 Module* CreateModule() {
-  return NULL;
+  return nullptr;
 }
 
 }  // namespace pp

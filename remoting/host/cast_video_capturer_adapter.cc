@@ -28,7 +28,7 @@ CastVideoCapturerAdapter::~CastVideoCapturerAdapter() {
 
 webrtc::SharedMemory* CastVideoCapturerAdapter::CreateSharedMemory(
     size_t size) {
-  return NULL;
+  return nullptr;
 }
 
 void CastVideoCapturerAdapter::OnCaptureCompleted(webrtc::DesktopFrame* frame) {
@@ -163,7 +163,7 @@ void CastVideoCapturerAdapter::Stop() {
 
   capture_timer_.reset();
 
-  SetCaptureFormat(NULL);
+  SetCaptureFormat(nullptr);
   SetCaptureState(cricket::CS_STOPPED);
 
   VLOG(1) << "CastVideoCapturerAdapter stopped.";

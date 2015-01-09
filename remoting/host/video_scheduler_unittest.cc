@@ -169,8 +169,8 @@ class VideoSchedulerTest : public testing::Test {
 };
 
 VideoSchedulerTest::VideoSchedulerTest()
-    : capturer_callback_(NULL),
-      mouse_monitor_callback_(NULL) {
+    : capturer_callback_(nullptr),
+      mouse_monitor_callback_(nullptr) {
 }
 
 void VideoSchedulerTest::SetUp() {
@@ -182,9 +182,9 @@ void VideoSchedulerTest::SetUp() {
 
 void VideoSchedulerTest::TearDown() {
   // Release the task runners, so that the test can quit.
-  capture_task_runner_ = NULL;
-  encode_task_runner_ = NULL;
-  main_task_runner_ = NULL;
+  capture_task_runner_ = nullptr;
+  encode_task_runner_ = nullptr;
+  main_task_runner_ = nullptr;
 
   // Run the MessageLoop until everything has torn down.
   run_loop_.Run();
@@ -208,7 +208,7 @@ void VideoSchedulerTest::StartVideoScheduler(
 
 void VideoSchedulerTest::StopVideoScheduler() {
   scheduler_->Stop();
-  scheduler_ = NULL;
+  scheduler_ = nullptr;
 }
 
 void VideoSchedulerTest::OnCapturerStart(

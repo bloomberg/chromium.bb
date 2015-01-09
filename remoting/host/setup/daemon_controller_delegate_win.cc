@@ -90,7 +90,7 @@ DaemonController::State ConvertToDaemonState(DWORD service_state) {
 DWORD OpenService(ScopedScHandle* service_out) {
   // Open the service and query its current state.
   ScopedScHandle scmanager(
-      ::OpenSCManagerW(NULL, SERVICES_ACTIVE_DATABASE,
+      ::OpenSCManagerW(nullptr, SERVICES_ACTIVE_DATABASE,
                        SC_MANAGER_CONNECT | SC_MANAGER_ENUMERATE_SERVICE));
   if (!scmanager.IsValid()) {
     DWORD error = GetLastError();
@@ -135,7 +135,7 @@ void InvokeCompletionCallback(
 
 DaemonControllerDelegateWin::DaemonControllerDelegateWin()
     : control_is_elevated_(false),
-      window_handle_(NULL) {
+      window_handle_(nullptr) {
 }
 
 DaemonControllerDelegateWin::~DaemonControllerDelegateWin() {
@@ -242,9 +242,9 @@ void DaemonControllerDelegateWin::UpdateConfig(
   }
 
   // Update the configuration.
-  ScopedBstr config_str(NULL);
+  ScopedBstr config_str(nullptr);
   ConfigToString(*config, &config_str);
-  if (config_str == NULL) {
+  if (config_str == nullptr) {
     InvokeCompletionCallback(done, E_OUTOFMEMORY);
     return;
   }
@@ -305,7 +305,7 @@ DaemonControllerDelegateWin::GetUsageStatsConsent() {
     return consent;
   }
 
-  if (control2_.get() == NULL) {
+  if (control2_.get() == nullptr) {
     // The host is installed and does not support crash dump reporting.
     return consent;
   }
@@ -333,7 +333,7 @@ HRESULT DaemonControllerDelegateWin::ActivateController() {
       return hr;
     }
 
-    hr = CoCreateInstance(class_id, NULL, CLSCTX_LOCAL_SERVER,
+    hr = CoCreateInstance(class_id, nullptr, CLSCTX_LOCAL_SERVER,
                           IID_IDaemonControl, control_.ReceiveVoid());
     if (FAILED(hr)) {
       return hr;
@@ -432,9 +432,9 @@ void DaemonControllerDelegateWin::StartHostWithConfig(
   }
 
   // Set the configuration.
-  ScopedBstr config_str(NULL);
+  ScopedBstr config_str(nullptr);
   ConfigToString(*config, &config_str);
-  if (config_str == NULL) {
+  if (config_str == nullptr) {
     InvokeCompletionCallback(done, E_OUTOFMEMORY);
     return;
   }

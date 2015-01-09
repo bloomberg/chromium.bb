@@ -123,7 +123,7 @@ bool UdpPacketSocket::Init(const rtc::SocketAddress& local_address,
   }
 
   for (uint32 port = min_port; port <= max_port; ++port) {
-    socket_.reset(new net::UDPServerSocket(NULL, net::NetLog::Source()));
+    socket_.reset(new net::UDPServerSocket(nullptr, net::NetLog::Source()));
     int result = socket_->Listen(
         net::IPEndPoint(local_endpoint.address(), static_cast<uint16>(port)));
     if (result == net::OK) {
@@ -364,7 +364,7 @@ rtc::AsyncPacketSocket* ChromiumPacketSocketFactory::CreateUdpSocket(
       uint16 min_port, uint16 max_port) {
   scoped_ptr<UdpPacketSocket> result(new UdpPacketSocket());
   if (!result->Init(local_address, min_port, max_port))
-    return NULL;
+    return nullptr;
   return result.release();
 }
 
@@ -375,7 +375,7 @@ ChromiumPacketSocketFactory::CreateServerTcpSocket(
     int opts) {
   // We don't use TCP sockets for remoting connections.
   NOTIMPLEMENTED();
-  return NULL;
+  return nullptr;
 }
 
 rtc::AsyncPacketSocket*
@@ -387,7 +387,7 @@ ChromiumPacketSocketFactory::CreateClientTcpSocket(
       int opts) {
   // We don't use TCP sockets for remoting connections.
   NOTREACHED();
-  return NULL;
+  return nullptr;
 }
 
 rtc::AsyncResolverInterface*
