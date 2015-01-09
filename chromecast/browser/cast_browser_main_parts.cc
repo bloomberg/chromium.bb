@@ -93,7 +93,6 @@ DefaultCommandLineSwitch g_default_switches[] = {
   { switches::kDisableGestureRequirementForMediaPlayback, ""},
   { switches::kForceUseOverlayEmbeddedVideo, ""},
 #endif
-  { switches::kDisableApplicationCache, "" },
   { switches::kDisablePlugins, "" },
   // Always enable HTMLMediaElement logs.
   { switches::kBlinkPlatformLogChannels, "Media"},

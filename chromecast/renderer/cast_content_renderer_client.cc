@@ -111,6 +111,10 @@ void CastContentRendererClient::RenderViewCreated(
     // embedders, though Android has enabled by default for mobile browsers.
     webview->settings()->setShrinksViewportContentToFit(false);
     webview->settings()->setMediaControlsOverlayPlayButtonEnabled(false);
+
+    // Disable application cache as Chromecast doesn't support off-line
+    // application running.
+    webview->settings()->setOfflineWebApplicationCacheEnabled(false);
   }
 }
 
