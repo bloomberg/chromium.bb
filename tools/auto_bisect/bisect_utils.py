@@ -367,7 +367,8 @@ def RunGClientAndSync(revisions=None, cwd=None):
             '--delete_unversioned_trees']
   if revisions is not None:
     for revision in revisions:
-      params.extend(['--revision', revision])
+      if revision is not None:
+        params.extend(['--revision', revision])
   return RunGClient(params, cwd=cwd)
 
 
