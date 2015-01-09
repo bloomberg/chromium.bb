@@ -710,5 +710,48 @@ bool EasyUnlockPrivateGetUserImageFunction::RunSync() {
   return true;
 }
 
+EasyUnlockPrivateGetConnectionInfoFunction::
+    EasyUnlockPrivateGetConnectionInfoFunction() {
+}
+
+EasyUnlockPrivateGetConnectionInfoFunction::
+    ~EasyUnlockPrivateGetConnectionInfoFunction() {
+}
+
+bool EasyUnlockPrivateGetConnectionInfoFunction::DoWork(
+    scoped_refptr<device::BluetoothAdapter> adapter) {
+  scoped_ptr<easy_unlock_private::GetConnectionInfo::Params> params =
+      easy_unlock_private::GetConnectionInfo::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  device::BluetoothDevice* device = adapter->GetDevice(params->device_address);
+
+  std::string error;
+  if (!device)
+    error = "Invalid Bluetooth device.";
+  else if (!device->IsConnected())
+    error = "Bluetooth device not connected.";
+
+  if (!error.empty()) {
+    SetError(error);
+    SendResponse(false);
+    return true;
+  }
+
+  device->GetConnectionInfo(base::Bind(
+      &EasyUnlockPrivateGetConnectionInfoFunction::OnConnectionInfo, this));
+  return false;
+}
+
+void EasyUnlockPrivateGetConnectionInfoFunction::OnConnectionInfo(
+    const device::BluetoothDevice::ConnectionInfo& connection_info) {
+  scoped_ptr<base::ListValue> results(new base::ListValue());
+  results->AppendInteger(connection_info.rssi);
+  results->AppendInteger(connection_info.transmit_power);
+  results->AppendInteger(connection_info.max_transmit_power);
+  SetResultList(results.Pass());
+  SendResponse(true);
+}
+
 }  // namespace api
 }  // namespace extensions

@@ -185,6 +185,13 @@ namespace easyUnlockPrivate {
   callback SignInChallengeCallback = void(optional ArrayBuffer challenge,
                                           optional ArrayBuffer signedNonce);
 
+  // Callback for the |getConnectionInfo()| method.
+  // |rssi|: The received signal strength from the remote device in dB.
+  // |transmit_power| The local transmission power to the remote device in dB.
+  // |max_transmit_power| The maximum transmission power that can be achieved.
+  callback ConnectionInfoCallback = void(
+      long rssi, long transmit_power, long max_transmit_power);
+
   interface Functions {
     // Gets localized strings required to render the API.
     //
@@ -315,6 +322,11 @@ namespace easyUnlockPrivate {
 
     // Gets the user's profile image as a bitmap.
     static void getUserImage(DataCallback callback);
+
+    // Gets the connection info for the Bluetooth device identified by
+    // deviceAddress.
+    static void getConnectionInfo(DOMString deviceAddress,
+                                  ConnectionInfoCallback callback);
   };
 
   interface Events {
