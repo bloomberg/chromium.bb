@@ -87,15 +87,17 @@ void MockCryptoClientStream::SetConfigNegotiated() {
   cgst.push_back(kTBBR);
 #endif
   cgst.push_back(kQBIC);
-  session()->config()->SetCongestionFeedback(cgst, kQBIC);
-  session()->config()->SetIdleConnectionStateLifetime(
+  QuicConfig config;
+  config.SetCongestionFeedback(cgst, kQBIC);
+  config.SetIdleConnectionStateLifetime(
       QuicTime::Delta::FromSeconds(2 * kMaximumIdleTimeoutSecs),
       QuicTime::Delta::FromSeconds(kMaximumIdleTimeoutSecs));
-  session()->config()->SetMaxStreamsPerConnection(
-      2 * kDefaultMaxStreamsPerConnection, kDefaultMaxStreamsPerConnection);
+  config.SetMaxStreamsPerConnection(kDefaultMaxStreamsPerConnection / 2,
+                                    kDefaultMaxStreamsPerConnection / 2);
+  config.SetBytesForConnectionIdToSend(PACKET_8BYTE_CONNECTION_ID);
 
   CryptoHandshakeMessage msg;
-  session()->config()->ToHandshakeMessage(&msg);
+  config.ToHandshakeMessage(&msg);
   string error_details;
   const QuicErrorCode error =
       session()->config()->ProcessPeerHello(msg, CLIENT, &error_details);

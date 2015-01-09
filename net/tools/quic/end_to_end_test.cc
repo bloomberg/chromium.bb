@@ -1017,6 +1017,78 @@ TEST_P(EndToEndTest, MinInitialRTT) {
   server_thread_->Resume();
 }
 
+TEST_P(EndToEndTest, 0ByteConnectionId) {
+  ValueRestore<bool> old_flag(&FLAGS_allow_truncated_connection_ids_for_quic,
+                              true);
+  client_config_.SetBytesForConnectionIdToSend(0);
+  ASSERT_TRUE(Initialize());
+
+  EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
+  EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
+
+  QuicPacketHeader* header = QuicConnectionPeer::GetLastHeader(
+      client_->client()->session()->connection());
+  EXPECT_EQ(PACKET_0BYTE_CONNECTION_ID,
+            header->public_header.connection_id_length);
+}
+
+TEST_P(EndToEndTest, 1ByteConnectionId) {
+  ValueRestore<bool> old_flag(&FLAGS_allow_truncated_connection_ids_for_quic,
+                              true);
+  client_config_.SetBytesForConnectionIdToSend(1);
+  ASSERT_TRUE(Initialize());
+
+  EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
+  EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
+  QuicPacketHeader* header = QuicConnectionPeer::GetLastHeader(
+      client_->client()->session()->connection());
+  EXPECT_EQ(PACKET_1BYTE_CONNECTION_ID,
+            header->public_header.connection_id_length);
+}
+
+TEST_P(EndToEndTest, 4ByteConnectionId) {
+  ValueRestore<bool> old_flag(&FLAGS_allow_truncated_connection_ids_for_quic,
+                              true);
+  client_config_.SetBytesForConnectionIdToSend(4);
+  ASSERT_TRUE(Initialize());
+
+  EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
+  EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
+  QuicPacketHeader* header = QuicConnectionPeer::GetLastHeader(
+      client_->client()->session()->connection());
+  EXPECT_EQ(PACKET_4BYTE_CONNECTION_ID,
+            header->public_header.connection_id_length);
+}
+
+TEST_P(EndToEndTest, 8ByteConnectionId) {
+  ValueRestore<bool> old_flag(&FLAGS_allow_truncated_connection_ids_for_quic,
+                              true);
+  client_config_.SetBytesForConnectionIdToSend(8);
+  ASSERT_TRUE(Initialize());
+
+  EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
+  EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
+  QuicPacketHeader* header = QuicConnectionPeer::GetLastHeader(
+      client_->client()->session()->connection());
+  EXPECT_EQ(PACKET_8BYTE_CONNECTION_ID,
+            header->public_header.connection_id_length);
+}
+
+TEST_P(EndToEndTest, 15ByteConnectionId) {
+  ValueRestore<bool> old_flag(&FLAGS_allow_truncated_connection_ids_for_quic,
+                              true);
+  client_config_.SetBytesForConnectionIdToSend(15);
+  ASSERT_TRUE(Initialize());
+
+  // Our server is permissive and allows for out of bounds values.
+  EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
+  EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
+  QuicPacketHeader* header = QuicConnectionPeer::GetLastHeader(
+      client_->client()->session()->connection());
+  EXPECT_EQ(PACKET_8BYTE_CONNECTION_ID,
+            header->public_header.connection_id_length);
+}
+
 TEST_P(EndToEndTest, ResetConnection) {
   ASSERT_TRUE(Initialize());
   client_->client()->WaitForCryptoHandshakeConfirmed();

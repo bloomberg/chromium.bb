@@ -107,6 +107,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       int load_server_info_timeout,
       bool disable_loading_server_info_for_new_servers,
       float load_server_info_timeout_srtt_multiplier,
+      bool enable_truncated_connection_ids,
       const QuicTagVector& connection_options);
   ~QuicStreamFactory() override;
 
@@ -306,6 +307,9 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   // milliseconds to wait for loading of QUIC server information. If we don't
   // want to timeout, set |load_server_info_timeout_srtt_multiplier_| to 0.
   float load_server_info_timeout_srtt_multiplier_;
+
+  // Set this for setting config's BytesForConnectionIdToSend (TCID param) to 0.
+  bool enable_truncated_connection_ids_;
 
   // Each profile will (probably) have a unique port_seed_ value.  This value is
   // used to help seed a pseudo-random number generator (PortSuggester) so that

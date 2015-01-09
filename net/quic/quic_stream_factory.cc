@@ -9,6 +9,7 @@
 #include "base/cpu.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/rand_util.h"
@@ -32,6 +33,7 @@
 #include "net/quic/quic_connection_helper.h"
 #include "net/quic/quic_crypto_client_stream_factory.h"
 #include "net/quic/quic_default_packet_writer.h"
+#include "net/quic/quic_flags.h"
 #include "net/quic/quic_http_stream.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_server_id.h"
@@ -565,6 +567,7 @@ QuicStreamFactory::QuicStreamFactory(
     int load_server_info_timeout,
     bool disable_loading_server_info_for_new_servers,
     float load_server_info_timeout_srtt_multiplier,
+    bool enable_truncated_connection_ids,
     const QuicTagVector& connection_options)
     : require_confirmation_(true),
       host_resolver_(host_resolver),
@@ -587,6 +590,7 @@ QuicStreamFactory::QuicStreamFactory(
           disable_loading_server_info_for_new_servers),
       load_server_info_timeout_srtt_multiplier_(
           load_server_info_timeout_srtt_multiplier),
+      enable_truncated_connection_ids_(enable_truncated_connection_ids),
       port_seed_(random_generator_->RandUint64()),
       check_persisted_supports_quic_(true),
       task_runner_(nullptr),
@@ -1051,6 +1055,9 @@ int QuicStreamFactory::CreateSession(
   int64 srtt = GetServerNetworkStatsSmoothedRttInMicroseconds(server_id);
   if (srtt > 0)
     config.SetInitialRoundTripTimeUsToSend(static_cast<uint32>(srtt));
+  if (FLAGS_allow_truncated_connection_ids_for_quic &&
+      enable_truncated_connection_ids_)
+    config.SetBytesForConnectionIdToSend(0);
 
   if (quic_server_info_factory_ && !server_info) {
     // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.

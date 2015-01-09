@@ -37,7 +37,7 @@ bool FLAGS_quic_use_bbr_congestion_control = false;
 bool FLAGS_quic_allow_bbr = false;
 
 // If true, truncate QUIC connection IDs if the client requests it.
-bool FLAGS_allow_truncated_connection_ids_for_quic = false;
+bool FLAGS_allow_truncated_connection_ids_for_quic = true;
 
 // Do not flip this flag.  jokulik plans more testing and additional monitoring
 // before the flag can go the auto-flip process.

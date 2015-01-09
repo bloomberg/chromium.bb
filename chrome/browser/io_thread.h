@@ -194,6 +194,7 @@ class IOThread : public content::BrowserThreadDelegate {
     Optional<int> quic_load_server_info_timeout_ms;
     Optional<bool> quic_disable_loading_server_info_for_new_servers;
     Optional<float> quic_load_server_info_timeout_srtt_multiplier;
+    Optional<bool> quic_enable_truncated_connection_ids;
     Optional<size_t> quic_max_packet_length;
     net::QuicTagVector quic_connection_options;
     Optional<std::string> quic_user_agent_id;
@@ -381,6 +382,10 @@ class IOThread : public content::BrowserThreadDelegate {
   // 'smoothed RTT' based on field trial. Returns 0 if there is an error parsing
   // the field trial params, or if the default value should be used.
   static float GetQuicLoadServerInfoTimeoutSrttMultiplier(
+      const VariationParameters& quic_trial_params);
+
+  // Returns true if QUIC's TruncatedConnectionIds should be enabled.
+  static bool ShouldQuicEnableTruncatedConnectionIds(
       const VariationParameters& quic_trial_params);
 
   // Returns the maximum length for QUIC packets, based on any flags in

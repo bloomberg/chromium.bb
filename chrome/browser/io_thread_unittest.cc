@@ -135,6 +135,7 @@ TEST_F(IOThreadTest, EnableQuicFromFieldTrialGroup) {
   EXPECT_EQ(0, params.quic_load_server_info_timeout_ms);
   EXPECT_FALSE(params.quic_disable_loading_server_info_for_new_servers);
   EXPECT_EQ(0.0f, params.quic_load_server_info_timeout_srtt_multiplier);
+  EXPECT_FALSE(params.quic_enable_truncated_connection_ids);
 }
 
 TEST_F(IOThreadTest, EnableQuicFromCommandLine) {
@@ -324,6 +325,15 @@ TEST_F(IOThreadTest, QuicLoadServerInfoTimeToSmoothedRttFromFieldTrialParams) {
   net::HttpNetworkSession::Params params;
   InitializeNetworkSessionParams(&params);
   EXPECT_EQ(0.5f, params.quic_load_server_info_timeout_srtt_multiplier);
+}
+
+TEST_F(IOThreadTest, QuicDisableTruncatedConnectionIds) {
+  field_trial_group_ = "Enabled";
+  field_trial_params_["enable_truncated_connection_ids"] = "true";
+  ConfigureQuicGlobals();
+  net::HttpNetworkSession::Params params;
+  InitializeNetworkSessionParams(&params);
+  EXPECT_TRUE(params.quic_enable_truncated_connection_ids);
 }
 
 TEST_F(IOThreadTest,

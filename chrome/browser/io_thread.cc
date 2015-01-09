@@ -1069,6 +1069,8 @@ void IOThread::InitializeNetworkSessionParamsFromGlobals(
       &params->quic_disable_loading_server_info_for_new_servers);
   globals.quic_load_server_info_timeout_srtt_multiplier.CopyToIfSet(
       &params->quic_load_server_info_timeout_srtt_multiplier);
+  globals.quic_enable_truncated_connection_ids.CopyToIfSet(
+      &params->quic_enable_truncated_connection_ids);
   globals.enable_quic_port_selection.CopyToIfSet(
       &params->enable_quic_port_selection);
   globals.quic_max_packet_length.CopyToIfSet(&params->quic_max_packet_length);
@@ -1231,6 +1233,8 @@ void IOThread::ConfigureQuicGlobals(
         ShouldDisableLoadingServerInfoForNewServers(quic_trial_params));
     float load_server_info_timeout_srtt_multiplier =
         GetQuicLoadServerInfoTimeoutSrttMultiplier(quic_trial_params);
+    globals->quic_enable_truncated_connection_ids.set(
+        ShouldQuicEnableTruncatedConnectionIds(quic_trial_params));
     if (load_server_info_timeout_srtt_multiplier != 0) {
       globals->quic_load_server_info_timeout_srtt_multiplier.set(
           load_server_info_timeout_srtt_multiplier);
@@ -1417,6 +1421,14 @@ float IOThread::GetQuicLoadServerInfoTimeoutSrttMultiplier(
     return (float)value;
   }
   return 0.0f;
+}
+
+// static
+bool IOThread::ShouldQuicEnableTruncatedConnectionIds(
+    const VariationParameters& quic_trial_params) {
+  return LowerCaseEqualsASCII(
+      GetVariationParam(quic_trial_params, "enable_truncated_connection_ids"),
+      "true");
 }
 
 // static
