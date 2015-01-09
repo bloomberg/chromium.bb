@@ -1122,14 +1122,6 @@ full_paladin = _config(
   chrome_binhost_only=True,
 )
 
-full_compile_paladin = full_paladin.derive(
-  chrome_sdk=False,
-  debug_symbols=False,
-  unittests=False,
-  upload_hw_test_artifacts=False,
-  cpe_export=False,
-)
-
 # If a board has a newer instruction set, then the unit tests and VM tests
 # cannot run on the builders, at least until we've implemented an emulator.
 # Disable the VM tests and unit tests to be safe.
@@ -1841,17 +1833,32 @@ internal_nowithdebug_paladin = internal_paladin.derive(
 )
 
 _CreateConfigsForBoards(internal_nowithdebug_paladin,
-    ['x86-generic', 'amd64-generic'],
-    'nowithdebug-paladin',
-    important=False,
+  ['x86-generic', 'amd64-generic'],
+  'nowithdebug-paladin',
+  important=False,
 )
 
 internal_nowithdebug_paladin.add_config('x86-mario-nowithdebug-paladin',
   boards=['x86-mario'],
 )
 
-_CreateConfigsForBoards(full_compile_paladin, ['falco', 'nyan'],
-                        'full-compile-paladin', important=False)
+# Used for builders which build completely from source except Chrome.
+full_compile_paladin = paladin.derive(
+  full_paladin,
+  chrome_sdk=False,
+  cpe_export=False,
+  debug_symbols=False,
+  prebuilts=False,
+  unittests=False,
+  upload_hw_test_artifacts=False,
+  vm_tests=[],
+)
+
+_CreateConfigsForBoards(full_compile_paladin,
+  ['falco', 'nyan'],
+  'full-compile-paladin',
+  important=False,
+)
 
 pre_cq = paladin.derive(
   build_type=constants.INCREMENTAL_TYPE,
