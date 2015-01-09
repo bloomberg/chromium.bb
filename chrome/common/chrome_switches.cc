@@ -100,21 +100,6 @@ const char kAppModeOAuth2Token[]            = "app-mode-oauth-token";
 // Enables overriding the path for the default authentication extension.
 const char kAuthExtensionPath[]             = "auth-ext-path";
 
-// Whitelist of servers that Negotiate will generate delegated Kerberos tickets
-// for.
-const char kAuthNegotiateDelegateWhitelist[] =
-    "auth-negotiate-delegate-whitelist";
-
-// HTTP authentication schemes to enable. This is a comma-separated list of
-// authentication schemes (basic, digest, ntlm, and negotiate). By default all
-// schemes are enabled. The primary use of this command line flag is to help
-// triage authentication-related issues reported by end-users.
-const char kAuthSchemes[]                   = "auth-schemes";
-
-// Whitelist of servers which NTLM and Negotiate can automatically authenticate
-// with using the default credentials of the currently logged in user.
-const char kAuthServerWhitelist[]           = "auth-server-whitelist";
-
 // A flag that is used to tell Chrome that it was launched automatically at
 // computer startup and not by some user action.
 const char kAutoLaunchAtStartup[]           = "auto-launch-at-startup";
