@@ -49,8 +49,7 @@
 namespace {
 
 class DownloadShelfMacTest : public CocoaProfileTest {
-
-  virtual void SetUp() {
+  void SetUp() override {
     CocoaProfileTest::SetUp();
     shelf_controller_.reset([[FakeDownloadShelfController alloc] init]);
   }

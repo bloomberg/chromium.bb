@@ -41,7 +41,7 @@ class ToolbarActionViewDelegateBridge : public ToolbarActionViewDelegateCocoa {
   ToolbarActionViewDelegateBridge(BrowserActionButton* owner,
                                   BrowserActionsController* controller,
                                   ToolbarActionViewController* viewController);
-  ~ToolbarActionViewDelegateBridge();
+  ~ToolbarActionViewDelegateBridge() override;
 
   ExtensionActionContextMenuController* menuController() {
     return menuController_;

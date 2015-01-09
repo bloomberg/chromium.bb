@@ -31,7 +31,7 @@
 
 class AvatarButtonControllerTest : public CocoaProfileTest {
  public:
-  virtual void SetUp() override {
+  void SetUp() override {
     switches::EnableNewAvatarMenuForTesting(
         base::CommandLine::ForCurrentProcess());
     DCHECK(profiles::IsMultipleProfilesEnabled());
@@ -43,7 +43,7 @@ class AvatarButtonControllerTest : public CocoaProfileTest {
         [[AvatarButtonController alloc] initWithBrowser:browser()]);
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     browser()->window()->Close();
     CocoaProfileTest::TearDown();
   }

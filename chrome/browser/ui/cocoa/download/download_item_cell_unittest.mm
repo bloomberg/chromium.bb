@@ -23,7 +23,7 @@ class DownloadItemCellTest : public CocoaTest {
   DownloadItemCellTest() : CocoaTest() {
   }
 
-  virtual void SetUp() {
+  void SetUp() override {
     CocoaTest::SetUp();
     button_.reset([[NSButton alloc] initWithFrame:NSMakeRect(0, 0, 100, 100)]);
     [[test_window() contentView] addSubview:button_];

@@ -51,7 +51,7 @@ class ToolbarControllerTest : public CocoaProfileTest {
     kWrenchIndex, kLocationIndex, kBrowserActionContainerViewIndex
   };
 
-  virtual void SetUp() override {
+  void SetUp() override {
     CocoaProfileTest::SetUp();
     ASSERT_TRUE(browser());
 
@@ -73,7 +73,7 @@ class ToolbarControllerTest : public CocoaProfileTest {
     [parent addSubview:[bar_ view]];
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     bar_.reset();  // browser() must outlive the ToolbarController.
     CocoaProfileTest::TearDown();
   }

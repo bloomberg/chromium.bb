@@ -107,7 +107,7 @@ namespace {
 
 class DownloadShelfControllerTest : public CocoaProfileTest {
  public:
-  virtual void SetUp() override {
+  void SetUp() override {
     CocoaProfileTest::SetUp();
     ASSERT_TRUE(browser());
 
@@ -119,7 +119,7 @@ class DownloadShelfControllerTest : public CocoaProfileTest {
     [[test_window() contentView] addSubview:[shelf_ view]];
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     if (shelf_.get()) {
       [shelf_ exiting];
       shelf_.reset();

@@ -197,7 +197,7 @@ namespace {
 
 class BookmarkBarViewTest : public CocoaProfileTest {
  public:
-  virtual void SetUp() {
+  void SetUp() override {
     CocoaProfileTest::SetUp();
     view_.reset([[BookmarkBarView alloc] init]);
   }

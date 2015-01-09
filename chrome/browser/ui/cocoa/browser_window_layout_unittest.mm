@@ -11,7 +11,7 @@
 class BrowserWindowLayoutTest : public testing::Test {
  public:
   BrowserWindowLayoutTest() {}
-  virtual void SetUp() override {
+  void SetUp() override {
     layout.reset([[BrowserWindowLayout alloc] init]);
 
     [layout setContentViewSize:NSMakeSize(600, 600)];

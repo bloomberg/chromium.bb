@@ -30,7 +30,7 @@ NSEvent* KeyEvent(const NSUInteger flags, const NSUInteger keyCode) {
 
 class ChromeEventProcessingWindowTest : public CocoaTest {
  public:
-  virtual void SetUp() {
+  void SetUp() override {
     CocoaTest::SetUp();
     // Create a window.
     const NSUInteger mask = NSTitledWindowMask | NSClosableWindowMask |
@@ -47,7 +47,7 @@ class ChromeEventProcessingWindowTest : public CocoaTest {
     }
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     [window_ close];
     CocoaTest::TearDown();
   }

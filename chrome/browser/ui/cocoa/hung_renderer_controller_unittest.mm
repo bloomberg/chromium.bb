@@ -13,7 +13,7 @@ namespace {
 
 class HungRendererControllerTest : public CocoaTest {
  public:
-  virtual void SetUp() {
+  void SetUp() override {
     CocoaTest::SetUp();
     hung_renderer_controller_ = [[HungRendererController alloc]
                                   initWithWindowNibName:@"HungRendererDialog"];

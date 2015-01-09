@@ -12,7 +12,7 @@ namespace {
 
 class AutofillTooltipControllerTest: public ui::CocoaTest {
  public:
-  virtual void SetUp() override {
+  void SetUp() override {
     CocoaTest::SetUp();
     controller_.reset([[AutofillTooltipController alloc]
                            initWithArrowLocation:info_bubble::kTopCenter]);

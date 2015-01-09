@@ -50,7 +50,7 @@ namespace keys = extensions::manifest_keys;
 class ExtensionInstalledBubbleControllerTest : public CocoaProfileTest {
 
  public:
-  virtual void SetUp() {
+  void SetUp() override {
     CocoaProfileTest::SetUp();
     ASSERT_TRUE(browser());
     window_ = browser()->window()->GetNativeWindow();

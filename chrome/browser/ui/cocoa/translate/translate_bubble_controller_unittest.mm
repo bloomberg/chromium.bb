@@ -24,7 +24,7 @@
 
 class TranslateBubbleControllerTest : public CocoaProfileTest {
  public:
-  virtual void SetUp() override {
+  void SetUp() override {
     CocoaProfileTest::SetUp();
     site_instance_ = content::SiteInstance::Create(profile());
   }

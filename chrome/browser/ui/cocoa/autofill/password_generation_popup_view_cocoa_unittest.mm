@@ -74,7 +74,7 @@ class PasswordGenerationPopupViewCocoaTest : public CocoaTest {
     : password_(base::ASCIIToUTF16("wow! such password"))
   {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     mock_controller_.reset(new MockPasswordGenerationPopupController);
     EXPECT_CALL(*mock_controller_, password())
         .WillRepeatedly(Return(password_));

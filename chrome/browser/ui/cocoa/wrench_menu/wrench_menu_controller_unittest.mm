@@ -69,9 +69,7 @@ class WrenchMenuControllerTest
             "device_id")) {
   }
 
-  virtual ~WrenchMenuControllerTest() {}
-
-  virtual void SetUp() override {
+  void SetUp() override {
     CocoaProfileTest::SetUp();
     ASSERT_TRUE(browser());
 
@@ -100,7 +98,7 @@ class WrenchMenuControllerTest
     return manager_.get();
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     fake_model_.reset();
     controller_.reset();
     manager_.reset();

@@ -18,7 +18,7 @@
 namespace {
 
 class WindowSizeAutosaverTest : public CocoaProfileTest {
-  virtual void SetUp() {
+  void SetUp() override {
     CocoaProfileTest::SetUp();
     path_ = "WindowSizeAutosaverTest";
     window_ =
@@ -35,7 +35,7 @@ class WindowSizeAutosaverTest : public CocoaProfileTest {
                 user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     [window_ close];
     CocoaProfileTest::TearDown();
   }

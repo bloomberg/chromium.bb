@@ -60,9 +60,7 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
 
 class AutofillDialogCocoaBrowserTest : public InProcessBrowserTest {
  public:
-  AutofillDialogCocoaBrowserTest() : InProcessBrowserTest() {}
-
-  virtual ~AutofillDialogCocoaBrowserTest() {}
+  AutofillDialogCocoaBrowserTest() {}
 
   void SetUpOnMainThread() override {
     // Ensure Mac OS X does not pop up a modal dialog for the Address Book.

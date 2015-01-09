@@ -45,8 +45,7 @@ class MockBridge : public HistoryMenuBridge {
 
 class HistoryMenuBridgeTest : public CocoaProfileTest {
  public:
-
-  virtual void SetUp() {
+  void SetUp() override {
     CocoaProfileTest::SetUp();
     profile()->CreateFaviconService();
     bridge_.reset(new MockBridge(profile()));

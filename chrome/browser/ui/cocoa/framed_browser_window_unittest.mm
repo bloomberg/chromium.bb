@@ -17,7 +17,7 @@
 
 class FramedBrowserWindowTest : public CocoaTest {
  public:
-  virtual void SetUp() {
+  void SetUp() override {
     CocoaTest::SetUp();
     // Create a window.
     window_ = [[FramedBrowserWindow alloc]
@@ -30,7 +30,7 @@ class FramedBrowserWindowTest : public CocoaTest {
     }
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     [window_ close];
     CocoaTest::TearDown();
   }

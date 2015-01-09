@@ -138,7 +138,7 @@ class WebsiteSettingsBubbleControllerTest : public CocoaTest {
     controller_ = nil;
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     [controller_ close];
     CocoaTest::TearDown();
   }

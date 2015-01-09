@@ -78,7 +78,7 @@ using ::testing::Return;
 
 class BrowserWindowControllerTest : public CocoaProfileTest {
  public:
-  virtual void SetUp() {
+  void SetUp() override {
     CocoaProfileTest::SetUp();
     ASSERT_TRUE(browser());
 
@@ -86,7 +86,7 @@ class BrowserWindowControllerTest : public CocoaProfileTest {
                                                      takeOwnership:NO];
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     [controller_ close];
     CocoaProfileTest::TearDown();
   }
@@ -841,7 +841,7 @@ TEST_F(BrowserWindowControllerTest, BookmarkBarHitTest) {
 
 class BrowserWindowFullScreenControllerTest : public CocoaProfileTest {
  public:
-  virtual void SetUp() {
+  void SetUp() override {
     CocoaProfileTest::SetUp();
     ASSERT_TRUE(browser());
 
@@ -850,7 +850,7 @@ class BrowserWindowFullScreenControllerTest : public CocoaProfileTest {
                                                          takeOwnership:NO];
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     [controller_ close];
     CocoaProfileTest::TearDown();
   }

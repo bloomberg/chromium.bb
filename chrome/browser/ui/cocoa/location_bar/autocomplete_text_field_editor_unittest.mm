@@ -32,7 +32,7 @@ namespace {
 
 class AutocompleteTextFieldEditorTest : public CocoaTest {
  public:
-  virtual void SetUp() {
+  void SetUp() override {
     CocoaTest::SetUp();
     NSRect frame = NSMakeRect(0, 0, 50, 30);
     base::scoped_nsobject<AutocompleteTextField> field(

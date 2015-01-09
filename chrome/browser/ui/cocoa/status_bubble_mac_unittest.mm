@@ -89,7 +89,7 @@ class StatusBubbleMacIgnoreMouseMoved : public StatusBubbleMac {
 
 class StatusBubbleMacTest : public CocoaTest {
  public:
-  virtual void SetUp() {
+  void SetUp() override {
     CocoaTest::SetUp();
     NSWindow* window = test_window();
     EXPECT_TRUE(window);
@@ -109,7 +109,7 @@ class StatusBubbleMacTest : public CocoaTest {
     EXPECT_TRUE(bubble_->window_);  // immediately creates window
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     // Not using a scoped_ptr because bubble must be deleted before calling
     // TearDown to get rid of bubble's window.
     delete bubble_;

@@ -47,7 +47,7 @@ public:
 
 class WebDialogWindowControllerTest : public BrowserWithTestWindowTest {
  public:
-  virtual void SetUp() {
+  void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
     CocoaTest::BootstrapCocoa();
     title_ = base::ASCIIToUTF16("Mock Title");

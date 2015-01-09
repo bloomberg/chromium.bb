@@ -22,9 +22,7 @@ class DownloadUtilMacTest : public CocoaTest {
     pasteboard_ = [NSPasteboard pasteboardWithUniqueName];
   }
 
-  virtual ~DownloadUtilMacTest() {
-    [pasteboard_ releaseGlobally];
-  }
+  ~DownloadUtilMacTest() override { [pasteboard_ releaseGlobally]; }
 
   NSPasteboard* pasteboard() { return pasteboard_; }
 

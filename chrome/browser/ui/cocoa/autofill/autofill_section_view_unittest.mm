@@ -17,7 +17,7 @@ namespace {
 
 class AutofillSectionViewTest : public ui::CocoaTest {
  public:
-  virtual void SetUp() {
+  void SetUp() override {
     CocoaTest::SetUp();
     view_.reset(
         [[AutofillSectionView alloc] initWithFrame:NSMakeRect(0, 0, 20, 20)]);

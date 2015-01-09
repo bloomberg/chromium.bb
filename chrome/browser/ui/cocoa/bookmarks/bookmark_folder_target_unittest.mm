@@ -33,7 +33,7 @@
 
 class BookmarkFolderTargetTest : public CocoaProfileTest {
  public:
-  virtual void SetUp() {
+  void SetUp() override {
     CocoaProfileTest::SetUp();
     ASSERT_TRUE(profile());
 

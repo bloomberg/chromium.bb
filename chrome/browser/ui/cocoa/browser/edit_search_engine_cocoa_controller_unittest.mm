@@ -79,7 +79,7 @@ namespace {
 
 class EditSearchEngineControllerTest : public CocoaProfileTest {
  public:
-  virtual void SetUp() {
+  void SetUp() override {
     CocoaProfileTest::SetUp();
     ASSERT_TRUE(profile());
 
@@ -89,7 +89,7 @@ class EditSearchEngineControllerTest : public CocoaProfileTest {
                                                    templateURL:nil];
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     // Force the window to load so we hit |-awakeFromNib| to register as the
     // window's delegate so that the controller can clean itself up in
     // |-windowWillClose:|.

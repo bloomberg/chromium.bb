@@ -74,7 +74,7 @@ class TranslationInfoBarTest : public CocoaProfileTest {
 
   // Each test gets a single Mock translate delegate for the lifetime of
   // the test.
-  virtual void SetUp() override {
+  void SetUp() override {
     translate::TranslateLanguageList::DisableUpdate();
     CocoaProfileTest::SetUp();
     web_contents_.reset(
@@ -83,7 +83,7 @@ class TranslationInfoBarTest : public CocoaProfileTest {
     ChromeTranslateClient::CreateForWebContents(web_contents_.get());
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     if (infobar_) {
       infobar_->CloseSoon();
       infobar_ = NULL;

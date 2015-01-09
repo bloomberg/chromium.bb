@@ -12,7 +12,7 @@ namespace {
 
 class AutofillSuggestionContainerTest : public ui::CocoaTest {
  public:
-  virtual void SetUp() {
+  void SetUp() override {
     CocoaTest::SetUp();
     container_.reset([[AutofillSuggestionContainer alloc] init]);
     [[test_window() contentView] addSubview:[container_ view]];

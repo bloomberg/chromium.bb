@@ -45,7 +45,7 @@ using content::WebContents;
 
 class ExclusiveAccessBubbleWindowControllerTest : public CocoaProfileTest {
  public:
-  virtual void SetUp() {
+  void SetUp() override {
     CocoaProfileTest::SetUp();
     ASSERT_TRUE(profile());
 
@@ -59,7 +59,7 @@ class ExclusiveAccessBubbleWindowControllerTest : public CocoaProfileTest {
     EXPECT_TRUE([controller_ window]);
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     [controller_ close];
     controller_.reset();
     CocoaProfileTest::TearDown();

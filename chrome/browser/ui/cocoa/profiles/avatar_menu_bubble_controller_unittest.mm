@@ -25,7 +25,7 @@ class AvatarMenuBubbleControllerTest : public CocoaTest {
       : manager_(TestingBrowserProcess::GetGlobal()) {
   }
 
-  virtual void SetUp() {
+  void SetUp() override {
     CocoaTest::SetUp();
     ASSERT_TRUE(manager_.SetUp());
 

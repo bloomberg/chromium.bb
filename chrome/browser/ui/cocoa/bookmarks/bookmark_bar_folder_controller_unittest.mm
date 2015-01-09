@@ -137,7 +137,7 @@ class BookmarkBarFolderControllerTest : public CocoaProfileTest {
   const BookmarkNode* folderA_;  // Owned by model.
   const BookmarkNode* longTitleNode_;  // Owned by model.
 
-  virtual void SetUp() {
+  void SetUp() override {
     CocoaProfileTest::SetUp();
     ASSERT_TRUE(profile());
 
@@ -688,7 +688,7 @@ class BookmarkBarFolderControllerMenuTest : public CocoaProfileTest {
   base::scoped_nsobject<ViewResizerPong> resizeDelegate_;
   base::scoped_nsobject<BookmarkBarController> bar_;
 
-  virtual void SetUp() {
+  void SetUp() override {
     CocoaProfileTest::SetUp();
     ASSERT_TRUE(browser());
 
@@ -1597,7 +1597,7 @@ TEST_F(BookmarkBarFolderControllerMenuTest, DropPositionIndicator) {
 class BookmarkBarFolderControllerClosingTest : public
     BookmarkBarFolderControllerMenuTest {
  public:
-  virtual void SetUp() {
+  void SetUp() override {
     BookmarkBarFolderControllerMenuTest::SetUp();
     ASSERT_TRUE(browser());
 

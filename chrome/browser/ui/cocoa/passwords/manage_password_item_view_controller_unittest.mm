@@ -36,9 +36,8 @@ class ManagePasswordItemViewControllerTest
     : public ManagePasswordsControllerTest {
  public:
   ManagePasswordItemViewControllerTest() {}
-  virtual ~ManagePasswordItemViewControllerTest() {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ManagePasswordsControllerTest::SetUp();
     PasswordStoreFactory::GetInstance()->SetTestingFactory(
         profile(), MockPasswordStoreService::Build);

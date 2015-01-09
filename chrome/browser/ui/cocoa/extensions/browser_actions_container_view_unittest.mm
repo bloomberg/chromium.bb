@@ -15,7 +15,7 @@ const CGFloat kMinimumContainerWidth = 10.0;
 
 class BrowserActionsContainerViewTest : public CocoaTest {
  public:
-  virtual void SetUp() {
+  void SetUp() override {
     CocoaTest::SetUp();
     view_.reset([[BrowserActionsContainerView alloc]
         initWithFrame:NSMakeRect(0, 0, 0, kContainerHeight)]);

@@ -14,7 +14,7 @@
 
 class HistoryOverlayControllerTest : public CocoaTest {
  public:
-  virtual void SetUp() {
+  void SetUp() override {
     CocoaTest::SetUp();
 
     // The overlay controller shows the panel as a subview of the given view.

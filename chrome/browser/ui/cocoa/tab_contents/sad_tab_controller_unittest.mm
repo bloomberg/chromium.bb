@@ -30,7 +30,7 @@ class SadTabControllerTest : public ChromeRenderViewHostTestHarness {
     link_clicked_ = false;
   }
 
-  virtual void SetUp() {
+  void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
     // Inherting from ChromeRenderViewHostTestHarness means we can't inherit
     // from from CocoaTest, so do a bootstrap and create test window.
@@ -43,7 +43,7 @@ class SadTabControllerTest : public ChromeRenderViewHostTestHarness {
     }
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     [test_window_ close];
     test_window_ = nil;
     ChromeRenderViewHostTestHarness::TearDown();

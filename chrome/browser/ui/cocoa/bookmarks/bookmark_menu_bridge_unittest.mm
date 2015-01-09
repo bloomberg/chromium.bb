@@ -38,8 +38,7 @@ class TestBookmarkMenuBridge : public BookmarkMenuBridge {
 // TODO(jrg): see refactor comment in bookmark_bar_state_controller_unittest.mm
 class BookmarkMenuBridgeTest : public CocoaProfileTest {
  public:
-
-   virtual void SetUp() {
+  void SetUp() override {
      CocoaProfileTest::SetUp();
      ASSERT_TRUE(profile());
 

@@ -36,13 +36,13 @@ namespace {
 
 class FindBarCocoaControllerTest : public CocoaTest {
  public:
-  virtual void SetUp() {
+  void SetUp() override {
     CocoaTest::SetUp();
     controller_.reset([[FindBarCocoaController alloc] initWithBrowser:nil]);
     [[test_window() contentView] addSubview:[controller_ view]];
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     CocoaTest::TearDown();
     [controller_ stopAnimation];
   }

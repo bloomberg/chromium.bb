@@ -24,7 +24,7 @@ class JavaScriptAppModalDialogCocoa : public app_modal::NativeAppModalDialog {
  public:
   explicit JavaScriptAppModalDialogCocoa(
       app_modal::JavaScriptAppModalDialog* dialog);
-  virtual ~JavaScriptAppModalDialogCocoa();
+  ~JavaScriptAppModalDialogCocoa() override;
 
   // Overridden from NativeAppModalDialog:
   int GetAppModalDialogButtons() const override;

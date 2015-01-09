@@ -16,7 +16,7 @@ namespace {
 
 class AutofillNotificationControllerTest : public ui::CocoaTest {
  public:
-  virtual void SetUp() {
+  void SetUp() override {
     CocoaTest::SetUp();
     InitControllerWithNotification(
         autofill::DialogNotification(autofill::DialogNotification::NONE,

@@ -26,7 +26,7 @@ class OmniboxPopupMatrixTest : public CocoaTest,
         middle_clicked_row_(0) {
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     CocoaTest::SetUp();
     matrix_.reset([[OmniboxPopupMatrix alloc] initWithDelegate:this]);
     [[test_window() contentView] addSubview:matrix_];

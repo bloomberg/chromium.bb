@@ -30,7 +30,7 @@ class ProfileMenuControllerTest : public CocoaProfileTest {
         [[ProfileMenuController alloc] initWithMainMenuItem:item_]);
   }
 
-  virtual void SetUp() {
+  void SetUp() override {
     CocoaProfileTest::SetUp();
     ASSERT_TRUE(profile());
 

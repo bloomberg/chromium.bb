@@ -14,7 +14,7 @@
 
 class ChromeBrowserWindowTest : public CocoaTest {
  public:
-  virtual void SetUp() {
+  void SetUp() override {
     CocoaTest::SetUp();
     // Create a window.
     const NSUInteger mask = NSTitledWindowMask | NSClosableWindowMask |
@@ -31,7 +31,7 @@ class ChromeBrowserWindowTest : public CocoaTest {
     }
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     [window_ close];
     CocoaTest::TearDown();
   }

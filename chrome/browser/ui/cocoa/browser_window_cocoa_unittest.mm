@@ -19,7 +19,7 @@
 
 // Main test class.
 class BrowserWindowCocoaTest : public CocoaProfileTest {
-  virtual void SetUp() {
+  void SetUp() override {
     CocoaProfileTest::SetUp();
     ASSERT_TRUE(browser());
 
@@ -27,7 +27,7 @@ class BrowserWindowCocoaTest : public CocoaProfileTest {
                                                      takeOwnership:NO];
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     [controller_ close];
     CocoaProfileTest::TearDown();
   }
