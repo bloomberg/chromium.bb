@@ -905,6 +905,7 @@ class CaptivePortalBrowserTest : public InProcessBrowserTest {
   // InProcessBrowserTest:
   void SetUpOnMainThread() override;
   void TearDownOnMainThread() override;
+  void SetUpCommandLine(base::CommandLine* command_line) override;
 
   // Sets the captive portal checking preference.  Does not affect the command
   // line flag, which is set in SetUpCommandLine.
@@ -1116,6 +1117,13 @@ void CaptivePortalBrowserTest::SetUpOnMainThread() {
 void CaptivePortalBrowserTest::TearDownOnMainThread() {
   // No test should have a captive portal check pending on quit.
   EXPECT_FALSE(CheckPending(browser()));
+}
+
+void CaptivePortalBrowserTest::SetUpCommandLine(
+    base::CommandLine* command_line) {
+  // Enable finch experiment for captive portal interstitials.
+  command_line->AppendSwitchASCII(
+      switches::kForceFieldTrials, "CaptivePortalInterstitial/Enabled/");
 }
 
 void CaptivePortalBrowserTest::EnableCaptivePortalDetection(

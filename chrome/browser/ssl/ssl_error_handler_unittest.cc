@@ -6,6 +6,7 @@
 
 #include "base/callback.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"
 #include "chrome/browser/captive_portal/captive_portal_service.h"
@@ -96,13 +97,20 @@ class TestSSLErrorHandler : public SSLErrorHandler {
 
 class SSLErrorHandlerTest : public ChromeRenderViewHostTestHarness {
  public:
+  SSLErrorHandlerTest()
+      : field_trial_list_(NULL) {
+  }
+
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
     SSLErrorHandler::SetInterstitialDelayTypeForTest(SSLErrorHandler::NONE);
     error_handler_.reset(new TestSSLErrorHandler(profile(),
                                                  web_contents(),
                                                  ssl_info_));
-  }
+    // Enable finch experiment for captive portal interstitials.
+    ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+                    "CaptivePortalInterstitial", "Enabled"));
+}
 
   void TearDown() override {
     EXPECT_FALSE(error_handler()->IsTimerRunning());
@@ -115,6 +123,7 @@ class SSLErrorHandlerTest : public ChromeRenderViewHostTestHarness {
  private:
   net::SSLInfo ssl_info_;
   scoped_ptr<TestSSLErrorHandler> error_handler_;
+  base::FieldTrialList field_trial_list_;
 };
 
 #if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)

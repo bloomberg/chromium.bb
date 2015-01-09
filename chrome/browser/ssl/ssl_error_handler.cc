@@ -71,6 +71,11 @@ base::TimeDelta GetInterstitialDisplayDelay(
   }
   return base::TimeDelta();
 }
+
+bool IsCaptivePortalInterstitialEnabled() {
+  return base::FieldTrialList::FindFullName("CaptivePortalInterstitial") ==
+         "Enabled";
+}
 #endif
 
 }  // namespace
@@ -143,16 +148,18 @@ void SSLErrorHandler::StartHandlingError() {
   RecordUMA(HANDLE_ALL);
 
 #if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
-  CheckForCaptivePortal();
-  timer_.Start(FROM_HERE,
-               GetInterstitialDisplayDelay(g_interstitial_delay_type),
-               this, &SSLErrorHandler::OnTimerExpired);
-  if (g_timer_started_callback)
-    g_timer_started_callback->Run(web_contents_);
-#else
+  if (IsCaptivePortalInterstitialEnabled()) {
+    CheckForCaptivePortal();
+    timer_.Start(FROM_HERE,
+                 GetInterstitialDisplayDelay(g_interstitial_delay_type),
+                 this, &SSLErrorHandler::OnTimerExpired);
+    if (g_timer_started_callback)
+      g_timer_started_callback->Run(web_contents_);
+    return;
+  }
+#endif
   // Display an SSL interstitial.
   ShowSSLInterstitial();
-#endif
 }
 
 void SSLErrorHandler::OnTimerExpired() {
