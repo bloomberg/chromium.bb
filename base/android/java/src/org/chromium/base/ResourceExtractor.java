@@ -10,6 +10,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.os.AsyncTask;
+import android.os.Trace;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
@@ -52,15 +53,20 @@ public class ResourceExtractor {
         public ExtractTask() {
         }
 
-        @Override
-        protected Void doInBackground(Void... unused) {
+        private void doInBackgroundImpl() {
             final File outputDir = getOutputDir();
             if (!outputDir.exists() && !outputDir.mkdirs()) {
                 Log.e(LOGTAG, "Unable to create pak resources directory!");
-                return null;
+                return;
             }
 
-            String timestampFile = checkPakTimestamp(outputDir);
+            String timestampFile = null;
+            Trace.beginSection("checkPakTimeStamp");
+            try {
+                timestampFile = checkPakTimestamp(outputDir);
+            } finally {
+                Trace.endSection();
+            }
             if (timestampFile != null) {
                 deleteFiles();
             }
@@ -72,7 +78,7 @@ public class ResourceExtractor {
             String currentLanguage = currentLocale.split("-", 2)[0];
 
             if (prefs.getString(LAST_LANGUAGE, "").equals(currentLanguage)
-                    &&  filenames.size() >= sMandatoryPaks.length) {
+                    && filenames.size() >= sMandatoryPaks.length) {
                 boolean filesPresent = true;
                 for (String file : filenames) {
                     if (!new File(outputDir, file).exists()) {
@@ -80,7 +86,7 @@ public class ResourceExtractor {
                         break;
                     }
                 }
-                if (filesPresent) return null;
+                if (filesPresent) return;
             } else {
                 prefs.edit().putString(LAST_LANGUAGE, currentLanguage).apply();
             }
@@ -93,9 +99,9 @@ public class ResourceExtractor {
 
             if (sExtractImplicitLocalePak) {
                 if (p.length() > 0) p.append('|');
-                // As well as the minimum required set of .paks above, we'll also add all .paks that
-                // we have for the user's currently selected language.
-
+                // As well as the minimum required set of .paks above, we'll
+                // also add all .paks that we have for the user's currently
+                // selected language.
                 p.append(currentLanguage);
                 p.append("(-\\w+)?\\.pak");
             }
@@ -103,6 +109,7 @@ public class ResourceExtractor {
             Pattern paksToInstall = Pattern.compile(p.toString());
 
             AssetManager manager = mContext.getResources().getAssets();
+            Trace.beginSection("WalkAssets");
             try {
                 // Loop through every asset file that we have in the APK, and look for the
                 // ones that we need to extract by trying to match the Patterns that we
@@ -114,16 +121,16 @@ public class ResourceExtractor {
                         continue;
                     }
                     boolean isAppDataFile = file.equals(ICU_DATA_FILENAME)
-                                      || file.equals(V8_NATIVES_DATA_FILENAME)
-                                      || file.equals(V8_SNAPSHOT_DATA_FILENAME);
-                    File output = new File(isAppDataFile
-                                           ? getAppDataDir() : outputDir, file);
+                            || file.equals(V8_NATIVES_DATA_FILENAME)
+                            || file.equals(V8_SNAPSHOT_DATA_FILENAME);
+                    File output = new File(isAppDataFile ? getAppDataDir() : outputDir, file);
                     if (output.exists()) {
                         continue;
                     }
 
                     InputStream is = null;
                     OutputStream os = null;
+                    Trace.beginSection("ExtractResource");
                     try {
                         is = manager.open(file);
                         os = new FileOutputStream(output);
@@ -159,6 +166,7 @@ public class ResourceExtractor {
                             if (os != null) {
                                 os.close();
                             }
+                            Trace.endSection(); // ExtractResource
                         }
                     }
                 }
@@ -169,11 +177,12 @@ public class ResourceExtractor {
                 // this happens with regularity.
                 Log.w(LOGTAG, "Exception unpacking required pak resources: " + e.getMessage());
                 deleteFiles();
-                return null;
+                return;
+            } finally {
+                Trace.endSection(); // WalkAssets
             }
 
             // Finished, write out a timestamp file if we need to.
-
             if (timestampFile != null) {
                 try {
                     new File(outputDir, timestampFile).createNewFile();
@@ -186,6 +195,20 @@ public class ResourceExtractor {
             // TODO(yusufo): Figure out why remove is required here.
             prefs.edit().remove(PAK_FILENAMES).apply();
             prefs.edit().putStringSet(PAK_FILENAMES, filenames).apply();
+        }
+
+        @Override
+        protected Void doInBackground(Void... unused) {
+            // TODO(lizeb): Use chrome tracing here (and above in
+            // doInBackgroundImpl) when it will be possible. This is currently
+            // not doable since the native library is not loaded yet, and the
+            // TraceEvent calls are dropped before this point.
+            Trace.beginSection("ResourceExtractor.ExtractTask.doInBackground");
+            try {
+                doInBackgroundImpl();
+            } finally {
+                Trace.endSection();
+            }
             return null;
         }
 
