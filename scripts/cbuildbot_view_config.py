@@ -61,12 +61,14 @@ def _HideDefaults(cfg):
     The same config entry, but without any defaults.
   """
   d = {}
+  child_configs = cfg.get('child_configs')
+  default = cbuildbot_config.default
+  if child_configs:
+    default = child_configs[0].derive(grouped=False)
+    d['child_configs'] = [_HideDefaults(x) for x in child_configs]
   for k, v in cfg.iteritems():
-    if cbuildbot_config.default.get(k) != v:
-      if k == 'child_configs':
-        d[k] = [_HideDefaults(x) for x in v]
-      else:
-        d[k] = v
+    if k != 'child_configs' and default.get(k) != v:
+      d[k] = v
   return d
 
 

@@ -880,6 +880,9 @@ class HWTestConfig(object):
   def timeout_mins(self):
     return int(self.timeout / 60)
 
+  def __eq__(self, other):
+    return self.__dict__ == other.__dict__
+
 
 def AFDORecordTest(**kwargs):
   default_dict = dict(pool=constants.HWTEST_SUITES_POOL,
