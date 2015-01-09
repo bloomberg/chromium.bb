@@ -311,15 +311,6 @@ PassRefPtrWillBeRawPtr<MediaControlOverlayPlayButtonElement> MediaControlOverlay
     return button.release();
 }
 
-void MediaControlOverlayPlayButtonElement::defaultEventHandler(Event* event)
-{
-    if (event->type() == EventTypeNames::click && mediaElement().togglePlayStateWillPlay()) {
-        mediaElement().togglePlayState();
-        updateDisplayType();
-        event->setDefaultHandled();
-    }
-}
-
 void MediaControlOverlayPlayButtonElement::updateDisplayType()
 {
     if (mediaElement().shouldShowControls() && mediaElement().togglePlayStateWillPlay())

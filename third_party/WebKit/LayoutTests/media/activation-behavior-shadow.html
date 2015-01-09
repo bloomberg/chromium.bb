@@ -1,0 +1,45 @@
+<!doctype html>
+<title>activation behavior with shadow children</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<video controls></video>
+<script>
+function shouldTogglePlayState(shadowChild)
+{
+    var id = internals.shadowPseudoId(shadowChild);
+    if (id == "-webkit-media-controls")
+        return true;
+    if (id == "-webkit-media-controls-play-button")
+        return true;
+    if (id == "-webkit-media-controls-panel")
+        return false;
+    return shouldTogglePlayState(shadowChild.parentNode);
+}
+
+function shouldClick(shadowChild)
+{
+    var id = internals.shadowPseudoId(shadowChild);
+    // The cast buttons are only visible if there are remote routes. Clicking
+    // when not visible violates sound assumptions made in HTMLMediaElement.
+    if (id == "-internal-media-controls-cast-button")
+        return false;
+    if (id == "-internal-media-controls-overlay-cast-button")
+        return false;
+    return true;
+}
+
+test(function()
+{
+    var v = document.querySelector("video");
+    var shadowChildren = internals.shadowRoot(v).querySelectorAll("*");
+    shadowChildren = Array.prototype.filter.call(shadowChildren, shouldClick);
+    shadowChildren.forEach(function(shadowChild)
+    {
+        v.pause();
+        shadowChild.click();
+        assert_equals(v.paused, !shouldTogglePlayState(shadowChild),
+                      "paused state after click element with pseudo id '"
+                      + internals.shadowPseudoId(shadowChild) + "'");
+    });
+});
+</script>
