@@ -277,11 +277,23 @@
     ['OS=="android"', {
       'targets': [
         {
+          'target_name': 'cast_shell_icudata',
+          'type': 'none',
+          'dependencies': [
+            '../third_party/icu/icu.gyp:icudata',
+          ],
+          'copies': [{
+            'destination': '<(PRODUCT_DIR)/assets',
+            'files': ['<(PRODUCT_DIR)/icudtl.dat'],
+          }],
+        },
+        {
           'target_name': 'libcast_shell_android',
           'type': 'shared_library',
           'dependencies': [
             'cast_jni_headers',
             'cast_shell_common',
+            'cast_shell_icudata',
             'cast_shell_pak',
             'cast_version_header',
             '../base/base.gyp:base',

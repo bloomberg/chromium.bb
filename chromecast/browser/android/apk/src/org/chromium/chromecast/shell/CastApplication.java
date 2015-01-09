@@ -23,7 +23,8 @@ import org.chromium.content.app.ContentApplication;
 public class CastApplication extends ContentApplication {
     private static final String TAG = "CastApplication";
 
-    private static final String[] MANDATORY_PAK_FILES = new String[] {"cast_shell.pak"};
+    private static final String[] MANDATORY_PAK_FILES =
+            new String[] {"cast_shell.pak", "icudtl.dat"};
     private static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "cast_shell";
     private static final String COMMAND_LINE_FILE = "/data/local/tmp/castshell-command-line";
 
