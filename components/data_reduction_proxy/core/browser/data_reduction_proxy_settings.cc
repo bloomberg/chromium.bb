@@ -306,10 +306,21 @@ void DataReductionProxySettings::AddDefaultProxyBypassRules() {
   // localhost
   DCHECK(configurator_);
   configurator_->AddHostPatternToBypass("<local>");
+  // RFC6890 loopback addresses.
+  // TODO(tbansal): Remove this once crbug/446705 is fixed.
+  configurator_->AddHostPatternToBypass("127.0.0.0/8");
+
+  // RFC6890 current network (only valid as source address).
+  configurator_->AddHostPatternToBypass("0.0.0.0/8");
+
   // RFC1918 private addresses.
   configurator_->AddHostPatternToBypass("10.0.0.0/8");
   configurator_->AddHostPatternToBypass("172.16.0.0/12");
   configurator_->AddHostPatternToBypass("192.168.0.0/16");
+
+  // RFC3513 unspecified address.
+  configurator_->AddHostPatternToBypass("::/128");
+
   // RFC4193 private addresses.
   configurator_->AddHostPatternToBypass("fc00::/7");
   // IPV6 probe addresses.
