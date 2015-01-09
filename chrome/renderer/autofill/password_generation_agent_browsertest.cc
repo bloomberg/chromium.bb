@@ -455,9 +455,24 @@ TEST_F(PasswordGenerationAgentTest, MultiplePasswordFormsTest) {
   SetAccountCreationFormsDetectedMessage(1);
 
   ExpectPasswordGenerationAvailable("password", false);
+  ExpectPasswordGenerationAvailable("first_password", true);
+}
 
-  // TODO(gcasto): Enable this check once we examine multiple heuristic matches.
-  //ExpectPasswordGenerationAvailable("first_password", true);
+TEST_F(PasswordGenerationAgentTest, MessagesAfterAccountSignupFormFound) {
+  LoadHTML(kAccountCreationFormHTML);
+  SetNotBlacklistedMessage(kAccountCreationFormHTML);
+  SetAccountCreationFormsDetectedMessage(0);
+
+  // Generation should be enabled.
+  ExpectPasswordGenerationAvailable("first_password", true);
+
+  // Extra not blacklisted messages can be sent. Make sure that they are handled
+  // correctly (generation should still be available).
+  SetNotBlacklistedMessage(kAccountCreationFormHTML);
+
+  // Need to focus another field first for verification to work.
+  ExpectPasswordGenerationAvailable("second_password", false);
+  ExpectPasswordGenerationAvailable("first_password", true);
 }
 
 }  // namespace autofill

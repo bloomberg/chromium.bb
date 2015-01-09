@@ -91,6 +91,14 @@ void CopyValueToAllInputElements(
 
 }  // namespace
 
+PasswordGenerationAgent::AccountCreationFormData::AccountCreationFormData(
+    linked_ptr<PasswordForm> password_form,
+    std::vector<blink::WebInputElement> passwords)
+    : form(password_form),
+      password_elements(passwords) {}
+
+PasswordGenerationAgent::AccountCreationFormData::~AccountCreationFormData() {}
+
 PasswordGenerationAgent::PasswordGenerationAgent(
     content::RenderFrame* render_frame)
     : content::RenderFrameObserver(render_frame),
@@ -117,17 +125,18 @@ void PasswordGenerationAgent::DidFinishDocumentLoad() {
   not_blacklisted_password_form_origins_.clear();
   generation_enabled_forms_.clear();
   generation_element_.reset();
-  possible_account_creation_form_.reset(new PasswordForm());
+  possible_account_creation_forms_.clear();
 
   // Log statistics after navigation so that we only log once per page.
-  if (password_elements_.empty()) {
+  if (generation_form_data_ &&
+      generation_form_data_->password_elements.empty()) {
     password_generation::LogPasswordGenerationEvent(
         password_generation::NO_SIGN_UP_DETECTED);
   } else {
     password_generation::LogPasswordGenerationEvent(
         password_generation::SIGN_UP_DETECTED);
   }
-  password_elements_.clear();
+  generation_form_data_.reset();
   password_is_generated_ = false;
   if (password_edited_) {
     password_generation::LogPasswordGenerationEvent(
@@ -166,7 +175,7 @@ void PasswordGenerationAgent::FindPossibleGenerationForm() {
     return;
 
   // If we have already found a signup form for this page, no need to continue.
-  if (!password_elements_.empty())
+  if (generation_form_data_)
     return;
 
   blink::WebVector<blink::WebFormElement> forms;
@@ -192,13 +201,16 @@ void PasswordGenerationAgent::FindPossibleGenerationForm() {
 
     std::vector<blink::WebInputElement> passwords;
     if (GetAccountCreationPasswordFields(forms[i], &passwords)) {
-      DVLOG(2) << "Account creation form detected";
-      password_elements_ = passwords;
-      possible_account_creation_form_.swap(password_form);
-      DetermineGenerationElement();
-      // We assume that there is only one account creation field per URL.
-      return;
+      AccountCreationFormData ac_form_data(
+          make_linked_ptr(password_form.release()), passwords);
+      possible_account_creation_forms_.push_back(ac_form_data);
     }
+  }
+
+  if (!possible_account_creation_forms_.empty()) {
+    DVLOG(2) << possible_account_creation_forms_.size()
+             << " possible account creation forms deteceted";
+    DetermineGenerationElement();
   }
 }
 
@@ -239,11 +251,9 @@ void PasswordGenerationAgent::OnPasswordAccepted(
   password_is_generated_ = true;
   password_generation::LogPasswordGenerationEvent(
       password_generation::PASSWORD_ACCEPTED);
-  for (std::vector<blink::WebInputElement>::iterator it =
-           password_elements_.begin();
-       it != password_elements_.end(); ++it) {
-    it->setValue(password, true /* sendEvents */);
-    it->setAutofilled(true);
+  for (auto& password_element : generation_form_data_->password_elements) {
+    password_element.setValue(password, true /* sendEvents */);
+    password_element.setAutofilled(true);
     // Advance focus to the next input field. We assume password fields in
     // an account creation form are always adjacent.
     render_frame()->GetRenderView()->GetWebView()->advanceFocus(false);
@@ -258,38 +268,49 @@ void PasswordGenerationAgent::OnAccountCreationFormsDetected(
 }
 
 void PasswordGenerationAgent::DetermineGenerationElement() {
+  if (generation_form_data_) {
+    DVLOG(2) << "Account creation form already found";
+    return;
+  }
+
   // Make sure local heuristics have identified a possible account creation
   // form.
-  if (!possible_account_creation_form_.get() || password_elements_.empty()) {
+  if (possible_account_creation_forms_.empty()) {
     DVLOG(2) << "Local hueristics have not detected a possible account "
              << "creation form";
     return;
   }
 
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kLocalHeuristicsOnlyForPasswordGeneration)) {
-    DVLOG(2) << "Bypassing additional checks.";
-  } else if (not_blacklisted_password_form_origins_.empty() ||
-             !ContainsURL(not_blacklisted_password_form_origins_,
-                          possible_account_creation_form_->origin)) {
-    DVLOG(2) << "Have not received confirmation that password form isn't "
-             << "blacklisted";
-    return;
-  } else if (generation_enabled_forms_.empty() ||
-             !ContainsForm(generation_enabled_forms_,
-                           *possible_account_creation_form_)) {
-    // Note that this message will never be sent if this feature is disabled
-    // (e.g. Password saving is disabled).
-    DVLOG(2) << "Have not received confirmation from Autofill that form is "
-             << "used for account creation";
+  for (auto& possible_form_data : possible_account_creation_forms_) {
+    PasswordForm* possible_password_form = possible_form_data.form.get();
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kLocalHeuristicsOnlyForPasswordGeneration)) {
+      DVLOG(2) << "Bypassing additional checks.";
+    } else if (!ContainsURL(not_blacklisted_password_form_origins_,
+                            possible_password_form->origin)) {
+      DVLOG(2) << "Have not received confirmation that password form isn't "
+               << "blacklisted";
+      continue;
+    } else if (!ContainsForm(generation_enabled_forms_,
+                             *possible_password_form)) {
+      // Note that this message will never be sent if this feature is disabled
+      // (e.g. Password saving is disabled).
+      DVLOG(2) << "Have not received confirmation from Autofill that form is "
+               << "used for account creation";
+      continue;
+    }
+
+    DVLOG(2) << "Password generation eligible form found";
+    generation_form_data_.reset(
+        new AccountCreationFormData(possible_form_data.form,
+                                    possible_form_data.password_elements));
+    generation_element_ = generation_form_data_->password_elements[0];
+    generation_element_.setAttribute("aria-autocomplete", "list");
+    password_generation::LogPasswordGenerationEvent(
+        password_generation::GENERATION_AVAILABLE);
+    possible_account_creation_forms_.clear();
     return;
   }
-
-  DVLOG(2) << "Password generation eligible form found";
-  generation_element_ = password_elements_[0];
-  generation_element_.setAttribute("aria-autocomplete", "list");
-  password_generation::LogPasswordGenerationEvent(
-      password_generation::GENERATION_AVAILABLE);
 }
 
 bool PasswordGenerationAgent::FocusedNodeHasChanged(
@@ -337,7 +358,8 @@ bool PasswordGenerationAgent::TextDidChangeInTextField(
       // User generated a password and then deleted it.
       password_generation::LogPasswordGenerationEvent(
           password_generation::PASSWORD_DELETED);
-      CopyValueToAllInputElements(element.value(), &password_elements_);
+      CopyValueToAllInputElements(element.value(),
+                                  &generation_form_data_->password_elements);
     }
 
     // Do not treat the password as generated.
@@ -350,7 +372,8 @@ bool PasswordGenerationAgent::TextDidChangeInTextField(
   } else if (password_is_generated_) {
     password_edited_ = true;
     // Mirror edits to any confirmation password fields.
-    CopyValueToAllInputElements(element.value(), &password_elements_);
+    CopyValueToAllInputElements(element.value(),
+                                &generation_form_data_->password_elements);
   } else if (element.value().length() > kMaximumOfferSize) {
     // User has rejected the feature and has started typing a password.
     HidePopup();
@@ -373,7 +396,7 @@ void PasswordGenerationAgent::ShowGenerationPopup() {
       routing_id(),
       bounding_box_scaled,
       generation_element_.maxLength(),
-      *possible_account_creation_form_));
+      *generation_form_data_->form));
 
   generation_popup_shown_ = true;
 }
@@ -386,7 +409,7 @@ void PasswordGenerationAgent::ShowEditingPopup() {
   Send(new AutofillHostMsg_ShowPasswordEditingPopup(
       routing_id(),
       bounding_box_scaled,
-      *possible_account_creation_form_));
+      *generation_form_data_->form));
 
   editing_popup_shown_ = true;
 }

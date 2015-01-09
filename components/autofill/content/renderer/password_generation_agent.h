@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "third_party/WebKit/public/web/WebInputElement.h"
@@ -56,6 +57,18 @@ class PasswordGenerationAgent : public content::RenderFrameObserver {
   void set_enabled(bool enabled) { enabled_ = enabled; }
 
  private:
+  struct AccountCreationFormData {
+    linked_ptr<PasswordForm> form;
+    std::vector<blink::WebInputElement> password_elements;
+
+    AccountCreationFormData(
+        linked_ptr<PasswordForm> form,
+        std::vector<blink::WebInputElement> password_elements);
+    ~AccountCreationFormData();
+  };
+
+  typedef std::vector<AccountCreationFormData> AccountCreationFormDataList;
+
   // RenderFrameObserver:
   void DidFinishDocumentLoad() override;
   void DidFinishLoad() override;
@@ -84,8 +97,8 @@ class PasswordGenerationAgent : public content::RenderFrameObserver {
   // Hides a password generation popup if one exists.
   void HidePopup();
 
-  // Stores the origin of the account creation form we detected.
-  scoped_ptr<PasswordForm> possible_account_creation_form_;
+  // Stores forms that are candidates for account creation.
+  AccountCreationFormDataList possible_account_creation_forms_;
 
   // Stores the origins of the password forms confirmed not to be blacklisted
   // by the browser. A form can be blacklisted if a user chooses "never save
@@ -97,8 +110,8 @@ class PasswordGenerationAgent : public content::RenderFrameObserver {
   // not be sent if the feature is disabled.
   std::vector<autofill::FormData> generation_enabled_forms_;
 
-  // Password elements that may be part of an account creation form.
-  std::vector<blink::WebInputElement> password_elements_;
+  // Data for form which generation is allowed on.
+  scoped_ptr<AccountCreationFormData> generation_form_data_;
 
   // Element where we want to trigger password generation UI.
   blink::WebInputElement generation_element_;
