@@ -327,6 +327,7 @@ void ContentSettingsHandler::GetLocalizedValues(
     {"plugins_header", IDS_PLUGIN_HEADER},
     {"pluginsAllow", IDS_PLUGIN_ALLOW_RADIO},
     {"pluginsDetect", IDS_PLUGIN_DETECT_RADIO},
+    {"pluginsAsk", IDS_PLUGIN_ASK_RADIO},
     {"pluginsBlock", IDS_PLUGIN_BLOCK_RADIO},
     {"disableIndividualPlugins", IDS_PLUGIN_SELECTIVE_DISABLE},
     // Pop-ups filter.
@@ -610,12 +611,6 @@ void ContentSettingsHandler::UpdateSettingDefaultFromModel(
   ContentSetting default_setting =
       profile->GetHostContentSettingsMap()->GetDefaultContentSetting(
           type, &provider_id);
-
-  // For Plugins, display the obsolete ASK setting as BLOCK.
-  if (type == ContentSettingsType::CONTENT_SETTINGS_TYPE_PLUGINS &&
-      default_setting == ContentSetting::CONTENT_SETTING_ASK) {
-    default_setting = ContentSetting::CONTENT_SETTING_BLOCK;
-  }
 
   base::DictionaryValue filter_settings;
   filter_settings.SetString(ContentSettingsTypeToGroupName(type) + ".value",

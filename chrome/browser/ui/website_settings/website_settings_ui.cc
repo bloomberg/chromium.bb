@@ -162,15 +162,8 @@ base::string16 WebsiteSettingsUI::PermissionActionToUIString(
     ContentSetting default_setting,
     content_settings::SettingSource source) {
   ContentSetting effective_setting = setting;
-  if (effective_setting == CONTENT_SETTING_DEFAULT) {
+  if (effective_setting == CONTENT_SETTING_DEFAULT)
     effective_setting = default_setting;
-
-    // For Plugins, ASK is obsolete. Show as BLOCK to reflect actual behavior.
-    if (type == CONTENT_SETTINGS_TYPE_PLUGINS &&
-        default_setting == CONTENT_SETTING_ASK) {
-      effective_setting = CONTENT_SETTING_BLOCK;
-    }
-  }
 
   const int* button_text_ids = NULL;
   switch (source) {

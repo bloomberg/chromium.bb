@@ -2079,6 +2079,20 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, MAYBE_PrerenderPluginPowerSaver) {
   NavigateToDestURL();
 }
 
+// Checks that plugins are not loaded on prerendering pages when click-to-play
+// is enabled.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderClickToPlay) {
+  // Enable click-to-play.
+  HostContentSettingsMap* content_settings_map =
+      current_browser()->profile()->GetHostContentSettingsMap();
+  content_settings_map->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS,
+                                                 CONTENT_SETTING_ASK);
+
+  PrerenderTestURL("files/prerender/prerender_plugin_click_to_play.html",
+                   FINAL_STATUS_USED, 1);
+  NavigateToDestURL();
+}
+
 // Checks that we don't load a NaCl plugin when NaCl is disabled.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderNaClPluginDisabled) {
   PrerenderTestURL("files/prerender/prerender_plugin_nacl_disabled.html",

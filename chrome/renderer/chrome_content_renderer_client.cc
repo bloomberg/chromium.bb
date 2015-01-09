@@ -697,8 +697,16 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
 
     if ((status_value ==
              ChromeViewHostMsg_GetPluginInfo_Status::kUnauthorized ||
+         status_value == ChromeViewHostMsg_GetPluginInfo_Status::kClickToPlay ||
          status_value == ChromeViewHostMsg_GetPluginInfo_Status::kBlocked) &&
         observer->IsPluginTemporarilyAllowed(identifier)) {
+      status_value = ChromeViewHostMsg_GetPluginInfo_Status::kAllowed;
+    }
+
+    // Allow full-screen plug-ins for left-click-to-play.
+    if (status_value == ChromeViewHostMsg_GetPluginInfo_Status::kClickToPlay &&
+        !frame->parent() && !frame->opener() &&
+        frame->document().isPluginDocument()) {
       status_value = ChromeViewHostMsg_GetPluginInfo_Status::kAllowed;
     }
 
@@ -901,6 +909,16 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
               group_name,
               identifier));
         }
+        observer->DidBlockContentType(content_type, group_name);
+        break;
+      }
+      case ChromeViewHostMsg_GetPluginInfo_Status::kClickToPlay: {
+        placeholder = create_blocked_plugin(
+            IDR_CLICK_TO_PLAY_PLUGIN_HTML,
+            l10n_util::GetStringFUTF16(IDS_PLUGIN_LOAD, group_name), GURL());
+        placeholder->set_allow_loading(true);
+        RenderThread::Get()->RecordAction(
+            UserMetricsAction("Plugin_ClickToPlay"));
         observer->DidBlockContentType(content_type, group_name);
         break;
       }

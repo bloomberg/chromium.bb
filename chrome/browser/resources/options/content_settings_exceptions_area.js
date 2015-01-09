@@ -73,6 +73,10 @@ cr.define('options.contentSettings', function() {
         optionDetect.textContent = loadTimeData.getString('detectException');
         optionDetect.value = 'detect';
         select.appendChild(optionDetect);
+        var optionAsk = cr.doc.createElement('option');
+        optionAsk.textContent = loadTimeData.getString('askException');
+        optionAsk.value = 'ask';
+        select.appendChild(optionAsk);
       }
 
       if (this.contentType == 'cookies') {

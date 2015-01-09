@@ -1013,7 +1013,9 @@
           { "policy": { "DefaultPluginsSetting": 1 },
             "value": "allow"},
           { "policy": { "DefaultPluginsSetting": 2 },
-            "value": "block"}
+            "value": "block"},
+          { "policy": { "DefaultPluginsSetting": 3 },
+            "value": "ask"}
         ]
       }
     ],

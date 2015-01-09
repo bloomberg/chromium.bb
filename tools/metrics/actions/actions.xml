@@ -10062,9 +10062,10 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Plugin_ClickToPlay">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
-  <obsolete>Left-click to play plugins has been removed.</obsolete>
+  <owner>tommycli@chromium.org</owner>
+  <description>
+    A plugin instance has loaded as a left click to play placeholder.
+  </description>
 </action>
 
 <action name="Plugin_Hide_Click">
