@@ -8,15 +8,18 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "components/signin/core/browser/signin_client.h"
+#include "components/signin/core/browser/signin_error_controller.h"
 #include "content/public/browser/render_process_host_observer.h"
 
 class CookieSettings;
 class Profile;
 
 class ChromeSigninClient : public SigninClient,
-                           public content::RenderProcessHostObserver {
+                           public content::RenderProcessHostObserver,
+                           public SigninErrorController::Observer {
  public:
-  explicit ChromeSigninClient(Profile* profile);
+  explicit ChromeSigninClient(
+      Profile* profile, SigninErrorController* signin_error_controller);
   ~ChromeSigninClient() override;
 
   // Utility methods.
@@ -65,8 +68,13 @@ class ChromeSigninClient : public SigninClient,
                     const std::string& username,
                     const std::string& password) override;
 
+  // SigninErrorController::Observer implementation.
+  void OnErrorChanged() override;
+
  private:
   Profile* profile_;
+
+  SigninErrorController* signin_error_controller_;
 
   // See SetSigninProcess. Tracks the currently active signin process
   // by ID, if there is one.

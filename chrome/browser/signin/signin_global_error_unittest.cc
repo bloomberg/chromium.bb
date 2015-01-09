@@ -6,6 +6,12 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_service.h"
+#include "base/strings/utf_string_conversions.h"
+#include "base/test/histogram_tester.h"
+#include "chrome/browser/prefs/pref_service_syncable.h"
+#include "chrome/browser/profiles/profile_info_cache.h"
+#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
 #include "chrome/browser/signin/fake_signin_manager.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
@@ -15,7 +21,9 @@
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/base/testing_profile_manager.h"
 #include "components/signin/core/browser/fake_auth_status_provider.h"
 #include "components/signin/core/browser/signin_error_controller.h"
 #include "components/signin/core/browser/signin_manager.h"
@@ -27,25 +35,47 @@ static const char kTestUsername[] = "testuser@test.com";
 
 class SigninGlobalErrorTest : public testing::Test {
  public:
+  SigninGlobalErrorTest() :
+      profile_manager_(TestingBrowserProcess::GetGlobal()) {}
+
   void SetUp() override {
+    ASSERT_TRUE(profile_manager_.SetUp());
+
     // Create a signed-in profile.
-    TestingProfile::Builder builder;
-    builder.AddTestingFactory(ProfileOAuth2TokenServiceFactory::GetInstance(),
-                              BuildFakeProfileOAuth2TokenService);
-    builder.AddTestingFactory(SigninManagerFactory::GetInstance(),
-                              FakeSigninManagerBase::Build);
-    profile_ = builder.Build();
+    TestingProfile::TestingFactories testing_factories;
+    testing_factories.push_back(std::make_pair(
+        ProfileOAuth2TokenServiceFactory::GetInstance(),
+        BuildFakeProfileOAuth2TokenService));
+    testing_factories.push_back(std::make_pair(
+        SigninManagerFactory::GetInstance(),
+        FakeSigninManagerBase::Build));
+    profile_ = profile_manager_.CreateTestingProfile(
+        "Person 1", scoped_ptr<PrefServiceSyncable>(),
+        base::UTF8ToUTF16("Person 1"), 0, std::string(), testing_factories);
 
-    SigninManagerFactory::GetForProfile(profile_.get())
+    SigninManagerFactory::GetForProfile(profile())
         ->SetAuthenticatedUsername(kTestAccountId);
+    ProfileInfoCache& cache =
+        profile_manager_.profile_manager()->GetProfileInfoCache();
+    cache.SetUserNameOfProfileAtIndex(
+        cache.GetIndexOfProfileWithPath(profile()->GetPath()),
+            base::UTF8ToUTF16(kTestAccountId));
 
-    global_error_ = SigninGlobalErrorFactory::GetForProfile(profile_.get());
-    error_controller_ = SigninErrorControllerFactory::GetForProfile(
-        profile_.get());
+    global_error_ = SigninGlobalErrorFactory::GetForProfile(profile());
+    error_controller_ = SigninErrorControllerFactory::GetForProfile(profile());
   }
 
+  TestingProfile* profile() { return profile_; }
+  TestingProfileManager* testing_profile_manager() {
+    return &profile_manager_;
+  }
+  SigninGlobalError* global_error() { return global_error_; }
+  SigninErrorController* error_controller() { return error_controller_; }
+
+ private:
   content::TestBrowserThreadBundle thread_bundle_;
-  scoped_ptr<TestingProfile> profile_;
+  TestingProfileManager profile_manager_;
+  TestingProfile* profile_;
   SigninGlobalError* global_error_;
   SigninErrorController* error_controller_;
 };
@@ -53,38 +83,38 @@ class SigninGlobalErrorTest : public testing::Test {
 TEST_F(SigninGlobalErrorTest, NoErrorAuthStatusProviders) {
   scoped_ptr<FakeAuthStatusProvider> provider;
 
-  ASSERT_FALSE(global_error_->HasMenuItem());
+  ASSERT_FALSE(global_error()->HasMenuItem());
 
   // Add a provider.
-  provider.reset(new FakeAuthStatusProvider(error_controller_));
-  ASSERT_FALSE(global_error_->HasMenuItem());
+  provider.reset(new FakeAuthStatusProvider(error_controller()));
+  ASSERT_FALSE(global_error()->HasMenuItem());
 
   // Remove the provider.
   provider.reset();
-  ASSERT_FALSE(global_error_->HasMenuItem());
+  ASSERT_FALSE(global_error()->HasMenuItem());
 }
 
 TEST_F(SigninGlobalErrorTest, ErrorAuthStatusProvider) {
   scoped_ptr<FakeAuthStatusProvider> provider;
   scoped_ptr<FakeAuthStatusProvider> error_provider;
 
-  provider.reset(new FakeAuthStatusProvider(error_controller_));
-  ASSERT_FALSE(global_error_->HasMenuItem());
+  provider.reset(new FakeAuthStatusProvider(error_controller()));
+  ASSERT_FALSE(global_error()->HasMenuItem());
 
-  error_provider.reset(new FakeAuthStatusProvider(error_controller_));
+  error_provider.reset(new FakeAuthStatusProvider(error_controller()));
   error_provider->SetAuthError(
       kTestAccountId,
       kTestUsername,
       GoogleServiceAuthError(
           GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
-  ASSERT_TRUE(global_error_->HasMenuItem());
+  ASSERT_TRUE(global_error()->HasMenuItem());
 
   error_provider.reset();
-  ASSERT_FALSE(global_error_->HasMenuItem());
+  ASSERT_FALSE(global_error()->HasMenuItem());
 
   provider.reset();
   error_provider.reset();
-  ASSERT_FALSE(global_error_->HasMenuItem());
+  ASSERT_FALSE(global_error()->HasMenuItem());
 }
 
 // Verify that SigninGlobalError ignores certain errors.
@@ -113,18 +143,30 @@ TEST_F(SigninGlobalErrorTest, AuthStatusEnumerateAllErrors) {
   static_assert(arraysize(table) == GoogleServiceAuthError::NUM_STATES,
       "table size should match number of auth error types");
 
+  // Mark the profile with an active timestamp so profile_metrics logs it.
+  testing_profile_manager()->UpdateLastUser(profile());
+
   for (size_t i = 0; i < arraysize(table); ++i) {
-    FakeAuthStatusProvider provider(error_controller_);
+    base::HistogramTester histogram_tester;
+    FakeAuthStatusProvider provider(error_controller());
     provider.SetAuthError(kTestAccountId,
                           kTestUsername,
                           GoogleServiceAuthError(table[i].error_state));
 
-    EXPECT_EQ(global_error_->HasMenuItem(), table[i].is_error);
-    EXPECT_EQ(global_error_->MenuItemLabel().empty(), !table[i].is_error);
-    EXPECT_EQ(global_error_->GetBubbleViewMessages().empty(),
+    EXPECT_EQ(global_error()->HasMenuItem(), table[i].is_error);
+    EXPECT_EQ(global_error()->MenuItemLabel().empty(), !table[i].is_error);
+    EXPECT_EQ(global_error()->GetBubbleViewMessages().empty(),
               !table[i].is_error);
-    EXPECT_FALSE(global_error_->GetBubbleViewTitle().empty());
-    EXPECT_FALSE(global_error_->GetBubbleViewAcceptButtonLabel().empty());
-    EXPECT_TRUE(global_error_->GetBubbleViewCancelButtonLabel().empty());
+    EXPECT_FALSE(global_error()->GetBubbleViewTitle().empty());
+    EXPECT_FALSE(global_error()->GetBubbleViewAcceptButtonLabel().empty());
+    EXPECT_TRUE(global_error()->GetBubbleViewCancelButtonLabel().empty());
+
+    ProfileMetrics::LogNumberOfProfiles(
+        testing_profile_manager()->profile_manager());
+
+    if (table[i].is_error)
+      histogram_tester.ExpectBucketCount("Signin.AuthError", i, 1);
+    histogram_tester.ExpectBucketCount(
+        "Profile.NumberOfProfilesWithAuthErrors", table[i].is_error, 1);
   }
 }

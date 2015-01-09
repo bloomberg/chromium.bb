@@ -58,6 +58,7 @@ const char kSigninRequiredKey[] = "signin_required";
 const char kSupervisedUserId[] = "managed_user_id";
 const char kProfileIsEphemeral[] = "is_ephemeral";
 const char kActiveTimeKey[] = "active_time";
+const char kIsAuthErrorKey[] = "is_auth_error";
 
 // First eight are generic icons, which use IDS_NUMBERED_PROFILE_NAME.
 const int kDefaultNames[] = {
@@ -455,6 +456,12 @@ bool ProfileInfoCache::ProfileIsUsingDefaultAvatarAtIndex(size_t index) const {
   return value;
 }
 
+bool ProfileInfoCache::ProfileIsAuthErrorAtIndex(size_t index) const {
+  bool value = false;
+  GetInfoForProfileAtIndex(index)->GetBoolean(kIsAuthErrorKey, &value);
+  return value;
+}
+
 size_t ProfileInfoCache::GetAvatarIconIndexOfProfileAtIndex(size_t index)
     const {
   std::string icon_url;
@@ -748,6 +755,17 @@ void ProfileInfoCache::SetProfileIsUsingDefaultAvatarAtIndex(
   scoped_ptr<base::DictionaryValue> info(
       GetInfoForProfileAtIndex(index)->DeepCopy());
   info->SetBoolean(kIsUsingDefaultAvatarKey, value);
+  // This takes ownership of |info|.
+  SetInfoForProfileAtIndex(index, info.release());
+}
+
+void ProfileInfoCache::SetProfileIsAuthErrorAtIndex(size_t index, bool value) {
+  if (value == ProfileIsAuthErrorAtIndex(index))
+    return;
+
+  scoped_ptr<base::DictionaryValue> info(
+      GetInfoForProfileAtIndex(index)->DeepCopy());
+  info->SetBoolean(kIsAuthErrorKey, value);
   // This takes ownership of |info|.
   SetInfoForProfileAtIndex(index, info.release());
 }

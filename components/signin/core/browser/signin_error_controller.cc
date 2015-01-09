@@ -4,6 +4,8 @@
 
 #include "components/signin/core/browser/signin_error_controller.h"
 
+#include "components/signin/core/browser/signin_metrics.h"
+
 namespace {
 
 typedef std::set<const SigninErrorController::AuthStatusProvider*>
@@ -92,6 +94,7 @@ void SigninErrorController::AuthStatusChanged() {
   }
 
   if (error_changed) {
+    signin_metrics::LogAuthError(auth_error_.state());
     FOR_EACH_OBSERVER(Observer, observer_list_, OnErrorChanged());
   }
 }

@@ -85,6 +85,7 @@ class ProfileInfoCache : public ProfileInfoInterface,
   bool ProfileIsEphemeralAtIndex(size_t index) const override;
   bool ProfileIsUsingDefaultNameAtIndex(size_t index) const override;
   bool ProfileIsUsingDefaultAvatarAtIndex(size_t index) const override;
+  bool ProfileIsAuthErrorAtIndex(size_t index) const;
 
   size_t GetAvatarIconIndexOfProfileAtIndex(size_t index) const;
 
@@ -113,6 +114,7 @@ class ProfileInfoCache : public ProfileInfoInterface,
   void SetProfileIsEphemeralAtIndex(size_t index, bool value);
   void SetProfileIsUsingDefaultNameAtIndex(size_t index, bool value);
   void SetProfileIsUsingDefaultAvatarAtIndex(size_t index, bool value);
+  void SetProfileIsAuthErrorAtIndex(size_t index, bool value);
 
   // Determines whether |name| is one of the default assigned names.
   bool IsDefaultProfileName(const base::string16& name) const;

@@ -26,9 +26,15 @@ class ProfileMetrics {
     size_t supervised;
     size_t unused;
     size_t gaia_icon;
+    size_t auth_errors;
 
     ProfileCounts()
-        : total(0), signedin(0), supervised(0), unused(0), gaia_icon(0) {}
+        : total(0),
+          signedin(0),
+          supervised(0),
+          unused(0),
+          gaia_icon(0),
+          auth_errors(0) {}
   };
 
   // Enum for counting the ways users were added.

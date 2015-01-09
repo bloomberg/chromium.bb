@@ -49,11 +49,16 @@ const char kGoogleAccountsUrl[] = "https://accounts.google.com";
 
 }  // namespace
 
-ChromeSigninClient::ChromeSigninClient(Profile* profile)
-    : profile_(profile), signin_host_id_(ChildProcessHost::kInvalidUniqueID) {
+ChromeSigninClient::ChromeSigninClient(
+    Profile* profile, SigninErrorController* signin_error_controller)
+    : profile_(profile),
+      signin_error_controller_(signin_error_controller),
+      signin_host_id_(ChildProcessHost::kInvalidUniqueID) {
+  signin_error_controller_->AddObserver(this);
 }
 
 ChromeSigninClient::~ChromeSigninClient() {
+  signin_error_controller_->RemoveObserver(this);
   std::set<RenderProcessHost*>::iterator i;
   for (i = signin_hosts_observed_.begin(); i != signin_hosts_observed_.end();
        ++i) {
@@ -231,4 +236,19 @@ void ChromeSigninClient::PostSignedIn(const std::string& account_id,
   if (!password.empty() && profiles::IsLockAvailable(profile_))
     chrome::SetLocalAuthCredentials(profile_, password);
 #endif
+}
+
+void ChromeSigninClient::OnErrorChanged() {
+  // Some tests don't have a ProfileManager.
+  if (g_browser_process->profile_manager() == nullptr)
+    return;
+
+  ProfileInfoCache& cache = g_browser_process->profile_manager()->
+      GetProfileInfoCache();
+  size_t index = cache.GetIndexOfProfileWithPath(profile_->GetPath());
+  if (index == std::string::npos)
+    return;
+
+  cache.SetProfileIsAuthErrorAtIndex(index,
+      signin_error_controller_->HasError());
 }

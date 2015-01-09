@@ -27753,6 +27753,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Profile.NumberOfProfilesWithAuthErrors">
+  <owner>mlerman@chromium.org</owner>
+  <summary>
+    Counts the type GAIA authentication errors on a user's machine when Chrome
+    starts up. The types of errors are broken down in Signin.AuthError.
+  </summary>
+</histogram>
+
 <histogram name="Profile.NumberOfSignedInProfiles">
   <owner>bcwhite@chromium.org</owner>
   <owner>rlp@chromium.org</owner>
@@ -32661,6 +32669,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <histogram name="Signin.AndroidSigninPromo" enum="AndroidSigninPromoAction">
   <owner>guohui@chromium.org</owner>
   <summary>Track how a user interfacts with the android signin promo.</summary>
+</histogram>
+
+<histogram name="Signin.AuthError" enum="GoogleServiceAuthError">
+  <owner>mlerman@chromium.org</owner>
+  <summary>
+    Log the type of GAIA authentication error that occur whenever the error
+    state changes.
+  </summary>
 </histogram>
 
 <histogram name="Signin.DuringFirstRun">

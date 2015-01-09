@@ -5,12 +5,15 @@
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 
 ChromeSigninClientFactory::ChromeSigninClientFactory()
     : BrowserContextKeyedServiceFactory(
           "ChromeSigninClient",
-          BrowserContextDependencyManager::GetInstance()) {}
+          BrowserContextDependencyManager::GetInstance()) {
+  DependsOn(SigninErrorControllerFactory::GetInstance());
+}
 
 ChromeSigninClientFactory::~ChromeSigninClientFactory() {}
 
@@ -27,7 +30,8 @@ ChromeSigninClientFactory* ChromeSigninClientFactory::GetInstance() {
 
 KeyedService* ChromeSigninClientFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  ChromeSigninClient* client =
-      new ChromeSigninClient(static_cast<Profile*>(context));
+  Profile* profile = static_cast<Profile*>(context);
+  ChromeSigninClient* client = new ChromeSigninClient(
+      profile, SigninErrorControllerFactory::GetForProfile(profile));
   return client;
 }

@@ -178,6 +178,12 @@ void TestingProfileManager::SetLoggedIn(bool logged_in) {
   profile_manager_->logged_in_ = logged_in;
 }
 
+void TestingProfileManager::UpdateLastUser(Profile* last_active) {
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+  profile_manager_->UpdateLastUser(last_active);
+#endif
+}
+
 const base::FilePath& TestingProfileManager::profiles_dir() {
   DCHECK(called_set_up_);
   return profiles_dir_.path();

@@ -97,4 +97,9 @@ void LogExternalCcResultFetches(
   }
 }
 
+void LogAuthError(GoogleServiceAuthError::State auth_error) {
+  UMA_HISTOGRAM_ENUMERATION("Signin.AuthError", auth_error,
+      GoogleServiceAuthError::State::NUM_STATES);
+}
+
 }  // namespace signin_metrics

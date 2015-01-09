@@ -84,6 +84,9 @@ class TestingProfileManager {
   // Sets ProfileManager's logged_in state. This is only useful on ChromeOS.
   void SetLoggedIn(bool logged_in);
 
+  // Sets the last used profile; also sets the active time to now.
+  void UpdateLastUser(Profile* last_active);
+
   // Helper accessors.
   const base::FilePath& profiles_dir();
   ProfileManager* profile_manager();

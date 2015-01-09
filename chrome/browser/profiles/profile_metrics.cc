@@ -139,6 +139,8 @@ bool ProfileMetrics::CountProfileInformation(ProfileManager* manager,
         counts->signedin++;
         if (info_cache.IsUsingGAIAPictureOfProfileAtIndex(i))
           counts->gaia_icon++;
+        if (info_cache.ProfileIsAuthErrorAtIndex(i))
+          counts->auth_errors++;
       }
     }
   }
@@ -178,6 +180,8 @@ void ProfileMetrics::LogNumberOfProfiles(ProfileManager* manager) {
                              counts.unused);
     UMA_HISTOGRAM_COUNTS_100("Profile.NumberOfSignedInProfilesWithGAIAIcons",
                              counts.gaia_icon);
+    UMA_HISTOGRAM_COUNTS_100("Profile.NumberOfProfilesWithAuthErrors",
+                             counts.auth_errors);
 
     LogLockedProfileInformation(manager);
     UpdateReportedOSProfileStatistics(counts.total, counts.signedin);

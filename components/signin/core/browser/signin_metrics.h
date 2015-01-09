@@ -7,6 +7,8 @@
 
 #include "base/time/time.h"
 
+#include "google_apis/gaia/google_service_auth_error.h"
+
 namespace signin_metrics {
 
 // Enum for the ways in which primary account detection is done.
@@ -163,6 +165,9 @@ void LogSignout(ProfileSignout metric);
 void LogExternalCcResultFetches(
     bool fetches_completed,
     const base::TimeDelta& time_to_check_connections);
+
+// Track when the current authentication error changed.
+void LogAuthError(GoogleServiceAuthError::State auth_error);
 
 }  // namespace signin_metrics
 
