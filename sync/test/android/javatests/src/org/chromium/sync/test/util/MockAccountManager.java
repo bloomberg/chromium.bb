@@ -4,6 +4,8 @@
 
 package org.chromium.sync.test.util;
 
+import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
+
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.accounts.AccountManagerCallback;
@@ -22,14 +24,14 @@ import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
+import android.text.TextUtils;
 import android.util.Log;
-
-import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
 import org.chromium.sync.signin.AccountManagerDelegate;
 import org.chromium.sync.signin.AccountManagerHelper;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -121,10 +123,17 @@ public class MockAccountManager implements AccountManagerDelegate {
         if (mAccounts == null) {
             return new Account[0];
         } else {
-            Account[] accounts = new Account[mAccounts.size()];
-            int i = 0;
+            ArrayList<Account> validAccounts = new ArrayList<Account>();
             for (AccountHolder ah : mAccounts) {
-                accounts[i++] = ah.getAccount();
+                if (TextUtils.equals(ah.getAccount().type, type)) {
+                    validAccounts.add(ah.getAccount());
+                }
+            }
+
+            Account[] accounts = new Account[validAccounts.size()];
+            int i = 0;
+            for (Account account : validAccounts) {
+                accounts[i++] = account;
             }
             return accounts;
         }
