@@ -1058,7 +1058,6 @@ crbug.com/386567 virtual/slimmingpaint/fast/multicol/hit-test-end-of-column-with
 crbug.com/386567 virtual/slimmingpaint/fast/multicol/hit-test-end-of-column.html [ Skip ]
 crbug.com/386567 virtual/slimmingpaint/fast/multicol/hit-test-gap-between-pages-flipped.html [ Skip ]
 crbug.com/386567 virtual/slimmingpaint/fast/multicol/hit-test-gap-between-pages.html [ Skip ]
-crbug.com/381919 virtual/slimmingpaint/fast/multicol/layers-split-across-columns.html [ Skip ]
 crbug.com/386567 virtual/slimmingpaint/fast/multicol/max-height-columns-block.html [ Skip ]
 crbug.com/386567 virtual/slimmingpaint/fast/multicol/nested-columns.html [ Skip ]
 crbug.com/386567 virtual/slimmingpaint/fast/multicol/overflow-across-columns-percent-height.html [ Skip ]
