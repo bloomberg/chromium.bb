@@ -18,15 +18,18 @@ namespace ui {
 
 namespace {
 
-DisplaySnapshotX11* CreateOutput(RROutput output, RRCrtc crtc) {
+DisplaySnapshotX11* CreateOutput(int64_t id,
+                                 DisplayConnectionType type,
+                                 RROutput output,
+                                 RRCrtc crtc) {
   static const DisplayModeX11* kDefaultDisplayMode =
       new DisplayModeX11(gfx::Size(1, 1), false, 60.0f, 20);
 
   DisplaySnapshotX11* snapshot = new DisplaySnapshotX11(
-      0,
+      id,
       gfx::Point(0, 0),
       gfx::Size(0, 0),
-      DISPLAY_CONNECTION_TYPE_UNKNOWN,
+      type,
       false,
       false,
       std::string(),
@@ -38,6 +41,20 @@ DisplaySnapshotX11* CreateOutput(RROutput output, RRCrtc crtc) {
       0);
 
   return snapshot;
+}
+
+DisplaySnapshotX11* CreateExternalOutput(RROutput output, RRCrtc crtc) {
+  return CreateOutput(static_cast<int64_t>(output),
+                      DISPLAY_CONNECTION_TYPE_UNKNOWN,
+                      output,
+                      crtc);
+}
+
+DisplaySnapshotX11* CreateInternalOutput(RROutput output, RRCrtc crtc) {
+  return CreateOutput(0,
+                      DISPLAY_CONNECTION_TYPE_INTERNAL,
+                      output,
+                      crtc);
 }
 
 class TestHelperDelegate : public NativeDisplayDelegateX11::HelperDelegate {
@@ -169,7 +186,7 @@ TEST_F(NativeDisplayEventDispatcherX11Test, CheckNotificationAfterSecondEvent) {
 
   // Simulate addition of the first output to the cached output list.
   ScopedVector<DisplaySnapshot> outputs;
-  outputs.push_back(CreateOutput(1, 10));
+  outputs.push_back(CreateExternalOutput(1, 10));
   helper_delegate_->set_cached_outputs(outputs.get());
 
   DispatchOutputChangeEvent(2, 11, 20, true);
@@ -178,7 +195,7 @@ TEST_F(NativeDisplayEventDispatcherX11Test, CheckNotificationAfterSecondEvent) {
 
 TEST_F(NativeDisplayEventDispatcherX11Test, CheckNotificationOnDisconnect) {
   ScopedVector<DisplaySnapshot> outputs;
-  outputs.push_back(CreateOutput(1, 10));
+  outputs.push_back(CreateExternalOutput(1, 10));
   helper_delegate_->set_cached_outputs(outputs.get());
 
   DispatchOutputChangeEvent(1, 10, 20, false);
@@ -187,7 +204,7 @@ TEST_F(NativeDisplayEventDispatcherX11Test, CheckNotificationOnDisconnect) {
 
 TEST_F(NativeDisplayEventDispatcherX11Test, CheckNotificationOnModeChange) {
   ScopedVector<DisplaySnapshot> outputs;
-  outputs.push_back(CreateOutput(1, 10));
+  outputs.push_back(CreateExternalOutput(1, 10));
   helper_delegate_->set_cached_outputs(outputs.get());
 
   DispatchOutputChangeEvent(1, 10, 21, true);
@@ -196,7 +213,7 @@ TEST_F(NativeDisplayEventDispatcherX11Test, CheckNotificationOnModeChange) {
 
 TEST_F(NativeDisplayEventDispatcherX11Test, CheckNotificationOnSecondOutput) {
   ScopedVector<DisplaySnapshot> outputs;
-  outputs.push_back(CreateOutput(1, 10));
+  outputs.push_back(CreateExternalOutput(1, 10));
   helper_delegate_->set_cached_outputs(outputs.get());
 
   DispatchOutputChangeEvent(2, 11, 20, true);
@@ -205,7 +222,7 @@ TEST_F(NativeDisplayEventDispatcherX11Test, CheckNotificationOnSecondOutput) {
 
 TEST_F(NativeDisplayEventDispatcherX11Test, CheckNotificationOnDifferentCrtc) {
   ScopedVector<DisplaySnapshot> outputs;
-  outputs.push_back(CreateOutput(1, 10));
+  outputs.push_back(CreateExternalOutput(1, 10));
   helper_delegate_->set_cached_outputs(outputs.get());
 
   DispatchOutputChangeEvent(1, 11, 20, true);
@@ -215,8 +232,8 @@ TEST_F(NativeDisplayEventDispatcherX11Test, CheckNotificationOnDifferentCrtc) {
 TEST_F(NativeDisplayEventDispatcherX11Test,
        CheckNotificationOnSecondOutputDisconnect) {
   ScopedVector<DisplaySnapshot> outputs;
-  outputs.push_back(CreateOutput(1, 10));
-  outputs.push_back(CreateOutput(2, 11));
+  outputs.push_back(CreateExternalOutput(1, 10));
+  outputs.push_back(CreateExternalOutput(2, 11));
   helper_delegate_->set_cached_outputs(outputs.get());
 
   DispatchOutputChangeEvent(2, 11, 20, false);
@@ -226,8 +243,8 @@ TEST_F(NativeDisplayEventDispatcherX11Test,
 TEST_F(NativeDisplayEventDispatcherX11Test,
        AvoidDuplicateNotificationOnSecondOutputDisconnect) {
   ScopedVector<DisplaySnapshot> outputs;
-  outputs.push_back(CreateOutput(1, 10));
-  outputs.push_back(CreateOutput(2, 11));
+  outputs.push_back(CreateExternalOutput(1, 10));
+  outputs.push_back(CreateExternalOutput(2, 11));
   helper_delegate_->set_cached_outputs(outputs.get());
 
   DispatchOutputChangeEvent(2, 11, 20, false);
@@ -248,8 +265,8 @@ TEST_F(NativeDisplayEventDispatcherX11Test,
       NativeDisplayEventDispatcherX11::kUseCacheAfterStartupMs / 2 + 1;
 
   ScopedVector<DisplaySnapshot> outputs;
-  outputs.push_back(CreateOutput(1, 10));
-  outputs.push_back(CreateOutput(2, 11));
+  outputs.push_back(CreateExternalOutput(1, 10));
+  outputs.push_back(CreateExternalOutput(2, 11));
   helper_delegate_->set_cached_outputs(outputs.get());
 
   EXPECT_EQ(0, helper_delegate_->num_calls_notify_observers());
@@ -286,6 +303,27 @@ TEST_F(NativeDisplayEventDispatcherX11Test,
       base::TimeDelta::FromMilliseconds(kHalfOfExpirationMs));
   DispatchOutputChangeEvent(2, 11, 20, true);
   EXPECT_EQ(4, helper_delegate_->num_calls_notify_observers());
+}
+
+TEST_F(NativeDisplayEventDispatcherX11Test,
+       UpdateMissingExternalDisplayId) {
+  ScopedVector<DisplaySnapshot> outputs;
+  outputs.push_back(CreateInternalOutput(1, 10));
+  helper_delegate_->set_cached_outputs(outputs.get());
+
+  ASSERT_EQ(0, helper_delegate_->num_calls_notify_observers());
+
+  // Internal display's ID can be zero and not updated.
+  DispatchOutputChangeEvent(1, 10, 20, true);
+  EXPECT_EQ(0, helper_delegate_->num_calls_notify_observers());
+
+  outputs.clear();
+  outputs.push_back(CreateOutput(0, DISPLAY_CONNECTION_TYPE_UNKNOWN, 2, 11));
+  helper_delegate_->set_cached_outputs(outputs.get());
+
+  // External display should be updated if the id is zero.
+  DispatchOutputChangeEvent(2, 11, 20, true);
+  EXPECT_EQ(1, helper_delegate_->num_calls_notify_observers());
 }
 
 }  // namespace ui
