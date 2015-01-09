@@ -49,6 +49,7 @@ public class GoogleServicesNotificationController {
         }
     }
 
+    @VisibleForTesting
     public static GoogleServicesNotificationController getInstance() {
         synchronized (LOCK) {
             return sInstance;
