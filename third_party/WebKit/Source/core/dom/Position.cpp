@@ -429,7 +429,7 @@ Node* Position::parentEditingBoundary() const
     if (!documentElement)
         return 0;
 
-    Node* boundary = m_anchorNode.get();
+    Node* boundary = containerNode();
     while (boundary != documentElement && boundary->nonShadowBoundaryParentNode() && m_anchorNode->hasEditableStyle() == boundary->parentNode()->hasEditableStyle())
         boundary = boundary->nonShadowBoundaryParentNode();
 

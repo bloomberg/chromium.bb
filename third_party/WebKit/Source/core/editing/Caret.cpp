@@ -224,15 +224,22 @@ void CaretBase::invalidateLocalCaretRect(Node* node, const LayoutRect& rect)
     caretPainter->invalidatePaintRectangle(inflatedRect);
 }
 
-bool CaretBase::shouldRepaintCaret(const RenderView* view, bool isContentEditable) const
+bool CaretBase::shouldRepaintCaret(Node& node) const
+{
+    // If PositionIsBeforeAnchor or PositionIsAfterAnchor, carets need to be
+    // repainted not only when the node is contentEditable but also when its
+    // parentNode() is contentEditable.
+    return node.isContentEditable() || (node.parentNode() && node.parentNode()->isContentEditable());
+}
+
+bool CaretBase::shouldRepaintCaret(const RenderView* view) const
 {
     ASSERT(view);
-    bool caretBrowsing = false;
     if (FrameView* frameView = view->frameView()) {
         LocalFrame& frame = frameView->frame(); // The frame where the selection started
-        caretBrowsing = frame.settings() && frame.settings()->caretBrowsingEnabled();
+        return frame.settings() && frame.settings()->caretBrowsingEnabled();
     }
-    return (caretBrowsing || isContentEditable);
+    return false;
 }
 
 void CaretBase::invalidateCaretRect(Node* node, bool caretRectChanged)
@@ -254,7 +261,7 @@ void CaretBase::invalidateCaretRect(Node* node, bool caretRectChanged)
         return;
 
     if (RenderView* view = node->document().renderView()) {
-        if (shouldRepaintCaret(view, node->isContentEditable(Node::UserSelectAllIsAlwaysNonEditable)))
+        if (node->isContentEditable(Node::UserSelectAllIsAlwaysNonEditable) || shouldRepaintCaret(view))
             invalidateLocalCaretRect(node, localCaretRectWithoutUpdate());
     }
 }

@@ -1265,9 +1265,9 @@ void FrameSelection::invalidateCaretRect()
         return;
 
     RenderView* view = m_frame->document()->renderView();
-    if (m_previousCaretNode && shouldRepaintCaret(view, m_previousCaretNode->isContentEditable()))
+    if (m_previousCaretNode && (shouldRepaintCaret(*m_previousCaretNode) || shouldRepaintCaret(view)))
         invalidateLocalCaretRect(m_previousCaretNode.get(), m_previousCaretRect);
-    if (newNode && shouldRepaintCaret(view, newNode->isContentEditable()))
+    if (newNode && (shouldRepaintCaret(*newNode) || shouldRepaintCaret(view)))
         invalidateLocalCaretRect(newNode, newRect);
 
     m_previousCaretNode = newNode;

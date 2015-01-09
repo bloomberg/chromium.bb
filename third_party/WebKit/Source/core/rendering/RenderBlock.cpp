@@ -32,6 +32,7 @@
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
+#include "core/editing/htmlediting.h"
 #include "core/events/OverflowEvent.h"
 #include "core/fetch/ResourceLoadPriorityOptimizer.h"
 #include "core/frame/FrameView.h"
@@ -3514,10 +3515,17 @@ void RenderBlock::updateHitTestResult(HitTestResult& result, const LayoutPoint& 
     }
 }
 
+// An inline-block uses its inlineBox as the inlineBoxWrapper,
+// so the firstChild() is nullptr if the only child is an empty inline-block.
+inline bool RenderBlock::isInlineBoxWrapperActuallyChild() const
+{
+    return isInlineBlockOrInlineTable() && !size().isEmpty() && node() && editingIgnoresContent(node());
+}
+
 LayoutRect RenderBlock::localCaretRect(InlineBox* inlineBox, int caretOffset, LayoutUnit* extraWidthToEndOfLine)
 {
     // Do the normal calculation in most cases.
-    if (firstChild())
+    if (firstChild() || isInlineBoxWrapperActuallyChild())
         return RenderBox::localCaretRect(inlineBox, caretOffset, extraWidthToEndOfLine);
 
     LayoutRect caretRect = localCaretRectForEmptyElement(size().width(), textIndentOffset());

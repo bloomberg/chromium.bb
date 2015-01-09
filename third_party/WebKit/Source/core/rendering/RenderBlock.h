@@ -390,6 +390,7 @@ private:
 
 private:
     virtual LayoutRect localCaretRect(InlineBox*, int caretOffset, LayoutUnit* extraWidthToEndOfLine = 0) override final;
+    bool isInlineBoxWrapperActuallyChild() const;
 
     void adjustPointToColumnContents(LayoutPoint&) const;
 
