@@ -542,6 +542,27 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
         </message>
       </if>
 
+      <if expr="is_ios">
+        <message desc="Initial screen's title, welcoming the user." name="IDS_WELCOME">
+          Welcome
+        </message>
+        <message desc="Initial screen's subtitle, with a short description of the app" name="IDS_SHORT_DESCRIPTION">
+          Access your computer securely over the Internet
+        </message>
+        <message desc="Subtitle shown in the host list when host is offline, and for which no last-online status is available." name ="IDS_HOST_OFFLINE_SUBTITLE">
+          offline
+        </message>
+        <message desc="Subtitle shown in the host list when host is offline. Indicates when host was last seen online." name ="IDS_LAST_ONLINE_SUBTITLE">
+          last online <ph name="DATE">$1<ex>1/6/13</ex></ph>
+        </message>
+        <message desc="Menu item to select the Touch input mode. In this mode, there is not visible mouse pointer and the user must tap on the screen to simulate a left-click." name ="IDS_SELECT_TOUCH_MODE">
+          Touch mode
+        </message>
+        <message desc="Menu item to select the Trackpad input mode. In this mode, the mouse cursor is visible and the screen acts as a laptop's trackpad." name ="IDS_SELECT_TRACKPAD_MODE">
+          Trackpad mode
+        </message>
+      </if>
+
       <message desc="Label for the access code entry box. This is where the client user enters the code that permits access to the host." name="IDS_ACCESS_CODE">
         Access code
       </message>
