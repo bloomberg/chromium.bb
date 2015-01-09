@@ -1483,7 +1483,6 @@ interface ReadableStream
     method cancel
     method constructor
     method read
-    method wait
 interface ReferenceError
     attribute name
     getter stack
