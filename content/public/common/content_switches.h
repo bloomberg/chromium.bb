@@ -75,7 +75,6 @@ CONTENT_EXPORT extern const char kDisablePluginsDiscovery[];
 extern const char kDisableRemoteFonts[];
 extern const char kDisableRendererAccessibility[];
 CONTENT_EXPORT extern const char kDisableSeccompFilterSandbox[];
-extern const char kDisableSessionStorage[];
 CONTENT_EXPORT extern const char kDisableSetuidSandbox[];
 CONTENT_EXPORT extern const char kDisableSharedWorkers[];
 CONTENT_EXPORT extern const char kDisableSingleThreadProxyScheduler[];

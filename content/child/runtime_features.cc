@@ -98,9 +98,6 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (command_line.HasSwitch(switches::kDisableLocalStorage))
     WebRuntimeFeatures::enableLocalStorage(false);
 
-  if (command_line.HasSwitch(switches::kDisableSessionStorage))
-    WebRuntimeFeatures::enableSessionStorage(false);
-
   if (command_line.HasSwitch(switches::kDisableMediaSource))
     WebRuntimeFeatures::enableMediaSource(false);
 

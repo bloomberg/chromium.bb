@@ -1200,7 +1200,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kDisablePinch,
     switches::kDisablePrefixedEncryptedMedia,
     switches::kDisableSeccompFilterSandbox,
-    switches::kDisableSessionStorage,
     switches::kDisableSharedWorkers,
     switches::kDisableSVG1DOM,
     switches::kDisableThreadedCompositing,

@@ -226,9 +226,6 @@ const char kDisableRendererAccessibility[]  = "disable-renderer-accessibility";
 // Disable the seccomp filter sandbox (seccomp-bpf) (Linux only).
 const char kDisableSeccompFilterSandbox[]   = "disable-seccomp-filter-sandbox";
 
-// Disable session storage.
-const char kDisableSessionStorage[]         = "disable-session-storage";
-
 // Disable the setuid sandbox (Linux only).
 const char kDisableSetuidSandbox[]          = "disable-setuid-sandbox";
 
