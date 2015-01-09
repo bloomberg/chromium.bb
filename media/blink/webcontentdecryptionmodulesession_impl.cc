@@ -23,6 +23,12 @@ namespace media {
 const char kCreateSessionUMAName[] = "CreateSession";
 const char kLoadSessionUMAName[] = "LoadSession";
 
+// TODO(jrummell): Pass an enum from blink. http://crbug.com/418239.
+const char kTemporarySessionType[] = "temporary";
+const char kPersistentLicenseSessionType[] = "persistent-license";
+const char kPersistentReleaseMessageSessionType[] =
+    "persistent-release-message";
+
 WebContentDecryptionModuleSessionImpl::WebContentDecryptionModuleSessionImpl(
     const scoped_refptr<CdmSessionAdapter>& adapter)
     : adapter_(adapter), is_closed_(false), weak_ptr_factory_(this) {
@@ -87,9 +93,19 @@ void WebContentDecryptionModuleSessionImpl::initializeNewSession(
       << "init_data_type '" << init_data_type_as_ascii
       << "' may be a MIME type";
 
+  MediaKeys::SessionType session_type_enum;
+  if (session_type == kPersistentLicenseSessionType) {
+    session_type_enum = MediaKeys::PERSISTENT_LICENSE_SESSION;
+  } else if (session_type == kPersistentReleaseMessageSessionType) {
+    session_type_enum = MediaKeys::PERSISTENT_RELEASE_MESSAGE_SESSION;
+  } else {
+    DCHECK(session_type == kTemporarySessionType);
+    session_type_enum = MediaKeys::TEMPORARY_SESSION;
+  }
+
   adapter_->InitializeNewSession(
       init_data_type_as_ascii, init_data,
-      base::saturated_cast<int>(init_data_length), MediaKeys::TEMPORARY_SESSION,
+      base::saturated_cast<int>(init_data_length), session_type_enum,
       scoped_ptr<NewSessionCdmPromise>(new NewSessionCdmResultPromise(
           result, adapter_->GetKeySystemUMAPrefix() + kCreateSessionUMAName,
           base::Bind(
@@ -107,7 +123,7 @@ void WebContentDecryptionModuleSessionImpl::load(
   // session type should be passed from blink. Type should also be passed in the
   // constructor (and removed from initializeNewSession()).
   adapter_->LoadSession(
-      MediaKeys::PERSISTENT_SESSION, base::UTF16ToASCII(session_id),
+      MediaKeys::PERSISTENT_LICENSE_SESSION, base::UTF16ToASCII(session_id),
       scoped_ptr<NewSessionCdmPromise>(new NewSessionCdmResultPromise(
           result, adapter_->GetKeySystemUMAPrefix() + kLoadSessionUMAName,
           base::Bind(

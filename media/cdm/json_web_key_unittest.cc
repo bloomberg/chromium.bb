@@ -384,8 +384,13 @@ TEST_F(JSONWebKeyTest, SessionType) {
   ExtractSessionTypeAndExpect(
       "{\"keys\":[{\"alg\": "
       "\"A128KW\",\"k\":\"AQI\",\"kid\":\"AQI\",\"kty\":\"oct\"}],\"type\":"
-      "\"persistent\"}",
-      true, MediaKeys::PERSISTENT_SESSION);
+      "\"persistent-license\"}",
+      true, MediaKeys::PERSISTENT_LICENSE_SESSION);
+  ExtractSessionTypeAndExpect(
+      "{\"keys\":[{\"alg\": "
+      "\"A128KW\",\"k\":\"AQI\",\"kid\":\"AQI\",\"kty\":\"oct\"}],\"type\":"
+      "\"persistent-release-message\"}",
+      true, MediaKeys::PERSISTENT_RELEASE_MESSAGE_SESSION);
   ExtractSessionTypeAndExpect(
       "{\"keys\":[{\"alg\": "
       "\"A128KW\",\"k\":\"AQI\",\"kid\":\"AQI\",\"kty\":\"oct\"}],\"type\":"
@@ -407,19 +412,20 @@ TEST_F(JSONWebKeyTest, CreateLicense) {
                          arraysize(data1),
                          MediaKeys::TEMPORARY_SESSION,
                          "{\"kids\":[\"AQI\"],\"type\":\"temporary\"}");
-  CreateLicenseAndExpect(data1,
-                         arraysize(data1),
-                         MediaKeys::PERSISTENT_SESSION,
-                         "{\"kids\":[\"AQI\"],\"type\":\"persistent\"}");
+  CreateLicenseAndExpect(
+      data1, arraysize(data1), MediaKeys::PERSISTENT_LICENSE_SESSION,
+      "{\"kids\":[\"AQI\"],\"type\":\"persistent-license\"}");
+  CreateLicenseAndExpect(
+      data1, arraysize(data1), MediaKeys::PERSISTENT_RELEASE_MESSAGE_SESSION,
+      "{\"kids\":[\"AQI\"],\"type\":\"persistent-release-message\"}");
   CreateLicenseAndExpect(data2,
                          arraysize(data2),
                          MediaKeys::TEMPORARY_SESSION,
                          "{\"kids\":[\"AQIDBA\"],\"type\":\"temporary\"}");
-  CreateLicenseAndExpect(
-      data3,
-      arraysize(data3),
-      MediaKeys::PERSISTENT_SESSION,
-      "{\"kids\":[\"AQIDBAUGBwgJCgsMDQ4PEA\"],\"type\":\"persistent\"}");
+  CreateLicenseAndExpect(data3, arraysize(data3),
+                         MediaKeys::PERSISTENT_LICENSE_SESSION,
+                         "{\"kids\":[\"AQIDBAUGBwgJCgsMDQ4PEA\"],\"type\":"
+                         "\"persistent-license\"}");
 }
 
 TEST_F(JSONWebKeyTest, ExtractLicense) {

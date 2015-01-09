@@ -66,10 +66,11 @@ class MEDIA_EXPORT MediaKeys{
 
   // Type of license required when creating/loading a session.
   // Must be consistent with the values specified in the spec:
-  // https://dvcs.w3.org/hg/html-media/raw-file/default/encrypted-media/encrypted-media.html#extensions
+  // https://w3c.github.io/encrypted-media/#idl-def-MediaKeySessionType
   enum SessionType {
     TEMPORARY_SESSION,
-    PERSISTENT_SESSION
+    PERSISTENT_LICENSE_SESSION,
+    PERSISTENT_RELEASE_MESSAGE_SESSION
   };
 
   virtual ~MediaKeys();

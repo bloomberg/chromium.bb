@@ -160,10 +160,9 @@ static media::MediaKeys::SessionType ConvertSessionType(
     case cdm::kTemporary:
       return media::MediaKeys::TEMPORARY_SESSION;
     case cdm::kPersistentLicense:
-      return media::MediaKeys::PERSISTENT_SESSION;
+      return media::MediaKeys::PERSISTENT_LICENSE_SESSION;
     case cdm::kPersistentKeyRelease:
-      // TODO(jrummell): Return matching type when MediaKeys changes.
-      return media::MediaKeys::PERSISTENT_SESSION;
+      return media::MediaKeys::PERSISTENT_RELEASE_MESSAGE_SESSION;
   }
   NOTIMPLEMENTED();
   return media::MediaKeys::TEMPORARY_SESSION;

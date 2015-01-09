@@ -57,7 +57,8 @@ interface ContentDecryptionModule {
   // See media::MediaKeys::SessionType.
   enum SessionType {
     TEMPORARY_SESSION,
-    PERSISTENT_SESSION
+    PERSISTENT_LICENSE_SESSION,
+    PERSISTENT_RELEASE_MESSAGE_SESSION
   };
 
   // Provides a server certificate to be used to encrypt messages to the

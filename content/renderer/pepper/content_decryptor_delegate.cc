@@ -257,12 +257,13 @@ media::SampleFormat PpDecryptedSampleFormatToMediaSampleFormat(
 
 PP_SessionType MediaSessionTypeToPpSessionType(
     MediaKeys::SessionType session_type) {
-  // TODO(jrummell): Add support for PP_SESSIONTYPE_RELEASE_LICENSE.
   switch (session_type) {
     case MediaKeys::TEMPORARY_SESSION:
       return PP_SESSIONTYPE_TEMPORARY;
-    case MediaKeys::PERSISTENT_SESSION:
+    case MediaKeys::PERSISTENT_LICENSE_SESSION:
       return PP_SESSIONTYPE_PERSISTENT_LICENSE;
+    case MediaKeys::PERSISTENT_RELEASE_MESSAGE_SESSION:
+      return PP_SESSIONTYPE_PERSISTENT_RELEASE;
     default:
       NOTREACHED();
       return PP_SESSIONTYPE_TEMPORARY;
