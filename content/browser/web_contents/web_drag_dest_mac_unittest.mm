@@ -27,7 +27,7 @@ NSString* const kCrCorePasteboardFlavorType_urln =
 
 class WebDragDestTest : public RenderViewHostImplTestHarness {
  public:
-  virtual void SetUp() {
+  void SetUp() override {
     RenderViewHostImplTestHarness::SetUp();
     drag_dest_.reset([[WebDragDest alloc] initWithWebContentsImpl:contents()]);
   }

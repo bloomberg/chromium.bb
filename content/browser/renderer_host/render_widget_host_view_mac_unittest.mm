@@ -166,7 +166,7 @@ class RenderWidgetHostViewMacTest : public RenderViewHostImplTestHarness {
  public:
   RenderWidgetHostViewMacTest() : old_rwhv_(NULL), rwhv_mac_(NULL) {}
 
-  virtual void SetUp() {
+  void SetUp() override {
     RenderViewHostImplTestHarness::SetUp();
     if (IsDelegatedRendererEnabled()) {
       ImageTransportFactory::InitializeForUnitTests(
@@ -183,7 +183,7 @@ class RenderWidgetHostViewMacTest : public RenderViewHostImplTestHarness {
     rwhv_mac_ = new RenderWidgetHostViewMac(rvh(), false);
     rwhv_cocoa_.reset([rwhv_mac_->cocoa_view() retain]);
   }
-  virtual void TearDown() {
+  void TearDown() override {
     // Make sure the rwhv_mac_ is gone once the superclass's |TearDown()| runs.
     rwhv_cocoa_.reset();
     RecycleAndWait();

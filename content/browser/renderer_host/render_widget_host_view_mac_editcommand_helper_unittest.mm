@@ -97,14 +97,14 @@ class RenderWidgetHostEditCommandCounter : public RenderWidgetHostImpl {
 
 class RenderWidgetHostViewMacEditCommandHelperTest : public PlatformTest {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     if (IsDelegatedRendererEnabled()) {
       ImageTransportFactory::InitializeForUnitTests(
           scoped_ptr<ImageTransportFactory>(
               new NoTransportImageTransportFactory));
     }
   }
-  virtual void TearDown() {
+  void TearDown() override {
     if (IsDelegatedRendererEnabled())
       ImageTransportFactory::Terminate();
   }

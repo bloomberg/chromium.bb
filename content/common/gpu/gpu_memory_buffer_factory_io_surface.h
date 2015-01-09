@@ -26,7 +26,7 @@ class GpuMemoryBufferFactoryIOSurface : public GpuMemoryBufferFactory,
                                         public gpu::ImageFactory {
  public:
   GpuMemoryBufferFactoryIOSurface();
-  ~GpuMemoryBufferFactoryIOSurface();
+  ~GpuMemoryBufferFactoryIOSurface() override;
 
   static bool IsGpuMemoryBufferConfigurationSupported(
       gfx::GpuMemoryBuffer::Format format,

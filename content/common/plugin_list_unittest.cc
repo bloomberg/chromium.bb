@@ -51,7 +51,7 @@ class PluginListTest : public testing::Test {
                     base::ASCIIToUTF16("bar")) {
   }
 
-  virtual void SetUp() {
+  void SetUp() override {
     plugin_list_.DisablePluginsDiscovery();
     plugin_list_.RegisterInternalPlugin(bar_plugin_, false);
     foo_plugin_.mime_types.push_back(

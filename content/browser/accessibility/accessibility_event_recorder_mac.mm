@@ -23,7 +23,7 @@ namespace content {
 class AccessibilityEventRecorderMac : public AccessibilityEventRecorder {
  public:
   explicit AccessibilityEventRecorderMac(BrowserAccessibilityManager* manager);
-  virtual ~AccessibilityEventRecorderMac();
+  ~AccessibilityEventRecorderMac() override;
 
   // Callback executed every time we receive an event notification.
   void EventReceived(AXUIElementRef element, CFStringRef notification);

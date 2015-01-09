@@ -33,7 +33,7 @@ class ExternalPopupMenuTest : public RenderViewTest {
     return view()->GetMainRenderFrame();
   }
 
-  virtual void SetUp() {
+  void SetUp() override {
     RenderViewTest::SetUp();
     // We need to set this explictly as RenderMain is not run.
     blink::WebView::setUseExternalPopupMenus(true);
@@ -154,7 +154,7 @@ class ExternalPopupMenuDisplayNoneTest : public ExternalPopupMenuTest {
   public:
   ExternalPopupMenuDisplayNoneTest() {}
 
-  virtual void SetUp() {
+  void SetUp() override {
     RenderViewTest::SetUp();
     // We need to set this explictly as RenderMain is not run.
     blink::WebView::setUseExternalPopupMenus(true);

@@ -18,7 +18,7 @@ namespace content {
 
 class BrowserAccessibilityTest : public ui::CocoaTest {
  public:
-  virtual void SetUp() {
+  void SetUp() override {
     CocoaTest::SetUp();
     RebuildAccessibilityTree();
   }
