@@ -4025,24 +4025,12 @@ bool HTMLMediaElement::isInteractiveContent() const
     return fastHasAttribute(controlsAttr);
 }
 
-bool HTMLMediaElement::willRespondToMouseClickEvents()
-{
-    return fastHasAttribute(controlsAttr);
-}
-
 void HTMLMediaElement::defaultEventHandler(Event* event)
 {
-    if (event->type() == EventTypeNames::click && willRespondToMouseClickEvents()) {
-        togglePlayState();
-        event->setDefaultHandled();
-        return;
-    }
-
     if (event->type() == EventTypeNames::focusin) {
         if (hasMediaControls())
             mediaControls()->mediaElementFocused();
     }
-
     HTMLElement::defaultEventHandler(event);
 }
 

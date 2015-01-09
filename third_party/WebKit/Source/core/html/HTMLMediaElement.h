@@ -346,7 +346,6 @@ private:
     virtual void didBecomeFullscreenElement() override final;
     virtual void willStopBeingFullscreenElement() override final;
     virtual bool isInteractiveContent() const override final;
-    virtual bool willRespondToMouseClickEvents() override final;
     virtual void defaultEventHandler(Event*) override final;
 
     // ActiveDOMObject functions.

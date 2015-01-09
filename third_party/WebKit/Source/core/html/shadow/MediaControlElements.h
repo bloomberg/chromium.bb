@@ -129,6 +129,7 @@ private:
     explicit MediaControlOverlayPlayButtonElement(MediaControls&);
 
     virtual const AtomicString& shadowPseudoId() const override;
+    virtual void defaultEventHandler(Event*) override;
     virtual bool keepEventInNode(Event*) override;
 };
 
