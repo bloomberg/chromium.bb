@@ -1401,6 +1401,9 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, PromptForPushState) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      autofill::switches::kEnablePasswordSaveOnInPageNavigation);
+  AddTabAtIndex(0, GURL(url::kAboutBlankURL), ui::PAGE_TRANSITION_TYPED);
   NavigateToFile("/password/password_push_state.html");
 
   // Verify that we show the save password prompt if 'history.pushState()'

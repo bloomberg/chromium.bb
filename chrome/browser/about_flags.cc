@@ -1016,6 +1016,14 @@ const Experiment kExperiments[] = {
         password_manager::switches::kDisablePasswordLink)
   },
   {
+     "enable-password-save-in-page-navigation",
+     IDS_FLAGS_ENABLE_SAVE_PASSOWRD_ON_IN_PAGE_NAVIGATION_NAME,
+     IDS_FLAGS_ENABLE_SAVE_PASSOWRD_ON_IN_PAGE_NAVIGATION_DESCRIPTION,
+     kOsAll,
+     SINGLE_VALUE_TYPE(
+             autofill::switches::kEnablePasswordSaveOnInPageNavigation)
+  },
+  {
     "enable-deferred-image-decoding",
     IDS_FLAGS_ENABLE_DEFERRED_IMAGE_DECODING_NAME,
     IDS_FLAGS_ENABLE_DEFERRED_IMAGE_DECODING_DESCRIPTION,

@@ -268,6 +268,10 @@ class PasswordAutofillAgent : public content::RenderFrameObserver {
   // True indicates that all frames in a page have been rendered.
   bool did_stop_loading_;
 
+  // True indicates that there is a command line flag to enable showing of
+  // save password prompt on in-page navigations.
+  bool save_password_on_in_page_navigation_;
+
   base::WeakPtrFactory<PasswordAutofillAgent> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordAutofillAgent);

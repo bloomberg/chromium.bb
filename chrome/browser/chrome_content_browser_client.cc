@@ -1381,6 +1381,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       autofill::switches::kEnableFillOnAccountSelect,
       autofill::switches::kEnableFillOnAccountSelectNoHighlighting,
       autofill::switches::kEnablePasswordGeneration,
+      autofill::switches::kEnablePasswordSaveOnInPageNavigation,
       autofill::switches::kEnableSingleClickAutofill,
       autofill::switches::kIgnoreAutocompleteOffForAutofill,
       autofill::switches::kLocalHeuristicsOnlyForPasswordGeneration,
