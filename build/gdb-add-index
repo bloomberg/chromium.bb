@@ -38,10 +38,10 @@ function index_one_file {
   local basename=$(basename "$file")
   local should_index="${SHOULD_INDEX}"
 
-  local readelf_out=$(readelf -S "$file")
+  local readelf_out=$(${TOOLCHAIN_PREFIX}readelf -S "$file")
   if [[ $readelf_out =~ "gdb_index" ]]; then
     if [ "${REMOVE_INDEX}" = 1 ]; then
-      objcopy --remove-section .gdb_index "$file"
+      ${TOOLCHAIN_PREFIX}objcopy --remove-section .gdb_index "$file"
       echo "Removed index from $basename."
     else
       echo "Skipped $basename -- already contains index."
@@ -53,14 +53,15 @@ function index_one_file {
     local start=$(date +"%s%N")
     echo "Adding index to $basename..."
 
-    gdb -batch "$file" -ex "save gdb-index $DIRECTORY" -ex "quit"
+    ${TOOLCHAIN_PREFIX}gdb -batch "$file" -ex "save gdb-index $DIRECTORY" \
+      -ex "quit"
     local index_file="$DIRECTORY/$basename.gdb-index"
     if [ -f "$index_file" ]; then
-      objcopy --add-section .gdb_index="$index_file" \
+      ${TOOLCHAIN_PREFIX}objcopy --add-section .gdb_index="$index_file" \
         --set-section-flags .gdb_index=readonly "$file" "$file"
       local finish=$(date +"%s%N")
-      local elappsed=$(((finish - start)/1000000))
-      echo "   ...$basename indexed. [${elappsed}ms]"
+      local elapsed=$(((finish - start)/1000000))
+      echo "   ...$basename indexed. [${elapsed}ms]"
     else
       echo "   ...$basename unindexable."
     fi
