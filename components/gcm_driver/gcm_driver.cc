@@ -6,23 +6,11 @@
 
 #include <algorithm>
 
+#include "base/bind.h"
 #include "base/logging.h"
-#include "base/metrics/field_trial.h"
 #include "components/gcm_driver/gcm_app_handler.h"
 
 namespace gcm {
-
-namespace {
-const char kGCMFieldTrialName[] = "GCM";
-const char kGCMFieldTrialEnabledGroupName[] = "Enabled";
-}  // namespace
-
-// static
-bool GCMDriver::IsAllowedForAllUsers() {
-  std::string group_name =
-      base::FieldTrialList::FindFullName(kGCMFieldTrialName);
-  return group_name == kGCMFieldTrialEnabledGroupName;
-}
 
 GCMDriver::GCMDriver() : weak_ptr_factory_(this) {
 }

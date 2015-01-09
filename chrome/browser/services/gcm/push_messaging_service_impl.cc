@@ -421,7 +421,6 @@ void PushMessagingServiceImpl::DidUnregister(
     case GCMClient::SERVER_ERROR:
     case GCMClient::INVALID_PARAMETER:
     case GCMClient::GCM_DISABLED:
-    case GCMClient::NOT_SIGNED_IN:
     case GCMClient::ASYNC_OPERATION_PENDING:
     case GCMClient::UNKNOWN_ERROR:
       callback.Run(content::PUSH_UNREGISTRATION_STATUS_UNKNOWN_ERROR);

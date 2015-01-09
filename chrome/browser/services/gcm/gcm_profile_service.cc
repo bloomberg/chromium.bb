@@ -48,8 +48,6 @@ class GCMProfileService::IdentityObserver : public IdentityProvider::Observer {
   void OnActiveAccountLogin() override;
   void OnActiveAccountLogout() override;
 
-  std::string SignedInUserName() const;
-
  private:
   void StartAccountTracker();
 
@@ -91,23 +89,17 @@ void GCMProfileService::IdentityObserver::OnActiveAccountLogin() {
   const std::string account_id = identity_provider_->GetActiveAccountId();
   if (account_id == account_id_)
     return;
-
   account_id_ = account_id;
+
+  // Still need to notify GCMDriver for UMA purpose.
   driver_->OnSignedIn();
 }
 
 void GCMProfileService::IdentityObserver::OnActiveAccountLogout() {
   account_id_.clear();
 
-  // When sign-in enforcement is not dropped, OnSignedOut will also clear all
-  // the GCM data and a new GCM ID will be retrieved after the user signs in
-  // again. Otherwise, the user sign-out will not affect the existing GCM
-  // data.
+  // Still need to notify GCMDriver for UMA purpose.
   driver_->OnSignedOut();
-}
-
-std::string GCMProfileService::IdentityObserver::SignedInUserName() const {
-  return driver_->IsStarted() ? account_id_ : std::string();
 }
 
 void GCMProfileService::IdentityObserver::StartAccountTracker() {
@@ -203,15 +195,6 @@ void GCMProfileService::Shutdown() {
     driver_->Shutdown();
     driver_.reset();
   }
-}
-
-std::string GCMProfileService::SignedInUserName() const {
-#if defined(OS_ANDROID)
-  return std::string();
-#else
-  return identity_observer_ ? identity_observer_->SignedInUserName()
-                            : std::string();
-#endif  // defined(OS_ANDROID)
 }
 
 void GCMProfileService::SetDriverForTesting(GCMDriver* driver) {

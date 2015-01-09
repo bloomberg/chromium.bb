@@ -30,7 +30,6 @@ cr.define('gcmInternals', function() {
     setIfExists(info, 'androidId', 'android-id');
     setIfExists(info, 'profileServiceCreated', 'profile-service-created');
     setIfExists(info, 'gcmEnabled', 'gcm-enabled');
-    setIfExists(info, 'signedInUserName', 'signed-in-username');
     setIfExists(info, 'gcmClientCreated', 'gcm-client-created');
     setIfExists(info, 'gcmClientState', 'gcm-client-state');
     setIfExists(info, 'connectionClientCreated', 'connection-client-created');

@@ -284,7 +284,7 @@ TEST_F(GCMNetworkChannelTest, FailedRegister) {
   // GcmNetworkChannel should have scheduled Register retry.
   EXPECT_EQ(2, delegate()->register_call_count_);
   // Return persistent error from Register call.
-  delegate()->register_callback.Run("", gcm::GCMClient::NOT_SIGNED_IN);
+  delegate()->register_callback.Run("", gcm::GCMClient::GCM_DISABLED);
   RunLoopUntilIdle();
   // GcmNetworkChannel should give up trying.
   EXPECT_EQ(2, delegate()->register_call_count_);

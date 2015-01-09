@@ -26,10 +26,8 @@
 #include "chrome/browser/extensions/test_extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/services/gcm/fake_signin_manager.h"
 #include "chrome/browser/services/gcm/gcm_profile_service.h"
 #include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
@@ -64,7 +62,6 @@ namespace extensions {
 namespace {
 
 const char kTestExtensionName[] = "FooBar";
-const char kTestingUsername[] = "user1@example.com";
 
 }  // namespace
 
@@ -223,11 +220,7 @@ class ExtensionGCMAppHandlerTest : public testing::Test {
 
     // Create a new profile.
     TestingProfile::Builder builder;
-    builder.AddTestingFactory(SigninManagerFactory::GetInstance(),
-                              gcm::FakeSigninManager::Build);
     profile_ = builder.Build();
-    signin_manager_ = static_cast<gcm::FakeSigninManager*>(
-        SigninManagerFactory::GetInstance()->GetForProfile(profile_.get()));
 
     // Create extension service in order to uninstall the extension.
     TestExtensionSystem* extension_system(
@@ -337,16 +330,6 @@ class ExtensionGCMAppHandlerTest : public testing::Test {
         NULL);
   }
 
-  void SignIn(const std::string& username) {
-    signin_manager_->SignIn(username);
-    waiter_.PumpIOLoop();
-  }
-
-  void SignOut() {
-    signin_manager_->SignOut(signin_metrics::SIGNOUT_TEST);
-    waiter_.PumpIOLoop();
-  }
-
   void Register(const std::string& app_id,
                 const std::vector<std::string>& sender_ids) {
     GetGCMDriver()->Register(
@@ -388,7 +371,6 @@ class ExtensionGCMAppHandlerTest : public testing::Test {
       in_process_utility_thread_helper_;
   scoped_ptr<TestingProfile> profile_;
   ExtensionService* extension_service_;  // Not owned.
-  gcm::FakeSigninManager* signin_manager_;  // Not owned.
   base::ScopedTempDir temp_dir_;
 
   // This is needed to create extension service under CrOS.
@@ -434,9 +416,6 @@ TEST_F(ExtensionGCMAppHandlerTest, UnregisterOnExtensionUninstall) {
   scoped_refptr<Extension> extension(CreateExtension());
   LoadExtension(extension.get());
 
-  // Sign-in is needed for registration.
-  SignIn(kTestingUsername);
-
   // Kick off registration.
   std::vector<std::string> sender_ids;
   sender_ids.push_back("sender1");
@@ -460,7 +439,6 @@ TEST_F(ExtensionGCMAppHandlerTest, UnregisterOnExtensionUninstall) {
 }
 
 TEST_F(ExtensionGCMAppHandlerTest, UpdateExtensionWithGcmPermissionKept) {
-  SignIn(kTestingUsername);
   scoped_refptr<Extension> extension(CreateExtension());
 
   // App handler is added when the extension is loaded.
@@ -476,7 +454,6 @@ TEST_F(ExtensionGCMAppHandlerTest, UpdateExtensionWithGcmPermissionKept) {
 }
 
 TEST_F(ExtensionGCMAppHandlerTest, UpdateExtensionWithGcmPermissionRemoved) {
-  SignIn(kTestingUsername);
   scoped_refptr<Extension> extension(CreateExtension());
 
   // App handler is added when the extension is loaded.

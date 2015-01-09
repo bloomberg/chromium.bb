@@ -154,10 +154,6 @@ void GcmInternalsUIMessageHandler::ReturnResults(
   device_info->SetBoolean("profileServiceCreated", profile_service != NULL);
   device_info->SetBoolean("gcmEnabled",
                           gcm::GCMProfileService::IsGCMEnabled(profile));
-  if (profile_service) {
-    device_info->SetString("signedInUserName",
-                           profile_service->SignedInUserName());
-  }
   if (stats) {
     results.SetBoolean("isRecording", stats->is_recording);
     device_info->SetBoolean("gcmClientCreated", stats->gcm_client_created);
@@ -252,10 +248,6 @@ void GcmInternalsUIMessageHandler::SetRecording(const base::ListValue* args) {
 
   if (!profile_service) {
     ReturnResults(profile, NULL, NULL);
-    return;
-  }
-  if (profile_service->SignedInUserName().empty()) {
-    ReturnResults(profile, profile_service, NULL);
     return;
   }
   // Get fresh stats after changing recording setting.

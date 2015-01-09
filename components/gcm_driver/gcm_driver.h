@@ -34,9 +34,6 @@ class GCMDriver {
   typedef base::Callback<void(const GCMClient::GCMStatistics& stats)>
       GetGCMStatisticsCallback;
 
-  // Returns true if the GCM is allowed for all users.
-  static bool IsAllowedForAllUsers();
-
   GCMDriver();
   virtual ~GCMDriver();
 

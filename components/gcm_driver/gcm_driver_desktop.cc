@@ -425,17 +425,10 @@ void GCMDriverDesktop::Shutdown() {
 
 void GCMDriverDesktop::OnSignedIn() {
   signed_in_ = true;
-  EnsureStarted();
 }
 
 void GCMDriverDesktop::OnSignedOut() {
   signed_in_ = false;
-
-  // When sign-in enforcement is not dropped, we will stop the GCM connection
-  // when the user signs out.
-  if (!GCMDriver::IsAllowedForAllUsers()) {
-    Stop();
-  }
 }
 
 void GCMDriverDesktop::Purge() {
@@ -726,8 +719,7 @@ GCMClient::Result GCMDriverDesktop::EnsureStarted() {
   if (!gcm_enabled_) {
     // Poll for channel status in order to find out when it is re-enabled when
     // GCM is currently disabled.
-    if (GCMDriver::IsAllowedForAllUsers())
-      gcm_channel_status_syncer_->EnsureStarted();
+    gcm_channel_status_syncer_->EnsureStarted();
 
     return GCMClient::GCM_DISABLED;
   }
@@ -736,17 +728,12 @@ GCMClient::Result GCMDriverDesktop::EnsureStarted() {
   if (app_handlers().empty())
     return GCMClient::UNKNOWN_ERROR;
 
-  // TODO(jianli): To be removed when sign-in enforcement is dropped.
-  if (!signed_in_ && !GCMDriver::IsAllowedForAllUsers())
-    return GCMClient::NOT_SIGNED_IN;
-
   DCHECK(!delayed_task_controller_);
   delayed_task_controller_.reset(new GCMDelayedTaskController);
 
   // Polling for channel status is only needed when GCM is supported for all
   // users.
-  if (GCMDriver::IsAllowedForAllUsers())
-    gcm_channel_status_syncer_->EnsureStarted();
+  gcm_channel_status_syncer_->EnsureStarted();
 
   UMA_HISTOGRAM_BOOLEAN("GCM.UserSignedIn", signed_in_);
 
