@@ -256,8 +256,12 @@ float Font::width(const TextRun& run, HashSet<const SimpleFontData*>* fallbackFo
     return result;
 }
 
-static bool requiresRecomputingBounds(const Font& font)
+static bool requiresRecomputingBounds(const Font& font, const FloatRect& bounds)
 {
+    // Blobs should never have empty bounds, but see http://crbug.com/445527
+    if (bounds.isEmpty())
+        return true;
+
     const FontDescription& fontDescription = font.fontDescription();
     return fontDescription.letterSpacing() < 0 || fontDescription.wordSpacing() < 0;
 }
@@ -271,7 +275,7 @@ PassTextBlobPtr Font::buildTextBlob(const GlyphBuffer& glyphBuffer, const FloatR
     SkRect skBounds = bounds;
     // FIXME: Identify these cases earlier on and avoid using bounds that are
     // not visually correct in other places.
-    const SkRect* skBoundsPtr = requiresRecomputingBounds(*this) ? nullptr : &skBounds;
+    const SkRect* skBoundsPtr = requiresRecomputingBounds(*this, bounds) ? nullptr : &skBounds;
     bool hasVerticalOffsets = glyphBuffer.hasVerticalOffsets();
 
     unsigned i = 0;
