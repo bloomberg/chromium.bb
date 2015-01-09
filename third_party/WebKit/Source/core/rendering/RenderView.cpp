@@ -334,7 +334,7 @@ void RenderView::invalidateTreeIfNeeded(const PaintInvalidationState& paintInval
     LayoutRect dirtyRect = viewRect();
     if (doingFullPaintInvalidation() && !dirtyRect.isEmpty()) {
         const RenderLayerModelObject* paintInvalidationContainer = &paintInvalidationState.paintInvalidationContainer();
-        mapRectToPaintInvalidationBacking(paintInvalidationContainer, dirtyRect, &paintInvalidationState);
+        RenderLayer::mapRectToPaintInvalidationBacking(this, paintInvalidationContainer, dirtyRect, &paintInvalidationState);
         invalidatePaintUsingContainer(paintInvalidationContainer, dirtyRect, PaintInvalidationFull);
     }
     RenderBlock::invalidateTreeIfNeeded(paintInvalidationState);
