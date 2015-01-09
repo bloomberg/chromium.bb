@@ -54,6 +54,7 @@ TEST_F(PowerPolicyControllerTest, Prefs) {
   prefs.presentation_screen_dim_delay_factor = 3.0;
   prefs.user_activity_screen_dim_delay_factor = 2.0;
   prefs.wait_for_initial_user_activity = true;
+  prefs.force_nonzero_brightness_for_user_activity = false;
   policy_controller_->ApplyPrefs(prefs);
 
   power_manager::PowerManagementPolicy expected_policy;
@@ -80,6 +81,7 @@ TEST_F(PowerPolicyControllerTest, Prefs) {
   expected_policy.set_presentation_screen_dim_delay_factor(3.0);
   expected_policy.set_user_activity_screen_dim_delay_factor(2.0);
   expected_policy.set_wait_for_initial_user_activity(true);
+  expected_policy.set_force_nonzero_brightness_for_user_activity(false);
   expected_policy.set_reason("Prefs");
   EXPECT_EQ(PowerPolicyController::GetPolicyDebugString(expected_policy),
             PowerPolicyController::GetPolicyDebugString(
@@ -90,12 +92,14 @@ TEST_F(PowerPolicyControllerTest, Prefs) {
   prefs.battery_idle_warning_delay_ms = 400000;
   prefs.lid_closed_action = PowerPolicyController::ACTION_SUSPEND;
   prefs.ac_brightness_percent = -1.0;
+  prefs.force_nonzero_brightness_for_user_activity = true;
   policy_controller_->ApplyPrefs(prefs);
   expected_policy.mutable_ac_delays()->set_idle_warning_ms(700000);
   expected_policy.mutable_battery_delays()->set_idle_warning_ms(400000);
   expected_policy.set_lid_closed_action(
       power_manager::PowerManagementPolicy_Action_SUSPEND);
   expected_policy.clear_ac_brightness_percent();
+  expected_policy.set_force_nonzero_brightness_for_user_activity(true);
   EXPECT_EQ(PowerPolicyController::GetPolicyDebugString(expected_policy),
             PowerPolicyController::GetPolicyDebugString(
                 fake_power_client_->policy()));

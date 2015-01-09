@@ -252,6 +252,7 @@ extern const char kPowerAllowScreenWakeLocks[];
 extern const char kPowerPresentationScreenDimDelayFactor[];
 extern const char kPowerUserActivityScreenDimDelayFactor[];
 extern const char kPowerWaitForInitialUserActivity[];
+extern const char kPowerForceNonzeroBrightnessForUserActivity[];
 extern const char kTermsOfServiceURL[];
 extern const char kUsedPolicyCertificatesOnce[];
 extern const char kAttestationEnabled[];

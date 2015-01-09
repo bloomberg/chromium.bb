@@ -148,6 +148,8 @@ std::string PowerPrefsTest::GetExpectedPowerPolicyForProfile(
       prefs->GetDouble(prefs::kPowerUserActivityScreenDimDelayFactor));
   expected_policy.set_wait_for_initial_user_activity(
       prefs->GetBoolean(prefs::kPowerWaitForInitialUserActivity));
+  expected_policy.set_force_nonzero_brightness_for_user_activity(
+      prefs->GetBoolean(prefs::kPowerForceNonzeroBrightnessForUserActivity));
   expected_policy.set_reason("Prefs");
   return PowerPolicyController::GetPolicyDebugString(expected_policy);
 }

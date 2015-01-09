@@ -66,6 +66,7 @@ class CHROMEOS_EXPORT PowerPolicyController
     double presentation_screen_dim_delay_factor;
     double user_activity_screen_dim_delay_factor;
     bool wait_for_initial_user_activity;
+    bool force_nonzero_brightness_for_user_activity;
   };
 
   // Returns a string describing |policy|.  Useful for tests.

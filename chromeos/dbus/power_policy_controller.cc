@@ -88,7 +88,8 @@ PowerPolicyController::PrefValues::PrefValues()
       enable_auto_screen_lock(false),
       presentation_screen_dim_delay_factor(1.0),
       user_activity_screen_dim_delay_factor(1.0),
-      wait_for_initial_user_activity(false) {}
+      wait_for_initial_user_activity(false),
+      force_nonzero_brightness_for_user_activity(true) {}
 
 // static
 std::string PowerPolicyController::GetPolicyDebugString(
@@ -127,6 +128,10 @@ std::string PowerPolicyController::GetPolicyDebugString(
   if (policy.has_wait_for_initial_user_activity()) {
     str += base::StringPrintf("wait_for_initial_user_activity=%d ",
         policy.wait_for_initial_user_activity());
+  }
+  if (policy.has_force_nonzero_brightness_for_user_activity()) {
+    str += base::StringPrintf("force_nonzero_brightness_for_user_activity=%d ",
+        policy.force_nonzero_brightness_for_user_activity());
   }
   if (policy.has_reason())
     str += base::StringPrintf("reason=\"%s\" ", policy.reason().c_str());
@@ -210,6 +215,8 @@ void PowerPolicyController::ApplyPrefs(const PrefValues& values) {
       values.user_activity_screen_dim_delay_factor);
   prefs_policy_.set_wait_for_initial_user_activity(
       values.wait_for_initial_user_activity);
+  prefs_policy_.set_force_nonzero_brightness_for_user_activity(
+      values.force_nonzero_brightness_for_user_activity);
 
   honor_screen_wake_locks_ = values.allow_screen_wake_locks;
 

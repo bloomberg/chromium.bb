@@ -161,6 +161,8 @@ void PowerPrefs::UpdatePowerPolicyFromPrefs() {
       prefs->GetDouble(prefs::kPowerUserActivityScreenDimDelayFactor);
   values.wait_for_initial_user_activity =
       prefs->GetBoolean(prefs::kPowerWaitForInitialUserActivity);
+  values.force_nonzero_brightness_for_user_activity =
+      prefs->GetBoolean(prefs::kPowerForceNonzeroBrightnessForUserActivity);
 
   power_policy_controller_->ApplyPrefs(values);
 }
@@ -248,6 +250,10 @@ void PowerPrefs::RegisterProfilePrefs(
       prefs::kPowerWaitForInitialUserActivity,
       false,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kPowerForceNonzeroBrightnessForUserActivity,
+      true,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 void PowerPrefs::SetProfile(Profile* profile) {
@@ -301,6 +307,8 @@ void PowerPrefs::SetProfile(Profile* profile) {
                               update_callback);
   pref_change_registrar_->Add(prefs::kPowerWaitForInitialUserActivity,
                               update_callback);
+  pref_change_registrar_->Add(
+      prefs::kPowerForceNonzeroBrightnessForUserActivity, update_callback);
 
   UpdatePowerPolicyFromPrefs();
 }
