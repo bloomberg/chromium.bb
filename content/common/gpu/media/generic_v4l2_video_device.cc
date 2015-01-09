@@ -17,6 +17,22 @@
 #include "content/common/gpu/media/generic_v4l2_video_device.h"
 #include "ui/gl/gl_bindings.h"
 
+#ifdef USE_LIBV4L2
+// Auto-generated for dlopen libv4l2 libraries
+#include "content/common/gpu/media/v4l2_stubs.h"
+#include "third_party/v4l-utils/lib/include/libv4l2.h"
+
+using content_common_gpu_media::kModuleV4l2;
+using content_common_gpu_media::InitializeStubs;
+using content_common_gpu_media::StubPathMap;
+
+static const base::FilePath::CharType kV4l2Lib[] =
+    FILE_PATH_LITERAL("libv4l2.so");
+#else
+#define v4l2_close close
+#define v4l2_ioctl ioctl
+#endif
+
 namespace content {
 
 namespace {
@@ -36,13 +52,13 @@ GenericV4L2Device::~GenericV4L2Device() {
     device_poll_interrupt_fd_ = -1;
   }
   if (device_fd_ != -1) {
-    close(device_fd_);
+    v4l2_close(device_fd_);
     device_fd_ = -1;
   }
 }
 
 int GenericV4L2Device::Ioctl(int request, void* arg) {
-  return HANDLE_EINTR(ioctl(device_fd_, request, arg));
+  return HANDLE_EINTR(v4l2_ioctl(device_fd_, request, arg));
 }
 
 bool GenericV4L2Device::Poll(bool poll_device, bool* event_pending) {
@@ -111,6 +127,12 @@ bool GenericV4L2Device::ClearDevicePollInterrupt() {
 
 bool GenericV4L2Device::Initialize() {
   const char* device_path = NULL;
+  static bool v4l2_functions_initialized = PostSandboxInitialization();
+  if (!v4l2_functions_initialized) {
+    LOG(ERROR) << "Failed to initialize LIBV4L2 libs";
+    return false;
+  }
+
   switch (type_) {
     case kDecoder:
       device_path = kDecoderDevice;
@@ -129,6 +151,12 @@ bool GenericV4L2Device::Initialize() {
   if (device_fd_ == -1) {
     return false;
   }
+#ifdef USE_LIBV4L2
+  if (HANDLE_EINTR(v4l2_fd_open(device_fd_, V4L2_DISABLE_CONVERSION)) == -1) {
+    v4l2_close(device_fd_);
+    return false;
+  }
+#endif
 
   device_poll_interrupt_fd_ = eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC);
   if (device_poll_interrupt_fd_ == -1) {
@@ -206,6 +234,18 @@ uint32 GenericV4L2Device::PreferredOutputFormat() {
   // implement proper handling (fallback, negotiation) for this in users.
   CHECK_EQ(type_, kDecoder);
   return V4L2_PIX_FMT_NV12M;
+}
+
+// static
+bool GenericV4L2Device::PostSandboxInitialization() {
+#ifdef USE_LIBV4L2
+  StubPathMap paths;
+  paths[kModuleV4l2].push_back(kV4l2Lib);
+
+  return InitializeStubs(paths);
+#else
+  return true;
+#endif
 }
 
 }  //  namespace content

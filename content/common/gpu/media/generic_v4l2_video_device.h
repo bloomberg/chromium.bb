@@ -52,6 +52,10 @@ class GenericV4L2Device : public V4L2Device {
   int device_poll_interrupt_fd_;
 
   DISALLOW_COPY_AND_ASSIGN(GenericV4L2Device);
+
+  // Lazily initialize static data after sandbox is enabled.  Return false on
+  // init failure.
+  static bool PostSandboxInitialization();
 };
 }  //  namespace content
 

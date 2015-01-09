@@ -31,6 +31,7 @@
     '../third_party/WebKit/public/blink_headers.gyp:blink_headers',
   ],
   'variables': {
+    'use_v4lplugin%': 0,
     'public_common_sources': [
       'public/common/appcache_info.h',
       'public/common/bindings_policy.h',
@@ -757,6 +758,50 @@
     ['enable_webrtc==1', {
       'dependencies': [
         '../third_party/libjingle/libjingle.gyp:libjingle',
+      ],
+    }],
+    ['use_v4lplugin==1 and chromeos==1', {
+      'defines': [
+        'USE_LIBV4L2',
+      ],
+      'variables': {
+        'generate_stubs_script': '../tools/generate_stubs/generate_stubs.py',
+        'extra_header': 'common/gpu/media/v4l2_stub_header.fragment',
+        'sig_files': ['common/gpu/media/v4l2.sig'],
+        'outfile_type': 'posix_stubs',
+        'stubs_filename_root': 'v4l2_stubs',
+        'project_path': 'content/common/gpu/media',
+        'intermediate_dir': '<(INTERMEDIATE_DIR)',
+        'output_root': '<(SHARED_INTERMEDIATE_DIR)/v4l2',
+      },
+      'include_dirs': [
+        '<(output_root)',
+      ],
+      'actions': [
+        {
+          'action_name': 'generate_stubs',
+          'inputs': [
+            '<(generate_stubs_script)',
+            '<(extra_header)',
+            '<@(sig_files)',
+          ],
+          'outputs': [
+            '<(intermediate_dir)/<(stubs_filename_root).cc',
+            '<(output_root)/<(project_path)/<(stubs_filename_root).h',
+          ],
+          'action': ['python',
+            '<(generate_stubs_script)',
+            '-i', '<(intermediate_dir)',
+            '-o', '<(output_root)/<(project_path)',
+            '-t', '<(outfile_type)',
+            '-e', '<(extra_header)',
+            '-s', '<(stubs_filename_root)',
+            '-p', '<(project_path)',
+            '<@(_inputs)',
+          ],
+          'process_outputs_as_sources': 1,
+          'message': 'Generating libv4l2 stubs for dynamic loading',
+        },
       ],
     }],
     ['target_arch=="arm" and chromeos == 1 and use_x11 == 1', {
