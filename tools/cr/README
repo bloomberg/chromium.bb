@@ -10,5 +10,5 @@ single checkout.
 It also makes the commands more discoverable by being a single starting point
 with built in help.
 
-If you are using bash, source cr.sh and you will get the cr function in your
-shell, along with tab completion.
+If you are using bash, source cr-bash-helpers.sh and you will get the cr
+function in your shell, along with tab completion.
