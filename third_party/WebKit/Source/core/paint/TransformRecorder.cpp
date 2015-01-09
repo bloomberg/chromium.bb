@@ -23,12 +23,11 @@ TransformRecorder::TransformRecorder(GraphicsContext& context, DisplayItemClient
 
     OwnPtr<BeginTransformDisplayItem> beginTransform = BeginTransformDisplayItem::create(m_client, transform);
 
-    // We need to apply the display item so the GraphicsContext has the correct matrix pushed (for callers of ctm(), etc.).
-    beginTransform->replay(&m_context);
-
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         ASSERT(m_context.displayItemList());
         m_context.displayItemList()->add(beginTransform.release());
+    } else {
+        beginTransform->replay(&m_context);
     }
 }
 
@@ -39,12 +38,11 @@ TransformRecorder::~TransformRecorder()
 
     OwnPtr<EndTransformDisplayItem> endTransform = EndTransformDisplayItem::create(m_client);
 
-    // We need to undo the effect of beginTransform so GraphicsContext has the correct matrix again.
-    endTransform->replay(&m_context);
-
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         ASSERT(m_context.displayItemList());
         m_context.displayItemList()->add(endTransform.release());
+    } else {
+        endTransform->replay(&m_context);
     }
 }
 
