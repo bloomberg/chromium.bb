@@ -34,8 +34,10 @@ class Operand(object):
       def_format.OperandReadWriteMode.READ_WRITE)
   arg_type_regex = '|'.join(def_format.ALL_OPERAND_TYPES)
   size_regex = (
-      r'|2|7|b|d|do|dq|fq|o|p|pb|pd|pdw|pdwx|pdx|ph|phx|pi|pj|pjx|pk|pkx|'
-      r'pq|pqw|pqwx|pqx|ps|psx|pw|q|r|s|sb|sd|se|si|sq|sr|ss|st|sw|sx|'
+      r'|2|7|b|d|do|dq|fq|o|'
+      r'p|pb|pbx|pd|pdw|pdwx|pdx|ph|phx|pi|pix|'
+      r'pj|pjx|pk|pkx|pq|pqw|pqwx|pqx|ps|psx|pw|pwx|'
+      r'q|r|s|sb|sd|se|si|sq|sr|ss|st|sw|sx|'
       r'v|w|x|y|z')
   implicit_mark_regex = r'\*?'
 
@@ -1279,12 +1281,15 @@ def SplitL(instruction):
 
   splits = {
       'x': ('x-xmm', 'x-ymm'),
+      'pbx': ('pb', 'pb-ymm'),
       'pdx': ('pd', 'pd-ymm'),
       'phx': ('ph', 'ph-ymm'),
+      'pix': ('pi', 'pi-ymm'),
       'pjx': ('pj', 'pj-ymm'),
       'pkx': ('pk', 'pk-ymm'),
       'pqx': ('pq', 'pq-ymm'),
       'psx': ('ps', 'ps-ymm'),
+      'pwx': ('pw', 'pw-ymm'),
       'pdwx': ('pdw', 'pdw-ymm'),
       'pqwx': ('pqw', 'pqw-ymm')}
 

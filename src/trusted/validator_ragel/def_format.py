@@ -95,6 +95,8 @@
 #       p:    A 32-bit or 48-bit far pointer, depending on the effective operand
 #             size.
 #       pb:   A Vector with byte-wide (8-bit) elements (packed byte).
+#       pbx:  A Vector with byte-wide (8-bit) elements (packed byte). L bit
+#             selects 256bit YMM registers.
 #       pd:   A double-precision (64-bit) floating-point vector operand (packed
 #             double-precision).
 #       pdw:  Vector composed of 32-bit doublewords.
@@ -107,6 +109,8 @@
 #       phx:  A half-precision (16-bit) floating-point vector operand (packed
 #             half-precision).  L bit selects 256bit YMM registers.
 #       pi:   Vector composed of 16-bit integers (packed integer).
+#       pix:  Vector composed of 16-bit integers (packed integer).
+#             L bit selects 256 bit YMM registers.
 #       pj:   Vector composed of 32-bit integers (packed double integer).
 #       pjx:  Vector composed of 32-bit integers (packed double integer).
 #             L bit selects 256bit YMM registers.
@@ -124,6 +128,8 @@
 #       psx:  A single-precision floating-point vector operand (packed
 #             single-precision).  L bit selects 256bit YMM registers.
 #       pw:   Vector composed of 16-bit words (packed word).
+#       pwx:  Vector composed of 16-bit words (packed word). L bit selects
+#             256 bit YMM registers.
 #       q:    A quadword (64-bit), irrespective of the effective operand size.
 #       r:    Register size (32bit in 32bit mode, 64bit in 64bit mode).
 #       s:    Segment register (if register operand).
