@@ -84,4 +84,16 @@ then
   fi
 fi
 
+# Get the SDK extras packages to install from the DEPS file 'sdkextras' hook.
+packages="$(python -c 'execfile("./get_sdk_extras_packages.py")')"
+for package in "${packages}"; do
+  package_num=$(../third_party/android_tools/sdk/tools/android list sdk | \
+                grep -i "$package," | \
+                awk '/^[ ]*[0-9]*- / {gsub("-",""); print $1}')
+  if [[ -n ${package_num} ]]; then
+    ../third_party/android_tools/sdk/tools/android update sdk --no-ui --filter \
+      ${package_num}
+  fi
+done
+
 echo "install-build-deps-android.sh complete."
