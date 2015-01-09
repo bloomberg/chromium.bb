@@ -1,21 +1,7 @@
-crbug.com/443780 virtual/slimmingpaint/fast/events/option-tab.html [ Failure ]
-crbug.com/443780 [ Linux Mac ] virtual/slimmingpaint/fast/events/panScroll-click-hyperlink.html [ Failure ]
 crbug.com/443780 [ Mac ] virtual/slimmingpaint/fast/events/scale-and-scroll-iframe-body.html [ ImageOnlyFailure ]
 crbug.com/443780 [ Mac ] virtual/slimmingpaint/fast/events/scale-and-scroll-iframe-window.html [ ImageOnlyFailure ]
-crbug.com/443780 virtual/slimmingpaint/fast/events/touch/compositor-touch-hit-rects-scroll.html [ Failure ]
-crbug.com/443780 [ Linux Mac ] virtual/slimmingpaint/fast/events/panScroll-in-iframe.html [ Timeout ]
-crbug.com/443780 [ Linux Mac ] virtual/slimmingpaint/fast/events/panScroll-click.html [ Timeout ]
-crbug.com/443780 [ Linux Mac ] virtual/slimmingpaint/fast/events/panScroll-event-fired.html [ Timeout ]
-crbug.com/443780 [ Linux Mac ] virtual/slimmingpaint/fast/events/panScroll-nested-divs.html [ Timeout ]
-crbug.com/443780 [ Linux Mac ] virtual/slimmingpaint/fast/events/panScroll-drag.html [ Timeout ]
-crbug.com/443780 [ Linux Mac ] virtual/slimmingpaint/fast/events/panScroll-nested-divs-forbidden.html [ Timeout ]
-crbug.com/443780 virtual/slimmingpaint/fast/events/drag-and-drop-autoscroll-mainframe.html [ Timeout ]
-crbug.com/443780 [ Mac ] virtual/slimmingpaint/fast/events/event-view-toString.html [ Timeout ]
-crbug.com/443780 [ Mac ] virtual/slimmingpaint/fast/events/hit-test-counts.html [ Failure ]
 crbug.com/443780 [ Mac ] virtual/slimmingpaint/fast/events/menu-key-context-menu-document.html [ Failure ]
 crbug.com/443780 [ Mac ] virtual/slimmingpaint/fast/events/menu-key-context-menu.html [ Failure ]
-crbug.com/443780 virtual/slimmingpaint/fast/events/domactivate-sets-underlying-click-event-as-handled.html [ Pass Failure ]
-
 crbug.com/441639 virtual/slimmingpaint/fast/overflow/paged-x-with-column-gap.html [ ImageOnlyFailure ]
 crbug.com/441639 [ Linux ] virtual/slimmingpaint/fast/overflow/paged-x-div-with-column-gap.html [ ImageOnlyFailure ]
 crbug.com/441639 [ Debug ] virtual/slimmingpaint/fast/overflow/lots-of-sibling-inline-boxes.html [ Pass Timeout ]
@@ -54,6 +40,7 @@ crbug.com/428980 fast/repaint/fixed-right-in-page-scale.html [ ImageOnlyFailure 
 crbug.com/428980 fast/transforms/selection-bounds-in-transformed-view.html [ Failure ]
 crbug.com/428980 css3/viewport-percentage-lengths/viewport-percentage-lengths-resize.html [ Failure ]
 crbug.com/428980 fast/events/drag-and-drop-autoscroll-mainframe.html [ Timeout ]
+crbug.com/428980 virtual/slimmingpaint/fast/events/drag-and-drop-autoscroll-mainframe.html [ Timeout ]
 crbug.com/428980 compositing/layer-creation/fixed-position-out-of-view-scaled-scroll.html [ Failure ]
 
 crbug.com/437743 virtual/slimmingpaint/fast/block/float/overhanging-tall-block.html [ Skip ]
@@ -78,7 +65,9 @@ crbug.com/9798 [ Win Release ] http/tests/xmlhttprequest/small-chunks-response-t
 
 crbug.com/339118 perf/compositor-touch-hit-rects.html [ Failure Pass ]
 crbug.com/339118 fast/events/touch/compositor-touch-hit-rects-scroll.html [ Failure Pass ]
+crbug.com/339118 virtual/slimmingpaint/fast/events/touch/compositor-touch-hit-rects-scroll.html [ Failure Pass ]
 crbug.com/430980 [ Mac ] fast/events/hit-test-counts.html [ Failure Pass ]
+crbug.com/430980 [ Mac ] virtual/slimmingpaint/fast/events/hit-test-counts.html [ Failure Pass ]
 
 # The result here is flaky. So a rebaseline won't make these [ Pass Timeout ].
 crbug.com/66751 [ Linux Mac ] http/tests/local/link-stylesheet-load-order-preload.html [ Failure ]
