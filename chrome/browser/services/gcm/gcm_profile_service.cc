@@ -134,30 +134,10 @@ void GCMProfileService::RegisterProfilePrefs(
 }
 
 #if defined(OS_ANDROID)
-static GCMProfileService* debug_instance = nullptr;  // TODO(johnme): Remove.
-
 GCMProfileService::GCMProfileService(Profile* profile)
     : profile_(profile),
       push_messaging_service_(this, profile) {
-  CHECK(!profile->IsOffTheRecord());
-
-  // TODO(johnme): Remove this debug code once crbug.com/437827 is fixed.
-  if (debug_instance != nullptr) {
-    LOG(FATAL) << "An instance of GCMProfileService already exists!"
-               << " Old profile: " << debug_instance->profile_ << " "
-               << debug_instance->profile_->GetDebugName() << " "
-               << debug_instance->profile_->GetProfileType() << " "
-               << debug_instance->profile_->IsSupervised() << " "
-               << debug_instance->profile_->IsNewProfile() << " "
-               << debug_instance->profile_->GetStartTime().ToInternalValue()
-               << ", new profile: " << profile << " "
-               << profile_->GetDebugName() << " "
-               << profile_->GetProfileType() << " "
-               << profile_->IsSupervised() << " "
-               << profile_->IsNewProfile() << " "
-               << profile_->GetStartTime().ToInternalValue();
-  }
-  debug_instance = this;
+  DCHECK(!profile->IsOffTheRecord());
 
   driver_.reset(new GCMDriverAndroid);
 }
