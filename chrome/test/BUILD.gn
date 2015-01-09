@@ -275,18 +275,16 @@ if (!is_android) {
         "//ui/views:test_support",
         "//ui/views/controls/webview:test_support",
       ]
+      if (!is_mac) {
+        sources += rebase_path(
+                gypi_values.chrome_interactive_ui_test_views_non_mac_sources,
+                ".",
+                "//chrome")
+      }
       if (is_linux) {
         # TODO(gbillock): aura linux does not support the automation for
         # SendMouseMoveNotifyWhenDone
         sources -= [ "../browser/ui/views/toolbar/toolbar_button_test.cc" ]
-      }
-      if (is_mac) {
-        sources -= [
-          "../browser/ui/views/keyboard_access_browsertest.cc",
-          "../browser/ui/views/message_center/web_notification_tray_browsertest.cc",
-          "../browser/ui/views/panels/panel_view_browsertest.cc",
-          "../browser/ui/views/toolbar/toolbar_button_test.cc",
-        ]
       }
       if (is_chromeos) {
         sources -= [
@@ -349,7 +347,9 @@ if (!is_android) {
           rebase_path(gypi_values.chrome_interactive_ui_test_panels_sources,
                       ".",
                       "//chrome")
-      if (toolkit_views) {
+
+      # TODO(tapted): Include on mac when views panels are ported.
+      if (toolkit_views && !is_mac) {
         sources += rebase_path(
                 gypi_values.chrome_interactive_ui_test_panels_views_sources,
                 ".",
@@ -395,12 +395,6 @@ if (!is_android) {
       # when we tried to pull it up to the common.gypi level, it broke other
       # things like the ui and startup tests. *shrug*
       ldflags += [ "-Wl,-ObjC" ]
-    } else {
-      # Non-Mac.
-      sources +=
-          rebase_path(gypi_values.chrome_interactive_ui_test_non_mac_sources,
-                      ".",
-                      "//chrome")
     }
 
     if (cld_version == 0 || cld_version == 2) {

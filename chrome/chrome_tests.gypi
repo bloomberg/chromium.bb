@@ -942,6 +942,7 @@
       'browser/ui/views/message_center/web_notification_tray_browsertest.cc',
       'browser/ui/views/panels/panel_view_browsertest.cc',
     ],
+     # Cross-platform views interactive tests ready for toolkit-views on Mac.
     'chrome_interactive_ui_test_views_sources': [
       '../ui/views/controls/webview/webview_interactive_uitest.cc',
       '../ui/views/corewm/desktop_capture_controller_unittest.cc',
@@ -949,19 +950,13 @@
       '../ui/views/widget/desktop_aura/x11_topmost_window_finder_interactive_uitest.cc',
       '../ui/views/widget/widget_interactive_uitest.cc',
       'browser/ui/views/ash/tab_scrubber_browsertest.cc',
-      'browser/ui/views/find_bar_controller_interactive_uitest.cc',
-      'browser/ui/views/frame/browser_view_focus_uitest.cc',
-      'browser/ui/views/frame/browser_view_interactive_uitest.cc',
-      'browser/ui/views/keyboard_access_browsertest.cc',
       'browser/ui/views/menu_controller_interactive_uitest.cc',
       'browser/ui/views/menu_item_view_interactive_uitest.cc',
+      'browser/ui/views/menu_model_adapter_test.cc',
       'browser/ui/views/menu_test_base.cc',
       'browser/ui/views/menu_test_base.h',
-      'browser/ui/views/menu_model_adapter_test.cc',
       'browser/ui/views/menu_view_drag_and_drop_test.cc',
-      'browser/ui/views/passwords/manage_passwords_icon_view_browsertest.cc',
       'browser/ui/views/status_icons/status_tray_state_changer_interactive_uitest_win.cc',
-      'browser/ui/views/toolbar/toolbar_button_test.cc',
       'test/base/view_event_test_base.cc',
       'test/base/view_event_test_base.h',
     ],
@@ -982,18 +977,28 @@
       'app/chrome_dll.rc',
       'test/data/resource.rc',
     ],
-    'chrome_interactive_ui_test_non_mac_sources': [
+    # Cross-platform (except Mac) views interactive tests.
+    # TODO(tapted): Move these to chrome_interactive_ui_test_views_sources when
+    # the corresponding files are moved in chrome_browser_ui.gypi (i.e. out of
+    # chrome_browser_ui_views_non_mac_sources).
+    'chrome_interactive_ui_test_views_non_mac_sources': [
       'browser/ui/views/bookmarks/bookmark_bar_view_test.cc',
       'browser/ui/views/bookmarks/bookmark_bar_view_test_helper.h',
       'browser/ui/views/constrained_window_views_browsertest.cc',
+      'browser/ui/views/find_bar_controller_interactive_uitest.cc',
       'browser/ui/views/find_bar_host_interactive_uitest.cc',
+      'browser/ui/views/frame/browser_view_focus_uitest.cc',
+      'browser/ui/views/frame/browser_view_interactive_uitest.cc',
+      'browser/ui/views/keyboard_access_browsertest.cc',
       'browser/ui/views/location_bar/location_icon_view_interactive_uitest.cc',
       'browser/ui/views/location_bar/star_view_browsertest.cc',
       'browser/ui/views/omnibox/omnibox_view_views_browsertest.cc',
       'browser/ui/views/passwords/manage_passwords_bubble_view_browsertest.cc',
+      'browser/ui/views/passwords/manage_passwords_icon_view_browsertest.cc',
       'browser/ui/views/ssl_client_certificate_selector_browsertest.cc',
       'browser/ui/views/tabs/tab_drag_controller_interactive_uitest.cc',
       'browser/ui/views/tabs/tab_drag_controller_interactive_uitest.h',
+      'browser/ui/views/toolbar/toolbar_button_test.cc',
       'browser/ui/views/toolbar/toolbar_view_interactive_uitest.cc',
     ],
     'chrome_interactive_ui_test_notifications_sources': [
@@ -1493,23 +1498,13 @@
           ],
         }],
         ['OS=="mac"', {
-          'sources!': [
-            # TODO(tapted): Enable toolkit-views tests on Mac when their
-            # respective implementations are ported.
-
-            # Note: Sources list duplicated in GN build.
-            'browser/ui/views/keyboard_access_browsertest.cc',
-            'browser/ui/views/message_center/web_notification_tray_browsertest.cc',
-            'browser/ui/views/panels/panel_view_browsertest.cc',
-            'browser/ui/views/toolbar/toolbar_button_test.cc',
-          ],
           'dependencies': [
             'chrome'
           ],
           # See comment about the same line in chrome/chrome_tests.gypi.
           'xcode_settings': {'OTHER_LDFLAGS': ['-Wl,-ObjC']},
         }, {  # Non-Mac.
-          'sources': [ '<@(chrome_interactive_ui_test_non_mac_sources)' ],
+          'sources': [ '<@(chrome_interactive_ui_test_views_non_mac_sources)' ],
         }],
         ['notifications == 1', {
           # Common notifications tests.
@@ -1586,7 +1581,8 @@
           # ChromeOS doesn't use panels, everybody else does.
           'sources': [ '<@(chrome_interactive_ui_test_panels_sources)' ],
           'conditions': [
-            [ 'toolkit_views==1', {
+            # TODO(tapted): Include on mac when views panels are ported.
+            [ 'toolkit_views==1 and OS != "mac"', {
               'sources': [
                 '<@(chrome_interactive_ui_test_panels_views_sources)',
               ],
