@@ -82,13 +82,14 @@ var FPS = 60;
 var IS_HIDPI = window.devicePixelRatio > 1;
 
 /** @const */
-var IS_MOBILE = window.navigator.userAgent.indexOf('Mobi') > -1;
+var IS_IOS =
+    window.navigator.userAgent.indexOf('UIWebViewForStaticFileContent') > -1;
+
+/** @const */
+var IS_MOBILE = window.navigator.userAgent.indexOf('Mobi') > -1 || IS_IOS;
 
 /** @const */
 var IS_TOUCH_ENABLED = 'ontouchstart' in window;
-
-/** @const */
-var IS_IOS = window.navigator.userAgent.indexOf('CriOS') > -1;
 
 /**
  * Default game configuration.
