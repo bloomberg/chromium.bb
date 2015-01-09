@@ -93,8 +93,7 @@ TEST_F(IOThreadTest, SpdyFieldTrialSpdy4Enabled) {
               ElementsAre(net::kProtoHTTP11,
                           net::kProtoQUIC1SPDY3,
                           net::kProtoSPDY31,
-                          net::kProtoSPDY4_14,
-                          net::kProtoSPDY4_15));
+                          net::kProtoSPDY4_14));
   globals_.use_alternate_protocols.CopyToIfSet(&use_alternate_protocols);
   EXPECT_TRUE(use_alternate_protocols);
 }
