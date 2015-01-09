@@ -608,29 +608,6 @@ crbug.com/338883 [ Linux ] crypto/subtle/ecdh-deriveKey-aes.html [ Failure Pass 
 crbug.com/338883 [ Linux ] crypto/subtle/ecdh-deriveKey-failures.html [ Failure Pass ]
 crbug.com/338883 [ Linux ] crypto/subtle/ecdh-deriveKey-hmac.html [ Failure Pass ]
 
-# minor rebaselines needed after http://crrev.com/841193002
-crbug.com/323521 compositing/gestures/gesture-tapHighlight-pixel-rotated-div.html [ NeedsRebaseline ]
-crbug.com/323521 compositing/squashing/squashing-print.html [ NeedsRebaseline ]
-crbug.com/323521 css3/masking/clip-path-circle-overflow.html [ NeedsRebaseline ]
-crbug.com/323521 css3/masking/clip-path-circle-relative-overflow.html [ NeedsRebaseline ]
-crbug.com/323521 editing/selection/transformed-selection-rects.html [ NeedsRebaseline ]
-crbug.com/323521 fast/backgrounds/mask-box-image.html [ NeedsRebaseline ]
-crbug.com/323521 fast/backgrounds/transformed-body-background.html [ NeedsRebaseline ]
-crbug.com/323521 fast/backgrounds/transformed-body-html-background.html [ NeedsRebaseline ]
-crbug.com/323521 fast/backgrounds/transformed-html-body-background.html [ NeedsRebaseline ]
-crbug.com/323521 fast/borders/border-antialiasing.html [ NeedsRebaseline ]
-crbug.com/323521 fast/css/resize-corner-tracking-transformed-iframe.html [ NeedsRebaseline ]
-crbug.com/323521 fast/css/resize-corner-tracking-transformed.html [ NeedsRebaseline ]
-crbug.com/323521 fast/transforms/diamond.html [ NeedsRebaseline ]
-crbug.com/323521 fast/transforms/skew-with-unitless-zero.html [ NeedsRebaseline ]
-crbug.com/323521 fast/transforms/transformed-caret.html [ NeedsRebaseline ]
-crbug.com/323521 svg/transforms/animated-path-inside-transformed-html.xhtml [ NeedsRebaseline ]
-crbug.com/323521 svg/transforms/svg-css-transforms.xhtml [ NeedsRebaseline ]
-crbug.com/323521 svg/transforms/text-with-pattern-inside-transformed-html.xhtml [ NeedsRebaseline ]
-crbug.com/323521 transforms/2d/hindi-rotated.html [ NeedsRebaseline ]
-crbug.com/323521 transforms/svg-vs-css.xhtml [ NeedsRebaseline ]
-crbug.com/323521 virtual/slimmingpaint/fast/css/resize-corner-tracking-transformed-iframe.html [ NeedsRebaseline ]
-
 # There are some unresolved problems with the teardown of WebWorkers that make
 # the "abandon" WebCrypto tests flaky-crash. This flakiness can also affect the
 # tests run immediately afterwards (the two AES-CBC decrypt tests).
