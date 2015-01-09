@@ -30,9 +30,10 @@ private:
     }
 
     static PassOwnPtrWillBeRawPtr<InterpolableValue> colorToInterpolableValue(const CSSValue&);
-    static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> interpolableValueToColor(InterpolableValue*);
+    static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> interpolableValueToColor(const InterpolableValue&);
 
     friend class AnimationColorStyleInterpolationTest;
+    friend class ShadowStyleInterpolation;
 };
 }
 

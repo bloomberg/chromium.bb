@@ -22,7 +22,7 @@ protected:
 
     static PassRefPtrWillBeRawPtr<CSSValue> interpolableValueToColor(InterpolableValue* value)
     {
-        return ColorStyleInterpolation::interpolableValueToColor(value);
+        return ColorStyleInterpolation::interpolableValueToColor(*value);
     }
 
     static PassRefPtrWillBeRawPtr<CSSValue> roundTrip(PassRefPtrWillBeRawPtr<CSSValue> value)

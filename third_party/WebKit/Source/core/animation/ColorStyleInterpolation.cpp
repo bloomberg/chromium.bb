@@ -34,10 +34,10 @@ PassOwnPtrWillBeRawPtr<InterpolableValue> ColorStyleInterpolation::colorToInterp
     return list->clone();
 }
 
-PassRefPtrWillBeRawPtr<CSSPrimitiveValue> ColorStyleInterpolation::interpolableValueToColor(InterpolableValue* value)
+PassRefPtrWillBeRawPtr<CSSPrimitiveValue> ColorStyleInterpolation::interpolableValueToColor(const InterpolableValue& value)
 {
-    ASSERT(value->isList());
-    InterpolableList* list = toInterpolableList(value);
+    ASSERT(value.isList());
+    const InterpolableList* list = toInterpolableList(&value);
 
     double alpha = toInterpolableNumber(list->get(3))->value();
     if (!alpha)
@@ -55,7 +55,7 @@ PassRefPtrWillBeRawPtr<CSSPrimitiveValue> ColorStyleInterpolation::interpolableV
 
 void ColorStyleInterpolation::apply(StyleResolverState& state) const
 {
-    StyleBuilder::applyProperty(m_id, state, interpolableValueToColor(m_cachedValue.get()).get());
+    StyleBuilder::applyProperty(m_id, state, interpolableValueToColor(*m_cachedValue).get());
 }
 
 void ColorStyleInterpolation::trace(Visitor* visitor)
