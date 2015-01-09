@@ -135,8 +135,7 @@ HttpBridge::RequestContext::RequestContext(
     const scoped_refptr<base::SingleThreadTaskRunner>&
         network_task_runner,
     const std::string& user_agent)
-    : baseline_context_(baseline_context),
-      network_task_runner_(network_task_runner),
+    : network_task_runner_(network_task_runner),
       job_factory_(new net::URLRequestJobFactoryImpl()) {
   DCHECK(!user_agent.empty());
 

@@ -138,9 +138,6 @@ class SYNC_EXPORT_PRIVATE ModelTypeRegistry
   // The set of encrypted types.
   ModelTypeSet encrypted_types_;
 
-  // A helper that manages cryptography state and preferences.
-  SyncEncryptionHandler* encryption_handler_;
-
   // The NudgeHandler.  Not owned.
   NudgeHandler* nudge_handler_;
 

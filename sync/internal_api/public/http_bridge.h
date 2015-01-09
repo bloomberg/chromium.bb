@@ -71,7 +71,6 @@ class SYNC_EXPORT_PRIVATE HttpBridge
     ~RequestContext() override;
 
    private:
-    net::URLRequestContext* const baseline_context_;
     const scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
     scoped_ptr<net::HttpUserAgentSettings> http_user_agent_settings_;
     scoped_ptr<net::URLRequestJobFactory> job_factory_;
