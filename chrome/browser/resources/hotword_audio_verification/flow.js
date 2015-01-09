@@ -210,7 +210,11 @@
     $('audio-history-wait').hidden = true;
     $('audio-history-error').hidden = false;
 
-    $('audio-history-agree').focus();
+    // Set a timeout before focusing the Enable button so that screenreaders
+    // have time to announce the error first.
+    this.setTimeout_(function() {
+        $('audio-history-agree').focus();
+    }.bind(this), 50);
   };
 
   /**
@@ -441,7 +445,12 @@
         curStep.classList.remove('listening');
         curStep.classList.add('not-started');
       }
-      $(this.trainingPagePrefix_ + '-toast').children[1].focus();
+
+      // Set a timeout before focusing the Retry button so that screenreaders
+      // have time to announce the timeout first.
+      this.setTimeout_(function() {
+        $(this.trainingPagePrefix_ + '-toast').children[1].focus();
+      }.bind(this), 50);
     } else if (this.trainingState_ == TrainingState.ERROR) {
       // Update the buttonbar.
       $(this.trainingPagePrefix_ + '-wait').hidden = true;
@@ -449,8 +458,11 @@
       $(this.trainingPagePrefix_ + '-retry').hidden = false;
       $(this.trainingPagePrefix_ + '-processing').hidden = false;
 
-      // Focus the retry button.
-      $(this.trainingPagePrefix_ + '-retry').children[0].focus();
+      // Set a timeout before focusing the Retry button so that screenreaders
+      // have time to announce the error first.
+      this.setTimeout_(function() {
+        $(this.trainingPagePrefix_ + '-retry').children[0].focus();
+      }.bind(this), 50);
     }
   };
 
