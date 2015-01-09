@@ -30,7 +30,7 @@
 
 [
     GarbageCollected,
-    NoInterfaceObject
+    Exposed=(Window,Worker)
 ] interface CryptoKey {
     readonly attribute DOMString type;
     readonly attribute boolean extractable;

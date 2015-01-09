@@ -41,6 +41,8 @@ function testGenerateRsaKey()
         publicKey = result.publicKey;
         privateKey = result.privateKey;
 
+        shouldBeTrue("publicKey instanceof CryptoKey", true);
+
         shouldEvaluateAsSilent("publicKey.type", "public");
         shouldEvaluateAsSilent("publicKey.extractable", true);
         shouldEvaluateAsSilent("publicKey.algorithm.name", algorithm.name);
