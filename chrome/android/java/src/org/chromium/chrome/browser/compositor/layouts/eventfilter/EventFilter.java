@@ -15,7 +15,6 @@ import org.chromium.base.VisibleForTesting;
 public abstract class EventFilter {
     protected final EventFilterHost mHost;
     protected final float mPxToDp;
-    private boolean mGestureStarted = false;
     private boolean mSimulateIntercepting = false;
 
     private boolean mAutoOffset = false;
@@ -52,7 +51,6 @@ public abstract class EventFilter {
      * @return                  Whether the filter is going to intercept events.
      */
     public final boolean onInterceptTouchEvent(MotionEvent event, boolean isKeyboardShowing) {
-        assert !mGestureStarted;
         MotionEvent sentEvent = event;
         if (mAutoOffset && (mCurrentTouchOffsetX != 0 || mCurrentTouchOffsetY != 0)) {
             sentEvent = MotionEvent.obtain(event);
@@ -92,18 +90,7 @@ public abstract class EventFilter {
      */
     public final boolean onTouchEvent(MotionEvent event) {
         if (mAutoOffset) event.offsetLocation(mCurrentTouchOffsetX, mCurrentTouchOffsetY);
-        final boolean handled = onTouchEventInternal(event);
-        if (handled && !mGestureStarted) {
-            mHost.onStartGesture();
-            mGestureStarted = true;
-        }
-        final int action = event.getActionMasked();
-        if (mGestureStarted
-                && (action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_CANCEL)) {
-            mHost.onEndGesture();
-            mGestureStarted = false;
-        }
-        return handled;
+        return onTouchEventInternal(event);
     }
 
     /**

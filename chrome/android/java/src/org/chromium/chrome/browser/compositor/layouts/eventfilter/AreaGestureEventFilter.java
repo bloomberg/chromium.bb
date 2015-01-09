@@ -13,7 +13,7 @@ import android.view.MotionEvent;
  * screen.
  */
 public class AreaGestureEventFilter extends GestureEventFilter {
-    private RectF mTriggerRect;
+    private final RectF mTriggerRect = new RectF();
 
     /**
      * Creates a {@link AreaGestureEventFilter}.
@@ -60,7 +60,11 @@ public class AreaGestureEventFilter extends GestureEventFilter {
      * @param rect The area that events should be stolen from in dp.
      */
     public void setEventArea(RectF rect) {
-        mTriggerRect = rect;
+        if (rect == null) {
+            mTriggerRect.setEmpty();
+        } else {
+            mTriggerRect.set(rect);
+        }
     }
 
     @Override
