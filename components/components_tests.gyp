@@ -811,6 +811,7 @@
                 'pairing/message_buffer_unittest.cc',
                 'timers/alarm_timer_unittest.cc',
                 'wifi_sync/wifi_security_class_chromeos_unittest.cc',
+                'wifi_sync/wifi_security_class_unittest.cc',
               ],
               'sources!': [
                 'storage_monitor/storage_monitor_linux_unittest.cc',

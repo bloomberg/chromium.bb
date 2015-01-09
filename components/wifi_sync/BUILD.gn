@@ -12,12 +12,14 @@ source_set("wifi_sync") {
     "wifi_credential_syncable_service.h",
     "wifi_credential_syncable_service_factory.cc",
     "wifi_credential_syncable_service_factory.h",
+    "wifi_security_class.cc",
     "wifi_security_class.h",
     "wifi_security_class_chromeos.cc",
   ]
 
   deps = [
     "//base",
+    "//components/onc",
     "//sync",
   ]
 }
@@ -27,10 +29,12 @@ source_set("unit_tests") {
 
   deps = [
     ":wifi_sync",
+    "//sync",
     "//testing/gtest",
   ]
 
   sources = [
     "wifi_security_class_chromeos_unittest.cc",
+    "wifi_security_class_unittest.cc",
   ]
 }

@@ -10,6 +10,7 @@
       'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
+        '../components/components.gyp:onc_component',
         '../sync/sync.gyp:sync',
       ],
       'sources': [
@@ -21,6 +22,7 @@
         'wifi_sync/wifi_credential_syncable_service.h',
         'wifi_sync/wifi_credential_syncable_service_factory.cc',
         'wifi_sync/wifi_credential_syncable_service_factory.h',
+        'wifi_sync/wifi_security_class.cc',
         'wifi_sync/wifi_security_class.h',
         'wifi_sync/wifi_security_class_chromeos.cc',
       ],
