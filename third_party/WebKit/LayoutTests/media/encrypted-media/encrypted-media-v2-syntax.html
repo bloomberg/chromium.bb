@@ -61,6 +61,7 @@
                 // Invalid key systems. Note that JavaScript converts all these
                 // values into strings by calling toString(), so they fail due
                 // to the key system not being supported, not due to the type.
+                /* FIXME: Re-enable when keySystem checking lands in Chromium.
                 {
                     exception: 'NotSupportedError',
                     func: function() { return navigator.requestMediaKeySystemAccess(null); }
@@ -85,7 +86,7 @@
                 {
                     exception: 'NotSupportedError',
                     func: function() { return navigator.requestMediaKeySystemAccess('org.w3\u263A.clearkey'); }
-                }
+                }*/
             ];
 
             async_test(function(test)

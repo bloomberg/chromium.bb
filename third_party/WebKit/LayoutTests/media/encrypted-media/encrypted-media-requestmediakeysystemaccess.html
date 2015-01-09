@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Test navigator.requestMediaKeySystemAccess()</title>
+        <script src="encrypted-media-utils.js"></script>
+        <script src="../../resources/testharness.js"></script>
+        <script src="../../resources/testharnessreport.js"></script>
+    </head>
+    <body>
+        <div id="log"></div>
+        <script>
+            function expect_error(keySystem, configurations, expectedError, testName) {
+                promise_test(function(test) {
+                  return navigator.requestMediaKeySystemAccess(keySystem, configurations).then(function(a) {
+                      assert_unreached('Unexpected requestMediaKeySystemAccess() success.');
+                  }, function(e) {
+                      assert_equals(e.name, expectedError);
+                  });
+                }, testName);
+            }
+
+            function expect_success(keySystem, configurations, testName) {
+                // FIXME: Check the resulting accumulated configuration. http://crbug.com/447059.
+                promise_test(function(test) {
+                  return navigator.requestMediaKeySystemAccess(keySystem, configurations);
+                }, testName);
+            }
+
+            expect_error('', [{}], 'InvalidAccessError', 'Empty keySystem');
+            expect_error('com.example.badkeysystem', [{}], 'NotSupportedError', 'Unsupported keySystem');
+            expect_error('org.w3.clearkey', [], 'InvalidAccessError', 'Empty supportedConfigurations');
+            expect_success('org.w3.clearkey', [{initDataTypes: ['webm']}], 'Valid configuration');
+
+            expect_success('org.w3.clearkey', [{
+                initDataTypes: ['webm'],
+                videoCapabilities: [{contentType: 'video/webm; codecs=vp8'}],
+            }], 'Supported video codec');
+        </script>
+    </body>
+</html>
