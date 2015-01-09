@@ -39,8 +39,8 @@ class LogHelper {
 class MEDIA_EXPORT MediaLog : public base::RefCountedThreadSafe<MediaLog> {
  public:
   // Convert various enums to strings.
-  static const char* EventTypeToString(MediaLogEvent::Type type);
-  static const char* PipelineStatusToString(PipelineStatus status);
+  static std::string EventTypeToString(MediaLogEvent::Type type);
+  static std::string PipelineStatusToString(PipelineStatus status);
 
   MediaLog();
 
@@ -51,11 +51,13 @@ class MEDIA_EXPORT MediaLog : public base::RefCountedThreadSafe<MediaLog> {
   // Helper methods to create events and their parameters.
   scoped_ptr<MediaLogEvent> CreateEvent(MediaLogEvent::Type type);
   scoped_ptr<MediaLogEvent> CreateBooleanEvent(
-      MediaLogEvent::Type type, const char* property, bool value);
-  scoped_ptr<MediaLogEvent> CreateStringEvent(
-      MediaLogEvent::Type type, const char* property, const std::string& value);
-  scoped_ptr<MediaLogEvent> CreateTimeEvent(
-      MediaLogEvent::Type type, const char* property, base::TimeDelta value);
+      MediaLogEvent::Type type, const std::string& property, bool value);
+  scoped_ptr<MediaLogEvent> CreateStringEvent(MediaLogEvent::Type type,
+                                              const std::string& property,
+                                              const std::string& value);
+  scoped_ptr<MediaLogEvent> CreateTimeEvent(MediaLogEvent::Type type,
+                                            const std::string& property,
+                                            base::TimeDelta value);
   scoped_ptr<MediaLogEvent> CreateLoadEvent(const std::string& url);
   scoped_ptr<MediaLogEvent> CreateSeekEvent(float seconds);
   scoped_ptr<MediaLogEvent> CreatePipelineStateChangedEvent(
@@ -69,11 +71,11 @@ class MEDIA_EXPORT MediaLog : public base::RefCountedThreadSafe<MediaLog> {
       const std::string& error);
 
   // Report a property change without an accompanying event.
-  void SetStringProperty(const char* key, const std::string& value);
-  void SetIntegerProperty(const char* key, int value);
-  void SetDoubleProperty(const char* key, double value);
-  void SetBooleanProperty(const char* key, bool value);
-  void SetTimeProperty(const char* key, base::TimeDelta value);
+  void SetStringProperty(const std::string& key, const std::string& value);
+  void SetIntegerProperty(const std::string& key, int value);
+  void SetDoubleProperty(const std::string& key, double value);
+  void SetBooleanProperty(const std::string& key, bool value);
+  void SetTimeProperty(const std::string& key, base::TimeDelta value);
 
  protected:
   friend class base::RefCountedThreadSafe<MediaLog>;

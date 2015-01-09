@@ -251,9 +251,9 @@ void DecoderStream<StreamType>::OnDecoderSelected(
   }
 
   const std::string stream_type = DecoderStreamTraits<StreamType>::ToString();
-  media_log_->SetBooleanProperty((stream_type + "_dds").c_str(),
+  media_log_->SetBooleanProperty(stream_type + "_dds",
                                  decrypting_demuxer_stream_);
-  media_log_->SetStringProperty((stream_type + "_decoder").c_str(),
+  media_log_->SetStringProperty(stream_type + "_decoder",
                                 decoder_->GetDisplayName());
 
   if (state_ == STATE_REINITIALIZING_DECODER) {
