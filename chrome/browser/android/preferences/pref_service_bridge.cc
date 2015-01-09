@@ -275,7 +275,7 @@ static jboolean GetPushNotificationsEnabled(JNIEnv* env, jobject obj) {
   HostContentSettingsMap* content_settings =
       GetOriginalProfile()->GetHostContentSettingsMap();
   return GetBooleanForContentSetting(content_settings,
-                                     CONTENT_SETTINGS_TYPE_PUSH_MESSAGING);
+                                     CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
 }
 
 static jboolean GetAllowLocationEnabled(JNIEnv* env, jobject obj) {
@@ -442,7 +442,7 @@ static void SetPushNotificationsEnabled(JNIEnv* env,
   HostContentSettingsMap* host_content_settings_map =
       GetOriginalProfile()->GetHostContentSettingsMap();
   host_content_settings_map->SetDefaultContentSetting(
-      CONTENT_SETTINGS_TYPE_PUSH_MESSAGING,
+      CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
       allow ? CONTENT_SETTING_ASK : CONTENT_SETTING_BLOCK);
 }
 
