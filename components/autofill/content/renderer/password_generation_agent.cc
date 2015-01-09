@@ -70,21 +70,11 @@ bool ContainsURL(const std::vector<GURL>& urls, const GURL& url) {
   return std::find(urls.begin(), urls.end(), url) != urls.end();
 }
 
-// Returns true if the |form1| is essentially equal to |form2|.
-bool FormsAreEqual(const autofill::FormData& form1,
-                   const PasswordForm& form2) {
-  // TODO(zysxqn): use more signals than just origin to compare.
-  // Note that FormData strips the fragement from the url while PasswordForm
-  // strips both the fragement and the path, so we can't just compare these
-  // two directly.
-  return form1.origin.GetOrigin() == form2.origin.GetOrigin();
-}
-
 bool ContainsForm(const std::vector<autofill::FormData>& forms,
                   const PasswordForm& form) {
   for (std::vector<autofill::FormData>::const_iterator it =
            forms.begin(); it != forms.end(); ++it) {
-    if (FormsAreEqual(*it, form))
+    if (it->SameFormAs(form.form_data))
       return true;
   }
   return false;

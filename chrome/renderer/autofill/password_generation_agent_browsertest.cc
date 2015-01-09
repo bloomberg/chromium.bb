@@ -10,6 +10,7 @@
 #include "chrome/test/base/chrome_render_view_test.h"
 #include "components/autofill/content/common/autofill_messages.h"
 #include "components/autofill/content/renderer/autofill_agent.h"
+#include "components/autofill/content/renderer/form_autofill_util.h"
 #include "components/autofill/content/renderer/test_password_generation_agent.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/password_generation_util.h"
@@ -44,12 +45,23 @@ class PasswordGenerationAgentTest : public ChromeRenderViewTest {
     password_generation_->OnMessageReceived(msg);
   }
 
-  void SetAccountCreationFormsDetectedMessage(const char* form_str) {
-    autofill::FormData form;
-    form.origin =
-        GURL(base::StringPrintf("data:text/html;charset=utf-8,%s", form_str));
+  // Sends a message that the |form_index| form on the page is valid for
+  // account creation.
+  void SetAccountCreationFormsDetectedMessage(int form_index) {
+    WebDocument document = GetMainFrame()->document();
+    blink::WebVector<blink::WebFormElement> web_forms;
+    document.forms(web_forms);
+
+    autofill::FormData form_data;
+    WebFormElementToFormData(web_forms[form_index],
+                             blink::WebFormControlElement(),
+                             REQUIRE_NONE,
+                             EXTRACT_NONE,
+                             &form_data,
+                             NULL /* FormFieldData */);
+
     std::vector<autofill::FormData> forms;
-    forms.push_back(form);
+    forms.push_back(form_data);
     AutofillMsg_AccountCreationFormsDetected msg(0, forms);
     password_generation_->OnMessageReceived(msg);
   }
@@ -110,6 +122,22 @@ const char kInvalidActionAccountCreationFormHTML[] =
     "  <INPUT type = 'submit' value = 'LOGIN' />"
     "</FORM>";
 
+const char kMultipleAccountCreationFormHTML[] =
+    "<FORM name = 'login' action = 'http://www.random.com/'> "
+    "  <INPUT type = 'text' id = 'random'/> "
+    "  <INPUT type = 'text' id = 'username'/> "
+    "  <INPUT type = 'password' id = 'password'/> "
+    "  <INPUT type = 'submit' value = 'LOGIN' />"
+    "</FORM>"
+    "<FORM name = 'signup' action = 'http://www.random.com/signup'> "
+    "  <INPUT type = 'text' id = 'username'/> "
+    "  <INPUT type = 'password' id = 'first_password' "
+    "         autocomplete = 'off' size = 5/>"
+    "  <INPUT type = 'password' id = 'second_password' size = 5/> "
+    "  <INPUT type = 'text' id = 'address'/> "
+    "  <INPUT type = 'submit' value = 'LOGIN' />"
+    "</FORM>";
+
 const char ChangeDetectionScript[] =
     "<script>"
     "  firstOnChangeCalled = false;"
@@ -136,20 +164,19 @@ TEST_F(PasswordGenerationAgentTest, DetectionTest) {
   // ACCOUNT_CREATION_FORM form Autofill server. We should show the icon.
   LoadHTML(kAccountCreationFormHTML);
   SetNotBlacklistedMessage(kAccountCreationFormHTML);
-  SetAccountCreationFormsDetectedMessage(kAccountCreationFormHTML);
+  SetAccountCreationFormsDetectedMessage(0);
   ExpectPasswordGenerationAvailable("first_password", true);
 
   // Hidden fields are not treated differently.
   LoadHTML(kHiddenPasswordAccountCreationFormHTML);
   SetNotBlacklistedMessage(kHiddenPasswordAccountCreationFormHTML);
-  SetAccountCreationFormsDetectedMessage(
-      kHiddenPasswordAccountCreationFormHTML);
+  SetAccountCreationFormsDetectedMessage(0);
   ExpectPasswordGenerationAvailable("first_password", true);
 
   // This doesn't trigger because the form action is invalid.
   LoadHTML(kInvalidActionAccountCreationFormHTML);
   SetNotBlacklistedMessage(kInvalidActionAccountCreationFormHTML);
-  SetAccountCreationFormsDetectedMessage(kInvalidActionAccountCreationFormHTML);
+  SetAccountCreationFormsDetectedMessage(0);
   ExpectPasswordGenerationAvailable("first_password", false);
 }
 
@@ -158,6 +185,8 @@ TEST_F(PasswordGenerationAgentTest, FillTest) {
   std::string html = std::string(kAccountCreationFormHTML) +
       ChangeDetectionScript;
   LoadHTML(html.c_str());
+  SetNotBlacklistedMessage(html.c_str());
+  SetAccountCreationFormsDetectedMessage(0);
 
   WebDocument document = GetMainFrame()->document();
   WebElement element =
@@ -207,7 +236,7 @@ TEST_F(PasswordGenerationAgentTest, FillTest) {
 TEST_F(PasswordGenerationAgentTest, EditingTest) {
   LoadHTML(kAccountCreationFormHTML);
   SetNotBlacklistedMessage(kAccountCreationFormHTML);
-  SetAccountCreationFormsDetectedMessage(kAccountCreationFormHTML);
+  SetAccountCreationFormsDetectedMessage(0);
 
   WebDocument document = GetMainFrame()->document();
   WebElement element =
@@ -256,21 +285,21 @@ TEST_F(PasswordGenerationAgentTest, BlacklistedTest) {
   // Did not receive not blacklisted message. Don't show password generation
   // icon.
   LoadHTML(kAccountCreationFormHTML);
-  SetAccountCreationFormsDetectedMessage(kAccountCreationFormHTML);
+  SetAccountCreationFormsDetectedMessage(0);
   ExpectPasswordGenerationAvailable("first_password", false);
 
   // Receive one not blacklisted message for non account creation form. Don't
   // show password generation icon.
   LoadHTML(kAccountCreationFormHTML);
   SetNotBlacklistedMessage(kSigninFormHTML);
-  SetAccountCreationFormsDetectedMessage(kAccountCreationFormHTML);
+  SetAccountCreationFormsDetectedMessage(0);
   ExpectPasswordGenerationAvailable("first_password", false);
 
   // Receive one not blackliste message for account creation form. Show password
   // generation icon.
   LoadHTML(kAccountCreationFormHTML);
   SetNotBlacklistedMessage(kAccountCreationFormHTML);
-  SetAccountCreationFormsDetectedMessage(kAccountCreationFormHTML);
+  SetAccountCreationFormsDetectedMessage(0);
   ExpectPasswordGenerationAvailable("first_password", true);
 
   // Receive two not blacklisted messages, one is for account creation form and
@@ -278,7 +307,7 @@ TEST_F(PasswordGenerationAgentTest, BlacklistedTest) {
   LoadHTML(kAccountCreationFormHTML);
   SetNotBlacklistedMessage(kAccountCreationFormHTML);
   SetNotBlacklistedMessage(kSigninFormHTML);
-  SetAccountCreationFormsDetectedMessage(kAccountCreationFormHTML);
+  SetAccountCreationFormsDetectedMessage(0);
   ExpectPasswordGenerationAvailable("first_password", true);
 }
 
@@ -293,7 +322,7 @@ TEST_F(PasswordGenerationAgentTest, AccountCreationFormsDetectedTest) {
   // generation icon.
   LoadHTML(kAccountCreationFormHTML);
   SetNotBlacklistedMessage(kAccountCreationFormHTML);
-  SetAccountCreationFormsDetectedMessage(kAccountCreationFormHTML);
+  SetAccountCreationFormsDetectedMessage(0);
   ExpectPasswordGenerationAvailable("first_password", true);
 }
 
@@ -302,7 +331,7 @@ TEST_F(PasswordGenerationAgentTest, MaximumOfferSize) {
 
   LoadHTML(kAccountCreationFormHTML);
   SetNotBlacklistedMessage(kAccountCreationFormHTML);
-  SetAccountCreationFormsDetectedMessage(kAccountCreationFormHTML);
+  SetAccountCreationFormsDetectedMessage(0);
   ExpectPasswordGenerationAvailable("first_password", true);
 
   WebDocument document = GetMainFrame()->document();
@@ -386,7 +415,6 @@ TEST_F(PasswordGenerationAgentTest, MaximumOfferSize) {
 TEST_F(PasswordGenerationAgentTest, DynamicFormTest) {
   LoadHTML(kSigninFormHTML);
   SetNotBlacklistedMessage(kSigninFormHTML);
-  SetAccountCreationFormsDetectedMessage(kSigninFormHTML);
 
   ExecuteJavaScript(
       "var form = document.createElement('form');"
@@ -406,11 +434,30 @@ TEST_F(PasswordGenerationAgentTest, DynamicFormTest) {
       "form.appendChild(second_password);"
       "document.body.appendChild(form);");
   ProcessPendingMessages();
+
+  // This needs to come after the DOM has been modified.
+  SetAccountCreationFormsDetectedMessage(1);
+
   // TODO(gcasto): I'm slighty worried about flakes in this test where
   // didAssociateFormControls() isn't called. If this turns out to be a problem
   // adding a call to OnDynamicFormsSeen(GetMainFrame()) will fix it, though
   // it will weaken the test.
   ExpectPasswordGenerationAvailable("first_password", true);
+}
+
+TEST_F(PasswordGenerationAgentTest, MultiplePasswordFormsTest) {
+  // If two forms on the page looks like possible account creation forms, make
+  // sure to trigger on the one that is specified from Autofill.
+  LoadHTML(kMultipleAccountCreationFormHTML);
+  SetNotBlacklistedMessage(kMultipleAccountCreationFormHTML);
+
+  // Should trigger on the second form.
+  SetAccountCreationFormsDetectedMessage(1);
+
+  ExpectPasswordGenerationAvailable("password", false);
+
+  // TODO(gcasto): Enable this check once we examine multiple heuristic matches.
+  //ExpectPasswordGenerationAvailable("first_password", true);
 }
 
 }  // namespace autofill
