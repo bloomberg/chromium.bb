@@ -558,11 +558,16 @@ gfx::Point WindowTreeHostX11::GetLocationOnNativeScreen() const {
 }
 
 void WindowTreeHostX11::SetCapture() {
-  // TODO(oshima): Grab x input.
+  // Do not grab X11 input. Grabbing X11 input is asynchronous and this method
+  // is expected to be synchronous. Grabbing X11 input is unnecessary on
+  // ChromeOS because ChromeOS manages all of the X windows. When running
+  // ChromeOS on the desktop for the sake of debugging:
+  // - Implicit pointer grab as a result of pressing a mouse button
+  // - Releasing capture as a result of losing activation (FocusOut)
+  // is sufficient.
 }
 
 void WindowTreeHostX11::ReleaseCapture() {
-  // TODO(oshima): Release x input.
 }
 
 void WindowTreeHostX11::SetCursorNative(gfx::NativeCursor cursor) {
