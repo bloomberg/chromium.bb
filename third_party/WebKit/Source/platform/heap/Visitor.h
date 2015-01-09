@@ -32,6 +32,7 @@
 #define Visitor_h
 
 #include "platform/PlatformExport.h"
+#include "platform/heap/StackFrameDepth.h"
 #include "platform/heap/ThreadState.h"
 #include "wtf/Assertions.h"
 #include "wtf/Deque.h"
@@ -612,18 +613,25 @@ public:
     }
 #endif
 
-    inline bool canTraceEagerly() const { return m_traceDepth < kMaxEagerTraceDepth; }
-    inline void incrementTraceDepth() { m_traceDepth++; }
-    inline void decrementTraceDepth() { ASSERT(m_traceDepth > 0); m_traceDepth--; }
+    inline bool canTraceEagerly() const
+    {
+        ASSERT(m_stackFrameDepth);
+        return m_stackFrameDepth->isSafeToRecurse();
+    }
+
+    inline void configureEagerTraceLimit()
+    {
+        if (!m_stackFrameDepth)
+            m_stackFrameDepth = new StackFrameDepth;
+        m_stackFrameDepth->configureLimit();
+    }
 
     inline bool isGlobalMarkingVisitor() const { return m_isGlobalMarkingVisitor; }
 
 protected:
     explicit Visitor(VisitorType type)
         : m_isGlobalMarkingVisitor(type == GlobalMarkingVisitorType)
-    {
-        m_traceDepth = 0;
-    }
+    { }
 
     virtual void registerWeakCellWithCallback(void**, WeakPointerCallback) = 0;
 #if ENABLE(GC_PROFILE_MARKING)
@@ -638,12 +646,8 @@ protected:
 
 private:
     static Visitor* fromHelper(VisitorHelper<Visitor>* helper) { return static_cast<Visitor*>(helper); }
+    static StackFrameDepth* m_stackFrameDepth;
 
-    // The maximum depth of eager, unrolled trace() calls that is
-    // considered safe and allowed.
-    const int kMaxEagerTraceDepth = 100;
-
-    static int m_traceDepth;
     bool m_isGlobalMarkingVisitor;
 };
 
@@ -710,9 +714,7 @@ public:
             ASSERT(visitor->canTraceEagerly());
             if (LIKELY(visitor->canTraceEagerly())) {
                 if (visitor->ensureMarked(t)) {
-                    visitor->incrementTraceDepth();
                     TraceTrait<T>::trace(visitor, const_cast<T*>(t));
-                    visitor->decrementTraceDepth();
                 }
                 return;
             }

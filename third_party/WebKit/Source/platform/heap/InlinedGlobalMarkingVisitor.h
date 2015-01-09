@@ -53,8 +53,6 @@ public:
     using Impl::ensureMarked;
 
     inline bool canTraceEagerly() const { return m_visitor->canTraceEagerly(); }
-    inline void incrementTraceDepth() { m_visitor->incrementTraceDepth(); }
-    inline void decrementTraceDepth() { m_visitor->decrementTraceDepth(); }
 
     Visitor* getUninlined() { return m_visitor; }
 
