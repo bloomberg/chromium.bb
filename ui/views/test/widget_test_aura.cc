@@ -11,6 +11,37 @@
 namespace views {
 namespace test {
 
+namespace {
+
+// Perform a pre-order traversal of |children| and all descendants, looking for
+// |first| and |second|. If |first| is found before |second|, return true.
+// When a layer is found, it is set to null. Returns once |second| is found, or
+// when there are no children left.
+// Note that ui::Layer children are bottom-to-top stacking order.
+bool FindLayersInOrder(const std::vector<ui::Layer*>& children,
+                       const ui::Layer** first,
+                       const ui::Layer** second) {
+  for (const ui::Layer* child : children) {
+    if (child == *second) {
+      *second = nullptr;
+      return *first == nullptr;
+    }
+
+    if (child == *first)
+      *first = nullptr;
+
+    if (FindLayersInOrder(child->children(), first, second))
+      return true;
+
+    // If second is cleared without success, exit early with failure.
+    if (!*second)
+      return false;
+  }
+  return false;
+}
+
+}  // namespace
+
 // static
 void WidgetTest::SimulateNativeDestroy(Widget* widget) {
   delete widget->GetNativeView();
@@ -19,6 +50,19 @@ void WidgetTest::SimulateNativeDestroy(Widget* widget) {
 // static
 bool WidgetTest::IsNativeWindowVisible(gfx::NativeWindow window) {
   return window->IsVisible();
+}
+
+// static
+bool WidgetTest::IsWindowStackedAbove(Widget* above, Widget* below) {
+  EXPECT_TRUE(above->IsVisible());
+  EXPECT_TRUE(below->IsVisible());
+
+  ui::Layer* root_layer = above->GetNativeWindow()->GetRootWindow()->layer();
+
+  // Traversal is bottom-to-top, so |below| should be found first.
+  const ui::Layer* first = below->GetLayer();
+  const ui::Layer* second = above->GetLayer();
+  return FindLayersInOrder(root_layer->children(), &first, &second);
 }
 
 // static

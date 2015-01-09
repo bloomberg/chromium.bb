@@ -93,6 +93,10 @@ class WidgetTest : public ViewsTestBase {
   // Return true if |window| is visible according to the native platform.
   static bool IsNativeWindowVisible(gfx::NativeWindow window);
 
+  // Return true if |above| is higher than |below| in the native window Z-order.
+  // Both windows must be visible.
+  static bool IsWindowStackedAbove(Widget* above, Widget* below);
+
   // Return the event processor for |widget|. On aura platforms, this is an
   // aura::WindowEventDispatcher. Otherwise, it is a bridge to the OS event
   // processor.

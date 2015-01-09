@@ -27,6 +27,25 @@ bool WidgetTest::IsNativeWindowVisible(gfx::NativeWindow window) {
 }
 
 // static
+bool WidgetTest::IsWindowStackedAbove(Widget* above, Widget* below) {
+  EXPECT_TRUE(above->IsVisible());
+  EXPECT_TRUE(below->IsVisible());
+
+  // -[NSApplication orderedWindows] are ordered front-to-back.
+  NSWindow* first = above->GetNativeWindow();
+  NSWindow* second = below->GetNativeWindow();
+
+  for (NSWindow* window in [NSApp orderedWindows]) {
+    if (window == second)
+      return !first;
+
+    if (window == first)
+      first = nil;
+  }
+  return false;
+}
+
+// static
 ui::EventProcessor* WidgetTest::GetEventProcessor(Widget* widget) {
   return static_cast<internal::RootView*>(widget->GetRootView());
 }

@@ -330,6 +330,97 @@ TEST_F(WidgetTest, Visibility) {
   // |child| should be automatically destroyed with |toplevel|.
 }
 
+// Test that child widgets are positioned relative to their parent.
+TEST_F(WidgetTest, ChildBoundsRelativeToParent) {
+  Widget* toplevel = CreateTopLevelPlatformWidget();
+  Widget* child = CreateChildPlatformWidget(toplevel->GetNativeView());
+
+  toplevel->SetBounds(gfx::Rect(160, 100, 320, 200));
+  child->SetBounds(gfx::Rect(0, 0, 320, 200));
+
+  child->Show();
+  toplevel->Show();
+
+  gfx::Rect toplevel_bounds = toplevel->GetWindowBoundsInScreen();
+
+  // Check the parent origin. If it was (0, 0) the test wouldn't be interesting.
+  EXPECT_NE(gfx::Vector2d(0, 0), toplevel_bounds.OffsetFromOrigin());
+
+  // The child's origin is at (0, 0), but the same size, so bounds should match.
+  EXPECT_EQ(toplevel_bounds, child->GetWindowBoundsInScreen());
+
+  toplevel->CloseNow();
+}
+
+// Test z-order of child widgets relative to their parent.
+TEST_F(WidgetTest, ChildStackedRelativeToParent) {
+  Widget* parent = CreateTopLevelPlatformWidget();
+  Widget* child = CreateChildPlatformWidget(parent->GetNativeView());
+
+  parent->SetBounds(gfx::Rect(160, 100, 320, 200));
+  child->SetBounds(gfx::Rect(50, 50, 30, 20));
+
+  // Child shown first. Initially not visible, but on top of parent when shown.
+  // Use ShowInactive whenever showing the child, otherwise the usual activation
+  // logic will just put it on top anyway. Here, we want to ensure it is on top
+  // of its parent regardless.
+  child->ShowInactive();
+  EXPECT_FALSE(child->IsVisible());
+
+  parent->Show();
+  EXPECT_TRUE(child->IsVisible());
+  EXPECT_TRUE(IsWindowStackedAbove(child, parent));
+  EXPECT_FALSE(IsWindowStackedAbove(parent, child));  // Sanity check.
+
+  Widget* popover = CreateTopLevelPlatformWidget();
+  popover->SetBounds(gfx::Rect(150, 90, 340, 240));
+  popover->Show();
+
+  EXPECT_TRUE(IsWindowStackedAbove(popover, child));
+  EXPECT_TRUE(IsWindowStackedAbove(child, parent));
+
+  // Showing the parent again should raise it and its child above the popover.
+  parent->Show();
+  EXPECT_TRUE(IsWindowStackedAbove(child, parent));
+  EXPECT_TRUE(IsWindowStackedAbove(parent, popover));
+
+  // Test grandchildren.
+  Widget* grandchild = CreateChildPlatformWidget(child->GetNativeView());
+  grandchild->SetBounds(gfx::Rect(5, 5, 15, 10));
+  grandchild->ShowInactive();
+  EXPECT_TRUE(IsWindowStackedAbove(grandchild, child));
+  EXPECT_TRUE(IsWindowStackedAbove(child, parent));
+  EXPECT_TRUE(IsWindowStackedAbove(parent, popover));
+
+  popover->Show();
+  EXPECT_TRUE(IsWindowStackedAbove(popover, grandchild));
+  EXPECT_TRUE(IsWindowStackedAbove(grandchild, child));
+
+  parent->Show();
+  EXPECT_TRUE(IsWindowStackedAbove(grandchild, child));
+  EXPECT_TRUE(IsWindowStackedAbove(child, popover));
+
+  // Test hiding and reshowing.
+  parent->Hide();
+  EXPECT_FALSE(grandchild->IsVisible());
+  parent->Show();
+
+  EXPECT_TRUE(IsWindowStackedAbove(grandchild, child));
+  EXPECT_TRUE(IsWindowStackedAbove(child, parent));
+  EXPECT_TRUE(IsWindowStackedAbove(parent, popover));
+
+  grandchild->Hide();
+  EXPECT_FALSE(grandchild->IsVisible());
+  grandchild->ShowInactive();
+
+  EXPECT_TRUE(IsWindowStackedAbove(grandchild, child));
+  EXPECT_TRUE(IsWindowStackedAbove(child, parent));
+  EXPECT_TRUE(IsWindowStackedAbove(parent, popover));
+
+  popover->CloseNow();
+  parent->CloseNow();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Widget ownership tests.
 //
