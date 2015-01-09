@@ -11,8 +11,8 @@ description("This tests the constructor for the MediaKeyMessageEvent DOM class."
 // No initializer is passed.
 shouldBe("new MediaKeyMessageEvent('eventType').bubbles", "false");
 shouldBe("new MediaKeyMessageEvent('eventType').cancelable", "false");
+shouldBeEqualToString("new MediaKeyMessageEvent('eventType').messageType", "license-request");
 shouldBeNull("new MediaKeyMessageEvent('eventType').message");
-shouldBeEmptyString("new MediaKeyMessageEvent('eventType').destinationURL");
 
 // bubbles is passed.
 shouldBe("new MediaKeyMessageEvent('eventType', { bubbles: false }).bubbles", "false");
@@ -26,8 +26,10 @@ shouldBe("new MediaKeyMessageEvent('eventType', { cancelable: true }).cancelable
 var arrayBuffer = new ArrayBuffer(1);
 shouldBe("new MediaKeyMessageEvent('eventType', { message: arrayBuffer }).message", "arrayBuffer");
 
-// destinationURL is passed.
-shouldBeEqualToString("new MediaKeyMessageEvent('eventType', { destinationURL: 'foo' }).destinationURL", "foo");
+// messageType is passed.
+shouldBeEqualToString("new MediaKeyMessageEvent('eventType', { messageType: 'license-request' }).messageType", "license-request");
+shouldBeEqualToString("new MediaKeyMessageEvent('eventType', { messageType: 'license-renewal' }).messageType", "license-renewal");
+shouldBeEqualToString("new MediaKeyMessageEvent('eventType', { messageType: 'license-release' }).messageType", "license-release");
 
 </script>
 </body>

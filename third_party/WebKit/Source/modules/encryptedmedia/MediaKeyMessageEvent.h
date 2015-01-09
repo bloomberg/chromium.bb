@@ -52,8 +52,8 @@ public:
 
     virtual const AtomicString& interfaceName() const override;
 
+    String messageType() const { return m_messageType; }
     DOMArrayBuffer* message() const { return m_message.get(); }
-    String destinationURL() const { return m_destinationURL; }
 
     virtual void trace(Visitor*) override;
 
@@ -61,8 +61,8 @@ private:
     MediaKeyMessageEvent();
     MediaKeyMessageEvent(const AtomicString& type, const MediaKeyMessageEventInit& initializer);
 
+    String m_messageType;
     RefPtr<DOMArrayBuffer> m_message;
-    String m_destinationURL;
 };
 
 } // namespace blink

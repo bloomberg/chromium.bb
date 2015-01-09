@@ -24,13 +24,18 @@
  */
 
 // https://w3c.github.io/encrypted-media/#mediakeymessageevent
-// Note: This implementation is different from the spec.
+
+enum MediaKeyMessageType {
+    "license-request",
+    "license-renewal",
+    "license-release"
+};
 
 [
     Constructor(DOMString type, optional MediaKeyMessageEventInit eventInitDict),
     RuntimeEnabled=EncryptedMedia
 ] interface MediaKeyMessageEvent : Event {
+    readonly attribute MediaKeyMessageType messageType;
     readonly attribute ArrayBuffer message;
-    readonly attribute DOMString destinationURL;
 };
 

@@ -44,6 +44,14 @@ class BLINK_PLATFORM_EXPORT WebContentDecryptionModuleSession {
 public:
     class BLINK_PLATFORM_EXPORT Client {
     public:
+        enum class MessageType {
+            LicenseRequest,
+            LicenseRenewal,
+            LicenseRelease
+        };
+
+        virtual void message(MessageType, const unsigned char* message, size_t messageLength) = 0;
+        // FIXME: Remove this method once Chromium updated to call the method above.
         virtual void message(const unsigned char* message, size_t messageLength, const WebURL& destinationURL) = 0;
         virtual void close() = 0;
 

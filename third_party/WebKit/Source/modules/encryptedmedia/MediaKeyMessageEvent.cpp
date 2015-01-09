@@ -37,10 +37,10 @@ MediaKeyMessageEvent::MediaKeyMessageEvent()
 MediaKeyMessageEvent::MediaKeyMessageEvent(const AtomicString& type, const MediaKeyMessageEventInit& initializer)
     : Event(type, initializer)
 {
+    if (initializer.hasMessageType())
+        m_messageType = initializer.messageType();
     if (initializer.hasMessage())
         m_message = initializer.message();
-    if (initializer.hasDestinationURL())
-        m_destinationURL = initializer.destinationURL();
 }
 
 MediaKeyMessageEvent::~MediaKeyMessageEvent()
