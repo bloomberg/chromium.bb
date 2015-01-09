@@ -27,7 +27,6 @@ var destinationVolume;
 var commandUpdateRecorder;
 
 function setUp() {
-
   // Set up string assets.
   loadTimeData.data = {
     CLOUD_IMPORT_BUTTON_LABEL: 'Import it!',
@@ -122,6 +121,79 @@ function testExecute_StartsImport() {
   mediaImporter.assertImportsStarted(1);
 }
 
+function testExecute_opensDestination(callback) {
+  var controller = createController(
+      VolumeManagerCommon.VolumeType.MTP,
+      'mtp-volume',
+      [
+        '/DCIM/',
+        '/DCIM/photos0/',
+        '/DCIM/photos0/IMG00001.jpg',
+        '/DCIM/photos0/IMG00002.jpg',
+        '/DCIM/photos1/',
+        '/DCIM/photos1/IMG00001.jpg',
+        '/DCIM/photos1/IMG00003.jpg'
+      ],
+      '/DCIM');
+
+  /**
+   * Sets up an import destination.
+   * @return {!Promise<!DirectoryEntry>}
+   */
+  var makeDestination = function() {
+    return new Promise(function(resolve, reject) {
+      window.webkitRequestFileSystem(
+          TEMPORARY,
+          1024*1024,
+          function(fs) {
+            fs.root.getDirectory(
+                'foo',
+                {create:true},
+                function(directoryEntry) {
+                  resolve(directoryEntry);
+                },
+                reject);
+          },
+          reject);
+    });
+  };
+
+  reportPromise(
+      makeDestination().then(
+          // Kicks off an import to the given destination, then verifies that
+          // the import controller moved the user to the correct location.
+          function(destination) {
+            mediaImporter.setDestination(destination);
+
+            controller.update();
+            mediaScanner.finalizeScans();
+            controller.update();
+            controller.execute();
+
+            return environment.whenCurrentDirectoryIsSet().then(
+                function(directory) {
+                  assertEquals(destination, directory);
+                });
+          }),
+      callback);
+
+}
+
+/**
+ * A stub that just provides interfaces from ImportTask that are required by
+ * these tests.
+ * @param {DirectoryEntry} destination
+ * @constructor
+ */
+function TestImportTask(destination) {
+  this.destination_ = destination;
+}
+
+/** @return {!Promise<DirectoryEntry>} */
+TestImportTask.prototype.getDestination = function() {
+  return Promise.resolve(this.destination_);
+};
+
 /**
  * Test import runner.
  *
@@ -130,12 +202,22 @@ function testExecute_StartsImport() {
 function TestImportRunner() {
   /** @type {!Array.<!importer.ScanResult>} */
   this.imported = [];
+
+  /** @type {DirectoryEntry} */
+  this.destination_ = null;
 }
 
 /** @override */
-TestImportRunner.prototype.importFromScanResult =
-    function(scanResult, opt_destination) {
+TestImportRunner.prototype.importFromScanResult = function(scanResult) {
   this.imported.push(scanResult);
+  return new TestImportTask(this.destination_);
+};
+
+/**
+ * @param {!DirectoryEntry} destination
+ */
+TestImportRunner.prototype.setDestination = function(destination) {
+  this.destination_ = destination;
 };
 
 /**
@@ -165,6 +247,14 @@ TestControllerEnvironment = function(volumeInfo, directory) {
 
   /** @private {boolean} */
   this.isDriveMounted = true;
+
+  /** @private {function(!DirectoryEntry)} */
+  this.directoryWasSet_;
+
+  /** @private {!Promise<!DirectoryEntry>} */
+  this.directoryWasSetPromise_ = new Promise(function(resolve, reject) {
+    this.directoryWasSet_ = resolve;
+  }.bind(this));
 };
 
 /** @override */
@@ -180,6 +270,12 @@ TestControllerEnvironment.prototype.getCurrentDirectory =
 };
 
 /** @override */
+TestControllerEnvironment.prototype.setCurrentDirectory = function(entry) {
+  this.directoryWasSet_(entry);
+  this.directory_ = entry;
+};
+
+/** @override */
 TestControllerEnvironment.prototype.getVolumeInfo =
     function(entry) {
   return this.volumeInfo_;
@@ -189,6 +285,14 @@ TestControllerEnvironment.prototype.getVolumeInfo =
 TestControllerEnvironment.prototype.isGoogleDriveMounted =
     function() {
   return this.isDriveMounted;
+};
+
+/**
+ * A promise that resolves when the current directory is set in the environment.
+ * @return {!Promise<!DirectoryEntry>}
+ */
+TestControllerEnvironment.prototype.whenCurrentDirectoryIsSet = function() {
+  return this.directoryWasSetPromise_;
 };
 
 /**

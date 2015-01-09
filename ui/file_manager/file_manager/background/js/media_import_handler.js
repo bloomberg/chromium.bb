@@ -140,21 +140,21 @@ importer.MediaImportHandler.prototype.onTaskProgress_ =
  * @param {string} taskId
  * @param {!importer.HistoryLoader} historyLoader
  * @param {!importer.ScanResult} scanResult
- * @param {!importer.MediaImportHandler.DestinationFactory} destination A
+ * @param {!importer.MediaImportHandler.DestinationFactory} destinationFactory A
  *     function that returns the directory into which media will be imported.
  */
 importer.MediaImportHandler.ImportTask = function(
     taskId,
     historyLoader,
     scanResult,
-    destination) {
+    destinationFactory) {
 
   importer.TaskQueue.BaseTask.call(this, taskId);
   /** @private {string} */
   this.taskId_ = taskId;
 
   /** @private {!importer.MediaImportHandler.DestinationFactory} */
-  this.getDestination_ = destination;
+  this.destinationFactory_ = destinationFactory;
 
   /** @private {!importer.ScanResult} */
   this.scanResult_ = scanResult;
@@ -162,8 +162,8 @@ importer.MediaImportHandler.ImportTask = function(
   /** @private {!importer.HistoryLoader} */
   this.historyLoader_ = historyLoader;
 
-  /** @private {DirectoryEntry} */
-  this.destination_ = null;
+  /** @private {Promise<!DirectoryEntry>} */
+  this.destinationPromise_ = null;
 
   /** @private {number} */
   this.totalBytes_ = 0;
@@ -195,22 +195,32 @@ importer.MediaImportHandler.ImportTask.prototype.__proto__ =
 
 /** @override */
 importer.MediaImportHandler.ImportTask.prototype.run = function() {
-
   // Wait for the scan to finish, then get the destination entry, then start the
   // import.
   this.scanResult_.whenFinal()
       .then(this.initialize_.bind(this))
-      .then(this.getDestination_.bind(this))
+      .then(this.getDestination.bind(this))
       .then(this.importTo_.bind(this));
 };
 
-/**
- * @private
- */
+/** @private */
 importer.MediaImportHandler.ImportTask.prototype.initialize_ = function() {
   this.remainingFilesCount_ = this.scanResult_.getFileEntries().length;
   this.totalBytes_ = this.scanResult_.getTotalBytes();
   this.notify(importer.TaskQueue.UpdateType.PROGRESS);
+};
+
+/**
+ * Returns a DirectoryEntry for the destination.  The destination is guaranteed
+ * to have been created when the promise resolves.
+ * @return {!Promise<!DirectoryEntry>}
+ */
+importer.MediaImportHandler.ImportTask.prototype.getDestination =
+    function() {
+  if (!this.destinationPromise_) {
+    this.destinationPromise_ = this.destinationFactory_();
+  }
+  return this.destinationPromise_;
 };
 
 /**
@@ -221,14 +231,14 @@ importer.MediaImportHandler.ImportTask.prototype.initialize_ = function() {
  */
 importer.MediaImportHandler.ImportTask.prototype.importTo_ =
     function(destination) {
-  this.destination_ = destination;
   AsyncUtil.forEach(
       this.scanResult_.getFileEntries(),
-      this.importOne_.bind(this),
+      this.importOne_.bind(this, destination),
       this.onSuccess_.bind(this));
 };
 
 /**
+ * @param {!DirectoryEntry} destination
  * @param {function()} completionCallback Called after this operation is
  *     complete.
  * @param {!FileEntry} entry The entry to import.
@@ -236,7 +246,7 @@ importer.MediaImportHandler.ImportTask.prototype.importTo_ =
  * @private
  */
 importer.MediaImportHandler.ImportTask.prototype.importOne_ =
-    function(completionCallback, entry, index) {
+    function(destination, completionCallback, entry, index) {
   // TODO(kenobi): Check for cancellation.
 
   // A count of the current number of processed bytes for this entry.
@@ -272,13 +282,13 @@ importer.MediaImportHandler.ImportTask.prototype.importOne_ =
   /** @this {importer.MediaImportHandler.ImportTask} */
   var onComplete = function() {
     completionCallback();
-    this.markAsCopied_(entry);
+    this.markAsCopied_(entry, destination);
     this.notify(importer.TaskQueue.UpdateType.PROGRESS);
   };
 
   fileOperationUtil.copyTo(
       entry,
-      this.destination_,
+      destination,
       entry.name,  // TODO(kenobi): account for duplicate filenames
       onEntryChanged.bind(this),
       onProgress.bind(this),
@@ -296,11 +306,14 @@ importer.MediaImportHandler.ImportTask.prototype.onEntryChanged_ =
   // TODO(kenobi): Add code to notify observers when entries are created.
 };
 
-/** @param {!FileEntry} entry */
+/**
+ * @param {!FileEntry} entry
+ * @param {!DirectoryEntry} destination
+ */
 importer.MediaImportHandler.ImportTask.prototype.markAsCopied_ =
-    function(entry) {
+    function(entry, destination) {
   this.remainingFilesCount_--;
-  var destinationUrl = this.destination_.toURL() + '/' + entry.name;
+  var destinationUrl = destination.toURL() + '/' + entry.name;
   this.historyLoader_.getHistory().then(
       /** @param {!importer.ImportHistory} history */
       function(history) {

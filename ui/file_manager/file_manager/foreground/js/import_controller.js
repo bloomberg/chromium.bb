@@ -90,7 +90,15 @@ importer.ImportController.prototype.onScanEvent_ = function(event, result) {
 importer.ImportController.prototype.execute = function() {
   metrics.recordEnum('CloudImport.UserAction', 'IMPORT_INITIATED');
   var result = this.getScanForImport_();
-  this.importRunner_.importFromScanResult(result);
+  var importTask = this.importRunner_.importFromScanResult(result);
+
+  importTask.getDestination().then(
+      /**
+       * @param {!DirectoryEntry} destination
+       */
+      function(destination) {
+        this.environment_.setCurrentDirectory(destination);
+      }.bind(this));
 };
 
 /**
@@ -201,6 +209,11 @@ importer.ControllerEnvironment.prototype.getSelection;
 importer.ControllerEnvironment.prototype.getCurrentDirectory;
 
 /**
+ * @param {!DirectoryEntry} entry
+ */
+importer.ControllerEnvironment.prototype.setCurrentDirectory;
+
+/**
  * Returns true if the Drive mount is present.
  * @return {boolean}
  */
@@ -233,6 +246,12 @@ importer.RuntimeControllerEnvironment.prototype.getCurrentDirectory =
     function() {
   return /** @type {!DirectoryEntry} */ (
       this.fileManager_.getCurrentDirectoryEntry());
+};
+
+/** @override */
+importer.RuntimeControllerEnvironment.prototype.setCurrentDirectory =
+    function(entry) {
+  this.fileManager_.directoryModel.activateDirectoryEntry(entry);
 };
 
 /** @override */
