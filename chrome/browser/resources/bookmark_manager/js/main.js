@@ -1029,12 +1029,18 @@ function newFolder(opt_target) {
   performGlobalUndo = null;  // This can't be undone, so disable global undo.
 
   var parentId = computeParentFolderForNewItem();
-
+  var selectedItem = bmm.list.selectedItem;
+  var newIndex;
   // Callback is called after tree and list data model updated.
   function createFolder(callback) {
+    if (selectedItem && document.activeElement != bmm.tree &&
+        !bmm.isFolder(selectedItem)) {
+      newIndex = bmm.list.dataModel.indexOf(selectedItem) + 1;
+    }
     chrome.bookmarks.create({
       title: loadTimeData.getString('new_folder_name'),
-      parentId: parentId
+      parentId: parentId,
+      index: newIndex
     }, callback);
   }
 
@@ -1048,8 +1054,8 @@ function newFolder(opt_target) {
   }
 
   function editNewFolderInList() {
-    createFolder(function() {
-      var index = bmm.list.dataModel.length - 1;
+    createFolder(function(newNode) {
+      var index = newNode.index;
       var sm = bmm.list.selectionModel;
       sm.anchorIndex = sm.leadIndex = sm.selectedIndex = index;
       scrollIntoViewAndMakeEditable(index);
@@ -1080,20 +1086,29 @@ function scrollIntoViewAndMakeEditable(index) {
  */
 function addPage() {
   var parentId = computeParentFolderForNewItem();
-
+  var selectedItem = bmm.list.selectedItem;
+  var newIndex;
   function editNewBookmark() {
+    if (selectedItem && document.activeElement != bmm.tree &&
+        !bmm.isFolder(selectedItem)) {
+      newIndex = bmm.list.dataModel.indexOf(selectedItem) + 1;
+    }
+
     var fakeNode = {
       title: '',
       url: '',
       parentId: parentId,
+      index: newIndex,
       id: 'new'
     };
     var dataModel = bmm.list.dataModel;
-    var length = dataModel.length;
-    dataModel.splice(length, 0, fakeNode);
+    var index = dataModel.length;
+    if (newIndex != undefined)
+      index = newIndex;
+    dataModel.splice(index, 0, fakeNode);
     var sm = bmm.list.selectionModel;
-    sm.anchorIndex = sm.leadIndex = sm.selectedIndex = length;
-    scrollIntoViewAndMakeEditable(length);
+    sm.anchorIndex = sm.leadIndex = sm.selectedIndex = index;
+    scrollIntoViewAndMakeEditable(index);
   };
 
   navigateTo(parentId, editNewBookmark);
