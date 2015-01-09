@@ -29,6 +29,8 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Navigator.h"
+#include "core/frame/Settings.h"
+#include "core/frame/UseCounter.h"
 #include "core/page/Page.h"
 #include "modules/mediastream/MediaDeviceInfoCallback.h"
 #include "modules/mediastream/MediaDevicesRequest.h"
@@ -36,6 +38,7 @@
 #include "modules/mediastream/NavigatorUserMediaSuccessCallback.h"
 #include "modules/mediastream/UserMediaController.h"
 #include "modules/mediastream/UserMediaRequest.h"
+#include "platform/weborigin/SecurityOrigin.h"
 
 namespace blink {
 
@@ -56,6 +59,17 @@ void NavigatorMediaStream::webkitGetUserMedia(Navigator& navigator, const Dictio
     if (!userMedia) {
         exceptionState.throwDOMException(NotSupportedError, "No user media controller available; is this a detached window?");
         return;
+    }
+
+    String errorMessage;
+    if (navigator.frame()->document()->securityOrigin()->canAccessFeatureRequiringSecureOrigin(errorMessage)) {
+        UseCounter::count(navigator.frame(), UseCounter::GetUserMediaSecureOrigin);
+    } else {
+        UseCounter::count(navigator.frame(), UseCounter::GetUserMediaInsecureOrigin);
+        if (navigator.frame()->settings()->strictPowerfulFeatureRestrictions()) {
+            exceptionState.throwSecurityError(ExceptionMessages::failedToExecute("webkitGetUserMedia", "Navigator", errorMessage));
+            return;
+        }
     }
 
     UserMediaRequest* request = UserMediaRequest::create(navigator.frame()->document(), userMedia, options, successCallback, errorCallback, exceptionState);

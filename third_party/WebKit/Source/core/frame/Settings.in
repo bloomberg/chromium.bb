@@ -108,7 +108,6 @@ asynchronousSpellCheckingEnabled initial=false
 hyperlinkAuditingEnabled initial=false
 allowDisplayOfInsecureContent initial=true
 allowRunningOfInsecureContent initial=true
-strictMixedContentChecking initial=false
 
 # FIXME: Remove this temporary flag. See crbug.com/366483 for the target
 # milestone.
@@ -315,3 +314,6 @@ inlineTextBoxAccessibilityEnabled initial=false
 # If true, context menu will be shown on mouse up instead of mouse down.
 # Typically enabled on Windows to match platform convention.
 showContextMenuOnMouseUp initial=false
+
+strictMixedContentChecking initial=false
+strictPowerfulFeatureRestrictions initial=false

@@ -8,7 +8,9 @@
 #include "core/dom/Document.h"
 #include "core/events/Event.h"
 #include "core/frame/LocalDOMWindow.h"
+#include "core/frame/Settings.h"
 #include "core/page/Page.h"
+#include "platform/weborigin/SecurityOrigin.h"
 
 namespace blink {
 
@@ -26,6 +28,12 @@ DeviceSingleWindowEventController::~DeviceSingleWindowEventController()
 
 void DeviceSingleWindowEventController::didUpdateData()
 {
+    if (m_document->frame()->settings()->strictPowerfulFeatureRestrictions()) {
+        String errorMessage;
+        if (!m_document->securityOrigin()->canAccessFeatureRequiringSecureOrigin(errorMessage))
+            return;
+    }
+
     dispatchDeviceEvent(lastEvent());
 }
 

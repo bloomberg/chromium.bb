@@ -29,11 +29,13 @@
 #include "modules/geolocation/Geolocation.h"
 
 #include "core/dom/Document.h"
+#include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
 #include "modules/geolocation/Coordinates.h"
 #include "modules/geolocation/GeolocationController.h"
 #include "modules/geolocation/GeolocationError.h"
 #include "modules/geolocation/GeolocationPosition.h"
+#include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/CurrentTime.h"
 
 namespace blink {
@@ -188,6 +190,14 @@ int Geolocation::watchPosition(PositionCallback* successCallback, PositionErrorC
 
 void Geolocation::startRequest(GeoNotifier *notifier)
 {
+    if (frame()->settings()->strictPowerfulFeatureRestrictions()) {
+        String errorMessage;
+        if (!executionContext()->securityOrigin()->canAccessFeatureRequiringSecureOrigin(errorMessage)) {
+            notifier->setFatalError(PositionError::create(PositionError::POSITION_UNAVAILABLE, errorMessage));
+            return;
+        }
+    }
+
     // Check whether permissions have already been denied. Note that if this is the case,
     // the permission state can not change again in the lifetime of this page.
     if (isDenied())
