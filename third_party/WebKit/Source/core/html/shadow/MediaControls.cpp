@@ -565,10 +565,7 @@ void MediaControls::createTextTrackDisplay()
     m_textDisplayContainer = textDisplayContainer.get();
 
     // Insert it before (behind) all other control elements.
-    if (m_overlayPlayButton)
-        m_overlayEnclosure->insertBefore(textDisplayContainer.release(), m_overlayPlayButton);
-    else
-        m_overlayEnclosure->insertBefore(textDisplayContainer.release(), m_overlayCastButton);
+    m_overlayEnclosure->insertBefore(textDisplayContainer.release(), m_overlayEnclosure->firstChild());
 }
 
 void MediaControls::showTextTrackDisplay()
