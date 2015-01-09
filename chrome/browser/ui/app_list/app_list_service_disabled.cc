@@ -22,7 +22,6 @@ class AppListServiceDisabled : public AppListService {
 
   // AppListService overrides:
   void SetAppListNextPaintCallback(void (*callback)()) override {}
-  void HandleFirstRun() override {}
   void Init(Profile* initial_profile) override {}
 
   base::FilePath GetProfilePath(const base::FilePath& user_data_dir) override {

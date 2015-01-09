@@ -40,7 +40,9 @@ class AppListService {
     ENABLE_FOR_APP_INSTALL,     // Triggered by a webstore packaged app install.
     ENABLE_VIA_WEBSTORE_LINK,   // Triggered by webstore explicitly via API.
     ENABLE_VIA_COMMAND_LINE,    // Triggered by --enable-app-list.
-    ENABLE_ON_REINSTALL,        // Triggered by Chrome reinstall finding pref.
+    ENABLE_ON_REINSTALL_UNUSED, // Triggered by Chrome reinstall finding pref.
+                                // Unused since detecting a reinstall and
+                                // detecting a pref are mutually exclusive.
     ENABLE_SHOWN_UNDISCOVERED,  // This overrides a prior ENABLE_FOR_APP_INSTALL
                                 // when the launcher is auto-shown without
                                 // being "discovered" beforehand.
@@ -64,10 +66,6 @@ class AppListService {
   // Indicates that |callback| should be called next time the app list is
   // painted.
   virtual void SetAppListNextPaintCallback(void (*callback)()) = 0;
-
-  // Perform Chrome first run logic. This is executed before Chrome's threads
-  // have been created.
-  virtual void HandleFirstRun() = 0;
 
   virtual base::FilePath GetProfilePath(
       const base::FilePath& user_data_dir) = 0;

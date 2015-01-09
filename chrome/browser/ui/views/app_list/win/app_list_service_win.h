@@ -21,7 +21,6 @@ class AppListServiceWin : public AppListServiceViews {
 
   // AppListService overrides:
   virtual void SetAppListNextPaintCallback(void (*callback)()) override;
-  virtual void HandleFirstRun() override;
   virtual void Init(Profile* initial_profile) override;
   virtual void ShowForProfile(Profile* requested_profile) override;
   virtual void CreateShortcut() override;
@@ -49,7 +48,6 @@ class AppListServiceWin : public AppListServiceViews {
   void LoadProfileForWarmup();
   void OnLoadProfileForWarmup(Profile* initial_profile);
 
-  bool enable_app_list_on_next_init_;
   scoped_ptr<ActivationTrackerWin> activation_tracker_;
 
   base::Closure next_paint_callback_;

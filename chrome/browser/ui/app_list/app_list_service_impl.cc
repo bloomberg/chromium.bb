@@ -258,8 +258,6 @@ AppListViewDelegate* AppListServiceImpl::GetViewDelegate(Profile* profile) {
 
 void AppListServiceImpl::SetAppListNextPaintCallback(void (*callback)()) {}
 
-void AppListServiceImpl::HandleFirstRun() {}
-
 void AppListServiceImpl::Init(Profile* initial_profile) {}
 
 base::FilePath AppListServiceImpl::GetProfilePath(

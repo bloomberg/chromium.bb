@@ -262,8 +262,7 @@ AppListServiceWin* AppListServiceWin::GetInstance() {
 
 AppListServiceWin::AppListServiceWin()
     : AppListServiceViews(scoped_ptr<AppListControllerDelegate>(
-          new AppListControllerDelegateWin(this))),
-      enable_app_list_on_next_init_(false) {
+          new AppListControllerDelegateWin(this))) {
 }
 
 AppListServiceWin::~AppListServiceWin() {
@@ -295,24 +294,7 @@ void AppListServiceWin::SetAppListNextPaintCallback(void (*callback)()) {
     next_paint_callback_ = base::Bind(callback);
 }
 
-void AppListServiceWin::HandleFirstRun() {
-  PrefService* local_state = g_browser_process->local_state();
-  // If the app list is already enabled during first run, then the user had
-  // opted in to the app launcher before uninstalling, so we re-enable to
-  // restore shortcuts to the app list.
-  // Note we can't directly create the shortcuts here because the IO thread
-  // hasn't been created yet.
-  enable_app_list_on_next_init_ = local_state->GetBoolean(
-      prefs::kAppLauncherHasBeenEnabled);
-}
-
 void AppListServiceWin::Init(Profile* initial_profile) {
-  if (enable_app_list_on_next_init_) {
-    enable_app_list_on_next_init_ = false;
-    EnableAppList(initial_profile, ENABLE_ON_REINSTALL);
-    CreateShortcut();
-  }
-
   ScheduleWarmup();
 
   MigrateAppLauncherEnabledPref();
