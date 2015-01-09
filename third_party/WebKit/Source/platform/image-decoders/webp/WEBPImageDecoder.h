@@ -54,7 +54,7 @@ public:
     virtual size_t clearCacheExceptFrame(size_t) override;
 
 private:
-    bool decode(const uint8_t* dataBytes, size_t dataSize, bool onlySize, size_t frameIndex);
+    bool decode(const uint8_t* dataBytes, size_t dataSize, size_t frameIndex);
 
     WebPIDecoder* m_decoder;
     WebPDecBuffer m_decoderBuffer;

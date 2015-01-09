@@ -209,7 +209,7 @@ ImageFrame* WEBPImageDecoder::frameBufferAtIndex(size_t index)
         if (!WebPDemuxGetFrame(m_demux, frameIndex + 1, &webpFrame))
             return 0;
         PlatformInstrumentation::willDecodeImage("WEBP");
-        decode(webpFrame.fragment.bytes, webpFrame.fragment.size, false, frameIndex);
+        decode(webpFrame.fragment.bytes, webpFrame.fragment.size, frameIndex);
         PlatformInstrumentation::didDecodeImage();
         WebPDemuxReleaseIterator(&webpFrame);
 
@@ -534,29 +534,12 @@ void WEBPImageDecoder::applyPostProcessing(size_t frameIndex)
     buffer.setPixelsChanged(true);
 }
 
-bool WEBPImageDecoder::decode(const uint8_t* dataBytes, size_t dataSize, bool onlySize, size_t frameIndex)
+bool WEBPImageDecoder::decode(const uint8_t* dataBytes, size_t dataSize, size_t frameIndex)
 {
     if (failed())
         return false;
 
-    if (!ImageDecoder::isSizeAvailable()) {
-        static const size_t imageHeaderSize = 30;
-        if (dataSize < imageHeaderSize)
-            return false;
-        int width, height;
-        WebPBitstreamFeatures features;
-        if (WebPGetFeatures(dataBytes, dataSize, &features) != VP8_STATUS_OK)
-            return setFailed();
-        width = features.width;
-        height = features.height;
-        m_formatFlags = features.has_alpha ? ALPHA_FLAG : 0;
-        if (!setSize(width, height))
-            return setFailed();
-    }
-
     ASSERT(ImageDecoder::isSizeAvailable());
-    if (onlySize)
-        return true;
 
     ASSERT(m_frameBufferCache.size() > frameIndex);
     ImageFrame& buffer = m_frameBufferCache[frameIndex];
