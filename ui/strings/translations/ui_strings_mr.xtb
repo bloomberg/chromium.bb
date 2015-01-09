@@ -1,6 +1,4 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="mr">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="mr">
 <translation id="4820616160060340806">आदेश+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="8806053966018712535"><ph name="FOLDER_NAME"/> फोल्डर</translation>
 <translation id="1871244248791675517">Ins</translation>
@@ -209,6 +207,7 @@
 <translation id="6907759265145635167"><ph name="QUANTITY"/> PB/s</translation>
 <translation id="2743387203779672305">क्लिपबोर्डवर कॉपी करा</translation>
 <translation id="8371695176452482769">आता बोला</translation>
+<translation id="6129953537138746214">जागा</translation>
 <translation id="1167268268675672572">ओळीच्या सुरुवातीवर हलवा आणि निवड सुधारित करा</translation>
 <translation id="6965382102122355670">ठिक आहे</translation>
 <translation id="7850320739366109486">व्यत्यय आणू नका</translation>

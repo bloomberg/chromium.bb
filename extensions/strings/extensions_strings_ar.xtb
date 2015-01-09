@@ -1,12 +1,10 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="ar">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="ar">
+<translation id="4542520061254486227">قراءة بياناتك على <ph name="WEBSITE_1"/> و<ph name="WEBSITE_2"/></translation>
 <translation id="3624204664103857160">‏تعذر تحميل صفحة launcher &quot;<ph name="PAGE"/>&quot;.</translation>
 <translation id="8804398419035066391">السماح بالاتصال بالمواقع المتعاونة</translation>
 <translation id="7809034755304591547">تم حظر <ph name="EXTENSION_NAME"/> (معرف الإضافة &quot;<ph name="EXTENSION_ID"/>&quot;) من قِبل المشرف.</translation>
 <translation id="1005274289863221750">استخدام الميكروفون والكاميرا</translation>
 <translation id="2857834222104759979">ملف البيان غير صالح.</translation>
-<translation id="3828484226910527078">‏الدخول إلى جهاز USB</translation>
 <translation id="6384275966486438344">تغيير إعدادات البحث لـ: <ph name="SEARCH_HOST"/></translation>
 <translation id="1445572445564823378">تتسبب هذه الإضافة في بطء <ph name="PRODUCT_NAME"/>. يجب تعطيلها لاستعادة أداء <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="1033780634303702874">الوصول إلى الأجهزة التسلسلية</translation>
@@ -15,30 +13,30 @@
 <translation id="677806580227005219">‏معالج Mime: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">الوصول إلى معلومات حول أجهزة البلوتوث المقترنة بنظامك واكتشاف أجهزة البلوتوث القريبة.</translation>
 <translation id="5911798608827489036">تبادل البيانات مع أي جهاز كمبيوتر متصل بالشبكة المحلية أو الإنترنت</translation>
-<translation id="4719685943208231314">‏الدخول إلى جهاز USB من <ph name="VENDOR_NAME"/></translation>
+<translation id="8284835137979141223"><ph name="PRODUCT_NAME"/> من <ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">تعذر تحميل النص البرمجي للخلفية '<ph name="BACKGROUND_SCRIPT"/>'.</translation>
 <translation id="9131487537093447019">إرسال الرسائل إلى أجهزة البلوتوث واستلامها منها.</translation>
-<translation id="8198425243160395623">‏الوصول إلى أجهزة USB</translation>
+<translation id="5678955352098267522">قراءة بياناتك على <ph name="WEBSITE_1"/></translation>
 <translation id="8597109877291678953">تبادل البيانات مع جهاز الكمبيوتر الذي يحمل الاسم <ph name="HOSTNAME"/></translation>
 <translation id="5456409301717116725">تتضمن هذه الإضافة ملف المفتاح '<ph name="KEY_PATH"/>'. ربما لا تريد إجراء ذلك.</translation>
+<translation id="7257666756905341374">قراءة البيانات التي نسختها ولصقتها</translation>
 <translation id="2350172092385603347">‏تم استخدام التعريب، ولكن لم يتم تحديد default_locale في البيان.</translation>
 <translation id="3759933321830434300">الأجزاء المقيدة من صفحات الويب</translation>
-<translation id="8058376558882514200">‏الدخول إلى جهاز USB <ph name="PRODUCT_NAME"/> من <ph name="VENDOR_NAME"/></translation>
 <translation id="149347756975725155">تعذر تحميل رمز الإضافة '<ph name="ICON"/>'.</translation>
 <translation id="8825366169884721447">أخفقت الإضافة في تعديل عنوان الطلب &quot;<ph name="HEADER_NAME"/>&quot; لأحد طلبات الشبكة نظرًا لتعارض التعديل مع إضافة أخرى (<ph name="EXTENSION_NAME"/>).</translation>
+<translation id="7495493006406536234">منتج <ph name="PRODUCT_ID"/></translation>
 <translation id="4233778200880751280">تعذر تحميل حول الصفحة &quot;<ph name="ABOUT_PAGE"/>&quot;.</translation>
 <translation id="388442998277590542">تعذر تحميل صفحة الخيارات &quot;<ph name="OPTIONS_PAGE"/>&quot;.</translation>
 <translation id="6344170822609224263">قائمة الدخول لاتصالات الشبكة</translation>
 <translation id="2616366145935564096">قراءة بياناتك وتغييرها في <ph name="WEBSITE_1"/></translation>
 <translation id="2518849872271000461">تبادل البيانات مع أجهزة الكمبيوتر التي تحمل الأسماء: <ph name="HOSTNAMES"/></translation>
-<translation id="1389014510128217152">- <ph name="WEBSITE_1"/></translation>
+<translation id="4444304522807523469">‏الدخول إلى الماسحات الضوئية للمستند الملحق عبر جهاز USB أو على الشبكة المحلية</translation>
 <translation id="6408118934673775994">قراءة بياناتك وتغييرها في <ph name="WEBSITE_1"/>، <ph name="WEBSITE_2"/> و <ph name="WEBSITE_3"/></translation>
 <translation id="961805664415579088">تبادل البيانات مع أي جهاز كمبيوتر في النطاق <ph name="DOMAIN"/></translation>
 <translation id="3502064055007747926">الوصول إلى أجهزة إدخال البيانات</translation>
 <translation id="8670869118777164560">أخفقت الإضافة في إعادة توجيه طلب الشبكة إلى <ph name="ATTEMPTED_REDIRECT_DESTINATION"/> نظرًا لإعادة توجيهها بواسطة إضافة أخرى (<ph name="EXTENSION_NAME"/>) إلى <ph name="ACTUAL_REDIRECT_DESTINATION"/>.</translation>
 <translation id="6840444547062817500">تعيد هذه الإضافة تحميل نفسها باستمرار.</translation>
 <translation id="8047248493720652249">أخفقت هذه الإضافة في تسمية التنزيل &quot;<ph name="ATTEMPTED_FILENAME"/>&quot; نظرًا لأن هناك إضافة أخرى (<ph name="EXTENSION_NAME"/>) قد حددت اسم ملف آخر &quot;<ph name="ACTUAL_FILENAME"/>&quot;.</translation>
-<translation id="2732710576072980201">المنتج <ph name="PRODUCT_ID"/> من <ph name="VENDOR_NAME"/> (الرقم التسلسلي <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="4968399700653439437">تبادل البيانات مع أي جهاز كمبيوتر في النطاقات: <ph name="DOMAINS"/></translation>
 <translation id="5026754133087629784">عرض الويب: <ph name="WEBVIEW_TAG_NAME"/></translation>
 <translation id="8284279544186306258">جميع مواقع <ph name="WEBSITE_1"/></translation>
@@ -57,8 +55,12 @@
 <translation id="7217838517480956708">يطلب مشرف هذا الجهاز تثبيت <ph name="EXTENSION_NAME"/>. لا يمكن إزالتها أو تعديلها.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME"/> من <ph name="VENDOR_NAME"/> (الرقم التسلسلي <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="7154130902455071009">تغيير الصفحة الرئيسية إلى: <ph name="START_PAGE"/></translation>
-<translation id="6758203075041033901">المنتج <ph name="PRODUCT_ID"/> من المورّد‬ <ph name="VENDOR_ID"/> (الرقم التسلسلي <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="6698810901424468597">قراءة بياناتك وتغييرها في <ph name="WEBSITE_1"/>و <ph name="WEBSITE_2"/></translation>
+<translation id="5544884907028850012">المورّد <ph name="VENDOR_ID"/></translation>
+<translation id="2048182445208425546">الدخول إلى عدد زيارات شبكتك</translation>
+<translation id="5972529113578162692">يتطلب مشرف هذا الجهاز تثبيت <ph name="EXTENSION_NAME"/>. لا يمكن إلغاء تثبيته.</translation>
+<translation id="7131040479572660648">قراءة بياناتك على <ph name="WEBSITE_1"/>، <ph name="WEBSITE_2"/> و<ph name="WEBSITE_3"/></translation>
 <translation id="1803557475693955505">تعذر تحميل صفحة الخلفية '<ph name="BACKGROUND_PAGE"/>'.</translation>
 <translation id="7972881773422714442">الخيارات: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
+<translation id="344630545793878684">قراءة بياناتك على عدد من مواقع الويب</translation>
 </translationbundle>

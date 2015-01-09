@@ -1,6 +1,4 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="bg">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="bg">
 <translation id="6017514345406065928">зелено</translation>
 <translation id="376869769528291915">:</translation>
 <translation id="6015796118275082299">Година</translation>
@@ -25,6 +23,7 @@
 <translation id="6315516427814392808">Предишната операция не можа да завърши поради недостиг на памет</translation>
 <translation id="2732718972699418926">AM</translation>
 <translation id="6042308850641462728">Още</translation>
+<translation id="6820686453637990663">Код за сигурност</translation>
 <translation id="7535087603100972091">Стойност</translation>
 <translation id="161042844686301425">синьозелено</translation>
 <translation id="1822429046913737220">AM/PM</translation>

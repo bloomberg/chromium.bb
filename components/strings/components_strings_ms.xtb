@@ -1,6 +1,4 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="ms">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="ms">
 <translation id="7485870689360869515">Tiada data dijumpai.</translation>
 <translation id="3884278016824448484">Pengecam peranti bercanggah</translation>
 <translation id="6779575937362063477">Kad jenis ini tidak disokong oleh Google Wallet. Sila pilih kad yang lain.</translation>
@@ -12,6 +10,7 @@
 <translation id="1339601241726513588">Domain pendaftaran:</translation>
 <translation id="7298195798382681320">Disyorkan</translation>
 <translation id="4058922952496707368">Kekunci &quot;<ph name="SUBKEY"/>&quot;: <ph name="ERROR"/></translation>
+<translation id="6980028882292583085">Makluman Javascript</translation>
 <translation id="5299298092464848405">Ralat semasa menghuraikan dasar</translation>
 <translation id="6628463337424475685"><ph name="ENGINE"/> Carian</translation>
 <translation id="6831043979455480757">Terjemah</translation>
@@ -24,6 +23,7 @@
 <translation id="2958431318199492670">Konfigurasi rangkaian tidak mematuhi piawaian ONC. Sebahagian konfigurasi tidak boleh diimport.</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="277499241957683684">Tiada rekod peranti</translation>
+<translation id="1491151370853475546">Muatkan semula Halaman Ini</translation>
 <translation id="8553075262323480129">Gagal terjemahan kerana bahasa halaman tidak dapat ditentukan.</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="1103523840287552314">Sentiasa terjemahkan <ph name="LANGUAGE"/></translation>
@@ -44,6 +44,7 @@
 <translation id="3380365263193509176">Ralat tidak diketahui</translation>
 <translation id="112840717907525620">Cache dasar OK</translation>
 <translation id="3452404311384756672">Selang masa ambil:</translation>
+<translation id="409504436206021213">Jangan Muat Semula</translation>
 <translation id="7441627299479586546">Subjek dasar salah</translation>
 <translation id="3885155851504623709">Mukim</translation>
 <translation id="6973656660372572881">Pelayan proksi tetap dan juga URL skrip .pac tidak ditetapkan.</translation>
@@ -52,6 +53,7 @@
 <translation id="3667681724235208644">Lihat Yang Asal</translation>
 <translation id="4079302484614802869">Konfigurasi proksi ditetapkan kepada penggunaaan URL skrip .pac, bukannya pelayan proksi tetap.</translation>
 <translation id="5540224163453853">Tidak menemui artikel yang diminta.</translation>
+<translation id="333371639341676808">Halang halaman ini daripada mencipta dialog tambahan.</translation>
 <translation id="5523118979700054094">Nama dasar</translation>
 <translation id="7791543448312431591">Tambah</translation>
 <translation id="2053553514270667976">Poskod</translation>
@@ -68,6 +70,7 @@
 <translation id="2367567093518048410">Tahap</translation>
 <translation id="7977590112176369853">&lt;masukkan pertanyaan&gt;</translation>
 <translation id="7610193165460212391">Nilai berada di luar julat <ph name="VALUE"/></translation>
+<translation id="8311778656528046050">Adakah anda pasti mahu memuat semula halaman ini?</translation>
 <translation id="370665806235115550">Memuatkan...</translation>
 <translation id="2096368010154057602">Jabatan</translation>
 <translation id="4258748452823770588">Tandatangan tidak elok</translation>
@@ -95,11 +98,14 @@
 <translation id="6445051938772793705">Negara</translation>
 <translation id="5031870354684148875">Mengenai Terjemahan Google</translation>
 <translation id="1152921474424827756">Akses <ph name="BEGIN_LINK"/>salinan cache<ph name="END_LINK"/> <ph name="URL"/></translation>
+<translation id="8201077131113104583">URL kemas kini tidak sah untuk sambungan dengan ID &quot;<ph name="EXTENSION_ID"/>&quot;.</translation>
 <translation id="6891596781022320156">Tahap dasar tidak disokong.</translation>
 <translation id="2025186561304664664">Proksi ditetapkan kepada auto konfigurasi.</translation>
 <translation id="1853748787962613237">Gagal memaparkan artikel.</translation>
 <translation id="5455374756549232013">Cap waktu dasar tidak elok</translation>
+<translation id="2025623846716345241">Sahkan Muat Semula</translation>
 <translation id="1962204205936693436"><ph name="DOMAIN"/> Penanda halaman</translation>
+<translation id="111844081046043029">Adakah anda pasti anda mahu meninggalkan halaman ini?</translation>
 <translation id="1973335181906896915">Ralat penyirian</translation>
 <translation id="5989320800837274978">Pelayan proksi tetap begitu juga URL skrip .pac, kedua-duanya tidak ditetapkan.</translation>
 <translation id="7805768142964895445">Status</translation>
@@ -110,12 +116,13 @@
 <translation id="7956713633345437162">Penanda halaman mudah alih</translation>
 <translation id="5089810972385038852">Negeri</translation>
 <translation id="647261751007945333">Dasar peranti</translation>
-<translation id="678528074488531090">Ralat pengesahan: <ph name="VALIDATION_ERROR"/>.</translation>
 <translation id="213826338245044447">Penanda Halaman Mudah Alih</translation>
 <translation id="8571890674111243710">Menterjemah halaman ke <ph name="LANGUAGE"/>...</translation>
 <translation id="4117700440116928470">Skop dasar tidak disokong.</translation>
 <translation id="2114841414352855701">Diabaikan kerana ia telah diatasi oleh <ph name="POLICY_NAME"/>.</translation>
 <translation id="3228969707346345236">Gagal terjemah kerana halaman sudah dalam <ph name="LANGUAGE"/>.</translation>
+<translation id="7521387064766892559">JavaScript</translation>
+<translation id="8034522405403831421">Halaman ini dalam <ph name="SOURCE_LANGUAGE"/>. Terjemahkannya kepada <ph name="TARGET_LANGUAGE"/>?</translation>
 <translation id="8891727572606052622">Mod proksi tidak sah.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="7752995774971033316">Tidak Diurus</translation>
@@ -137,9 +144,11 @@
 <translation id="3377188786107721145">Ralat menghuraikan dasar</translation>
 <translation id="2270192940992995399">Gagal menemui artikel.</translation>
 <translation id="4726672564094551039">Muat semula dasar</translation>
+<translation id="9154176715500758432">Kekal di Halaman ini</translation>
 <translation id="2392959068659972793">Paparkan dasar tanpa nilai yang ditetapkan</translation>
 <translation id="5190835502935405962">Bar Penanda Halaman</translation>
 <translation id="6965978654500191972">Peranti</translation>
+<translation id="5295309862264981122">Sahkan Navigasi</translation>
 <translation id="8249320324621329438">Diambil kali terakhir:</translation>
 <translation id="194030505837763158">Pergi ke <ph name="LINK"/></translation>
 <translation id="1285320974508926690">Jangan sekali-kali menterjemahkan tapak ini</translation>
@@ -150,6 +159,7 @@
 <translation id="9020542370529661692">Halaman ini telah diterjemahkan kepada <ph name="TARGET_LANGUAGE"/></translation>
 <translation id="5631439013527180824">Token pengurusan peranti tidak sah</translation>
 <translation id="560412284261940334">Pengurusan tidak disokong</translation>
+<translation id="6512448926095770873">Tinggalkan Halaman ini</translation>
 <translation id="1639239467298939599">Memuatkan</translation>
 <translation id="3169472444629675720">Temui</translation>
 <translation id="4923417429809017348">Halaman ini diterjemahkan dari bahasa yang tidak diketahui ke <ph name="LANGUAGE_LANGUAGE"/></translation>
@@ -163,6 +173,8 @@
 <translation id="5509780412636533143">Penanda halaman terurus</translation>
 <translation id="8866481888320382733">Ralat semasa menghuraikan tetapan dasar</translation>
 <translation id="6644283850729428850">Dasar ini telah dikecam.</translation>
+<translation id="1693754753824026215">Halaman di <ph name="SITE"/> menyatakan:</translation>
+<translation id="4269787794583293679">(Tiada nama pengguna)</translation>
 <translation id="7988324688042446538">Penanda halaman desktop</translation>
 <translation id="8488350697529856933">Diguna pakai untuk</translation>
 <translation id="6165508094623778733">Ketahui lebih lanjut</translation>
@@ -184,8 +196,8 @@
 <translation id="2639739919103226564">Status:</translation>
 <translation id="1832546148887467272">Beralih kepada <ph name="NEW_GOOGLE_HOST"/></translation>
 <translation id="5095208057601539847">Wilayah</translation>
+<translation id="2581221116934462656">Adakah anda ingin <ph name="PRODUCT_NAME"/> menawarkan halaman <ph name="LANGUAGE_NAME"/> dari tapak ini diterjemah pada masa akan datang?</translation>
 <translation id="3934680773876859118">Gagal untuk memuatkan dokumen PDF</translation>
-<translation id="1152021252151287493">Tandatangan pengesahan tidak sah.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="2721148159707890343">Permintaan berjaya</translation>
 <translation id="2455981314101692989">Halaman web ini melumpuhkan pengisian automatik untuk borang ini.</translation>

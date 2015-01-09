@@ -1,6 +1,4 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="zh-CN">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="zh-CN">
 <translation id="2094750046714988961">外部存储设备尚未准备就绪，无法启动分析器</translation>
 <translation id="1256337885411059545">无法播放视频</translation>
 <translation id="2520230379124234395">分析器已启动</translation>

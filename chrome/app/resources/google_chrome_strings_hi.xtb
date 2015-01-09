@@ -1,6 +1,4 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="hi">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="hi">
 <translation id="2286950485307333924">अब आपने Chrome में प्रवेश कर लिया है</translation>
 <translation id="8000275528373650868">Google Chrome को Windows Vista या SP2 वाले Windows XP या इसके बाद के वर्शन की आवश्यकता है.</translation>
 <translation id="1302523850133262269">कृपया Chrome के द्वारा नवीनतम सिस्टम अपडेट इंस्टॉल करने के दौरान प्रतीक्षा करें.</translation>
@@ -30,7 +28,6 @@
 <translation id="110877069173485804">यह आपका Chrome है</translation>
 <translation id="8406086379114794905">Chrome को बेहतर बनाने में सहायता करें</translation>
 <translation id="2896252579017640304">Chrome ऐप्स  लॉन्च करें</translation>
-<translation id="4121281502786319101">Chrome &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; से निजी कनेक्‍शन स्‍थापित नहीं कर सकता. ऐसा संभवतः इसलिए क्‍योंकि आपके डिवाइस का दिनांक गलत तरीके से सेट है. (आपके डिवाइस को दिनांक <ph name="DATE"/> पर सेट होना चाहिए.) आपको <ph name="BEGIN_LINK"/>अपने डिवाइस का दिनांक और समय अपडेट <ph name="END_LINK"/> करने के बाद अपना पृष्‍ठ रिफ़्रैश करना चाहिए.</translation>
 <translation id="5620765574781326016">पृष्ठ को छोड़े बिना वेबसाइटों पर दिए गए विषयों के बारे में जानें.</translation>
 <translation id="2721687379934343312">Mac पर, पासवर्ड को आपके कीचेन पर सहेज लिया जाता है और उन्हें इस OS X खाते को साझा करने वाले अन्य Chrome उपयोगकर्ताओं द्वारा अभिगमित या समन्‍वयित किया जा सकता है.</translation>
 <translation id="683440813066116847">mDNS ट्रैफ़िक की अनुमति देने के लिए Google Chrome Canary के लिए इनबाउंड नियम.</translation>
@@ -68,8 +65,8 @@
 <translation id="4513711165509885787">आपका बिलिंग विवरण Chrome में सहेज लिया गया है.</translation>
 <translation id="5253588388888612165">यदि आप इस कंप्यूटर को <ph name="PROFILE_NAME"/> से साझा करते हैं, तो स्वयं को Chrome में अलग से जोड़ें. अन्यथा उनके Google खाते को डिस्कनेक्ट करें.</translation>
 <translation id="7098166902387133879">Google Chrome आपके माइक्रोफ़ोन का उपयोग कर रहा है.</translation>
+<translation id="2596415276201385844">सुरक्षित कनेक्‍शन स्‍थापित करने के लिए, आपकी घड़ी को सही तरीके से सेट किए जाने की आवश्‍यकता है. ऐसा इसलिए क्‍योंकि वेबसाइटों द्वारा स्‍वयं की पहचान करने के लिए उपयोग किए जाने वाले प्रमाणपत्र केवल विशिष्‍ट समयावधियों के लिए ही मान्‍य होते हैं. चूंकि आपके डिवाइस की घड़ी गलत है, इसलिए Chrome इन प्रमाणपत्रों का सत्‍यापन नहीं कर सकता.</translation>
 <translation id="4053720452172726777">Google Chrome कस्टमाइज़ करें और नियंत्रित करें</translation>
-<translation id="4315766637075282876">Chrome उसे आपके |Google द्वारा सहेजे पासवर्ड| में संग्रहीत करेगा और उसे आपके लिए इसे स्‍वतः भरेगा ताकि आपको इसे स्‍वयं याद न रखना पड़े.</translation>
 <translation id="5298539825145851748">Chrome से नि‍कालें</translation>
 <translation id="3197823471738295152">आपका डिवाइस अद्यतित है.</translation>
 <translation id="8286862437124483331">Google Chrome पासवर्ड दिखाने का प्रयास कर रहा है. इसकी अनुमति देने के लिए अपना Windows पासवर्ड लिखें.</translation>
@@ -85,8 +82,8 @@
 <translation id="345168553362876363">Google Chrome ऐप्स  लॉन्चर, Chrome ऐप्स  के लिए एकमात्र प्लेटफ़ॉर्म है.</translation>
 <translation id="225614027745146050">आपका स्वागत है</translation>
 <translation id="7473891865547856676">जी रहने दें</translation>
-<translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3149510190863420837">Chrome ऐप्स </translation>
+<translation id="8851136666856101339">मुख्य</translation>
 <translation id="7473136999113284234">Chrome अपने आप अपडेट हो जाता है इसलिए आपके पास हमेशा नवीनतम वर्शन रहता है.</translation>
 <translation id="7084448929020576097"><ph name="FILE_NAME"/> दुर्भावनापूर्ण है, और Chrome ने इसे अवरुद्ध कर दिया है.</translation>
 <translation id="6368958679917195344">Chrome OS को अतिरिक्त <ph name="BEGIN_LINK_CROS_OSS"/>ओपन सोर्स सॉफ़्टवेयर<ph name="END_LINK_CROS_OSS"/> द्वारा संभव बनाया गया है.</translation>
@@ -94,9 +91,9 @@
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="8823341990149967727">Chrome पुराना हो गया है</translation>
 <translation id="4424024547088906515">यह सर्वर यह नहीं प्रमाणित कर सका कि यह <ph name="DOMAIN"/> है; इसका सुरक्षा प्रमाणपत्र Chrome द्वारा विश्वसनीय नहीं है. ऐसा गलत कॉन्फ़िगरेशन या किसी आक्रमणकर्ता द्वारा आपके कनेक्शन में अवरोध डालने के कारण हो सकता है.</translation>
-<translation id="6722021951952731012">सुरक्षित नेटवर्क कनेक्‍शन स्‍थापित करने के लिए, आपके कंप्‍यूटर की घड़ी का सही होना आवश्‍यक है. ऐसा इसलिए क्‍योंकि सुरक्षित कनेक्शन स्थापित करते समय वेबसाइटें स्वयं की पहचान करने के लिए जिन प्रमाणपत्रों का उपयोग करती हैं, वे केवल निश्‍चित समय अवधि के लिए मान्‍य होते हैं. चूंकि आपके कंप्‍यूटर की घड़ी गलत है, इसलिए Chrome प्रमाणपत्रों की उचित रूप से जांच नहीं कर सकता.</translation>
 <translation id="473775607612524610">अपडेट करें</translation>
-<translation id="1195935957447623558">Google Chrome ठीक से बंद नहीं हुआ था. आपके द्वारा खोले गए पृष्ठों को पुन: खोलने के लिए, पुनर्स्थापित करें पर क्लिक करें.</translation>
+<translation id="5618769508111928343"><ph name="SITE"/> आपकी जानकारी की रक्षा करने के लिए आमतौर पर एन्‍क्रिप्‍शन का उपयोग करती है. इस बार जब Chrome ने <ph name="SITE"/> से कनेक्‍ट करने का प्रयास किया, तो वेबसाइट ने असामान्‍य
+  और गलत क्रेडेंशियल भेजे. या तो कोई हमलावर <ph name="SITE"/> होने का दावा करने का प्रयास कर रहा है या फिर किसी वाई-फ़ाई प्रवेश स्‍क्रीन ने कनेक्‍शन को बाधित कर दिया है. आपकी जानकारी अभी भी सुरक्षित है क्‍योंकि किसी भी डेटा का आदान-प्रदान होने से पहले ही Chrome ने कनेक्‍शन को बंद कर दिया था.</translation>
 <translation id="2576431527583832481">Chrome अब बेहतर हो गया है! एक नया वर्शन उपलब्ध है.</translation>
 <translation id="4633000520311261472">Chrome को अधिक सुरक्षित बनाने के लिए, हमने ऐसे कुछ एक्सटेंशन अक्षम कर दिए हैं जो <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> में सूचीबद्ध नहीं हैं और आपकी जानकारी के बिना जोड़े गए हो सकते हैं.</translation>
 <translation id="3656661827369545115">आपका कंप्यूटर प्रारंभ होने पर क्रोमियम अपने आप लॉन्च करें</translation>
@@ -134,6 +131,14 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="5563479599352954471">एकल स्पर्श से खोजें</translation>
 <translation id="2664962310688259219">Chrome OS ओपन सोर्स लाइसेंस</translation>
+<translation id="6341737370356890233">Chrome
+          मेनू &gt;
+          <ph name="SETTINGS_TITLE"/>
+          &gt;
+          <ph name="ADVANCED_TITLE"/>
+          पर जाएं और &quot;<ph name="NO_PREFETCH_DESCRIPTION"/>&quot; का चयन हटाएं
+          यदि इससे समस्या का समाधान नहीं होता, तो बेहतर प्रदर्शन के लिए हम इस विकल्‍प को पुन: चुनने
+          की अनुशंसा करते हैं.</translation>
 <translation id="2290014774651636340">Google API कुंजियां अनुपलब्ध हैं. Google Chrome की कुछ कार्यक्षमता अक्षम कर दी जाएगी.</translation>
 <translation id="2397416548179033562">Chrome मेनू दिखाएं</translation>
 <translation id="4794050651896644714">Chrome में विवरण सहेजें</translation>
@@ -141,7 +146,6 @@
 <translation id="5855036575689098185">आपके कंप्यूटर पर चल रहा सॉफ़्टवेयर Google Chrome के साथ असंगत है.</translation>
 <translation id="7164397146364144019">आप Google को संभावित सुरक्षा घटनाओं के विवरणों की अपने आप रिपोर्ट करके Chrome को अधिक सुरक्षित और आसान बनाने में सहायता कर सकते हैं.</translation>
 <translation id="8008534537613507642">Chrome फिर से इंस्टॉल करें</translation>
-<translation id="2044287590254833138">Google Chrome टूलबार</translation>
 <translation id="8862326446509486874">सिस्टम-स्तर स्थापना के लिए आपके पास उचित अधिकार नहीं हैं. इंस्टॉलर को व्यवस्थापक के रूप में फिर से चलाने का प्रयास करें.</translation>
 <translation id="2874156562296220396">Google Chrome को <ph name="BEGIN_LINK_CHROMIUM"/>क्रोमियम<ph name="END_LINK_CHROMIUM"/> ओपन सोर्स प्रोजेक्ट और अन्य <ph name="BEGIN_LINK_OSS"/>ओपन सोर्स सॉफ्टवेयर<ph name="END_LINK_OSS"/> ने संभव बनाया है.</translation>
 <translation id="7191567847629796517">Google Chrome OS <ph name="SCHEME"/> लिंक प्रबंधित करने के लिए बाहरी ऐप्‍लिकेशन लॉन्‍च करने का समर्थन नहीं करता. अनुरोधित लिंक <ph name="PROTOLINK"/> है.</translation>
@@ -153,6 +157,7 @@
 <translation id="2290095356545025170">क्या आप वाकई Google Chrome को विस्थापित करना चाहते हैं?</translation>
 <translation id="7062966102157262887">डाउनलोड वर्तमान में चल रहा है. क्या आप Google Chrome से बाहर निकलना और डाउनलोड को रद्द करना चाहते हैं?</translation>
 <translation id="4273752058983339720">Google Chrome आपके द्वारा अपना कंप्‍यूटर प्रारंभ करते ही लॉन्‍च होने के लिए कॉन्‍फ़ि‍गर किया गया है.</translation>
+<translation id="2316129865977710310">जी रहने दें</translation>
 <translation id="415994390253732730">Chrome अजीब तरीके से व्‍यवहार कर रहा है?</translation>
 <translation id="1104959162601287462">&amp;Chrome OS के बारे में</translation>
 <translation id="5328989068199000832">Google Chrome बाइनरी</translation>
@@ -163,21 +168,14 @@
 <translation id="8568392309447938879">ऐप्स का उपयोग करने के लिए आपको Chrome में प्रवेश किए हुए रहना होगा. इससे Chrome को सभी डिवाइस में मौजूद आपके ऐप्स, बुकमार्क, इतिहास, पासवर्ड और अन्य सेटिंग समन्वयित करने की अनुमति मिल जाती है.</translation>
 <translation id="4990567037958725628">Google Chrome कैनरी</translation>
 <translation id="4561051373932531560">Google Chrome आपको वेब पर फ़ोन नंबर क्लिक करने और उसे Skype से कॉल करने की सुविधा देता है!</translation>
-<translation id="2705287621619748344">Chrome &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; से निजी कनेक्‍शन स्‍थापित नहीं कर सकता. ऐसा संभवतः इसलिए क्‍योंकि आपके कंप्‍यूटर का दिनांक गलत तरीके से सेट है (आपके कंप्‍यूटर में दिनांक <ph name="DATE"/> पर सेट है.) <ph name="BEGIN_LINK"/>आपको अपने कंप्‍यूटर का दिनांक और समय अपडेट करने<ph name="END_LINK"/> के बाद यह पृष्‍ठ रिफ़्रैश करना चाहिए.</translation>
 <translation id="5788838254726722945">Google Chrome ऐप्स  लॉन्चर अनइंस्टॉल करें</translation>
 <translation id="3612333635265770873">इसी नाम के एक मॉड्यूल को Google Chrome का विरोध करने के लिए जाना जाता है.</translation>
 <translation id="2665296953892887393">Google को क्रैश रिपोर्ट और <ph name="UMA_LINK"/> भेजकर Google Chrome को बेहतर बनाने में सहायता करें</translation>
 <translation id="7761834446675418963">Chrome को खोलने और ब्राउज़ करना प्रारंभ करने के लिए अपना नाम क्लिक करें.</translation>
 <translation id="2669824781555328029"><ph name="FILE_NAME"/> आपके ब्राउज़िंग अनुभव को क्षति पहुंचा सकती है, इसलिए Chrome ने उसे अवरुद्ध कर दिया है.</translation>
-<translation id="5875635642195358109">यहां
-        Chrome मेनू &gt;
-        <ph name="SETTINGS_TITLE"/>
-        &gt;
-        <ph name="ADVANCED_TITLE"/>
-        पर जाएं और &quot;<ph name="NO_PREFETCH_DESCRIPTION"/>&quot; का चयन ना करें.
-        यदि इससे समस्या का समाधान नहीं होता, तो हम बेहतर प्रदर्शन के लिए इस
-        विकल्प को पुन: चुनने की सुझाव देते हैं.</translation>
 <translation id="6235018212288296708">mDNS ट्रैफ़िक की अनुमति देने के लिए Google Chrome के लिए इनबाउंड नियम.</translation>
+<translation id="7984945080620862648">आप इस समय <ph name="SITE"/> पर विज़िट नहीं कर सकते हैं क्योंकि वेबसाइट ने ऐसे अव्यवस्थित प्रमाणिकता भेजे हैं जिन्हें Chrome संसाधित नहीं कर सकता. नेटवर्क की त्रुटियां और हमले आमतौर पर अस्थायी होते हैं, इसलिए संभवत: यह पृष्ठ बाद में काम करेगा.</translation>
+<translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3281987435599047980">Google खोज को कोई शब्‍द या उसके आस-पास का प्रसंग भेजता है, जो परिभाषाएं, चित्र, खोज परिणाम, और अन्‍य विवरण लौटाता है.</translation>
 <translation id="61852838583753520">&amp;Chrome OS को अपडेट करें</translation>
 <translation id="5028489144783860647">Google Chrome आपका डेटा समन्‍वयित नहीं कर सका. कृपया अपना समन्‍वयन पासफ़्रेज़ अपडेट करें.</translation>
@@ -188,7 +186,6 @@
 <translation id="7890208801193284374">यदि आप कंप्यूटर साझा करते हैं, तो मित्र और परिवार अलग-अलग ब्राउज़ कर सकते हैं और Chrome को जैसा चाहें सेट कर सकते हैं.</translation>
 <translation id="7161904924553537242">Google Chrome में आपका स्वागत है</translation>
 <translation id="4147555960264124640">आप प्रबंधित खाते से प्रवेश कर रहे हैं और उसके व्यवस्थापक को अपनी Google Chrome प्रोफ़ाइल पर नियंत्रण दे रहे हैं. आपका Chrome डेटा, जैसे आपके ऐप्स , बुकमार्क, इतिहास, पासवर्ड, और अन्य सेटिंग <ph name="USER_NAME"/> से स्थायी रूप से जुड़ जाएंगी. आप Google खाता डैशबोर्ड से इस डेटा को हटा सकेंगे, लेकिन आप किसी अन्य खाते से इस डेटा को संबद्ध नहीं कर सकेंगे. <ph name="LEARN_MORE"/></translation>
-<translation id="4568169453579447500">असंगत Google अपडेट समूह नीति सेटिंग के कारण Google Chrome अपडेट नहीं किया जा सकता है. Google Chrome बाइनरी ऐप्लिकेशन के लिए अपडेट नीति ओवरराइड सेट करने के लिए समूह नीति संपादक का उपयोग करें और पुन: प्रयास करें; विवरण के लिए http://goo.gl/uJ9gV देखें.</translation>
 <translation id="1348153800635493797">Google वॉलेट का उपयोग करने के लिए आपको Chrome को अपग्रेड करना होगा [<ph name="ERROR_CODE"/>].</translation>
 <translation id="8187289872471304532">यहां
           ऐप्स  &gt; सिस्टम प्राथमिकताएं &gt; नेटवर्क &gt; उन्नत &gt; प्रॉक्सी
@@ -196,6 +193,10 @@
 <translation id="8669527147644353129">Google Chrome सहायक</translation>
 <translation id="870251953148363156">&amp;Google Chrome को अपडेट करें</translation>
 <translation id="130631256467250065">अगली बार अपना डिवाइस पुन: प्रारंभ करने पर आपके परिवर्तन प्रभावी हो जाएंगे.</translation>
+<translation id="1546593779121993896">Chrome मेनू &gt; सेटिंग &gt; (उन्‍नत) गोपनीयता पर जाएं
+          और &quot;नेटवर्क कार्रवाई पूर्वानुमानों&quot; को अक्षम करें.
+          यदि इससे समस्‍या हल नहीं होती, तो बेहतर प्रदर्शन के लिए हम इस विकल्‍प को पुन: सक्षम करने
+          की अनुशंसा करते हैं.</translation>
 <translation id="163860049029591106">Chrome OS के साथ आरंभ करना</translation>
 <translation id="1587223624401073077">Google Chrome आपके कैमरे का उपयोग कर रहा है.</translation>
 <translation id="1399397803214730675">इस कंप्यूटर में Google Chrome का अधिक नवीन वर्शन पहले से मौजूद है. यदि सॉफ्टवेयर काम नहीं कर रहा है, तो कृपया Google Chrome अनइंस्‍टॉल करें और फिर से प्रयास करें.</translation>
@@ -250,6 +251,7 @@
 <translation id="3360895254066713204">Chrome सहायक</translation>
 <translation id="1877026089748256423">Chrome पुराना हो गया है</translation>
 <translation id="7592736734348559088">Google Chrome आपका डेटा समन्‍वयित नहीं कर सका क्‍योंकि आपके खाते के प्रवेश विवरण पुराने हैं.</translation>
+<translation id="7810280330588098283">Chrome इसे आपके |Google द्वारा सहेजे गए पासवर्ड| में संग्रहीत कर लेगा और आपको अगली बार इसकी आवश्‍यकता होने पर इसे याद रखेगा.</translation>
 <translation id="6991142834212251086">मेरे Chrome डेटा को इस खाते से लिंक करें</translation>
 <translation id="3451115285585441894">Chrome में जोड़ा जा रहा है...</translation>
 <translation id="3047079729301751317"><ph name="USERNAME"/> को डिस्कनेक्ट करने से आपका इतिहास, बुकमार्क, सेटिंग, और इस डिवाइस पर संग्रहीत अन्य Chrome डेटा साफ़ हो जाएगा. आपके Google खाते में संग्रहीत डेटा साफ़ नहीं होगा और उसे <ph name="GOOGLE_DASHBOARD_LINK"/>Google डैशबोर्ड<ph name="END_GOOGLE_DASHBOARD_LINK"/> पर प्रबंधित किया जा सकता है.</translation>
@@ -261,12 +263,13 @@
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="2334084861041072223">कॉपीराइट <ph name="YEAR"/> Google Inc. सर्वाधिकार सुरक्षित.</translation>
 <translation id="1698376642261615901">Google Chrome एक ऐसा वेब ब्राउज़र है, जो वेब पृष्ठ और ऐप्स  को बिजली की गति से चलाता है. यह तेज़, स्थिर, और उपयोग में आसान है. Google Chrome में अंतर्निहित मैलवेयर और फ़िशिंग सुरक्षा के साथ अधिक सुरक्षित रूप से वेब ब्राउज़ करें.</translation>
+<translation id="4523402702161492148">Google Chrome को Google अपडेट समूह नीति की असंगत सेटिंग के कारण अपडेट नहीं किया जा सकता. Google Chrome बाइनरी ऐप्‍लिकेशन हेतु अपडेट नीति ओवरराइट सेट करने के लिए Group नीति संपादक का उपयोग करें और पुन: प्रयास करें; विवरण के लिए https://goo.gl/uJ9gV देखें.</translation>
 <translation id="853189717709780425">आप प्रबंधित खाते से प्रवेश कर रहे हैं और अपने Google Chrome प्रोफ़ाइल पर उसके व्यवस्थापक नियंत्रण दे रहे हैं. आपके ऐप्स , बुकमार्क, इतिहास, पासवर्ड, और अन्य सेटिंग जैसा Chrome डेटा <ph name="USER_NAME"/> से स्थायी रूप से जुड़ जाएगा. आप इस डेटा को Google खाते डैशबोर्ड के माध्यम से हटा सकेंगे, लेकिन आप इस डेटा को किसी अन्य खाते से संबद्ध नहीं कर सकेंगे.</translation>
 <translation id="6049075767726609708">एक व्यवस्थापक ने इस सिस्टम में Google Chrome स्थापित किया है और यह सभी उपयोगकर्ताओं के लिए उपलब्ध है. सिस्टम-स्तरीय Google Chrome आपके उपयोगकर्ता-स्तरीय स्थापना को अब बदल देगा.</translation>
 <translation id="1818142563254268765">Chrome स्वयं को नवीनतम वर्शन में अपडेट नहीं कर सका, इसलिए आप शानदार नई सुविधाओं और सुरक्षा समाधानों का लाभ नहीं ले पा रहे हैं. आपको Chrome को अपडेट करना होगा.</translation>
-<translation id="4821676311965554623">सुरक्षित नेटवर्क कनेक्‍शन स्‍थापित करने के लिए, आपके डिवाइस  की घड़ी का सही होना आवश्‍यक है. ऐसा इसलिए क्‍योंकि सुरक्षित कनेक्शन स्थापित करते समय वेबसाइटें स्वयं की पहचान करने के लिए जिन प्रमाणपत्रों का उपयोग करती हैं, वे केवल निश्‍चित समय अवधि के लिए मान्‍य होते हैं. चूंकि आपके डिवाइस की घड़ी गलत है, इसलिए Chrome प्रमाणपत्रों की उचित रूप से जांच नहीं कर सकता.</translation>
 <translation id="7408085963519505752">Chrome OS शर्तें</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
+<translation id="1016765312371154165">Chrome सही तरीके से बंद नहीं हुआ था.</translation>
 <translation id="3836351788193713666">लगभग अद्यतित! अपडेट करना समाप्त करने के लिए Google Chrome पुन: लॉन्‍च करें.</translation>
 <translation id="884296878221830158">इससे यह भी नियंत्रित होता है कि जब आप Chrome प्रारंभ करते हैं या होम बटन क्लिक करते हैं तब कौन सा पृष्‍ठ दिखाया जाए.</translation>
 <translation id="7106741999175697885">कार्य प्रबंधक - Google Chrome</translation>

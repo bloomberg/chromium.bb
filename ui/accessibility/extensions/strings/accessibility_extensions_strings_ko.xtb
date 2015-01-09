@@ -1,4 +1,42 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="ko">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="ko">
+<translation id="1408730541890277710">이미지를 대체 텍스트로 바꿉니다.</translation>
+<translation id="595639123821853262">반전 회색조</translation>
+<translation id="8260673944985561857">캐럿 브라우징 옵션</translation>
+<translation id="3410969471888629217">사이트 맞춤설정 저장 안함</translation>
+<translation id="6050189528197190982">회색조</translation>
+<translation id="5094574508723441140">대비 강화</translation>
+<translation id="8609925175482059018">&lt;span class='key'&gt;F7&lt;/span&gt;을 눌러 캐럿 브라우징을 사용 설정합니다. 사용 중지하려면 F7을 다시 누르세요.</translation>
+<translation id="3435896845095436175">사용</translation>
+<translation id="8480209185614411573">고대비</translation>
+<translation id="1588438908519853928">일반</translation>
+<translation id="4954450790315188152">캐럿 브라우징이 사용 설정된 경우:</translation>
+<translation id="2965611304828530558">&lt;p&gt;링크 또는 제어에 도달하면 자동으로 초점이 맞춰집니다. &lt;span class='key'&gt;Enter&lt;/span&gt; 키를 누른 다음 링크 또는 버튼을 클릭합니다. &lt;/p&gt; &lt;p&gt;초점이 맞춰진 제어(예: 입력란, 목록 상자)가 화살표 키를 캡처할 때 &lt;span class='key'&gt;Esc&lt;/span&gt;를 누른 다음 왼쪽 또는 오른쪽 화살표를 눌러 캐럿 브라우징을 계속합니다. &lt;/p&gt; &lt;p&gt;또는 &lt;span class='key'&gt;Tab&lt;/span&gt;을 눌러 다음 초점 가능한 제어로 이동합니다. &lt;/p&gt;</translation>
+<translation id="2394933097471027016">지금 시도해 보세요. 이 페이지에는 캐럿 브라우징이 항상 사용 설정되어 있습니다.</translation>
+<translation id="3622586652998721735">기본 스키마로 설정</translation>
+<translation id="2179565792157161713">새 탭에서 상세 설명 열기</translation>
+<translation id="2471847333270902538"><ph name="SITE"/>의 색구성표:</translation>
+<translation id="690628312087070417">캐럿이 멀리 이동하는 경우:</translation>
+<translation id="5331422999063554397">반전 색상</translation>
+<translation id="2648340354586434750">&lt;span class='key'&gt;옵션&lt;/span&gt;을 눌러 단어별로 이동합니다.</translation>
+<translation id="5287723860611749454">&lt;p&gt;화살표 키를 사용하여 문서 내에서 이동합니다. &lt;/p&gt; &lt;p&gt;아무 곳이나 클릭하여 커서를 원하는 위치로 이동합니다. &lt;/p&gt; &lt;p&gt;&lt;span class='key'&gt;Shift&lt;/span&gt; + 화살표를 눌러 텍스트를 선택합니다.&lt;/p&gt;</translation>
+<translation id="5558600050691192317">키보드 명령어</translation>
+<translation id="633394792577263429">&lt;span class='key'&gt;Control&lt;/span&gt;을 눌러 단어별로 이동합니다.</translation>
+<translation id="2079545284768500474">실행 취소</translation>
+<translation id="8254860724243898966">&lt;span class='key'&gt;Alt&lt;/span&gt; + &lt;img src='increase_brightness.png'&gt;(밝기 높임 키 또는 F7)를 눌러 캐럿 브라우징을 사용 설정합니다. 사용 중지하려면 다시 누릅니다.</translation>
+<translation id="3812541808639806898">이미지 대체 텍스트 뷰어</translation>
+<translation id="1287053896835709737">검은색 바탕에 노란색</translation>
+<translation id="4896660567607030658">피드백 없이 커서만 표시</translation>
+<translation id="5631241868147802353">기본 색구성표:</translation>
+<translation id="5173942593318174089">애니메이션으로 커서 위치를 강조표시합니다.</translation>
+<translation id="894241283505723656">컨텍스트 메뉴의 상세 설명</translation>
+<translation id="5555153510860501336">고대비가 사용 중지되었습니다.</translation>
+<translation id="1703735871906654364">캐럿 브라우징</translation>
+<translation id="7384431257964758081">고대비가 사용 설정되었습니다.</translation>
+<translation id="6550675742724504774">옵션</translation>
+<translation id="5650358096585648000">시각적 피드백</translation>
+<translation id="4388820049312272371">빠르게 깜박이며 커서 위치를 강조표시합니다.</translation>
+<translation id="4023902424053835668">화살표 키를 사용하여 웹페이지 텍스트를 탐색합니다.</translation>
+<translation id="2795227192542594043">이 확장 프로그램을 사용하면 웹페이지에서 이동 가능한 커서가 표시되어 키보드로 텍스트를 선택할 수 있습니다.</translation>
+<translation id="4394049700291259645">사용 중지</translation>
+<translation id="5710185147685935461">색구성표 변경 또는 반전을 통해 웹페이지의 가독성을 높입니다.</translation>
 </translationbundle>

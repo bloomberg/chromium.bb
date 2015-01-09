@@ -1,6 +1,4 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="de">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="de">
 <translation id="1503959756075098984">Ohne Nutzereingriff zu installierende Erweiterungs-IDs und Aktualisierungs-URLs</translation>
 <translation id="793134539373873765">Gibt an, ob P2P für die Nutzdaten von Betriebssystem-Updates verwendet werden soll. Falls auf &quot;True&quot; gesetzt, teilen die Geräte Update-Nutzdaten im LAN und versuchen, die Daten von dort zu laden. Dadurch wird potenziell weniger Internetbandbreite verbraucht und es kommt seltener zu Datenstaus. Wenn die Update-Nutzdaten nicht im LAN verfügbar sind, lädt das Gerät sie ersatzweise von einem Updateserver herunter. Ist diese Option auf &quot;False&quot; gesetzt oder nicht konfiguriert, wird P2P nicht verwendet.</translation>
 <translation id="2463365186486772703">Gebietsschema der App</translation>

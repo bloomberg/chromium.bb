@@ -1,13 +1,13 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="no">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="no">
 <translation id="8588878054171169263">Lagre bildet</translation>
 <translation id="7998918019931843664">Åpne lukkede faner igjen</translation>
 <translation id="4996978546172906250">Del via</translation>
+<translation id="6292937202013477045">Det kan hende at angripere prøver å stjele informasjonen din (for eksempel bilder, passord, meldinger og kredittkort) fra <ph name="DOMAIN_NAME"/>.</translation>
 <translation id="346339498574870680">Kopiér bildenettadressen</translation>
 <translation id="6657585470893396449">Passord</translation>
 <translation id="5578795271662203820">Søk etter dette bildet i <ph name="SEARCH_ENGINE"/></translation>
 <translation id="6831043979455480757">Oversett</translation>
+<translation id="869891660844655955">Utløpsdato</translation>
 <translation id="7644305409888602715">Oversetter siden til <ph name="SOURCE_LANGUAGE"/> …</translation>
 <translation id="7015922086425404465">Få appen fra Google Play-butikken: <ph name="APP_ACTION"/></translation>
 <translation id="1491151370853475546">Last inn denne siden på nytt</translation>
@@ -28,17 +28,24 @@ Du logger på med en administrert konto, og gir administratoren kontroll over Ch
 <translation id="1966710179511230534">Oppdater påloggingsinformasjonen din.</translation>
 <translation id="1623104350909869708">Hindre denne siden i å opprette flere dialogruter</translation>
 <translation id="1426410128494586442">Ja</translation>
+<translation id="5595485650161345191">Rediger adresse</translation>
 <translation id="8218346974737627104">Bekreft påloggingen</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE"/> – fane</translation>
 <translation id="624558823898732418">Målspråk: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="8872441722924401214">Velg autentiseringssertifikat</translation>
 <translation id="7791543448312431591">Legg til</translation>
+<translation id="8719023831149562936">Kan ikke beame gjeldende fane</translation>
+<translation id="4378154925671717803">Telefon</translation>
 <translation id="3896036286668839683">Sertifikatfremviser</translation>
 <translation id="5039804452771397117">Tillat</translation>
 <translation id="8583805026567836021">Fjerner kontodata …</translation>
+<translation id="5860033963881614850">Av</translation>
 <translation id="4250680216510889253">Nei</translation>
 <translation id="8073388330009372546">Åpne bildet i en ny fane</translation>
 <translation id="552553974213252141">Ble tekstutdraget riktig?</translation>
+<translation id="5317780077021120954">Lagre</translation>
+<translation id="2718352093833049315">Bare på Wi-Fi</translation>
+<translation id="7029809446516969842">Passord</translation>
 <translation id="2414886740292270097">Mørk</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="8730621377337864115">Ferdig</translation>
@@ -48,31 +55,43 @@ Du logger på med en administrert konto, og gir administratoren kontroll over Ch
 <translation id="1807246157184219062">Lys</translation>
 <translation id="7053983685419859001">Blokkér</translation>
 <translation id="8374821112118309944">Du må oppdatere til en nyere versjon av Talkback.</translation>
+<translation id="8481940801237642152">Tilkoblingen til dette området er privat, men det kan hende at noen på nettverket kan endre utseendet på siden.</translation>
 <translation id="2593272815202181319">Monospace</translation>
+<translation id="4807098396393229769">Navn som er oppført på kortet</translation>
 <translation id="656628257199996201">Oversett alltid <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="2748463065602559597">Du ser på en sikker Google Chrome-side.</translation>
 <translation id="9137013805542155359">Vis original</translation>
 <translation id="4543661749405994812">Kopiér e-postadressen</translation>
+<translation id="5659593005791499971">E-post</translation>
+<translation id="8428213095426709021">Innstillinger</translation>
 <translation id="5684874026226664614">Beklager. Denne siden kunne ikke oversettes.</translation>
+<translation id="10614374240317010">Aldri lagret</translation>
+<translation id="2903493209154104877">Adresser</translation>
 <translation id="8503813439785031346">Brukernavn</translation>
 <translation id="2532336938189706096">Nettvisning</translation>
+<translation id="6571070086367343653">Rediger kredittkort</translation>
+<translation id="7080851568148064063">Legg til på startsiden</translation>
 <translation id="4619298195800598081">Åpne det opprinnelige bildet i en ny fane</translation>
 <translation id="4002066346123236978">Tittel</translation>
 <translation id="3254409185687681395">Legg til bokmerke for denne siden</translation>
 <translation id="907015151729920253">Smartkort</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="3063601790762993062">Lagre videoen</translation>
+<translation id="8106211421800660735">Kredittkortnummer</translation>
 <translation id="6042308850641462728">Mer</translation>
 <translation id="7267430310003164111">Forespørsel om nedlasting av en app fra Google Play-butikken. Appnavn: <ph name="APP_NAME"/>. Appens gjennomsnittlige vurdering: <ph name="APP_RATING"/>.</translation>
 <translation id="4148957013307229264">Installerer …</translation>
 <translation id="3992315671621218278">Lagre linken</translation>
-<translation id="8034522405403831421">Denne siden er på <ph name="SOURCE_LANGUAGE"/>. Vil du oversette den til <ph name="TARGET_LANGUAGE"/>?</translation>
+<translation id="2476578072172137802">Nettstedsinnstillinger</translation>
 <translation id="4195643157523330669">Åpne i ny fane</translation>
 <translation id="651048280540227067">Lukk menyen</translation>
 <translation id="3089395242580810162">Åpne i inkognitofane</translation>
+<translation id="6981982820502123353">Tilgjengelighet</translation>
 <translation id="8725066075913043281">Prøv igjen</translation>
 <translation id="8909135823018751308">Del</translation>
+<translation id="654446541061731451">Velg en fane for beaming</translation>
 <translation id="4269820728363426813">Kopiér linkadressen</translation>
+<translation id="8261506727792406068">Slett</translation>
 <translation id="4510973599275542560">Ikke last inn på nytt</translation>
 <translation id="1206892813135768548">Kopiér linkteksten</translation>
 <translation id="9154176715500758432">Bli værende på denne siden</translation>
@@ -81,22 +100,32 @@ Du logger på med en administrert konto, og gir administratoren kontroll over Ch
 <translation id="6671495933530132209">Kopiér bildet</translation>
 <translation id="8209050860603202033">Åpne bildet</translation>
 <translation id="2501278716633472235">Gå tilbake</translation>
+<translation id="8941248009481596111">Tilkoblingen til dette nettstedet er privat.</translation>
 <translation id="1285320974508926690">Oversett aldri dette nettstedet</translation>
 <translation id="5164482624172255778">Vil du at Google Chrome skal tilby seg å oversette sider på <ph name="LANGUAGE"/> fra dette nettstedet neste gang?</translation>
 <translation id="8528538445849828817">Sidespråk: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="4881695831933465202">Åpne</translation>
 <translation id="6512448926095770873">Forlat siden</translation>
+<translation id="5565871407246142825">Kredittkort</translation>
 <translation id="7947953824732555851">Godta og logg på</translation>
+<translation id="2612676031748830579">Kortnummer</translation>
 <translation id="6333140779060797560">Del via <ph name="APPLICATION"/></translation>
 <translation id="6040143037577758943">Lukk</translation>
+<translation id="2888126860611144412">Om Chrome</translation>
+<translation id="5138299137310274655">Denne siden er på <ph name="SOURCE_LANGUAGE"/>. Vil du oversette den til <ph name="TARGET_LANGUAGE"/>?</translation>
+<translation id="7649070708921625228">Hjelp</translation>
 <translation id="969096075394517431">Endre språk</translation>
 <translation id="5032574515228824816">Ledetekst</translation>
+<translation id="6165508094623778733">Les mer</translation>
 <translation id="7961015016161918242">Aldri</translation>
 <translation id="497421865427891073">Gå til neste</translation>
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="8310344678080805313">Standardfaner</translation>
 <translation id="6277522088822131679">Det oppsto et problem med å skrive ut siden. Prøv på nytt.</translation>
+<translation id="7634554953375732414">Tilkoblingen til dette nettstedet er ikke privat.</translation>
+<translation id="6612358246767739896">Beskyttet innhold</translation>
 <translation id="1742134235943978220">Oversatt til <ph name="TARGET_LANGUAGE"/>.</translation>
+<translation id="5916664084637901428">På</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="7561196759112975576">Alltid</translation>
 </translationbundle>

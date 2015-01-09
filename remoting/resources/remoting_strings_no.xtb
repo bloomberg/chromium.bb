@@ -1,6 +1,5 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="no">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="no">
+<translation id="3233367171080043075">Du kan avslutte når som helst.</translation>
 <translation id="7606912958770842224">Aktiver eksterne tilkoblinger</translation>
 <translation id="3785447812627779171">Chromoting
 Vert</translation>
@@ -19,6 +18,7 @@ Vert</translation>
 <translation id="5070121137485264635">Den eksterne verten krever at du godkjenner via et tredjepartsnettsted. For å fortsette må du gi Chrome Eksternt skrivebord ytterligere tillatelser til å åpne denne adressen:</translation>
 <translation id="2124408767156847088">Få sikker tilgang til datamaskinene dine fra Android-enheten din.</translation>
 <translation id="3194245623920924351">Chrome Eksternt skrivebord</translation>
+<translation id="5537725057119320332">Cast</translation>
 <translation id="3649256019230929621">Minimerer vinduet</translation>
 <translation id="4808503597364150972">Skriv inn PIN-koden for <ph name="HOSTNAME"/>.</translation>
 <translation id="7672203038394118626">Eksterne tilkoblinger for denne datamaskinen har blitt deaktivert.</translation>
@@ -26,6 +26,7 @@ Vert</translation>
 <translation id="4368630973089289038">Vil du være med på å forbedre Chromoting? <ph name="LINK_BEGIN"/>Delta i spørreundersøkelsen.<ph name="LINK_END"/></translation>
 <translation id="332624996707057614">Rediger datamaskinnavnet</translation>
 <translation id="1996161829609978754">Chrome laster ned installasjonsprogrammet for Chromoting-verten. Når nedlastingen er ferdig, må du kjøre installasjonsprogrammet før du fortsetter.</translation>
+<translation id="222632161986885959">En deltaker i denne hangouten har tilbudt seg å hjelpe deg ved å styre datamaskinen. Hvis du godtar:</translation>
 <translation id="2046651113449445291">Følgende kunder har blitt tilknyttet denne datamaskinen og kan koble til uten å måtte oppgi PIN-kode. Du kan trekke tilbake denne tillatelsen når som helst, både individuelt og for alle klienter.</translation>
 <translation id="7658239707568436148">Avbryt</translation>
 <translation id="7782471917492991422">Kontrollér datamaskinens strøminnstillinger og sørg for at den ikke er konfigurert til å gå i dvale når den ikke er i bruk.</translation>
@@ -97,6 +98,8 @@ Du kan finne informasjon om personvern i Googles personvernregler (http://goo.gl
 <translation id="2013884659108657024">Chrome laster ned installasjonsprogrammet for Chrome Eksternt skrivebord-vert. Når nedlastingen er ferdig må du kjøre installasjonsprogrammet før du fortsetter.</translation>
 <translation id="1742469581923031760">Kobler til …</translation>
 <translation id="8998327464021325874">Kontroller for Chrome Eksternt skrivebord-vert</translation>
+<translation id="7017806586333792422">Start innspilling</translation>
+<translation id="1619813076098775562">Lukket tilkobling til Cast-enhet.</translation>
 <translation id="6748108480210050150">Fra</translation>
 <translation id="3950820424414687140">Logg på</translation>
 <translation id="1291443878853470558">Du må aktivere eksterne tilkoblinger hvis du ønsker å bruke Chromoting med denne datamaskinen.</translation>
@@ -107,11 +110,13 @@ Du kan finne informasjon om personvern i Googles personvernregler (http://goo.gl
 <translation id="7401733114166276557">Chrome Eksternt skrivebord</translation>
 <translation id="3362124771485993931">Tast inn PIN-koden på nytt</translation>
 <translation id="1760808606374294203">•  Feilrettinger for Android Lollipop.</translation>
+<translation id="5231421057630485350">Personen som hjelper deg, kan styre musen og tastaturet ditt.</translation>
 <translation id="154040539590487450">Kunne ikke starte tjenesten for ekstern tilgang.</translation>
 <translation id="7948001860594368197">Skjermalternativer</translation>
 <translation id="8172070902751707422">Autentiseringen mislyktes. Logg på Chrome Eksternt skrivebord på nytt.</translation>
 <translation id="5254120496627797685">Hvis du forlater denne siden, avsluttes Chrome Eksternt skrivebord-økten.</translation>
 <translation id="173559734173571936">For å bruke Chrome Eksternt skrivebord må du gi utvidede tilgangstillatelser til datamaskinen din. Du trenger bare å gjøre dette én gang.</translation>
+<translation id="712467900648340229">Kunne ikke koble til Cast-enheten.</translation>
 <translation id="9032136467203159543">Du mangler noen komponenter som kreves for Chromoting. Sørg for at du har installert den nyeste versjonen, og prøv på nytt.</translation>
 <translation id="1342297293546459414">Se og kontrollér en delt datamaskin.</translation>
 <translation id="1520828917794284345">Tilpass størrelsen på skrivebordet</translation>
@@ -147,6 +152,7 @@ Du kan finne informasjon om personvern i Googles personvernregler (http://goo.gl
 <translation id="2699970397166997657">Chromoting</translation>
 <translation id="4812684235631257312">Vert</translation>
 <translation id="6178645564515549384">Innebygd meldingsvert for ekstern hjelp</translation>
+<translation id="1738759452976856405">Stopp innspilling</translation>
 <translation id="897805526397249209">For å aktivere eksterne tilkoblinger til en annen datamaskin, må du installere Chromoting på maskinen, og klikke på «<ph name="BUTTON_NAME"/>».</translation>
 <translation id="1704090719919187045">Alternativer for Chromoting-vert</translation>
 <translation id="809687642899217504">Mine datamaskiner</translation>
@@ -187,6 +193,7 @@ skrivebord-vert</translation>
 <translation id="4703799847237267011">Chromoting-økten er avsluttet.</translation>
 <translation id="8178433417677596899">Skjermdeling bruker-til-bruker, perfekt for ekstern teknisk støttte.</translation>
 <translation id="652218476070540101">PIN-koden for denne datamaskinen oppdateres …</translation>
+<translation id="951991426597076286">Avvis</translation>
 <translation id="4563926062592110512">Klienten koblet fra: <ph name="CLIENT_USERNAME"/>.</translation>
 <translation id="5308380583665731573">Koble til</translation>
 <translation id="7319983568955948908">Stopp deling</translation>

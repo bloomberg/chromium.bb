@@ -1,6 +1,4 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="iw">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="iw">
 <translation id="1503959756075098984">מזהי תוספים וכתובות אתר לעדכון עבור התקנה שקטה</translation>
 <translation id="793134539373873765">‏מציין אם יש לעשות שימוש ב-p2p עבור תוכן מנות לעדכון מערכת ההפעלה. אם מוגדרת האפשרות True, מכשירים ישתפו וינסו לצרוך תוכן מנות של עדכונים ברשת LAN, ועלולים לפגוע ברמת השימוש ובצפיפות של רוחב הפס של האינטרנט. אם תוכן מנת העדכון אינו זמין ברשת ה-LAN, המכשיר יחזור לבצע הורדות משרת עדכונים. אם מוגדרת האפשרות False, או שהגדרה זו לא מוגדרת כלל, לא ייעשה שימוש ב-p2p.</translation>
 <translation id="2463365186486772703">אזור יישום</translation>

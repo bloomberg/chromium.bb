@@ -1,6 +1,5 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="lt">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="lt">
+<translation id="3233367171080043075">Bet kada galite baigti.</translation>
 <translation id="7606912958770842224">Įgalinti nuotolinį ryšį</translation>
 <translation id="3785447812627779171">„Chrome“ nuotolinio ryšio
 priegloba</translation>
@@ -19,6 +18,7 @@ priegloba</translation>
 <translation id="5070121137485264635">Nuotolinė priegloba reikalauja autentifikuoti trečiosios šalies svetainę. Jei norite tęsti, turite suteikti „Chrome“ nuotolinio kompiuterio valdymo programai papildomas teises pasiekti šį adresą</translation>
 <translation id="2124408767156847088">Saugiai pasiekite kompiuterius „Android“ įrenginiu.</translation>
 <translation id="3194245623920924351">Nuotolinis kompiut. valdymas</translation>
+<translation id="5537725057119320332">Perduoti</translation>
 <translation id="3649256019230929621">Sumažinti langą</translation>
 <translation id="4808503597364150972">Įveskite „<ph name="HOSTNAME"/>“ PIN kodą.</translation>
 <translation id="7672203038394118626">Nuotolinis ryšys šiame kompiuteryje neleidžiamas.</translation>
@@ -26,6 +26,7 @@ priegloba</translation>
 <translation id="4368630973089289038">Norite padėti patobulinti „Chrome“ nuotolinį ryšį? <ph name="LINK_BEGIN"/>Sudalyvaukite apklausoje.<ph name="LINK_END"/></translation>
 <translation id="332624996707057614">Redaguoti kompiuterio pavadinimą</translation>
 <translation id="1996161829609978754">„Chrome“ atsisiunčiama „Chrome“ nuotolinio ryšio prieglobos diegimo programa. Kai atsisiuntimas bus baigtas, prieš tęsdami paleiskite ją.</translation>
+<translation id="222632161986885959">Šio „Hangout“ dalyvis pasiūlė jums padėti, jei leisite valdyti savo kompiuterį: Jei sutiksite:</translation>
 <translation id="2046651113449445291">Nurodyti klientai susieti su šiuo kompiuteriu ir gali prisijungti nepateikę PIN kodo. Bet kada galite atšaukti šį leidimą atskiriems arba visiems klientams.</translation>
 <translation id="7658239707568436148">Atšaukti</translation>
 <translation id="7782471917492991422">Patikrinkite kompiuterio galios tvarkymo nustatymus ir įsitikinkite, kad jis nėra sukonfigūruotas užmigti neveikos būsenos.</translation>
@@ -97,6 +98,8 @@ Jei reikia informacijos apie privatumą, žr. „Google“ privatumo politiką (
 <translation id="2013884659108657024">„Chrome“ atsisiunčiama „Chrome“ nuotolinio kompiuterio valdymo diegimo programa. Kai atsisiuntimas bus baigtas, prieš tęsdami paleiskite ją.</translation>
 <translation id="1742469581923031760">Jungiamasi…</translation>
 <translation id="8998327464021325874">„Chrome“ nuotolinio kompiuterio valdymo prieglobos valdymo priemonė</translation>
+<translation id="7017806586333792422">Pradėti įrašymą</translation>
+<translation id="1619813076098775562">Nutrauktas ryšys su perdavimo įrenginiu.</translation>
 <translation id="6748108480210050150">Ryšį užmezga</translation>
 <translation id="3950820424414687140">Prisijungti</translation>
 <translation id="1291443878853470558">Jei norite naudoti „Chrome“ nuotolinį ryšį šiam kompiuteriui pasiekti, turite įgalinti nuotolinį ryšį.</translation>
@@ -107,11 +110,13 @@ Jei reikia informacijos apie privatumą, žr. „Google“ privatumo politiką (
 <translation id="7401733114166276557">„Chrome“ nuotolinis kompiuterio valdymas</translation>
 <translation id="3362124771485993931">Iš naujo įveskite PIN kodą</translation>
 <translation id="1760808606374294203">• Pataisymai, skirti „Lollipop“ versijos „Android“.</translation>
+<translation id="5231421057630485350">Jums padedantis asmuo galės valdyti jūsų pelę ir klaviatūrą.</translation>
 <translation id="154040539590487450">Paleidžiant nuotolinės prieigos paslaugą įvyko klaida.</translation>
 <translation id="7948001860594368197">Ekrano parinktys</translation>
 <translation id="8172070902751707422">Nustatant tapatybę įvyko klaida. Bandykite prisijungti prie „Chrome“ nuotolinio kompiuterio valdymo dar kartą.</translation>
 <translation id="5254120496627797685">Išėjus iš šio puslapio, baigsis „Chrome“ nuotolinio kompiuterio valdymo sesija.</translation>
 <translation id="173559734173571936">Jei norite naudoti „Chrome“ nuotolinį kompiuterio valdymą, turite suteikti išplėstinės prieigos prie kompiuterio leidimus. Tai reikės atlikti tik vieną kartą.</translation>
+<translation id="712467900648340229">Nepavyko prisijungti prie perdavimo įrenginio.</translation>
 <translation id="9032136467203159543">Trūksta kai kurių „Chrome“ nuotoliniam ryšiui reikalingų komponentų. Įsitikinkite, kad įdiegėte naujausią versiją, ir bandykite dar kartą.</translation>
 <translation id="1342297293546459414">Matykite ir valdykite bendrinamą kompiuterį.</translation>
 <translation id="1520828917794284345">Sumažinti darbalaukį, kad tilptų</translation>
@@ -147,6 +152,7 @@ Jei reikia informacijos apie privatumą, žr. „Google“ privatumo politiką (
 <translation id="2699970397166997657">„Chrome“ nuotolinis ryšys</translation>
 <translation id="4812684235631257312">Priegloba</translation>
 <translation id="6178645564515549384">Vietinė nuotolinės pagalbos pranešimų priegloba</translation>
+<translation id="1738759452976856405">Stabdyti įrašymą</translation>
 <translation id="897805526397249209">Jei norite įgalinti nuotolinį ryšį su kitu kompiuteriu, jame įdiekite „Chrome“ nuotolinį ryšį ir spustelėkite „<ph name="BUTTON_NAME"/>“.</translation>
 <translation id="1704090719919187045">„Chrome“ nuotolinio ryšio prieglobos nuostatos</translation>
 <translation id="809687642899217504">Mano kompiuteriai</translation>
@@ -187,6 +193,7 @@ valdymo priegloba</translation>
 <translation id="4703799847237267011">„Chrome“ nuotolinio ryšio sesija baigėsi.</translation>
 <translation id="8178433417677596899">Ekrano „naudotojas naudotojui“ bendrinimas, puikiai tinkantis nuotoliniam techniniam palaikymui vykdyti.</translation>
 <translation id="652218476070540101">Šio kompiuterio PIN kodas atnaujinamas…</translation>
+<translation id="951991426597076286">Atmesti</translation>
 <translation id="4563926062592110512">Atjungtas klientas: <ph name="CLIENT_USERNAME"/>.</translation>
 <translation id="5308380583665731573">Prisijungti</translation>
 <translation id="7319983568955948908">Stabdyti bendrinimą</translation>

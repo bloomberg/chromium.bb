@@ -1,6 +1,4 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="gu">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="gu">
 <translation id="7485870689360869515">કોઈ ડેટા મળ્યો નથી.</translation>
 <translation id="3884278016824448484">વિરોધાભાસી ઉપકરણ ઓળખકર્તા</translation>
 <translation id="6779575937362063477">Google Wallet દ્વારા આ પ્રકારના કાર્ડને સમર્થન નથી. કૃપા કરીને બીજું કાર્ડ પસંદ કરો.</translation>
@@ -12,6 +10,7 @@
 <translation id="1339601241726513588">નોંધણી ડોમેન:</translation>
 <translation id="7298195798382681320">ભલામણ કરેલ</translation>
 <translation id="4058922952496707368">કી &quot;<ph name="SUBKEY"/>&quot;: <ph name="ERROR"/></translation>
+<translation id="6980028882292583085">Javascript ચેતવણી</translation>
 <translation id="5299298092464848405">ભૂલ વિશ્લેષણ નીતિ</translation>
 <translation id="6628463337424475685"><ph name="ENGINE"/> શોધ</translation>
 <translation id="6831043979455480757">અનુવાદ કરો</translation>
@@ -24,6 +23,7 @@
 <translation id="2958431318199492670">નેટવર્ક ગોઠવણી ONC માનકનું પાલન કરતી નથી. ગોઠવણીના ભાગો આયાત કરી શકાશે નહીં.</translation>
 <translation id="933712198907837967">ડાઇનર્સ ક્લબ</translation>
 <translation id="277499241957683684">ઉપકરણ રેકોર્ડ ખૂટે છે</translation>
+<translation id="1491151370853475546">આ પૃષ્ઠને ફરીથી લોડ કરો</translation>
 <translation id="8553075262323480129">ભાષાંતર નિષ્ફળ રહ્યું કારણ કે પૃષ્ઠની ભાષા નિર્ધારિત થઈ શકી નથી.</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="1103523840287552314"><ph name="LANGUAGE"/> નો હંમેશાં અનુવાદ કરો</translation>
@@ -44,6 +44,7 @@
 <translation id="3380365263193509176">અજ્ઞાત ભૂલ</translation>
 <translation id="112840717907525620">નીતિ કેશ ઑકે</translation>
 <translation id="3452404311384756672">આનયન અંતરાલ:</translation>
+<translation id="409504436206021213">ફરીથી લોડ કરવું નહીં</translation>
 <translation id="7441627299479586546">ખોટો નીતિ વિષય</translation>
 <translation id="3885155851504623709">પૅરિશ</translation>
 <translation id="6973656660372572881">નિયત પ્રોક્સી સર્વર્સ અને .pac script URL બન્નેનો ઉલ્લેખ કરેલો છે.</translation>
@@ -52,6 +53,7 @@
 <translation id="3667681724235208644">મૂળ જુઓ</translation>
 <translation id="4079302484614802869">પ્રોક્સી ગોઠવણી .pac સ્ક્રિપ્ટ URL નો ઉપયોગ કરવા માટે સેટ છે, નિયત પ્રોક્સી સર્વર્સ માટે નહીં.</translation>
 <translation id="5540224163453853">વિનંતી કરેલ લેખ શોધી શકાયો નથી.</translation>
+<translation id="333371639341676808">આ પૃષ્ઠને વધારાનાં સંવાદો બનાવવાથી રોકો.</translation>
 <translation id="5523118979700054094">નીતિનું નામ</translation>
 <translation id="7791543448312431591">ઉમેરો</translation>
 <translation id="2053553514270667976">પિન કોડ</translation>
@@ -68,6 +70,7 @@
 <translation id="2367567093518048410">સ્તર</translation>
 <translation id="7977590112176369853">&lt;ક્વેરી દાખલ કરો&gt;</translation>
 <translation id="7610193165460212391">મૂલ્ય <ph name="VALUE"/> શ્રેણી બહારનું છે.</translation>
+<translation id="8311778656528046050">શું તમે ખરેખર આ પૃષ્ઠને ફરીથી લોડ કરવા માંગો છો?</translation>
 <translation id="370665806235115550">લોડ કરી રહ્યું છે...</translation>
 <translation id="2096368010154057602">વિભાગ</translation>
 <translation id="4258748452823770588">ખરાબ હસ્તાક્ષર</translation>
@@ -95,11 +98,14 @@
 <translation id="6445051938772793705">દેશ</translation>
 <translation id="5031870354684148875">Google અનુવાદ વિશે</translation>
 <translation id="1152921474424827756"><ph name="URL"/> ની <ph name="BEGIN_LINK"/>કેશ કરેલ કૉપિ<ph name="END_LINK"/> ઍક્સેસ કરો</translation>
+<translation id="8201077131113104583">ID &quot;<ph name="EXTENSION_ID"/>&quot; સાથેના એક્સટેન્શન માટે અમાન્ય અપડેટ URL.</translation>
 <translation id="6891596781022320156">નીતિ સ્તર સમર્થિત નથી.</translation>
 <translation id="2025186561304664664">પ્રોક્સી સ્વતઃ ગોઠવાયેલી પર સેટ છે.</translation>
 <translation id="1853748787962613237">લેખ પ્રદર્શિત કરવામાં નિષ્ફળ થયાં.</translation>
 <translation id="5455374756549232013">ખરાબ નીતિ સમયનોંધ</translation>
+<translation id="2025623846716345241">ફરીથી લોડ કરવાની પુષ્ટિ કરો</translation>
 <translation id="1962204205936693436"><ph name="DOMAIN"/> બુકમાર્ક્સ</translation>
+<translation id="111844081046043029">શું તમે ખરેખર આ પૃષ્ઠ છોડવા માંગો છો?</translation>
 <translation id="1973335181906896915">અનુક્રમાંકન ભૂલ</translation>
 <translation id="5989320800837274978">નિયત પ્રોક્સી સર્વર્સ અથવા .pac સ્ક્રિપ્ટનો URL નો ઉલ્લેખ કરેલો નથી.</translation>
 <translation id="7805768142964895445">સ્થિતિ</translation>
@@ -110,12 +116,13 @@
 <translation id="7956713633345437162">મોબાઇલ બુકમાર્ક્સ</translation>
 <translation id="5089810972385038852">રાજ્ય</translation>
 <translation id="647261751007945333">ઉપકરણ નીતિઓ</translation>
-<translation id="678528074488531090">માન્યતા ભૂલ: <ph name="VALIDATION_ERROR"/>.</translation>
 <translation id="213826338245044447">મોબાઇલ બુકમાર્ક્સ</translation>
 <translation id="8571890674111243710">પૃષ્ઠને <ph name="LANGUAGE"/> માં અનુવાદિત કરી રહ્યું છે...</translation>
 <translation id="4117700440116928470">નીતિ મર્યાદા સમર્થિત નથી.</translation>
 <translation id="2114841414352855701">અવગણ્યું કારણ કે તે <ph name="POLICY_NAME"/> દ્વારા ઓવરરાઇડ થયું હતું.</translation>
 <translation id="3228969707346345236">ભાષાંતર નિષ્ફળ રહ્યું કારણ કે પૃષ્ઠ પહેલાથી જ <ph name="LANGUAGE"/> માં છે.</translation>
+<translation id="7521387064766892559">JavaScript</translation>
+<translation id="8034522405403831421">આ પૃષ્ઠ <ph name="SOURCE_LANGUAGE"/> માં છે. શું તેનો અનુવાદ <ph name="TARGET_LANGUAGE"/> માં કરીએ?</translation>
 <translation id="8891727572606052622">અમાન્ય પ્રોક્સી મોડ.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="7752995774971033316">બિનસંચાલિત</translation>
@@ -137,9 +144,11 @@
 <translation id="3377188786107721145">નીતિ વિશ્લેષણ ભૂલ</translation>
 <translation id="2270192940992995399">લેખ શોધવામાં નિષ્ફળ થયાં.</translation>
 <translation id="4726672564094551039">નીતિઓ ફરીથી લોડ કરો</translation>
+<translation id="9154176715500758432">આ પૃષ્ઠ પર રહો</translation>
 <translation id="2392959068659972793">કોઈ કિંમત સેટ નહીં સાથે નીતિઓ બતાવો</translation>
 <translation id="5190835502935405962">બુકમાર્ક્સ બાર</translation>
 <translation id="6965978654500191972">ઉપકરણ</translation>
+<translation id="5295309862264981122">નેવિગેશનની પુષ્ટિ કરો</translation>
 <translation id="8249320324621329438">છેલ્લું આનયન:</translation>
 <translation id="194030505837763158"><ph name="LINK"/> પર જાઓ</translation>
 <translation id="1285320974508926690">આ સાઇટનું ક્યારેય ભાષાંતર કરશો નહીં</translation>
@@ -150,6 +159,7 @@
 <translation id="9020542370529661692">આ પૃષ્ઠનો <ph name="TARGET_LANGUAGE"/> માં અનુવાદ કરવામાં આવ્યો છે</translation>
 <translation id="5631439013527180824">અમાન્ય ઉપકરણ સંચાલન ટોકન</translation>
 <translation id="560412284261940334">સંચાલન સમર્થિત નથી</translation>
+<translation id="6512448926095770873">આ પૃષ્ઠ છોડો</translation>
 <translation id="1639239467298939599">લોડ કરી રહ્યું છે</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="4923417429809017348">આ પૃષ્ઠ કોઈ અજ્ઞાત ભાષામાંથી <ph name="LANGUAGE_LANGUAGE"/> માં અનુવાદિત કરવામાં આવ્યું છે</translation>
@@ -163,6 +173,8 @@
 <translation id="5509780412636533143">સંચાલિત બુકમાર્ક્સ</translation>
 <translation id="8866481888320382733">ભૂલ વિશ્લેષણ નીતિ સેટિંગ્સ</translation>
 <translation id="6644283850729428850">આ નીતિ દૂર કરવામાં આવેલી છે.</translation>
+<translation id="1693754753824026215"><ph name="SITE"/> પરનું પૃષ્ઠ કહે છે:</translation>
+<translation id="4269787794583293679">(કોઇ વપરાશકર્તાનામ નથી)</translation>
 <translation id="7988324688042446538">ડેસ્કટૉપ બુકમાર્ક્સ</translation>
 <translation id="8488350697529856933">આમને લાગુ</translation>
 <translation id="6165508094623778733">વધુ જાણો</translation>
@@ -184,8 +196,8 @@
 <translation id="2639739919103226564">સ્થિતિ:</translation>
 <translation id="1832546148887467272"><ph name="NEW_GOOGLE_HOST"/> માં સ્વિચ કરો</translation>
 <translation id="5095208057601539847">પ્રાંત</translation>
+<translation id="2581221116934462656">શું તમે <ph name="PRODUCT_NAME"/> ને આ સાઇટથી આગલી વખતે <ph name="LANGUAGE_NAME"/> પૃષ્ઠોમાં અનુવાદની ઓફર કરવા માગો છો?</translation>
 <translation id="3934680773876859118">PDF દસ્તાવેજ લોડ કરવામાં નિષ્ફળ રહ્યા</translation>
-<translation id="1152021252151287493">ખોટી ચકાસણી સહી.</translation>
 <translation id="6965382102122355670">ઓકે</translation>
 <translation id="2721148159707890343">વિનંતી સફળ થઇ</translation>
 <translation id="2455981314101692989">આ વેબપૃષ્ઠે આ ફોર્મનું આપમેળે ભરણ અક્ષમ કર્યું છે.</translation>

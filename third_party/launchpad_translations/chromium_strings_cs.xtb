@@ -1,12 +1,11 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="cs">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="cs">
 <translation id="6676384891291319759">Přístup k internetu</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR"/> Autoři prohlížeče Chromium. Všechna práva vyhrazena.</translation>
 <translation id="6373523479360886564">Jste si jisti, že chcete Chromium odinstalovat?</translation>
 <translation id="5065199687811594072">Chcete v aplikaci Chromium uložit informace o této platební kartě k vyplňování formulářů?</translation>
 <translation id="6510925080656968729">Odinstalovat Chromium</translation>
 <translation id="2615699638672665509">Tento počítač brzy přestane dostávat aktualizace prohlížeče Chromium, protože jeho hardware již není podporován.</translation>
+<translation id="5532301346661895910">Prohlížeč Chromium toto heslo uloží mezi |uložená hesla Google| a zapamatuje si jej pro příští použití.</translation>
 <translation id="6893813176749746474">Prohlížeč Chromium byl aktualizován, ale minimálně po 30 dnů jste jej nepoužili.</translation>
 <translation id="1550579416447684632">Spustit aplikace Chromium</translation>
 <translation id="2732467638532545152">Váš počítač používá starou verzi operačního systému Microsoft Windows, která bezpečnostní certifikát tohoto webu neumí zpracovat. Kvůli tomuto problému Chromium nedokáže určit, zda certifikát pochází z webu <ph name="SITE"/>, nebo od někoho ve vaší síti, kdo se za web <ph name="SITE"/> vydává. Aktualizujte prosím operační systém počítače na nejnovější verzi systému Windows.</translation>
@@ -20,6 +19,7 @@
 <translation id="1065672644894730302">Nelze číst vaše nastavení.
 
 Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</translation>
+<translation id="7861509383340276692">Přejděte do nabídky Chromium &gt; <ph name="SETTINGS_TITLE"/> &gt; <ph name="ADVANCED_TITLE"/> a zrušte výběr možnosti <ph name="NO_PREFETCH_DESCRIPTION"/>. Pokud to však problém nevyřeší, doporučujeme vám tuto možnost znovu vybrat (za účelem zlepšení výkonu).</translation>
 <translation id="4423735387467980091">Přizpůsobit a ovládat Chromium</translation>
 <translation id="1881322772814446296">Přihlašujete se pomocí spravovaného účtu a poskytujete jeho správci kontrolu nad vaším profilem prohlížeče Chromium. Vaše údaje prohlížeče Chromium, například aplikace, záložky, historie, hesla a jiná nastavení, budou trvale přidružena k účtu <ph name="USER_NAME"/>. Tyto údaje budete moci smazat pomocí stránky Dashboard služby Účty Google, ale nebudete je moci přidružit k jinému účtu. Pokud chcete uchovat existující údaje prohlížeče Chromium odděleně, můžete vytvořit nový profil. <ph name="LEARN_MORE"/></translation>
 <translation id="5620765574781326016">Vyhledávejte informace o tématech zmíněných na stránce, aniž byste stránku museli opustit.</translation>
@@ -34,8 +34,6 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="3883381313049582448">Použít heslo vygenerované prohlížečem Chromium</translation>
 <translation id="3549345495227188780">Začínáme se systémem Chromium OS</translation>
 <translation id="1668054258064581266">Odebrání účtu z aplikace Chromium se může projevit až po opětovném načtení otevřených karet.</translation>
-<translation id="6953661834318318668">Lišta nástrojů Chromium</translation>
-<translation id="6764700151360706293">Prohlížeč Chromium nemůže navázat soukromé připojení k doméně &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;. Pravděpodobně je to způsobeno tím, že je v zařízení nastaveno nesprávné datum. (Datum ve vašem zařízení je <ph name="DATE"/>.) Měli byste <ph name="BEGIN_LINK"/>v zařízení aktualizovat datum a čas<ph name="END_LINK"/> a poté tuto stránku obnovit.</translation>
 <translation id="4285930937574705105">Došlo k nespecifikované chybě, instalace se nezdařila. Pokud je prohlížeč Chromium právě spuštěný, zavřete jej prosím a zkuste to znovu.</translation>
 <translation id="1396446129537741364">Chromium se pokouší zobrazit hesla.</translation>
 <translation id="8987477933582888019">Webový prohlížeč</translation>
@@ -73,30 +71,23 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="3190315855212034486">Ouha! Prohlížeč Chromium spadl. Chcete jej znovu spustit?</translation>
 <translation id="8843170958047978824">Odstranit z prohlížeče Chromium</translation>
 <translation id="3068515742935458733">Pomozte aplikaci Chromium zlepšovat tím, že budete společnosti Google zasílat zprávy o selhání a <ph name="UMA_LINK"/>.</translation>
+<translation id="1609700857210121286">Přejděte do nabídky Chromium &gt; Nastavení &gt; (Rozšířené) Ochrana soukromí a zrušte výběr možnosti Předvídání síťových akcí. Pokud to však problém nevyřeší, doporučujeme vám tuto možnost znovu vybrat (za účelem zlepšení výkonu).</translation>
 <translation id="734373864078049451">Zde jsou k dispozici vaše weby, záložky a další obsah prohlížeče Chromium.</translation>
 <translation id="3197823471738295152">Zařízení bylo aktualizováno.</translation>
 <translation id="3065280201209294872">Tyto stránky používají zastaralé bezpečnostní nastavení. Budoucí verze prohlížeče Chromium mohou mít potíže tyto stránky bezpečně navštívit.</translation>
 <translation id="8551886023433311834">Aktualizace je téměř hotova! Dokončíte ji restartováním zařízení.</translation>
 <translation id="8353224596138547809">Přejete si, aby aplikace Chromium uložila vaše heslo pro tyto stránky?</translation>
+<translation id="8738058698779197622">Aby bylo možné navázat zabezpečené spojení, hodiny musejí být nastaveny správně. Důvodem je, že certifikáty, pomocí kterých se weby identifikují, platí pouze pro pevně daná období. Jelikož hodiny v zařízení nejsou nastaveny správně, prohlížeč Chromium tyto certifikáty nemůže ověřit.</translation>
 <translation id="7339898014177206373">Nové okno</translation>
-<translation id="3733625138702910745">Přejděte do
-        nabídky Chromium &gt;
-        <ph name="SETTINGS_TITLE"/>
-        &gt;
-        <ph name="ADVANCED_TITLE"/>
-        a zrušte výběr možnosti <ph name="NO_PREFETCH_DESCRIPTION"/>.
-        Pokud to však problém nevyřeší, doporučujeme vám
-        tuto možnost znovu vybrat (pro zlepšení výkonu).</translation>
 <translation id="7463979740390522693">Chromium – oznámení (nepřečtené: <ph name="QUANTITY"/>)</translation>
 <translation id="225614027745146050">Vítejte</translation>
 <translation id="5823381412099532241">Prohlížeč Chromium se nemohl aktualizovat na nejnovější verzi. Nebudete mít proto k dispozici skvělé nové funkce a opravy zabezpečení. Chromium je potřeba aktualizovat.</translation>
 <translation id="7473891865547856676">Ne, děkuji</translation>
 <translation id="9191268552238695869">Správce do tohoto počítače nainstaloval prohlížeč Chromium, který je přístupný všem uživatelům. Vaši instalaci prohlížeče Chromium na úrovni uživatele nyní nahradí instalace na systémové úrovni.</translation>
-<translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3509308970982693815">Zavřete prosím všechna okna prohlížeče Chromium a zkuste to znovu.</translation>
+<translation id="8851136666856101339">hlavní</translation>
 <translation id="4077262827416206768">Aby se změny projevily, zavřete prosím všechna okna prohlížeče Chromium a spusťte jej znovu.</translation>
 <translation id="6475912303565314141">Také řídí, která stránka se zobrazí při spuštění prohlížeče Chromium.</translation>
-<translation id="126227967341954494">Chcete-li navázat zabezpečené síťové připojení, v zařízení musejí být správně nastavené hodiny. Důvodem je, že certifikáty, pomocí kterých se webové stránky při navazování zabezpečeného připojení identifikují, mají pouze omezenou platnost. Jelikož jsou hodiny ve vašem zařízení nastaveny nesprávně, prohlížeč Chromium nemůže certifikáty zkontrolovat.</translation>
 <translation id="1725059042853530269">Soubor <ph name="FILE_NAME"/> může narušit prohlížení internetu, aplikace Chromium jej proto zablokovala.</translation>
 <translation id="750717762378961310">Tento soubor je škodlivý a prohlížeč Chromium jej zablokoval.</translation>
 <translation id="6944967875980567883">Moduly načtené do prohlížeče Chromium</translation>
@@ -128,7 +119,6 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="5358375970380395591">Přihlašujete se pomocí spravovaného účtu a poskytujete jeho správci kontrolu nad vaším profilem prohlížeče Chromium. Vaše údaje prohlížeče Chromium, například aplikace, záložky, historie, hesla a jiná nastavení, budou trvale přidružena k účtu <ph name="USER_NAME"/>. Tyto údaje budete moci smazat pomocí Hlavního panelu v Účtech Google, ale nebudete je moci přidružit k jinému účtu. <ph name="LEARN_MORE"/></translation>
 <translation id="9036189287518468038">Spouštěč aplikací Chromium</translation>
 <translation id="5563479599352954471">Vyhledávání jedním klepnutím</translation>
-<translation id="1525296040716062026">Prohlížeč Chromium toto heslo uloží mezi |uložená hesla Google| a bude jej pro vás automaticky vyplňovat, abyste si heslo nemuseli pamatovat.</translation>
 <translation id="8493179195440786826">Prohlížeč Chromium je zastaralý</translation>
 <translation id="911206726377975832">Vymazat také všechna data procházení?</translation>
 <translation id="95514773681268843">Doména <ph name="DOMAIN"/> vyžaduje, abyste si před použitím tohoto zařízení přečetli následující smluvní podmínky a odsouhlasili je. Tyto smluvní podmínky nerozšiřují, neupravují ani neomezují smluvní podmínky systému Chromium OS.</translation>
@@ -157,8 +147,11 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="1745962126679160932">Prohlížeč Chromium vaše informace bezpečně uloží, abyste je nemuseli zadávat znovu. I přesto však bude třeba ověřit bezpečnostní kód karty pro budoucí platby.</translation>
 <translation id="275588974610408078">Hlášení o selhání není v prohlížeči Chromium k dispozici.</translation>
 <translation id="5909170354645388250">V prohlížeči Chromium se nepoužívá. Zástupná položka k zachování synchronizace map zdrojů. Očekává jeden argument: $1.</translation>
+<translation id="1144202035120576837">Web <ph name="SITE"/> vaše informace běžně chrání šifrováním. Když se prohlížeč Chromium k webu <ph name="SITE"/> pokusil připojit tentokrát, web vrátil neobvyklé a nesprávné identifikační údaje. Buď se za web <ph name="SITE"/> pokouší vydávat nějaký útočník, nebo bylo připojení přerušeno přihlašovací obrazovkou sítě Wi-Fi. Vaše informace jsou i nadále v bezpečí, protože prohlížeč Chromium připojení přerušil dříve, než došlo k odeslání jakýchkoliv dat.</translation>
+<translation id="2316129865977710310">Ne, děkuji</translation>
 <translation id="7937630085815544518">K prohlížeči Chromium jste byli přihlášeni s účtem <ph name="USER_EMAIL_ADDRESS"/>. Přihlaste se prosím znovu pomocí stejného účtu.</translation>
 <translation id="2685838254101182273">Chromium již nepodporuje verzi operačního systému, kterou používáte, a nebude možné jej aktualizovat.</translation>
+<translation id="8684913864886094367">Aplikace Chromium nebyla řádně ukončena.</translation>
 <translation id="3582788516608077514">Aktualizace prohlížeče Chromium...</translation>
 <translation id="7223968959479464213">Správce úloh – Chromium</translation>
 <translation id="1779356040007214683">Aby bylo Chromium bezpečnější, deaktivovali jsme některá rozšíření, která nejsou uvedena na webu <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> a mohla být přidána bez vašeho vědomí.</translation>
@@ -169,6 +162,7 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="2648074677641340862">Během instalace došlo k chybě operačního systému. Stáhněte prosím Chromium znovu.</translation>
 <translation id="5942520288919337908">Do prohlížeče Chromium bylo přidáno rozšíření <ph name="EXTENSION_NAME"/>.</translation>
 <translation id="549669000822060376">Počkejte prosím, než Chromium nainstaluje nejnovější aktualizace systému.</translation>
+<translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3281987435599047980">odesílá slovo a jeho okolní kontext do Vyhledávání Google a vrací definice, obrázky, výsledky vyhledávání a další podrobnosti.</translation>
 <translation id="4559775032954821361">Přejděte do
           nabídky Chromium &gt;
@@ -193,7 +187,6 @@ Některé funkce mohou být nedostupné. Zadejte prosím jiný adresář profilu
 <translation id="1115445892567829615">Prohlížeč Chromium vaše data nemohl synchronizovat. Aktualizujte prosím přístupové heslo pro Synchronizaci.</translation>
 <translation id="1298199220304005244">Pomoc s používáním operačního systému Chromium OS</translation>
 <translation id="331951419404882060">Chromium OS vaše data nemohl synchronizovat, protože při přihlašování došlo k chybě.</translation>
-<translation id="957661023718540197">Prohlížeč Chromium nemůže navázat soukromé připojení k doméně &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;. Důvodem je pravděpodobně to, že datum v počítači není nastaveno správně. (Datum ve vašem počítači je <ph name="DATE"/>.) Měli byste <ph name="BEGIN_LINK"/>v počítači aktualizovat datum a čas<ph name="END_LINK"/> a poté tuto stránku obnovit.</translation>
 <translation id="8187289872471304532">Přejděte do nabídky
           Aplikace &gt; Nastavení systému &gt; Síť &gt; Rozšířená nastavení &gt; Servery proxy
           a zrušte výběr všech vybraných serverů proxy.</translation>
@@ -201,7 +194,6 @@ Některé funkce mohou být nedostupné. Zadejte prosím jiný adresář profilu
 <translation id="4488676065623537541">Fakturační údaje byly uloženy do prohlížeče Chromium.</translation>
 <translation id="130631256467250065">Změny se projeví po příštím restartu zařízení.</translation>
 <translation id="3244477511402911926">Centrum oznámení Chromium</translation>
-<translation id="1105130903706696483">Prohlížeč Chromium nebyl řádně ukončen. Chcete-li znovu otevřít stránky, které byly otevřené, klikněte na možnost Obnovit.</translation>
 <translation id="9197815481970649201">Nyní jste do prohlížeče Chromium přihlášeni</translation>
 <translation id="1929939181775079593">Prohlížeč Chromium neodpovídá. Chcete jej znovu načíst?</translation>
 <translation id="1414495520565016063">Jste přihlášeni do prohlížeče Chromium.</translation>
@@ -232,7 +224,6 @@ Některé funkce mohou být nedostupné. Zadejte prosím jiný adresář profilu
 <translation id="805745970029938373">Zde se zobrazují všechna oznámení z aplikací, rozšíření a webů Chromium.</translation>
 <translation id="2119636228670142020">O systému &amp;Chromium OS</translation>
 <translation id="1708666629004767631">K dispozici je nová, bezpečnější verze prohlížeče Chromium.</translation>
-<translation id="3800866064403932345">Chcete-li navázat zabezpečené síťové připojení, v počítači musejí být správně nastavené hodiny. Důvodem je, že certifikáty, pomocí kterých se webové stránky při navazování zabezpečeného připojení identifikují, mají pouze omezenou platnost. Jelikož jsou hodiny ve vašem počítači nastaveny nesprávně, prohlížeč Chromium nemůže certifikáty zkontrolovat.</translation>
 <translation id="378917192836375108">Chromium umožňuje kliknout na telefonní číslo na webu a volat na něj prostřednictvím aplikace Skype.</translation>
 <translation id="8724049448828509830">Probíhá stahování. Chcete Chromium ukončit a stahování zrušit?</translation>
 <translation id="608189560609172163">Přihlížeč Chromium vaše data nemohl synchronizovat, protože při přihlašování došlo k chybě.</translation>
@@ -247,6 +238,7 @@ Pokud se přesto přihlásíte, budou data prohlížeče Chromium (například z
 <translation id="1967743265616885482">O modulu se stejným názvem je známo, že u něj dochází ke konfliktu s prohlížečem Chromium.</translation>
 <translation id="7962572577636132072">Prohlížeč Chromium se automaticky aktualizuje, abyste vždy měli k dispozici nejnovější verzi.</translation>
 <translation id="722928257909516027">Zobrazit nabídku Chromium</translation>
+<translation id="3744899669254331632">Web <ph name="SITE"/> nyní nelze navštívit, protože tento web odeslal nesprávné identifikační údaje, které prohlížeč Chromium nedokáže zpracovat. Síťové chyby a útoky jsou obvykle dočasné, tato stránka pravděpodobně později bude fungovat.</translation>
 <translation id="8704119203788522458">Toto je váš prohlížeč Chromium</translation>
 <translation id="8269379391216269538">Pomozte projekt Chromium vylepšit</translation>
 <translation id="4224199872375172890">Chromium je aktuální.</translation>

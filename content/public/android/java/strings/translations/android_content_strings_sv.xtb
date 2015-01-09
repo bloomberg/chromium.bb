@@ -1,6 +1,4 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="sv">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="sv">
 <translation id="2094750046714988961">Det går inte att starta profileraren eftersom den externa lagringsplatsen inte är klar</translation>
 <translation id="1256337885411059545">Det går inte att spela upp video</translation>
 <translation id="2520230379124234395">Profileraren har startats</translation>

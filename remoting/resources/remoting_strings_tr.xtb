@@ -1,6 +1,5 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="tr">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="tr">
+<translation id="3233367171080043075">İstediğiniz zaman sonlandırabilirsiniz.</translation>
 <translation id="7606912958770842224">Uzaktan bağlantıları etkinleştir</translation>
 <translation id="3785447812627779171">Chromoting
 Ana Makinesi</translation>
@@ -19,6 +18,7 @@ Ana Makinesi</translation>
 <translation id="5070121137485264635">Uzak ana makine üçüncü taraf bir web sitesine kimlik doğrulama işlemi yapmanızı gerektiriyor. Devam etmek üzere şu adrese erişim için Chrome Uzaktan Masaüstü'ne ek izinler vermelisiniz:</translation>
 <translation id="2124408767156847088">Android cihazınızdan bilgisayarlarınıza güvenle erişin.</translation>
 <translation id="3194245623920924351">Chrome Uzaktan Masaüstü</translation>
+<translation id="5537725057119320332">Yayınla</translation>
 <translation id="3649256019230929621">Pencereyi simge durumuna küçült</translation>
 <translation id="4808503597364150972">Lütfen <ph name="HOSTNAME"/> için PIN'inizi girin.</translation>
 <translation id="7672203038394118626">Bu bilgisayara uzaktan bağlantılar devre dışı bırakıldı.</translation>
@@ -26,6 +26,7 @@ Ana Makinesi</translation>
 <translation id="4368630973089289038">Chromoting'i daha iyi hale getirmeye yardımcı olmak ister misiniz? <ph name="LINK_BEGIN"/>Ankete katılın.<ph name="LINK_END"/></translation>
 <translation id="332624996707057614">Bilgisayarın adını düzenle</translation>
 <translation id="1996161829609978754">Chrome, Chromoting Ana Bilgisayar yükleyicisini indiriyor. İndirme işlemi tamamlandığında, devam etmeden önce lütfen yükleyiciyi çalıştırın.</translation>
+<translation id="222632161986885959">Bu Hangout'un katılımcılarından biri bilgisayarınızı kontrol ederek size yardımcı olmayı teklif etti. Bu teklifi kabul ederseniz:</translation>
 <translation id="2046651113449445291">Aşağıdaki istemciler bu bilgisayarla eşlendi ve bir PIN sağlamadan bağlanabilir. Bu izni, istediğiniz zaman tek tek veya tüm istemciler için iptal edebilirsiniz.</translation>
 <translation id="7658239707568436148">İptal</translation>
 <translation id="7782471917492991422">Lütfen bilgisayarınızın güç yönetimi ayarlarını kontrol edin ve boşta kaldığında uyku moduna geçecek şekilde ayarlanmadığından emin olun.</translation>
@@ -97,6 +98,8 @@ Gizlilikle ilgili daha fazla bilgi edinmek için lütfen Google Gizlilik Politik
 <translation id="2013884659108657024">Chrome, Chrome Uzaktan Masaüstü Ana Bilgisayar yükleyicisini indiriyor. İndirme işlemi tamamlandığında, devam etmeden önce lütfen yükleyiciyi çalıştırın.</translation>
 <translation id="1742469581923031760">Bağlanıyor...</translation>
 <translation id="8998327464021325874">Chrome Uzaktan Masaüstü Ana Makine Denetleyicisi</translation>
+<translation id="7017806586333792422">Kaydı Başlat</translation>
+<translation id="1619813076098775562">Cast cihazına bağlantı kapatıldı.</translation>
 <translation id="6748108480210050150">Kimden</translation>
 <translation id="3950820424414687140">Oturum açın</translation>
 <translation id="1291443878853470558">Bu bilgisayara erişmek için Chromoting'i kullanmak istiyorsanız uzaktan bağlantıları etkinleştirmelisiniz.</translation>
@@ -107,11 +110,13 @@ Gizlilikle ilgili daha fazla bilgi edinmek için lütfen Google Gizlilik Politik
 <translation id="7401733114166276557">Chrome Uzaktan Masaüstü</translation>
 <translation id="3362124771485993931">PIN'i yeniden yazın</translation>
 <translation id="1760808606374294203">• Android Lollipop için düzeltmeler</translation>
+<translation id="5231421057630485350">Size yardımcı olan kişi farenizi ve klavyenizi kontrol edebilecektir.</translation>
 <translation id="154040539590487450">Uzaktan erişim hizmeti başlatılamadı.</translation>
 <translation id="7948001860594368197">Ekran seçenekleri</translation>
 <translation id="8172070902751707422">Kimlik doğrulama başarısız oldu. Lütfen Chrome Uzaktan Masaüstü'nde tekrar oturum açın.</translation>
 <translation id="5254120496627797685">Bu sayfadan ayrılırsanız Chrome Uzaktan Masaüstü oturumunuz sonlanır.</translation>
 <translation id="173559734173571936">Chrome Uzaktan Masaüstü uygulamasını kullanabilmek için öncelikle, bilgisayarınıza genişletilmiş erişim izinleri vermelisiniz. Bunu yalnızca bir kez yapmanız gerekir.</translation>
+<translation id="712467900648340229">Yayın cihazına bağlanamadı.</translation>
 <translation id="9032136467203159543">Chromoting için gereken bazı bileşenler eksik. Lütfen son sürümü yüklediğinizden emin olun ve tekrar deneyin.</translation>
 <translation id="1342297293546459414">Paylaşılan bir bilgisayarı görün ve denetleyin.</translation>
 <translation id="1520828917794284345">Masaüstünü uygun şekilde yeniden boyutlandır</translation>
@@ -147,6 +152,7 @@ Gizlilikle ilgili daha fazla bilgi edinmek için lütfen Google Gizlilik Politik
 <translation id="2699970397166997657">Chromoting</translation>
 <translation id="4812684235631257312">Ana makine</translation>
 <translation id="6178645564515549384">Uzaktan yardım için yerel mesajlaşma ana makinesi</translation>
+<translation id="1738759452976856405">Kaydı Durdur</translation>
 <translation id="897805526397249209">Başka bir bilgisayara uzaktan bağlantıları etkinleştirmek için Chromoting'i o bilgisayara yükleyin ve “<ph name="BUTTON_NAME"/>” düğmesini tıklayın.</translation>
 <translation id="1704090719919187045">Chromoting Ana Makine Tercihleri</translation>
 <translation id="809687642899217504">Bilgisayarlarım</translation>
@@ -187,6 +193,7 @@ Masaüstü Ana Makinesi</translation>
 <translation id="4703799847237267011">Chromoting oturumunuz sonlandırıldı.</translation>
 <translation id="8178433417677596899">Kullanıcılar arası ekran paylaşımı, uzaktan teknik destek için mükemmeldir.</translation>
 <translation id="652218476070540101">Bu bilgisayarın PIN'i güncelleniyor…</translation>
+<translation id="951991426597076286">Reddet</translation>
 <translation id="4563926062592110512">İstemcinin bağlantısı kesildi: <ph name="CLIENT_USERNAME"/>.</translation>
 <translation id="5308380583665731573">Bağlan</translation>
 <translation id="7319983568955948908">Paylaşmayı Durdur</translation>

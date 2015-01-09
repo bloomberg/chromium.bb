@@ -1,6 +1,4 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="id">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="id">
 <translation id="7485870689360869515">Tidak ada data yang ditemukan.</translation>
 <translation id="3884278016824448484">Pengenal perangkat bertentangan</translation>
 <translation id="6779575937362063477">Kartu kredit jenis ini tidak didukung oleh Google Wallet. Mohon pilih kartu kredit yang lain.</translation>
@@ -12,6 +10,7 @@
 <translation id="1339601241726513588">Domain pendaftaran:</translation>
 <translation id="7298195798382681320">Direkomendasikan</translation>
 <translation id="4058922952496707368">Kunci &quot;<ph name="SUBKEY"/>&quot;: <ph name="ERROR"/></translation>
+<translation id="6980028882292583085">Lansiran JavaScript</translation>
 <translation id="5299298092464848405">Kebijakan kesalahan penguraian</translation>
 <translation id="6628463337424475685"><ph name="ENGINE"/> Penelusuran</translation>
 <translation id="6831043979455480757">Terjemahkan</translation>
@@ -24,6 +23,7 @@
 <translation id="2958431318199492670">Konfigurasi jaringan tidak mematuhi standar ONC. Bagian dari konfigurasi mungkin tidak diimpor.</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="277499241957683684">Catatan perangkat hilang</translation>
+<translation id="1491151370853475546">Muat Ulang Laman Ini</translation>
 <translation id="8553075262323480129">Terjemahan gagal karena bahasa laman tidak dapat ditentukan.</translation>
 <translation id="7935318582918952113">Penyaring DOM</translation>
 <translation id="1103523840287552314">Selalu terjemahkan <ph name="LANGUAGE"/></translation>
@@ -44,6 +44,7 @@
 <translation id="3380365263193509176">Kesalahan tidak dikenal</translation>
 <translation id="112840717907525620">Cache kebijakan Oke</translation>
 <translation id="3452404311384756672">Interval pengambilan:</translation>
+<translation id="409504436206021213">Jangan Muat Ulang</translation>
 <translation id="7441627299479586546">Subjek kebijakan salah</translation>
 <translation id="3885155851504623709">Parish</translation>
 <translation id="6973656660372572881">Server proxy tetap dan URL skrip .pac telah ditentukan.</translation>
@@ -52,6 +53,7 @@
 <translation id="3667681724235208644">Lihat Laman Asli</translation>
 <translation id="4079302484614802869">Konfigurasi proxy disetel untuk menggunakan URL skrip .pac, bukan server proxy yang tetap.</translation>
 <translation id="5540224163453853">Tidak dapat menemukan artikel yang diminta.</translation>
+<translation id="333371639341676808">Cegah dialog lain dari laman ini.</translation>
 <translation id="5523118979700054094">Nama kebijakan</translation>
 <translation id="7791543448312431591">Tambahkan</translation>
 <translation id="2053553514270667976">Kode pos</translation>
@@ -68,6 +70,7 @@
 <translation id="2367567093518048410">Tingkat</translation>
 <translation id="7977590112176369853">&lt;masukkan permintaan&gt;</translation>
 <translation id="7610193165460212391">Nilai di luar jangkauan <ph name="VALUE"/>.</translation>
+<translation id="8311778656528046050">Yakin ingin memuat ulang laman ini?</translation>
 <translation id="370665806235115550">Membuka...</translation>
 <translation id="2096368010154057602">Departemen</translation>
 <translation id="4258748452823770588">Tanda tangan salah</translation>
@@ -95,11 +98,14 @@
 <translation id="6445051938772793705">Negara</translation>
 <translation id="5031870354684148875">Tentang Google Terjemahan</translation>
 <translation id="1152921474424827756">Akses <ph name="BEGIN_LINK"/>salinan yang disimpan dalam cache<ph name="END_LINK"/> dari <ph name="URL"/></translation>
+<translation id="8201077131113104583">URL pembaruan tidak valid untuk ekstensi dengan ID &quot;<ph name="EXTENSION_ID"/>&quot;.</translation>
 <translation id="6891596781022320156">Tingkat kebijakan tidak didukung.</translation>
 <translation id="2025186561304664664">Proxy disetel ke konfigurasi otomatis.</translation>
 <translation id="1853748787962613237">Gagal menampilkan artikel.</translation>
 <translation id="5455374756549232013">Stempel waktu kebijakan salah</translation>
+<translation id="2025623846716345241">Konfirmasi Pemuatan Ulang</translation>
 <translation id="1962204205936693436">Bookmark <ph name="DOMAIN"/></translation>
+<translation id="111844081046043029">Yakin ingin meninggalkan laman ini?</translation>
 <translation id="1973335181906896915">Kesalahan serialisasi</translation>
 <translation id="5989320800837274978">Baik proxy server tetap ataupun URL skrip .pac tidak ditentukan.</translation>
 <translation id="7805768142964895445">Status</translation>
@@ -110,12 +116,13 @@
 <translation id="7956713633345437162">Bookmark seluler</translation>
 <translation id="5089810972385038852">Negara bagian</translation>
 <translation id="647261751007945333">Kebijakan perangkat</translation>
-<translation id="678528074488531090">Kesalahan validasi: <ph name="VALIDATION_ERROR"/>.</translation>
 <translation id="213826338245044447">Bookmark Seluler</translation>
 <translation id="8571890674111243710">Menerjemahkan laman ke <ph name="LANGUAGE"/>...</translation>
 <translation id="4117700440116928470">Lingkup kebijakan tidak didukung.</translation>
 <translation id="2114841414352855701">Diabaikan karena diganti dengan <ph name="POLICY_NAME"/>.</translation>
 <translation id="3228969707346345236">Terjemahan gagal karena laman sudah dalam bahasa <ph name="LANGUAGE"/>.</translation>
+<translation id="7521387064766892559">Javascript</translation>
+<translation id="8034522405403831421">Laman ini berbahasa <ph name="SOURCE_LANGUAGE"/>. Terjemahkan ke <ph name="TARGET_LANGUAGE"/>?</translation>
 <translation id="8891727572606052622">Mode proxy tidak valid.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="7752995774971033316">Tidak terkelola</translation>
@@ -137,9 +144,11 @@
 <translation id="3377188786107721145">Kesalahan penguraian kebijakan</translation>
 <translation id="2270192940992995399">Gagal menemukan artikel.</translation>
 <translation id="4726672564094551039">Muat ulang kebijakan</translation>
+<translation id="9154176715500758432">Tetap di Laman ini</translation>
 <translation id="2392959068659972793">Tampilkan kebijakan tanpa nilai yang disetel</translation>
 <translation id="5190835502935405962">Bilah Bookmark</translation>
 <translation id="6965978654500191972">Perangkat</translation>
+<translation id="5295309862264981122">Konfirmasikan Navigasi</translation>
 <translation id="8249320324621329438">Terakhir diambil:</translation>
 <translation id="194030505837763158">Buka <ph name="LINK"/></translation>
 <translation id="1285320974508926690">Jangan pernah terjemahkan situs ini</translation>
@@ -150,6 +159,7 @@
 <translation id="9020542370529661692">Laman ini telah diterjemahkan ke <ph name="TARGET_LANGUAGE"/></translation>
 <translation id="5631439013527180824">Token pengelolaan perangkat tidak valid</translation>
 <translation id="560412284261940334">Pengelolaan tidak didukung</translation>
+<translation id="6512448926095770873">Keluar dari Laman</translation>
 <translation id="1639239467298939599">Memuat</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="4923417429809017348">Laman ini telah diterjemahkan dari bahasa yang tidak diketahui ke bahasa <ph name="LANGUAGE_LANGUAGE"/></translation>
@@ -163,6 +173,8 @@
 <translation id="5509780412636533143">Mengelola bookmark</translation>
 <translation id="8866481888320382733">Kesalahan saat menguraikan setelan kebijakan</translation>
 <translation id="6644283850729428850">Kebijakan ini telah usang.</translation>
+<translation id="1693754753824026215">Laman di <ph name="SITE"/> menyatakan:</translation>
+<translation id="4269787794583293679">(Tidak ada nama pengguna)</translation>
 <translation id="7988324688042446538">Bookmark desktop</translation>
 <translation id="8488350697529856933">Berlaku untuk</translation>
 <translation id="6165508094623778733">Pelajari lebih lanjut</translation>
@@ -184,8 +196,8 @@
 <translation id="2639739919103226564">Status:</translation>
 <translation id="1832546148887467272">Beralih ke <ph name="NEW_GOOGLE_HOST"/></translation>
 <translation id="5095208057601539847">Provinsi</translation>
+<translation id="2581221116934462656">Apakah Anda ingin <ph name="PRODUCT_NAME"/> menawarkan terjemahan laman <ph name="LANGUAGE_NAME"/> dari situs ini saat mengunjunginya nanti?</translation>
 <translation id="3934680773876859118">Gagal memuat dokumen PDF</translation>
-<translation id="1152021252151287493">Tanda tangan verifikasi buruk.</translation>
 <translation id="6965382102122355670">Oke</translation>
 <translation id="2721148159707890343">Permintaan berhasil</translation>
 <translation id="2455981314101692989">Laman web ini telah menonaktifkan pengisian otomatis untuk formulir ini.</translation>

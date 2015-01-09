@@ -1,16 +1,16 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="fa">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="fa">
 <translation id="8588878054171169263">ذخیره تصویر</translation>
 <translation id="7998918019931843664">بازکردن مجدد برگه‌های بسته شده</translation>
 <translation id="4996978546172906250">اشتراک‌گذاری از طریق</translation>
+<translation id="6292937202013477045">ممکن است حمله‌کننده‌ها در تلاش باشند اطلاعات شما (مثلاً گذرواژه‌ها، پیام‌ها یا کارت‌های اعتباری) را از <ph name="DOMAIN_NAME"/> سرقت کنند.</translation>
 <translation id="346339498574870680">کپی کردن نشانی اینترنتی تصویر</translation>
 <translation id="6657585470893396449">گذرواژه</translation>
 <translation id="5578795271662203820">جستجوی <ph name="SEARCH_ENGINE"/> برای این تصویر</translation>
 <translation id="6831043979455480757">ترجمه</translation>
+<translation id="869891660844655955">تاریخ انقضا</translation>
 <translation id="7644305409888602715">در حال ترجمه صفحه به <ph name="SOURCE_LANGUAGE"/>…</translation>
 <translation id="7015922086425404465">‏دریافت برنامه از فروشگاه Google Play:‏ <ph name="APP_ACTION"/></translation>
-<translation id="1491151370853475546">بارگیری مجدد این صفحه</translation>
+<translation id="1491151370853475546">تازه‌سازی این صفحه</translation>
 <translation id="5233638681132016545">برگهٔ جدید</translation>
 <translation id="641643625718530986">چاپ...</translation>
 <translation id="5763382633136178763">برگه‌های ناشناس</translation>
@@ -26,17 +26,24 @@
 <translation id="1966710179511230534">لطفاً جزئیات ورود به سیستمتان را به‌روز کنید.</translation>
 <translation id="1623104350909869708">جلوگیری از ایجاد پنجره‌های اضافی توسط این صفحه</translation>
 <translation id="1426410128494586442">بله</translation>
+<translation id="5595485650161345191">ویرایش آدرس</translation>
 <translation id="8218346974737627104">تأیید ورود به سیستم</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE"/>، برگه</translation>
 <translation id="624558823898732418">زبان ترجمه: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="8872441722924401214">انتخاب گواهی برای احراز هویت</translation>
 <translation id="7791543448312431591">افزودن</translation>
+<translation id="8719023831149562936">انتقال برگه کنونی با پرتو ممکن نیست</translation>
+<translation id="4378154925671717803">تلفن</translation>
 <translation id="3896036286668839683">نظاره‌گر گواهی</translation>
 <translation id="5039804452771397117">مجاز بودن</translation>
 <translation id="8583805026567836021">پاکسازی اطلاعات حساب</translation>
+<translation id="5860033963881614850">خاموش</translation>
 <translation id="4250680216510889253">خیر</translation>
 <translation id="8073388330009372546">باز کردن تصویر در برگه جدید</translation>
 <translation id="552553974213252141">آیا نوشتار به درستی استخراج شده است؟</translation>
+<translation id="5317780077021120954">ذخیره</translation>
+<translation id="2718352093833049315">‏فقط در Wi-Fi</translation>
+<translation id="7029809446516969842">رمزهای ورود</translation>
 <translation id="2414886740292270097">تاریک</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="8730621377337864115">انجام شد</translation>
@@ -46,31 +53,43 @@
 <translation id="1807246157184219062">روشن</translation>
 <translation id="7053983685419859001">مسدود کردن</translation>
 <translation id="8374821112118309944">‏باید TalkBack را به نسخه جدیدتری به‌روزرسانی کنید.</translation>
+<translation id="8481940801237642152">اتصال شما به این سایت خصوصی است، اما ممکن است شخصی در شبکه بتواند ظاهر این صفحه را تغییر دهد.</translation>
 <translation id="2593272815202181319">قلم‌های با عرض ثابت</translation>
+<translation id="4807098396393229769">نام روی کارت</translation>
 <translation id="656628257199996201"><ph name="SOURCE_LANGUAGE"/> همیشه ترجمه شود</translation>
 <translation id="2748463065602559597">‏شما در حال مشاهده یک صفحه امن Google Chrome هستید.</translation>
 <translation id="9137013805542155359">نمایش مورد اصلی</translation>
 <translation id="4543661749405994812">کپی آدرس ایمیل</translation>
+<translation id="5659593005791499971">ایمیل</translation>
+<translation id="8428213095426709021">تنظیمات</translation>
 <translation id="5684874026226664614">متأسفیم. این صفحه ترجمه نشد.</translation>
+<translation id="10614374240317010">هرگز ذخیره نمی‌شود</translation>
+<translation id="2903493209154104877">آدرس‌ها</translation>
 <translation id="8503813439785031346">نام کاربری</translation>
 <translation id="2532336938189706096">نمای وب</translation>
+<translation id="6571070086367343653">ویرایش کارت اعتباری</translation>
+<translation id="7080851568148064063">افزودن به صفحه اصلی</translation>
 <translation id="4619298195800598081">باز کردن تصویر اصلی در برگه جدید</translation>
 <translation id="4002066346123236978">عنوان</translation>
 <translation id="3254409185687681395">نشانک گذاری این صفحه</translation>
 <translation id="907015151729920253">کارت هوشمند</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="3063601790762993062">ذخیره ویدیو</translation>
+<translation id="8106211421800660735">شمارهٔ کارت اعتباری</translation>
 <translation id="6042308850641462728">بیشتر</translation>
 <translation id="7267430310003164111">‏سؤال برای دریافت برنامه از فروشگاه Google Play. نام برنامه: <ph name="APP_NAME"/>. رتبه متوسط برنامه: <ph name="APP_RATING"/>.</translation>
 <translation id="4148957013307229264">در حال نصب...</translation>
 <translation id="3992315671621218278">ذخیره پیوند</translation>
-<translation id="8034522405403831421">این صفحه به زبان <ph name="SOURCE_LANGUAGE"/> است. مایلید آن را به <ph name="TARGET_LANGUAGE"/> ترجمه کنید؟</translation>
+<translation id="2476578072172137802">تنظیمات سایت</translation>
 <translation id="4195643157523330669">باز کردن در برگهٔ جدید</translation>
 <translation id="651048280540227067">نادیده گرفتن منو</translation>
 <translation id="3089395242580810162">باز کردن در برگه ناشناس</translation>
+<translation id="6981982820502123353">قابلیت دسترسی</translation>
 <translation id="8725066075913043281">سعی مجدد</translation>
 <translation id="8909135823018751308">اشتراک‌گذاری‌...</translation>
+<translation id="654446541061731451">برگه‌ای برای انتقال با پرتو انتخاب کنید</translation>
 <translation id="4269820728363426813">کپی آدرس پیوند</translation>
+<translation id="8261506727792406068">حذف</translation>
 <translation id="4510973599275542560">تازه‌سازی نشود</translation>
 <translation id="1206892813135768548">کپی نوشتار پیوند</translation>
 <translation id="9154176715500758432">ماندن در این صفحه</translation>
@@ -79,22 +98,31 @@
 <translation id="6671495933530132209">کپی تصویر</translation>
 <translation id="8209050860603202033">باز کردن تصویر</translation>
 <translation id="2501278716633472235">بازگشت</translation>
+<translation id="8941248009481596111">اتصال شما به این سایت خصوصی است.</translation>
 <translation id="1285320974508926690">این سایت هرگز ترجمه نشود</translation>
 <translation id="5164482624172255778">‏آیا مایلید دفعه بعد Google Chrome ترجمه صفحاتی به زبان <ph name="LANGUAGE"/> در این سایت را پیشنهاد دهد؟</translation>
 <translation id="8528538445849828817">زبان صفحه: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="4881695831933465202">باز کردن</translation>
 <translation id="6512448926095770873">ترک کردن این صفحه</translation>
+<translation id="5565871407246142825">کارت‌های اعتباری</translation>
 <translation id="7947953824732555851">پذیرش و ورود به سیستم</translation>
+<translation id="2612676031748830579">شماره کارت</translation>
 <translation id="6333140779060797560">اشتراک‌گذاری از طریق <ph name="APPLICATION"/></translation>
 <translation id="6040143037577758943">بستن</translation>
+<translation id="5138299137310274655">این صفحه به زبان <ph name="SOURCE_LANGUAGE"/> است. به <ph name="TARGET_LANGUAGE"/> ترجمه شود؟</translation>
+<translation id="7649070708921625228">راهنما</translation>
 <translation id="969096075394517431">تغییر زبان‌ها</translation>
 <translation id="5032574515228824816">فرمان</translation>
+<translation id="6165508094623778733">بیشتر بیاموزید</translation>
 <translation id="7961015016161918242">هرگز</translation>
 <translation id="497421865427891073">جلو رفتن</translation>
 <translation id="4056223980640387499">سپیا</translation>
 <translation id="8310344678080805313">برگه‌های استاندارد</translation>
 <translation id="6277522088822131679">در چاپ صفحه مشکلی پیش آمد. لطفاً دوباره امتحان کنید.</translation>
+<translation id="7634554953375732414">اتصال شما به این سایت خصوصی نیست.</translation>
+<translation id="6612358246767739896">محتوای محافظت شده</translation>
 <translation id="1742134235943978220">به <ph name="TARGET_LANGUAGE"/> ترجمه شد.</translation>
+<translation id="5916664084637901428">روشن</translation>
 <translation id="6965382102122355670">تأیید</translation>
 <translation id="7561196759112975576">همیشه</translation>
 </translationbundle>

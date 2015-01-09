@@ -1,12 +1,10 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="fi">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="fi">
+<translation id="4542520061254486227">Lukea tietojasi sivustoissa <ph name="WEBSITE_1"/> ja <ph name="WEBSITE_2"/></translation>
 <translation id="3624204664103857160">Käynnistyssivun <ph name="PAGE"/> lataaminen ei onnistu.</translation>
 <translation id="8804398419035066391">Kommunikoida yhteistyösivustojen kanssa.</translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME"/> (laajennustunnus <ph name="EXTENSION_ID"/>) on järjestelmänvalvojan kiellettyjen laajennuksien luettelossa.</translation>
 <translation id="1005274289863221750">Käyttää mikrofonia ja kameraa</translation>
 <translation id="2857834222104759979">Luettelotiedosto on virheellinen.</translation>
-<translation id="3828484226910527078">Käytä USB-laitetta</translation>
 <translation id="6384275966486438344">Ota käyttöön seuraava hakukone: <ph name="SEARCH_HOST"/></translation>
 <translation id="1445572445564823378">Tämä laajennus hidastaa tuotetta <ph name="PRODUCT_NAME"/>. Poista laajennus käytöstä tehostaaksesi tuotteen <ph name="PRODUCT_NAME"/> toimintaa.</translation>
 <translation id="1033780634303702874">Käyttää sarjaporttilaitteitasi</translation>
@@ -15,30 +13,30 @@
 <translation id="677806580227005219">Mimehandler: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">Käyttää järjestelmäsi kanssa laitepariksi liitettyjen Bluetooth-laitteiden tietoja ja löytää lähellä olevia Bluetooth-laitteita.</translation>
 <translation id="5911798608827489036">Vaihda tietoja minkä tahansa paikallisverkossa tai internetissä olevan tietokoneen kanssa</translation>
-<translation id="4719685943208231314">Käyttää valmistajan <ph name="VENDOR_NAME"/> USB-laitetta.</translation>
+<translation id="8284835137979141223"><ph name="PRODUCT_NAME"/> myyjältä <ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">Taustakoodin <ph name="BACKGROUND_SCRIPT"/> lataaminen epäonnistui.</translation>
 <translation id="9131487537093447019">Lähettää viestejä Bluetooth-laitteisiin ja vastaanottaa viestejä Bluetooth-laitteilta.</translation>
-<translation id="8198425243160395623">Käyttää USB-laitteita</translation>
+<translation id="5678955352098267522">Lukea tietojasi sivustossa <ph name="WEBSITE_1"/></translation>
 <translation id="8597109877291678953">Vaihda tietoja tietokoneen nimeltä <ph name="HOSTNAME"/> kanssa</translation>
 <translation id="5456409301717116725">Tämä laajennus sisältää avaintiedoston <ph name="KEY_PATH"/>. Et todennäköisesti halua sitä.</translation>
+<translation id="7257666756905341374">Lukea kopioimiasi ja liittämiäsi tietoja</translation>
 <translation id="2350172092385603347">Lokalisaatiota käytetään, mutta default_locale ei ole määritetty luettelossa.</translation>
 <translation id="3759933321830434300">Estä joitain verkkosivujen osia</translation>
-<translation id="8058376558882514200">Käyttää valmistajan <ph name="VENDOR_NAME"/> USB-laitetta <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="149347756975725155">Laajennuskuvakkeen <ph name="ICON"/> lataaminen ei onnistunut.</translation>
 <translation id="8825366169884721447">Tämä laajennus ei muokannut verkkopyynnön otsikkoa <ph name="HEADER_NAME"/>, koska muokkaus oli ristiriidassa toisen laajennuksen (<ph name="EXTENSION_NAME"/>) kanssa.</translation>
+<translation id="7495493006406536234">Tuote <ph name="PRODUCT_ID"/></translation>
 <translation id="4233778200880751280">Tietosivun <ph name="ABOUT_PAGE"/> lataus epäonnistui.</translation>
 <translation id="388442998277590542">Asetussivun <ph name="OPTIONS_PAGE"/> lataaminen epäonnistui.</translation>
 <translation id="6344170822609224263">Pääsy verkkoyhteysluetteloon</translation>
 <translation id="2616366145935564096">lukea ja muuttaa tietojasi sivustossa <ph name="WEBSITE_1"/></translation>
 <translation id="2518849872271000461">Vaida tietoja seuraavan nimisten tietokoneiden kanssa: <ph name="HOSTNAMES"/></translation>
-<translation id="1389014510128217152">– <ph name="WEBSITE_1"/></translation>
+<translation id="4444304522807523469">Käyttää USB:n tai lähiverkon kautta yhdistettyjä dokumenttiskannereita</translation>
 <translation id="6408118934673775994">lukea ja muuttaa tietojasi sivustoissa <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> ja <ph name="WEBSITE_3"/></translation>
 <translation id="961805664415579088">Vaihda tietoja minkä tahansa verkkotunnusta <ph name="DOMAIN"/> käyttävän tietokoneen kanssa</translation>
 <translation id="3502064055007747926">Käyttää syöttölaitteita</translation>
 <translation id="8670869118777164560">Tämä laajennus ei uudelleenohjannut verkkopyyntöä kohteeseen <ph name="ATTEMPTED_REDIRECT_DESTINATION"/>, koska toinen laajennus (<ph name="EXTENSION_NAME"/>) uudelleenohjasi sen kohteeseen <ph name="ACTUAL_REDIRECT_DESTINATION"/>.</translation>
 <translation id="6840444547062817500">Tämä laajennus päivittyy liian usein.</translation>
 <translation id="8047248493720652249">Laajennus ei voinut antaa lataukselle nimeä <ph name="ATTEMPTED_FILENAME"/>, koska toinen laajennus (<ph name="EXTENSION_NAME"/>) määritti toisen tiedostonimen (<ph name="ACTUAL_FILENAME"/>).</translation>
-<translation id="2732710576072980201">Tuote <ph name="PRODUCT_ID"/> myyjältä <ph name="VENDOR_NAME"/> (sarjanumero <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="4968399700653439437">Vaihda tietoja minkä tahansa seuraavia verkkotunnuksia käyttävän tietokoneen kanssa: <ph name="DOMAINS"/></translation>
 <translation id="5026754133087629784">Verkkonäkymä: <ph name="WEBVIEW_TAG_NAME"/></translation>
 <translation id="8284279544186306258">kaikki verkkotunnuksen <ph name="WEBSITE_1"/> sivustot</translation>
@@ -57,8 +55,12 @@
 <translation id="7217838517480956708">Koneen ylläpitäjä vaatii laajennuksen <ph name="EXTENSION_NAME"/> asennusta. Sitä ei voi poistaa tai muuttaa.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME"/> myyjältä <ph name="VENDOR_NAME"/> (sarjanumero <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="7154130902455071009">Vaihda aloitussivuksi <ph name="START_PAGE"/></translation>
-<translation id="6758203075041033901">Tuote <ph name="PRODUCT_ID"/> myyjältä <ph name="VENDOR_ID"/> (sarjanumero <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="6698810901424468597">lukea ja muuttaa tietojasi sivustoissa <ph name="WEBSITE_1"/> ja <ph name="WEBSITE_2"/></translation>
+<translation id="5544884907028850012">Myyjä <ph name="VENDOR_ID"/></translation>
+<translation id="2048182445208425546">Käyttää verkkoliikennettäsi</translation>
+<translation id="5972529113578162692">Tämän laitteen järjestelmänvalvoja on määrittänyt, että laitteessa täytyy olla <ph name="EXTENSION_NAME"/>. Laajennusta ei voi poistaa.</translation>
+<translation id="7131040479572660648">Lukea tietojasi sivuistoissa <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> ja <ph name="WEBSITE_3"/></translation>
 <translation id="1803557475693955505">Taustasivun <ph name="BACKGROUND_PAGE"/> lataaminen ei onnistunut.</translation>
 <translation id="7972881773422714442">Vaihtoehdot: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
+<translation id="344630545793878684">Lukea tietojasi useissa sivustoissa</translation>
 </translationbundle>

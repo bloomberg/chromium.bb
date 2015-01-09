@@ -1,6 +1,5 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="bg">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="bg">
+<translation id="3233367171080043075">Можете да прекратите по всяко време.</translation>
 <translation id="7606912958770842224">Активиране на отдалечените връзки</translation>
 <translation id="3785447812627779171">Хост на
 Chromoting</translation>
@@ -19,6 +18,7 @@ Chromoting</translation>
 <translation id="5070121137485264635">Отдалеченият хост изисква да удостоверите самоличността си пред уебсайт на трета страна. За да продължите, трябва да предоставите на отдалечения работен плот на Chrome допълнителни разрешения за достъп до този адрес:</translation>
 <translation id="2124408767156847088">Осъществявайте сигурно достъп до компютрите си от устройството си с Android.</translation>
 <translation id="3194245623920924351">Отдалечен работен плот</translation>
+<translation id="5537725057119320332">Предаване</translation>
 <translation id="3649256019230929621">Намаляване на прозореца</translation>
 <translation id="4808503597364150972">Моля, въведете ПИН кода си за <ph name="HOSTNAME"/>.</translation>
 <translation id="7672203038394118626">Отдалечените връзки за този компютър са деактивирани.</translation>
@@ -26,6 +26,7 @@ Chromoting</translation>
 <translation id="4368630973089289038">Искате ли да помогнете за подобряването на Chromoting? <ph name="LINK_BEGIN"/>Участвайте в проучването.<ph name="LINK_END"/></translation>
 <translation id="332624996707057614">Редактиране на името на компютъра</translation>
 <translation id="1996161829609978754">Chrome изтегля инсталационната програма за хоста на Chromoting.  След като процесът завърши, моля, стартирайте я, преди да продължите.</translation>
+<translation id="222632161986885959">Участник в този разговор предложи да ви помогне, като контролира компютъра ви. Ако приемете:</translation>
 <translation id="2046651113449445291">Следните клиентски програми са сдвоени с този компютър и могат да се свързват, без да предоставят ПИН код. В състояние сте да отмените това разрешение по всяко време – за отделни програми или за всички.</translation>
 <translation id="7658239707568436148">Отказ</translation>
 <translation id="7782471917492991422">Моля, проверете настройките за управление на захранването на компютъра си и се уверете, че не е конфигуриран да преминава в спящ режим при неактивност.</translation>
@@ -97,6 +98,8 @@ Chromoting</translation>
 <translation id="2013884659108657024">Chrome изтегля инсталационната програма за хоста на отдалечения работен плот на Chrome.  След като процесът завърши, моля, стартирайте я, преди да продължите.</translation>
 <translation id="1742469581923031760">Установява се връзка…</translation>
 <translation id="8998327464021325874">Контролер за хоста на отдалечения работен плот на Chrome</translation>
+<translation id="7017806586333792422">Стартиране на записването</translation>
+<translation id="1619813076098775562">Връзката с устройството Cast е прекъсната.</translation>
 <translation id="6748108480210050150">От</translation>
 <translation id="3950820424414687140">Вход</translation>
 <translation id="1291443878853470558">Трябва да активирате отдалечените връзки, ако искате да използвате Chromoting, за да осъществявате достъп до този компютър.</translation>
@@ -107,11 +110,13 @@ Chromoting</translation>
 <translation id="7401733114166276557">Отдалечен работен плот на Chrome</translation>
 <translation id="3362124771485993931">Въведете отново ПИН кода</translation>
 <translation id="1760808606374294203">• Поправки за Android (Lollipop).</translation>
+<translation id="5231421057630485350">Човекът, който ви помага, ще може да контролира мишката и клавиатурата ви.</translation>
 <translation id="154040539590487450">Стартирането на услугата за отдалечен достъп не бе успешно.</translation>
 <translation id="7948001860594368197">Опции за екрана</translation>
 <translation id="8172070902751707422">Удостоверяването не бе успешно. Моля, влезте отново в отдалечения работен плот на Chrome.</translation>
 <translation id="5254120496627797685">Ако излезете от тази страница, сесията ви в отдалечения работен плот на Chrome ще приключи.</translation>
 <translation id="173559734173571936">За да използвате отдалечения работен плот на Chrome, е необходимо да предоставите разширени разрешения за достъп до компютъра си. Трябва да направите това само веднъж.</translation>
+<translation id="712467900648340229">Свързването с устройството Cast не бе успешно.</translation>
 <translation id="9032136467203159543">Липсват някои компоненти, задължителни за Chromoting. Моля, уверете се, че сте инсталирали най-новата версия, и опитайте пак.</translation>
 <translation id="1342297293546459414">Вижте и контролирайте споделен компютър.</translation>
 <translation id="1520828917794284345">Преоразмеряване на работния плот с цел уеднаквяване</translation>
@@ -147,6 +152,7 @@ Chromoting</translation>
 <translation id="2699970397166997657">Chromoting</translation>
 <translation id="4812684235631257312">Хост</translation>
 <translation id="6178645564515549384">Хост за обмен на съобщения с приложения с директно изпълнение за отдалечено съдействие</translation>
+<translation id="1738759452976856405">Спиране на записването</translation>
 <translation id="897805526397249209">За да активирате отдалечените връзки към друг компютър, инсталирайте на него Chromoting и кликнете върху „<ph name="BUTTON_NAME"/>“.</translation>
 <translation id="1704090719919187045">Предпочитания за хоста на Chromoting</translation>
 <translation id="809687642899217504">Моите компютри</translation>
@@ -187,6 +193,7 @@ Chromoting</translation>
 <translation id="4703799847237267011">Сесията ви в Chromoting приключи.</translation>
 <translation id="8178433417677596899">Споделяне на екран от потребител на потребител – идеално за отдалечена техническа поддръжка.</translation>
 <translation id="652218476070540101">ПИН кодът за този компютър се актуализира…</translation>
+<translation id="951991426597076286">Отхвърляне</translation>
 <translation id="4563926062592110512">Връзката с клиентската програма е прекъсната: <ph name="CLIENT_USERNAME"/>.</translation>
 <translation id="5308380583665731573">Свързване</translation>
 <translation id="7319983568955948908">Спиране на споделянето</translation>

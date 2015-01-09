@@ -1,13 +1,13 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="zh-CN">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="zh-CN">
 <translation id="8588878054171169263">保存图片</translation>
 <translation id="7998918019931843664">重新打开关闭的标签页</translation>
 <translation id="4996978546172906250">分享方式</translation>
+<translation id="6292937202013477045">攻击者可能会试图从 <ph name="DOMAIN_NAME"/> 窃取您的信息（例如：照片、密码、邮件或信用卡信息）。</translation>
 <translation id="346339498574870680">复制图片网址</translation>
 <translation id="6657585470893396449">密码</translation>
 <translation id="5578795271662203820">在<ph name="SEARCH_ENGINE"/>中搜索此图片</translation>
 <translation id="6831043979455480757">翻译</translation>
+<translation id="869891660844655955">截止日期</translation>
 <translation id="7644305409888602715">正在将网页内容翻译成<ph name="SOURCE_LANGUAGE"/>…</translation>
 <translation id="7015922086425404465">从Google Play商店下载应用：<ph name="APP_ACTION"/></translation>
 <translation id="1491151370853475546">重新加载此页</translation>
@@ -28,17 +28,24 @@
 <translation id="1966710179511230534">请更新您的登录详细信息。</translation>
 <translation id="1623104350909869708">阻止此页创建其他对话框</translation>
 <translation id="1426410128494586442">是</translation>
+<translation id="5595485650161345191">修改地址</translation>
 <translation id="8218346974737627104">确认登录</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE"/>，标签页</translation>
 <translation id="624558823898732418">翻译语言：<ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="8872441722924401214">选择用于验证身份的证书</translation>
 <translation id="7791543448312431591">添加</translation>
+<translation id="8719023831149562936">无法传输当前的标签页</translation>
+<translation id="4378154925671717803">电话</translation>
 <translation id="3896036286668839683">证书查看器</translation>
 <translation id="5039804452771397117">允许</translation>
 <translation id="8583805026567836021">清除帐户数据</translation>
+<translation id="5860033963881614850">关闭</translation>
 <translation id="4250680216510889253">否</translation>
 <translation id="8073388330009372546">在新标签页中打开图片</translation>
 <translation id="552553974213252141">提取的内容是否正确？</translation>
+<translation id="5317780077021120954">保存</translation>
+<translation id="2718352093833049315">仅限 Wi-Fi</translation>
+<translation id="7029809446516969842">密码</translation>
 <translation id="2414886740292270097">深色调</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="8730621377337864115">完成</translation>
@@ -48,31 +55,43 @@
 <translation id="1807246157184219062">浅色调</translation>
 <translation id="7053983685419859001">禁止</translation>
 <translation id="8374821112118309944">您需要将“话语提示”更新到更高版本。</translation>
+<translation id="8481940801237642152">您与此网站建立的是私密连接，但网络上的某些用户也许能更改此网页的外观。</translation>
 <translation id="2593272815202181319">等宽</translation>
+<translation id="4807098396393229769">持卡人姓名</translation>
 <translation id="656628257199996201">一律翻译<ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="2748463065602559597">您正在查看的是安全的 Google Chrome 浏览器网页。</translation>
 <translation id="9137013805542155359">显示原始网页</translation>
 <translation id="4543661749405994812">复制电子邮件地址</translation>
+<translation id="5659593005791499971">电子邮件</translation>
+<translation id="8428213095426709021">设置</translation>
 <translation id="5684874026226664614">糟糕，此网页内容无法翻译。</translation>
+<translation id="10614374240317010">一律不保存</translation>
+<translation id="2903493209154104877">地址</translation>
 <translation id="8503813439785031346">用户名</translation>
 <translation id="2532336938189706096">网页视图</translation>
+<translation id="6571070086367343653">修改信用卡</translation>
+<translation id="7080851568148064063">添加到主屏幕</translation>
 <translation id="4619298195800598081">在新标签页中打开原始图片</translation>
 <translation id="4002066346123236978">标题</translation>
 <translation id="3254409185687681395">为此页添加书签</translation>
 <translation id="907015151729920253">智能卡</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="3063601790762993062">保存视频</translation>
+<translation id="8106211421800660735">信用卡号</translation>
 <translation id="6042308850641462728">更多</translation>
 <translation id="7267430310003164111">提示您从Google Play商店下载应用。应用名称：<ph name="APP_NAME"/>。应用的平均评分：<ph name="APP_RATING"/>。</translation>
 <translation id="4148957013307229264">正在安装...</translation>
 <translation id="3992315671621218278">保存链接</translation>
-<translation id="8034522405403831421">此网页的源语言为<ph name="SOURCE_LANGUAGE"/>，要将其翻译成<ph name="TARGET_LANGUAGE"/>吗？</translation>
+<translation id="2476578072172137802">网站设置</translation>
 <translation id="4195643157523330669">在新标签页中打开</translation>
 <translation id="651048280540227067">关闭此菜单</translation>
 <translation id="3089395242580810162">在隐身标签页中打开</translation>
+<translation id="6981982820502123353">辅助功能</translation>
 <translation id="8725066075913043281">重试</translation>
 <translation id="8909135823018751308">分享…</translation>
+<translation id="654446541061731451">选择要传输的标签页</translation>
 <translation id="4269820728363426813">复制链接地址</translation>
+<translation id="8261506727792406068">删除</translation>
 <translation id="4510973599275542560">不重新加载</translation>
 <translation id="1206892813135768548">复制链接文字</translation>
 <translation id="9154176715500758432">留在此页</translation>
@@ -81,22 +100,32 @@
 <translation id="6671495933530132209">复制图片</translation>
 <translation id="8209050860603202033">打开图片</translation>
 <translation id="2501278716633472235">返回</translation>
+<translation id="8941248009481596111">您与此网站建立的是私密连接。</translation>
 <translation id="1285320974508926690">一律不翻译此网站</translation>
 <translation id="5164482624172255778">下次访问这个网站时，您希望 Google Chrome 翻译此网站的<ph name="LANGUAGE"/>网页吗？</translation>
 <translation id="8528538445849828817">网页语言：<ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="4881695831933465202">打开</translation>
 <translation id="6512448926095770873">离开此页</translation>
+<translation id="5565871407246142825">信用卡</translation>
 <translation id="7947953824732555851">接受并登录</translation>
+<translation id="2612676031748830579">卡号</translation>
 <translation id="6333140779060797560">通过<ph name="APPLICATION"/>分享</translation>
 <translation id="6040143037577758943">关闭</translation>
+<translation id="2888126860611144412">关于 Chrome</translation>
+<translation id="5138299137310274655">这是<ph name="SOURCE_LANGUAGE"/>网页，要将其翻译成<ph name="TARGET_LANGUAGE"/>吗？</translation>
+<translation id="7649070708921625228">帮助</translation>
 <translation id="969096075394517431">更改语言</translation>
 <translation id="5032574515228824816">提示</translation>
+<translation id="6165508094623778733">了解详情</translation>
 <translation id="7961015016161918242">永不保存</translation>
 <translation id="497421865427891073">前进</translation>
 <translation id="4056223980640387499">棕色调</translation>
 <translation id="8310344678080805313">标准标签页</translation>
 <translation id="6277522088822131679">打印该页面时出现问题，请重试。</translation>
+<translation id="7634554953375732414">您与此网站建立的不是私密连接。</translation>
+<translation id="6612358246767739896">受保护的内容</translation>
 <translation id="1742134235943978220">已翻译成<ph name="TARGET_LANGUAGE"/>。</translation>
+<translation id="5916664084637901428">启用</translation>
 <translation id="6965382102122355670">确定</translation>
 <translation id="7561196759112975576">永远</translation>
 </translationbundle>

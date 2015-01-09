@@ -1,6 +1,4 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="vi">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="vi">
 <translation id="2094750046714988961">Không thể khởi động profiler vì bộ nhớ ngoài không sẵn sàng</translation>
 <translation id="1256337885411059545">Không thể phát video</translation>
 <translation id="2520230379124234395">Đã chạy Profiler</translation>

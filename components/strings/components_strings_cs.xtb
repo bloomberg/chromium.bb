@@ -1,6 +1,4 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="cs">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="cs">
 <translation id="7485870689360869515">Nebyla nalezena žádná data.</translation>
 <translation id="3884278016824448484">Konfliktní identifikátor zařízení</translation>
 <translation id="6779575937362063477">Peněženka Google tento typ karty nepodporuje. Vyberte jinou kartu.</translation>
@@ -12,6 +10,7 @@
 <translation id="1339601241726513588">Doména registrace:</translation>
 <translation id="7298195798382681320">Doporučeno</translation>
 <translation id="4058922952496707368">Klíč <ph name="SUBKEY"/>: <ph name="ERROR"/></translation>
+<translation id="6980028882292583085">JavaScript – výstraha</translation>
 <translation id="5299298092464848405">Při analýze zásady došlo k chybě</translation>
 <translation id="6628463337424475685">Vyhledávání <ph name="ENGINE"/></translation>
 <translation id="6831043979455480757">Přeložit</translation>
@@ -24,6 +23,7 @@
 <translation id="2958431318199492670">Konfigurace sítě nesplňuje standard ONC. Může se stát, že některé části konfigurace nebudou importovány.</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="277499241957683684">Chybějící záznam zařízení</translation>
+<translation id="1491151370853475546">Načíst tuto stránku znovu</translation>
 <translation id="8553075262323480129">Překlad se nezdařil. Nepodařilo se rozpoznat jazyk stránky.</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="1103523840287552314">Vždy překládat jazyk <ph name="LANGUAGE"/></translation>
@@ -44,6 +44,7 @@
 <translation id="3380365263193509176">Neznámá chyba</translation>
 <translation id="112840717907525620">Mezipaměť zásady je v pořádku</translation>
 <translation id="3452404311384756672">Interval načtení:</translation>
+<translation id="409504436206021213">Nenačítat</translation>
 <translation id="7441627299479586546">Chybný předmět zásady</translation>
 <translation id="3885155851504623709">Okrsek</translation>
 <translation id="6973656660372572881">Určeny jsou pevně dané servery proxy i adresa URL skriptu PAC.</translation>
@@ -52,6 +53,7 @@
 <translation id="3667681724235208644">Zobrazit originál</translation>
 <translation id="4079302484614802869">Proxy je nastaveno na používání adresy URL skriptu PAC, nikoliv pevně daných serverů proxy.</translation>
 <translation id="5540224163453853">Požadovaný článek nebyl nalezen.</translation>
+<translation id="333371639341676808">Bránit této stránce ve vytváření dalších dialogových oken.</translation>
 <translation id="5523118979700054094">Název zásady</translation>
 <translation id="7791543448312431591">Přidat</translation>
 <translation id="2053553514270667976">PSČ</translation>
@@ -68,6 +70,7 @@
 <translation id="2367567093518048410">Úroveň</translation>
 <translation id="7977590112176369853">&lt;zadat dotaz&gt;</translation>
 <translation id="7610193165460212391">Hodnota <ph name="VALUE"/> je mimo rozsah.</translation>
+<translation id="8311778656528046050">Opravdu chcete tuto stránku znovu načíst?</translation>
 <translation id="370665806235115550">Načítání...</translation>
 <translation id="2096368010154057602">Oddělení</translation>
 <translation id="4258748452823770588">Chybný podpis</translation>
@@ -95,11 +98,14 @@
 <translation id="6445051938772793705">Země</translation>
 <translation id="5031870354684148875">O Překladači Google</translation>
 <translation id="1152921474424827756">Otevřete <ph name="BEGIN_LINK"/>archivovanou kopii<ph name="END_LINK"/> stránky <ph name="URL"/></translation>
+<translation id="8201077131113104583">Neplatná adresa URL aktualizace rozšíření s ID <ph name="EXTENSION_ID"/>.</translation>
 <translation id="6891596781022320156">Úroveň zásady není podporována.</translation>
 <translation id="2025186561304664664">Proxy server je nastaven na automatickou konfiguraci.</translation>
 <translation id="1853748787962613237">Zobrazení článku se nezdařilo.</translation>
 <translation id="5455374756549232013">Chybné časové razítko zásady</translation>
+<translation id="2025623846716345241">Potvrdit opětovné načtení</translation>
 <translation id="1962204205936693436">Záložky domény <ph name="DOMAIN"/></translation>
+<translation id="111844081046043029">Jste si jisti, že chcete opustit tuto stránku?</translation>
 <translation id="1973335181906896915">Chyba serializace</translation>
 <translation id="5989320800837274978">Nejsou určeny pevně dané servery proxy ani adresa URL skriptu PAC.</translation>
 <translation id="7805768142964895445">Stav</translation>
@@ -110,12 +116,13 @@
 <translation id="7956713633345437162">Mobilní záložky</translation>
 <translation id="5089810972385038852">Stát/kraj</translation>
 <translation id="647261751007945333">Zásady zařízení</translation>
-<translation id="678528074488531090">Chyba ověřování: <ph name="VALIDATION_ERROR"/>.</translation>
 <translation id="213826338245044447">Mobilní záložky</translation>
 <translation id="8571890674111243710">Překlad stránky do jazyka: <ph name="LANGUAGE"/>...</translation>
 <translation id="4117700440116928470">Rozsah zásady není podporován.</translation>
 <translation id="2114841414352855701">Zásada ignorována, protože bylo přepsána zásadou <ph name="POLICY_NAME"/>.</translation>
 <translation id="3228969707346345236">Překlad se nezdařil. Stránka je již v jazyce <ph name="LANGUAGE"/>.</translation>
+<translation id="7521387064766892559">JavaScript</translation>
+<translation id="8034522405403831421">Stránka je v jazyce <ph name="SOURCE_LANGUAGE"/>. Chcete ji přeložit do jazyka <ph name="TARGET_LANGUAGE"/>?</translation>
 <translation id="8891727572606052622">Neplatný režim proxy serveru.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="7752995774971033316">Nespravováno</translation>
@@ -137,9 +144,11 @@
 <translation id="3377188786107721145">Chyba analýzy zásady</translation>
 <translation id="2270192940992995399">Článek nebyl nalezen.</translation>
 <translation id="4726672564094551039">Znovu načíst zásady</translation>
+<translation id="9154176715500758432">Zůstat na této stránce</translation>
 <translation id="2392959068659972793">Zobrazit zásady bez nastavených hodnot</translation>
 <translation id="5190835502935405962">Lišta záložek</translation>
 <translation id="6965978654500191972">Zařízení</translation>
+<translation id="5295309862264981122">Potvrdit navigaci</translation>
 <translation id="8249320324621329438">Naposledy načteno:</translation>
 <translation id="194030505837763158">Přejít na odkaz <ph name="LINK"/></translation>
 <translation id="1285320974508926690">Tento web nikdy nepřekládat</translation>
@@ -150,6 +159,7 @@
 <translation id="9020542370529661692">Stránka byla přeložena do jazyka <ph name="TARGET_LANGUAGE"/></translation>
 <translation id="5631439013527180824">Neplatný token správy zařízení</translation>
 <translation id="560412284261940334">Správa není podporována</translation>
+<translation id="6512448926095770873">Opustit tuto stránku</translation>
 <translation id="1639239467298939599">Načítání</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="4923417429809017348">Tato stránka byla přeložena z neznámého jazyka do jazyka <ph name="LANGUAGE_LANGUAGE"/></translation>
@@ -163,6 +173,8 @@
 <translation id="5509780412636533143">Spravované záložky</translation>
 <translation id="8866481888320382733">Při analýze nastavení zásady došlo k chybě</translation>
 <translation id="6644283850729428850">Tato zásada se již nepoužívá.</translation>
+<translation id="1693754753824026215">Stránka na webu <ph name="SITE"/> říká:</translation>
+<translation id="4269787794583293679">(Žádné uživatelské jméno)</translation>
 <translation id="7988324688042446538">Záložky v PC</translation>
 <translation id="8488350697529856933">Platí pro</translation>
 <translation id="6165508094623778733">Další informace</translation>
@@ -184,8 +196,8 @@
 <translation id="2639739919103226564">Stav:</translation>
 <translation id="1832546148887467272">Přepnout na doménu <ph name="NEW_GOOGLE_HOST"/></translation>
 <translation id="5095208057601539847">Provincie</translation>
+<translation id="2581221116934462656">Chcete, aby prohlížeč <ph name="PRODUCT_NAME"/> příště pro stránky v jazyce <ph name="LANGUAGE_NAME"/> z tohoto webu nabízel překlad?</translation>
 <translation id="3934680773876859118">Načítání dokumentu PDF se nezdařilo.</translation>
-<translation id="1152021252151287493">Chybný ověřovací podpis.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="2721148159707890343">Požadavek byl úspěšný</translation>
 <translation id="2455981314101692989">U tohoto formuláře je na dané webové stránce vypnuto automatické vyplňování.</translation>

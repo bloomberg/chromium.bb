@@ -1,6 +1,4 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="gu">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="gu">
 <translation id="4820616160060340806">કમાન્ડ+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="8806053966018712535"><ph name="FOLDER_NAME"/> ફોલ્ડર</translation>
 <translation id="1871244248791675517">Ins</translation>
@@ -209,6 +207,7 @@
 <translation id="6907759265145635167"><ph name="QUANTITY"/> PB/s</translation>
 <translation id="2743387203779672305">ક્લિપબોર્ડ પર કૉપિ કરો</translation>
 <translation id="8371695176452482769">હવે બોલો</translation>
+<translation id="6129953537138746214">જગ્યા</translation>
 <translation id="1167268268675672572">લીટીની શરૂઆતમાં ખસેડો અને પસંદગી સંશોધિત કરો</translation>
 <translation id="6965382102122355670">ઓકે</translation>
 <translation id="7850320739366109486">ખલેલ પાડશો નહીં</translation>

@@ -1,6 +1,4 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="fi">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="fi">
 <translation id="4820616160060340806">Command + <ph name="KEY_COMBO_NAME"/></translation>
 <translation id="8806053966018712535">Kansio <ph name="FOLDER_NAME"/></translation>
 <translation id="1871244248791675517">Ins</translation>
@@ -209,6 +207,7 @@
 <translation id="6907759265145635167"><ph name="QUANTITY"/> Pt/s</translation>
 <translation id="2743387203779672305">Kopioi leikepöydälle</translation>
 <translation id="8371695176452482769">Puhu nyt</translation>
+<translation id="6129953537138746214">Välilyönti</translation>
 <translation id="1167268268675672572">Siirrä rivin alkuun ja muokkaa valintaa</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="7850320739366109486">Älä häiritse</translation>

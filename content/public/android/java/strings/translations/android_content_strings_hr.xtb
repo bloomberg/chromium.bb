@@ -1,6 +1,4 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="hr">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="hr">
 <translation id="2094750046714988961">Nije moguće pokrenuti profiler jer vanjska pohrana nije spremna</translation>
 <translation id="1256337885411059545">Nije moguće reprod. videozapis</translation>
 <translation id="2520230379124234395">Profiler se pokrenuo</translation>

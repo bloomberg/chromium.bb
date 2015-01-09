@@ -1,6 +1,5 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="da">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="da">
+<translation id="3233367171080043075">Du kan afslutte når som helst.</translation>
 <translation id="7606912958770842224">Aktivér fjernforbindelser</translation>
 <translation id="3785447812627779171">Chromoting-
 host</translation>
@@ -19,6 +18,7 @@ host</translation>
 <translation id="5070121137485264635">Fjernværten kræver, at du bekræftes over for et tredjepartswebsite. Du skal give Chrome Fjernskrivebord yderligere tilladelser til at få adgang til denne adresse, før du kan fortsætte:</translation>
 <translation id="2124408767156847088">Sikker adgang til dine computere fra din Android-enhed.</translation>
 <translation id="3194245623920924351">Chrome Fjernskrivebord</translation>
+<translation id="5537725057119320332">Cast</translation>
 <translation id="3649256019230929621">Minimer vinduet</translation>
 <translation id="4808503597364150972">Indtast din pinkode til <ph name="HOSTNAME"/>.</translation>
 <translation id="7672203038394118626">Fjernforbindelserne til denne computer er blevet deaktiveret.</translation>
@@ -26,6 +26,7 @@ host</translation>
 <translation id="4368630973089289038">Vil du gerne være med til at forbedre Chromoting? <ph name="LINK_BEGIN"/>Deltag i spørgeundersøgelsen.<ph name="LINK_END"/></translation>
 <translation id="332624996707057614">Rediger computerens navn</translation>
 <translation id="1996161829609978754">Chrome downloader installationsprogrammet Chromoting Host. Når overførslen er færdig, skal du køre installationsprogrammet, før du fortsætter.</translation>
+<translation id="222632161986885959">En deltager i dette Hangout har tilbudt at hjælpe med at styre din computer. Hvis du accepterer:</translation>
 <translation id="2046651113449445291">Følgende klienter er parret med denne computer og kan oprette forbindelse uden at angive en pinkode. Du kan altid trække denne tilladelse tilbage, enten for hver enkelt eller for alle klienter.</translation>
 <translation id="7658239707568436148">Annuller</translation>
 <translation id="7782471917492991422">Kontrollér indstillingerne for strømstyring på din computer, og sørg for, at den ikke er konfigureret til at gå i dvale, når den er inaktiv.</translation>
@@ -97,6 +98,8 @@ Du kan få flere oplysninger om privatliv i privatlivspolitikkerne for Google (h
 <translation id="2013884659108657024">Chrome downloader installationsprogrammet Chrome Remote Desktop Host. Når overførslen er færdig, skal du køre installationsprogrammet, før du fortsætter.</translation>
 <translation id="1742469581923031760">Opretter forbindelse...</translation>
 <translation id="8998327464021325874">Administration af host for Chrome Fjernskrivebord</translation>
+<translation id="7017806586333792422">Start optagelse</translation>
+<translation id="1619813076098775562">Lukket forbindelse til Cast-enheden.</translation>
 <translation id="6748108480210050150">Fra</translation>
 <translation id="3950820424414687140">Log ind</translation>
 <translation id="1291443878853470558">Du skal aktivere fjernforbindelserne, hvis du vil bruge Chromoting til at få adgang til denne computer.</translation>
@@ -107,11 +110,13 @@ Du kan få flere oplysninger om privatliv i privatlivspolitikkerne for Google (h
 <translation id="7401733114166276557">Chrome Fjernskrivebord</translation>
 <translation id="3362124771485993931">Indtast pinkoden igen</translation>
 <translation id="1760808606374294203">• Fejlrettelser til Android Lollipop.</translation>
+<translation id="5231421057630485350">Den person, der hjælper dig, vil kunne styre din mus og dit tastatur.</translation>
 <translation id="154040539590487450">Tjenesten til fjernadgang kunne ikke starte.</translation>
 <translation id="7948001860594368197">Valgmuligheder for skærm</translation>
 <translation id="8172070902751707422">Godkendelse mislykkedes. Log ind på Chrome Fjernskrivebord igen.</translation>
 <translation id="5254120496627797685">Hvis du forlader denne side, afsluttes din session med Chrome Fjernskrivebord.</translation>
 <translation id="173559734173571936">Hvis du vil bruge Chrome Fjernskrivebord, skal du give udvidet adgangstilladelse til din computer. Du skal kun gøre dette én gang.</translation>
+<translation id="712467900648340229">Der kunne ikke oprettes forbindelse til Cast-enheden.</translation>
 <translation id="9032136467203159543">Nogle komponenter, der kræves til Chromoting, mangler. Kontrollér, at du har den nyeste version, og prøv igen.</translation>
 <translation id="1342297293546459414">Få vist og kontrollér en delt computer.</translation>
 <translation id="1520828917794284345">Tilpas størrelse på skrivebord</translation>
@@ -147,6 +152,7 @@ Du kan få flere oplysninger om privatliv i privatlivspolitikkerne for Google (h
 <translation id="2699970397166997657">Chromoting</translation>
 <translation id="4812684235631257312">Host</translation>
 <translation id="6178645564515549384">Indbygget beskedhost til ekstern hjælp</translation>
+<translation id="1738759452976856405">Stop optagelse</translation>
 <translation id="897805526397249209">Hvis du vil aktivere fjernforbindelser til en anden computer, skal du installere Chromoting på den pågældende computer og klikke på &quot;<ph name="BUTTON_NAME"/>&quot;.</translation>
 <translation id="1704090719919187045">Præferencer for Chromoting-host</translation>
 <translation id="809687642899217504">Mine computere</translation>
@@ -187,6 +193,7 @@ Fjernskrivebord</translation>
 <translation id="4703799847237267011">Din session med Chromoting er afsluttet.</translation>
 <translation id="8178433417677596899">Skærmdeling med funktionen bruger-til-bruger – perfekt til ekstern teknisk support.</translation>
 <translation id="652218476070540101">Pinkoden for denne computer opdateres…</translation>
+<translation id="951991426597076286">Afvis</translation>
 <translation id="4563926062592110512">Frakoblet klient: <ph name="CLIENT_USERNAME"/>.</translation>
 <translation id="5308380583665731573">Få forbindelse</translation>
 <translation id="7319983568955948908">Stop deling</translation>

@@ -1,6 +1,4 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="en-GB">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="en-GB">
 <translation id="2286950485307333924">You're now signed in to Chrome</translation>
 <translation id="8000275528373650868">Google Chrome requires Windows Vista or Windows XP with SP2 or higher.</translation>
 <translation id="1302523850133262269">Please wait while Chrome installs the latest system updates.</translation>
@@ -34,7 +32,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="110877069173485804">This is your Chrome</translation>
 <translation id="8406086379114794905">Help make Chrome better</translation>
 <translation id="2896252579017640304">Launch Chrome apps</translation>
-<translation id="4121281502786319101">Chrome can't establish a private connection to &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;. This is probably because your device's date is set incorrectly. (Your device has the date set to <ph name="DATE"/>.) You should refresh this page after <ph name="BEGIN_LINK"/>you update your device's date and time<ph name="END_LINK"/>.</translation>
 <translation id="5620765574781326016">Learn about topics on websites without leaving the page.</translation>
 <translation id="2721687379934343312">On Mac, passwords are saved to your Keychain and may be accessed or synced by other Chrome users sharing this OS X account.</translation>
 <translation id="683440813066116847">Inbound rule for Google Chrome Canary to allow mDNS traffic.</translation>
@@ -74,8 +71,8 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="4513711165509885787">Your billing details have been saved in Chrome.</translation>
 <translation id="5253588388888612165">If you share this computer with <ph name="PROFILE_NAME"/>, add yourself to Chrome to browse separately. Otherwise disconnect their Google Account.</translation>
 <translation id="7098166902387133879">Google Chrome is using your microphone.</translation>
+<translation id="2596415276201385844">To establish a secure connection, your clock needs to be set correctly. This is because the certificates that websites use to identify themselves are only valid for specific periods of time. Since your device's clock is incorrect, Chrome cannot verify these certificates.</translation>
 <translation id="4053720452172726777">Customise and control Google Chrome</translation>
-<translation id="4315766637075282876">Chrome will store this in your |Google saved passwords| and autofill it for you so that you don't have to remember it yourself.</translation>
 <translation id="5298539825145851748">Remove from Chrome</translation>
 <translation id="3197823471738295152">Your device is up to date.</translation>
 <translation id="8286862437124483331">Google Chrome is trying to show passwords. Type your Windows password to allow this.</translation>
@@ -91,8 +88,8 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="345168553362876363">Google Chrome App Launcher is a standalone platform for Chrome apps.</translation>
 <translation id="225614027745146050">Welcome</translation>
 <translation id="7473891865547856676">No Thanks</translation>
-<translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3149510190863420837">Chrome Apps</translation>
+<translation id="8851136666856101339">main</translation>
 <translation id="7473136999113284234">Chrome updates automatically so that you always have the freshest version.</translation>
 <translation id="7084448929020576097"><ph name="FILE_NAME"/> is malicious and Chrome has blocked it.</translation>
 <translation id="6368958679917195344">Chrome OS is made possible by additional <ph name="BEGIN_LINK_CROS_OSS"/>open-source software<ph name="END_LINK_CROS_OSS"/>.</translation>
@@ -100,9 +97,8 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="8823341990149967727">Chrome is Out of Date</translation>
 <translation id="4424024547088906515">This server could not prove that it is <ph name="DOMAIN"/>; its security certificate is not trusted by Chrome. This may be caused by a misconfiguration or an attacker intercepting your connection.</translation>
-<translation id="6722021951952731012">To establish a secure network connection, your computer needs a correct clock. This is because the certificates that websites use to identify themselves when establishing a secure connection are only valid for a specific time period. Since your computer's clock is wrong, Chrome cannot properly check certificates.</translation>
 <translation id="473775607612524610">Update</translation>
-<translation id="1195935957447623558">Google Chrome didn't shut down correctly. To reopen the pages that you had open, click Restore.</translation>
+<translation id="5618769508111928343"><ph name="SITE"/> normally uses encryption to protect your information. When Chrome tried to connect to <ph name="SITE"/> this time, the website sent back unusual and incorrect credentials. Either an attacker is trying to pretend to be <ph name="SITE"/>, or a Wi-Fi sign-in screen has interrupted the connection. Your information is still secure because Chrome stopped the connection before any data was exchanged.</translation>
 <translation id="2576431527583832481">Chrome just got better! A new version is available.</translation>
 <translation id="4633000520311261472">To make Chrome safer, we disabled some extensions that aren't listed in the <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> and may have been added without your knowledge.</translation>
 <translation id="3656661827369545115">Launch Chromium automatically when your computer starts</translation>
@@ -140,6 +136,14 @@ Signing in anyway will merge Chrome information like bookmarks, history and othe
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="5563479599352954471">Search with one touch</translation>
 <translation id="2664962310688259219">Chrome OS open source licences</translation>
+<translation id="6341737370356890233">Go to
+          the Chrome menu &gt;
+          <ph name="SETTINGS_TITLE"/>
+          &gt;
+          <ph name="ADVANCED_TITLE"/>
+          and deselect &quot;<ph name="NO_PREFETCH_DESCRIPTION"/>&quot;.
+          If this does not resolve the issue, we recommend selecting this option
+          again for improved performance.</translation>
 <translation id="2290014774651636340">Google API keys are missing. Some functionality of Google Chrome will be disabled.</translation>
 <translation id="2397416548179033562">Show Chrome menu</translation>
 <translation id="4794050651896644714">Save details in Chrome</translation>
@@ -147,7 +151,6 @@ Signing in anyway will merge Chrome information like bookmarks, history and othe
 <translation id="5855036575689098185">Software running on your computer is incompatible with Google Chrome.</translation>
 <translation id="7164397146364144019">You can help make Chrome safer and easier to use by automatically reporting details of possible security incidents to Google.</translation>
 <translation id="8008534537613507642">Reinstall Chrome</translation>
-<translation id="2044287590254833138">Google Chrome Toolbar</translation>
 <translation id="8862326446509486874">You do not have appropriate rights for system-level installation. Try running the installer again as Administrator.</translation>
 <translation id="2874156562296220396">Google Chrome is made possible by the <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> open source project and other <ph name="BEGIN_LINK_OSS"/>open source software<ph name="END_LINK_OSS"/>.</translation>
 <translation id="7191567847629796517">Google Chrome OS does not support launching an external application to handle <ph name="SCHEME"/> links. The link requested is <ph name="PROTOLINK"/>.</translation>
@@ -159,6 +162,7 @@ Signing in anyway will merge Chrome information like bookmarks, history and othe
 <translation id="2290095356545025170">Are you sure you want to uninstall Google Chrome?</translation>
 <translation id="7062966102157262887">A download is currently in progress. Do you want to exit Google Chrome and cancel the download?</translation>
 <translation id="4273752058983339720">Google Chrome is configured to automatically launch when you start your computer.</translation>
+<translation id="2316129865977710310">No, thank you</translation>
 <translation id="415994390253732730">Chrome Behaving Strangely?</translation>
 <translation id="1104959162601287462">About the &amp;Chrome OS</translation>
 <translation id="5328989068199000832">Google Chrome Binaries</translation>
@@ -169,21 +173,14 @@ Signing in anyway will merge Chrome information like bookmarks, history and othe
 <translation id="8568392309447938879">You need to be signed in to Chrome to use apps. This allows Chrome to sync your apps, bookmarks, history, passwords and other settings across devices.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome lets you click a phone number on the web and call it with Skype!</translation>
-<translation id="2705287621619748344">Chrome can't establish a private connection to &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;. This is probably because your computer's date is set incorrectly (Your computer has the date set to <ph name="DATE"/>.) You should refresh this page after <ph name="BEGIN_LINK"/>you update your computer's date and time<ph name="END_LINK"/>.</translation>
 <translation id="5788838254726722945">Uninstall Google Chrome App Launcher</translation>
 <translation id="3612333635265770873">A module with the same name has been known to conflict with Google Chrome.</translation>
 <translation id="2665296953892887393">Help make Google Chrome better by sending crash reports and <ph name="UMA_LINK"/> to Google</translation>
 <translation id="7761834446675418963">Click your name to open Chrome and start browsing.</translation>
 <translation id="2669824781555328029"><ph name="FILE_NAME"/> may harm your browsing experience, so Chrome has blocked it.</translation>
-<translation id="5875635642195358109">Go to
-        the Chrome menu &gt;
-        <ph name="SETTINGS_TITLE"/>
-        &gt;
-        <ph name="ADVANCED_TITLE"/>
-        and deselect &quot;<ph name="NO_PREFETCH_DESCRIPTION"/>.&quot;
-        If this does not resolve the issue, we recommend selecting this option
-        again for improved performance.</translation>
 <translation id="6235018212288296708">Inbound rule for Google Chrome to allow mDNS traffic.</translation>
+<translation id="7984945080620862648">You cannot visit <ph name="SITE"/> at the moment because the website sent scrambled credentials that Chrome cannot process. Network errors and attacks are usually temporary, so this page will probably work later.</translation>
+<translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3281987435599047980">sends a word and its surrounding context to Google Search, returning definitions, pictures, search results and other details.</translation>
 <translation id="61852838583753520">Update the &amp;Chrome OS</translation>
 <translation id="5028489144783860647">Google Chrome could not sync your data. Please update your Sync passphrase.</translation>
@@ -194,7 +191,6 @@ Signing in anyway will merge Chrome information like bookmarks, history and othe
 <translation id="7890208801193284374">If you share a computer, friends and family can browse separately and set up Chrome just the way they want.</translation>
 <translation id="7161904924553537242">Welcome to Google Chrome</translation>
 <translation id="4147555960264124640">You are signing in with a managed account and giving its administrator control over your Google Chrome profile. Your Chrome data, such as your apps, bookmarks, history, passwords and other settings will become permanently tied to <ph name="USER_NAME"/>. You will be able to delete this data via the Google Accounts Dashboard, but you will not be able to associate this data with another account. <ph name="LEARN_MORE"/></translation>
-<translation id="4568169453579447500">Google Chrome cannot be updated due to inconsistent Google Update Group Policy settings. Use the Group Policy Editor to set the update policy override for the Google Chrome Binaries application and try again; see http://goo.gl/uJ9gV for details.</translation>
 <translation id="1348153800635493797">You must upgrade Chrome to use Google Wallet [<ph name="ERROR_CODE"/>].</translation>
 <translation id="8187289872471304532">Go to
           Applications &gt; System Preferences &gt; Network &gt; Advanced &gt; Proxies
@@ -202,6 +198,10 @@ Signing in anyway will merge Chrome information like bookmarks, history and othe
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="870251953148363156">Update &amp;Google Chrome</translation>
 <translation id="130631256467250065">Your changes will take effect the next time that you restart your device.</translation>
+<translation id="1546593779121993896">Go to the Chrome menu &gt; Settings &gt; (Advanced) Privacy
+          and disable &quot;Network action predictions&quot;.
+          If this does not resolve the issue, we recommend re-enabling this option
+          again for improved performance.</translation>
 <translation id="163860049029591106">Get Started with Chrome OS</translation>
 <translation id="1587223624401073077">Google Chrome is using your camera.</translation>
 <translation id="1399397803214730675">This computer already has a more recent version of Google Chrome. If the software is not working, please uninstall Google Chrome and try again.</translation>
@@ -256,6 +256,7 @@ Signing in anyway will merge Chrome information like bookmarks, history and othe
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="1877026089748256423">Chrome is out of date</translation>
 <translation id="7592736734348559088">Google Chrome could not sync your data because your account sign-in details are out of date.</translation>
+<translation id="7810280330588098283">Chrome will store this in your |Google saved passwords| and remember it the next time you need it.</translation>
 <translation id="6991142834212251086">Link my Chrome data to this account</translation>
 <translation id="3451115285585441894">Adding to Chrome...</translation>
 <translation id="3047079729301751317">Disconnecting <ph name="USERNAME"/> will clear your history, bookmarks, settings and other Chrome data stored on this device. Data stored in your Google Account will not be cleared and can be managed on <ph name="GOOGLE_DASHBOARD_LINK"/>Google Dashboard<ph name="END_GOOGLE_DASHBOARD_LINK"/>.</translation>
@@ -267,12 +268,13 @@ Signing in anyway will merge Chrome information like bookmarks, history and othe
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="2334084861041072223">Copyright <ph name="YEAR"/> Google Inc. All rights reserved.</translation>
 <translation id="1698376642261615901">Google Chrome is a web browser that runs web pages and applications with lightning speed. It's fast, stable and easy to use. Browse the web more safely with malware and phishing protection built into Google Chrome.</translation>
+<translation id="4523402702161492148">Google Chrome cannot be updated due to inconsistent Google Update Group Policy settings. Use the Group Policy Editor to set the update policy override for the Google Chrome Binaries application and try again; see https://goo.gl/uJ9gV for details.</translation>
 <translation id="853189717709780425">You are signing in with a managed account and giving its administrator control over your Google Chrome profile. Your Chrome data, such as your apps, bookmarks, history, passwords, and other settings will become permanently tied to <ph name="USER_NAME"/>. You will be able to delete this data via the Google Accounts Dashboard, but you will not be able to associate this data with another account.</translation>
 <translation id="6049075767726609708">An administrator has installed Google Chrome on this system, and it is available for all users. The system-level Google Chrome will replace your user-level installation now.</translation>
 <translation id="1818142563254268765">Chrome could not update itself to the latest version, so you are missing out on amazing new features and security fixes. You need to update Chrome.</translation>
-<translation id="4821676311965554623">To establish a secure network connection, your device needs a correct clock. This is because the certificates that websites use to identify themselves when establishing a secure connection are only valid for a specific time period. Since your device's clock is wrong, Chrome cannot properly check certificates.</translation>
 <translation id="7408085963519505752">Chrome OS terms</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
+<translation id="1016765312371154165">Chrome didn't shut down correctly.</translation>
 <translation id="3836351788193713666">Nearly up to date! Relaunch Google Chrome to finish updating.</translation>
 <translation id="884296878221830158">It also controls what page is shown when you start Chrome or click the Home button.</translation>
 <translation id="7106741999175697885">Task Manager - Google Chrome</translation>

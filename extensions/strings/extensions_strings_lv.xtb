@@ -1,12 +1,10 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="lv">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="lv">
+<translation id="4542520061254486227">Lasīt jūsu datus vietnēs <ph name="WEBSITE_1"/> un <ph name="WEBSITE_2"/></translation>
 <translation id="3624204664103857160">Nevarēja ielādēt palaišanas programmas lapu “<ph name="PAGE"/>”.</translation>
 <translation id="8804398419035066391">Izveidot savienojumu ar sadarbības vietnēm</translation>
 <translation id="7809034755304591547">Administrators bloķēja paplašinājumu <ph name="EXTENSION_NAME"/> (paplašinājuma ID “<ph name="EXTENSION_ID"/>”).</translation>
 <translation id="1005274289863221750">Izmantot jūsu mikrofonu un videokameru</translation>
 <translation id="2857834222104759979">Manifesta fails nav derīgs.</translation>
-<translation id="3828484226910527078">Piekļūt USB ierīcei</translation>
 <translation id="6384275966486438344">Mainiet savus meklēšanas iestatījumus uz šiem: <ph name="SEARCH_HOST"/></translation>
 <translation id="1445572445564823378">Šis paplašinājums palēnina <ph name="PRODUCT_NAME"/> darbību. Atspējojiet to, lai atjaunotu <ph name="PRODUCT_NAME"/> veiktspēju.</translation>
 <translation id="1033780634303702874">Piekļūt jūsu seriālajām ierīcēm</translation>
@@ -15,30 +13,30 @@
 <translation id="677806580227005219">MIME apdarinātājs: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">Piekļūt informācijai par Bluetooth ierīcēm, kuras savienotas pārī ar jūsu sistēmu, un atrast tuvumā esošas Bluetooth ierīces.</translation>
 <translation id="5911798608827489036">Apmainīties datiem ar jebkuru datoru lokālajā tīklā vai internetā</translation>
-<translation id="4719685943208231314">Piekļūt USB ierīce, ko ražojis <ph name="VENDOR_NAME"/></translation>
+<translation id="8284835137979141223"><ph name="PRODUCT_NAME"/> no <ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">Nevarēja ielādēt fona skriptu <ph name="BACKGROUND_SCRIPT"/>.</translation>
 <translation id="9131487537093447019">Sūtīt ziņojumus uz Bluetooth ierīcēm un saņemt ziņojumus no tām.</translation>
-<translation id="8198425243160395623">Piekļūt jūsu USB ierīcēm</translation>
+<translation id="5678955352098267522">Lasīt jūsu datus vietnē <ph name="WEBSITE_1"/></translation>
 <translation id="8597109877291678953">Apmainīties datiem ar datoru <ph name="HOSTNAME"/></translation>
 <translation id="5456409301717116725">Šis paplašinājums ietver atslēgas failu <ph name="KEY_PATH"/>. Iespējams, jūs to nevēlaties izmantot.</translation>
+<translation id="7257666756905341374">Lasīt datus, ko kopējat un ielīmējat</translation>
 <translation id="2350172092385603347">Lokalizācija ir lietota, tomēr manifestā nav norādīta default_locale.</translation>
 <translation id="3759933321830434300">Bloķēt tīmekļa lapu daļas</translation>
-<translation id="8058376558882514200">Piekļūt USB ierīcei <ph name="PRODUCT_NAME"/>, ko ražojis <ph name="VENDOR_NAME"/></translation>
 <translation id="149347756975725155">Nevarēja ielādēt paplašinājuma ikonu “<ph name="ICON"/>”.</translation>
 <translation id="8825366169884721447">Šis paplašinājums nevarēja mainīt tīkla pieprasījuma galveni “<ph name="HEADER_NAME"/>”, jo izmaiņas radīja konfliktu ar citu paplašinājumu (<ph name="EXTENSION_NAME"/>).</translation>
+<translation id="7495493006406536234">Produkts <ph name="PRODUCT_ID"/></translation>
 <translation id="4233778200880751280">Nevarēja ielādēt lapu “Par” (<ph name="ABOUT_PAGE"/>).</translation>
 <translation id="388442998277590542">Nevarēja ielādēt opciju lapu “<ph name="OPTIONS_PAGE"/>”.</translation>
 <translation id="6344170822609224263">Piekļūt tīkla savienojumu sarakstam</translation>
 <translation id="2616366145935564096">Lasīt un mainīt jūsu datus vietnē <ph name="WEBSITE_1"/></translation>
 <translation id="2518849872271000461">Apmainīties datiem ar šādiem datoriem: <ph name="HOSTNAMES"/></translation>
-<translation id="1389014510128217152">- <ph name="WEBSITE_1"/></translation>
+<translation id="4444304522807523469">Piekļūt dokumentu skeneriem, kas pievienoti, izmantojot USB vai lokālajā tīklā</translation>
 <translation id="6408118934673775994">Lasīt un mainīt jūsu datus vietnēs <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> un <ph name="WEBSITE_3"/></translation>
 <translation id="961805664415579088">Apmainīties datiem ar jebkuru datoru domēnā <ph name="DOMAIN"/></translation>
 <translation id="3502064055007747926">Piekļūt jūsu ievadierīcēm</translation>
 <translation id="8670869118777164560">Šis paplašinājums nevarēja novirzīt tīkla pieprasījumu uz galamērķi <ph name="ATTEMPTED_REDIRECT_DESTINATION"/>, jo cits paplašinājums (<ph name="EXTENSION_NAME"/>) to novirzīja uz šādu galamērķi: <ph name="ACTUAL_REDIRECT_DESTINATION"/>.</translation>
 <translation id="6840444547062817500">Šis paplašinājums pārāk bieži veica atkārtotu ielādi.</translation>
 <translation id="8047248493720652249">Šim paplašinājumam neizdevās piešķirt nosaukumu lejupielādei “<ph name="ATTEMPTED_FILENAME"/>”, jo cits paplašinājums (<ph name="EXTENSION_NAME"/>) noteica citu faila nosaukumu “<ph name="ACTUAL_FILENAME"/>”.</translation>
-<translation id="2732710576072980201">Produkts <ph name="PRODUCT_ID"/>, ko piedāvā <ph name="VENDOR_NAME"/> (sērijas numurs: <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="4968399700653439437">Apmainīties datiem ar jebkuru datoru šādos domēnos: <ph name="DOMAINS"/></translation>
 <translation id="5026754133087629784">Webview: <ph name="WEBVIEW_TAG_NAME"/></translation>
 <translation id="8284279544186306258">visās <ph name="WEBSITE_1"/> vietnēs</translation>
@@ -57,8 +55,12 @@
 <translation id="7217838517480956708">Šīs ierīces administrators uzskata, ka paplašinājumam <ph name="EXTENSION_NAME"/> ir jābūt instalētam. To nevar noņemt vai pārveidot.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME"/>, ko piedāvā <ph name="VENDOR_NAME"/> (sērijas numurs: <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="7154130902455071009">Mainiet savu sākumlapu uz šo: <ph name="START_PAGE"/></translation>
-<translation id="6758203075041033901">Produkts <ph name="PRODUCT_ID"/>, ko piedāvā izplatītājs <ph name="VENDOR_ID"/> (sērijas numurs: <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="6698810901424468597">Lasīt un mainīt jūsu datus vietnēs <ph name="WEBSITE_1"/> un <ph name="WEBSITE_2"/></translation>
+<translation id="5544884907028850012">Pārdevējs <ph name="VENDOR_ID"/></translation>
+<translation id="2048182445208425546">Piekļūt jūsu tīkla datplūsmai</translation>
+<translation id="5972529113578162692">Šīs ierīces administrators pieprasa, lai būtu instalēts paplašinājums <ph name="EXTENSION_NAME"/>. To nevar atinstalēt.</translation>
+<translation id="7131040479572660648">Lasīt jūsu datus vietnēs <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> un <ph name="WEBSITE_3"/></translation>
 <translation id="1803557475693955505">Nevarēja ielādēt fona lapu “<ph name="BACKGROUND_PAGE"/>”.</translation>
 <translation id="7972881773422714442">Iespējas: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
+<translation id="344630545793878684">Lasīt jūsu datus vairākās vietnēs</translation>
 </translationbundle>

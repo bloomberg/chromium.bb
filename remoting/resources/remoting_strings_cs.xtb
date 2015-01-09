@@ -1,6 +1,5 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="cs">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="cs">
+<translation id="3233367171080043075">Asistenci lze kdykoli ukončit.</translation>
 <translation id="7606912958770842224">Povolit vzdálená připojení</translation>
 <translation id="3785447812627779171">Hostitel
 funkce
@@ -20,6 +19,7 @@ Chromoting</translation>
 <translation id="5070121137485264635">Vzdálený hostitelský server vyžaduje, abyste provedli ověření na stránce třetí strany. Aby bylo možné pokračovat, je nutné udělit Vzdálené ploše Chrome dodatečná oprávnění k přístupu na tuto adresu:</translation>
 <translation id="2124408767156847088">Bezpečně ze svého zařízení Android přistupujte k počítačům.</translation>
 <translation id="3194245623920924351">Vzdálená plocha Chrome</translation>
+<translation id="5537725057119320332">Odeslat</translation>
 <translation id="3649256019230929621">Minimalizovat okno</translation>
 <translation id="4808503597364150972">Zadejte kód PIN pro počítač <ph name="HOSTNAME"/>.</translation>
 <translation id="7672203038394118626">Vzdálená připojení k tomuto počítači byla zakázána.</translation>
@@ -27,6 +27,7 @@ Chromoting</translation>
 <translation id="4368630973089289038">Chcete pomoci vylepšit funkci Chromoting? <ph name="LINK_BEGIN"/>Vyplňte dotazník.<ph name="LINK_END"/></translation>
 <translation id="332624996707057614">Upravit název počítače</translation>
 <translation id="1996161829609978754">Chrome stahuje instalační program hostitele funkce Chromoting. Po stažení instalační program spusťte a poté pokračujte.</translation>
+<translation id="222632161986885959">Účastník tohoto Hangoutu vám nabídl, že vám pomůže a bude ovládat váš počítač. Pokud přijmete:</translation>
 <translation id="2046651113449445291">Následující klienti byli spárováni s tímto počítačem a mohou se připojit bez zadávání kódu PIN. Toto oprávnění lze kdykoli zrušit (buď u jednotlivých, nebo u všech klientů).</translation>
 <translation id="7658239707568436148">Zrušit</translation>
 <translation id="7782471917492991422">Zkontrolujte prosím nastavení řízení spotřeby svého počítače a ujistěte se, zda není nastaven na přechod do režimu spánku při nečinnosti.</translation>
@@ -98,6 +99,8 @@ Informace ohledně ochrany soukromí naleznete v zásadách ochrany soukromí sp
 <translation id="2013884659108657024">Chrome stahuje instalační program hostitele Vzdálené plochy Chrome. Po stažení instalační program spusťte a poté pokračujte.</translation>
 <translation id="1742469581923031760">Připojování...</translation>
 <translation id="8998327464021325874">Hostitelský kontroler Vzdálené plochy Chrome</translation>
+<translation id="7017806586333792422">Zahájit nahrávání</translation>
+<translation id="1619813076098775562">Připojení k zařízení Cast bylo ukončeno.</translation>
 <translation id="6748108480210050150">Klient</translation>
 <translation id="3950820424414687140">Přihlaste se</translation>
 <translation id="1291443878853470558">Chcete-li se k tomuto počítači připojit prostřednictvím funkce Chromoting, je třeba povolit vzdálená připojení.</translation>
@@ -108,11 +111,13 @@ Informace ohledně ochrany soukromí naleznete v zásadách ochrany soukromí sp
 <translation id="7401733114166276557">Vzdálená plocha Chrome</translation>
 <translation id="3362124771485993931">Ověření kódu PIN</translation>
 <translation id="1760808606374294203">• Opravy pro platformu Android Lollipop.</translation>
+<translation id="5231421057630485350">Osoba, která vám pomáhá, bude moci ovládat vaši myš a klávesnici.</translation>
 <translation id="154040539590487450">Spuštění služby pro vzdálený přístup se nezdařilo.</translation>
 <translation id="7948001860594368197">Možnosti obrazovky</translation>
 <translation id="8172070902751707422">Ověření selhalo. Přihlaste se prosím ke Vzdálené ploše Chrome znovu.</translation>
 <translation id="5254120496627797685">Pokud opustíte tuto stránku, relace Vzdálené plochy Chrome bude ukončena.</translation>
 <translation id="173559734173571936">Chcete-li používat Vzdálenou plochu Chrome, je třeba udělit rozšířená oprávnění k přístupu do vašeho počítače. Tato oprávnění je třeba udělit pouze jednou.</translation>
+<translation id="712467900648340229">Připojení k zařízení Cast se nezdařilo.</translation>
 <translation id="9032136467203159543">Některé součásti potřebné pro Chromoting chybí. Zkontrolujte, zda je nainstalována nejnovější verze, a zkuste to znovu.</translation>
 <translation id="1342297293546459414">Umožňuje zobrazit a ovládat sdílený počítač.</translation>
 <translation id="1520828917794284345">Přizpůsobit velikost plochy obrazovce</translation>
@@ -148,6 +153,7 @@ Informace ohledně ochrany soukromí naleznete v zásadách ochrany soukromí sp
 <translation id="2699970397166997657">Chromoting</translation>
 <translation id="4812684235631257312">Hostitel</translation>
 <translation id="6178645564515549384">Nativní hostitelská aplikace pro komunikaci při vzdálené pomoci</translation>
+<translation id="1738759452976856405">Ukončit záznam</translation>
 <translation id="897805526397249209">Chcete-li umožnit vzdálené připojení k jinému počítači, nainstalujte do něj aplikaci Chromoting a poté klikněte na tlačítko <ph name="BUTTON_NAME"/>.</translation>
 <translation id="1704090719919187045">Nastavení hostitele funkce Chromoting</translation>
 <translation id="809687642899217504">Mé počítače</translation>
@@ -188,6 +194,7 @@ plochy Chrome</translation>
 <translation id="4703799847237267011">Relace funkce Chromoting byla ukončena.</translation>
 <translation id="8178433417677596899">Sdílení obrazovky mezi uživateli je ideální pro vzdálenou technickou podporu.</translation>
 <translation id="652218476070540101">Aktualizace kódu PIN pro tento počítač…</translation>
+<translation id="951991426597076286">Odmítnout</translation>
 <translation id="4563926062592110512">Klient odpojen: <ph name="CLIENT_USERNAME"/>.</translation>
 <translation id="5308380583665731573">Připojení</translation>
 <translation id="7319983568955948908">Ukončit sdílení</translation>

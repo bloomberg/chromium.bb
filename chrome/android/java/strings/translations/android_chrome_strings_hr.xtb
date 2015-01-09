@@ -1,13 +1,13 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="hr">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="hr">
 <translation id="8588878054171169263">Spremi sliku</translation>
 <translation id="7998918019931843664">Ponovno otvaranje zatvorene kartice</translation>
 <translation id="4996978546172906250">Dijeli putem</translation>
+<translation id="6292937202013477045">Netko možda pokušava ukrasti vaše podatke s web-lokacije <ph name="DOMAIN_NAME"/> (na primjer, fotografije, zaporke, poruke i kreditne kartice).</translation>
 <translation id="346339498574870680">Kopiraj URL slike</translation>
 <translation id="6657585470893396449">Zaporka</translation>
 <translation id="5578795271662203820">Potraži sliku na usluzi <ph name="SEARCH_ENGINE"/></translation>
 <translation id="6831043979455480757">Prevedi</translation>
+<translation id="869891660844655955">Datum isteka</translation>
 <translation id="7644305409888602715">Prevođenje stranice na <ph name="SOURCE_LANGUAGE"/>...</translation>
 <translation id="7015922086425404465">Preuzmite aplikaciju iz trgovine Google Play: <ph name="APP_ACTION"/></translation>
 <translation id="1491151370853475546">Ponovo učitaj ovu stranicu</translation>
@@ -28,17 +28,24 @@ Prijavljujete se svojim upravljanim računom i njenom administratoru dajete nadz
 <translation id="1966710179511230534">Ažurirajte pojedinosti prijave.</translation>
 <translation id="1623104350909869708">Spriječi da ova stranica stvori dodatne dijaloške okvire</translation>
 <translation id="1426410128494586442">Da</translation>
+<translation id="5595485650161345191">Uređivanje adrese</translation>
 <translation id="8218346974737627104">Potvrda prijave</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE"/>, kartica</translation>
 <translation id="624558823898732418">Jezik prijevoda: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="8872441722924401214">Odabir certifikata za autentifikaciju</translation>
 <translation id="7791543448312431591">Dodaj</translation>
+<translation id="8719023831149562936">Trenutačnu karticu nije moguće emitirati</translation>
+<translation id="4378154925671717803">Telefon</translation>
 <translation id="3896036286668839683">Preglednik certifikata</translation>
 <translation id="5039804452771397117">Dopusti</translation>
 <translation id="8583805026567836021">Brisanje podataka računa</translation>
+<translation id="5860033963881614850">Isključeno</translation>
 <translation id="4250680216510889253">Ne</translation>
 <translation id="8073388330009372546">Otvori sliku u novoj kartici</translation>
 <translation id="552553974213252141">Je li tekst ispravno izdvojen?</translation>
+<translation id="5317780077021120954">Spremi</translation>
+<translation id="2718352093833049315">Samo na Wi-Fi-ju</translation>
+<translation id="7029809446516969842">Zaporke</translation>
 <translation id="2414886740292270097">Tamno</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="8730621377337864115">Gotovo</translation>
@@ -48,31 +55,43 @@ Prijavljujete se svojim upravljanim računom i njenom administratoru dajete nadz
 <translation id="1807246157184219062">Svijetlo</translation>
 <translation id="7053983685419859001">Blokiraj</translation>
 <translation id="8374821112118309944">Morate ažurirati TalkBack na najnoviju verziju.</translation>
+<translation id="8481940801237642152">Veza s tom web-lokacijom privatna je, ali bi netko na mreži mogao izmijeniti izgled stranice.</translation>
 <translation id="2593272815202181319">Ravnomjerno raspoređeno</translation>
+<translation id="4807098396393229769">Ime na kartici</translation>
 <translation id="656628257199996201">Uvijek prevodi <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="2748463065602559597">Gledate sigurnu stranicu Google Chrome.</translation>
 <translation id="9137013805542155359">Prikaži original</translation>
 <translation id="4543661749405994812">Kopiraj e-adresu</translation>
+<translation id="5659593005791499971">E-pošta</translation>
+<translation id="8428213095426709021">Postavke</translation>
 <translation id="5684874026226664614">Ups. Stranicu nije bilo moguće prevesti.</translation>
+<translation id="10614374240317010">Nikad spremljeno</translation>
+<translation id="2903493209154104877">Adrese</translation>
 <translation id="8503813439785031346">Korisničko ime</translation>
 <translation id="2532336938189706096">Web-prikaz</translation>
+<translation id="6571070086367343653">Uređivanje kreditne kartice</translation>
+<translation id="7080851568148064063">Dodaj na početni zaslon</translation>
 <translation id="4619298195800598081">Izvornik na novoj kartici</translation>
 <translation id="4002066346123236978">Naslov</translation>
 <translation id="3254409185687681395">Označi ovu stranicu</translation>
 <translation id="907015151729920253">Pametna kartica</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="3063601790762993062">Spremi videozapis</translation>
+<translation id="8106211421800660735">Broj kreditne kartice</translation>
 <translation id="6042308850641462728">Više</translation>
 <translation id="7267430310003164111">Pitanje o preuzimanju aplikacije iz Trgovine Google Play. Naziv aplikacije: <ph name="APP_NAME"/>. Prosječna ocjena aplikacije: <ph name="APP_RATING"/>.</translation>
 <translation id="4148957013307229264">Instaliranje...</translation>
 <translation id="3992315671621218278">Spremi vezu</translation>
-<translation id="8034522405403831421">Jezik ove stranice jest <ph name="SOURCE_LANGUAGE"/>. Želite li je prevesti na <ph name="TARGET_LANGUAGE"/>?</translation>
+<translation id="2476578072172137802">Postavke web-lokacije</translation>
 <translation id="4195643157523330669">Otvori u novoj kartici</translation>
 <translation id="651048280540227067">Odbacivanje izbornika</translation>
 <translation id="3089395242580810162">Otvori na kartici Anonimno</translation>
+<translation id="6981982820502123353">Pristupačnost</translation>
 <translation id="8725066075913043281">Pokušajte ponovo</translation>
 <translation id="8909135823018751308">Dijeljenje…</translation>
+<translation id="654446541061731451">Odaberite karticu za emitiranje</translation>
 <translation id="4269820728363426813">Kopiraj adresu veze</translation>
+<translation id="8261506727792406068">Izbriši</translation>
 <translation id="4510973599275542560">Ne učitavaj ponovo</translation>
 <translation id="1206892813135768548">Kopiraj tekst veze</translation>
 <translation id="9154176715500758432">Ostani na ovoj stranici</translation>
@@ -81,22 +100,32 @@ Prijavljujete se svojim upravljanim računom i njenom administratoru dajete nadz
 <translation id="6671495933530132209">Kopiraj sliku</translation>
 <translation id="8209050860603202033">Otvori sliku</translation>
 <translation id="2501278716633472235">Natrag</translation>
+<translation id="8941248009481596111">Veza s web-lokacijom privatna je.</translation>
 <translation id="1285320974508926690">Nikad nemoj prevoditi ovu web-lokaciju</translation>
 <translation id="5164482624172255778">Želite li da Google Chrome sljedeći put ponudi prijevod stranica s ove web-lokacije za <ph name="LANGUAGE"/> jezik?</translation>
 <translation id="8528538445849828817">Jezik stranice: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="4881695831933465202">Otvori</translation>
 <translation id="6512448926095770873">Zatvori ovu stranicu</translation>
+<translation id="5565871407246142825">Kreditne kartice</translation>
 <translation id="7947953824732555851">Prihv. i prijavi se</translation>
+<translation id="2612676031748830579">Broj kartice</translation>
 <translation id="6333140779060797560">Dijeljenje putem aplikacije <ph name="APPLICATION"/></translation>
 <translation id="6040143037577758943">Zatvori</translation>
+<translation id="2888126860611144412">O Chromeu</translation>
+<translation id="5138299137310274655">Jezik ove stranice je <ph name="SOURCE_LANGUAGE"/>. Želite li je prevesti na <ph name="TARGET_LANGUAGE"/>?</translation>
+<translation id="7649070708921625228">Pomoć</translation>
 <translation id="969096075394517431">Promijenite jezike</translation>
 <translation id="5032574515228824816">Upit</translation>
+<translation id="6165508094623778733">Saznajte više</translation>
 <translation id="7961015016161918242">Nikad</translation>
 <translation id="497421865427891073">Idi naprijed</translation>
 <translation id="4056223980640387499">Sepija</translation>
 <translation id="8310344678080805313">Standardne kartice</translation>
 <translation id="6277522088822131679">Pojavio se problem prilikom ispisivanja stranice. Pokušajte ponovo.</translation>
+<translation id="7634554953375732414">Veza s web-lokacijom nije privatna.</translation>
+<translation id="6612358246767739896">Zaštićeni sadržaj</translation>
 <translation id="1742134235943978220">Prevedeno na <ph name="TARGET_LANGUAGE"/>.</translation>
+<translation id="5916664084637901428">Uključi</translation>
 <translation id="6965382102122355670">U redu</translation>
 <translation id="7561196759112975576">Uvijek</translation>
 </translationbundle>

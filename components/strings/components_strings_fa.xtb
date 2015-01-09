@@ -1,17 +1,16 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="fa">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="fa">
 <translation id="7485870689360869515">هیچ داده‌ای یافت نشد.</translation>
 <translation id="3884278016824448484">شناسه دستگاه یکسان نیست</translation>
 <translation id="6779575937362063477">‏Google Wallet این نوع کارت را پشتیبانی نمی‌کند. لطفاً کارت دیگری انتخاب کنید.</translation>
 <translation id="5172758083709347301">دستگاه</translation>
-<translation id="7180611975245234373">تازه کردن</translation>
+<translation id="7180611975245234373">بازخوانی</translation>
 <translation id="777702478322588152">حوزه اداری</translation>
 <translation id="7600965453749440009">هرگز <ph name="LANGUAGE"/> ترجمه نشود</translation>
 <translation id="2262243747453050782">‏خطای HTTP</translation>
 <translation id="1339601241726513588">دامنه ثبت‌نام:</translation>
 <translation id="7298195798382681320">توصیه می‌شود</translation>
 <translation id="4058922952496707368">کلید &quot;<ph name="SUBKEY"/>&quot;: <ph name="ERROR"/></translation>
+<translation id="6980028882292583085">هشدار جاوا اسکریپت</translation>
 <translation id="5299298092464848405">خطا در تجزیه خط‌‌مشی</translation>
 <translation id="6628463337424475685">جستجوی <ph name="ENGINE"/></translation>
 <translation id="6831043979455480757">ترجمه</translation>
@@ -24,6 +23,7 @@
 <translation id="2958431318199492670">‏پیکربندی شبکه با استاندارد ONC تطابق ندارد. بخشی از پیکربندی ممکن است وارد نشود.</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="277499241957683684">ثبت دستگاه موجود نیست</translation>
+<translation id="1491151370853475546">تازه‌سازی این صفحه</translation>
 <translation id="8553075262323480129">ترجمه انجام نشد زیرا زبان صفحه تعیین نشد.</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="1103523840287552314"><ph name="LANGUAGE"/> همیشه ترجمه شود</translation>
@@ -44,6 +44,7 @@
 <translation id="3380365263193509176">خطای ناشناخته</translation>
 <translation id="112840717907525620">حافظه پنهان خط مشی مورد تأیید است</translation>
 <translation id="3452404311384756672">فاصله زمانی واکشی:</translation>
+<translation id="409504436206021213">تازه‌سازی نشود</translation>
 <translation id="7441627299479586546">موضوع خط مشی اشتباه است</translation>
 <translation id="3885155851504623709">بخش</translation>
 <translation id="6973656660372572881">‏هم سرورهای پروکسی ثابت و هم آدرس اسکریپت pac. مشخص شده‌اند.</translation>
@@ -52,6 +53,7 @@
 <translation id="3667681724235208644">مشاهده مورد اصلی</translation>
 <translation id="4079302484614802869">‏تنظیمات پروکسی، برای استفاده از آدرس اسکریپت pac. تنظیم شده است و از سرورهای ثابت نمی‌تواند استفاده کند.</translation>
 <translation id="5540224163453853">مقاله درخواستی یافت نشد.</translation>
+<translation id="333371639341676808">از ایجاد کادرهای گفتگوی دیگر توسط این صفحه جلوگیری شود.</translation>
 <translation id="5523118979700054094">نام خط مشی</translation>
 <translation id="7791543448312431591">افزودن</translation>
 <translation id="2053553514270667976">کد پستی</translation>
@@ -68,6 +70,7 @@
 <translation id="2367567093518048410">سطح</translation>
 <translation id="7977590112176369853">&lt;واردکردن پرسش&gt;</translation>
 <translation id="7610193165460212391">مقدار خارج از محدوده <ph name="VALUE"/> است.</translation>
+<translation id="8311778656528046050">آیا مطمئن هستید که می‌خواهید این صفحه را تازه‌سازی کنید؟</translation>
 <translation id="370665806235115550">در حال بارگیری...</translation>
 <translation id="2096368010154057602">حوزه</translation>
 <translation id="4258748452823770588">امضای نادرست</translation>
@@ -95,11 +98,14 @@
 <translation id="6445051938772793705">کشور</translation>
 <translation id="5031870354684148875">‏درباره Google Translate</translation>
 <translation id="1152921474424827756">دسترسی به یک <ph name="BEGIN_LINK"/>نسخه ذخیره شده در حافظه پنهان<ph name="END_LINK"/> از <ph name="URL"/></translation>
+<translation id="8201077131113104583">نشانی اینترنتی به‌روزرسانی نامعتبر برای برنامه افزودنی با شناسه «<ph name="EXTENSION_ID"/>».</translation>
 <translation id="6891596781022320156">سطح خط‌مشی پشتیبانی نمی‌شود.</translation>
 <translation id="2025186561304664664">پروکسی بر روی پیکربندی خودکار تنظیم شده است.</translation>
 <translation id="1853748787962613237">نمایش مقاله ناموفق بود.</translation>
 <translation id="5455374756549232013">مهر زمان خط مشی نادرست است</translation>
+<translation id="2025623846716345241">تأیید تازه‌سازی</translation>
 <translation id="1962204205936693436">نشانک‌های <ph name="DOMAIN"/></translation>
+<translation id="111844081046043029">آیا می‌خواهید این صفحه را ترک کنید؟</translation>
 <translation id="1973335181906896915">خطای ترتیب</translation>
 <translation id="5989320800837274978">‏سرور پروکسی ثابت و URL اسکریپت pac. تعیین نشده‌اند.</translation>
 <translation id="7805768142964895445">وضعیت</translation>
@@ -110,12 +116,13 @@
 <translation id="7956713633345437162">نشانک‌های تلفن‌ همراه</translation>
 <translation id="5089810972385038852">ایالت</translation>
 <translation id="647261751007945333">خط‌‌مشی‌های دستگاه</translation>
-<translation id="678528074488531090">خطای ارزیابی: <ph name="VALIDATION_ERROR"/>.</translation>
 <translation id="213826338245044447">نشانک‌های تلفن‌ همراه</translation>
 <translation id="8571890674111243710">ترجمه صفحه به <ph name="LANGUAGE"/>...</translation>
 <translation id="4117700440116928470">محدوده خط‌مشی پشتیبانی نمی‌شود.</translation>
 <translation id="2114841414352855701">نادیده گرفته شد زیرا <ph name="POLICY_NAME"/> آن را لغو می‌کند.</translation>
 <translation id="3228969707346345236">ترجمه انجام نشد زیرا صفحه در حال حاضر به زبان <ph name="LANGUAGE"/> است.</translation>
+<translation id="7521387064766892559">جاوا اسکریپت</translation>
+<translation id="8034522405403831421">این صفحه به زبان <ph name="SOURCE_LANGUAGE"/> است. مایلید آن را به <ph name="TARGET_LANGUAGE"/> ترجمه کنید؟</translation>
 <translation id="8891727572606052622">حالت پروکسی نامعتبر است.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="7752995774971033316">مدیریت نشده</translation>
@@ -136,10 +143,12 @@
 <translation id="8812832766208874265">ادامه استفاده از <ph name="CURRENT_GOOGLE_HOST"/></translation>
 <translation id="3377188786107721145">خطای تجزیه خط مشی</translation>
 <translation id="2270192940992995399">مقاله یافت نشد.</translation>
-<translation id="4726672564094551039">بازخوانی خط مشی‌ها</translation>
+<translation id="4726672564094551039">تازه‌سازی خط مشی‌ها</translation>
+<translation id="9154176715500758432">ماندن در این صفحه</translation>
 <translation id="2392959068659972793">نمایش خط‌مشی‌ها با مقدار تنظیم نشده</translation>
 <translation id="5190835502935405962">نوار نشانک‌ها</translation>
 <translation id="6965978654500191972">دستگاه</translation>
+<translation id="5295309862264981122">تأیید پیمایش</translation>
 <translation id="8249320324621329438">آخرین واکشی شده:</translation>
 <translation id="194030505837763158">رفتن به <ph name="LINK"/></translation>
 <translation id="1285320974508926690">این سایت هرگز ترجمه نشود</translation>
@@ -150,6 +159,7 @@
 <translation id="9020542370529661692">این صفحه به <ph name="TARGET_LANGUAGE"/> ترجمه شده است</translation>
 <translation id="5631439013527180824">نشانه مدیریت دستگاه نامعتبر است</translation>
 <translation id="560412284261940334">مدیریت پشتیبانی نمی‌شود</translation>
+<translation id="6512448926095770873">ترک کردن این صفحه</translation>
 <translation id="1639239467298939599">بارگیری</translation>
 <translation id="3169472444629675720">کشف کردن</translation>
 <translation id="4923417429809017348">این صفحه از یک زبان ناشناخته به <ph name="LANGUAGE_LANGUAGE"/> ترجمه شده است.</translation>
@@ -163,6 +173,8 @@
 <translation id="5509780412636533143">نشانک‌های مدیریت شده</translation>
 <translation id="8866481888320382733">خطا در تجزیه تنظیمات خط مشی</translation>
 <translation id="6644283850729428850">این قانون قدیمی شده است.</translation>
+<translation id="1693754753824026215">صفحه <ph name="SITE"/> نشان می‌دهد:</translation>
+<translation id="4269787794583293679">(بدون نام کاربری)</translation>
 <translation id="7988324688042446538">نشانک‌های دسک‌تاپ</translation>
 <translation id="8488350697529856933">اعمال برای</translation>
 <translation id="6165508094623778733">بیشتر بیاموزید</translation>
@@ -184,8 +196,8 @@
 <translation id="2639739919103226564">وضعیت:</translation>
 <translation id="1832546148887467272">جابجایی به <ph name="NEW_GOOGLE_HOST"/></translation>
 <translation id="5095208057601539847">استان</translation>
+<translation id="2581221116934462656">مایلید دفعه بعد <ph name="PRODUCT_NAME"/> پیشنهاد دهد صفحه‌های <ph name="LANGUAGE_NAME"/> از این سایت ترجمه شوند؟</translation>
 <translation id="3934680773876859118">‏بارگیری سند PDF انجام نشد</translation>
-<translation id="1152021252151287493">امضای تأیید نامناسب.</translation>
 <translation id="6965382102122355670">تأیید</translation>
 <translation id="2721148159707890343">درخواست با موفقیت انجام شد</translation>
 <translation id="2455981314101692989">این صفحهٔ وب، تکمیل خودکار این فرم را غیر فعال کرده است.</translation>

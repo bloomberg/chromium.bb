@@ -1,6 +1,5 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="es">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="es">
+<translation id="3233367171080043075">Puedes finalizar la asistencia en cualquier momento.</translation>
 <translation id="7606912958770842224">Habilitar conexiones remotas</translation>
 <translation id="3785447812627779171">Host de
 Chromoting</translation>
@@ -19,6 +18,7 @@ Chromoting</translation>
 <translation id="5070121137485264635">El host remoto requiere tu autenticación en un sitio web de terceros. Para continuar, debes conceder a la aplicación Escritorio remoto de Chrome permisos adicionales para acceder a la siguiente dirección:</translation>
 <translation id="2124408767156847088">Accede de forma segura a tus ordenadores desde tu dispositivo Android.</translation>
 <translation id="3194245623920924351">Escritorio remoto de Chrome</translation>
+<translation id="5537725057119320332">Enviar</translation>
 <translation id="3649256019230929621">Minimizar ventana</translation>
 <translation id="4808503597364150972">Introduce el PIN de <ph name="HOSTNAME"/>.</translation>
 <translation id="7672203038394118626">Se han inhabilitado las conexiones remotas con este ordenador.</translation>
@@ -26,6 +26,7 @@ Chromoting</translation>
 <translation id="4368630973089289038">¿Quieres ayudar a mejorar Chromoting? <ph name="LINK_BEGIN"/>Realiza la encuesta<ph name="LINK_END"/></translation>
 <translation id="332624996707057614">Edita el nombre del ordenador</translation>
 <translation id="1996161829609978754">Chrome está descargando el archivo de instalación del host de Chromoting. Cuando se haya completado la descarga, ejecuta el archivo de instalación antes de continuar.</translation>
+<translation id="222632161986885959">Un participante de este Hangout se ha ofrecido a ayudarte controlando tu ordenador. Si aceptas:</translation>
 <translation id="2046651113449445291">Los siguientes clientes se han sincronizado con este ordenador y se pueden conectar sin un PIN. Puedes revocar este permiso en cualquier momento ya sea de forma individual o para todos los clientes.</translation>
 <translation id="7658239707568436148">Cancelar</translation>
 <translation id="7782471917492991422">Comprueba las opciones de energía de tu ordenador y asegúrate de que no esté configurado para entrar en modo de suspensión cuando esté inactivo.</translation>
@@ -97,6 +98,8 @@ Para obtener información sobre la privacidad, consulta la Política de privacid
 <translation id="2013884659108657024">Chrome está descargando el archivo de instalación del host de Escritorio remoto de Chrome. Cuando se haya completado la descarga, ejecuta el archivo de instalación antes de continuar.</translation>
 <translation id="1742469581923031760">Conectando...</translation>
 <translation id="8998327464021325874">Controlador de host de Escritorio remoto de Chrome</translation>
+<translation id="7017806586333792422">Iniciar grabación</translation>
+<translation id="1619813076098775562">Se ha cerrado la conexión al dispositivo de transmisión.</translation>
 <translation id="6748108480210050150">De</translation>
 <translation id="3950820424414687140">Iniciar sesión</translation>
 <translation id="1291443878853470558">Si quieres utilizar Chromoting para acceder a este ordenador, debes habilitar las conexiones remotas.</translation>
@@ -107,11 +110,13 @@ Para obtener información sobre la privacidad, consulta la Política de privacid
 <translation id="7401733114166276557">Escritorio remoto de Chrome</translation>
 <translation id="3362124771485993931">Volver a escribir el PIN</translation>
 <translation id="1760808606374294203">• Correcciones para Android Lollipop</translation>
+<translation id="5231421057630485350">La persona que te ayude podrá controlar el ratón y el teclado.</translation>
 <translation id="154040539590487450">No se ha podido iniciar el servicio de acceso remoto.</translation>
 <translation id="7948001860594368197">Opciones de pantalla</translation>
 <translation id="8172070902751707422">Se ha producido un error de autenticación. Vuelve a iniciar sesión en Escritorio remoto de Chrome.</translation>
 <translation id="5254120496627797685">Si abandonas esta página, finalizará tu sesión en Escritorio remoto de Chrome.</translation>
 <translation id="173559734173571936">Para poder utilizar Escritorio remoto de Chrome, debes conceder permisos de acceso ampliados a tu ordenador. Solo tienes que realizar esta acción una vez.</translation>
+<translation id="712467900648340229">Error al establecer conexión con el dispositivo de transmisión.</translation>
 <translation id="9032136467203159543">Faltan algunos de los componentes necesarios para Chromoting. Asegúrate de haber instalado la última versión y vuelve a intentarlo.</translation>
 <translation id="1342297293546459414">Permite ver y controlar un ordenador compartido.</translation>
 <translation id="1520828917794284345">Ajustar el tamaño del escritorio</translation>
@@ -147,6 +152,7 @@ Para obtener información sobre la privacidad, consulta la Política de privacid
 <translation id="2699970397166997657">Chromoting</translation>
 <translation id="4812684235631257312">Host</translation>
 <translation id="6178645564515549384">Host de mensajes nativo para asistencia remota</translation>
+<translation id="1738759452976856405">Detener grabación</translation>
 <translation id="897805526397249209">Para habilitar conexiones remotas con otro ordenador, instala Chromoting en él y haz clic en <ph name="BUTTON_NAME"/>.</translation>
 <translation id="1704090719919187045">Preferencias de host de Chromoting</translation>
 <translation id="809687642899217504">Mis ordenadores</translation>
@@ -187,6 +193,7 @@ remoto de Chrome</translation>
 <translation id="4703799847237267011">Ha finalizado tu sesión en Chromoting.</translation>
 <translation id="8178433417677596899">Pantalla compartida entre usuarios, opción perfecta para la asistencia técnica remota</translation>
 <translation id="652218476070540101">Se está actualizando el PIN de este ordenador...</translation>
+<translation id="951991426597076286">Rechazar</translation>
 <translation id="4563926062592110512">Cliente desconectado: <ph name="CLIENT_USERNAME"/>.</translation>
 <translation id="5308380583665731573">Conexiones</translation>
 <translation id="7319983568955948908">Dejar de compartir</translation>

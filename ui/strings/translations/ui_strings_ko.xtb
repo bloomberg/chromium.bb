@@ -1,6 +1,4 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="ko">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="ko">
 <translation id="4820616160060340806">Command+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="8806053966018712535"><ph name="FOLDER_NAME"/> 폴더</translation>
 <translation id="1871244248791675517">Insert</translation>
@@ -208,7 +206,8 @@
 <translation id="3759876923365568382"><ph name="NUMBER_FEW"/>일 남음</translation>
 <translation id="6907759265145635167"><ph name="QUANTITY"/>PB/s</translation>
 <translation id="2743387203779672305">클립보드로 복사</translation>
-<translation id="8371695176452482769">지금 말하기</translation>
+<translation id="8371695176452482769">말하세요</translation>
+<translation id="6129953537138746214">공백</translation>
 <translation id="1167268268675672572">첫 줄로 이동 및 선택사항 수정</translation>
 <translation id="6965382102122355670">확인</translation>
 <translation id="7850320739366109486">알림 일시중지</translation>

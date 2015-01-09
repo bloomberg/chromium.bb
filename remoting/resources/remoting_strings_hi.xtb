@@ -1,6 +1,5 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="hi">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="hi">
+<translation id="3233367171080043075">आप किसी भी समय समाप्‍त कर सकते हैं.</translation>
 <translation id="7606912958770842224">दूरस्‍थ कनेक्‍शन सक्षम करें</translation>
 <translation id="3785447812627779171">Chromoting
 होस्ट</translation>
@@ -19,6 +18,7 @@
 <translation id="5070121137485264635">दूरस्थ होस्ट के लिए आवश्यक है कि आप किसी तृतीय-पक्ष की वेबसाइट प्रमाणीकृत करें. जारी रखने के लिए, आपको Chrome दूरस्थ डेस्कटॉप को इस पते को एक्सेस करने के लिए अतिरिक्त अनुमतियां देनी होंगी:</translation>
 <translation id="2124408767156847088">अपने Android डिवाइस से सुरक्षित रूप से अपने कंप्यूटर एक्सेस करें.</translation>
 <translation id="3194245623920924351">Chrome दूरस्थ डेस्कटॉप</translation>
+<translation id="5537725057119320332">कास्‍ट करें</translation>
 <translation id="3649256019230929621">विंडो को छोटा करें</translation>
 <translation id="4808503597364150972">कृपया <ph name="HOSTNAME"/> के लिए अपना पिन दर्ज करें.</translation>
 <translation id="7672203038394118626">इस कंप्‍यूटर के लिए दूरस्‍थ कनेक्‍शन अक्षम कर दिए गए हैं.</translation>
@@ -26,6 +26,7 @@
 <translation id="4368630973089289038">Chromoting को बेहतर बनाने में सहायता करना चाहते हैं? <ph name="LINK_BEGIN"/>सर्वेक्षण में भाग लें.<ph name="LINK_END"/></translation>
 <translation id="332624996707057614">कंप्‍यूटर का नाम संपादित करें</translation>
 <translation id="1996161829609978754">Chrome, Chrome होस्ट इंस्टॉलर को डाउनलोड कर रहा है. डाउनलोड पूर्ण हो जाने पर, कृपया आगे बढने से पहले इंस्टॉलर चलाएं.</translation>
+<translation id="222632161986885959">इस hangout के एक प्रतिभागी ने आपके कंप्‍यूटर को नियंत्रित करके आपकी सहायता करने का ऑफ़र दिया है.  यदि आप स्‍वीकार करते हैं:</translation>
 <translation id="2046651113449445291">निम्न क्लाइंट इस कंप्यूटर से युग्मित कर दिए गए हैं और वे PIN प्रदान किए बिना कनेक्ट कर सकते हैं. आप किसी भी समय, अलग-अलग या सभी क्लाइंट के लिए इस अनुमति को निरस्त कर सकते हैं.</translation>
 <translation id="7658239707568436148">रहने दें</translation>
 <translation id="7782471917492991422">कृपया अपने कंप्‍यूटर की शक्ति प्रबंधन सेटिंग जांचें और सुनिश्चित करें कि उसे प्रयोग में नहीं रहते समय सुप्त रहने के लिए कॉन्‍फ़िगर नहीं किया गया है.</translation>
@@ -97,6 +98,8 @@
 <translation id="2013884659108657024">Chrome, Chrome दूरस्थ डेस्कटॉप होस्ट इंस्टॉलर को डाउनलोड कर रहा है. डाउनलोड पूर्ण हो जाने पर, कृपया आगे बढने से पहले इंस्टॉलर चलाएं.</translation>
 <translation id="1742469581923031760">कनेक्ट हो रहा है...</translation>
 <translation id="8998327464021325874">Chrome दूरस्थ डेस्क टॉप होस्ट नियंत्रक</translation>
+<translation id="7017806586333792422">रिकॉर्ड करना प्रारंभ करें</translation>
+<translation id="1619813076098775562">कास्‍ट डिवाइस से कनेक्‍शन बंद किया गया.</translation>
 <translation id="6748108480210050150">प्रेषक</translation>
 <translation id="3950820424414687140">प्रवेश करें</translation>
 <translation id="1291443878853470558">यदि आप इस कंप्यूटर पर पहुंचने के लिए Chromoting का उपयोग करना चाहते हैं, तो आपको दूरस्थ कनेक्शन सक्षम करने होंगे.</translation>
@@ -107,11 +110,13 @@
 <translation id="7401733114166276557">Chrome दूरस्थ डेस्कटॉप</translation>
 <translation id="3362124771485993931">पिन फिर से लिखें</translation>
 <translation id="1760808606374294203">• Android Lollipop के लिए समाधान.</translation>
+<translation id="5231421057630485350">आपकी सहायता करने वाला व्‍यक्‍ति आपका माउस और कीबोर्ड नियंत्रित कर सकेगा.</translation>
 <translation id="154040539590487450">दूरस्‍थ पहुंच सेवा प्रारंभ करने में विफल.</translation>
 <translation id="7948001860594368197">स्‍क्रीन विकल्‍प</translation>
 <translation id="8172070902751707422">प्रमाणीकरण विफल. कृपया Chrome दूरस्थ डेस्कटॉप में फिर से प्रवेश करें.</translation>
 <translation id="5254120496627797685">इस पृष्ठ को छोड़ देने पर आपका Chrome दूरस्थ डेस्कटॉप सत्र समाप्त हो जाएगा.</translation>
 <translation id="173559734173571936">Chrome दूरस्थ डेस्कटॉप का उपयोग करने के लिए आपको अपने कंप्‍यूटर को आवश्‍यक रूप से विस्‍तृत पहुंच अनुमति प्रदान करनी होगी. आपको ऐसा केवल एक बार करना होगा.</translation>
+<translation id="712467900648340229">कास्‍ट डिवाइस से कनेक्‍ट करने में विफल रहा.</translation>
 <translation id="9032136467203159543">Chrome दूरस्थ डेस्कटॉप के लिए आवश्‍यक कुछ घटक गुम हैं. कृपया सुनिश्चित करें कि आपने नवीनतम वर्शन इंस्‍टॉल किया है और फिर से प्रयास करें.</translation>
 <translation id="1342297293546459414">साझा किया गया कंप्‍यूटर देखें और नियंत्रित करें.</translation>
 <translation id="1520828917794284345">डेस्कटॉप को सटीक आकार में बदलें</translation>
@@ -147,6 +152,7 @@
 <translation id="2699970397166997657">Chromoting</translation>
 <translation id="4812684235631257312">होस्ट</translation>
 <translation id="6178645564515549384">दूरस्थ सहायता के लिए स्थानीय संदेश सेवा होस्ट</translation>
+<translation id="1738759452976856405">रिकॉर्ड करना बंद करें</translation>
 <translation id="897805526397249209">किसी भिन्न कंप्यूटर के लिए दूरस्थ कनेक्शन सक्षम करने के लिए, वहां Chromoting इंस्टॉल करें और “<ph name="BUTTON_NAME"/>” क्लिक करें.</translation>
 <translation id="1704090719919187045">Chromoting होस्ट प्राथमिकताएं</translation>
 <translation id="809687642899217504">मेरे कंप्यूटर</translation>
@@ -187,6 +193,7 @@
 <translation id="4703799847237267011">आपका Chromoting सत्र समाप्त हो गया है.</translation>
 <translation id="8178433417677596899">उपयोगकर्ता-से-उपयोगकर्ता स्‍क्रीन साझाकरण, दूरस्‍थ तकनीकी सहायता के लिए उपयुक्त.</translation>
 <translation id="652218476070540101">इस कंप्‍यूटर का पिन अपडेट किया जा रहा है…</translation>
+<translation id="951991426597076286">अस्वीकार करें</translation>
 <translation id="4563926062592110512">क्लाइंट डिस्कनेक्ट किया गया: <ph name="CLIENT_USERNAME"/>.</translation>
 <translation id="5308380583665731573">कनेक्ट करें</translation>
 <translation id="7319983568955948908">साझाकरण रोकें</translation>

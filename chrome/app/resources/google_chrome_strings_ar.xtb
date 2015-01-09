@@ -1,6 +1,4 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="ar">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="ar">
 <translation id="2286950485307333924">‏تم تسجيل دخولك الآن إلى Chrome</translation>
 <translation id="8000275528373650868">‏يتطلب Google Chrome نظام التشغيل Windows Vista أو Windows XP المزود بحزمة الخدمة SP2 أو الأعلى منها.</translation>
 <translation id="1302523850133262269">‏الرجاء الانتظار لحين تثبيت Chrome لآخر تحديثات النظام.</translation>
@@ -30,7 +28,6 @@
 <translation id="110877069173485804">‏هذا Chrome الخاص بك</translation>
 <translation id="8406086379114794905">‏ساهم في تحسين Chrome</translation>
 <translation id="2896252579017640304">‏تشغيل تطبيقات Chrome</translation>
-<translation id="4121281502786319101">‏لا يمكن لـ Chrome من إجراء اتصال خاص بـ  &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;. قد يكون ذلك بسبب أنه قد تم ضبط جهازك على تاريخ خاطئ. (تم ضبط تاريخ جهازك على <ph name="DATE"/>.) يجب تحديث هذه الصفحة بعد <ph name="BEGIN_LINK"/>تحديث التاريخ والساعة على جهازك<ph name="END_LINK"/>.</translation>
 <translation id="5620765574781326016">تعرّف على موضوعات على مواقع الويب دون مغادرة الصفحة.</translation>
 <translation id="2721687379934343312">‏في نظام التشغيل Mac، يتم حفظ كلمات المرور في تطبيق Keychain  ويمكن الدخول إليها أو مزامنتها من قبل مستخدمي Chrome الآخرين الذين يشاركون حساب نظام التشغيل X هذا.</translation>
 <translation id="683440813066116847">‏قاعدة الوارد إلى Google Chrome Canary للسماح بحركة مرور mDNS.</translation>
@@ -70,8 +67,8 @@
 <translation id="4513711165509885787">‏تم حفظ تفاصيل الفوترة في Chrome.</translation>
 <translation id="5253588388888612165">‏إذا كنت تشارك جهاز الكمبيوتر هذا مع <ph name="PROFILE_NAME"/>، فأضف نفسك إلى Chrome للتصفح بشكلٍ منفصل. أو ألغِ ربط حسابك بحسابه في Google.</translation>
 <translation id="7098166902387133879">‏يستخدم Google Chrome الميكروفون.</translation>
+<translation id="2596415276201385844">‏لإنشاء اتصال آمن، فإنك بحاجة إلى ضبط ساعتك بشكل صحيح. وذلك لأن الشهادات التي تستخدمها مواقع الويب لتعريف نفسها تكون صالحة فقط لفترات محددة من الوقت. فإذا كانت ساعة جهازك غير صحيحة، فلن يتمكن Chrome من التحقق من هذه الشهادات.</translation>
 <translation id="4053720452172726777">‏تخصيص Google Chrome والتحكم فيه</translation>
-<translation id="4315766637075282876">‏سيخزنها Chrome في | كلمات مرور Google المحفوظة | ثم يكتبها تلقائيًا حتى لا تضطر إلى تذكرها بنفسك.</translation>
 <translation id="5298539825145851748">‏إزالة من Chrome</translation>
 <translation id="3197823471738295152">جهازك محدّث.</translation>
 <translation id="8286862437124483331">‏يحاول Google Chrome عرض كلمات المرور. اكتب كلمة مرور Windows للسماح بذلك.</translation>
@@ -87,8 +84,8 @@
 <translation id="345168553362876363">‏مشغل تطبيقات Google Chrome هو نظام أساسي مستقل لتطبيقات Chrome.</translation>
 <translation id="225614027745146050">مرحبًا</translation>
 <translation id="7473891865547856676">لا، شكرًا</translation>
-<translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3149510190863420837">‏تطبيقات Chrome</translation>
+<translation id="8851136666856101339">main</translation>
 <translation id="7473136999113284234">‏يجري تحديث Chrome تلقائيًا بحيث يكون لديك أحدث إصدار.</translation>
 <translation id="7084448929020576097">‏<ph name="FILE_NAME"/> برنامج ضار، وقد أجرى Chrome حظره.</translation>
 <translation id="6368958679917195344">‏أصبح نظام التشغيل Chrome متاحًا من خلال <ph name="BEGIN_LINK_CROS_OSS"/>برنامج مفتوح المصدر<ph name="END_LINK_CROS_OSS"/> إضافي.</translation>
@@ -96,9 +93,9 @@
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="8823341990149967727">‏إصدار Chrome قديم</translation>
 <translation id="4424024547088906515">‏هذا الخادم لم يتمكن من إثبات أن ذلك <ph name="DOMAIN"/>؛ بل إنه شهادة أمان غير موثوقة من قبل Chrome. وربما يكون السبب في ذلك خطأ في التكوين أو مهاجمًا يعترض الاتصال.</translation>
-<translation id="6722021951952731012">‏لأجراء اتصال شبكة آمن، يحتاج جهاز الكمبيوتر ضبط إعدادات الساعة بشكل صحيح. وذلك لأن الشهادات التي تستخدمها مواقع الويب لتعريف نفسها عند إنشاء اتصال آمن لا تكن صالحة إلا لفترة زمنية محددة. وحيث إن إعدادات الساعة لديك غير صحيحة ، فلا يستطيع Chrome التحقق من الشهادات بشكل صحيح.</translation>
 <translation id="473775607612524610">تحديث</translation>
-<translation id="1195935957447623558">‏لم يتمّ إغلاق Google Chrome بطريقة صحيحة. لإعادة فتح الصفحات التي سبق فتحها، انقر على زرّ إعادة.</translation>
+<translation id="5618769508111928343">‏يستخدم <ph name="SITE"/> التشفير عادةً لحماية معلوماتك. عندما حاول Chrome الاتصال بـ <ph name="SITE"/> في هذه المرة، أرجع موقع الويب مرة أخرى
+  بيانات اعتماد غير عادية وغير صحيحة. والسبب إما أن أحد المهاجمين يحاول التظاهر بأنه <ph name="SITE"/>، أو أن شاشة تسجيل دخول Wi-Fi قاطعت الاتصال. ما زالت معلوماتك في أمان لأن Chrome أوقف الاتصال قبل تبادل أي بيانات.</translation>
 <translation id="2576431527583832481">‏لقد أصبح Chrome أفضل من ذي قبل! يتوفر إصدار جديد.</translation>
 <translation id="4633000520311261472">‏لجعل Chrome أكثر أمانًا، تم تعطيل بعض الإضافات غير المدرجة في <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> والتي ربما تمت إضافتها بدون علمك.</translation>
 <translation id="3656661827369545115">‏تشغيل Chromium تلقائيًا عندما يتم تشغيل جهاز الكمبيوتر</translation>
@@ -136,6 +133,14 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="5563479599352954471">للبحث بلمسة واحدة</translation>
 <translation id="2664962310688259219">‏تراخيص مفتوحة المصدر لنظام التشغيل Chrome</translation>
+<translation id="6341737370356890233">‏انتقل إلى
+        قائمة Chrome &gt;
+        <ph name="SETTINGS_TITLE"/>
+        &gt;
+        <ph name="ADVANCED_TITLE"/>
+        وألغ تحديد <ph name="NO_PREFETCH_DESCRIPTION"/>
+        إذا لم يعمل ذلك على حل المشكلة، نوصي بتحديد هذا الخيار
+        مرة من أجل أداء أفضل.</translation>
 <translation id="2290014774651636340">‏مفاتيح واجهة برمجة تطبيقات Google مفقودة. وسيترتب على ذلك توقف بعض وظائف Google Chrome عن العمل.</translation>
 <translation id="2397416548179033562">‏لإظهار قائمة Chrome</translation>
 <translation id="4794050651896644714">‏حفظ التفاصيل في Chrome</translation>
@@ -143,7 +148,6 @@
 <translation id="5855036575689098185">‏البرامج التي تعمل على جهاز الكمبيوتر لا تتوافق مع Google Chrome.</translation>
 <translation id="7164397146364144019">‏يمكنك المساعدة في جعل Chrome أكثر أمانًا وأسهل استخدامًا بإبلاغ Google تلقائيًا بتفاصيل أي مخاطر أمنية محتملة.</translation>
 <translation id="8008534537613507642">‏إعادة تثبيت Chrome</translation>
-<translation id="2044287590254833138">‏شريط أدوات Google Chrome</translation>
 <translation id="8862326446509486874">لا تملك الحقوق الكافية للتثبيت على مستوى النظام. جرّب تشغيل المثبِّت بصفة مشرف.</translation>
 <translation id="2874156562296220396">‏نوفر لكم Google Chrome بفضل المشروع المفتوح المصدر <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> و<ph name="BEGIN_LINK_OSS"/>برامج أخرى مفتوحة المصدر<ph name="END_LINK_OSS"/>.</translation>
 <translation id="7191567847629796517">‏لا يدعم نظام تشغيل Google Chrome إطلاق تطبيق خارجي للتعامل مع روابط <ph name="SCHEME"/>. الرابط المطلوب هو <ph name="PROTOLINK"/>.</translation>
@@ -155,6 +159,7 @@
 <translation id="2290095356545025170">‏هل تريد بالتأكيد إزالة Google Chrome؟</translation>
 <translation id="7062966102157262887">‏هناك تنزيل قيد التقدم. هل تريد الخروج من Google Chrome وإلغاء التنزيل؟</translation>
 <translation id="4273752058983339720">‏تمت تهيئة Google Chrome لإطلاقه تلقائيًا عند بدء تشغيل جهاز الكمبيوتر.</translation>
+<translation id="2316129865977710310">لا، شكرًا</translation>
 <translation id="415994390253732730">‏هل يتصرف Chrome على نحو غريب؟</translation>
 <translation id="1104959162601287462">‏حول &amp;نظام التشغيل Google Chrome</translation>
 <translation id="5328989068199000832">‏ثنائيات Google Chrome</translation>
@@ -165,21 +170,14 @@
 <translation id="8568392309447938879">‏يلزمك تسجيل الدخول إلى Chrome لتتمكن من استخدام التطبيقات. سيتيح هذا للمتصفح Chrome مزامنة تطبيقاتك والإشارات المرجعية والسجل وكلمات المرور وغير ذلك من الإعدادات عبر الأجهزة.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">‏يتيح لك Google Chrome النقر على رقم هاتف على الويب والاتصال به باستخدام Skype!</translation>
-<translation id="2705287621619748344">‏لم يتمكن Chrome من إنشاء اتصال بـ  &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;. قد يكون ذلك بسبب أنه قد تم ضبط جهازك على تاريخ خاطئ. (تم ضبط تاريخ جهازك على <ph name="DATE"/>.) يجب تحديث هذه الصفحة بعد <ph name="BEGIN_LINK"/>تحديث التاريخ والساعة على جهازك<ph name="END_LINK"/>.</translation>
 <translation id="5788838254726722945">‏إلغاء تثبيت مشغل تطبيقات Google Chrome</translation>
 <translation id="3612333635265770873">‏هناك وحدة تحمل الاسم نفسه ومعروف أنها تتعارض مع Google Chrome.</translation>
 <translation id="2665296953892887393">‏يمكنك المساعدة في تحسين Google Chrome عن طريق إرسال تقارير الأعطال و<ph name="UMA_LINK"/> إلى Google</translation>
 <translation id="7761834446675418963">‏انقر على اسمك لفتح Chrome وبدء التصفح.</translation>
 <translation id="2669824781555328029">‏قد يضر <ph name="FILE_NAME"/> بتجربة متصفحك، لذلك فقد حظره Chrome.</translation>
-<translation id="5875635642195358109">‏انتقل إلى
-        قائمة Chrome &gt;
-        <ph name="SETTINGS_TITLE"/>
-        &gt;
-        <ph name="ADVANCED_TITLE"/>
-        وألغ تحديد &quot;<ph name="NO_PREFETCH_DESCRIPTION"/>.&quot;
-        في حالة ما إذا لم يؤد ذلك إلى حل المشكلة، فنوصي بتحديد هذا الخيار
-        مرة أخرى لتحسين الأداء.</translation>
 <translation id="6235018212288296708">‏قاعدة الوارد إلى Google Chrome للسماح بحركة مرور mDNS.</translation>
+<translation id="7984945080620862648">‏لا يمكنك زيارة <ph name="SITE"/> الآن لأن موقع الويب أرسل بيانات اعتماد مختلطة يتعذر على Chrome معالجتها. أخطاء الشبكة والهجمات عليها عادةً ما تكون مؤقتة، لذا ستعمل هذه الصفحة لاحقًا على الأرجح.</translation>
+<translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3281987435599047980">‏لإرسال الكلمة والنص المحيط بها إلى بحث Google وعرض التعريفات والصور ونتائج البحث والتفاصيل الأخرى.</translation>
 <translation id="61852838583753520">‏تحديث ن&amp;ظام التشغيل Google Chrome</translation>
 <translation id="5028489144783860647">‏تعذر على Google Chrome مزامنة البيانات. الرجاء تحديث عبارة مرور المزامنة.</translation>
@@ -190,12 +188,18 @@
 <translation id="7890208801193284374">‏إذا كنت تشارك الكمبيوتر مع أصدقائك وعائلتك، فبإمكانهم التصفح على حدة وإعداد Chrome على النحو الذي يريدونه.</translation>
 <translation id="7161904924553537242">‏مرحبًا بك في Google Chrome</translation>
 <translation id="4147555960264124640">‏إنك تسجل الدخول باستخدام حساب مُدار وتمنح المشرف إمكانية التحكم في ملفك الشخصي في Google Chrome. وسيتم ربط بيانات Chrome التابعة لك، مثل التطبيقات والإشارات المرجعية والسجلّ وكلمات المرور والإعدادات الأخرى بالمستخدم <ph name="USER_NAME"/>. وستتمكن من حذف هذه البيانات عبر لوحة تحكم حسابات Google، ولكنك لن تتمكن من إقران هذه البيانات بحساب آخر. <ph name="LEARN_MORE"/></translation>
-<translation id="4568169453579447500">‏لا يمكن تحديث Google Chrome نظرًا لتعارض إعدادات سياسة مجموعة تحديث Google. استخدم محرر سياسة المجموعة لتعيين تجاوز سياسة التحديث لتطبيق ثنائيات Google Chrome، ثم أعد المحاولة؛ راجع http://goo.gl/uJ9gV للحصول على تفاصيل.</translation>
 <translation id="1348153800635493797">‏يتعيّن عليك ترقية Chrome حتى يتسنى لك استخدام محفظة Google [<ph name="ERROR_CODE"/>].</translation>
 <translation id="8187289872471304532">‏انتقل إلى Applications (التطبيقات) &gt; System Preferences (تفضيلات النظام) &gt; Network (الشبكة) &gt; Advanced (الخيارات المتقدمة) &gt; Proxies (الخوادم الوكيلة) وألغ تحديد أي خوادم وكيلة تم تحديدها.</translation>
 <translation id="8669527147644353129">‏مساعد Google Chrome</translation>
 <translation id="870251953148363156">‏&amp;تحديث Google Chrome</translation>
 <translation id="130631256467250065">تسري التغييرات في المرة التالية التي تعيد فيها تشغيل الجهاز.</translation>
+<translation id="1546593779121993896">‏انتقل  إلى قائمة Chrome &gt; الإعدادات&gt; خصوصية (متقدمة)
+
+          وعطّل &quot;تنبؤات إجراءات الشبكة&quot;
+
+          إذا لم يعمل هذا على حل المشكلة، نوصي بإعادة تمكين هذا الخيار
+
+          مرة أخرى من أجل أداء أفضل.</translation>
 <translation id="163860049029591106">‏البدء في استخدام نظام التشغيل Chrome</translation>
 <translation id="1587223624401073077">‏يستخدم Google Chrome الكاميرا.</translation>
 <translation id="1399397803214730675">‏يحتوي جهاز الكمبيوتر هذا على نسخة أحدث من Google Chrome. إذا كان برنامج Google Chrome لا يعمل، فالرجاء إزالة Google Chrome وإعادة المحاولة.</translation>
@@ -250,6 +254,7 @@
 <translation id="3360895254066713204">‏مساعد Chrome</translation>
 <translation id="1877026089748256423">‏إصدار Chrome قديم</translation>
 <translation id="7592736734348559088">‏تعذر على Google Chrome مزامنة البيانات نظرًا لأن تفاصيل تسجيل الدخول إلى حسابك قديمة.</translation>
+<translation id="7810280330588098283">‏سيخزن Chrome هذا في |كلمات مرور Google المحفوظة لديك| وتذكرها عند احتياجك إليها في المرة القادمة.</translation>
 <translation id="6991142834212251086">‏ربط بياناتي في Chrome بهذا الحساب</translation>
 <translation id="3451115285585441894">‏جارٍ الإضافة إلى Chrome...</translation>
 <translation id="3047079729301751317">‏سيؤدي قطع اتصال <ph name="USERNAME"/> إلى مسح السجّل والإشارات المرجعية والإعدادات وبيانات Chrome الأخرى المخزنة على هذا الجهاز. لن يتم مسح البيانات المخزنة في حساب Google ويمكن إدارتها على <ph name="GOOGLE_DASHBOARD_LINK"/>لوحة تحكم Google<ph name="END_GOOGLE_DASHBOARD_LINK"/>.</translation>
@@ -261,12 +266,13 @@
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="2334084861041072223">‏حقوق الطبع والنشر لعام <ph name="YEAR"/> لصالح شركة .Google Inc. جميع الحقوق محفوظة.</translation>
 <translation id="1698376642261615901">‏إن Google Chrome هو متصفح ويب يشغّل صفحات الويب والتطبيقات بسرعة خاطفة. فهذا المتصفح سريع ويتميز بالثبات وسهولة الاستخدام، ويمكنك من خلاله تصفح الويب بقدر أكبر من الأمان من خلال وجود حماية مضمنة داخله ضد البرامج الضارة والتصيّد.</translation>
+<translation id="4523402702161492148">‏لا يمكن تحديث Google Chrome لأن إعدادات سياسات مجموعة تحديث Google غير متناسقة. استخدم محرر سياسات المجموعة لتعيين إلغاء سياسات التحديث لتطبيق البرامج الثنائية في Google Chrome وحاول مرة أخرى. لمزيد من التفاصيل اطلع على https://goo.gl/uJ9gV.</translation>
 <translation id="853189717709780425">‏أنت تسجل الدخول بحساب يخضع لإدارة شخص آخر وتمنح مشرفه إمكانية التحكم في ملفك الشخصي في Google Chrome. سيتم ربط بياناتك في Chrome دائمًا بالحساب <ph name="USER_NAME"/> مثل تطبيقاتك وإشاراتك المرجعية وسجلك وكلمات المرور التابعة لك والإعدادات الأخرى. وستتمكن من حذف هذه البيانات عبر لوحة تحكم حسابات Google، ولكنك لن تتمكن من إقران هذه البيانات بحساب آخر.</translation>
 <translation id="6049075767726609708">‏قام أحد المشرفين بتثبيت Google Chrome على هذا الجهاز، وهو متاح لجميع المستخدمين. سيحل Google Chrome على مستوى النظام محل النسخة المثبتة على مستوى المستخدم لديك الآن.</translation>
 <translation id="1818142563254268765">‏تعذر تحديث Chrome إلى أحدث إصدار، وبالتالي تفوتك ميزات جديدة رائعة وإصلاحات للأمان. يلزمك تحديث Chrome.</translation>
-<translation id="4821676311965554623">‏لتأسيس اتصال شبكة آمنة،  يحتاج الجهاز لضبط إعدادت الساعة بشكل صحيح. وذلك لأن استخدام مواقع التوثيق لتعريف نفسها عند إنشاء اتصال آمن لا يكون صالحًا لفترة زمنية محددة. وحيث إن إعدادات الساعة لديك غير صحيحة ، فلا يستطيع Chrome التحقق من الشهادات.</translation>
 <translation id="7408085963519505752">‏بنود نظام التشغيل Chrome</translation>
 <translation id="3870154837782082782">Google Inc‎.‎</translation>
+<translation id="1016765312371154165">‏لم يتم إيقاف تشغيل Chrome بشكل صحيح.</translation>
 <translation id="3836351788193713666">‏أوشك الانتهاء من التحديث! إعادة تشغيل Google Chrome لإنهاء التحديث.</translation>
 <translation id="884296878221830158">‏كما أنها تتحكم في الصفحة التي تظهر عند تشغيل Chrome أو النقر على زر الصفحة الرئيسية.</translation>
 <translation id="7106741999175697885">‏مدير المهام - Google Chrome</translation>

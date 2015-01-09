@@ -1,6 +1,5 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="ru">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="ru">
+<translation id="3233367171080043075">Сеанс можно завершить в любой момент.</translation>
 <translation id="7606912958770842224">Разрешить удаленные подключения</translation>
 <translation id="3785447812627779171">Хост
 Пульта Chrome</translation>
@@ -19,6 +18,7 @@
 <translation id="5070121137485264635">Для удаленного доступа к сайту требуется пройти аутентификацию. Дайте Удаленному рабочему столу Chrome дополнительные разрешения для доступа к следующему адресу:</translation>
 <translation id="2124408767156847088">Безопасный удаленный доступ к компьютеру с Android-устройства</translation>
 <translation id="3194245623920924351">Удаленный рабочий стол Chrome</translation>
+<translation id="5537725057119320332">Cast</translation>
 <translation id="3649256019230929621">Свернуть окно</translation>
 <translation id="4808503597364150972">Введите PIN-код для хоста <ph name="HOSTNAME"/>.</translation>
 <translation id="7672203038394118626">Удаленные подключения для этого компьютера запрещены.</translation>
@@ -26,6 +26,7 @@
 <translation id="4368630973089289038">Хотите помочь нам улучшить Chromoting? <ph name="LINK_BEGIN"/>Примите участие в опросе.<ph name="LINK_END"/></translation>
 <translation id="332624996707057614">Изменить имя компьютера</translation>
 <translation id="1996161829609978754">Программа установки хоста для Пульта Chrome скачивается. Запустите ее после скачивания.</translation>
+<translation id="222632161986885959">Участник этого видеочата предложил вам помочь, выполняя действия на вашем компьютере. В этом случае:</translation>
 <translation id="2046651113449445291">Следующие клиенты связаны с данным компьютером и могут подключаться, не указывая PIN-код. В любое время это разрешение можно отозвать для одного или всех клиентов.</translation>
 <translation id="7658239707568436148">Отмена</translation>
 <translation id="7782471917492991422">Отключите в настройках энергопотребления компьютера функцию перехода в спящий режим при отсутствии активности.</translation>
@@ -97,6 +98,8 @@
 <translation id="2013884659108657024">Программа установки хоста для Удаленного рабочего стола Chrome скачивается. Запустите ее после скачивания.</translation>
 <translation id="1742469581923031760">Подключение…</translation>
 <translation id="8998327464021325874">Контроллер хоста Удаленного рабочего стола Chrome</translation>
+<translation id="7017806586333792422">Начать запись</translation>
+<translation id="1619813076098775562">Приложение больше не подключено к Cast-устройству</translation>
 <translation id="6748108480210050150">Клиент</translation>
 <translation id="3950820424414687140">Вход</translation>
 <translation id="1291443878853470558">Если вам нужен доступ к этому компьютеру через Пульт Chrome, необходимо разрешить удаленные подключения.</translation>
@@ -106,12 +109,14 @@
 <translation id="5908809458024685848">Вход не выполнен. Войдите в Пульт Chrome и повторите попытку.</translation>
 <translation id="7401733114166276557">Удаленный рабочий стол Chrome</translation>
 <translation id="3362124771485993931">Введите PIN-код ещё раз</translation>
-<translation id="1760808606374294203">• Исправлены ошибки в версии для Android Lollipop.</translation>
+<translation id="1760808606374294203">• Исправлены ошибки в версии для Android 5.0.</translation>
+<translation id="5231421057630485350">Пользователь, который вам помогает, сможет управлять вашей клавиатурой и мышью.</translation>
 <translation id="154040539590487450">Не удалось запустить службу удаленного доступа.</translation>
 <translation id="7948001860594368197">Параметры экрана</translation>
 <translation id="8172070902751707422">Сбой аутентификации. Войдите в приложение &quot;Удаленный рабочий стол Chrome&quot; ещё раз.</translation>
 <translation id="5254120496627797685">Если вы покинете эту страницу, сеанс Удаленного рабочего стола Chrome будет завершен.</translation>
 <translation id="173559734173571936">Чтобы использовать Удаленный рабочий стол Chrome, настройте на своем компьютере расширенные права доступа. Это достаточно сделать всего один раз.</translation>
+<translation id="712467900648340229">Не удалось подключиться к Cast-устройству</translation>
 <translation id="9032136467203159543">Отсутствуют некоторые компоненты, необходимые для работы Пульта Chrome. Установите последнюю версию приложения и повторите попытку.</translation>
 <translation id="1342297293546459414">Вы сможете получить доступ к общему компьютеру.</translation>
 <translation id="1520828917794284345">Подогнать размер рабочего стола</translation>
@@ -147,6 +152,7 @@
 <translation id="2699970397166997657">Пульт Chrome</translation>
 <translation id="4812684235631257312">Хост</translation>
 <translation id="6178645564515549384">Собственный хост сообщений для удаленного помощника</translation>
+<translation id="1738759452976856405">Остановить запись</translation>
 <translation id="897805526397249209">Чтобы разрешить удаленные подключения на другом компьютере, установите на него Пульт Chrome и нажмите кнопку &quot;<ph name="BUTTON_NAME"/>&quot;.</translation>
 <translation id="1704090719919187045">Настройки хоста Пульта Chrome</translation>
 <translation id="809687642899217504">Мои компьютеры</translation>
@@ -187,6 +193,7 @@
 <translation id="4703799847237267011">Сеанс Пульта Chrome завершен.</translation>
 <translation id="8178433417677596899">Функция доступа к экрану идеально подходит для удаленной технической поддержки.</translation>
 <translation id="652218476070540101">Изменение PIN-кода…</translation>
+<translation id="951991426597076286">Отклонить</translation>
 <translation id="4563926062592110512">Отключен клиент: <ph name="CLIENT_USERNAME"/>.</translation>
 <translation id="5308380583665731573">Подключение</translation>
 <translation id="7319983568955948908">Закрыть доступ</translation>

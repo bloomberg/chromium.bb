@@ -1,12 +1,10 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="pl">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="pl">
+<translation id="4542520061254486227">Odczyt Twoich danych na stronie <ph name="WEBSITE_1"/> i <ph name="WEBSITE_2"/></translation>
 <translation id="3624204664103857160">Nie można wczytać strony programu uruchamiającego „<ph name="PAGE"/>”.</translation>
 <translation id="8804398419035066391">Komunikować się ze współpracującymi witrynami</translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME"/> (ID rozszerzenia „<ph name="EXTENSION_ID"/>”) jest zablokowane przez administratora.</translation>
 <translation id="1005274289863221750">Korzystać z Twojego mikrofonu i kamery</translation>
 <translation id="2857834222104759979">Plik manifestu jest nieprawidłowy.</translation>
-<translation id="3828484226910527078">Dostęp do urządzenia USB</translation>
 <translation id="6384275966486438344">Zmień ustawienia wyszukiwania na: <ph name="SEARCH_HOST"/></translation>
 <translation id="1445572445564823378">To rozszerzenie spowalnia pracę <ph name="PRODUCT_NAME"/>. Wyłącz je, aby przywrócić wydajność przeglądarki <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="1033780634303702874">Dostęp do urządzeń szeregowych</translation>
@@ -15,30 +13,30 @@
 <translation id="677806580227005219">Moduł obsługi MIME: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">Uzyskiwać dostęp do informacji o urządzeniach Bluetooth sparowanych z systemem oraz wykrywać urządzenia Bluetooth w pobliżu.</translation>
 <translation id="5911798608827489036">Wymiana danych z dowolnym komputerem w sieci lokalnej lub internecie</translation>
-<translation id="4719685943208231314">Dostęp do urządzenia USB firmy <ph name="VENDOR_NAME"/></translation>
+<translation id="8284835137979141223"><ph name="PRODUCT_NAME"/> od <ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">Nie udało się wczytać skryptu działającego w tle „<ph name="BACKGROUND_SCRIPT"/>”.</translation>
 <translation id="9131487537093447019">Wysyłać wiadomości do urządzeń Bluetooth i odbierać je z nich.</translation>
-<translation id="8198425243160395623">Dostęp do urządzeń USB</translation>
+<translation id="5678955352098267522">Odczyt Twoich danych na stronie <ph name="WEBSITE_1"/></translation>
 <translation id="8597109877291678953">Wymiana danych z komputerem o nazwie <ph name="HOSTNAME"/></translation>
 <translation id="5456409301717116725">To rozszerzenie zawiera plik klucza „<ph name="KEY_PATH"/>”. Prawdopodobnie nie powinno tak być.</translation>
+<translation id="7257666756905341374">Odczyt danych, które kopiujesz i wklejasz</translation>
 <translation id="2350172092385603347">Lokalizacja została użyta, ale nie określono języka default_locale w pliku manifestu.</translation>
 <translation id="3759933321830434300">Blokowanie części stron internetowych</translation>
-<translation id="8058376558882514200">Dostęp do urządzenia USB <ph name="PRODUCT_NAME"/> firmy <ph name="VENDOR_NAME"/></translation>
 <translation id="149347756975725155">Nie można wczytać ikony rozszerzenia „<ph name="ICON"/>”.</translation>
 <translation id="8825366169884721447">Rozszerzenie nie zmodyfikowało nagłówka żądania „<ph name="HEADER_NAME"/>” żądania sieciowego, bo zmiana powodowałaby konflikt z innym rozszerzeniem (<ph name="EXTENSION_NAME"/>).</translation>
+<translation id="7495493006406536234">Usługa <ph name="PRODUCT_ID"/></translation>
 <translation id="4233778200880751280">Nie udało się załadować strony z informacjami: „<ph name="ABOUT_PAGE"/>”.</translation>
 <translation id="388442998277590542">Nie można wczytać strony opcji „<ph name="OPTIONS_PAGE"/>”.</translation>
 <translation id="6344170822609224263">Lista dostępu połączeń sieciowych</translation>
 <translation id="2616366145935564096">Odczytywanie i modyfikowanie Twoich danych na <ph name="WEBSITE_1"/></translation>
 <translation id="2518849872271000461">Wymiana danych z komputerami o nazwach: <ph name="HOSTNAMES"/></translation>
-<translation id="1389014510128217152">– <ph name="WEBSITE_1"/></translation>
+<translation id="4444304522807523469">Dostęp do skanerów podłączonych przez USB lub do sieci lokalnej</translation>
 <translation id="6408118934673775994">Odczytywanie i modyfikowanie Twoich danych na <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> i <ph name="WEBSITE_3"/></translation>
 <translation id="961805664415579088">Wymiana danych z dowolnym komputerem w domenie <ph name="DOMAIN"/></translation>
 <translation id="3502064055007747926">Dostęp do urządzeń wejściowych</translation>
 <translation id="8670869118777164560">Rozszerzenie nie przekierowało żądania sieciowego do <ph name="ATTEMPTED_REDIRECT_DESTINATION"/>, bo inne rozszerzenie (<ph name="EXTENSION_NAME"/>) przekierowało je do <ph name="ACTUAL_REDIRECT_DESTINATION"/>.</translation>
 <translation id="6840444547062817500">To rozszerzenie zbyt często ładowało się ponownie.</translation>
 <translation id="8047248493720652249">Rozszerzenie nie może odczytać nazwy pobieranego pliku „<ph name="ATTEMPTED_FILENAME"/>”, ponieważ inne rozszerzenie (<ph name="EXTENSION_NAME"/>) odczytało odmienną jego nazwę „<ph name="ACTUAL_FILENAME"/>”.</translation>
-<translation id="2732710576072980201">Produkt <ph name="PRODUCT_ID"/> firmy <ph name="VENDOR_NAME"/> (numer seryjny <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="4968399700653439437">Wymiana danych z dowolnym komputerem w domenach <ph name="DOMAINS"/></translation>
 <translation id="5026754133087629784">Webview: <ph name="WEBVIEW_TAG_NAME"/></translation>
 <translation id="8284279544186306258">wszystkie strony <ph name="WEBSITE_1"/></translation>
@@ -57,8 +55,12 @@
 <translation id="7217838517480956708">Administrator tego komputera wymaga zainstalowanego rozszerzenia <ph name="EXTENSION_NAME"/>. Nie można go usunąć ani modyfikować.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME"/> firmy <ph name="VENDOR_NAME"/> (numer seryjny <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="7154130902455071009">Zmień stronę startową na: <ph name="START_PAGE"/></translation>
-<translation id="6758203075041033901">Produkt <ph name="PRODUCT_ID"/> firmy <ph name="VENDOR_ID"/> (numer seryjny <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="6698810901424468597">Odczytywanie i modyfikowanie Twoich danych na <ph name="WEBSITE_1"/> i <ph name="WEBSITE_2"/></translation>
+<translation id="5544884907028850012">Dostawca <ph name="VENDOR_ID"/></translation>
+<translation id="2048182445208425546">Dostęp do ruchu sieciowego</translation>
+<translation id="5972529113578162692">Administrator tego urządzenia wymaga, by było na nim zainstalowane rozszerzenie <ph name="EXTENSION_NAME"/>. Nie można go odinstalować.</translation>
+<translation id="7131040479572660648">Odczyt Twoich danych na stronie <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> i <ph name="WEBSITE_3"/></translation>
 <translation id="1803557475693955505">Nie można wczytać strony w tle „<ph name="BACKGROUND_PAGE"/>”.</translation>
 <translation id="7972881773422714442">Opcje: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
+<translation id="344630545793878684">Odczyt Twoich danych na kilku stronach internetowych</translation>
 </translationbundle>

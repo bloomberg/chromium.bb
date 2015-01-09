@@ -1,6 +1,4 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="fr">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="fr">
 <translation id="2094750046714988961">Impossible de démarrer le générateur de profils, car la mémoire de stockage externe n'est pas disponible.</translation>
 <translation id="1256337885411059545">Impossible de lire la vidéo.</translation>
 <translation id="2520230379124234395">Le générateur de profils a été lancé.</translation>

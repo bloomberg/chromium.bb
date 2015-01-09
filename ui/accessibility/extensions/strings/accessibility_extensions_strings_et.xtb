@@ -1,4 +1,42 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="et">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="et">
+<translation id="1408730541890277710">Kujutiste asendamine nende alternatiivse tekstiga.</translation>
+<translation id="595639123821853262">Ümberpööratud hallskaala</translation>
+<translation id="8260673944985561857">Sisestusmärgiga sirvimise valikud</translation>
+<translation id="3410969471888629217">Unusta saidi kohandused</translation>
+<translation id="6050189528197190982">Hallskaala</translation>
+<translation id="5094574508723441140">Suurendatud kontrast</translation>
+<translation id="8609925175482059018">Sisestusmärgiga sirvimise sisselülitamiseks vajutage klahvi &lt;span class='key'&gt;F7&lt;/span&gt;. Selle väljalülitamiseks vajutage klahvi uuesti.</translation>
+<translation id="3435896845095436175">Luba</translation>
+<translation id="8480209185614411573">Suur kontrast</translation>
+<translation id="1588438908519853928">Tavaline</translation>
+<translation id="4954450790315188152">Kui sisestusmärgiga sirvimine on lubatud, saate teha järgmist.</translation>
+<translation id="2965611304828530558">&lt;p&gt;Kui jõuate lingi või juhtelemendini, fokuseeritakse see automaatselt.   Lingil või nupul klõpsamiseks vajutage &lt;span class='key'&gt;sisestusklahvi&lt;/span&gt;. &lt;/p&gt; &lt;p&gt;   Kui fokuseeritud juhtelement (näiteks tekstikast või loendikast) jäädvustab   nooleklahvid, vajutage sisestusmärgiga sirvimise jätkamiseks klahvi &lt;span class='key'&gt;Esc&lt;/span&gt; ja siis   vasak- või paremnoolt. &lt;/p&gt; &lt;p&gt;   Teise võimalusena võite vajutada ka &lt;span class='key'&gt;tabulaatorit&lt;/span&gt;, et liikuda järgmisele fokuseeritavale juhtelemendile. &lt;/p&gt;</translation>
+<translation id="2394933097471027016">Proovige seda kohe – sisestusmärgiga sirvimine on sellel lehel alati lubatud!</translation>
+<translation id="3622586652998721735">Määra vaikeskeemiks</translation>
+<translation id="2179565792157161713">Ava pikk kirjeldus uuel vahelehel</translation>
+<translation id="2471847333270902538">Saidi <ph name="SITE"/> värviskeem:</translation>
+<translation id="690628312087070417">Kui sisestusmärk liigub edasi suure vahemaaga:</translation>
+<translation id="5331422999063554397">Vahetatud värv</translation>
+<translation id="2648340354586434750">Sõnahaaval liikumiseks hoidke all &lt;span class='key'&gt;valikuklahvi&lt;/span&gt;.</translation>
+<translation id="5287723860611749454">&lt;p&gt;Kogu dokumendis liikumiseks kasutage nooleklahve. &lt;/p&gt;&lt;p&gt;Kursori liigutamiseks soovitud kohta klõpsake sellel kohal. &lt;/p&gt; &lt;p&gt;   Teksti valimiseks vajutage &lt;span class='key'&gt;tõstuklahvi&lt;/span&gt; ja nooli.&lt;/p&gt;</translation>
+<translation id="5558600050691192317">Klaviatuuri käsud</translation>
+<translation id="633394792577263429">Sõnahaaval liikumiseks hoidke all &lt;span class='key'&gt;juhtklahvi&lt;/span&gt;.</translation>
+<translation id="2079545284768500474">Võta tagasi</translation>
+<translation id="8254860724243898966">Sisestusmärgiga sirvimise sisselülitamiseks vajutage klahvi &lt;span class='key'&gt;Alt&lt;/span&gt; ja klahvi &lt;img src='increase_brightness.png'&gt; (heleduse suurendamise klahvi või klahvi F7). Selle väljalülitamiseks vajutage klahve uuesti.</translation>
+<translation id="3812541808639806898">Kujutise Alt-tekstivaatur</translation>
+<translation id="1287053896835709737">Kollane mustal</translation>
+<translation id="4896660567607030658">Kuva ainult kursor ilma tagasisideta.</translation>
+<translation id="5631241868147802353">Vaikevärviskeem:</translation>
+<translation id="5173942593318174089">Tõsta kursori asukoht esile animatsiooniga.</translation>
+<translation id="894241283505723656">Pikad kirjeldused kontekstimenüüs</translation>
+<translation id="5555153510860501336">Suur kontrastsus on keelatud</translation>
+<translation id="1703735871906654364">Sisestusmärgiga sirvimine</translation>
+<translation id="7384431257964758081">Suur kontrastsus on lubatud</translation>
+<translation id="6550675742724504774">Valikud</translation>
+<translation id="5650358096585648000">Visuaalne tagasiside</translation>
+<translation id="4388820049312272371">Tõsta kursori asukoht esile kiire vilkumisega.</translation>
+<translation id="4023902424053835668">Veebilehtedel oleva teksti nooleklahvidega sirvimine.</translation>
+<translation id="2795227192542594043">See laiendus lisab veebilehele liigutatava kursori, mille abil saate klaviatuuriga teksti valida.</translation>
+<translation id="4394049700291259645">Keela</translation>
+<translation id="5710185147685935461">Värviskeemi muutmine või vahetamine, et veebilehed oleksid paremini loetavad.</translation>
 </translationbundle>

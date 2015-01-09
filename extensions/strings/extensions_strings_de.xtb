@@ -1,12 +1,10 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="de">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="de">
+<translation id="4542520061254486227">Ihre Daten auf <ph name="WEBSITE_1"/> und <ph name="WEBSITE_2"/> lesen</translation>
 <translation id="3624204664103857160">Launcher-Seite &quot;<ph name="PAGE"/>&quot; konnte nicht geladen werden.</translation>
 <translation id="8804398419035066391">Mit zusammenarbeitenden Websites kommunizieren</translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME"/> (Erweiterungs-ID &quot;<ph name="EXTENSION_ID"/>&quot;) wurde vom Administrator blockiert.</translation>
 <translation id="1005274289863221750">Ihr Mikrofon und Ihre Kamera verwenden</translation>
 <translation id="2857834222104759979">Manifest-Datei ist ungültig.</translation>
-<translation id="3828484226910527078">Auf USB-Gerät zugreifen</translation>
 <translation id="6384275966486438344">Sucheinstellungen in <ph name="SEARCH_HOST"/> ändern</translation>
 <translation id="1445572445564823378">Diese Erweiterung verlangsamt die Ausführung von <ph name="PRODUCT_NAME"/>. Deaktivieren Sie sie, um die Leistung von <ph name="PRODUCT_NAME"/> nicht zu beeinträchtigen.</translation>
 <translation id="1033780634303702874">Auf Ihre seriellen Geräte zugreifen</translation>
@@ -15,30 +13,30 @@
 <translation id="677806580227005219">Mimehandler: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">Auf Informationen zu Bluetooth-Geräten mit Pairing mit Ihrem System zugreifen und Bluetooth-Geräte in der Nähe finden</translation>
 <translation id="5911798608827489036">Daten mit einem beliebigen Computer im lokalen Netz oder Internet austauschen</translation>
-<translation id="4719685943208231314">Auf USB-Gerät von <ph name="VENDOR_NAME"/> zugreifen</translation>
+<translation id="8284835137979141223"><ph name="PRODUCT_NAME"/> von <ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">Hintergrundskript &quot;<ph name="BACKGROUND_SCRIPT"/>&quot; konnte nicht geladen werden.</translation>
 <translation id="9131487537093447019">Nachrichten an Bluetooth-Geräte senden und von diesen erhalten</translation>
-<translation id="8198425243160395623">Auf Ihre USB-Geräte zugreifen</translation>
+<translation id="5678955352098267522">Ihre Daten auf <ph name="WEBSITE_1"/> lesen</translation>
 <translation id="8597109877291678953">Daten mit dem Computer mit dem Namen <ph name="HOSTNAME"/> austauschen</translation>
 <translation id="5456409301717116725">Die Erweiterung enthält die Schlüsseldatei &quot;<ph name="KEY_PATH"/>&quot;. Möchten Sie den Vorgang wirklich fortsetzen?</translation>
+<translation id="7257666756905341374">Daten lesen, die Sie kopieren und einfügen</translation>
 <translation id="2350172092385603347">Lokalisierung wurde verwendet, in der Manifest-Datei war jedoch kein Wert für &quot;default_locale&quot; angegeben.</translation>
 <translation id="3759933321830434300">Teile von Webseiten blockieren</translation>
-<translation id="8058376558882514200">Auf USB-Gerät <ph name="PRODUCT_NAME"/> von <ph name="VENDOR_NAME"/> zugreifen</translation>
 <translation id="149347756975725155">Erweiterungssymbol &quot;<ph name="ICON"/>&quot; kann nicht geladen werden.</translation>
 <translation id="8825366169884721447">Die Erweiterung konnte den Anfrage-Header &quot;<ph name="HEADER_NAME"/>&quot; einer Netzwerkanfrage nicht modifizieren, da die Modifikation einen Konflikt mit einer anderen Erweiterung (<ph name="EXTENSION_NAME"/>) verursacht.</translation>
+<translation id="7495493006406536234">Produkt <ph name="PRODUCT_ID"/></translation>
 <translation id="4233778200880751280">Infoseite &quot;<ph name="ABOUT_PAGE"/>&quot; konnte nicht geladen werden.</translation>
 <translation id="388442998277590542">Optionsseite &quot;<ph name="OPTIONS_PAGE"/>&quot; konnte nicht geladen werden.</translation>
 <translation id="6344170822609224263">Auf Liste der Netzwerkverbindungen zugreifen</translation>
 <translation id="2616366145935564096">Eigene Daten auf <ph name="WEBSITE_1"/> lesen und ändern</translation>
 <translation id="2518849872271000461">Daten mit den Computern mit folgenden Namen austauschen: <ph name="HOSTNAMES"/></translation>
-<translation id="1389014510128217152">– <ph name="WEBSITE_1"/></translation>
+<translation id="4444304522807523469">Auf Dokumentenscanner zugreifen, die per USB angeschlossen sind oder sich im lokalen Netzwerk befinden</translation>
 <translation id="6408118934673775994">Eigene Daten auf <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> und <ph name="WEBSITE_3"/> lesen und ändern</translation>
 <translation id="961805664415579088">Daten mit einem beliebigen Computer in der Domain <ph name="DOMAIN"/> austauschen</translation>
 <translation id="3502064055007747926">Auf Ihre Eingabegeräte zugreifen</translation>
 <translation id="8670869118777164560">Die Erweiterung konnte die Netzwerkanfrage nicht an <ph name="ATTEMPTED_REDIRECT_DESTINATION"/> weiterleiten, da eine andere Erweiterung (<ph name="EXTENSION_NAME"/>) sie an <ph name="ACTUAL_REDIRECT_DESTINATION"/> weitergeleitet hat.</translation>
 <translation id="6840444547062817500">Diese Erweiterung hat sich selbst zu häufig neu geladen.</translation>
 <translation id="8047248493720652249">Diese Erweiterung konnte den Download nicht &quot;<ph name="ATTEMPTED_FILENAME"/>&quot; nennen, weil eine andere Erweiterung (<ph name="EXTENSION_NAME"/>) einen anderen Dateinamen &quot;<ph name="ACTUAL_FILENAME"/>&quot; festgelegt hat.</translation>
-<translation id="2732710576072980201">Produkt <ph name="PRODUCT_ID"/> von <ph name="VENDOR_NAME"/> (Seriennummer <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="4968399700653439437">Daten mit einem beliebigen Computer in den Domains <ph name="DOMAINS"/> austauschen</translation>
 <translation id="5026754133087629784">Web-Ansicht: <ph name="WEBVIEW_TAG_NAME"/></translation>
 <translation id="8284279544186306258">alle <ph name="WEBSITE_1"/>-Websites</translation>
@@ -57,8 +55,12 @@
 <translation id="7217838517480956708">Der Administrator dieses Computers schreibt die Installation von <ph name="EXTENSION_NAME"/> vor. Die Erweiterung kann nicht entfernt oder geändert werden.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME"/> von <ph name="VENDOR_NAME"/> (Seriennummer <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="7154130902455071009">Startseite in <ph name="START_PAGE"/> ändern</translation>
-<translation id="6758203075041033901">Produkt <ph name="PRODUCT_ID"/> von Anbieter <ph name="VENDOR_ID"/> (Seriennummer <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="6698810901424468597">Eigene Daten auf <ph name="WEBSITE_1"/> und <ph name="WEBSITE_2"/> lesen und ändern</translation>
+<translation id="5544884907028850012">Anbieter <ph name="VENDOR_ID"/></translation>
+<translation id="2048182445208425546">Auf Ihren Netzwerkverkehr zugreifen</translation>
+<translation id="5972529113578162692">Der Administrator dieses Computers hat die Installation von <ph name="EXTENSION_NAME"/> vorgegeben. Eine Deinstallation ist daher nicht möglich.</translation>
+<translation id="7131040479572660648">Ihre Daten auf <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> und <ph name="WEBSITE_3"/> lesen</translation>
 <translation id="1803557475693955505">Hintergrundseite &quot;<ph name="BACKGROUND_PAGE"/>&quot; konnte nicht geladen werden.</translation>
 <translation id="7972881773422714442">Options: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
+<translation id="344630545793878684">Ihre Daten auf verschiedenen Websites lesen</translation>
 </translationbundle>

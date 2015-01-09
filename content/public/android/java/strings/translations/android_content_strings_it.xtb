@@ -1,6 +1,4 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="it">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="it">
 <translation id="2094750046714988961">Impossibile avviare profiler perché la memoria esterna non è pronta</translation>
 <translation id="1256337885411059545">Impossibile riprodurre il video</translation>
 <translation id="2520230379124234395">Profiler avviato</translation>

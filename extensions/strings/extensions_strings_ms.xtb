@@ -1,12 +1,10 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="ms">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="ms">
+<translation id="4542520061254486227">Baca data anda di <ph name="WEBSITE_1"/> dan <ph name="WEBSITE_2"/></translation>
 <translation id="3624204664103857160">Tidak dapat memuatkan halaman pelancar '<ph name="PAGE"/>'.</translation>
 <translation id="8804398419035066391">Berkomunikasi dengan tapak web yang bekerjasama</translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME"/> (ID sambungan &quot;<ph name="EXTENSION_ID"/>&quot;) disekat oleh pentadbir.</translation>
 <translation id="1005274289863221750">Gunakan mikrofon dan kamera anda</translation>
 <translation id="2857834222104759979">Fail manifes tidak sah.</translation>
-<translation id="3828484226910527078">Akses peranti USB</translation>
 <translation id="6384275966486438344">Ubah tetapan carian anda kepada: <ph name="SEARCH_HOST"/></translation>
 <translation id="1445572445564823378">Sambungan ini melambatkan <ph name="PRODUCT_NAME"/>. Anda perlu melumpuhkannya untuk memulihkan prestasi <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="1033780634303702874">Akses peranti bersiri anda</translation>
@@ -15,30 +13,30 @@
 <translation id="677806580227005219">Mimehandler: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">Akses maklumat mengenai peranti Bluetooth yang dipasangkan dengan sistem anda dan temui peranti Bluetooth berhampiran.</translation>
 <translation id="5911798608827489036">Bertukar data dengan mana-mana komputer pada rangkaian tempatan atau internet</translation>
-<translation id="4719685943208231314">Akses peranti USB daripada <ph name="VENDOR_NAME"/>.</translation>
+<translation id="8284835137979141223"><ph name="PRODUCT_NAME"/> daripada <ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">Tidak dapat memuatkan skrip latar belakang '<ph name="BACKGROUND_SCRIPT"/>'.</translation>
 <translation id="9131487537093447019">Hantar mesej kepada dan terima mesej daripada peranti Bluetooth.</translation>
-<translation id="8198425243160395623">Akses peranti USB anda</translation>
+<translation id="5678955352098267522">Baca data anda di <ph name="WEBSITE_1"/></translation>
 <translation id="8597109877291678953">Bertukar data dengan komputer bernama <ph name="HOSTNAME"/></translation>
 <translation id="5456409301717116725">Sambungan ini merangkumi fail utama ' <ph name="KEY_PATH"/> '. Anda mungkin tidak mahu melakukannya.</translation>
+<translation id="7257666756905341374">Baca data yang anda salin dan tampal</translation>
 <translation id="2350172092385603347">Penempatan digunakan, tetapi default_locale tidak dinyatakan dalam ketara.</translation>
 <translation id="3759933321830434300">Sekat sebahagian halaman web</translation>
-<translation id="8058376558882514200">Akses peranti USB <ph name="PRODUCT_NAME"/> daripada <ph name="VENDOR_NAME"/>.</translation>
 <translation id="149347756975725155">Tidak dapat memuatkan ikon sambungan '<ph name="ICON"/>'.</translation>
 <translation id="8825366169884721447">Sambungan ini gagal mengubah suai pengatas permintaan &quot;<ph name="HEADER_NAME"/>&quot; untuk permintaan rangkaian kerana ubah suai tersebut bercanggah dengan sambungan lain (<ph name="EXTENSION_NAME"/>).</translation>
+<translation id="7495493006406536234">Produk <ph name="PRODUCT_ID"/></translation>
 <translation id="4233778200880751280">Tidak dapat memuatkan halaman perihal '<ph name="ABOUT_PAGE"/>'.</translation>
 <translation id="388442998277590542">Tidak dapat memuatkan halaman pilihan '<ph name="OPTIONS_PAGE"/>'.</translation>
 <translation id="6344170822609224263">Akses senarai sambungan rangkaian</translation>
 <translation id="2616366145935564096">Baca dan tukar data anda di <ph name="WEBSITE_1"/></translation>
 <translation id="2518849872271000461">Bertukar data dengan komputer bernama: <ph name="HOSTNAMES"/></translation>
-<translation id="1389014510128217152">- <ph name="WEBSITE_1"/></translation>
+<translation id="4444304522807523469">Akses pengimbas dokumen yang disambungkan melalui USB atau pada rangkaian tempatan</translation>
 <translation id="6408118934673775994">Baca dan tukar data anda di <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> dan <ph name="WEBSITE_3"/></translation>
 <translation id="961805664415579088">Bertukar data dengan mana-mana komputer dalam domain <ph name="DOMAIN"/></translation>
 <translation id="3502064055007747926">Akses peranti input anda</translation>
 <translation id="8670869118777164560">Sambungan ini gagal mengubah hala permintaan rangkaian ke <ph name="ATTEMPTED_REDIRECT_DESTINATION"/> kerana sambungan lain (<ph name="EXTENSION_NAME"/>) mengubah halanya ke <ph name="ACTUAL_REDIRECT_DESTINATION"/>.</translation>
 <translation id="6840444547062817500">Sambungan ini terlalu kerap memuat semula sendiri.</translation>
 <translation id="8047248493720652249">Sambungan ini gagal menamakan muat turun &quot;<ph name="ATTEMPTED_FILENAME"/>&quot; kerana sambungan lain (<ph name="EXTENSION_NAME"/>) menetapkan nama fail lain &quot;<ph name="ACTUAL_FILENAME"/>&quot;.</translation>
-<translation id="2732710576072980201">Produk <ph name="PRODUCT_ID"/> daripada <ph name="VENDOR_NAME"/> (nombor siri <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="4968399700653439437">Bertukar data dengan mana-mana komputer dalam domain: <ph name="DOMAINS"/></translation>
 <translation id="5026754133087629784">Paparan Web: <ph name="WEBVIEW_TAG_NAME"/></translation>
 <translation id="8284279544186306258">semua tapak <ph name="WEBSITE_1"/></translation>
@@ -57,8 +55,12 @@
 <translation id="7217838517480956708">Pentadbir mesin ini memerlukan <ph name="EXTENSION_NAME"/> dipasang. Sambungan ini tidak boleh dialih keluar atau diubah suai.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME"/> daripada <ph name="VENDOR_NAME"/> (nombor siri <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="7154130902455071009">Tukar halaman permulaan anda kepada: <ph name="START_PAGE"/></translation>
-<translation id="6758203075041033901">Produk <ph name="PRODUCT_ID"/> daripada Penjual <ph name="VENDOR_ID"/> (nombor siri <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="6698810901424468597">Baca dan tukar data anda di <ph name="WEBSITE_1"/> dan <ph name="WEBSITE_2"/></translation>
+<translation id="5544884907028850012">Penjual <ph name="VENDOR_ID"/></translation>
+<translation id="2048182445208425546">Akses trafik rangkaian anda</translation>
+<translation id="5972529113578162692">Pentadbir mesin ini memerlukan <ph name="EXTENSION_NAME"/> dipasang. Sambungan ini tidak boleh dinyahpasang.</translation>
+<translation id="7131040479572660648">Baca data anda di <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> dan <ph name="WEBSITE_3"/></translation>
 <translation id="1803557475693955505">Tidak dapat memuatkan halaman latar belakang '<ph name="BACKGROUND_PAGE"/>'.</translation>
 <translation id="7972881773422714442">Pilihan: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
+<translation id="344630545793878684">Baca data anda di beberapa tapak web</translation>
 </translationbundle>

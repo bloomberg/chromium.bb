@@ -1,6 +1,4 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="zh-CN">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="zh-CN">
 <translation id="7485870689360869515">找不到数据。</translation>
 <translation id="3884278016824448484">设备标识符存在冲突</translation>
 <translation id="6779575937362063477">Google 电子钱包不支持此类型的信用卡，请选择其他信用卡。</translation>
@@ -12,6 +10,7 @@
 <translation id="1339601241726513588">注册域：</translation>
 <translation id="7298195798382681320">推荐</translation>
 <translation id="4058922952496707368">“<ph name="SUBKEY"/>”键：<ph name="ERROR"/></translation>
+<translation id="6980028882292583085">JavaScript 提醒</translation>
 <translation id="5299298092464848405">解析策略时出错</translation>
 <translation id="6628463337424475685"><ph name="ENGINE"/> 搜索</translation>
 <translation id="6831043979455480757">翻译</translation>
@@ -24,6 +23,7 @@
 <translation id="2958431318199492670">网络配置不符合 ONC 标准。无法导入配置的某些部分。</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="277499241957683684">缺少设备记录</translation>
+<translation id="1491151370853475546">重新加载此页</translation>
 <translation id="8553075262323480129">系统无法确定该网页的语言，因此无法进行翻译。</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="1103523840287552314">总是翻译<ph name="LANGUAGE"/></translation>
@@ -44,6 +44,7 @@
 <translation id="3380365263193509176">未知错误</translation>
 <translation id="112840717907525620">策略缓存良好</translation>
 <translation id="3452404311384756672">抓取时间间隔：</translation>
+<translation id="409504436206021213">不重新加载</translation>
 <translation id="7441627299479586546">策略主题有误</translation>
 <translation id="3885155851504623709">区</translation>
 <translation id="6973656660372572881">固定代理服务器和 .pac 脚本网址均已指定。</translation>
@@ -52,6 +53,7 @@
 <translation id="3667681724235208644">查看原始页面</translation>
 <translation id="4079302484614802869">代理配置已设置为使用 .pac 脚本网址，而不是固定的代理服务器。</translation>
 <translation id="5540224163453853">找不到请求的文章。</translation>
+<translation id="333371639341676808">禁止此页再显示对话框。</translation>
 <translation id="5523118979700054094">政策名</translation>
 <translation id="7791543448312431591">添加</translation>
 <translation id="2053553514270667976">邮编</translation>
@@ -68,6 +70,7 @@
 <translation id="2367567093518048410">级别</translation>
 <translation id="7977590112176369853">&lt;输入查询&gt;</translation>
 <translation id="7610193165460212391">值超出了范围 (<ph name="VALUE"/>)。</translation>
+<translation id="8311778656528046050">确定要重新加载此网页吗？</translation>
 <translation id="370665806235115550">正在加载...</translation>
 <translation id="2096368010154057602">省</translation>
 <translation id="4258748452823770588">签名无效</translation>
@@ -95,11 +98,14 @@
 <translation id="6445051938772793705">国家/地区</translation>
 <translation id="5031870354684148875">关于 Google 翻译</translation>
 <translation id="1152921474424827756">访问<ph name="URL"/>的<ph name="BEGIN_LINK"/>缓存副本<ph name="END_LINK"/></translation>
+<translation id="8201077131113104583">ID 为“<ph name="EXTENSION_ID"/>”的扩展程序的更新网址无效。</translation>
 <translation id="6891596781022320156">政策级别不受支持。</translation>
 <translation id="2025186561304664664">代理已设为自动配置。</translation>
 <translation id="1853748787962613237">无法显示文章。</translation>
 <translation id="5455374756549232013">策略时间戳无效</translation>
+<translation id="2025623846716345241">确认重新加载</translation>
 <translation id="1962204205936693436"><ph name="DOMAIN"/>书签</translation>
+<translation id="111844081046043029">确定要离开此页吗？</translation>
 <translation id="1973335181906896915">序列化错误</translation>
 <translation id="5989320800837274978">固定代理服务器和 .pac 脚本网址均未指定。</translation>
 <translation id="7805768142964895445">状态</translation>
@@ -110,12 +116,13 @@
 <translation id="7956713633345437162">移动设备书签</translation>
 <translation id="5089810972385038852">州</translation>
 <translation id="647261751007945333">设备政策</translation>
-<translation id="678528074488531090">验证错误：<ph name="VALIDATION_ERROR"/>。</translation>
 <translation id="213826338245044447">移动设备书签</translation>
 <translation id="8571890674111243710">正在将网页翻译成<ph name="LANGUAGE"/>...</translation>
 <translation id="4117700440116928470">政策范围不受支持。</translation>
 <translation id="2114841414352855701">由于已被 <ph name="POLICY_NAME"/> 替换，该政策已忽略。</translation>
 <translation id="3228969707346345236">此网页已经是<ph name="LANGUAGE"/>网页，因此无法翻译。</translation>
+<translation id="7521387064766892559">JavaScript</translation>
+<translation id="8034522405403831421">此网页的源语言为<ph name="SOURCE_LANGUAGE"/>，要将其翻译成<ph name="TARGET_LANGUAGE"/>吗？</translation>
 <translation id="8891727572606052622">代理模式无效。</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="7752995774971033316">非托管</translation>
@@ -137,9 +144,11 @@
 <translation id="3377188786107721145">策略解析错误</translation>
 <translation id="2270192940992995399">找不到文章。</translation>
 <translation id="4726672564094551039">重新加载政策</translation>
+<translation id="9154176715500758432">留在此页</translation>
 <translation id="2392959068659972793">显示未设定值的政策</translation>
 <translation id="5190835502935405962">书签栏</translation>
 <translation id="6965978654500191972">设备</translation>
+<translation id="5295309862264981122">确认导航</translation>
 <translation id="8249320324621329438">最后一次抓取时间：</translation>
 <translation id="194030505837763158">请访问<ph name="LINK"/></translation>
 <translation id="1285320974508926690">一律不翻译此网站</translation>
@@ -150,6 +159,7 @@
 <translation id="9020542370529661692">已将此网页内容翻译成<ph name="TARGET_LANGUAGE"/></translation>
 <translation id="5631439013527180824">设备管理令牌无效</translation>
 <translation id="560412284261940334">不支持管理</translation>
+<translation id="6512448926095770873">离开此页</translation>
 <translation id="1639239467298939599">正在加载</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="4923417429809017348">翻译服务器已将此网页从某种未知语言翻译成了<ph name="LANGUAGE_LANGUAGE"/>。</translation>
@@ -163,6 +173,8 @@
 <translation id="5509780412636533143">受管理的书签</translation>
 <translation id="8866481888320382733">解析策略设置时出错</translation>
 <translation id="6644283850729428850">此政策已弃用。</translation>
+<translation id="1693754753824026215"><ph name="SITE"/> 上的网页显示：</translation>
+<translation id="4269787794583293679">（无用户名）</translation>
 <translation id="7988324688042446538">桌面书签</translation>
 <translation id="8488350697529856933">适用对象</translation>
 <translation id="6165508094623778733">了解详情</translation>
@@ -184,8 +196,8 @@
 <translation id="2639739919103226564">状态：</translation>
 <translation id="1832546148887467272">切换到 <ph name="NEW_GOOGLE_HOST"/></translation>
 <translation id="5095208057601539847">省</translation>
+<translation id="2581221116934462656">您希望 <ph name="PRODUCT_NAME"/> 下次翻译此网站的<ph name="LANGUAGE_NAME"/>网页吗？</translation>
 <translation id="3934680773876859118">无法加载 PDF 文档</translation>
-<translation id="1152021252151287493">验证签名无效。</translation>
 <translation id="6965382102122355670">确定</translation>
 <translation id="2721148159707890343">请求成功</translation>
 <translation id="2455981314101692989">该网页已对该表单停用自动填充功能。</translation>

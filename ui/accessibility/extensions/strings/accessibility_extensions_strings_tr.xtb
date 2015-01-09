@@ -1,4 +1,42 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="tr">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="tr">
+<translation id="1408730541890277710">Resimleri &quot;alt&quot; metinleri ile değiştirme.</translation>
+<translation id="595639123821853262">Ters Gri Tonlaması</translation>
+<translation id="8260673944985561857">Caret Browsing Seçenekleri</translation>
+<translation id="3410969471888629217">Site özelleştirmelerini unut</translation>
+<translation id="6050189528197190982">Gri Tonlama</translation>
+<translation id="5094574508723441140">Artırılmış Kontrast</translation>
+<translation id="8609925175482059018">Caret Browsing'i etkinleştirmek için &lt;span class='key'&gt;F7&lt;/span&gt; tuşuna basın. Kapatmak için yine aynı tuşa basın.</translation>
+<translation id="3435896845095436175">Etkinleştir</translation>
+<translation id="8480209185614411573">Yüksek Kontrast</translation>
+<translation id="1588438908519853928">Normal</translation>
+<translation id="4954450790315188152">Caret Browsing etkinleştirildiğinde:</translation>
+<translation id="2965611304828530558">&lt;p&gt;Bir bağlantı ya da kontrol öğesine geldiğinizde, bu bağlantı ya da öğeye otomatik olarak odaklanılır. Bir bağlantı veya düğmeyi tıklamak için &lt;span class='key'&gt;Enter&lt;/span&gt; tuşuna basın. &lt;/p&gt; &lt;p&gt;   Odaklanılmış bir kontrol öğesi (metin kutusu veya liste kutusu gibi) ok tuşlarını yakaladığında, Caret Browsing'e devam etmek için &lt;span class='key'&gt;Esc&lt;/span&gt; tuşuna ardından da sol veya sağ ok tuşuna basın. &lt;/p&gt; &lt;p&gt; Alternatif olarak, bir sonraki odaklanılabilir kontrol öğesine geçmek üzere &lt;span class='key'&gt;Sekme&lt;/span&gt; tuşuna da basabilirsiniz.&lt;/p&gt;</translation>
+<translation id="2394933097471027016">Caret Browsing bu sayfada her zaman etkindir, hemen deneyin!</translation>
+<translation id="3622586652998721735">Varsayılan düzen olarak belirle</translation>
+<translation id="2179565792157161713">Uzun Açıklamayı Yeni Sekmede Aç</translation>
+<translation id="2471847333270902538"><ph name="SITE"/> için renk düzeni:</translation>
+<translation id="690628312087070417">Klavye imleci uzun mesafe atlarsa:</translation>
+<translation id="5331422999063554397">Ters Renk</translation>
+<translation id="2648340354586434750">Kelime kelime hareket etmek için &lt;span class='key'&gt;Seçenek&lt;/span&gt; tuşunu basılı tutun.</translation>
+<translation id="5287723860611749454">&lt;p&gt;Doküman içinde hareket etmek için ok tuşlarını kullanın.&lt;/p&gt;&lt;p&gt;İmleci belli bir konuma götürmek için ilgili konumu tıklayın.&lt;/p&gt; &lt;p&gt; Metni seçmek için &lt;span class='key'&gt;ÜstKrktr&lt;/span&gt; + ok tuşlarına basın.&lt;/p&gt;</translation>
+<translation id="5558600050691192317">Klavye komutları</translation>
+<translation id="633394792577263429">Kelime kelime hareket etmek için &lt;span class='key'&gt;Control&lt;/span&gt; tuşunu basılı tutun.</translation>
+<translation id="2079545284768500474">Geri Al</translation>
+<translation id="8254860724243898966">Caret Browsing'i etkinleştirmek için &lt;span class='key'&gt;Alt&lt;/span&gt; + &lt;img src='increase_brightness.png'&gt; (Parlaklığı Artırma tuşu veya F7) tuşuna basın. Kapatmak için tekrar aynı tuşa basın.</translation>
+<translation id="3812541808639806898">Resim &quot;Alt&quot; Metni Görüntüleyici</translation>
+<translation id="1287053896835709737">Siyah üzerine sarı</translation>
+<translation id="4896660567607030658">Geri bildirim yok, sadece imleci göster.</translation>
+<translation id="5631241868147802353">Varsayılan renk düzeni:</translation>
+<translation id="5173942593318174089">İmleç konumunu bir animasyon ile vurgulama.</translation>
+<translation id="894241283505723656">İçerik Menüsünde Uzun Açıklamalar</translation>
+<translation id="5555153510860501336">Yüksek Kontrast Devre Dışı</translation>
+<translation id="1703735871906654364">Klavye Göz Atma</translation>
+<translation id="7384431257964758081">Yüksek Kontrast Etkin</translation>
+<translation id="6550675742724504774">Seçenekler</translation>
+<translation id="5650358096585648000">Görsel Geri Bildirim</translation>
+<translation id="4388820049312272371">İmleç konumunu hızlı bir yanıp sönme ile vurgulama.</translation>
+<translation id="4023902424053835668">Web sayfalarının metinlerine ok tuşlarını kullanarak göz atın.</translation>
+<translation id="2795227192542594043">Bu uzantı size web sayfasında hareket ettirilebilen bir imleç sunarak klavye ile seçim yapmanıza olanak sağlar.</translation>
+<translation id="4394049700291259645">Devre dışı bırak</translation>
+<translation id="5710185147685935461">Web sayfalarının daha kolay okunabilmesini sağlamak için renk düzenini değiştirin veya ters çevirin.</translation>
 </translationbundle>

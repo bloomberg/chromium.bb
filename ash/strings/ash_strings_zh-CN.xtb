@@ -1,8 +1,7 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="zh-CN">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="zh-CN">
 <translation id="3595596368722241419">电池已充满</translation>
 <translation id="6895424601869865703">为<ph name="GIVEN_NAME"/>添加一个帐户</translation>
+<translation id="1270290102613614947">屏幕键盘已停用</translation>
 <translation id="1057289296854808272">旋转功能已启用（点按此处可进行更改）</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> <ph name="MINUTE"/></translation>
 <translation id="30155388420722288">溢出按钮</translation>
@@ -13,8 +12,8 @@
 <translation id="9074739597929991885">蓝牙</translation>
 <translation id="2268130516524549846">蓝牙已停用</translation>
 <translation id="6713285437468012787">蓝牙设备“<ph name="DEVICE_NAME"/>”已配对，现可供所有用户使用。您可以通过“设置”取消此配对。</translation>
-<translation id="7165320105431587207">无法配置网络</translation>
 <translation id="3775358506042162758">使用多帐户登录时，最多只能有 3 个帐户。</translation>
+<translation id="9151726767154816831">重新启动并通过 Powerwash 来进行更新</translation>
 <translation id="370649949373421643">启用 Wi-Fi</translation>
 <translation id="3626281679859535460">亮度</translation>
 <translation id="3621202678540785336">输入</translation>
@@ -25,22 +24,15 @@
 <translation id="2303600792989757991">“切换窗口”概述</translation>
 <translation id="5565793151875479467">代理...</translation>
 <translation id="938582441709398163">Overlay 键盘</translation>
-<translation id="4387004326333427325">身份验证证书遭到远程拒绝</translation>
 <translation id="6047696787498798094">切换到其他用户后将停止屏幕共享。要继续吗？</translation>
 <translation id="6979158407327259162">Google 云端硬盘</translation>
 <translation id="3683428399328702079"><ph name="DISPLAY_NAME"/>的分辨率已改为<ph name="RESOLUTION"/></translation>
-<translation id="6943836128787782965">HTTP 获取请求失败</translation>
 <translation id="2297568595583585744">状态栏</translation>
-<translation id="1661867754829461514">缺少 PIN</translation>
 <translation id="2248649616066688669">Chromebook连接到外接显示器时，即使合上盖子，也可继续使用。</translation>
-<translation id="40400351611212369">网络激活错误</translation>
-<translation id="4237016987259239829">网络连接错误</translation>
 <translation id="2946640296642327832">启用蓝牙</translation>
 <translation id="6459472438155181876">正在将屏幕扩展到<ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">蜂窝网络设备</translation>
 <translation id="6596816719288285829">IP 地址</translation>
-<translation id="4508265954913339219">激活失败</translation>
-<translation id="8688591111840995413">密码错误</translation>
 <translation id="3621712662352432595">音频设置</translation>
 <translation id="1812696562331527143">您的输入法已更改为“<ph name="INPUT_METHOD_ID"/>”*（<ph name="BEGIN_LINK"/>第三方<ph name="END_LINK"/>）。
 按 Shift + Alt 键可切换。</translation>
@@ -51,7 +43,6 @@
 <translation id="3891340733213178823">连按两次Ctrl+Shift+Q即可退出。</translation>
 <translation id="5871632337994001636">管理设备…</translation>
 <translation id="785750925697875037">查看移动帐户</translation>
-<translation id="4628814525959230255">通过环聊与<ph name="HELPER_NAME"/>共享您屏幕的控制权。</translation>
 <translation id="7864539943188674973">停用蓝牙</translation>
 <translation id="939252827960237676">无法保存屏幕截图</translation>
 <translation id="9080206825613744995">麦克风目前处于使用状态。</translation>
@@ -67,8 +58,6 @@
 <translation id="5238774010593222950">无法登录其他帐户。</translation>
 <translation id="1723752762323179280">退出会话</translation>
 <translation id="1426410128494586442">是</translation>
-<translation id="7170041865419449892">超出范围</translation>
-<translation id="2544853746127077729">身份验证证书遭到网络拒绝</translation>
 <translation id="2963773877003373896">mod3</translation>
 <translation id="5222676887888702881">退出</translation>
 <translation id="2391579633712104609">180°</translation>
@@ -76,7 +65,6 @@
 <translation id="4957722034734105353">了解详情...</translation>
 <translation id="2964193600955408481">停用 Wi-Fi</translation>
 <translation id="4279490309300973883">正在镜像</translation>
-<translation id="7973962044839454485">用户名或密码不正确，导致 PPP 身份验证失败</translation>
 <translation id="2509468283778169019">CAPS LOCK 已打开</translation>
 <translation id="3892641579809465218">内部显示</translation>
 <translation id="7823564328645135659">同步了您的设置后，该语言已由“<ph name="FROM_LOCALE"/>”更改为“<ph name="TO_LOCALE"/>”。</translation>
@@ -98,19 +86,18 @@
 <translation id="3967919079500697218">您的管理员已停用屏幕截图功能。</translation>
 <translation id="372094107052732682">连按两次 Ctrl+Shift+Q 即可退出。</translation>
 <translation id="923686485342484400">连按两次Ctrl+Shift+Q即可退出。</translation>
+<translation id="9194617393863864469">登录其他用户帐户…</translation>
 <translation id="6803622936009808957">找不到系统支持的分辨率，因此无法镜像显示屏。已改为进入扩展桌面。</translation>
-<translation id="1480041086352807611">演示模式</translation>
 <translation id="4066708417179825777"><ph name="PRIMARY_ACCOUNT"/>（主帐户）</translation>
 <translation id="3626637461649818317">剩余电量：<ph name="PERCENTAGE"/>%</translation>
 <translation id="9089416786594320554">输入法</translation>
 <translation id="2700058918926273959">会话将在<ph name="SESSION_TIME_REMAINING"/>后结束，到时您将自动退出。</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/>%</translation>
-<translation id="2670531586141364277">激活“<ph name="NAME"/>”需要连接网络。</translation>
 <translation id="3963445509666917109">扬声器（内部）</translation>
+<translation id="1747827819627189109">屏幕键盘已启用</translation>
 <translation id="2825619548187458965">文件架</translation>
 <translation id="2614835198358683673">您的 Chromebook 在开启期间可能无法充电。建议您使用产品原装的充电器。</translation>
 <translation id="4430019312045809116">音量</translation>
-<translation id="4442424173763614572">DNS 查找失败</translation>
 <translation id="544691375626129091">所有可参加的用户均已添加到此会话中。</translation>
 <translation id="1383876407941801731">搜索</translation>
 <translation id="2204305834655267233">网络信息</translation>
@@ -120,16 +107,11 @@
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="3625258641415618104">已停用屏幕截图</translation>
 <translation id="1346748346194534595">向右</translation>
-<translation id="1773212559869067373">身份验证证书遭到本地拒绝</translation>
 <translation id="8528322925433439945">移动...</translation>
 <translation id="8428213095426709021">设置</translation>
 <translation id="2372145515558759244">正在同步应用...</translation>
-<translation id="7256405249507348194">无法识别的错误：<ph name="DESC"/></translation>
 <translation id="1987317783729300807">帐户</translation>
-<translation id="2894654529758326923">信息</translation>
-<translation id="7925247922861151263">AAA 检查失败</translation>
 <translation id="8456362689280298700">电池充满还需 <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
-<translation id="6312403991423642364">未知网络错误</translation>
 <translation id="1467432559032391204">向左</translation>
 <translation id="5543001071567407895">短信</translation>
 <translation id="1957803754585243749">0°</translation>
@@ -145,51 +127,39 @@
 <translation id="2761704814324807722">状态栏，时间为<ph name="TIME"/>，<ph name="BATTERY"/></translation>
 <translation id="3784455785234192852">锁定</translation>
 <translation id="2805756323405976993">应用</translation>
-<translation id="5097002363526479830">无法连接到网络“<ph name="NAME"/>”：<ph name="DETAILS"/></translation>
 <translation id="2872961005593481000">关闭</translation>
 <translation id="3433830597744061105">管理帐户</translation>
-<translation id="2966449113954629791">您的移动数据量可能已用完。请访问“<ph name="NAME"/>”激活门户网站，购买更多数据。</translation>
 <translation id="742594950370306541">摄像头处于使用状态。</translation>
 <translation id="7052914147756339792">设置壁纸...</translation>
 <translation id="2532589005999780174">高反差模式</translation>
 <translation id="511445211639755999"><ph name="RESOLUTION"/>，<ph name="OVERSCAN"/></translation>
-<translation id="1119447706177454957">内部错误</translation>
 <translation id="3019353588588144572">电池电量将在 <ph name="TIME_REMAINING"/>后充满</translation>
 <translation id="3473479545200714844">屏幕放大镜</translation>
 <translation id="882279321799040148">点击即可查看</translation>
 <translation id="1753067873202720523">您的 Chromebook 在处于打开状态时可能无法充电。</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME"/>不支持<ph name="SPECIFIED_RESOLUTION"/>。分辨率已改为<ph name="FALLBACK_RESOLUTION"/></translation>
-<translation id="5045550434625856497">密码不正确</translation>
 <translation id="1602076796624386989">启用移动数据</translation>
 <translation id="68610848741840742">ChromeVox（语音反馈）</translation>
 <translation id="6981982820502123353">辅助功能</translation>
 <translation id="6585808820553845416">会话将在<ph name="SESSION_TIME_REMAINING"/>后结束。</translation>
-<translation id="4274292172790327596">未识别的错误</translation>
 <translation id="5977415296283489383">耳机</translation>
 <translation id="225680501294068881">正在查找设备...</translation>
 <translation id="5597451508971090205"><ph name="DATE"/><ph name="SHORT_WEEKDAY"/></translation>
 <translation id="737451040872859086">麦克风（内部）</translation>
-<translation id="8401662262483418323">无法连接到“<ph name="NAME"/>”：<ph name="DETAILS"/>
-服务器消息：<ph name="SERVER_MSG"/></translation>
 <translation id="2475982808118771221">出现错误</translation>
 <translation id="3783640748446814672">alt</translation>
-<translation id="7229570126336867161">需要 EVDO</translation>
 <translation id="2999742336789313416">“<ph name="DISPLAY_NAME"/>”是由 <ph name="DOMAIN"/> 管理的公开会话</translation>
-<translation id="9044646465488564462">无法连接到网络：<ph name="DETAILS"/></translation>
 <translation id="7029814467594812963">退出会话</translation>
 <translation id="479989351350248267">搜索</translation>
 <translation id="4872237917498892622">Alt + 搜索键或 Shift</translation>
 <translation id="2429753432712299108">蓝牙设备“<ph name="DEVICE_NAME"/>”需要配对许可。在接受之前，请确保该设备上显示以下配对密钥：<ph name="PASSKEY"/></translation>
 <translation id="9201131092683066720">电池电量为<ph name="PERCENTAGE"/>%。</translation>
 <translation id="2983818520079887040">设置...</translation>
-<translation id="3871838685472846647">蜂窝网络已激活</translation>
 <translation id="6452181791372256707">拒绝</translation>
 <translation id="1195412055398077112">过扫描</translation>
 <translation id="607652042414456612">附近的蓝牙设备可检测到您的计算机（名称将显示为“<ph name="NAME"/>”，地址为<ph name="ADDRESS"/>）</translation>
 <translation id="112308213915226829">自动隐藏文件架</translation>
-<translation id="6732801395666424405">未加载证书</translation>
 <translation id="7573962313813535744">停靠模式</translation>
-<translation id="8300849813060516376">OTASP 失败</translation>
 <translation id="2792498699870441125">Alt + 搜索键</translation>
 <translation id="8660803626959853127">正在同步 <ph name="COUNT"/> 个文件</translation>
 <translation id="5958529069007801266">受监管用户</translation>
@@ -205,16 +175,12 @@
 <translation id="3050422059534974565">CAPS LOCK 已开启。
 按搜索键或 Shift 可取消。</translation>
 <translation id="397105322502079400">正在计算...</translation>
-<translation id="158849752021629804">需要家庭网络</translation>
 <translation id="1013923882670373915">蓝牙设备“<ph name="DEVICE_NAME"/>”需要配对许可。请在该设备上输入以下PIN码：<ph name="PINCODE"/></translation>
-<translation id="5864471791310927901">DHCP 查找失败</translation>
 <translation id="2819276065543622893">您将立即退出。</translation>
 <translation id="5507786745520522457">设置移动数据网络</translation>
 <translation id="6165508094623778733">了解详情</translation>
-<translation id="9046895021617826162">连接失败</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS"/>秒后恢复到原分辨率</translation>
 <translation id="743058460480092004">摄像头和麦克风处于使用状态。</translation>
-<translation id="8372369524088641025">WEP 密钥错误</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="3573179567135747900">重新更改为“<ph name="FROM_LOCALE"/>”（需要重启）</translation>
 <translation id="8103386449138765447">短信数：<ph name="MESSAGE_COUNT"/> 条</translation>
@@ -227,12 +193,9 @@
 <translation id="4918086044614829423">接受</translation>
 <translation id="5102001756192215136">可用时长：<ph name="HOUR"/>:<ph name="MINUTE"/></translation>
 <translation id="3009178788565917040">输出</translation>
-<translation id="520760366042891468">通过环聊共享您屏幕的控制权。</translation>
 <translation id="6911468394164995108">连接其他网络...</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>：<ph name="ANNOTATION"/></translation>
-<translation id="2563856802393254086">恭喜！“<ph name="NAME"/>”数据服务已激活，您可以开始使用了。</translation>
 <translation id="412065659894267608">还需要 <ph name="HOUR"/> 小时 <ph name="MINUTE"/> 分钟才能充满电</translation>
 <translation id="3077734595579995578">shift</translation>
-<translation id="7297443947353982503">用户名/密码错误或 EAP 身份验证失败</translation>
 <translation id="6359806961507272919"><ph name="PHONE_NUMBER"/> 发来的短信</translation>
 </translationbundle>

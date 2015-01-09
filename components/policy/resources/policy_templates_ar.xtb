@@ -1,6 +1,4 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="ar">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="ar">
 <translation id="1503959756075098984">‏معرّفات الإضافات وعناوين URL الخاصة بالتحديث المراد تثبيتها تلقائيًا</translation>
 <translation id="793134539373873765">‏لتحديد ما إذا كان سيتم استخدام p2p لحمولات تحديث نظام التشغيل. في حالة التعيين على &quot;True&quot;، ستجري الأجهزة مشاركة لحمولات التحديث وتحاول استهلاكها على شبكة LAN، ويحتمل أن يؤدي ذلك إلى تخفيف العبء على استخدام النطاق الترددي للإنترنت وتقليل  التكدس. وإذا لم تكن حمولة التحديث متاحة على شبكة LAN، فسيعاود الجهاز تنزيلها من خادم التحديث. وفي حالة التعيين على &quot;False&quot; أو غير مهيأ، فلن  يتم استخدام p2p.</translation>
 <translation id="2463365186486772703">لغة التطبيق</translation>

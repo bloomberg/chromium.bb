@@ -1,6 +1,4 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="el">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="el">
 <translation id="4820616160060340806">Εντολή+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="8806053966018712535">Φάκελος <ph name="FOLDER_NAME"/></translation>
 <translation id="1871244248791675517">Ins</translation>
@@ -209,6 +207,7 @@
 <translation id="6907759265145635167"><ph name="QUANTITY"/> PB/s</translation>
 <translation id="2743387203779672305">Αντιγραφή στο πρόχειρο</translation>
 <translation id="8371695176452482769">Μιλήστε τώρα</translation>
+<translation id="6129953537138746214">Κενό</translation>
 <translation id="1167268268675672572">Μετακίνηση στην αρχή της γραμμής και τροποποίηση επιλογής</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="7850320739366109486">Μην ενοχλείτε</translation>

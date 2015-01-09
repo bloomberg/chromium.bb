@@ -1,6 +1,5 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="pt-BR">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="pt-BR">
+<translation id="3233367171080043075">É possível interromper a assistência a qualquer momento.</translation>
 <translation id="7606912958770842224">Ativar conexões remotas</translation>
 <translation id="3785447812627779171">Host do
 Chromoting</translation>
@@ -19,6 +18,7 @@ Chromoting</translation>
 <translation id="5070121137485264635">O host remoto requer a autenticação em um website de terceiros. Para continuar, você deve conceder à Área de trabalho remota do Google Chrome acesso a permissões adicionais para acessar este endereço:</translation>
 <translation id="2124408767156847088">Acesse com segurança seus computadores no seu dispositivo Android.</translation>
 <translation id="3194245623920924351">Área de trabalho remota do Google Chrome</translation>
+<translation id="5537725057119320332">Transmitir</translation>
 <translation id="3649256019230929621">Minimizar janela</translation>
 <translation id="4808503597364150972">Digite seu PIN para <ph name="HOSTNAME"/>.</translation>
 <translation id="7672203038394118626">As conexões remotas deste computador foram desativadas.</translation>
@@ -26,6 +26,7 @@ Chromoting</translation>
 <translation id="4368630973089289038">Quer ajudar a melhorar o Chromoting? <ph name="LINK_BEGIN"/>Responda à pesquisa.<ph name="LINK_END"/></translation>
 <translation id="332624996707057614">Editar nome do computador</translation>
 <translation id="1996161829609978754">O Google Chrome está fazendo download do instalador do host do Chromoting. Quando o download estiver concluído, execute o instalador antes de continuar.</translation>
+<translation id="222632161986885959">Um participante deste Hangout ofereceu ajuda a você por meio de controle do seu computador. Se você aceitar:</translation>
 <translation id="2046651113449445291">Os clientes a seguir foram pareados com este computador e podem se conectar sem o fornecimento de um PIN. Você pode revogar esta permissão a qualquer momento, individualmente ou para todos os clientes.</translation>
 <translation id="7658239707568436148">Cancelar</translation>
 <translation id="7782471917492991422">Verifique as configurações de gerenciamento de energia de seu computador para garantir que ele não esteja configurado para entrar em modo de espera quando estiver inativo.</translation>
@@ -97,6 +98,8 @@ Para ver mais informações sobre privacidade, consulte a Política de Privacida
 <translation id="2013884659108657024">O Google Chrome está fazendo download do instalador do host da Área de trabalho remota do Google Chrome. Quando o download estiver concluído, execute o instalador antes de continuar.</translation>
 <translation id="1742469581923031760">Conectando...</translation>
 <translation id="8998327464021325874">Controlador do host da Área de trabalho remota do Google Chrome</translation>
+<translation id="7017806586333792422">Começar a gravar</translation>
+<translation id="1619813076098775562">A conexão com o dispositivo de transmissão foi encerrada.</translation>
 <translation id="6748108480210050150">De</translation>
 <translation id="3950820424414687140">Fazer login</translation>
 <translation id="1291443878853470558">Ative conexões remotas se desejar usar o Chromoting para acessar este computador.</translation>
@@ -107,11 +110,13 @@ Para ver mais informações sobre privacidade, consulte a Política de Privacida
 <translation id="7401733114166276557">Área de trabalho remota do Google Chrome</translation>
 <translation id="3362124771485993931">Digite o PIN novamente</translation>
 <translation id="1760808606374294203">• Correções no Android Lollipop.</translation>
+<translation id="5231421057630485350">A pessoa que está ajudando você poderá controlar seu mouse e teclado.</translation>
 <translation id="154040539590487450">Falha ao iniciar o serviço de acesso remoto.</translation>
 <translation id="7948001860594368197">Opções de tela</translation>
 <translation id="8172070902751707422">Falha na autenticação. Faça login novamente na Área de trabalho remota do Google Chrome.</translation>
 <translation id="5254120496627797685">Abandonar esta página encerrará sua sessão na Área de trabalho remota do Google Chrome.</translation>
 <translation id="173559734173571936">Para utilizar a Área de trabalho remota do Google Chrome, é necessário conceder permissões de acesso estendidas a seu computador. Você só precisará fazer isto uma vez.</translation>
+<translation id="712467900648340229">Não foi possível estabelecer conexão com o dispositivo de transmissão.</translation>
 <translation id="9032136467203159543">Alguns componentes necessários ao Chromoting estão faltando. Certifique-se de que tenha instalado a versão mais recente e tente novamente.</translation>
 <translation id="1342297293546459414">Ver e controlar um computador compartilhado.</translation>
 <translation id="1520828917794284345">Redimensionar área de trabalho para ajustar</translation>
@@ -147,6 +152,7 @@ Para ver mais informações sobre privacidade, consulte a Política de Privacida
 <translation id="2699970397166997657">Chromoting</translation>
 <translation id="4812684235631257312">Host</translation>
 <translation id="6178645564515549384">Host de mensagens nativas para assistência remota</translation>
+<translation id="1738759452976856405">Parar gravação</translation>
 <translation id="897805526397249209">Para ativar conexões remotas a um computador diferente, instale o Chromoting no computador desejado e clique em &quot;<ph name="BUTTON_NAME"/>&quot;.</translation>
 <translation id="1704090719919187045">Preferências do host do Chromoting</translation>
 <translation id="809687642899217504">Meus computadores</translation>
@@ -187,6 +193,7 @@ remota do Google Chrome</translation>
 <translation id="4703799847237267011">Sua sessão do Chromoting foi encerrada.</translation>
 <translation id="8178433417677596899">Compartilhamento de tela de usuário a usuário, perfeito para suporte técnico remoto.</translation>
 <translation id="652218476070540101">O PIN para este computador está sendo atualizado...</translation>
+<translation id="951991426597076286">Recusar</translation>
 <translation id="4563926062592110512">Cliente desconectado: <ph name="CLIENT_USERNAME"/>.</translation>
 <translation id="5308380583665731573">Conectar-se</translation>
 <translation id="7319983568955948908">Parar compartilhamento</translation>

@@ -1,6 +1,4 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="bn">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="bn">
 <translation id="1503959756075098984">এক্সটেনশন আইডিগুলি এবং আপডেট URLগুলি নীরবে ইনস্টল হয়</translation>
 <translation id="793134539373873765">OS আপডেট প্লেলোডগুলির জন্য p2p ব্যবহার করা হবে কিনা নির্দিষ্ট করে৷ যদি True তে সেট করা থাকে, ডিভাইসগুলি ভাগ করা হবে এবং ইন্টারনেট ব্যান্ডউইডথ ব্যবহার এবং ঝনঝট কমাতে LAN এ আপডেট প্লেলোডগুলির কনজিউম করার চেষ্টা করবে৷ যদি LAN এ আপডেট প্লেলোড উপলব্ধ না থাকে, তবে ডিভাইস আপডেট সার্ভার থেকে ডাউনলোড করতে ফিরে আসবে৷ যদি False তে সেট করা থাকে বা কনফিগার করা না থাকে, তবে p2p ব্যবহার করা হবে না৷</translation>
 <translation id="2463365186486772703">অ্যাপ্লিকেশন লোকেল</translation>

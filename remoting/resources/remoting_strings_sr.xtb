@@ -1,6 +1,5 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="sr">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="sr">
+<translation id="3233367171080043075">Можете да завршите процес у било ком тренутку.</translation>
 <translation id="7606912958770842224">Омогући даљинско повезивање</translation>
 <translation id="3785447812627779171">Хост за Chromoting</translation>
 <translation id="1841799852846221389">Онемогућавање даљинског повезивања за овај рачунар…</translation>
@@ -18,6 +17,7 @@
 <translation id="5070121137485264635">Удаљени хост захтева да потврдите аутентичност на веб-сајту треће стране. Да бисте наставили, морате да дате Chrome удаљеном рачунару додатне дозволе за приступ овој адреси:</translation>
 <translation id="2124408767156847088">Безбедно приступајте рачунарима са Android уређаја.</translation>
 <translation id="3194245623920924351">Chrome удаљени рачунар</translation>
+<translation id="5537725057119320332">Пребацуј</translation>
 <translation id="3649256019230929621">Смањивање прозора</translation>
 <translation id="4808503597364150972">Унесите PIN за <ph name="HOSTNAME"/>.</translation>
 <translation id="7672203038394118626">Даљинско повезивање за овај рачунар је онемогућено.</translation>
@@ -25,6 +25,7 @@
 <translation id="4368630973089289038">Желите да нам помогнете да побољшамо Chromoting? <ph name="LINK_BEGIN"/>Попуните анкету.<ph name="LINK_END"/></translation>
 <translation id="332624996707057614">Измените назив рачунара</translation>
 <translation id="1996161829609978754">Chrome преузима инсталациони програм Хост за Chromoting. Када се преузимање заврши, покрените инсталациони програм пре него што наставите.</translation>
+<translation id="222632161986885959">Учесник у овом hangout-у је понудио да вам помогне тако што ће контролисати рачунар. Ако прихватите:</translation>
 <translation id="2046651113449445291">Следећи клијенти су упарени са овим рачунаром и могу да се повезују без навођења PIN-а. Можете да опозовете ову дозволу у било ком тренутку, било појединачно или за све клијенте.</translation>
 <translation id="7658239707568436148">Откажи</translation>
 <translation id="7782471917492991422">Проверите подешавања за управљање напајањем рачунара и уверите се да није конфигурисан тако да прелази у режим спавања када је неактиван.</translation>
@@ -96,6 +97,8 @@
 <translation id="2013884659108657024">Chrome преузима инсталациони програм Хост за Chrome удаљени рачунар. Када се преузимање заврши, покрените инсталациони програм пре него што наставите.</translation>
 <translation id="1742469581923031760">Повезивање…</translation>
 <translation id="8998327464021325874">Контролер хоста за Chrome удаљени рачунар</translation>
+<translation id="7017806586333792422">Почни снимање</translation>
+<translation id="1619813076098775562">Веза са уређајем за пребацивање је затворена.</translation>
 <translation id="6748108480210050150">Од</translation>
 <translation id="3950820424414687140">Пријави ме</translation>
 <translation id="1291443878853470558">Морате да омогућите даљинско повезивање ако желите да користите Chromoting да бисте приступали овом рачунару.</translation>
@@ -106,11 +109,13 @@
 <translation id="7401733114166276557">Chrome удаљени рачунар</translation>
 <translation id="3362124771485993931">Поново унесите PIN</translation>
 <translation id="1760808606374294203">• Исправке за Android Lollipop.</translation>
+<translation id="5231421057630485350">Особа која вам помаже ће моћи да контролише миш и тастатуру.</translation>
 <translation id="154040539590487450">Покретање услуге даљинског приступа није успело.</translation>
 <translation id="7948001860594368197">Опције екрана</translation>
-<translation id="8172070902751707422">Потврда аутентичности није успела. Поново се пријавите на Chrome удаљени рачунар.</translation>
+<translation id="8172070902751707422">Потврда аутентичности није успела. Поново се пријавите у Chrome удаљени рачунар.</translation>
 <translation id="5254120496627797685">Напуштањем ове странице завршићете сесију Chrome удаљеног рачунара.</translation>
 <translation id="173559734173571936">Да бисте користили Chrome удаљени рачунар, морате да дате рачунару дозволе за шири приступ. То треба да урадите само једанпут.</translation>
+<translation id="712467900648340229">Повезивање са уређајем за пребацивање није успело.</translation>
 <translation id="9032136467203159543">Недостају неке компоненте које су потребне за Chromoting. Проверите да ли сте инсталирали најновију верзију и покушајте поново.</translation>
 <translation id="1342297293546459414">Прегледајте и контролишите дељени рачунар.</translation>
 <translation id="1520828917794284345">Промени величину радне површине да би се уклопила</translation>
@@ -146,6 +151,7 @@
 <translation id="2699970397166997657">Chromoting</translation>
 <translation id="4812684235631257312">Хост</translation>
 <translation id="6178645564515549384">Матични хост за размену порука за даљинску помоћ</translation>
+<translation id="1738759452976856405">Заустави снимање</translation>
 <translation id="897805526397249209">Да бисте омогућили даљинско повезивање са неким другим рачунаром, инсталирајте Chromoting на њега и кликните на „<ph name="BUTTON_NAME"/>“.</translation>
 <translation id="1704090719919187045">Подешавања хоста за Chromoting</translation>
 <translation id="809687642899217504">Моји рачунари</translation>
@@ -185,6 +191,7 @@
 <translation id="4703799847237267011">Сесија Chromoting-а се завршила.</translation>
 <translation id="8178433417677596899">Дељење екрана између корисника, савршено за даљинску техничку подршку.</translation>
 <translation id="652218476070540101">PIN за овај рачунар се ажурира…</translation>
+<translation id="951991426597076286">Одбиј</translation>
 <translation id="4563926062592110512">Клијент чија је веза прекинута: <ph name="CLIENT_USERNAME"/>.</translation>
 <translation id="5308380583665731573">Повезивање</translation>
 <translation id="7319983568955948908">Заустави дељење</translation>
@@ -194,7 +201,7 @@
 <translation id="4277736576214464567">Приступни кôд је неважећи. Покушајте поново.</translation>
 <translation id="6550675742724504774">Опције</translation>
 <translation id="979100198331752041">Chrome удаљени рачунар на хосту <ph name="HOSTNAME"/> је застарео и треба да га ажурирате.</translation>
-<translation id="7729639150174291243">Нисте пријављени на Chrome удаљени рачунар. Пријавите се и покушајте поново.</translation>
+<translation id="7729639150174291243">Нисте пријављени у Chrome удаљени рачунар. Пријавите се и покушајте поново.</translation>
 <translation id="2841013758207633010">Време</translation>
 <translation id="6011539954251327702">Chromoting вам омогућава да безбедно делите рачунар на вебу. Потребно је да оба корисника покрену апликацију Chromoting, која може да се пронађе на <ph name="URL"/>.</translation>
 <translation id="2919669478609886916">Тренутно делите овај уређај са још једним корисником. Да ли желите да наставите дељење?</translation>

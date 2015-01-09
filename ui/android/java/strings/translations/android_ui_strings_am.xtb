@@ -1,6 +1,4 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="am">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="am">
 <translation id="6017514345406065928">አረንጓዴ</translation>
 <translation id="376869769528291915">:</translation>
 <translation id="6015796118275082299">ዓመት</translation>
@@ -25,6 +23,7 @@
 <translation id="6315516427814392808">በአነስተኛ ማህደረ ትውስታ ምክንያት ቀዳሚውን ክወና ማጠናቀቅ አልተቻለም</translation>
 <translation id="2732718972699418926">ጥዋት</translation>
 <translation id="6042308850641462728">ተጨማሪ</translation>
+<translation id="6820686453637990663">CVC</translation>
 <translation id="7535087603100972091">እሴት</translation>
 <translation id="161042844686301425">ውሃ ሰማያዊ</translation>
 <translation id="1822429046913737220">ጥዋት/ከሰዓት</translation>

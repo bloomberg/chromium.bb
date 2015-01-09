@@ -1,12 +1,11 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="lv">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="lv">
 <translation id="6676384891291319759">Piekļūt internetam</translation>
 <translation id="8586442755830160949">Autortiesības <ph name="YEAR"/> Chromium autori. Visas tiesības paturētas.</translation>
 <translation id="6373523479360886564">Vai tiešām vēlaties atinstalēt pārlūku Chromium?</translation>
 <translation id="5065199687811594072">Vai vēlaties, lai Chromium saglabātu šo kredītkartes informāciju tīmekļa veidlapu aizpildīšanai?</translation>
 <translation id="6510925080656968729">Atinstalēt Chromium</translation>
 <translation id="2615699638672665509">Šis dators drīz vairs nesaņems Chromium atjauninājumus, jo tā aparatūra vairs netiek atbalstīta.</translation>
+<translation id="5532301346661895910">Chromium saglabās paroli jūsu |Google saglabāto paroļu| sarakstā un atcerēsies nākamajā reizē, kad jums tā būs nepieciešama.</translation>
 <translation id="6893813176749746474">Pārlūks Chromium ir atjaunināts, bet jūs neesat to izmantojis vismaz 30 dienas.</translation>
 <translation id="1550579416447684632">Palaist Chromium lietotnes</translation>
 <translation id="2732467638532545152">Jūsu datorā tiek izmantota iepriekšējā Microsoft Windows versija, kurā nevar apstrādāt šīs vietnes drošības sertifikātu. Šīs problēmas dēļ Chromium nevar noteikt, vai sertifikāts tika sūtīts no vietnes <ph name="SITE"/> vai arī to nosūtījusi kāda persona, kas izmanto jūsu tīklu un uzdodas par vietni <ph name="SITE"/>. Lūdzu, atjauniniet datora operētājsistēmu uz jaunāku Windows versiju.</translation>
@@ -18,6 +17,14 @@
 <translation id="3748537968684000502">Jūs skatāt drošu Chromium lapu.</translation>
 <translation id="2077129598763517140">Izmantot aparatūras paātrināšanas režīmu, kad tas ir pieejams</translation>
 <translation id="1065672644894730302">Jūsu preferences nevar nolasīt. Dažas funkcijas var nebūt pieejamas, un preferenču izmaiņas netiks saglabātas</translation>
+<translation id="7861509383340276692">Atveriet
+        Chromium izvēlni &gt;
+        <ph name="SETTINGS_TITLE"/>
+        &gt;
+        <ph name="ADVANCED_TITLE"/>
+        un noņemiet atzīmi no izvēles rūtiņas “<ph name="NO_PREFETCH_DESCRIPTION"/>”.
+        Ja problēmu neizdodas novērst, ieteicams atkal atlasīt šo opciju,
+        lai uzlabotu veiktspēju.</translation>
 <translation id="4423735387467980091">Pielāgot un kontrolēt Chromium</translation>
 <translation id="1881322772814446296">Jūs pierakstāties ar pārvaldītu kontu, kura administrators var kontrolēt jūsu profilu. Jūsu Chromium dati, piemēram, lietotnes, grāmatzīmes, vēsture, paroles un citi iestatījumi, tiks neatgriezeniski saistīti ar lietotāju <ph name="USER_NAME"/>. Varēsiet dzēst šos datus, izmantojot Google kontu informācijas paneli, taču nevarēsiet šos datus saistīt ar citu kontu. Ja vēlaties, varat izveidot jaunu profilu, lai atsevišķi glabātu Chromium datus. <ph name="LEARN_MORE"/></translation>
 <translation id="5620765574781326016">Uzziniet vairāk par vietnēs aprakstītajām tēmām, neaizverot lapu.</translation>
@@ -32,8 +39,6 @@
 <translation id="3883381313049582448">Izmantot Chromium ģenerētu paroli</translation>
 <translation id="3549345495227188780">Darba sākšana operētājsistēmā Chromium OS</translation>
 <translation id="1668054258064581266">Kad konts būs noņemts no Chromium, iespējams, būs atkārtoti jāielādē atvērtās cilnes, lai izmaiņas stātos spēkā.</translation>
-<translation id="6953661834318318668">Chromium rīkjosla</translation>
-<translation id="6764700151360706293">Chromium nevar izveidot privātu savienojumu ar domēnu &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;. Iespējams, tas ir tādēļ, ka ir nepareizi iestatīts jūsu ierīces datums (iestatītais ierīces datums ir šāds: <ph name="DATE"/>). Kad būsiet <ph name="BEGIN_LINK"/>atjauninājis ierīces datumu un laiku<ph name="END_LINK"/>, atsvaidziniet šo lapu.</translation>
 <translation id="4285930937574705105">Instalācija neizdevās nenoteiktas kļūdas dēļ. Ja Chromium šobrīd darbojas, aizveriet to un mēģiniet vēlreiz.</translation>
 <translation id="1396446129537741364">Chromium mēģina rādīt paroles.</translation>
 <translation id="8987477933582888019">Tīmekļa pārlūks</translation>
@@ -71,30 +76,26 @@
 <translation id="3190315855212034486">Eh! Chromium ir avarējis. Vai restartēt to tūlīt?</translation>
 <translation id="8843170958047978824">Noņemt no pārlūka Chromium</translation>
 <translation id="3068515742935458733">Palīdzēt uzlabot Chromium, nosūtot Google serveriem avāriju pārskatus un <ph name="UMA_LINK"/></translation>
+<translation id="1609700857210121286">Atveriet Chromium izvēlni &gt; Iestatījumi &gt; (Papildu) Konfidencialitāte
+          un atspējojiet opciju “Tīkla darbības prognozes”.
+          Ja problēmu neizdodas novērst, ieteicams atkal iespējot šo opciju,
+          lai uzlabotu veiktspēju.</translation>
 <translation id="734373864078049451">Šeit atrodas jūsu tīmekļa saturs, grāmatzīmes un cits Chromium saturs.</translation>
 <translation id="3197823471738295152">Ierīce ir atjaunināta.</translation>
 <translation id="3065280201209294872">Šajā vietnē tiek izmantoti novecojuši drošības iestatījumi, kas var liegt turpmākajām Chromium versijām tai droši piekļūt.</translation>
 <translation id="8551886023433311834">Atjaunināšana ir gandrīz pabeigta. Restartējiet ierīci, lai pabeigtu atjaunināšanu.</translation>
 <translation id="8353224596138547809">Vai vēlaties, lai produktā Chromium tiek saglabāta parole šai vietnei?</translation>
+<translation id="8738058698779197622">Lai izveidotu drošu savienojumu, ir jāiestata pareizs pulksteņa laiks. Tas ir nepieciešams, jo sertifikāti, kurus vietnes izmanto, lai tiktu identificētas, ir derīgi tikai noteiktos laika periodos. Tā kā jūsu ierīces pulkstenis nav pareizi iestatīts, Chromium nevar verificēt šos sertifikātus.</translation>
 <translation id="7339898014177206373">Jauns logs</translation>
-<translation id="3733625138702910745">Atveriet
-        Chromium izvēlni &gt;
-        <ph name="SETTINGS_TITLE"/>
-        &gt;
-        <ph name="ADVANCED_TITLE"/>
-        un noņemiet atzīmi no izvēles rūtiņas “<ph name="NO_PREFETCH_DESCRIPTION"/>”.
-        Ja problēmu neizdodas novērst, ieteicams atkal atlasīt šo opciju,
-        lai uzlabotu veiktspēju.</translation>
 <translation id="7463979740390522693">Chrome saite — paziņojumi (nelasīti: <ph name="QUANTITY"/>)</translation>
 <translation id="225614027745146050">Laipni lūdzam!</translation>
 <translation id="5823381412099532241">Pārlūku Chromium nevarēja automātiski atjaunināt uz jaunāko versiju, tāpēc jums nav pieejamas vairākas jaunas, noderīgas funkcijas un drošības uzlabojumi. Atjauniniet pārlūku Chromium.</translation>
 <translation id="7473891865547856676">Nē, paldies!</translation>
 <translation id="9191268552238695869">Administrators šajā sistēmā ir instalējis Chromium, un tas ir pieejams visiem lietotājiem. Sistēmas līmeņa Chromium tūlīt aizstās lietotāja līmeņa instalāciju.</translation>
-<translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3509308970982693815">Aizveriet visus Chromium logus un mēģiniet vēlreiz.</translation>
+<translation id="8851136666856101339">galvenais</translation>
 <translation id="4077262827416206768">Aizveriet visus Chromium logus un atkārtoti palaidiet Chromium, lai šīs izmaiņas stātos spēkā.</translation>
 <translation id="6475912303565314141">Tas nosaka arī to, kāda lapa tiks rādīta, kad atvērsiet pārlūku Chromium.</translation>
-<translation id="126227967341954494">Lai izveidotu drošu tīkla savienojumu, jūsu ierīcē ir jābūt pareizi iestatītam pulkstenim. Tas tādēļ, ka sertifikāti, kurus vietnes izmanto, lai identificētu sevi, izveidojot drošu savienojumu, ir derīgi tikai noteiktu laika periodu. Tā kā jūsu ierīcē nav pareizi iestatīts pulkstenis, Chromium nevar pareizi pārbaudīt sertifikātus.</translation>
 <translation id="1725059042853530269">Fails <ph name="FILE_NAME"/> var kaitēt jūsu pārlūkošanas pieredzei, tādēļ Chromium to ir bloķējis.</translation>
 <translation id="750717762378961310">Šis fails ir ļaunprātīgs, un Chromium to bloķēja.</translation>
 <translation id="6944967875980567883">Pārlūkā Chromium ielādētie moduļi</translation>
@@ -126,7 +127,6 @@
 <translation id="5358375970380395591">Jūs pierakstāties ar pārvaldītu kontu, kura administrators var kontrolēt jūsu profilu. Jūsu Chromium dati, piemēram, lietotnes, grāmatzīmes, vēsture, paroles un citi iestatījumi, tiks neatgriezeniski saistīti ar lietotāju <ph name="USER_NAME"/>. Varēsiet dzēst šos datus, izmantojot Google kontu informācijas paneli, taču nevarēsiet šos datus saistīt ar citu kontu. <ph name="LEARN_MORE"/></translation>
 <translation id="9036189287518468038">Chromium lietotņu palaišanas programma</translation>
 <translation id="5563479599352954471">Meklējiet ar vienu pieskārienu</translation>
-<translation id="1525296040716062026">Chromium to saglabās |Google saglabāto paroļu| sarakstā un automātiski to aizpildīs jūsu vietā. Tas nozīmē, ka jums šī parole nav jāiegaumē.</translation>
 <translation id="8493179195440786826">Chromium versija ir novecojusi</translation>
 <translation id="911206726377975832">Vai dzēst arī pārlūkošanas datus?</translation>
 <translation id="95514773681268843">Pirms šīs ierīces lietošanas jums ir jāizlasa un jāapstiprina tālāk sniegtie domēna <ph name="DOMAIN"/> pakalpojumu sniegšanas noteikumi. Šie noteikumi nepaplašina, nepārveido vai neierobežo operētājsistēmas Chromium OS noteikumus.</translation>
@@ -155,8 +155,11 @@
 <translation id="1745962126679160932">Pārlūkā Chromium tiks droši saglabāta jūsu informācija, lai jums vairs nevajadzētu to atkārtoti ievadīt, bet, veicot turpmākus maksājumus, jums joprojām būs jāapstiprina kartes drošības kods.</translation>
 <translation id="275588974610408078">Avāriju pārskatu sūtīšana nav pieejama pārlūkā Chromium.</translation>
 <translation id="5909170354645388250">Netiek izmantots pārlūkā Chromium. Vietturis resursu karšu uzturēšanai sinhronizācijā. Tas paredz vienu argumentu: $1.</translation>
+<translation id="1144202035120576837">Vietnē <ph name="SITE"/> informācijas aizsargāšanai parasti tiek izmantota šifrēšana. Kad pārlūks Chromium mēģināja izveidot savienojumu ar vietni <ph name="SITE"/>, tika uzrādīti neparasti un nepareizi akreditācijas dati. Vai nu uzbrucējs mēģina uzdoties par vietni <ph name="SITE"/>, vai arī tika pārtraukts savienojums ar Wi-Fi pierakstīšanās ekrānu. Jūsu informācija joprojām ir drošībā, jo pārlūkā Chromium tika pārtraukts savienojums, pirms tika veikta jebkādu datu apmaiņa.</translation>
+<translation id="2316129865977710310">Nē, paldies</translation>
 <translation id="7937630085815544518">Operētājsistēmā Chromium iepriekš pierakstījāties kā lietotājs <ph name="USER_EMAIL_ADDRESS"/>. Lai pierakstītos vēlreiz, lūdzu, izmantojiet to pašu kontu.</translation>
 <translation id="2685838254101182273">Operētājsistēmas Chromium atjaunināšana ir apturēta, un vairs netiek atbalstīta šī jūsu operētājsistēmas versija.</translation>
+<translation id="8684913864886094367">Chromium netika pareizi izslēgts.</translation>
 <translation id="3582788516608077514">Notiek Chromium atjaunināšana...</translation>
 <translation id="7223968959479464213">Uzdevumu pārvaldnieks — Chromium</translation>
 <translation id="1779356040007214683">Lai uzlabotu Chromium drošību, mēs atspējojām dažus paplašinājumus, kas nav norādīti vietnē <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> un, iespējams, tika pievienoti, jums nezinot.</translation>
@@ -167,6 +170,7 @@
 <translation id="2648074677641340862">Instalācijas laikā radās operētājsistēmas kļūda. Lejupielādējiet Chromium vēlreiz.</translation>
 <translation id="5942520288919337908">Paplašinājums <ph name="EXTENSION_NAME"/> ir pievienots pārlūkam Chromium.</translation>
 <translation id="549669000822060376">Lūdzu, uzgaidiet, kamēr Chromium instalē jaunākos sistēmas atjauninājumus.</translation>
+<translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3281987435599047980">nosūta vārdu un tā apkārtējo kontekstu pakalpojumam Google meklēšana, iegūstot definīcijas, attēlus, meklēšanas rezultātus un citu papildinformāciju.</translation>
 <translation id="4559775032954821361">Atveriet
           Chromium izvēlni &gt;
@@ -191,7 +195,6 @@ Dažas funkcijas var nebūt pieejamas. Norādiet citu profila direktoriju vai iz
 <translation id="1115445892567829615">Chromium nevarēja sinhronizēt jūsu datus. Lūdzu, atjauniniet savu sinhronizācijas ieejas frāzi.</translation>
 <translation id="1298199220304005244">Saņemt palīdzību par Chromium OS izmantošanu</translation>
 <translation id="331951419404882060">Chromium OS nevarēja sinhronizēt jūsu datus pierakstīšanās kļūdas dēļ.</translation>
-<translation id="957661023718540197">Chromium nevar izveidot privātu savienojumu ar domēnu &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;. Iespējams, tas ir tādēļ, ka ir nepareizi iestatīts jūsu datora datums (iestatītais datora datums ir šāds: <ph name="DATE"/>). Kad būsiet <ph name="BEGIN_LINK"/>atjauninājis datora datumu un laiku<ph name="END_LINK"/>, atsvaidziniet šo lapu.</translation>
 <translation id="8187289872471304532">Atveriet izvēlni
           Applications (Lietojumprogrammas) &gt; System Preferences (Sistēmas preferences) &gt; Network (Tīkls) &gt; Advanced (Papildu) &gt; (Proxies) Starpniekserveri
           un noņemiet atzīmes no visiem atzīmētajiem starpniekserveriem.</translation>
@@ -199,7 +202,6 @@ Dažas funkcijas var nebūt pieejamas. Norādiet citu profila direktoriju vai iz
 <translation id="4488676065623537541">Jūsu norēķinu dati tika saglabāti pārlūkā Chromium.</translation>
 <translation id="130631256467250065">Izmaiņas stāsies spēkā nākamajā reizē, kad restartēsiet ierīci.</translation>
 <translation id="3244477511402911926">Chromium paziņojumu centrs</translation>
-<translation id="1105130903706696483">Chromium netika aizvērts pareizi. Lai atvērtās lapas atvērtu no jauna, noklikšķiniet uz Atjaunot.</translation>
 <translation id="9197815481970649201">Jūs esat pierakstījies pārlūkā Chromium</translation>
 <translation id="1929939181775079593">Chromium nereaģē. Vai restartēt to tūlīt?</translation>
 <translation id="1414495520565016063">Esat pierakstījies operētājsistēmā Chromium!</translation>
@@ -230,7 +232,6 @@ Dažas funkcijas var nebūt pieejamas. Norādiet citu profila direktoriju vai iz
 <translation id="805745970029938373">Šeit būs redzami visi paziņojumi no Chromium lietotnēm, paplašinājumiem un vietnēm.</translation>
 <translation id="2119636228670142020">Par &amp;Chromium OS</translation>
 <translation id="1708666629004767631">Ir pieejama jauna un drošāka Chromium versija.</translation>
-<translation id="3800866064403932345">Lai izveidotu drošu tīkla savienojumu, jūsu datorā ir jābūt pareizi iestatītam pulkstenim. Tas tādēļ, ka sertifikāti, kurus vietnes izmanto, lai identificētu sevi, izveidojot drošu savienojumu, ir derīgi tikai noteiktu laika periodu. Tā kā jūsu datorā nav pareizi iestatīts pulkstenis, Chromium nevar pareizi pārbaudīt sertifikātus.</translation>
 <translation id="378917192836375108">Chromium ļauj jums noklikšķināt uz tālruņa numura un zvanīt uz to pakalpojumā Skype!</translation>
 <translation id="8724049448828509830">Lejupielāde vēl nav pabeigta. Vai vēlaties iziet no pārlūkprogrammas Chromium un atcelt lejupielādi?</translation>
 <translation id="608189560609172163">Chromium nevarēja sinhronizēt jūsu datus pierakstīšanās kļūdas dēļ.</translation>
@@ -245,6 +246,7 @@ Ja pierakstīsieties tik un tā, Chromium informācija, piemēram, grāmatzīmes
 <translation id="1967743265616885482">Ir zināms, ka modulis ar tādu pašu nosaukumu konfliktē ar Chromium.</translation>
 <translation id="7962572577636132072">Pārlūks Chromium tiek atjaunināts automātiski, tādēļ jums vienmēr būs pieejama visjaunākā versija.</translation>
 <translation id="722928257909516027">Rādīt Chromium izvēlni</translation>
+<translation id="3744899669254331632">Pašlaik jūs nevarat apmeklēt vietni <ph name="SITE"/>, jo šī vietne nosūtīja kodētus akreditācijas datus, kurus Chromium nevar apstrādāt. Tā kā tīkla kļūdas un uzbrukumi parasti ir īslaicīga problēma, iespējams, vēlāk šī lapa atkal darbosies.</translation>
 <translation id="8704119203788522458">Šis ir jūsu Chromium</translation>
 <translation id="8269379391216269538">Palīdziet uzlabot Chromium</translation>
 <translation id="4224199872375172890">Chromium ir atjaunināts.</translation>

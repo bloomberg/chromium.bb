@@ -1,12 +1,10 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="en-GB">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="en-GB">
+<translation id="4542520061254486227">Read your data on <ph name="WEBSITE_1"/> and <ph name="WEBSITE_2"/></translation>
 <translation id="3624204664103857160">Could not load launcher page '<ph name="PAGE"/>'.</translation>
 <translation id="8804398419035066391">Communicate with cooperating websites</translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME"/> (extension ID &quot;<ph name="EXTENSION_ID"/>&quot;) is blocked by the administrator.</translation>
 <translation id="1005274289863221750">Use your microphone and camera</translation>
 <translation id="2857834222104759979">Manifest file is invalid.</translation>
-<translation id="3828484226910527078">Access the USB device</translation>
 <translation id="6384275966486438344">Change your search settings to: <ph name="SEARCH_HOST"/></translation>
 <translation id="1445572445564823378">This extension is slowing down <ph name="PRODUCT_NAME"/>. You should disable it to restore <ph name="PRODUCT_NAME"/>'s performance.</translation>
 <translation id="1033780634303702874">Access your serial devices</translation>
@@ -15,30 +13,30 @@
 <translation id="677806580227005219">Mimehandler: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">Access information about Bluetooth devices paired with your system and discover nearby Bluetooth devices.</translation>
 <translation id="5911798608827489036">Exchange data with any computer on the local network or internet</translation>
-<translation id="4719685943208231314">Access the USB device from <ph name="VENDOR_NAME"/></translation>
+<translation id="8284835137979141223"><ph name="PRODUCT_NAME"/> from <ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">Could not load background script '<ph name="BACKGROUND_SCRIPT"/>'.</translation>
 <translation id="9131487537093447019">Send messages to and receive messages from Bluetooth devices.</translation>
-<translation id="8198425243160395623">Access your USB devices</translation>
+<translation id="5678955352098267522">Read your data on <ph name="WEBSITE_1"/></translation>
 <translation id="8597109877291678953">Exchange data with the computer named <ph name="HOSTNAME"/></translation>
 <translation id="5456409301717116725">This extension includes the key file '<ph name="KEY_PATH"/>'. You probably don't want to do that.</translation>
+<translation id="7257666756905341374">Read data that you copy and paste</translation>
 <translation id="2350172092385603347">Localisation used, but default_locale wasn't specified in the manifest.</translation>
 <translation id="3759933321830434300">Block parts of web pages</translation>
-<translation id="8058376558882514200">Access the USB device <ph name="PRODUCT_NAME"/> from <ph name="VENDOR_NAME"/></translation>
 <translation id="149347756975725155">Could not load extension icon '<ph name="ICON"/>'.</translation>
 <translation id="8825366169884721447">This extension failed to modify the request header &quot;<ph name="HEADER_NAME"/>&quot; of a network request because the modification conflicted with another extension (<ph name="EXTENSION_NAME"/>).</translation>
+<translation id="7495493006406536234">Product <ph name="PRODUCT_ID"/></translation>
 <translation id="4233778200880751280">Could not load about page '<ph name="ABOUT_PAGE"/>'.</translation>
 <translation id="388442998277590542">Could not load options page '<ph name="OPTIONS_PAGE"/>'.</translation>
 <translation id="6344170822609224263">Access list of network connections</translation>
 <translation id="2616366145935564096">Read and change your data on <ph name="WEBSITE_1"/></translation>
 <translation id="2518849872271000461">Exchange data with the computers named: <ph name="HOSTNAMES"/></translation>
-<translation id="1389014510128217152">- <ph name="WEBSITE_1"/></translation>
+<translation id="4444304522807523469">Access document scanners attached via USB or on the local network</translation>
 <translation id="6408118934673775994">Read and change your data on <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> and <ph name="WEBSITE_3"/></translation>
 <translation id="961805664415579088">Exchange data with any computer in the domain <ph name="DOMAIN"/></translation>
 <translation id="3502064055007747926">Access your input devices</translation>
 <translation id="8670869118777164560">This extension failed to redirect a network request to <ph name="ATTEMPTED_REDIRECT_DESTINATION"/> because another extension (<ph name="EXTENSION_NAME"/>) redirected it to <ph name="ACTUAL_REDIRECT_DESTINATION"/>.</translation>
 <translation id="6840444547062817500">This extension reloaded itself too frequently.</translation>
 <translation id="8047248493720652249">This extension failed to name the download &quot;<ph name="ATTEMPTED_FILENAME"/>&quot; because another extension (<ph name="EXTENSION_NAME"/>) determined a different filename &quot;<ph name="ACTUAL_FILENAME"/>&quot;.</translation>
-<translation id="2732710576072980201">Product <ph name="PRODUCT_ID"/> from <ph name="VENDOR_NAME"/> (serial number <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="4968399700653439437">Exchange data with any computer in the domains: <ph name="DOMAINS"/></translation>
 <translation id="5026754133087629784">Webview: <ph name="WEBVIEW_TAG_NAME"/></translation>
 <translation id="8284279544186306258">all <ph name="WEBSITE_1"/> sites</translation>
@@ -57,8 +55,12 @@
 <translation id="7217838517480956708">The administrator of this machine requires <ph name="EXTENSION_NAME"/> to be installed. It cannot be removed or modified.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME"/> from <ph name="VENDOR_NAME"/> (serial number <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="7154130902455071009">Change your start page to: <ph name="START_PAGE"/></translation>
-<translation id="6758203075041033901">Product <ph name="PRODUCT_ID"/> from Vendor <ph name="VENDOR_ID"/> (serial number <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="6698810901424468597">Read and change your data on <ph name="WEBSITE_1"/> and <ph name="WEBSITE_2"/></translation>
+<translation id="5544884907028850012">Vendor <ph name="VENDOR_ID"/></translation>
+<translation id="2048182445208425546">Access your network traffic</translation>
+<translation id="5972529113578162692">The administrator of this machine requires <ph name="EXTENSION_NAME"/> to be installed. It cannot be uninstalled.</translation>
+<translation id="7131040479572660648">Read your data on <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> and <ph name="WEBSITE_3"/></translation>
 <translation id="1803557475693955505">Could not load background page '<ph name="BACKGROUND_PAGE"/>'.</translation>
 <translation id="7972881773422714442">Options: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
+<translation id="344630545793878684">Read your data on a number of websites</translation>
 </translationbundle>

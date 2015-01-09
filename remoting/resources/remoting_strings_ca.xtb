@@ -1,6 +1,5 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="ca">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="ca">
+<translation id="3233367171080043075">Podeu sortir de l'ajuda en qualsevol moment.</translation>
 <translation id="7606912958770842224">Activa les connexions remotes</translation>
 <translation id="3785447812627779171">Chromoting
 Host</translation>
@@ -19,6 +18,7 @@ Host</translation>
 <translation id="5070121137485264635">L'amfitrió remot necessita que us autentiqueu en un lloc web de tercers. Per continuar, cal que concediu permisos addicionals a l'escriptori remot de Chrome per accedir a aquesta adreça:</translation>
 <translation id="2124408767156847088">Accediu de manera segura als vostres ordinadors des del dispositiu Android.</translation>
 <translation id="3194245623920924351">Escriptori remot de Chrome</translation>
+<translation id="5537725057119320332">Emet</translation>
 <translation id="3649256019230929621">Minimitza la finestra</translation>
 <translation id="4808503597364150972">Introduïu el vostre PIN per a <ph name="HOSTNAME"/>.</translation>
 <translation id="7672203038394118626">S'han desactivat les connexions remotes en aquest ordinador.</translation>
@@ -26,6 +26,7 @@ Host</translation>
 <translation id="4368630973089289038">Voleu ajudar a millorar Chromoting? <ph name="LINK_BEGIN"/>Responeu a l'enquesta.<ph name="LINK_END"/></translation>
 <translation id="332624996707057614">Edita el nom de l'ordinador</translation>
 <translation id="1996161829609978754">Chrome està baixant l'instal·lador de l'amfitrió de Chromoting. Quan s'hagi completat la baixada, executeu l'instal·lador abans de continuar.</translation>
+<translation id="222632161986885959">Un participant d'aquesta conversa s'ha ofert a ajudar-vos i necessita controlar el vostre ordinador. Si ho accepteu:</translation>
 <translation id="2046651113449445291">Els clients següents s'han sincronitzat amb aquest ordinador i s'hi poden connectar sense indicar cap PIN. Podeu revocar aquest permís en qualsevol moment, ja sigui individualment o per a tots els clients.</translation>
 <translation id="7658239707568436148">Cancel·la</translation>
 <translation id="7782471917492991422">Comproveu la configuració de gestió d'energia de l'ordinador i assegureu-vos que no s'hagi configurat per estar en mode de baix consum quan estigui inactiu.</translation>
@@ -97,6 +98,8 @@ Per obtenir informació sobre la privadesa, vegeu la Política de privadesa de G
 <translation id="2013884659108657024">Chrome està baixant l'instal·lador de l'amfitrió de l'escriptori remot de Chrome. Quan s'hagi completat la baixada, executeu l'instal·lador abans de continuar.</translation>
 <translation id="1742469581923031760">S'està connectant...</translation>
 <translation id="8998327464021325874">Controlador de l'amfitrió de l'escriptori remot de Chrome</translation>
+<translation id="7017806586333792422">Inicia l'enregistrament</translation>
+<translation id="1619813076098775562">La connexió amb el dispositiu d'emissió s'ha tancat</translation>
 <translation id="6748108480210050150">De</translation>
 <translation id="3950820424414687140">Inici de sessió</translation>
 <translation id="1291443878853470558">Heu d'activar les connexions remotes si voleu utilitzar Chromoting per accedir a aquest ordinador.</translation>
@@ -107,11 +110,13 @@ Per obtenir informació sobre la privadesa, vegeu la Política de privadesa de G
 <translation id="7401733114166276557">Escriptori remot de Chrome</translation>
 <translation id="3362124771485993931">Torneu a escriure el PIN</translation>
 <translation id="1760808606374294203">• Correccions per a Android Lollipop</translation>
+<translation id="5231421057630485350">L'usuari que us ajudi podrà controlar el cursor i el teclat.</translation>
 <translation id="154040539590487450">No s'ha pogut iniciar el servei d'accés remot.</translation>
 <translation id="7948001860594368197">Opcions de pantalla</translation>
 <translation id="8172070902751707422">Ha fallat l'autenticació. Torneu a iniciar la sessió a l'escriptori remot de Chrome.</translation>
 <translation id="5254120496627797685">Si sortiu d'aquesta pàgina, la sessió de l'escriptori remot de Chrome finalitzarà.</translation>
 <translation id="173559734173571936">Per utilitzar l'escriptori remot de Chrome heu de concedir permisos d'accés ampliat a l'ordinador. Només ho heu de fer una vegada.</translation>
+<translation id="712467900648340229">La connexió amb el dispositiu d'emissió no s'ha pogut establir</translation>
 <translation id="9032136467203159543">Falten alguns components necessaris per a Chromoting. Assegureu-vos que n'heu instal·lat la versió més recent i torneu-ho a provar.</translation>
 <translation id="1342297293546459414">Vegeu i controleu un ordinador compartit.</translation>
 <translation id="1520828917794284345">Ajusta la mida de l'escriptori</translation>
@@ -147,6 +152,7 @@ Per obtenir informació sobre la privadesa, vegeu la Política de privadesa de G
 <translation id="2699970397166997657">Chromoting</translation>
 <translation id="4812684235631257312">Amfitrió</translation>
 <translation id="6178645564515549384">Amfitrió de missatgeria nativa per a l'assistència remota</translation>
+<translation id="1738759452976856405">Atura l'enregistrament</translation>
 <translation id="897805526397249209">Per activar les connexions remotes a un altre ordinador, instal·leu-hi Chromoting i feu clic a <ph name="BUTTON_NAME"/>.</translation>
 <translation id="1704090719919187045">Preferències de Chromoting Host</translation>
 <translation id="809687642899217504">Els meus ordinadors</translation>
@@ -187,6 +193,7 @@ remot de Chrome</translation>
 <translation id="4703799847237267011">La vostra sessió de Chromoting ha finalitzat.</translation>
 <translation id="8178433417677596899">Ús compartit de pantalla d'usuari a usuari, perfecte per a l'assistència tècnica remota.</translation>
 <translation id="652218476070540101">S'està actualitzant el PIN d'aquest ordinador...</translation>
+<translation id="951991426597076286">Rebutja</translation>
 <translation id="4563926062592110512">Client desconnectat: <ph name="CLIENT_USERNAME"/>.</translation>
 <translation id="5308380583665731573">Connexió</translation>
 <translation id="7319983568955948908">Deixa de compartir</translation>

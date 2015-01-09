@@ -1,13 +1,13 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="tr">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="tr">
 <translation id="8588878054171169263">Resmi kaydet</translation>
 <translation id="7998918019931843664">Kapatılan sekmeyi yeniden aç</translation>
 <translation id="4996978546172906250">Paylaşım yöntemi:</translation>
+<translation id="6292937202013477045">Saldırganlar <ph name="DOMAIN_NAME"/> alan adından bilgilerinizi (ör. fotoğraflarınızı, şifrelerinizi, iletilerinizi ve kredi kartı bilgilerinizi) çalmaya çalışabilirler.</translation>
 <translation id="346339498574870680">Resmin URL'sini kopyala</translation>
 <translation id="6657585470893396449">Şifre</translation>
 <translation id="5578795271662203820">Bu resmi, <ph name="SEARCH_ENGINE"/> üzerinde ara</translation>
 <translation id="6831043979455480757">Çevir</translation>
+<translation id="869891660844655955">Son kullanma tarihi</translation>
 <translation id="7644305409888602715">Sayfa <ph name="SOURCE_LANGUAGE"/> diline çevriliyor...</translation>
 <translation id="7015922086425404465">Uygulamayı Google Play Store'dan alın: <ph name="APP_ACTION"/></translation>
 <translation id="1491151370853475546">Bu Sayfayı Yeniden Yükle</translation>
@@ -28,17 +28,24 @@ Yönetilen bir hesapla oturum açıyor ve hesabın yöneticisine Chrome profilin
 <translation id="1966710179511230534">Lütfen oturum açma ayrıntılarınızı güncelleyin.</translation>
 <translation id="1623104350909869708">Bu sayfanın daha fazla iletişim kutusu oluşturmasını önle</translation>
 <translation id="1426410128494586442">Evet</translation>
+<translation id="5595485650161345191">Adresi düzenle</translation>
 <translation id="8218346974737627104">Oturum açmayı onaylayın</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE"/>, sekme</translation>
 <translation id="624558823898732418">Çeviri Dili: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="8872441722924401214">Kimlik doğrulama sertifikasını seçin</translation>
 <translation id="7791543448312431591">Ekle</translation>
+<translation id="8719023831149562936">Geçerli sekme ışınlanamıyor</translation>
+<translation id="4378154925671717803">Telefon</translation>
 <translation id="3896036286668839683">Sertifika Görüntüleyici</translation>
 <translation id="5039804452771397117">İzin ver</translation>
 <translation id="8583805026567836021">Hesap verileri temizleniyor</translation>
+<translation id="5860033963881614850">Kapalı</translation>
 <translation id="4250680216510889253">Hayır</translation>
 <translation id="8073388330009372546">Resmi yeni sekmede aç</translation>
 <translation id="552553974213252141">Metin doğru bir şekilde çıkarıldı mı?</translation>
+<translation id="5317780077021120954">Kaydet</translation>
+<translation id="2718352093833049315">Yaln. Kablosuzda</translation>
+<translation id="7029809446516969842">Şifreler</translation>
 <translation id="2414886740292270097">Koyu</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="8730621377337864115">Bitti</translation>
@@ -48,31 +55,43 @@ Yönetilen bir hesapla oturum açıyor ve hesabın yöneticisine Chrome profilin
 <translation id="1807246157184219062">Açık</translation>
 <translation id="7053983685419859001">Engelle</translation>
 <translation id="8374821112118309944">TalkBack'i daha yeni bir sürüme güncellemeniz gerekiyor.</translation>
+<translation id="8481940801237642152">Bu siteye bağlantınız gizli bir bağlantı, ancak ağ üzerindeki biri sayfanın görünümünü değiştirebilir.</translation>
 <translation id="2593272815202181319">Eş aralıklı</translation>
+<translation id="4807098396393229769">Kartın üzerindeki ad</translation>
 <translation id="656628257199996201"><ph name="SOURCE_LANGUAGE"/> dilini her zaman çevir</translation>
 <translation id="2748463065602559597">Güvenli bir Google Chrome sayfasını görüntülüyorsunuz.</translation>
 <translation id="9137013805542155359">Orijinali göster</translation>
 <translation id="4543661749405994812">E-posta adresini kopyala</translation>
+<translation id="5659593005791499971">E-posta</translation>
+<translation id="8428213095426709021">Ayarlar</translation>
 <translation id="5684874026226664614">Hata! Bu sayfa çevrilemedi.</translation>
+<translation id="10614374240317010">Hiç kaydedilmeyecekler</translation>
+<translation id="2903493209154104877">Adresler</translation>
 <translation id="8503813439785031346">Kullanıcı adı</translation>
 <translation id="2532336938189706096">Web Görüntüleme</translation>
+<translation id="6571070086367343653">Kredi kartını düzenle</translation>
+<translation id="7080851568148064063">Ana ekrana ekle</translation>
 <translation id="4619298195800598081">Orijinal resmi yeni sekmede aç</translation>
 <translation id="4002066346123236978">Başlık</translation>
 <translation id="3254409185687681395">Bu sayfaya yer işareti koy</translation>
 <translation id="907015151729920253">Akıllı kart</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="3063601790762993062">Videoyu kaydet</translation>
+<translation id="8106211421800660735">Kredi kartı numarası</translation>
 <translation id="6042308850641462728">Daha fazla</translation>
 <translation id="7267430310003164111">Uygulamanın Google Play Store'dan alınması için istem. Uygulamanın adı: <ph name="APP_NAME"/>. Uygulamanın ortalama kullanıcı oyu: <ph name="APP_RATING"/>.</translation>
 <translation id="4148957013307229264">Yükleniyor...</translation>
 <translation id="3992315671621218278">Bağlantıyı kaydet</translation>
-<translation id="8034522405403831421">Bu sayfa <ph name="SOURCE_LANGUAGE"/> dilinde. <ph name="TARGET_LANGUAGE"/> diline çevrilsin mi?</translation>
+<translation id="2476578072172137802">Site Ayarları</translation>
 <translation id="4195643157523330669">Yeni sekmede aç</translation>
 <translation id="651048280540227067">Menüyü kapat</translation>
 <translation id="3089395242580810162">Gizli sekmede aç</translation>
+<translation id="6981982820502123353">Erişilebilirlik</translation>
 <translation id="8725066075913043281">Yeniden dene</translation>
 <translation id="8909135823018751308">Paylaş…</translation>
+<translation id="654446541061731451">Işınlamak için bir sekme seçin</translation>
 <translation id="4269820728363426813">Bağlantı adresini kopyala</translation>
+<translation id="8261506727792406068">Sil</translation>
 <translation id="4510973599275542560">Yeniden yükleme</translation>
 <translation id="1206892813135768548">Bağlantı metnini kopyala</translation>
 <translation id="9154176715500758432">Bu Sayfada Kal</translation>
@@ -81,22 +100,32 @@ Yönetilen bir hesapla oturum açıyor ve hesabın yöneticisine Chrome profilin
 <translation id="6671495933530132209">Resmi kopyala</translation>
 <translation id="8209050860603202033">Resmi aç</translation>
 <translation id="2501278716633472235">Geri dön</translation>
+<translation id="8941248009481596111">Bu siteye bağlantınız gizli.</translation>
 <translation id="1285320974508926690">Bu siteyi hiçbir zaman çevirme</translation>
 <translation id="5164482624172255778">Google Chrome'un bir dahaki sefere bu siteden <ph name="LANGUAGE"/> dilindeki sayfaları çevirmeyi önermesini ister misiniz?</translation>
 <translation id="8528538445849828817">Sayfanın Dili: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="4881695831933465202">Aç</translation>
 <translation id="6512448926095770873">Bu Sayfadan Ayrıl</translation>
+<translation id="5565871407246142825">Kredi kartları</translation>
 <translation id="7947953824732555851">Kabul et ve oturum aç</translation>
+<translation id="2612676031748830579">Kart numarası</translation>
 <translation id="6333140779060797560">Paylaşım yöntemi: <ph name="APPLICATION"/></translation>
 <translation id="6040143037577758943">Kapat</translation>
+<translation id="2888126860611144412">Chrome hakkında</translation>
+<translation id="5138299137310274655">Bu sayfa <ph name="SOURCE_LANGUAGE"/> dilinde. <ph name="TARGET_LANGUAGE"/> diline çevrilsin mi?</translation>
+<translation id="7649070708921625228">Yardım</translation>
 <translation id="969096075394517431">Dilleri değiştir</translation>
 <translation id="5032574515228824816">İstem</translation>
+<translation id="6165508094623778733">Daha fazla bilgi edinin</translation>
 <translation id="7961015016161918242">Hiçbir Zaman</translation>
 <translation id="497421865427891073">İlerle</translation>
 <translation id="4056223980640387499">Sepya Tonu</translation>
 <translation id="8310344678080805313">Standart sekmeler</translation>
 <translation id="6277522088822131679">Sayfa yazdırılırken bir sorun oluştu. Lütfen tekrar deneyin.</translation>
+<translation id="7634554953375732414">Bu siteye bağlantınız gizli değil.</translation>
+<translation id="6612358246767739896">Korunan içerik</translation>
 <translation id="1742134235943978220"><ph name="TARGET_LANGUAGE"/> diline çevrildi.</translation>
+<translation id="5916664084637901428">Açık</translation>
 <translation id="6965382102122355670">Tamam</translation>
 <translation id="7561196759112975576">Her zaman</translation>
 </translationbundle>

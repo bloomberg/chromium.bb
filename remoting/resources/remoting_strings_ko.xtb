@@ -1,6 +1,5 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="ko">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="ko">
+<translation id="3233367171080043075">언제든지 종료할 수 있습니다.</translation>
 <translation id="7606912958770842224">원격 연결 사용</translation>
 <translation id="3785447812627779171">Chromoting
 호스트</translation>
@@ -19,6 +18,7 @@
 <translation id="5070121137485264635">원격 호스트는 타사 웹사이트에 대한 인증이 필요합니다. 계속하려면 이 주소에 액세스할 수 있도록 Chrome 원격 데스크톱에 추가 권한을 허용해야 합니다.</translation>
 <translation id="2124408767156847088">Android 기기에서 컴퓨터에 안전하게 액세스하세요.</translation>
 <translation id="3194245623920924351">Chrome 원격 데스크톱</translation>
+<translation id="5537725057119320332">전송</translation>
 <translation id="3649256019230929621">창 최소화</translation>
 <translation id="4808503597364150972"><ph name="HOSTNAME"/>의 PIN을 입력하세요.</translation>
 <translation id="7672203038394118626">컴퓨터의 원격 연결이 사용중지되었습니다.</translation>
@@ -26,6 +26,7 @@
 <translation id="4368630973089289038">Chromoting을 개선하도록 도와주려면 <ph name="LINK_BEGIN"/>설문조사에 참여하세요.<ph name="LINK_END"/></translation>
 <translation id="332624996707057614">컴퓨터 이름 수정</translation>
 <translation id="1996161829609978754">Chrome에서 Chromoting 호스트 설치 프로그램을 다운로드 중입니다. 다운로드가 완료되면 설치 프로그램을 실행하고 계속하세요.</translation>
+<translation id="222632161986885959">이 행아웃의 참가자가 내 컴퓨터를 제어하여 나를 돕겠다고 제안했습니다. 이를 허용하는 경우:</translation>
 <translation id="2046651113449445291">다음 클라이언트는 이 컴퓨터와 페어링되었으며 PIN을 제공하지 않고도 연결할 수 있습니다. 언제든지 개별 클라이언트 또는 모든 클라이언트에 대해 이 권한을 취소할 수 있습니다.</translation>
 <translation id="7658239707568436148">취소</translation>
 <translation id="7782471917492991422">컴퓨터의 전원 관리 설정을 확인하고 유휴 상태일 때 절전 모드로 전환되도록 설정되지 않았는지 확인하세요.</translation>
@@ -97,6 +98,8 @@
 <translation id="2013884659108657024">Chrome에서 원격 데스크톱 호스트 설치 프로그램을 다운로드 중입니다. 다운로드가 완료되면 계속하기 전에 설치 프로그램을 실행하세요.</translation>
 <translation id="1742469581923031760">연결 중...</translation>
 <translation id="8998327464021325874">Chrome 원격 데스크톱 호스트 컨트롤러</translation>
+<translation id="7017806586333792422">녹화 시작</translation>
+<translation id="1619813076098775562">Cast 기기에 대한 연결이 종료되었습니다.</translation>
 <translation id="6748108480210050150">클라이언트</translation>
 <translation id="3950820424414687140">로그인</translation>
 <translation id="1291443878853470558">Chromoting을 사용하여 컴퓨터에 액세스하려면 원격 연결을 사용하도록 설정해야 합니다.</translation>
@@ -107,11 +110,13 @@
 <translation id="7401733114166276557">Chrome 원격 데스크톱</translation>
 <translation id="3362124771485993931">PIN 확인</translation>
 <translation id="1760808606374294203">• Android Lollipop 수정</translation>
+<translation id="5231421057630485350">나를 도와주는 사람은 내 마우스와 키보드를 제어할 수 있습니다.</translation>
 <translation id="154040539590487450">원격 액세스 서비스를 시작하지 못했습니다.</translation>
 <translation id="7948001860594368197">화면 옵션</translation>
 <translation id="8172070902751707422">인증하지 못했습니다. Chrome 원격 데스크톱에 다시 로그인하세요.</translation>
 <translation id="5254120496627797685">이 페이지를 닫으면 Chrome 원격 데스크톱 세션이 종료됩니다.</translation>
 <translation id="173559734173571936">Chrome 원격 데스크톱을 사용하려면 내 컴퓨터에 확장 액세스 권한을 부여해야 합니다. 이 작업은 한 번만 수행하면 됩니다.</translation>
+<translation id="712467900648340229">Cast 기기에 연결하지 못했습니다.</translation>
 <translation id="9032136467203159543">Chromoting에 필요한 일부 구성 요소가 누락되었습니다. 최신 버전을 설치했는지 확인한 뒤 다시 시도해 주세요.</translation>
 <translation id="1342297293546459414">공유한 컴퓨터를 보고 제어합니다.</translation>
 <translation id="1520828917794284345">데스크톱 크기 조정</translation>
@@ -147,6 +152,7 @@
 <translation id="2699970397166997657">Chromoting</translation>
 <translation id="4812684235631257312">호스트</translation>
 <translation id="6178645564515549384">원격 지원을 위한 기본 메시징 호스트</translation>
+<translation id="1738759452976856405">녹화 중지</translation>
 <translation id="897805526397249209">다른 컴퓨터에 원격 연결을 사용하려면 그 컴퓨터에 Chromoting을 설치하고 '<ph name="BUTTON_NAME"/>' 버튼을 클릭하세요.</translation>
 <translation id="1704090719919187045">Chromoting 호스트 환경설정</translation>
 <translation id="809687642899217504">내 컴퓨터</translation>
@@ -187,6 +193,7 @@
 <translation id="4703799847237267011">Chromoting 세션이 종료되었습니다.</translation>
 <translation id="8178433417677596899">사용자 간 화면 공유가 가능하며 원격 기술 지원에 적합합니다.</translation>
 <translation id="652218476070540101">컴퓨터의 PIN을 업데이트 중…</translation>
+<translation id="951991426597076286">거부</translation>
 <translation id="4563926062592110512">연결 해제된 클라이언트: <ph name="CLIENT_USERNAME"/></translation>
 <translation id="5308380583665731573">연결</translation>
 <translation id="7319983568955948908">공유 중지</translation>

@@ -1,6 +1,4 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="iw">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="iw">
 <translation id="7485870689360869515">לא נמצאו נתונים.</translation>
 <translation id="3884278016824448484">מזהה מכשיר מתנגש</translation>
 <translation id="6779575937362063477">‏סוג כרטיס זה אינו נתמך על ידי ארנק Google. בחר כרטיס אחר.</translation>
@@ -12,6 +10,7 @@
 <translation id="1339601241726513588">דומיין הרשמה:</translation>
 <translation id="7298195798382681320">מומלצים</translation>
 <translation id="4058922952496707368">מפתח &quot;<ph name="SUBKEY"/>&quot;: <ph name="ERROR"/></translation>
+<translation id="6980028882292583085">‏התראת JavaScript</translation>
 <translation id="5299298092464848405">שגיאה בניתוח המדיניות</translation>
 <translation id="6628463337424475685"><ph name="ENGINE"/> חיפוש</translation>
 <translation id="6831043979455480757">תרגם</translation>
@@ -24,6 +23,7 @@
 <translation id="2958431318199492670">‏תצורת הרשת אינה תואמת לתקן ONC. ייתכן שחלקים מהתצורה לא ייכללו בייבוא.</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="277499241957683684">חסרה רשומת מכשיר</translation>
+<translation id="1491151370853475546">טען מחדש דף זה</translation>
 <translation id="8553075262323480129">התרגום נכשל כיוון שלא הייתה אפשרות לקבוע את שפת הדף.</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="1103523840287552314">תרגם <ph name="LANGUAGE"/> תמיד</translation>
@@ -44,6 +44,7 @@
 <translation id="3380365263193509176">שגיאה לא ידועה</translation>
 <translation id="112840717907525620">הקובץ השמור של המדיניות תקין</translation>
 <translation id="3452404311384756672">מרווח אחזור:</translation>
+<translation id="409504436206021213">אל תטען מחדש</translation>
 <translation id="7441627299479586546">נושא המדיניות שגוי</translation>
 <translation id="3885155851504623709">קהילה</translation>
 <translation id="6973656660372572881">‏צוינו שרתי Proxy קבועים וכתובת אתר של הסקריפט מסוג ‎.Pac</translation>
@@ -52,6 +53,7 @@
 <translation id="3667681724235208644">הצג את המקור</translation>
 <translation id="4079302484614802869">‏תצורת ה-Proxy מוגדרת להשתמש בכתובת אתר של סקריפט מסוג ‎.Pac ולא בשרתי Proxy קבועים.</translation>
 <translation id="5540224163453853">לא ניתן היה למצוא את הפריט המבוקש.</translation>
+<translation id="333371639341676808">מנע מדף זה ליצור דיאלוגים נוספים.</translation>
 <translation id="5523118979700054094">שם מדיניות</translation>
 <translation id="7791543448312431591">הוסף</translation>
 <translation id="2053553514270667976">מספר / מיקוד</translation>
@@ -68,6 +70,7 @@
 <translation id="2367567093518048410">רמה</translation>
 <translation id="7977590112176369853">&lt;הזן שאילתה&gt;</translation>
 <translation id="7610193165460212391">הערך מחוץ לטווח <ph name="VALUE"/>.</translation>
+<translation id="8311778656528046050">האם אתה בטוח שברצונך לטעון מחדש דף זה?</translation>
 <translation id="370665806235115550">טוען...</translation>
 <translation id="2096368010154057602">מחלקה</translation>
 <translation id="4258748452823770588">חתימה שגויה</translation>
@@ -95,11 +98,14 @@
 <translation id="6445051938772793705">ארץ</translation>
 <translation id="5031870354684148875">‏מידע על Google Translate</translation>
 <translation id="1152921474424827756">גש אל <ph name="BEGIN_LINK"/>עותק בקובץ שמור<ph name="END_LINK"/> של <ph name="URL"/></translation>
+<translation id="8201077131113104583">כתובת אתר לא חוקית לעדכון עבור תוסף עם המזהה &quot;<ph name="EXTENSION_ID"/>&quot;.</translation>
 <translation id="6891596781022320156">רמת המדיניות אינה נתמכת.</translation>
 <translation id="2025186561304664664">‏שרת Proxy נקבע למוגדר אוטומטית.</translation>
 <translation id="1853748787962613237">הצגת הפריט נכשלה.</translation>
 <translation id="5455374756549232013">חותמת הזמן של המדיניות שגויה</translation>
+<translation id="2025623846716345241">אשר טעינה מחדש</translation>
 <translation id="1962204205936693436">סימניות של <ph name="DOMAIN"/></translation>
+<translation id="111844081046043029">האם אתה בטוח שברצונך לצאת מדף זה?</translation>
 <translation id="1973335181906896915">שגיאה בעריכה בסידרה</translation>
 <translation id="5989320800837274978">‏לא צוינו שרתי Proxy קבועים ולא כתובת אתר של סקריפט ‎.pac</translation>
 <translation id="7805768142964895445">סטטוס</translation>
@@ -110,12 +116,13 @@
 <translation id="7956713633345437162">סימניות לנייד</translation>
 <translation id="5089810972385038852">מדינה</translation>
 <translation id="647261751007945333">מדיניות המכשיר</translation>
-<translation id="678528074488531090">שגיאת אימות: <ph name="VALIDATION_ERROR"/>.</translation>
 <translation id="213826338245044447">סימניות לנייד</translation>
 <translation id="8571890674111243710">מתרגם דף ל<ph name="LANGUAGE"/>...</translation>
 <translation id="4117700440116928470">היקף המדיניות אינו נתמך.</translation>
 <translation id="2114841414352855701">המערכת התעלמה משום שהמדיניות בוטלה על ידי <ph name="POLICY_NAME"/>.</translation>
 <translation id="3228969707346345236">התרגום נכשל כיוון שהדף כבר ב<ph name="LANGUAGE"/>.</translation>
+<translation id="7521387064766892559">JavaScript</translation>
+<translation id="8034522405403831421">דף זה מוצג ב<ph name="SOURCE_LANGUAGE"/>. האם לתרגם אותו ל<ph name="TARGET_LANGUAGE"/>?</translation>
 <translation id="8891727572606052622">‏מצב שרת Proxy לא חוקי.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="7752995774971033316">ללא ניהול</translation>
@@ -137,9 +144,11 @@
 <translation id="3377188786107721145">שגיאה בניתוח המדיניות</translation>
 <translation id="2270192940992995399">לא ניתן היה למצוא את הפריט.</translation>
 <translation id="4726672564094551039">טען מדיניות מחדש</translation>
+<translation id="9154176715500758432">הישאר בדף זה</translation>
 <translation id="2392959068659972793">הצגת מדיניות ללא ערך מוגדר</translation>
 <translation id="5190835502935405962">סרגל הסימניות</translation>
 <translation id="6965978654500191972">התקן</translation>
+<translation id="5295309862264981122">אשר ניווט</translation>
 <translation id="8249320324621329438">אוחזר לאחרונה:</translation>
 <translation id="194030505837763158">עבור ל-<ph name="LINK"/></translation>
 <translation id="1285320974508926690">לעולם אל תתרגם אתר זה</translation>
@@ -150,6 +159,7 @@
 <translation id="9020542370529661692">הדף הזה תורגם ל<ph name="TARGET_LANGUAGE"/></translation>
 <translation id="5631439013527180824">אסימון ניהול המכשיר אינו חוקי</translation>
 <translation id="560412284261940334">ניהול אינו נתמך</translation>
+<translation id="6512448926095770873">צא מדף זה</translation>
 <translation id="1639239467298939599">טוען</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="4923417429809017348">דף זה תורגם משפה לא ידועה ל<ph name="LANGUAGE_LANGUAGE"/></translation>
@@ -163,6 +173,8 @@
 <translation id="5509780412636533143">סימניות מנוהלות</translation>
 <translation id="8866481888320382733">שגיאה בניתוח הגדרות המדיניות</translation>
 <translation id="6644283850729428850">מדיניות זו אינה בתוקף.</translation>
+<translation id="1693754753824026215">הדף ב-<ph name="SITE"/> אומר:</translation>
+<translation id="4269787794583293679">(אין שם משתמש)</translation>
 <translation id="7988324688042446538">סימניות שולחן עבודה</translation>
 <translation id="8488350697529856933">חל על</translation>
 <translation id="6165508094623778733">למידע נוסף</translation>
@@ -184,8 +196,8 @@
 <translation id="2639739919103226564">סטטוס:</translation>
 <translation id="1832546148887467272">החלף ל-<ph name="NEW_GOOGLE_HOST"/></translation>
 <translation id="5095208057601539847">פרובינציה</translation>
+<translation id="2581221116934462656">האם תרצה ש-<ph name="PRODUCT_NAME"/> יציע לתרגם דפים ב<ph name="LANGUAGE_NAME"/> מהאתר הזה בפעם הבאה?</translation>
 <translation id="3934680773876859118">‏הטעינה של מסמך PDF נכשלה</translation>
-<translation id="1152021252151287493">חתימת אימות לא חוקית.</translation>
 <translation id="6965382102122355670">אישור</translation>
 <translation id="2721148159707890343">הבקשה בוצעה בהצלחה</translation>
 <translation id="2455981314101692989">דף אינטרנט זה השבית מילוי אוטומטי של טופס זה.</translation>

@@ -1,6 +1,5 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="id">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="id">
+<translation id="3233367171080043075">Anda dapat mengakhirinya kapan saja.</translation>
 <translation id="7606912958770842224">Aktifkan sambungan jarak jauh</translation>
 <translation id="3785447812627779171">Host
 Chromoting</translation>
@@ -19,6 +18,7 @@ Chromoting</translation>
 <translation id="5070121137485264635">Hosting jarak jauh mewajibkan Anda mengautentikasi ke situs web pihak ketiga. Untuk melanjutkan, Anda harus memberikan izin tambahan ke Chrome Desktop Jarak Jauh untuk mengakses alamat ini:</translation>
 <translation id="2124408767156847088">Akses komputer dari perangkat Android Anda dengan aman.</translation>
 <translation id="3194245623920924351">Chrome Desktop Jarak Jauh</translation>
+<translation id="5537725057119320332">Cast</translation>
 <translation id="3649256019230929621">Meminimalkan jendela</translation>
 <translation id="4808503597364150972">Masukkan PIN Anda untuk <ph name="HOSTNAME"/>.</translation>
 <translation id="7672203038394118626">Sambungan jarak jauh untuk komputer ini telah dinonaktifkan.</translation>
@@ -26,6 +26,7 @@ Chromoting</translation>
 <translation id="4368630973089289038">Ingin membantu meningkatkan Chromoting? <ph name="LINK_BEGIN"/>Isi survei ini.<ph name="LINK_END"/></translation>
 <translation id="332624996707057614">Edit nama komputer</translation>
 <translation id="1996161829609978754">Chrome sedang mengunduh pemasang Inang Chromoting. Setelah unduhan selesai, jalankan pemasang sebelum melanjutkan.</translation>
+<translation id="222632161986885959">Peserta dalam Hangout ini menawarkan bantuan dengan mengontrol komputer Anda.  Jika Anda menerima:</translation>
 <translation id="2046651113449445291">Klien berikut telah disandingkan dengan komputer ini dan dapat tersambung tanpa memberikan PIN. Anda dapat mencabut izin ini kapan saja, baik secara individu atau pun untuk semua klien.</translation>
 <translation id="7658239707568436148">Batal</translation>
 <translation id="7782471917492991422">Periksa setelan pengelolaan daya komputer Anda dan pastikan agar tidak dikonfigurasi untuk tidur ketika menganggur.</translation>
@@ -97,6 +98,8 @@ Untuk informasi tentang privasi, lihat Kebijakan Privasi Google (http://goo.gl/S
 <translation id="2013884659108657024">Chrome sedang mengunduh pemasang Inang Chrome Desktop Jarak Jauh. Setelah unduhan selesai, jalankan pemasang sebelum melanjutkan.</translation>
 <translation id="1742469581923031760">Menyambungkan...</translation>
 <translation id="8998327464021325874">Pengontrol Host Chrome Desktop Jarak Jauh</translation>
+<translation id="7017806586333792422">Mulai Merekam</translation>
+<translation id="1619813076098775562">Menutup koneksi ke perangkat Cast.</translation>
 <translation id="6748108480210050150">Dari</translation>
 <translation id="3950820424414687140">Masuk</translation>
 <translation id="1291443878853470558">Anda harus mengaktifkan sambungan jarak jauh jika ingin menggunakan Chromoting untuk mengakses komputer ini.</translation>
@@ -107,11 +110,13 @@ Untuk informasi tentang privasi, lihat Kebijakan Privasi Google (http://goo.gl/S
 <translation id="7401733114166276557">Chrome Desktop Jarak Jauh</translation>
 <translation id="3362124771485993931">Ketik ulang PIN</translation>
 <translation id="1760808606374294203">• Perbaikan untuk Android Lollipop.</translation>
+<translation id="5231421057630485350">Orang yang membantu akan dapat mengontrol mouse dan keyboard Anda.</translation>
 <translation id="154040539590487450">Gagal memulai layanan akses jarak jauh.</translation>
 <translation id="7948001860594368197">Opsi layar</translation>
 <translation id="8172070902751707422">Autentikasi gagal. Masuk ke Chrome Desktop Jarak Jauh lagi.</translation>
 <translation id="5254120496627797685">Dengan meninggalkan laman ini, Anda akan mengakhiri sesi Chrome Desktop Jarak Jauh.</translation>
 <translation id="173559734173571936">Untuk menggunakan Chrome Desktop Jarak Jauh, Anda harus memberikan izin akses yang diperpanjang ke komputer. Anda hanya perlu melakukan ini satu kali.</translation>
+<translation id="712467900648340229">Gagal tersambung ke perangkat Cast.</translation>
 <translation id="9032136467203159543">Beberapa komponen yang diperlukan untuk Chromoting hilang. Pastikan bahwa Anda telah memasang versi teranyar dan coba lagi.</translation>
 <translation id="1342297293546459414">Melihat dan mengontrol komputer bersama.</translation>
 <translation id="1520828917794284345">Ubah ukuran desktop agar sesuai</translation>
@@ -147,6 +152,7 @@ Untuk informasi tentang privasi, lihat Kebijakan Privasi Google (http://goo.gl/S
 <translation id="2699970397166997657">Chromoting</translation>
 <translation id="4812684235631257312">Host</translation>
 <translation id="6178645564515549384">Hosting perpesanan asli untuk bantuan jarak jauh</translation>
+<translation id="1738759452976856405">Berhenti Merekam</translation>
 <translation id="897805526397249209">Untuk mengaktifkan sambungan jarak jauh ke komputer yang berbeda, pasang Chromoting di komputer tersebut, lalu klik “<ph name="BUTTON_NAME"/>”.</translation>
 <translation id="1704090719919187045">Preferensi Host Chromoting</translation>
 <translation id="809687642899217504">Komputer Saya</translation>
@@ -187,6 +193,7 @@ Desktop Jarak Jauh</translation>
 <translation id="4703799847237267011">Sesi Chromoting Anda berakhir.</translation>
 <translation id="8178433417677596899">Berbagi layar pengguna ke pengguna, cocok untuk dukungan teknis jarak jauh.</translation>
 <translation id="652218476070540101">PIN untuk komputer ini sedang diperbarui...</translation>
+<translation id="951991426597076286">Tolak</translation>
 <translation id="4563926062592110512">Klien terputus: <ph name="CLIENT_USERNAME"/>.</translation>
 <translation id="5308380583665731573">Sambungkan</translation>
 <translation id="7319983568955948908">Hentikan Berbagi</translation>

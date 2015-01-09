@@ -1,12 +1,10 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="ko">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="ko">
+<translation id="4542520061254486227"><ph name="WEBSITE_1"/> 및 <ph name="WEBSITE_2"/>에서 데이터 읽기</translation>
 <translation id="3624204664103857160">런처 페이지('<ph name="PAGE"/>')를 로드할 수 없습니다.</translation>
 <translation id="8804398419035066391">협력 중인 웹사이트와 통신</translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME"/>(확장 프로그램 ID '<ph name="EXTENSION_ID"/>')은(는) 관리자에 의해 차단되었습니다.</translation>
 <translation id="1005274289863221750">마이크와 카메라 사용</translation>
 <translation id="2857834222104759979">매니페스트 파일이 잘못되었습니다.</translation>
-<translation id="3828484226910527078">USB 기기에 액세스</translation>
 <translation id="6384275966486438344">다음으로 검색 설정 변경: <ph name="SEARCH_HOST"/></translation>
 <translation id="1445572445564823378">이 확장 프로그램은 <ph name="PRODUCT_NAME"/>의 성능을 저하시킵니다. <ph name="PRODUCT_NAME"/>의 성능을 복원하려면 확장 프로그램을 사용중지해야 합니다.</translation>
 <translation id="1033780634303702874">직렬 기기에 액세스</translation>
@@ -15,30 +13,30 @@
 <translation id="677806580227005219">Mimehandler: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">시스템과 페어링된 블루투스 기기 관련 정보에 액세스하고 근처의 블루투스 기기를 검색합니다.</translation>
 <translation id="5911798608827489036">로컬 네트워크 또는 인터넷의 모든 컴퓨터와 데이터 교환</translation>
-<translation id="4719685943208231314"><ph name="VENDOR_NAME"/>의 USB 기기에 액세스</translation>
+<translation id="8284835137979141223"><ph name="VENDOR_NAME"/>의 <ph name="PRODUCT_NAME"/></translation>
 <translation id="657064425229075395">백그라운드 스크립트('<ph name="BACKGROUND_SCRIPT"/>')를 로드하지 못했습니다.</translation>
 <translation id="9131487537093447019">블루투스 기기와 메시지를 주고받습니다.</translation>
-<translation id="8198425243160395623">USB 기기에 액세스</translation>
+<translation id="5678955352098267522"><ph name="WEBSITE_1"/>에서 데이터 읽기</translation>
 <translation id="8597109877291678953">이름이 <ph name="HOSTNAME"/>인 컴퓨터와 데이터 교환</translation>
 <translation id="5456409301717116725">이 확장 프로그램은 키 파일 '<ph name="KEY_PATH"/>'을(를) 포함합니다. 사용하지 않는 것이 좋습니다.</translation>
+<translation id="7257666756905341374">복사하여 붙여넣은 데이터 조회</translation>
 <translation id="2350172092385603347">번역한 언어를 이용하였지만 매니페스트에 기본 언어(default_locale)를 지정하지 않았습니다.</translation>
 <translation id="3759933321830434300">웹페이지의 일부 차단</translation>
-<translation id="8058376558882514200"><ph name="VENDOR_NAME"/>의 USB 기기 <ph name="PRODUCT_NAME"/>에 액세스</translation>
 <translation id="149347756975725155">확장 프로그램 아이콘('<ph name="ICON"/>')을 로드하지 못했습니다.</translation>
 <translation id="8825366169884721447">이 확장프로그램이 네트워크 요청의 요청 헤더 '<ph name="HEADER_NAME"/>을(를) 수정하는 데 실패했습니다. 수정 요청이 다른 확장 프로그램(<ph name="EXTENSION_NAME"/>)와(과) 충돌했습니다.</translation>
+<translation id="7495493006406536234">제품 <ph name="PRODUCT_ID"/></translation>
 <translation id="4233778200880751280">정보 페이지 '<ph name="ABOUT_PAGE"/>'을(를) 로드할 수 없습니다.</translation>
 <translation id="388442998277590542">옵션 페이지('<ph name="OPTIONS_PAGE"/>')를 로드하지 못했습니다.</translation>
 <translation id="6344170822609224263">네트워크 연결 목록에 액세스</translation>
 <translation id="2616366145935564096"><ph name="WEBSITE_1"/>의 데이터를 읽고 변경</translation>
 <translation id="2518849872271000461">이름이 <ph name="HOSTNAMES"/>인 컴퓨터와 데이터 교환</translation>
-<translation id="1389014510128217152">- <ph name="WEBSITE_1"/></translation>
+<translation id="4444304522807523469">USB나 로컬 네트워크에 포함된 문서 스캐너에 액세스</translation>
 <translation id="6408118934673775994"><ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/>, <ph name="WEBSITE_3"/>의 데이터를 읽고 변경</translation>
 <translation id="961805664415579088">도메인 <ph name="DOMAIN"/>에 있는 모든 컴퓨터와 데이터 교환</translation>
 <translation id="3502064055007747926">입력 기기에 액세스</translation>
 <translation id="8670869118777164560">이 확장 프로그램에서 네트워크 요청을 <ph name="ATTEMPTED_REDIRECT_DESTINATION"/>(으)로 리디렉션하는 데 실패했습니다. 다른 확장 프로그램(<ph name="EXTENSION_NAME"/>)이 해당 요청을 <ph name="ACTUAL_REDIRECT_DESTINATION"/>(으)로 리디렉션했습니다.</translation>
 <translation id="6840444547062817500">확장 프로그램이 너무 자주 새로고침됩니다.</translation>
 <translation id="8047248493720652249">다른 확장 프로그램(<ph name="EXTENSION_NAME"/>)에서 파일 이름을 '<ph name="ACTUAL_FILENAME"/>'(으)로 지정했기 때문에 이 확장 프로그램에서 다운로드하는 파일의 이름을 '<ph name="ATTEMPTED_FILENAME"/>'(으)로 지정하지 못했습니다.</translation>
-<translation id="2732710576072980201"><ph name="VENDOR_NAME"/>의 제품 <ph name="PRODUCT_ID"/>(일련 번호 <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="4968399700653439437">도메인 <ph name="DOMAINS"/>에 있는 모든 컴퓨터와 데이터 교환</translation>
 <translation id="5026754133087629784">Webview: <ph name="WEBVIEW_TAG_NAME"/></translation>
 <translation id="8284279544186306258">모든 <ph name="WEBSITE_1"/> 사이트</translation>
@@ -57,8 +55,12 @@
 <translation id="7217838517480956708">이 기기를 설치할 때 관리자가 <ph name="EXTENSION_NAME"/>을(를) 요구합니다. 삭제 또는 수정할 수 없습니다.</translation>
 <translation id="6580950983454333167"><ph name="VENDOR_NAME"/>의 제품 <ph name="PRODUCT_NAME"/>(일련 번호 <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="7154130902455071009">다음으로 시작 페이지 변경: <ph name="START_PAGE"/></translation>
-<translation id="6758203075041033901">공급업체 <ph name="VENDOR_ID"/>의 제품 <ph name="PRODUCT_ID"/>(일련 번호 <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="6698810901424468597"><ph name="WEBSITE_1"/> 및 <ph name="WEBSITE_2"/>의 데이터를 읽고 변경</translation>
+<translation id="5544884907028850012">공급업체 <ph name="VENDOR_ID"/></translation>
+<translation id="2048182445208425546">네트워크 트래픽에 액세스</translation>
+<translation id="5972529113578162692">이 시스템의 관리자가 <ph name="EXTENSION_NAME"/>의 설치를 요구합니다. 이 확장 프로그램은 제거할 수 없습니다.</translation>
+<translation id="7131040479572660648"><ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/>, <ph name="WEBSITE_3"/>에서 데이터 읽기</translation>
 <translation id="1803557475693955505">배경 페이지('<ph name="BACKGROUND_PAGE"/>')를 로드하지 못했습니다.</translation>
 <translation id="7972881773422714442">옵션: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
+<translation id="344630545793878684">다수의 웹사이트에서 데이터 읽기</translation>
 </translationbundle>

@@ -1,6 +1,4 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="ta">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="ta">
 <translation id="4820616160060340806">Command+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="8806053966018712535"><ph name="FOLDER_NAME"/> கோப்புறை</translation>
 <translation id="1871244248791675517">Ins</translation>
@@ -209,6 +207,7 @@
 <translation id="6907759265145635167"><ph name="QUANTITY"/> பெ.பை/வி</translation>
 <translation id="2743387203779672305">கிளிப்போர்டுக்கு நகலெடு</translation>
 <translation id="8371695176452482769">இப்போது பேசுக</translation>
+<translation id="6129953537138746214">இடைவெளி</translation>
 <translation id="1167268268675672572">வரியின் துவக்கத்திற்கு நகர்ந்து தேர்வை மாற்று</translation>
 <translation id="6965382102122355670">சரி</translation>
 <translation id="7850320739366109486">தொந்தரவு செய்ய வேண்டாம்</translation>

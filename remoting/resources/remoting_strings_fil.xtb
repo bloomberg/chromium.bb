@@ -1,6 +1,5 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="fil">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="fil">
+<translation id="3233367171080043075">Maaari mong tapusin anumang oras.</translation>
 <translation id="7606912958770842224">Paganahin ang mga malayuang koneksyon</translation>
 <translation id="3785447812627779171">Chromoting
 Host</translation>
@@ -19,6 +18,7 @@ Host</translation>
 <translation id="5070121137485264635">Hinihiling sa iyo ng remote host na magpatunay sa isang website ng third-party. Upang makapagpatuloy, dapat mong bigyan ng mga karagdagang pahintulot ang Remote na Desktop ng Chrome upang ma-access ang address na ito:</translation>
 <translation id="2124408767156847088">Ligtas na i-access ang iyong mga computer mula sa iyong Android device.</translation>
 <translation id="3194245623920924351">Remote na Desktop ng Chrome</translation>
+<translation id="5537725057119320332">I-cast</translation>
 <translation id="3649256019230929621">I-minimize ang window</translation>
 <translation id="4808503597364150972">Pakilagay ang iyong PIN para sa <ph name="HOSTNAME"/>.</translation>
 <translation id="7672203038394118626">Hindi pinagana ang mga malayuang koneksyon para sa computer na ito.</translation>
@@ -26,6 +26,7 @@ Host</translation>
 <translation id="4368630973089289038">Gustong tulungang mapabuti ang Chromoting? <ph name="LINK_BEGIN"/>Sagutan ang survey.<ph name="LINK_END"/></translation>
 <translation id="332624996707057614">I-edit ang pangalan ng computer</translation>
 <translation id="1996161829609978754">Dina-download ng Chrome ang installer ng Host ng Chromoting.  Sa sandaling makumpleto ang pag-download, mangyaring patakbuhin ang installer bago magpatuloy.</translation>
+<translation id="222632161986885959">Nag-alok ang isang kalahok sa hangout na ito na tulungan ka sa pamamagitan ng pagkokontrol sa iyong computer.  Kung tatanggapin mo:</translation>
 <translation id="2046651113449445291">Naipares ang mga sumusunod na client sa computer na ito at makakakonekta nang hindi nagbibigay ng PIN. Mababawi mo ang pahintulot na ito anumang oras, nang paisa-isa, o para sa lahat ng client.</translation>
 <translation id="7658239707568436148">Ikansela</translation>
 <translation id="7782471917492991422">Pakisuri ang mga setting sa pamamahala ng power ng iyong computer at tiyakin na hindi ito naka-configure na mag-sleep kapag idle.</translation>
@@ -97,6 +98,8 @@ Para sa higit pang impormasyon tungkol sa privacy, pakitingnan ang Patakaran sa 
 <translation id="2013884659108657024">Dina-download ng Chrome ang installer ng Host ng Remote na Desktop ng Chrome.  Sa sandaling makumpleto ang pag-download, mangyaring patakbuhin ang installer bago magpatuloy.</translation>
 <translation id="1742469581923031760">Kumokonekta…</translation>
 <translation id="8998327464021325874">Controller ng Host ng Remote na Desktop ng Chrome</translation>
+<translation id="7017806586333792422">Simulan ang Pagre-record</translation>
+<translation id="1619813076098775562">Isinara ang koneksyon sa Cast device.</translation>
 <translation id="6748108480210050150">Mula kay</translation>
 <translation id="3950820424414687140">Mag-sign in</translation>
 <translation id="1291443878853470558">Dapat mong paganahin ang mga malayuang koneksyon kung nais mong gamitin ang Chromoting upang i-access ang computer na ito.</translation>
@@ -107,11 +110,13 @@ Para sa higit pang impormasyon tungkol sa privacy, pakitingnan ang Patakaran sa 
 <translation id="7401733114166276557">Remote na Desktop ng Chrome</translation>
 <translation id="3362124771485993931">Muling i-type ang PIN</translation>
 <translation id="1760808606374294203">• Mga pag-aayos para sa Android Lollipop.</translation>
+<translation id="5231421057630485350">Makokontrol ng taong tumutulong sa iyo ang iyong mouse at keyboard.</translation>
 <translation id="154040539590487450">Nabigong simulan ang serbisyo ng malayuang pag-access.</translation>
 <translation id="7948001860594368197">Mga pagpipilian sa screen</translation>
 <translation id="8172070902751707422">Nabigo ang pagpapatotoo. Mangyaring mag-sign in sa Remote na Desktop ng Chrome muli.</translation>
 <translation id="5254120496627797685">Tatapusin ng pag-alis sa pahinang ito ang iyong session sa Remote na Desktop ng Chrome.</translation>
 <translation id="173559734173571936">Upang magamit ang Remote na Desktop ng Chrome, dapat kang magbigay ng mga pagpapahintulot sa pinalawak na access sa iyong computer. Isang beses mo lang ito kailangang gawin.</translation>
+<translation id="712467900648340229">Hindi nakakonekta sa Cast device.</translation>
 <translation id="9032136467203159543">Nawawala ang ilang bahagi na kinakailangan para sa Remote na Desktop ng Chrome. Mangyaring tiyakin na na-install mo na ang pinakabagong bersyon at subukang muli.</translation>
 <translation id="1342297293546459414">Tumingin at magkontrol ng nakabahaging computer.</translation>
 <translation id="1520828917794284345">Baguhin ang laki ng desktop upang kumasya</translation>
@@ -147,6 +152,7 @@ Para sa higit pang impormasyon tungkol sa privacy, pakitingnan ang Patakaran sa 
 <translation id="2699970397166997657">Chromoting</translation>
 <translation id="4812684235631257312">Host</translation>
 <translation id="6178645564515549384">Host ng native na pagmemensahe para sa remote na tulong</translation>
+<translation id="1738759452976856405">Itigil ang Pagre-record</translation>
 <translation id="897805526397249209">Upang paganahin ang mga malayuang koneksyon sa ibang computer, i-install ang Chromoting doon at i-click ang “<ph name="BUTTON_NAME"/>”.</translation>
 <translation id="1704090719919187045">Mga Kagustuhan sa Chromoting Host</translation>
 <translation id="809687642899217504">Aking Mga Computer</translation>
@@ -187,6 +193,7 @@ Desktop ng Chrome</translation>
 <translation id="4703799847237267011">Natapos na ang iyong session ng Chromoting.</translation>
 <translation id="8178433417677596899">Pagbabahagi ng screen na user-sa-user, mainam para sa malayuang suportang panteknikal.</translation>
 <translation id="652218476070540101">Ina-update ang PIN para sa computer na ito…</translation>
+<translation id="951991426597076286">Tanggihan</translation>
 <translation id="4563926062592110512">Naputol ang koneksyon ng client: <ph name="CLIENT_USERNAME"/>.</translation>
 <translation id="5308380583665731573">Kumonekta</translation>
 <translation id="7319983568955948908">Ihinto ang Pagbabahagi</translation>

@@ -1,6 +1,4 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="tr">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="tr">
 <translation id="6017514345406065928">Yeşil</translation>
 <translation id="376869769528291915">:</translation>
 <translation id="6015796118275082299">Yıl</translation>
@@ -25,6 +23,7 @@
 <translation id="6315516427814392808">Bellek yetersiz olduğundan önceki işlem tamamlanamadı</translation>
 <translation id="2732718972699418926">ÖÖ</translation>
 <translation id="6042308850641462728">Daha fazla</translation>
+<translation id="6820686453637990663">CVC</translation>
 <translation id="7535087603100972091">Değer</translation>
 <translation id="161042844686301425">Camgöbeği</translation>
 <translation id="1822429046913737220">AM/PM</translation>

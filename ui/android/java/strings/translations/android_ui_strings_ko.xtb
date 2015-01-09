@@ -1,6 +1,4 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="ko">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="ko">
 <translation id="6017514345406065928">녹색</translation>
 <translation id="376869769528291915">:</translation>
 <translation id="6015796118275082299">연도</translation>
@@ -25,6 +23,7 @@
 <translation id="6315516427814392808">메모리가 부족하여 이전 작업을 완료할 수 없습니다.</translation>
 <translation id="2732718972699418926">오전</translation>
 <translation id="6042308850641462728">더보기</translation>
+<translation id="6820686453637990663">CVC</translation>
 <translation id="7535087603100972091">값</translation>
 <translation id="161042844686301425">청록색</translation>
 <translation id="1822429046913737220">오전/오후</translation>

@@ -1,6 +1,5 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="iw">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="iw">
+<translation id="3233367171080043075">תוכל לסיים בכל עת.</translation>
 <translation id="7606912958770842224">הפעל חיבורים מרוחקים</translation>
 <translation id="3785447812627779171">‏מארח
 Chromoting</translation>
@@ -19,6 +18,7 @@ Chromoting</translation>
 <translation id="5070121137485264635">‏המארח המרוחק דורש שתבצע אימות מול אתר של צד שלישי. כדי להמשיך, עליך להעניק לשולחן העבודה המרוחק של Chrome הרשאות נוספות כדי לגשת לכתובת זו:</translation>
 <translation id="2124408767156847088">‏גש למחשבים שלך באופן מאובטח ממכשיר Android שלך.</translation>
 <translation id="3194245623920924351">‏שולחן עבודה מרוחק של Chrome</translation>
+<translation id="5537725057119320332">העבר</translation>
 <translation id="3649256019230929621">מזער את החלון</translation>
 <translation id="4808503597364150972">‏הזן את ה-PIN של <ph name="HOSTNAME"/>.</translation>
 <translation id="7672203038394118626">חיבורים מרוחקים למחשב זה הושבתו.</translation>
@@ -26,6 +26,7 @@ Chromoting</translation>
 <translation id="4368630973089289038">‏רוצה לעזור לשפר את Chromoting‏? <ph name="LINK_BEGIN"/>השב על הסקר.<ph name="LINK_END"/></translation>
 <translation id="332624996707057614">ערוך את שם המחשב</translation>
 <translation id="1996161829609978754">‏Chrome מוריד את מתקין המארח של Chromoting. בסיום ההורדה, הפעל את המתקין לפני שתמשיך.</translation>
+<translation id="222632161986885959">‏משתתף ב-Hangout זה הציע לעזור לך על ידי שליטה במחשב שלך. אם אתה מקבל את ההצעה:</translation>
 <translation id="2046651113449445291">‏הלקוחות הבאים הותאמו למחשב זה ויכולים להתחבר מבלי לספק PIN. ניתן לבטל הרשאה זו בכל עת, בנפרד או עבור כל הלקוחות.</translation>
 <translation id="7658239707568436148">ביטול</translation>
 <translation id="7782471917492991422">בדוק את הגדרות ניהול צריכת החשמל של המחשב כדי לוודא שאינו מוגדר לעבור למצב שינה בזמן חוסר פעילות.</translation>
@@ -97,6 +98,8 @@ Chromoting</translation>
 <translation id="2013884659108657024">‏Chrome מוריד את מתקין המארח של 'שולחן עבודה מרוחק של Chrome'. בסיום ההורדה, הפעל את המתקין לפני שתמשיך.</translation>
 <translation id="1742469581923031760">מתחבר…</translation>
 <translation id="8998327464021325874">‏בקר מארח שולחן העבודה המרוחק של Chrome</translation>
+<translation id="7017806586333792422">התחל הקלטה</translation>
+<translation id="1619813076098775562">נסגר החיבור למכשיר העברה.</translation>
 <translation id="6748108480210050150">מ-</translation>
 <translation id="3950820424414687140">כניסה</translation>
 <translation id="1291443878853470558">‏אם ברצונך להשתמש ב-Chromoting כדי לגשת למחשב זה, עליך להפעיל חיבורים מרוחקים.</translation>
@@ -107,11 +110,13 @@ Chromoting</translation>
 <translation id="7401733114166276557">‏שולחן עבודה מרוחק של Chrome</translation>
 <translation id="3362124771485993931">‏הקלד שוב את ה-PIN</translation>
 <translation id="1760808606374294203">‏• תיקונים עבור Android Lollipop.</translation>
+<translation id="5231421057630485350">האדם שעוזר לך יוכל לשלוט על העכבר והמקלדת שלך.</translation>
 <translation id="154040539590487450">הפעלת שירות הגישה מרחוק נכשלה.</translation>
 <translation id="7948001860594368197">אפשרויות מסך</translation>
 <translation id="8172070902751707422">‏האימות נכשל. היכנס שוב ל'שולחן עבודה מרוחק של Chrome'.</translation>
 <translation id="5254120496627797685">‏יציאה מדף זה תגרום לסיום הפעילות של 'שולחן עבודה מרוחק של Chrome'.</translation>
 <translation id="173559734173571936">‏כדי להשתמש ב'שולחן עבודה מרוחק של Chrome', עליך להעניק הרשאות גישה מורחבות למחשב שלך. יהיה עליך לעשות זאת פעם אחת בלבד.</translation>
+<translation id="712467900648340229">נכשל החיבור למכשיר העברה.</translation>
 <translation id="9032136467203159543">‏חלק מהרכיבים הדרושים עבור Chromoting חסרים. ודא שהתקנת את הגירסה העדכנית ביותר ונסה שוב.</translation>
 <translation id="1342297293546459414">הצג תוכן של מחשב משותף ושלוט בו.</translation>
 <translation id="1520828917794284345">שנה את גודל שולחן העבודה</translation>
@@ -147,6 +152,7 @@ Chromoting</translation>
 <translation id="2699970397166997657">Chromoting</translation>
 <translation id="4812684235631257312">מארח</translation>
 <translation id="6178645564515549384">מארח העברת הודעות ייעודי עבור סיוע מרוחק</translation>
+<translation id="1738759452976856405">הפסק הקלטה</translation>
 <translation id="897805526397249209">‏כדי להפעיל חיבורים מרוחקים למחשב אחר, התקן את Chromoting במחשב האחר ולחץ על '<ph name="BUTTON_NAME"/>'.</translation>
 <translation id="1704090719919187045">‏העדפות מארח Chromoting</translation>
 <translation id="809687642899217504">המחשבים שלי</translation>
@@ -187,6 +193,7 @@ Chromoting</translation>
 <translation id="4703799847237267011">‏הפעילות של Chromoting הסתיימה.</translation>
 <translation id="8178433417677596899">שיתוף מסך ממשתמש למשתמש, הפתרון המושלם לתמיכה טכנית מרחוק.</translation>
 <translation id="652218476070540101">‏ה-PIN של מחשב זה מתעדכן...</translation>
+<translation id="951991426597076286">דחה</translation>
 <translation id="4563926062592110512">לקוח שהתנתק: <ph name="CLIENT_USERNAME"/>.</translation>
 <translation id="5308380583665731573">התחברות</translation>
 <translation id="7319983568955948908">הפסק את השיתוף</translation>

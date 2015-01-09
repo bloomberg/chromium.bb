@@ -1,6 +1,5 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="vi">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="vi">
+<translation id="3233367171080043075">Bạn có thể kết thúc bất cứ lúc nào.</translation>
 <translation id="7606912958770842224">Bật kết nối từ xa</translation>
 <translation id="3785447812627779171">Máy chủ kết nối từ xa
 trên Chrome</translation>
@@ -19,6 +18,7 @@ trên Chrome</translation>
 <translation id="5070121137485264635">Máy chủ lưu trữ từ xa yêu cầu bạn xác thực với một trang web của bên thứ ba. Để tiếp tục, bạn phải cấp cho Chrome Remote Desktop thêm quyền truy cập vào địa chỉ sau:</translation>
 <translation id="2124408767156847088">Truy cập máy tính an toàn từ thiết bị Android của bạn.</translation>
 <translation id="3194245623920924351">Chrome Remote Desktop</translation>
+<translation id="5537725057119320332">Truyền</translation>
 <translation id="3649256019230929621">Thu nhỏ cửa sổ</translation>
 <translation id="4808503597364150972">Vui lòng nhập mã PIN của bạn cho <ph name="HOSTNAME"/>.</translation>
 <translation id="7672203038394118626">Kết nối từ xa cho máy tính này đã bị tắt.</translation>
@@ -26,6 +26,7 @@ trên Chrome</translation>
 <translation id="4368630973089289038">Bạn muốn trợ giúp cải tiến tính năng Kết nối từ xa trên Chrome? Hãy <ph name="LINK_BEGIN"/>tham gia khảo sát.<ph name="LINK_END"/></translation>
 <translation id="332624996707057614">Chỉnh sửa tên máy tính</translation>
 <translation id="1996161829609978754">Chrome đang tải xuống trình cài đặt máy chủ Kết nối từ xa trên Chrome. Sau khi quá trình tải xuống hoàn tất, vui lòng chạy trình cài đặt trước khi tiếp tục.</translation>
+<translation id="222632161986885959">Một người tham gia hangout này đã đề nghị giúp bạn bằng cách điều khiển máy tính của bạn. Nếu bạn chấp nhận:</translation>
 <translation id="2046651113449445291">Các ứng dụng khách sau đã được ghép nối với máy tính này và có thể kết nối mà không cung cấp mã PIN. Bạn có thể thu hồi quyền này bất kỳ lúc nào, từng ứng dụng khách một hoặc tất cả các ứng dụng khách.</translation>
 <translation id="7658239707568436148">Hủy</translation>
 <translation id="7782471917492991422">Vui lòng kiểm tra cài đặt quản lý nguồn máy tính của bạn và đảm bảo rằng máy tính không được định cấu hình để ngủ khi không hoạt động.</translation>
@@ -97,6 +98,8 @@ Các máy tính từ xa có bàn phím không phải tiếng Anh-Mỹ có thể 
 <translation id="2013884659108657024">Chrome đang tải xuống trình cài đặt máy chủ Chrome Remote Desktop. Sau khi quá trình tải xuống hoàn tất, vui lòng chạy trình cài đặt trước khi tiếp tục.</translation>
 <translation id="1742469581923031760">Đang kết nối...</translation>
 <translation id="8998327464021325874">Trình điều khiển máy chủ Chrome Remote Desktop</translation>
+<translation id="7017806586333792422">Bắt đầu quay</translation>
+<translation id="1619813076098775562">Đã đóng kết nối tới Thiết bị truyền.</translation>
 <translation id="6748108480210050150">Từ</translation>
 <translation id="3950820424414687140">Đăng nhập</translation>
 <translation id="1291443878853470558">Bạn phải bật kết nối từ xa nếu bạn muốn sử dụng Kết nối từ xa trên Chrome để truy cập vào máy tính này.</translation>
@@ -107,11 +110,13 @@ Các máy tính từ xa có bàn phím không phải tiếng Anh-Mỹ có thể 
 <translation id="7401733114166276557">Chrome Remote Desktop</translation>
 <translation id="3362124771485993931">Nhập lại mã PIN</translation>
 <translation id="1760808606374294203">• Bản sửa lỗi dành cho Android Lollipop.</translation>
+<translation id="5231421057630485350">Người giúp bạn sẽ có thể điều khiển chuột và bàn phím của bạn.</translation>
 <translation id="154040539590487450">Không thể bắt đầu dịch vụ truy cập từ xa.</translation>
 <translation id="7948001860594368197">Tùy chọn màn hình</translation>
 <translation id="8172070902751707422">Xác thực không thành công. Vui lòng đăng nhập lại Chrome Remote Desktop.</translation>
 <translation id="5254120496627797685">Thoát khỏi trang này sẽ kết thúc phiên Chrome Remote Desktop của bạn.</translation>
 <translation id="173559734173571936">Để sử dụng Chrome Remote Desktop, bạn phải cấp các quyền truy cập mở rộng cho máy tính của mình. Bạn chỉ phải thực hiện việc này một lần.</translation>
+<translation id="712467900648340229">Không kết nối được tới Thiết bị truyền.</translation>
 <translation id="9032136467203159543">Thiếu một số thành phần cần thiết cho Kết nối từ xa trên Chrome. Vui lòng đảm bảo rằng bạn đã cài đặt phiên bản mới nhất và thử lại.</translation>
 <translation id="1342297293546459414">Xem và kiểm soát máy tính dùng chung.</translation>
 <translation id="1520828917794284345">Thay đổi kích thước màn hình cho vừa</translation>
@@ -147,6 +152,7 @@ Các máy tính từ xa có bàn phím không phải tiếng Anh-Mỹ có thể 
 <translation id="2699970397166997657">Kết nối từ xa trên Chrome</translation>
 <translation id="4812684235631257312">Máy chủ</translation>
 <translation id="6178645564515549384">Máy chủ nhắn tin gốc dành cho hỗ trợ từ xa</translation>
+<translation id="1738759452976856405">Dừng quay</translation>
 <translation id="897805526397249209">Để bật kết nối từ xa với một máy tính khác, hãy cài đặt Kết nối từ xa trên Chrome trên máy tính đó và nhấp “<ph name="BUTTON_NAME"/>”.</translation>
 <translation id="1704090719919187045">Tùy chọn máy chủ kết nối từ xa trên Chrome</translation>
 <translation id="809687642899217504">Máy tính của tôi</translation>
@@ -187,6 +193,7 @@ Remote Desktop</translation>
 <translation id="4703799847237267011">Phiên Kết nối từ xa trên Chrome của bạn đã kết thúc.</translation>
 <translation id="8178433417677596899">Chia sẻ màn hình giữa người dùng, hoàn hảo để hỗ trợ kỹ thuật từ xa.</translation>
 <translation id="652218476070540101">Mã PIN cho máy tính này đang được cập nhật…</translation>
+<translation id="951991426597076286">Từ chối</translation>
 <translation id="4563926062592110512">Ứng dụng khách đã ngắt kết nối: <ph name="CLIENT_USERNAME"/>.</translation>
 <translation id="5308380583665731573">Kết nối</translation>
 <translation id="7319983568955948908">Ngừng chia sẻ</translation>

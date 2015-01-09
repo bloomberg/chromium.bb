@@ -1,4 +1,42 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="lt">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="lt">
+<translation id="1408730541890277710">Pakeisti vaizdus jų „alt“ tekstu.</translation>
+<translation id="595639123821853262">Invertuotasis pilkumo tonas</translation>
+<translation id="8260673944985561857">„Caret Browsing“ parinktys</translation>
+<translation id="3410969471888629217">Pamiršti svetainės tinkinimus</translation>
+<translation id="6050189528197190982">Pilkumo tonas</translation>
+<translation id="5094574508723441140">Didesnis kontrastas</translation>
+<translation id="8609925175482059018">Paspauskite &lt;span class='key'&gt;F7&lt;/span&gt;, kad įjungtumėte „Caret Browsing“. Paspauskite klavišą dar kartą, kad funkciją išjungtumėte.</translation>
+<translation id="3435896845095436175">Įgalinti</translation>
+<translation id="8480209185614411573">Didelis kontrastas</translation>
+<translation id="1588438908519853928">Įprastas</translation>
+<translation id="4954450790315188152">Kai „Caret Browsing“ įgalinta:</translation>
+<translation id="2965611304828530558">&lt;p&gt;Kai pasiekiate nuorodą ar valdiklį, jis automatiškai išryškinamas. Paspauskite &lt;span class='key'&gt;Enter&lt;/span&gt;, kad spustelėtumėte nuorodą ar mygtuką. &lt;/p&gt; &lt;p&gt;   Kai išryškintas valdiklis (pvz., teksto laukelis ar sąrašo laukelis) išjungia rodyklių klavišus, paspauskite &lt;span class='key'&gt;Esc&lt;/span&gt; ir rodyklę kairėn ar dešinėn, kad toliau naudotumėte „Caret Browsing“ funkciją. &lt;/p&gt; &lt;p&gt;   Taip pat paspauskite &lt;span class='key'&gt;tabuliavimo klavišą&lt;/span&gt;, kad pereitumėte į kitą išryškinamą valdiklį. &lt;/p&gt;</translation>
+<translation id="2394933097471027016">Išbandykite dabar – „Caret Browsing“ visada įgalinta šiame puslapyje!</translation>
+<translation id="3622586652998721735">Nustatyti kaip numatytąją schemą</translation>
+<translation id="2179565792157161713">Atidaryti ilgą aprašą naujame skirtuke</translation>
+<translation id="2471847333270902538">Spalvų schema, skirta svetainei <ph name="SITE"/>:</translation>
+<translation id="690628312087070417">Kai žymeklis peršoka labai toli:</translation>
+<translation id="5331422999063554397">Invertuotoji spalva</translation>
+<translation id="2648340354586434750">Laikykite paspaudę &lt;span class='key'&gt;Option&lt;/span&gt;, kad pereitumėte žodžiais.</translation>
+<translation id="5287723860611749454">&lt;p&gt;Naudokite rodyklių klavišus, kad pereitumėte per dokumentą. &lt;/p&gt;&lt;p&gt;Spustelėkite bet kurioje vietoje, kad perkeltumėte žymeklį į tą vietą. &lt;/p&gt; &lt;p&gt;   Paspauskite &lt;span class='key'&gt;Shift&lt;/span&gt; ir rodyklių klavišus, kas pasirinktumėte tekstą.&lt;/p&gt;</translation>
+<translation id="5558600050691192317">Klaviatūros komandos</translation>
+<translation id="633394792577263429">Laikykite paspaudę &lt;span class='key'&gt;Control&lt;/span&gt;, kad pereitumėte žodžiais.</translation>
+<translation id="2079545284768500474">Anuliuoti</translation>
+<translation id="8254860724243898966">Paspauskite &lt;span class='key'&gt;Alt&lt;/span&gt; ir &lt;img src='increase_brightness.png'&gt; (šviesumo didinimo klavišą arba F7), kad įjungtumėte „Caret Browsing“. Paspauskite klavišą dar kartą, kad funkciją išjungtumėte.</translation>
+<translation id="3812541808639806898">Image Alt Text Viewer</translation>
+<translation id="1287053896835709737">Geltona ant juodos</translation>
+<translation id="4896660567607030658">Jokių atsiliepimų, tik rodyti žymeklį.</translation>
+<translation id="5631241868147802353">Numatytoji spalvų schema:</translation>
+<translation id="5173942593318174089">Paryškinti žymeklio vietą naudojant animaciją.</translation>
+<translation id="894241283505723656">Long Descriptions in Context Menu</translation>
+<translation id="5555153510860501336">Didelis kontrastas išjungtas</translation>
+<translation id="1703735871906654364">Caret Browsing</translation>
+<translation id="7384431257964758081">Didelis kontrastas įgalintas</translation>
+<translation id="6550675742724504774">Parinktys</translation>
+<translation id="5650358096585648000">Vizuali reakcija</translation>
+<translation id="4388820049312272371">Paryškinti žymeklio vietą naudojant greito mirksėjimo funkciją.</translation>
+<translation id="4023902424053835668">Naršykite tinklalapių tekstą naudodami rodyklių klavišus.</translation>
+<translation id="2795227192542594043">Naudojant šį plėtinį tinklalapyje pateikiamas perkeliamas žymeklis, kad galėtumėte pasirinkti tekstą naudodami klaviatūrą.</translation>
+<translation id="4394049700291259645">Neleisti</translation>
+<translation id="5710185147685935461">Pakeiskite arba invertuokite spalvų schemą, kad tinklalapių tekstą būtų galima lengviau skaityti.</translation>
 </translationbundle>

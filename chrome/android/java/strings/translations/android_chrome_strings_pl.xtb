@@ -1,13 +1,13 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="pl">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="pl">
 <translation id="8588878054171169263">Zapisz grafikę</translation>
 <translation id="7998918019931843664">Otwórz ponownie zamkniętą kartę</translation>
 <translation id="4996978546172906250">Udostępnij przez</translation>
+<translation id="6292937202013477045">Osoby dokonujące ataków mogą próbować wykraść Twoje dane z <ph name="DOMAIN_NAME"/> (np. zdjęcia, hasła, wiadomości lub dane karty kredytowej).</translation>
 <translation id="346339498574870680">Kopiuj adres obrazka</translation>
 <translation id="6657585470893396449">Hasło</translation>
 <translation id="5578795271662203820">Szukaj tej grafiki w <ph name="SEARCH_ENGINE"/></translation>
 <translation id="6831043979455480757">Tłumacz</translation>
+<translation id="869891660844655955">Data wygaśnięcia</translation>
 <translation id="7644305409888602715">Tłumaczę stronę na <ph name="SOURCE_LANGUAGE"/>...</translation>
 <translation id="7015922086425404465">Pobierz aplikację ze Sklepu Google Play: <ph name="APP_ACTION"/></translation>
 <translation id="1491151370853475546">Załaduj tę stronę ponownie</translation>
@@ -28,17 +28,24 @@ Logujesz się na zarządzane konto i dajesz jego administratorowi kontrolę nad 
 <translation id="1966710179511230534">Zaktualizuj swoje dane logowania.</translation>
 <translation id="1623104350909869708">Zapobiegaj wyświetlaniu dodatkowych okien dialogowych na tej stronie</translation>
 <translation id="1426410128494586442">Tak</translation>
+<translation id="5595485650161345191">Edytuj adres</translation>
 <translation id="8218346974737627104">Potwierdź, że chcesz się zalogować</translation>
 <translation id="8853345339104747198">Karta <ph name="TAB_TITLE"/></translation>
 <translation id="624558823898732418">Język tłumaczenia: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="8872441722924401214">Wybierz certyfikat do uwierzytelniania</translation>
 <translation id="7791543448312431591">Dodaj</translation>
+<translation id="8719023831149562936">Nie można przesłać bieżącej karty</translation>
+<translation id="4378154925671717803">Telefon</translation>
 <translation id="3896036286668839683">Przeglądarka certyfikatów</translation>
 <translation id="5039804452771397117">Zezwalaj</translation>
 <translation id="8583805026567836021">Usuwam dane konta</translation>
+<translation id="5860033963881614850">Wyłączone</translation>
 <translation id="4250680216510889253">Nie</translation>
 <translation id="8073388330009372546">Otwórz grafikę w nowej karcie</translation>
 <translation id="552553974213252141">Czy tekst został prawidłowo wyodrębniony?</translation>
+<translation id="5317780077021120954">Zapisz</translation>
+<translation id="2718352093833049315">Tylko przez Wi-Fi</translation>
+<translation id="7029809446516969842">Hasła</translation>
 <translation id="2414886740292270097">Ciemny</translation>
 <translation id="3927692899758076493">Bezszeryfowa</translation>
 <translation id="8730621377337864115">Gotowe</translation>
@@ -48,31 +55,43 @@ Logujesz się na zarządzane konto i dajesz jego administratorowi kontrolę nad 
 <translation id="1807246157184219062">Jasny</translation>
 <translation id="7053983685419859001">Blokuj</translation>
 <translation id="8374821112118309944">Musisz zainstalować nowszą wersję TalkBack.</translation>
+<translation id="8481940801237642152">Twoje połączenie z tą witryną jest prywatne, ale inna osoba w sieci może zmienić wygląd tej strony.</translation>
 <translation id="2593272815202181319">Stała szerokość znaków</translation>
+<translation id="4807098396393229769">Imię i nazwisko na karcie</translation>
 <translation id="656628257199996201">Zawsze tłumacz z języka: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="2748463065602559597">Przeglądasz bezpieczną stronę Google Chrome.</translation>
 <translation id="9137013805542155359">Pokaż tekst oryginalny</translation>
 <translation id="4543661749405994812">Kopiuj adres e-mail</translation>
+<translation id="5659593005791499971">E-mail</translation>
+<translation id="8428213095426709021">Ustawienia</translation>
 <translation id="5684874026226664614">Nie można przetłumaczyć tej strony.</translation>
+<translation id="10614374240317010">Nigdy nie zapisane</translation>
+<translation id="2903493209154104877">Adresy</translation>
 <translation id="8503813439785031346">Nazwa użytkownika</translation>
 <translation id="2532336938189706096">Widok sieci</translation>
+<translation id="6571070086367343653">Edytuj kartę kredytową</translation>
+<translation id="7080851568148064063">Dodaj do ekranu głównego</translation>
 <translation id="4619298195800598081">Otwórz oryginał w nowej karcie</translation>
 <translation id="4002066346123236978">Tytuł</translation>
 <translation id="3254409185687681395">Dodaj stronę do zakładek</translation>
 <translation id="907015151729920253">Karta inteligentna</translation>
 <translation id="5016205925109358554">Szeryfowa</translation>
 <translation id="3063601790762993062">Zapisz film</translation>
+<translation id="8106211421800660735">Numer karty kredytowej</translation>
 <translation id="6042308850641462728">Więcej</translation>
 <translation id="7267430310003164111">Monit o pobranie aplikacji ze Sklepu Google Play. Nazwa aplikacji: <ph name="APP_NAME"/>. Średnia ocena aplikacji: <ph name="APP_RATING"/>.</translation>
 <translation id="4148957013307229264">Trwa instalowanie...</translation>
 <translation id="3992315671621218278">Zapisz link</translation>
-<translation id="8034522405403831421">Język tej strony to <ph name="SOURCE_LANGUAGE"/>. Przetłumaczyć ją na <ph name="TARGET_LANGUAGE"/>?</translation>
+<translation id="2476578072172137802">Ustawienia witryny</translation>
 <translation id="4195643157523330669">Otwórz w nowej karcie</translation>
 <translation id="651048280540227067">Zamknij to menu</translation>
 <translation id="3089395242580810162">Otwórz w karcie incognito</translation>
+<translation id="6981982820502123353">Ułatwienia dostępu</translation>
 <translation id="8725066075913043281">Spróbuj ponownie</translation>
 <translation id="8909135823018751308">Udostępnij…</translation>
+<translation id="654446541061731451">Wybierz kartę do przesłania</translation>
 <translation id="4269820728363426813">Kopiuj adres linku</translation>
+<translation id="8261506727792406068">Usuń</translation>
 <translation id="4510973599275542560">Nie ładuj ponownie</translation>
 <translation id="1206892813135768548">Kopiuj tekst linku</translation>
 <translation id="9154176715500758432">Pozostań na tej stronie</translation>
@@ -81,22 +100,32 @@ Logujesz się na zarządzane konto i dajesz jego administratorowi kontrolę nad 
 <translation id="6671495933530132209">Kopiuj grafikę</translation>
 <translation id="8209050860603202033">Otwórz grafikę</translation>
 <translation id="2501278716633472235">Wróć</translation>
+<translation id="8941248009481596111">Twoje połączenie z tą witryną jest prywatne.</translation>
 <translation id="1285320974508926690">Nigdy nie tłumacz tej witryny</translation>
 <translation id="5164482624172255778">Czy chcesz, aby następnym razem przeglądarka Google Chrome zaoferowała tłumaczenie stron z tej witryny, których język to <ph name="LANGUAGE"/>?</translation>
 <translation id="8528538445849828817">Język strony: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="4881695831933465202">Otwórz</translation>
 <translation id="6512448926095770873">Opuść tę stronę</translation>
+<translation id="5565871407246142825">Karty kredytowe</translation>
 <translation id="7947953824732555851">Zaakceptuj i zaloguj się</translation>
+<translation id="2612676031748830579">Numer karty</translation>
 <translation id="6333140779060797560">Udostępnij przez: <ph name="APPLICATION"/></translation>
 <translation id="6040143037577758943">Zamknij</translation>
+<translation id="2888126860611144412">Chrome – informacje</translation>
+<translation id="5138299137310274655">Język tej strony to <ph name="SOURCE_LANGUAGE"/>. Przetłumaczyć ją na <ph name="TARGET_LANGUAGE"/>?</translation>
+<translation id="7649070708921625228">Pomoc</translation>
 <translation id="969096075394517431">Zmień języki</translation>
 <translation id="5032574515228824816">Monit</translation>
+<translation id="6165508094623778733">Więcej informacji</translation>
 <translation id="7961015016161918242">Nigdy</translation>
 <translation id="497421865427891073">Dalej</translation>
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="8310344678080805313">Karty standardowe</translation>
 <translation id="6277522088822131679">Podczas drukowania strony wystąpił problem. Spróbuj ponownie.</translation>
+<translation id="7634554953375732414">Twoje połączenie z tą witryną nie jest prywatne.</translation>
+<translation id="6612358246767739896">Treść chroniona</translation>
 <translation id="1742134235943978220">Przetłumaczone na <ph name="TARGET_LANGUAGE"/>.</translation>
+<translation id="5916664084637901428">Włącz</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="7561196759112975576">Zawsze</translation>
 </translationbundle>

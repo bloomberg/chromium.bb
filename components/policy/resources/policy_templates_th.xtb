@@ -1,6 +1,4 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="th">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="th">
 <translation id="1503959756075098984">ติดตั้งรหัสส่วนขยายและ URL การอัปเดตอย่างเงียบๆ</translation>
 <translation id="793134539373873765">ระบุว่าจะใช้ p2p สำหรับส่วนข้อมูลการอัปเดต OS ไหม หากตั้งค่าเป็น &quot;จริง&quot; อุปกรณ์จะแชร์และพยายามรับส่วนข้อมูลการอัปเดตบน LAN ซึ่งอาจลดแบนด์วิดท์และความคับคั่งในอินเทอร์เน็ต หากส่วนข้อมูลการอัปเดตไม่พร้อมใช้งานบน LAN อุปกรณ์จะกลับไปใช้การดาวน์โหลดจากเซิร์ฟเวอร์การอัปเดต หากตั้งค่าเป็น &quot;เท็จ&quot; หรือไม่กำหนดค่า p2p จะไม่ถูกใช้งาน</translation>
 <translation id="2463365186486772703">ภาษาของแอปพลิเคชัน</translation>

@@ -1,6 +1,4 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="zh-TW">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="zh-TW">
 <translation id="2286950485307333924">您現在已登入 Chrome</translation>
 <translation id="8000275528373650868">Google Chrome 支援的作業系統為 Windows Vista 或 Windows XP SP2 以上版本。</translation>
 <translation id="1302523850133262269">請稍候，Chrome 正在安裝最新的系統更新。</translation>
@@ -32,7 +30,6 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="110877069173485804">這是您專屬的 Chrome</translation>
 <translation id="8406086379114794905">協助改善 Chrome 的服務品質</translation>
 <translation id="2896252579017640304">啟動 Chrome 應用程式</translation>
-<translation id="4121281502786319101">Chrome 無法和 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; 網域之間建立私人連線，可能是因為您的裝置日期設定有誤 (裝置日期設定為 <ph name="DATE"/>)。請<ph name="BEGIN_LINK"/>更新裝置的日期和時間<ph name="END_LINK"/>，然後重新整理這個網頁。</translation>
 <translation id="5620765574781326016">不必離開所在頁面即可瞭解網站上有哪些主題。</translation>
 <translation id="2721687379934343312">在 Mac 上，密碼會儲存到您的「鑰匙圈」資料庫中，因此其他共用這個 OS X 帳戶的 Chrome 使用者都能存取或同步處理這些密碼。</translation>
 <translation id="683440813066116847">允許 mDNS 流量的 Google Chrome Canary 輸入規則。</translation>
@@ -70,8 +67,8 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="4513711165509885787">Chrome 已儲存您的帳單詳細資訊。</translation>
 <translation id="5253588388888612165">如果您和「<ph name="PROFILE_NAME"/>」共用這台電腦，只要在 Chrome 新增個人身分，就能享有專屬的瀏覽環境。如果您並未與對方共用電腦，請解除其 Google 帳戶的連結。</translation>
 <translation id="7098166902387133879">Google Chrome 正在使用您的麥克風。</translation>
+<translation id="2596415276201385844">您必須正確設定時鐘，才能建立安全連線。這是因為網站驗證身分時所使用的憑證僅於特定一段時間內有效。由於您裝置的時鐘不正確，因此 Chrome 無法驗證這些憑證。</translation>
 <translation id="4053720452172726777">自訂及管理 Google Chrome</translation>
-<translation id="4315766637075282876">Chrome 會將這個密碼儲存至 |Google 已儲存的密碼| 並適時為您自動填入，您不必記住密碼。</translation>
 <translation id="5298539825145851748">從 Chrome 中移除</translation>
 <translation id="3197823471738295152">您的裝置已更新。</translation>
 <translation id="8286862437124483331">Google Chrome 現在會嘗試顯示密碼。如果您同意的話，請輸入您的 Windows 密碼。</translation>
@@ -87,8 +84,8 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="345168553362876363">Google Chrome 應用程式啟動器是適用於 Chrome 應用程式的獨立平台。</translation>
 <translation id="225614027745146050">歡迎使用</translation>
 <translation id="7473891865547856676">不用了，謝謝</translation>
-<translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3149510190863420837">Chrome 應用程式</translation>
+<translation id="8851136666856101339">主要元素</translation>
 <translation id="7473136999113284234">Chrome 會自動更新，隨時讓您使用最新版本。</translation>
 <translation id="7084448929020576097"><ph name="FILE_NAME"/> 是惡意軟體，因此已遭到 Chrome 封鎖。</translation>
 <translation id="6368958679917195344">Chrome 作業系統藉助了其他<ph name="BEGIN_LINK_CROS_OSS"/>開放原始碼軟體<ph name="END_LINK_CROS_OSS"/>的相關技術才得以問世。</translation>
@@ -96,9 +93,8 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="8823341990149967727">Chrome 版本過舊</translation>
 <translation id="4424024547088906515">伺服器無法證明其屬於 <ph name="DOMAIN"/> 網域；其安全性憑證未取得 Chrome 的信任。這可能是因為設定錯誤，或有攻擊者攔截您的連線所致。</translation>
-<translation id="6722021951952731012">您的電腦需要設定正確的時鐘，才能建立安全的網路連線；因為建立安全連線時，網站用於表明身分的憑證只在特定時段有效。您電腦的時鐘設定有誤，導致 Chrome 無法適當解讀憑證。</translation>
 <translation id="473775607612524610">更新</translation>
-<translation id="1195935957447623558">Google Chrome 上次執行時並未正確關閉。如果要重新開啟您之前瀏覽的網頁，請按一下 [還原]。</translation>
+<translation id="5618769508111928343"><ph name="SITE"/> 通常會使用加密方式保護您的資訊。目前當 Chrome 嘗試連線至 <ph name="SITE"/> 時，該網站會傳回異常且錯誤的憑證。這可能是因為有攻擊者試圖偽裝成 <ph name="SITE"/>，或是 Wi-Fi 登入畫面造成連線中斷。請放心，Chrome 並未交換任何資料即已停止連線，所以您的資訊仍然安全無虞。</translation>
 <translation id="2576431527583832481">Chrome 現在變得更進步了！歡迎您升級使用新版本。</translation>
 <translation id="4633000520311261472">為了讓 Chrome 的安全性更有保障，我們已將部分未列在 <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> 中的擴充功能停用，它們可能在您不知情的情況下加入瀏覽器。</translation>
 <translation id="3656661827369545115">開機時自動啟動 Chromium</translation>
@@ -134,6 +130,14 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="5563479599352954471">輕觸即可搜尋</translation>
 <translation id="2664962310688259219">Chrome 作業系統開放原始碼授權</translation>
+<translation id="6341737370356890233">前往
+        Chrome 選單 &gt;
+        [<ph name="SETTINGS_TITLE"/>]
+        &gt;
+        [<ph name="ADVANCED_TITLE"/>]
+        然後取消勾選 [<ph name="NO_PREFETCH_DESCRIPTION"/>]。
+        如果仍然無法解決問題，建議您重新勾選這個選項
+        以增進效能。</translation>
 <translation id="2290014774651636340">缺少 Google API 金鑰，系統將停用 Google Chrome 的部分功能。</translation>
 <translation id="2397416548179033562">顯示 Chrome 選單</translation>
 <translation id="4794050651896644714">在 Chrome 中儲存詳細資料</translation>
@@ -141,7 +145,6 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="5855036575689098185">您電腦上執行的軟體與 Google Chrome 不相容。</translation>
 <translation id="7164397146364144019">您可以自動將疑似安全性事件的詳細資料傳送給 Google，協助我們讓 Chrome 變得更安全、更好用。</translation>
 <translation id="8008534537613507642">重新安裝 Chrome</translation>
-<translation id="2044287590254833138">Google Chrome 工具列</translation>
 <translation id="8862326446509486874">您沒有在系統層級進行安裝的權限，請以管理員的身分執行安裝檔。</translation>
 <translation id="2874156562296220396">Google Chrome 的開發仰賴 <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> 開放原始碼計劃與其他<ph name="BEGIN_LINK_OSS"/>開放原始碼軟體<ph name="END_LINK_OSS"/>的協助才得以完成。</translation>
 <translation id="7191567847629796517">Google Chrome 作業系統不支援啟用外部應用程式以處理 <ph name="SCHEME"/> 連結。所要求的連結為 <ph name="PROTOLINK"/>。</translation>
@@ -153,6 +156,7 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="2290095356545025170">您是否確定要解除安裝 Google Chrome？</translation>
 <translation id="7062966102157262887">目前正在進行下載，您要結束 Google Chrome 並取消下載嗎？</translation>
 <translation id="4273752058983339720">已將 Google Chrome 設定為開機時自動啟動。</translation>
+<translation id="2316129865977710310">不，謝謝</translation>
 <translation id="415994390253732730">Chrome 出現異常行為？</translation>
 <translation id="1104959162601287462">關於 Chrome 作業系統(&amp;C)</translation>
 <translation id="5328989068199000832">Google Chrome Binaries</translation>
@@ -163,21 +167,14 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="8568392309447938879">您必須登入 Chrome 才能使用應用程式。在登入狀態下，Chrome 可同步處理您在多個裝置上的應用程式、書籤、紀錄、密碼和其他設定。</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome 可讓您按一下網頁上的電話號碼，隨即透過 Skype 撥打電話！</translation>
-<translation id="2705287621619748344">Chrome 無法和 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;. 網域之間建立私人連線，可能是因為您的電腦日期設定有誤 (電腦日期設定為 <ph name="DATE"/>)。請<ph name="BEGIN_LINK"/>更新電腦的日期和時間<ph name="END_LINK"/>，然後重新整理這個網頁。</translation>
 <translation id="5788838254726722945">解除安裝 Google Chrome 應用程式啟動器</translation>
 <translation id="3612333635265770873">依據名稱判斷，這個模組可能會與 Google Chrome 衝突。</translation>
 <translation id="2665296953892887393">將當機報告和<ph name="UMA_LINK"/>傳送給 Google，助我們一臂之力，讓 Google Chrome 更臻完美</translation>
 <translation id="7761834446675418963">按一下您的名稱即可開啟 Chrome 並開始瀏覽。</translation>
 <translation id="2669824781555328029"><ph name="FILE_NAME"/> 可能會影響您的瀏覽品質，因此 Chrome 已經予以封鎖。</translation>
-<translation id="5875635642195358109">前往
-        Chrome 選單 &gt;
-        [<ph name="SETTINGS_TITLE"/>]
-        &gt;
-        [<ph name="ADVANCED_TITLE"/>]
-        然後取消勾選 [<ph name="NO_PREFETCH_DESCRIPTION"/>]。
-        如果仍然無法解決問題，建議您重新勾選這個選項
-        以增進效能。</translation>
 <translation id="6235018212288296708">允許 mDNS 流量的 Google Chrome 輸入規則。</translation>
+<translation id="7984945080620862648">您目前無法造訪 <ph name="SITE"/>，因為這個網站傳送的憑證經過編碼，導致 Chrome 無法處理。網路錯誤和攻擊行為通常是暫時性的，所以這個網頁可能稍後就能正常使用。</translation>
+<translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3281987435599047980">將某個字詞及其上下文傳送給 Google 搜尋，就會傳回字詞定義、相關圖片、搜尋結果和其他詳細資料。</translation>
 <translation id="61852838583753520">更新 Chrome 作業系統(&amp;C)</translation>
 <translation id="5028489144783860647">Google Chrome 無法同步處理您的資料，請更新您的同步通關密語。</translation>
@@ -188,7 +185,6 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="7890208801193284374">如果您與親朋好友共用電腦，人人皆可享有獨立的瀏覽空間，依照自己的偏好設定 Chrome。</translation>
 <translation id="7161904924553537242">歡迎使用 Google Chrome</translation>
 <translation id="4147555960264124640">您已登入管理化環境下的帳戶，並將管理控制權授予您的 Chrome 設定檔。您的 Chrome 資料 (例如應用程式、書籤、紀錄、密碼和其他設定) 均將永久與 <ph name="USER_NAME"/> 建立關聯。您可以透過 Google 帳戶資訊主頁刪除這些資料，但您無法將這些資料與其他帳戶建立關聯。<ph name="LEARN_MORE"/></translation>
-<translation id="4568169453579447500">由於 Google 更新群組政策設定不一致，因此 Google Chrome 無法更新。請使用「群組政策編輯器」設定要覆寫 Google Chrome Binaries 應用程式的更新政策，然後再試一次；詳情請參閱 http://goo.gl/uJ9gV。</translation>
 <translation id="1348153800635493797">您必須升級 Chrome 才能使用 Google 電子錢包 [<ph name="ERROR_CODE"/>]。</translation>
 <translation id="8187289872471304532">前往
           [應用程式] &gt; [系統偏好設定] &gt; [網路] &gt; [進階] &gt; [Proxy]
@@ -196,6 +192,10 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="8669527147644353129">Google Chrome 小幫手</translation>
 <translation id="870251953148363156">更新 Google Chrome(&amp;G)</translation>
 <translation id="130631256467250065">您的變更會在下次重新啟動裝置時生效。</translation>
+<translation id="1546593779121993896">前往 Chrome 選單 &gt; [設定] &gt; (進階設定) [隱私權]
+          然後停用 [網路動作預測] 選項。
+          如果仍然無法解決問題，建議您重新啟用這個選項
+          以增進效能。</translation>
 <translation id="163860049029591106">開始使用 Chrome 作業系統</translation>
 <translation id="1587223624401073077">Google Chrome 正在使用您的攝影機。</translation>
 <translation id="1399397803214730675">這台電腦已安裝較新的 Google Chrome 版本，如果軟體無法順利運作，請解除安裝 Google Chrome，然後再試一次。</translation>
@@ -250,6 +250,7 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="3360895254066713204">Chrome 小幫手</translation>
 <translation id="1877026089748256423">Chrome 版本過舊</translation>
 <translation id="7592736734348559088">您的帳戶登入詳細資料尚未更新，因此 Google Chrome 無法同步處理您的資料。</translation>
+<translation id="7810280330588098283">Chrome 會將此密碼儲存在您的 |Google 儲存的密碼|中，讓您在下次需要使用時套用。</translation>
 <translation id="6991142834212251086">將我的 Chrome 資料連結至這個帳戶</translation>
 <translation id="3451115285585441894">正在新增至 Chrome...</translation>
 <translation id="3047079729301751317">解除與 <ph name="USERNAME"/> 的連結將會清除此裝置上已儲存的歷史紀錄、書籤、設定和其他 Chrome 資料。不過，這不會清除 Google 帳戶中儲存的資料，您可以在 <ph name="GOOGLE_DASHBOARD_LINK"/>Google 資訊主頁<ph name="END_GOOGLE_DASHBOARD_LINK"/>管理這些資料。</translation>
@@ -261,12 +262,13 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="2334084861041072223">Copyright <ph name="YEAR"/> Google Inc. 版權所有。</translation>
 <translation id="1698376642261615901">Google Chrome 瀏覽器開啟網頁和執行應用程式的速度奇快無比！除了執行速度迅速、穩定且容易使用之外，內建防護機制還可讓您安心瀏覽網頁，無需擔心受到網路釣魚與惡意軟體的威脅。</translation>
+<translation id="4523402702161492148">由於 Google 更新群組政策設定不一致，因此無法更新 Google Chrome。請使用群組政策編輯器為 Google Chrome Binaries 應用程式設定更新政策覆寫，然後再試一次。詳情請見 https://goo.gl/uJ9gV。</translation>
 <translation id="853189717709780425">您已登入管理化環境下的帳戶，並將管理控制權授予您的 Chrome 設定檔。您的 Chrome 資料 (例如應用程式、書籤、紀錄、密碼和其他設定) 均將永久與 <ph name="USER_NAME"/> 建立關聯。您可以透過 Google 帳戶資訊主頁刪除這些資料，但您無法將這些資料與其他帳戶建立關聯。</translation>
 <translation id="6049075767726609708">管理員已經在此系統安裝 Google Chrome，且供所有使用者使用。系統層級的 Google Chrome 將取代使用者層級的版本。</translation>
 <translation id="1818142563254268765">由於 Chrome 無法更新至最新版本，您現在無法使用各種最新功能和安全性修正。請更新 Chrome。</translation>
-<translation id="4821676311965554623">您的裝置需要設定正確的時鐘，才能建立安全的網路連線；因為建立安全連線時，網站用於表明身分的憑證只在特定時段有效。您裝置的時鐘設定有誤，導致 Chrome 無法適當解讀憑證。</translation>
 <translation id="7408085963519505752">Chrome 作業系統條款</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
+<translation id="1016765312371154165">Chrome 未正確關閉。</translation>
 <translation id="3836351788193713666">即將更新到最新版本！重新啟動 Google Chrome 即可完成更新。</translation>
 <translation id="884296878221830158">這個擴充功能也會控管 Chrome 啟動時或您點選 [首頁] 按鈕時所顯示的網頁。</translation>
 <translation id="7106741999175697885">工作管理員 - Google Chrome</translation>

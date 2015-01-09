@@ -1,6 +1,4 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="fi">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="fi">
 <translation id="1503959756075098984">Laajennuksien tunnukset ja päivitys-URL-osoitteet asennetaan taustalla</translation>
 <translation id="793134539373873765">Tarkentaa, käytetäänkö p2p-menetelmää käyttöjärjestelmän päivityksen tietosisältöön. Jos määritys on Tosi, laitteet jakavat ja yrittävät käyttää päivitysten tietosisältöjä LAN-verkossa, mahdollisesti vähentäen laajakaistan käyttöä ja ruuhkaa. Jos päivityksen tietosisältö ei ole LAN-verkossa, laite palaa lataamaan päivityspalvelimelta. Jos määritys on Epätosi tai sitä ei ole asetettu, p2p-menetelmää ei käytetä.</translation>
 <translation id="2463365186486772703">Sovelluksen kieli</translation>
@@ -360,7 +358,7 @@ Jos tätä asetusta ei ole määritetty, kaiken tyyppisiä sovelluksia ja laajen
 
       Jos asetusta ei oteta käyttöön, selaus- ja lataushistoriaa ei voi poistaa.</translation>
 <translation id="2884728160143956392">Salli vain käyttökerran evästeet näissä sivustoissa</translation>
-<translation id="3021272743506189340">Kun arvo on tosi, Google Driven synkronointi Chrome-käyttöjärjestelmän Tiedostot-sovelluksen kanssa poistetaan käytöstä matkapuhelinverkossa. Tällöin tiedot synkronoidaan Google Driveen vain, kun käytössä on wifi- tai Ethernet-yhteys.
+<translation id="3021272743506189340">Kun arvo on tosi, Google Driven synkronointi Chrome-käyttöjärjestelmän Tiedostot-sovelluksen kanssa poistetaan käytöstä matkapuhelinverkossa. Tällöin tiedot synkronoidaan Google Driveen vain, kun käytössä on Wi-Fi- tai Ethernet-yhteys.
 
           Jos arvoa ei ole asetettu tai se on epätosi, käyttäjät voivat siirtää tiedostoja Google Driveen matkapuhelinverkossa.</translation>
 <translation id="4655130238810647237">Ottaa käyttöön tai poistaa käytöstä kirjanmerkkien muokkaamisen tuotteessa <ph name="PRODUCT_NAME"/>. Jos otat tämän asetuksen käyttöön, kirjanmerkkejä voi lisätä, poistaa tai muuttaa. Tämä on oletusarvo (myös silloin, kun käytäntöä ei ole määritetty). Jos poistat asetuksen käytöstä, kirjanmerkkejä ei voi lisätä, poistaa tai muuttaa. Nykyiset kirjanmerkit ovat edelleen käytettävissä.</translation>
@@ -433,12 +431,12 @@ Jos tämä asetus ei ole käytössä, käyttäjät eivät voi tulostaa tuotteest
 <translation id="1022361784792428773">Niiden laajennuksien tunnukset, joita käyttäjä ei saa asentaa (tai * = kaikki).</translation>
 <translation id="6064943054844745819">Määrittää luettelon vanhoista verkkokäyttöympäristön ominaisuuksista, jotka otetaan uudelleen käyttöön.
 
-      Tämä käytäntö antaa järjestelmänvalvojille mahdollisuuden ottaa uudelleen käyttöön verkkokäyttöympäristön vanhoja ominaisuuksia rajoitetuksi ajaksi. Ominaisuudet on merkitty merkkijonotunnisteilla. Tunnisteita vastaavat ominaisuudet otetaan uudelleen käyttöön käytännön määrityksen mukaisesti.
+      Tämä käytäntö antaa järjestelmänvalvojille mahdollisuuden ottaa uudelleen käyttöön verkkokäyttöympäristön vanhoja ominaisuuksia rajoitetuksi ajaksi. Ominaisuudet on merkitty merkkijonotageilla. Tageja vastaavat ominaisuudet otetaan uudelleen käyttöön käytännön määrityksen mukaisesti.
 
-      Seuraavat tunnisteet on määritetty tällä hetkellä:
+      Seuraavat tagit on määritetty tällä hetkellä:
       – ShowModalDialog_EffectiveUntil20150430
 
-      Jos tätä käytäntöä ei määritetä tai tunnisteluettelo on tyhjä, mitään verkkokäyttöympäristön vanhoja ominaisuuksia ei oteta käyttöön.</translation>
+      Jos tätä käytäntöä ei määritetä tai tagiluettelo on tyhjä, mitään verkkokäyttöympäristön vanhoja ominaisuuksia ei oteta käyttöön.</translation>
 <translation id="3805659594028420438">Ota käyttöön TLS domain-bound -varmennelaajennus (vanhentunut)</translation>
 <translation id="5499375345075963939">Tämä käytäntö toimii vain myyntitilassa.
 
@@ -1604,7 +1602,7 @@ Jos tämä asetus ei ole käytössä, järjestelmäpalkissa ei näytetä suurta 
 <translation id="5645779841392247734">Salli evästeet näissä sivustoissa</translation>
 <translation id="4043912146394966243"> Yhteystyypit, joilla voidaan suorittaa käyttöjärjestelmäpäivityksiä. Käyttöjärjestelmäpäivitykset saattavat kuormittaa yhteyttä niiden koon vuoksi, ja tiedonsiirrosta voidaan periä lisämaksuja. Järjestelmäpäivityksiä ei voi tällä hetkellä oletuksena suorittaa kalliilla yhteystyypeillä, kuten WiMax, Bluetooth ja Cellular.
 
-      Tunnistettuja yhteystyypin tunnuksia ovat ethernet, wifi, wimax, bluetooth ja cellular.</translation>
+      Tunnistettuja yhteystyypin tunnuksia ovat ethernet, Wi-Fi, wimax, bluetooth ja cellular.</translation>
 <translation id="6652197835259177259">Paikallisesti hallinnoitujen käyttäjien asetukset</translation>
 <translation id="2808013382476173118">Sallii etäasiakkaiden muodostaa yhteyden tähän koneeseen STUN-palvelimien kautta.
 

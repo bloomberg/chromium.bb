@@ -1,8 +1,7 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="fi">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="fi">
 <translation id="3595596368722241419">Akku täynnä</translation>
 <translation id="6895424601869865703">Lisää tili käyttäjälle <ph name="GIVEN_NAME"/></translation>
+<translation id="1270290102613614947">Ruutunäppäimistö poistettiin käytöstä</translation>
 <translation id="1057289296854808272">Kiertäminen käytössä (muuta napauttamalla tätä)</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> <ph name="MINUTE"/></translation>
 <translation id="30155388420722288">Overflow-painike</translation>
@@ -13,8 +12,8 @@
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="2268130516524549846">Bluetooth pois käytöstä</translation>
 <translation id="6713285437468012787">Bluetooth-laitteeseen <ph name="DEVICE_NAME"/> on nyt muodostettu laitepariyhteys, ja se on kaikkien käyttäjien saatavilla. Voit poistaa laiteparin Asetuksien kautta.</translation>
-<translation id="7165320105431587207">Verkon asetuksien määrittäminen epäonnistui</translation>
 <translation id="3775358506042162758">Sinulla voi olla enintään kolme tiliä useaan tiliin kirjautuessasi.</translation>
+<translation id="9151726767154816831">Käynnistä laite uudelleen ja suorita powerwash asentaaksesi päivitykset</translation>
 <translation id="370649949373421643">Ota Wi-Fi käyttöön</translation>
 <translation id="3626281679859535460">Kirkkaus</translation>
 <translation id="3621202678540785336">Äänitulo:</translation>
@@ -25,22 +24,15 @@
 <translation id="2303600792989757991">Vaihda ikkunan yleiskatsausta</translation>
 <translation id="5565793151875479467">Välityspalvelin...</translation>
 <translation id="938582441709398163">Näppäimistön peitto</translation>
-<translation id="4387004326333427325">Todennusvarmenne on hylätty etäyhteyden kautta</translation>
 <translation id="6047696787498798094">Näytön jakaminen loppuu, kun vaihdat toiseen käyttäjään. Haluatko jatkaa?</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="3683428399328702079">Ruudun <ph name="DISPLAY_NAME"/> tarkkuudeksi vaihdettiin <ph name="RESOLUTION"/></translation>
-<translation id="6943836128787782965">HTTP get -toiminto epäonnistui</translation>
 <translation id="2297568595583585744">Tila-alue</translation>
-<translation id="1661867754829461514">PIN-koodi puuttuu</translation>
 <translation id="2248649616066688669">Voit käyttää Chromebookia sen ollessa yhdistettynä ulkoiseen näyttöön, vaikka laitteen kansi olisi kiinni.</translation>
-<translation id="40400351611212369">Verkon aktivointivirhe</translation>
-<translation id="4237016987259239829">Verkon yhteysvirhe</translation>
 <translation id="2946640296642327832">Ota Bluetooth käyttöön</translation>
 <translation id="6459472438155181876">Ruutua laajennetaan: <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">Matkapuhelin</translation>
 <translation id="6596816719288285829">IP-osoite</translation>
-<translation id="4508265954913339219">Aktivointi epäonnistui</translation>
-<translation id="8688591111840995413">Virheellinen salasana</translation>
 <translation id="3621712662352432595">Ääniasetukset</translation>
 <translation id="1812696562331527143">Syöttötapa on vaihtunut. Uusi syöttötapa on <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>kolmas osapuoli<ph name="END_LINK"/>).
 Vaihda syöttötapaa painamalla Shift + Alt.</translation>
@@ -51,7 +43,6 @@ Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="3891340733213178823">Kirjaudu ulos painamalla Ctrl+Shift+Q kahdesti.</translation>
 <translation id="5871632337994001636">Hallinnoi laitteita…</translation>
 <translation id="785750925697875037">Näytä mobiilitili</translation>
-<translation id="4628814525959230255">Näytönhallinnan jakaminen henkilön <ph name="HELPER_NAME"/> kanssa Hangout-keskustelujen kautta.</translation>
 <translation id="7864539943188674973">Poista Bluetooth käytöstä</translation>
 <translation id="939252827960237676">Kuvakaappauksen tallentaminen epäonnistui</translation>
 <translation id="9080206825613744995">Mikrofoni on käytössä.</translation>
@@ -67,8 +58,6 @@ Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="5238774010593222950">Kirjautuminen toiseen tiliin ei onnistu.</translation>
 <translation id="1723752762323179280">Käyttökerran lopettaminen</translation>
 <translation id="1426410128494586442">Kyllä</translation>
-<translation id="7170041865419449892">Katvealueella</translation>
-<translation id="2544853746127077729">Verkko on hylännyt todennusvarmenteen</translation>
 <translation id="2963773877003373896">mod3</translation>
 <translation id="5222676887888702881">Kirjaudu ulos</translation>
 <translation id="2391579633712104609">180°</translation>
@@ -76,12 +65,11 @@ Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="4957722034734105353">Lisätietoja...</translation>
 <translation id="2964193600955408481">Wi-Fi pois käytöstä</translation>
 <translation id="4279490309300973883">Peilaus päällä</translation>
-<translation id="7973962044839454485">PPP-todennus epäonnistui virheellisen käyttäjänimen tai salasanan vuoksi</translation>
 <translation id="2509468283778169019">CAPS LOCK on päällä</translation>
 <translation id="3892641579809465218">Sisäinen näyttö</translation>
 <translation id="7823564328645135659">Käyttökieli on muutettu kielestä <ph name="FROM_LOCALE"/> kieleksi <ph name="TO_LOCALE"/> asetustesi synkronoinnin yhteydessä.</translation>
 <translation id="3606978283550408104">Pistekirjoitusnäyttö on yhdistetty.</translation>
-<translation id="8654520615680304441">Ota wifi käyttöön…</translation>
+<translation id="8654520615680304441">Ota Wi-Fi käyttöön…</translation>
 <translation id="6650933572246256093">Bluetooth-laite <ph name="DEVICE_NAME"/> pyytää lupaa laiteparin muodostamiseen. Anna tämä avain kyseisellä laitteella: <ph name="PASSKEY"/></translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="5825747213122829519">Syöttötapa on vaihtunut. Uusi syöttötapa on <ph name="INPUT_METHOD_ID"/>.
@@ -98,19 +86,18 @@ Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="3967919079500697218">Järjestelmänvalvoja on poistanut käytöstä mahdollisuuden ottaa kuvakaappauksia.</translation>
 <translation id="372094107052732682">Lopeta painamalla kahdesti Ctrl+Shift+Q.</translation>
 <translation id="923686485342484400">Kirjaudu ulos painamalla Control Shift Q kahdesti.</translation>
+<translation id="9194617393863864469">Kirjaa sisään toinen käyttäjä…</translation>
 <translation id="6803622936009808957">Näyttöjen peilaaminen ei onnistunut, sillä tuettua resoluutiota ei löytynyt. Sen sijaan valittiin työpöydän laajennus.</translation>
-<translation id="1480041086352807611">Esittelytila</translation>
 <translation id="4066708417179825777"><ph name="PRIMARY_ACCOUNT"/> (ensisijainen)</translation>
 <translation id="3626637461649818317"><ph name="PERCENTAGE"/> % jäljellä</translation>
 <translation id="9089416786594320554">Syöttötavat</translation>
 <translation id="2700058918926273959">Istunnon loppumiseen on <ph name="SESSION_TIME_REMAINING"/>. Sinut kirjataan ulos.</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/> %</translation>
-<translation id="2670531586141364277">Verkon <ph name="NAME"/> aktivointi vaatii verkkoyhteyden.</translation>
 <translation id="3963445509666917109">Kaiutin (sisäinen)</translation>
+<translation id="1747827819627189109">Ruutunäppäimistö otettiin käyttöön</translation>
 <translation id="2825619548187458965">Hylly</translation>
 <translation id="2614835198358683673">Chromebookisi ei välttämättä lataudu sen ollessa päällä. Harkitse virallisen laturin käyttämistä.</translation>
 <translation id="4430019312045809116">Äänenvoimakkuus</translation>
-<translation id="4442424173763614572">DNS-haku epäonnistui</translation>
 <translation id="544691375626129091">Kaikki käytettävissä olevat käyttäjät on jo lisätty tähän istuntoon.</translation>
 <translation id="1383876407941801731">Haku</translation>
 <translation id="2204305834655267233">Verkon tiedot</translation>
@@ -120,16 +107,11 @@ Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="3625258641415618104">Kuvakaappaukset poissa käytöstä</translation>
 <translation id="1346748346194534595">Oikealle</translation>
-<translation id="1773212559869067373">Todennusvarmenne on hylätty paikallisesti</translation>
 <translation id="8528322925433439945">Mobiiliverkot...</translation>
 <translation id="8428213095426709021">Asetukset</translation>
 <translation id="2372145515558759244">Synkronoidaan sovelluksia...</translation>
-<translation id="7256405249507348194">Tunnistamaton virhe: <ph name="DESC"/></translation>
 <translation id="1987317783729300807">Tilit</translation>
-<translation id="2894654529758326923">Tiedot</translation>
-<translation id="7925247922861151263">AAA-testi epäonnistui</translation>
 <translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/> kunnes akku on ladattu</translation>
-<translation id="6312403991423642364">Tuntematon verkkovirhe</translation>
 <translation id="1467432559032391204">Vasemmalle</translation>
 <translation id="5543001071567407895">Tekstiviesti</translation>
 <translation id="1957803754585243749">0°</translation>
@@ -145,51 +127,39 @@ Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="2761704814324807722">Tila-alue, aika <ph name="TIME"/>, <ph name="BATTERY"/></translation>
 <translation id="3784455785234192852">Lukitse</translation>
 <translation id="2805756323405976993">Sovellukset</translation>
-<translation id="5097002363526479830">Yhteyden muodostaminen verkkoon &quot;<ph name="NAME"/>&quot; epäonnistui: <ph name="DETAILS"/></translation>
 <translation id="2872961005593481000">Sammuta</translation>
 <translation id="3433830597744061105">Hallinnoi tilejä</translation>
-<translation id="2966449113954629791">Olet saattanut käyttää tiedonsiirtosaldosi loppuun. Käy <ph name="NAME"/>-aktivointiportaalissa ostamassa lisää saldoa.</translation>
 <translation id="742594950370306541">Kamera on käytössä.</translation>
 <translation id="7052914147756339792">Aseta taustakuva...</translation>
 <translation id="2532589005999780174">Suuri kontrasti -tila</translation>
 <translation id="511445211639755999"><ph name="RESOLUTION"/>, <ph name="OVERSCAN"/></translation>
-<translation id="1119447706177454957">Sisäinen virhe</translation>
 <translation id="3019353588588144572">Akku on ladattu <ph name="TIME_REMAINING"/> kuluttua</translation>
 <translation id="3473479545200714844">Ruudun suurentaminen</translation>
 <translation id="882279321799040148">Näytä klikkaamalla</translation>
 <translation id="1753067873202720523">Chromebook ei välttämättä lataudu sen ollessa päällä.</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME"/> ei tue resoluutiota <ph name="SPECIFIED_RESOLUTION"/>. Resoluutioksi valittiin <ph name="FALLBACK_RESOLUTION"/>.</translation>
-<translation id="5045550434625856497">Väärä salasana</translation>
 <translation id="1602076796624386989">Ota mobiilitiedonsiirto käyttöön</translation>
 <translation id="68610848741840742">ChromeVox (äänipalaute)</translation>
 <translation id="6981982820502123353">Esteettömyys</translation>
 <translation id="6585808820553845416">Istunnon loppumiseen on <ph name="SESSION_TIME_REMAINING"/>.</translation>
-<translation id="4274292172790327596">Tunnistamaton virhe</translation>
 <translation id="5977415296283489383">Kuulokkeet</translation>
 <translation id="225680501294068881">Etsitään laitteita...</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY"/>, <ph name="DATE"/></translation>
 <translation id="737451040872859086">Mikrofoni (sisäinen)</translation>
-<translation id="8401662262483418323">Yhteyden muodostaminen kohteeseen <ph name="NAME"/> ei onnistu: <ph name="DETAILS"/>
-Palvelimen viesti: <ph name="SERVER_MSG"/></translation>
 <translation id="2475982808118771221">Tapahtui virhe</translation>
 <translation id="3783640748446814672">alt</translation>
-<translation id="7229570126336867161">EVDO tarvitaan</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME"/> on julkinen käyttökerta, jota hallinnoi <ph name="DOMAIN"/></translation>
-<translation id="9044646465488564462">Yhteyden muodostaminen verkkoon epäonnistui: <ph name="DETAILS"/></translation>
 <translation id="7029814467594812963">Sulje käyttökerta</translation>
 <translation id="479989351350248267">haku</translation>
 <translation id="4872237917498892622">Alt + haku tai Shift</translation>
 <translation id="2429753432712299108">Bluetooth-laite <ph name="DEVICE_NAME"/> pyytää lupaa laiteparin muodostamiseen. Ennen kuin hyväksyt pyynnön, varmista, että laitteella näkyy tämä avain: <ph name="PASSKEY"/></translation>
 <translation id="9201131092683066720">Akussa on virtaa <ph name="PERCENTAGE"/> %.</translation>
 <translation id="2983818520079887040">Asetukset...</translation>
-<translation id="3871838685472846647">Matkapuhelin aktivoitu</translation>
 <translation id="6452181791372256707">Hylkää</translation>
 <translation id="1195412055398077112">kuvasta rajataan pois osa</translation>
 <translation id="607652042414456612">Lähellä olevat Bluetooth-laitteet voivat löytää tietokoneesi. Tietokoneesi nimi on <ph name="NAME"/> ja osoite <ph name="ADDRESS"/></translation>
 <translation id="112308213915226829">Piilota hylly automaattisesti</translation>
-<translation id="6732801395666424405">Varmenteita ei ole ladattu</translation>
 <translation id="7573962313813535744">Telakoitu tila</translation>
-<translation id="8300849813060516376">OTASP epäonnistui</translation>
 <translation id="2792498699870441125">Alt + haku</translation>
 <translation id="8660803626959853127">Synkronoidaan <ph name="COUNT"/> tiedosto(a)</translation>
 <translation id="5958529069007801266">Valvottu käyttäjä</translation>
@@ -204,16 +174,12 @@ Palvelimen viesti: <ph name="SERVER_MSG"/></translation>
 <translation id="7649070708921625228">Ohje</translation>
 <translation id="3050422059534974565">CAPS LOCK on päällä. Peruuta painamalla haku- tai Shift-näppäintä.</translation>
 <translation id="397105322502079400">Lasketaan...</translation>
-<translation id="158849752021629804">Kotiverkko tarvitaan</translation>
 <translation id="1013923882670373915">Bluetooth-laite <ph name="DEVICE_NAME"/> pyytää lupaa laiteparin muodostamiseen. Anna tämä PIN-koodi kyseisellä laitteella: <ph name="PINCODE"/></translation>
-<translation id="5864471791310927901">DHCP-haku epäonnistui</translation>
 <translation id="2819276065543622893">Sinut kirjataan ulos nyt.</translation>
 <translation id="5507786745520522457">Ota mobiiliverkon data käyttöön</translation>
 <translation id="6165508094623778733">Lisätietoja</translation>
-<translation id="9046895021617826162">Yhdistäminen epäonnistui</translation>
 <translation id="7168224885072002358">Palautetaan vanha tarkkuus, aikaa palautukseen <ph name="TIMEOUT_SECONDS"/></translation>
 <translation id="743058460480092004">Kamera ja mikrofoni ovat käytössä.</translation>
-<translation id="8372369524088641025">Väärä WEP-avain</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="3573179567135747900">Vaihda takaisin kieleksi <ph name="FROM_LOCALE"/> (vaatii uudelleenkäynnistyksen)</translation>
 <translation id="8103386449138765447">Tekstiviestit: <ph name="MESSAGE_COUNT"/></translation>
@@ -224,12 +190,9 @@ Palvelimen viesti: <ph name="SERVER_MSG"/></translation>
 <translation id="4918086044614829423">Hyväksy</translation>
 <translation id="5102001756192215136"><ph name="HOUR"/>.<ph name="MINUTE"/> jäljellä</translation>
 <translation id="3009178788565917040">Äänentoisto</translation>
-<translation id="520760366042891468">Näytön hallinnan jakaminen Hangout-keskustelujen kautta.</translation>
 <translation id="6911468394164995108">Liity muuhun verkkoon...</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
-<translation id="2563856802393254086">Onnittelut! Tiedonsiirtopalvelusi <ph name="NAME"/> on aktivoitu ja käyttövalmis.</translation>
 <translation id="412065659894267608">Akku täynnä <ph name="HOUR"/> t <ph name="MINUTE"/> min kuluttua</translation>
 <translation id="3077734595579995578">shift</translation>
-<translation id="7297443947353982503">Käyttäjänimi/salasana on virheellinen tai EAP-todennus epäonnistui</translation>
 <translation id="6359806961507272919">Tekstiviesti lähettäjältä <ph name="PHONE_NUMBER"/></translation>
 </translationbundle>

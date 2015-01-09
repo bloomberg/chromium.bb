@@ -1,12 +1,10 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="ja">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="ja">
+<translation id="4542520061254486227"><ph name="WEBSITE_1"/> と <ph name="WEBSITE_2"/> でのユーザーデータの読み取り</translation>
 <translation id="3624204664103857160">ランチャー ページ「<ph name="PAGE"/>」を読み込めませんでした。</translation>
 <translation id="8804398419035066391">連携するウェブサイトとの通信</translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME"/>（拡張機能 ID「<ph name="EXTENSION_ID"/>」）は管理者によってブロックされています。</translation>
 <translation id="1005274289863221750">マイクとカメラを使用する</translation>
 <translation id="2857834222104759979">マニフェスト ファイルが無効です。</translation>
-<translation id="3828484226910527078">USB デバイスへのアクセス</translation>
 <translation id="6384275966486438344">検索設定を次に変更します: <ph name="SEARCH_HOST"/></translation>
 <translation id="1445572445564823378">この拡張機能によって <ph name="PRODUCT_NAME"/> の速度が低下しています。<ph name="PRODUCT_NAME"/> のパフォーマンスを回復するには、この拡張機能を無効にしてください。</translation>
 <translation id="1033780634303702874">シリアル デバイスへのアクセス</translation>
@@ -15,30 +13,30 @@
 <translation id="677806580227005219">MIME ハンドラ: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">システムでペア設定されている Bluetooth デバイスの情報へのアクセスと、近くにある Bluetooth デバイスの検出。</translation>
 <translation id="5911798608827489036">ローカル ネットワークまたはインターネット上のパソコンとのデータ交換</translation>
-<translation id="4719685943208231314"><ph name="VENDOR_NAME"/> の USB デバイスへのアクセス</translation>
+<translation id="8284835137979141223"><ph name="PRODUCT_NAME"/>、提供元: <ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">バックグラウンド スクリプト「<ph name="BACKGROUND_SCRIPT"/>」を読み込めませんでした。</translation>
 <translation id="9131487537093447019">Bluetooth デバイスとのメッセージの送受信。</translation>
-<translation id="8198425243160395623">USB デバイスへのアクセス</translation>
+<translation id="5678955352098267522"><ph name="WEBSITE_1"/> でのユーザーデータの読み取り</translation>
 <translation id="8597109877291678953">パソコン <ph name="HOSTNAME"/> とのデータ交換</translation>
 <translation id="5456409301717116725">この拡張機能には、鍵ファイル「<ph name="KEY_PATH"/>」が含まれていますが、おそらくその必要性はありません。</translation>
+<translation id="7257666756905341374">コピー＆ペーストするデータの読み取り</translation>
 <translation id="2350172092385603347">言語/地域機能は使用されていますが、マニフェストに default_locale が指定されていません。</translation>
 <translation id="3759933321830434300">一部のウェブページをブロックする</translation>
-<translation id="8058376558882514200"><ph name="VENDOR_NAME"/> の USB デバイス <ph name="PRODUCT_NAME"/> へのアクセス</translation>
 <translation id="149347756975725155">拡張機能アイコン「<ph name="ICON"/>」を読み込むことができませんでした。</translation>
 <translation id="8825366169884721447">ネットワーク リクエストのリクエスト ヘッダー「<ph name="HEADER_NAME"/>」への変更内容が別の拡張機能（<ph name="EXTENSION_NAME"/>）と競合したため、この拡張機能はヘッダーを変更できませんでした。</translation>
+<translation id="7495493006406536234">商品 <ph name="PRODUCT_ID"/></translation>
 <translation id="4233778200880751280">情報ページ「<ph name="ABOUT_PAGE"/>」を読み込めませんでした。</translation>
 <translation id="388442998277590542">オプション ページ「<ph name="OPTIONS_PAGE"/>」を読み込むことができませんでした。</translation>
 <translation id="6344170822609224263">ネットワーク接続のリストにアクセスする</translation>
 <translation id="2616366145935564096"><ph name="WEBSITE_1"/> 上にある自分のデータの読み取りと変更</translation>
 <translation id="2518849872271000461">次のパソコンとのデータ交換: <ph name="HOSTNAMES"/></translation>
-<translation id="1389014510128217152">- <ph name="WEBSITE_1"/></translation>
+<translation id="4444304522807523469">USB 接続またはローカル ネットワーク上のドキュメント スキャナーへのアクセス</translation>
 <translation id="6408118934673775994"><ph name="WEBSITE_1"/>、<ph name="WEBSITE_2"/>、<ph name="WEBSITE_3"/> 上にある自分のデータの読み取りと変更</translation>
 <translation id="961805664415579088">ドメイン <ph name="DOMAIN"/> 内のパソコンとのデータ交換</translation>
 <translation id="3502064055007747926">入力デバイスへのアクセス</translation>
 <translation id="8670869118777164560">別の拡張機能（<ph name="EXTENSION_NAME"/>）がネットワーク リクエストを <ph name="ACTUAL_REDIRECT_DESTINATION"/> にリダイレクトしたため、この拡張機能はリクエストを <ph name="ATTEMPTED_REDIRECT_DESTINATION"/> にリダイレクトできませんでした。</translation>
 <translation id="6840444547062817500">この拡張機能は、自身により頻繁に再読み込みされています。</translation>
 <translation id="8047248493720652249">この拡張機能は、ダウンロード ファイル「<ph name="ATTEMPTED_FILENAME"/>」に名前を付けることができませんでした。別の拡張機能（<ph name="EXTENSION_NAME"/>）が異なるファイル名「<ph name="ACTUAL_FILENAME"/>」を指定しました。</translation>
-<translation id="2732710576072980201">製品 <ph name="PRODUCT_ID"/>、提供元 <ph name="VENDOR_NAME"/>（シリアル番号 <ph name="SERIAL_NUMBER"/>）</translation>
 <translation id="4968399700653439437">次のドメイン内のパソコンとのデータ交換: <ph name="DOMAINS"/></translation>
 <translation id="5026754133087629784">WebView: <ph name="WEBVIEW_TAG_NAME"/></translation>
 <translation id="8284279544186306258"><ph name="WEBSITE_1"/> の全サイト</translation>
@@ -57,8 +55,12 @@
 <translation id="7217838517480956708">このパソコンの管理者にとって <ph name="EXTENSION_NAME"/> がインストールされている必要があります。削除や修正はできません。</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME"/>、提供元 <ph name="VENDOR_NAME"/>（シリアル番号 <ph name="SERIAL_NUMBER"/>）</translation>
 <translation id="7154130902455071009">スタート ページを次に変更します: <ph name="START_PAGE"/></translation>
-<translation id="6758203075041033901">製品 <ph name="PRODUCT_ID"/>、提供元 <ph name="VENDOR_ID"/>（シリアル番号 <ph name="SERIAL_NUMBER"/>）</translation>
 <translation id="6698810901424468597"><ph name="WEBSITE_1"/>、<ph name="WEBSITE_2"/> 上にある自分のデータの読み取りと変更</translation>
+<translation id="5544884907028850012">ベンダー <ph name="VENDOR_ID"/></translation>
+<translation id="2048182445208425546">ユーザーのネットワーク トラフィックへのアクセス</translation>
+<translation id="5972529113578162692">このパソコンの管理者により、<ph name="EXTENSION_NAME"/> をインストールすることが要件として指定されています。この拡張機能はアンインストールできません。</translation>
+<translation id="7131040479572660648"><ph name="WEBSITE_1"/>、<ph name="WEBSITE_2"/>、<ph name="WEBSITE_3"/> でのユーザーデータの読み取り</translation>
 <translation id="1803557475693955505">背景ページ「<ph name="BACKGROUND_PAGE"/>」を読み込むことができませんでした。</translation>
 <translation id="7972881773422714442">オプション: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
+<translation id="344630545793878684">多数のウェブサイトでのユーザーデータの読み取り</translation>
 </translationbundle>

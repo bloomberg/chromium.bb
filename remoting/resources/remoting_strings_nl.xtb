@@ -1,6 +1,5 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="nl">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="nl">
+<translation id="3233367171080043075">Je kunt op elk gewenst moment stoppen.</translation>
 <translation id="7606912958770842224">Externe verbindingen inschakelen</translation>
 <translation id="3785447812627779171">Chromoting-
 host</translation>
@@ -19,6 +18,7 @@ host</translation>
 <translation id="5070121137485264635">De externe host vereist dat je op een website van derden wordt geverifieerd. Als je wilt doorgaan, moet je Chrome Remote Desktop aanvullende machtigingen geven om toegang tot dit adres te krijgen:</translation>
 <translation id="2124408767156847088">Veilig toegang tot je computers vanaf je Android-apparaat.</translation>
 <translation id="3194245623920924351">Chrome Remote Desktop</translation>
+<translation id="5537725057119320332">Cast</translation>
 <translation id="3649256019230929621">Venster minimaliseren</translation>
 <translation id="4808503597364150972">Geef je pincode voor <ph name="HOSTNAME"/> op.</translation>
 <translation id="7672203038394118626">Externe verbindingen voor deze computer zijn uitgeschakeld.</translation>
@@ -26,6 +26,7 @@ host</translation>
 <translation id="4368630973089289038">Wil je ons helpen Chromoting te verbeteren? <ph name="LINK_BEGIN"/>Vul de enquête in.<ph name="LINK_END"/></translation>
 <translation id="332624996707057614">Computernaam bewerken</translation>
 <translation id="1996161829609978754">Chrome downloadt het installatieprogramma voor de Chromoting-host. Zodra het downloaden is voltooid, voer je het installatieprogramma uit voordat je doorgaat.</translation>
+<translation id="222632161986885959">Een deelnemer aan deze Hangout heeft je hulp aangeboden door het beheer van de computer over te nemen. Als je dit accepteert:</translation>
 <translation id="2046651113449445291">De volgende clients zijn gekoppeld met deze computer en kunnen verbinding maken zonder een pincode op te geven. Je kunt deze toestemming op elk gewenst moment intrekken, voor afzonderlijke clients of voor alle clients.</translation>
 <translation id="7658239707568436148">Annuleren</translation>
 <translation id="7782471917492991422">Controleer de instellingen voor energiebeheer van je computer en zorg ervoor dat de slaapstand niet wordt geactiveerd wanneer de computer inactief is.</translation>
@@ -97,6 +98,8 @@ Voor meer informatie over privacy bekijk je het Privacybeleid van Google (http:/
 <translation id="2013884659108657024">Chrome downloadt het installatieprogramma voor de Chrome Remote Desktop-host. Zodra het downloaden is voltooid, voer je het installatieprogramma uit voordat je doorgaat.</translation>
 <translation id="1742469581923031760">Verbinding maken…</translation>
 <translation id="8998327464021325874">Controller voor Chrome Remote Desktop-host</translation>
+<translation id="7017806586333792422">Opnemen starten</translation>
+<translation id="1619813076098775562">De verbinding met het Cast-apparaat is verbroken.</translation>
 <translation id="6748108480210050150">Van</translation>
 <translation id="3950820424414687140">Inloggen</translation>
 <translation id="1291443878853470558">Je moet externe verbindingen inschakelen als je Chromoting wilt gebruiken voor toegang tot deze computer.</translation>
@@ -107,11 +110,13 @@ Voor meer informatie over privacy bekijk je het Privacybeleid van Google (http:/
 <translation id="7401733114166276557">Chrome Remote Desktop</translation>
 <translation id="3362124771485993931">Pincode nogmaals opgeven</translation>
 <translation id="1760808606374294203">• Bugfixes voor Android Lollipop.</translation>
+<translation id="5231421057630485350">De persoon die jou helpt, kan je muis en toetsenbord bedienen.</translation>
 <translation id="154040539590487450">Kan de service voor externe toegang niet starten.</translation>
 <translation id="7948001860594368197">Schermopties</translation>
 <translation id="8172070902751707422">Authenticatie mislukt. Log opnieuw in bij Chrome Remote Desktop.</translation>
 <translation id="5254120496627797685">Als je deze pagina verlaat, wordt je Chrome Remote Desktop-sessie beëindigd.</translation>
 <translation id="173559734173571936">Om Chrome Remote Desktop te gebruiken, moet je eerst uitgebreide toegangsrechten voor je computer verlenen. Je hoeft dit slechts één keer te doen.</translation>
+<translation id="712467900648340229">Kan geen verbinding met het Cast-apparaat maken.</translation>
 <translation id="9032136467203159543">Er ontbreken enkele componenten die vereist zijn voor Chromoting. Controleer of je de nieuwste versie hebt geïnstalleerd en probeer het opnieuw.</translation>
 <translation id="1342297293546459414">Een gedeelde computer bekijken en beheren.</translation>
 <translation id="1520828917794284345">Formaat van bureaublad aanpassen</translation>
@@ -121,7 +126,7 @@ Voor meer informatie over privacy bekijk je het Privacybeleid van Google (http:/
 <translation id="3933246213702324812">Chromoting op <ph name="HOSTNAME"/> is verouderd en moet worden bijgewerkt.</translation>
 <translation id="6193698048504518729">Verbinding maken met <ph name="HOSTNAME"/></translation>
 <translation id="8116630183974937060">Er is een netwerkfout opgetreden. Controleer of je apparaat online is en probeer het opnieuw.</translation>
-<translation id="3020807351229499221">Kan pincode niet bijwerken. Probeer het later opnieuw.</translation>
+<translation id="3020807351229499221">Kan pincode niet updaten. Probeer het later opnieuw.</translation>
 <translation id="2647232381348739934">Chromoting-service</translation>
 <translation id="579702532610384533">Opnieuw verbinding maken</translation>
 <translation id="4867841927763172006">PrtScn verzenden</translation>
@@ -147,6 +152,7 @@ Voor meer informatie over privacy bekijk je het Privacybeleid van Google (http:/
 <translation id="2699970397166997657">Chromoting</translation>
 <translation id="4812684235631257312">Host</translation>
 <translation id="6178645564515549384">Systeemeigen berichthost voor externe ondersteuning</translation>
+<translation id="1738759452976856405">Opnemen stoppen</translation>
 <translation id="897805526397249209">Als je externe verbindingen met een andere computer mogelijk wilt maken, installeer je Chromoting en klik je op '<ph name="BUTTON_NAME"/>'.</translation>
 <translation id="1704090719919187045">Voorkeuren voor Chromoting-host</translation>
 <translation id="809687642899217504">Mijn computers</translation>
@@ -187,6 +193,7 @@ Desktop-host</translation>
 <translation id="4703799847237267011">Je Chromoting-sessie is beëindigd.</translation>
 <translation id="8178433417677596899">Schermen delen tussen gebruikers, perfect voor externe ondersteuning.</translation>
 <translation id="652218476070540101">De pincode voor deze computer wordt bijgewerkt…</translation>
+<translation id="951991426597076286">Afwijzen</translation>
 <translation id="4563926062592110512">Verbinding met client verbroken: <ph name="CLIENT_USERNAME"/>.</translation>
 <translation id="5308380583665731573">Verbinding maken</translation>
 <translation id="7319983568955948908">Delen stoppen</translation>

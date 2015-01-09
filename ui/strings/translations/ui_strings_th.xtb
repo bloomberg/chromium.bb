@@ -1,6 +1,4 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="th">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="th">
 <translation id="4820616160060340806">คำสั่ง+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="8806053966018712535">โฟลเดอร์ <ph name="FOLDER_NAME"/></translation>
 <translation id="1871244248791675517">Ins</translation>
@@ -209,6 +207,7 @@
 <translation id="6907759265145635167"><ph name="QUANTITY"/> PB/วินาที</translation>
 <translation id="2743387203779672305">คัดลอกไว้ที่คลิปบอร์ด</translation>
 <translation id="8371695176452482769">เชิญพูดเลย</translation>
+<translation id="6129953537138746214">ช่องว่าง</translation>
 <translation id="1167268268675672572">เลื่อนไปจุดเริ่มต้นของบรรทัดและปรับการเลือก</translation>
 <translation id="6965382102122355670">ตกลง</translation>
 <translation id="7850320739366109486">ห้ามรบกวน</translation>

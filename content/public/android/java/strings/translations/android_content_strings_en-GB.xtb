@@ -1,6 +1,4 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="en-GB">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="en-GB">
 <translation id="2094750046714988961">Can't start profiler because external storage is not ready</translation>
 <translation id="1256337885411059545">Cannot play video</translation>
 <translation id="2520230379124234395">Profiler started</translation>

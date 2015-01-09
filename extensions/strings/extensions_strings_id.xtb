@@ -1,12 +1,10 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="id">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="id">
+<translation id="4542520061254486227">Membaca data Anda di <ph name="WEBSITE_1"/> dan <ph name="WEBSITE_2"/></translation>
 <translation id="3624204664103857160">Tidak dapat memuat laman peluncur '<ph name="PAGE"/>'.</translation>
 <translation id="8804398419035066391">Berkomunikasi dengan situs web yang bekerja sama</translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME"/> (ID ekstensi &quot;<ph name="EXTENSION_ID"/>&quot;) dicekal oleh administrator.</translation>
 <translation id="1005274289863221750">Menggunakan mikrofon dan kamera Anda</translation>
 <translation id="2857834222104759979">File manifes tidak valid.</translation>
-<translation id="3828484226910527078">Mengakses perangkat USB</translation>
 <translation id="6384275966486438344">Ubah setelan penelusuran Anda menjadi: <ph name="SEARCH_HOST"/></translation>
 <translation id="1445572445564823378">Ekstensi ini memperlambat <ph name="PRODUCT_NAME"/>. Anda harus menonaktifkannya agar dapat memulihkan kinerja <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="1033780634303702874">Mengakses perangkat seri Anda</translation>
@@ -15,30 +13,30 @@
 <translation id="677806580227005219">Mimehandler: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">Mengakses informasi tentang perangkat Bluetooth yang disandingkan dengan sistem Anda dan menemukan perangkat Bluetooth di sekitarnya.</translation>
 <translation id="5911798608827489036">Tukar data dengan komputer mana saja di jaringan lokal atau internet</translation>
-<translation id="4719685943208231314">Mengakses perangkat USB dari <ph name="VENDOR_NAME"/></translation>
+<translation id="8284835137979141223"><ph name="PRODUCT_NAME"/> dari <ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">Tidak dapat memuat skrip latar belakang '<ph name="BACKGROUND_SCRIPT"/>'.</translation>
 <translation id="9131487537093447019">Kirim pesan ke dan terima pesan dari perangkat Bluetooth.</translation>
-<translation id="8198425243160395623">Mengakses perangkat USB Anda</translation>
+<translation id="5678955352098267522">Membaca data Anda di <ph name="WEBSITE_1"/></translation>
 <translation id="8597109877291678953">Tukar data dengan komputer yang bernama <ph name="HOSTNAME"/></translation>
 <translation id="5456409301717116725">Ekstensi ini termasuk file kunci '<ph name="KEY_PATH"/>'. Anda mungkin tidak ingin melakukannya.</translation>
+<translation id="7257666756905341374">Mengakses data yang Anda salin dan tempel</translation>
 <translation id="2350172092385603347">Lokalisasi digunakan, tetapi default_locale tidak ditentukan dalam manifes.</translation>
 <translation id="3759933321830434300">Blokir bagian laman web</translation>
-<translation id="8058376558882514200">Mengakses perangkat USB <ph name="PRODUCT_NAME"/> dari <ph name="VENDOR_NAME"/></translation>
 <translation id="149347756975725155">Tidak dapat memuat ikon ekstensi '<ph name="ICON"/>'.</translation>
 <translation id="8825366169884721447">Ekstensi ini gagal memodifikasi tajuk permintaan &quot;<ph name="HEADER_NAME"/>&quot; dari suatu permintaan jaringan karena modifikasi bertentangan dengan ekstensi lain (<ph name="EXTENSION_NAME"/>).</translation>
+<translation id="7495493006406536234">Produk <ph name="PRODUCT_ID"/></translation>
 <translation id="4233778200880751280">Tidak dapat memuat laman tentang '<ph name="ABOUT_PAGE"/>'.</translation>
 <translation id="388442998277590542">Tidak dapat memuat laman opsi '<ph name="OPTIONS_PAGE"/>'.</translation>
 <translation id="6344170822609224263">Mengakses daftar sambungan jaringan</translation>
 <translation id="2616366145935564096">Membaca dan mengubah data Anda di <ph name="WEBSITE_1"/></translation>
 <translation id="2518849872271000461">Tukar data dengan komputer yang bernama: <ph name="HOSTNAMES"/></translation>
-<translation id="1389014510128217152">- <ph name="WEBSITE_1"/></translation>
+<translation id="4444304522807523469">Mengakses pemindai dokumen yang terpasang melalui USB atau pada jaringan lokal</translation>
 <translation id="6408118934673775994">Membaca dan mengubah data Anda di <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/>, dan <ph name="WEBSITE_3"/></translation>
 <translation id="961805664415579088">Tukar data dengan komputer mana saja di domain <ph name="DOMAIN"/></translation>
 <translation id="3502064055007747926">Mengakses perangkat masukan Anda</translation>
 <translation id="8670869118777164560">Ekstensi ini gagal mengalihkan permintaan jaringan ke <ph name="ATTEMPTED_REDIRECT_DESTINATION"/> karena ekstensi lain (<ph name="EXTENSION_NAME"/>) mengalihkannya ke <ph name="ACTUAL_REDIRECT_DESTINATION"/>.</translation>
 <translation id="6840444547062817500">Ekstensi ini terlalu sering memuat ulang sendiri.</translation>
 <translation id="8047248493720652249">Ekstensi ini gagal memberi nama unduhan &quot;<ph name="ATTEMPTED_FILENAME"/>&quot; karena ekstensi lain (<ph name="EXTENSION_NAME"/>) menentukan nama file yang berbeda &quot;<ph name="ACTUAL_FILENAME"/>&quot;.</translation>
-<translation id="2732710576072980201">Produk <ph name="PRODUCT_ID"/> dari <ph name="VENDOR_NAME"/> (nomor seri <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="4968399700653439437">Tukar data dengan komputer mana saja di domain: <ph name="DOMAINS"/></translation>
 <translation id="5026754133087629784">Tampilan web: <ph name="WEBVIEW_TAG_NAME"/></translation>
 <translation id="8284279544186306258">semua situs <ph name="WEBSITE_1"/></translation>
@@ -57,8 +55,12 @@
 <translation id="7217838517480956708">Administrator mesin ini membutuhkan <ph name="EXTENSION_NAME"/> untuk dipasang. Persyaratan ini tidak dapat dihapus atau dimodifikasi.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME"/> dari <ph name="VENDOR_NAME"/> (nomor seri <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="7154130902455071009">Ubah laman awal Anda menjadi: <ph name="START_PAGE"/></translation>
-<translation id="6758203075041033901">Produk <ph name="PRODUCT_ID"/> dari Vendor <ph name="VENDOR_ID"/> (nomor seri <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="6698810901424468597">Membaca dan mengubah data Anda di <ph name="WEBSITE_1"/> dan <ph name="WEBSITE_2"/></translation>
+<translation id="5544884907028850012">Vendor <ph name="VENDOR_ID"/></translation>
+<translation id="2048182445208425546">Mengakses lalu lintas jaringan Anda</translation>
+<translation id="5972529113578162692">Administrator komputer ini mewajibkan agar <ph name="EXTENSION_NAME"/> dipasang. Ekstensi tersebut tidak dapat dicopot pemasangannya.</translation>
+<translation id="7131040479572660648">Membaca data Anda di <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/>, dan <ph name="WEBSITE_3"/></translation>
 <translation id="1803557475693955505">Tidak dapat memuat laman latar belakang '<ph name="BACKGROUND_PAGE"/>'.</translation>
 <translation id="7972881773422714442">Opsi: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
+<translation id="344630545793878684">Membaca data Anda di sejumlah situs</translation>
 </translationbundle>

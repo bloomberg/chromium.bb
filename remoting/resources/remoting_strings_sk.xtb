@@ -1,6 +1,5 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="sk">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="sk">
+<translation id="3233367171080043075">Pomoc môžete kedykoľvek ukončiť.</translation>
 <translation id="7606912958770842224">Povoliť vzdialené pripojenia</translation>
 <translation id="3785447812627779171">Chromoting
 Hostiteľ</translation>
@@ -19,6 +18,7 @@ Hostiteľ</translation>
 <translation id="5070121137485264635">Vzdialený hostiteľ od vás vyžaduje overenie na webových stránkach tretej strany. Ak chcete pokračovať, musíte vzdialenej ploche Chrome udeliť dodatočné oprávnenie na prístup k tejto adrese:</translation>
 <translation id="2124408767156847088">Zaistite bezpečný prístup k svojim počítačom zo zariadenia s Androidom.</translation>
 <translation id="3194245623920924351">Vzdialená plocha Chrome</translation>
+<translation id="5537725057119320332">Prenášať</translation>
 <translation id="3649256019230929621">Minimalizovať okno</translation>
 <translation id="4808503597364150972">Zadajte kód PIN pre počítač <ph name="HOSTNAME"/>.</translation>
 <translation id="7672203038394118626">Vzdialené pripojenia k tomuto počítaču boli zakázané.</translation>
@@ -26,6 +26,7 @@ Hostiteľ</translation>
 <translation id="4368630973089289038">Chcete pomôcť vylepšiť funkciu Chromoting? <ph name="LINK_BEGIN"/>Zúčastnite sa prieskumu.<ph name="LINK_END"/></translation>
 <translation id="332624996707057614">Upraviť názov počítača</translation>
 <translation id="1996161829609978754">Chrome sťahuje inštalátor hostiteľa Vzdialenej plochy Chrome. Inštalátor po stiahnutí najprv spustite a pokračujte až potom.</translation>
+<translation id="222632161986885959">Účastník tohto hangoutu vám ponúkol pomoc prostredníctvom ovládania vášho počítača. Ak ju prijmete:</translation>
 <translation id="2046651113449445291">S týmto počítačom boli spárované nasledujúce klientske programy a môžu sa pripojiť bez kódu PIN. Toto povolenie môžete kedykoľvek odvolať buď pre jednotlivé programy, alebo pre všetky programy naraz.</translation>
 <translation id="7658239707568436148">Zrušiť</translation>
 <translation id="7782471917492991422">Skontrolujte nastavenia správy napájania svojho počítača a uistite sa, že nie je nakonfigurovaný prechod do režimu spánku pri nečinnosti.</translation>
@@ -97,6 +98,8 @@ Informácie o ochrane osobných údajov nájdete v Pravidlách ochrany osobných
 <translation id="2013884659108657024">Chrome sťahuje inštalátor hostiteľa Vzdialenej plochy Chrome. Inštalátor po stiahnutí najprv spustite a pokračujte až potom.</translation>
 <translation id="1742469581923031760">Prebieha pripájanie...</translation>
 <translation id="8998327464021325874">Ovládač hostiteľa Vzdialenej plochy Chrome</translation>
+<translation id="7017806586333792422">Spustiť zaznamenávanie</translation>
+<translation id="1619813076098775562">Pripojenie k zariadeniu Cast bolo zavreté.</translation>
 <translation id="6748108480210050150">Klient</translation>
 <translation id="3950820424414687140">Prihlásiť sa</translation>
 <translation id="1291443878853470558">Ak chcete použiť na prístup k tomuto počítaču aplikáciu Chromoting, musíte povoliť vzdialené pripojenia.</translation>
@@ -107,11 +110,13 @@ Informácie o ochrane osobných údajov nájdete v Pravidlách ochrany osobných
 <translation id="7401733114166276557">Vzdialená plocha Chrome</translation>
 <translation id="3362124771485993931">Znova zadajte kód PIN</translation>
 <translation id="1760808606374294203">• Opravy pre systém Android Lollipop</translation>
+<translation id="5231421057630485350">Osoba, ktorá vám pomáha, môže ovládať vašu myš aj klávesnicu.</translation>
 <translation id="154040539590487450">Spustenie služby vzdialeného prístupu zlyhalo.</translation>
 <translation id="7948001860594368197">Možnosti obrazovky</translation>
 <translation id="8172070902751707422">Overenie totožnosti zlyhalo. Prihláste sa do služby Vzdialená plocha Chrome znova.</translation>
 <translation id="5254120496627797685">Ak opustíte túto stránku, relácia Vzdialenej plochy Chrome sa ukončí.</translation>
 <translation id="173559734173571936">Ak chcete používať Vzdialenú plochu Chrome, musíte najprv udeliť rozšírené povolenia na prístup k vášmu počítaču. Stačí to urobiť len raz.</translation>
+<translation id="712467900648340229">Nepodarilo sa pripojiť k zariadeniu Cast.</translation>
 <translation id="9032136467203159543">Niektoré komponenty potrebné pre aplikáciu Chromoting chýbajú. Uistite sa, že ste nainštalovali najnovšiu verziu a skúste to znova.</translation>
 <translation id="1342297293546459414">Zobrazte a ovládajte zdieľaný počítač.</translation>
 <translation id="1520828917794284345">Prispôsobiť veľkosť pracovnej plochy obrazovke klienta</translation>
@@ -147,6 +152,7 @@ Informácie o ochrane osobných údajov nájdete v Pravidlách ochrany osobných
 <translation id="2699970397166997657">Chromoting</translation>
 <translation id="4812684235631257312">Hostiteľ</translation>
 <translation id="6178645564515549384">Natívna hostiteľská aplikácia určená na odosielanie správ v rámci vzdialenej pomoci</translation>
+<translation id="1738759452976856405">Zastaviť zaznamenávanie</translation>
 <translation id="897805526397249209">Ak chcete povoliť vzdialené pripojenie k inému počítaču, nainštalujte na ňom aplikáciu Chromoting a potom kliknite na tlačidlo <ph name="BUTTON_NAME"/>.</translation>
 <translation id="1704090719919187045">Predvoľby hostiteľa funkcie Chromoting</translation>
 <translation id="809687642899217504">Moje počítače</translation>
@@ -187,6 +193,7 @@ Hostiteľ pracovnej plochy</translation>
 <translation id="4703799847237267011">Vaša relácia aplikácie Chromoting bola ukončená.</translation>
 <translation id="8178433417677596899">Zdieľanie obrazovky medzi používateľmi – ideálne pre vzdialenú technickú podporu.</translation>
 <translation id="652218476070540101">Prebieha aktualizácia kódu PIN pre tento počítač...</translation>
+<translation id="951991426597076286">Odmietnuť</translation>
 <translation id="4563926062592110512">Klient bol odpojený: <ph name="CLIENT_USERNAME"/>.</translation>
 <translation id="5308380583665731573">Pripojenie</translation>
 <translation id="7319983568955948908">Prestať zdieľať</translation>

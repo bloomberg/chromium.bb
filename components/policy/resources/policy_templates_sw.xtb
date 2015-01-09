@@ -1,6 +1,4 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="sw">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="sw">
 <translation id="1503959756075098984">Vitambulisho vya viendelezi na URL zilizo sasishswa zitasakinishwa kimyakimya</translation>
 <translation id="793134539373873765">Hubainisha iwapo p2p itatumika kwa sasisho za data ya OS. Kama imewekwa kuwa Kweli, vifaa vitashiriki na kujaribu kusasisha data kwenye LAN, hivyo kuna uwezekano wa kupunguza matumizi ya kipimo data cha intaneti na msongamano. Kama sasisho ya data haipo kwenye LAN, kifaa kitarudia kupakua kutoka kwenye seva ya sasisho. Kama imewekwa kuwa Uongo ama haijasanidiwa, p2p haitatumika.</translation>
 <translation id="2463365186486772703">Lugha ya programu</translation>
@@ -333,7 +331,7 @@ Kama sera hii haitawekwa, hii itawashwa lakini mtumiaji ataweza kuibadilisha.</t
       Ukiweka sera hii, unaweza kusanidi iwapo mtumiaji anaruhusiwa kuingia katika <ph name="PRODUCT_NAME"/> au la.</translation>
 <translation id="5564962323737505851">Inasanidi kidhibiti cha nenosiri. Ikiwa kidhibiti cha nenosiri kimewezeshwa, hivyo basi unaweza kuchagua kuwezesha au kulemaza iwapo mtumiaji anaweza kuonyesha manenosiri yaliyohifadhiwa katika maandishi wazi.</translation>
 <translation id="4668325077104657568">Mpangilio chaguo-msingi wa picha</translation>
-<translation id="4492287494009043413">Lemaza upigaji wa picha kiwamba</translation>
+<translation id="4492287494009043413">Zima upigaji picha za skrini</translation>
 <translation id="6368403635025849609">Ruhusu JavaScript kwenye tovuti hizi</translation>
 <translation id="6074963268421707432">Usiruhusu tovuti yoyote ionyeshe arifa kwenye eneo-kazi</translation>
 <translation id="8614804915612153606">Inalemaza Kusasisha Otomatiki</translation>
@@ -1195,11 +1193,11 @@ Thamani ya sera inapaswa kubainishwa katika milisekunde. Thamani huwekwa pamoja 
       Ukiwezesha mpangilio huu, Zana za Msanidi Programu haziwezi kufikiwa na vipengee vya tovuti haviwezi kukaguliwa tena. Mikato yoyote ya kibodi na menyu yoyote au maingizo yoyote ya menyu ya muktadha ya kufungua Zana za Msanidi Programu au Kiweko cha JavaScript vitalemazwa.
 
       Kulemaza chaguo hii au kuiacha bila kuwekwa kutaruhusu mtumiaji kutumia Zana za Msanidi Programu na kiweko cha JavaScript.</translation>
-<translation id="9203071022800375458">Inalemaza kupiga picha kiwamba.
+<translation id="9203071022800375458">Inazuia kipengele cha kupiga picha za skrini.
 
-      Ikiwezeshwa picha kiwamba haziwezi kupigwa kwa kutumia mikato ya kibodi au APl za kiendelezi.
+      Ikiwashwa picha za skrini haziwezi kupigwa kwa kutumia mikato ya kibodi au APl za kiendelezi.
 
-      Ikilemazwa au isopobainishwa, upigaji picha kiwamba unaruhusiwa.</translation>
+      Ikizimwa au isipobainishwa, upigaji picha za skrini unaruhusiwa.</translation>
 <translation id="5697306356229823047">Ripoti watumiaji wa kifaa</translation>
 <translation id="8649763579836720255">Vifaa vya Chrome OS vinaweza kutumia usahihishaji wa mbali (Ufikiaji Uliothibitishwa) kupata hati iliyotolewa na Chrome OS CA inayodai kifaa kinastahiki kucheza maudhui yanayolindwa. Utaratibu huu unahusisha kutuma maelezo ya vifaa vya maunzi vilivyoidhinshwa kwa Chrome OS CA ambayo inatambua kifaa kipekee. 
 

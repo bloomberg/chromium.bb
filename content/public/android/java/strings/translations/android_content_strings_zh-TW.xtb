@@ -1,6 +1,4 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="zh-TW">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="zh-TW">
 <translation id="2094750046714988961">外部儲存空間尚未準備就緒，因此無法啟動分析器</translation>
 <translation id="1256337885411059545">無法播放影片</translation>
 <translation id="2520230379124234395">分析器已啟動</translation>

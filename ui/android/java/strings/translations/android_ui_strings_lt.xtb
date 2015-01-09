@@ -1,6 +1,4 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="lt">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="lt">
 <translation id="6017514345406065928">Žalia</translation>
 <translation id="376869769528291915">:</translation>
 <translation id="6015796118275082299">Metai</translation>
@@ -25,6 +23,7 @@
 <translation id="6315516427814392808">Nepavyko baigti ankstesnio veiksmo dėl atminties trūkumo</translation>
 <translation id="2732718972699418926">priešpiet</translation>
 <translation id="6042308850641462728">Daugiau</translation>
+<translation id="6820686453637990663">CVC</translation>
 <translation id="7535087603100972091">Reikšmė</translation>
 <translation id="161042844686301425">Žydra</translation>
 <translation id="1822429046913737220">iki pietų / po pietų</translation>

@@ -1,12 +1,10 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="th">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="th">
+<translation id="4542520061254486227">อ่านข้อมูลใน <ph name="WEBSITE_1"/> และ <ph name="WEBSITE_2"/></translation>
 <translation id="3624204664103857160">ไม่สามารถโหลดหน้า Launcher &quot;<ph name="PAGE"/>&quot;</translation>
 <translation id="8804398419035066391">ติดต่อกับเว็บไซต์ที่ร่วมมือ</translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME"/> (ID ส่วนขยาย &quot;<ph name="EXTENSION_ID"/>&quot;) ถูกบล็อกโดยผู้ดูแลระบบ</translation>
 <translation id="1005274289863221750">ใช้ไมโครโฟนและกล้องถ่ายรูปของคุณ</translation>
 <translation id="2857834222104759979">ไฟล์มานิเฟสต์ไม่ถูกต้อง</translation>
-<translation id="3828484226910527078">เข้าถึงอุปกรณ์ USB</translation>
 <translation id="6384275966486438344">เปลี่ยนการตั้งค่าการค้นหาของคุณเป็น: <ph name="SEARCH_HOST"/></translation>
 <translation id="1445572445564823378">ส่วนขยายนี้จะทำให้ <ph name="PRODUCT_NAME"/> ทำงานช้าลง คุณควรปิดใช้งานส่วนขยายเพื่อให้ประสิทธิภาพการทำงานของ <ph name="PRODUCT_NAME"/> กลับมาเป็นปกติ</translation>
 <translation id="1033780634303702874">เข้าถึงอุปกรณ์ซีเรียล</translation>
@@ -15,30 +13,30 @@
 <translation id="677806580227005219">เครื่องจัดการ MIME: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">เข้าถึงข้อมูลเกี่ยวกับอุปกรณ์บลูทูธที่จับคู่กับระบบของคุณ และสำรวจอุปกรณ์บลูทูธใกล้เคียง</translation>
 <translation id="5911798608827489036">แลกเปลี่ยนข้อมูลกับคอมพิวเตอร์ใดๆ ที่อยู่ในเครือข่ายในท้องถิ่นหรืออินเทอร์เน็ต</translation>
-<translation id="4719685943208231314">เข้าถึงอุปกรณ์ USB จาก <ph name="VENDOR_NAME"/></translation>
+<translation id="8284835137979141223"><ph name="PRODUCT_NAME"/> จาก <ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">ไม่สามารถโหลดสคริปต์พื้นหลัง &quot;<ph name="BACKGROUND_SCRIPT"/>&quot;</translation>
 <translation id="9131487537093447019">ส่งข้อความถึงและรับข้อความจากอุปกรณ์บลูทูธ</translation>
-<translation id="8198425243160395623">เข้าถึงอุปกรณ์ USB ของคุณ</translation>
+<translation id="5678955352098267522">อ่านข้อมูลใน <ph name="WEBSITE_1"/></translation>
 <translation id="8597109877291678953">แลกเปลี่ยนข้อมูลกับคอมพิวเตอร์ชื่อ <ph name="HOSTNAME"/></translation>
 <translation id="5456409301717116725">ส่วนขยายนี้มีไฟล์คีย์ &quot;<ph name="KEY_PATH"/>&quot; คุณอาจจะไม่ต้องการดำเนินการนั้น</translation>
+<translation id="7257666756905341374">อ่านข้อมูลที่คุณคัดลอกและวาง</translation>
 <translation id="2350172092385603347">ใช้การแปลภาษาท้องถิ่นแล้ว แต่ไม่ได้ระบุ default_locale ในมานิเฟสต์</translation>
 <translation id="3759933321830434300">บล็อกส่วนต่างๆ ของหน้าเว็บ</translation>
-<translation id="8058376558882514200">เข้าถึงอุปกรณ์ USB <ph name="PRODUCT_NAME"/> จาก <ph name="VENDOR_NAME"/></translation>
 <translation id="149347756975725155">ไม่สามารถโหลดไอคอนส่วนขยาย &quot;<ph name="ICON"/>&quot;</translation>
 <translation id="8825366169884721447">ส่วนขยายนี้ไม่สามารถแก้ไขส่วนหัวคำขอ &quot;<ph name="HEADER_NAME"/>&quot; ของคำขอเครือข่ายได้เนื่องจากการแก้ไขขัดแย้งกับส่วนขยายอื่น (<ph name="EXTENSION_NAME"/>)</translation>
+<translation id="7495493006406536234">ผลิตภัณฑ์ <ph name="PRODUCT_ID"/></translation>
 <translation id="4233778200880751280">ไม่สามารถโหลดหน้าเกี่ยวกับ &quot;<ph name="ABOUT_PAGE"/>&quot;</translation>
 <translation id="388442998277590542">ไม่สามารถโหลดหน้าตัวเลือก &quot;<ph name="OPTIONS_PAGE"/>&quot;</translation>
 <translation id="6344170822609224263">เข้าถึงรายการเชื่อมต่อเครือข่าย</translation>
 <translation id="2616366145935564096">อ่านและเปลี่ยนแปลงข้อมูลของคุณใน <ph name="WEBSITE_1"/></translation>
 <translation id="2518849872271000461">แลกเปลี่ยนข้อมูลกับคอมพิวเตอร์ชื่อ: <ph name="HOSTNAMES"/></translation>
-<translation id="1389014510128217152">- <ph name="WEBSITE_1"/></translation>
+<translation id="4444304522807523469">เข้าถึงเครื่องสแกนเอกสารที่เชื่อมต่อผ่าน USB หรือบนเครือข่าย LAN</translation>
 <translation id="6408118934673775994">อ่านและเปลี่ยนแปลงข้อมูลของคุณใน <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> และ <ph name="WEBSITE_3"/></translation>
 <translation id="961805664415579088">แลกเปลี่ยนข้อมูลกับคอมพิวเตอร์ใดๆ ในโดเมน <ph name="DOMAIN"/></translation>
 <translation id="3502064055007747926">เข้าถึงอุปกรณ์อินพุต</translation>
 <translation id="8670869118777164560">ส่วนขยายนี้ไม่สามารถเปลี่ยนเส้นทางคำขอเครือข่ายไปยัง <ph name="ATTEMPTED_REDIRECT_DESTINATION"/> เนื่องจากส่วนขยายอื่น (<ph name="EXTENSION_NAME"/>) ได้เปลี่ยนเส้นทางคำขอไปยัง <ph name="ACTUAL_REDIRECT_DESTINATION"/></translation>
 <translation id="6840444547062817500">ส่วนขยายนี้โหลดตัวเองซ้ำบ่อยเกินไป</translation>
 <translation id="8047248493720652249">ส่วนขยายนี้ล้มเหลวในการตั้งชื่อการดาวน์โหลดว่า &quot;<ph name="ATTEMPTED_FILENAME"/>&quot; เนื่องจากอีกส่วนขยายหนึ่ง (<ph name="EXTENSION_NAME"/>) ได้กำหนดชื่อไฟล์ที่แตกต่างไว้ว่า &quot;<ph name="ACTUAL_FILENAME"/>&quot;</translation>
-<translation id="2732710576072980201">ผลิตภัณฑ์ <ph name="PRODUCT_ID"/> จาก <ph name="VENDOR_NAME"/> (หมายเลขซีเรียล <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="4968399700653439437">แลกเปลี่ยนข้อมูลกับคอมพิวเตอร์ใดๆ ในโดเมน: <ph name="DOMAINS"/></translation>
 <translation id="5026754133087629784">มุมมองเว็บ: <ph name="WEBVIEW_TAG_NAME"/></translation>
 <translation id="8284279544186306258">ไซต์ <ph name="WEBSITE_1"/> ทั้งหมด</translation>
@@ -57,8 +55,12 @@
 <translation id="7217838517480956708">ผู้ดูแลระบบของเครื่องนี้ต้องการให้มีการติดตั้ง <ph name="EXTENSION_NAME"/> โดยไม่สามารถลบหรือแก้ไขได้</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME"/> จาก <ph name="VENDOR_NAME"/> (หมายเลขซีเรียล <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="7154130902455071009">เปลี่ยนหน้าเริ่มต้นของคุณเป็น: <ph name="START_PAGE"/></translation>
-<translation id="6758203075041033901">ผลิตภัณฑ์ <ph name="PRODUCT_ID"/> จากผู้ให้บริการ <ph name="VENDOR_ID"/> (หมายเลขซีเรียล <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="6698810901424468597">อ่านและเปลี่ยนแปลงข้อมูลของคุณใน <ph name="WEBSITE_1"/> และ <ph name="WEBSITE_2"/></translation>
+<translation id="5544884907028850012">ผู้ให้บริการ <ph name="VENDOR_ID"/></translation>
+<translation id="2048182445208425546">เข้าถึงปริมาณการใช้งานเครือข่าย</translation>
+<translation id="5972529113578162692">ผู้ดูแลระบบของอุปกรณ์เครื่องนี้กำหนดให้ติดตั้ง <ph name="EXTENSION_NAME"/> ไม่สามารถถอนการติดตั้งส่วนขยายนี้ได้</translation>
+<translation id="7131040479572660648">อ่านข้อมูลบน <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> และ <ph name="WEBSITE_3"/></translation>
 <translation id="1803557475693955505">ไม่สามารถโหลดหน้าพื้นหลัง &quot;<ph name="BACKGROUND_PAGE"/>&quot;</translation>
 <translation id="7972881773422714442">ตัวเลือก: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
+<translation id="344630545793878684">อ่านข้อมูลบนเว็บไซต์จำนวนมาก</translation>
 </translationbundle>

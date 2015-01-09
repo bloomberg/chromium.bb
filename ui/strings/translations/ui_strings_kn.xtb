@@ -1,6 +1,4 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="kn">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="kn">
 <translation id="4820616160060340806">ಕಮಾಂಡ್+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="8806053966018712535">ಫೋಲ್ಡರ್ <ph name="FOLDER_NAME"/></translation>
 <translation id="1871244248791675517">Ins</translation>
@@ -81,7 +79,7 @@
 <translation id="6659594942844771486">ಟ್ಯಾಬ್</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY"/> MB</translation>
 <translation id="4988273303304146523"><ph name="NUMBER_DEFAULT"/> days ago</translation>
-<translation id="8428213095426709021">ಸೆಟ್ಟಿಂಗ್ಸ್</translation>
+<translation id="8428213095426709021">ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>
 <translation id="2497284189126895209">ಎಲ್ಲ ಫೈಲ್‌ಗಳು</translation>
 <translation id="7487278341251176613"><ph name="NUMBER_TWO"/> ನಿಮಿಷಗಳು ಉಳಿದಿವೆ</translation>
 <translation id="5110450810124758964"><ph name="NUMBER_ONE"/> day ago</translation>
@@ -209,6 +207,7 @@
 <translation id="6907759265145635167"><ph name="QUANTITY"/> PB/s</translation>
 <translation id="2743387203779672305">ಕ್ಲಿಪ್‌ಬೋರ್ಡ್‌ಗೆ ನಕಲಿಸಿ</translation>
 <translation id="8371695176452482769">ಈಗ ಮಾತನಾಡಿ</translation>
+<translation id="6129953537138746214">ಸ್ಪೇಸ್</translation>
 <translation id="1167268268675672572">ಸಾಲಿನ ಪ್ರಾರಂಭಕ್ಕೆ ಸರಿಸಿ ಮತ್ತು ಆಯ್ಕೆಯನ್ನು ಮಾರ್ಪಡಿಸಿ</translation>
 <translation id="6965382102122355670">ಸರಿ</translation>
 <translation id="7850320739366109486">ಅಡಚಣೆ ಮಾಡಬೇಡಿ</translation>

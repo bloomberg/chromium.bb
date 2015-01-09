@@ -1,13 +1,13 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="ar">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="ar">
 <translation id="8588878054171169263">حفظ الصورة</translation>
 <translation id="7998918019931843664">إعادة فتح علامة التبويب المغلقة</translation>
 <translation id="4996978546172906250">مشاركة عن طريق</translation>
+<translation id="6292937202013477045">قد يحاول المهاجمون سرقة معلوماتك (على سبيل المثال، الصور وكلمات المرور والرسائل وبطاقات الائتمان) من <ph name="DOMAIN_NAME"/>.</translation>
 <translation id="346339498574870680">‏نسخ عنوان URL للصورة</translation>
 <translation id="6657585470893396449">كلمة المرور</translation>
 <translation id="5578795271662203820">البحث في <ph name="SEARCH_ENGINE"/> عن هذه الصورة</translation>
 <translation id="6831043979455480757">ترجمة</translation>
+<translation id="869891660844655955">تاريخ انتهاء الصلاحية</translation>
 <translation id="7644305409888602715">جارٍ ترجمة الصفحة إلى <ph name="SOURCE_LANGUAGE"/>...</translation>
 <translation id="7015922086425404465">‏الحصول على التطبيق من متجر Google Play: <ph name="APP_ACTION"/></translation>
 <translation id="1491151370853475546">إعادة تحميل هذه الصفحة</translation>
@@ -26,17 +26,24 @@
 <translation id="1966710179511230534">الرجاء تحديث تفاصيل تسجيل الدخول.</translation>
 <translation id="1623104350909869708">منع هذه الصفحة من إنشاء مربعات حوار إضافية.</translation>
 <translation id="1426410128494586442">نعم</translation>
+<translation id="5595485650161345191">تعديل العنوان</translation>
 <translation id="8218346974737627104">تأكيد تسجيل الدخول</translation>
 <translation id="8853345339104747198">علامة التبويب <ph name="TAB_TITLE"/></translation>
 <translation id="624558823898732418">لغة الترجمة: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="8872441722924401214">اختيار شهادة للمصادقة</translation>
 <translation id="7791543448312431591">إضافة</translation>
+<translation id="8719023831149562936">تعذر إرسال علامة التبويب الحالية باستخدام الشعاع</translation>
+<translation id="4378154925671717803">الهاتف</translation>
 <translation id="3896036286668839683">عارض الشهادات</translation>
 <translation id="5039804452771397117">سماح</translation>
 <translation id="8583805026567836021">محو بيانات الحساب</translation>
+<translation id="5860033963881614850">إيقاف</translation>
 <translation id="4250680216510889253">لا</translation>
 <translation id="8073388330009372546">فتح الصورة بعلامة تبويب جديدة</translation>
 <translation id="552553974213252141">هل تم استخراج النص بشكل صحيح؟</translation>
+<translation id="5317780077021120954">حفظ</translation>
+<translation id="2718352093833049315">‏في شبكة Wi-Fi فقط</translation>
+<translation id="7029809446516969842">كلمات المرور</translation>
 <translation id="2414886740292270097">داكن</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="8730621377337864115">تم</translation>
@@ -46,31 +53,43 @@
 <translation id="1807246157184219062">فاتح</translation>
 <translation id="7053983685419859001">منع</translation>
 <translation id="8374821112118309944">‏يلزمك تحديث TalkBack إلى إصدار جديد.</translation>
+<translation id="8481940801237642152">إن اتصالك بهذا الموقع له خصوصية، لكن قد يتمكن أحد الأشخاص على هذه الشبكة من تغيير مظهر الصفحة.</translation>
 <translation id="2593272815202181319">أحادي المسافة</translation>
+<translation id="4807098396393229769">الاسم كما على البطاقة</translation>
 <translation id="656628257199996201">ترجمة <ph name="SOURCE_LANGUAGE"/> دائمًا</translation>
 <translation id="2748463065602559597">‏أنت تعرض صفحة Google Chrome آمنة.</translation>
 <translation id="9137013805542155359">إظهار الصفحة الأصلية</translation>
 <translation id="4543661749405994812">نسخ عنوان البريد الإلكتروني</translation>
+<translation id="5659593005791499971">البريد الإلكتروني</translation>
+<translation id="8428213095426709021">إعدادات</translation>
 <translation id="5684874026226664614">عفوًا. تعذرت ترجمة هذه الصفحة.</translation>
+<translation id="10614374240317010">لم يتم الحفظ مطلقًا</translation>
+<translation id="2903493209154104877">العناوين</translation>
 <translation id="8503813439785031346">اسم المستخدم</translation>
 <translation id="2532336938189706096">عرض الويب</translation>
+<translation id="6571070086367343653">تعديل بطاقة الائتمان</translation>
+<translation id="7080851568148064063">إضافة إلى الشاشة الرئيسية</translation>
 <translation id="4619298195800598081">فتح الصورة الأصلية بتبويب جديد</translation>
 <translation id="4002066346123236978">العنوان</translation>
 <translation id="3254409185687681395">وضع إشارة على هذه الصفحة</translation>
 <translation id="907015151729920253">البطاقة الذكية</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="3063601790762993062">حفظ الفيديو</translation>
+<translation id="8106211421800660735">رقم بطاقة الائتمان</translation>
 <translation id="6042308850641462728">المزيد</translation>
 <translation id="7267430310003164111">‏طلب الحصول على تطبيق من متجر Google Play.  اسم التطبيق: <ph name="APP_NAME"/>.  معدل التطبيق المتوسط: <ph name="APP_RATING"/>.</translation>
 <translation id="4148957013307229264">جارٍ التثبيت...</translation>
 <translation id="3992315671621218278">حفظ الرابط</translation>
-<translation id="8034522405403831421">هذه الصفحة باللغة <ph name="SOURCE_LANGUAGE"/>. هل تريد ترجمتها إلى اللغة <ph name="TARGET_LANGUAGE"/>؟</translation>
+<translation id="2476578072172137802">إعدادات الموقع</translation>
 <translation id="4195643157523330669">فتح الإشارة في علامة تبويب جديدة</translation>
 <translation id="651048280540227067">إغلاق القائمة</translation>
 <translation id="3089395242580810162">فتح في علامة تبويب تصفح متخفي</translation>
+<translation id="6981982820502123353">إمكانية الدخول</translation>
 <translation id="8725066075913043281">أعد المحاولة</translation>
 <translation id="8909135823018751308">مشاركة…</translation>
+<translation id="654446541061731451">حدد علامة تبويب لإرسالها باستخدام الشعاع</translation>
 <translation id="4269820728363426813">نسخ عنوان الرابط</translation>
+<translation id="8261506727792406068">حذف</translation>
 <translation id="4510973599275542560">عدم إعادة التحميل</translation>
 <translation id="1206892813135768548">نسخ نص الرابط</translation>
 <translation id="9154176715500758432">البقاء في هذه الصفحة</translation>
@@ -79,22 +98,32 @@
 <translation id="6671495933530132209">نسخ الصورة</translation>
 <translation id="8209050860603202033">فتح الصورة</translation>
 <translation id="2501278716633472235">الرجوع للخلف</translation>
+<translation id="8941248009481596111">إن اتصالك بهذا الموقع له خصوصية.</translation>
 <translation id="1285320974508926690">عدم ترجمة هذا الموقع مطلقًا</translation>
 <translation id="5164482624172255778">‏هل تريد أن يعرض Google Chrome ترجمة الصفحات باللغة <ph name="LANGUAGE"/> من هذا الموقع مرة أخرى؟</translation>
 <translation id="8528538445849828817">لغة الصفحة: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="4881695831933465202">فتح</translation>
 <translation id="6512448926095770873">مغادرة هذه الصفحة</translation>
+<translation id="5565871407246142825">بطاقات ائتمان</translation>
 <translation id="7947953824732555851">قبول وتسجيل الدخول</translation>
+<translation id="2612676031748830579">رقم البطاقة</translation>
 <translation id="6333140779060797560">مشاركة عن طريق <ph name="APPLICATION"/></translation>
 <translation id="6040143037577758943">إغلاق</translation>
+<translation id="2888126860611144412">‏حول Chrome</translation>
+<translation id="5138299137310274655">هذه الصفحة باللغة <ph name="SOURCE_LANGUAGE"/> هل تريد ترجمتها إلى اللغة <ph name="TARGET_LANGUAGE"/>؟</translation>
+<translation id="7649070708921625228">مساعدة</translation>
 <translation id="969096075394517431">تغيير اللغات</translation>
 <translation id="5032574515228824816">مطالبة</translation>
+<translation id="6165508094623778733">مزيد من المعلومات</translation>
 <translation id="7961015016161918242">مطلقًا</translation>
 <translation id="497421865427891073">انتقال للأمام</translation>
 <translation id="4056223980640387499">بني داكن</translation>
 <translation id="8310344678080805313">علامات التبويب القياسية</translation>
 <translation id="6277522088822131679">حدثت مشكلة أثناء طباعة الصفحة. الرجاء إعادة المحاولة.</translation>
+<translation id="7634554953375732414">إن اتصالك بهذا الموقع ليس له خصوصية.</translation>
+<translation id="6612358246767739896">محتوى محمي</translation>
 <translation id="1742134235943978220">تمت الترجمة إلى <ph name="TARGET_LANGUAGE"/>.</translation>
+<translation id="5916664084637901428">تشغيل</translation>
 <translation id="6965382102122355670">موافق</translation>
 <translation id="7561196759112975576">دومًا</translation>
 </translationbundle>

@@ -1,6 +1,5 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="et">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="et">
+<translation id="3233367171080043075">Saate mis tahes ajal lõpetada.</translation>
 <translation id="7606912958770842224">Luba kaugühendused</translation>
 <translation id="3785447812627779171">Chromootimine
 Host</translation>
@@ -19,6 +18,7 @@ Host</translation>
 <translation id="5070121137485264635">Kaughost vajab autentimist kolmanda osapoole veebisaidil. Jätkamiseks peate andma Chrome Remote Desktopile täiendavad load juurdepääsuks sellele aadressile:</translation>
 <translation id="2124408767156847088">Hankige oma Android-seadmest turvaliselt juurdepääs oma arvutitele.</translation>
 <translation id="3194245623920924351">Chrome Remote Desktop</translation>
+<translation id="5537725057119320332">Ülekanne</translation>
 <translation id="3649256019230929621">Minimeeri aken</translation>
 <translation id="4808503597364150972">Sisestage hosti <ph name="HOSTNAME"/> PIN-kood.</translation>
 <translation id="7672203038394118626">Selles arvutis on kaugühendused keelatud.</translation>
@@ -26,6 +26,7 @@ Host</translation>
 <translation id="4368630973089289038">Kas soovite aidata chromootimist täiustada? <ph name="LINK_BEGIN"/>Vastake küsitlusele.<ph name="LINK_END"/></translation>
 <translation id="332624996707057614">Arvuti nime muutmine</translation>
 <translation id="1996161829609978754">Chrome laadib alla rakenduse Chromoting Host installerit. Kui allalaadimine on lõppenud, käitage enne jätkamist installerit.</translation>
+<translation id="222632161986885959">Selles Hangoutis osaleja pakkus teile abi teie arvutit juhtides. Kui nõustute:</translation>
 <translation id="2046651113449445291">Järgmised kliendid on seotud selle arvutiga ja saavad luua ühenduse ilma PIN-koodi esitamata. Saate selle loa igal ajal tühistada ühe või ka kõikide klientide puhul.</translation>
 <translation id="7658239707568436148">Tühista</translation>
 <translation id="7782471917492991422">Kontrollige oma arvuti toitehalduse seadeid ja veenduge, et arvuti ei ole seadistatud lülituma jõudeolekul unerežiimile.</translation>
@@ -97,6 +98,8 @@ Lisateavet privaatsuse kohta vaadake Google'i privaatsuseeskirjadest (http://goo
 <translation id="2013884659108657024">Chrome laadib alla Chrome Remote Desktopi hosti installerit. Kui allalaadimine on lõppenud, käitage enne jätkamist installerit.</translation>
 <translation id="1742469581923031760">Ühendamine ...</translation>
 <translation id="8998327464021325874">Chrome Remote Desktopi hosti kontroller</translation>
+<translation id="7017806586333792422">Alusta salvestamist</translation>
+<translation id="1619813076098775562">Ühendus ülekandeseadmesse suleti.</translation>
 <translation id="6748108480210050150">Allikas</translation>
 <translation id="3950820424414687140">Sisselogimine</translation>
 <translation id="1291443878853470558">Kui soovite rakendusega Chromoting arvuti juurde pääseda, siis lubage kaugühendused.</translation>
@@ -107,11 +110,13 @@ Lisateavet privaatsuse kohta vaadake Google'i privaatsuseeskirjadest (http://goo
 <translation id="7401733114166276557">Chrome Remote Desktop</translation>
 <translation id="3362124771485993931">Sisestage PIN-kood uuesti</translation>
 <translation id="1760808606374294203">• Android Lollipopi parandused.</translation>
+<translation id="5231421057630485350">Teid abistav inimene saab juhtida teie hiirt ja klaviatuuri.</translation>
 <translation id="154040539590487450">Kaugühenduse teenuse käivitamine ebaõnnestus.</translation>
 <translation id="7948001860594368197">Ekraani valikud</translation>
 <translation id="8172070902751707422">Autentimine ebaõnnestus. Logige uuesti sisse Chrome Remote Desktopi.</translation>
 <translation id="5254120496627797685">Lehelt lahkudes katkeb teie Chrome Remote Desktopi seanss.</translation>
 <translation id="173559734173571936">Chrome Remote Desktopi kasutamiseks peate andma arvutile laiendatud pääsuload. Seda tuleb teha vaid üks kord.</translation>
+<translation id="712467900648340229">Ülekandeseadmega ühenduse loomine ebaõnnestus.</translation>
 <translation id="9032136467203159543">Mõned rakenduse Chromoting jaoks vajalikud komponendid on puudu. Veenduge, et installitud on uusim versioon, ja proovige uuesti.</translation>
 <translation id="1342297293546459414">Vaadake ja juhtige jagatud arvutit.</translation>
 <translation id="1520828917794284345">Muuda suurust töölaua sobitamiseks</translation>
@@ -147,6 +152,7 @@ Lisateavet privaatsuse kohta vaadake Google'i privaatsuseeskirjadest (http://goo
 <translation id="2699970397166997657">Chromoting</translation>
 <translation id="4812684235631257312">Host</translation>
 <translation id="6178645564515549384">Omasõnumside hostimine kaugabi jaoks</translation>
+<translation id="1738759452976856405">Peata salvestamine</translation>
 <translation id="897805526397249209">Muu arvutiga kaugühenduste lubamiseks installige sellesse rakendus Chromoting ja klõpsake nupul „<ph name="BUTTON_NAME"/>”.</translation>
 <translation id="1704090719919187045">Chromootimise hosti eelistused</translation>
 <translation id="809687642899217504">Minu arvutid</translation>
@@ -187,6 +193,7 @@ Desktopi host</translation>
 <translation id="4703799847237267011">Teie rakenduse Chromoting seanss on lõppenud.</translation>
 <translation id="8178433417677596899">Ekraani jagamine kasutajalt kasutajale, sobib täiuslikult kaugühenduse abil tehnilise toe pakkumiseks.</translation>
 <translation id="652218476070540101">Selle arvuti PIN-koodi värskendatakse ...</translation>
+<translation id="951991426597076286">Keeldu</translation>
 <translation id="4563926062592110512">Ühenduse katkestanud klient: <ph name="CLIENT_USERNAME"/>.</translation>
 <translation id="5308380583665731573">Ühendamine</translation>
 <translation id="7319983568955948908">Lõpeta jagamine</translation>

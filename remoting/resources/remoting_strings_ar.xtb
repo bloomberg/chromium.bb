@@ -1,6 +1,5 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="ar">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="ar">
+<translation id="3233367171080043075">يمكنك الإنهاء في أي وقت.</translation>
 <translation id="7606912958770842224">تمكين الاتصالات عن بُعد</translation>
 <translation id="3785447812627779171">مضيف
 التوافق مع نظام التشغيل</translation>
@@ -19,6 +18,7 @@
 <translation id="5070121137485264635">‏يتطلب منك المضيف البعيد مصادقة موقع ويب لجهة خارجية. للمتابعة، يجب منح تطبيق سطح المكتب البعيد من Chrome أذونات إضافية للدخول إلى هذا العنوان:</translation>
 <translation id="2124408767156847088">‏استمتع بدخول آمن إلى جهاز الكمبيوتر من خلال جهاز Android.</translation>
 <translation id="3194245623920924351">‏سطح المكتب البعيد من Chrome</translation>
+<translation id="5537725057119320332">إرسال</translation>
 <translation id="3649256019230929621">تصغير النافذة</translation>
 <translation id="4808503597364150972">الرجاء إدخال رقم التعريف الشخصي التابع لك لـ <ph name="HOSTNAME"/>.</translation>
 <translation id="7672203038394118626">تم تعطيل الاتصالات عن بُعد لهذا الكمبيوتر.</translation>
@@ -26,6 +26,7 @@
 <translation id="4368630973089289038">‏إذا كنت ترغب في تحسين التوافق مع نظام التشغيل Chrome، فيُمكنك <ph name="LINK_BEGIN"/>المشاركة في الاستبيان.<ph name="LINK_END"/></translation>
 <translation id="332624996707057614">تعديل اسم الكمبيوتر</translation>
 <translation id="1996161829609978754">‏يجري Chrome تنزيلاً لأداة تثبيت مضيف تطبيق التوافق مع نظام التشغيل Chrome. بعد اكتمال التنزيل، يرجى تشغيل أداة التثبيت قبل المتابعة.</translation>
+<translation id="222632161986885959">‏لقد عرض أحد المشاركين في جلسة Hangout هذه أن يساعدك عن طريق التحكم في جهاز الكمبيوتر.  إذا قبلت ذلك:</translation>
 <translation id="2046651113449445291">تم إقران العملاء التالين بهذا الكمبيوتر ويمكنه الاتصال بدون توفير رقم تعريف شخصي. يمكنك إبطال هذا الإذن متى شئت، سواء على نطاق فردي أو لجميع العملاء.</translation>
 <translation id="7658239707568436148">إلغاء</translation>
 <translation id="7782471917492991422">يرجى التحقق من إعدادات إدارة الطاقة في جهاز الكمبيوتر وضمان عدم تهيئتها على وضع السكون عند الخمول.</translation>
@@ -97,6 +98,8 @@
 <translation id="2013884659108657024">‏يجري Chrome تنزيلاً لأداة تثبيت &quot;مضيف سطح المكتب البعيد من Chrome&quot;. بعد اكتمال التنزيل، يرجى تشغيل أداة التثبيت قبل المتابعة.</translation>
 <translation id="1742469581923031760">جارٍ الاتصال...</translation>
 <translation id="8998327464021325874">‏أداة التحكم في مضيف سطح المكتب البعيد من Chrome</translation>
+<translation id="7017806586333792422">بدء التسجيل</translation>
+<translation id="1619813076098775562">تم إغلاق الاتصال بجهاز البث.</translation>
 <translation id="6748108480210050150">من</translation>
 <translation id="3950820424414687140">تسجيل الدخول</translation>
 <translation id="1291443878853470558">‏يجب تمكين الاتصالات عن بُعد إذا كنت تريد استخدام تطبيق التوافق مع نظام التشغيل Chrome للدخول إلى هذا الكمبيوتر.</translation>
@@ -107,11 +110,13 @@
 <translation id="7401733114166276557">‏سطح المكتب البعيد من Chrome</translation>
 <translation id="3362124771485993931">أعد كتابة رقم التعريف الشخصي</translation>
 <translation id="1760808606374294203">‏• إصلاحات لـ Android Lollipop.</translation>
+<translation id="5231421057630485350">سيكون الشخص الذي يساعدك قادرًا على التحكم في الماوس ولوحة المفاتيح بجهازك.</translation>
 <translation id="154040539590487450">أخفق بدء خدمة الدخول عن بُعد.</translation>
 <translation id="7948001860594368197">خيارات الشاشة</translation>
 <translation id="8172070902751707422">‏أخفقت المصادقة. الرجاء تسجيل الدخول إلى سطح المكتب البعيد من Chrome مرة أخرى.</translation>
 <translation id="5254120496627797685">‏ستؤدي مغادرة هذه الصفحة إلى إنهاء جلسة سطح المكتب البعيد من Chrome.</translation>
 <translation id="173559734173571936">‏لاستخدام سطح المكتب البعيد من Chrome، يجب أولاً منح أذونات موسّعة بالدخول إلى جهاز الكمبيوتر. لن يُطلب منك إجراء ذلك سوى مرة واحدة.</translation>
+<translation id="712467900648340229">فشل الاتصال بجهاز البث.</translation>
 <translation id="9032136467203159543">‏بعض المكونات المطلوبة للتوافق مع نظام التشغيل Chrome مفقودة. الرجاء التأكد من تثبيت أحدث إصدار وإعادة المحاولة.</translation>
 <translation id="1342297293546459414">الاطلاع على جهاز كمبيوتر تمت مشاركته والتحكم فيه.</translation>
 <translation id="1520828917794284345">تغيير حجم سطح المكتب للملاءمة</translation>
@@ -148,6 +153,7 @@
 <translation id="2699970397166997657">‏التوافق مع نظام التشغيل Chrome</translation>
 <translation id="4812684235631257312">المضيف</translation>
 <translation id="6178645564515549384">مضيف الرسائل الأصلي للمساعدة عن بُعد</translation>
+<translation id="1738759452976856405">إيقاف التسجيل</translation>
 <translation id="897805526397249209">لتمكين الاتصالات عن بُعد بجهاز كمبيوتر مختلف، ثبِّت 
 تطبيق التوافق مع نظام التشغيل عليه وانقر على “<ph name="BUTTON_NAME"/>”.</translation>
 <translation id="1704090719919187045">‏تفضيلات مضيف التوافق مع نظام التشغيل Chrome</translation>
@@ -189,6 +195,7 @@
 <translation id="4703799847237267011">‏انتهت جلسة تطبيق التوافق مع نظام التشغيل Chrome.</translation>
 <translation id="8178433417677596899">تعد ميزة مشاركة الشاشة من مستخدم إلى مستخدم ميزة مثالية للدعم الفني عن بُعد.</translation>
 <translation id="652218476070540101">جارٍ تحديث رقم التعريف الشخصي لهذا الكمبيوتر...</translation>
+<translation id="951991426597076286">رفض</translation>
 <translation id="4563926062592110512">تم إلغاء ربط العميل: <ph name="CLIENT_USERNAME"/>.</translation>
 <translation id="5308380583665731573">اتصال</translation>
 <translation id="7319983568955948908">إيقاف المشاركة</translation>

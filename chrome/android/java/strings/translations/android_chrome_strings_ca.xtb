@@ -1,13 +1,13 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="ca">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="ca">
 <translation id="8588878054171169263">Desa la imatge</translation>
 <translation id="7998918019931843664">Torna a obrir la pestanya tancada</translation>
 <translation id="4996978546172906250">Compartir mitjançant</translation>
+<translation id="6292937202013477045">És possible que alguns atacants estiguin provant de robar la vostra informació (per exemple, fotos, contrasenyes, missatges i dades de targetes de crèdit) del domini <ph name="DOMAIN_NAME"/>.</translation>
 <translation id="346339498574870680">Copia l'URL de la imatge</translation>
 <translation id="6657585470893396449">Contrasenya</translation>
 <translation id="5578795271662203820">Cerca aquesta imatge a <ph name="SEARCH_ENGINE"/></translation>
 <translation id="6831043979455480757">Tradueix</translation>
+<translation id="869891660844655955">Data de caducitat</translation>
 <translation id="7644305409888602715">La pàgina s'està traduint a <ph name="SOURCE_LANGUAGE"/>...</translation>
 <translation id="7015922086425404465">Baixeu aplicacions de Google Play Store: <ph name="APP_ACTION"/>.</translation>
 <translation id="1491151370853475546">Torna a carregar aquesta pàgina</translation>
@@ -28,17 +28,24 @@ Inicieu la sessió amb un compte gestionat, de manera que concediu al seu admini
 <translation id="1966710179511230534">Actualitzeu les dades d'inici de sessió.</translation>
 <translation id="1623104350909869708">Impedeix que aquesta pàgina creï diàlegs addicionals.</translation>
 <translation id="1426410128494586442">Sí</translation>
+<translation id="5595485650161345191">Edita l'adreça</translation>
 <translation id="8218346974737627104">Confirmació de l'inici de sessió</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE"/>, pestanya</translation>
 <translation id="624558823898732418">Idioma de traducció: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="8872441722924401214">Selecció del certificat per a l'autenticació</translation>
 <translation id="7791543448312431591">Afegeix</translation>
+<translation id="8719023831149562936">La pestanya actual no es pot compartir.</translation>
+<translation id="4378154925671717803">Telèfon</translation>
 <translation id="3896036286668839683">Lector de certificats</translation>
 <translation id="5039804452771397117">Permet</translation>
 <translation id="8583805026567836021">S'estan esborrant les dades del compte</translation>
+<translation id="5860033963881614850">Desactivat</translation>
 <translation id="4250680216510889253">No</translation>
 <translation id="8073388330009372546">Obre en una pestanya nova</translation>
 <translation id="552553974213252141">S'ha extret correctament el text?</translation>
+<translation id="5317780077021120954">Desa</translation>
+<translation id="2718352093833049315">Només amb Wi-Fi</translation>
+<translation id="7029809446516969842">Contrasenyes</translation>
 <translation id="2414886740292270097">Fosc</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="8730621377337864115">Fet</translation>
@@ -48,31 +55,43 @@ Inicieu la sessió amb un compte gestionat, de manera que concediu al seu admini
 <translation id="1807246157184219062">Clar</translation>
 <translation id="7053983685419859001">Bloqueja</translation>
 <translation id="8374821112118309944">Heu de fer l'actualització de TalkBack a una versió més recent</translation>
+<translation id="8481940801237642152">La vostra connexió amb aquest lloc és privada, però és possible que algun usuari de la xarxa pugui canviar l'aspecte de la pàgina.</translation>
 <translation id="2593272815202181319">Monospace</translation>
+<translation id="4807098396393229769">Titular de la targeta</translation>
 <translation id="656628257199996201">Tradueix sempre: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="2748463065602559597">Esteu visualitzant una pàgina segura de Google Chrome.</translation>
 <translation id="9137013805542155359">Mostra l'original</translation>
 <translation id="4543661749405994812">Copia l'adreça electrònica</translation>
+<translation id="5659593005791499971">Correu electrònic</translation>
+<translation id="8428213095426709021">Configuració</translation>
 <translation id="5684874026226664614">Aquesta pàgina no s'ha pogut traduir.</translation>
+<translation id="10614374240317010">Contrasenyes que no es desen mai</translation>
+<translation id="2903493209154104877">Adreces</translation>
 <translation id="8503813439785031346">Nom d'usuari</translation>
 <translation id="2532336938189706096">Visualització web</translation>
+<translation id="6571070086367343653">Edita la targeta de crèdit</translation>
+<translation id="7080851568148064063">Afegeix a pantalla d'inici</translation>
 <translation id="4619298195800598081">Obre imatge orig. a pest. nova</translation>
 <translation id="4002066346123236978">Títol</translation>
 <translation id="3254409185687681395">Afegeix aquesta pàgina a les adreces d'interès</translation>
 <translation id="907015151729920253">Targeta intel·ligent</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="3063601790762993062">Desa el vídeo</translation>
+<translation id="8106211421800660735">Número de targeta de crèdit</translation>
 <translation id="6042308850641462728">Més</translation>
 <translation id="7267430310003164111">Sol·licitud per baixar l'aplicació de Google Play Store. Nom de l'aplicació: <ph name="APP_NAME"/>. Puntuació mitjana de l'aplicació: <ph name="APP_RATING"/></translation>
 <translation id="4148957013307229264">S'està instal·lant...</translation>
 <translation id="3992315671621218278">Desa l'enllaç</translation>
-<translation id="8034522405403831421">Aquesta pàgina està escrita en <ph name="SOURCE_LANGUAGE"/>. Voleu traduir-la a <ph name="TARGET_LANGUAGE"/>?</translation>
+<translation id="2476578072172137802">Configuració del lloc</translation>
 <translation id="4195643157523330669">Obre en una pestanya nova</translation>
 <translation id="651048280540227067">Descarta el menú</translation>
 <translation id="3089395242580810162">Obre en una pestanya d'incògnit</translation>
+<translation id="6981982820502123353">Accessibilitat</translation>
 <translation id="8725066075913043281">Torna-ho a provar</translation>
 <translation id="8909135823018751308">Comparteix...</translation>
+<translation id="654446541061731451">Trieu una pestanya per compartir-la.</translation>
 <translation id="4269820728363426813">Copia l'adreça de l'enllaç</translation>
+<translation id="8261506727792406068">Elimina</translation>
 <translation id="4510973599275542560">No tornis a carregar</translation>
 <translation id="1206892813135768548">Copia el text de l'enllaç</translation>
 <translation id="9154176715500758432">Roman en aquesta pàgina</translation>
@@ -81,22 +100,32 @@ Inicieu la sessió amb un compte gestionat, de manera que concediu al seu admini
 <translation id="6671495933530132209">Copia la imatge</translation>
 <translation id="8209050860603202033">Obre la imatge</translation>
 <translation id="2501278716633472235">Enrere</translation>
+<translation id="8941248009481596111">La vostra connexió amb aquest lloc és privada.</translation>
 <translation id="1285320974508926690">No tradueixis mai aquest lloc</translation>
 <translation id="5164482624172255778">Voleu que Google Chrome us ofereixi la possibilitat de traduir les pàgines en <ph name="LANGUAGE"/> d'aquest lloc la propera vegada?</translation>
 <translation id="8528538445849828817">Idioma de la pàgina: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="4881695831933465202">Obre</translation>
 <translation id="6512448926095770873">Abandona aquesta pàgina</translation>
+<translation id="5565871407246142825">Targetes de crèdit</translation>
 <translation id="7947953824732555851">Acc. i inicia sessió</translation>
+<translation id="2612676031748830579">Número de targeta</translation>
 <translation id="6333140779060797560">Comparteix mitjançant <ph name="APPLICATION"/>.</translation>
 <translation id="6040143037577758943">Tanca</translation>
+<translation id="2888126860611144412">Quan a Chrome</translation>
+<translation id="5138299137310274655">La pàgina està en <ph name="SOURCE_LANGUAGE"/>. Voleu traduir-la i que es mostri en <ph name="TARGET_LANGUAGE"/>?</translation>
+<translation id="7649070708921625228">Ajuda</translation>
 <translation id="969096075394517431">Canvia els idiomes</translation>
 <translation id="5032574515228824816">Sol·licitud</translation>
+<translation id="6165508094623778733">Més informació</translation>
 <translation id="7961015016161918242">Mai</translation>
 <translation id="497421865427891073">Vés endavant</translation>
 <translation id="4056223980640387499">Sèpia</translation>
 <translation id="8310344678080805313">Pestanyes estàndard</translation>
 <translation id="6277522088822131679">S'ha produït un problema en imprimir la pàgina. Torneu-ho a provar.</translation>
+<translation id="7634554953375732414">La vostra connexió amb aquest lloc no és privada.</translation>
+<translation id="6612358246767739896">Contingut protegit</translation>
 <translation id="1742134235943978220">S'ha traduït a <ph name="TARGET_LANGUAGE"/>.</translation>
+<translation id="5916664084637901428">Activat</translation>
 <translation id="6965382102122355670">D'acord</translation>
 <translation id="7561196759112975576">Sempre</translation>
 </translationbundle>

@@ -1,6 +1,5 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="th">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="th">
+<translation id="3233367171080043075">คุณสามารถหยุดเมื่อใดก็ได้</translation>
 <translation id="7606912958770842224">เปิดใช้งานการเชื่อมต่อระยะไกล</translation>
 <translation id="3785447812627779171">Chromoting
 Host</translation>
@@ -19,6 +18,7 @@ Host</translation>
 <translation id="5070121137485264635">โฮสต์ระยะไกลกำหนดให้คุณตรวจสอบสิทธิ์กับเว็บไซต์ของบุคคลที่สาม หากต้องการดำเนินการต่อ คุณต้องให้สิทธิ์อนุญาตเพิ่มเติมแก่ Chrome Remote Desktop เพื่อเข้าถึงที่อยู่นี้:</translation>
 <translation id="2124408767156847088">เข้าถึงคอมพิวเตอร์ของคุณจากอุปกรณ์ Android ได้อย่างปลอดภัย</translation>
 <translation id="3194245623920924351">Chrome Remote Desktop</translation>
+<translation id="5537725057119320332">ส่ง</translation>
 <translation id="3649256019230929621">ย่อหน้าต่าง</translation>
 <translation id="4808503597364150972">โปรดป้อน PIN ของคุณสำหรับ <ph name="HOSTNAME"/></translation>
 <translation id="7672203038394118626">การเชื่อมต่อระยะไกลสำหรับคอมพิวเตอร์เครื่องนี้ถูกปิดใช้งานแล้ว</translation>
@@ -26,6 +26,7 @@ Host</translation>
 <translation id="4368630973089289038">หากต้องการช่วยปรับปรุง Chromoting โปรด<ph name="LINK_BEGIN"/>ตอบแบบสำรวจ<ph name="LINK_END"/></translation>
 <translation id="332624996707057614">แก้ไขชื่อคอมพิวเตอร์</translation>
 <translation id="1996161829609978754">Chrome กำลังดาวน์โหลดตัวติดตั้ง Chromoting Host เมื่อดาวน์โหลดเสร็จแล้ว โปรดเรียกใช้โปรแกรมติดตั้งก่อนดำเนินการต่อ</translation>
+<translation id="222632161986885959">ผู้เข้าร่วมแฮงเอาท์ได้เสนอที่จะช่วยเหลือคุณโดยการควบคุมคอมพิวเตอร์ของคุณ หากคุณยอมรับ ให้ทำดังนี้:</translation>
 <translation id="2046651113449445291">ไคลเอ็นต์ต่อไปนี้ถูกจับคู่กับคอมพิวเตอร์เครื่องนี้และสามารถเชื่อมต่อโดยไม่ต้องใส่รหัส PIN คุณสามารถยกเลิกสิทธิ์นี้ได้ทุกเมื่อ ไม่ว่าจะเป็นทีละไคลเอ็นต์หรือสำหรับไคลเอ็นต์ทั้งหมด</translation>
 <translation id="7658239707568436148">ยกเลิก</translation>
 <translation id="7782471917492991422">โปรดตรวจสอบการตั้งค่าการจัดการพลังงานของคอมพิวเตอร์ที่ใช้ และตรวจสอบให้แน่ใจว่าไม่ได้กำหนดค่าให้เข้าสู่โหมดสลีปเมื่อไม่มีการใช้งาน</translation>
@@ -97,6 +98,8 @@ Host</translation>
 <translation id="2013884659108657024">Chrome กำลังดาวน์โหลดตัวติดตั้ง Chrome Remote Desktop Host เมื่อดาวน์โหลดเสร็จแล้ว โปรดเรียกใช้โปรแกรมติดตั้งก่อนดำเนินการต่อ</translation>
 <translation id="1742469581923031760">กำลังเชื่อมต่อ…</translation>
 <translation id="8998327464021325874">Chrome Remote Desktop Host Controller</translation>
+<translation id="7017806586333792422">เริ่มบันทึก</translation>
+<translation id="1619813076098775562">ปิดการเชื่อมต่อกับเครื่องส่งแล้ว</translation>
 <translation id="6748108480210050150">จาก</translation>
 <translation id="3950820424414687140">ลงชื่อเข้าใช้</translation>
 <translation id="1291443878853470558">คุณต้องเปิดใช้งานการเชื่อมต่อระยะไกลหากคุณต้องการใช้ Chromoting ในการเข้าถึงคอมพิวเตอร์เครื่องนี้</translation>
@@ -107,11 +110,13 @@ Host</translation>
 <translation id="7401733114166276557">Chrome Remote Desktop</translation>
 <translation id="3362124771485993931">พิมพ์ PIN ซ้ำอีกครั้ง</translation>
 <translation id="1760808606374294203">• การแก้ไขสำหรับ Android Lollipop</translation>
+<translation id="5231421057630485350">ผู้ที่ช่วยเหลือคุณจะสามารถควบคุมเมาส์และแป้นพิมพ์ของคุณได้</translation>
 <translation id="154040539590487450">ไม่สามารถเริ่มบริการเข้าถึงระยะไกล</translation>
 <translation id="7948001860594368197">ตัวเลือกหน้าจอ</translation>
 <translation id="8172070902751707422">การตรวจสอบสิทธิ์ล้มเหลว โปรดลงชื่อเข้าใช้ Chrome Remote Desktop อีกครั้ง</translation>
 <translation id="5254120496627797685">การออกจากหน้านี้จะสิ้นสุดเซสชัน Chrome Remote Desktop ของคุณ</translation>
 <translation id="173559734173571936">ในการใช้ Chrome Remote Desktop คุณต้องให้สิทธิ์การเข้าถึงเพิ่มเติมสำหรับคอมพิวเตอร์ของคุณ คุณจะต้องทำเช่นนี้เพียงครั้งเดียว</translation>
+<translation id="712467900648340229">ไม่สามารถเชื่อมต่อเครื่องส่งได้</translation>
 <translation id="9032136467203159543">องค์ประกอบที่จำเป็นบางอย่างสำหรับ Chromoting ขาดหายไป โปรดตรวจสอบให้แน่ใจว่าคุณติดตั้งเวอร์ชันล่าสุดแล้วและลองอีกครั้ง</translation>
 <translation id="1342297293546459414">ดูและควบคุมคอมพิวเตอร์ที่ใช้งานร่วมกัน</translation>
 <translation id="1520828917794284345">ปรับขนาดเดสก์ท็อปให้พอดี</translation>
@@ -147,6 +152,7 @@ Host</translation>
 <translation id="2699970397166997657">Chromoting</translation>
 <translation id="4812684235631257312">โฮสต์</translation>
 <translation id="6178645564515549384">โฮสต์การรับส่งข้อความดั้งเดิมสำหรับการสนับสนุนระยะไกล</translation>
+<translation id="1738759452976856405">หยุดบันทึก</translation>
 <translation id="897805526397249209">ในการเปิดใช้งานการเชื่อมต่อระยะไกลกับคอมพิวเตอร์เครื่องอื่น ให้ติดตั้ง Chromoting ที่คอมพิวเตอร์ที่ต้องการใช้งานและคลิก &quot;<ph name="BUTTON_NAME"/>&quot;</translation>
 <translation id="1704090719919187045">Chromoting Host Preferences</translation>
 <translation id="809687642899217504">คอมพิวเตอร์ของฉัน</translation>
@@ -187,6 +193,7 @@ Desktop Host</translation>
 <translation id="4703799847237267011">เซสชัน Chromoting ของคุณได้สิ้นสุดลงแล้ว</translation>
 <translation id="8178433417677596899">การแชร์หน้าจอระหว่างผู้ใช้กับผู้ใช้ เหมาะสำหรับการสนับสนุนทางเทคนิคจากระยะไกล</translation>
 <translation id="652218476070540101">กำลังอัปเดต PIN สำหรับคอมพิวเตอร์เครื่องนี้…</translation>
+<translation id="951991426597076286">ปฏิเสธ</translation>
 <translation id="4563926062592110512">ไคลเอ็นต์ที่ยกเลิกการเชื่อมต่อ: <ph name="CLIENT_USERNAME"/></translation>
 <translation id="5308380583665731573">เชื่อมต่อ</translation>
 <translation id="7319983568955948908">หยุดการแชร์</translation>

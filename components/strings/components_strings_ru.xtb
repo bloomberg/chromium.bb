@@ -1,6 +1,4 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="ru">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="ru">
 <translation id="7485870689360869515">Данные не найдены.</translation>
 <translation id="3884278016824448484">Конфликт идентификаторов устройств</translation>
 <translation id="6779575937362063477">Этот тип карт не поддерживается в Google Кошельке. Выберите другую карту.</translation>
@@ -12,6 +10,7 @@
 <translation id="1339601241726513588">Регистрация домена:</translation>
 <translation id="7298195798382681320">Рекомендованные</translation>
 <translation id="4058922952496707368">Ключ &quot;<ph name="SUBKEY"/>&quot;: <ph name="ERROR"/></translation>
+<translation id="6980028882292583085">Оповещение JavaScript</translation>
 <translation id="5299298092464848405">Не удалось выполнить анализ политики</translation>
 <translation id="6628463337424475685">Поиск <ph name="ENGINE"/></translation>
 <translation id="6831043979455480757">Перевести</translation>
@@ -24,6 +23,7 @@
 <translation id="2958431318199492670">Некоторые элементы сетевой конфигурации невозможно импортировать, поскольку она не соответствует стандарту ONC.</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="277499241957683684">Устройство не зарегистрировано</translation>
+<translation id="1491151370853475546">Обновить страницу</translation>
 <translation id="8553075262323480129">Перевод не удался, так как не удается определить язык страницы.</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="1103523840287552314">Всегда переводить <ph name="LANGUAGE"/></translation>
@@ -44,6 +44,7 @@
 <translation id="3380365263193509176">Неизвестная ошибка</translation>
 <translation id="112840717907525620">В кеше политики ошибок не найдено</translation>
 <translation id="3452404311384756672">Выберите интервал:</translation>
+<translation id="409504436206021213">Не обновлять страницу</translation>
 <translation id="7441627299479586546">Неверный субъект политики</translation>
 <translation id="3885155851504623709">Округ</translation>
 <translation id="6973656660372572881">Указаны как фиксированные прокси-серверы, так и URL PAC-скриптов.</translation>
@@ -52,6 +53,7 @@
 <translation id="3667681724235208644">Смотреть оригинал</translation>
 <translation id="4079302484614802869">Конфигурация прокси-сервера предусматривает использование URL PAC-скриптов вместо фиксированных прокси-серверов.</translation>
 <translation id="5540224163453853">Не удалось найти указанную статью</translation>
+<translation id="333371639341676808">Предотвратить создание дополнительных диалоговых окон на этой странице.</translation>
 <translation id="5523118979700054094">Название правила</translation>
 <translation id="7791543448312431591">Добавить</translation>
 <translation id="2053553514270667976">Почтовый индекс</translation>
@@ -68,6 +70,7 @@
 <translation id="2367567093518048410">Уровень</translation>
 <translation id="7977590112176369853">&lt;введите запрос&gt;</translation>
 <translation id="7610193165460212391">Значение <ph name="VALUE"/> лежит за пределами разрешенного диапазона.</translation>
+<translation id="8311778656528046050">Действительно обновить эту страницу?</translation>
 <translation id="370665806235115550">Загрузка...</translation>
 <translation id="2096368010154057602">Округ</translation>
 <translation id="4258748452823770588">Подпись недействительна</translation>
@@ -95,11 +98,14 @@
 <translation id="6445051938772793705">Страна</translation>
 <translation id="5031870354684148875">О Переводчике Google</translation>
 <translation id="1152921474424827756">Открыть <ph name="BEGIN_LINK"/>кешированную версию<ph name="END_LINK"/> страницы <ph name="URL"/></translation>
+<translation id="8201077131113104583">Недействительный URL для обновления расширения с идентификатором <ph name="EXTENSION_ID"/>.</translation>
 <translation id="6891596781022320156">Значение правила не поддерживается.</translation>
 <translation id="2025186561304664664">Прокси-сервер настраивается автоматически.</translation>
 <translation id="1853748787962613237">Не удалось показать статью</translation>
 <translation id="5455374756549232013">Неверная временная метка политики</translation>
+<translation id="2025623846716345241">Подтвердить обновление страницы</translation>
 <translation id="1962204205936693436">Закладки <ph name="DOMAIN"/></translation>
+<translation id="111844081046043029">Вы действительно хотите покинуть эту страницу?</translation>
 <translation id="1973335181906896915">Не удалось выполнить сериализацию</translation>
 <translation id="5989320800837274978">Ни фиксированные прокси-серверы, ни URL PAC-скриптов не указаны.</translation>
 <translation id="7805768142964895445">Состояние</translation>
@@ -110,12 +116,13 @@
 <translation id="7956713633345437162">Закладки на мобильном</translation>
 <translation id="5089810972385038852">Штат</translation>
 <translation id="647261751007945333">Правила устройства</translation>
-<translation id="678528074488531090">Ошибка проверки: <ph name="VALIDATION_ERROR"/>.</translation>
 <translation id="213826338245044447">Закладки на мобильном</translation>
 <translation id="8571890674111243710">Перевод страницы на <ph name="LANGUAGE"/>...</translation>
 <translation id="4117700440116928470">Область действия правил не поддерживается.</translation>
 <translation id="2114841414352855701">Игнорируется, так как правило <ph name="POLICY_NAME"/> имеет приоритет.</translation>
 <translation id="3228969707346345236">Перевод не удался, так как страница уже написана на следующем языке: <ph name="LANGUAGE"/>.</translation>
+<translation id="7521387064766892559">JavaScript</translation>
+<translation id="8034522405403831421">Язык этой страницы: <ph name="SOURCE_LANGUAGE"/>. Перевести ее на <ph name="TARGET_LANGUAGE"/>?</translation>
 <translation id="8891727572606052622">Недопустимый режим работы прокси-сервера.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="7752995774971033316">Не управляется</translation>
@@ -137,9 +144,11 @@
 <translation id="3377188786107721145">Не удалось выполнить анализ политики</translation>
 <translation id="2270192940992995399">Не удалось найти статью</translation>
 <translation id="4726672564094551039">Повторно загрузить политики</translation>
+<translation id="9154176715500758432">Остаться на этой странице</translation>
 <translation id="2392959068659972793">Показывать правила, значения которых не заданы</translation>
 <translation id="5190835502935405962">Панель закладок</translation>
 <translation id="6965978654500191972">Устройство</translation>
+<translation id="5295309862264981122">Подтвердите переход</translation>
 <translation id="8249320324621329438">Время последней загрузки:</translation>
 <translation id="194030505837763158">Перейдите по ссылке: <ph name="LINK"/></translation>
 <translation id="1285320974508926690">Никогда не переводить этот сайт</translation>
@@ -150,6 +159,7 @@
 <translation id="9020542370529661692">Эта страница переведена на <ph name="TARGET_LANGUAGE"/>.</translation>
 <translation id="5631439013527180824">Токен устройства недействителен</translation>
 <translation id="560412284261940334">Управление устройствами не поддерживается</translation>
+<translation id="6512448926095770873">Покинуть эту страницу</translation>
 <translation id="1639239467298939599">Загрузка</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="4923417429809017348">Эта страница была автоматически переведена с неизвестного языка на <ph name="LANGUAGE_LANGUAGE"/></translation>
@@ -163,6 +173,8 @@
 <translation id="5509780412636533143">Управляемые закладки</translation>
 <translation id="8866481888320382733">Не удалось выполнить анализ настроек политики</translation>
 <translation id="6644283850729428850">Правило устарело.</translation>
+<translation id="1693754753824026215">Подтвердите действие на <ph name="SITE"/></translation>
+<translation id="4269787794583293679">(Не указано)</translation>
 <translation id="7988324688042446538">Закладки на компьютере</translation>
 <translation id="8488350697529856933">Объект применения</translation>
 <translation id="6165508094623778733">Подробнее...</translation>
@@ -171,7 +183,7 @@
 <translation id="8876793034577346603">Не удалось выполнить анализ конфигурации сети.</translation>
 <translation id="106701514854093668">Закладки на компьютере</translation>
 <translation id="6154808779448689242">Возвращенный токен не соответствует имеющемуся</translation>
-<translation id="7961015016161918242">еще нет</translation>
+<translation id="7961015016161918242">Нет</translation>
 <translation id="2835170189407361413">Очистить форму</translation>
 <translation id="6550675742724504774">Параметры</translation>
 <translation id="8804164990146287819">Политика конфиденциальности</translation>
@@ -184,8 +196,8 @@
 <translation id="2639739919103226564">Состояние:</translation>
 <translation id="1832546148887467272">Переключиться на <ph name="NEW_GOOGLE_HOST"/></translation>
 <translation id="5095208057601539847">Провинция</translation>
+<translation id="2581221116934462656">Хотите, чтобы <ph name="PRODUCT_NAME"/> всегда предлагал перевести этот сайт, когда обнаружит на его страницах <ph name="LANGUAGE_NAME"/>?</translation>
 <translation id="3934680773876859118">Не удалось загрузить документ PDF</translation>
-<translation id="1152021252151287493">Подтверждающая подпись недействительна.</translation>
 <translation id="6965382102122355670">ОК</translation>
 <translation id="2721148159707890343">Запрос выполнен успешно</translation>
 <translation id="2455981314101692989">На этой веб-странице отключено автоматическое заполнение формы.</translation>

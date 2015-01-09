@@ -1,6 +1,4 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="cs">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="cs">
 <translation id="2094750046714988961">Nástroj profiler nelze spustit, protože externí zařízení není připraveno</translation>
 <translation id="1256337885411059545">Video nelze přehrát</translation>
 <translation id="2520230379124234395">Nástroj profiler byl spuštěn</translation>

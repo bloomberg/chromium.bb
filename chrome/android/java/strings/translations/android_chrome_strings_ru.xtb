@@ -1,13 +1,13 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="ru">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="ru">
 <translation id="8588878054171169263">Сохранить изображение</translation>
 <translation id="7998918019931843664">Восстановить закрытую вкладку</translation>
-<translation id="4996978546172906250">Поделиться через</translation>
+<translation id="4996978546172906250">Способ отправки</translation>
+<translation id="6292937202013477045">Злоумышленники могут пытаться похитить ваши данные (например, пароли, сообщения или номера банковских карт) с сайтов домена <ph name="DOMAIN_NAME"/>.</translation>
 <translation id="346339498574870680">Скопировать URL изображения</translation>
 <translation id="6657585470893396449">Пароль</translation>
 <translation id="5578795271662203820">Найти это изображение в <ph name="SEARCH_ENGINE"/></translation>
 <translation id="6831043979455480757">Перевести</translation>
+<translation id="869891660844655955">Срок действия</translation>
 <translation id="7644305409888602715">Выполняется перевод на <ph name="SOURCE_LANGUAGE"/>…</translation>
 <translation id="7015922086425404465">Приобрести приложение в Google Play Маркете: <ph name="APP_ACTION"/>.</translation>
 <translation id="1491151370853475546">Обновить страницу</translation>
@@ -28,17 +28,24 @@
 <translation id="1966710179511230534">Обновите учетные данные</translation>
 <translation id="1623104350909869708">Запретить создание дополнительных диалоговых окон на этой странице</translation>
 <translation id="1426410128494586442">Да</translation>
+<translation id="5595485650161345191">Изменить адрес</translation>
 <translation id="8218346974737627104">Подтвердите вход</translation>
 <translation id="8853345339104747198">Вкладка &quot;<ph name="TAB_TITLE"/>&quot;</translation>
 <translation id="624558823898732418">Перевести на <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="8872441722924401214">Выберите сертификат</translation>
 <translation id="7791543448312431591">Добавить</translation>
+<translation id="8719023831149562936">Не удалось передать текущую вкладку</translation>
+<translation id="4378154925671717803">Телефон</translation>
 <translation id="3896036286668839683">Средство просмотра сертификатов</translation>
 <translation id="5039804452771397117">Разрешить</translation>
 <translation id="8583805026567836021">Удаление данных аккаунта</translation>
+<translation id="5860033963881614850">Выкл.</translation>
 <translation id="4250680216510889253">Нет</translation>
 <translation id="8073388330009372546">Открыть в новой вкладке</translation>
 <translation id="552553974213252141">Правильно ли извлечен текст?</translation>
+<translation id="5317780077021120954">Сохранить</translation>
+<translation id="2718352093833049315">Только Wi-Fi</translation>
+<translation id="7029809446516969842">Пароли</translation>
 <translation id="2414886740292270097">Темный</translation>
 <translation id="3927692899758076493">Без засечек</translation>
 <translation id="8730621377337864115">Готово</translation>
@@ -48,31 +55,43 @@
 <translation id="1807246157184219062">Светлый</translation>
 <translation id="7053983685419859001">Блокировать</translation>
 <translation id="8374821112118309944">Установите последнюю версию TalkBack.</translation>
+<translation id="8481940801237642152">Подключение к веб-сайту защищено, но посторонний пользователь может изменить вид страницы</translation>
 <translation id="2593272815202181319">Моноширинный</translation>
+<translation id="4807098396393229769">Имя владельца</translation>
 <translation id="656628257199996201">Всегда переводить <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="2748463065602559597">Вы просматриваете безопасную страницу Google Chrome.</translation>
 <translation id="9137013805542155359">Показать оригинал</translation>
 <translation id="4543661749405994812">Скопировать адрес эл. почты</translation>
+<translation id="5659593005791499971">Электронная почта</translation>
+<translation id="8428213095426709021">Настройки</translation>
 <translation id="5684874026226664614">Не удалось перевести страницу</translation>
+<translation id="10614374240317010">Сайты, пароли для которых не сохраняются</translation>
+<translation id="2903493209154104877">Адреса</translation>
 <translation id="8503813439785031346">Имя пользователя</translation>
 <translation id="2532336938189706096">Веб-версия</translation>
+<translation id="6571070086367343653">Изменить данные карты</translation>
+<translation id="7080851568148064063">Добавить на главный экран</translation>
 <translation id="4619298195800598081">Оригинал в новой вкладке</translation>
 <translation id="4002066346123236978">Название</translation>
 <translation id="3254409185687681395">Добавить страницу в закладки</translation>
 <translation id="907015151729920253">Смарт-карта</translation>
 <translation id="5016205925109358554">С засечками</translation>
 <translation id="3063601790762993062">Сохранить видео</translation>
+<translation id="8106211421800660735">Номер карты</translation>
 <translation id="6042308850641462728">Подробнее...</translation>
 <translation id="7267430310003164111">Ссылка на приложение в Google Play Маркете. Название приложения: <ph name="APP_NAME"/>.  Средняя оценка: <ph name="APP_RATING"/>.</translation>
 <translation id="4148957013307229264">Установка...</translation>
 <translation id="3992315671621218278">Сохранить ссылку</translation>
-<translation id="8034522405403831421">Язык этой страницы: <ph name="SOURCE_LANGUAGE"/>. Перевести ее на <ph name="TARGET_LANGUAGE"/>?</translation>
+<translation id="2476578072172137802">Настройки сайта</translation>
 <translation id="4195643157523330669">Открыть в новой вкладке</translation>
 <translation id="651048280540227067">Закрыть меню</translation>
 <translation id="3089395242580810162">Открыть в режиме инкогнито</translation>
+<translation id="6981982820502123353">Специальные возможности</translation>
 <translation id="8725066075913043281">Повторить попытку</translation>
 <translation id="8909135823018751308">Поделиться...</translation>
+<translation id="654446541061731451">Выберите вкладку для передачи</translation>
 <translation id="4269820728363426813">Копировать адрес ссылки</translation>
+<translation id="8261506727792406068">Удалить</translation>
 <translation id="4510973599275542560">Отмена</translation>
 <translation id="1206892813135768548">Копировать текст ссылки</translation>
 <translation id="9154176715500758432">Остаться на этой странице</translation>
@@ -81,22 +100,32 @@
 <translation id="6671495933530132209">Копировать изображение</translation>
 <translation id="8209050860603202033">Открыть изображение</translation>
 <translation id="2501278716633472235">Назад</translation>
+<translation id="8941248009481596111">Подключение к веб-сайту защищено</translation>
 <translation id="1285320974508926690">Никогда не переводить этот сайт</translation>
 <translation id="5164482624172255778">Хотите, чтобы Google Chrome всегда предлагал перевести этот сайт, когда на его страницах используется <ph name="LANGUAGE"/>?</translation>
 <translation id="8528538445849828817">Исходный язык: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="4881695831933465202">Открыть</translation>
 <translation id="6512448926095770873">Покинуть эту страницу</translation>
+<translation id="5565871407246142825">Банковские карты</translation>
 <translation id="7947953824732555851">Принять и войти</translation>
+<translation id="2612676031748830579">Номер карты</translation>
 <translation id="6333140779060797560">Отправить с помощью <ph name="APPLICATION"/></translation>
 <translation id="6040143037577758943">Закрыть</translation>
+<translation id="2888126860611144412">О браузере Chrome</translation>
+<translation id="5138299137310274655">Язык этой страницы – <ph name="SOURCE_LANGUAGE"/>. Перевести ее на <ph name="TARGET_LANGUAGE"/>?</translation>
+<translation id="7649070708921625228">Справка</translation>
 <translation id="969096075394517431">Изменить языки</translation>
 <translation id="5032574515228824816">Запрос</translation>
-<translation id="7961015016161918242">еще нет</translation>
+<translation id="6165508094623778733">Подробнее...</translation>
+<translation id="7961015016161918242">Нет</translation>
 <translation id="497421865427891073">Вперед</translation>
 <translation id="4056223980640387499">Сепия</translation>
 <translation id="8310344678080805313">Обычные вкладки</translation>
 <translation id="6277522088822131679">Не удалось распечатать страницу. Повторите попытку.</translation>
+<translation id="7634554953375732414">Подключение к веб-сайту не защищено</translation>
+<translation id="6612358246767739896">Защищенное содержание</translation>
 <translation id="1742134235943978220">Переведено на <ph name="TARGET_LANGUAGE"/>.</translation>
+<translation id="5916664084637901428">ВКЛ</translation>
 <translation id="6965382102122355670">ОК</translation>
 <translation id="7561196759112975576">Всегда</translation>
 </translationbundle>

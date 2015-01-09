@@ -1,6 +1,4 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="zh-TW">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="zh-TW">
 <translation id="7485870689360869515">找不到任何資料。</translation>
 <translation id="3884278016824448484">裝置識別碼發生衝突</translation>
 <translation id="6779575937362063477">Google 電子錢包不支援此類型卡片，請選取其他卡片。</translation>
@@ -12,6 +10,7 @@
 <translation id="1339601241726513588">註冊網域：</translation>
 <translation id="7298195798382681320">建議採用</translation>
 <translation id="4058922952496707368">鍵「<ph name="SUBKEY"/>」：<ph name="ERROR"/></translation>
+<translation id="6980028882292583085">JavaScript 通知</translation>
 <translation id="5299298092464848405">解析政策時發生錯誤</translation>
 <translation id="6628463337424475685"><ph name="ENGINE"/> 搜尋</translation>
 <translation id="6831043979455480757">翻譯</translation>
@@ -24,6 +23,7 @@
 <translation id="2958431318199492670">網路設定未遵循 ONC 標準，系統可能無法匯入部分設定。</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="277499241957683684">沒有裝置紀錄</translation>
+<translation id="1491151370853475546">重新載入這個網頁</translation>
 <translation id="8553075262323480129">無法判定網頁的語言，翻譯作業失敗。</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="1103523840287552314">一律翻譯<ph name="LANGUAGE"/></translation>
@@ -44,6 +44,7 @@
 <translation id="3380365263193509176">未知的錯誤</translation>
 <translation id="112840717907525620">政策快取正確</translation>
 <translation id="3452404311384756672">擷取間隔：</translation>
+<translation id="409504436206021213">不要重新載入</translation>
 <translation id="7441627299479586546">政策主體有誤</translation>
 <translation id="3885155851504623709">轄區</translation>
 <translation id="6973656660372572881">已指定固定的 Proxy 伺服器和 .pac 指令碼網址。</translation>
@@ -52,6 +53,7 @@
 <translation id="3667681724235208644">查看原始網頁</translation>
 <translation id="4079302484614802869">Proxy 設定已設為使用 .pac 指令碼網址，而非固定的 Proxy 伺服器。</translation>
 <translation id="5540224163453853">找不到要求的文章。</translation>
+<translation id="333371639341676808">防止此網頁產生其他對話方塊。</translation>
 <translation id="5523118979700054094">政策名稱</translation>
 <translation id="7791543448312431591">新增</translation>
 <translation id="2053553514270667976">郵遞區號</translation>
@@ -68,6 +70,7 @@
 <translation id="2367567093518048410">等級</translation>
 <translation id="7977590112176369853">&lt;輸入查詢&gt;</translation>
 <translation id="7610193165460212391">值超出 <ph name="VALUE"/> 的範圍。</translation>
+<translation id="8311778656528046050">您確定要重新載入這個網頁？</translation>
 <translation id="370665806235115550">載入中…</translation>
 <translation id="2096368010154057602">省</translation>
 <translation id="4258748452823770588">簽名有誤</translation>
@@ -95,11 +98,14 @@
 <translation id="6445051938772793705">國家/地區</translation>
 <translation id="5031870354684148875">關於「Google 翻譯」</translation>
 <translation id="1152921474424827756">存取 <ph name="URL"/> 的<ph name="BEGIN_LINK"/>頁庫存檔副本<ph name="END_LINK"/></translation>
+<translation id="8201077131113104583">擴充功能 (ID：「<ph name="EXTENSION_ID"/>」) 的更新網址無效。</translation>
 <translation id="6891596781022320156">系統不支援這項政策的層級。</translation>
 <translation id="2025186561304664664">Proxy 已設為自動設定。</translation>
 <translation id="1853748787962613237">無法顯示文章。</translation>
 <translation id="5455374756549232013">政策時間戳記有誤</translation>
+<translation id="2025623846716345241">確認重新載入</translation>
 <translation id="1962204205936693436"><ph name="DOMAIN"/> 書籤</translation>
+<translation id="111844081046043029">您確定要離開此網頁嗎?</translation>
 <translation id="1973335181906896915">序列化錯誤</translation>
 <translation id="5989320800837274978">沒有指定固定的 Proxy 伺服器和 .pac 指令碼網址。</translation>
 <translation id="7805768142964895445">狀態</translation>
@@ -110,12 +116,13 @@
 <translation id="7956713633345437162">行動版書籤</translation>
 <translation id="5089810972385038852">州</translation>
 <translation id="647261751007945333">裝置政策</translation>
-<translation id="678528074488531090">驗證錯誤：<ph name="VALIDATION_ERROR"/>。</translation>
 <translation id="213826338245044447">行動版書籤</translation>
 <translation id="8571890674111243710">正在將網頁翻譯成<ph name="LANGUAGE"/>...</translation>
 <translation id="4117700440116928470">系統不支援這項政策的範圍。</translation>
 <translation id="2114841414352855701">由於政策被「<ph name="POLICY_NAME"/>」覆寫了，因此遭到略過。</translation>
 <translation id="3228969707346345236">網頁已經是<ph name="LANGUAGE"/>，翻譯作業失敗。</translation>
+<translation id="7521387064766892559">JavaScript</translation>
+<translation id="8034522405403831421">這個網頁的內容是<ph name="SOURCE_LANGUAGE"/>，需要翻譯成<ph name="TARGET_LANGUAGE"/>嗎？</translation>
 <translation id="8891727572606052622">Proxy 模式無效。</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="7752995774971033316">未管理</translation>
@@ -137,9 +144,11 @@
 <translation id="3377188786107721145">政策解析錯誤</translation>
 <translation id="2270192940992995399">找不到文章。</translation>
 <translation id="4726672564094551039">重新載入政策</translation>
+<translation id="9154176715500758432">停留在此頁</translation>
 <translation id="2392959068659972793">顯示尚未設定任何值的政策</translation>
 <translation id="5190835502935405962">書籤列</translation>
 <translation id="6965978654500191972">裝置</translation>
+<translation id="5295309862264981122">確認瀏覽</translation>
 <translation id="8249320324621329438">上次擷取時間：</translation>
 <translation id="194030505837763158">前往 <ph name="LINK"/></translation>
 <translation id="1285320974508926690">一律不翻譯此網站</translation>
@@ -150,6 +159,7 @@
 <translation id="9020542370529661692">此網頁內容已翻譯成<ph name="TARGET_LANGUAGE"/></translation>
 <translation id="5631439013527180824">裝置管理符記無效</translation>
 <translation id="560412284261940334">系統不支援管理</translation>
+<translation id="6512448926095770873">離開此頁</translation>
 <translation id="1639239467298939599">載入中</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="4923417429809017348">系統已將此網頁從不明語言翻譯成<ph name="LANGUAGE_LANGUAGE"/></translation>
@@ -163,6 +173,8 @@
 <translation id="5509780412636533143">受管理書籤</translation>
 <translation id="8866481888320382733">解析政策設定時發生錯誤</translation>
 <translation id="6644283850729428850">這項政策已遭取代。</translation>
+<translation id="1693754753824026215"><ph name="SITE"/> 的網頁顯示：</translation>
+<translation id="4269787794583293679">(沒有使用者名稱)</translation>
 <translation id="7988324688042446538">電腦版書籤</translation>
 <translation id="8488350697529856933">適用對象</translation>
 <translation id="6165508094623778733">瞭解詳情</translation>
@@ -184,8 +196,8 @@
 <translation id="2639739919103226564">狀態：</translation>
 <translation id="1832546148887467272">切換至<ph name="NEW_GOOGLE_HOST"/></translation>
 <translation id="5095208057601539847">省</translation>
+<translation id="2581221116934462656">您下次要讓 <ph name="PRODUCT_NAME"/> 翻譯這個網站的<ph name="LANGUAGE_NAME"/>網頁嗎？</translation>
 <translation id="3934680773876859118">無法載入 PDF 文件</translation>
-<translation id="1152021252151287493">驗證簽名錯誤。</translation>
 <translation id="6965382102122355670">確定</translation>
 <translation id="2721148159707890343">要求成功</translation>
 <translation id="2455981314101692989">這個網頁已停用這個表單的自動填入功能。</translation>

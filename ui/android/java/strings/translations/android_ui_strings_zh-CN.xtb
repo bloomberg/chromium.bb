@@ -1,6 +1,4 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="zh-CN">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="zh-CN">
 <translation id="6017514345406065928">绿色</translation>
 <translation id="376869769528291915">:</translation>
 <translation id="6015796118275082299">年</translation>
@@ -25,6 +23,7 @@
 <translation id="6315516427814392808">内存不足，无法完成上一操作</translation>
 <translation id="2732718972699418926">上午</translation>
 <translation id="6042308850641462728">更多</translation>
+<translation id="6820686453637990663">CVC</translation>
 <translation id="7535087603100972091">值</translation>
 <translation id="161042844686301425">青色</translation>
 <translation id="1822429046913737220">上午/下午</translation>

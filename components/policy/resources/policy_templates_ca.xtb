@@ -1,6 +1,4 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="ca">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="ca">
 <translation id="1503959756075098984">ID de les extensions i URL de les actualitzacions que s'instal·laran en silenci</translation>
 <translation id="793134539373873765">Permet especificar si s'utilitzarà la tecnologia d'igual a igual (P2P) per a les càrregues útils d'actualització del sistema operatiu. Si el valor s'estableix com a True, els dispositius compartiran i provaran de consumir les càrregues útils d'actualització a la xarxa LAN, amb la qual cosa és possible que es redueixi l'ús i la congestió de l'amplada de banda d'Internet. Si la càrrega útil d'actualització no està disponible a la xarxa LAN, el dispositiu farà les baixades des d'un servidor d'actualitzacions. Si el valor s'estableix com a False o si no es configura, no es farà servir P2P.</translation>
 <translation id="2463365186486772703">Configuració regional de l'aplicació</translation>
@@ -775,11 +773,11 @@ Cada entrada de la llista especifica un identificador, que s'utilitza internamen
 Si activeu aquest paràmetre, SafeSearch de Cerca de Google sempre estarà activa.
 
 Si desactiveu aquest paràmetre o si no definiu cap valor, SafeSearch de Cerca de Google no s'executarà.</translation>
-<translation id="6017568866726630990">Mostra el diàleg d'impressió del sistema en comptes de la visualització prèvia d'impressió.
+<translation id="6017568866726630990">Mostra el diàleg d'impressió del sistema en comptes de la previsualització d'impressió.
 
-Si s'activa aquest paràmetre, <ph name="PRODUCT_NAME"/> obrirà el diàleg d'impressió del sistema en comptes de la visualització prèvia integrada quan un usuari sol·liciti la impressió d'una pàgina.
+Si s'activa aquest paràmetre, <ph name="PRODUCT_NAME"/> obrirà el diàleg d'impressió del sistema en comptes de la previsualització integrada quan un usuari sol·liciti la impressió d'una pàgina.
 
-Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran que aparegui la pantalla de visualització prèvia d'impressió.</translation>
+Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran que aparegui la pantalla de previsualització d'impressió.</translation>
 <translation id="7933141401888114454">Activa la creació d'usuaris supervisats.</translation>
 <translation id="2824715612115726353">Activa el mode d'incògnit</translation>
 <translation id="1057535219415338480">Permet la predicció de xarxa a <ph name="PRODUCT_NAME"/> i impedeix que els usuaris canviïn aquesta configuració.
@@ -950,7 +948,7 @@ Aquesta política s'ignora en els comptes d'usuari normals.</translation>
       Si aquesta política es defineix com a &quot;true&quot;, les icones s'amaguen.
 
       Si aquesta política es defineix com a &quot;false&quot; o no es configura, les icones estan visibles.</translation>
-<translation id="5085647276663819155">Desactiva la visualització prèvia d'impressió</translation>
+<translation id="5085647276663819155">Desactiva la previsualització d'impressió</translation>
 <translation id="8672321184841719703">Versió objectiu de l'actualització automàtica</translation>
 <translation id="553658564206262718">Configuració de la gestió de l'energia quan l'usuari està inactiu
 
