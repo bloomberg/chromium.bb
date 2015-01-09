@@ -1132,14 +1132,6 @@ const Experiment kExperiments[] = {
   },
 #endif
   {
-    "impl-side-painting",
-    IDS_FLAGS_IMPL_SIDE_PAINTING_NAME,
-    IDS_FLAGS_IMPL_SIDE_PAINTING_DESCRIPTION,
-    kOsAll,
-    ENABLE_DISABLE_VALUE_TYPE(switches::kEnableImplSidePainting,
-                              switches::kDisableImplSidePainting)
-  },
-  {
     "lcd-text-aa",
     IDS_FLAGS_LCD_TEXT_NAME,
     IDS_FLAGS_LCD_TEXT_DESCRIPTION,
