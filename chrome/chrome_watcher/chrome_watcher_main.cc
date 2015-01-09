@@ -54,7 +54,9 @@ BOOL CALLBACK ConsoleCtrlHandler(DWORD ctl_type) {
 
 // The main entry point to the watcher, declared as extern "C" to avoid name
 // mangling.
-extern "C" int WatcherMain(const base::char16* registry_path) {
+extern "C" int WatcherMain(const base::char16* registry_path,
+                           HANDLE process_handle) {
+  base::Process process(process_handle);
   // The exit manager is in charge of calling the dtors of singletons.
   base::AtExitManager exit_manager;
   // Initialize the commandline singleton from the environment.
@@ -71,12 +73,11 @@ extern "C" int WatcherMain(const base::char16* registry_path) {
   browser_watcher::ExitCodeWatcher exit_code_watcher(registry_path);
   int ret = 1;
   // Attempt to wait on our parent process, and record its exit status.
-  if (exit_code_watcher.ParseArguments(
-        *base::CommandLine::ForCurrentProcess())) {
+  if (exit_code_watcher.Initialize(process.Duplicate())) {
     // Set up a console control handler, and provide it the data it needs
     // to record into the browser's exit funnel.
     HandlerData data;
-    data.process = exit_code_watcher.process().Handle();
+    data.process = process.Handle();
     data.registry_path = registry_path;
     g_handler_data = &data;
     ::SetConsoleCtrlHandler(&ConsoleCtrlHandler, TRUE /* Add */);
@@ -85,7 +86,7 @@ extern "C" int WatcherMain(const base::char16* registry_path) {
     exit_code_watcher.WaitForExit();
 
     browser_watcher::ExitFunnel funnel;
-    funnel.Init(registry_path, exit_code_watcher.process().Handle());
+    funnel.Init(registry_path, process.Handle());
     funnel.RecordEvent(L"BrowserExit");
 
     // Chrome/content exit codes are currently in the range of 0-28.

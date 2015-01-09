@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_BROWSER_WATCHER_WATCHER_MAIN_API_WIN_H_
 #define COMPONENTS_BROWSER_WATCHER_WATCHER_MAIN_API_WIN_H_
 
+#include <Windows.h>
 #include "base/files/file_path.h"
 #include "base/strings/string16.h"
 
@@ -16,9 +17,10 @@ extern const base::FilePath::CharType kWatcherDll[];
 extern const char kWatcherDLLEntrypoint[];
 
 // The type of the watcher DLL's main entry point.
-// The |registry_path| parameter is the path under HKCU where the exit
-// codes will be written.
-typedef int (*WatcherMainFunction)(const base::char16* registry_path);
+// Watches |parent_process| and records its exit code under |registry_path| in
+// HKCU. Takes ownership of |parent_process|.
+typedef int (*WatcherMainFunction)(const base::char16* registry_path,
+                                   HANDLE parent_process);
 
 }  // namespace browser_watcher
 

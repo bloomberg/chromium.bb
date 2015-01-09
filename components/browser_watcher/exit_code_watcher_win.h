@@ -10,31 +10,23 @@
 #include "base/time/time.h"
 #include "base/win/scoped_handle.h"
 
-namespace base {
-class CommandLine;
-}
-
 namespace browser_watcher {
 
 // Watches for the exit code of a process and records it in a given registry
 // location.
 class ExitCodeWatcher {
  public:
-  // Name of the switch used for the parent process handle.
-  static const char kParenthHandleSwitch[];
-
   // Initialize the watcher with a registry path.
   explicit ExitCodeWatcher(const base::char16* registry_path);
   ~ExitCodeWatcher();
 
   // Initializes from arguments on |cmd_line|, returns true on success.
-  // This function expects the process handle indicated by kParentHandleSwitch
-  // in |cmd_line| to be open with sufficient privilege to wait and retrieve
-  // the process exit code.
+  // This function expects |process| to be open with sufficient privilege to
+  // wait and retrieve the process exit code.
   // It checks the handle for validity and takes ownership of it.
   // The intent is for this handle to be inherited into the watcher process
   // hosting the instance of this class.
-  bool ParseArguments(const base::CommandLine& cmd_line);
+  bool Initialize(base::Process process);
 
   // Waits for the process to exit and records its exit code in registry.
   // This is a blocking call.

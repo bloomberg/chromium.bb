@@ -62,6 +62,8 @@
         'app/chrome_exe_main_mac.cc',
         'app/chrome_exe_main_win.cc',
         'app/chrome_exe_resource.h',
+        'app/chrome_watcher_command_line_win.cc',
+        'app/chrome_watcher_command_line_win.h',
         'app/client_util.cc',
         'app/client_util.h',
         'app/signature_validator_win.cc',

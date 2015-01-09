@@ -22,7 +22,7 @@ namespace browser_watcher {
 
 namespace {
 
-const base::char16 kRegistryPath[] = L"Software\\BrowserWatcherTest";
+const base::char16 kRegistryPath[] = L"Software\\ExitCodeWatcherTest";
 
 MULTIPROCESS_TEST_MAIN(Sleeper) {
   // Sleep forever - the test harness will kill this process to give it an
@@ -65,18 +65,6 @@ class ScopedSleeperProcess {
     is_killed_ = true;
   }
 
-  void GetNewHandle(base::ProcessHandle* output) {
-    ASSERT_TRUE(process_.IsValid());
-
-    ASSERT_TRUE(DuplicateHandle(::GetCurrentProcess(),
-                                process_.Handle(),
-                                ::GetCurrentProcess(),
-                                output,
-                                0,
-                                FALSE,
-                                DUPLICATE_SAME_ACCESS));
-  }
-
   const base::Process& process() const { return process_; }
 
  private:
@@ -84,13 +72,13 @@ class ScopedSleeperProcess {
   bool is_killed_;
 };
 
-class BrowserWatcherTest : public testing::Test {
+class ExitCodeWatcherTest : public testing::Test {
  public:
   typedef testing::Test Super;
 
   static const int kExitCode = 0xCAFEBABE;
 
-  BrowserWatcherTest() :
+  ExitCodeWatcherTest() :
       cmd_line_(base::CommandLine::NO_PROGRAM),
       process_(base::kNullProcessHandle) {
   }
@@ -110,10 +98,11 @@ class BrowserWatcherTest : public testing::Test {
     Super::TearDown();
   }
 
-  void OpenSelfWithAccess(uint32 access) {
-    ASSERT_EQ(base::kNullProcessHandle, process_);
-    ASSERT_TRUE(base::OpenProcessHandleWithAccess(
-        base::GetCurrentProcId(), access, &process_));
+  base::Process OpenSelfWithAccess(uint32 access) {
+    HANDLE self = nullptr;
+    EXPECT_TRUE(base::OpenProcessHandleWithAccess(base::GetCurrentProcId(),
+                                                  access, &self));
+    return base::Process(self);
   }
 
   void VerifyWroteExitCode(base::ProcessId proc_id, int exit_code) {
@@ -142,76 +131,46 @@ class BrowserWatcherTest : public testing::Test {
 
 }  // namespace
 
-TEST_F(BrowserWatcherTest, ExitCodeWatcherInvalidCmdLineFailsInit) {
-  ExitCodeWatcher watcher(kRegistryPath);
-
-  // An empty command line should fail.
-  EXPECT_FALSE(watcher.ParseArguments(cmd_line_));
-
-  // A non-numeric parent-handle argument should fail.
-  cmd_line_.AppendSwitchASCII(ExitCodeWatcher::kParenthHandleSwitch, "asdf");
-  EXPECT_FALSE(watcher.ParseArguments(cmd_line_));
-}
-
-TEST_F(BrowserWatcherTest, ExitCodeWatcherInvalidHandleFailsInit) {
+TEST_F(ExitCodeWatcherTest, ExitCodeWatcherInvalidHandleFailsInit) {
   ExitCodeWatcher watcher(kRegistryPath);
 
   // A waitable event has a non process-handle.
-  base::WaitableEvent event(false, false);
+  base::Process event(::CreateEvent(NULL, false, false, NULL));
 
   // A non-process handle should fail.
-  cmd_line_.AppendSwitchASCII(ExitCodeWatcher::kParenthHandleSwitch,
-                              base::StringPrintf("%d", event.handle()));
-  EXPECT_FALSE(watcher.ParseArguments(cmd_line_));
+  EXPECT_FALSE(watcher.Initialize(event.Pass()));
 }
 
-TEST_F(BrowserWatcherTest, ExitCodeWatcherNoAccessHandleFailsInit) {
+TEST_F(ExitCodeWatcherTest, ExitCodeWatcherNoAccessHandleFailsInit) {
   ExitCodeWatcher watcher(kRegistryPath);
 
   // Open a SYNCHRONIZE-only handle to this process.
-  ASSERT_NO_FATAL_FAILURE(OpenSelfWithAccess(SYNCHRONIZE));
+  base::Process self = OpenSelfWithAccess(SYNCHRONIZE);
+  ASSERT_TRUE(self.IsValid());
 
   // A process handle with insufficient access should fail.
-  cmd_line_.AppendSwitchASCII(ExitCodeWatcher::kParenthHandleSwitch,
-                              base::StringPrintf("%d", process_));
-  EXPECT_FALSE(watcher.ParseArguments(cmd_line_));
+  EXPECT_FALSE(watcher.Initialize(self.Pass()));
 }
 
-TEST_F(BrowserWatcherTest, ExitCodeWatcherSucceedsInit) {
+TEST_F(ExitCodeWatcherTest, ExitCodeWatcherSucceedsInit) {
   ExitCodeWatcher watcher(kRegistryPath);
 
   // Open a handle to this process with sufficient access for the watcher.
-  ASSERT_NO_FATAL_FAILURE(
-      OpenSelfWithAccess(SYNCHRONIZE | PROCESS_QUERY_INFORMATION));
+  base::Process self =
+      OpenSelfWithAccess(SYNCHRONIZE | PROCESS_QUERY_INFORMATION);
+  ASSERT_TRUE(self.IsValid());
 
   // A process handle with sufficient access should succeed init.
-  cmd_line_.AppendSwitchASCII(ExitCodeWatcher::kParenthHandleSwitch,
-                              base::StringPrintf("%d", process_));
-  EXPECT_TRUE(watcher.ParseArguments(cmd_line_));
-
-  ASSERT_EQ(process_, watcher.process().Handle());
-
-  // The watcher takes ownership of the handle, make sure it's not
-  // double-closed.
-  process_ = base::kNullProcessHandle;
+  EXPECT_TRUE(watcher.Initialize(self.Pass()));
 }
 
-TEST_F(BrowserWatcherTest, ExitCodeWatcherOnExitedProcess) {
+TEST_F(ExitCodeWatcherTest, ExitCodeWatcherOnExitedProcess) {
   ScopedSleeperProcess sleeper;
   ASSERT_NO_FATAL_FAILURE(sleeper.Launch());
 
-  // Create a new handle to the sleeper process. This handle will leak in
-  // the case this test fails. A ScopedHandle cannot be used here, as the
-  // ownership would momentarily be held by two of them, which is disallowed.
-  base::ProcessHandle sleeper_handle = base::kNullProcessHandle;
-  sleeper.GetNewHandle(&sleeper_handle);
-
   ExitCodeWatcher watcher(kRegistryPath);
 
-  cmd_line_.AppendSwitchASCII(ExitCodeWatcher::kParenthHandleSwitch,
-                              base::StringPrintf("%d", sleeper_handle));
-  EXPECT_TRUE(watcher.ParseArguments(cmd_line_));
-  ASSERT_EQ(sleeper_handle, watcher.process().Handle());
+  EXPECT_TRUE(watcher.Initialize(sleeper.process().Duplicate()));
 
   // Verify that the watcher wrote a sentinel for the process.
   VerifyWroteExitCode(sleeper.process().pid(), STILL_ACTIVE);

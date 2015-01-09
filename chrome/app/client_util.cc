@@ -18,8 +18,10 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/version.h"
+#include "base/win/scoped_handle.h"
 #include "base/win/windows_version.h"
 #include "chrome/app/chrome_crash_reporter_client.h"
+#include "chrome/app/chrome_watcher_command_line_win.h"
 #include "chrome/app/client_util.h"
 #include "chrome/app/image_pre_reader_win.h"
 #include "chrome/common/chrome_constants.h"
@@ -177,6 +179,11 @@ int MainDllLoader::Launch(HINSTANCE instance) {
   }
 
   if (process_type_ == "watcher") {
+    base::win::ScopedHandle parent_process =
+        InterpretChromeWatcherCommandLine(cmd_line);
+    if (!parent_process.IsValid())
+      return chrome::RESULT_CODE_UNSUPPORTED_PARAM;
+
     // Intentionally leaked.
     HMODULE watcher_dll = Load(&version, &file);
     if (!watcher_dll)
@@ -186,8 +193,8 @@ int MainDllLoader::Launch(HINSTANCE instance) {
         reinterpret_cast<browser_watcher::WatcherMainFunction>(
             ::GetProcAddress(watcher_dll,
                              browser_watcher::kWatcherDLLEntrypoint));
-
-    return watcher_main(chrome::kBrowserExitCodesRegistryPath);
+    return watcher_main(chrome::kBrowserExitCodesRegistryPath,
+                        parent_process.Take());
   }
 
   // Initialize the sandbox services.
@@ -255,10 +262,8 @@ void ChromeDllLoader::OnBeforeLaunch(const std::string& process_type,
       base::char16 exe_path[MAX_PATH];
       ::GetModuleFileNameW(nullptr, exe_path, arraysize(exe_path));
 
-      base::CommandLine cmd_line = base::CommandLine(base::FilePath(exe_path));
-      cmd_line.AppendSwitchASCII(switches::kProcessType, "watcher");
-      browser_watcher::WatcherClient watcher_client(cmd_line);
-
+      browser_watcher::WatcherClient watcher_client(base::Bind(
+          &GenerateChromeWatcherCommandLine, base::FilePath(exe_path)));
       watcher_client.LaunchWatcher();
     }
   }
