@@ -4,7 +4,7 @@
 <meta name="viewport" content="width=device-width, user-scalable=no">
 <script>
 function insertBackground() {
-  var video = templateData['video_id'];
+  var video = loadTimeData.getValue("video_id");
   document.body.style.backgroundImage = "url('http://img.youtube.com/vi/" + video + "/0.jpg')";
 }
 </script>
