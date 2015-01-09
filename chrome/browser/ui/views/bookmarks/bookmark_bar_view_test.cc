@@ -724,7 +724,7 @@ class BookmarkBarViewTest5 : public BookmarkBarViewEventTestBase {
 };
 
 #if !defined(OS_WIN)  // flaky http://crbug.com/400578
-VIEW_TEST(BookmarkBarViewTest5, MAYBE(DND))
+VIEW_TEST(BookmarkBarViewTest5, DND)
 #endif
 
 // Tests holding mouse down on overflow button, dragging such that menu pops up
