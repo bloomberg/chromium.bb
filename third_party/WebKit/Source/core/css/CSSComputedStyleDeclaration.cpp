@@ -565,7 +565,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
     if (!style)
         return nullptr;
 
-    RefPtr<CSSValue> value = RenderStyleCSSValueMapping::get(propertyID, *style, renderer, styledNode, m_allowVisitedStyle);
+    RefPtrWillBeRawPtr<CSSValue> value = RenderStyleCSSValueMapping::get(propertyID, *style, renderer, styledNode, m_allowVisitedStyle);
     if (value)
         return value;
 

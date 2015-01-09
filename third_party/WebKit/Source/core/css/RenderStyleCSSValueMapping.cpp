@@ -1264,7 +1264,7 @@ PassRefPtrWillBeRawPtr<CSSValue> RenderStyleCSSValueMapping::valueForFilter(cons
     return list.release();
 }
 
-PassRefPtr<CSSValue> RenderStyleCSSValueMapping::get(CSSPropertyID propertyID, const RenderStyle& style, const RenderObject* renderer, Node* styledNode, bool allowVisitedStyle)
+PassRefPtrWillBeRawPtr<CSSValue> RenderStyleCSSValueMapping::get(CSSPropertyID propertyID, const RenderStyle& style, const RenderObject* renderer, Node* styledNode, bool allowVisitedStyle)
 {
     const SVGRenderStyle& svgStyle = style.svgStyle();
     propertyID = CSSProperty::resolveDirectionAwareProperty(propertyID, style.direction(), style.writingMode());
