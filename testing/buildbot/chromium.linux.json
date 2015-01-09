@@ -122,7 +122,8 @@
       },
       "url_unittests",
       "views_unittests",
-      "wm_unittests"
+      "wm_unittests",
+      "skia_unittests"
     ],
     "scripts": [
       {
@@ -262,7 +263,8 @@
       },
       "url_unittests",
       "views_unittests",
-      "wm_unittests"
+      "wm_unittests",
+      "skia_unittests"
     ],
     "scripts": [
       {
@@ -398,7 +400,8 @@
       },
       "url_unittests",
       "views_unittests",
-      "wm_unittests"
+      "wm_unittests",
+      "skia_unittests"
     ],
     "scripts": [
       {
@@ -440,7 +443,8 @@
       "sql_unittests",
       "sync_unit_tests",
       "ui_base_unittests",
-      "unit_tests"
+      "unit_tests",
+      "skia_unittests"
     ]
   }
 }
