@@ -366,6 +366,8 @@ static int r6_surface_init_2d(struct radeon_surface_manager *surf_man,
     xalign = (surf_man->hw_info.group_bytes * surf_man->hw_info.num_banks) /
              (tilew * surf->bpe * surf->nsamples);
     xalign = MAX2(tilew * surf_man->hw_info.num_banks, xalign);
+    if (surf->flags & RADEON_SURF_FMASK)
+	xalign = MAX2(128, xalign);
     yalign = tilew * surf_man->hw_info.num_pipes;
     if (surf->flags & RADEON_SURF_SCANOUT) {
         xalign = MAX2((surf->bpe == 1) ? 64 : 32, xalign);
