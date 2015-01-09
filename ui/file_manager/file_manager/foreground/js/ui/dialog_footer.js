@@ -57,6 +57,9 @@ function DialogFooter(dialogType, container, filenameInput) {
 
   // Initialize the element styles.
   container.classList.add('button-panel');
+
+  // Set initial label for OK button. The label can be updated dynamically
+  // depending on dialog types.
   this.okButton.textContent = DialogFooter.getOKButtonLabel_(dialogType);
 
   // Register event handlers.

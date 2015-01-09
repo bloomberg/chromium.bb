@@ -128,6 +128,14 @@ function DialogActionController(
  * @private
  */
 DialogActionController.prototype.processOKActionForSaveDialog_ = function() {
+  var selection = this.fileSelectionHandler_.selection;
+
+  // If OK action is clicked when a directory is selected, open the directory.
+  if (selection.directoryCount === 1 && selection.fileCount === 0) {
+    this.directoryModel_.changeDirectoryEntry(selection.entries[0]);
+    return;
+  }
+
   // Save-as doesn't require a valid selection from the list, since
   // we're going to take the filename from the text input.
   var filename = this.dialogFooter_.filenameInput.value;
@@ -443,9 +451,15 @@ DialogActionController.prototype.updateOkButton_ = function() {
   }
 
   if (this.dialogType_ === DialogType.SELECT_SAVEAS_FILE) {
-    this.dialogFooter_.okButton.disabled =
-        this.directoryModel_.isReadOnly() ||
-        !this.dialogFooter_.filenameInput.value;
+    if (selection.directoryCount === 1 && selection.fileCount === 0) {
+      this.dialogFooter_.okButton.textContent = str('OPEN_LABEL');
+      this.dialogFooter_.okButton.disabled = false;
+    } else {
+      this.dialogFooter_.okButton.textContent = str('SAVE_LABEL');
+      this.dialogFooter_.okButton.disabled =
+          this.directoryModel_.isReadOnly() ||
+          !this.dialogFooter_.filenameInput.value;
+    }
     return;
   }
 
