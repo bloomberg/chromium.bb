@@ -351,6 +351,26 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_SIGNOUT_MANAGED_ACCOUNT_MESSAGE" desc="Message to display for sign out of Chrome dialog when the account has enterprise management, and all user data will be erased">
         You are signing out of an account managed by <ph name="DOMAIN_NAME">%1$s<ex>google.com</ex></ph>. This will delete the Chrome data stored on this device, but the data will remain in your Google Account.
       </message>
+      <message name="IDS_FIRSTRUN_SIGNED_IN_TITLE" desc="Message informing the user that they are now signed in.">
+        You're now signed in to Chrome.
+      </message>
+      <message name="IDS_FIRSTRUN_SIGNED_IN_DESCRIPTION" desc="Message informing the user what is being synced.">
+        Your open tabs, bookmarks, history, and more are being synced with your Google Account.
+      </message>
+
+      <!-- Sync strings -->
+      <message name="IDS_SIGN_IN_SYNC" desc="Sync preference title in signed-in prefs and prefix for notification related to sync [CHAR-LIMIT=32]">
+        Sync
+      </message>
+      <message name="IDS_SYNC_ANDROID_MASTER_SYNC_DISABLED" desc="Message to show when Android master sync flag is disabled">
+        Android system sync disabled. Please re-enable and try again.
+      </message>
+      <message name="IDS_SYNC_NEED_PASSPHRASE" desc="Error message when a passphrase is needed for decrypting sync data.">
+        Passphrase required
+      </message>
+      <message name="IDS_SYNC_NEED_PASSWORD" desc="Error message when a password is needed for decrypting sync data.">
+        Password required
+      </message>
 
       <!-- Sync error strings -->
       <message desc="Sync error string for generic error. [CHAR-LIMIT=80]" name="IDS_SYNC_ERROR_GENERIC">

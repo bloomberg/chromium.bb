@@ -8,11 +8,21 @@ package org.chromium.chrome.browser.notifications;
  * Constants used in more than a single Notification class, e.g. intents and extra names.
  */
 public class NotificationConstants {
-    // These actions have to be synchronized with the receiver defined in AndroidManfiest.xml.
+    // These actions have to be synchronized with the receiver defined in AndroidManifest.xml.
     public static final String ACTION_CLICK_NOTIFICATION =
             "org.chromium.chrome.browser.notifications.CLICK_NOTIFICATION";
     public static final String ACTION_CLOSE_NOTIFICATION =
             "org.chromium.chrome.browser.notifications.CLOSE_NOTIFICATION";
 
     public static final String EXTRA_NOTIFICATION_ID = "notification_id";
+
+    /**
+     * Unique identifier for a single sync notification. Since the notification ID is reused,
+     * old notifications will be overwritten.
+     */
+    public static final int NOTIFICATION_ID_SYNC = 1;
+    /**
+     * Unique identifier for the "Signed in to Chrome" notification.
+     */
+    public static final int NOTIFICATION_ID_SIGNED_IN = 2;
 }
