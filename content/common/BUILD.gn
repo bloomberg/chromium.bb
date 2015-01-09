@@ -281,12 +281,10 @@ source_set("common") {
   }
 
   if (is_chromeos) {
-    if (cpu_arch == "arm" && use_x11) {
+    if ((cpu_arch == "arm" && use_x11) || use_v4l2_codec) {
       sources += [
-        "gpu/media/exynos_v4l2_video_device.cc",
-        "gpu/media/exynos_v4l2_video_device.h",
-        "gpu/media/tegra_v4l2_video_device.cc",
-        "gpu/media/tegra_v4l2_video_device.h",
+        "gpu/media/generic_v4l2_video_device.cc",
+        "gpu/media/generic_v4l2_video_device.h",
         "gpu/media/v4l2_image_processor.cc",
         "gpu/media/v4l2_image_processor.h",
         "gpu/media/v4l2_video_decode_accelerator.cc",
@@ -300,6 +298,12 @@ source_set("common") {
         "EGL",
         "GLESv2",
       ]
+      if (cpu_arch == "arm") {
+        sources += [
+          "gpu/media/tegra_v4l2_video_device.cc",
+          "gpu/media/tegra_v4l2_video_device.h",
+        ]
+      }
     }
     if (cpu_arch != "arm") {
       sources += [

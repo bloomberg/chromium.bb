@@ -11,3 +11,11 @@ content_common_gypi_values =
                 [ rebase_path("../content_common.gypi") ],
                 "scope",
                 [ "../content_common.gypi" ])
+
+declare_args() {
+  # TODO(henryhsu): This flag should be removed after the linux header of
+  # trybot is updated.
+  # Indicates if Video4Linux2 codec is used. This is used for x86 CrOS
+  # platform which has v4l2 hardware encoder / decoder.
+  use_v4l2_codec = false
+}
