@@ -412,6 +412,11 @@ extern const char kEasyUnlockShowTutorial[];
 
 extern const char kZeroSuggestCachedResults[];
 
+#if defined(ENABLE_EXTENSIONS) && !defined(OS_ANDROID) && !defined(OS_IOS)
+extern const char kCopresenceAuthenticatedDeviceId[];
+extern const char kCopresenceAnonymousDeviceId[];
+#endif
+
 // Local state prefs. Please add Profile prefs above instead.
 extern const char kCertRevocationCheckingEnabled[];
 extern const char kCertRevocationCheckingRequiredLocalAnchors[];

@@ -92,13 +92,13 @@ class RpcHandler {
   struct PendingRequest {
     PendingRequest(scoped_ptr<ReportRequest> report,
                    const std::string& app_id,
-                   const std::string& auth_token,
+                   bool authenticated,
                    const StatusCallback& callback);
     ~PendingRequest();
 
     scoped_ptr<ReportRequest> report;
     const std::string app_id;
-    const std::string auth_token;
+    const bool authenticated;
     const StatusCallback callback;
   };
 
@@ -106,20 +106,19 @@ class RpcHandler {
 
   // Before accepting any other calls, the server requires registration,
   // which is tied to the auth token (or lack thereof) used to call Report.
-  void RegisterForToken(const std::string& auth_token);
+  void RegisterDevice(bool authenticated);
 
   // Device registration has completed. Send the requests that it was blocking.
-  void ProcessQueuedRequests(const std::string& auth_token);
+  void ProcessQueuedRequests(bool authenticated);
 
   // Send a ReportRequest from Chrome itself, i.e. no app id.
-  void SendReportRequest(scoped_ptr<ReportRequest> request,
-                         const std::string& auth_token);
+  void ReportOnAllDevices(scoped_ptr<ReportRequest> request);
 
   // Store a GCM ID and send it to the server if needed.
   void RegisterGcmId(const std::string& gcm_id);
 
   // Server call response handlers.
-  void RegisterResponseHandler(const std::string& auth_token,
+  void RegisterResponseHandler(bool authenticated,
                                bool gcm_pending,
                                HttpPost* completed_post,
                                int http_status_code,
@@ -150,7 +149,7 @@ class RpcHandler {
   void SendServerRequest(const std::string& rpc_name,
                          const std::string& device_id,
                          const std::string& app_id,
-                         const std::string& auth_token,
+                         bool authenticated,
                          scoped_ptr<T> request,
                          const PostCleanupCallback& response_handler);
 
@@ -174,8 +173,9 @@ class RpcHandler {
 
   ScopedVector<PendingRequest> pending_requests_queue_;
   TimedMap<std::string, bool> invalid_audio_token_cache_;
-  std::map<std::string, std::string> device_id_by_auth_token_;
   std::set<HttpPost*> pending_posts_;
+  std::set<bool> pending_registrations_;
+  std::string auth_token_;
   std::string gcm_id_;
 
   DISALLOW_COPY_AND_ASSIGN(RpcHandler);

@@ -94,15 +94,23 @@ class RpcHandlerTest : public testing::Test, public CopresenceDelegate {
     return nullptr;
   }
 
+  const std::string GetDeviceId(bool authenticated) override {
+    return device_id_by_auth_state_[authenticated];
+  }
+
+  void SaveDeviceId(bool authenticated, const std::string& device_id) override {
+    device_id_by_auth_state_[authenticated] = device_id;
+  }
+
  protected:
 
   // Send test input to RpcHandler
 
-  void RegisterForToken(const std::string& auth_token) {
-    rpc_handler_.RegisterForToken(auth_token);
+  void RegisterDevice(bool authenticated) {
+    rpc_handler_.RegisterDevice(authenticated);
   }
 
-  void SendRegisterResponse(const std::string& auth_token,
+  void SendRegisterResponse(bool authenticated,
                             const std::string& device_id) {
     RegisterDeviceResponse response;
     response.set_registered_device_id(device_id);
@@ -111,7 +119,7 @@ class RpcHandlerTest : public testing::Test, public CopresenceDelegate {
     std::string serialized_response;
     response.SerializeToString(&serialized_response);
     rpc_handler_.RegisterResponseHandler(
-        auth_token, false, nullptr, net::HTTP_OK, serialized_response);
+        authenticated, false, nullptr, net::HTTP_OK, serialized_response);
   }
 
   void SendReport(scoped_ptr<ReportRequest> request,
@@ -136,12 +144,12 @@ class RpcHandlerTest : public testing::Test, public CopresenceDelegate {
 
   // Read and modify RpcHandler state
 
-  const ScopedVector<RpcHandler::PendingRequest>& request_queue() const {
-    return rpc_handler_.pending_requests_queue_;
+  void SetAuthToken(const std::string& auth_token) {
+    rpc_handler_.auth_token_ = auth_token;
   }
 
-  std::map<std::string, std::string>& device_id_by_auth_token() {
-    return rpc_handler_.device_id_by_auth_token_;
+  const ScopedVector<RpcHandler::PendingRequest>& request_queue() const {
+    return rpc_handler_.pending_requests_queue_;
   }
 
   void AddInvalidToken(const std::string& token) {
@@ -159,6 +167,8 @@ class RpcHandlerTest : public testing::Test, public CopresenceDelegate {
   FakeDirectiveHandler directive_handler_;
   scoped_ptr<CopresenceStateImpl> state_;
   RpcHandler rpc_handler_;
+
+  std::map<bool, std::string> device_id_by_auth_state_;
 
   CopresenceStatus status_;
   std::string rpc_name_;
@@ -185,8 +195,8 @@ class RpcHandlerTest : public testing::Test, public CopresenceDelegate {
   }
 };
 
-TEST_F(RpcHandlerTest, RegisterForToken) {
-  RegisterForToken("");
+TEST_F(RpcHandlerTest, RegisterDevice) {
+  RegisterDevice(false);
   EXPECT_THAT(request_protos_, SizeIs(1));
   const RegisterDeviceRequest* registration =
       static_cast<RegisterDeviceRequest*>(request_protos_[0]);
@@ -194,7 +204,8 @@ TEST_F(RpcHandlerTest, RegisterForToken) {
   EXPECT_EQ(CHROME, identity.type());
   EXPECT_FALSE(identity.chrome_id().empty());
 
-  RegisterForToken("abc");
+  SetAuthToken("Register auth");
+  RegisterDevice(true);
   EXPECT_THAT(request_protos_, SizeIs(2));
   registration = static_cast<RegisterDeviceRequest*>(request_protos_[1]);
   EXPECT_FALSE(registration->has_device_identifiers());
@@ -206,7 +217,7 @@ TEST_F(RpcHandlerTest, RequestQueuing) {
   report->mutable_manage_messages_request()->add_id_to_unpublish("unpublish");
   SendReport(make_scoped_ptr(report), "Q App ID", "Q Auth Token");
   EXPECT_THAT(request_queue(), SizeIs(1));
-  EXPECT_EQ("Q Auth Token", request_queue()[0]->auth_token);
+  EXPECT_TRUE(request_queue()[0]->authenticated);
 
   // Check for registration request.
   EXPECT_THAT(request_protos_, SizeIs(1));
@@ -222,7 +233,7 @@ TEST_F(RpcHandlerTest, RequestQueuing) {
   SendReport(make_scoped_ptr(report), "Q App ID", "Q Auth Token");
   EXPECT_THAT(request_protos_, SizeIs(1));
   EXPECT_THAT(request_queue(), SizeIs(2));
-  EXPECT_EQ("Q Auth Token", request_queue()[1]->auth_token);
+  EXPECT_TRUE(request_queue()[1]->authenticated);
 
   // Send an anonymous report.
   report = new ReportRequest;
@@ -230,7 +241,7 @@ TEST_F(RpcHandlerTest, RequestQueuing) {
       ->set_token_id("Q Audio Token");
   SendReport(make_scoped_ptr(report), "Q App ID", "");
   EXPECT_THAT(request_queue(), SizeIs(3));
-  EXPECT_EQ("", request_queue()[2]->auth_token);
+  EXPECT_FALSE(request_queue()[2]->authenticated);
 
   // Check for another registration request.
   EXPECT_THAT(request_protos_, SizeIs(2));
@@ -239,8 +250,8 @@ TEST_F(RpcHandlerTest, RequestQueuing) {
   EXPECT_EQ("", auth_token_);
 
   // Respond to the first registration.
-  SendRegisterResponse("Q Auth Token", "Q Auth Device ID");
-  EXPECT_EQ("Q Auth Device ID", device_id_by_auth_token()["Q Auth Token"]);
+  SendRegisterResponse(true, "Q Auth Device ID");
+  EXPECT_EQ("Q Auth Device ID", device_id_by_auth_state_[true]);
 
   // Check that queued reports are sent.
   EXPECT_THAT(request_protos_, SizeIs(4));
@@ -254,8 +265,8 @@ TEST_F(RpcHandlerTest, RequestQueuing) {
             report->manage_subscriptions_request().id_to_unsubscribe(0));
 
   // Respond to the second registration.
-  SendRegisterResponse("", "Q Anonymous Device ID");
-  EXPECT_EQ("Q Anonymous Device ID", device_id_by_auth_token()[""]);
+  SendRegisterResponse(false, "Q Anonymous Device ID");
+  EXPECT_EQ("Q Anonymous Device ID", device_id_by_auth_state_[false]);
 
   // Check for last report.
   EXPECT_THAT(request_protos_, SizeIs(5));
@@ -266,8 +277,7 @@ TEST_F(RpcHandlerTest, RequestQueuing) {
 }
 
 TEST_F(RpcHandlerTest, CreateRequestHeader) {
-  device_id_by_auth_token()["CreateRequestHeader Auth Token"] =
-      "CreateRequestHeader Device ID";
+  device_id_by_auth_state_[true] = "CreateRequestHeader Device ID";
   SendReport(make_scoped_ptr(new ReportRequest),
              "CreateRequestHeader App",
              "CreateRequestHeader Auth Token");
@@ -295,8 +305,9 @@ TEST_F(RpcHandlerTest, ReportTokens) {
   test_tokens.push_back(AudioToken("token 3", true));
   AddInvalidToken("token 2");
 
-  device_id_by_auth_token()[""] = "ReportTokens Anonymous Device";
-  device_id_by_auth_token()["ReportTokens Auth"] = "ReportTokens Auth Device";
+  device_id_by_auth_state_[false] = "ReportTokens Anonymous Device";
+  device_id_by_auth_state_[true] = "ReportTokens Auth Device";
+  SetAuthToken("ReportTokens Auth");
 
   rpc_handler_.ReportTokens(test_tokens);
   EXPECT_EQ(RpcHandler::kReportRequestRpcName, rpc_name_);

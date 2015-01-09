@@ -121,7 +121,10 @@
 #include "chrome/browser/signin/easy_unlock_service.h"
 #include "chrome/browser/ui/webui/extensions/extension_settings_handler.h"
 #include "extensions/browser/extension_prefs.h"
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#include "chrome/browser/extensions/api/copresence/copresence_api.h"
 #endif
+#endif  // defined(ENABLE_EXTENSIONS)
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
 #include "chrome/browser/plugins/plugins_resource_service.h"
@@ -437,7 +440,10 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   extensions::launch_util::RegisterProfilePrefs(registry);
   ExtensionWebUI::RegisterProfilePrefs(registry);
   extensions::ExtensionPrefs::RegisterProfilePrefs(registry);
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+  extensions::CopresenceService::RegisterProfilePrefs(registry);
 #endif
+#endif  // defined(ENABLE_EXTENSIONS)
 
 #if defined(ENABLE_NOTIFICATIONS)
   DesktopNotificationService::RegisterProfilePrefs(registry);

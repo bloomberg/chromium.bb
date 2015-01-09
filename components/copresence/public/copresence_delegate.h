@@ -59,6 +59,15 @@ class CopresenceDelegate {
   // If no driver is available, this can return null.
   virtual gcm::GCMDriver* GetGCMDriver() = 0;
 
+  // Get the copresence device ID for authenticated or anonymous calls,
+  // as specified. If none exists, return the empty string.
+  virtual const std::string GetDeviceId(bool authenticated) = 0;
+
+  // Save a copresence device ID for authenticated or anonymous calls.
+  // If the device ID is empty, any stored ID should be deleted.
+  virtual void SaveDeviceId(bool authenticated,
+                            const std::string& device_id) = 0;
+
  protected:
   virtual ~CopresenceDelegate() {}
 };

@@ -6,22 +6,28 @@
 
 #include "base/lazy_instance.h"
 #include "base/memory/linked_ptr.h"
+#include "base/prefs/pref_service.h"
 #include "chrome/browser/copresence/chrome_whispernet_client.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/services/gcm/gcm_profile_service.h"
 #include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/api/copresence.h"
 #include "chrome/common/extensions/manifest_handlers/copresence_manifest.h"
+#include "chrome/common/pref_names.h"
 #include "components/copresence/copresence_manager_impl.h"
 #include "components/copresence/proto/data.pb.h"
 #include "components/copresence/proto/enums.pb.h"
 #include "components/copresence/proto/rpcs.pb.h"
 #include "components/copresence/public/whispernet_client.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 #include "content/public/browser/browser_context.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_constants.h"
+
+using user_prefs::PrefRegistrySyncable;
 
 namespace extensions {
 
@@ -34,10 +40,15 @@ const char kInvalidOperationsMessage[] =
     "Invalid operation in operations array.";
 const char kShuttingDownMessage[] = "Shutting down.";
 
+const std::string GetPrefName(bool authenticated) {
+  return authenticated ? prefs::kCopresenceAuthenticatedDeviceId
+                       : prefs::kCopresenceAnonymousDeviceId;
+}
+
 }  // namespace
 
 
-// CopresenceService implementation.
+// Public functions.
 
 CopresenceService::CopresenceService(content::BrowserContext* context)
     : is_shutting_down_(false), browser_context_(context) {}
@@ -86,11 +97,33 @@ void CopresenceService::set_manager_for_testing(
   manager_ = manager.Pass();
 }
 
+void CopresenceService::ResetState() {
+  DVLOG(2) << "Deleting copresence state";
+  GetPrefService()->ClearPref(prefs::kCopresenceAuthenticatedDeviceId);
+  GetPrefService()->ClearPref(prefs::kCopresenceAnonymousDeviceId);
+  manager_ = nullptr;
+}
+
+// static
+void CopresenceService::RegisterProfilePrefs(PrefRegistrySyncable* registry) {
+  registry->RegisterStringPref(
+      prefs::kCopresenceAuthenticatedDeviceId,
+      std::string(),
+      PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterStringPref(
+      prefs::kCopresenceAnonymousDeviceId,
+      std::string(),
+      PrefRegistrySyncable::UNSYNCABLE_PREF);
+}
+
 // static
 BrowserContextKeyedAPIFactory<CopresenceService>*
 CopresenceService::GetFactoryInstance() {
   return g_factory.Pointer();
 }
+
+
+// Private functions.
 
 void CopresenceService::HandleMessages(
     const std::string& /* app_id */,
@@ -174,6 +207,27 @@ gcm::GCMDriver* CopresenceService::GetGCMDriver() {
   gcm::GCMProfileService* gcm_service =
       gcm::GCMProfileServiceFactory::GetForProfile(browser_context_);
   return gcm_service ? gcm_service->driver() : nullptr;
+}
+
+const std::string CopresenceService::GetDeviceId(bool authenticated) {
+  std::string id = GetPrefService()->GetString(GetPrefName(authenticated));
+  DVLOG(3) << "Retrieved device ID \"" << id << "\", "
+           << "authenticated = " << authenticated;
+  return id;
+}
+
+void CopresenceService::SaveDeviceId(bool authenticated,
+                                     const std::string& device_id) {
+  DVLOG(3) << "Storing device ID \"" << device_id << "\", "
+           << "authenticated = " << authenticated;
+  if (device_id.empty())
+    GetPrefService()->ClearPref(GetPrefName(authenticated));
+  else
+    GetPrefService()->SetString(GetPrefName(authenticated), device_id);
+}
+
+PrefService* CopresenceService::GetPrefService() {
+  return Profile::FromBrowserContext(browser_context_)->GetPrefs();
 }
 
 template <>

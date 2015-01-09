@@ -1227,6 +1227,15 @@ const char kEasyUnlockShowTutorial[] = "easy_unlock.show_tutorial";
 // A cache of zero suggest results using JSON serialized into a string.
 const char kZeroSuggestCachedResults[] = "zerosuggest.cachedresults";
 
+// These device IDs are used by the copresence component, to uniquely identify
+// this device to the server. For privacy, authenticated and unauthenticated
+// calls are made using different device IDs.
+#if defined(ENABLE_EXTENSIONS) && !defined(OS_ANDROID) && !defined(OS_IOS)
+const char kCopresenceAuthenticatedDeviceId[] =
+    "apps.copresence.auth_device_id";
+const char kCopresenceAnonymousDeviceId[] = "apps.copresence.unauth_device_id";
+#endif
+
 // *************** LOCAL STATE ***************
 // These are attached to the machine/installation
 
