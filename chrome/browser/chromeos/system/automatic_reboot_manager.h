@@ -18,7 +18,7 @@
 #include "chromeos/dbus/update_engine_client.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "ui/wm/core/user_activity_observer.h"
+#include "ui/base/user_activity/user_activity_observer.h"
 
 class PrefRegistrySimple;
 
@@ -71,7 +71,7 @@ namespace system {
 // /var/run ensures that it gets cleared automatically on every boot.
 class AutomaticRebootManager : public PowerManagerClient::Observer,
                                public UpdateEngineClient::Observer,
-                               public wm::UserActivityObserver,
+                               public ui::UserActivityObserver,
                                public content::NotificationObserver {
  public:
   // The current uptime and the uptime at which an update was applied and a
@@ -107,7 +107,7 @@ class AutomaticRebootManager : public PowerManagerClient::Observer,
   virtual void UpdateStatusChanged(
       const UpdateEngineClient::Status& status) override;
 
-  // wm::UserActivityObserver:
+  // ui::UserActivityObserver:
   virtual void OnUserActivity(const ui::Event* event) override;
 
   // content::NotificationObserver:

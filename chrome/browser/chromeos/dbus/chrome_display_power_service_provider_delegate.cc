@@ -5,8 +5,8 @@
 #include "chrome/browser/chromeos/dbus/chrome_display_power_service_provider_delegate.h"
 
 #include "ash/shell.h"
+#include "ui/base/user_activity/user_activity_detector.h"
 #include "ui/display/chromeos/display_configurator.h"
-#include "ui/wm/core/user_activity_detector.h"
 
 namespace chromeos {
 
@@ -24,7 +24,7 @@ void ChromeDisplayPowerServiceProviderDelegate::SetDisplayPower(
   // we suspend may trigger a mouse move, which would then be incorrectly
   // reported as user activity.  Let the UserActivityDetector
   // know so that it can ignore such events.
-  wm::UserActivityDetector::Get()->OnDisplayPowerChanging();
+  ui::UserActivityDetector::Get()->OnDisplayPowerChanging();
 
   ash::Shell::GetInstance()->display_configurator()->SetDisplayPower(
       power_state, ui::DisplayConfigurator::kSetDisplayPowerNoFlags);

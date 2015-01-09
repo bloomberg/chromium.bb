@@ -18,7 +18,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
-#include "ui/wm/core/user_activity_detector.h"
+#include "ui/base/user_activity/user_activity_detector.h"
 
 namespace policy {
 
@@ -108,8 +108,8 @@ void RecommendationRestorer::Restore(bool allow_delay,
     allow_delay = false;
   } else if (allow_delay) {
     // Skip the delay if there has been no user input since the browser started.
-    const wm::UserActivityDetector* user_activity_detector =
-        wm::UserActivityDetector::Get();
+    const ui::UserActivityDetector* user_activity_detector =
+        ui::UserActivityDetector::Get();
     if (user_activity_detector &&
         user_activity_detector->last_activity_time().is_null()) {
       allow_delay = false;
@@ -135,8 +135,8 @@ void RecommendationRestorer::StartTimer() {
   // Listen for user activity so that the timer can be reset while the user is
   // active, causing it to fire only when the user remains idle for
   // |kRestoreDelayInMs|.
-  wm::UserActivityDetector* user_activity_detector =
-      wm::UserActivityDetector::Get();
+  ui::UserActivityDetector* user_activity_detector =
+      ui::UserActivityDetector::Get();
   if (user_activity_detector && !user_activity_detector->HasObserver(this))
     user_activity_detector->AddObserver(this);
 
@@ -156,8 +156,8 @@ void RecommendationRestorer::StartTimer() {
 
 void RecommendationRestorer::StopTimer() {
   restore_timer_.Stop();
-  if (wm::UserActivityDetector::Get())
-    wm::UserActivityDetector::Get()->RemoveObserver(this);
+  if (ui::UserActivityDetector::Get())
+    ui::UserActivityDetector::Get()->RemoveObserver(this);
 }
 
 }  // namespace policy

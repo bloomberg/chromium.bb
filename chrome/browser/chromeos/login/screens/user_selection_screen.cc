@@ -23,7 +23,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_type.h"
-#include "ui/wm/core/user_activity_detector.h"
+#include "ui/base/user_activity/user_activity_detector.h"
 
 namespace chromeos {
 
@@ -114,7 +114,7 @@ UserSelectionScreen::UserSelectionScreen(const std::string& display_type)
 
 UserSelectionScreen::~UserSelectionScreen() {
   ScreenlockBridge::Get()->SetLockHandler(nullptr);
-  wm::UserActivityDetector* activity_detector = wm::UserActivityDetector::Get();
+  ui::UserActivityDetector* activity_detector = ui::UserActivityDetector::Get();
   if (activity_detector->HasObserver(this))
     activity_detector->RemoveObserver(this);
 }
@@ -227,7 +227,7 @@ void UserSelectionScreen::Init(const user_manager::UserList& users,
   users_ = users;
   show_guest_ = show_guest;
 
-  wm::UserActivityDetector* activity_detector = wm::UserActivityDetector::Get();
+  ui::UserActivityDetector* activity_detector = ui::UserActivityDetector::Get();
   if (!activity_detector->HasObserver(this))
     activity_detector->AddObserver(this);
 }

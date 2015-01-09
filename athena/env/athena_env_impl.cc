@@ -18,6 +18,7 @@
 #include "ui/aura/window_tree_host_observer.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/cursor/image_cursors.h"
+#include "ui/base/user_activity/user_activity_detector.h"
 #include "ui/chromeos/user_activity_power_manager_notifier.h"
 #include "ui/display/chromeos/display_configurator.h"
 #include "ui/display/types/display_mode.h"
@@ -31,7 +32,6 @@
 #include "ui/wm/core/input_method_event_filter.h"
 #include "ui/wm/core/native_cursor_manager.h"
 #include "ui/wm/core/native_cursor_manager_delegate.h"
-#include "ui/wm/core/user_activity_detector.h"
 
 namespace athena {
 
@@ -245,7 +245,7 @@ class AthenaEnvImpl : public AthenaEnv,
     cursor_manager_->SetCursor(ui::kCursorPointer);
     aura::client::SetCursorClient(host_->window(), cursor_manager_.get());
 
-    user_activity_detector_.reset(new wm::UserActivityDetector);
+    user_activity_detector_.reset(new ui::UserActivityDetector);
     host_->event_processor()->GetRootTarget()->AddPreTargetHandler(
         user_activity_detector_.get());
     user_activity_notifier_.reset(new ui::UserActivityPowerManagerNotifier(
@@ -395,7 +395,7 @@ class AthenaEnvImpl : public AthenaEnv,
   scoped_ptr<wm::CompoundEventFilter> root_window_event_filter_;
   scoped_ptr<aura::client::DefaultCaptureClient> capture_client_;
   scoped_ptr<wm::CursorManager> cursor_manager_;
-  scoped_ptr<wm::UserActivityDetector> user_activity_detector_;
+  scoped_ptr<ui::UserActivityDetector> user_activity_detector_;
   scoped_ptr<ui::DisplayConfigurator> display_configurator_;
   scoped_ptr<ui::UserActivityPowerManagerNotifier> user_activity_notifier_;
 

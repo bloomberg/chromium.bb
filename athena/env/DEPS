@@ -5,6 +5,7 @@ include_rules = [
   "+ui/chromeos",
   "+ui/display",
   "+ui/events/devices",
+  "+ui/events/user_activity",
   "+ui/gfx",
   "+ui/wm",
 ]

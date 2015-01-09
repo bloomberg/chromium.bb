@@ -7,11 +7,11 @@
 #include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
 #include "base/time/time.h"
-#include "ui/wm/core/user_activity_detector.h"
+#include "ui/base/user_activity/user_activity_detector.h"
 
 void CalculateIdleTime(IdleTimeCallback notify) {
   base::TimeDelta idle_time = base::TimeTicks::Now() -
-      wm::UserActivityDetector::Get()->last_activity_time();
+      ui::UserActivityDetector::Get()->last_activity_time();
   notify.Run(static_cast<int>(idle_time.InSeconds()));
 }
 

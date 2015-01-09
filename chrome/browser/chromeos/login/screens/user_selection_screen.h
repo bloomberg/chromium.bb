@@ -16,7 +16,7 @@
 #include "chrome/browser/chromeos/login/ui/models/user_board_model.h"
 #include "chrome/browser/signin/screenlock_bridge.h"
 #include "components/user_manager/user.h"
-#include "ui/wm/core/user_activity_observer.h"
+#include "ui/base/user_activity/user_activity_observer.h"
 
 class EasyUnlockService;
 
@@ -26,7 +26,7 @@ class LoginDisplayWebUIHandler;
 class UserBoardView;
 
 // This class represents User Selection screen: user pod-based login screen.
-class UserSelectionScreen : public wm::UserActivityObserver,
+class UserSelectionScreen : public ui::UserActivityObserver,
                             public ScreenlockBridge::LockHandler,
                             public UserBoardModel {
  public:
@@ -53,7 +53,7 @@ class UserSelectionScreen : public wm::UserActivityObserver,
 
   void HandleGetUsers();
 
-  // wm::UserActivityDetector implementation:
+  // ui::UserActivityDetector implementation:
   virtual void OnUserActivity(const ui::Event* event) override;
 
   void InitEasyUnlock();

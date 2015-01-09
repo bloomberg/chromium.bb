@@ -10,11 +10,11 @@
 #include "base/compiler_specific.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "ui/wm/core/user_activity_observer.h"
+#include "ui/base/user_activity/user_activity_observer.h"
 
 namespace chromeos {
 
-class IdleDetector : public wm::UserActivityObserver {
+class IdleDetector : public ui::UserActivityObserver {
  public:
   explicit IdleDetector(const base::Closure& on_idle_callback);
   virtual ~IdleDetector();
@@ -22,7 +22,7 @@ class IdleDetector : public wm::UserActivityObserver {
   void Start(const base::TimeDelta& timeout);
 
  private:
-  // wm::UserActivityObserver overrides:
+  // ui::UserActivityObserver overrides:
   virtual void OnUserActivity(const ui::Event* event) override;
 
   // Resets |timer_| to fire when we reach our idle timeout.

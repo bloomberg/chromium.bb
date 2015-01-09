@@ -6,10 +6,10 @@
 
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
+#include "ui/base/user_activity/user_activity_detector.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/keycodes/keyboard_codes_posix.h"
-#include "ui/wm/core/user_activity_detector.h"
 
 namespace ui {
 namespace {
@@ -42,7 +42,7 @@ power_manager::UserActivityType GetUserActivityTypeForEvent(
 }  // namespace
 
 UserActivityPowerManagerNotifier::UserActivityPowerManagerNotifier(
-    ::wm::UserActivityDetector* detector)
+    UserActivityDetector* detector)
     : detector_(detector) {
   detector_->AddObserver(this);
 }

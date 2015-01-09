@@ -10,8 +10,8 @@
 #include "ash/wm/power_button_controller.h"
 #include "base/prefs/pref_service.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "ui/base/user_activity/user_activity_detector.h"
 #include "ui/display/chromeos/display_configurator.h"
-#include "ui/wm/core/user_activity_detector.h"
 
 namespace ash {
 
@@ -50,7 +50,7 @@ void PowerEventObserver::SuspendImminent() {
         RequestLockScreen();
   }
 
-  wm::UserActivityDetector::Get()->OnDisplayPowerChanging();
+  ui::UserActivityDetector::Get()->OnDisplayPowerChanging();
   shell->display_configurator()->SuspendDisplays();
 }
 

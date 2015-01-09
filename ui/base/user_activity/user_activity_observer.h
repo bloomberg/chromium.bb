@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_WM_CORE_USER_ACTIVITY_OBSERVER_H_
-#define UI_WM_CORE_USER_ACTIVITY_OBSERVER_H_
+#ifndef UI_BASE_USER_ACTIVITY_USER_ACTIVITY_OBSERVER_H_
+#define UI_BASE_USER_ACTIVITY_USER_ACTIVITY_OBSERVER_H_
 
 #include "base/basictypes.h"
-#include "ui/wm/wm_export.h"
+#include "ui/base/ui_base_export.h"
 
 namespace ui {
 class Event;
 }
 
-namespace wm {
+namespace ui {
 
 // Interface for classes that want to be notified about user activity.
 // Implementations should register themselves with UserActivityDetector.
-class WM_EXPORT UserActivityObserver {
+class UI_BASE_EXPORT UserActivityObserver {
  public:
   // Invoked periodically while the user is active (i.e. generating input
   // events). |event| is the event that triggered the notification; it may
@@ -30,6 +30,6 @@ class WM_EXPORT UserActivityObserver {
   DISALLOW_COPY_AND_ASSIGN(UserActivityObserver);
 };
 
-}  // namespace wm
+}  // namespace ui
 
-#endif  // UI_WM_CORE_USER_ACTIVITY_OBSERVER_H_
+#endif  // UI_BASE_USER_ACTIVITY_USER_ACTIVITY_OBSERVER_H_

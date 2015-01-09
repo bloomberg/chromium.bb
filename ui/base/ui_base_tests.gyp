@@ -79,6 +79,7 @@
         'test/data/resource.h',
         'text/bytes_formatting_unittest.cc',
         'touch/selection_bound_unittest.cc',
+        'user_activity/user_activity_detector_unittest.cc',
         'view_prop_unittest.cc',
         'webui/web_ui_util_unittest.cc',
         'x/selection_requestor_unittest.cc',
@@ -143,6 +144,7 @@
           ],
           'sources!': [
             'touch/selection_bound_unittest.cc',
+            'user_activity/user_activity_detector_unittest.cc',
           ],
         }],
         ['use_pango == 1', {

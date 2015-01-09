@@ -24,6 +24,7 @@
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/cursor/image_cursors.h"
 #include "ui/base/ime/input_method_initializer.h"
+#include "ui/base/user_activity/user_activity_detector.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/screen.h"
@@ -34,7 +35,6 @@
 #include "ui/wm/core/input_method_event_filter.h"
 #include "ui/wm/core/native_cursor_manager.h"
 #include "ui/wm/core/native_cursor_manager_delegate.h"
-#include "ui/wm/core/user_activity_detector.h"
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -278,7 +278,7 @@ void ShellDesktopControllerAura::InitWindowManager() {
   cursor_manager_->SetCursor(ui::kCursorPointer);
   aura::client::SetCursorClient(host_->window(), cursor_manager_.get());
 
-  user_activity_detector_.reset(new wm::UserActivityDetector);
+  user_activity_detector_.reset(new ui::UserActivityDetector);
   host_->event_processor()->GetRootTarget()->AddPreTargetHandler(
       user_activity_detector_.get());
 #if defined(OS_CHROMEOS)

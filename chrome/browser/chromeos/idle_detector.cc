@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "ui/wm/core/user_activity_detector.h"
+#include "ui/base/user_activity/user_activity_detector.h"
 
 namespace chromeos {
 
@@ -14,8 +14,8 @@ IdleDetector::IdleDetector(const base::Closure& on_idle_callback)
     : idle_callback_(on_idle_callback) {}
 
 IdleDetector::~IdleDetector() {
-  wm::UserActivityDetector* user_activity_detector =
-      wm::UserActivityDetector::Get();
+  ui::UserActivityDetector* user_activity_detector =
+      ui::UserActivityDetector::Get();
   if (user_activity_detector && user_activity_detector->HasObserver(this))
     user_activity_detector->RemoveObserver(this);
 }
@@ -26,8 +26,8 @@ void IdleDetector::OnUserActivity(const ui::Event* event) {
 
 void IdleDetector::Start(const base::TimeDelta& timeout) {
   timeout_ = timeout;
-  if (!wm::UserActivityDetector::Get()->HasObserver(this))
-    wm::UserActivityDetector::Get()->AddObserver(this);
+  if (!ui::UserActivityDetector::Get()->HasObserver(this))
+    ui::UserActivityDetector::Get()->AddObserver(this);
   ResetTimer();
 }
 

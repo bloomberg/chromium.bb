@@ -15,8 +15,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/common/pref_names.h"
+#include "ui/base/user_activity/user_activity_detector.h"
 #include "ui/events/event.h"
-#include "ui/wm/core/user_activity_detector.h"
 
 namespace chromeos {
 
@@ -97,20 +97,20 @@ SessionLengthLimiter::SessionLengthLimiter(Delegate* delegate,
     UpdateSessionStartTime();
   }
 
-  if (!user_activity_seen_ && wm::UserActivityDetector::Get())
-    wm::UserActivityDetector::Get()->AddObserver(this);
+  if (!user_activity_seen_ && ui::UserActivityDetector::Get())
+    ui::UserActivityDetector::Get()->AddObserver(this);
 }
 
 SessionLengthLimiter::~SessionLengthLimiter() {
-  if (!user_activity_seen_ && wm::UserActivityDetector::Get())
-    wm::UserActivityDetector::Get()->RemoveObserver(this);
+  if (!user_activity_seen_ && ui::UserActivityDetector::Get())
+    ui::UserActivityDetector::Get()->RemoveObserver(this);
 }
 
 void SessionLengthLimiter::OnUserActivity(const ui::Event* event) {
   if (user_activity_seen_)
     return;
-  if (wm::UserActivityDetector::Get())
-    wm::UserActivityDetector::Get()->RemoveObserver(this);
+  if (ui::UserActivityDetector::Get())
+    ui::UserActivityDetector::Get()->RemoveObserver(this);
   user_activity_seen_ = true;
 
   PrefService* local_state = g_browser_process->local_state();

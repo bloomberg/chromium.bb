@@ -86,6 +86,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/ui_base_switches.h"
+#include "ui/base/user_activity/user_activity_detector.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/events/event_target_iterator.h"
@@ -109,7 +110,6 @@
 #include "ui/wm/core/input_method_event_filter.h"
 #include "ui/wm/core/nested_accelerator_controller.h"
 #include "ui/wm/core/shadow_controller.h"
-#include "ui/wm/core/user_activity_detector.h"
 #include "ui/wm/core/visibility_controller.h"
 #include "ui/wm/core/window_modality_controller.h"
 
@@ -914,9 +914,9 @@ void Shell::Init(const ShellInitParams& init_params) {
 
   // The order in which event filters are added is significant.
 
-  // wm::UserActivityDetector passes events to observers, so let them get
+  // ui::UserActivityDetector passes events to observers, so let them get
   // rewritten first.
-  user_activity_detector_.reset(new ::wm::UserActivityDetector);
+  user_activity_detector_.reset(new ui::UserActivityDetector);
   AddPreTargetHandler(user_activity_detector_.get());
 
   overlay_filter_.reset(new OverlayEventFilter);

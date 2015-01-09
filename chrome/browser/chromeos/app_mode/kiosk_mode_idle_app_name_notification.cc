@@ -14,7 +14,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "extensions/browser/extension_system.h"
-#include "ui/wm/core/user_activity_detector.h"
+#include "ui/base/user_activity/user_activity_detector.h"
 
 namespace chromeos {
 
@@ -56,8 +56,8 @@ KioskModeIdleAppNameNotification::KioskModeIdleAppNameNotification()
 }
 
 KioskModeIdleAppNameNotification::~KioskModeIdleAppNameNotification() {
-  wm::UserActivityDetector* user_activity_detector =
-      wm::UserActivityDetector::Get();
+  ui::UserActivityDetector* user_activity_detector =
+      ui::UserActivityDetector::Get();
   if (user_activity_detector && user_activity_detector->HasObserver(this)) {
     user_activity_detector->RemoveObserver(this);
     // At this time the DBusThreadManager might already be gone.
@@ -98,8 +98,8 @@ void KioskModeIdleAppNameNotification::SuspendDone(
 }
 
 void KioskModeIdleAppNameNotification::Start() {
-  if (!wm::UserActivityDetector::Get()->HasObserver(this)) {
-    wm::UserActivityDetector::Get()->AddObserver(this);
+  if (!ui::UserActivityDetector::Get()->HasObserver(this)) {
+    ui::UserActivityDetector::Get()->AddObserver(this);
     chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
         this);
   }

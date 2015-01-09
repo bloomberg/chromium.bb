@@ -233,6 +233,9 @@ component("base") {
     "ui_base_switches_util.h",
     "ui_base_types.cc",
     "ui_base_types.h",
+    "user_activity/user_activity_detector.cc",
+    "user_activity/user_activity_detector.h",
+    "user_activity/user_activity_observer.h",
     "view_prop.cc",
     "view_prop.h",
     "webui/jstemplate_builder.cc",
@@ -741,7 +744,12 @@ test("ui_base_unittests") {
     "resource/resource_bundle_unittest.cc",
     "test/test_clipboard_unittest.cc",
     "test/run_all_unittests.cc",
+    "user_activity/user_activity_detector_unittest.cc",
   ]
+
+  if (is_android) {
+    sources -= [ "user_activity/user_activity_detector_unittest.cc" ]
+  }
 
   if (is_ios) {
     # Compile this Mac file on iOS as well.

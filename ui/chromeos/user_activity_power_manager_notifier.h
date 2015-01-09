@@ -8,28 +8,25 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/time/time.h"
+#include "ui/base/user_activity/user_activity_observer.h"
 #include "ui/chromeos/ui_chromeos_export.h"
-#include "ui/wm/core/user_activity_observer.h"
-
-namespace wm {
-class UserActivityDetector;
-}  // namespace wm
 
 namespace ui {
 
+class UserActivityDetector;
+
 // Notifies the power manager when the user is active.
 class UI_CHROMEOS_EXPORT UserActivityPowerManagerNotifier
-    : public ::wm::UserActivityObserver {
+    : public UserActivityObserver {
  public:
-  explicit UserActivityPowerManagerNotifier(
-      ::wm::UserActivityDetector* detector);
+  explicit UserActivityPowerManagerNotifier(UserActivityDetector* detector);
   virtual ~UserActivityPowerManagerNotifier();
 
   // UserActivityObserver implementation.
   virtual void OnUserActivity(const Event* event) override;
 
  private:
-  ::wm::UserActivityDetector* detector_;  // not owned
+  UserActivityDetector* detector_;  // not owned
 
   // Last time that the power manager was notified.
   base::TimeTicks last_notify_time_;

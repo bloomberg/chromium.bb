@@ -22,6 +22,7 @@
 #include "base/logging.h"
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/user_activity/user_activity_detector.h"
 #include "ui/compositor/dip_util.h"
 #include "ui/display/types/display_mode.h"
 #include "ui/display/types/display_snapshot.h"
@@ -29,7 +30,6 @@
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/events/devices/touchscreen_device.h"
 #include "ui/gfx/display.h"
-#include "ui/wm/core/user_activity_detector.h"
 
 namespace ash {
 
@@ -249,8 +249,8 @@ void DisplayChangeObserver::OnDisplayModeChanged(
 
   // For the purposes of user activity detection, ignore synthetic mouse events
   // that are triggered by screen resizes: http://crbug.com/360634
-  ::wm::UserActivityDetector* user_activity_detector =
-      ::wm::UserActivityDetector::Get();
+  ui::UserActivityDetector* user_activity_detector =
+      ui::UserActivityDetector::Get();
   if (user_activity_detector)
     user_activity_detector->OnDisplayPowerChanging();
 }

@@ -14,15 +14,16 @@
 #include "chrome/browser/ui/webui/chromeos/login/native_window_delegate.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "components/user_manager/user.h"
+#include "ui/base/user_activity/user_activity_observer.h"
 #include "ui/views/widget/widget.h"
-#include "ui/wm/core/user_activity_observer.h"
 
 namespace chromeos {
+
 // WebUI-based login UI implementation.
 class WebUILoginDisplay : public LoginDisplay,
                           public NativeWindowDelegate,
                           public SigninScreenHandlerDelegate,
-                          public wm::UserActivityObserver {
+                          public ui::UserActivityObserver {
  public:
   explicit WebUILoginDisplay(LoginDisplay::Delegate* delegate);
   virtual ~WebUILoginDisplay();
@@ -80,7 +81,7 @@ class WebUILoginDisplay : public LoginDisplay,
   virtual void HandleGetUsers() override;
   virtual const user_manager::UserList& GetUsers() const override;
 
-  // wm::UserActivityDetector implementation:
+  // ui::UserActivityDetector implementation:
   virtual void OnUserActivity(const ui::Event* event) override;
 
  private:

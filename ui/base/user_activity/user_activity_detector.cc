@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/wm/core/user_activity_detector.h"
+#include "ui/base/user_activity/user_activity_detector.h"
 
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
+#include "ui/base/user_activity/user_activity_observer.h"
 #include "ui/events/event.h"
-#include "ui/wm/core/user_activity_observer.h"
 
-namespace wm {
+namespace ui {
 
 namespace {
 
@@ -120,4 +120,4 @@ void UserActivityDetector::HandleActivity(const ui::Event* event) {
   }
 }
 
-}  // namespace wm
+}  // namespace ui

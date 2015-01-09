@@ -12,7 +12,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "ui/wm/core/user_activity_observer.h"
+#include "ui/base/user_activity/user_activity_observer.h"
 
 class PrefService;
 class PrefRegistrySimple;
@@ -21,7 +21,7 @@ namespace chromeos {
 
 // Enforces a session length limit by terminating the session when the limit is
 // reached.
-class SessionLengthLimiter : public wm::UserActivityObserver {
+class SessionLengthLimiter : public ui::UserActivityObserver {
  public:
   class Delegate {
    public:
@@ -37,7 +37,7 @@ class SessionLengthLimiter : public wm::UserActivityObserver {
   SessionLengthLimiter(Delegate* delegate, bool browser_restarted);
   virtual ~SessionLengthLimiter();
 
-  // wm::UserActivityObserver:
+  // ui::UserActivityObserver:
   virtual void OnUserActivity(const ui::Event* event) override;
 
  private:

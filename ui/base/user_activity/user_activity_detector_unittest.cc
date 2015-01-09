@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/wm/core/user_activity_detector.h"
+#include "ui/base/user_activity/user_activity_detector.h"
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
-#include "ui/aura/test/aura_test_base.h"
+#include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/user_activity/user_activity_observer.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/geometry/point.h"
-#include "ui/wm/core/user_activity_observer.h"
 
-namespace wm {
+namespace ui {
 
 // Implementation that just counts the number of times we've been told that the
 // user is active.
@@ -35,24 +35,18 @@ class TestUserActivityObserver : public UserActivityObserver {
   DISALLOW_COPY_AND_ASSIGN(TestUserActivityObserver);
 };
 
-class UserActivityDetectorTest : public aura::test::AuraTestBase {
+class UserActivityDetectorTest : public testing::Test {
  public:
-  UserActivityDetectorTest() {}
-  ~UserActivityDetectorTest() override {}
-
-  void SetUp() override {
-    AuraTestBase::SetUp();
-    observer_.reset(new TestUserActivityObserver);
-    detector_.reset(new UserActivityDetector);
+  UserActivityDetectorTest()
+      : detector_(new UserActivityDetector),
+        observer_(new TestUserActivityObserver) {
     detector_->AddObserver(observer_.get());
-
     now_ = base::TimeTicks::Now();
     detector_->set_now_for_test(now_);
   }
 
-  void TearDown() override {
+  ~UserActivityDetectorTest() override {
     detector_->RemoveObserver(observer_.get());
-    AuraTestBase::TearDown();
   }
 
  protected:
@@ -197,4 +191,4 @@ TEST_F(UserActivityDetectorTest, IgnoreSyntheticMouseEvents) {
   EXPECT_EQ(0, observer_->num_invocations());
 }
 
-}  // namespace wm
+}  // namespace ui

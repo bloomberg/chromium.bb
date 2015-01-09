@@ -42,7 +42,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
-#include "ui/wm/core/user_activity_detector.h"
+#include "ui/base/user_activity/user_activity_detector.h"
 
 namespace chromeos {
 namespace system {
@@ -174,8 +174,8 @@ AutomaticRebootManager::AutomaticRebootManager(
   // idle. Start listening for user activity to determine whether the user is
   // idle or not.
   if (!user_manager::UserManager::Get()->IsUserLoggedIn()) {
-    if (wm::UserActivityDetector::Get())
-      wm::UserActivityDetector::Get()->AddObserver(this);
+    if (ui::UserActivityDetector::Get())
+      ui::UserActivityDetector::Get()->AddObserver(this);
     notification_registrar_.Add(this, chrome::NOTIFICATION_LOGIN_USER_CHANGED,
         content::NotificationService::AllSources());
     login_screen_idle_timer_.reset(
@@ -207,8 +207,8 @@ AutomaticRebootManager::~AutomaticRebootManager() {
   DBusThreadManager* dbus_thread_manager = DBusThreadManager::Get();
   dbus_thread_manager->GetPowerManagerClient()->RemoveObserver(this);
   dbus_thread_manager->GetUpdateEngineClient()->RemoveObserver(this);
-  if (wm::UserActivityDetector::Get())
-    wm::UserActivityDetector::Get()->RemoveObserver(this);
+  if (ui::UserActivityDetector::Get())
+    ui::UserActivityDetector::Get()->RemoveObserver(this);
 }
 
 void AutomaticRebootManager::AddObserver(
@@ -275,8 +275,8 @@ void AutomaticRebootManager::Observe(
   } else if (type == chrome::NOTIFICATION_LOGIN_USER_CHANGED) {
     // A session is starting. Stop listening for user activity as it no longer
     // is a relevant criterion.
-    if (wm::UserActivityDetector::Get())
-      wm::UserActivityDetector::Get()->RemoveObserver(this);
+    if (ui::UserActivityDetector::Get())
+      ui::UserActivityDetector::Get()->RemoveObserver(this);
     notification_registrar_.Remove(
         this, chrome::NOTIFICATION_LOGIN_USER_CHANGED,
         content::NotificationService::AllSources());

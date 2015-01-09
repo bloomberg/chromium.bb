@@ -57,6 +57,7 @@ class Rect;
 namespace ui {
 class DisplayConfigurator;
 class Layer;
+class UserActivityDetector;
 class UserActivityPowerManagerNotifier;
 }
 namespace views {
@@ -74,7 +75,6 @@ class InputMethodEventFilter;
 class NestedAcceleratorController;
 class ShadowController;
 class VisibilityController;
-class UserActivityDetector;
 class WindowModalityController;
 }
 
@@ -145,7 +145,6 @@ class SystemTrayNotifier;
 class ToplevelWindowEventHandler;
 class TouchTransformerController;
 class TouchObserverHUD;
-class UserActivityDetector;
 class UserWallpaperDelegate;
 class VirtualKeyboardController;
 class VideoActivityNotifier;
@@ -672,7 +671,7 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   scoped_ptr<PowerButtonController> power_button_controller_;
   scoped_ptr<LockStateController> lock_state_controller_;
   scoped_ptr<MruWindowTracker> mru_window_tracker_;
-  scoped_ptr< ::wm::UserActivityDetector> user_activity_detector_;
+  scoped_ptr<ui::UserActivityDetector> user_activity_detector_;
   scoped_ptr<VideoDetector> video_detector_;
   scoped_ptr<WindowCycleController> window_cycle_controller_;
   scoped_ptr<WindowSelectorController> window_selector_controller_;

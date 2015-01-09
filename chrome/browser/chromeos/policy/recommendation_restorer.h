@@ -14,7 +14,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "ui/wm/core/user_activity_observer.h"
+#include "ui/base/user_activity/user_activity_observer.h"
 
 class Profile;
 
@@ -28,7 +28,7 @@ namespace policy {
 // becomes idle for one minute.
 class RecommendationRestorer : public KeyedService,
                                public content::NotificationObserver,
-                               public wm::UserActivityObserver {
+                               public ui::UserActivityObserver {
  public:
   explicit RecommendationRestorer(Profile* profile);
   virtual ~RecommendationRestorer();
@@ -41,7 +41,7 @@ class RecommendationRestorer : public KeyedService,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) override;
 
-  // wm::UserActivityObserver:
+  // ui::UserActivityObserver:
   virtual void OnUserActivity(const ui::Event* event) override;
 
   // If a recommended value and a user setting exist for |pref_name|, clears the

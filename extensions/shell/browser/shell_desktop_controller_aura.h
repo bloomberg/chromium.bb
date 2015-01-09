@@ -36,17 +36,17 @@ namespace gfx {
 class Size;
 }
 
-#if defined(OS_CHROMEOS)
 namespace ui {
+class UserActivityDetector;
+#if defined(OS_CHROMEOS)
 class UserActivityPowerManagerNotifier;
-}
 #endif
+}
 
 namespace wm {
 class CompoundEventFilter;
 class CursorManager;
 class InputMethodEventFilter;
-class UserActivityDetector;
 }
 
 namespace extensions {
@@ -128,7 +128,7 @@ class ShellDesktopControllerAura
 
   scoped_ptr<wm::CursorManager> cursor_manager_;
 
-  scoped_ptr<wm::UserActivityDetector> user_activity_detector_;
+  scoped_ptr<ui::UserActivityDetector> user_activity_detector_;
 #if defined(OS_CHROMEOS)
   scoped_ptr<ui::UserActivityPowerManagerNotifier> user_activity_notifier_;
 #endif
