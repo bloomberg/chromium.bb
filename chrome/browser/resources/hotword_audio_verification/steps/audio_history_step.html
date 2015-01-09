@@ -1,8 +1,9 @@
 <div id="audio-history-container" hidden>
   <div class="container">
-    <span class="close" tabindex="0"></span>
+    <span class="close" tabindex="0" role="button"
+        i18n-values="aria-label:close"></span>
     <div class="header">
-      <h1 i18n-content="audioHistoryTitle"></h1>
+      <h1 i18n-content="audioHistoryTitle" aria-live="polite"></h1>
     </div>
     <div class="content">
       <div i18n-content="audioHistoryDescription1"></div>
@@ -27,7 +28,7 @@
           <span class="icon"></span>
           <span i18n-content="audioHistoryWait" class="text"></span>
         </div>
-        <div id="audio-history-error" class="message error" hidden>
+        <div id="audio-history-error" class="message error" role="alert" hidden>
           <span class="icon"></span>
           <span i18n-content="error" class="text"></span>
         </div>

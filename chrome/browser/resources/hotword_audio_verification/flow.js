@@ -209,6 +209,8 @@
 
     $('audio-history-wait').hidden = true;
     $('audio-history-error').hidden = false;
+
+    $('audio-history-agree').focus();
   };
 
   /**
@@ -406,6 +408,8 @@
     var trainingSteps = this.getCurrentTrainingStep_('listening');
     var steps = trainingSteps.steps;
 
+    $(this.trainingPagePrefix_ + '-toast').hidden =
+        this.trainingState_ != TrainingState.TIMEOUT;
     if (this.trainingState_ == TrainingState.RESET) {
       // We reset the training to begin at the first step.
       // The first step is reset to 'listening', while the rest
@@ -437,15 +441,17 @@
         curStep.classList.remove('listening');
         curStep.classList.add('not-started');
       }
+      $(this.trainingPagePrefix_ + '-toast').children[1].focus();
     } else if (this.trainingState_ == TrainingState.ERROR) {
       // Update the buttonbar.
       $(this.trainingPagePrefix_ + '-wait').hidden = true;
       $(this.trainingPagePrefix_ + '-error').hidden = false;
       $(this.trainingPagePrefix_ + '-retry').hidden = false;
       $(this.trainingPagePrefix_ + '-processing').hidden = false;
+
+      // Focus the retry button.
+      $(this.trainingPagePrefix_ + '-retry').children[0].focus();
     }
-    $(this.trainingPagePrefix_ + '-toast').hidden =
-        !(this.trainingState_ == TrainingState.TIMEOUT);
   };
 
   /**

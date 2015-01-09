@@ -1,8 +1,9 @@
 <div id="speech-training-container" hidden>
   <div class="container">
-    <span class="close" tabindex="0"></span>
+    <span class="close" tabindex="0" role="button"
+        i18n-values="aria-label:close"></span>
     <div class="header">
-      <h1 i18n-content="trainingTitle"></h1>
+      <h1 i18n-content="trainingTitle" aria-live="polite"></h1>
     </div>
     <div id="speech-training-training" class="content">
       <div class="col-2">
@@ -30,7 +31,7 @@
       </div>
     </div>
     <div id="speech-training-toast" class="toast" hidden>
-      <span i18n-content="trainingTimeout" class="message"></span>
+      <span i18n-content="trainingTimeout" class="message" role="alert"></span>
       <button i18n-content="trainingRetry" class="retry-button" tabindex="0">
       </button>
     </div>
@@ -44,7 +45,8 @@
           <span class="icon"></span>
           <span i18n-content="finishedWait" class="text"></span>
         </div>
-        <div id="speech-training-error" class="message error" hidden>
+        <div id="speech-training-error" class="message error"
+            role="alert" hidden>
           <span class="icon"></span>
           <span i18n-content="error" class="text"></span>
         </div>
