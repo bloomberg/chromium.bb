@@ -1567,16 +1567,17 @@ void HeapPage::sweep(ThreadHeap* heap)
             size_t size = header->size();
             // This is a fast version of header->payloadSize().
             size_t payloadSize = size - sizeof(HeapObjectHeader);
+            Address payload = header->payload();
             // For ASan we unpoison the specific object when calling the
             // finalizer and poison it again when done to allow the object's own
             // finalizer to operate on the object, but not have other finalizers
             // be allowed to access it.
-            ASAN_UNPOISON_MEMORY_REGION(header->payload(), payloadSize);
-            header->finalize(header->payload(), payloadSize);
+            ASAN_UNPOISON_MEMORY_REGION(payload, payloadSize);
+            header->finalize(payload, payloadSize);
             // This memory will be added to the freelist. Maintain the invariant
             // that memory on the freelist is zero filled.
             FILL_ZERO_IF_PRODUCTION(headerAddress, size);
-            ASAN_POISON_MEMORY_REGION(header->payload(), payloadSize);
+            ASAN_POISON_MEMORY_REGION(payload, payloadSize);
             headerAddress += size;
             continue;
         }
