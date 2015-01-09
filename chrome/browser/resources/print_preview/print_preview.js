@@ -955,7 +955,7 @@ cr.define('print_preview', function() {
      * @private
      */
     onManageCloudDestinationsActivated_: function() {
-      this.nativeLayer_.startManageCloudDestinations();
+      this.nativeLayer_.startManageCloudDestinations(this.userInfo_.activeUser);
     },
 
     /**

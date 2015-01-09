@@ -398,9 +398,14 @@ cr.define('print_preview', function() {
       chrome.send('manageLocalPrinters');
     },
 
-    /** Navigates the user to the Google Cloud Print management page. */
-    startManageCloudDestinations: function() {
-      chrome.send('manageCloudPrinters');
+    /**
+     * Navigates the user to the Google Cloud Print management page.
+     * @param {?string} user Email address of the user to open the management
+     *     page for (user must be currently logged in, indeed) or {@code null}
+     *     to open this page for the primary user.
+     */
+    startManageCloudDestinations: function(user) {
+      chrome.send('manageCloudPrinters', [user || '']);
     },
 
     /** Forces browser to open a new tab with the given URL address. */

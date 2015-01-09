@@ -69,6 +69,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "google_apis/gaia/oauth2_token_service.h"
+#include "net/base/url_util.h"
 #include "printing/backend/print_backend.h"
 #include "printing/backend/print_backend_consts.h"
 #include "printing/metafile.h"
@@ -1019,10 +1020,16 @@ void PrintPreviewHandler::HandleGetAccessToken(const base::ListValue* args) {
 }
 
 void PrintPreviewHandler::HandleManageCloudPrint(
-    const base::ListValue* /*args*/) {
+    const base::ListValue* args) {
   ++manage_cloud_printers_dialog_request_count_;
+  GURL manage_url(cloud_devices::GetCloudPrintRelativeURL("manage.html"));
+  std::string user;
+  if (!args->GetString(0, &user))
+    return;
+  if (!user.empty())
+    manage_url = net::AppendQueryParameter(manage_url, "user", user);
   preview_web_contents()->OpenURL(content::OpenURLParams(
-      cloud_devices::GetCloudPrintRelativeURL("manage.html"),
+      manage_url,
       content::Referrer(),
       NEW_FOREGROUND_TAB,
       ui::PAGE_TRANSITION_LINK,
