@@ -114,19 +114,19 @@ function formatJapaneseImperialEra(year, month) {
     if (year > ImperialEraLimit)
         return "";
     if (year > 1989)
-        return "(平成" + localizeNumber(year - 1988) + "年)";
+        return "(\u5e73\u6210" + localizeNumber(year - 1988) + "\u5e74)";
     if (year == 1989)
-        return "(平成元年)";
+        return "(\u5e73\u6210\u5143\u5e74)";
     if (year >= 1927)
-        return "(昭和" + localizeNumber(year - 1925) + "年)";
+        return "(\u662d\u548c" + localizeNumber(year - 1925) + "\u5e74)";
     if (year > 1912)
-        return "(大正" + localizeNumber(year - 1911) + "年)";
+        return "(\u5927\u6b63" + localizeNumber(year - 1911) + "\u5e74)";
     if (year == 1912 && month >= 7)
-        return "(大正元年)";
+        return "(\u5927\u6b63\u5143\u5e74)";
     if (year > 1868)
-        return "(明治" + localizeNumber(year - 1867) + "年)";
+        return "(\u660e\u6cbb" + localizeNumber(year - 1867) + "\u5e74)";
     if (year == 1868)
-        return "(明治元年)";
+        return "(\u660e\u6cbb\u5143\u5e74)";
     return "";
 }
 
@@ -769,7 +769,7 @@ Month.prototype.toString = function() {
  */
 Month.prototype.toLocaleString = function() {
     if (global.params.locale === "ja")
-        return "" + this.year + "年" + formatJapaneseImperialEra(this.year, this.month) + " " + (this.month + 1) + "月";
+        return "" + this.year + "\u5e74" + formatJapaneseImperialEra(this.year, this.month) + " " + (this.month + 1) + "\u6708";
     return window.pagePopupController.formatMonth(this.year, this.month);
 };
 
