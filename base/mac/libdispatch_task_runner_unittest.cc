@@ -12,7 +12,7 @@
 
 class LibDispatchTaskRunnerTest : public testing::Test {
  public:
-  virtual void SetUp() override {
+  void SetUp() override {
     task_runner_ = new base::mac::LibDispatchTaskRunner(
         "org.chromium.LibDispatchTaskRunnerTest");
   }

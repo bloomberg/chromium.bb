@@ -27,9 +27,7 @@ class ScopedSendingEventTest : public testing::Test {
   ScopedSendingEventTest() : app_([[ScopedSendingEventTestCrApp alloc] init]) {
     NSApp = app_.get();
   }
-  virtual ~ScopedSendingEventTest() {
-    NSApp = nil;
-  }
+  ~ScopedSendingEventTest() override { NSApp = nil; }
 
  private:
   base::scoped_nsobject<ScopedSendingEventTestCrApp> app_;
