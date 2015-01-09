@@ -414,8 +414,10 @@ cr.define('extensions', function() {
     }
 
     var currentlyShowingOverlay = ExtensionSettings.getCurrentOverlay();
-    if (currentlyShowingOverlay)
+    if (currentlyShowingOverlay) {
       currentlyShowingOverlay.classList.remove('showing');
+      cr.dispatchSimpleEvent($('overlay'), 'cancelOverlay');
+    }
 
     if (node) {
       if (document.activeElement != document.body)
