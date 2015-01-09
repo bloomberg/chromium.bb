@@ -26,9 +26,9 @@ import java.util.regex.Pattern;
 /**
  *  An Instrumentation that runs tests based on ChromeNativeTestActivity.
  */
-public class ChromiumNativeTestInstrumentationTestRunner extends Instrumentation {
+public class ChromeNativeTestInstrumentationTestRunner extends Instrumentation {
 
-    private static final String TAG = "ChromiumNativeTestInstrumentationTestRunner";
+    private static final String TAG = "ChromeNativeTestInstrumentationTestRunner";
     private static final Pattern RE_TEST_OUTPUT = Pattern.compile("\\[ *([^ ]*) *\\] ?([^ ]*) .*");
 
     private static interface ResultsBundleGenerator {

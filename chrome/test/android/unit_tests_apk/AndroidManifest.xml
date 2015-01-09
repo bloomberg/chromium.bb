@@ -24,7 +24,7 @@ found in the LICENSE file.
         </activity>
     </application>
 
-    <instrumentation android:name="org.chromium.native_test.ChromiumNativeTestInstrumentationTestRunner"
+    <instrumentation android:name="org.chromium.native_test.ChromeNativeTestInstrumentationTestRunner"
             android:targetPackage="org.chromium.native_test"
             android:label="Instrumentation entry point for org.chromium.native_test"/>
 

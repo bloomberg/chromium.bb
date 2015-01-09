@@ -19,7 +19,7 @@ class RemoteDeviceGtestRun(remote_device_test_run.RemoteDeviceTestRun):
   """Run gtests and uirobot tests on a remote device."""
 
   DEFAULT_RUNNER_PACKAGE = (
-      'org.chromium.native_test.ChromiumNativeTestInstrumentationTestRunner')
+      'org.chromium.native_test.ChromeNativeTestInstrumentationTestRunner')
 
   #override
   def TestPackage(self):
