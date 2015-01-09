@@ -15,6 +15,7 @@
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
@@ -167,9 +168,7 @@ void UpdateGaiaProfileInfoIfNeeded(Profile* profile) {
 }
 
 SigninErrorController* GetSigninErrorController(Profile* profile) {
-  ProfileOAuth2TokenService* token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
-  return token_service ? token_service->signin_error_controller() : NULL;
+  return SigninErrorControllerFactory::GetForProfile(profile);
 }
 
 Profile* SetActiveProfileToGuestIfLocked() {

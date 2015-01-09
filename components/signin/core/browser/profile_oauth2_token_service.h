@@ -10,7 +10,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/linked_ptr.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/signin/core/browser/signin_error_controller.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 
 namespace net {
@@ -19,6 +18,7 @@ class URLRequestContextGetter;
 
 class GoogleServiceAuthError;
 class SigninClient;
+class SigninErrorController;
 
 // ProfileOAuth2TokenService is a KeyedService that retrieves
 // OAuth2 access tokens for a given set of scopes using the OAuth2 login
@@ -40,7 +40,8 @@ class ProfileOAuth2TokenService : public OAuth2TokenService,
   ~ProfileOAuth2TokenService() override;
 
   // Initializes this token service with the SigninClient.
-  virtual void Initialize(SigninClient* client);
+  virtual void Initialize(SigninClient* client,
+                          SigninErrorController* signin_error_controller);
 
   // KeyedService implementation.
   void Shutdown() override;
@@ -67,14 +68,6 @@ class ProfileOAuth2TokenService : public OAuth2TokenService,
   // Revokes all credentials handled by the object.
   virtual void RevokeAllCredentials();
 
-  SigninErrorController* signin_error_controller() {
-    return signin_error_controller_.get();
-  }
-
-  const SigninErrorController* signin_error_controller() const {
-    return signin_error_controller_.get();
-  }
-
   SigninClient* client() const { return client_; }
 
  protected:
@@ -96,12 +89,16 @@ class ProfileOAuth2TokenService : public OAuth2TokenService,
   // when invalid.
   void ValidateAccountId(const std::string& account_id) const;
 
+  SigninErrorController* signin_error_controller() {
+    return signin_error_controller_;
+  }
+
  private:
   // The client with which this instance was initialized, or NULL.
   SigninClient* client_;
 
-  // Used to expose auth errors to the UI.
-  scoped_ptr<SigninErrorController> signin_error_controller_;
+  // The error controller with which this instance was initialized, or NULL.
+  SigninErrorController* signin_error_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileOAuth2TokenService);
 };

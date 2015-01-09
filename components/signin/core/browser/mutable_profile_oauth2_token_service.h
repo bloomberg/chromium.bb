@@ -8,6 +8,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/threading/thread_checker.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
+#include "components/signin/core/browser/signin_error_controller.h"
 #include "components/webdata/common/web_data_service_base.h"
 #include "components/webdata/common/web_data_service_consumer.h"
 
@@ -37,7 +38,7 @@ class MutableProfileOAuth2TokenService : public ProfileOAuth2TokenService,
  protected:
   class AccountInfo : public SigninErrorController::AuthStatusProvider {
    public:
-    AccountInfo(ProfileOAuth2TokenService* token_service,
+    AccountInfo(SigninErrorController* signin_error_controller,
                 const std::string& account_id,
                 const std::string& refresh_token);
     ~AccountInfo() override;
@@ -55,7 +56,7 @@ class MutableProfileOAuth2TokenService : public ProfileOAuth2TokenService,
     GoogleServiceAuthError GetAuthStatus() const override;
 
    private:
-    ProfileOAuth2TokenService* token_service_;
+    SigninErrorController* signin_error_controller_;
     std::string account_id_;
     std::string refresh_token_;
     GoogleServiceAuthError last_auth_error_;

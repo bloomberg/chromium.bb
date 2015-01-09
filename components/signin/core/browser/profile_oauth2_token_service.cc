@@ -14,25 +14,24 @@
 #include "net/url_request/url_request_context_getter.h"
 
 ProfileOAuth2TokenService::ProfileOAuth2TokenService()
-    : client_(NULL) {}
+    : client_(NULL),
+      signin_error_controller_(NULL) {}
 
-ProfileOAuth2TokenService::~ProfileOAuth2TokenService() {
-  DCHECK(!signin_error_controller_.get()) <<
-      "ProfileOAuth2TokenService::Initialize called but not "
-      "ProfileOAuth2TokenService::Shutdown";
-}
+ProfileOAuth2TokenService::~ProfileOAuth2TokenService() {}
 
-void ProfileOAuth2TokenService::Initialize(SigninClient* client) {
+void ProfileOAuth2TokenService::Initialize(
+    SigninClient* client,
+    SigninErrorController* signin_error_controller) {
   DCHECK(client);
   DCHECK(!client_);
+  DCHECK(signin_error_controller);
+  DCHECK(!signin_error_controller_);
   client_ = client;
-
-  signin_error_controller_.reset(new SigninErrorController());
+  signin_error_controller_ = signin_error_controller;
 }
 
 void ProfileOAuth2TokenService::Shutdown() {
   DCHECK(client_) << "Shutdown() called without matching call to Initialize()";
-  signin_error_controller_.reset();
 }
 
 net::URLRequestContextGetter* ProfileOAuth2TokenService::GetRequestContext() {

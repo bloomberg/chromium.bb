@@ -11,7 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "chrome/browser/signin/signin_ui_util.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -24,7 +24,6 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/locale_settings.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_error_controller.h"
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -168,8 +167,8 @@ MessageType GetStatusInfo(ProfileSyncService* service,
     if (service) {
       // Since there is no auth in progress, check for an auth error first.
       AuthError auth_error =
-          ProfileOAuth2TokenServiceFactory::GetForProfile(service->profile())->
-              signin_error_controller()->auth_error();
+          SigninErrorControllerFactory::GetForProfile(service->profile())->
+              auth_error();
       if (auth_error.state() != AuthError::NONE) {
         if (status_label && link_label)
           signin_ui_util::GetStatusLabelsForAuthError(
@@ -231,8 +230,8 @@ MessageType GetStatusInfo(ProfileSyncService* service,
       ProfileSyncService::Status status;
       service->QueryDetailedSyncStatus(&status);
       AuthError auth_error =
-          ProfileOAuth2TokenServiceFactory::GetForProfile(service->profile())->
-              signin_error_controller()->auth_error();
+          SigninErrorControllerFactory::GetForProfile(service->profile())->
+              auth_error();
       if (status_label) {
         status_label->assign(
             l10n_util::GetStringUTF16(IDS_SYNC_NTP_SETUP_IN_PROGRESS));

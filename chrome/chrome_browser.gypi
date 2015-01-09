@@ -2507,6 +2507,8 @@
       'browser/signin/screenlock_bridge.h',
       'browser/signin/signin_cookie_changed_subscription.cc',
       'browser/signin/signin_cookie_changed_subscription.h',
+      'browser/signin/signin_error_controller_factory.cc',
+      'browser/signin/signin_error_controller_factory.h',
       'browser/signin/signin_header_helper.cc',
       'browser/signin/signin_header_helper.h',
       'browser/signin/signin_manager_factory.cc',

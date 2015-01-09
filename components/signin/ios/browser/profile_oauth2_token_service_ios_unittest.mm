@@ -32,7 +32,7 @@ class ProfileOAuth2TokenServiceIOSTest : public testing::Test,
                              net::HTTP_OK,
                              net::URLRequestStatus::SUCCESS);
     fake_provider_ = client_.GetIOSProviderAsFake();
-    oauth2_service_.Initialize(&client_);
+    oauth2_service_.Initialize(&client_, &signin_error_controller_);
     oauth2_service_.AddObserver(this);
   }
 
@@ -75,6 +75,7 @@ class ProfileOAuth2TokenServiceIOSTest : public testing::Test,
   base::MessageLoop message_loop_;
   net::FakeURLFetcherFactory factory_;
   TestSigninClient client_;
+  SigninErrorController signin_error_controller_;
   ios::FakeProfileOAuth2TokenServiceIOSProvider* fake_provider_;
   ProfileOAuth2TokenServiceIOS oauth2_service_;
   TestingOAuth2TokenServiceConsumer consumer_;

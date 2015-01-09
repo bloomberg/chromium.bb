@@ -82,27 +82,27 @@ void MutableProfileOAuth2TokenService::
 }
 
 MutableProfileOAuth2TokenService::AccountInfo::AccountInfo(
-    ProfileOAuth2TokenService* token_service,
+    SigninErrorController* signin_error_controller,
     const std::string& account_id,
     const std::string& refresh_token)
-  : token_service_(token_service),
+  : signin_error_controller_(signin_error_controller),
     account_id_(account_id),
     refresh_token_(refresh_token),
     last_auth_error_(GoogleServiceAuthError::NONE) {
-  DCHECK(token_service_);
+  DCHECK(signin_error_controller_);
   DCHECK(!account_id_.empty());
-  token_service_->signin_error_controller()->AddProvider(this);
+  signin_error_controller_->AddProvider(this);
 }
 
 MutableProfileOAuth2TokenService::AccountInfo::~AccountInfo() {
-  token_service_->signin_error_controller()->RemoveProvider(this);
+  signin_error_controller_->RemoveProvider(this);
 }
 
 void MutableProfileOAuth2TokenService::AccountInfo::SetLastAuthError(
     const GoogleServiceAuthError& error) {
   if (error.state() != last_auth_error_.state()) {
     last_auth_error_ = error;
-    token_service_->signin_error_controller()->AuthStatusChanged();
+    signin_error_controller_->AuthStatusChanged();
   }
 }
 
@@ -204,7 +204,9 @@ void MutableProfileOAuth2TokenService::OnWebDataServiceRequestDone(
   DCHECK(!loading_primary_account_id_.empty());
   if (refresh_tokens().count(loading_primary_account_id_) == 0) {
     refresh_tokens()[loading_primary_account_id_].reset(
-        new AccountInfo(this, loading_primary_account_id_, std::string()));
+        new AccountInfo(signin_error_controller(),
+                        loading_primary_account_id_,
+                        std::string()));
   }
 
   // If we don't have a refresh token for a known account, signal an error.
@@ -254,7 +256,9 @@ void MutableProfileOAuth2TokenService::LoadAllCredentialsIntoMemory(
           account_id = gaia::CanonicalizeEmail(account_id);
 
         refresh_tokens()[account_id].reset(
-            new AccountInfo(this, account_id, refresh_token));
+            new AccountInfo(signin_error_controller(),
+                            account_id,
+                            refresh_token));
         FireRefreshTokenAvailable(account_id);
       }
     }
@@ -328,7 +332,9 @@ void MutableProfileOAuth2TokenService::UpdateCredentials(
       refresh_tokens_[account_id]->set_refresh_token(refresh_token);
     } else {
       refresh_tokens_[account_id].reset(
-          new AccountInfo(this, account_id, refresh_token));
+          new AccountInfo(signin_error_controller(),
+                          account_id,
+                          refresh_token));
     }
 
     // Save the token in memory and in persistent store.

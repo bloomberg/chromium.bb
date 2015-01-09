@@ -9,7 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "chrome/browser/signin/signin_global_error.h"
 #include "chrome/browser/signin/signin_global_error_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -22,7 +22,6 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/signin/core/browser/account_tracker_service.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -107,8 +106,8 @@ void GetStatusLabelsForAuthError(Profile* profile,
     link_label->assign(l10n_util::GetStringUTF16(IDS_SYNC_RELOGIN_LINK_LABEL));
 
   const GoogleServiceAuthError::State state =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile)->
-          signin_error_controller()->auth_error().state();
+      SigninErrorControllerFactory::GetForProfile(profile)->
+          auth_error().state();
   switch (state) {
     case GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS:
     case GoogleServiceAuthError::SERVICE_ERROR:

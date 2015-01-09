@@ -14,7 +14,7 @@
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/supervised_user/legacy/supervised_user_shared_settings_service.h"
 #include "chrome/browser/supervised_user/legacy/supervised_user_shared_settings_service_factory.h"
@@ -23,7 +23,6 @@
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_error_controller.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/web_ui.h"
@@ -93,8 +92,7 @@ void SupervisedUserImportHandler::InitializeHandler() {
         SupervisedUserSyncServiceFactory::GetForProfile(profile);
     if (sync_service) {
       sync_service->AddObserver(this);
-      observer_.Add(ProfileOAuth2TokenServiceFactory::GetForProfile(profile)->
-                        signin_error_controller());
+      observer_.Add(SigninErrorControllerFactory::GetForProfile(profile));
       SupervisedUserSharedSettingsService* settings_service =
           SupervisedUserSharedSettingsServiceFactory::GetForBrowserContext(
               profile);
@@ -104,7 +102,7 @@ void SupervisedUserImportHandler::InitializeHandler() {
     } else {
       DCHECK(!SupervisedUserSharedSettingsServiceFactory::GetForBrowserContext(
                  profile));
-      DCHECK(!ProfileOAuth2TokenServiceFactory::GetForProfile(profile));
+      DCHECK(!SigninErrorControllerFactory::GetForProfile(profile));
     }
   }
 }
@@ -224,13 +222,10 @@ bool SupervisedUserImportHandler::IsAccountConnected() const {
 
 bool SupervisedUserImportHandler::HasAuthError() const {
   Profile* profile = Profile::FromWebUI(web_ui());
-  ProfileOAuth2TokenService* token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
-  if (!token_service)
-    return true;
-
   SigninErrorController* error_controller =
-      token_service->signin_error_controller();
+      SigninErrorControllerFactory::GetForProfile(profile);
+  if (!error_controller)
+    return true;
 
   GoogleServiceAuthError::State state = error_controller->auth_error().state();
 

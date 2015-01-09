@@ -9,13 +9,14 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/observer_list.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 
 // Keep track of auth errors and expose them to observers in the UI. Services
 // that wish to expose auth errors to the user should register an
 // AuthStatusProvider to report their current authentication state, and should
 // invoke AuthStatusChanged() when their authentication state may have changed.
-class SigninErrorController {
+class SigninErrorController : public KeyedService {
  public:
   class AuthStatusProvider {
    public:
@@ -42,7 +43,7 @@ class SigninErrorController {
   };
 
   SigninErrorController();
-  ~SigninErrorController();
+  ~SigninErrorController() override;
 
   // Adds a provider which the SigninErrorController object will start querying
   // for auth status.

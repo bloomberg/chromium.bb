@@ -159,9 +159,11 @@ static jobject GetForProfile(JNIEnv* env,
       env, clazz, j_profile_android);
 }
 
-void AndroidProfileOAuth2TokenService::Initialize(SigninClient* client) {
+void AndroidProfileOAuth2TokenService::Initialize(
+    SigninClient* client,
+    SigninErrorController* signin_error_controller) {
   DVLOG(1) << "AndroidProfileOAuth2TokenService::Initialize";
-  ProfileOAuth2TokenService::Initialize(client);
+  ProfileOAuth2TokenService::Initialize(client, signin_error_controller);
 
   if (!is_testing_profile_) {
     Java_OAuth2TokenService_validateAccounts(

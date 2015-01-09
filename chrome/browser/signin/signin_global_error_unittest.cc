@@ -6,10 +6,10 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_service.h"
-#include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
 #include "chrome/browser/signin/fake_signin_manager.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "chrome/browser/signin/signin_global_error_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
@@ -40,8 +40,8 @@ class SigninGlobalErrorTest : public testing::Test {
         ->SetAuthenticatedUsername(kTestAccountId);
 
     global_error_ = SigninGlobalErrorFactory::GetForProfile(profile_.get());
-    error_controller_ = ProfileOAuth2TokenServiceFactory::GetForProfile(
-        profile_.get())->signin_error_controller();
+    error_controller_ = SigninErrorControllerFactory::GetForProfile(
+        profile_.get());
   }
 
   content::TestBrowserThreadBundle thread_bundle_;

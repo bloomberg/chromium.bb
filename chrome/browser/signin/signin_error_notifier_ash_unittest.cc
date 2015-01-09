@@ -10,14 +10,13 @@
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/signin/fake_signin_manager.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "chrome/browser/signin/signin_error_notifier_factory_ash.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/signin/core/browser/fake_auth_status_provider.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_error_controller.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -84,9 +83,8 @@ class SigninErrorNotifierTest : public AshTestBase {
     gfx::Screen::SetScreenTypeDelegate(new ScreenTypeDelegateDesktop);
 #endif
 
-    error_controller_ =
-        ProfileOAuth2TokenServiceFactory::GetForProfile(profile_.get())->
-            signin_error_controller();
+    error_controller_ = SigninErrorControllerFactory::GetForProfile(
+        profile_.get());
     SigninErrorNotifierFactory::GetForProfile(profile_.get());
     notification_ui_manager_ = g_browser_process->notification_ui_manager();
   }

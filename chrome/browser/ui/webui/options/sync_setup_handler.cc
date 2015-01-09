@@ -23,7 +23,7 @@
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "chrome/browser/signin/signin_header_helper.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_promo.h"
@@ -42,7 +42,6 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/locale_settings.h"
 #include "components/google/core/browser/google_util.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_error_controller.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/signin/core/common/profile_management_switches.h"
@@ -369,8 +368,7 @@ void SyncSetupHandler::DisplayGaiaLoginInNewTabOrWindow() {
                               signin_metrics::HISTOGRAM_REAUTH_MAX);
 
     SigninErrorController* error_controller =
-        ProfileOAuth2TokenServiceFactory::GetForProfile(browser->profile())->
-            signin_error_controller();
+        SigninErrorControllerFactory::GetForProfile(browser->profile());
     DCHECK(error_controller->HasError());
     if (switches::IsNewAvatarMenu() && !force_new_tab) {
       browser->window()->ShowAvatarBubbleFromAvatarButton(
@@ -741,8 +739,7 @@ void SyncSetupHandler::OpenSyncSetup() {
       SigninManagerFactory::GetForProfile(GetProfile());
 
   if (!signin->IsAuthenticated() ||
-      ProfileOAuth2TokenServiceFactory::GetForProfile(GetProfile())->
-          signin_error_controller()->HasError()) {
+      SigninErrorControllerFactory::GetForProfile(GetProfile())->HasError()) {
     // User is not logged in (cases 1-2), or login has been specially requested
     // because previously working credentials have expired (case 3). Close sync
     // setup including any visible overlays, and display the gaia auth page.

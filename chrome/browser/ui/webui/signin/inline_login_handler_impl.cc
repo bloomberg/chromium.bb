@@ -18,6 +18,7 @@
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/local_auth.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -160,8 +161,7 @@ void InlineSigninHelper::OnClientOAuthSuccess(const ClientOAuthResult& result) {
     ProfileSyncService* sync_service =
         ProfileSyncServiceFactory::GetForProfile(profile_);
     SigninErrorController* error_controller =
-        ProfileOAuth2TokenServiceFactory::GetForProfile(profile_)->
-            signin_error_controller();
+        SigninErrorControllerFactory::GetForProfile(profile_);
 
     bool is_new_avatar_menu = switches::IsNewAvatarMenu();
 

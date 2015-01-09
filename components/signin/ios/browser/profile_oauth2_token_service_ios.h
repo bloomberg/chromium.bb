@@ -9,6 +9,7 @@
 
 #include "base/threading/thread_checker.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
+#include "components/signin/core/browser/signin_error_controller.h"
 
 class OAuth2AccessTokenFetcher;
 
@@ -39,7 +40,9 @@ class ProfileOAuth2TokenServiceIOS : public ProfileOAuth2TokenService {
                                      const std::string& access_token) override;
 
   // ProfileOAuth2TokenService
-  virtual void Initialize(SigninClient* client) override;
+  virtual void Initialize(
+      SigninClient* client,
+      SigninErrorController* signin_error_controller) override;
   virtual void LoadCredentials(const std::string& primary_account_id) override;
   virtual std::vector<std::string> GetAccounts() override;
   virtual void UpdateAuthError(const std::string& account_id,
@@ -85,7 +88,7 @@ class ProfileOAuth2TokenServiceIOS : public ProfileOAuth2TokenService {
  private:
   class AccountInfo : public SigninErrorController::AuthStatusProvider {
    public:
-    AccountInfo(ProfileOAuth2TokenService* token_service,
+    AccountInfo(SigninErrorController* signin_error_controller,
                 const std::string& account_id);
     virtual ~AccountInfo();
 
@@ -97,7 +100,7 @@ class ProfileOAuth2TokenServiceIOS : public ProfileOAuth2TokenService {
     virtual GoogleServiceAuthError GetAuthStatus() const override;
 
    private:
-    ProfileOAuth2TokenService* token_service_;
+    SigninErrorController* signin_error_controller_;
     std::string account_id_;
     GoogleServiceAuthError last_auth_error_;
 

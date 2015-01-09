@@ -6,6 +6,7 @@
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
+#include "chrome/browser/signin/signin_error_controller_factory.h"
 
 // TODO(blundell): Should these be namespaced?
 KeyedService* BuildFakeProfileOAuth2TokenService(
@@ -13,7 +14,8 @@ KeyedService* BuildFakeProfileOAuth2TokenService(
   Profile* profile = Profile::FromBrowserContext(context);
   FakeProfileOAuth2TokenService* service = new FakeProfileOAuth2TokenService();
   service->Initialize(
-      ChromeSigninClientFactory::GetInstance()->GetForProfile(profile));
+      ChromeSigninClientFactory::GetInstance()->GetForProfile(profile),
+      SigninErrorControllerFactory::GetInstance()->GetForProfile(profile));
   return service;
 }
 
@@ -23,6 +25,7 @@ KeyedService* BuildAutoIssuingFakeProfileOAuth2TokenService(
   FakeProfileOAuth2TokenService* service = new FakeProfileOAuth2TokenService();
   service->set_auto_post_fetch_response_on_message_loop(true);
   service->Initialize(
-      ChromeSigninClientFactory::GetInstance()->GetForProfile(profile));
+      ChromeSigninClientFactory::GetInstance()->GetForProfile(profile),
+      SigninErrorControllerFactory::GetInstance()->GetForProfile(profile));
   return service;
 }

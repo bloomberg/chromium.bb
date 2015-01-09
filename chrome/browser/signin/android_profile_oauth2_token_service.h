@@ -44,7 +44,9 @@ class AndroidProfileOAuth2TokenService : public ProfileOAuth2TokenService {
   }
 
   // ProfileOAuth2TokenService overrides:
-  virtual void Initialize(SigninClient* client) override;
+  virtual void Initialize(
+      SigninClient* client,
+      SigninErrorController* signin_error_controller) override;
   virtual bool RefreshTokenIsAvailable(
       const std::string& account_id) const override;
   virtual void UpdateAuthError(

@@ -13,7 +13,7 @@
 #include "base/stl_util.h"
 #include "base/values.h"
 #include "chrome/browser/signin/fake_signin_manager.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
@@ -25,7 +25,6 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/signin/core/browser/fake_auth_status_provider.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/sync_driver/sync_prefs.h"
 #include "content/public/browser/web_ui.h"
@@ -868,8 +867,7 @@ TEST_F(SyncSetupHandlerTest, ShowSigninOnAuthError) {
   SetupInitializedProfileSyncService();
   mock_signin_->SetAuthenticatedUsername(kTestUser);
   FakeAuthStatusProvider provider(
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile_.get())->
-          signin_error_controller());
+      SigninErrorControllerFactory::GetForProfile(profile_.get()));
   provider.SetAuthError(kTestUser, kTestUser, error_);
   EXPECT_CALL(*mock_pss_, IsSyncEnabledAndLoggedIn())
       .WillRepeatedly(Return(true));

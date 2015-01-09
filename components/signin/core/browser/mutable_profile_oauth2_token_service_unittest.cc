@@ -46,7 +46,7 @@ class MutableProfileOAuth2TokenServiceTest
                              "",
                              net::HTTP_OK,
                              net::URLRequestStatus::SUCCESS);
-    oauth2_service_.Initialize(&client_);
+    oauth2_service_.Initialize(&client_, &signin_error_controller_);
     // Make sure PO2TS has a chance to load itself before continuing.
     base::RunLoop().RunUntilIdle();
     oauth2_service_.AddObserver(this);
@@ -119,6 +119,7 @@ class MutableProfileOAuth2TokenServiceTest
   TestSigninClient client_;
   MutableProfileOAuth2TokenService oauth2_service_;
   TestingOAuth2TokenServiceConsumer consumer_;
+  SigninErrorController signin_error_controller_;
   int token_available_count_;
   int token_revoked_count_;
   int tokens_loaded_count_;
@@ -362,7 +363,7 @@ TEST_F(MutableProfileOAuth2TokenServiceTest, FetchTransientError) {
       oauth2_service_.StartRequest(kEmail, scope_list, &consumer_));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(GoogleServiceAuthError::AuthErrorNone(),
-            oauth2_service_.signin_error_controller()->auth_error());
+           signin_error_controller_.auth_error());
 }
 
 TEST_F(MutableProfileOAuth2TokenServiceTest, CanonicalizeAccountId) {

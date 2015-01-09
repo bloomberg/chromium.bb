@@ -130,25 +130,25 @@ void SSOAccessTokenFetcher::OnAccessTokenResponse(NSString* token,
 }  // namespace
 
 ProfileOAuth2TokenServiceIOS::AccountInfo::AccountInfo(
-    ProfileOAuth2TokenService* token_service,
+    SigninErrorController* signin_error_controller,
     const std::string& account_id)
-    : token_service_(token_service),
+    : signin_error_controller_(signin_error_controller),
       account_id_(account_id),
       last_auth_error_(GoogleServiceAuthError::NONE) {
-  DCHECK(token_service_);
+  DCHECK(signin_error_controller_);
   DCHECK(!account_id_.empty());
-  token_service_->signin_error_controller()->AddProvider(this);
+  signin_error_controller_->AddProvider(this);
 }
 
 ProfileOAuth2TokenServiceIOS::AccountInfo::~AccountInfo() {
-  token_service_->signin_error_controller()->RemoveProvider(this);
+  signin_error_controller_->RemoveProvider(this);
 }
 
 void ProfileOAuth2TokenServiceIOS::AccountInfo::SetLastAuthError(
     const GoogleServiceAuthError& error) {
   if (error.state() != last_auth_error_.state()) {
     last_auth_error_ = error;
-    token_service_->signin_error_controller()->AuthStatusChanged();
+    signin_error_controller_->AuthStatusChanged();
   }
 }
 
@@ -176,9 +176,10 @@ ProfileOAuth2TokenServiceIOS::~ProfileOAuth2TokenServiceIOS() {
   DCHECK(thread_checker_.CalledOnValidThread());
 }
 
-void ProfileOAuth2TokenServiceIOS::Initialize(SigninClient* client) {
+void ProfileOAuth2TokenServiceIOS::Initialize(
+    SigninClient* client, SigninErrorController* signin_error_controller) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  ProfileOAuth2TokenService::Initialize(client);
+  ProfileOAuth2TokenService::Initialize(client, signin_error_controller);
 }
 
 void ProfileOAuth2TokenServiceIOS::Shutdown() {
@@ -332,7 +333,8 @@ void ProfileOAuth2TokenServiceIOS::AddOrUpdateAccount(
     CancelRequestsForAccount(account_id);
     ClearCacheForAccount(account_id);
   } else {
-    accounts_[account_id].reset(new AccountInfo(this, account_id));
+    accounts_[account_id].reset(
+        new AccountInfo(signin_error_controller(), account_id));
   }
   UpdateAuthError(account_id, GoogleServiceAuthError::AuthErrorNone());
   FireRefreshTokenAvailable(account_id);

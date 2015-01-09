@@ -6,6 +6,7 @@
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
+#include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/browser/webdata/web_data_service_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -24,6 +25,7 @@ ProfileOAuth2TokenServiceFactory::ProfileOAuth2TokenServiceFactory()
   DependsOn(GlobalErrorServiceFactory::GetInstance());
   DependsOn(WebDataServiceFactory::GetInstance());
   DependsOn(ChromeSigninClientFactory::GetInstance());
+  DependsOn(SigninErrorControllerFactory::GetInstance());
 }
 
 ProfileOAuth2TokenServiceFactory::~ProfileOAuth2TokenServiceFactory() {
@@ -55,6 +57,7 @@ KeyedService* ProfileOAuth2TokenServiceFactory::BuildServiceInstanceFor(
   PlatformSpecificOAuth2TokenService* service =
       new PlatformSpecificOAuth2TokenService();
   service->Initialize(
-      ChromeSigninClientFactory::GetInstance()->GetForProfile(profile));
+      ChromeSigninClientFactory::GetInstance()->GetForProfile(profile),
+      SigninErrorControllerFactory::GetInstance()->GetForProfile(profile));
   return service;
 }
