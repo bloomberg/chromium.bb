@@ -120,6 +120,10 @@ $nav-box-shadow: 0 3px 4px rgba(0, 0, 0, 0.12);
       &:hover {
         background-image: $nav-hover-gradient;
       }
+      &.highlight {
+        color: $black;
+        background-image: $nav-hover-gradient;
+      }
     }
 
     li {
@@ -209,6 +213,9 @@ $nav-box-shadow: 0 3px 4px rgba(0, 0, 0, 0.12);
 
   #fatnav {
     .pillar {
+      &.highlight .toplevel {
+        color: $black;
+      }
       &.active {
         background: $nav-item-shaded-bg;
 

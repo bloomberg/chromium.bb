@@ -4,6 +4,7 @@
     "items": [
       {
         "title": "Learn Basics",
+        "href": "/devtools/index",
         "items": [
           {
             "title": "Overview",
@@ -47,6 +48,7 @@
       },
       {
         "title": "Use Tools",
+        "href": "/devtools/docs/dom-and-styles",
         "items": [
           {
             "title": "Inspecting & Tweaking",
@@ -86,6 +88,7 @@
       },
       {
         "title": "Performance & Profiling",
+        "href": "/devtools/docs/network", 
         "items": [
           {
             "title": "Evaluating Network Performance",
@@ -121,6 +124,7 @@
       },
       {
         "title": "Reference",
+        "href": "/devtools/docs/console-api",
         "items": [
           {
             "title": "Console API Reference",
@@ -191,6 +195,7 @@
     "items": [
       {
         "title": "Getting Started",
+        "href": "/multidevice/index",
         "items": [
           {
             "title": "Chrome for a Multi-Device World",
@@ -220,6 +225,7 @@
       },
       {
         "title": "Chrome for Android",
+        "href": "/multidevice/android/overview",
         "items": [
           {
             "title": "Overview",
@@ -237,6 +243,7 @@
       },
       {
         "title": "Chrome WebView",
+        "href": "/multidevice/webview/overview",
         "items": [
           {
             "title": "WebView for Android",
@@ -262,6 +269,7 @@
       },
       {
         "title": "Chrome for iOS",
+        "href": "/multidevice/ios/overview",
         "items": [
           {
             "title": "Overview",
@@ -298,6 +306,7 @@
     "items": [
       {
         "title": "Apps",
+        "href": "/apps/about_apps",
         "items": [
           {
             "title": "Learn Basics",
@@ -362,6 +371,10 @@
                 "href": "/apps/app_codelab_publish"
               }
             ]
+          },
+          {
+            "title": "Run Chrome Apps on Mobile",
+            "href": "/apps/chrome_apps_on_mobile"
           },
           {
             "title": "Samples",
@@ -454,10 +467,6 @@
                 "href": "/apps/publish_app"
               },
               {
-                "title": "Run Chrome Apps on Mobile",
-                "href": "/apps/chrome_apps_on_mobile"
-              },
-              {
                 "title": "Monetize Your App",
                 "href": "/apps/google_wallet"
               },
@@ -519,6 +528,7 @@
       },
       {
         "title": "Extensions",
+        "href": "/extensions/overview",
         "items": [
           {
             "title": "Learn Basics",
@@ -687,6 +697,7 @@
       },
       {
         "title": "Native Client",
+        "href": "/native-client/overview",
         "items": [
           {
             "title": "Learn Basics",
@@ -902,6 +913,7 @@
       },
       {
         "title": "Store",
+        "href": "/webstore/index",
         "items": [
           {
             "title": "What Is the Chrome Web Store?",

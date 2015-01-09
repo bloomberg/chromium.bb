@@ -8,18 +8,20 @@
        platform:platform
        platformTitle:platformTitle}}
 <article class="article-content">
+  <nav class="inline-site-toc no-permalink">
+    {{+partials.relatedpages_items items:sidenavs.chrome /}}
+  </nav>
   <div itemprop="articleBody">
+    <nav class="inline-toc no-permalink">
+      {{^removeToc}}
+      $(table_of_contents)
+      {{/removeToc}}
+    </nav>
 
 {{- This is unindented because it may contain whitespace-sensitive tags. -}}
 {{+article data:data platform:platform platformTitle:platformTitle /}}
     
     {{+partials.cc /}}
-    <nav class="inline-toc no-permalink">
-      {{+partials.relatedpages_items items:sidenavs.related /}}
-      {{^removeToc}}
-      $(table_of_contents)
-      {{/removeToc}}
-    </nav>
   </div>
 </article>
 {{/partials.site}}

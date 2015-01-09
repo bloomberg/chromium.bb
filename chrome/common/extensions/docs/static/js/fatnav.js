@@ -14,6 +14,9 @@ var fatNav = document.querySelector('#fatnav');
 var search = document.querySelector('#search');
 var mobileNavCollasper = document.querySelector('#topnav .collase-icon');
 
+var catLinks = fatNav.querySelectorAll('.category > a');
+var catPath = findCategoryPath();
+
 function hideActive(parentNode) {
   //parentNode.classList.remove('active');
 
@@ -22,11 +25,25 @@ function hideActive(parentNode) {
   });
 }
 
+function findCategoryPath() {
+  var sel = document.querySelector('.inline-site-toc .selected');
+  if (!sel || !sel.parentElement.previousElementSibling)
+    return;
+  return sel.parentElement.previousElementSibling.getAttribute('href');
+}
+
+function findPillar(el) {
+  var p = el;
+  while (p && !p.classList.contains('pillar')) {
+    p = p.parentElement;
+  }
+  return p;
+}
+
 // Clicking outside the fatnav.
 document.body.addEventListener('click', function(e) {
   hideActive(fatNav);
 });
-
 
 // Fatnav activates onclick and closes on mouseleave.
 var pillars = document.querySelectorAll('.pillar');
@@ -83,6 +100,19 @@ if (!isTouch) {
       hideActive(fatNav);
     }
   });
+}
+
+// Highlight selected menu item based on the current URL
+for (var i = 0, a; a = catLinks[i]; i++) {
+  var href = a.getAttribute('href');
+  if (href === window.location.pathname || catPath && href === catPath) {
+    a.classList.add('highlight');
+    p = findPillar(a);
+    if (p) {
+      p.classList.add('highlight');
+    }
+    break;
+  }
 }
 
 })();
