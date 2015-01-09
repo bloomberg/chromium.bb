@@ -15,6 +15,7 @@ from chromite.compute import gcloud
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import gs
+from chromite.lib import osutils
 
 
 # Supported targets.
@@ -35,8 +36,7 @@ OPERATIONS = {
 ALL_OPERATIONS = set(cros_build_lib.iflatten_instance(OPERATIONS.values()))
 
 
-
-def BotifyInstance(instance, project, zone):
+def BotifyInstance(instance, project, zone, testing=False):
   """Transforms the |instance| to a Chrome OS bot.
 
   Perform necessary tasks to clone the chromite repostority on the
@@ -51,6 +51,8 @@ def BotifyInstance(instance, project, zone):
     instance: Name of the GCE instance.
     project: GCloud Project that the |instance| belongs to.
     zone: Zone of the GCE instance.
+    testing: If set, copy the current chromite directory to |instance|.
+      Otherwise, `git clone` the chromite repository.
   """
   # TODO: To speed this up, we can switch to run remote commands using
   # remote_access.RemoteAgent wrapper. We'd only need to run `gcloud
@@ -90,11 +92,26 @@ def BotifyInstance(instance, project, zone):
       instance,
       cmd=r'sudo find %s -type f -exec chmod 600 {} \;' % dest_path)
 
-  # Install git to clone chromite.
+  # Bootstrap by copying chromite to the temporary directory.
   base_dir = '/tmp'
-  gcctx.SSH(instance, cmd='sudo apt-get install git')
-  gcctx.SSH(instance, cmd='cd %s && git clone %s' % (
-      base_dir, bot_constants.CHROMITE_URL))
+  if testing:
+    # Copy the current chromite directory. This allows all local
+    # changes to be copied to the temporary instance for testing.
+    chromite_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    with osutils.TempDir(prefix='cros_compute') as tempdir:
+      chromite_tarball = os.path.join(tempdir, 'chromite.tar.gz')
+      cros_build_lib.RunCommand(
+          ['tar', '--exclude=.git', '--exclude=third_party',
+           '--exclude=appengine', '-czf', chromite_tarball, 'chromite'],
+          cwd=os.path.dirname(chromite_dir))
+      dest_path = os.path.join(base_dir, os.path.basename(chromite_tarball))
+      gcctx.CopyFilesToInstance(instance, chromite_tarball, dest_path)
+      gcctx.SSH(instance, cmd='tar xzf %s -C %s' % (dest_path, base_dir))
+  else:
+    # Install git to clone chromite.
+    gcctx.SSH(instance, cmd='sudo apt-get install git')
+    gcctx.SSH(instance, cmd='cd %s && git clone %s' % (
+        base_dir, bot_constants.CHROMITE_URL))
 
   # Run the setup script as BUILDBOT_USER.
   gcctx.SSH(
@@ -162,17 +179,21 @@ def CreateAndArchiveImageFromInstance(instance, project, zone, image_name):
   gcctx.CreateImage(image_name, archive_path)
 
 
-def CreateImageForCrosBots(project, zone):
+def CreateImageForCrosBots(project, zone, address=None, testing=False):
   """Create a new image for cros bots."""
   gcctx = gcloud.GCContext(project, zone=zone, quiet=True)
   # The name of the image to create.
   image = compute_configs.DEFAULT_IMAGE_NAME
+  if testing:
+    image = '%s-testing' % image
+
   # Create a temporary instance and botify it.
   instance = ('chromeos-temp-%s'
               % cros_build_lib.GetRandomString())
-  gcctx.CreateInstance(instance, image=compute_configs.DEFAULT_BASE_IMAGE)
+  gcctx.CreateInstance(instance, image=compute_configs.DEFAULT_BASE_IMAGE,
+                       address=address)
   try:
-    BotifyInstance(instance, project, zone)
+    BotifyInstance(instance, project, zone, testing=testing)
   except:
     # Clean up the temp instance.
     gcctx.DeleteInstance(instance)
@@ -218,6 +239,12 @@ def main(argv):
       '--chromeos', default=False, action='store_true',
       help='Turn on the offical Chrome OS flag (e.g. to create '
            'a new Chrome OS bot image)')
+  parser.add_argument(
+      '--testing', default=False, action='store_true',
+      help='This option is mainly for testing changes to the official '
+           'Chrome OS bot image creation process. If set true, it copies '
+           'the current chromite directory onto the instance to preserve '
+           'all local changes. It also appends the image name with -testing.')
 
   opts = parser.parse_args(argv)
   opts.Freeze()
@@ -234,7 +261,8 @@ def main(argv):
       if opts.chromeos:
         # Create a new image for Chrome OS bots. The name of the base
         # image and the image to create are defined in compute_configs.
-        CreateImageForCrosBots(opts.project, opts.zone)
+        CreateImageForCrosBots(opts.project, opts.zone, testing=opts.testing,
+                               address=opts.address)
       else:
         if not opts.image or not opts.instance:
           cros_build_lib.Die(
