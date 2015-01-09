@@ -7,6 +7,7 @@
 
 #include "core/paint/BlockPainter.h"
 #include "core/paint/BoxPainter.h"
+#include "core/paint/RenderDrawingRecorder.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderMultiColumnSet.h"
 #include "platform/geometry/LayoutPoint.h"
@@ -50,8 +51,8 @@ void MultiColumnSetPainter::paintColumnRules(const PaintInfo& paintInfo, const L
     if (colCount <= 1)
         return;
 
+    DrawingRecorder drawingRecorder(paintInfo.context, m_renderMultiColumnSet.displayItemClient(), DisplayItem::ColumnRules, m_renderMultiColumnSet.visualOverflowRect());
     bool antialias = BoxPainter::shouldAntialiasLines(paintInfo.context);
-
     bool leftToRight = m_renderMultiColumnSet.style()->isLeftToRightDirection();
     LayoutUnit currLogicalLeftOffset = leftToRight ? LayoutUnit() : m_renderMultiColumnSet.contentLogicalWidth();
     LayoutUnit ruleAdd = m_renderMultiColumnSet.borderAndPaddingLogicalLeft();

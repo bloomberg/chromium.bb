@@ -200,6 +200,11 @@
     "args": ["--enable-slimming-paint", "--enable-impl-side-painting"]
   },
   {
+    "prefix": "slimmingpaint",
+    "base": "fast/multicol",
+    "args": ["--enable-slimming-paint", "--enable-impl-side-painting", "--enable-region-based-columns"]
+  },
+  {
     "prefix": "rootlayerscrolls",
     "base": "fast/scrolling",
     "args": ["--root-layer-scrolls"]
