@@ -7,6 +7,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
 #include "chromeos/dbus/power_manager_client.h"
+#include "chromeos/device_event_log.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_state_handler_observer.h"
@@ -47,6 +48,7 @@ void NetworkListView::UpdateNetworkList() {
   NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
   handler->GetVisibleNetworkList(&network_list);
   UpdateNetworks(network_list);
+  UpdateNetworkIcons();
   UpdateNetworkListInternal();
 }
 
@@ -62,6 +64,7 @@ bool NetworkListView::IsViewInList(views::View* view,
 
 void NetworkListView::UpdateNetworks(
     const NetworkStateHandler::NetworkStateList& networks) {
+  SCOPED_NET_LOG_IF_SLOW();
   network_list_.clear();
   const NetworkTypePattern pattern = delegate_->GetNetworkTypePattern();
   for (NetworkStateHandler::NetworkStateList::const_iterator iter =
@@ -76,7 +79,8 @@ void NetworkListView::UpdateNetworks(
   }
 }
 
-void NetworkListView::UpdateNetworkListInternal() {
+void NetworkListView::UpdateNetworkIcons() {
+  SCOPED_NET_LOG_IF_SLOW();
   NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
 
   // First, update state for all networks
@@ -98,12 +102,14 @@ void NetworkListView::UpdateNetworkListInternal() {
     if (!animating && network->IsConnectingState())
       animating = true;
   }
-
   if (animating)
     network_icon::NetworkIconAnimation::GetInstance()->AddObserver(this);
   else
     network_icon::NetworkIconAnimation::GetInstance()->RemoveObserver(this);
+}
 
+void NetworkListView::UpdateNetworkListInternal() {
+  SCOPED_NET_LOG_IF_SLOW();
   // Get the updated list entries
   network_map_.clear();
   std::set<std::string> new_service_paths;
@@ -129,21 +135,22 @@ void NetworkListView::UpdateNetworkListInternal() {
     service_path_map_.erase(*remove_it);
   }
 
-  if (needs_relayout) {
-    views::View* selected_view = NULL;
-    for (ServicePathMap::const_iterator iter = service_path_map_.begin();
-         iter != service_path_map_.end();
-         ++iter) {
-      if (delegate_->IsViewHovered(iter->second)) {
-        selected_view = iter->second;
-        break;
-      }
+  if (needs_relayout)
+    HandleRelayout();
+}
+
+void NetworkListView::HandleRelayout() {
+  views::View* selected_view = NULL;
+  for (auto& iter : service_path_map_) {
+    if (delegate_->IsViewHovered(iter.second)) {
+      selected_view = iter.second;
+      break;
     }
-    content_->SizeToPreferredSize();
-    delegate_->RelayoutScrollList();
-    if (selected_view)
-      content_->ScrollRectToVisible(selected_view->bounds());
   }
+  content_->SizeToPreferredSize();
+  delegate_->RelayoutScrollList();
+  if (selected_view)
+    content_->ScrollRectToVisible(selected_view->bounds());
 }
 
 bool NetworkListView::UpdateNetworkListEntries(
@@ -155,14 +162,8 @@ bool NetworkListView::UpdateNetworkListEntries(
   int index = 0;
 
   // Highlighted networks
-  for (size_t i = 0; i < network_list_.size(); ++i) {
-    const NetworkInfo* info = network_list_[i];
-    if (info->highlight) {
-      if (UpdateNetworkChild(index++, info))
-        needs_relayout = true;
-      new_service_paths->insert(info->service_path);
-    }
-  }
+  needs_relayout |=
+      UpdateNetworkChildren(new_service_paths, &index, true /* highlighted */);
 
   const NetworkTypePattern pattern = delegate_->GetNetworkTypePattern();
   if (pattern.MatchesPattern(NetworkTypePattern::Cellular())) {
@@ -173,8 +174,9 @@ bool NetworkListView::UpdateNetworkListEntries(
         !handler->FirstNetworkByType(NetworkTypePattern::Mobile())) {
       message_id = IDS_ASH_STATUS_TRAY_NO_CELLULAR_NETWORKS;
     }
-    if (UpdateInfoLabel(message_id, index, &no_cellular_networks_view_))
-      needs_relayout = true;
+    needs_relayout |=
+        UpdateInfoLabel(message_id, index, &no_cellular_networks_view_);
+
     if (message_id)
       ++index;
   }
@@ -187,8 +189,8 @@ bool NetworkListView::UpdateNetworkListEntries(
                        ? IDS_ASH_STATUS_TRAY_NETWORK_WIFI_ENABLED
                        : IDS_ASH_STATUS_TRAY_NETWORK_WIFI_DISABLED;
     }
-    if (UpdateInfoLabel(message_id, index, &no_wifi_networks_view_))
-      needs_relayout = true;
+    needs_relayout |=
+        UpdateInfoLabel(message_id, index, &no_wifi_networks_view_);
     if (message_id)
       ++index;
 
@@ -196,21 +198,14 @@ bool NetworkListView::UpdateNetworkListEntries(
     message_id = 0;
     if (handler->GetScanningByType(NetworkTypePattern::WiFi()))
       message_id = IDS_ASH_STATUS_TRAY_WIFI_SCANNING_MESSAGE;
-    if (UpdateInfoLabel(message_id, index, &scanning_view_))
-      needs_relayout = true;
+    needs_relayout |= UpdateInfoLabel(message_id, index, &scanning_view_);
     if (message_id)
       ++index;
   }
 
   // Un-highlighted networks
-  for (size_t i = 0; i < network_list_.size(); ++i) {
-    const NetworkInfo* info = network_list_[i];
-    if (!info->highlight) {
-      if (UpdateNetworkChild(index++, info))
-        needs_relayout = true;
-      new_service_paths->insert(info->service_path);
-    }
-  }
+  needs_relayout |= UpdateNetworkChildren(new_service_paths, &index,
+                                          false /* not highlighted */);
 
   // No networks or other messages (fallback)
   if (index == 0) {
@@ -219,10 +214,25 @@ bool NetworkListView::UpdateNetworkListEntries(
       message_id = IDS_ASH_STATUS_TRAY_NETWORK_NO_VPN;
     else
       message_id = IDS_ASH_STATUS_TRAY_NO_NETWORKS;
-    if (UpdateInfoLabel(message_id, index, &scanning_view_))
-      needs_relayout = true;
+    needs_relayout |= UpdateInfoLabel(message_id, index, &scanning_view_);
   }
 
+  return needs_relayout;
+}
+
+bool NetworkListView::UpdateNetworkChildren(
+    std::set<std::string>* new_service_paths,
+    int* child_index,
+    bool highlighted) {
+  bool needs_relayout = false;
+  int index = *child_index;
+  for (auto& info : network_list_) {
+    if (info->highlight != highlighted)
+      continue;
+    needs_relayout |= UpdateNetworkChild(index++, info);
+    new_service_paths->insert(info->service_path);
+  }
+  *child_index = index;
   return needs_relayout;
 }
 

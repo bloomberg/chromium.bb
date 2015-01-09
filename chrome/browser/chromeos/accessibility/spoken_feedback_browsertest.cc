@@ -40,6 +40,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/app_list/app_list_switches.h"
 #include "ui/base/test/ui_controls.h"
+#include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/views/widget/widget.h"
 
 using extensions::api::braille_display_private::StubBrailleController;
@@ -52,14 +53,15 @@ namespace chromeos {
 
 class LoggedInSpokenFeedbackTest : public InProcessBrowserTest {
  protected:
-  LoggedInSpokenFeedbackTest() {}
-  virtual ~LoggedInSpokenFeedbackTest() {}
+  LoggedInSpokenFeedbackTest()
+      : animation_mode_(ui::ScopedAnimationDurationScaleMode::ZERO_DURATION) {}
+  ~LoggedInSpokenFeedbackTest() override {}
 
-  virtual void SetUpInProcessBrowserTestFixture() override {
+  void SetUpInProcessBrowserTestFixture() override {
     AccessibilityManager::SetBrailleControllerForTest(&braille_controller_);
   }
 
-  virtual void TearDownOnMainThread() override {
+  void TearDownOnMainThread() override {
     AccessibilityManager::SetBrailleControllerForTest(NULL);
   }
 
@@ -174,6 +176,8 @@ class LoggedInSpokenFeedbackTest : public InProcessBrowserTest {
 
  private:
   StubBrailleController braille_controller_;
+  ui::ScopedAnimationDurationScaleMode animation_mode_;
+
   DISALLOW_COPY_AND_ASSIGN(LoggedInSpokenFeedbackTest);
 };
 

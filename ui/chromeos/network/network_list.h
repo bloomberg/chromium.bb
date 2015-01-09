@@ -44,8 +44,13 @@ class UI_CHROMEOS_EXPORT NetworkListView
  private:
   void UpdateNetworks(
       const chromeos::NetworkStateHandler::NetworkStateList& networks);
+  void UpdateNetworkIcons();
   void UpdateNetworkListInternal();
+  void HandleRelayout();
   bool UpdateNetworkListEntries(std::set<std::string>* new_service_paths);
+  bool UpdateNetworkChildren(std::set<std::string>* new_service_paths,
+                             int* child_index,
+                             bool highlighted);
   bool UpdateNetworkChild(int index, const NetworkInfo* info);
   bool PlaceViewAtIndex(views::View* view, int index);
   bool UpdateInfoLabel(int message_id, int index, views::Label** label);
