@@ -223,6 +223,81 @@ public class ClassName {
     with self.assertRaises(Exception):
       HeaderParser(test_data).ParseDefinitions()
 
+  def testParseSimpleMultiLineDirective(self):
+    test_data = """
+      // GENERATED_JAVA_ENUM_PACKAGE: \\
+      //   test.namespace
+      // GENERATED_JAVA_CLASS_NAME_OVERRIDE: Bar
+      enum Foo {
+        FOO_A,
+      };
+    """.split('\n')
+    definitions = HeaderParser(test_data).ParseDefinitions()
+    self.assertEqual('test.namespace', definitions[0].enum_package)
+    self.assertEqual('Bar', definitions[0].class_name)
+
+  def testParseMultiLineDirective(self):
+    test_data = """
+      // GENERATED_JAVA_ENUM_PACKAGE: te\\
+      //   st.name\\
+      //   space
+      enum Foo {
+        FOO_A,
+      };
+    """.split('\n')
+    definitions = HeaderParser(test_data).ParseDefinitions()
+    self.assertEqual('test.namespace', definitions[0].enum_package)
+
+  def testParseMultiLineDirectiveWithOtherDirective(self):
+    test_data = """
+      // GENERATED_JAVA_ENUM_PACKAGE: \\
+      //   test.namespace
+      // GENERATED_JAVA_CLASS_NAME_OVERRIDE: \\
+      //   Ba\\
+      //   r
+      enum Foo {
+        FOO_A,
+      };
+    """.split('\n')
+    definitions = HeaderParser(test_data).ParseDefinitions()
+    self.assertEqual('test.namespace', definitions[0].enum_package)
+    self.assertEqual('Bar', definitions[0].class_name)
+
+  def testParseMalformedMultiLineDirectiveWithOtherDirective(self):
+    test_data = """
+      // GENERATED_JAVA_ENUM_PACKAGE: \\
+      //   test.name\\
+      //   space\\
+      // GENERATED_JAVA_CLASS_NAME_OVERRIDE: Bar
+      enum Foo {
+        FOO_A,
+      };
+    """.split('\n')
+    with self.assertRaises(Exception):
+      HeaderParser(test_data).ParseDefinitions()
+
+  def testParseMalformedMultiLineDirective(self):
+    test_data = """
+      // GENERATED_JAVA_ENUM_PACKAGE: \\
+      //   test.name\\
+      //   space\\
+      enum Foo {
+        FOO_A,
+      };
+    """.split('\n')
+    with self.assertRaises(Exception):
+      HeaderParser(test_data).ParseDefinitions()
+
+  def testParseMalformedMultiLineDirectiveShort(self):
+    test_data = """
+      // GENERATED_JAVA_ENUM_PACKAGE: \\
+      enum Foo {
+        FOO_A,
+      };
+    """.split('\n')
+    with self.assertRaises(Exception):
+      HeaderParser(test_data).ParseDefinitions()
+
   def testEnumValueAssignmentNoneDefined(self):
     definition = EnumDefinition(original_enum_name='c', enum_package='p')
     definition.AppendEntry('A', None)

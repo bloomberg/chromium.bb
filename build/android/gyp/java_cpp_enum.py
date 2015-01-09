@@ -124,6 +124,12 @@ class HeaderParser(object):
   enum_end_re = re.compile(r'^\s*}\s*;\.*$')
   generator_directive_re = re.compile(
       r'^\s*//\s+GENERATED_JAVA_(\w+)\s*:\s*([\.\w]+)$')
+  multi_line_generator_directive_start_re = re.compile(
+      r'^\s*//\s+GENERATED_JAVA_(\w+)\s*:\s*([\.\w]*)\\$')
+  multi_line_directive_continuation_re = re.compile(
+      r'^\s*//\s+([\.\w]+)\\$')
+  multi_line_directive_end_re = re.compile(
+      r'^\s*//\s+([\.\w]*)$')
 
   optional_class_or_struct_re = r'(class|struct)?'
   enum_name_re = r'(\w+)'
@@ -131,11 +137,17 @@ class HeaderParser(object):
   enum_start_re = re.compile(r'^\s*enum\s+' + optional_class_or_struct_re +
       '\s*' + enum_name_re + '\s*' + optional_fixed_type_re + '\s*{\s*$')
 
-  def __init__(self, lines):
+  def __init__(self, lines, path=None):
     self._lines = lines
+    self._path = path
     self._enum_definitions = []
     self._in_enum = False
     self._current_definition = None
+    self._generator_directives = DirectiveSet()
+    self._multi_line_generator_directive = None
+
+  def _ApplyGeneratorDirectives(self):
+    self._generator_directives.UpdateDefinition(self._current_definition)
     self._generator_directives = DirectiveSet()
 
   def ParseDefinitions(self):
@@ -144,7 +156,9 @@ class HeaderParser(object):
     return self._enum_definitions
 
   def _ParseLine(self, line):
-    if not self._in_enum:
+    if self._multi_line_generator_directive:
+      self._ParseMultiLineDirectiveLine(line)
+    elif not self._in_enum:
       self._ParseRegularLine(line)
     else:
       self._ParseEnumLine(line)
@@ -153,7 +167,8 @@ class HeaderParser(object):
     if HeaderParser.single_line_comment_re.match(line):
       return
     if HeaderParser.multi_line_comment_start_re.match(line):
-      raise Exception('Multi-line comments in enums are not supported.')
+      raise Exception('Multi-line comments in enums are not supported in ' +
+                      self._path)
     enum_end = HeaderParser.enum_end_re.match(line)
     enum_entry = HeaderParser.enum_line_re.match(line)
     if enum_end:
@@ -166,25 +181,46 @@ class HeaderParser(object):
       enum_value = enum_entry.groups()[2]
       self._current_definition.AppendEntry(enum_key, enum_value)
 
-  def _ApplyGeneratorDirectives(self):
-    self._generator_directives.UpdateDefinition(self._current_definition)
-    self._generator_directives = DirectiveSet()
+  def _ParseMultiLineDirectiveLine(self, line):
+    multi_line_directive_continuation = (
+        HeaderParser.multi_line_directive_continuation_re.match(line))
+    multi_line_directive_end = (
+        HeaderParser.multi_line_directive_end_re.match(line))
+
+    if multi_line_directive_continuation:
+      value_cont = multi_line_directive_continuation.groups()[0]
+      self._multi_line_generator_directive[1].append(value_cont)
+    elif multi_line_directive_end:
+      directive_name = self._multi_line_generator_directive[0]
+      directive_value = "".join(self._multi_line_generator_directive[1])
+      directive_value += multi_line_directive_end.groups()[0]
+      self._multi_line_generator_directive = None
+      self._generator_directives.Update(directive_name, directive_value)
+    else:
+      raise Exception('Malformed multi-line directive declaration in ' +
+                      self._path)
 
   def _ParseRegularLine(self, line):
     enum_start = HeaderParser.enum_start_re.match(line)
     generator_directive = HeaderParser.generator_directive_re.match(line)
-    if enum_start:
+    multi_line_generator_directive_start = (
+        HeaderParser.multi_line_generator_directive_start_re.match(line))
+
+    if generator_directive:
+      directive_name = generator_directive.groups()[0]
+      directive_value = generator_directive.groups()[1]
+      self._generator_directives.Update(directive_name, directive_value)
+    elif multi_line_generator_directive_start:
+      directive_name = multi_line_generator_directive_start.groups()[0]
+      directive_value = multi_line_generator_directive_start.groups()[1]
+      self._multi_line_generator_directive = (directive_name, [directive_value])
+    elif enum_start:
       if self._generator_directives.empty:
         return
       self._current_definition = EnumDefinition(
           original_enum_name=enum_start.groups()[1],
           fixed_type=enum_start.groups()[3])
       self._in_enum = True
-    elif generator_directive:
-      directive_name = generator_directive.groups()[0]
-      directive_value = generator_directive.groups()[1]
-      self._generator_directives.Update(directive_name, directive_value)
-
 
 def GetScriptName():
   script_components = os.path.abspath(sys.argv[0]).split(os.path.sep)
@@ -209,7 +245,7 @@ def DoGenerate(options, source_paths):
 
 def DoParseHeaderFile(path):
   with open(path) as f:
-    return HeaderParser(f.readlines()).ParseDefinitions()
+    return HeaderParser(f.readlines(), path).ParseDefinitions()
 
 
 def GenerateOutput(source_path, enum_definition):
