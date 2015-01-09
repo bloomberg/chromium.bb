@@ -592,6 +592,47 @@ double LocalFrame::devicePixelRatio() const
     return ratio;
 }
 
+PassOwnPtr<DragImage> LocalFrame::paintIntoDragImage(
+    DisplayItemClient displayItemClient, DisplayItem::Type clipType, RespectImageOrientationEnum shouldRespectImageOrientation, IntRect paintingRect)
+{
+    ASSERT(document()->isActive());
+    float deviceScaleFactor = m_host->deviceScaleFactor();
+    paintingRect.setWidth(paintingRect.width() * deviceScaleFactor);
+    paintingRect.setHeight(paintingRect.height() * deviceScaleFactor);
+
+    OwnPtr<ImageBuffer> buffer = ImageBuffer::create(paintingRect.size());
+    if (!buffer)
+        return nullptr;
+
+    OwnPtr<GraphicsContext> extraGraphicsContext;
+    OwnPtr<DisplayItemList> displayItemList;
+    GraphicsContext* context;
+    if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
+        displayItemList = DisplayItemList::create();
+        extraGraphicsContext = adoptPtr(new GraphicsContext(0, displayItemList.get()));
+        context = extraGraphicsContext.get();
+    } else {
+        context = buffer->context();
+    }
+
+    {
+        AffineTransform transform;
+        transform.scale(deviceScaleFactor, deviceScaleFactor);
+        transform.translate(-paintingRect.x(), -paintingRect.y());
+        TransformRecorder transformRecorder(*context, displayItemClient, transform);
+
+        ClipRecorder clipRecorder(displayItemClient, context, clipType, LayoutRect(0, 0, paintingRect.maxX(), paintingRect.maxY()));
+
+        m_view->paintContents(context, paintingRect);
+    }
+
+    if (RuntimeEnabledFeatures::slimmingPaintEnabled())
+        displayItemList->replay(buffer->context());
+
+    RefPtr<Image> image = buffer->copyImage();
+    return DragImage::create(image.get(), shouldRespectImageOrientation, deviceScaleFactor);
+}
+
 PassOwnPtr<DragImage> LocalFrame::nodeImage(Node& node)
 {
     if (!node.renderer())
@@ -610,29 +651,10 @@ PassOwnPtr<DragImage> LocalFrame::nodeImage(Node& node)
     if (!renderer)
         return nullptr;
 
-    LayoutRect topLevelRect;
-    IntRect paintingRect = pixelSnappedIntRect(renderer->paintingRootRect(topLevelRect));
+    LayoutRect rect;
 
-    ASSERT(document()->isActive());
-    float deviceScaleFactor = m_host->deviceScaleFactor();
-    paintingRect.setWidth(paintingRect.width() * deviceScaleFactor);
-    paintingRect.setHeight(paintingRect.height() * deviceScaleFactor);
-
-    OwnPtr<ImageBuffer> buffer = ImageBuffer::create(paintingRect.size());
-    if (!buffer)
-        return nullptr;
-
-    AffineTransform transform;
-    transform.scale(deviceScaleFactor, deviceScaleFactor);
-    transform.translate(-paintingRect.x(), -paintingRect.y());
-    TransformRecorder transformRecorder(*buffer->context(), renderer->displayItemClient(), transform);
-
-    ClipRecorder clipRecorder(renderer->displayItemClient(), buffer->context(), DisplayItem::ClipNodeImage, LayoutRect(0, 0, paintingRect.maxX(), paintingRect.maxY()));
-
-    m_view->paintContents(buffer->context(), paintingRect);
-
-    RefPtr<Image> image = buffer->copyImage();
-    return DragImage::create(image.get(), renderer->shouldRespectImageOrientation(), deviceScaleFactor);
+    return paintIntoDragImage(renderer->displayItemClient(), DisplayItem::ClipNodeImage, renderer->shouldRespectImageOrientation(),
+        pixelSnappedIntRect(renderer->paintingRootRect(rect)));
 }
 
 PassOwnPtr<DragImage> LocalFrame::dragImageForSelection()
@@ -644,24 +666,8 @@ PassOwnPtr<DragImage> LocalFrame::dragImageForSelection()
     m_view->setPaintBehavior(PaintBehaviorSelectionOnly | PaintBehaviorFlattenCompositingLayers);
     m_view->updateLayoutAndStyleForPainting();
 
-    IntRect paintingRect = enclosingIntRect(selection().bounds());
-
-    ASSERT(document()->isActive());
-    float deviceScaleFactor = m_host->deviceScaleFactor();
-    paintingRect.setWidth(paintingRect.width() * deviceScaleFactor);
-    paintingRect.setHeight(paintingRect.height() * deviceScaleFactor);
-
-    OwnPtr<ImageBuffer> buffer = ImageBuffer::create(paintingRect.size());
-    if (!buffer)
-        return nullptr;
-    buffer->context()->scale(deviceScaleFactor, deviceScaleFactor);
-    buffer->context()->translate(-paintingRect.x(), -paintingRect.y());
-    buffer->context()->clip(FloatRect(0, 0, paintingRect.maxX(), paintingRect.maxY()));
-
-    m_view->paintContents(buffer->context(), paintingRect);
-
-    RefPtr<Image> image = buffer->copyImage();
-    return DragImage::create(image.get(), DoNotRespectImageOrientation, deviceScaleFactor);
+    return paintIntoDragImage(
+        displayItemClient(), DisplayItem::ClipSelectionImage, DoNotRespectImageOrientation, enclosingIntRect(selection().bounds()));
 }
 
 String LocalFrame::selectedText() const

@@ -63,12 +63,16 @@ WTF::String DisplayItem::typeAsDebugString(DisplayItem::Type type)
     case ClipNodeImage: return "ClipNodeImage";
     case ClipFrameToVisibleContentRect: return "ClipFrameToVisibleContentRect";
     case ClipFrameScrollbars: return "ClipFrameScrollbars";
+    case ClipSelectionImage: return "ClipSelectionImage";
     case FloatClipForeground: return "FloatClipForeground";
     case FloatClipSelection: return "FloatClipSelection";
     case FloatClipSelfOutline: return "FloatClipSelfOutline";
     case EndFloatClip: return "EndFloatClip";
     case BeginClipPath: return "BeginClipPath";
     case EndClipPath: return "EndClipPath";
+    case VideoBitmap: return "VideoBitmap";
+    case ImageBitmap: return "ImageBitmap";
+    case DragImage: return "DragImage";
     }
     ASSERT_NOT_REACHED();
     return "Unknown";

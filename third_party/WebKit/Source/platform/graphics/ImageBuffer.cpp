@@ -35,7 +35,6 @@
 
 #include "GrContext.h"
 #include "platform/MIMETypeRegistry.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/BitmapImage.h"
 #include "platform/graphics/GraphicsContext.h"
@@ -71,7 +70,7 @@ PassOwnPtr<ImageBuffer> ImageBuffer::create(PassOwnPtr<ImageBufferSurface> surfa
 
 PassOwnPtr<ImageBuffer> ImageBuffer::create(const IntSize& size, OpacityMode opacityMode)
 {
-    OwnPtr<ImageBufferSurface> surface = adoptPtr(new UnacceleratedImageBufferSurface(size, opacityMode));
+    OwnPtr<ImageBufferSurface> surface(adoptPtr(new UnacceleratedImageBufferSurface(size, opacityMode)));
     if (!surface->isValid())
         return nullptr;
     return adoptPtr(new ImageBuffer(surface.release()));
@@ -82,10 +81,7 @@ ImageBuffer::ImageBuffer(PassOwnPtr<ImageBufferSurface> surface)
     , m_client(0)
 {
     if (m_surface->canvas()) {
-        if (RuntimeEnabledFeatures::slimmingPaintEnabled())
-            m_displayItemList = DisplayItemList::create();
-
-        m_context = adoptPtr(new GraphicsContext(m_surface->canvas(), m_displayItemList.get()));
+        m_context = adoptPtr(new GraphicsContext(m_surface->canvas(), 0));
         m_context->setAccelerated(m_surface->isAccelerated());
     }
     m_surface->setImageBuffer(this);
@@ -93,8 +89,6 @@ ImageBuffer::ImageBuffer(PassOwnPtr<ImageBufferSurface> surface)
 
 ImageBuffer::~ImageBuffer()
 {
-    if (m_displayItemList)
-        m_displayItemList->replay(m_context.get());
 }
 
 GraphicsContext* ImageBuffer::context() const
@@ -145,6 +139,7 @@ void ImageBuffer::notifySurfaceInvalid()
 
 void ImageBuffer::resetCanvas(SkCanvas* canvas)
 {
+    ASSERT(context()->canvas());
     context()->resetCanvas(canvas);
     if (m_client)
         m_client->restoreCanvasMatrixClipStack();

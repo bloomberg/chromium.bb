@@ -137,6 +137,8 @@ public:
 
     PassRefPtr<SkImage> newImageSnapshot() const;
 
+    DisplayItemClient displayItemClient() const { return static_cast<DisplayItemClientInternalVoid*>((void*)this); }
+
 private:
     ImageBuffer(PassOwnPtr<ImageBufferSurface>);
 
@@ -153,7 +155,6 @@ private:
     OwnPtr<ImageBufferSurface> m_surface;
     OwnPtr<GraphicsContext> m_context;
     ImageBufferClient* m_client;
-    OwnPtr<DisplayItemList> m_displayItemList;
 };
 
 struct ImageDataBuffer {

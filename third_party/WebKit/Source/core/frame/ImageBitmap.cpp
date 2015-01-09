@@ -11,6 +11,7 @@
 #include "platform/graphics/BitmapImage.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/ImageBuffer.h"
+#include "platform/graphics/paint/DrawingRecorder.h"
 #include "wtf/RefPtr.h"
 
 namespace blink {
@@ -63,14 +64,32 @@ ImageBitmap::ImageBitmap(HTMLVideoElement* video, const IntRect& cropRect)
     IntRect srcRect = intersection(cropRect, videoRect);
     IntRect dstRect(IntPoint(), srcRect.size());
 
-    OwnPtr<ImageBuffer> buf = ImageBuffer::create(videoRect.size());
-    if (!buf)
+    OwnPtr<ImageBuffer> buffer = ImageBuffer::create(videoRect.size());
+    if (!buffer)
         return;
-    GraphicsContext* c = buf->context();
-    c->clip(dstRect);
-    c->translate(-srcRect.x(), -srcRect.y());
-    video->paintCurrentFrameInContext(c, videoRect);
-    m_bitmap = buf->copyImage(DontCopyBackingStore);
+
+    OwnPtr<GraphicsContext> extraGraphicsContext;
+    OwnPtr<DisplayItemList> displayItemList;
+    GraphicsContext* context;
+    if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
+        displayItemList = DisplayItemList::create();
+        extraGraphicsContext = adoptPtr(new GraphicsContext(0, displayItemList.get()));
+        context = extraGraphicsContext.get();
+    } else {
+        context = buffer->context();
+    }
+
+    {
+        DrawingRecorder recorder(context, buffer->displayItemClient(), DisplayItem::VideoBitmap, videoRect);
+        context->clip(dstRect);
+        context->translate(-srcRect.x(), -srcRect.y());
+    }
+
+    if (RuntimeEnabledFeatures::slimmingPaintEnabled())
+        displayItemList->replay(buffer->context());
+
+    video->paintCurrentFrameInContext(buffer->context(), videoRect);
+    m_bitmap = buffer->copyImage(DontCopyBackingStore);
     m_bitmapRect = IntRect(IntPoint(std::max(0, -cropRect.x()), std::max(0, -cropRect.y())), srcRect.size());
 }
 
@@ -91,14 +110,14 @@ ImageBitmap::ImageBitmap(ImageData* data, const IntRect& cropRect)
     , m_bitmapOffset(IntPoint())
 {
     IntRect srcRect = intersection(cropRect, IntRect(IntPoint(), data->size()));
-
-    OwnPtr<ImageBuffer> buf = ImageBuffer::create(data->size());
-    if (!buf)
+    OwnPtr<ImageBuffer> buffer = ImageBuffer::create(data->size());
+    if (!buffer)
         return;
-    if (srcRect.width() > 0 && srcRect.height() > 0)
-        buf->putByteArray(Premultiplied, data->data(), data->size(), srcRect, IntPoint(std::min(0, -cropRect.x()), std::min(0, -cropRect.y())));
 
-    m_bitmap = buf->copyImage(DontCopyBackingStore);
+    if (srcRect.width() > 0 && srcRect.height() > 0)
+        buffer->putByteArray(Premultiplied, data->data(), data->size(), srcRect, IntPoint(std::min(0, -cropRect.x()), std::min(0, -cropRect.y())));
+
+    m_bitmap = buffer->copyImage(DontCopyBackingStore);
     m_bitmapRect = IntRect(IntPoint(std::max(0, -cropRect.x()), std::max(0, -cropRect.y())),  srcRect.size());
 }
 

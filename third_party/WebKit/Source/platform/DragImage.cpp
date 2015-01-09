@@ -26,6 +26,7 @@
 #include "config.h"
 #include "platform/DragImage.h"
 
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/fonts/Font.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/fonts/FontDescription.h"
@@ -38,6 +39,7 @@
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/Image.h"
 #include "platform/graphics/ImageBuffer.h"
+#include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/graphics/skia/NativeImageSkia.h"
 #include "platform/text/BidiTextRun.h"
 #include "platform/text/StringTruncator.h"
@@ -165,35 +167,54 @@ PassOwnPtr<DragImage> DragImage::create(const KURL& url, const String& inLabel, 
     OwnPtr<ImageBuffer> buffer(ImageBuffer::create(scaledImageSize));
     if (!buffer)
         return nullptr;
-    buffer->context()->scale(deviceScaleFactor, deviceScaleFactor);
 
-    const float DragLabelRadius = 5;
-    const IntSize radii(DragLabelRadius, DragLabelRadius);
-    IntRect rect(IntPoint(), imageSize);
-    const Color backgroundColor(140, 140, 140);
-    buffer->context()->fillRoundedRect(rect, radii, radii, radii, radii, backgroundColor);
-
-    // Draw the text
-    if (drawURLString) {
-        if (clipURLString)
-            urlString = StringTruncator::centerTruncate(urlString, imageSize.width() - (kDragLabelBorderX * 2.0f), urlFont);
-        IntPoint textPos(kDragLabelBorderX, imageSize.height() - (kLabelBorderYOffset + urlFont.fontMetrics().descent()));
-        TextRun textRun(urlString);
-        buffer->context()->drawText(urlFont, TextRunPaintInfo(textRun), textPos);
+    OwnPtr<GraphicsContext> extraGraphicsContext;
+    OwnPtr<DisplayItemList> displayItemList;
+    GraphicsContext* context;
+    if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
+        displayItemList = DisplayItemList::create();
+        extraGraphicsContext = adoptPtr(new GraphicsContext(0, displayItemList.get()));
+        context = extraGraphicsContext.get();
+    } else {
+        context = buffer->context();
     }
 
-    if (clipLabelString)
-        label = StringTruncator::rightTruncate(label, imageSize.width() - (kDragLabelBorderX * 2.0f), labelFont);
+    {
+        IntRect rect(IntPoint(), imageSize);
+        DrawingRecorder drawingRecorder(context, buffer->displayItemClient(), DisplayItem::DragImage, rect);
+        context->scale(deviceScaleFactor, deviceScaleFactor);
 
-    bool hasStrongDirectionality;
-    TextRun textRun = textRunWithDirectionality(label, hasStrongDirectionality);
-    IntPoint textPos(kDragLabelBorderX, kDragLabelBorderY + labelFont.fontDescription().computedPixelSize());
-    if (hasStrongDirectionality && textRun.direction() == RTL) {
-        float textWidth = labelFont.width(textRun);
-        int availableWidth = imageSize.width() - kDragLabelBorderX * 2;
-        textPos.setX(availableWidth - ceilf(textWidth));
+        const float DragLabelRadius = 5;
+        const IntSize radii(DragLabelRadius, DragLabelRadius);
+
+        const Color backgroundColor(140, 140, 140);
+        context->fillRoundedRect(rect, radii, radii, radii, radii, backgroundColor);
+
+        // Draw the text
+        if (drawURLString) {
+            if (clipURLString)
+                urlString = StringTruncator::centerTruncate(urlString, imageSize.width() - (kDragLabelBorderX * 2.0f), urlFont);
+            IntPoint textPos(kDragLabelBorderX, imageSize.height() - (kLabelBorderYOffset + urlFont.fontMetrics().descent()));
+            TextRun textRun(urlString);
+            context->drawText(urlFont, TextRunPaintInfo(textRun), textPos);
+        }
+
+        if (clipLabelString)
+            label = StringTruncator::rightTruncate(label, imageSize.width() - (kDragLabelBorderX * 2.0f), labelFont);
+
+        bool hasStrongDirectionality;
+        TextRun textRun = textRunWithDirectionality(label, hasStrongDirectionality);
+        IntPoint textPos(kDragLabelBorderX, kDragLabelBorderY + labelFont.fontDescription().computedPixelSize());
+        if (hasStrongDirectionality && textRun.direction() == RTL) {
+            float textWidth = labelFont.width(textRun);
+            int availableWidth = imageSize.width() - kDragLabelBorderX * 2;
+            textPos.setX(availableWidth - ceilf(textWidth));
+        }
+        context->drawBidiText(labelFont, TextRunPaintInfo(textRun), FloatPoint(textPos));
     }
-    buffer->context()->drawBidiText(labelFont, TextRunPaintInfo(textRun), FloatPoint(textPos));
+
+    if (RuntimeEnabledFeatures::slimmingPaintEnabled())
+        displayItemList->replay(buffer->context());
 
     RefPtr<Image> image = buffer->copyImage();
     return DragImage::create(image.get(), DoNotRespectImageOrientation, deviceScaleFactor);

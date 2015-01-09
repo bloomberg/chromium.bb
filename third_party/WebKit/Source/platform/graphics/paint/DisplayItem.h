@@ -78,12 +78,16 @@ public:
         ClipNodeImage,
         ClipFrameToVisibleContentRect,
         ClipFrameScrollbars,
+        ClipSelectionImage,
         FloatClipForeground,
         FloatClipSelection,
         FloatClipSelfOutline,
         EndFloatClip,
         BeginClipPath,
-        EndClipPath
+        EndClipPath,
+        VideoBitmap,
+        ImageBitmap,
+        DragImage
     };
 
     // Create a dummy display item which just holds the id but has no display operation.

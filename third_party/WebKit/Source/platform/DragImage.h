@@ -28,6 +28,7 @@
 
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/ImageOrientation.h"
+#include "platform/graphics/paint/DisplayItem.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "wtf/Forward.h"
 
@@ -53,6 +54,8 @@ public:
 
 private:
     DragImage(const SkBitmap&, float resolutionScale);
+
+    DisplayItemClient displayItemClient() const { return static_cast<DisplayItemClientInternalVoid*>((void*)this); }
 
     SkBitmap m_bitmap;
     float m_resolutionScale;
