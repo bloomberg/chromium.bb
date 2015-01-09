@@ -78,8 +78,8 @@ bool NetworkState::PropertyChanged(const std::string& key,
       return false;
     return olp->GetStringWithoutPathExpansion(shill::kPaymentPortalURL,
                                               &payment_url_);
-  } else if (key == shill::kSecurityProperty) {
-    return GetStringValue(key, value, &security_);
+  } else if (key == shill::kSecurityClassProperty) {
+    return GetStringValue(key, value, &security_class_);
   } else if (key == shill::kEapMethodProperty) {
     return GetStringValue(key, value, &eap_method_);
   } else if (key == shill::kNetworkTechnologyProperty) {
@@ -153,8 +153,8 @@ void NetworkState::GetStateProperties(base::DictionaryValue* dictionary) const {
 
   // Properties shared by all types.
   dictionary->SetStringWithoutPathExpansion(shill::kGuidProperty, guid());
-  dictionary->SetStringWithoutPathExpansion(shill::kSecurityProperty,
-                                            security());
+  dictionary->SetStringWithoutPathExpansion(shill::kSecurityClassProperty,
+                                            security_class());
 
   if (visible()) {
     if (!error().empty())
@@ -285,7 +285,7 @@ std::string NetworkState::GetSpecifier() const {
     return std::string();
   }
   if (type() == shill::kTypeWifi)
-    return name() + "_" + security_;
+    return name() + "_" + security_class_;
   if (!name().empty())
     return name();
   return type();  // For unnamed networks such as ethernet.

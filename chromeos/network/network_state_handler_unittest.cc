@@ -493,22 +493,22 @@ TEST_F(NetworkStateHandlerTest, ServicePropertyChanged) {
   const std::string eth1 = kShillManagerClientStubDefaultService;
   const NetworkState* ethernet = network_state_handler_->GetNetworkState(eth1);
   ASSERT_TRUE(ethernet);
-  EXPECT_EQ("", ethernet->security());
+  EXPECT_EQ("", ethernet->security_class());
   EXPECT_EQ(1, test_observer_->PropertyUpdatesForService(eth1));
-  base::StringValue security_value("TestSecurity");
+  base::StringValue security_class_value("TestSecurityClass");
   DBusThreadManager::Get()->GetShillServiceClient()->SetProperty(
       dbus::ObjectPath(eth1),
-      shill::kSecurityProperty, security_value,
+      shill::kSecurityClassProperty, security_class_value,
       base::Bind(&base::DoNothing), base::Bind(&ErrorCallbackFunction));
   message_loop_.RunUntilIdle();
   ethernet = network_state_handler_->GetNetworkState(eth1);
-  EXPECT_EQ("TestSecurity", ethernet->security());
+  EXPECT_EQ("TestSecurityClass", ethernet->security_class());
   EXPECT_EQ(2, test_observer_->PropertyUpdatesForService(eth1));
 
   // Changing a service to the existing value should not trigger an update.
   DBusThreadManager::Get()->GetShillServiceClient()->SetProperty(
       dbus::ObjectPath(eth1),
-      shill::kSecurityProperty, security_value,
+      shill::kSecurityClassProperty, security_class_value,
       base::Bind(&base::DoNothing), base::Bind(&ErrorCallbackFunction));
   message_loop_.RunUntilIdle();
   EXPECT_EQ(2, test_observer_->PropertyUpdatesForService(eth1));
@@ -639,7 +639,7 @@ TEST_F(NetworkStateHandlerTest, DefaultServiceChanged) {
   test_observer_->reset_change_counts();
   DBusThreadManager::Get()->GetShillServiceClient()->SetProperty(
       dbus::ObjectPath(wifi1),
-      shill::kSecurityProperty, base::StringValue("TestSecurity"),
+      shill::kSecurityClassProperty, base::StringValue("TestSecurityClass"),
       base::Bind(&base::DoNothing), base::Bind(&ErrorCallbackFunction));
   message_loop_.RunUntilIdle();
   EXPECT_EQ(1u, test_observer_->default_network_change_count());

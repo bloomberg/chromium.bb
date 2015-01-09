@@ -87,7 +87,7 @@ class NetworkStateNotifierTest : public testing::Test {
     service_test->AddService("/service/wifi1", "wifi1_guid", "wifi1",
                              shill::kTypeWifi, shill::kStateIdle,
                              add_to_visible);
-    service_test->SetServiceProperty("wifi1", shill::kSecurityProperty,
+    service_test->SetServiceProperty("wifi1", shill::kSecurityClassProperty,
                                      base::StringValue(shill::kSecurityWep));
     service_test->SetServiceProperty("wifi1", shill::kConnectableProperty,
                                      base::FundamentalValue(true));

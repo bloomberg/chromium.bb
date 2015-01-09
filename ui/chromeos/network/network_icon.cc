@@ -674,7 +674,7 @@ void NetworkIconImpl::GetBadges(const NetworkState* network, Badges* badges) {
 
   const std::string& type = network->type();
   if (type == shill::kTypeWifi) {
-    if (network->security() != shill::kSecurityNone &&
+    if (network->security_class() != shill::kSecurityNone &&
         IconTypeIsDark(icon_type_)) {
       badges->bottom_right = rb.GetImageSkiaNamed(
           IDR_AURA_UBER_TRAY_NETWORK_SECURE_DARK);

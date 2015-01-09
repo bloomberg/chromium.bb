@@ -4,7 +4,7 @@
   "Passphrase": "user's passphrase",
   "Profile": "/profile/user1/shill",
   "WiFi.HexSSID": "7769666931", // "wifi1"
-  "Security": "psk",
+  "SecurityClass": "psk",
   "Type": "wifi",
   "UIData": "{\"onc_source\":\"user_policy\",\"user_settings\":{\"WiFi\":{\"Passphrase\":\"FAKE_CREDENTIAL_VPaJDV9x\"}}}"
 }

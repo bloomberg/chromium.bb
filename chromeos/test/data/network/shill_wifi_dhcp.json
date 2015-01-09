@@ -4,7 +4,7 @@
    "Mode": "managed",
    "StaticIPConfig": {},
    "Passphrase": "some passphrase",
-   "Security": "psk",
+   "SecurityClass": "psk",
    "Type": "wifi",
    "WiFi.HexSSID": "576966695769746844484350", // "WifiWithDHCP"
 }

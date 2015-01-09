@@ -97,8 +97,6 @@ INSTANTIATE_TEST_CASE_P(
                        "translation_of_shill_ethernet_with_ipconfig.onc"),
         std::make_pair("shill_wifi_clientcert.json",
                        "translation_of_shill_wifi_clientcert.onc"),
-        std::make_pair("shill_wifi_wpa1.json",
-                       "translation_of_shill_wifi_wpa1.onc"),
         std::make_pair("shill_output_l2tpipsec.json",
                        "translation_of_shill_l2tpipsec.onc"),
         std::make_pair("shill_output_openvpn.json",

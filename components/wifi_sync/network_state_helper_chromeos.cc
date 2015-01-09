@@ -30,16 +30,14 @@ WifiCredential::CredentialSet GetWifiCredentialsForShillProfile(
     if (network->profile_path() != shill_profile_path)
       continue;
 
-    // TODO(quiche): Switch away from network->security(), once we have
-    // a security_class() field in NetworkState.
-    //
     // TODO(quiche): Fill in the actual passphrase via an asynchronous
     // call to a chromeos::NetworkConfigurationHandler instance's
     // GetProperties method.
     credentials.insert(
-        WifiCredential(network->raw_ssid(),
-                       WifiSecurityClassFromShillSecurity(network->security()),
-                       ""  /* empty passphrase */));
+        WifiCredential(
+            network->raw_ssid(),
+            WifiSecurityClassFromShillSecurity(network->security_class()),
+            ""  /* empty passphrase */));
   }
   return credentials;
 }

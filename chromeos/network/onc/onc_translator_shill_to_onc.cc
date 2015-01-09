@@ -313,8 +313,9 @@ void ShillToONCTranslator::TranslateVPN() {
 }
 
 void ShillToONCTranslator::TranslateWiFiWithState() {
-  TranslateWithTableAndSet(
-      shill::kSecurityProperty, kWiFiSecurityTable, ::onc::wifi::kSecurity);
+  TranslateWithTableAndSet(shill::kSecurityClassProperty,
+                           kWiFiSecurityTable,
+                           ::onc::wifi::kSecurity);
   std::string ssid = shill_property_util::GetSSIDFromProperties(
       *shill_dictionary_, NULL /* ignore unknown encoding */);
   if (!ssid.empty())

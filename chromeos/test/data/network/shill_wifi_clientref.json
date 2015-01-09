@@ -5,7 +5,7 @@
    "GUID": "{77db0089-0bc8-4358-929c-123xcv}",
    "Mode": "managed",
    "SaveCredentials": true,
-   "Security": "802_1x",
+   "SecurityClass": "802_1x",
    "Type": "wifi",
    "WiFi.HexSSID": "536F6D65576966692D5859" // "SomeWifi-XY"
 }

@@ -663,7 +663,7 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
                          state,
                          add_to_visible);
     services->SetServiceProperty(kWifi1Path,
-                                 shill::kSecurityProperty,
+                                 shill::kSecurityClassProperty,
                                  base::StringValue(shill::kSecurityWep));
     services->SetServiceProperty(kWifi1Path,
                                  shill::kConnectableProperty,
@@ -678,7 +678,7 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
                          shill::kStateIdle,
                          add_to_visible);
     services->SetServiceProperty(kWifi2Path,
-                                 shill::kSecurityProperty,
+                                 shill::kSecurityClassProperty,
                                  base::StringValue(shill::kSecurityPsk));
 
     base::FundamentalValue strength_value(80);
@@ -695,7 +695,7 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
                            shill::kStatePortal,
                            add_to_visible);
       services->SetServiceProperty(kPortaledWifiPath,
-                                   shill::kSecurityProperty,
+                                   shill::kSecurityClassProperty,
                                    base::StringValue(shill::kSecurityNone));
       services->SetConnectBehavior(kPortaledWifiPath,
                                    base::Bind(&UpdatePortaledWifiState,

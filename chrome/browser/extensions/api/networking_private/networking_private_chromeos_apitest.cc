@@ -256,7 +256,7 @@ class NetworkingPrivateChromeOSApiTest : public ExtensionApiTest {
 
     AddService("stub_wifi1", "wifi1", shill::kTypeWifi, shill::kStateOnline);
     service_test_->SetServiceProperty("stub_wifi1",
-                                      shill::kSecurityProperty,
+                                      shill::kSecurityClassProperty,
                                       base::StringValue(shill::kSecurityWep));
     service_test_->SetServiceProperty("stub_wifi1",
                                       shill::kSignalStrengthProperty,
@@ -285,7 +285,7 @@ class NetworkingPrivateChromeOSApiTest : public ExtensionApiTest {
 
     AddService("stub_wifi2", "wifi2_PSK", shill::kTypeWifi, shill::kStateIdle);
     service_test_->SetServiceProperty("stub_wifi2",
-                                      shill::kSecurityProperty,
+                                      shill::kSecurityClassProperty,
                                       base::StringValue(shill::kSecurityPsk));
     service_test_->SetServiceProperty("stub_wifi2",
                                       shill::kSignalStrengthProperty,

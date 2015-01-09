@@ -201,7 +201,7 @@ void LocalTranslator::TranslateWiFi() {
   if (onc_object_->GetStringWithoutPathExpansion(
           ::onc::wifi::kSecurity, &security)) {
     TranslateWithTableAndSet(security, kWiFiSecurityTable,
-                             shill::kSecurityProperty);
+                             shill::kSecurityClassProperty);
   }
 
   std::string ssid;

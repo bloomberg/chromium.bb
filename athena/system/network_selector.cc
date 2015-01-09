@@ -243,7 +243,7 @@ class NetworkRow : public views::View {
 
     // If this is not a wifi network that needs a password, then ignore.
     if (network->type() != shill::kTypeWifi ||
-        network->security() == shill::kSecurityNone) {
+        network->security_class() == shill::kSecurityNone) {
       return;
     }
 

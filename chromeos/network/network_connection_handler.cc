@@ -91,7 +91,7 @@ std::string GetDefaultUserProfilePath(const NetworkState* network) {
       (LoginState::IsInitialized() &&
        !LoginState::Get()->UserHasNetworkProfile()) ||
       (network && network->type() == shill::kTypeWifi &&
-       network->security() == shill::kSecurityNone)) {
+       network->security_class() == shill::kSecurityNone)) {
     return NetworkProfileHandler::GetSharedProfilePath();
   }
   const NetworkProfile* profile  =
@@ -367,10 +367,10 @@ void NetworkConnectionHandler::VerifyConfiguredAndConnect(
     return;
   }
 
-  std::string type, security;
+  std::string type, security_class;
   service_properties.GetStringWithoutPathExpansion(shill::kTypeProperty, &type);
   service_properties.GetStringWithoutPathExpansion(
-      shill::kSecurityProperty, &security);
+      shill::kSecurityClassProperty, &security_class);
   bool connectable = false;
   service_properties.GetBooleanWithoutPathExpansion(
       shill::kConnectableProperty, &connectable);
@@ -436,7 +436,8 @@ void NetworkConnectionHandler::VerifyConfiguredAndConnect(
         client_cert_type = client_cert::CONFIG_TYPE_IPSEC;
       }
     }
-  } else if (type == shill::kTypeWifi && security == shill::kSecurity8021x) {
+  } else if (type == shill::kTypeWifi &&
+             security_class == shill::kSecurity8021x) {
     client_cert_type = client_cert::CONFIG_TYPE_EAP;
   }
 

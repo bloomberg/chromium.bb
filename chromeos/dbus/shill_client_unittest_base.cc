@@ -347,7 +347,8 @@ ShillClientUnittestBase::CreateExampleServiceProperties() {
                                       new base::StringValue(shill::kTypeWifi));
   shill_property_util::SetSSID("testssid", properties);
   properties->SetWithoutPathExpansion(
-      shill::kSecurityProperty, new base::StringValue(shill::kSecurityPsk));
+      shill::kSecurityClassProperty,
+      new base::StringValue(shill::kSecurityPsk));
   return properties;
 }
 

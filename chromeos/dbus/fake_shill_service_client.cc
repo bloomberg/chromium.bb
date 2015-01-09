@@ -390,7 +390,7 @@ base::DictionaryValue* FakeShillServiceClient::SetServiceProperties(
   properties->SetStringWithoutPathExpansion(shill::kStateProperty, state);
   properties->SetBooleanWithoutPathExpansion(shill::kVisibleProperty, visible);
   if (type == shill::kTypeWifi) {
-    properties->SetStringWithoutPathExpansion(shill::kSecurityProperty,
+    properties->SetStringWithoutPathExpansion(shill::kSecurityClassProperty,
                                               shill::kSecurityNone);
     properties->SetStringWithoutPathExpansion(shill::kModeProperty,
                                               shill::kModeManaged);

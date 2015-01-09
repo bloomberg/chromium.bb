@@ -136,7 +136,7 @@ void NetworkConnectImpl::HandleUnconfiguredNetwork(
 
   if (network->type() == shill::kTypeWifi) {
     // Only show the config view for secure networks, otherwise do nothing.
-    if (network->security() != shill::kSecurityNone) {
+    if (network->security_class() != shill::kSecurityNone) {
       delegate_->ShowNetworkConfigure(service_path);
     }
     return;
@@ -377,7 +377,7 @@ void NetworkConnectImpl::ConnectToNetwork(const std::string& service_path) {
   NET_LOG_USER("ConnectToNetwork", service_path);
   const NetworkState* network = GetNetworkState(service_path);
   if (network) {
-    if (!network->error().empty() && !network->security().empty()) {
+    if (!network->error().empty() && !network->security_class().empty()) {
       NET_LOG_USER("Configure: " + network->error(), service_path);
       // If the network is in an error state, show the configuration UI
       // directly to avoid a spurious notification.

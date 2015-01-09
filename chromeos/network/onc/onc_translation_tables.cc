@@ -120,7 +120,7 @@ const FieldTranslationEntry wifi_fields[] = {
     // This field is converted during translation, see onc_translator_*.
     // { ::onc::wifi::kSSID, shill::kWifiHexSsid},
     // This field is converted during translation, see onc_translator_*.
-    // { ::onc::wifi::kSecurity, shill::kSecurityProperty },
+    // { ::onc::wifi::kSecurity, shill::kSecurityClassProperty },
     { ::onc::wifi::kSignalStrength, shill::kSignalStrengthProperty},
     {NULL}};
 
@@ -285,14 +285,11 @@ const StringTranslationEntry kVPNTypeTable[] = {
     { ::onc::vpn::kThirdPartyVpn, shill::kProviderThirdPartyVpn},
     {NULL}};
 
-// The first matching line is chosen.
 const StringTranslationEntry kWiFiSecurityTable[] = {
     { ::onc::wifi::kSecurityNone, shill::kSecurityNone},
     { ::onc::wifi::kWEP_PSK, shill::kSecurityWep},
     { ::onc::wifi::kWPA_PSK, shill::kSecurityPsk},
     { ::onc::wifi::kWPA_EAP, shill::kSecurity8021x},
-    { ::onc::wifi::kWPA_PSK, shill::kSecurityRsn},
-    { ::onc::wifi::kWPA_PSK, shill::kSecurityWpa},
     {NULL}};
 
 const StringTranslationEntry kEAPOuterTable[] = {

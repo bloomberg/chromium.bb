@@ -679,17 +679,17 @@ bool WifiConfigView::Login() {
         shill::kModeProperty, shill::kModeManaged);
     properties.SetBooleanWithoutPathExpansion(
         shill::kSaveCredentialsProperty, GetSaveCredentials());
-    std::string security = shill::kSecurityNone;
+    std::string security_class = shill::kSecurityNone;
     if (!eap_method_combobox_) {
       switch (security_combobox_->selected_index()) {
         case SECURITY_INDEX_NONE:
-          security = shill::kSecurityNone;
+          security_class = shill::kSecurityNone;
           break;
         case SECURITY_INDEX_WEP:
-          security = shill::kSecurityWep;
+          security_class = shill::kSecurityWep;
           break;
         case SECURITY_INDEX_PSK:
-          security = shill::kSecurityPsk;
+          security_class = shill::kSecurityPsk;
           break;
       }
       std::string passphrase = GetPassphrase();
@@ -698,11 +698,11 @@ bool WifiConfigView::Login() {
             shill::kPassphraseProperty, GetPassphrase());
       }
     } else {
-      security = shill::kSecurity8021x;
+      security_class = shill::kSecurity8021x;
       SetEapProperties(&properties, false /* not configured */);
     }
     properties.SetStringWithoutPathExpansion(
-        shill::kSecurityProperty, security);
+        shill::kSecurityClassProperty, security_class);
 
     // Configure and connect to network.
     ui::NetworkConnect::Get()->CreateConfigurationAndConnect(&properties,
@@ -899,7 +899,7 @@ void WifiConfigView::Init(bool show_8021x) {
   const NetworkState* network = GetNetworkState();
   if (network) {
     if (network->type() == shill::kTypeWifi) {
-      if (network->security() == shill::kSecurity8021x)
+      if (network->security_class() == shill::kSecurity8021x)
         show_8021x = true;
     } else if (network->type() == shill::kTypeEthernet) {
       show_8021x = true;
