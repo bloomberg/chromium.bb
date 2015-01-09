@@ -110,6 +110,10 @@ namespace fileSystemProvider {
     // of the file system (such as creating, deleting or writing to files).
     boolean? writable;
 
+    // The maximum number of files that can be opened at once. If not specified,
+    // then not limited.
+    long? openedFilesLimit;
+
     // Whether the file system supports the <code>tag</code> field for observed
     // directories. Required in order to enable the internal cache.
     [nodoc] boolean? supportsNotifyTag;
@@ -503,7 +507,8 @@ namespace fileSystemProvider {
         ProviderErrorCallback errorCallback);
 
     // Raised when opening a file at <code>filePath</code> is requested. If the
-    // file does not exist, then the operation must fail.
+    // file does not exist, then the operation must fail. Maximum number of
+    // files opened at once can be specified with <code>MountOptions</code>.
     [maxListeners=1] static void onOpenFileRequested(
         OpenFileRequestedOptions options,
         ProviderSuccessCallback successCallback,

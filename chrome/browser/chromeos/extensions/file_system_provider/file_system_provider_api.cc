@@ -87,6 +87,13 @@ bool FileSystemProviderMountFunction::RunSync() {
     return false;
   }
 
+  // If the opened files limit is set, then it must be larger or equal than 0.
+  if (params->options.opened_files_limit.get() &&
+      *params->options.opened_files_limit.get() < 0) {
+    SetError(FileErrorToString(base::File::FILE_ERROR_INVALID_OPERATION));
+    return false;
+  }
+
   Service* const service = Service::Get(GetProfile());
   DCHECK(service);
 
@@ -94,6 +101,9 @@ bool FileSystemProviderMountFunction::RunSync() {
   options.file_system_id = params->options.file_system_id;
   options.display_name = params->options.display_name;
   options.writable = params->options.writable;
+  options.opened_files_limit = params->options.opened_files_limit.get()
+                                   ? *params->options.opened_files_limit.get()
+                                   : 0;
   options.supports_notify_tag = params->options.supports_notify_tag;
 
   const base::File::Error result =

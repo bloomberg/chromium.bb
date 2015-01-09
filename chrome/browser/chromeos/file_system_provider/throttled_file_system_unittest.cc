@@ -50,8 +50,7 @@ class FileSystemProviderThrottledFileSystemTest : public testing::Test {
   // at once. If 0, then no limit.
   void SetUpFileSystem(size_t limit) {
     MountOptions options(kFileSystemId, kDisplayName);
-    if (limit)
-      options.opened_files_limit = limit;
+    options.opened_files_limit = limit;
 
     ProvidedFileSystemInfo file_system_info(kExtensionId, options,
                                             base::FilePath() /* mount_path */);

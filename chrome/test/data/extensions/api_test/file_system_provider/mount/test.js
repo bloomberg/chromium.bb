@@ -18,7 +18,7 @@ chrome.test.runTests([
   // Verifies that mounting fails, when an empty string is provided as a name.
   function emptyDisplayName() {
     chrome.fileSystemProvider.mount(
-        {fileSystemId: 'file-system-id', displayName: ''},
+        {fileSystemId: 'file-system-id-2', displayName: ''},
         chrome.test.callbackFail('INVALID_OPERATION'));
   },
 
@@ -27,6 +27,36 @@ chrome.test.runTests([
     chrome.fileSystemProvider.mount(
         {fileSystemId: '', displayName: 'File System Name'},
         chrome.test.callbackFail('INVALID_OPERATION'));
+  },
+
+  // Verifies that mounting succeeds, when a positive limit for opened files is
+  // provided.
+  function goodOpenedFilesLimit() {
+    chrome.fileSystemProvider.mount({
+      fileSystemId: 'file-system-id-3',
+      displayName: 'File System Name',
+      openedFilesLimit: 10
+    }, chrome.test.callbackPass());
+  },
+
+  // Verifies that mounting succeeds, when limit for number of opened files is
+  // set to 0. It means no limit.
+  function goodOpenedFilesLimit() {
+    chrome.fileSystemProvider.mount({
+      fileSystemId: 'file-system-id-4',
+      displayName: 'File System Name',
+      openedFilesLimit: 0
+    }, chrome.test.callbackPass());
+  },
+
+  // Verifies that mounting fails, when a negative limit for opened files is
+  // provided.
+  function illegalOpenedFilesLimit() {
+    chrome.fileSystemProvider.mount({
+      fileSystemId: 'file-system-id-5',
+      displayName: 'File System Name',
+      openedFilesLimit: -1
+    }, chrome.test.callbackFail('INVALID_OPERATION'));
   },
 
   // End to end test. Mounts a volume using fileSystemProvider.mount(), then
@@ -81,7 +111,7 @@ chrome.test.runTests([
   // requests should succeed, except the last one which should fail with a
   // security error.
   function stressMountTest() {
-    var ALREADY_MOUNTED_FILE_SYSTEMS = 3;  // By previous tests.
+    var ALREADY_MOUNTED_FILE_SYSTEMS = 5;  // By previous tests.
     var MAX_FILE_SYSTEMS = 16;
     var index = 0;
     var tryNextOne = function() {
