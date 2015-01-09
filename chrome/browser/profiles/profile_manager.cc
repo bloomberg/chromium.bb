@@ -643,54 +643,56 @@ void ProfileManager::ScheduleProfileForDeletion(
   PrefService* local_state = g_browser_process->local_state();
   ProfileInfoCache& cache = GetProfileInfoCache();
 
+  // If we're deleting the last (non-legacy-supervised) profile, then create a
+  // new profile in its place.
+  base::FilePath last_non_supervised_profile_path;
+  for (size_t i = 0; i < cache.GetNumberOfProfiles(); ++i) {
+    base::FilePath cur_path = cache.GetPathOfProfileAtIndex(i);
+    // Make sure that this profile is not pending deletion, and is not
+    // legacy-supervised.
+    if (cur_path != profile_dir &&
+        !cache.ProfileIsLegacySupervisedAtIndex(i) &&
+        !IsProfileMarkedForDeletion(cur_path)) {
+      last_non_supervised_profile_path = cur_path;
+      break;
+    }
+  }
+
+  base::FilePath new_path;
+  if (last_non_supervised_profile_path.empty()) {
+    // If we are using --new-avatar-menu, then assign the default
+    // placeholder avatar and name. Otherwise, use random ones.
+    bool is_new_avatar_menu = switches::IsNewAvatarMenu();
+    int avatar_index = profiles::GetPlaceholderAvatarIndex();
+    base::string16 new_avatar_url = is_new_avatar_menu ?
+        base::UTF8ToUTF16(profiles::GetDefaultAvatarIconUrl(avatar_index)) :
+        base::string16();
+    base::string16 new_profile_name = is_new_avatar_menu ?
+        cache.ChooseNameForNewProfile(avatar_index) : base::string16();
+
+    new_path = GenerateNextProfileDirectoryPath();
+    CreateProfileAsync(new_path,
+                       callback,
+                       new_profile_name,
+                       new_avatar_url,
+                       std::string());
+
+    ProfileMetrics::LogProfileAddNewUser(
+        ProfileMetrics::ADD_NEW_USER_LAST_DELETED);
+  }
+
+  // Update the last used profile pref before closing browser windows. This
+  // way the correct last used profile is set for any notification observers.
   const std::string last_used_profile =
       local_state->GetString(prefs::kProfileLastUsed);
-
   if (last_used_profile == profile_dir.BaseName().MaybeAsASCII() ||
       last_used_profile == GetGuestProfilePath().BaseName().MaybeAsASCII()) {
-    // Update the last used profile pref before closing browser windows. This
-    // way the correct last used profile is set for any notification observers.
-    base::FilePath last_non_supervised_profile_path;
-    for (size_t i = 0; i < cache.GetNumberOfProfiles(); ++i) {
-      base::FilePath cur_path = cache.GetPathOfProfileAtIndex(i);
-      // Make sure that this profile is not pending deletion.
-      if (cur_path != profile_dir &&
-          !cache.ProfileIsLegacySupervisedAtIndex(i) &&
-          !IsProfileMarkedForDeletion(cur_path)) {
-        last_non_supervised_profile_path = cur_path;
-        break;
-      }
-    }
-
-    // If we're deleting the last (non-supervised) profile, then create a new
-    // profile in its place.
     const std::string last_non_supervised_profile =
         last_non_supervised_profile_path.BaseName().MaybeAsASCII();
     if (last_non_supervised_profile.empty()) {
-      base::FilePath new_path = GenerateNextProfileDirectoryPath();
-      // Make sure the last used profile path is pointing at it. This way the
-      // correct last used profile is set for any notification observers.
+      DCHECK(!new_path.empty());
       local_state->SetString(prefs::kProfileLastUsed,
                              new_path.BaseName().MaybeAsASCII());
-
-      // If we are using --new-avatar-menu, then assign the default
-      // placeholder avatar and name. Otherwise, use random ones.
-      bool is_new_avatar_menu = switches::IsNewAvatarMenu();
-      int avatar_index = profiles::GetPlaceholderAvatarIndex();
-      base::string16 new_avatar_url = is_new_avatar_menu ?
-          base::UTF8ToUTF16(profiles::GetDefaultAvatarIconUrl(avatar_index)) :
-          base::string16();
-      base::string16 new_profile_name = is_new_avatar_menu ?
-          cache.ChooseNameForNewProfile(avatar_index) : base::string16();
-
-      CreateProfileAsync(new_path,
-                         callback,
-                         new_profile_name,
-                         new_avatar_url,
-                         std::string());
-
-      ProfileMetrics::LogProfileAddNewUser(
-          ProfileMetrics::ADD_NEW_USER_LAST_DELETED);
     } else {
       // On the Mac, the browser process is not killed when all browser windows
       // are closed, so just in case we are deleting the active profile, and no
