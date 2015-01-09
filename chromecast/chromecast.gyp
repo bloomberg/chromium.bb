@@ -119,6 +119,7 @@
         'chromecast_locales.gyp:chromecast_settings',
         'media/media.gyp:media_base',
         '../base/base.gyp:base',
+        '../components/components.gyp:breakpad_host',
         '../components/components.gyp:cdm_renderer',
         '../components/components.gyp:component_metrics_proto',
         '../components/components.gyp:crash_component',

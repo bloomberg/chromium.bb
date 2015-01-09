@@ -20,6 +20,7 @@
 #include "chromecast/common/chromecast_switches.h"
 #include "chromecast/common/global_descriptors.h"
 #include "components/crash/app/breakpad_linux.h"
+#include "components/crash/browser/crash_handler_host_linux.h"
 #include "components/dns_prefetch/browser/net_message_filter.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/certificate_request_result_type.h"
@@ -275,6 +276,11 @@ void CastContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
                          base::ScopedFD(minidump_file.TakePlatformFile()));
     }
   }
+#else
+  int crash_signal_fd = GetCrashSignalFD(command_line);
+  if (crash_signal_fd >= 0) {
+    mappings->Share(kCrashDumpSignal, crash_signal_fd);
+  }
 #endif  // defined(OS_ANDROID)
 }
 
@@ -286,6 +292,44 @@ CastContentBrowserClient::OverrideCreateExternalVideoSurfaceContainer(
 }
 #endif  // defined(OS_ANDROID) && defined(VIDEO_HOLE)
 
+#if !defined(OS_ANDROID)
+int CastContentBrowserClient::GetCrashSignalFD(
+    const base::CommandLine& command_line) {
+  std::string process_type =
+      command_line.GetSwitchValueASCII(switches::kProcessType);
+
+  if (process_type == switches::kRendererProcess ||
+      process_type == switches::kGpuProcess) {
+    breakpad::CrashHandlerHostLinux* crash_handler =
+        crash_handlers_[process_type];
+    if (!crash_handler) {
+      crash_handler = CreateCrashHandlerHost(process_type);
+      crash_handlers_[process_type] = crash_handler;
+    }
+    return crash_handler->GetDeathSignalSocket();
+  }
+
+  return -1;
+}
+
+breakpad::CrashHandlerHostLinux*
+CastContentBrowserClient::CreateCrashHandlerHost(
+    const std::string& process_type) {
+  // Let cast shell dump to /tmp. Internal minidump generator code can move it
+  // to /data/minidumps later, since /data/minidumps is file lock-controlled.
+  base::FilePath dumps_path;
+  PathService::Get(base::DIR_TEMP, &dumps_path);
+
+  // Alway set "upload" to false to use our own uploader.
+  breakpad::CrashHandlerHostLinux* crash_handler =
+    new breakpad::CrashHandlerHostLinux(
+        process_type, dumps_path, false /* upload */);
+  // StartUploaderThread() even though upload is diferred.
+  // Breakpad-related memory is freed in the uploader thread.
+  crash_handler->StartUploaderThread();
+  return crash_handler;
+}
+#endif  // !defined(OS_ANDROID)
 
 }  // namespace shell
 }  // namespace chromecast

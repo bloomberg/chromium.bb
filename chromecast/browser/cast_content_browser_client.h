@@ -5,9 +5,15 @@
 #ifndef CHROMECAST_BROWSER_CAST_CONTENT_BROWSER_CLIENT_H_
 #define CHROMECAST_BROWSER_CAST_CONTENT_BROWSER_CLIENT_H_
 
+#include <map>
+
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/content_browser_client.h"
+
+namespace breakpad {
+class CrashHandlerHostLinux;
+}
 
 namespace chromecast {
 namespace shell {
@@ -84,6 +90,18 @@ class CastContentBrowserClient: public content::ContentBrowserClient {
   net::X509Certificate* SelectClientCertificateOnIOThread(
       GURL requesting_url,
       int render_process_id);
+
+#if !defined(OS_ANDROID)
+  // Returns the crash signal FD corresponding to the current process type.
+  int GetCrashSignalFD(const base::CommandLine& command_line);
+
+  // Creates a CrashHandlerHost instance for the given process type.
+  breakpad::CrashHandlerHostLinux* CreateCrashHandlerHost(
+      const std::string& process_type);
+
+  // A static cache to hold crash_handlers for each process_type
+  std::map<std::string, breakpad::CrashHandlerHostLinux*> crash_handlers_;
+#endif
 
   scoped_ptr<URLRequestContextFactory> url_request_context_factory_;
 
