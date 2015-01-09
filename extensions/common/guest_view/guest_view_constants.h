@@ -9,6 +9,13 @@
 
 namespace guestview {
 
+// Sizing Attributes.
+extern const char kAttributeAutoSize[];
+extern const char kAttributeMaxHeight[];
+extern const char kAttributeMaxWidth[];
+extern const char kAttributeMinHeight[];
+extern const char kAttributeMinWidth[];
+
 // Parameters/properties on events.
 extern const char kIsTopLevel[];
 extern const char kReason[];
@@ -26,4 +33,3 @@ extern const int kInstanceIDNone;
 }  // namespace guestview
 
 #endif  // EXTENSIONS_COMMON_GUEST_VIEW_GUEST_VIEW_CONSTANTS_H_
-

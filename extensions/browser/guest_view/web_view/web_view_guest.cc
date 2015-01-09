@@ -281,8 +281,6 @@ void WebViewGuest::CreateWebContents(
 }
 
 void WebViewGuest::DidAttachToEmbedder() {
-  SetUpAutoSize();
-
   std::string name;
   if (attach_params()->GetString(webview::kAttributeName, &name)) {
     // If the guest window's name is empty, then the WebView tag's name is
@@ -1022,28 +1020,6 @@ bool WebViewGuest::HandleKeyboardShortcuts(
 #endif
 
   return false;
-}
-
-void WebViewGuest::SetUpAutoSize() {
-  // Read the autosize parameters passed in from the embedder.
-  bool auto_size_enabled = false;
-  attach_params()->GetBoolean(webview::kAttributeAutoSize, &auto_size_enabled);
-
-  int max_height = 0;
-  int max_width = 0;
-  attach_params()->GetInteger(webview::kAttributeMaxHeight, &max_height);
-  attach_params()->GetInteger(webview::kAttributeMaxWidth, &max_width);
-
-  int min_height = 0;
-  int min_width = 0;
-  attach_params()->GetInteger(webview::kAttributeMinHeight, &min_height);
-  attach_params()->GetInteger(webview::kAttributeMinWidth, &min_width);
-
-  // Call SetAutoSize to apply all the appropriate validation and clipping of
-  // values.
-  SetAutoSize(auto_size_enabled,
-              gfx::Size(min_width, min_height),
-              gfx::Size(max_width, max_height));
 }
 
 void WebViewGuest::ShowContextMenu(

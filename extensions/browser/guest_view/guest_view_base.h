@@ -277,6 +277,8 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   void CompleteInit(const WebContentsCreatedCallback& callback,
                     content::WebContents* guest_web_contents);
 
+  void SetUpAutoSize();
+
   void StartTrackingEmbedderZoomLevel();
   void StopTrackingEmbedderZoomLevel();
 

@@ -314,6 +314,8 @@ bool GuestViewBase::ZoomPropagatesFromEmbedderToGuest() const {
 void GuestViewBase::DidAttach(int guest_proxy_routing_id) {
   opener_lifetime_observer_.reset();
 
+  SetUpAutoSize();
+
   // Give the derived class an opportunity to perform some actions.
   DidAttachToEmbedder();
 
@@ -551,6 +553,28 @@ void GuestViewBase::CompleteInit(const WebContentsCreatedCallback& callback,
   }
   InitWithWebContents(guest_web_contents);
   callback.Run(guest_web_contents);
+}
+
+void GuestViewBase::SetUpAutoSize() {
+  // Read the autosize parameters passed in from the embedder.
+  bool auto_size_enabled = false;
+  attach_params()->GetBoolean(guestview::kAttributeAutoSize,
+                              &auto_size_enabled);
+
+  int max_height = 0;
+  int max_width = 0;
+  attach_params()->GetInteger(guestview::kAttributeMaxHeight, &max_height);
+  attach_params()->GetInteger(guestview::kAttributeMaxWidth, &max_width);
+
+  int min_height = 0;
+  int min_width = 0;
+  attach_params()->GetInteger(guestview::kAttributeMinHeight, &min_height);
+  attach_params()->GetInteger(guestview::kAttributeMinWidth, &min_width);
+
+  // Call SetAutoSize to apply all the appropriate validation and clipping of
+  // values.
+  SetAutoSize(auto_size_enabled, gfx::Size(min_width, min_height),
+              gfx::Size(max_width, max_height));
 }
 
 void GuestViewBase::StartTrackingEmbedderZoomLevel() {

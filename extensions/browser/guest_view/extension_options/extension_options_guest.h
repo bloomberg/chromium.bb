@@ -70,7 +70,6 @@ class ExtensionOptionsGuest
                         int guest_instance_id);
   ~ExtensionOptionsGuest() override;
   void OnRequest(const ExtensionHostMsg_Request_Params& params);
-  void SetUpAutoSize();
 
   scoped_ptr<extensions::ExtensionFunctionDispatcher>
       extension_function_dispatcher_;

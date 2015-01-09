@@ -118,8 +118,6 @@ void ExtensionOptionsGuest::CreateWebContents(
 }
 
 void ExtensionOptionsGuest::DidAttachToEmbedder() {
-  SetUpAutoSize();
-
   // We should not re-navigate on reattachment.
   if (has_navigated_)
     return;
@@ -259,31 +257,6 @@ void ExtensionOptionsGuest::OnRequest(
     const ExtensionHostMsg_Request_Params& params) {
   extension_function_dispatcher_->Dispatch(params,
                                            web_contents()->GetRenderViewHost());
-}
-
-void ExtensionOptionsGuest::SetUpAutoSize() {
-  // Read the autosize parameters passed in from the embedder.
-  bool auto_size_enabled = false;
-  attach_params()->GetBoolean(extensionoptions::kAttributeAutoSize,
-                              &auto_size_enabled);
-
-  int max_height = 0;
-  int max_width = 0;
-  attach_params()->GetInteger(extensionoptions::kAttributeMaxHeight,
-                              &max_height);
-  attach_params()->GetInteger(extensionoptions::kAttributeMaxWidth, &max_width);
-
-  int min_height = 0;
-  int min_width = 0;
-  attach_params()->GetInteger(extensionoptions::kAttributeMinHeight,
-                              &min_height);
-  attach_params()->GetInteger(extensionoptions::kAttributeMinWidth, &min_width);
-
-  // Call SetAutoSize to apply all the appropriate validation and clipping of
-  // values.
-  SetAutoSize(auto_size_enabled,
-              gfx::Size(min_width, min_height),
-              gfx::Size(max_width, max_height));
 }
 
 }  // namespace extensions

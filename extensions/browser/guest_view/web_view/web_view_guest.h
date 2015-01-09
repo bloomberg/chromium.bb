@@ -320,8 +320,6 @@ class WebViewGuest : public GuestView<WebViewGuest>,
 
   bool HandleKeyboardShortcuts(const content::NativeWebKeyboardEvent& event);
 
-  void SetUpAutoSize();
-
   // Identifies the set of rules registries belonging to this guest.
   int rules_registry_id_;
 

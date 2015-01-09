@@ -6,6 +6,13 @@
 
 namespace guestview {
 
+// Sizing Attributes.
+const char kAttributeAutoSize[] = "autosize";
+const char kAttributeMaxHeight[] = "maxheight";
+const char kAttributeMaxWidth[] = "maxwidth";
+const char kAttributeMinHeight[] = "minheight";
+const char kAttributeMinWidth[] = "minwidth";
+
 // Parameters/properties on events.
 const char kIsTopLevel[] = "isTopLevel";
 const char kReason[] = "reason";
