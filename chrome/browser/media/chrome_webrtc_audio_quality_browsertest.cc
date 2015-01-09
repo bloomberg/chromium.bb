@@ -172,6 +172,10 @@ class MAYBE_WebRtcAudioQualityBrowserTest : public WebRtcTestBase {
   void TestAutoGainControl(const base::FilePath::StringType& reference_filename,
                            const std::string& constraints,
                            const std::string& perf_modifier);
+  void SetupAndRecordAudioCall(const base::FilePath& reference_file,
+                               const base::FilePath& recording,
+                               const std::string& constraints,
+                               const base::TimeDelta recording_time);
 };
 
 namespace {
@@ -187,17 +191,19 @@ class AudioRecorder {
   // unless |mono| is true.
   // TODO(phoglund): make win and mac also support the record_cd parameter. Or,
   // even better, make everybody use the CD format rather than DAT.
-  bool StartRecording(int duration_sec, const base::FilePath& output_file,
-                      bool mono, bool record_cd) {
+  bool StartRecording(base::TimeDelta recording_time,
+                      const base::FilePath& output_file, bool mono,
+                      bool record_cd) {
     EXPECT_FALSE(recording_application_.IsValid())
         << "Tried to record, but is already recording.";
 
+    int duration_sec = static_cast<int>(recording_time.InSeconds());
     base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+
 #if defined(OS_WIN)
     // This disable is required to run SoundRecorder.exe on 64-bit Windows
     // from a 32-bit binary. We need to load the wow64 disable function from
     // the DLL since it doesn't exist on Windows XP.
-    // TODO(phoglund): find some cleaner solution than using SoundRecorder.exe.
     base::ScopedNativeLibrary kernel32_lib(base::FilePath(L"kernel32"));
     if (kernel32_lib.is_valid()) {
       typedef BOOL (WINAPI* Wow64DisableWow64FSRedirection)(PVOID*);
@@ -561,17 +567,98 @@ void AnalyzeSegmentsAndPrintResult(
   }
 }
 
+void ComputeAndPrintPesqResults(const base::FilePath& reference_file,
+                                const base::FilePath& recording,
+                                const std::string& perf_modifier) {
+  base::FilePath trimmed_reference = CreateTemporaryWaveFile();
+  base::FilePath trimmed_recording = CreateTemporaryWaveFile();
+
+  ASSERT_TRUE(RemoveSilence(recording, trimmed_reference));
+  ASSERT_TRUE(RemoveSilence(recording, trimmed_recording));
+
+  std::string raw_mos;
+  std::string mos_lqo;
+  ASSERT_TRUE(RunPesq(trimmed_reference, trimmed_recording, 16000,
+                      &raw_mos, &mos_lqo));
+
+  perf_test::PrintResult(
+      "audio_pesq", perf_modifier, "raw_mos", raw_mos, "score", true);
+  perf_test::PrintResult(
+      "audio_pesq", perf_modifier, "mos_lqo", mos_lqo, "score", true);
+
+  EXPECT_TRUE(base::DeleteFile(trimmed_reference, false));
+  EXPECT_TRUE(base::DeleteFile(trimmed_recording, false));
+}
+
 }  // namespace
 
+// Sets up a one-way WebRTC call and records its output to |recording|, using
+// getUserMedia.
+//
+// |reference_file| should have at least two seconds of silence in the
+// beginning: otherwise all the reference audio will not be picked up by the
+// recording. Note that the reference file will start playing as soon as the
+// audio device is up following the getUserMedia call in the left tab. The time
+// it takes to negotiate a call isn't deterministic, but two seconds should be
+// plenty of time. Similarly, the recording time should be enough to catch the
+// whole reference file. If you then silence-trim the reference file and actual
+// file, you should end up with two time-synchronized files.
+void MAYBE_WebRtcAudioQualityBrowserTest::SetupAndRecordAudioCall(
+    const base::FilePath& reference_file,
+    const base::FilePath& recording,
+    const std::string& constraints,
+    const base::TimeDelta recording_time) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(test::HasReferenceFilesInCheckout());
+  ASSERT_TRUE(ForceMicrophoneVolumeTo100Percent());
+
+  ConfigureFakeDeviceToPlayFile(reference_file);
+
+  // Create a one-way call.
+  GURL test_page = embedded_test_server()->GetURL(kWebRtcAudioTestHtmlPage);
+  content::WebContents* left_tab =
+      OpenPageAndGetUserMediaInNewTabWithConstraints(test_page, constraints);
+  SetupPeerconnectionWithLocalStream(left_tab);
+
+  content::WebContents* right_tab =
+      OpenPageWithoutGetUserMedia(kWebRtcAudioTestHtmlPage);
+
+  AudioRecorder recorder;
+  ASSERT_TRUE(recorder.StartRecording(recording_time, recording, false, true));
+
+  NegotiateCall(left_tab, right_tab);
+
+  ASSERT_TRUE(recorder.WaitForRecordingToEnd());
+  DVLOG(0) << "Done recording to " << recording.value() << std::endl;
+
+  HangUp(left_tab);
+}
+
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcAudioQualityBrowserTest,
-                       MANUAL_TestAudioQuality) {
-  if (OnWinXp()) {
-    LOG(ERROR) << "This test is not implemented for Windows XP.";
+                       MANUAL_TestCallQualityWithAudioFromFakeDevice) {
+  if (OnWinXp() || OnWin8()) {
+    // http://crbug.com/379798.
+    LOG(ERROR) << "This test is not implemented for Windows XP/Win8.";
     return;
   }
-  if (OnWin8()) {
+
+  base::FilePath reference_file =
+      test::GetReferenceFilesDir().Append(kReferenceFile);
+  base::FilePath recording = CreateTemporaryWaveFile();
+
+  ASSERT_NO_FATAL_FAILURE(SetupAndRecordAudioCall(
+      reference_file, recording, kAudioOnlyCallConstraints,
+      base::TimeDelta::FromSeconds(25)));
+  ComputeAndPrintPesqResults(reference_file, recording, "_getusermedia");
+
+  EXPECT_TRUE(base::DeleteFile(recording, false));
+}
+
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcAudioQualityBrowserTest,
+                       MANUAL_TestCallQualityWithAudioFromWebAudio) {
+  if (OnWinXp() || OnWin8()) {
     // http://crbug.com/379798.
-    LOG(ERROR) << "Temporarily disabled for Win 8.";
+    LOG(ERROR) << "This test is not implemented for Windows XP/Win8.";
     return;
   }
   ASSERT_TRUE(test::HasReferenceFilesInCheckout());
@@ -588,19 +675,13 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcAudioQualityBrowserTest,
 
   NegotiateCall(left_tab, right_tab);
 
-  // Note: the media flow isn't necessarily established on the connection just
-  // because the ready state is ok on both sides. We sleep a bit between call
-  // establishment and playing to avoid cutting off the beginning of the stream.
-  test::SleepInJavascript(left_tab, 2000);
-
   base::FilePath recording = CreateTemporaryWaveFile();
 
-  // Note: the sound clip is about 10 seconds: record for 15 seconds to get some
+  // Note: the sound clip is about 13 seconds: record for 20 seconds to get some
   // safety margins on each side.
   AudioRecorder recorder;
-  static int kRecordingTimeSeconds = 15;
-  ASSERT_TRUE(recorder.StartRecording(kRecordingTimeSeconds, recording,
-                                      true, false));
+  ASSERT_TRUE(recorder.StartRecording(base::TimeDelta::FromSeconds(20),
+                                      recording, true, false));
 
   PlayAudioFileThroughWebAudio(left_tab);
 
@@ -609,23 +690,11 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcAudioQualityBrowserTest,
 
   HangUp(left_tab);
 
-  base::FilePath trimmed_recording = CreateTemporaryWaveFile();
-
-  ASSERT_TRUE(RemoveSilence(recording, trimmed_recording));
-  DVLOG(0) << "Trimmed silence: " << trimmed_recording.value() << std::endl;
-
-  std::string raw_mos;
-  std::string mos_lqo;
-  base::FilePath reference_file_in_test_dir =
+  // Compare with the reference file on disk (this is the same file we played
+  // through WebAudio earlier).
+  base::FilePath reference_file =
       test::GetReferenceFilesDir().Append(kReferenceFile);
-  ASSERT_TRUE(RunPesq(reference_file_in_test_dir, trimmed_recording, 16000,
-                      &raw_mos, &mos_lqo));
-
-  perf_test::PrintResult("audio_pesq", "", "raw_mos", raw_mos, "score", true);
-  perf_test::PrintResult("audio_pesq", "", "mos_lqo", mos_lqo, "score", true);
-
-  EXPECT_TRUE(base::DeleteFile(recording, false));
-  EXPECT_TRUE(base::DeleteFile(trimmed_recording, false));
+  ComputeAndPrintPesqResults(reference_file, recording, "_webaudio");
 }
 
 /**
@@ -662,46 +731,18 @@ void MAYBE_WebRtcAudioQualityBrowserTest::TestAutoGainControl(
     const base::FilePath::StringType& reference_filename,
     const std::string& constraints,
     const std::string& perf_modifier) {
-  if (OnWinXp()) {
-    LOG(ERROR) << "This test is not implemented for Windows XP.";
-    return;
-  }
-  if (OnWin8()) {
+  if (OnWinXp() || OnWin8()) {
     // http://crbug.com/379798.
-    LOG(ERROR) << "Temporarily disabled for Win 8.";
+    LOG(ERROR) << "This test is not implemented for Windows XP/Win8.";
     return;
   }
-  ASSERT_TRUE(test::HasReferenceFilesInCheckout());
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
-
-  ASSERT_TRUE(ForceMicrophoneVolumeTo100Percent());
-
   base::FilePath reference_file =
       test::GetReferenceFilesDir().Append(reference_filename);
-  ConfigureFakeDeviceToPlayFile(reference_file);
-
-  // Create a one-way call.
-  GURL test_page = embedded_test_server()->GetURL(kWebRtcAudioTestHtmlPage);
-  content::WebContents* left_tab =
-      OpenPageAndGetUserMediaInNewTabWithConstraints(test_page, constraints);
-  SetupPeerconnectionWithLocalStream(left_tab);
-
-  content::WebContents* right_tab =
-      OpenPageWithoutGetUserMedia(kWebRtcAudioTestHtmlPage);
-
   base::FilePath recording = CreateTemporaryWaveFile();
 
-  AudioRecorder recorder;
-  static int kRecordingTimeSeconds = 25;
-  ASSERT_TRUE(recorder.StartRecording(kRecordingTimeSeconds, recording, false,
-                                      true));
-
-  NegotiateCall(left_tab, right_tab);
-
-  ASSERT_TRUE(recorder.WaitForRecordingToEnd());
-  DVLOG(0) << "Done recording to " << recording.value() << std::endl;
-
-  HangUp(left_tab);
+  ASSERT_NO_FATAL_FAILURE(SetupAndRecordAudioCall(
+      reference_file, recording, constraints,
+      base::TimeDelta::FromSeconds(25)));
 
   // Call Take() on the scoped temp dirs if you want to look at the files after
   // the test exits (the default is to delete the files).
@@ -743,19 +784,18 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcAudioQualityBrowserTest,
 
 // Only implemented for Linux for now.
 #if defined(OS_LINUX)
-#define MAYBE_MANUAL_TestComputeGainWithAudioProcessingOff \
-        MANUAL_TestComputeGainWithAudioProcessingOff
+#define MAYBE_MANUAL_TestAutoGainIsOffWithAudioProcessingOff \
+        MANUAL_TestAutoGainIsOffWithAudioProcessingOff
 #else
-#define MAYBE_MANUAL_TestComputeGainWithAudioProcessingOff \
-        DISABLED_MANUAL_TestComputeGainWithAudioProcessingOff
+#define MAYBE_MANUAL_TestAutoGainIsOffWithAudioProcessingOff \
+        DISABLED_MANUAL_TestAutoGainIsOffWithAudioProcessingOff
 #endif
 
 // Since the AGC is off here there should be no gain at all.
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcAudioQualityBrowserTest,
-                       MAYBE_MANUAL_TestComputeGainWithAudioProcessingOff) {
+                       MAYBE_MANUAL_TestAutoGainIsOffWithAudioProcessingOff) {
   const char* kAudioCallWithoutAudioProcessing =
       "{audio: { mandatory: { echoCancellation: false } } }";
   ASSERT_NO_FATAL_FAILURE(TestAutoGainControl(
       kAgcTestReferenceFile, kAudioCallWithoutAudioProcessing, "_no_agc"));
 }
-

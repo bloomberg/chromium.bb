@@ -97,9 +97,9 @@ const char kUseFileForFakeVideoCapture[] = "use-file-for-fake-video-capture";
 
 // Play a .wav file as the microphone. Note that for WebRTC calls we'll treat
 // the bits as if they came from the microphone, which means you should disable
-// audio processing (lest your audio file will play back distorted). Also the
-// wav file will have to have the same number of channels, bits per sample and
-// sampling frequency as the system's input device.
+// audio processing (lest your audio file will play back distorted). The input
+// file is converted to suit Chrome's audio buses if necessary, so most sane
+// .wav files should work.
 const char kUseFileForFakeAudioCapture[] = "use-file-for-fake-audio-capture";
 
 // Enables support for inband text tracks in media content.

@@ -17,6 +17,7 @@
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_parameters.h"
 #include "media/audio/sounds/wav_audio_handler.h"
+#include "media/base/audio_converter.h"
 
 namespace media {
 
@@ -25,7 +26,7 @@ class AudioManagerBase;
 
 // This class can either generate a beep sound or play audio from a file.
 class MEDIA_EXPORT FakeAudioInputStream
-    : public AudioInputStream {
+    : public AudioInputStream, AudioConverter::InputCallback {
  public:
   static AudioInputStream* MakeFakeStream(
       AudioManagerBase* manager, const AudioParameters& params);
@@ -83,11 +84,16 @@ class MEDIA_EXPORT FakeAudioInputStream
   scoped_ptr<media::AudioBus> audio_bus_;
   scoped_ptr<uint8[]> wav_file_data_;
   scoped_ptr<media::WavAudioHandler> wav_audio_handler_;
+  scoped_ptr<media::AudioConverter> file_audio_converter_;
   int wav_file_read_pos_;
 
   // Allows us to run tasks on the FakeAudioInputStream instance which are
   // bound by its lifetime.
   base::WeakPtrFactory<FakeAudioInputStream> weak_factory_;
+
+  // If running in file mode, this provides audio data from wav_audio_handler_.
+  double ProvideInput(AudioBus* audio_bus,
+                      base::TimeDelta buffer_delay) override;
 
   DISALLOW_COPY_AND_ASSIGN(FakeAudioInputStream);
 };

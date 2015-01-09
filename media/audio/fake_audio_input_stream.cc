@@ -66,11 +66,13 @@ scoped_ptr<uint8[]> ReadWavFile(const base::FilePath& wav_filename,
       wav_filename, base::File::FLAG_OPEN | base::File::FLAG_READ);
   if (!wav_file.IsValid()) {
     CHECK(false) << "Failed to read " << wav_filename.value() << " as input to "
-        << "the fake device.";
+                 << "the fake device.";
     return nullptr;
   }
 
   size_t wav_file_length = wav_file.GetLength();
+  CHECK_GT(wav_file_length, 0u)
+      << "Input file to fake device is empty: " << wav_filename.value();
 
   uint8* wav_file_data = new uint8[wav_file_length];
   size_t read_bytes = wav_file.Read(0, reinterpret_cast<char*>(wav_file_data),
@@ -84,9 +86,7 @@ scoped_ptr<uint8[]> ReadWavFile(const base::FilePath& wav_filename,
 }
 
 // Opens |wav_filename|, reads it and loads it as a Wav file. This function will
-// bluntly trigger CHECKs if the file doesn't have the sampling frequency, bits
-// per sample or number of channels as specified in |expected_params|. We also
-// trigger CHECKs if we can't read the file or if it's malformed.
+// bluntly trigger CHECKs if we can't read the file or if it's malformed.
 scoped_ptr<media::WavAudioHandler> CreateWavAudioHandler(
     const base::FilePath& wav_filename, const uint8* wav_file_data,
     size_t wav_file_length, const AudioParameters& expected_params) {
@@ -94,18 +94,6 @@ scoped_ptr<media::WavAudioHandler> CreateWavAudioHandler(
                              wav_file_length);
   scoped_ptr<media::WavAudioHandler> wav_audio_handler(
       new media::WavAudioHandler(wav_data));
-
-  // Ensure the input file matches what the audio bus wants, otherwise bail out.
-  CHECK_EQ(wav_audio_handler->params().channels(),
-           expected_params.channels())
-      << "Failed to read " << wav_filename.value() << " to fake device.";
-  CHECK_EQ(wav_audio_handler->params().sample_rate(),
-           expected_params.sample_rate())
-      << "Failed to read " << wav_filename.value() << " to fake device.";
-  CHECK_EQ(wav_audio_handler->params().bits_per_sample(),
-           expected_params.bits_per_sample())
-      << "Failed to read " << wav_filename.value() << " to fake device.";
-
   return wav_audio_handler.Pass();
 }
 
@@ -208,6 +196,20 @@ void FakeAudioInputStream::OpenInFileMode(const base::FilePath& wav_filename) {
   wav_file_data_ = ReadWavFile(wav_filename, &file_length);
   wav_audio_handler_ = CreateWavAudioHandler(
       wav_filename, wav_file_data_.get(), file_length, params_);
+
+  // Hook us up so we pull in data from the file into the converter. We need to
+  // modify the wav file's audio parameters since we'll be reading small slices
+  // of it at a time and not the whole thing (like 10 ms at a time).
+  AudioParameters file_audio_slice(
+      wav_audio_handler_->params().format(),
+      wav_audio_handler_->params().channel_layout(),
+      wav_audio_handler_->params().sample_rate(),
+      wav_audio_handler_->params().bits_per_sample(),
+      params_.frames_per_buffer());
+
+  file_audio_converter_.reset(
+      new AudioConverter(file_audio_slice, params_, false));
+  file_audio_converter_->AddInput(this);
 }
 
 bool FakeAudioInputStream::PlayingFromFile() {
@@ -219,11 +221,7 @@ void FakeAudioInputStream::PlayFile() {
   if (wav_audio_handler_->AtEnd(wav_file_read_pos_))
     return;
 
-  // Unfilled frames will be zeroed by CopyTo.
-  size_t bytes_written;
-  wav_audio_handler_->CopyTo(audio_bus_.get(), wav_file_read_pos_,
-                             &bytes_written);
-  wav_file_read_pos_ += bytes_written;
+  file_audio_converter_->Convert(audio_bus_.get());
   callback_->OnData(this, audio_bus_.get(), buffer_size_, 1.0);
 }
 
@@ -320,5 +318,15 @@ void FakeAudioInputStream::BeepOnce() {
   BeepContext* beep_context = g_beep_context.Pointer();
   beep_context->SetBeepOnce(true);
 }
+
+double FakeAudioInputStream::ProvideInput(AudioBus* audio_bus_into_converter,
+                                          base::TimeDelta buffer_delay) {
+  // Unfilled frames will be zeroed by CopyTo.
+  size_t bytes_written;
+  wav_audio_handler_->CopyTo(audio_bus_into_converter, wav_file_read_pos_,
+                             &bytes_written);
+  wav_file_read_pos_ += bytes_written;
+  return 1.0;
+};
 
 }  // namespace media
