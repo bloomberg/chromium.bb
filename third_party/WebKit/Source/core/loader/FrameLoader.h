@@ -75,7 +75,6 @@ public:
 
     void init();
 
-    MixedContentChecker* mixedContentChecker() const { return &m_mixedContentChecker; }
     ProgressTracker& progress() const { return *m_progressTracker; }
 
     // These functions start a load. All eventually call into startLoad() or loadInSameDocument().
@@ -218,7 +217,6 @@ private:
     // header dependencies unless performance testing proves otherwise.
     // Some of these could be lazily created for memory savings on devices.
     mutable FrameLoaderStateMachine m_stateMachine;
-    mutable MixedContentChecker m_mixedContentChecker;
 
     OwnPtrWillBeMember<ProgressTracker> m_progressTracker;
 

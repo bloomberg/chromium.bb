@@ -57,13 +57,9 @@ public:
     static bool shouldBlockConnection(LocalFrame*, const KURL&, ReportingStatus = SendReport);
 
     static bool isMixedContent(SecurityOrigin*, const KURL&);
+    static bool isMixedFormAction(LocalFrame*, const KURL&, ReportingStatus = SendReport);
 
     static void checkMixedPrivatePublic(LocalFrame*, const AtomicString& resourceIPAddress);
-
-    // FIXME: Get rid of these non-static bits. https://crbug.com/305811
-    explicit MixedContentChecker(LocalFrame*);
-    bool canSubmitToInsecureForm(SecurityOrigin*, const KURL&) const;
-    void trace(Visitor*);
 
 private:
     enum MixedContentType {
@@ -85,13 +81,6 @@ private:
     static const char* typeNameFromContext(WebURLRequest::RequestContext);
     static void logToConsole(LocalFrame*, const KURL&, WebURLRequest::RequestContext, bool allowed);
     static void count(LocalFrame*, WebURLRequest::RequestContext);
-
-    // FIXME: Get rid of these non-static bits. https://crbug.com/305811
-    FrameLoaderClient* client() const;
-    bool canDisplayInsecureContent(SecurityOrigin*, const KURL&, const MixedContentType) const;
-    void logWarning(bool allowed, const KURL& i, const MixedContentType) const;
-
-    RawPtrWillBeMember<LocalFrame> m_frame;
 };
 
 } // namespace blink

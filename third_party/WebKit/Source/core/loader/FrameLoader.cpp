@@ -112,7 +112,6 @@ static bool needsHistoryItemRestore(FrameLoadType type)
 
 FrameLoader::FrameLoader(LocalFrame* frame)
     : m_frame(frame)
-    , m_mixedContentChecker(frame)
     , m_progressTracker(ProgressTracker::create(frame))
     , m_loadType(FrameLoadTypeStandard)
     , m_fetchContext(FrameFetchContext::create(frame))
@@ -133,7 +132,6 @@ FrameLoader::~FrameLoader()
 void FrameLoader::trace(Visitor* visitor)
 {
     visitor->trace(m_frame);
-    visitor->trace(m_mixedContentChecker);
     visitor->trace(m_progressTracker);
     visitor->trace(m_fetchContext);
     visitor->trace(m_currentItem);

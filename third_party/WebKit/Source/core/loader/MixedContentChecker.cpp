@@ -45,16 +45,6 @@
 
 namespace blink {
 
-MixedContentChecker::MixedContentChecker(LocalFrame* frame)
-    : m_frame(frame)
-{
-}
-
-FrameLoaderClient* MixedContentChecker::client() const
-{
-    return m_frame->loader().client();
-}
-
 static void measureStricterVersionOfIsMixedContent(LocalFrame* frame, const KURL& url)
 {
     // We're currently only checking for mixed content in `https://*` contexts.
@@ -381,67 +371,30 @@ bool MixedContentChecker::shouldBlockConnection(LocalFrame* frame, const KURL& u
     return !allowed;
 }
 
-bool MixedContentChecker::canDisplayInsecureContent(SecurityOrigin* securityOrigin, const KURL& url, const MixedContentType type) const
-{
-    // Check the top frame if it differs from MixedContentChecker's m_frame.
-    if (!m_frame->tree().top()->isLocalFrame()) {
-        // FIXME: We need a way to access the top-level frame's MixedContentChecker when that frame
-        // is in a different process from the current frame. Until that is done, we always allow
-        // loads in remote frames.
-        return false;
-    }
-    Frame* top = m_frame->tree().top();
-    if (top != m_frame && !toLocalFrame(top)->loader().mixedContentChecker()->canDisplayInsecureContent(toLocalFrame(top)->document()->securityOrigin(), url, type))
-        return false;
-
-    // Just count these for the moment, don't block them.
-    if (Platform::current()->isReservedIPAddress(url) && !Platform::current()->isReservedIPAddress(KURL(ParsedURLString, securityOrigin->toString())))
-        UseCounter::count(m_frame->document(), UseCounter::MixedContentPrivateIPInPublicWebsitePassive);
-
-    // Then check the current frame:
-    if (!isMixedContent(securityOrigin, url))
-        return true;
-
-    Settings* settings = m_frame->settings();
-    bool allowed = client()->allowDisplayingInsecureContent(settings && settings->allowDisplayOfInsecureContent(), securityOrigin, url);
-    logWarning(allowed, url, type);
-
-    if (allowed)
-        client()->didDisplayInsecureContent();
-
-    return allowed;
-}
-
-bool MixedContentChecker::canSubmitToInsecureForm(SecurityOrigin* securityOrigin, const KURL& url) const
+bool MixedContentChecker::isMixedFormAction(LocalFrame* frame, const KURL& url, ReportingStatus reportingStatus)
 {
     // For whatever reason, some folks handle forms via JavaScript, and submit to `javascript:void(0)`
     // rather than calling `preventDefault()`. We special-case `javascript:` URLs here, as they don't
     // introduce MixedContent for form submissions.
     if (url.protocolIs("javascript"))
-        return true;
+        return false;
 
-    return canDisplayInsecureContent(securityOrigin, url, MixedContentChecker::Submission);
-}
+    LocalFrame* mixedFrame = inWhichFrameIsContentMixed(frame, WebURLRequest::FrameTypeNone, url);
+    if (!mixedFrame)
+        return false;
 
-void MixedContentChecker::logWarning(bool allowed, const KURL& target, const MixedContentType type) const
-{
-    StringBuilder message;
-    message.append((allowed ? "" : "[blocked] "));
-    message.append("The page at '" + m_frame->document()->url().elidedString() + "' was loaded over HTTPS, but ");
-    switch (type) {
-    case Display:
-        message.append("displayed insecure content from '" + target.elidedString() + "': this content should also be loaded over HTTPS.\n");
-        break;
-    case Execution:
-    case WebSocket:
-        message.append("ran insecure content from '" + target.elidedString() + "': this content should also be loaded over HTTPS.\n");
-        break;
-    case Submission:
-        message.append("is submitting data to an insecure location at '" + target.elidedString() + "': this content should also be submitted over HTTPS.\n");
-        break;
+    UseCounter::count(mixedFrame, UseCounter::MixedContentPresent);
+
+    mixedFrame->loader().client()->didDisplayInsecureContent();
+
+    if (reportingStatus == SendReport) {
+        String message = String::format(
+            "Mixed Content: The page at '%s' was loaded over a secure connection, but contains a form which targets an insecure endpoint '%s'. This endpoint should be made available over a secure connection.",
+            frame->document()->url().elidedString().utf8().data(), url.elidedString().utf8().data());
+        mixedFrame->document()->addConsoleMessage(ConsoleMessage::create(SecurityMessageSource, WarningMessageLevel, message));
     }
-    MessageLevel messageLevel = allowed ? WarningMessageLevel : ErrorMessageLevel;
-    m_frame->document()->addConsoleMessage(ConsoleMessage::create(SecurityMessageSource, messageLevel, message.toString()));
+
+    return true;
 }
 
 void MixedContentChecker::checkMixedPrivatePublic(LocalFrame* frame, const AtomicString& resourceIPAddress)
@@ -457,11 +410,6 @@ void MixedContentChecker::checkMixedPrivatePublic(LocalFrame* frame, const Atomi
     // FIXME: Once we know how we want to check this, adjust the platform APIs to avoid the KURL construction.
     if (Platform::current()->isReservedIPAddress(resourceIP) && !Platform::current()->isReservedIPAddress(documentIP))
         UseCounter::count(frame->document(), UseCounter::MixedContentPrivateHostnameInPublicHostname);
-}
-
-void MixedContentChecker::trace(Visitor* visitor)
-{
-    visitor->trace(m_frame);
 }
 
 } // namespace blink
