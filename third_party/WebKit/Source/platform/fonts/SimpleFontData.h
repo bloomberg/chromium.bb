@@ -231,7 +231,10 @@ ALWAYS_INLINE float SimpleFontData::widthForGlyph(Glyph glyph) const
     if (width != cGlyphSizeUnknown)
         return width;
 
-    width = platformWidthForGlyph(glyph);
+    if (m_verticalData)
+        width = m_verticalData->advanceHeight(this, glyph);
+    else
+        width = platformWidthForGlyph(glyph);
 
     m_glyphToWidthMap.setMetricsForGlyph(glyph, width);
     return width;
