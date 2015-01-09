@@ -146,9 +146,8 @@ class MoxBase(patch_unittest.MockPatchBase, cros_test_lib.MoxTestCase):
     return validation_pool.HelperPool(cros_internal=cros_internal,
                                       cros=cros)
 
-
-class TestPatchSeries(MoxBase):
-  """Tests resolution and applying logic of validation_pool.ValidationPool."""
+class PatchSeriesTestCase(MoxBase):
+  """Base class for tests that need to test PatchSeries."""
 
   @contextlib.contextmanager
   def _ValidateTransactionCall(self, _changes):
@@ -221,6 +220,32 @@ class TestPatchSeries(MoxBase):
     self.assertItemsEqual(failed_inflight, failed_inflight_result)
     self.assertItemsEqual(failed_tot, failed_tot_result)
     return result
+
+
+# pylint:disable=too-many-ancestors
+class TestUploadedLocalPatch(patch_unittest.UploadedLocalPatchTestCase,
+                             PatchSeriesTestCase):
+  """Test the interaction between uploaded local git patches and PatchSeries."""
+
+  def testFetchChanges(self):
+    """Test fetching uploaded local patches."""
+    git1, git2, patch1 = self._CommonGitSetup()
+    patch2 = self.CommitFile(git1, 'monkeys2', 'foon2')
+    patch3 = self._MkPatch(git1, None, original_sha1=patch1.sha1)
+    patch4 = self._MkPatch(git1, None, original_sha1=patch2.sha1)
+    self.assertEqual(patch3.id, patch1.id)
+    self.assertEqual(patch4.id, patch2.id)
+    self.assertNotEqual(patch3.id, patch4.id)
+    series = self.GetPatchSeries()
+    series.GetGitRepoForChange = lambda change, **kwargs: git2
+    patches = series.FetchChanges([patch3, patch4])
+    self.assertEqual(len(patches), 2)
+    self.assertEqual(patches[0].id, patch3.id)
+    self.assertEqual(patches[1].id, patch4.id)
+
+
+class TestPatchSeries(PatchSeriesTestCase):
+  """Tests resolution and applying logic of validation_pool.ValidationPool."""
 
   def testApplyWithDeps(self):
     """Test that we can apply changes correctly and respect deps.

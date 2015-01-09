@@ -566,7 +566,7 @@ class TestLocalPatchGit(GitRepoPatchTestCase):
         self._run(base + ['refs/testing/test2'], git2))
 
 
-class TestUploadedLocalPatch(GitRepoPatchTestCase):
+class UploadedLocalPatchTestCase(GitRepoPatchTestCase):
   """Test uploading of local git patches."""
 
   PROJECT = 'chromiumos/chromite'
@@ -579,9 +579,13 @@ class TestUploadedLocalPatch(GitRepoPatchTestCase):
     return self.patch_kls(source, self.PROJECT, ref,
                           '%s/master' % constants.EXTERNAL_REMOTE,
                           self.ORIGINAL_BRANCH,
-                          self.ORIGINAL_SHA1,
+                          kwargs.pop('original_sha1', self.ORIGINAL_SHA1),
                           kwargs.pop('remote', constants.EXTERNAL_REMOTE),
                           carbon_copy_sha1=sha1, **kwargs)
+
+
+class TestUploadedLocalPatch(UploadedLocalPatchTestCase):
+  """Test uploading of local git patches."""
 
   def testStringRepresentation(self):
     _, _, patch = self._CommonGitSetup()
