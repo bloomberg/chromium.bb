@@ -45,7 +45,6 @@ crbug.com/428980 compositing/layer-creation/fixed-position-out-of-view-scaled-sc
 
 crbug.com/437743 virtual/slimmingpaint/fast/block/float/overhanging-tall-block.html [ Skip ]
 
-crbug.com/444211 [ Win Mac ] svg/custom/scrolling-embedded-svg-file-image-repaint-problem.html [ Failure ImageOnlyFailure ]
 crbug.com/446356 [ Linux Debug ] fast/svg/whitespace-length-invalid.html [ Failure Timeout ]
 
 # Text::inDocument() returns false but should not.
