@@ -105,6 +105,7 @@ bool ProxyDecryptor::GenerateKeyRequest(const std::string& init_data_type,
 
   if (session_creation_type == LoadSession) {
     media_keys_->LoadSession(
+        MediaKeys::PERSISTENT_SESSION,
         std::string(reinterpret_cast<const char*>(init_data_vector_data),
                     init_data_vector.size()),
         promise.Pass());

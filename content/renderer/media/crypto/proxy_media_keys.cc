@@ -91,6 +91,7 @@ void ProxyMediaKeys::CreateSessionAndGenerateRequest(
 }
 
 void ProxyMediaKeys::LoadSession(
+    SessionType session_type,
     const std::string& web_session_id,
     scoped_ptr<media::NewSessionCdmPromise> promise) {
   // TODO(xhwang): Check key system and platform support for LoadSession in

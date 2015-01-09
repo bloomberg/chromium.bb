@@ -94,7 +94,8 @@ class MEDIA_EXPORT MediaKeys{
   // Loads a session with the |web_session_id| provided.
   // Note: UpdateSession() and ReleaseSession() should only be called after
   // |promise| is resolved.
-  virtual void LoadSession(const std::string& web_session_id,
+  virtual void LoadSession(SessionType session_type,
+                           const std::string& web_session_id,
                            scoped_ptr<NewSessionCdmPromise> promise) = 0;
 
   // Updates a session specified by |web_session_id| with |response|.

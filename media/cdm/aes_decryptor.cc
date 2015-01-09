@@ -268,7 +268,8 @@ void AesDecryptor::CreateSessionAndGenerateRequest(
   session_message_cb_.Run(web_session_id, message, GURL());
 }
 
-void AesDecryptor::LoadSession(const std::string& web_session_id,
+void AesDecryptor::LoadSession(SessionType session_type,
+                               const std::string& web_session_id,
                                scoped_ptr<NewSessionCdmPromise> promise) {
   // TODO(xhwang): Change this to NOTREACHED() when blink checks for key systems
   // that do not support loadSession. See http://crbug.com/342481

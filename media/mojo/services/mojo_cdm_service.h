@@ -32,7 +32,8 @@ class MojoCdmService
       mojo::Array<uint8_t> init_data,
       const mojo::Callback<void(mojo::CdmPromiseResultPtr, mojo::String)>&
           callback) final;
-  void LoadSession(const mojo::String& session_id,
+  void LoadSession(mojo::ContentDecryptionModule::SessionType session_type,
+                   const mojo::String& session_id,
                    const mojo::Callback<void(mojo::CdmPromiseResultPtr,
                                              mojo::String)>& callback) final;
   void UpdateSession(

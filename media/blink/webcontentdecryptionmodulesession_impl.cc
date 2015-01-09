@@ -103,8 +103,11 @@ void WebContentDecryptionModuleSessionImpl::load(
   DCHECK(!session_id.isEmpty());
   DCHECK(web_session_id_.empty());
 
+  // TODO(jrummell): Now that there are 2 types of persistent sessions, the
+  // session type should be passed from blink. Type should also be passed in the
+  // constructor (and removed from initializeNewSession()).
   adapter_->LoadSession(
-      base::UTF16ToASCII(session_id),
+      MediaKeys::PERSISTENT_SESSION, base::UTF16ToASCII(session_id),
       scoped_ptr<NewSessionCdmPromise>(new NewSessionCdmResultPromise(
           result, adapter_->GetKeySystemUMAPrefix() + kLoadSessionUMAName,
           base::Bind(

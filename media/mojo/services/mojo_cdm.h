@@ -42,7 +42,8 @@ class MojoCdm : public MediaKeys, public mojo::ContentDecryptionModuleClient {
       const uint8_t* init_data,
       int init_data_length,
       scoped_ptr<NewSessionCdmPromise> promise) final;
-  void LoadSession(const std::string& session_id,
+  void LoadSession(SessionType session_type,
+                   const std::string& session_id,
                    scoped_ptr<NewSessionCdmPromise> promise) final;
   void UpdateSession(const std::string& session_id,
                      const uint8_t* response,

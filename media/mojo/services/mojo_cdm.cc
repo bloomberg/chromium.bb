@@ -81,9 +81,11 @@ void MojoCdm::CreateSessionAndGenerateRequest(
                  weak_factory_.GetWeakPtr(), base::Passed(&promise)));
 }
 
-void MojoCdm::LoadSession(const std::string& session_id,
+void MojoCdm::LoadSession(SessionType session_type,
+                          const std::string& session_id,
                           scoped_ptr<NewSessionCdmPromise> promise) {
   remote_cdm_->LoadSession(
+      static_cast<mojo::ContentDecryptionModule::SessionType>(session_type),
       session_id,
       base::Bind(&MojoCdm::OnPromiseResult<std::string>,
                  weak_factory_.GetWeakPtr(), base::Passed(&promise)));

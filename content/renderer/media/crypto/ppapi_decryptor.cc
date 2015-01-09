@@ -124,6 +124,7 @@ void PpapiDecryptor::CreateSessionAndGenerateRequest(
 }
 
 void PpapiDecryptor::LoadSession(
+    SessionType session_type,
     const std::string& web_session_id,
     scoped_ptr<media::NewSessionCdmPromise> promise) {
   DVLOG(2) << __FUNCTION__;
@@ -133,7 +134,7 @@ void PpapiDecryptor::LoadSession(
     promise->reject(INVALID_STATE_ERROR, 0, "CdmDelegate() does not exist.");
     return;
   }
-  CdmDelegate()->LoadSession(web_session_id, promise.Pass());
+  CdmDelegate()->LoadSession(session_type, web_session_id, promise.Pass());
 }
 
 void PpapiDecryptor::UpdateSession(

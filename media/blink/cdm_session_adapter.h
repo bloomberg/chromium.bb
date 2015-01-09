@@ -65,7 +65,8 @@ class CdmSessionAdapter : public base::RefCounted<CdmSessionAdapter> {
                             scoped_ptr<NewSessionCdmPromise> promise);
 
   // Loads the session specified by |web_session_id|.
-  void LoadSession(const std::string& web_session_id,
+  void LoadSession(MediaKeys::SessionType session_type,
+                   const std::string& web_session_id,
                    scoped_ptr<NewSessionCdmPromise> promise);
 
   // Updates the session specified by |web_session_id| with |response|.

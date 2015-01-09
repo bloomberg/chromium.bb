@@ -386,13 +386,13 @@ void ContentDecryptorDelegate::CreateSessionAndGenerateRequest(
       StringVar::StringToPPVar(init_data_type), init_data_array);
 }
 
-// TODO(jrummell): Pass |session_type| to this method.
 void ContentDecryptorDelegate::LoadSession(
+    media::MediaKeys::SessionType session_type,
     const std::string& web_session_id,
     scoped_ptr<NewSessionCdmPromise> promise) {
   uint32_t promise_id = SavePromise(promise.Pass());
   plugin_decryption_interface_->LoadSession(
-      pp_instance_, promise_id, PP_SESSIONTYPE_PERSISTENT_LICENSE,
+      pp_instance_, promise_id, MediaSessionTypeToPpSessionType(session_type),
       StringVar::StringToPPVar(web_session_id));
 }
 

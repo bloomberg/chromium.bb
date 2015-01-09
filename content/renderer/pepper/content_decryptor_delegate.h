@@ -67,7 +67,8 @@ class ContentDecryptorDelegate {
       const uint8* init_data,
       int init_data_length,
       scoped_ptr<media::NewSessionCdmPromise> promise);
-  void LoadSession(const std::string& web_session_id,
+  void LoadSession(media::MediaKeys::SessionType session_type,
+                   const std::string& web_session_id,
                    scoped_ptr<media::NewSessionCdmPromise> promise);
   void UpdateSession(const std::string& web_session_id,
                      const uint8* response,

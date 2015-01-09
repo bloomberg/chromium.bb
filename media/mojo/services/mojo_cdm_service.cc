@@ -62,10 +62,12 @@ void MojoCdmService::CreateSessionAndGenerateRequest(
 }
 
 void MojoCdmService::LoadSession(
+    mojo::ContentDecryptionModule::SessionType session_type,
     const mojo::String& session_id,
     const mojo::Callback<void(mojo::CdmPromiseResultPtr, mojo::String)>&
         callback) {
   cdm_->LoadSession(
+      static_cast<MediaKeys::SessionType>(session_type),
       session_id.To<std::string>(),
       scoped_ptr<NewSessionCdmPromise>(new NewSessionMojoCdmPromise(callback)));
 }
