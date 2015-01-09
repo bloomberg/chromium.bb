@@ -50,7 +50,6 @@ public:
     int timeoutID() const;
 
     // ActiveDOMObject
-    virtual void contextDestroyed() override;
     virtual void stop() override;
 
     // The following are essentially constants. All intervals are in seconds.

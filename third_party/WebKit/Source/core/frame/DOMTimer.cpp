@@ -170,11 +170,6 @@ void DOMTimer::fired()
         executionContext()->setTimerNestingLevel(0);
 }
 
-void DOMTimer::contextDestroyed()
-{
-    SuspendableTimer::contextDestroyed();
-}
-
 void DOMTimer::stop()
 {
     SuspendableTimer::stop();
