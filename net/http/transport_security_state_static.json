@@ -136,19 +136,6 @@
       ]
     },
     {
-      "name": "tor2web",
-      "static_spki_hashes": [
-        "AlphaSSL_G2",
-        "Tor2web"
-      ]
-    },
-    {
-      "name": "lavabit",
-      "static_spki_hashes": [
-        "Libertylavabitcom"
-      ]
-    },
-    {
       "name": "dropbox",
       "static_spki_hashes": [
         "DigiCertAssuredIDRoot",
@@ -593,7 +580,7 @@
     { "name": "braintreepayments.com", "mode": "force-https" },
     { "name": "www.braintreepayments.com", "mode": "force-https" },
     { "name": "emailprivacytester.com", "mode": "force-https" },
-    { "name": "tor2web.org", "include_subdomains": true, "pins": "tor2web" },
+    { "name": "tor2web.org", "include_subdomains": true, "mode": "force-https" },
     { "name": "business.medbank.com.mt", "include_subdomains": true, "mode": "force-https" },
     { "name": "arivo.com.br", "include_subdomains": true, "mode": "force-https" },
     { "name": "www.apollo-auto.com", "include_subdomains": true, "mode": "force-https" },
@@ -726,7 +713,6 @@
     { "name": "cybozu.com", "include_subdomains": true,  "mode": "force-https" },
     { "name": "davidlyness.com", "include_subdomains": true,  "mode": "force-https" },
     { "name": "medium.com", "include_subdomains": true,  "mode": "force-https" },
-    { "name": "liberty.lavabit.com", "include_subdomains": true, "mode": "force-https", "pins": "lavabit" },
     { "name": "getlantern.org", "include_subdomains": true, "mode": "force-https" },
     { "name": "kinsights.com", "mode": "force-https" },
     { "name": "simbolo.co.uk", "mode": "force-https" },
