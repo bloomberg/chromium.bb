@@ -81,6 +81,30 @@ PassRefPtrWillBeRawPtr<MediaControls> MediaControls::create(HTMLMediaElement& me
     return nullptr;
 }
 
+// The media controls DOM structure looks like:
+//
+// MediaControls                                       (-webkit-media-controls)
+// +-MediaControlOverlayEnclosureElement               (-webkit-media-controls-overlay-enclosure)
+// | +-MediaControlTextTrackContainerElement           (-webkit-media-text-track-container)
+// | | {when text tracks are enabled}
+// | +-MediaControlOverlayPlayButtonElement            (-webkit-media-controls-overlay-play-button)
+// | | {if mediaControlsOverlayPlayButtonEnabled}
+// | \-MediaControlCastButtonElement                   (-internal-media-controls-overlay-cast-button)
+// \-MediaControlPanelEnclosureElement                 (-webkit-media-controls-enclosure)
+//   \-MediaControlPanelElement                        (-webkit-media-controls-panel)
+//     +-MediaControlPlayButtonElement                 (-webkit-media-controls-play-button)
+//     +-MediaControlTimelineElement                   (-webkit-media-controls-timeline)
+//     +-MediaControlCurrentTimeDisplayElement         (-webkit-media-controls-current-time-display)
+//     +-MediaControlTimeRemainingDisplayElement       (-webkit-media-controls-time-remaining-display)
+//     +-MediaControlMuteButtonElement                 (-webkit-media-controls-mute-button)
+//     +-MediaControlVolumeSliderElement               (-webkit-media-controls-volume-slider)
+//     +-MediaControlToggleClosedCaptionsButtonElement (-webkit-media-controls-toggle-closed-captions-button)
+//     +-MediaControlCastButtonElement                 (-internal-media-controls-cast-button)
+//     \-MediaControlFullscreenButtonElement           (-webkit-media-controls-fullscreen-button)
+//
+// Most of the structure is built by MediaControls::initializeControls() - the
+// exception being MediaControlTextTrackContainerElement which is added
+// on-demand by MediaControls::createTextTrackDisplay().
 bool MediaControls::initializeControls()
 {
     TrackExceptionState exceptionState;
