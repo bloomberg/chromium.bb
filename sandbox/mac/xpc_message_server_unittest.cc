@@ -22,7 +22,7 @@ namespace sandbox {
 
 class XPCMessageServerTest : public testing::Test {
  public:
-  virtual void SetUp() override {
+  void SetUp() override {
     if (!RunXPCTest())
       return;
     ASSERT_TRUE(InitializeXPC());

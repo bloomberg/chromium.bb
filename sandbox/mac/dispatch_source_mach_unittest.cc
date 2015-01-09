@@ -16,7 +16,7 @@ namespace sandbox {
 
 class DispatchSourceMachTest : public testing::Test {
  public:
-  virtual void SetUp() override {
+  void SetUp() override {
     mach_port_t port = MACH_PORT_NULL;
     ASSERT_EQ(KERN_SUCCESS, mach_port_allocate(mach_task_self(),
         MACH_PORT_RIGHT_RECEIVE, &port));

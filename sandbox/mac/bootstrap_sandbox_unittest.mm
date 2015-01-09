@@ -80,7 +80,7 @@ namespace sandbox {
 
 class BootstrapSandboxTest : public base::MultiProcessTest {
  public:
-  virtual void SetUp() override {
+  void SetUp() override {
     base::MultiProcessTest::SetUp();
 
     sandbox_ = BootstrapSandbox::Create();
