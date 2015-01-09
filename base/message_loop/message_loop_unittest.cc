@@ -668,14 +668,12 @@ class DummyTaskObserver : public MessageLoop::TaskObserver {
 
   void WillProcessTask(const PendingTask& pending_task) override {
     num_tasks_started_++;
-    EXPECT_TRUE(pending_task.time_posted != TimeTicks());
     EXPECT_LE(num_tasks_started_, num_tasks_);
     EXPECT_EQ(num_tasks_started_, num_tasks_processed_ + 1);
   }
 
   void DidProcessTask(const PendingTask& pending_task) override {
     num_tasks_processed_++;
-    EXPECT_TRUE(pending_task.time_posted != TimeTicks());
     EXPECT_LE(num_tasks_started_, num_tasks_);
     EXPECT_EQ(num_tasks_started_, num_tasks_processed_);
   }

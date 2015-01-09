@@ -382,8 +382,7 @@ TEST_F(TrackedObjectsTest, LifeCycleToSnapshotMainThread) {
   Location location(kFunction, kFile, kLineNumber, NULL);
   TallyABirth(location, kMainThreadName);
 
-  const base::TimeTicks kTimePosted = base::TimeTicks() +
-      base::TimeDelta::FromMilliseconds(1);
+  const TrackedTime kTimePosted = TrackedTime::FromMilliseconds(1);
   const base::TimeTicks kDelayedStartTime = base::TimeTicks();
   // TrackingInfo will call TallyABirth() during construction.
   base::TrackingInfo pending_task(location, kDelayedStartTime);
@@ -419,8 +418,7 @@ TEST_F(TrackedObjectsTest, LifeCycleMidDeactivatedToSnapshotMainThread) {
   Location location(kFunction, kFile, kLineNumber, NULL);
   TallyABirth(location, kMainThreadName);
 
-  const base::TimeTicks kTimePosted = base::TimeTicks() +
-      base::TimeDelta::FromMilliseconds(1);
+  const TrackedTime kTimePosted = TrackedTime::FromMilliseconds(1);
   const base::TimeTicks kDelayedStartTime = base::TimeTicks();
   // TrackingInfo will call TallyABirth() during construction.
   base::TrackingInfo pending_task(location, kDelayedStartTime);
@@ -458,8 +456,7 @@ TEST_F(TrackedObjectsTest, LifeCyclePreDeactivatedToSnapshotMainThread) {
   Location location(kFunction, kFile, kLineNumber, NULL);
   TallyABirth(location, kMainThreadName);
 
-  const base::TimeTicks kTimePosted = base::TimeTicks() +
-      base::TimeDelta::FromMilliseconds(1);
+  const TrackedTime kTimePosted = TrackedTime::FromMilliseconds(1);
   const base::TimeTicks kDelayedStartTime = base::TimeTicks();
   // TrackingInfo will call TallyABirth() during construction.
   base::TrackingInfo pending_task(location, kDelayedStartTime);
@@ -556,8 +553,7 @@ TEST_F(TrackedObjectsTest, TwoLives) {
   Location location(kFunction, kFile, kLineNumber, NULL);
   TallyABirth(location, kMainThreadName);
 
-  const base::TimeTicks kTimePosted = base::TimeTicks() +
-      base::TimeDelta::FromMilliseconds(1);
+  const TrackedTime kTimePosted = TrackedTime::FromMilliseconds(1);
   const base::TimeTicks kDelayedStartTime = base::TimeTicks();
   // TrackingInfo will call TallyABirth() during construction.
   base::TrackingInfo pending_task(location, kDelayedStartTime);
@@ -601,8 +597,7 @@ TEST_F(TrackedObjectsTest, DifferentLives) {
   const char kFunction[] = "DifferentLives";
   Location location(kFunction, kFile, kLineNumber, NULL);
 
-  const base::TimeTicks kTimePosted = base::TimeTicks() +
-      base::TimeDelta::FromMilliseconds(1);
+  const TrackedTime kTimePosted = TrackedTime::FromMilliseconds(1);
   const base::TimeTicks kDelayedStartTime = base::TimeTicks();
   // TrackingInfo will call TallyABirth() during construction.
   base::TrackingInfo pending_task(location, kDelayedStartTime);
@@ -668,8 +663,7 @@ TEST_F(TrackedObjectsTest, TaskWithNestedExclusion) {
   Location location(kFunction, kFile, kLineNumber, NULL);
   TallyABirth(location, kMainThreadName);
 
-  const base::TimeTicks kTimePosted = base::TimeTicks() +
-      base::TimeDelta::FromMilliseconds(1);
+  const TrackedTime kTimePosted = TrackedTime::FromMilliseconds(1);
   const base::TimeTicks kDelayedStartTime = base::TimeTicks();
   // TrackingInfo will call TallyABirth() during construction.
   base::TrackingInfo pending_task(location, kDelayedStartTime);
@@ -706,8 +700,7 @@ TEST_F(TrackedObjectsTest, TaskWith2NestedExclusions) {
   Location location(kFunction, kFile, kLineNumber, NULL);
   TallyABirth(location, kMainThreadName);
 
-  const base::TimeTicks kTimePosted = base::TimeTicks() +
-      base::TimeDelta::FromMilliseconds(1);
+  const TrackedTime kTimePosted = TrackedTime::FromMilliseconds(1);
   const base::TimeTicks kDelayedStartTime = base::TimeTicks();
   // TrackingInfo will call TallyABirth() during construction.
   base::TrackingInfo pending_task(location, kDelayedStartTime);
@@ -753,8 +746,7 @@ TEST_F(TrackedObjectsTest, TaskWithNestedExclusionWithNestedTask) {
 
   TallyABirth(location, kMainThreadName);
 
-  const base::TimeTicks kTimePosted = base::TimeTicks() +
-      base::TimeDelta::FromMilliseconds(1);
+  const TrackedTime kTimePosted = TrackedTime::FromMilliseconds(1);
   const base::TimeTicks kDelayedStartTime = base::TimeTicks();
   // TrackingInfo will call TallyABirth() during construction.
   base::TrackingInfo pending_task(location, kDelayedStartTime);
@@ -771,8 +763,7 @@ TEST_F(TrackedObjectsTest, TaskWithNestedExclusionWithNestedTask) {
       Location second_location(kFunction, kFile, kSecondFakeLineNumber, NULL);
       base::TrackingInfo nested_task(second_location, kDelayedStartTime);
        // Overwrite implied Now().
-      nested_task.time_posted =
-          base::TimeTicks() + base::TimeDelta::FromMilliseconds(8);
+      nested_task.time_posted = TrackedTime::FromMilliseconds(8);
       SetTestTime(9);
       TaskStopwatch nested_task_stopwatch;
       nested_task_stopwatch.Start();

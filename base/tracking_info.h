@@ -36,15 +36,18 @@ struct BASE_EXPORT TrackingInfo {
   // unserviced, after they *could* be serviced.  This is the same stat as we
   // have for non-delayed tasks, and we consistently call it queuing delay.
   tracked_objects::TrackedTime EffectiveTimePosted() const {
-    return tracked_objects::TrackedTime(
-        delayed_run_time.is_null() ? time_posted : delayed_run_time);
+    return delayed_run_time.is_null()
+               ? time_posted
+               : tracked_objects::TrackedTime(delayed_run_time);
   }
 
   // Record of location and thread that the task came from.
   tracked_objects::Births* birth_tally;
 
-  // Time when the related task was posted.
-  base::TimeTicks time_posted;
+  // Time when the related task was posted. Note that this value may be empty
+  // if task profiling is disabled, and should only be used in conjunction with
+  // profiling-related reporting.
+  tracked_objects::TrackedTime time_posted;
 
   // The time when the task should be run.
   base::TimeTicks delayed_run_time;

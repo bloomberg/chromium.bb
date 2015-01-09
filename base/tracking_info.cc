@@ -18,7 +18,7 @@ TrackingInfo::TrackingInfo(
     base::TimeTicks delayed_run_time)
     : birth_tally(
           tracked_objects::ThreadData::TallyABirthIfActive(posted_from)),
-      time_posted(TimeTicks::Now()),
+      time_posted(tracked_objects::ThreadData::Now()),
       delayed_run_time(delayed_run_time) {
 }
 

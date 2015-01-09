@@ -231,9 +231,6 @@ void TaskQueue::TaskAsValueInto(const base::PendingTask& task,
   state->SetBoolean("nestable", task.nestable);
   state->SetBoolean("is_high_res", task.is_high_res);
   state->SetDouble(
-      "time_posted",
-      (task.time_posted - base::TimeTicks()).InMicroseconds() / 1000.0L);
-  state->SetDouble(
       "delayed_run_time",
       (task.delayed_run_time - base::TimeTicks()).InMicroseconds() / 1000.0L);
   state->EndDictionary();
