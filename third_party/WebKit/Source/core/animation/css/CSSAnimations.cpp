@@ -193,6 +193,8 @@ static void resolveKeyframes(StyleResolver* resolver, const Element* animatingEl
                 startKeyframe->setPropertyValue(property, snapshotValue.get());
             if (endNeedsValue)
                 endKeyframe->setPropertyValue(property, snapshotValue.get());
+            if (property == CSSPropertyOpacity || property == CSSPropertyTransform)
+                UseCounter::count(elementForScoping->document(), UseCounter::SyntheticKeyframesInCompositedCSSAnimation);
         }
     }
     ASSERT(startKeyframe->properties().size() == allProperties.size());
