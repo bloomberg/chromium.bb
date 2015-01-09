@@ -415,7 +415,7 @@ private:
 CSSStyleRule* InspectorCSSAgent::asCSSStyleRule(CSSRule* rule)
 {
     if (!rule || rule->type() != CSSRule::STYLE_RULE)
-        return 0;
+        return nullptr;
     return toCSSStyleRule(rule);
 }
 
@@ -423,7 +423,7 @@ CSSStyleRule* InspectorCSSAgent::asCSSStyleRule(CSSRule* rule)
 CSSMediaRule* InspectorCSSAgent::asCSSMediaRule(CSSRule* rule)
 {
     if (!rule || rule->type() != CSSRule::MEDIA_RULE)
-        return 0;
+        return nullptr;
     return toCSSMediaRule(rule);
 }
 
@@ -461,12 +461,12 @@ void InspectorCSSAgent::clearFrontend()
     ASSERT(m_frontend);
     ErrorString error;
     disable(&error);
-    m_frontend = 0;
+    m_frontend = nullptr;
 }
 
 void InspectorCSSAgent::discardAgent()
 {
-    m_domAgent->setDOMListener(0);
+    m_domAgent->setDOMListener(nullptr);
     m_domAgent = nullptr;
 }
 
@@ -578,7 +578,7 @@ void InspectorCSSAgent::didMutateStyle(CSSStyleDeclaration* style, bool isInline
     m_styleDeclarationPendingMutation = false;
     if (!styleSheetEditInProgress() && !isInlineStyle) {
         CSSStyleSheet* parentSheet = style->parentStyleSheet();
-        Document* owner = parentSheet ? parentSheet->ownerDocument() : 0;
+        Document* owner = parentSheet ? parentSheet->ownerDocument() : nullptr;
         if (owner)
             owner->modifiedStyleSheet(parentSheet, FullStyleUpdate);
     }
@@ -1184,7 +1184,7 @@ bool InspectorCSSAgent::collectMediaQueriesFromRule(CSSRule* rule, TypeBuilder::
 {
     MediaList* mediaList;
     String sourceURL;
-    CSSStyleSheet* parentStyleSheet = 0;
+    CSSStyleSheet* parentStyleSheet = nullptr;
     bool isMediaRule = true;
     bool addedItems = false;
     if (rule->type() == CSSRule::MEDIA_RULE) {
@@ -1197,7 +1197,7 @@ bool InspectorCSSAgent::collectMediaQueriesFromRule(CSSRule* rule, TypeBuilder::
         parentStyleSheet = importRule->parentStyleSheet();
         isMediaRule = false;
     } else {
-        mediaList = 0;
+        mediaList = nullptr;
     }
 
     if (parentStyleSheet) {
@@ -1248,7 +1248,7 @@ InspectorStyleSheetForInlineStyle* InspectorCSSAgent::asInspectorStyleSheet(Elem
 
     CSSStyleDeclaration* style = element->style();
     if (!style)
-        return 0;
+        return nullptr;
 
     String newStyleSheetId = String::number(m_lastStyleSheetId++);
     RefPtrWillBeRawPtr<InspectorStyleSheetForInlineStyle> inspectorStyleSheet = InspectorStyleSheetForInlineStyle::create(newStyleSheetId, element, this);
@@ -1262,11 +1262,11 @@ Element* InspectorCSSAgent::elementForId(ErrorString* errorString, int nodeId)
     Node* node = m_domAgent->nodeForId(nodeId);
     if (!node) {
         *errorString = "No node with given id found";
-        return 0;
+        return nullptr;
     }
     if (!node->isElementNode()) {
         *errorString = "Not an element node";
-        return 0;
+        return nullptr;
     }
     return toElement(node);
 }
@@ -1323,11 +1323,11 @@ InspectorStyleSheet* InspectorCSSAgent::viaInspectorStyleSheet(Document* documen
 {
     if (!document) {
         ASSERT(!createIfAbsent);
-        return 0;
+        return nullptr;
     }
 
     if (!document->isHTMLDocument() && !document->isSVGDocument())
-        return 0;
+        return nullptr;
 
     RefPtrWillBeRawPtr<InspectorStyleSheet> inspectorStyleSheet = m_documentToViaInspectorStyleSheet.get(document);
     if (inspectorStyleSheet || !createIfAbsent)
@@ -1345,7 +1345,7 @@ InspectorStyleSheet* InspectorCSSAgent::viaInspectorStyleSheet(Document* documen
         else if (document->body())
             targetNode = document->body();
         else
-            return 0;
+            return nullptr;
 
         InlineStyleOverrideScope overrideScope(document);
         m_creatingViaInspectorStyleSheet = true;
@@ -1354,8 +1354,9 @@ InspectorStyleSheet* InspectorCSSAgent::viaInspectorStyleSheet(Document* documen
         // We just need to pick the respective InspectorStyleSheet from m_documentToViaInspectorStyleSheet.
         m_creatingViaInspectorStyleSheet = false;
     }
+
     if (exceptionState.hadException())
-        return 0;
+        return nullptr;
 
     return m_documentToViaInspectorStyleSheet.get(document);
 }
@@ -1365,7 +1366,7 @@ InspectorStyleSheet* InspectorCSSAgent::assertInspectorStyleSheetForId(ErrorStri
     IdToInspectorStyleSheet::iterator it = m_idToInspectorStyleSheet.find(styleSheetId);
     if (it == m_idToInspectorStyleSheet.end()) {
         *errorString = "No style sheet with given id found";
-        return 0;
+        return nullptr;
     }
     return it->value.get();
 }
@@ -1379,7 +1380,7 @@ InspectorStyleSheetBase* InspectorCSSAgent::assertStyleSheetForId(ErrorString* e
     IdToInspectorStyleSheetForInlineStyle::iterator it = m_idToInspectorStyleSheetForInlineStyle.find(styleSheetId);
     if (it == m_idToInspectorStyleSheetForInlineStyle.end()) {
         *errorString = "No style sheet with given id found";
-        return 0;
+        return nullptr;
     }
     return it->value.get();
 }

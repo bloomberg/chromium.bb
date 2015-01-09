@@ -63,7 +63,7 @@ static const char consoleMessagesEnabled[] = "consoleMessagesEnabled";
 InspectorConsoleAgent::InspectorConsoleAgent(InjectedScriptManager* injectedScriptManager)
     : InspectorBaseAgent<InspectorConsoleAgent>("Console")
     , m_injectedScriptManager(injectedScriptManager)
-    , m_frontend(0)
+    , m_frontend(nullptr)
     , m_enabled(false)
 {
 }
@@ -107,7 +107,7 @@ void InspectorConsoleAgent::disable(ErrorString*)
 {
     if (!m_enabled)
         return;
-    m_instrumentingAgents->setInspectorConsoleAgent(0);
+    m_instrumentingAgents->setInspectorConsoleAgent(nullptr);
     m_enabled = false;
     disableStackCapturingIfNeeded();
 
@@ -135,7 +135,7 @@ void InspectorConsoleAgent::setFrontend(InspectorFrontend* frontend)
 
 void InspectorConsoleAgent::clearFrontend()
 {
-    m_frontend = 0;
+    m_frontend = nullptr;
     String errorString;
     disable(&errorString);
 }

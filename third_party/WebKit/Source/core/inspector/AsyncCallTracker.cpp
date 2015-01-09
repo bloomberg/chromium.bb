@@ -143,7 +143,7 @@ static XMLHttpRequest* toXmlHttpRequest(EventTarget* eventTarget)
         return static_cast<XMLHttpRequest*>(eventTarget);
     if (interfaceName == EventTargetNames::XMLHttpRequestUpload)
         return static_cast<XMLHttpRequestUpload*>(eventTarget)->xmlHttpRequest();
-    return 0;
+    return nullptr;
 }
 
 AsyncCallTracker::AsyncCallTracker(InspectorDebuggerAgent* debuggerAgent, InstrumentingAgents* instrumentingAgents)

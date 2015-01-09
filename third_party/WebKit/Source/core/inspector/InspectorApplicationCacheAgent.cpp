@@ -56,7 +56,7 @@ void InspectorApplicationCacheAgent::setFrontend(InspectorFrontend* frontend)
 void InspectorApplicationCacheAgent::clearFrontend()
 {
     m_instrumentingAgents->setInspectorApplicationCacheAgent(0);
-    m_frontend = 0;
+    m_frontend = nullptr;
 }
 
 void InspectorApplicationCacheAgent::restore()
@@ -124,7 +124,7 @@ DocumentLoader* InspectorApplicationCacheAgent::assertFrameWithDocumentLoader(Er
 {
     LocalFrame* frame = m_pageAgent->assertFrame(errorString, frameId);
     if (!frame)
-        return 0;
+        return nullptr;
 
     return InspectorPageAgent::assertDocumentLoader(errorString, frame);
 }

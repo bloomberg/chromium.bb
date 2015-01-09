@@ -259,7 +259,7 @@ struct TimelineImageInfo {
 
 static LocalFrame* frameForExecutionContext(ExecutionContext* context)
 {
-    LocalFrame* frame = 0;
+    LocalFrame* frame = nullptr;
     if (context->isDocument())
         frame = toDocument(context)->frame();
     return frame;
@@ -320,7 +320,7 @@ void InspectorTimelineAgent::clearFrontend()
     ErrorString error;
     stop(&error);
     disable(&error);
-    m_frontend = 0;
+    m_frontend = nullptr;
 }
 
 void InspectorTimelineAgent::restore()
@@ -1287,7 +1287,7 @@ double InspectorTimelineAgent::timestamp()
 LocalFrame* InspectorTimelineAgent::mainFrame() const
 {
     if (!m_pageAgent)
-        return 0;
+        return nullptr;
     return m_pageAgent->mainFrame();
 }
 

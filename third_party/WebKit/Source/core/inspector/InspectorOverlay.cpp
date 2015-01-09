@@ -591,7 +591,7 @@ static const ShapeOutsideInfo* shapeOutsideInfoForNode(Node* node, Shape::Displa
 {
     RenderObject* renderer = node->renderer();
     if (!renderer || !renderer->isBox() || !toRenderBox(renderer)->shapeOutsideInfo())
-        return 0;
+        return nullptr;
 
     FrameView* containingView = node->document().view();
     RenderBox* renderBox = toRenderBox(renderer);
@@ -629,7 +629,7 @@ PassRefPtr<JSONObject> buildElementInfo(Element* element)
 {
     RefPtr<JSONObject> elementInfo = JSONObject::create();
     Element* realElement = element;
-    PseudoElement* pseudoElement = 0;
+    PseudoElement* pseudoElement = nullptr;
     if (element->isPseudoElement()) {
         pseudoElement = toPseudoElement(element);
         realElement = element->parentOrShadowHostElement();
@@ -826,7 +826,7 @@ bool InspectorOverlay::getBoxModel(Node* node, RefPtr<TypeBuilder::DOM::BoxModel
         return false;
 
     IntRect boundingBox = pixelSnappedIntRect(view->contentsToRootView(renderer->absoluteBoundingBoxRect()));
-    RenderBoxModelObject* modelObject = renderer->isBoxModelObject() ? toRenderBoxModelObject(renderer) : 0;
+    RenderBoxModelObject* modelObject = renderer->isBoxModelObject() ? toRenderBoxModelObject(renderer) : nullptr;
 
     model = TypeBuilder::DOM::BoxModel::create()
         .setContent(buildArrayForQuad(content))

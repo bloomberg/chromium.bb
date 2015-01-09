@@ -167,7 +167,7 @@ void InspectorLayerTreeAgent::setFrontend(InspectorFrontend* frontend)
 
 void InspectorLayerTreeAgent::clearFrontend()
 {
-    m_frontend = 0;
+    m_frontend = nullptr;
     disable(0);
 }
 
@@ -266,7 +266,7 @@ int InspectorLayerTreeAgent::idForNode(Node* node)
 RenderLayerCompositor* InspectorLayerTreeAgent::renderLayerCompositor()
 {
     RenderView* renderView = m_page->deprecatedLocalMainFrame()->contentRenderer();
-    RenderLayerCompositor* compositor = renderView ? renderView->compositor() : 0;
+    RenderLayerCompositor* compositor = renderView ? renderView->compositor() : nullptr;
     return compositor;
 }
 
@@ -290,7 +290,7 @@ static GraphicsLayer* findLayerById(GraphicsLayer* root, int layerId)
         if (GraphicsLayer* layer = findLayerById(root->children()[i], layerId))
             return layer;
     }
-    return 0;
+    return nullptr;
 }
 
 GraphicsLayer* InspectorLayerTreeAgent::layerById(ErrorString* errorString, const String& layerId)
@@ -299,12 +299,12 @@ GraphicsLayer* InspectorLayerTreeAgent::layerById(ErrorString* errorString, cons
     int id = layerId.toInt(&ok);
     if (!ok) {
         *errorString = "Invalid layer id";
-        return 0;
+        return nullptr;
     }
     RenderLayerCompositor* compositor = renderLayerCompositor();
     if (!compositor) {
         *errorString = "Not in compositing mode";
-        return 0;
+        return nullptr;
     }
 
     GraphicsLayer* result = findLayerById(rootGraphicsLayer(), id);
@@ -400,7 +400,7 @@ const GraphicsContextSnapshot* InspectorLayerTreeAgent::snapshotById(ErrorString
     SnapshotById::iterator it = m_snapshotById.find(snapshotId);
     if (it == m_snapshotById.end()) {
         *errorString = "Snapshot not found";
-        return 0;
+        return nullptr;
     }
     return it->value.get();
 }

@@ -50,7 +50,7 @@ static const char runtimeEnabled[] = "runtimeEnabled";
 InspectorRuntimeAgent::InspectorRuntimeAgent(InjectedScriptManager* injectedScriptManager, ScriptDebugServer* scriptDebugServer)
     : InspectorBaseAgent<InspectorRuntimeAgent>("Runtime")
     , m_enabled(false)
-    , m_frontend(0)
+    , m_frontend(nullptr)
     , m_injectedScriptManager(injectedScriptManager)
     , m_scriptDebugServer(scriptDebugServer)
 {
@@ -183,7 +183,7 @@ void InspectorRuntimeAgent::setFrontend(InspectorFrontend* frontend)
 
 void InspectorRuntimeAgent::clearFrontend()
 {
-    m_frontend = 0;
+    m_frontend = nullptr;
     String errorString;
     disable(&errorString);
 }

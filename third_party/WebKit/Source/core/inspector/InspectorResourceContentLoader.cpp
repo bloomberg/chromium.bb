@@ -95,7 +95,7 @@ void InspectorResourceContentLoader::start()
         HashSet<String> urlsToFetch;
 
         ResourceRequest resourceRequest;
-        HistoryItem* item = document->frame() ? document->frame()->loader().currentItem() : 0;
+        HistoryItem* item = document->frame() ? document->frame()->loader().currentItem() : nullptr;
         if (item) {
             resourceRequest = FrameLoader::requestFromHistoryItem(item, ReturnCacheDataDontLoad);
         } else {
@@ -172,7 +172,7 @@ void InspectorResourceContentLoader::stop()
     HashSet<ResourceClient*> pendingResourceClients;
     m_pendingResourceClients.swap(pendingResourceClients);
     for (const auto& client : pendingResourceClients)
-        client->m_loader = 0;
+        client->m_loader = nullptr;
     m_resources.clear();
     // Make sure all callbacks are called to prevent infinite waiting time.
     checkDone();

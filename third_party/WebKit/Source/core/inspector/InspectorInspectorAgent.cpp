@@ -55,7 +55,7 @@ static const char inspectorAgentEnabled[] = "inspectorAgentEnabled";
 InspectorInspectorAgent::InspectorInspectorAgent(Page* page, InjectedScriptManager* injectedScriptManager)
     : InspectorBaseAgent<InspectorInspectorAgent>("Inspector")
     , m_inspectedPage(page)
-    , m_frontend(0)
+    , m_frontend(nullptr)
     , m_injectedScriptManager(injectedScriptManager)
 {
     ASSERT_ARG(page, page);
@@ -64,7 +64,7 @@ InspectorInspectorAgent::InspectorInspectorAgent(Page* page, InjectedScriptManag
 InspectorInspectorAgent::~InspectorInspectorAgent()
 {
 #if !ENABLE(OILPAN)
-    m_instrumentingAgents->setInspectorInspectorAgent(0);
+    m_instrumentingAgents->setInspectorInspectorAgent(nullptr);
 #endif
 }
 
@@ -106,7 +106,7 @@ void InspectorInspectorAgent::setFrontend(InspectorFrontend* inspectorFrontend)
 void InspectorInspectorAgent::clearFrontend()
 {
     m_pendingEvaluateTestCommands.clear();
-    m_frontend = 0;
+    m_frontend = nullptr;
     m_injectedScriptManager->discardInjectedScripts();
     ErrorString error;
     disable(&error);

@@ -54,7 +54,7 @@ void setCallStack(TracedValue* value)
         scriptCallStack->toTracedValue(value, "stackTrace");
 }
 
-void setNodeInfo(TracedValue* value, Node* node, const char* idFieldName, const char* nameFieldName = 0)
+void setNodeInfo(TracedValue* value, Node* node, const char* idFieldName, const char* nameFieldName = nullptr)
 {
     value->setInteger(idFieldName, InspectorNodeIds::idForNode(node));
     if (nameFieldName)
@@ -293,9 +293,9 @@ static void createQuad(TracedValue* value, const char* name, const FloatQuad& qu
     value->endArray();
 }
 
-static void setGeneratingNodeInfo(TracedValue* value, const RenderObject* renderer, const char* idFieldName, const char* nameFieldName = 0)
+static void setGeneratingNodeInfo(TracedValue* value, const RenderObject* renderer, const char* idFieldName, const char* nameFieldName = nullptr)
 {
-    Node* node = 0;
+    Node* node = nullptr;
     for (; renderer && !node; renderer = renderer->parent())
         node = renderer->generatingNode();
     if (!node)
@@ -390,7 +390,7 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorResourceFinishEvent::d
 
 static LocalFrame* frameForExecutionContext(ExecutionContext* context)
 {
-    LocalFrame* frame = 0;
+    LocalFrame* frame = nullptr;
     if (context->isDocument())
         frame = toDocument(context)->frame();
     return frame;

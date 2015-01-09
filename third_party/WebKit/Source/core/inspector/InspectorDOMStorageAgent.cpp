@@ -91,7 +91,7 @@ void InspectorDOMStorageAgent::setFrontend(InspectorFrontend* frontend)
 
 void InspectorDOMStorageAgent::clearFrontend()
 {
-    m_frontend = 0;
+    m_frontend = nullptr;
     disable(0);
 }
 
@@ -114,7 +114,7 @@ void InspectorDOMStorageAgent::enable(ErrorString*)
 
 void InspectorDOMStorageAgent::disable(ErrorString*)
 {
-    m_instrumentingAgents->setInspectorDOMStorageAgent(0);
+    m_instrumentingAgents->setInspectorDOMStorageAgent(nullptr);
     m_state->setBoolean(DOMStorageAgentState::domStorageAgentEnabled, false);
 }
 

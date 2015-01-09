@@ -32,7 +32,7 @@ namespace blink {
 InspectorAnimationAgent::InspectorAnimationAgent(InspectorDOMAgent* domAgent)
     : InspectorBaseAgent<InspectorAnimationAgent>("Animation")
     , m_domAgent(domAgent)
-    , m_frontend(0)
+    , m_frontend(nullptr)
     , m_element(nullptr)
 {
 }
@@ -44,7 +44,7 @@ void InspectorAnimationAgent::setFrontend(InspectorFrontend* frontend)
 
 void InspectorAnimationAgent::clearFrontend()
 {
-    m_instrumentingAgents->setInspectorAnimationAgent(0);
+    m_instrumentingAgents->setInspectorAnimationAgent(nullptr);
     m_frontend = nullptr;
     reset();
 }
@@ -262,7 +262,7 @@ void InspectorAnimationAgent::startListening(ErrorString* errorString, int nodeI
 
 void InspectorAnimationAgent::stopListening(ErrorString*)
 {
-    m_element = 0;
+    m_element = nullptr;
 }
 
 void InspectorAnimationAgent::didCreateAnimationPlayer(AnimationPlayer& player)
@@ -285,7 +285,7 @@ AnimationPlayer* InspectorAnimationAgent::assertAnimationPlayer(ErrorString* err
     AnimationPlayer* player = m_idToAnimationPlayer.get(id);
     if (!player) {
         *errorString = "Could not find animation player with given id";
-        return 0;
+        return nullptr;
     }
     return player;
 }

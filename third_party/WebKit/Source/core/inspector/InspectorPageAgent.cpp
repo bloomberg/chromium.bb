@@ -306,7 +306,7 @@ bool InspectorPageAgent::cachedResourceContent(Resource* cachedResource, String*
         }
         default:
             SharedBuffer* buffer = cachedResource->resourceBuffer();
-            return decodeBuffer(buffer ? buffer->data() : 0, buffer ? buffer->size() : 0, cachedResource->response().textEncodingName(), result);
+            return decodeBuffer(buffer ? buffer->data() : nullptr, buffer ? buffer->size() : 0, cachedResource->response().textEncodingName(), result);
         }
     }
     return false;
@@ -315,7 +315,7 @@ bool InspectorPageAgent::cachedResourceContent(Resource* cachedResource, String*
 // static
 bool InspectorPageAgent::sharedBufferContent(PassRefPtr<SharedBuffer> buffer, const String& textEncodingName, bool withBase64Encode, String* result)
 {
-    return dataContent(buffer ? buffer->data() : 0, buffer ? buffer->size() : 0, textEncodingName, withBase64Encode, result);
+    return dataContent(buffer ? buffer->data() : nullptr, buffer ? buffer->size() : 0, textEncodingName, withBase64Encode, result);
 }
 
 bool InspectorPageAgent::dataContent(const char* data, unsigned size, const String& textEncodingName, bool withBase64Encode, String* result)
@@ -337,7 +337,7 @@ Resource* InspectorPageAgent::cachedResource(LocalFrame* frame, const KURL& url)
 {
     Document* document = frame->document();
     if (!document)
-        return 0;
+        return nullptr;
     Resource* cachedResource = document->fetcher()->cachedResource(url);
     if (!cachedResource) {
         Vector<Document*> allImports = InspectorPageAgent::importsForFrame(frame);
@@ -785,8 +785,8 @@ void InspectorPageAgent::searchInResource(ErrorString*, const String& frameId, c
     LocalFrame* frame = frameForId(frameId);
     KURL kurl(ParsedURLString, url);
 
-    FrameLoader* frameLoader = frame ? &frame->loader() : 0;
-    DocumentLoader* loader = frameLoader ? frameLoader->documentLoader() : 0;
+    FrameLoader* frameLoader = frame ? &frame->loader() : nullptr;
+    DocumentLoader* loader = frameLoader ? frameLoader->documentLoader() : nullptr;
     if (!loader)
         return;
 
@@ -1053,7 +1053,7 @@ LocalFrame* InspectorPageAgent::mainFrame()
 
 LocalFrame* InspectorPageAgent::frameForId(const String& frameId)
 {
-    return frameId.isEmpty() ? 0 : m_identifierToFrame.get(frameId);
+    return frameId.isEmpty() ? nullptr : m_identifierToFrame.get(frameId);
 }
 
 String InspectorPageAgent::frameId(LocalFrame* frame)
@@ -1096,7 +1096,7 @@ LocalFrame* InspectorPageAgent::findFrameWithSecurityOrigin(const String& origin
         if (documentOrigin->toRawString() == originRawString)
             return toLocalFrame(frame);
     }
-    return 0;
+    return nullptr;
 }
 
 LocalFrame* InspectorPageAgent::assertFrame(ErrorString* errorString, const String& frameId)

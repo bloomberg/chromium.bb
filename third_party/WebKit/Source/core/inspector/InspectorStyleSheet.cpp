@@ -218,7 +218,7 @@ static inline void fixUnparsedProperties(const CharacterType* characters, CSSRul
     CSSPropertySourceData* nextData = &(propertyData.at(0));
     for (unsigned i = 0; i < size; ++i) {
         CSSPropertySourceData* currentData = nextData;
-        nextData = i < size - 1 ? &(propertyData.at(i + 1)) : 0;
+        nextData = i < size - 1 ? &(propertyData.at(i + 1)) : nullptr;
 
         if (currentData->parsedOk)
             continue;
@@ -789,7 +789,7 @@ NewLineAndWhitespace& InspectorStyle::newLineAndWhitespaceDelimiters() const
         return m_format;
 
     RefPtrWillBeRawPtr<CSSRuleSourceData> sourceData = extractSourceData();
-    WillBeHeapVector<CSSPropertySourceData>* sourcePropertyData = sourceData ? &(sourceData->styleSourceData->propertyData) : 0;
+    WillBeHeapVector<CSSPropertySourceData>* sourcePropertyData = sourceData ? &(sourceData->styleSourceData->propertyData) : nullptr;
     int propertyCount = sourcePropertyData ? sourcePropertyData->size() : 0;
     if (!propertyCount) {
         m_format.first = "\n";
@@ -1147,7 +1147,7 @@ CSSStyleRule* InspectorStyleSheet::insertCSSOMRuleInStyleSheet(const SourceRange
     if (!styleRule) {
         m_pageStyleSheet->deleteRule(index, ASSERT_NO_EXCEPTION);
         exceptionState.throwDOMException(SyntaxError, "The rule '" + ruleText + "' could not be added in style sheet.");
-        return 0;
+        return nullptr;
     }
     return styleRule;
 }
@@ -1161,7 +1161,7 @@ CSSStyleRule* InspectorStyleSheet::insertCSSOMRuleInMediaRule(CSSMediaRule* medi
     if (!styleRule) {
         mediaRule->deleteRule(index, ASSERT_NO_EXCEPTION);
         exceptionState.throwDOMException(SyntaxError, "The rule '" + ruleText + "' could not be added in media rule.");
-        return 0;
+        return nullptr;
     }
     return styleRule;
 }
@@ -1174,7 +1174,7 @@ CSSStyleRule* InspectorStyleSheet::insertCSSOMRuleBySourceRange(const SourceRang
         RefPtrWillBeRawPtr<CSSRuleSourceData> ruleSourceData = m_parsedStyleSheet->ruleSourceDataAt(i);
         if (ruleSourceData->ruleHeaderRange.start < sourceRange.start && sourceRange.start < ruleSourceData->ruleBodyRange.start) {
             exceptionState.throwDOMException(NotFoundError, "Cannot insert rule inside rule selector.");
-            return 0;
+            return nullptr;
         }
         if (sourceRange.start < ruleSourceData->ruleBodyRange.start || ruleSourceData->ruleBodyRange.end < sourceRange.start)
             continue;
@@ -1188,7 +1188,7 @@ CSSStyleRule* InspectorStyleSheet::insertCSSOMRuleBySourceRange(const SourceRang
     RefPtrWillBeRawPtr<CSSRule> rule = m_flatRules.at(containingRuleIndex);
     if (rule->type() != CSSRule::MEDIA_RULE) {
         exceptionState.throwDOMException(NotFoundError, "Cannot insert rule in non-media rule.");
-        return 0;
+        return nullptr;
     }
     return insertCSSOMRuleInMediaRule(toCSSMediaRule(rule.get()), sourceRange, ruleText, exceptionState);
 }
@@ -1289,30 +1289,30 @@ CSSStyleRule* InspectorStyleSheet::addRule(const String& ruleText, const SourceR
 {
     if (!ensureParsedDataReady()) {
         exceptionState.throwDOMException(NotFoundError, "Cannot parse style sheet.");
-        return 0;
+        return nullptr;
     }
 
     if (location.start != location.end) {
         exceptionState.throwDOMException(NotFoundError, "Source range must be collapsed.");
-        return 0;
+        return nullptr;
     }
 
     if (!verifyRuleText(ruleText)) {
         exceptionState.throwDOMException(SyntaxError, "Rule text is not valid.");
-        return 0;
+        return nullptr;
     }
 
     String text;
     bool success = getText(&text);
     if (!success) {
         exceptionState.throwDOMException(NotFoundError, "The rule '" + ruleText + "' could not be added.");
-        return 0;
+        return nullptr;
     }
 
     ensureFlatRules();
     CSSStyleRule* styleRule = insertCSSOMRuleBySourceRange(location, ruleText, exceptionState);
     if (exceptionState.hadException())
-        return 0;
+        return nullptr;
 
     text.insert(ruleText, location.start);
 
@@ -1384,14 +1384,14 @@ CSSStyleRule* InspectorStyleSheet::ruleForId(const InspectorCSSId& id) const
 {
     ASSERT(!id.isEmpty());
     ensureFlatRules();
-    return InspectorCSSAgent::asCSSStyleRule(id.ordinal() >= m_flatRules.size() ? 0 : m_flatRules.at(id.ordinal()).get());
+    return InspectorCSSAgent::asCSSStyleRule(id.ordinal() >= m_flatRules.size() ? nullptr : m_flatRules.at(id.ordinal()).get());
 }
 
 CSSMediaRule* InspectorStyleSheet::mediaRuleForId(const InspectorCSSId& id) const
 {
     ASSERT(!id.isEmpty());
     ensureFlatRules();
-    return InspectorCSSAgent::asCSSMediaRule(id.ordinal() >= m_flatRules.size() ? 0 : m_flatRules.at(id.ordinal()).get());
+    return InspectorCSSAgent::asCSSMediaRule(id.ordinal() >= m_flatRules.size() ? nullptr : m_flatRules.at(id.ordinal()).get());
 }
 
 PassRefPtr<TypeBuilder::CSS::CSSStyleSheetHeader> InspectorStyleSheet::buildObjectForStyleSheetInfo() const
@@ -1401,7 +1401,7 @@ PassRefPtr<TypeBuilder::CSS::CSSStyleSheetHeader> InspectorStyleSheet::buildObje
         return nullptr;
 
     Document* document = styleSheet->ownerDocument();
-    LocalFrame* frame = document ? document->frame() : 0;
+    LocalFrame* frame = document ? document->frame() : nullptr;
 
     RefPtr<TypeBuilder::CSS::CSSStyleSheetHeader> result = TypeBuilder::CSS::CSSStyleSheetHeader::create()
         .setStyleSheetId(id())
@@ -1514,7 +1514,7 @@ CSSStyleDeclaration* InspectorStyleSheet::styleForId(const InspectorCSSId& id) c
 {
     CSSStyleRule* rule = ruleForId(id);
     if (!rule)
-        return 0;
+        return nullptr;
 
     return rule->style();
 }
@@ -1843,11 +1843,11 @@ Element* InspectorStyleSheet::ownerStyleElement() const
 {
     Node* ownerNode = m_pageStyleSheet->ownerNode();
     if (!ownerNode || !ownerNode->isElementNode())
-        return 0;
+        return nullptr;
     Element* ownerElement = toElement(ownerNode);
 
     if (!isHTMLStyleElement(ownerElement) && !isSVGStyleElement(ownerElement))
-        return 0;
+        return nullptr;
     return ownerElement;
 }
 

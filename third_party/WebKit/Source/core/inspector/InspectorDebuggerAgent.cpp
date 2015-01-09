@@ -268,7 +268,7 @@ void InspectorDebuggerAgent::setFrontend(InspectorFrontend* frontend)
 
 void InspectorDebuggerAgent::clearFrontend()
 {
-    m_frontend = 0;
+    m_frontend = nullptr;
 
     if (!enabled())
         return;
@@ -899,7 +899,7 @@ void InspectorDebuggerAgent::evaluateOnCallFrame(ErrorString* errorString, const
     }
 
     Vector<ScriptValue> asyncCallStacks;
-    const AsyncCallChain* asyncChain = trackingAsyncCalls() ? currentAsyncCallChain() : 0;
+    const AsyncCallChain* asyncChain = trackingAsyncCalls() ? currentAsyncCallChain() : nullptr;
     if (asyncChain) {
         const AsyncCallStackVector& callStacks = asyncChain->callStacks();
         asyncCallStacks.resize(callStacks.size());
@@ -1363,9 +1363,9 @@ void InspectorDebuggerAgent::didParseSource(const String& scriptId, const Script
     String scriptURL = script.sourceURL();
     String sourceMapURL = sourceMapURLForScript(script, compileResult);
 
-    const String* sourceMapURLParam = sourceMapURL.isNull() ? 0 : &sourceMapURL;
-    const bool* isContentScriptParam = isContentScript ? &isContentScript : 0;
-    const bool* hasSourceURLParam = hasSourceURL ? &hasSourceURL : 0;
+    const String* sourceMapURLParam = sourceMapURL.isNull() ? nullptr : &sourceMapURL;
+    const bool* isContentScriptParam = isContentScript ? &isContentScript : nullptr;
+    const bool* hasSourceURLParam = hasSourceURL ? &hasSourceURL : nullptr;
     if (!hasSyntaxError)
         m_frontend->scriptParsed(scriptId, scriptURL, script.startLine(), script.startColumn(), script.endLine(), script.endColumn(), isContentScriptParam, sourceMapURLParam, hasSourceURLParam);
     else

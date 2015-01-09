@@ -242,7 +242,7 @@ void InjectedScript::getInternalProperties(ErrorString* errorString, const Strin
 Node* InjectedScript::nodeForObjectId(const String& objectId)
 {
     if (isEmpty() || !canAccessInspectedWindow())
-        return 0;
+        return nullptr;
 
     ScriptFunctionCall function(injectedScriptObject(), "nodeForObjectId");
     function.appendArgument(objectId);
