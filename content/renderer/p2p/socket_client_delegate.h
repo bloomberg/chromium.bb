@@ -31,7 +31,7 @@ class P2PSocketClientDelegate {
                                        P2PSocketClient* client) = 0;
 
   // Called once for each Send() call after the send is complete.
-  virtual void OnSendComplete() = 0;
+  virtual void OnSendComplete(const P2PSendPacketMetrics& send_metrics) = 0;
 
   // Called if an non-retryable error occurs.
   virtual void OnError() = 0;

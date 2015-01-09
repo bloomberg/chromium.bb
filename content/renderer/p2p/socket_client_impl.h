@@ -39,15 +39,11 @@ class P2PSocketClientImpl : public P2PSocketClient {
                     const P2PHostAndIPEndPoint& remote_address,
                     P2PSocketClientDelegate* delegate);
 
-  // Send the |data| to the |address|.
-  void Send(const net::IPEndPoint& address,
-            const std::vector<char>& data) override;
-
   // Send the |data| to the |address| using Differentiated Services Code Point
-  // |dscp|.
-  void SendWithDscp(const net::IPEndPoint& address,
-                    const std::vector<char>& data,
-                    const rtc::PacketOptions& options) override;
+  // |dscp|. Return value is the unique packet_id for this packet.
+  uint64_t Send(const net::IPEndPoint& address,
+                const std::vector<char>& data,
+                const rtc::PacketOptions& options) override;
 
   // Setting socket options.
   void SetOption(P2PSocketOption option, int value) override;
@@ -77,8 +73,7 @@ class P2PSocketClientImpl : public P2PSocketClient {
   void OnSocketCreated(const net::IPEndPoint& local_address,
                        const net::IPEndPoint& remote_address);
   void OnIncomingTcpConnection(const net::IPEndPoint& address);
-  void OnSendComplete(int packet_id);
-  void OnSendComplete();
+  void OnSendComplete(const P2PSendPacketMetrics& send_metrics);
   void OnError();
   void OnDataReceived(const net::IPEndPoint& address,
                       const std::vector<char>& data,
@@ -90,11 +85,18 @@ class P2PSocketClientImpl : public P2PSocketClient {
   void DeliverOnIncomingTcpConnection(
       const net::IPEndPoint& address,
       scoped_refptr<P2PSocketClient> new_client);
-  void DeliverOnSendComplete();
+  void DeliverOnSendComplete(const P2PSendPacketMetrics& send_metrics);
   void DeliverOnError();
   void DeliverOnDataReceived(const net::IPEndPoint& address,
                              const std::vector<char>& data,
                              const base::TimeTicks& timestamp);
+
+  // Helper function to be called by Send to handle different threading
+  // condition.
+  void SendWithPacketId(const net::IPEndPoint& address,
+                        const std::vector<char>& data,
+                        const rtc::PacketOptions& options,
+                        uint64_t packet_id);
 
   // Scheduled on the IPC thread to finish initialization.
   void DoInit(P2PSocketType type,

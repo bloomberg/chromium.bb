@@ -404,7 +404,8 @@ void P2PSocketHostTcpBase::HandleWriteResult(int result) {
   if (result >= 0) {
     write_buffer_->DidConsume(result);
     if (write_buffer_->BytesRemaining() == 0) {
-      message_sender_->Send(new P2PMsg_OnSendComplete(id_));
+      message_sender_->Send(
+          new P2PMsg_OnSendComplete(id_, P2PSendPacketMetrics()));
       if (write_queue_.empty()) {
         write_buffer_ = NULL;
       } else {

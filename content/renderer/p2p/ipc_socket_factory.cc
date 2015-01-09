@@ -5,7 +5,7 @@
 #include "content/renderer/p2p/ipc_socket_factory.h"
 
 #include <algorithm>
-#include <deque>
+#include <list>
 
 #include "base/compiler_specific.h"
 #include "base/debug/trace_event.h"
@@ -76,6 +76,19 @@ class IpcPacketSocket : public rtc::AsyncPacketSocket,
   IpcPacketSocket();
   ~IpcPacketSocket() override;
 
+  // Struct to track information when a packet is received by this socket for
+  // send. The information tracked here will be used to match with the
+  // P2PSendPacketMetrics from the underneath system socket.
+  struct InFlightPacketRecord {
+    InFlightPacketRecord(uint64_t packet_id, size_t packet_size)
+        : packet_id(packet_id), packet_size(packet_size) {}
+
+    uint64_t packet_id;
+    size_t packet_size;
+  };
+
+  typedef std::list<InFlightPacketRecord> InFlightPacketList;
+
   // Always takes ownership of client even if initialization fails.
   bool Init(P2PSocketType type, P2PSocketClientImpl* client,
             const rtc::SocketAddress& local_address,
@@ -103,7 +116,7 @@ class IpcPacketSocket : public rtc::AsyncPacketSocket,
               const net::IPEndPoint& remote_address) override;
   void OnIncomingTcpConnection(const net::IPEndPoint& address,
                                P2PSocketClient* client) override;
-  void OnSendComplete() override;
+  void OnSendComplete(const P2PSendPacketMetrics& send_metrics) override;
   void OnError() override;
   void OnDataReceived(const net::IPEndPoint& address,
                       const std::vector<char>& data,
@@ -124,7 +137,7 @@ class IpcPacketSocket : public rtc::AsyncPacketSocket,
 
   // Update trace of send throttling internal state. This should be called
   // immediately after any changes to |send_bytes_available_| and/or
-  // |in_flight_packet_sizes_|.
+  // |in_flight_packet_records_|.
   void TraceSendThrottlingState() const;
 
   void InitAcceptedTcp(P2PSocketClient* client,
@@ -163,7 +176,11 @@ class IpcPacketSocket : public rtc::AsyncPacketSocket,
   // allows short bursts of high-rate sending without dropping packets, but
   // quickly restricts the client to a sustainable steady-state rate.
   size_t send_bytes_available_;
-  std::deque<size_t> in_flight_packet_sizes_;
+
+  // Used to detect when browser doesn't send SendComplete message for some
+  // packets. In normal case, the first packet should be the one that we're
+  // going to receive the next completion signal.
+  InFlightPacketList in_flight_packet_records_;
 
   // Set to true once EWOULDBLOCK was returned from Send(). Indicates that the
   // caller expects SignalWritable notification.
@@ -244,7 +261,7 @@ void IpcPacketSocket::TraceSendThrottlingState() const {
   TRACE_COUNTER_ID1("p2p", "P2PSendBytesAvailable", local_address_.port(),
                     send_bytes_available_);
   TRACE_COUNTER_ID1("p2p", "P2PSendPacketsInFlight", local_address_.port(),
-                    in_flight_packet_sizes_.size());
+                    in_flight_packet_records_.size());
 }
 
 void IpcPacketSocket::IncrementDiscardCounters(size_t bytes_discarded) {
@@ -384,7 +401,7 @@ int IpcPacketSocket::SendTo(const void *data, size_t data_size,
     if (!writable_signal_expected_) {
       WebRtcLogMessage(base::StringPrintf(
           "IpcPacketSocket: sending is blocked. %d packets_in_flight.",
-          static_cast<int>(in_flight_packet_sizes_.size())));
+          static_cast<int>(in_flight_packet_records_.size())));
 
       writable_signal_expected_ = true;
     }
@@ -412,12 +429,18 @@ int IpcPacketSocket::SendTo(const void *data, size_t data_size,
   }
 
   send_bytes_available_ -= data_size;
-  in_flight_packet_sizes_.push_back(data_size);
-  TraceSendThrottlingState();
 
   const char* data_char = reinterpret_cast<const char*>(data);
   std::vector<char> data_vector(data_char, data_char + data_size);
-  client_->SendWithDscp(address_chrome, data_vector, options);
+  uint64_t packet_id = client_->Send(address_chrome, data_vector, options);
+
+  // Ensure packet_id is not 0. It can't be the case according to
+  // P2PSocketClientImpl::Send().
+  DCHECK_NE(packet_id, 0uL);
+
+  in_flight_packet_records_.push_back(
+      InFlightPacketRecord(packet_id, data_size));
+  TraceSendThrottlingState();
 
   // Fake successful send. The caller ignores result anyway.
   return data_size;
@@ -565,21 +588,29 @@ void IpcPacketSocket::OnIncomingTcpConnection(
   SignalNewConnection(this, socket.release());
 }
 
-void IpcPacketSocket::OnSendComplete() {
+void IpcPacketSocket::OnSendComplete(const P2PSendPacketMetrics& send_metrics) {
   DCHECK_EQ(base::MessageLoop::current(), message_loop_);
 
-  CHECK(!in_flight_packet_sizes_.empty());
-  send_bytes_available_ += in_flight_packet_sizes_.front();
+  CHECK(!in_flight_packet_records_.empty());
+
+  const InFlightPacketRecord& record = in_flight_packet_records_.front();
+
+  // Tracking is not turned on for TCP so it's always 0. For UDP, this will
+  // cause a crash when the packet ids don't match.
+  CHECK(send_metrics.packet_id == 0 ||
+        record.packet_id == send_metrics.packet_id);
+
+  send_bytes_available_ += record.packet_size;
 
   DCHECK_LE(send_bytes_available_, kMaximumInFlightBytes);
 
-  in_flight_packet_sizes_.pop_front();
+  in_flight_packet_records_.pop_front();
   TraceSendThrottlingState();
 
   if (writable_signal_expected_ && send_bytes_available_ > 0) {
     WebRtcLogMessage(base::StringPrintf(
         "IpcPacketSocket: sending is unblocked. %d packets in flight.",
-        static_cast<int>(in_flight_packet_sizes_.size())));
+        static_cast<int>(in_flight_packet_records_.size())));
 
     SignalReadyToSend(this);
     writable_signal_expected_ = false;

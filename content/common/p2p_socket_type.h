@@ -48,6 +48,16 @@ struct P2PHostAndIPEndPoint {
   net::IPEndPoint ip_address;
 };
 
+// Stuct which keeps track of metrics during a send operation on P2P sockets.
+// Currently, it only carries packet_id but could be expanded to include
+// timestamps when packet arrives at various points.
+struct P2PSendPacketMetrics {
+  P2PSendPacketMetrics() : packet_id(0) {}
+  explicit P2PSendPacketMetrics(uint64_t packet_id) : packet_id(packet_id) {}
+
+  uint64_t packet_id;
+};
+
 }  // namespace content
 
 #endif  // CONTENT_COMMON_P2P_SOCKET_TYPE_H_

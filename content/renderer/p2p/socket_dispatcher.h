@@ -96,7 +96,7 @@ class CONTENT_EXPORT P2PSocketDispatcher : public IPC::MessageFilter,
                        const net::IPEndPoint& local_address,
                        const net::IPEndPoint& remote_address);
   void OnIncomingTcpConnection(int socket_id, const net::IPEndPoint& address);
-  void OnSendComplete(int socket_id);
+  void OnSendComplete(int socket_id, const P2PSendPacketMetrics& send_metrics);
   void OnError(int socket_id);
   void OnDataReceived(int socket_id, const net::IPEndPoint& address,
                       const std::vector<char>& data,

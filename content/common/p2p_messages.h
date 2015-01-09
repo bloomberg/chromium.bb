@@ -49,6 +49,10 @@ IPC_STRUCT_TRAITS_BEGIN(content::P2PHostAndIPEndPoint)
   IPC_STRUCT_TRAITS_MEMBER(ip_address)
 IPC_STRUCT_TRAITS_END()
 
+IPC_STRUCT_TRAITS_BEGIN(content::P2PSendPacketMetrics)
+  IPC_STRUCT_TRAITS_MEMBER(packet_id)
+IPC_STRUCT_TRAITS_END()
+
 // P2P Socket messages sent from the browser to the renderer.
 
 IPC_MESSAGE_CONTROL1(P2PMsg_NetworkListChanged,
@@ -63,8 +67,10 @@ IPC_MESSAGE_CONTROL3(P2PMsg_OnSocketCreated,
                      net::IPEndPoint /* local_address */,
                      net::IPEndPoint /* remote_address */)
 
-IPC_MESSAGE_CONTROL1(P2PMsg_OnSendComplete,
-                     int /* socket_id */)
+// |send_metrics| carries packet_id for this packet.
+IPC_MESSAGE_CONTROL2(P2PMsg_OnSendComplete,
+                     int /* socket_id */,
+                     content::P2PSendPacketMetrics /* send_metrics */)
 
 IPC_MESSAGE_CONTROL1(P2PMsg_OnError,
                      int /* socket_id */)

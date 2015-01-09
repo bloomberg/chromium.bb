@@ -345,7 +345,8 @@ void P2PSocketHostUdp::HandleSendResult(uint64 packet_id,
       base::TimeTicks::Now() -
           base::TimeTicks::FromInternalValue(tick_received) /* sample */);
 
-  message_sender_->Send(new P2PMsg_OnSendComplete(id_));
+  message_sender_->Send(
+      new P2PMsg_OnSendComplete(id_, P2PSendPacketMetrics(packet_id)));
 }
 
 P2PSocketHost* P2PSocketHostUdp::AcceptIncomingTcpConnection(

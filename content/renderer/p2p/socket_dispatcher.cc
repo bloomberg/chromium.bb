@@ -156,10 +156,12 @@ void P2PSocketDispatcher::OnIncomingTcpConnection(
   }
 }
 
-void P2PSocketDispatcher::OnSendComplete(int socket_id) {
+void P2PSocketDispatcher::OnSendComplete(
+    int socket_id,
+    const P2PSendPacketMetrics& send_metrics) {
   P2PSocketClientImpl* client = GetClient(socket_id);
   if (client) {
-    client->OnSendComplete();
+    client->OnSendComplete(send_metrics);
   }
 }
 

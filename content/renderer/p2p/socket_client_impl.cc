@@ -15,8 +15,8 @@
 
 namespace {
 
-uint64 GetUniqueId(uint32 random_socket_id, uint32 packet_id) {
-  uint64 uid = random_socket_id;
+uint64_t GetUniqueId(uint32 random_socket_id, uint32 packet_id) {
+  uint64_t uid = random_socket_id;
   uid <<= 32;
   uid |= packet_id;
   return uid;
@@ -69,31 +69,33 @@ void P2PSocketClientImpl::DoInit(P2PSocketType type,
       type, socket_id_, local_address, remote_address));
 }
 
-void P2PSocketClientImpl::SendWithDscp(
-    const net::IPEndPoint& address,
-    const std::vector<char>& data,
-    const rtc::PacketOptions& options) {
+uint64_t P2PSocketClientImpl::Send(const net::IPEndPoint& address,
+                                   const std::vector<char>& data,
+                                   const rtc::PacketOptions& options) {
+  uint64_t unique_id = GetUniqueId(random_socket_id_, ++next_packet_id_);
   if (!ipc_message_loop_->BelongsToCurrentThread()) {
     ipc_message_loop_->PostTask(
-        FROM_HERE, base::Bind(
-            &P2PSocketClientImpl::SendWithDscp, this, address, data, options));
-    return;
+        FROM_HERE, base::Bind(&P2PSocketClientImpl::SendWithPacketId, this,
+                              address, data, options, unique_id));
+    return unique_id;
   }
 
   // Can send data only when the socket is open.
   DCHECK(state_ == STATE_OPEN || state_ == STATE_ERROR);
   if (state_ == STATE_OPEN) {
-    uint64 unique_id = GetUniqueId(random_socket_id_, ++next_packet_id_);
-    TRACE_EVENT_ASYNC_BEGIN0("p2p", "Send", unique_id);
-    dispatcher_->SendP2PMessage(new P2PHostMsg_Send(socket_id_, address, data,
-                                                    options, unique_id));
+    SendWithPacketId(address, data, options, unique_id);
   }
+
+  return unique_id;
 }
 
-void P2PSocketClientImpl::Send(const net::IPEndPoint& address,
-                               const std::vector<char>& data) {
-  rtc::PacketOptions options(rtc::DSCP_DEFAULT);
-  SendWithDscp(address, data, options);
+void P2PSocketClientImpl::SendWithPacketId(const net::IPEndPoint& address,
+                                           const std::vector<char>& data,
+                                           const rtc::PacketOptions& options,
+                                           uint64_t packet_id) {
+  TRACE_EVENT_ASYNC_BEGIN0("p2p", "Send", packet_id);
+  dispatcher_->SendP2PMessage(
+      new P2PHostMsg_Send(socket_id_, address, data, options, packet_id));
 }
 
 void P2PSocketClientImpl::SetOption(P2PSocketOption option,
@@ -196,17 +198,20 @@ void P2PSocketClientImpl::DeliverOnIncomingTcpConnection(
   }
 }
 
-void P2PSocketClientImpl::OnSendComplete() {
+void P2PSocketClientImpl::OnSendComplete(
+    const P2PSendPacketMetrics& send_metrics) {
   DCHECK(ipc_message_loop_->BelongsToCurrentThread());
 
   delegate_message_loop_->PostTask(
-      FROM_HERE, base::Bind(&P2PSocketClientImpl::DeliverOnSendComplete, this));
+      FROM_HERE, base::Bind(&P2PSocketClientImpl::DeliverOnSendComplete, this,
+                            send_metrics));
 }
 
-void P2PSocketClientImpl::DeliverOnSendComplete() {
+void P2PSocketClientImpl::DeliverOnSendComplete(
+    const P2PSendPacketMetrics& send_metrics) {
   DCHECK(delegate_message_loop_->BelongsToCurrentThread());
   if (delegate_)
-    delegate_->OnSendComplete();
+    delegate_->OnSendComplete(send_metrics);
 }
 
 void P2PSocketClientImpl::OnError() {
