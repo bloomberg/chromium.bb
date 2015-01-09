@@ -28,10 +28,10 @@ class RecoveryInstallGlobalErrorFactory
   friend struct DefaultSingletonTraits<RecoveryInstallGlobalErrorFactory>;
 
   RecoveryInstallGlobalErrorFactory();
-  virtual ~RecoveryInstallGlobalErrorFactory();
+  ~RecoveryInstallGlobalErrorFactory() override;
 
   // BrowserContextKeyedServiceFactory:
-  virtual KeyedService* BuildServiceInstanceFor(
+  KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const override;
 
   DISALLOW_COPY_AND_ASSIGN(RecoveryInstallGlobalErrorFactory);

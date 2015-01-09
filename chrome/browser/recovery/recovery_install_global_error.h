@@ -17,31 +17,31 @@ class RecoveryInstallGlobalError : public GlobalErrorWithStandardBubble,
                                    public KeyedService {
  public:
   explicit RecoveryInstallGlobalError(Profile* profile);
-  virtual ~RecoveryInstallGlobalError();
+  ~RecoveryInstallGlobalError() override;
 
  private:
   // KeyedService:
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
   // GlobalErrorWithStandardBubble:
-  virtual Severity GetSeverity() override;
-  virtual bool HasMenuItem() override;
-  virtual int MenuItemCommandID() override;
-  virtual base::string16 MenuItemLabel() override;
-  virtual int MenuItemIconResourceID() override;
-  virtual void ExecuteMenuItem(Browser* browser) override;
-  virtual bool HasBubbleView() override;
-  virtual bool HasShownBubbleView() override;
-  virtual void ShowBubbleView(Browser* browser) override;
-  virtual gfx::Image GetBubbleViewIcon() override;
-  virtual base::string16 GetBubbleViewTitle() override;
-  virtual std::vector<base::string16> GetBubbleViewMessages() override;
-  virtual base::string16 GetBubbleViewAcceptButtonLabel() override;
-  virtual bool ShouldAddElevationIconToAcceptButton() override;
-  virtual base::string16 GetBubbleViewCancelButtonLabel() override;
-  virtual void OnBubbleViewDidClose(Browser* browser) override;
-  virtual void BubbleViewAcceptButtonPressed(Browser* browser) override;
-  virtual void BubbleViewCancelButtonPressed(Browser* browser) override;
+  Severity GetSeverity() override;
+  bool HasMenuItem() override;
+  int MenuItemCommandID() override;
+  base::string16 MenuItemLabel() override;
+  int MenuItemIconResourceID() override;
+  void ExecuteMenuItem(Browser* browser) override;
+  bool HasBubbleView() override;
+  bool HasShownBubbleView() override;
+  void ShowBubbleView(Browser* browser) override;
+  gfx::Image GetBubbleViewIcon() override;
+  base::string16 GetBubbleViewTitle() override;
+  std::vector<base::string16> GetBubbleViewMessages() override;
+  base::string16 GetBubbleViewAcceptButtonLabel() override;
+  bool ShouldAddElevationIconToAcceptButton() override;
+  base::string16 GetBubbleViewCancelButtonLabel() override;
+  void OnBubbleViewDidClose(Browser* browser) override;
+  void BubbleViewAcceptButtonPressed(Browser* browser) override;
+  void BubbleViewCancelButtonPressed(Browser* browser) override;
 
   bool HasElevationNotification() const;
   void OnElevationRequirementChanged();
