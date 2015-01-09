@@ -215,6 +215,11 @@ public:
     void convertToLayerCoords(const RenderLayer* ancestorLayer, LayoutPoint&) const;
     void convertToLayerCoords(const RenderLayer* ancestorLayer, LayoutRect&) const;
 
+    // Does the same as convertToLayerCoords() when not in multicol. For multicol, however,
+    // convertToLayerCoords() calculates the offset in flow-thread coordinates (what the layout
+    // engine uses internally), while this method calculates the visual coordinates; i.e. it figures
+    // out which column the layer starts in and adds in the offset. See
+    // http://www.chromium.org/developers/design-documents/multi-column-layout for more info.
     LayoutPoint visualOffsetFromAncestor(const RenderLayer* ancestorLayer) const;
 
     // The hitTest() method looks for mouse events by walking layers that intersect the point from front to back.
@@ -676,6 +681,13 @@ private:
     OwnPtr<TransformationMatrix> m_transform;
 
     // Pointer to the enclosing RenderLayer that caused us to be paginated. It is 0 if we are not paginated.
+    //
+    // See RenderMultiColumnFlowThread and
+    // https://sites.google.com/a/chromium.org/dev/developers/design-documents/multi-column-layout
+    // for more information about the multicol implementation. It's important to understand the
+    // difference between flow thread coordinates and visual coordinates when working with multicol
+    // in RenderLayer, since RenderLayer is one of the few places where we have to worry about the
+    // visual ones. Internally we try to use flow-thread coordinates whenever possible.
     RenderLayer* m_enclosingPaginationLayer;
 
     // These compositing reasons are updated whenever style changes, not while updating compositing layers.

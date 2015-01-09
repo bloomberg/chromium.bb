@@ -436,6 +436,7 @@ static bool checkContainingBlockChainForPagination(RenderLayerModelObject* rende
 }
 
 // Convert a bounding box from flow thread coordinates, relative to |layer|, to visual coordinates, relative to |ancestorLayer|.
+// See http://www.chromium.org/developers/design-documents/multi-column-layout for more info on these coordinate types.
 static void convertFromFlowThreadToVisualBoundingBoxInAncestor(const RenderLayer* layer, const RenderLayer* ancestorLayer, LayoutRect& rect)
 {
     RenderLayer* paginationLayer = layer->enclosingPaginationLayer();
@@ -453,15 +454,12 @@ static void convertFromFlowThreadToVisualBoundingBoxInAncestor(const RenderLayer
     rect = flowThread->fragmentsBoundingBox(rect);
 
     // Finally, make the visual rectangle relative to |ancestorLayer|.
-    // FIXME: Handle nested fragmentation contexts (crbug.com/423076). For now just give up if there
-    // are different pagination layers involved.
-    if (!ancestorLayer->enclosingPaginationLayer() || ancestorLayer->enclosingPaginationLayer() != paginationLayer) {
-        // The easy case. The ancestor layer is not within the pagination layer.
-        paginationLayer->convertToLayerCoords(ancestorLayer, rect);
+    if (ancestorLayer->enclosingPaginationLayer() != paginationLayer) {
+        rect.moveBy(paginationLayer->visualOffsetFromAncestor(ancestorLayer));
         return;
     }
-    // The ancestor layer is also inside the pagination layer, so we need to subtract the visual
-    // distance from the ancestor layer to the pagination layer.
+    // The ancestor layer is inside the same pagination layer as |layer|, so we need to subtract
+    // the visual distance from the ancestor layer to the pagination layer.
     rect.moveBy(-ancestorLayer->visualOffsetFromAncestor(paginationLayer));
 }
 
@@ -1453,9 +1451,13 @@ void RenderLayer::convertToLayerCoords(const RenderLayer* ancestorLayer, LayoutR
 
 LayoutPoint RenderLayer::visualOffsetFromAncestor(const RenderLayer* ancestorLayer) const
 {
-    RenderLayer* paginationLayer = enclosingPaginationLayer();
     LayoutPoint offset;
-    if (!paginationLayer || paginationLayer == this) {
+    if (ancestorLayer == this)
+        return offset;
+    RenderLayer* paginationLayer = enclosingPaginationLayer();
+    if (paginationLayer == this)
+        paginationLayer = parent()->enclosingPaginationLayer();
+    if (!paginationLayer) {
         convertToLayerCoords(ancestorLayer, offset);
         return offset;
     }
@@ -1466,10 +1468,7 @@ LayoutPoint RenderLayer::visualOffsetFromAncestor(const RenderLayer* ancestorLay
     if (ancestorLayer == paginationLayer)
         return offset;
 
-    // FIXME: Handle nested fragmentation contexts (crbug.com/423076). For now just give up if there
-    // are different pagination layers involved.
-    if (!ancestorLayer->enclosingPaginationLayer() || ancestorLayer->enclosingPaginationLayer() != paginationLayer) {
-        // The easy case. The ancestor layer is not within the pagination layer.
+    if (ancestorLayer->enclosingPaginationLayer() != paginationLayer) {
         offset.moveBy(paginationLayer->visualOffsetFromAncestor(ancestorLayer));
     } else {
         // The ancestor layer is also inside the pagination layer, so we need to subtract the visual
@@ -1555,16 +1554,13 @@ void RenderLayer::collectFragments(LayerFragments& fragments, const RenderLayer*
 
     // Make the dirty rect relative to the fragmentation context (multicol container, etc.).
     RenderFlowThread* enclosingFlowThread = toRenderFlowThread(enclosingPaginationLayer()->renderer());
-    LayoutPoint offsetOfPaginationLayerFromRoot;
-    // FIXME: more work needed if there are nested pagination layers.
-    if (rootLayer != enclosingPaginationLayer() && rootLayer->enclosingPaginationLayer() == enclosingPaginationLayer()) {
-        // The root layer is inside the fragmentation context. So we need to look inside it and find
-        // the visual offset from the fragmentation context.
-        LayoutPoint flowThreadOffset;
-        rootLayer->convertToLayerCoords(enclosingPaginationLayer(), flowThreadOffset);
-        offsetOfPaginationLayerFromRoot = -enclosingFlowThread->flowThreadPointToVisualPoint(flowThreadOffset);
+    LayoutPoint offsetOfPaginationLayerFromRoot; // Visual offset from the root layer to the nearest fragmentation context.
+    if (rootLayer->enclosingPaginationLayer() == enclosingPaginationLayer()) {
+        // The root layer is in the same fragmentation context as this layer, so we need to look
+        // inside it and subtract the offset between the fragmentation context and the root layer.
+        offsetOfPaginationLayerFromRoot = -rootLayer->visualOffsetFromAncestor(enclosingPaginationLayer());
     } else {
-        enclosingPaginationLayer()->convertToLayerCoords(rootLayer, offsetOfPaginationLayerFromRoot);
+        offsetOfPaginationLayerFromRoot = enclosingPaginationLayer()->visualOffsetFromAncestor(rootLayer);
     }
     LayoutRect dirtyRectInFlowThread(dirtyRect);
     dirtyRectInFlowThread.moveBy(-offsetOfPaginationLayerFromRoot);

@@ -94,6 +94,9 @@ class RenderMultiColumnSpannerPlaceholder;
 // column heights changed in the previous pass, since column height changes may affect break points
 // and pagination struts anywhere in the tree, and currently no way exists to do this in a more
 // optimized manner.
+//
+// There's also some documentation online:
+// https://sites.google.com/a/chromium.org/dev/developers/design-documents/multi-column-layout
 class RenderMultiColumnFlowThread : public RenderFlowThread {
 public:
     virtual ~RenderMultiColumnFlowThread();
