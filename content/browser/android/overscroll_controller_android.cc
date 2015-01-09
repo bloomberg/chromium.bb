@@ -18,6 +18,7 @@
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/android/resources/resource_manager.h"
 #include "ui/base/android/window_android_compositor.h"
+#include "ui/base/l10n/l10n_util_android.h"
 
 namespace content {
 namespace {
@@ -61,9 +62,9 @@ scoped_ptr<OverscrollRefresh> CreateRefreshEffect(
     return nullptr;
   }
 
-  return make_scoped_ptr(
-      new OverscrollRefresh(&compositor->GetResourceManager(), client,
-                            kDefaultRefreshDragTargetDips * dpi_scale));
+  return make_scoped_ptr(new OverscrollRefresh(
+      &compositor->GetResourceManager(), client,
+      kDefaultRefreshDragTargetDips * dpi_scale, l10n_util::IsLayoutRtl()));
 }
 
 }  // namespace

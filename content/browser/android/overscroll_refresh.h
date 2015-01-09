@@ -46,10 +46,12 @@ class CONTENT_EXPORT OverscrollRefresh {
  public:
   // Both |resource_manager| and |client| must not be null.
   // |target_drag_offset_pixels| is the threshold beyond which the effect
-  // will trigger a refresh action when released.
+  // will trigger a refresh action when released. When |mirror| is true,
+  // the effect and its rotation will be mirrored about the y axis.
   OverscrollRefresh(ui::ResourceManager* resource_manager,
                     OverscrollRefreshClient* client,
-                    float target_drag_offset_pixels);
+                    float target_drag_offset_pixels,
+                    bool mirror);
   ~OverscrollRefresh();
 
   // Scroll event stream listening methods.

@@ -63,7 +63,8 @@ void UpdateLayer(cc::UIResourceLayer* layer,
                  const gfx::Size& size,
                  const gfx::Vector2dF& offset,
                  float opacity,
-                 float rotation) {
+                 float rotation,
+                 bool mirror) {
   DCHECK(layer);
   DCHECK(parent);
   DCHECK(parent->layer_tree_host());
@@ -98,6 +99,8 @@ void UpdateLayer(cc::UIResourceLayer* layer,
   float offset_y = offset.y() - size.height() * 0.5f;
   gfx::Transform transform;
   transform.Translate(offset_x, offset_y);
+  if (mirror)
+    transform.Scale(-1.f, 1.f);
   transform.Rotate(rotation);
   layer->SetTransform(transform);
 }
@@ -106,11 +109,12 @@ void UpdateLayer(cc::UIResourceLayer* layer,
 
 class OverscrollRefresh::Effect {
  public:
-  Effect(ui::ResourceManager* resource_manager, float target_drag)
+  Effect(ui::ResourceManager* resource_manager, float target_drag, bool mirror)
       : resource_manager_(resource_manager),
         idle_layer_(cc::UIResourceLayer::Create()),
         active_layer_(cc::UIResourceLayer::Create()),
         target_drag_(target_drag),
+        mirror_(mirror),
         drag_(0),
         idle_alpha_(0),
         active_alpha_(0),
@@ -346,9 +350,10 @@ class OverscrollRefresh::Effect {
                                  offset_ - active_size.height() * 0.5f);
 
     UpdateLayer(idle_layer_.get(), parent, idle_resource, scaled_idle_size,
-                idle_offset, idle_alpha_, rotation_);
+                idle_offset, idle_alpha_, rotation_, mirror_);
     UpdateLayer(active_layer_.get(), parent, active_resource,
-                scaled_active_size, active_offset, active_alpha_, rotation_);
+                scaled_active_size, active_offset, active_alpha_, rotation_,
+                mirror_);
   }
 
   bool IsFinished() const { return state_ == STATE_IDLE; }
@@ -374,6 +379,7 @@ class OverscrollRefresh::Effect {
   scoped_refptr<cc::UIResourceLayer> active_layer_;
 
   const float target_drag_;
+  const bool mirror_;
   float drag_;
   float idle_alpha_;
   float active_alpha_;
@@ -406,11 +412,12 @@ class OverscrollRefresh::Effect {
 
 OverscrollRefresh::OverscrollRefresh(ui::ResourceManager* resource_manager,
                                      OverscrollRefreshClient* client,
-                                     float target_drag_offset_pixels)
+                                     float target_drag_offset_pixels,
+                                     bool mirror)
     : client_(client),
       scrolled_to_top_(true),
       scroll_consumption_state_(DISABLED),
-      effect_(new Effect(resource_manager, target_drag_offset_pixels)) {
+      effect_(new Effect(resource_manager, target_drag_offset_pixels, mirror)) {
   DCHECK(client);
 }
 
