@@ -2819,7 +2819,7 @@ Press any key to continue exploring.
   <message name="IDS_ENABLE_DEBUGGING_HELP" desc="Help content of the enable debugging features dialog.">
     <ph name="BEGIN_H3">&lt;h3&gt;</ph>Debugging Features<ph name="END_H3">&lt;/h3&gt;</ph>
     <ph name="BR">&lt;br&gt;</ph>
-    You can enable the debugging features on your Chromebook in order to install and test custom code on your device.  This will allow you to:<ph name="BR">&lt;br&gt;</ph>
+    You can enable the debugging features on your Chrome OS Device in order to install and test custom code on your device.  This will allow you to:<ph name="BR">&lt;br&gt;</ph>
     <ph name="BEGIN_LIST">&lt;ul&gt;</ph>
       <ph name="LIST_ITEM">&lt;li&gt;</ph>Remove rootfs verification so you can modify OS files
       <ph name="LIST_ITEM">&lt;li&gt;</ph>Enable SSH access to the device using the standard test keys so you can use tools such as <ph name="BEGIN_CODE">&lt;span style=&quot;color:grey;font-family:monospace&quot;&gt;</ph>&apos;cros flash&apos;<ph name="END_CODE">&lt;/span&gt;</ph> to access the device
@@ -2832,6 +2832,9 @@ Press any key to continue exploring.
     <ph name="BR">&lt;br&gt;</ph>
     For more information about the debugging features see:<ph name="BR">&lt;br&gt;</ph>
     http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-features
+    <ph name="BR">&lt;br&gt;</ph>
+    <ph name="BR">&lt;br&gt;</ph>
+    <ph name="BEGIN_BOLD">&lt;b&gt;</ph>Note:<ph name="END_BOLD">&lt;/b&gt;</ph>  The system will reboot during the process.
   </message>
 
   <message name="IDS_RESET_SCREEN_WARNING_MSG" desc="Warning text shown on reset screen above the exclamation icon.">

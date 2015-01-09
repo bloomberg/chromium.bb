@@ -287,7 +287,7 @@ void EnableDebuggingScreenHandler::HandleOnLearnMore() {
       Profile::FromWebUI(web_ui()),
       NULL,
       GetNativeWindow(),
-      l10n_util::GetStringUTF16(IDS_ENABLE_DEBUGGING_SCREEN_TITLE),
+      base::string16(),
       data_url);
   dialog->Show();
 }
