@@ -146,8 +146,6 @@ static v8::Local<v8::Value> toV8(const IDBAny* impl, v8::Local<v8::Object> creat
         return toV8(impl->idbObjectStore(), creationContext, isolate);
     case IDBAny::BufferType:
         return deserializeIDBValueBuffer(isolate, impl->buffer(), impl->blobInfo());
-    case IDBAny::StringType:
-        return v8String(isolate, impl->string());
     case IDBAny::IntegerType:
         return v8::Number::New(isolate, impl->integer());
     case IDBAny::KeyType:

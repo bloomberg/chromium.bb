@@ -91,7 +91,6 @@ public:
         IDBObjectStoreType,
         BufferType,
         IntegerType,
-        StringType,
         KeyPathType,
         KeyType,
         BufferKeyAndKeyPathType,
@@ -108,7 +107,6 @@ public:
     SharedBuffer* buffer() const;
     const Vector<WebBlobInfo>* blobInfo() const;
     int64_t integer() const;
-    const String& string() const;
     const IDBKey* key() const;
     const IDBKeyPath& keyPath() const;
 
@@ -121,7 +119,6 @@ private:
     explicit IDBAny(IDBObjectStore*);
     explicit IDBAny(IDBKey*);
     explicit IDBAny(const IDBKeyPath&);
-    explicit IDBAny(const String&);
     IDBAny(PassRefPtr<SharedBuffer>, const Vector<WebBlobInfo>*);
     IDBAny(PassRefPtr<SharedBuffer>, const Vector<WebBlobInfo>*, IDBKey*, const IDBKeyPath&);
     explicit IDBAny(int64_t);
@@ -138,7 +135,6 @@ private:
     const IDBKeyPath m_idbKeyPath;
     const RefPtr<SharedBuffer> m_buffer;
     const Vector<WebBlobInfo>* m_blobInfo;
-    const String m_string;
     const int64_t m_integer;
 };
 

@@ -181,13 +181,12 @@ PassRefPtrWillBeRawPtr<DOMStringList> IDBDatabase::objectStoreNames() const
     return objectStoreNames.release();
 }
 
-ScriptValue IDBDatabase::version(ScriptState* scriptState) const
+void IDBDatabase::version(UnsignedLongLongOrString& result) const
 {
-    int64_t intVersion = m_metadata.intVersion;
-    if (intVersion == IDBDatabaseMetadata::NoIntVersion)
-        return idbAnyToScriptValue(scriptState, IDBAny::createString(m_metadata.version));
-
-    return idbAnyToScriptValue(scriptState, IDBAny::create(intVersion));
+    if (m_metadata.intVersion == IDBDatabaseMetadata::NoIntVersion)
+        result.setString(m_metadata.version);
+    else
+        result.setUnsignedLongLong(m_metadata.intVersion);
 }
 
 IDBObjectStore* IDBDatabase::createObjectStore(const String& name, const IDBKeyPath& keyPath, bool autoIncrement, ExceptionState& exceptionState)

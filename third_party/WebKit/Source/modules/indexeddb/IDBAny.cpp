@@ -44,11 +44,6 @@ IDBAny* IDBAny::createNull()
     return new IDBAny(NullType);
 }
 
-IDBAny* IDBAny::createString(const String& value)
-{
-    return new IDBAny(value);
-}
-
 IDBAny::IDBAny(Type type)
     : m_type(type)
     , m_integer(0)
@@ -128,12 +123,6 @@ const Vector<WebBlobInfo>* IDBAny::blobInfo() const
     return m_blobInfo;
 }
 
-const String& IDBAny::string() const
-{
-    ASSERT(m_type == StringType);
-    return m_string;
-}
-
 int64_t IDBAny::integer() const
 {
     ASSERT(m_type == IntegerType);
@@ -203,13 +192,6 @@ IDBAny::IDBAny(IDBKey* key)
 IDBAny::IDBAny(const IDBKeyPath& value)
     : m_type(KeyPathType)
     , m_idbKeyPath(value)
-    , m_integer(0)
-{
-}
-
-IDBAny::IDBAny(const String& value)
-    : m_type(StringType)
-    , m_string(value)
     , m_integer(0)
 {
 }
