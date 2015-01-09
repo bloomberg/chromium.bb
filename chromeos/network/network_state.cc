@@ -29,33 +29,6 @@ bool ConvertListValueToStringVector(const base::ListValue& string_list,
   return true;
 }
 
-bool IsCaCertNssSet(const base::DictionaryValue& properties) {
-  std::string ca_cert_nss;
-  if (properties.GetStringWithoutPathExpansion(shill::kEapCaCertNssProperty,
-                                               &ca_cert_nss) &&
-      !ca_cert_nss.empty()) {
-    return true;
-  }
-
-  const base::DictionaryValue* provider = NULL;
-  properties.GetDictionaryWithoutPathExpansion(shill::kProviderProperty,
-                                               &provider);
-  if (!provider)
-    return false;
-  if (provider->GetStringWithoutPathExpansion(
-          shill::kL2tpIpsecCaCertNssProperty, &ca_cert_nss) &&
-      !ca_cert_nss.empty()) {
-    return true;
-  }
-  if (provider->GetStringWithoutPathExpansion(
-          shill::kOpenVPNCaCertNSSProperty, &ca_cert_nss) &&
-      !ca_cert_nss.empty()) {
-    return true;
-  }
-
-  return false;
-}
-
 }  // namespace
 
 namespace chromeos {
@@ -66,8 +39,7 @@ NetworkState::NetworkState(const std::string& path)
       connectable_(false),
       prefix_length_(0),
       signal_strength_(0),
-      cellular_out_of_credits_(false),
-      has_ca_cert_nss_(false) {
+      cellular_out_of_credits_(false) {
 }
 
 NetworkState::~NetworkState() {
@@ -158,20 +130,12 @@ bool NetworkState::InitialPropertiesReceived(
     const base::DictionaryValue& properties) {
   NET_LOG(EVENT) << "InitialPropertiesReceived: " << path() << ": " << name()
                  << " State: " << connection_state_ << " Visible: " << visible_;
-  bool changed = false;
   if (!properties.HasKey(shill::kTypeProperty)) {
     NET_LOG(ERROR) << "NetworkState has no type: "
                    << shill_property_util::GetNetworkIdFromProperties(
                           properties);
     return false;
   }
-  // Ensure that the network has a valid name.
-  changed |= UpdateName(properties);
-
-  // Set the has_ca_cert_nss_ property.
-  bool had_ca_cert_nss = has_ca_cert_nss_;
-  has_ca_cert_nss_ = IsCaCertNssSet(properties);
-  changed |= had_ca_cert_nss != has_ca_cert_nss_;
 
   // By convention, all visible WiFi and WiMAX networks have a
   // SignalStrength > 0.
@@ -180,7 +144,8 @@ bool NetworkState::InitialPropertiesReceived(
       signal_strength_ = 1;
   }
 
-  return changed;
+  // Ensure that the network has a valid name.
+  return UpdateName(properties);
 }
 
 void NetworkState::GetStateProperties(base::DictionaryValue* dictionary) const {

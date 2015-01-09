@@ -21,38 +21,8 @@
 
 namespace chromeos {
 
-namespace {
-
-enum UMANetworkType {
-  UMA_NETWORK_TYPE_EAP,
-  UMA_NETWORK_TYPE_OPENVPN,
-  UMA_NETWORK_TYPE_IPSEC,
-  UMA_NETWORK_TYPE_SIZE,
-};
-
-// Copied from x509_certificate_model_nss.cc
-std::string GetNickname(const net::X509Certificate& cert) {
-  if (!cert.os_cert_handle()->nickname)
-    return std::string();
-  std::string name = cert.os_cert_handle()->nickname;
-  // Hack copied from mozilla: Cut off text before first :, which seems to
-  // just be the token name.
-  size_t colon_pos = name.find(':');
-  if (colon_pos != std::string::npos)
-    name = name.substr(colon_pos + 1);
-  return name;
-}
-
-}  // namespace
-
-// Migrates each network of |networks| with a deprecated CaCertNss property to
-// the respective CaCertPEM property and fixes an invalid or missing slot ID of
-// a client certificate configuration.
-//
-// If a network already has a CaCertPEM property, then the NssProperty is
-// cleared. Otherwise, the NssProperty is compared with
-// the nickname of each certificate of |certs|. If a match is found, the
-// CaCertPemProperty is set and the NssProperty is cleared.
+// Migrates each network of |networks| with an invalid or missing slot ID in
+// their client certificate configuration.
 //
 // If a network with a client certificate configuration (i.e. a PKCS11 ID) is
 // found, the configured client certificate is looked up.
@@ -72,17 +42,15 @@ class NetworkCertMigrator::MigrationTask
   }
 
   void Run(const NetworkStateHandler::NetworkStateList& networks) {
-    // Request properties for each network that has a CaCertNssProperty set
-    // or which could be configured with a client certificate.
-    for (NetworkStateHandler::NetworkStateList::const_iterator it =
-             networks.begin(); it != networks.end(); ++it) {
-      if (!(*it)->HasCACertNSS() &&
-          (*it)->security() != shill::kSecurity8021x &&
-          (*it)->type() != shill::kTypeVPN &&
-          (*it)->type() != shill::kTypeEthernetEap) {
+    // Request properties for each network that could be configured with a
+    // client certificate.
+    for (const NetworkState* network : networks) {
+      if (network->security() != shill::kSecurity8021x &&
+          network->type() != shill::kTypeVPN &&
+          network->type() != shill::kTypeEthernetEap) {
         continue;
       }
-      const std::string& service_path = (*it)->path();
+      const std::string& service_path = network->path();
       DBusThreadManager::Get()->GetShillServiceClient()->GetProperties(
           dbus::ObjectPath(service_path),
           base::Bind(&network_handler::GetPropertiesCallback,
@@ -101,7 +69,6 @@ class NetworkCertMigrator::MigrationTask
 
     base::DictionaryValue new_properties;
     MigrateClientCertProperties(service_path, properties, &new_properties);
-    MigrateNssProperties(service_path, properties, &new_properties);
 
     if (new_properties.empty())
       return;
@@ -149,156 +116,37 @@ class NetworkCertMigrator::MigrationTask
     }
   }
 
-  void MigrateNssProperties(const std::string& service_path,
-                            const base::DictionaryValue& properties,
-                            base::DictionaryValue* new_properties) {
-    std::string nss_key, pem_key, nickname;
-    const base::ListValue* pem_property = NULL;
-    UMANetworkType uma_type = UMA_NETWORK_TYPE_SIZE;
-
-    GetNssAndPemProperties(
-        properties, &nss_key, &pem_key, &pem_property, &nickname, &uma_type);
-    if (nickname.empty())
-      return;  // Didn't find any nickname.
-
-    VLOG(2) << "Found NSS nickname to migrate. Property: " << nss_key
-            << ", network: " << service_path;
-    UMA_HISTOGRAM_ENUMERATION(
-        "Network.MigrationNssToPem", uma_type, UMA_NETWORK_TYPE_SIZE);
-
-    if (pem_property && !pem_property->empty()) {
-      VLOG(2) << "PEM already exists, clearing NSS property.";
-      ClearNssProperty(nss_key, new_properties);
-      return;
-    }
-
-    scoped_refptr<net::X509Certificate> cert =
-        FindCertificateWithNickname(nickname);
-    if (!cert.get()) {
-      VLOG(2) << "No matching cert found.";
-      return;
-    }
-
-    std::string pem_encoded;
-    if (!net::X509Certificate::GetPEMEncoded(cert->os_cert_handle(),
-                                             &pem_encoded)) {
-      LOG(ERROR) << "PEM encoding failed.";
-      return;
-    }
-
-    ClearNssProperty(nss_key, new_properties);
-    SetPemProperty(pem_key, pem_encoded, new_properties);
-  }
-
-  void GetNssAndPemProperties(const base::DictionaryValue& shill_properties,
-                              std::string* nss_key,
-                              std::string* pem_key,
-                              const base::ListValue** pem_property,
-                              std::string* nickname,
-                              UMANetworkType* uma_type) {
-    struct NssPem {
-      const char* read_prefix;
-      const char* nss_key;
-      const char* pem_key;
-      UMANetworkType uma_type;
-    } const kNssPemMap[] = {
-        { NULL, shill::kEapCaCertNssProperty, shill::kEapCaCertPemProperty,
-         UMA_NETWORK_TYPE_EAP },
-        { shill::kProviderProperty, shill::kL2tpIpsecCaCertNssProperty,
-         shill::kL2tpIpsecCaCertPemProperty, UMA_NETWORK_TYPE_IPSEC },
-        { shill::kProviderProperty, shill::kOpenVPNCaCertNSSProperty,
-         shill::kOpenVPNCaCertPemProperty, UMA_NETWORK_TYPE_OPENVPN },
-    };
-
-    for (size_t i = 0; i < arraysize(kNssPemMap); ++i) {
-      const base::DictionaryValue* dict = &shill_properties;
-      if (kNssPemMap[i].read_prefix) {
-        shill_properties.GetDictionaryWithoutPathExpansion(
-            kNssPemMap[i].read_prefix, &dict);
-        if (!dict)
-          continue;
-      }
-      dict->GetStringWithoutPathExpansion(kNssPemMap[i].nss_key, nickname);
-      if (!nickname->empty()) {
-        *nss_key = kNssPemMap[i].nss_key;
-        *pem_key = kNssPemMap[i].pem_key;
-        *uma_type = kNssPemMap[i].uma_type;
-        dict->GetListWithoutPathExpansion(kNssPemMap[i].pem_key, pem_property);
-        return;
-      }
-    }
-  }
-
-  void ClearNssProperty(const std::string& nss_key,
-                        base::DictionaryValue* new_properties) {
-    new_properties->SetStringWithoutPathExpansion(nss_key, std::string());
-  }
-
   scoped_refptr<net::X509Certificate> FindCertificateWithPkcs11Id(
       const std::string& pkcs11_id, int* slot_id) {
     *slot_id = -1;
-    for (net::CertificateList::iterator it = certs_.begin(); it != certs_.end();
-         ++it) {
+    for (scoped_refptr<net::X509Certificate> cert : certs_) {
       int current_slot_id = -1;
       std::string current_pkcs11_id =
-          CertLoader::GetPkcs11IdAndSlotForCert(**it, &current_slot_id);
+          CertLoader::GetPkcs11IdAndSlotForCert(*cert, &current_slot_id);
       if (current_pkcs11_id == pkcs11_id) {
         *slot_id = current_slot_id;
-        return *it;
+        return cert;
       }
     }
-    return NULL;
-  }
-
-  scoped_refptr<net::X509Certificate> FindCertificateWithNickname(
-      const std::string& nickname) {
-    for (net::CertificateList::iterator it = certs_.begin(); it != certs_.end();
-         ++it) {
-      if (nickname == GetNickname(**it))
-        return *it;
-    }
-    return NULL;
-  }
-
-  void SetPemProperty(const std::string& pem_key,
-                      const std::string& pem_encoded_cert,
-                      base::DictionaryValue* new_properties) {
-    scoped_ptr<base::ListValue> ca_cert_pems(new base::ListValue);
-    ca_cert_pems->AppendString(pem_encoded_cert);
-    new_properties->SetWithoutPathExpansion(pem_key, ca_cert_pems.release());
+    return nullptr;
   }
 
   void SendPropertiesToShill(const std::string& service_path,
                              const base::DictionaryValue& properties) {
     DBusThreadManager::Get()->GetShillServiceClient()->SetProperties(
-        dbus::ObjectPath(service_path),
-        properties,
-        base::Bind(
-            &MigrationTask::NotifyNetworkStateHandler, this, service_path),
-        base::Bind(&MigrationTask::LogErrorAndNotifyNetworkStateHandler,
-                   this,
-                   service_path));
+        dbus::ObjectPath(service_path), properties,
+        base::Bind(&base::DoNothing), base::Bind(&LogError, service_path));
   }
 
-  void LogErrorAndNotifyNetworkStateHandler(const std::string& service_path,
-                                            const std::string& error_name,
-                                            const std::string& error_message) {
+  static void LogError(const std::string& service_path,
+                       const std::string& error_name,
+                       const std::string& error_message) {
     network_handler::ShillErrorCallbackFunction(
         "MigrationTask.SetProperties failed",
         service_path,
         network_handler::ErrorCallback(),
         error_name,
         error_message);
-    NotifyNetworkStateHandler(service_path);
-  }
-
-  void NotifyNetworkStateHandler(const std::string& service_path) {
-    if (!cert_migrator_) {
-      VLOG(2) << "NetworkCertMigrator already destroyed. Aborting migration.";
-      return;
-    }
-    cert_migrator_->network_state_handler_->RequestUpdateForNetwork(
-        service_path);
   }
 
  private:
@@ -311,7 +159,7 @@ class NetworkCertMigrator::MigrationTask
 };
 
 NetworkCertMigrator::NetworkCertMigrator()
-    : network_state_handler_(NULL),
+    : network_state_handler_(nullptr),
       weak_ptr_factory_(this) {
 }
 
@@ -335,17 +183,17 @@ void NetworkCertMigrator::NetworkListChanged() {
     VLOG(2) << "Certs not loaded yet.";
     return;
   }
-  // Run the migration process from deprecated CaCertNssProperties to CaCertPem
-  // and to fix missing or incorrect slot ids of client certificates.
+  // Run the migration process to fix missing or incorrect slot ids of client
+  // certificates.
   VLOG(2) << "Start certificate migration of network configurations.";
   scoped_refptr<MigrationTask> helper(new MigrationTask(
       CertLoader::Get()->cert_list(), weak_ptr_factory_.GetWeakPtr()));
   NetworkStateHandler::NetworkStateList networks;
   network_state_handler_->GetNetworkListByType(
       NetworkTypePattern::Default(),
-      true,  // only configured networks
-      false, // visible and not visible networks
-      0,     // no count limit
+      true,   // only configured networks
+      false,  // visible and not visible networks
+      0,      // no count limit
       &networks);
   helper->Run(networks);
 }
@@ -353,9 +201,8 @@ void NetworkCertMigrator::NetworkListChanged() {
 void NetworkCertMigrator::OnCertificatesLoaded(
     const net::CertificateList& cert_list,
     bool initial_load) {
-  // Maybe there are networks referring to certs that were not loaded before but
-  // are now.
-  NetworkListChanged();
+  if (initial_load)
+    NetworkListChanged();
 }
 
 }  // namespace chromeos

@@ -35,16 +35,15 @@ namespace chromeos {
 class CHROMEOS_EXPORT NetworkState : public ManagedState {
  public:
   explicit NetworkState(const std::string& path);
-  virtual ~NetworkState();
+  ~NetworkState() override;
 
   // ManagedState overrides
   // If you change this method, update GetProperties too.
-  virtual bool PropertyChanged(const std::string& key,
-                               const base::Value& value) override;
-  virtual bool InitialPropertiesReceived(
+  bool PropertyChanged(const std::string& key,
+                       const base::Value& value) override;
+  bool InitialPropertiesReceived(
       const base::DictionaryValue& properties) override;
-  virtual void GetStateProperties(
-      base::DictionaryValue* dictionary) const override;
+  void GetStateProperties(base::DictionaryValue* dictionary) const override;
 
   void IPConfigPropertiesChanged(const base::DictionaryValue& properties);
 
@@ -92,9 +91,6 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   const std::string& roaming() const { return roaming_; }
   const std::string& payment_url() const { return payment_url_; }
   bool cellular_out_of_credits() const { return cellular_out_of_credits_; }
-
-  // Whether this network has a CACertNSS nickname set.
-  bool HasCACertNSS() const { return has_ca_cert_nss_; }
 
   // Returns true if |connection_state_| is a connected/connecting state.
   bool IsConnectedState() const;
@@ -176,10 +172,6 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   std::string roaming_;
   std::string payment_url_;
   bool cellular_out_of_credits_;
-
-  // Whether a deprecated CaCertNSS property of this network is set. Required
-  // for migration to PEM.
-  bool has_ca_cert_nss_;
 
   // TODO(pneubeck): Remove this once (Managed)NetworkConfigurationHandler
   // provides proxy configuration. crbug.com/241775

@@ -15,12 +15,12 @@ namespace chromeos {
 
 class NetworkStateHandler;
 
-// Migrates network configurations from deprecated CaCertNSS properties to
-// CaCertPEM and incorrect or missing slot IDs of client certificates.
+// Migrates network configurations with incorrect or missing slot IDs of client
+// certificates.
 class CHROMEOS_EXPORT NetworkCertMigrator : public NetworkStateHandlerObserver,
                                             public CertLoader::Observer {
  public:
-  virtual ~NetworkCertMigrator();
+  ~NetworkCertMigrator() override;
 
  private:
   friend class NetworkHandler;
@@ -30,12 +30,12 @@ class CHROMEOS_EXPORT NetworkCertMigrator : public NetworkStateHandlerObserver,
   NetworkCertMigrator();
   void Init(NetworkStateHandler* network_state_handler);
 
-   // NetworkStateHandlerObserver overrides
-  virtual void NetworkListChanged() override;
+  // NetworkStateHandlerObserver overrides
+  void NetworkListChanged() override;
 
   // CertLoader::Observer overrides
-  virtual void OnCertificatesLoaded(const net::CertificateList& cert_list,
-                                    bool initial_load) override;
+  void OnCertificatesLoaded(const net::CertificateList& cert_list,
+                            bool initial_load) override;
 
   // Unowned associated NetworkStateHandler* (global or test instance).
   NetworkStateHandler* network_state_handler_;
