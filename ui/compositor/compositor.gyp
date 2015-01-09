@@ -90,6 +90,7 @@
         '<(DEPTH)/cc/cc.gyp:cc',
         '<(DEPTH)/cc/cc.gyp:cc_surfaces',
         '<(DEPTH)/cc/cc_tests.gyp:cc_test_support',
+        '<(DEPTH)/gpu/blink/gpu_blink.gyp:gpu_blink',
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/testing/gtest.gyp:gtest',
         '<(DEPTH)/third_party/WebKit/public/blink.gyp:blink_minimal',

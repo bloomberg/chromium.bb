@@ -10,14 +10,16 @@
 #include "content/browser/android/in_process/synchronous_compositor_output_surface.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/renderer/gpu/frame_swap_message_queue.h"
+#include "gpu/blink/webgraphicscontext3d_in_process_command_buffer_impl.h"
 #include "gpu/command_buffer/client/gl_in_process_context.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "ui/gl/android/surface_texture.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gl_surface_stub.h"
 #include "webkit/common/gpu/context_provider_in_process.h"
-#include "webkit/common/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
 
+using gpu_blink::WebGraphicsContext3DImpl;
+using gpu_blink::WebGraphicsContext3DInProcessCommandBufferImpl;
 using webkit::gpu::ContextProviderWebContext;
 
 namespace content {
@@ -34,9 +36,6 @@ blink::WebGraphicsContext3D::Attributes GetDefaultAttribs() {
 
   return attributes;
 }
-
-using gpu_blink::WebGraphicsContext3DImpl;
-using webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl;
 
 scoped_ptr<gpu::GLInProcessContext> CreateOffscreenContext(
     const blink::WebGraphicsContext3D::Attributes& attributes) {
@@ -160,7 +159,6 @@ class SynchronousCompositorFactoryImpl::VideoContextProvider
   DISALLOW_COPY_AND_ASSIGN(VideoContextProvider);
 };
 
-using webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl;
 
 SynchronousCompositorFactoryImpl::SynchronousCompositorFactoryImpl()
     : record_full_layer_(true),
@@ -236,7 +234,7 @@ SynchronousCompositorFactoryImpl::CreateStreamTextureFactory(int frame_id) {
   return factory;
 }
 
-webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl*
+WebGraphicsContext3DInProcessCommandBufferImpl*
 SynchronousCompositorFactoryImpl::CreateOffscreenGraphicsContext3D(
     const blink::WebGraphicsContext3D::Attributes& attributes) {
   return WrapContextWithAttributes(CreateOffscreenContext(attributes),

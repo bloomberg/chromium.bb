@@ -20,6 +20,7 @@
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_settings.h"
+#include "gpu/blink/webgraphicscontext3d_in_process_command_buffer_impl.h"
 #include "gpu/command_buffer/client/gl_in_process_context.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "ui/gfx/frame_time.h"
@@ -28,14 +29,13 @@
 #include "ui/gfx/transform.h"
 #include "ui/gl/gl_bindings.h"
 #include "webkit/common/gpu/context_provider_in_process.h"
-#include "webkit/common/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
 
 namespace android_webview {
 
 namespace {
 
 using gpu_blink::WebGraphicsContext3DImpl;
-using webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl;
+using gpu_blink::WebGraphicsContext3DInProcessCommandBufferImpl;
 
 scoped_refptr<cc::ContextProvider> CreateContext(
     scoped_refptr<gfx::GLSurface> surface,

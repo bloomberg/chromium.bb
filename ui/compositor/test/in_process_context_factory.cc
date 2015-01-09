@@ -13,6 +13,7 @@
 #include "cc/surfaces/surface_id_allocator.h"
 #include "cc/test/pixel_test_output_surface.h"
 #include "cc/test/test_shared_bitmap_manager.h"
+#include "gpu/blink/webgraphicscontext3d_in_process_command_buffer_impl.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "ui/compositor/compositor_switches.h"
@@ -21,7 +22,6 @@
 #include "ui/gl/gl_surface.h"
 #include "webkit/common/gpu/context_provider_in_process.h"
 #include "webkit/common/gpu/grcontext_for_webgraphicscontext3d.h"
-#include "webkit/common/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
 
 namespace ui {
 namespace {
@@ -94,7 +94,7 @@ void InProcessContextFactory::CreateOutputSurface(
   attrs.shareResources = true;
   bool lose_context_when_out_of_memory = true;
 
-  using webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl;
+  using gpu_blink::WebGraphicsContext3DInProcessCommandBufferImpl;
   scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl> context3d(
       WebGraphicsContext3DInProcessCommandBufferImpl::CreateViewContext(
           attrs, lose_context_when_out_of_memory, compositor->widget()));

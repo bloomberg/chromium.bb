@@ -112,6 +112,7 @@ source_set("test_support") {
     "//cc",
     "//cc/surfaces",
     "//cc:test_support",
+    "//gpu/blink",
     "//skia",
     "//testing/gtest",
     "//third_party/WebKit/public:blink_minimal",

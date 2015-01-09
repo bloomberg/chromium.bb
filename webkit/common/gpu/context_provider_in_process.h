@@ -9,8 +9,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
+#include "gpu/blink/webgraphicscontext3d_in_process_command_buffer_impl.h"
 #include "webkit/common/gpu/context_provider_web_context.h"
-#include "webkit/common/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
 #include "webkit/common/gpu/webkit_gpu_export.h"
 
 namespace blink { class WebGraphicsContext3D; }
@@ -23,7 +23,8 @@ class WEBKIT_GPU_EXPORT ContextProviderInProcess
     : NON_EXPORTED_BASE(public ContextProviderWebContext) {
  public:
   static scoped_refptr<ContextProviderInProcess> Create(
-      scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl> context3d,
+      scoped_ptr<gpu_blink::WebGraphicsContext3DInProcessCommandBufferImpl>
+          context3d,
       const std::string& debug_name);
 
   // Uses default attributes for creating an offscreen context.
@@ -49,7 +50,8 @@ class WEBKIT_GPU_EXPORT ContextProviderInProcess
 
  protected:
   ContextProviderInProcess(
-      scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl> context3d,
+      scoped_ptr<gpu_blink::WebGraphicsContext3DInProcessCommandBufferImpl>
+          context3d,
       const std::string& debug_name);
   ~ContextProviderInProcess() override;
 
@@ -61,7 +63,7 @@ class WEBKIT_GPU_EXPORT ContextProviderInProcess
   base::ThreadChecker main_thread_checker_;
   base::ThreadChecker context_thread_checker_;
 
-  scoped_ptr<webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl>
+  scoped_ptr<gpu_blink::WebGraphicsContext3DInProcessCommandBufferImpl>
       context3d_;
   scoped_ptr<webkit::gpu::GrContextForWebGraphicsContext3D> gr_context_;
 

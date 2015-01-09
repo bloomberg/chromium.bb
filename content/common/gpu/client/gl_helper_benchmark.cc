@@ -26,12 +26,12 @@
 #include "content/common/gpu/client/gl_helper_scaling.h"
 #include "content/public/test/unittest_test_suite.h"
 #include "content/test/content_test_suite.h"
+#include "gpu/blink/webgraphicscontext3d_in_process_command_buffer_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkTypes.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gl/gl_surface.h"
-#include "webkit/common/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
@@ -59,7 +59,7 @@ class GLHelperTest : public testing::Test {
   void SetUp() override {
     WebGraphicsContext3D::Attributes attributes;
     bool lose_context_when_out_of_memory = false;
-    context_ = webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl::
+    context_ = gpu_blink::WebGraphicsContext3DInProcessCommandBufferImpl::
         CreateOffscreenContext(attributes, lose_context_when_out_of_memory);
     context_->InitializeOnCurrentThread();
 
@@ -107,7 +107,7 @@ class GLHelperTest : public testing::Test {
     base::CloseFile(f);
   }
 
-  scoped_ptr<webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl>
+  scoped_ptr<gpu_blink::WebGraphicsContext3DInProcessCommandBufferImpl>
       context_;
   scoped_ptr<content::GLHelper> helper_;
   scoped_ptr<content::GLHelperScaling> helper_scaling_;

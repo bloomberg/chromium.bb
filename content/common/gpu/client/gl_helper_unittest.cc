@@ -29,12 +29,12 @@
 #include "content/common/gpu/client/gl_helper_scaling.h"
 #include "content/public/test/unittest_test_suite.h"
 #include "content/test/content_test_suite.h"
+#include "gpu/blink/webgraphicscontext3d_in_process_command_buffer_impl.h"
 #include "media/base/video_frame.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkTypes.h"
 #include "ui/gl/gl_implementation.h"
-#include "webkit/common/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
@@ -44,7 +44,7 @@ namespace content {
 
 using blink::WebGLId;
 using blink::WebGraphicsContext3D;
-using webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl;
+using gpu_blink::WebGraphicsContext3DInProcessCommandBufferImpl;
 
 content::GLHelper::ScalerQuality kQualities[] = {
     content::GLHelper::SCALER_QUALITY_BEST,

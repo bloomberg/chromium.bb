@@ -47,6 +47,7 @@
 #include "content/common/gpu/gpu_process_launch_causes.h"
 #include "content/common/host_shared_bitmap_manager.h"
 #include "content/public/browser/android/compositor_client.h"
+#include "gpu/blink/webgraphicscontext3d_in_process_command_buffer_impl.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "third_party/khronos/GLES2/gl2.h"
@@ -56,7 +57,6 @@
 #include "ui/gfx/android/device_display_info.h"
 #include "ui/gfx/frame_time.h"
 #include "webkit/common/gpu/context_provider_in_process.h"
-#include "webkit/common/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
 
 namespace content {
 

@@ -14,6 +14,8 @@
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "webkit/common/gpu/grcontext_for_webgraphicscontext3d.h"
 
+using gpu_blink::WebGraphicsContext3DInProcessCommandBufferImpl;
+
 namespace webkit {
 namespace gpu {
 
@@ -152,8 +154,7 @@ class GrContext* ContextProviderInProcess::GrContext() {
   if (gr_context_)
     return gr_context_->get();
 
-  gr_context_.reset(
-      new webkit::gpu::GrContextForWebGraphicsContext3D(context3d_.get()));
+  gr_context_.reset(new GrContextForWebGraphicsContext3D(context3d_.get()));
   return gr_context_->get();
 }
 

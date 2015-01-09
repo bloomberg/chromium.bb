@@ -84,7 +84,7 @@
 #if defined(OS_ANDROID)
 #include "content/renderer/android/synchronous_compositor_factory.h"
 #include "content/renderer/media/android/audio_decoder_android.h"
-#include "webkit/common/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
+#include "gpu/blink/webgraphicscontext3d_in_process_command_buffer_impl.h"
 #endif
 
 #if defined(OS_MACOSX)
@@ -964,7 +964,7 @@ RendererBlinkPlatformImpl::createOffscreenGraphicsContext3D(
 #if defined(OS_ANDROID)
   if (SynchronousCompositorFactory* factory =
       SynchronousCompositorFactory::GetInstance()) {
-    scoped_ptr<webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl>
+    scoped_ptr<gpu_blink::WebGraphicsContext3DInProcessCommandBufferImpl>
         in_process_context(
             factory->CreateOffscreenGraphicsContext3D(attributes));
     if (!in_process_context ||

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/common/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
+#include "gpu/blink/webgraphicscontext3d_in_process_command_buffer_impl.h"
 
 #include <GLES2/gl2.h>
 #ifndef GL_GLEXT_PROTOTYPES
@@ -27,8 +27,7 @@
 using gpu::gles2::GLES2Implementation;
 using gpu::GLInProcessContext;
 
-namespace webkit {
-namespace gpu {
+namespace gpu_blink {
 
 // static
 scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl>
@@ -176,5 +175,4 @@ void WebGraphicsContext3DInProcessCommandBufferImpl::OnContextLost() {
   }
 }
 
-}  // namespace gpu
-}  // namespace webkit
+}  // namespace gpu_blink

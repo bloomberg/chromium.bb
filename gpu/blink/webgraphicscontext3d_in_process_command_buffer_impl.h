@@ -2,22 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_COMMON_GPU_WEBGRAPHICSCONTEXT3D_IN_PROCESS_COMMAND_BUFFER_IMPL_H_
-#define WEBKIT_COMMON_GPU_WEBGRAPHICSCONTEXT3D_IN_PROCESS_COMMAND_BUFFER_IMPL_H_
+#ifndef GPU_BLINK_WEBGRAPHICSCONTEXT3D_IN_PROCESS_COMMAND_BUFFER_IMPL_H_
+#define GPU_BLINK_WEBGRAPHICSCONTEXT3D_IN_PROCESS_COMMAND_BUFFER_IMPL_H_
 
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "gpu/blink/gpu_blink_export.h"
 #include "gpu/blink/webgraphicscontext3d_impl.h"
 #include "gpu/command_buffer/client/gl_in_process_context.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "ui/gfx/native_widget_types.h"
-#include "webkit/common/gpu/webkit_gpu_export.h"
 
 namespace gpu {
 class ContextSupport;
+class GLInProcessContext;
 
 namespace gles2 {
 class GLES2Interface;
@@ -26,15 +27,10 @@ struct ContextCreationAttribHelper;
 }
 }
 
-namespace gpu {
-class GLInProcessContext;
-}
+namespace gpu_blink {
 
-namespace webkit {
-namespace gpu {
-
-class WEBKIT_GPU_EXPORT WebGraphicsContext3DInProcessCommandBufferImpl
-    : public gpu_blink::WebGraphicsContext3DImpl {
+class GPU_BLINK_EXPORT WebGraphicsContext3DInProcessCommandBufferImpl
+    : public WebGraphicsContext3DImpl {
  public:
   enum MappedMemoryReclaimLimit {
     kNoLimit = 0,
@@ -104,7 +100,6 @@ class WEBKIT_GPU_EXPORT WebGraphicsContext3DInProcessCommandBufferImpl
   ::gpu::gles2::GLES2Implementation* real_gl_;
 };
 
-}  // namespace gpu
-}  // namespace webkit
+}  // namespace gpu_blink
 
-#endif  // WEBKIT_COMMON_GPU_WEBGRAPHICSCONTEXT3D_IN_PROCESS_COMMAND_BUFFER_IMPL_H_
+#endif  // GPU_BLINK_WEBGRAPHICSCONTEXT3D_IN_PROCESS_COMMAND_BUFFER_IMPL_H_
