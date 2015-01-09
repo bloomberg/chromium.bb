@@ -15,7 +15,7 @@ Some network label caveats
     you see requests that die in the SSL negotiation phase, in particular, this
     is often the correct label.
 * Cr-Internals-Network-DataProxy:  Flywheel / the Data Reduction Proxy.  Issues
-    require Reduce Data Usage be turned on.  Proxy url is
+    require "Reduce Data Usage" be turned on.  Proxy url is
     https://proxy.googlezip.net:443, with compress.googlezip.net:80 as a
     fallback.  Currently Android and iOS only.
 * Cr-Internals-Network-Cache:  The cache is the layer that handles most range
@@ -26,11 +26,12 @@ Some network label caveats
     there's no specific HTTP owner.
 * Cr-Internals-Network-Logging:  Covers about:net-internals, about:net-export as
     well as the what's sent to the NetLog.
-* Connectivity issues (ERR_NETWORK_CHANGED, system always thinking it's offline)
-    don't have a label.  There should be assigned to pauljensen@chromium.org.
-    TODO(mmenke):  Should we add a label?
-* SDCH issues should go to rdsmith@chromium.org.
-    TODO(mmenke):  Should we add a label?
+* Cr-Internals-Network-Connectivity:  Issues related to switching between
+    networks, ERR_NETWORK_CHANGED, Chrome thinking it's online when it's not /
+    navigator.onLine inaccuracies, etc.
+* Cr-Internals-Network-Filters:  Covers SDCH and gzip issues.
+    ERR_CONTENT_DECODING_FAILED indicates a problem at this layer, and bugs here
+    can also cause response body corruption.
 
 
 Common non-network label reference.  Bugs in these areas often receive the
