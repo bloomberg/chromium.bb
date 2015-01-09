@@ -86,6 +86,7 @@
           './image_editor/viewport.js',
           './entry_list_watcher.js',
           './error_banner.js',
+          './gallery_data_model.js',
           './gallery_item.js',
           './mosaic_mode.js',
           './ribbon.js',

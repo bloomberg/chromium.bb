@@ -39,3 +39,8 @@ IN_PROC_BROWSER_TEST_F(GalleryJsTest, GalleryItemTest) {
   RunTest(base::FilePath(
       FILE_PATH_LITERAL("gallery_item_unittest.html")));
 }
+
+IN_PROC_BROWSER_TEST_F(GalleryJsTest, GalleryDataModelTest) {
+  RunTest(base::FilePath(
+      FILE_PATH_LITERAL("gallery_data_model_unittest.html")));
+}
