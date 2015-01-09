@@ -531,7 +531,7 @@ TEST_F(BookmarkIndexTest, GetResultsSortedByTypedCount) {
   // 2. Google Reader (google.com/reader) 80
   // 3. Google Docs (docs.google.com) 50
   // 4. Google Maps (maps.google.com) 40
-  ASSERT_EQ(4, static_cast<int>(matches.size()));
+  ASSERT_EQ(4U, matches.size());
   EXPECT_EQ(data[0].url, matches[0].node->url());
   EXPECT_EQ(data[3].url, matches[1].node->url());
   EXPECT_EQ(data[2].url, matches[2].node->url());
@@ -541,7 +541,7 @@ TEST_F(BookmarkIndexTest, GetResultsSortedByTypedCount) {
   // Select top two matches.
   model->GetBookmarksMatching(ASCIIToUTF16("google"), 2, &matches);
 
-  ASSERT_EQ(2, static_cast<int>(matches.size()));
+  ASSERT_EQ(2U, matches.size());
   EXPECT_EQ(data[0].url, matches[0].node->url());
   EXPECT_EQ(data[3].url, matches[1].node->url());
 }
