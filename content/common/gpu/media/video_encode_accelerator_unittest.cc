@@ -27,10 +27,13 @@
 #include "ui/ozone/public/ozone_platform.h"
 #endif
 
-#if defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
+#if defined(OS_CHROMEOS)
+#if defined(ARCH_CPU_ARMEL) || (defined(USE_OZONE) && defined(USE_V4L2_CODEC))
 #include "content/common/gpu/media/v4l2_video_encode_accelerator.h"
-#elif defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
+#endif
+#if defined(ARCH_CPU_X86_FAMILY)
 #include "content/common/gpu/media/vaapi_video_encode_accelerator.h"
+#endif  // defined(ARCH_CPU_X86_FAMILY)
 #else
 #error The VideoEncodeAcceleratorUnittest is not supported on this platform.
 #endif
@@ -526,6 +529,9 @@ class VEAClient : public VideoEncodeAccelerator::Client {
  private:
   bool has_encoder() { return encoder_.get(); }
 
+  scoped_ptr<media::VideoEncodeAccelerator> CreateV4L2VEA();
+  scoped_ptr<media::VideoEncodeAccelerator> CreateVaapiVEA();
+
   void SetState(ClientState new_state);
 
   // Set current stream parameters to given |bitrate| at |framerate|.
@@ -728,33 +734,55 @@ VEAClient::VEAClient(TestStream* test_stream,
 
 VEAClient::~VEAClient() { CHECK(!has_encoder()); }
 
+scoped_ptr<media::VideoEncodeAccelerator> VEAClient::CreateV4L2VEA() {
+  scoped_ptr<media::VideoEncodeAccelerator> encoder;
+#if defined(OS_CHROMEOS) && (defined(ARCH_CPU_ARMEL) || \
+    (defined(USE_OZONE) && defined(USE_V4L2_CODEC)))
+  scoped_ptr<V4L2Device> device = V4L2Device::Create(V4L2Device::kEncoder);
+  if (device)
+    encoder.reset(new V4L2VideoEncodeAccelerator(device.Pass()));
+#endif
+  return encoder.Pass();
+}
+
+scoped_ptr<media::VideoEncodeAccelerator> VEAClient::CreateVaapiVEA() {
+  scoped_ptr<media::VideoEncodeAccelerator> encoder;
+#if defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
+  encoder.reset(new VaapiVideoEncodeAccelerator());
+#endif
+  return encoder.Pass();
+}
+
 void VEAClient::CreateEncoder() {
   DCHECK(thread_checker_.CalledOnValidThread());
   CHECK(!has_encoder());
 
-#if defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
-  scoped_ptr<V4L2Device> device = V4L2Device::Create(V4L2Device::kEncoder);
-  encoder_.reset(new V4L2VideoEncodeAccelerator(device.Pass()));
-#elif defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
-  encoder_.reset(new VaapiVideoEncodeAccelerator());
-#endif
-
-  SetState(CS_ENCODER_SET);
+  scoped_ptr<media::VideoEncodeAccelerator> encoders[] = {
+    CreateV4L2VEA(),
+    CreateVaapiVEA()
+  };
 
   DVLOG(1) << "Profile: " << test_stream_->requested_profile
            << ", initial bitrate: " << requested_bitrate_;
-  if (!encoder_->Initialize(kInputFormat,
-                            test_stream_->visible_size,
-                            test_stream_->requested_profile,
-                            requested_bitrate_,
-                            this)) {
-    LOG(ERROR) << "VideoEncodeAccelerator::Initialize() failed";
-    SetState(CS_ERROR);
-    return;
-  }
 
-  SetStreamParameters(requested_bitrate_, requested_framerate_);
-  SetState(CS_INITIALIZED);
+  for (size_t i = 0; i < arraysize(encoders); ++i) {
+    if (!encoders[i])
+      continue;
+    encoder_ = encoders[i].Pass();
+    SetState(CS_ENCODER_SET);
+    if (encoder_->Initialize(kInputFormat,
+                             test_stream_->visible_size,
+                             test_stream_->requested_profile,
+                             requested_bitrate_,
+                             this)) {
+      SetStreamParameters(requested_bitrate_, requested_framerate_);
+      SetState(CS_INITIALIZED);
+      return;
+    }
+  }
+  encoder_.reset();
+  LOG(ERROR) << "VideoEncodeAccelerator::Initialize() failed";
+  SetState(CS_ERROR);
 }
 
 void VEAClient::DestroyEncoder() {

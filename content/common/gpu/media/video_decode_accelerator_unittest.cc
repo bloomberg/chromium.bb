@@ -54,13 +54,17 @@
 #include "ui/gfx/codec/png_codec.h"
 
 #if defined(OS_WIN)
+#include "base/win/windows_version.h"
 #include "content/common/gpu/media/dxva_video_decode_accelerator.h"
-#elif defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
+#elif defined(OS_CHROMEOS)
+#if defined(ARCH_CPU_ARMEL) || (defined(USE_OZONE) && defined(USE_V4L2_CODEC))
 #include "content/common/gpu/media/v4l2_video_decode_accelerator.h"
 #include "content/common/gpu/media/v4l2_video_device.h"
-#elif defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
+#endif
+#if defined(ARCH_CPU_X86_FAMILY)
 #include "content/common/gpu/media/vaapi_video_decode_accelerator.h"
 #include "content/common/gpu/media/vaapi_wrapper.h"
+#endif  // defined(ARCH_CPU_X86_FAMILY)
 #else
 #error The VideoAccelerator tests are not supported on this platform.
 #endif  // OS_WIN
@@ -282,6 +286,10 @@ class GLRenderingVDAClient
  private:
   typedef std::map<int32, scoped_refptr<TextureRef>> TextureRefMap;
 
+  scoped_ptr<media::VideoDecodeAccelerator> CreateDXVAVDA();
+  scoped_ptr<media::VideoDecodeAccelerator> CreateV4L2VDA();
+  scoped_ptr<media::VideoDecodeAccelerator> CreateVaapiVDA();
+
   void SetState(ClientState new_state);
   void FinishInitialization();
   void ReturnPicture(int32 picture_buffer_id);
@@ -411,40 +419,74 @@ GLRenderingVDAClient::~GLRenderingVDAClient() {
 
 static bool DoNothingReturnTrue() { return true; }
 
+scoped_ptr<media::VideoDecodeAccelerator>
+GLRenderingVDAClient::CreateDXVAVDA() {
+  scoped_ptr<media::VideoDecodeAccelerator> decoder;
+#if defined(OS_WIN)
+  if (base::win::GetVersion() >= base::win::VERSION_WIN7)
+    decoder.reset(
+        new DXVAVideoDecodeAccelerator(base::Bind(&DoNothingReturnTrue)));
+#endif
+  return decoder.Pass();
+}
+
+scoped_ptr<media::VideoDecodeAccelerator>
+GLRenderingVDAClient::CreateV4L2VDA() {
+  scoped_ptr<media::VideoDecodeAccelerator> decoder;
+#if defined(OS_CHROMEOS) && (defined(ARCH_CPU_ARMEL) || \
+    (defined(USE_OZONE) && defined(USE_V4L2_CODEC)))
+  scoped_ptr<V4L2Device> device = V4L2Device::Create(V4L2Device::kDecoder);
+  if (device.get()) {
+    base::WeakPtr<VideoDecodeAccelerator::Client> weak_client = AsWeakPtr();
+    decoder.reset(new V4L2VideoDecodeAccelerator(
+        static_cast<EGLDisplay>(rendering_helper_->GetGLDisplay()),
+        static_cast<EGLContext>(rendering_helper_->GetGLContextHandle()),
+        weak_client,
+        base::Bind(&DoNothingReturnTrue),
+        device.Pass(),
+        base::MessageLoopProxy::current()));
+  }
+#endif
+  return decoder.Pass();
+}
+
+scoped_ptr<media::VideoDecodeAccelerator>
+GLRenderingVDAClient::CreateVaapiVDA() {
+  scoped_ptr<media::VideoDecodeAccelerator> decoder;
+#if defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
+  decoder.reset(
+      new VaapiVideoDecodeAccelerator(base::Bind(&DoNothingReturnTrue)));
+#endif
+  return decoder.Pass();
+}
+
 void GLRenderingVDAClient::CreateAndStartDecoder() {
   CHECK(decoder_deleted());
   CHECK(!decoder_.get());
 
   VideoDecodeAccelerator::Client* client = this;
-  base::WeakPtr<VideoDecodeAccelerator::Client> weak_client = AsWeakPtr();
-#if defined(OS_WIN)
-  decoder_.reset(
-      new DXVAVideoDecodeAccelerator(base::Bind(&DoNothingReturnTrue)));
-#elif defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
 
-  scoped_ptr<V4L2Device> device = V4L2Device::Create(V4L2Device::kDecoder);
-  if (!device.get()) {
-    NotifyError(media::VideoDecodeAccelerator::PLATFORM_FAILURE);
-    return;
+  scoped_ptr<media::VideoDecodeAccelerator> decoders[] = {
+    CreateDXVAVDA(),
+    CreateV4L2VDA(),
+    CreateVaapiVDA()
+  };
+
+  for (size_t i = 0; i < arraysize(decoders); ++i) {
+    if (!decoders[i])
+      continue;
+    decoder_ = decoders[i].Pass();
+    weak_decoder_factory_.reset(
+        new base::WeakPtrFactory<VideoDecodeAccelerator>(decoder_.get()));
+    SetState(CS_DECODER_SET);
+    if (decoder_->Initialize(profile_, client)) {
+      FinishInitialization();
+      return;
+    }
   }
-  decoder_.reset(new V4L2VideoDecodeAccelerator(
-      static_cast<EGLDisplay>(rendering_helper_->GetGLDisplay()),
-      static_cast<EGLContext>(rendering_helper_->GetGLContextHandle()),
-      weak_client, base::Bind(&DoNothingReturnTrue), device.Pass(),
-      base::MessageLoopProxy::current()));
-#elif defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
-  decoder_.reset(
-      new VaapiVideoDecodeAccelerator(base::Bind(&DoNothingReturnTrue)));
-#endif  // OS_WIN
-  CHECK(decoder_.get());
-  weak_decoder_factory_.reset(
-      new base::WeakPtrFactory<VideoDecodeAccelerator>(decoder_.get()));
-  SetState(CS_DECODER_SET);
-  if (decoder_deleted())
-    return;
-
-  CHECK(decoder_->Initialize(profile_, client));
-  FinishInitialization();
+  // Decoders are all initialize failed.
+  LOG(ERROR) << "VideoDecodeAccelerator::Initialize() failed";
+  CHECK(false);
 }
 
 void GLRenderingVDAClient::ProvidePictureBuffers(
