@@ -250,9 +250,7 @@ bool WindowProxy::initialize()
 
 void WindowProxy::createContext()
 {
-    // This can get called after a frame is already detached...
-    // FIXME: Fix the code so we don't need this check.
-    if (m_frame->isLocalFrame() && !toLocalFrame(m_frame)->loader().documentLoader())
+    if (!m_frame->client())
         return;
 
     // Create a new environment using an empty template for the shadow

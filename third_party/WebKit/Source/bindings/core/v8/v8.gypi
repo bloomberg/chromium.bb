@@ -171,6 +171,8 @@
             'WebGLAny.h',
             'WindowProxy.cpp',
             'WindowProxy.h',
+            'WindowProxyManager.cpp',
+            'WindowProxyManager.h',
             'WorkerScriptController.cpp',
             'WorkerScriptController.h',
             'WorkerScriptDebugServer.cpp',
