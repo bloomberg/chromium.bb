@@ -229,6 +229,10 @@ void CastMetricsServiceClient::Initialize(CastService* cast_service) {
   RegisterPlatformMetricsProviders(metrics_service_.get(), cast_service_);
 
   metrics_service_->InitializeMetricsRecordingState();
+#if !defined(OS_ANDROID)
+  // Reset clean_shutdown bit after InitializeMetricsRecordingState().
+  metrics_service_->LogNeedForCleanShutdown();
+#endif  // !defined(OS_ANDROID)
 
   if (IsReportingEnabled())
     metrics_service_->Start();
@@ -239,6 +243,13 @@ void CastMetricsServiceClient::Initialize(CastService* cast_service) {
   external_metrics_.reset(new ExternalMetrics(stability_provider));
   external_metrics_->Start();
 #endif  // defined(OS_LINUX)
+}
+
+void CastMetricsServiceClient::Finalize() {
+#if !defined(OS_ANDROID)
+  // Set clean_shutdown bit.
+  metrics_service_->RecordCompletedSessionEnd();
+#endif  // !defined(OS_ANDROID)
 }
 
 bool CastMetricsServiceClient::IsReportingEnabled() {

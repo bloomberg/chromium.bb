@@ -245,6 +245,7 @@ bool CastBrowserMainParts::MainMessageLoopRun(int* result_code) {
 
 void CastBrowserMainParts::PostMainMessageLoopRun() {
   cast_browser_process_->cast_service()->Finalize();
+  cast_browser_process_->metrics_service_client()->Finalize();
   cast_browser_process_.reset();
 }
 

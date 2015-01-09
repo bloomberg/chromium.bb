@@ -57,14 +57,16 @@ class CastBrowserProcess {
   PrefService* pref_service() const { return pref_service_.get(); }
 
  private:
-  scoped_ptr<CastBrowserContext> browser_context_;
+  // Note: The following order should match the order they are set in
+  // CastBrowserMainParts.
   scoped_ptr<metrics::CastMetricsHelper> metrics_helper_;
-  scoped_ptr<metrics::CastMetricsServiceClient> metrics_service_client_;
   scoped_ptr<PrefService> pref_service_;
-  scoped_ptr<RemoteDebuggingServer> remote_debugging_server_;
+  scoped_ptr<CastBrowserContext> browser_context_;
+  scoped_ptr<metrics::CastMetricsServiceClient> metrics_service_client_;
 #if defined(OS_ANDROID)
   scoped_ptr<breakpad::CrashDumpManager> crash_dump_manager_;
 #endif  // defined(OS_ANDROID)
+  scoped_ptr<RemoteDebuggingServer> remote_debugging_server_;
 
   // Note: CastService must be destroyed before others.
   scoped_ptr<CastService> cast_service_;

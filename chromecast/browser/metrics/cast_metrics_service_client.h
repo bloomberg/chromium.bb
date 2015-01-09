@@ -47,6 +47,7 @@ class CastMetricsServiceClient : public ::metrics::MetricsServiceClient {
       net::URLRequestContextGetter* request_context);
 
   void Initialize(CastService* cast_service);
+  void Finalize();
 
   // metrics::MetricsServiceClient implementation:
   void SetMetricsClientId(const std::string& client_id) override;
