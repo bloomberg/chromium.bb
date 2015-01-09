@@ -279,10 +279,7 @@ TEST_F(PasswordManagerTest, FormSubmitWithOnlyNewPasswordField) {
   // This test is the same as FormSubmitEmptyStore, except that it simulates the
   // user entering credentials into a sign-up form that only has a new password
   // field.
-  std::vector<PasswordForm*> result;  // Empty password store.
   EXPECT_CALL(driver_, FillPasswordForm(_)).Times(Exactly(0));
-  EXPECT_CALL(*store_.get(), GetLogins(_, _, _))
-      .WillOnce(DoAll(WithArg<2>(InvokeConsumer(result)), Return()));
   std::vector<PasswordForm> observed;
   PasswordForm form(MakeFormWithOnlyNewPasswordField());
   observed.push_back(form);
@@ -824,9 +821,6 @@ TEST_F(PasswordManagerTest,
 // Create a form with a new_password_element. Submit the form with the empty
 // new password value. It shouldn't overwrite the existing password.
 TEST_F(PasswordManagerTest, DoNotUpdateWithEmptyPassword) {
-  std::vector<PasswordForm*> result;  // Empty password store.
-  EXPECT_CALL(*store_.get(), GetLogins(_, _, _))
-      .WillOnce(DoAll(WithArg<2>(InvokeConsumer(result)), Return()));
   std::vector<PasswordForm> observed;
   PasswordForm form(MakeSimpleForm());
   form.new_password_element = ASCIIToUTF16("new_password_element");
@@ -839,7 +833,6 @@ TEST_F(PasswordManagerTest, DoNotUpdateWithEmptyPassword) {
   // And the form submit contract is to call ProvisionallySavePassword.
   OnPasswordFormSubmitted(form);
 
-  scoped_ptr<PasswordFormManager> form_to_save;
   EXPECT_CALL(client_, PromptUserToSavePasswordPtr(_)).Times(0);
 
   // Now the password manager waits for the login to complete successfully.

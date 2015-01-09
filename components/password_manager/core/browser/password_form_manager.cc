@@ -375,6 +375,19 @@ void PasswordFormManager::FetchMatchingLoginsFromPasswordStore(
     logger->LogMessage(Logger::STRING_FETCH_LOGINS_METHOD);
   }
 
+  // Do not autofill on sign-up or change password forms (until we have some
+  // working change password functionality).
+  if (!observed_form_.new_password_element.empty()) {
+    if (logger)
+      logger->LogMessage(Logger::STRING_FORM_NOT_AUTOFILLED);
+    client_->AutofillResultsComputed();
+    // There is no point in looking for the credentials in the store when they
+    // won't be autofilled, so pretend there were none.
+    std::vector<autofill::PasswordForm*> dummy_results;
+    OnGetPasswordStoreResults(dummy_results);
+    return;
+  }
+
   PasswordStore* password_store = client_->GetPasswordStore();
   if (!password_store) {
     if (logger)
@@ -557,10 +570,6 @@ void PasswordFormManager::OnGetPasswordStoreResults(
 }
 
 bool PasswordFormManager::ShouldIgnoreResult(const PasswordForm& form) const {
-  // Do not autofill on sign-up or change password forms (until we have some
-  // working change password functionality).
-  if (!observed_form_.new_password_element.empty())
-    return true;
   // Don't match an invalid SSL form with one saved under secure circumstances.
   if (form.ssl_valid && !observed_form_.ssl_valid)
     return true;
