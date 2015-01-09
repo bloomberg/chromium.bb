@@ -64,11 +64,11 @@ TEST_F(AnimationShadowStyleInterpolationTest, ZeroTest)
 
 TEST_F(AnimationShadowStyleInterpolationTest, MultipleValueNonPixelTest)
 {
-    RefPtr<CSSPrimitiveValue> color = CSSPrimitiveValue::createColor(makeRGBA(112, 123, 175, 255));
-    RefPtr<CSSPrimitiveValue> x = CSSPrimitiveValue::create(10, CSSPrimitiveValue::CSS_EMS);
-    RefPtr<CSSPrimitiveValue> y = CSSPrimitiveValue::create(20, CSSPrimitiveValue::CSS_EMS);
-    RefPtr<CSSPrimitiveValue> blur = CSSPrimitiveValue::create(30, CSSPrimitiveValue::CSS_EMS);
-    RefPtr<CSSPrimitiveValue> spread = CSSPrimitiveValue::create(40, CSSPrimitiveValue::CSS_EMS);
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> color = CSSPrimitiveValue::createColor(makeRGBA(112, 123, 175, 255));
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> x = CSSPrimitiveValue::create(10, CSSPrimitiveValue::CSS_EMS);
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> y = CSSPrimitiveValue::create(20, CSSPrimitiveValue::CSS_EMS);
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> blur = CSSPrimitiveValue::create(30, CSSPrimitiveValue::CSS_EMS);
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> spread = CSSPrimitiveValue::create(40, CSSPrimitiveValue::CSS_EMS);
 
     RefPtrWillBeRawPtr<CSSShadowValue> shadowValue = CSSShadowValue::create(x, y, blur, spread, CSSPrimitiveValue::createIdentifier(CSSValueNone), color);
 
@@ -79,11 +79,11 @@ TEST_F(AnimationShadowStyleInterpolationTest, MultipleValueNonPixelTest)
 
 TEST_F(AnimationShadowStyleInterpolationTest, InsetShadowTest)
 {
-    RefPtr<CSSPrimitiveValue> color = CSSPrimitiveValue::createColor(makeRGBA(54, 48, 214, 64));
-    RefPtr<CSSPrimitiveValue> x = CSSPrimitiveValue::create(10, CSSPrimitiveValue::CSS_PX);
-    RefPtr<CSSPrimitiveValue> y = CSSPrimitiveValue::create(20, CSSPrimitiveValue::CSS_PX);
-    RefPtr<CSSPrimitiveValue> blur = CSSPrimitiveValue::create(30, CSSPrimitiveValue::CSS_PX);
-    RefPtr<CSSPrimitiveValue> spread = CSSPrimitiveValue::create(40, CSSPrimitiveValue::CSS_PX);
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> color = CSSPrimitiveValue::createColor(makeRGBA(54, 48, 214, 64));
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> x = CSSPrimitiveValue::create(10, CSSPrimitiveValue::CSS_PX);
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> y = CSSPrimitiveValue::create(20, CSSPrimitiveValue::CSS_PX);
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> blur = CSSPrimitiveValue::create(30, CSSPrimitiveValue::CSS_PX);
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> spread = CSSPrimitiveValue::create(40, CSSPrimitiveValue::CSS_PX);
 
     RefPtrWillBeRawPtr<CSSShadowValue> shadowValue = CSSShadowValue::create(x, y, blur, spread, CSSPrimitiveValue::createIdentifier(CSSValueInset), color);
 
