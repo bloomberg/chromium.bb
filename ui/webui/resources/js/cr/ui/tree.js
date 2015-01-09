@@ -664,9 +664,10 @@ cr.define('cr.ui', function() {
    * @return {cr.ui.TreeItem} The found item or null.
    */
   function getPrevious(item) {
-    var previousSibling = assertInstanceof(item.previousElementSibling,
-                                           cr.ui.TreeItem);
-    return previousSibling ? getLastHelper(previousSibling) : item.parentItem;
+    var previousSibling = item.previousElementSibling;
+    if (previousSibling)
+      return getLastHelper(assertInstanceof(previousSibling, cr.ui.TreeItem));
+    return item.parentItem;
   }
 
   /**
