@@ -125,13 +125,6 @@ NaClManager.prototype.logPluginLoadResult_ = function(error) {
 };
 
 /**
- * @return {boolean} True if the recognizer is in a running state.
- */
-NaClManager.prototype.isRunning = function() {
-  return this.recognizerState_ == ManagerState_.RUNNING;
-};
-
-/**
  * Set a timeout. Only allow one timeout to exist at any given time.
  * @param {!function()} func
  * @param {number} timeout
@@ -175,8 +168,13 @@ NaClManager.prototype.startRecognizer = function(mode) {
       hotword.debug('Starting Recognizer in NORMAL mode');
       this.sendDataToPlugin_(hotword.constants.NaClPlugin.RESTART);
     }
-    this.waitForMessage_(hotword.constants.TimeoutMs.LONG,
-                         hotword.constants.NaClPlugin.READY_FOR_AUDIO);
+    // Normally, there would be a waitForMessage_(READY_FOR_AUDIO) here.
+    // However, this message is sent the first time audio data is read and in
+    // some cases (ie. using the hotword stream), this won't happen until a
+    // potential hotword trigger is seen. Having a waitForMessage_() would time
+    // out in this case, so just leave it out. This ends up sacrificing a bit of
+    // error detection in the non-hotword-stream case, but I think we can live
+    // with that.
   } else if (this.recognizerState_ == ManagerState_.STOPPING) {
     // Wait until the plugin is stopped before trying to start it.
     this.restartOnStop_ = true;

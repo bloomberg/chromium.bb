@@ -124,6 +124,13 @@ cr.define('hotword', function() {
      */
     this.trainingEnabled_ = false;
 
+    /**
+     * Helper class to keep this extension alive while the hotword detector is
+     * running in always-on mode.
+     * @private {!hotword.KeepAlive}
+     */
+    this.keepAlive_ = new hotword.KeepAlive();
+
     // Get the initial status.
     chrome.hotwordPrivate.getStatus(this.handleStatus_.bind(this));
 
@@ -313,8 +320,15 @@ cr.define('hotword', function() {
           // googDucking set to false so that audio output level from other tabs
           // is not affected when hotword is enabled. https://crbug.com/357773
           // content/common/media/media_stream_options.cc
+          // When always-on is enabled, request the hotword stream.
+          // Optional because we allow power users to bypass the hardware
+          // detection via a flag, and hence the hotword stream may not be
+          // available.
           var constraints = /** @type {googMediaStreamConstraints} */
-              ({audio: {optional: [{googDucking: false}]}});
+              ({audio: {optional: [
+                { googDucking: false },
+                { googHotword: this.isAlwaysOnEnabled() }
+              ]}});
           navigator.webkitGetUserMedia(
               /** @type {MediaStreamConstraints} */ (constraints),
               function(stream) {
@@ -322,6 +336,8 @@ cr.define('hotword', function() {
                     hotword.constants.UmaMetrics.MEDIA_STREAM_RESULT,
                     hotword.constants.UmaMediaStreamOpenResult.SUCCESS,
                     hotword.constants.UmaMediaStreamOpenResult.MAX);
+                if (this.isAlwaysOnEnabled())
+                  this.keepAlive_.start();
                 if (!this.pluginManager_.initialize(naclArch, stream)) {
                   this.state_ = State_.ERROR;
                   this.shutdownPluginManager_();
@@ -357,6 +373,8 @@ cr.define('hotword', function() {
       assert(this.pluginManager_, 'No NaCl plugin loaded');
       if (this.state_ != State_.RUNNING) {
         this.state_ = State_.RUNNING;
+        if (this.isAlwaysOnEnabled())
+          this.keepAlive_.start();
         this.pluginManager_.startRecognizer(this.startMode_);
       }
       for (var i = 0; i < this.sessions_.length; i++) {
@@ -373,6 +391,7 @@ cr.define('hotword', function() {
      * @private
      */
     stopDetector_: function() {
+      this.keepAlive_.stop();
       if (this.pluginManager_ && this.state_ == State_.RUNNING) {
         this.state_ = State_.STOPPED;
         this.pluginManager_.stopRecognizer();
@@ -384,6 +403,7 @@ cr.define('hotword', function() {
      * @private
      */
     shutdownPluginManager_: function() {
+      this.keepAlive_.stop();
       if (this.pluginManager_) {
         this.pluginManager_.shutdown();
         this.pluginManager_ = null;
@@ -443,6 +463,7 @@ cr.define('hotword', function() {
      * @private
      */
     onTrigger_: function(event) {
+      this.keepAlive_.stop();
       hotword.debug('Hotword triggered!');
       chrome.metricsPrivate.recordUserAction(
           hotword.constants.UmaMetrics.TRIGGER);

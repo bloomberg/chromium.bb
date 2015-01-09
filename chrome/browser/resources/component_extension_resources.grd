@@ -95,6 +95,7 @@
         <include name="IDR_HOTWORD_AUDIO_CLIENT_JS" file="hotword/audio_client.js" type="BINDATA" />
         <include name="IDR_HOTWORD_BASE_SESSION_MANAGER_JS" file="hotword/base_session_manager.js" type="BINDATA" />
         <include name="IDR_HOTWORD_CONSTANTS_JS" file="hotword/constants.js" type="BINDATA" />
+        <include name="IDR_HOTWORD_KEEP_ALIVE_JS" file="hotword/keep_alive.js" type="BINDATA" />
         <include name="IDR_HOTWORD_LAUNCHER_MANAGER_JS" file="hotword/launcher_manager.js" type="BINDATA" />
         <include name="IDR_HOTWORD_LOGGING_JS" file="hotword/logging.js" type="BINDATA" />
         <include name="IDR_HOTWORD_MANAGER_JS" file="hotword/manager.js" type="BINDATA" />
