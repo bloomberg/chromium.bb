@@ -18,7 +18,9 @@ typedef object JSON;
     [CallWith=ScriptState] Promise<JSON> json();
     [CallWith=ScriptState] Promise<USVString> text();
 
-    [RuntimeEnabled=Stream] readonly attribute ReadableStream body;
+    // FIXME: .body is temporarily disabled for M41 branch cut.
+    // [RuntimeEnabled=Stream] readonly attribute ReadableStream body;
+
     // Still to be implemented.
     // [CallWith=ScriptState] Promise<FormData> formData();
 };
