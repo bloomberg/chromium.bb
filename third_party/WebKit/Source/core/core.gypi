@@ -657,6 +657,7 @@
             'animation/css/CSSAnimationData.h',
             'animation/css/CSSAnimations.cpp',
             'animation/css/CSSAnimations.h',
+            'animation/css/CSSAnimationUpdate.h',
             'animation/css/CSSPropertyEquality.cpp',
             'animation/css/CSSPropertyEquality.h',
             'animation/css/CSSTimingData.cpp',
