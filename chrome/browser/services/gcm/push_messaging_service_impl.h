@@ -82,6 +82,12 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
                               const GCMClient::IncomingMessage& message,
                               content::PushDeliveryStatus status);
 
+  // Developers are required to display a Web Notification in response to an
+  // incoming push message in order to clarify to the user that something has
+  // happened in the background. When they forget to do so, display a default
+  // notification on their behalf.
+  void RequireUserVisibleUX(const PushMessagingApplicationId& application_id);
+
   void RegisterEnd(
       const content::PushMessagingService::RegisterCallback& callback,
       const std::string& registration_id,
