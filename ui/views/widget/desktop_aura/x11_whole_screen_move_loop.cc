@@ -202,7 +202,6 @@ void X11WholeScreenMoveLoop::EndMoveLoop() {
     return;
 
   // Prevent DispatchMouseMovement from dispatching any posted motion event.
-  weak_factory_.InvalidateWeakPtrs();
   last_motion_in_screen_.reset();
 
   // We undo our emulated mouse click from RunMoveLoop();
