@@ -86,6 +86,9 @@ public:
     // one, and so on.
     LayoutRectOutsets logicalOutsets(WritingMode) const;
 
+    // The same as |logicalOutsets|, but also adjusting for flipped lines.
+    LayoutRectOutsets logicalOutsetsWithFlippedLines(WritingMode) const;
+
     LayoutUnit before(WritingMode) const;
     LayoutUnit after(WritingMode) const;
     LayoutUnit start(WritingMode, TextDirection) const;

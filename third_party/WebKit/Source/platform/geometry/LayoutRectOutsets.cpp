@@ -62,6 +62,14 @@ LayoutRectOutsets LayoutRectOutsets::logicalOutsets(WritingMode writingMode) con
     return *this;
 }
 
+LayoutRectOutsets LayoutRectOutsets::logicalOutsetsWithFlippedLines(WritingMode writingMode) const
+{
+    LayoutRectOutsets outsets = logicalOutsets(writingMode);
+    if (isFlippedLinesWritingMode(writingMode))
+        std::swap(outsets.m_top, outsets.m_bottom);
+    return outsets;
+}
+
 LayoutUnit LayoutRectOutsets::before(WritingMode writingMode) const
 {
     switch (writingMode) {
