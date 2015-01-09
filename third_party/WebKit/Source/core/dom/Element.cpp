@@ -3422,12 +3422,8 @@ v8::Handle<v8::Object> Element::wrapCustomElement(v8::Isolate* isolate, v8::Hand
         return v8::Handle<v8::Object>();
 
     V8PerContextData* perContextData = V8PerContextData::from(context);
-    if (!perContextData)
-        return wrapper;
-
-    CustomElementBinding* binding = perContextData->customElementBinding(customElementDefinition());
-
-    wrapper->SetPrototype(binding->prototype());
+    if (perContextData)
+        wrapper->SetPrototype(perContextData->customElementBinding(customElementDefinition())->prototype());
 
     return V8DOMWrapper::associateObjectWithWrapper(isolate, this, wrapperType, wrapper);
 }
