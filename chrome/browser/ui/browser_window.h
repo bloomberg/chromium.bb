@@ -23,9 +23,11 @@
 class Browser;
 class DownloadShelf;
 class FindBar;
+class GlobalErrorBubbleViewBase;
 class GURL;
 class LocationBar;
 class Profile;
+class ProfileResetGlobalError;
 class StatusBubble;
 class TemplateURL;
 
@@ -237,6 +239,16 @@ class BrowserWindow : public ui::BaseWindow {
       translate::TranslateStep step,
       translate::TranslateErrors::Type error_type,
       bool is_user_gesture) = 0;
+
+  // Create a session recovery bubble if the last session crashed. It also
+  // offers the option to enable metrics reporting if it's not already enabled.
+  // Returns true if a bubble is created, returns false if nothing is created.
+  virtual bool ShowSessionCrashedBubble() = 0;
+
+  // Shows the profile reset bubble on the platforms that support it.
+  virtual bool IsProfileResetBubbleSupported() const = 0;
+  virtual GlobalErrorBubbleViewBase* ShowProfileResetBubble(
+      const base::WeakPtr<ProfileResetGlobalError>& global_error) = 0;
 
 #if defined(ENABLE_ONE_CLICK_SIGNIN)
   enum OneClickSigninBubbleType {

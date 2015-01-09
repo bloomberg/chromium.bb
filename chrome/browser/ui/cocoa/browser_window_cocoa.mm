@@ -623,6 +623,20 @@ void BrowserWindowCocoa::ShowTranslateBubble(
                                        errorType:error_type];
 }
 
+bool BrowserWindowCocoa::ShowSessionCrashedBubble() {
+  return false;
+}
+
+bool BrowserWindowCocoa::IsProfileResetBubbleSupported() const {
+  return false;
+}
+
+GlobalErrorBubbleViewBase* BrowserWindowCocoa::ShowProfileResetBubble(
+    const base::WeakPtr<ProfileResetGlobalError>& global_error) {
+  NOTREACHED();
+  return nullptr;
+}
+
 #if defined(ENABLE_ONE_CLICK_SIGNIN)
 void BrowserWindowCocoa::ShowOneClickSigninBubble(
     OneClickSigninBubbleType type,

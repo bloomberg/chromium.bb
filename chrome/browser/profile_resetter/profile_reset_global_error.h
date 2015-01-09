@@ -25,7 +25,7 @@ class ProfileResetGlobalError
   ~ProfileResetGlobalError() override;
 
   // Returns whether or not the reset prompt is supported on this platform.
-  static bool IsSupportedOnPlatform();
+  static bool IsSupportedOnPlatform(Browser* browser);
 
   // Called by the bubble view when it is closed.
   void OnBubbleViewDidClose();

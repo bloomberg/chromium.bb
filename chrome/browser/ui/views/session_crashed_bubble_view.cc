@@ -18,7 +18,6 @@
 #include "chrome/browser/sessions/session_restore.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_list_observer.h"
-#include "chrome/browser/ui/startup/session_crashed_bubble.h"
 #include "chrome/browser/ui/startup/startup_browser_creator_impl.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -132,10 +131,13 @@ class SessionCrashedBubbleView::BrowserRemovalObserver
 };
 
 // static
-void SessionCrashedBubbleView::Show(Browser* browser) {
+bool SessionCrashedBubbleView::Show(Browser* browser) {
+  if (!IsBubbleUIEnabled())
+    return false;
+
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   if (browser->profile()->IsOffTheRecord())
-    return;
+    return true;
 
   // Observes browser removal event and will be deallocated in ShowForReal.
   scoped_ptr<BrowserRemovalObserver> browser_observer(
@@ -155,6 +157,8 @@ void SessionCrashedBubbleView::Show(Browser* browser) {
 #else
   SessionCrashedBubbleView::ShowForReal(browser_observer.Pass(), false);
 #endif  // defined(GOOGLE_CHROME_BUILD)
+
+  return true;
 }
 
 // static
@@ -445,12 +449,4 @@ void SessionCrashedBubbleView::RestorePreviousSession(views::Button* sender) {
 
 void SessionCrashedBubbleView::CloseBubble() {
   GetWidget()->Close();
-}
-
-bool ShowSessionCrashedBubble(Browser* browser) {
-  if (IsBubbleUIEnabled()) {
-    SessionCrashedBubbleView::Show(browser);
-    return true;
-  }
-  return false;
 }

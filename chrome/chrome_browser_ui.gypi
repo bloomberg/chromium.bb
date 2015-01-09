@@ -838,7 +838,6 @@
       'browser/ui/settings_window_manager.cc',
       'browser/ui/settings_window_manager.h',
       'browser/ui/settings_window_manager_observer.h',
-      'browser/ui/profile_reset_bubble.h',
       'browser/ui/simple_message_box.h',
       'browser/ui/status_bubble.h',
       'browser/ui/sync/inline_login_dialog.cc',
@@ -1299,9 +1298,6 @@
       'browser/ui/aura/active_desktop_monitor.cc',
       'browser/ui/aura/active_desktop_monitor.h',
     ],
-    'chrome_browser_ui_non_aura_sources': [
-      'browser/ui/profile_reset_bubble_stub.cc',
-    ],
     # ChromeOS-only sources that don't end in _chromeos or live in a chromeos
     # directory.
     'chrome_browser_ui_chromeos_sources': [
@@ -1363,7 +1359,6 @@
       'browser/ui/webui/certificate_viewer_webui.h',
     ],
     'chrome_browser_ui_mac_sources': [
-      'browser/ui/startup/session_crashed_bubble.cc',
       'browser/ui/startup/autolaunch_prompt.cc',
       'browser/ui/web_contents_sizer.mm',
     ],
@@ -1537,7 +1532,6 @@
       'browser/ui/startup/google_api_keys_infobar_delegate.h',
       'browser/ui/startup/obsolete_system_infobar_delegate.cc',
       'browser/ui/startup/obsolete_system_infobar_delegate.h',
-      'browser/ui/startup/session_crashed_bubble.h',
       'browser/ui/startup/session_crashed_infobar_delegate.cc',
       'browser/ui/startup/session_crashed_infobar_delegate.h',
       'browser/ui/startup/startup_browser_creator.cc',
@@ -2923,8 +2917,6 @@
               'sources': [ '<@(chrome_browser_ui_aura_non_chromeos)' ],
             }],
           ],
-        }, { # else: use_aura==0
-          'sources': [ '<@(chrome_browser_ui_non_aura_sources)' ],
         }],
         ['ui_compositor_image_transport==1', {
           'dependencies': [

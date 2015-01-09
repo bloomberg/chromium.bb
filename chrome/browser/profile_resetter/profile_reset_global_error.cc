@@ -10,10 +10,10 @@
 #include "chrome/browser/profile_resetter/automatic_profile_resetter_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
-#include "chrome/browser/ui/profile_reset_bubble.h"
 #include "chrome/common/url_constants.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -52,8 +52,8 @@ ProfileResetGlobalError::~ProfileResetGlobalError() {
 }
 
 // static
-bool ProfileResetGlobalError::IsSupportedOnPlatform() {
-  return IsProfileResetBubbleSupported();
+bool ProfileResetGlobalError::IsSupportedOnPlatform(Browser* browser) {
+  return browser->window()->IsProfileResetBubbleSupported();
 }
 
 bool ProfileResetGlobalError::HasMenuItem() { return true; }
@@ -83,7 +83,7 @@ void ProfileResetGlobalError::ShowBubbleView(Browser* browser) {
     return;
 
   has_shown_bubble_view_ = true;
-  bubble_view_ = ShowProfileResetBubble(AsWeakPtr(), browser);
+  bubble_view_ = browser->window()->ShowProfileResetBubble(AsWeakPtr());
 
   if (automatic_profile_resetter_)
     automatic_profile_resetter_->NotifyDidShowResetBubble();

@@ -268,7 +268,9 @@ scoped_ptr<base::ListValue> AutomaticProfileResetterDelegateImpl::
 bool AutomaticProfileResetterDelegateImpl::TriggerPrompt() {
   DCHECK(global_error_service_);
 
-  if (!ProfileResetGlobalError::IsSupportedOnPlatform())
+  Browser* browser = chrome::FindTabbedBrowser(
+      profile_, false /*match_original_profiles*/, chrome::GetActiveDesktop());
+  if (!browser || !ProfileResetGlobalError::IsSupportedOnPlatform(browser))
     return false;
 
   ProfileResetGlobalError* global_error = new ProfileResetGlobalError(profile_);
@@ -282,14 +284,8 @@ bool AutomaticProfileResetterDelegateImpl::TriggerPrompt() {
     if ((*it)->GetBubbleView())
       break;
   }
-  if (it == global_errors.end()) {
-    Browser* browser = chrome::FindTabbedBrowser(
-        profile_,
-        false /*match_original_profiles*/,
-        chrome::GetActiveDesktop());
-    if (browser)
-      global_error->ShowBubbleView(browser);
-  }
+  if (it == global_errors.end())
+    global_error->ShowBubbleView(browser);
   return true;
 }
 

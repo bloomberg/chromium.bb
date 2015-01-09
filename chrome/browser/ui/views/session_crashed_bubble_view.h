@@ -39,7 +39,7 @@ class SessionCrashedBubbleView
       public content::NotificationObserver,
       public TabStripModelObserver {
  public:
-  static void Show(Browser* browser);
+  static bool Show(Browser* browser);
 
  private:
   // A helper class that listens to browser removal event.

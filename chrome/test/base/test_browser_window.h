@@ -110,6 +110,10 @@ class TestBrowserWindow : public BrowserWindow {
                            translate::TranslateStep step,
                            translate::TranslateErrors::Type error_type,
                            bool is_user_gesture) override {}
+  bool ShowSessionCrashedBubble() override;
+  bool IsProfileResetBubbleSupported() const override;
+  GlobalErrorBubbleViewBase* ShowProfileResetBubble(
+      const base::WeakPtr<ProfileResetGlobalError>& global_error) override;
 #if defined(ENABLE_ONE_CLICK_SIGNIN)
   void ShowOneClickSigninBubble(
       OneClickSigninBubbleType type,
