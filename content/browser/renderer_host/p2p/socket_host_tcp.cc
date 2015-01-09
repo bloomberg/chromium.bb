@@ -438,6 +438,10 @@ void P2PSocketHostTcpBase::DidCompleteRead(int result) {
     LOG(ERROR) << "Error when reading from TCP socket: " << result;
     OnError();
     return;
+  } else if (result == 0) {
+    LOG(WARNING) << "Remote peer has shutdown TCP socket.";
+    OnError();
+    return;
   }
 
   read_buffer_->set_offset(read_buffer_->offset() + result);
