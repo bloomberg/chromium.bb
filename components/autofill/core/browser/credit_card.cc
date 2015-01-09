@@ -599,7 +599,7 @@ bool CreditCard::IsLocalDuplicateOfServerCard(const CreditCard& other) const {
     return true;
 
   if (other.record_type() == FULL_SERVER_CARD)
-    return number_ == other.number_;
+    return StripSeparators(number_) == StripSeparators(other.number_);
 
   // For masked cards, this is the best we can do to compare card numbers.
   return TypeAndLastFourDigits() == other.TypeAndLastFourDigits();

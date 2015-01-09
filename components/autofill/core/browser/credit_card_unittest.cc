@@ -186,6 +186,9 @@ TEST(CreditCardTest, Compare) {
     { LOCAL_CARD, "", "423456789012", "", "",
       MASKED_SERVER_CARD, "John Dillinger", "9012", "01", "2010", kMasterCard,
       false },
+    { LOCAL_CARD, "John Dillinger", "4234-5678-9012", "01", "2010",
+      FULL_SERVER_CARD, "John Dillinger", "423456789012", "01", "2010", nullptr,
+      true },
   };
 
   for (size_t i = 0; i < arraysize(test_cases); ++i) {
