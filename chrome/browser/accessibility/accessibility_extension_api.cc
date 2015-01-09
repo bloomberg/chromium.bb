@@ -105,7 +105,8 @@ void ExtensionAccessibilityEventRouter::HandleMenuEvent(
       OnControlHover(info);
       break;
     default:
-      NOTREACHED();
+      // Ignore all other event types.
+      break;
   }
 }
 
@@ -131,7 +132,8 @@ void ExtensionAccessibilityEventRouter::HandleControlEvent(
       OnControlHover(info);
       break;
     default:
-      NOTREACHED();
+      // Ignore all other event types.
+      break;
   }
 }
 
