@@ -1391,6 +1391,25 @@ static bool allCornersClippedOut(const FloatRoundedRect& border, const LayoutRec
     return true;
 }
 
+static inline void drawSolidBorderRect(GraphicsContext* context, const FloatRect& borderRect,
+    float borderWidth, const Color& color)
+{
+    FloatRect strokeRect(borderRect);
+    strokeRect.inflate(-borderWidth / 2);
+
+    bool antialias = BoxPainter::shouldAntialiasLines(context);
+    bool wasAntialias = context->shouldAntialias();
+    if (antialias != wasAntialias)
+        context->setShouldAntialias(antialias);
+
+    context->setStrokeStyle(SolidStroke);
+    context->setStrokeColor(color);
+    context->strokeRect(strokeRect, borderWidth);
+
+    if (antialias != wasAntialias)
+        context->setShouldAntialias(wasAntialias);
+}
+
 void BoxPainter::paintBorder(RenderBoxModelObject& obj, const PaintInfo& info, const LayoutRect& rect, const RenderStyle* style, BackgroundBleedAvoidance bleedAvoidance, bool includeLogicalLeftEdge, bool includeLogicalRightEdge)
 {
     GraphicsContext* graphicsContext = info.context;
@@ -1459,8 +1478,14 @@ void BoxPainter::paintBorder(RenderBoxModelObject& obj, const PaintInfo& info, c
 
     // isRenderable() check avoids issue described in https://bugs.webkit.org/show_bug.cgi?id=38787
     if ((haveAllSolidEdges || haveAllDoubleEdges) && allEdgesShareColor && innerBorder.isRenderable()) {
-        // Fast path for drawing all solid edges and all unrounded double edges
+        // Fast path for non-rounded, solid, uniform width and color borders.
+        if (edgesToDraw == AllBorderEdges && haveAllSolidEdges && allEdgesShareWidth
+            && !outerBorder.isRounded() && !innerBorder.isRounded()) {
+            drawSolidBorderRect(graphicsContext, rect, edges[firstVisibleEdge].width, edges[firstVisibleEdge].color);
+            return;
+        }
 
+        // Fast path for drawing all solid edges and all unrounded double edges
         if (numEdgesVisible == 4 && (outerBorder.isRounded() || haveAlphaColor)
             && (haveAllSolidEdges || (!outerBorder.isRounded() && !innerBorder.isRounded()))) {
             Path path;
