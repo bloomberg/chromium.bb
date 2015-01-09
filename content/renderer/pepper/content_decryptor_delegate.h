@@ -12,10 +12,10 @@
 #include "base/basictypes.h"
 #include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
-#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "media/base/cdm_promise.h"
+#include "media/base/cdm_promise_adapter.h"
 #include "media/base/channel_layout.h"
 #include "media/base/decryptor.h"
 #include "media/base/media_keys.h"
@@ -136,10 +136,6 @@ class ContentDecryptorDelegate {
                       const PP_DecryptedSampleInfo* sample_info);
 
  private:
-  // The following types keep track of Promises. The index is the promise_id,
-  // so that returning results can be matched to the corresponding promise.
-  typedef base::ScopedPtrHashMap<uint32_t, media::CdmPromise> PromiseMap;
-
   template <typename Callback>
   class TrackableCallback {
    public:
@@ -202,14 +198,6 @@ class ContentDecryptorDelegate {
 
   void SatisfyAllPendingCallbacksOnError();
 
-  // Takes ownership of |promise| and returns an identifier to be passed via
-  // Pepper.
-  uint32_t SavePromise(scoped_ptr<media::CdmPromise> promise);
-
-  // Find the promise for a specified |promise_id|. Caller is responsible to
-  // delete the CdmPromise<> once done with it.
-  scoped_ptr<media::CdmPromise> TakePromise(uint32_t promise_id);
-
   const PP_Instance pp_instance_;
   const PPP_ContentDecryptor_Private* const plugin_decryption_interface_;
 
@@ -253,9 +241,7 @@ class ContentDecryptorDelegate {
   int audio_channel_count_;
   media::ChannelLayout audio_channel_layout_;
 
-  // Keep track of outstanding promises. Maps have ownership of the promises.
-  uint32_t next_promise_id_;
-  PromiseMap promises_;
+  media::CdmPromiseAdapter cdm_promise_adapter_;
 
   base::WeakPtr<ContentDecryptorDelegate> weak_this_;
   base::WeakPtrFactory<ContentDecryptorDelegate> weak_ptr_factory_;

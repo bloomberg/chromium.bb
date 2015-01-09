@@ -67,6 +67,8 @@ source_set("base") {
     "cdm_key_information.h",
     "cdm_promise.cc",
     "cdm_promise.h",
+    "cdm_promise_adapter.cc",
+    "cdm_promise_adapter.h",
     "channel_mixer.cc",
     "channel_mixer.h",
     "channel_mixing_matrix.cc",

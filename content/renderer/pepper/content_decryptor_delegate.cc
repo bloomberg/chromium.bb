@@ -346,7 +346,6 @@ ContentDecryptorDelegate::ContentDecryptorDelegate(
       audio_samples_per_second_(0),
       audio_channel_count_(0),
       audio_channel_layout_(media::CHANNEL_LAYOUT_NONE),
-      next_promise_id_(1),
       weak_ptr_factory_(this) {
   weak_this_ = weak_ptr_factory_.GetWeakPtr();
 }
@@ -396,7 +395,7 @@ void ContentDecryptorDelegate::SetServerCertificate(
     return;
   }
 
-  uint32_t promise_id = SavePromise(promise.Pass());
+  uint32_t promise_id = cdm_promise_adapter_.SavePromise(promise.Pass());
   PP_Var certificate_array =
       PpapiGlobals::Get()->GetVarTracker()->MakeArrayBufferPPVar(
           certificate_length, certificate);
@@ -410,7 +409,7 @@ void ContentDecryptorDelegate::CreateSessionAndGenerateRequest(
     const uint8* init_data,
     int init_data_length,
     scoped_ptr<NewSessionCdmPromise> promise) {
-  uint32_t promise_id = SavePromise(promise.Pass());
+  uint32_t promise_id = cdm_promise_adapter_.SavePromise(promise.Pass());
   PP_Var init_data_array =
       PpapiGlobals::Get()->GetVarTracker()->MakeArrayBufferPPVar(
           init_data_length, init_data);
@@ -423,7 +422,7 @@ void ContentDecryptorDelegate::LoadSession(
     media::MediaKeys::SessionType session_type,
     const std::string& web_session_id,
     scoped_ptr<NewSessionCdmPromise> promise) {
-  uint32_t promise_id = SavePromise(promise.Pass());
+  uint32_t promise_id = cdm_promise_adapter_.SavePromise(promise.Pass());
   plugin_decryption_interface_->LoadSession(
       pp_instance_, promise_id, MediaSessionTypeToPpSessionType(session_type),
       StringVar::StringToPPVar(web_session_id));
@@ -434,7 +433,7 @@ void ContentDecryptorDelegate::UpdateSession(
     const uint8* response,
     int response_length,
     scoped_ptr<SimpleCdmPromise> promise) {
-  uint32_t promise_id = SavePromise(promise.Pass());
+  uint32_t promise_id = cdm_promise_adapter_.SavePromise(promise.Pass());
   PP_Var response_array =
       PpapiGlobals::Get()->GetVarTracker()->MakeArrayBufferPPVar(
           response_length, response);
@@ -454,7 +453,7 @@ void ContentDecryptorDelegate::CloseSession(
     return;
   }
 
-  uint32_t promise_id = SavePromise(promise.Pass());
+  uint32_t promise_id = cdm_promise_adapter_.SavePromise(promise.Pass());
   plugin_decryption_interface_->CloseSession(
       pp_instance_, promise_id, StringVar::StringToPPVar(web_session_id));
 }
@@ -468,7 +467,7 @@ void ContentDecryptorDelegate::RemoveSession(
     return;
   }
 
-  uint32_t promise_id = SavePromise(promise.Pass());
+  uint32_t promise_id = cdm_promise_adapter_.SavePromise(promise.Pass());
   plugin_decryption_interface_->RemoveSession(
       pp_instance_, promise_id, StringVar::StringToPPVar(web_session_id));
 }
@@ -717,7 +716,7 @@ bool ContentDecryptorDelegate::DecryptAndDecodeVideo(
 }
 
 void ContentDecryptorDelegate::OnPromiseResolved(uint32 promise_id) {
-  scoped_ptr<CdmPromise> promise = TakePromise(promise_id);
+  scoped_ptr<CdmPromise> promise = cdm_promise_adapter_.TakePromise(promise_id);
   if (!promise ||
       promise->GetResolveParameterType() != media::CdmPromise::VOID_TYPE) {
     NOTREACHED();
@@ -732,7 +731,7 @@ void ContentDecryptorDelegate::OnPromiseResolved(uint32 promise_id) {
 void ContentDecryptorDelegate::OnPromiseResolvedWithSession(
     uint32 promise_id,
     PP_Var web_session_id) {
-  scoped_ptr<CdmPromise> promise = TakePromise(promise_id);
+  scoped_ptr<CdmPromise> promise = cdm_promise_adapter_.TakePromise(promise_id);
   if (!promise ||
       promise->GetResolveParameterType() != media::CdmPromise::STRING_TYPE) {
     NOTREACHED();
@@ -757,7 +756,7 @@ void ContentDecryptorDelegate::OnPromiseRejected(
   StringVar* error_description_string = StringVar::FromPPVar(error_description);
   DCHECK(error_description_string);
 
-  scoped_ptr<CdmPromise> promise = TakePromise(promise_id);
+  scoped_ptr<CdmPromise> promise = cdm_promise_adapter_.TakePromise(promise_id);
   DCHECK(promise);
   if (promise) {
     promise->reject(PpExceptionTypeToMediaException(exception_code),
@@ -1284,27 +1283,7 @@ void ContentDecryptorDelegate::SatisfyAllPendingCallbacksOnError() {
   if (!video_decode_cb_.is_null())
     video_decode_cb_.ResetAndReturn().Run(media::Decryptor::kError, NULL);
 
-  // Reject all outstanding promises.
-  for (PromiseMap::iterator it = promises_.begin(); it != promises_.end();
-       ++it) {
-    it->second->reject(
-        media::MediaKeys::UNKNOWN_ERROR, 0, "Failure calling plugin.");
-  }
-  promises_.clear();
-}
-
-uint32_t ContentDecryptorDelegate::SavePromise(scoped_ptr<CdmPromise> promise) {
-  uint32_t promise_id = next_promise_id_++;
-  promises_.add(promise_id, promise.Pass());
-  return promise_id;
-}
-
-scoped_ptr<CdmPromise> ContentDecryptorDelegate::TakePromise(
-    uint32_t promise_id) {
-  PromiseMap::iterator it = promises_.find(promise_id);
-  if (it == promises_.end())
-    return scoped_ptr<CdmPromise>();
-  return promises_.take_and_erase(it);
+  cdm_promise_adapter_.Clear();
 }
 
 }  // namespace content
