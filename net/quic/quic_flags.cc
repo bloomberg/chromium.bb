@@ -4,14 +4,6 @@
 
 #include "net/quic/quic_flags.h"
 
-// TODO(rtenneti): Remove this.
-// Do not flip this flag until the flakiness of the
-// net/tools/quic/end_to_end_test is fixed.
-// If true, then QUIC connections will track the retransmission history of a
-// packet so that an ack of a previous transmission will ack the data of all
-// other transmissions.
-bool FLAGS_track_retransmission_history = false;
-
 bool FLAGS_quic_allow_oversized_packets_for_test = false;
 
 // When true, the use time based loss detection instead of nack.
