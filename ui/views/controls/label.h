@@ -149,6 +149,14 @@ class VIEWS_EXPORT Label : public View {
   void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
 
  private:
+  struct DrawStringParams {
+    DrawStringParams() : flags(0) {}
+
+    base::string16 text;
+    gfx::Rect bounds;
+    int flags;
+  };
+
   // These tests call CalculateDrawStringParams in order to verify the
   // calculations done for drawing text.
   FRIEND_TEST_ALL_PREFIXES(LabelTest, DrawSingleLineString);
@@ -173,17 +181,16 @@ class VIEWS_EXPORT Label : public View {
 
   gfx::Rect GetAvailableRect() const;
 
-  // Returns parameters to be used for the DrawString call.
-  void CalculateDrawStringParams(base::string16* paint_text,
-                                 gfx::Rect* text_bounds,
-                                 int* flags) const;
+  // Returns parameters to be used for the DrawString call. Returned value is a
+  // weak pointer, owned by and scoped to the label.
+  const DrawStringParams* CalculateDrawStringParams() const;
 
   // Updates any colors that have not been explicitly set from the theme.
   void UpdateColorsFromTheme(const ui::NativeTheme* theme);
 
-  // Resets |cached_heights_| and |cached_heights_cursor_| and mark
-  // |text_size_valid_| as false.
-  void ResetCachedSize();
+  // Resets |cached_heights_|, |cached_heights_cursor_|, |cached_draw_params_|
+  // and mark |text_size_valid_| as false.
+  void ResetLayoutCache();
 
   bool ShouldShowDefaultTooltip() const;
 
@@ -220,6 +227,9 @@ class VIEWS_EXPORT Label : public View {
   // The cached heights to avoid recalculation in GetHeightForWidth().
   mutable std::vector<gfx::Size> cached_heights_;
   mutable int cached_heights_cursor_;
+
+  // The cached results of CalculateDrawStringParams().
+  mutable DrawStringParams cached_draw_params_;
 
   // TODO(vadimt): Remove is_first_paint_text_ before crbug.com/431326 is
   // closed.
