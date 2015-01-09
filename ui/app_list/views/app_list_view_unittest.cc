@@ -823,9 +823,11 @@ TEST_P(AppListViewTestDesktop, BackTest) {
   EXPECT_NO_FATAL_FAILURE(test_context_->RunBackTest());
 }
 
+#if defined(USE_AURA)
 INSTANTIATE_TEST_CASE_P(AppListViewTestAuraInstance,
                         AppListViewTestAura,
                         ::testing::Range<int>(TEST_TYPE_START, TEST_TYPE_END));
+#endif
 
 INSTANTIATE_TEST_CASE_P(AppListViewTestDesktopInstance,
                         AppListViewTestDesktop,
