@@ -6,7 +6,6 @@
 // callback ForEachCallback = void(DOMString id, MIDIOutput port);
 
 [
-    Iterable,
     NoInterfaceObject,
     GarbageCollected,
 ] interface MIDIOutputMap {
@@ -19,4 +18,5 @@
     boolean has(DOMString key);
     // FIXME: Implement forEach.
     // void forEach (ForEachCallback callback);
+    readonly maplike<DOMString, MIDIOutput>;
 };

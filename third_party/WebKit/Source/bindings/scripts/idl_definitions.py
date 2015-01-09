@@ -204,7 +204,7 @@ class IdlCallbackFunction(TypedObject):
 class IdlDictionary(object):
     def __init__(self, idl_name, node):
         self.extended_attributes = {}
-        self.is_partial = node.GetProperty('Partial') or False
+        self.is_partial = bool(node.GetProperty('Partial'))
         self.idl_name = idl_name
         self.name = node.GetName()
         self.members = []
@@ -270,15 +270,18 @@ class IdlInterface(object):
         self.operations = []
         self.parent = None
         self.stringifier = None
+        self.iterable = None
+        self.maplike = None
+        self.setlike = None
         self.original_interface = None
         self.partial_interfaces = []
         if not node:  # Early exit for IdlException.__init__
             return
 
-        self.is_callback = node.GetProperty('CALLBACK') or False
+        self.is_callback = bool(node.GetProperty('CALLBACK'))
         self.is_exception = False
         # FIXME: uppercase 'Partial' => 'PARTIAL' in base IDL parser
-        self.is_partial = node.GetProperty('Partial') or False
+        self.is_partial = bool(node.GetProperty('Partial'))
         self.idl_name = idl_name
         self.name = node.GetName()
         self.idl_type = IdlType(self.name)
@@ -303,8 +306,17 @@ class IdlInterface(object):
             elif child_class == 'Stringifier':
                 self.stringifier = IdlStringifier(idl_name, child)
                 self.process_stringifier()
+            elif child_class == 'Iterable':
+                self.iterable = IdlIterable(idl_name, child)
+            elif child_class == 'Maplike':
+                self.maplike = IdlMaplike(idl_name, child)
+            elif child_class == 'Setlike':
+                self.setlike = IdlSetlike(idl_name, child)
             else:
                 raise ValueError('Unrecognized node class: %s' % child_class)
+
+        if len(filter(None, [self.iterable, self.maplike, self.setlike])) > 1:
+            raise ValueError('Interface can only have one of iterable<>, maplike<> and setlike<>.')
 
     def resolve_typedefs(self, typedefs):
         for attribute in self.attributes:
@@ -372,8 +384,8 @@ class IdlException(IdlInterface):
 
 class IdlAttribute(TypedObject):
     def __init__(self, idl_name, node):
-        self.is_read_only = node.GetProperty('READONLY') or False
-        self.is_static = node.GetProperty('STATIC') or False
+        self.is_read_only = bool(node.GetProperty('READONLY'))
+        self.is_static = bool(node.GetProperty('STATIC'))
         self.idl_name = idl_name
         self.name = node.GetName()
         # Defaults, overridden below
@@ -500,7 +512,7 @@ class IdlOperation(TypedObject):
         if self.name == '_unnamed_':
             self.name = ''
 
-        self.is_static = node.GetProperty('STATIC') or False
+        self.is_static = bool(node.GetProperty('STATIC'))
         property_dictionary = node.GetProperties()
         for special_keyword in SPECIAL_KEYWORD_LIST:
             if special_keyword in property_dictionary:
@@ -579,7 +591,7 @@ class IdlArgument(TypedObject):
                 child_name = child.GetName()
                 if child_name != '...':
                     raise ValueError('Unrecognized Argument node; expected "...", got "%s"' % child_name)
-                self.is_variadic = child.GetProperty('ELLIPSIS') or False
+                self.is_variadic = bool(child.GetProperty('ELLIPSIS'))
             elif child_class == 'Default':
                 self.default_value = default_node_to_idl_literal(child)
             else:
@@ -634,6 +646,55 @@ class IdlStringifier(object):
         if self.attribute or self.operation:
             (self.attribute or self.operation).extended_attributes.update(
                 self.extended_attributes)
+
+
+################################################################################
+# Iterable, Maplike, Setlike
+################################################################################
+
+class IdlIterable(object):
+    def __init__(self, idl_name, node):
+        children = node.GetChildren()
+
+        # FIXME: Support extended attributes.
+
+        if len(children) == 1:
+            self.key_type = None
+            self.value_type = type_node_to_type(children[0])
+        elif len(children) == 2:
+            self.key_type = type_node_to_type(children[0])
+            self.value_type = type_node_to_type(children[1])
+        else:
+            raise ValueError('Unexpected number of children: %d' % len(children))
+
+
+class IdlMaplike(object):
+    def __init__(self, idl_name, node):
+        self.is_read_only = bool(node.GetProperty('READONLY'))
+
+        children = node.GetChildren()
+
+        # FIXME: Support extended attributes.
+
+        if len(children) == 2:
+            self.key_type = type_node_to_type(children[0])
+            self.value_type = type_node_to_type(children[1])
+        else:
+            raise ValueError('Unexpected number of children: %d' % len(children))
+
+
+class IdlSetlike(object):
+    def __init__(self, idl_name, node):
+        self.is_read_only = bool(node.GetProperty('READONLY'))
+
+        children = node.GetChildren()
+
+        # FIXME: Support extended attributes.
+
+        if len(children) == 1:
+            self.value_type = type_node_to_type(children[0])
+        else:
+            raise ValueError('Unexpected number of children: %d' % len(children))
 
 
 ################################################################################
@@ -824,7 +885,7 @@ def type_node_inner_to_type(node):
     # interface type. We do not distinguish these, and just use the type name.
     if node_class in ['PrimitiveType', 'Typeref']:
         # unrestricted syntax: unrestricted double | unrestricted float
-        is_unrestricted = node.GetProperty('UNRESTRICTED') or False
+        is_unrestricted = bool(node.GetProperty('UNRESTRICTED'))
         return IdlType(node.GetName(), is_unrestricted=is_unrestricted)
     elif node_class == 'Any':
         return IdlType('any')

@@ -124,13 +124,15 @@ def interface_context(interface):
     # [DependentLifetime]
     is_dependent_lifetime = 'DependentLifetime' in extended_attributes
 
-    # [Iterable]
+    # [Iterable], iterable<>, maplike<> and setlike<>
     iterator_method = None
     # FIXME: support Iterable in partial interfaces. However, we don't
     # need to support iterator overloads between interface and
     # partial interface definitions.
     # http://heycam.github.io/webidl/#idl-overloading
-    if 'Iterable' in extended_attributes and not interface.is_partial:
+    if (not interface.is_partial
+        and (interface.iterable or interface.maplike or interface.setlike
+             or 'Iterable' in extended_attributes)):
         iterator_operation = IdlOperation(interface.idl_name)
         iterator_operation.name = 'iterator'
         iterator_operation.idl_type = IdlType('Iterator')
@@ -138,6 +140,9 @@ def interface_context(interface):
         iterator_operation.extended_attributes['CallWith'] = 'ScriptState'
         iterator_method = v8_methods.method_context(interface,
                                                     iterator_operation)
+        # FIXME: iterable<>, maplike<> and setlike<> should also imply the
+        # presence of a subset of keys(), values(), entries(), forEach(), has(),
+        # get(), add(), set(), delete() and clear(), and a 'size' attribute.
 
     # [MeasureAs]
     is_measure_as = 'MeasureAs' in extended_attributes

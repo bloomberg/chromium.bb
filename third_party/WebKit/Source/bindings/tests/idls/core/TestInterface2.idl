@@ -55,4 +55,6 @@
     [RaisesException] deleter boolean deleteNamedItem(DOMString name);
 
     stringifier DOMString stringifierMethod();
+
+    readonly setlike<TestInterfaceEmpty>;
 };

@@ -27,7 +27,6 @@
 [
     DoNotCheckConstants,
     GarbageCollected,
-    Iterable,
 ] interface Internals {
     DOMString address(Node node);
 
@@ -299,4 +298,6 @@
     UnionTypesTest unionTypesTest();
 
     void forceBlinkGCWithoutV8GC();
+
+    iterable<long>;
 };

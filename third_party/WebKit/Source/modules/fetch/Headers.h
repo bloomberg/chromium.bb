@@ -42,7 +42,7 @@ public:
     bool has(const String& key, ExceptionState&);
     void set(const String& key, const String& value, ExceptionState&);
 
-    // Iterable
+    // iterable<ByteString, ByteString>
     Iterator* iterator(ScriptState*, ExceptionState&);
 
     void setGuard(Guard guard) { m_guard = guard; }
