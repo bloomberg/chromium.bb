@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/command_line.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/guid.h"
 #include "base/memory/scoped_ptr.h"
@@ -22,6 +23,7 @@
 #include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
+#include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/webdata/common/web_data_service_base.h"
 #include "components/webdata/common/web_database_service.h"
@@ -118,6 +120,14 @@ class PersonalDataManagerTest : public testing::Test {
     EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
         .WillOnce(QuitMainMessageLoop());
     base::MessageLoop::current()->Run();
+  }
+
+  void EnableWalletCardImport() {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kEnableWalletCardImport);
+    ScopedVector<CreditCard> unused;
+    autofill_table_->GetServerCreditCards(&unused.get());
+    autofill_table_->SetServerCreditCards(std::vector<CreditCard>());
   }
 
   // The temporary directory should be deleted at the end to ensure that
@@ -370,8 +380,33 @@ TEST_F(PersonalDataManagerTest, UpdateUnverifiedProfilesAndCreditCards) {
   EXPECT_EQ(credit_card.origin(), cards3[0]->origin());
 }
 
+// Tests that server cards are ignored without the flag.
+TEST_F(PersonalDataManagerTest, ReturnsServerCreditCards) {
+  std::vector<CreditCard> server_cards;
+  server_cards.push_back(CreditCard(CreditCard::MASKED_SERVER_CARD, "a123"));
+  test::SetCreditCardInfo(&server_cards.back(), "John Dillinger",
+                          "9012" /* Visa */, "01", "2010");
+  server_cards.back().SetTypeForMaskedCard(kVisaCard);
+
+  server_cards.push_back(CreditCard(CreditCard::MASKED_SERVER_CARD, "b456"));
+  test::SetCreditCardInfo(&server_cards.back(), "Bonnie Parker",
+                          "2109" /* Mastercard */, "12", "2012");
+  server_cards.back().SetTypeForMaskedCard(kMasterCard);
+
+  autofill_table_->SetServerCreditCards(server_cards);
+  personal_data_->Refresh();
+
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
+      .WillOnce(QuitMainMessageLoop());
+  base::MessageLoop::current()->Run();
+
+  EXPECT_EQ(0U, personal_data_->GetCreditCards().size());
+}
+
 // Tests that UpdateCreditCard can be used to mask or unmask server cards.
 TEST_F(PersonalDataManagerTest, UpdateServerCreditCards) {
+  EnableWalletCardImport();
+
   std::vector<CreditCard> server_cards;
   server_cards.push_back(CreditCard(CreditCard::MASKED_SERVER_CARD, "a123"));
   test::SetCreditCardInfo(&server_cards.back(), "John Dillinger",
@@ -394,6 +429,7 @@ TEST_F(PersonalDataManagerTest, UpdateServerCreditCards) {
       .WillOnce(QuitMainMessageLoop());
   base::MessageLoop::current()->Run();
 
+  ASSERT_EQ(3U, personal_data_->GetCreditCards().size());
   // The GUIDs will be different, so just compare the data.
   for (size_t i = 0; i < 3; ++i)
     EXPECT_EQ(0, server_cards[i].Compare(*personal_data_->GetCreditCards()[i]));
@@ -2675,6 +2711,8 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions) {
 }
 
 TEST_F(PersonalDataManagerTest, GetCreditCardSuggestions) {
+  EnableWalletCardImport();
+
   // These GUIDs are reverse alphabetical to make validating expectations
   // easier.
   CreditCard credit_card0("287151C8-6AB1-487C-9095-28E80BE5DA15",

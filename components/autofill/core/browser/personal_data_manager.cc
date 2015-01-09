@@ -8,6 +8,7 @@
 #include <functional>
 #include <iterator>
 
+#include "base/command_line.h"
 #include "base/i18n/timezone.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
@@ -26,6 +27,7 @@
 #include "components/autofill/core/browser/phone_number_i18n.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
+#include "components/autofill/core/common/autofill_switches.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_data.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_formatter.h"
 
@@ -657,8 +659,11 @@ const std::vector<CreditCard*>& PersonalDataManager::GetCreditCards() const {
   credit_cards_.clear();
   credit_cards_.insert(credit_cards_.end(), local_credit_cards_.begin(),
                        local_credit_cards_.end());
-  credit_cards_.insert(credit_cards_.end(), server_credit_cards_.begin(),
-                       server_credit_cards_.end());
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableWalletCardImport)) {
+    credit_cards_.insert(credit_cards_.end(), server_credit_cards_.begin(),
+                         server_credit_cards_.end());
+  }
   return credit_cards_;
 }
 
