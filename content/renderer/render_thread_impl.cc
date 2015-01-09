@@ -26,6 +26,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_tokenizer.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_local.h"
 #include "base/threading/thread_restrictions.h"
@@ -542,6 +543,15 @@ void RenderThreadImpl::Init() {
       !base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableThreadedEventHandlingMac) &&
       base::mac::IsOSLionOrLater();
+  if (is_elastic_overscroll_enabled_) {
+    base::ScopedCFTypeRef<CFStringRef> key(
+        base::SysUTF8ToCFStringRef("NSScrollViewRubberbanding"));
+    Boolean key_exists = false;
+    Boolean value = CFPreferencesGetAppBooleanValue(
+        key, kCFPreferencesCurrentApplication, &key_exists);
+    if (key_exists && !value)
+      is_elastic_overscroll_enabled_ = false;
+  }
 #else
   is_elastic_overscroll_enabled_ = false;
 #endif
