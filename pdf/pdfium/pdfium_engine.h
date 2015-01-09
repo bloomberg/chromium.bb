@@ -246,6 +246,10 @@ class PDFiumEngine : public PDFEngine,
   // PDFiumPage because we might not have that structure when we need this.
   pp::Size GetPageSize(int index);
 
+  void GetAllScreenRectsUnion(std::vector<PDFiumRange>* rect_range,
+                              const pp::Point& offset_point,
+                              std::vector<pp::Rect>* rect_vector);
+
   void UpdateTickMarks();
 
   // Called to continue searching so we don't block the main thread.
