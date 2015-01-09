@@ -151,7 +151,7 @@ void RenderGeometryMap::dumpSteps() const
 
 FloatQuad RenderGeometryMap::mapToContainer(const FloatRect& rect, const RenderLayerModelObject* container) const
 {
-    FloatRect result;
+    FloatQuad result;
 
     if (!hasFixedPositionStep() && !hasTransformStep() && !hasNonUniformStep() && (!container || (m_mapping.size() && container == m_mapping[0].m_renderer))) {
         result = rect;
@@ -159,7 +159,7 @@ FloatQuad RenderGeometryMap::mapToContainer(const FloatRect& rect, const RenderL
     } else {
         TransformState transformState(TransformState::ApplyTransformDirection, rect.center(), rect);
         mapToContainer(transformState, container);
-        result = transformState.lastPlanarQuad().boundingBox();
+        result = transformState.lastPlanarQuad();
     }
 
 #if ENABLE(ASSERT)
@@ -175,7 +175,7 @@ FloatQuad RenderGeometryMap::mapToContainer(const FloatRect& rect, const RenderL
 
             // Inspector creates renderers with negative width <https://bugs.webkit.org/show_bug.cgi?id=87194>.
             // Taking FloatQuad bounds avoids spurious assertions because of that.
-            ASSERT(enclosingIntRect(rendererMappedResult) == enclosingIntRect(FloatQuad(result).boundingBox()));
+            ASSERT(enclosingIntRect(rendererMappedResult) == enclosingIntRect(result.boundingBox()));
         }
     }
 #endif
