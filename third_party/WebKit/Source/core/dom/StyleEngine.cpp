@@ -169,6 +169,14 @@ void StyleEngine::OrderedTreeScopeSet::remove(TreeScope* treeScope)
     m_hash.remove(treeScope);
 }
 
+void StyleEngine::OrderedTreeScopeSet::trace(Visitor* visitor)
+{
+#if ENABLE(OILPAN)
+    visitor->trace(m_treeScopes);
+    visitor->trace(m_hash);
+#endif
+}
+
 TreeScopeStyleSheetCollection* StyleEngine::ensureStyleSheetCollectionFor(TreeScope& treeScope)
 {
     if (treeScope == m_document)
@@ -727,6 +735,8 @@ void StyleEngine::trace(Visitor* visitor)
     visitor->trace(m_documentStyleSheetCollection);
     visitor->trace(m_styleSheetCollectionMap);
     visitor->trace(m_resolver);
+    visitor->trace(m_dirtyTreeScopes);
+    visitor->trace(m_activeTreeScopes);
     visitor->trace(m_fontSelector);
     visitor->trace(m_textToSheetCache);
     visitor->trace(m_sheetToTextCache);

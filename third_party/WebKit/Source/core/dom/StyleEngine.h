@@ -193,7 +193,7 @@ private:
     Document* master();
     Document& document() const { return *m_document; }
 
-    typedef WillBeHeapHashSet<TreeScope*> UnorderedTreeScopeSet;
+    typedef WillBeHeapHashSet<RawPtrWillBeMember<TreeScope>> UnorderedTreeScopeSet;
 
     // A class which holds document-ordered treescopes which have stylesheets.
     // ListHashSet allows only sequential access, not random access.
@@ -203,7 +203,8 @@ private:
     // To solve this, use a vector for the document-ordered treescopes and
     // use a hashset for quickly checking whether a given treescope is
     // in the document-ordered treescopes or not.
-    class OrderedTreeScopeSet {
+    class OrderedTreeScopeSet final {
+        DISALLOW_ALLOCATION();
         WTF_MAKE_NONCOPYABLE(OrderedTreeScopeSet);
     public:
         OrderedTreeScopeSet() { }
@@ -228,8 +229,10 @@ private:
         TreeScope* operator[](size_t i) { return m_treeScopes[i]; }
         const TreeScope* operator[](size_t i) const { return m_treeScopes[i]; }
 
+        void trace(Visitor*);
+
     private:
-        WillBeHeapVector<TreeScope*, 16> m_treeScopes;
+        WillBeHeapVector<RawPtrWillBeMember<TreeScope>, 16> m_treeScopes;
         UnorderedTreeScopeSet m_hash;
     };
 
