@@ -88,6 +88,11 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
   // Processes the Public-Key-Pins header, if one exists.
   void ProcessPublicKeyPinsHeader();
 
+  // TODO(battre) Remove this when crbug.com/289715 is fixed.
+  static void OnHeadersReceivedCallbackForDebugging(
+      base::WeakPtr<URLRequestHttpJob> job,
+      int result);
+
   // |result| should be net::OK, or the request is canceled.
   void OnHeadersReceivedCallback(int result);
   void OnStartCompleted(int result);
@@ -266,6 +271,14 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
   bool awaiting_callback_;
 
   const HttpUserAgentSettings* http_user_agent_settings_;
+
+  // TODO(battre) Remove this when crbug.com/289715 is fixed.
+  enum TransactionState {
+    TRANSACTION_WAS_NOT_INITIALIZED,
+    TRANSACTION_WAS_INITIALIZED,
+    TRANSACTION_WAS_DESTROYED
+  };
+  TransactionState transaction_state_;
 
   base::WeakPtrFactory<URLRequestHttpJob> weak_factory_;
 

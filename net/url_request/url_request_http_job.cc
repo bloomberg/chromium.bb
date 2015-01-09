@@ -9,6 +9,7 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/debug/alias.h"
 #include "base/file_version_info.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
@@ -207,10 +208,17 @@ URLRequestHttpJob::URLRequestHttpJob(
                      base::Unretained(this))),
       awaiting_callback_(false),
       http_user_agent_settings_(http_user_agent_settings),
+      transaction_state_(TRANSACTION_WAS_NOT_INITIALIZED),
       weak_factory_(this) {
   URLRequestThrottlerManager* manager = request->context()->throttler_manager();
   if (manager)
     throttling_entry_ = manager->RegisterRequestUrl(request->url());
+
+  // TODO(battre) Remove this overriding once crbug.com/289715 has been
+  // resolved.
+  on_headers_received_callback_ =
+      base::Bind(&URLRequestHttpJob::OnHeadersReceivedCallbackForDebugging,
+                 weak_factory_.GetWeakPtr());
 
   ResetTimer();
 }
@@ -407,6 +415,7 @@ void URLRequestHttpJob::DestroyTransaction() {
 
   DoneWithRequest(ABORTED);
   transaction_.reset();
+  transaction_state_ = TRANSACTION_WAS_DESTROYED;
   response_info_ = NULL;
   receive_headers_end_ = base::TimeTicks();
 }
@@ -468,6 +477,8 @@ void URLRequestHttpJob::StartTransactionInternal() {
 
     rv = request_->context()->http_transaction_factory()->CreateTransaction(
         priority_, &transaction_);
+    if (rv == OK)
+      transaction_state_ = TRANSACTION_WAS_INITIALIZED;
 
     if (rv == OK && request_info_.url.SchemeIsWSOrWSS()) {
       base::SupportsUserData::Data* data = request_->GetUserData(
@@ -931,6 +942,19 @@ void URLRequestHttpJob::OnStartCompleted(int result) {
       response_info_ = transaction_->GetResponseInfo();
     NotifyStartError(URLRequestStatus(URLRequestStatus::FAILED, result));
   }
+}
+
+// TODO(battre) Use URLRequestHttpJob::OnHeadersReceivedCallback again, once
+// crbug.com/289715 has been resolved.
+// static
+void URLRequestHttpJob::OnHeadersReceivedCallbackForDebugging(
+    base::WeakPtr<net::URLRequestHttpJob> job,
+    int result) {
+  CHECK(job.get());
+  net::URLRequestHttpJob::TransactionState state = job->transaction_state_;
+  base::debug::Alias(&state);
+  CHECK(job->transaction_.get());
+  job->OnHeadersReceivedCallback(result);
 }
 
 void URLRequestHttpJob::OnHeadersReceivedCallback(int result) {
