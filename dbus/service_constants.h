@@ -629,6 +629,7 @@ const char kTypeWimax[] = "wimax";
 const char kTypeBluetooth[] = "bluetooth";
 const char kTypeCellular[] = "cellular";
 const char kTypeVPN[] = "vpn";
+const char kTypePPPoE[] = "pppoe";
 
 // Flimflam mode options.
 const char kModeManaged[] = "managed";
@@ -687,6 +688,11 @@ const char kOpenVPNStaticChallengeProperty[] = "OpenVPN.StaticChallenge";
 const char kOpenVPNTLSAuthContentsProperty[] = "OpenVPN.TLSAuthContents";
 const char kOpenVPNTLSRemoteProperty[] = "OpenVPN.TLSRemote";
 const char kOpenVPNUserProperty[] = "OpenVPN.User";
+
+// FlimFlam PPPoE property names.
+const char kPPPoEDeviceProperty[] = "PPPoE.Device";
+const char kPPPoEUsernameProperty[] = "PPPoE.Username";
+const char kPPPoEPasswordProperty[] = "PPPoE.Password";
 
 // FlimFlam technology family options
 const char kTechnologyFamilyCdma[] = "CDMA";
