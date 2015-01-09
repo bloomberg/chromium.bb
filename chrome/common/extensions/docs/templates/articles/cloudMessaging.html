@@ -4,7 +4,7 @@
 <p>Google Cloud Messaging (GCM) is a service for both Android-powered devices and
 Chrome instances to send and receive message data from servers. The
 <a href="gcm.html">chrome.gcm</a> API allows the Chrome apps or extensions to access
-the GCM service for the signed-in Chrome users. The service works even if an app
+the GCM service. The service works even if an app
 or extension isn't currently running. For example, calendar updates could be
 pushed to users even when their calendar app isn't open. </p>
 
@@ -322,8 +322,6 @@ The error code will also be passed as a parameter to $(ref:gcm.onSendError) even
 <ul>
 <li><strong>Function was called with invalid parameters</strong>: this could happen when gcm
 functions are called with bad parameters.</li>
-<li><strong>Profile was not signed in</strong>: this could happen when gcm functions are called
-from a profile that was not signed in.</li>
 <li><strong>Asynchronous operation is pending</strong>: this could happen when certain gcm
 function is called again without waiting for the callback passed in previous
 function to be called.</li>
