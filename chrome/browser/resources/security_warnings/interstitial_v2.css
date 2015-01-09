@@ -15,7 +15,6 @@ a {
 body {
   background-color: #f7f7f7;
   color: #585858;
-  font-size: 125%;
 }
 
 body.safe-browsing {
@@ -95,6 +94,10 @@ h2 {
 
 .hidden {
   display: none;
+}
+
+html {
+  font-size: 125%;
 }
 
 .icon {
