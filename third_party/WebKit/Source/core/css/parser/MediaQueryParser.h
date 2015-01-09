@@ -32,7 +32,7 @@ public:
     MediaQueryData();
     void clear();
     bool addExpression();
-    void addParserValue(CSSParserTokenType, const CSSParserToken&);
+    bool tryAddParserValue(CSSParserTokenType, const CSSParserToken&);
     void setMediaType(const String&);
     PassOwnPtrWillBeRawPtr<MediaQuery> takeMediaQuery();
 

@@ -145,8 +145,10 @@ void MediaQueryParser::readFeatureValue(CSSParserTokenType type, const CSSParser
     if (type == DimensionToken && token.unitType() == CSSPrimitiveValue::CSS_UNKNOWN) {
         m_state = SkipUntilComma;
     } else {
-        m_mediaQueryData.addParserValue(type, token);
-        m_state = ReadFeatureEnd;
+        if (m_mediaQueryData.tryAddParserValue(type, token))
+            m_state = ReadFeatureEnd;
+        else
+            m_state = SkipUntilBlockEnd;
     }
 }
 
@@ -158,7 +160,7 @@ void MediaQueryParser::readFeatureEnd(CSSParserTokenType type, const CSSParserTo
         else
             m_state = SkipUntilComma;
     } else if (type == DelimiterToken && token.delimiter() == '/') {
-        m_mediaQueryData.addParserValue(type, token);
+        m_mediaQueryData.tryAddParserValue(type, token);
         m_state = ReadFeatureValue;
     } else {
         m_state = SkipUntilBlockEnd;
@@ -253,7 +255,7 @@ bool MediaQueryData::addExpression()
     return isValid;
 }
 
-void MediaQueryData::addParserValue(CSSParserTokenType type, const CSSParserToken& token)
+bool MediaQueryData::tryAddParserValue(CSSParserTokenType type, const CSSParserToken& token)
 {
     CSSParserValue value;
     if (type == NumberToken || type == PercentageToken || type == DimensionToken) {
@@ -264,15 +266,18 @@ void MediaQueryData::addParserValue(CSSParserTokenType type, const CSSParserToke
         value.iValue = token.delimiter();
         value.id = CSSValueInvalid;
         value.isInt = false;
-    } else {
+    } else if (type == IdentToken) {
         CSSParserString tokenValue;
         tokenValue.init(token.value());
         value.unit = CSSPrimitiveValue::CSS_IDENT;
         value.string = tokenValue;
         value.id = cssValueKeywordID(tokenValue);
         value.isInt = false;
+    } else {
+        return false;
     }
     m_valueList.addValue(value);
+    return true;
 }
 
 void MediaQueryData::setMediaType(const String& mediaType)
