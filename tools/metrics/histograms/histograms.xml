@@ -39312,6 +39312,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Uptime.DBusCrash" units="ms">
+  <owner>derat@chromium.org</owner>
+  <summary>
+    The system uptime on Chrome OS when the dbus-daemon process crashes,
+    resulting in a reboot.
+  </summary>
+</histogram>
+
 <histogram name="Uptime.LoginPromptSetupTimeAfterLogout" units="ms">
   <owner>hajimehoshi@chromium.org</owner>
   <owner>kouhei@chromium.org</owner>
