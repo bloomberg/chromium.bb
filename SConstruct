@@ -3201,8 +3201,6 @@ if nacl_env.Bit('bitcode'):
   nacl_env['TARGET_VARIANT'] += '-clang'
 
 nacl_env.Replace(TESTRUNNER_LIBS=['testrunner'])
-# TODO(mseaborn): Drop this once chrome side has inlined this.
-nacl_env.Replace(PPAPI_LIBS=['ppapi'])
 
 # TODO(mseaborn): Make nacl-glibc-based static linking work with just
 # "-static", without specifying a linker script.
