@@ -636,9 +636,12 @@ void ChromotingInstance::HandleConnect(const base::DictionaryValue& data) {
 #endif
   input_handler_.set_input_stub(normalizing_input_filter_.get());
 
-  video_renderer_.reset(new PepperVideoRenderer3D());
-  if (!video_renderer_->Initialize(this, context_, this))
-    video_renderer_.reset();
+  // 3D renderer is currently disabled because it may be unstable. See
+  // crbug.com/447403 .
+  //
+  // video_renderer_.reset(new PepperVideoRenderer3D());
+  // if (!video_renderer_->Initialize(this, context_, this))
+  //   video_renderer_.reset();
 
   // If we failed to initialize 3D renderer (because there is no hardware
   // support on this machine) then use the 2D renderer.
