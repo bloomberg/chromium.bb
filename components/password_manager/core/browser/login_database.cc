@@ -118,6 +118,18 @@ void AddCallback(int err, sql::Statement* /*stmt*/) {
     DLOG(WARNING) << "LoginDatabase::AddLogin updated an existing form";
 }
 
+bool DoesMatchConstraints(const PasswordForm& form) {
+  if (form.origin.is_empty()) {
+    DLOG(ERROR) << "Constraint violation: form.origin is empty";
+    return false;
+  }
+  if (form.signon_realm.empty()) {
+    DLOG(ERROR) << "Constraint violation: form.signon_realm is empty";
+    return false;
+  }
+  return true;
+}
+
 // UMA_* macros assume that the name never changes. This is a helper function
 // where this assumption doesn't hold.
 void LogDynamicUMAStat(const std::string& name,
@@ -430,6 +442,8 @@ void LoginDatabase::ReportMetrics(const std::string& sync_username,
 
 PasswordStoreChangeList LoginDatabase::AddLogin(const PasswordForm& form) {
   PasswordStoreChangeList list;
+  if (!DoesMatchConstraints(form))
+    return list;
   std::string encrypted_password;
   if (EncryptedString(form.password_value, &encrypted_password) !=
           ENCRYPTION_RESULT_SUCCESS)

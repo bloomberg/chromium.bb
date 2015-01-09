@@ -201,6 +201,8 @@ TEST_F(PasswordStoreTest, StartSyncFlare) {
       base::Bind(&StartSyncFlareMock::StartSyncFlare, base::Unretained(&mock)));
   {
     PasswordForm form;
+    form.origin = GURL("http://accounts.google.com/LoginAuth");
+    form.signon_realm = "http://accounts.google.com/";
     EXPECT_CALL(mock, StartSyncFlare(syncer::PASSWORDS));
     store->AddLogin(form);
     base::MessageLoop::current()->RunUntilIdle();

@@ -675,11 +675,15 @@ TEST_F(LoginDatabaseTest, ClearPrivateData_SavedPasswords) {
   base::TimeDelta one_day = base::TimeDelta::FromDays(1);
 
   // Create one with a 0 time.
-  EXPECT_TRUE(AddTimestampedLogin(&db_, "1", "foo1", base::Time(), true));
+  EXPECT_TRUE(AddTimestampedLogin(&db_, "http://1.com", "foo1",
+                                  base::Time(), true));
   // Create one for now and +/- 1 day.
-  EXPECT_TRUE(AddTimestampedLogin(&db_, "2", "foo2", now - one_day, true));
-  EXPECT_TRUE(AddTimestampedLogin(&db_, "3", "foo3", now, true));
-  EXPECT_TRUE(AddTimestampedLogin(&db_, "4", "foo4", now + one_day, true));
+  EXPECT_TRUE(AddTimestampedLogin(&db_, "http://2.com", "foo2",
+                                  now - one_day, true));
+  EXPECT_TRUE(AddTimestampedLogin(&db_, "http://3.com", "foo3",
+                                  now, true));
+  EXPECT_TRUE(AddTimestampedLogin(&db_, "http://4.com", "foo4",
+                                  now + one_day, true));
 
   // Verify inserts worked.
   EXPECT_TRUE(db_.GetAutofillableLogins(&result));
@@ -714,11 +718,15 @@ TEST_F(LoginDatabaseTest, RemoveLoginsSyncedBetween) {
   base::TimeDelta one_day = base::TimeDelta::FromDays(1);
 
   // Create one with a 0 time.
-  EXPECT_TRUE(AddTimestampedLogin(&db_, "1", "foo1", base::Time(), false));
+  EXPECT_TRUE(AddTimestampedLogin(&db_, "http://1.com", "foo1",
+                                  base::Time(), false));
   // Create one for now and +/- 1 day.
-  EXPECT_TRUE(AddTimestampedLogin(&db_, "2", "foo2", now - one_day, false));
-  EXPECT_TRUE(AddTimestampedLogin(&db_, "3", "foo3", now, false));
-  EXPECT_TRUE(AddTimestampedLogin(&db_, "4", "foo4", now + one_day, false));
+  EXPECT_TRUE(AddTimestampedLogin(&db_, "http://2.com", "foo2",
+                                  now - one_day, false));
+  EXPECT_TRUE(AddTimestampedLogin(&db_, "http://3.com", "foo3",
+                                  now, false));
+  EXPECT_TRUE(AddTimestampedLogin(&db_, "http://4.com", "foo4",
+                                  now + one_day, false));
 
   // Verify inserts worked.
   EXPECT_TRUE(db_.GetAutofillableLogins(&result.get()));
@@ -728,8 +736,8 @@ TEST_F(LoginDatabaseTest, RemoveLoginsSyncedBetween) {
   // Get everything from today's date and on.
   EXPECT_TRUE(db_.GetLoginsSyncedBetween(now, base::Time(), &result.get()));
   ASSERT_EQ(2U, result.size());
-  EXPECT_EQ("3", result[0]->signon_realm);
-  EXPECT_EQ("4", result[1]->signon_realm);
+  EXPECT_EQ("http://3.com", result[0]->signon_realm);
+  EXPECT_EQ("http://4.com", result[1]->signon_realm);
   result.clear();
 
   // Delete everything from today's date and on.
@@ -738,8 +746,8 @@ TEST_F(LoginDatabaseTest, RemoveLoginsSyncedBetween) {
   // Should have deleted half of what we inserted.
   EXPECT_TRUE(db_.GetAutofillableLogins(&result.get()));
   ASSERT_EQ(2U, result.size());
-  EXPECT_EQ("1", result[0]->signon_realm);
-  EXPECT_EQ("2", result[1]->signon_realm);
+  EXPECT_EQ("http://1.com", result[0]->signon_realm);
+  EXPECT_EQ("http://2.com", result[1]->signon_realm);
   result.clear();
 
   // Delete with 0 date (should delete all).
@@ -963,6 +971,25 @@ TEST_F(LoginDatabaseTest, DoubleAdd) {
   list.push_back(PasswordStoreChange(PasswordStoreChange::REMOVE, form));
   list.push_back(PasswordStoreChange(PasswordStoreChange::ADD, form));
   EXPECT_EQ(list, db_.AddLogin(form));
+}
+
+TEST_F(LoginDatabaseTest, AddWrongForm) {
+  PasswordForm form;
+  // |origin| shouldn't be empty.
+  form.origin = GURL();
+  form.signon_realm = "http://accounts.google.com/";
+  form.username_value = ASCIIToUTF16("my_username");
+  form.password_value = ASCIIToUTF16("my_password");
+  form.ssl_valid = false;
+  form.preferred = true;
+  form.blacklisted_by_user = false;
+  form.scheme = PasswordForm::SCHEME_HTML;
+  EXPECT_EQ(PasswordStoreChangeList(), db_.AddLogin(form));
+
+  // |signon_realm| shouldn't be empty.
+  form.origin = GURL("http://accounts.google.com/LoginAuth");
+  form.signon_realm.clear();
+  EXPECT_EQ(PasswordStoreChangeList(), db_.AddLogin(form));
 }
 
 TEST_F(LoginDatabaseTest, UpdateLogin) {
