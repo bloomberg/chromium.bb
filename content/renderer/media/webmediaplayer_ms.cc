@@ -17,6 +17,7 @@
 #include "content/renderer/media/media_stream_renderer_factory.h"
 #include "content/renderer/media/video_frame_provider.h"
 #include "content/renderer/render_frame_impl.h"
+#include "content/renderer/render_thread_impl.h"
 #include "media/base/media_log.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_rotation.h"
@@ -30,6 +31,7 @@
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "webkit/common/gpu/context_provider_web_context.h"
 
 using blink::WebCanvas;
 using blink::WebMediaPlayer;
@@ -326,9 +328,20 @@ void WebMediaPlayerMS::paint(blink::WebCanvas* canvas,
   DVLOG(3) << "WebMediaPlayerMS::paint";
   DCHECK(thread_checker_.CalledOnValidThread());
 
+  media::Context3D context_3d;
+  if (current_frame_.get() &&
+      current_frame_->format() == media::VideoFrame::NATIVE_TEXTURE) {
+    cc::ContextProvider* provider =
+        RenderThreadImpl::current()->SharedMainThreadContextProvider().get();
+    // GPU Process crashed.
+    if (!provider)
+      return;
+    context_3d = media::Context3D(provider->ContextGL(), provider->GrContext());
+    DCHECK(context_3d.gl);
+  }
   gfx::RectF dest_rect(rect.x, rect.y, rect.width, rect.height);
   video_renderer_.Paint(current_frame_, canvas, dest_rect, alpha, mode,
-                        media::VIDEO_ROTATION_0, media::Context3D());
+                        media::VIDEO_ROTATION_0, context_3d);
 
   {
     base::AutoLock auto_lock(current_frame_lock_);
