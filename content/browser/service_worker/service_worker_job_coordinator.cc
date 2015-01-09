@@ -12,9 +12,8 @@ namespace content {
 
 namespace {
 
-bool IsRegisterOrUpdateJob(const ServiceWorkerRegisterJobBase& job) {
-  return job.GetType() == ServiceWorkerRegisterJobBase::REGISTRATION_JOB ||
-         job.GetType() == ServiceWorkerRegisterJobBase::UPDATE_JOB;
+bool IsRegisterJob(const ServiceWorkerRegisterJobBase& job) {
+  return job.GetType() == ServiceWorkerRegisterJobBase::REGISTRATION_JOB;
 }
 
 }
@@ -53,13 +52,13 @@ void ServiceWorkerJobCoordinator::JobQueue::Pop(
 
 void ServiceWorkerJobCoordinator::JobQueue::DoomInstallingWorkerIfNeeded() {
   DCHECK(!jobs_.empty());
-  if (!IsRegisterOrUpdateJob(*jobs_.front()))
+  if (!IsRegisterJob(*jobs_.front()))
     return;
   ServiceWorkerRegisterJob* job =
       static_cast<ServiceWorkerRegisterJob*>(jobs_.front());
   std::deque<ServiceWorkerRegisterJobBase*>::iterator it = jobs_.begin();
   for (++it; it != jobs_.end(); ++it) {
-    if (IsRegisterOrUpdateJob(**it)) {
+    if (IsRegisterJob(**it)) {
       job->DoomInstallingWorker();
       return;
     }
