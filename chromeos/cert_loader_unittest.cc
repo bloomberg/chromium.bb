@@ -9,18 +9,13 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "crypto/nss_util_internal.h"
 #include "crypto/scoped_nss_types.h"
-#include "crypto/scoped_test_nss_chromeos_user.h"
-#include "net/base/net_errors.h"
+#include "crypto/scoped_test_nss_db.h"
 #include "net/base/test_data_directory.h"
 #include "net/cert/nss_cert_database_chromeos.h"
 #include "net/cert/x509_certificate.h"
 #include "net/test/cert_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-// http://crbug.com/418369
-#ifdef NDEBUG
 
 namespace chromeos {
 namespace {
@@ -38,40 +33,43 @@ bool IsCertInCertificateList(const net::X509Certificate* cert,
   return false;
 }
 
-void FailOnPrivateSlotCallback(crypto::ScopedPK11Slot slot) {
-  EXPECT_FALSE(true) << "GetPrivateSlotForChromeOSUser callback called even "
-                     << "though the private slot had been initialized.";
-}
+class TestNSSCertDatabase : public net::NSSCertDatabaseChromeOS {
+ public:
+  TestNSSCertDatabase(crypto::ScopedPK11Slot public_slot,
+                      crypto::ScopedPK11Slot private_slot)
+      : NSSCertDatabaseChromeOS(public_slot.Pass(), private_slot.Pass()) {}
+  ~TestNSSCertDatabase() override {}
+
+  void NotifyOfCertAdded(const net::X509Certificate* cert) {
+    NSSCertDatabaseChromeOS::NotifyObserversOfCertAdded(cert);
+  }
+};
 
 class CertLoaderTest : public testing::Test,
                        public CertLoader::Observer {
  public:
-  CertLoaderTest() : cert_loader_(NULL),
-                     primary_user_("primary"),
-                     certificates_loaded_events_count_(0U) {
-  }
+  CertLoaderTest()
+      : cert_loader_(nullptr), certificates_loaded_events_count_(0U) {}
 
-  virtual ~CertLoaderTest() {}
+  ~CertLoaderTest() override {}
 
-  virtual void SetUp() override {
-    ASSERT_TRUE(primary_user_.constructed_successfully());
-    ASSERT_TRUE(
-        crypto::GetPublicSlotForChromeOSUser(primary_user_.username_hash()));
+  void SetUp() override {
+    ASSERT_TRUE(primary_db_.is_open());
 
     CertLoader::Initialize();
     cert_loader_ = CertLoader::Get();
     cert_loader_->AddObserver(this);
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     cert_loader_->RemoveObserver(this);
     CertLoader::Shutdown();
   }
 
  protected:
-  void StartCertLoaderWithPrimaryUser() {
-    FinishUserInitAndGetDatabase(&primary_user_, &primary_db_);
-    cert_loader_->StartWithNSSDB(primary_db_.get());
+  void StartCertLoaderWithPrimaryDB() {
+    CreateCertDatabase(&primary_db_, &primary_certdb_);
+    cert_loader_->StartWithNSSDB(primary_certdb_.get());
 
     base::RunLoop().RunUntilIdle();
     GetAndResetCertificatesLoadedEventsCount();
@@ -79,8 +77,8 @@ class CertLoaderTest : public testing::Test,
 
   // CertLoader::Observer:
   // The test keeps count of times the observer method was called.
-  virtual void OnCertificatesLoaded(const net::CertificateList& cert_list,
-                                    bool initial_load) override {
+  void OnCertificatesLoaded(const net::CertificateList& cert_list,
+                            bool initial_load) override {
     EXPECT_TRUE(certificates_loaded_events_count_ == 0 || !initial_load);
     certificates_loaded_events_count_++;
   }
@@ -93,29 +91,14 @@ class CertLoaderTest : public testing::Test,
     return result;
   }
 
-  // Finishes initialization for the |user| and returns a user's NSS database
-  // instance.
-  void FinishUserInitAndGetDatabase(
-      crypto::ScopedTestNSSChromeOSUser* user,
-      scoped_ptr<net::NSSCertDatabaseChromeOS>* database) {
-    ASSERT_TRUE(user->constructed_successfully());
+  void CreateCertDatabase(crypto::ScopedTestNSSDB* db,
+                          scoped_ptr<TestNSSCertDatabase>* certdb) {
+    ASSERT_TRUE(db->is_open());
 
-    user->FinishInit();
-
-    crypto::ScopedPK11Slot private_slot(
-        crypto::GetPrivateSlotForChromeOSUser(
-            user->username_hash(),
-            base::Bind(&FailOnPrivateSlotCallback)));
-    ASSERT_TRUE(private_slot);
-
-    database->reset(new net::NSSCertDatabaseChromeOS(
-        crypto::GetPublicSlotForChromeOSUser(user->username_hash()),
-        private_slot.Pass()));
-    (*database)->SetSlowTaskRunnerForTest(message_loop_.message_loop_proxy());
-  }
-
-  int GetDbPrivateSlotId(net::NSSCertDatabase* db) {
-    return static_cast<int>(PK11_GetSlotID(db->GetPrivateSlot().get()));
+    certdb->reset(new TestNSSCertDatabase(
+        crypto::ScopedPK11Slot(PK11_ReferenceSlot(db->slot())),
+        crypto::ScopedPK11Slot(PK11_ReferenceSlot(db->slot()))));
+    (*certdb)->SetSlowTaskRunnerForTest(message_loop_.task_runner());
   }
 
   void ImportCACert(const std::string& cert_file,
@@ -124,7 +107,6 @@ class CertLoaderTest : public testing::Test,
     ASSERT_TRUE(database);
     ASSERT_TRUE(imported_certs);
 
-    // Add a certificate to the user's db.
     *imported_certs = net::CreateCertificateListFromFile(
         net::GetTestCertsDirectory(),
         cert_file,
@@ -138,27 +120,15 @@ class CertLoaderTest : public testing::Test,
     ASSERT_TRUE(failed.empty());
   }
 
-  void ImportClientCertAndKey(const std::string& pkcs12_file,
-                              net::NSSCertDatabase* database,
-                              net::CertificateList* imported_certs) {
-    ASSERT_TRUE(database);
-    ASSERT_TRUE(imported_certs);
-
-    std::string pkcs12_data;
-    base::FilePath pkcs12_file_path =
-        net::GetTestCertsDirectory().Append(pkcs12_file);
-    ASSERT_TRUE(base::ReadFileToString(pkcs12_file_path, &pkcs12_data));
-
-    net::CertificateList client_cert_list;
-    scoped_refptr<net::CryptoModule> module(net::CryptoModule::CreateFromHandle(
-        database->GetPrivateSlot().get()));
-    ASSERT_EQ(net::OK,
-              database->ImportFromPKCS12(module.get(),
-                                         pkcs12_data,
-                                         base::string16(),
-                                         false,
-                                         imported_certs));
-    ASSERT_EQ(1U, imported_certs->size());
+  scoped_refptr<net::X509Certificate> ImportClientCertAndKey(
+      TestNSSCertDatabase* database) {
+    // Import a client cert signed by that CA.
+    scoped_refptr<net::X509Certificate> client_cert(
+        net::ImportClientCertAndKeyFromFile(net::GetTestCertsDirectory(),
+                                            "client_1.pem", "client_1.pk8",
+                                            database->GetPrivateSlot().get()));
+    database->NotifyOfCertAdded(client_cert.get());
+    return client_cert;
   }
 
   CertLoader* cert_loader_;
@@ -166,8 +136,8 @@ class CertLoaderTest : public testing::Test,
   // The user is primary as the one whose certificates CertLoader handles, it
   // has nothing to do with crypto::InitializeNSSForChromeOSUser is_primary_user
   // parameter (which is irrelevant for these tests).
-  crypto::ScopedTestNSSChromeOSUser primary_user_;
-  scoped_ptr<net::NSSCertDatabaseChromeOS> primary_db_;
+  crypto::ScopedTestNSSDB primary_db_;
+  scoped_ptr<TestNSSCertDatabase> primary_certdb_;
 
   base::MessageLoop message_loop_;
 
@@ -175,13 +145,14 @@ class CertLoaderTest : public testing::Test,
   size_t certificates_loaded_events_count_;
 };
 
+}  // namespace
+
 TEST_F(CertLoaderTest, Basic) {
   EXPECT_FALSE(cert_loader_->CertificatesLoading());
   EXPECT_FALSE(cert_loader_->certificates_loaded());
 
-  FinishUserInitAndGetDatabase(&primary_user_, &primary_db_);
-
-  cert_loader_->StartWithNSSDB(primary_db_.get());
+  CreateCertDatabase(&primary_db_, &primary_certdb_);
+  cert_loader_->StartWithNSSDB(primary_certdb_.get());
 
   EXPECT_FALSE(cert_loader_->certificates_loaded());
   EXPECT_TRUE(cert_loader_->CertificatesLoading());
@@ -199,10 +170,10 @@ TEST_F(CertLoaderTest, Basic) {
 }
 
 TEST_F(CertLoaderTest, CertLoaderUpdatesCertListOnNewCert) {
-  StartCertLoaderWithPrimaryUser();
+  StartCertLoaderWithPrimaryDB();
 
   net::CertificateList certs;
-  ImportCACert("root_ca_cert.pem", primary_db_.get(), &certs);
+  ImportCACert("root_ca_cert.pem", primary_certdb_.get(), &certs);
 
   // Certs are loaded asynchronously, so the new cert should not yet be in the
   // cert list.
@@ -221,14 +192,14 @@ TEST_F(CertLoaderTest, CertLoaderUpdatesCertListOnNewCert) {
 }
 
 TEST_F(CertLoaderTest, CertLoaderNoUpdateOnSecondaryDbChanges) {
-  crypto::ScopedTestNSSChromeOSUser secondary_user("secondary");
-  scoped_ptr<net::NSSCertDatabaseChromeOS> secondary_db;
+  crypto::ScopedTestNSSDB secondary_db;
+  scoped_ptr<TestNSSCertDatabase> secondary_certdb;
 
-  StartCertLoaderWithPrimaryUser();
-  FinishUserInitAndGetDatabase(&secondary_user, &secondary_db);
+  StartCertLoaderWithPrimaryDB();
+  CreateCertDatabase(&secondary_db, &secondary_certdb);
 
   net::CertificateList certs;
-  ImportCACert("root_ca_cert.pem", secondary_db.get(), &certs);
+  ImportCACert("root_ca_cert.pem", secondary_certdb.get(), &certs);
 
   base::RunLoop().RunUntilIdle();
 
@@ -237,68 +208,58 @@ TEST_F(CertLoaderTest, CertLoaderNoUpdateOnSecondaryDbChanges) {
 }
 
 TEST_F(CertLoaderTest, ClientLoaderUpdateOnNewClientCert) {
-  StartCertLoaderWithPrimaryUser();
+  StartCertLoaderWithPrimaryDB();
 
-  net::CertificateList certs;
-  ImportClientCertAndKey("websocket_client_cert.p12",
-                         primary_db_.get(),
-                         &certs);
+  scoped_refptr<net::X509Certificate> cert(
+      ImportClientCertAndKey(primary_certdb_.get()));
 
   ASSERT_EQ(0U, GetAndResetCertificatesLoadedEventsCount());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1U, GetAndResetCertificatesLoadedEventsCount());
 
-  EXPECT_TRUE(
-      IsCertInCertificateList(certs[0].get(), cert_loader_->cert_list()));
+  EXPECT_TRUE(IsCertInCertificateList(cert.get(), cert_loader_->cert_list()));
 }
 
 TEST_F(CertLoaderTest, CertLoaderNoUpdateOnNewClientCertInSecondaryDb) {
-  crypto::ScopedTestNSSChromeOSUser secondary_user("secondary");
-  scoped_ptr<net::NSSCertDatabaseChromeOS> secondary_db;
+  crypto::ScopedTestNSSDB secondary_db;
+  scoped_ptr<TestNSSCertDatabase> secondary_certdb;
 
-  StartCertLoaderWithPrimaryUser();
-  FinishUserInitAndGetDatabase(&secondary_user, &secondary_db);
+  StartCertLoaderWithPrimaryDB();
+  CreateCertDatabase(&secondary_db, &secondary_certdb);
 
-  net::CertificateList certs;
-  ImportClientCertAndKey("websocket_client_cert.p12",
-                         secondary_db.get(),
-                         &certs);
+  scoped_refptr<net::X509Certificate> cert(
+      ImportClientCertAndKey(secondary_certdb.get()));
 
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_FALSE(
-      IsCertInCertificateList(certs[0].get(), cert_loader_->cert_list()));
+  EXPECT_FALSE(IsCertInCertificateList(cert.get(), cert_loader_->cert_list()));
 }
 
 TEST_F(CertLoaderTest, UpdatedOnCertRemoval) {
-  StartCertLoaderWithPrimaryUser();
+  StartCertLoaderWithPrimaryDB();
 
-  net::CertificateList certs;
-  ImportClientCertAndKey("websocket_client_cert.p12",
-                         primary_db_.get(),
-                         &certs);
+  scoped_refptr<net::X509Certificate> cert(
+      ImportClientCertAndKey(primary_certdb_.get()));
 
   base::RunLoop().RunUntilIdle();
 
   ASSERT_EQ(1U, GetAndResetCertificatesLoadedEventsCount());
-  ASSERT_TRUE(
-      IsCertInCertificateList(certs[0].get(), cert_loader_->cert_list()));
+  ASSERT_TRUE(IsCertInCertificateList(cert.get(), cert_loader_->cert_list()));
 
-  primary_db_->DeleteCertAndKey(certs[0].get());
+  primary_certdb_->DeleteCertAndKey(cert.get());
 
   ASSERT_EQ(0U, GetAndResetCertificatesLoadedEventsCount());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1U, GetAndResetCertificatesLoadedEventsCount());
 
-  ASSERT_FALSE(
-      IsCertInCertificateList(certs[0].get(), cert_loader_->cert_list()));
+  ASSERT_FALSE(IsCertInCertificateList(cert.get(), cert_loader_->cert_list()));
 }
 
 TEST_F(CertLoaderTest, UpdatedOnCACertTrustChange) {
-  StartCertLoaderWithPrimaryUser();
+  StartCertLoaderWithPrimaryDB();
 
   net::CertificateList certs;
-  ImportCACert("root_ca_cert.pem", primary_db_.get(), &certs);
+  ImportCACert("root_ca_cert.pem", primary_certdb_.get(), &certs);
 
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ(1U, GetAndResetCertificatesLoadedEventsCount());
@@ -307,9 +268,9 @@ TEST_F(CertLoaderTest, UpdatedOnCACertTrustChange) {
 
   // The value that should have been set by |ImportCACert|.
   ASSERT_EQ(net::NSSCertDatabase::TRUST_DEFAULT,
-            primary_db_->GetCertTrust(certs[0].get(), net::CA_CERT));
-  ASSERT_TRUE(primary_db_->SetCertTrust(
-      certs[0].get(), net::CA_CERT, net::NSSCertDatabase::TRUSTED_SSL));
+            primary_certdb_->GetCertTrust(certs[0].get(), net::CA_CERT));
+  ASSERT_TRUE(primary_certdb_->SetCertTrust(certs[0].get(), net::CA_CERT,
+                                            net::NSSCertDatabase::TRUSTED_SSL));
 
   // Cert trust change should trigger certificate reload in cert_loader_.
   ASSERT_EQ(0U, GetAndResetCertificatesLoadedEventsCount());
@@ -317,8 +278,4 @@ TEST_F(CertLoaderTest, UpdatedOnCACertTrustChange) {
   EXPECT_EQ(1U, GetAndResetCertificatesLoadedEventsCount());
 }
 
-}  // namespace
 }  // namespace chromeos
-
-#endif
-

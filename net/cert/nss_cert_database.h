@@ -263,6 +263,12 @@ class NET_EXPORT NSSCertDatabase {
   // in tests (see SetSlowTaskRunnerForTest).
   scoped_refptr<base::TaskRunner> GetSlowTaskRunner() const;
 
+ protected:
+  // Broadcasts notifications to all registered observers.
+  void NotifyObserversOfCertAdded(const X509Certificate* cert);
+  void NotifyObserversOfCertRemoved(const X509Certificate* cert);
+  void NotifyObserversOfCACertChanged(const X509Certificate* cert);
+
  private:
   // Registers |observer| to receive notifications of certificate changes.  The
   // thread on which this is called is the thread on which |observer| will be
@@ -281,11 +287,6 @@ class NET_EXPORT NSSCertDatabase {
   void NotifyCertRemovalAndCallBack(scoped_refptr<X509Certificate> cert,
                                     const DeleteCertCallback& callback,
                                     bool success);
-
-  // Broadcasts notifications to all registered observers.
-  void NotifyObserversOfCertAdded(const X509Certificate* cert);
-  void NotifyObserversOfCertRemoved(const X509Certificate* cert);
-  void NotifyObserversOfCACertChanged(const X509Certificate* cert);
 
   // Certificate removal implementation used by |DeleteCertAndKey*|. Static so
   // it may safely be used on the worker thread.
