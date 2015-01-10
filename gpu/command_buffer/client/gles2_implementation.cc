@@ -102,6 +102,7 @@ GLES2Implementation::GLES2Implementation(
       support_client_side_arrays_(support_client_side_arrays),
       use_count_(0),
       error_message_callback_(NULL),
+      current_trace_stack_(0),
       gpu_control_(gpu_control),
       capabilities_(gpu_control->GetCapabilities()),
       weak_ptr_factory_(this) {
@@ -3857,34 +3858,24 @@ void GLES2Implementation::TraceBeginCHROMIUM(
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glTraceBeginCHROMIUM("
                  << category_name << ", " << trace_name << ")");
-  if (current_trace_category_.get() || current_trace_name_.get()) {
-    SetGLError(GL_INVALID_OPERATION, "glTraceBeginCHROMIUM",
-               "trace already running");
-    return;
-  }
-  TRACE_EVENT_COPY_ASYNC_BEGIN0(category_name, trace_name, this);
   SetBucketAsCString(kResultBucketId, category_name);
-  SetBucketAsCString(kResultBucketId + 1, category_name);
+  SetBucketAsCString(kResultBucketId + 1, trace_name);
   helper_->TraceBeginCHROMIUM(kResultBucketId, kResultBucketId + 1);
   helper_->SetBucketSize(kResultBucketId, 0);
   helper_->SetBucketSize(kResultBucketId + 1, 0);
-  current_trace_category_.reset(new std::string(category_name));
-  current_trace_name_.reset(new std::string(trace_name));
+  current_trace_stack_++;
 }
 
 void GLES2Implementation::TraceEndCHROMIUM() {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glTraceEndCHROMIUM(" << ")");
-  if (!current_trace_category_.get() || !current_trace_name_.get()) {
+  if (current_trace_stack_ == 0) {
     SetGLError(GL_INVALID_OPERATION, "glTraceEndCHROMIUM",
                "missing begin trace");
     return;
   }
   helper_->TraceEndCHROMIUM();
-  TRACE_EVENT_COPY_ASYNC_END0(current_trace_category_->c_str(),
-                              current_trace_name_->c_str(), this);
-  current_trace_category_.reset();
-  current_trace_name_.reset();
+  current_trace_stack_--;
 }
 
 void* GLES2Implementation::MapBufferCHROMIUM(GLuint target, GLenum access) {

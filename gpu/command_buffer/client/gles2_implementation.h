@@ -743,8 +743,7 @@ class GLES2_IMPL_EXPORT GLES2Implementation
 
   GLES2ImplementationErrorMessageCallback* error_message_callback_;
 
-  scoped_ptr<std::string> current_trace_category_;
-  scoped_ptr<std::string> current_trace_name_;
+  int current_trace_stack_;
 
   GpuControl* gpu_control_;
 

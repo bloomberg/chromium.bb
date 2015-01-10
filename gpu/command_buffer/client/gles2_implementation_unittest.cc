@@ -3441,6 +3441,76 @@ TEST_F(GLES2ImplementationTest, LimitSizeAndOffsetTo32Bit) {
   EXPECT_STREQ(kOffsetOverflowMessage, GetLastError().c_str());
 }
 
+TEST_F(GLES2ImplementationTest, TraceBeginCHROMIUM) {
+  const uint32 kCategoryBucketId = GLES2Implementation::kResultBucketId;
+  const uint32 kNameBucketId = GLES2Implementation::kResultBucketId + 1;
+  const std::string category_name = "test category";
+  const std::string trace_name = "test trace";
+  const size_t kPaddedString1Size =
+      transfer_buffer_->RoundToAlignment(category_name.size() + 1);
+  const size_t kPaddedString2Size =
+      transfer_buffer_->RoundToAlignment(trace_name.size() + 1);
+
+  gl_->TraceBeginCHROMIUM(category_name.c_str(), trace_name.c_str());
+  EXPECT_EQ(GL_NO_ERROR, CheckError());
+
+  struct Cmds {
+    cmd::SetBucketSize category_size1;
+    cmd::SetBucketData category_data;
+    cmd::SetToken set_token1;
+    cmd::SetBucketSize name_size1;
+    cmd::SetBucketData name_data;
+    cmd::SetToken set_token2;
+    cmds::TraceBeginCHROMIUM trace_call_begin;
+    cmd::SetBucketSize category_size2;
+    cmd::SetBucketSize name_size2;
+  };
+
+  ExpectedMemoryInfo mem1 = GetExpectedMemory(kPaddedString1Size);
+  ExpectedMemoryInfo mem2 = GetExpectedMemory(kPaddedString2Size);
+
+  ASSERT_STREQ(category_name.c_str(), reinterpret_cast<char*>(mem1.ptr));
+  ASSERT_STREQ(trace_name.c_str(), reinterpret_cast<char*>(mem2.ptr));
+
+  Cmds expected;
+  expected.category_size1.Init(kCategoryBucketId, category_name.size() + 1);
+  expected.category_data.Init(
+      kCategoryBucketId, 0, category_name.size() + 1, mem1.id, mem1.offset);
+  expected.set_token1.Init(GetNextToken());
+  expected.name_size1.Init(kNameBucketId, trace_name.size() + 1);
+  expected.name_data.Init(
+      kNameBucketId, 0, trace_name.size() + 1, mem2.id, mem2.offset);
+  expected.set_token2.Init(GetNextToken());
+  expected.trace_call_begin.Init(kCategoryBucketId, kNameBucketId);
+  expected.category_size2.Init(kCategoryBucketId, 0);
+  expected.name_size2.Init(kNameBucketId, 0);
+
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
+TEST_F(GLES2ImplementationTest, AllowNestedTracesCHROMIUM) {
+  const std::string category1_name = "test category 1";
+  const std::string trace1_name = "test trace 1";
+  const std::string category2_name = "test category 2";
+  const std::string trace2_name = "test trace 2";
+
+  gl_->TraceBeginCHROMIUM(category1_name.c_str(), trace1_name.c_str());
+  EXPECT_EQ(GL_NO_ERROR, CheckError());
+
+  gl_->TraceBeginCHROMIUM(category2_name.c_str(), trace2_name.c_str());
+  EXPECT_EQ(GL_NO_ERROR, CheckError());
+
+  gl_->TraceEndCHROMIUM();
+  EXPECT_EQ(GL_NO_ERROR, CheckError());
+
+  gl_->TraceEndCHROMIUM();
+  EXPECT_EQ(GL_NO_ERROR, CheckError());
+
+  // No more corresponding begin tracer marker should error.
+  gl_->TraceEndCHROMIUM();
+  EXPECT_EQ(GL_INVALID_OPERATION, CheckError());
+}
+
 TEST_F(GLES2ImplementationManualInitTest, LoseContextOnOOM) {
   ContextInitOptions init_options;
   init_options.lose_context_when_out_of_memory = true;
