@@ -1724,11 +1724,8 @@ void RenderViewContextMenu::NotifyURLOpened(
 bool RenderViewContextMenu::IsDevCommandEnabled(int id) const {
   if (id == IDC_CONTENT_CONTEXT_INSPECTELEMENT ||
       id == IDC_CONTENT_CONTEXT_INSPECTBACKGROUNDPAGE) {
-    const base::CommandLine* command_line =
-        base::CommandLine::ForCurrentProcess();
     if (!GetPrefs(browser_context_)
-             ->GetBoolean(prefs::kWebKitJavascriptEnabled) ||
-        command_line->HasSwitch(switches::kDisableJavaScript))
+             ->GetBoolean(prefs::kWebKitJavascriptEnabled))
       return false;
 
     // Don't enable the web inspector if the developer tools are disabled via

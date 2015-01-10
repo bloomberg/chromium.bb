@@ -169,9 +169,6 @@ const char kDisableImplSidePainting[]       = "disable-impl-side-painting";
 // Prevent Java from running.
 const char kDisableJava[]                   = "disable-java";
 
-// Don't execute JavaScript (browser JS like the new tab page still runs).
-const char kDisableJavaScript[]             = "disable-javascript";
-
 // Don't kill a child process when it sends a bad IPC message.  Apart
 // from testing, it is a bad idea from a security perspective to enable
 // this switch.

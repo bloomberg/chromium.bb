@@ -325,8 +325,6 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs(const GURL& url) {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
 
-  prefs.javascript_enabled =
-      !command_line.HasSwitch(switches::kDisableJavaScript);
   prefs.web_security_enabled =
       !command_line.HasSwitch(switches::kDisableWebSecurity);
   prefs.plugins_enabled =
