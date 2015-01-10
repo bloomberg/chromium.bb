@@ -40,7 +40,7 @@ namespace WTF {
 
 static const TextEncoding& UTF7Encoding()
 {
-    AtomicallyInitializedStatic(TextEncoding, globalUTF7Encoding = *new TextEncoding("UTF-7"));
+    AtomicallyInitializedStatic(const TextEncoding&, globalUTF7Encoding = *new TextEncoding("UTF-7"));
     return globalUTF7Encoding;
 }
 
@@ -175,50 +175,50 @@ const TextEncoding& TextEncoding::encodingForFormSubmission() const
 
 const TextEncoding& ASCIIEncoding()
 {
-    AtomicallyInitializedStatic(TextEncoding, globalASCIIEncoding = *new TextEncoding("ASCII"));
+    AtomicallyInitializedStatic(const TextEncoding&, globalASCIIEncoding = *new TextEncoding("ASCII"));
     return globalASCIIEncoding;
 }
 
 const TextEncoding& Latin1Encoding()
 {
-    AtomicallyInitializedStatic(TextEncoding, globalLatin1Encoding = *new TextEncoding("latin1"));
+    AtomicallyInitializedStatic(const TextEncoding&, globalLatin1Encoding = *new TextEncoding("latin1"));
     return globalLatin1Encoding;
 }
 
 const TextEncoding& UTF16BigEndianEncoding()
 {
-    AtomicallyInitializedStatic(TextEncoding, globalUTF16BigEndianEncoding = *new TextEncoding("UTF-16BE"));
+    AtomicallyInitializedStatic(const TextEncoding&, globalUTF16BigEndianEncoding = *new TextEncoding("UTF-16BE"));
     return globalUTF16BigEndianEncoding;
 }
 
 const TextEncoding& UTF16LittleEndianEncoding()
 {
-    AtomicallyInitializedStatic(TextEncoding, globalUTF16LittleEndianEncoding = *new TextEncoding("UTF-16LE"));
+    AtomicallyInitializedStatic(const TextEncoding&, globalUTF16LittleEndianEncoding = *new TextEncoding("UTF-16LE"));
     return globalUTF16LittleEndianEncoding;
 }
 
 const TextEncoding& UTF32BigEndianEncoding()
 {
-    AtomicallyInitializedStatic(TextEncoding, globalUTF32BigEndianEncoding = *new TextEncoding("UTF-32BE"));
+    AtomicallyInitializedStatic(const TextEncoding&, globalUTF32BigEndianEncoding = *new TextEncoding("UTF-32BE"));
     return globalUTF32BigEndianEncoding;
 }
 
 const TextEncoding& UTF32LittleEndianEncoding()
 {
-    AtomicallyInitializedStatic(TextEncoding, globalUTF32LittleEndianEncoding = *new TextEncoding("UTF-32LE"));
+    AtomicallyInitializedStatic(const TextEncoding&, globalUTF32LittleEndianEncoding = *new TextEncoding("UTF-32LE"));
     return globalUTF32LittleEndianEncoding;
 }
 
 const TextEncoding& UTF8Encoding()
 {
-    AtomicallyInitializedStatic(TextEncoding, globalUTF8Encoding = *new TextEncoding("UTF-8"));
+    AtomicallyInitializedStatic(const TextEncoding&, globalUTF8Encoding = *new TextEncoding("UTF-8"));
     ASSERT(globalUTF8Encoding.isValid());
     return globalUTF8Encoding;
 }
 
 const TextEncoding& WindowsLatin1Encoding()
 {
-    AtomicallyInitializedStatic(TextEncoding, globalWindowsLatin1Encoding = *new TextEncoding("WinLatin1"));
+    AtomicallyInitializedStatic(const TextEncoding&, globalWindowsLatin1Encoding = *new TextEncoding("WinLatin1"));
     return globalWindowsLatin1Encoding;
 }
 
