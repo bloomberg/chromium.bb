@@ -50,6 +50,10 @@ def MakeDestinationPath(from_path, to_path):
     raise Exception('Only intended to move individual source files '
                     '(%s does not have a recognized extension).' %
                     from_path)
+
+  # Remove '.', '..', etc.
+  to_path = os.path.normpath(to_path)
+
   if os.path.isdir(to_path):
     to_path = os.path.join(to_path, os.path.basename(from_path))
   else:
