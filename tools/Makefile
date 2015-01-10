@@ -74,6 +74,12 @@ include REVISIONS
 endif
 export NACL_FAKE_SONAME = $(shell commit=$(NACL_GLIBC_COMMIT);echo $${commit:0:8})
 
+# Recent version of makeinfo (such as the one in ubuntu trusty) fail to
+# compile the info files in our version of gcc. Setting this variable to
+# no stops gcc from detecteing a modern version of makeinfo and effectivly
+# stops it from building the info files.
+export gcc_cv_prog_makeinfo_modern=no
+
 # Toplevel installation directory.
 # MUST be an absolute pathname, for configure --prefix=$(PREFIX)
 PREFIX = $(abspath $(SDKROOT))
