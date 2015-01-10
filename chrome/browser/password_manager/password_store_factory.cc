@@ -15,7 +15,6 @@
 #include "chrome/browser/webdata/web_data_service_factory.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/chrome_version_info.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/os_crypt/os_crypt_switches.h"
 #include "components/password_manager/core/browser/login_database.h"
@@ -59,35 +58,14 @@ void ReportOsPassword(password_manager_util::OsPasswordStatus status) {
 }
 
 void DelayReportOsPassword() {
-  int64 kInitWindowDelay = 40;
-
-  // TODO(vadimt): Remove kInitWindowDelay and the below switch, and delay by 40
-  // sec always before crbug.com/441428 is closed.
-
-  // Profiler UMA data is reported only for first 30 sec after browser startup.
-  // To make pasword reporting visible to the server-side analysis tool,
-  // reducing this period to 10 sec in trunk and Canary builds, making it
-  // possible to see jankiness of password reporting based on the Canary data.
-  switch (chrome::VersionInfo::GetChannel()) {
-    case chrome::VersionInfo::CHANNEL_UNKNOWN:
-    case chrome::VersionInfo::CHANNEL_CANARY:
-      kInitWindowDelay = 10;
-      break;
-
-    case chrome::VersionInfo::CHANNEL_DEV:
-    case chrome::VersionInfo::CHANNEL_BETA:
-    case chrome::VersionInfo::CHANNEL_STABLE:
-      // Profiler instrumentations are not enabled.
-      break;
-  }
-
   // Avoid checking OS password until later on in browser startup
   // since it calls a few Windows APIs.
   content::BrowserThread::PostDelayedTask(
-      content::BrowserThread::UI, FROM_HERE,
+      content::BrowserThread::UI,
+      FROM_HERE,
       base::Bind(&password_manager_util::GetOsPasswordStatus,
                  base::Bind(&ReportOsPassword)),
-      base::TimeDelta::FromSeconds(kInitWindowDelay));
+      base::TimeDelta::FromSeconds(40));
 }
 
 }  // namespace
