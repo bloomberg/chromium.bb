@@ -1082,7 +1082,7 @@ void RenderViewHostImpl::OnUpdateState(int32 page_id, const PageState& state) {
 
 void RenderViewHostImpl::OnUpdateTargetURL(const GURL& url) {
   if (is_active_)
-    delegate_->UpdateTargetURL(url);
+    delegate_->UpdateTargetURL(this, url);
 
   // Send a notification back to the renderer that we are ready to
   // receive more target urls.

@@ -2593,6 +2593,7 @@ void WebContentsImpl::DidNavigateMainFramePreCommit(
 }
 
 void WebContentsImpl::DidNavigateMainFramePostCommit(
+    RenderFrameHostImpl* render_frame_host,
     const LoadCommittedDetails& details,
     const FrameHostMsg_DidCommitProvisionalLoad_Params& params) {
   if (details.is_navigation_to_different_page()) {
@@ -2602,7 +2603,7 @@ void WebContentsImpl::DidNavigateMainFramePostCommit(
     // clicking on a link); see bugs 1184641 and 980803. We don't want to
     // clear the bubble when a user navigates to a named anchor in the same
     // page.
-    UpdateTargetURL(GURL());
+    UpdateTargetURL(render_frame_host->GetRenderViewHost(), GURL());
   }
 
   if (!details.is_in_page) {
@@ -3670,7 +3671,15 @@ void WebContentsImpl::UpdateState(RenderViewHost* rvh,
   controller_.NotifyEntryChanged(entry, entry_index);
 }
 
-void WebContentsImpl::UpdateTargetURL(const GURL& url) {
+void WebContentsImpl::UpdateTargetURL(RenderViewHost* render_view_host,
+                                      const GURL& url) {
+  if (fullscreen_widget_routing_id_ != MSG_ROUTING_NONE) {
+    // If we're fullscreen only update the url if it's from the fullscreen
+    // renderer.
+    RenderWidgetHostView* fs = GetFullscreenRenderWidgetHostView();
+    if (fs && fs->GetRenderWidgetHost() != render_view_host)
+      return;
+  }
   if (delegate_)
     delegate_->UpdateTargetURL(this, url);
 }

@@ -412,7 +412,8 @@ class CONTENT_EXPORT WebContentsImpl
   void UpdateState(RenderViewHost* render_view_host,
                    int32 page_id,
                    const PageState& page_state) override;
-  void UpdateTargetURL(const GURL& url) override;
+  void UpdateTargetURL(RenderViewHost* render_view_host,
+                       const GURL& url) override;
   void Close(RenderViewHost* render_view_host) override;
   void RequestMove(const gfx::Rect& new_bounds) override;
   void DidCancelLoading() override;
@@ -502,6 +503,7 @@ class CONTENT_EXPORT WebContentsImpl
                                 ui::PageTransition transition_type) override;
   void DidNavigateMainFramePreCommit(bool navigation_is_within_page) override;
   void DidNavigateMainFramePostCommit(
+      RenderFrameHostImpl* render_frame_host,
       const LoadCommittedDetails& details,
       const FrameHostMsg_DidCommitProvisionalLoad_Params& params) override;
   void DidNavigateAnyFramePostCommit(

@@ -64,6 +64,7 @@ class CONTENT_EXPORT NavigatorDelegate {
   // not provided since it may be invalid/changed after being committed. The
   // NavigationController's last committed entry is for this navigation.
   virtual void DidNavigateMainFramePostCommit(
+      RenderFrameHostImpl* render_frame_host,
       const LoadCommittedDetails& details,
       const FrameHostMsg_DidCommitProvisionalLoad_Params& params) {}
   virtual void DidNavigateAnyFramePostCommit(

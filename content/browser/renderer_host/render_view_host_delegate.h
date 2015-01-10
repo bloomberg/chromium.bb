@@ -110,7 +110,8 @@ class CONTENT_EXPORT RenderViewHostDelegate {
                            const PageState& state) {}
 
   // The destination URL has changed should be updated.
-  virtual void UpdateTargetURL(const GURL& url) {}
+  virtual void UpdateTargetURL(RenderViewHost* render_view_host,
+                               const GURL& url) {}
 
   // The page is trying to close the RenderView's representation in the client.
   virtual void Close(RenderViewHost* render_view_host) {}

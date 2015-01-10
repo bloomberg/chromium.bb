@@ -622,8 +622,10 @@ void NavigatorImpl::DidNavigate(
 
   // Run post-commit tasks.
   if (delegate_) {
-    if (details.is_main_frame)
-      delegate_->DidNavigateMainFramePostCommit(details, params);
+    if (details.is_main_frame) {
+      delegate_->DidNavigateMainFramePostCommit(render_frame_host,
+                                                details, params);
+    }
 
     delegate_->DidNavigateAnyFramePostCommit(
         render_frame_host, details, params);
