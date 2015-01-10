@@ -289,6 +289,8 @@ void ChannelMojo::InitMessageReader(mojo::ScopedMessagePipeHandle pipe,
 
   set_peer_pid(peer_pid);
   listener_->OnChannelConnected(static_cast<int32_t>(GetPeerPID()));
+  if (message_reader_)
+    message_reader_->ReadMessagesThenWait();
 }
 
 void ChannelMojo::OnPipeClosed(internal::MessagePipeReader* reader) {

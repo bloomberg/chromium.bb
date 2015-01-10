@@ -9,18 +9,19 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "ipc/mojo/async_handle_waiter.h"
 #include "ipc/mojo/ipc_channel_mojo.h"
-#include "mojo/public/cpp/environment/environment.h"
 
 namespace IPC {
 namespace internal {
 
 MessagePipeReader::MessagePipeReader(mojo::ScopedMessagePipeHandle handle,
                                      MessagePipeReader::Delegate* delegate)
-    : pipe_wait_id_(0),
-      pipe_(handle.Pass()),
-      delegate_(delegate) {
-  StartWaiting();
+    : pipe_(handle.Pass()),
+      delegate_(delegate),
+      async_waiter_(
+          new AsyncHandleWaiter(base::Bind(&MessagePipeReader::PipeIsReady,
+                                           base::Unretained(this)))) {
 }
 
 MessagePipeReader::~MessagePipeReader() {
@@ -28,7 +29,7 @@ MessagePipeReader::~MessagePipeReader() {
 }
 
 void MessagePipeReader::Close() {
-  StopWaiting();
+  async_waiter_.reset();
   pipe_.reset();
   OnPipeClosed();
 }
@@ -63,11 +64,6 @@ bool MessagePipeReader::Send(scoped_ptr<Message> message) {
   }
 
   return true;
-}
-
-// static
-void MessagePipeReader::InvokePipeIsReady(void* closure, MojoResult result) {
-  reinterpret_cast<MessagePipeReader*>(closure)->PipeIsReady(result);
 }
 
 void MessagePipeReader::OnMessageReceived() {
@@ -133,23 +129,7 @@ MojoResult MessagePipeReader::ReadMessageBytes() {
   return result;
 }
 
-void MessagePipeReader::PipeIsReady(MojoResult wait_result) {
-  pipe_wait_id_ = 0;
-
-  if (wait_result != MOJO_RESULT_OK) {
-    if (wait_result != MOJO_RESULT_ABORTED) {
-      // FAILED_PRECONDITION happens every time the peer is dead so
-      // it isn't worth polluting the log message.
-      DLOG_IF(WARNING, wait_result != MOJO_RESULT_FAILED_PRECONDITION)
-          << "Pipe got error from the waiter. Closing: "
-          << wait_result;
-      OnPipeError(wait_result);
-    }
-
-    Close();
-    return;
-  }
-
+void MessagePipeReader::ReadAvailableMessages() {
   while (pipe_.is_valid()) {
     MojoResult read_result = ReadMessageBytes();
     if (read_result == MOJO_RESULT_SHOULD_WAIT)
@@ -170,31 +150,49 @@ void MessagePipeReader::PipeIsReady(MojoResult wait_result) {
     OnMessageReceived();
   }
 
-  if (pipe_.is_valid())
-    StartWaiting();
 }
 
-void MessagePipeReader::StartWaiting() {
-  DCHECK(pipe_.is_valid());
-  DCHECK(!pipe_wait_id_);
-  // Not using MOJO_HANDLE_SIGNAL_WRITABLE here, expecting buffer in
-  // MessagePipe.
-  //
-  // TODO(morrita): Should we re-set the signal when we get new
-  // message to send?
-  pipe_wait_id_ = mojo::Environment::GetDefaultAsyncWaiter()->AsyncWait(
-      pipe_.get().value(),
-      MOJO_HANDLE_SIGNAL_READABLE,
-      MOJO_DEADLINE_INDEFINITE,
-      &InvokePipeIsReady,
-      this);
+void MessagePipeReader::ReadMessagesThenWait() {
+  while (true) {
+    ReadAvailableMessages();
+    if (!pipe_.is_valid())
+      break;
+    // |Wait()| is safe to call only after all messages are read.
+    // If can fail with |MOJO_RESULT_ALREADY_EXISTS| otherwise.
+    // Also, we don't use MOJO_HANDLE_SIGNAL_WRITABLE here, expecting buffer in
+    // MessagePipe.
+    MojoResult result =
+        async_waiter_->Wait(pipe_.get().value(), MOJO_HANDLE_SIGNAL_READABLE);
+    // If the result is |MOJO_RESULT_ALREADY_EXISTS|, there could be messages
+    // that have been arrived after the last |ReadAvailableMessages()|.
+    // We have to consume then and retry in that case.
+    if (result != MOJO_RESULT_ALREADY_EXISTS) {
+      if (result != MOJO_RESULT_OK) {
+        DLOG(ERROR) << "Result is " << result;
+        OnPipeError(result);
+        Close();
+      }
+
+      break;
+    }
+  }
 }
 
-void MessagePipeReader::StopWaiting() {
-  if (!pipe_wait_id_)
+void MessagePipeReader::PipeIsReady(MojoResult wait_result) {
+  if (wait_result != MOJO_RESULT_OK) {
+    if (wait_result != MOJO_RESULT_ABORTED) {
+      // FAILED_PRECONDITION happens every time the peer is dead so
+      // it isn't worth polluting the log message.
+      DLOG_IF(WARNING, wait_result != MOJO_RESULT_FAILED_PRECONDITION)
+          << "Pipe got error from the waiter. Closing: " << wait_result;
+      OnPipeError(wait_result);
+    }
+
+    Close();
     return;
-  mojo::Environment::GetDefaultAsyncWaiter()->CancelWait(pipe_wait_id_);
-  pipe_wait_id_ = 0;
+  }
+
+  ReadMessagesThenWait();
 }
 
 void MessagePipeReader::DelayedDeleter::operator()(

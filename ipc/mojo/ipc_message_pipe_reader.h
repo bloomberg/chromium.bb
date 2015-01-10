@@ -16,6 +16,8 @@
 namespace IPC {
 namespace internal {
 
+class AsyncHandleWaiter;
+
 // A helper class to handle bytestream directly over mojo::MessagePipe
 // in template-method pattern. MessagePipeReader manages the lifetime
 // of given MessagePipe and participates the event loop, and
@@ -81,25 +83,23 @@ class MessagePipeReader {
   bool IsValid() { return pipe_.is_valid(); }
 
   bool Send(scoped_ptr<Message> message);
+  void ReadMessagesThenWait();
 
  private:
-  static void InvokePipeIsReady(void* closure, MojoResult result);
-
   void OnMessageReceived();
   void OnPipeClosed();
   void OnPipeError(MojoResult error);
 
   MojoResult ReadMessageBytes();
   void PipeIsReady(MojoResult wait_result);
-  void StartWaiting();
-  void StopWaiting();
+  void ReadAvailableMessages();
 
   std::vector<char>  data_buffer_;
   std::vector<MojoHandle> handle_buffer_;
-  MojoAsyncWaitID pipe_wait_id_;
   mojo::ScopedMessagePipeHandle pipe_;
-  // Is null once the message pipe is closed.
+  // |delegate_| and |async_waiter_| are null once the message pipe is closed.
   Delegate* delegate_;
+  scoped_ptr<AsyncHandleWaiter> async_waiter_;
 
   DISALLOW_COPY_AND_ASSIGN(MessagePipeReader);
 };

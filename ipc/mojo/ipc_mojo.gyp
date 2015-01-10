@@ -28,6 +28,8 @@
       ],
       'sources': [
         'client_channel.mojom',
+        'async_handle_waiter.cc',
+        'async_handle_waiter.h',
         'ipc_channel_mojo.cc',
         'ipc_channel_mojo.h',
         'ipc_channel_mojo_host.cc',
@@ -64,6 +66,7 @@
         '..'
       ],
       'sources': [
+        'async_handle_waiter_unittest.cc',
         'run_all_unittests.cc',
         'ipc_channel_mojo_unittest.cc',
         'ipc_mojo_bootstrap_unittest.cc',
