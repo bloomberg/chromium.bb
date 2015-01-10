@@ -146,6 +146,7 @@ GuestViewBase::GuestViewBase(content::BrowserContext* browser_context,
       element_instance_id_(guestview::kInstanceIDNone),
       initialized_(false),
       is_being_destroyed_(false),
+      guest_sizer_(nullptr),
       auto_size_enabled_(false),
       is_full_page_plugin_(false),
       weak_ptr_factory_(this) {
@@ -340,9 +341,12 @@ void GuestViewBase::DidDetach() {
   element_instance_id_ = guestview::kInstanceIDNone;
 }
 
-void GuestViewBase::ElementSizeChanged(const gfx::Size& old_size,
-                                       const gfx::Size& new_size) {
-  element_size_ = new_size;
+void GuestViewBase::ElementSizeChanged(const gfx::Size& size) {
+  element_size_ = size;
+
+  // Only resize if needed.
+  if (!size.IsEmpty())
+    guest_sizer_->SizeContents(size);
 }
 
 WebContents* GuestViewBase::GetOwnerWebContents() const {
@@ -367,11 +371,13 @@ void GuestViewBase::Destroy() {
 
   is_being_destroyed_ = true;
 
+  guest_sizer_ = nullptr;
+
   // It is important to clear owner_web_contents_ after the call to
   // StopTrackingEmbedderZoomLevel(), but before the rest of
   // the statements in this function.
   StopTrackingEmbedderZoomLevel();
-  owner_web_contents_ = NULL;
+  owner_web_contents_ = nullptr;
 
   DCHECK(web_contents());
 
@@ -415,6 +421,10 @@ void GuestViewBase::SetOpener(GuestViewBase* guest) {
 void GuestViewBase::RegisterDestructionCallback(
     const DestructionCallback& callback) {
   destruction_callback_ = callback;
+}
+
+void GuestViewBase::SetGuestSizer(content::GuestSizer* guest_sizer) {
+  guest_sizer_ = guest_sizer;
 }
 
 void GuestViewBase::WillAttach(content::WebContents* embedder_web_contents,

@@ -31,6 +31,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_plugin_guest_manager.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/guest_sizer.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -98,6 +99,11 @@ BrowserPluginGuest::BrowserPluginGuest(bool has_render_view,
   web_contents->SetBrowserPluginGuest(this);
   delegate->RegisterDestructionCallback(
       base::Bind(&BrowserPluginGuest::WillDestroy, AsWeakPtr()));
+  delegate->SetGuestSizer(this);
+}
+
+void BrowserPluginGuest::SizeContents(const gfx::Size& new_size) {
+  GetWebContents()->GetView()->SizeContents(new_size);
 }
 
 void BrowserPluginGuest::Init() {
@@ -732,14 +738,11 @@ void BrowserPluginGuest::OnResizeGuest(
   }
 
   if (last_seen_browser_plugin_size_ != params.view_size) {
-    delegate_->ElementSizeChanged(last_seen_browser_plugin_size_,
-                                  params.view_size);
+    delegate_->ElementSizeChanged(params.view_size);
     last_seen_browser_plugin_size_ = params.view_size;
   }
 
-  // Just resize the WebContents and repaint if needed.
-  if (!params.view_size.IsEmpty())
-    GetWebContents()->GetView()->SizeContents(params.view_size);
+  // Just repaint the WebContents if needed.
   if (params.repaint)
     Send(new ViewMsg_Repaint(routing_id(), params.view_size));
 }

@@ -11,6 +11,7 @@
 #include "base/values.h"
 #include "components/ui/zoom/zoom_observer.h"
 #include "content/public/browser/browser_plugin_guest_delegate.h"
+#include "content/public/browser/guest_sizer.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -252,12 +253,12 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   // BrowserPluginGuestDelegate implementation.
   void DidAttach(int guest_proxy_routing_id) final;
   void DidDetach() final;
-  void ElementSizeChanged(const gfx::Size& old_size,
-                          const gfx::Size& new_size) final;
+  void ElementSizeChanged(const gfx::Size& size) final;
   content::WebContents* GetOwnerWebContents() const final;
   void GuestSizeChanged(const gfx::Size& old_size,
                         const gfx::Size& new_size) final;
   void RegisterDestructionCallback(const DestructionCallback& callback) final;
+  void SetGuestSizer(content::GuestSizer* guest_sizer) final;
   void WillAttach(content::WebContents* embedder_web_contents,
                   int browser_plugin_instance_id,
                   bool is_full_page_plugin) final;
@@ -364,6 +365,9 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   // The size of the guest content. Note: In autosize mode, the container
   // element may not match the size of the guest.
   gfx::Size guest_size_;
+
+  // A pointer to the guest_sizer.
+  content::GuestSizer* guest_sizer_;
 
   // Indicates whether autosize mode is enabled or not.
   bool auto_size_enabled_;

@@ -38,6 +38,7 @@
 #include "ui/base/ime/text_input_type.h"
 #include "ui/gfx/geometry/rect.h"
 
+class GuestSizer;
 class SkBitmap;
 struct BrowserPluginHostMsg_Attach_Params;
 struct BrowserPluginHostMsg_ResizeGuest_Params;
@@ -80,7 +81,8 @@ struct DropData;
 // A BrowserPluginGuest can also create a new unattached guest via
 // CreateNewWindow. The newly created guest will live in the same partition,
 // which means it can share storage and can script this guest.
-class CONTENT_EXPORT BrowserPluginGuest : public WebContentsObserver {
+class CONTENT_EXPORT BrowserPluginGuest : public GuestSizer,
+                                          public WebContentsObserver {
  public:
   ~BrowserPluginGuest() override;
 
@@ -165,6 +167,9 @@ class CONTENT_EXPORT BrowserPluginGuest : public WebContentsObserver {
   bool OnMessageReceived(const IPC::Message& message) override;
   bool OnMessageReceived(const IPC::Message& message,
                          RenderFrameHost* render_frame_host) override;
+
+  // GuestSizer implementation.
+  void SizeContents(const gfx::Size& new_size) override;
 
   // Exposes the protected web_contents() from WebContentsObserver.
   WebContentsImpl* GetWebContents() const;

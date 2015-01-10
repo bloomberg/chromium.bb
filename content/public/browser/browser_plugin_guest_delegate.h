@@ -8,6 +8,7 @@
 #include "base/callback_forward.h"
 #include "base/process/kill.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/guest_sizer.h"
 #include "content/public/browser/web_contents.h"
 
 namespace base {
@@ -51,8 +52,7 @@ class CONTENT_EXPORT BrowserPluginGuestDelegate {
   virtual void DidDetach() {}
 
   // Notification that the BrowserPlugin has resized.
-  virtual void ElementSizeChanged(const gfx::Size& old_size,
-                                  const gfx::Size& new_size) {}
+  virtual void ElementSizeChanged(const gfx::Size& size) {}
 
   // Returns the WebContents that currently owns this guest.
   virtual WebContents* GetOwnerWebContents() const;
@@ -81,6 +81,9 @@ class CONTENT_EXPORT BrowserPluginGuestDelegate {
   virtual bool Find(int request_id,
                     const base::string16& search_text,
                     const blink::WebFindOptions& options);
+
+  // Provides the delegate with an interface with which to size the guest.
+  virtual void SetGuestSizer(GuestSizer* guest_sizer) {}
 };
 
 }  // namespace content
