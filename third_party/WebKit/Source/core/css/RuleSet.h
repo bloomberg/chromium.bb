@@ -82,8 +82,6 @@ public:
     bool isLastInArray() const { return m_isLastInArray; }
     void setLastInArray(bool flag) { m_isLastInArray = flag; }
 
-    bool hasMultipartSelector() const { return m_hasMultipartSelector; }
-    bool hasRightmostSelectorMatchingHTMLBasedOnRuleHash() const { return m_hasRightmostSelectorMatchingHTMLBasedOnRuleHash; }
     bool containsUncommonAttributeSelector() const { return m_containsUncommonAttributeSelector; }
     unsigned specificity() const { return m_specificity; }
     unsigned linkMatchType() const { return m_linkMatchType; }
@@ -103,8 +101,6 @@ private:
     // Some simple testing showed <100,000 RuleData's on large sites.
     unsigned m_position : 18;
     unsigned m_specificity : 24;
-    unsigned m_hasMultipartSelector : 1;
-    unsigned m_hasRightmostSelectorMatchingHTMLBasedOnRuleHash : 1;
     unsigned m_containsUncommonAttributeSelector : 1;
     unsigned m_linkMatchType : 2; //  SelectorChecker::LinkMatchMask
     unsigned m_hasDocumentSecurityOrigin : 1;

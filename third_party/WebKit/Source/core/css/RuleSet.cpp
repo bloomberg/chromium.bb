@@ -51,21 +51,6 @@ using namespace HTMLNames;
 
 // -----------------------------------------------------------------
 
-static inline bool isSelectorMatchingHTMLBasedOnRuleHash(const CSSSelector& selector)
-{
-    if (selector.match() == CSSSelector::Tag) {
-        const AtomicString& selectorNamespace = selector.tagQName().namespaceURI();
-        if (selectorNamespace != starAtom && selectorNamespace != xhtmlNamespaceURI)
-            return false;
-        if (selector.relation() == CSSSelector::SubSelector && selector.tagHistory())
-            return isSelectorMatchingHTMLBasedOnRuleHash(*selector.tagHistory());
-        return true;
-    }
-    if (SelectorChecker::isCommonPseudoClassSelector(selector))
-        return true;
-    return selector.match() == CSSSelector::Id || selector.match() == CSSSelector::Class;
-}
-
 static inline bool selectorListContainsUncommonAttributeSelector(const CSSSelector* selector)
 {
     const CSSSelectorList* selectorList = selector->selectorList();
@@ -127,8 +112,6 @@ RuleData::RuleData(StyleRule* rule, unsigned selectorIndex, unsigned position, A
     , m_isLastInArray(false)
     , m_position(position)
     , m_specificity(selector().specificity())
-    , m_hasMultipartSelector(!!selector().tagHistory())
-    , m_hasRightmostSelectorMatchingHTMLBasedOnRuleHash(isSelectorMatchingHTMLBasedOnRuleHash(selector()))
     , m_containsUncommonAttributeSelector(blink::containsUncommonAttributeSelector(selector()))
     , m_linkMatchType(SelectorChecker::determineLinkMatchType(selector()))
     , m_hasDocumentSecurityOrigin(addRuleFlags & RuleHasDocumentSecurityOrigin)
