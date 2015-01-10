@@ -28,8 +28,8 @@ void DiscardableMemory::GetSupportedTypes(
     std::vector<DiscardableMemoryType>* types) {
   const DiscardableMemoryType supported_types[] = {
     DISCARDABLE_MEMORY_TYPE_MACH,
-    DISCARDABLE_MEMORY_TYPE_SHMEM,
-    DISCARDABLE_MEMORY_TYPE_EMULATED
+    DISCARDABLE_MEMORY_TYPE_EMULATED,
+    DISCARDABLE_MEMORY_TYPE_SHMEM
   };
   types->assign(supported_types, supported_types + arraysize(supported_types));
 }
