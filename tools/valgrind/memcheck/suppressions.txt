@@ -3524,3 +3524,9 @@
    fun:avcodec_decode_*
    fun:avcodec_decode_*
 }
+{
+   bug_447788
+   Memcheck:Unaddressable
+   ...
+   fun:_ZN3gpu5gles252GLES2ImplementationTest_TexImage3DSingleCommand_Test8TestBodyEv
+}
