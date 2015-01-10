@@ -287,19 +287,5 @@ TEST(DiscardableSharedMemoryTest, LockAndUnlockRange) {
   EXPECT_TRUE(rv);
 }
 
-TEST(DiscardableSharedMemoryTest, MappedSize) {
-  const uint32 kDataSize = 1024;
-
-  TestDiscardableSharedMemory memory;
-  bool rv = memory.CreateAndMap(kDataSize);
-  ASSERT_TRUE(rv);
-
-  EXPECT_LE(kDataSize, memory.mapped_size());
-
-  // Mapped size should be 0 after memory segment has been closed.
-  memory.Close();
-  EXPECT_EQ(0u, memory.mapped_size());
-}
-
 }  // namespace
 }  // namespace base
