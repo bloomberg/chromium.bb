@@ -7,6 +7,8 @@
 *.rules
 *.sdf
 *.sln
+*.sublime-project
+*.sublime-workspace
 *.suo
 *.targets
 *.user
