@@ -106,7 +106,7 @@ uint32_t V4L2Device::V4L2PixFmtToDrmFormat(uint32_t format) {
       return DRM_FORMAT_ARGB8888;
 
     default:
-      LOG(FATAL) << "Add more cases as needed";
+      DVLOG(1) << "Add more cases as needed";
       return 0;
   }
 }
