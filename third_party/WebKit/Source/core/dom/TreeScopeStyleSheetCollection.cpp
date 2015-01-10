@@ -55,7 +55,7 @@ void TreeScopeStyleSheetCollection::addStyleSheetCandidateNode(Node* node, bool 
     // since styles outside of the body and head continue to be shunted into the head
     // (and thus can shift to end up before dynamically added DOM content that is also
     // outside the body).
-    if (createdByParser && document().body())
+    if (createdByParser && document().body() && !node->nextSibling())
         m_styleSheetCandidateNodes.parserAdd(node);
     else
         m_styleSheetCandidateNodes.add(node);
