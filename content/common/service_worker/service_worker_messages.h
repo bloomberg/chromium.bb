@@ -106,7 +106,7 @@ IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::ServiceWorkerClientInfo)
   IPC_STRUCT_TRAITS_MEMBER(client_id)
-  IPC_STRUCT_TRAITS_MEMBER(visibility_state)
+  IPC_STRUCT_TRAITS_MEMBER(page_visibility_state)
   IPC_STRUCT_TRAITS_MEMBER(is_focused)
   IPC_STRUCT_TRAITS_MEMBER(url)
   IPC_STRUCT_TRAITS_MEMBER(frame_type)

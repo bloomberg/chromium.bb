@@ -16,7 +16,7 @@
 #include "content/test/test_navigation_url_loader.h"
 #include "content/test/test_render_view_host.h"
 #include "net/base/load_flags.h"
-#include "third_party/WebKit/public/web/WebPageVisibilityState.h"
+#include "third_party/WebKit/public/platform/WebPageVisibilityState.h"
 #include "ui/base/page_transition_types.h"
 
 namespace content {

@@ -8,8 +8,8 @@
 #include "base/basictypes.h"
 #include "content/common/content_export.h"
 #include "content/public/common/resource_type.h"
+#include "third_party/WebKit/public/platform/WebPageVisibilityState.h"
 #include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
-#include "third_party/WebKit/public/web/WebPageVisibilityState.h"
 #include "ui/base/page_transition_types.h"
 
 namespace net {

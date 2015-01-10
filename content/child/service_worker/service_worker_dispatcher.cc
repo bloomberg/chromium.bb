@@ -681,7 +681,7 @@ void ServiceWorkerDispatcher::OnGetClientInfo(int thread_id,
   if (found != script_clients_.end() && found->second->getClientInfo(&info)) {
     ServiceWorkerClientInfo result;
     result.client_id = info.clientID;
-    result.visibility_state = info.visibilityState.utf8();
+    result.page_visibility_state = info.pageVisibilityState;
     result.is_focused = info.isFocused;
     result.url = info.url;
     result.frame_type = static_cast<RequestContextFrameType>(info.frameType);

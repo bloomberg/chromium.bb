@@ -8,9 +8,9 @@
 #include "base/compiler_specific.h"
 #include "content/child/web_url_loader_impl.h"
 #include "content/common/content_export.h"
+#include "third_party/WebKit/public/platform/WebPageVisibilityState.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
-#include "third_party/WebKit/public/web/WebPageVisibilityState.h"
 #include "ui/base/page_transition_types.h"
 
 namespace content {

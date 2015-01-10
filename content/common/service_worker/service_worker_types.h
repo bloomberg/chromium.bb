@@ -13,6 +13,7 @@
 #include "content/common/content_export.h"
 #include "content/public/common/request_context_frame_type.h"
 #include "content/public/common/request_context_type.h"
+#include "third_party/WebKit/public/platform/WebPageVisibilityState.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerResponseType.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerState.h"
 #include "url/gurl.h"
@@ -199,7 +200,7 @@ class ChangedVersionAttributesMask {
 
 struct ServiceWorkerClientInfo {
   int client_id;
-  std::string visibility_state;
+  blink::WebPageVisibilityState page_visibility_state;
   bool is_focused;
   GURL url;
   RequestContextFrameType frame_type;

@@ -414,8 +414,7 @@ void ServiceWorkerScriptContext::OnDidGetClientDocuments(
       clients.size());
   for (size_t i = 0; i < clients.size(); ++i) {
     convertedClients[i].clientID = clients[i].client_id;
-    convertedClients[i].visibilityState =
-        blink::WebString::fromUTF8(clients[i].visibility_state);
+    convertedClients[i].pageVisibilityState = clients[i].page_visibility_state;
     convertedClients[i].isFocused = clients[i].is_focused;
     convertedClients[i].url = clients[i].url;
     convertedClients[i].frameType =

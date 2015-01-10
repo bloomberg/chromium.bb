@@ -14,9 +14,9 @@
 #include "base/strings/string16.h"
 #include "content/public/common/content_client.h"
 #include "ipc/ipc_message.h"
+#include "third_party/WebKit/public/platform/WebPageVisibilityState.h"
 #include "third_party/WebKit/public/web/WebNavigationPolicy.h"
 #include "third_party/WebKit/public/web/WebNavigationType.h"
-#include "third_party/WebKit/public/web/WebPageVisibilityState.h"
 #include "ui/base/page_transition_types.h"
 #include "v8/include/v8.h"
 
