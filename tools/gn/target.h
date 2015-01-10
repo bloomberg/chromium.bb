@@ -270,8 +270,6 @@ class Target : public Item {
   FileList inputs_;
   FileList data_;
 
-  bool hard_dep_;
-
   LabelTargetVector private_deps_;
   LabelTargetVector public_deps_;
   LabelTargetVector data_deps_;
@@ -282,8 +280,6 @@ class Target : public Item {
   UniqueVector<LabelTargetPair> forward_dependent_configs_;
 
   std::set<Label> allow_circular_includes_from_;
-
-  bool external_;
 
   // Static libraries and source sets from transitive deps. These things need
   // to be linked only with the end target (executable, shared library). Source

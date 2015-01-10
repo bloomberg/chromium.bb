@@ -69,7 +69,6 @@ Target::Target(const Settings* settings, const Label& label)
       check_includes_(true),
       complete_static_lib_(false),
       testonly_(false),
-      hard_dep_(false),
       toolchain_(nullptr) {
 }
 
