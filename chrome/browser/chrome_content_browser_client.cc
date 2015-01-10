@@ -2289,6 +2289,12 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
   }
   DCHECK(!web_prefs->default_encoding.empty());
 
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnablePotentiallyAnnoyingSecurityFeatures)) {
+    web_prefs->strict_mixed_content_checking = true;
+    web_prefs->strict_powerful_feature_restrictions = true;
+  }
+
   for (size_t i = 0; i < extra_parts_.size(); ++i)
     extra_parts_[i]->OverrideWebkitPrefs(rvh, url, web_prefs);
 }

@@ -511,6 +511,11 @@ const char kEnablePdfMaterialUI[]           = "enable-pdf-material-ui";
 const char kEnablePluginPlaceholderShadowDom[] =
     "enable-plugin-placeholder-shadow-dom";
 
+// Enables a number of potentially annoying security features (strict mixed
+// content mode, powerful feature restrictions, etc.)
+const char kEnablePotentiallyAnnoyingSecurityFeatures[] =
+    "enable-potentially-annoying-security-features";
+
 // Enables the Power overlay in Settings.
 const char kEnablePowerOverlay[]            = "enable-power-overlay";
 

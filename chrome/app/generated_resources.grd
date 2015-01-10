@@ -6129,6 +6129,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_FORCE_GPU_RASTERIZATION" desc="Description of the 'Force GPU rasterization' experiment">
         Force-enabled for all layers
       </message>
+      <message name="IDS_FLAGS_EXPERIMENTAL_SECURITY_FEATURES_NAME" desc="Name for the flag to enable experimental security features.">
+        Enable potentially annoying security features.
+      </message>
+      <message name="IDS_FLAGS_EXPERIMENTAL_SECURITY_FEATURES_DESCRIPTION" desc="Description for the flag to enable experimental security features.">
+        Enables several security features that will likely break one or more pages that you visit on a daily basis. Strict mixed content checking, for example. And locking powerful features to secure contexts. This flag will probably annoy you.
+      </message>
       <message name="IDS_FLAGS_EXPERIMENTAL_WEB_PLATFORM_FEATURES_NAME" desc="Name for the flag to enable experimental Web Platform features.">
         Enable experimental Web Platform features.
       </message>
