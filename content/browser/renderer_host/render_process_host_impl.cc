@@ -1179,7 +1179,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kDisable3DAPIs,
     switches::kDisableAcceleratedJpegDecoding,
     switches::kDisableAcceleratedVideoDecode,
-    switches::kDisableApplicationCache,
     switches::kDisableBlinkScheduler,
     switches::kDisableBreakpad,
     switches::kDisablePreferCompositingToLCDText,

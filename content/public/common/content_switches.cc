@@ -86,9 +86,6 @@ const char kDisableAccelerated2dCanvas[]    = "disable-accelerated-2d-canvas";
 const char kDisableAcceleratedVideoDecode[] =
     "disable-accelerated-video-decode";
 
-// Disable the ApplicationCache.
-const char kDisableApplicationCache[]       = "disable-application-cache";
-
 // Disable limits on the number of backing stores. Can prevent blinking for
 // users with many windows/tabs and lots of memory.
 const char kDisableBackingStoreLimit[]      = "disable-backing-store-limit";

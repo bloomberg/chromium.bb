@@ -89,9 +89,6 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (command_line.HasSwitch(switches::kDisableDatabases))
     WebRuntimeFeatures::enableDatabase(false);
 
-  if (command_line.HasSwitch(switches::kDisableApplicationCache))
-    WebRuntimeFeatures::enableApplicationCache(false);
-
   if (command_line.HasSwitch(switches::kDisableBlinkScheduler))
     WebRuntimeFeatures::enableBlinkScheduler(false);
 
