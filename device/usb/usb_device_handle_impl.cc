@@ -477,7 +477,7 @@ void LIBUSB_CALL UsbDeviceHandleImpl::Transfer::PlatformCallback(
 }
 
 UsbDeviceHandleImpl::UsbDeviceHandleImpl(scoped_refptr<UsbContext> context,
-                                         UsbDeviceImpl* device,
+                                         scoped_refptr<UsbDeviceImpl> device,
                                          PlatformUsbDeviceHandle handle)
     : device_(device),
       handle_(handle),
@@ -495,7 +495,7 @@ UsbDeviceHandleImpl::~UsbDeviceHandleImpl() {
 }
 
 scoped_refptr<UsbDevice> UsbDeviceHandleImpl::GetDevice() const {
-  return static_cast<UsbDevice*>(device_);
+  return device_;
 }
 
 void UsbDeviceHandleImpl::Close() {

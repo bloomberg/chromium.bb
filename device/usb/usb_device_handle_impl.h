@@ -86,7 +86,7 @@ class UsbDeviceHandleImpl : public UsbDeviceHandle {
 
   // This constructor is called by UsbDevice.
   UsbDeviceHandleImpl(scoped_refptr<UsbContext> context,
-                      UsbDeviceImpl* device,
+                      scoped_refptr<UsbDeviceImpl> device,
                       PlatformUsbDeviceHandle handle);
 
   ~UsbDeviceHandleImpl() override;
@@ -126,7 +126,7 @@ class UsbDeviceHandleImpl : public UsbDeviceHandle {
   // Informs the object to drop internal references.
   void InternalClose();
 
-  UsbDeviceImpl* device_;
+  scoped_refptr<UsbDeviceImpl> device_;
 
   PlatformUsbDeviceHandle handle_;
 
