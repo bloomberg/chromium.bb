@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#if defined(OS_WIN) && defined(ARCH_CPU_X86_64)
+#include <math.h> // needed for _set_FMA3_enable
+#endif  // WIN && ARCH_CPU_X86_64
+
 #include "allocator_shim/allocator_stub.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -112,6 +116,15 @@ bool InitializeModule(const base::CommandLine& command_line,
   *create_media_engine = &CreateWebRtcMediaEngine;
   *destroy_media_engine = &DestroyWebRtcMediaEngine;
   *init_diagnostic_logging = &rtc::InitDiagnosticLoggingDelegateFunction;
+
+#if defined(OS_WIN) && defined(ARCH_CPU_X86_64)
+  // VS2013 only checks the existence of FMA3 instructions, not the enabled-ness
+  // of them at the OS level (this is fixed in VS2015). We force off usage of
+  // FMA3 instructions in the CRT to avoid using that path and hitting illegal
+  // instructions when running on CPUs that support FMA3, but OSs that don't.
+  // See http://crbug.com/436603 and http://crbug.com/446983.
+  _set_FMA3_enable(0);
+#endif  // WIN && ARCH_CPU_X86_64
 
   if (base::CommandLine::Init(0, NULL)) {
 #if !defined(OS_WIN)
