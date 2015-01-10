@@ -7,7 +7,10 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "content/public/common/resource_type.h"
+
+class SafeBrowsingDatabaseManager;
 
 namespace net {
 class URLRequest;
@@ -22,7 +25,8 @@ class OffDomainInclusionDetector {
     NO_EVENT,
     EMPTY_MAIN_FRAME_URL,
     INVALID_MAIN_FRAME_URL,
-    OFF_DOMAIN_INCLUSION_DETECTED,
+    OFF_DOMAIN_INCLUSION_WHITELISTED,
+    OFF_DOMAIN_INCLUSION_SUSPICIOUS,
   };
 
   // TODO(gab): Hook the OffDomainInclusionDetector to the
@@ -30,11 +34,13 @@ class OffDomainInclusionDetector {
   // custom callback type.
   typedef base::Callback<void(AnalysisEvent event)> ReportAnalysisEventCallback;
 
-  OffDomainInclusionDetector();
+  explicit OffDomainInclusionDetector(
+      const scoped_refptr<SafeBrowsingDatabaseManager>& database_manager);
 
   // Constructs an OffDomainInclusionDetector with a ReportAnalysisEventCallback
   // to get feedback from detection events, used only in tests.
-  explicit OffDomainInclusionDetector(
+  OffDomainInclusionDetector(
+      const scoped_refptr<SafeBrowsingDatabaseManager>& database_manager,
       const ReportAnalysisEventCallback& report_analysis_event_callback);
 
   ~OffDomainInclusionDetector();
@@ -44,6 +50,8 @@ class OffDomainInclusionDetector {
   void OnResourceRequest(const net::URLRequest* request);
 
  private:
+  scoped_refptr<SafeBrowsingDatabaseManager> database_manager_;
+
   const ReportAnalysisEventCallback report_analysis_event_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(OffDomainInclusionDetector);

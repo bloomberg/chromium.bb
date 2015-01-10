@@ -149,28 +149,33 @@ class SafeBrowsingDatabaseManager
   // the hash prefix only (so there may be false positives).
   virtual bool CheckSideEffectFreeWhitelistUrl(const GURL& url);
 
-  // Check if the |url| matches any of the full-length hashes from the
-  // client-side phishing detection whitelist.  Returns true if there was a
-  // match and false otherwise.  To make sure we are conservative we will return
-  // true if an error occurs. This method is expected to be called on the IO
-  // thread.
+  // Check if the |url| matches any of the full-length hashes from the client-
+  // side phishing detection whitelist.  Returns true if there was a match and
+  // false otherwise.  To make sure we are conservative we will return true if
+  // an error occurs.  This method must be called on the IO thread.
   virtual bool MatchCsdWhitelistUrl(const GURL& url);
 
   // Check if the given IP address (either IPv4 or IPv6) matches the malware
   // IP blacklist.
   virtual bool MatchMalwareIP(const std::string& ip_address);
 
-  // Check if the |url| matches any of the full-length hashes from the
-  // download whitelist.  Returns true if there was a match and false otherwise.
-  // To make sure we are conservative we will return true if an error occurs.
-  // This method is expected to be called on the IO thread.
+  // Check if the |url| matches any of the full-length hashes from the download
+  // whitelist.  Returns true if there was a match and false otherwise. To make
+  // sure we are conservative we will return true if an error occurs.  This
+  // method must be called on the IO thread.
   virtual bool MatchDownloadWhitelistUrl(const GURL& url);
 
   // Check if |str| matches any of the full-length hashes from the download
-  // whitelist.  Returns true if there was a match and false otherwise.
-  // To make sure we are conservative we will return true if an error occurs.
-  // This method is expected to be called on the IO thread.
+  // whitelist.  Returns true if there was a match and false otherwise. To make
+  // sure we are conservative we will return true if an error occurs.  This
+  // method must be called on the IO thread.
   virtual bool MatchDownloadWhitelistString(const std::string& str);
+
+  // Check if the |url| matches any of the full-length hashes from the off-
+  // domain inclusion whitelist. Returns true if there was a match and false
+  // otherwise. To make sure we are conservative, we will return true if an
+  // error occurs.  This method must be called on the IO thread.
+  virtual bool MatchInclusionWhitelistUrl(const GURL& url);
 
   // Check if the CSD malware IP matching kill switch is turned on.
   virtual bool IsMalwareKillSwitchOn();
@@ -189,12 +194,12 @@ class SafeBrowsingDatabaseManager
                             const base::TimeDelta& cache_lifetime);
 
   // Called to initialize objects that are used on the io_thread.  This may be
-  // called multiple times during the life of the DatabaseManager. Should be
+  // called multiple times during the life of the DatabaseManager. Must be
   // called on IO thread.
   void StartOnIOThread();
 
   // Called to stop or shutdown operations on the io_thread. This may be called
-  // multiple times during the life of the DatabaseManager. Should be called
+  // multiple times during the life of the DatabaseManager. Must be called
   // on IO thread. If shutdown is true, the manager is disabled permanently.
   void StopOnIOThread(bool shutdown);
 

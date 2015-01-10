@@ -31387,6 +31387,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SBOffDomainInclusion.Detected" enum="ContentResourceType">
+  <obsolete>
+    Deprecated 01/2015.
+  </obsolete>
   <owner>gab@chromium.org</owner>
   <summary>
     Logs the resource type of each resource request for which an off-domain
@@ -31418,6 +31421,24 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>
     Logs the resource type of each resource request analyzed by the
     OffDomainInclusionDetector.
+  </summary>
+</histogram>
+
+<histogram name="SBOffDomainInclusion.Suspicious" enum="ContentResourceType">
+  <owner>gab@chromium.org</owner>
+  <summary>
+    Logs the resource type of each resource request for which an off-domain
+    inclusion was detected by the OffDomainInclusionDetector and considered
+    suspicious.
+  </summary>
+</histogram>
+
+<histogram name="SBOffDomainInclusion.Whitelisted" enum="ContentResourceType">
+  <owner>gab@chromium.org</owner>
+  <summary>
+    Logs the resource type of each resource request for which an off-domain
+    inclusion was detected by the OffDomainInclusionDetector and ignored because
+    it was present on the inclusion whitelist.
   </summary>
 </histogram>
 

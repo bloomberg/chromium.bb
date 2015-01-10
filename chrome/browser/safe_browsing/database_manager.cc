@@ -438,6 +438,13 @@ bool SafeBrowsingDatabaseManager::MatchDownloadWhitelistString(
   return database_->ContainsDownloadWhitelistedString(str);
 }
 
+bool SafeBrowsingDatabaseManager::MatchInclusionWhitelistUrl(const GURL& url) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (!enabled_ || !MakeDatabaseAvailable())
+    return true;
+  return database_->ContainsInclusionWhitelistedUrl(url);
+}
+
 bool SafeBrowsingDatabaseManager::IsMalwareKillSwitchOn() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!enabled_ || !MakeDatabaseAvailable()) {

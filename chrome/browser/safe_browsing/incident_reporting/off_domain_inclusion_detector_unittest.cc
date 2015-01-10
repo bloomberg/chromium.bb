@@ -3,7 +3,12 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/run_loop.h"
+#include "chrome/browser/safe_browsing/database_manager.h"
 #include "chrome/browser/safe_browsing/incident_reporting/off_domain_inclusion_detector.h"
+#include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -11,8 +16,14 @@
 #include "net/base/request_priority.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
+
+using testing::_;
+using testing::NiceMock;
+using testing::Return;
+using testing::Values;
 
 namespace safe_browsing {
 
@@ -49,16 +60,60 @@ static_assert(
         arraysize(kResourceTypesIgnored) == content::RESOURCE_TYPE_LAST_TYPE,
     "Expected resource types list aren't comprehensive");
 
-class OffDomainInclusionDetectorTest : public testing::Test {
+// A set of test cases to run each parametrized test case below through.
+enum class OffDomainInclusionTestCases {
+  OFF_DOMAIN_INCLUSION_WHITELISTED,
+  OFF_DOMAIN_INCLUSION_UNKNOWN,
+};
+
+class MockSafeBrowsingDatabaseManager : public SafeBrowsingDatabaseManager {
  public:
-  OffDomainInclusionDetectorTest()
-      : off_domain_inclusion_detector_(
-            base::Bind(
-                &OffDomainInclusionDetectorTest::OnOffDomainInclusionEvent,
-                base::Unretained(this))),
-        observed_analysis_event_(AnalysisEvent::NO_EVENT) {}
+  explicit MockSafeBrowsingDatabaseManager(
+      const scoped_refptr<SafeBrowsingService>& service)
+      : SafeBrowsingDatabaseManager(service) {}
+
+  MOCK_METHOD1(MatchInclusionWhitelistUrl, bool(const GURL& url));
 
  protected:
+  virtual ~MockSafeBrowsingDatabaseManager() {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockSafeBrowsingDatabaseManager);
+};
+
+class OffDomainInclusionDetectorTest
+    : public testing::TestWithParam<OffDomainInclusionTestCases> {
+ protected:
+  OffDomainInclusionDetectorTest()
+      : observed_analysis_event_(AnalysisEvent::NO_EVENT) {}
+
+  void SetUp() override {
+    // Only used for initializing MockSafeBrowsingDatabaseManager.
+    scoped_refptr<SafeBrowsingService> sb_service =
+        SafeBrowsingService::CreateSafeBrowsingService();
+
+    scoped_refptr<MockSafeBrowsingDatabaseManager>
+        mock_safe_browsing_database_manager =
+            new NiceMock<MockSafeBrowsingDatabaseManager>(sb_service);
+    ON_CALL(*mock_safe_browsing_database_manager, MatchInclusionWhitelistUrl(_))
+        .WillByDefault(Return(
+            GetParam() ==
+            OffDomainInclusionTestCases::OFF_DOMAIN_INCLUSION_WHITELISTED));
+
+    off_domain_inclusion_detector_.reset(new OffDomainInclusionDetector(
+        mock_safe_browsing_database_manager,
+        base::Bind(&OffDomainInclusionDetectorTest::OnOffDomainInclusionEvent,
+                   base::Unretained(this))));
+  }
+
+  void TearDown() override {
+    // The SafeBrowsingService held by the MockSafeBrowsingDatabaseManager in
+    // |off_domain_inclusion_detector_| is deleted asynchronously and we thus
+    // need to cleanup explicitly here or the test will leak.
+    off_domain_inclusion_detector_.reset();
+    base::RunLoop().RunUntilIdle();
+  }
+
   AnalysisEvent GetLastEventAndReset() {
     const AnalysisEvent last_event = observed_analysis_event_;
     observed_analysis_event_ = AnalysisEvent::NO_EVENT;
@@ -92,7 +147,16 @@ class OffDomainInclusionDetectorTest : public testing::Test {
     return url_request.Pass();
   }
 
-  OffDomainInclusionDetector off_domain_inclusion_detector_;
+  // Returns the expected AnalysisEvent produced when facing an off-domain
+  // inclusion in the current test configuration.
+  AnalysisEvent GetExpectedOffDomainInclusionEventType() {
+    return GetParam() ==
+                   OffDomainInclusionTestCases::OFF_DOMAIN_INCLUSION_WHITELISTED
+               ? AnalysisEvent::OFF_DOMAIN_INCLUSION_WHITELISTED
+               : AnalysisEvent::OFF_DOMAIN_INCLUSION_SUSPICIOUS;
+  }
+
+  scoped_ptr<OffDomainInclusionDetector> off_domain_inclusion_detector_;
 
  private:
   void OnOffDomainInclusionEvent(AnalysisEvent event) {
@@ -107,7 +171,7 @@ class OffDomainInclusionDetectorTest : public testing::Test {
   AnalysisEvent observed_analysis_event_;
 };
 
-TEST_F(OffDomainInclusionDetectorTest, NoEventForIgnoredResourceTypes) {
+TEST_P(OffDomainInclusionDetectorTest, NoEventForIgnoredResourceTypes) {
   for (content::ResourceType tested_type : kResourceTypesIgnored) {
     SCOPED_TRACE(tested_type);
 
@@ -118,14 +182,14 @@ TEST_F(OffDomainInclusionDetectorTest, NoEventForIgnoredResourceTypes) {
                           true,     // is_main_frame
                           false));  // parent_is_main_frame
 
-    off_domain_inclusion_detector_.OnResourceRequest(
+    off_domain_inclusion_detector_->OnResourceRequest(
         request_for_tested_type.get());
 
     EXPECT_EQ(AnalysisEvent::NO_EVENT, GetLastEventAndReset());
   }
 }
 
-TEST_F(OffDomainInclusionDetectorTest, NoEventForSameDomainInclusions) {
+TEST_P(OffDomainInclusionDetectorTest, NoEventForSameDomainInclusions) {
   for (content::ResourceType tested_type :
        kResourceTypesObservedIfInMainFrame) {
     SCOPED_TRACE(tested_type);
@@ -137,14 +201,14 @@ TEST_F(OffDomainInclusionDetectorTest, NoEventForSameDomainInclusions) {
                           true,     // is_main_frame
                           false));  // parent_is_main_frame
 
-    off_domain_inclusion_detector_.OnResourceRequest(
+    off_domain_inclusion_detector_->OnResourceRequest(
         request_for_tested_type.get());
 
     EXPECT_EQ(AnalysisEvent::NO_EVENT, GetLastEventAndReset());
   }
 }
 
-TEST_F(OffDomainInclusionDetectorTest, OffDomainInclusionInMainFrame) {
+TEST_P(OffDomainInclusionDetectorTest, OffDomainInclusionInMainFrame) {
   for (content::ResourceType tested_type :
        kResourceTypesObservedIfInMainFrame) {
     SCOPED_TRACE(tested_type);
@@ -156,15 +220,14 @@ TEST_F(OffDomainInclusionDetectorTest, OffDomainInclusionInMainFrame) {
                           true,     // is_main_frame
                           false));  // parent_is_main_frame
 
-    off_domain_inclusion_detector_.OnResourceRequest(
+    off_domain_inclusion_detector_->OnResourceRequest(
         request_for_tested_type.get());
 
-    EXPECT_EQ(AnalysisEvent::OFF_DOMAIN_INCLUSION_DETECTED,
-              GetLastEventAndReset());
+    EXPECT_EQ(GetExpectedOffDomainInclusionEventType(), GetLastEventAndReset());
   }
 }
 
-TEST_F(OffDomainInclusionDetectorTest, HttpsOffDomainInclusionInMainFrame) {
+TEST_P(OffDomainInclusionDetectorTest, HttpsOffDomainInclusionInMainFrame) {
   for (content::ResourceType tested_type :
        kResourceTypesObservedIfInMainFrame) {
     SCOPED_TRACE(tested_type);
@@ -176,15 +239,14 @@ TEST_F(OffDomainInclusionDetectorTest, HttpsOffDomainInclusionInMainFrame) {
                           true,     // is_main_frame
                           false));  // parent_is_main_frame
 
-    off_domain_inclusion_detector_.OnResourceRequest(
+    off_domain_inclusion_detector_->OnResourceRequest(
         request_for_tested_type.get());
 
-    EXPECT_EQ(AnalysisEvent::OFF_DOMAIN_INCLUSION_DETECTED,
-              GetLastEventAndReset());
+    EXPECT_EQ(GetExpectedOffDomainInclusionEventType(), GetLastEventAndReset());
   }
 }
 
-TEST_F(OffDomainInclusionDetectorTest,
+TEST_P(OffDomainInclusionDetectorTest,
        NoEventForNonHttpOffDomainInclusionInMainFrame) {
   for (content::ResourceType tested_type :
        kResourceTypesObservedIfInMainFrame) {
@@ -197,14 +259,14 @@ TEST_F(OffDomainInclusionDetectorTest,
                           true,     // is_main_frame
                           false));  // parent_is_main_frame
 
-    off_domain_inclusion_detector_.OnResourceRequest(
+    off_domain_inclusion_detector_->OnResourceRequest(
         request_for_tested_type.get());
 
     EXPECT_EQ(AnalysisEvent::NO_EVENT, GetLastEventAndReset());
   }
 }
 
-TEST_F(OffDomainInclusionDetectorTest, NoEventForSameTopLevelDomain) {
+TEST_P(OffDomainInclusionDetectorTest, NoEventForSameTopLevelDomain) {
   for (content::ResourceType tested_type :
        kResourceTypesObservedIfInMainFrame) {
     SCOPED_TRACE(tested_type);
@@ -216,14 +278,14 @@ TEST_F(OffDomainInclusionDetectorTest, NoEventForSameTopLevelDomain) {
                           true,     // is_main_frame
                           false));  // parent_is_main_frame
 
-    off_domain_inclusion_detector_.OnResourceRequest(
+    off_domain_inclusion_detector_->OnResourceRequest(
         request_for_tested_type.get());
 
     EXPECT_EQ(AnalysisEvent::NO_EVENT, GetLastEventAndReset());
   }
 }
 
-TEST_F(OffDomainInclusionDetectorTest,
+TEST_P(OffDomainInclusionDetectorTest,
        OffDomainInclusionForSameTopLevelRegistryButDifferentDomain) {
   for (content::ResourceType tested_type :
        kResourceTypesObservedIfInMainFrame) {
@@ -236,15 +298,14 @@ TEST_F(OffDomainInclusionDetectorTest,
                           true,     // is_main_frame
                           false));  // parent_is_main_frame
 
-    off_domain_inclusion_detector_.OnResourceRequest(
+    off_domain_inclusion_detector_->OnResourceRequest(
         request_for_tested_type.get());
 
-    EXPECT_EQ(AnalysisEvent::OFF_DOMAIN_INCLUSION_DETECTED,
-              GetLastEventAndReset());
+    EXPECT_EQ(GetExpectedOffDomainInclusionEventType(), GetLastEventAndReset());
   }
 }
 
-TEST_F(OffDomainInclusionDetectorTest,
+TEST_P(OffDomainInclusionDetectorTest,
        NoEventForOffDomainRegularResourceInSubframe) {
   for (content::ResourceType tested_type :
        kResourceTypesObservedIfInMainFrame) {
@@ -257,14 +318,14 @@ TEST_F(OffDomainInclusionDetectorTest,
                           false,   // is_main_frame
                           true));  // parent_is_main_frame
 
-    off_domain_inclusion_detector_.OnResourceRequest(
+    off_domain_inclusion_detector_->OnResourceRequest(
         request_for_tested_type.get());
 
     EXPECT_EQ(AnalysisEvent::NO_EVENT, GetLastEventAndReset());
   }
 }
 
-TEST_F(OffDomainInclusionDetectorTest,
+TEST_P(OffDomainInclusionDetectorTest,
        NoEventForOffDomainSubSubFrameInclusion) {
   for (content::ResourceType tested_type :
        kResourceTypesObservedIfParentIsMainFrame) {
@@ -277,14 +338,14 @@ TEST_F(OffDomainInclusionDetectorTest,
                           false,    // is_main_frame
                           false));  // parent_is_main_frame
 
-    off_domain_inclusion_detector_.OnResourceRequest(
+    off_domain_inclusion_detector_->OnResourceRequest(
         request_for_tested_type.get());
 
     EXPECT_EQ(AnalysisEvent::NO_EVENT, GetLastEventAndReset());
   }
 }
 
-TEST_F(OffDomainInclusionDetectorTest,
+TEST_P(OffDomainInclusionDetectorTest,
        OffDomainInclusionForOffDomainResourcesObservedIfParentIsMainFrame) {
   for (content::ResourceType tested_type :
        kResourceTypesObservedIfParentIsMainFrame) {
@@ -297,15 +358,14 @@ TEST_F(OffDomainInclusionDetectorTest,
                           false,   // is_main_frame
                           true));  // parent_is_main_frame
 
-    off_domain_inclusion_detector_.OnResourceRequest(
+    off_domain_inclusion_detector_->OnResourceRequest(
         request_for_tested_type.get());
 
-    EXPECT_EQ(AnalysisEvent::OFF_DOMAIN_INCLUSION_DETECTED,
-              GetLastEventAndReset());
+    EXPECT_EQ(GetExpectedOffDomainInclusionEventType(), GetLastEventAndReset());
   }
 }
 
-TEST_F(OffDomainInclusionDetectorTest,
+TEST_P(OffDomainInclusionDetectorTest,
        EmptyEventForOffDomainInclusionWithNoReferrer) {
   for (content::ResourceType tested_type :
        kResourceTypesObservedIfInMainFrame) {
@@ -318,11 +378,17 @@ TEST_F(OffDomainInclusionDetectorTest,
                           true,     // is_main_frame
                           false));  // parent_is_main_frame
 
-    off_domain_inclusion_detector_.OnResourceRequest(
+    off_domain_inclusion_detector_->OnResourceRequest(
         request_for_tested_type.get());
 
     EXPECT_EQ(AnalysisEvent::EMPTY_MAIN_FRAME_URL, GetLastEventAndReset());
   }
 }
+
+INSTANTIATE_TEST_CASE_P(
+    OffDomainInclusionDetectorTestInstance,
+    OffDomainInclusionDetectorTest,
+    Values(OffDomainInclusionTestCases::OFF_DOMAIN_INCLUSION_WHITELISTED,
+           OffDomainInclusionTestCases::OFF_DOMAIN_INCLUSION_UNKNOWN));
 
 }  // namespace safe_browsing

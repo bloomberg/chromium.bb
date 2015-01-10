@@ -6,7 +6,10 @@
 
 #include <string>
 
+#include "base/logging.h"
 #include "base/metrics/histogram.h"
+#include "chrome/browser/safe_browsing/database_manager.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_request_info.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/url_request/url_request.h"
@@ -14,12 +17,18 @@
 
 namespace safe_browsing {
 
-OffDomainInclusionDetector::OffDomainInclusionDetector() {
+OffDomainInclusionDetector::OffDomainInclusionDetector(
+    const scoped_refptr<SafeBrowsingDatabaseManager>& database_manager)
+    : OffDomainInclusionDetector(database_manager,
+                                 ReportAnalysisEventCallback()) {
 }
 
 OffDomainInclusionDetector::OffDomainInclusionDetector(
+    const scoped_refptr<SafeBrowsingDatabaseManager>& database_manager,
     const ReportAnalysisEventCallback& report_analysis_event_callback)
-    : report_analysis_event_callback_(report_analysis_event_callback) {
+    : database_manager_(database_manager),
+      report_analysis_event_callback_(report_analysis_event_callback) {
+  DCHECK(database_manager);
 }
 
 OffDomainInclusionDetector::~OffDomainInclusionDetector() {
@@ -27,6 +36,11 @@ OffDomainInclusionDetector::~OffDomainInclusionDetector() {
 
 void OffDomainInclusionDetector::OnResourceRequest(
     const net::URLRequest* request) {
+  // Must be called on the IO thread for now as it accesses the safe browsing
+  // database manager on it, but the analysis below could be made asynchronous
+  // if needed.
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
   // Only look at actual net requests (e.g., not chrome-extensions://id/foo.js).
   if (!request->url().SchemeIsHTTPOrHTTPS())
     return;
@@ -73,7 +87,7 @@ void OffDomainInclusionDetector::OnResourceRequest(
       return;
   }
 
-  // Record the type of request analyzed to be able to do ratio analysis w.r.t
+  // Record the type of request analyzed to be able to do ratio analysis w.r.t.
   // other histograms below.
   UMA_HISTOGRAM_ENUMERATION("SBOffDomainInclusion.RequestAnalyzed",
                             resource_type,
@@ -84,8 +98,8 @@ void OffDomainInclusionDetector::OnResourceRequest(
   const GURL main_frame_url(request->referrer());
   if (!main_frame_url.is_valid()) {
     if (main_frame_url.is_empty()) {
-      // This can happen in a few scenarios where the referer is dropped (e.g.,
-      // HTTPS => HTTP requests). Consider adding the original referer to
+      // This can happen in a few scenarios where the referrer is dropped (e.g.,
+      // HTTPS => HTTP requests). Consider adding the original referrer to
       // ResourceRequestInfo if that's an issue.
       UMA_HISTOGRAM_ENUMERATION("SBOffDomainInclusion.EmptyMainFrameURL",
                                 resource_type,
@@ -105,11 +119,21 @@ void OffDomainInclusionDetector::OnResourceRequest(
             main_frame_url,
             net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
 
+    // Off-Domain Inclusion?
     if (!request->url().DomainIs(main_frame_domain.c_str())) {
-      UMA_HISTOGRAM_ENUMERATION("SBOffDomainInclusion.Detected",
-                                resource_type,
-                                content::RESOURCE_TYPE_LAST_TYPE);
-      analysis_event = AnalysisEvent::OFF_DOMAIN_INCLUSION_DETECTED;
+      // Whitelisted?
+      if (database_manager_->MatchInclusionWhitelistUrl(request->url())) {
+        UMA_HISTOGRAM_ENUMERATION("SBOffDomainInclusion.Whitelisted",
+                                  resource_type,
+                                  content::RESOURCE_TYPE_LAST_TYPE);
+        analysis_event = AnalysisEvent::OFF_DOMAIN_INCLUSION_WHITELISTED;
+
+      } else {
+        UMA_HISTOGRAM_ENUMERATION("SBOffDomainInclusion.Suspicious",
+                                  resource_type,
+                                  content::RESOURCE_TYPE_LAST_TYPE);
+        analysis_event = AnalysisEvent::OFF_DOMAIN_INCLUSION_SUSPICIOUS;
+      }
     }
   }
 

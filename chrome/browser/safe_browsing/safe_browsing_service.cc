@@ -234,7 +234,7 @@ void SafeBrowsingService::Initialize() {
   }
 
   off_domain_inclusion_detector_.reset(
-      new safe_browsing::OffDomainInclusionDetector);
+      new safe_browsing::OffDomainInclusionDetector(database_manager_));
 #endif
 
   // Track the safe browsing preference of existing profiles.
