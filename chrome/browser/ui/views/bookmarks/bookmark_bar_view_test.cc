@@ -206,7 +206,7 @@ class TestingPageNavigator : public PageNavigator {
 };
 
 // TODO(erg): Fix bookmark DND tests on linux_aura. crbug.com/163931
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 #define MAYBE(x) DISABLED_##x
 #else
 #define MAYBE(x) x
