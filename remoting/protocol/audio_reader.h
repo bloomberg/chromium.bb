@@ -5,46 +5,22 @@
 #ifndef REMOTING_PROTOCOL_AUDIO_READER_H_
 #define REMOTING_PROTOCOL_AUDIO_READER_H_
 
-#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "remoting/proto/audio.pb.h"
 #include "remoting/protocol/audio_stub.h"
-#include "remoting/protocol/message_reader.h"
 #include "remoting/protocol/channel_dispatcher_base.h"
-
-namespace net {
-class StreamSocket;
-}  // namespace net
+#include "remoting/protocol/protobuf_message_parser.h"
 
 namespace remoting {
 namespace protocol {
 
-class Session;
-class SessionConfig;
-
 class AudioReader : public ChannelDispatcherBase {
  public:
-  static scoped_ptr<AudioReader> Create(const SessionConfig& config);
-
+  explicit AudioReader(AudioStub* audio_stub);
   ~AudioReader() override;
 
-  void set_audio_stub(AudioStub* audio_stub) { audio_stub_ = audio_stub; }
-
- protected:
-  void OnInitialized() override;
-
  private:
-  explicit AudioReader(AudioPacket::Encoding encoding);
-
-  void OnNewData(scoped_ptr<AudioPacket> packet,
-                 const base::Closure& done_task);
-
-  AudioPacket::Encoding encoding_;
-
-  ProtobufMessageReader<AudioPacket> reader_;
-
-  // The stub that processes all received packets.
-  AudioStub* audio_stub_;
+  ProtobufMessageParser<AudioPacket> parser_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioReader);
 };

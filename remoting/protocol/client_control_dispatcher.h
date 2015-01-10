@@ -11,7 +11,7 @@
 #include "remoting/protocol/clipboard_stub.h"
 #include "remoting/protocol/cursor_shape_stub.h"
 #include "remoting/protocol/host_stub.h"
-#include "remoting/protocol/message_reader.h"
+#include "remoting/protocol/protobuf_message_parser.h"
 
 namespace remoting {
 namespace protocol {
@@ -51,10 +51,6 @@ class ClientControlDispatcher : public ChannelDispatcherBase,
     clipboard_stub_ = clipboard_stub;
   }
 
- protected:
-  // ChannelDispatcherBase overrides.
-  void OnInitialized() override;
-
  private:
   void OnMessageReceived(scoped_ptr<ControlMessage> message,
                          const base::Closure& done_task);
@@ -62,8 +58,7 @@ class ClientControlDispatcher : public ChannelDispatcherBase,
   ClientStub* client_stub_;
   ClipboardStub* clipboard_stub_;
 
-  ProtobufMessageReader<ControlMessage> reader_;
-  BufferedSocketWriter writer_;
+  ProtobufMessageParser<ControlMessage> parser_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientControlDispatcher);
 };

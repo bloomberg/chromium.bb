@@ -22,15 +22,9 @@ AudioWriter::AudioWriter()
 AudioWriter::~AudioWriter() {
 }
 
-void AudioWriter::OnInitialized() {
-  // TODO(sergeyu): Provide a non-null WriteFailedCallback for the writer.
-  buffered_writer_.Init(
-      channel(), BufferedSocketWriter::WriteFailedCallback());
-}
-
 void AudioWriter::ProcessAudioPacket(scoped_ptr<AudioPacket> packet,
                                      const base::Closure& done) {
-  buffered_writer_.Write(SerializeAndFrameMessage(*packet), done);
+  writer()->Write(SerializeAndFrameMessage(*packet), done);
 }
 
 // static

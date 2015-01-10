@@ -348,6 +348,9 @@ ChannelMultiplexer::ChannelMultiplexer(StreamChannelFactory* factory,
     : base_channel_factory_(factory),
       base_channel_name_(base_channel_name),
       next_channel_id_(0),
+      parser_(base::Bind(&ChannelMultiplexer::OnIncomingPacket,
+                         base::Unretained(this)),
+              &reader_),
       weak_factory_(this) {
 }
 
@@ -400,9 +403,7 @@ void ChannelMultiplexer::OnBaseChannelReady(
 
   if (base_channel_.get()) {
     // Initialize reader and writer.
-    reader_.Init(base_channel_.get(),
-                 base::Bind(&ChannelMultiplexer::OnIncomingPacket,
-                            base::Unretained(this)));
+    reader_.StartReading(base_channel_.get());
     writer_.Init(base_channel_.get(),
                  base::Bind(&ChannelMultiplexer::OnWriteFailed,
                             base::Unretained(this)));

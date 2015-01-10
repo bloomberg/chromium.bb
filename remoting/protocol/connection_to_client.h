@@ -31,7 +31,8 @@ class VideoStub;
 // host. It sets up all protocol channels and connects them to the
 // stubs.
 class ConnectionToClient : public base::NonThreadSafe,
-                           public Session::EventHandler {
+                           public Session::EventHandler,
+                           public ChannelDispatcherBase::EventHandler {
  public:
   class EventHandler {
    public:
@@ -105,10 +106,12 @@ class ConnectionToClient : public base::NonThreadSafe,
   void OnSessionRouteChange(const std::string& channel_name,
                             const TransportRoute& route) override;
 
- private:
-  // Callback for channel initialization.
-  void OnChannelInitialized(bool successful);
+  // ChannelDispatcherBase::EventHandler interface.
+  void OnChannelInitialized(ChannelDispatcherBase* channel_dispatcher) override;
+  void OnChannelError(ChannelDispatcherBase* channel_dispatcher,
+                      ErrorCode error) override;
 
+ private:
   void NotifyIfChannelsReady();
 
   void Close(ErrorCode error);

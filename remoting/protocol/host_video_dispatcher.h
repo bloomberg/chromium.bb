@@ -24,13 +24,7 @@ class HostVideoDispatcher : public ChannelDispatcherBase, public VideoStub {
   void ProcessVideoPacket(scoped_ptr<VideoPacket> packet,
                           const base::Closure& done) override;
 
- protected:
-  // ChannelDispatcherBase overrides.
-  void OnInitialized() override;
-
  private:
-  BufferedSocketWriter writer_;
-
   DISALLOW_COPY_AND_ASSIGN(HostVideoDispatcher);
 };
 

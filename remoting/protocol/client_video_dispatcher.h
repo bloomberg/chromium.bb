@@ -8,7 +8,7 @@
 #include "base/compiler_specific.h"
 #include "remoting/proto/video.pb.h"
 #include "remoting/protocol/channel_dispatcher_base.h"
-#include "remoting/protocol/message_reader.h"
+#include "remoting/protocol/protobuf_message_parser.h"
 
 namespace remoting {
 namespace protocol {
@@ -20,15 +20,8 @@ class ClientVideoDispatcher : public ChannelDispatcherBase {
   explicit ClientVideoDispatcher(VideoStub* video_stub);
   ~ClientVideoDispatcher() override;
 
- protected:
-  // ChannelDispatcherBase overrides.
-  void OnInitialized() override;
-
  private:
-  ProtobufMessageReader<VideoPacket> reader_;
-
-  // The stub to which VideoPackets are passed for processing.
-  VideoStub* video_stub_;
+  ProtobufMessageParser<VideoPacket> parser_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientVideoDispatcher);
 };

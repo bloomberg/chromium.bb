@@ -184,31 +184,24 @@ void ConnectionToHost::OnSessionStateChange(
       SetState(AUTHENTICATED, OK);
 
       control_dispatcher_.reset(new ClientControlDispatcher());
-      control_dispatcher_->Init(
-          session_.get(), session_->config().control_config(),
-          base::Bind(&ConnectionToHost::OnChannelInitialized,
-                     base::Unretained(this)));
+      control_dispatcher_->Init(session_.get(),
+                                session_->config().control_config(), this);
       control_dispatcher_->set_client_stub(client_stub_);
       control_dispatcher_->set_clipboard_stub(clipboard_stub_);
 
       event_dispatcher_.reset(new ClientEventDispatcher());
-      event_dispatcher_->Init(
-          session_.get(), session_->config().event_config(),
-          base::Bind(&ConnectionToHost::OnChannelInitialized,
-                     base::Unretained(this)));
+      event_dispatcher_->Init(session_.get(), session_->config().event_config(),
+                              this);
 
       video_dispatcher_.reset(
           new ClientVideoDispatcher(monitored_video_stub_.get()));
       video_dispatcher_->Init(session_.get(), session_->config().video_config(),
-                          base::Bind(&ConnectionToHost::OnChannelInitialized,
-                                     base::Unretained(this)));
+                              this);
 
-      audio_reader_ = AudioReader::Create(session_->config());
-      if (audio_reader_.get()) {
+      if (session_->config().is_audio_enabled()) {
+        audio_reader_.reset(new AudioReader(audio_stub_));
         audio_reader_->Init(session_.get(), session_->config().audio_config(),
-                            base::Bind(&ConnectionToHost::OnChannelInitialized,
-                                       base::Unretained(this)));
-        audio_reader_->set_audio_stub(audio_stub_);
+                            this);
       }
       break;
 
@@ -241,22 +234,25 @@ void ConnectionToHost::OnSessionRouteChange(const std::string& channel_name,
   event_callback_->OnRouteChanged(channel_name, route);
 }
 
+void ConnectionToHost::OnChannelInitialized(
+    ChannelDispatcherBase* channel_dispatcher) {
+  NotifyIfChannelsReady();
+}
+
+void ConnectionToHost::OnChannelError(
+    ChannelDispatcherBase* channel_dispatcher,
+    ErrorCode error) {
+  LOG(ERROR) << "Failed to connect channel " << channel_dispatcher;
+  CloseOnError(CHANNEL_CONNECTION_ERROR);
+  return;
+}
+
 void ConnectionToHost::OnVideoChannelStatus(bool active) {
   event_callback_->OnConnectionReady(active);
 }
 
 ConnectionToHost::State ConnectionToHost::state() const {
   return state_;
-}
-
-void ConnectionToHost::OnChannelInitialized(bool successful) {
-  if (!successful) {
-    LOG(ERROR) << "Failed to connect video channel";
-    CloseOnError(CHANNEL_CONNECTION_ERROR);
-    return;
-  }
-
-  NotifyIfChannelsReady();
 }
 
 void ConnectionToHost::NotifyIfChannelsReady() {

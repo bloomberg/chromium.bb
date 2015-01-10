@@ -67,13 +67,16 @@ class MessageReaderTest : public testing::Test {
   }
 
  protected:
-  void SetUp() override { reader_.reset(new MessageReader()); }
+  void SetUp() override {
+    reader_.reset(new MessageReader());
+  }
 
   void TearDown() override { STLDeleteElements(&messages_); }
 
   void InitReader() {
-    reader_->Init(&socket_, base::Bind(
-        &MessageReaderTest::OnMessage, base::Unretained(this)));
+    reader_->SetMessageReceivedCallback(
+        base::Bind(&MessageReaderTest::OnMessage, base::Unretained(this)));
+    reader_->StartReading(&socket_);
   }
 
   void AddMessage(const std::string& message) {

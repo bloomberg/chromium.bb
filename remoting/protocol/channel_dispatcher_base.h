@@ -10,6 +10,9 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
+#include "remoting/protocol/buffered_socket_writer.h"
+#include "remoting/protocol/errors.h"
+#include "remoting/protocol/message_reader.h"
 
 namespace net {
 class StreamSocket;
@@ -28,6 +31,17 @@ class Session;
 // messages.
 class ChannelDispatcherBase {
  public:
+  class EventHandler {
+   public:
+    EventHandler() {}
+    virtual ~EventHandler() {}
+
+    virtual void OnChannelInitialized(
+        ChannelDispatcherBase* channel_dispatcher) = 0;
+    virtual void OnChannelError(ChannelDispatcherBase* channel_dispatcher,
+                                ErrorCode error) = 0;
+  };
+
   // The callback is called when initialization is finished. The
   // parameter is set to true on success.
   typedef base::Callback<void(bool)> InitializedCallback;
@@ -38,27 +52,30 @@ class ChannelDispatcherBase {
   // |session|. Caller retains ownership of the Session.
   void Init(Session* session,
             const ChannelConfig& config,
-            const InitializedCallback& callback);
+            EventHandler* event_handler);
+
+  const std::string& channel_name() { return channel_name_; }
 
   // Returns true if the channel is currently connected.
-  bool is_connected() { return channel() != nullptr; }
+  bool is_connected() { return channel_ != nullptr; }
 
  protected:
   explicit ChannelDispatcherBase(const char* channel_name);
 
-  net::StreamSocket* channel() { return channel_.get(); }
-
-  // Called when channel is initialized. Must be overriden in the
-  // child classes. Should not delete the dispatcher.
-  virtual void OnInitialized() = 0;
+  BufferedSocketWriter* writer() { return &writer_; }
+  MessageReader* reader() { return &reader_; }
 
  private:
   void OnChannelReady(scoped_ptr<net::StreamSocket> socket);
+  void OnWriteFailed(int error);
 
   std::string channel_name_;
   StreamChannelFactory* channel_factory_;
-  InitializedCallback initialized_callback_;
+  EventHandler* event_handler_;
   scoped_ptr<net::StreamSocket> channel_;
+
+  BufferedSocketWriter writer_;
+  MessageReader reader_;
 
   DISALLOW_COPY_AND_ASSIGN(ChannelDispatcherBase);
 };

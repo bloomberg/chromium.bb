@@ -13,30 +13,14 @@
 namespace remoting {
 namespace protocol {
 
-AudioReader::AudioReader(AudioPacket::Encoding encoding)
+AudioReader::AudioReader(AudioStub* audio_stub)
     : ChannelDispatcherBase(kAudioChannelName),
-      encoding_(encoding),
-      audio_stub_(nullptr) {
+      parser_(base::Bind(&AudioStub::ProcessAudioPacket,
+                         base::Unretained(audio_stub)),
+              reader()) {
 }
 
 AudioReader::~AudioReader() {
-}
-
-// static
-scoped_ptr<AudioReader> AudioReader::Create(const SessionConfig& config) {
-  if (!config.is_audio_enabled())
-    return nullptr;
-  return make_scoped_ptr(new AudioReader(AudioPacket::ENCODING_RAW));
-}
-
-void AudioReader::OnInitialized() {
-  reader_.Init(channel(), base::Bind(&AudioReader::OnNewData,
-                                     base::Unretained(this)));
-}
-
-void AudioReader::OnNewData(scoped_ptr<AudioPacket> packet,
-                            const base::Closure& done_task) {
-  audio_stub_->ProcessAudioPacket(packet.Pass(), done_task);
 }
 
 }  // namespace protocol

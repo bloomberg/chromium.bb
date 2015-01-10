@@ -15,17 +15,19 @@ namespace protocol {
 
 ChannelDispatcherBase::ChannelDispatcherBase(const char* channel_name)
     : channel_name_(channel_name),
-      channel_factory_(nullptr) {
+      channel_factory_(nullptr),
+      event_handler_(nullptr) {
 }
 
 ChannelDispatcherBase::~ChannelDispatcherBase() {
+  writer()->Close();
   if (channel_factory_)
     channel_factory_->CancelChannelCreation(channel_name_);
 }
 
 void ChannelDispatcherBase::Init(Session* session,
                                  const ChannelConfig& config,
-                                 const InitializedCallback& callback) {
+                                 EventHandler* event_handler) {
   DCHECK(session);
   switch (config.transport) {
     case ChannelConfig::TRANSPORT_MUX_STREAM:
@@ -37,12 +39,10 @@ void ChannelDispatcherBase::Init(Session* session,
       break;
 
     default:
-      NOTREACHED();
-      callback.Run(false);
-      return;
+      LOG(FATAL) << "Unknown transport type: " << config.transport;
   }
 
-  initialized_callback_ = callback;
+  event_handler_ = event_handler;
 
   channel_factory_->CreateChannel(channel_name_, base::Bind(
       &ChannelDispatcherBase::OnChannelReady, base::Unretained(this)));
@@ -51,16 +51,21 @@ void ChannelDispatcherBase::Init(Session* session,
 void ChannelDispatcherBase::OnChannelReady(
     scoped_ptr<net::StreamSocket> socket) {
   if (!socket.get()) {
-    initialized_callback_.Run(false);
+    event_handler_->OnChannelError(this, CHANNEL_CONNECTION_ERROR);
     return;
   }
 
   channel_factory_ = nullptr;
   channel_ = socket.Pass();
+  writer_.Init(channel_.get(), base::Bind(&ChannelDispatcherBase::OnWriteFailed,
+                                          base::Unretained(this)));
+  reader_.StartReading(channel_.get());
 
-  OnInitialized();
+  event_handler_->OnChannelInitialized(this);
+}
 
-  initialized_callback_.Run(true);
+void ChannelDispatcherBase::OnWriteFailed(int error) {
+  event_handler_->OnChannelError(this, CHANNEL_CONNECTION_ERROR);
 }
 
 }  // namespace protocol

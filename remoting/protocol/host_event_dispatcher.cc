@@ -16,19 +16,17 @@ namespace protocol {
 
 HostEventDispatcher::HostEventDispatcher()
     : ChannelDispatcherBase(kEventChannelName),
-      input_stub_(nullptr) {
+      input_stub_(nullptr),
+      parser_(base::Bind(&HostEventDispatcher::OnMessageReceived,
+                         base::Unretained(this)),
+              reader()) {
 }
 
 HostEventDispatcher::~HostEventDispatcher() {
 }
 
-void HostEventDispatcher::OnInitialized() {
-  reader_.Init(channel(), base::Bind(
-      &HostEventDispatcher::OnMessageReceived, base::Unretained(this)));
-}
-
-void HostEventDispatcher::OnMessageReceived(
-    scoped_ptr<EventMessage> message, const base::Closure& done_task) {
+void HostEventDispatcher::OnMessageReceived(scoped_ptr<EventMessage> message,
+                                            const base::Closure& done_task) {
   DCHECK(input_stub_);
 
   base::ScopedClosureRunner done_runner(done_task);

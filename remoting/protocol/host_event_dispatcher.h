@@ -6,7 +6,7 @@
 #define REMOTING_PROTOCOL_HOST_EVENT_DISPATCHER_H_
 
 #include "remoting/protocol/channel_dispatcher_base.h"
-#include "remoting/protocol/message_reader.h"
+#include "remoting/protocol/protobuf_message_parser.h"
 
 namespace remoting {
 namespace protocol {
@@ -34,10 +34,6 @@ class HostEventDispatcher : public ChannelDispatcherBase {
     event_timestamp_callback_ = value;
   }
 
- protected:
-  // ChannelDispatcherBase overrides.
-  void OnInitialized() override;
-
  private:
   void OnMessageReceived(scoped_ptr<EventMessage> message,
                          const base::Closure& done_task);
@@ -45,7 +41,7 @@ class HostEventDispatcher : public ChannelDispatcherBase {
   InputStub* input_stub_;
   EventTimestampCallback event_timestamp_callback_;
 
-  ProtobufMessageReader<EventMessage> reader_;
+  ProtobufMessageParser<EventMessage> parser_;
 
   DISALLOW_COPY_AND_ASSIGN(HostEventDispatcher);
 };

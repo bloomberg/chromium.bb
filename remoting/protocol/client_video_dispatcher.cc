@@ -15,15 +15,12 @@ namespace protocol {
 
 ClientVideoDispatcher::ClientVideoDispatcher(VideoStub* video_stub)
     : ChannelDispatcherBase(kVideoChannelName),
-      video_stub_(video_stub) {
+      parser_(base::Bind(&VideoStub::ProcessVideoPacket,
+                         base::Unretained(video_stub)),
+              reader()) {
 }
 
 ClientVideoDispatcher::~ClientVideoDispatcher() {
-}
-
-void ClientVideoDispatcher::OnInitialized() {
-  reader_.Init(channel(), base::Bind(&VideoStub::ProcessVideoPacket,
-                                     base::Unretained(video_stub_)));
 }
 
 }  // namespace protocol

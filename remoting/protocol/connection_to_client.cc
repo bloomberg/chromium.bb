@@ -119,34 +119,26 @@ void ConnectionToClient::OnSessionStateChange(Session::State state) {
     case Session::AUTHENTICATED:
       // Initialize channels.
       control_dispatcher_.reset(new HostControlDispatcher());
-      control_dispatcher_->Init(
-          session_.get(), session_->config().control_config(),
-          base::Bind(&ConnectionToClient::OnChannelInitialized,
-                     base::Unretained(this)));
+      control_dispatcher_->Init(session_.get(),
+                                session_->config().control_config(), this);
       control_dispatcher_->set_clipboard_stub(clipboard_stub_);
       control_dispatcher_->set_host_stub(host_stub_);
 
       event_dispatcher_.reset(new HostEventDispatcher());
-      event_dispatcher_->Init(
-          session_.get(), session_->config().event_config(),
-          base::Bind(&ConnectionToClient::OnChannelInitialized,
-                     base::Unretained(this)));
+      event_dispatcher_->Init(session_.get(), session_->config().event_config(),
+                              this);
       event_dispatcher_->set_input_stub(input_stub_);
       event_dispatcher_->set_event_timestamp_callback(base::Bind(
           &ConnectionToClient::OnEventTimestamp, base::Unretained(this)));
 
       video_dispatcher_.reset(new HostVideoDispatcher());
-      video_dispatcher_->Init(
-          session_.get(), session_->config().video_config(),
-          base::Bind(&ConnectionToClient::OnChannelInitialized,
-                     base::Unretained(this)));
+      video_dispatcher_->Init(session_.get(), session_->config().video_config(),
+                              this);
 
       audio_writer_ = AudioWriter::Create(session_->config());
       if (audio_writer_.get()) {
-        audio_writer_->Init(
-            session_.get(), session_->config().audio_config(),
-            base::Bind(&ConnectionToClient::OnChannelInitialized,
-                       base::Unretained(this)));
+        audio_writer_->Init(session_.get(), session_->config().audio_config(),
+                            this);
       }
 
       // Notify the handler after initializing the channels, so that
@@ -170,28 +162,33 @@ void ConnectionToClient::OnSessionRouteChange(
   handler_->OnRouteChange(this, channel_name, route);
 }
 
-void ConnectionToClient::OnChannelInitialized(bool successful) {
+void ConnectionToClient::OnChannelInitialized(
+    ChannelDispatcherBase* channel_dispatcher) {
   DCHECK(CalledOnValidThread());
 
-  if (!successful) {
-    LOG(ERROR) << "Failed to connect a channel";
-    Close(CHANNEL_CONNECTION_ERROR);
-    return;
-  }
-
   NotifyIfChannelsReady();
+}
+
+void ConnectionToClient::OnChannelError(
+    ChannelDispatcherBase* channel_dispatcher,
+    ErrorCode error) {
+  DCHECK(CalledOnValidThread());
+
+  LOG(ERROR) << "Failed to connect channel "
+             << channel_dispatcher->channel_name();
+  Close(CHANNEL_CONNECTION_ERROR);
 }
 
 void ConnectionToClient::NotifyIfChannelsReady() {
   DCHECK(CalledOnValidThread());
 
-  if (!control_dispatcher_.get() || !control_dispatcher_->is_connected())
+  if (!control_dispatcher_ || !control_dispatcher_->is_connected())
     return;
-  if (!event_dispatcher_.get() || !event_dispatcher_->is_connected())
+  if (!event_dispatcher_ || !event_dispatcher_->is_connected())
     return;
-  if (!video_dispatcher_.get() || !video_dispatcher_->is_connected())
+  if (!video_dispatcher_ || !video_dispatcher_->is_connected())
     return;
-  if ((!audio_writer_.get() || !audio_writer_->is_connected()) &&
+  if ((!audio_writer_ || !audio_writer_->is_connected()) &&
       session_->config().is_audio_enabled()) {
     return;
   }

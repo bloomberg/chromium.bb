@@ -25,13 +25,7 @@ class ClientEventDispatcher : public ChannelDispatcherBase, public InputStub {
   void InjectTextEvent(const TextEvent& event) override;
   void InjectMouseEvent(const MouseEvent& event) override;
 
- protected:
-  // ChannelDispatcherBase overrides.
-  void OnInitialized() override;
-
  private:
-  BufferedSocketWriter writer_;
-
   DISALLOW_COPY_AND_ASSIGN(ClientEventDispatcher);
 };
 

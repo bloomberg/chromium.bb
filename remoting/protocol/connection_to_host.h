@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "remoting/proto/internal.pb.h"
+#include "remoting/protocol/channel_dispatcher_base.h"
 #include "remoting/protocol/clipboard_filter.h"
 #include "remoting/protocol/errors.h"
 #include "remoting/protocol/input_filter.h"
@@ -47,6 +48,7 @@ class VideoStub;
 class ConnectionToHost : public SignalStrategy::Listener,
                          public SessionManager::Listener,
                          public Session::EventHandler,
+                         public ChannelDispatcherBase::EventHandler,
                          public base::NonThreadSafe {
  public:
   // The UI implementations maintain corresponding definitions of this
@@ -133,6 +135,11 @@ class ConnectionToHost : public SignalStrategy::Listener,
   void OnSessionRouteChange(const std::string& channel_name,
                             const TransportRoute& route) override;
 
+  // ChannelDispatcherBase::EventHandler interface.
+  void OnChannelInitialized(ChannelDispatcherBase* channel_dispatcher) override;
+  void OnChannelError(ChannelDispatcherBase* channel_dispatcher,
+                      ErrorCode error) override;
+
   // MonitoredVideoStub::EventHandler interface.
   virtual void OnVideoChannelStatus(bool active);
 
@@ -140,9 +147,6 @@ class ConnectionToHost : public SignalStrategy::Listener,
   State state() const;
 
  private:
-  // Callbacks for channel initialization
-  void OnChannelInitialized(bool successful);
-
   void NotifyIfChannelsReady();
 
   void CloseOnError(ErrorCode error);

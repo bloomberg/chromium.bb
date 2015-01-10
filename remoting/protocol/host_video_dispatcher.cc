@@ -20,14 +20,9 @@ HostVideoDispatcher::HostVideoDispatcher()
 HostVideoDispatcher::~HostVideoDispatcher() {
 }
 
-void HostVideoDispatcher::OnInitialized() {
-  // TODO(sergeyu): Provide WriteFailedCallback for the buffered writer.
-  writer_.Init(channel(), BufferedSocketWriter::WriteFailedCallback());
-}
-
 void HostVideoDispatcher::ProcessVideoPacket(scoped_ptr<VideoPacket> packet,
                                              const base::Closure& done) {
-  writer_.Write(SerializeAndFrameMessage(*packet), done);
+  writer()->Write(SerializeAndFrameMessage(*packet), done);
 }
 
 }  // namespace protocol

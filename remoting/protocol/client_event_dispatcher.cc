@@ -20,13 +20,6 @@ ClientEventDispatcher::ClientEventDispatcher()
 }
 
 ClientEventDispatcher::~ClientEventDispatcher() {
-  writer_.Close();
-}
-
-void ClientEventDispatcher::OnInitialized() {
-  // TODO(garykac): Set write failed callback.
-  writer_.Init(channel(),
-                BufferedSocketWriter::WriteFailedCallback());
 }
 
 void ClientEventDispatcher::InjectKeyEvent(const KeyEvent& event) {
@@ -35,7 +28,7 @@ void ClientEventDispatcher::InjectKeyEvent(const KeyEvent& event) {
   EventMessage message;
   message.set_timestamp(base::Time::Now().ToInternalValue());
   message.mutable_key_event()->CopyFrom(event);
-  writer_.Write(SerializeAndFrameMessage(message), base::Closure());
+  writer()->Write(SerializeAndFrameMessage(message), base::Closure());
 }
 
 void ClientEventDispatcher::InjectTextEvent(const TextEvent& event) {
@@ -43,14 +36,14 @@ void ClientEventDispatcher::InjectTextEvent(const TextEvent& event) {
   EventMessage message;
   message.set_timestamp(base::Time::Now().ToInternalValue());
   message.mutable_text_event()->CopyFrom(event);
-  writer_.Write(SerializeAndFrameMessage(message), base::Closure());
+  writer()->Write(SerializeAndFrameMessage(message), base::Closure());
 }
 
 void ClientEventDispatcher::InjectMouseEvent(const MouseEvent& event) {
   EventMessage message;
   message.set_timestamp(base::Time::Now().ToInternalValue());
   message.mutable_mouse_event()->CopyFrom(event);
-  writer_.Write(SerializeAndFrameMessage(message), base::Closure());
+  writer()->Write(SerializeAndFrameMessage(message), base::Closure());
 }
 
 }  // namespace protocol

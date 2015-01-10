@@ -38,13 +38,8 @@ class AudioWriter : public ChannelDispatcherBase,
   void ProcessAudioPacket(scoped_ptr<AudioPacket> packet,
                           const base::Closure& done) override;
 
- protected:
-  void OnInitialized() override;
-
  private:
   AudioWriter();
-
-  BufferedSocketWriter buffered_writer_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioWriter);
 };
