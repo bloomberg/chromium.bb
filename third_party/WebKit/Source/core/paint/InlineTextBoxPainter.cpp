@@ -149,6 +149,7 @@ void InlineTextBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& 
     StringView string;
     if (!combinedText) {
         string = m_inlineTextBox.renderer().text().createView();
+        ASSERT(m_inlineTextBox.start() + length <= string.length());
         if (static_cast<unsigned>(length) != string.length() || m_inlineTextBox.start())
             string.narrow(m_inlineTextBox.start(), length);
         maximumLength = m_inlineTextBox.renderer().textLength() - m_inlineTextBox.start();

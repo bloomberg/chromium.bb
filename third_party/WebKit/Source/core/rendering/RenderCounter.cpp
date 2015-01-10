@@ -415,7 +415,7 @@ PassRefPtr<StringImpl> RenderCounter::originalText() const
 
 void RenderCounter::updateCounter()
 {
-    setTextInternal(originalText());
+    setText(originalText());
 }
 
 void RenderCounter::invalidate()
