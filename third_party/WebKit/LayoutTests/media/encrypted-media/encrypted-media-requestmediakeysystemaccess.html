@@ -26,15 +26,72 @@
                 }, testName);
             }
 
-            expect_error('', [{}], 'InvalidAccessError', 'Empty keySystem');
-            expect_error('com.example.badkeysystem', [{}], 'NotSupportedError', 'Unsupported keySystem');
-            expect_error('org.w3.clearkey', [], 'InvalidAccessError', 'Empty supportedConfigurations');
-            expect_success('org.w3.clearkey', [{initDataTypes: ['webm']}], 'Valid configuration');
+            // Tests for single-parameter version.
+            promise_test(function(test) {
+              return navigator.requestMediaKeySystemAccess('org.w3.clearkey');
+            }, 'Single-parameter');
 
+            // Tests for keySystem.
+            expect_error('', [{}], 'InvalidAccessError', 'Empty keySystem');
+            expect_error('com.example.unsupported', [{}], 'NotSupportedError', 'Unsupported keySystem');
+            expect_error('org.w3.clearkey.', [{}], 'NotSupportedError', 'keySystem ends with "."');
+            expect_error('org.w3.ClearKey', [{}], 'NotSupportedError', 'Capitalized keySystem');
+            expect_error('org.w3.clearke\u028F', [{}], 'NotSupportedError', 'Non-ASCII keySystem');
+
+            // Tests for trivial configurations.
+            expect_error('org.w3.clearkey', [], 'InvalidAccessError', 'Empty supportedConfigurations');
+            expect_success('org.w3.clearkey', [{}], 'Empty configuration');
+
+            // Various combinations of supportedConfigurations.
             expect_success('org.w3.clearkey', [{
                 initDataTypes: ['webm'],
-                videoCapabilities: [{contentType: 'video/webm; codecs=vp8'}],
+                audioCapabilities: [{contentType: 'audio/webm'}],
+                videoCapabilities: [{contentType: 'video/webm'}],
+            }], 'Basic supported configuration');
+
+            expect_success('org.w3.clearkey', [{
+                initDataTypes: ['fakeidt', 'webm'],
+                audioCapabilities: [{contentType: 'audio/fake'}, {contentType: 'audio/webm'}],
+                videoCapabilities: [{contentType: 'video/fake'}, {contentType: 'video/webm'}],
+            }], 'Partially supported configuration');
+
+            expect_success('org.w3.clearkey', [{
+                audioCapabilities: [{contentType: 'audio/webm; codecs=vorbis'}],
+            }], 'Supported audio codec');
+
+            expect_error('org.w3.clearkey', [{
+                audioCapabilities: [{contentType: 'audio/webm; codecs=fake'}],
+            }], 'NotSupportedError', 'Unsupported audio codec');
+
+            expect_error('org.w3.clearkey', [{
+                audioCapabilities: [
+                    {contentType: 'audio/webm; codecs=mp4a'},
+                    {contentType: 'audio/webm; codecs=mp4a.40.2'}
+                ],
+            }], 'NotSupportedError', 'Mismatched audio container/codec');
+
+            expect_success('org.w3.clearkey', [{
+                audioCapabilities: [{contentType: 'video/webm; codecs=vp8'}],
             }], 'Supported video codec');
+
+            expect_error('org.w3.clearkey', [{
+                audioCapabilities: [{contentType: 'video/webm; codecs=fake'}],
+            }], 'NotSupportedError', 'Unsupported video codec');
+
+            expect_error('org.w3.clearkey', [{
+                videoCapabilities: [
+                    {contentType: 'audio/webm; codecs=avc1'},
+                    {contentType: 'audio/webm; codecs=avc1.42e01e'}
+                ],
+            }], 'NotSupportedError', 'Mismatched video container/codec');
+
+            expect_success('org.w3.clearkey', [
+                {initDataTypes: ['fakeidt']},
+                {initDataTypes: ['webm']}
+            ], 'Two configurations, one supported');
+
+            // FIXME: Test for an empty config before and after a supported config,
+            // once empty configs are considered invalid.
         </script>
     </body>
 </html>
