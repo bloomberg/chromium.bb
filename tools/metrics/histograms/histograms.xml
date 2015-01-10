@@ -2144,6 +2144,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="CAPSUpdater.Step" enum="CAPSUpdaterStep">
+  <owner>cpu@chromium.org</owner>
+  <summary>
+    Tracks the component updater steps for the Chrome Crash Service.
+  </summary>
+</histogram>
+
 <histogram name="CaptivePortal.DetectResult" enum="CaptivePortalDetectResult">
   <owner>meacer@chromium.org</owner>
   <summary>Records the result of a captive portal probe.</summary>
@@ -43103,6 +43110,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="1" label="webkit-3d"/>
   <int value="2" label="experimental-webgl"/>
   <int value="3" label="webgl"/>
+</enum>
+
+<enum name="CAPSUpdaterStep" type="int">
+  <int value="0" label="CAPS component ready"/>
+  <int value="1" label="CAPS component missing"/>
+  <int value="2" label="CAPS Service failed to start"/>
+  <int value="3" label="CAPS Service started"/>
 </enum>
 
 <enum name="CaptivePortalBlockingPageEvent" type="int">

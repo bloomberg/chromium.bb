@@ -166,6 +166,7 @@
 #include "chrome/browser/browser_util_win.h"
 #include "chrome/browser/chrome_browser_main_win.h"
 #include "chrome/browser/chrome_select_file_dialog_factory_win.h"
+#include "chrome/browser/component_updater/caps_installer_win.h"
 #include "chrome/browser/component_updater/sw_reporter_installer_win.h"
 #include "chrome/browser/first_run/try_chrome_dialog_view.h"
 #include "chrome/browser/first_run/upgrade_util_win.h"
@@ -449,6 +450,7 @@ void RegisterComponentsForUpdate() {
 
 #if defined(OS_WIN)
   RegisterSwReporterComponent(cus, g_browser_process->local_state());
+  RegisterCAPSComponent(cus);
 #endif
 
   cus->Start();

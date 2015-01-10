@@ -240,6 +240,8 @@
       'browser/command_updater.cc',
       'browser/command_updater.h',
       'browser/command_updater_delegate.h',
+      'browser/component_updater/caps_installer_win.cc',
+      'browser/component_updater/caps_installer_win.h',
       'browser/component_updater/chrome_component_updater_configurator.cc',
       'browser/component_updater/chrome_component_updater_configurator.h',
       'browser/component_updater/cld_component_installer.cc',
