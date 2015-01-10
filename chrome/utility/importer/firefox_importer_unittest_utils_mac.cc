@@ -34,10 +34,8 @@ const char kTestChannelID[] = "T1";
 // Launch the child process:
 // |nss_path| - path to the NSS directory holding the decryption libraries.
 // |channel| - IPC Channel to use for communication.
-// |handle| - On return, the process handle to use to communicate with the
-// child.
-bool LaunchNSSDecrypterChildProcess(const base::FilePath& nss_path,
-    IPC::Channel* channel, base::ProcessHandle* handle) {
+base::Process LaunchNSSDecrypterChildProcess(const base::FilePath& nss_path,
+                                             IPC::Channel* channel) {
   base::CommandLine cl(*base::CommandLine::ForCurrentProcess());
   cl.AppendSwitchASCII(switches::kTestChildProcess, "NSSDecrypterChildProcess");
 
@@ -49,14 +47,14 @@ bool LaunchNSSDecrypterChildProcess(const base::FilePath& nss_path,
 
   base::ScopedFD ipcfd(channel->TakeClientFileDescriptor());
   if (!ipcfd.is_valid())
-    return false;
+    return base::Process();
 
   base::FileHandleMappingVector fds_to_map;
   fds_to_map.push_back(std::pair<int,int>(ipcfd.get(),
       kPrimaryIPCChannel + base::GlobalDescriptors::kBaseDescriptor));
 
   options.fds_to_remap = &fds_to_map;
-  return base::LaunchProcess(cl.argv(), options, handle);
+  return base::LaunchProcess(cl.argv(), options);
 }
 
 }  // namespace
@@ -131,8 +129,7 @@ class FFDecryptorServerChannelListener : public IPC::Listener {
   IPC::Sender* sender_;  // weak
 };
 
-FFUnitTestDecryptorProxy::FFUnitTestDecryptorProxy()
-    : child_process_(0) {
+FFUnitTestDecryptorProxy::FFUnitTestDecryptorProxy() {
 }
 
 bool FFUnitTestDecryptorProxy::Setup(const base::FilePath& nss_path) {
@@ -145,19 +142,18 @@ bool FFUnitTestDecryptorProxy::Setup(const base::FilePath& nss_path) {
   listener_->SetSender(channel_.get());
 
   // Spawn child and set up sync IPC connection.
-  bool ret = LaunchNSSDecrypterChildProcess(nss_path,
-                                            channel_.get(),
-                                            &child_process_);
-  return ret && (child_process_ != 0);
+  child_process_ = LaunchNSSDecrypterChildProcess(nss_path, channel_.get());
+  return child_process_.IsValid();
 }
 
 FFUnitTestDecryptorProxy::~FFUnitTestDecryptorProxy() {
   listener_->QuitClient();
   channel_->Close();
 
-  if (child_process_) {
-    base::WaitForSingleProcess(child_process_, base::TimeDelta::FromSeconds(5));
-    base::CloseProcessHandle(child_process_);
+  if (child_process_.IsValid()) {
+    base::WaitForSingleProcess(child_process_.Handle(),
+                               base::TimeDelta::FromSeconds(5));
+    child_process_.Close();
   }
 }
 

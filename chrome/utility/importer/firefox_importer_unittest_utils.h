@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "base/files/file_util.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/process/process_handle.h"
+#include "base/process/process.h"
 #include "chrome/utility/importer/nss_decryptor.h"
 #include "components/autofill/core/common/password_form.h"
 
@@ -57,7 +57,7 @@ class FFUnitTestDecryptorProxy {
   // the operation timed out.
   bool WaitForClientResponse();
 
-  base::ProcessHandle child_process_;
+  base::Process child_process_;
   scoped_ptr<IPC::Channel> channel_;
   scoped_ptr<FFDecryptorServerChannelListener> listener_;
   scoped_ptr<base::MessageLoopForIO> message_loop_;

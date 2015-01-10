@@ -117,8 +117,8 @@ bool ImageWriter::OpenDevice() {
   cmd_line.AppendArgPath(real_device_path);
 
   // Launch the process.
-  base::ProcessHandle process_handle;
-  if (!base::LaunchProcess(cmd_line, options, &process_handle)) {
+  base::Process process = base::LaunchProcess(cmd_line, options);
+  if (!process.IsValid()) {
     LOG(ERROR) << "Failed to launch authopen process.";
     return false;
   }
@@ -157,7 +157,7 @@ bool ImageWriter::OpenDevice() {
 
   // Wait for the child.
   int child_exit_status;
-  if (!base::WaitForExitCode(process_handle, &child_exit_status)) {
+  if (!process.WaitForExit(&child_exit_status)) {
     LOG(ERROR) << "Unable to wait for child.";
     return false;
   }

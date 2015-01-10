@@ -120,10 +120,10 @@ TEST_F(ProcessInfoSnapshotMacTest, EffectiveVsRealUserIDTest) {
   argv.push_back("-l");
   argv.push_back("0");
 
-  base::ProcessHandle process_handle;
   base::LaunchOptions options;
   options.fds_to_remap = &fds_to_remap;
-  ASSERT_TRUE(base::LaunchProcess(argv, options, &process_handle));
+  base::Process process = base::LaunchProcess(argv, options);
+  ASSERT_TRUE(process.IsValid());
   PCHECK(IGNORE_EINTR(close(fds[1])) == 0);
 
   // Wait until there's some output form top. This is an easy way to tell that
@@ -132,17 +132,17 @@ TEST_F(ProcessInfoSnapshotMacTest, EffectiveVsRealUserIDTest) {
   PCHECK(HANDLE_EINTR(read(fds[0], buf, 1)) == 1);
 
   std::vector<base::ProcessId> pid_list;
-  pid_list.push_back(process_handle);
+  pid_list.push_back(process.pid());
   ProcessInfoSnapshot snapshot;
   ASSERT_TRUE(snapshot.Sample(pid_list));
 
   ProcessInfoSnapshot::ProcInfoEntry proc_info;
-  ASSERT_TRUE(snapshot.GetProcInfo(process_handle, &proc_info));
+  ASSERT_TRUE(snapshot.GetProcInfo(process.pid(), &proc_info));
   // Effective user ID should be 0 (root).
   EXPECT_EQ(proc_info.euid, 0u);
   // Real user ID should match the calling process's user id.
   EXPECT_EQ(proc_info.uid, geteuid());
 
-  ASSERT_TRUE(base::KillProcess(process_handle, 0, true));
+  ASSERT_TRUE(base::KillProcess(process.Handle(), 0, true));
   PCHECK(IGNORE_EINTR(close(fds[0])) == 0);
 }
