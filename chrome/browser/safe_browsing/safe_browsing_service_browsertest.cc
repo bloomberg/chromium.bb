@@ -160,6 +160,9 @@ class TestSafeBrowsingDatabase :  public SafeBrowsingDatabase {
     return true;
   }
   bool ContainsDownloadWhitelistedUrl(const GURL& url) override { return true; }
+  bool ContainsInclusionWhitelistedUrl(const GURL& url) override {
+    return true;
+  }
   bool ContainsExtensionPrefixes(const std::vector<SBPrefix>& prefixes,
                                  std::vector<SBPrefix>* prefix_hits) override {
     return true;

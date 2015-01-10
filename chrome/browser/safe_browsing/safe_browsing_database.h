@@ -57,21 +57,13 @@ class SafeBrowsingDatabaseFactory {
 // as phishing by the client-side phishing detection. These on-disk databases
 // are shared among all profiles, as it doesn't contain user-specific data. This
 // object is not thread-safe, i.e. all its methods should be used on the same
-// thread that it was created on.
+// thread that it was created on, unless specified otherwise.
 class SafeBrowsingDatabase {
  public:
   // Factory method for obtaining a SafeBrowsingDatabase implementation.
   // It is not thread safe.
-  // |enable_download_protection| is used to control the download database
-  // feature.
-  // |enable_client_side_whitelist| is used to control the csd whitelist
-  // database feature.
-  // |enable_download_whitelist| is used to control the download whitelist
-  // database feature.
-  // |enable_ip_blacklist| is used to control the csd malware IP blacklist
-  // database feature.
-  // |enable_unwanted_software_list| is used to control the unwanted software
-  // list database feature.
+  // The browse list and off-domain inclusion whitelist are always on;
+  // availability of other lists is controlled by the flags on this method.
   static SafeBrowsingDatabase* Create(bool enable_download_protection,
                                       bool enable_client_side_whitelist,
                                       bool enable_download_whitelist,
@@ -136,6 +128,9 @@ class SafeBrowsingDatabase {
   // to call from any thread.
   virtual bool ContainsDownloadWhitelistedUrl(const GURL& url) = 0;
   virtual bool ContainsDownloadWhitelistedString(const std::string& str) = 0;
+
+  // Returns true if |url| is on the off-domain inclusion whitelist.
+  virtual bool ContainsInclusionWhitelistedUrl(const GURL& url) = 0;
 
   // Populates |prefix_hits| with any prefixes in |prefixes| that have matches
   // in the database.
@@ -222,6 +217,10 @@ class SafeBrowsingDatabase {
   static base::FilePath DownloadWhitelistDBFilename(
       const base::FilePath& download_whitelist_base_filename);
 
+  // Filename for the off-domain inclusion whitelist databsae.
+  static base::FilePath InclusionWhitelistDBFilename(
+      const base::FilePath& inclusion_whitelist_base_filename);
+
   // Filename for extension blacklist database.
   static base::FilePath ExtensionBlacklistDBFilename(
       const base::FilePath& extension_blacklist_base_filename);
@@ -293,16 +292,14 @@ class SafeBrowsingDatabase {
 
 class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
  public:
-  // Create a database with a browse, download, download whitelist and
-  // csd whitelist store objects. Takes ownership of all the store objects.
-  // When |download_store| is NULL, the database will ignore any operations
-  // related download (url hashes and binary hashes).  The same is true for
-  // the |csd_whitelist_store|, |download_whitelist_store| and
-  // |ip_blacklist_store|.
+  // Create a database with the stores below. Takes ownership of all store
+  // objects handed to this constructor. Ignores all future operations on lists
+  // for which the store is initialized to NULL.
   SafeBrowsingDatabaseNew(SafeBrowsingStore* browse_store,
                           SafeBrowsingStore* download_store,
                           SafeBrowsingStore* csd_whitelist_store,
                           SafeBrowsingStore* download_whitelist_store,
+                          SafeBrowsingStore* inclusion_whitelist_store,
                           SafeBrowsingStore* extension_blacklist_store,
                           SafeBrowsingStore* side_effect_free_whitelist_store,
                           SafeBrowsingStore* ip_blacklist_store,
@@ -329,6 +326,7 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
   bool ContainsCsdWhitelistedUrl(const GURL& url) override;
   bool ContainsDownloadWhitelistedUrl(const GURL& url) override;
   bool ContainsDownloadWhitelistedString(const std::string& str) override;
+  bool ContainsInclusionWhitelistedUrl(const GURL& url) override;
   bool ContainsExtensionPrefixes(const std::vector<SBPrefix>& prefixes,
                                  std::vector<SBPrefix>* prefix_hits) override;
   bool ContainsSideEffectFreeWhitelistUrl(const GURL& url) override;
@@ -386,6 +384,7 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
     enum class SBWhitelistId {
       CSD,
       DOWNLOAD,
+      INCLUSION,
     };
     enum class PrefixSetId {
       BROWSE,
@@ -426,6 +425,7 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
 
     SBWhitelist csd_whitelist_;
     SBWhitelist download_whitelist_;
+    SBWhitelist inclusion_whitelist_;
 
     // The IP blacklist should be small.  At most a couple hundred IPs.
     IPBlacklist ip_blacklist_;
@@ -477,8 +477,7 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
   bool ContainsWhitelistedHashes(SBWhitelistId whitelist_id,
                                  const std::vector<SBFullHash>& hashes);
 
-  // Return the browse_store_, download_store_, download_whitelist_store or
-  // csd_whitelist_store_ based on list_id.
+  // Return the store matching |list_id|.
   SafeBrowsingStore* GetStore(int list_id);
 
   // Deletes the files on disk.
@@ -587,6 +586,10 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
   // For the download whitelist chunks and full-length hashes.  This list only
   // contains 256 bit hashes.
   scoped_ptr<SafeBrowsingStore> download_whitelist_store_;
+
+  // For the off-domain inclusion whitelist chunks and full-length hashes.  This
+  // list only contains 256 bit hashes.
+  scoped_ptr<SafeBrowsingStore> inclusion_whitelist_store_;
 
   // For extension IDs.
   scoped_ptr<SafeBrowsingStore> extension_blacklist_store_;

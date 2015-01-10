@@ -198,8 +198,9 @@ const char kExtensionBlacklist[] = "goog-badcrxids-digestvar";
 const char kSideEffectFreeWhitelist[] = "goog-sideeffectfree-shavar";
 const char kIPBlacklist[] = "goog-badip-digest256";
 const char kUnwantedUrlList[] = "goog-unwanted-shavar";
+const char kInclusionWhitelist[] = "goog-csdinclusionwhite-sha256";
 
-const char* kAllLists[9] = {
+const char* kAllLists[10] = {
     kMalwareList,
     kPhishingList,
     kBinUrlList,
@@ -209,6 +210,7 @@ const char* kAllLists[9] = {
     kSideEffectFreeWhitelist,
     kIPBlacklist,
     kUnwantedUrlList,
+    kInclusionWhitelist,
 };
 
 ListType GetListId(const base::StringPiece& name) {
@@ -231,6 +233,8 @@ ListType GetListId(const base::StringPiece& name) {
     id = IPBLACKLIST;
   } else if (name == safe_browsing_util::kUnwantedUrlList) {
     id = UNWANTEDURL;
+  } else if (name == safe_browsing_util::kInclusionWhitelist) {
+    id = INCLUSIONWHITELIST;
   } else {
     id = INVALID;
   }
@@ -265,6 +269,9 @@ bool GetListName(ListType list_id, std::string* list) {
       break;
     case UNWANTEDURL:
       *list = safe_browsing_util::kUnwantedUrlList;
+      break;
+    case INCLUSIONWHITELIST:
+      *list = safe_browsing_util::kInclusionWhitelist;
       break;
     default:
       return false;

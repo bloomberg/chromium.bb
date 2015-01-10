@@ -172,9 +172,11 @@ extern const char kSideEffectFreeWhitelist[];
 extern const char kIPBlacklist[];
 // SafeBrowsing unwanted URL list.
 extern const char kUnwantedUrlList[];
+// SafeBrowsing off-domain inclusion whitelist list name.
+extern const char kInclusionWhitelist[];
 
 // This array must contain all Safe Browsing lists.
-extern const char* kAllLists[9];
+extern const char* kAllLists[10];
 
 enum ListType {
   INVALID = -1,
@@ -196,6 +198,8 @@ enum ListType {
   // See above comment.  Leave 13 available.
   UNWANTEDURL = 14,
   // See above comment.  Leave 15 available.
+  INCLUSIONWHITELIST = 16,
+  // See above comment.  Leave 17 available.
 };
 
 // M40 experimental flag controls rollout of the UwS warning.

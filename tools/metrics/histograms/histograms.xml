@@ -62207,6 +62207,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="Download" label="Download"/>
   <suffix name="CsdWhitelist" label="CsdWhitelist"/>
   <suffix name="DownloadWhitelist" label="DownloadWhitelist"/>
+  <suffix name="InclusionWhitelist" label="InclusionWhitelist"/>
   <suffix name="ExtensionBlacklist" label="ExtensionBlacklist"/>
   <suffix name="SideEffectFreeWhitelist" label="SideEffectFreeWhitelist"/>
   <suffix name="IPBlacklist" label="IPBlacklist"/>
