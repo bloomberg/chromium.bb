@@ -72,6 +72,10 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
                              const ResultCallback& continuation) override;
   void UnregisterServiceWorker(const GURL& pattern,
                                const ResultCallback& continuation) override;
+  void CanHandleMainResourceOffline(
+      const GURL& url,
+      const GURL& first_party,
+      const net::CompletionCallback& callback) override;
   void GetAllOriginsInfo(const GetUsageInfoCallback& callback) override;
   void DeleteForOrigin(const GURL& origin_url) override;
 

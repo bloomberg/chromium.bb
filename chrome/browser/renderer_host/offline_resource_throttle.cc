@@ -17,6 +17,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_controller.h"
 #include "content/public/browser/resource_request_info.h"
+#include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
@@ -61,15 +62,16 @@ OfflineResourceThrottle::OfflineResourceThrottle(
     net::URLRequest* request,
     content::AppCacheService* appcache_service)
     : request_(request),
-      appcache_service_(appcache_service) {
+      appcache_service_(appcache_service),
+      pending_callbacks_(0) {
   DCHECK(appcache_service);
 }
 
 OfflineResourceThrottle::~OfflineResourceThrottle() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  if (!appcache_completion_callback_.IsCancelled())
-    appcache_completion_callback_.Cancel();
+  if (!completion_callback_.IsCancelled())
+    completion_callback_.Cancel();
 }
 
 void OfflineResourceThrottle::WillStartRequest(bool* defer) {
@@ -90,15 +92,25 @@ void OfflineResourceThrottle::WillStartRequest(bool* defer) {
     url = &redirect_url;
   }
 
-  DCHECK(appcache_completion_callback_.IsCancelled());
+  DCHECK(completion_callback_.IsCancelled());
 
-  appcache_completion_callback_.Reset(
+  completion_callback_.Reset(
       base::Bind(&OfflineResourceThrottle::OnCanHandleOfflineComplete,
                  AsWeakPtr()));
+
+  pending_callbacks_ = 1;
   appcache_service_->CanHandleMainResourceOffline(
       *url, *first_party,
-      appcache_completion_callback_.callback());
+      completion_callback_.callback());
 
+  content::ServiceWorkerContext* service_worker_context =
+      content::ServiceWorkerContext::GetServiceWorkerContext(request_);
+  if (service_worker_context) {
+    ++pending_callbacks_;
+    service_worker_context->CanHandleMainResourceOffline(
+        *url, *first_party,
+        completion_callback_.callback());
+  }
   *defer = true;
 }
 
@@ -129,11 +141,13 @@ bool OfflineResourceThrottle::ShouldShowOfflinePage(const GURL& url) const {
 }
 
 void OfflineResourceThrottle::OnCanHandleOfflineComplete(int rv) {
-  appcache_completion_callback_.Cancel();
+  --pending_callbacks_;
 
   if (rv == net::OK) {
+    completion_callback_.Cancel();
     controller()->Resume();
-  } else {
+  } else if (!pending_callbacks_) {
+    completion_callback_.Cancel();
     const content::ResourceRequestInfo* info =
         content::ResourceRequestInfo::ForRequest(request_);
     BrowserThread::PostTask(

@@ -34,23 +34,17 @@ class OfflineResourceThrottle
   virtual const char* GetNameForLogging() const override;
 
  private:
-  // OfflineLoadPage callback.
   void OnBlockingPageComplete(bool proceed);
-
-  // Erase the state associated with a deferred load request.
   void ClearRequestInfo();
   bool IsRemote(const GURL& url) const;
-
-  // True if chrome should show the offline page.
   bool ShouldShowOfflinePage(const GURL& url) const;
-
-  // A callback to tell if an appcache exists.
   void OnCanHandleOfflineComplete(int rv);
 
   net::URLRequest* request_;
   // Safe to keep a pointer around since AppCacheService outlives all requests.
   content::AppCacheService* appcache_service_;
-  net::CancelableCompletionCallback appcache_completion_callback_;
+  net::CancelableCompletionCallback completion_callback_;
+  int pending_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(OfflineResourceThrottle);
 };

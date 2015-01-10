@@ -11,7 +11,12 @@
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "content/public/browser/service_worker_usage_info.h"
+#include "net/base/completion_callback.h"
 #include "url/gurl.h"
+
+namespace net {
+class URLRequest;
+}
 
 namespace content {
 
@@ -35,6 +40,10 @@ class ServiceWorkerContext {
   // Returns true if the header name should not be passed to the ServiceWorker.
   // Must be called from the IO thread.
   static bool IsExcludedHeaderNameForFetchEvent(const std::string& header_name);
+
+  // Retrieves the ServiceWorkerContext, if any, associated with |request|.
+  CONTENT_EXPORT static ServiceWorkerContext* GetServiceWorkerContext(
+      net::URLRequest* request);
 
   // Equivalent to calling navigator.serviceWorker.register(script_url, {scope:
   // pattern}) from a renderer, except that |pattern| is an absolute URL instead
@@ -63,6 +72,13 @@ class ServiceWorkerContext {
                                        const ResultCallback& callback) = 0;
 
   // TODO(jyasskin): Provide a way to SendMessage to a Scope.
+
+  // Determines if a request for 'url' can be satisfied while offline.
+  // This method always completes asynchronously.
+  virtual void CanHandleMainResourceOffline(const GURL& url,
+                                            const GURL& first_party,
+                                            const net::CompletionCallback&
+                                            callback) = 0;
 
   // Methods used in response to browsing data and quota manager requests.
   virtual void GetAllOriginsInfo(const GetUsageInfoCallback& callback) = 0;
