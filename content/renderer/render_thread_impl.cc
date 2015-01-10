@@ -523,7 +523,7 @@ void RenderThreadImpl::Init() {
       *base::CommandLine::ForCurrentProcess();
 
   is_impl_side_painting_enabled_ =
-      !command_line.HasSwitch(switches::kDisableImplSidePainting);
+      command_line.HasSwitch(switches::kEnableImplSidePainting);
   cc_blink::WebLayerImpl::SetImplSidePaintingEnabled(
       is_impl_side_painting_enabled_);
 

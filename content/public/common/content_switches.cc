@@ -161,6 +161,7 @@ const char kDisableHangMonitor[]            = "disable-hang-monitor";
 const char kDisableHistogramCustomizer[]    = "disable-histogram-customizer";
 
 // Paint content on the main thread instead of the compositor thread.
+// Overrides the kEnableImplSidePainting flag.
 const char kDisableImplSidePainting[]       = "disable-impl-side-painting";
 
 // Prevent Java from running.
@@ -343,6 +344,9 @@ const char kEnableLowResTiling[] = "enable-low-res-tiling";
 
 // Dynamically apply color profiles to web content images.
 const char kEnableImageColorProfiles[]      = "enable-image-color-profiles";
+
+// Paint content on the compositor thread instead of the main thread.
+const char kEnableImplSidePainting[]        = "enable-impl-side-painting";
 
 // Force logging to be enabled.  Logging is disabled by default in release
 // builds.

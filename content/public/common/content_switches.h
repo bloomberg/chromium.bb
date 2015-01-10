@@ -105,6 +105,7 @@ extern const char kEnableGpuClientTracing[];
 CONTENT_EXPORT extern const char kEnableGpuRasterization[];
 CONTENT_EXPORT extern const char kEnableLowResTiling[];
 CONTENT_EXPORT extern const char kEnableImageColorProfiles[];
+CONTENT_EXPORT extern const char kEnableImplSidePainting[];
 CONTENT_EXPORT extern const char kEnableLCDText[];
 CONTENT_EXPORT extern const char kEnableLogging[];
 extern const char kEnableMemoryBenchmarking[];

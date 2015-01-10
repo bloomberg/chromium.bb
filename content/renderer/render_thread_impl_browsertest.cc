@@ -138,16 +138,8 @@ class RenderThreadImplBrowserTest : public testing::Test {
 
     mock_process_.reset(new MockRenderProcess);
     test_task_counter_ = make_scoped_refptr(new TestTaskCounter());
-
-    // RenderThreadImpl expects the browser to pass these flags.
-    base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
-    base::CommandLine::StringVector old_argv = cmd->argv();
-
-    cmd->AppendSwitchASCII(switches::kNumRasterThreads, "1");
     thread_ = new RenderThreadImplForTest(test_helper_->GetChannelId(),
                                           test_task_counter_);
-    cmd->InitFromArgv(old_argv);
-
     thread_->EnsureWebKitInitialized();
 
     test_msg_filter_ = make_scoped_refptr(
