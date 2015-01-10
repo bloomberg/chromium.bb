@@ -4,6 +4,9 @@
 
 #include "chromecast/browser/cast_content_browser_client.h"
 
+#include <string>
+
+#include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/files/scoped_file.h"
 #include "base/i18n/rtl.h"
