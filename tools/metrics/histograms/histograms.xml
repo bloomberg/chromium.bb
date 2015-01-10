@@ -58184,6 +58184,9 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="5" label="HOLE"/>
   <int value="6" label="NATIVE_TEXTURE"/>
   <int value="7" label="YV12J"/>
+  <int value="8" label="NV12"/>
+  <int value="9" label="YV24"/>
+  <int value="10" label="ARGB"/>
 </enum>
 
 <enum name="VideoPlayerCastAPIExtensionStatus" type="int">

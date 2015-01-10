@@ -15,6 +15,7 @@
 #include "base/files/scoped_file.h"
 #include "base/posix/eintr_wrapper.h"
 #include "content/common/gpu/media/generic_v4l2_video_device.h"
+#include "ui/gl/egl_util.h"
 #include "ui/gl/gl_bindings.h"
 
 #ifdef USE_LIBV4L2
@@ -165,17 +166,50 @@ bool GenericV4L2Device::Initialize() {
   return true;
 }
 
-EGLImageKHR GenericV4L2Device::CreateEGLImage(EGLDisplay egl_display,
-                                             EGLContext /* egl_context */,
-                                             GLuint texture_id,
-                                             gfx::Size frame_buffer_size,
-                                             unsigned int buffer_index,
-                                             size_t planes_count) {
-  DVLOG(3) << "CreateEGLImage()";
+bool GenericV4L2Device::CanCreateEGLImageFrom(uint32_t v4l2_pixfmt) {
+  static uint32_t kEGLImageDrmFmtsSupported[] = {
+    DRM_FORMAT_ARGB8888,
+#if defined(ARCH_CPU_ARMEL)
+    DRM_FORMAT_NV12,
+#endif
+  };
 
-  scoped_ptr<base::ScopedFD[]> dmabuf_fds(new base::ScopedFD[planes_count]);
-  for (size_t i = 0; i < planes_count; ++i) {
-    // Export the DMABUF fd so we can export it as a texture.
+  return std::find(
+      kEGLImageDrmFmtsSupported,
+      kEGLImageDrmFmtsSupported + arraysize(kEGLImageDrmFmtsSupported),
+      V4L2PixFmtToDrmFormat(v4l2_pixfmt)) !=
+      kEGLImageDrmFmtsSupported + arraysize(kEGLImageDrmFmtsSupported);
+}
+
+EGLImageKHR GenericV4L2Device::CreateEGLImage(EGLDisplay egl_display,
+                                              EGLContext /* egl_context */,
+                                              GLuint texture_id,
+                                              gfx::Size frame_buffer_size,
+                                              unsigned int buffer_index,
+                                              uint32_t v4l2_pixfmt,
+                                              size_t num_v4l2_planes) {
+  DVLOG(3) << "CreateEGLImage()";
+  if (!CanCreateEGLImageFrom(v4l2_pixfmt)) {
+    LOG(ERROR) << "Unsupported V4L2 pixel format";
+    return EGL_NO_IMAGE_KHR;
+  }
+
+  media::VideoFrame::Format vf_format =
+      V4L2PixFmtToVideoFrameFormat(v4l2_pixfmt);
+  // Number of components, as opposed to the number of V4L2 planes, which is
+  // just a buffer count.
+  size_t num_planes = media::VideoFrame::NumPlanes(vf_format);
+  DCHECK_LE(num_planes, 3u);
+  if (num_planes < num_v4l2_planes) {
+    // It's possible for more than one DRM plane to reside in one V4L2 plane,
+    // but not the other way around. We must use all V4L2 planes.
+    LOG(ERROR) << "Invalid plane count";
+    return EGL_NO_IMAGE_KHR;
+  }
+
+  scoped_ptr<base::ScopedFD[]> dmabuf_fds(new base::ScopedFD[num_v4l2_planes]);
+  // Export dmabuf fds so we can create an EGLImage from them.
+  for (size_t i = 0; i < num_v4l2_planes; ++i) {
     struct v4l2_exportbuffer expbuf;
     memset(&expbuf, 0, sizeof(expbuf));
     expbuf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
@@ -187,26 +221,46 @@ EGLImageKHR GenericV4L2Device::CreateEGLImage(EGLDisplay egl_display,
     }
     dmabuf_fds[i].reset(expbuf.fd);
   }
-  DCHECK_EQ(planes_count, 2u);
-  EGLint attrs[] = {
-      EGL_WIDTH,                     0, EGL_HEIGHT,                    0,
-      EGL_LINUX_DRM_FOURCC_EXT,      0, EGL_DMA_BUF_PLANE0_FD_EXT,     0,
-      EGL_DMA_BUF_PLANE0_OFFSET_EXT, 0, EGL_DMA_BUF_PLANE0_PITCH_EXT,  0,
-      EGL_DMA_BUF_PLANE1_FD_EXT,     0, EGL_DMA_BUF_PLANE1_OFFSET_EXT, 0,
-      EGL_DMA_BUF_PLANE1_PITCH_EXT,  0, EGL_NONE, };
-  attrs[1] = frame_buffer_size.width();
-  attrs[3] = frame_buffer_size.height();
-  attrs[5] = DRM_FORMAT_NV12;
-  attrs[7] = dmabuf_fds[0].get();
-  attrs[9] = 0;
-  attrs[11] = frame_buffer_size.width();
-  attrs[13] = dmabuf_fds[1].get();
-  attrs[15] = 0;
-  attrs[17] = frame_buffer_size.width();
+
+  std::vector<EGLint> attrs;
+  attrs.push_back(EGL_WIDTH);
+  attrs.push_back(frame_buffer_size.width());
+  attrs.push_back(EGL_HEIGHT);
+  attrs.push_back(frame_buffer_size.height());
+  attrs.push_back(EGL_LINUX_DRM_FOURCC_EXT);
+  attrs.push_back(V4L2PixFmtToDrmFormat(v4l2_pixfmt));
+
+  // For existing formats, if we have less buffers (V4L2 planes) than
+  // components (planes), the remaining planes are stored in the last
+  // V4L2 plane. Use one V4L2 plane per each component until we run out of V4L2
+  // planes, and use the last V4L2 plane for all remaining components, each
+  // with an offset equal to the size of the preceding planes in the same
+  // V4L2 plane.
+  size_t v4l2_plane = 0;
+  size_t plane_offset = 0;
+  for (size_t plane = 0; plane < num_planes; ++plane) {
+    attrs.push_back(EGL_DMA_BUF_PLANE0_FD_EXT + plane * 3);
+    attrs.push_back(dmabuf_fds[v4l2_plane].get());
+    attrs.push_back(EGL_DMA_BUF_PLANE0_OFFSET_EXT + plane * 3);
+    attrs.push_back(plane_offset);
+    attrs.push_back(EGL_DMA_BUF_PLANE0_PITCH_EXT + plane * 3);
+    attrs.push_back(media::VideoFrame::RowBytes(plane, vf_format,
+                    frame_buffer_size.width()));
+
+    if (v4l2_plane + 1 < num_v4l2_planes) {
+      ++v4l2_plane;
+    } else {
+      plane_offset += media::VideoFrame::PlaneAllocationSize(
+          vf_format, plane, frame_buffer_size);
+    }
+  }
+
+  attrs.push_back(EGL_NONE);
 
   EGLImageKHR egl_image = eglCreateImageKHR(
-      egl_display, EGL_NO_CONTEXT, EGL_LINUX_DMA_BUF_EXT, NULL, attrs);
+      egl_display, EGL_NO_CONTEXT, EGL_LINUX_DMA_BUF_EXT, NULL, &attrs[0]);
   if (egl_image == EGL_NO_IMAGE_KHR) {
+    LOG(ERROR) << "Failed creating EGL image: " << ui::GetLastEGLErrorString();
     return egl_image;
   }
   glBindTexture(GL_TEXTURE_EXTERNAL_OES, texture_id);
@@ -226,13 +280,6 @@ uint32 GenericV4L2Device::PreferredInputFormat() {
   // TODO(posciak): We should support "dontcare" returns here once we
   // implement proper handling (fallback, negotiation) for this in users.
   CHECK_EQ(type_, kEncoder);
-  return V4L2_PIX_FMT_NV12M;
-}
-
-uint32 GenericV4L2Device::PreferredOutputFormat() {
-  // TODO(posciak): We should support "dontcare" returns here once we
-  // implement proper handling (fallback, negotiation) for this in users.
-  CHECK_EQ(type_, kDecoder);
   return V4L2_PIX_FMT_NV12M;
 }
 
