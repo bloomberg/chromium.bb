@@ -34,6 +34,8 @@ class AudioManager {
   virtual const std::string GetToken(AudioType type) = 0;
 
   virtual bool IsPlayingTokenHeard(AudioType type) = 0;
+
+  virtual void SetTokenLength(AudioType type, size_t token_length) = 0;
 };
 
 }  // namespace copresence

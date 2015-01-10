@@ -40,13 +40,12 @@ class ChromeWhispernetClient final : public copresence::WhispernetClient {
   // WhispernetClient overrides:
   void Initialize(const copresence::SuccessCallback& init_callback) override;
   void Shutdown() override;
-
-  void EncodeToken(const std::string& token,
+  void EncodeToken(const std::string& token_str,
                    copresence::AudioType type) override;
   void DecodeSamples(copresence::AudioType type,
-                     const std::string& samples) override;
+                     const std::string& samples,
+                     const size_t token_length[2]) override;
   void DetectBroadcast() override;
-
   void RegisterTokensCallback(
       const copresence::TokensCallback& tokens_callback) override;
   void RegisterSamplesCallback(
@@ -62,9 +61,8 @@ class ChromeWhispernetClient final : public copresence::WhispernetClient {
   static const char kWhispernetProxyExtensionId[];
 
  private:
-  // Fire an event to initialize whispernet with the given parameters.
-  void InitializeWhispernet(
-      const extensions::api::copresence_private::AudioParameters& params);
+  // Fire an event to configure whispernet with the given audio parameters.
+  void AudioConfiguration(const copresence::config::AudioParamData& params);
 
   // This gets called twice; once when the proxy extension loads, the second
   // time when we have initialized the proxy extension's encoder and decoder.

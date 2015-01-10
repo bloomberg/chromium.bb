@@ -5,33 +5,31 @@
 // Use the <code>chrome.copresencePrivate</code> API to interface with Chrome
 // from the whispernet_proxy extension.
 namespace copresencePrivate {
-  dictionary DecodeSamplesParameters {
-    boolean decodeAudible;
-    boolean decodeInaudible;
-  };
-
-  dictionary PlayParameters {
-    double sampleRate;
-    long bitsPerSample;
-    double carrierFrequency;
-    long repetitions;
-  };
-
-  dictionary RecordParameters {
-    double sampleRate;
-    long bitsPerSample;
-    long channels;
-    double carrierFrequency;
-  };
-
-  dictionary AudioParameters {
-    PlayParameters play;
-    RecordParameters record;
-  };
-
   dictionary Token {
     DOMString token;
     boolean audible;
+  };
+
+  dictionary DecodeSamplesParameters {
+    ArrayBuffer samples;
+
+    boolean decodeAudible;
+    boolean decodeInaudible;
+
+    long audibleTokenLength;
+    long inaudibleTokenLength;
+  };
+
+  dictionary EncodeTokenParameters {
+    Token token;
+    long repetitions;
+  };
+
+  dictionary AudioParameters {
+    // This string contains marshalling of a custom parameters structure
+    // that Chrome and the Whispernet wrapper both know about. These are
+    // based off //components/copresence/proto/config_data.proto.
+    ArrayBuffer paramData;
   };
 
   interface Functions {
@@ -46,13 +44,12 @@ namespace copresencePrivate {
   };
 
   interface Events {
-    // Fired to request initialization of the whisper.net library.
-    static void onInitialize(AudioParameters audioParams);
+    // Fired to request audio configuration of the whisper.net library.
+    static void onConfigAudio(AudioParameters audioParams);
     // Fired to request encoding of the given token.
-    static void onEncodeTokenRequest(DOMString base64Token, boolean audible);
+    static void onEncodeTokenRequest(EncodeTokenParameters encodeParams);
     // Fired when we have new samples to decode.
-    static void onDecodeSamplesRequest(ArrayBuffer samples,
-                                       DecodeSamplesParameters request);
+    static void onDecodeSamplesRequest(DecodeSamplesParameters decodeParams);
     // Fired to request a DetectBroadcast.
     static void onDetectBroadcastRequest();
   };

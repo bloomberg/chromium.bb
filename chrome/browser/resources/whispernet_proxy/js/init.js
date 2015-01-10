@@ -14,21 +14,21 @@ var whisperDecoder = null;
 
 /**
  * Initialize the whispernet encoder and decoder.
- * @param {Object} audioParams Audio parameters used to initialize the encoder
- * and decoder.
+ * @param {Object} audioParams Object containing the parameters needed for
+ *     setting up audio config.
  */
-function initialize(audioParams) {
+function audioConfig(audioParams) {
   if (!whispernetNacl) {
     chrome.copresencePrivate.sendInitialized(false);
     return;
   }
 
-  console.log('init: creating encoder!');
-  whisperEncoder = new WhisperEncoder(audioParams.play, whispernetNacl);
+  console.log('Configuring encoder!');
+  whisperEncoder = new WhisperEncoder(audioParams.paramData, whispernetNacl);
   whisperEncoder.setAudioDataCallback(chrome.copresencePrivate.sendSamples);
 
-  console.log('init: creating decoder!');
-  whisperDecoder = new WhisperDecoder(audioParams.record, whispernetNacl);
+  console.log('Configuring decoder!');
+  whisperDecoder = new WhisperDecoder(audioParams.paramData, whispernetNacl);
   whisperDecoder.setReceiveCallback(chrome.copresencePrivate.sendFound);
   whisperDecoder.onDetectBroadcast(chrome.copresencePrivate.sendDetect);
 
@@ -37,12 +37,11 @@ function initialize(audioParams) {
 
 /**
  * Sends a request to whispernet to encode a token.
- * @param {string} token Token to encode. This needs to be a base64 string.
- * @param {boolean} audible Whether we should use encode audible samples.
+ * @param {Object} params Encode token parameters object.
  */
-function encodeTokenRequest(token, audible) {
+function encodeTokenRequest(params) {
   if (whisperEncoder) {
-    whisperEncoder.encode(atob(token), audible, true);
+    whisperEncoder.encode(params);
   } else {
     console.error('encodeTokenRequest: Whisper not initialized!');
   }
@@ -50,12 +49,11 @@ function encodeTokenRequest(token, audible) {
 
 /**
  * Sends a request to whispernet to decode samples.
- * @param {ArrayBuffer} samples Array of samples to process.
- * @param {Object} type Type of decoding to perform.
+ * @param {Object} params Process samples parameters object.
  */
-function decodeSamplesRequest(samples, type) {
+function decodeSamplesRequest(params) {
   if (whisperDecoder) {
-    whisperDecoder.processSamples(samples, type);
+    whisperDecoder.processSamples(params);
   } else {
     console.error('decodeSamplesRequest: Whisper not initialized!');
   }
@@ -79,7 +77,7 @@ function onWhispernetLoaded() {
   console.log('init: Nacl ready!');
 
   // Setup all the listeners for the private API.
-  chrome.copresencePrivate.onInitialize.addListener(initialize);
+  chrome.copresencePrivate.onConfigAudio.addListener(audioConfig);
   chrome.copresencePrivate.onEncodeTokenRequest.addListener(encodeTokenRequest);
   chrome.copresencePrivate.onDecodeSamplesRequest.addListener(
       decodeSamplesRequest);

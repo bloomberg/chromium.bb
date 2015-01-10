@@ -38,38 +38,31 @@ function stringToArray(str) {
  * the whispernet wrapper.
  */
 function WhisperEncoder(params, whisperNacl) {
-  params = params || {};
-  this.repetitions_ = params.repetitions || 3;
-
   this.whisperNacl_ = whisperNacl;
   this.whisperNacl_.addListener(this.onNaclMessage_.bind(this));
 
   var msg = {
     type: 'initialize_encoder',
-    sample_rate: params.sampleRate || 48000.0,
-    upsampling_factor: params.bitsPerSample || 16,
+    params: params
   };
+
   this.whisperNacl_.send(msg);
 }
 
 /**
  * Method to encode a token.
- * @param {string} token Token to encode.
- * @param {boolean} audible Whether we should use encode audible samples.
- * @param {boolean} raw Whether we should return the encoded samples in raw
- * format or as a Wave file.
+ * @param {Object} params Encode token parameters object.
  */
-WhisperEncoder.prototype.encode = function(token, audible, raw) {
+WhisperEncoder.prototype.encode = function(params) {
   var msg = {
     type: 'encode_token',
     // Trying to send the token in binary form to Nacl doesn't work correctly.
     // We end up with the correct string + a bunch of extra characters. This is
     // true of returning a binary string too; hence we communicate back and
     // forth by converting the bytes into an array of integers.
-    token: stringToArray(token),
-    repetitions: this.repetitions_,
-    use_dtmf: audible,
-    return_raw_samples: raw
+    token: stringToArray(atob(params.token.token)),
+    repetitions: params.repetitions,
+    use_dtmf: params.token.audible
   };
   this.whisperNacl_.send(msg);
 };
@@ -106,18 +99,12 @@ WhisperEncoder.prototype.onNaclMessage_ = function(e) {
  * the whispernet wrapper.
  */
 function WhisperDecoder(params, whisperNacl) {
-  params = params || {};
-
   this.whisperNacl_ = whisperNacl;
   this.whisperNacl_.addListener(this.onNaclMessage_.bind(this));
 
   var msg = {
     type: 'initialize_decoder',
-    channels: params.channels || 1,
-    sample_rate: params.sampleRate || 48000.0,
-    upsampling_factor: params.bitsPerSample || 16,
-    max_candidates: 1,
-    max_buffer_duration_in_seconds: 3
+    params: params
   };
   this.whisperNacl_.send(msg);
 }
@@ -144,15 +131,16 @@ WhisperDecoder.prototype.detectBroadcast = function() {
 
 /**
  * Method to request the decoder to process samples.
- * @param {ArrayBuffer} samples Array of samples to process.
- * @param {Object} type Type of decoding to perform.
+ * @param {Object} params Process samples parameters object.
  */
-WhisperDecoder.prototype.processSamples = function(samples, type) {
+WhisperDecoder.prototype.processSamples = function(params) {
   var msg = {
     type: 'decode_tokens',
-    decode_audible: type.decodeAudible,
-    decode_inaudible: type.decodeInaudible,
-    data: samples,
+    decode_audible: params.decodeAudible,
+    decode_inaudible: params.decodeInaudible,
+    data: params.samples,
+    token_length_dtmf: params.audibleTokenLength,
+    token_length_dsss: params.inaudibleTokenLength
   };
 
   this.whisperNacl_.send(msg);

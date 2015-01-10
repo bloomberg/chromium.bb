@@ -89,6 +89,7 @@ void AudioDirectiveHandlerImpl::AddInstruction(
   base::TimeDelta ttl =
       base::TimeDelta::FromMilliseconds(directive.ttl_millis());
 
+  size_t token_length = 0;
   switch (instruction.token_instruction_type()) {
     case TRANSMIT:
       DVLOG(2) << "Audio Transmit Directive received. Token: "
@@ -115,8 +116,14 @@ void AudioDirectiveHandlerImpl::AddInstruction(
       switch (instruction.medium()) {
         case AUDIO_ULTRASOUND_PASSBAND:
           receives_lists_[INAUDIBLE]->AddDirective(op_id, directive);
+          if ((token_length =
+                   directive.configuration().token_params().length()) > 0)
+            audio_manager_->SetTokenLength(INAUDIBLE, token_length);
           break;
         case AUDIO_AUDIBLE_DTMF:
+          if ((token_length =
+                   directive.configuration().token_params().length()) > 0)
+            audio_manager_->SetTokenLength(AUDIBLE, token_length);
           receives_lists_[AUDIBLE]->AddDirective(op_id, directive);
           break;
         default:

@@ -50,6 +50,7 @@ class AudioManagerStub final : public AudioManager {
   void SetToken(AudioType type, const std::string& url_unsafe_token) override {}
   const std::string GetToken(AudioType type) override { return std::string(); }
   bool IsPlayingTokenHeard(AudioType type) override { return false; }
+  void SetTokenLength(AudioType type, size_t token_length) override {}
 
   bool IsRecording(AudioType type) { return recording_[type]; }
   bool IsPlaying(AudioType type) { return playing_[type]; }

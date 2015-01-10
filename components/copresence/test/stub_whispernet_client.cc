@@ -32,7 +32,8 @@ void StubWhispernetClient::EncodeToken(const std::string& token,
 }
 
 void StubWhispernetClient::DecodeSamples(AudioType type,
-                                         const std::string& samples) {
+                                         const std::string& samples,
+                                         const size_t token_length[2]) {
   if (!tokens_cb_.is_null())
     tokens_cb_.Run(tokens_);
 }

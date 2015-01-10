@@ -81,9 +81,8 @@ void AudioManagerImpl::Initialize(WhispernetClient* whispernet_client,
     player_[INAUDIBLE] = new AudioPlayerImpl();
   player_[INAUDIBLE]->Initialize();
 
-  decode_cancelable_cb_.Reset(base::Bind(&WhispernetClient::DecodeSamples,
-                                         base::Unretained(whispernet_client_),
-                                         BOTH));
+  decode_cancelable_cb_.Reset(base::Bind(
+      &AudioManagerImpl::DecodeSamplesConnector, base::Unretained(this)));
   if (!recorder_)
     recorder_ = new AudioRecorderImpl();
   recorder_->Initialize(decode_cancelable_cb_.callback());
@@ -167,6 +166,10 @@ bool AudioManagerImpl::IsPlayingTokenHeard(AudioType type) {
   return base::Time::Now() - heard_own_token_[type] < tokenTimeout;
 }
 
+void AudioManagerImpl::SetTokenLength(AudioType type, size_t token_length) {
+  token_length_[type] = token_length;
+}
+
 // Private methods.
 
 void AudioManagerImpl::OnTokenEncoded(
@@ -221,6 +224,27 @@ void AudioManagerImpl::RestartPlaying(AudioType type) {
   player_[type]->Play(samples_cache_[type]->GetValue(playing_token_[type]));
   // If we're playing, we always record to hear what we are playing.
   recorder_->Record();
+}
+
+void AudioManagerImpl::DecodeSamplesConnector(const std::string& samples) {
+  // If we are either supposed to be recording *or* playing, audible or
+  // inaudible, we should be decoding that type. This is so that if we are
+  // just playing, we will still decode our recorded token so we can check
+  // if we heard our own token. Whether or not we report the token to the
+  // server is checked for and handled in OnTokensFound.
+
+  bool decode_audible =
+      should_be_recording_[AUDIBLE] || should_be_playing_[AUDIBLE];
+  bool decode_inaudible =
+      should_be_recording_[INAUDIBLE] || should_be_playing_[INAUDIBLE];
+
+  if (decode_audible && decode_inaudible) {
+    whispernet_client_->DecodeSamples(BOTH, samples, token_length_);
+  } else if (decode_audible) {
+    whispernet_client_->DecodeSamples(AUDIBLE, samples, token_length_);
+  } else if (decode_inaudible) {
+    whispernet_client_->DecodeSamples(INAUDIBLE, samples, token_length_);
+  }
 }
 
 }  // namespace copresence

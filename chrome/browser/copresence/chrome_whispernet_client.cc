@@ -4,6 +4,7 @@
 
 #include "chrome/browser/copresence/chrome_whispernet_client.h"
 
+#include "base/stl_util.h"
 #include "chrome/browser/extensions/api/copresence_private/copresence_private_api.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -13,6 +14,27 @@
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_system.h"
 #include "grit/browser_resources.h"
+
+namespace {
+
+copresence::config::AudioParamData GetDefaultAudioConfig() {
+  copresence::config::AudioParamData config_data = {};
+  config_data.audio_dtmf.coder_sample_rate =
+      config_data.audio_dsss.coder_sample_rate = copresence::kDefaultSampleRate;
+  config_data.audio_dtmf.num_repetitions_to_play =
+      config_data.audio_dsss.num_repetitions_to_play =
+          copresence::kDefaultRepetitions;
+
+  config_data.audio_dsss.upsampling_factor = copresence::kDefaultBitsPerSample;
+  config_data.audio_dsss.desired_carrier_frequency =
+      copresence::kDefaultCarrierFrequency;
+
+  config_data.recording_channels = copresence::kDefaultChannels;
+
+  return config_data;
+}
+
+}  // namespace
 
 // static
 const char ChromeWhispernetClient::kWhispernetProxyExtensionId[] =
@@ -62,40 +84,48 @@ void ChromeWhispernetClient::Shutdown() {
   db_callback_.Reset();
 }
 
-// Fire an event to request a token encode.
-void ChromeWhispernetClient::EncodeToken(const std::string& token,
+void AudioConfiguration(const copresence::config::AudioParamData& data,
+                        const copresence::SuccessCallback& init_callback) {
+}
+
+void ChromeWhispernetClient::EncodeToken(const std::string& token_str,
                                          copresence::AudioType type) {
   DCHECK(extension_loaded_);
   DCHECK(browser_context_);
   DCHECK(extensions::EventRouter::Get(browser_context_));
 
+  extensions::api::copresence_private::EncodeTokenParameters params;
+  params.token.token = token_str;
+  params.token.audible = type == copresence::AUDIBLE;
   scoped_ptr<extensions::Event> event(new extensions::Event(
       extensions::api::copresence_private::OnEncodeTokenRequest::kEventName,
-      extensions::api::copresence_private::OnEncodeTokenRequest::Create(
-          token, type == copresence::AUDIBLE),
+      extensions::api::copresence_private::OnEncodeTokenRequest::Create(params),
       browser_context_));
 
   extensions::EventRouter::Get(browser_context_)
       ->DispatchEventToExtension(kWhispernetProxyExtensionId, event.Pass());
 }
 
-// Fire an event to request a decode for the given samples.
 void ChromeWhispernetClient::DecodeSamples(copresence::AudioType type,
-                                           const std::string& samples) {
+                                           const std::string& samples,
+                                           const size_t token_length[2]) {
   DCHECK(extension_loaded_);
   DCHECK(browser_context_);
   DCHECK(extensions::EventRouter::Get(browser_context_));
 
-  extensions::api::copresence_private::DecodeSamplesParameters request_type;
-  request_type.decode_audible =
+  extensions::api::copresence_private::DecodeSamplesParameters params;
+  params.samples = samples;
+  params.decode_audible =
       type == copresence::AUDIBLE || type == copresence::BOTH;
-  request_type.decode_inaudible =
+  params.decode_inaudible =
       type == copresence::INAUDIBLE || type == copresence::BOTH;
+  params.audible_token_length = token_length[copresence::AUDIBLE];
+  params.inaudible_token_length = token_length[copresence::INAUDIBLE];
 
   scoped_ptr<extensions::Event> event(new extensions::Event(
       extensions::api::copresence_private::OnDecodeSamplesRequest::kEventName,
       extensions::api::copresence_private::OnDecodeSamplesRequest::Create(
-          samples, request_type),
+          params),
       browser_context_));
 
   extensions::EventRouter::Get(browser_context_)
@@ -150,15 +180,22 @@ copresence::SuccessCallback ChromeWhispernetClient::GetInitializedCallback() {
 
 // Private:
 
-// Fire an event to initialize whispernet with the given parameters.
-void ChromeWhispernetClient::InitializeWhispernet(
-    const extensions::api::copresence_private::AudioParameters& params) {
+void ChromeWhispernetClient::AudioConfiguration(
+    const copresence::config::AudioParamData& params) {
   DCHECK(browser_context_);
   DCHECK(extensions::EventRouter::Get(browser_context_));
 
+  extensions::api::copresence_private::AudioParameters audio_params;
+
+  // We serialize AudioConfigData to a string and send it to the whispernet
+  // nacl wrapper.
+  const size_t params_size = sizeof(params);
+  audio_params.param_data.resize(params_size);
+  memcpy(string_as_array(&audio_params.param_data), &params, params_size);
+
   scoped_ptr<extensions::Event> event(new extensions::Event(
-      extensions::api::copresence_private::OnInitialize::kEventName,
-      extensions::api::copresence_private::OnInitialize::Create(params),
+      extensions::api::copresence_private::OnConfigAudio::kEventName,
+      extensions::api::copresence_private::OnConfigAudio::Create(audio_params),
       browser_context_));
 
   extensions::EventRouter::Get(browser_context_)
@@ -179,18 +216,5 @@ void ChromeWhispernetClient::OnExtensionLoaded(bool success) {
   // done, which means we've initialized for realz, hence call the init
   // callback.
 
-  // At this point, we have the same parameters for record and play. This
-  // may change later though (ongoing discussion with research).
-  extensions::api::copresence_private::AudioParameters params;
-  params.play.sample_rate = copresence::kDefaultSampleRate;
-  params.play.bits_per_sample = copresence::kDefaultBitsPerSample;
-  params.play.carrier_frequency = copresence::kDefaultCarrierFrequency;
-  params.play.repetitions = copresence::kDefaultRepetitions;
-
-  params.record.sample_rate = copresence::kDefaultSampleRate;
-  params.record.bits_per_sample = copresence::kDefaultBitsPerSample;
-  params.record.carrier_frequency = copresence::kDefaultCarrierFrequency;
-  params.record.channels = copresence::kDefaultChannels;
-
-  InitializeWhispernet(params);
+  AudioConfiguration(GetDefaultAudioConfig());
 }

@@ -46,6 +46,7 @@ class AudioManagerImpl final : public AudioManager {
   void SetToken(AudioType type, const std::string& url_unsafe_token) override;
   const std::string GetToken(AudioType type) override;
   bool IsPlayingTokenHeard(AudioType type) override;
+  void SetTokenLength(AudioType type, size_t token_length) override;
 
   void set_player_for_testing(AudioType type, AudioPlayer* player) {
     player_[type] = player;
@@ -72,6 +73,8 @@ class AudioManagerImpl final : public AudioManager {
   void UpdateToken(AudioType type, const std::string& token);
 
   void RestartPlaying(AudioType type);
+
+  void DecodeSamplesConnector(const std::string& samples);
 
   WhispernetClient* whispernet_client_;
 
@@ -106,6 +109,8 @@ class AudioManagerImpl final : public AudioManager {
   // expires the oldest samples first.
   // Indexed using enum AudioType.
   ScopedVector<SamplesMap> samples_cache_;
+
+  size_t token_length_[2];
 
   DISALLOW_COPY_AND_ASSIGN(AudioManagerImpl);
 };

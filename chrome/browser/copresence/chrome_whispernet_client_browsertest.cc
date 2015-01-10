@@ -22,7 +22,12 @@
 
 namespace {
 
+// TODO(rkc): Add more varied test input.
 const char kSixZeros[] = "MDAwMDAw";
+const char kEightZeros[] = "MDAwMDAwMDA=";
+const char kNineZeros[] = "MDAwMDAwMDAw";
+
+const size_t kTokenLengths[] = {6, 6};
 
 copresence::WhispernetClient* GetWhispernetClient(
     content::BrowserContext* context) {
@@ -50,7 +55,8 @@ std::string AudioBusToString(scoped_refptr<media::AudioBusRefCounted> source) {
 
 class ChromeWhispernetClientTest : public ExtensionBrowserTest {
  public:
-  ChromeWhispernetClientTest() : context_(NULL), initialized_(false) {}
+  ChromeWhispernetClientTest()
+      : context_(NULL), expected_audible_(false), initialized_(false) {}
 
   ~ChromeWhispernetClientTest() override {}
 
@@ -64,31 +70,33 @@ class ChromeWhispernetClientTest : public ExtensionBrowserTest {
     EXPECT_TRUE(initialized_);
   }
 
-  void EncodeTokenAndSaveSamples(bool audible) {
+  void EncodeTokenAndSaveSamples(bool audible, const std::string& token) {
     copresence::WhispernetClient* client = GetWhispernetClient(context_);
     ASSERT_TRUE(client);
 
     run_loop_.reset(new base::RunLoop());
     client->RegisterSamplesCallback(base::Bind(
         &ChromeWhispernetClientTest::SamplesCallback, base::Unretained(this)));
-    expected_token_ = kSixZeros;
+    expected_token_ = token;
     expected_audible_ = audible;
 
-    client->EncodeToken(kSixZeros,
+    client->EncodeToken(token,
                         audible ? copresence::AUDIBLE : copresence::INAUDIBLE);
     run_loop_->Run();
 
     EXPECT_GT(saved_samples_->frames(), 0);
   }
 
-  void DecodeSamplesAndVerifyToken(bool expect_audible) {
+  void DecodeSamplesAndVerifyToken(bool expect_audible,
+                                   const std::string& expected_token,
+                                   const size_t token_length[2]) {
     copresence::WhispernetClient* client = GetWhispernetClient(context_);
     ASSERT_TRUE(client);
 
     run_loop_.reset(new base::RunLoop());
     client->RegisterTokensCallback(base::Bind(
         &ChromeWhispernetClientTest::TokensCallback, base::Unretained(this)));
-    expected_token_ = kSixZeros;
+    expected_token_ = expected_token;
     expected_audible_ = expect_audible;
 
     ASSERT_GT(saved_samples_->frames(), 0);
@@ -106,7 +114,7 @@ class ChromeWhispernetClientTest : public ExtensionBrowserTest {
 
     client->DecodeSamples(
         expect_audible ? copresence::AUDIBLE : copresence::INAUDIBLE,
-        AudioBusToString(samples_bus));
+        AudioBusToString(samples_bus), token_length);
     run_loop_->Run();
   }
 
@@ -174,24 +182,35 @@ IN_PROC_BROWSER_TEST_F(ChromeWhispernetClientTest, Initialize) {
 
 IN_PROC_BROWSER_TEST_F(ChromeWhispernetClientTest, EncodeToken) {
   InitializeWhispernet();
-  EncodeTokenAndSaveSamples(false);
+  EncodeTokenAndSaveSamples(false, kSixZeros);
 }
 
 IN_PROC_BROWSER_TEST_F(ChromeWhispernetClientTest, DecodeSamples) {
   InitializeWhispernet();
-  EncodeTokenAndSaveSamples(false);
-  DecodeSamplesAndVerifyToken(false);
+  EncodeTokenAndSaveSamples(false, kSixZeros);
+  DecodeSamplesAndVerifyToken(false, kSixZeros, kTokenLengths);
 }
 
 IN_PROC_BROWSER_TEST_F(ChromeWhispernetClientTest, DetectBroadcast) {
   InitializeWhispernet();
-  EncodeTokenAndSaveSamples(false);
-  DecodeSamplesAndVerifyToken(false);
+  EncodeTokenAndSaveSamples(false, kSixZeros);
+  DecodeSamplesAndVerifyToken(false, kSixZeros, kTokenLengths);
   DetectBroadcast();
 }
 
 IN_PROC_BROWSER_TEST_F(ChromeWhispernetClientTest, Audible) {
   InitializeWhispernet();
-  EncodeTokenAndSaveSamples(true);
-  DecodeSamplesAndVerifyToken(true);
+  EncodeTokenAndSaveSamples(true, kSixZeros);
+  DecodeSamplesAndVerifyToken(true, kSixZeros, kTokenLengths);
+}
+
+IN_PROC_BROWSER_TEST_F(ChromeWhispernetClientTest, TokenLengths) {
+  InitializeWhispernet();
+  size_t kLongTokenLengths[2] = {8, 9};
+
+  EncodeTokenAndSaveSamples(true, kEightZeros);
+  DecodeSamplesAndVerifyToken(true, kEightZeros, kLongTokenLengths);
+
+  EncodeTokenAndSaveSamples(false, kNineZeros);
+  DecodeSamplesAndVerifyToken(false, kNineZeros, kLongTokenLengths);
 }
