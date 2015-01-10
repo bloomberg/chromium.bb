@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<title>getUserMedia On An Insecure Origin</title>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<!-- FIXME: We should extract the get_host_info() bits of this file out to somewhere useful. -->
+<script src="/serviceworker/resources/test-helpers.js"></script>
+<script>
+if (window.location.origin != get_host_info().UNAUTHENTICATED_ORIGIN) {
+    window.location = get_host_info().UNAUTHENTICATED_ORIGIN + window.location.pathname;
+} else {
+    if (window.testRunner)
+        testRunner.overridePreference("WebKitStrictPowerfulFeatureRestrictions", true);
+
+    test(function () {
+        assert_throws(
+            "SecurityError",
+            function() {
+                navigator.webkitGetUserMedia(
+                    { video:true },
+                    function() { assert_unreached("Success callback should not be called."); },
+                    function() { assert_unreached("Error callback should not be called."); });
+            });
+    }, 'getUserMedia');
+}
+</script>
