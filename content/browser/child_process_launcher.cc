@@ -324,8 +324,8 @@ void ChildProcessLauncher::Context::LaunchInternal(
   scoped_ptr<base::CommandLine> cmd_line_deleter(cmd_line);
   base::TimeTicks begin_launch_time = base::TimeTicks::Now();
 
-#if defined(OS_WIN)
   base::Process process;
+#if defined(OS_WIN)
   if (launch_elevated) {
     base::LaunchOptions options;
     options.start_hidden = true;
@@ -371,7 +371,6 @@ void ChildProcessLauncher::Context::LaunchInternal(
                  begin_launch_time));
 
 #elif defined(OS_POSIX)
-  base::ProcessHandle handle = base::kNullProcessHandle;
   // We need to close the client end of the IPC channel to reliably detect
   // child termination.
 
@@ -379,8 +378,9 @@ void ChildProcessLauncher::Context::LaunchInternal(
   GetContentClient()->browser()->GetAdditionalMappedFilesForChildProcess(
       *cmd_line, child_process_id, files_to_register.get());
   if (use_zygote) {
-    handle = ZygoteHostImpl::GetInstance()->ForkRequest(
+    base::ProcessHandle handle = ZygoteHostImpl::GetInstance()->ForkRequest(
         cmd_line->argv(), files_to_register.Pass(), process_type);
+    process = base::Process(handle);
   } else
   // Fall through to the normal posix case below when we're not zygoting.
 #endif  // !defined(OS_MACOSX)
@@ -430,25 +430,22 @@ void ChildProcessLauncher::Context::LaunchInternal(
     }
 #endif  // defined(OS_MACOSX)
 
-    bool launched = base::LaunchProcess(*cmd_line, options, &handle);
-    if (!launched)
-      handle = base::kNullProcessHandle;
+    process = base::LaunchProcess(*cmd_line, options);
 
 #if defined(OS_MACOSX)
     if (ShouldEnableBootstrapSandbox() &&
         bootstrap_sandbox_policy != SANDBOX_TYPE_INVALID) {
-      GetBootstrapSandbox()->FinishedFork(handle);
+      GetBootstrapSandbox()->FinishedFork(process.Handle());
     }
 
-    if (launched)
-      broker->AddPlaceholderForPid(handle, child_process_id);
+    if (process.IsValid())
+      broker->AddPlaceholderForPid(process.pid(), child_process_id);
 
     // After updating the broker, release the lock and let the child's
     // messasge be processed on the broker's thread.
     broker->GetLock().Release();
 #endif  // defined(OS_MACOSX)
   }
-  base::Process process(handle);
 #endif  // else defined(OS_POSIX)
 #if !defined(OS_ANDROID)
   if (process.IsValid())
