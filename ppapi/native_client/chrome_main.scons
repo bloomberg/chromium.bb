@@ -44,9 +44,6 @@ ppapi_scons_files['irt_variant_test_scons_files'] = [
     # 'inbrowser_test_runner' must be in the irt_variant list
     # otherwise it will run no tests.
     'tests/nacl_browser/inbrowser_test_runner/nacl.scons',
-    # Disabled by Brad Chen 4 Sep to try to green Chromium
-    # nacl_integration tests
-    #'tests/nacl_browser/fault_injection/nacl.scons',
 ]
 
 ppapi_scons_files['untrusted_scons_files'] = [
