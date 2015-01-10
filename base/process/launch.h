@@ -189,6 +189,11 @@ BASE_EXPORT Process LaunchElevatedProcess(const CommandLine& cmdline,
 // instead of a CommandLine.  Useful for situations where you need to
 // control the command line arguments directly, but prefer the
 // CommandLine version if launching Chrome itself.
+BASE_EXPORT Process LaunchProcess(const std::vector<std::string>& argv,
+                                  const LaunchOptions& options);
+
+// Deprecated version.
+// TODO(rvargas) crbug.com/417532: Remove this after migrating all consumers.
 BASE_EXPORT bool LaunchProcess(const std::vector<std::string>& argv,
                                const LaunchOptions& options,
                                ProcessHandle* process_handle);
