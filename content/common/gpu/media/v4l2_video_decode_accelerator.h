@@ -275,9 +275,8 @@ class CONTENT_EXPORT V4L2VideoDecodeAccelerator
   bool CreateInputBuffers();
   bool CreateOutputBuffers();
 
-  // Query the hardware for a suitable format that we can use for
-  // importing into EGLImages for output, and set it.
-  bool SetupOutputFormat();
+  // Set input and output formats before starting decode.
+  bool SetupFormats();
 
   //
   // Methods run on child thread.
