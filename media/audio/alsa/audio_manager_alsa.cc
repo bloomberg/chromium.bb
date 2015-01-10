@@ -69,7 +69,7 @@ void AudioManagerAlsa::ShowLinuxAudioInputSettings() {
                  << "what command to use for your desktop environment.";
       return;
   }
-  base::LaunchProcess(command_line, base::LaunchOptions(), NULL);
+  base::LaunchProcess(command_line, base::LaunchOptions());
 }
 
 // Implementation of AudioManager.
