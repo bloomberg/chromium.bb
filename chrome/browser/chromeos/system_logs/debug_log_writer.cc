@@ -88,8 +88,8 @@ void WriteDebugLogToFile(base::File* file,
 // same thread from where it was initially called from.
 void RunCommand(const std::vector<std::string>& argv,
                 const CommandCompletionCallback& callback) {
-  base::ProcessHandle handle = base::kNullProcessHandle;
-  if (!base::LaunchProcess(argv, base::LaunchOptions(), &handle)) {
+  base::Process process = base::LaunchProcess(argv, base::LaunchOptions());
+  if (!process.IsValid()) {
     LOG(ERROR) << "Failed to execute command " << argv[0];
     if (!callback.is_null())
       callback.Run(false);
@@ -98,8 +98,8 @@ void RunCommand(const std::vector<std::string>& argv,
   }
 
   int exit_code = 0;
-  if (!base::WaitForExitCode(handle, &exit_code)) {
-    LOG(ERROR) << "Can't get exit code for pid " << handle;
+  if (!process.WaitForExit(&exit_code)) {
+    LOG(ERROR) << "Can't get exit code for pid " << process.pid();
     if (!callback.is_null())
       callback.Run(false);
 

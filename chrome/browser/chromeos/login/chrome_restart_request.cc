@@ -256,7 +256,7 @@ void ReLaunch(const std::string& command_line) {
   // This is not a proper way to get |argv| but it's good enough for debugging.
   base::SplitString(command_line, ' ', &argv);
 
-  base::LaunchProcess(argv, base::LaunchOptions(), NULL);
+  base::LaunchProcess(argv, base::LaunchOptions());
   chrome::AttemptUserExit();
 }
 

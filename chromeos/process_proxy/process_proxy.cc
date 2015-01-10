@@ -231,8 +231,14 @@ bool ProcessProxy::LaunchProcess(const std::string& command, int slave_fd,
   options.environ["TERM"] = "xterm";
 
   // Launch the process.
-  return base::LaunchProcess(base::CommandLine(base::FilePath(command)),
-                             options, pid);
+  base::Process process =
+      base::LaunchProcess(base::CommandLine(base::FilePath(command)), options);
+
+  // TODO(rvargas) crbug/417532: This is somewhat wrong but the interface of
+  // Open vends pid_t* so ownership is quite vague anyway, and Process::Close
+  // doesn't do much in POSIX.
+  *pid = process.pid();
+  return process.IsValid();
 }
 
 void ProcessProxy::CloseAllFdPairs() {
