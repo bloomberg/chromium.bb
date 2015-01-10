@@ -15,12 +15,14 @@ ProcessInfoNativeHandler::ProcessInfoNativeHandler(
     const std::string& extension_id,
     const std::string& context_type,
     bool is_incognito_context,
+    bool is_component_extension,
     int manifest_version,
     bool send_request_disabled)
     : ObjectBackedNativeHandler(context),
       extension_id_(extension_id),
       context_type_(context_type),
       is_incognito_context_(is_incognito_context),
+      is_component_extension_(is_component_extension),
       manifest_version_(manifest_version),
       send_request_disabled_(send_request_disabled) {
   RouteFunction("GetExtensionId",
@@ -31,6 +33,9 @@ ProcessInfoNativeHandler::ProcessInfoNativeHandler(
                            base::Unretained(this)));
   RouteFunction("InIncognitoContext",
                 base::Bind(&ProcessInfoNativeHandler::InIncognitoContext,
+                           base::Unretained(this)));
+  RouteFunction("IsComponentExtension",
+                base::Bind(&ProcessInfoNativeHandler::IsComponentExtension,
                            base::Unretained(this)));
   RouteFunction("GetManifestVersion",
                 base::Bind(&ProcessInfoNativeHandler::GetManifestVersion,
@@ -58,6 +63,11 @@ void ProcessInfoNativeHandler::GetContextType(
 void ProcessInfoNativeHandler::InIncognitoContext(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
   args.GetReturnValue().Set(is_incognito_context_);
+}
+
+void ProcessInfoNativeHandler::IsComponentExtension(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
+  args.GetReturnValue().Set(is_component_extension_);
 }
 
 void ProcessInfoNativeHandler::GetManifestVersion(

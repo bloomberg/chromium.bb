@@ -13,11 +13,13 @@
 #include "base/lazy_instance.h"
 #include "base/message_loop/message_loop.h"
 #include "base/values.h"
+#include "content/public/common/child_process_host.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/v8_value_converter.h"
 #include "extensions/common/api/messaging/message.h"
 #include "extensions/common/extension_messages.h"
+#include "extensions/common/guest_view/guest_view_constants.h"
 #include "extensions/common/manifest_handlers/externally_connectable.h"
 #include "extensions/renderer/dispatcher.h"
 #include "extensions/renderer/event_bindings.h"
@@ -265,6 +267,7 @@ void DispatchOnConnectToScriptContext(
 
   v8::Handle<v8::Value> tab = v8::Null(isolate);
   v8::Handle<v8::Value> tls_channel_id_value = v8::Undefined(isolate);
+  v8::Handle<v8::Value> guest_process_id = v8::Undefined(isolate);
 
   if (extension) {
     if (!source->tab.empty() && !extension->is_platform_app())
@@ -279,6 +282,9 @@ void DispatchOnConnectToScriptContext(
                                                      v8::String::kNormalString,
                                                      tls_channel_id.size());
     }
+
+    if (info.guest_process_id != content::ChildProcessHost::kInvalidUniqueID)
+      guest_process_id = v8::Integer::New(isolate, info.guest_process_id);
   }
 
   v8::Handle<v8::Value> arguments[] = {
@@ -293,6 +299,8 @@ void DispatchOnConnectToScriptContext(
       tab,
       // source_frame_id
       v8::Integer::New(isolate, source->frame_id),
+      // guestProcessId
+      guest_process_id,
       // sourceExtensionId
       v8::String::NewFromUtf8(isolate,
                               info.source_id.c_str(),

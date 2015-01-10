@@ -134,6 +134,7 @@ void ApiTestBase::RegisterModules() {
           env()->context()->GetExtensionID(),
           env()->context()->GetContextTypeDescription(),
           false,
+          false,
           2,
           false)));
   env()->RegisterTestFile("test_environment_specific_bindings",

@@ -183,6 +183,9 @@ IPC_STRUCT_BEGIN(ExtensionMsg_ExternalConnectionInfo)
 
   // The ID of the frame that is the target of the request.
   IPC_STRUCT_MEMBER(int, target_frame_id)
+
+  // The process ID of the webview that initiated the request.
+  IPC_STRUCT_MEMBER(int, guest_process_id)
 IPC_STRUCT_END()
 
 IPC_STRUCT_TRAITS_BEGIN(extensions::DraggableRegion)

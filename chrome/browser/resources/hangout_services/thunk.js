@@ -4,7 +4,14 @@
 
 chrome.runtime.onMessageExternal.addListener(
     function(message, sender, sendResponse) {
-      function doSendResponse(value, error) {
+      function doSendResponse(value, errorString) {
+        var error = null;
+        if (errorString) {
+          error = {};
+          error['name'] = 'ComponentExtensonError';
+          error['message'] = errorString;
+        }
+
         var errorMessage = error || chrome.extension.lastError;
         sendResponse({'value': value, 'error': errorMessage});
       }
@@ -25,6 +32,15 @@ chrome.runtime.onMessageExternal.addListener(
       }
 
       try {
+        var requestInfo = {};
+        if (sender.tab) {
+          requestInfo['tabId'] = sender.tab.id;
+        }
+
+        if (sender.guestProcessId) {
+          requestInfo['guestProcessId'] = sender.guestProcessId;
+        }
+
         var method = message['method'];
         var origin = getHost(sender.url);
         if (method == 'chooseDesktopMedia') {
@@ -50,41 +66,41 @@ chrome.runtime.onMessageExternal.addListener(
         } else if (method == 'logging.setMetadata') {
           var metaData = message['metaData'];
           chrome.webrtcLoggingPrivate.setMetaData(
-              sender.tab.id, origin, metaData, doSendResponse);
+              requestInfo, origin, metaData, doSendResponse);
           return true;
         } else if (method == 'logging.start') {
           chrome.webrtcLoggingPrivate.start(
-              sender.tab.id, origin, doSendResponse);
+              requestInfo, origin, doSendResponse);
           return true;
         } else if (method == 'logging.uploadOnRenderClose') {
           chrome.webrtcLoggingPrivate.setUploadOnRenderClose(
-              sender.tab.id, origin, true);
+              requestInfo, origin, true);
           doSendResponse();
           return false;
         } else if (method == 'logging.noUploadOnRenderClose') {
           chrome.webrtcLoggingPrivate.setUploadOnRenderClose(
-              sender.tab.id, origin, false);
+              requestInfo, origin, false);
           doSendResponse();
           return false;
         } else if (method == 'logging.stop') {
           chrome.webrtcLoggingPrivate.stop(
-              sender.tab.id, origin, doSendResponse);
+              requestInfo, origin, doSendResponse);
           return true;
         } else if (method == 'logging.upload') {
           chrome.webrtcLoggingPrivate.upload(
-              sender.tab.id, origin, doSendResponse);
+              requestInfo, origin, doSendResponse);
           return true;
         } else if (method == 'logging.stopAndUpload') {
-          stopAllRtpDump(sender.tab.id, origin, function() {
-            chrome.webrtcLoggingPrivate.stop(sender.tab.id, origin, function() {
+          stopAllRtpDump(requestInfo, origin, function() {
+            chrome.webrtcLoggingPrivate.stop(requestInfo, origin, function() {
               chrome.webrtcLoggingPrivate.upload(
-                  sender.tab.id, origin, doSendResponse);
+                  requestInfo, origin, doSendResponse);
             });
           });
           return true;
         } else if (method == 'logging.discard') {
           chrome.webrtcLoggingPrivate.discard(
-              sender.tab.id, origin, doSendResponse);
+              requestInfo, origin, doSendResponse);
           return true;
         } else if (method == 'getSinks') {
           chrome.webrtcAudioPrivate.getSinks(doSendResponse);
@@ -121,13 +137,13 @@ chrome.runtime.onMessageExternal.addListener(
           var incoming = message['incoming'] || false;
           var outgoing = message['outgoing'] || false;
           chrome.webrtcLoggingPrivate.startRtpDump(
-              sender.tab.id, origin, incoming, outgoing, doSendResponse);
+              requestInfo, origin, incoming, outgoing, doSendResponse);
           return true;
         } else if (method == 'logging.stopRtpDump') {
           var incoming = message['incoming'] || false;
           var outgoing = message['outgoing'] || false;
           chrome.webrtcLoggingPrivate.stopRtpDump(
-              sender.tab.id, origin, incoming, outgoing, doSendResponse);
+              requestInfo, origin, incoming, outgoing, doSendResponse);
           return true;
         }
         throw new Error('Unknown method: ' + method);
@@ -222,14 +238,14 @@ function onProcessCpu(port) {
   });
 }
 
-function stopAllRtpDump(tabId, origin, callback) {
+function stopAllRtpDump(requestInfo, origin, callback) {
   // Stops incoming and outgoing separately, otherwise stopRtpDump will fail if
   // either type of dump has not been started.
   chrome.webrtcLoggingPrivate.stopRtpDump(
-      tabId, origin, true, false,
+      requestInfo, origin, true, false,
       function() {
         chrome.webrtcLoggingPrivate.stopRtpDump(
-            tabId, origin, false, true, callback);
+            requestInfo, origin, false, true, callback);
       });
 }
 

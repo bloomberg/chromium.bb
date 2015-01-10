@@ -30,15 +30,18 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/child_process_host.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extensions_browser_client.h"
+#include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "extensions/browser/lazy_background_task_queue.h"
 #include "extensions/browser/pref_names.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/guest_view/guest_view_constants.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/manifest_handlers/externally_connectable.h"
@@ -131,6 +134,7 @@ struct MessageService::OpenChannelParams {
   std::string channel_name;
   bool include_tls_channel_id;
   std::string tls_channel_id;
+  bool include_guest_process_id;
 
   // Takes ownership of receiver.
   OpenChannelParams(int source_process_id,
@@ -143,7 +147,8 @@ struct MessageService::OpenChannelParams {
                     const std::string& target_extension_id,
                     const GURL& source_url,
                     const std::string& channel_name,
-                    bool include_tls_channel_id)
+                    bool include_tls_channel_id,
+                    bool include_guest_process_id)
       : source_process_id(source_process_id),
         source_frame_id(source_frame_id),
         target_frame_id(target_frame_id),
@@ -153,7 +158,8 @@ struct MessageService::OpenChannelParams {
         target_extension_id(target_extension_id),
         source_url(source_url),
         channel_name(channel_name),
-        include_tls_channel_id(include_tls_channel_id) {
+        include_tls_channel_id(include_tls_channel_id),
+        include_guest_process_id(include_guest_process_id) {
     if (source_tab)
       this->source_tab = source_tab.Pass();
   }
@@ -308,6 +314,8 @@ void MessageService::OpenChannelToExtension(
   WebContents* source_contents = tab_util::GetWebContentsByFrameID(
       source_process_id, source_routing_id);
 
+  bool include_guest_process_id = false;
+
   // Include info about the opener's tab (if it was a tab).
   scoped_ptr<base::DictionaryValue> source_tab;
   int source_frame_id = -1;
@@ -322,13 +330,23 @@ void MessageService::OpenChannelToExtension(
     // Main frame's frameId is 0.
     if (rfh)
       source_frame_id = !rfh->GetParent() ? 0 : source_routing_id;
+  } else {
+    // Check to see if it was a WebView making the request.
+    // Sending messages from WebViews to extensions breaks webview isolation,
+    // so only allow component extensions to receive messages from WebViews.
+    bool is_web_view = !!WebViewGuest::FromWebContents(source_contents);
+    if (is_web_view && extensions::Manifest::IsComponentLocation(
+                           target_extension->location())) {
+      include_guest_process_id = true;
+    }
   }
 
   scoped_ptr<OpenChannelParams> params(new OpenChannelParams(
       source_process_id, source_tab.Pass(), source_frame_id,
-      -1, // no target_frame_id for a channel to an extension/background page.
+      -1,  // no target_frame_id for a channel to an extension/background page.
       nullptr, receiver_port_id, source_extension_id, target_extension_id,
-      source_url, channel_name, include_tls_channel_id));
+      source_url, channel_name, include_tls_channel_id,
+      include_guest_process_id));
 
   pending_incognito_channels_[GET_CHANNEL_ID(params->receiver_port_id)] =
       PendingMessagesQueue();
@@ -512,7 +530,8 @@ void MessageService::OpenChannelToTab(
       receiver.release(), receiver_port_id, extension_id, extension_id,
       GURL(),  // Source URL doesn't make sense for opening to tabs.
       channel_name,
-      false));  // Connections to tabs don't get TLS channel IDs.
+      false,  // Connections to tabs don't get TLS channel IDs.
+      false));  // Connections to tabs aren't webview guests.
   OpenChannelImpl(params.Pass());
 }
 
@@ -543,6 +562,10 @@ void MessageService::OpenChannelImpl(scoped_ptr<OpenChannelParams> params) {
 
   CHECK(channel->receiver->GetRenderProcessHost());
 
+  int guest_process_id = content::ChildProcessHost::kInvalidUniqueID;
+  if (params->include_guest_process_id)
+    guest_process_id = params->source_process_id;
+
   // Send the connect event to the receiver.  Give it the opener's port ID (the
   // opener has the opposite port ID).
   channel->receiver->DispatchOnConnect(params->receiver_port_id,
@@ -550,6 +573,7 @@ void MessageService::OpenChannelImpl(scoped_ptr<OpenChannelParams> params) {
                                        params->source_tab.Pass(),
                                        params->source_frame_id,
                                        params->target_frame_id,
+                                       guest_process_id,
                                        params->source_extension_id,
                                        params->target_extension_id,
                                        params->source_url,

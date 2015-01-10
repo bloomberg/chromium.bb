@@ -16,17 +16,20 @@ class RenderProcessHost;
 
 namespace extensions {
 
-// TODO(grunell). Merge this with WebrtcAudioPrivateTabIdFunction.
-class WebrtcLoggingPrivateTabIdFunction : public ChromeAsyncExtensionFunction {
+class WebrtcLoggingPrivateFunction : public ChromeAsyncExtensionFunction {
  protected:
-  ~WebrtcLoggingPrivateTabIdFunction() override {}
+  ~WebrtcLoggingPrivateFunction() override {}
 
-  content::RenderProcessHost* RphFromTabIdAndSecurityOrigin(
-      int tab_id, const std::string& security_origin);
+  // Returns the RenderProcessHost associated with the given |request|
+  // authorized by the |security_origin|. Returns null if unauthorized or
+  // the RPH does not exist.
+  content::RenderProcessHost* RphFromRequest(
+      const api::webrtc_logging_private::RequestInfo& request,
+      const std::string& security_origin);
 };
 
 class WebrtcLoggingPrivateSetMetaDataFunction
-    : public WebrtcLoggingPrivateTabIdFunction {
+    : public WebrtcLoggingPrivateFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("webrtcLoggingPrivate.setMetaData",
                              WEBRTCLOGGINGPRIVATE_SETMETADATA)
@@ -43,7 +46,7 @@ class WebrtcLoggingPrivateSetMetaDataFunction
 };
 
 class WebrtcLoggingPrivateStartFunction
-    : public WebrtcLoggingPrivateTabIdFunction {
+    : public WebrtcLoggingPrivateFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("webrtcLoggingPrivate.start",
                              WEBRTCLOGGINGPRIVATE_START)
@@ -60,7 +63,7 @@ class WebrtcLoggingPrivateStartFunction
 };
 
 class WebrtcLoggingPrivateSetUploadOnRenderCloseFunction
-    : public WebrtcLoggingPrivateTabIdFunction {
+    : public WebrtcLoggingPrivateFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("webrtcLoggingPrivate.setUploadOnRenderClose",
                              WEBRTCLOGGINGPRIVATE_SETUPLOADONRENDERCLOSE)
@@ -74,7 +77,7 @@ class WebrtcLoggingPrivateSetUploadOnRenderCloseFunction
 };
 
 class WebrtcLoggingPrivateStopFunction
-    : public WebrtcLoggingPrivateTabIdFunction {
+    : public WebrtcLoggingPrivateFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("webrtcLoggingPrivate.stop",
                              WEBRTCLOGGINGPRIVATE_STOP)
@@ -91,7 +94,7 @@ class WebrtcLoggingPrivateStopFunction
 };
 
 class WebrtcLoggingPrivateUploadFunction
-    : public WebrtcLoggingPrivateTabIdFunction {
+    : public WebrtcLoggingPrivateFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("webrtcLoggingPrivate.upload",
                              WEBRTCLOGGINGPRIVATE_UPLOAD)
@@ -109,7 +112,7 @@ class WebrtcLoggingPrivateUploadFunction
 };
 
 class WebrtcLoggingPrivateDiscardFunction
-    : public WebrtcLoggingPrivateTabIdFunction {
+    : public WebrtcLoggingPrivateFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("webrtcLoggingPrivate.discard",
                              WEBRTCLOGGINGPRIVATE_DISCARD)
@@ -126,7 +129,7 @@ class WebrtcLoggingPrivateDiscardFunction
 };
 
 class WebrtcLoggingPrivateStartRtpDumpFunction
-    : public WebrtcLoggingPrivateTabIdFunction {
+    : public WebrtcLoggingPrivateFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("webrtcLoggingPrivate.startRtpDump",
                              WEBRTCLOGGINGPRIVATE_STARTRTPDUMP)
@@ -143,7 +146,7 @@ class WebrtcLoggingPrivateStartRtpDumpFunction
 };
 
 class WebrtcLoggingPrivateStopRtpDumpFunction
-    : public WebrtcLoggingPrivateTabIdFunction {
+    : public WebrtcLoggingPrivateFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("webrtcLoggingPrivate.stopRtpDump",
                              WEBRTCLOGGINGPRIVATE_STOPRTPDUMP)

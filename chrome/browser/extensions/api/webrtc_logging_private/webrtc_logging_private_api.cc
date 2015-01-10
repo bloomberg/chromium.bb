@@ -15,7 +15,10 @@
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/guest_view/web_view/web_view_guest.h"
+#include "extensions/browser/process_manager.h"
 #include "extensions/common/error_utils.h"
 
 using content::BrowserThread;
@@ -33,10 +36,21 @@ namespace StartRtpDump = api::webrtc_logging_private::StartRtpDump;
 namespace StopRtpDump = api::webrtc_logging_private::StopRtpDump;
 
 using api::webrtc_logging_private::MetaDataEntry;
+using api::webrtc_logging_private::RequestInfo;
 
-content::RenderProcessHost*
-WebrtcLoggingPrivateTabIdFunction::RphFromTabIdAndSecurityOrigin(
-    int tab_id, const std::string& security_origin) {
+content::RenderProcessHost* WebrtcLoggingPrivateFunction::RphFromRequest(
+    const RequestInfo& request, const std::string& security_origin) {
+  // If |guest_process_id| is defined, directly use this id to find the
+  // corresponding RenderProcessHost.
+  if (request.guest_process_id.get())
+    return content::RenderProcessHost::FromID(*request.guest_process_id.get());
+
+  // Otherwise, use the |tab_id|. If there's no |tab_id| and no
+  // |guest_process_id|, we can't look up the RenderProcessHost.
+  if (!request.tab_id.get())
+    return NULL;
+
+  int tab_id = *request.tab_id.get();
   content::WebContents* contents = NULL;
   if (!ExtensionTabUtil::GetTabById(
            tab_id, GetProfile(), true, NULL, NULL, &contents, NULL)) {
@@ -71,7 +85,7 @@ bool WebrtcLoggingPrivateSetMetaDataFunction::RunAsync() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   content::RenderProcessHost* host =
-      RphFromTabIdAndSecurityOrigin(params->tab_id, params->security_origin);
+      RphFromRequest(params->request, params->security_origin);
   if (!host)
     return false;
 
@@ -111,7 +125,7 @@ bool WebrtcLoggingPrivateStartFunction::RunAsync() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   content::RenderProcessHost* host =
-      RphFromTabIdAndSecurityOrigin(params->tab_id, params->security_origin);
+      RphFromRequest(params->request, params->security_origin);
   if (!host)
     return false;
 
@@ -148,7 +162,7 @@ bool WebrtcLoggingPrivateSetUploadOnRenderCloseFunction::RunAsync() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   content::RenderProcessHost* host =
-      RphFromTabIdAndSecurityOrigin(params->tab_id, params->security_origin);
+      RphFromRequest(params->request, params->security_origin);
   if (!host)
     return false;
 
@@ -170,7 +184,7 @@ bool WebrtcLoggingPrivateStopFunction::RunAsync() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   content::RenderProcessHost* host =
-      RphFromTabIdAndSecurityOrigin(params->tab_id, params->security_origin);
+      RphFromRequest(params->request, params->security_origin);
   if (!host)
     return false;
 
@@ -204,7 +218,7 @@ bool WebrtcLoggingPrivateUploadFunction::RunAsync() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   content::RenderProcessHost* host =
-      RphFromTabIdAndSecurityOrigin(params->tab_id, params->security_origin);
+      RphFromRequest(params->request, params->security_origin);
   if (!host)
     return false;
 
@@ -244,7 +258,7 @@ bool WebrtcLoggingPrivateDiscardFunction::RunAsync() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   content::RenderProcessHost* host =
-      RphFromTabIdAndSecurityOrigin(params->tab_id, params->security_origin);
+      RphFromRequest(params->request, params->security_origin);
   if (!host)
     return false;
 
@@ -290,7 +304,7 @@ bool WebrtcLoggingPrivateStartRtpDumpFunction::RunAsync() {
           : (params->incoming ? RTP_DUMP_INCOMING : RTP_DUMP_OUTGOING);
 
   content::RenderProcessHost* host =
-      RphFromTabIdAndSecurityOrigin(params->tab_id, params->security_origin);
+      RphFromRequest(params->request, params->security_origin);
   if (!host)
     return false;
 
@@ -347,7 +361,7 @@ bool WebrtcLoggingPrivateStopRtpDumpFunction::RunAsync() {
           : (params->incoming ? RTP_DUMP_INCOMING : RTP_DUMP_OUTGOING);
 
   content::RenderProcessHost* host =
-      RphFromTabIdAndSecurityOrigin(params->tab_id, params->security_origin);
+      RphFromRequest(params->request, params->security_origin);
   if (!host)
     return false;
 

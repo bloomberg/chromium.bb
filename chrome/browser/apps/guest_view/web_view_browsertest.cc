@@ -2205,6 +2205,28 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, WhitelistedContentScript) {
                            "TEST_PASSED");
 }
 
+IN_PROC_BROWSER_TEST_F(WebViewTest, SendMessageToExtensionFromGuest) {
+  // Load the extension as a normal, non-component extension.
+  const extensions::Extension* extension =
+      LoadExtension(test_data_dir_.AppendASCII(
+          "platform_apps/web_view/extension_api/component_extension"));
+  ASSERT_TRUE(extension);
+
+  TestHelper("testNonComponentExtension", "web_view/component_extension",
+             NEEDS_TEST_SERVER);
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest, SendMessageToComponentExtensionFromGuest) {
+  const extensions::Extension* component_extension =
+      LoadExtensionAsComponent(test_data_dir_.AppendASCII(
+          "platform_apps/web_view/extension_api/component_extension"));
+  ASSERT_TRUE(component_extension);
+
+  TestHelper("testComponentExtension", "web_view/component_extension",
+             NEEDS_TEST_SERVER);
+}
+
+
 IN_PROC_BROWSER_TEST_F(WebViewTest, SetPropertyOnDocumentReady) {
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/web_view/document_ready"))
                   << message_;

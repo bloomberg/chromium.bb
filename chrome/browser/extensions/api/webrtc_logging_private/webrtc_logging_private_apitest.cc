@@ -48,7 +48,10 @@ IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTest, TestStartStopDiscard) {
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   base::ListValue parameters;
-  parameters.AppendInteger(extensions::ExtensionTabUtil::GetTabId(contents));
+  base::DictionaryValue* request_info = new base::DictionaryValue();
+  request_info->SetInteger("tabId",
+                           extensions::ExtensionTabUtil::GetTabId(contents));
+  parameters.Append(request_info);
   parameters.AppendString(contents->GetURL().GetOrigin().spec());
   std::string parameter_string;
   base::JSONWriter::Write(&parameters, &parameter_string);
@@ -141,7 +144,10 @@ IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTest, TestStartStopUpload) {
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   base::ListValue parameters;
-  parameters.AppendInteger(extensions::ExtensionTabUtil::GetTabId(contents));
+  base::DictionaryValue* request_info = new base::DictionaryValue();
+  request_info->SetInteger("tabId",
+                           extensions::ExtensionTabUtil::GetTabId(contents));
+  parameters.Append(request_info);
   parameters.AppendString(contents->GetURL().GetOrigin().spec());
   base::DictionaryValue* meta_data_entry = new base::DictionaryValue();
   meta_data_entry->SetString("key", "app_session_id");
@@ -171,7 +177,10 @@ IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTest, TestStartStopUpload) {
   start_function->set_has_callback(true);
 
   parameters.Clear();
-  parameters.AppendInteger(extensions::ExtensionTabUtil::GetTabId(contents));
+  request_info = new base::DictionaryValue();
+  request_info->SetInteger("tabId",
+                           extensions::ExtensionTabUtil::GetTabId(contents));
+  parameters.Append(request_info);
   parameters.AppendString(contents->GetURL().GetOrigin().spec());
   base::JSONWriter::Write(&parameters, &parameter_string);
 
@@ -294,7 +303,10 @@ IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTest, TestStartStopRtpDump) {
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   base::ListValue parameters;
-  parameters.AppendInteger(extensions::ExtensionTabUtil::GetTabId(contents));
+  base::DictionaryValue* request_info = new base::DictionaryValue();
+  request_info->SetInteger("tabId",
+                           extensions::ExtensionTabUtil::GetTabId(contents));
+  parameters.Append(request_info);
   parameters.AppendString(contents->GetURL().GetOrigin().spec());
   parameters.AppendBoolean(true);
   parameters.AppendBoolean(true);
