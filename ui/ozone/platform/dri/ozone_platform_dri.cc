@@ -50,10 +50,7 @@ class OzonePlatformDri : public OzonePlatform {
       : dri_(new DriWrapper(kDefaultGraphicsCardPath, true)),
         buffer_generator_(new DriBufferGenerator(dri_.get())),
         screen_manager_(new ScreenManager(dri_.get(), buffer_generator_.get())),
-        device_manager_(CreateDeviceManager()) {
-    base::AtExitManager::RegisterTask(
-        base::Bind(&base::DeletePointer<OzonePlatformDri>, this));
-  }
+        device_manager_(CreateDeviceManager()) {}
   ~OzonePlatformDri() override {}
 
   // OzonePlatform:

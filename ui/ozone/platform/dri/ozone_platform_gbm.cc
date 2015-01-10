@@ -85,8 +85,6 @@ class GbmBufferGenerator : public ScanoutBufferGenerator {
 class OzonePlatformGbm : public OzonePlatform {
  public:
   OzonePlatformGbm(bool use_surfaceless) : use_surfaceless_(use_surfaceless) {
-    base::AtExitManager::RegisterTask(
-        base::Bind(&base::DeletePointer<OzonePlatformGbm>, this));
   }
   ~OzonePlatformGbm() override {}
 
