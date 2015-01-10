@@ -219,6 +219,34 @@ void ZeroSuggestProviderTest::CreateMostVisitedFieldTrial() {
       OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A");
 }
 
+TEST_F(ZeroSuggestProviderTest, TestDoesNotReturnMatchesForPrefix) {
+  CreatePersonalizedFieldTrial();
+
+  std::string url("http://www.cnn.com/");
+  AutocompleteInput input(base::ASCIIToUTF16(url), base::string16::npos,
+                          std::string(), GURL(url),
+                          metrics::OmniboxEventProto::INVALID_SPEC, true, false,
+                          true, true,
+                          ChromeAutocompleteSchemeClassifier(&profile_));
+
+  // Set up the pref to cache the response from the previous run.
+  std::string json_response("[\"\",[\"search1\", \"search2\", \"search3\"],"
+      "[],[],{\"google:suggestrelevance\":[602, 601, 600],"
+      "\"google:verbatimrelevance\":1300}]");
+  PrefService* prefs = profile_.GetPrefs();
+  prefs->SetString(prefs::kZeroSuggestCachedResults, json_response);
+
+  provider_->Start(input, false, false);
+
+  // Expect that matches don't get populated out of cache because we are not
+  // in zero suggest mode.
+  EXPECT_TRUE(provider_->matches().empty());
+
+  // Expect that fetcher did not get created.
+  net::TestURLFetcher* fetcher = test_factory_.GetFetcherByID(1);
+  EXPECT_FALSE(fetcher);
+}
+
 TEST_F(ZeroSuggestProviderTest, TestMostVisitedCallback) {
   CreateMostVisitedFieldTrial();
 
@@ -234,7 +262,7 @@ TEST_F(ZeroSuggestProviderTest, TestMostVisitedCallback) {
                               base::ASCIIToUTF16("Foo"));
   urls.push_back(url);
 
-  provider_->Start(input, false);
+  provider_->Start(input, false, true);
   EXPECT_TRUE(provider_->matches().empty());
   static_cast<FakeEmptyTopSites*>(profile_.GetTopSites())->mv_callback.Run(
       urls);
@@ -242,7 +270,7 @@ TEST_F(ZeroSuggestProviderTest, TestMostVisitedCallback) {
   EXPECT_EQ(2U, provider_->matches().size());
   provider_->Stop(false);
 
-  provider_->Start(input, false);
+  provider_->Start(input, false, true);
   provider_->Stop(false);
   EXPECT_TRUE(provider_->matches().empty());
   // Most visited results arriving after Stop() has been called, ensure they
@@ -267,7 +295,7 @@ TEST_F(ZeroSuggestProviderTest, TestMostVisitedNavigateToSearchPage) {
                               base::ASCIIToUTF16("Foo"));
   urls.push_back(url);
 
-  provider_->Start(input, false);
+  provider_->Start(input, false, true);
   EXPECT_TRUE(provider_->matches().empty());
   // Stop() doesn't always get called.
 
@@ -285,7 +313,7 @@ TEST_F(ZeroSuggestProviderTest, TestMostVisitedNavigateToSearchPage) {
       true,
       ChromeAutocompleteSchemeClassifier(&profile_));
 
-  provider_->Start(srp_input, false);
+  provider_->Start(srp_input, false, true);
   EXPECT_TRUE(provider_->matches().empty());
   // Most visited results arriving after a new request has been started.
   static_cast<FakeEmptyTopSites*>(profile_.GetTopSites())->mv_callback.Run(
@@ -307,7 +335,7 @@ TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestCachingFirstRun) {
                           true, true,
                           ChromeAutocompleteSchemeClassifier(&profile_));
 
-  provider_->Start(input, false);
+  provider_->Start(input, false, true);
 
   EXPECT_TRUE(prefs->GetString(prefs::kZeroSuggestCachedResults).empty());
   EXPECT_TRUE(provider_->matches().empty());
@@ -344,7 +372,7 @@ TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestHasCachedResults) {
   PrefService* prefs = profile_.GetPrefs();
   prefs->SetString(prefs::kZeroSuggestCachedResults, json_response);
 
-  provider_->Start(input, false);
+  provider_->Start(input, false, true);
 
   // Expect that matches get populated synchronously out of the cache.
   ASSERT_EQ(4U, provider_->matches().size());
@@ -391,7 +419,7 @@ TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestReceivedEmptyResults) {
   PrefService* prefs = profile_.GetPrefs();
   prefs->SetString(prefs::kZeroSuggestCachedResults, json_response);
 
-  provider_->Start(input, false);
+  provider_->Start(input, false, true);
 
   // Expect that matches get populated synchronously out of the cache.
   ASSERT_EQ(4U, provider_->matches().size());

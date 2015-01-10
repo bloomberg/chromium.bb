@@ -262,14 +262,7 @@ void AutocompleteController::Start(const AutocompleteInput& input) {
     // TODO(mpearson): Remove timing code once bugs 178705 / 237703 / 168933
     // are resolved.
     base::TimeTicks provider_start_time = base::TimeTicks::Now();
-
-    // Call Start() on ZeroSuggestProvider with an INVALID AutocompleteInput
-    // to clear out zero-suggest |matches_|.
-    if (i->get() == zero_suggest_provider_)
-      (*i)->Start(AutocompleteInput(), minimal_changes);
-    else
-      (*i)->Start(input_, minimal_changes);
-
+    (*i)->Start(input_, minimal_changes, false);
     if (!input.want_asynchronous_matches())
       DCHECK((*i)->done());
     base::TimeTicks provider_end_time = base::TimeTicks::Now();
@@ -333,12 +326,8 @@ void AutocompleteController::OnOmniboxFocused(const AutocompleteInput& input) {
   // Call Start() on all prefix-based providers with an INVALID
   // AutocompleteInput to clear out cached |matches_|, which ensures that
   // they aren't used with zero suggest.
-  for (Providers::iterator i(providers_.begin()); i != providers_.end(); ++i) {
-    if ((*i)->ProvidesMatchesOnOmniboxFocus())
-      (*i)->Start(input, false);
-    else
-      (*i)->Start(AutocompleteInput(), false);
-  }
+  for (Providers::iterator i(providers_.begin()); i != providers_.end(); ++i)
+    (*i)->Start(input, false, true);
 
   UpdateResult(false, false);
 }

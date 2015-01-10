@@ -343,7 +343,7 @@ void SearchProviderTest::RunTest(TestData* cases,
                             metrics::OmniboxEventProto::INVALID_SPEC, false,
                             prefer_keyword, true, true,
                             ChromeAutocompleteSchemeClassifier(&profile_));
-    provider_->Start(input, false);
+    provider_->Start(input, false, false);
     matches = provider_->matches();
     SCOPED_TRACE(
         ASCIIToUTF16("Input was: ") +
@@ -388,7 +388,7 @@ void SearchProviderTest::QueryForInput(const base::string16& text,
                           metrics::OmniboxEventProto::INVALID_SPEC,
                           prevent_inline_autocomplete, prefer_keyword, true,
                           true, ChromeAutocompleteSchemeClassifier(&profile_));
-  provider_->Start(input, false);
+  provider_->Start(input, false, false);
 
   // RunUntilIdle so that the task scheduled by SearchProvider to create the
   // URLFetchers runs.
@@ -3470,4 +3470,14 @@ TEST_F(SearchProviderTest, RemoveExtraAnswers) {
   EXPECT_TRUE(matches[4].answer_contents.empty());
   EXPECT_TRUE(matches[4].answer_type.empty());
   EXPECT_FALSE(matches[4].answer);
+}
+
+TEST_F(SearchProviderTest, DoesNotProvideOnFocus) {
+  AutocompleteInput input(base::ASCIIToUTF16("f"), base::string16::npos,
+                          std::string(), GURL(),
+                          metrics::OmniboxEventProto::INVALID_SPEC, false,
+                          true, true, true,
+                          ChromeAutocompleteSchemeClassifier(&profile_));
+  provider_->Start(input, false, true);
+  EXPECT_TRUE(provider_->matches().empty());
 }

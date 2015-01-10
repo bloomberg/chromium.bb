@@ -20,7 +20,9 @@ class BuiltinProvider : public AutocompleteProvider {
   BuiltinProvider();
 
   // AutocompleteProvider:
-  void Start(const AutocompleteInput& input, bool minimal_changes) override;
+  void Start(const AutocompleteInput& input,
+             bool minimal_changes,
+             bool called_due_to_focus) override;
 
  private:
   ~BuiltinProvider() override;

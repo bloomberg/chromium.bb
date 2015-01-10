@@ -49,10 +49,6 @@ void AutocompleteProvider::Stop(bool clear_cached_results) {
   done_ = true;
 }
 
-bool AutocompleteProvider::ProvidesMatchesOnOmniboxFocus() const {
-  return false;
-}
-
 const char* AutocompleteProvider::GetName() const {
   return TypeToString(type_);
 }

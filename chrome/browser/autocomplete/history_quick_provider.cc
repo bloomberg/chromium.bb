@@ -56,9 +56,10 @@ HistoryQuickProvider::HistoryQuickProvider(Profile* profile)
 }
 
 void HistoryQuickProvider::Start(const AutocompleteInput& input,
-                                 bool minimal_changes) {
+                                 bool minimal_changes,
+                                 bool called_due_to_focus) {
   matches_.clear();
-  if (disabled_)
+  if (disabled_ || called_due_to_focus)
     return;
 
   // Don't bother with INVALID and FORCED_QUERY.

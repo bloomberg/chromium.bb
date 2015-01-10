@@ -360,7 +360,7 @@ void ShortcutsProviderTest::RunTest(
                           metrics::OmniboxEventProto::INVALID_SPEC,
                           prevent_inline_autocomplete, false, true, true,
                           ChromeAutocompleteSchemeClassifier(&profile_));
-  provider_->Start(input, false);
+  provider_->Start(input, false, false);
   EXPECT_TRUE(provider_->done());
 
   ac_matches_ = provider_->matches();
@@ -819,6 +819,16 @@ TEST_F(ShortcutsProviderTest, DeleteMatch) {
   EXPECT_EQ(original_shortcuts_count + 1, backend_->shortcuts_map().size());
   EXPECT_TRUE(backend_->shortcuts_map().end() ==
               backend_->shortcuts_map().find(ASCIIToUTF16("delete")));
+}
+
+TEST_F(ShortcutsProviderTest, DoesNotProvideOnFocus) {
+  AutocompleteInput input(ASCIIToUTF16("about:o"), base::string16::npos,
+                          std::string(), GURL(),
+                          metrics::OmniboxEventProto::INVALID_SPEC,
+                          false, false, true, true,
+                          ChromeAutocompleteSchemeClassifier(&profile_));
+  provider_->Start(input, false, true);
+  EXPECT_TRUE(provider_->matches().empty());
 }
 
 #if defined(ENABLE_EXTENSIONS)

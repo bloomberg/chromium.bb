@@ -57,7 +57,9 @@ class TestProvider : public AutocompleteProvider {
         match_keyword_(match_keyword) {
   }
 
-  void Start(const AutocompleteInput& input, bool minimal_changes) override;
+  void Start(const AutocompleteInput& input,
+             bool minimal_changes,
+             bool called_due_to_focus) override;
 
   void set_listener(AutocompleteProviderListener* listener) {
     listener_ = listener;
@@ -83,11 +85,15 @@ class TestProvider : public AutocompleteProvider {
 };
 
 void TestProvider::Start(const AutocompleteInput& input,
-                         bool minimal_changes) {
+                         bool minimal_changes,
+                         bool called_due_to_focus) {
   if (minimal_changes)
     return;
 
   matches_.clear();
+
+  if (called_due_to_focus)
+    return;
 
   // Generate 4 results synchronously, the rest later.
   AddResults(0, 1);

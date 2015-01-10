@@ -253,7 +253,7 @@ void UrlSearchProvider::Start(bool /*is_voice_query*/,
         new UrlSearchResult(browser_context_, what_you_typed_match)));
   }
 
-  provider_->Start(input_, minimal_changes);
+  provider_->Start(input_, minimal_changes, false);
 }
 
 void UrlSearchProvider::Stop() {

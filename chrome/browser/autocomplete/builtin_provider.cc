@@ -61,9 +61,11 @@ BuiltinProvider::BuiltinProvider()
 }
 
 void BuiltinProvider::Start(const AutocompleteInput& input,
-                            bool minimal_changes) {
+                            bool minimal_changes,
+                            bool called_due_to_focus) {
   matches_.clear();
-  if ((input.type() == metrics::OmniboxInputType::INVALID) ||
+  if (called_due_to_focus ||
+      (input.type() == metrics::OmniboxInputType::INVALID) ||
       (input.type() == metrics::OmniboxInputType::FORCED_QUERY) ||
       (input.type() == metrics::OmniboxInputType::QUERY))
     return;

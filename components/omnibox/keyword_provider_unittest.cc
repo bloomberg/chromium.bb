@@ -97,7 +97,7 @@ void KeywordProviderTest::RunTest(TestData<ResultType>* keyword_cases,
                             std::string(), GURL(),
                             metrics::OmniboxEventProto::INVALID_SPEC, true,
                             false, true, true, TestingSchemeClassifier());
-    kw_provider_->Start(input, false);
+    kw_provider_->Start(input, false, false);
     EXPECT_TRUE(kw_provider_->done());
     matches = kw_provider_->matches();
     ASSERT_EQ(keyword_cases[i].num_results, matches.size());
@@ -366,4 +366,13 @@ TEST_F(KeywordProviderTest, ExtraQueryParams) {
 
   RunTest<GURL>(url_cases, arraysize(url_cases),
                 &AutocompleteMatch::destination_url);
+}
+
+TEST_F(KeywordProviderTest, DoesNotProvideMatchesOnFocus) {
+  AutocompleteInput input(ASCIIToUTF16("aaa"), base::string16::npos,
+                          std::string(), GURL(),
+                          metrics::OmniboxEventProto::INVALID_SPEC, true,
+                          false, true, true, TestingSchemeClassifier());
+  kw_provider_->Start(input, false, true);
+  ASSERT_TRUE(kw_provider_->matches().empty());
 }

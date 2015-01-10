@@ -65,12 +65,13 @@ BookmarkProvider::BookmarkProvider(Profile* profile)
 }
 
 void BookmarkProvider::Start(const AutocompleteInput& input,
-                             bool minimal_changes) {
+                             bool minimal_changes,
+                             bool called_due_to_focus) {
   if (minimal_changes)
     return;
   matches_.clear();
 
-  if (input.text().empty() ||
+  if (called_due_to_focus || input.text().empty() ||
       (input.type() == metrics::OmniboxInputType::FORCED_QUERY))
     return;
 

@@ -69,8 +69,9 @@ class TestBaseSearchProvider : public BaseSearchProvider {
                      bool(const SearchSuggestionParser::SuggestResult& result));
   MOCK_METHOD1(RecordDeletionResult, void(bool success));
 
-  MOCK_METHOD2(Start,
-               void(const AutocompleteInput& input, bool minimal_changes));
+  MOCK_METHOD3(Start,
+               void(const AutocompleteInput& input, bool minimal_changes,
+                    bool called_due_to_focus));
   void AddMatchToMap(const SearchSuggestionParser::SuggestResult& result,
                      const std::string& metadata,
                      int accepted_suggestion,

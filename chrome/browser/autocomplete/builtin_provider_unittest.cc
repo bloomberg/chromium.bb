@@ -42,7 +42,7 @@ class BuiltinProviderTest : public testing::Test {
                                     metrics::OmniboxEventProto::INVALID_SPEC,
                                     true, false, true, true,
                                     ChromeAutocompleteSchemeClassifier(NULL));
-      provider_->Start(input, false);
+      provider_->Start(input, false, false);
       EXPECT_TRUE(provider_->done());
       matches = provider_->matches();
       EXPECT_EQ(cases[i].num_results, matches.size());
@@ -55,9 +55,9 @@ class BuiltinProviderTest : public testing::Test {
     }
   }
 
- private:
   scoped_refptr<BuiltinProvider> provider_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(BuiltinProviderTest);
 };
 
@@ -280,6 +280,17 @@ TEST_F(BuiltinProviderTest, AboutBlank) {
   };
 
   RunTest(about_blank_cases, arraysize(about_blank_cases));
+}
+
+TEST_F(BuiltinProviderTest, DoesNotSupportMatchesOnFocus) {
+  const AutocompleteInput input(ASCIIToUTF16("chrome://s"),
+                                base::string16::npos,
+                                std::string(), GURL(),
+                                metrics::OmniboxEventProto::INVALID_SPEC,
+                                true, false, true, true,
+                                ChromeAutocompleteSchemeClassifier(NULL));
+   provider_->Start(input, false, true);
+   EXPECT_TRUE(provider_->matches().empty());
 }
 
 #if !defined(OS_ANDROID)

@@ -81,9 +81,9 @@ class AutocompleteController : public AutocompleteProviderListener {
   void Stop(bool clear_result);
 
   // Called when the omnibox is focused while no existing user input is in
-  // progress.  This is used to trigger any providers which want to provide
-  // matches in response to focus.  See
-  // AutocompleteProvider::ProvidesMatchesOnOmniboxFocus().
+  // progress.  This is used to call Start() on all providers with
+  // |called_due_to_focus| parameter set to check if they want to provide
+  // on focus matches.
   void OnOmniboxFocused(const AutocompleteInput& input);
 
   // Asks the relevant provider to delete |match|, and ensures observers are

@@ -292,7 +292,7 @@ void HistoryQuickProviderTest::RunTestWithCursor(
                           metrics::OmniboxEventProto::INVALID_SPEC,
                           prevent_inline_autocomplete, false, true, true,
                           ChromeAutocompleteSchemeClassifier(profile_.get()));
-  provider_->Start(input, false);
+  provider_->Start(input, false, false);
   EXPECT_TRUE(provider_->done());
 
   ac_matches_ = provider_->matches();
@@ -712,6 +712,16 @@ TEST_F(HistoryQuickProviderTest, CullSearchResults) {
   RunTest(ASCIIToUTF16("testsearch"), false, expected_urls, true,
           ASCIIToUTF16("testsearch.com"),
                     ASCIIToUTF16(".com"));
+}
+
+TEST_F(HistoryQuickProviderTest, DoesNotProvideMatchesOnFocus) {
+  AutocompleteInput input(ASCIIToUTF16("popularsite"), base::string16::npos,
+                          std::string(), GURL(),
+                          metrics::OmniboxEventProto::INVALID_SPEC,
+                          false, false, true, true,
+                          ChromeAutocompleteSchemeClassifier(profile_.get()));
+  provider_->Start(input, false, true);
+  EXPECT_TRUE(provider_->matches().empty());
 }
 
 // HQPOrderingTest -------------------------------------------------------------

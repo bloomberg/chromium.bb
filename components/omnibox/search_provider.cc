@@ -189,7 +189,8 @@ ACMatches::iterator SearchProvider::FindTopMatch(ACMatches* matches) {
 }
 
 void SearchProvider::Start(const AutocompleteInput& input,
-                           bool minimal_changes) {
+                           bool minimal_changes,
+                           bool called_due_to_focus) {
   // Do our best to load the model as early as possible.  This will reduce
   // odds of having the model not ready when really needed (a non-empty input).
   TemplateURLService* model = providers_.template_url_service();
@@ -200,7 +201,8 @@ void SearchProvider::Start(const AutocompleteInput& input,
   field_trial_triggered_ = false;
 
   // Can't return search/suggest results for bogus input.
-  if (input.type() == metrics::OmniboxInputType::INVALID) {
+  if (called_due_to_focus ||
+      input.type() == metrics::OmniboxInputType::INVALID) {
     Stop(true);
     return;
   }

@@ -310,7 +310,7 @@ void HistoryURLProviderTest::RunTest(
                           prevent_inline_autocomplete, false, true, true,
                           ChromeAutocompleteSchemeClassifier(profile_.get()));
   *identified_input_type = input.type();
-  autocomplete_->Start(input, false);
+  autocomplete_->Start(input, false, false);
   if (!autocomplete_->done())
     base::MessageLoop::current()->Run();
 
@@ -610,7 +610,7 @@ TEST_F(HistoryURLProviderTest, EmptyVisits) {
                           metrics::OmniboxEventProto::INVALID_SPEC, false,
                           false, true, true,
                           ChromeAutocompleteSchemeClassifier(profile_.get()));
-  autocomplete_->Start(input, false);
+  autocomplete_->Start(input, false, false);
   // HistoryURLProvider shouldn't be done (waiting on async results).
   EXPECT_FALSE(autocomplete_->done());
 
@@ -653,7 +653,7 @@ TEST_F(HistoryURLProviderTest, DontAutocompleteOnTrailingWhitespace) {
                           metrics::OmniboxEventProto::INVALID_SPEC, false,
                           false, true, true,
                           ChromeAutocompleteSchemeClassifier(profile_.get()));
-  autocomplete_->Start(input, false);
+  autocomplete_->Start(input, false, false);
   if (!autocomplete_->done())
     base::MessageLoop::current()->Run();
 
@@ -791,10 +791,20 @@ TEST_F(HistoryURLProviderTest, CrashDueToFixup) {
                             metrics::OmniboxEventProto::INVALID_SPEC,
                             false, false, true, true,
                             ChromeAutocompleteSchemeClassifier(profile_.get()));
-    autocomplete_->Start(input, false);
+    autocomplete_->Start(input, false, false);
     if (!autocomplete_->done())
       base::MessageLoop::current()->Run();
   }
+}
+
+TEST_F(HistoryURLProviderTest, DoesNotProvideMatchesOnFocus) {
+  AutocompleteInput input(ASCIIToUTF16("foo"), base::string16::npos,
+                          std::string(), GURL(),
+                          metrics::OmniboxEventProto::INVALID_SPEC,
+                          false, false, true, true,
+                          ChromeAutocompleteSchemeClassifier(profile_.get()));
+  autocomplete_->Start(input, false, true);
+  EXPECT_TRUE(autocomplete_->matches().empty());
 }
 
 TEST_F(HistoryURLProviderTest, CullSearchResults) {
