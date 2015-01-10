@@ -35,7 +35,7 @@ password_manager::PasswordStore* GetPasswordStore(
     content::WebContents* web_contents) {
   return PasswordStoreFactory::GetForProfile(
              Profile::FromBrowserContext(web_contents->GetBrowserContext()),
-             Profile::EXPLICIT_ACCESS).get();
+             ServiceAccessType::EXPLICIT_ACCESS).get();
 }
 
 autofill::ConstPasswordFormMap ConstifyMap(

@@ -82,7 +82,7 @@ AutocompleteActionPredictor::AutocompleteActionPredictor(Profile* profile)
     // Request the in-memory database from the history to force it to load so
     // it's available as soon as possible.
     HistoryService* history_service = HistoryServiceFactory::GetForProfile(
-        profile_, Profile::EXPLICIT_ACCESS);
+        profile_, ServiceAccessType::EXPLICIT_ACCESS);
     if (history_service)
       history_service->InMemoryDatabase();
 
@@ -463,8 +463,8 @@ void AutocompleteActionPredictor::CreateCaches(
   }
 
   // If the history service is ready, delete any old or invalid entries.
-  HistoryService* history_service =
-      HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
+  HistoryService* history_service = HistoryServiceFactory::GetForProfile(
+      profile_, ServiceAccessType::EXPLICIT_ACCESS);
   if (!TryDeleteOldEntries(history_service)) {
     // Wait for the notification that the history service is ready and the URL
     // DB is loaded.

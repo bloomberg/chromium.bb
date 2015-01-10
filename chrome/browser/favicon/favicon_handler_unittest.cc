@@ -1517,7 +1517,7 @@ TEST_F(FaviconHandlerTest, UnableToDownloadFavicon) {
       profile, BuildHistoryService);
 
   FaviconService* favicon_service = FaviconServiceFactory::GetForProfile(
-      profile, Profile::IMPLICIT_ACCESS);
+      profile, ServiceAccessType::IMPLICIT_ACCESS);
 
   FaviconTabHelper::CreateForWebContents(web_contents());
   FaviconTabHelper* favicon_tab_helper =

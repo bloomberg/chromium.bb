@@ -190,7 +190,7 @@ WebsiteSettings::WebsiteSettings(
   Init(profile, url, ssl);
 
   HistoryService* history_service = HistoryServiceFactory::GetForProfile(
-      profile, Profile::EXPLICIT_ACCESS);
+      profile, ServiceAccessType::EXPLICIT_ACCESS);
   if (history_service) {
     history_service->GetVisibleVisitCountToHost(
         site_url_,

@@ -129,9 +129,8 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, MAYBE_Autocomplete) {
   WaitForTemplateURLServiceToLoad();
   // The results depend on the history backend being loaded. Make sure it is
   // loaded so that the autocomplete results are consistent.
-  ui_test_utils::WaitForHistoryToLoad(
-      HistoryServiceFactory::GetForProfile(browser()->profile(),
-                                           Profile::EXPLICIT_ACCESS));
+  ui_test_utils::WaitForHistoryToLoad(HistoryServiceFactory::GetForProfile(
+      browser()->profile(), ServiceAccessType::EXPLICIT_ACCESS));
 
   LocationBar* location_bar = GetLocationBar();
   OmniboxView* omnibox_view = location_bar->GetOmniboxView();

@@ -63,8 +63,8 @@ class ManagePasswordItemViewControllerTest
 
   password_manager::MockPasswordStore* mockStore() {
     password_manager::PasswordStore* store =
-        PasswordStoreFactory::GetForProfile(profile(), Profile::EXPLICIT_ACCESS)
-            .get();
+        PasswordStoreFactory::GetForProfile(
+            profile(), ServiceAccessType::EXPLICIT_ACCESS).get();
     password_manager::MockPasswordStore* mockStore =
         static_cast<password_manager::MockPasswordStore*>(store);
     return mockStore;

@@ -66,15 +66,16 @@ void ChromeAutocompleteProviderClient::Classify(
 }
 
 history::URLDatabase* ChromeAutocompleteProviderClient::InMemoryDatabase() {
-  HistoryService* history_service =
-      HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
+  HistoryService* history_service = HistoryServiceFactory::GetForProfile(
+      profile_, ServiceAccessType::EXPLICIT_ACCESS);
   return history_service ? history_service->InMemoryDatabase() : NULL;
 }
 
 void ChromeAutocompleteProviderClient::DeleteMatchingURLsForKeywordFromHistory(
     history::KeywordID keyword_id,
     const base::string16& term) {
-  HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS)
+  HistoryServiceFactory::GetForProfile(profile_,
+                                       ServiceAccessType::EXPLICIT_ACCESS)
       ->DeleteMatchingURLsForKeyword(keyword_id, term);
 }
 

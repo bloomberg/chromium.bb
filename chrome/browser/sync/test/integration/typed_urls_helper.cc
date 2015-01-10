@@ -285,13 +285,9 @@ void AddUrlToHistoryWithTimestamp(int index,
                source,
                timestamp);
   if (test()->use_verifier())
-    AddToHistory(
-        HistoryServiceFactory::GetForProfile(test()->verifier(),
-                                             Profile::IMPLICIT_ACCESS),
-        url,
-        transition,
-        source,
-        timestamp);
+    AddToHistory(HistoryServiceFactory::GetForProfile(
+                     test()->verifier(), ServiceAccessType::IMPLICIT_ACCESS),
+                 url, transition, source, timestamp);
 
   // Wait until the AddPage() request has completed so we know the change has
   // filtered down to the sync observers (don't need to wait for the
@@ -303,9 +299,8 @@ void DeleteUrlFromHistory(int index, const GURL& url) {
   HistoryServiceFactory::GetForProfileWithoutCreating(
       test()->GetProfile(index))->DeleteURL(url);
   if (test()->use_verifier())
-    HistoryServiceFactory::GetForProfile(test()->verifier(),
-                                         Profile::IMPLICIT_ACCESS)->
-        DeleteURL(url);
+    HistoryServiceFactory::GetForProfile(
+        test()->verifier(), ServiceAccessType::IMPLICIT_ACCESS)->DeleteURL(url);
   WaitForHistoryDBThread(index);
 }
 
@@ -314,8 +309,8 @@ void DeleteUrlsFromHistory(int index, const std::vector<GURL>& urls) {
       test()->GetProfile(index))->DeleteURLsForTest(urls);
   if (test()->use_verifier())
     HistoryServiceFactory::GetForProfile(test()->verifier(),
-                                         Profile::IMPLICIT_ACCESS)->
-        DeleteURLsForTest(urls);
+                                         ServiceAccessType::IMPLICIT_ACCESS)
+        ->DeleteURLsForTest(urls);
   WaitForHistoryDBThread(index);
 }
 
@@ -375,9 +370,8 @@ bool CheckURLRowsAreEqual(
 }
 
 bool CheckAllProfilesHaveSameURLsAsVerifier() {
-  HistoryService* verifier_service =
-      HistoryServiceFactory::GetForProfile(test()->verifier(),
-                                           Profile::IMPLICIT_ACCESS);
+  HistoryService* verifier_service = HistoryServiceFactory::GetForProfile(
+      test()->verifier(), ServiceAccessType::IMPLICIT_ACCESS);
   history::URLRows verifier_urls =
       GetTypedUrlsFromHistoryService(verifier_service);
   for (int i = 0; i < test()->num_clients(); ++i) {

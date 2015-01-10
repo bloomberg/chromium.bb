@@ -1357,7 +1357,7 @@ PrerenderHandle* PrerenderManager::AddPrerender(
   // Query the history to see if the URL being prerendered has ever been
   // visited before.
   HistoryService* history_service = HistoryServiceFactory::GetForProfile(
-      profile_, Profile::EXPLICIT_ACCESS);
+      profile_, ServiceAccessType::EXPLICIT_ACCESS);
   if (history_service) {
     history_service->QueryURL(
         url,

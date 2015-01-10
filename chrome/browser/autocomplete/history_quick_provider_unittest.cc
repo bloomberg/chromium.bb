@@ -129,10 +129,9 @@ class HistoryQuickProviderTest : public testing::Test {
     Profile* profile = static_cast<Profile*>(context);
     return new TemplateURLService(
         profile->GetPrefs(), make_scoped_ptr(new SearchTermsData), NULL,
-        scoped_ptr<TemplateURLServiceClient>(
-            new ChromeTemplateURLServiceClient(
-                HistoryServiceFactory::GetForProfile(
-                    profile, Profile::EXPLICIT_ACCESS))),
+        scoped_ptr<TemplateURLServiceClient>(new ChromeTemplateURLServiceClient(
+            HistoryServiceFactory::GetForProfile(
+                profile, ServiceAccessType::EXPLICIT_ACCESS))),
         NULL, NULL, base::Closure());
   }
 
@@ -186,9 +185,8 @@ void HistoryQuickProviderTest::SetUp() {
   bookmarks::test::WaitForBookmarkModelToLoad(
       BookmarkModelFactory::GetForProfile(profile_.get()));
   profile_->BlockUntilHistoryIndexIsRefreshed();
-  history_service_ =
-      HistoryServiceFactory::GetForProfile(profile_.get(),
-                                           Profile::EXPLICIT_ACCESS);
+  history_service_ = HistoryServiceFactory::GetForProfile(
+      profile_.get(), ServiceAccessType::EXPLICIT_ACCESS);
   EXPECT_TRUE(history_service_);
   provider_ = new HistoryQuickProvider(profile_.get());
   TemplateURLServiceFactory::GetInstance()->SetTestingFactoryAndUse(

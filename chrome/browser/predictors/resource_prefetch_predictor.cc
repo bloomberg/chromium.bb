@@ -605,7 +605,7 @@ void ResourcePrefetchPredictor::OnNavigationComplete(
 
   // Kick off history lookup to determine if we should record the URL.
   HistoryService* history_service = HistoryServiceFactory::GetForProfile(
-      profile_, Profile::EXPLICIT_ACCESS);
+      profile_, ServiceAccessType::EXPLICIT_ACCESS);
   DCHECK(history_service);
   history_service->ScheduleDBTask(
       scoped_ptr<history::HistoryDBTask>(
@@ -1347,8 +1347,8 @@ void ResourcePrefetchPredictor::OnHistoryServiceLoaded(
 
 void ResourcePrefetchPredictor::ConnectToHistoryService() {
   // Register for HistoryServiceLoading if it is not ready.
-  HistoryService* history_service =
-      HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
+  HistoryService* history_service = HistoryServiceFactory::GetForProfile(
+      profile_, ServiceAccessType::EXPLICIT_ACCESS);
   if (!history_service)
     return;
   if (history_service->BackendLoaded()) {

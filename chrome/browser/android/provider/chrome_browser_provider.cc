@@ -1168,13 +1168,13 @@ ChromeBrowserProvider::ChromeBrowserProvider(JNIEnv* env, jobject obj)
   bookmark_model_ = BookmarkModelFactory::GetForProfile(profile_);
   top_sites_ = profile_->GetTopSites();
   favicon_service_ = FaviconServiceFactory::GetForProfile(
-      profile_, Profile::EXPLICIT_ACCESS),
+      profile_, ServiceAccessType::EXPLICIT_ACCESS),
   service_.reset(new AndroidHistoryProviderService(profile_));
 
   // Registers the notifications we are interested.
   bookmark_model_->AddObserver(this);
-  history_service_observer_.Add(
-      HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS));
+  history_service_observer_.Add(HistoryServiceFactory::GetForProfile(
+      profile_, ServiceAccessType::EXPLICIT_ACCESS));
   notification_registrar_.Add(this, chrome::NOTIFICATION_HISTORY_URLS_DELETED,
                               content::NotificationService::AllSources());
   notification_registrar_.Add(this,

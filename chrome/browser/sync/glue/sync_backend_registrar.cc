@@ -94,8 +94,8 @@ SyncBackendRegistrar::SyncBackendRegistrar(
   // TODO(pavely): Remove ScopedTracker below once crbug.com/426272 is fixed.
   tracked_objects::ScopedTracker tracker2(FROM_HERE_WITH_EXPLICIT_FUNCTION(
       "426272 SyncBackendRegistrar::ctor history"));
-  HistoryService* history_service =
-      HistoryServiceFactory::GetForProfile(profile, Profile::IMPLICIT_ACCESS);
+  HistoryService* history_service = HistoryServiceFactory::GetForProfile(
+      profile, ServiceAccessType::IMPLICIT_ACCESS);
   if (history_service) {
     workers_[syncer::GROUP_HISTORY] =
         new HistoryModelWorker(history_service->AsWeakPtr(), this);
@@ -107,7 +107,8 @@ SyncBackendRegistrar::SyncBackendRegistrar(
   tracked_objects::ScopedTracker tracker3(FROM_HERE_WITH_EXPLICIT_FUNCTION(
       "426272 SyncBackendRegistrar::ctor passwords"));
   scoped_refptr<password_manager::PasswordStore> password_store =
-      PasswordStoreFactory::GetForProfile(profile, Profile::IMPLICIT_ACCESS);
+      PasswordStoreFactory::GetForProfile(profile,
+                                          ServiceAccessType::IMPLICIT_ACCESS);
   if (password_store.get()) {
     workers_[syncer::GROUP_PASSWORD] =
         new PasswordModelWorker(password_store, this);

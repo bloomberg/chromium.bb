@@ -251,7 +251,7 @@ class DownloadsHistoryDataCollector {
   bool WaitForDownloadInfo(
       scoped_ptr<std::vector<history::DownloadRow> >* results) {
     HistoryService* hs = HistoryServiceFactory::GetForProfile(
-        profile_, Profile::EXPLICIT_ACCESS);
+        profile_, ServiceAccessType::EXPLICIT_ACCESS);
     DCHECK(hs);
     hs->QueryDownloads(
         base::Bind(&DownloadsHistoryDataCollector::OnQueryDownloadsComplete,
@@ -1894,10 +1894,11 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, PRE_DownloadTest_History) {
   HistoryObserver observer(browser()->profile());
   DownloadAndWait(browser(), download_url);
   observer.WaitForStored();
-  HistoryServiceFactory::GetForProfile(
-      browser()->profile(), Profile::IMPLICIT_ACCESS)->FlushForTest(
-      base::Bind(&base::MessageLoop::Quit,
-                 base::Unretained(base::MessageLoop::current()->current())));
+  HistoryServiceFactory::GetForProfile(browser()->profile(),
+                                       ServiceAccessType::IMPLICIT_ACCESS)
+      ->FlushForTest(base::Bind(
+          &base::MessageLoop::Quit,
+          base::Unretained(base::MessageLoop::current()->current())));
   content::RunMessageLoop();
 }
 

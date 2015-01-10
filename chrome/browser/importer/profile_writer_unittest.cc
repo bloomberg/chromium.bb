@@ -91,9 +91,8 @@ class ProfileWriterTest : public testing::Test {
   }
 
   void VerifyHistoryCount(Profile* profile) {
-    HistoryService* history_service =
-        HistoryServiceFactory::GetForProfile(profile,
-                                             Profile::EXPLICIT_ACCESS);
+    HistoryService* history_service = HistoryServiceFactory::GetForProfile(
+        profile, ServiceAccessType::EXPLICIT_ACCESS);
     history::QueryOptions options;
     base::CancelableTaskTracker history_task_tracker;
     history_service->QueryHistory(

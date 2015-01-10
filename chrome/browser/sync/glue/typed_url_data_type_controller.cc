@@ -126,7 +126,7 @@ bool TypedUrlDataTypeController::PostTaskOnBackendThread(
     const base::Closure& task) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   HistoryService* history = HistoryServiceFactory::GetForProfile(
-      profile(), Profile::IMPLICIT_ACCESS);
+      profile(), ServiceAccessType::IMPLICIT_ACCESS);
   if (history) {
     history->ScheduleDBTask(
         scoped_ptr<history::HistoryDBTask>(

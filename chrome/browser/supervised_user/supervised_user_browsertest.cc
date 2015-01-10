@@ -268,7 +268,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserBlockModeTest,
 
   // Query the history entry.
   HistoryService* history_service = HistoryServiceFactory::GetForProfile(
-      browser()->profile(), Profile::EXPLICIT_ACCESS);
+      browser()->profile(), ServiceAccessType::EXPLICIT_ACCESS);
   history::QueryOptions options;
   history::QueryResults results;
   QueryHistory(history_service, "", options, &results);

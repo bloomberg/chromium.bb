@@ -528,8 +528,8 @@ void HistoryURLProvider::Start(const AutocompleteInput& input,
   // We'll need the history service to run both passes, so try to obtain it.
   if (!profile_)
     return;
-  HistoryService* const history_service =
-      HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
+  HistoryService* const history_service = HistoryServiceFactory::GetForProfile(
+      profile_, ServiceAccessType::EXPLICIT_ACCESS);
   if (!history_service)
     return;
 

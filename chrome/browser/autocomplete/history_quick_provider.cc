@@ -116,8 +116,8 @@ void HistoryQuickProvider::DoAutocomplete() {
        autocomplete_input_.parts().path.is_nonempty());
   if (can_have_url_what_you_typed_match_first) {
     HistoryService* const history_service =
-        HistoryServiceFactory::GetForProfile(profile_,
-                                             Profile::EXPLICIT_ACCESS);
+        HistoryServiceFactory::GetForProfile(
+            profile_, ServiceAccessType::EXPLICIT_ACCESS);
     // We expect HistoryService to be available.  In case it's not,
     // (e.g., due to Profile corruption) we let HistoryQuick provider
     // completions (which may be available because it's a different
@@ -292,8 +292,8 @@ history::InMemoryURLIndex* HistoryQuickProvider::GetIndex() {
   if (index_for_testing_.get())
     return index_for_testing_.get();
 
-  HistoryService* const history_service =
-      HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
+  HistoryService* const history_service = HistoryServiceFactory::GetForProfile(
+      profile_, ServiceAccessType::EXPLICIT_ACCESS);
   if (!history_service)
     return NULL;
 

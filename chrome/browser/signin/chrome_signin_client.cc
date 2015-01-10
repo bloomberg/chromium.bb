@@ -120,7 +120,7 @@ PrefService* ChromeSigninClient::GetPrefs() { return profile_->GetPrefs(); }
 
 scoped_refptr<TokenWebData> ChromeSigninClient::GetDatabase() {
   return WebDataServiceFactory::GetTokenWebDataForProfile(
-      profile_, Profile::EXPLICIT_ACCESS);
+      profile_, ServiceAccessType::EXPLICIT_ACCESS);
 }
 
 bool ChromeSigninClient::CanRevokeCredentials() {

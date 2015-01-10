@@ -434,8 +434,8 @@ void FaviconCache::OnPageFaviconUpdated(const GURL& page_url) {
     page_task_map_[page_url] = 0;  // For testing only.
     return;
   }
-  FaviconService* favicon_service =
-      FaviconServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
+  FaviconService* favicon_service = FaviconServiceFactory::GetForProfile(
+      profile_, ServiceAccessType::EXPLICIT_ACCESS);
   if (!favicon_service)
     return;
   // TODO(zea): This appears to only fetch one favicon (best match based on

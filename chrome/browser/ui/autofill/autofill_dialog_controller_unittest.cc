@@ -276,12 +276,11 @@ class TestAutofillDialogController
   }
 
   void Init(content::BrowserContext* browser_context) {
-    test_manager_.Init(
-        WebDataServiceFactory::GetAutofillWebDataForProfile(
-            Profile::FromBrowserContext(browser_context),
-            Profile::EXPLICIT_ACCESS),
-        user_prefs::UserPrefs::Get(browser_context),
-        browser_context->IsOffTheRecord());
+    test_manager_.Init(WebDataServiceFactory::GetAutofillWebDataForProfile(
+                           Profile::FromBrowserContext(browser_context),
+                           ServiceAccessType::EXPLICIT_ACCESS),
+                       user_prefs::UserPrefs::Get(browser_context),
+                       browser_context->IsOffTheRecord());
   }
 
   TestAutofillDialogView* GetView() {

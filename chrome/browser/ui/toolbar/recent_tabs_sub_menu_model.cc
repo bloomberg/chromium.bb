@@ -612,7 +612,7 @@ void RecentTabsSubMenuModel::AddTabFavicon(int command_id, const GURL& url) {
   SetIcon(index_in_menu, default_favicon_);
   // Start request to fetch actual icon if possible.
   FaviconService* favicon_service = FaviconServiceFactory::GetForProfile(
-      browser_->profile(), Profile::EXPLICIT_ACCESS);
+      browser_->profile(), ServiceAccessType::EXPLICIT_ACCESS);
   if (!favicon_service)
     return;
 

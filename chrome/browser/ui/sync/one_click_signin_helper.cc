@@ -459,7 +459,7 @@ void CurrentHistoryCleaner::DidCommitProvisionalLoadForFrame(
   content::NavigationController* nc = &web_contents()->GetController();
   HistoryService* hs = HistoryServiceFactory::GetForProfile(
       Profile::FromBrowserContext(web_contents()->GetBrowserContext()),
-      Profile::IMPLICIT_ACCESS);
+      ServiceAccessType::IMPLICIT_ACCESS);
 
   // Have to wait until something else gets added to history before removal.
   if (history_index_to_remove_ < nc->GetLastCommittedEntryIndex()) {

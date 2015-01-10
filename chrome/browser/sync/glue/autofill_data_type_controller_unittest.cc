@@ -192,10 +192,9 @@ class SyncAutofillDataTypeControllerTest : public testing::Test {
 // immediately try to start association and fail (due to missing DB
 // thread).
 TEST_F(SyncAutofillDataTypeControllerTest, StartWDSReady) {
-  FakeWebDataService* web_db =
-      static_cast<FakeWebDataService*>(
-          WebDataServiceFactory::GetAutofillWebDataForProfile(
-              &profile_, Profile::EXPLICIT_ACCESS).get());
+  FakeWebDataService* web_db = static_cast<FakeWebDataService*>(
+      WebDataServiceFactory::GetAutofillWebDataForProfile(
+          &profile_, ServiceAccessType::EXPLICIT_ACCESS).get());
   web_db->LoadDatabase();
   autofill_dtc_->LoadModels(
     base::Bind(&SyncAutofillDataTypeControllerTest::OnLoadFinished,
@@ -228,7 +227,7 @@ TEST_F(SyncAutofillDataTypeControllerTest, StartWDSNotReady) {
 
   FakeWebDataService* web_db = static_cast<FakeWebDataService*>(
       WebDataServiceFactory::GetAutofillWebDataForProfile(
-          &profile_, Profile::EXPLICIT_ACCESS).get());
+          &profile_, ServiceAccessType::EXPLICIT_ACCESS).get());
   web_db->LoadDatabase();
 
   autofill_dtc_->StartAssociating(

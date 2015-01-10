@@ -38,11 +38,10 @@ KeyedService* CreateTemplateURLService(content::BrowserContext* context) {
       profile->GetPrefs(),
       scoped_ptr<SearchTermsData>(new UIThreadSearchTermsData(profile)),
       WebDataServiceFactory::GetKeywordWebDataForProfile(
-          profile, Profile::EXPLICIT_ACCESS),
-      scoped_ptr<TemplateURLServiceClient>(
-          new ChromeTemplateURLServiceClient(
-              HistoryServiceFactory::GetForProfile(profile,
-                                                   Profile::EXPLICIT_ACCESS))),
+          profile, ServiceAccessType::EXPLICIT_ACCESS),
+      scoped_ptr<TemplateURLServiceClient>(new ChromeTemplateURLServiceClient(
+          HistoryServiceFactory::GetForProfile(
+              profile, ServiceAccessType::EXPLICIT_ACCESS))),
       nullptr, nullptr, base::Closure());
 }
 

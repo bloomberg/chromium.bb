@@ -17,6 +17,7 @@
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/password_manager/test_password_store_service.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/login/login_prompt.h"
 #include "chrome/browser/ui/login/login_prompt_test_utils.h"
@@ -1071,8 +1072,8 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
                        DontPromptWhenEnableAutomaticPasswordSavingSwitchIsSet) {
   password_manager::TestPasswordStore* password_store =
       static_cast<password_manager::TestPasswordStore*>(
-          PasswordStoreFactory::GetForProfile(browser()->profile(),
-                                              Profile::IMPLICIT_ACCESS).get());
+          PasswordStoreFactory::GetForProfile(
+              browser()->profile(), ServiceAccessType::IMPLICIT_ACCESS).get());
 
   EXPECT_TRUE(password_store->IsEmpty());
 
@@ -1162,8 +1163,8 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, NoLastLoadGoodLastLoad) {
 
   password_manager::TestPasswordStore* password_store =
       static_cast<password_manager::TestPasswordStore*>(
-          PasswordStoreFactory::GetForProfile(browser()->profile(),
-                                              Profile::IMPLICIT_ACCESS).get());
+          PasswordStoreFactory::GetForProfile(
+              browser()->profile(), ServiceAccessType::IMPLICIT_ACCESS).get());
   EXPECT_TRUE(password_store->IsEmpty());
 
   // Navigate to a page requiring HTTP auth. Wait for the tab to get the correct
@@ -1288,8 +1289,8 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
                        PromptWhenPasswordFormWithoutUsernameFieldSubmitted) {
   password_manager::TestPasswordStore* password_store =
       static_cast<password_manager::TestPasswordStore*>(
-          PasswordStoreFactory::GetForProfile(browser()->profile(),
-                                              Profile::IMPLICIT_ACCESS).get());
+          PasswordStoreFactory::GetForProfile(
+              browser()->profile(), ServiceAccessType::IMPLICIT_ACCESS).get());
 
   EXPECT_TRUE(password_store->IsEmpty());
 
@@ -1318,8 +1319,8 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
                        AutofillSuggetionsForPasswordFormWithoutUsernameField) {
   password_manager::TestPasswordStore* password_store =
       static_cast<password_manager::TestPasswordStore*>(
-          PasswordStoreFactory::GetForProfile(browser()->profile(),
-                                              Profile::IMPLICIT_ACCESS).get());
+          PasswordStoreFactory::GetForProfile(
+              browser()->profile(), ServiceAccessType::IMPLICIT_ACCESS).get());
 
   EXPECT_TRUE(password_store->IsEmpty());
 

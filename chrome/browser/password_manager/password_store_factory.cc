@@ -11,6 +11,7 @@
 #include "chrome/browser/password_manager/password_manager_util.h"
 #include "chrome/browser/password_manager/sync_metrics.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/sync_start_util.h"
 #include "chrome/browser/webdata/web_data_service_factory.h"
 #include "chrome/common/chrome_constants.h"
@@ -89,8 +90,8 @@ void PasswordStoreService::Shutdown() {
 // static
 scoped_refptr<PasswordStore> PasswordStoreFactory::GetForProfile(
     Profile* profile,
-    Profile::ServiceAccessType sat) {
-  if (sat == Profile::IMPLICIT_ACCESS && profile->IsOffTheRecord()) {
+    ServiceAccessType sat) {
+  if (sat == ServiceAccessType::IMPLICIT_ACCESS && profile->IsOffTheRecord()) {
     NOTREACHED() << "This profile is OffTheRecord";
     return NULL;
   }
@@ -171,7 +172,7 @@ KeyedService* PasswordStoreFactory::BuildServiceInstanceFor(
                             db_thread_runner,
                             login_db.release(),
                             WebDataServiceFactory::GetPasswordWebDataForProfile(
-                                profile, Profile::EXPLICIT_ACCESS));
+                                profile, ServiceAccessType::EXPLICIT_ACCESS));
 #elif defined(OS_MACOSX)
   crypto::AppleKeychain* keychain =
       base::CommandLine::ForCurrentProcess()->HasSwitch(

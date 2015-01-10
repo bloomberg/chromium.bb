@@ -175,10 +175,9 @@ class HistoryURLProviderTest : public testing::Test,
     Profile* profile = static_cast<Profile*>(context);
     return new TemplateURLService(
         profile->GetPrefs(), make_scoped_ptr(new SearchTermsData), NULL,
-        scoped_ptr<TemplateURLServiceClient>(
-            new ChromeTemplateURLServiceClient(
-                HistoryServiceFactory::GetForProfile(
-                    profile, Profile::EXPLICIT_ACCESS))),
+        scoped_ptr<TemplateURLServiceClient>(new ChromeTemplateURLServiceClient(
+            HistoryServiceFactory::GetForProfile(
+                profile, ServiceAccessType::EXPLICIT_ACCESS))),
         NULL, NULL, base::Closure());
   }
 
@@ -259,7 +258,7 @@ bool HistoryURLProviderTest::SetUpImpl(bool no_db) {
   }
   profile_->GetPrefs()->SetString(prefs::kAcceptLanguages, "en-US,en,ko");
   history_service_ = HistoryServiceFactory::GetForProfile(
-      profile_.get(), Profile::EXPLICIT_ACCESS);
+      profile_.get(), ServiceAccessType::EXPLICIT_ACCESS);
 
   autocomplete_ = new HistoryURLProvider(this, profile_.get());
   TemplateURLServiceFactory::GetInstance()->SetTestingFactoryAndUse(

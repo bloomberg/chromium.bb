@@ -91,7 +91,7 @@ scoped_refptr<AutofillWebDataService> ChromeAutofillClient::GetDatabase() {
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   return WebDataServiceFactory::GetAutofillWebDataForProfile(
-      profile, Profile::EXPLICIT_ACCESS);
+      profile, ServiceAccessType::EXPLICIT_ACCESS);
 }
 
 PrefService* ChromeAutofillClient::GetPrefs() {

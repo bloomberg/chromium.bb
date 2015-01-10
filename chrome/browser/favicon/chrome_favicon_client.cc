@@ -17,8 +17,8 @@ ChromeFaviconClient::~ChromeFaviconClient() {
 }
 
 FaviconService* ChromeFaviconClient::GetFaviconService() {
-  return FaviconServiceFactory::GetForProfile(profile_,
-                                              Profile::EXPLICIT_ACCESS);
+  return FaviconServiceFactory::GetForProfile(
+      profile_, ServiceAccessType::EXPLICIT_ACCESS);
 }
 
 bool ChromeFaviconClient::IsBookmarked(const GURL& url) {

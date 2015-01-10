@@ -142,8 +142,8 @@ HistoryService* HistoryTabHelper::GetHistoryService() {
   if (profile->IsOffTheRecord())
     return NULL;
 
-  return HistoryServiceFactory::GetForProfile(profile,
-                                              Profile::IMPLICIT_ACCESS);
+  return HistoryServiceFactory::GetForProfile(
+      profile, ServiceAccessType::IMPLICIT_ACCESS);
 }
 
 void HistoryTabHelper::WebContentsDestroyed() {
@@ -153,8 +153,8 @@ void HistoryTabHelper::WebContentsDestroyed() {
   if (profile->IsOffTheRecord())
     return;
 
-  HistoryService* hs =
-      HistoryServiceFactory::GetForProfile(profile, Profile::IMPLICIT_ACCESS);
+  HistoryService* hs = HistoryServiceFactory::GetForProfile(
+      profile, ServiceAccessType::IMPLICIT_ACCESS);
   if (hs) {
     NavigationEntry* entry = tab->GetController().GetLastCommittedEntry();
     if (entry) {

@@ -263,15 +263,15 @@ TEST_F(ProfileManagerTest, CreateAndUseTwoProfiles) {
 
   // Force lazy-init of some profile services to simulate use.
   ASSERT_TRUE(profile1->CreateHistoryService(true, false));
-  EXPECT_TRUE(HistoryServiceFactory::GetForProfile(profile1,
-                                                   Profile::EXPLICIT_ACCESS));
+  EXPECT_TRUE(HistoryServiceFactory::GetForProfile(
+      profile1, ServiceAccessType::EXPLICIT_ACCESS));
   profile1->CreateBookmarkModel(true);
   EXPECT_TRUE(BookmarkModelFactory::GetForProfile(profile1));
   profile2->CreateBookmarkModel(true);
   EXPECT_TRUE(BookmarkModelFactory::GetForProfile(profile2));
   ASSERT_TRUE(profile2->CreateHistoryService(true, false));
-  EXPECT_TRUE(HistoryServiceFactory::GetForProfile(profile2,
-                                                   Profile::EXPLICIT_ACCESS));
+  EXPECT_TRUE(HistoryServiceFactory::GetForProfile(
+      profile2, ServiceAccessType::EXPLICIT_ACCESS));
 
   // Make sure any pending tasks run before we destroy the profiles.
     base::RunLoop().RunUntilIdle();

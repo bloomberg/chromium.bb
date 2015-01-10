@@ -208,7 +208,7 @@ void InMemoryURLIndexTest::SetUp() {
   profile_.BlockUntilHistoryProcessesPendingRequests();
   profile_.BlockUntilHistoryIndexIsRefreshed();
   history_service_ = HistoryServiceFactory::GetForProfile(
-      &profile_, Profile::EXPLICIT_ACCESS);
+      &profile_, ServiceAccessType::EXPLICIT_ACCESS);
   ASSERT_TRUE(history_service_);
   HistoryBackend* backend = history_service_->history_backend_.get();
   history_database_ = backend->db();

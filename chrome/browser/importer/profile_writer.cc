@@ -87,20 +87,21 @@ bool ProfileWriter::TemplateURLServiceIsLoaded() const {
 
 void ProfileWriter::AddPasswordForm(const autofill::PasswordForm& form) {
   PasswordStoreFactory::GetForProfile(
-      profile_, Profile::EXPLICIT_ACCESS)->AddLogin(form);
+      profile_, ServiceAccessType::EXPLICIT_ACCESS)->AddLogin(form);
 }
 
 #if defined(OS_WIN)
 void ProfileWriter::AddIE7PasswordInfo(const IE7PasswordInfo& info) {
   WebDataServiceFactory::GetPasswordWebDataForProfile(
-      profile_, Profile::EXPLICIT_ACCESS)->AddIE7Login(info);
+      profile_, ServiceAccessType::EXPLICIT_ACCESS)->AddIE7Login(info);
 }
 #endif
 
 void ProfileWriter::AddHistoryPage(const history::URLRows& page,
                                    history::VisitSource visit_source) {
-  HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS)->
-      AddPagesWithDetails(page, visit_source);
+  HistoryServiceFactory::GetForProfile(profile_,
+                                       ServiceAccessType::EXPLICIT_ACCESS)
+      ->AddPagesWithDetails(page, visit_source);
 }
 
 void ProfileWriter::AddHomepage(const GURL& home_page) {
@@ -233,8 +234,9 @@ void ProfileWriter::AddBookmarks(
 
 void ProfileWriter::AddFavicons(
     const std::vector<ImportedFaviconUsage>& favicons) {
-  FaviconServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS)->
-      SetImportedFavicons(favicons);
+  FaviconServiceFactory::GetForProfile(profile_,
+                                       ServiceAccessType::EXPLICIT_ACCESS)
+      ->SetImportedFavicons(favicons);
 }
 
 typedef std::map<std::string, TemplateURL*> HostPathMap;
@@ -335,7 +337,7 @@ void ProfileWriter::AddAutofillFormDataEntries(
     const std::vector<autofill::AutofillEntry>& autofill_entries) {
   scoped_refptr<autofill::AutofillWebDataService> web_data_service =
       WebDataServiceFactory::GetAutofillWebDataForProfile(
-          profile_, Profile::EXPLICIT_ACCESS);
+          profile_, ServiceAccessType::EXPLICIT_ACCESS);
   if (web_data_service.get())
     web_data_service->UpdateAutofillEntries(autofill_entries);
 }

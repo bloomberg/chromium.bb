@@ -54,7 +54,7 @@ void AutofillProfileDataTypeController::OnPersonalDataChanged() {
   personal_data_->RemoveObserver(this);
   autofill::AutofillWebDataService* web_data_service =
       WebDataServiceFactory::GetAutofillWebDataForProfile(
-          profile_, Profile::EXPLICIT_ACCESS).get();
+          profile_, ServiceAccessType::EXPLICIT_ACCESS).get();
 
   if (!web_data_service)
     return;
@@ -92,7 +92,7 @@ bool AutofillProfileDataTypeController::StartModels() {
 
   autofill::AutofillWebDataService* web_data_service =
       WebDataServiceFactory::GetAutofillWebDataForProfile(
-          profile_, Profile::EXPLICIT_ACCESS).get();
+          profile_, ServiceAccessType::EXPLICIT_ACCESS).get();
 
   if (!web_data_service)
     return false;

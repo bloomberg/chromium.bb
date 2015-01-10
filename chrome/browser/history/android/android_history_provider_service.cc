@@ -28,8 +28,8 @@ AndroidHistoryProviderService::QueryHistoryAndBookmarks(
     const std::string& sort_order,
     const QueryCallback& callback,
     base::CancelableTaskTracker* tracker) {
-  HistoryService* hs =
-      HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
+  HistoryService* hs = HistoryServiceFactory::GetForProfile(
+      profile_, ServiceAccessType::EXPLICIT_ACCESS);
   if (hs) {
     DCHECK(hs->thread_) << "History service being called after cleanup";
     DCHECK(hs->thread_checker_.CalledOnValidThread());
@@ -56,8 +56,8 @@ AndroidHistoryProviderService::UpdateHistoryAndBookmarks(
     const std::vector<base::string16>& selection_args,
     const UpdateCallback& callback,
     base::CancelableTaskTracker* tracker) {
-  HistoryService* hs =
-      HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
+  HistoryService* hs = HistoryServiceFactory::GetForProfile(
+      profile_, ServiceAccessType::EXPLICIT_ACCESS);
   if (hs) {
     DCHECK(hs->thread_) << "History service being called after cleanup";
     DCHECK(hs->thread_checker_.CalledOnValidThread());
@@ -82,8 +82,8 @@ AndroidHistoryProviderService::DeleteHistoryAndBookmarks(
     const std::vector<base::string16>& selection_args,
     const DeleteCallback& callback,
     base::CancelableTaskTracker* tracker) {
-  HistoryService* hs =
-      HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
+  HistoryService* hs = HistoryServiceFactory::GetForProfile(
+      profile_, ServiceAccessType::EXPLICIT_ACCESS);
   if (hs) {
     DCHECK(hs->thread_) << "History service being called after cleanup";
     DCHECK(hs->thread_checker_.CalledOnValidThread());
@@ -106,8 +106,8 @@ AndroidHistoryProviderService::InsertHistoryAndBookmark(
     const history::HistoryAndBookmarkRow& values,
     const InsertCallback& callback,
     base::CancelableTaskTracker* tracker) {
-  HistoryService* hs =
-      HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
+  HistoryService* hs = HistoryServiceFactory::GetForProfile(
+      profile_, ServiceAccessType::EXPLICIT_ACCESS);
   if (hs) {
     DCHECK(hs->thread_) << "History service being called after cleanup";
     DCHECK(hs->thread_checker_.CalledOnValidThread());
@@ -130,8 +130,8 @@ AndroidHistoryProviderService::DeleteHistory(
     const std::vector<base::string16>& selection_args,
     const DeleteCallback& callback,
     base::CancelableTaskTracker* tracker) {
-  HistoryService* hs =
-      HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
+  HistoryService* hs = HistoryServiceFactory::GetForProfile(
+      profile_, ServiceAccessType::EXPLICIT_ACCESS);
   if (hs) {
     DCHECK(hs->thread_) << "History service being called after cleanup";
     DCHECK(hs->thread_checker_.CalledOnValidThread());
@@ -156,8 +156,8 @@ AndroidHistoryProviderService::MoveStatement(
     int destination,
     const MoveStatementCallback& callback,
     base::CancelableTaskTracker* tracker) {
-  HistoryService* hs =
-      HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
+  HistoryService* hs = HistoryServiceFactory::GetForProfile(
+      profile_, ServiceAccessType::EXPLICIT_ACCESS);
   if (hs) {
     DCHECK(hs->thread_) << "History service being called after cleanup";
     DCHECK(hs->thread_checker_.CalledOnValidThread());
@@ -178,8 +178,8 @@ AndroidHistoryProviderService::MoveStatement(
 
 void AndroidHistoryProviderService::CloseStatement(
     history::AndroidStatement* statement) {
-  HistoryService* hs =
-      HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
+  HistoryService* hs = HistoryServiceFactory::GetForProfile(
+      profile_, ServiceAccessType::EXPLICIT_ACCESS);
   if (hs) {
     hs->ScheduleAndForget(HistoryService::PRIORITY_NORMAL,
             &HistoryBackend::CloseStatement, statement);
@@ -193,8 +193,8 @@ AndroidHistoryProviderService::InsertSearchTerm(
     const history::SearchRow& row,
     const InsertCallback& callback,
     base::CancelableTaskTracker* tracker) {
-  HistoryService* hs =
-      HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
+  HistoryService* hs = HistoryServiceFactory::GetForProfile(
+      profile_, ServiceAccessType::EXPLICIT_ACCESS);
   if (hs) {
     DCHECK(hs->thread_) << "History service being called after cleanup";
     DCHECK(hs->thread_checker_.CalledOnValidThread());
@@ -217,8 +217,8 @@ AndroidHistoryProviderService::UpdateSearchTerms(
     const std::vector<base::string16>& selection_args,
     const UpdateCallback& callback,
     base::CancelableTaskTracker* tracker) {
-  HistoryService* hs =
-      HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
+  HistoryService* hs = HistoryServiceFactory::GetForProfile(
+      profile_, ServiceAccessType::EXPLICIT_ACCESS);
   if (hs) {
     DCHECK(hs->thread_) << "History service being called after cleanup";
     DCHECK(hs->thread_checker_.CalledOnValidThread());
@@ -243,8 +243,8 @@ AndroidHistoryProviderService::DeleteSearchTerms(
     const std::vector<base::string16>& selection_args,
     const DeleteCallback& callback,
     base::CancelableTaskTracker* tracker) {
-  HistoryService* hs =
-      HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
+  HistoryService* hs = HistoryServiceFactory::GetForProfile(
+      profile_, ServiceAccessType::EXPLICIT_ACCESS);
   if (hs) {
     DCHECK(hs->thread_) << "History service being called after cleanup";
     DCHECK(hs->thread_checker_.CalledOnValidThread());
@@ -270,8 +270,8 @@ AndroidHistoryProviderService::QuerySearchTerms(
     const std::string& sort_order,
     const QueryCallback& callback,
     base::CancelableTaskTracker* tracker) {
-  HistoryService* hs =
-      HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
+  HistoryService* hs = HistoryServiceFactory::GetForProfile(
+      profile_, ServiceAccessType::EXPLICIT_ACCESS);
   if (hs) {
     DCHECK(hs->thread_) << "History service being called after cleanup";
     DCHECK(hs->thread_checker_.CalledOnValidThread());
@@ -296,8 +296,8 @@ AndroidHistoryProviderService::GetLargestRawFaviconForID(
     favicon_base::FaviconID favicon_id,
     const favicon_base::FaviconRawBitmapCallback& callback,
     base::CancelableTaskTracker* tracker) {
-  FaviconService* fs =
-      FaviconServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
+  FaviconService* fs = FaviconServiceFactory::GetForProfile(
+      profile_, ServiceAccessType::EXPLICIT_ACCESS);
   DCHECK(fs);
   return fs->GetLargestRawFaviconForID(favicon_id, callback, tracker);
 }

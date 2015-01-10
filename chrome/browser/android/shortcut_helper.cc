@@ -18,6 +18,7 @@
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/web_application_info.h"
@@ -385,7 +386,7 @@ void ShortcutHelper::AddShortcutUsingFavicon() {
   icon_types.push_back(favicon_base::TOUCH_PRECOMPOSED_ICON |
                        favicon_base::TOUCH_ICON);
   FaviconService* favicon_service = FaviconServiceFactory::GetForProfile(
-      profile, Profile::EXPLICIT_ACCESS);
+      profile, ServiceAccessType::EXPLICIT_ACCESS);
 
   // Using favicon if its size is not smaller than platform required size,
   // otherwise using the largest icon among all avaliable icons.

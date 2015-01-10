@@ -151,7 +151,7 @@ KeyedService* ProfileResetterTest::CreateTemplateURLService(
       profile->GetPrefs(),
       scoped_ptr<SearchTermsData>(new UIThreadSearchTermsData(profile)),
       WebDataServiceFactory::GetKeywordWebDataForProfile(
-          profile, Profile::EXPLICIT_ACCESS),
+          profile, ServiceAccessType::EXPLICIT_ACCESS),
       scoped_ptr<TemplateURLServiceClient>(), NULL, NULL, base::Closure());
 }
 

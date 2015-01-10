@@ -192,8 +192,8 @@ SafeBrowsingBlockingPage::SafeBrowsingBlockingPage(
     RecordUserDecision(PROCEEDING_DISABLED);
 
   HistoryService* history_service = HistoryServiceFactory::GetForProfile(
-          Profile::FromBrowserContext(web_contents->GetBrowserContext()),
-          Profile::EXPLICIT_ACCESS);
+      Profile::FromBrowserContext(web_contents->GetBrowserContext()),
+      ServiceAccessType::EXPLICIT_ACCESS);
   if (history_service) {
     history_service->GetVisibleVisitCountToHost(
         request_url(),

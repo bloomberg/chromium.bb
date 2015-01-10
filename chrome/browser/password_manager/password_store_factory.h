@@ -7,9 +7,9 @@
 
 #include "base/basictypes.h"
 #include "base/memory/singleton.h"
-#include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/keyed_service/core/service_access_type.h"
 
 class Profile;
 
@@ -50,7 +50,7 @@ class PasswordStoreFactory : public BrowserContextKeyedServiceFactory {
  public:
   static scoped_refptr<password_manager::PasswordStore> GetForProfile(
       Profile* profile,
-      Profile::ServiceAccessType set);
+      ServiceAccessType set);
 
   static PasswordStoreFactory* GetInstance();
 

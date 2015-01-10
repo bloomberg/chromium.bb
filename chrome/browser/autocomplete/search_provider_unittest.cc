@@ -441,9 +441,8 @@ void SearchProviderTest::QueryForInputAndWaitForFetcherResponses(
 GURL SearchProviderTest::AddSearchToHistory(TemplateURL* t_url,
                                             base::string16 term,
                                             int visit_count) {
-  HistoryService* history =
-      HistoryServiceFactory::GetForProfile(&profile_,
-                                           Profile::EXPLICIT_ACCESS);
+  HistoryService* history = HistoryServiceFactory::GetForProfile(
+      &profile_, ServiceAccessType::EXPLICIT_ACCESS);
   GURL search(t_url->url_ref().ReplaceSearchTerms(
       TemplateURLRef::SearchTermsArgs(term),
       TemplateURLServiceFactory::GetForProfile(
@@ -739,9 +738,11 @@ TEST_F(SearchProviderTest, DontAutocompleteURLLikeTerms) {
                                 ASCIIToUTF16("docs.google.com"), 1);
 
   // Add the term as a url.
-  HistoryServiceFactory::GetForProfile(&profile_, Profile::EXPLICIT_ACCESS)->
-      AddPageWithDetails(GURL("http://docs.google.com"), base::string16(), 1, 1,
-                         base::Time::Now(), false, history::SOURCE_BROWSED);
+  HistoryServiceFactory::GetForProfile(&profile_,
+                                       ServiceAccessType::EXPLICIT_ACCESS)
+      ->AddPageWithDetails(GURL("http://docs.google.com"), base::string16(), 1,
+                           1, base::Time::Now(), false,
+                           history::SOURCE_BROWSED);
   profile_.BlockUntilHistoryProcessesPendingRequests();
 
   AutocompleteMatch wyt_match;

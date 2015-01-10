@@ -44,7 +44,7 @@ KeyedService* PersonalDataManagerFactory::BuildServiceInstanceFor(
   PersonalDataManager* service =
       new PersonalDataManager(g_browser_process->GetApplicationLocale());
   service->Init(WebDataServiceFactory::GetAutofillWebDataForProfile(
-                    profile, Profile::EXPLICIT_ACCESS),
+                    profile, ServiceAccessType::EXPLICIT_ACCESS),
                 profile->GetPrefs(),
                 profile->IsOffTheRecord());
   return service;

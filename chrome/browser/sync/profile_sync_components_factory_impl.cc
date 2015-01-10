@@ -163,7 +163,7 @@ ProfileSyncComponentsFactoryImpl::ProfileSyncComponentsFactoryImpl(
       command_line_(command_line),
       web_data_service_(WebDataServiceFactory::GetAutofillWebDataForProfile(
           profile_,
-          Profile::EXPLICIT_ACCESS)),
+          ServiceAccessType::EXPLICIT_ACCESS)),
       sync_service_url_(sync_service_url),
       token_service_(token_service),
       url_request_context_getter_(url_request_context_getter),
@@ -502,9 +502,8 @@ base::WeakPtr<syncer::SyncableService> ProfileSyncComponentsFactoryImpl::
           GetThemeSyncableService()->AsWeakPtr();
 #endif
     case syncer::HISTORY_DELETE_DIRECTIVES: {
-      HistoryService* history =
-          HistoryServiceFactory::GetForProfile(
-              profile_, Profile::EXPLICIT_ACCESS);
+      HistoryService* history = HistoryServiceFactory::GetForProfile(
+          profile_, ServiceAccessType::EXPLICIT_ACCESS);
       return history ? history->AsWeakPtr() : base::WeakPtr<HistoryService>();
     }
 #if defined(ENABLE_SPELLCHECK)
@@ -550,8 +549,8 @@ base::WeakPtr<syncer::SyncableService> ProfileSyncComponentsFactoryImpl::
     case syncer::PASSWORDS: {
 #if defined(PASSWORD_MANAGER_ENABLE_SYNC)
       scoped_refptr<password_manager::PasswordStore> password_store =
-          PasswordStoreFactory::GetForProfile(profile_,
-                                              Profile::EXPLICIT_ACCESS);
+          PasswordStoreFactory::GetForProfile(
+              profile_, ServiceAccessType::EXPLICIT_ACCESS);
       return password_store.get() ? password_store->GetPasswordSyncableService()
                                   : base::WeakPtr<syncer::SyncableService>();
 #else

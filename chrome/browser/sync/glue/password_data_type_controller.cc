@@ -51,7 +51,7 @@ bool PasswordDataTypeController::StartModels() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_EQ(MODEL_STARTING, state());
   password_store_ = PasswordStoreFactory::GetForProfile(
-      profile_, Profile::EXPLICIT_ACCESS);
+      profile_, ServiceAccessType::EXPLICIT_ACCESS);
   return !!password_store_.get();
 }
 

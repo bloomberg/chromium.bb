@@ -1549,7 +1549,8 @@ TEST_F(DownloadProtectionServiceTest,
     redirects.push_back(GURL("http://tab.com/ref1"));
     redirects.push_back(GURL("http://tab.com/ref2"));
     redirects.push_back(tab_url);
-    HistoryServiceFactory::GetForProfile(&profile, Profile::EXPLICIT_ACCESS)
+    HistoryServiceFactory::GetForProfile(&profile,
+                                         ServiceAccessType::EXPLICIT_ACCESS)
         ->AddPage(tab_url,
                   base::Time::Now(),
                   reinterpret_cast<history::ContextID>(1),

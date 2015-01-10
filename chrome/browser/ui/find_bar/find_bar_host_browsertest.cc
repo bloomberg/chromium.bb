@@ -187,10 +187,11 @@ class FindInPageControllerTest : public InProcessBrowserTest {
   }
 
   void FlushHistoryService() {
-    HistoryServiceFactory::GetForProfile(
-        browser()->profile(), Profile::IMPLICIT_ACCESS)->FlushForTest(
-        base::Bind(&base::MessageLoop::Quit,
-                   base::Unretained(base::MessageLoop::current()->current())));
+    HistoryServiceFactory::GetForProfile(browser()->profile(),
+                                         ServiceAccessType::IMPLICIT_ACCESS)
+        ->FlushForTest(base::Bind(
+            &base::MessageLoop::Quit,
+            base::Unretained(base::MessageLoop::current()->current())));
     content::RunMessageLoop();
   }
 };

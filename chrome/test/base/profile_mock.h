@@ -6,7 +6,7 @@
 #define CHROME_TEST_BASE_PROFILE_MOCK_H_
 
 #include "chrome/test/base/testing_profile.h"
-
+#include "components/keyed_service/core/service_access_type.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace password_manager {

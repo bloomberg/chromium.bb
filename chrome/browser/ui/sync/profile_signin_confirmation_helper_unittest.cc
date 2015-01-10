@@ -228,8 +228,7 @@ TEST_F(ProfileSigninConfirmationHelperTest, PromptForNewProfile_Extensions) {
 TEST_F(ProfileSigninConfirmationHelperTest,
        DISABLED_PromptForNewProfile_History) {
   HistoryService* history = HistoryServiceFactory::GetForProfile(
-      profile_.get(),
-      Profile::EXPLICIT_ACCESS);
+      profile_.get(), ServiceAccessType::EXPLICIT_ACCESS);
   ASSERT_TRUE(history);
 
   // Profile is new but has more than $(kHistoryEntriesBeforeNewProfilePrompt)
@@ -253,8 +252,7 @@ TEST_F(ProfileSigninConfirmationHelperTest,
 TEST_F(ProfileSigninConfirmationHelperTest,
        DISABLED_PromptForNewProfile_TypedURLs) {
   HistoryService* history = HistoryServiceFactory::GetForProfile(
-      profile_.get(),
-      Profile::EXPLICIT_ACCESS);
+      profile_.get(), ServiceAccessType::EXPLICIT_ACCESS);
   ASSERT_TRUE(history);
 
   // Profile is new but has a typed URL.

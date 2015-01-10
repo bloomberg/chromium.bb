@@ -68,8 +68,8 @@ class SQLiteCursorTest : public testing::Test,
     testing_profile_->CreateFaviconService();
     ASSERT_TRUE(testing_profile_->CreateHistoryService(true, false));
     service_.reset(new AndroidHistoryProviderService(testing_profile_));
-    hs_ = HistoryServiceFactory::GetForProfile(testing_profile_,
-                                               Profile::EXPLICIT_ACCESS);
+    hs_ = HistoryServiceFactory::GetForProfile(
+        testing_profile_, ServiceAccessType::EXPLICIT_ACCESS);
   }
 
   virtual void TearDown() override {

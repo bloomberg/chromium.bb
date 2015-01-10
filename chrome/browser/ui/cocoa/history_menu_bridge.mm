@@ -74,7 +74,7 @@ HistoryMenuBridge::HistoryMenuBridge(Profile* profile)
     // may not be ready when the Bridge is created. If this happens, register
     // for a notification that tells us the HistoryService is ready.
     HistoryService* hs = HistoryServiceFactory::GetForProfile(
-        profile_, Profile::EXPLICIT_ACCESS);
+        profile_, ServiceAccessType::EXPLICIT_ACCESS);
     if (hs) {
       history_service_observer_.Add(hs);
       if (hs->BackendLoaded()) {
@@ -432,8 +432,8 @@ HistoryMenuBridge::HistoryItem* HistoryMenuBridge::HistoryItemForTab(
 }
 
 void HistoryMenuBridge::GetFaviconForHistoryItem(HistoryItem* item) {
-  FaviconService* service =
-      FaviconServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
+  FaviconService* service = FaviconServiceFactory::GetForProfile(
+      profile_, ServiceAccessType::EXPLICIT_ACCESS);
   base::CancelableTaskTracker::TaskId task_id =
       service->GetFaviconImageForPageURL(
           item->url,

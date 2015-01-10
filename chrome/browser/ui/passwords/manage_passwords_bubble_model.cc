@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 
 #include "chrome/browser/password_manager/password_store_factory.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
@@ -306,8 +307,8 @@ void ManagePasswordsBubbleModel::OnPasswordAction(
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   password_manager::PasswordStore* password_store =
-      PasswordStoreFactory::GetForProfile(profile, Profile::EXPLICIT_ACCESS)
-          .get();
+      PasswordStoreFactory::GetForProfile(
+          profile, ServiceAccessType::EXPLICIT_ACCESS).get();
   DCHECK(password_store);
   if (action == REMOVE_PASSWORD)
     password_store->RemoveLogin(password_form);

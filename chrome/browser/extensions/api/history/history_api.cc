@@ -226,8 +226,8 @@ void BrowserContextKeyedAPIFactory<HistoryAPI>::DeclareFactoryDependencies() {
 void HistoryAPI::OnListenerAdded(const EventListenerInfo& details) {
   Profile* profile = Profile::FromBrowserContext(browser_context_);
   history_event_router_.reset(new HistoryEventRouter(
-      profile,
-      HistoryServiceFactory::GetForProfile(profile, Profile::EXPLICIT_ACCESS)));
+      profile, HistoryServiceFactory::GetForProfile(
+                   profile, ServiceAccessType::EXPLICIT_ACCESS)));
   EventRouter::Get(browser_context_)->UnregisterObserver(this);
 }
 
@@ -294,7 +294,7 @@ bool HistoryGetVisitsFunction::RunAsyncImpl() {
     return false;
 
   HistoryService* hs = HistoryServiceFactory::GetForProfile(
-      GetProfile(), Profile::EXPLICIT_ACCESS);
+      GetProfile(), ServiceAccessType::EXPLICIT_ACCESS);
   hs->QueryURL(url,
                true,  // Retrieve full history of a URL.
                base::Bind(&HistoryGetVisitsFunction::QueryComplete,
@@ -339,7 +339,7 @@ bool HistorySearchFunction::RunAsyncImpl() {
     options.max_count = *params->query.max_results;
 
   HistoryService* hs = HistoryServiceFactory::GetForProfile(
-      GetProfile(), Profile::EXPLICIT_ACCESS);
+      GetProfile(), ServiceAccessType::EXPLICIT_ACCESS);
   hs->QueryHistory(search_text,
                    options,
                    base::Bind(&HistorySearchFunction::SearchComplete,
@@ -373,7 +373,7 @@ bool HistoryAddUrlFunction::RunAsync() {
     return false;
 
   HistoryService* hs = HistoryServiceFactory::GetForProfile(
-      GetProfile(), Profile::EXPLICIT_ACCESS);
+      GetProfile(), ServiceAccessType::EXPLICIT_ACCESS);
   hs->AddPage(url, base::Time::Now(), history::SOURCE_EXTENSION);
 
   SendResponse(true);
@@ -392,7 +392,7 @@ bool HistoryDeleteUrlFunction::RunAsync() {
     return false;
 
   HistoryService* hs = HistoryServiceFactory::GetForProfile(
-      GetProfile(), Profile::EXPLICIT_ACCESS);
+      GetProfile(), ServiceAccessType::EXPLICIT_ACCESS);
   hs->DeleteURL(url);
 
   // Also clean out from the activity log. If the activity log testing flag is
@@ -421,7 +421,7 @@ bool HistoryDeleteRangeFunction::RunAsyncImpl() {
 
   std::set<GURL> restrict_urls;
   HistoryService* hs = HistoryServiceFactory::GetForProfile(
-      GetProfile(), Profile::EXPLICIT_ACCESS);
+      GetProfile(), ServiceAccessType::EXPLICIT_ACCESS);
   hs->ExpireHistoryBetween(
       restrict_urls,
       start_time,
@@ -451,7 +451,7 @@ bool HistoryDeleteAllFunction::RunAsyncImpl() {
 
   std::set<GURL> restrict_urls;
   HistoryService* hs = HistoryServiceFactory::GetForProfile(
-      GetProfile(), Profile::EXPLICIT_ACCESS);
+      GetProfile(), ServiceAccessType::EXPLICIT_ACCESS);
   hs->ExpireHistoryBetween(
       restrict_urls,
       base::Time(),      // Unbounded beginning...

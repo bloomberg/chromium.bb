@@ -502,7 +502,7 @@ HistoryEnumerator::HistoryEnumerator(Profile* profile) {
       new content::MessageLoopRunner;
 
   HistoryService* hs = HistoryServiceFactory::GetForProfile(
-      profile, Profile::EXPLICIT_ACCESS);
+      profile, ServiceAccessType::EXPLICIT_ACCESS);
   hs->QueryHistory(base::string16(),
                    history::QueryOptions(),
                    base::Bind(&HistoryEnumerator::HistoryQueryComplete,

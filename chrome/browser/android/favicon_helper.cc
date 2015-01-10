@@ -116,7 +116,7 @@ jboolean FaviconHelper::GetLocalFaviconImageForURL(
     return false;
 
   FaviconService* favicon_service = FaviconServiceFactory::GetForProfile(
-      profile, Profile::EXPLICIT_ACCESS);
+      profile, ServiceAccessType::EXPLICIT_ACCESS);
   DCHECK(favicon_service);
   if (!favicon_service)
     return false;
@@ -152,7 +152,7 @@ void FaviconHelper::GetLargestRawFaviconForUrl(
     return;
 
   FaviconService* favicon_service = FaviconServiceFactory::GetForProfile(
-      profile, Profile::EXPLICIT_ACCESS);
+      profile, ServiceAccessType::EXPLICIT_ACCESS);
   DCHECK(favicon_service);
   if (!favicon_service)
     return;

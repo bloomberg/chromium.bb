@@ -243,8 +243,8 @@ void MessageCenterSettingsController::GetNotifierList(
   ContentSettingsForOneType settings;
   DesktopNotificationProfileUtil::GetNotificationsSettings(profile, &settings);
 
-  FaviconService* favicon_service =
-      FaviconServiceFactory::GetForProfile(profile, Profile::EXPLICIT_ACCESS);
+  FaviconService* favicon_service = FaviconServiceFactory::GetForProfile(
+      profile, ServiceAccessType::EXPLICIT_ACCESS);
   favicon_tracker_.reset(new base::CancelableTaskTracker());
   patterns_.clear();
   for (ContentSettingsForOneType::const_iterator iter = settings.begin();

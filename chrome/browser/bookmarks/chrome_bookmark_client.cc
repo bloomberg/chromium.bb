@@ -102,8 +102,8 @@ ChromeBookmarkClient::GetFaviconImageForPageURL(
     favicon_base::IconType type,
     const favicon_base::FaviconImageCallback& callback,
     base::CancelableTaskTracker* tracker) {
-  FaviconService* favicon_service =
-      FaviconServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
+  FaviconService* favicon_service = FaviconServiceFactory::GetForProfile(
+      profile_, ServiceAccessType::EXPLICIT_ACCESS);
   if (!favicon_service)
     return base::CancelableTaskTracker::kBadTaskId;
   if (type == favicon_base::FAVICON) {

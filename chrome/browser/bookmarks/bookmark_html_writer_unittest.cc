@@ -196,12 +196,12 @@ TEST_F(BookmarkHTMLWriterTest, Test) {
   const BookmarkNode* f1 = model->AddFolder(
       model->bookmark_bar_node(), 0, f1_title);
   model->AddURLWithCreationTimeAndMetaInfo(f1, 0, url1_title, url1, t1, NULL);
-  HistoryServiceFactory::GetForProfile(&profile, Profile::EXPLICIT_ACCESS)->
-      AddPage(url1, base::Time::Now(), history::SOURCE_BROWSED);
-  FaviconServiceFactory::GetForProfile(&profile, Profile::EXPLICIT_ACCESS)
-      ->SetFavicons(url1,
-                    url1_favicon,
-                    favicon_base::FAVICON,
+  HistoryServiceFactory::GetForProfile(&profile,
+                                       ServiceAccessType::EXPLICIT_ACCESS)
+      ->AddPage(url1, base::Time::Now(), history::SOURCE_BROWSED);
+  FaviconServiceFactory::GetForProfile(&profile,
+                                       ServiceAccessType::EXPLICIT_ACCESS)
+      ->SetFavicons(url1, url1_favicon, favicon_base::FAVICON,
                     gfx::Image::CreateFrom1xBitmap(bitmap));
   const BookmarkNode* f2 = model->AddFolder(f1, 1, f2_title);
   model->AddURLWithCreationTimeAndMetaInfo(f2, 0, url2_title, url2, t2, NULL);
@@ -234,7 +234,8 @@ TEST_F(BookmarkHTMLWriterTest, Test) {
   run_loop.Run();
 
   // Clear favicon so that it would be read from file.
-  FaviconServiceFactory::GetForProfile(&profile, Profile::EXPLICIT_ACCESS)
+  FaviconServiceFactory::GetForProfile(&profile,
+                                       ServiceAccessType::EXPLICIT_ACCESS)
       ->SetFavicons(url1, url1_favicon, favicon_base::FAVICON, gfx::Image());
 
   // Read the bookmarks back in.

@@ -240,8 +240,8 @@ class TopSitesImplTest : public HistoryUnitTestBase {
   }
   TestingProfile* profile() {return profile_.get();}
   HistoryService* history_service() {
-    return HistoryServiceFactory::GetForProfile(profile_.get(),
-                                                Profile::EXPLICIT_ACCESS);
+    return HistoryServiceFactory::GetForProfile(
+        profile_.get(), ServiceAccessType::EXPLICIT_ACCESS);
   }
 
   MostVisitedURLList GetPrepopulatePages() {

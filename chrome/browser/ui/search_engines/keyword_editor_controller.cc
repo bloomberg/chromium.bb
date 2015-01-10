@@ -17,8 +17,8 @@ using base::UserMetricsAction;
 KeywordEditorController::KeywordEditorController(Profile* profile)
     : url_model_(TemplateURLServiceFactory::GetForProfile(profile)) {
   table_model_.reset(new TemplateURLTableModel(
-      url_model_,
-      FaviconServiceFactory::GetForProfile(profile, Profile::EXPLICIT_ACCESS)));
+      url_model_, FaviconServiceFactory::GetForProfile(
+                      profile, ServiceAccessType::EXPLICIT_ACCESS)));
 }
 
 KeywordEditorController::~KeywordEditorController() {

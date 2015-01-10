@@ -74,31 +74,6 @@ class PrefRegistrySyncable;
 // http://dev.chromium.org/developers/design-documents/profile-architecture
 class Profile : public content::BrowserContext {
  public:
-  // Profile services are accessed with the following parameter. This parameter
-  // defines what the caller plans to do with the service.
-  // The caller is responsible for not performing any operation that would
-  // result in persistent implicit records while using an OffTheRecord profile.
-  // This flag allows the profile to perform an additional check.
-  //
-  // It also gives us an opportunity to perform further checks in the future. We
-  // could, for example, return an history service that only allow some specific
-  // methods.
-  enum ServiceAccessType {
-    // The caller plans to perform a read or write that takes place as a result
-    // of the user input. Use this flag when the operation you are doing can be
-    // performed while incognito. (ex: creating a bookmark)
-    //
-    // Since EXPLICIT_ACCESS means "as a result of a user action", this request
-    // always succeeds.
-    EXPLICIT_ACCESS,
-
-    // The caller plans to call a method that will permanently change some data
-    // in the profile, as part of Chrome's implicit data logging. Use this flag
-    // when you are about to perform an operation which is incompatible with the
-    // incognito mode.
-    IMPLICIT_ACCESS
-  };
-
   enum CreateStatus {
     // Profile services were not created due to a local error (e.g., disk full).
     CREATE_STATUS_LOCAL_FAIL,

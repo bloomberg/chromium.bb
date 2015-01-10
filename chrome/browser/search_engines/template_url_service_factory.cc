@@ -12,6 +12,7 @@
 #include "chrome/browser/google/google_url_tracker_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/rlz/rlz.h"
 #include "chrome/browser/search_engines/chrome_template_url_service_client.h"
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
@@ -49,10 +50,10 @@ KeyedService* TemplateURLServiceFactory::BuildInstanceFor(
       profile->GetPrefs(),
       scoped_ptr<SearchTermsData>(new UIThreadSearchTermsData(profile)),
       WebDataServiceFactory::GetKeywordWebDataForProfile(
-          profile, Profile::EXPLICIT_ACCESS),
+          profile, ServiceAccessType::EXPLICIT_ACCESS),
       scoped_ptr<TemplateURLServiceClient>(new ChromeTemplateURLServiceClient(
-          HistoryServiceFactory::GetForProfile(profile,
-                                               Profile::EXPLICIT_ACCESS))),
+          HistoryServiceFactory::GetForProfile(
+              profile, ServiceAccessType::EXPLICIT_ACCESS))),
       GoogleURLTrackerFactory::GetForProfile(profile),
       g_browser_process->rappor_service(),
       dsp_change_callback);

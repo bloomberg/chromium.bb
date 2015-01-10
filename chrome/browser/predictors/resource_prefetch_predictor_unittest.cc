@@ -79,7 +79,7 @@ class ResourcePrefetchPredictorTest : public testing::Test {
  protected:
   void AddUrlToHistory(const std::string& url, int visit_count) {
     HistoryServiceFactory::GetForProfile(profile_.get(),
-                                         Profile::EXPLICIT_ACCESS)->
+                                         ServiceAccessType::EXPLICIT_ACCESS)->
         AddPageWithDetails(
             GURL(url),
             base::string16(),
@@ -186,8 +186,8 @@ void ResourcePrefetchPredictorTest::SetUp() {
 
   ASSERT_TRUE(profile_->CreateHistoryService(true, false));
   profile_->BlockUntilHistoryProcessesPendingRequests();
-  EXPECT_TRUE(HistoryServiceFactory::GetForProfile(profile_.get(),
-                                                   Profile::EXPLICIT_ACCESS));
+  EXPECT_TRUE(HistoryServiceFactory::GetForProfile(
+      profile_.get(), ServiceAccessType::EXPLICIT_ACCESS));
   // Initialize the predictor with empty data.
   ResetPredictor();
   EXPECT_EQ(predictor_->initialization_state_,

@@ -74,8 +74,8 @@ class LastDownloadFinderTest : public testing::Test {
   // download to its history.
   void CreateProfileWithDownload() {
     TestingProfile* profile = CreateProfile(SAFE_BROWSING_OPT_IN);
-    HistoryService* history_service =
-        HistoryServiceFactory::GetForProfile(profile, Profile::EXPLICIT_ACCESS);
+    HistoryService* history_service = HistoryServiceFactory::GetForProfile(
+        profile, ServiceAccessType::EXPLICIT_ACCESS);
     history_service->CreateDownload(
         CreateTestDownloadRow(),
         base::Bind(&LastDownloadFinderTest::OnDownloadCreated,
@@ -162,8 +162,8 @@ class LastDownloadFinderTest : public testing::Test {
   void AddDownload(Profile* profile, const history::DownloadRow& download) {
     base::RunLoop run_loop;
 
-    HistoryService* history_service =
-        HistoryServiceFactory::GetForProfile(profile, Profile::EXPLICIT_ACCESS);
+    HistoryService* history_service = HistoryServiceFactory::GetForProfile(
+        profile, ServiceAccessType::EXPLICIT_ACCESS);
     history_service->CreateDownload(
         download,
         base::Bind(&LastDownloadFinderTest::ContinueOnDownloadCreated,
@@ -183,7 +183,8 @@ class LastDownloadFinderTest : public testing::Test {
   // dtor must be run.
   void FlushHistoryBackend(Profile* profile) {
     base::RunLoop run_loop;
-    HistoryServiceFactory::GetForProfile(profile, Profile::EXPLICIT_ACCESS)
+    HistoryServiceFactory::GetForProfile(profile,
+                                         ServiceAccessType::EXPLICIT_ACCESS)
         ->FlushForTest(run_loop.QuitClosure());
     run_loop.Run();
     // Then make sure anything bounced back to the main thread has been handled.

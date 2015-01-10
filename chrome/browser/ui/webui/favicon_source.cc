@@ -64,8 +64,8 @@ void FaviconSource::StartDataRequest(
     int render_process_id,
     int render_frame_id,
     const content::URLDataSource::GotDataCallback& callback) {
-  FaviconService* favicon_service =
-      FaviconServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
+  FaviconService* favicon_service = FaviconServiceFactory::GetForProfile(
+      profile_, ServiceAccessType::EXPLICIT_ACCESS);
   if (!favicon_service) {
     SendDefaultResponse(callback);
     return;

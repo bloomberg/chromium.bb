@@ -25,8 +25,8 @@ HistoryUIBrowserTest::~HistoryUIBrowserTest() {
 void HistoryUIBrowserTest::SetUpOnMainThread() {
   WebUIBrowserTest::SetUpOnMainThread();
 
-  history_ = HistoryServiceFactory::GetForProfile(browser()->profile(),
-                                                  Profile::EXPLICIT_ACCESS);
+  history_ = HistoryServiceFactory::GetForProfile(
+      browser()->profile(), ServiceAccessType::EXPLICIT_ACCESS);
   ui_test_utils::WaitForHistoryToLoad(history_);
 }
 

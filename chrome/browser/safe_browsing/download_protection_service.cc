@@ -23,6 +23,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/binary_feature_extractor.h"
 #include "chrome/browser/safe_browsing/download_feedback_service.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
@@ -676,8 +677,8 @@ class DownloadProtectionService::CheckClientDownloadRequest
     }
 
     Profile* profile = Profile::FromBrowserContext(item_->GetBrowserContext());
-    HistoryService* history =
-        HistoryServiceFactory::GetForProfile(profile, Profile::EXPLICIT_ACCESS);
+    HistoryService* history = HistoryServiceFactory::GetForProfile(
+        profile, ServiceAccessType::EXPLICIT_ACCESS);
     if (!history) {
       SendRequest();
       return;

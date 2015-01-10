@@ -281,7 +281,7 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
 
   if ((remove_mask & REMOVE_HISTORY) && may_delete_history) {
     HistoryService* history_service = HistoryServiceFactory::GetForProfile(
-        profile_, Profile::EXPLICIT_ACCESS);
+        profile_, ServiceAccessType::EXPLICIT_ACCESS);
     if (history_service) {
       std::set<GURL> restrict_urls;
       if (!remove_origin_.is_empty())
@@ -383,7 +383,7 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
     // history, so clear them as well.
     scoped_refptr<autofill::AutofillWebDataService> web_data_service =
         WebDataServiceFactory::GetAutofillWebDataForProfile(
-            profile_, Profile::EXPLICIT_ACCESS);
+            profile_, ServiceAccessType::EXPLICIT_ACCESS);
     if (web_data_service.get()) {
       waiting_for_clear_autofill_origin_urls_ = true;
       web_data_service->RemoveOriginURLsModifiedBetween(
@@ -544,8 +544,8 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
   if (remove_mask & REMOVE_PASSWORDS) {
     content::RecordAction(UserMetricsAction("ClearBrowsingData_Passwords"));
     password_manager::PasswordStore* password_store =
-        PasswordStoreFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS)
-            .get();
+        PasswordStoreFactory::GetForProfile(
+            profile_, ServiceAccessType::EXPLICIT_ACCESS).get();
 
     if (password_store)
       password_store->RemoveLoginsCreatedBetween(delete_begin_, delete_end_);
@@ -555,7 +555,7 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
     content::RecordAction(UserMetricsAction("ClearBrowsingData_Autofill"));
     scoped_refptr<autofill::AutofillWebDataService> web_data_service =
         WebDataServiceFactory::GetAutofillWebDataForProfile(
-            profile_, Profile::EXPLICIT_ACCESS);
+            profile_, ServiceAccessType::EXPLICIT_ACCESS);
 
     if (web_data_service.get()) {
       waiting_for_clear_form_ = true;

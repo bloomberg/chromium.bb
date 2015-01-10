@@ -86,9 +86,8 @@ class HistoryBrowserTest : public InProcessBrowserTest {
   void WaitForHistoryBackendToRun() {
     base::CancelableTaskTracker task_tracker;
     scoped_ptr<history::HistoryDBTask> task(new WaitForHistoryTask());
-    HistoryService* history =
-        HistoryServiceFactory::GetForProfile(GetProfile(),
-                                             Profile::EXPLICIT_ACCESS);
+    HistoryService* history = HistoryServiceFactory::GetForProfile(
+        GetProfile(), ServiceAccessType::EXPLICIT_ACCESS);
     history->HistoryService::ScheduleDBTask(task.Pass(), &task_tracker);
     content::RunMessageLoop();
   }
@@ -120,12 +119,12 @@ IN_PROC_BROWSER_TEST_F(HistoryBrowserTest, SavingHistoryEnabled) {
   EXPECT_FALSE(GetPrefs()->GetBoolean(prefs::kSavingBrowserHistoryDisabled));
 
   EXPECT_TRUE(HistoryServiceFactory::GetForProfile(
-      GetProfile(), Profile::EXPLICIT_ACCESS));
+      GetProfile(), ServiceAccessType::EXPLICIT_ACCESS));
   EXPECT_TRUE(HistoryServiceFactory::GetForProfile(
-      GetProfile(), Profile::IMPLICIT_ACCESS));
+      GetProfile(), ServiceAccessType::IMPLICIT_ACCESS));
 
   ui_test_utils::WaitForHistoryToLoad(HistoryServiceFactory::GetForProfile(
-      browser()->profile(), Profile::EXPLICIT_ACCESS));
+      browser()->profile(), ServiceAccessType::EXPLICIT_ACCESS));
   ExpectEmptyHistory();
 
   ui_test_utils::NavigateToURL(browser(), GetTestUrl());
@@ -143,12 +142,12 @@ IN_PROC_BROWSER_TEST_F(HistoryBrowserTest, SavingHistoryDisabled) {
   GetPrefs()->SetBoolean(prefs::kSavingBrowserHistoryDisabled, true);
 
   EXPECT_TRUE(HistoryServiceFactory::GetForProfile(
-      GetProfile(), Profile::EXPLICIT_ACCESS));
+      GetProfile(), ServiceAccessType::EXPLICIT_ACCESS));
   EXPECT_FALSE(HistoryServiceFactory::GetForProfile(
-      GetProfile(), Profile::IMPLICIT_ACCESS));
+      GetProfile(), ServiceAccessType::IMPLICIT_ACCESS));
 
   ui_test_utils::WaitForHistoryToLoad(HistoryServiceFactory::GetForProfile(
-      browser()->profile(), Profile::EXPLICIT_ACCESS));
+      browser()->profile(), ServiceAccessType::EXPLICIT_ACCESS));
   ExpectEmptyHistory();
 
   ui_test_utils::NavigateToURL(browser(), GetTestUrl());
@@ -162,7 +161,7 @@ IN_PROC_BROWSER_TEST_F(HistoryBrowserTest, SavingHistoryEnabledThenDisabled) {
   EXPECT_FALSE(GetPrefs()->GetBoolean(prefs::kSavingBrowserHistoryDisabled));
 
   ui_test_utils::WaitForHistoryToLoad(HistoryServiceFactory::GetForProfile(
-      browser()->profile(), Profile::EXPLICIT_ACCESS));
+      browser()->profile(), ServiceAccessType::EXPLICIT_ACCESS));
 
   ui_test_utils::NavigateToURL(browser(), GetTestUrl());
   WaitForHistoryBackendToRun();
@@ -192,7 +191,7 @@ IN_PROC_BROWSER_TEST_F(HistoryBrowserTest, SavingHistoryDisabledThenEnabled) {
   GetPrefs()->SetBoolean(prefs::kSavingBrowserHistoryDisabled, true);
 
   ui_test_utils::WaitForHistoryToLoad(HistoryServiceFactory::GetForProfile(
-      browser()->profile(), Profile::EXPLICIT_ACCESS));
+      browser()->profile(), ServiceAccessType::EXPLICIT_ACCESS));
   ExpectEmptyHistory();
 
   ui_test_utils::NavigateToURL(browser(), GetTestUrl());

@@ -64,7 +64,7 @@ void SuggestionsSourceTopSites::FetchItems(Profile* profile) {
 
   history_tracker_.TryCancelAll();
   HistoryService* history = HistoryServiceFactory::GetForProfile(
-      profile, Profile::EXPLICIT_ACCESS);
+      profile, ServiceAccessType::EXPLICIT_ACCESS);
   // |history| may be null during unit tests.
   if (history) {
     history::VisitFilter time_filter;

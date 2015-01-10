@@ -9,6 +9,7 @@
 #include "base/memory/singleton.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/sync_start_util.h"
 #include "chrome/browser/ui/profile_error_dialog.h"
 #include "chrome/grit/chromium_strings.h"
@@ -75,11 +76,12 @@ WebDataServiceFactory::~WebDataServiceFactory() {
 // static
 WebDataServiceWrapper* WebDataServiceFactory::GetForProfile(
     Profile* profile,
-    Profile::ServiceAccessType access_type) {
+    ServiceAccessType access_type) {
   // If |access_type| starts being used for anything other than this
   // DCHECK, we need to start taking it as a parameter to
   // the *WebDataService::FromBrowserContext() functions (see above).
-  DCHECK(access_type != Profile::IMPLICIT_ACCESS || !profile->IsOffTheRecord());
+  DCHECK(access_type != ServiceAccessType::IMPLICIT_ACCESS ||
+         !profile->IsOffTheRecord());
   return static_cast<WebDataServiceWrapper*>(
       GetInstance()->GetServiceForBrowserContext(profile, true));
 }
@@ -87,11 +89,12 @@ WebDataServiceWrapper* WebDataServiceFactory::GetForProfile(
 // static
 WebDataServiceWrapper* WebDataServiceFactory::GetForProfileIfExists(
     Profile* profile,
-    Profile::ServiceAccessType access_type) {
+    ServiceAccessType access_type) {
   // If |access_type| starts being used for anything other than this
   // DCHECK, we need to start taking it as a parameter to
   // the *WebDataService::FromBrowserContext() functions (see above).
-  DCHECK(access_type != Profile::IMPLICIT_ACCESS || !profile->IsOffTheRecord());
+  DCHECK(access_type != ServiceAccessType::IMPLICIT_ACCESS ||
+         !profile->IsOffTheRecord());
   return static_cast<WebDataServiceWrapper*>(
       GetInstance()->GetServiceForBrowserContext(profile, false));
 }
@@ -100,7 +103,7 @@ WebDataServiceWrapper* WebDataServiceFactory::GetForProfileIfExists(
 scoped_refptr<autofill::AutofillWebDataService>
 WebDataServiceFactory::GetAutofillWebDataForProfile(
     Profile* profile,
-    Profile::ServiceAccessType access_type) {
+    ServiceAccessType access_type) {
   WebDataServiceWrapper* wrapper =
       WebDataServiceFactory::GetForProfile(profile, access_type);
   // |wrapper| can be null in Incognito mode.
@@ -113,7 +116,7 @@ WebDataServiceFactory::GetAutofillWebDataForProfile(
 scoped_refptr<KeywordWebDataService>
 WebDataServiceFactory::GetKeywordWebDataForProfile(
     Profile* profile,
-    Profile::ServiceAccessType access_type) {
+    ServiceAccessType access_type) {
   WebDataServiceWrapper* wrapper =
       WebDataServiceFactory::GetForProfile(profile, access_type);
   // |wrapper| can be null in Incognito mode.
@@ -125,7 +128,7 @@ WebDataServiceFactory::GetKeywordWebDataForProfile(
 // static
 scoped_refptr<TokenWebData> WebDataServiceFactory::GetTokenWebDataForProfile(
     Profile* profile,
-    Profile::ServiceAccessType access_type) {
+    ServiceAccessType access_type) {
   WebDataServiceWrapper* wrapper =
       WebDataServiceFactory::GetForProfile(profile, access_type);
   // |wrapper| can be null in Incognito mode.
@@ -138,7 +141,7 @@ scoped_refptr<TokenWebData> WebDataServiceFactory::GetTokenWebDataForProfile(
 scoped_refptr<PasswordWebDataService>
 WebDataServiceFactory::GetPasswordWebDataForProfile(
     Profile* profile,
-    Profile::ServiceAccessType access_type) {
+    ServiceAccessType access_type) {
   WebDataServiceWrapper* wrapper =
       WebDataServiceFactory::GetForProfile(profile, access_type);
   // |wrapper| can be null in Incognito mode.

@@ -519,13 +519,12 @@ TEST_F(BackFwdMenuModelTest, FaviconLoadTest) {
   NavigateAndCommit(url2);
 
   // Set the desired favicon for url1.
-  HistoryServiceFactory::GetForProfile(
-      profile(), Profile::EXPLICIT_ACCESS)->AddPage(
-          url1, base::Time::Now(), history::SOURCE_BROWSED);
-  FaviconServiceFactory::GetForProfile(profile(), Profile::EXPLICIT_ACCESS)
-      ->SetFavicons(url1,
-                    url1_favicon,
-                    favicon_base::FAVICON,
+  HistoryServiceFactory::GetForProfile(profile(),
+                                       ServiceAccessType::EXPLICIT_ACCESS)
+      ->AddPage(url1, base::Time::Now(), history::SOURCE_BROWSED);
+  FaviconServiceFactory::GetForProfile(profile(),
+                                       ServiceAccessType::EXPLICIT_ACCESS)
+      ->SetFavicons(url1, url1_favicon, favicon_base::FAVICON,
                     gfx::Image::CreateFrom1xBitmap(new_icon_bitmap));
 
   // Will return the current icon (default) but start an anync call

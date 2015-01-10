@@ -310,9 +310,8 @@ void InMemoryURLIndex::OnCacheLoadDone(
 // Restoring from the History DB -----------------------------------------------
 
 void InMemoryURLIndex::ScheduleRebuildFromHistory() {
-  HistoryService* service =
-      HistoryServiceFactory::GetForProfile(profile_,
-                                           Profile::EXPLICIT_ACCESS);
+  HistoryService* service = HistoryServiceFactory::GetForProfile(
+      profile_, ServiceAccessType::EXPLICIT_ACCESS);
   service->ScheduleDBTask(
       scoped_ptr<history::HistoryDBTask>(
           new InMemoryURLIndex::RebuildPrivateDataFromHistoryDBTask(

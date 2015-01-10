@@ -167,7 +167,7 @@ AutofillProfile CreateAutofillProfile(ProfileType type) {
 
 scoped_refptr<AutofillWebDataService> GetWebDataService(int index) {
   return WebDataServiceFactory::GetAutofillWebDataForProfile(
-      test()->GetProfile(index), Profile::EXPLICIT_ACCESS);
+      test()->GetProfile(index), ServiceAccessType::EXPLICIT_ACCESS);
 }
 
 PersonalDataManager* GetPersonalDataManager(int index) {

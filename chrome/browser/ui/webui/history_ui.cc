@@ -482,7 +482,7 @@ void BrowsingHistoryHandler::QueryHistory(
   results_info_value_.Clear();
 
   HistoryService* hs = HistoryServiceFactory::GetForProfile(
-      profile, Profile::EXPLICIT_ACCESS);
+      profile, ServiceAccessType::EXPLICIT_ACCESS);
   hs->QueryHistory(search_text,
                    options,
                    base::Bind(&BrowsingHistoryHandler::QueryComplete,
@@ -570,8 +570,8 @@ void BrowsingHistoryHandler::HandleRemoveVisits(const base::ListValue* args) {
     return;
   }
 
-  HistoryService* history_service =
-      HistoryServiceFactory::GetForProfile(profile, Profile::EXPLICIT_ACCESS);
+  HistoryService* history_service = HistoryServiceFactory::GetForProfile(
+      profile, ServiceAccessType::EXPLICIT_ACCESS);
   history::WebHistoryService* web_history =
       WebHistoryServiceFactory::GetForProfile(profile);
 

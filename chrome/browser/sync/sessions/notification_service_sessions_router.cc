@@ -58,8 +58,8 @@ NotificationServiceSessionsRouter::NotificationServiceSessionsRouter(
   registrar_.Add(this,
       content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
       content::NotificationService::AllBrowserContextsAndSources());
-  HistoryService* history_service =
-      HistoryServiceFactory::GetForProfile(profile, Profile::EXPLICIT_ACCESS);
+  HistoryService* history_service = HistoryServiceFactory::GetForProfile(
+      profile, ServiceAccessType::EXPLICIT_ACCESS);
   if (history_service) {
     favicon_changed_subscription_ = history_service->AddFaviconChangedCallback(
         base::Bind(&NotificationServiceSessionsRouter::OnFaviconChanged,

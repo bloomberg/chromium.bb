@@ -266,9 +266,10 @@ password_manager::PasswordStore*
 ChromePasswordManagerClient::GetPasswordStore() {
   // Always use EXPLICIT_ACCESS as the password manager checks IsOffTheRecord
   // itself when it shouldn't access the PasswordStore.
-  // TODO(gcasto): Is is safe to change this to Profile::IMPLICIT_ACCESS?
-  return PasswordStoreFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS)
-      .get();
+  // TODO(gcasto): Is is safe to change this to
+  // ServiceAccessType::IMPLICIT_ACCESS?
+  return PasswordStoreFactory::GetForProfile(
+             profile_, ServiceAccessType::EXPLICIT_ACCESS).get();
 }
 
 base::FieldTrial::Probability

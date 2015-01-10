@@ -119,13 +119,13 @@ void FaviconTabHelper::SaveFavicon() {
   // Make sure the page is in history, otherwise adding the favicon does
   // nothing.
   HistoryService* history = HistoryServiceFactory::GetForProfile(
-      profile_->GetOriginalProfile(), Profile::IMPLICIT_ACCESS);
+      profile_->GetOriginalProfile(), ServiceAccessType::IMPLICIT_ACCESS);
   if (!history)
     return;
   history->AddPageNoVisitForBookmark(entry->GetURL(), entry->GetTitle());
 
   FaviconService* service = FaviconServiceFactory::GetForProfile(
-      profile_->GetOriginalProfile(), Profile::IMPLICIT_ACCESS);
+      profile_->GetOriginalProfile(), ServiceAccessType::IMPLICIT_ACCESS);
   if (!service)
     return;
   const FaviconStatus& favicon(entry->GetFavicon());
@@ -147,7 +147,7 @@ void FaviconTabHelper::RemoveObserver(FaviconTabHelperObserver* observer) {
 
 int FaviconTabHelper::StartDownload(const GURL& url, int max_image_size) {
   FaviconService* favicon_service = FaviconServiceFactory::GetForProfile(
-      profile_->GetOriginalProfile(), Profile::IMPLICIT_ACCESS);
+      profile_->GetOriginalProfile(), ServiceAccessType::IMPLICIT_ACCESS);
   if (favicon_service && favicon_service->WasUnableToDownloadFavicon(url)) {
     DVLOG(1) << "Skip Failed FavIcon: " << url;
     return 0;
@@ -231,7 +231,7 @@ void FaviconTabHelper::DidStartNavigationToPendingEntry(
   if (reload_type != NavigationController::NO_RELOAD &&
       !profile_->IsOffTheRecord()) {
     FaviconService* favicon_service = FaviconServiceFactory::GetForProfile(
-        profile_, Profile::IMPLICIT_ACCESS);
+        profile_, ServiceAccessType::IMPLICIT_ACCESS);
     if (favicon_service) {
       favicon_service->SetFaviconOutOfDateForPage(url);
       if (reload_type == NavigationController::RELOAD_IGNORING_CACHE)
@@ -294,7 +294,7 @@ void FaviconTabHelper::DidDownloadFavicon(
   if (bitmaps.empty() && http_status_code == 404) {
     DVLOG(1) << "Failed to Download Favicon:" << image_url;
     FaviconService* favicon_service = FaviconServiceFactory::GetForProfile(
-        profile_->GetOriginalProfile(), Profile::IMPLICIT_ACCESS);
+        profile_->GetOriginalProfile(), ServiceAccessType::IMPLICIT_ACCESS);
     if (favicon_service)
       favicon_service->UnableToDownloadFavicon(image_url);
   }

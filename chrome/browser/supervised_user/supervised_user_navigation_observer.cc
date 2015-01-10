@@ -235,8 +235,8 @@ void SupervisedUserNavigationObserver::OnRequestBlockedInternal(
   // Add the entry to the history database.
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-  HistoryService* history_service =
-     HistoryServiceFactory::GetForProfile(profile, Profile::IMPLICIT_ACCESS);
+  HistoryService* history_service = HistoryServiceFactory::GetForProfile(
+      profile, ServiceAccessType::IMPLICIT_ACCESS);
 
   // |history_service| is null if saving history is disabled.
   if (history_service)

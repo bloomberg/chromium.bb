@@ -109,8 +109,8 @@ void ShortcutsProvider::DeleteMatch(const AutocompleteMatch& match) {
 
   // Delete the match from the history DB. This will eventually result in a
   // second call to DeleteShortcutsWithURL(), which is harmless.
-  HistoryService* const history_service =
-      HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
+  HistoryService* const history_service = HistoryServiceFactory::GetForProfile(
+      profile_, ServiceAccessType::EXPLICIT_ACCESS);
   DCHECK(history_service);
   history_service->DeleteURL(url);
 }

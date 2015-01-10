@@ -383,7 +383,7 @@ class RemoveHistoryTester {
     if (!profile->CreateHistoryService(true, false))
       return false;
     history_service_ = HistoryServiceFactory::GetForProfile(
-        profile, Profile::EXPLICIT_ACCESS);
+        profile, ServiceAccessType::EXPLICIT_ACCESS);
     return true;
   }
 

@@ -12,16 +12,18 @@
 #include "chrome/browser/history/chrome_history_client_factory.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/keyed_service/core/service_access_type.h"
 
 // static
-HistoryService* HistoryServiceFactory::GetForProfile(
-    Profile* profile, Profile::ServiceAccessType sat) {
+HistoryService* HistoryServiceFactory::GetForProfile(Profile* profile,
+                                                     ServiceAccessType sat) {
   // If saving history is disabled, only allow explicit access.
   if (profile->GetPrefs()->GetBoolean(prefs::kSavingBrowserHistoryDisabled) &&
-      sat != Profile::EXPLICIT_ACCESS)
+      sat != ServiceAccessType::EXPLICIT_ACCESS)
     return NULL;
 
   return static_cast<HistoryService*>(
@@ -29,12 +31,12 @@ HistoryService* HistoryServiceFactory::GetForProfile(
 }
 
 // static
-HistoryService*
-HistoryServiceFactory::GetForProfileIfExists(
-    Profile* profile, Profile::ServiceAccessType sat) {
+HistoryService* HistoryServiceFactory::GetForProfileIfExists(
+    Profile* profile,
+    ServiceAccessType sat) {
   // If saving history is disabled, only allow explicit access.
   if (profile->GetPrefs()->GetBoolean(prefs::kSavingBrowserHistoryDisabled) &&
-      sat != Profile::EXPLICIT_ACCESS)
+      sat != ServiceAccessType::EXPLICIT_ACCESS)
     return NULL;
 
   return static_cast<HistoryService*>(

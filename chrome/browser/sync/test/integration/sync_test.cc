@@ -397,7 +397,7 @@ bool SyncTest::SetupClients() {
   bookmarks::test::WaitForBookmarkModelToLoad(
       BookmarkModelFactory::GetForProfile(verifier()));
   ui_test_utils::WaitForHistoryToLoad(HistoryServiceFactory::GetForProfile(
-      verifier(), Profile::EXPLICIT_ACCESS));
+      verifier(), ServiceAccessType::EXPLICIT_ACCESS));
   ui_test_utils::WaitForTemplateURLServiceToLoad(
       TemplateURLServiceFactory::GetForProfile(verifier()));
   return (verifier_ != NULL);
@@ -457,7 +457,7 @@ void SyncTest::InitializeInstance(int index) {
   bookmarks::test::WaitForBookmarkModelToLoad(
       BookmarkModelFactory::GetForProfile(GetProfile(index)));
   ui_test_utils::WaitForHistoryToLoad(HistoryServiceFactory::GetForProfile(
-      GetProfile(index), Profile::EXPLICIT_ACCESS));
+      GetProfile(index), ServiceAccessType::EXPLICIT_ACCESS));
   ui_test_utils::WaitForTemplateURLServiceToLoad(
       TemplateURLServiceFactory::GetForProfile(GetProfile(index)));
 }

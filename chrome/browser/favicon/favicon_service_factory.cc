@@ -10,15 +10,16 @@
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 
 // static
-FaviconService* FaviconServiceFactory::GetForProfile(
-    Profile* profile, Profile::ServiceAccessType sat) {
+FaviconService* FaviconServiceFactory::GetForProfile(Profile* profile,
+                                                     ServiceAccessType sat) {
   if (!profile->IsOffTheRecord()) {
     return static_cast<FaviconService*>(
         GetInstance()->GetServiceForBrowserContext(profile, true));
-  } else if (sat == Profile::EXPLICIT_ACCESS) {
+  } else if (sat == ServiceAccessType::EXPLICIT_ACCESS) {
     // Profile must be OffTheRecord in this case.
     return static_cast<FaviconService*>(
         GetInstance()->GetServiceForBrowserContext(

@@ -420,8 +420,8 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, DeletePasswords) {
   form.blacklisted_by_user = false;
 
   scoped_refptr<password_manager::PasswordStore> password_store =
-      PasswordStoreFactory::GetForProfile(profile, Profile::EXPLICIT_ACCESS)
-          .get();
+      PasswordStoreFactory::GetForProfile(
+          profile, ServiceAccessType::EXPLICIT_ACCESS).get();
   ASSERT_TRUE(password_store.get());
 
   password_store->AddLogin(form);

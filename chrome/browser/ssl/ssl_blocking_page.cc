@@ -350,7 +350,7 @@ SSLBlockingPage::SSLBlockingPage(content::WebContents* web_contents,
     if (internal_)
       RecordSSLBlockingPageEventStats(SHOW_INTERNAL_HOSTNAME);
     HistoryService* history_service = HistoryServiceFactory::GetForProfile(
-        profile, Profile::EXPLICIT_ACCESS);
+        profile, ServiceAccessType::EXPLICIT_ACCESS);
     if (history_service) {
       history_service->GetVisibleVisitCountToHost(
           request_url,

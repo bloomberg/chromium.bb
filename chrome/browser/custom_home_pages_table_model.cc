@@ -220,8 +220,8 @@ void CustomHomePagesTableModel::SetObserver(ui::TableModelObserver* observer) {
 }
 
 void CustomHomePagesTableModel::LoadTitle(Entry* entry) {
-    HistoryService* history_service = HistoryServiceFactory::GetForProfile(
-        profile_, Profile::EXPLICIT_ACCESS);
+  HistoryService* history_service = HistoryServiceFactory::GetForProfile(
+      profile_, ServiceAccessType::EXPLICIT_ACCESS);
   if (history_service) {
     entry->task_id = history_service->QueryURL(
         entry->url,

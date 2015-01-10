@@ -227,8 +227,8 @@ void LastDownloadFinder::OnMetadataQuery(
   } else {
     // Search history since no metadata was found.
     iter->second = WAITING_FOR_HISTORY;
-    HistoryService* history_service =
-        HistoryServiceFactory::GetForProfile(profile, Profile::IMPLICIT_ACCESS);
+    HistoryService* history_service = HistoryServiceFactory::GetForProfile(
+        profile, ServiceAccessType::IMPLICIT_ACCESS);
     // No history service is returned for profiles that do not save history.
     if (!history_service) {
       RemoveProfileAndReportIfDone(iter);
@@ -324,7 +324,7 @@ void LastDownloadFinder::OnHistoryServiceLoaded(
     HistoryService* history_service) {
   for (const auto& pair : profile_states_) {
     HistoryService* hs = HistoryServiceFactory::GetForProfileIfExists(
-        pair.first, Profile::EXPLICIT_ACCESS);
+        pair.first, ServiceAccessType::EXPLICIT_ACCESS);
     if (hs == history_service) {
       // Start the query in the history service if the finder was waiting for
       // the service to load.

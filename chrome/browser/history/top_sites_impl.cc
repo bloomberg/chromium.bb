@@ -450,7 +450,7 @@ base::CancelableTaskTracker::TaskId TopSitesImpl::StartQueryForMostVisited() {
     return base::CancelableTaskTracker::kBadTaskId;
 
   HistoryService* hs = HistoryServiceFactory::GetForProfile(
-      profile_, Profile::EXPLICIT_ACCESS);
+      profile_, ServiceAccessType::EXPLICIT_ACCESS);
   // |hs| may be null during unit tests.
   if (hs) {
     return hs->QueryMostVisitedURLs(

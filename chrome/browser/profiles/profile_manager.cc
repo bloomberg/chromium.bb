@@ -1154,8 +1154,8 @@ void ProfileManager::FinishDeletingProfile(const base::FilePath& profile_dir) {
     ProfileMetrics::LogProfileDelete(profile_is_signed_in);
     // Some platforms store passwords in keychains. They should be removed.
     scoped_refptr<password_manager::PasswordStore> password_store =
-        PasswordStoreFactory::GetForProfile(profile, Profile::EXPLICIT_ACCESS)
-            .get();
+        PasswordStoreFactory::GetForProfile(
+            profile, ServiceAccessType::EXPLICIT_ACCESS).get();
     if (password_store.get()) {
       password_store->RemoveLoginsCreatedBetween(base::Time(),
                                                  base::Time::Max());

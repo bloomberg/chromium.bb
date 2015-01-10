@@ -458,8 +458,8 @@ bool BrowserFeatureExtractor::GetHistoryService(HistoryService** history) {
   *history = NULL;
   if (tab_ && tab_->GetBrowserContext()) {
     Profile* profile = Profile::FromBrowserContext(tab_->GetBrowserContext());
-    *history = HistoryServiceFactory::GetForProfile(profile,
-                                                    Profile::EXPLICIT_ACCESS);
+    *history = HistoryServiceFactory::GetForProfile(
+        profile, ServiceAccessType::EXPLICIT_ACCESS);
     if (*history) {
       return true;
     }

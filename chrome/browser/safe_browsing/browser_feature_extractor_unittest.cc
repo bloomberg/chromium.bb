@@ -103,8 +103,8 @@ class BrowserFeatureExtractorTest : public ChromeRenderViewHostTestHarness {
   }
 
   HistoryService* history_service() {
-    return HistoryServiceFactory::GetForProfile(profile(),
-                                                Profile::EXPLICIT_ACCESS);
+    return HistoryServiceFactory::GetForProfile(
+        profile(), ServiceAccessType::EXPLICIT_ACCESS);
   }
 
   void SetRedirectChain(const std::vector<GURL>& redirect_chain,

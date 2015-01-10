@@ -36,6 +36,7 @@
         'keyed_service/core/refcounted_keyed_service.h',
         'keyed_service/core/refcounted_keyed_service_factory.cc',
         'keyed_service/core/refcounted_keyed_service_factory.h',
+        'keyed_service/core/service_access_type.h',
       ],
     },
   ],
