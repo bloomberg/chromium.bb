@@ -58,16 +58,8 @@ PlayerUtils.registerEMEEventListeners = function(player) {
     try {
       if (player.testConfig.sessionToLoad) {
         Utils.timeLog('Loading session: ' + player.testConfig.sessionToLoad);
-
-        // Temporary fix while the session type changes.
-        // TODO(jrummell): Remove once the blink change lands.
-        var session;
-        try {
-          session = message.target.mediaKeys.createSession('persistent');
-        } catch (e) {
-          session =
-              message.target.mediaKeys.createSession('persistent-license');
-        }
+        var session =
+            message.target.mediaKeys.createSession('persistent-license');
         addMediaKeySessionListeners(session);
         session.load(player.testConfig.sessionToLoad)
             .catch(function(error) { Utils.failTest(error, KEY_ERROR); });
