@@ -10712,6 +10712,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="InputMethod.ImeSwitch" enum="IMESwitchType">
+  <owner>shuchen@chromium.org</owner>
+  <summary>The trigger type of input method switches by user.</summary>
+</histogram>
+
 <histogram name="InputMethod.VirtualKeyboard.BackspaceCount">
   <owner>shuchen@chromium.org</owner>
   <summary>
@@ -48858,6 +48863,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="0" label="Off"/>
   <int value="1" label="Modest"/>
   <int value="2" label="Aggressive"/>
+</enum>
+
+<enum name="IMESwitchType" type="int">
+  <int value="0" label="By tray menu">IME switches by tray menu</int>
+  <int value="1" label="By accelerator">IME switches by accelerator</int>
 </enum>
 
 <enum name="IMEVKLayout" type="int">
