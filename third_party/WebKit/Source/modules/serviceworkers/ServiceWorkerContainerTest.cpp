@@ -171,7 +171,7 @@ protected:
         m_page->document().setSecurityOrigin(SecurityOrigin::createFromString(url));
     }
 
-    void setVisibilityState(PageVisibilityState visibilityState)
+    void setPageVisibilityState(PageVisibilityState visibilityState)
     {
         m_page->page().setVisibilityState(visibilityState, true); // Set as initial state
     }
@@ -364,7 +364,7 @@ TEST_F(ServiceWorkerContainerTest, GetRegistration_OmittedDocumentURLDefaultsToP
 
 TEST_F(ServiceWorkerContainerTest, GetClientInfo)
 {
-    setVisibilityState(PageVisibilityStateVisible);
+    setPageVisibilityState(PageVisibilityStateVisible);
     setFocused(true);
     setPageURL("http://localhost/x/index.html");
 
@@ -372,15 +372,15 @@ TEST_F(ServiceWorkerContainerTest, GetClientInfo)
 
     WebServiceWorkerClientInfo info;
     ASSERT_TRUE(container->getClientInfo(&info));
-    EXPECT_EQ(WebString("visible"), info.visibilityState);
+    EXPECT_EQ(WebPageVisibilityStateVisible, info.pageVisibilityState);
     EXPECT_TRUE(info.isFocused);
     EXPECT_EQ(WebURL(KURL(KURL(), "http://localhost/x/index.html")), info.url);
     EXPECT_EQ(WebURLRequest::FrameTypeTopLevel, info.frameType);
 
-    setVisibilityState(PageVisibilityStateHidden);
+    setPageVisibilityState(PageVisibilityStateHidden);
     setFocused(false);
     ASSERT_TRUE(container->getClientInfo(&info));
-    EXPECT_EQ(WebString("hidden"), info.visibilityState);
+    EXPECT_EQ(WebPageVisibilityStateHidden, info.pageVisibilityState);
     EXPECT_FALSE(info.isFocused);
 }
 

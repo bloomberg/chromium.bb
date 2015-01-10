@@ -291,8 +291,6 @@ bool ServiceWorkerContainer::getClientInfo(WebServiceWorkerClientInfo* info)
     if (!context || !context->isDocument())
         return false;
     Document* document = toDocument(context);
-    // FIXME: remove info->visibilityState when Chromium is updated.
-    info->visibilityState = document->visibilityState();
     info->pageVisibilityState = static_cast<WebPageVisibilityState>(document->pageVisibilityState());
     info->isFocused = document->hasFocus();
     info->url = document->url();

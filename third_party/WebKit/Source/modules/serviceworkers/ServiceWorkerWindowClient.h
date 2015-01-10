@@ -31,9 +31,6 @@ public:
 private:
     explicit ServiceWorkerWindowClient(const WebServiceWorkerClientInfo&);
 
-    // FIXME: remove m_visibilityState when m_pageVisibilityState will be used
-    // by Chromium.
-    String m_visibilityState;
     WebPageVisibilityState m_pageVisibilityState;
     bool m_isFocused;
     WebURLRequest::FrameType m_frameType;

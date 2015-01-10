@@ -25,8 +25,7 @@ struct WebServiceWorkerClientInfo {
     }
 
     int clientID;
-    // FIXME: remove when the Chromium code will be updated.
-    WebString visibilityState;
+
     WebPageVisibilityState pageVisibilityState;
     bool isFocused;
     WebURL url;

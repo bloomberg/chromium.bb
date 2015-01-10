@@ -23,7 +23,6 @@ ServiceWorkerWindowClient* ServiceWorkerWindowClient::create(const WebServiceWor
 
 ServiceWorkerWindowClient::ServiceWorkerWindowClient(const WebServiceWorkerClientInfo& info)
     : ServiceWorkerClient(info)
-    , m_visibilityState(info.visibilityState)
     , m_pageVisibilityState(info.pageVisibilityState)
     , m_isFocused(info.isFocused)
     , m_frameType(info.frameType)
@@ -36,9 +35,6 @@ ServiceWorkerWindowClient::~ServiceWorkerWindowClient()
 
 String ServiceWorkerWindowClient::visibilityState() const
 {
-    // FIXME: temporary until m_pageVisibilityState is used in Chromium.
-    if (m_pageVisibilityState == WebPageVisibilityStateLast)
-        return m_visibilityState;
     return pageVisibilityStateString(static_cast<PageVisibilityState>(m_pageVisibilityState));
 }
 
