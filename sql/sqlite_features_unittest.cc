@@ -71,11 +71,45 @@ TEST_F(SQLiteFeaturesTest, NoFTS1) {
 TEST_F(SQLiteFeaturesTest, FTS2) {
   ASSERT_TRUE(db().Execute("CREATE VIRTUAL TABLE foo USING fts2(x)"));
 }
+
+// A standard SQLite will not include our patch.  This includes iOS.
+#if !defined(USE_SYSTEM_SQLITE)
+// Chromium fts2 was patched to treat "foo*" as a prefix search, though the icu
+// tokenizer will return it as two tokens {"foo", "*"}.
+TEST_F(SQLiteFeaturesTest, FTS2_Prefix) {
+  const char kCreateSql[] =
+      "CREATE VIRTUAL TABLE foo USING fts2(x, tokenize icu)";
+  ASSERT_TRUE(db().Execute(kCreateSql));
+
+  ASSERT_TRUE(db().Execute("INSERT INTO foo (x) VALUES ('test')"));
+
+  sql::Statement s(db().GetUniqueStatement(
+      "SELECT x FROM foo WHERE x MATCH 'te*'"));
+  ASSERT_TRUE(s.Step());
+  EXPECT_EQ("test", s.ColumnString(0));
+}
+#endif
 #endif
 
 // fts3 is used for current history files, and also for WebDatabase.
 TEST_F(SQLiteFeaturesTest, FTS3) {
   ASSERT_TRUE(db().Execute("CREATE VIRTUAL TABLE foo USING fts3(x)"));
 }
+
+#if !defined(USE_SYSTEM_SQLITE)
+// Test that fts3 doesn't need fts2's patch (see above).
+TEST_F(SQLiteFeaturesTest, FTS3_Prefix) {
+  const char kCreateSql[] =
+      "CREATE VIRTUAL TABLE foo USING fts3(x, tokenize icu)";
+  ASSERT_TRUE(db().Execute(kCreateSql));
+
+  ASSERT_TRUE(db().Execute("INSERT INTO foo (x) VALUES ('test')"));
+
+  sql::Statement s(db().GetUniqueStatement(
+      "SELECT x FROM foo WHERE x MATCH 'te*'"));
+  ASSERT_TRUE(s.Step());
+  EXPECT_EQ("test", s.ColumnString(0));
+}
+#endif
 
 }  // namespace
