@@ -26,7 +26,7 @@ To make a release follow these steps.
   10. Update topic in #wayland to point to release announcement
 
 For x.y.0 releases, also create the x.y branch.  The x.y branch is for
-bug fixes and conservetive changes to the x.y.0 release, and is where
+bug fixes and conservative changes to the x.y.0 release, and is where
 we release x.y.z releases from.  Creating the x.y branch opens up
 master for new development and lets new development move on.  We've
 done this both after the x.y.0 release (to focus development on bug
