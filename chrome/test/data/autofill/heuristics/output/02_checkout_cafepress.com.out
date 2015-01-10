@@ -20,10 +20,10 @@ ADDRESS_HOME_CITY | ShipCity | Town/City* |  | ShipName_1-default
 ADDRESS_HOME_STATE | ShipState | State/Province* |  | ShipName_1-default
 UNKNOWN_TYPE | ShipStateOther | State/Province* |  | ShipName_1-default
 ADDRESS_HOME_ZIP | ShipZip | Zip/Postal Code* |  | ShipName_1-default
-UNKNOWN_TYPE | ShowGiftMsg | 2 Shipping Address | on | ShipName_1-default
-ADDRESS_HOME_STREET_ADDRESS | GiftMessage | 2 Shipping Address |  | ShipName_1-default
+UNKNOWN_TYPE | ShowGiftMsg | This is a gift order. Check this box to see gift options. | on | ShipName_1-default
+UNKNOWN_TYPE | GiftMessage | One message per order You have |  | ShipName_1-default
 UNKNOWN_TYPE | countdown | You have | 300 | ShipName_1-default
-UNKNOWN_TYPE | ApplyGiftWrap | 2 Shipping Address | on | ShipName_1-default
+UNKNOWN_TYPE | ApplyGiftWrap | (+$0.00) | on | ShipName_1-default
 UNKNOWN_TYPE | txtCoupon | Apply Promo Code |  | ShipName_1-default
 UNKNOWN_TYPE | PaymentMethod |  | PayByCafeCash | ShipName_1-default
 UNKNOWN_TYPE | PaymentMethod |  | PayByGC | ShipName_1-default

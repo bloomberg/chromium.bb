@@ -453,6 +453,25 @@ base::string16 InferLabelFromDefinitionList(
   return FindChildText(previous);
 }
 
+// Returns true if the closest ancestor is a <div> and not a <td>.
+// Returns false if the closest ancestor is a <td> tag,
+// or if there is no <div> or <td> ancestor.
+bool ClosestAncestorIsDivAndNotTD(const WebFormControlElement& element) {
+  for (WebNode parent_node = element.parentNode();
+       !parent_node.isNull();
+       parent_node = parent_node.parentNode()) {
+    if (!parent_node.isElementNode())
+      continue;
+
+    WebElement cur_element = parent_node.to<WebElement>();
+    if (cur_element.hasHTMLTagName("div"))
+      return true;
+    if (cur_element.hasHTMLTagName("td"))
+      return false;
+  }
+  return false;
+}
+
 // Infers corresponding label for |element| from surrounding context in the DOM,
 // e.g. the contents of the preceding <p> tag or text element.
 base::string16 InferLabelForElement(const WebFormControlElement& element) {
@@ -470,6 +489,20 @@ base::string16 InferLabelForElement(const WebFormControlElement& element) {
   if (!inferred_label.empty())
     return inferred_label;
 
+  // If we didn't find a label, check for definition list case.
+  inferred_label = InferLabelFromDefinitionList(element);
+  if (!inferred_label.empty())
+    return inferred_label;
+
+  bool check_div_first = ClosestAncestorIsDivAndNotTD(element);
+  if (check_div_first) {
+    // If we didn't find a label, check for div table case first since it's the
+    // closest ancestor.
+    inferred_label = InferLabelFromDivTable(element);
+    if (!inferred_label.empty())
+      return inferred_label;
+  }
+
   // If we didn't find a label, check for table cell case.
   inferred_label = InferLabelFromTableColumn(element);
   if (!inferred_label.empty())
@@ -480,13 +513,12 @@ base::string16 InferLabelForElement(const WebFormControlElement& element) {
   if (!inferred_label.empty())
     return inferred_label;
 
-  // If we didn't find a label, check for definition list case.
-  inferred_label = InferLabelFromDefinitionList(element);
-  if (!inferred_label.empty())
-    return inferred_label;
-
-  // If we didn't find a label, check for div table case.
-  return InferLabelFromDivTable(element);
+  if (!check_div_first) {
+    // If we didn't find a label from the table, check for div table case if we
+    // haven't already.
+    inferred_label = InferLabelFromDivTable(element);
+  }
+  return inferred_label;
 }
 
 // Fills |option_strings| with the values of the <option> elements present in

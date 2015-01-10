@@ -11,8 +11,8 @@ ADDRESS_HOME_COUNTRY | CC_COUNTRY | Country | United States | f1_1-default
 PHONE_HOME_WHOLE_NUMBER | dphone | Telephone |  | f1_1-default
 EMAIL_ADDRESS | demail | Email * |  | f1_1-default
 UNKNOWN_TYPE | amt | $ |  | f1_1-default
-UNKNOWN_TYPE | tributeSelect | Name * | on | f1_1-default
-UNKNOWN_TYPE | DonationType | Name * | OneTime | f1_1-default
+UNKNOWN_TYPE | tributeSelect | Gift amount in USD ($10 minimum) $ | on | f1_1-default
+UNKNOWN_TYPE | DonationType | Gift amount in USD ($10 minimum) $ | OneTime | f1_1-default
 UNKNOWN_TYPE | DonationType | This is a one time donation | Recurs | f1_1-default
 UNKNOWN_TYPE | ccrecurring | I would like to make this a recurring donation deducted | Monthly | f1_1-default
 UNKNOWN_TYPE | remLen | ( You may enter up to 500 characters. ) | 500 | f1_1-default
