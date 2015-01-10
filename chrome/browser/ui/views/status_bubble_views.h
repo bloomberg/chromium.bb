@@ -60,8 +60,6 @@ class StatusBubbleViews : public StatusBubble {
   void MouseMoved(const gfx::Point& location, bool left_content) override;
   void UpdateDownloadShelfVisibility(bool visible) override;
 
-  views::Widget* GetPopupForTest() { return popup(); }
-
  protected:
   views::Widget* popup() { return popup_.get(); }
 
