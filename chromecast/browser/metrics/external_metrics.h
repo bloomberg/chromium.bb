@@ -24,13 +24,19 @@ class CastStabilityMetricsProvider;
 class ExternalMetrics {
  public:
   explicit ExternalMetrics(CastStabilityMetricsProvider* stability_provider);
-  ~ExternalMetrics();
 
   // Begins external data collection. Calls to RecordAction originate in the
   // File thread but are executed in the UI thread.
   void Start();
 
+  // Destroys itself in appropriate thread.
+  void StopAndDestroy();
+
  private:
+  friend class base::DeleteHelper<ExternalMetrics>;
+
+  ~ExternalMetrics();
+
   // The max length of a message (name-value pair, plus header)
   static const int kMetricsMessageMaxLength = 1024;  // be generous
 

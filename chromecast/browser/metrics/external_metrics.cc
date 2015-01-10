@@ -58,7 +58,13 @@ ExternalMetrics::ExternalMetrics(
   DCHECK(stability_provider);
 }
 
-ExternalMetrics::~ExternalMetrics() {}
+ExternalMetrics::~ExternalMetrics() {
+}
+
+void ExternalMetrics::StopAndDestroy() {
+  content::BrowserThread::DeleteSoon(
+      content::BrowserThread::FILE, FROM_HERE, this);
+}
 
 void ExternalMetrics::Start() {
   ScheduleCollector();

@@ -90,7 +90,7 @@ class CastMetricsServiceClient : public ::metrics::MetricsServiceClient {
   std::string client_id_;
 
 #if defined(OS_LINUX)
-  scoped_ptr<ExternalMetrics> external_metrics_;
+  ExternalMetrics* external_metrics_;
 #endif  // defined(OS_LINUX)
   const scoped_refptr<base::MessageLoopProxy> metrics_service_loop_;
   scoped_ptr< ::metrics::MetricsStateManager> metrics_state_manager_;
