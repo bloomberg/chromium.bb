@@ -44,6 +44,8 @@ public:
         , m_layerBridge(Canvas2DLayerBridge::create(size, opacityMode, msaaSampleCount))
     {
         clear();
+        if (isValid())
+            m_layerBridge->flush();
     }
 
     virtual ~Canvas2DImageBufferSurface()
