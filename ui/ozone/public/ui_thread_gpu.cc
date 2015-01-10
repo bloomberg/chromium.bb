@@ -23,7 +23,7 @@ const int kGpuProcessHostId = 1;
 class FakeGpuProcess : public IPC::Sender {
  public:
   FakeGpuProcess() : weak_factory_(this) {}
-  ~FakeGpuProcess() {}
+  ~FakeGpuProcess() override {}
 
   void Init() {
     task_runner_ = base::ThreadTaskRunnerHandle::Get();
