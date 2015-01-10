@@ -51,6 +51,7 @@ void TestPreferences::Reset() {
   asynchronous_spell_checking_enabled = false;
   web_security_enabled = true;
   strict_mixed_content_checking = false;
+  strict_powerful_feature_restrictions = false;
 }
 
 }  // namespace content

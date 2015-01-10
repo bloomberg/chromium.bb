@@ -51,6 +51,8 @@ void ExportLayoutTestSpecificPreferences(const TestPreferences& from,
       from.web_security_enabled;
   to->strict_mixed_content_checking =
       from.strict_mixed_content_checking;
+  to->strict_powerful_feature_restrictions =
+      from.strict_powerful_feature_restrictions;
 }
 
 // Applies settings that differ between layout tests and regular mode. Some
@@ -76,6 +78,7 @@ void ApplyLayoutTestDefaultPreferences(WebPreferences* prefs) {
   prefs->allow_displaying_insecure_content = true;
   prefs->allow_running_insecure_content = true;
   prefs->strict_mixed_content_checking = false;
+  prefs->strict_powerful_feature_restrictions = false;
   prefs->webgl_errors_to_console_enabled = false;
   base::string16 serif;
 #if defined(OS_MACOSX)

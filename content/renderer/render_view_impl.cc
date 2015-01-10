@@ -1018,6 +1018,8 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   settings->setAllowRunningOfInsecureContent(
       prefs.allow_running_insecure_content);
   settings->setStrictMixedContentChecking(prefs.strict_mixed_content_checking);
+  settings->setStrictPowerfulFeatureRestrictions(
+      prefs.strict_powerful_feature_restrictions);
   settings->setPasswordEchoEnabled(prefs.password_echo_enabled);
   settings->setShouldPrintBackgrounds(prefs.should_print_backgrounds);
   settings->setShouldClearDocumentBackground(

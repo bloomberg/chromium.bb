@@ -476,8 +476,11 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs(const GURL& url) {
   prefs.spatial_navigation_enabled = command_line.HasSwitch(
       switches::kEnableSpatialNavigation);
 
-  prefs.strict_mixed_content_checking =
-      command_line.HasSwitch(switches::kEnableStrictMixedContentChecking);
+  prefs.strict_mixed_content_checking = command_line.HasSwitch(
+      switches::kEnableStrictMixedContentChecking);
+
+  prefs.strict_powerful_feature_restrictions = command_line.HasSwitch(
+      switches::kEnableStrictPowerfulFeatureRestrictions);
 
   std::string v8_cache_options =
       command_line.GetSwitchValueASCII(switches::kV8CacheOptions);

@@ -2534,6 +2534,8 @@ void TestRunner::OverridePreference(const std::string key,
     prefs->allow_running_of_insecure_content = value->BooleanValue();
   } else if (key == "WebKitStrictMixedContentChecking") {
     prefs->strict_mixed_content_checking = value->BooleanValue();
+  } else if (key == "WebKitStrictPowerfulFeatureRestrictions") {
+    prefs->strict_powerful_feature_restrictions = value->BooleanValue();
   } else if (key == "WebKitShouldRespectImageOrientation") {
     prefs->should_respect_image_orientation = value->BooleanValue();
   } else if (key == "WebKitWebAudioEnabled") {

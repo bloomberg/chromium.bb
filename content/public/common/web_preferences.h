@@ -134,6 +134,10 @@ struct CONTENT_EXPORT WebPreferences {
   // mixed content, and disables embedder notifications that such content was
   // requested (thereby preventing user override).
   bool strict_mixed_content_checking;
+  // Strict powerful feature restrictions block insecure usage of powerful
+  // features (like geolocation) that we haven't yet disabled for the web at
+  // large.
+  bool strict_powerful_feature_restrictions;
   bool password_echo_enabled;
   bool should_print_backgrounds;
   bool should_clear_document_background;

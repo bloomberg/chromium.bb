@@ -45,6 +45,7 @@ struct TestPreferences {
     bool asynchronous_spell_checking_enabled;
     bool web_security_enabled;
     bool strict_mixed_content_checking;
+    bool strict_powerful_feature_restrictions;
 
     TestPreferences();
     void Reset();

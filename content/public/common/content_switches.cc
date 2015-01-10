@@ -421,6 +421,11 @@ const char kEnableStrictSiteIsolation[]     = "enable-strict-site-isolation";
 const char kEnableStrictMixedContentChecking[] =
     "enable-strict-mixed-content-checking";
 
+// Blocks insecure usage of number of powerful features (geolocation, for
+// example) that we haven't yet deprecated for the web at large.
+const char kEnableStrictPowerfulFeatureRestrictions[] =
+    "enable-strict-powerful-feature-restrictions";
+
 // Enable support for sync events in ServiceWorkers.
 const char kEnableServiceWorkerSync[]       = "enable-service-worker-sync";
 
