@@ -6,6 +6,7 @@
 #include "base/message_loop/message_loop.h"
 #include "content/browser/geofencing/geofencing_manager.h"
 #include "content/browser/geofencing/geofencing_service.h"
+#include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
@@ -18,9 +19,8 @@ typedef std::map<std::string, WebCircularGeofencingRegion> RegionMap;
 
 namespace {
 
+static const int kRenderProcessId = 99;
 static const char* kTestRegionId = "region-id";
-static const int64 kTestServiceWorkerRegistrationId = 123;
-static const int64 kTestServiceWorkerRegistrationId2 = 456;
 static const int64 kTestGeofencingRegistrationId = 42;
 static const int64 kTestGeofencingRegistrationId2 = 43;
 
@@ -36,11 +36,21 @@ namespace content {
 
 class TestGeofencingService : public GeofencingService {
  public:
-  MOCK_METHOD0(IsServiceAvailable, bool());
+  TestGeofencingService() : is_available_(false) {}
+
+  bool IsServiceAvailable() override { return is_available_; }
+
+  void SetIsServiceAvailable(bool is_available) {
+    is_available_ = is_available;
+  }
+
   MOCK_METHOD2(RegisterRegion,
                int64(const WebCircularGeofencingRegion& region,
                      GeofencingRegistrationDelegate* delegate));
   MOCK_METHOD1(UnregisterRegion, void(int64 geofencing_registration_id));
+
+ private:
+  bool is_available_;
 };
 
 ACTION_P(SaveDelegate, delegate) {
@@ -78,6 +88,30 @@ class StatusCatcher {
   scoped_refptr<MessageLoopRunner> runner_;
 };
 
+void SaveResponseCallback(bool* called,
+                          int64* store_registration_id,
+                          ServiceWorkerStatusCode status,
+                          int64 registration_id) {
+  EXPECT_EQ(SERVICE_WORKER_OK, status) << ServiceWorkerStatusToString(status);
+  *called = true;
+  *store_registration_id = registration_id;
+}
+
+ServiceWorkerContextCore::RegistrationCallback MakeRegisteredCallback(
+    bool* called,
+    int64* store_registration_id) {
+  return base::Bind(&SaveResponseCallback, called, store_registration_id);
+}
+
+void CallCompletedCallback(bool* called, ServiceWorkerStatusCode) {
+  *called = true;
+}
+
+ServiceWorkerContextCore::UnregistrationCallback MakeUnregisteredCallback(
+    bool* called) {
+  return base::Bind(&CallCompletedCallback, called);
+}
+
 class GeofencingManagerTest : public testing::Test {
  public:
   GeofencingManagerTest() : service_(nullptr) {
@@ -88,22 +122,54 @@ class GeofencingManagerTest : public testing::Test {
   }
 
   void SetUp() override {
+    helper_.reset(new EmbeddedWorkerTestHelper(kRenderProcessId));
     service_ = new TestGeofencingService();
-    ON_CALL(*service_, IsServiceAvailable())
-        .WillByDefault(testing::Return(false));
-    manager_ = new GeofencingManager(nullptr /* ServiceWorkerContextWrapper */);
+    manager_ = new GeofencingManager(helper_->context_wrapper());
     manager_->SetServiceForTesting(service_);
+    manager_->Init();
+
+    worker1_ = RegisterServiceWorker("1");
+    worker2_ = RegisterServiceWorker("2");
   }
 
   void TearDown() override {
+    worker1_ = nullptr;
+    worker2_ = nullptr;
     manager_ = nullptr;
     delete service_;
     service_ = nullptr;
+    helper_.reset();
   }
 
-  void SetHasProviderForTests() {
-    ON_CALL(*service_, IsServiceAvailable())
-        .WillByDefault(testing::Return(true));
+  void SetHasProviderForTests() { service_->SetIsServiceAvailable(true); }
+
+  scoped_refptr<ServiceWorkerRegistration> RegisterServiceWorker(
+      const std::string& name) {
+    GURL pattern("http://www.example.com/" + name);
+    GURL script_url("http://www.example.com/service_worker.js");
+    int64 registration_id = kInvalidServiceWorkerRegistrationId;
+    bool called = false;
+    helper_->context()->RegisterServiceWorker(
+        pattern, script_url, nullptr,
+        MakeRegisteredCallback(&called, &registration_id));
+
+    EXPECT_FALSE(called);
+    base::RunLoop().RunUntilIdle();
+    EXPECT_TRUE(called);
+
+    return make_scoped_refptr(new ServiceWorkerRegistration(
+        pattern, registration_id, helper_->context()->AsWeakPtr()));
+  }
+
+  void UnregisterServiceWorker(
+      const scoped_refptr<ServiceWorkerRegistration>& registration) {
+    bool called = false;
+    helper_->context()->UnregisterServiceWorker(
+        registration->pattern(), MakeUnregisteredCallback(&called));
+
+    EXPECT_FALSE(called);
+    base::RunLoop().RunUntilIdle();
+    EXPECT_TRUE(called);
   }
 
   GeofencingStatus RegisterRegionSync(
@@ -174,101 +240,86 @@ class GeofencingManagerTest : public testing::Test {
 
  protected:
   TestBrowserThreadBundle threads_;
+  scoped_ptr<EmbeddedWorkerTestHelper> helper_;
   TestGeofencingService* service_;
   scoped_refptr<GeofencingManager> manager_;
 
   WebCircularGeofencingRegion test_region_;
   RegionMap expected_regions_;
+
+  scoped_refptr<ServiceWorkerRegistration> worker1_;
+  scoped_refptr<ServiceWorkerRegistration> worker2_;
 };
 
 TEST_F(GeofencingManagerTest, RegisterRegion_NoService) {
   EXPECT_EQ(GEOFENCING_STATUS_OPERATION_FAILED_SERVICE_NOT_AVAILABLE,
-            RegisterRegionSync(
-                kTestServiceWorkerRegistrationId, kTestRegionId, test_region_));
+            RegisterRegionSync(worker1_->id(), kTestRegionId, test_region_));
 }
 
 TEST_F(GeofencingManagerTest, UnregisterRegion_NoService) {
   EXPECT_EQ(GEOFENCING_STATUS_OPERATION_FAILED_SERVICE_NOT_AVAILABLE,
-            UnregisterRegionSync(
-                kTestServiceWorkerRegistrationId, kTestRegionId, false));
+            UnregisterRegionSync(worker1_->id(), kTestRegionId, false));
 }
 
 TEST_F(GeofencingManagerTest, GetRegisteredRegions_NoService) {
   RegionMap regions;
   EXPECT_EQ(GEOFENCING_STATUS_OPERATION_FAILED_SERVICE_NOT_AVAILABLE,
-            manager_->GetRegisteredRegions(kTestServiceWorkerRegistrationId,
-                                           &regions));
+            manager_->GetRegisteredRegions(worker1_->id(), &regions));
   EXPECT_TRUE(regions.empty());
 }
 
 TEST_F(GeofencingManagerTest, RegisterRegion_FailsInService) {
   SetHasProviderForTests();
-  EXPECT_EQ(
-      GEOFENCING_STATUS_ERROR,
-      RegisterRegionSyncWithServiceResult(kTestServiceWorkerRegistrationId,
-                                          kTestRegionId,
-                                          test_region_,
-                                          GEOFENCING_STATUS_ERROR,
-                                          -1));
+  EXPECT_EQ(GEOFENCING_STATUS_ERROR,
+            RegisterRegionSyncWithServiceResult(worker1_->id(), kTestRegionId,
+                                                test_region_,
+                                                GEOFENCING_STATUS_ERROR, -1));
 }
 
 TEST_F(GeofencingManagerTest, RegisterRegion_SucceedsInService) {
   SetHasProviderForTests();
-  EXPECT_EQ(
-      GEOFENCING_STATUS_OK,
-      RegisterRegionSyncWithServiceResult(kTestServiceWorkerRegistrationId,
-                                          kTestRegionId,
-                                          test_region_,
-                                          GEOFENCING_STATUS_OK,
-                                          kTestGeofencingRegistrationId));
-  VerifyRegions(kTestServiceWorkerRegistrationId, expected_regions_);
+  EXPECT_EQ(GEOFENCING_STATUS_OK,
+            RegisterRegionSyncWithServiceResult(
+                worker1_->id(), kTestRegionId, test_region_,
+                GEOFENCING_STATUS_OK, kTestGeofencingRegistrationId));
+  VerifyRegions(worker1_->id(), expected_regions_);
 }
 
 TEST_F(GeofencingManagerTest, RegisterRegion_AlreadyRegistered) {
   SetHasProviderForTests();
-  EXPECT_EQ(
-      GEOFENCING_STATUS_OK,
-      RegisterRegionSyncWithServiceResult(kTestServiceWorkerRegistrationId,
-                                          kTestRegionId,
-                                          test_region_,
-                                          GEOFENCING_STATUS_OK,
-                                          kTestGeofencingRegistrationId));
-  VerifyRegions(kTestServiceWorkerRegistrationId, expected_regions_);
+  EXPECT_EQ(GEOFENCING_STATUS_OK,
+            RegisterRegionSyncWithServiceResult(
+                worker1_->id(), kTestRegionId, test_region_,
+                GEOFENCING_STATUS_OK, kTestGeofencingRegistrationId));
+  VerifyRegions(worker1_->id(), expected_regions_);
 
   WebCircularGeofencingRegion region2;
   region2.latitude = 43.2;
   region2.longitude = 1.45;
   region2.radius = 8.5;
   EXPECT_EQ(GEOFENCING_STATUS_ERROR,
-            RegisterRegionSync(
-                kTestServiceWorkerRegistrationId, kTestRegionId, region2));
-  VerifyRegions(kTestServiceWorkerRegistrationId, expected_regions_);
+            RegisterRegionSync(worker1_->id(), kTestRegionId, region2));
+  VerifyRegions(worker1_->id(), expected_regions_);
 }
 
 TEST_F(GeofencingManagerTest, UnregisterRegion_NotRegistered) {
   SetHasProviderForTests();
   EXPECT_EQ(GEOFENCING_STATUS_UNREGISTRATION_FAILED_NOT_REGISTERED,
-            UnregisterRegionSync(
-                kTestServiceWorkerRegistrationId, kTestRegionId, false));
+            UnregisterRegionSync(worker1_->id(), kTestRegionId, false));
 }
 
 TEST_F(GeofencingManagerTest, UnregisterRegion_Success) {
   SetHasProviderForTests();
 
-  EXPECT_EQ(
-      GEOFENCING_STATUS_OK,
-      RegisterRegionSyncWithServiceResult(kTestServiceWorkerRegistrationId,
-                                          kTestRegionId,
-                                          test_region_,
-                                          GEOFENCING_STATUS_OK,
-                                          kTestGeofencingRegistrationId));
+  EXPECT_EQ(GEOFENCING_STATUS_OK,
+            RegisterRegionSyncWithServiceResult(
+                worker1_->id(), kTestRegionId, test_region_,
+                GEOFENCING_STATUS_OK, kTestGeofencingRegistrationId));
 
   EXPECT_EQ(GEOFENCING_STATUS_OK,
-            UnregisterRegionSync(kTestServiceWorkerRegistrationId,
-                                 kTestRegionId,
-                                 true,
+            UnregisterRegionSync(worker1_->id(), kTestRegionId, true,
                                  kTestGeofencingRegistrationId));
-  VerifyRegions(kTestServiceWorkerRegistrationId, RegionMap());
+  VerifyRegions(worker1_->id(), RegionMap());
 }
 
 TEST_F(GeofencingManagerTest, GetRegisteredRegions_RegistrationInProgress) {
@@ -282,22 +333,20 @@ TEST_F(GeofencingManagerTest, GetRegisteredRegions_RegistrationInProgress) {
       .WillOnce(testing::DoAll(SaveDelegate(&delegate),
                                testing::Return(kTestGeofencingRegistrationId)));
   manager_->RegisterRegion(
-      kTestServiceWorkerRegistrationId,
-      kTestRegionId,
-      test_region_,
+      worker1_->id(), kTestRegionId, test_region_,
       base::Bind(&StatusCatcher::Done, base::Unretained(&result)));
 
   // At this point the manager should have tried registering the region with
   // the service, resulting in |delegate| being set. Until the callback is
   // called the registration is not complete though.
   EXPECT_NE(delegate, nullptr);
-  VerifyRegions(kTestServiceWorkerRegistrationId, RegionMap());
+  VerifyRegions(worker1_->id(), RegionMap());
 
   // Now call the callback, and verify the registration completed succesfully.
   delegate->RegistrationFinished(kTestGeofencingRegistrationId,
                                  GEOFENCING_STATUS_OK);
   EXPECT_EQ(GEOFENCING_STATUS_OK, result.Wait());
-  VerifyRegions(kTestServiceWorkerRegistrationId, expected_regions_);
+  VerifyRegions(worker1_->id(), expected_regions_);
 }
 
 TEST_F(GeofencingManagerTest, UnregisterRegion_RegistrationInProgress) {
@@ -311,9 +360,7 @@ TEST_F(GeofencingManagerTest, UnregisterRegion_RegistrationInProgress) {
       .WillOnce(testing::DoAll(SaveDelegate(&delegate),
                                testing::Return(kTestGeofencingRegistrationId)));
   manager_->RegisterRegion(
-      kTestServiceWorkerRegistrationId,
-      kTestRegionId,
-      test_region_,
+      worker1_->id(), kTestRegionId, test_region_,
       base::Bind(&StatusCatcher::Done, base::Unretained(&result)));
 
   // At this point the manager should have tried registering the region with
@@ -322,88 +369,68 @@ TEST_F(GeofencingManagerTest, UnregisterRegion_RegistrationInProgress) {
   EXPECT_NE(delegate, nullptr);
 
   EXPECT_EQ(GEOFENCING_STATUS_UNREGISTRATION_FAILED_NOT_REGISTERED,
-            UnregisterRegionSync(
-                kTestServiceWorkerRegistrationId, kTestRegionId, false));
+            UnregisterRegionSync(worker1_->id(), kTestRegionId, false));
 }
 
 TEST_F(GeofencingManagerTest, GetRegisteredRegions_NoRegions) {
   SetHasProviderForTests();
-  VerifyRegions(kTestServiceWorkerRegistrationId, RegionMap());
+  VerifyRegions(worker1_->id(), RegionMap());
 }
 
 TEST_F(GeofencingManagerTest, RegisterRegion_SeparateServiceWorkers) {
   SetHasProviderForTests();
 
-  EXPECT_EQ(
-      GEOFENCING_STATUS_OK,
-      RegisterRegionSyncWithServiceResult(kTestServiceWorkerRegistrationId,
-                                          kTestRegionId,
-                                          test_region_,
-                                          GEOFENCING_STATUS_OK,
-                                          kTestGeofencingRegistrationId));
+  EXPECT_EQ(GEOFENCING_STATUS_OK,
+            RegisterRegionSyncWithServiceResult(
+                worker1_->id(), kTestRegionId, test_region_,
+                GEOFENCING_STATUS_OK, kTestGeofencingRegistrationId));
 
-  VerifyRegions(kTestServiceWorkerRegistrationId, expected_regions_);
-  VerifyRegions(kTestServiceWorkerRegistrationId2, RegionMap());
+  VerifyRegions(worker1_->id(), expected_regions_);
+  VerifyRegions(worker2_->id(), RegionMap());
 
-  EXPECT_EQ(
-      GEOFENCING_STATUS_OK,
-      RegisterRegionSyncWithServiceResult(kTestServiceWorkerRegistrationId2,
-                                          kTestRegionId,
-                                          test_region_,
-                                          GEOFENCING_STATUS_OK,
-                                          kTestGeofencingRegistrationId2));
+  EXPECT_EQ(GEOFENCING_STATUS_OK,
+            RegisterRegionSyncWithServiceResult(
+                worker2_->id(), kTestRegionId, test_region_,
+                GEOFENCING_STATUS_OK, kTestGeofencingRegistrationId2));
 
-  VerifyRegions(kTestServiceWorkerRegistrationId, expected_regions_);
-  VerifyRegions(kTestServiceWorkerRegistrationId2, expected_regions_);
+  VerifyRegions(worker1_->id(), expected_regions_);
+  VerifyRegions(worker2_->id(), expected_regions_);
 }
 
 TEST_F(GeofencingManagerTest, UnregisterRegion_SeparateServiceWorkers) {
   SetHasProviderForTests();
 
-  EXPECT_EQ(
-      GEOFENCING_STATUS_OK,
-      RegisterRegionSyncWithServiceResult(kTestServiceWorkerRegistrationId,
-                                          kTestRegionId,
-                                          test_region_,
-                                          GEOFENCING_STATUS_OK,
-                                          kTestGeofencingRegistrationId));
-  EXPECT_EQ(
-      GEOFENCING_STATUS_OK,
-      RegisterRegionSyncWithServiceResult(kTestServiceWorkerRegistrationId2,
-                                          kTestRegionId,
-                                          test_region_,
-                                          GEOFENCING_STATUS_OK,
-                                          kTestGeofencingRegistrationId2));
+  EXPECT_EQ(GEOFENCING_STATUS_OK,
+            RegisterRegionSyncWithServiceResult(
+                worker1_->id(), kTestRegionId, test_region_,
+                GEOFENCING_STATUS_OK, kTestGeofencingRegistrationId));
+  EXPECT_EQ(GEOFENCING_STATUS_OK,
+            RegisterRegionSyncWithServiceResult(
+                worker2_->id(), kTestRegionId, test_region_,
+                GEOFENCING_STATUS_OK, kTestGeofencingRegistrationId2));
 
   EXPECT_EQ(GEOFENCING_STATUS_OK,
-            UnregisterRegionSync(kTestServiceWorkerRegistrationId,
-                                 kTestRegionId,
-                                 true,
+            UnregisterRegionSync(worker1_->id(), kTestRegionId, true,
                                  kTestGeofencingRegistrationId));
 
-  VerifyRegions(kTestServiceWorkerRegistrationId, RegionMap());
-  VerifyRegions(kTestServiceWorkerRegistrationId2, expected_regions_);
+  VerifyRegions(worker1_->id(), RegionMap());
+  VerifyRegions(worker2_->id(), expected_regions_);
 
   EXPECT_EQ(GEOFENCING_STATUS_OK,
-            UnregisterRegionSync(kTestServiceWorkerRegistrationId2,
-                                 kTestRegionId,
-                                 true,
+            UnregisterRegionSync(worker2_->id(), kTestRegionId, true,
                                  kTestGeofencingRegistrationId2));
 
-  VerifyRegions(kTestServiceWorkerRegistrationId, RegionMap());
-  VerifyRegions(kTestServiceWorkerRegistrationId2, RegionMap());
+  VerifyRegions(worker1_->id(), RegionMap());
+  VerifyRegions(worker2_->id(), RegionMap());
 }
 
 TEST_F(GeofencingManagerTest, ShutdownCleansRegistrations) {
   SetHasProviderForTests();
   scoped_refptr<MessageLoopRunner> runner(new MessageLoopRunner());
-  EXPECT_EQ(
-      GEOFENCING_STATUS_OK,
-      RegisterRegionSyncWithServiceResult(kTestServiceWorkerRegistrationId,
-                                          kTestRegionId,
-                                          test_region_,
-                                          GEOFENCING_STATUS_OK,
-                                          kTestGeofencingRegistrationId));
+  EXPECT_EQ(GEOFENCING_STATUS_OK,
+            RegisterRegionSyncWithServiceResult(
+                worker1_->id(), kTestRegionId, test_region_,
+                GEOFENCING_STATUS_OK, kTestGeofencingRegistrationId));
 
   EXPECT_CALL(*service_, UnregisterRegion(kTestGeofencingRegistrationId))
       .WillOnce(QuitRunner(runner));
@@ -411,59 +438,75 @@ TEST_F(GeofencingManagerTest, ShutdownCleansRegistrations) {
   runner->Run();
 }
 
+TEST_F(GeofencingManagerTest, OnRegistrationDeleted) {
+  SetHasProviderForTests();
+
+  EXPECT_EQ(GEOFENCING_STATUS_OK,
+            RegisterRegionSyncWithServiceResult(
+                worker1_->id(), kTestRegionId, test_region_,
+                GEOFENCING_STATUS_OK, kTestGeofencingRegistrationId));
+  EXPECT_EQ(GEOFENCING_STATUS_OK,
+            RegisterRegionSyncWithServiceResult(
+                worker2_->id(), kTestRegionId, test_region_,
+                GEOFENCING_STATUS_OK, kTestGeofencingRegistrationId2));
+
+  EXPECT_CALL(*service_, UnregisterRegion(kTestGeofencingRegistrationId));
+  UnregisterServiceWorker(worker1_);
+  VerifyRegions(worker1_->id(), RegionMap());
+  VerifyRegions(worker2_->id(), expected_regions_);
+
+  EXPECT_CALL(*service_, UnregisterRegion(kTestGeofencingRegistrationId2));
+  UnregisterServiceWorker(worker2_);
+  VerifyRegions(worker1_->id(), RegionMap());
+  VerifyRegions(worker2_->id(), RegionMap());
+}
+
 TEST_F(GeofencingManagerTest, RegisterRegion_MockedNoService) {
   manager_->SetMockProvider(GeofencingMockState::SERVICE_UNAVAILABLE);
-  // Make sure real service doesn't get called.
-  EXPECT_CALL(*service_, IsServiceAvailable()).Times(0);
 
   EXPECT_EQ(GEOFENCING_STATUS_OPERATION_FAILED_SERVICE_NOT_AVAILABLE,
-            RegisterRegionSync(kTestServiceWorkerRegistrationId, kTestRegionId,
-                               test_region_));
+            RegisterRegionSync(worker1_->id(), kTestRegionId, test_region_));
 }
 
 TEST_F(GeofencingManagerTest, UnregisterRegion_MockedNoService) {
   manager_->SetMockProvider(GeofencingMockState::SERVICE_UNAVAILABLE);
-  // Make sure real service doesn't get called.
-  EXPECT_CALL(*service_, IsServiceAvailable()).Times(0);
 
   EXPECT_EQ(GEOFENCING_STATUS_OPERATION_FAILED_SERVICE_NOT_AVAILABLE,
-            UnregisterRegionSync(kTestServiceWorkerRegistrationId,
-                                 kTestRegionId, false));
+            UnregisterRegionSync(worker1_->id(), kTestRegionId, false));
 }
 
 TEST_F(GeofencingManagerTest, GetRegisteredRegions_MockedNoService) {
   manager_->SetMockProvider(GeofencingMockState::SERVICE_UNAVAILABLE);
-  // Make sure real service doesn't get called.
-  EXPECT_CALL(*service_, IsServiceAvailable()).Times(0);
 
   RegionMap regions;
   EXPECT_EQ(GEOFENCING_STATUS_OPERATION_FAILED_SERVICE_NOT_AVAILABLE,
-            manager_->GetRegisteredRegions(kTestServiceWorkerRegistrationId,
-                                           &regions));
+            manager_->GetRegisteredRegions(worker1_->id(), &regions));
   EXPECT_TRUE(regions.empty());
 }
 
 TEST_F(GeofencingManagerTest, RegisterRegion_MockedService) {
   manager_->SetMockProvider(GeofencingMockState::SERVICE_AVAILABLE);
 
+  // Make sure real service doesn't get called.
+  EXPECT_CALL(*service_, RegisterRegion(testing::_, testing::_)).Times(0);
+
   EXPECT_EQ(GEOFENCING_STATUS_OK,
-            RegisterRegionSync(kTestServiceWorkerRegistrationId, kTestRegionId,
-                               test_region_));
-  VerifyRegions(kTestServiceWorkerRegistrationId, expected_regions_);
+            RegisterRegionSync(worker1_->id(), kTestRegionId, test_region_));
+  VerifyRegions(worker1_->id(), expected_regions_);
 }
 
 TEST_F(GeofencingManagerTest, SetMockProviderClearsRegistrations) {
   SetHasProviderForTests();
   EXPECT_EQ(GEOFENCING_STATUS_OK,
             RegisterRegionSyncWithServiceResult(
-                kTestServiceWorkerRegistrationId, kTestRegionId, test_region_,
+                worker1_->id(), kTestRegionId, test_region_,
                 GEOFENCING_STATUS_OK, kTestGeofencingRegistrationId));
-  VerifyRegions(kTestServiceWorkerRegistrationId, expected_regions_);
+  VerifyRegions(worker1_->id(), expected_regions_);
 
   EXPECT_CALL(*service_, UnregisterRegion(kTestGeofencingRegistrationId));
 
   manager_->SetMockProvider(GeofencingMockState::SERVICE_AVAILABLE);
-  VerifyRegions(kTestServiceWorkerRegistrationId, RegionMap());
+  VerifyRegions(worker1_->id(), RegionMap());
 }
 
 }  // namespace content

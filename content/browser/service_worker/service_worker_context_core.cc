@@ -310,11 +310,12 @@ void ServiceWorkerContextCore::RegistrationComplete(
 void ServiceWorkerContextCore::UnregistrationComplete(
     const GURL& pattern,
     const ServiceWorkerContextCore::UnregistrationCallback& callback,
+    int64 registration_id,
     ServiceWorkerStatusCode status) {
   callback.Run(status);
   if (observer_list_.get()) {
     observer_list_->Notify(&ServiceWorkerContextObserver::OnRegistrationDeleted,
-                           pattern);
+                           registration_id, pattern);
   }
 }
 

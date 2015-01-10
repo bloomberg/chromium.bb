@@ -215,6 +215,7 @@ class CONTENT_EXPORT ServiceWorkerContextCore
 
   void UnregistrationComplete(const GURL& pattern,
                               const UnregistrationCallback& callback,
+                              int64 registration_id,
                               ServiceWorkerStatusCode status);
 
   void DidGetAllRegistrationsForUnregisterForOrigin(

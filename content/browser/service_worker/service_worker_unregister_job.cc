@@ -40,7 +40,8 @@ void ServiceWorkerUnregisterJob::Start() {
 }
 
 void ServiceWorkerUnregisterJob::Abort() {
-  CompleteInternal(SERVICE_WORKER_ERROR_ABORT);
+  CompleteInternal(kInvalidServiceWorkerRegistrationId,
+                   SERVICE_WORKER_ERROR_ABORT);
 }
 
 bool ServiceWorkerUnregisterJob::Equals(
@@ -59,44 +60,48 @@ void ServiceWorkerUnregisterJob::OnRegistrationFound(
     const scoped_refptr<ServiceWorkerRegistration>& registration) {
   if (status == SERVICE_WORKER_ERROR_NOT_FOUND) {
     DCHECK(!registration.get());
-    Complete(SERVICE_WORKER_ERROR_NOT_FOUND);
+    Complete(kInvalidServiceWorkerRegistrationId,
+             SERVICE_WORKER_ERROR_NOT_FOUND);
     return;
   }
 
   if (status != SERVICE_WORKER_OK || registration->is_uninstalling()) {
-    Complete(status);
+    Complete(kInvalidServiceWorkerRegistrationId, status);
     return;
   }
 
   // TODO: "7. If registration.updatePromise is not null..."
 
   // "8. Resolve promise."
-  ResolvePromise(SERVICE_WORKER_OK);
+  ResolvePromise(registration->id(), SERVICE_WORKER_OK);
 
   registration->ClearWhenReady();
 
-  Complete(SERVICE_WORKER_OK);
+  Complete(registration->id(), SERVICE_WORKER_OK);
 }
 
-void ServiceWorkerUnregisterJob::Complete(ServiceWorkerStatusCode status) {
-  CompleteInternal(status);
+void ServiceWorkerUnregisterJob::Complete(int64 registration_id,
+                                          ServiceWorkerStatusCode status) {
+  CompleteInternal(registration_id, status);
   context_->job_coordinator()->FinishJob(pattern_, this);
 }
 
 void ServiceWorkerUnregisterJob::CompleteInternal(
+    int64 registration_id,
     ServiceWorkerStatusCode status) {
   if (!is_promise_resolved_)
-    ResolvePromise(status);
+    ResolvePromise(registration_id, status);
 }
 
 void ServiceWorkerUnregisterJob::ResolvePromise(
+    int64 registration_id,
     ServiceWorkerStatusCode status) {
   DCHECK(!is_promise_resolved_);
   is_promise_resolved_ = true;
   for (std::vector<UnregistrationCallback>::iterator it = callbacks_.begin();
        it != callbacks_.end();
        ++it) {
-    it->Run(status);
+    it->Run(registration_id, status);
   }
 }
 

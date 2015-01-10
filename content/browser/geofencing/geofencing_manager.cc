@@ -83,11 +83,14 @@ void GeofencingManager::Shutdown() {
 
 void GeofencingManager::InitOnIO() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  service_ = GeofencingServiceImpl::GetInstance();
+  service_worker_context_->AddObserver(this);
+  if (!service_)
+    service_ = GeofencingServiceImpl::GetInstance();
 }
 
 void GeofencingManager::ShutdownOnIO() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  service_worker_context_->RemoveObserver(this);
   // Clean up all registrations with the |GeofencingService|.
   // TODO(mek): This will need to change to support geofence registrations that
   //     outlive the browser, although removing the references to this
@@ -105,20 +108,17 @@ void GeofencingManager::RegisterRegion(
 
   // TODO(mek): Validate region_id and region.
 
-  // Look up service worker. In unit tests |service_worker_context_| might not
-  // be set.
-  GURL service_worker_origin;
-  if (service_worker_context_.get()) {
-    ServiceWorkerRegistration* service_worker_registration =
-        service_worker_context_->context()->GetLiveRegistration(
-            service_worker_registration_id);
-    if (!service_worker_registration) {
-      callback.Run(GEOFENCING_STATUS_OPERATION_FAILED_NO_SERVICE_WORKER);
-      return;
-    }
-
-    service_worker_origin = service_worker_registration->pattern().GetOrigin();
+  // Look up service worker.
+  ServiceWorkerRegistration* service_worker_registration =
+      service_worker_context_->context()->GetLiveRegistration(
+          service_worker_registration_id);
+  if (!service_worker_registration) {
+    callback.Run(GEOFENCING_STATUS_OPERATION_FAILED_NO_SERVICE_WORKER);
+    return;
   }
+
+  GURL service_worker_origin =
+      service_worker_registration->pattern().GetOrigin();
 
   if (!service_->IsServiceAvailable()) {
     callback.Run(GEOFENCING_STATUS_OPERATION_FAILED_SERVICE_NOT_AVAILABLE);
@@ -144,16 +144,13 @@ void GeofencingManager::UnregisterRegion(int64 service_worker_registration_id,
 
   // TODO(mek): Validate region_id.
 
-  // Look up service worker. In unit tests |service_worker_context_| might not
-  // be set.
-  if (service_worker_context_.get()) {
-    ServiceWorkerRegistration* service_worker_registration =
-        service_worker_context_->context()->GetLiveRegistration(
-            service_worker_registration_id);
-    if (!service_worker_registration) {
-      callback.Run(GEOFENCING_STATUS_OPERATION_FAILED_NO_SERVICE_WORKER);
-      return;
-    }
+  // Look up service worker.
+  ServiceWorkerRegistration* service_worker_registration =
+      service_worker_context_->context()->GetLiveRegistration(
+          service_worker_registration_id);
+  if (!service_worker_registration) {
+    callback.Run(GEOFENCING_STATUS_OPERATION_FAILED_NO_SERVICE_WORKER);
+    return;
   }
 
   if (!service_->IsServiceAvailable()) {
@@ -186,15 +183,12 @@ GeofencingStatus GeofencingManager::GetRegisteredRegions(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   CHECK(result);
 
-  // Look up service worker. In unit tests |service_worker_context_| might not
-  // be set.
-  if (service_worker_context_.get()) {
-    ServiceWorkerRegistration* service_worker_registration =
-        service_worker_context_->context()->GetLiveRegistration(
-            service_worker_registration_id);
-    if (!service_worker_registration) {
-      return GEOFENCING_STATUS_OPERATION_FAILED_NO_SERVICE_WORKER;
-    }
+  // Look up service worker.
+  ServiceWorkerRegistration* service_worker_registration =
+      service_worker_context_->context()->GetLiveRegistration(
+          service_worker_registration_id);
+  if (!service_worker_registration) {
+    return GEOFENCING_STATUS_OPERATION_FAILED_NO_SERVICE_WORKER;
   }
 
   if (!service_->IsServiceAvailable()) {
@@ -243,6 +237,13 @@ void GeofencingManager::SetMockPosition(double latitude, double longitude) {
   if (!mock_service_)
     return;
   mock_service_->SetMockPosition(latitude, longitude);
+}
+
+void GeofencingManager::OnRegistrationDeleted(
+    int64 service_worker_registration_id,
+    const GURL& pattern) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  CleanUpForServiceWorker(service_worker_registration_id);
 }
 
 void GeofencingManager::RegistrationFinished(int64 geofencing_registration_id,
@@ -326,6 +327,23 @@ void GeofencingManager::ClearRegistration(Registration* registration) {
   registrations_iterator->second.erase(registration->region_id);
   if (registrations_iterator->second.empty())
     registrations_.erase(registrations_iterator);
+}
+
+void GeofencingManager::CleanUpForServiceWorker(
+    int64 service_worker_registration_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  ServiceWorkerRegistrationsMap::iterator registrations_iterator =
+      registrations_.find(service_worker_registration_id);
+  if (registrations_iterator == registrations_.end())
+    return;
+
+  for (const auto& registration : registrations_iterator->second) {
+    int geofencing_registration_id =
+        registration.second.geofencing_registration_id;
+    service_->UnregisterRegion(geofencing_registration_id);
+    registrations_by_id_.erase(geofencing_registration_id);
+  }
+  registrations_.erase(service_worker_registration_id);
 }
 
 void GeofencingManager::DispatchGeofencingEvent(

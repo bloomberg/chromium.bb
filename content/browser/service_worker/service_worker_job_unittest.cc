@@ -82,6 +82,7 @@ ServiceWorkerStorage::FindRegistrationCallback SaveFoundRegistration(
 
 void SaveUnregistrationCallback(ServiceWorkerStatusCode expected_status,
                                 bool* called,
+                                int64 registration_id,
                                 ServiceWorkerStatusCode status) {
   EXPECT_EQ(expected_status, status);
   *called = true;

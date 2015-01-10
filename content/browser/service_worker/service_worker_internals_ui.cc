@@ -377,7 +377,8 @@ class ServiceWorkerInternalsUI::PartitionObserver
     web_ui_->CallJavascriptFunction("serviceworker.onRegistrationStored",
                                     StringValue(pattern.spec()));
   }
-  void OnRegistrationDeleted(const GURL& pattern) override {
+  void OnRegistrationDeleted(int64 registration_id,
+                             const GURL& pattern) override {
     web_ui_->CallJavascriptFunction("serviceworker.onRegistrationDeleted",
                                     StringValue(pattern.spec()));
   }

@@ -111,6 +111,7 @@ enum NotificationType {
 struct NotificationLog {
   NotificationType type;
   GURL pattern;
+  int64 registration_id;
 };
 
 }  // namespace
@@ -136,10 +137,12 @@ class ServiceWorkerContextTest : public ServiceWorkerContextObserver,
     log.pattern = pattern;
     notifications_.push_back(log);
   }
-  void OnRegistrationDeleted(const GURL& pattern) override {
+  void OnRegistrationDeleted(int64 registration_id,
+                             const GURL& pattern) override {
     NotificationLog log;
     log.type = REGISTRATION_DELETED;
     log.pattern = pattern;
+    log.registration_id = registration_id;
     notifications_.push_back(log);
   }
   void OnStorageWiped() override {
@@ -323,6 +326,7 @@ TEST_F(ServiceWorkerContextTest, Unregister) {
   EXPECT_EQ(pattern, notifications_[0].pattern);
   EXPECT_EQ(REGISTRATION_DELETED, notifications_[1].type);
   EXPECT_EQ(pattern, notifications_[1].pattern);
+  EXPECT_EQ(registration_id, notifications_[1].registration_id);
 }
 
 // Make sure registrations are cleaned up when they are unregistered in bulk.
@@ -418,8 +422,10 @@ TEST_F(ServiceWorkerContextTest, UnregisterMultiple) {
   EXPECT_EQ(origin3_p1, notifications_[3].pattern);
   EXPECT_EQ(REGISTRATION_DELETED, notifications_[4].type);
   EXPECT_EQ(origin1_p2, notifications_[4].pattern);
+  EXPECT_EQ(registration_id2, notifications_[4].registration_id);
   EXPECT_EQ(REGISTRATION_DELETED, notifications_[5].type);
   EXPECT_EQ(origin1_p1, notifications_[5].pattern);
+  EXPECT_EQ(registration_id1, notifications_[5].registration_id);
 }
 
 // Make sure registering a new script shares an existing registration.

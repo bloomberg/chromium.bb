@@ -27,7 +27,8 @@ class ServiceWorkerStorage;
 // ServiceWorkerRegistration itself.
 class ServiceWorkerUnregisterJob : public ServiceWorkerRegisterJobBase {
  public:
-  typedef base::Callback<void(ServiceWorkerStatusCode status)>
+  typedef base::Callback<void(int64 registration_id,
+                              ServiceWorkerStatusCode status)>
       UnregistrationCallback;
 
   ServiceWorkerUnregisterJob(base::WeakPtr<ServiceWorkerContextCore> context,
@@ -48,9 +49,9 @@ class ServiceWorkerUnregisterJob : public ServiceWorkerRegisterJobBase {
   void OnRegistrationFound(
       ServiceWorkerStatusCode status,
       const scoped_refptr<ServiceWorkerRegistration>& registration);
-  void Complete(ServiceWorkerStatusCode status);
-  void CompleteInternal(ServiceWorkerStatusCode status);
-  void ResolvePromise(ServiceWorkerStatusCode status);
+  void Complete(int64 registration_id, ServiceWorkerStatusCode status);
+  void CompleteInternal(int64 registration_id, ServiceWorkerStatusCode status);
+  void ResolvePromise(int64 registration_id, ServiceWorkerStatusCode status);
 
   base::WeakPtr<ServiceWorkerContextCore> context_;
   const GURL pattern_;
