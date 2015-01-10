@@ -49,11 +49,16 @@ class DriGpuPlatformSupportMessageFilter : public IPC::MessageFilter {
     // the main thread. If a cursor move message arrives but we haven't
     // processed the previous main thread message, keep processing on main
     // until nothing is pending.
+    bool cursor_position_message = MessageAffectsCursorPosition(message.type());
+    bool cursor_state_message = MessageAffectsCursorState(message.type());
+
+    // Only handle cursor related messages here.
+    if (!cursor_position_message && !cursor_state_message)
+      return false;
+
     bool cursor_was_animating = cursor_animating_;
     UpdateAnimationState(message);
-    bool process_move_on_main = pending_main_thread_operations_ &&
-                                MessageAffectsCursorPosition(message.type());
-    if (MessageAffectsCursorState(message.type()) || process_move_on_main ||
+    if (cursor_state_message || pending_main_thread_operations_ ||
         cursor_animating_ || cursor_was_animating) {
       pending_main_thread_operations_++;
 
