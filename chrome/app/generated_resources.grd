@@ -15044,7 +15044,7 @@ Do you accept?
 
       <!-- Copresence settings/debug strings -->
       <if expr="not is_android and not is_ios">
-        <message name="IDS_COPRESENCE_TITLE" desc="Title for the chrome://copresence page">
+        <message name="IDS_COPRESENCE_TITLE" desc="Title for the chrome://copresence page.">
           Google Copresence Info
         </message>
 
@@ -15067,17 +15067,24 @@ Do you accept?
         <message name="IDS_COPRESENCE_RECEIVED_TOKENS_TITLE" desc="Title for the table of copresence tokens recently received.">
           Tokens Received
         </message>
-        <message name="IDS_COPRESENCE_TOKEN_ID" desc="Title for the column in a tokens table listing the token id (base64 encoded)">
+        <message name="IDS_COPRESENCE_TOKEN_ID" desc="Title for the column in a tokens table listing the token id (base64 encoded).">
           Token ID
         </message>
         <message name="IDS_COPRESENCE_TOKEN_STATUS" desc="Title for the column in a tokens table indicating the status of a token: e.g. 'transmitted', 'received', 'expired', etc.">
           Status
         </message>
-        <message name="IDS_COPRESENCE_TOKEN_TRANSMIT_TIME" desc="Title for the column in the transmitted tokens table indicating when the token was first transmitted, e.g. '12:34 PM'">
+        <message name="IDS_COPRESENCE_TOKEN_TRANSMIT_TIME" desc="Title for the column in the transmitted tokens table indicating when the token was first transmitted, e.g. '12:34 PM'.">
           Time First Transmitted
         </message>
-        <message name="IDS_COPRESENCE_TOKEN_RECEIVE_TIME" desc="Title for the column in the received tokens table indicating when the token was last received, e.g. '12:34 AM'">
+        <message name="IDS_COPRESENCE_TOKEN_RECEIVE_TIME" desc="Title for the column in the received tokens table indicating when the token was last received, e.g. '12:34 AM'.">
           Time Last Received
+        </message>
+
+        <message name="IDS_COPRESENCE_CLEAR_STATE" desc="Label for the button that deletes all copresence state in the current profile.">
+          Clear Copresence State
+        </message>
+        <message name="IDS_COPRESENCE_CONFIRM_DELETE" desc="Message explaining which state will be deleted and the effect it will have.">
+          Attempts to connect to nearby devices will be cancelled. All local copresence data will be cleared, and apps using copresence may stop working. Are you sure?
         </message>
       </if>
 

@@ -43,6 +43,11 @@ scoped_ptr<WebUIDataSource> CreateDataSource() {
   data_source->AddLocalizedString("token_receive_time",
                                   IDS_COPRESENCE_TOKEN_RECEIVE_TIME);
 
+  data_source->AddLocalizedString("clear_state",
+                                  IDS_COPRESENCE_CLEAR_STATE);
+  data_source->AddLocalizedString("confirm_delete",
+                                  IDS_COPRESENCE_CONFIRM_DELETE);
+
   data_source->SetJsonPath("strings.js");
   data_source->AddResourcePath("copresence.css", IDR_COPRESENCE_CSS);
   data_source->AddResourcePath("copresence.js", IDR_COPRESENCE_JS);

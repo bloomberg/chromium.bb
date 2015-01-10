@@ -65,6 +65,14 @@ function updateReceivedToken(token) {
 }
 
 /**
+ * Callback to clear out the token tables.
+ */
+function clearTokens() {
+  clearTable($('transmitted-tokens-table'));
+  clearTable($('received-tokens-table'));
+}
+
+/**
  * Add or update a token in the specified table.
  * @param {HTMLTableElement} table
  * @param {Token} token
@@ -102,6 +110,21 @@ function updateTokenRow(row, token) {
   row.cells[3].textContent = token.time;
 }
 
+/**
+ * Delete all the rows in a table.
+ * @param {HTMLTableElement} table
+ */
+function clearTable(table) {
+  var body = table.tBodies[0];
+  while (body.rows.length > 0)
+    body.deleteRow();
+}
+
 document.addEventListener('DOMContentLoaded', function() {
   chrome.send('populateCopresenceState');
+
+  $('reset-button').addEventListener('click', function() {
+    if (confirm(loadTimeData.getString('confirm_delete')))
+      chrome.send('clearCopresenceState');
+  });
 });

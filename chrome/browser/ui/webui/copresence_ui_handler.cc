@@ -101,16 +101,25 @@ scoped_ptr<DictionaryValue> FormatToken(const T& token) {
   return js_token.Pass();
 }
 
-// Safely retrieve the CopresenceState, if any.
-copresence::CopresenceState* GetCopresenceState(WebUI* web_ui) {
-  // This function must be called with a valid web_ui.
+// Retrieve the CopresenceService, if any.
+CopresenceService* GetCopresenceService(WebUI* web_ui) {
   DCHECK(web_ui);
-  DCHECK(web_ui->GetWebContents());
-
-  // During shutdown, however, there may be no CopresenceService.
-  CopresenceService* service = CopresenceService::GetFactoryInstance()->Get(
+  return CopresenceService::GetFactoryInstance()->Get(
       web_ui->GetWebContents()->GetBrowserContext());
+}
+
+// Safely retrieve the CopresenceState, if any.
+copresence::CopresenceState* GetCopresenceState(CopresenceService* service) {
+  // During shutdown, there may be no CopresenceService.
   return service && service->manager() ? service->manager()->state() : nullptr;
+}
+
+// Safely retrieve the CopresenceState, if any. It would be cleaner if we could
+// put this into CopresenceUIHandler and call WebUIMessageHandler::web_ui()
+// instead of taking an argument. However, it turns out that web_ui() returns
+// null when called in the constructor. So we pass in the web_ui explicitly.
+copresence::CopresenceState* GetCopresenceState(WebUI* web_ui) {
+  return GetCopresenceState(GetCopresenceService(web_ui));
 }
 
 }  // namespace
@@ -138,6 +147,10 @@ void CopresenceUIHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "populateCopresenceState",
       base::Bind(&CopresenceUIHandler::HandlePopulateState,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "clearCopresenceState",
+      base::Bind(&CopresenceUIHandler::HandleClearState,
                  base::Unretained(this)));
 }
 
@@ -179,4 +192,21 @@ void CopresenceUIHandler::HandlePopulateState(const ListValue* args) {
     TokenTransmitted(token_entry.second);
   for (const auto& token_entry : state_->received_tokens())
     TokenReceived(token_entry.second);
+}
+
+void CopresenceUIHandler::HandleClearState(const ListValue* args) {
+  DCHECK(args->empty());
+
+  CopresenceService* service = GetCopresenceService(web_ui());
+  DCHECK(service);
+  service->ResetState();
+
+  // CopresenceService::ResetState() deletes the CopresenceState object
+  // we were using. We have to get the new one and reconnect to it.
+  state_ = GetCopresenceState(service);
+  DCHECK(state_);
+  state_->AddObserver(this);
+
+  web_ui()->CallJavascriptFunction("clearTokens");
+  DirectivesUpdated();
 }

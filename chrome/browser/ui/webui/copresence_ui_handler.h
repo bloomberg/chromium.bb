@@ -41,6 +41,9 @@ class CopresenceUIHandler final : public content::WebUIMessageHandler,
   // Handler to populate the page with its initial state.
   void HandlePopulateState(const base::ListValue* args);
 
+  // Handler for the clear state button.
+  void HandleClearState(const base::ListValue* args);
+
   copresence::CopresenceState* state_;
 
   DISALLOW_COPY_AND_ASSIGN(CopresenceUIHandler);
