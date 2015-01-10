@@ -217,6 +217,12 @@ bool EasyUnlockPrivateGetStringsFunction::RunSync() {
       "setupSecurePhoneHeaderText",
       l10n_util::GetStringFUTF16(IDS_EASY_UNLOCK_SETUP_SECURE_PHONE_HEADER_TEXT,
                                  device_type));
+  strings->SetString("setupSecurePhoneButtonLabel",
+                     l10n_util::GetStringUTF16(
+                         IDS_EASY_UNLOCK_SETUP_SECURE_PHONE_BUTTON_LABEL));
+  strings->SetString("setupSecurePhoneLinkText",
+                     l10n_util::GetStringUTF16(
+                         IDS_EASY_UNLOCK_SETUP_SECURE_PHONE_LINK_TEXT));
   // Step 2: Found a viable phone.
   strings->SetString(
       "setupFoundPhoneHeaderTitle",
