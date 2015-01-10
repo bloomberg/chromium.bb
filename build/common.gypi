@@ -1806,7 +1806,7 @@
       }],
       ['chromecast==1', {
         'enable_mpeg2ts_stream_parser%': 1,
-        'ffmpeg_branding%': 'Chrome',
+        'ffmpeg_branding%': 'ChromeOS',
         'ozone_platform_ozonex%': 1,
         'use_playready%': 0,
         'conditions': [
