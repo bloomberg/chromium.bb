@@ -92,7 +92,6 @@ bool RunHostScriptWithTimeout(
   for (unsigned int i = 0; i < args.size(); ++i) {
     command_line.AppendArg(args[i]);
   }
-  base::ProcessHandle process_handle;
 
   // Redirect the child's stdout to the parent's stderr. In the case where this
   // parent process is a Native Messaging host, its stdout is used to send
@@ -106,14 +105,15 @@ bool RunHostScriptWithTimeout(
   options.allow_new_privs = true;
 #endif
 
-  if (!base::LaunchProcess(command_line, options, &process_handle)) {
+  base::Process process = base::LaunchProcess(command_line, options);
+  if (!process.IsValid()) {
     LOG(ERROR) << "Failed to run command: "
                << command_line.GetCommandLineString();
     return false;
   }
 
-  if (!base::WaitForExitCodeWithTimeout(process_handle, exit_code, timeout)) {
-    base::KillProcess(process_handle, 0, false);
+  if (!process.WaitForExitWithTimeout(timeout, exit_code)) {
+    base::KillProcess(process.Handle(), 0, false);
     LOG(ERROR) << "Timeout exceeded for command: "
                << command_line.GetCommandLineString();
     return false;
