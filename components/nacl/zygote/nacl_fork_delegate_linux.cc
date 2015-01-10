@@ -267,7 +267,7 @@ void NaClForkDelegate::Init(const int sandboxdesc,
     options.clear_environ = true;
     AddPassthroughEnvToOptions(&options);
 
-    if (!base::LaunchProcess(argv_to_launch, options, NULL))
+    if (!base::LaunchProcess(argv_to_launch, options).IsValid())
       status_ = kNaClHelperLaunchFailed;
     // parent and error cases are handled below
 

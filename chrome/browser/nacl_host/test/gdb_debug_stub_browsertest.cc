@@ -7,6 +7,7 @@
 #include "base/path_service.h"
 #include "base/process/kill.h"
 #include "base/process/launch.h"
+#include "base/process/process.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/ppapi/ppapi_test.h"
@@ -21,7 +22,7 @@ class NaClGdbDebugStubTest : public PPAPINaClNewlibTest {
 
   void SetUpCommandLine(base::CommandLine* command_line) override;
 
-  void StartTestScript(base::ProcessHandle* test_process,
+  void StartTestScript(base::Process* test_process,
                        std::string test_name, int debug_stub_port);
   void RunDebugStubTest(const std::string& nacl_module,
                         const std::string& test_name);
@@ -32,7 +33,7 @@ void NaClGdbDebugStubTest::SetUpCommandLine(base::CommandLine* command_line) {
   command_line->AppendSwitch(switches::kEnableNaClDebug);
 }
 
-void NaClGdbDebugStubTest::StartTestScript(base::ProcessHandle* test_process,
+void NaClGdbDebugStubTest::StartTestScript(base::Process* test_process,
                                            std::string test_name,
                                            int debug_stub_port) {
   // We call python script to reuse GDB RSP protocol implementation.
@@ -44,12 +45,12 @@ void NaClGdbDebugStubTest::StartTestScript(base::ProcessHandle* test_process,
   cmd.AppendArg(base::IntToString(debug_stub_port));
   cmd.AppendArg(test_name);
   LOG(INFO) << cmd.GetCommandLineString();
-  base::LaunchProcess(cmd, base::LaunchOptions(), test_process);
+  *test_process = base::LaunchProcess(cmd, base::LaunchOptions());
 }
 
 void NaClGdbDebugStubTest::RunDebugStubTest(const std::string& nacl_module,
                                             const std::string& test_name) {
-  base::ProcessHandle test_script;
+  base::Process test_script;
   scoped_ptr<base::Environment> env(base::Environment::Create());
   nacl::NaClBrowser::GetInstance()->SetGdbDebugStubPortListener(
       base::Bind(&NaClGdbDebugStubTest::StartTestScript,
@@ -60,7 +61,7 @@ void NaClGdbDebugStubTest::RunDebugStubTest(const std::string& nacl_module,
   env->UnSetVar("NACLVERBOSITY");
   nacl::NaClBrowser::GetInstance()->ClearGdbDebugStubPortListener();
   int exit_code;
-  base::WaitForExitCode(test_script, &exit_code);
+  test_script.WaitForExit(&exit_code);
   EXPECT_EQ(0, exit_code);
 }
 
