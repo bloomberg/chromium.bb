@@ -944,7 +944,7 @@ bool V4L2VideoEncodeAccelerator::SetFormats(
 
   struct v4l2_crop crop;
   memset(&crop, 0, sizeof(crop));
-  crop.type = V4L2_BUF_TYPE_VIDEO_OUTPUT;
+  crop.type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
   crop.c.left = 0;
   crop.c.top = 0;
   crop.c.width = visible_size_.width();
