@@ -29,7 +29,6 @@ class ShellContentRendererClient : public ContentRendererClient {
   // TODO(mkwst): These toggle based on the kEnablePepperTesting flag. Do we
   // need that outside of layout tests?
   bool IsPluginAllowedToUseCompositorAPI(const GURL& url) override;
-  bool IsPluginAllowedToUseVideoDecodeAPI(const GURL& url) override;
   bool IsPluginAllowedToUseDevChannelAPIs() override;
 
  private:

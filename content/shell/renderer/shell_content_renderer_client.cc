@@ -36,12 +36,6 @@ bool ShellContentRendererClient::IsPluginAllowedToUseCompositorAPI(
       switches::kEnablePepperTesting);
 }
 
-bool ShellContentRendererClient::IsPluginAllowedToUseVideoDecodeAPI(
-    const GURL& url) {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnablePepperTesting);
-}
-
 bool ShellContentRendererClient::IsPluginAllowedToUseDevChannelAPIs() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnablePepperTesting);

@@ -74,19 +74,6 @@ bool CanUseCompositorAPI(const RendererPpapiHost* host, PP_Instance instance) {
       document_url);
 }
 
-bool CanUseVideoDecodeAPI(const RendererPpapiHost* host, PP_Instance instance) {
-  blink::WebPluginContainer* container =
-      host->GetContainerForInstance(instance);
-  if (!container)
-    return false;
-
-  GURL document_url = container->element().document().url();
-  ContentRendererClient* content_renderer_client =
-      GetContentClient()->renderer();
-  return content_renderer_client->IsPluginAllowedToUseVideoDecodeAPI(
-      document_url);
-}
-
 }  // namespace
 
 ContentRendererPepperHostFactory::ContentRendererPepperHostFactory(
@@ -171,12 +158,9 @@ scoped_ptr<ResourceHost> ContentRendererPepperHostFactory::CreateResourceHost(
     case PpapiHostMsg_URLLoader_Create::ID:
       return scoped_ptr<ResourceHost>(
           new PepperURLLoaderHost(host_, false, instance, resource));
-    case PpapiHostMsg_VideoDecoder_Create::ID: {
-      if (!CanUseVideoDecodeAPI(host_, instance))
-        return scoped_ptr<ResourceHost>();
+    case PpapiHostMsg_VideoDecoder_Create::ID:
       return scoped_ptr<ResourceHost>(
           new PepperVideoDecoderHost(host_, instance, resource));
-    }
     case PpapiHostMsg_WebSocket_Create::ID:
       return scoped_ptr<ResourceHost>(
           new PepperWebSocketHost(host_, instance, resource));

@@ -198,11 +198,6 @@ bool ContentRendererClient::IsPluginAllowedToUseCompositorAPI(const GURL& url) {
   return false;
 }
 
-bool ContentRendererClient::IsPluginAllowedToUseVideoDecodeAPI(
-    const GURL& url) {
-  return false;
-}
-
 bool ContentRendererClient::IsPluginAllowedToUseDevChannelAPIs() {
   return false;
 }

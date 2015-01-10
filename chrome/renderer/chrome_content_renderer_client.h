@@ -147,7 +147,6 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   void AddKeySystems(std::vector<media::KeySystemInfo>* key_systems) override;
   bool IsPluginAllowedToUseDevChannelAPIs() override;
   bool IsPluginAllowedToUseCompositorAPI(const GURL& url) override;
-  bool IsPluginAllowedToUseVideoDecodeAPI(const GURL& url) override;
   content::BrowserPluginDelegate* CreateBrowserPluginDelegate(
       content::RenderFrame* render_frame,
       const std::string& mime_type,
