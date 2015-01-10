@@ -1,29 +1,42 @@
-To make a release follow these steps.
+To make a release of Weston and/or Wayland, follow these steps.
 
-  1.  Update configure.ac to intended version, commit.
+  0.  Update the first three lines of configure.ac to the intended
+      version, commit.  Also note that Weston includes versioned
+      dependencies on 'wayland-server' and 'wayland-client' in
+      configure.ac which typically need updated as well.
 
-  2.  make distcheck (for weston I do make distcheck TESTS= to avoid
-      running the tests... most of the tests pass, but the xwayland one
-      is flaky)
+  1.  Verify the test suites and codebase checks pass.  (All of the
+      tests pass should pass except for xwayland, which can be flaky.)
 
-  3.  git tag -am 1.5.0 1.5.0
+      $ make check
 
-  4.  scp tarballs to /srv/wayland.freedesktop.org/www/releases on
-      annarchy.freedesktop.org
+  2.  Run the release.sh script to generate the tarballs, sign and
+      upload them, and generate a release announcement template.
+      This script can be obtained from X.org's modular package:
 
-  5.  Put SHA1 for tarballs and tagged commits in release announcement
+        http://cgit.freedesktop.org/xorg/util/modular/tree/release.sh
 
-  6.  Push configure.ac commits and tags.
+      The script supports a --dry-run option to test it without actually
+      doing a release.  If the script fails on the distcheck step due to
+      a testsuite error that can't be fixed for some reason, you can
+      skip testsuite by specifying the --dist argument.  Pass --help to
+      see other supported options.
 
-  7.  Send out release announcement.
+  3.  Compose a release announcement.  The script will generate a
+      weston.x.y.0.announce file with a list of changes and tags.
+      Prepend this with a human-readable listing of the most notable
+      changes.  For x.y.0 releases, indicate the schedule for the
+      x.y+1.0 release.
 
-  8.  Get the release email URL from
+  4.  Send the release announcement to wayland-devel@lists.freedesktop.org
+
+  5.  Get your freshly posted release email URL from
       http://lists.freedesktop.org/archives/wayland-devel/
 
-  9.  Update releases.html in wayland-web with links to tarballs and
-      release email.
+  6.  Update releases.html in wayland-web with links to tarballs and
+      the release email URL
 
-  10. Update topic in #wayland to point to release announcement
+  7.  Update topic in #wayland to point to the release announcement URL
 
 For x.y.0 releases, also create the x.y branch.  The x.y branch is for
 bug fixes and conservative changes to the x.y.0 release, and is where
@@ -33,6 +46,9 @@ done this both after the x.y.0 release (to focus development on bug
 fixing for the x.y.1 release for a little longer) or before the x.y.0
 release (like we did with the 1.5.0 release, to unblock master
 development early). 
+
+    $ git branch x.y
+    $ git push origin x.y
 
 The master branch configure.ac version should always be (at least)
 x.y.90, with x.y being the most recent stable branch.  Stable branch
