@@ -60,7 +60,10 @@ class NativeDisplayDelegateProxy : public NativeDisplayDelegate,
   void OnDeviceEvent(const DeviceEvent& event) override;
 
   // GpuPlatformSupportHost:
-  void OnChannelEstablished(int host_id, IPC::Sender* sender) override;
+  void OnChannelEstablished(
+      int host_id,
+      scoped_refptr<base::SingleThreadTaskRunner> send_runner,
+      const base::Callback<void(IPC::Message*)>& send_callback) override;
   void OnChannelDestroyed(int host_id) override;
 
   // IPC::Listener overrides:

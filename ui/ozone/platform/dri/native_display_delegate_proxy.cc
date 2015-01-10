@@ -196,8 +196,10 @@ void NativeDisplayDelegateProxy::OnDeviceEvent(const DeviceEvent& event) {
                     OnConfigurationChanged());
 }
 
-void NativeDisplayDelegateProxy::OnChannelEstablished(int host_id,
-                                                      IPC::Sender* sender) {
+void NativeDisplayDelegateProxy::OnChannelEstablished(
+    int host_id,
+    scoped_refptr<base::SingleThreadTaskRunner> send_runner,
+    const base::Callback<void(IPC::Message*)>& send_callback) {
   FOR_EACH_OBSERVER(NativeDisplayObserver, observers_,
                     OnConfigurationChanged());
 }

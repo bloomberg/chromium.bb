@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/callback.h"
 #include "base/observer_list.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/ozone/public/gpu_platform_support_host.h"
@@ -33,8 +34,13 @@ class DriGpuPlatformSupportHost : public GpuPlatformSupportHost,
   void AddChannelObserver(ChannelObserver* observer);
   void RemoveChannelObserver(ChannelObserver* observer);
 
+  bool IsConnected();
+
   // GpuPlatformSupportHost:
-  void OnChannelEstablished(int host_id, IPC::Sender* sender) override;
+  void OnChannelEstablished(
+      int host_id,
+      scoped_refptr<base::SingleThreadTaskRunner> send_runner,
+      const base::Callback<void(IPC::Message*)>& send_callback) override;
   void OnChannelDestroyed(int host_id) override;
 
   // IPC::Listener:
@@ -53,7 +59,10 @@ class DriGpuPlatformSupportHost : public GpuPlatformSupportHost,
 
  private:
   int host_id_;
-  IPC::Sender* sender_;
+
+  scoped_refptr<base::SingleThreadTaskRunner> send_runner_;
+  base::Callback<void(IPC::Message*)> send_callback_;
+
   std::vector<GpuPlatformSupportHost*> handlers_;
   ObserverList<ChannelObserver> channel_observers_;
 };

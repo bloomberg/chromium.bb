@@ -8,13 +8,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/ozone/ozone_export.h"
 
-namespace IPC {
-class Sender;
-}
-
 namespace ui {
 
-class UiThreadGpuForwardingSender;
+class FakeGpuProcess;
+class FakeGpuProcessHost;
 
 // Helper class for applications that do GL on the UI thead.
 //
@@ -29,8 +26,8 @@ class OZONE_EXPORT UiThreadGpu {
   bool Initialize();
 
  private:
-  scoped_ptr<UiThreadGpuForwardingSender> ui_sender_;
-  scoped_ptr<UiThreadGpuForwardingSender> gpu_sender_;
+  scoped_ptr<FakeGpuProcess> fake_gpu_process_;
+  scoped_ptr<FakeGpuProcessHost> fake_gpu_process_host_;
 
   DISALLOW_COPY_AND_ASSIGN(UiThreadGpu);
 };

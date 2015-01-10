@@ -5,6 +5,8 @@
 #ifndef UI_OZONE_PUBLIC_GPU_PLATFORM_SUPPORT_HOST_H_
 #define UI_OZONE_PUBLIC_GPU_PLATFORM_SUPPORT_HOST_H_
 
+#include "base/memory/ref_counted.h"
+#include "base/single_thread_task_runner.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "ui/ozone/ozone_base_export.h"
@@ -26,7 +28,10 @@ class OZONE_BASE_EXPORT GpuPlatformSupportHost : public IPC::Listener {
   ~GpuPlatformSupportHost() override;
 
   // Called when the GPU process is spun up & channel established.
-  virtual void OnChannelEstablished(int host_id, IPC::Sender* sender) = 0;
+  virtual void OnChannelEstablished(
+      int host_id,
+      scoped_refptr<base::SingleThreadTaskRunner> send_runner,
+      const base::Callback<void(IPC::Message*)>& sender) = 0;
 
   // Called when the GPU process is destroyed.
   virtual void OnChannelDestroyed(int host_id) = 0;
