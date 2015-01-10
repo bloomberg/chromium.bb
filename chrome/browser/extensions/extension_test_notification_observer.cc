@@ -7,6 +7,7 @@
 #include "base/callback_list.h"
 #include "chrome/browser/extensions/extension_action_test_util.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -44,6 +45,11 @@ bool HaveAllExtensionRenderViewHostsFinishedLoading(
       return false;
   }
   return true;
+}
+
+bool IsExtensionNotIdle(const std::string& extension_id,
+                        content::BrowserContext* context) {
+  return !extensions::util::IsExtensionIdle(extension_id, context);
 }
 
 }  // namespace
@@ -146,6 +152,25 @@ bool ExtensionTestNotificationObserver::WaitForExtensionViewsToLoad() {
   WaitForCondition(
       base::Bind(&HaveAllExtensionRenderViewHostsFinishedLoading, manager),
       &notification_set);
+  return true;
+}
+
+bool ExtensionTestNotificationObserver::WaitForExtensionIdle(
+    const std::string& extension_id) {
+  NotificationSet notification_set;
+  notification_set.Add(content::NOTIFICATION_RENDERER_PROCESS_TERMINATED);
+  WaitForCondition(base::Bind(&extensions::util::IsExtensionIdle, extension_id,
+                              GetProfile()),
+                   &notification_set);
+  return true;
+}
+
+bool ExtensionTestNotificationObserver::WaitForExtensionNotIdle(
+    const std::string& extension_id) {
+  NotificationSet notification_set;
+  notification_set.Add(content::NOTIFICATION_LOAD_STOP);
+  WaitForCondition(base::Bind(&IsExtensionNotIdle, extension_id, GetProfile()),
+                   &notification_set);
   return true;
 }
 

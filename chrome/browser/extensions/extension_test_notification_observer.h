@@ -60,6 +60,12 @@ class ExtensionTestNotificationObserver
   // Wait for all extension views to load.
   bool WaitForExtensionViewsToLoad();
 
+  // Wait for extension to be idle.
+  bool WaitForExtensionIdle(const std::string& extension_id);
+
+  // Wait for extension to be not idle.
+  bool WaitForExtensionNotIdle(const std::string& extension_id);
+
   // Watch for the given event type from the given source.
   // After calling this method, call Wait() to ensure that RunMessageLoop() is
   // called appropriately and cleanup is performed.

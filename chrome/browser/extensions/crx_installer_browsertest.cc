@@ -14,6 +14,7 @@
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_install_prompt_show_params.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/fake_safe_browsing_database_manager.h"
 #include "chrome/browser/extensions/test_extension_dir.h"
@@ -432,17 +433,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, HiDpiThemeTest) {
   EXPECT_FALSE(registry->enabled_extensions().GetByID(extension_id));
 }
 
-// See http://crbug.com/315299.
-#if defined(OS_WIN) || defined(OS_LINUX)
-#define MAYBE_InstallDelayedUntilNextUpdate \
-        DISABLED_InstallDelayedUntilNextUpdate
-#else
-#define MAYBE_InstallDelayedUntilNextUpdate InstallDelayedUntilNextUpdate
-#endif
 IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest,
-                       MAYBE_InstallDelayedUntilNextUpdate) {
+                       InstallDelayedUntilNextUpdate) {
   const std::string extension_id("ldnnhddmnhbkjipkidpdiheffobcpfmf");
-  base::FilePath crx_path = test_data_dir_.AppendASCII("delayed_install");
+  base::FilePath base_path = test_data_dir_.AppendASCII("delayed_install");
+
   ExtensionSystem* extension_system = extensions::ExtensionSystem::Get(
       browser()->profile());
   ExtensionService* service = extension_system->extension_service();
@@ -453,47 +448,41 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest,
 
   // Install version 1 of the test extension. This extension does not have
   // a background page but does have a browser action.
-  ASSERT_TRUE(InstallExtension(crx_path.AppendASCII("v1.crx"), 1));
+  base::FilePath v1_path = PackExtension(base_path.AppendASCII("v1"));
+  ASSERT_FALSE(v1_path.empty());
+  ASSERT_TRUE(InstallExtension(v1_path, 1));
   const extensions::Extension* extension =
      registry->enabled_extensions().GetByID(extension_id);
   ASSERT_TRUE(extension);
   ASSERT_EQ(extension_id, extension->id());
   ASSERT_EQ("1.0", extension->version()->GetString());
 
-  // Make test extension non-idle by opening the extension's browser action
-  // popup. This should cause the installation to be delayed.
-  content::WindowedNotificationObserver loading_observer(
-      extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
-      content::Source<Profile>(profile()));
-  BrowserActionTestUtil util(browser());
-  // There is only one extension, so just click the first browser action.
-  ASSERT_EQ(1, util.NumberOfBrowserActions());
-  util.Press(0);
-  loading_observer.Wait();
-  ExtensionHost* extension_host =
-      content::Details<ExtensionHost>(loading_observer.details()).ptr();
+  // Make test extension non-idle by opening the extension's options page.
+  ExtensionTabUtil::OpenOptionsPage(extension, browser());
+  WaitForExtensionNotIdle(extension_id);
 
   // Install version 2 of the extension and check that it is indeed delayed.
-  ASSERT_TRUE(UpdateExtensionWaitForIdle(
-      extension_id, crx_path.AppendASCII("v2.crx"), 0));
+  base::FilePath v2_path = PackExtension(base_path.AppendASCII("v2"));
+  ASSERT_FALSE(v2_path.empty());
+  ASSERT_TRUE(UpdateExtensionWaitForIdle(extension_id, v2_path, 0));
 
   ASSERT_EQ(1u, service->delayed_installs()->size());
   extension = registry->enabled_extensions().GetByID(extension_id);
   ASSERT_EQ("1.0", extension->version()->GetString());
 
-  // Make the extension idle again by closing the popup. This should not trigger
-  // the delayed install.
-  content::RenderProcessHostWatcher terminated_observer(
-      extension_host->render_process_host(),
-      content::RenderProcessHostWatcher::WATCH_FOR_HOST_DESTRUCTION);
-  extension_host->render_view_host()->ClosePage();
-  terminated_observer.Wait();
+  // Make the extension idle again by navigating away from the options page.
+  // This should not trigger the delayed install.
+  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
+  WaitForExtensionIdle(extension_id);
   ASSERT_EQ(1u, service->delayed_installs()->size());
+  extension = registry->enabled_extensions().GetByID(extension_id);
+  ASSERT_EQ("1.0", extension->version()->GetString());
 
   // Install version 3 of the extension. Because the extension is idle,
   // this install should succeed.
-  ASSERT_TRUE(UpdateExtensionWaitForIdle(
-      extension_id, crx_path.AppendASCII("v3.crx"), 0));
+  base::FilePath v3_path = PackExtension(base_path.AppendASCII("v3"));
+  ASSERT_FALSE(v3_path.empty());
+  ASSERT_TRUE(UpdateExtensionWaitForIdle(extension_id, v3_path, 0));
   extension = registry->enabled_extensions().GetByID(extension_id);
   ASSERT_EQ("3.0", extension->version()->GetString());
 
