@@ -120,7 +120,26 @@ class PnaclPackaging(object):
                    'getrevision',
                    '--revision-package', PnaclPackaging.pnacl_package]
 
-    version = subprocess.check_output(pkg_ver_cmd).strip()
+    git_version = subprocess.check_output(pkg_ver_cmd).strip()
+
+    nacl_dir = os.path.join(
+        PnaclPackaging.package_base,
+        '../../../../../native_client')
+
+    if sys.platform == 'win32':
+      git = 'git.bat'
+      shell = True
+    else:
+      git = 'git'
+      shell = False
+
+    subprocess.check_call(
+        [git, 'fetch', '--tags'],
+        cwd=nacl_dir, shell=shell)
+
+    version = subprocess.check_output(
+        [git, 'describe', git_version, '--tags'],
+        cwd=nacl_dir, shell=shell).split('-')[1]
 
     # CWS happens to use version quads, so make it a quad too.
     # However, each component of the quad is limited to 64K max.
@@ -129,7 +148,7 @@ class PnaclPackaging(object):
     version = int(version)
     version_more = version / max_version
     version = version % max_version
-    return '0.1.%d.%d' % (version_more, version)
+    return '0.2.%d.%d' % (version_more, version)
 
   @staticmethod
   def GeneratePnaclInfo(target_dir, abi_version, arch):
