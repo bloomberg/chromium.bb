@@ -23,6 +23,7 @@ import pipes
 import platform
 import psutil
 import platform
+import re
 import signal
 import socket
 import subprocess
@@ -415,6 +416,9 @@ class Desktop:
     if retcode != 0:
       logging.error("Failed to set XKB to 'evdev'")
 
+    if not self.server_supports_exact_resize:
+      return
+
     # Register the screen sizes if the X server's RANDR extension supports it.
     # Errors here are non-fatal; the X server will continue to run with the
     # dimensions from the "-screen" option.
@@ -429,7 +433,8 @@ class Desktop:
     # Set the initial mode to the first size specified, otherwise the X server
     # would default to (max_width, max_height), which might not even be in the
     # list.
-    label = "%dx%d" % self.sizes[0]
+    initial_size = self.sizes[0]
+    label = "%dx%d" % initial_size
     args = ["xrandr", "-s", label]
     subprocess.call(args, env=self.child_env, stdout=devnull, stderr=devnull)
 
@@ -438,6 +443,14 @@ class Desktop:
     # something realistic.
     args = ["xrandr", "--dpi", "96"]
     subprocess.call(args, env=self.child_env, stdout=devnull, stderr=devnull)
+
+    # Monitor for any automatic resolution changes from the desktop environment.
+    args = [sys.argv[0], "--watch-resolution", str(initial_size[0]),
+            str(initial_size[1])]
+
+    # It is not necessary to wait() on the process here, as this script's main
+    # loop will reap the exit-codes of all child processes.
+    subprocess.Popen(args, env=self.child_env, stdout=devnull, stderr=devnull)
 
     devnull.close()
 
@@ -944,6 +957,47 @@ def waitpid_handle_exceptions(pid, deadline):
         raise
 
 
+def watch_for_resolution_changes(initial_size):
+  """Watches for any resolution-changes which set the maximum screen resolution,
+  and resets the initial size if this happens.
+
+  The Ubuntu desktop has a component (the 'xrandr' plugin of
+  unity-settings-daemon) which often changes the screen resolution to the
+  first listed mode. This is the built-in mode for the maximum screen size,
+  which can trigger excessive CPU usage in some situations. So this is a hack
+  which waits for any such events, and undoes the change if it occurs.
+
+  Sometimes, the user might legitimately want to use the maximum available
+  resolution, so this monitoring is limited to a short time-period.
+  """
+  for _ in range(30):
+    time.sleep(1)
+
+    xrandr_output = subprocess.Popen(["xrandr"],
+                                     stdout=subprocess.PIPE).communicate()[0]
+    matches = re.search(r'current (\d+) x (\d+), maximum (\d+) x (\d+)',
+                        xrandr_output)
+
+    # No need to handle ValueError. If xrandr fails to give valid output,
+    # there's no point in continuing to monitor.
+    current_size = (int(matches.group(1)), int(matches.group(2)))
+    maximum_size = (int(matches.group(3)), int(matches.group(4)))
+
+    if current_size != initial_size:
+      # Resolution change detected.
+      if current_size == maximum_size:
+        # This was probably an automated change from unity-settings-daemon, so
+        # undo it.
+        label = "%dx%d" % initial_size
+        args = ["xrandr", "-s", label]
+        subprocess.call(args)
+        args = ["xrandr", "--dpi", "96"]
+        subprocess.call(args)
+
+      # Stop monitoring after any change was detected.
+      break
+
+
 def main():
   EPILOG = """This script is not intended for use by end-users.  To configure
 Chrome Remote Desktop, please install the app from the Chrome
@@ -981,6 +1035,9 @@ Web Store: https://chrome.google.com/remotedesktop"""
   parser.add_option("", "--host-version", dest="host_version", default=False,
                     action="store_true",
                     help="Prints version of the host.")
+  parser.add_option("", "--watch-resolution", dest="watch_resolution",
+                    type="int", nargs=2, default=False, action="store",
+                    help=optparse.SUPPRESS_HELP)
   (options, args) = parser.parse_args()
 
   # Determine the filename of the host configuration and PID files.
@@ -988,7 +1045,6 @@ Web Store: https://chrome.google.com/remotedesktop"""
     options.config = os.path.join(CONFIG_DIR, "host#%s.json" % g_host_hash)
 
   # Check for a modal command-line option (start, stop, etc.)
-
   if options.get_status:
     proc = get_daemon_proc()
     if proc is not None:
@@ -1051,6 +1107,10 @@ Web Store: https://chrome.google.com/remotedesktop"""
   if options.host_version:
     # TODO(sergeyu): Also check RPM package version once we add RPM package.
     return os.system(locate_executable(HOST_BINARY_NAME) + " --version") >> 8
+
+  if options.watch_resolution:
+    watch_for_resolution_changes(options.watch_resolution)
+    return 0
 
   if not options.start:
     # If no modal command-line options specified, print an error and exit.
