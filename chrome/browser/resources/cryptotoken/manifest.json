@@ -9,6 +9,7 @@
     "usb",
     "cryptotokenPrivate",
     "externally_connectable.all_urls",
+    "tabs",
     "u2fDevices",
     "https://*/*",
     "http://*/*",
