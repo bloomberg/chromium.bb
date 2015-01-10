@@ -10417,6 +10417,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Hotword.SharedModuleReinstallLanguage" enum="LanguageCode">
+  <owner>amistry@chromium.org</owner>
+  <owner>rlp@chromium.org</owner>
+  <owner>somast@chromium.org</owner>
+  <summary>
+    Language, switched to by the user, that triggered a hotword shared module
+    reinstall.
+  </summary>
+</histogram>
+
 <histogram name="HttpCache.AsyncValidationDuration" units="milliseconds">
   <owner>ricea@chromium.org</owner>
   <summary>

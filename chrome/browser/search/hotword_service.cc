@@ -11,6 +11,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
@@ -33,6 +34,7 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/language_usage_metrics/language_usage_metrics.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
@@ -568,6 +570,11 @@ bool HotwordService::MaybeReinstallHotwordExtension() {
                                      false);
   }
 
+  // Record re-installs due to language change.
+  UMA_HISTOGRAM_SPARSE_SLOWLY(
+      "Hotword.SharedModuleReinstallLanguage",
+      language_usage_metrics::LanguageUsageMetrics::ToLanguageCode(
+          GetCurrentLocale(profile_)));
   return UninstallHotwordExtension(extension_service);
 }
 
