@@ -43,32 +43,32 @@ int GCInfoTable::s_gcInfoIndex = 0;
 size_t GCInfoTable::s_gcInfoTableSize = 0;
 GCInfo const** s_gcInfoTable = nullptr;
 
-size_t GCInfoTable::allocateGCInfoSlot()
+void GCInfoTable::ensureGCInfoIndex(const GCInfo* gcInfo, size_t* gcInfoIndexSlot)
 {
-    // FIXME: if multiple threads attempt to allocate the initial object
-    // for a given type, there'll be a write race on updating the 'static'
-    // holding its index. Duplicate GCInfo slots might be written for the
-    // object, which is benign, but verify that the index update race is
-    // acceptable.
-    int index = atomicIncrement(&s_gcInfoIndex);
-    size_t gcInfoIndex = static_cast<size_t>(index);
-    ASSERT(gcInfoIndex < GCInfoTable::maxIndex);
-    if (gcInfoIndex >= s_gcInfoTableSize)
-        resize(gcInfoIndex);
-
-    return gcInfoIndex;
-}
-
-void GCInfoTable::resize(size_t index)
-{
+    ASSERT(gcInfo);
+    ASSERT(gcInfoIndexSlot);
+    // Keep a global GCInfoTable lock while allocating a new slot.
     AtomicallyInitializedStatic(Mutex&, mutex = *new Mutex);
     MutexLocker locker(mutex);
 
-    // Keep a lock while expanding the shared table; check
-    // if another thread have already resized.
-    if (index < s_gcInfoTableSize)
+    // If more than one thread ends up allocating a slot for
+    // the same GCInfo, have later threads reuse the slot
+    // allocated by the first.
+    if (*gcInfoIndexSlot)
         return;
 
+    int index = ++s_gcInfoIndex;
+    size_t gcInfoIndex = static_cast<size_t>(index);
+    ASSERT(gcInfoIndex < GCInfoTable::maxIndex);
+    if (gcInfoIndex >= s_gcInfoTableSize)
+        resize();
+
+    s_gcInfoTable[gcInfoIndex] = gcInfo;
+    *gcInfoIndexSlot = gcInfoIndex;
+}
+
+void GCInfoTable::resize()
+{
     // (Light) experimentation suggests that Blink doesn't need
     // more than this while handling content on popular web properties.
     const size_t initialSize = 512;
@@ -84,7 +84,7 @@ void GCInfoTable::resize(size_t index)
 void GCInfoTable::init()
 {
     RELEASE_ASSERT(!s_gcInfoTable);
-    resize(0);
+    resize();
 }
 
 void GCInfoTable::shutdown()

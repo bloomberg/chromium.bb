@@ -863,7 +863,7 @@ extern PLATFORM_EXPORT GCInfo const** s_gcInfoTable;
 
 class GCInfoTable {
 public:
-    PLATFORM_EXPORT static size_t allocateGCInfoSlot();
+    PLATFORM_EXPORT static void ensureGCInfoIndex(const GCInfo*, size_t*);
 
     static void init();
     static void shutdown();
@@ -872,7 +872,7 @@ public:
     static const size_t maxIndex = 1 << 15;
 
 private:
-    static void resize(size_t);
+    static void resize();
 
     static int s_gcInfoIndex;
     static size_t s_gcInfoTableSize;
@@ -880,12 +880,13 @@ private:
 
 // This macro should be used when returning a unique 15 bit integer
 // for a given gcInfo.
-#define RETURN_GCINFO_INDEX() \
-    static const size_t gcInfoIndex = GCInfoTable::allocateGCInfoSlot(); \
-    ASSERT(gcInfoIndex >= 1); \
-    ASSERT(gcInfoIndex < GCInfoTable::maxIndex);  \
-    ASSERT(s_gcInfoTable); \
-    s_gcInfoTable[gcInfoIndex] = &gcInfo; \
+#define RETURN_GCINFO_INDEX()                                  \
+    static size_t gcInfoIndex = 0;                             \
+    ASSERT(s_gcInfoTable);                                     \
+    if (!gcInfoIndex)                                          \
+        GCInfoTable::ensureGCInfoIndex(&gcInfo, &gcInfoIndex); \
+    ASSERT(gcInfoIndex >= 1);                                  \
+    ASSERT(gcInfoIndex < GCInfoTable::maxIndex);               \
     return gcInfoIndex;
 
 template<typename T>
