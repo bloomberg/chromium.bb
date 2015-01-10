@@ -255,13 +255,13 @@ is_debugger_attached(void)
 {
 	int status;
 	int rc;
-	int pid = fork();
+	pid_t pid = fork();
 
 	if (pid == -1)
 		return 0;
 
 	if (pid == 0) {
-		int ppid = getppid();
+		pid_t ppid = getppid();
 		if (ptrace(PTRACE_ATTACH, ppid, NULL, NULL) == 0) {
 			waitpid(ppid, NULL, 0);
 			ptrace(PTRACE_CONT, NULL, NULL);
