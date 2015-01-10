@@ -83,21 +83,7 @@ void ServiceWorkerURLRequestJob::Start() {
 
 void ServiceWorkerURLRequestJob::Kill() {
   net::URLRequestJob::Kill();
-  if (stream_ || !waiting_stream_url_.is_empty()) {
-    if (ServiceWorkerVersion* active_version = provider_host_->active_version())
-      active_version->RemoveStreamingURLRequestJob(this);
-  }
-  if (stream_) {
-    stream_->RemoveReadObserver(this);
-    stream_->Abort();
-    stream_ = nullptr;
-  }
-  if (!waiting_stream_url_.is_empty()) {
-    StreamRegistry* stream_registry =
-        GetStreamContextForResourceContext(resource_context_)->registry();
-    stream_registry->RemoveRegisterObserver(waiting_stream_url_);
-    stream_registry->AbortPendingStream(waiting_stream_url_);
-  }
+  ClearStream();
   fetch_dispatcher_.reset();
   blob_request_.reset();
   weak_factory_.InvalidateWeakPtrs();
@@ -341,6 +327,7 @@ void ServiceWorkerURLRequestJob::GetExtraResponseInfo(
 
 
 ServiceWorkerURLRequestJob::~ServiceWorkerURLRequestJob() {
+  ClearStream();
 }
 
 void ServiceWorkerURLRequestJob::MaybeStartRequest() {
@@ -539,7 +526,8 @@ void ServiceWorkerURLRequestJob::DidDispatchFetchEvent(
   if (response.stream_url.is_valid()) {
     DCHECK(response.blob_uuid.empty());
     DCHECK(provider_host_->active_version());
-    provider_host_->active_version()->AddStreamingURLRequestJob(this);
+    streaming_version_ = provider_host_->active_version();
+    streaming_version_->AddStreamingURLRequestJob(this);
     response_url_ = response.url;
     service_worker_response_type_ = response.response_type;
     CreateResponseHeader(
@@ -617,6 +605,24 @@ void ServiceWorkerURLRequestJob::DeliverErrorResponse() {
   CreateResponseHeader(
       500, "Service Worker Response Error", ServiceWorkerHeaderMap());
   CommitResponseHeader();
+}
+
+void ServiceWorkerURLRequestJob::ClearStream() {
+  if (streaming_version_) {
+    streaming_version_->RemoveStreamingURLRequestJob(this);
+    streaming_version_ = nullptr;
+  }
+  if (stream_) {
+    stream_->RemoveReadObserver(this);
+    stream_->Abort();
+    stream_ = nullptr;
+  }
+  if (!waiting_stream_url_.is_empty()) {
+    StreamRegistry* stream_registry =
+        GetStreamContextForResourceContext(resource_context_)->registry();
+    stream_registry->RemoveRegisterObserver(waiting_stream_url_);
+    stream_registry->AbortPendingStream(waiting_stream_url_);
+  }
 }
 
 }  // namespace content

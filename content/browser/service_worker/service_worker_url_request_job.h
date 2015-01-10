@@ -41,6 +41,7 @@ class ResourceRequestBody;
 class ServiceWorkerContextCore;
 class ServiceWorkerFetchDispatcher;
 class ServiceWorkerProviderHost;
+class ServiceWorkerVersion;
 class Stream;
 
 class CONTENT_EXPORT ServiceWorkerURLRequestJob
@@ -159,6 +160,9 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob
   // Creates and commits a response header indicating error.
   void DeliverErrorResponse();
 
+  // Releases the resources for streaming.
+  void ClearStream();
+
   base::WeakPtr<ServiceWorkerProviderHost> provider_host_;
 
   // Timing info to show on the popup in Devtools' Network tab.
@@ -198,6 +202,7 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob
   // using the userdata mechanism. So we have to keep it not to free the blobs.
   scoped_refptr<ResourceRequestBody> body_;
   scoped_ptr<storage::BlobDataHandle> request_body_blob_data_handle_;
+  scoped_refptr<ServiceWorkerVersion> streaming_version_;
 
   base::WeakPtrFactory<ServiceWorkerURLRequestJob> weak_factory_;
 
