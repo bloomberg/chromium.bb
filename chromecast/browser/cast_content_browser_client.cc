@@ -114,6 +114,13 @@ void CastContentBrowserClient::AppendExtraCommandLineSwitches(
   base::CommandLine* browser_command_line =
       base::CommandLine::ForCurrentProcess();
 
+  // IsCrashReporterEnabled() is set when InitCrashReporter() is called, and
+  // controlled by GetBreakpadClient()->EnableBreakpadForProcess(), therefore
+  // it's ok to add switch to every process here.
+  if (breakpad::IsCrashReporterEnabled()) {
+    command_line->AppendSwitch(switches::kEnableCrashReporter);
+  }
+
   // Renderer process command-line
   if (process_type == switches::kRendererProcess) {
     // Any browser command-line switches that should be propagated to
