@@ -231,7 +231,7 @@ void MidiManagerAlsa::StartInitialization() {
                                                   addr->port,
                                                   name.c_str());
         std::string version;
-        if (driver != "") {
+        if (!driver.empty()) {
           version = driver + " / ";
         }
         version += base::StringPrintf("ALSA library version %d.%d.%d",

@@ -57,7 +57,7 @@ void WriteFromUrlOperation::GetDownloadTarget(
     return;
   }
 
-  if (url_.ExtractFileName() == "") {
+  if (url_.ExtractFileName().empty()) {
     if (!base::CreateTemporaryFileInDir(temp_dir_.path(), &image_path_)) {
       Error(error::kTempFileError);
       return;

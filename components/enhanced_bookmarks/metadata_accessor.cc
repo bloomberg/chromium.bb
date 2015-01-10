@@ -119,7 +119,7 @@ bool SetOriginalImageForBookmark(BookmarkModel* bookmark_model,
   ImageData data;
 
   // Try to populate the imageData with the existing data.
-  if (decoded != "") {
+  if (!decoded.empty()) {
     // If the parsing fails, something is wrong. Immediately fail.
     bool result = data.ParseFromString(decoded);
     if (!result)
@@ -150,7 +150,7 @@ bool OriginalImageFromBookmark(const BookmarkNode* node,
                                int* width,
                                int* height) {
   std::string decoded(DataForMetaInfoField(node, kImageDataKey));
-  if (decoded == "")
+  if (decoded.empty())
     return false;
 
   ImageData data;
@@ -169,7 +169,7 @@ bool ThumbnailImageFromBookmark(const BookmarkNode* node,
                                 int* width,
                                 int* height) {
   std::string decoded(DataForMetaInfoField(node, kImageDataKey));
-  if (decoded == "")
+  if (decoded.empty())
     return false;
 
   ImageData data;
@@ -185,7 +185,7 @@ bool ThumbnailImageFromBookmark(const BookmarkNode* node,
 
 std::string SnippetFromBookmark(const BookmarkNode* node) {
   std::string decoded(DataForMetaInfoField(node, kPageDataKey));
-  if (decoded == "")
+  if (decoded.empty())
     return decoded;
 
   PageData data;
@@ -210,7 +210,7 @@ bool SetAllImagesForBookmark(BookmarkModel* bookmark_model,
   ImageData data;
 
   // Try to populate the imageData with the existing data.
-  if (decoded != "") {
+  if (!decoded.empty()) {
     // If the parsing fails, something is wrong. Immediately fail.
     bool result = data.ParseFromString(decoded);
     if (!result)

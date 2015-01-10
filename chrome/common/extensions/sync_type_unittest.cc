@@ -70,7 +70,7 @@ class ExtensionSyncTypeTest : public testing::Test {
     std::string error;
     scoped_refptr<Extension> extension = Extension::Create(
         extension_path, location, source, creation_flags, &error);
-    if (expected_error == "")
+    if (expected_error.empty())
       EXPECT_TRUE(extension.get());
     else
       EXPECT_FALSE(extension.get());

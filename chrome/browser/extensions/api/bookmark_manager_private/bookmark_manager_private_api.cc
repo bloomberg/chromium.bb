@@ -617,7 +617,7 @@ bool BookmarkManagerPrivateGetSubtreeFunction::RunOnReady() {
 
   const BookmarkNode* node = NULL;
 
-  if (params->id == "") {
+  if (params->id.empty()) {
     BookmarkModel* model = BookmarkModelFactory::GetForProfile(GetProfile());
     node = model->root_node();
   } else {

@@ -576,7 +576,7 @@ void ServerWrapper::OnHttpRequest(int connection_id,
     return;
   }
 
-  if (info.path == "" || info.path == "/") {
+  if (info.path.empty() || info.path == "/") {
     // Discovery page request.
     BrowserThread::PostTask(
         BrowserThread::UI,

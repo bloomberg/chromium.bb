@@ -105,7 +105,7 @@ TouchEventQueue::TouchScrollingMode GetTouchScrollingMode() {
     return TouchEventQueue::TOUCH_SCROLLING_MODE_SYNC_TOUCHMOVE;
   if (modeString == switches::kTouchScrollingModeTouchcancel)
     return TouchEventQueue::TOUCH_SCROLLING_MODE_TOUCHCANCEL;
-  if (modeString != "")
+  if (!modeString.empty())
     LOG(ERROR) << "Invalid --touch-scrolling-mode option: " << modeString;
   return TouchEventQueue::TOUCH_SCROLLING_MODE_DEFAULT;
 }

@@ -256,7 +256,7 @@ Error Html5Fs::Init(const FsInitArgs& args) {
         filesystem_type = PP_FILESYSTEMTYPE_LOCALPERSISTENT;
       } else if (iter->second == "TEMPORARY") {
         filesystem_type = PP_FILESYSTEMTYPE_LOCALTEMPORARY;
-      } else if (iter->second == "") {
+      } else if (iter->second.empty()) {
         filesystem_type = PP_FILESYSTEMTYPE_LOCALPERSISTENT;
       } else {
         LOG_ERROR("Unknown filesystem type: '%s'", iter->second.c_str());

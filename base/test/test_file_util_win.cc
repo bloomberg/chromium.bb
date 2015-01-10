@@ -249,7 +249,7 @@ bool HasInternetZoneIdentifier(const FilePath& full_path) {
   switch (lines.size()) {
     case 3:
       // optional empty line at end of file:
-      if (lines[2] != "")
+      if (!lines[2].empty())
         return false;
       // fall through:
     case 2:

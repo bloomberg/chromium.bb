@@ -33,14 +33,14 @@ class TestAddObserver : public message_center::MessageCenterObserver {
 
   void OnNotificationAdded(const std::string& id) override {
     std::string log = logs_[id];
-    if (log != "")
+    if (!log.empty())
       log += "_";
     logs_[id] = log + "add-" + id;
   }
 
   void OnNotificationUpdated(const std::string& id) override {
     std::string log = logs_[id];
-    if (log != "")
+    if (!log.empty())
       log += "_";
     logs_[id] = log + "update-" + id;
   }
@@ -75,7 +75,7 @@ class MessageCenterNotificationsTest : public InProcessBrowserTest {
     void Display() override { log_ += "Display_"; }
     void Close(bool by_user) override {
       log_ += "Close_";
-      log_ += ( by_user ? "by_user_" : "programmatically_");
+      log_ += (by_user ? "by_user_" : "programmatically_");
     }
     void Click() override { log_ += "Click_"; }
     void ButtonClick(int button_index) override {

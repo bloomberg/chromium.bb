@@ -1076,7 +1076,7 @@ bool DeveloperPrivateLoadDirectoryFunction::RunAsync() {
                  ->GetFileSystemContext();
 
   // Directory url is non empty only for syncfilesystem.
-  if (directory_url_str != "") {
+  if (!directory_url_str.empty()) {
     storage::FileSystemURL directory_url =
         context_->CrackURL(GURL(directory_url_str));
     if (!directory_url.is_valid() ||

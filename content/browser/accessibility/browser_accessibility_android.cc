@@ -248,7 +248,7 @@ bool BrowserAccessibilityAndroid::CanOpenPopup() const {
 const char* BrowserAccessibilityAndroid::GetClassName() const {
   const char* class_name = NULL;
 
-  switch(GetRole()) {
+  switch (GetRole()) {
     case ui::AX_ROLE_SPIN_BUTTON:
     case ui::AX_ROLE_TEXT_AREA:
     case ui::AX_ROLE_TEXT_FIELD:
@@ -435,7 +435,7 @@ base::string16 BrowserAccessibilityAndroid::GetText() const {
 
 int BrowserAccessibilityAndroid::GetItemIndex() const {
   int index = 0;
-  switch(GetRole()) {
+  switch (GetRole()) {
     case ui::AX_ROLE_LIST_ITEM:
     case ui::AX_ROLE_LIST_BOX_OPTION:
     case ui::AX_ROLE_TREE_ITEM:
@@ -458,7 +458,7 @@ int BrowserAccessibilityAndroid::GetItemIndex() const {
 
 int BrowserAccessibilityAndroid::GetItemCount() const {
   int count = 0;
-  switch(GetRole()) {
+  switch (GetRole()) {
     case ui::AX_ROLE_LIST:
     case ui::AX_ROLE_LIST_BOX:
     case ui::AX_ROLE_DESCRIPTION_LIST:
@@ -575,7 +575,7 @@ int BrowserAccessibilityAndroid::AndroidInputType() const {
   if (!GetHtmlAttribute("type", &type))
     return ANDROID_TEXT_INPUTTYPE_TYPE_TEXT;
 
-  if (type == "" || type == "text" || type == "search")
+  if (type.empty() || type == "text" || type == "search")
     return ANDROID_TEXT_INPUTTYPE_TYPE_TEXT;
   else if (type == "date")
     return ANDROID_TEXT_INPUTTYPE_TYPE_DATETIME_DATE;

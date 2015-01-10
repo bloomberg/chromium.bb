@@ -38,7 +38,7 @@ static bool IsValidPlatform(const Platform* platform) {
   const std::string& variant = platform->variant;
 
   if (name == "Win") {
-    if (variant != "" &&
+    if (!variant.empty() &&
         variant != "XP" &&
         variant != "Vista" &&
         variant != "7" &&
@@ -46,7 +46,7 @@ static bool IsValidPlatform(const Platform* platform) {
       return false;
     }
   } else if (name == "Mac") {
-    if (variant != "" &&
+    if (!variant.empty() &&
         variant != "10.6" &&
         variant != "10.7" &&
         variant != "10.8" &&
@@ -55,7 +55,7 @@ static bool IsValidPlatform(const Platform* platform) {
       return false;
     }
   } else if (name == "Linux") {
-    if (variant != "" &&
+    if (!variant.empty() &&
         variant != "32" &&
         variant != "64") {
       return false;

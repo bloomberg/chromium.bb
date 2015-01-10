@@ -86,7 +86,7 @@ class Simulator {
     // If the name of the file wasn't ASCII, this will give an empty simulation
     //  name, but that's not really harmful (we'll still warn about it though.)
     spec.simulation_name = path.BaseName().RemoveExtension().MaybeAsASCII();
-    if (spec.simulation_name == "") {
+    if (spec.simulation_name.empty()) {
       LOG(WARNING) << "Simulation for path " << path.LossyDisplayName() <<
         " will have a blank simulation name, since the file name isn't ASCII";
     }

@@ -121,12 +121,8 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
-#include "components/policy/core/common/policy_map.h"
-#include "components/policy/core/common/policy_namespace.h"
-#include "components/policy/core/common/policy_service.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
-#include "policy/policy_constants.h"
 #include "ui/chromeos/accessibility_types.h"
 #include "ui/gfx/image/image_skia.h"
 #endif  // defined(OS_CHROMEOS)
@@ -1708,7 +1704,7 @@ void BrowserOptionsHandler::HandleRequestHotwordAvailable(
   }
 
   std::string group = base::FieldTrialList::FindFullName("VoiceTrigger");
-  if (group != "" && group != "Disabled" &&
+  if (!group.empty() && group != "Disabled" &&
       HotwordServiceFactory::IsHotwordAllowed(profile)) {
     // Update the current error value.
     HotwordServiceFactory::IsServiceAvailable(profile);

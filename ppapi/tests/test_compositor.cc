@@ -34,7 +34,7 @@ REGISTER_TEST_CASE(Compositor);
 
 #define VERIFY(r) do { \
     std::string result = (r); \
-    if (result != "") \
+    if (!result.empty()) \
       return result; \
   } while (false)
 

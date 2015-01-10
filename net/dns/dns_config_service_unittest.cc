@@ -41,7 +41,7 @@ class NameServerClassifierTest : public testing::Test {
     for (std::vector<std::string>::const_iterator it = server_strings.begin();
          it != server_strings.end();
          ++it) {
-      if (*it == "")
+      if (it->empty())
         continue;
 
       IPAddressNumber address;

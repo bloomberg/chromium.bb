@@ -140,7 +140,7 @@ std::string TestVar::TestNullInputInUtf8Conversion() {
   // Should not crash, and make an empty string.
   const char* null_string = NULL;
   pp::Var null_var(null_string);
-  if (!null_var.is_string() || null_var.AsString() != "") {
+  if (!null_var.is_string() || !null_var.AsString().empty()) {
     return "Expected NULL input to make an empty string Var.";
   }
 

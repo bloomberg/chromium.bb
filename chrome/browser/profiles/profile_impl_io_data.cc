@@ -74,7 +74,7 @@ net::BackendType ChooseCacheBackendType() {
         command_line.GetSwitchValueASCII(switches::kUseSimpleCacheBackend);
     if (LowerCaseEqualsASCII(opt_value, "off"))
       return net::CACHE_BACKEND_BLOCKFILE;
-    if (opt_value == "" || LowerCaseEqualsASCII(opt_value, "on"))
+    if (opt_value.empty() || LowerCaseEqualsASCII(opt_value, "on"))
       return net::CACHE_BACKEND_SIMPLE;
   }
   const std::string experiment_name =

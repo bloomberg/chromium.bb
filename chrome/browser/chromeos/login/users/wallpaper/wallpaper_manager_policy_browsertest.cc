@@ -234,7 +234,7 @@ class WallpaperManagerPolicyTest
     const std::string user_id = kTestUsers[user_number];
     policy::UserPolicyBuilder* builder =
         user_policy_builders_[user_number].get();
-    if (filename != "") {
+    if (!filename.empty()) {
       builder->payload().
           mutable_wallpaperimage()->set_value(ConstructPolicy(filename));
     } else {

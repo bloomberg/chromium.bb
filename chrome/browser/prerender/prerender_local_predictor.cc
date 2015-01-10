@@ -292,7 +292,7 @@ bool IsExtendedRootURL(const GURL& url) {
 }
 
 bool IsRootPageURL(const GURL& url) {
-  return (url.path() == "/" || url.path() == "" || IsExtendedRootURL(url)) &&
+  return (url.path() == "/" || url.path().empty() || IsExtendedRootURL(url)) &&
       (!url.has_query()) && (!url.has_ref());
 }
 

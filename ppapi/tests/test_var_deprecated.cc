@@ -26,7 +26,8 @@ static const char kSetValueFunction[] = "SetValue";
 // ScriptableObject used by the var tests.
 class VarScriptableObject : public pp::deprecated::ScriptableObject {
  public:
-  VarScriptableObject(TestVarDeprecated* v) : test_var_deprecated_(v) {}
+  explicit VarScriptableObject(TestVarDeprecated* v)
+      : test_var_deprecated_(v) {}
 
   // pp::deprecated::ScriptableObject overrides.
   bool HasMethod(const pp::Var& name, pp::Var* exception);
@@ -183,7 +184,7 @@ std::string TestVarDeprecated::TestNullInputInUtf8Conversion() {
   // Should not crash, and make an empty string.
   const char* null_string = NULL;
   pp::Var null_var(null_string);
-  if (!null_var.is_string() || null_var.AsString() != "") {
+  if (!null_var.is_string() || !null_var.AsString().empty()) {
     return "Expected NULL input to make an empty string Var.";
   }
 

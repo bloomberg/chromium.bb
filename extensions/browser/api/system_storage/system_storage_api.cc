@@ -59,7 +59,7 @@ void SystemStorageEjectDeviceFunction::OnStorageMonitorInit(
       StorageMonitor::GetInstance()->GetDeviceIdForTransientId(
           transient_device_id);
 
-  if (device_id_str == "") {
+  if (device_id_str.empty()) {
     HandleResponse(StorageMonitor::EJECT_NO_SUCH_DEVICE);
     return;
   }
