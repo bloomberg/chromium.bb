@@ -50,7 +50,7 @@ int leak_check_enabled;
 
 /* when this var is set to 0, every call to test_set_timeout() is
  * suppressed - handy when debugging the test. Can be set by
- * WAYLAND_TEST_NO_TIMEOUTS evnironment var */
+ * WAYLAND_TEST_NO_TIMEOUTS environment variable. */
 static int timeouts_enabled = 1;
 
 /* set to one if the output goes to the terminal */
