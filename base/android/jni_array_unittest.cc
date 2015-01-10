@@ -21,10 +21,13 @@ TEST(JniArray, BasicConversions) {
   std::vector<uint8> vec(5);
   JavaByteArrayToByteVector(env, bytes.obj(), &vec);
   EXPECT_EQ(4U, vec.size());
-  EXPECT_EQ(std::vector<uint8>(kBytes, kBytes + kLen), vec);
+  std::vector<uint8> expected_vec(kBytes, kBytes + kLen);
+  EXPECT_EQ(expected_vec, vec);
 
   AppendJavaByteArrayToByteVector(env, bytes.obj(), &vec);
   EXPECT_EQ(8U, vec.size());
+  expected_vec.insert(expected_vec.end(), kBytes, kBytes + kLen);
+  EXPECT_EQ(expected_vec, vec);
 }
 
 void CheckIntConversion(

@@ -23,7 +23,7 @@ bool OpenAsset(const std::string& filename,
       env,
       base::android::GetApplicationContext(),
       base::android::ConvertUTF8ToJavaString(env, filename).Release());
-  std::vector<long> results;
+  std::vector<jlong> results;
   base::android::JavaLongArrayToLongVector(env, jarr.obj(), &results);
   DCHECK_EQ(3U, results.size());
   *fd = static_cast<int>(results[0]);

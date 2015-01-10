@@ -10,6 +10,20 @@
 
 namespace base {
 namespace android {
+namespace {
+
+// As |GetArrayLength| makes no guarantees about the returned value (e.g., it
+// may be -1 if |array| is not a valid Java array), provide a safe wrapper
+// that always returns a valid, non-negative size.
+template <typename JavaArrayType>
+size_t SafeGetArrayLength(JNIEnv* env, JavaArrayType jarray) {
+  DCHECK(jarray);
+  jsize length = env->GetArrayLength(jarray);
+  DCHECK_GE(length, 0) << "Invalid array length: " << length;
+  return static_cast<size_t>(std::max(0, length));
+}
+
+}  // namespace
 
 ScopedJavaLocalRef<jbyteArray> ToJavaByteArray(
     JNIEnv* env, const uint8* bytes, size_t len) {
@@ -108,10 +122,10 @@ void AppendJavaStringArrayToStringVector(JNIEnv* env,
   DCHECK(out);
   if (!array)
     return;
-  jsize len = env->GetArrayLength(array);
+  size_t len = SafeGetArrayLength(env, array);
   size_t back = out->size();
   out->resize(back + len);
-  for (jsize i = 0; i < len; ++i) {
+  for (size_t i = 0; i < len; ++i) {
     ScopedJavaLocalRef<jstring> str(env,
         static_cast<jstring>(env->GetObjectArrayElement(array, i)));
     ConvertJavaStringToUTF16(env, str.obj(), &((*out)[back + i]));
@@ -124,10 +138,10 @@ void AppendJavaStringArrayToStringVector(JNIEnv* env,
   DCHECK(out);
   if (!array)
     return;
-  jsize len = env->GetArrayLength(array);
+  size_t len = SafeGetArrayLength(env, array);
   size_t back = out->size();
   out->resize(back + len);
-  for (jsize i = 0; i < len; ++i) {
+  for (size_t i = 0; i < len; ++i) {
     ScopedJavaLocalRef<jstring> str(env,
         static_cast<jstring>(env->GetObjectArrayElement(array, i)));
     ConvertJavaStringToUTF8(env, str.obj(), &((*out)[back + i]));
@@ -140,16 +154,20 @@ void AppendJavaByteArrayToByteVector(JNIEnv* env,
   DCHECK(out);
   if (!byte_array)
     return;
-  jsize len = env->GetArrayLength(byte_array);
-  jbyte* bytes = env->GetByteArrayElements(byte_array, NULL);
-  out->insert(out->end(), bytes, bytes + len);
-  env->ReleaseByteArrayElements(byte_array, bytes, JNI_ABORT);
+  size_t len = SafeGetArrayLength(env, byte_array);
+  if (!len)
+    return;
+  size_t back = out->size();
+  out->resize(back + len);
+  env->GetByteArrayRegion(byte_array, 0, len,
+                          reinterpret_cast<int8*>(&(*out)[back]));
 }
 
 void JavaByteArrayToByteVector(JNIEnv* env,
                                jbyteArray byte_array,
                                std::vector<uint8>* out) {
   DCHECK(out);
+  DCHECK(byte_array);
   out->clear();
   AppendJavaByteArrayToByteVector(env, byte_array, out);
 }
@@ -158,39 +176,35 @@ void JavaIntArrayToIntVector(JNIEnv* env,
                              jintArray int_array,
                              std::vector<int>* out) {
   DCHECK(out);
-  out->clear();
-  jsize len = env->GetArrayLength(int_array);
-  jint* ints = env->GetIntArrayElements(int_array, NULL);
-  for (jsize i = 0; i < len; ++i) {
-    out->push_back(static_cast<int>(ints[i]));
-  }
-  env->ReleaseIntArrayElements(int_array, ints, JNI_ABORT);
+  size_t len = SafeGetArrayLength(env, int_array);
+  out->resize(len);
+  if (!len)
+    return;
+  // TODO(jdduke): Use |out->data()| for pointer access after switch to libc++,
+  // both here and in the other conversion routines. See crbug.com/427718.
+  env->GetIntArrayRegion(int_array, 0, len, &(*out)[0]);
 }
 
 void JavaLongArrayToLongVector(JNIEnv* env,
                                jlongArray long_array,
-                               std::vector<long>* out) {
+                               std::vector<jlong>* out) {
   DCHECK(out);
-  out->clear();
-  jsize len = env->GetArrayLength(long_array);
-  jlong* longs = env->GetLongArrayElements(long_array, NULL);
-  for (jsize i = 0; i < len; ++i) {
-    out->push_back(static_cast<long>(longs[i]));
-  }
-  env->ReleaseLongArrayElements(long_array, longs, JNI_ABORT);
+  size_t len = SafeGetArrayLength(env, long_array);
+  out->resize(len);
+  if (!len)
+    return;
+  env->GetLongArrayRegion(long_array, 0, len, &(*out)[0]);
 }
 
 void JavaFloatArrayToFloatVector(JNIEnv* env,
                                  jfloatArray float_array,
                                  std::vector<float>* out) {
   DCHECK(out);
-  out->clear();
-  jsize len = env->GetArrayLength(float_array);
-  jfloat* floats = env->GetFloatArrayElements(float_array, NULL);
-  for (jsize i = 0; i < len; ++i) {
-    out->push_back(static_cast<float>(floats[i]));
-  }
-  env->ReleaseFloatArrayElements(float_array, floats, JNI_ABORT);
+  size_t len = SafeGetArrayLength(env, float_array);
+  out->resize(len);
+  if (!len)
+    return;
+  env->GetFloatArrayRegion(float_array, 0, len, &(*out)[0]);
 }
 
 void JavaArrayOfByteArrayToStringVector(
@@ -198,10 +212,9 @@ void JavaArrayOfByteArrayToStringVector(
     jobjectArray array,
     std::vector<std::string>* out) {
   DCHECK(out);
-  out->clear();
-  jsize len = env->GetArrayLength(array);
+  size_t len = SafeGetArrayLength(env, array);
   out->resize(len);
-  for (jsize i = 0; i < len; ++i) {
+  for (size_t i = 0; i < len; ++i) {
     ScopedJavaLocalRef<jbyteArray> bytes_array(
         env, static_cast<jbyteArray>(
             env->GetObjectArrayElement(array, i)));
