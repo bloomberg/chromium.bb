@@ -40,19 +40,24 @@ var testPromise;
 
 // Set up the test components.
 function setUp() {
+  setupChromeApis();
+  testFileSystem = new MockFileSystem('abc-123', 'filesystem:abc-123');
   testFileEntry = new MockFileEntry(
       testFileSystem,
       FILE_PATH, {
         size: FILE_SIZE,
         modificationTime: FILE_LAST_MODIFIED
       });
-  testFileSystem = new MockFileSystem('abc-123', 'filesystem:abc-123');
   testFileSystem.entries[FILE_PATH] = testFileEntry;
 
   storage = new TestRecordStorage();
 
   var history = new importer.PersistentImportHistory(storage);
   historyProvider = history.refresh();
+}
+
+function tearDown() {
+  testPromise = null;
 }
 
 function testHistoryWasCopiedFalseForUnknownEntry(callback) {
@@ -88,6 +93,16 @@ function testHistoryWasImportedTrueForKnownEntrySetAtRuntime(callback) {
   reportPromise(testPromise, callback);
 }
 
+function testHistoryWasCopiedTrueForKnownEntryLoadedFromStorage(callback) {
+  // TestRecordWriter is pre-configured with this entry.
+  testPromise = historyProvider.then(
+      function(history) {
+        history.wasCopied(testFileEntry, GOOGLE_DRIVE).then(assertTrue);
+      });
+
+  reportPromise(testPromise, callback);
+}
+
 function testCopyChangeFiresChangedEvent(callback) {
   testPromise = historyProvider.then(
       function(history) {
@@ -104,6 +119,27 @@ function testCopyChangeFiresChangedEvent(callback) {
                             recorder.getLastArguments()[0]['state']);
                       });
             });
+      });
+
+  reportPromise(testPromise, callback);
+}
+
+function testMarkImportedByUrl(callback) {
+  var destinationUrl = 'filesystem:chrome-extension://abc/photos/splosion.jpg';
+  testPromise = historyProvider.then(
+      function(history) {
+        return history.markCopied(testFileEntry, SPACE_CAMP, destinationUrl)
+            .then(
+                function() {
+                  return history.markImportedByUrl(destinationUrl)
+                      .then(
+                          function() {
+                            return history.wasImported(
+                                testFileEntry,
+                                SPACE_CAMP)
+                                .then(assertTrue);
+                          });
+                });
       });
 
   reportPromise(testPromise, callback);
@@ -272,13 +308,14 @@ function testHistoryLoaderIntegration(callback) {
 }
 
 /**
- * Shared error handler.
- * @param {function()} callback
- * @param {*} error
+ * Installs stub APIs.
  */
-function handleError(callback, error) {
-  console.error(error && (error.stack || error) || 'Unspecified test error.');
-  callback(/* error */ true);
+function setupChromeApis() {
+  chrome = {};
+  chrome.fileManagerPrivate = {};
+  chrome.fileManagerPrivate.onFileTransfersUpdated = {
+    addListener: function() {}
+  };
 }
 
 /**
