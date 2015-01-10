@@ -35,6 +35,7 @@
 
 [
     Custom=VisitDOMWrapper, // Conflict with [SetWrapperReferenceTo] and [SetWrapperReferenceFrom]
+    NoImplHeader,
 ] interface TestInterface3 {
     [Custom] getter boolean (unsigned long index);
     [Custom] setter boolean (unsigned long index, Node value);
