@@ -428,8 +428,6 @@ void ThreadState::cleanupPages()
 void ThreadState::cleanup()
 {
     checkThread();
-    // Finish sweeping.
-    completeSweep();
     {
         // Grab the threadAttachMutex to ensure only one thread can shutdown at
         // a time and that no other thread can do a global GC. It also allows
@@ -438,6 +436,9 @@ void ThreadState::cleanup()
         // lock to avoid a dead-lock where another thread has already requested
         // GC.
         SafePointAwareMutexLocker locker(threadAttachMutex(), NoHeapPointersOnStack);
+
+        // Finish sweeping.
+        completeSweep();
 
         // From here on ignore all conservatively discovered
         // pointers into the heap owned by this thread.
