@@ -175,13 +175,17 @@ CastMetricsServiceClient::CastMetricsServiceClient(
     : io_task_runner_(io_task_runner),
       pref_service_(pref_service),
       cast_service_(NULL),
+#if !defined(OS_ANDROID)
       external_metrics_(NULL),
+#endif  // !defined(OS_ANDROID)
       metrics_service_loop_(base::MessageLoopProxy::current()),
       request_context_(request_context) {
 }
 
 CastMetricsServiceClient::~CastMetricsServiceClient() {
+#if !defined(OS_ANDROID)
   DCHECK(!external_metrics_);
+#endif  // !defined(OS_ANDROID)
 }
 
 void CastMetricsServiceClient::Initialize(CastService* cast_service) {
