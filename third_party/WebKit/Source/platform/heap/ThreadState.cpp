@@ -1107,7 +1107,7 @@ void ThreadState::removeInterruptor(Interruptor* interruptor)
     {
         MutexLocker locker(threadAttachMutex());
         size_t index = m_interruptors.find(interruptor);
-        RELEASE_ASSERT(index >= 0);
+        RELEASE_ASSERT(index != kNotFound);
         m_interruptors.remove(index);
     }
 }
