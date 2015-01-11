@@ -16,7 +16,6 @@ group("trusted_targets") {
     "//native_client/src/trusted/service_runtime:nacl_error_code",
     "//native_client/src/trusted/simple_service:simple_service",
     "//native_client/src/trusted/desc_cacheability:desc_cacheability",
-    "//native_client/src/trusted/manifest_name_service_proxy:manifest_proxy",
     "//native_client/src/trusted/threading:thread_interface",
     "//native_client/src/shared/srpc/:nonnacl_srpc",
     "//native_client/src/trusted/desc:nrd_xfer",

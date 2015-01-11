@@ -18,7 +18,6 @@
 
 #include "native_client/src/trusted/desc/nacl_desc_invalid.h"
 #include "native_client/src/trusted/fault_injection/fault_injection.h"
-#include "native_client/src/trusted/manifest_name_service_proxy/manifest_proxy.h"
 #include "native_client/src/trusted/simple_service/nacl_simple_service.h"
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
@@ -234,7 +233,6 @@ static void NaClSecureReverseClientCallback(
   struct NaClSecureService          *self =
       (struct NaClSecureService *) state;
   struct NaClApp                    *nap = self->nap;
-  struct NaClManifestProxy          *manifest_proxy;
   struct NaClReverseHostInterface   *reverse_host_interface;
   struct NaClReverseQuotaInterface  *reverse_quota_interface;
   UNREFERENCED_PARAMETER(tif);
@@ -292,41 +290,12 @@ static void NaClSecureReverseClientCallback(
   NaClRefCountSafeUnref((struct NaClRefCount *) reverse_quota_interface);
   reverse_quota_interface = NULL;
 
-  manifest_proxy = (struct NaClManifestProxy *)
-      malloc(sizeof *manifest_proxy);
-  if (NULL == manifest_proxy ||
-      !NaClManifestProxyCtor(manifest_proxy,
-                             NaClAddrSpSquattingThreadIfFactoryFunction,
-                             (void *) nap,
-                             self)) {
-    NaClLog(LOG_FATAL, "Manifest proxy ctor failed\n");
-    goto cleanup_manifest_proxy;
-  }
-
-  /*
-   * NaClSimpleServiceStartServiceThread requires the nap->mu lock.
-   */
-  if (!NaClSimpleServiceStartServiceThread((struct NaClSimpleService *)
-                                           manifest_proxy)) {
-    NaClLog(LOG_FATAL, "ManifestProxy start service failed\n");
-    goto cleanup_manifest_proxy;
-  }
-
-  NaClXMutexLock(&nap->mu);
-  (*NACL_VTBL(NaClNameService, nap->name_service)->
-    CreateDescEntry)(nap->name_service,
-                     "ManifestNameService", NACL_ABI_O_RDWR,
-                     NaClDescRef(manifest_proxy->base.bound_and_cap[1]));
-  NaClXMutexUnlock(&nap->mu);
-
   NaClXMutexLock(&self->mu);
   self->reverse_channel_initialization_state =
     NACL_REVERSE_CHANNEL_INITIALIZED;
   NaClXCondVarBroadcast(&self->cv);
   NaClXMutexUnlock(&self->mu);
 
- cleanup_manifest_proxy:
-  NaClRefCountSafeUnref((struct NaClRefCount *) manifest_proxy);
  cleanup_reverse_quota_interface:
   NaClRefCountSafeUnref((struct NaClRefCount *) reverse_quota_interface);
  cleanup_reverse_host_interface:

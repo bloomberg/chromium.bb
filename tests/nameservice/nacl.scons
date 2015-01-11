@@ -18,34 +18,3 @@ node = env.CommandSelLdrTestNacl(
     'nameservice_test.out',
     nameservice_test_nexe)
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_nameservice_test')
-
-
-srpc_ns_obj = env.ComponentObject('srpc_nameservice_test.o',
-                                  'srpc_nameservice_test.c')
-srpc_ns_nexe_name = env.ProgramNameForNmf('srpc_nameservice_test')
-srpc_ns_nexe = env.ComponentProgram(srpc_ns_nexe_name,
-                                    srpc_ns_obj,
-                                    EXTRA_LIBS=[
-                                        'srpc',
-                                        'platform',
-                                        'gio',
-                                        'imc',
-                                        'imc_syscalls',
-                                        '${NONIRT_LIBS}',
-                                        '${PTHREAD_LIBS}'])
-env.Publish(srpc_ns_nexe_name, 'run',
-            ['srpc_nameservice_test.html'])
-
-# sel_universal test
-
-node = env.SelUniversalTest(
-    'srpc_nameservice_test.out',
-    srpc_ns_nexe,
-    sel_universal_flags=['--uses_reverse_service',
-                         '--command_file',
-                         env.File('srpc_nameservice_test.stdin')],
-    stdout_golden=env.File('srpc_nameservice_test.stdout'),
-    )
-env.AddNodeToTestSuite(node,
-                       ['small_tests'],
-                       'run_srpc_nameservice_test')

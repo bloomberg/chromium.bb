@@ -48,7 +48,6 @@ LIBRARY_DEPENDENCIES_DEFAULT = {
         'desc_cacheability',
         'nacl_error_code',
         'env_cleanser',
-        'manifest_proxy',
         'simple_service',
         'thread_interface',
         'nonnacl_srpc',
