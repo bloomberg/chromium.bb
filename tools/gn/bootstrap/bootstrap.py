@@ -405,7 +405,7 @@ def build_gn_with_gn(temp_gn, build_dir, options):
   cmd.append('gn')
   check_call(cmd)
 
-  if not debug:
+  if not options.debug:
     check_call(['strip', os.path.join(build_dir, 'gn')])
 
 
