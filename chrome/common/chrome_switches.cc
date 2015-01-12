@@ -198,12 +198,6 @@ const char kDisableAboutInSettings[]        = "disable-about-in-settings";
 // Disables the experimental asynchronous DNS client.
 const char kDisableAsyncDns[]               = "disable-async-dns";
 
-// Disables CNAME lookup of the host when generating the Kerberos SPN for a
-// Negotiate challenge. See HttpAuthHandlerNegotiate::CreateSPN for more
-// background.
-const char kDisableAuthNegotiateCnameLookup[] =
-    "disable-auth-negotiate-cname-lookup";
-
 // Disable several subsystems which run network requests in the background.
 // This is for use when doing network performance testing to avoid noise in the
 // measurements.
@@ -396,11 +390,6 @@ const char kEnableAppsFileAssociations[]    = "enable-apps-file-associations";
 
 // Enables the experimental asynchronous DNS client.
 const char kEnableAsyncDns[]                = "enable-async-dns";
-
-// Enables the inclusion of non-standard ports when generating the Kerberos SPN
-// in response to a Negotiate challenge. See
-// HttpAuthHandlerNegotiate::CreateSPN for more background.
-const char kEnableAuthNegotiatePort[]       = "enable-auth-negotiate-port";
 
 // Enables the benchmarking extensions.
 const char kEnableBenchmarking[]            = "enable-benchmarking";
@@ -688,9 +677,6 @@ const char kForceFirstRun[]                 = "force-first-run";
 // header, specified as a 64-bit encoded list of numeric experiment ids. Ids
 // prefixed with the character "t" will be treated as Trigger Variation Ids.
 const char kForceVariationIds[]             = "force-variation-ids";
-
-// Specifies a custom name for the GSSAPI library to load.
-const char kGSSAPILibraryName[]             = "gssapi-library-name";
 
 // These flags show the man page on Linux. They are equivalent to each
 // other.

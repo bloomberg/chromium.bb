@@ -24,7 +24,6 @@
 const CommandLinePrefStore::StringSwitchToPreferenceMapEntry
     CommandLinePrefStore::string_switch_map_[] = {
       { switches::kLang, prefs::kApplicationLocale },
-      { switches::kGSSAPILibraryName, prefs::kGSSAPILibraryName },
       { data_reduction_proxy::switches::kDataReductionProxy,
           data_reduction_proxy::prefs::kDataReductionProxy },
       { switches::kSSLVersionMin, prefs::kSSLVersionMin },
@@ -39,10 +38,6 @@ const CommandLinePrefStore::PathSwitchToPreferenceMapEntry
 
 const CommandLinePrefStore::BooleanSwitchToPreferenceMapEntry
     CommandLinePrefStore::boolean_switch_map_[] = {
-      { switches::kDisableAuthNegotiateCnameLookup,
-          prefs::kDisableAuthNegotiateCnameLookup, true },
-      { switches::kEnableAuthNegotiatePort, prefs::kEnableAuthNegotiatePort,
-          true },
       { switches::kDisable3DAPIs, prefs::kDisable3DAPIs, true },
       { switches::kEnableCloudPrintProxy, prefs::kCloudPrintProxyEnabled,
           true },
