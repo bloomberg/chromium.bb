@@ -214,15 +214,15 @@ StorageMonitor::EjectStatus EjectPathOnFileThread(
   command.push_back(path.value());
 
   base::LaunchOptions options;
-  base::ProcessHandle handle;
-  if (!base::LaunchProcess(command, options, &handle))
+  base::Process process = base::LaunchProcess(command, options);
+  if (!process.IsValid())
     return StorageMonitor::EJECT_FAILURE;
 
   int exit_code = -1;
-  if (!base::WaitForExitCodeWithTimeout(handle, &exit_code,
-      base::TimeDelta::FromMilliseconds(3000))) {
-    base::KillProcess(handle, -1, false);
-    base::EnsureProcessTerminated(base::Process(handle));
+  if (!process.WaitForExitWithTimeout(base::TimeDelta::FromMilliseconds(3000),
+                                      &exit_code)) {
+    base::KillProcess(process.Handle(), -1, false);
+    base::EnsureProcessTerminated(process.Pass());
     return StorageMonitor::EJECT_FAILURE;
   }
 
