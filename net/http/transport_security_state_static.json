@@ -1726,7 +1726,9 @@
     { "name": "thyngster.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "tid.jp", "include_subdomains": true, "mode": "force-https" },
     { "name": "tonywebster.com", "include_subdomains": true, "mode": "force-https" },
-    { "name": "tucuxi.org", "include_subdomains": true, "mode": "force-https" }
+    { "name": "tucuxi.org", "include_subdomains": true, "mode": "force-https" },
+    { "name": "firebaseio.com", "include_subdomains": true, "mode": "force-https" },
+    { "name": "firebaseio-demo.com", "include_subdomains": true, "mode": "force-https" }
   ],
 
   // |ReportUMAOnPinFailure| uses these to report which domain was associated
