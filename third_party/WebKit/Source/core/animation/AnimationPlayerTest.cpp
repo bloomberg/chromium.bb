@@ -263,7 +263,7 @@ TEST_F(AnimationAnimationPlayerTest, SetStartTimeLimitsAnimationPlayer)
     player->setStartTime(-100 * 1000);
     EXPECT_EQ(AnimationPlayer::Finished, player->playStateInternal());
     EXPECT_EQ(0, player->currentTimeInternal());
-    EXPECT_TRUE(player->finished());
+    EXPECT_TRUE(player->limited());
 }
 
 TEST_F(AnimationAnimationPlayerTest, SetStartTimeOnLimitedAnimationPlayer)
@@ -276,7 +276,7 @@ TEST_F(AnimationAnimationPlayerTest, SetStartTimeOnLimitedAnimationPlayer)
     player->setStartTime(-40 * 1000);
     EXPECT_EQ(30, player->currentTimeInternal());
     EXPECT_EQ(AnimationPlayer::Finished, player->playStateInternal());
-    EXPECT_TRUE(player->finished());
+    EXPECT_TRUE(player->limited());
 }
 
 TEST_F(AnimationAnimationPlayerTest, StartTimePauseFinish)
@@ -480,12 +480,12 @@ TEST_F(AnimationAnimationPlayerTest, Finish)
 {
     player->finish(exceptionState);
     EXPECT_EQ(30, player->currentTimeInternal());
-    EXPECT_TRUE(player->finished());
+    EXPECT_EQ(AnimationPlayer::Finished, player->playStateInternal());
 
     player->setPlaybackRate(-1);
     player->finish(exceptionState);
     EXPECT_EQ(0, player->currentTimeInternal());
-    EXPECT_TRUE(player->finished());
+    EXPECT_EQ(AnimationPlayer::Finished, player->playStateInternal());
 
     EXPECT_FALSE(exceptionState.hadException());
 }
@@ -532,7 +532,7 @@ TEST_F(AnimationAnimationPlayerTest, LimitingAtSourceEnd)
 {
     simulateFrame(30);
     EXPECT_EQ(30, player->currentTimeInternal());
-    EXPECT_TRUE(player->finished());
+    EXPECT_TRUE(player->limited());
     simulateFrame(40);
     EXPECT_EQ(30, player->currentTimeInternal());
     EXPECT_FALSE(player->paused());
@@ -545,7 +545,7 @@ TEST_F(AnimationAnimationPlayerTest, LimitingAtStart)
     simulateFrame(30);
     simulateFrame(45);
     EXPECT_EQ(0, player->currentTimeInternal());
-    EXPECT_TRUE(player->finished());
+    EXPECT_TRUE(player->limited());
     simulateFrame(60);
     EXPECT_EQ(0, player->currentTimeInternal());
     EXPECT_FALSE(player->paused());
@@ -554,7 +554,7 @@ TEST_F(AnimationAnimationPlayerTest, LimitingAtStart)
 TEST_F(AnimationAnimationPlayerTest, LimitingWithNoSource)
 {
     player->setSource(0);
-    EXPECT_TRUE(player->finished());
+    EXPECT_TRUE(player->limited());
     simulateFrame(30);
     EXPECT_EQ(0, player->currentTimeInternal());
 }
@@ -604,7 +604,7 @@ TEST_F(AnimationAnimationPlayerTest, SetPlaybackRateWhileLimited)
     player->setPlaybackRate(-2);
     simulateFrame(50);
     simulateFrame(60);
-    EXPECT_FALSE(player->finished());
+    EXPECT_FALSE(player->limited());
     EXPECT_EQ(10, player->currentTimeInternal());
 }
 
@@ -654,7 +654,7 @@ TEST_F(AnimationAnimationPlayerTest, SetSourceLimitsAnimationPlayer)
     player->setCurrentTimeInternal(20);
     player->setSource(makeAnimation(10).get());
     EXPECT_EQ(20, player->currentTimeInternal());
-    EXPECT_TRUE(player->finished());
+    EXPECT_TRUE(player->limited());
     simulateFrame(10);
     EXPECT_EQ(20, player->currentTimeInternal());
 }
@@ -663,7 +663,7 @@ TEST_F(AnimationAnimationPlayerTest, SetSourceUnlimitsAnimationPlayer)
 {
     player->setCurrentTimeInternal(40);
     player->setSource(makeAnimation(60).get());
-    EXPECT_FALSE(player->finished());
+    EXPECT_FALSE(player->limited());
     EXPECT_EQ(40, player->currentTimeInternal());
     simulateFrame(10);
     EXPECT_EQ(50, player->currentTimeInternal());

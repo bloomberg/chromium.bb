@@ -446,7 +446,7 @@ AnimationPlayer::AnimationPlayState AnimationPlayer::calculatePlayState()
         return Pending;
     if (m_paused)
         return Paused;
-    if (finished())
+    if (limited())
         return Finished;
     return Running;
 }
@@ -540,7 +540,8 @@ void AnimationPlayer::finish(ExceptionState& exceptionState)
     }
 
     m_currentTimePending = false;
-    ASSERT(finished());
+    ASSERT(playStateInternal() != Idle);
+    ASSERT(limited());
 }
 
 const AtomicString& AnimationPlayer::interfaceName() const
@@ -597,7 +598,7 @@ void AnimationPlayer::setPlaybackRateInternal(double playbackRate)
     ASSERT(std::isfinite(playbackRate));
     ASSERT(playbackRate != m_playbackRate);
 
-    if (!finished() && !paused() && hasStartTime())
+    if (!limited() && !paused() && hasStartTime())
         m_currentTimePending = true;
 
     double storedCurrentTime = currentTimeInternal();
@@ -699,7 +700,7 @@ bool AnimationPlayer::update(TimingUpdateReason reason)
         m_content->updateInheritedTime(inheritedTime, reason);
     }
 
-    if ((idle || finished()) && !m_finished) {
+    if ((idle || limited()) && !m_finished) {
         if (reason == TimingUpdateForAnimationFrame && (idle || hasStartTime())) {
             const AtomicString& eventType = EventTypeNames::finish;
             if (executionContext() && hasEventListeners(eventType)) {

@@ -88,11 +88,9 @@ public:
     void play();
     void reverse();
     void finish(ExceptionState&);
-    bool finished() const { return m_playState != Idle && limited(currentTimeInternal()); }
-    bool playing() const { return !(playStateInternal() == Idle || finished() || m_paused || m_isPausedForTesting); }
-    // FIXME: Resolve whether finished() should just return the flag, and
-    // remove this method.
-    bool finishedInternal() const { return m_finished; }
+
+    bool playing() const { return !(playStateInternal() == Idle || limited() || m_paused || m_isPausedForTesting); }
+    bool limited() const { return limited(currentTimeInternal()); }
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(finish);
 
@@ -251,6 +249,7 @@ private:
 
     bool m_currentTimePending;
     bool m_stateIsBeingUpdated;
+
 };
 
 } // namespace blink
