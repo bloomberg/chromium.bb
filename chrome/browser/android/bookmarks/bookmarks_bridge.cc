@@ -469,8 +469,7 @@ void BookmarksBridge::GetAllBookmarkIDsOrderedByCreationDate(
 
     for (int i = 0; i < (*folder_iter)->child_count(); ++i) {
       const BookmarkNode* child = (*folder_iter)->GetChild(i);
-      if (!IsFolderAvailable(child) || !IsReachable(child) ||
-          client_->IsDescendantOfManagedNode(child))
+      if (!IsReachable(child) || client_->IsDescendantOfManagedNode(child))
         continue;
 
       if (child->is_folder()) {
