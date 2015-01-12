@@ -87,7 +87,6 @@ extern const char kDisableOriginChip[];
 extern const char kDisableOutOfProcessPdf[];
 extern const char kDisablePasswordManagerReauthentication[];
 extern const char kDisablePdfMaterialUI[];
-extern const char kDisablePeopleSearch[];
 extern const char kDisablePermissionsBubbles[];
 extern const char kDisablePopupBlocking[];
 extern const char kDisablePreconnect[];

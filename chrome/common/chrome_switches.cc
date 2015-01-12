@@ -286,9 +286,6 @@ const char kDisablePasswordManagerReauthentication[] =
 // Disable the new material UI - requires out of process PDF plugin.
 const char kDisablePdfMaterialUI[]          = "disable-pdf-material-ui";
 
-// Enables searching for people from the apps list search box.
-const char kDisablePeopleSearch[]           = "disable-people-search";
-
 // Don't use bubbles for content permissions requests instead of infobars.
 const char kDisablePermissionsBubbles[]      = "disable-permissions-bubbles";
 

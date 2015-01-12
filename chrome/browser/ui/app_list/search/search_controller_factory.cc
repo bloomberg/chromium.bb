@@ -55,12 +55,6 @@ scoped_ptr<SearchController> CreateSearchController(
   controller->AddProvider(Mixer::WEBSTORE_GROUP,
                           scoped_ptr<SearchProvider>(
                               new WebstoreProvider(profile, list_controller)));
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisablePeopleSearch)) {
-    controller->AddProvider(Mixer::PEOPLE_GROUP,
-                            scoped_ptr<SearchProvider>(
-                                new PeopleProvider(profile, list_controller)));
-  }
   if (IsSuggestionsSearchProviderEnabled()) {
     controller->AddProvider(
         Mixer::SUGGESTIONS_GROUP,
