@@ -1191,34 +1191,32 @@ bool Directory::CheckTreeInvariants(syncable::BaseTransaction* trans,
                       "Non unique name should not be empty.",
                       trans))
         return false;
-      int safety_count = handles.size() + 1;
-      // TODO(stanisc): handle items with Null parentid
-      while (!parentid.IsRoot()) {
-        Entry parent(trans, GET_BY_ID, parentid);
-        if (!SyncAssert(parent.good(), FROM_HERE,
-                        "Parent entry is not valid.",
-                        trans))
-          return false;
-        if (handles.end() == handles.find(parent.GetMetahandle()))
-            break; // Skip further checking if parent was unmodified.
-        if (!SyncAssert(parent.GetIsDir(), FROM_HERE,
-                        "Parent should be a directory",
-                        trans))
-          return false;
-        if (!SyncAssert(!parent.GetIsDel(), FROM_HERE,
-                        "Parent should not have been marked for deletion.",
-                        trans))
-          return false;
-        if (!SyncAssert(handles.end() != handles.find(parent.GetMetahandle()),
-                        FROM_HERE,
-                        "Parent should be in the index.",
-                        trans))
-          return false;
-        parentid = parent.GetParentId();
-        if (!SyncAssert(--safety_count > 0, FROM_HERE,
-                        "Count should be greater than zero.",
-                        trans))
-          return false;
+
+      if (!parentid.IsNull()) {
+        int safety_count = handles.size() + 1;
+        // TODO(stanisc): handle items with Null parentid
+        while (!parentid.IsRoot()) {
+          Entry parent(trans, GET_BY_ID, parentid);
+          if (!SyncAssert(parent.good(), FROM_HERE,
+                          "Parent entry is not valid.", trans))
+            return false;
+          if (handles.end() == handles.find(parent.GetMetahandle()))
+            break;  // Skip further checking if parent was unmodified.
+          if (!SyncAssert(parent.GetIsDir(), FROM_HERE,
+                          "Parent should be a directory", trans))
+            return false;
+          if (!SyncAssert(!parent.GetIsDel(), FROM_HERE,
+                          "Parent should not have been marked for deletion.",
+                          trans))
+            return false;
+          if (!SyncAssert(handles.end() != handles.find(parent.GetMetahandle()),
+                          FROM_HERE, "Parent should be in the index.", trans))
+            return false;
+          parentid = parent.GetParentId();
+          if (!SyncAssert(--safety_count > 0, FROM_HERE,
+                          "Count should be greater than zero.", trans))
+            return false;
+        }
       }
     }
     int64 base_version = e.GetBaseVersion();

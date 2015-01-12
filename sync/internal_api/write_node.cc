@@ -337,6 +337,7 @@ bool WriteNode::InitBookmarkByCreation(const BaseNode& parent,
   }
 
   syncable::Id parent_id = parent.GetEntry()->GetId();
+  DCHECK(!parent_id.IsNull());
 
   // Start out with a dummy name.  We expect
   // the caller to set a meaningful name after creation.
@@ -352,8 +353,26 @@ bool WriteNode::InitBookmarkByCreation(const BaseNode& parent,
   // Entries are untitled folders by default.
   entry_->PutIsDir(true);
 
-  // Now set the predecessor, which sets IS_UNSYNCED as necessary.
-  return PutPredecessor(predecessor);
+  if (!PutPredecessor(predecessor)) {
+    return false;
+  }
+
+  // Mark this entry as unsynced, to wake up the syncer.
+  MarkForSyncing();
+  return true;
+}
+
+WriteNode::InitUniqueByCreationResult WriteNode::InitUniqueByCreation(
+    ModelType model_type,
+    const BaseNode& parent,
+    const std::string& tag) {
+  return InitUniqueByCreationImpl(model_type, parent.GetEntry()->GetId(), tag);
+}
+
+WriteNode::InitUniqueByCreationResult WriteNode::InitUniqueByCreation(
+    ModelType model_type,
+    const std::string& tag) {
+  return InitUniqueByCreationImpl(model_type, syncable::Id(), tag);
 }
 
 // Create a new node with default properties and a client defined unique tag,
@@ -362,9 +381,9 @@ bool WriteNode::InitBookmarkByCreation(const BaseNode& parent,
 // we will attempt to undelete the node.
 // TODO(chron): Code datatype into hash tag.
 // TODO(chron): Is model type ever lost?
-WriteNode::InitUniqueByCreationResult WriteNode::InitUniqueByCreation(
+WriteNode::InitUniqueByCreationResult WriteNode::InitUniqueByCreationImpl(
     ModelType model_type,
-    const BaseNode& parent,
+    const syncable::Id& parent_id,
     const std::string& tag) {
   // This DCHECK will only fail if init is called twice.
   DCHECK(!entry_);
@@ -374,8 +393,6 @@ WriteNode::InitUniqueByCreationResult WriteNode::InitUniqueByCreation(
   }
 
   const std::string hash = syncable::GenerateSyncableHash(model_type, tag);
-
-  syncable::Id parent_id = parent.GetEntry()->GetId();
 
   // Start out with a dummy name.  We expect
   // the caller to set a meaningful name after creation.
@@ -440,10 +457,13 @@ WriteNode::InitUniqueByCreationResult WriteNode::InitUniqueByCreation(
   // We don't support directory and tag combinations.
   entry_->PutIsDir(false);
 
-  // Now set the predecessor, which sets IS_UNSYNCED as necessary.
-  bool success = PutPredecessor(NULL);
-  if (!success)
-    return INIT_FAILED_SET_PREDECESSOR;
+  if (!parent_id.IsNull()) {
+    if (!PutPredecessor(NULL))
+      return INIT_FAILED_SET_PREDECESSOR;
+  }
+
+  // Mark this entry as unsynced, to wake up the syncer.
+  MarkForSyncing();
 
   return INIT_SUCCESS;
 }
@@ -457,6 +477,7 @@ bool WriteNode::SetPosition(const BaseNode& new_parent,
   }
 
   syncable::Id new_parent_id = new_parent.GetEntry()->GetId();
+  DCHECK(!new_parent_id.IsNull());
 
   // Filter out redundant changes if both the parent and the predecessor match.
   if (new_parent_id == entry_->GetParentId()) {
@@ -469,8 +490,13 @@ bool WriteNode::SetPosition(const BaseNode& new_parent,
 
   entry_->PutParentId(new_parent_id);
 
-  // Now set the predecessor, which sets IS_UNSYNCED as necessary.
-  return PutPredecessor(predecessor);
+  if (!PutPredecessor(predecessor)) {
+    return false;
+  }
+
+  // Mark this entry as unsynced, to wake up the syncer.
+  MarkForSyncing();
+  return true;
 }
 
 void WriteNode::SetAttachmentMetadata(
@@ -505,14 +531,10 @@ void WriteNode::Drop() {
 }
 
 bool WriteNode::PutPredecessor(const BaseNode* predecessor) {
+  DCHECK(!entry_->GetParentId().IsNull());
   syncable::Id predecessor_id = predecessor ?
       predecessor->GetEntry()->GetId() : syncable::Id();
-  if (!entry_->PutPredecessor(predecessor_id))
-    return false;
-  // Mark this entry as unsynced, to wake up the syncer.
-  MarkForSyncing();
-
-  return true;
+  return entry_->PutPredecessor(predecessor_id);
 }
 
 void WriteNode::MarkForSyncing() {

@@ -95,11 +95,25 @@ using syncable::kEncryptedString;
 
 namespace {
 
-// Makes a non-folder child of the root node.  Returns the id of the
+// Makes a child node under the type root folder.  Returns the id of the
 // newly-created node.
 int64 MakeNode(UserShare* share,
                ModelType model_type,
                const std::string& client_tag) {
+  WriteTransaction trans(FROM_HERE, share);
+  WriteNode node(&trans);
+  WriteNode::InitUniqueByCreationResult result =
+      node.InitUniqueByCreation(model_type, client_tag);
+  EXPECT_EQ(WriteNode::INIT_SUCCESS, result);
+  node.SetIsFolder(false);
+  return node.GetId();
+}
+
+// Makes a non-folder child of the root node.  Returns the id of the
+// newly-created node.
+int64 MakeNodeWithRoot(UserShare* share,
+                       ModelType model_type,
+                       const std::string& client_tag) {
   WriteTransaction trans(FROM_HERE, share);
   ReadNode root_node(&trans);
   root_node.InitByRootLookup();
@@ -140,8 +154,7 @@ int64 MakeBookmarkWithParent(UserShare* share,
 // Creates the "synced" root node for a particular datatype. We use the syncable
 // methods here so that the syncer treats these nodes as if they were already
 // received from the server.
-int64 MakeServerNodeForType(UserShare* share,
-                            ModelType model_type) {
+int64 MakeTypeRoot(UserShare* share, ModelType model_type) {
   sync_pb::EntitySpecifics specifics;
   AddDefaultFieldValue(model_type, &specifics);
   syncable::WriteTransaction trans(
@@ -155,8 +168,6 @@ int64 MakeServerNodeForType(UserShare* share,
   entry.PutBaseVersion(1);
   entry.PutServerVersion(1);
   entry.PutIsUnappliedUpdate(false);
-  // TODO(stanisc): setting parent ID might be unnecessary once
-  // empty parent ID is supported.
   entry.PutParentId(syncable::Id::GetRoot());
   entry.PutServerParentId(syncable::Id::GetRoot());
   entry.PutServerIsDir(true);
@@ -306,21 +317,46 @@ TEST_F(SyncApiTest, BasicTagWrite) {
     ReadTransaction trans(FROM_HERE, user_share());
     ReadNode root_node(&trans);
     root_node.InitByRootLookup();
-    EXPECT_EQ(root_node.GetFirstChildId(), 0);
+    EXPECT_EQ(kInvalidId, root_node.GetFirstChildId());
   }
 
-  ignore_result(MakeNode(user_share(), BOOKMARKS, "testtag"));
+  ignore_result(MakeNodeWithRoot(user_share(), BOOKMARKS, "testtag"));
 
   {
     ReadTransaction trans(FROM_HERE, user_share());
     ReadNode node(&trans);
     EXPECT_EQ(BaseNode::INIT_OK,
               node.InitByClientTagLookup(BOOKMARKS, "testtag"));
+    EXPECT_NE(0, node.GetId());
 
     ReadNode root_node(&trans);
     root_node.InitByRootLookup();
-    EXPECT_NE(node.GetId(), 0);
     EXPECT_EQ(node.GetId(), root_node.GetFirstChildId());
+  }
+}
+
+TEST_F(SyncApiTest, BasicTagWriteWithImplicitParent) {
+  int64 type_root = MakeTypeRoot(user_share(), PREFERENCES);
+
+  {
+    ReadTransaction trans(FROM_HERE, user_share());
+    ReadNode type_root_node(&trans);
+    EXPECT_EQ(BaseNode::INIT_OK, type_root_node.InitByIdLookup(type_root));
+    EXPECT_EQ(kInvalidId, type_root_node.GetFirstChildId());
+  }
+
+  ignore_result(MakeNode(user_share(), PREFERENCES, "testtag"));
+
+  {
+    ReadTransaction trans(FROM_HERE, user_share());
+    ReadNode node(&trans);
+    EXPECT_EQ(BaseNode::INIT_OK,
+              node.InitByClientTagLookup(PREFERENCES, "testtag"));
+    EXPECT_EQ(kInvalidId, node.GetParentId());
+
+    ReadNode type_root_node(&trans);
+    EXPECT_EQ(BaseNode::INIT_OK, type_root_node.InitByIdLookup(type_root));
+    EXPECT_EQ(node.GetId(), type_root_node.GetFirstChildId());
   }
 }
 
@@ -332,9 +368,9 @@ TEST_F(SyncApiTest, ModelTypesSiloed) {
     EXPECT_EQ(root_node.GetFirstChildId(), 0);
   }
 
-  ignore_result(MakeNode(user_share(), BOOKMARKS, "collideme"));
-  ignore_result(MakeNode(user_share(), PREFERENCES, "collideme"));
-  ignore_result(MakeNode(user_share(), AUTOFILL, "collideme"));
+  ignore_result(MakeNodeWithRoot(user_share(), BOOKMARKS, "collideme"));
+  ignore_result(MakeNodeWithRoot(user_share(), PREFERENCES, "collideme"));
+  ignore_result(MakeNodeWithRoot(user_share(), AUTOFILL, "collideme"));
 
   {
     ReadTransaction trans(FROM_HERE, user_share());
@@ -537,7 +573,7 @@ TEST_F(SyncApiTest, WriteEncryptedTitle) {
 }
 
 TEST_F(SyncApiTest, BaseNodeSetSpecifics) {
-  int64 child_id = MakeNode(user_share(), BOOKMARKS, "testtag");
+  int64 child_id = MakeNodeWithRoot(user_share(), BOOKMARKS, "testtag");
   WriteTransaction trans(FROM_HERE, user_share());
   WriteNode node(&trans);
   EXPECT_EQ(BaseNode::INIT_OK, node.InitByIdLookup(child_id));
@@ -553,7 +589,7 @@ TEST_F(SyncApiTest, BaseNodeSetSpecifics) {
 }
 
 TEST_F(SyncApiTest, BaseNodeSetSpecificsPreservesUnknownFields) {
-  int64 child_id = MakeNode(user_share(), BOOKMARKS, "testtag");
+  int64 child_id = MakeNodeWithRoot(user_share(), BOOKMARKS, "testtag");
   WriteTransaction trans(FROM_HERE, user_share());
   WriteNode node(&trans);
   EXPECT_EQ(BaseNode::INIT_OK, node.InitByIdLookup(child_id));
@@ -585,7 +621,7 @@ TEST_F(SyncApiTest, EmptyTags) {
 
 // Test counting nodes when the type's root node has no children.
 TEST_F(SyncApiTest, GetTotalNodeCountEmpty) {
-  int64 type_root = MakeServerNodeForType(user_share(), BOOKMARKS);
+  int64 type_root = MakeTypeRoot(user_share(), BOOKMARKS);
   {
     ReadTransaction trans(FROM_HERE, user_share());
     ReadNode type_root_node(&trans);
@@ -597,7 +633,7 @@ TEST_F(SyncApiTest, GetTotalNodeCountEmpty) {
 
 // Test counting nodes when there is one child beneath the type's root.
 TEST_F(SyncApiTest, GetTotalNodeCountOneChild) {
-  int64 type_root = MakeServerNodeForType(user_share(), BOOKMARKS);
+  int64 type_root = MakeTypeRoot(user_share(), BOOKMARKS);
   int64 parent = MakeFolderWithParent(user_share(), BOOKMARKS, type_root, NULL);
   {
     ReadTransaction trans(FROM_HERE, user_share());
@@ -615,7 +651,7 @@ TEST_F(SyncApiTest, GetTotalNodeCountOneChild) {
 // Test counting nodes when there are multiple children beneath the type root,
 // and one of those children has children of its own.
 TEST_F(SyncApiTest, GetTotalNodeCountMultipleChildren) {
-  int64 type_root = MakeServerNodeForType(user_share(), BOOKMARKS);
+  int64 type_root = MakeTypeRoot(user_share(), BOOKMARKS);
   int64 parent = MakeFolderWithParent(user_share(), BOOKMARKS, type_root, NULL);
   ignore_result(MakeFolderWithParent(user_share(), BOOKMARKS, type_root, NULL));
   int64 child1 = MakeFolderWithParent(user_share(), BOOKMARKS, parent, NULL);
@@ -834,8 +870,8 @@ class SyncManagerTest : public testing::Test,
     if (initialization_succeeded_) {
       for (ModelSafeRoutingInfo::iterator i = routing_info.begin();
            i != routing_info.end(); ++i) {
-        type_roots_[i->first] = MakeServerNodeForType(
-            sync_manager_.GetUserShare(), i->first);
+        type_roots_[i->first] =
+            MakeTypeRoot(sync_manager_.GetUserShare(), i->first);
       }
     }
 
@@ -1126,13 +1162,13 @@ TEST_F(SyncManagerTest, EncryptDataTypesWithData) {
   }
   // Next batch_size nodes are a different type and on their own.
   for (; i < 2*batch_size; ++i) {
-    MakeNode(sync_manager_.GetUserShare(), SESSIONS,
-             base::StringPrintf("%" PRIuS "", i));
+    MakeNodeWithRoot(sync_manager_.GetUserShare(), SESSIONS,
+                     base::StringPrintf("%" PRIuS "", i));
   }
   // Last batch_size nodes are a third type that will not need encryption.
   for (; i < 3*batch_size; ++i) {
-    MakeNode(sync_manager_.GetUserShare(), THEMES,
-             base::StringPrintf("%" PRIuS "", i));
+    MakeNodeWithRoot(sync_manager_.GetUserShare(), THEMES,
+                     base::StringPrintf("%" PRIuS "", i));
   }
 
   {
@@ -1615,12 +1651,10 @@ TEST_F(SyncManagerTest, EncryptBookmarksWithLegacyData) {
   std::string url2 = "http://www.bla.com";
 
   // Create a bookmark using the legacy format.
-  int64 node_id1 = MakeNode(sync_manager_.GetUserShare(),
-      BOOKMARKS,
-      "testtag");
-  int64 node_id2 = MakeNode(sync_manager_.GetUserShare(),
-      BOOKMARKS,
-      "testtag2");
+  int64 node_id1 =
+      MakeNodeWithRoot(sync_manager_.GetUserShare(), BOOKMARKS, "testtag");
+  int64 node_id2 =
+      MakeNodeWithRoot(sync_manager_.GetUserShare(), BOOKMARKS, "testtag2");
   {
     WriteTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     WriteNode node(&trans);
@@ -2690,7 +2724,7 @@ TEST_F(SyncManagerTest, PurgeUnappliedTypes) {
   AddDefaultFieldValue(BOOKMARKS, &bm_specifics);
   int pref1_meta = MakeServerNode(
       share, PREFERENCES, "pref1", "hash1", pref_specifics);
-  int64 pref2_meta = MakeNode(share, PREFERENCES, "pref2");
+  int64 pref2_meta = MakeNodeWithRoot(share, PREFERENCES, "pref2");
   int pref3_meta = MakeServerNode(
       share, PREFERENCES, "pref3", "hash3", pref_specifics);
   int pref4_meta = MakeServerNode(

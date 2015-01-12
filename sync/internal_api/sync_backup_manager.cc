@@ -83,7 +83,7 @@ void SyncBackupManager::NormalizeEntries() {
 
     if (!entry.GetId().ServerKnows())
       entry.PutId(syncable::Id::CreateFromServerId(entry.GetId().value()));
-    if (!entry.GetParentId().ServerKnows()) {
+    if (!entry.GetParentId().IsNull() && !entry.GetParentId().ServerKnows()) {
       entry.PutParentIdPropertyOnly(syncable::Id::CreateFromServerId(
           entry.GetParentId().value()));
     }

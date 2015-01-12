@@ -58,7 +58,7 @@ class SYNC_EXPORT Id {
     return "r" == s_;
   }
   inline bool ServerKnows() const {
-    return s_[0] == 's' || s_ == "r";
+    return !IsNull() && (s_[0] == 's' || s_ == "r");
   }
 
   inline bool IsNull() const { return s_.empty(); }

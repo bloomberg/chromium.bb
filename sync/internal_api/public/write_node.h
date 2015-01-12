@@ -34,6 +34,7 @@ class Cryptographer;
 class WriteTransaction;
 
 namespace syncable {
+class Id;
 class Entry;
 class MutableEntry;
 }
@@ -82,6 +83,12 @@ class SYNC_EXPORT WriteNode : public BaseNode {
   InitUniqueByCreationResult InitUniqueByCreation(
       ModelType model_type,
       const BaseNode& parent,
+      const std::string& client_tag);
+
+  // InitUniqueByCreation overload for model types without hierarchy.
+  // The parent node isn't stored but is assumed to be the type root folder.
+  InitUniqueByCreationResult InitUniqueByCreation(
+      ModelType model_type,
       const std::string& client_tag);
 
   // Looks up the type's root folder.  This is usually created by the sync
@@ -187,6 +194,11 @@ class SYNC_EXPORT WriteNode : public BaseNode {
   FRIEND_TEST_ALL_PREFIXES(SyncManagerTest, EncryptBookmarksWithLegacyData);
 
   void* operator new(size_t size);  // Node is meant for stack use only.
+
+  InitUniqueByCreationResult InitUniqueByCreationImpl(
+      ModelType model_type,
+      const syncable::Id& parent_id,
+      const std::string& client_tag);
 
   // Helper to set the previous node.
   bool PutPredecessor(const BaseNode* predecessor) WARN_UNUSED_RESULT;

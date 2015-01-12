@@ -29,13 +29,16 @@ void MutableEntry::Init(WriteTransaction* trans,
   kernel->put(ID, trans->directory_->NextId());
   kernel->put(META_HANDLE, trans->directory_->NextMetahandle());
   kernel->mark_dirty(&trans->directory_->kernel_->dirty_metahandles);
-  kernel->put(PARENT_ID, parent_id);
   kernel->put(NON_UNIQUE_NAME, name);
   const base::Time& now = base::Time::Now();
   kernel->put(CTIME, now);
   kernel->put(MTIME, now);
   // We match the database defaults here
   kernel->put(BASE_VERSION, CHANGES_VERSION);
+
+  if (!parent_id.IsNull()) {
+    kernel->put(PARENT_ID, parent_id);
+  }
 
   // Normally the SPECIFICS setting code is wrapped in logic to deal with
   // unknown fields and encryption.  Since all we want to do here is ensure that
@@ -52,6 +55,20 @@ void MutableEntry::Init(WriteTransaction* trans,
 
   // Now swap the pointers.
   kernel_ = kernel.release();
+}
+
+MutableEntry::MutableEntry(WriteTransaction* trans,
+                           Create,
+                           ModelType model_type,
+                           const string& name)
+    : ModelNeutralMutableEntry(trans), write_transaction_(trans) {
+  Init(trans, model_type, Id(), name);
+  // We need to have a valid position ready before we can index the item.
+  DCHECK_NE(BOOKMARKS, model_type);
+  DCHECK(!ShouldMaintainPosition());
+
+  bool result = trans->directory()->InsertEntry(trans, kernel_);
+  DCHECK(result);
 }
 
 MutableEntry::MutableEntry(WriteTransaction* trans,

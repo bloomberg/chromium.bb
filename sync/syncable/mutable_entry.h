@@ -30,8 +30,15 @@ class SYNC_EXPORT_PRIVATE MutableEntry : public ModelNeutralMutableEntry {
 
  public:
   MutableEntry(WriteTransaction* trans, CreateNewUpdateItem, const Id& id);
-  MutableEntry(WriteTransaction* trans, Create, ModelType model_type,
-               const Id& parent_id, const std::string& name);
+  MutableEntry(WriteTransaction* trans,
+               Create,
+               ModelType model_type,
+               const std::string& name);
+  MutableEntry(WriteTransaction* trans,
+               Create,
+               ModelType model_type,
+               const Id& parent_id,
+               const std::string& name);
   MutableEntry(WriteTransaction* trans, GetByHandle, int64);
   MutableEntry(WriteTransaction* trans, GetById, const Id&);
   MutableEntry(WriteTransaction* trans, GetByClientTag, const std::string& tag);

@@ -12,9 +12,8 @@
 namespace syncer {
 namespace syncable {
 
-bool ChildComparator::operator()(
-    const syncable::EntryKernel* a,
-    const syncable::EntryKernel* b) const {
+bool ChildComparator::operator()(const EntryKernel* a,
+                                 const EntryKernel* b) const {
   const UniquePosition& a_pos = a->ref(UNIQUE_POSITION);
   const UniquePosition& b_pos = b->ref(UNIQUE_POSITION);
 
@@ -56,7 +55,18 @@ bool ParentChildIndex::ShouldInclude(const EntryKernel* entry) {
 bool ParentChildIndex::Insert(EntryKernel* entry) {
   DCHECK(ShouldInclude(entry));
 
-  const syncable::Id& parent_id = entry->ref(PARENT_ID);
+  const Id& parent_id = GetParentId(entry);
+  // Store type root ID when inserting a type root entry.
+  if (parent_id.IsRoot()) {
+    ModelType model_type = GetModelType(entry);
+    // TODO(stanisc): there are some unit tests that create entries
+    // at the root and don't bother initializing specifics which
+    // produces TOP_LEVEL_FOLDER type here.
+    if (syncer::IsRealDataType(model_type)) {
+      model_type_root_ids_[model_type] = entry->ref(ID);
+    }
+  }
+
   OrderedChildSet* children = NULL;
   ParentChildrenMap::iterator i = parent_children_map_.find(parent_id);
   if (i != parent_children_map_.end()) {
@@ -73,8 +83,18 @@ bool ParentChildIndex::Insert(EntryKernel* entry) {
 // one does not own any EntryKernels.  This function removes references to the
 // given EntryKernel but does not delete it.
 void ParentChildIndex::Remove(EntryKernel* e) {
-  ParentChildrenMap::iterator parent =
-      parent_children_map_.find(e->ref(PARENT_ID));
+  const Id& parent_id = GetParentId(e);
+  // Clear type root ID when removing a type root entry.
+  if (parent_id.IsRoot()) {
+    ModelType model_type = GetModelType(e);
+    // TODO(stanisc): the check is needed to work around some tests.
+    // See TODO above.
+    if (model_type_root_ids_[model_type] == e->ref(ID)) {
+      model_type_root_ids_[model_type] = Id();
+    }
+  }
+
+  ParentChildrenMap::iterator parent = parent_children_map_.find(parent_id);
   DCHECK(parent != parent_children_map_.end());
 
   OrderedChildSet* children = parent->second;
@@ -89,7 +109,7 @@ void ParentChildIndex::Remove(EntryKernel* e) {
 }
 
 bool ParentChildIndex::Contains(EntryKernel *e) const {
-  const syncable::Id& parent_id = e->ref(PARENT_ID);
+  const Id& parent_id = GetParentId(e);
   ParentChildrenMap::const_iterator parent =
       parent_children_map_.find(parent_id);
   if (parent == parent_children_map_.end()) {
@@ -109,6 +129,29 @@ const OrderedChildSet* ParentChildIndex::GetChildren(const syncable::Id& id) {
   // A successful lookup implies at least some children exist.
   DCHECK(!parent->second->empty());
   return parent->second;
+}
+
+const Id& ParentChildIndex::GetParentId(EntryKernel* e) const {
+  const Id& parent_id = e->ref(PARENT_ID);
+  if (!parent_id.IsNull()) {
+    return parent_id;
+  }
+  return GetModelTypeRootId(GetModelType(e));
+}
+
+ModelType ParentChildIndex::GetModelType(EntryKernel* e) {
+  // TODO(stanisc): is there a more effective way to find out model type?
+  ModelType model_type = e->GetModelType();
+  if (!syncer::IsRealDataType(model_type)) {
+    model_type = e->GetServerModelType();
+  }
+  return model_type;
+}
+
+const Id& ParentChildIndex::GetModelTypeRootId(ModelType model_type) const {
+  // TODO(stanisc): Review whether this approach is reliable enough.
+  // Should this method simply enumerate children of root node ("r") instead?
+  return model_type_root_ids_[model_type];
 }
 
 }  // namespace syncable

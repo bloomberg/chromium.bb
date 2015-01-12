@@ -1766,6 +1766,70 @@ TEST_F(SyncableDirectoryTest, Directory_GetAttachmentIdsToUpload) {
   ASSERT_TRUE(id_set.empty());
 }
 
+// Verify that the directory accepts entries with unset parent ID.
+TEST_F(SyncableDirectoryTest, MutableEntry_ImplicitParentId) {
+  TestIdFactory id_factory;
+  const Id root_id = TestIdFactory::root();
+  const Id p_root_id = id_factory.NewServerId();
+  const Id a_root_id = id_factory.NewServerId();
+  const Id item1_id = id_factory.NewServerId();
+  const Id item2_id = id_factory.NewServerId();
+  const Id item3_id = id_factory.NewServerId();
+  // Create two type root folders that are necessary (for now)
+  // for creating items without explicitly set Parent ID
+  {
+    WriteTransaction trans(FROM_HERE, UNITTEST, dir().get());
+    MutableEntry p_root(&trans, CREATE, PREFERENCES, root_id, "P");
+    ASSERT_TRUE(p_root.good());
+    p_root.PutIsDir(true);
+    p_root.PutId(p_root_id);
+    p_root.PutBaseVersion(1);
+
+    MutableEntry a_root(&trans, CREATE, AUTOFILL, root_id, "A");
+    ASSERT_TRUE(a_root.good());
+    a_root.PutIsDir(true);
+    a_root.PutId(a_root_id);
+    a_root.PutBaseVersion(1);
+  }
+
+  // Create two entries with implicit parent nodes and one entry with explicit
+  // parent node.
+  {
+    WriteTransaction trans(FROM_HERE, UNITTEST, dir().get());
+    MutableEntry item1(&trans, CREATE, PREFERENCES, "P1");
+    item1.PutBaseVersion(1);
+    item1.PutId(item1_id);
+    MutableEntry item2(&trans, CREATE, AUTOFILL, "A1");
+    item2.PutBaseVersion(1);
+    item2.PutId(item2_id);
+    // Placing an AUTOFILL item under the root isn't expected,
+    // but let's test it to verify that explicit root overrides the implicit
+    // one and this entry doesn't end up under the "A" root.
+    MutableEntry item3(&trans, CREATE, AUTOFILL, root_id, "A2");
+    item3.PutBaseVersion(1);
+    item3.PutId(item3_id);
+  }
+
+  {
+    ReadTransaction trans(FROM_HERE, dir().get());
+    // Verify that item1 and item2 are good and have no ParentId.
+    Entry item1(&trans, GET_BY_ID, item1_id);
+    ASSERT_TRUE(item1.good());
+    ASSERT_TRUE(item1.GetParentId().IsNull());
+    Entry item2(&trans, GET_BY_ID, item2_id);
+    ASSERT_TRUE(item2.good());
+    ASSERT_TRUE(item2.GetParentId().IsNull());
+    // Verify that p_root and a_root have exactly one child each
+    // (subtract one to exclude roots themselves).
+    Entry p_root(&trans, GET_BY_ID, p_root_id);
+    ASSERT_EQ(item1_id, p_root.GetFirstChildId());
+    ASSERT_EQ(1, p_root.GetTotalNodeCount() - 1);
+    Entry a_root(&trans, GET_BY_ID, a_root_id);
+    ASSERT_EQ(item2_id, a_root.GetFirstChildId());
+    ASSERT_EQ(1, a_root.GetTotalNodeCount() - 1);
+  }
+}
+
 }  // namespace syncable
 
 }  // namespace syncer

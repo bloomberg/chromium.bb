@@ -34,6 +34,8 @@ using syncable::SPECIFICS;
 // string.
 static int64 IdToMetahandle(syncable::BaseTransaction* trans,
                             const syncable::Id& id) {
+  if (id.IsNull())
+    return kInvalidId;
   syncable::Entry entry(trans, syncable::GET_BY_ID, id);
   if (!entry.good())
     return kInvalidId;
