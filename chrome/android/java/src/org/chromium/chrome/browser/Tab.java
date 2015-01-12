@@ -329,9 +329,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
             extends ChromeWebContentsDelegateAndroid {
         @Override
         public void onLoadProgressChanged(int progress) {
-            for (TabObserver observer : mObservers) {
-                observer.onLoadProgressChanged(Tab.this, progress);
-            }
+            notifyLoadProgress(progress);
         }
 
         @Override
@@ -1551,6 +1549,14 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         while (observers.hasNext()) {
             observers.next().onTitleUpdated(this);
         }
+    }
+
+    /**
+     * Notify the observers that the load progress has changed.
+     * @param progress The current percentage of progress.
+     */
+    protected void notifyLoadProgress(int progress) {
+        for (TabObserver observer : mObservers) observer.onLoadProgressChanged(Tab.this, progress);
     }
 
     protected void notifyFaviconChanged() {
