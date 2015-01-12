@@ -948,19 +948,15 @@ bool RenderWidgetHostViewMac::IsSurfaceAvailableForCopy() const {
 }
 
 void RenderWidgetHostViewMac::Show() {
-  [cocoa_view_ setHidden:NO];
-
   WasShown();
 }
 
 void RenderWidgetHostViewMac::Hide() {
-  [cocoa_view_ setHidden:YES];
-
   WasHidden();
 }
 
 bool RenderWidgetHostViewMac::IsShowing() {
-  return ![cocoa_view_ isHidden];
+  return !render_widget_host_->is_hidden();
 }
 
 gfx::Rect RenderWidgetHostViewMac::GetViewBounds() const {
