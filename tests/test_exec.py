@@ -55,7 +55,7 @@ class TestExec(unittest.TestCase):
 
     def _Popen(self, args, **kwargs):
         command = self._GetResourceFilename('../visualmetrics.py')
-        return subprocess.Popen([command] + args, **kwargs)
+        return subprocess.Popen(['python', command] + args, **kwargs)
 
     def _runTest(self, data_dir):
         video_path = self._GetResourceFilename(os.path.join(data_dir, 'video.mp4'))

@@ -3,29 +3,29 @@
 Copyright (c) 2014, Google Inc.
 All rights reserved.
 
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
+Redistribution and use in source and binary forms, with or without modification,
+are permitted provided that the following conditions are met:
 
     * Redistributions of source code must retain the above copyright notice,
       this list of conditions and the following disclaimer.
     * Redistributions in binary form must reproduce the above copyright notice,
       this list of conditions and the following disclaimer in the documentation
       and/or other materials provided with the distribution.
-    * Neither the name of the <ORGANIZATION> nor the names of its contributors
-    may be used to endorse or promote products derived from this software
-    without specific prior written permission.
+    * Neither the name of the company nor the names of its contributors may be
+      used to endorse or promote products derived from this software without
+      specific prior written permission.
 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-"""
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE."""
 import glob
 import gzip
 import json
@@ -44,8 +44,7 @@ import tempfile
 
 
 def video_to_frames(video, directory, force, orange_file, find_viewport, full_resolution, timeline_file):
-    viewport = None
-    first_frame = os.path.join(directory, 'image-000000')
+    first_frame = os.path.join(directory, 'ms_000000')
     if (not os.path.isfile(first_frame + '.png') and not os.path.isfile(first_frame + '.jpg')) or force:
         if os.path.isfile(video):
             video = os.path.realpath(video)
@@ -71,7 +70,6 @@ def video_to_frames(video, directory, force, orange_file, find_viewport, full_re
             logging.critical("Input video file " + video + " does not exist")
     else:
         logging.info("Extracted video already exists in " + directory)
-    return viewport
 
 
 def extract_frames(video, directory, full_resolution, viewport):
@@ -213,7 +211,7 @@ def adjust_frame_times(directory):
             if offset is None:
                 offset = frame_time
             new_time = frame_time - offset
-            dest = os.path.join(directory, 'image-{0:06d}.png'.format(new_time))
+            dest = os.path.join(directory, 'ms_{0:06d}.png'.format(new_time))
             os.rename(frame, dest)
 
 
@@ -221,7 +219,7 @@ def eliminate_duplicate_frames(directory):
     try:
         # Do a first pass looking for the first non-blank frame with an allowance
         # for up to a 2% per-pixel difference for noise in the white field.
-        files = sorted(glob.glob(os.path.join(directory, 'image-*.png')))
+        files = sorted(glob.glob(os.path.join(directory, 'ms_*.png')))
         blank = files[0]
 
         from PIL import Image
@@ -248,7 +246,7 @@ def eliminate_duplicate_frames(directory):
 
         # Do a second pass looking for the last frame but with an allowance for up
         # to a 10% difference in individual pixels to deal with noise around text.
-        files = sorted(glob.glob(os.path.join(directory, 'image-*.png')))
+        files = sorted(glob.glob(os.path.join(directory, 'ms_*.png')))
         count = len(files)
         duplicates = []
         if count > 2:
@@ -358,23 +356,23 @@ def generate_orange_png(orange_file):
 
 
 def synchronize_to_timeline(directory, timeline_file):
-    offset = get_timeline_offset(directory, timeline_file)
+    offset = get_timeline_offset(timeline_file)
     if offset > 0:
-        frames = sorted(glob.glob(os.path.join(directory, 'image-*.png')))
-        match = re.compile('image-(?P<ms>[0-9]+)\.png')
+        frames = sorted(glob.glob(os.path.join(directory, 'ms_*.png')))
+        match = re.compile('ms_(?P<ms>[0-9]+)\.png')
         for frame in frames:
             m = re.search(match, frame)
             if m is not None:
                 frame_time = int(m.groupdict().get('ms'))
                 new_time = max(frame_time - offset, 0)
-                dest = os.path.join(directory, 'image-{0:06d}.png'.format(new_time))
+                dest = os.path.join(directory, 'ms_{0:06d}.png'.format(new_time))
                 if frame != dest:
                     if os.path.isfile(dest):
                         os.remove(dest)
                     os.rename(frame, dest)
 
 
-def get_timeline_offset(directory, timeline_file):
+def get_timeline_offset(timeline_file):
     offset = 0
     try:
         file_name, ext = os.path.splitext(timeline_file)
@@ -475,20 +473,20 @@ def get_timeline_event_navigate_time(timeline_event):
 ########################################################################################################################
 
 
-def calculate_histograms(directory, histograms_file, force, viewport):
+def calculate_histograms(directory, histograms_file, force):
     if not os.path.isfile(histograms_file) or force:
         try:
             extension = None
             directory = os.path.realpath(directory)
-            first_frame = os.path.join(directory, 'image-000000')
+            first_frame = os.path.join(directory, 'ms_000000')
             if os.path.isfile(first_frame + '.png'):
                 extension = '.png'
             elif os.path.isfile(first_frame + '.jpg'):
                 extension = '.jpg'
             if extension is not None:
                 histograms = []
-                frames = sorted(glob.glob(os.path.join(directory, 'image-*' + extension)))
-                match = re.compile('image-(?P<ms>[0-9]+)\.')
+                frames = sorted(glob.glob(os.path.join(directory, 'ms_*' + extension)))
+                match = re.compile('ms_(?P<ms>[0-9]+)\.')
                 for frame in frames:
                     m = re.search(match, frame)
                     if m is not None:
@@ -540,8 +538,8 @@ def calculate_image_histogram(file):
 
 def convert_to_jpeg(directory, quality):
     directory = os.path.realpath(directory)
-    files = sorted(glob.glob(os.path.join(directory, 'image-*.png')))
-    match = re.compile('(?P<base>image-[0-9]+\.)')
+    files = sorted(glob.glob(os.path.join(directory, 'ms_*.png')))
+    match = re.compile('(?P<base>ms_[0-9]+\.)')
     for file in files:
         m = re.search(match, file)
         if m is not None:
@@ -799,9 +797,9 @@ if '__main__' == __name__:
                     not os.path.isfile(orange_file):
                     orange_file = os.path.join(temp_dir, 'orange.png')
                     generate_orange_png(orange_file)
-                viewport = video_to_frames(options.video, directory, options.force, orange_file, options.viewport,
-                                           options.full, options.timeline)
-            calculate_histograms(directory, histogram_file, options.force, viewport)
+                video_to_frames(options.video, directory, options.force, orange_file, options.viewport, options.full,
+                                options.timeline)
+            calculate_histograms(directory, histogram_file, options.force)
             if options.dir is not None and options.quality is not None:
                 convert_to_jpeg(directory, options.quality)
             metrics = calculate_visual_metrics(histogram_file, options.start, options.end)
