@@ -51,6 +51,9 @@ function onload()
         f[i] = i;
     console.log("%O", f)
 
+    var g = new Uint8Array(new ArrayBuffer(Math.pow(20, 6) + Math.pow(20, 4) + 3));
+    console.dir(g);
+
     runTest();
 }
 

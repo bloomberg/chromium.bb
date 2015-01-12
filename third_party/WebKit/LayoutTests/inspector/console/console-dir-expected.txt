@@ -7,6 +7,7 @@ CONSOLE MESSAGE: line 28: [object Object]
 CONSOLE MESSAGE: line 31: [object Object]
 CONSOLE MESSAGE: line 32: [object Object]
 CONSOLE MESSAGE: line 34: function __proto__() { [native code] }
+CONSOLE MESSAGE: line 39: [object Uint8Array]
 Tests that console logging dumps proper messages.
 
 console-dir.html:9 Array[2]
@@ -61,4 +62,10 @@ console-dir.html:34 function __proto__() { [native code] }
     __proto__: function Empty() {}
     <function scope>
         No Scopes
+console-dir.html:39 Uint8Array[400000000]
+    [0 … 99999999]
+    [100000000 … 199999999]
+    [200000000 … 299999999]
+    [300000000 … 399999999]
+    __proto__: Uint8Array
 

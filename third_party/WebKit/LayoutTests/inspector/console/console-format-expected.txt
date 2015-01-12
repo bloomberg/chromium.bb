@@ -84,6 +84,10 @@ CONSOLE MESSAGE: line 12: [object Text]
 CONSOLE MESSAGE: line 13: [object Text]
 CONSOLE MESSAGE: line 12: [object DOMException]
 CONSOLE MESSAGE: line 13: [object DOMException]
+CONSOLE MESSAGE: line 12: [object Uint8Array]
+CONSOLE MESSAGE: line 13: [object Uint8Array]
+CONSOLE MESSAGE: line 12: [object Uint8Array]
+CONSOLE MESSAGE: line 13: [object Uint8Array]
 Tests that console logging dumps proper messages.
 
  console-format.html:26 Array[10]0: "test"1: "test2"4: "test4"foo: Objectlength: 10__proto__: Array[0]
@@ -244,4 +248,12 @@ console-format.html:12 DOMException: Failed to execute 'removeChild' on 'Node': 
 console-format.html:13 [DOMException: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of th…]0: DOMException: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.length: 1__proto__: Array[0]
 globals[35]
 DOMException: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node. {message: "Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.", name: "NotFoundError", code: 8, stack: "", INDEX_SIZE_ERR: 1…}code: 8message: "Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node."name: "NotFoundError"stack: ""__proto__: DOMException
+console-format.html:12 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0…][0 … 99][100 … 199][200 … 299][300 … 399]foo: "bar"__proto__: Uint8Array
+console-format.html:13 [Uint8Array[400]]0: Uint8Array[400]length: 1__proto__: Array[0]
+globals[36]
+Uint8Array[400][0 … 99][100 … 199][200 … 299][300 … 399]foo: "bar"__proto__: Uint8Array
+console-format.html:12 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0…][0 … 99999999][100000000 … 199999999][200000000 … 299999999][300000000 … 399999999]__proto__: Uint8Array
+console-format.html:13 [Uint8Array[400000000]]0: Uint8Array[400000000]length: 1__proto__: Array[0]
+globals[37]
+Uint8Array[400000000][0 … 99999999][100000000 … 199999999][200000000 … 299999999][300000000 … 399999999]__proto__: Uint8Array
 

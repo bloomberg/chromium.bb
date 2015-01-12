@@ -19,7 +19,7 @@ function onload()
     var bar = { bar: "bar" };
     bar.__proto__ = foo;
     var array = ["test", "test2"]; array.length = 10;
-    array.foo = {}; 
+    array.foo = {};
     array[4] = "test4";
 
     var svg = document.getElementById("svg-node");
@@ -33,7 +33,7 @@ function onload()
     console.log("%%s%s%%s self-escape4", "dummy");
     console.log("%%%%% self-escape5", "dummy");
     console.log("%%%s self-escape6", "dummy");
-    
+
     // Populate Globals
     var regex1 = /^url\(\s*(?:(?:"(?:[^\\\"]|(?:\\[\da-f]{1,6}\s?|\.))*"|'(?:[^\\\']|(?:\\[\da-f]{1,6}\s?|\.))*')|(?:[!#$%&*-~\w]|(?:\\[\da-f]{1,6}\s?|\.))*)\s*\)/i;
     var regex2 = new RegExp("foo\\\\bar\\sbaz", "i");
@@ -61,13 +61,18 @@ function onload()
     var textNode = document.getElementById("x").nextSibling;
     var arrayLikeFunction = function() {};
     arrayLikeFunction.splice = function() {};
+    var smallTypedArray = new Uint8Array(new ArrayBuffer(400));
+    smallTypedArray["foo"] = "bar";
+    var bigTypedArray = new Uint8Array(new ArrayBuffer(400 * 1000 * 1000));
+    bigTypedArray["FAIL"] = "FAIL: Object.getOwnPropertyNames() should not have been run";
 
     globals = [
         regex1, regex2, str, str2, error, errorWithMessage, node, func, multilinefunc, num, linkify,
         null, undefined, valuelessAttribute, valuedAttribute, existingAttribute, throwingLengthGetter,
         NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY, array, {}, [function() {}], bar, svg,
         objectWithNonEnumerables, negZero, Object.create(null), Object, Object.prototype, arrayLikeFunction,
-        new Number(42), new String("abc"), new Uint16Array([1, 2, 3]), textNode, domException()
+        new Number(42), new String("abc"), new Uint16Array([1, 2, 3]), textNode, domException(),
+        smallTypedArray, bigTypedArray
     ];
 
     runTest();

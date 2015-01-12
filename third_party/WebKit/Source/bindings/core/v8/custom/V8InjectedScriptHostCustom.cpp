@@ -145,6 +145,13 @@ void V8InjectedScriptHost::isHTMLAllCollectionMethodCustom(const v8::FunctionCal
     v8SetReturnValue(info, V8HTMLAllCollection::hasInstance(info[0], info.GetIsolate()));
 }
 
+void V8InjectedScriptHost::isTypedArrayMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    if (info.Length() < 1)
+        return;
+    v8SetReturnValue(info, info[0]->IsTypedArray());
+}
+
 void V8InjectedScriptHost::subtypeMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (info.Length() < 1)

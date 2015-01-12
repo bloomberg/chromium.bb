@@ -40,6 +40,7 @@
     [NotEnumerable, Unforgeable, Custom] any inspectedObject(long num);
     [NotEnumerable, Unforgeable, Custom] DOMString internalConstructorName(any obj);
     [NotEnumerable, Unforgeable, Custom] boolean isHTMLAllCollection(any obj);
+    [NotEnumerable, Unforgeable, Custom] boolean isTypedArray(any obj);
     [NotEnumerable, Unforgeable, Custom] DOMString subtype(any obj);
     [NotEnumerable, Unforgeable, Custom] any functionDetails(Function obj);
     [NotEnumerable, Unforgeable, Custom] object? generatorObjectDetails(object obj);
