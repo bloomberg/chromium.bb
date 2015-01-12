@@ -58,6 +58,13 @@ class WALLPAPER_EXPORT MovableOnDestroyCallback {
 typedef scoped_ptr<MovableOnDestroyCallback> MovableOnDestroyCallbackHolder;
 
 struct WALLPAPER_EXPORT WallpaperInfo {
+  WallpaperInfo();
+  WallpaperInfo(const std::string& in_location,
+                WallpaperLayout in_layout,
+                user_manager::User::WallpaperType in_type,
+                const base::Time& in_date);
+  ~WallpaperInfo();
+
   // Either file name of migrated wallpaper including first directory level
   // (corresponding to user id hash) or online wallpaper URL.
   std::string location;

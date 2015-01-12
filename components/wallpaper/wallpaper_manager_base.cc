@@ -142,6 +142,24 @@ MovableOnDestroyCallback::~MovableOnDestroyCallback() {
     callback_.Run();
 }
 
+WallpaperInfo::WallpaperInfo()
+    : layout(WALLPAPER_LAYOUT_CENTER),
+      type(user_manager::User::WALLPAPER_TYPE_COUNT) {
+}
+
+WallpaperInfo::WallpaperInfo(const std::string& in_location,
+                             WallpaperLayout in_layout,
+                             user_manager::User::WallpaperType in_type,
+                             const base::Time& in_date)
+    : location(in_location),
+      layout(in_layout),
+      type(in_type),
+      date(in_date) {
+}
+
+WallpaperInfo::~WallpaperInfo() {
+}
+
 const char kWallpaperSequenceTokenName[] = "wallpaper-sequence";
 
 const char kSmallWallpaperSuffix[] = "_small";
