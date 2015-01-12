@@ -12084,8 +12084,8 @@ The following application will be launched if you accept this request:
       </message>
 
       <if expr="chromeos">
-        <message name="IDS_OPTIONS_DISABLE_GDATA" desc="The text in the options panel describes that we can disable webdrive on Chrome OS.">
-          Disable Google Drive on this device
+        <message name="IDS_OPTIONS_DISABLE_GDATA" desc="The text in the options panel describes that we can disable webdrive on Chrome OS for active user.">
+          Disconnect Google Drive account
         </message>
       </if>
 
