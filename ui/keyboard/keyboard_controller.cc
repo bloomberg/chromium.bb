@@ -141,7 +141,7 @@ void ToggleTouchEventLogging(bool enable) {
   VLOG(1) << "Running " << command.GetCommandLineString();
   base::LaunchOptions options;
   options.wait = true;
-  base::LaunchProcess(command, options, NULL);
+  base::LaunchProcess(command, options);
 #endif
 }
 

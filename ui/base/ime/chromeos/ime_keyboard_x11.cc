@@ -157,23 +157,23 @@ void ImeKeyboardX11::MaybeExecuteSetLayoutCommand() {
   const std::string layout_to_set = execute_queue_.front();
 
   std::vector<std::string> argv;
-  base::ProcessHandle handle = base::kNullProcessHandle;
 
   argv.push_back(kSetxkbmapCommand);
   argv.push_back("-layout");
   argv.push_back(layout_to_set);
   argv.push_back("-synch");
 
-  if (!base::LaunchProcess(argv, base::LaunchOptions(), &handle)) {
+  base::Process process = base::LaunchProcess(argv, base::LaunchOptions());
+  if (!process.IsValid()) {
     DVLOG(1) << "Failed to execute setxkbmap: " << layout_to_set;
     execute_queue_ = std::queue<std::string>();  // clear the queue.
     return;
   }
 
-  PollUntilChildFinish(handle);
+  PollUntilChildFinish(process.Handle());
 
   DVLOG(1) << "ExecuteSetLayoutCommand: " << layout_to_set
-           << ": pid=" << base::GetProcId(handle);
+           << ": pid=" << process.pid();
 }
 
 // Delay and loop until child process finishes and call the callback.
