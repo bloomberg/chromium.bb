@@ -29,6 +29,7 @@
 #include "cstring.h"
 #include "cmemory.h"
 
+#if 0
 #if U_PLATFORM == U_PF_WINDOWS && defined(_MSC_VER) && (_MSC_VER >= 1500)
 /*
  * TODO: It seems like we should widen this to
@@ -39,6 +40,7 @@
  * Or call some Windows function and see what it returns.
  */
 #define USE_WINDOWS_LOCALE_API
+#endif
 #endif
 
 #ifdef USE_WINDOWS_LOCALE_API

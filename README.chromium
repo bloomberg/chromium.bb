@@ -32,16 +32,10 @@ This directory contains the source code of ICU 54.1 for C/C++.
   icudata generation step without layout and layoutex directory by removing the
   corresponding Makefile's from ac_config variable.
 
-2. Apply the following patch for platform related headers (putilimpl.h and
-   others).
-
-  - patches/putil.patch for Android, QNX and newlib(NaCl-newlib).
-    Upstream bug for Android : http://bugs.icu-project.org/trac/ticket/10478
-    Upstream bug for QNX : http://bugs.icu-project.org/trac/ticket/10811
-    Upstream bug for newlib : http://bugs.icu-project.org/trac/ticket/10873
+2. Apply the following patch for platform.h for NaCl.
 
  - patches/platform_nacl.patch to add U_PF_NATIVE_CLIENT
-   Upstream bug : http://bugs.icu-project.org/trac/ticket/11033
+   upstream bug : http://bugs.icu-project.org/trac/ticket/11033
 
 
 3. Breakiterator patches
@@ -159,25 +153,16 @@ This directory contains the source code of ICU 54.1 for C/C++.
 8. Build-related changes
 
   - patches/wpo.patch
-    Upstream bugs : http://bugs.icu-project.org/trac/ticket/8043
+    upstream bugs : http://bugs.icu-project.org/trac/ticket/8043
                     http://bugs.icu-project.org/trac/ticket/5701
   - patches/vscomp.patch for building with Visual Studio on Windows.
      a. do not use WINDOWS_LOCALE_API in locmap.c
      b. do not redefine stringpiece::npos
-     c. fix a Windows build failure with U_USING_ICU_NAMESPACE=0
-        upstream bug: http://bugs.icu-project.org/trac/ticket/10486
-        fixed in ICU 53)
-     d. Explicitly use Windows 'A' API when argument is an LPSTR in wintz.c
-        upstream bug : http://bugs.icu-project.org/trac/ticket/10870
 
   - patches/data.build.patch :
       Remove unnecessary resources : invuca, unames, collator source, stringprep
   - patches/data.build.win.patch :
       Windows-only data build patch.
-
-  - patches/clang_win.patch :
-    Take care of 3 warnings from clang and MSVC 2013.
-    upstream bug : http://bugs.icu-project.org/trac/ticket/11102
 
 9. Pre-built data files are checked in with the following steps on Linux:
 
@@ -240,27 +225,13 @@ This directory contains the source code of ICU 54.1 for C/C++.
       f. Copy that icudt52.dll to ${CHROME_ICU_ROOT}/windows/icudt.dll
          and check that in.
 
+10. Apply the following patches for regex
+   - patches/regex.patch (a combined patch of 3 revisions below)
+   - upstream bugs (fixed in the upstream ToT) :
+     http://bugs.icu-project.org/trac/ticket/11370 (r36723:36724)
+     http://bugs.icu-project.org/trac/ticket/11369 (r36726:36727)
+     http://bugs.icu-project.org/trac/ticket/11371 (r36800:36801)
 
-10. Change export of U_ICUDATA_ENTRY_POINT from U_IMPORT to U_EXPORT.
-    - patches/declspec.patch
-
-11. Cherry-pick an upstream patch to fix a bug in bidi.
-    - patches/bidi.patch
-    - upstream bug : http://bugs.icu-project.org/trac/ticket/11054
-
-12. Apply the following patches for regex
-   - patches/regex.patch and patches/regex2.patch
-   - upstream bugs : http://bugs.icu-project.org/trac/ticket/11369
-                     http://bugs.icu-project.org/trac/ticket/11370
-                     http://bugs.icu-project.org/trac/ticket/11371
-
-13. Apply the patch for collator
-   - patches/col.patch
-   - No upstream bug was filed because the upstream code was completely
-     rewritten during the ICU 53 cycle.
-
-14. Fix a bug in locid (getBaseName is wrong).
+11. Fix a bug in locid (getBaseName is wrong).
    - patches/locid.patch
-   - Upstream bug: http://bugs.icu-project.org/trac/ticket/11421
-
-
+   - upstream bug: http://bugs.icu-project.org/trac/ticket/11421

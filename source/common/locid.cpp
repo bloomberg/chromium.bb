@@ -509,6 +509,13 @@ Locale& Locale::init(const char* localeID, UBool canonicalize)
         /* preset all fields to empty */
         language[0] = script[0] = country[0] = 0;
 
+        // Need to reset baseName. Otherwise, when a Locale object created with
+        // the default constructor is changed with setFromPOSIXID() later
+        // (e.g. locales obtained with getAvailableLocales()),
+        // baseName will be still that of the default locale instead of one
+        // corresponding to localeID.
+        baseName = NULL;
+
         // "canonicalize" the locale ID to ICU/Java format
         err = U_ZERO_ERROR;
         length = canonicalize ?

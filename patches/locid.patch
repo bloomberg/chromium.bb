@@ -1,11 +1,11 @@
-Index: source/common/locid.cpp
-===================================================================
---- source/common/locid.cpp	(revision 36834)
-+++ source/common/locid.cpp	(working copy)
-@@ -484,6 +484,13 @@
+diff --git a/source/common/locid.cpp b/source/common/locid.cpp
+index f073aad..02da988 100644
+--- a/source/common/locid.cpp
++++ b/source/common/locid.cpp
+@@ -509,6 +509,13 @@ Locale& Locale::init(const char* localeID, UBool canonicalize)
          /* preset all fields to empty */
          language[0] = script[0] = country[0] = 0;
-
+ 
 +        // Need to reset baseName. Otherwise, when a Locale object created with
 +        // the default constructor is changed with setFromPOSIXID() later
 +        // (e.g. locales obtained with getAvailableLocales()),
