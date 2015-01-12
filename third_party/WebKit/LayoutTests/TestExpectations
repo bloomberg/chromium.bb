@@ -2,6 +2,7 @@ crbug.com/443780 [ Mac ] virtual/slimmingpaint/fast/events/scale-and-scroll-ifra
 crbug.com/443780 [ Mac ] virtual/slimmingpaint/fast/events/scale-and-scroll-iframe-window.html [ ImageOnlyFailure ]
 crbug.com/443780 [ Mac ] virtual/slimmingpaint/fast/events/menu-key-context-menu-document.html [ Failure ]
 crbug.com/443780 [ Mac ] virtual/slimmingpaint/fast/events/menu-key-context-menu.html [ Failure ]
+crbug.com/435662 [ Mac ] virtual/slimmingpaint/fast/events/menu-key-context-menu-position.html [ Failure ]
 crbug.com/441639 virtual/slimmingpaint/fast/overflow/paged-x-with-column-gap.html [ ImageOnlyFailure ]
 crbug.com/441639 [ Linux ] virtual/slimmingpaint/fast/overflow/paged-x-div-with-column-gap.html [ ImageOnlyFailure ]
 crbug.com/441639 [ Debug ] virtual/slimmingpaint/fast/overflow/lots-of-sibling-inline-boxes.html [ Pass Timeout ]

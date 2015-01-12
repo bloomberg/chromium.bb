@@ -2789,12 +2789,10 @@ bool EventHandler::sendContextMenuEventForKey()
 #else
     int rightAligned = 0;
 #endif
-    IntPoint location;
-
+    IntPoint rootViewLocation;
     Element* focusedElement = doc->focusedElement();
     FrameSelection& selection = m_frame->selection();
     Position start = selection.selection().start();
-    bool shouldTranslateToRootView = true;
 
     if (start.deprecatedNode() && (selection.rootEditableElement() || selection.isRange())) {
         RefPtrWillBeRawPtr<Range> selectionRange = selection.toNormalizedRange();
@@ -2803,28 +2801,25 @@ bool EventHandler::sendContextMenuEventForKey()
         int x = rightAligned ? firstRect.maxX() : firstRect.x();
         // In a multiline edit, firstRect.maxY() would endup on the next line, so -1.
         int y = firstRect.maxY() ? firstRect.maxY() - 1 : 0;
-        location = IntPoint(x, y);
+        rootViewLocation = view->contentsToRootView(IntPoint(x, y));
     } else if (focusedElement) {
         IntRect clippedRect = focusedElement->boundsInRootViewSpace();
-        location = IntPoint(clippedRect.center());
+        rootViewLocation = IntPoint(clippedRect.center());
     } else {
-        location = IntPoint(
+        rootViewLocation = IntPoint(
             rightAligned ? view->contentsWidth() - kContextMenuMargin : kContextMenuMargin,
             kContextMenuMargin);
-        shouldTranslateToRootView = false;
     }
 
     m_frame->view()->setCursor(pointerCursor());
-
-    IntPoint position = shouldTranslateToRootView ? view->contentsToRootView(location) : location;
-    IntPoint globalPosition = view->hostWindow()->rootViewToScreen(IntRect(position, IntSize())).location();
+    IntPoint globalPosition = view->hostWindow()->rootViewToScreen(IntRect(rootViewLocation, IntSize())).location();
 
     Node* targetNode = doc->focusedElement();
     if (!targetNode)
         targetNode = doc;
 
     // Use the focused node as the target for hover and active.
-    HitTestResult result(position);
+    HitTestResult result(rootViewLocation);
     result.setInnerNode(targetNode);
     doc->updateHoverActiveState(HitTestRequest::Active, result.innerElement());
 
@@ -2834,7 +2829,7 @@ bool EventHandler::sendContextMenuEventForKey()
     if (m_frame->settings()->showContextMenuOnMouseUp())
         eventType = PlatformEvent::MouseReleased;
 
-    PlatformMouseEvent mouseEvent(position, globalPosition, RightButton, eventType, 1, false, false, false, false, PlatformMouseEvent::RealOrIndistinguishable, WTF::currentTime());
+    PlatformMouseEvent mouseEvent(rootViewLocation, globalPosition, RightButton, eventType, 1, false, false, false, false, PlatformMouseEvent::RealOrIndistinguishable, WTF::currentTime());
 
     handleMousePressEvent(mouseEvent);
     return sendContextMenuEvent(mouseEvent);

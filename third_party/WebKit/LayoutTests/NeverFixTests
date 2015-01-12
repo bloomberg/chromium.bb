@@ -96,6 +96,7 @@ fast/harness/sample-fail-mismatch-reftest.html [ WontFix ]
 [ Mac ] editing/spelling/spelling-on-context-menu-key.html [ WontFix ]
 [ Mac ] fast/events/menu-key-context-menu-document.html [ WontFix ]
 [ Mac ] fast/events/menu-key-context-menu.html [ WontFix ]
+[ Mac ] fast/events/menu-key-context-menu-position.html [ WontFix ]
 
 # Link Highlighting is only supported on Windows and Linux
 [ Mac ] compositing/gestures [ WontFix ]
