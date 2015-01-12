@@ -2,9 +2,9 @@
 ROLE_SYSTEM_DOCUMENT name='Table example' READONLY FOCUSABLE
     ROLE_SYSTEM_TABLE
         ROLE_SYSTEM_ROW
-            ROLE_SYSTEM_CELL
+            ROLE_SYSTEM_COLUMNHEADER
                 ROLE_SYSTEM_STATICTEXT name='Pair'
-            ROLE_SYSTEM_CELL
+            ROLE_SYSTEM_COLUMNHEADER
                 ROLE_SYSTEM_STATICTEXT name='Single'
         ROLE_SYSTEM_ROW
             ROLE_SYSTEM_CELL

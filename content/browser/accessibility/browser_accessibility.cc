@@ -663,6 +663,12 @@ bool BrowserAccessibility::HasState(ui::AXState state_enum) const {
   return (GetState() >> state_enum) & 1;
 }
 
+bool BrowserAccessibility::IsCellOrTableHeaderRole() const {
+  return (GetRole() == ui::AX_ROLE_CELL ||
+          GetRole() == ui::AX_ROLE_COLUMN_HEADER ||
+          GetRole() == ui::AX_ROLE_ROW_HEADER);
+}
+
 bool BrowserAccessibility::IsEditableText() const {
   // These roles don't have readonly set, but they're not editable text.
   if (GetRole() == ui::AX_ROLE_SCROLL_AREA ||

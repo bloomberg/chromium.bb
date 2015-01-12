@@ -2,9 +2,9 @@
 ROLE_SYSTEM_DOCUMENT name='Table example - thead, tbody, tfoot' READONLY FOCUSABLE
     ROLE_SYSTEM_TABLE
         ROLE_SYSTEM_ROW
-            ROLE_SYSTEM_CELL
+            ROLE_SYSTEM_COLUMNHEADER
                 ROLE_SYSTEM_STATICTEXT name='Sum'
-            ROLE_SYSTEM_CELL
+            ROLE_SYSTEM_COLUMNHEADER
                 ROLE_SYSTEM_STATICTEXT name='Subtraction'
         ROLE_SYSTEM_ROW
             ROLE_SYSTEM_CELL

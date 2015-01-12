@@ -2864,8 +2864,9 @@ HRESULT WINAPI BrowserAccessibilityWin::InternalQueryInterface(
     const _ATL_INTMAP_ENTRY* entries,
     REFIID iid,
     void** object) {
-  int32 ia_role =
-      reinterpret_cast<BrowserAccessibilityWin*>(this_ptr)->ia_role_;
+  BrowserAccessibilityWin* accessibility =
+      reinterpret_cast<BrowserAccessibilityWin*>(this_ptr);
+  int32 ia_role = accessibility->ia_role_;
   if (iid == IID_IAccessibleImage) {
     if (ia_role != ROLE_SYSTEM_GRAPHIC) {
       *object = NULL;
@@ -2877,7 +2878,7 @@ HRESULT WINAPI BrowserAccessibilityWin::InternalQueryInterface(
       return E_NOINTERFACE;
     }
   } else if (iid == IID_IAccessibleTableCell) {
-    if (ia_role != ROLE_SYSTEM_CELL) {
+    if (!accessibility->IsCellOrTableHeaderRole()) {
       *object = NULL;
       return E_NOINTERFACE;
     }
@@ -2963,7 +2964,7 @@ void BrowserAccessibilityWin::OnDataChanged() {
   }
 
   // Expose table cell index.
-  if (ia_role_ == ROLE_SYSTEM_CELL) {
+  if (IsCellOrTableHeaderRole()) {
     BrowserAccessibility* table = GetParent();
     while (table && table->GetRole() != ui::AX_ROLE_TABLE)
       table = table->GetParent();
