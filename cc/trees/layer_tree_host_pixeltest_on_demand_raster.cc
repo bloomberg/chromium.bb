@@ -111,19 +111,6 @@ TEST_F(LayerTreeHostOnDemandRasterPixelTest, RasterPictureLayer) {
   RunOnDemandRasterPixelTest();
 }
 
-class LayerTreeHostOnDemandRasterPixelTestWithGpuRasterizationForced
-    : public LayerTreeHostOnDemandRasterPixelTest {
-  void InitializeSettings(LayerTreeSettings* settings) override {
-    LayerTreeHostOnDemandRasterPixelTest::InitializeSettings(settings);
-    settings->gpu_rasterization_forced = true;
-  }
-};
-
-TEST_F(LayerTreeHostOnDemandRasterPixelTestWithGpuRasterizationForced,
-       RasterPictureLayer) {
-  RunOnDemandRasterPixelTest();
-}
-
 }  // namespace
 }  // namespace cc
 
