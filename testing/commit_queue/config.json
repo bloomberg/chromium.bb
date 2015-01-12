@@ -79,8 +79,8 @@
                   "sync_unit_tests",
                   "gfx_unittests"
               ],
-              "ios_rel_device": ["compile"],
-              "ios_rel_device_ninja": ["compile"]
+              "ios_rel_device_ng": ["defaulttests"],
+              "ios_rel_device_ninja_ng": ["defaulttests"]
             },
             "tryserver.chromium.win": {
               "win_chromium_compile_dbg": ["defaulttests"],
