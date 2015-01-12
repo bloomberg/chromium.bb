@@ -120,12 +120,11 @@ class OffDomainInclusionDetectorTest
     return last_event;
   }
 
-  scoped_ptr<net::URLRequest> GetTestURLRequest(
-      const std::string& url,
-      const std::string& referrer,
-      content::ResourceType resource_type,
-      bool is_main_frame,
-      bool parent_is_main_frame) const {
+  void SimulateTestURLRequest(const std::string& url,
+                              const std::string& referrer,
+                              content::ResourceType resource_type,
+                              bool is_main_frame,
+                              bool parent_is_main_frame) const {
     scoped_ptr<net::URLRequest> url_request(
         context_.CreateRequest(GURL(url), net::DEFAULT_PRIORITY, NULL, NULL));
 
@@ -144,7 +143,12 @@ class OffDomainInclusionDetectorTest
         true,                  // allow_download
         false);                // is_async
 
-    return url_request.Pass();
+    off_domain_inclusion_detector_->OnResourceRequest(url_request.get());
+
+    // OffDomainInclusionDetector::OnResourceRequest() sometimes completes
+    // asynchronously, run all message loops (i.e. this message loop in unit
+    // tests) until idle.
+    base::RunLoop().RunUntilIdle();
   }
 
   // Returns the expected AnalysisEvent produced when facing an off-domain
@@ -156,7 +160,6 @@ class OffDomainInclusionDetectorTest
                : AnalysisEvent::OFF_DOMAIN_INCLUSION_SUSPICIOUS;
   }
 
-  scoped_ptr<OffDomainInclusionDetector> off_domain_inclusion_detector_;
 
  private:
   void OnOffDomainInclusionEvent(AnalysisEvent event) {
@@ -169,21 +172,19 @@ class OffDomainInclusionDetectorTest
   net::TestURLRequestContext context_;
 
   AnalysisEvent observed_analysis_event_;
+
+  scoped_ptr<OffDomainInclusionDetector> off_domain_inclusion_detector_;
 };
 
 TEST_P(OffDomainInclusionDetectorTest, NoEventForIgnoredResourceTypes) {
   for (content::ResourceType tested_type : kResourceTypesIgnored) {
     SCOPED_TRACE(tested_type);
 
-    scoped_ptr<net::URLRequest> request_for_tested_type(
-        GetTestURLRequest("http://offdomain.com/foo",
-                          "http://mydomain.com/bar",
-                          tested_type,
-                          true,     // is_main_frame
-                          false));  // parent_is_main_frame
-
-    off_domain_inclusion_detector_->OnResourceRequest(
-        request_for_tested_type.get());
+    SimulateTestURLRequest("http://offdomain.com/foo",
+                           "http://mydomain.com/bar",
+                           tested_type,
+                           true,    // is_main_frame
+                           false);  // parent_is_main_frame
 
     EXPECT_EQ(AnalysisEvent::NO_EVENT, GetLastEventAndReset());
   }
@@ -194,15 +195,11 @@ TEST_P(OffDomainInclusionDetectorTest, NoEventForSameDomainInclusions) {
        kResourceTypesObservedIfInMainFrame) {
     SCOPED_TRACE(tested_type);
 
-    scoped_ptr<net::URLRequest> request_for_tested_type(
-        GetTestURLRequest("http://mydomain.com/foo",
-                          "http://mydomain.com/bar",
-                          tested_type,
-                          true,     // is_main_frame
-                          false));  // parent_is_main_frame
-
-    off_domain_inclusion_detector_->OnResourceRequest(
-        request_for_tested_type.get());
+    SimulateTestURLRequest("http://mydomain.com/foo",
+                           "http://mydomain.com/bar",
+                           tested_type,
+                           true,    // is_main_frame
+                           false);  // parent_is_main_frame
 
     EXPECT_EQ(AnalysisEvent::NO_EVENT, GetLastEventAndReset());
   }
@@ -213,15 +210,11 @@ TEST_P(OffDomainInclusionDetectorTest, OffDomainInclusionInMainFrame) {
        kResourceTypesObservedIfInMainFrame) {
     SCOPED_TRACE(tested_type);
 
-    scoped_ptr<net::URLRequest> request_for_tested_type(
-        GetTestURLRequest("http://offdomain.com/foo",
-                          "http://mydomain.com/bar",
-                          tested_type,
-                          true,     // is_main_frame
-                          false));  // parent_is_main_frame
-
-    off_domain_inclusion_detector_->OnResourceRequest(
-        request_for_tested_type.get());
+    SimulateTestURLRequest("http://offdomain.com/foo",
+                           "http://mydomain.com/bar",
+                           tested_type,
+                           true,    // is_main_frame
+                           false);  // parent_is_main_frame
 
     EXPECT_EQ(GetExpectedOffDomainInclusionEventType(), GetLastEventAndReset());
   }
@@ -232,15 +225,11 @@ TEST_P(OffDomainInclusionDetectorTest, HttpsOffDomainInclusionInMainFrame) {
        kResourceTypesObservedIfInMainFrame) {
     SCOPED_TRACE(tested_type);
 
-    scoped_ptr<net::URLRequest> request_for_tested_type(
-        GetTestURLRequest("https://offdomain.com/foo",
-                          "https://mydomain.com/bar",
-                          tested_type,
-                          true,     // is_main_frame
-                          false));  // parent_is_main_frame
-
-    off_domain_inclusion_detector_->OnResourceRequest(
-        request_for_tested_type.get());
+    SimulateTestURLRequest("https://offdomain.com/foo",
+                           "https://mydomain.com/bar",
+                           tested_type,
+                           true,    // is_main_frame
+                           false);  // parent_is_main_frame
 
     EXPECT_EQ(GetExpectedOffDomainInclusionEventType(), GetLastEventAndReset());
   }
@@ -252,15 +241,11 @@ TEST_P(OffDomainInclusionDetectorTest,
        kResourceTypesObservedIfInMainFrame) {
     SCOPED_TRACE(tested_type);
 
-    scoped_ptr<net::URLRequest> request_for_tested_type(
-        GetTestURLRequest("ftp://offdomain.com/foo",
-                          "http://mydomain.com/bar",
-                          tested_type,
-                          true,     // is_main_frame
-                          false));  // parent_is_main_frame
-
-    off_domain_inclusion_detector_->OnResourceRequest(
-        request_for_tested_type.get());
+    SimulateTestURLRequest("ftp://offdomain.com/foo",
+                           "http://mydomain.com/bar",
+                           tested_type,
+                           true,    // is_main_frame
+                           false);  // parent_is_main_frame
 
     EXPECT_EQ(AnalysisEvent::NO_EVENT, GetLastEventAndReset());
   }
@@ -271,15 +256,11 @@ TEST_P(OffDomainInclusionDetectorTest, NoEventForSameTopLevelDomain) {
        kResourceTypesObservedIfInMainFrame) {
     SCOPED_TRACE(tested_type);
 
-    scoped_ptr<net::URLRequest> request_for_tested_type(
-        GetTestURLRequest("http://a.mydomain.com/foo",
-                          "http://b.mydomain.com/bar",
-                          tested_type,
-                          true,     // is_main_frame
-                          false));  // parent_is_main_frame
-
-    off_domain_inclusion_detector_->OnResourceRequest(
-        request_for_tested_type.get());
+    SimulateTestURLRequest("http://a.mydomain.com/foo",
+                           "http://b.mydomain.com/bar",
+                           tested_type,
+                           true,    // is_main_frame
+                           false);  // parent_is_main_frame
 
     EXPECT_EQ(AnalysisEvent::NO_EVENT, GetLastEventAndReset());
   }
@@ -291,15 +272,11 @@ TEST_P(OffDomainInclusionDetectorTest,
        kResourceTypesObservedIfInMainFrame) {
     SCOPED_TRACE(tested_type);
 
-    scoped_ptr<net::URLRequest> request_for_tested_type(
-        GetTestURLRequest("http://a.appspot.com/foo",
-                          "http://b.appspot.com/bar",
-                          tested_type,
-                          true,     // is_main_frame
-                          false));  // parent_is_main_frame
-
-    off_domain_inclusion_detector_->OnResourceRequest(
-        request_for_tested_type.get());
+    SimulateTestURLRequest("http://a.appspot.com/foo",
+                           "http://b.appspot.com/bar",
+                           tested_type,
+                           true,    // is_main_frame
+                           false);  // parent_is_main_frame
 
     EXPECT_EQ(GetExpectedOffDomainInclusionEventType(), GetLastEventAndReset());
   }
@@ -311,15 +288,11 @@ TEST_P(OffDomainInclusionDetectorTest,
        kResourceTypesObservedIfInMainFrame) {
     SCOPED_TRACE(tested_type);
 
-    scoped_ptr<net::URLRequest> request_for_tested_type(
-        GetTestURLRequest("http://offdomain.com/foo",
-                          "http://mydomain.com/bar",
-                          tested_type,
-                          false,   // is_main_frame
-                          true));  // parent_is_main_frame
-
-    off_domain_inclusion_detector_->OnResourceRequest(
-        request_for_tested_type.get());
+    SimulateTestURLRequest("http://offdomain.com/foo",
+                           "http://mydomain.com/bar",
+                           tested_type,
+                           false,  // is_main_frame
+                           true);  // parent_is_main_frame
 
     EXPECT_EQ(AnalysisEvent::NO_EVENT, GetLastEventAndReset());
   }
@@ -331,15 +304,11 @@ TEST_P(OffDomainInclusionDetectorTest,
        kResourceTypesObservedIfParentIsMainFrame) {
     SCOPED_TRACE(tested_type);
 
-    scoped_ptr<net::URLRequest> request_for_tested_type(
-        GetTestURLRequest("http://offdomain.com/foo",
-                          "http://mydomain.com/bar",
-                          tested_type,
-                          false,    // is_main_frame
-                          false));  // parent_is_main_frame
-
-    off_domain_inclusion_detector_->OnResourceRequest(
-        request_for_tested_type.get());
+    SimulateTestURLRequest("http://offdomain.com/foo",
+                           "http://mydomain.com/bar",
+                           tested_type,
+                           false,   // is_main_frame
+                           false);  // parent_is_main_frame
 
     EXPECT_EQ(AnalysisEvent::NO_EVENT, GetLastEventAndReset());
   }
@@ -351,15 +320,11 @@ TEST_P(OffDomainInclusionDetectorTest,
        kResourceTypesObservedIfParentIsMainFrame) {
     SCOPED_TRACE(tested_type);
 
-    scoped_ptr<net::URLRequest> request_for_tested_type(
-        GetTestURLRequest("http://offdomain.com/foo",
-                          "http://mydomain.com/bar",
-                          tested_type,
-                          false,   // is_main_frame
-                          true));  // parent_is_main_frame
-
-    off_domain_inclusion_detector_->OnResourceRequest(
-        request_for_tested_type.get());
+    SimulateTestURLRequest("http://offdomain.com/foo",
+                           "http://mydomain.com/bar",
+                           tested_type,
+                           false,  // is_main_frame
+                           true);  // parent_is_main_frame
 
     EXPECT_EQ(GetExpectedOffDomainInclusionEventType(), GetLastEventAndReset());
   }
@@ -371,15 +336,11 @@ TEST_P(OffDomainInclusionDetectorTest,
        kResourceTypesObservedIfInMainFrame) {
     SCOPED_TRACE(tested_type);
 
-    scoped_ptr<net::URLRequest> request_for_tested_type(
-        GetTestURLRequest("https://offdomain.com/foo",
-                          "",
-                          tested_type,
-                          true,     // is_main_frame
-                          false));  // parent_is_main_frame
-
-    off_domain_inclusion_detector_->OnResourceRequest(
-        request_for_tested_type.get());
+    SimulateTestURLRequest("https://offdomain.com/foo",
+                           "",
+                           tested_type,
+                           true,    // is_main_frame
+                           false);  // parent_is_main_frame
 
     EXPECT_EQ(AnalysisEvent::EMPTY_MAIN_FRAME_URL, GetLastEventAndReset());
   }
