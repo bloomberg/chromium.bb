@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// http://w3c.github.io/push-api/#pushsubscription-interface
+// https://w3c.github.io/push-api/#pushsubscription-interface
 
 [
     GarbageCollected,
     RuntimeEnabled=PushMessaging,
 ] interface PushSubscription {
-    readonly attribute DOMString endpoint;
+    readonly attribute USVString endpoint;
     readonly attribute DOMString subscriptionId;
     [CallWith=ScriptState] Promise<boolean> unsubscribe();
 };
