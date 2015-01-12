@@ -92,6 +92,15 @@
             '-Qunused-arguments',
           ],
         }],
+        ['clang==1 and target_arch=="ia32"', {
+          'cflags!': [
+            # TODO(binji): This is a horrible hack to workaround a miscompile
+            # in clang 3.6.0 (trunk 223108) when compiling
+            # nacl_helper_bootstrap with -m32 and -mstackrealign. See
+            # crbug.com/445647
+            '-mstackrealign',
+          ]
+        }],
       ],
     },
     {
