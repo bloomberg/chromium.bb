@@ -29,6 +29,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/worker_pool.h"
+#include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "net/base/cache_type.h"
 #include "net/base/io_buffer.h"
@@ -361,7 +362,7 @@ void HttpCache::AsyncValidation::Start(const BoundNetLog& net_log,
 
   DCHECK_EQ(0, request_.load_flags & LOAD_ASYNC_REVALIDATION);
   request_.load_flags |= LOAD_ASYNC_REVALIDATION;
-  start_time_ = base::Time::Now();
+  start_time_ = cache_->clock()->Now();
   // This use of base::Unretained is safe because |transaction_| is owned by
   // this object.
   read_callback_ = base::Bind(&AsyncValidation::OnRead, base::Unretained(this));
@@ -439,7 +440,7 @@ void HttpCache::AsyncValidation::Terminate(int result) {
     // anyway.
     cache_->DoomEntry(transaction_->key(), transaction_.get());
   }
-  base::TimeDelta duration = base::Time::Now() - start_time_;
+  base::TimeDelta duration = cache_->clock()->Now() - start_time_;
   UMA_HISTOGRAM_TIMES("HttpCache.AsyncValidationDuration", duration);
   transaction_->net_log().EndEventWithNetErrorCode(
       NetLog::TYPE_ASYNC_REVALIDATION, result);
@@ -458,6 +459,7 @@ HttpCache::HttpCache(const net::HttpNetworkSession::Params& params,
       use_stale_while_revalidate_(params.use_stale_while_revalidate),
       mode_(NORMAL),
       network_layer_(new HttpNetworkLayer(new HttpNetworkSession(params))),
+      clock_(new base::DefaultClock()),
       weak_factory_(this) {
   SetupQuicServerInfoFactory(network_layer_->GetSession());
 }
@@ -475,6 +477,7 @@ HttpCache::HttpCache(HttpNetworkSession* session,
       use_stale_while_revalidate_(session->params().use_stale_while_revalidate),
       mode_(NORMAL),
       network_layer_(new HttpNetworkLayer(session)),
+      clock_(new base::DefaultClock()),
       weak_factory_(this) {
 }
 
@@ -489,6 +492,7 @@ HttpCache::HttpCache(HttpTransactionFactory* network_layer,
       use_stale_while_revalidate_(false),
       mode_(NORMAL),
       network_layer_(network_layer),
+      clock_(new base::DefaultClock()),
       weak_factory_(this) {
   SetupQuicServerInfoFactory(network_layer_->GetSession());
   HttpNetworkSession* session = network_layer_->GetSession();

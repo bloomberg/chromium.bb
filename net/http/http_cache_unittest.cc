@@ -13,6 +13,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/simple_test_clock.h"
 #include "net/base/cache_type.h"
 #include "net/base/elements_upload_data_stream.h"
 #include "net/base/host_port_pair.h"
@@ -25,6 +26,7 @@
 #include "net/cert/cert_status_flags.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/http/http_byte_range.h"
+#include "net/http/http_cache_transaction.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_request_info.h"
 #include "net/http/http_response_headers.h"
@@ -7094,6 +7096,115 @@ TEST(HttpCache, ReceivedBytesRange) {
   EXPECT_EQ(range_response_size * 2, received_bytes);
 
   RemoveMockTransaction(&kRangeGET_TransactionOK);
+}
+
+class HttpCachePrefetchValidationTest : public ::testing::Test {
+ protected:
+  static const int kMaxAgeSecs = 100;
+  static const int kRequireValidationSecs = kMaxAgeSecs + 1;
+
+  HttpCachePrefetchValidationTest() : transaction_(kSimpleGET_Transaction) {
+    DCHECK_LT(kMaxAgeSecs, prefetch_reuse_mins() * net::kNumSecondsPerMinute);
+
+    clock_ = new base::SimpleTestClock();
+    cache_.http_cache()->SetClockForTesting(make_scoped_ptr(clock_));
+    cache_.network_layer()->SetClock(clock_);
+
+    transaction_.response_headers = "Cache-Control: max-age=100\n";
+  }
+
+  bool TransactionRequiredNetwork(int load_flags) {
+    int pre_transaction_count = transaction_count();
+    transaction_.load_flags = load_flags;
+    RunTransactionTest(cache_.http_cache(), transaction_);
+    return pre_transaction_count != transaction_count();
+  }
+
+  void AdvanceTime(int seconds) {
+    clock_->Advance(base::TimeDelta::FromSeconds(seconds));
+  }
+
+  int prefetch_reuse_mins() { return net::HttpCache::kPrefetchReuseMins; }
+
+  // How many times this test has sent requests to the (fake) origin
+  // server. Every test case needs to make at least one request to initialise
+  // the cache.
+  int transaction_count() {
+    return cache_.network_layer()->transaction_count();
+  }
+
+  MockHttpCache cache_;
+  ScopedMockTransaction transaction_;
+  std::string response_headers_;
+  base::SimpleTestClock* clock_;
+};
+
+TEST_F(HttpCachePrefetchValidationTest, SkipValidationShortlyAfterPrefetch) {
+  EXPECT_TRUE(TransactionRequiredNetwork(net::LOAD_PREFETCH));
+  AdvanceTime(kRequireValidationSecs);
+  EXPECT_FALSE(TransactionRequiredNetwork(net::LOAD_NORMAL));
+}
+
+TEST_F(HttpCachePrefetchValidationTest, ValidateLongAfterPrefetch) {
+  EXPECT_TRUE(TransactionRequiredNetwork(net::LOAD_PREFETCH));
+  AdvanceTime(prefetch_reuse_mins() * net::kNumSecondsPerMinute);
+  EXPECT_TRUE(TransactionRequiredNetwork(net::LOAD_NORMAL));
+}
+
+TEST_F(HttpCachePrefetchValidationTest, SkipValidationOnceOnly) {
+  EXPECT_TRUE(TransactionRequiredNetwork(net::LOAD_PREFETCH));
+  AdvanceTime(kRequireValidationSecs);
+  EXPECT_FALSE(TransactionRequiredNetwork(net::LOAD_NORMAL));
+  EXPECT_TRUE(TransactionRequiredNetwork(net::LOAD_NORMAL));
+}
+
+TEST_F(HttpCachePrefetchValidationTest, SkipValidationOnceReadOnly) {
+  EXPECT_TRUE(TransactionRequiredNetwork(net::LOAD_PREFETCH));
+  AdvanceTime(kRequireValidationSecs);
+  EXPECT_FALSE(TransactionRequiredNetwork(net::LOAD_ONLY_FROM_CACHE));
+  EXPECT_TRUE(TransactionRequiredNetwork(net::LOAD_NORMAL));
+}
+
+TEST_F(HttpCachePrefetchValidationTest, BypassCacheOverwritesPrefetch) {
+  EXPECT_TRUE(TransactionRequiredNetwork(net::LOAD_PREFETCH));
+  AdvanceTime(kRequireValidationSecs);
+  EXPECT_TRUE(TransactionRequiredNetwork(net::LOAD_BYPASS_CACHE));
+  AdvanceTime(kRequireValidationSecs);
+  EXPECT_TRUE(TransactionRequiredNetwork(net::LOAD_NORMAL));
+}
+
+TEST_F(HttpCachePrefetchValidationTest,
+       SkipValidationOnExistingEntryThatNeedsValidation) {
+  EXPECT_TRUE(TransactionRequiredNetwork(net::LOAD_NORMAL));
+  AdvanceTime(kRequireValidationSecs);
+  EXPECT_TRUE(TransactionRequiredNetwork(net::LOAD_PREFETCH));
+  AdvanceTime(kRequireValidationSecs);
+  EXPECT_FALSE(TransactionRequiredNetwork(net::LOAD_NORMAL));
+  EXPECT_TRUE(TransactionRequiredNetwork(net::LOAD_NORMAL));
+}
+
+TEST_F(HttpCachePrefetchValidationTest,
+       SkipValidationOnExistingEntryThatDoesNotNeedValidation) {
+  EXPECT_TRUE(TransactionRequiredNetwork(net::LOAD_NORMAL));
+  EXPECT_FALSE(TransactionRequiredNetwork(net::LOAD_PREFETCH));
+  AdvanceTime(kRequireValidationSecs);
+  EXPECT_FALSE(TransactionRequiredNetwork(net::LOAD_NORMAL));
+  EXPECT_TRUE(TransactionRequiredNetwork(net::LOAD_NORMAL));
+}
+
+TEST_F(HttpCachePrefetchValidationTest, PrefetchMultipleTimes) {
+  EXPECT_TRUE(TransactionRequiredNetwork(net::LOAD_PREFETCH));
+  EXPECT_FALSE(TransactionRequiredNetwork(net::LOAD_PREFETCH));
+  AdvanceTime(kRequireValidationSecs);
+  EXPECT_FALSE(TransactionRequiredNetwork(net::LOAD_NORMAL));
+}
+
+TEST_F(HttpCachePrefetchValidationTest, ValidateOnDelayedSecondPrefetch) {
+  EXPECT_TRUE(TransactionRequiredNetwork(net::LOAD_PREFETCH));
+  AdvanceTime(kRequireValidationSecs);
+  EXPECT_TRUE(TransactionRequiredNetwork(net::LOAD_PREFETCH));
+  AdvanceTime(kRequireValidationSecs);
+  EXPECT_FALSE(TransactionRequiredNetwork(net::LOAD_NORMAL));
 }
 
 // Framework for tests of stale-while-revalidate related functionality.  With

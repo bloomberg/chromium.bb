@@ -25,6 +25,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
+#include "base/time/clock.h"
 #include "base/time/time.h"
 #include "net/base/cache_type.h"
 #include "net/base/completion_callback.h"
@@ -126,6 +127,10 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory,
     scoped_refptr<base::SingleThreadTaskRunner> thread_;
   };
 
+  // The number of minutes after a resource is prefetched that it can be used
+  // again without validation.
+  static const int kPrefetchReuseMins = 5;
+
   // The disk cache is initialized lazily (by CreateTransaction) in this case.
   // The HttpCache takes ownership of the |backend_factory|.
   HttpCache(const net::HttpNetworkSession::Params& params,
@@ -180,6 +185,12 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory,
   // Get/Set the cache's mode.
   void set_mode(Mode value) { mode_ = value; }
   Mode mode() { return mode_; }
+
+  // Get/Set the cache's clock. These are public only for testing.
+  void SetClockForTesting(scoped_ptr<base::Clock> clock) {
+    clock_.reset(clock.release());
+  }
+  base::Clock* clock() const { return clock_.get(); }
 
   // Close currently active sockets so that fresh page loads will not use any
   // recycled connections.  For sockets currently in use, they may not close
@@ -461,6 +472,9 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory,
 
   // The async validations currently in progress, keyed by URL.
   AsyncValidationMap async_validations_;
+
+  // A clock that can be swapped out for testing.
+  scoped_ptr<base::Clock> clock_;
 
   base::WeakPtrFactory<HttpCache> weak_factory_;
 

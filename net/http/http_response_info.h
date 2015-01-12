@@ -95,6 +95,10 @@ class NET_EXPORT HttpResponseInfo {
   // Whether the request use http proxy or server authentication.
   bool did_use_http_auth;
 
+  // True if the resource was originally fetched for a prefetch and has not been
+  // used since.
+  bool unused_since_prefetch;
+
   // Remote address of the socket which fetched this resource.
   //
   // NOTE: If the response was served from the cache (was_cached is true),

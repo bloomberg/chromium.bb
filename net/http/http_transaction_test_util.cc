@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/time/clock.h"
 #include "base/time/time.h"
 #include "net/base/load_flags.h"
 #include "net/base/load_timing_info.h"
@@ -399,14 +400,14 @@ int MockNetworkTransaction::StartInternal(
       "%s\n%s\n", resp_status.c_str(), resp_headers.c_str());
   std::replace(header_data.begin(), header_data.end(), '\n', '\0');
 
-  response_.request_time = base::Time::Now();
+  response_.request_time = transaction_factory_->Now();
   if (!t->request_time.is_null())
     response_.request_time = t->request_time;
 
   response_.was_cached = false;
   response_.network_accessed = true;
 
-  response_.response_time = base::Time::Now();
+  response_.response_time = transaction_factory_->Now();
   if (!t->response_time.is_null())
     response_.response_time = t->response_time;
 
@@ -417,6 +418,9 @@ int MockNetworkTransaction::StartInternal(
 
   if (net_log.net_log())
     socket_log_id_ = net_log.net_log()->NextID();
+
+  if (request_->load_flags & net::LOAD_PREFETCH)
+    response_.unused_since_prefetch = true;
 
   if (test_mode_ & TEST_MODE_SYNC_NET_START)
     return net::OK;
@@ -454,7 +458,9 @@ MockNetworkLayer::MockNetworkLayer()
     : transaction_count_(0),
       done_reading_called_(false),
       stop_caching_called_(false),
-      last_create_transaction_priority_(net::DEFAULT_PRIORITY) {}
+      last_create_transaction_priority_(net::DEFAULT_PRIORITY),
+      clock_(nullptr) {
+}
 
 MockNetworkLayer::~MockNetworkLayer() {}
 
@@ -484,6 +490,17 @@ net::HttpCache* MockNetworkLayer::GetCache() {
 
 net::HttpNetworkSession* MockNetworkLayer::GetSession() {
   return NULL;
+}
+
+void MockNetworkLayer::SetClock(base::Clock* clock) {
+  DCHECK(!clock_);
+  clock_ = clock;
+}
+
+base::Time MockNetworkLayer::Now() {
+  if (clock_)
+    return clock_->Now();
+  return base::Time::Now();
 }
 
 //-----------------------------------------------------------------------------

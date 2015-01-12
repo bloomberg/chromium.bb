@@ -1417,6 +1417,7 @@
       'http/http_request_headers_unittest.cc',
       'http/http_response_body_drainer_unittest.cc',
       'http/http_response_headers_unittest.cc',
+      'http/http_response_info_unittest.cc',
       'http/http_security_headers_unittest.cc',
       'http/http_server_properties_impl_unittest.cc',
       'http/http_server_properties_manager_unittest.cc',

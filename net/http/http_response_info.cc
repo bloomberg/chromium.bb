@@ -91,6 +91,8 @@ enum {
   // This bit is set if ssl_info has SCTs.
   RESPONSE_INFO_HAS_SIGNED_CERTIFICATE_TIMESTAMPS = 1 << 20,
 
+  RESPONSE_INFO_UNUSED_SINCE_PREFETCH = 1 << 21,
+
   // TODO(darin): Add other bits to indicate alternate request methods.
   // For now, we don't support storing those.
 };
@@ -103,6 +105,7 @@ HttpResponseInfo::HttpResponseInfo()
       was_npn_negotiated(false),
       was_fetched_via_proxy(false),
       did_use_http_auth(false),
+      unused_since_prefetch(false),
       connection_info(CONNECTION_INFO_UNKNOWN) {
 }
 
@@ -115,6 +118,7 @@ HttpResponseInfo::HttpResponseInfo(const HttpResponseInfo& rhs)
       was_fetched_via_proxy(rhs.was_fetched_via_proxy),
       proxy_server(rhs.proxy_server),
       did_use_http_auth(rhs.did_use_http_auth),
+      unused_since_prefetch(rhs.unused_since_prefetch),
       socket_address(rhs.socket_address),
       npn_negotiated_protocol(rhs.npn_negotiated_protocol),
       connection_info(rhs.connection_info),
@@ -140,6 +144,7 @@ HttpResponseInfo& HttpResponseInfo::operator=(const HttpResponseInfo& rhs) {
   was_npn_negotiated = rhs.was_npn_negotiated;
   was_fetched_via_proxy = rhs.was_fetched_via_proxy;
   did_use_http_auth = rhs.did_use_http_auth;
+  unused_since_prefetch = rhs.unused_since_prefetch;
   socket_address = rhs.socket_address;
   npn_negotiated_protocol = rhs.npn_negotiated_protocol;
   connection_info = rhs.connection_info;
@@ -277,6 +282,8 @@ bool HttpResponseInfo::InitFromPickle(const Pickle& pickle,
 
   did_use_http_auth = (flags & RESPONSE_INFO_USE_HTTP_AUTHENTICATION) != 0;
 
+  unused_since_prefetch = (flags & RESPONSE_INFO_UNUSED_SINCE_PREFETCH) != 0;
+
   return true;
 }
 
@@ -308,6 +315,8 @@ void HttpResponseInfo::Persist(Pickle* pickle,
     flags |= RESPONSE_INFO_HAS_CONNECTION_INFO;
   if (did_use_http_auth)
     flags |= RESPONSE_INFO_USE_HTTP_AUTHENTICATION;
+  if (unused_since_prefetch)
+    flags |= RESPONSE_INFO_UNUSED_SINCE_PREFETCH;
   if (!ssl_info.signed_certificate_timestamps.empty())
     flags |= RESPONSE_INFO_HAS_SIGNED_CERTIFICATE_TIMESTAMPS;
 

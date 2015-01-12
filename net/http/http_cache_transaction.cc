@@ -27,6 +27,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/time/clock.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "net/base/completion_callback.h"
@@ -755,8 +756,8 @@ int HttpCache::Transaction::HandleResult(int rv) {
 // 2. Cached entry, no validation:
 //   Start():
 //   GetBackend* -> InitEntry -> OpenEntry* -> AddToEntry* -> CacheReadResponse*
-//   -> BeginPartialCacheValidation() -> BeginCacheValidation() ->
-//   SetupEntryForRead()
+//   -> CacheDispatchValidation -> BeginPartialCacheValidation() ->
+//   BeginCacheValidation() -> SetupEntryForRead()
 //
 //   Read():
 //   CacheReadData*
@@ -764,10 +765,10 @@ int HttpCache::Transaction::HandleResult(int rv) {
 // 3. Cached entry, validation (304):
 //   Start():
 //   GetBackend* -> InitEntry -> OpenEntry* -> AddToEntry* -> CacheReadResponse*
-//   -> BeginPartialCacheValidation() -> BeginCacheValidation() ->
-//   SendRequest* -> SuccessfulSendRequest -> UpdateCachedResponse ->
-//   CacheWriteResponse* -> UpdateCachedResponseComplete ->
-//   OverwriteCachedResponse -> PartialHeadersReceived
+//   -> CacheDispatchValidation -> BeginPartialCacheValidation() ->
+//   BeginCacheValidation() -> SendRequest* -> SuccessfulSendRequest ->
+//   UpdateCachedResponse -> CacheWriteResponse* -> UpdateCachedResponseComplete
+//   -> OverwriteCachedResponse -> PartialHeadersReceived
 //
 //   Read():
 //   CacheReadData*
@@ -775,10 +776,10 @@ int HttpCache::Transaction::HandleResult(int rv) {
 // 4. Cached entry, validation and replace (200):
 //   Start():
 //   GetBackend* -> InitEntry -> OpenEntry* -> AddToEntry* -> CacheReadResponse*
-//   -> BeginPartialCacheValidation() -> BeginCacheValidation() ->
-//   SendRequest* -> SuccessfulSendRequest -> OverwriteCachedResponse ->
-//   CacheWriteResponse* -> DoTruncateCachedData* -> TruncateCachedMetadata* ->
-//   PartialHeadersReceived
+//   -> CacheDispatchValidation -> BeginPartialCacheValidation() ->
+//   BeginCacheValidation() -> SendRequest* -> SuccessfulSendRequest ->
+//   OverwriteCachedResponse -> CacheWriteResponse* -> DoTruncateCachedData* ->
+//   TruncateCachedMetadata* -> PartialHeadersReceived
 //
 //   Read():
 //   NetworkRead* -> CacheWriteData*
@@ -786,12 +787,12 @@ int HttpCache::Transaction::HandleResult(int rv) {
 // 5. Sparse entry, partially cached, byte range request:
 //   Start():
 //   GetBackend* -> InitEntry -> OpenEntry* -> AddToEntry* -> CacheReadResponse*
-//   -> BeginPartialCacheValidation() -> CacheQueryData* ->
-//   ValidateEntryHeadersAndContinue() -> StartPartialCacheValidation ->
-//   CompletePartialCacheValidation -> BeginCacheValidation() -> SendRequest* ->
-//   SuccessfulSendRequest -> UpdateCachedResponse -> CacheWriteResponse* ->
-//   UpdateCachedResponseComplete -> OverwriteCachedResponse ->
-//   PartialHeadersReceived
+//   -> CacheDispatchValidation -> BeginPartialCacheValidation() ->
+//   CacheQueryData* -> ValidateEntryHeadersAndContinue() ->
+//   StartPartialCacheValidation -> CompletePartialCacheValidation ->
+//   BeginCacheValidation() -> SendRequest* -> SuccessfulSendRequest ->
+//   UpdateCachedResponse -> CacheWriteResponse* -> UpdateCachedResponseComplete
+//   -> OverwriteCachedResponse -> PartialHeadersReceived
 //
 //   Read() 1:
 //   NetworkRead* -> CacheWriteData*
@@ -830,8 +831,9 @@ int HttpCache::Transaction::HandleResult(int rv) {
 //   itself.
 //   Start():
 //   GetBackend* -> InitEntry -> OpenEntry* -> AddToEntry* -> CacheReadResponse*
-//   -> BeginPartialCacheValidation() -> BeginCacheValidation() ->
-//   SendRequest* -> SuccessfulSendRequest -> OverwriteCachedResponse
+//   -> CacheDispatchValidation -> BeginPartialCacheValidation() ->
+//   BeginCacheValidation() -> SendRequest* -> SuccessfulSendRequest ->
+//   OverwriteCachedResponse
 //
 // 10. HEAD. Sparse entry, partially cached:
 //   Serve the request from the cache, as long as it doesn't require
@@ -842,6 +844,28 @@ int HttpCache::Transaction::HandleResult(int rv) {
 //   Start(): Basically the same as example 7, as we never create a partial_
 //   object for this request.
 //
+// 11. Prefetch, not-cached entry:
+//   The same as example 1. The "unused_since_prefetch" bit is stored as true in
+//   UpdateCachedResponse.
+//
+// 12. Prefetch, cached entry:
+//   Like examples 2-4, only CacheToggleUnusedSincePrefetch* is inserted between
+//   CacheReadResponse* and CacheDispatchValidation if the unused_since_prefetch
+//   bit is unset.
+//
+// 13. Cached entry less than 5 minutes old, unused_since_prefetch is true:
+//   Skip validation, similar to example 2.
+//   GetBackend* -> InitEntry -> OpenEntry* -> AddToEntry* -> CacheReadResponse*
+//   -> CacheToggleUnusedSincePrefetch* -> CacheDispatchValidation ->
+//   BeginPartialCacheValidation() -> BeginCacheValidation() ->
+//   SetupEntryForRead()
+//
+//   Read():
+//   CacheReadData*
+//
+// 14. Cached entry more than 5 minutes old, unused_since_prefetch is true:
+//   Like examples 2-4, only CacheToggleUnusedSincePrefetch* is inserted between
+//   CacheReadResponse* and CacheDispatchValidation.
 int HttpCache::Transaction::DoLoop(int result) {
   DCHECK(next_state_ != STATE_NONE);
 
@@ -949,6 +973,17 @@ int HttpCache::Transaction::DoLoop(int result) {
         break;
       case STATE_CACHE_READ_RESPONSE_COMPLETE:
         rv = DoCacheReadResponseComplete(rv);
+        break;
+      case STATE_CACHE_DISPATCH_VALIDATION:
+        DCHECK_EQ(OK, rv);
+        rv = DoCacheDispatchValidation();
+        break;
+      case STATE_TOGGLE_UNUSED_SINCE_PREFETCH:
+        DCHECK_EQ(OK, rv);
+        rv = DoCacheToggleUnusedSincePrefetch();
+        break;
+      case STATE_TOGGLE_UNUSED_SINCE_PREFETCH_COMPLETE:
+        rv = DoCacheToggleUnusedSincePrefetchComplete(rv);
         break;
       case STATE_CACHE_WRITE_RESPONSE:
         DCHECK_EQ(OK, rv);
@@ -1629,6 +1664,7 @@ int HttpCache::Transaction::DoUpdateCachedResponse() {
   response_.response_time = new_response_->response_time;
   response_.request_time = new_response_->request_time;
   response_.network_accessed = new_response_->network_accessed;
+  response_.unused_since_prefetch = new_response_->unused_since_prefetch;
 
   if (response_.headers->HasHeaderValue("cache-control", "no-store")) {
     if (!entry_->doomed) {
@@ -1857,6 +1893,22 @@ int HttpCache::Transaction::DoCacheReadResponseComplete(int result) {
   if (response_.headers->GetContentLength() == current_size)
     truncated_ = false;
 
+  if ((response_.unused_since_prefetch &&
+       !(request_->load_flags & LOAD_PREFETCH)) ||
+      (!response_.unused_since_prefetch &&
+       (request_->load_flags & LOAD_PREFETCH))) {
+    // Either this is the first use of an entry since it was prefetched or
+    // this is a prefetch. The value of response.unused_since_prefetch is valid
+    // for this transaction but the bit needs to be flipped in storage.
+    next_state_ = STATE_TOGGLE_UNUSED_SINCE_PREFETCH;
+    return OK;
+  }
+
+  next_state_ = STATE_CACHE_DISPATCH_VALIDATION;
+  return OK;
+}
+
+int HttpCache::Transaction::DoCacheDispatchValidation() {
   // We now have access to the cache entry.
   //
   //  o if we are a reader for the transaction, then we can start reading the
@@ -1870,6 +1922,7 @@ int HttpCache::Transaction::DoCacheReadResponseComplete(int result) {
   //    conditionalized request (if-modified-since / if-none-match). We check
   //    if the request headers define a validation request.
   //
+  int result = ERR_FAILED;
   switch (mode_) {
     case READ:
       UpdateTransactionPattern(PATTERN_ENTRY_USED);
@@ -1884,9 +1937,28 @@ int HttpCache::Transaction::DoCacheReadResponseComplete(int result) {
     case WRITE:
     default:
       NOTREACHED();
-      result = ERR_FAILED;
   }
   return result;
+}
+
+int HttpCache::Transaction::DoCacheToggleUnusedSincePrefetch() {
+  // Write back the toggled value for the next use of this entry.
+  response_.unused_since_prefetch = !response_.unused_since_prefetch;
+
+  // TODO(jkarlin): If DoUpdateCachedResponse is also called for this
+  // transaction then metadata will be written to cache twice. If prefetching
+  // becomes more common, consider combining the writes.
+  target_state_ = STATE_TOGGLE_UNUSED_SINCE_PREFETCH_COMPLETE;
+  next_state_ = STATE_CACHE_WRITE_RESPONSE;
+  return OK;
+}
+
+int HttpCache::Transaction::DoCacheToggleUnusedSincePrefetchComplete(
+    int result) {
+  // Restore the original value for this transaction.
+  response_.unused_since_prefetch = !response_.unused_since_prefetch;
+  next_state_ = STATE_CACHE_DISPATCH_VALIDATION;
+  return OK;
 }
 
 int HttpCache::Transaction::DoCacheWriteResponse() {
@@ -2554,6 +2626,16 @@ ValidationType HttpCache::Transaction::RequiresValidation() {
   if (effective_load_flags_ & LOAD_PREFERRING_CACHE)
     return VALIDATION_NONE;
 
+  if (response_.unused_since_prefetch &&
+      !(effective_load_flags_ & LOAD_PREFETCH) &&
+      response_.headers->GetCurrentAge(
+          response_.request_time, response_.response_time,
+          cache_->clock_->Now()) < TimeDelta::FromMinutes(kPrefetchReuseMins)) {
+    // The first use of a resource after prefetch within a short window skips
+    // validation.
+    return VALIDATION_NONE;
+  }
+
   if (effective_load_flags_ & (LOAD_VALIDATE_CACHE | LOAD_ASYNC_REVALIDATION))
     return VALIDATION_SYNCHRONOUS;
 
@@ -2561,8 +2643,9 @@ ValidationType HttpCache::Transaction::RequiresValidation() {
     return VALIDATION_SYNCHRONOUS;
 
   ValidationType validation_required_by_headers =
-      response_.headers->RequiresValidation(
-          response_.request_time, response_.response_time, Time::Now());
+      response_.headers->RequiresValidation(response_.request_time,
+                                            response_.response_time,
+                                            cache_->clock_->Now());
 
   if (validation_required_by_headers == VALIDATION_ASYNCHRONOUS) {
     // Asynchronous revalidation is only supported for GET and HEAD methods.
@@ -2624,7 +2707,8 @@ bool HttpCache::Transaction::ConditionalizeRequest() {
         response_.headers->GetFreshnessLifetimes(response_.response_time);
     if (lifetimes.staleness > TimeDelta()) {
       TimeDelta current_age = response_.headers->GetCurrentAge(
-          response_.request_time, response_.response_time, Time::Now());
+          response_.request_time, response_.response_time,
+          cache_->clock_->Now());
 
       custom_request_->extra_headers.SetHeader(
           kFreshnessHeader,
