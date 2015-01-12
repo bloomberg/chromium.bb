@@ -208,6 +208,7 @@ extern const char kIgnoreUrlFetcherCertRequests[];
 extern const char kIncognito[];
 extern const char kInstallChromeApp[];
 extern const char kInstallEphemeralAppFromWebstore[];
+extern const char kInstallSupervisedUserWhitelists[];
 extern const char kInstantProcess[];
 extern const char kInvalidationUseGCMChannel[];
 extern const char kIpcFuzzerTestcase[];

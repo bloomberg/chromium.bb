@@ -742,6 +742,11 @@ const char kInstallChromeApp[]              = "install-chrome-app";
 const char kInstallEphemeralAppFromWebstore[] =
     "install-ephemeral-app-from-webstore";
 
+// A list of whitelists to install for a supervised user, for testing.
+// The list is of the following form: <id>[:<name>],[<id>[:<name>],...]
+const char kInstallSupervisedUserWhitelists[] =
+    "install-supervised-user-whitelists";
+
 // Marks a renderer as an Instant process.
 const char kInstantProcess[]                = "instant-process";
 
