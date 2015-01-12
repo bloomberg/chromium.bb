@@ -33,8 +33,6 @@ vars = {
   'sourceforge_url': 'http://svn.code.sf.net/p/%(repo)s/code',
   'llvm_url': 'http://src.chromium.org/llvm-project',
   'llvm_git': 'https://llvm.googlesource.com',
-  'libcxx_revision': '48198f9110397fff47fe7c37cbfa296be7d44d3d',
-  'libcxxabi_revision': '4ad1009ab3a59fa7a6896d74d5e4de5885697f95',
   'webkit_trunk': 'http://src.chromium.org/blink/trunk',
   'webkit_revision': '3604522ac5a91e2b95c18b4d1bbcf3b085829835', # from svn revision 188204
   'chromium_git': 'https://chromium.googlesource.com',
@@ -155,12 +153,6 @@ deps = {
 
   'src/third_party/leveldatabase/src':
     Var('chromium_git') + '/external/leveldb.git' + '@' + '251ebf5dc70129ad3c38193fe6c99a5b0ec6b9fa',
-
-  'src/third_party/libc++/trunk':
-   Var('chromium_git') + '/chromium/llvm-project/libcxx.git' + '@' +  Var('libcxx_revision'),
-
-  'src/third_party/libc++abi/trunk':
-   Var('chromium_git') + '/chromium/llvm-project/libcxxabi.git' + '@' +  Var('libcxxabi_revision'),
 
   'src/third_party/snappy/src':
     Var('chromium_git') + '/external/snappy.git' + '@' + '762bb32f0c9d2f31ba4958c7c0933d22e80c20bf',

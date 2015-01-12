@@ -28,7 +28,7 @@
       'conditions': [
         ['use_custom_libcxx==1', {
           'dependencies!': [
-            '../../third_party/libc++/libc++.gyp:libcxx_proxy',
+            '../../buildtools/third_party/libc++/libc++.gyp:libcxx_proxy',
           ],
         }],
         ['tsan==1', {
