@@ -5,12 +5,10 @@
 #ifndef CHROME_BROWSER_MEDIA_MEDIA_STREAM_CAPTURE_INDICATOR_H_
 #define CHROME_BROWSER_MEDIA_MEDIA_STREAM_CAPTURE_INDICATOR_H_
 
-#include <map>
-#include <string>
-#include <utility>
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/status_icons/status_icon_menu_model.h"
 #include "content/public/common/media_stream_request.h"
@@ -24,7 +22,6 @@ class ImageSkia;
 }  // namespace gfx
 
 class StatusIcon;
-class StatusTray;
 
 // This indicator is owned by MediaCaptureDevicesDispatcher
 // (MediaCaptureDevicesDispatcher is a singleton).
@@ -96,14 +93,16 @@ class MediaStreamCaptureIndicator
 
   // A map that contains the usage counts of the opened capture devices for each
   // WebContents instance.
-  typedef std::map<content::WebContents*, WebContentsDeviceUsage*> UsageMap;
-  UsageMap usage_map_;
+  base::ScopedPtrHashMap<content::WebContents*,
+                         WebContentsDeviceUsage> usage_map_;
 
   // A vector which maps command IDs to their associated WebContents
   // instance. This is rebuilt each time the status tray icon context menu is
   // updated.
   typedef std::vector<content::WebContents*> CommandTargets;
   CommandTargets command_targets_;
+
+  DISALLOW_COPY_AND_ASSIGN(MediaStreamCaptureIndicator);
 };
 
 #endif  // CHROME_BROWSER_MEDIA_MEDIA_STREAM_CAPTURE_INDICATOR_H_

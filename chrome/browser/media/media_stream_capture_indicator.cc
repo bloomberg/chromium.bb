@@ -4,8 +4,8 @@
 
 #include "chrome/browser/media/media_stream_capture_indicator.h"
 
-#include "base/bind.h"
-#include "base/i18n/rtl.h"
+#include <string>
+
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_service.h"
@@ -20,7 +20,6 @@
 #include "chrome/grit/chromium_strings.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -43,7 +42,7 @@ namespace {
 
 #if defined(ENABLE_EXTENSIONS)
 const extensions::Extension* GetExtension(WebContents* web_contents) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (!web_contents)
     return NULL;
@@ -55,7 +54,7 @@ const extensions::Extension* GetExtension(WebContents* web_contents) {
 }
 
 bool IsWhitelistedExtension(const extensions::Extension* extension) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   static const char* const kExtensionWhitelist[] = {
     extension_misc::kHotwordExtensionId,
@@ -73,7 +72,7 @@ bool IsWhitelistedExtension(const extensions::Extension* extension) {
 // Gets the security originator of the tab. It returns a string with no '/'
 // at the end to display in the UI.
 base::string16 GetSecurityOrigin(WebContents* web_contents) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (!web_contents)
     return base::string16();
@@ -91,7 +90,7 @@ base::string16 GetSecurityOrigin(WebContents* web_contents) {
 }
 
 base::string16 GetTitle(WebContents* web_contents) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (!web_contents)
     return base::string16();
@@ -124,15 +123,14 @@ base::string16 GetTitle(WebContents* web_contents) {
 
 // Stores usage counts for all the capture devices associated with a single
 // WebContents instance. Instances of this class are owned by
-// MediaStreamCaptureIndicator. They also observe for the destruction of the
-// WebContents instances and delete themselves when corresponding WebContents is
-// deleted.
+// MediaStreamCaptureIndicator. They also observe for the destruction of their
+// corresponding WebContents and trigger their own deletion from their
+// MediaStreamCaptureIndicator.
 class MediaStreamCaptureIndicator::WebContentsDeviceUsage
     : public content::WebContentsObserver {
  public:
-  explicit WebContentsDeviceUsage(
-      scoped_refptr<MediaStreamCaptureIndicator> indicator,
-      WebContents* web_contents)
+  WebContentsDeviceUsage(scoped_refptr<MediaStreamCaptureIndicator> indicator,
+                         WebContents* web_contents)
       : WebContentsObserver(web_contents),
         indicator_(indicator),
         audio_ref_count_(0),
@@ -158,7 +156,6 @@ class MediaStreamCaptureIndicator::WebContentsDeviceUsage
   // content::WebContentsObserver overrides.
   void WebContentsDestroyed() override {
     indicator_->UnregisterWebContents(web_contents());
-    delete this;
   }
 
   scoped_refptr<MediaStreamCaptureIndicator> indicator_;
@@ -176,8 +173,7 @@ class MediaStreamCaptureIndicator::WebContentsDeviceUsage
 // in the content layer. Each UIDelegate keeps a weak pointer to the
 // corresponding WebContentsDeviceUsage object to deliver updates about state of
 // the stream.
-class MediaStreamCaptureIndicator::UIDelegate
-    : public content::MediaStreamUI {
+class MediaStreamCaptureIndicator::UIDelegate : public content::MediaStreamUI {
  public:
   UIDelegate(base::WeakPtr<WebContentsDeviceUsage> device_usage,
              const content::MediaStreamDevices& devices)
@@ -213,8 +209,7 @@ class MediaStreamCaptureIndicator::UIDelegate
 scoped_ptr<content::MediaStreamUI>
 MediaStreamCaptureIndicator::WebContentsDeviceUsage::RegisterMediaStream(
     const content::MediaStreamDevices& devices) {
-  return scoped_ptr<content::MediaStreamUI>(new UIDelegate(
-      weak_factory_.GetWeakPtr(), devices));
+  return make_scoped_ptr(new UIDelegate( weak_factory_.GetWeakPtr(), devices));
 }
 
 void MediaStreamCaptureIndicator::WebContentsDeviceUsage::AddDevices(
@@ -277,70 +272,63 @@ MediaStreamCaptureIndicator::~MediaStreamCaptureIndicator() {
   // empty like it should.
   DCHECK(usage_map_.empty() ||
          !BrowserThread::IsMessageLoopValid(BrowserThread::UI));
-
-  // Free any WebContentsDeviceUsage objects left over.
-  for (UsageMap::const_iterator it = usage_map_.begin(); it != usage_map_.end();
-       ++it) {
-    delete it->second;
-  }
 }
 
 scoped_ptr<content::MediaStreamUI>
 MediaStreamCaptureIndicator::RegisterMediaStream(
     content::WebContents* web_contents,
     const content::MediaStreamDevices& devices) {
-  WebContentsDeviceUsage*& usage = usage_map_[web_contents];
-  if (!usage)
+  WebContentsDeviceUsage* usage = usage_map_.get(web_contents);
+  if (!usage) {
     usage = new WebContentsDeviceUsage(this, web_contents);
+    usage_map_.add(web_contents, make_scoped_ptr(usage));
+  }
   return usage->RegisterMediaStream(devices);
 }
 
 void MediaStreamCaptureIndicator::ExecuteCommand(int command_id,
                                                  int event_flags) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   const int index =
       command_id - IDC_MEDIA_CONTEXT_MEDIA_STREAM_CAPTURE_LIST_FIRST;
   DCHECK_LE(0, index);
   DCHECK_GT(static_cast<int>(command_targets_.size()), index);
-  WebContents* const web_contents = command_targets_[index];
-  UsageMap::const_iterator it = usage_map_.find(web_contents);
-  if (it == usage_map_.end())
-    return;
-  web_contents->GetDelegate()->ActivateContents(web_contents);
+  WebContents* web_contents = command_targets_[index];
+  if (ContainsKey(usage_map_, web_contents))
+    web_contents->GetDelegate()->ActivateContents(web_contents);
 }
 
 bool MediaStreamCaptureIndicator::IsCapturingUserMedia(
     content::WebContents* web_contents) const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  UsageMap::const_iterator it = usage_map_.find(web_contents);
-  return (it != usage_map_.end() &&
-          (it->second->IsCapturingAudio() || it->second->IsCapturingVideo()));
+  WebContentsDeviceUsage* usage = usage_map_.get(web_contents);
+  return usage && (usage->IsCapturingAudio() || usage->IsCapturingVideo());
 }
 
 bool MediaStreamCaptureIndicator::IsCapturingVideo(
     content::WebContents* web_contents) const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  UsageMap::const_iterator it = usage_map_.find(web_contents);
-  return (it != usage_map_.end() && it->second->IsCapturingVideo());
+  WebContentsDeviceUsage* usage = usage_map_.get(web_contents);
+  return usage && usage->IsCapturingVideo();
 }
 
 bool MediaStreamCaptureIndicator::IsCapturingAudio(
     content::WebContents* web_contents) const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  UsageMap::const_iterator it = usage_map_.find(web_contents);
-  return (it != usage_map_.end() && it->second->IsCapturingAudio());
+  WebContentsDeviceUsage* usage = usage_map_.get(web_contents);
+  return usage && usage->IsCapturingAudio();
 }
 
 bool MediaStreamCaptureIndicator::IsBeingMirrored(
     content::WebContents* web_contents) const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  UsageMap::const_iterator it = usage_map_.find(web_contents);
-  return it != usage_map_.end() && it->second->IsMirroring();
+  WebContentsDeviceUsage* usage = usage_map_.get(web_contents);
+  return usage && usage->IsMirroring();
 }
 
 void MediaStreamCaptureIndicator::UnregisterWebContents(
@@ -351,7 +339,8 @@ void MediaStreamCaptureIndicator::UnregisterWebContents(
 
 void MediaStreamCaptureIndicator::MaybeCreateStatusTrayIcon(bool audio,
                                                             bool video) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   if (status_icon_)
     return;
 
@@ -376,7 +365,8 @@ void MediaStreamCaptureIndicator::MaybeCreateStatusTrayIcon(bool audio,
 }
 
 void MediaStreamCaptureIndicator::EnsureStatusTrayIconResources() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   if (!mic_image_) {
     mic_image_ = ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
         IDR_INFOBAR_MEDIA_STREAM_MIC);
@@ -390,7 +380,7 @@ void MediaStreamCaptureIndicator::EnsureStatusTrayIconResources() {
 }
 
 void MediaStreamCaptureIndicator::MaybeDestroyStatusTrayIcon() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (!status_icon_)
     return;
@@ -407,22 +397,21 @@ void MediaStreamCaptureIndicator::MaybeDestroyStatusTrayIcon() {
 }
 
 void MediaStreamCaptureIndicator::UpdateNotificationUserInterface() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  scoped_ptr<StatusIconMenuModel> menu(new StatusIconMenuModel(this));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
+  scoped_ptr<StatusIconMenuModel> menu(new StatusIconMenuModel(this));
   bool audio = false;
   bool video = false;
   int command_id = IDC_MEDIA_CONTEXT_MEDIA_STREAM_CAPTURE_LIST_FIRST;
   command_targets_.clear();
 
-  for (UsageMap::const_iterator iter = usage_map_.begin();
-       iter != usage_map_.end(); ++iter) {
+  for (const auto& it : usage_map_) {
     // Check if any audio and video devices have been used.
-    const WebContentsDeviceUsage& usage = *iter->second;
+    const WebContentsDeviceUsage& usage = *it.second;
     if (!usage.IsCapturingAudio() && !usage.IsCapturingVideo())
       continue;
 
-    WebContents* const web_contents = iter->first;
+    WebContents* const web_contents = it.first;
 
     // The audio/video icon is shown only for non-whitelisted extensions or on
     // Android. For regular tabs on desktop, we show an indicator in the tab
@@ -440,8 +429,7 @@ void MediaStreamCaptureIndicator::UpdateNotificationUserInterface() {
     menu->AddItem(command_id, GetTitle(web_contents));
 
     // If the menu item is not a label, enable it.
-    menu->SetCommandIdEnabled(command_id,
-                              command_id != IDC_MinimumLabelValue);
+    menu->SetCommandIdEnabled(command_id, command_id != IDC_MinimumLabelValue);
 
     // If reaching the maximum number, no more item will be added to the menu.
     if (command_id == IDC_MEDIA_CONTEXT_MEDIA_STREAM_CAPTURE_LIST_LAST)
@@ -466,8 +454,10 @@ void MediaStreamCaptureIndicator::GetStatusTrayIconInfo(
     bool video,
     gfx::ImageSkia* image,
     base::string16* tool_tip) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(audio || video);
+  DCHECK(image);
+  DCHECK(tool_tip);
 
   int message_id = 0;
   if (audio && video) {
