@@ -66,6 +66,7 @@ static const char timerFiredEventName[] = "timerFired";
 static const char newPromiseEventName[] = "newPromise";
 static const char promiseResolvedEventName[] = "promiseResolved";
 static const char promiseRejectedEventName[] = "promiseRejected";
+static const char scriptFirstStatementEventName[] = "scriptFirstStatement";
 static const char windowCloseEventName[] = "close";
 static const char webglErrorFiredEventName[] = "webglErrorFired";
 static const char webglWarningFiredEventName[] = "webglWarningFired";
@@ -502,6 +503,11 @@ void InspectorDOMDebuggerAgent::willHandleEvent(EventTarget* target, Event* even
     Node* node = target->toNode();
     String targetName = node ? node->nodeName() : target->interfaceName();
     pauseOnNativeEventIfNeeded(preparePauseOnNativeEventData(event->type(), &targetName), false);
+}
+
+void InspectorDOMDebuggerAgent::willEvaluateScript(LocalFrame*, const String& url, int)
+{
+    pauseOnNativeEventIfNeeded(preparePauseOnNativeEventData(scriptFirstStatementEventName, 0), false);
 }
 
 void InspectorDOMDebuggerAgent::willCloseWindow()

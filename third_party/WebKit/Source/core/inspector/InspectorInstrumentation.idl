@@ -206,7 +206,7 @@ interface InspectorInstrumentation {
     [AsyncCallTracker, Inline=FastReturn]
     void didPerformExecutionContextTask(ExecutionContext*);
 
-    [Debugger, Timeline, Inline=FastReturn]
+    [Debugger, DOMDebugger, Timeline, Inline=FastReturn]
     InspectorInstrumentationCookie willEvaluateScript([Keep] LocalFrame*, const String& url, int lineNumber);
 
     [Debugger, Timeline, Inline=FastReturn]

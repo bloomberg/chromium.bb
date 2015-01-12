@@ -49,6 +49,7 @@ class EventTarget;
 class InspectorDOMAgent;
 class InspectorDebuggerAgent;
 class JSONObject;
+class LocalFrame;
 class Node;
 
 typedef String ErrorString;
@@ -90,6 +91,7 @@ public:
     void didCancelAnimationFrame(Document*, int callbackId);
     void willFireAnimationFrame(Document*, int callbackId);
     void willHandleEvent(EventTarget*, Event*, EventListener*, bool useCapture);
+    void willEvaluateScript(LocalFrame*, const String& url, int lineNumber);
     void didFireWebGLError(const String& errorName);
     void didFireWebGLWarning();
     void didFireWebGLErrorOrWarning(const String& message);
