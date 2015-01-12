@@ -72,16 +72,14 @@ PassRefPtr<TypeBuilder::Animation::AnimationNode> InspectorAnimationAgent::build
 {
     ComputedTimingProperties computedTiming;
     animationNode->computedTiming(computedTiming);
-    // FIXME: Use computedTiming in place of specifiedTiming.
     RefPtr<TypeBuilder::Animation::AnimationNode> animationObject = TypeBuilder::Animation::AnimationNode::create()
-        .setStartDelay(animationNode->specifiedTiming().startDelay)
-        .setPlaybackRate(animationNode->specifiedTiming().playbackRate)
-        .setIterationStart(animationNode->specifiedTiming().iterationStart)
-        .setIterationCount(animationNode->specifiedTiming().iterationCount)
+        .setDelay(computedTiming.delay())
+        .setPlaybackRate(computedTiming.playbackRate())
+        .setIterationStart(computedTiming.iterationStart())
+        .setIterations(computedTiming.iterations())
         .setDuration(computedTiming.duration().getAsUnrestrictedDouble())
-        .setDirection(animationNode->specifiedTiming().direction)
-        .setFillMode(animationNode->specifiedTiming().fillMode)
-        .setTimeFraction(computedTiming.timeFraction())
+        .setDirection(computedTiming.direction())
+        .setFill(computedTiming.fill())
         .setName(animationNode->name())
         .setBackendNodeId(InspectorNodeIds::idForNode(toAnimation(animationNode)->target()));
     return animationObject.release();
