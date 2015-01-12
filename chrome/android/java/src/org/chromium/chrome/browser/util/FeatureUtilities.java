@@ -15,9 +15,13 @@ import android.os.Bundle;
 import android.os.UserManager;
 import android.speech.RecognizerIntent;
 
+import org.chromium.base.CommandLine;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.ChromeSwitches;
+import org.chromium.chrome.browser.preferences.DocumentModeManager;
 import org.chromium.sync.signin.AccountManagerHelper;
+import org.chromium.ui.base.DeviceFormFactor;
 
 import java.util.List;
 
@@ -57,8 +61,8 @@ public class FeatureUtilities {
      * @return Whether or not sync is allowed on this device.
      */
     public static boolean canAllowSync(Context context) {
-        return (hasGoogleAccountAuthenticator(context) && hasSyncPermissions(context)) ||
-                hasGoogleAccounts(context);
+        return (hasGoogleAccountAuthenticator(context) && hasSyncPermissions(context))
+                || hasGoogleAccounts(context);
     }
 
     @VisibleForTesting
@@ -83,6 +87,30 @@ public class FeatureUtilities {
         UserManager manager = (UserManager) context.getSystemService(Context.USER_SERVICE);
         Bundle userRestrictions = manager.getUserRestrictions();
         return !userRestrictions.getBoolean(UserManager.DISALLOW_MODIFY_ACCOUNTS, false);
+    }
+
+    /**
+     * Check whether Chrome should be running on document mode.
+     * @param context The context to use for checking configuration.
+     * @return Whether Chrome should be running on document mode.
+     */
+    public static boolean isDocumentMode(Context context) {
+        return isDocumentModeEligible(context)
+                && !DocumentModeManager.getInstance(context).isOptedOutOfDocumentMode()
+                && ((CommandLine.getInstance() == null)
+                    || !CommandLine.getInstance().hasSwitch(
+                            ChromeSwitches.DISABLE_DOCUMENT_MODE));
+    }
+
+    /**
+     * Whether the device could possibly run in Document mode (may return true even
+     * if the document mode is turned off).
+     * @param context The context to use for checking configuration.
+     * @return Whether the device could possibly run in Document mode.
+     */
+    public static boolean isDocumentModeEligible(Context context) {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
+                && !DeviceFormFactor.isTablet(context);
     }
 
     /**
