@@ -724,6 +724,7 @@
         'browser/mojo/service_registration_manager.h',
         'browser/mojo/stash_backend.cc',
         'browser/mojo/stash_backend.h',
+        'browser/notification_types.cc',
         'browser/notification_types.h',
         'browser/null_app_sorting.cc',
         'browser/null_app_sorting.h',

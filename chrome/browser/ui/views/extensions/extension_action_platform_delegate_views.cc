@@ -147,14 +147,14 @@ void ExtensionActionPlatformDelegateViews::Observe(
     const content::NotificationDetails& details) {
   DCHECK(type == extensions::NOTIFICATION_EXTENSION_COMMAND_ADDED ||
          type == extensions::NOTIFICATION_EXTENSION_COMMAND_REMOVED);
-  std::pair<const std::string, const std::string>* payload =
-      content::Details<std::pair<const std::string, const std::string> >(
-          details).ptr();
-  if (controller_->extension()->id() == payload->first &&
-      (payload->second ==
-       extensions::manifest_values::kBrowserActionCommandEvent ||
-       payload->second ==
-       extensions::manifest_values::kPageActionCommandEvent)) {
+  extensions::ExtensionCommandRemovedDetails* payload =
+      content::Details<extensions::ExtensionCommandRemovedDetails>(details)
+          .ptr();
+  if (controller_->extension()->id() == payload->extension_id &&
+      (payload->command_name ==
+           extensions::manifest_values::kBrowserActionCommandEvent ||
+       payload->command_name ==
+           extensions::manifest_values::kPageActionCommandEvent)) {
     if (type == extensions::NOTIFICATION_EXTENSION_COMMAND_ADDED)
       RegisterCommand();
     else

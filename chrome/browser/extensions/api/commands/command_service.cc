@@ -72,6 +72,14 @@ bool IsForCurrentPlatform(const std::string& key) {
   return StartsWithASCII(key, Command::CommandPlatform() + ":", true);
 }
 
+std::string StripCurrentPlatform(const std::string& key) {
+  DCHECK(IsForCurrentPlatform(key));
+  std::string result = key;
+  ReplaceFirstSubstringAfterOffset(&result, 0, Command::CommandPlatform() + ":",
+                                   "");
+  return result;
+}
+
 void SetInitialBindingsHaveBeenAssigned(
     ExtensionPrefs* prefs, const std::string& extension_id) {
   prefs->UpdateExtensionPref(extension_id, kInitialBindingsHaveBeenAssigned,
@@ -804,13 +812,12 @@ void CommandService::RemoveKeybindingPrefs(const std::string& extension_id,
     std::string key = *it;
     bindings->Remove(key, NULL);
 
-    std::pair<const std::string, const std::string> details =
-        std::make_pair(extension_id, command_name);
+    ExtensionCommandRemovedDetails details(extension_id, command_name,
+                                           StripCurrentPlatform(key));
     content::NotificationService::current()->Notify(
         extensions::NOTIFICATION_EXTENSION_COMMAND_REMOVED,
         content::Source<Profile>(profile_),
-        content::Details<std::pair<const std::string, const std::string> >(
-            &details));
+        content::Details<ExtensionCommandRemovedDetails>(&details));
   }
 }
 
