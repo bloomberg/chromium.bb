@@ -1620,22 +1620,21 @@ chrome_pfq.add_config('alex-chrome-pfq',
   _base_configs['x86-alex'],
 )
 
-# TODO(sosa): Re-enable hwtest once lab is back up.
 chrome_pfq.add_config('lumpy-chrome-pfq',
   _base_configs['lumpy'],
   afdo_generate=True,
-  #hw_tests=[AFDORecordTest()] + HWTestConfig.DefaultListPFQ(
-  #    minimum_duts=0, timeout=2*HWTestConfig.DEFAULT_HW_TEST_TIMEOUT),
+  hw_tests=[AFDORecordTest()] + HWTestConfig.DefaultListPFQ(
+      minimum_duts=0, timeout=2*HWTestConfig.DEFAULT_HW_TEST_TIMEOUT),
 )
 
 chrome_pfq.add_config('daisy_skate-chrome-pfq',
   _base_configs['daisy_skate'],
-  #hw_tests=HWTestConfig.DefaultListPFQ(),
+  hw_tests=HWTestConfig.DefaultListPFQ(),
 )
 
 chrome_pfq.add_config('falco-chrome-pfq',
   _base_configs['falco'],
-  #hw_tests=HWTestConfig.DefaultListPFQ(),
+  hw_tests=HWTestConfig.DefaultListPFQ(),
 )
 
 _telemetry_boards = frozenset([
