@@ -2955,6 +2955,69 @@ TEST_F(ViewLayerTest, BoundInRTL) {
   base::i18n::SetICUDefaultLocale(locale);
 }
 
+// Make sure that resizing a parent in RTL correctly repositions its children.
+TEST_F(ViewLayerTest, ResizeParentInRTL) {
+  std::string locale = l10n_util::GetApplicationLocale(std::string());
+  base::i18n::SetICUDefaultLocale("he");
+
+  View* view = new View;
+  widget()->SetContentsView(view);
+
+  int content_width = view->width();
+
+  // Create a paints-to-layer view |v1|.
+  View* v1 = new View;
+  v1->SetPaintToLayer(true);
+  v1->SetBounds(10, 10, 20, 10);
+  view->AddChildView(v1);
+  EXPECT_EQ(gfx::Rect(content_width - 30, 10, 20, 10),
+            v1->layer()->bounds());
+
+  // Attach a paints-to-layer child view to |v1|.
+  View* v2 = new View;
+  v2->SetPaintToLayer(true);
+  v2->SetBounds(3, 5, 6, 4);
+  EXPECT_EQ(gfx::Rect(3, 5, 6, 4),
+            v2->layer()->bounds());
+  v1->AddChildView(v2);
+  // Check that |v2| now has RTL-appropriate bounds.
+  EXPECT_EQ(gfx::Rect(11, 5, 6, 4),
+            v2->layer()->bounds());
+
+  // Attach a non-layer child view to |v1|, and give it a paints-to-layer child.
+  View* v3 = new View;
+  v3->SetBounds(1, 1, 18, 8);
+  View* v4 = new View;
+  v4->SetPaintToLayer(true);
+  v4->SetBounds(2, 4, 6, 4);
+  EXPECT_EQ(gfx::Rect(2, 4, 6, 4),
+            v4->layer()->bounds());
+  v3->AddChildView(v4);
+  EXPECT_EQ(gfx::Rect(10, 4, 6, 4),
+            v4->layer()->bounds());
+  v1->AddChildView(v3);
+  // Check that |v4| now has RTL-appropriate bounds.
+  EXPECT_EQ(gfx::Rect(11, 5, 6, 4),
+            v4->layer()->bounds());
+
+  // Resize |v1|. Make sure that |v2| and |v4|'s layers have been moved
+  // correctly to RTL-appropriate bounds.
+  v1->SetSize(gfx::Size(30, 10));
+  EXPECT_EQ(gfx::Rect(21, 5, 6, 4),
+            v2->layer()->bounds());
+  EXPECT_EQ(gfx::Rect(21, 5, 6, 4),
+            v4->layer()->bounds());
+
+  // Move and resize |v3|. Make sure that |v4|'s layer has been moved correctly
+  // to RTL-appropriate bounds.
+  v3->SetBounds(2, 1, 12, 8);
+  EXPECT_EQ(gfx::Rect(20, 5, 6, 4),
+            v4->layer()->bounds());
+
+  // Reset locale.
+  base::i18n::SetICUDefaultLocale(locale);
+}
+
 // Makes sure a transform persists after toggling the visibility.
 TEST_F(ViewLayerTest, ToggleVisibilityWithTransform) {
   View* view = new View;
