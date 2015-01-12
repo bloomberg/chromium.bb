@@ -188,15 +188,15 @@ def _ParseRevisionsFromDEPSFileManually(deps_file_contents):
   return dict(re_results)
 
 
-def _WaitUntilBuildIsReady(fetch_build_func, bot_name, builder_host,
-                           builder_port, build_request_id, max_timeout):
+def _WaitUntilBuildIsReady(fetch_build_func, bot_name, builder_type,
+                           build_request_id, max_timeout):
   """Waits until build is produced by bisect builder on try server.
 
   Args:
     fetch_build_func: Function to check and download build from cloud storage.
     bot_name: Builder bot name on try server.
-    builder_host Try server host name.
-    builder_port: Try server port.
+    builder_type: Builder type, e.g. "perf" or "full". Refer to the constants
+        |fetch_build| which determine the valid values that can be passed.
     build_request_id: A unique ID of the build request posted to try server.
     max_timeout: Maximum time to wait for the build.
 
@@ -224,12 +224,12 @@ def _WaitUntilBuildIsReady(fetch_build_func, bot_name, builder_host,
       if not build_num:
         # Get the build number on try server for the current build.
         build_num = request_build.GetBuildNumFromBuilder(
-            build_request_id, bot_name, builder_host, builder_port)
+            build_request_id, bot_name, builder_type)
       # Check the status of build using the build number.
       # Note: Build is treated as PENDING if build number is not found
       # on the the try server.
       build_status, status_link = request_build.GetBuildStatus(
-          build_num, bot_name, builder_host, builder_port)
+          build_num, bot_name, builder_type)
       if build_status == request_build.FAILED:
         return (None, 'Failed to produce build, log: %s' % status_link)
     elapsed_time = time.time() - start_time
@@ -903,8 +903,8 @@ class BisectPerformanceMetrics(object):
       return None
 
     archive_filename, error_msg = _WaitUntilBuildIsReady(
-        fetch_build_func, bot_name, self.opts.builder_host,
-        self.opts.builder_port, build_request_id, build_timeout)
+        fetch_build_func, bot_name, self.opts.builder_type, build_request_id,
+        build_timeout)
     if not archive_filename:
       logging.warn('%s [revision: %s]', error_msg, git_revision)
     return archive_filename
@@ -1016,7 +1016,8 @@ class BisectPerformanceMetrics(object):
 
   def IsDownloadable(self, depot):
     """Checks if build can be downloaded based on target platform and depot."""
-    if self.opts.target_platform in ['chromium', 'android']:
+    if (self.opts.target_platform in ['chromium', 'android']
+        and self.opts.builder_type == fetch_build.PERF_BUILDER):
       return (depot == 'chromium' or
               'chromium' in bisect_utils.DEPOT_DEPS_NAME[depot]['from'] or
               'v8' in bisect_utils.DEPOT_DEPS_NAME[depot]['from'])
@@ -2512,8 +2513,7 @@ class BisectOptions(object):
     self.debug_fake_first_test_mean = 0
     self.target_arch = 'ia32'
     self.target_build_type = 'Release'
-    self.builder_host = None
-    self.builder_port = None
+    self.builder_type = 'perf'
     self.bisect_mode = bisect_utils.BISECT_MODE_MEAN
     self.improvement_direction = 0
     self.bug_id = ''
@@ -2615,12 +2615,12 @@ class BisectOptions(object):
                        choices=['Release', 'Debug'],
                        help='The target build type. Choices are "Release" '
                             '(default), or "Debug".')
-    group.add_argument('--builder_host', dest='builder_host',
-                       help='Host address of server to produce build by '
-                            'posting try job request.')
-    group.add_argument('--builder_port', dest='builder_port', type=int,
-                       help='HTTP port of the server to produce build by '
-                            'posting try job request.')
+    group.add_argument('--builder_type', default=fetch_build.PERF_BUILDER,
+                       choices=[fetch_build.PERF_BUILDER,
+                                fetch_build.FULL_BUILDER],
+                       help='Type of builder to get build from. This '
+                            'determines both the bot that builds and the '
+                            'place where archived builds are downloaded from.')
 
   @staticmethod
   def _AddDebugOptionsGroup(parser):

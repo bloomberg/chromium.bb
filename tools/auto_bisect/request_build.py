@@ -19,6 +19,8 @@ import sys
 import urllib
 import urllib2
 
+import fetch_build
+
 # URL template for fetching JSON data about builds.
 BUILDER_JSON_URL = ('%(server_url)s/json/builders/%(bot_name)s/builds/'
                     '%(build_num)s?as_text=1&filter=0')
@@ -201,7 +203,7 @@ def _GetBuildData(buildbot_url):
   return None
 
 
-def _GetBuildBotUrl(builder_host, builder_port):
+def _GetBuildBotUrl(builder_type):
   """Gets build bot URL for fetching build info.
 
   Bisect builder bots are hosted on tryserver.chromium.perf, though we cannot
@@ -209,27 +211,24 @@ def _GetBuildBotUrl(builder_host, builder_port):
   tryserver URL for the perf tryserver.
 
   Args:
-    builder_host: Hostname of the server where the builder is hosted.
-    builder_port: Port number of ther server where the builder is hosted.
+    builder_type: Determines what type of builder is used, e.g. "perf".
 
   Returns:
     URL of the buildbot as a string.
   """
-  if (builder_host == PERF_BISECT_BUILDER_HOST and
-      builder_port == PERF_BISECT_BUILDER_PORT):
+  if builder_type == fetch_build.PERF_BUILDER:
     return PERF_TRY_SERVER_URL
   else:
-    return 'http://%s:%s' % (builder_host, builder_port)
+    raise NotImplementedError('Cannot yet get non-perf builds.')
 
 
-def GetBuildStatus(build_num, bot_name, builder_host, builder_port):
+def GetBuildStatus(build_num, bot_name, builder_type):
   """Gets build status from the buildbot status page for a given build number.
 
   Args:
     build_num: A build number on tryserver to determine its status.
     bot_name: Name of the bot where the build information is scanned.
-    builder_host: Hostname of the server where the builder is hosted.
-    builder_port: Port number of the server where the builder is hosted.
+    builder_type: Type of builder, e.g. "perf".
 
   Returns:
     A pair which consists of build status (SUCCESS, FAILED or PENDING) and a
@@ -238,7 +237,7 @@ def GetBuildStatus(build_num, bot_name, builder_host, builder_port):
   results_url = None
   if build_num:
     # Get the URL for requesting JSON data with status information.
-    server_url = _GetBuildBotUrl(builder_host, builder_port)
+    server_url = _GetBuildBotUrl(builder_type)
     buildbot_url = BUILDER_JSON_URL % {
         'server_url': server_url,
         'bot_name': bot_name,
@@ -260,7 +259,7 @@ def GetBuildStatus(build_num, bot_name, builder_host, builder_port):
   return (PENDING, results_url)
 
 
-def GetBuildNumFromBuilder(build_reason, bot_name, builder_host, builder_port):
+def GetBuildNumFromBuilder(build_reason, bot_name, builder_type):
   """Gets build number on build status page for a given 'build reason'.
 
   This function parses the JSON data from buildbot page and collects basic
@@ -273,14 +272,13 @@ def GetBuildNumFromBuilder(build_reason, bot_name, builder_host, builder_port):
   Args:
     build_reason: A unique build name set to build on tryserver.
     bot_name: Name of the bot where the build information is scanned.
-    builder_host: Hostname of the server where the builder is hosted.
-    builder_port: Port number of ther server where the builder is hosted.
+    builder_type: Type of builder, e.g. "perf".
 
   Returns:
     A build number as a string if found, otherwise None.
   """
   # Gets the buildbot url for the given host and port.
-  server_url = _GetBuildBotUrl(builder_host, builder_port)
+  server_url = _GetBuildBotUrl(builder_type)
   buildbot_url = BUILDER_JSON_URL % {
       'server_url': server_url,
       'bot_name': bot_name,

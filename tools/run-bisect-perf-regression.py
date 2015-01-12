@@ -511,8 +511,7 @@ def _RunBisectionScript(
       ('bisect_mode', '--bisect_mode'),
       ('improvement_direction', '--improvement_direction'),
       ('bug_id', '--bug_id'),
-      ('builder_host', '--builder_host'),
-      ('builder_port', '--builder_port'),
+      ('builder_type', '--builder_type'),
   ]
   for config_key, flag in options:
     if config.has_key(config_key):
