@@ -808,8 +808,6 @@ crbug.com/334269 [ Mac ] svg/text/tspan-multiple-outline.svg [ ImageOnlyFailure 
 crbug.com/334269 [ Mac ] svg/transforms/transformed-text-fill-gradient.html [ ImageOnlyFailure ]
 crbug.com/334269 [ Mac ] virtual/antialiasedtext/fast/text/international/complex-text-missing-glyph-fallback.html [ ImageOnlyFailure ]
 crbug.com/334269 [ Mac ] virtual/antialiasedtext/fast/text/international/vertical-positioning-with-combining-marks.html [ ImageOnlyFailure ]
-crbug.com/334269 [ Mac ] virtual/regionbasedmulticol/fast/multicol/newmulticol/list-item.html [ ImageOnlyFailure ]
-crbug.com/334269 [ Mac ] virtual/regionbasedmulticol/fast/multicol/newmulticol/table-cell.html [ ImageOnlyFailure ]
 crbug.com/334269 [ Mac ] fast/css/word-spacing-characters-complex-text.html [ Skip ]
 crbug.com/334269 [ Mac ] fast/multicol/multicol-with-child-renderLayer-for-input.html [ ImageOnlyFailure Crash ]
 
@@ -1073,8 +1071,6 @@ crbug.com/386567 virtual/slimmingpaint/fast/multicol/vertical-rl/float-truncatio
 crbug.com/386567 virtual/slimmingpaint/fast/multicol/vertical-rl/image-inside-nested-blocks-with-border.html [ Skip ]
 crbug.com/386567 virtual/slimmingpaint/fast/multicol/vertical-rl/nested-columns.html [ Skip ]
 crbug.com/396823 [ Mac ] virtual/slimmingpaint/fast/multicol/multicol-with-child-renderLayer-for-input.html [ ImageOnlyFailure ]
-crbug.com/334269 [ Mac ] virtual/slimmingpaint/fast/multicol/newmulticol/list-item.html [ ImageOnlyFailure ]
-crbug.com/334269 [ Mac ] virtual/slimmingpaint/fast/multicol/newmulticol/table-cell.html [ ImageOnlyFailure ]
 
 # New multicol tests which should currently only run in virtual/regionbasedmulticol, because
 # the baseline is based on the region based multicol implementation.
