@@ -227,181 +227,185 @@ if (!is_ios) {
   }
 }  # !is_ios
 
-test("content_browsertests") {
-  sources = rebase_path(content_tests_gypi_values.content_browsertests_sources,
-                        ".",
-                        "//content")
-
-  defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
-
-  deps = [
-    ":browsertest_support",
-    ":web_ui_test_mojo_bindings",
-    "//base/allocator",
-    "//base/test:test_support",
-    "//content/common:mojo_bindings",
-    "//content/gpu",
-    "//content/public/common",
-    "//content/public/plugin",
-    "//content/public/renderer",
-    "//content:resources",
-    "//content/shell:content_shell_lib",
-    "//content/shell:pak",
-    "//content/test:test_support",
-    "//device/battery",
-    "//device/battery:mojo_bindings",
-    "//gin",
-    "//gpu",
-    "//ipc:test_support",
-    "//media:test_support",
-    "//media/audio:test_support",
-    "//media/base:test_support",
-    "//media:shared_memory_support",
-    "//mojo/edk/system",
-    "//mojo/edk/test:test_support",
-    "//mojo/environment:chromium",
-    "//mojo/public/cpp/bindings",
-    "//mojo/public/js",
-    "//net:test_support",
-    "//ppapi:ppapi_host",
-    "//ppapi:ppapi_ipc",
-    "//ppapi:ppapi_proxy",
-    "//ppapi:ppapi_shared",
-
-    #"//ppapi:ppapi_tests",  TODO(GYP)
-    #"//ppapi:ppapi_unittest_shared",  TODO(GYP)
-    "//testing/gmock",
-    "//testing/gtest",
-    "//third_party/WebKit/public:blink",
-    "//third_party/leveldatabase",
-    "//third_party/mesa:osmesa",
-    "//ui/accessibility",
-    "//ui/accessibility:ax_gen",
-    "//ui/base",
-    "//ui/gfx",
-    "//ui/gfx/geometry",
-    "//ui/gl",
-    "//ui/resources",
-    "//ui/shell_dialogs",
-    "//ui/snapshot",
-  ]
-
-  if (!is_chromeos) {
-    sources -=
-        [ "../browser/web_contents/touch_editable_impl_aura_browsertest.cc" ]
-  }
-
-  if (is_win) {
-    sources +=
-        rebase_path(content_tests_gypi_values.content_browsertests_win_sources,
+# TODO(GYP) enable content_browsertests on Mac when it links.
+if (!is_mac) {
+  test("content_browsertests") {
+    sources =
+        rebase_path(content_tests_gypi_values.content_browsertests_sources,
                     ".",
                     "//content")
 
-    # TODO(GYP) Windows support
-    #       'resource_include_dirs': [
-    #         '<(SHARED_INTERMEDIATE_DIR)/webkit',
-    #       ],
-    #       'sources': [
-    #         'shell/app/resource.h',
-    #         'shell/app/shell.rc',
-    #         # TODO:  It would be nice to have these pulled in
-    #         # automatically from direct_dependent_settings in
-    #         # their various targets (net.gyp:net_resources, etc.),
-    #         # but that causes errors in other targets when
-    #         # resulting .res files get referenced multiple times.
-    #         '<(SHARED_INTERMEDIATE_DIR)/blink/public/resources/blink_resources.rc',
-    #         '<(SHARED_INTERMEDIATE_DIR)/content/app/strings/content_strings_en-US.rc',
-    #         '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.rc',
-    #       ],
-    deps += [
-      "//contemt/app/strings",
-      "//net:net_resources",
-      "//third_party/WebKit/public:resources",
-      "//third_party/iaccessible2",
-      "//third_party/isimpledom",
-    ]
+    defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
 
-    # TODO(GYP) Windows
-    #         'Debug_Base': {
-    #           'msvs_settings': {
-    #             'VCLinkerTool': {
-    #               'LinkIncremental': '<(msvs_large_module_debug_link_mode)',
-  }
-
-  if (is_linux) {
-    sources -=
-        [ "../browser/accessibility/dump_accessibility_tree_browsertest.cc" ]
-  }
-
-  if (is_android) {
-    sources += rebase_path(
-            content_tests_gypi_values.content_browsertests_android_sources,
-            ".",
-            "//content")
-    sources -=
-        [ "../browser/battery_status/battery_monitor_impl_browsertest.cc" ]
-    deps += [
-      "//content/shell/android:content_shell_jni_headers",
+    deps = [
+      ":browsertest_support",
+      ":web_ui_test_mojo_bindings",
+      "//base/allocator",
+      "//base/test:test_support",
+      "//content/common:mojo_bindings",
+      "//content/gpu",
+      "//content/public/common",
+      "//content/public/plugin",
+      "//content/public/renderer",
+      "//content:resources",
       "//content/shell:content_shell_lib",
-      "//testing/android:native_test_util",
+      "//content/shell:pak",
+      "//content/test:test_support",
+      "//device/battery",
+      "//device/battery:mojo_bindings",
+      "//gin",
+      "//gpu",
+      "//ipc:test_support",
+      "//media:test_support",
+      "//media/audio:test_support",
+      "//media/base:test_support",
+      "//media:shared_memory_support",
+      "//mojo/edk/system",
+      "//mojo/edk/test:test_support",
+      "//mojo/environment:chromium",
+      "//mojo/public/cpp/bindings",
+      "//mojo/public/js",
+      "//net:test_support",
+      "//ppapi:ppapi_host",
+      "//ppapi:ppapi_ipc",
+      "//ppapi:ppapi_proxy",
+      "//ppapi:ppapi_shared",
+
+      #"//ppapi:ppapi_tests",  TODO(GYP)
+      #"//ppapi:ppapi_unittest_shared",  TODO(GYP)
+      "//testing/gmock",
+      "//testing/gtest",
+      "//third_party/WebKit/public:blink",
+      "//third_party/leveldatabase",
+      "//third_party/mesa:osmesa",
+      "//ui/accessibility",
+      "//ui/accessibility:ax_gen",
+      "//ui/base",
+      "//ui/gfx",
+      "//ui/gfx/geometry",
+      "//ui/gl",
+      "//ui/resources",
+      "//ui/shell_dialogs",
+      "//ui/snapshot",
     ]
-  }
 
-  if (is_mac) {
-    sources += [ "../renderer/external_popup_menu_browsertest.cc" ]
-    deps += [
-      # Needed for Content Shell.app's Helper.
-      #"//content/shell:content_shell",  #TODO(GYP) enable for mac
-    ]
-  }
+    if (!is_chromeos) {
+      sources -=
+          [ "../browser/web_contents/touch_editable_impl_aura_browsertest.cc" ]
+    }
 
-  if (use_aura && !is_win) {
-    deps += [ "//ui/events:test_support" ]
-  }
+    if (is_win) {
+      sources += rebase_path(
+              content_tests_gypi_values.content_browsertests_win_sources,
+              ".",
+              "//content")
 
-  if (!use_aura && !is_mac) {
-    sources -=
-        [ "../browser/compositor/image_transport_factory_browsertest.cc" ]
-  }
+      # TODO(GYP) Windows support
+      #       'resource_include_dirs': [
+      #         '<(SHARED_INTERMEDIATE_DIR)/webkit',
+      #       ],
+      #       'sources': [
+      #         'shell/app/resource.h',
+      #         'shell/app/shell.rc',
+      #         # TODO:  It would be nice to have these pulled in
+      #         # automatically from direct_dependent_settings in
+      #         # their various targets (net.gyp:net_resources, etc.),
+      #         # but that causes errors in other targets when
+      #         # resulting .res files get referenced multiple times.
+      #         '<(SHARED_INTERMEDIATE_DIR)/blink/public/resources/blink_resources.rc',
+      #         '<(SHARED_INTERMEDIATE_DIR)/content/app/strings/content_strings_en-US.rc',
+      #         '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.rc',
+      #       ],
+      deps += [
+        "//contemt/app/strings",
+        "//net:net_resources",
+        "//third_party/WebKit/public:resources",
+        "//third_party/iaccessible2",
+        "//third_party/isimpledom",
+      ]
 
-  if (!is_android && !is_ios && !is_linux) {
-    # Npapi test plugin doesn't build on Android or iOS.
-    #data_deps += [ 'copy_npapi_test_plugin' ]  TODO(GYP)
-  }
+      # TODO(GYP) Windows
+      #         'Debug_Base': {
+      #           'msvs_settings': {
+      #             'VCLinkerTool': {
+      #               'LinkIncremental': '<(msvs_large_module_debug_link_mode)',
+    }
 
-  if (enable_webrtc) {
-    sources += rebase_path(
-            content_tests_gypi_values.content_browsertests_webrtc_sources,
-            ".",
-            "//content")
-    deps += [ "//testing/perf" ]
-  }
+    if (is_linux) {
+      sources -=
+          [ "../browser/accessibility/dump_accessibility_tree_browsertest.cc" ]
+    }
 
-  if (enable_plugins) {
-    sources += rebase_path(
-            content_tests_gypi_values.content_browsertests_plugins_sources,
-            ".",
-            "//content")
-    #deps += [ "//ppapi:ppapi_tests" ]  # TODO(GYP)
-  }
+    if (is_android) {
+      sources += rebase_path(
+              content_tests_gypi_values.content_browsertests_android_sources,
+              ".",
+              "//content")
+      sources -=
+          [ "../browser/battery_status/battery_monitor_impl_browsertest.cc" ]
+      deps += [
+        "//content/shell/android:content_shell_jni_headers",
+        "//content/shell:content_shell_lib",
+        "//testing/android:native_test_util",
+      ]
+    }
 
-  if (enable_web_speech) {
-    sources += rebase_path(
-            content_tests_gypi_values.content_browsertests_speech_sources,
-            ".",
-            "//content")
-  }
+    if (is_mac) {
+      sources += [ "../renderer/external_popup_menu_browsertest.cc" ]
+      deps += [
+        # Needed for Content Shell.app's Helper.
+        #"//content/shell:content_shell",  #TODO(GYP) enable for mac
+      ]
+    }
 
-  if (!is_chrome_branded) {
-    sources += rebase_path(
-            content_tests_gypi_values.content_browsertests_unofficial_build_sources,
-            ".",
-            "//content")
-  }
+    if (use_aura && !is_win) {
+      deps += [ "//ui/events:test_support" ]
+    }
 
-  if (!use_aura) {
-    sources -=
-        [ "../browser/web_contents/web_contents_view_aura_browsertest.cc" ]
+    if (!use_aura && !is_mac) {
+      sources -=
+          [ "../browser/compositor/image_transport_factory_browsertest.cc" ]
+    }
+
+    if (!is_android && !is_ios && !is_linux) {
+      # Npapi test plugin doesn't build on Android or iOS.
+      #data_deps += [ 'copy_npapi_test_plugin' ]  TODO(GYP)
+    }
+
+    if (enable_webrtc) {
+      sources += rebase_path(
+              content_tests_gypi_values.content_browsertests_webrtc_sources,
+              ".",
+              "//content")
+      deps += [ "//testing/perf" ]
+    }
+
+    if (enable_plugins) {
+      sources += rebase_path(
+              content_tests_gypi_values.content_browsertests_plugins_sources,
+              ".",
+              "//content")
+      #deps += [ "//ppapi:ppapi_tests" ]  # TODO(GYP)
+    }
+
+    if (enable_web_speech) {
+      sources += rebase_path(
+              content_tests_gypi_values.content_browsertests_speech_sources,
+              ".",
+              "//content")
+    }
+
+    if (!is_chrome_branded) {
+      sources += rebase_path(
+              content_tests_gypi_values.content_browsertests_unofficial_build_sources,
+              ".",
+              "//content")
+    }
+
+    if (!use_aura) {
+      sources -=
+          [ "../browser/web_contents/web_contents_view_aura_browsertest.cc" ]
+    }
   }
 }
 # TODO(GYP): Unit test targets
