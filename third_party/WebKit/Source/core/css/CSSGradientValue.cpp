@@ -258,6 +258,7 @@ void CSSGradientValue::addStops(Gradient* gradient, const CSSToLengthConversionD
                 if (!computedGradientLength) {
                     FloatSize gradientSize(gradientStart - gradientEnd);
                     gradientLength = gradientSize.diagonalLength();
+                    computedGradientLength = true;
                 }
                 float length;
                 if (stop.m_position->isLength())
@@ -353,6 +354,7 @@ void CSSGradientValue::addStops(Gradient* gradient, const CSSToLengthConversionD
                 if (!computedGradientLength) {
                     FloatSize gradientSize(gradientStart - gradientEnd);
                     gradientLength = gradientSize.diagonalLength();
+                    computedGradientLength = true;
                 }
 
                 if (maxLengthForRepeat > gradientLength)
