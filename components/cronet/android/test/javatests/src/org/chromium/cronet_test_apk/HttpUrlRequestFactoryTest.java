@@ -6,6 +6,7 @@ package org.chromium.cronet_test_apk;
 
 import android.test.suitebuilder.annotation.SmallTest;
 
+import org.chromium.base.PathUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.net.HttpUrlRequest;
 import org.chromium.net.HttpUrlRequestFactory;
@@ -102,5 +103,44 @@ public class HttpUrlRequestFactoryTest extends CronetTestBase {
             return;
         }
         fail("IllegalArgumentException must be thrown");
+    }
+
+    /**
+     * Returns the path for the test storage (http cache, QUIC server info).
+     */
+    public String getTestStoragePath() {
+        return PathUtils.getDataDirectory(
+                getInstrumentation().getTargetContext()) + "/test_storage";
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    public void testEnableHttpCache() {
+        HttpUrlRequestFactoryConfig config = new HttpUrlRequestFactoryConfig();
+        config.enableHttpCache(HttpUrlRequestFactoryConfig.HttpCache.DISABLED, 0);
+        config.enableHttpCache(HttpUrlRequestFactoryConfig.HttpCache.IN_MEMORY, 0);
+        try {
+            config.enableHttpCache(HttpUrlRequestFactoryConfig.HttpCache.DISK, 0);
+            fail("IllegalArgumentException must be thrown");
+        } catch (IllegalArgumentException e) {
+            assertEquals("Storage path must be set", e.getMessage());
+        }
+        try {
+            config.enableHttpCache(
+                    HttpUrlRequestFactoryConfig.HttpCache.DISK_NO_HTTP, 0);
+            fail("IllegalArgumentException must be thrown");
+        } catch (IllegalArgumentException e) {
+            assertEquals("Storage path must be set", e.getMessage());
+        }
+
+        config.setStoragePath(prepareTestStorage());
+        config.enableHttpCache(HttpUrlRequestFactoryConfig.HttpCache.DISK, 100);
+        config.enableHttpCache(HttpUrlRequestFactoryConfig.HttpCache.DISK_NO_HTTP, 100);
+        try {
+            config.enableHttpCache(HttpUrlRequestFactoryConfig.HttpCache.IN_MEMORY, 0);
+            fail("IllegalArgumentException must be thrown");
+        } catch (IllegalArgumentException e) {
+            assertEquals("Storage path must be empty", e.getMessage());
+        }
     }
 }

@@ -75,6 +75,8 @@ class URLRequestContextAdapter : public net::URLRequestContextGetter {
 
   const std::string& GetUserAgent(const GURL& url) const;
 
+  bool load_disable_cache() const { return load_disable_cache_; }
+
   // net::URLRequestContextGetter implementation:
   net::URLRequestContext* GetURLRequestContext() override;
   scoped_refptr<base::SingleThreadTaskRunner> GetNetworkTaskRunner()
@@ -87,20 +89,7 @@ class URLRequestContextAdapter : public net::URLRequestContextGetter {
   void InitRequestContextOnMainThread();
 
  private:
-  scoped_refptr<URLRequestContextAdapterDelegate> delegate_;
-  scoped_ptr<net::URLRequestContext> context_;
-  std::string user_agent_;
-  base::Thread* network_thread_;
-  scoped_ptr<NetLogObserver> net_log_observer_;
-  scoped_ptr<net::NetLogLogger> net_log_logger_;
-  scoped_ptr<net::ProxyConfigService> proxy_config_service_;
-  scoped_ptr<URLRequestContextConfig> config_;
-
-  // A queue of tasks that need to be run after context has been initialized.
-  std::queue<RunAfterContextInitTask> tasks_waiting_for_context_;
-  bool is_context_initialized_ = false;
-
-  virtual ~URLRequestContextAdapter();
+  ~URLRequestContextAdapter() override;
 
   // Initializes |context_| on the Network thread.
   void InitRequestContextOnNetworkThread();
@@ -111,6 +100,20 @@ class URLRequestContextAdapter : public net::URLRequestContextGetter {
   // Helper function to stop writing NetLog data to file. This should only be
   // run after context is initialized.
   void StopNetLogHelper();
+
+  scoped_refptr<URLRequestContextAdapterDelegate> delegate_;
+  scoped_ptr<net::URLRequestContext> context_;
+  std::string user_agent_;
+  bool load_disable_cache_;
+  base::Thread* network_thread_;
+  scoped_ptr<NetLogObserver> net_log_observer_;
+  scoped_ptr<net::NetLogLogger> net_log_logger_;
+  scoped_ptr<net::ProxyConfigService> proxy_config_service_;
+  scoped_ptr<URLRequestContextConfig> config_;
+
+  // A queue of tasks that need to be run after context has been initialized.
+  std::queue<RunAfterContextInitTask> tasks_waiting_for_context_;
+  bool is_context_initialized_;
 
   DISALLOW_COPY_AND_ASSIGN(URLRequestContextAdapter);
 };

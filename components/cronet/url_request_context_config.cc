@@ -94,6 +94,8 @@ void URLRequestContextConfig::RegisterJSONConverter(
                                &URLRequestContextConfig::enable_spdy);
   converter->RegisterStringField(REQUEST_CONTEXT_CONFIG_HTTP_CACHE,
                                  &URLRequestContextConfig::http_cache);
+  converter->RegisterBoolField(REQUEST_CONTEXT_CONFIG_LOAD_DISABLE_CACHE,
+                               &URLRequestContextConfig::load_disable_cache);
   converter->RegisterIntField(REQUEST_CONTEXT_CONFIG_HTTP_CACHE_MAX_SIZE,
                               &URLRequestContextConfig::http_cache_max_size);
   converter->RegisterRepeatedMessage(REQUEST_CONTEXT_CONFIG_QUIC_HINTS,

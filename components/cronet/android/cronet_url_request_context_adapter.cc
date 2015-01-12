@@ -8,6 +8,7 @@
 #include "base/files/file_util.h"
 #include "base/single_thread_task_runner.h"
 #include "components/cronet/url_request_context_config.h"
+#include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_log_logger.h"
 #include "net/base/network_delegate_impl.h"
@@ -107,7 +108,8 @@ class BasicNetworkDelegate : public net::NetworkDelegateImpl {
 
 namespace cronet {
 
-CronetURLRequestContextAdapter::CronetURLRequestContextAdapter() {
+CronetURLRequestContextAdapter::CronetURLRequestContextAdapter()
+    : default_load_flags_(0) {
 }
 
 CronetURLRequestContextAdapter::~CronetURLRequestContextAdapter() {
@@ -143,6 +145,11 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
   config->ConfigureURLRequestContextBuilder(&context_builder);
 
   context_.reset(context_builder.Build());
+
+  default_load_flags_ = net::LOAD_DO_NOT_SAVE_COOKIES |
+                        net::LOAD_DO_NOT_SEND_COOKIES;
+  if (config->load_disable_cache)
+    default_load_flags_ |= net::LOAD_DISABLE_CACHE;
 
   // Currently (circa M39) enabling QUIC requires setting probability threshold.
   if (config->enable_quic) {

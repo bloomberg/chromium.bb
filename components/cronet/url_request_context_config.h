@@ -63,6 +63,9 @@ struct URLRequestContextConfig {
   std::string http_cache;
   // Max size of http cache in bytes.
   int http_cache_max_size;
+  // Disable caching for HTTP responses. Other information may be stored in
+  // the cache.
+  bool load_disable_cache;
   // Storage path for http cache and cookie storage.
   std::string storage_path;
   // User-Agent request header field.

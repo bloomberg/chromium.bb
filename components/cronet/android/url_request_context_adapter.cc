@@ -120,7 +120,9 @@ namespace cronet {
 
 URLRequestContextAdapter::URLRequestContextAdapter(
     URLRequestContextAdapterDelegate* delegate,
-    std::string user_agent) {
+    std::string user_agent)
+    : load_disable_cache_(true),
+      is_context_initialized_(false) {
   delegate_ = delegate;
   user_agent_ = user_agent;
 }
@@ -208,6 +210,7 @@ void URLRequestContextAdapter::InitRequestContextOnNetworkThread() {
           1.0f);
     }
   }
+  load_disable_cache_ = config_->load_disable_cache;
   config_.reset(NULL);
 
   if (VLOG_IS_ON(2)) {

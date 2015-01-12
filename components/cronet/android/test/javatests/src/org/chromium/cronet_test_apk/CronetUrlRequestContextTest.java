@@ -276,4 +276,105 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         assertTrue(file.delete());
         assertTrue(!file.exists());
     }
+
+    private void enableCache(UrlRequestContextConfig.HttpCache cacheType)
+            throws Exception {
+        UrlRequestContextConfig config = new UrlRequestContextConfig();
+        config.setLibraryName("cronet_tests");
+        if (cacheType == UrlRequestContextConfig.HttpCache.DISK
+                || cacheType == UrlRequestContextConfig.HttpCache.DISK_NO_HTTP) {
+            config.setStoragePath(prepareTestStorage());
+        }
+
+        config.enableHttpCache(cacheType, 1000 * 1024);
+        String[] commandLineArgs = {
+                CronetTestActivity.CONFIG_KEY, config.toString()
+        };
+        mActivity = launchCronetTestAppWithUrlAndCommandLineArgs(null,
+                commandLineArgs);
+        assertTrue(UploadTestServer.startUploadTestServer(
+                getInstrumentation().getTargetContext()));
+    }
+
+    private void checkRequestCaching(String url, boolean expectCached) {
+        TestUrlRequestListener listener = new TestUrlRequestListener();
+        UrlRequest urlRequest = mActivity.mUrlRequestContext.createRequest(
+                url, listener, listener.getExecutor());
+        urlRequest.start();
+        listener.blockForDone();
+        assertEquals(expectCached, listener.mResponseInfo.wasCached());
+        assertEquals(200, listener.mResponseInfo.getHttpStatusCode());
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    public void testEnableHttpCacheDisabled() throws Exception {
+        enableCache(UrlRequestContextConfig.HttpCache.DISABLED);
+        String url = UploadTestServer.getFileURL("/cacheable.txt");
+        checkRequestCaching(url, false);
+        checkRequestCaching(url, false);
+        checkRequestCaching(url, false);
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    public void testEnableHttpCacheInMemory() throws Exception {
+        enableCache(UrlRequestContextConfig.HttpCache.IN_MEMORY);
+        String url = UploadTestServer.getFileURL("/cacheable.txt");
+        checkRequestCaching(url, false);
+        checkRequestCaching(url, true);
+        UploadTestServer.shutdownUploadTestServer();
+        checkRequestCaching(url, true);
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    public void testEnableHttpCacheDisk() throws Exception {
+        enableCache(UrlRequestContextConfig.HttpCache.DISK);
+        String url = UploadTestServer.getFileURL("/cacheable.txt");
+        checkRequestCaching(url, false);
+        checkRequestCaching(url, true);
+        UploadTestServer.shutdownUploadTestServer();
+        checkRequestCaching(url, true);
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    public void testEnableHttpCacheDiskNoHttp() throws Exception {
+        enableCache(UrlRequestContextConfig.HttpCache.DISABLED);
+        String url = UploadTestServer.getFileURL("/cacheable.txt");
+        checkRequestCaching(url, false);
+        checkRequestCaching(url, false);
+        checkRequestCaching(url, false);
+    }
+
+    // TODO(mef): Simple cache uses global thread pool that is not affected by
+    // shutdown of UrlRequestContext. This test can be flaky unless that thread
+    // pool is destroyed and recreated. Enable the test when crbug.com/442321 is fixed.
+    @SmallTest
+    @Feature({"Cronet"})
+    public void disabled_testEnableHttpCacheDiskNewContext() throws Exception {
+        UrlRequestContextConfig config = new UrlRequestContextConfig();
+        config.setLibraryName("cronet_tests");
+        config.setStoragePath(prepareTestStorage());
+        config.enableHttpCache(UrlRequestContextConfig.HttpCache.DISK, 1000 * 1024);
+        String[] commandLineArgs = {
+                CronetTestActivity.CONFIG_KEY, config.toString()
+        };
+        mActivity = launchCronetTestAppWithUrlAndCommandLineArgs(null,
+                commandLineArgs);
+        assertTrue(UploadTestServer.startUploadTestServer(
+                getInstrumentation().getTargetContext()));
+        String url = UploadTestServer.getFileURL("/cacheable.txt");
+        checkRequestCaching(url, false);
+        checkRequestCaching(url, true);
+        UploadTestServer.shutdownUploadTestServer();
+        checkRequestCaching(url, true);
+        // Shutdown original context and create another that uses the same cache.
+        mActivity.mUrlRequestContext.shutdown();
+        mActivity.mUrlRequestContext = mActivity.mUrlRequestContext.createContext(
+                getInstrumentation().getTargetContext().getApplicationContext(),
+                config);
+        checkRequestCaching(url, true);
+    }
 }

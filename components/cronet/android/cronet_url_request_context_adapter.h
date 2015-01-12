@@ -50,19 +50,23 @@ class CronetURLRequestContextAdapter {
 
   void StopNetLog();
 
- private:
-  // Network thread is owned by |this|, but is destroyed from java thread.
-  base::Thread* network_thread_;
-  // |net_log_logger_| and |context_| should only be accessed on network thread.
-  scoped_ptr<net::NetLogLogger> net_log_logger_;
-  scoped_ptr<net::URLRequestContext> context_;
+  // Default net::LOAD flags used to create requests.
+  int default_load_flags() const { return default_load_flags_; }
 
+ private:
   // Initializes |context_| on the Network thread.
   void InitializeOnNetworkThread(
       scoped_ptr<URLRequestContextConfig> config,
       const base::Closure& java_init_network_thread);
   void StartNetLogToFileOnNetworkThread(const std::string& file_name);
   void StopNetLogOnNetworkThread();
+
+  // Network thread is owned by |this|, but is destroyed from java thread.
+  base::Thread* network_thread_;
+  // |net_log_logger_| and |context_| should only be accessed on network thread.
+  scoped_ptr<net::NetLogLogger> net_log_logger_;
+  scoped_ptr<net::URLRequestContext> context_;
+  int default_load_flags_;
 
   DISALLOW_COPY_AND_ASSIGN(CronetURLRequestContextAdapter);
 };
