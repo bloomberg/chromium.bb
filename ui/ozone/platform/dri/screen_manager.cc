@@ -89,8 +89,11 @@ void ScreenManager::RemoveDisplayController(uint32_t crtc) {
   if (it != controllers_.end()) {
     bool is_mirrored = (*it)->IsMirrored();
     (*it)->RemoveCrtc(crtc);
-    if (!is_mirrored)
+    if (!is_mirrored) {
+      FOR_EACH_OBSERVER(DisplayChangeObserver, observers_,
+                        OnDisplayRemoved(*it));
       controllers_.erase(it);
+    }
   }
 }
 
@@ -105,7 +108,6 @@ bool ScreenManager::ConfigureDisplayController(uint32_t crtc,
                                    << ") doesn't exist.";
 
   HardwareDisplayController* controller = *it;
-  controller = *it;
   // If nothing changed just enable the controller. Note, we perform an exact
   // comparison on the mode since the refresh rate may have changed.
   if (SameMode(mode, controller->get_mode()) &&
@@ -119,6 +121,8 @@ bool ScreenManager::ConfigureDisplayController(uint32_t crtc,
         return HandleMirrorMode(it, mirror, crtc, connector);
     }
 
+    FOR_EACH_OBSERVER(DisplayChangeObserver, observers_,
+                      OnDisplayChanged(controller));
     // Just re-enable the controller to re-use the current state.
     return controller->Enable();
   }
@@ -159,7 +163,7 @@ bool ScreenManager::DisableDisplayController(uint32_t crtc) {
   return false;
 }
 
-base::WeakPtr<HardwareDisplayController> ScreenManager::GetDisplayController(
+HardwareDisplayController* ScreenManager::GetDisplayController(
     const gfx::Rect& bounds) {
   // TODO(dnicoara): Remove hack once TestScreen uses a simple Ozone display
   // configuration reader and ScreenManager is called from there to create the
@@ -170,9 +174,17 @@ base::WeakPtr<HardwareDisplayController> ScreenManager::GetDisplayController(
   HardwareDisplayControllers::iterator it =
       FindActiveDisplayControllerByLocation(bounds);
   if (it != controllers_.end())
-    return (*it)->AsWeakPtr();
+    return *it;
 
-  return base::WeakPtr<HardwareDisplayController>();
+  return nullptr;
+}
+
+void ScreenManager::AddObserver(DisplayChangeObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void ScreenManager::RemoveObserver(DisplayChangeObserver* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 ScreenManager::HardwareDisplayControllers::iterator
@@ -244,6 +256,8 @@ bool ScreenManager::ModesetDisplayController(
     return false;
   }
 
+  FOR_EACH_OBSERVER(DisplayChangeObserver, observers_,
+                    OnDisplayChanged(controller));
   return true;
 }
 
@@ -254,6 +268,10 @@ bool ScreenManager::HandleMirrorMode(
     uint32_t connector) {
   (*mirror)->AddCrtc((*original)->RemoveCrtc(crtc));
   if ((*mirror)->Enable()) {
+    FOR_EACH_OBSERVER(DisplayChangeObserver, observers_,
+                      OnDisplayRemoved(*original));
+    FOR_EACH_OBSERVER(DisplayChangeObserver, observers_,
+                      OnDisplayChanged(*mirror));
     controllers_.erase(original);
     return true;
   }

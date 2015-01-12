@@ -33,6 +33,32 @@ class MockScreenManager : public ui::ScreenManager {
   DISALLOW_COPY_AND_ASSIGN(MockScreenManager);
 };
 
+class TestDisplayChangeObserver : public ui::DisplayChangeObserver {
+ public:
+  TestDisplayChangeObserver()
+      : num_displays_changed_(0), num_displays_removed_(0) {}
+
+  ~TestDisplayChangeObserver() override {}
+
+  int num_displays_changed() const { return num_displays_changed_; }
+  int num_displays_removed() const { return num_displays_removed_; }
+
+  // TestDisplayChangeObserver:
+  void OnDisplayChanged(ui::HardwareDisplayController* controller) override {
+    num_displays_changed_++;
+  }
+
+  void OnDisplayRemoved(ui::HardwareDisplayController* controller) override {
+    num_displays_removed_++;
+  }
+
+ private:
+  int num_displays_changed_;
+  int num_displays_removed_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestDisplayChangeObserver);
+};
+
 }  // namespace
 
 class ScreenManagerTest : public testing::Test {
@@ -55,8 +81,10 @@ class ScreenManagerTest : public testing::Test {
     buffer_generator_.reset(new ui::DriBufferGenerator(dri_.get()));
     screen_manager_.reset(new MockScreenManager(
         dri_.get(), buffer_generator_.get()));
+    screen_manager_->AddObserver(&observer_);
   }
   void TearDown() override {
+    screen_manager_->RemoveObserver(&observer_);
     screen_manager_.reset();
     dri_.reset();
   }
@@ -65,6 +93,8 @@ class ScreenManagerTest : public testing::Test {
   scoped_ptr<ui::MockDriWrapper> dri_;
   scoped_ptr<ui::DriBufferGenerator> buffer_generator_;
   scoped_ptr<MockScreenManager> screen_manager_;
+
+  TestDisplayChangeObserver observer_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ScreenManagerTest);
@@ -81,7 +111,7 @@ TEST_F(ScreenManagerTest, CheckWithValidController) {
                                               kPrimaryConnector,
                                               GetPrimaryBounds().origin(),
                                               kDefaultMode);
-  base::WeakPtr<ui::HardwareDisplayController> controller =
+  ui::HardwareDisplayController* controller =
       screen_manager_->GetDisplayController(GetPrimaryBounds());
 
   EXPECT_TRUE(controller);
@@ -124,12 +154,14 @@ TEST_F(ScreenManagerTest, CheckControllerAfterItIsRemoved) {
                                               kPrimaryConnector,
                                               GetPrimaryBounds().origin(),
                                               kDefaultMode);
-  base::WeakPtr<ui::HardwareDisplayController> controller =
-      screen_manager_->GetDisplayController(GetPrimaryBounds());
+  EXPECT_EQ(1, observer_.num_displays_changed());
+  EXPECT_EQ(0, observer_.num_displays_removed());
+  EXPECT_TRUE(screen_manager_->GetDisplayController(GetPrimaryBounds()));
 
-  EXPECT_TRUE(controller);
   screen_manager_->RemoveDisplayController(kPrimaryCrtc);
-  EXPECT_FALSE(controller);
+  EXPECT_EQ(1, observer_.num_displays_changed());
+  EXPECT_EQ(1, observer_.num_displays_removed());
+  EXPECT_FALSE(screen_manager_->GetDisplayController(GetPrimaryBounds()));
 }
 
 TEST_F(ScreenManagerTest, CheckDuplicateConfiguration) {
@@ -149,6 +181,9 @@ TEST_F(ScreenManagerTest, CheckDuplicateConfiguration) {
   // Should reuse existing framebuffer.
   EXPECT_EQ(framebuffer, dri_->current_framebuffer());
 
+  EXPECT_EQ(2, observer_.num_displays_changed());
+  EXPECT_EQ(0, observer_.num_displays_removed());
+
   EXPECT_TRUE(screen_manager_->GetDisplayController(GetPrimaryBounds()));
   EXPECT_FALSE(screen_manager_->GetDisplayController(GetSecondaryBounds()));
 }
@@ -164,6 +199,9 @@ TEST_F(ScreenManagerTest, CheckChangingMode) {
   new_mode.vdisplay = 10;
   screen_manager_->ConfigureDisplayController(
       kPrimaryCrtc, kPrimaryConnector, GetPrimaryBounds().origin(), new_mode);
+
+  EXPECT_EQ(2, observer_.num_displays_changed());
+  EXPECT_EQ(0, observer_.num_displays_removed());
 
   gfx::Rect new_bounds(0, 0, new_mode.hdisplay, new_mode.vdisplay);
   EXPECT_TRUE(screen_manager_->GetDisplayController(new_bounds));
@@ -188,6 +226,8 @@ TEST_F(ScreenManagerTest, CheckForControllersInMirroredMode) {
                                               GetPrimaryBounds().origin(),
                                               kDefaultMode);
 
+  EXPECT_EQ(2, observer_.num_displays_changed());
+  EXPECT_EQ(1, observer_.num_displays_removed());
   EXPECT_TRUE(screen_manager_->GetDisplayController(GetPrimaryBounds()));
   EXPECT_FALSE(screen_manager_->GetDisplayController(GetSecondaryBounds()));
 }
@@ -246,12 +286,18 @@ TEST_F(ScreenManagerTest, MonitorGoneInMirrorMode) {
                                               GetPrimaryBounds().origin(),
                                               kDefaultMode);
 
+  EXPECT_EQ(2, observer_.num_displays_changed());
+  EXPECT_EQ(1, observer_.num_displays_removed());
+
   screen_manager_->RemoveDisplayController(kSecondaryCrtc);
   EXPECT_TRUE(
       screen_manager_->ConfigureDisplayController(kPrimaryCrtc,
                                                   kPrimaryConnector,
                                                   GetPrimaryBounds().origin(),
                                                   kDefaultMode));
+  EXPECT_EQ(3, observer_.num_displays_changed());
+  EXPECT_EQ(1, observer_.num_displays_removed());
+
   EXPECT_TRUE(screen_manager_->GetDisplayController(GetPrimaryBounds()));
   EXPECT_FALSE(screen_manager_->GetDisplayController(GetSecondaryBounds()));
 }
@@ -314,7 +360,7 @@ TEST_F(ScreenManagerTest, CheckMirrorModeAfterBeginReEnabled) {
       kSecondaryCrtc, kSecondaryConnector, GetPrimaryBounds().origin(),
       kDefaultMode);
 
-  base::WeakPtr<ui::HardwareDisplayController> controller =
+  ui::HardwareDisplayController* controller =
       screen_manager_->GetDisplayController(GetPrimaryBounds());
   EXPECT_TRUE(controller);
   EXPECT_FALSE(controller->IsMirrored());

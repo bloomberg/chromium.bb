@@ -61,6 +61,8 @@ DriWindowDelegateImpl::~DriWindowDelegateImpl() {
 void DriWindowDelegateImpl::Initialize() {
   TRACE_EVENT1("dri", "DriWindowDelegateImpl::Initialize", "widget", widget_);
 
+  screen_manager_->AddObserver(this);
+
   uint64_t cursor_width = 64;
   uint64_t cursor_height = 64;
   drm_->GetCapability(DRM_CAP_CURSOR_WIDTH, &cursor_width);
@@ -78,6 +80,7 @@ void DriWindowDelegateImpl::Initialize() {
 
 void DriWindowDelegateImpl::Shutdown() {
   TRACE_EVENT1("dri", "DriWindowDelegateImpl::Shutdown", "widget", widget_);
+  screen_manager_->RemoveObserver(this);
 }
 
 gfx::AcceleratedWidget DriWindowDelegateImpl::GetAcceleratedWidget() {
@@ -85,12 +88,13 @@ gfx::AcceleratedWidget DriWindowDelegateImpl::GetAcceleratedWidget() {
 }
 
 HardwareDisplayController* DriWindowDelegateImpl::GetController() {
-  return controller_.get();
+  return controller_;
 }
 
 void DriWindowDelegateImpl::OnBoundsChanged(const gfx::Rect& bounds) {
   TRACE_EVENT2("dri", "DriWindowDelegateImpl::OnBoundsChanged", "widget",
                widget_, "bounds", bounds.ToString());
+  bounds_ = bounds;
   controller_ = screen_manager_->GetDisplayController(bounds);
 }
 
@@ -126,6 +130,30 @@ void DriWindowDelegateImpl::MoveCursor(const gfx::Point& location) {
 
   if (controller_)
     controller_->MoveCursor(location);
+}
+
+void DriWindowDelegateImpl::OnDisplayChanged(
+    HardwareDisplayController* controller) {
+  DCHECK(controller);
+
+  gfx::Rect controller_bounds =
+      gfx::Rect(controller->origin(), controller->GetModeSize());
+  if (controller_) {
+    if (controller_ != controller)
+      return;
+
+    if (controller->IsDisabled() || bounds_ != controller_bounds)
+      controller_ = nullptr;
+  } else {
+    if (bounds_ == controller_bounds && !controller->IsDisabled())
+      controller_ = controller;
+  }
+}
+
+void DriWindowDelegateImpl::OnDisplayRemoved(
+    HardwareDisplayController* controller) {
+  if (controller_ == controller)
+    controller_ = nullptr;
 }
 
 void DriWindowDelegateImpl::ResetCursor(bool bitmap_only) {

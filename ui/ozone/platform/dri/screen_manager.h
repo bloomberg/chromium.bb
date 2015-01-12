@@ -7,7 +7,8 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
-#include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
+#include "ui/ozone/platform/dri/display_change_observer.h"
 #include "ui/ozone/platform/dri/hardware_display_controller.h"
 
 typedef struct _drmModeModeInfo drmModeModeInfo;
@@ -49,13 +50,12 @@ class ScreenManager {
   bool DisableDisplayController(uint32_t crtc);
 
   // Returns a reference to the display controller configured to display within
-  // |bounds|.
-  // This returns a weak reference since the display controller may be destroyed
-  // at any point in time, but the changes are propagated to the compositor much
-  // later (Compositor owns SurfaceOzone*, which is responsible for updating the
-  // display surface).
-  base::WeakPtr<HardwareDisplayController> GetDisplayController(
-      const gfx::Rect& bounds);
+  // |bounds|. If the caller caches the controller it must also register as an
+  // observer to be notified when the controller goes out of scope.
+  HardwareDisplayController* GetDisplayController(const gfx::Rect& bounds);
+
+  void AddObserver(DisplayChangeObserver* observer);
+  void RemoveObserver(DisplayChangeObserver* observer);
 
   // On non CrOS builds there is no display configurator to look-up available
   // displays and initialize the HDCs. In such cases this is called internally
@@ -91,6 +91,8 @@ class ScreenManager {
   ScanoutBufferGenerator* buffer_generator_;  // Not owned.
   // List of display controllers (active and disabled).
   HardwareDisplayControllers controllers_;
+
+  ObserverList<DisplayChangeObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenManager);
 };

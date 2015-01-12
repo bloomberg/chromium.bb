@@ -5,15 +5,12 @@
 #ifndef UI_OZONE_PLATFORM_DRI_DRI_WINDOW_DELEGATE_IMPL_H_
 #define UI_OZONE_PLATFORM_DRI_DRI_WINDOW_DELEGATE_IMPL_H_
 
-#include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/ozone/platform/dri/display_change_observer.h"
 #include "ui/ozone/platform/dri/dri_window_delegate.h"
-
-namespace gfx {
-class Rect;
-}  // namespace gfx
 
 namespace ui {
 
@@ -23,7 +20,8 @@ class DriWrapper;
 class HardwareDisplayController;
 class ScreenManager;
 
-class DriWindowDelegateImpl : public DriWindowDelegate {
+class DriWindowDelegateImpl : public DriWindowDelegate,
+                              public DisplayChangeObserver {
  public:
   DriWindowDelegateImpl(gfx::AcceleratedWidget widget,
                         DriWrapper* drm,
@@ -44,6 +42,10 @@ class DriWindowDelegateImpl : public DriWindowDelegate {
                                   const gfx::Point& location) override;
   void MoveCursor(const gfx::Point& location) override;
 
+  // DisplayChangeObserver:
+  void OnDisplayChanged(HardwareDisplayController* controller) override;
+  void OnDisplayRemoved(HardwareDisplayController* controller) override;
+
  private:
   // Draw the last set cursor & update the cursor plane.
   void ResetCursor(bool bitmap_only);
@@ -57,7 +59,12 @@ class DriWindowDelegateImpl : public DriWindowDelegate {
   DriWindowDelegateManager* window_manager_;  // Not owned.
   ScreenManager* screen_manager_;             // Not owned.
 
-  base::WeakPtr<HardwareDisplayController> controller_;
+  // The current bounds of the window.
+  gfx::Rect bounds_;
+
+  // The controller associated with the current window. This may be nullptr if
+  // the window isn't over an active display.
+  HardwareDisplayController* controller_;
 
   base::RepeatingTimer<DriWindowDelegateImpl> cursor_timer_;
 
