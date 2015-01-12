@@ -683,7 +683,7 @@ pp::Var Instance::GetLinkAtPosition(const pp::Point& point) {
 }
 
 pp::Var Instance::GetSelectedText(bool html) {
-  if (html || !engine_->HasPermission(PDFEngine::PERMISSION_COPY))
+  if (html)
     return pp::Var();
   return engine_->GetSelectedText();
 }
@@ -1857,7 +1857,10 @@ pp::Var Instance::CallScriptableMethod(const pp::Var& method,
           v_scrollbar_.get() ? GetScrollbarReservedThickness() : 0);
   }
   if (method_str == kJSGetSelectedText) {
-    return GetSelectedText(false);
+    std::string selected_text = engine_->GetSelectedText();
+    // Always return unix newlines to JS.
+    base::ReplaceChars(selected_text, "\r", std::string(), &selected_text);
+    return selected_text;
   }
   if (method_str == kJSDocumentLoadComplete) {
     return pp::Var((document_load_state_ != LOAD_STATE_LOADING));

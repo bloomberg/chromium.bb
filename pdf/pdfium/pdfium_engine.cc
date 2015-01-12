@@ -2250,6 +2250,9 @@ void PDFiumEngine::InvalidateAllPages() {
 }
 
 std::string PDFiumEngine::GetSelectedText() {
+  if (!HasPermission(PDFEngine::PERMISSION_COPY))
+    return std::string();
+
   base::string16 result;
   base::string16 new_line_char = base::UTF8ToUTF16("\n");
   for (size_t i = 0; i < selection_.size(); ++i) {
@@ -3344,8 +3347,7 @@ void PDFiumEngine::GetRegion(const pp::Point& location,
 }
 
 void PDFiumEngine::OnSelectionChanged() {
-  if (HasPermission(PDFEngine::PERMISSION_COPY))
-    pp::PDF::SetSelectedText(GetPluginInstance(), GetSelectedText().c_str());
+  pp::PDF::SetSelectedText(GetPluginInstance(), GetSelectedText().c_str());
 }
 
 void PDFiumEngine::RotateInternal() {

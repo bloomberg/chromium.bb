@@ -567,7 +567,7 @@ pp::Var OutOfProcessInstance::GetLinkAtPosition(
 }
 
 pp::Var OutOfProcessInstance::GetSelectedText(bool html) {
-  if (html || !engine_->HasPermission(PDFEngine::PERMISSION_COPY))
+  if (html)
     return pp::Var();
   return engine_->GetSelectedText();
 }
