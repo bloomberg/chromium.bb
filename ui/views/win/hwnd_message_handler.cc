@@ -561,8 +561,7 @@ void HWNDMessageHandler::CenterWindow(const gfx::Size& size) {
 
 void HWNDMessageHandler::SetRegion(HRGN region) {
   custom_window_region_.Set(region);
-  ResetWindowRegion(false, true);
-  UpdateDwmNcRenderingPolicy();
+  ResetWindowRegion(true, true);
 }
 
 void HWNDMessageHandler::StackAbove(HWND other_hwnd) {
