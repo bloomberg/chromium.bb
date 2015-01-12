@@ -178,7 +178,7 @@ int LoadFrameworkAndStart(app_mode::ChromeAppModeInfo* info) {
   // Launch the executable directly since base::mac::OpenApplicationWithPath
   // uses LSOpenApplication which doesn't pass command line arguments if the
   // application is already running.
-  if (!base::LaunchProcess(command_line, base::LaunchOptions(), NULL)) {
+  if (!base::LaunchProcess(command_line, base::LaunchOptions()).IsValid()) {
     LOG(ERROR) << "Could not launch Chrome: "
                << command_line.GetCommandLineString();
     return 1;
