@@ -574,6 +574,8 @@
             'animation/EffectInput.cpp',
             'animation/EffectInput.h',
             'animation/ElementAnimation.h',
+            'animation/ImageStyleInterpolation.cpp',
+            'animation/ImageStyleInterpolation.h',
             'animation/InertAnimation.cpp',
             'animation/InertAnimation.h',
             'animation/InterpolableValue.cpp',
