@@ -217,6 +217,10 @@ class GPU_EXPORT BufferManager {
     allow_buffers_on_multiple_targets_ = allow;
   }
 
+  void set_allow_fixed_attribs(bool allow) {
+    allow_fixed_attribs_ = allow;
+  }
+
   size_t mem_represented() const {
     return memory_tracker_->GetMemRepresented();
   }
@@ -269,6 +273,9 @@ class GPU_EXPORT BufferManager {
 
   // Whether or not buffers can be bound to multiple targets.
   bool allow_buffers_on_multiple_targets_;
+
+  // Whether or not allow using GL_FIXED type for vertex attribs.
+  bool allow_fixed_attribs_;
 
   // Counts the number of Buffer allocated with 'this' as its manager.
   // Allows to check no Buffer will outlive this.

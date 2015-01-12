@@ -12,6 +12,7 @@
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "ui/gl/gl_bindings.h"
+#include "ui/gl/gl_implementation.h"
 
 namespace gpu {
 namespace gles2 {
@@ -23,6 +24,7 @@ BufferManager::BufferManager(
           new MemoryTypeTracker(memory_tracker, MemoryTracker::kManaged)),
       feature_info_(feature_info),
       allow_buffers_on_multiple_targets_(false),
+      allow_fixed_attribs_(false),
       buffer_count_(0),
       have_context_(true),
       use_client_side_arrays_for_stream_buffers_(
@@ -251,10 +253,13 @@ void BufferManager::SetInfo(
     Buffer* buffer, GLsizeiptr size, GLenum usage, const GLvoid* data) {
   DCHECK(buffer);
   memory_tracker_->TrackMemFree(buffer->size());
-  bool is_client_side_array = IsUsageClientSideArray(usage);
-  bool shadow = buffer->target() == GL_ELEMENT_ARRAY_BUFFER ||
-                allow_buffers_on_multiple_targets_ ||
-                is_client_side_array;
+  const bool is_client_side_array = IsUsageClientSideArray(usage);
+  const bool support_fixed_attribs =
+    gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2;
+  const bool shadow = buffer->target() == GL_ELEMENT_ARRAY_BUFFER ||
+                      allow_buffers_on_multiple_targets_ ||
+                      (allow_fixed_attribs_ && !support_fixed_attribs) ||
+                      is_client_side_array;
   buffer->SetInfo(size, usage, shadow, data, is_client_side_array);
   memory_tracker_->TrackMemAlloc(buffer->size());
 }

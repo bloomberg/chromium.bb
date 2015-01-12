@@ -9882,7 +9882,7 @@ error::Error GLES2DecoderImpl::HandleEnableFeatureCHROMIUM(
   if (feature_str.compare("pepper3d_allow_buffers_on_multiple_targets") == 0) {
     buffer_manager()->set_allow_buffers_on_multiple_targets(true);
   } else if (feature_str.compare("pepper3d_support_fixed_attribs") == 0) {
-    buffer_manager()->set_allow_buffers_on_multiple_targets(true);
+    buffer_manager()->set_allow_fixed_attribs(true);
     // TODO(gman): decide how to remove the need for this const_cast.
     // I could make validators_ non const but that seems bad as this is the only
     // place it is needed. I could make some special friend class of validators
