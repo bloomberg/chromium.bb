@@ -25,7 +25,7 @@ bool RelaunchChromeBrowser(const base::CommandLine& command_line) {
   base::LaunchOptions options;
   // Don't set NO_NEW_PRIVS on the relaunched browser process.
   options.allow_new_privs = true;
-  return base::LaunchProcess(command_line, options, NULL);
+  return base::LaunchProcess(command_line, options).IsValid();
 }
 
 bool IsUpdatePendingRestart() {
