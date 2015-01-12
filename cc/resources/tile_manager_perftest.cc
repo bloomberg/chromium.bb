@@ -181,7 +181,8 @@ class TileManagerPerfTest : public testing::Test {
     timer_.Reset();
     do {
       RasterTilePriorityQueue queue;
-      host_impl_.BuildRasterQueue(&queue, priorities[priority_count]);
+      host_impl_.BuildRasterQueue(&queue, priorities[priority_count],
+                                  RasterTilePriorityQueue::Type::ALL);
       priority_count = (priority_count + 1) % arraysize(priorities);
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
@@ -211,7 +212,8 @@ class TileManagerPerfTest : public testing::Test {
     do {
       int count = tile_count;
       RasterTilePriorityQueue queue;
-      host_impl_.BuildRasterQueue(&queue, priorities[priority_count]);
+      host_impl_.BuildRasterQueue(&queue, priorities[priority_count],
+                                  RasterTilePriorityQueue::Type::ALL);
       while (count--) {
         ASSERT_FALSE(queue.IsEmpty());
         ASSERT_TRUE(queue.Top() != NULL);

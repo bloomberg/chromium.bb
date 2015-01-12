@@ -233,7 +233,8 @@ class CC_EXPORT PictureLayerTiling {
 
  protected:
   friend class CoverageIterator;
-  friend class TilingSetRasterQueue;
+  friend class TilingSetRasterQueueAll;
+  friend class TilingSetRasterQueueRequired;
   friend class TilingSetEvictionQueue;
 
   typedef std::pair<int, int> TileMapKey;

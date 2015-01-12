@@ -5,6 +5,7 @@
 #include "cc/layers/picture_layer_impl.h"
 
 #include "cc/debug/lap_timer.h"
+#include "cc/resources/tiling_set_raster_queue_all.h"
 #include "cc/test/fake_impl_proxy.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/fake_output_surface.h"
@@ -76,8 +77,8 @@ class PictureLayerImplPerfTest : public testing::Test {
     timer_.Reset();
     do {
       int count = num_tiles;
-      scoped_ptr<TilingSetRasterQueue> queue =
-          pending_layer_->CreateRasterQueue(false);
+      scoped_ptr<TilingSetRasterQueue> queue(new TilingSetRasterQueueAll(
+          pending_layer_->picture_layer_tiling_set(), false));
       while (count--) {
         ASSERT_TRUE(!queue->IsEmpty()) << "count: " << count;
         ASSERT_TRUE(queue->Top() != nullptr) << "count: " << count;
@@ -99,8 +100,8 @@ class PictureLayerImplPerfTest : public testing::Test {
 
     timer_.Reset();
     do {
-      scoped_ptr<TilingSetRasterQueue> queue =
-          pending_layer_->CreateRasterQueue(false);
+      scoped_ptr<TilingSetRasterQueue> queue(new TilingSetRasterQueueAll(
+          pending_layer_->picture_layer_tiling_set(), false));
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
 

@@ -25,6 +25,7 @@
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/quads/tile_draw_quad.h"
 #include "cc/resources/tile_manager.h"
+#include "cc/resources/tiling_set_raster_queue_all.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/occlusion.h"
 #include "ui/gfx/geometry/quad_f.h"
@@ -94,6 +95,7 @@ PictureLayerImpl::~PictureLayerImpl() {
   layer_tree_impl()->UnregisterPictureLayerImpl(this);
 }
 
+// TODO(vmpstr): Expose tiling_set to the eviction queue directly.
 scoped_ptr<TilingSetEvictionQueue> PictureLayerImpl::CreateEvictionQueue(
     TreePriority tree_priority) {
   if (!tilings_)
@@ -102,14 +104,6 @@ scoped_ptr<TilingSetEvictionQueue> PictureLayerImpl::CreateEvictionQueue(
       GetPendingOrActiveTwinLayer() != nullptr;
   return make_scoped_ptr(new TilingSetEvictionQueue(
       tilings_.get(), tree_priority, skip_shared_out_of_order_tiles));
-}
-
-scoped_ptr<TilingSetRasterQueue> PictureLayerImpl::CreateRasterQueue(
-    bool prioritize_low_res) {
-  if (!tilings_)
-    return make_scoped_ptr(new TilingSetRasterQueue());
-  return make_scoped_ptr(
-      new TilingSetRasterQueue(tilings_.get(), prioritize_low_res));
 }
 
 const char* PictureLayerImpl::LayerTypeAsString() const {

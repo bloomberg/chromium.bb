@@ -14,6 +14,8 @@
 #include "cc/layers/picture_layer.h"
 #include "cc/quads/draw_quad.h"
 #include "cc/quads/tile_draw_quad.h"
+#include "cc/resources/tiling_set_raster_queue_all.h"
+#include "cc/resources/tiling_set_raster_queue_required.h"
 #include "cc/test/begin_frame_args_test.h"
 #include "cc/test/fake_content_layer_client.h"
 #include "cc/test/fake_impl_proxy.h"
@@ -1613,8 +1615,8 @@ TEST_F(NoLowResPictureLayerImplTest, MarkRequiredOffscreenTiles) {
   int num_visible = 0;
   int num_offscreen = 0;
 
-  scoped_ptr<TilingSetRasterQueue> queue =
-      pending_layer_->CreateRasterQueue(false);
+  scoped_ptr<TilingSetRasterQueue> queue(new TilingSetRasterQueueAll(
+      pending_layer_->picture_layer_tiling_set(), false));
   for (; !queue->IsEmpty(); queue->Pop()) {
     const Tile* tile = queue->Top();
     DCHECK(tile);
@@ -2744,24 +2746,23 @@ TEST_F(PictureLayerImplTest, TilingSetRasterQueue) {
 
   host_impl_.SetViewportSize(gfx::Size(500, 500));
 
-  gfx::Size tile_size(100, 100);
+  gfx::Size recording_tile_size(100, 100);
   gfx::Size layer_bounds(1000, 1000);
 
   scoped_refptr<FakePicturePileImpl> pending_pile =
-      FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
+      FakePicturePileImpl::CreateFilledPile(recording_tile_size, layer_bounds);
 
   SetupPendingTree(pending_pile);
   EXPECT_EQ(2u, pending_layer_->num_tilings());
 
-  scoped_ptr<TilingSetRasterQueue> queue =
-      pending_layer_->CreateRasterQueue(false);
-
   std::set<Tile*> unique_tiles;
   bool reached_prepaint = false;
-  size_t non_ideal_tile_count = 0u;
-  size_t low_res_tile_count = 0u;
-  size_t high_res_tile_count = 0u;
-  queue = pending_layer_->CreateRasterQueue(false);
+  int non_ideal_tile_count = 0u;
+  int low_res_tile_count = 0u;
+  int high_res_tile_count = 0u;
+  int high_res_now_tiles = 0u;
+  scoped_ptr<TilingSetRasterQueue> queue(new TilingSetRasterQueueAll(
+      pending_layer_->picture_layer_tiling_set(), false));
   while (!queue->IsEmpty()) {
     Tile* tile = queue->Top();
     TilePriority priority = tile->priority(PENDING_TREE);
@@ -2770,12 +2771,15 @@ TEST_F(PictureLayerImplTest, TilingSetRasterQueue) {
 
     // Non-high res tiles only get visible tiles. Also, prepaint should only
     // come at the end of the iteration.
-    if (priority.resolution != HIGH_RESOLUTION)
+    if (priority.resolution != HIGH_RESOLUTION) {
       EXPECT_EQ(TilePriority::NOW, priority.priority_bin);
-    else if (reached_prepaint)
+    } else if (reached_prepaint) {
       EXPECT_NE(TilePriority::NOW, priority.priority_bin);
-    else
+    } else {
       reached_prepaint = priority.priority_bin != TilePriority::NOW;
+      if (!reached_prepaint)
+        ++high_res_now_tiles;
+    }
 
     non_ideal_tile_count += priority.resolution == NON_IDEAL_RESOLUTION;
     low_res_tile_count += priority.resolution == LOW_RESOLUTION;
@@ -2786,11 +2790,37 @@ TEST_F(PictureLayerImplTest, TilingSetRasterQueue) {
   }
 
   EXPECT_TRUE(reached_prepaint);
-  EXPECT_EQ(0u, non_ideal_tile_count);
-  EXPECT_EQ(0u, low_res_tile_count);
-  EXPECT_EQ(16u, high_res_tile_count);
+  EXPECT_EQ(0, non_ideal_tile_count);
+  EXPECT_EQ(0, low_res_tile_count);
+
+  // With layer size being 1000x1000 and default tile size 256x256, we expect to
+  // see 4 now tiles out of 16 total high res tiles.
+  EXPECT_EQ(16, high_res_tile_count);
+  EXPECT_EQ(4, high_res_now_tiles);
   EXPECT_EQ(low_res_tile_count + high_res_tile_count + non_ideal_tile_count,
-            unique_tiles.size());
+            static_cast<int>(unique_tiles.size()));
+
+  queue.reset(new TilingSetRasterQueueRequired(
+      pending_layer_->picture_layer_tiling_set(),
+      RasterTilePriorityQueue::Type::REQUIRED_FOR_DRAW));
+  EXPECT_TRUE(queue->IsEmpty());
+
+  queue.reset(new TilingSetRasterQueueRequired(
+      pending_layer_->picture_layer_tiling_set(),
+      RasterTilePriorityQueue::Type::REQUIRED_FOR_ACTIVATION));
+  EXPECT_FALSE(queue->IsEmpty());
+  int required_for_activation_count = 0;
+  while (!queue->IsEmpty()) {
+    Tile* tile = queue->Top();
+    EXPECT_TRUE(tile->required_for_activation());
+    EXPECT_FALSE(tile->IsReadyToDraw());
+    ++required_for_activation_count;
+    queue->Pop();
+  }
+
+  // All of the high res tiles should be required for activation, since there is
+  // no active twin.
+  EXPECT_EQ(high_res_now_tiles, required_for_activation_count);
 
   // No NOW tiles.
   time_ticks += base::TimeDelta::FromMilliseconds(200);
@@ -2804,7 +2834,8 @@ TEST_F(PictureLayerImplTest, TilingSetRasterQueue) {
 
   unique_tiles.clear();
   high_res_tile_count = 0u;
-  queue = pending_layer_->CreateRasterQueue(false);
+  queue.reset(new TilingSetRasterQueueAll(
+      pending_layer_->picture_layer_tiling_set(), false));
   while (!queue->IsEmpty()) {
     Tile* tile = queue->Top();
     TilePriority priority = tile->priority(PENDING_TREE);
@@ -2821,8 +2852,8 @@ TEST_F(PictureLayerImplTest, TilingSetRasterQueue) {
     queue->Pop();
   }
 
-  EXPECT_EQ(16u, high_res_tile_count);
-  EXPECT_EQ(high_res_tile_count, unique_tiles.size());
+  EXPECT_EQ(16, high_res_tile_count);
+  EXPECT_EQ(high_res_tile_count, static_cast<int>(unique_tiles.size()));
 
   time_ticks += base::TimeDelta::FromMilliseconds(200);
   host_impl_.SetCurrentBeginFrameArgs(
@@ -2845,7 +2876,8 @@ TEST_F(PictureLayerImplTest, TilingSetRasterQueue) {
   non_ideal_tile_count = 0;
   low_res_tile_count = 0;
   high_res_tile_count = 0;
-  queue = pending_layer_->CreateRasterQueue(true);
+  queue.reset(new TilingSetRasterQueueAll(
+      pending_layer_->picture_layer_tiling_set(), true));
   while (!queue->IsEmpty()) {
     Tile* tile = queue->Top();
     TilePriority priority = tile->priority(PENDING_TREE);
@@ -2858,9 +2890,44 @@ TEST_F(PictureLayerImplTest, TilingSetRasterQueue) {
     queue->Pop();
   }
 
-  EXPECT_EQ(0u, non_ideal_tile_count);
-  EXPECT_EQ(1u, low_res_tile_count);
-  EXPECT_EQ(0u, high_res_tile_count);
+  EXPECT_EQ(0, non_ideal_tile_count);
+  EXPECT_EQ(1, low_res_tile_count);
+  EXPECT_EQ(0, high_res_tile_count);
+}
+
+TEST_F(PictureLayerImplTest, TilingSetRasterQueueActiveTree) {
+  base::TimeTicks time_ticks;
+  time_ticks += base::TimeDelta::FromMilliseconds(1);
+  host_impl_.SetCurrentBeginFrameArgs(
+      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, time_ticks));
+
+  host_impl_.SetViewportSize(gfx::Size(500, 500));
+
+  gfx::Size tile_size(100, 100);
+  gfx::Size layer_bounds(1000, 1000);
+
+  scoped_refptr<FakePicturePileImpl> pending_pile =
+      FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
+
+  SetupPendingTree(pending_pile);
+  ActivateTree();
+  EXPECT_EQ(2u, active_layer_->num_tilings());
+
+  scoped_ptr<TilingSetRasterQueue> queue(new TilingSetRasterQueueRequired(
+      active_layer_->picture_layer_tiling_set(),
+      RasterTilePriorityQueue::Type::REQUIRED_FOR_DRAW));
+  EXPECT_FALSE(queue->IsEmpty());
+  while (!queue->IsEmpty()) {
+    Tile* tile = queue->Top();
+    EXPECT_TRUE(tile->required_for_draw());
+    EXPECT_FALSE(tile->IsReadyToDraw());
+    queue->Pop();
+  }
+
+  queue.reset(new TilingSetRasterQueueRequired(
+      active_layer_->picture_layer_tiling_set(),
+      RasterTilePriorityQueue::Type::REQUIRED_FOR_ACTIVATION));
+  EXPECT_TRUE(queue->IsEmpty());
 }
 
 TEST_F(PictureLayerImplTest, TilingSetEvictionQueue) {
@@ -3828,8 +3895,8 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
 
   // No occlusion.
   int unoccluded_tile_count = 0;
-  scoped_ptr<TilingSetRasterQueue> queue =
-      pending_layer_->CreateRasterQueue(false);
+  scoped_ptr<TilingSetRasterQueue> queue(new TilingSetRasterQueueAll(
+      pending_layer_->picture_layer_tiling_set(), false));
   while (!queue->IsEmpty()) {
     Tile* tile = queue->Top();
 
@@ -3861,7 +3928,8 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
   host_impl_.pending_tree()->UpdateDrawProperties();
 
   unoccluded_tile_count = 0;
-  queue = pending_layer_->CreateRasterQueue(false);
+  queue.reset(new TilingSetRasterQueueAll(
+      pending_layer_->picture_layer_tiling_set(), false));
   while (!queue->IsEmpty()) {
     Tile* tile = queue->Top();
 
@@ -3884,7 +3952,8 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
   host_impl_.pending_tree()->UpdateDrawProperties();
 
   unoccluded_tile_count = 0;
-  queue = pending_layer_->CreateRasterQueue(false);
+  queue.reset(new TilingSetRasterQueueAll(
+      pending_layer_->picture_layer_tiling_set(), false));
   while (!queue->IsEmpty()) {
     Tile* tile = queue->Top();
 

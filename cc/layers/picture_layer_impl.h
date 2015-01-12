@@ -16,7 +16,6 @@
 #include "cc/resources/picture_layer_tiling_set.h"
 #include "cc/resources/picture_pile_impl.h"
 #include "cc/resources/tiling_set_eviction_queue.h"
-#include "cc/resources/tiling_set_raster_queue.h"
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkPicture.h"
 
@@ -50,7 +49,6 @@ class CC_EXPORT PictureLayerImpl
 
   scoped_ptr<TilingSetEvictionQueue> CreateEvictionQueue(
       TreePriority tree_priority);
-  scoped_ptr<TilingSetRasterQueue> CreateRasterQueue(bool prioritize_low_res);
 
   // LayerImpl overrides.
   const char* LayerTypeAsString() const override;
@@ -94,6 +92,8 @@ class CC_EXPORT PictureLayerImpl
   void RunMicroBenchmark(MicroBenchmarkImpl* benchmark) override;
 
   bool CanHaveTilings() const;
+
+  PictureLayerTilingSet* picture_layer_tiling_set() { return tilings_.get(); }
 
   // Functions used by tile manager.
   PictureLayerImpl* GetPendingOrActiveTwinLayer() const;

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/resources/tiling_set_raster_queue.h"
+#include "cc/resources/tiling_set_raster_queue_all.h"
 
 #include <utility>
 
@@ -12,12 +12,9 @@
 
 namespace cc {
 
-TilingSetRasterQueue::TilingSetRasterQueue()
-    : tiling_set_(nullptr), current_stage_(arraysize(stages_)) {
-}
-
-TilingSetRasterQueue::TilingSetRasterQueue(PictureLayerTilingSet* tiling_set,
-                                           bool prioritize_low_res)
+TilingSetRasterQueueAll::TilingSetRasterQueueAll(
+    PictureLayerTilingSet* tiling_set,
+    bool prioritize_low_res)
     : tiling_set_(tiling_set), current_stage_(0) {
   DCHECK(tiling_set_);
 
@@ -58,69 +55,70 @@ TilingSetRasterQueue::TilingSetRasterQueue(PictureLayerTilingSet* tiling_set,
 
   IteratorType index = stages_[current_stage_].iterator_type;
   TilePriority::PriorityBin tile_type = stages_[current_stage_].tile_type;
-  if (!iterators_[index] || iterators_[index].type() != tile_type)
+  if (iterators_[index].done() || iterators_[index].type() != tile_type)
     AdvanceToNextStage();
 }
 
-TilingSetRasterQueue::~TilingSetRasterQueue() {
+TilingSetRasterQueueAll::~TilingSetRasterQueueAll() {
 }
 
-bool TilingSetRasterQueue::IsEmpty() const {
+bool TilingSetRasterQueueAll::IsEmpty() const {
   return current_stage_ >= arraysize(stages_);
 }
 
-void TilingSetRasterQueue::Pop() {
+void TilingSetRasterQueueAll::Pop() {
   IteratorType index = stages_[current_stage_].iterator_type;
   TilePriority::PriorityBin tile_type = stages_[current_stage_].tile_type;
 
   // First advance the iterator.
-  DCHECK(iterators_[index]);
+  DCHECK(!iterators_[index].done());
   DCHECK(iterators_[index].type() == tile_type);
   ++iterators_[index];
 
-  if (!iterators_[index] || iterators_[index].type() != tile_type)
+  if (iterators_[index].done() || iterators_[index].type() != tile_type)
     AdvanceToNextStage();
 }
 
-Tile* TilingSetRasterQueue::Top() {
+Tile* TilingSetRasterQueueAll::Top() {
   DCHECK(!IsEmpty());
 
   IteratorType index = stages_[current_stage_].iterator_type;
-  DCHECK(iterators_[index]);
+  DCHECK(!iterators_[index].done());
   DCHECK(iterators_[index].type() == stages_[current_stage_].tile_type);
 
   return *iterators_[index];
 }
 
-const Tile* TilingSetRasterQueue::Top() const {
+const Tile* TilingSetRasterQueueAll::Top() const {
   DCHECK(!IsEmpty());
 
   IteratorType index = stages_[current_stage_].iterator_type;
-  DCHECK(iterators_[index]);
+  DCHECK(!iterators_[index].done());
   DCHECK(iterators_[index].type() == stages_[current_stage_].tile_type);
 
   return *iterators_[index];
 }
 
-void TilingSetRasterQueue::AdvanceToNextStage() {
+void TilingSetRasterQueueAll::AdvanceToNextStage() {
   DCHECK_LT(current_stage_, arraysize(stages_));
   ++current_stage_;
   while (current_stage_ < arraysize(stages_)) {
     IteratorType index = stages_[current_stage_].iterator_type;
     TilePriority::PriorityBin tile_type = stages_[current_stage_].tile_type;
 
-    if (iterators_[index] && iterators_[index].type() == tile_type)
+    if (!iterators_[index].done() && iterators_[index].type() == tile_type)
       break;
     ++current_stage_;
   }
 }
 
-TilingSetRasterQueue::TilingIterator::TilingIterator()
+TilingSetRasterQueueAll::TilingIterator::TilingIterator()
     : tiling_(NULL), current_tile_(NULL) {
 }
 
-TilingSetRasterQueue::TilingIterator::TilingIterator(PictureLayerTiling* tiling,
-                                                     TilingData* tiling_data)
+TilingSetRasterQueueAll::TilingIterator::TilingIterator(
+    PictureLayerTiling* tiling,
+    TilingData* tiling_data)
     : tiling_(tiling),
       tiling_data_(tiling_data),
       phase_(VISIBLE_RECT),
@@ -147,10 +145,10 @@ TilingSetRasterQueue::TilingIterator::TilingIterator(PictureLayerTiling* tiling,
   tiling_->UpdateTileAndTwinPriority(current_tile_);
 }
 
-TilingSetRasterQueue::TilingIterator::~TilingIterator() {
+TilingSetRasterQueueAll::TilingIterator::~TilingIterator() {
 }
 
-void TilingSetRasterQueue::TilingIterator::AdvancePhase() {
+void TilingSetRasterQueueAll::TilingIterator::AdvancePhase() {
   DCHECK_LT(phase_, EVENTUALLY_RECT);
 
   do {
@@ -206,8 +204,9 @@ void TilingSetRasterQueue::TilingIterator::AdvancePhase() {
     tiling_->UpdateTileAndTwinPriority(current_tile_);
 }
 
-TilingSetRasterQueue::TilingIterator& TilingSetRasterQueue::TilingIterator::
-operator++() {
+TilingSetRasterQueueAll::TilingIterator&
+    TilingSetRasterQueueAll::TilingIterator::
+    operator++() {
   current_tile_ = NULL;
   while (!current_tile_ || !TileNeedsRaster(current_tile_)) {
     std::pair<int, int> next_index;

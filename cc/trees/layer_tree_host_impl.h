@@ -243,7 +243,8 @@ class CC_EXPORT LayerTreeHostImpl
   void NotifyReadyToDraw() override;
   void NotifyTileStateChanged(const Tile* tile) override;
   void BuildRasterQueue(RasterTilePriorityQueue* queue,
-                        TreePriority tree_priority) override;
+                        TreePriority tree_priority,
+                        RasterTilePriorityQueue::Type type) override;
   void BuildEvictionQueue(EvictionTilePriorityQueue* queue,
                           TreePriority tree_priority) override;
 

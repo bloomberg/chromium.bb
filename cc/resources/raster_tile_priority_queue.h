@@ -16,12 +16,20 @@
 
 namespace cc {
 
+// TODO(vmpstr): Consider virtualizing this and adding ::Create with the
+// parameters of ::Build that would create a simpler queue for required only
+// tiles (ie, there's no need for the heap if all we're interested in are the
+// required tiles.
 class CC_EXPORT RasterTilePriorityQueue {
  public:
-  struct PairedTilingSetQueue {
+  enum class Type { ALL, REQUIRED_FOR_ACTIVATION, REQUIRED_FOR_DRAW };
+
+  class PairedTilingSetQueue {
+   public:
     PairedTilingSetQueue();
     PairedTilingSetQueue(const PictureLayerImpl::Pair& layer_pair,
-                         TreePriority tree_priority);
+                         TreePriority tree_priority,
+                         Type type);
     ~PairedTilingSetQueue();
 
     bool IsEmpty() const;
@@ -33,19 +41,28 @@ class CC_EXPORT RasterTilePriorityQueue {
 
     scoped_refptr<base::debug::ConvertableToTraceFormat> StateAsValue() const;
 
-    scoped_ptr<TilingSetRasterQueue> active_queue;
-    scoped_ptr<TilingSetRasterQueue> pending_queue;
-    bool has_both_layers;
+    const TilingSetRasterQueue* active_queue() const {
+      return active_queue_.get();
+    }
+    const TilingSetRasterQueue* pending_queue() const {
+      return pending_queue_.get();
+    }
+
+   private:
+    scoped_ptr<TilingSetRasterQueue> active_queue_;
+    scoped_ptr<TilingSetRasterQueue> pending_queue_;
+    bool has_both_layers_;
 
     // Set of returned tiles (excluding the current one) for DCHECKing.
-    std::set<const Tile*> returned_tiles_for_debug;
+    std::set<const Tile*> returned_tiles_for_debug_;
   };
 
   RasterTilePriorityQueue();
   ~RasterTilePriorityQueue();
 
   void Build(const std::vector<PictureLayerImpl::Pair>& paired_layers,
-             TreePriority tree_priority);
+             TreePriority tree_priority,
+             Type type);
   void Reset();
 
   bool IsEmpty() const;

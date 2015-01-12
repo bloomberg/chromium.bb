@@ -61,7 +61,8 @@ class CC_EXPORT TileManagerClient {
   // that will return tiles in order in which they should be rasterized.
   // Note if the queue was previous built, Reset must be called on it.
   virtual void BuildRasterQueue(RasterTilePriorityQueue* queue,
-                                TreePriority tree_priority) = 0;
+                                TreePriority tree_priority,
+                                RasterTilePriorityQueue::Type type) = 0;
 
   // Given an empty eviction tile priority queue, this will build a priority
   // queue that will return tiles in order in which they should be evicted.
