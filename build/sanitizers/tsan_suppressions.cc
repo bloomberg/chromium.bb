@@ -312,6 +312,9 @@ char kTSanDefaultSuppressions[] =
 // https://crbug.com/447461
 "race:net::SSLConfig::SSLConfig\n"
 
+// https://crbug.com/430533
+"race:content::ChildGpuMemoryBufferManager::~ChildGpuMemoryBufferManager\n"
+
 // End of suppressions.
 ;  // Please keep this semicolon.
 
