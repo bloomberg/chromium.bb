@@ -4,6 +4,9 @@
 
 #include "chrome/browser/chromeos/policy/device_status_collector.h"
 
+#include <string>
+#include <vector>
+
 #include "base/bind.h"
 #include "base/environment.h"
 #include "base/logging.h"
@@ -82,12 +85,15 @@ class TestingDeviceStatusCollector : public policy::DeviceStatusCollector {
   TestingDeviceStatusCollector(
       PrefService* local_state,
       chromeos::system::StatisticsProvider* provider,
-      policy::DeviceStatusCollector::LocationUpdateRequester*
-          location_update_requester)
+      const policy::DeviceStatusCollector::LocationUpdateRequester&
+          location_update_requester,
+      const policy::DeviceStatusCollector::VolumeInfoFetcher&
+          volume_info_fetcher)
       : policy::DeviceStatusCollector(
           local_state,
           provider,
-          location_update_requester) {
+          location_update_requester,
+          volume_info_fetcher) {
     // Set the baseline time to a fixed value (1 AM) to prevent test flakiness
     // due to a single activity period spanning two days.
     SetBaselineTime(Time::Now().LocalMidnight() + TimeDelta::FromHours(1));
@@ -112,6 +118,18 @@ class TestingDeviceStatusCollector : public policy::DeviceStatusCollector {
     baseline_offset_periods_ = 0;
   }
 
+  void set_mock_cpu_usage(double total_cpu_usage, int num_processors) {
+    std::vector<double> usage;
+    for (int i = 0; i < num_processors; ++i)
+      usage.push_back(total_cpu_usage / num_processors);
+
+    mock_cpu_usage_ = usage;
+
+    // Refresh our samples.
+    for (int i = 0; i < static_cast<int>(kMaxCPUSamples); ++i)
+      SampleCPUUsage();
+  }
+
  protected:
   virtual void CheckIdleState() override {
     // This should never be called in testing, as it results in a dbus call.
@@ -126,12 +144,18 @@ class TestingDeviceStatusCollector : public policy::DeviceStatusCollector {
         TimeDelta::FromSeconds(poll_interval * baseline_offset_periods_++);
   }
 
+  std::vector<double> GetPerProcessCPUUsage() override {
+    return mock_cpu_usage_;
+  }
+
  private:
   // Baseline time for the fake times returned from GetCurrentTime().
   Time baseline_time_;
 
   // The number of simulated periods since the baseline time.
   int baseline_offset_periods_;
+
+  std::vector<double> mock_cpu_usage_;
 };
 
 // Return the total number of active milliseconds contained in a device
@@ -142,6 +166,14 @@ int64 GetActiveMilliseconds(em::DeviceStatusReportRequest& status) {
     active_milliseconds += status.active_period(i).active_duration();
   }
   return active_milliseconds;
+}
+
+// Mock VolumeInfoFetcher used to return empty VolumeInfo, to avoid warnings
+// and test slowdowns from trying to fetch information about non-existent
+// volumes.
+std::vector<em::VolumeInfo> GetEmptyVolumeInfo(
+    const std::vector<std::string>& mount_points) {
+  return std::vector<em::VolumeInfo>();
 }
 
 std::vector<em::VolumeInfo> GetFakeVolumeInfo(
@@ -208,7 +240,7 @@ class DeviceStatusCollectorTest : public testing::Test {
         cros_settings_->RemoveSettingsProvider(device_settings_provider_));
     cros_settings_->AddSettingsProvider(&stub_settings_provider_);
 
-    RestartStatusCollector();
+  RestartStatusCollector(base::Bind(&GetEmptyVolumeInfo));
   }
 
   void AddMountPoint(const std::string& mount_point) {
@@ -236,13 +268,16 @@ class DeviceStatusCollectorTest : public testing::Test {
     cros_settings_->SetBoolean(chromeos::kReportDeviceNetworkInterfaces, false);
   }
 
-  void RestartStatusCollector() {
+  void RestartStatusCollector(
+      const policy::DeviceStatusCollector::VolumeInfoFetcher& fetcher) {
     policy::DeviceStatusCollector::LocationUpdateRequester callback =
         base::Bind(&MockPositionUpdateRequester);
+    std::vector<em::VolumeInfo> expected_volume_info;
     status_collector_.reset(
         new TestingDeviceStatusCollector(&prefs_,
                                          &fake_statistics_provider_,
-                                         &callback));
+                                         callback,
+                                         fetcher));
   }
 
   void GetStatus() {
@@ -401,7 +436,7 @@ TEST_F(DeviceStatusCollectorTest, StateKeptInPref) {
   // Process the list a second time after restarting the collector. It should be
   // able to count the active periods found by the original collector, because
   // the results are stored in a pref.
-  RestartStatusCollector();
+  RestartStatusCollector(base::Bind(&GetEmptyVolumeInfo));
   status_collector_->Simulate(test_states,
                               sizeof(test_states) / sizeof(IdleState));
 
@@ -643,7 +678,7 @@ TEST_F(DeviceStatusCollectorTest, Location) {
   // Restart the status collector. Check that the last known location has been
   // retrieved from local state without requesting a geolocation update.
   SetMockPositionToReturnNext(valid_fix);
-  RestartStatusCollector();
+  RestartStatusCollector(base::Bind(&GetEmptyVolumeInfo));
   CheckThatAValidLocationIsReported();
   EXPECT_TRUE(mock_position_to_return_next.get());
 
@@ -718,8 +753,7 @@ TEST_F(DeviceStatusCollectorTest, TestVolumeInfo) {
 
   EXPECT_FALSE(expected_volume_info.empty());
 
-  status_collector_->SetVolumeInfoFetcherForTest(
-      base::Bind(&GetFakeVolumeInfo, expected_volume_info));
+  RestartStatusCollector(base::Bind(&GetFakeVolumeInfo, expected_volume_info));
   message_loop_.RunUntilIdle();
 
   GetStatus();
@@ -745,6 +779,31 @@ TEST_F(DeviceStatusCollectorTest, TestVolumeInfo) {
   cros_settings_->SetBoolean(chromeos::kReportDeviceHardwareStatus, false);
   GetStatus();
   EXPECT_EQ(0, status_.volume_info_size());
+}
+
+TEST_F(DeviceStatusCollectorTest, TestCPUSamples) {
+  // Mock 100% CPU usage and 2 processors.
+  const int full_cpu_usage = 100;
+  status_collector_->set_mock_cpu_usage(full_cpu_usage, 2);
+  GetStatus();
+  EXPECT_EQ(static_cast<int>(DeviceStatusCollector::kMaxCPUSamples),
+            status_.cpu_utilization_pct().size());
+  for (const auto utilization : status_.cpu_utilization_pct())
+    EXPECT_EQ(full_cpu_usage, utilization);
+
+  // Now set CPU usage to 0.
+  const int idle_cpu_usage = 0;
+  status_collector_->set_mock_cpu_usage(idle_cpu_usage, 2);
+  GetStatus();
+  EXPECT_EQ(static_cast<int>(DeviceStatusCollector::kMaxCPUSamples),
+            status_.cpu_utilization_pct().size());
+  for (const auto utilization : status_.cpu_utilization_pct())
+    EXPECT_EQ(idle_cpu_usage, utilization);
+
+  // Turning off hardware reporting should not report CPU utilization.
+  cros_settings_->SetBoolean(chromeos::kReportDeviceHardwareStatus, false);
+  GetStatus();
+  EXPECT_EQ(0, status_.cpu_utilization_pct().size());
 }
 
 // Fake device state.

@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POLICY_DEVICE_STATUS_COLLECTOR_H_
 #define CHROME_BROWSER_CHROMEOS_POLICY_DEVICE_STATUS_COLLECTOR_H_
 
+#include <deque>
 #include <string>
 #include <vector>
 
@@ -52,10 +53,17 @@ class DeviceStatusCollector : public CloudPolicyClient::StatusProvider {
       const content::GeolocationProvider::LocationUpdateCallback& callback)>
           LocationUpdateRequester;
 
+  using VolumeInfoFetcher = base::Callback<
+    std::vector<enterprise_management::VolumeInfo>(
+        const std::vector<std::string>& mount_points)>;
+
+  // Constructor. Callers can inject their own VolumeInfoFetcher, or if a null
+  // callback is passed, the default implementation will be used.
   DeviceStatusCollector(
       PrefService* local_state,
       chromeos::system::StatisticsProvider* provider,
-      LocationUpdateRequester* location_update_requester);
+      const LocationUpdateRequester& location_update_requester,
+      const VolumeInfoFetcher& volume_info_fetcher);
   virtual ~DeviceStatusCollector();
 
   // CloudPolicyClient::StatusProvider:
@@ -70,12 +78,8 @@ class DeviceStatusCollector : public CloudPolicyClient::StatusProvider {
   // How often, in seconds, to poll to see if the user is idle.
   static const unsigned int kIdlePollIntervalSeconds = 30;
 
-  using VolumeInfoFetcher = base::Callback<
-    std::vector<enterprise_management::VolumeInfo>(
-        const std::vector<std::string>& mount_points)>;
-
-  // Used by tests to return mock VolumeInfo.
-  void SetVolumeInfoFetcherForTest(VolumeInfoFetcher fetcher);
+  // The total number of CPU samples cached internally.
+  static const unsigned int kMaxCPUSamples = 10;
 
  protected:
   // Check whether the user has been idle for a certain period of time.
@@ -86,6 +90,13 @@ class DeviceStatusCollector : public CloudPolicyClient::StatusProvider {
 
   // Callback which receives the results of the idle state check.
   void IdleStateCallback(IdleState state);
+
+  // Samples the current CPU usage and updates our cache of samples.
+  void SampleCPUUsage();
+
+  // Returns the percentage of total CPU that each process uses. Virtual so it
+  // can be mocked.
+  virtual std::vector<double> GetPerProcessCPUUsage();
 
   // The number of days in the past to store device activity.
   // This is kept in case device status uploads fail for a number of days.
@@ -178,6 +189,10 @@ class DeviceStatusCollector : public CloudPolicyClient::StatusProvider {
 
   // Cached disk volume information.
   std::vector<enterprise_management::VolumeInfo> volume_info_;
+
+  // Cached percentage-of-CPU-used data (contains multiple samples taken
+  // periodically every kHardwareStatusSampleIntervalSeconds).
+  std::deque<int> cpu_usage_percent_;
 
   // Callback invoked to fetch information about the mounted disk volumes.
   VolumeInfoFetcher volume_info_fetcher_;

@@ -230,7 +230,8 @@ void DeviceCloudPolicyManagerChromeOS::StartConnection(
             new DeviceStatusCollector(
                 local_state_,
                 chromeos::system::StatisticsProvider::GetInstance(),
-                NULL)));
+                DeviceStatusCollector::LocationUpdateRequester(),
+                DeviceStatusCollector::VolumeInfoFetcher())));
   }
 
   // Set state keys here so the first policy fetch submits them to the server.

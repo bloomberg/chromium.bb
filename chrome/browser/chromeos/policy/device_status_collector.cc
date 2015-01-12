@@ -17,7 +17,11 @@
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
+#include "base/process/process_handle.h"
+#include "base/process/process_iterator.h"
+#include "base/process/process_metrics.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/sys_info.h"
 #include "base/task_runner_util.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -109,7 +113,8 @@ namespace policy {
 DeviceStatusCollector::DeviceStatusCollector(
     PrefService* local_state,
     chromeos::system::StatisticsProvider* provider,
-    LocationUpdateRequester* location_update_requester)
+    const LocationUpdateRequester& location_update_requester,
+    const VolumeInfoFetcher& volume_info_fetcher)
     : max_stored_past_activity_days_(kMaxStoredPastActivityDays),
       max_stored_future_activity_days_(kMaxStoredFutureActivityDays),
       local_state_(local_state),
@@ -117,7 +122,9 @@ DeviceStatusCollector::DeviceStatusCollector(
       last_reported_day_(0),
       duration_for_last_reported_day_(0),
       geolocation_update_in_progress_(false),
+      volume_info_fetcher_(volume_info_fetcher),
       statistics_provider_(provider),
+      location_update_requester_(location_update_requester),
       report_version_info_(false),
       report_activity_times_(false),
       report_boot_mode_(false),
@@ -126,12 +133,12 @@ DeviceStatusCollector::DeviceStatusCollector(
       report_users_(false),
       report_hardware_status_(false),
       weak_factory_(this) {
-  if (location_update_requester)
-    location_update_requester_ = *location_update_requester;
+  if (volume_info_fetcher_.is_null())
+    volume_info_fetcher_ = base::Bind(&GetVolumeInfo);
+
   idle_poll_timer_.Start(FROM_HERE,
                          TimeDelta::FromSeconds(kIdlePollIntervalSeconds),
                          this, &DeviceStatusCollector::CheckIdleState);
-  volume_info_fetcher_ = base::Bind(&GetVolumeInfo);
   hardware_status_sampling_timer_.Start(
       FROM_HERE,
       TimeDelta::FromSeconds(kHardwareStatusSampleIntervalSeconds),
@@ -209,13 +216,6 @@ void DeviceStatusCollector::RegisterPrefs(PrefRegistrySimple* registry) {
                                    new base::DictionaryValue);
   registry->RegisterDictionaryPref(prefs::kDeviceLocation,
                                    new base::DictionaryValue);
-}
-
-void DeviceStatusCollector::SetVolumeInfoFetcherForTest(
-    VolumeInfoFetcher fetcher) {
-  volume_info_fetcher_ = fetcher;
-  // Now that there is a new VolumeInfoFetcher, refresh the cached values.
-  SampleHardwareStatus();
 }
 
 void DeviceStatusCollector::CheckIdleState() {
@@ -353,6 +353,7 @@ void DeviceStatusCollector::AddActivePeriod(Time start, Time end) {
 
 void DeviceStatusCollector::ClearCachedHardwareStatus() {
   volume_info_.clear();
+  cpu_usage_percent_.clear();
 }
 
 void DeviceStatusCollector::IdleStateCallback(IdleState state) {
@@ -401,8 +402,49 @@ void DeviceStatusCollector::SampleHardwareStatus() {
       base::Bind(&DeviceStatusCollector::ReceiveVolumeInfo,
                  weak_factory_.GetWeakPtr()));
 
-  // TODO(atwilson): Walk the process list and measure CPU utilization
-  // and system RAM (http://crbug.com/430908).
+  SampleCPUUsage();
+}
+
+void DeviceStatusCollector::SampleCPUUsage() {
+  // Walk the process list and measure CPU utilization.
+  double total_usage = 0;
+  std::vector<double> per_process_usage = GetPerProcessCPUUsage();
+  for (double cpu_usage : per_process_usage) {
+    total_usage += cpu_usage;
+  }
+  cpu_usage_percent_.push_back(total_usage);
+
+  // If our cache of samples is full, throw out old samples to make room for new
+  // sample.
+  if (cpu_usage_percent_.size() > kMaxCPUSamples)
+    cpu_usage_percent_.pop_front();
+}
+
+std::vector<double> DeviceStatusCollector::GetPerProcessCPUUsage() {
+  std::vector<double> cpu_usage;
+  base::ProcessIterator process_iter(nullptr);
+
+  const int num_processors = base::SysInfo::NumberOfProcessors();
+  while (const base::ProcessEntry* process_entry =
+         process_iter.NextProcessEntry()) {
+    base::ProcessHandle process;
+    if (!base::OpenProcessHandle(process_entry->pid(), &process)) {
+      LOG(ERROR) << "Could not create process handle for process "
+                  << process_entry->pid();
+      continue;
+    }
+    scoped_ptr<base::ProcessMetrics> metrics(
+        base::ProcessMetrics::CreateProcessMetrics(process));
+    const double usage = metrics->GetPlatformIndependentCPUUsage();
+    base::CloseProcessHandle(process);
+    DCHECK_LE(0, usage);
+    if (usage > 0) {
+      // Convert CPU usage from "percentage of a single core" to "percentage of
+      // all CPU available".
+      cpu_usage.push_back(usage / num_processors);
+    }
+  }
+  return cpu_usage;
 }
 
 void DeviceStatusCollector::GetActivityTimes(
@@ -612,7 +654,10 @@ void DeviceStatusCollector::GetHardwareStatus(
     *status->add_volume_info() = info;
   }
 
-  // TODO(atwilson): Add CPU/memory status (http://crbug.com/430908).
+  status->clear_cpu_utilization_pct();
+  for (const int cpu_usage : cpu_usage_percent_) {
+    status->add_cpu_utilization_pct(cpu_usage);
+  }
 }
 
 bool DeviceStatusCollector::GetDeviceStatus(
