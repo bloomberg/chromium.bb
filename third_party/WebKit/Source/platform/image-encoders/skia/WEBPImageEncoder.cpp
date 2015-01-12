@@ -135,7 +135,7 @@ bool WEBPImageEncoder::encode(const SkBitmap& bitmap, int quality, Vector<unsign
 
 bool WEBPImageEncoder::encode(const ImageDataBuffer& imageData, int quality, Vector<unsigned char>* output)
 {
-    return encodePixels(imageData.size(), imageData.data(), false, quality, output);
+    return encodePixels(IntSize(imageData.width(), imageData.height()), imageData.pixels(), false, quality, output);
 }
 
 } // namespace blink

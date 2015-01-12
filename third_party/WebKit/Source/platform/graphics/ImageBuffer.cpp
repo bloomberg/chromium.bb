@@ -396,12 +396,12 @@ String ImageBuffer::toDataURL(const String& mimeType, const double* quality) con
     return "data:" + mimeType + ";base64," + base64Encode(encodedImage);
 }
 
-String ImageDataToDataURL(const ImageDataBuffer& imageData, const String& mimeType, const double* quality)
+String ImageDataBuffer::toDataURL(const String& mimeType, const double* quality) const
 {
     ASSERT(MIMETypeRegistry::isSupportedImageMIMETypeForEncoding(mimeType));
 
     Vector<char> encodedImage;
-    if (!encodeImage(imageData, mimeType, quality, &encodedImage))
+    if (!encodeImage(*this, mimeType, quality, &encodedImage))
         return "data:,";
 
     return "data:" + mimeType + ";base64," + base64Encode(encodedImage);

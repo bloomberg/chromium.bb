@@ -467,7 +467,7 @@ String HTMLCanvasElement::toDataURLInternal(const String& mimeType, const double
     String encodingMimeType = toEncodingMimeType(mimeType);
     if (!m_context) {
         RefPtrWillBeRawPtr<ImageData> imageData = ImageData::create(m_size);
-        return ImageDataToDataURL(ImageDataBuffer(imageData->size(), imageData->data()), encodingMimeType, quality);
+        return ImageDataBuffer(imageData->size(), imageData->data()->data()).toDataURL(encodingMimeType, quality);
     }
 
     if (m_context->is3d()) {
@@ -475,7 +475,7 @@ String HTMLCanvasElement::toDataURLInternal(const String& mimeType, const double
         RefPtrWillBeRawPtr<ImageData> imageData =
             toWebGLRenderingContext(m_context.get())->paintRenderingResultsToImageData(sourceBuffer);
         if (imageData)
-            return ImageDataToDataURL(ImageDataBuffer(imageData->size(), imageData->data()), encodingMimeType, quality);
+            return ImageDataBuffer(imageData->size(), imageData->data()->data()).toDataURL(encodingMimeType, quality);
         m_context->paintRenderingResultsToCanvas(sourceBuffer);
     }
 

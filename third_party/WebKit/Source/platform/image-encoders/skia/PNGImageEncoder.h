@@ -39,9 +39,9 @@ namespace blink {
 
 struct ImageDataBuffer;
 
-// Interface for encoding PNG data. This is a wrapper around libpng.
 class PNGImageEncoder {
 public:
+    // Encode the input data with default compression quality. See also https://crbug.com/179289
     static bool encode(const SkBitmap&, Vector<unsigned char>* output);
     static bool encode(const ImageDataBuffer&, Vector<unsigned char>* output);
 };

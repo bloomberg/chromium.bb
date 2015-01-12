@@ -68,7 +68,7 @@ static void preMultipliedBGRAtoRGBA(const void* pixels, int pixelCount, unsigned
     }
 }
 
-static bool encodePixels(IntSize imageSize, unsigned char* inputPixels, bool premultiplied, Vector<unsigned char>* output)
+static bool encodePixels(IntSize imageSize, const unsigned char* inputPixels, bool premultiplied, Vector<unsigned char>* output)
 {
     imageSize.clampNegativeToZero();
     Vector<unsigned char> row;
@@ -97,7 +97,7 @@ static bool encodePixels(IntSize imageSize, unsigned char* inputPixels, bool pre
                  8, PNG_COLOR_TYPE_RGB_ALPHA, 0, 0, 0);
     png_write_info(png, info);
 
-    unsigned char* pixels = inputPixels;
+    unsigned char* pixels = const_cast<unsigned char*>(inputPixels);
     row.resize(imageSize.width() * sizeof(SkPMColor));
     const size_t pixelRowStride = imageSize.width() * 4;
     for (int y = 0; y < imageSize.height(); ++y) {
@@ -126,7 +126,7 @@ bool PNGImageEncoder::encode(const SkBitmap& bitmap, Vector<unsigned char>* outp
 
 bool PNGImageEncoder::encode(const ImageDataBuffer& imageData, Vector<unsigned char>* output)
 {
-    return encodePixels(imageData.size(), imageData.data(), false, output);
+    return encodePixels(IntSize(imageData.width(), imageData.height()), imageData.pixels(), false, output);
 }
 
 } // namespace blink

@@ -158,15 +158,14 @@ private:
 };
 
 struct ImageDataBuffer {
-    ImageDataBuffer(const IntSize& size, PassRefPtr<Uint8ClampedArray> data) : m_size(size), m_data(data) { }
-    IntSize size() const { return m_size; }
-    unsigned char* data() const { return m_data->data(); }
-
+    ImageDataBuffer(const IntSize& size, unsigned char* data) : m_data(data), m_size(size) { }
+    String PLATFORM_EXPORT toDataURL(const String& mimeType, const double* quality) const;
+    unsigned char* pixels() const { return m_data; }
+    int height() const { return m_size.height(); }
+    int width() const { return m_size.width(); }
+    unsigned char* m_data;
     IntSize m_size;
-    RefPtr<Uint8ClampedArray> m_data;
 };
-
-String PLATFORM_EXPORT ImageDataToDataURL(const ImageDataBuffer&, const String& mimeType, const double* quality);
 
 } // namespace blink
 
