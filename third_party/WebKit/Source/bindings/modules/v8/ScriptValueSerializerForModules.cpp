@@ -30,6 +30,7 @@ enum CryptoKeyAlgorithmTag {
     RsaPssTag = 13,
     EcdsaTag = 14,
     EcdhTag = 15,
+    HkdfTag = 16,
     // Maximum allowed value is 2^32-1
 };
 
@@ -61,6 +62,7 @@ enum CryptoKeySubTag {
     // ID 3 was used by RsaKeyTag, while still behind experimental flag.
     RsaHashedKeyTag = 4,
     EcKeyTag = 5,
+    NoParamsKeyTag = 6,
     // Maximum allowed value is 255
 };
 
@@ -122,8 +124,8 @@ bool SerializedScriptValueWriterForModules::writeCryptoKey(const WebCryptoKey& k
         doWriteEcKey(key);
         break;
     case WebCryptoKeyAlgorithmParamsTypeNone:
-        ASSERT_NOT_REACHED();
-        return false;
+        doWriteKeyWithoutParams(key);
+        break;
     }
 
     doWriteKeyUsages(key.usages(), key.extractable());
@@ -184,6 +186,14 @@ void SerializedScriptValueWriterForModules::doWriteEcKey(const WebCryptoKey& key
     doWriteNamedCurve(key.algorithm().ecParams()->namedCurve());
 }
 
+void SerializedScriptValueWriterForModules::doWriteKeyWithoutParams(const WebCryptoKey& key)
+{
+    ASSERT(WebCryptoAlgorithm::isKdf(key.algorithm().id()));
+    append(static_cast<uint8_t>(NoParamsKeyTag));
+
+    doWriteAlgorithmId(key.algorithm().id());
+}
+
 void SerializedScriptValueWriterForModules::doWriteAlgorithmId(WebCryptoAlgorithmId id)
 {
     switch (id) {
@@ -215,6 +225,8 @@ void SerializedScriptValueWriterForModules::doWriteAlgorithmId(WebCryptoAlgorith
         return doWriteUint32(EcdsaTag);
     case WebCryptoAlgorithmIdEcdh:
         return doWriteUint32(EcdhTag);
+    case WebCryptoAlgorithmIdHkdf:
+        return doWriteUint32(HkdfTag);
     }
     ASSERT_NOT_REACHED();
 }
@@ -359,6 +371,10 @@ bool SerializedScriptValueReaderForModules::readCryptoKey(v8::Handle<v8::Value>*
         if (!doReadEcKey(algorithm, type))
             return false;
         break;
+    case NoParamsKeyTag:
+        if (!doReadKeyWithoutParams(algorithm, type))
+            return false;
+        break;
     default:
         return false;
     }
@@ -458,6 +474,16 @@ bool SerializedScriptValueReaderForModules::doReadEcKey(WebCryptoKeyAlgorithm& a
     return !algorithm.isNull();
 }
 
+bool SerializedScriptValueReaderForModules::doReadKeyWithoutParams(WebCryptoKeyAlgorithm& algorithm, WebCryptoKeyType& type)
+{
+    WebCryptoAlgorithmId id;
+    if (!doReadAlgorithmId(id))
+        return false;
+    algorithm = WebCryptoKeyAlgorithm::createWithoutParams(id);
+    type = WebCryptoKeyTypeSecret;
+    return !algorithm.isNull();
+}
+
 bool SerializedScriptValueReaderForModules::doReadAlgorithmId(WebCryptoAlgorithmId& id)
 {
     uint32_t rawId;
@@ -506,6 +532,9 @@ bool SerializedScriptValueReaderForModules::doReadAlgorithmId(WebCryptoAlgorithm
         return true;
     case EcdhTag:
         id = WebCryptoAlgorithmIdEcdh;
+        return true;
+    case HkdfTag:
+        id = WebCryptoAlgorithmIdHkdf;
         return true;
     }
 

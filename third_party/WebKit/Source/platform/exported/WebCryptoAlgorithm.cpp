@@ -239,6 +239,20 @@ const WebCryptoAlgorithmInfo algorithmIdToInfo[] = {
             WebCryptoAlgorithmParamsTypeNone, // WrapKey
             WebCryptoAlgorithmParamsTypeNone // UnwrapKey
         }
+    }, { // Index 14
+        "HKDF", {
+            WebCryptoAlgorithmInfo::Undefined, // Encrypt
+            WebCryptoAlgorithmInfo::Undefined, // Decrypt
+            WebCryptoAlgorithmInfo::Undefined, // Sign
+            WebCryptoAlgorithmInfo::Undefined, // Verify
+            WebCryptoAlgorithmInfo::Undefined, // Digest
+            WebCryptoAlgorithmInfo::Undefined, // GenerateKey
+            WebCryptoAlgorithmParamsTypeNone, // ImportKey
+            WebCryptoAlgorithmParamsTypeNone, // GetKeyLength
+            WebCryptoAlgorithmParamsTypeHkdfParams, // DeriveBits
+            WebCryptoAlgorithmInfo::Undefined, // WrapKey
+            WebCryptoAlgorithmInfo::Undefined // UnwrapKey
+        }
     },
 };
 
@@ -259,7 +273,8 @@ static_assert(WebCryptoAlgorithmIdAesKw == 10, "AESKW id must match");
 static_assert(WebCryptoAlgorithmIdRsaPss == 11, "RSA-PSS id must match");
 static_assert(WebCryptoAlgorithmIdEcdsa == 12, "ECDSA id must match");
 static_assert(WebCryptoAlgorithmIdEcdh == 13, "ECDH id must match");
-static_assert(WebCryptoAlgorithmIdLast == 13, "last id must match");
+static_assert(WebCryptoAlgorithmIdHkdf == 14, "HKDF id must match");
+static_assert(WebCryptoAlgorithmIdLast == 14, "last id must match");
 static_assert(10 == WebCryptoOperationLast, "the parameter mapping needs to be updated");
 
 } // namespace
@@ -437,6 +452,14 @@ const WebCryptoAesDerivedKeyParams* WebCryptoAlgorithm::aesDerivedKeyParams() co
     return 0;
 }
 
+const WebCryptoHkdfParams* WebCryptoAlgorithm::hkdfParams() const
+{
+    ASSERT(!isNull());
+    if (paramsType() == WebCryptoAlgorithmParamsTypeHkdfParams)
+        return static_cast<WebCryptoHkdfParams*>(m_private->params.get());
+    return 0;
+}
+
 bool WebCryptoAlgorithm::isHash(WebCryptoAlgorithmId id)
 {
     switch (id) {
@@ -445,6 +468,31 @@ bool WebCryptoAlgorithm::isHash(WebCryptoAlgorithmId id)
     case WebCryptoAlgorithmIdSha384:
     case WebCryptoAlgorithmIdSha512:
         return true;
+    case WebCryptoAlgorithmIdAesCbc:
+    case WebCryptoAlgorithmIdHmac:
+    case WebCryptoAlgorithmIdRsaSsaPkcs1v1_5:
+    case WebCryptoAlgorithmIdAesGcm:
+    case WebCryptoAlgorithmIdRsaOaep:
+    case WebCryptoAlgorithmIdAesCtr:
+    case WebCryptoAlgorithmIdAesKw:
+    case WebCryptoAlgorithmIdRsaPss:
+    case WebCryptoAlgorithmIdEcdsa:
+    case WebCryptoAlgorithmIdEcdh:
+    case WebCryptoAlgorithmIdHkdf:
+        break;
+    }
+    return false;
+}
+
+bool WebCryptoAlgorithm::isKdf(WebCryptoAlgorithmId id)
+{
+    switch (id) {
+    case WebCryptoAlgorithmIdHkdf:
+        return true;
+    case WebCryptoAlgorithmIdSha1:
+    case WebCryptoAlgorithmIdSha256:
+    case WebCryptoAlgorithmIdSha384:
+    case WebCryptoAlgorithmIdSha512:
     case WebCryptoAlgorithmIdAesCbc:
     case WebCryptoAlgorithmIdHmac:
     case WebCryptoAlgorithmIdRsaSsaPkcs1v1_5:

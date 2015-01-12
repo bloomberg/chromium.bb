@@ -70,8 +70,9 @@ enum WebCryptoAlgorithmId {
     WebCryptoAlgorithmIdRsaPss,
     WebCryptoAlgorithmIdEcdsa,
     WebCryptoAlgorithmIdEcdh,
+    WebCryptoAlgorithmIdHkdf,
 #if INSIDE_BLINK
-    WebCryptoAlgorithmIdLast = WebCryptoAlgorithmIdEcdh,
+    WebCryptoAlgorithmIdLast = WebCryptoAlgorithmIdHkdf,
 #endif
 };
 
@@ -101,6 +102,7 @@ enum WebCryptoAlgorithmParamsType {
     WebCryptoAlgorithmParamsTypeEcKeyImportParams,
     WebCryptoAlgorithmParamsTypeEcdhKeyDeriveParams,
     WebCryptoAlgorithmParamsTypeAesDerivedKeyParams,
+    WebCryptoAlgorithmParamsTypeHkdfParams,
 };
 
 struct WebCryptoAlgorithmInfo {
@@ -132,6 +134,7 @@ class WebCryptoEcKeyGenParams;
 class WebCryptoEcKeyImportParams;
 class WebCryptoEcdhKeyDeriveParams;
 class WebCryptoAesDerivedKeyParams;
+class WebCryptoHkdfParams;
 
 class WebCryptoAlgorithmParams;
 class WebCryptoAlgorithmPrivate;
@@ -190,9 +193,12 @@ public:
     BLINK_PLATFORM_EXPORT const WebCryptoEcKeyImportParams* ecKeyImportParams() const;
     BLINK_PLATFORM_EXPORT const WebCryptoEcdhKeyDeriveParams* ecdhKeyDeriveParams() const;
     BLINK_PLATFORM_EXPORT const WebCryptoAesDerivedKeyParams* aesDerivedKeyParams() const;
+    BLINK_PLATFORM_EXPORT const WebCryptoHkdfParams* hkdfParams() const;
 
     // Returns true if the provided algorithm ID is for a hash (in other words, SHA-*)
     BLINK_PLATFORM_EXPORT static bool isHash(WebCryptoAlgorithmId);
+    // Returns true if the provided algorithm ID is for a key derivation function
+    BLINK_PLATFORM_EXPORT static bool isKdf(WebCryptoAlgorithmId);
 
 private:
     BLINK_PLATFORM_EXPORT void assign(const WebCryptoAlgorithm& other);

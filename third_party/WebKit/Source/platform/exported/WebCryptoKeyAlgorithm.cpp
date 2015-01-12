@@ -93,6 +93,13 @@ WebCryptoKeyAlgorithm WebCryptoKeyAlgorithm::createEc(WebCryptoAlgorithmId id, W
     return WebCryptoKeyAlgorithm(id, adoptPtr(new WebCryptoEcKeyAlgorithmParams(namedCurve)));
 }
 
+WebCryptoKeyAlgorithm WebCryptoKeyAlgorithm::createWithoutParams(WebCryptoAlgorithmId id)
+{
+    if (!WebCryptoAlgorithm::isKdf(id))
+        return WebCryptoKeyAlgorithm();
+    return WebCryptoKeyAlgorithm(id, nullptr);
+}
+
 bool WebCryptoKeyAlgorithm::isNull() const
 {
     return m_private.isNull();
@@ -148,7 +155,8 @@ void WebCryptoKeyAlgorithm::writeToDictionary(WebCryptoKeyAlgorithmDictionary* d
 {
     ASSERT(!isNull());
     dict->setString("name", WebCryptoAlgorithm::lookupAlgorithmInfo(id())->name);
-    m_private->params.get()->writeToDictionary(dict);
+    if (m_private->params.get())
+        m_private->params.get()->writeToDictionary(dict);
 }
 
 void WebCryptoKeyAlgorithm::assign(const WebCryptoKeyAlgorithm& other)

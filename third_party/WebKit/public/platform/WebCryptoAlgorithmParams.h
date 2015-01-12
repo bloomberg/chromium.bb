@@ -337,6 +337,29 @@ private:
     const unsigned short m_lengthBits;
 };
 
+class WebCryptoHkdfParams : public WebCryptoAlgorithmParamsWithHash {
+public:
+    WebCryptoHkdfParams(const WebCryptoAlgorithm& hash, const unsigned char* salt, unsigned saltSize, const unsigned char* info, unsigned infoSize)
+        : WebCryptoAlgorithmParamsWithHash(hash)
+        , m_salt(salt, saltSize)
+        , m_info(info, infoSize)
+    {
+    }
+
+    const WebVector<unsigned char>& salt() const { return m_salt; }
+
+    const WebVector<unsigned char>& info() const { return m_info; }
+
+    virtual WebCryptoAlgorithmParamsType type() const
+    {
+        return WebCryptoAlgorithmParamsTypeHkdfParams;
+    }
+
+private:
+    const WebVector<unsigned char> m_salt;
+    const WebVector<unsigned char> m_info;
+};
+
 } // namespace blink
 
 #endif

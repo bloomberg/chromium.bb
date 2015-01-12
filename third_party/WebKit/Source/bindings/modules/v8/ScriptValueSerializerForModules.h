@@ -30,6 +30,7 @@ private:
     void doWriteAesKey(const WebCryptoKey&);
     void doWriteRsaHashedKey(const WebCryptoKey&);
     void doWriteEcKey(const WebCryptoKey&);
+    void doWriteKeyWithoutParams(const WebCryptoKey&);
     void doWriteAlgorithmId(WebCryptoAlgorithmId);
     void doWriteAsymmetricKeyType(WebCryptoKeyType);
     void doWriteNamedCurve(WebCryptoNamedCurve);
@@ -56,6 +57,7 @@ private:
     bool doReadAesKey(WebCryptoKeyAlgorithm&, WebCryptoKeyType&);
     bool doReadRsaHashedKey(WebCryptoKeyAlgorithm&, WebCryptoKeyType&);
     bool doReadEcKey(WebCryptoKeyAlgorithm&, WebCryptoKeyType&);
+    bool doReadKeyWithoutParams(WebCryptoKeyAlgorithm&, WebCryptoKeyType&);
     bool doReadAlgorithmId(WebCryptoAlgorithmId&);
     bool doReadAsymmetricKeyType(WebCryptoKeyType&);
     bool doReadNamedCurve(WebCryptoNamedCurve&);
