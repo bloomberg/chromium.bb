@@ -34,6 +34,8 @@ public:
 
     static bool parseSupportsCondition(const String&);
 
+    // The color will only be changed when string contains a valid CSS color, so callers
+    // can set it to a default color and ignore the boolean result.
     static bool parseColor(RGBA32& color, const String&, bool strict = false);
     static bool parseSystemColor(RGBA32& color, const String&);
     static StyleColor colorFromRGBColorString(const String&);

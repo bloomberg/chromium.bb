@@ -124,7 +124,30 @@ bool CSSParser::parseSupportsCondition(const String& condition)
 
 bool CSSParser::parseColor(RGBA32& color, const String& string, bool strict)
 {
-    return BisonCSSParser::parseColor(color, string, strict);
+    if (string.isEmpty())
+        return false;
+
+    // First try creating a color specified by name, rgba(), rgb() or "#" syntax.
+    if (CSSPropertyParser::fastParseColor(color, string, strict))
+        return true;
+
+    // In case the fast-path parser didn't understand the color, try the full parser.
+    RefPtrWillBeRawPtr<MutableStylePropertySet> stylePropertySet = MutableStylePropertySet::create();
+    // FIXME: The old CSS parser is only working in strict mode ignoring the strict parameter.
+    // It needs to be investigated why.
+    if (!parseValue(stylePropertySet.get(), CSSPropertyColor, string, false, strictCSSParserContext()))
+        return false;
+
+    RefPtrWillBeRawPtr<CSSValue> value = stylePropertySet->getPropertyCSSValue(CSSPropertyColor);
+    if (!value || !value->isPrimitiveValue())
+        return false;
+
+    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value.get());
+    if (!primitiveValue->isRGBColor())
+        return false;
+
+    color = primitiveValue->getRGBA32Value();
+    return true;
 }
 
 StyleColor CSSParser::colorFromRGBColorString(const String& string)
