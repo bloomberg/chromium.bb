@@ -1379,7 +1379,17 @@ static inline const RenderLayer* accumulateOffsetTowardsAncestor(const RenderLay
 
             location += (fixedContainerCoords - ancestorCoords);
         } else {
+            // RenderView has been handled in the first top-level 'if' block above.
+            ASSERT(ancestorLayer != renderer->view()->layer());
+            ASSERT(ancestorLayer->hasTransformRelatedProperty());
+
             location += layer->location();
+
+            // The spec (http://dev.w3.org/csswg/css-transforms/#transform-rendering) doesn't say if a
+            // fixed-position element under a scrollable transformed element should scroll. However,
+            // other parts of blink scroll the fixed-position element, and the following keeps the consistency.
+            if (RenderLayerScrollableArea* scrollableArea = ancestorLayer->scrollableArea())
+                location -= LayoutSize(scrollableArea->scrollOffset());
         }
         return ancestorLayer;
     }
