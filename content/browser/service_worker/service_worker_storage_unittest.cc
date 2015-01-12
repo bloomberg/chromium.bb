@@ -416,6 +416,18 @@ class ServiceWorkerStorageTest : public testing::Test {
     return result;
   }
 
+  ServiceWorkerStatusCode FindRegistrationForIdOnly(
+      int64 registration_id,
+      scoped_refptr<ServiceWorkerRegistration>* registration) {
+    bool was_called = false;
+    ServiceWorkerStatusCode result = SERVICE_WORKER_ERROR_FAILED;
+    storage()->FindRegistrationForIdOnly(
+        registration_id, MakeFindCallback(&was_called, &result, registration));
+    base::RunLoop().RunUntilIdle();
+    EXPECT_TRUE(was_called);
+    return result;
+  }
+
   scoped_ptr<ServiceWorkerContextCore> context_;
   base::WeakPtr<ServiceWorkerContextCore> context_ptr_;
   TestBrowserThreadBundle browser_thread_bundle_;
@@ -490,6 +502,14 @@ TEST_F(ServiceWorkerStorageTest, StoreFindUpdateDeleteRegistration) {
   EXPECT_EQ(SERVICE_WORKER_OK,
             FindRegistrationForId(
                 kRegistrationId, kScope.GetOrigin(), &found_registration));
+  ASSERT_TRUE(found_registration.get());
+  EXPECT_EQ(kRegistrationId, found_registration->id());
+  EXPECT_EQ(live_registration, found_registration);
+  found_registration = NULL;
+
+  // Can be found by just the id too.
+  EXPECT_EQ(SERVICE_WORKER_OK,
+            FindRegistrationForIdOnly(kRegistrationId, &found_registration));
   ASSERT_TRUE(found_registration.get());
   EXPECT_EQ(kRegistrationId, found_registration->id());
   EXPECT_EQ(live_registration, found_registration);
@@ -588,6 +608,9 @@ TEST_F(ServiceWorkerStorageTest, StoreFindUpdateDeleteRegistration) {
             FindRegistrationForId(
                 kRegistrationId, kScope.GetOrigin(), &found_registration));
   EXPECT_FALSE(found_registration.get());
+  EXPECT_EQ(SERVICE_WORKER_ERROR_NOT_FOUND,
+            FindRegistrationForIdOnly(kRegistrationId, &found_registration));
+  EXPECT_FALSE(found_registration.get());
 
   // Deleting an unstored registration should succeed.
   EXPECT_EQ(SERVICE_WORKER_OK,
@@ -620,6 +643,10 @@ TEST_F(ServiceWorkerStorageTest, InstallingRegistrationsAreFindable) {
   EXPECT_FALSE(found_registration.get());
 
   EXPECT_EQ(SERVICE_WORKER_ERROR_NOT_FOUND,
+            FindRegistrationForIdOnly(kRegistrationId, &found_registration));
+  EXPECT_FALSE(found_registration.get());
+
+  EXPECT_EQ(SERVICE_WORKER_ERROR_NOT_FOUND,
             FindRegistrationForDocument(kDocumentUrl, &found_registration));
   EXPECT_FALSE(found_registration.get());
 
@@ -647,6 +674,11 @@ TEST_F(ServiceWorkerStorageTest, InstallingRegistrationsAreFindable) {
   EXPECT_EQ(SERVICE_WORKER_OK,
             FindRegistrationForId(
                 kRegistrationId, kScope.GetOrigin(), &found_registration));
+  EXPECT_EQ(live_registration, found_registration);
+  found_registration = NULL;
+
+  EXPECT_EQ(SERVICE_WORKER_OK,
+            FindRegistrationForIdOnly(kRegistrationId, &found_registration));
   EXPECT_EQ(live_registration, found_registration);
   found_registration = NULL;
 
@@ -682,6 +714,10 @@ TEST_F(ServiceWorkerStorageTest, InstallingRegistrationsAreFindable) {
   EXPECT_EQ(SERVICE_WORKER_ERROR_NOT_FOUND,
             FindRegistrationForId(
                 kRegistrationId, kScope.GetOrigin(), &found_registration));
+  EXPECT_FALSE(found_registration.get());
+
+  EXPECT_EQ(SERVICE_WORKER_ERROR_NOT_FOUND,
+            FindRegistrationForIdOnly(kRegistrationId, &found_registration));
   EXPECT_FALSE(found_registration.get());
 
   EXPECT_EQ(SERVICE_WORKER_ERROR_NOT_FOUND,

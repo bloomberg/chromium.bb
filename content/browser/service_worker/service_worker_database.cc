@@ -66,7 +66,11 @@
 //
 //   key: "URES:" + <int64 'uncommitted_resource_id'>
 //   value: <empty>
-
+//
+// Version 2
+//
+//   key: "REGID_TO_ORIGIN:" + <int64 'registration_id'>
+//   value: <GURL 'origin'>
 namespace content {
 
 namespace {
@@ -80,13 +84,14 @@ const char kUniqueOriginKey[] = "INITDATA_UNIQUE_ORIGIN:";
 const char kRegKeyPrefix[] = "REG:";
 const char kRegUserDataKeyPrefix[] = "REG_USER_DATA:";
 const char kRegHasUserDataKeyPrefix[] = "REG_HAS_USER_DATA:";
+const char kRegIdToOriginKeyPrefix[] = "REGID_TO_ORIGIN:";
 const char kResKeyPrefix[] = "RES:";
 const char kKeySeparator = '\x00';
 
 const char kUncommittedResIdKeyPrefix[] = "URES:";
 const char kPurgeableResIdKeyPrefix[] = "PRES:";
 
-const int64 kCurrentSchemaVersion = 1;
+const int64 kCurrentSchemaVersion = 2;
 
 bool RemovePrefix(const std::string& str,
                   const std::string& prefix,
@@ -150,6 +155,11 @@ std::string CreateHasUserDataKey(int64 registration_id,
                                  const std::string& user_data_name) {
   return CreateHasUserDataKeyPrefix(user_data_name)
       .append(base::Int64ToString(registration_id));
+}
+
+std::string CreateRegistrationIdToOriginKey(int64 registration_id) {
+  return base::StringPrintf("%s%s", kRegIdToOriginKeyPrefix,
+                            base::Int64ToString(registration_id).c_str());
 }
 
 void PutRegistrationDataToBatch(
@@ -523,6 +533,40 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::ReadRegistration(
   return STATUS_OK;
 }
 
+ServiceWorkerDatabase::Status ServiceWorkerDatabase::ReadRegistrationOrigin(
+    int64 registration_id,
+    GURL* origin) {
+  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(origin);
+
+  Status status = LazyOpen(true);
+  if (IsNewOrNonexistentDatabase(status))
+    return STATUS_ERROR_NOT_FOUND;
+  if (status != STATUS_OK)
+    return status;
+
+  std::string value;
+  status = LevelDBStatusToStatus(
+      db_->Get(leveldb::ReadOptions(),
+               CreateRegistrationIdToOriginKey(registration_id), &value));
+  if (status != STATUS_OK) {
+    HandleReadResult(FROM_HERE,
+                     status == STATUS_ERROR_NOT_FOUND ? STATUS_OK : status);
+    return status;
+  }
+
+  GURL parsed(value);
+  if (!parsed.is_valid()) {
+    status = STATUS_ERROR_CORRUPTED;
+    HandleReadResult(FROM_HERE, status);
+    return status;
+  }
+
+  *origin = parsed;
+  HandleReadResult(FROM_HERE, STATUS_OK);
+  return STATUS_OK;
+}
+
 ServiceWorkerDatabase::Status ServiceWorkerDatabase::WriteRegistration(
     const RegistrationData& registration,
     const std::vector<ResourceRecord>& resources,
@@ -550,6 +594,8 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::WriteRegistration(
       << "sizes of the resources.";
 #endif
   PutRegistrationDataToBatch(registration, &batch);
+  batch.Put(CreateRegistrationIdToOriginKey(registration.registration_id),
+            registration.scope.GetOrigin().spec());
 
   // Used for avoiding multiple writes for the same resource id or url.
   std::set<int64> pushed_resources;
@@ -680,6 +726,7 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::DeleteRegistration(
 
   // Delete a registration specified by |registration_id|.
   batch.Delete(CreateRegistrationKey(registration_id, origin));
+  batch.Delete(CreateRegistrationIdToOriginKey(registration_id));
 
   // Delete resource records and user data associated with the registration.
   for (const auto& registration : registrations) {
@@ -892,6 +939,7 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::DeleteAllDataForOrigins(
     // Delete registrations, resource records and user data.
     for (const RegistrationData& data : registrations) {
       batch.Delete(CreateRegistrationKey(data.registration_id, origin));
+      batch.Delete(CreateRegistrationIdToOriginKey(data.registration_id));
 
       status = DeleteResourceRecords(
           data.version_id, newly_purgeable_resources, &batch);
@@ -970,6 +1018,21 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::LazyOpen(
   if (status != STATUS_OK)
     return status;
   DCHECK_LE(0, db_version);
+
+  if (db_version > 0 && db_version < kCurrentSchemaVersion) {
+    switch (db_version) {
+      case 1:
+        status = UpgradeDatabaseSchemaFromV1ToV2();
+        if (status != STATUS_OK)
+          return status;
+        db_version = 2;
+        // Intentionally fall-through to other version upgrade cases.
+    }
+    // Either the database got upgraded to the current schema version, or some
+    // upgrade step failed which would have caused this method to abort.
+    DCHECK_EQ(db_version, kCurrentSchemaVersion);
+  }
+
   if (db_version > 0)
     state_ = INITIALIZED;
   return STATUS_OK;
@@ -982,6 +1045,51 @@ bool ServiceWorkerDatabase::IsNewOrNonexistentDatabase(
   if (status == STATUS_OK && state_ == UNINITIALIZED)
     return true;
   return false;
+}
+
+ServiceWorkerDatabase::Status
+ServiceWorkerDatabase::UpgradeDatabaseSchemaFromV1ToV2() {
+  Status status = STATUS_OK;
+  leveldb::WriteBatch batch;
+
+  // Version 2 introduced REGID_TO_ORIGIN, add for all existing registrations.
+  scoped_ptr<leveldb::Iterator> itr(db_->NewIterator(leveldb::ReadOptions()));
+  for (itr->Seek(kRegKeyPrefix); itr->Valid(); itr->Next()) {
+    status = LevelDBStatusToStatus(itr->status());
+    if (status != STATUS_OK) {
+      HandleReadResult(FROM_HERE, status);
+      return status;
+    }
+
+    std::string key;
+    if (!RemovePrefix(itr->key().ToString(), kRegKeyPrefix, &key))
+      break;
+
+    std::vector<std::string> parts;
+    base::SplitStringDontTrim(key, kKeySeparator, &parts);
+    if (parts.size() != 2) {
+      status = STATUS_ERROR_CORRUPTED;
+      HandleReadResult(FROM_HERE, status);
+      return status;
+    }
+
+    int64 registration_id;
+    status = ParseId(parts[1], &registration_id);
+    if (status != STATUS_OK) {
+      HandleReadResult(FROM_HERE, status);
+      return status;
+    }
+
+    batch.Put(CreateRegistrationIdToOriginKey(registration_id), parts[0]);
+  }
+
+  // Update schema version manually instead of relying on WriteBatch to make
+  // sure each upgrade step only updates it to the actually correct version.
+  batch.Put(kDatabaseVersionKey, base::Int64ToString(2));
+  status = LevelDBStatusToStatus(
+      db_->Write(leveldb::WriteOptions(), &batch));
+  HandleWriteResult(FROM_HERE, status);
+  return status;
 }
 
 ServiceWorkerDatabase::Status ServiceWorkerDatabase::ReadNextAvailableId(

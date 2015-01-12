@@ -98,6 +98,14 @@ class CONTENT_EXPORT ServiceWorkerStorage
                              const GURL& origin,
                              const FindRegistrationCallback& callback);
 
+  // Generally |FindRegistrationForId| should be used to look up a registration
+  // by |registration_id| since it's more efficient. But if a |registration_id|
+  // is all that is available this method can be used instead.
+  // Like |FindRegistrationForId| this method may complete immediately (the
+  // callback may be called prior to the method returning) or asynchronously.
+  void FindRegistrationForIdOnly(int64 registration_id,
+                                 const FindRegistrationCallback& callback);
+
   ServiceWorkerRegistration* GetUninstallingRegistration(const GURL& scope);
 
   // Returns info about all stored and initially installing registrations for
@@ -405,6 +413,11 @@ class CONTENT_EXPORT ServiceWorkerStorage
       scoped_refptr<base::SequencedTaskRunner> original_task_runner,
       int64 registration_id,
       const GURL& origin,
+      const FindInDBCallback& callback);
+  static void FindForIdOnlyInDB(
+      ServiceWorkerDatabase* database,
+      scoped_refptr<base::SequencedTaskRunner> original_task_runner,
+      int64 registration_id,
       const FindInDBCallback& callback);
   static void GetUserDataInDB(
       ServiceWorkerDatabase* database,

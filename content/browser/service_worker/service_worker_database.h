@@ -121,6 +121,11 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
       RegistrationData* registration,
       std::vector<ResourceRecord>* resources);
 
+  // Looks up the origin for the registration with |registration_id|. Returns OK
+  // if a registration was found and read successfully. Otherwise, returns an
+  // error.
+  Status ReadRegistrationOrigin(int64 registration_id, GURL* origin);
+
   // Writes |registration| and |resources| into the database and does following
   // things:
   //   - If an old version of the registration exists, deletes it and sets
@@ -241,6 +246,10 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
   // and this must be called just after LazyOpen() is called. Returns true if
   // the database is new or nonexistent, that is, it has never been used.
   bool IsNewOrNonexistentDatabase(Status status);
+
+  // Upgrades the database schema from version 1 to version 2. Called by
+  // LazyOpen() when the stored schema is older than version 2.
+  Status UpgradeDatabaseSchemaFromV1ToV2();
 
   // Reads the next available id for |id_key|. Returns OK if it's successfully
   // read. Fills |next_avail_id| with an initial value and returns OK if it's
@@ -367,6 +376,7 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerDatabaseTest,
                            UserData_UninitializedDatabase);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerDatabaseTest, DestroyDatabase);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerDatabaseTest, UpgradeSchemaToVersion2);
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerDatabase);
 };
