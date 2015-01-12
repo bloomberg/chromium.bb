@@ -17,17 +17,6 @@ URLsDeletedDetails::URLsDeletedDetails()
 
 URLsDeletedDetails::~URLsDeletedDetails() {}
 
-KeywordSearchUpdatedDetails::KeywordSearchUpdatedDetails(
-    const URLRow& url_row,
-    KeywordID keyword_id,
-    const base::string16& term)
-    : url_row(url_row),
-      keyword_id(keyword_id),
-      term(term) {
-}
-
-KeywordSearchUpdatedDetails::~KeywordSearchUpdatedDetails() {}
-
 KeywordSearchDeletedDetails::KeywordSearchDeletedDetails(URLID url_row_id)
     : url_row_id(url_row_id) {
 }

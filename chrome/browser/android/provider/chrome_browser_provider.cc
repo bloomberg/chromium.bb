@@ -1177,9 +1177,6 @@ ChromeBrowserProvider::ChromeBrowserProvider(JNIEnv* env, jobject obj)
       profile_, ServiceAccessType::EXPLICIT_ACCESS));
   notification_registrar_.Add(this, chrome::NOTIFICATION_HISTORY_URLS_DELETED,
                               content::NotificationService::AllSources());
-  notification_registrar_.Add(this,
-      chrome::NOTIFICATION_HISTORY_KEYWORD_SEARCH_TERM_UPDATED,
-      content::NotificationService::AllSources());
   TemplateURLService* template_service =
         TemplateURLServiceFactory::GetForProfile(profile_);
   if (!template_service->loaded())
@@ -1627,18 +1624,22 @@ void ChromeBrowserProvider::OnURLVisited(HistoryService* history_service,
   OnHistoryChanged();
 }
 
+void ChromeBrowserProvider::OnKeywordSearchTermUpdated(
+    HistoryService* history_service,
+    const history::URLRow& row,
+    history::KeywordID keyword_id,
+    const base::string16& term) {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = weak_java_provider_.get(env);
+  if (obj.is_null())
+    return;
+  Java_ChromeBrowserProvider_onSearchTermChanged(env, obj.obj());
+}
+
 void ChromeBrowserProvider::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_HISTORY_URLS_DELETED) {
-    OnHistoryChanged();
-  } else if (type ==
-      chrome::NOTIFICATION_HISTORY_KEYWORD_SEARCH_TERM_UPDATED) {
-    JNIEnv* env = AttachCurrentThread();
-    ScopedJavaLocalRef<jobject> obj = weak_java_provider_.get(env);
-    if (obj.is_null())
-      return;
-    Java_ChromeBrowserProvider_onSearchTermChanged(env, obj.obj());
-  }
+  DCHECK_EQ(type, chrome::NOTIFICATION_HISTORY_URLS_DELETED);
+  OnHistoryChanged();
 }

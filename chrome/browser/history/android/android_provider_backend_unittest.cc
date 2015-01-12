@@ -84,6 +84,9 @@ class AndroidProviderBackendDelegate : public HistoryBackend::Delegate {
   void NotifyURLsModified(const history::URLRows& rows) override {
     modified_details_.reset(new history::URLRows(rows));
   }
+  void NotifyKeywordSearchTermUpdated(const URLRow& row,
+                                      KeywordID keyword_id,
+                                      const base::string16& term) override {}
   void BroadcastNotifications(
       int type,
       scoped_ptr<HistoryDetails> details) override {

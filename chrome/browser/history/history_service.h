@@ -616,6 +616,13 @@ class HistoryService : public content::NotificationObserver,
   // HistoryService is being deleted.
   void NotifyHistoryServiceBeingDeleted();
 
+  // Notify all HistoryServiceObservers registered that a keyword search term
+  // has been updated. |row| contains the URL information for search |term|.
+  // |keyword_id| associated with a URL and search term.
+  void NotifyKeywordSearchTermUpdated(const history::URLRow& row,
+                                      history::KeywordID keyword_id,
+                                      const base::string16& term);
+
   // Favicon -------------------------------------------------------------------
 
   // These favicon methods are exposed to the FaviconService. Instead of calling

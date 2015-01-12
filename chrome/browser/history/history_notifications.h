@@ -11,7 +11,6 @@
 
 #include "chrome/browser/history/history_details.h"
 #include "components/history/core/browser/history_types.h"
-#include "components/history/core/browser/keyword_id.h"
 #include "url/gurl.h"
 
 namespace history {
@@ -47,20 +46,6 @@ struct URLsDeletedDetails : public HistoryDetails {
   // The list of deleted favicon urls. This is valid only when |all_history| is
   // false, indicating that a subset of history has been deleted.
   std::set<GURL> favicon_urls;
-};
-
-// Details for HISTORY_KEYWORD_SEARCH_TERM_UPDATED.
-struct KeywordSearchUpdatedDetails : public HistoryDetails {
-  KeywordSearchUpdatedDetails(const URLRow& url_row,
-                              KeywordID keyword_id,
-                              const base::string16& term);
-  ~KeywordSearchUpdatedDetails() override;
-
-  // The affected URLRow. The ID will be set to the value that is currently in
-  // effect in the main history database.
-  URLRow url_row;
-  KeywordID keyword_id;
-  base::string16 term;
 };
 
 // Details for HISTORY_KEYWORD_SEARCH_TERM_DELETED.

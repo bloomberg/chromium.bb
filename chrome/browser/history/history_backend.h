@@ -143,6 +143,13 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
     // be forwarded to the HistoryServiceObservers in the correct thread.
     virtual void NotifyURLsModified(const URLRows& changed_urls) = 0;
 
+    // Notify HistoryService that some keyword has been searched using omnibox.
+    // The event will be forwarded to the HistoryServiceObservers in the correct
+    // thread.
+    virtual void NotifyKeywordSearchTermUpdated(const URLRow& row,
+                                                KeywordID keyword_id,
+                                                const base::string16& term) = 0;
+
     // Broadcasts the specified notification to the notification service.
     // This is implemented here because notifications must only be sent from
     // the main thread. This is the only method that doesn't identify the

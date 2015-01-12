@@ -126,6 +126,9 @@ class HistoryBackendTestDelegate : public HistoryBackend::Delegate {
                         const RedirectList& redirects,
                         base::Time visit_time) override;
   void NotifyURLsModified(const URLRows& changed_urls) override;
+  void NotifyKeywordSearchTermUpdated(const URLRow& row,
+                                      KeywordID keyword_id,
+                                      const base::string16& term) override;
   void BroadcastNotifications(int type,
                               scoped_ptr<HistoryDetails> details) override;
   void DBLoaded() override;
@@ -214,6 +217,12 @@ class HistoryBackendTestBase : public testing::Test {
     urls_modified_notifications_.push_back(changed_urls);
   }
 
+  void NotifyKeywordSearchTermUpdated(const URLRow& row,
+                                      KeywordID keyword_id,
+                                      const base::string16& term) {
+    mem_backend_->OnKeywordSearchTermUpdated(nullptr, row, keyword_id, term);
+  }
+
   void BroadcastNotifications(int type, scoped_ptr<HistoryDetails> details) {
     // Send the notifications directly to the in-memory database.
     content::Details<HistoryDetails> det(details.get());
@@ -291,6 +300,13 @@ void HistoryBackendTestDelegate::NotifyURLVisited(ui::PageTransition transition,
 void HistoryBackendTestDelegate::NotifyURLsModified(
     const URLRows& changed_urls) {
   test_->NotifyURLsModified(changed_urls);
+}
+
+void HistoryBackendTestDelegate::NotifyKeywordSearchTermUpdated(
+    const URLRow& row,
+    KeywordID keyword_id,
+    const base::string16& term) {
+  test_->NotifyKeywordSearchTermUpdated(row, keyword_id, term);
 }
 
 void HistoryBackendTestDelegate::BroadcastNotifications(

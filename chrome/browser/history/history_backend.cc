@@ -1051,10 +1051,9 @@ void HistoryBackend::SetKeywordSearchTermsForURL(const GURL& url,
 
   db_->SetKeywordSearchTermsForURL(row.id(), keyword_id, term);
 
-  BroadcastNotifications(
-      chrome::NOTIFICATION_HISTORY_KEYWORD_SEARCH_TERM_UPDATED,
-      scoped_ptr<HistoryDetails>(
-          new KeywordSearchUpdatedDetails(row, keyword_id, term)));
+  if (delegate_)
+    delegate_->NotifyKeywordSearchTermUpdated(row, keyword_id, term);
+
   ScheduleCommit();
 }
 

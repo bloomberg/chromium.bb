@@ -186,11 +186,15 @@ class ChromeBrowserProvider : public bookmarks::BaseBookmarkModelObserver,
   void OnHistoryChanged();
 
   // Override history::HistoryServiceObserver.
-  virtual void OnURLVisited(HistoryService* history_service,
-                            ui::PageTransition transition,
-                            const history::URLRow& row,
-                            const history::RedirectList& redirects,
-                            base::Time visit_time) override;
+  void OnURLVisited(HistoryService* history_service,
+                    ui::PageTransition transition,
+                    const history::URLRow& row,
+                    const history::RedirectList& redirects,
+                    base::Time visit_time) override;
+  void OnKeywordSearchTermUpdated(HistoryService* history_service,
+                                  const history::URLRow& row,
+                                  history::KeywordID keyword_id,
+                                  const base::string16& term) override;
 
   // Override content::NotificationObserver.
   virtual void Observe(int type,

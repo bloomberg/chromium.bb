@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "components/history/core/browser/history_types.h"
+#include "components/history/core/browser/keyword_id.h"
 
 class HistoryService;
 
@@ -47,6 +48,15 @@ class HistoryServiceObserver {
 
   // Is called to notify when |history_service| is being deleted.
   virtual void HistoryServiceBeingDeleted(HistoryService* history_service) {}
+
+  // Sent when a keyword search term is updated.
+  //
+  // |row| contains the URL information for search |term|.
+  // |keyword_id| associated with a URL and search term.
+  virtual void OnKeywordSearchTermUpdated(HistoryService* history_service,
+                                          const URLRow& row,
+                                          KeywordID keyword_id,
+                                          const base::string16& term) {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HistoryServiceObserver);
