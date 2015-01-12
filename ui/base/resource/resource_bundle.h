@@ -329,6 +329,9 @@ class UI_BASE_EXPORT ResourceBundle {
   // comments for ReloadLocaleResources().
   void UnloadLocaleResources();
 
+  // Initializes the font description of default gfx::FontList.
+  void InitDefaultFontList();
+
   // Initializes all the gfx::FontList members if they haven't yet been
   // initialized.
   void LoadFontsIfNecessary();

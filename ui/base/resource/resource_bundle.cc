@@ -74,24 +74,6 @@ const char kPakFileSuffix[] = ".pak";
 
 ResourceBundle* g_shared_instance_ = NULL;
 
-void InitDefaultFontList() {
-#if defined(OS_CHROMEOS) && defined(USE_PANGO)
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  std::string font_family = base::UTF16ToUTF8(
-      rb.GetLocalizedString(IDS_UI_FONT_FAMILY_CROS));
-  ui::ReplaceNotoSansWithRobotoIfEnabled(&font_family);
-  gfx::FontList::SetDefaultFontDescription(font_family);
-
-  // TODO(yukishiino): Remove SetDefaultFontDescription() once the migration to
-  // the font list is done.  We will no longer need SetDefaultFontDescription()
-  // after every client gets started using a FontList instead of a Font.
-  gfx::PlatformFontPango::SetDefaultFontDescription(font_family);
-#else
-  // Use a single default font as the default font list.
-  gfx::FontList::SetDefaultFontDescription(std::string());
-#endif
-}
-
 #if defined(OS_ANDROID)
 // Returns the scale factor closest to |scale| from the full list of factors.
 // Note that it does NOT rely on the list of supported scale factors.
@@ -171,7 +153,7 @@ std::string ResourceBundle::InitSharedInstanceWithLocale(
   if (load_resources == LOAD_COMMON_RESOURCES)
     g_shared_instance_->LoadCommonResources();
   std::string result = g_shared_instance_->LoadLocaleResources(pref_locale);
-  InitDefaultFontList();
+  g_shared_instance_->InitDefaultFontList();
   return result;
 }
 
@@ -186,7 +168,7 @@ void ResourceBundle::InitSharedInstanceWithPakFileRegion(
     return;
   }
   g_shared_instance_->locale_resources_data_.reset(data_pack.release());
-  InitDefaultFontList();
+  g_shared_instance_->InitDefaultFontList();
 }
 
 // static
@@ -194,7 +176,7 @@ void ResourceBundle::InitSharedInstanceWithPakPath(const base::FilePath& path) {
   InitSharedInstance(NULL);
   g_shared_instance_->LoadTestResources(path, path);
 
-  InitDefaultFontList();
+  g_shared_instance_->InitDefaultFontList();
 }
 
 // static
@@ -562,6 +544,7 @@ const gfx::Font& ResourceBundle::GetFont(FontStyle style) {
 
 void ResourceBundle::ReloadFonts() {
   base::AutoLock lock_scope(*images_and_fonts_lock_);
+  InitDefaultFontList();
   base_font_list_.reset();
   LoadFontsIfNecessary();
 }
@@ -685,6 +668,23 @@ void ResourceBundle::AddDataPack(DataPack* data_pack) {
   if (GetScaleForScaleFactor(data_pack->GetScaleFactor()) >
       GetScaleForScaleFactor(max_scale_factor_))
     max_scale_factor_ = data_pack->GetScaleFactor();
+}
+
+void ResourceBundle::InitDefaultFontList() {
+#if defined(OS_CHROMEOS) && defined(USE_PANGO)
+  std::string font_family = base::UTF16ToUTF8(
+      GetLocalizedString(IDS_UI_FONT_FAMILY_CROS));
+  ui::ReplaceNotoSansWithRobotoIfEnabled(&font_family);
+  gfx::FontList::SetDefaultFontDescription(font_family);
+
+  // TODO(yukishiino): Remove SetDefaultFontDescription() once the migration to
+  // the font list is done.  We will no longer need SetDefaultFontDescription()
+  // after every client gets started using a FontList instead of a Font.
+  gfx::PlatformFontPango::SetDefaultFontDescription(font_family);
+#else
+  // Use a single default font as the default font list.
+  gfx::FontList::SetDefaultFontDescription(std::string());
+#endif
 }
 
 void ResourceBundle::LoadFontsIfNecessary() {
