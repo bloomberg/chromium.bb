@@ -661,7 +661,6 @@ void UseCounter::countDeprecationIfNotPrivateScript(v8::Isolate* isolate, Execut
     UseCounter::countDeprecation(context, feature);
 }
 
-// FIXME: Update other UseCounter::deprecationMessage() cases to use this.
 static String replacedBy(const char* oldString, const char* newString)
 {
     return String::format("'%s' is deprecated. Please use '%s' instead.", oldString, newString);
@@ -679,7 +678,7 @@ String UseCounter::deprecationMessage(Feature feature)
         return replacedBy("KeyboardEvent.keyLocation", "KeyboardEvent.location");
 
     case ConsoleMarkTimeline:
-        return "console.markTimeline is deprecated. Please use the console.timeStamp instead.";
+        return replacedBy("console.markTimeline", "console.timeStamp");
 
     case FileError:
         return "FileError is deprecated. Please use the 'name' or 'message' attributes of DOMError rather than 'code'.";
@@ -694,19 +693,19 @@ String UseCounter::deprecationMessage(Feature feature)
         return "'HTMLVideoElement.webkitSupportsFullscreen' is deprecated. Its value is true if the video is loaded.";
 
     case PrefixedVideoDisplayingFullscreen:
-        return "'HTMLVideoElement.webkitDisplayingFullscreen' is deprecated. Please use the 'fullscreenchange' and 'webkitfullscreenchange' events instead.";
+        return "'HTMLVideoElement.webkitDisplayingFullscreen' is deprecated. Please use the 'fullscreenchange' event instead.";
 
     case PrefixedVideoEnterFullscreen:
-        return "'HTMLVideoElement.webkitEnterFullscreen()' is deprecated. Please use 'Element.requestFullscreen()' and 'Element.webkitRequestFullscreen()' instead.";
+        return replacedBy("HTMLVideoElement.webkitEnterFullscreen()", "Element.requestFullscreen()");
 
     case PrefixedVideoExitFullscreen:
-        return "'HTMLVideoElement.webkitExitFullscreen()' is deprecated. Please use 'Document.exitFullscreen()' and 'Document.webkitExitFullscreen()' instead.";
+        return replacedBy("HTMLVideoElement.webkitExitFullscreen()", "Document.exitFullscreen()");
 
     case PrefixedVideoEnterFullScreen:
-        return "'HTMLVideoElement.webkitEnterFullScreen()' is deprecated. Please use 'Element.requestFullscreen()' and 'Element.webkitRequestFullscreen()' instead.";
+        return replacedBy("HTMLVideoElement.webkitEnterFullScreen()", "Element.requestFullscreen()");
 
     case PrefixedVideoExitFullScreen:
-        return "'HTMLVideoElement.webkitExitFullScreen()' is deprecated. Please use 'Document.exitFullscreen()' and 'Document.webkitExitFullscreen()' instead.";
+        return replacedBy("HTMLVideoElement.webkitExitFullScreen()", "Document.exitFullscreen()");
 
     case PrefixedIndexedDB:
         return replacedBy("webkitIndexedDB", "indexedDB");
@@ -757,16 +756,16 @@ String UseCounter::deprecationMessage(Feature feature)
         return "Setting 'XMLHttpRequest.withCredentials' for synchronous requests is deprecated.";
 
     case EventSourceURL:
-        return "'EventSource.URL' is deprecated. Please use 'EventSource.url' instead.";
+        return replacedBy("EventSource.URL", "EventSource.url");
 
     case WebSocketURL:
-        return "'WebSocket.URL' is deprecated. Please use 'WebSocket.url' instead.";
+        return replacedBy("WebSocket.URL", "WebSocket.url");
 
     case HTMLTableElementVspace:
-        return "The 'vspace' attribute on table is deprecated. Please use CSS instead.";
+        return "The 'vspace' attribute on table is deprecated. Please use CSS margin-top and margin-bottom property instead.";
 
     case HTMLTableElementHspace:
-        return "The 'hspace' attribute on table is deprecated. Please use CSS instead.";
+        return "The 'hspace' attribute on table is deprecated. Please use CSS margin-left and margin-right property instead.";
 
     case PictureSourceSrc:
         return "<source src> with a <picture> parent is invalid and therefore ignored. Please use <source srcset> instead.";
@@ -778,10 +777,10 @@ String UseCounter::deprecationMessage(Feature feature)
         return "The XMLHttpRequest progress event property 'totalSize' is deprecated. Please use 'total' instead.";
 
     case ConsoleTimeline:
-        return "console.timeline is deprecated. Please use the console.time instead.";
+        return replacedBy("console.timeline", "console.time");
 
     case ConsoleTimelineEnd:
-        return "console.timelineEnd is deprecated. Please use the console.timeEnd instead.";
+        return replacedBy("console.timelineEnd", "console.timeEnd");
 
     case XMLHttpRequestSynchronousInNonWorkerOutsideBeforeUnload:
         return "Synchronous XMLHttpRequest on the main thread is deprecated because of its detrimental effects to the end user's experience. For more help, check http://xhr.spec.whatwg.org/.";

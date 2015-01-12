@@ -1,5 +1,5 @@
-CONSOLE WARNING: console.timeline is deprecated. Please use the console.time instead.
-CONSOLE WARNING: console.timelineEnd is deprecated. Please use the console.timeEnd instead.
+CONSOLE WARNING: 'console.timeline' is deprecated. Please use 'console.time' instead.
+CONSOLE WARNING: 'console.timelineEnd' is deprecated. Please use 'console.timeEnd' instead.
 Tests console.timeline and timelineEnd commands.
 
 
