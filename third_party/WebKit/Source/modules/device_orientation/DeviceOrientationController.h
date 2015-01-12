@@ -23,6 +23,7 @@ public:
 
     // Inherited from DeviceSingleWindowEventController.
     void didUpdateData() override;
+    void didAddEventListener(LocalDOMWindow*, const AtomicString& eventType) override;
 
     void setOverride(DeviceOrientationData*);
     void clearOverride();

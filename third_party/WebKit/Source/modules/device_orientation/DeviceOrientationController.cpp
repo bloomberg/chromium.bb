@@ -6,10 +6,13 @@
 #include "modules/device_orientation/DeviceOrientationController.h"
 
 #include "core/dom/Document.h"
+#include "core/frame/Settings.h"
+#include "core/frame/UseCounter.h"
 #include "modules/EventModules.h"
 #include "modules/device_orientation/DeviceOrientationData.h"
 #include "modules/device_orientation/DeviceOrientationDispatcher.h"
 #include "modules/device_orientation/DeviceOrientationEvent.h"
+#include "platform/weborigin/SecurityOrigin.h"
 
 namespace blink {
 
@@ -45,6 +48,22 @@ DeviceOrientationController& DeviceOrientationController::from(Document& documen
         DocumentSupplement::provideTo(document, supplementName(), adoptPtrWillBeNoop(controller));
     }
     return *controller;
+}
+
+void DeviceOrientationController::didAddEventListener(LocalDOMWindow* window, const AtomicString& eventType)
+{
+    if (document().frame()) {
+        String errorMessage;
+        if (document().securityOrigin()->canAccessFeatureRequiringSecureOrigin(errorMessage)) {
+            UseCounter::count(document().frame(), UseCounter::DeviceOrientationSecureOrigin);
+        } else {
+            UseCounter::count(document().frame(), UseCounter::DeviceOrientationInsecureOrigin);
+            if (document().frame()->settings()->strictPowerfulFeatureRestrictions())
+                return;
+        }
+    }
+
+    DeviceSingleWindowEventController::didAddEventListener(window, eventType);
 }
 
 DeviceOrientationData* DeviceOrientationController::lastData() const

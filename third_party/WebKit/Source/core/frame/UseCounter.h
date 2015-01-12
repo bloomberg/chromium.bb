@@ -606,6 +606,10 @@ public:
         MixedContentFormPresent = 665,
         GetUserMediaInsecureOrigin = 666,
         GetUserMediaSecureOrigin = 667,
+        DeviceMotionInsecureOrigin = 668,
+        DeviceMotionSecureOrigin = 669,
+        DeviceOrientationInsecureOrigin = 670,
+        DeviceOrientationSecureOrigin = 671,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
