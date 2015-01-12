@@ -700,7 +700,7 @@ void AutofillManager::OnUnmaskVerificationResult(bool success) {
       DCHECK_EQ(kDiscoverCard, unmasking_card_.type());
       unmasking_card_.SetNumber(base::ASCIIToUTF16("6011000990139424"));
     }
-    personal_data_->UpdateCreditCard(unmasking_card_);
+    personal_data_->UpdateServerCreditCard(unmasking_card_);
     FillCreditCardForm(unmasking_query_id_, unmasking_form_, unmasking_field_,
                        unmasking_card_);
   }
