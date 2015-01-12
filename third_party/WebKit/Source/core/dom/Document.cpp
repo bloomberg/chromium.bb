@@ -1689,18 +1689,22 @@ void Document::inheritHtmlAndBodyElementStyles(StyleRecalcChange change)
         columnGap = overflowStyle->columnGap();
     }
 
+    WebScrollBlocksOn scrollBlocksOn = documentElementStyle->scrollBlocksOn();
+
     RefPtr<RenderStyle> documentStyle = renderView()->style();
     if (documentStyle->writingMode() != rootWritingMode
         || documentStyle->direction() != rootDirection
         || documentStyle->overflowX() != overflowX
         || documentStyle->overflowY() != overflowY
-        || documentStyle->columnGap() != columnGap) {
+        || documentStyle->columnGap() != columnGap
+        || documentStyle->scrollBlocksOn() != scrollBlocksOn) {
         RefPtr<RenderStyle> newStyle = RenderStyle::clone(documentStyle.get());
         newStyle->setWritingMode(rootWritingMode);
         newStyle->setDirection(rootDirection);
         newStyle->setColumnGap(columnGap);
         newStyle->setOverflowX(overflowX);
         newStyle->setOverflowY(overflowY);
+        newStyle->setScrollBlocksOn(scrollBlocksOn);
         renderView()->setStyle(newStyle);
         setupFontBuilder(newStyle.get());
     }

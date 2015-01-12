@@ -42,7 +42,7 @@ CSSGridLayout status=experimental
 CSSMaskSourceType status=experimental
 CSSMotionPath status=experimental
 CSSOMSmoothScroll status=experimental
-CSSScrollBlocksOn status=test
+CSSScrollBlocksOn status=experimental
 CSSViewport status=experimental
 // getPropertyCSSValue, CSSValue, etc. will be removed once layout tests no longer depend on them. crbug.com/331608
 CustomSchemeHandler depends_on=NavigatorContentUtils, status=experimental

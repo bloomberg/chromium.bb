@@ -76,17 +76,7 @@ class RenderBox : public RenderBoxModelObject {
 public:
     explicit RenderBox(ContainerNode*);
 
-    // hasAutoZIndex only returns true if the element is positioned or a flex-item since
-    // position:static elements that are not flex-items get their z-index coerced to auto.
-    virtual LayerType layerTypeRequired() const override
-    {
-        if (isPositioned() || createsGroup() || hasClipPath() || hasTransformRelatedProperty() || hasHiddenBackface() || hasReflection() || style()->specifiesColumns() || !style()->hasAutoZIndex() || style()->shouldCompositeForCurrentAnimations())
-            return NormalLayer;
-        if (hasOverflowClip())
-            return OverflowClipLayer;
-
-        return NoLayer;
-    }
+    virtual LayerType layerTypeRequired() const override;
 
     virtual bool backgroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect) const override;
 

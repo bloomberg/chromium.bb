@@ -190,7 +190,7 @@ void CompositingRequirementsUpdater::update(RenderLayer* root)
     TRACE_EVENT0("blink", "CompositingRequirementsUpdater::updateRecursive");
 
     // Go through the layers in presentation order, so that we can compute which RenderLayers need compositing layers.
-    // FIXME: we could maybe do this and the hierarchy udpate in one pass, but the parenting logic would be more complex.
+    // FIXME: we could maybe do this and the hierarchy update in one pass, but the parenting logic would be more complex.
     RecursionData recursionData(root);
     OverlapMap overlapTestRequestMap;
     bool saw3DTransform = false;

@@ -1,0 +1,14 @@
+This test verifies that SVG documents have the default scroll-blocks-on mode applied to them, and that foreignObject html documents inside them don't create a new composited layer unnecessarily.
+
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "scrollBlocksOn": ["StartTouch", "WheelEvent"],
+      "contentsOpaque": true,
+      "drawsContent": true
+    }
+  ]
+}
+

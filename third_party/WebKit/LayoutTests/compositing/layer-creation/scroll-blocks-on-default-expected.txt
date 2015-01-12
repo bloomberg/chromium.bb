@@ -1,0 +1,20 @@
+Verify we get the default scroll-blocks-on mode applied to the viewport, no additional layers created (even with an iframe), and no scroll-blocks-on mode applied to any other layer.
+
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "scrollBlocksOn": ["StartTouch", "WheelEvent"],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [8, 8],
+          "bounds": [20, 20]
+        }
+      ]
+    }
+  ]
+}
+

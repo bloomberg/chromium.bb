@@ -104,6 +104,30 @@ RenderBox::RenderBox(ContainerNode* node)
     setIsBox();
 }
 
+LayerType RenderBox::layerTypeRequired() const
+{
+    // hasAutoZIndex only returns true if the element is positioned or a flex-item since
+    // position:static elements that are not flex-items get their z-index coerced to auto.
+    if (isPositioned() || createsGroup() || hasClipPath() || hasTransformRelatedProperty()
+        || hasHiddenBackface() || hasReflection() || style()->specifiesColumns()
+        || !style()->hasAutoZIndex() || style()->shouldCompositeForCurrentAnimations())
+        return NormalLayer;
+
+    // Ensure that explicit use of scroll-blocks-on creates a RenderLayer (since we might need
+    // it to be composited).
+    if (style()->hasScrollBlocksOn()) {
+        if (isDocumentElement()) {
+            ASSERT(style()->scrollBlocksOn() == view()->style()->scrollBlocksOn());
+            return NoLayer;
+        }
+        return NormalLayer;
+    }
+    if (hasOverflowClip())
+        return OverflowClipLayer;
+
+    return NoLayer;
+}
+
 void RenderBox::willBeRemovedFromTree()
 {
     if (m_rareData && m_rareData->m_spannerPlaceholder) {

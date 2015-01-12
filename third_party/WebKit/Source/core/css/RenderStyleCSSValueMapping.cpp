@@ -635,18 +635,18 @@ static LayoutRect sizingBox(const RenderObject* renderer)
     return box->style()->boxSizing() == BORDER_BOX ? box->borderBoxRect() : box->computedCSSContentBoxRect();
 }
 
-static PassRefPtrWillBeRawPtr<CSSValue> scrollBlocksOnFlagsToCSSValue(ScrollBlocksOn scrollBlocksOn)
+static PassRefPtrWillBeRawPtr<CSSValue> scrollBlocksOnFlagsToCSSValue(WebScrollBlocksOn scrollBlocksOn)
 {
     RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
 
-    if (scrollBlocksOn == ScrollBlocksOnNone)
+    if (scrollBlocksOn == WebScrollBlocksOnNone)
         return cssValuePool().createIdentifierValue(CSSValueNone);
 
-    if (scrollBlocksOn & ScrollBlocksOnStartTouch)
+    if (scrollBlocksOn & WebScrollBlocksOnStartTouch)
         list->append(cssValuePool().createIdentifierValue(CSSValueStartTouch));
-    if (scrollBlocksOn & ScrollBlocksOnWheelEvent)
+    if (scrollBlocksOn & WebScrollBlocksOnWheelEvent)
         list->append(cssValuePool().createIdentifierValue(CSSValueWheelEvent));
-    if (scrollBlocksOn & ScrollBlocksOnScrollEvent)
+    if (scrollBlocksOn & WebScrollBlocksOnScrollEvent)
         list->append(cssValuePool().createIdentifierValue(CSSValueScrollEvent));
     ASSERT(list->length());
     return list.release();

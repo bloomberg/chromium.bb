@@ -236,6 +236,8 @@ void CompositedLayerMapping::createPrimaryGraphicsLayer()
         updateLayerBlendMode(renderer()->style());
         updateIsRootForIsolatedGroup();
     }
+
+    updateScrollBlocksOn(renderer()->style());
 }
 
 void CompositedLayerMapping::destroyGraphicsLayers()
@@ -293,6 +295,18 @@ void CompositedLayerMapping::updateIsRootForIsolatedGroup()
     ASSERT(m_owningLayer.stackingNode()->isStackingContext() || !isolate);
 
     m_graphicsLayer->setIsRootForIsolatedGroup(isolate);
+}
+
+void CompositedLayerMapping::updateScrollBlocksOn(const RenderStyle* style)
+{
+    // Note that blink determines the default scroll blocking policy, even
+    // when the scroll-blocks-on CSS feature isn't enabled.
+    WebScrollBlocksOn blockingMode = WebScrollBlocksOnStartTouch | WebScrollBlocksOnWheelEvent;
+
+    if (RuntimeEnabledFeatures::cssScrollBlocksOnEnabled())
+        blockingMode = style->scrollBlocksOn();
+
+    m_graphicsLayer->setScrollBlocksOn(blockingMode);
 }
 
 void CompositedLayerMapping::updateContentsOpaque()
@@ -714,6 +728,8 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry(const RenderLayer* comp
     updateChildrenTransform();
     updateScrollParent(compositor()->preferCompositingToLCDTextEnabled() ? m_owningLayer.scrollParent() : 0);
     registerScrollingLayers();
+
+    updateScrollBlocksOn(renderer()->style());
 
     updateCompositingReasons();
 }

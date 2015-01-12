@@ -49,6 +49,11 @@ CompositingReasons CompositingReasonFinder::directReasons(const RenderLayer* lay
 {
     ASSERT(potentialCompositingReasonsFromStyle(layer->renderer()) == layer->potentialCompositingReasonsFromStyle());
     CompositingReasons styleDeterminedDirectCompositingReasons = layer->potentialCompositingReasonsFromStyle() & CompositingReasonComboAllDirectStyleDeterminedReasons;
+
+    // Apply optimizations for scroll-blocks-on which require comparing style between objects.
+    if ((styleDeterminedDirectCompositingReasons & CompositingReasonScrollBlocksOn) && !requiresCompositingForScrollBlocksOn(layer->renderer()))
+        styleDeterminedDirectCompositingReasons &= ~CompositingReasonScrollBlocksOn;
+
     return styleDeterminedDirectCompositingReasons | nonStyleDeterminedDirectReasons(layer);
 }
 
@@ -93,6 +98,12 @@ CompositingReasons CompositingReasonFinder::potentialCompositingReasonsFromStyle
     if (style->hasPerspective())
         reasons |= CompositingReasonPerspectiveWith3DDescendants;
 
+    // Ignore scroll-blocks-on on the document element, because it will get propagated to
+    // the RenderView (by Document::inheritHtmlAndBodyElementStyles) and we don't want to
+    // create two composited layers.
+    if (style->hasScrollBlocksOn() && !renderer->isDocumentElement())
+        reasons |= CompositingReasonScrollBlocksOn;
+
     // If the implementation of createsGroup changes, we need to be aware of that in this part of code.
     ASSERT((renderer->isTransparent() || renderer->hasMask() || renderer->hasFilter() || style->hasBlendMode()) == renderer->createsGroup());
 
@@ -122,7 +133,7 @@ CompositingReasons CompositingReasonFinder::potentialCompositingReasonsFromStyle
 bool CompositingReasonFinder::requiresCompositingForTransform(RenderObject* renderer) const
 {
     // Note that we ask the renderer if it has a transform, because the style may have transforms,
-    // but the renderer may be an inline that doesn't suppport them.
+    // but the renderer may be an inline that doesn't support them.
     return renderer->hasTransformRelatedProperty() && renderer->style()->transform().has3DOperation();
 }
 
@@ -168,6 +179,44 @@ bool CompositingReasonFinder::requiresCompositingForPositionFixed(const RenderLa
     // Don't promote fixed position elements that are descendants of a non-view container, e.g. transformed elements.
     // They will stay fixed wrt the container rather than the enclosing frame.
     return layer->scrollsWithViewport() && m_renderView.frameView()->isScrollable();
+}
+
+bool CompositingReasonFinder::requiresCompositingForScrollBlocksOn(const RenderObject* renderer) const
+{
+    // Note that the other requires* functions run at RenderObject::styleDidChange time and so can rely
+    // only on the style of their object.  This function runs at CompositingRequirementsUpdater::update
+    // time, and so can consider the style of other objects.
+    RenderStyle* style = renderer->style();
+
+    // We should only get here by CompositingReasonScrollBlocksOn being a potential compositing reason.
+    ASSERT(style->hasScrollBlocksOn() && !renderer->isDocumentElement());
+
+    // scroll-blocks-on style is propagated from the document element to the document.
+    ASSERT(!renderer->isRenderView()
+        || !renderer->document().documentElement()
+        || !renderer->document().documentElement()->renderer()
+        || renderer->document().documentElement()->renderer()->style()->scrollBlocksOn() == style->scrollBlocksOn());
+
+    // When a scroll occurs, it's the union of all bits set on the target element's containing block
+    // chain that determines the behavior.  Thus we really only need a new layer if this object contains
+    // additional bits from those set by all objects in it's containing block chain.  But determining
+    // this fully is probably more expensive than it's worth.  Instead we just have fast-paths here for
+    // the most common cases of unnecessary layer creation.
+    // Optimizing this fully would avoid layer explosion in pathological cases like '*' rules.
+    // We could consider tracking the current state in CompositingRequirementsUpdater::update.
+
+    // Ensure iframes don't get composited when they require no more blocking than the root.
+    if (renderer->isRenderView()) {
+        if (const FrameView* parentFrame = toRenderView(renderer)->frameView()->parentFrameView()) {
+            if (const RenderView* parentRenderer = parentFrame->renderView()) {
+                // Does this frame contain only blocks-on bits already present in the parent frame?
+                if (!(style->scrollBlocksOn() & ~parentRenderer->style()->scrollBlocksOn()))
+                    return false;
+            }
+        }
+    }
+
+    return true;
 }
 
 }

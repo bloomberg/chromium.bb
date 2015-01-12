@@ -522,12 +522,16 @@ PassRefPtr<RenderStyle> StyleResolver::styleForDocument(Document& document)
     const LocalFrame* frame = document.frame();
 
     RefPtr<RenderStyle> documentStyle = RenderStyle::create();
-    documentStyle->setDisplay(BLOCK);
     documentStyle->setRTLOrdering(document.visuallyOrdered() ? VisualOrder : LogicalOrder);
     documentStyle->setZoom(frame && !document.printing() ? frame->pageZoomFactor() : 1);
     documentStyle->setLocale(document.contentLanguage());
     documentStyle->setZIndex(0);
     documentStyle->setUserModify(document.inDesignMode() ? READ_WRITE : READ_ONLY);
+    // These are designed to match the user-agent stylesheet values for the document element
+    // so that the common case doesn't need to create a new RenderStyle in
+    // Document::inheritHtmlAndBodyElementStyles.
+    documentStyle->setDisplay(BLOCK);
+    documentStyle->setScrollBlocksOn(WebScrollBlocksOnStartTouch | WebScrollBlocksOnWheelEvent);
 
     document.setupFontBuilder(documentStyle.get());
 

@@ -6,7 +6,7 @@ opacity
 reflected
 perspective
 preserve3d
-Compositing reasons for #document: root
+Compositing reasons for #document: root,scrollBlocksOn
 Compositing reasons for div#transform3d: assumedOverlap,inlineTransform,transform3D
 Compositing reasons for iframe#iframe: iFrame
 Compositing reasons for div#backface-visibility: assumedOverlap,backfaceVisibilityHidden

@@ -73,6 +73,7 @@
 #include "platform/text/TextDirection.h"
 #include "platform/text/UnicodeBidi.h"
 #include "platform/transforms/TransformOperations.h"
+#include "public/platform/WebScrollBlocksOn.h"
 #include "wtf/Forward.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/RefCounted.h"
@@ -919,7 +920,8 @@ public:
     TouchAction touchAction() const { return static_cast<TouchAction>(rareNonInheritedData->m_touchAction); }
 
     ScrollBehavior scrollBehavior() const { return static_cast<ScrollBehavior>(rareNonInheritedData->m_scrollBehavior); }
-    ScrollBlocksOn scrollBlocksOn() const { return static_cast<ScrollBlocksOn>(rareNonInheritedData->m_scrollBlocksOn); }
+    WebScrollBlocksOn scrollBlocksOn() const { return static_cast<WebScrollBlocksOn>(rareNonInheritedData->m_scrollBlocksOn); }
+    bool hasScrollBlocksOn() const { return scrollBlocksOn() != WebScrollBlocksOnNone; }
 
     const Vector<CSSPropertyID>& willChangeProperties() const { return rareNonInheritedData->m_willChange->m_properties; }
     bool willChangeContents() const { return rareNonInheritedData->m_willChange->m_contents; }
@@ -1335,7 +1337,7 @@ public:
     void setTouchAction(TouchAction t) { SET_VAR(rareNonInheritedData, m_touchAction, t); }
 
     void setScrollBehavior(ScrollBehavior b) { SET_VAR(rareNonInheritedData, m_scrollBehavior, b); }
-    void setScrollBlocksOn(ScrollBlocksOn b) { SET_VAR(rareNonInheritedData, m_scrollBlocksOn, b); }
+    void setScrollBlocksOn(WebScrollBlocksOn b) { SET_VAR(rareNonInheritedData, m_scrollBlocksOn, b); }
 
     void setWillChangeProperties(const Vector<CSSPropertyID>& properties) { SET_VAR(rareNonInheritedData.access()->m_willChange, m_properties, properties); }
     void setWillChangeContents(bool b) { SET_VAR(rareNonInheritedData.access()->m_willChange, m_contents, b); }
@@ -1611,7 +1613,7 @@ public:
     static ShadowList* initialBoxShadow() { return 0; }
     static ShadowList* initialTextShadow() { return 0; }
     static ScrollBehavior initialScrollBehavior() { return ScrollBehaviorAuto; }
-    static ScrollBlocksOn initialScrollBlocksOn() { return ScrollBlocksOnNone; }
+    static WebScrollBlocksOn initialScrollBlocksOn() { return WebScrollBlocksOnNone; }
 
     // The initial value is 'none' for grid tracks.
     static Vector<GridTrackSize> initialGridTemplateColumns() { return Vector<GridTrackSize>(); }

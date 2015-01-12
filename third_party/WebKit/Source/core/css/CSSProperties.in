@@ -240,7 +240,7 @@ quotes inherited, converter=convertQuotes
 resize custom_value
 right animatable, initial=initialOffset, converter=convertLengthOrAuto
 scroll-behavior runtime_flag=CSSOMSmoothScroll, type_name=ScrollBehavior
-scroll-blocks-on runtime_flag=CSSScrollBlocksOn, converter=convertFlags<ScrollBlocksOn>
+scroll-blocks-on runtime_flag=CSSScrollBlocksOn, converter=convertFlags<WebScrollBlocksOn>
 shape-image-threshold animatable, type_name=float
 shape-margin animatable, converter=convertLength
 shape-outside animatable, converter=convertShapeValue

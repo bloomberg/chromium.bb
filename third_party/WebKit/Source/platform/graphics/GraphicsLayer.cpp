@@ -80,6 +80,7 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient* client)
     , m_backgroundColor(Color::transparent)
     , m_opacity(1)
     , m_blendMode(WebBlendModeNormal)
+    , m_scrollBlocksOn(WebScrollBlocksOnNone)
     , m_hasTransformOrigin(false)
     , m_contentsOpaque(false)
     , m_shouldFlattenTransform(true)
@@ -574,6 +575,17 @@ PassRefPtr<JSONObject> GraphicsLayer::layerTreeAsJSON(LayerTreeFlags flags, Rend
     if (m_blendMode != WebBlendModeNormal)
         json->setString("blendMode", compositeOperatorName(CompositeSourceOver, m_blendMode));
 
+    if ((flags & LayerTreeIncludesScrollBlocksOn) && m_scrollBlocksOn) {
+        RefPtr<JSONArray> scrollBlocksOnJSON = adoptRef(new JSONArray);
+        if (m_scrollBlocksOn & WebScrollBlocksOnStartTouch)
+            scrollBlocksOnJSON->pushString("StartTouch");
+        if (m_scrollBlocksOn & WebScrollBlocksOnWheelEvent)
+            scrollBlocksOnJSON->pushString("WheelEvent");
+        if (m_scrollBlocksOn & WebScrollBlocksOnScrollEvent)
+            scrollBlocksOnJSON->pushString("ScrollEvent");
+        json->setArray("scrollBlocksOn", scrollBlocksOnJSON);
+    }
+
     if (m_isRootForIsolatedGroup)
         json->setBoolean("isolate", m_isRootForIsolatedGroup);
 
@@ -876,7 +888,15 @@ void GraphicsLayer::setBlendMode(WebBlendMode blendMode)
     if (m_blendMode == blendMode)
         return;
     m_blendMode = blendMode;
-    platformLayer()->setBlendMode(WebBlendMode(blendMode));
+    platformLayer()->setBlendMode(blendMode);
+}
+
+void GraphicsLayer::setScrollBlocksOn(WebScrollBlocksOn scrollBlocksOn)
+{
+    if (m_scrollBlocksOn == scrollBlocksOn)
+        return;
+    m_scrollBlocksOn = scrollBlocksOn;
+    platformLayer()->setScrollBlocksOn(scrollBlocksOn);
 }
 
 void GraphicsLayer::setIsRootForIsolatedGroup(bool isolated)

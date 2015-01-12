@@ -34,6 +34,7 @@
 #include "WebFloatPoint3D.h"
 #include "WebPoint.h"
 #include "WebRect.h"
+#include "WebScrollBlocksOn.h"
 #include "WebSize.h"
 #include "WebString.h"
 #include "WebVector.h"
@@ -185,6 +186,10 @@ public:
 
     virtual void setTouchEventHandlerRegion(const WebVector<WebRect>&) = 0;
     virtual WebVector<WebRect> touchEventHandlerRegion() const = 0;
+
+    // FIXME: Make pure once cc is updated.  crbug.com/347272
+    virtual void setScrollBlocksOn(WebScrollBlocksOn) { };
+    virtual WebScrollBlocksOn scrollBlocksOn() const { return WebScrollBlocksOnNone;};
 
     virtual void setIsContainerForFixedPositionLayers(bool) = 0;
     virtual bool isContainerForFixedPositionLayers() const = 0;

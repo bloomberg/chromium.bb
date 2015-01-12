@@ -1,0 +1,26 @@
+Verifies that setting the scroll-blocks-on property in a stylesheet creates layers with the correct modes only when it's greater than the defaults on the root.  In this case, only 'addScroll' should get a layer.
+
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "scrollBlocksOn": ["StartTouch", "WheelEvent"],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [8, 8],
+          "bounds": [784, 1],
+          "scrollBlocksOn": ["WheelEvent"]
+        },
+        {
+          "position": [8, 9],
+          "bounds": [784, 2],
+          "scrollBlocksOn": ["StartTouch", "ScrollEvent"]
+        }
+      ]
+    }
+  ]
+}
+

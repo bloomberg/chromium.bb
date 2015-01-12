@@ -45,6 +45,7 @@
 #include "public/platform/WebLayerClient.h"
 #include "public/platform/WebLayerScrollClient.h"
 #include "public/platform/WebNinePatchLayer.h"
+#include "public/platform/WebScrollBlocksOn.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
@@ -181,6 +182,7 @@ public:
     void setOpacity(float);
 
     void setBlendMode(WebBlendMode);
+    void setScrollBlocksOn(WebScrollBlocksOn);
     void setIsRootForIsolatedGroup(bool);
 
     void setFilters(const FilterOperations&);
@@ -307,6 +309,8 @@ private:
     float m_opacity;
 
     WebBlendMode m_blendMode;
+
+    WebScrollBlocksOn m_scrollBlocksOn;
 
     bool m_hasTransformOrigin : 1;
     bool m_contentsOpaque : 1;
