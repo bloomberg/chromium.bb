@@ -16,6 +16,8 @@
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "components/signin/core/browser/signin_manager.h"
 
+using bookmarks::BookmarkModel;
+
 namespace {
 const char kTestBookmarkURL[] = "http://www.google.com";
 } // namespace

@@ -79,6 +79,8 @@
 #include "chrome/browser/ui/webui/ntp/ntp_login_handler.h"
 #endif
 
+using bookmarks::BookmarkModel;
+
 static const char kStringsJsFile[] = "strings.js";
 static const char kHistoryJsFile[] = "history.js";
 static const char kOtherDevicesJsFile[] = "other_devices.js";

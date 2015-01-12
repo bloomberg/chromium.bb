@@ -18,6 +18,8 @@
 #import "chrome/browser/ui/cocoa/applescript/window_applescript.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 
+using bookmarks::BookmarkModel;
+
 @implementation BrowserCrApplication (AppleScriptAdditions)
 
 - (NSArray*)appleScriptWindows {

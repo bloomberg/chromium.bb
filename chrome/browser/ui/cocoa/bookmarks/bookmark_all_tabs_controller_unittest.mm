@@ -15,6 +15,7 @@
 #include "testing/platform_test.h"
 
 using base::ASCIIToUTF16;
+using bookmarks::BookmarkModel;
 
 @interface BookmarkAllTabsControllerOverride : BookmarkAllTabsController
 @end

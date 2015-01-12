@@ -104,6 +104,7 @@
 #endif
 
 using base::Time;
+using bookmarks::BookmarkModel;
 using content::BrowserThread;
 using content::DownloadManagerDelegate;
 using testing::NiceMock;

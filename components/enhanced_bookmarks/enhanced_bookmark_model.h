@@ -17,13 +17,16 @@
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/keyed_service/core/keyed_service.h"
 
-namespace base {
-class Time;
-}  // namespace base
-
-class BookmarkModel;
 class BookmarkNode;
 class GURL;
+
+namespace base {
+class Time;
+}
+
+namespace bookmarks {
+class BookmarkModel;
+}
 
 FORWARD_DECLARE_TEST(EnhancedBookmarkModelTest, SetMultipleMetaInfo);
 
@@ -36,7 +39,7 @@ class EnhancedBookmarkModelObserver;
 class EnhancedBookmarkModel : public KeyedService,
                               public bookmarks::BaseBookmarkModelObserver {
  public:
-  EnhancedBookmarkModel(BookmarkModel* bookmark_model,
+  EnhancedBookmarkModel(bookmarks::BookmarkModel* bookmark_model,
                         const std::string& version);
   ~EnhancedBookmarkModel() override;
 
@@ -124,7 +127,7 @@ class EnhancedBookmarkModel : public KeyedService,
 
   // TODO(rfevang): Ideally nothing should need the underlying bookmark model.
   // Remove when that is actually the case.
-  BookmarkModel* bookmark_model() { return bookmark_model_; }
+  bookmarks::BookmarkModel* bookmark_model() { return bookmark_model_; }
 
   // Returns true if the enhanced bookmark model is done loading.
   bool loaded() { return loaded_; }
@@ -140,22 +143,23 @@ class EnhancedBookmarkModel : public KeyedService,
 
   // bookmarks::BaseBookmarkModelObserver:
   void BookmarkModelChanged() override;
-  void BookmarkModelLoaded(BookmarkModel* model, bool ids_reassigned) override;
-  void BookmarkNodeAdded(BookmarkModel* model,
+  void BookmarkModelLoaded(bookmarks::BookmarkModel* model,
+                           bool ids_reassigned) override;
+  void BookmarkNodeAdded(bookmarks::BookmarkModel* model,
                          const BookmarkNode* parent,
                          int index) override;
-  void BookmarkNodeRemoved(BookmarkModel* model,
+  void BookmarkNodeRemoved(bookmarks::BookmarkModel* model,
                            const BookmarkNode* parent,
                            int old_index,
                            const BookmarkNode* node,
                            const std::set<GURL>& removed_urls) override;
-  void BookmarkNodeChanged(BookmarkModel* model,
+  void BookmarkNodeChanged(bookmarks::BookmarkModel* model,
                            const BookmarkNode* node) override;
-  void OnWillChangeBookmarkMetaInfo(BookmarkModel* model,
+  void OnWillChangeBookmarkMetaInfo(bookmarks::BookmarkModel* model,
                                     const BookmarkNode* node) override;
-  void BookmarkMetaInfoChanged(BookmarkModel* model,
+  void BookmarkMetaInfoChanged(bookmarks::BookmarkModel* model,
                                const BookmarkNode* node) override;
-  void BookmarkAllUserNodesRemoved(BookmarkModel* model,
+  void BookmarkAllUserNodesRemoved(bookmarks::BookmarkModel* model,
                                    const std::set<GURL>& removed_urls) override;
 
   // Initialize the mapping from remote ids to nodes.
@@ -190,7 +194,7 @@ class EnhancedBookmarkModel : public KeyedService,
   void SetMultipleMetaInfo(const BookmarkNode* node,
                            BookmarkNode::MetaInfoMap meta_info);
 
-  BookmarkModel* bookmark_model_;
+  bookmarks::BookmarkModel* bookmark_model_;
   bool loaded_;
 
   ObserverList<EnhancedBookmarkModelObserver> observers_;

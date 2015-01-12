@@ -55,6 +55,7 @@ using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF16;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::ConvertUTF16ToJavaString;
+using bookmarks::BookmarkModel;
 using metrics::OmniboxEventProto;
 
 namespace {

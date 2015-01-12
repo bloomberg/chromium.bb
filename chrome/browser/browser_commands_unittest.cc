@@ -21,6 +21,7 @@
 
 typedef BrowserWithTestWindowTest BrowserCommandsTest;
 
+using bookmarks::BookmarkModel;
 using content::OpenURLParams;
 using content::Referrer;
 using content::WebContents;

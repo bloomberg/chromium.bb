@@ -19,6 +19,8 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
+using bookmarks::BookmarkModel;
+
 namespace {
 
 class ToolbarViewTest : public InProcessBrowserTest {

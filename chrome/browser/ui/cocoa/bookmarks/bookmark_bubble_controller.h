@@ -9,11 +9,14 @@
 #import "chrome/browser/ui/cocoa/base_bubble_controller.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_model_observer_for_cocoa.h"
 
-class BookmarkModel;
 class BookmarkNode;
 class ChromeBookmarkClient;
 @class BookmarkBubbleController;
 @class BookmarkSyncPromoController;
+
+namespace bookmarks {
+class BookmarkModel;
+}
 
 // Controller for the bookmark bubble.  The bookmark bubble is a
 // bubble that pops up when clicking on the STAR next to the URL to
@@ -24,7 +27,7 @@ class ChromeBookmarkClient;
   // |client_|, |model_| and |node_| are weak and owned by the current browser's
   // profile.
   ChromeBookmarkClient* client_;  // weak
-  BookmarkModel* model_;  // weak
+  bookmarks::BookmarkModel* model_;  // weak
   const BookmarkNode* node_;  // weak
 
   // The bookmark node whose button we asked to pulse.
@@ -54,7 +57,7 @@ class ChromeBookmarkClient;
 // init routine.  Closing of the window happens implicitly on dealloc.
 - (id)initWithParentWindow:(NSWindow*)parentWindow
                     client:(ChromeBookmarkClient*)client
-                     model:(BookmarkModel*)model
+                     model:(bookmarks::BookmarkModel*)model
                       node:(const BookmarkNode*)node
          alreadyBookmarked:(BOOL)alreadyBookmarked;
 

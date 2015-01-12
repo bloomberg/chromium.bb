@@ -30,6 +30,8 @@
 #include "extensions/common/extension_set.h"
 #endif
 
+using bookmarks::BookmarkModel;
+
 namespace {
 
 const int kHistoryEntriesBeforeNewProfilePrompt = 10;

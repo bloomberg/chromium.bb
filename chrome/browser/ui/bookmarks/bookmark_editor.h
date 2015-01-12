@@ -9,11 +9,15 @@
 #include <vector>
 
 #include "base/strings/string16.h"
-#include "components/bookmarks/browser/bookmark_model.h"
+#include "components/bookmarks/browser/bookmark_node.h"
 #include "ui/gfx/native_widget_types.h"
 
 class GURL;
 class Profile;
+
+namespace bookmarks {
+class BookmarkModel;
+}
 
 // Small, cross platform interface that shows the correct platform specific
 // bookmark editor dialog.
@@ -108,7 +112,7 @@ class BookmarkEditor {
   // explicitly being added, returns a pointer to the new node that was created.
   // Otherwise the return value is identically |node|.
   static const BookmarkNode* ApplyEditsWithNoFolderChange(
-      BookmarkModel* model,
+      bookmarks::BookmarkModel* model,
       const BookmarkNode* parent,
       const EditDetails& details,
       const base::string16& new_title,
@@ -119,7 +123,7 @@ class BookmarkEditor {
   // is explicitly being added, returns a pointer to the new node that was
   // created.  Otherwise the return value is identically |node|.
   static const BookmarkNode* ApplyEditsWithPossibleFolderChange(
-      BookmarkModel* model,
+      bookmarks::BookmarkModel* model,
       const BookmarkNode* new_parent,
       const EditDetails& details,
       const base::string16& new_title,

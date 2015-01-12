@@ -7,9 +7,9 @@
 
 #include "base/macros.h"
 
-class BookmarkModel;
-
 namespace bookmarks {
+
+class BookmarkModel;
 
 // Scopes the grouping of a set of changes into one undoable action.
 class ScopedGroupBookmarkActions {

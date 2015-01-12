@@ -31,11 +31,14 @@
 class BookmarkBarViewObserver;
 class BookmarkBarViewTestHelper;
 class BookmarkContextMenu;
-class BookmarkModel;
 class Browser;
 class BrowserView;
 class ChromeBookmarkClient;
 class Profile;
+
+namespace bookmarks {
+class BookmarkModel;
+}
 
 namespace content {
 class PageNavigator;
@@ -205,28 +208,29 @@ class BookmarkBarView : public views::AccessiblePaneView,
   void OnBookmarkBubbleHidden() override;
 
   // bookmarks::BookmarkModelObserver:
-  void BookmarkModelLoaded(BookmarkModel* model, bool ids_reassigned) override;
-  void BookmarkModelBeingDeleted(BookmarkModel* model) override;
-  void BookmarkNodeMoved(BookmarkModel* model,
+  void BookmarkModelLoaded(bookmarks::BookmarkModel* model,
+                           bool ids_reassigned) override;
+  void BookmarkModelBeingDeleted(bookmarks::BookmarkModel* model) override;
+  void BookmarkNodeMoved(bookmarks::BookmarkModel* model,
                          const BookmarkNode* old_parent,
                          int old_index,
                          const BookmarkNode* new_parent,
                          int new_index) override;
-  void BookmarkNodeAdded(BookmarkModel* model,
+  void BookmarkNodeAdded(bookmarks::BookmarkModel* model,
                          const BookmarkNode* parent,
                          int index) override;
-  void BookmarkNodeRemoved(BookmarkModel* model,
+  void BookmarkNodeRemoved(bookmarks::BookmarkModel* model,
                            const BookmarkNode* parent,
                            int old_index,
                            const BookmarkNode* node,
                            const std::set<GURL>& removed_urls) override;
-  void BookmarkAllUserNodesRemoved(BookmarkModel* model,
+  void BookmarkAllUserNodesRemoved(bookmarks::BookmarkModel* model,
                                    const std::set<GURL>& removed_urls) override;
-  void BookmarkNodeChanged(BookmarkModel* model,
+  void BookmarkNodeChanged(bookmarks::BookmarkModel* model,
                            const BookmarkNode* node) override;
-  void BookmarkNodeChildrenReordered(BookmarkModel* model,
+  void BookmarkNodeChildrenReordered(bookmarks::BookmarkModel* model,
                                      const BookmarkNode* node) override;
-  void BookmarkNodeFaviconChanged(BookmarkModel* model,
+  void BookmarkNodeFaviconChanged(bookmarks::BookmarkModel* model,
                                   const BookmarkNode* node) override;
 
   // views::DragController:
@@ -315,19 +319,20 @@ class BookmarkBarView : public views::AccessiblePaneView,
 
   // Implementation for BookmarkNodeAddedImpl. Returns true if LayoutAndPaint()
   // is required.
-  bool BookmarkNodeAddedImpl(BookmarkModel* model,
+  bool BookmarkNodeAddedImpl(bookmarks::BookmarkModel* model,
                              const BookmarkNode* parent,
                              int index);
 
   // Implementation for BookmarkNodeRemoved. Returns true if LayoutAndPaint() is
   // required.
-  bool BookmarkNodeRemovedImpl(BookmarkModel* model,
+  bool BookmarkNodeRemovedImpl(bookmarks::BookmarkModel* model,
                                const BookmarkNode* parent,
                                int index);
 
   // If the node is a child of the root node, the button is updated
   // appropriately.
-  void BookmarkNodeChangedImpl(BookmarkModel* model, const BookmarkNode* node);
+  void BookmarkNodeChangedImpl(bookmarks::BookmarkModel* model,
+                               const BookmarkNode* node);
 
   // Shows the menu used during drag and drop for the specified node.
   void ShowDropFolderForNode(const BookmarkNode* node);
@@ -389,7 +394,7 @@ class BookmarkBarView : public views::AccessiblePaneView,
 
   // BookmarkModel that owns the entries and folders that are shown in this
   // view. This is owned by the Profile.
-  BookmarkModel* model_;
+  bookmarks::BookmarkModel* model_;
 
   // ChromeBookmarkClient. This is owned by the Profile.
   ChromeBookmarkClient* client_;

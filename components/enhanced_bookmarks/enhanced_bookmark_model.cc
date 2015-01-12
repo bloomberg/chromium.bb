@@ -19,6 +19,8 @@
 #include "ui/base/models/tree_node_iterator.h"
 #include "url/gurl.h"
 
+using bookmarks::BookmarkModel;
+
 namespace {
 const char* kBookmarkBarId = "f_bookmarks_bar";
 

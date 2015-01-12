@@ -15,6 +15,8 @@
 #import "chrome/browser/ui/cocoa/applescript/error_applescript.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 
+using bookmarks::BookmarkModel;
+
 @interface BookmarkNodeAppleScript()
 @property (nonatomic, copy) NSString* tempTitle;
 @end

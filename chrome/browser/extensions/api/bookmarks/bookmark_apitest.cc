@@ -15,6 +15,8 @@
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 
+using bookmarks::BookmarkModel;
+
 // Flaky on Windows and Linux. http://crbug.com/383452
 #if defined(OS_WIN) || defined(OS_LINUX)
 #define MAYBE_Bookmarks DISABLED_Bookmarks

@@ -15,6 +15,8 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 
+using bookmarks::BookmarkModel;
+
 namespace extensions {
 
 namespace keys = bookmark_api_constants;

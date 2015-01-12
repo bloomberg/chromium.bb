@@ -53,6 +53,7 @@ using base::ASCIIToUTF16;
 using base::UTF16ToUTF8;
 using base::Time;
 using base::TimeDelta;
+using bookmarks::BookmarkModel;
 
 namespace {
 

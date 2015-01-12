@@ -76,7 +76,7 @@ class BookmarkMenuDelegate : public bookmarks::BaseBookmarkModelObserver,
   // the first child of |node| to show in the menu.
   void SetActiveMenu(const BookmarkNode* node, int start_index);
 
-  BookmarkModel* GetBookmarkModel();
+  bookmarks::BookmarkModel* GetBookmarkModel();
   ChromeBookmarkClient* GetChromeBookmarkClient();
 
   // Returns the menu.
@@ -123,7 +123,7 @@ class BookmarkMenuDelegate : public bookmarks::BaseBookmarkModelObserver,
 
   // BookmarkModelObserver methods.
   void BookmarkModelChanged() override;
-  void BookmarkNodeFaviconChanged(BookmarkModel* model,
+  void BookmarkNodeFaviconChanged(bookmarks::BookmarkModel* model,
                                   const BookmarkNode* node) override;
 
   // BookmarkContextMenu::Observer methods.

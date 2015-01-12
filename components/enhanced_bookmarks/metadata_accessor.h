@@ -9,9 +9,12 @@
 #include <string>
 #include <vector>
 
-class BookmarkModel;
 class BookmarkNode;
 class GURL;
+
+namespace bookmarks {
+class BookmarkModel;
+}
 
 // TODO(rfevang): Remove this file once the remaining caller
 // is converted (enhanced_bookmarks_bridge.cc)
@@ -32,11 +35,11 @@ extern const char* kNoteKey;
 
 // Returns the remoteId for a bookmark. If the bookmark doesn't have one already
 // this function will create and set one.
-std::string RemoteIdFromBookmark(BookmarkModel* bookmark_model,
+std::string RemoteIdFromBookmark(bookmarks::BookmarkModel* bookmark_model,
                                  const BookmarkNode* node);
 
 // Sets the description of a bookmark.
-void SetDescriptionForBookmark(BookmarkModel* bookmark_model,
+void SetDescriptionForBookmark(bookmarks::BookmarkModel* bookmark_model,
                                const BookmarkNode* node,
                                const std::string& description);
 
@@ -46,7 +49,7 @@ std::string DescriptionFromBookmark(const BookmarkNode* node);
 // Sets the URL of an image representative of the page.
 // Expects the URL to be valid and not empty.
 // Returns true if the metainfo is successfully populated.
-bool SetOriginalImageForBookmark(BookmarkModel* bookmark_model,
+bool SetOriginalImageForBookmark(bookmarks::BookmarkModel* bookmark_model,
                                  const BookmarkNode* node,
                                  const GURL& url,
                                  int width,
@@ -74,7 +77,7 @@ std::string SnippetFromBookmark(const BookmarkNode* node);
 // remove existing entries for empty urls or set them if the url is not empty.
 // expects valid or empty urls. Returns true if the metainfo is successfully
 // populated.
-bool SetAllImagesForBookmark(BookmarkModel* bookmark_model,
+bool SetAllImagesForBookmark(bookmarks::BookmarkModel* bookmark_model,
                              const BookmarkNode* node,
                              const GURL& image_url,
                              int image_width,

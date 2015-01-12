@@ -14,7 +14,6 @@
 @class BookmarkBarController;
 class BookmarkContextMenuController;
 class BookmarkContextMenuDelegateBridge;
-class BookmarkModel;
 class BookmarkNode;
 @class MenuController;
 

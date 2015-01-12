@@ -17,6 +17,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
+using bookmarks::BookmarkModel;
 using testing::_;
 
 class MockObserver : public PartnerBookmarksShim::Observer {

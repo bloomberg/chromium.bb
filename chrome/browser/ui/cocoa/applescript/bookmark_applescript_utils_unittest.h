@@ -14,8 +14,6 @@
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #include "testing/platform_test.h"
 
-class BookmarkModel;
-
 // The fake object that acts as our app's delegate, useful for testing purposes.
 @interface FakeAppDelegate : AppController {
  @public

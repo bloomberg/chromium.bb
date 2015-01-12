@@ -8,7 +8,7 @@
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 
-class Profile;
+using bookmarks::BookmarkModel;
 
 ChromeFaviconClient::ChromeFaviconClient(Profile* profile) : profile_(profile) {
 }

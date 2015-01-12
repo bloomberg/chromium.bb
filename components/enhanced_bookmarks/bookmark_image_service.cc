@@ -1,6 +1,7 @@
 // Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 #include "components/enhanced_bookmarks/bookmark_image_service.h"
 
 #include "base/single_thread_task_runner.h"
@@ -11,6 +12,8 @@
 #include "components/enhanced_bookmarks/enhanced_bookmark_model.h"
 #include "components/enhanced_bookmarks/enhanced_bookmark_utils.h"
 #include "components/enhanced_bookmarks/persistent_image_store.h"
+
+using bookmarks::BookmarkModel;
 
 namespace {
 

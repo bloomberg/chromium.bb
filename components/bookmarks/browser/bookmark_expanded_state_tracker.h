@@ -9,11 +9,12 @@
 
 #include "components/bookmarks/browser/base_bookmark_model_observer.h"
 
-class BookmarkModel;
 class BookmarkNode;
 class PrefService;
 
 namespace bookmarks {
+
+class BookmarkModel;
 
 // BookmarkExpandedStateTracker is used to track a set of expanded nodes. The
 // nodes are persisted in preferences. If an expanded node is removed from the

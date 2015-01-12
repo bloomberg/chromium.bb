@@ -81,8 +81,9 @@ class ExternalProcessImporterHost
   virtual void LaunchImportIfReady();
 
   // bookmarks::BaseBookmarkModelObserver:
-  void BookmarkModelLoaded(BookmarkModel* model, bool ids_reassigned) override;
-  void BookmarkModelBeingDeleted(BookmarkModel* model) override;
+  void BookmarkModelLoaded(bookmarks::BookmarkModel* model,
+                           bool ids_reassigned) override;
+  void BookmarkModelBeingDeleted(bookmarks::BookmarkModel* model) override;
   void BookmarkModelChanged() override;
 
   // Called when TemplateURLService has been loaded.

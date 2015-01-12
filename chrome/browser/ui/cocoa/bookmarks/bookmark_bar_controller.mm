@@ -64,6 +64,7 @@
 #include "ui/resources/grit/ui_resources.h"
 
 using base::UserMetricsAction;
+using bookmarks::BookmarkModel;
 using bookmarks::BookmarkNodeData;
 using content::OpenURLParams;
 using content::Referrer;

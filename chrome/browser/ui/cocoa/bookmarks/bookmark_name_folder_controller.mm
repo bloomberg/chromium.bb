@@ -13,6 +13,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
+using bookmarks::BookmarkModel;
+
 @implementation BookmarkNameFolderController
 
 // Common initializer (private).

@@ -13,6 +13,8 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #import "ui/base/cocoa/menu_controller.h"
 
+using bookmarks::BookmarkModel;
+
 @interface BookmarkContextMenuCocoaController (Private)
 - (void)willExecuteCommand:(int)command;
 @end

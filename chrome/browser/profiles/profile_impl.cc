@@ -159,6 +159,7 @@
 using base::Time;
 using base::TimeDelta;
 using base::UserMetricsAction;
+using bookmarks::BookmarkModel;
 using content::BrowserThread;
 using content::DownloadManagerDelegate;
 

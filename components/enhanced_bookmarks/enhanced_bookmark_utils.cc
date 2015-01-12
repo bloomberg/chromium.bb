@@ -7,6 +7,8 @@
 #include "base/i18n/string_compare.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 
+using bookmarks::BookmarkModel;
+
 namespace enhanced_bookmarks {
 
 // Comparator used to sort bookmarks. No folders are allowed.

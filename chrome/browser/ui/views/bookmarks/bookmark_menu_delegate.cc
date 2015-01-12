@@ -30,6 +30,7 @@
 #include "ui/views/widget/widget.h"
 
 using base::UserMetricsAction;
+using bookmarks::BookmarkModel;
 using bookmarks::BookmarkNodeData;
 using content::PageNavigator;
 using views::MenuItemView;

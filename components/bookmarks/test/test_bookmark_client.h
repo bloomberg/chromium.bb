@@ -8,9 +8,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "components/bookmarks/browser/bookmark_client.h"
 
-class BookmarkModel;
-
 namespace bookmarks {
+
+class BookmarkModel;
 
 class TestBookmarkClient : public BookmarkClient {
  public:

@@ -19,6 +19,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
+using bookmarks::BookmarkModel;
+
 namespace policy {
 
 const char ManagedBookmarksTracker::kName[] = "name";

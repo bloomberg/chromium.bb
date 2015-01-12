@@ -13,7 +13,9 @@
 #include "ui/gfx/image/image.h"
 #include "url/gurl.h"
 
+namespace bookmarks {
 class BookmarkModel;
+}
 
 // BookmarkNode ---------------------------------------------------------------
 
@@ -115,7 +117,7 @@ class BookmarkNode : public ui::TreeNode<BookmarkNode> {
   // HistoryContentsProvider.
 
  private:
-  friend class BookmarkModel;
+  friend class bookmarks::BookmarkModel;
 
   // A helper function to initialize various fields during construction.
   void Initialize(int64 id);

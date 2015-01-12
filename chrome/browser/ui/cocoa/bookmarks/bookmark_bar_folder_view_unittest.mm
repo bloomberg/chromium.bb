@@ -23,6 +23,8 @@
 #import "third_party/ocmock/OCMock/OCMock.h"
 #import "third_party/ocmock/ocmock_extensions.h"
 
+using bookmarks::BookmarkModel;
+
 // Allows us to verify BookmarkBarFolderView.
 @interface BookmarkBarFolderView(TestingAPI)
 

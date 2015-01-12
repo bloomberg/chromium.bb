@@ -14,6 +14,7 @@
 #include "content/public/browser/browser_thread.h"
 
 using base::Time;
+using bookmarks::BookmarkModel;
 using content::BrowserThread;
 
 namespace history {

@@ -13,8 +13,6 @@
 #include "base/strings/string16.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 
-class BookmarkModel;
-
 namespace base {
 class DictionaryValue;
 class ListValue;
@@ -22,6 +20,8 @@ class Value;
 }
 
 namespace bookmarks {
+
+class BookmarkModel;
 
 // BookmarkCodec is responsible for encoding and decoding the BookmarkModel
 // into JSON values. The encoded values are written to disk via the

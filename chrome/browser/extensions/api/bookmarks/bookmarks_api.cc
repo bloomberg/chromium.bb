@@ -51,6 +51,8 @@
 #include "ui/aura/remote_window_tree_host_win.h"
 #endif
 
+using bookmarks::BookmarkModel;
+
 namespace extensions {
 
 namespace keys = bookmark_api_constants;

@@ -19,6 +19,8 @@
 #include "components/omnibox/autocomplete_match.h"
 #include "url/url_util.h"
 
+using bookmarks::BookmarkModel;
+
 void HistoryProvider::DeleteMatch(const AutocompleteMatch& match) {
   DCHECK(done_);
   DCHECK(profile_);

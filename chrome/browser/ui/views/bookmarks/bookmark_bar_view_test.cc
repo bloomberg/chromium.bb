@@ -48,6 +48,7 @@
 #include "ui/views/widget/widget.h"
 
 using base::ASCIIToUTF16;
+using bookmarks::BookmarkModel;
 using content::BrowserThread;
 using content::OpenURLParams;
 using content::PageNavigator;

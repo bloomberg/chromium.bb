@@ -23,6 +23,7 @@ using base::ASCIIToUTF16;
 using base::UTF8ToUTF16;
 using base::Time;
 using base::TimeDelta;
+using bookmarks::BookmarkModel;
 using content::BrowserThread;
 
 // Base class for bookmark editor tests. Creates a BookmarkModel and populates

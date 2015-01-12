@@ -23,6 +23,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using bookmarks::BookmarkMatch;
+using bookmarks::BookmarkModel;
 using content::BrowserThread;
 
 class TestProfileWriter : public ProfileWriter {

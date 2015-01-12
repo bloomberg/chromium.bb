@@ -17,6 +17,7 @@
 #include "components/search_engines/template_url_service.h"
 #include "content/public/browser/browser_thread.h"
 
+using bookmarks::BookmarkModel;
 using content::BrowserThread;
 
 ExternalProcessImporterHost::ExternalProcessImporterHost()

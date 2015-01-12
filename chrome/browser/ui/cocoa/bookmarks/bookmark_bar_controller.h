@@ -25,7 +25,6 @@
 @class BookmarkButtonCell;
 @class BookmarkFolderTarget;
 @class BookmarkContextMenuCocoaController;
-class BookmarkModel;
 class BookmarkNode;
 class Browser;
 class ChromeBookmarkClient;
@@ -35,6 +34,8 @@ class ThemeProvider;
 }
 
 namespace bookmarks {
+
+class BookmarkModel;
 
 // Magic numbers from Cole
 // TODO(jrg): create an objc-friendly version of bookmark_bar_constants.h?
@@ -170,8 +171,8 @@ willAnimateFromState:(BookmarkBar::State)oldState
   BOOL isAnimationRunning_;
 
   Browser* browser_;              // weak; owned by its window
-  BookmarkModel* bookmarkModel_;  // weak; part of the profile owned by the
-                                  // top-level Browser object.
+  bookmarks::BookmarkModel* bookmarkModel_;  // weak; part of the profile owned
+                                             // by the top-level Browser object.
   ChromeBookmarkClient* bookmarkClient_;
 
   // Our initial view width, which is applied in awakeFromNib.
@@ -369,20 +370,20 @@ willAnimateFromState:(BookmarkBar::State)oldState
 // Redirects from BookmarkBarBridge, the C++ object which glues us to
 // the rest of Chromium.  Internal to BookmarkBarController.
 @interface BookmarkBarController(BridgeRedirect)
-- (void)loaded:(BookmarkModel*)model;
-- (void)beingDeleted:(BookmarkModel*)model;
-- (void)nodeAdded:(BookmarkModel*)model
+- (void)loaded:(bookmarks::BookmarkModel*)model;
+- (void)beingDeleted:(bookmarks::BookmarkModel*)model;
+- (void)nodeAdded:(bookmarks::BookmarkModel*)model
            parent:(const BookmarkNode*)oldParent index:(int)index;
-- (void)nodeChanged:(BookmarkModel*)model
+- (void)nodeChanged:(bookmarks::BookmarkModel*)model
                node:(const BookmarkNode*)node;
-- (void)nodeMoved:(BookmarkModel*)model
+- (void)nodeMoved:(bookmarks::BookmarkModel*)model
         oldParent:(const BookmarkNode*)oldParent oldIndex:(int)oldIndex
         newParent:(const BookmarkNode*)newParent newIndex:(int)newIndex;
-- (void)nodeRemoved:(BookmarkModel*)model
+- (void)nodeRemoved:(bookmarks::BookmarkModel*)model
              parent:(const BookmarkNode*)oldParent index:(int)index;
-- (void)nodeFaviconLoaded:(BookmarkModel*)model
+- (void)nodeFaviconLoaded:(bookmarks::BookmarkModel*)model
                      node:(const BookmarkNode*)node;
-- (void)nodeChildrenReordered:(BookmarkModel*)model
+- (void)nodeChildrenReordered:(bookmarks::BookmarkModel*)model
                          node:(const BookmarkNode*)node;
 @end
 

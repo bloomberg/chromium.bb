@@ -15,6 +15,7 @@
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/bookmarks/browser/scoped_group_bookmark_actions.h"
 
+using bookmarks::BookmarkModel;
 using bookmarks::BookmarkNodeData;
 
 namespace {

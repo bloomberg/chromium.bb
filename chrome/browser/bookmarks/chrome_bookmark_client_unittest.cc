@@ -24,6 +24,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using bookmarks::BookmarkModel;
 using testing::Mock;
 using testing::_;
 

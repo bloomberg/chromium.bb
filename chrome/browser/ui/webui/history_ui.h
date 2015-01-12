@@ -18,9 +18,12 @@
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
-class BookmarkModel;
 class ProfileSyncService;
 class SupervisedUserService;
+
+namespace bookmarks {
+class BookmarkModel;
+}
 
 // The handler for Javascript messages related to the "history" view.
 class BrowsingHistoryHandler : public content::WebUIMessageHandler,
@@ -51,7 +54,7 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
 
     // Converts the entry to a DictionaryValue to be owned by the caller.
     scoped_ptr<base::DictionaryValue> ToValue(
-        BookmarkModel* bookmark_model,
+        bookmarks::BookmarkModel* bookmark_model,
         SupervisedUserService* supervised_user_service,
         const ProfileSyncService* sync_service) const;
 

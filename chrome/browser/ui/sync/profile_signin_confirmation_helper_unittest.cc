@@ -50,6 +50,8 @@
 #include "extensions/common/permissions/permission_set.h"
 #endif
 
+using bookmarks::BookmarkModel;
+
 namespace {
 
 template<typename T>

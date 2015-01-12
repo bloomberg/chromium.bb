@@ -20,6 +20,7 @@
 
 using base::ASCIIToUTF16;
 using bookmarks::BookmarkExpandedStateTracker;
+using bookmarks::BookmarkModel;
 
 class BookmarkEditorBaseControllerTest : public CocoaProfileTest {
  public:

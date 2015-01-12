@@ -20,6 +20,7 @@
 #import "third_party/mozilla/NSPasteboard+Utils.h"
 
 using base::UserMetricsAction;
+using bookmarks::BookmarkModel;
 
 @interface BookmarkBarView (Private)
 - (void)themeDidChangeNotification:(NSNotification*)aNotification;

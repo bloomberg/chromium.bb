@@ -15,11 +15,14 @@
 #include "components/bookmarks/browser/bookmark_client.h"
 #include "components/policy/core/browser/managed_bookmarks_tracker.h"
 
-class BookmarkModel;
 class GURL;
 class HistoryService;
 class HistoryServiceFactory;
 class Profile;
+
+namespace bookmarks {
+class BookmarkModel;
+}
 
 class ChromeBookmarkClient : public bookmarks::BookmarkClient,
                              public bookmarks::BaseBookmarkModelObserver {
@@ -27,7 +30,7 @@ class ChromeBookmarkClient : public bookmarks::BookmarkClient,
   explicit ChromeBookmarkClient(Profile* profile);
   ~ChromeBookmarkClient() override;
 
-  void Init(BookmarkModel* model);
+  void Init(bookmarks::BookmarkModel* model);
 
   // KeyedService:
   void Shutdown() override;
@@ -66,14 +69,15 @@ class ChromeBookmarkClient : public bookmarks::BookmarkClient,
 
   // bookmarks::BaseBookmarkModelObserver:
   void BookmarkModelChanged() override;
-  void BookmarkNodeRemoved(BookmarkModel* model,
+  void BookmarkNodeRemoved(bookmarks::BookmarkModel* model,
                            const BookmarkNode* parent,
                            int old_index,
                            const BookmarkNode* node,
                            const std::set<GURL>& removed_urls) override;
-  void BookmarkAllUserNodesRemoved(BookmarkModel* model,
+  void BookmarkAllUserNodesRemoved(bookmarks::BookmarkModel* model,
                                    const std::set<GURL>& removed_urls) override;
-  void BookmarkModelLoaded(BookmarkModel* model, bool ids_reassigned) override;
+  void BookmarkModelLoaded(bookmarks::BookmarkModel* model,
+                           bool ids_reassigned) override;
 
   // Helper for GetLoadExtraNodesCallback().
   static bookmarks::BookmarkPermanentNodeList LoadExtraNodes(
@@ -97,7 +101,7 @@ class ChromeBookmarkClient : public bookmarks::BookmarkClient,
 
   // Pointer to the BookmarkModel. Will be non-NULL from the call to Init to
   // the call to Shutdown. Must be valid for the whole interval.
-  BookmarkModel* model_;
+  bookmarks::BookmarkModel* model_;
 
   scoped_ptr<policy::ManagedBookmarksTracker> managed_bookmarks_tracker_;
   BookmarkPermanentNode* managed_node_;

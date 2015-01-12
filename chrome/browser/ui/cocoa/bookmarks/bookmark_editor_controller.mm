@@ -15,6 +15,7 @@
 #include "components/user_prefs/user_prefs.h"
 
 using bookmarks::BookmarkExpandedStateTracker;
+using bookmarks::BookmarkModel;
 
 @interface BookmarkEditorController (Private)
 

@@ -30,7 +30,16 @@ class FilePath;
 class SequencedTaskRunner;
 }
 
+namespace favicon_base {
+struct FaviconImageResult;
+}
+
+namespace query_parser {
+enum class MatchingAlgorithm;
+}
+
 namespace bookmarks {
+
 class BookmarkCodecTest;
 class BookmarkExpandedStateTracker;
 class BookmarkIndex;
@@ -40,15 +49,6 @@ class BookmarkStorage;
 class ScopedGroupBookmarkActions;
 class TestBookmarkClient;
 struct BookmarkMatch;
-}
-
-namespace favicon_base {
-struct FaviconImageResult;
-}
-
-namespace query_parser {
-enum class MatchingAlgorithm;
-}
 
 // BookmarkModel --------------------------------------------------------------
 
@@ -67,7 +67,7 @@ class BookmarkModel : public KeyedService {
     base::string16 title;
   };
 
-  explicit BookmarkModel(bookmarks::BookmarkClient* client);
+  explicit BookmarkModel(BookmarkClient* client);
   ~BookmarkModel() override;
 
   // KeyedService:
@@ -112,8 +112,8 @@ class BookmarkModel : public KeyedService {
   // (as long as the model is loaded).
   const BookmarkNode* GetParentForNewNodes();
 
-  void AddObserver(bookmarks::BookmarkModelObserver* observer);
-  void RemoveObserver(bookmarks::BookmarkModelObserver* observer);
+  void AddObserver(BookmarkModelObserver* observer);
+  void RemoveObserver(BookmarkModelObserver* observer);
 
   // Notifies the observers that an extensive set of changes is about to happen,
   // such as during import or sync, so they can delay any expensive UI updates
@@ -242,15 +242,14 @@ class BookmarkModel : public KeyedService {
   // in either the title or the URL. It uses default matching algorithm.
   void GetBookmarksMatching(const base::string16& text,
                             size_t max_count,
-                            std::vector<bookmarks::BookmarkMatch>* matches);
+                            std::vector<BookmarkMatch>* matches);
 
   // Returns up to |max_count| of bookmarks containing each term from |text|
   // in either the title or the URL.
-  void GetBookmarksMatching(
-      const base::string16& text,
-      size_t max_count,
-      query_parser::MatchingAlgorithm matching_algorithm,
-      std::vector<bookmarks::BookmarkMatch>* matches);
+  void GetBookmarksMatching(const base::string16& text,
+                            size_t max_count,
+                            query_parser::MatchingAlgorithm matching_algorithm,
+                            std::vector<BookmarkMatch>* matches);
 
   // Sets the store to NULL, making it so the BookmarkModel does not persist
   // any changes to disk. This is only useful during testing to speed up
@@ -262,7 +261,7 @@ class BookmarkModel : public KeyedService {
 
   // Returns the object responsible for tracking the set of expanded nodes in
   // the bookmark editor.
-  bookmarks::BookmarkExpandedStateTracker* expanded_state_tracker() {
+  BookmarkExpandedStateTracker* expanded_state_tracker() {
     return expanded_state_tracker_.get();
   }
 
@@ -302,13 +301,13 @@ class BookmarkModel : public KeyedService {
   void OnFaviconChanged(const std::set<GURL>& urls);
 
   // Returns the client used by this BookmarkModel.
-  bookmarks::BookmarkClient* client() const { return client_; }
+  BookmarkClient* client() const { return client_; }
 
  private:
-  friend class bookmarks::BookmarkCodecTest;
-  friend class bookmarks::BookmarkStorage;
-  friend class bookmarks::ScopedGroupBookmarkActions;
-  friend class bookmarks::TestBookmarkClient;
+  friend class BookmarkCodecTest;
+  friend class BookmarkStorage;
+  friend class ScopedGroupBookmarkActions;
+  friend class TestBookmarkClient;
 
   // Used to order BookmarkNodes by URL.
   class NodeURLComparator {
@@ -330,7 +329,7 @@ class BookmarkModel : public KeyedService {
 
   // Invoked when loading is finished. Sets |loaded_| and notifies observers.
   // BookmarkModel takes ownership of |details|.
-  void DoneLoading(scoped_ptr<bookmarks::BookmarkLoadDetails> details);
+  void DoneLoading(scoped_ptr<BookmarkLoadDetails> details);
 
   // Populates |nodes_ordered_by_url_set_| from root.
   void PopulateNodesByURL(BookmarkNode* node);
@@ -397,10 +396,10 @@ class BookmarkModel : public KeyedService {
 
   // Creates and returns a new BookmarkLoadDetails. It's up to the caller to
   // delete the returned object.
-  scoped_ptr<bookmarks::BookmarkLoadDetails> CreateLoadDetails(
+  scoped_ptr<BookmarkLoadDetails> CreateLoadDetails(
       const std::string& accept_languages);
 
-  bookmarks::BookmarkClient* const client_;
+  BookmarkClient* const client_;
 
   // Whether the initial set of data has been loaded.
   bool loaded_;
@@ -417,7 +416,7 @@ class BookmarkModel : public KeyedService {
   int64 next_node_id_;
 
   // The observers.
-  ObserverList<bookmarks::BookmarkModelObserver> observers_;
+  ObserverList<BookmarkModelObserver> observers_;
 
   // Set of nodes ordered by URL. This is not a map to avoid copying the
   // urls.
@@ -431,20 +430,22 @@ class BookmarkModel : public KeyedService {
   base::CancelableTaskTracker cancelable_task_tracker_;
 
   // Reads/writes bookmarks to disk.
-  scoped_ptr<bookmarks::BookmarkStorage> store_;
+  scoped_ptr<BookmarkStorage> store_;
 
-  scoped_ptr<bookmarks::BookmarkIndex> index_;
+  scoped_ptr<BookmarkIndex> index_;
 
   base::WaitableEvent loaded_signal_;
 
   // See description of IsDoingExtensiveChanges above.
   int extensive_changes_;
 
-  scoped_ptr<bookmarks::BookmarkExpandedStateTracker> expanded_state_tracker_;
+  scoped_ptr<BookmarkExpandedStateTracker> expanded_state_tracker_;
 
   std::set<std::string> non_cloned_keys_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkModel);
 };
+
+}  // namespace bookmarks
 
 #endif  // COMPONENTS_BOOKMARKS_BROWSER_BOOKMARK_MODEL_H_

@@ -13,6 +13,7 @@
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
 
 using base::ASCIIToUTF16;
+using bookmarks::BookmarkModel;
 
 namespace {
 

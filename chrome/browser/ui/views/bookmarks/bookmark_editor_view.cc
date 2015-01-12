@@ -39,6 +39,7 @@
 #include "url/gurl.h"
 
 using bookmarks::BookmarkExpandedStateTracker;
+using bookmarks::BookmarkModel;
 using views::GridLayout;
 
 namespace {

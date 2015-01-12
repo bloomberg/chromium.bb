@@ -11,7 +11,6 @@
 #include "base/strings/string16.h"
 #include "components/policy/policy_export.h"
 
-class BookmarkModel;
 class BookmarkNode;
 class BookmarkPermanentNode;
 class GURL;
@@ -19,6 +18,10 @@ class PrefService;
 
 namespace base {
 class ListValue;
+}
+
+namespace bookmarks {
+class BookmarkModel;
 }
 
 namespace policy {
@@ -34,7 +37,7 @@ class POLICY_EXPORT ManagedBookmarksTracker {
   static const char kUrl[];
   static const char kChildren[];
 
-  ManagedBookmarksTracker(BookmarkModel* model,
+  ManagedBookmarksTracker(bookmarks::BookmarkModel* model,
                           PrefService* prefs,
                           const GetManagementDomainCallback& callback);
   ~ManagedBookmarksTracker();
@@ -63,7 +66,7 @@ class POLICY_EXPORT ManagedBookmarksTracker {
                            GURL* url,
                            const base::ListValue** children);
 
-  BookmarkModel* model_;
+  bookmarks::BookmarkModel* model_;
   BookmarkPermanentNode* managed_node_;
   PrefService* prefs_;
   PrefChangeRegistrar registrar_;

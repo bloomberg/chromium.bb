@@ -180,29 +180,31 @@ class BookmarksBridge : public bookmarks::BaseBookmarkModelObserver,
   // any of the other callback methods. For example, this is called when
   // partner bookmarks change.
   void BookmarkModelChanged() override;
-  void BookmarkModelLoaded(BookmarkModel* model, bool ids_reassigned) override;
-  void BookmarkModelBeingDeleted(BookmarkModel* model) override;
-  void BookmarkNodeMoved(BookmarkModel* model,
+  void BookmarkModelLoaded(bookmarks::BookmarkModel* model,
+                           bool ids_reassigned) override;
+  void BookmarkModelBeingDeleted(bookmarks::BookmarkModel* model) override;
+  void BookmarkNodeMoved(bookmarks::BookmarkModel* model,
                          const BookmarkNode* old_parent,
                          int old_index,
                          const BookmarkNode* new_parent,
                          int new_index) override;
-  void BookmarkNodeAdded(BookmarkModel* model,
+  void BookmarkNodeAdded(bookmarks::BookmarkModel* model,
                          const BookmarkNode* parent,
                          int index) override;
-  void BookmarkNodeRemoved(BookmarkModel* model,
+  void BookmarkNodeRemoved(bookmarks::BookmarkModel* model,
                            const BookmarkNode* parent,
                            int old_index,
                            const BookmarkNode* node,
                            const std::set<GURL>& removed_urls) override;
-  void BookmarkAllUserNodesRemoved(BookmarkModel* model,
+  void BookmarkAllUserNodesRemoved(bookmarks::BookmarkModel* model,
                                    const std::set<GURL>& removed_urls) override;
-  void BookmarkNodeChanged(BookmarkModel* model,
+  void BookmarkNodeChanged(bookmarks::BookmarkModel* model,
                            const BookmarkNode* node) override;
-  void BookmarkNodeChildrenReordered(BookmarkModel* model,
+  void BookmarkNodeChildrenReordered(bookmarks::BookmarkModel* model,
                                      const BookmarkNode* node) override;
-  void ExtensiveBookmarkChangesBeginning(BookmarkModel* model) override;
-  void ExtensiveBookmarkChangesEnded(BookmarkModel* model) override;
+  void ExtensiveBookmarkChangesBeginning(
+      bookmarks::BookmarkModel* model) override;
+  void ExtensiveBookmarkChangesEnded(bookmarks::BookmarkModel* model) override;
 
   // Override PartnerBookmarksShim::Observer
   void PartnerShimChanged(PartnerBookmarksShim* shim) override;
@@ -211,7 +213,7 @@ class BookmarksBridge : public bookmarks::BaseBookmarkModelObserver,
 
   Profile* profile_;
   JavaObjectWeakGlobalRef weak_java_ref_;
-  BookmarkModel* bookmark_model_;  // weak
+  bookmarks::BookmarkModel* bookmark_model_;  // weak
   ChromeBookmarkClient* client_;   // weak
   scoped_ptr<bookmarks::ScopedGroupBookmarkActions> grouped_bookmark_actions_;
 

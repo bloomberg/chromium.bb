@@ -13,6 +13,7 @@
 #include "ui/base/models/tree_node_iterator.h"
 
 using namespace image::collections;
+using bookmarks::BookmarkModel;
 
 namespace {
 

@@ -67,19 +67,19 @@ class BookmarkTabHelper
 
   // Overridden from bookmarks::BaseBookmarkModelObserver:
   void BookmarkModelChanged() override;
-  void BookmarkModelLoaded(BookmarkModel* model, bool ids_reassigned) override;
-  void BookmarkNodeAdded(BookmarkModel* model,
+  void BookmarkModelLoaded(bookmarks::BookmarkModel* model,
+                           bool ids_reassigned) override;
+  void BookmarkNodeAdded(bookmarks::BookmarkModel* model,
                          const BookmarkNode* parent,
                          int index) override;
-  void BookmarkNodeRemoved(BookmarkModel* model,
+  void BookmarkNodeRemoved(bookmarks::BookmarkModel* model,
                            const BookmarkNode* parent,
                            int old_index,
                            const BookmarkNode* node,
                            const std::set<GURL>& removed_urls) override;
-  void BookmarkAllUserNodesRemoved(BookmarkModel* model,
+  void BookmarkAllUserNodesRemoved(bookmarks::BookmarkModel* model,
                                    const std::set<GURL>& removed_urls) override;
-
-  void BookmarkNodeChanged(BookmarkModel* model,
+  void BookmarkNodeChanged(bookmarks::BookmarkModel* model,
                            const BookmarkNode* node) override;
 
   // Overridden from content::WebContentsObserver:
@@ -93,7 +93,7 @@ class BookmarkTabHelper
   // Whether the current URL is starred.
   bool is_starred_;
 
-  BookmarkModel* bookmark_model_;
+  bookmarks::BookmarkModel* bookmark_model_;
 
   // Our delegate, to notify when the url starred changed.
   BookmarkTabHelperDelegate* delegate_;

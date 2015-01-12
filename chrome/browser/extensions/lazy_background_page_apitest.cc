@@ -33,6 +33,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "url/gurl.h"
 
+using bookmarks::BookmarkModel;
 using extensions::Extension;
 using extensions::ResultCatcher;
 

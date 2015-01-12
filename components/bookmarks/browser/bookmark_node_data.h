@@ -12,17 +12,18 @@
 #include "base/time/time.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "ui/base/clipboard/clipboard_types.h"
-
 #include "url/gurl.h"
+
 #if defined(TOOLKIT_VIEWS)
 #include "ui/base/dragdrop/os_exchange_data.h"
 #endif
 
-class BookmarkModel;
 class Pickle;
 class PickleIterator;
 
 namespace bookmarks {
+
+class BookmarkModel;
 
 // BookmarkNodeData is used to represent the following:
 //

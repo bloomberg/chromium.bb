@@ -25,6 +25,7 @@
 #include <cmath>
 
 using base::ASCIIToUTF16;
+using bookmarks::BookmarkModel;
 
 namespace {
 

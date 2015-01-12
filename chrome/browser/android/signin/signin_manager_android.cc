@@ -45,6 +45,8 @@
 #include "net/url_request/url_request_context_getter.h"
 #endif
 
+using bookmarks::BookmarkModel;
+
 namespace {
 
 // A BrowsingDataRemover::Observer that clears all Profile data and then

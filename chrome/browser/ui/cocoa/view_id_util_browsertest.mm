@@ -21,6 +21,7 @@
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "extensions/common/switches.h"
 
+using bookmarks::BookmarkModel;
 using content::OpenURLParams;
 using content::Referrer;
 

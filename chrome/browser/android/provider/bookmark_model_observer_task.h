@@ -14,11 +14,11 @@
 // Must not be created from the UI thread.
 class BookmarkModelTask {
  public:
-  explicit BookmarkModelTask(BookmarkModel* model);
-  BookmarkModel* model() const;
+  explicit BookmarkModelTask(bookmarks::BookmarkModel* model);
+  bookmarks::BookmarkModel* model() const;
 
  private:
-  BookmarkModel* model_;
+  bookmarks::BookmarkModel* model_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkModelTask);
 };
@@ -27,33 +27,33 @@ class BookmarkModelTask {
 class BookmarkModelObserverTask : public BookmarkModelTask,
                                   public bookmarks::BookmarkModelObserver {
  public:
-  explicit BookmarkModelObserverTask(BookmarkModel* bookmark_model);
+  explicit BookmarkModelObserverTask(bookmarks::BookmarkModel* bookmark_model);
   virtual ~BookmarkModelObserverTask();
 
   // bookmarks::BookmarkModelObserver:
-  virtual void BookmarkModelLoaded(BookmarkModel* model,
+  virtual void BookmarkModelLoaded(bookmarks::BookmarkModel* model,
                                    bool ids_reassigned) override;
-  virtual void BookmarkNodeMoved(BookmarkModel* model,
+  virtual void BookmarkNodeMoved(bookmarks::BookmarkModel* model,
                                  const BookmarkNode* old_parent,
                                  int old_index,
                                  const BookmarkNode* new_parent,
                                  int new_index) override;
-  virtual void BookmarkNodeAdded(BookmarkModel* model,
+  virtual void BookmarkNodeAdded(bookmarks::BookmarkModel* model,
                                  const BookmarkNode* parent,
                                  int index) override;
-  virtual void BookmarkNodeRemoved(BookmarkModel* model,
+  virtual void BookmarkNodeRemoved(bookmarks::BookmarkModel* model,
                                    const BookmarkNode* parent,
                                    int old_index,
                                    const BookmarkNode* node,
                                    const std::set<GURL>& removed_urls) override;
   virtual void BookmarkAllUserNodesRemoved(
-      BookmarkModel* model,
+      bookmarks::BookmarkModel* model,
       const std::set<GURL>& removed_urls) override;
-  virtual void BookmarkNodeChanged(BookmarkModel* model,
+  virtual void BookmarkNodeChanged(bookmarks::BookmarkModel* model,
                                    const BookmarkNode* node) override;
-  virtual void BookmarkNodeFaviconChanged(BookmarkModel* model,
+  virtual void BookmarkNodeFaviconChanged(bookmarks::BookmarkModel* model,
                                           const BookmarkNode* node) override;
-  virtual void BookmarkNodeChildrenReordered(BookmarkModel* model,
+  virtual void BookmarkNodeChildrenReordered(bookmarks::BookmarkModel* model,
                                              const BookmarkNode* node) override;
 
  private:

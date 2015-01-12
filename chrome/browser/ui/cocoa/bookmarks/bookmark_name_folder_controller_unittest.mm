@@ -16,6 +16,7 @@
 #include "testing/platform_test.h"
 
 using base::ASCIIToUTF16;
+using bookmarks::BookmarkModel;
 
 class BookmarkNameFolderControllerTest : public CocoaProfileTest {
 };

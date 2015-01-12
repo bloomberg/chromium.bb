@@ -14,6 +14,8 @@
 #include "testing/platform_test.h"
 #import "ui/events/test/cocoa_test_event_utils.h"
 
+using bookmarks::BookmarkModel;
+
 // Fake BookmarkButton delegate to get a pong on mouse entered/exited
 @interface FakeButtonDelegate : NSObject<BookmarkButtonDelegate> {
  @public

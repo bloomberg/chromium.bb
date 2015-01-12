@@ -9,9 +9,12 @@
 #include "components/history/core/browser/history_client.h"
 #include "components/history/core/browser/top_sites_observer.h"
 
-class BookmarkModel;
 class HistoryService;
 class Profile;
+
+namespace bookmarks {
+class BookmarkModel;
+}
 
 namespace history {
 class TopSites;
@@ -22,7 +25,7 @@ class TopSites;
 class ChromeHistoryClient : public history::HistoryClient,
                             public history::TopSitesObserver {
  public:
-  explicit ChromeHistoryClient(BookmarkModel* bookmark_model,
+  explicit ChromeHistoryClient(bookmarks::BookmarkModel* bookmark_model,
                                Profile* profile,
                                history::TopSites* top_sites);
   ~ChromeHistoryClient() override;
@@ -43,7 +46,7 @@ class ChromeHistoryClient : public history::HistoryClient,
 
  private:
   // The BookmarkModel, this should outlive ChromeHistoryClient.
-  BookmarkModel* bookmark_model_;
+  bookmarks::BookmarkModel* bookmark_model_;
   Profile* profile_;
   // The TopSites object is owned by the Profile (see
   // chrome/browser/profiles/profile_impl.h)

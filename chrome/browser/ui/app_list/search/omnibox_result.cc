@@ -17,6 +17,8 @@
 #include "url/gurl.h"
 #include "url/url_canon.h"
 
+using bookmarks::BookmarkModel;
+
 namespace app_list {
 
 namespace {

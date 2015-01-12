@@ -25,6 +25,8 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "content/public/browser/browser_thread.h"
 
+using bookmarks::BookmarkModel;
+
 // static
 BookmarkModel* BookmarkModelFactory::GetForProfile(Profile* profile) {
   return static_cast<BookmarkModel*>(

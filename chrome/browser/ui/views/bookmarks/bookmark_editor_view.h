@@ -128,28 +128,28 @@ class BookmarkEditorView : public BookmarkEditor,
 
   // bookmarks::BookmarkModelObserver:
   // Any structural change results in resetting the tree model.
-  void BookmarkModelLoaded(BookmarkModel* model, bool ids_reassigned) override {
-  }
-  void BookmarkNodeMoved(BookmarkModel* model,
+  void BookmarkModelLoaded(bookmarks::BookmarkModel* model,
+                           bool ids_reassigned) override {}
+  void BookmarkNodeMoved(bookmarks::BookmarkModel* model,
                          const BookmarkNode* old_parent,
                          int old_index,
                          const BookmarkNode* new_parent,
                          int new_index) override;
-  void BookmarkNodeAdded(BookmarkModel* model,
+  void BookmarkNodeAdded(bookmarks::BookmarkModel* model,
                          const BookmarkNode* parent,
                          int index) override;
-  void BookmarkNodeRemoved(BookmarkModel* model,
+  void BookmarkNodeRemoved(bookmarks::BookmarkModel* model,
                            const BookmarkNode* parent,
                            int index,
                            const BookmarkNode* node,
                            const std::set<GURL>& removed_urls) override;
-  void BookmarkAllUserNodesRemoved(BookmarkModel* model,
+  void BookmarkAllUserNodesRemoved(bookmarks::BookmarkModel* model,
                                    const std::set<GURL>& removed_urls) override;
-  void BookmarkNodeChanged(BookmarkModel* model,
+  void BookmarkNodeChanged(bookmarks::BookmarkModel* model,
                            const BookmarkNode* node) override {}
-  void BookmarkNodeChildrenReordered(BookmarkModel* model,
+  void BookmarkNodeChildrenReordered(bookmarks::BookmarkModel* model,
                                      const BookmarkNode* node) override;
-  void BookmarkNodeFaviconChanged(BookmarkModel* model,
+  void BookmarkNodeFaviconChanged(bookmarks::BookmarkModel* model,
                                   const BookmarkNode* node) override {}
 
   // Resets the model of the tree and updates the various buttons appropriately.
@@ -253,7 +253,7 @@ class BookmarkEditorView : public BookmarkEditor,
   scoped_ptr<views::MenuRunner> context_menu_runner_;
 
   // Mode used to create nodes from.
-  BookmarkModel* bb_model_;
+  bookmarks::BookmarkModel* bb_model_;
 
   // If true, we're running the menu for the bookmark bar or other bookmarks
   // nodes.

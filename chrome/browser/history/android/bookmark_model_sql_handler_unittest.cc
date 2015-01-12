@@ -21,9 +21,10 @@
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace history {
-
+using bookmarks::BookmarkModel;
 using content::BrowserThread;
+
+namespace history {
 
 class BookmarkModelSQLHandlerTest : public testing::Test {
  public:

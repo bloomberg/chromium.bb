@@ -58,6 +58,7 @@ using base::android::MethodID;
 using base::android::JavaRef;
 using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
+using bookmarks::BookmarkModel;
 using content::BrowserThread;
 
 // After refactoring the following class hierarchy has been created in order

@@ -15,6 +15,7 @@
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
+using bookmarks::BookmarkModel;
 using content::WebContents;
 
 @implementation BookmarkAllTabsController

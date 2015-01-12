@@ -15,6 +15,8 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "content/public/browser/notification_service.h"
 
+using bookmarks::BookmarkModel;
+
 ChromeHistoryClient::ChromeHistoryClient(BookmarkModel* bookmark_model,
                                          Profile* profile,
                                          history::TopSites* top_sites)

@@ -37,6 +37,8 @@
 #include "components/password_manager/core/browser/webdata/password_web_data_service_win.h"
 #endif
 
+using bookmarks::BookmarkModel;
+
 namespace {
 
 // Generates a unique folder name. If |folder_name| is not unique, then this

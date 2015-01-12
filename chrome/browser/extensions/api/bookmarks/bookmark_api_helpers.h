@@ -11,9 +11,12 @@
 #include "base/basictypes.h"
 #include "chrome/common/extensions/api/bookmarks.h"
 
-class BookmarkModel;
 class BookmarkNode;
 class ChromeBookmarkClient;
+
+namespace bookmarks {
+class BookmarkModel;
+}
 
 // Helper functions.
 namespace extensions {
@@ -38,7 +41,7 @@ void AddNodeFoldersOnly(ChromeBookmarkClient* client,
                             api::bookmarks::BookmarkTreeNode> >* nodes,
                         bool recurse);
 
-bool RemoveNode(BookmarkModel* model,
+bool RemoveNode(bookmarks::BookmarkModel* model,
                 ChromeBookmarkClient* client,
                 int64 id,
                 bool recursive,

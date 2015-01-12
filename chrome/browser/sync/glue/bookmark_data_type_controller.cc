@@ -16,6 +16,7 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "content/public/browser/browser_thread.h"
 
+using bookmarks::BookmarkModel;
 using content::BrowserThread;
 
 namespace browser_sync {

@@ -7,8 +7,11 @@
 
 #include "components/history/core/android/sql_handler.h"
 
-class BookmarkModel;
 class Profile;
+
+namespace bookmarks {
+class BookmarkModel;
+}
 
 namespace history {
 
@@ -62,7 +65,7 @@ class BookmarkModelSQLHandler : public SQLHandler {
     ~Task();
 
     // Returns profile_'s BookmarkModel if the profile_ is valid.
-    BookmarkModel* GetBookmarkModel();
+    bookmarks::BookmarkModel* GetBookmarkModel();
 
     DISALLOW_COPY_AND_ASSIGN(Task);
   };

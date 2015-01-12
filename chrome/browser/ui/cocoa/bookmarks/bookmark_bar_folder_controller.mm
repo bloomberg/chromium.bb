@@ -23,6 +23,7 @@
 #include "components/bookmarks/browser/bookmark_node_data.h"
 #include "ui/base/theme_provider.h"
 
+using bookmarks::BookmarkModel;
 using bookmarks::BookmarkNodeData;
 using bookmarks::kBookmarkBarMenuCornerRadius;
 

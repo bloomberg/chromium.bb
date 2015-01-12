@@ -97,7 +97,7 @@ class BookmarkContextMenuController
   content::PageNavigator* navigator_;
   const BookmarkNode* parent_;
   std::vector<const BookmarkNode*> selection_;
-  BookmarkModel* model_;
+  bookmarks::BookmarkModel* model_;
   scoped_ptr<ui::SimpleMenuModel> menu_model_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkContextMenuController);

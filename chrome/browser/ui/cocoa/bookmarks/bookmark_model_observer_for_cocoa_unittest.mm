@@ -11,6 +11,8 @@
 #import "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #include "chrome/test/base/testing_profile.h"
 
+using bookmarks::BookmarkModel;
+
 namespace {
 
 class BookmarkModelObserverForCocoaTest : public CocoaProfileTest {

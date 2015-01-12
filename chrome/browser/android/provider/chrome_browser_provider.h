@@ -179,8 +179,10 @@ class ChromeBrowserProvider : public bookmarks::BaseBookmarkModelObserver,
 
   // Override bookmarks::BaseBookmarkModelObserver.
   virtual void BookmarkModelChanged() override;
-  virtual void ExtensiveBookmarkChangesBeginning(BookmarkModel* model) override;
-  virtual void ExtensiveBookmarkChangesEnded(BookmarkModel* model) override;
+  virtual void ExtensiveBookmarkChangesBeginning(
+      bookmarks::BookmarkModel* model) override;
+  virtual void ExtensiveBookmarkChangesEnded(
+      bookmarks::BookmarkModel* model) override;
 
   // Deals with updates to the history service.
   void OnHistoryChanged();
@@ -209,7 +211,7 @@ class ChromeBrowserProvider : public bookmarks::BaseBookmarkModelObserver,
   // the lifetime of Profile, they are safe to use as long as the Profile is
   // alive.
   Profile* profile_;
-  BookmarkModel* bookmark_model_;
+  bookmarks::BookmarkModel* bookmark_model_;
   history::TopSites* top_sites_;
   FaviconService* favicon_service_;
 

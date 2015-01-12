@@ -15,6 +15,8 @@
 #include "ui/views/drag_utils.h"
 #include "ui/views/widget/widget.h"
 
+using bookmarks::BookmarkModel;
+
 namespace chrome {
 
 void DragBookmarks(Profile* profile,

@@ -22,6 +22,8 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image.h"
 
+using bookmarks::BookmarkModel;
+
 ///////////////////////////////////////////////////////////////////////////////
 // OmniboxPopupModel
 

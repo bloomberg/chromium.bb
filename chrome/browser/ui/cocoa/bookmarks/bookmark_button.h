@@ -9,10 +9,13 @@
 
 @class BookmarkBarFolderController;
 @class BookmarkButton;
-class BookmarkModel;
 class BookmarkNode;
 @class BrowserWindowController;
 class ThemeService;
+
+namespace bookmarks {
+class BookmarkModel;
+}
 
 // Protocol for a BookmarkButton's delegate, responsible for doing
 // things on behalf of a bookmark button.
@@ -72,7 +75,7 @@ class ThemeService;
 - (void)closeBookmarkFolder:(id)sender;
 
 // Return the bookmark model for this controller.
-- (BookmarkModel*)bookmarkModel;
+- (bookmarks::BookmarkModel*)bookmarkModel;
 
 // Perform drag enter/exit operations, such as hover-open and hover-close.
 - (BOOL)draggingAllowed:(id<NSDraggingInfo>)info;

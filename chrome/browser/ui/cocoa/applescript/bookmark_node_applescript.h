@@ -9,8 +9,11 @@
 
 #import "chrome/browser/ui/cocoa/applescript/element_applescript.h"
 
-class BookmarkModel;
 class BookmarkNode;
+
+namespace bookmarks {
+class BookmarkModel;
+}
 
 // Contains all the elements that are common to both a bookmark folder and
 // bookmark item.
@@ -41,7 +44,7 @@ class BookmarkNode;
 - (NSNumber*)index;
 
 // Returns the bookmark model of the browser, returns NULL if there is an error.
-- (BookmarkModel*)bookmarkModel;
+- (bookmarks::BookmarkModel*)bookmarkModel;
 
 @end
 

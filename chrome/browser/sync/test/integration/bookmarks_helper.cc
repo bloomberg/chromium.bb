@@ -42,6 +42,8 @@
 #include "ui/base/models/tree_node_iterator.h"
 #include "ui/gfx/image/image_skia.h"
 
+using bookmarks::BookmarkModel;
+
 namespace {
 
 // History task which runs all pending tasks on the history thread and

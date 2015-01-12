@@ -15,6 +15,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/models/combobox_model_observer.h"
 
+using bookmarks::BookmarkModel;
 using content::BrowserThread;
 
 // Implementation of ComboboxModelObserver that records when
@@ -31,7 +32,7 @@ class TestComboboxModelObserver : public ui::ComboboxModelObserver {
     return changed;
   }
 
-  // ComboboxModelObserver:
+  // ui::ComboboxModelObserver:
   void OnComboboxModelChanged(ui::ComboboxModel* model) override {
     changed_ = true;
   }

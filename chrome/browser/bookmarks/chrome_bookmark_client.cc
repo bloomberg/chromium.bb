@@ -25,6 +25,8 @@
 #include "policy/policy_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using bookmarks::BookmarkModel;
+
 namespace {
 
 void RunCallbackWithImage(

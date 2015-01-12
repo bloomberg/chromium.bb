@@ -103,6 +103,7 @@
 #include "components/wifi_sync/wifi_credential_syncable_service_factory.h"
 #endif
 
+using bookmarks::BookmarkModel;
 using browser_sync::AutofillDataTypeController;
 using browser_sync::AutofillProfileDataTypeController;
 using browser_sync::BookmarkChangeProcessor;

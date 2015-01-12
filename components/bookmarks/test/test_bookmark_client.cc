@@ -19,7 +19,7 @@ TestBookmarkClient::~TestBookmarkClient() {}
 
 scoped_ptr<BookmarkModel> TestBookmarkClient::CreateModel() {
   scoped_ptr<BookmarkModel> bookmark_model(new BookmarkModel(this));
-  scoped_ptr<bookmarks::BookmarkLoadDetails> details =
+  scoped_ptr<BookmarkLoadDetails> details =
       bookmark_model->CreateLoadDetails(std::string());
   details->LoadExtraNodes();
   bookmark_model->DoneLoading(details.Pass());
@@ -27,7 +27,7 @@ scoped_ptr<BookmarkModel> TestBookmarkClient::CreateModel() {
 }
 
 void TestBookmarkClient::SetExtraNodesToLoad(
-    bookmarks::BookmarkPermanentNodeList extra_nodes) {
+    BookmarkPermanentNodeList extra_nodes) {
   extra_nodes_to_load_ = extra_nodes.Pass();
   // Keep a copy in |extra_nodes_| for the acessor.
   extra_nodes_ = extra_nodes_to_load_.get();
@@ -63,7 +63,7 @@ bool TestBookmarkClient::IsPermanentNodeVisible(
 void TestBookmarkClient::RecordAction(const base::UserMetricsAction& action) {
 }
 
-bookmarks::LoadExtraCallback TestBookmarkClient::GetLoadExtraNodesCallback() {
+LoadExtraCallback TestBookmarkClient::GetLoadExtraNodesCallback() {
   return base::Bind(&TestBookmarkClient::LoadExtraNodes,
                     base::Passed(&extra_nodes_to_load_));
 }
@@ -82,8 +82,8 @@ bool TestBookmarkClient::CanBeEditedByUser(const BookmarkNode* node) {
 }
 
 // static
-bookmarks::BookmarkPermanentNodeList TestBookmarkClient::LoadExtraNodes(
-    bookmarks::BookmarkPermanentNodeList extra_nodes,
+BookmarkPermanentNodeList TestBookmarkClient::LoadExtraNodes(
+    BookmarkPermanentNodeList extra_nodes,
     int64* next_id) {
   return extra_nodes.Pass();
 }

@@ -24,6 +24,7 @@
 #include "ui/base/l10n/l10n_util_mac.h"
 
 using base::UserMetricsAction;
+using bookmarks::BookmarkModel;
 
 // An object to represent the ChooseAnotherFolder item in the pop up.
 @interface ChooseAnotherFolder : NSObject

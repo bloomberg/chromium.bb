@@ -12,6 +12,8 @@
 #include "testing/platform_test.h"
 #include "url/gurl.h"
 
+using bookmarks::BookmarkModel;
+
 // TODO(jrg): use OCMock.
 
 namespace {

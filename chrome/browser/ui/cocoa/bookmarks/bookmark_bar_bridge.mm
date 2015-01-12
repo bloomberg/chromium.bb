@@ -11,6 +11,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 
+using bookmarks::BookmarkModel;
 
 BookmarkBarBridge::BookmarkBarBridge(Profile* profile,
                                      BookmarkBarController* controller,

@@ -109,6 +109,7 @@ const char kOsOverrideForTabletSite[] = "Linux; Android 4.0.3";
 }
 
 using base::UserMetricsAction;
+using bookmarks::BookmarkModel;
 using content::NavigationController;
 using content::NavigationEntry;
 using content::OpenURLParams;

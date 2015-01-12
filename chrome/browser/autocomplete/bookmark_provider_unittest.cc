@@ -24,6 +24,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using bookmarks::BookmarkMatch;
+using bookmarks::BookmarkModel;
 
 // The bookmark corpus against which we will simulate searches.
 struct BookmarksTestInfo {

@@ -30,6 +30,8 @@
 #include "content/public/browser/web_ui.h"
 #include "mojo/common/common_type_converters.h"
 
+using bookmarks::BookmarkModel;
+
 namespace mojo {
 
 template <>

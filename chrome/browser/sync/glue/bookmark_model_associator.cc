@@ -36,6 +36,7 @@
 #include "sync/util/cryptographer.h"
 #include "sync/util/data_type_histogram.h"
 
+using bookmarks::BookmarkModel;
 using content::BrowserThread;
 
 namespace browser_sync {

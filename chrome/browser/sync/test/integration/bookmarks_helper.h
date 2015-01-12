@@ -20,7 +20,7 @@ class GURL;
 namespace bookmarks_helper {
 
 // Used to access the bookmark model within a particular sync profile.
-BookmarkModel* GetBookmarkModel(int index) WARN_UNUSED_RESULT;
+bookmarks::BookmarkModel* GetBookmarkModel(int index) WARN_UNUSED_RESULT;
 
 // Used to access the bookmark bar within a particular sync profile.
 const BookmarkNode* GetBookmarkBarNode(int index) WARN_UNUSED_RESULT;
@@ -35,7 +35,7 @@ const BookmarkNode* GetSyncedBookmarksNode(int index) WARN_UNUSED_RESULT;
 const BookmarkNode* GetManagedNode(int index) WARN_UNUSED_RESULT;
 
 // Used to access the bookmarks within the verifier sync profile.
-BookmarkModel* GetVerifierBookmarkModel() WARN_UNUSED_RESULT;
+bookmarks::BookmarkModel* GetVerifierBookmarkModel() WARN_UNUSED_RESULT;
 
 // Adds a URL with address |url| and title |title| to the bookmark bar of
 // profile |profile|. Returns a pointer to the node that was added.

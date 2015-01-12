@@ -34,15 +34,15 @@ class BookmarkManagerPrivateEventRouter
     : public bookmarks::BaseBookmarkModelObserver {
  public:
   BookmarkManagerPrivateEventRouter(content::BrowserContext* browser_context,
-                                    BookmarkModel* bookmark_model);
+                                    bookmarks::BookmarkModel* bookmark_model);
   ~BookmarkManagerPrivateEventRouter() override;
 
   // bookmarks::BaseBookmarkModelObserver:
   void BookmarkModelChanged() override;
-  void BookmarkModelBeingDeleted(BookmarkModel* model) override;
-  void OnWillChangeBookmarkMetaInfo(BookmarkModel* model,
+  void BookmarkModelBeingDeleted(bookmarks::BookmarkModel* model) override;
+  void OnWillChangeBookmarkMetaInfo(bookmarks::BookmarkModel* model,
                                     const BookmarkNode* node) override;
-  void BookmarkMetaInfoChanged(BookmarkModel* model,
+  void BookmarkMetaInfoChanged(bookmarks::BookmarkModel* model,
                                const BookmarkNode* node) override;
 
  private:
@@ -54,7 +54,7 @@ class BookmarkManagerPrivateEventRouter
   BookmarkNode::MetaInfoMap prev_meta_info_;
 
   content::BrowserContext* browser_context_;
-  BookmarkModel* bookmark_model_;
+  bookmarks::BookmarkModel* bookmark_model_;
 };
 
 class BookmarkManagerPrivateAPI : public BrowserContextKeyedAPI,

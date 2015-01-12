@@ -69,6 +69,7 @@
 #include "ui/gfx/image/image.h"
 #include "url/url_util.h"
 
+using bookmarks::BookmarkModel;
 using metrics::OmniboxEventProto;
 using predictors::AutocompleteActionPredictor;
 

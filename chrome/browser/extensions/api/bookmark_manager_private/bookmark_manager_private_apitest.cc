@@ -20,6 +20,8 @@
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "components/user_prefs/user_prefs.h"
 
+using bookmarks::BookmarkModel;
+
 // Times out on win syzyasan, http://crbug.com/166026
 #if defined(SYZYASAN)
 #define MAYBE_BookmarkManager DISABLED_BookmarkManager

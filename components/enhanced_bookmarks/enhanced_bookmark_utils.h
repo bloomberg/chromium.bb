@@ -9,8 +9,11 @@
 #include <string>
 #include <vector>
 
-class BookmarkModel;
 class BookmarkNode;
+
+namespace bookmarks {
+class BookmarkModel;
+}
 
 namespace enhanced_bookmarks {
 
@@ -21,22 +24,25 @@ void SortBookmarksByName(std::vector<const BookmarkNode*>& nodes);
 // Returns the permanent nodes whose url children are considered uncategorized
 // and whose folder children should be shown in the bookmark menu.
 // |model| must be loaded.
-std::vector<const BookmarkNode*> PrimaryPermanentNodes(BookmarkModel* model);
+std::vector<const BookmarkNode*> PrimaryPermanentNodes(
+    bookmarks::BookmarkModel* model);
 
 // Returns an unsorted vector of folders that are considered to be at the "root"
 // level of the bookmark hierarchy. Functionally, this means all direct
 // descendants of PrimaryPermanentNodes, and possibly a node for the bookmarks
 // bar.
-std::vector<const BookmarkNode*> RootLevelFolders(BookmarkModel* model);
+std::vector<const BookmarkNode*> RootLevelFolders(
+    bookmarks::BookmarkModel* model);
 
 // Returns whether |node| is a primary permanent node in the sense of
 // |PrimaryPermanentNodes|.
-bool IsPrimaryPermanentNode(const BookmarkNode* node, BookmarkModel* model);
+bool IsPrimaryPermanentNode(const BookmarkNode* node,
+                            bookmarks::BookmarkModel* model);
 
 // Returns the root level folder in which this node is directly, or indirectly
 // via subfolders, located.
 const BookmarkNode* RootLevelFolderForNode(const BookmarkNode* node,
-                                           BookmarkModel* model);
+                                           bookmarks::BookmarkModel* model);
 
 }  // namespace enhanced_bookmarks
 

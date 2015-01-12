@@ -13,8 +13,11 @@
 #include "components/bookmarks/browser/bookmark_expanded_state_tracker.h"
 
 class BookmarkEditorBaseControllerBridge;
-class BookmarkModel;
 @class BookmarkTreeBrowserCell;
+
+namespace bookmarks {
+class BookmarkModel;
+}
 
 // A base controller class for bookmark creation and editing dialogs which
 // present the current bookmark folder structure in a tree view.  Do not
@@ -116,7 +119,7 @@ class BookmarkModel;
 - (BOOL)okEnabled;
 
 // Accessors
-- (BookmarkModel*)bookmarkModel;
+- (bookmarks::BookmarkModel*)bookmarkModel;
 - (Profile*)profile;
 - (const BookmarkNode*)parentNode;
 - (const GURL&)url;

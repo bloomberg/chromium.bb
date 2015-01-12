@@ -42,6 +42,7 @@ using base::android::ToJavaIntArray;
 using bookmarks::android::JavaBookmarkIdCreateBookmarkId;
 using bookmarks::android::JavaBookmarkIdGetId;
 using bookmarks::android::JavaBookmarkIdGetType;
+using bookmarks::BookmarkModel;
 using bookmarks::BookmarkType;
 using content::BrowserThread;
 

@@ -24,6 +24,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
+using bookmarks::BookmarkModel;
 using testing::Mock;
 using testing::_;
 

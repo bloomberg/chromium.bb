@@ -44,32 +44,34 @@ class BookmarkEventRouter : public bookmarks::BookmarkModelObserver {
   explicit BookmarkEventRouter(Profile* profile);
   ~BookmarkEventRouter() override;
 
-  // BookmarkModelObserver:
-  void BookmarkModelLoaded(BookmarkModel* model, bool ids_reassigned) override;
-  void BookmarkModelBeingDeleted(BookmarkModel* model) override;
-  void BookmarkNodeMoved(BookmarkModel* model,
+  // bookmarks::BookmarkModelObserver:
+  void BookmarkModelLoaded(bookmarks::BookmarkModel* model,
+                           bool ids_reassigned) override;
+  void BookmarkModelBeingDeleted(bookmarks::BookmarkModel* model) override;
+  void BookmarkNodeMoved(bookmarks::BookmarkModel* model,
                          const BookmarkNode* old_parent,
                          int old_index,
                          const BookmarkNode* new_parent,
                          int new_index) override;
-  void BookmarkNodeAdded(BookmarkModel* model,
+  void BookmarkNodeAdded(bookmarks::BookmarkModel* model,
                          const BookmarkNode* parent,
                          int index) override;
-  void BookmarkNodeRemoved(BookmarkModel* model,
+  void BookmarkNodeRemoved(bookmarks::BookmarkModel* model,
                            const BookmarkNode* parent,
                            int old_index,
                            const BookmarkNode* node,
                            const std::set<GURL>& removed_urls) override;
-  void BookmarkAllUserNodesRemoved(BookmarkModel* model,
+  void BookmarkAllUserNodesRemoved(bookmarks::BookmarkModel* model,
                                    const std::set<GURL>& removed_urls) override;
-  void BookmarkNodeChanged(BookmarkModel* model,
+  void BookmarkNodeChanged(bookmarks::BookmarkModel* model,
                            const BookmarkNode* node) override;
-  void BookmarkNodeFaviconChanged(BookmarkModel* model,
+  void BookmarkNodeFaviconChanged(bookmarks::BookmarkModel* model,
                                   const BookmarkNode* node) override;
-  void BookmarkNodeChildrenReordered(BookmarkModel* model,
+  void BookmarkNodeChildrenReordered(bookmarks::BookmarkModel* model,
                                      const BookmarkNode* node) override;
-  void ExtensiveBookmarkChangesBeginning(BookmarkModel* model) override;
-  void ExtensiveBookmarkChangesEnded(BookmarkModel* model) override;
+  void ExtensiveBookmarkChangesBeginning(
+      bookmarks::BookmarkModel* model) override;
+  void ExtensiveBookmarkChangesEnded(bookmarks::BookmarkModel* model) override;
 
  private:
   // Helper to actually dispatch an event to extension listeners.
@@ -77,7 +79,7 @@ class BookmarkEventRouter : public bookmarks::BookmarkModelObserver {
                      scoped_ptr<base::ListValue> event_args);
 
   content::BrowserContext* browser_context_;
-  BookmarkModel* model_;
+  bookmarks::BookmarkModel* model_;
   ChromeBookmarkClient* client_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkEventRouter);
@@ -126,7 +128,7 @@ class BookmarksFunction : public ChromeAsyncExtensionFunction,
   virtual bool RunOnReady() = 0;
 
   // Helper to get the BookmarkModel.
-  BookmarkModel* GetBookmarkModel();
+  bookmarks::BookmarkModel* GetBookmarkModel();
 
   // Helper to get the ChromeBookmarkClient.
   ChromeBookmarkClient* GetChromeBookmarkClient();
@@ -144,7 +146,7 @@ class BookmarksFunction : public ChromeAsyncExtensionFunction,
   // Helper to create a bookmark node from a CreateDetails object. If a node
   // can't be created based on the given details, sets error_ and returns NULL.
   const BookmarkNode* CreateBookmarkNode(
-      BookmarkModel* model,
+      bookmarks::BookmarkModel* model,
       const api::bookmarks::CreateDetails& details,
       const BookmarkNode::MetaInfoMap* meta_info);
 
@@ -161,7 +163,8 @@ class BookmarksFunction : public ChromeAsyncExtensionFunction,
  private:
   // bookmarks::BaseBookmarkModelObserver:
   void BookmarkModelChanged() override;
-  void BookmarkModelLoaded(BookmarkModel* model, bool ids_reassigned) override;
+  void BookmarkModelLoaded(bookmarks::BookmarkModel* model,
+                           bool ids_reassigned) override;
 
   void RunAndSendResponse();
 };

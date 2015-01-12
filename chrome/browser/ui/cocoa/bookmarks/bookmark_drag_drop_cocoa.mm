@@ -22,6 +22,8 @@
 #include "components/bookmarks/browser/bookmark_node_data.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 
+using bookmarks::BookmarkModel;
+
 namespace {
 
 // Make a drag image from the drop data.

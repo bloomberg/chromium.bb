@@ -37,8 +37,9 @@ class BookmarkDataTypeController : public FrontendDataTypeController,
 
   // bookmarks::BaseBookmarkModelObserver:
   void BookmarkModelChanged() override;
-  void BookmarkModelLoaded(BookmarkModel* model, bool ids_reassigned) override;
-  void BookmarkModelBeingDeleted(BookmarkModel* model) override;
+  void BookmarkModelLoaded(bookmarks::BookmarkModel* model,
+                           bool ids_reassigned) override;
+  void BookmarkModelBeingDeleted(bookmarks::BookmarkModel* model) override;
 
   // Helper that returns true iff both the bookmark model and the history
   // service have finished loading.
@@ -50,7 +51,7 @@ class BookmarkDataTypeController : public FrontendDataTypeController,
 
   ScopedObserver<HistoryService, HistoryServiceObserver>
       history_service_observer_;
-  ScopedObserver<BookmarkModel, BaseBookmarkModelObserver>
+  ScopedObserver<bookmarks::BookmarkModel, BaseBookmarkModelObserver>
       bookmark_model_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkDataTypeController);

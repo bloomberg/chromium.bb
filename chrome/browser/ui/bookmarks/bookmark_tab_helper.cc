@@ -18,6 +18,8 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 
+using bookmarks::BookmarkModel;
+
 namespace {
 
 bool IsNTPWebUI(content::WebContents* web_contents) {

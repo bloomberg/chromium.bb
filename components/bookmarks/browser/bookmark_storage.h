@@ -14,8 +14,6 @@
 #include "base/memory/weak_ptr.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 
-class BookmarkModel;
-
 namespace base {
 class SequencedTaskRunner;
 }
@@ -23,6 +21,7 @@ class SequencedTaskRunner;
 namespace bookmarks {
 
 class BookmarkIndex;
+class BookmarkModel;
 
 // A list of BookmarkPermanentNodes that owns them.
 typedef ScopedVector<BookmarkPermanentNode> BookmarkPermanentNodeList;

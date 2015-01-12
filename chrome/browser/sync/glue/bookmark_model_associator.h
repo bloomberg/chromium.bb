@@ -17,9 +17,12 @@
 #include "components/sync_driver/model_associator.h"
 #include "sync/internal_api/public/util/unrecoverable_error_handler.h"
 
-class BookmarkModel;
 class BookmarkNode;
 class Profile;
+
+namespace bookmarks {
+class BookmarkModel;
+}
 
 namespace syncer {
 class BaseNode;
@@ -41,7 +44,7 @@ class BookmarkModelAssociator
   // expect the mobile bookmarks permanent folder to be created.
   // Should be set to true only by mobile clients.
   BookmarkModelAssociator(
-      BookmarkModel* bookmark_model,
+      bookmarks::BookmarkModel* bookmark_model,
       Profile* profile_,
       syncer::UserShare* user_share,
       sync_driver::DataTypeErrorHandler* unrecoverable_error_handler,
@@ -146,7 +149,7 @@ class BookmarkModelAssociator
       syncer::SyncMergeResult* local_merge_result,
       syncer::SyncMergeResult* syncer_merge_result) const;
 
-  BookmarkModel* bookmark_model_;
+  bookmarks::BookmarkModel* bookmark_model_;
   Profile* profile_;
   syncer::UserShare* user_share_;
   sync_driver::DataTypeErrorHandler* unrecoverable_error_handler_;

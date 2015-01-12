@@ -33,6 +33,7 @@
 #include "ui/views/widget/widget.h"
 
 using base::UserMetricsAction;
+using bookmarks::BookmarkModel;
 using views::ColumnSet;
 using views::GridLayout;
 

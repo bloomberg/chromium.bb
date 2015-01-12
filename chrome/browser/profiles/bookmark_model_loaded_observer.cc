@@ -7,6 +7,8 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 
+using bookmarks::BookmarkModel;
+
 BookmarkModelLoadedObserver::BookmarkModelLoadedObserver(Profile* profile)
     : profile_(profile) {
 }

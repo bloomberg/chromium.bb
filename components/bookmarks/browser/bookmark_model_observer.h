@@ -7,11 +7,12 @@
 
 #include <set>
 
-class BookmarkModel;
 class BookmarkNode;
 class GURL;
 
 namespace bookmarks {
+
+class BookmarkModel;
 
 // Observer for the BookmarkModel.
 class BookmarkModelObserver {
