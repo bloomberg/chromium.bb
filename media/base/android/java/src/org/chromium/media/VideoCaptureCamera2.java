@@ -274,6 +274,14 @@ public class VideoCaptureCamera2 extends VideoCapture {
         }
     }
 
+    static boolean isLegacyDevice(Context appContext, int id) {
+        final CameraCharacteristics cameraCharacteristics =
+                getCameraCharacteristics(appContext, id);
+        return cameraCharacteristics != null
+                && cameraCharacteristics.get(CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL)
+                == CameraMetadata.INFO_SUPPORTED_HARDWARE_LEVEL_LEGACY;
+    }
+
     static int getNumberOfCameras(Context appContext) {
         final CameraManager manager =
                 (CameraManager) appContext.getSystemService(Context.CAMERA_SERVICE);

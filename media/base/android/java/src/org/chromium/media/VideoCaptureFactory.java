@@ -96,7 +96,7 @@ class VideoCaptureFactory {
     @CalledByNative
     static VideoCapture createVideoCapture(
             Context context, int id, long nativeVideoCaptureDeviceAndroid) {
-        if (isLReleaseOrLater()) {
+        if (isLReleaseOrLater() && !VideoCaptureCamera2.isLegacyDevice(context, id)) {
             return new VideoCaptureCamera2(context,
                                            id,
                                            nativeVideoCaptureDeviceAndroid);
@@ -118,7 +118,7 @@ class VideoCaptureFactory {
 
     @CalledByNative
     static String getDeviceName(int id, Context appContext) {
-        if (isLReleaseOrLater()) {
+        if (isLReleaseOrLater() && !VideoCaptureCamera2.isLegacyDevice(appContext, id)) {
             return VideoCaptureCamera2.getName(id, appContext);
         }
         return (ChromiumCameraInfo.isSpecialCamera(id))
@@ -128,7 +128,7 @@ class VideoCaptureFactory {
 
     @CalledByNative
     static VideoCapture.CaptureFormat[] getDeviceSupportedFormats(Context appContext, int id) {
-        if (isLReleaseOrLater()) {
+        if (isLReleaseOrLater() && !VideoCaptureCamera2.isLegacyDevice(appContext, id)) {
             return VideoCaptureCamera2.getDeviceSupportedFormats(appContext, id);
         }
         return ChromiumCameraInfo.isSpecialCamera(id)
