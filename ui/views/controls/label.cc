@@ -108,6 +108,7 @@ void Label::SetBackgroundColor(SkColor color) {
   background_color_ = color;
   background_color_set_ = true;
   RecalculateColors();
+  cached_draw_params_.text.clear();
 }
 
 void Label::SetShadows(const gfx::ShadowValues& shadows) {
