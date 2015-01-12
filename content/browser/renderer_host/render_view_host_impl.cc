@@ -334,8 +334,6 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs(const GURL& url) {
 
   prefs.remote_fonts_enabled =
       !command_line.HasSwitch(switches::kDisableRemoteFonts);
-  prefs.xslt_enabled =
-      !command_line.HasSwitch(switches::kDisableXSLT);
 
   prefs.local_storage_enabled =
       !command_line.HasSwitch(switches::kDisableLocalStorage);
