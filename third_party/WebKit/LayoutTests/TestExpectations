@@ -423,17 +423,6 @@ crbug.com/320477 [ Debug ] inspector/sources/debugger/debugger-pause-in-internal
 
 crbug.com/396823 [ Mac ] virtual/regionbasedmulticol/fast/multicol/multicol-with-child-renderLayer-for-input.html [ ImageOnlyFailure ]
 
-crbug.com/444921 fast/block/lineboxcontain/block-glyphs-replaced.html [ NeedsRebaseline ]
-crbug.com/444921 fast/block/lineboxcontain/block-glyphs.html [ NeedsRebaseline ]
-crbug.com/444921 fast/block/lineboxcontain/block-with-ideographs.xhtml [ NeedsRebaseline ]
-crbug.com/444921 fast/block/lineboxcontain/glyphs.html [ NeedsRebaseline ]
-crbug.com/444921 fast/block/lineboxcontain/glyphs-clipping.html [ NeedsRebaseline ]
-crbug.com/444921 virtual/slimmingpaint/fast/block/lineboxcontain/block-glyphs-replaced.html [ NeedsRebaseline ]
-crbug.com/444921 virtual/slimmingpaint/fast/block/lineboxcontain/block-glyphs.html [ NeedsRebaseline ]
-crbug.com/444921 virtual/slimmingpaint/fast/block/lineboxcontain/block-with-ideographs.xhtml [ NeedsRebaseline ]
-crbug.com/444921 virtual/slimmingpaint/fast/block/lineboxcontain/glyphs.html [ NeedsRebaseline ]
-crbug.com/444921 virtual/slimmingpaint/fast/block/lineboxcontain/glyphs-clipping.html [ NeedsRebaseline ]
-
 crbug.com/442730 inspector/sources/debugger/watch-expressions-preserve-expansion.html [ Pass Failure ]
 
 # Printing Layout broken in these tests.
