@@ -51,7 +51,7 @@
 namespace {
 
 bool g_opt_long;
-const char* g_opt_fs_type = "p";
+const base::FilePath::CharType* g_opt_fs_type = FILE_PATH_LITERAL("p");
 
 void ShowMessageAndExit(const std::string& msg) {
   fprintf(stderr, "%s\n", msg.c_str());
@@ -187,11 +187,11 @@ int main(int argc, char* argv[]) {
       argc--;
       argv++;
     } else if (std::string(argv[1]) == "-t") {
-      g_opt_fs_type = "t";
+      g_opt_fs_type = FILE_PATH_LITERAL("t");
       argc--;
       argv++;
     } else if (std::string(argv[1]) == "-s") {
-      g_opt_fs_type = "s";
+      g_opt_fs_type = FILE_PATH_LITERAL("s");
       argc--;
       argv++;
     } else {
