@@ -67,6 +67,7 @@ AnimationTimeline::AnimationTimeline(Document* document, PassOwnPtrWillBeRawPtr<
     , m_documentCurrentTimeSnapshot(0)
     , m_zeroTimeOffset(0)
     , m_playbackRate(1)
+    , m_lastCurrentTimeInternal(0)
 {
     if (!timing)
         m_timing = adoptPtrWillBeNoop(new AnimationTimelineTiming(this));
