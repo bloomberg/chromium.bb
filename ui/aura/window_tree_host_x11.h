@@ -68,7 +68,7 @@ class AURA_EXPORT WindowTreeHostX11 : public WindowTreeHost,
 
   ::Window x_root_window() { return x_root_window_; }
   XDisplay* xdisplay() { return xdisplay_; }
-  const gfx::Rect bounds() const { return bounds_; }
+  const gfx::Rect& bounds() const { return bounds_; }
   ui::X11AtomCache* atom_cache() { return &atom_cache_; }
 
  private:
