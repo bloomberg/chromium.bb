@@ -627,6 +627,10 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // changed.
   void LocaleChanged();
 
+  // Notifies the view hierarchy contained in this widget that the device scale
+  // factor changed.
+  void DeviceScaleFactorChanged(float device_scale_factor);
+
   void SetFocusTraversableParent(FocusTraversable* parent);
   void SetFocusTraversableParentView(View* parent_view);
 

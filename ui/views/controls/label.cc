@@ -434,6 +434,16 @@ void Label::OnNativeThemeChanged(const ui::NativeTheme* theme) {
   UpdateColorsFromTheme(theme);
 }
 
+void Label::OnDeviceScaleFactorChanged(float device_scale_factor) {
+  View::OnDeviceScaleFactorChanged(device_scale_factor);
+  // When the device scale factor is changed, some font rendering parameters is
+  // changed (especially, hinting). The bounding box of the text has to be
+  // re-computed based on the new parameters. See crbug.com/441439
+  ResetLayoutCache();
+  PreferredSizeChanged();
+  SchedulePaint();
+}
+
 void Label::Init(const base::string16& text, const gfx::FontList& font_list) {
   font_list_ = font_list;
   enabled_color_set_ = disabled_color_set_ = background_color_set_ = false;

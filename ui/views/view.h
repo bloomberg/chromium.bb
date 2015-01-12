@@ -1425,11 +1425,15 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Used to propagate theme changed notifications from the root view to all
   // views in the hierarchy.
-  virtual void PropagateThemeChanged();
+  void PropagateThemeChanged();
 
   // Used to propagate locale changed notifications from the root view to all
   // views in the hierarchy.
-  virtual void PropagateLocaleChanged();
+  void PropagateLocaleChanged();
+
+  // Used to propagate device scale factor changed notifications from the root
+  // view to all views in the hierarchy.
+  void PropagateDeviceScaleFactorChanged(float device_scale_factor);
 
   // Tooltips ------------------------------------------------------------------
 

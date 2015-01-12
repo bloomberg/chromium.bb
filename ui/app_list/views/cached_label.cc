@@ -67,7 +67,7 @@ void CachedLabel::OnPaint(gfx::Canvas* canvas) {
 void CachedLabel::OnDeviceScaleFactorChanged(
     float device_scale_factor) {
   Invalidate();
-  View::OnDeviceScaleFactorChanged(device_scale_factor);
+  Label::OnDeviceScaleFactorChanged(device_scale_factor);
 }
 
 }  // namespace app_list

@@ -2426,6 +2426,16 @@ void View::PropagateLocaleChanged() {
   OnLocaleChanged();
 }
 
+void View::PropagateDeviceScaleFactorChanged(float device_scale_factor) {
+  for (int i = child_count() - 1; i >= 0; --i)
+    child_at(i)->PropagateDeviceScaleFactorChanged(device_scale_factor);
+
+  // If the view is drawing to the layer, OnDeviceScaleFactorChanged() is called
+  // through LayerDelegate callback.
+  if (!layer())
+    OnDeviceScaleFactorChanged(device_scale_factor);
+}
+
 // Tooltips --------------------------------------------------------------------
 
 void View::UpdateTooltip() {

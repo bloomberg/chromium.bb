@@ -227,6 +227,10 @@ void RootView::LocaleChanged() {
   View::PropagateLocaleChanged();
 }
 
+void RootView::DeviceScaleFactorChanged(float device_scale_factor) {
+  View::PropagateDeviceScaleFactorChanged(device_scale_factor);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // RootView, FocusTraversable implementation:
 

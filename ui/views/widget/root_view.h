@@ -86,6 +86,10 @@ class VIEWS_EXPORT RootView : public View,
   // hierarchy.
   void LocaleChanged();
 
+  // Public API for broadcasting device scale factor change notifications to
+  // this View hierarchy.
+  void DeviceScaleFactorChanged(float device_scale_factor);
+
   // Overridden from FocusTraversable:
   FocusSearch* GetFocusSearch() override;
   FocusTraversable* GetFocusTraversableParent() override;

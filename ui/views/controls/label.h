@@ -147,6 +147,7 @@ class VIEWS_EXPORT Label : public View {
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   void OnPaint(gfx::Canvas* canvas) override;
   void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
+  void OnDeviceScaleFactorChanged(float device_scale_factor) override;
 
  private:
   struct DrawStringParams {
