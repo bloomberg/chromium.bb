@@ -3,9 +3,9 @@ ROLE_SYSTEM_DOCUMENT READONLY FOCUSABLE
         IA2_ROLE_CAPTION
             ROLE_SYSTEM_STATICTEXT name='Browser and Engine'
         ROLE_SYSTEM_ROW
-            ROLE_SYSTEM_CELL
+            ROLE_SYSTEM_COLUMNHEADER
                 ROLE_SYSTEM_STATICTEXT name='Browser'
-            ROLE_SYSTEM_CELL
+            ROLE_SYSTEM_COLUMNHEADER
                 ROLE_SYSTEM_STATICTEXT name='Engine'
         ROLE_SYSTEM_ROW
             ROLE_SYSTEM_CELL
