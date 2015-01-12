@@ -75,16 +75,16 @@ bool LaunchXdgUtility(const std::vector<std::string>& argv, int* exit_code) {
   base::FileHandleMappingVector no_stdin;
   no_stdin.push_back(std::make_pair(devnull, STDIN_FILENO));
 
-  base::ProcessHandle handle;
   base::LaunchOptions options;
   options.fds_to_remap = &no_stdin;
-  if (!base::LaunchProcess(argv, options, &handle)) {
+  base::Process process = base::LaunchProcess(argv, options);
+  if (!process.IsValid()) {
     close(devnull);
     return false;
   }
   close(devnull);
 
-  return base::WaitForExitCode(handle, exit_code);
+  return process.WaitForExit(exit_code);
 }
 
 std::string CreateShortcutIcon(const gfx::ImageFamily& icon_images,
