@@ -169,27 +169,6 @@
       ],
     },
     {
-      'target_name': 'nacl_ppapi_util',
-      'type': 'none',
-      'variables': {
-        'nlib_target': 'libnacl_ppapi_util.a',
-        'nso_target': 'libnacl_ppapi_util.so',
-        'build_newlib': 1,
-        'build_glibc': 1,
-        'build_pnacl_newlib': 1,
-        'nexe_destination_dir': 'nacl_test_data',
-        'sources': [
-          # TODO(ncbray) move these files once SCons no longer depends on them.
-          '../../../../ppapi/native_client/src/untrusted/nacl_ppapi_util/string_buffer.cc',
-          '../../../../ppapi/native_client/src/untrusted/nacl_ppapi_util/nacl_ppapi_util.cc',
-          '../../../../ppapi/native_client/src/untrusted/nacl_ppapi_util/ppapi_srpc_main.c',
-        ]
-      },
-      'dependencies': [
-        '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
-      ],
-    },
-    {
       'target_name': 'ppapi_progress_events',
       'type': 'none',
       'variables': {
@@ -522,7 +501,6 @@
         'build_pnacl_newlib': 0,
         'nexe_destination_dir': 'nacl_test_data',
         'link_flags': [
-          '-lnacl_ppapi_util',
           '-lppapi_cpp',
           '-lppapi',
           '-lsrpc',
@@ -559,7 +537,6 @@
         '<(DEPTH)/native_client/src/untrusted/nacl/nacl.gyp:imc_syscalls_lib',
         '<(DEPTH)/native_client/src/untrusted/nacl/nacl.gyp:nacl_lib',
         '<(DEPTH)/native_client/src/trusted/weak_ref/weak_ref.gyp:weak_ref_lib',
-        'nacl_ppapi_util',
       ],
       'conditions': [
         # These are needed to build a non-SFI nexe binary.
