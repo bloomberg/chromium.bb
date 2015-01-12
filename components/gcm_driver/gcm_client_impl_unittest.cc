@@ -600,14 +600,6 @@ TEST_F(GCMClientImplTest, LoadingCompleted) {
   EXPECT_TRUE(device_checkin_info().account_tokens.empty());
 }
 
-TEST_F(GCMClientImplTest, CheckOut) {
-  EXPECT_TRUE(mcs_client());
-  EXPECT_TRUE(connection_factory());
-  gcm_client()->CheckOut();
-  EXPECT_FALSE(mcs_client());
-  EXPECT_FALSE(connection_factory());
-}
-
 TEST_F(GCMClientImplTest, RegisterApp) {
   EXPECT_FALSE(ExistsRegistration(kAppId));
 

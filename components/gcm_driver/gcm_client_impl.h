@@ -93,7 +93,6 @@ class GCMClientImpl
       GCMClient::Delegate* delegate) override;
   void Start() override;
   void Stop() override;
-  void CheckOut() override;
   void Register(const std::string& app_id,
                 const std::vector<std::string>& sender_ids) override;
   void Unregister(const std::string& app_id) override;

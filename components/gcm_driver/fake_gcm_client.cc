@@ -24,7 +24,7 @@ FakeGCMClient::FakeGCMClient(
     const scoped_refptr<base::SequencedTaskRunner>& io_thread)
     : delegate_(NULL),
       sequence_id_(0),
-      status_(UNINITIALIZED),
+      started_(false),
       start_mode_(start_mode),
       ui_thread_(ui_thread),
       io_thread_(io_thread),
@@ -47,7 +47,7 @@ void FakeGCMClient::Initialize(
 
 void FakeGCMClient::Start() {
   DCHECK(io_thread_->RunsTasksOnCurrentThread());
-  DCHECK_NE(STARTED, status_);
+  DCHECK(!started_);
 
   if (start_mode_ == DELAY_START)
     return;
@@ -55,7 +55,7 @@ void FakeGCMClient::Start() {
 }
 
 void FakeGCMClient::DoLoading() {
-  status_ = STARTED;
+  started_ = true;
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&FakeGCMClient::CheckinFinished,
@@ -64,14 +64,8 @@ void FakeGCMClient::DoLoading() {
 
 void FakeGCMClient::Stop() {
   DCHECK(io_thread_->RunsTasksOnCurrentThread());
-  status_ = STOPPED;
+  started_ = false;
   delegate_->OnDisconnected();
-}
-
-void FakeGCMClient::CheckOut() {
-  DCHECK(io_thread_->RunsTasksOnCurrentThread());
-  status_ = CHECKED_OUT;
-  sequence_id_++;
 }
 
 void FakeGCMClient::Register(const std::string& app_id,

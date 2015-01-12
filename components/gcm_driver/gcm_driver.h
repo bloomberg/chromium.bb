@@ -74,10 +74,6 @@ class GCMDriver {
   virtual void OnSignedIn() = 0;
   virtual void OnSignedOut() = 0;
 
-  // Removes all the cached and persisted GCM data. If the GCM service is
-  // restarted after the purge, a new Android ID will be obtained.
-  virtual void Purge() = 0;
-
   // Adds a handler for a given app.
   virtual void AddAppHandler(const std::string& app_id, GCMAppHandler* handler);
 

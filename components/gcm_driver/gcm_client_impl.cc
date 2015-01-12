@@ -616,12 +616,6 @@ void GCMClientImpl::Stop() {
   gcm_store_->Close();
 }
 
-void GCMClientImpl::CheckOut() {
-  Stop();
-  gcm_store_->Destroy(base::Bind(&GCMClientImpl::OnGCMStoreDestroyed,
-                                 weak_ptr_factory_.GetWeakPtr()));
-}
-
 void GCMClientImpl::Register(const std::string& app_id,
                              const std::vector<std::string>& sender_ids) {
   DCHECK_EQ(state_, READY);

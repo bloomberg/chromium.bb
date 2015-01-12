@@ -246,10 +246,6 @@ class GCMClient {
   // Stops using the GCM service. This will not erase the persisted data.
   virtual void Stop() = 0;
 
-  // Checks out of the GCM service. This will erase all the cached and persisted
-  // data.
-  virtual void CheckOut() = 0;
-
   // Registers the application for GCM. Delegate::OnRegisterFinished will be
   // called asynchronously upon completion.
   // |app_id|: application ID.

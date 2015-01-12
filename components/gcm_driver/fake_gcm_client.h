@@ -17,13 +17,6 @@ namespace gcm {
 
 class FakeGCMClient : public GCMClient {
  public:
-  enum Status {
-    UNINITIALIZED,
-    STARTED,
-    STOPPED,
-    CHECKED_OUT
-  };
-
   enum StartMode {
     NO_DELAY_START,
     DELAY_START,
@@ -46,7 +39,6 @@ class FakeGCMClient : public GCMClient {
       Delegate* delegate) override;
   void Start() override;
   void Stop() override;
-  void CheckOut() override;
   void Register(const std::string& app_id,
                 const std::vector<std::string>& sender_ids) override;
   void Unregister(const std::string& app_id) override;
@@ -76,8 +68,6 @@ class FakeGCMClient : public GCMClient {
   std::string GetRegistrationIdFromSenderIds(
       const std::vector<std::string>& sender_ids) const;
 
-  Status status() const { return status_; }
-
  private:
   // Called on IO thread.
   void DoLoading();
@@ -98,7 +88,7 @@ class FakeGCMClient : public GCMClient {
   // Increased at checkout in order to produce a different registration ID
   // after checkout and re-checkin.
   int sequence_id_;
-  Status status_;
+  bool started_;
   StartMode start_mode_;
   scoped_refptr<base::SequencedTaskRunner> ui_thread_;
   scoped_refptr<base::SequencedTaskRunner> io_thread_;

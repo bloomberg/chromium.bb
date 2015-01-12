@@ -364,7 +364,7 @@ TEST_F(GCMDriverTest, DisableAndReenableGCM) {
   PumpUILoop();
 
   // GCMClient should be started.
-  EXPECT_EQ(FakeGCMClient::STARTED, GetGCMClient()->status());
+  EXPECT_TRUE(driver()->IsStarted());
 
   // Disables the GCM.
   driver()->Disable();
@@ -372,7 +372,7 @@ TEST_F(GCMDriverTest, DisableAndReenableGCM) {
   PumpUILoop();
 
   // GCMClient should be stopped.
-  EXPECT_EQ(FakeGCMClient::STOPPED, GetGCMClient()->status());
+  EXPECT_FALSE(driver()->IsStarted());
 
   // Enables the GCM.
   driver()->Enable();
@@ -380,18 +380,7 @@ TEST_F(GCMDriverTest, DisableAndReenableGCM) {
   PumpUILoop();
 
   // GCMClient should be started.
-  EXPECT_EQ(FakeGCMClient::STARTED, GetGCMClient()->status());
-
-  // Disables the GCM.
-  driver()->Disable();
-  PumpIOLoop();
-  PumpUILoop();
-
-  // GCMClient should be stopped.
-  EXPECT_EQ(FakeGCMClient::STOPPED, GetGCMClient()->status());
-
-  // GCMClient should be stopped.
-  EXPECT_EQ(FakeGCMClient::STOPPED, GetGCMClient()->status());
+  EXPECT_TRUE(driver()->IsStarted());
 }
 
 TEST_F(GCMDriverTest, StartOrStopGCMOnDemand) {
@@ -399,38 +388,35 @@ TEST_F(GCMDriverTest, StartOrStopGCMOnDemand) {
   PumpIOLoop();
   PumpUILoop();
 
-  // GCMClient is not started.
-  EXPECT_EQ(FakeGCMClient::UNINITIALIZED, GetGCMClient()->status());
-
   // GCMClient is started after an app handler has been added.
   driver()->AddAppHandler(kTestAppID1, gcm_app_handler());
   PumpIOLoop();
   PumpUILoop();
-  EXPECT_EQ(FakeGCMClient::STARTED, GetGCMClient()->status());
+  EXPECT_TRUE(driver()->IsStarted());
 
   // Add another app handler.
   driver()->AddAppHandler(kTestAppID2, gcm_app_handler());
   PumpIOLoop();
   PumpUILoop();
-  EXPECT_EQ(FakeGCMClient::STARTED, GetGCMClient()->status());
+  EXPECT_TRUE(driver()->IsStarted());
 
   // GCMClient remains active after one app handler is gone.
   driver()->RemoveAppHandler(kTestAppID1);
   PumpIOLoop();
   PumpUILoop();
-  EXPECT_EQ(FakeGCMClient::STARTED, GetGCMClient()->status());
+  EXPECT_TRUE(driver()->IsStarted());
 
   // GCMClient should be stopped after the last app handler is gone.
   driver()->RemoveAppHandler(kTestAppID2);
   PumpIOLoop();
   PumpUILoop();
-  EXPECT_EQ(FakeGCMClient::STOPPED, GetGCMClient()->status());
+  EXPECT_FALSE(driver()->IsStarted());
 
   // GCMClient is restarted after an app handler has been added.
   driver()->AddAppHandler(kTestAppID2, gcm_app_handler());
   PumpIOLoop();
   PumpUILoop();
-  EXPECT_EQ(FakeGCMClient::STARTED, GetGCMClient()->status());
+  EXPECT_TRUE(driver()->IsStarted());
 }
 
 TEST_F(GCMDriverTest, RegisterFailed) {

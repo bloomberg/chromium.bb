@@ -70,7 +70,6 @@ class GCMDriverDesktop::IOWorker : public GCMClient::Delegate {
       const scoped_refptr<base::SequencedTaskRunner> blocking_task_runner);
   void Start(const base::WeakPtr<GCMDriverDesktop>& service);
   void Stop();
-  void CheckOut();
   void Register(const std::string& app_id,
                 const std::vector<std::string>& sender_ids);
   void Unregister(const std::string& app_id);
@@ -253,15 +252,6 @@ void GCMDriverDesktop::IOWorker::Stop() {
   gcm_client_->Stop();
 }
 
-void GCMDriverDesktop::IOWorker::CheckOut() {
-  DCHECK(io_thread_->RunsTasksOnCurrentThread());
-
-  gcm_client_->CheckOut();
-
-  // Note that we still need to keep GCMClient instance alive since the
-  // GCMDriverDesktop may check in again.
-}
-
 void GCMDriverDesktop::IOWorker::Register(
     const std::string& app_id,
     const std::vector<std::string>& sender_ids) {
@@ -429,16 +419,6 @@ void GCMDriverDesktop::OnSignedIn() {
 
 void GCMDriverDesktop::OnSignedOut() {
   signed_in_ = false;
-}
-
-void GCMDriverDesktop::Purge() {
-  DCHECK(ui_thread_->RunsTasksOnCurrentThread());
-
-  RemoveCachedData();
-
-  io_thread_->PostTask(FROM_HERE,
-                       base::Bind(&GCMDriverDesktop::IOWorker::CheckOut,
-                       base::Unretained(io_worker_.get())));
 }
 
 void GCMDriverDesktop::AddAppHandler(const std::string& app_id,
