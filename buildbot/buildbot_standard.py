@@ -303,6 +303,9 @@ def BuildScript(status, context):
   with Step('medium_tests under IRT', status, halt_on_fail=False):
     SCons(context, mode=context['default_scons_mode'] + ['nacl_irt_test'],
           args=['medium_tests_irt'])
+  with Step('large_tests under IRT', status, halt_on_fail=False):
+    SCons(context, mode=context['default_scons_mode'] + ['nacl_irt_test'],
+          args=['large_tests_irt'])
   ### END tests ###
 
   ### BEGIN GN tests ###

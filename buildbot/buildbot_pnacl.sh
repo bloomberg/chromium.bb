@@ -52,9 +52,6 @@ readonly SCONS_NONSFI="\
     skip_nonstable_bitcode=1 \
     use_newlib_nonsfi_loader=0"
 
-# subset of tests used on toolchain builders
-readonly SCONS_TC_TESTS="small_tests medium_tests"
-
 readonly SCONS_COMMON="./scons --verbose bitcode=1"
 readonly UP_DOWN_LOAD="buildbot/file_up_down_load.sh"
 # This script is used by toolchain bots (i.e. tc-xxx functions)
@@ -354,8 +351,9 @@ mode-buildbot-arm() {
 
   # Normal pexe mode build.
   scons-stage-irt "arm" "${qemuflags}" "${SCONS_EVERYTHING}"
-  # also run some tests with the irt
+  # Also run tests with the irt
   scons-stage-irt "arm" "${qemuflags}" "${SCONS_S_M_IRT}"
+  scons-stage-irt "arm" "${qemuflags} -j1" "large_tests_irt"
 
   # non-pexe-mode tests
   scons-stage-noirt "arm" "${qemuflags} pnacl_generate_pexe=0" "nonpexe_tests"
@@ -385,8 +383,9 @@ mode-buildbot-arm-hw() {
   # Large tests cannot be run in parallel
   scons-stage-noirt "arm" "${hwflags} -j1" "large_tests"
 
-  # also run some tests with the irt
+  # Also run tests with the irt
   scons-stage-irt "arm" "${hwflags}" "${SCONS_S_M_IRT}"
+  scons-stage-irt "arm" "${hwflags} -j1" "large_tests_irt"
 
   scons-stage-noirt "arm" "${hwflags} pnacl_generate_pexe=0" "nonpexe_tests"
   scons-stage-irt "arm" \

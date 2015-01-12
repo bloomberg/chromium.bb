@@ -46,10 +46,13 @@ def RunSconsTests(status, context):
 
   irt_mode = context['default_scons_mode'] + ['nacl_irt_test']
   smoke_tests_irt = ['small_tests_irt', 'medium_tests_irt']
-  # Run some tests with the IRT
+  # Run tests with the IRT.
   with Step('smoke_tests_irt ' + arch, status, halt_on_fail=False):
     SCons(context, parallel=True, mode=irt_mode,
           args=flags_run + smoke_tests_irt)
+  with Step('large_tests_irt ' + arch, status, halt_on_fail=False):
+    SCons(context, parallel=False, mode=irt_mode,
+          args=flags_run + ['large_tests_irt'])
 
   if arch != 'arm' and not context.Windows():
     # Run a some nacl_clang tests. Eventually we will have bots that just run
