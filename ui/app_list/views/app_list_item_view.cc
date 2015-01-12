@@ -18,6 +18,7 @@
 #include "ui/base/dragdrop/drag_utils.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/ui_base_switches_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/animation/throb_animation.h"
@@ -194,6 +195,7 @@ void AppListItemView::SetTouchDragging(bool touch_dragging) {
     return;
 
   touch_dragging_ = touch_dragging;
+  SetState(STATE_NORMAL);
   SetUIState(touch_dragging_ ? UI_STATE_DRAGGING : UI_STATE_NORMAL);
 }
 
@@ -390,17 +392,13 @@ void AppListItemView::ShowContextMenuForView(views::View* source,
 }
 
 void AppListItemView::StateChanged() {
-  const bool is_folder_ui_enabled = apps_grid_view_->model()->folders_enabled();
-  if (is_folder_ui_enabled)
-    apps_grid_view_->ClearAnySelectedView();
-
   if (state() == STATE_HOVERED || state() == STATE_PRESSED) {
-    if (!is_folder_ui_enabled)
-      apps_grid_view_->SetSelectedView(this);
+    // Show the hover/tap highlight: for tap, lighter highlight replaces darker
+    // keyboard selection; for mouse hover, keyboard selection takes precedence.
+    if (!apps_grid_view_->IsSelectedView(this) || state() == STATE_PRESSED)
+      SetItemIsHighlighted(true);
     title_->SetEnabledColor(kGridTitleHoverColor);
   } else {
-    if (!is_folder_ui_enabled)
-      apps_grid_view_->ClearSelectedView(this);
     SetItemIsHighlighted(false);
     if (item_weak_)
       item_weak_->set_highlighted(false);
@@ -502,6 +500,17 @@ void AppListItemView::OnGestureEvent(ui::GestureEvent* event) {
         apps_grid_view_->EndDrag(false);
         event->SetHandled();
       }
+      break;
+    case ui::ET_GESTURE_TAP_DOWN:
+      if (switches::IsTouchFeedbackEnabled() && state_ != STATE_DISABLED) {
+        SetState(STATE_PRESSED);
+        event->SetHandled();
+      }
+      break;
+    case ui::ET_GESTURE_TAP:
+    case ui::ET_GESTURE_TAP_CANCEL:
+      if (switches::IsTouchFeedbackEnabled() && state_ != STATE_DISABLED)
+        SetState(STATE_NORMAL);
       break;
     case ui::ET_GESTURE_LONG_PRESS:
       if (!apps_grid_view_->has_dragged_view())

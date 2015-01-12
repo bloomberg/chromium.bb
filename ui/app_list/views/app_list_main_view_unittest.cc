@@ -9,6 +9,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/test/app_list_test_model.h"
 #include "ui/app_list/test/app_list_test_view_delegate.h"
 #include "ui/app_list/views/app_list_folder_view.h"
@@ -18,6 +19,8 @@
 #include "ui/app_list/views/contents_view.h"
 #include "ui/app_list/views/search_box_view.h"
 #include "ui/app_list/views/test/apps_grid_view_test_api.h"
+#include "ui/aura/window.h"
+#include "ui/events/test/event_generator.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/view_model.h"
 #include "ui/views/widget/widget.h"
@@ -263,6 +266,60 @@ TEST_F(AppListMainViewTest, ModelChanged) {
   delegate_->ReplaceTestModel(kReplacementItems);
   main_view_->ModelChanged();
   EXPECT_EQ(kReplacementItems, RootViewModel()->view_size());
+}
+
+// Tests that mouse hovering over an app item highlights it
+TEST_F(AppListMainViewTest, MouseHoverToHighlight) {
+  delegate_->GetTestModel()->PopulateApps(2);
+  main_widget_->Show();
+
+  ui::test::EventGenerator generator(
+      main_widget_->GetNativeWindow()->GetRootWindow());
+  AppListItemView* item0 = RootViewModel()->view_at(0);
+  AppListItemView* item1 = RootViewModel()->view_at(1);
+
+  // If experimental launcher, switch to All Apps page
+  if (app_list::switches::IsExperimentalAppListEnabled()) {
+    GetContentsView()->SetActivePage(
+        GetContentsView()->GetPageIndexForState(AppListModel::STATE_APPS));
+    GetContentsView()->Layout();
+  }
+
+  generator.MoveMouseTo(item0->GetBoundsInScreen().CenterPoint());
+  EXPECT_TRUE(item0->is_highlighted());
+  EXPECT_FALSE(item1->is_highlighted());
+
+  generator.MoveMouseTo(item1->GetBoundsInScreen().CenterPoint());
+  EXPECT_FALSE(item0->is_highlighted());
+  EXPECT_TRUE(item1->is_highlighted());
+
+  generator.MoveMouseTo(gfx::Point(-1, -1));
+  EXPECT_FALSE(item0->is_highlighted());
+  EXPECT_FALSE(item1->is_highlighted());
+}
+
+// Tests that tap gesture on app item highlights it
+TEST_F(AppListMainViewTest, TapGestureToHighlight) {
+  delegate_->GetTestModel()->PopulateApps(1);
+  main_widget_->Show();
+
+  ui::test::EventGenerator generator(
+      main_widget_->GetNativeWindow()->GetRootWindow());
+  AppListItemView* item = RootViewModel()->view_at(0);
+
+  // If experimental launcher, switch to All Apps page
+  if (app_list::switches::IsExperimentalAppListEnabled()) {
+    GetContentsView()->SetActivePage(
+        GetContentsView()->GetPageIndexForState(AppListModel::STATE_APPS));
+    GetContentsView()->Layout();
+  }
+
+  generator.set_current_location(item->GetBoundsInScreen().CenterPoint());
+  generator.PressTouch();
+  EXPECT_TRUE(item->is_highlighted());
+
+  generator.ReleaseTouch();
+  EXPECT_FALSE(item->is_highlighted());
 }
 
 // Tests dragging an item out of a single item folder and drop it at the last

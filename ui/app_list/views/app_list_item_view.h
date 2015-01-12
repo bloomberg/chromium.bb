@@ -44,10 +44,10 @@ class APP_LIST_EXPORT AppListItemView : public views::CustomButton,
   // Set the icon of this image, adding a drop shadow if |has_shadow|.
   void SetIcon(const gfx::ImageSkia& icon, bool has_shadow);
 
-  // Set the item name.
   void SetItemName(const base::string16& display_name,
                    const base::string16& full_name);
   void SetItemIsInstalling(bool is_installing);
+  bool is_highlighted() { return is_highlighted_; }  // for unit test
   void SetItemIsHighlighted(bool is_highlighted);
   void SetItemPercentDownloaded(int percent_downloaded);
 
@@ -80,6 +80,9 @@ class APP_LIST_EXPORT AppListItemView : public views::CustomButton,
   // Returns the icon bounds for the given |target_bounds| as
   // the assuming bounds of this view.
   gfx::Rect GetIconBoundsForTargetViewBounds(const gfx::Rect& target_bounds);
+
+  // views::CustomButton overrides:
+  void OnGestureEvent(ui::GestureEvent* event) override;
 
  private:
   enum UIState {
@@ -127,9 +130,6 @@ class APP_LIST_EXPORT AppListItemView : public views::CustomButton,
   void OnMouseReleased(const ui::MouseEvent& event) override;
   void OnMouseCaptureLost() override;
   bool OnMouseDragged(const ui::MouseEvent& event) override;
-
-  // ui::EventHandler overrides:
-  void OnGestureEvent(ui::GestureEvent* event) override;
 
   // AppListItemObserver overrides:
   void ItemIconChanged() override;
