@@ -1432,8 +1432,6 @@ crbug.com/429128 [ Linux ] virtual/gpu/fast/canvas/yuv-video-on-accelerated-canv
 # By about a quarter or less of a pixel.
 crbug.com/421412 [ Mac ] virtual/antialiasedtext/fast/text/international/bdo-bidi-width.html [ ImageOnlyFailure ]
 
-crbug.com/435870 fast/loader/open-in-srcdoc-unload.html [ Pass Failure ]
-
 crbug.com/432822 [ SnowLeopard ] virtual/slimmingpaint/fast/block/basic/016.html [ Failure ImageOnlyFailure ]
 crbug.com/432822 [ SnowLeopard ] virtual/slimmingpaint/fast/block/basic/fieldset-stretch-to-legend.html [ Failure ImageOnlyFailure ]
 crbug.com/432822 [ SnowLeopard ] virtual/slimmingpaint/fast/block/float/008.html [ Failure ImageOnlyFailure ]
