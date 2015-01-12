@@ -287,7 +287,7 @@ int LaunchChildTestProcessWithOptions(const CommandLine& command_line,
   new_options.allow_new_privs = true;
 #endif
 
-  ProcessHandle process_handle;
+  Process process;
 
   {
     // Note how we grab the lock before the process possibly gets created.
@@ -295,19 +295,22 @@ int LaunchChildTestProcessWithOptions(const CommandLine& command_line,
     // in the set.
     AutoLock lock(g_live_processes_lock.Get());
 
-    if (!LaunchProcess(command_line, new_options, &process_handle))
+    process = LaunchProcess(command_line, new_options);
+    if (!process.IsValid())
       return -1;
 
-    g_live_processes.Get().insert(std::make_pair(process_handle, command_line));
+    // TODO(rvargas) crbug.com/417532: Don't store process handles.
+    g_live_processes.Get().insert(std::make_pair(process.Handle(),
+                                                 command_line));
   }
 
   int exit_code = 0;
-  if (!WaitForExitCodeWithTimeout(process_handle, &exit_code, timeout)) {
+  if (!process.WaitForExitWithTimeout(timeout, &exit_code)) {
     *was_timeout = true;
     exit_code = -1;  // Set a non-zero exit code to signal a failure.
 
     // Ensure that the process terminates.
-    KillProcess(process_handle, -1, true);
+    KillProcess(process.Handle(), -1, true);
   }
 
   {
@@ -322,14 +325,12 @@ int LaunchChildTestProcessWithOptions(const CommandLine& command_line,
       // or due to it timing out, we need to clean up any child processes that
       // it might have created. On Windows, child processes are automatically
       // cleaned up using JobObjects.
-      KillProcessGroup(process_handle);
+      KillProcessGroup(process.Handle());
     }
 #endif
 
-    g_live_processes.Get().erase(process_handle);
+    g_live_processes.Get().erase(process.Handle());
   }
-
-  CloseProcessHandle(process_handle);
 
   return exit_code;
 }
