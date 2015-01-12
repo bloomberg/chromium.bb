@@ -425,7 +425,8 @@ class WebContentsViewAuraTest : public ContentBrowserTest {
 };
 
 // Flaky on Windows: http://crbug.com/305722
-#if defined(OS_WIN)
+// The test frequently times out on Linux, too. See crbug.com/440043.
+#if defined(OS_WIN) || defined(OS_LINUX)
 #define MAYBE_OverscrollNavigation DISABLED_OverscrollNavigation
 #else
 #define MAYBE_OverscrollNavigation OverscrollNavigation
