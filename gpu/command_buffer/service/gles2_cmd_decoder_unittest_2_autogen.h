@@ -103,7 +103,6 @@ TEST_P(GLES2DecoderTest2, IsRenderbufferInvalidArgsBadSharedMemoryId) {
 }
 
 TEST_P(GLES2DecoderTest2, IsSamplerValidArgs) {
-  EXPECT_CALL(*gl_, IsSampler(kServiceSamplerId));
   SpecializedSetup<cmds::IsSampler, 0>(true);
   cmds::IsSampler cmd;
   cmd.Init(client_sampler_id_, shared_memory_id_, shared_memory_offset_);
@@ -115,7 +114,6 @@ TEST_P(GLES2DecoderTest2, IsSamplerValidArgs) {
 }
 
 TEST_P(GLES2DecoderTest2, IsSamplerInvalidArgsBadSharedMemoryId) {
-  EXPECT_CALL(*gl_, IsSampler(kServiceSamplerId)).Times(0);
   SpecializedSetup<cmds::IsSampler, 0>(false);
   decoder_->set_unsafe_es3_apis_enabled(true);
   cmds::IsSampler cmd;
@@ -161,7 +159,6 @@ TEST_P(GLES2DecoderTest2, IsTextureInvalidArgsBadSharedMemoryId) {
 }
 
 TEST_P(GLES2DecoderTest2, IsTransformFeedbackValidArgs) {
-  EXPECT_CALL(*gl_, IsTransformFeedback(kServiceTransformFeedbackId));
   SpecializedSetup<cmds::IsTransformFeedback, 0>(true);
   cmds::IsTransformFeedback cmd;
   cmd.Init(client_transformfeedback_id_, shared_memory_id_,
@@ -174,7 +171,6 @@ TEST_P(GLES2DecoderTest2, IsTransformFeedbackValidArgs) {
 }
 
 TEST_P(GLES2DecoderTest2, IsTransformFeedbackInvalidArgsBadSharedMemoryId) {
-  EXPECT_CALL(*gl_, IsTransformFeedback(kServiceTransformFeedbackId)).Times(0);
   SpecializedSetup<cmds::IsTransformFeedback, 0>(false);
   decoder_->set_unsafe_es3_apis_enabled(true);
   cmds::IsTransformFeedback cmd;

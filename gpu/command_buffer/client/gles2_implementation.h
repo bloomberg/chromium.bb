@@ -435,14 +435,22 @@ class GLES2_IMPL_EXPORT GLES2Implementation
   bool IsTransformFeedbackReservedId(GLuint id) { return false; }
 
   void BindBufferHelper(GLenum target, GLuint buffer);
+  void BindBufferBaseHelper(GLenum target, GLuint index, GLuint buffer);
+  void BindBufferRangeHelper(GLenum target, GLuint index, GLuint buffer,
+                             GLintptr offset, GLsizeiptr size);
   void BindFramebufferHelper(GLenum target, GLuint framebuffer);
   void BindRenderbufferHelper(GLenum target, GLuint renderbuffer);
+  void BindSamplerHelper(GLuint unit, GLuint sampler);
   void BindTextureHelper(GLenum target, GLuint texture);
+  void BindTransformFeedbackHelper(GLenum target, GLuint transformfeedback);
   void BindVertexArrayOESHelper(GLuint array);
   void BindValuebufferCHROMIUMHelper(GLenum target, GLuint valuebuffer);
   void UseProgramHelper(GLuint program);
 
   void BindBufferStub(GLenum target, GLuint buffer);
+  void BindBufferBaseStub(GLenum target, GLuint index, GLuint buffer);
+  void BindBufferRangeStub(GLenum target, GLuint index, GLuint buffer,
+                           GLintptr offset, GLsizeiptr size);
   void BindFramebufferStub(GLenum target, GLuint framebuffer);
   void BindRenderbufferStub(GLenum target, GLuint renderbuffer);
   void BindTextureStub(GLenum target, GLuint texture);

@@ -1431,6 +1431,7 @@ _FUNCTION_INFO = {
   'BindBufferBase': {
     'type': 'Bind',
     'id_mapping': [ 'Buffer' ],
+    'gen_func': 'GenBuffersARB',
     'unsafe': True,
   },
   'BindFramebuffer': {
@@ -2168,6 +2169,7 @@ _FUNCTION_INFO = {
   'IsSampler': {
     'type': 'Is',
     'id_mapping': [ 'Sampler' ],
+    'expectation': False,
     'unsafe': True,
   },
   'IsTexture': {
@@ -2178,6 +2180,7 @@ _FUNCTION_INFO = {
   'IsTransformFeedback': {
     'type': 'Is',
     'id_mapping': [ 'TransformFeedback' ],
+    'expectation': False,
     'unsafe': True,
   },
   'LinkProgram': {
@@ -3240,9 +3243,33 @@ static_assert(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
   def WriteHandlerImplementation(self, func, file):
     """Writes the handler implementation for this command."""
     if func.IsUnsafe() and func.GetInfo('id_mapping'):
+      code_no_gen = """  if (!group_->Get%(type)sServiceId(%(var)s, &%(var)s)) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "%(func)s", "invalid %(var)s id");
+    return error::kNoError;
+  }
+"""
+      code_gen = """  if (!group_->Get%(type)sServiceId(%(var)s, &%(var)s)) {
+    if (!group_->bind_generates_resource()) {
+      LOCAL_SET_GL_ERROR(
+          GL_INVALID_OPERATION, "%(func)s", "invalid %(var)s id");
+      return error::kNoError;
+    }
+    GLuint client_id = %(var)s;
+    gl%(gen_func)s(1, &%(var)s);
+    Create%(type)s(client_id, %(var)s);
+  }
+"""
+      gen_func = func.GetInfo('gen_func')
       for id_type in func.GetInfo('id_mapping'):
-        file.Write("  group_->Get%sServiceId(%s, &%s);\n" %
-                   (id_type, id_type.lower(), id_type.lower()))
+        if gen_func and id_type in gen_func:
+          file.Write(code_gen % { 'type': id_type,
+                                  'var': id_type.lower(),
+                                  'func': func.GetGLFunctionName(),
+                                  'gen_func': gen_func })
+        else:
+          file.Write(code_no_gen % { 'type': id_type,
+                                     'var': id_type.lower(),
+                                     'func': func.GetGLFunctionName() })
     file.Write("  %s(%s);\n" %
                (func.GetGLFunctionName(), func.MakeOriginalArgString("")))
 
@@ -4399,22 +4426,42 @@ TEST_P(%(test_name)s, %(name)sValidArgs) {
 }
 """
       if func.GetInfo("gen_func"):
-          valid_test += """
+        valid_test += """
 TEST_P(%(test_name)s, %(name)sValidArgsNewId) {
-  EXPECT_CALL(*gl_, %(gl_func_name)s(%(first_gl_arg)s, kNewServiceId));
+  EXPECT_CALL(*gl_,
+              %(gl_func_name)s(%(all_except_last_gl_arg)s, kNewServiceId));
   EXPECT_CALL(*gl_, %(gl_gen_func_name)s(1, _))
      .WillOnce(SetArgumentPointee<1>(kNewServiceId));
   SpecializedSetup<cmds::%(name)s, 0>(true);
   cmds::%(name)s cmd;
-  cmd.Init(%(first_arg)s, kNewClientId);
+  cmd.Init(%(all_except_last_arg)s, kNewClientId);"""
+        if func.IsUnsafe():
+          valid_test += """
+  decoder_->set_unsafe_es3_apis_enabled(true);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  EXPECT_TRUE(Get%(resource_type)s(kNewClientId) != NULL);
+  decoder_->set_unsafe_es3_apis_enabled(false);
+  EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
+}
+"""
+        else:
+          valid_test += """
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
   EXPECT_TRUE(Get%(resource_type)s(kNewClientId) != NULL);
 }
 """
+
+      all_except_last_arg = [
+        arg.GetValidArg(func) for arg in func.GetOriginalArgs()[:-1]
+      ]
+      all_except_last_gl_arg = [
+        arg.GetValidGLArg(func) for arg in func.GetOriginalArgs()[:-1]
+      ]
       self.WriteValidUnitTest(func, file, valid_test, {
-          'first_arg': func.GetOriginalArgs()[0].GetValidArg(func),
-          'first_gl_arg': func.GetOriginalArgs()[0].GetValidGLArg(func),
+          'all_except_last_arg': ", ".join(all_except_last_arg),
+          'all_except_last_gl_arg': ", ".join(all_except_last_gl_arg),
           'resource_type': func.GetOriginalArgs()[-1].resource_type,
           'gl_gen_func_name': func.GetInfo("gen_func"),
       }, *extras)
@@ -4449,14 +4496,7 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
       for arg in func.GetOriginalArgs():
         arg.WriteClientSideValidationCode(file, func)
 
-      if func.IsUnsafe():
-        code = """  helper_->%(name)s(%(arg_string)s);
-  CheckGLError();
-}
-
-"""
-      else:
-        code = """  if (Is%(type)sReservedId(%(id)s)) {
+      code = """  if (Is%(type)sReservedId(%(id)s)) {
     SetGLError(GL_INVALID_OPERATION, "%(name)s\", \"%(id)s reserved id");
     return;
   }
@@ -6427,12 +6467,15 @@ TEST_P(%(test_name)s, %(name)sInvalidArgsBadSharedMemoryId) {
 """
     file.Write(code % {'func_name': func.name})
     func.WriteHandlerValidation(file)
-    if func.IsUnsafe() and func.GetInfo('id_mapping'):
-      for id_type in func.GetInfo('id_mapping'):
-        file.Write("  group_->Get%sServiceId(%s, &%s);\n" %
-                   (id_type, id_type.lower(), id_type.lower()))
-    file.Write("  *result_dst = %s(%s);\n" %
-               (func.GetGLFunctionName(), func.MakeOriginalArgString("")))
+    if func.IsUnsafe():
+      assert func.GetInfo('id_mapping')
+      assert len(func.GetInfo('id_mapping')) == 1
+      id_type = func.GetInfo('id_mapping')[0]
+      file.Write("  *result_dst = group_->Get%sServiceId(%s, &%s);\n" %
+                 (id_type, id_type.lower(), id_type.lower()))
+    else:
+      file.Write("  *result_dst = %s(%s);\n" %
+                 (func.GetGLFunctionName(), func.MakeOriginalArgString("")))
     file.Write("  return error::kNoError;\n")
     file.Write("}\n")
     file.Write("\n")

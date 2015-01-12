@@ -59,7 +59,16 @@ error::Error GLES2DecoderImpl::HandleBindBufferBase(
   GLenum target = static_cast<GLenum>(c.target);
   GLuint index = static_cast<GLuint>(c.index);
   GLuint buffer = c.buffer;
-  group_->GetBufferServiceId(buffer, &buffer);
+  if (!group_->GetBufferServiceId(buffer, &buffer)) {
+    if (!group_->bind_generates_resource()) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBindBufferBase",
+                         "invalid buffer id");
+      return error::kNoError;
+    }
+    GLuint client_id = buffer;
+    glGenBuffersARB(1, &buffer);
+    CreateBuffer(client_id, buffer);
+  }
   glBindBufferBase(target, index, buffer);
   return error::kNoError;
 }
@@ -105,7 +114,11 @@ error::Error GLES2DecoderImpl::HandleBindSampler(uint32_t immediate_data_size,
   (void)c;
   GLuint unit = static_cast<GLuint>(c.unit);
   GLuint sampler = c.sampler;
-  group_->GetSamplerServiceId(sampler, &sampler);
+  if (!group_->GetSamplerServiceId(sampler, &sampler)) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBindSampler",
+                       "invalid sampler id");
+    return error::kNoError;
+  }
   glBindSampler(unit, sampler);
   return error::kNoError;
 }
@@ -135,7 +148,12 @@ error::Error GLES2DecoderImpl::HandleBindTransformFeedback(
   (void)c;
   GLenum target = static_cast<GLenum>(c.target);
   GLuint transformfeedback = c.transformfeedback;
-  group_->GetTransformFeedbackServiceId(transformfeedback, &transformfeedback);
+  if (!group_->GetTransformFeedbackServiceId(transformfeedback,
+                                             &transformfeedback)) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBindTransformFeedback",
+                       "invalid transformfeedback id");
+    return error::kNoError;
+  }
   glBindTransformFeedback(target, transformfeedback);
   return error::kNoError;
 }
@@ -1461,7 +1479,11 @@ error::Error GLES2DecoderImpl::HandleGetSamplerParameterfv(
   if (result->size != 0) {
     return error::kInvalidArguments;
   }
-  group_->GetSamplerServiceId(sampler, &sampler);
+  if (!group_->GetSamplerServiceId(sampler, &sampler)) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glGetSamplerParameterfv",
+                       "invalid sampler id");
+    return error::kNoError;
+  }
   glGetSamplerParameterfv(sampler, pname, params);
   GLenum error = glGetError();
   if (error == GL_NO_ERROR) {
@@ -1496,7 +1518,11 @@ error::Error GLES2DecoderImpl::HandleGetSamplerParameteriv(
   if (result->size != 0) {
     return error::kInvalidArguments;
   }
-  group_->GetSamplerServiceId(sampler, &sampler);
+  if (!group_->GetSamplerServiceId(sampler, &sampler)) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glGetSamplerParameteriv",
+                       "invalid sampler id");
+    return error::kNoError;
+  }
   glGetSamplerParameteriv(sampler, pname, params);
   GLenum error = glGetError();
   if (error == GL_NO_ERROR) {
@@ -1894,8 +1920,7 @@ error::Error GLES2DecoderImpl::HandleIsSampler(uint32_t immediate_data_size,
   if (!result_dst) {
     return error::kOutOfBounds;
   }
-  group_->GetSamplerServiceId(sampler, &sampler);
-  *result_dst = glIsSampler(sampler);
+  *result_dst = group_->GetSamplerServiceId(sampler, &sampler);
   return error::kNoError;
 }
 
@@ -1946,8 +1971,8 @@ error::Error GLES2DecoderImpl::HandleIsTransformFeedback(
   if (!result_dst) {
     return error::kOutOfBounds;
   }
-  group_->GetTransformFeedbackServiceId(transformfeedback, &transformfeedback);
-  *result_dst = glIsTransformFeedback(transformfeedback);
+  *result_dst = group_->GetTransformFeedbackServiceId(transformfeedback,
+                                                      &transformfeedback);
   return error::kNoError;
 }
 
@@ -2094,7 +2119,11 @@ error::Error GLES2DecoderImpl::HandleSamplerParameterf(
   GLuint sampler = c.sampler;
   GLenum pname = static_cast<GLenum>(c.pname);
   GLfloat param = static_cast<GLfloat>(c.param);
-  group_->GetSamplerServiceId(sampler, &sampler);
+  if (!group_->GetSamplerServiceId(sampler, &sampler)) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glSamplerParameterf",
+                       "invalid sampler id");
+    return error::kNoError;
+  }
   glSamplerParameterf(sampler, pname, param);
   return error::kNoError;
 }
@@ -2137,7 +2166,11 @@ error::Error GLES2DecoderImpl::HandleSamplerParameteri(
   GLuint sampler = c.sampler;
   GLenum pname = static_cast<GLenum>(c.pname);
   GLint param = static_cast<GLint>(c.param);
-  group_->GetSamplerServiceId(sampler, &sampler);
+  if (!group_->GetSamplerServiceId(sampler, &sampler)) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glSamplerParameteri",
+                       "invalid sampler id");
+    return error::kNoError;
+  }
   glSamplerParameteri(sampler, pname, param);
   return error::kNoError;
 }

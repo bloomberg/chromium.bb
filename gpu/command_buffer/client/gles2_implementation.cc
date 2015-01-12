@@ -2695,6 +2695,42 @@ void GLES2Implementation::BindBufferStub(GLenum target, GLuint buffer) {
     helper_->CommandBufferHelper::Flush();
 }
 
+void GLES2Implementation::BindBufferBaseHelper(
+    GLenum target, GLuint index, GLuint buffer_id) {
+  // TODO(zmo): See note #1 above.
+  // TODO(zmo): There's a bug here. If the target or index is invalid the ID
+  // will not be used even though it's marked it as used here.
+  GetIdHandler(id_namespaces::kBuffers)->MarkAsUsedForBind(
+      this, target, index, buffer_id, &GLES2Implementation::BindBufferBaseStub);
+}
+
+void GLES2Implementation::BindBufferBaseStub(
+    GLenum target, GLuint index, GLuint buffer) {
+  helper_->BindBufferBase(target, index, buffer);
+  if (share_group_->bind_generates_resource())
+    helper_->CommandBufferHelper::Flush();
+}
+
+void GLES2Implementation::BindBufferRangeHelper(
+    GLenum target, GLuint index, GLuint buffer_id,
+    GLintptr offset, GLsizeiptr size) {
+  // TODO(zmo): See note #1 above.
+  // TODO(zmo): There's a bug here. If an arguments is invalid the ID will not
+  // be used even though it's marked it as used here.
+  GetIdHandler(id_namespaces::kBuffers)->MarkAsUsedForBind(
+      this, target, index, buffer_id, offset, size,
+      &GLES2Implementation::BindBufferRangeStub);
+}
+
+void GLES2Implementation::BindBufferRangeStub(
+    GLenum target, GLuint index, GLuint buffer,
+    GLintptr offset, GLsizeiptr size) {
+  // TODO(zmo): uncomment the below call once the helper function is added.
+  // helper_->BindBufferRange(target, index, buffer, offset, size);
+  if (share_group_->bind_generates_resource())
+    helper_->CommandBufferHelper::Flush();
+}
+
 void GLES2Implementation::BindFramebufferHelper(
     GLenum target, GLuint framebuffer) {
   // TODO(gman): See note #1 above.
@@ -2777,6 +2813,11 @@ void GLES2Implementation::BindRenderbufferStub(GLenum target,
     helper_->CommandBufferHelper::Flush();
 }
 
+void GLES2Implementation::BindSamplerHelper(GLuint unit,
+                                            GLuint sampler) {
+  helper_->BindSampler(unit, sampler);
+}
+
 void GLES2Implementation::BindTextureHelper(GLenum target, GLuint texture) {
   // TODO(gman): See note #1 above.
   // TODO(gman): Change this to false once we figure out why it's failing
@@ -2818,6 +2859,11 @@ void GLES2Implementation::BindTextureStub(GLenum target, GLuint texture) {
   helper_->BindTexture(target, texture);
   if (share_group_->bind_generates_resource())
     helper_->CommandBufferHelper::Flush();
+}
+
+void GLES2Implementation::BindTransformFeedbackHelper(
+    GLenum target, GLuint transformfeedback) {
+  helper_->BindTransformFeedback(target, transformfeedback);
 }
 
 void GLES2Implementation::BindVertexArrayOESHelper(GLuint array) {

@@ -67,6 +67,22 @@ TEST_P(GLES2DecoderTest1, BindBufferBaseValidArgs) {
   EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
 }
 
+TEST_P(GLES2DecoderTest1, BindBufferBaseValidArgsNewId) {
+  EXPECT_CALL(*gl_,
+              BindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 2, kNewServiceId));
+  EXPECT_CALL(*gl_, GenBuffersARB(1, _))
+      .WillOnce(SetArgumentPointee<1>(kNewServiceId));
+  SpecializedSetup<cmds::BindBufferBase, 0>(true);
+  cmds::BindBufferBase cmd;
+  cmd.Init(GL_TRANSFORM_FEEDBACK_BUFFER, 2, kNewClientId);
+  decoder_->set_unsafe_es3_apis_enabled(true);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  EXPECT_TRUE(GetBuffer(kNewClientId) != NULL);
+  decoder_->set_unsafe_es3_apis_enabled(false);
+  EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
+}
+
 TEST_P(GLES2DecoderTest1, BindFramebufferValidArgs) {
   EXPECT_CALL(*gl_, BindFramebufferEXT(GL_FRAMEBUFFER, kServiceFramebufferId));
   SpecializedSetup<cmds::BindFramebuffer, 0>(true);

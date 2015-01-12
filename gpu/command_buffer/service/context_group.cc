@@ -408,5 +408,14 @@ bool ContextGroup::QueryGLFeatureU(
   return result;
 }
 
+bool ContextGroup::GetBufferServiceId(
+    GLuint client_id, GLuint* service_id) const {
+  Buffer* buffer = buffer_manager_->GetBuffer(client_id);
+  if (!buffer)
+    return false;
+  *service_id = buffer->service_id();
+  return true;
+}
+
 }  // namespace gles2
 }  // namespace gpu

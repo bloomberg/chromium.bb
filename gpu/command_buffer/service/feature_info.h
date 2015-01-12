@@ -123,7 +123,7 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
   }
 
   const gfx::GLVersionInfo& gl_version_info() const {
-    CHECK(gl_version_info_.get());
+    DCHECK(gl_version_info_.get());
     return *(gl_version_info_.get());
   }
 
