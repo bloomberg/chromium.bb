@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/history/download_database.h"
+#include "components/history/core/browser/download_database.h"
 
 #include <limits>
 #include <string>
@@ -17,13 +17,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "chrome/browser/history/download_row.h"
+#include "components/history/core/browser/download_constants.h"
+#include "components/history/core/browser/download_row.h"
 #include "components/history/core/browser/history_types.h"
-#include "content/public/browser/download_interrupt_reasons.h"
-#include "content/public/browser/download_item.h"
 #include "sql/statement.h"
-
-using content::DownloadItem;
 
 namespace history {
 
@@ -41,7 +38,8 @@ enum DroppedReason {
 #if defined(OS_POSIX)
 
 // Binds/reads the given file path to the given column of the given statement.
-void BindFilePath(sql::Statement& statement, const base::FilePath& path,
+void BindFilePath(sql::Statement& statement,
+                  const base::FilePath& path,
                   int col) {
   statement.BindString(col, path.value());
 }
@@ -52,7 +50,8 @@ base::FilePath ColumnFilePath(sql::Statement& statement, int col) {
 #else
 
 // See above.
-void BindFilePath(sql::Statement& statement, const base::FilePath& path,
+void BindFilePath(sql::Statement& statement,
+                  const base::FilePath& path,
                   int col) {
   statement.BindString16(col, path.value());
 }
@@ -64,121 +63,21 @@ base::FilePath ColumnFilePath(sql::Statement& statement, int col) {
 
 }  // namespace
 
-// These constants and the transformation functions below are used to allow
-// DownloadItem::DownloadState and DownloadDangerType to change without
-// breaking the database schema.
-// They guarantee that the values of the |state| field in the database are one
-// of the values returned by StateToInt, and that the values of the |state|
-// field of the DownloadRows returned by QueryDownloads() are one of the values
-// returned by IntToState().
-const int DownloadDatabase::kStateInvalid = -1;
-const int DownloadDatabase::kStateInProgress = 0;
-const int DownloadDatabase::kStateComplete = 1;
-const int DownloadDatabase::kStateCancelled = 2;
-const int DownloadDatabase::kStateBug140687 = 3;
-const int DownloadDatabase::kStateInterrupted = 4;
-
-const int DownloadDatabase::kDangerTypeInvalid = -1;
-const int DownloadDatabase::kDangerTypeNotDangerous = 0;
-const int DownloadDatabase::kDangerTypeDangerousFile = 1;
-const int DownloadDatabase::kDangerTypeDangerousUrl = 2;
-const int DownloadDatabase::kDangerTypeDangerousContent = 3;
-const int DownloadDatabase::kDangerTypeMaybeDangerousContent = 4;
-const int DownloadDatabase::kDangerTypeUncommonContent = 5;
-const int DownloadDatabase::kDangerTypeUserValidated = 6;
-const int DownloadDatabase::kDangerTypeDangerousHost = 7;
-const int DownloadDatabase::kDangerTypePotentiallyUnwanted = 8;
-
-int DownloadDatabase::StateToInt(DownloadItem::DownloadState state) {
-  switch (state) {
-    case DownloadItem::IN_PROGRESS: return DownloadDatabase::kStateInProgress;
-    case DownloadItem::COMPLETE: return DownloadDatabase::kStateComplete;
-    case DownloadItem::CANCELLED: return DownloadDatabase::kStateCancelled;
-    case DownloadItem::INTERRUPTED: return DownloadDatabase::kStateInterrupted;
-    case DownloadItem::MAX_DOWNLOAD_STATE:
-      NOTREACHED();
-      return DownloadDatabase::kStateInvalid;
-  }
-  NOTREACHED();
-  return DownloadDatabase::kStateInvalid;
-}
-
-DownloadItem::DownloadState DownloadDatabase::IntToState(int state) {
-  switch (state) {
-    case DownloadDatabase::kStateInProgress: return DownloadItem::IN_PROGRESS;
-    case DownloadDatabase::kStateComplete: return DownloadItem::COMPLETE;
-    case DownloadDatabase::kStateCancelled: return DownloadItem::CANCELLED;
-    // We should not need kStateBug140687 here because MigrateDownloadsState()
-    // is called in HistoryDatabase::Init().
-    case DownloadDatabase::kStateInterrupted: return DownloadItem::INTERRUPTED;
-    default: return DownloadItem::MAX_DOWNLOAD_STATE;
-  }
-}
-
-int DownloadDatabase::DangerTypeToInt(content::DownloadDangerType danger_type) {
-  switch (danger_type) {
-    case content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS:
-      return DownloadDatabase::kDangerTypeNotDangerous;
-    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE:
-      return DownloadDatabase::kDangerTypeDangerousFile;
-    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL:
-      return DownloadDatabase::kDangerTypeDangerousUrl;
-    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT:
-      return DownloadDatabase::kDangerTypeDangerousContent;
-    case content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT:
-      return DownloadDatabase::kDangerTypeMaybeDangerousContent;
-    case content::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT:
-      return DownloadDatabase::kDangerTypeUncommonContent;
-    case content::DOWNLOAD_DANGER_TYPE_USER_VALIDATED:
-      return DownloadDatabase::kDangerTypeUserValidated;
-    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST:
-      return DownloadDatabase::kDangerTypeDangerousHost;
-    case content::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED:
-      return DownloadDatabase::kDangerTypePotentiallyUnwanted;
-    case content::DOWNLOAD_DANGER_TYPE_MAX:
-      NOTREACHED();
-      return DownloadDatabase::kDangerTypeInvalid;
-  }
-  NOTREACHED();
-  return DownloadDatabase::kDangerTypeInvalid;
-}
-
-content::DownloadDangerType DownloadDatabase::IntToDangerType(int danger_type) {
-  switch (danger_type) {
-    case DownloadDatabase::kDangerTypeNotDangerous:
-      return content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS;
-    case DownloadDatabase::kDangerTypeDangerousFile:
-      return content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE;
-    case DownloadDatabase::kDangerTypeDangerousUrl:
-      return content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL;
-    case DownloadDatabase::kDangerTypeDangerousContent:
-      return content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT;
-    case DownloadDatabase::kDangerTypeMaybeDangerousContent:
-      return content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT;
-    case DownloadDatabase::kDangerTypeUncommonContent:
-      return content::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT;
-    case DownloadDatabase::kDangerTypeUserValidated:
-      return content::DOWNLOAD_DANGER_TYPE_USER_VALIDATED;
-    case DownloadDatabase::kDangerTypeDangerousHost:
-      return content::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST;
-    case DownloadDatabase::kDangerTypePotentiallyUnwanted:
-      return content::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED;
-    default:
-      return content::DOWNLOAD_DANGER_TYPE_MAX;
-  }
-}
-
-DownloadDatabase::DownloadDatabase()
+DownloadDatabase::DownloadDatabase(
+    DownloadInterruptReason download_interrupt_no_reason,
+    DownloadInterruptReason download_interrupt_crash)
     : owning_thread_set_(false),
       owning_thread_(0),
-      in_progress_entry_cleanup_completed_(false) {
+      in_progress_entry_cleanup_completed_(false),
+      download_interrupt_no_reason_(download_interrupt_no_reason),
+      download_interrupt_crash_(download_interrupt_crash) {
 }
 
 DownloadDatabase::~DownloadDatabase() {
 }
 
-bool DownloadDatabase::EnsureColumnExists(
-    const std::string& name, const std::string& type) {
+bool DownloadDatabase::EnsureColumnExists(const std::string& name,
+                                          const std::string& type) {
   std::string add_col = "ALTER TABLE downloads ADD COLUMN " + name + " " + type;
   return GetDB().DoesColumnExist("downloads", name.c_str()) ||
          GetDB().Execute(add_col.c_str());
@@ -194,8 +93,8 @@ bool DownloadDatabase::MigrateMimeType() {
 bool DownloadDatabase::MigrateDownloadsState() {
   sql::Statement statement(GetDB().GetUniqueStatement(
       "UPDATE downloads SET state=? WHERE state=?"));
-  statement.BindInt(0, kStateInterrupted);
-  statement.BindInt(1, kStateBug140687);
+  statement.BindInt(0, DownloadStateToInt(DownloadState::INTERRUPTED));
+  statement.BindInt(1, DownloadStateToInt(DownloadState::BUG_140687));
   return statement.Run();
 }
 
@@ -250,8 +149,10 @@ bool DownloadDatabase::MigrateDownloadsReasonPathsAndDangerType() {
       "            (end_time + 11644473600) * 1000000 END, "
       "       opened "
       "FROM downloads_tmp"));
-  statement_populate.BindInt(0, content::DOWNLOAD_INTERRUPT_REASON_NONE);
-  statement_populate.BindInt(1, kDangerTypeNotDangerous);
+  statement_populate.BindInt(
+      0, DownloadInterruptReasonToInt(download_interrupt_no_reason_));
+  statement_populate.BindInt(
+      1, DownloadDangerTypeToInt(DownloadDangerType::NOT_DANGEROUS));
   if (!statement_populate.Run())
     return false;
 
@@ -296,7 +197,7 @@ bool DownloadDatabase::InitDownloadTable() {
       "total_bytes INTEGER NOT NULL,"       // Total size of the download.
       "state INTEGER NOT NULL,"             // 1=complete, 4=interrupted
       "danger_type INTEGER NOT NULL,"       // Danger type, validated.
-      "interrupt_reason INTEGER NOT NULL,"  // content::DownloadInterruptReason
+      "interrupt_reason INTEGER NOT NULL,"  // DownloadInterruptReason
       "end_time INTEGER NOT NULL,"          // When the download completed.
       "opened INTEGER NOT NULL,"            // 1 if it has ever been opened
                                             // else 0
@@ -334,15 +235,20 @@ uint32 DownloadDatabase::GetNextDownloadId() {
       "SELECT max(id) FROM downloads"));
   bool result = select_max_id.Step();
   DCHECK(result);
-  // If there are zero records in the downloads table, then max(id) will return
-  // 0 = kInvalidId, so GetNextDownloadId() will set *id = kInvalidId + 1.
-  // If there is at least one record but all of the |id|s are <= kInvalidId,
-  // then max(id) will return <= kInvalidId, so GetNextDownloadId should return
-  // kInvalidId + 1. Note that any records with |id <= kInvalidId| will be
-  // dropped in QueryDownloads()
+  // If there are zero records in the downloads table, then max(id) will
+  // return 0 = kInvalidDownloadId, so GetNextDownloadId() will set
+  // *id = kInvalidDownloadId + 1.
+  //
+  // If there is at least one record but all of the |id|s are
+  // <= kInvalidDownloadId, then max(id) will return <= kInvalidDownloadId,
+  // so GetNextDownloadId() should return kInvalidDownloadId + 1.
+  //
+  // Note that any records with |id <= kInvalidDownloadId| will be dropped in
+  // QueryDownloads().
+  //
   // SQLITE doesn't have unsigned integers.
   return 1 + static_cast<uint32>(std::max(
-      static_cast<int64>(content::DownloadItem::kInvalidId),
+      static_cast<int64>(kInvalidDownloadId),
       select_max_id.ColumnInt64(0)));
 }
 
@@ -350,8 +256,7 @@ bool DownloadDatabase::DropDownloadTable() {
   return GetDB().Execute("DROP TABLE downloads");
 }
 
-void DownloadDatabase::QueryDownloads(
-    std::vector<DownloadRow>* results) {
+void DownloadDatabase::QueryDownloads(std::vector<DownloadRow>* results) {
   EnsureInProgressEntriesCleanedUp();
 
   results->clear();
@@ -375,24 +280,25 @@ void DownloadDatabase::QueryDownloads(
     // |id|s instead of casting them to very large uint32s, which would break
     // the max(id) logic in GetNextDownloadId().
     int64 signed_id = statement_main.ColumnInt64(column++);
-    info->id = static_cast<uint32>(signed_id);
+    info->id = IntToDownloadId(signed_id);
     info->current_path = ColumnFilePath(statement_main, column++);
     info->target_path = ColumnFilePath(statement_main, column++);
     info->mime_type = statement_main.ColumnString(column++);
     info->original_mime_type = statement_main.ColumnString(column++);
-    info->start_time = base::Time::FromInternalValue(
-        statement_main.ColumnInt64(column++));
+    info->start_time =
+        base::Time::FromInternalValue(statement_main.ColumnInt64(column++));
     info->received_bytes = statement_main.ColumnInt64(column++);
     info->total_bytes = statement_main.ColumnInt64(column++);
     int state = statement_main.ColumnInt(column++);
-    info->state = IntToState(state);
-    if (info->state == DownloadItem::MAX_DOWNLOAD_STATE)
+    info->state = IntToDownloadState(state);
+    if (info->state == DownloadState::INVALID)
       UMA_HISTOGRAM_COUNTS("Download.DatabaseInvalidState", state);
-    info->danger_type = IntToDangerType(statement_main.ColumnInt(column++));
-    info->interrupt_reason = static_cast<content::DownloadInterruptReason>(
-        statement_main.ColumnInt(column++));
-    info->end_time = base::Time::FromInternalValue(
-        statement_main.ColumnInt64(column++));
+    info->danger_type =
+        IntToDownloadDangerType(statement_main.ColumnInt(column++));
+    info->interrupt_reason =
+        IntToDownloadInterruptReason(statement_main.ColumnInt(column++));
+    info->end_time =
+        base::Time::FromInternalValue(statement_main.ColumnInt64(column++));
     info->opened = statement_main.ColumnInt(column++) != 0;
     info->referrer_url = GURL(statement_main.ColumnString(column++));
     info->by_ext_id = statement_main.ColumnString(column++);
@@ -403,15 +309,15 @@ void DownloadDatabase::QueryDownloads(
     // If the record is corrupted, note that and drop it.
     // http://crbug.com/251269
     DroppedReason dropped_reason = DROPPED_REASON_MAX;
-    if (signed_id <= static_cast<int64>(content::DownloadItem::kInvalidId)) {
+    if (signed_id <= static_cast<int64>(kInvalidDownloadId)) {
       // SQLITE doesn't have unsigned integers.
       dropped_reason = DROPPED_REASON_BAD_ID;
     } else if (!ids.insert(info->id).second) {
       dropped_reason = DROPPED_REASON_DUPLICATE_ID;
       NOTREACHED() << info->id;
-    } else if (info->state == DownloadItem::MAX_DOWNLOAD_STATE) {
+    } else if (info->state == DownloadState::INVALID) {
       dropped_reason = DROPPED_REASON_BAD_STATE;
-    } else if (info->danger_type == content::DOWNLOAD_DANGER_TYPE_MAX) {
+    } else if (info->danger_type == DownloadDangerType::INVALID) {
       dropped_reason = DROPPED_REASON_BAD_DANGER_TYPE;
     }
     if (dropped_reason != DROPPED_REASON_MAX) {
@@ -436,9 +342,9 @@ void DownloadDatabase::QueryDownloads(
     int64 signed_id = statement_chain.ColumnInt64(column++);
     int chain_index = statement_chain.ColumnInt(column++);
 
-    if (signed_id <= static_cast<int64>(content::DownloadItem::kInvalidId))
+    if (signed_id <= static_cast<int64>(kInvalidDownloadId))
       continue;
-    uint32 id = static_cast<uint32>(signed_id);
+    uint32 id = IntToDownloadId(signed_id);
 
     // Note that these DCHECKs may trip as a result of corrupted databases.
     // We have them because in debug builds the chances are higher there's
@@ -486,14 +392,12 @@ void DownloadDatabase::QueryDownloads(
 bool DownloadDatabase::UpdateDownload(const DownloadRow& data) {
   EnsureInProgressEntriesCleanedUp();
 
-  DCHECK_NE(content::DownloadItem::kInvalidId, data.id);
-  int state = StateToInt(data.state);
-  if (state == kStateInvalid) {
+  DCHECK_NE(kInvalidDownloadId, data.id);
+  if (data.state == DownloadState::INVALID) {
     NOTREACHED();
     return false;
   }
-  int danger_type = DangerTypeToInt(data.danger_type);
-  if (danger_type == kDangerTypeInvalid) {
+  if (data.danger_type == DownloadDangerType::INVALID) {
     NOTREACHED();
     return false;
   }
@@ -512,9 +416,10 @@ bool DownloadDatabase::UpdateDownload(const DownloadRow& data) {
   statement.BindString(column++, data.mime_type);
   statement.BindString(column++, data.original_mime_type);
   statement.BindInt64(column++, data.received_bytes);
-  statement.BindInt(column++, state);
-  statement.BindInt(column++, danger_type);
-  statement.BindInt(column++, static_cast<int>(data.interrupt_reason));
+  statement.BindInt(column++, DownloadStateToInt(data.state));
+  statement.BindInt(column++, DownloadDangerTypeToInt(data.danger_type));
+  statement.BindInt(column++,
+                    DownloadInterruptReasonToInt(data.interrupt_reason));
   statement.BindInt64(column++, data.end_time.ToInternalValue());
   statement.BindInt64(column++, data.total_bytes);
   statement.BindInt(column++, (data.opened ? 1 : 0));
@@ -522,7 +427,7 @@ bool DownloadDatabase::UpdateDownload(const DownloadRow& data) {
   statement.BindString(column++, data.by_ext_name);
   statement.BindString(column++, data.etag);
   statement.BindString(column++, data.last_modified);
-  statement.BindInt(column++, data.id);
+  statement.BindInt(column++, DownloadIdToInt(data.id));
 
   return statement.Run();
 }
@@ -533,27 +438,25 @@ void DownloadDatabase::EnsureInProgressEntriesCleanedUp() {
 
   sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "UPDATE downloads SET state=?, interrupt_reason=? WHERE state=?"));
-  statement.BindInt(0, kStateInterrupted);
-  statement.BindInt(1, content::DOWNLOAD_INTERRUPT_REASON_CRASH);
-  statement.BindInt(2, kStateInProgress);
+  statement.BindInt(0, DownloadStateToInt(DownloadState::INTERRUPTED));
+  statement.BindInt(1, DownloadInterruptReasonToInt(download_interrupt_crash_));
+  statement.BindInt(2, DownloadStateToInt(DownloadState::IN_PROGRESS));
 
   statement.Run();
   in_progress_entry_cleanup_completed_ = true;
 }
 
 bool DownloadDatabase::CreateDownload(const DownloadRow& info) {
-  DCHECK_NE(content::DownloadItem::kInvalidId, info.id);
+  DCHECK_NE(kInvalidDownloadId, info.id);
   EnsureInProgressEntriesCleanedUp();
 
   if (info.url_chain.empty())
     return false;
 
-  int state = StateToInt(info.state);
-  if (state == kStateInvalid)
+  if (info.state == DownloadState::INVALID)
     return false;
 
-  int danger_type = DangerTypeToInt(info.danger_type);
-  if (danger_type == kDangerTypeInvalid)
+  if (info.danger_type == DownloadDangerType::INVALID)
     return false;
 
   {
@@ -569,7 +472,7 @@ bool DownloadDatabase::CreateDownload(const DownloadRow& info) {
         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"));
 
     int column = 0;
-    statement_insert.BindInt(column++, info.id);
+    statement_insert.BindInt(column++, DownloadIdToInt(info.id));
     BindFilePath(statement_insert, info.current_path, column++);
     BindFilePath(statement_insert, info.target_path, column++);
     statement_insert.BindString(column++, info.mime_type);
@@ -577,9 +480,11 @@ bool DownloadDatabase::CreateDownload(const DownloadRow& info) {
     statement_insert.BindInt64(column++, info.start_time.ToInternalValue());
     statement_insert.BindInt64(column++, info.received_bytes);
     statement_insert.BindInt64(column++, info.total_bytes);
-    statement_insert.BindInt(column++, state);
-    statement_insert.BindInt(column++, danger_type);
-    statement_insert.BindInt(column++, info.interrupt_reason);
+    statement_insert.BindInt(column++, DownloadStateToInt(info.state));
+    statement_insert.BindInt(column++,
+                             DownloadDangerTypeToInt(info.danger_type));
+    statement_insert.BindInt(
+        column++, DownloadInterruptReasonToInt(info.interrupt_reason));
     statement_insert.BindInt64(column++, info.end_time.ToInternalValue());
     statement_insert.BindInt(column++, info.opened ? 1 : 0);
     statement_insert.BindString(column++, info.referrer_url.spec());

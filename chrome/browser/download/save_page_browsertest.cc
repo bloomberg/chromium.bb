@@ -19,7 +19,6 @@
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/download/save_package_file_picker.h"
-#include "chrome/browser/history/download_row.h"
 #include "chrome/browser/net/url_request_mock_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -32,6 +31,8 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/history/core/browser/download_constants.h"
+#include "components/history/core/browser/download_row.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/notification_service.h"
@@ -141,7 +142,7 @@ bool DownloadStoredProperly(
     const GURL& expected_url,
     const base::FilePath& expected_path,
     int64 num_files,
-    DownloadItem::DownloadState expected_state,
+    history::DownloadState expected_state,
     DownloadItem* item,
     const history::DownloadRow& info) {
   // This function may be called multiple times for a given test. Returning
@@ -383,7 +384,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, MAYBE_SaveHTMLOnly) {
   GetDestinationPaths("a", &full_file_name, &dir);
   DownloadPersistedObserver persisted(browser()->profile(), base::Bind(
       &DownloadStoredProperly, url, full_file_name, 1,
-      DownloadItem::COMPLETE));
+      history::DownloadState::COMPLETE));
   scoped_refptr<content::MessageLoopRunner> loop_runner(
       new content::MessageLoopRunner);
   SavePackageFinishedObserver observer(
@@ -414,7 +415,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, DISABLED_SaveHTMLOnlyCancel) {
   DownloadItemCreatedObserver creation_observer(manager);
   DownloadPersistedObserver persisted(browser()->profile(), base::Bind(
       &DownloadStoredProperly, url, full_file_name, -1,
-      DownloadItem::CANCELLED));
+      history::DownloadState::CANCELLED));
   // -1 to disable number of files check; we don't update after cancel, and
   // we don't know when the single file completed in relationship to
   // the cancel.
@@ -510,7 +511,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, MAYBE_SaveViewSourceHTMLOnly) {
   GetDestinationPaths("a", &full_file_name, &dir);
   DownloadPersistedObserver persisted(browser()->profile(), base::Bind(
       &DownloadStoredProperly, actual_page_url, full_file_name, 1,
-      DownloadItem::COMPLETE));
+      history::DownloadState::COMPLETE));
   scoped_refptr<content::MessageLoopRunner> loop_runner(
       new content::MessageLoopRunner);
   SavePackageFinishedObserver observer(
@@ -544,7 +545,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, MAYBE_SaveCompleteHTML) {
   GetDestinationPaths("b", &full_file_name, &dir);
   DownloadPersistedObserver persisted(browser()->profile(), base::Bind(
       &DownloadStoredProperly, url, full_file_name, 3,
-      DownloadItem::COMPLETE));
+      history::DownloadState::COMPLETE));
   scoped_refptr<content::MessageLoopRunner> loop_runner(
       new content::MessageLoopRunner);
   SavePackageFinishedObserver observer(
@@ -639,7 +640,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, MAYBE_FileNameFromPageTitle) {
       "Test page for saving page feature_files");
   DownloadPersistedObserver persisted(browser()->profile(), base::Bind(
       &DownloadStoredProperly, url, full_file_name, 3,
-      DownloadItem::COMPLETE));
+      history::DownloadState::COMPLETE));
   scoped_refptr<content::MessageLoopRunner> loop_runner(
       new content::MessageLoopRunner);
   SavePackageFinishedObserver observer(
@@ -680,7 +681,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, MAYBE_RemoveFromList) {
   GetDestinationPaths("a", &full_file_name, &dir);
   DownloadPersistedObserver persisted(browser()->profile(), base::Bind(
       &DownloadStoredProperly, url, full_file_name, 1,
-      DownloadItem::COMPLETE));
+      history::DownloadState::COMPLETE));
   scoped_refptr<content::MessageLoopRunner> loop_runner(
       new content::MessageLoopRunner);
   SavePackageFinishedObserver observer(
@@ -770,7 +771,7 @@ IN_PROC_BROWSER_TEST_F(SavePageAsMHTMLBrowserTest, SavePageAsMHTML) {
   SavePackageFilePicker::SetShouldPromptUser(false);
   DownloadPersistedObserver persisted(browser()->profile(), base::Bind(
       &DownloadStoredProperly, url, full_file_name, -1,
-      DownloadItem::COMPLETE));
+      history::DownloadState::COMPLETE));
   scoped_refptr<content::MessageLoopRunner> loop_runner(
       new content::MessageLoopRunner);
   SavePackageFinishedObserver observer(

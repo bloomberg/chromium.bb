@@ -41,6 +41,7 @@ group("all_components") {
     "//components/feedback",
     "//components/gcm_driver",
     "//components/google/core/browser",
+    "//components/history/content/browser",
     "//components/history/core/browser",
     "//components/history/core/common",
     "//components/history/core/test",
@@ -124,8 +125,9 @@ group("all_components") {
   }
   if (is_ios) {
     deps -= [
-      "//components/keyed_service/content",
       "//components/copresence_endpoints",
+      "//components/history/content/browser",
+      "//components/keyed_service/content",
     ]
   }
 

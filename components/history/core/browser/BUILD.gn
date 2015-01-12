@@ -6,6 +6,13 @@ import("//third_party/protobuf/proto_library.gni")
 
 static_library("browser") {
   sources = [
+    "download_constants.h",
+    "download_database.cc",
+    "download_database.h",
+    "download_row.cc",
+    "download_row.h",
+    "download_types.cc",
+    "download_types.h",
     "history_backend_notifier.h",
     "history_backend_observer.h",
     "history_client.cc",

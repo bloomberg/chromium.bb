@@ -9,7 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "build/build_config.h"
-#include "chrome/browser/history/download_database.h"
+#include "components/history/core/browser/download_database.h"
 #include "components/history/core/browser/url_database.h"
 #include "components/history/core/browser/visit_database.h"
 #include "components/history/core/browser/visitsegment_database.h"

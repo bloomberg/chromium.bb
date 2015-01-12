@@ -559,6 +559,9 @@
                 # Dependencies of error_page
                 'components.gyp:error_page_renderer',
 
+                # Dependencies of history
+                'components.gyp:history_content_browser',
+
                 # Dependencies of
                 # intercept_navigation_resource_throttle_unittest.cc
                 '../skia/skia.gyp:skia',

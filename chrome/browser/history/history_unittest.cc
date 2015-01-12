@@ -42,7 +42,6 @@
 #include "base/task/cancelable_task_tracker.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
-#include "chrome/browser/history/download_row.h"
 #include "chrome/browser/history/history_backend.h"
 #include "chrome/browser/history/history_database.h"
 #include "chrome/browser/history/history_notifications.h"
@@ -52,6 +51,9 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/tools/profiles/thumbnail-inl.h"
+#include "components/history/content/browser/download_constants_utils.h"
+#include "components/history/core/browser/download_constants.h"
+#include "components/history/core/browser/download_row.h"
 #include "components/history/core/browser/history_constants.h"
 #include "components/history/core/browser/history_db_task.h"
 #include "components/history/core/browser/in_memory_database.h"
@@ -180,9 +182,7 @@ class HistoryBackendDBTest : public HistoryUnitTestBase {
     base::MessageLoop::current()->Run();
   }
 
-  bool AddDownload(uint32 id,
-                   DownloadItem::DownloadState state,
-                   const Time& time) {
+  bool AddDownload(uint32 id, DownloadState state, const Time& time) {
     std::vector<GURL> url_chain;
     url_chain.push_back(GURL("foo-url"));
 
@@ -199,8 +199,9 @@ class HistoryBackendDBTest : public HistoryUnitTestBase {
                          0,
                          512,
                          state,
-                         content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
-                         content::DOWNLOAD_INTERRUPT_REASON_NONE,
+                         DownloadDangerType::NOT_DANGEROUS,
+                         ToHistoryDownloadInterruptReason(
+                            content::DOWNLOAD_INTERRUPT_REASON_NONE),
                          id,
                          false,
                          "by_ext_id",
@@ -250,7 +251,7 @@ TEST_F(HistoryBackendDBTest, ClearBrowsingData_Downloads) {
   // was removed.
   Time now = Time();
   uint32 id = 1;
-  EXPECT_TRUE(AddDownload(id, DownloadItem::COMPLETE, Time()));
+  EXPECT_TRUE(AddDownload(id, DownloadState::COMPLETE, Time()));
   db_->QueryDownloads(&downloads);
   EXPECT_EQ(1U, downloads.size());
 
@@ -266,9 +267,8 @@ TEST_F(HistoryBackendDBTest, ClearBrowsingData_Downloads) {
   EXPECT_EQ(now, downloads[0].end_time);
   EXPECT_EQ(0, downloads[0].received_bytes);
   EXPECT_EQ(512, downloads[0].total_bytes);
-  EXPECT_EQ(DownloadItem::COMPLETE, downloads[0].state);
-  EXPECT_EQ(content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
-            downloads[0].danger_type);
+  EXPECT_EQ(DownloadState::COMPLETE, downloads[0].state);
+  EXPECT_EQ(DownloadDangerType::NOT_DANGEROUS, downloads[0].danger_type);
   EXPECT_EQ(content::DOWNLOAD_INTERRUPT_REASON_NONE,
             downloads[0].interrupt_reason);
   EXPECT_FALSE(downloads[0].opened);
@@ -729,9 +729,9 @@ TEST_F(HistoryBackendDBTest, ConfirmDownloadRowCreateAndDelete) {
 
   // Add some downloads.
   uint32 id1 = 1, id2 = 2, id3 = 3;
-  AddDownload(id1, DownloadItem::COMPLETE, now);
-  AddDownload(id2, DownloadItem::COMPLETE, now + base::TimeDelta::FromDays(2));
-  AddDownload(id3, DownloadItem::COMPLETE, now - base::TimeDelta::FromDays(2));
+  AddDownload(id1, DownloadState::COMPLETE, now);
+  AddDownload(id2, DownloadState::COMPLETE, now + base::TimeDelta::FromDays(2));
+  AddDownload(id3, DownloadState::COMPLETE, now - base::TimeDelta::FromDays(2));
 
   // Confirm that resulted in the correct number of rows in the DB.
   DeleteBackend();
@@ -785,9 +785,10 @@ TEST_F(HistoryBackendDBTest, DownloadNukeRecordsMissingURLs) {
                        std::string(),
                        0,
                        512,
-                       DownloadItem::COMPLETE,
-                       content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
-                       content::DOWNLOAD_INTERRUPT_REASON_NONE,
+                       DownloadState::COMPLETE,
+                       DownloadDangerType::NOT_DANGEROUS,
+                       ToHistoryDownloadInterruptReason(
+                          content::DOWNLOAD_INTERRUPT_REASON_NONE),
                        1,
                        0,
                        "by_ext_id",
@@ -834,7 +835,7 @@ TEST_F(HistoryBackendDBTest, ConfirmDownloadInProgressCleanup) {
   base::Time now(base::Time::Now());
 
   // Put an IN_PROGRESS download in the DB.
-  AddDownload(1, DownloadItem::IN_PROGRESS, now);
+  AddDownload(1, DownloadState::IN_PROGRESS, now);
 
   // Confirm that they made it into the DB unchanged.
   DeleteBackend();
@@ -849,7 +850,8 @@ TEST_F(HistoryBackendDBTest, ConfirmDownloadInProgressCleanup) {
     sql::Statement statement1(db.GetUniqueStatement(
         "Select state, interrupt_reason from downloads"));
     EXPECT_TRUE(statement1.Step());
-    EXPECT_EQ(DownloadDatabase::kStateInProgress, statement1.ColumnInt(0));
+    EXPECT_EQ(DownloadStateToInt(DownloadState::IN_PROGRESS),
+              statement1.ColumnInt(0));
     EXPECT_EQ(content::DOWNLOAD_INTERRUPT_REASON_NONE, statement1.ColumnInt(1));
     EXPECT_FALSE(statement1.Step());
   }
@@ -860,7 +862,7 @@ TEST_F(HistoryBackendDBTest, ConfirmDownloadInProgressCleanup) {
   std::vector<DownloadRow> results;
   db_->QueryDownloads(&results);
   ASSERT_EQ(1u, results.size());
-  EXPECT_EQ(content::DownloadItem::INTERRUPTED, results[0].state);
+  EXPECT_EQ(DownloadState::INTERRUPTED, results[0].state);
   EXPECT_EQ(content::DOWNLOAD_INTERRUPT_REASON_CRASH,
             results[0].interrupt_reason);
 
@@ -879,7 +881,8 @@ TEST_F(HistoryBackendDBTest, ConfirmDownloadInProgressCleanup) {
     sql::Statement statement1(db.GetUniqueStatement(
         "Select state, interrupt_reason from downloads"));
     EXPECT_TRUE(statement1.Step());
-    EXPECT_EQ(DownloadDatabase::kStateInterrupted, statement1.ColumnInt(0));
+    EXPECT_EQ(DownloadStateToInt(DownloadState::INTERRUPTED),
+              statement1.ColumnInt(0));
     EXPECT_EQ(content::DOWNLOAD_INTERRUPT_REASON_CRASH,
               statement1.ColumnInt(1));
     EXPECT_FALSE(statement1.Step());

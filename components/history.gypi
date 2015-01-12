@@ -26,6 +26,13 @@
       ],
       'sources': [
         # Note: sources list duplicated in GN build.
+        'history/core/browser/download_constants.h',
+        'history/core/browser/download_database.cc',
+        'history/core/browser/download_database.h',
+        'history/core/browser/download_row.cc',
+        'history/core/browser/download_row.h',
+        'history/core/browser/download_types.cc',
+        'history/core/browser/download_types.h',
         'history/core/browser/history_backend_notifier.h',
         'history/core/browser/history_backend_observer.h',
         'history/core/browser/history_client.cc',
@@ -119,6 +126,27 @@
     },
   ],
   'conditions': [
+    ['OS!="ios"', {
+      'targets': [
+        {
+          # GN version: //components/history/content/browser
+          'target_name': 'history_content_browser',
+          'type': 'static_library',
+          'include_dirs': [
+            '..',
+          ],
+          'dependencies': [
+            '../base/base.gyp:base',
+            '../content/content.gyp:content_browser',
+            'history_core_browser',
+          ],
+          'sources': [
+            'history/content/browser/download_constants_utils.cc',
+            'history/content/browser/download_constants_utils.h',
+          ],
+        }
+      ],
+    }],
     ['OS=="android"', {
       'targets': [
         {

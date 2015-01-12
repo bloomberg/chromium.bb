@@ -14,6 +14,8 @@
 #include "base/rand_util.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
+#include "components/history/content/browser/download_constants_utils.h"
+#include "content/public/browser/download_interrupt_reasons.h"
 #include "sql/transaction.h"
 
 #if defined(OS_MACOSX)
@@ -33,7 +35,11 @@ const char kEarlyExpirationThresholdKey[] = "early_expiration_threshold";
 
 }  // namespace
 
-HistoryDatabase::HistoryDatabase() {
+HistoryDatabase::HistoryDatabase()
+    : DownloadDatabase(ToHistoryDownloadInterruptReason(
+                           content::DOWNLOAD_INTERRUPT_REASON_NONE),
+                       ToHistoryDownloadInterruptReason(
+                           content::DOWNLOAD_INTERRUPT_REASON_CRASH)) {
 }
 
 HistoryDatabase::~HistoryDatabase() {

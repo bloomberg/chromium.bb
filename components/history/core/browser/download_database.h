@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_HISTORY_DOWNLOAD_DATABASE_H_
-#define CHROME_BROWSER_HISTORY_DOWNLOAD_DATABASE_H_
+#ifndef COMPONENTS_HISTORY_CORE_BROWSER_DOWNLOAD_DATABASE_H_
+#define COMPONENTS_HISTORY_CORE_BROWSER_DOWNLOAD_DATABASE_H_
 
 #include <string>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/threading/platform_thread.h"
-#include "content/public/browser/download_item.h"
+#include "components/history/core/browser/download_types.h"
 #include "sql/meta_table.h"
 
 namespace sql {
@@ -25,14 +25,14 @@ struct DownloadRow;
 class DownloadDatabase {
  public:
   // Must call InitDownloadTable before using any other functions.
-  DownloadDatabase();
+  DownloadDatabase(DownloadInterruptReason download_interrupt_no_reason,
+                   DownloadInterruptReason download_interrupt_crash);
   virtual ~DownloadDatabase();
 
   uint32 GetNextDownloadId();
 
   // Get all the downloads from the database.
-  void QueryDownloads(
-      std::vector<DownloadRow>* results);
+  void QueryDownloads(std::vector<DownloadRow>* results);
 
   // Update the state of one download. Returns true if successful.
   // Does not update |url|, |start_time|; uses |id| only
@@ -84,28 +84,8 @@ class DownloadDatabase {
   bool DropDownloadTable();
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(
-      HistoryBackendDBTest, ConfirmDownloadInProgressCleanup);
-
-  // Values used in the database for DownloadItem::State.
-  static const int kStateInvalid;
-  static const int kStateInProgress;
-  static const int kStateComplete;
-  static const int kStateCancelled;
-  static const int kStateBug140687;
-  static const int kStateInterrupted;
-
-  // Values used in the database for DownloadItem::DangerType
-  static const int kDangerTypeInvalid;
-  static const int kDangerTypeNotDangerous;
-  static const int kDangerTypeDangerousFile;
-  static const int kDangerTypeDangerousUrl;
-  static const int kDangerTypeDangerousContent;
-  static const int kDangerTypeMaybeDangerousContent;
-  static const int kDangerTypeUncommonContent;
-  static const int kDangerTypeUserValidated;
-  static const int kDangerTypeDangerousHost;
-  static const int kDangerTypePotentiallyUnwanted;
+  FRIEND_TEST_ALL_PREFIXES(HistoryBackendDBTest,
+                           ConfirmDownloadInProgressCleanup);
 
   // Fixes state of the download entries. Sometimes entries with IN_PROGRESS
   // state are not updated during browser shutdown (particularly when crashing).
@@ -118,13 +98,6 @@ class DownloadDatabase {
 
   void RemoveDownloadURLs(uint32 id);
 
-  // Utility functions for conversion between DownloadItem types
-  // and DownloadDatabase constants.
-  static int StateToInt(content::DownloadItem::DownloadState state);
-  static content::DownloadItem::DownloadState IntToState(int state);
-  static int DangerTypeToInt(content::DownloadDangerType danger_type);
-  static content::DownloadDangerType IntToDangerType(int danger_type);
-
   bool owning_thread_set_;
   base::PlatformThreadId owning_thread_;
 
@@ -135,9 +108,15 @@ class DownloadDatabase {
   // actually use the downloads database.
   bool in_progress_entry_cleanup_completed_;
 
+  // Those constants are defined in the embedder and injected into the
+  // database in the constructor. They represent the interrupt reason
+  // to use for respectively an undefined value and in case of a crash.
+  DownloadInterruptReason download_interrupt_no_reason_;
+  DownloadInterruptReason download_interrupt_crash_;
+
   DISALLOW_COPY_AND_ASSIGN(DownloadDatabase);
 };
 
 }  // namespace history
 
-#endif  // CHROME_BROWSER_HISTORY_DOWNLOAD_DATABASE_H_
+#endif  // COMPONENTS_HISTORY_CORE_BROWSER_DOWNLOAD_DATABASE_H_

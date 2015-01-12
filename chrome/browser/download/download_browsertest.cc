@@ -40,7 +40,6 @@
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_install_prompt_show_params.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/history/download_row.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -65,6 +64,9 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/history/content/browser/download_constants_utils.h"
+#include "components/history/core/browser/download_constants.h"
+#include "components/history/core/browser/download_row.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar.h"
 #include "content/public/browser/download_interrupt_reasons.h"
@@ -1774,12 +1776,12 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadHistoryCheck) {
   ASSERT_EQ(2u, row.url_chain.size());
   EXPECT_EQ(redirect_url.spec(), row.url_chain[0].spec());
   EXPECT_EQ(download_url.spec(), row.url_chain[1].spec());
-  EXPECT_EQ(content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, row.danger_type);
+  EXPECT_EQ(history::DownloadDangerType::NOT_DANGEROUS, row.danger_type);
   EXPECT_LE(start, row.start_time);
   EXPECT_EQ(URLRequestSlowDownloadJob::kFirstDownloadSize, row.received_bytes);
   EXPECT_EQ(URLRequestSlowDownloadJob::kFirstDownloadSize
             + URLRequestSlowDownloadJob::kSecondDownloadSize, row.total_bytes);
-  EXPECT_EQ(content::DownloadItem::IN_PROGRESS, row.state);
+  EXPECT_EQ(history::DownloadState::IN_PROGRESS, row.state);
   EXPECT_FALSE(row.opened);
 
   // Finish the download.  We're ok relying on the history to be flushed
@@ -1807,15 +1809,16 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadHistoryCheck) {
   ASSERT_EQ(2u, row1.url_chain.size());
   EXPECT_EQ(redirect_url.spec(), row1.url_chain[0].spec());
   EXPECT_EQ(download_url.spec(), row1.url_chain[1].spec());
-  EXPECT_EQ(content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, row1.danger_type);
+  EXPECT_EQ(history::DownloadDangerType::NOT_DANGEROUS, row1.danger_type);
   EXPECT_LE(start, row1.start_time);
   EXPECT_GE(end, row1.end_time);
   EXPECT_EQ(URLRequestSlowDownloadJob::kFirstDownloadSize,
             row1.received_bytes);
   EXPECT_EQ(URLRequestSlowDownloadJob::kFirstDownloadSize
             + URLRequestSlowDownloadJob::kSecondDownloadSize, row1.total_bytes);
-  EXPECT_EQ(content::DownloadItem::INTERRUPTED, row1.state);
-  EXPECT_EQ(content::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED,
+  EXPECT_EQ(history::DownloadState::INTERRUPTED, row1.state);
+  EXPECT_EQ(history::ToHistoryDownloadInterruptReason(
+                content::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED),
             row1.interrupt_reason);
   EXPECT_FALSE(row1.opened);
 }
@@ -1857,9 +1860,9 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadHistoryDangerCheck) {
   EXPECT_NE(DownloadTargetDeterminer::GetCrDownloadPath(
                 DestinationFile(browser(), file)),
             row.current_path);
-  EXPECT_EQ(content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE, row.danger_type);
+  EXPECT_EQ(history::DownloadDangerType::DANGEROUS_FILE, row.danger_type);
   EXPECT_LE(start, row.start_time);
-  EXPECT_EQ(content::DownloadItem::IN_PROGRESS, row.state);
+  EXPECT_EQ(history::DownloadState::IN_PROGRESS, row.state);
   EXPECT_FALSE(row.opened);
 
   // Validate the download and wait for it to finish.
@@ -1877,9 +1880,9 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadHistoryDangerCheck) {
   history::DownloadRow& row1(downloads_in_database->at(0));
   EXPECT_EQ(DestinationFile(browser(), file), row1.target_path);
   EXPECT_EQ(DestinationFile(browser(), file), row1.current_path);
-  EXPECT_EQ(content::DOWNLOAD_DANGER_TYPE_USER_VALIDATED, row1.danger_type);
+  EXPECT_EQ(history::DownloadDangerType::USER_VALIDATED, row1.danger_type);
   EXPECT_LE(start, row1.start_time);
-  EXPECT_EQ(content::DownloadItem::COMPLETE, row1.state);
+  EXPECT_EQ(history::DownloadState::COMPLETE, row1.state);
   EXPECT_FALSE(row1.opened);
   // Not checking file size--not relevant to the point of the test, and
   // the file size is actually different on Windows and other platforms,

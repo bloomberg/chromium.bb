@@ -226,6 +226,7 @@ static_library("browser") {
       "//components/app_modal",
       "//components/autofill/content/browser",
       "//components/dom_distiller/content",
+      "//components/history/content/browser",
       "//components/keyed_service/content",
       "//components/navigation_interception",
       "//components/password_manager/content/browser",

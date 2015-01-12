@@ -14,8 +14,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
-#include "chrome/browser/history/download_row.h"
 #include "chrome/browser/safe_browsing/incident_reporting/download_metadata_manager.h"
+#include "components/history/core/browser/download_row.h"
 #include "components/history/core/browser/history_service_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -26,10 +26,6 @@ class Profile;
 namespace content {
 class NotificationDetails;
 class NotificationSource;
-}
-
-namespace history {
-struct DownloadRow;
 }
 
 namespace safe_browsing {

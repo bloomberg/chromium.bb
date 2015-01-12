@@ -15,7 +15,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/history/chrome_history_client.h"
 #include "chrome/browser/history/chrome_history_client_factory.h"
-#include "chrome/browser/history/download_row.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/web_history_service_factory.h"
@@ -28,6 +27,9 @@
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "components/history/content/browser/download_constants_utils.h"
+#include "components/history/core/browser/download_constants.h"
+#include "components/history/core/browser/download_row.h"
 #include "components/history/core/browser/history_constants.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
@@ -219,20 +221,21 @@ class LastDownloadFinderTest : public testing::Test {
         std::vector<GURL>(1, GURL("http://www.google.com")),  // url_chain
         GURL(),                                               // referrer
         "application/octet-stream",                           // mime_type
-        "application/octet-stream",                   // original_mime_type
-        now - base::TimeDelta::FromMinutes(10),       // start
-        now - base::TimeDelta::FromMinutes(9),        // end
-        std::string(),                                // etag
-        std::string(),                                // last_modified
-        47LL,                                         // received
-        47LL,                                         // total
-        content::DownloadItem::COMPLETE,              // download_state
-        content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,  // danger_type
-        content::DOWNLOAD_INTERRUPT_REASON_NONE,      // interrupt_reason,
-        1,                                            // id
-        false,                                        // download_opened
-        std::string(),                                // ext_id
-        std::string());                               // ext_name
+        "application/octet-stream",                  // original_mime_type
+        now - base::TimeDelta::FromMinutes(10),      // start
+        now - base::TimeDelta::FromMinutes(9),       // end
+        std::string(),                               // etag
+        std::string(),                               // last_modified
+        47LL,                                        // received
+        47LL,                                        // total
+        history::DownloadState::COMPLETE,            // download_state
+        history::DownloadDangerType::NOT_DANGEROUS,  // danger_type
+        history::ToHistoryDownloadInterruptReason(
+            content::DOWNLOAD_INTERRUPT_REASON_NONE),  // interrupt_reason,
+        1,                                             // id
+        false,                                         // download_opened
+        std::string(),                                 // ext_id
+        std::string());                                // ext_name
   }
 
   void ExpectNoDownloadFound(

@@ -24,7 +24,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/history/download_row.h"
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/in_memory_history_backend.h"
 #include "chrome/browser/history/in_memory_history_backend.h"
@@ -35,6 +34,8 @@
 #include "chrome/common/importer/imported_favicon_usage.h"
 #include "chrome/common/url_constants.h"
 #include "components/favicon_base/select_favicon_frames.h"
+#include "components/history/core/browser/download_constants.h"
+#include "components/history/core/browser/download_row.h"
 #include "components/history/core/browser/history_backend_observer.h"
 #include "components/history/core/browser/history_client.h"
 #include "components/history/core/browser/history_constants.h"
@@ -1111,7 +1112,7 @@ void HistoryBackend::RemoveObserver(HistoryBackendObserver* observer) {
 // Downloads -------------------------------------------------------------------
 
 uint32 HistoryBackend::GetNextDownloadId() {
-  return db_ ? db_->GetNextDownloadId() : content::DownloadItem::kInvalidId;
+  return db_ ? db_->GetNextDownloadId() : kInvalidDownloadId;
 }
 
 // Get all the download entries from the database.

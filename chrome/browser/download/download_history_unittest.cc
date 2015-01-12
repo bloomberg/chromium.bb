@@ -8,9 +8,10 @@
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "chrome/browser/download/download_history.h"
-#include "chrome/browser/history/download_database.h"
-#include "chrome/browser/history/download_row.h"
 #include "chrome/browser/history/history_service.h"
+#include "components/history/content/browser/download_constants_utils.h"
+#include "components/history/core/browser/download_constants.h"
+#include "components/history/core/browser/download_row.h"
 #include "content/public/test/mock_download_item.h"
 #include "content/public/test/mock_download_manager.h"
 #include "content/public/test/test_browser_thread.h"
@@ -228,24 +229,25 @@ class DownloadHistoryTest : public testing::Test {
     EXPECT_CALL(manager(), RemoveObserver(_));
     download_created_index_ = 0;
     for (size_t index = 0; index < infos->size(); ++index) {
+      const history::DownloadRow& row = infos->at(index);
       content::MockDownloadManager::CreateDownloadItemAdapter adapter(
-          infos->at(index).id,
-          infos->at(index).current_path,
-          infos->at(index).target_path,
-          infos->at(index).url_chain,
-          infos->at(index).referrer_url,
-          infos->at(index).mime_type,
-          infos->at(index).original_mime_type,
-          infos->at(index).start_time,
-          infos->at(index).end_time,
-          infos->at(index).etag,
-          infos->at(index).last_modified,
-          infos->at(index).received_bytes,
-          infos->at(index).total_bytes,
-          infos->at(index).state,
-          infos->at(index).danger_type,
-          infos->at(index).interrupt_reason,
-          infos->at(index).opened);
+          history::ToContentDownloadId(row.id),
+          row.current_path,
+          row.target_path,
+          row.url_chain,
+          row.referrer_url,
+          row.mime_type,
+          row.original_mime_type,
+          row.start_time,
+          row.end_time,
+          row.etag,
+          row.last_modified,
+          row.received_bytes,
+          row.total_bytes,
+          history::ToContentDownloadState(row.state),
+          history::ToContentDownloadDangerType(row.danger_type),
+          history::ToContentDownloadInterruptReason(row.interrupt_reason),
+          row.opened);
       EXPECT_CALL(manager(), MockCreateDownloadItem(adapter))
         .WillOnce(DoAll(
             InvokeWithoutArgs(
@@ -405,10 +407,11 @@ class DownloadHistoryTest : public testing::Test {
     info->last_modified = last_modified;
     info->received_bytes = received_bytes;
     info->total_bytes = total_bytes;
-    info->state = state;
-    info->danger_type = danger_type;
-    info->interrupt_reason = interrupt_reason;
-    info->id = id;
+    info->state = history::ToHistoryDownloadState(state);
+    info->danger_type = history::ToHistoryDownloadDangerType(danger_type);
+    info->interrupt_reason =
+        history::ToHistoryDownloadInterruptReason(interrupt_reason);
+    info->id = history::ToHistoryDownloadId(id);
     info->opened = opened;
     info->by_ext_id = by_extension_id;
     info->by_ext_name = by_extension_name;
@@ -661,21 +664,22 @@ TEST_F(DownloadHistoryTest, DownloadHistoryTest_Update) {
   // state
   EXPECT_CALL(item(0), GetState())
       .WillRepeatedly(Return(content::DownloadItem::INTERRUPTED));
-  info.state = content::DownloadItem::INTERRUPTED;
+  info.state = history::DownloadState::INTERRUPTED;
   item(0).NotifyObserversDownloadUpdated();
   ExpectDownloadUpdated(info);
 
   // danger_type
   EXPECT_CALL(item(0), GetDangerType())
       .WillRepeatedly(Return(content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT));
-  info.danger_type = content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT;
+  info.danger_type = history::DownloadDangerType::DANGEROUS_CONTENT;
   item(0).NotifyObserversDownloadUpdated();
   ExpectDownloadUpdated(info);
 
   // interrupt_reason
   EXPECT_CALL(item(0), GetLastReason())
       .WillRepeatedly(Return(content::DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED));
-  info.interrupt_reason = content::DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED;
+  info.interrupt_reason = history::ToHistoryDownloadInterruptReason(
+      content::DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED);
   item(0).NotifyObserversDownloadUpdated();
   ExpectDownloadUpdated(info);
 

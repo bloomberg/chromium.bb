@@ -30,9 +30,10 @@
 
 #include "base/metrics/histogram.h"
 #include "chrome/browser/download/download_crx_util.h"
-#include "chrome/browser/history/download_database.h"
-#include "chrome/browser/history/download_row.h"
 #include "chrome/browser/history/history_service.h"
+#include "components/history/content/browser/download_constants_utils.h"
+#include "components/history/core/browser/download_database.h"
+#include "components/history/core/browser/download_row.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
@@ -135,10 +136,10 @@ history::DownloadRow GetDownloadRow(
       item->GetLastModifiedTime(),
       item->GetReceivedBytes(),
       item->GetTotalBytes(),
-      item->GetState(),
-      item->GetDangerType(),
-      item->GetLastReason(),
-      item->GetId(),
+      history::ToHistoryDownloadState(item->GetState()),
+      history::ToHistoryDownloadDangerType(item->GetDangerType()),
+      history::ToHistoryDownloadInterruptReason(item->GetLastReason()),
+      history::ToHistoryDownloadId(item->GetId()),
       item->GetOpened(),
       by_ext_id,
       by_ext_name);
@@ -257,7 +258,7 @@ void DownloadHistory::QueryCallback(scoped_ptr<InfoVector> infos) {
     return;
   for (InfoVector::const_iterator it = infos->begin();
        it != infos->end(); ++it) {
-    loading_id_ = it->id;
+    loading_id_ = history::ToContentDownloadId(it->id);
     content::DownloadItem* item = notifier_.GetManager()->CreateDownloadItem(
         loading_id_,
         it->current_path,
@@ -272,9 +273,9 @@ void DownloadHistory::QueryCallback(scoped_ptr<InfoVector> infos) {
         it->last_modified,
         it->received_bytes,
         it->total_bytes,
-        it->state,
-        it->danger_type,
-        it->interrupt_reason,
+        history::ToContentDownloadState(it->state),
+        history::ToContentDownloadDangerType(it->danger_type),
+        history::ToContentDownloadInterruptReason(it->interrupt_reason),
         it->opened);
 #if defined(ENABLE_EXTENSIONS)
     if (!it->by_ext_id.empty() && !it->by_ext_name.empty()) {

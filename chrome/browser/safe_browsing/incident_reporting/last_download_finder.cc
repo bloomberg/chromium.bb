@@ -19,7 +19,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "chrome/common/safe_browsing/download_protection_util.h"
-#include "content/public/browser/download_item.h"
+#include "components/history/core/browser/download_constants.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
@@ -85,7 +85,7 @@ const history::DownloadRow* FindMostInteresting(
   for (size_t i = 0; i < downloads.size(); ++i) {
     const history::DownloadRow& row = downloads[i];
     // Ignore incomplete downloads.
-    if (row.state != content::DownloadItem::COMPLETE)
+    if (row.state != history::DownloadState::COMPLETE)
       continue;
     if (!most_recent_row || IsMoreInterestingThan(row, *most_recent_row))
       most_recent_row = &row;
