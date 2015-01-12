@@ -709,3 +709,15 @@ UNADDRESSABLE ACCESS
 name=https://crbug.com/447788
 ...
 *!gpu::gles2::GLES2ImplementationTest_TexImage3DSingleCommand_Test::TestBody
+
+UNADDRESSABLE ACCESS
+name=https://crbug.com/448189
+aura.dll!aura::GetDeviceScaleFactorFromDisplay
+aura.dll!aura::WindowTreeHost::InitCompositor
+aura.dll!aura::WindowTreeHost::InitHost
+ash.dll!ash::DisplayController::AddWindowTreeHostForDisplay
+ash.dll!ash::DisplayController::CreatePrimaryHost
+ash.dll!ash::Shell::Init
+ash.dll!ash::Shell::CreateInstance
+*!ash::test::AshTestHelper::SetUp
+*!ash::test::AshTestBase::SetUp
