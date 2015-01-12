@@ -29,7 +29,7 @@
 namespace remoting {
 
 RemoteDesktopBrowserTest::RemoteDesktopBrowserTest()
-    : extension_(NULL) {
+    : remote_test_helper_(nullptr), extension_(nullptr) {
 }
 
 RemoteDesktopBrowserTest::~RemoteDesktopBrowserTest() {}
@@ -72,7 +72,7 @@ void RemoteDesktopBrowserTest::OpenClientBrowserPage() {
   // Open the client browser page in a new tab
   ui_test_utils::NavigateToURLWithDisposition(
       browser(),
-      GURL(http_server() + "/clientpage.html"),
+      GURL(http_server() + "/client.html"),
       NEW_FOREGROUND_TAB, ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
 
   // Save this web content for later reference
@@ -80,6 +80,9 @@ void RemoteDesktopBrowserTest::OpenClientBrowserPage() {
 
   // Go back to the previous tab that has chromoting opened
   browser()->tab_strip_model()->SelectPreviousTab();
+
+  // Create the RemoteTestHelper object to use.
+  remote_test_helper_.reset(new RemoteTestHelper(client_web_content_));
 }
 
 bool RemoteDesktopBrowserTest::HtmlElementVisible(const std::string& name) {
@@ -677,42 +680,6 @@ void RemoteDesktopBrowserTest::ExecuteScriptAndWaitForAnyPageLoad(
 }
 
 // static
-bool RemoteDesktopBrowserTest::ExecuteScriptAndExtractBool(
-    content::WebContents* web_contents, const std::string& script) {
-  bool result;
-  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
-      web_contents,
-      "window.domAutomationController.send(" + script + ");",
-      &result));
-
-  return result;
-}
-
-// static
-int RemoteDesktopBrowserTest::ExecuteScriptAndExtractInt(
-    content::WebContents* web_contents, const std::string& script) {
-  int result;
-  _ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
-      web_contents,
-      "window.domAutomationController.send(" + script + ");",
-      &result));
-
-  return result;
-}
-
-// static
-std::string RemoteDesktopBrowserTest::ExecuteScriptAndExtractString(
-    content::WebContents* web_contents, const std::string& script) {
-  std::string result;
-  _ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-      web_contents,
-      "window.domAutomationController.send(" + script + ");",
-      &result));
-
-  return result;
-}
-
-// static
 bool RemoteDesktopBrowserTest::LoadScript(
     content::WebContents* web_contents,
     const base::FilePath::StringType& path) {
@@ -770,8 +737,8 @@ void RemoteDesktopBrowserTest::ClickOnControl(const std::string& name) {
   std::string has_disabled_attribute =
     "document.getElementById('" + name + "').hasAttribute('disabled')";
 
-  if (ExecuteScriptAndExtractBool(active_web_contents(),
-                                  has_disabled_attribute)) {
+  if (RemoteTestHelper::ExecuteScriptAndExtractBool(active_web_contents(),
+                                                    has_disabled_attribute)) {
     // This element has a disabled attribute. Wait for it become enabled.
     ConditionalTimeoutWaiter waiter(
           base::TimeDelta::FromSeconds(5),
@@ -891,7 +858,7 @@ void RemoteDesktopBrowserTest::SetUserNameAndPassword(
 // static
 bool RemoteDesktopBrowserTest::IsAuthenticatedInWindow(
     content::WebContents* web_contents) {
-  return ExecuteScriptAndExtractBool(
+  return RemoteTestHelper::ExecuteScriptAndExtractBool(
       web_contents, "remoting.identity.isAuthenticated()");
 }
 
@@ -899,7 +866,7 @@ bool RemoteDesktopBrowserTest::IsAuthenticatedInWindow(
 bool RemoteDesktopBrowserTest::IsHostActionComplete(
     content::WebContents* client_web_content,
     std::string host_action_var) {
-  return ExecuteScriptAndExtractBool(
+  return RemoteTestHelper::ExecuteScriptAndExtractBool(
       client_web_content,
       host_action_var);
 }
@@ -908,7 +875,7 @@ bool RemoteDesktopBrowserTest::IsHostActionComplete(
 bool RemoteDesktopBrowserTest::IsEnabled(
     content::WebContents* client_web_content,
     const std::string& element_name) {
-  return !ExecuteScriptAndExtractBool(
+  return !RemoteTestHelper::ExecuteScriptAndExtractBool(
     client_web_content,
     "document.getElementById(\"" + element_name + "\").disabled");
 }

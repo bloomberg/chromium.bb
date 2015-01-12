@@ -10,6 +10,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "chrome/test/remoting/remote_test_helper.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/dns/mock_host_resolver.h"
@@ -29,20 +30,6 @@ const char kMe2MePin[] = "me2me-pin";
 const char kRemoteHostName[] = "remote-host-name";
 const char kExtensionName[] = "extension-name";
 const char kHttpServer[] = "http-server";
-
-// ASSERT_TRUE can only be used in void returning functions. This version
-// should be used in non-void-returning functions.
-inline void _ASSERT_TRUE(bool condition) {
-  if (!condition) {
-    // ASSERT_TRUE only prints the first call frame in the error message.
-    // In our case, this is the _ASSERT_TRUE wrapper function, which is not
-    // useful.  To help with debugging, we will dump the full callstack.
-    LOG(ERROR) << "Assertion failed.";
-    LOG(ERROR) << base::debug::StackTrace().ToString();
-  }
-  ASSERT_TRUE(condition);
-  return;
-}
 
 }  // namespace
 
@@ -225,6 +212,10 @@ class RemoteDesktopBrowserTest : public extensions::PlatformAppBrowserTest {
     return app_web_content_;
   }
 
+  RemoteTestHelper* remote_test_helper() const {
+    return remote_test_helper_.get();
+  }
+
   // Whether to perform the cleanup tasks (uninstalling chromoting, etc).
   // This is useful for diagnostic purposes.
   bool NoCleanup() { return no_cleanup_; }
@@ -259,32 +250,23 @@ class RemoteDesktopBrowserTest : public extensions::PlatformAppBrowserTest {
   // Helper to execute a JavaScript code snippet in the active WebContents
   // and extract the boolean result.
   bool ExecuteScriptAndExtractBool(const std::string& script) {
-    return ExecuteScriptAndExtractBool(active_web_contents(), script);
+    return RemoteTestHelper::ExecuteScriptAndExtractBool(
+        active_web_contents(), script);
   }
-
-  // Helper to execute a JavaScript code snippet and extract the boolean result.
-  static bool ExecuteScriptAndExtractBool(content::WebContents* web_contents,
-                                          const std::string& script);
 
   // Helper to execute a JavaScript code snippet in the active WebContents
   // and extract the int result.
   int ExecuteScriptAndExtractInt(const std::string& script) {
-    return ExecuteScriptAndExtractInt(active_web_contents(), script);
+    return RemoteTestHelper::ExecuteScriptAndExtractInt(
+        active_web_contents(), script);
   }
-
-  // Helper to execute a JavaScript code snippet and extract the int result.
-  static int ExecuteScriptAndExtractInt(content::WebContents* web_contents,
-                                        const std::string& script);
 
   // Helper to execute a JavaScript code snippet in the active WebContents
   // and extract the string result.
   std::string ExecuteScriptAndExtractString(const std::string& script) {
-    return ExecuteScriptAndExtractString(active_web_contents(), script);
+    return RemoteTestHelper::ExecuteScriptAndExtractString(
+        active_web_contents(), script);
   }
-
-  // Helper to execute a JavaScript code snippet and extract the string result.
-  static std::string ExecuteScriptAndExtractString(
-      content::WebContents* web_contents, const std::string& script);
 
   // Helper to load a JavaScript file from |path| and inject it to
   // current web_content.  The variable |path| is relative to the directory of
@@ -378,6 +360,9 @@ class RemoteDesktopBrowserTest : public extensions::PlatformAppBrowserTest {
   // the HTTP server. This is how the remoting browser tests
   // will get acknowledgments of actions completed on the host.
   content::WebContents* client_web_content_;
+
+  // Helper class to assist in performing and verifying remote operations.
+  scoped_ptr<RemoteTestHelper> remote_test_helper_;
 
   // WebContent of the landing page in the chromoting app.
   content::WebContents* app_web_content_;
