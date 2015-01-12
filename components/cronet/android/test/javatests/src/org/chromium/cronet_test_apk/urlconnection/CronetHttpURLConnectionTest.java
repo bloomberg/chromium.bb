@@ -9,13 +9,15 @@ import android.test.suitebuilder.annotation.SmallTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.cronet_test_apk.CronetTestActivity;
 import org.chromium.cronet_test_apk.CronetTestBase;
-import org.chromium.cronet_test_apk.MockUrlRequestJobFactory;
 import org.chromium.cronet_test_apk.UploadTestServer;
+import org.chromium.net.UrlRequestException;
 
 import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -63,22 +65,109 @@ public class CronetHttpURLConnectionTest extends CronetTestBase {
 
     @SmallTest
     @Feature({"Cronet"})
-    @OnlyRunCronetHttpURLConnection
-    // TODO(xunjieli): Use embedded test server's ServeFilesFromDirectory.
-    // Mock UrlRequestJobs only work for chromium network stack.
+    @CompareDefaultWithCronet
     public void testNotFoundURLRequest() throws Exception {
-        MockUrlRequestJobFactory mockFactory = new MockUrlRequestJobFactory(
-                getInstrumentation().getTargetContext());
-        URL url = new URL(MockUrlRequestJobFactory.NOTFOUND_URL);
+        URL url = new URL(UploadTestServer.getFileURL("/notfound.html"));
         HttpURLConnection urlConnection =
                 (HttpURLConnection) url.openConnection();
         assertEquals(404, urlConnection.getResponseCode());
         assertEquals("Not Found", urlConnection.getResponseMessage());
+        try {
+            urlConnection.getInputStream();
+            fail();
+        } catch (FileNotFoundException e) {
+            // Expected.
+        }
+        InputStream errorStream = urlConnection.getErrorStream();
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        int byteRead;
+        while ((byteRead = errorStream.read()) != -1) {
+            out.write(byteRead);
+        }
         assertEquals("<!DOCTYPE html>\n<html>\n<head>\n"
                 + "<title>Not found</title>\n<p>Test page loaded.</p>\n"
                 + "</head>\n</html>\n",
-                getResponseAsString(urlConnection));
+                out.toString());
         urlConnection.disconnect();
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    @CompareDefaultWithCronet
+    public void testServerNotAvailable() throws Exception {
+        URL url = new URL(UploadTestServer.getFileURL("/success.txt"));
+        HttpURLConnection urlConnection =
+                (HttpURLConnection) url.openConnection();
+        assertEquals("this is a text file\n",
+                getResponseAsString(urlConnection));
+        // After shutting down the server, the server should not be handling
+        // new requests.
+        UploadTestServer.shutdownUploadTestServer();
+        HttpURLConnection secondConnection =
+                (HttpURLConnection) url.openConnection();
+        try {
+            secondConnection.connect();
+            fail();
+        } catch (IOException e) {
+            assertTrue(e instanceof java.net.ConnectException
+                    || e instanceof UrlRequestException);
+            assertTrue((e.getMessage().contains("ECONNREFUSED")
+                    || e.getMessage().contains("net::ERR_CONNECTION_REFUSED")));
+        }
+        checkExceptionsAreThrown(secondConnection);
+        // Starts the server to avoid crashing on shutdown in tearDown().
+        assertTrue(UploadTestServer.startUploadTestServer(
+                getInstrumentation().getTargetContext()));
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    @CompareDefaultWithCronet
+    public void testBadIP() throws Exception {
+        URL url = new URL("http://0.0.0.0/");
+        HttpURLConnection urlConnection =
+                (HttpURLConnection) url.openConnection();
+        try {
+            urlConnection.connect();
+            fail();
+        } catch (IOException e) {
+            assertTrue(e instanceof java.net.ConnectException
+                    || e instanceof UrlRequestException);
+            assertTrue((e.getMessage().contains("ECONNREFUSED")
+                    || e.getMessage().contains("net::ERR_CONNECTION_REFUSED")));
+        }
+        checkExceptionsAreThrown(urlConnection);
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    @CompareDefaultWithCronet
+    public void testBadHostname() throws Exception {
+        URL url = new URL("http://this-weird-host-name-does-not-exist/");
+        HttpURLConnection urlConnection =
+                (HttpURLConnection) url.openConnection();
+        try {
+            urlConnection.connect();
+            fail();
+        } catch (IOException e) {
+            assertTrue(e instanceof java.net.UnknownHostException
+                    || e instanceof UrlRequestException);
+            assertTrue((e.getMessage().contains("Unable to resolve host")
+                    || e.getMessage().contains("net::ERR_NAME_NOT_RESOLVED")));
+        }
+        checkExceptionsAreThrown(urlConnection);
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    @CompareDefaultWithCronet
+    public void testBadScheme() throws Exception {
+        try {
+            URL url = new URL("flying://goat");
+            fail();
+        } catch (MalformedURLException e) {
+            // Expected.
+        }
     }
 
     @SmallTest
@@ -400,8 +489,44 @@ public class CronetHttpURLConnectionTest extends CronetTestBase {
         } catch (IOException e) {
             // Expected.
         }
-        // TODO(xunjieli): Test that error stream should null here.
+        assertNull(connection.getErrorStream());
         connection.disconnect();
+    }
+
+    private void checkExceptionsAreThrown(HttpURLConnection connection)
+            throws Exception {
+        try {
+            connection.connect();
+            fail();
+        } catch (IOException e) {
+            // Expected.
+        }
+
+        try {
+            connection.getInputStream();
+            fail();
+        } catch (IOException e) {
+            // Expected.
+        }
+
+        try {
+            connection.getResponseCode();
+            fail();
+        } catch (IOException e) {
+            // Expected.
+        }
+
+        try {
+            connection.getResponseMessage();
+            fail();
+        } catch (IOException e) {
+            // Expected.
+        }
+
+        // getErrorStream() does not have a throw clause, it returns null if
+        // there's an exception.
+        InputStream errorStream = connection.getErrorStream();
+        assertNull(errorStream);
     }
 
     /**

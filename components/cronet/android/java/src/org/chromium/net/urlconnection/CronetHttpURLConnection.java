@@ -11,6 +11,7 @@ import org.chromium.net.UrlRequestContext;
 import org.chromium.net.UrlRequestException;
 import org.chromium.net.UrlRequestListener;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -31,6 +32,7 @@ public class CronetHttpURLConnection extends HttpURLConnection {
 
     private CronetInputStream mInputStream;
     private ResponseInfo mResponseInfo;
+    private UrlRequestException mException;
     private ByteBuffer mResponseByteBuffer;
     private boolean mOnRedirectCalled = false;
 
@@ -47,17 +49,20 @@ public class CronetHttpURLConnection extends HttpURLConnection {
     /**
      * Opens a connection to the resource. If the connect method is called when
      * the connection has already been opened (indicated by the connected field
-     * having the value true), the call is ignored.
+     * having the value true), the call is ignored unless an exception is thrown
+     * previously, in which case, the exception will be rethrown.
      */
     @Override
     public void connect() throws IOException {
         if (connected) {
+            checkHasResponse();
             return;
         }
         connected = true;
         mRequest.start();
         // Blocks until onResponseStarted or onFailed is called.
         mMessageLoop.loop();
+        checkHasResponse();
     }
 
     /**
@@ -84,9 +89,6 @@ public class CronetHttpURLConnection extends HttpURLConnection {
     @Override
     public String getResponseMessage() throws IOException {
         connect();
-        if (mResponseInfo == null) {
-            return "";
-        }
         return mResponseInfo.getHttpStatusText();
     }
 
@@ -96,26 +98,47 @@ public class CronetHttpURLConnection extends HttpURLConnection {
     @Override
     public int getResponseCode() throws IOException {
         connect();
-        if (mResponseInfo == null) {
-            return 0;
-        }
         return mResponseInfo.getHttpStatusCode();
     }
 
     /**
      * Returns an InputStream for reading data from the resource pointed by this
      * URLConnection.
+     * @throws FileNotFoundException if http response code is equal or greater
+     *             than {@link HTTP_BAD_REQUEST}.
+     * @throws IOException If the request gets a network error or HTTP error
+     *             status code, or if the caller tried to read the response body
+     *             of a redirect when redirects are disabled.
      */
     @Override
     public InputStream getInputStream() throws IOException {
         connect();
-        if (mResponseInfo == null) {
-            throw new IOException();
-        }
         if (!instanceFollowRedirects && mOnRedirectCalled) {
             throw new IOException("Cannot read response body of a redirect.");
         }
+        // Emulate default implementation's behavior to throw
+        // FileNotFoundException when we get a 400 and above.
+        if (mResponseInfo.getHttpStatusCode() >= HTTP_BAD_REQUEST) {
+            throw new FileNotFoundException(url.toString());
+        }
         return mInputStream;
+    }
+
+    /**
+     * Returns an input stream from the server in the case of an error such as
+     * the requested file has not been found on the remote server.
+     */
+    @Override
+    public InputStream getErrorStream() {
+        try {
+            connect();
+        } catch (IOException e) {
+            return null;
+        }
+        if (mResponseInfo.getHttpStatusCode() >= HTTP_BAD_REQUEST) {
+            return mInputStream;
+        }
+        return null;
     }
 
     /**
@@ -207,7 +230,12 @@ public class CronetHttpURLConnection extends HttpURLConnection {
         @Override
         public void onFailed(UrlRequest request, ResponseInfo info,
                 UrlRequestException exception) {
-            // TODO(xunjieli): Handle failure.
+            if (exception == null) {
+                throw new IllegalStateException(
+                        "Exception cannot be null in onFailed.");
+            }
+            mResponseInfo = info;
+            mException = exception;
             setResponseDataCompleted();
         }
 
@@ -220,6 +248,20 @@ public class CronetHttpURLConnection extends HttpURLConnection {
                 mInputStream.setResponseDataCompleted();
             }
             mMessageLoop.postQuitTask();
+        }
+    }
+
+    /**
+     * Checks whether response headers are received, and throws an exception if
+     * an exception occurred before headers received. This method should only be
+     * called after onResponseStarted or onFailed.
+     */
+    private void checkHasResponse() throws IOException {
+        if (mException != null) {
+            throw mException;
+        } else if (mResponseInfo == null) {
+            throw new NullPointerException(
+                    "Response info is null when there is no exception.");
         }
     }
 }
