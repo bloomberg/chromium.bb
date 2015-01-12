@@ -106,7 +106,7 @@ importEcKeys().then(function(result) {
     var usages = ['encrypt'];
 
     return crypto.subtle.deriveKey(algorithm, ecKeys.private, derivedAlgorithm, extractable, usages);
-}).then(function(failAndFinishJSTest, result) {
+}).then(failAndFinishJSTest, function(result) {
     logError(result);
 
     debug("\nDeriving an AES-CBC key with unsupported usage (sign)...");
