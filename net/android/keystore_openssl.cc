@@ -12,6 +12,7 @@
 #include <openssl/err.h>
 #include <openssl/evp.h>
 #include <openssl/rsa.h>
+#include <openssl/x509.h>
 
 #include "base/android/build_info.h"
 #include "base/android/jni_android.h"
@@ -65,6 +66,9 @@ namespace net {
 namespace android {
 
 namespace {
+
+using ScopedPKCS8_PRIV_KEY_INFO =
+    crypto::ScopedOpenSSL<PKCS8_PRIV_KEY_INFO, PKCS8_PRIV_KEY_INFO_free>::Type;
 
 extern const RSA_METHOD android_rsa_method;
 extern const ECDSA_METHOD android_ecdsa_method;
@@ -318,8 +322,10 @@ const RSA_METHOD android_rsa_method = {
 // On success, this creates a new global JNI reference to the object
 // that is owned by and destroyed with the EVP_PKEY. I.e. caller can
 // free |private_key| after the call.
-crypto::ScopedEVP_PKEY GetRsaPkeyWrapper(jobject private_key,
-                                         AndroidRSA* legacy_rsa) {
+crypto::ScopedEVP_PKEY CreateRsaPkeyWrapper(
+    jobject private_key,
+    AndroidRSA* legacy_rsa,
+    const crypto::OpenSSLErrStackTracer& tracer) {
   crypto::ScopedRSA rsa(
       RSA_new_method(global_boringssl_engine.Get().engine()));
 
@@ -387,18 +393,26 @@ void LeakEngine(jobject private_key) {
   s_instance.Get().LeakEngine(private_key);
 }
 
-// Setup an EVP_PKEY to wrap an existing platform RSA PrivateKey object
-// for Android 4.0 to 4.1.x. Must only be used on Android < 4.2.
-// |private_key| is a JNI reference (local or global) to the object.
-// |pkey| is the EVP_PKEY to setup as a wrapper.
-// Returns true on success, false otherwise.
-crypto::ScopedEVP_PKEY GetRsaLegacyKey(jobject private_key) {
+// Creates an EVP_PKEY wrapper corresponding to the RSA key
+// |private_key|. Returns nullptr on failure.
+crypto::ScopedEVP_PKEY GetRsaPkeyWrapper(jobject private_key) {
+  const int kAndroid42ApiLevel = 17;
+  crypto::OpenSSLErrStackTracer tracer(FROM_HERE);
+
+  if (base::android::BuildInfo::GetInstance()->sdk_int() >=
+      kAndroid42ApiLevel) {
+    return CreateRsaPkeyWrapper(private_key, nullptr, tracer);
+  }
+
+  // Route around platform bug: if Android < 4.2, then
+  // base::android::RawSignDigestWithPrivateKey() cannot work, so instead, try
+  // to get the system OpenSSL's EVP_PKEY begin this PrivateKey object.
   AndroidEVP_PKEY* sys_pkey =
       GetOpenSSLSystemHandleForPrivateKey(private_key);
   if (sys_pkey != NULL) {
     if (sys_pkey->type != ANDROID_EVP_PKEY_RSA) {
       LOG(ERROR) << "Private key has wrong type!";
-      return crypto::ScopedEVP_PKEY();
+      return nullptr;
     }
 
     AndroidRSA* sys_rsa = sys_pkey->pkey.rsa;
@@ -412,25 +426,29 @@ crypto::ScopedEVP_PKEY GetRsaLegacyKey(jobject private_key) {
       }
     }
 
-    return GetRsaPkeyWrapper(private_key, sys_rsa);
+    return CreateRsaPkeyWrapper(private_key, sys_rsa, tracer);
   }
 
   // GetOpenSSLSystemHandleForPrivateKey() will fail on Android 4.0.3 and
   // earlier. However, it is possible to get the key content with
   // PrivateKey.getEncoded() on these platforms.  Note that this method may
-  // return NULL on 4.0.4 and later.
-  std::vector<uint8> encoded;
-  if (!GetPrivateKeyEncodedBytes(private_key, &encoded)) {
+  // return false on 4.0.4 and later.
+  std::vector<uint8_t> encoded;
+  if (!GetPrivateKeyEncodedBytes(private_key, &encoded) || encoded.empty()) {
     LOG(ERROR) << "Can't get private key data!";
-    return crypto::ScopedEVP_PKEY();
+    return nullptr;
   }
-  const unsigned char* p =
-      reinterpret_cast<const unsigned char*>(&encoded[0]);
-  int len = static_cast<int>(encoded.size());
-  crypto::ScopedEVP_PKEY pkey(d2i_AutoPrivateKey(NULL, &p, len));
-  if (!pkey) {
-    LOG(ERROR) << "Can't convert private key data!";
-    return crypto::ScopedEVP_PKEY();
+  const uint8_t* p = &encoded[0];
+  ScopedPKCS8_PRIV_KEY_INFO pkcs8(
+      d2i_PKCS8_PRIV_KEY_INFO(NULL, &p, encoded.size()));
+  if (!pkcs8.get() || p != &encoded[0] + encoded.size()) {
+    LOG(ERROR) << "Can't decode PrivateKeyInfo";
+    return nullptr;
+  }
+  crypto::ScopedEVP_PKEY pkey(EVP_PKCS82PKEY(pkcs8.get()));
+  if (!pkey || EVP_PKEY_id(pkey.get()) != EVP_PKEY_RSA) {
+    LOG(ERROR) << "Can't decode RSA key";
+    return nullptr;
   }
   return pkey.Pass();
 }
@@ -503,6 +521,7 @@ int EcdsaMethodVerify(const uint8_t* digest,
 // is owned by and destroyed with the EVP_PKEY. I.e. the caller shall
 // always free |private_key| after the call.
 crypto::ScopedEVP_PKEY GetEcdsaPkeyWrapper(jobject private_key) {
+  crypto::OpenSSLErrStackTracer tracer(FROM_HERE);
   crypto::ScopedEC_KEY ec_key(
       EC_KEY_new_method(global_boringssl_engine.Get().engine()));
 
@@ -553,29 +572,17 @@ const ECDSA_METHOD android_ecdsa_method = {
 }  // namespace
 
 crypto::ScopedEVP_PKEY GetOpenSSLPrivateKeyWrapper(jobject private_key) {
-  const int kAndroid42ApiLevel = 17;
-
   // Create sub key type, depending on private key's algorithm type.
   PrivateKeyType key_type = GetPrivateKeyType(private_key);
   switch (key_type) {
     case PRIVATE_KEY_TYPE_RSA:
-      // Route around platform bug: if Android < 4.2, then
-      // base::android::RawSignDigestWithPrivateKey() cannot work, so
-      // instead, obtain a raw EVP_PKEY* to the system object
-      // backing this PrivateKey object.
-      if (base::android::BuildInfo::GetInstance()->sdk_int() <
-          kAndroid42ApiLevel) {
-        return GetRsaLegacyKey(private_key);
-      } else {
-        // Running on Android 4.2.
-        return GetRsaPkeyWrapper(private_key, NULL);
-      }
+      return GetRsaPkeyWrapper(private_key);
     case PRIVATE_KEY_TYPE_ECDSA:
       return GetEcdsaPkeyWrapper(private_key);
     default:
       LOG(WARNING)
           << "GetOpenSSLPrivateKeyWrapper() called with invalid key type";
-      return crypto::ScopedEVP_PKEY();
+      return nullptr;
   }
 }
 
