@@ -104,7 +104,9 @@ public class AwContentViewClient extends ContentViewClient implements ContentVid
         WebChromeClient.CustomViewCallback cb = new WebChromeClient.CustomViewCallback() {
             @Override
             public void onCustomViewHidden() {
-                mAwContents.requestExitFullscreen();
+                if (mCustomView != null) {
+                    mAwContents.requestExitFullscreen();
+                }
             }
         };
         mCustomView = new FrameLayout(mContext);
@@ -117,9 +119,9 @@ public class AwContentViewClient extends ContentViewClient implements ContentVid
      */
     public void exitFullscreen() {
         if (mCustomView != null) {
+            mCustomView = null;
             mAwContents.exitFullScreen();
             mAwContentsClient.onHideCustomView();
-            mCustomView = null;
         }
     }
 }

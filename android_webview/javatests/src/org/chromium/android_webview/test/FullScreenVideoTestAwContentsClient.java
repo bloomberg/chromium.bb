@@ -29,6 +29,7 @@ public class FullScreenVideoTestAwContentsClient extends TestAwContentsClient {
     private CallbackHelper mOnHideCustomViewCallbackHelper = new CallbackHelper();
     private CallbackHelper mOnUnhandledKeyUpEventCallbackHelper = new CallbackHelper();
 
+    private Runnable mOnHideCustomViewRunnable;
     private final Activity mActivity;
     private final boolean mAllowHardwareAcceleration;
     private View mCustomView;
@@ -61,10 +62,20 @@ public class FullScreenVideoTestAwContentsClient extends TestAwContentsClient {
         mOnShowCustomViewCallbackHelper.notifyCalled();
     }
 
+    /**
+     * Sets a task that will be run when {@link #onHideCustomView()} is invoked.
+     */
+    public void setOnHideCustomViewRunnable(Runnable runnable) {
+        mOnHideCustomViewRunnable = runnable;
+    }
+
     @Override
     public void onHideCustomView() {
         mActivity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
         mOnHideCustomViewCallbackHelper.notifyCalled();
+        if (mOnHideCustomViewRunnable != null) {
+            mOnHideCustomViewRunnable.run();
+        }
     }
 
     public WebChromeClient.CustomViewCallback getExitCallback() {
