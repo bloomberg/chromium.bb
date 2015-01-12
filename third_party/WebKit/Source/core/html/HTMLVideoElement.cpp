@@ -183,7 +183,7 @@ void HTMLVideoElement::setDisplayMode(DisplayMode mode)
         // Don't show the poster if there is a seek operation or
         // the video has restarted because of loop attribute
         if (mode == Video && oldMode == Poster && !hasAvailableVideoFrame())
-            mode = PosterWaitingForVideo;
+            return;
     }
 
     HTMLMediaElement::setDisplayMode(mode);

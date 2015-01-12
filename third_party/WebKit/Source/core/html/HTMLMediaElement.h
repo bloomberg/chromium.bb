@@ -318,7 +318,7 @@ protected:
 
     virtual void didMoveToNewDocument(Document& oldDocument) override;
 
-    enum DisplayMode { Unknown, Poster, PosterWaitingForVideo, Video };
+    enum DisplayMode { Unknown, Poster, Video };
     DisplayMode displayMode() const { return m_displayMode; }
     virtual void setDisplayMode(DisplayMode mode) { m_displayMode = mode; }
 
