@@ -161,6 +161,18 @@ FakeServer::~FakeServer() {
   STLDeleteContainerPairSecondPointers(entities_.begin(), entities_.end());
 }
 
+bool FakeServer::CreatePermanentBookmarkFolder(const char* server_tag,
+                                               const char* name) {
+  FakeServerEntity* entity =
+      PermanentEntity::Create(syncer::BOOKMARKS, server_tag, name,
+                              ModelTypeToRootTag(syncer::BOOKMARKS));
+  if (entity == NULL)
+    return false;
+
+  SaveEntity(entity);
+  return true;
+}
+
 bool FakeServer::CreateDefaultPermanentItems() {
   ModelTypeSet all_types = syncer::ProtocolTypes();
   for (ModelTypeSet::Iterator it = all_types.First(); it.Good(); it.Inc()) {
@@ -173,25 +185,10 @@ bool FakeServer::CreateDefaultPermanentItems() {
     SaveEntity(top_level_entity);
 
     if (model_type == syncer::BOOKMARKS) {
-      FakeServerEntity* bookmark_bar_entity =
-          PermanentEntity::Create(syncer::BOOKMARKS,
-                                  "bookmark_bar",
-                                  "Bookmark Bar",
-                                  ModelTypeToRootTag(syncer::BOOKMARKS));
-      if (bookmark_bar_entity == NULL) {
+      if (!CreatePermanentBookmarkFolder("bookmark_bar", "Bookmark Bar"))
         return false;
-      }
-      SaveEntity(bookmark_bar_entity);
-
-      FakeServerEntity* other_bookmarks_entity =
-          PermanentEntity::Create(syncer::BOOKMARKS,
-                                  "other_bookmarks",
-                                  "Other Bookmarks",
-                                  ModelTypeToRootTag(syncer::BOOKMARKS));
-      if (other_bookmarks_entity == NULL) {
+      if (!CreatePermanentBookmarkFolder("other_bookmarks", "Other Bookmarks"))
         return false;
-      }
-      SaveEntity(other_bookmarks_entity);
     }
   }
 

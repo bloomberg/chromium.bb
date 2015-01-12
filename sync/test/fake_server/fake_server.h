@@ -121,6 +121,8 @@ class FakeServer {
                            const std::string& invalidator_client_id,
                            sync_pb::CommitResponse* response);
 
+  bool CreatePermanentBookmarkFolder(const char* server_tag, const char* name);
+
   // Inserts the default permanent items in |entities_|.
   bool CreateDefaultPermanentItems();
 
