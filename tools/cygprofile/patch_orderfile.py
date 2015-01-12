@@ -50,7 +50,7 @@ def binary_search (search_addr, start, end):
     return (addressMap[nm_addr], sym_size)
   else:
     halfway = start + ((end - start) / 2)
-    nm_addr = uniqueAddrs[halfway][0]
+    (nm_addr, sym_size) = uniqueAddrs[halfway]
     if (addr >= nm_addr and addr < nm_addr + sym_size):
       return (addressMap[nm_addr], sym_size)
     elif (addr < nm_addr):
