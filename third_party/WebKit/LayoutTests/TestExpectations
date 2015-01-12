@@ -1,3 +1,7 @@
+crbug.com/424225 virtual/slimmingpaint/fast/borders/border-image-side-reduction.html [ NeedsRebaseline ]
+crbug.com/424225 fast/backgrounds/size/zero.html [ NeedsRebaseline ]
+crbug.com/424225 fast/borders/border-image-side-reduction.html [ NeedsRebaseline ]
+
 crbug.com/443780 [ Mac ] virtual/slimmingpaint/fast/events/scale-and-scroll-iframe-body.html [ ImageOnlyFailure ]
 crbug.com/443780 [ Mac ] virtual/slimmingpaint/fast/events/scale-and-scroll-iframe-window.html [ ImageOnlyFailure ]
 crbug.com/443780 [ Mac ] virtual/slimmingpaint/fast/events/menu-key-context-menu-document.html [ Failure ]

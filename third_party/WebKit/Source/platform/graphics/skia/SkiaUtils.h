@@ -91,14 +91,14 @@ SkMatrix PLATFORM_EXPORT affineTransformToSkMatrix(const AffineTransform&);
 
 bool nearlyIntegral(float value);
 
+bool isSmallImage(const SkRect& imageRect);
+
 InterpolationQuality limitInterpolationQuality(const GraphicsContext*, InterpolationQuality resampling);
 
 InterpolationQuality computeInterpolationQuality(
     const SkMatrix&,
-    float srcWidth,
-    float srcHeight,
-    float destWidth,
-    float destHeight,
+    const SkRect& srcRect,
+    const SkRect& destRect,
     bool isDataComplete = true);
 
 bool shouldDrawAntiAliased(const GraphicsContext*, const SkRect& destRect);

@@ -163,6 +163,17 @@ bool nearlyIntegral(float value)
     return fabs(value - floorf(value)) < std::numeric_limits<float>::epsilon();
 }
 
+bool isSmallImage(const SkRect& imageRect)
+{
+    // Images smaller than this in either direction are considered "small" and
+    // are less likely to be resampled (see computeInterpolationQuality() below).
+    const float kSmallImageSizeThreshold = 8.0;
+
+    return
+        SkScalarToFloat(imageRect.width()) <= kSmallImageSizeThreshold
+        || SkScalarToFloat(imageRect.height()) <= kSmallImageSizeThreshold;
+}
+
 InterpolationQuality limitInterpolationQuality(const GraphicsContext* context, InterpolationQuality resampling)
 {
     return std::min(resampling, context->imageInterpolationQuality());
@@ -170,10 +181,8 @@ InterpolationQuality limitInterpolationQuality(const GraphicsContext* context, I
 
 InterpolationQuality computeInterpolationQuality(
     const SkMatrix& matrix,
-    float srcWidth,
-    float srcHeight,
-    float destWidth,
-    float destHeight,
+    const SkRect& srcRect,
+    const SkRect& destRect,
     bool isDataComplete)
 {
     // The percent change below which we will not resample. This usually means
@@ -181,14 +190,15 @@ InterpolationQuality computeInterpolationQuality(
     // sampling is usually good enough.
     const float kFractionalChangeThreshold = 0.025f;
 
-    // Images smaller than this in either direction are considered "small" and
-    // are not resampled ever (see below).
-    const int kSmallImageSizeThreshold = 8;
-
     // The amount an image can be stretched in a single direction before we
     // say that it is being stretched so much that it must be a line or
     // background that doesn't need resampling.
     const float kLargeStretch = 3.0f;
+
+    float srcWidth = SkScalarToFloat(srcRect.width());
+    float srcHeight = SkScalarToFloat(srcRect.height());
+    float destWidth = SkScalarToFloat(destRect.width());
+    float destHeight = SkScalarToFloat(destRect.height());
 
     // Figure out if we should resample this image. We try to prune out some
     // common cases where resampling won't give us anything, since it is much
@@ -201,10 +211,7 @@ InterpolationQuality computeInterpolationQuality(
     if (widthNearlyEqual && heightNearlyEqual)
         return InterpolationNone;
 
-    if (srcWidth <= kSmallImageSizeThreshold
-        || srcHeight <= kSmallImageSizeThreshold
-        || destWidth <= kSmallImageSizeThreshold
-        || destHeight <= kSmallImageSizeThreshold) {
+    if (isSmallImage(srcRect) || isSmallImage(destRect)) {
         // Small image detected.
 
         // Resample in the case where the new size would be non-integral.
