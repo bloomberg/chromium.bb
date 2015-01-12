@@ -78,6 +78,9 @@
     // An array to hold cached password values.
     passwordValues_: null,
 
+    // A MutationObserver to watch for dynamic password field creation.
+    passwordFieldsObserver: null,
+
     /**
      * Initialize the scraper with given channel and docRoot. Note that the
      * scanning for password fields happens inside the function and does not
@@ -91,15 +94,59 @@
       this.pageURL_ = pageURL;
       this.channel_ = channel;
 
-      this.passwordFields_ = docRoot.querySelectorAll('input[type=password]');
+      this.passwordFields_ = [];
       this.passwordValues_ = [];
 
-      for (var i = 0; i < this.passwordFields_.length; ++i) {
-        this.passwordFields_[i].addEventListener(
-            'input', this.onPasswordChanged_.bind(this, i));
+      this.findAndTrackChildren(docRoot);
 
-        this.passwordValues_[i] = this.passwordFields_[i].value;
-      }
+      this.passwordFieldsObserver = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+          Array.prototype.forEach.call(
+            mutation.addedNodes,
+            function(addedNode) {
+              if (addedNode.nodeType != Node.ELEMENT_NODE)
+                return;
+
+              if (addedNode.matches('input[type=password]')) {
+                this.trackPasswordField(addedNode);
+              } else {
+                this.findAndTrackChildren(addedNode);
+              }
+            }.bind(this));
+        }.bind(this));
+      }.bind(this));
+      this.passwordFieldsObserver.observe(docRoot,
+                                          {subtree: true, childList: true});
+    },
+
+    /**
+     * Find and track password fields that are descendants of the given element.
+     * @param {!HTMLElement} element The parent element to search from.
+     */
+    findAndTrackChildren: function(element) {
+      Array.prototype.forEach.call(
+          element.querySelectorAll('input[type=password]'), function(field) {
+            this.trackPasswordField(field);
+          }.bind(this));
+    },
+
+    /**
+     * Start tracking value changes of the given password field if it is
+     * not being tracked yet.
+     * @param {!HTMLInputElement} passworField The password field to track.
+     */
+    trackPasswordField: function(passwordField) {
+      var existing = this.passwordFields_.filter(function(element) {
+        return element === passwordField;
+      });
+      if (existing.length != 0)
+        return;
+
+      var index = this.passwordFields_.length;
+      passwordField.addEventListener(
+          'input', this.onPasswordChanged_.bind(this, index));
+      this.passwordFields_.push(passwordField);
+      this.passwordValues_.push(passwordField.value);
     },
 
     /**
@@ -143,13 +190,25 @@
     var apiCallForwarder = new APICallForwarder();
     apiCallForwarder.init(channel);
 
-    var passwordScraper = new PasswordInputScraper();
-    passwordScraper.init(channel, pageURL, document.documentElement);
+    var initPasswordScraper = function() {
+      var passwordScraper = new PasswordInputScraper();
+      passwordScraper.init(channel, pageURL, document.documentElement);
+    };
+
+    if (document.readyState == 'loading') {
+      window.addEventListener('readystatechange', function listener(event) {
+        if (document.readyState == 'loading')
+          return;
+        initPasswordScraper();
+        window.removeEventListener(event.type, listener, true);
+      }, true);
+    } else {
+      initPasswordScraper();
+    }
   }
 
   var channel = new Channel();
   channel.connect('injected');
   channel.sendWithCallback({name: 'getSAMLFlag'},
                            onGetSAMLFlag.bind(undefined, channel));
-
 })();

@@ -509,11 +509,44 @@ IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedSingle) {
   // Lands on confirm password screen.
   OobeScreenWaiter(OobeDisplay::SCREEN_CONFIRM_PASSWORD).Wait();
 
-  // Enter an unknown password should go back to confirm password screen.
+  // Entering an unknown password should go back to the confirm password screen.
   SendConfirmPassword("wrong_password");
   OobeScreenWaiter(OobeDisplay::SCREEN_CONFIRM_PASSWORD).Wait();
 
-  // Enter a known password should finish login and start session.
+  // Entering a known password should finish login and start session.
+  SendConfirmPassword("fake_password");
+  content::WindowedNotificationObserver(
+      chrome::NOTIFICATION_SESSION_STARTED,
+      content::NotificationService::AllSources()).Wait();
+}
+
+// Tests password scraping from a dynamically created password field.
+IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedDynamic) {
+  fake_saml_idp()->SetLoginHTMLTemplate("saml_login.html");
+  StartSamlAndWaitForIdpPageLoad(kFirstSAMLUserEmail);
+
+  ExecuteJsInSigninFrame(
+    "(function() {"
+      "var newPassInput = document.createElement('input');"
+      "newPassInput.id = 'DynamicallyCreatedPassword';"
+      "newPassInput.type = 'password';"
+      "newPassInput.name = 'Password';"
+      "document.forms[0].appendChild(newPassInput);"
+    "})();");
+
+  // Fill-in the SAML IdP form and submit.
+  SetSignFormField("Email", "fake_user");
+  SetSignFormField("DynamicallyCreatedPassword", "fake_password");
+  ExecuteJsInSigninFrame("document.getElementById('Submit').click();");
+
+  // Lands on confirm password screen.
+  OobeScreenWaiter(OobeDisplay::SCREEN_CONFIRM_PASSWORD).Wait();
+
+  // Entering an unknown password should go back to the confirm password screen.
+  SendConfirmPassword("wrong_password");
+  OobeScreenWaiter(OobeDisplay::SCREEN_CONFIRM_PASSWORD).Wait();
+
+  // Entering a known password should finish login and start session.
   SendConfirmPassword("fake_password");
   content::WindowedNotificationObserver(
       chrome::NOTIFICATION_SESSION_STARTED,
