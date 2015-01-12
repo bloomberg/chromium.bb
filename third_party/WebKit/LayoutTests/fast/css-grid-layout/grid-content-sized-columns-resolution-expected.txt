@@ -28,22 +28,22 @@ PASS window.getComputedStyle(gridMaxContentAndMaxContentFixedUnsortedConstrained
 Check that items are processed by ascending span to compute track breadths allowing extra space distribution.
 PASS window.getComputedStyle(gridMinContentFixedAndAutoUnsorted, '').getPropertyValue('grid-template-columns') is "15px 90px"
 PASS window.getComputedStyle(gridAutoAndAutoUnsorted, '').getPropertyValue('grid-template-columns') is "30px 60px"
-PASS window.getComputedStyle(gridMinContentAndMinContentFixedUnsorted, '').getPropertyValue('grid-template-columns') is "10px 40px"
+PASS window.getComputedStyle(gridMinContentAndMinContentFixedUnsorted, '').getPropertyValue('grid-template-columns') is "0px 40px"
 PASS window.getComputedStyle(gridMaxContentAndMinContentUnsorted, '').getPropertyValue('grid-template-columns') is "0px 70px"
 PASS window.getComputedStyle(gridFixedMinContentAndMaxContentUnsorted, '').getPropertyValue('grid-template-columns') is "10px 70px"
 PASS window.getComputedStyle(gridFixedMaxContentAndMinContentUnsorted, '').getPropertyValue('grid-template-columns') is "50px 40px"
-PASS window.getComputedStyle(gridMinContentAndMaxContentFixedUnsorted, '').getPropertyValue('grid-template-columns') is "10px 90px"
+PASS window.getComputedStyle(gridMinContentAndMaxContentFixedUnsorted, '').getPropertyValue('grid-template-columns') is "0px 90px"
 PASS window.getComputedStyle(gridMaxContentFixedAndAutoUnsorted, '').getPropertyValue('grid-template-columns') is "15px 70px"
 PASS window.getComputedStyle(gridAutoMinContentUnsorted, '').getPropertyValue('grid-template-columns') is "50px 60px"
 PASS window.getComputedStyle(gridAutoMaxContentUnsorted, '').getPropertyValue('grid-template-columns') is "0px 90px"
-PASS window.getComputedStyle(gridMaxContentAndMinContentFixedUnsorted, '').getPropertyValue('grid-template-columns') is "55px 40px"
-PASS window.getComputedStyle(gridMaxContentAndMaxContentFixedUnsorted, '').getPropertyValue('grid-template-columns') is "75px 70px"
+PASS window.getComputedStyle(gridMaxContentAndMinContentFixedUnsorted, '').getPropertyValue('grid-template-columns') is "50px 40px"
+PASS window.getComputedStyle(gridMaxContentAndMaxContentFixedUnsorted, '').getPropertyValue('grid-template-columns') is "40px 70px"
 
 Check that only a subset of tracks grow above track limits.
 PASS window.getComputedStyle(gridMinContentFixedAndAutoAboveLimits, '').getPropertyValue('grid-template-columns') is "15px 95px"
 PASS window.getComputedStyle(gridMaxContentFixedAndAutoAboveLimits, '').getPropertyValue('grid-template-columns') is "65px 85px"
 PASS window.getComputedStyle(gridMinContentFixedAndFixedFixedAndAuto, '').getPropertyValue('grid-template-columns') is "20px 20px 60px"
-PASS window.getComputedStyle(gridAutoAndFixedFixedAndMaxContentFixed, '').getPropertyValue('grid-template-columns') is "40px 20px 90px"
+PASS window.getComputedStyle(gridAutoAndFixedFixedAndMaxContentFixed, '').getPropertyValue('grid-template-columns') is "70px 20px 60px"
 PASS successfullyParsed is true
 
 TEST COMPLETE
