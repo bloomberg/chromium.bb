@@ -943,6 +943,8 @@ void IdentityLaunchWebAuthFlowFunction::OnAuthFlowFailure(
       break;
   }
   SendResponse(false);
+  if (auth_flow_)
+    auth_flow_.release()->DetachDelegateAndDelete();
   Release();  // Balanced in RunAsync.
 }
 
@@ -951,6 +953,8 @@ void IdentityLaunchWebAuthFlowFunction::OnAuthFlowURLChange(
   if (redirect_url.GetWithEmptyPath() == final_url_prefix_) {
     SetResult(new base::StringValue(redirect_url.spec()));
     SendResponse(true);
+    if (auth_flow_)
+      auth_flow_.release()->DetachDelegateAndDelete();
     Release();  // Balanced in RunAsync.
   }
 }
