@@ -976,6 +976,8 @@
         'test/test_io_thread.h',
         'test/test_listener_ios.h',
         'test/test_listener_ios.mm',
+        'test/test_mock_time_task_runner.cc',
+        'test/test_mock_time_task_runner.h',
         'test/test_pending_task.cc',
         'test/test_pending_task.h',
         'test/test_reg_util_win.cc',
