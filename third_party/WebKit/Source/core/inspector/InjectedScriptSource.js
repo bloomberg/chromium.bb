@@ -149,12 +149,14 @@ function nullifyObjectProto(obj)
 }
 
 /**
- * @param {*} obj
+ * @param {number|string} obj
  * @return {boolean}
  */
 function isUInt32(obj)
 {
-    return typeof obj === "number" && obj >>> 0 === obj && (obj > 0 || 1 / obj > 0);
+    if (typeof obj === "number")
+        return obj >>> 0 === obj && (obj > 0 || 1 / obj > 0);
+    return "" + (obj >>> 0) === obj;
 }
 
 /**
@@ -167,8 +169,10 @@ function isArrayLike(obj)
     if (typeof obj !== "object")
         return false;
     try {
-        if (typeof obj.splice === "function")
-            return isUInt32(obj.length);
+        if (typeof obj.splice === "function") {
+            var len = obj.length;
+            return typeof len === "number" && isUInt32(len);
+        }
     } catch (e) {
     }
     return false;
@@ -1362,13 +1366,13 @@ InjectedScript.RemoteObject.prototype = {
                 preview.lossless = false;
                 continue;
             }
-            if (!descriptor.enumerable && !descriptor.isOwn)
-                continue;
 
             var name = descriptor.name;
             if (name === "__proto__")
                 continue;
             if (this.subtype === "array" && name === "length")
+                continue;
+            if (!descriptor.enumerable && !descriptor.isOwn && !(this.subtype === "array" && isUInt32(name)))
                 continue;
 
             if (!("value" in descriptor)) {

@@ -1,0 +1,43 @@
+CONSOLE MESSAGE: line 9: 
+CONSOLE MESSAGE: line 9: arr0
+CONSOLE MESSAGE: line 9: arr0,,,,
+CONSOLE MESSAGE: line 9: arr0,2,3
+CONSOLE MESSAGE: line 9: arr0,,,,,obj5,,,,,arr10,,,,
+CONSOLE MESSAGE: line 9: arr0,,,,,obj5,,,8,,arr10,,,,
+CONSOLE MESSAGE: line 9: 0,,,,,obj5,,,,,10,,,,
+CONSOLE MESSAGE: line 9: arr0,,,4,,obj5,,,,,arr10,,,,
+CONSOLE MESSAGE: line 9: 0,1,2,3,4,5,6,7,8,9
+CONSOLE MESSAGE: line 9: arr0,1,2,3,4,obj5,6,7,8,9,arr10
+Tests that console logging dumps array values defined on Array.prototype[].
+
+a0
+[]
+console-format-array-prototype.html:9 [0: "arr0", 10: "arr10", 5: "obj5"]
+a1
+["arr0"]
+console-format-array-prototype.html:9 ["arr0", 10: "arr10", 5: "obj5"]
+a2
+["arr0", undefined × 4]
+console-format-array-prototype.html:9 ["arr0", 10: "arr10", 5: "obj5"]
+a3
+["arr0", 2, 3]
+console-format-array-prototype.html:9 ["arr0", 2, 3, 10: "arr10", 5: "obj5"]
+a4
+["arr0", undefined × 4, "obj5", undefined × 4, "arr10", undefined × 4]
+console-format-array-prototype.html:9 ["arr0", 5: "obj5", 10: "arr10"]
+a5
+["arr0", undefined × 4, "obj5", undefined × 2, 8, undefined × 1, "arr10", undefined × 4]
+console-format-array-prototype.html:9 ["arr0", 5: "obj5", 8: 8, 10: "arr10"]
+a6
+[0, undefined × 4, "obj5", undefined × 4, 10, undefined × 4]
+console-format-array-prototype.html:9 [0, 5: "obj5", 10: 10]
+a7
+["arr0", undefined × 2, 4, undefined × 1, "obj5", undefined × 4, "arr10", undefined × 4]
+console-format-array-prototype.html:9 [3: 4, index0: 0, index1: 1, index2: 2, index3: 3, index4: 4…]
+a8
+[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+console-format-array-prototype.html:9 [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10: "arr10"]
+a9
+["arr0", 1, 2, 3, 4, "obj5", 6, 7, 8, 9, "arr10"]
+console-format-array-prototype.html:9 ["arr0", 1, 2, 3, 4, "obj5", 6, 7, 8, 9, "arr10", foo: "bar"]
+
