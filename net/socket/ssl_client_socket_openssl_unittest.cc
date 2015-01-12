@@ -50,8 +50,6 @@ namespace {
 // These client auth tests are currently dependent on OpenSSL's struct X509.
 #if defined(USE_OPENSSL_CERTS)
 
-const SSLConfig kDefaultSSLConfig;
-
 // Loads a PEM-encoded private key file into a scoped EVP_PKEY object.
 // |filepath| is the private key file path.
 // |*pkey| is reset to the new EVP_PKEY on success, untouched otherwise.
@@ -154,7 +152,7 @@ class SSLClientSocketOpenSSLClientAuthTest : public PlatformTest {
   // Returns true on succes, false otherwise. Success means that the socket
   // could be created and its Connect() was called, not that the connection
   // itself was a success.
-  bool CreateAndConnectSSLClientSocket(SSLConfig& ssl_config,
+  bool CreateAndConnectSSLClientSocket(const SSLConfig& ssl_config,
                                        int* result) {
     sock_ = CreateSSLClientSocket(transport_.Pass(),
                                   test_server_->host_port_pair(),
@@ -200,10 +198,9 @@ TEST_F(SSLClientSocketOpenSSLClientAuthTest, NoCert) {
   ASSERT_TRUE(ConnectToTestServer(ssl_options));
 
   base::FilePath certs_dir = GetTestCertsDirectory();
-  SSLConfig ssl_config = kDefaultSSLConfig;
 
   int rv;
-  ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(SSLConfig(), &rv));
 
   EXPECT_EQ(ERR_SSL_CLIENT_AUTH_CERT_NEEDED, rv);
   EXPECT_FALSE(sock_->IsConnected());
@@ -220,7 +217,7 @@ TEST_F(SSLClientSocketOpenSSLClientAuthTest, SendEmptyCert) {
   ASSERT_TRUE(ConnectToTestServer(ssl_options));
 
   base::FilePath certs_dir = GetTestCertsDirectory();
-  SSLConfig ssl_config = kDefaultSSLConfig;
+  SSLConfig ssl_config;
   ssl_config.send_client_cert = true;
   ssl_config.client_cert = NULL;
 
@@ -242,7 +239,7 @@ TEST_F(SSLClientSocketOpenSSLClientAuthTest, SendGoodCert) {
   ASSERT_TRUE(ConnectToTestServer(ssl_options));
 
   base::FilePath certs_dir = GetTestCertsDirectory();
-  SSLConfig ssl_config = kDefaultSSLConfig;
+  SSLConfig ssl_config;
   ssl_config.send_client_cert = true;
   ssl_config.client_cert = ImportCertFromFile(certs_dir, "client_1.pem");
 

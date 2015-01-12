@@ -45,8 +45,6 @@ namespace net {
 
 namespace {
 
-const SSLConfig kDefaultSSLConfig;
-
 // WrappedStreamSocket is a base class that wraps an existing StreamSocket,
 // forwarding the Socket and StreamSocket interfaces to the underlying
 // transport.
@@ -791,7 +789,7 @@ class SSLClientSocketCertRequestInfoTest : public SSLClientSocketTest {
     EXPECT_EQ(OK, rv);
 
     scoped_ptr<SSLClientSocket> sock(CreateSSLClientSocket(
-        transport.Pass(), test_server.host_port_pair(), kDefaultSSLConfig));
+        transport.Pass(), test_server.host_port_pair(), SSLConfig()));
     EXPECT_FALSE(sock->IsConnected());
 
     rv = sock->Connect(callback.callback());
@@ -1012,7 +1010,7 @@ TEST_F(SSLClientSocketTest, Connect) {
   EXPECT_EQ(OK, rv);
 
   scoped_ptr<SSLClientSocket> sock(CreateSSLClientSocket(
-      transport.Pass(), test_server.host_port_pair(), kDefaultSSLConfig));
+      transport.Pass(), test_server.host_port_pair(), SSLConfig()));
 
   EXPECT_FALSE(sock->IsConnected());
 
@@ -1054,7 +1052,7 @@ TEST_F(SSLClientSocketTest, ConnectExpired) {
   EXPECT_EQ(OK, rv);
 
   scoped_ptr<SSLClientSocket> sock(CreateSSLClientSocket(
-      transport.Pass(), test_server.host_port_pair(), kDefaultSSLConfig));
+      transport.Pass(), test_server.host_port_pair(), SSLConfig()));
 
   EXPECT_FALSE(sock->IsConnected());
 
@@ -1098,7 +1096,7 @@ TEST_F(SSLClientSocketTest, ConnectMismatched) {
   EXPECT_EQ(OK, rv);
 
   scoped_ptr<SSLClientSocket> sock(CreateSSLClientSocket(
-      transport.Pass(), test_server.host_port_pair(), kDefaultSSLConfig));
+      transport.Pass(), test_server.host_port_pair(), SSLConfig()));
 
   EXPECT_FALSE(sock->IsConnected());
 
@@ -1142,7 +1140,7 @@ TEST_F(SSLClientSocketTest, ConnectClientAuthCertRequested) {
   EXPECT_EQ(OK, rv);
 
   scoped_ptr<SSLClientSocket> sock(CreateSSLClientSocket(
-      transport.Pass(), test_server.host_port_pair(), kDefaultSSLConfig));
+      transport.Pass(), test_server.host_port_pair(), SSLConfig()));
 
   EXPECT_FALSE(sock->IsConnected());
 
@@ -1200,7 +1198,7 @@ TEST_F(SSLClientSocketTest, ConnectClientAuthSendNullCert) {
     rv = callback.WaitForResult();
   EXPECT_EQ(OK, rv);
 
-  SSLConfig ssl_config = kDefaultSSLConfig;
+  SSLConfig ssl_config;
   ssl_config.send_client_cert = true;
   ssl_config.client_cert = NULL;
 
@@ -1258,7 +1256,7 @@ TEST_F(SSLClientSocketTest, Read) {
   EXPECT_EQ(OK, rv);
 
   scoped_ptr<SSLClientSocket> sock(CreateSSLClientSocket(
-      transport.Pass(), test_server.host_port_pair(), kDefaultSSLConfig));
+      transport.Pass(), test_server.host_port_pair(), SSLConfig()));
 
   rv = sock->Connect(callback.callback());
   if (rv == ERR_IO_PENDING)
@@ -1543,7 +1541,7 @@ TEST_F(SSLClientSocketTest, Read_FullDuplex) {
   EXPECT_EQ(OK, rv);
 
   scoped_ptr<SSLClientSocket> sock(CreateSSLClientSocket(
-      transport.Pass(), test_server.host_port_pair(), kDefaultSSLConfig));
+      transport.Pass(), test_server.host_port_pair(), SSLConfig()));
 
   rv = sock->Connect(callback.callback());
   if (rv == ERR_IO_PENDING)
@@ -1821,10 +1819,8 @@ TEST_F(SSLClientSocketTest, Connect_WithZeroReturn) {
   EXPECT_EQ(OK, rv);
 
   SynchronousErrorStreamSocket* raw_transport = transport.get();
-  scoped_ptr<SSLClientSocket> sock(
-      CreateSSLClientSocket(transport.Pass(),
-                            test_server.host_port_pair(),
-                            kDefaultSSLConfig));
+  scoped_ptr<SSLClientSocket> sock(CreateSSLClientSocket(
+      transport.Pass(), test_server.host_port_pair(), SSLConfig()));
 
   raw_transport->SetNextReadError(0);
 
@@ -1939,7 +1935,7 @@ TEST_F(SSLClientSocketTest, Read_SmallChunks) {
   EXPECT_EQ(OK, rv);
 
   scoped_ptr<SSLClientSocket> sock(CreateSSLClientSocket(
-      transport.Pass(), test_server.host_port_pair(), kDefaultSSLConfig));
+      transport.Pass(), test_server.host_port_pair(), SSLConfig()));
 
   rv = sock->Connect(callback.callback());
   if (rv == ERR_IO_PENDING)
@@ -1993,7 +1989,7 @@ TEST_F(SSLClientSocketTest, Read_ManySmallRecords) {
   ASSERT_EQ(OK, rv);
 
   scoped_ptr<SSLClientSocket> sock(CreateSSLClientSocket(
-      transport.Pass(), test_server.host_port_pair(), kDefaultSSLConfig));
+      transport.Pass(), test_server.host_port_pair(), SSLConfig()));
 
   rv = callback.GetResult(sock->Connect(callback.callback()));
   ASSERT_EQ(OK, rv);
@@ -2043,7 +2039,7 @@ TEST_F(SSLClientSocketTest, Read_Interrupted) {
   EXPECT_EQ(OK, rv);
 
   scoped_ptr<SSLClientSocket> sock(CreateSSLClientSocket(
-      transport.Pass(), test_server.host_port_pair(), kDefaultSSLConfig));
+      transport.Pass(), test_server.host_port_pair(), SSLConfig()));
 
   rv = sock->Connect(callback.callback());
   if (rv == ERR_IO_PENDING)
@@ -2094,7 +2090,7 @@ TEST_F(SSLClientSocketTest, Read_FullLogging) {
   EXPECT_EQ(OK, rv);
 
   scoped_ptr<SSLClientSocket> sock(CreateSSLClientSocket(
-      transport.Pass(), test_server.host_port_pair(), kDefaultSSLConfig));
+      transport.Pass(), test_server.host_port_pair(), SSLConfig()));
 
   rv = sock->Connect(callback.callback());
   if (rv == ERR_IO_PENDING)
@@ -2180,7 +2176,7 @@ TEST_F(SSLClientSocketTest, PrematureApplicationData) {
   EXPECT_EQ(OK, rv);
 
   scoped_ptr<SSLClientSocket> sock(CreateSSLClientSocket(
-      transport.Pass(), test_server.host_port_pair(), kDefaultSSLConfig));
+      transport.Pass(), test_server.host_port_pair(), SSLConfig()));
 
   rv = sock->Connect(callback.callback());
   if (rv == ERR_IO_PENDING)
@@ -2285,11 +2281,9 @@ TEST_F(SSLClientSocketTest, ClientSocketHandleNotFromPool) {
   scoped_ptr<ClientSocketHandle> socket_handle(new ClientSocketHandle());
   socket_handle->SetSocket(transport.Pass());
 
-  scoped_ptr<SSLClientSocket> sock(
-      socket_factory_->CreateSSLClientSocket(socket_handle.Pass(),
-                                             test_server.host_port_pair(),
-                                             kDefaultSSLConfig,
-                                             context_));
+  scoped_ptr<SSLClientSocket> sock(socket_factory_->CreateSSLClientSocket(
+      socket_handle.Pass(), test_server.host_port_pair(), SSLConfig(),
+      context_));
 
   EXPECT_FALSE(sock->IsConnected());
   rv = sock->Connect(callback.callback());
@@ -2319,7 +2313,7 @@ TEST_F(SSLClientSocketTest, ExportKeyingMaterial) {
   EXPECT_EQ(OK, rv);
 
   scoped_ptr<SSLClientSocket> sock(CreateSSLClientSocket(
-      transport.Pass(), test_server.host_port_pair(), kDefaultSSLConfig));
+      transport.Pass(), test_server.host_port_pair(), SSLConfig()));
 
   rv = sock->Connect(callback.callback());
   if (rv == ERR_IO_PENDING)
@@ -2404,7 +2398,7 @@ TEST_F(SSLClientSocketTest, VerifyServerChainProperlyOrdered) {
   EXPECT_EQ(OK, rv);
 
   scoped_ptr<SSLClientSocket> sock(CreateSSLClientSocket(
-      transport.Pass(), test_server.host_port_pair(), kDefaultSSLConfig));
+      transport.Pass(), test_server.host_port_pair(), SSLConfig()));
   EXPECT_FALSE(sock->IsConnected());
   rv = sock->Connect(callback.callback());
   rv = callback.GetResult(rv);
@@ -2511,7 +2505,7 @@ TEST_F(SSLClientSocketTest, VerifyReturnChainProperlyOrdered) {
   EXPECT_EQ(OK, rv);
 
   scoped_ptr<SSLClientSocket> sock(CreateSSLClientSocket(
-      transport.Pass(), test_server.host_port_pair(), kDefaultSSLConfig));
+      transport.Pass(), test_server.host_port_pair(), SSLConfig()));
   EXPECT_FALSE(sock->IsConnected());
   rv = sock->Connect(callback.callback());
 
@@ -2759,7 +2753,7 @@ TEST_F(SSLClientSocketTest, ReuseStates) {
   EXPECT_EQ(OK, rv);
 
   scoped_ptr<SSLClientSocket> sock(CreateSSLClientSocket(
-      transport.Pass(), test_server.host_port_pair(), kDefaultSSLConfig));
+      transport.Pass(), test_server.host_port_pair(), SSLConfig()));
 
   rv = sock->Connect(callback.callback());
   if (rv == ERR_IO_PENDING)
@@ -2855,7 +2849,7 @@ TEST_F(SSLClientSocketTest, HandshakeCallbackIsRun_WithSuccess) {
     rv = callback.WaitForResult();
   EXPECT_EQ(OK, rv);
 
-  SSLConfig ssl_config = kDefaultSSLConfig;
+  SSLConfig ssl_config;
   ssl_config.false_start_enabled = false;
 
   scoped_ptr<SSLClientSocket> sock(CreateSSLClientSocket(
@@ -2892,7 +2886,7 @@ TEST_F(SSLClientSocketTest, HandshakeCallbackIsRun_WithDisabledSessionCache) {
     rv = callback.WaitForResult();
   EXPECT_EQ(OK, rv);
 
-  SSLConfig ssl_config = kDefaultSSLConfig;
+  SSLConfig ssl_config;
   ssl_config.false_start_enabled = false;
 
   scoped_ptr<SSLClientSocket> sock(CreateSSLClientSocket(
@@ -3052,7 +3046,7 @@ TEST_F(SSLClientSocketChannelIDTest, SendChannelID) {
   ASSERT_TRUE(ConnectToTestServer(ssl_options));
 
   EnableChannelID();
-  SSLConfig ssl_config = kDefaultSSLConfig;
+  SSLConfig ssl_config;
   ssl_config.channel_id_enabled = true;
 
   int rv;
@@ -3074,7 +3068,7 @@ TEST_F(SSLClientSocketChannelIDTest, FailingChannelID) {
   ASSERT_TRUE(ConnectToTestServer(ssl_options));
 
   EnableFailingChannelID();
-  SSLConfig ssl_config = kDefaultSSLConfig;
+  SSLConfig ssl_config;
   ssl_config.channel_id_enabled = true;
 
   int rv;
@@ -3096,7 +3090,7 @@ TEST_F(SSLClientSocketChannelIDTest, FailingChannelIDAsync) {
   ASSERT_TRUE(ConnectToTestServer(ssl_options));
 
   EnableAsyncFailingChannelID();
-  SSLConfig ssl_config = kDefaultSSLConfig;
+  SSLConfig ssl_config;
   ssl_config.channel_id_enabled = true;
 
   int rv;

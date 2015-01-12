@@ -2877,6 +2877,7 @@ void SSLClientSocket::ClearSessionCache() {
 
 // static
 uint16 SSLClientSocket::GetMaxSupportedSSLVersion() {
+  crypto::EnsureNSSInit();
   if (PK11_TokenExists(CKM_NSS_TLS_MASTER_KEY_DERIVE_DH_SHA256)) {
     return SSL_PROTOCOL_VERSION_TLS1_2;
   } else {
