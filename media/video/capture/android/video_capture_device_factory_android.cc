@@ -41,11 +41,11 @@ scoped_ptr<VideoCaptureDevice> VideoCaptureDeviceFactoryAndroid::Create(
   if (!base::StringToInt(device_name.id(), &id))
     return scoped_ptr<VideoCaptureDevice>();
 
-  VideoCaptureDeviceAndroid* video_capture_device(
+  scoped_ptr<VideoCaptureDeviceAndroid> video_capture_device(
       new VideoCaptureDeviceAndroid(device_name));
 
   if (video_capture_device->Init())
-    return scoped_ptr<VideoCaptureDevice>(video_capture_device);
+    return video_capture_device.Pass();
 
   DLOG(ERROR) << "Error creating Video Capture Device.";
   return scoped_ptr<VideoCaptureDevice>();
