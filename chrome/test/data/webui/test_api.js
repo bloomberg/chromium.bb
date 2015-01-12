@@ -280,7 +280,16 @@ var testing = {};
      * Override this method to perform tasks before running your test.
      * @type {Function}
      */
-    setUp: function() {},
+    setUp: function() {
+      // These should be ignored in many of the web UI tests.
+      // user-image-stream and supervised-user-creation-image-stream are
+      // streaming video elements used for capturing a user image so they won't
+      // have captions and should be ignored everywhere.
+      this.accessibilityAuditConfig.ignoreSelectors('videoWithoutCaptions',
+                                                    '.user-image-stream');
+      this.accessibilityAuditConfig.ignoreSelectors(
+          'videoWithoutCaptions', '.supervised-user-creation-image-stream');
+    },
 
     /**
      * Override this method to perform tasks after running your test. If you

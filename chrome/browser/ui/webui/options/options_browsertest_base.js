@@ -16,12 +16,4 @@ OptionsBrowsertestBase.prototype = {
 
   /** @override */
   accessibilityIssuesAreErrors: true,
-
-  /** @override */
-  setUp: function() {
-    // user-image-stream is a streaming video element used for capturing a
-    // user image during OOBE.
-    this.accessibilityAuditConfig.ignoreSelectors('videoWithoutCaptions',
-                                                  '.user-image-stream');
-  },
 };

@@ -54,6 +54,7 @@ cr.define('options', function() {
       else
         imageEl.src = this.dataItem.url;
       imageEl.title = this.dataItem.title || '';
+      imageEl.alt = imageEl.title;
       if (typeof this.dataItem.clickHandler == 'function')
         imageEl.addEventListener('mousedown', this.dataItem.clickHandler);
       // Remove any garbage added by GridItem and ListItem decorators.

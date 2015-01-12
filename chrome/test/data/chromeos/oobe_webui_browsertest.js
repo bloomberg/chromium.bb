@@ -17,9 +17,25 @@ function OobeWebUITest() {}
 OobeWebUITest.prototype = {
   __proto__: testing.Test.prototype,
 
+  /** @override */
   browsePreload: 'chrome://oobe/oobe',
 
-  isAsync: false
+  /** @override */
+  runAccessibilityChecks: true,
+
+  /** @override */
+  accessibilityIssuesAreErrors: true,
+
+  /** @override */
+  setUp: function() {
+    testing.Test.prototype.setUp.call(this);
+
+    // Polymer issue https://github.com/Polymer/polymer/issues/1081
+    this.accessibilityAuditConfig.ignoreSelectors('badAriaAttributeValue',
+                                                  'PAPER-BUTTON');
+    this.accessibilityAuditConfig.ignoreSelectors('badAriaAttributeValue',
+                                                  '#progressContainer');
+  },
 };
 
 function createOobeWebUITestSupervisedManagerData() {
