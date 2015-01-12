@@ -123,8 +123,9 @@ class PictureLayerImplPerfTest : public testing::Test {
     timer_.Reset();
     do {
       int count = num_tiles;
-      scoped_ptr<TilingSetEvictionQueue> queue =
-          pending_layer_->CreateEvictionQueue(priorities[priority_count]);
+      scoped_ptr<TilingSetEvictionQueue> queue(
+          new TilingSetEvictionQueue(pending_layer_->picture_layer_tiling_set(),
+                                     priorities[priority_count], false));
       while (count--) {
         ASSERT_TRUE(!queue->IsEmpty()) << "count: " << count;
         ASSERT_TRUE(queue->Top() != nullptr) << "count: " << count;
@@ -152,8 +153,9 @@ class PictureLayerImplPerfTest : public testing::Test {
     int priority_count = 0;
     timer_.Reset();
     do {
-      scoped_ptr<TilingSetEvictionQueue> queue =
-          pending_layer_->CreateEvictionQueue(priorities[priority_count]);
+      scoped_ptr<TilingSetEvictionQueue> queue(
+          new TilingSetEvictionQueue(pending_layer_->picture_layer_tiling_set(),
+                                     priorities[priority_count], false));
       priority_count = (priority_count + 1) % arraysize(priorities);
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());

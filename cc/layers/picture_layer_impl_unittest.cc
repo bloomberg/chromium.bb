@@ -2982,8 +2982,9 @@ TEST_F(PictureLayerImplTest, TilingSetEvictionQueue) {
   EXPECT_GT(number_of_unmarked_tiles, 1u);
 
   // Tiles don't have resources yet.
-  scoped_ptr<TilingSetEvictionQueue> queue =
-      pending_layer_->CreateEvictionQueue(SAME_PRIORITY_FOR_BOTH_TREES);
+  scoped_ptr<TilingSetEvictionQueue> queue(
+      new TilingSetEvictionQueue(pending_layer_->picture_layer_tiling_set(),
+                                 SAME_PRIORITY_FOR_BOTH_TREES, false));
   EXPECT_TRUE(queue->IsEmpty());
 
   host_impl_.tile_manager()->InitializeTilesWithResourcesForTesting(all_tiles);
@@ -2995,7 +2996,9 @@ TEST_F(PictureLayerImplTest, TilingSetEvictionQueue) {
   Tile* last_tile = nullptr;
   size_t distance_decreasing = 0;
   size_t distance_increasing = 0;
-  queue = pending_layer_->CreateEvictionQueue(SAME_PRIORITY_FOR_BOTH_TREES);
+  queue.reset(
+      new TilingSetEvictionQueue(pending_layer_->picture_layer_tiling_set(),
+                                 SAME_PRIORITY_FOR_BOTH_TREES, false));
   while (!queue->IsEmpty()) {
     Tile* tile = queue->Top();
     if (!last_tile)
@@ -3771,8 +3774,9 @@ class OcclusionTrackingPictureLayerImplTest : public PictureLayerImplTest {
       Tile* last_tile = nullptr;
       std::set<Tile*> shared_tiles;
 
-      scoped_ptr<TilingSetEvictionQueue> queue =
-          layer->CreateEvictionQueue(tree_priority);
+      scoped_ptr<TilingSetEvictionQueue> queue(
+          new TilingSetEvictionQueue(layer->picture_layer_tiling_set(),
+                                     tree_priority, layer && twin_layer));
       while (!queue->IsEmpty()) {
         Tile* tile = queue->Top();
         if (!last_tile)
@@ -3806,7 +3810,9 @@ class OcclusionTrackingPictureLayerImplTest : public PictureLayerImplTest {
       // Count also shared tiles which are occluded in the tree but which were
       // not returned by the tiling set eviction queue. Those shared tiles
       // shall be returned by the twin tiling set eviction queue.
-      queue = twin_layer->CreateEvictionQueue(tree_priority);
+      queue.reset(
+          new TilingSetEvictionQueue(twin_layer->picture_layer_tiling_set(),
+                                     tree_priority, layer && twin_layer));
       while (!queue->IsEmpty()) {
         Tile* tile = queue->Top();
         if (tile->is_shared()) {

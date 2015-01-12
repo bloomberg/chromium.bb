@@ -128,10 +128,17 @@ EvictionTilePriorityQueue::PairedTilingSetQueue::PairedTilingSetQueue() {
 EvictionTilePriorityQueue::PairedTilingSetQueue::PairedTilingSetQueue(
     const PictureLayerImpl::Pair& layer_pair,
     TreePriority tree_priority) {
-  if (layer_pair.active)
-    active_queue = layer_pair.active->CreateEvictionQueue(tree_priority);
-  if (layer_pair.pending)
-    pending_queue = layer_pair.pending->CreateEvictionQueue(tree_priority);
+  bool skip_shared_out_of_order_tiles = layer_pair.active && layer_pair.pending;
+  if (layer_pair.active) {
+    active_queue = make_scoped_ptr(new TilingSetEvictionQueue(
+        layer_pair.active->picture_layer_tiling_set(), tree_priority,
+        skip_shared_out_of_order_tiles));
+  }
+  if (layer_pair.pending) {
+    pending_queue = make_scoped_ptr(new TilingSetEvictionQueue(
+        layer_pair.pending->picture_layer_tiling_set(), tree_priority,
+        skip_shared_out_of_order_tiles));
+  }
 }
 
 EvictionTilePriorityQueue::PairedTilingSetQueue::~PairedTilingSetQueue() {

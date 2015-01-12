@@ -47,9 +47,6 @@ class CC_EXPORT PictureLayerImpl
 
   bool is_mask() const { return is_mask_; }
 
-  scoped_ptr<TilingSetEvictionQueue> CreateEvictionQueue(
-      TreePriority tree_priority);
-
   // LayerImpl overrides.
   const char* LayerTypeAsString() const override;
   scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
