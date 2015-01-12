@@ -33,7 +33,7 @@ size_t FindAccessibleTextBoundary(const base::string16& text,
     } else {
       for (size_t j = line_breaks.size(); j != 0; --j) {
         size_t line_break = line_breaks[j - 1] >= 0 ? line_breaks[j - 1] : 0;
-        if (line_break <= start_offset)
+        if (line_break < start_offset)
           return line_break;
       }
       return 0;

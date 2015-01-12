@@ -79,6 +79,7 @@
       ],
       'sources': [
         'ax_generated_tree_unittest.cc',
+        'ax_text_utils_unittest.cc',
         'ax_tree_serializer_unittest.cc',
         'ax_tree_unittest.cc',
       ]
