@@ -1130,6 +1130,11 @@ int64 QuicStreamFactory::GetServerNetworkStatsSmoothedRttInMicroseconds(
 void QuicStreamFactory::InitializeCachedStateInCryptoConfig(
     const QuicServerId& server_id,
     const scoped_ptr<QuicServerInfo>& server_info) {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
+  tracked_objects::ScopedTracker tracking_profile1(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "422516 QuicStreamFactory::InitializeCachedStateInCryptoConfig1"));
+
   // |server_info| will be NULL, if a non-empty server config already exists in
   // the memory cache. This is a minor optimization to avoid LookupOrCreate.
   if (!server_info)
@@ -1160,6 +1165,11 @@ void QuicStreamFactory::InitializeCachedStateInCryptoConfig(
           server_info->state().server_config.empty());
     }
   }
+
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
+  tracked_objects::ScopedTracker tracking_profile2(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "422516 QuicStreamFactory::InitializeCachedStateInCryptoConfig2"));
 
   if (!cached->Initialize(server_info->state().server_config,
                           server_info->state().source_address_token,
