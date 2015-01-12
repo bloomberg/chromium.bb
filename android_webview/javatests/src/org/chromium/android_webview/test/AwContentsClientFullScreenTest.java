@@ -4,18 +4,14 @@
 
 package org.chromium.android_webview.test;
 
-import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
-
 import android.test.suitebuilder.annotation.MediumTest;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 
-import org.chromium.android_webview.ExternalVideoSurfaceContainer.NoPunchingSurfaceView;
 import org.chromium.android_webview.test.util.JavascriptEventObserver;
-import org.chromium.base.CommandLine;
+import org.chromium.android_webview.test.util.VideoSurfaceViewUtils;
 import org.chromium.base.test.util.Feature;
-import org.chromium.content.browser.ContentVideoView;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -35,14 +31,6 @@ import java.util.concurrent.TimeoutException;
  * very common use case.
  */
 public class AwContentsClientFullScreenTest extends AwTestBase {
-    /**
-     * MAX_WAIT_FOR_HOLE_PUNCHING_SURFACE_ATTACHED is used so that
-     * {@link #testHolePunchingSurfaceNotCreatedForClearVideo} provides a high level
-     * of confidence that the hole punching surface is not attached. By
-     * {@link #testOnShowCustomViewTransfersHolePunchingSurfaceForVideoInsideDiv}
-     * we know that it takes less that this time for the surface to be attached.
-     */
-    private static final long MAX_WAIT_FOR_HOLE_PUNCHING_SURFACE_ATTACHED = scaleTimeout(100);
     private static final String VIDEO_TEST_URL =
             "file:///android_asset/full_screen_video_test.html";
     private static final String VIDEO_INSIDE_DIV_TEST_URL =
@@ -204,14 +192,15 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
         tapPlayButton();
         assertTrue(DOMUtils.waitForVideoPlay(getWebContentsOnUiThread(), VIDEO_ID));
         // Wait to ensure that the surface view is not added asynchronously.
-        waitAndAssertContainsHolePunchingSurfaceView(mTestContainerView, false);
+        VideoSurfaceViewUtils.waitAndAssertContainsZeroVideoHoleSurfaceViews(this,
+                mTestContainerView);
     }
 
     @MediumTest
     @Feature({"AndroidWebView"})
     public void testOnShowCustomViewTransfersHolePunchingSurfaceForVideoInsideDiv()
             throws Throwable {
-        forceUseHolePunchingExternalSurface();
+        VideoSurfaceViewUtils.forceUseVideoHoleSurfaceView();
 
         loadTestPage(VIDEO_INSIDE_DIV_TEST_URL);
         assertFalse(DOMUtils.isFullscreen(getWebContentsOnUiThread()));
@@ -219,7 +208,8 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
         // Play and verify that there is a surface view for hole punching.
         tapPlayButton();
         assertTrue(DOMUtils.waitForVideoPlay(getWebContentsOnUiThread(), VIDEO_ID));
-        assertWaitForContainsHolePunchingSurfaceView(mTestContainerView, true);
+        VideoSurfaceViewUtils.pollAndAssertContainsOneVideoHoleSurfaceView(this,
+                mTestContainerView);
 
         // Enter fullscreen and verify that the hole punching surface is transferred. Note
         // that VIDEO_INSIDE_DIV_TEST_URL goes fullscreen on a <div> element, so in fullscreen
@@ -229,17 +219,17 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
         DOMUtils.clickNode(this, mContentViewCore, CUSTOM_FULLSCREEN_CONTROL_ID);
         mContentsClient.waitForCustomViewShown();
         View customView = mContentsClient.getCustomView();
-        assertContainsHolePunchingSurfaceView(mTestContainerView, false);
+        VideoSurfaceViewUtils.assertContainsZeroVideoHoleSurfaceViews(this, mTestContainerView);
         // Wait to ensure that the surface view stays there after being transfered and not
         // removed asynchronously.
-        waitAndAssertContainsHolePunchingSurfaceView(customView, true);
+        VideoSurfaceViewUtils.waitAndAssertContainsOneVideoHoleSurfaceView(this, customView);
     }
 
     @MediumTest
     @Feature({"AndroidWebView"})
     public void testOnShowCustomViewRemovesHolePunchingSurfaceForVideo()
             throws Throwable {
-        forceUseHolePunchingExternalSurface();
+        VideoSurfaceViewUtils.forceUseVideoHoleSurfaceView();
 
         loadTestPage(VIDEO_TEST_URL);
         assertFalse(DOMUtils.isFullscreen(getWebContentsOnUiThread()));
@@ -247,7 +237,8 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
         // Play and verify that there is a surface view for hole punching.
         tapPlayButton();
         assertTrue(DOMUtils.waitForVideoPlay(getWebContentsOnUiThread(), VIDEO_ID));
-        assertWaitForContainsHolePunchingSurfaceView(mTestContainerView, true);
+        VideoSurfaceViewUtils.pollAndAssertContainsOneVideoHoleSurfaceView(this,
+                mTestContainerView);
 
         // Enter fullscreen and verify that the surface view is removed. Note that
         // VIDEO_TEST_URL goes fullscreen on the <video> element, so in fullscreen
@@ -256,19 +247,10 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
         DOMUtils.clickNode(this, mContentViewCore, CUSTOM_FULLSCREEN_CONTROL_ID);
         mContentsClient.waitForCustomViewShown();
         View customView = mContentsClient.getCustomView();
-        assertContainsHolePunchingSurfaceView(mTestContainerView, false);
+        VideoSurfaceViewUtils.assertContainsZeroVideoHoleSurfaceViews(this, mTestContainerView);
         // We need to wait because the surface view is first transfered, and then removed
         // asynchronously.
-        waitAndAssertContainsHolePunchingSurfaceView(customView, false);
-    }
-
-    /**
-     * Force the use of the hole punching external surface (see VIDEO_HOLE). If this method is
-     * called the external surface will also be created for clear video (that this test class uses)
-     * and not just for encrypted video.
-     */
-    private void forceUseHolePunchingExternalSurface() {
-        CommandLine.getInstance().appendSwitch("force-use-overlay-embedded-video");
+        VideoSurfaceViewUtils.waitAndAssertContainsZeroVideoHoleSurfaceViews(this, customView);
     }
 
     @MediumTest
@@ -468,61 +450,8 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
     }
 
     private void assertContainsContentVideoView() throws Exception {
-        assertTrue(containsChildOfType(mContentsClient.getCustomView(),
-                ContentVideoView.class));
-    }
-
-    private void assertContainsHolePunchingSurfaceView(View view, boolean expected)
-            throws Exception {
-        assertEquals(containsChildOfType(view, NoPunchingSurfaceView.class), expected);
-    }
-
-    private void assertWaitForContainsHolePunchingSurfaceView(
-            final View view, final boolean expected) throws InterruptedException {
-        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                try {
-                    return containsChildOfType(view, NoPunchingSurfaceView.class) == expected;
-                } catch (Exception e) {
-                    fail(e.getMessage());
-                    return false;
-                }
-            }
-        }, MAX_WAIT_FOR_HOLE_PUNCHING_SURFACE_ATTACHED,
-        MAX_WAIT_FOR_HOLE_PUNCHING_SURFACE_ATTACHED / 10));
-    }
-
-    private void waitAndAssertContainsHolePunchingSurfaceView(View view, boolean expected)
-            throws Exception {
-        Thread.sleep(MAX_WAIT_FOR_HOLE_PUNCHING_SURFACE_ATTACHED);
-        assertEquals(expected, containsChildOfType(view, NoPunchingSurfaceView.class));
-    }
-
-    private boolean containsChildOfType(final View view, final Class<? extends View> childType)
-            throws Exception {
-        return runTestOnUiThreadAndGetResult(new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                return containsChildOfTypeOnUiThread(view, childType);
-            }
-        });
-    }
-
-    private boolean containsChildOfTypeOnUiThread(final View view,
-            final Class<? extends View> childType) throws Exception {
-        if (childType.isInstance(view)) {
-            return true;
-        }
-        if (view instanceof ViewGroup) {
-            ViewGroup viewGroup = (ViewGroup) view;
-            for (int i = 0; i < viewGroup.getChildCount(); i++) {
-                if (containsChildOfTypeOnUiThread(viewGroup.getChildAt(i), childType)) {
-                    return true;
-                }
-            }
-        }
-        return false;
+        VideoSurfaceViewUtils.assertContainsOneContentVideoView(this,
+                mContentsClient.getCustomView());
     }
 
     private JavascriptEventObserver registerObserver(final String observerName) throws Throwable {
