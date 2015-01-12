@@ -246,7 +246,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcApprtcBrowserTest, MANUAL_WorksOnApprtc) {
     DVLOG(1) << "Waiting for AppRTC to come up...";
 
   GURL room_url = GURL("http://localhost:9999/r/some_room"
-                       "?wsh=localhost&wsp=8089&wstls=false");
+                       "?wshpp=localhost:8089&wstls=false");
 
   chrome::AddTabAt(browser(), GURL(), -1, true);
   content::WebContents* left_tab = OpenPageAndAcceptUserMedia(room_url);
@@ -289,7 +289,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcApprtcBrowserTest,
     DVLOG(1) << "Waiting for AppRTC to come up...";
 
   GURL room_url = GURL("http://localhost:9999/r/some_room"
-                       "?wsh=localhost&wsp=8089&wstls=false"
+                       "?wshpp=localhost:8089&wstls=false"
                        "&firefox_fake_device=1");
   content::WebContents* chrome_tab = OpenPageAndAcceptUserMedia(room_url);
 
