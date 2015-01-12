@@ -150,24 +150,24 @@ void BlobStorageContext::AppendBlobDataItem(
                        memory_usage_ / 1024);
   switch (item.type()) {
     case BlobData::Item::TYPE_BYTES:
-      UMA_HISTOGRAM_COUNTS("Storage.BlobItemSize.Bytes", length);
+      UMA_HISTOGRAM_COUNTS("Storage.BlobItemSize.Bytes", length / 1024);
       DCHECK(!item.offset());
       exceeded_memory = !AppendBytesItem(target_blob_data, item.bytes(),
                                          static_cast<int64>(length));
       break;
     case BlobData::Item::TYPE_FILE:
-      UMA_HISTOGRAM_COUNTS("Storage.BlobItemSize.File", length);
+      UMA_HISTOGRAM_COUNTS("Storage.BlobItemSize.File", length / 1024);
       AppendFileItem(target_blob_data, item.path(), item.offset(), length,
                      item.expected_modification_time());
       break;
     case BlobData::Item::TYPE_FILE_FILESYSTEM:
-      UMA_HISTOGRAM_COUNTS("Storage.BlobItemSize.FileSystem", length);
+      UMA_HISTOGRAM_COUNTS("Storage.BlobItemSize.FileSystem", length / 1024);
       AppendFileSystemFileItem(target_blob_data, item.filesystem_url(),
                                item.offset(), length,
                                item.expected_modification_time());
       break;
     case BlobData::Item::TYPE_BLOB: {
-      UMA_HISTOGRAM_COUNTS("Storage.BlobItemSize.Blob", length);
+      UMA_HISTOGRAM_COUNTS("Storage.BlobItemSize.Blob", length / 1024);
       scoped_ptr<BlobDataHandle> src = GetBlobDataFromUUID(item.blob_uuid());
       if (src)
         exceeded_memory = !ExpandStorageItems(target_blob_data,
