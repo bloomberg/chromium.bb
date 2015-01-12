@@ -591,7 +591,7 @@ void BrowserWindowCocoa::ShowBookmarkAppBubble(
       } else {
         chrome::NavigateParams params(profile, GURL(chrome::kChromeUIAppsURL),
                                       ui::PAGE_TRANSITION_LINK);
-        params.disposition = NEW_FOREGROUND_TAB;
+        params.disposition = SINGLETON_TAB;
         chrome::Navigate(&params);
 
         content::NotificationService::current()->Notify(
