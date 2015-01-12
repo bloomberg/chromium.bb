@@ -597,7 +597,7 @@
     ]
   },
   "webcamPrivate": {
-    "channel": "dev",
+    "channel": "stable",
     "extension_types": ["extension", "platform_app"]
   },
   "management": [
