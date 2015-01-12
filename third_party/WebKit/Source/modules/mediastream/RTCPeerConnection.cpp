@@ -116,8 +116,22 @@ RTCConfiguration* RTCPeerConnection::parseConfiguration(const Dictionary& config
         return 0;
     }
 
+    RTCBundlePolicy bundlePolicy = RTCBundlePolicyBalanced;
+    String bundlePolicyString;
+    if (DictionaryHelper::get(configuration, "bundlePolicy", bundlePolicyString)) {
+        if (bundlePolicyString == "max-compat") {
+            bundlePolicy = RTCBundlePolicyMaxCompat;
+        } else if (bundlePolicyString == "max-bundle") {
+            bundlePolicy = RTCBundlePolicyMaxBundle;
+        } else if (bundlePolicyString != "balanced") {
+            exceptionState.throwTypeError("Malformed RTCBundlePolicy");
+            return 0;
+        }
+    }
+
     RTCConfiguration* rtcConfiguration = RTCConfiguration::create();
     rtcConfiguration->setIceTransports(iceTransports);
+    rtcConfiguration->setBundlePolicy(bundlePolicy);
 
     for (size_t i = 0; i < numberOfServers; ++i) {
         Dictionary iceServer;

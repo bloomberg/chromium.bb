@@ -78,6 +78,12 @@ enum WebRTCIceTransports {
     WebRTCIceTransportsAll
 };
 
+enum WebRTCBundlePolicy {
+    WebRTCBundlePolicyBalanced,
+    WebRTCBundlePolicyMaxCompat,
+    WebRTCBundlePolicyMaxBundle
+};
+
 class WebRTCConfiguration {
 public:
     WebRTCConfiguration() { }
@@ -99,6 +105,8 @@ public:
     BLINK_PLATFORM_EXPORT WebRTCICEServer server(size_t index) const;
 
     BLINK_PLATFORM_EXPORT WebRTCIceTransports iceTransports() const;
+
+    BLINK_PLATFORM_EXPORT WebRTCBundlePolicy bundlePolicy() const;
 
 #if INSIDE_BLINK
     BLINK_PLATFORM_EXPORT WebRTCConfiguration(RTCConfiguration*);

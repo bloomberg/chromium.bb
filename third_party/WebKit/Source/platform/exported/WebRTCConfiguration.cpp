@@ -114,4 +114,20 @@ WebRTCIceTransports WebRTCConfiguration::iceTransports() const
     return WebRTCIceTransportsAll;
 }
 
+WebRTCBundlePolicy WebRTCConfiguration::bundlePolicy() const
+{
+    ASSERT(!isNull());
+    switch (m_private->bundlePolicy()) {
+    case RTCBundlePolicyBalanced:
+        return WebRTCBundlePolicyBalanced;
+    case RTCBundlePolicyMaxCompat:
+        return WebRTCBundlePolicyMaxCompat;
+    case RTCBundlePolicyMaxBundle:
+        return WebRTCBundlePolicyMaxBundle;
+    default:
+        ASSERT_NOT_REACHED();
+    }
+    return WebRTCBundlePolicyBalanced;
+}
+
 } // namespace blink
