@@ -11,14 +11,21 @@ dd {
 </style>
 <dl>
 <dt>Ideographic, Kana, CJK symbols</dt>
-<dd>&#x56FD; &#x56FD; &#x3042; &#xFF01; &#x56FD;<br>&#x56FD;WWWWW</dd>
+<dd>&#x56FD; &#x56FD; &#x3042; &#xFF01; &#x56FD;<br>&#x56FD;&#xFEFF;WWWWW</dd>
 <dd>&#x56FD; &#x56FD; &#x3042; &#xFF01; &#x56FD;<br>WWWWWW</dd>
 <dd>&#x56FD; &#x56FD; &#x3042; &#xFF01; &#x56FD;<br>WWWWWW</dd>
 <dd>&#x56FD; &#x56FD; &#x3042; &#xFF01; W<br>WWWWWW</dd>
 <dt>Ideographic, Kana, CJK symbols with spans</dt>
-<dd>&#x56FD; &#x56FD; &#x3042; &#xFF01; &#x56FD;<br>&#x56FD;WWWWW</dd>
+<dd>&#x56FD; &#x56FD; &#x3042; &#xFF01; &#x56FD;<br>&#x56FD;&#xFEFF;WWWWW</dd>
 <dt>Ideographic, Latin, and spaces</dt>
-<dd>WW &#x56FD;   W  &#x56FD;<br>&#x56FD;WWWWW</dd>
+<dd>WW &#x56FD;   W  &#x56FD;<br>&#x56FD;&#xFEFF;WWWWW</dd>
 <dd>WW &#x56FD;   W  &#x56FD;<br>WWWWWW</dd>
 <dd>WW &#x56FD;   W  &#x56FD;<br>WWWWWW</dd>
 </dl>
+<script>
+document.body.offsetLeft; // Kick off loading @font-face
+if (window.testRunner) {
+    testRunner.waitUntilDone();
+    document.body.onload = function () { testRunner.notifyDone(); };
+}
+</script>

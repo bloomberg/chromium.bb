@@ -18,7 +18,14 @@ dd {
 <dt>Ideographic, Kana, CJK symbols with spans</dt>
 <dd style="width:9em;">&#x56FD;<span>&#x56FD;</span>&#x3042;&#xFF01;&#x56FD;&#x56FD;&#xFEFF;WWWWW</dd>
 <dt>Ideographic, Latin, and spaces</dt>
-<dd style="width:12em;">WW&#x56FD; W &#x56FD;&#x56FD;&#xFEFF;WWWWW</dd>
-<dd style="width:12em;">WW&#x56FD; W &#x56FD;WWWWWW</dd>
-<dd style="width:12em;">WW&#x56FD; W &#x56FD; WWWWWW</dd>
+<dd style="width:11em;">WW&#x56FD; W &#x56FD;&#x56FD;&#xFEFF;WWWWW</dd>
+<dd style="width:11em;">WW&#x56FD; W &#x56FD;WWWWWW</dd>
+<dd style="width:11em;">WW&#x56FD; W &#x56FD; WWWWWW</dd>
 </dl>
+<script>
+document.body.offsetLeft; // Kick off loading @font-face
+if (window.testRunner) {
+    testRunner.waitUntilDone();
+    document.body.onload = function () { testRunner.notifyDone(); };
+}
+</script>
