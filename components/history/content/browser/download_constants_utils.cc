@@ -102,8 +102,6 @@ DownloadDangerType ToHistoryDownloadDangerType(
       NOTREACHED();
       return DownloadDangerType::INVALID;
   }
-  NOTREACHED();
-  return DownloadDangerType::INVALID;
 }
 
 content::DownloadInterruptReason ToContentDownloadInterruptReason(
