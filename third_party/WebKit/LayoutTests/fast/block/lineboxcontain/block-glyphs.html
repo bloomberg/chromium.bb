@@ -3,12 +3,20 @@
 <title>line-box-contain: block glyphs</title>
 <style>
 .test { -webkit-line-box-contain: block glyphs; line-box-contain: block glyphs; font: 64px/1em Ahem; background-color:red; width:6em; overflow:hidden }
-.goodline { color: green; line-height:12 }
+.goodline { color: green; line-height:12; border-top: 1px solid green; }
 </style>
 </head>
 <body>
 You should see a green rectangle below.  If you see any red, the test has failed.
 
+<!--
+    Ahem has 0.2em descent and 0.8em ascent, so 64px Ahem has 12.8px descent and 51.2px ascent.
+    Since we expand to enclosing integer points, the integer glyph bounds will be 65px tall.
+    As a result, we need 64px of text + 1px of extra border to fill the line box.
+    This is not an elegant hack; sorry.
+
+    Warning: this is very sensitive to changes in font code and may need adjustment later.
+-->
 <div class="test">
 <span class="goodline">xxxxx</span><span style="background-color:green; font-size:128px; padding-left:0.5em;"></span><br>
 <div style="display:inline-block; width:1em;height:2em;vertical-align:bottom;background-color:green"></div><span class="goodline">xxxxx</span>

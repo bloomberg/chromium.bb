@@ -911,9 +911,9 @@ float Font::floatWidthForSimpleText(const TextRun& run, HashSet<const SimpleFont
     shaper.advance(run.length());
 
     if (glyphBounds) {
-        glyphBounds->setTop(floorf(-bounds.minGlyphBoundingBoxY));
+        glyphBounds->setTop(ceilf(-bounds.minGlyphBoundingBoxY));
         glyphBounds->setBottom(ceilf(bounds.maxGlyphBoundingBoxY));
-        glyphBounds->setLeft(floorf(bounds.firstGlyphOverflow));
+        glyphBounds->setLeft(ceilf(bounds.firstGlyphOverflow));
         glyphBounds->setRight(ceilf(bounds.lastGlyphOverflow));
     }
 

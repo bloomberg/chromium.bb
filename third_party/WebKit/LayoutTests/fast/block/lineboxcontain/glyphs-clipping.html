@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<style>
+#tests p { -webkit-line-box-contain: glyphs; line-box-contain: glyphs; overflow: hidden; }
+</style>
+
+<p>None of these should have clipped text.</p>
+
+<!--
+    Ideally, this would be a ref test, but some clipping remains.
+-->
+<div id="tests">
+    <p style="font-size: 12px">Lorem ipsum dolor sit amet.</p>
+    <p style="font-size: 13px">Lorem ipsum dolor sit amet.</p>
+    <p style="font-size: 14px">Lorem ipsum dolor sit amet.</p>
+    <p style="font-size: 15px">Lorem ipsum dolor sit amet.</p>
+    <p style="font-size: 16px">Lorem ipsum dolor sit amet.</p>
+    <p style="font-size: 17px">Lorem ipsum dolor sit amet.</p>
+
+    <!-- &Eacute; is particularly tall. -->
+    <p style="font-size: 12px">&Eacute;tats-Unis.</p>
+    <p style="font-size: 13px">&Eacute;tats-Unis.</p>
+    <p style="font-size: 14px">&Eacute;tats-Unis.</p>
+    <p style="font-size: 15px">&Eacute;tats-Unis.</p>
+    <p style="font-size: 16px">&Eacute;tats-Unis.</p>
+    <p style="font-size: 17px">&Eacute;tats-Unis.</p>
+</div>
