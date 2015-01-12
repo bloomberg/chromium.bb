@@ -7,6 +7,8 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/timer/timer.h"
+#include "ui/events/event.h"
+#include "ui/events/keycodes/dom3/dom_code.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gl/gl_surface.h"
@@ -87,7 +89,11 @@ class DemoWindow : public ui::PlatformWindowDelegate {
   // PlatformWindowDelegate:
    void OnBoundsChanged(const gfx::Rect& new_bounds) override {}
    void OnDamageRect(const gfx::Rect& damaged_region) override {}
-   void DispatchEvent(ui::Event* event) override {}
+   void DispatchEvent(ui::Event* event) override {
+     if (event->IsKeyEvent() &&
+         static_cast<ui::KeyEvent*>(event)->code() == ui::DomCode::KEY_Q)
+       Quit();
+   }
    void OnCloseRequest() override { Quit(); }
    void OnClosed() override {}
    void OnWindowStateChanged(ui::PlatformWindowState new_state) override {}
