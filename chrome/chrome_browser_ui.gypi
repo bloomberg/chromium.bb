@@ -1854,6 +1854,8 @@
       'browser/ui/views/find_bar_view.h',
       'browser/ui/views/hung_renderer_view.cc',
       'browser/ui/views/hung_renderer_view.h',
+      'browser/ui/views/infobars/confirm_infobar.cc',
+      'browser/ui/views/infobars/confirm_infobar.h',
       'browser/ui/views/passwords/credentials_item_view.cc',
       'browser/ui/views/passwords/credentials_item_view.h',
       'browser/ui/views/passwords/manage_password_items_view.cc',
@@ -2150,8 +2152,6 @@
       'browser/ui/views/importer/import_lock_dialog_view.h',
       'browser/ui/views/infobars/alternate_nav_infobar_view.cc',
       'browser/ui/views/infobars/alternate_nav_infobar_view.h',
-      'browser/ui/views/infobars/confirm_infobar.cc',
-      'browser/ui/views/infobars/confirm_infobar.h',
       'browser/ui/views/infobars/extension_infobar.cc',
       'browser/ui/views/infobars/extension_infobar.h',
       'browser/ui/views/infobars/infobar_background.cc',
@@ -2877,12 +2877,14 @@
                   'sources!': [
                     'browser/ui/cocoa/bookmarks/bookmark_drag_drop_cocoa.mm',
                     'browser/ui/cocoa/browser_window_factory_cocoa.mm',
+                    'browser/ui/cocoa/infobars/confirm_infobar_controller.mm',
                     'browser/ui/cocoa/tab_dialogs_cocoa.mm',
                   ],
                 }, {
                   'sources!': [
                     'browser/ui/views/bookmarks/bookmark_drag_drop_views.cc',
                     'browser/ui/views/frame/browser_window_factory.cc',
+                    'browser/ui/views/infobar/confirm_infobar.cc'
                     'browser/ui/views/tab_dialogs_views.cc',
                   ],
                 }],
