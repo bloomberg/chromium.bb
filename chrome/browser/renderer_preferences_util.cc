@@ -47,17 +47,21 @@ void UpdateFromSystemSettings(content::RendererPreferences* prefs,
   prefs->enable_do_not_track =
       pref_service->GetBoolean(prefs::kEnableDoNotTrack);
 
-  double default_zoom_level = -1;
+  double default_zoom_level = 0;
+  bool default_zoom_level_set = false;
 #if !defined(OS_ANDROID)
   ui_zoom::ZoomController* zoom_controller =
       ui_zoom::ZoomController::FromWebContents(web_contents);
-  if (zoom_controller)
+  if (zoom_controller) {
     default_zoom_level = zoom_controller->GetDefaultZoomLevel();
+    default_zoom_level_set = true;
+  }
 #endif
 
-  if (default_zoom_level < 0) {
-    default_zoom_level = content::HostZoomMap::GetDefaultForBrowserContext(
-        web_contents->GetBrowserContext())->GetDefaultZoomLevel();
+  if (!default_zoom_level_set) {
+    default_zoom_level =
+        content::HostZoomMap::Get(web_contents->GetSiteInstance())
+            ->GetDefaultZoomLevel();
   }
   prefs->default_zoom_level = default_zoom_level;
 

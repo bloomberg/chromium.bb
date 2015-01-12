@@ -15,6 +15,7 @@ class BrowserContext;
 class ColorChooser;
 struct FileChooserParams;
 struct OpenURLParams;
+class RenderViewHost;
 class WebContents;
 }
 
@@ -35,6 +36,7 @@ class AppDelegate {
 
   // General initialization.
   virtual void InitWebContents(content::WebContents* web_contents) = 0;
+  virtual void RenderViewCreated(content::RenderViewHost* render_view_host) = 0;
 
   // Resizes WebContents.
   virtual void ResizeWebContents(content::WebContents* web_contents,

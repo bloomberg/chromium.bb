@@ -13,11 +13,6 @@
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/geometry/rect.h"
 
-namespace content {
-class BrowserContext;
-class WebContents;
-}
-
 class ScopedKeepAlive;
 
 class ChromeAppDelegate : public extensions::AppDelegate,
@@ -35,6 +30,7 @@ class ChromeAppDelegate : public extensions::AppDelegate,
 
   // extensions::AppDelegate:
   void InitWebContents(content::WebContents* web_contents) override;
+  void RenderViewCreated(content::RenderViewHost* render_view_host) override;
   void ResizeWebContents(content::WebContents* web_contents,
                          const gfx::Size& size) override;
   content::WebContents* OpenURLFromTab(

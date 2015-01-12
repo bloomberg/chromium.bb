@@ -24,6 +24,7 @@
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
+#include "chrome/browser/ui/zoom/chrome_zoom_level_prefs.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/test_switches.h"
@@ -31,6 +32,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/devtools_agent_host.h"
+#include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/test/test_utils.h"
@@ -1313,6 +1315,29 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, ReinstallDataCleanup) {
     ResultCatcher result_catcher;
     EXPECT_TRUE(result_catcher.GetNextResult());
   }
+}
+
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, AppsIgnoreDefaultZoom) {
+  const Extension* extension = LoadAndLaunchPlatformApp("minimal", "Launched");
+
+  // Set the browser default zoom to something other than the default (which is
+  // 0).
+  browser()->profile()->GetZoomLevelPrefs()->SetDefaultZoomLevelPref(1);
+
+  // Launch another window. This is a simple way to guarantee that any messages
+  // that would have been delivered to the app renderer and back for zoom have
+  // made it through.
+  ExtensionTestMessageListener launched_listener("Launched", false);
+  LaunchPlatformApp(extension);
+  launched_listener.WaitUntilSatisfied();
+
+  // Now check that the app window's default zoom, and actual zoom level,
+  // have not been changed from the default.
+  WebContents* web_contents = GetFirstAppWindowWebContents();
+  content::HostZoomMap* app_host_zoom_map = content::HostZoomMap::Get(
+      web_contents->GetSiteInstance());
+  EXPECT_EQ(0, app_host_zoom_map->GetDefaultZoomLevel());
+  EXPECT_EQ(0, app_host_zoom_map->GetZoomLevel(web_contents));
 }
 
 }  // namespace extensions

@@ -60,6 +60,11 @@ AthenaAppDelegateBase::~AthenaAppDelegateBase() {
     AthenaEnv::Get()->RemoveTerminatingCallback(terminating_callback_);
 }
 
+void AthenaAppDelegateBase::RenderViewCreated(
+    content::RenderViewHost* render_view_host) {
+  // No implementation necessary for athena.
+}
+
 void AthenaAppDelegateBase::ResizeWebContents(
     content::WebContents* web_contents,
     const gfx::Size& size) {

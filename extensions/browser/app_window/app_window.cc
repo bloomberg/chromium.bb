@@ -254,10 +254,8 @@ void AppWindow::Init(const GURL& url,
   // Initialize the render interface and web contents
   app_window_contents_.reset(app_window_contents);
   app_window_contents_->Initialize(browser_context(), url);
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableAppsShowOnFirstPaint)) {
-    content::WebContentsObserver::Observe(web_contents());
-  }
+
+  content::WebContentsObserver::Observe(web_contents());
   app_delegate_->InitWebContents(web_contents());
 
   WebContentsModalDialogManager::CreateForWebContents(web_contents());
@@ -437,6 +435,10 @@ void AppWindow::RequestToLockMouse(WebContents* web_contents,
 bool AppWindow::PreHandleGestureEvent(WebContents* source,
                                       const blink::WebGestureEvent& event) {
   return AppWebContentsHelper::ShouldSuppressGestureEvent(event);
+}
+
+void AppWindow::RenderViewCreated(content::RenderViewHost* render_view_host) {
+  app_delegate_->RenderViewCreated(render_view_host);
 }
 
 void AppWindow::DidFirstVisuallyNonEmptyPaint() {

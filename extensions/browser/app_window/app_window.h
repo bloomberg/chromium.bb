@@ -409,6 +409,7 @@ class AppWindow : public content::NotificationObserver,
                              const blink::WebGestureEvent& event) override;
 
   // content::WebContentsObserver implementation.
+  void RenderViewCreated(content::RenderViewHost* render_view_host) override;
   void DidFirstVisuallyNonEmptyPaint() override;
 
   // content::NotificationObserver implementation.

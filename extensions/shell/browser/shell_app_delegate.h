@@ -12,14 +12,14 @@ namespace extensions {
 
 // AppDelegate implementation for app_shell. Sets focus after the WebContents is
 // created. Ignores most operations that would create a new dialog or window.
-class ShellAppDelegate : public AppDelegate,
-                         public content::WebContentsObserver {
+class ShellAppDelegate : public AppDelegate {
  public:
   ShellAppDelegate();
   ~ShellAppDelegate() override;
 
   // AppDelegate overrides:
   void InitWebContents(content::WebContents* web_contents) override;
+  void RenderViewCreated(content::RenderViewHost* render_view_host) override;
   void ResizeWebContents(content::WebContents* web_contents,
                          const gfx::Size& size) override;
   content::WebContents* OpenURLFromTab(
@@ -50,9 +50,6 @@ class ShellAppDelegate : public AppDelegate,
                              bool blocked) override;
   bool IsWebContentsVisible(content::WebContents* web_contents) override;
   void SetTerminatingCallback(const base::Closure& callback) override;
-
-  // content::WebContentsObserver:
-  void RenderViewCreated(content::RenderViewHost* render_view_host) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ShellAppDelegate);

@@ -20,6 +20,7 @@ class AthenaAppDelegateBase : public extensions::AppDelegate {
   class NewActivityContentsDelegate;
 
   // extensions::AppDelegate:
+  void RenderViewCreated(content::RenderViewHost* render_view_host) override;
   void ResizeWebContents(content::WebContents* web_contents,
                          const gfx::Size& size) override;
   content::WebContents* OpenURLFromTab(
