@@ -9,7 +9,7 @@ promise_test(function() {
       .then(function() {
           var promises = [];
           for (var i = 0; i < 8; ++i)
-            promises.push(skipWaiting());
+            promises.push(self.skipWaiting());
           return Promise.all(promises);
         })
       .then(function(results) {
