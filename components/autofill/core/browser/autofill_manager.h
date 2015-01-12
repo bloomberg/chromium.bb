@@ -356,6 +356,8 @@ class AutofillManager : public AutofillDownloadManager::Observer,
   // A copy of the credit card that's currently being unmasked, and data about
   // the form.
   CreditCard unmasking_card_;
+  // CVC is not part of CreditCard, so store it separately.
+  base::string16 unmasking_cvc_;
   int unmasking_query_id_;
   FormData unmasking_form_;
   FormFieldData unmasking_field_;

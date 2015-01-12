@@ -555,8 +555,6 @@ void AutofillManager::FillOrPreviewForm(
     }
   }
 
-  // TODO(estade): previewing masked cards should show something nicer in
-  // the number field than just the last 4 digits.
   FillOrPreviewDataModelForm(action, query_id, form, field, data_model, variant,
                              is_credit_card);
 }
@@ -672,8 +670,8 @@ void AutofillManager::OnLoadedServerPredictions(
 }
 
 void AutofillManager::OnUnmaskResponse(const base::string16& cvc) {
+  unmasking_cvc_ = cvc;
   // TODO(estade): fake verification: assume 123/1234 is the correct cvc.
-  // TODO(estade): hold onto this CVC so we can fill it.
   if (StartsWithASCII(base::UTF16ToASCII(cvc), "123", true)) {
     base::MessageLoop::current()->PostDelayedTask(
         FROM_HERE, base::Bind(&AutofillManager::OnUnmaskVerificationResult,
@@ -701,6 +699,7 @@ void AutofillManager::OnUnmaskVerificationResult(bool success) {
                        unmasking_card_);
   }
   client()->OnUnmaskVerificationResult(success);
+  unmasking_cvc_.clear();
 }
 
 void AutofillManager::OnDidEndTextFieldEditing() {
@@ -962,47 +961,57 @@ void AutofillManager::FillOrPreviewDataModelForm(
 
     const AutofillField* cached_field = form_structure->field(i);
     FieldTypeGroup field_group_type = cached_field->Type().group();
-    if (field_group_type != NO_GROUP) {
-      // If the field being filled is either
-      //   (a) the field that the user initiated the fill from, or
-      //   (b) part of the same logical unit, e.g. name or phone number,
-      // then take the multi-profile "variant" into account.
-      // Otherwise fill with the default (zeroth) variant.
-      size_t use_variant = 0;
-      if (result.fields[i].SameFieldAs(field) ||
-          field_group_type == initiating_group_type) {
-        use_variant = variant;
-      }
-      base::string16 value = data_model->GetInfoForVariant(
-          cached_field->Type(), use_variant, app_locale_);
 
-      // Must match ForEachMatchingFormField() in form_autofill_util.cc.
-      // Only notify autofilling of empty fields and the field that initiated
-      // the filling (note that "select-one" controls may not be empty but will
-      // still be autofilled).
-      bool should_notify =
-          !is_credit_card &&
-          !value.empty() &&
-          (result.fields[i].SameFieldAs(field) ||
-           result.fields[i].form_control_type == "select-one" ||
-           result.fields[i].value.empty());
-      if (AutofillField::FillFormField(*cached_field,
-                                       value,
-                                       profile_language_code,
-                                       app_locale_,
-                                       &result.fields[i])) {
-        // Mark the cached field as autofilled, so that we can detect when a
-        // user edits an autofilled field (for metrics).
-        form_structure->field(i)->is_autofilled = true;
+    if (field_group_type == NO_GROUP)
+      continue;
 
-        // Mark the field as autofilled when a non-empty value is assigned to
-        // it. This allows the renderer to distinguish autofilled fields from
-        // fields with non-empty values, such as select-one fields.
-        result.fields[i].is_autofilled = true;
+    // If the field being filled is either
+    //   (a) the field that the user initiated the fill from, or
+    //   (b) part of the same logical unit, e.g. name or phone number,
+    // then take the multi-profile "variant" into account.
+    // Otherwise fill with the default (zeroth) variant.
+    size_t use_variant = 0;
+    if (result.fields[i].SameFieldAs(field) ||
+        field_group_type == initiating_group_type) {
+      use_variant = variant;
+    }
+    base::string16 value = data_model->GetInfoForVariant(
+        cached_field->Type(), use_variant, app_locale_);
+    if (is_credit_card &&
+        cached_field->Type().GetStorableType() ==
+            CREDIT_CARD_VERIFICATION_CODE) {
+      // If this is |unmasking_card_|, |unmasking_cvc_| should be non-empty
+      // and vice versa.
+      DCHECK_EQ(&unmasking_card_ == data_model, !unmasking_cvc_.empty());
+      value = unmasking_cvc_;
+    }
 
-        if (should_notify)
-          client_->DidFillOrPreviewField(value, profile_full_name);
-      }
+    // Must match ForEachMatchingFormField() in form_autofill_util.cc.
+    // Only notify autofilling of empty fields and the field that initiated
+    // the filling (note that "select-one" controls may not be empty but will
+    // still be autofilled).
+    bool should_notify =
+        !is_credit_card &&
+        !value.empty() &&
+        (result.fields[i].SameFieldAs(field) ||
+         result.fields[i].form_control_type == "select-one" ||
+         result.fields[i].value.empty());
+    if (AutofillField::FillFormField(*cached_field,
+                                     value,
+                                     profile_language_code,
+                                     app_locale_,
+                                     &result.fields[i])) {
+      // Mark the cached field as autofilled, so that we can detect when a
+      // user edits an autofilled field (for metrics).
+      form_structure->field(i)->is_autofilled = true;
+
+      // Mark the field as autofilled when a non-empty value is assigned to
+      // it. This allows the renderer to distinguish autofilled fields from
+      // fields with non-empty values, such as select-one fields.
+      result.fields[i].is_autofilled = true;
+
+      if (should_notify)
+        client_->DidFillOrPreviewField(value, profile_full_name);
     }
   }
 
