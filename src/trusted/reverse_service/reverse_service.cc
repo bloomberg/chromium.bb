@@ -50,18 +50,6 @@ void StartupInitializationComplete(NaClReverseInterface* self) {
   }
 }
 
-int OpenManifestEntry(NaClReverseInterface* self,
-                      char const* url_key,
-                      struct NaClFileInfo* info) {
-  ReverseInterfaceWrapper* wrapper =
-      reinterpret_cast<ReverseInterfaceWrapper*>(self);
-  if (NULL == wrapper->iface) {
-    NaClLog(1, "OpenManifestEntry, no reverse_interface.\n");
-    return 0;
-  }
-  return wrapper->iface->OpenManifestEntry(nacl::string(url_key), info);
-}
-
 void ReportCrash(NaClReverseInterface* self) {
   ReverseInterfaceWrapper* wrapper =
       reinterpret_cast<ReverseInterfaceWrapper*>(self);
@@ -102,7 +90,6 @@ static NaClReverseInterfaceVtbl const kReverseInterfaceWrapperVtbl = {
     ReverseInterfaceWrapperDtor,
   },
   StartupInitializationComplete,
-  OpenManifestEntry,
   ReportCrash,
   RequestQuotaForWrite,
 };

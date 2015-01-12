@@ -41,16 +41,6 @@ class ReverseInterface : public RefCountBase {
   // surf away, the thread switch may get cancelled, and the
   // implementation will have to reply with a failure indication.
 
-  // The bool functions returns false if the service thread unblocked
-  // because of surf-away, shutdown, or other issues.  The plugin,
-  // when it tells sel_ldr to shut down, will also signal all threads
-  // that are waiting for main thread callbacks to wake up and abandon
-  // their vigil after the callbacks are all cancelled (by abandoning
-  // the WeakRefAnchor or by bombing their CompletionCallbackFactory).
-  // Since shutdown/surfaway is the only admissible error, we use bool
-  // as the return type.
-  virtual bool OpenManifestEntry(nacl::string url_key,
-                                 struct NaClFileInfo* info) = 0;
   virtual void ReportCrash() = 0;
 
   // Quota checking for files that were sent to the untrusted module.

@@ -27,7 +27,6 @@
 #include "native_client/src/trusted/desc/nacl_desc_invalid.h"
 #include "native_client/src/trusted/desc/nacl_desc_io.h"
 
-#include "native_client/src/trusted/reverse_service/manifest_rpc.h"
 #include "native_client/src/trusted/reverse_service/reverse_control_rpc.h"
 
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
@@ -137,85 +136,6 @@ static void NaClReverseServiceModuleInitDoneRpc(
   NaClLog(4, "Leaving ModuleInitDoneRpc\n");
   rpc->result = NACL_SRPC_RESULT_OK;
   (*done_cls->Run)(done_cls);
-}
-
-/*
- * Manifest name service, internal APIs.
- *
- * Manifest file lookups result in read-only file descriptors with a
- * handle.  When the descriptor is closed, the service runtime must
- * inform the plugin of this using the handle, so that the File object
- * reference can be closed (thereby allowing the browser to delete or
- * otherwise garbage collect the file).  Files, being from the
- * manifest, cannot be deleted.  The manifest is also a read-only
- * object, so no new entries can be made to it.
- *
- * Read-only proxies do not require quota support per se, since we do
- * not limit read bandwidth.  Quota support is needed for storage
- * limits, though could also be used to limit write bandwidth (prevent
- * disk output saturation, limit malicious code's ability to cause
- * disk failures, especially with flash disks with limited write
- * cycles).
- */
-
-/*
- * Look up by string name, resulting in a handle (if name is in the
- * preimage), a object proxy handle, and an error code.
- */
-static void NaClReverseServiceManifestLookupRpc(
-    struct NaClSrpcRpc      *rpc,
-    struct NaClSrpcArg      **in_args,
-    struct NaClSrpcArg      **out_args,
-    struct NaClSrpcClosure  *done_cls) {
-  struct NaClReverseService *nrsp =
-    (struct NaClReverseService *) rpc->channel->server_instance_data;
-  char                      *url_key = in_args[0]->arrays.str;
-  int                       flags = in_args[0]->u.ival;
-  struct NaClFileInfo       info;
-  struct NaClHostDesc       *host_desc;
-  struct NaClDescIoDesc     *io_desc = NULL;
-  struct NaClDesc           *nacl_desc = NULL;
-
-  memset(&info, 0, sizeof(info));
-
-  NaClLog(4, "Entered ManifestLookupRpc: 0x%08"NACL_PRIxPTR", %s, %d\n",
-          (uintptr_t) nrsp, url_key, flags);
-
-  NaClLog(4, "ManifestLookupRpc: invoking OpenManifestEntry\n");
-  if (!(*NACL_VTBL(NaClReverseInterface, nrsp->iface)->
-        OpenManifestEntry)(nrsp->iface, url_key, &info)
-      || -1 == info.desc) {
-    NaClLog(1, "ManifestLookupRpc: OpenManifestEntry failed.\n");
-    out_args[0]->u.ival = NACL_ABI_ENOENT; /* failed */
-    out_args[1]->u.hval = (struct NaClDesc *) NaClDescInvalidMake();
-    out_args[2]->u.lval = 0;
-    out_args[3]->u.lval = 0;
-    out_args[4]->u.count = 0;
-    goto done;
-  }
-  NaClLog(4, "ManifestLookupRpc: OpenManifestEntry returned desc %d.\n",
-          info.desc);
-  host_desc = (struct NaClHostDesc *) malloc(sizeof *host_desc);
-  CHECK(host_desc != NULL);
-  CHECK(NaClHostDescPosixTake(host_desc, info.desc, NACL_ABI_O_RDONLY) == 0);
-  io_desc = NaClDescIoDescMake(host_desc);
-  CHECK(io_desc != NULL);
-  nacl_desc = (struct NaClDesc *) io_desc;
-
-  out_args[0]->u.ival = 0;  /* OK */
-  out_args[1]->u.hval = nacl_desc;
-  out_args[2]->u.lval = (int64_t) info.file_token.lo;
-  out_args[3]->u.lval = (int64_t) info.file_token.hi;
-  out_args[4]->u.count = 10;
-  strncpy(out_args[4]->arrays.carr, "123456789", 10);
-  /*
-   * TODO(phosek): the array should be an object reference (issue 3035).
-   */
-
- done:
-  rpc->result = NACL_SRPC_RESULT_OK;
-  (*done_cls->Run)(done_cls);
-  NaClDescSafeUnref((struct NaClDesc *) io_desc);
 }
 
 static void NaClReverseServiceRequestQuotaForWriteRpc(
@@ -355,7 +275,6 @@ void NaClReverseThreadIfExit(struct NaClThreadInterface   *vself,
 struct NaClSrpcHandlerDesc const kNaClReverseServiceHandlers[] = {
   { NACL_REVERSE_CONTROL_ADD_CHANNEL, NaClReverseServiceAddChannelRpc, },
   { NACL_REVERSE_CONTROL_INIT_DONE, NaClReverseServiceModuleInitDoneRpc, },
-  { NACL_MANIFEST_LOOKUP, NaClReverseServiceManifestLookupRpc, },
   { NACL_REVERSE_REQUEST_QUOTA_FOR_WRITE, NaClReverseServiceRequestQuotaForWriteRpc, },
   { (char const *) NULL, (NaClSrpcMethod) NULL, },
 };
@@ -501,17 +420,6 @@ void NaClReverseInterfaceStartupInitializationComplete(
           (uintptr_t) self);
 }
 
-int NaClReverseInterfaceOpenManifestEntry(
-    struct NaClReverseInterface   *self,
-    char const                    *url_key,
-    struct NaClFileInfo           *info) {
-  NaClLog(3,
-          ("NaClReverseInterfaceOpenManifestEntry(0x%08"NACL_PRIxPTR", %s"
-           ", 0x%08"NACL_PRIxPTR")\n"),
-          (uintptr_t) self, url_key, (uintptr_t) info);
-  return 0;
-}
-
 void NaClReverseInterfaceReportCrash(
     struct NaClReverseInterface *self) {
   NaClLog(3,
@@ -536,7 +444,6 @@ struct NaClReverseInterfaceVtbl const kNaClReverseInterfaceVtbl = {
     NaClReverseInterfaceDtor,
   },
   NaClReverseInterfaceStartupInitializationComplete,
-  NaClReverseInterfaceOpenManifestEntry,
   NaClReverseInterfaceReportCrash,
   NaClReverseInterfaceRequestQuotaForWrite,
 };

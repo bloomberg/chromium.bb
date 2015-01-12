@@ -105,16 +105,6 @@ struct NaClReverseInterfaceVtbl {
    */
 
   /*
-   * Opens manifest entry specified by |url_key|. Returns 1 if
-   * successful and stores the file descriptor in |out_desc|, otherwise
-   * returns 0.
-   */
-  int                           (*OpenManifestEntry)(
-      struct NaClReverseInterface   *self,
-      char const                    *url_key,
-      struct NaClFileInfo           *info);
-
-  /*
    * Reports the client crash.
    */
   void                          (*ReportCrash)(
@@ -142,11 +132,6 @@ void NaClReverseInterfaceDtor(struct NaClRefCount *vself);
 
 void NaClReverseInterfaceStartupInitializationComplete(
     struct NaClReverseInterface   *self);
-
-int NaClReverseInterfaceOpenManifestEntry(
-    struct NaClReverseInterface   *self,
-    char const                    *url_key,
-    struct NaClFileInfo           *info);
 
 void NaClReverseInterfaceReportCrash(
     struct NaClReverseInterface   *self);

@@ -306,10 +306,6 @@ int raii_main(int argc, char* argv[]) {
   loop.AddHandler("pnacl_emu_initialize", HandlerPnaclEmuInitialize);
   loop.AddHandler("pnacl_emu_add_varname_mapping",
                   HandlerPnaclEmuAddVarnameMapping);
-  loop.AddHandler("reverse_service_add_manifest_mapping",
-                  HandlerReverseEmuAddManifestMapping);
-  loop.AddHandler("reverse_service_dump_manifest_mappings",
-                  HandlerReverseEmuDumpManifestMappings);
   loop.AddHandler("stream_file", HandlerPnaclFileStream);
   loop.AddHandler("wait_for_exit", HandlerWaitForExit);
 

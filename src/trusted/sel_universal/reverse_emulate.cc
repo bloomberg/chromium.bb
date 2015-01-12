@@ -43,9 +43,6 @@ class ReverseEmulate : public nacl::ReverseInterface {
   // Startup handshake
   virtual void StartupInitializationComplete();
 
-  // Name service use.
-  virtual bool OpenManifestEntry(nacl::string url_key,
-                                 struct NaClFileInfo* info);
   virtual void ReportCrash();
 
   // Request quota for a write to a file.
@@ -68,10 +65,6 @@ class ReverseEmulate : public nacl::ReverseInterface {
 };
 
 namespace {
-
-typedef std::map<nacl::string, string> KeyToFileMap;
-
-KeyToFileMap g_key_to_file;
 
 nacl::scoped_ptr_refcount<nacl::ReverseService> g_reverse_service;
 
@@ -147,36 +140,6 @@ void ReverseEmulateFini() {
   NaClCondVarDtor(&g_exit_cv);
 }
 
-bool HandlerReverseEmuAddManifestMapping(NaClCommandLoop* ncl,
-                                         const std::vector<string>& args) {
-  UNREFERENCED_PARAMETER(ncl);
-  if (args.size() < 3) {
-    NaClLog(LOG_ERROR, "not enough args\n");
-    return false;
-  }
-  NaClLog(1, "HandlerReverseEmulateAddManifestMapping(%s) -> %s\n",
-          args[1].c_str(), args[2].c_str());
-  // Set the mapping for the key.
-  g_key_to_file[args[1]] = args[2];
-  return true;
-}
-
-bool HandlerReverseEmuDumpManifestMappings(NaClCommandLoop* ncl,
-                                           const std::vector<string>& args) {
-  UNREFERENCED_PARAMETER(ncl);
-  if (args.size() != 1) {
-    NaClLog(LOG_ERROR, "unexpected args\n");
-    return false;
-  }
-  printf("ReverseEmulate manifest mappings:\n");
-  for (KeyToFileMap::iterator i = g_key_to_file.begin();
-       i != g_key_to_file.end();
-       ++i) {
-    printf("'%s': '%s'\n", i->first.c_str(), i->second.c_str());
-  }
-  return true;
-}
-
 bool HandlerWaitForExit(NaClCommandLoop* ncl,
                         const std::vector<string>& args) {
   UNREFERENCED_PARAMETER(ncl);
@@ -206,26 +169,6 @@ ReverseEmulate::~ReverseEmulate() {
 
 void ReverseEmulate::StartupInitializationComplete() {
   NaClLog(1, "ReverseEmulate::StartupInitializationComplete ()\n");
-}
-
-bool ReverseEmulate::OpenManifestEntry(nacl::string url_key,
-                                       struct NaClFileInfo* info) {
-  NaClLog(1, "ReverseEmulate::OpenManifestEntry (url_key=%s)\n",
-          url_key.c_str());
-  memset(info, 0, sizeof(*info));
-  info->desc = -1;
-  // Find the pathname for the key.
-  if (g_key_to_file.find(url_key) == g_key_to_file.end()) {
-    NaClLog(1, "ReverseEmulate::OpenManifestEntry: no pathname for key.\n");
-    return false;
-  }
-  nacl::string pathname = g_key_to_file[url_key];
-  NaClLog(1, "ReverseEmulate::OpenManifestEntry: pathname is %s.\n",
-          pathname.c_str());
-  // TODO(ncbray): provide more information so that fast validation caching and
-  // mmaping can be enabled.
-  info->desc = OPEN(pathname.c_str(), O_RDONLY);
-  return info->desc >= 0;
 }
 
 void ReverseEmulate::ReportCrash() {
