@@ -269,10 +269,10 @@ const char* FullscreenControllerStateTest::GetEventString(Event event) {
 
 // static
 bool FullscreenControllerStateTest::IsWindowFullscreenStateChangedReentrant() {
-#if defined(TOOLKIT_VIEWS)
-  return true;
-#else
+#if defined(OS_MACOSX)
   return false;
+#else
+  return true;
 #endif
 }
 
