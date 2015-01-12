@@ -113,4 +113,15 @@
     <!-- Tooltip x margin for text bubble -->
     <dimen name="bubble_tip_margin">8dp</dimen>
 
+    <!-- Compositor Tab Title Dimensions -->
+    <dimen name="compositor_tab_title_bar_shadow_x_offset">0.6667dp</dimen>            <!-- 1px hdpi -->
+    <dimen name="compositor_tab_title_bar_shadow_y_offset">0.6667dp</dimen>            <!-- 1px hdpi -->
+    <dimen name="compositor_tab_title_bar_shadow_x_offset_incognito">-0.6667dp</dimen> <!-- -1px hdpi -->
+    <dimen name="compositor_tab_title_bar_shadow_y_offset_incognito">-0.6667dp</dimen> <!-- -1px hdpi -->
+    <!-- The size of the text for tab titles. -->
+    <dimen name="compositor_tab_title_text_size">13dp</dimen>
+    <!-- The size of the bounding box for favicons. -->
+    <dimen name="compositor_tab_title_favicon_size">16dp</dimen>
+    <!-- Slop value for allowing slight misses on the compositor button. -->
+    <dimen name="compositor_button_slop">10dp</dimen>
 </resources>

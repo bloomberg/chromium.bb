@@ -69,4 +69,10 @@
     <color name="pref_button_pressed_color">#038ecd</color>
     <color name="pref_button_disabled_color">#83d7fd</color>
 
+    <!-- Compositor Tab Title Colors -->
+    <color name="compositor_tab_title_bar_text">#555555</color>
+    <color name="compositor_tab_title_bar_text_incognito">#FFFFFFFF</color>
+    <color name="compositor_tab_title_bar_shadow">#AAFFFFFF</color>
+    <color name="compositor_tab_title_bar_shadow_incognito">#88000000</color>
+
 </resources>

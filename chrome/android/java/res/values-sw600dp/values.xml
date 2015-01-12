@@ -29,4 +29,7 @@
     <integer name="default_write_queue_size">3</integer>
     <!-- The maximum size of the compression queue in the thumbnail cache. -->
     <integer name="default_compression_queue_size">3</integer>
+
+    <!-- Compositor Tab Title Text -->
+    <bool name="compositor_tab_title_fake_bold_text">false</bool>
 </resources>
