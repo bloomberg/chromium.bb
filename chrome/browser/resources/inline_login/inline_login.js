@@ -31,7 +31,7 @@ cr.define('inline.login', function() {
 
   function onNewWindow(e) {
     window.open(e.detail.targetUrl, '_blank');
-    e.window.discard();
+    e.detail.window.discard();
   }
 
   function onAuthCompleted(e) {
