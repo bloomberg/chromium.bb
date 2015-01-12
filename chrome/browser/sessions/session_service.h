@@ -221,6 +221,7 @@ class SessionService : public BaseSessionServiceDelegateImpl,
   FRIEND_TEST_ALL_PREFIXES(SessionServiceTest, SavedSessionNotification);
   FRIEND_TEST_ALL_PREFIXES(SessionServiceTest, RestoreActivation1);
   FRIEND_TEST_ALL_PREFIXES(SessionServiceTest, RestoreActivation2);
+  FRIEND_TEST_ALL_PREFIXES(SessionServiceTest, RemoveUnusedRestoreWindowsTest);
   FRIEND_TEST_ALL_PREFIXES(NoStartupWindowTest, DontInitSessionServiceForApps);
 
   typedef std::map<SessionID::id_type, std::pair<int, int> > IdToRange;

@@ -545,7 +545,7 @@ void SessionService::RemoveUnusedRestoreWindows(
                                    window->app_name.empty() ? TYPE_NORMAL :
                                                               TYPE_APP)) {
       delete window;
-      window_list->erase(i++);
+      i = window_list->erase(i);
     } else {
       ++i;
     }

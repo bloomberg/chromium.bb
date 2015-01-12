@@ -528,6 +528,18 @@ TEST_F(SessionServiceTest, IgnorePopups) {
   helper_.AssertNavigationEquals(nav1, tab->navigations[0]);
 }
 
+TEST_F(SessionServiceTest, RemoveUnusedRestoreWindowsTest) {
+  ScopedVector<sessions::SessionWindow> windows_list;
+  windows_list.push_back(new sessions::SessionWindow());
+  windows_list.back()->type = sessions::SessionWindow::TYPE_TABBED;
+  windows_list.push_back(new sessions::SessionWindow());
+  windows_list.back()->type = sessions::SessionWindow::TYPE_POPUP;
+
+  service()->RemoveUnusedRestoreWindows(&(windows_list.get()));
+  ASSERT_EQ(1U, windows_list.size());
+  EXPECT_EQ(sessions::SessionWindow::TYPE_TABBED, windows_list[0]->type);
+}
+
 #if defined (OS_CHROMEOS)
 // Makes sure we track apps. Only applicable on chromeos.
 TEST_F(SessionServiceTest, RestoreApp) {
