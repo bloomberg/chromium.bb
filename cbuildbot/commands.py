@@ -18,7 +18,6 @@ import re
 import shutil
 import tempfile
 
-from chromite.cbuildbot import cbuildbot_config
 from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import constants
 from chromite.cros.tests import cros_vm_test
@@ -116,11 +115,6 @@ def RunBuildScript(buildroot, cmd, chromite_cmd=False, **kwargs):
 
       # Looks like a generic failure. Raise a BuildScriptFailure.
       raise failures_lib.BuildScriptFailure(ex, cmd[0])
-
-
-def GetInput(prompt):
-  """Helper function to grab input from a user.   Makes testing easier."""
-  return raw_input(prompt)
 
 
 def ValidateClobber(buildroot):
@@ -952,45 +946,6 @@ def AbortHWTests(config_type_or_name, version, debug, suite=''):
       cros_build_lib.RunCommand(cmd)
     except cros_build_lib.RunCommandError:
       cros_build_lib.Warning('AbortHWTests failed', exc_info=True)
-
-
-def _GetAbortCQHWTestsURL(version, suite):
-  """Get the URL where we should save state about the specified abort command.
-
-  Args:
-    version: The version of the current build. E.g. R18-1655.0.0-rc1
-    suite: The suite argument that AbortCQHWTests was called with, if any.
-  """
-  url = '%s/hwtests-aborted/%s/suite=%s'
-  return url % (constants.MANIFEST_VERSIONS_GS_URL, version, suite)
-
-
-def AbortCQHWTests(version, debug, suite=''):
-  """Abort the specified hardware tests on the commit queue.
-
-  Args:
-    version: The version of the current build. E.g. R18-1655.0.0-rc1
-    debug: Whether we are in debug mode.
-    suite: Name of the Autotest suite. If empty, abort all suites.
-  """
-  # Mark the substr/suite as aborted in Google Storage.
-  ctx = gs.GSContext(dry_run=debug)
-  ctx.Copy('-', _GetAbortCQHWTestsURL(version, suite), input='')
-  # Abort all jobs for the given version, containing the 'paladin' suffix.
-  AbortHWTests(cbuildbot_config.CONFIG_TYPE_PALADIN, version, debug, suite)
-
-
-def HaveCQHWTestsBeenAborted(version, suite=''):
-  """Check in Google Storage whether the specified abort call was sent.
-
-  This function will return True if the following call has occurred:
-    AbortCQHWTests(version, debug=False, suite=suite)
-
-  Args:
-    version: The version of the current build. E.g. R18-1655.0.0-rc1
-    suite: The suite argument that AbortCQHWTests was called with, if any.
-  """
-  return gs.GSContext().Exists(_GetAbortCQHWTestsURL(version, suite))
 
 
 def GenerateStackTraces(buildroot, board, test_results_dir,

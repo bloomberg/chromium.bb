@@ -301,11 +301,6 @@ class RepoRepository(object):
            self._referenced_repo]
     git.RunGit('.', cmd)
 
-  def Detach(self):
-    """Detach projects back to manifest versions.  Effectively a 'reset'."""
-    cros_build_lib.RunCommand(['repo', '--time', 'sync', '-d'],
-                              cwd=self.directory)
-
   def Sync(self, local_manifest=None, jobs=None, all_branches=True,
            network_only=False):
     """Sync/update the source.  Changes manifest if specified.

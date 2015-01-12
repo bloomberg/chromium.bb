@@ -31,10 +31,6 @@ class QueryNotSpecific(GerritException):
   """Thrown when a query needs to identify one CL, but matched multiple."""
 
 
-class FailedToReachGerrit(GerritException):
-  """Exception thrown if we failed to contact the Gerrit server."""
-
-
 class GerritHelper(object):
   """Helper class to manage interaction with the gerrit-on-borg service."""
 

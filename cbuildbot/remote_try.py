@@ -243,11 +243,6 @@ class RemoteTryJob(object):
     else:
       self._Submit(workdir, testjob, dryrun)
 
-  def GetTrybotConsoleLink(self):
-    """Get link to the console for the user."""
-    return ('%s/console?name=%s' % (constants.TRYBOT_DASHBOARD,
-                                    self.user_email))
-
   def GetTrybotWaterfallLink(self):
     """Get link to the waterfall for the user."""
     # Note that this will only show the jobs submitted by the user in the last

@@ -496,15 +496,6 @@ class CanaryCompletionStage(MasterSlaveSyncCompletionStage):
 class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
   """Commits or reports errors to CL's that failed to be validated."""
 
-  def _AbortCQHWTests(self):
-    """Abort any HWTests started by the CQ."""
-    if (cbuildbot_config.IsCQType(self._run.config.build_type) and
-        not self._run.config.do_not_apply_cq_patches and
-        self._run.manifest_branch == 'master'):
-      version = self._run.GetVersion()
-      if not commands.HaveCQHWTestsBeenAborted(version):
-        commands.AbortCQHWTests(version, self._run.options.debug)
-
   def HandleSuccess(self):
     if self._run.config.master:
       self.sync_stage.pool.SubmitPool()

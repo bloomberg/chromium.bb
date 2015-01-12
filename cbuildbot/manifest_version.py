@@ -306,8 +306,6 @@ class VersionInfo(object):
 
 class BuilderStatus(object):
   """Object representing the status of a build."""
-  MISSING_MESSAGE = ('Unknown run, it probably never started:'
-                     ' %(builder)s, version %(version)s')
 
   def __init__(self, status, message, dashboard_url=None):
     """Constructor for BuilderStatus.

@@ -76,14 +76,6 @@ class SpreadsheetError(GatherStatsError):
   """Raised when there is a problem with the stats spreadsheet."""
 
 
-class BadData(DataError):
-  """Raised when a json file is still running."""
-
-
-class NoDataError(DataError):
-  """Returned if a manifest file does not exist."""
-
-
 def _SendToCarbon(builds, token_funcs):
   """Send data for |builds| to Carbon/Graphite according to |token_funcs|.
 

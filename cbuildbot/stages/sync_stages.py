@@ -892,24 +892,6 @@ class PreCQSyncStage(SyncStage):
 class PreCQLauncherStage(SyncStage):
   """Scans for CLs and automatically launches Pre-CQ jobs to test them."""
 
-  # The CL is currently being tested by a Pre-CQ trybot.
-  STATUS_INFLIGHT = constants.CL_STATUS_INFLIGHT
-
-  # The CL has passed the Pre-CQ.
-  STATUS_PASSED = constants.CL_STATUS_PASSED
-
-  # The CL has failed the Pre-CQ.
-  STATUS_FAILED = constants.CL_STATUS_FAILED
-
-  # We have requested a Pre-CQ trybot but it has not started yet.
-  STATUS_LAUNCHING = constants.CL_STATUS_LAUNCHING
-
-  # The CL is ready to be retried.
-  STATUS_WAITING = constants.CL_STATUS_WAITING
-
-  # The CL has passed the Pre-CQ and is ready to be submitted.
-  STATUS_READY_TO_SUBMIT = constants.CL_STATUS_READY_TO_SUBMIT
-
   # The number of minutes we wait before launching Pre-CQ jobs. This measures
   # the idle time of a given patch series, so, for example, if a user takes
   # 20 minutes to mark a series of 20 patches as ready, we won't launch a
@@ -1158,8 +1140,7 @@ class PreCQLauncherStage(SyncStage):
       if self._HasTimedOut(timestamp, current_time, timeout):
         pool.SendNotification(change, '%(details)s', details=msg)
         pool.RemoveReady(change, reason=config)
-        pool.UpdateCLPreCQStatus(change, self.STATUS_FAILED)
-
+        pool.UpdateCLPreCQStatus(change, constants.CL_STATUS_FAILED)
 
   def _ProcessVerified(self, change, can_submit, will_submit):
     """Process a change that is fully pre-cq verified.
@@ -1290,7 +1271,7 @@ class PreCQLauncherStage(SyncStage):
     # ready or commit ready, before launching.
     launchable_progress_map = {
         k: v for k, v in progress_map.iteritems()
-        if k.HasReadyFlag() or status_map[k] != self.STATUS_FAILED}
+        if k.HasReadyFlag() or status_map[k] != constants.CL_STATUS_FAILED}
 
     for plan, config in self.GetDisjointTransactionsToTest(
         pool, launchable_progress_map):

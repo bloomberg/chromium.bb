@@ -6,7 +6,6 @@
 
 from __future__ import print_function
 
-import contextlib
 import errno
 import os
 import signal
@@ -432,17 +431,6 @@ class Cgroup(object):
       return True
     return False
 
-  def RemoveGroup(self, name, strict=False):
-    """Removes a nested cgroup of ours
-
-    Args:
-      name: the namespace to remove.
-      strict: if False, remove it if possible.  If True, its an error if it
-              cannot be removed.
-    """
-    return self._RemoveGroupOnDisk(self._LimitName(name, for_path=True),
-                                   strict)
-
   @classmethod
   def _RemoveGroupOnDisk(cls, path, strict, sudo_strict=True):
     """Perform the actual group removal.
@@ -539,23 +527,6 @@ class Cgroup(object):
       # Suppress any sudo_strict behaviour, since we may be invoked
       # during interpreter shutdown.
       self._RemoveGroupOnDisk(self.path, False, sudo_strict=False)
-
-  def TemporarilySwitchToNewGroup(self, namespace, **kwargs):
-    """Context manager to create a new cgroup & temporarily switch into it."""
-    node = self.AddGroup(namespace, **kwargs)
-    return self.TemporarilySwitchToGroup(node)
-
-  @contextlib.contextmanager
-  def TemporarilySwitchToGroup(self, group):
-    """Temporarily move this process into the given group, moving back after.
-
-    Used in a context manager fashion (aka, the with statement).
-    """
-    group.TransferCurrentProcess()
-    try:
-      yield
-    finally:
-      self.TransferCurrentProcess()
 
   def KillProcesses(self, poll_interval=0.05, remove=False, sigterm_timeout=10):
     """Kill all processes in this namespace."""

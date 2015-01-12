@@ -20,7 +20,6 @@ from chromite.cbuildbot import failures_lib
 from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
-from chromite.lib import gs
 from chromite.lib import git
 from chromite.lib import gob_util
 from chromite.lib import osutils
@@ -456,18 +455,6 @@ f6b0b80d5f2d9a2fb41ebb6e2cee7ad8 *./updater4.sh
     """Verifies that HWTests are aborted for a specific non-CQ config."""
     commands.AbortHWTests('my_config', 'my_version', debug=False)
     self.assertCommandContains(['-i', 'my_config/my_version'])
-
-  def testAbortCQHWTests(self):
-    commands.AbortCQHWTests('my-version', debug=False)
-    self.assertCommandContains(['cp'])
-    self.assertCommandContains(['-i', 'paladin/my-version'])
-
-  def testHWTestsAborted(self, aborted=True):
-    self.PatchObject(gs.GSContext, 'Exists', return_value=aborted)
-    self.assertEqual(commands.HaveCQHWTestsBeenAborted('my-version'), aborted)
-
-  def testHWTestsNotAborted(self):
-    self.testHWTestsAborted(aborted=False)
 
 
 class BuildTarballTests(cros_build_lib_unittest.RunCommandTempDirTestCase):

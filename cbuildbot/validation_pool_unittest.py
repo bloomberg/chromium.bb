@@ -114,7 +114,6 @@ class MoxBase(patch_unittest.MockPatchBase, cros_test_lib.MoxTestCase):
   def setUp(self):
     self.build_root = 'fakebuildroot'
     self.manager = parallel.Manager()
-    self.mox.StubOutWithMock(validation_pool, '_RunCommand')
     self.PatchObject(gob_util, 'CreateHttpConn',
                      side_effect=AssertionError('Test should not contact GoB'))
     self.PatchObject(tree_status, 'IsTreeOpen', return_value=True)

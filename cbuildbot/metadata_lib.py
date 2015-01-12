@@ -648,15 +648,6 @@ class BuildData(object):
 
     return ' | '.join(message_list)
 
-  def GetChangelistsStr(self):
-    cl_strs = []
-    for cl_dict in self.metadata_dict['changes']:
-      cl_strs.append('%s%s:%s' %
-                     ('*' if cl_dict['internal'] == 'true' else '',
-                      cl_dict['gerrit_number'], cl_dict['patch_number']))
-
-    return ' '.join(cl_strs)
-
   def GetFailedStages(self, with_urls=False):
     """Get names of all failed stages, optionally with URLs for each.
 

@@ -704,11 +704,6 @@ class ArchivingStageMixin(object):
     return self.archive.upload_url
 
   @property
-  def base_upload_url(self):
-    """The GS path one level up from self.upload_url."""
-    return os.path.dirname(self.upload_url)
-
-  @property
   def download_url(self):
     """The URL where artifacts for this run can be downloaded."""
     return self.archive.download_url

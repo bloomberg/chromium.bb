@@ -183,21 +183,6 @@ class PatchSeriesTooLong(cros_patch.PatchException):
     return self.ShortExplanation()
 
 
-def _RunCommand(cmd, dryrun):
-  """Runs the specified shell cmd if dryrun=False.
-
-  Errors are ignored, but logged.
-  """
-  if dryrun:
-    logging.info('Would have run: %s', ' '.join(cmd))
-    return
-
-  try:
-    cros_build_lib.RunCommand(cmd)
-  except cros_build_lib.RunCommandError:
-    cros_build_lib.Error('Command failed', exc_info=True)
-
-
 class GerritHelperNotAvailable(gerrit.GerritException):
   """Exception thrown when a specific helper is requested but unavailable."""
 
@@ -335,8 +320,6 @@ class PatchSeries(object):
     self.deps_filter_fn = deps_filter_fn
     self._is_submitting = is_submitting
 
-    self.applied = []
-    self.failed = []
     self.failed_tot = {}
 
     # A mapping of ChangeId to exceptions if the patch failed against
@@ -2485,32 +2468,6 @@ class ValidationPool(object):
     inputs = [[change, messages, suspects, sanity, infra_fail,
                lab_fail, no_stat] for change in candidates]
     parallel.RunTasksInProcessPool(self._ChangeFailedValidation, inputs)
-
-  def HandleCouldNotApply(self, change):
-    """Handler for when Paladin fails to apply a change.
-
-    This handler strips the Commit Ready bit forcing the developer
-    to re-upload a rebased change as this theirs failed to apply cleanly.
-
-    Args:
-      change: GerritPatch instance to operate upon.
-    """
-    msg = '%(queue)s failed to apply your change in %(build_log)s . '
-    # This is written this way to protect against bugs in CQ itself.  We log
-    # it both to the build output, and mark the change w/ it.
-    extra_msg = getattr(change, 'apply_error_message', None)
-    if extra_msg is None:
-      logging.error(
-          'Change %s was passed to HandleCouldNotApply without an appropriate '
-          'apply_error_message set.  Internal bug.', change)
-      extra_msg = (
-          'Internal CQ issue: extra error info was not given,  Please contact '
-          'the build team and ensure they are aware of this specific change '
-          'failing.')
-
-    msg += extra_msg
-    self.SendNotification(change, msg)
-    self.RemoveReady(change)
 
   def HandleApplySuccess(self, change, build_log=None):
     """Handler for when Paladin successfully applies (picks up) a change.
