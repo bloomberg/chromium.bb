@@ -284,10 +284,10 @@ Background.prototype = {
         !this.active_)
       return;
 
-    if (!this.currentRange_) {
-      if (!evt.target.state.focused)
-        return;
+    if (!evt.target.state.focused)
+      return;
 
+    if (!this.currentRange_) {
       this.onEventDefault(evt);
       this.currentRange_ = cursors.Range.fromNode(evt.target);
     }

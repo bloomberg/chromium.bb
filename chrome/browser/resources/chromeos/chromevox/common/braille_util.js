@@ -8,6 +8,8 @@
 
 
 goog.provide('cvox.BrailleUtil');
+goog.provide('cvox.BrailleUtil.ValueSelectionSpan');
+goog.provide('cvox.BrailleUtil.ValueSpan');
 
 goog.require('cvox.ChromeVox');
 goog.require('cvox.DomUtil');

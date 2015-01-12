@@ -13,6 +13,7 @@ goog.require('cvox.AbstractEarcons');
 goog.require('cvox.AbstractTts');
 goog.require('cvox.BrailleInterface');
 goog.require('cvox.BrailleUtil');
+goog.require('cvox.BrailleUtil.ValueSelectionSpan');
 goog.require('cvox.ChromeVoxEditableTextBase');
 goog.require('cvox.NavBraille');
 goog.require('cvox.QueueMode');

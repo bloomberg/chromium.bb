@@ -13,6 +13,8 @@ goog.require('AutomationUtil.Dir');
 goog.require('cursors.Cursor');
 goog.require('cursors.Range');
 goog.require('cursors.Unit');
+goog.require('cvox.BrailleUtil.ValueSelectionSpan');
+goog.require('cvox.BrailleUtil.ValueSpan');
 goog.require('cvox.Spannable');
 
 goog.scope(function() {
@@ -200,6 +202,18 @@ Output.Action.prototype = {
 };
 
 /**
+ * Annotation for selection.
+ * @param {number} startIndex
+ * @param {number} endIndex
+ * @constructor
+ */
+Output.SelectionSpan = function(startIndex, endIndex) {
+  // TODO(dtseng): Direction lost below; should preserve for braille panning.
+  this.startIndex = startIndex < endIndex ? startIndex : endIndex;
+  this.endIndex = endIndex > startIndex ? endIndex : startIndex;
+};
+
+/**
  * Possible events handled by ChromeVox internally.
  * @enum {string}
  */
@@ -225,10 +239,7 @@ Output.prototype = {
       return;
 
     cvox.ChromeVox.tts.speak(buff.toString(), cvox.QueueMode.FLUSH);
-    var actions = buff.getSpansInstanceOf(
-        /** @type {function()} */(new Output.Action(
-            function() {}).constructor));
-
+    var actions = buff.getSpansInstanceOf(Output.Action);
     if (actions) {
       actions.forEach(function(a) {
         a.run();
@@ -240,8 +251,32 @@ Output.prototype = {
    * Handles output to braille.
    */
   handleBraille: function() {
-    cvox.ChromeVox.braille.write(
-        cvox.NavBraille.fromText(this.brailleBuffer_.toString()));
+    var selSpan =
+        this.brailleBuffer_.getSpanInstanceOf(Output.SelectionSpan);
+    var startIndex = -1, endIndex = -1;
+    if (selSpan) {
+      var valueStart = this.brailleBuffer_.getSpanStart(selSpan);
+      var valueEnd = this.brailleBuffer_.getSpanEnd(selSpan);
+      if (valueStart === undefined || valueEnd === undefined) {
+        valueStart = -1;
+        valueEnd = -1;
+      } else {
+        startIndex = valueStart + selSpan.startIndex;
+        endIndex = valueStart + selSpan.endIndex;
+        this.brailleBuffer_.setSpan(new cvox.BrailleUtil.ValueSpan(valueStart),
+                                    valueStart, valueEnd);
+        this.brailleBuffer_.setSpan(new cvox.BrailleUtil.ValueSelectionSpan(),
+                                    startIndex, endIndex);
+      }
+    }
+
+    var output = new cvox.NavBraille({
+      text: this.brailleBuffer_,
+      startIndex: startIndex,
+      endIndex: endIndex
+    });
+
+    cvox.ChromeVox.braille.write(output);
   },
 
   /**
@@ -333,6 +368,15 @@ Output.prototype = {
         if (token == 'role') {
           // Non-localized role and state obtained by default.
           this.addToSpannable_(buff, node.role, options);
+        } else if (token == 'value') {
+          var text = node.attributes.value;
+          var offset = buff.getLength();
+          if (node.attributes.textSelStart !== undefined) {
+            options.annotation = new Output.SelectionSpan(
+                node.attributes.textSelStart,
+                node.attributes.textSelEnd);
+          }
+          this.addToSpannable_(buff, text, options);
         } else if (token == 'indexInParent') {
           this.addToSpannable_(buff, node.indexInParent + 1);
         } else if (token == 'parentChildCount') {
