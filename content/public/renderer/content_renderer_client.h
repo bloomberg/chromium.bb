@@ -81,9 +81,6 @@ class CONTENT_EXPORT ContentRendererClient {
   // Notifies that a new RenderView has been created.
   virtual void RenderViewCreated(RenderView* render_view) {}
 
-  // Sets a number of views/tabs opened in this process.
-  virtual void SetNumberOfViews(int number_of_views) {}
-
   // Returns the bitmap to show when a plugin crashed, or NULL for none.
   virtual SkBitmap* GetSadPluginBitmap();
 

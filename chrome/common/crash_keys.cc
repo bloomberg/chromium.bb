@@ -72,8 +72,6 @@ const char kVariations[] = "variations";
 const char kExtensionID[] = "extension-%" PRIuS;
 const char kNumExtensionsCount[] = "num-extensions";
 
-const char kNumberOfViews[] = "num-views";
-
 const char kShutdownType[] = "shutdown-type";
 
 #if !defined(OS_ANDROID)
@@ -127,7 +125,6 @@ size_t RegisterChromeCrashKeys() {
     { kNumVariations, kSmallSize },
     { kVariations, kLargeSize },
     { kNumExtensionsCount, kSmallSize },
-    { kNumberOfViews, kSmallSize },
     { kShutdownType, kSmallSize },
 #if !defined(OS_ANDROID)
     { kGPUVendorID, kSmallSize },

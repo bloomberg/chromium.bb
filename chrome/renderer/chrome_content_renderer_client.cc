@@ -528,10 +528,6 @@ void ChromeContentRendererClient::RenderViewCreated(
   new password_manager::CredentialManagerClient(render_view);
 }
 
-void ChromeContentRendererClient::SetNumberOfViews(int number_of_views) {
-  base::debug::SetCrashKeyValue(crash_keys::kNumberOfViews,
-                                base::IntToString(number_of_views));
-}
 
 SkBitmap* ChromeContentRendererClient::GetSadPluginBitmap() {
   return const_cast<SkBitmap*>(ResourceBundle::GetSharedInstance().
