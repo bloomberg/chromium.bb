@@ -9,17 +9,18 @@
 #include "base/values.h"
 #include "chrome/browser/about_flags.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/settings/cros_settings_names.h"
+#include "components/ownership/owner_settings_service.h"
 
 namespace chromeos {
 namespace about_flags {
 
-OwnerFlagsStorage::OwnerFlagsStorage(PrefService *prefs,
-                                     CrosSettings *cros_settings)
+OwnerFlagsStorage::OwnerFlagsStorage(
+    PrefService* prefs,
+    ownership::OwnerSettingsService* owner_settings_service)
     : ::about_flags::PrefServiceFlagsStorage(prefs),
-      cros_settings_(cros_settings) {
+      owner_settings_service_(owner_settings_service) {
   // Make this code more unit test friendly.
   if (g_browser_process->local_state()) {
     const base::ListValue* legacy_experiments =
@@ -61,7 +62,7 @@ bool OwnerFlagsStorage::SetFlags(const std::set<std::string>& flags) {
        it != switches.end(); ++it) {
     experiments_list.Append(new base::StringValue(*it));
   }
-  cros_settings_->Set(kStartUpFlags, experiments_list);
+  owner_settings_service_->Set(kStartUpFlags, experiments_list);
 
   return true;
 }

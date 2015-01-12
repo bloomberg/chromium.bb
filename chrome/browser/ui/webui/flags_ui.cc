@@ -262,9 +262,11 @@ void FinishInitialization(base::WeakPtr<FlagsUI> flags_ui,
   // Note that |dom_handler| is owned by the web ui that owns |flags_ui|, so
   // it is still alive if |flags_ui| is.
   if (current_user_is_owner) {
+    chromeos::OwnerSettingsServiceChromeOS* service =
+        chromeos::OwnerSettingsServiceChromeOSFactory::GetForBrowserContext(
+            profile);
     dom_handler->Init(new chromeos::about_flags::OwnerFlagsStorage(
-                          profile->GetPrefs(),
-                          chromeos::CrosSettings::Get()),
+                          profile->GetPrefs(), service),
                       about_flags::kOwnerAccessToFlags);
   } else {
     dom_handler->Init(

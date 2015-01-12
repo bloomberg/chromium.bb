@@ -8,9 +8,11 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/pref_service_flags_storage.h"
 
-namespace chromeos {
+namespace ownership {
+class OwnerSettingsService;
+}
 
-class CrosSettings;
+namespace chromeos {
 
 namespace about_flags {
 
@@ -19,13 +21,14 @@ namespace about_flags {
 // settings as well which effectively applies them to the login session as well.
 class OwnerFlagsStorage : public ::about_flags::PrefServiceFlagsStorage {
  public:
-  OwnerFlagsStorage(PrefService *prefs, CrosSettings *cros_settings);
+  OwnerFlagsStorage(PrefService* prefs,
+                    ownership::OwnerSettingsService* owner_settings_service);
   virtual ~OwnerFlagsStorage();
 
   virtual bool SetFlags(const std::set<std::string>& flags) override;
 
  private:
-  CrosSettings* cros_settings_;
+  ownership::OwnerSettingsService* owner_settings_service_;
 };
 
 }  // namespace about_flags
