@@ -39,11 +39,10 @@ namespace blink {
 enum AddRuleFlags {
     RuleHasNoSpecialState         = 0,
     RuleHasDocumentSecurityOrigin = 1,
-    RuleCanUseFastCheckSelector   = 1 << 1,
 };
 
 enum PropertyWhitelistType {
-    PropertyWhitelistNone   = 0,
+    PropertyWhitelistNone,
     PropertyWhitelistCue,
     PropertyWhitelistFirstLetter,
 };
