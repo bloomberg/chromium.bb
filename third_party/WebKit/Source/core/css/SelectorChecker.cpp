@@ -474,8 +474,11 @@ static bool anyAttributeMatches(Element& element, CSSSelector::Match match, cons
         if (attributeValueMatches(attributeItem, match, selectorValue, !caseInsensitive))
             return true;
 
-        if (caseInsensitive)
+        if (caseInsensitive) {
+            if (selectorAttr.namespaceURI() != starAtom)
+                return false;
             continue;
+        }
 
         // Legacy dictates that values of some attributes should be compared in
         // a case-insensitive manner regardless of whether the case insensitive
@@ -488,6 +491,8 @@ static bool anyAttributeMatches(Element& element, CSSSelector::Match match, cons
             UseCounter::count(element.document(), UseCounter::CaseInsensitiveAttrSelectorMatch);
             return true;
         }
+        if (selectorAttr.namespaceURI() != starAtom)
+            return false;
     }
 
     return false;
