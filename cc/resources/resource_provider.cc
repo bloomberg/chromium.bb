@@ -1049,6 +1049,13 @@ ResourceProvider::ScopedWriteLockGpuMemoryBuffer::
     GLES2Interface* gl = resource_provider_->ContextGL();
     DCHECK(gl);
 
+#if defined(OS_CHROMEOS)
+    // TODO(reveman): GL_COMMANDS_ISSUED_CHROMIUM is used for synchronization
+    // on ChromeOS to avoid some performance issues. This only works with
+    // shared memory backed buffers. crbug.com/436314
+    DCHECK_EQ(gpu_memory_buffer_->GetHandle().type, gfx::SHARED_MEMORY_BUFFER);
+#endif
+
     resource_->image_id =
         gl->CreateImageCHROMIUM(gpu_memory_buffer_->AsClientBuffer(),
                                 size_.width(),
@@ -2070,8 +2077,16 @@ void ResourceProvider::CopyResource(ResourceId source_id, ResourceId dest_id) {
   if (use_sync_query_) {
     if (!source_resource->gl_read_lock_query_id)
       gl->GenQueriesEXT(1, &source_resource->gl_read_lock_query_id);
+#if defined(OS_CHROMEOS)
+    // TODO(reveman): This avoids a performance problem on some ChromeOS
+    // devices. This needs to be removed to support native GpuMemoryBuffer
+    // implementations. crbug.com/436314
+    gl->BeginQueryEXT(GL_COMMANDS_ISSUED_CHROMIUM,
+                      source_resource->gl_read_lock_query_id);
+#else
     gl->BeginQueryEXT(GL_COMMANDS_COMPLETED_CHROMIUM,
                       source_resource->gl_read_lock_query_id);
+#endif
   }
   DCHECK(!dest_resource->image_id);
   dest_resource->allocated = true;
@@ -2084,7 +2099,11 @@ void ResourceProvider::CopyResource(ResourceId source_id, ResourceId dest_id) {
   if (source_resource->gl_read_lock_query_id) {
     // End query and create a read lock fence that will prevent access to
     // source resource until CopyTextureCHROMIUM command has completed.
+#if defined(OS_CHROMEOS)
+    gl->EndQueryEXT(GL_COMMANDS_ISSUED_CHROMIUM);
+#else
     gl->EndQueryEXT(GL_COMMANDS_COMPLETED_CHROMIUM);
+#endif
     source_resource->read_lock_fence = make_scoped_refptr(
         new CopyTextureFence(gl, source_resource->gl_read_lock_query_id));
   } else {
