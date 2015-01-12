@@ -29,12 +29,13 @@
 
 namespace device {
 
-class HidConnectionLinux::Helper : public base::MessagePumpLibevent::Watcher {
+class HidConnectionLinux::FileThreadHelper
+    : public base::MessagePumpLibevent::Watcher {
  public:
-  Helper(base::PlatformFile platform_file,
-         scoped_refptr<HidDeviceInfo> device_info,
-         base::WeakPtr<HidConnectionLinux> connection,
-         scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+  FileThreadHelper(base::PlatformFile platform_file,
+                   scoped_refptr<HidDeviceInfo> device_info,
+                   base::WeakPtr<HidConnectionLinux> connection,
+                   scoped_refptr<base::SingleThreadTaskRunner> task_runner)
       : platform_file_(platform_file),
         connection_(connection),
         task_runner_(task_runner) {
@@ -43,7 +44,9 @@ class HidConnectionLinux::Helper : public base::MessagePumpLibevent::Watcher {
     has_report_id_ = device_info->has_report_id();
   }
 
-  ~Helper() override { DCHECK(thread_checker_.CalledOnValidThread()); }
+  ~FileThreadHelper() override {
+    DCHECK(thread_checker_.CalledOnValidThread());
+  }
 
   // Starts the FileDescriptorWatcher that reads input events from the device.
   // Must be called on a thread that has a base::MessageLoopForIO. The helper
@@ -122,10 +125,10 @@ HidConnectionLinux::HidConnectionLinux(
 
   // The helper is passed a weak pointer to this connection so that it can be
   // cleaned up after the connection is closed.
-  helper_ = new Helper(device_file_.GetPlatformFile(), device_info,
-                       weak_factory_.GetWeakPtr(), task_runner_);
-  file_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&Helper::Start, base::Unretained(helper_)));
+  helper_ = new FileThreadHelper(device_file_.GetPlatformFile(), device_info,
+                                 weak_factory_.GetWeakPtr(), task_runner_);
+  file_task_runner_->PostTask(FROM_HERE, base::Bind(&FileThreadHelper::Start,
+                                                    base::Unretained(helper_)));
 }
 
 HidConnectionLinux::~HidConnectionLinux() {

@@ -24,8 +24,7 @@ class HidServiceLinux : public HidService {
 
  private:
   struct ConnectParams;
-  class Helper;
-  friend class Helper;
+  class FileThreadHelper;
 
   ~HidServiceLinux() override;
 
@@ -50,7 +49,7 @@ class HidServiceLinux : public HidService {
 
   // The helper lives on the FILE thread and holds a weak reference back to the
   // service that owns it.
-  scoped_ptr<Helper> helper_;
+  scoped_ptr<FileThreadHelper> helper_;
   base::WeakPtrFactory<HidServiceLinux> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(HidServiceLinux);

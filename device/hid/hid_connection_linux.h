@@ -25,9 +25,8 @@ class HidConnectionLinux : public HidConnection {
       scoped_refptr<base::SingleThreadTaskRunner> file_thread_runner);
 
  private:
-  class Helper;
-  friend class Helper;
   friend class base::RefCountedThreadSafe<HidConnectionLinux>;
+  class FileThreadHelper;
 
   typedef base::Callback<void(ssize_t)> InternalWriteCallback;
   typedef base::Callback<void(int)> IoctlCallback;
@@ -78,7 +77,7 @@ class HidConnectionLinux : public HidConnection {
   void ProcessReadQueue();
 
   base::File device_file_;
-  Helper* helper_;
+  FileThreadHelper* helper_;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;

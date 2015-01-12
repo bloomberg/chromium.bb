@@ -60,22 +60,25 @@ struct HidServiceLinux::ConnectParams {
   base::File device_file;
 };
 
-class HidServiceLinux::Helper : public DeviceMonitorLinux::Observer,
-                                public base::MessageLoop::DestructionObserver {
+class HidServiceLinux::FileThreadHelper
+    : public DeviceMonitorLinux::Observer,
+      public base::MessageLoop::DestructionObserver {
  public:
-  Helper(base::WeakPtr<HidServiceLinux> service,
-         scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+  FileThreadHelper(base::WeakPtr<HidServiceLinux> service,
+                   scoped_refptr<base::SingleThreadTaskRunner> task_runner)
       : observer_(this), service_(service), task_runner_(task_runner) {
     DeviceMonitorLinux* monitor = DeviceMonitorLinux::GetInstance();
     observer_.Add(monitor);
     monitor->Enumerate(
-        base::Bind(&Helper::OnDeviceAdded, base::Unretained(this)));
+        base::Bind(&FileThreadHelper::OnDeviceAdded, base::Unretained(this)));
     task_runner->PostTask(
         FROM_HERE,
         base::Bind(&HidServiceLinux::FirstEnumerationComplete, service_));
   }
 
-  ~Helper() override { DCHECK(thread_checker_.CalledOnValidThread()); }
+  ~FileThreadHelper() override {
+    DCHECK(thread_checker_.CalledOnValidThread());
+  }
 
  private:
   // DeviceMonitorLinux::Observer:
@@ -202,7 +205,7 @@ void HidServiceLinux::StartHelper(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   // Helper is a message loop destruction observer and will delete itself when
   // this thread's message loop is destroyed.
-  new Helper(weak_ptr, task_runner);
+  new FileThreadHelper(weak_ptr, task_runner);
 }
 
 void HidServiceLinux::Connect(const HidDeviceId& device_id,
