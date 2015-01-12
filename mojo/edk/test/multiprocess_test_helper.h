@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/process/process_handle.h"
+#include "base/process/process.h"
 #include "base/test/multiprocess_test.h"
 #include "base/test/test_timeouts.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
@@ -58,7 +58,7 @@ class MultiprocessTestHelper {
   scoped_ptr<embedder::PlatformChannelPair> platform_channel_pair_;
 
   // Valid after |StartChild()| and before |WaitForChildShutdown()|.
-  base::ProcessHandle test_child_handle_;
+  base::Process test_child_;
 
   DISALLOW_COPY_AND_ASSIGN(MultiprocessTestHelper);
 };

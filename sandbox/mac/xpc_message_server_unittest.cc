@@ -149,21 +149,19 @@ XPC_TEST_F(GetSenderPID)  // {
 #pragma GCC diagnostic pop
   ASSERT_EQ(KERN_SUCCESS, kr);
 
-  base::ProcessHandle child_handle = base::SpawnMultiProcessTestChild(
+  base::Process child = base::SpawnMultiProcessTestChild(
       "GetSenderPID",
       base::GetMultiProcessTestChildBaseCommandLine(),
       base::LaunchOptions());
-  ASSERT_NE(base::kNullProcessHandle, child_handle);
+  ASSERT_TRUE(child.IsValid());
 
   int exit_code = -1;
-  ASSERT_TRUE(base::WaitForExitCode(child_handle, &exit_code));
+  ASSERT_TRUE(child.WaitForExit(&exit_code));
   EXPECT_EQ(0, exit_code);
 
-  EXPECT_EQ(base::GetProcId(child_handle), sender_pid);
-  EXPECT_EQ(base::GetProcId(child_handle), child_pid);
+  EXPECT_EQ(child.pid(), sender_pid);
+  EXPECT_EQ(child.pid(), child_pid);
   EXPECT_EQ(sender_pid, child_pid);
-
-  base::CloseProcessHandle(child_handle);
 }
 
 MULTIPROCESS_TEST_MAIN(GetSenderPID) {

@@ -293,8 +293,8 @@ TEST_F(IPCChannelPosixTest, AdvancedConnected) {
   ASSERT_TRUE(channel->AcceptsConnections());
   ASSERT_FALSE(channel->HasAcceptedConnection());
 
-  base::ProcessHandle handle = SpawnChild("IPCChannelPosixTestConnectionProc");
-  ASSERT_TRUE(handle);
+  base::Process process = SpawnChild("IPCChannelPosixTestConnectionProc");
+  ASSERT_TRUE(process.IsValid());
   SpinRunLoop(TestTimeouts::action_max_timeout());
   ASSERT_EQ(IPCChannelPosixTestListener::CONNECTED, listener.status());
   ASSERT_TRUE(channel->HasAcceptedConnection());
@@ -304,7 +304,7 @@ TEST_F(IPCChannelPosixTest, AdvancedConnected) {
   channel->Send(message);
   SpinRunLoop(TestTimeouts::action_timeout());
   int exit_code = 0;
-  EXPECT_TRUE(base::WaitForExitCode(handle, &exit_code));
+  EXPECT_TRUE(process.WaitForExit(&exit_code));
   EXPECT_EQ(0, exit_code);
   ASSERT_EQ(IPCChannelPosixTestListener::CHANNEL_ERROR, listener.status());
   ASSERT_FALSE(channel->HasAcceptedConnection());
@@ -323,16 +323,16 @@ TEST_F(IPCChannelPosixTest, ResetState) {
   ASSERT_TRUE(channel->AcceptsConnections());
   ASSERT_FALSE(channel->HasAcceptedConnection());
 
-  base::ProcessHandle handle = SpawnChild("IPCChannelPosixTestConnectionProc");
-  ASSERT_TRUE(handle);
+  base::Process process = SpawnChild("IPCChannelPosixTestConnectionProc");
+  ASSERT_TRUE(process.IsValid());
   SpinRunLoop(TestTimeouts::action_max_timeout());
   ASSERT_EQ(IPCChannelPosixTestListener::CONNECTED, listener.status());
   ASSERT_TRUE(channel->HasAcceptedConnection());
   channel->ResetToAcceptingConnectionState();
   ASSERT_FALSE(channel->HasAcceptedConnection());
 
-  base::ProcessHandle handle2 = SpawnChild("IPCChannelPosixTestConnectionProc");
-  ASSERT_TRUE(handle2);
+  base::Process process2 = SpawnChild("IPCChannelPosixTestConnectionProc");
+  ASSERT_TRUE(process2.IsValid());
   SpinRunLoop(TestTimeouts::action_max_timeout());
   ASSERT_EQ(IPCChannelPosixTestListener::CONNECTED, listener.status());
   ASSERT_TRUE(channel->HasAcceptedConnection());
@@ -341,9 +341,9 @@ TEST_F(IPCChannelPosixTest, ResetState) {
                                            IPC::Message::PRIORITY_NORMAL);
   channel->Send(message);
   SpinRunLoop(TestTimeouts::action_timeout());
-  EXPECT_TRUE(base::KillProcess(handle, 0, false));
+  EXPECT_TRUE(base::KillProcess(process.Handle(), 0, false));
   int exit_code = 0;
-  EXPECT_TRUE(base::WaitForExitCode(handle2, &exit_code));
+  EXPECT_TRUE(process2.WaitForExit(&exit_code));
   EXPECT_EQ(0, exit_code);
   ASSERT_EQ(IPCChannelPosixTestListener::CHANNEL_ERROR, listener.status());
   ASSERT_FALSE(channel->HasAcceptedConnection());
@@ -383,16 +383,16 @@ TEST_F(IPCChannelPosixTest, MultiConnection) {
   ASSERT_TRUE(channel->AcceptsConnections());
   ASSERT_FALSE(channel->HasAcceptedConnection());
 
-  base::ProcessHandle handle = SpawnChild("IPCChannelPosixTestConnectionProc");
-  ASSERT_TRUE(handle);
+  base::Process process = SpawnChild("IPCChannelPosixTestConnectionProc");
+  ASSERT_TRUE(process.IsValid());
   SpinRunLoop(TestTimeouts::action_max_timeout());
   ASSERT_EQ(IPCChannelPosixTestListener::CONNECTED, listener.status());
   ASSERT_TRUE(channel->HasAcceptedConnection());
-  base::ProcessHandle handle2 = SpawnChild("IPCChannelPosixFailConnectionProc");
-  ASSERT_TRUE(handle2);
+  base::Process process2 = SpawnChild("IPCChannelPosixFailConnectionProc");
+  ASSERT_TRUE(process2.IsValid());
   SpinRunLoop(TestTimeouts::action_max_timeout());
   int exit_code = 0;
-  EXPECT_TRUE(base::WaitForExitCode(handle2, &exit_code));
+  EXPECT_TRUE(process2.WaitForExit(&exit_code));
   EXPECT_EQ(exit_code, 0);
   ASSERT_EQ(IPCChannelPosixTestListener::DENIED, listener.status());
   ASSERT_TRUE(channel->HasAcceptedConnection());
@@ -401,7 +401,7 @@ TEST_F(IPCChannelPosixTest, MultiConnection) {
                                            IPC::Message::PRIORITY_NORMAL);
   channel->Send(message);
   SpinRunLoop(TestTimeouts::action_timeout());
-  EXPECT_TRUE(base::WaitForExitCode(handle, &exit_code));
+  EXPECT_TRUE(process.WaitForExit(&exit_code));
   EXPECT_EQ(exit_code, 0);
   ASSERT_EQ(IPCChannelPosixTestListener::CHANNEL_ERROR, listener.status());
   ASSERT_FALSE(channel->HasAcceptedConnection());

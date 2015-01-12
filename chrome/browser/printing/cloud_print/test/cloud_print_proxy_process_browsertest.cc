@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "base/process/kill.h"
+#include "base/process/process.h"
 #include "base/rand_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/multiprocess_test.h"
@@ -308,10 +309,10 @@ class CloudPrintProxyPolicyStartupTest : public base::MultiProcessTest,
   scoped_refptr<base::MessageLoopProxy> IOMessageLoopProxy() {
     return BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
   }
-  base::ProcessHandle Launch(const std::string& name);
+  base::Process Launch(const std::string& name);
   void WaitForConnect();
   bool Send(IPC::Message* message);
-  void ShutdownAndWaitForExitWithTimeout(base::ProcessHandle handle);
+  void ShutdownAndWaitForExitWithTimeout(base::Process process);
 
   // IPC::Listener implementation
   bool OnMessageReceived(const IPC::Message& message) override { return false; }
@@ -430,7 +431,7 @@ void CloudPrintProxyPolicyStartupTest::TearDown() {
   TestingBrowserProcess::DeleteInstance();
 }
 
-base::ProcessHandle CloudPrintProxyPolicyStartupTest::Launch(
+base::Process CloudPrintProxyPolicyStartupTest::Launch(
     const std::string& name) {
   EXPECT_FALSE(CheckServiceProcessReady());
 
@@ -450,12 +451,12 @@ base::ProcessHandle CloudPrintProxyPolicyStartupTest::Launch(
       kPrimaryIPCChannel + base::GlobalDescriptors::kBaseDescriptor));
   base::LaunchOptions options;
   options.fds_to_remap = &ipc_file_list;
-  base::ProcessHandle handle = SpawnChildWithOptions(name, options);
+  base::Process process = SpawnChildWithOptions(name, options);
 #else
-  base::ProcessHandle handle = SpawnChild(name);
+  base::Process process = SpawnChild(name);
 #endif
-  EXPECT_TRUE(handle);
-  return handle;
+  EXPECT_TRUE(process.IsValid());
+  return process.Pass();
 }
 
 void CloudPrintProxyPolicyStartupTest::WaitForConnect() {
@@ -474,16 +475,14 @@ bool CloudPrintProxyPolicyStartupTest::Send(IPC::Message* message) {
 }
 
 void CloudPrintProxyPolicyStartupTest::ShutdownAndWaitForExitWithTimeout(
-    base::ProcessHandle handle) {
+    base::Process process) {
   ASSERT_TRUE(Send(new ServiceMsg_Shutdown()));
 
   int exit_code = -100;
-  bool exited =
-      base::WaitForExitCodeWithTimeout(handle, &exit_code,
-                                       TestTimeouts::action_timeout());
+  bool exited = process.WaitForExitWithTimeout(TestTimeouts::action_timeout(),
+                                               &exit_code);
   EXPECT_TRUE(exited);
   EXPECT_EQ(exit_code, 0);
-  base::CloseProcessHandle(handle);
 }
 
 void CloudPrintProxyPolicyStartupTest::OnChannelConnected(int32 peer_pid) {
@@ -511,10 +510,10 @@ TEST_F(CloudPrintProxyPolicyStartupTest, StartAndShutdown) {
   // constructed.
   chrome::TestingIOThreadState testing_io_thread_state;
 
-  base::ProcessHandle handle =
+  base::Process process =
       Launch("CloudPrintMockService_StartEnabledWaitForQuit");
   WaitForConnect();
-  ShutdownAndWaitForExitWithTimeout(handle);
+  ShutdownAndWaitForExitWithTimeout(process.Pass());
   content::RunAllPendingInMessageLoop();
 }
 
@@ -527,7 +526,7 @@ KeyedService* CloudPrintProxyServiceFactoryForPolicyTest(
 }
 
 TEST_F(CloudPrintProxyPolicyStartupTest, StartBrowserWithoutPolicy) {
-  base::ProcessHandle handle =
+  base::Process process =
       Launch("CloudPrintMockService_StartEnabledWaitForQuit");
 
   // Setup the Browser Process with a full IOThread::Globals.
@@ -571,13 +570,13 @@ TEST_F(CloudPrintProxyPolicyStartupTest, StartBrowserWithoutPolicy) {
   EXPECT_EQ(MockServiceIPCServer::EnabledUserId(),
             prefs->GetString(prefs::kCloudPrintEmail));
 
-  ShutdownAndWaitForExitWithTimeout(handle);
+  ShutdownAndWaitForExitWithTimeout(process.Pass());
   content::RunAllPendingInMessageLoop();
   profile_manager.DeleteTestingProfile("StartBrowserWithoutPolicy");
 }
 
 TEST_F(CloudPrintProxyPolicyStartupTest, StartBrowserWithPolicy) {
-  base::ProcessHandle handle =
+  base::Process process =
       Launch("CloudPrintMockService_StartEnabledExpectDisabled");
 
   TestingBrowserProcess* browser_process =
@@ -622,7 +621,7 @@ TEST_F(CloudPrintProxyPolicyStartupTest, StartBrowserWithPolicy) {
 
   EXPECT_EQ("", prefs->GetString(prefs::kCloudPrintEmail));
 
-  ShutdownAndWaitForExitWithTimeout(handle);
+  ShutdownAndWaitForExitWithTimeout(process.Pass());
   content::RunAllPendingInMessageLoop();
   profile_manager.DeleteTestingProfile("StartBrowserWithPolicy");
 }

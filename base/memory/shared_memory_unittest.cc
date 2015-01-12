@@ -699,15 +699,15 @@ const char* const SharedMemoryProcessTest::s_test_name_ = "MPMem";
 TEST_F(SharedMemoryProcessTest, Tasks) {
   SharedMemoryProcessTest::CleanUp();
 
-  ProcessHandle handles[kNumTasks];
+  Process processes[kNumTasks];
   for (int index = 0; index < kNumTasks; ++index) {
-    handles[index] = SpawnChild("SharedMemoryTestMain");
-    ASSERT_TRUE(handles[index]);
+    processes[index] = SpawnChild("SharedMemoryTestMain");
+    ASSERT_TRUE(processes[index].IsValid());
   }
 
   int exit_code = 0;
   for (int index = 0; index < kNumTasks; ++index) {
-    EXPECT_TRUE(WaitForExitCode(handles[index], &exit_code));
+    EXPECT_TRUE(processes[index].WaitForExit(&exit_code));
     EXPECT_EQ(0, exit_code);
   }
 

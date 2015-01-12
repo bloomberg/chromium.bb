@@ -184,7 +184,7 @@ TEST_F(SyncSocketTest, SanityTest) {
 #if defined(OS_WIN)
   // On windows we need to duplicate the handle into the server process.
   BOOL retval = DuplicateHandle(GetCurrentProcess(), pair[1].handle(),
-                                client_process(), &target_handle,
+                                client_process().Handle(), &target_handle,
                                 0, FALSE, DUPLICATE_SAME_ACCESS);
   EXPECT_TRUE(retval);
   // Set up a message to pass the handle to the server.

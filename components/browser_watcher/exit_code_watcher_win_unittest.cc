@@ -50,8 +50,7 @@ class ScopedSleeperProcess {
     base::CommandLine cmd_line(base::GetMultiProcessTestChildBaseCommandLine());
     base::LaunchOptions options;
     options.start_hidden = true;
-    process_ = base::Process(
-        base::SpawnMultiProcessTestChild("Sleeper", cmd_line, options));
+    process_ = base::SpawnMultiProcessTestChild("Sleeper", cmd_line, options);
     ASSERT_TRUE(process_.IsValid());
   }
 

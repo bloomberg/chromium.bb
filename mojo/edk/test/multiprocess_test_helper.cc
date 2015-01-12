@@ -14,14 +14,13 @@
 namespace mojo {
 namespace test {
 
-MultiprocessTestHelper::MultiprocessTestHelper()
-    : test_child_handle_(base::kNullProcessHandle) {
+MultiprocessTestHelper::MultiprocessTestHelper() {
   platform_channel_pair_.reset(new embedder::PlatformChannelPair());
   server_platform_handle = platform_channel_pair_->PassServerHandle();
 }
 
 MultiprocessTestHelper::~MultiprocessTestHelper() {
-  CHECK_EQ(test_child_handle_, base::kNullProcessHandle);
+  CHECK(!test_child_.IsValid());
   server_platform_handle.reset();
   platform_channel_pair_.reset();
 }
@@ -29,7 +28,7 @@ MultiprocessTestHelper::~MultiprocessTestHelper() {
 void MultiprocessTestHelper::StartChild(const std::string& test_child_name) {
   CHECK(platform_channel_pair_);
   CHECK(!test_child_name.empty());
-  CHECK_EQ(test_child_handle_, base::kNullProcessHandle);
+  CHECK(!test_child_.IsValid());
 
   std::string test_child_main = test_child_name + "TestChildMain";
 
@@ -49,21 +48,20 @@ void MultiprocessTestHelper::StartChild(const std::string& test_child_name) {
 #error "Not supported yet."
 #endif
 
-  test_child_handle_ =
+  test_child_ =
       base::SpawnMultiProcessTestChild(test_child_main, command_line, options);
   platform_channel_pair_->ChildProcessLaunched();
 
-  CHECK_NE(test_child_handle_, base::kNullProcessHandle);
+  CHECK(test_child_.IsValid());
 }
 
 int MultiprocessTestHelper::WaitForChildShutdown() {
-  CHECK_NE(test_child_handle_, base::kNullProcessHandle);
+  CHECK(test_child_.IsValid());
 
   int rv = -1;
-  CHECK(base::WaitForExitCodeWithTimeout(test_child_handle_, &rv,
-                                         TestTimeouts::action_timeout()));
-  base::CloseProcessHandle(test_child_handle_);
-  test_child_handle_ = base::kNullProcessHandle;
+  CHECK(test_child_.WaitForExitWithTimeout(TestTimeouts::action_timeout(),
+                                           &rv));
+  test_child_.Close();
   return rv;
 }
 

@@ -142,11 +142,10 @@ MULTIPROCESS_TEST_MAIN(SimpleChildProcess) {
 
 // TODO(viettrungluu): This should be in a "MultiProcessTestTest".
 TEST_F(ProcessUtilTest, SpawnChild) {
-  base::ProcessHandle handle = SpawnChild("SimpleChildProcess");
-  ASSERT_NE(base::kNullProcessHandle, handle);
-  EXPECT_TRUE(base::WaitForSingleProcess(
-                  handle, TestTimeouts::action_max_timeout()));
-  base::CloseProcessHandle(handle);
+  base::Process process = SpawnChild("SimpleChildProcess");
+  ASSERT_TRUE(process.IsValid());
+  EXPECT_TRUE(base::WaitForSingleProcess(process.Handle(),
+                                         TestTimeouts::action_max_timeout()));
 }
 
 MULTIPROCESS_TEST_MAIN(SlowChildProcess) {
@@ -158,12 +157,11 @@ TEST_F(ProcessUtilTest, KillSlowChild) {
   const std::string signal_file =
       ProcessUtilTest::GetSignalFilePath(kSignalFileSlow);
   remove(signal_file.c_str());
-  base::ProcessHandle handle = SpawnChild("SlowChildProcess");
-  ASSERT_NE(base::kNullProcessHandle, handle);
+  base::Process process = SpawnChild("SlowChildProcess");
+  ASSERT_TRUE(process.IsValid());
   SignalChildren(signal_file.c_str());
-  EXPECT_TRUE(base::WaitForSingleProcess(
-                  handle, TestTimeouts::action_max_timeout()));
-  base::CloseProcessHandle(handle);
+  EXPECT_TRUE(base::WaitForSingleProcess(process.Handle(),
+                                         TestTimeouts::action_max_timeout()));
   remove(signal_file.c_str());
 }
 
@@ -172,21 +170,20 @@ TEST_F(ProcessUtilTest, DISABLED_GetTerminationStatusExit) {
   const std::string signal_file =
       ProcessUtilTest::GetSignalFilePath(kSignalFileSlow);
   remove(signal_file.c_str());
-  base::ProcessHandle handle = SpawnChild("SlowChildProcess");
-  ASSERT_NE(base::kNullProcessHandle, handle);
+  base::Process process = SpawnChild("SlowChildProcess");
+  ASSERT_TRUE(process.IsValid());
 
   int exit_code = 42;
   EXPECT_EQ(base::TERMINATION_STATUS_STILL_RUNNING,
-            base::GetTerminationStatus(handle, &exit_code));
+            base::GetTerminationStatus(process.Handle(), &exit_code));
   EXPECT_EQ(kExpectedStillRunningExitCode, exit_code);
 
   SignalChildren(signal_file.c_str());
   exit_code = 42;
   base::TerminationStatus status =
-      WaitForChildTermination(handle, &exit_code);
+      WaitForChildTermination(process.Handle(), &exit_code);
   EXPECT_EQ(base::TERMINATION_STATUS_NORMAL_TERMINATION, status);
   EXPECT_EQ(0, exit_code);
-  base::CloseProcessHandle(handle);
   remove(signal_file.c_str());
 }
 
@@ -195,12 +192,11 @@ TEST_F(ProcessUtilTest, DISABLED_GetTerminationStatusExit) {
 TEST_F(ProcessUtilTest, GetProcId) {
   base::ProcessId id1 = base::GetProcId(GetCurrentProcess());
   EXPECT_NE(0ul, id1);
-  base::ProcessHandle handle = SpawnChild("SimpleChildProcess");
-  ASSERT_NE(base::kNullProcessHandle, handle);
-  base::ProcessId id2 = base::GetProcId(handle);
+  base::Process process = SpawnChild("SimpleChildProcess");
+  ASSERT_TRUE(process.IsValid());
+  base::ProcessId id2 = process.pid();
   EXPECT_NE(0ul, id2);
   EXPECT_NE(id1, id2);
-  base::CloseProcessHandle(handle);
 }
 #endif
 
@@ -239,18 +235,18 @@ TEST_F(ProcessUtilTest, MAYBE_GetTerminationStatusCrash) {
   const std::string signal_file =
     ProcessUtilTest::GetSignalFilePath(kSignalFileCrash);
   remove(signal_file.c_str());
-  base::ProcessHandle handle = SpawnChild("CrashingChildProcess");
-  ASSERT_NE(base::kNullProcessHandle, handle);
+  base::Process process = SpawnChild("CrashingChildProcess");
+  ASSERT_TRUE(process.IsValid());
 
   int exit_code = 42;
   EXPECT_EQ(base::TERMINATION_STATUS_STILL_RUNNING,
-            base::GetTerminationStatus(handle, &exit_code));
+            base::GetTerminationStatus(process.Handle(), &exit_code));
   EXPECT_EQ(kExpectedStillRunningExitCode, exit_code);
 
   SignalChildren(signal_file.c_str());
   exit_code = 42;
   base::TerminationStatus status =
-      WaitForChildTermination(handle, &exit_code);
+      WaitForChildTermination(process.Handle(), &exit_code);
   EXPECT_EQ(base::TERMINATION_STATUS_PROCESS_CRASHED, status);
 
 #if defined(OS_WIN)
@@ -261,7 +257,6 @@ TEST_F(ProcessUtilTest, MAYBE_GetTerminationStatusCrash) {
   int signal = WTERMSIG(exit_code);
   EXPECT_EQ(SIGSEGV, signal);
 #endif
-  base::CloseProcessHandle(handle);
 
   // Reset signal handlers back to "normal".
   base::debug::EnableInProcessStackDumping();
@@ -286,18 +281,18 @@ TEST_F(ProcessUtilTest, GetTerminationStatusKill) {
   const std::string signal_file =
     ProcessUtilTest::GetSignalFilePath(kSignalFileKill);
   remove(signal_file.c_str());
-  base::ProcessHandle handle = SpawnChild("KilledChildProcess");
-  ASSERT_NE(base::kNullProcessHandle, handle);
+  base::Process process = SpawnChild("KilledChildProcess");
+  ASSERT_TRUE(process.IsValid());
 
   int exit_code = 42;
   EXPECT_EQ(base::TERMINATION_STATUS_STILL_RUNNING,
-            base::GetTerminationStatus(handle, &exit_code));
+            base::GetTerminationStatus(process.Handle(), &exit_code));
   EXPECT_EQ(kExpectedStillRunningExitCode, exit_code);
 
   SignalChildren(signal_file.c_str());
   exit_code = 42;
   base::TerminationStatus status =
-      WaitForChildTermination(handle, &exit_code);
+      WaitForChildTermination(process.Handle(), &exit_code);
   EXPECT_EQ(base::TERMINATION_STATUS_PROCESS_WAS_KILLED, status);
 #if defined(OS_WIN)
   EXPECT_EQ(kExpectedKilledExitCode, exit_code);
@@ -307,7 +302,6 @@ TEST_F(ProcessUtilTest, GetTerminationStatusKill) {
   int signal = WTERMSIG(exit_code);
   EXPECT_EQ(SIGKILL, signal);
 #endif
-  base::CloseProcessHandle(handle);
   remove(signal_file.c_str());
 }
 
@@ -535,9 +529,9 @@ int ProcessUtilTest::CountOpenFDsInChild() {
   fd_mapping_vec.push_back(std::pair<int, int>(fds[1], kChildPipe));
   base::LaunchOptions options;
   options.fds_to_remap = &fd_mapping_vec;
-  base::ProcessHandle handle =
+  base::Process process =
       SpawnChildWithOptions("ProcessUtilsLeakFDChildProcess", options);
-  CHECK(handle);
+  CHECK(process.IsValid());
   int ret = IGNORE_EINTR(close(fds[1]));
   DPCHECK(ret == 0);
 
@@ -549,11 +543,12 @@ int ProcessUtilTest::CountOpenFDsInChild() {
 
 #if defined(THREAD_SANITIZER)
   // Compiler-based ThreadSanitizer makes this test slow.
-  CHECK(base::WaitForSingleProcess(handle, base::TimeDelta::FromSeconds(3)));
+  CHECK(base::WaitForSingleProcess(process.Handle(),
+                                   base::TimeDelta::FromSeconds(3)));
 #else
-  CHECK(base::WaitForSingleProcess(handle, base::TimeDelta::FromSeconds(1)));
+  CHECK(base::WaitForSingleProcess(process.Handle(),
+                                   base::TimeDelta::FromSeconds(1)));
 #endif
-  base::CloseProcessHandle(handle);
   ret = IGNORE_EINTR(close(fds[0]));
   DPCHECK(ret == 0);
 
@@ -888,7 +883,7 @@ bool IsProcessDead(base::ProcessHandle child) {
 }
 
 TEST_F(ProcessUtilTest, DelayedTermination) {
-  base::Process child_process(SpawnChild("process_util_test_never_die"));
+  base::Process child_process = SpawnChild("process_util_test_never_die");
   ASSERT_TRUE(child_process.IsValid());
   base::EnsureProcessTerminated(child_process.Duplicate());
   base::WaitForSingleProcess(child_process.Handle(),
@@ -906,7 +901,7 @@ MULTIPROCESS_TEST_MAIN(process_util_test_never_die) {
 }
 
 TEST_F(ProcessUtilTest, ImmediateTermination) {
-  base::Process child_process(SpawnChild("process_util_test_die_immediately"));
+  base::Process child_process = SpawnChild("process_util_test_die_immediately");
   ASSERT_TRUE(child_process.IsValid());
   // Give it time to die.
   sleep(2);

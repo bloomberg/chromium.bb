@@ -200,19 +200,19 @@ TEST_F(StatsTableTest, DISABLED_MultipleProcesses) {
   // Spin up a set of processes to go bang on the various counters.
   // After we join the processes, we'll make sure the counters
   // contain the values we expected.
-  ProcessHandle procs[kMaxProcs];
+  Process procs[kMaxProcs];
 
   // Spawn the processes.
   for (int16 index = 0; index < kMaxProcs; index++) {
     procs[index] = SpawnChild("StatsTableMultipleProcessMain");
-    EXPECT_NE(kNullProcessHandle, procs[index]);
+    EXPECT_TRUE(procs[index].IsValid());
   }
 
   // Wait for the processes to finish.
   for (int index = 0; index < kMaxProcs; index++) {
-    EXPECT_TRUE(WaitForSingleProcess(
-        procs[index], base::TimeDelta::FromMinutes(1)));
-    CloseProcessHandle(procs[index]);
+    EXPECT_TRUE(WaitForSingleProcess(procs[index].Handle(),
+                                     base::TimeDelta::FromMinutes(1)));
+    procs[index].Close();
   }
 
   StatsCounter zero_counter(kCounterZero);

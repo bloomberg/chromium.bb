@@ -100,14 +100,14 @@ class BootstrapSandboxTest : public base::MultiProcessTest {
     sandbox_->PrepareToForkWithPolicy(policy_id);
     base::LaunchOptions options;
     options.replacement_bootstrap_name = sandbox_->server_bootstrap_name();
-    base::ProcessHandle pid = SpawnChildWithOptions(child_name, options);
-    ASSERT_GT(pid, 0);
-    sandbox_->FinishedFork(pid);
+    base::Process process = SpawnChildWithOptions(child_name, options);
+    ASSERT_TRUE(process.IsValid());
+    sandbox_->FinishedFork(process.Handle());
     int code = 0;
-    EXPECT_TRUE(base::WaitForExitCode(pid, &code));
+    EXPECT_TRUE(process.WaitForExit(&code));
     EXPECT_EQ(0, code);
     if (out_pid)
-      *out_pid = pid;
+      *out_pid = process.pid();
   }
 
  protected:
@@ -121,15 +121,15 @@ TEST_F(BootstrapSandboxTest, DistributedNotifications_Unsandboxed) {
   base::scoped_nsobject<DistributedNotificationObserver> observer(
       [[DistributedNotificationObserver alloc] init]);
 
-  base::ProcessHandle pid = SpawnChild(kNotificationTestMain);
-  ASSERT_GT(pid, 0);
+  base::Process process = SpawnChild(kNotificationTestMain);
+  ASSERT_TRUE(process.IsValid());
   int code = 0;
-  EXPECT_TRUE(base::WaitForExitCode(pid, &code));
+  EXPECT_TRUE(process.WaitForExit(&code));
   EXPECT_EQ(0, code);
 
   [observer waitForNotification];
   EXPECT_EQ(1, [observer receivedCount]);
-  EXPECT_EQ(pid, [[observer object] intValue]);
+  EXPECT_EQ(process.pid(), [[observer object] intValue]);
 }
 
 // Run the test with the sandbox enabled without notifications on the policy
@@ -439,10 +439,9 @@ TEST_F(BootstrapSandboxTest, ChildOutliveSandbox) {
   sandbox_->PrepareToForkWithPolicy(kTestPolicyId);
   base::LaunchOptions options;
   options.replacement_bootstrap_name = sandbox_->server_bootstrap_name();
-  base::ProcessHandle pid =
-      SpawnChildWithOptions("ChildOutliveSandbox", options);
-  ASSERT_GT(pid, 0);
-  sandbox_->FinishedFork(pid);
+  base::Process process = SpawnChildWithOptions("ChildOutliveSandbox", options);
+  ASSERT_TRUE(process.IsValid());
+  sandbox_->FinishedFork(process.Handle());
 
   // Synchronize with the child.
   mach_msg_empty_rcv_t rcv_msg;
@@ -468,7 +467,7 @@ TEST_F(BootstrapSandboxTest, ChildOutliveSandbox) {
   EXPECT_EQ(KERN_SUCCESS, kr) << mach_error_string(kr);
 
   int code = 0;
-  EXPECT_TRUE(base::WaitForExitCode(pid, &code));
+  EXPECT_TRUE(process.WaitForExit(&code));
   EXPECT_EQ(0, code);
 }
 

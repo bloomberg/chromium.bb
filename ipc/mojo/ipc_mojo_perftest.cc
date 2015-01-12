@@ -40,7 +40,7 @@ public:
   bool DidStartClient() override {
     bool ok = IPCTestBase::DidStartClient();
     DCHECK(ok);
-    host_->OnClientLaunched(client_process());
+    host_->OnClientLaunched(client_process().Handle());
     return ok;
   }
 

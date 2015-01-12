@@ -22,8 +22,7 @@ std::string IPCTestBase::GetChannelName(const std::string& test_client_name) {
   return test_client_name + "__Channel";
 }
 
-IPCTestBase::IPCTestBase()
-    : client_process_(base::kNullProcessHandle) {
+IPCTestBase::IPCTestBase() {
 }
 
 IPCTestBase::~IPCTestBase() {
@@ -104,8 +103,8 @@ std::string IPCTestBase::GetTestMainName() const {
 }
 
 bool IPCTestBase::DidStartClient() {
-  DCHECK_NE(base::kNullProcessHandle, client_process_);
-  return client_process_ != base::kNullProcessHandle;
+  DCHECK(client_process_.IsValid());
+  return client_process_.IsValid();
 }
 
 #if defined(OS_POSIX)
@@ -117,7 +116,7 @@ bool IPCTestBase::StartClient() {
 }
 
 bool IPCTestBase::StartClientWithFD(int ipcfd) {
-  DCHECK_EQ(client_process_, base::kNullProcessHandle);
+  DCHECK(!client_process_.IsValid());
 
   base::FileHandleMappingVector fds_to_map;
   if (ipcfd > -1)
@@ -133,7 +132,7 @@ bool IPCTestBase::StartClientWithFD(int ipcfd) {
 #elif defined(OS_WIN)
 
 bool IPCTestBase::StartClient() {
-  DCHECK_EQ(client_process_, base::kNullProcessHandle);
+  DCHECK(!client_process_.IsValid());
   client_process_ = SpawnChild(GetTestMainName());
   return DidStartClient();
 }
@@ -141,12 +140,11 @@ bool IPCTestBase::StartClient() {
 #endif
 
 bool IPCTestBase::WaitForClientShutdown() {
-  DCHECK(client_process_ != base::kNullProcessHandle);
+  DCHECK(client_process_.IsValid());
 
-  bool rv = base::WaitForSingleProcess(client_process_,
+  bool rv = base::WaitForSingleProcess(client_process_.Handle(),
                                        base::TimeDelta::FromSeconds(5));
-  base::CloseProcessHandle(client_process_);
-  client_process_ = base::kNullProcessHandle;
+  client_process_.Close();
   return rv;
 }
 

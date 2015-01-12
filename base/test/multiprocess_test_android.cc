@@ -19,9 +19,9 @@ namespace base {
 // and we don't have an executable to exec*. This implementation does the bare
 // minimum to execute the method specified by procname (in the child process).
 //  - All options except |fds_to_remap| are ignored.
-ProcessHandle SpawnMultiProcessTestChild(const std::string& procname,
-                                         const CommandLine& base_command_line,
-                                         const LaunchOptions& options) {
+Process SpawnMultiProcessTestChild(const std::string& procname,
+                                   const CommandLine& base_command_line,
+                                   const LaunchOptions& options) {
   // TODO(viettrungluu): The FD-remapping done below is wrong in the presence of
   // cycles (e.g., fd1 -> fd2, fd2 -> fd1). crbug.com/326576
   FileHandleMappingVector empty;
@@ -32,11 +32,11 @@ ProcessHandle SpawnMultiProcessTestChild(const std::string& procname,
 
   if (pid < 0) {
     PLOG(ERROR) << "fork";
-    return kNullProcessHandle;
+    return Process();
   }
   if (pid > 0) {
     // Parent process.
-    return pid;
+    return Process(pid);
   }
   // Child process.
   base::hash_set<int> fds_to_keep_open;
@@ -69,7 +69,7 @@ ProcessHandle SpawnMultiProcessTestChild(const std::string& procname,
     command_line->AppendSwitchASCII(switches::kTestChildProcess, procname);
 
   _exit(multi_process_function_list::InvokeChildProcessTest(procname));
-  return 0;
+  return Process();
 }
 
 }  // namespace base
