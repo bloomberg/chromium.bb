@@ -1,6 +1,92 @@
 Verifies JavaScript pretty-printing functionality.
 
 
+Running: multipleVariableDeclarations
+====== 8< ------
+var a = 1, b = {}, c = 2, d = "hello world";
+var a, b, c, d = 2, e, f = 3;
+
+------ >8 ======
+Correct mapping for <{}>
+Correct mapping for <hello>
+Correct mapping for <;>
+
+Running: emptyObjectExpression
+====== 8< ------
+var a = {}
+
+------ >8 ======
+Correct mapping for <{>
+Correct mapping for <}>
+Correct mapping for <a>
+
+Running: breakContinueStatements
+====== 8< ------
+for (var i in set)
+    if (i % 2 === 0)
+        break;
+    else
+        continue;
+
+------ >8 ======
+Correct mapping for <break>
+Correct mapping for <continue>
+Correct mapping for <2>
+Correct mapping for <else>
+
+Running: chainedIfStatements
+====== 8< ------
+if (a % 7 === 0)
+    b = 1;
+else if (a % 9 === 1)
+    b = 2;
+else if (a % 5 === 3) {
+    b = a / 2;
+    b++;
+} else
+    b = 3;
+
+------ >8 ======
+Correct mapping for <7>
+Correct mapping for <9>
+Correct mapping for <3>
+Correct mapping for <++>
+
+Running: tryCatchStatement
+====== 8< ------
+try {
+    a(b());
+} catch (e) {
+    f()
+}finally {
+    f();
+}
+
+------ >8 ======
+Correct mapping for <try>
+Correct mapping for <catch>
+Correct mapping for <finally>
+
+Running: forLoopWithIfStatementWithoutBlockStatements
+====== 8< ------
+for (var value of map)
+    if (value.length % 3 === 0)
+        console.log(value);
+
+------ >8 ======
+Correct mapping for <length>
+Correct mapping for <console>
+Correct mapping for <of>
+
+Running: objectExpressionProperties
+====== 8< ------
+var mapping = {original: [1, 2, 3],formatted: [],count: 0}
+
+------ >8 ======
+Correct mapping for <mapping>
+Correct mapping for <original>
+Correct mapping for <formatted>
+
 Running: blockFormatting
 ====== 8< ------
 {
@@ -15,6 +101,9 @@ Correct mapping for <(2)>
 Running: assignmentFormatting
 ====== 8< ------
 var exp = 'a string';
+c = +a + (0 > a ? b : 0);
+c = (1);
+var a = (1);
 
 ------ >8 ======
 Correct mapping for <string>
@@ -27,6 +116,28 @@ var obj = {'foo': 1,bar: "2",cat: {dog: '1989'}}
 Correct mapping for <dog>
 Correct mapping for <1989>
 Correct mapping for <foo>
+
+Running: ifStatements
+====== 8< ------
+if (a < b)
+    log(a);
+else
+    log(b);
+if (a < b) {
+    log(a)
+} else {
+    log(b);
+}
+if (a === b)
+    log('equals');
+if (a !== b) {
+    log('non-eq');
+}
+
+------ >8 ======
+Correct mapping for <===>
+Correct mapping for <!==>
+Correct mapping for <non-eq>
 
 Running: arrayLiteralFormatting
 ====== 8< ------
@@ -187,6 +298,27 @@ Correct mapping for <function require>
 Correct mapping for <var regexp>
 Correct mapping for <importScripts>
 Correct mapping for <formatted2>
+
+Running: ifStatementIndentRegression
+====== 8< ------
+{
+    if (a > b) {
+        a();
+        pretty();
+    } else if (a + b)
+        e();
+    reset();
+}
+
+------ >8 ======
+Correct mapping for <pretty>
+Correct mapping for <reset>
+
+Running: trailingCommentsTest
+====== 8< ------
+noop(); //#sourceMappingURL=program.js.map
+
+------ >8 ======
 
 Running: inlinedScriptFormatting
 ====== 8< ------
