@@ -1472,6 +1472,87 @@ TEST_F(ShelfLayoutManagerTest, OpenAppListWithShelfHiddenState) {
   EXPECT_EQ(SHELF_HIDDEN, shelf->visibility_state());
 }
 
+// Tests the correct behavior of the shelf when there is a system modal window
+// open when we have a single display.
+TEST_F(ShelfLayoutManagerTest, ShelfWithSystemModalWindowSingleDisplay) {
+  Shell* shell = Shell::GetInstance();
+  ShelfLayoutManager* shelf = GetShelfLayoutManager();
+  shelf->LayoutShelf();
+  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+
+  aura::Window* window = CreateTestWindow();
+  window->SetBounds(gfx::Rect(0, 0, 100, 100));
+  window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
+  window->Show();
+  wm::ActivateWindow(window);
+
+  // Enable system modal dialog, and make sure shelf is still hidden.
+  shell->SimulateModalWindowOpenForTesting(true);
+  EXPECT_TRUE(shell->IsSystemModalWindowOpen());
+  EXPECT_FALSE(wm::CanActivateWindow(window));
+  shell->UpdateShelfVisibility();
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
+}
+
+// Tests the correct behavior of the shelf when there is a system modal window
+// open when we have dual display.
+TEST_F(ShelfLayoutManagerTest, ShelfWithSystemModalWindowDualDisplay) {
+  if (!SupportsMultipleDisplays())
+    return;
+
+  // Create two displays.
+  Shell* shell = Shell::GetInstance();
+  DisplayManager* display_manager = shell->display_manager();
+  UpdateDisplay("200x200,100x100");
+  EXPECT_EQ(2U, display_manager->GetNumDisplays());
+
+  DisplayController* display_controller = shell->display_controller();
+  aura::Window::Windows root_windows = display_controller->GetAllRootWindows();
+  EXPECT_EQ(root_windows.size(), 2U);
+
+  // Get the shelves in both displays and set them to be 'AutoHide'.
+  ShelfLayoutManager* shelf_1 =
+      GetRootWindowController(root_windows[0])->GetShelfLayoutManager();
+  ShelfLayoutManager* shelf_2 =
+      GetRootWindowController(root_windows[1])->GetShelfLayoutManager();
+  EXPECT_NE(shelf_1, shelf_2);
+  EXPECT_NE(shelf_1->shelf_widget()->GetNativeWindow()->GetRootWindow(),
+            shelf_2->shelf_widget()->GetNativeWindow()->GetRootWindow());
+  shelf_1->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  shelf_1->LayoutShelf();
+  shelf_2->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  shelf_2->LayoutShelf();
+
+  // Create a window in each display and show them in maximized state.
+  aura::Window* window_1 = CreateTestWindowInParent(root_windows[0]);
+  window_1->SetBounds(gfx::Rect(0, 0, 100, 100));
+  window_1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
+  window_1->Show();
+  aura::Window* window_2 = CreateTestWindowInParent(root_windows[1]);
+  window_2->SetBounds(gfx::Rect(201, 0, 100, 100));
+  window_2->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
+  window_2->Show();
+
+  EXPECT_EQ(shelf_1->shelf_widget()->GetNativeWindow()->GetRootWindow(),
+            window_1->GetRootWindow());
+  EXPECT_EQ(shelf_2->shelf_widget()->GetNativeWindow()->GetRootWindow(),
+            window_2->GetRootWindow());
+  EXPECT_TRUE(window_1->IsVisible());
+  EXPECT_TRUE(window_2->IsVisible());
+
+  // Enable system modal dialog, and make sure both shelves are still hidden.
+  shell->SimulateModalWindowOpenForTesting(true);
+  EXPECT_TRUE(shell->IsSystemModalWindowOpen());
+  EXPECT_FALSE(wm::CanActivateWindow(window_1));
+  EXPECT_FALSE(wm::CanActivateWindow(window_2));
+  shell->UpdateShelfVisibility();
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf_1->visibility_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf_1->auto_hide_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf_2->visibility_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf_2->auto_hide_state());
+}
+
 // Tests that the shelf is only hidden for a fullscreen window at the front and
 // toggles visibility when another window is activated.
 TEST_F(ShelfLayoutManagerTest, FullscreenWindowInFrontHidesShelf) {

@@ -191,8 +191,8 @@ aura::Window* GetReferenceWindow(const aura::Window* root_window,
     active = NULL;
 
   // Get a list of all windows.
-  const std::vector<aura::Window*> windows =
-      ash::MruWindowTracker::BuildWindowList();
+  const std::vector<aura::Window*> windows = ash::Shell::GetInstance()->
+      mru_window_tracker()->BuildWindowListIgnoreModal();
 
   if (windows.empty())
     return NULL;
@@ -503,8 +503,8 @@ gfx::Rect WindowPositioner::SmartPopupPosition(
     const gfx::Rect& old_pos,
     const gfx::Rect& work_area,
     int grid) {
-  const std::vector<aura::Window*> windows =
-      MruWindowTracker::BuildWindowList();
+  const std::vector<aura::Window*> windows = ash::Shell::GetInstance()->
+      mru_window_tracker()->BuildWindowListIgnoreModal();
 
   std::vector<const gfx::Rect*> regions;
   // Process the window list and check if we can bail immediately.

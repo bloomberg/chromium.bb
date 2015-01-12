@@ -213,6 +213,73 @@ TEST_F(MaximizeModeWindowManagerTest, PreCreateWindows) {
   EXPECT_EQ(rect.ToString(), w8->bounds().ToString());
 }
 
+// The same test as the above but while a system modal dialog is shown.
+TEST_F(MaximizeModeWindowManagerTest, GoingToMaximizedWithModalDialogPresent) {
+  // Bounds for windows we know can be controlled.
+  gfx::Rect rect1(10, 10, 200, 50);
+  gfx::Rect rect2(10, 60, 200, 50);
+  gfx::Rect rect3(20, 140, 100, 100);
+  // Bounds for anything else.
+  gfx::Rect rect(80, 90, 100, 110);
+  scoped_ptr<aura::Window> w1(CreateWindow(ui::wm::WINDOW_TYPE_NORMAL, rect1));
+  scoped_ptr<aura::Window> w2(CreateWindow(ui::wm::WINDOW_TYPE_NORMAL, rect2));
+  scoped_ptr<aura::Window> w3(
+      CreateFixedSizeNonMaximizableWindow(ui::wm::WINDOW_TYPE_NORMAL, rect3));
+  scoped_ptr<aura::Window> w4(CreateWindow(ui::wm::WINDOW_TYPE_PANEL, rect));
+  scoped_ptr<aura::Window> w5(CreateWindow(ui::wm::WINDOW_TYPE_POPUP, rect));
+  scoped_ptr<aura::Window> w6(CreateWindow(ui::wm::WINDOW_TYPE_CONTROL, rect));
+  scoped_ptr<aura::Window> w7(CreateWindow(ui::wm::WINDOW_TYPE_MENU, rect));
+  scoped_ptr<aura::Window> w8(CreateWindow(ui::wm::WINDOW_TYPE_TOOLTIP, rect));
+  EXPECT_FALSE(wm::GetWindowState(w1.get())->IsMaximized());
+  EXPECT_FALSE(wm::GetWindowState(w2.get())->IsMaximized());
+  EXPECT_FALSE(wm::GetWindowState(w3.get())->IsMaximized());
+  EXPECT_EQ(rect1.ToString(), w1->bounds().ToString());
+  EXPECT_EQ(rect2.ToString(), w2->bounds().ToString());
+  EXPECT_EQ(rect3.ToString(), w3->bounds().ToString());
+
+  // Enable system modal dialog, and make sure both shelves are still hidden.
+  ash::Shell::GetInstance()->SimulateModalWindowOpenForTesting(true);
+  EXPECT_TRUE(ash::Shell::GetInstance()->IsSystemModalWindowOpen());
+
+  // Create the manager and make sure that all qualifying windows were detected
+  // and changed.
+  ash::MaximizeModeWindowManager* manager = CreateMaximizeModeWindowManager();
+  ASSERT_TRUE(manager);
+  EXPECT_EQ(3, manager->GetNumberOfManagedWindows());
+  EXPECT_TRUE(wm::GetWindowState(w1.get())->IsMaximized());
+  EXPECT_TRUE(wm::GetWindowState(w2.get())->IsMaximized());
+  EXPECT_FALSE(wm::GetWindowState(w3.get())->IsMaximized());
+  EXPECT_NE(rect3.origin().ToString(), w3->bounds().origin().ToString());
+  EXPECT_EQ(rect3.size().ToString(), w3->bounds().size().ToString());
+
+  // All other windows should not have been touched.
+  EXPECT_FALSE(wm::GetWindowState(w4.get())->IsMaximized());
+  EXPECT_FALSE(wm::GetWindowState(w5.get())->IsMaximized());
+  EXPECT_FALSE(wm::GetWindowState(w6.get())->IsMaximized());
+  EXPECT_FALSE(wm::GetWindowState(w7.get())->IsMaximized());
+  EXPECT_FALSE(wm::GetWindowState(w8.get())->IsMaximized());
+  EXPECT_EQ(rect.ToString(), w4->bounds().ToString());
+  EXPECT_EQ(rect.ToString(), w5->bounds().ToString());
+  EXPECT_EQ(rect.ToString(), w6->bounds().ToString());
+  EXPECT_EQ(rect.ToString(), w7->bounds().ToString());
+  EXPECT_EQ(rect.ToString(), w8->bounds().ToString());
+
+  // Destroy the manager again and check that the windows return to their
+  // previous state.
+  DestroyMaximizeModeWindowManager();
+  EXPECT_FALSE(wm::GetWindowState(w1.get())->IsMaximized());
+  EXPECT_FALSE(wm::GetWindowState(w2.get())->IsMaximized());
+  EXPECT_FALSE(wm::GetWindowState(w3.get())->IsMaximized());
+  EXPECT_EQ(rect1.ToString(), w1->bounds().ToString());
+  EXPECT_EQ(rect2.ToString(), w2->bounds().ToString());
+  EXPECT_EQ(rect3.ToString(), w3->bounds().ToString());
+  EXPECT_EQ(rect.ToString(), w4->bounds().ToString());
+  EXPECT_EQ(rect.ToString(), w5->bounds().ToString());
+  EXPECT_EQ(rect.ToString(), w6->bounds().ToString());
+  EXPECT_EQ(rect.ToString(), w7->bounds().ToString());
+  EXPECT_EQ(rect.ToString(), w8->bounds().ToString());
+}
+
 // Test that non-maximizable windows get properly handled when going into
 // maximized mode.
 TEST_F(MaximizeModeWindowManagerTest,
@@ -679,7 +746,8 @@ TEST_F(MaximizeModeWindowManagerTest, ModeChangeKeepsMRUOrder) {
 
   // The windows should be in the reverse order of creation in the MRU list.
   {
-    MruWindowTracker::WindowList windows = MruWindowTracker::BuildWindowList();
+    MruWindowTracker::WindowList windows = ash::Shell::GetInstance()->
+        mru_window_tracker()->BuildMruWindowList();
     EXPECT_EQ(w1.get(), windows[4]);
     EXPECT_EQ(w2.get(), windows[3]);
     EXPECT_EQ(w3.get(), windows[2]);
@@ -692,7 +760,8 @@ TEST_F(MaximizeModeWindowManagerTest, ModeChangeKeepsMRUOrder) {
   ASSERT_TRUE(manager);
   EXPECT_EQ(5, manager->GetNumberOfManagedWindows());
   {
-    MruWindowTracker::WindowList windows = MruWindowTracker::BuildWindowList();
+    MruWindowTracker::WindowList windows = ash::Shell::GetInstance()->
+        mru_window_tracker()->BuildMruWindowList();
     // We do not test maximization here again since that was done already.
     EXPECT_EQ(w1.get(), windows[4]);
     EXPECT_EQ(w2.get(), windows[3]);
@@ -704,7 +773,8 @@ TEST_F(MaximizeModeWindowManagerTest, ModeChangeKeepsMRUOrder) {
   // Destroying should still keep the order.
   DestroyMaximizeModeWindowManager();
   {
-    MruWindowTracker::WindowList windows = MruWindowTracker::BuildWindowList();
+    MruWindowTracker::WindowList windows = ash::Shell::GetInstance()->
+          mru_window_tracker()->BuildMruWindowList();
     // We do not test maximization here again since that was done already.
     EXPECT_EQ(w1.get(), windows[4]);
     EXPECT_EQ(w2.get(), windows[3]);

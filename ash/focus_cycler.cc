@@ -19,7 +19,8 @@ namespace ash {
 namespace {
 
 bool HasFocusableWindow() {
-  return !MruWindowTracker::BuildWindowList().empty();
+  return !ash::Shell::GetInstance()->
+      mru_window_tracker()->BuildMruWindowList().empty();
 }
 
 }  // namespace

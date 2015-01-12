@@ -53,6 +53,18 @@ AshFocusRules::AshFocusRules() {
 AshFocusRules::~AshFocusRules() {
 }
 
+bool AshFocusRules::IsWindowConsideredActivatable(aura::Window* window) const {
+  // Only toplevel windows can be activated.
+  if (!IsToplevelWindow(window))
+    return false;
+
+  // The window must be visible.
+  if (!IsWindowConsideredVisibleForActivation(window))
+    return false;
+
+  return true;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // AshFocusRules, ::wm::FocusRules:
 

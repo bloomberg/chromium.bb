@@ -24,6 +24,13 @@ class ActivationClient;
 
 namespace ash {
 
+namespace wm {
+
+class AshFocusRules;
+
+}  // namespace wm
+
+
 // Maintains a most recently used list of windows. This is used for window
 // cycling using Alt+Tab and overview mode.
 class ASH_EXPORT MruWindowTracker
@@ -32,21 +39,19 @@ class ASH_EXPORT MruWindowTracker
  public:
   typedef std::vector<aura::Window*> WindowList;
 
-  explicit MruWindowTracker(
-      aura::client::ActivationClient* activation_client);
+  MruWindowTracker(
+      aura::client::ActivationClient* activation_client,
+      ash::wm::AshFocusRules* focus_rules);
   ~MruWindowTracker() override;
-
-  // Returns the set of windows which can be cycled through. This method creates
-  // the vector based on the current set of windows across all valid root
-  // windows. As a result it is not necessarily the same as the set of
-  // windows being iterated over.
-  // The returned window list will be in descending (top most window first)
-  // order.
-  static WindowList BuildWindowList();
 
   // Returns the set of windows which can be cycled through using the tracked
   // list of most recently used windows.
-  WindowList BuildMruWindowList();
+  WindowList BuildMruWindowList() const;
+
+  // This does the same thing as the above, but ignores the system modal dialog
+  // state and hence the returned list could contain more windows if a system
+  // modal dialog window is present.
+  WindowList BuildWindowListIgnoreModal() const;
 
   // Starts or stops ignoring window activations. If no longer ignoring
   // activations the currently active window is moved to the front of the
@@ -66,11 +71,17 @@ class ASH_EXPORT MruWindowTracker
   // Overridden from WindowObserver:
   void OnWindowDestroyed(aura::Window* window) override;
 
+  // Uses the focus rules to check whether the window can be activateable,
+  // regardless of the state of the System modal dialog.
+  bool IsWindowConsideredActivateable(aura::Window* window) const;
+
   // List of windows that have been activated in containers that we cycle
   // through, sorted by most recently used.
   std::list<aura::Window*> mru_windows_;
 
-  aura::client::ActivationClient* activation_client_;
+  aura::client::ActivationClient* activation_client_;  // Not owned.
+
+  wm::AshFocusRules* focus_rules_;  // Not owned.
 
   bool ignore_window_activations_;
 

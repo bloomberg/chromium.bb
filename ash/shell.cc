@@ -878,8 +878,10 @@ void Shell::Init(const ShellInitParams& init_params) {
   env_filter_.reset(new ::wm::CompoundEventFilter);
   AddPreTargetHandler(env_filter_.get());
 
+  wm::AshFocusRules* focus_rules = new wm::AshFocusRules();
+
   ::wm::FocusController* focus_controller =
-      new ::wm::FocusController(new wm::AshFocusRules);
+      new ::wm::FocusController(focus_rules);
   focus_client_.reset(focus_controller);
   activation_client_ = focus_controller;
   activation_client_->AddObserver(this);
@@ -974,7 +976,8 @@ void Shell::Init(const ShellInitParams& init_params) {
 
   magnification_controller_.reset(
       MagnificationController::CreateInstance());
-  mru_window_tracker_.reset(new MruWindowTracker(activation_client_));
+  mru_window_tracker_.reset(new MruWindowTracker(activation_client_,
+                                                 focus_rules));
 
   partial_magnification_controller_.reset(
       new PartialMagnificationController());
