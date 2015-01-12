@@ -948,6 +948,10 @@ void RenderLayerScrollableArea::setHasHorizontalScrollbar(bool hasScrollbar)
         DisableCompositingQueryAsserts disabler;
         m_hBar = createScrollbar(HorizontalScrollbar);
     } else {
+        if (!layerForHorizontalScrollbar())
+            m_hBar->invalidate();
+        // Otherwise we will remove the layer and just need recompositing.
+
         destroyScrollbar(HorizontalScrollbar);
     }
 
@@ -972,6 +976,10 @@ void RenderLayerScrollableArea::setHasVerticalScrollbar(bool hasScrollbar)
         DisableCompositingQueryAsserts disabler;
         m_vBar = createScrollbar(VerticalScrollbar);
     } else {
+        if (!layerForVerticalScrollbar())
+            m_vBar->invalidate();
+        // Otherwise we will remove the layer and just need recompositing.
+
         destroyScrollbar(VerticalScrollbar);
     }
 
