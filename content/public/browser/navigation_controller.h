@@ -46,6 +46,11 @@ class NavigationController {
   };
 
   // Load type used in LoadURLParams.
+  //
+  // A Java counterpart will be generated for this enum.
+  // GENERATED_JAVA_ENUM_PACKAGE: (
+  //   org.chromium.content_public.browser.navigation_controller)
+  // GENERATED_JAVA_PREFIX_TO_STRIP: LOAD_TYPE_
   enum LoadURLType {
     // For loads that do not fall into any types below.
     LOAD_TYPE_DEFAULT,
@@ -64,6 +69,11 @@ class NavigationController {
   };
 
   // User agent override type used in LoadURLParams.
+  //
+  // A Java counterpart will be generated for this enum.
+  // GENERATED_JAVA_ENUM_PACKAGE: (
+  //   org.chromium.content_public.browser.navigation_controller)
+  // GENERATED_JAVA_PREFIX_TO_STRIP: UA_OVERRIDE_
   enum UserAgentOverrideOption {
     // Use the override value from the previous NavigationEntry in the
     // NavigationController.

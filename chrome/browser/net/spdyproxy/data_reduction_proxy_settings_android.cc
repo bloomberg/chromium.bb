@@ -109,8 +109,7 @@ jboolean DataReductionProxySettingsAndroid::IsDataReductionProxyUnreachable(
 
 // static
 bool DataReductionProxySettingsAndroid::Register(JNIEnv* env) {
-  bool register_natives_impl_result = RegisterNativesImpl(env);
-  return register_natives_impl_result;
+  return RegisterNativesImpl(env);
 }
 
 ScopedJavaLocalRef<jlongArray>

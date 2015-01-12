@@ -41,6 +41,7 @@ android_library("content_java") {
     "//net/android:net_java",
     "//ui/android:ui_java",
     "//third_party/jsr-305:jsr_305_javalib",
+    "//third_party/WebKit/public:blink_headers_java",
 
     #"//content:content_common",
   ]
@@ -109,6 +110,7 @@ java_cpp_enum("content_public_android_java_enums_srcjar") {
     "//content/browser/android/content_view_core_impl.cc",
     "//content/browser/android/gesture_event_type.h",
     "//content/browser/gamepad/gamepad_standard_mappings.h",
+    "//content/public/browser/navigation_controller.h",
     "//content/public/common/result_codes.h",
     "//content/public/common/screen_orientation_values.h",
     "//content/public/common/speech_recognition_error.h",
@@ -119,6 +121,8 @@ java_cpp_enum("content_public_android_java_enums_srcjar") {
     "org/chromium/content/browser/input/CanonicalAxisIndex.java",
     "org/chromium/content/browser/input/CanonicalButtonIndex.java",
     "org/chromium/content/browser/input/PopupItemType.java",
+    "org/chromium/content_public/browser/navigation_controller/LoadURLType.java",
+    "org/chromium/content_public/browser/navigation_controller/UserAgentOverrideOption.java",
     "org/chromium/content_public/common/ResultCode.java",
     "org/chromium/content_public/common/ScreenOrientationValues.java",
     "org/chromium/content_public/common/SpeechRecognitionErrorCode.java",

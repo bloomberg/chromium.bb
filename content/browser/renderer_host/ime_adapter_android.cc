@@ -66,27 +66,7 @@ NativeWebKeyboardEvent NativeWebKeyboardEventFromKeyEvent(
 }  // anonymous namespace
 
 bool RegisterImeAdapter(JNIEnv* env) {
-  if (!RegisterNativesImpl(env))
-    return false;
-
-  Java_ImeAdapter_initializeWebInputEvents(env,
-                                           blink::WebInputEvent::RawKeyDown,
-                                           blink::WebInputEvent::KeyUp,
-                                           blink::WebInputEvent::Char,
-                                           blink::WebInputEvent::ShiftKey,
-                                           blink::WebInputEvent::AltKey,
-                                           blink::WebInputEvent::ControlKey,
-                                           blink::WebInputEvent::CapsLockOn,
-                                           blink::WebInputEvent::NumLockOn);
-  Java_ImeAdapter_initializeTextInputFlags(
-      env,
-      blink::WebTextInputFlagAutocompleteOn,
-      blink::WebTextInputFlagAutocompleteOff,
-      blink::WebTextInputFlagAutocorrectOn,
-      blink::WebTextInputFlagAutocorrectOff,
-      blink::WebTextInputFlagSpellcheckOn,
-      blink::WebTextInputFlagSpellcheckOff);
-  return true;
+  return RegisterNativesImpl(env);
 }
 
 // Callback from Java to convert BackgroundColorSpan data to a

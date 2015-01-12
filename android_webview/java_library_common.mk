@@ -54,6 +54,8 @@ $(call intermediates-dir-for,GYP,shared)/enums/network_change_notifier_types_jav
 $(call intermediates-dir-for,GYP,shared)/enums/content_gamepad_mapping/org/chromium/content/browser/input/CanonicalAxisIndex.java \
 $(call intermediates-dir-for,GYP,shared)/enums/content_gamepad_mapping/org/chromium/content/browser/input/CanonicalButtonIndex.java \
 $(call intermediates-dir-for,GYP,shared)/enums/gesture_event_type_java/org/chromium/content/browser/GestureEventType.java \
+$(call intermediates-dir-for,GYP,shared)/enums/navigation_controller_java/org/chromium/content_public/browser/navigation_controller/LoadURLType.java \
+$(call intermediates-dir-for,GYP,shared)/enums/navigation_controller_java/org/chromium/content_public/browser/navigation_controller/UserAgentOverrideOption.java \
 $(call intermediates-dir-for,GYP,shared)/enums/popup_item_type_java/org/chromium/content/browser/input/PopupItemType.java \
 $(call intermediates-dir-for,GYP,shared)/enums/private_key_types_java/org/chromium/net/PrivateKeyType.java \
 $(call intermediates-dir-for,GYP,shared)/enums/result_codes_java/org/chromium/content_public/common/ResultCode.java \
@@ -71,6 +73,9 @@ $(call intermediates-dir-for,GYP,shared)/enums/system_ui_resource_type_java/org/
 $(call intermediates-dir-for,GYP,shared)/enums/text_input_type_java/org/chromium/ui/base/ime/TextInputType.java \
 $(call intermediates-dir-for,GYP,shared)/enums/touch_device_types_java/org/chromium/ui/base/HoverType.java \
 $(call intermediates-dir-for,GYP,shared)/enums/touch_device_types_java/org/chromium/ui/base/PointerType.java \
+$(call intermediates-dir-for,GYP,shared)/enums/web_input_event_java/org/chromium/blink_public/web/WebInputEventModifier.java \
+$(call intermediates-dir-for,GYP,shared)/enums/web_input_event_java/org/chromium/blink_public/web/WebInputEventType.java \
+$(call intermediates-dir-for,GYP,shared)/enums/web_text_input_type/org/chromium/blink_public/web/WebTextInputFlags.java \
 $(call intermediates-dir-for,GYP,shared)/templates/net_errors_java/org/chromium/net/NetError.java \
 $(call intermediates-dir-for,GYP,shared)/java_mojo/device_battery_mojo_bindings/src/org/chromium/mojom/device/BatteryMonitor.java \
 $(call intermediates-dir-for,GYP,shared)/java_mojo/device_battery_mojo_bindings/src/org/chromium/mojom/device/BatteryMonitor_Internal.java \

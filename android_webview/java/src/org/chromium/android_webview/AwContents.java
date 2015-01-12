@@ -59,6 +59,8 @@ import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationHistory;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.browser.navigation_controller.LoadURLType;
+import org.chromium.content_public.browser.navigation_controller.UserAgentOverrideOption;
 import org.chromium.content_public.common.Referrer;
 import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.base.PageTransition;
@@ -1151,8 +1153,7 @@ public class AwContents implements SmartClipProvider {
     public void loadUrl(LoadUrlParams params) {
         if (isDestroyed()) return;
 
-        if (params.getLoadUrlType() == LoadUrlParams.LOAD_TYPE_DATA
-                && !params.isBaseUrlDataScheme()) {
+        if (params.getLoadUrlType() == LoadURLType.DATA && !params.isBaseUrlDataScheme()) {
             // This allows data URLs with a non-data base URL access to file:///android_asset/ and
             // file:///android_res/ URLs. If AwSettings.getAllowFileAccess permits, it will also
             // allow access to file:// URLs (subject to OS level permission checks).
@@ -1170,7 +1171,7 @@ public class AwContents implements SmartClipProvider {
 
         // For WebView, always use the user agent override, which is set
         // every time the user agent in AwSettings is modified.
-        params.setOverrideUserAgent(LoadUrlParams.UA_OVERRIDE_TRUE);
+        params.setOverrideUserAgent(UserAgentOverrideOption.TRUE);
 
 
         // We don't pass extra headers to the content layer, as WebViewClassic
@@ -1203,8 +1204,7 @@ public class AwContents implements SmartClipProvider {
             requestVisitedHistoryFromClient();
         }
 
-        if (params.getLoadUrlType() == LoadUrlParams.LOAD_TYPE_DATA
-                && params.getBaseUrl() != null) {
+        if (params.getLoadUrlType() == LoadURLType.DATA && params.getBaseUrl() != null) {
             // Data loads with a base url will be resolved in Blink, and not cause an onPageStarted
             // event to be sent. Sending the callback directly from here.
             mContentsClient.getCallbackHelper().postOnPageStarted(params.getBaseUrl());

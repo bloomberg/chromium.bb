@@ -19,6 +19,8 @@ import android.view.inputmethod.ExtractedText;
 import android.view.inputmethod.ExtractedTextRequest;
 
 import org.chromium.base.VisibleForTesting;
+import org.chromium.blink_public.web.WebInputEventType;
+import org.chromium.blink_public.web.WebTextInputFlags;
 import org.chromium.ui.base.ime.TextInputType;
 
 /**
@@ -69,14 +71,14 @@ public class AdapterInputConnection extends BaseInputConnection {
 
         int inputType = imeAdapter.getTextInputType();
         int inputFlags = imeAdapter.getTextInputFlags();
-        if ((inputFlags & ImeAdapter.sTextInputFlagAutocompleteOff) != 0) {
+        if ((inputFlags & WebTextInputFlags.AutocompleteOff) != 0) {
             outAttrs.inputType |= EditorInfo.TYPE_TEXT_FLAG_NO_SUGGESTIONS;
         }
 
         if (inputType == TextInputType.TEXT) {
             // Normal text field
             outAttrs.imeOptions |= EditorInfo.IME_ACTION_GO;
-            if ((inputFlags & ImeAdapter.sTextInputFlagAutocorrectOff) == 0) {
+            if ((inputFlags & WebTextInputFlags.AutocorrectOff) == 0) {
                 outAttrs.inputType |= EditorInfo.TYPE_TEXT_FLAG_AUTO_CORRECT;
             }
         } else if (inputType == TextInputType.TEXT_AREA
@@ -84,7 +86,7 @@ public class AdapterInputConnection extends BaseInputConnection {
             // TextArea or contenteditable.
             outAttrs.inputType |= EditorInfo.TYPE_TEXT_FLAG_MULTI_LINE
                     | EditorInfo.TYPE_TEXT_FLAG_CAP_SENTENCES;
-            if ((inputFlags & ImeAdapter.sTextInputFlagAutocorrectOff) == 0) {
+            if ((inputFlags & WebTextInputFlags.AutocorrectOff) == 0) {
                 outAttrs.inputType |= EditorInfo.TYPE_TEXT_FLAG_AUTO_CORRECT;
             }
             outAttrs.imeOptions |= EditorInfo.IME_ACTION_NONE;
@@ -269,7 +271,7 @@ public class AdapterInputConnection extends BaseInputConnection {
             // Send TAB key event
             long timeStampMs = SystemClock.uptimeMillis();
             mImeAdapter.sendSyntheticKeyEvent(
-                    ImeAdapter.sEventTypeRawKeyDown, timeStampMs, KeyEvent.KEYCODE_TAB, 0, 0);
+                    WebInputEventType.RawKeyDown, timeStampMs, KeyEvent.KEYCODE_TAB, 0, 0);
         } else {
             mImeAdapter.sendKeyEventWithKeyCode(KeyEvent.KEYCODE_ENTER,
                     KeyEvent.FLAG_SOFT_KEYBOARD | KeyEvent.FLAG_KEEP_TOUCH_MODE
@@ -366,10 +368,10 @@ public class AdapterInputConnection extends BaseInputConnection {
         boolean result = true;
         if (keyCode == KeyEvent.KEYCODE_UNKNOWN) {
             result = mImeAdapter.sendSyntheticKeyEvent(
-                    ImeAdapter.sEventTypeRawKeyDown, SystemClock.uptimeMillis(), keyCode, 0, 0);
+                    WebInputEventType.RawKeyDown, SystemClock.uptimeMillis(), keyCode, 0, 0);
             result &= mImeAdapter.deleteSurroundingText(beforeLength, afterLength);
             result &= mImeAdapter.sendSyntheticKeyEvent(
-                    ImeAdapter.sEventTypeKeyUp, SystemClock.uptimeMillis(), keyCode, 0, 0);
+                    WebInputEventType.KeyUp, SystemClock.uptimeMillis(), keyCode, 0, 0);
         } else {
             mImeAdapter.sendKeyEventWithKeyCode(
                     keyCode, KeyEvent.FLAG_SOFT_KEYBOARD | KeyEvent.FLAG_KEEP_TOUCH_MODE);

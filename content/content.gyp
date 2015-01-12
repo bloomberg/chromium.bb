@@ -436,11 +436,13 @@
             '../net/net.gyp:net',
             '../ui/android/ui_android.gyp:ui_java',
             '../ui/touch_selection/ui_touch_selection.gyp:selection_event_type_java',
+            '../third_party/WebKit/public/blink_headers.gyp:blink_headers_java',
             'common_aidl',
             'content_common',
             'content_strings_grd',
             'content_gamepad_mapping',
             'gesture_event_type_java',
+            'navigation_controller_java',
             'popup_item_type_java',
             'result_codes_java',
             'speech_recognition_error_java',
@@ -480,6 +482,14 @@
           'type': 'none',
           'variables': {
             'source_file': 'browser/android/gesture_event_type.h',
+          },
+          'includes': [ '../build/android/java_cpp_enum.gypi' ],
+        },
+        {
+          'target_name': 'navigation_controller_java',
+          'type': 'none',
+          'variables': {
+            'source_file': 'public/browser/navigation_controller.h',
           },
           'includes': [ '../build/android/java_cpp_enum.gypi' ],
         },

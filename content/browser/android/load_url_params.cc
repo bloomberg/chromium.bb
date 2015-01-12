@@ -12,29 +12,10 @@
 #include "jni/LoadUrlParams_jni.h"
 #include "url/gurl.h"
 
-namespace {
-
-using content::NavigationController;
-
-void RegisterConstants(JNIEnv* env) {
-  Java_LoadUrlParams_initializeConstants(env,
-      NavigationController::LOAD_TYPE_DEFAULT,
-      NavigationController::LOAD_TYPE_BROWSER_INITIATED_HTTP_POST,
-      NavigationController::LOAD_TYPE_DATA,
-      NavigationController::UA_OVERRIDE_INHERIT,
-      NavigationController::UA_OVERRIDE_FALSE,
-      NavigationController::UA_OVERRIDE_TRUE);
-}
-
-}  // namespace
-
 namespace content {
 
 bool RegisterLoadUrlParams(JNIEnv* env) {
-  if (!RegisterNativesImpl(env))
-    return false;
-  RegisterConstants(env);
-  return true;
+  return RegisterNativesImpl(env);
 }
 
 jboolean IsDataScheme(JNIEnv* env, jclass clazz, jstring jurl) {
