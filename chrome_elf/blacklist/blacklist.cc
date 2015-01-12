@@ -50,6 +50,7 @@ const wchar_t* g_troublesome_dlls[kTroublesomeDllsMaxCount] = {
   L"minisp.dll",                        // Unknown (suspected malware).
   L"safetynut.dll",                     // Unknown (suspected adware).
   L"systemk.dll",                       // Unknown (suspected adware).
+  L"vntsrv.dll",                        // Virtual New Tab by APN LLC.
   L"wajam_goblin_64.dll",               // Wajam Internet Technologies.
   L"wajam_goblin.dll",                  // Wajam Internet Technologies.
   L"windowsapihookdll32.dll",           // Lenovo One Key Theater.
