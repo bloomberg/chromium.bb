@@ -115,11 +115,13 @@ class WatcherClientTest : public base::MultiProcessTest {
 
     switch (handle_policy) {
       case LEAK_HANDLE:
-        ret.AppendSwitchASCII(kLeakHandle, base::StringPrintf("%d", self_));
+        ret.AppendSwitchASCII(kLeakHandle,
+                              base::StringPrintf("%d", self_.Get()));
         break;
 
       case NO_LEAK_HANDLE:
-        ret.AppendSwitchASCII(kNoLeakHandle, base::StringPrintf("%d", self_));
+        ret.AppendSwitchASCII(kNoLeakHandle,
+                              base::StringPrintf("%d", self_.Get()));
         break;
 
       default:
