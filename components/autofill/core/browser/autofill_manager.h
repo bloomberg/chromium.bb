@@ -225,6 +225,7 @@ class AutofillManager : public AutofillDownloadManager::Observer,
 
   // CardUnmaskDelegate:
   void OnUnmaskResponse(const base::string16& cvc) override;
+  void OnUnmaskPromptClosed() override;
 
   // A toy method called when the (fake) unmasking process has finished.
   void OnUnmaskVerificationResult(bool success);

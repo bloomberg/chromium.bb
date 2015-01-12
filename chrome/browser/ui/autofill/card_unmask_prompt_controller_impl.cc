@@ -44,6 +44,7 @@ void CardUnmaskPromptControllerImpl::OnVerificationResult(bool success) {
 
 void CardUnmaskPromptControllerImpl::OnUnmaskDialogClosed() {
   card_unmask_view_ = nullptr;
+  delegate_->OnUnmaskPromptClosed();
 }
 
 void CardUnmaskPromptControllerImpl::OnUnmaskResponse(

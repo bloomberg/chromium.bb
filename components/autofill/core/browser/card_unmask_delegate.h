@@ -11,7 +11,12 @@ namespace autofill {
 
 class CardUnmaskDelegate {
  public:
+  // Called when the user has attempted a verification. Prompt is still
+  // open at this point.
   virtual void OnUnmaskResponse(const base::string16& cvc) = 0;
+
+  // Called when the unmask prompt is closed (e.g., cancelled).
+  virtual void OnUnmaskPromptClosed() = 0;
 };
 
 }  // namespace autofill

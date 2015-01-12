@@ -685,6 +685,12 @@ void AutofillManager::OnUnmaskResponse(const base::string16& cvc) {
   }
 }
 
+void AutofillManager::OnUnmaskPromptClosed() {
+  driver_->RendererShouldClearPreviewedForm();
+  unmasking_card_ = CreditCard();
+  unmasking_cvc_.clear();
+}
+
 void AutofillManager::OnUnmaskVerificationResult(bool success) {
   if (success) {
     unmasking_card_.set_record_type(CreditCard::FULL_SERVER_CARD);
@@ -699,7 +705,6 @@ void AutofillManager::OnUnmaskVerificationResult(bool success) {
                        unmasking_card_);
   }
   client()->OnUnmaskVerificationResult(success);
-  unmasking_cvc_.clear();
 }
 
 void AutofillManager::OnDidEndTextFieldEditing() {
