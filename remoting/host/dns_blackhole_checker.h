@@ -23,7 +23,7 @@ extern const char kDefaultHostTalkGadgetPrefix[];
 class DnsBlackholeChecker : public net::URLFetcherDelegate {
  public:
   DnsBlackholeChecker(
-      scoped_refptr<net::URLRequestContextGetter> url_request_context_getter,
+      const scoped_refptr<net::URLRequestContextGetter>& request_context_getter,
       std::string talkgadget_prefix);
   ~DnsBlackholeChecker() override;
 

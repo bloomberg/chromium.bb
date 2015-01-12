@@ -39,43 +39,43 @@ scoped_ptr<ChromotingHostContext> ChromotingHostContext::Copy() {
       video_encode_task_runner_, url_request_context_getter_));
 }
 
-scoped_refptr<AutoThreadTaskRunner>
-ChromotingHostContext::audio_task_runner() {
+scoped_refptr<AutoThreadTaskRunner> ChromotingHostContext::audio_task_runner()
+    const {
   return audio_task_runner_;
 }
 
-scoped_refptr<AutoThreadTaskRunner>
-ChromotingHostContext::file_task_runner() {
+scoped_refptr<AutoThreadTaskRunner> ChromotingHostContext::file_task_runner()
+    const {
   return file_task_runner_;
 }
 
-scoped_refptr<AutoThreadTaskRunner>
-ChromotingHostContext::input_task_runner() {
+scoped_refptr<AutoThreadTaskRunner> ChromotingHostContext::input_task_runner()
+    const {
   return input_task_runner_;
 }
 
-scoped_refptr<AutoThreadTaskRunner>
-ChromotingHostContext::network_task_runner() {
+scoped_refptr<AutoThreadTaskRunner> ChromotingHostContext::network_task_runner()
+    const {
   return network_task_runner_;
 }
 
-scoped_refptr<AutoThreadTaskRunner>
-ChromotingHostContext::ui_task_runner() {
+scoped_refptr<AutoThreadTaskRunner> ChromotingHostContext::ui_task_runner()
+    const {
   return ui_task_runner_;
 }
 
 scoped_refptr<AutoThreadTaskRunner>
-ChromotingHostContext::video_capture_task_runner() {
+ChromotingHostContext::video_capture_task_runner() const {
   return video_capture_task_runner_;
 }
 
 scoped_refptr<AutoThreadTaskRunner>
-ChromotingHostContext::video_encode_task_runner() {
+ChromotingHostContext::video_encode_task_runner() const {
   return video_encode_task_runner_;
 }
 
 scoped_refptr<net::URLRequestContextGetter>
-ChromotingHostContext::url_request_context_getter() {
+ChromotingHostContext::url_request_context_getter() const {
   return url_request_context_getter_;
 }
 

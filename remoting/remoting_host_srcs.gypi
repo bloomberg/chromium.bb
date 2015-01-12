@@ -118,6 +118,8 @@
       'host/host_extension_session_manager.h',
       'host/host_secret.cc',
       'host/host_secret.h',
+      'host/host_signaling_manager.cc',
+      'host/host_signaling_manager.h',
       'host/host_status_logger.cc',
       'host/host_status_logger.h',
       'host/host_status_monitor.h',

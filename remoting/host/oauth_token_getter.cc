@@ -34,7 +34,8 @@ OAuthTokenGetter::OAuthCredentials::OAuthCredentials(
 
 OAuthTokenGetter::OAuthTokenGetter(
     scoped_ptr<OAuthCredentials> oauth_credentials,
-    scoped_refptr<net::URLRequestContextGetter> url_request_context_getter,
+    const scoped_refptr<net::URLRequestContextGetter>&
+        url_request_context_getter,
     bool auto_refresh)
     : oauth_credentials_(oauth_credentials.Pass()),
       gaia_oauth_client_(

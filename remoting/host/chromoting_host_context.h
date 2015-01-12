@@ -47,35 +47,36 @@ class ChromotingHostContext {
   scoped_ptr<ChromotingHostContext> Copy();
 
   // Task runner for the thread that is used for the UI.
-  scoped_refptr<AutoThreadTaskRunner> ui_task_runner();
+  scoped_refptr<AutoThreadTaskRunner> ui_task_runner() const;
 
   // Task runner for the thread used for audio capture and encoding.
-  scoped_refptr<AutoThreadTaskRunner> audio_task_runner();
+  scoped_refptr<AutoThreadTaskRunner> audio_task_runner() const;
 
   // Task runner for the thread that is used for blocking file
   // IO. This thread is used by the URLRequestContext to read proxy
   // configuration and by NatConfig to read policy configs.
-  scoped_refptr<AutoThreadTaskRunner> file_task_runner();
+  scoped_refptr<AutoThreadTaskRunner> file_task_runner() const;
 
   // Task runner for the thread that is used by the InputInjector.
   //
   // TODO(sergeyu): Do we need a separate thread for InputInjector?
   // Can we use some other thread instead?
-  scoped_refptr<AutoThreadTaskRunner> input_task_runner();
+  scoped_refptr<AutoThreadTaskRunner> input_task_runner() const;
 
   // Task runner for the thread used for network IO. This thread runs
   // a libjingle message loop, and is the only thread on which
   // libjingle code may be run.
-  scoped_refptr<AutoThreadTaskRunner> network_task_runner();
+  scoped_refptr<AutoThreadTaskRunner> network_task_runner() const;
 
   // Task runner for the thread used by the ScreenRecorder to capture
   // the screen.
-  scoped_refptr<AutoThreadTaskRunner> video_capture_task_runner();
+  scoped_refptr<AutoThreadTaskRunner> video_capture_task_runner() const;
 
   // Task runner for the thread used to encode video streams.
-  scoped_refptr<AutoThreadTaskRunner> video_encode_task_runner();
+  scoped_refptr<AutoThreadTaskRunner> video_encode_task_runner() const;
 
-  scoped_refptr<net::URLRequestContextGetter> url_request_context_getter();
+  scoped_refptr<net::URLRequestContextGetter> url_request_context_getter()
+      const;
 
  private:
   ChromotingHostContext(

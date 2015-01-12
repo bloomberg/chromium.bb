@@ -55,7 +55,7 @@ class XmppSignalStrategy : public base::NonThreadSafe,
 
   XmppSignalStrategy(
       net::ClientSocketFactory* socket_factory,
-      scoped_refptr<net::URLRequestContextGetter> request_context_getter,
+      const scoped_refptr<net::URLRequestContextGetter>& request_context_getter,
       const XmppServerConfig& xmpp_server_config);
   ~XmppSignalStrategy() override;
 

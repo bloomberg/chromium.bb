@@ -45,8 +45,9 @@ SignalingConnector::~SignalingConnector() {
   net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
 }
 
-void SignalingConnector::EnableOAuth(OAuthTokenGetter* oauth_token_getter) {
-  oauth_token_getter_ = oauth_token_getter;
+void SignalingConnector::EnableOAuth(
+    scoped_ptr<OAuthTokenGetter> oauth_token_getter) {
+  oauth_token_getter_ = oauth_token_getter.Pass();
 }
 
 void SignalingConnector::OnSignalStrategyStateChange(

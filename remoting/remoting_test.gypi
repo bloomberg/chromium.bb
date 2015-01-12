@@ -26,7 +26,6 @@
         'host/fake_host_status_monitor.h',
         'host/fake_mouse_cursor_monitor.cc',
         'host/fake_mouse_cursor_monitor.h',
-        'host/mock_callback.h',
         'host/policy_hack/fake_policy_watcher.cc',
         'host/policy_hack/fake_policy_watcher.h',
         'host/policy_hack/mock_policy_callback.cc',

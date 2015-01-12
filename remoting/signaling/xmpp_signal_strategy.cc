@@ -48,7 +48,7 @@ XmppSignalStrategy::XmppServerConfig::~XmppServerConfig() {}
 
 XmppSignalStrategy::XmppSignalStrategy(
     net::ClientSocketFactory* socket_factory,
-    scoped_refptr<net::URLRequestContextGetter> request_context_getter,
+    const scoped_refptr<net::URLRequestContextGetter>& request_context_getter,
     const XmppSignalStrategy::XmppServerConfig& xmpp_server_config)
     : socket_factory_(socket_factory),
       request_context_getter_(request_context_getter),

@@ -39,8 +39,7 @@ class SignalingConnector
 
   // May be called immediately after the constructor to enable OAuth
   // access token updating.
-  // |oauth_token_getter| must outlive SignalingConnector.
-  void EnableOAuth(OAuthTokenGetter* oauth_token_getter);
+  void EnableOAuth(scoped_ptr<OAuthTokenGetter> oauth_token_getter);
 
   // OAuthTokenGetter callback.
   void OnAccessToken(OAuthTokenGetter::Status status,
@@ -69,7 +68,7 @@ class SignalingConnector
   base::Closure auth_failed_callback_;
   scoped_ptr<DnsBlackholeChecker> dns_blackhole_checker_;
 
-  OAuthTokenGetter* oauth_token_getter_;
+  scoped_ptr<OAuthTokenGetter> oauth_token_getter_;
 
   // Number of times we tried to connect without success.
   int reconnect_attempts_;

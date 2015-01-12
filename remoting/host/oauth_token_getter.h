@@ -42,6 +42,9 @@ class OAuthTokenGetter :
   // This structure contains information required to perform
   // authentication to OAuth2.
   struct OAuthCredentials {
+    // |is_service_account| should be True if the OAuth refresh token is for a
+    // service account, False for a user account, to allow the correct client-ID
+    // to be used.
     OAuthCredentials(const std::string& login,
                      const std::string& refresh_token,
                      bool is_service_account);
@@ -56,10 +59,10 @@ class OAuthTokenGetter :
     bool is_service_account;
   };
 
-  OAuthTokenGetter(
-      scoped_ptr<OAuthCredentials> oauth_credentials,
-      scoped_refptr<net::URLRequestContextGetter> url_request_context_getter,
-      bool auto_refresh);
+  OAuthTokenGetter(scoped_ptr<OAuthCredentials> oauth_credentials,
+                   const scoped_refptr<net::URLRequestContextGetter>&
+                       url_request_context_getter,
+                   bool auto_refresh);
   ~OAuthTokenGetter() override;
 
   // Call |on_access_token| with an access token, or the failure status.
