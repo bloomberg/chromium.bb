@@ -26,9 +26,17 @@ void ImageStyleInterpolation::apply(StyleResolverState& state) const
         StyleBuilder::applyProperty(m_id, state, m_finalImage.get());
         return;
     }
-    RefPtr<CSSCrossfadeValue> crossfadeValue = CSSCrossfadeValue::create(m_initialImage, m_finalImage);
+    RefPtrWillBeRawPtr<CSSCrossfadeValue> crossfadeValue = CSSCrossfadeValue::create(m_initialImage, m_finalImage);
     crossfadeValue->setPercentage(CSSPrimitiveValue::create(cachedValue, CSSPrimitiveValue::CSS_NUMBER));
 
     StyleBuilder::applyProperty(m_id, state, crossfadeValue.get());
 }
+
+void ImageStyleInterpolation::trace(Visitor* visitor)
+{
+    visitor->trace(m_initialImage);
+    visitor->trace(m_finalImage);
+    StyleInterpolation::trace(visitor);
 }
+
+} // namespace blink

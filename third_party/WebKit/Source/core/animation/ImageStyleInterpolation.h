@@ -16,6 +16,8 @@ public:
         return adoptRefWillBeNoop(new ImageStyleInterpolation(&start, &end, id));
     }
 
+    virtual void trace(Visitor*) override;
+
     static bool canCreateFrom(const CSSValue&);
     virtual void apply(StyleResolverState&) const override;
 
@@ -27,8 +29,8 @@ private:
     {
     }
 
-    PassRefPtrWillBeRawPtr<CSSValue> m_initialImage;
-    PassRefPtrWillBeRawPtr<CSSValue> m_finalImage;
+    RefPtrWillBeMember<CSSValue> m_initialImage;
+    RefPtrWillBeMember<CSSValue> m_finalImage;
 };
 }
 
