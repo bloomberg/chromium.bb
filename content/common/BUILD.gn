@@ -142,7 +142,6 @@ source_set("common") {
       "//mojo/environment:chromium",
       "//mojo/public/interfaces/application",
       "//sandbox",
-      "//storage/browser",
       "//storage/common",
       "//third_party/WebKit/public:blink",
       "//ui/gl",

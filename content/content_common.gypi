@@ -579,7 +579,6 @@
         '../mojo/mojo_edk.gyp:mojo_system_impl',
         '../mojo/mojo_public.gyp:mojo_application_bindings',
         '../mojo/mojo_public.gyp:mojo_cpp_bindings',
-        '../storage/storage_browser.gyp:storage',
         '../storage/storage_common.gyp:storage_common',
         '../third_party/WebKit/public/blink.gyp:blink',
         '../ui/gl/gl.gyp:gl',
