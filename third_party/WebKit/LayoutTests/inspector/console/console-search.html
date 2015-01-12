@@ -1,0 +1,155 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/console-test.js"></script>
+<script>
+function populateConsoleWithMessages()
+{
+    console.log("FIRST MATCH, SECOND MATCH");
+    for (var i = 0; i < 200; ++i)
+        console.log("Message #" + i);
+    var a = {};
+    for (var i = 0; i < 200; ++i)
+        a["field_" + i] = "value #" + i;
+    console.dir(a);
+    console.log("LAST MATCH");
+    runTest();
+}
+
+function test()
+{
+    function addResult(result)
+    {
+        viewport.refresh();
+        InspectorTest.addResult(result);
+    }
+
+    function setQuery(text)
+    {
+        consoleView._searchableView._searchInputElement.value = text;
+        consoleView._searchableView.showSearchField();
+    }
+
+    var consoleView = WebInspector.ConsolePanel._view();
+    var viewport = consoleView._viewport;
+    const maximumViewportMessagesCount = 150;
+    InspectorTest.runTestSuite([
+        function assertViewportHeight(next)
+        {
+            viewport.invalidate();
+            var viewportMessagesCount = viewport._lastVisibleIndex - viewport._firstVisibleIndex;
+            if (viewportMessagesCount > maximumViewportMessagesCount) {
+                InspectorTest.addResult(String.sprintf(
+                  "Test cannot be run because viewport can fit %d messages, while %d is the test's maximum.",
+                   viewportMessagesCount, maximumViewportMessagesCount));
+                InspectorTest.completeTest();
+                return;
+            }
+            next();
+        },
+
+        function scrollConsoleToTop(next)
+        {
+            viewport.forceScrollItemToBeFirst(0);
+            addResult("first visible message index: " + viewport.firstVisibleIndex());
+            next();
+        },
+
+        function testCanJumpForward(next)
+        {
+            setQuery("MATCH");
+
+            // Find first match.
+            consoleView._searchableView.handleFindNextShortcut();
+            addResult("first visible message index: " + viewport.firstVisibleIndex());
+
+            // Find second match.
+            consoleView._searchableView.handleFindNextShortcut();
+            addResult("first visible message index: " + viewport.firstVisibleIndex());
+
+            // Find last match.
+            consoleView._searchableView.handleFindNextShortcut();
+            addResult("last visible message index: " + viewport.lastVisibleIndex());
+            next();
+        },
+
+        function testCanJumpBackward(next)
+        {
+            setQuery("MATCH");
+
+            // Start out at the first match.
+            consoleView._searchableView.handleFindNextShortcut();
+
+            // Find last match.
+            consoleView._searchableView.handleFindPreviousShortcut();
+            addResult("last visible message index: " + viewport.lastVisibleIndex());
+
+            // Find second match.
+            consoleView._searchableView.handleFindPreviousShortcut();
+            addResult("first visible message index: " + viewport.firstVisibleIndex());
+
+            // Find first match.
+            consoleView._searchableView.handleFindPreviousShortcut();
+            addResult("first visible message index: " + viewport.firstVisibleIndex());
+            next();
+        },
+
+        function scrollConsoleToTop(next)
+        {
+            viewport.forceScrollItemToBeFirst(0);
+            addResult("first visible message index: " + viewport.firstVisibleIndex());
+            next();
+        },
+
+        function testCanMarkCurrentMatch(next)
+        {
+            function addCurrentMarked ()
+            {
+                var matches = document.querySelectorAll(".highlighted-search-result");
+                addResult("number of visible matches: " + matches.length);
+                for (var i = 0; i < matches.length; ++i)
+                    addResult("match " + i + ": " + matches[i].className);
+            }
+
+            setQuery("MATCH");
+
+            // Find first match.
+            consoleView._searchableView.handleFindNextShortcut();
+            addCurrentMarked();
+
+            // Find second match.
+            consoleView._searchableView.handleFindNextShortcut();
+            addCurrentMarked();
+
+            next();
+        },
+
+        function testCanJumpForwardBetweenTreeElementMatches(next)
+        {
+            InspectorTest.expandConsoleMessages(function()
+            {
+                // Find first match.
+                setQuery("field_1");
+                consoleView._searchableView.handleFindNextShortcut();
+                var currentResultElem = document.querySelector(".current-search-result");
+                addResult("matched tree element: " + currentResultElem.innerHTML);
+
+                // Find last match.
+                setQuery("field_199");
+                consoleView._searchableView.handleFindNextShortcut();
+                currentResultElem = document.querySelector(".current-search-result");
+                addResult("matched tree element: " + currentResultElem.innerHTML);
+
+                next();
+            });
+        }
+    ]);
+}
+</script>
+</head>
+<body onload="populateConsoleWithMessages()">
+<p>
+    Tests console search.
+</p>
+</body>
+</html>
