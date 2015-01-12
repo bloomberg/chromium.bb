@@ -125,11 +125,11 @@ class HeaderParser(object):
   generator_directive_re = re.compile(
       r'^\s*//\s+GENERATED_JAVA_(\w+)\s*:\s*([\.\w]+)$')
   multi_line_generator_directive_start_re = re.compile(
-      r'^\s*//\s+GENERATED_JAVA_(\w+)\s*:\s*([\.\w]*)\\$')
+      r'^\s*//\s+GENERATED_JAVA_(\w+)\s*:\s*\(([\.\w]*)$')
   multi_line_directive_continuation_re = re.compile(
-      r'^\s*//\s+([\.\w]+)\\$')
+      r'^\s*//\s+([\.\w]+)$')
   multi_line_directive_end_re = re.compile(
-      r'^\s*//\s+([\.\w]*)$')
+      r'^\s*//\s+([\.\w]*)\)$')
 
   optional_class_or_struct_re = r'(class|struct)?'
   enum_name_re = r'(\w+)'

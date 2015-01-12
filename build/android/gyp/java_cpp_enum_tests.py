@@ -225,8 +225,8 @@ public class ClassName {
 
   def testParseSimpleMultiLineDirective(self):
     test_data = """
-      // GENERATED_JAVA_ENUM_PACKAGE: \\
-      //   test.namespace
+      // GENERATED_JAVA_ENUM_PACKAGE: (
+      //   test.namespace)
       // GENERATED_JAVA_CLASS_NAME_OVERRIDE: Bar
       enum Foo {
         FOO_A,
@@ -238,9 +238,9 @@ public class ClassName {
 
   def testParseMultiLineDirective(self):
     test_data = """
-      // GENERATED_JAVA_ENUM_PACKAGE: te\\
-      //   st.name\\
-      //   space
+      // GENERATED_JAVA_ENUM_PACKAGE: (te
+      //   st.name
+      //   space)
       enum Foo {
         FOO_A,
       };
@@ -250,11 +250,12 @@ public class ClassName {
 
   def testParseMultiLineDirectiveWithOtherDirective(self):
     test_data = """
-      // GENERATED_JAVA_ENUM_PACKAGE: \\
-      //   test.namespace
-      // GENERATED_JAVA_CLASS_NAME_OVERRIDE: \\
-      //   Ba\\
+      // GENERATED_JAVA_ENUM_PACKAGE: (
+      //   test.namespace)
+      // GENERATED_JAVA_CLASS_NAME_OVERRIDE: (
+      //   Ba
       //   r
+      //   )
       enum Foo {
         FOO_A,
       };
@@ -265,9 +266,9 @@ public class ClassName {
 
   def testParseMalformedMultiLineDirectiveWithOtherDirective(self):
     test_data = """
-      // GENERATED_JAVA_ENUM_PACKAGE: \\
-      //   test.name\\
-      //   space\\
+      // GENERATED_JAVA_ENUM_PACKAGE: (
+      //   test.name
+      //   space
       // GENERATED_JAVA_CLASS_NAME_OVERRIDE: Bar
       enum Foo {
         FOO_A,
@@ -278,9 +279,9 @@ public class ClassName {
 
   def testParseMalformedMultiLineDirective(self):
     test_data = """
-      // GENERATED_JAVA_ENUM_PACKAGE: \\
-      //   test.name\\
-      //   space\\
+      // GENERATED_JAVA_ENUM_PACKAGE: (
+      //   test.name
+      //   space
       enum Foo {
         FOO_A,
       };
@@ -290,7 +291,7 @@ public class ClassName {
 
   def testParseMalformedMultiLineDirectiveShort(self):
     test_data = """
-      // GENERATED_JAVA_ENUM_PACKAGE: \\
+      // GENERATED_JAVA_ENUM_PACKAGE: (
       enum Foo {
         FOO_A,
       };
