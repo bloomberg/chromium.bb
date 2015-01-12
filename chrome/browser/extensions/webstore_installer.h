@@ -211,19 +211,23 @@ class WebstoreInstaller : public content::NotificationObserver,
   // This does *not* transfer ownership of |directory|.
   static void SetDownloadDirectoryForTests(base::FilePath* directory);
 
+ protected:
+  // For testing.
+  ~WebstoreInstaller() override;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(WebstoreInstallerTest, PlatformParams);
   friend struct content::BrowserThread::DeleteOnThread<
-   content::BrowserThread::UI>;
+      content::BrowserThread::UI>;
   friend class base::DeleteHelper<WebstoreInstaller>;
-  ~WebstoreInstaller() override;
 
   // Helper to get install URL.
   static GURL GetWebstoreInstallURL(const std::string& extension_id,
                                     InstallSource source);
 
   // DownloadManager::DownloadUrl callback.
-  void OnDownloadStarted(content::DownloadItem* item,
+  void OnDownloadStarted(const std::string& extension_id,
+                         content::DownloadItem* item,
                          content::DownloadInterruptReason interrupt_reason);
 
   // DownloadItem::Observer implementation:
@@ -237,8 +241,9 @@ class WebstoreInstaller : public content::NotificationObserver,
   // This function is used for both the extension Crx and dependences.
   void DownloadCrx(const std::string& extension_id, InstallSource source);
 
-  // Starts downloading the extension to |file_path|.
-  void StartDownload(const base::FilePath& file_path);
+  // Starts downloading the extension with ID |extension_id| to |file_path|.
+  void StartDownload(const std::string& extension_id,
+                     const base::FilePath& file_path);
 
   // Updates the InstallTracker with the latest download progress.
   void UpdateDownloadProgress();

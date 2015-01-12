@@ -282,6 +282,7 @@
       'browser/extensions/subscribe_page_action_browsertest.cc',
       'browser/extensions/web_contents_browsertest.cc',
       'browser/extensions/webstore_inline_installer_browsertest.cc',
+      'browser/extensions/webstore_installer_browsertest.cc',
       'browser/extensions/webstore_installer_test.cc',
       'browser/extensions/webstore_installer_test.h',
       'browser/extensions/webstore_reinstaller_browsertest.cc',
