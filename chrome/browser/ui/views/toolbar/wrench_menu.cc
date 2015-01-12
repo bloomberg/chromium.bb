@@ -640,11 +640,16 @@ class WrenchMenu::ZoomView : public WrenchMenuView {
     WebContents* selected_tab =
         menu()->browser_->tab_strip_model()->GetActiveWebContents();
     int zoom = 100;
-    if (selected_tab)
-      zoom = ui_zoom::ZoomController::FromWebContents(selected_tab)
-                 ->GetZoomPercent();
-    increment_button_->SetEnabled(zoom < selected_tab->GetMaximumZoomPercent());
-    decrement_button_->SetEnabled(zoom > selected_tab->GetMinimumZoomPercent());
+    if (selected_tab) {
+      auto zoom_controller =
+          ui_zoom::ZoomController::FromWebContents(selected_tab);
+      if (zoom_controller)
+        zoom = zoom_controller->GetZoomPercent();
+      increment_button_->SetEnabled(zoom <
+                                    selected_tab->GetMaximumZoomPercent());
+      decrement_button_->SetEnabled(zoom >
+                                    selected_tab->GetMinimumZoomPercent());
+    }
     zoom_label_->SetText(
         l10n_util::GetStringFUTF16Int(IDS_ZOOM_PERCENT, zoom));
 
