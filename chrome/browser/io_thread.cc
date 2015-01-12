@@ -1243,14 +1243,12 @@ void IOThread::ConfigureQuicGlobals(
         ShouldEnableQuicPortSelection(command_line));
     globals->quic_connection_options =
         GetQuicConnectionOptions(command_line, quic_trial_params);
-    if (ShouldEnableQuicPacing(command_line, quic_trial_group,
-                               quic_trial_params)) {
+    if (ShouldEnableQuicPacing(command_line, quic_trial_params)) {
       globals->quic_connection_options.push_back(net::kPACE);
     }
   }
 
   size_t max_packet_length = GetQuicMaxPacketLength(command_line,
-                                                    quic_trial_group,
                                                     quic_trial_params);
   if (max_packet_length != 0) {
     globals->quic_max_packet_length.set(max_packet_length);
@@ -1314,7 +1312,6 @@ bool IOThread::ShouldEnableQuicPortSelection(
 
 bool IOThread::ShouldEnableQuicPacing(
     const base::CommandLine& command_line,
-    base::StringPiece quic_trial_group,
     const VariationParameters& quic_trial_params) {
   if (command_line.HasSwitch(switches::kEnableQuicPacing))
     return true;
@@ -1338,10 +1335,7 @@ net::QuicTagVector IOThread::GetQuicConnectionOptions(
   VariationParameters::const_iterator it =
       quic_trial_params.find("connection_options");
   if (it == quic_trial_params.end()) {
-    // TODO(rch): remove support for deprecated congestion_options.
-    it = quic_trial_params.find("congestion_options");
-    if (it == quic_trial_params.end())
-      return net::QuicTagVector();
+    return net::QuicTagVector();
   }
 
   return net::QuicUtils::ParseQuicConnectionOptions(it->second);
@@ -1434,7 +1428,6 @@ bool IOThread::ShouldQuicEnableTruncatedConnectionIds(
 // static
 size_t IOThread::GetQuicMaxPacketLength(
     const base::CommandLine& command_line,
-    base::StringPiece quic_trial_group,
     const VariationParameters& quic_trial_params) {
   if (command_line.HasSwitch(switches::kQuicMaxPacketLength)) {
     unsigned value;

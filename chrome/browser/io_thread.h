@@ -356,7 +356,6 @@ class IOThread : public content::BrowserThreadDelegate {
   // QUIC handshake.
   static bool ShouldEnableQuicPacing(
       const base::CommandLine& command_line,
-      base::StringPiece quic_trial_group,
       const VariationParameters& quic_trial_params);
 
   // Returns true if QUIC should always require handshake confirmation during
@@ -393,7 +392,6 @@ class IOThread : public content::BrowserThreadDelegate {
   // parsing any of the options, or if the default value should be used.
   static size_t GetQuicMaxPacketLength(
       const base::CommandLine& command_line,
-      base::StringPiece quic_trial_group,
       const VariationParameters& quic_trial_params);
 
   // Returns the QUIC versions specified by any flags in |command_line|
