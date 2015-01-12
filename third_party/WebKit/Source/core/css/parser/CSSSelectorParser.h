@@ -20,38 +20,36 @@ public:
     static void parseSelector(CSSParserTokenRange, const CSSParserContext&, const AtomicString& defaultNamespace, StyleSheetContents*, CSSSelectorList&);
 
 private:
-    CSSSelectorParser(CSSParserTokenRange, const CSSParserContext&, const AtomicString& defaultNamespace, StyleSheetContents*);
+    CSSSelectorParser(const CSSParserContext&, const AtomicString& defaultNamespace, StyleSheetContents*);
 
     // These will all consume trailing comments if successful
 
-    void consumeComplexSelectorList(CSSSelectorList&);
-    void consumeCompoundSelectorList(CSSSelectorList&);
+    void consumeComplexSelectorList(CSSParserTokenRange&, CSSSelectorList&);
+    void consumeCompoundSelectorList(CSSParserTokenRange&, CSSSelectorList&);
 
-    PassOwnPtr<CSSParserSelector> consumeComplexSelector();
-    PassOwnPtr<CSSParserSelector> consumeCompoundSelector();
+    PassOwnPtr<CSSParserSelector> consumeComplexSelector(CSSParserTokenRange&);
+    PassOwnPtr<CSSParserSelector> consumeCompoundSelector(CSSParserTokenRange&);
     // This doesn't include element names, since they're handled specially
-    PassOwnPtr<CSSParserSelector> consumeSimpleSelector();
+    PassOwnPtr<CSSParserSelector> consumeSimpleSelector(CSSParserTokenRange&);
 
-    bool consumeName(AtomicString& name, AtomicString& namespacePrefix, bool& hasNamespace);
+    bool consumeName(CSSParserTokenRange&, AtomicString& name, AtomicString& namespacePrefix, bool& hasNamespace);
 
     // These will return nullptr when the selector is invalid
-    PassOwnPtr<CSSParserSelector> consumeId();
-    PassOwnPtr<CSSParserSelector> consumeClass();
-    PassOwnPtr<CSSParserSelector> consumePseudo();
-    PassOwnPtr<CSSParserSelector> consumeAttribute();
+    PassOwnPtr<CSSParserSelector> consumeId(CSSParserTokenRange&);
+    PassOwnPtr<CSSParserSelector> consumeClass(CSSParserTokenRange&);
+    PassOwnPtr<CSSParserSelector> consumePseudo(CSSParserTokenRange&);
+    PassOwnPtr<CSSParserSelector> consumeAttribute(CSSParserTokenRange&);
 
-    CSSSelector::Relation consumeCombinator();
-    CSSSelector::Match consumeAttributeMatch();
-    CSSSelector::AttributeMatchType consumeAttributeFlags();
+    CSSSelector::Relation consumeCombinator(CSSParserTokenRange&);
+    CSSSelector::Match consumeAttributeMatch(CSSParserTokenRange&);
+    CSSSelector::AttributeMatchType consumeAttributeFlags(CSSParserTokenRange&);
 
     QualifiedName determineNameInNamespace(const AtomicString& prefix, const AtomicString& localName);
     void rewriteSpecifiersWithNamespaceIfNeeded(CSSParserSelector*);
     void rewriteSpecifiersWithElementName(const AtomicString& namespacePrefix, const AtomicString& elementName, CSSParserSelector*, bool tagIsForNamespaceRule = false);
     void rewriteSpecifiersWithElementNameForCustomPseudoElement(const QualifiedName& tag, const AtomicString& elementName, CSSParserSelector*, bool tagIsForNamespaceRule);
     void rewriteSpecifiersWithElementNameForContentPseudoElement(const QualifiedName& tag, const AtomicString& elementName, CSSParserSelector*, bool tagIsForNamespaceRule);
-    PassOwnPtr<CSSParserSelector> rewriteSpecifiers(PassOwnPtr<CSSParserSelector> specifiers, PassOwnPtr<CSSParserSelector> newSpecifier);
-
-    CSSParserTokenRange m_tokenRange;
+    static PassOwnPtr<CSSParserSelector> rewriteSpecifiers(PassOwnPtr<CSSParserSelector> specifiers, PassOwnPtr<CSSParserSelector> newSpecifier);
 
     const CSSParserContext& m_context;
     AtomicString m_defaultNamespace;

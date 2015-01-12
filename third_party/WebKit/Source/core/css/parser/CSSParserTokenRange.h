@@ -62,6 +62,7 @@ public:
     CSSParserTokenRange consumeBlock();
 
     void consumeComponentValue();
+    void consumeComments();
     void consumeWhitespaceAndComments();
 
     static void initStaticEOFToken();
