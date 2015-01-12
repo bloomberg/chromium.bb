@@ -111,6 +111,8 @@ cr.define('cr.login', function() {
         ['responseHeaders']);
     window.addEventListener(
         'message', this.onMessageFromWebview_.bind(this), false);
+    window.addEventListener(
+        'popstate', this.onPopState_.bind(this), false);
   };
 
   /**
@@ -143,16 +145,15 @@ cr.define('cr.login', function() {
     var currentUrl = details.url;
 
     if (currentUrl.lastIndexOf(this.continueUrlWithoutParams_, 0) == 0) {
-      if (currentUrl.indexOf('ntp=1') >= 0) {
+      if (currentUrl.indexOf('ntp=1') >= 0)
         this.skipForNow_ = true;
-      }
+
       this.onAuthCompleted_();
       return;
     }
 
-    if (currentUrl.indexOf('https') != 0) {
+    if (currentUrl.indexOf('https') != 0)
       this.trusted_ = false;
-    }
 
     if (this.isConstrainedWindow_) {
       var isEmbeddedPage = false;
@@ -171,9 +172,35 @@ cr.define('cr.login', function() {
       }
     }
 
-    if (currentUrl.lastIndexOf(this.idpOrigin_) == 0) {
+    this.updateHistoryState_(currentUrl);
+
+    // Posts a message to IdP pages to initiate communication.
+    if (currentUrl.lastIndexOf(this.idpOrigin_) == 0)
       this.webview_.contentWindow.postMessage({}, currentUrl);
-    }
+  };
+
+  /**
+    * Manually updates the history. Invoked upon completion of a webview
+    * navigation.
+    * @param {string} url Request URL.
+    * @private
+    */
+  Authenticator.prototype.updateHistoryState_ = function(url) {
+    if (history.state && history.state.url != url)
+      history.pushState({url: url}, '');
+    else
+      history.replaceState({url: url});
+  };
+
+  /**
+   * Invoked when the history state is changed.
+   * @param {object} e The popstate event being triggered.
+   * @private
+   */
+  Authenticator.prototype.onPopState_ = function(e) {
+    var state = e.state;
+    if (state && state.url)
+      this.webview_.src = state.url;
   };
 
   /**
