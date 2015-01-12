@@ -971,7 +971,7 @@
           'icu_use_data_file_flag%' : 0,
         }],
         ['OS=="win" or OS=="mac"', {
-            'enable_wifi_bootstrapping%' : 1,
+          'enable_wifi_bootstrapping%' : 1,
         }],
 
         # Path to sas.dll, which provides the SendSAS function.
