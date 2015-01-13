@@ -13,21 +13,12 @@ import("//build/config/linux/pkg_config.gni")
 # don't want to bloat the binary more by including another copy.
 
 declare_args() {
-  if (is_chromeos) {
-    # ChromeOS includes an up-to-date system harfbuzz that we have control
-    # over, so it use the system one by default.
-    use_system_harfbuzz = true
-  } else if (is_official_build) {
-    # For official builds, we want to control the Harbuzz version so always
-    # use our included one. Currently the sysroot includes a version of pangoft
-    # that doesn't link to harfbuzz, so there are no linker problems. If we
-    # update that version, we'll need to work around the duplicate symbols some
-    # other way.
-    use_system_harfbuzz = false
-  } else if (is_linux) {
-    # Use the system harfbuzz for newer versions of pangoft, and not for older
-    # ones. pangoft links to the system harfbuzz starting with 1.31.0, which
-    # causes duplicate symbols when we link our own version.
+  if (is_linux && (!is_official_build || is_chromeos)) {
+    # Since version 1.31.0, pangoft2 which we depend on pulls in harfbuzz
+    # anyways. However, we want to have control of the version of harfbuzz
+    # we use, so don't use system harfbuzz for official builds, unless we
+    # are building for chrome os, where we have the system harfbuzz under
+    # control as well.
     use_system_harfbuzz = exec_script(pkg_config_script,
                                       pkg_config_args + [
                                             "--atleast-version=1.31.0",
@@ -35,6 +26,12 @@ declare_args() {
                                           ],
                                       "value")
   } else {
+    use_system_harfbuzz = false
+  }
+  if (is_linux && cpu_arch == "arm" && !is_chromeos) {
+    # Override use_system_harfbuzz for ARM cross compiling so system
+    # harfbuzz is not used because the corresponding package is not
+    # available.
     use_system_harfbuzz = false
   }
 }
