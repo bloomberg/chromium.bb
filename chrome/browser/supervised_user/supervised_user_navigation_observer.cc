@@ -18,6 +18,7 @@
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/history/content/browser/history_context_helper.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar.h"
@@ -227,10 +228,9 @@ void SupervisedUserNavigationObserver::OnRequestBlockedInternal(
   Time timestamp = Time::Now();  // TODO(bauerb): Use SaneTime when available.
   // Create a history entry for the attempt and mark it as such.
   history::HistoryAddPageArgs add_page_args(
-        url, timestamp, web_contents(), 0,
-        url, history::RedirectList(),
-        ui::PAGE_TRANSITION_BLOCKED, history::SOURCE_BROWSED,
-        false);
+      url, timestamp, history::ContextIDForWebContents(web_contents()), 0, url,
+      history::RedirectList(), ui::PAGE_TRANSITION_BLOCKED,
+      history::SOURCE_BROWSED, false);
 
   // Add the entry to the history database.
   Profile* profile =

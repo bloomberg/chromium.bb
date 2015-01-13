@@ -19,6 +19,7 @@ static_library("browser") {
     "history_client.h",
     "history_constants.cc",
     "history_constants.h",
+    "history_context.h",
     "history_db_task.h",
     "history_match.cc",
     "history_match.h",

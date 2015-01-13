@@ -18,6 +18,7 @@
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "components/favicon_base/favicon_types.h"
+#include "components/history/core/browser/history_context.h"
 #include "components/history/core/browser/url_row.h"
 #include "components/history/core/common/thumbnail_score.h"
 #include "ui/base/page_transition_types.h"
@@ -25,11 +26,6 @@
 #include "url/gurl.h"
 
 class PageUsageData;
-
-// TODO(sdefresne): remove, http://crbug.com/371816
-namespace content {
-class WebContents;
-}
 
 namespace history {
 
@@ -43,13 +39,6 @@ typedef std::vector<GURL> RedirectList;
 typedef int64 FaviconBitmapID; // Identifier for a bitmap in a favicon.
 typedef int64 SegmentID;  // URL segments for the most visited view.
 typedef int64 IconMappingID; // For page url and icon mapping.
-
-// Identifier for a context to scope the lifetime of navigation entry
-// references. (ContextIDs are used in comparisons only and are never
-// dereferenced.)
-// NB: The use of WebContents here is temporary; when the dependency on content
-// is broken, some other type will take its place.
-typedef content::WebContents* ContextID;
 
 // The enumeration of all possible sources of visits is listed below.
 // The source will be propagated along with a URL or a visit item

@@ -13,6 +13,7 @@
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/render_messages.h"
+#include "components/history/content/browser/history_context_helper.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
@@ -59,8 +60,8 @@ HistoryTabHelper::CreateHistoryAddPageArgs(
     int nav_entry_id,
     const content::FrameNavigateParams& params) {
   history::HistoryAddPageArgs add_page_args(
-      params.url, timestamp, web_contents(), nav_entry_id,
-      params.referrer.url, params.redirects, params.transition,
+      params.url, timestamp, history::ContextIDForWebContents(web_contents()),
+      nav_entry_id, params.referrer.url, params.redirects, params.transition,
       history::SOURCE_BROWSED, did_replace_entry);
   if (ui::PageTransitionIsMainFrame(params.transition) &&
       virtual_url != params.url) {
@@ -157,10 +158,11 @@ void HistoryTabHelper::WebContentsDestroyed() {
       profile, ServiceAccessType::IMPLICIT_ACCESS);
   if (hs) {
     NavigationEntry* entry = tab->GetController().GetLastCommittedEntry();
+    history::ContextID context_id = history::ContextIDForWebContents(tab);
     if (entry) {
-      hs->UpdateWithPageEndTime(tab, entry->GetUniqueID(), tab->GetURL(),
+      hs->UpdateWithPageEndTime(context_id, entry->GetUniqueID(), tab->GetURL(),
                                 base::Time::Now());
     }
-    hs->ClearCachedDataForContextID(tab);
+    hs->ClearCachedDataForContextID(context_id);
   }
 }

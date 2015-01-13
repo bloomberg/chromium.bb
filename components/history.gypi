@@ -39,6 +39,7 @@
         'history/core/browser/history_client.h',
         'history/core/browser/history_constants.cc',
         'history/core/browser/history_constants.h',
+        'history/core/browser/history_context.h',
         'history/core/browser/history_db_task.h',
         'history/core/browser/history_match.cc',
         'history/core/browser/history_match.h',
@@ -143,6 +144,8 @@
           'sources': [
             'history/content/browser/download_constants_utils.cc',
             'history/content/browser/download_constants_utils.h',
+            'history/content/browser/history_context_helper.cc',
+            'history/content/browser/history_context_helper.h',
           ],
         }
       ],
