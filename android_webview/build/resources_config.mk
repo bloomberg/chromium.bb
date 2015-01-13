@@ -11,6 +11,7 @@ android_webview_manifest_file := $(call my-dir)/AndroidManifest.xml
 # Resources.
 android_webview_resources_dirs := \
     $(call my-dir)/../java/res \
+    $(call my-dir)/../apk/java/res \
     $(call intermediates-dir-for,GYP,shared)/android_webview_jarjar_content_resources/jarjar_res \
     $(call intermediates-dir-for,GYP,shared)/android_webview_jarjar_ui_resources/jarjar_res \
     $(call intermediates-dir-for,GYP,ui_strings_grd)/ui_strings_grd/res_grit \
