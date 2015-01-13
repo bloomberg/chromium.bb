@@ -80,6 +80,8 @@ cr.define('accessibility', function() {
   function addGlobalAccessibilityModeToggle(global_a11y_mode) {
     var full_a11y_on = isAccessibilityComplete(global_a11y_mode);
     $('toggle_global').textContent = (full_a11y_on ? 'on' : 'off');
+    $('toggle_global').setAttribute('aria-pressed',
+                                    (full_a11y_on ? 'true' : 'false'));
     $('toggle_global').addEventListener('click',
                                         toggleGlobalAccessibility);
   }
@@ -149,18 +151,19 @@ cr.define('accessibility', function() {
   }
 
   function createToggleAccessibilityElement(data) {
-    var link = document.createElement('a');
-    link.setAttribute('href', '#');
+    var link = document.createElement('a', 'action-link');
+    link.setAttribute('role', 'button');
     var full_a11y_on = isAccessibilityComplete(data['a11y_mode']);
     link.textContent = 'accessibility ' + (full_a11y_on ? 'on' : 'off');
+    link.setAttribute('aria-pressed', (full_a11y_on ? 'true' : 'false'));
     link.addEventListener('click',
                           toggleAccessibility.bind(this, data, link));
     return link;
   }
 
   function createShowAccessibilityTreeElement(data, row, opt_refresh) {
-    var link = document.createElement('a');
-    link.setAttribute('href', '#');
+    var link = document.createElement('a', 'action-link');
+    link.setAttribute('role', 'button');
     if (opt_refresh)
       link.textContent = 'refresh accessibility tree';
     else
@@ -172,8 +175,8 @@ cr.define('accessibility', function() {
   }
 
   function createHideAccessibilityTreeElement(id) {
-    var link = document.createElement('a');
-    link.setAttribute('href', '#');
+    var link = document.createElement('a', 'action-link');
+    link.setAttribute('role', 'button');
     link.textContent = 'hide accessibility tree';
     link.addEventListener('click',
                           function() {
