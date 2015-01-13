@@ -353,9 +353,10 @@ void TranslateONCHierarchy(const OncValueSignature& signature,
     base::DictionaryValue* nested_shill_dict = NULL;
     target_shill_dictionary->GetDictionaryWithoutPathExpansion(
         *it, &nested_shill_dict);
-    if (!nested_shill_dict)
+    if (!nested_shill_dict) {
       nested_shill_dict = new base::DictionaryValue;
-    target_shill_dictionary->SetWithoutPathExpansion(*it, nested_shill_dict);
+      target_shill_dictionary->SetWithoutPathExpansion(*it, nested_shill_dict);
+    }
     target_shill_dictionary = nested_shill_dict;
   }
   // Translates fields of |onc_object| and writes them to
