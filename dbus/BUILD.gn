@@ -66,8 +66,10 @@ source_set("test_support") {
     "mock_object_proxy.h",
   ]
 
-  deps = [
+  public_deps = [
     ":dbus",
+  ]
+  deps = [
     "//testing/gmock",
   ]
 
