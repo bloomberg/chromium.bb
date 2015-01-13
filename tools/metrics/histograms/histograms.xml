@@ -1182,6 +1182,22 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="AsyncDNS.PrefDefaultSource" enum="AsyncDNSPrefDefaultSource">
+  <owner>ttuttle@chromium.org</owner>
+  <summary>
+    The source of the async DNS preference's default. Logged at startup, when
+    the IO thread is created.
+  </summary>
+</histogram>
+
+<histogram name="AsyncDNS.PrefSource" enum="AsyncDNSPrefSource">
+  <owner>ttuttle@chromium.org</owner>
+  <summary>
+    The source of the async DNS preference's value. Logged at startup, when the
+    IO thread is created.
+  </summary>
+</histogram>
+
 <histogram name="AsyncDNS.ResolveError" enum="NetErrorCodes">
   <owner>ttuttle@chromium.org</owner>
   <summary>
@@ -42429,6 +42445,23 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="7" label="NO_ADDRESSES"/>
 </enum>
 
+<enum name="AsyncDNSPrefDefaultSource" type="int">
+  <int value="0" label="PLATFORM"/>
+  <int value="1" label="FIELD_TRIAL"/>
+  <int value="2" label="HARD_CODED_DEFAULT"/>
+</enum>
+
+<enum name="AsyncDNSPrefSource" type="int">
+  <int value="0" label="MANAGED_PREF"/>
+  <int value="1" label="SUPERVISED_PREF"/>
+  <int value="2" label="EXTENSION_PREF"/>
+  <int value="3" label="COMMAND_LINE_PREF"/>
+  <int value="4" label="USER_PREF"/>
+  <int value="5" label="RECOMMENDED_PREF"/>
+  <int value="6" label="DEFAULT_PREF"/>
+  <int value="7" label="UNKNOWN_PREF"/>
+</enum>
+
 <enum name="AsyncDNSResolveStatus" type="int">
   <int value="0" label="DNS_SUCCESS">Succeeded with async DNS.</int>
   <int value="1" label="PROC_SUCCESS">
@@ -58708,6 +58741,13 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="Fast"
       label="Fast start by skipping normal chrome.dll startup."/>
   <affected-histogram name="Startup.AppListFirstPaintWarmStart"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="AsyncDNSPref">
+  <suffix name="Disabled"/>
+  <suffix name="Enabled"/>
+  <affected-histogram name="AsyncDNS.PrefDefaultSource"/>
+  <affected-histogram name="AsyncDNS.PrefSource"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="AsyncSlowStart">

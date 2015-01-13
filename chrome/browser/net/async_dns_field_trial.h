@@ -5,10 +5,16 @@
 #ifndef CHROME_BROWSER_NET_ASYNC_DNS_FIELD_TRIAL_H_
 #define CHROME_BROWSER_NET_ASYNC_DNS_FIELD_TRIAL_H_
 
+#include "base/prefs/pref_service.h"
+
 namespace chrome_browser_net {
 
 // Returns true when the async resolver should be used.
 bool ConfigureAsyncDnsFieldTrial();
+
+// Logs the derivation of the async DNS pref's actual value, for debugging.
+// Must be called on the UI thread, since it accesses prefs directly.
+void LogAsyncDnsPrefSource(const PrefService::Preference* pref);
 
 }  // namespace chrome_browser_net
 

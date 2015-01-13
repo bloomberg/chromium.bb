@@ -505,6 +505,8 @@ IOThread::IOThread(
       chrome_browser_net::ConfigureAsyncDnsFieldTrial());
   local_state->SetDefaultPrefValue(prefs::kBuiltInDnsClientEnabled,
                                    dns_client_enabled_default);
+  chrome_browser_net::LogAsyncDnsPrefSource(
+      local_state->FindPreference(prefs::kBuiltInDnsClientEnabled));
 
   dns_client_enabled_.Init(prefs::kBuiltInDnsClientEnabled,
                            local_state,
