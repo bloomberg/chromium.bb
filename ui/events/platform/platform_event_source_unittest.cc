@@ -77,8 +77,7 @@ class TestPlatformEventDispatcher : public PlatformEventDispatcher {
   TestPlatformEventDispatcher(int id, std::vector<int>* list)
       : id_(id),
         list_(list),
-        post_dispatch_action_(POST_DISPATCH_NONE),
-        stop_stream_(false) {
+        post_dispatch_action_(POST_DISPATCH_NONE) {
     PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(this);
   }
   ~TestPlatformEventDispatcher() override {
@@ -102,7 +101,6 @@ class TestPlatformEventDispatcher : public PlatformEventDispatcher {
   int id_;
   std::vector<int>* list_;
   uint32_t post_dispatch_action_;
-  bool stop_stream_;
 
   DISALLOW_COPY_AND_ASSIGN(TestPlatformEventDispatcher);
 };
