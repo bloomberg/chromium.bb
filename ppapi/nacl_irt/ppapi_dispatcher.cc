@@ -182,6 +182,11 @@ void PpapiDispatcher::OnMsgInitializeNaClDispatcher(
   // plugin.
   proxy::InterfaceList::SetProcessGlobalPermissions(args.permissions);
 
+  // Notify the renderer process, if necessary.
+  ManifestService* manifest_service = GetManifestService();
+  if (manifest_service)
+    manifest_service->StartupInitializationComplete();
+
   int32_t error = ::PPP_InitializeModule(
       0 /* module */,
       &proxy::PluginDispatcher::GetBrowserInterface);
@@ -201,11 +206,6 @@ void PpapiDispatcher::OnMsgInitializeNaClDispatcher(
   }
   // From here, the dispatcher will manage its own lifetime according to the
   // lifetime of the attached channel.
-
-  // Notify the renderer process, if necessary.
-  ManifestService* manifest_service = GetManifestService();
-  if (manifest_service)
-    manifest_service->StartupInitializationComplete();
 }
 
 void PpapiDispatcher::OnPluginDispatcherMessageReceived(

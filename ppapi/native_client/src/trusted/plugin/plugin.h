@@ -158,7 +158,6 @@ class Plugin : public pp::Instance {
   // is successful, the file descriptor is opened and can be passed to sel_ldr
   // with the sandbox on.
   void NexeFileDidOpen(int32_t pp_error);
-  void NexeFileDidOpenContinuation(int32_t pp_error);
 
   // Callback used when a .nexe is translated from bitcode.  If the translation
   // is successful, the file descriptor is opened and can be passed to sel_ldr
