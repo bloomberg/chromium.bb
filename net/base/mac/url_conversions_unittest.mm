@@ -15,7 +15,7 @@ namespace {
 
 class URLConversionTest : public ::testing::Test {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     testData_.reset([[NSArray alloc]
         initWithObjects:
             // Simple URL with protocol
