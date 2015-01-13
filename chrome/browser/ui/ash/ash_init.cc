@@ -65,7 +65,7 @@ void OpenAsh(gfx::AcceleratedWidget remote_window) {
       scoped_ptr<ash::ScreenshotDelegate>(new ChromeScreenshotGrabber).Pass());
 #if defined(OS_CHROMEOS)
   // TODO(flackr): Investigate exposing a blocking pool task runner to chromeos.
-  shell->accelerometer_reader()->Initialize(
+  chromeos::AccelerometerReader::GetInstance()->Initialize(
       content::BrowserThread::GetBlockingPool()
           ->GetTaskRunnerWithShutdownBehavior(
               base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));

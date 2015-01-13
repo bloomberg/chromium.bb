@@ -79,7 +79,7 @@ MaximizeModeController::MaximizeModeController()
       lid_is_closed_(false) {
   Shell::GetInstance()->AddShellObserver(this);
 #if defined(OS_CHROMEOS)
-  Shell::GetInstance()->accelerometer_reader()->AddObserver(this);
+  chromeos::AccelerometerReader::GetInstance()->AddObserver(this);
   chromeos::DBusThreadManager::Get()->
       GetPowerManagerClient()->AddObserver(this);
 #endif  // OS_CHROMEOS
@@ -88,7 +88,7 @@ MaximizeModeController::MaximizeModeController()
 MaximizeModeController::~MaximizeModeController() {
   Shell::GetInstance()->RemoveShellObserver(this);
 #if defined(OS_CHROMEOS)
-  Shell::GetInstance()->accelerometer_reader()->RemoveObserver(this);
+  chromeos::AccelerometerReader::GetInstance()->RemoveObserver(this);
   chromeos::DBusThreadManager::Get()->
       GetPowerManagerClient()->RemoveObserver(this);
 #endif  // OS_CHROMEOS

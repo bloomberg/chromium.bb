@@ -138,7 +138,6 @@
 #include "ash/virtual_keyboard_controller.h"
 #include "base/bind_helpers.h"
 #include "base/sys_info.h"
-#include "chromeos/accelerometer/accelerometer_reader.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "ui/chromeos/user_activity_power_manager_notifier.h"
 #include "ui/display/chromeos/display_configurator.h"
@@ -638,7 +637,6 @@ Shell::Shell(ShellDelegate* delegate)
       window_positioner_(new WindowPositioner),
       activation_client_(NULL),
 #if defined(OS_CHROMEOS)
-      accelerometer_reader_(new chromeos::AccelerometerReader()),
       display_configurator_(new ui::DisplayConfigurator()),
 #endif  // defined(OS_CHROMEOS)
       native_cursor_manager_(new AshNativeCursorManager),

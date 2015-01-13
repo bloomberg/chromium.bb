@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
+#include "base/memory/singleton.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -187,12 +188,9 @@ AccelerometerReader::ConfigurationData::ConfigurationData()
 AccelerometerReader::ConfigurationData::~ConfigurationData() {
 }
 
-AccelerometerReader::AccelerometerReader()
-    : configuration_(new AccelerometerReader::Configuration()),
-      weak_factory_(this) {
-}
-
-AccelerometerReader::~AccelerometerReader() {
+// static
+AccelerometerReader* AccelerometerReader::GetInstance() {
+  return Singleton<AccelerometerReader>::get();
 }
 
 void AccelerometerReader::Initialize(
@@ -222,6 +220,14 @@ bool AccelerometerReader::IsReadingStable(const ui::AccelerometerUpdate& update,
   return update.has(source) &&
          std::abs(update.get(source).Length() - kMeanGravity) <=
              kDeviationFromGravityThreshold;
+}
+
+AccelerometerReader::AccelerometerReader()
+    : configuration_(new AccelerometerReader::Configuration()),
+      weak_factory_(this) {
+}
+
+AccelerometerReader::~AccelerometerReader() {
 }
 
 void AccelerometerReader::OnInitialized(

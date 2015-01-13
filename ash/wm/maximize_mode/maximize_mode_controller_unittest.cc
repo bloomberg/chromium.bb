@@ -57,7 +57,7 @@ class MaximizeModeControllerTest : public test::AshTestBase {
 
   void SetUp() override {
     test::AshTestBase::SetUp();
-    Shell::GetInstance()->accelerometer_reader()->RemoveObserver(
+    chromeos::AccelerometerReader::GetInstance()->RemoveObserver(
         maximize_mode_controller());
 
     // Set the first display to be the internal display for the accelerometer
@@ -67,7 +67,7 @@ class MaximizeModeControllerTest : public test::AshTestBase {
   }
 
   void TearDown() override {
-    Shell::GetInstance()->accelerometer_reader()->AddObserver(
+    chromeos::AccelerometerReader::GetInstance()->AddObserver(
         maximize_mode_controller());
     test::AshTestBase::TearDown();
   }

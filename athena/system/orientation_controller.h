@@ -35,8 +35,6 @@ class OrientationController : public chromeos::AccelerometerReader::Observer {
   // The last configured rotation.
   gfx::Display::Rotation current_rotation_;
 
-  scoped_ptr<chromeos::AccelerometerReader> accelerometer_reader_;
-
   DISALLOW_COPY_AND_ASSIGN(OrientationController);
 };
 

@@ -42,12 +42,6 @@ class FocusClient;
 }
 }
 
-#if defined(OS_CHROMEOS)
-namespace chromeos {
-class AccelerometerReader;
-}
-#endif
-
 namespace gfx {
 class ImageSkia;
 class Point;
@@ -517,10 +511,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   }
 
 #if defined(OS_CHROMEOS)
-  chromeos::AccelerometerReader* accelerometer_reader() {
-    return accelerometer_reader_.get();
-  }
-
   // TODO(oshima): Move these objects to DisplayController.
   ui::DisplayConfigurator* display_configurator() {
     return display_configurator_.get();
@@ -714,7 +704,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   scoped_ptr<LocaleNotificationController> locale_notification_controller_;
 
 #if defined(OS_CHROMEOS)
-  scoped_ptr<chromeos::AccelerometerReader> accelerometer_reader_;
   scoped_ptr<PowerEventObserver> power_event_observer_;
   scoped_ptr<ui::UserActivityPowerManagerNotifier> user_activity_notifier_;
   scoped_ptr<VideoActivityNotifier> video_activity_notifier_;

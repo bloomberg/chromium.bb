@@ -74,7 +74,7 @@ ScreenOrientationController::ScreenOrientationController()
 ScreenOrientationController::~ScreenOrientationController() {
   content::ScreenOrientationProvider::SetDelegate(NULL);
   Shell::GetInstance()->RemoveShellObserver(this);
-  Shell::GetInstance()->accelerometer_reader()->RemoveObserver(this);
+  chromeos::AccelerometerReader::GetInstance()->RemoveObserver(this);
   Shell::GetInstance()->display_controller()->RemoveObserver(this);
 }
 
@@ -220,14 +220,14 @@ void ScreenOrientationController::OnMaximizeModeStarted() {
       display_manager->GetDisplayInfo(gfx::Display::InternalDisplayId())
           .rotation();
   LoadDisplayRotationProperties();
-  Shell::GetInstance()->accelerometer_reader()->AddObserver(this);
+  chromeos::AccelerometerReader::GetInstance()->AddObserver(this);
   Shell::GetInstance()->display_controller()->AddObserver(this);
 }
 
 void ScreenOrientationController::OnMaximizeModeEnded() {
   if (!Shell::GetInstance()->display_manager()->HasInternalDisplay())
     return;
-  Shell::GetInstance()->accelerometer_reader()->RemoveObserver(this);
+  chromeos::AccelerometerReader::GetInstance()->RemoveObserver(this);
   Shell::GetInstance()->display_controller()->RemoveObserver(this);
   if (current_rotation_ != user_rotation_)
     SetDisplayRotation(user_rotation_);

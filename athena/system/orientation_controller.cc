@@ -9,6 +9,7 @@
 #include "base/files/file_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/task_runner.h"
+#include "chromeos/accelerometer/accelerometer_reader.h"
 
 namespace athena {
 
@@ -24,18 +25,16 @@ OrientationController::OrientationController() {
 
 void OrientationController::InitWith(
     scoped_refptr<base::TaskRunner> blocking_task_runner) {
-  accelerometer_reader_.reset(new chromeos::AccelerometerReader());
-  accelerometer_reader_->Initialize(blocking_task_runner);
-  accelerometer_reader_->AddObserver(this);
+  chromeos::AccelerometerReader::GetInstance()->Initialize(
+      blocking_task_runner);
+  chromeos::AccelerometerReader::GetInstance()->AddObserver(this);
 }
 
 OrientationController::~OrientationController() {
-  DCHECK(!accelerometer_reader_.get());
 }
 
 void OrientationController::Shutdown() {
-  accelerometer_reader_->RemoveObserver(this);
-  accelerometer_reader_.reset();
+  chromeos::AccelerometerReader::GetInstance()->RemoveObserver(this);
 }
 
 void OrientationController::OnAccelerometerUpdated(
