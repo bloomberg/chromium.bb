@@ -18,7 +18,7 @@
 #include "ui/gl/egl_util.h"
 #include "ui/gl/gl_bindings.h"
 
-#ifdef USE_LIBV4L2
+#if defined(USE_LIBV4L2)
 // Auto-generated for dlopen libv4l2 libraries
 #include "content/common/gpu/media/v4l2_stubs.h"
 #include "third_party/v4l-utils/lib/include/libv4l2.h"
@@ -28,7 +28,7 @@ using content_common_gpu_media::InitializeStubs;
 using content_common_gpu_media::StubPathMap;
 
 static const base::FilePath::CharType kV4l2Lib[] =
-    FILE_PATH_LITERAL("libv4l2.so");
+    FILE_PATH_LITERAL("/usr/lib/libv4l2.so");
 #else
 #define v4l2_close close
 #define v4l2_ioctl ioctl
@@ -152,7 +152,7 @@ bool GenericV4L2Device::Initialize() {
   if (device_fd_ == -1) {
     return false;
   }
-#ifdef USE_LIBV4L2
+#if defined(USE_LIBV4L2)
   if (HANDLE_EINTR(v4l2_fd_open(device_fd_, V4L2_DISABLE_CONVERSION)) == -1) {
     v4l2_close(device_fd_);
     return false;
@@ -285,7 +285,7 @@ uint32 GenericV4L2Device::PreferredInputFormat() {
 
 // static
 bool GenericV4L2Device::PostSandboxInitialization() {
-#ifdef USE_LIBV4L2
+#if defined(USE_LIBV4L2)
   StubPathMap paths;
   paths[kModuleV4l2].push_back(kV4l2Lib);
 

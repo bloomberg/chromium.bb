@@ -84,16 +84,29 @@ inline bool IsOzone() {
 #endif
 }
 
-bool IsAcceleratedVideoEnabled() {
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
+inline bool UseLibV4L2() {
+#if defined(USE_LIBV4L2)
+  return true;
+#else
+  return false;
+#endif
+}
+
+bool IsAcceleratedVaapiVideoEncodeEnabled() {
   bool accelerated_encode_enabled = false;
 #if defined(OS_CHROMEOS)
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
   accelerated_encode_enabled =
       !command_line.HasSwitch(switches::kDisableVaapiAcceleratedVideoEncode);
 #endif
-  return !command_line.HasSwitch(switches::kDisableAcceleratedVideoDecode) ||
-         accelerated_encode_enabled;
+  return accelerated_encode_enabled;
+}
+
+bool IsAcceleratedVideoDecodeEnabled() {
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  return !command_line.HasSwitch(switches::kDisableAcceleratedVideoDecode);
 }
 
 intptr_t GpuSIGSYS_Handler(const struct arch_seccomp_data& args,
@@ -138,13 +151,14 @@ intptr_t GpuSIGSYS_Handler(const struct arch_seccomp_data& args,
 }
 
 void AddV4L2GpuWhitelist(std::vector<BrokerFilePermission>* permissions) {
-  // Device nodes for V4L2 video decode accelerator drivers.
-  static const char kDevVideoDecPath[] = "/dev/video-dec";
+  if (IsAcceleratedVideoDecodeEnabled()) {
+    // Device node for V4L2 video decode accelerator drivers.
+    static const char kDevVideoDecPath[] = "/dev/video-dec";
+    permissions->push_back(BrokerFilePermission::ReadWrite(kDevVideoDecPath));
+  }
 
-  // Device nodes for V4L2 video encode accelerator drivers.
+  // Device node for V4L2 video encode accelerator drivers.
   static const char kDevVideoEncPath[] = "/dev/video-enc";
-
-  permissions->push_back(BrokerFilePermission::ReadWrite(kDevVideoDecPath));
   permissions->push_back(BrokerFilePermission::ReadWrite(kDevVideoEncPath));
 }
 
@@ -279,7 +293,8 @@ bool GpuProcessPolicy::PreSandboxHook() {
   if (IsArchitectureX86_64() || IsArchitectureI386()) {
     // Accelerated video dlopen()'s some shared objects
     // inside the sandbox, so preload them now.
-    if (IsAcceleratedVideoEnabled()) {
+    if (IsAcceleratedVaapiVideoEncodeEnabled() ||
+        IsAcceleratedVideoDecodeEnabled()) {
       const char* I965DrvVideoPath = NULL;
 
       if (IsArchitectureX86_64()) {
@@ -319,6 +334,12 @@ void GpuProcessPolicy::InitGpuBrokerProcess(
         BrokerFilePermission::ReadWriteCreateUnlinkRecursive(kDevShm));
   } else if (IsArchitectureArm() || IsOzone()){
     AddV4L2GpuWhitelist(&permissions);
+    if (UseLibV4L2()) {
+      dlopen("/usr/lib/libv4l2.so", RTLD_NOW|RTLD_GLOBAL|RTLD_NODELETE);
+      // This is a device-specific encoder plugin.
+      dlopen("/usr/lib/libv4l/plugins/libv4l-encplugin.so",
+          RTLD_NOW|RTLD_GLOBAL|RTLD_NODELETE);
+    }
   }
 
   // Add eventual extra files from permissions_extra.
