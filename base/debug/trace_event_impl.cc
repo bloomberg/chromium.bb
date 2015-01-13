@@ -701,13 +701,13 @@ void TraceEvent::AppendAsJSON(std::string* out) const {
   // Category group checked at category creation time.
   DCHECK(!strchr(name_, '"'));
   StringAppendF(out,
-      "{\"cat\":\"%s\",\"pid\":%i,\"tid\":%i,\"ts\":%" PRId64 ","
-      "\"ph\":\"%c\",\"name\":\"%s\",\"args\":{",
-      TraceLog::GetCategoryGroupName(category_group_enabled_),
+      "{\"pid\":%i,\"tid\":%i,\"ts\":%" PRId64 ","
+      "\"ph\":\"%c\",\"cat\":\"%s\",\"name\":\"%s\",\"args\":{",
       process_id,
       thread_id_,
       time_int64,
       phase_,
+      TraceLog::GetCategoryGroupName(category_group_enabled_),
       name_);
 
   // Output argument names and values, stop at first NULL argument name.
@@ -1760,7 +1760,7 @@ void TraceLog::ConvertTraceEventsToTraceFormat(
       }
       for (size_t j = 0; j < chunk->size(); ++j) {
         if (i > 0 || j > 0)
-          json_events_str_ptr->data().append(",");
+          json_events_str_ptr->data().append(",\n");
         chunk->GetEventAt(j)->AppendAsJSON(&(json_events_str_ptr->data()));
       }
     }
