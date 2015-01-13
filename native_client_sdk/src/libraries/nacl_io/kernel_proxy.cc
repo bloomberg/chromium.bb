@@ -279,6 +279,11 @@ int KernelProxy::dup2(int oldfd, int newfd) {
   if (oldfd == newfd)
     return newfd;
 
+  if (newfd < 0) {
+    errno = EBADF;
+    return -1;
+  }
+
   ScopedKernelHandle old_handle;
   std::string old_path;
   Error error = AcquireHandleAndPath(oldfd, &old_handle, &old_path);

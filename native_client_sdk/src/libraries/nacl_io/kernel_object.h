@@ -8,6 +8,7 @@
 #include <pthread.h>
 
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -104,7 +105,7 @@ class KernelObject {
  private:
   std::string cwd_;
   mode_t umask_;
-  std::vector<int> free_fds_;
+  std::set<int> free_fds_;
   HandleMap_t handle_map_;
   FsMap_t filesystems_;
 

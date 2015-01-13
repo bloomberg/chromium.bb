@@ -220,12 +220,12 @@ int KernelObject::AllocateFD(const ScopedKernelHandle& handle,
   std::string abs_path = GetAbsParts(path).Join();
   Descriptor_t descriptor(handle, abs_path);
 
-  // If we can recycle and FD, use that first
+  // If we can recycle an FD, use that first
   if (free_fds_.size()) {
-    id = free_fds_.front();
     // Force lower numbered FD to be available first.
-    std::pop_heap(free_fds_.begin(), free_fds_.end(), std::greater<int>());
-    free_fds_.pop_back();
+    // std::set is ordered, so begin() returns the lowest value.
+    id = *free_fds_.begin();
+    free_fds_.erase(id);
     handle_map_[id] = descriptor;
   } else {
     id = handle_map_.size();
@@ -238,38 +238,33 @@ int KernelObject::AllocateFD(const ScopedKernelHandle& handle,
 void KernelObject::FreeAndReassignFD(int fd,
                                      const ScopedKernelHandle& handle,
                                      const std::string& path) {
-  if (NULL == handle) {
-    FreeFD(fd);
-  } else {
-    AUTO_LOCK(handle_lock_);
+  AUTO_LOCK(handle_lock_);
 
-    // If the required FD is larger than the current set, grow the set.
-    int sz = static_cast<int>(handle_map_.size());
-    if (fd >= sz) {
-      // Expand the handle map to include all the extra descriptors
-      // up to and including fd.
-      handle_map_.resize(fd + 1);
-      // Add all the new descriptors, except fd, to the free list.
-      for (; sz < fd; ++sz) {
-        free_fds_.push_back(sz);
-        std::push_heap(free_fds_.begin(), free_fds_.end(),
-                       std::greater<int>());
-      }
+  // If the required FD is larger than the current set, grow the set.
+  int sz = static_cast<int>(handle_map_.size());
+  if (fd >= sz) {
+    // Expand the handle map to include all the extra descriptors
+    // up to and including fd.
+    handle_map_.resize(fd + 1);
+    // Add all the new descriptors, except fd, to the free list.
+    for (; sz < fd; ++sz) {
+      free_fds_.insert(sz);
     }
-
-    // This path will be from an existing handle, and absolute.
-    handle_map_[fd] = Descriptor_t(handle, path);
   }
+
+  assert(handle != NULL);
+
+  free_fds_.erase(fd);
+
+  // This path will be from an existing handle, and absolute.
+  handle_map_[fd] = Descriptor_t(handle, path);
 }
 
 void KernelObject::FreeFD(int fd) {
   AUTO_LOCK(handle_lock_);
 
   handle_map_[fd].handle.reset(NULL);
-  free_fds_.push_back(fd);
-
-  // Force lower numbered FD to be available first.
-  std::push_heap(free_fds_.begin(), free_fds_.end(), std::greater<int>());
+  free_fds_.insert(fd);
 }
 
 }  // namespace nacl_io

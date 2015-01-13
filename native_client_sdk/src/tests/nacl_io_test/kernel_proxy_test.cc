@@ -527,6 +527,53 @@ TEST_F(KernelProxyTest, Dup) {
   // fd, new_fd, dup_fd -> "/bar"
 }
 
+TEST_F(KernelProxyTest, DescriptorDup2Dance) {
+  // Open a file to a get a descriptor to copy for this test.
+  // The test makes the assumption at all descriptors
+  // open by default are contiguous starting from zero.
+  int fd = ki_open("/foo", O_CREAT | O_RDWR, 0777);
+  ASSERT_GT(fd, -1);
+
+  // The comment above each statement below tracks which descriptors,
+  // starting from fd are currently allocated.
+  // Descriptors marked with an 'x' are allocated.
+
+  // (fd)   (fd + 1)   (fd + 2)
+  //  x
+  ASSERT_EQ(fd + 1, ki_dup2(fd, fd + 1));
+  // (fd)   (fd + 1)   (fd + 2)
+  //  x      x
+  ASSERT_EQ(0, ki_close(fd + 1));
+  // (fd)   (fd + 1)   (fd + 2)
+  //  x
+  ASSERT_EQ(fd + 1, ki_dup2(fd, fd + 1));
+  // (fd)   (fd + 1)   (fd + 2)
+  //  x      x
+  ASSERT_EQ(fd + 2, ki_dup(fd));
+  // (fd)   (fd + 1)   (fd + 2)
+  //  x      x          x
+  ASSERT_EQ(0, ki_close(fd + 2));
+  // (fd)   (fd + 1)   (fd + 2)
+  //  x      x
+  ASSERT_EQ(0, ki_close(fd + 1));
+  // (fd)   (fd + 1)   (fd + 2)
+  //  x
+  ASSERT_EQ(0, ki_close(fd));
+}
+
+TEST_F(KernelProxyTest, Dup2Negative) {
+  // Open a file to a get a descriptor to copy for this test.
+  // The test makes the assumption at all descriptors
+  // open by default are contiguous starting from zero.
+  int fd = ki_open("/foo", O_CREAT | O_RDWR, 0777);
+  ASSERT_GT(fd, -1);
+
+  // Attempt to dup2 to an invalid descriptor.
+  ASSERT_EQ(-1, ki_dup2(fd, -12));
+  EXPECT_EQ(EBADF, errno);
+  ASSERT_EQ(0, ki_close(fd));
+}
+
 TEST_F(KernelProxyTest, DescriptorAllocationConsistency) {
   // Check that the descriptor free list returns the expected ones,
   // as the order is mandated by POSIX.
