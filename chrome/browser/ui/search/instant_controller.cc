@@ -30,10 +30,6 @@
 #include "net/base/network_change_notifier.h"
 #include "url/gurl.h"
 
-#if defined(TOOLKIT_VIEWS)
-#include "ui/views/widget/widget.h"
-#endif
-
 namespace {
 
 bool IsContentsFrom(const InstantPage* page,
