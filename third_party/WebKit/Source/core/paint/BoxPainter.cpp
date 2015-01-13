@@ -1587,9 +1587,9 @@ void BoxPainter::paintBorder(RenderBoxModelObject& obj, const PaintInfo& info, c
     FloatRoundedRect unadjustedInnerBorder = (bleedAvoidance == BackgroundBleedBackgroundOverBorder) ? style->getRoundedInnerBorderFor(rect, includeLogicalLeftEdge, includeLogicalRightEdge) : innerBorder;
     IntPoint innerBorderAdjustment(innerBorder.rect().x() - unadjustedInnerBorder.rect().x(), innerBorder.rect().y() - unadjustedInnerBorder.rect().y());
     if (haveAlphaColor)
-        paintTranslucentBorderSides(obj, graphicsContext, style, outerBorder, unadjustedInnerBorder, innerBorderAdjustment, edges, edgesToDraw, bleedAvoidance, includeLogicalLeftEdge, includeLogicalRightEdge, antialias);
+        paintTranslucentBorderSides(graphicsContext, style, outerBorder, unadjustedInnerBorder, innerBorderAdjustment, edges, edgesToDraw, bleedAvoidance, includeLogicalLeftEdge, includeLogicalRightEdge, antialias);
     else
-        paintBorderSides(obj, graphicsContext, style, outerBorder, unadjustedInnerBorder, innerBorderAdjustment, edges, edgesToDraw, bleedAvoidance, includeLogicalLeftEdge, includeLogicalRightEdge, antialias);
+        paintBorderSides(graphicsContext, style, outerBorder, unadjustedInnerBorder, innerBorderAdjustment, edges, edgesToDraw, bleedAvoidance, includeLogicalLeftEdge, includeLogicalRightEdge, antialias);
 }
 
 static inline bool includesAdjacentEdges(BorderEdgeFlags flags)
@@ -1600,7 +1600,7 @@ static inline bool includesAdjacentEdges(BorderEdgeFlags flags)
         || (flags & (LeftBorderEdge | TopBorderEdge)) == (LeftBorderEdge | TopBorderEdge);
 }
 
-void BoxPainter::paintTranslucentBorderSides(RenderObject& obj, GraphicsContext* graphicsContext, const RenderStyle* style, const FloatRoundedRect& outerBorder, const FloatRoundedRect& innerBorder, const IntPoint& innerBorderAdjustment,
+void BoxPainter::paintTranslucentBorderSides(GraphicsContext* graphicsContext, const RenderStyle* style, const FloatRoundedRect& outerBorder, const FloatRoundedRect& innerBorder, const IntPoint& innerBorderAdjustment,
     const BorderEdge edges[], BorderEdgeFlags edgesToDraw, BackgroundBleedAvoidance bleedAvoidance, bool includeLogicalLeftEdge, bool includeLogicalRightEdge, bool antialias)
 {
     // willBeOverdrawn assumes that we draw in order: top, bottom, left, right.
@@ -1635,7 +1635,7 @@ void BoxPainter::paintTranslucentBorderSides(RenderObject& obj, GraphicsContext*
             commonColor = Color(commonColor.red(), commonColor.green(), commonColor.blue());
         }
 
-        paintBorderSides(obj, graphicsContext, style, outerBorder, innerBorder, innerBorderAdjustment, edges, commonColorEdgeSet, bleedAvoidance, includeLogicalLeftEdge, includeLogicalRightEdge, antialias, &commonColor);
+        paintBorderSides(graphicsContext, style, outerBorder, innerBorder, innerBorderAdjustment, edges, commonColorEdgeSet, bleedAvoidance, includeLogicalLeftEdge, includeLogicalRightEdge, antialias, &commonColor);
 
         if (useTransparencyLayer)
             graphicsContext->endLayer();
@@ -1650,7 +1650,7 @@ LayoutRect BoxPainter::borderInnerRectAdjustedForBleedAvoidance(GraphicsContext*
     return (bleedAvoidance == BackgroundBleedBackgroundOverBorder) ? shrinkRectByOnePixel(context, rect) : rect;
 }
 
-void BoxPainter::paintOneBorderSide(RenderObject& obj, GraphicsContext* graphicsContext, const RenderStyle* style, const FloatRoundedRect& outerBorder, const FloatRoundedRect& innerBorder,
+void BoxPainter::paintOneBorderSide(GraphicsContext* graphicsContext, const RenderStyle* style, const FloatRoundedRect& outerBorder, const FloatRoundedRect& innerBorder,
     const FloatRect& sideRect, BoxSide side, BoxSide adjacentSide1, BoxSide adjacentSide2, const BorderEdge edges[], const Path* path,
     BackgroundBleedAvoidance bleedAvoidance, bool includeLogicalLeftEdge, bool includeLogicalRightEdge, bool antialias, const Color* overrideColor)
 {
@@ -1697,7 +1697,7 @@ void BoxPainter::paintOneBorderSide(RenderObject& obj, GraphicsContext* graphics
     }
 }
 
-void BoxPainter::paintBorderSides(RenderObject& obj, GraphicsContext* graphicsContext, const RenderStyle* style, const FloatRoundedRect& outerBorder, const FloatRoundedRect& innerBorder,
+void BoxPainter::paintBorderSides(GraphicsContext* graphicsContext, const RenderStyle* style, const FloatRoundedRect& outerBorder, const FloatRoundedRect& innerBorder,
     const IntPoint& innerBorderAdjustment, const BorderEdge edges[], BorderEdgeFlags edgeSet, BackgroundBleedAvoidance bleedAvoidance,
     bool includeLogicalLeftEdge, bool includeLogicalRightEdge, bool antialias, const Color* overrideColor)
 {
@@ -1717,7 +1717,7 @@ void BoxPainter::paintBorderSides(RenderObject& obj, GraphicsContext* graphicsCo
         sideRect.setHeight(edges[BSTop].width + innerBorderAdjustment.y());
 
         bool usePath = renderRadii && (borderStyleHasInnerDetail(edges[BSTop].borderStyle()) || borderWillArcInnerEdge(innerBorder.radii().topLeft(), innerBorder.radii().topRight()));
-        paintOneBorderSide(obj, graphicsContext, style, outerBorder, innerBorder, sideRect, BSTop, BSLeft, BSRight, edges, usePath ? &roundedPath : 0, bleedAvoidance, includeLogicalLeftEdge, includeLogicalRightEdge, antialias, overrideColor);
+        paintOneBorderSide(graphicsContext, style, outerBorder, innerBorder, sideRect, BSTop, BSLeft, BSRight, edges, usePath ? &roundedPath : 0, bleedAvoidance, includeLogicalLeftEdge, includeLogicalRightEdge, antialias, overrideColor);
     }
 
     if (edges[BSBottom].shouldRender() && includesEdge(edgeSet, BSBottom)) {
@@ -1725,7 +1725,7 @@ void BoxPainter::paintBorderSides(RenderObject& obj, GraphicsContext* graphicsCo
         sideRect.shiftYEdgeTo(sideRect.maxY() - edges[BSBottom].width - innerBorderAdjustment.y());
 
         bool usePath = renderRadii && (borderStyleHasInnerDetail(edges[BSBottom].borderStyle()) || borderWillArcInnerEdge(innerBorder.radii().bottomLeft(), innerBorder.radii().bottomRight()));
-        paintOneBorderSide(obj, graphicsContext, style, outerBorder, innerBorder, sideRect, BSBottom, BSLeft, BSRight, edges, usePath ? &roundedPath : 0, bleedAvoidance, includeLogicalLeftEdge, includeLogicalRightEdge, antialias, overrideColor);
+        paintOneBorderSide(graphicsContext, style, outerBorder, innerBorder, sideRect, BSBottom, BSLeft, BSRight, edges, usePath ? &roundedPath : 0, bleedAvoidance, includeLogicalLeftEdge, includeLogicalRightEdge, antialias, overrideColor);
     }
 
     if (edges[BSLeft].shouldRender() && includesEdge(edgeSet, BSLeft)) {
@@ -1733,7 +1733,7 @@ void BoxPainter::paintBorderSides(RenderObject& obj, GraphicsContext* graphicsCo
         sideRect.setWidth(edges[BSLeft].width + innerBorderAdjustment.x());
 
         bool usePath = renderRadii && (borderStyleHasInnerDetail(edges[BSLeft].borderStyle()) || borderWillArcInnerEdge(innerBorder.radii().bottomLeft(), innerBorder.radii().topLeft()));
-        paintOneBorderSide(obj, graphicsContext, style, outerBorder, innerBorder, sideRect, BSLeft, BSTop, BSBottom, edges, usePath ? &roundedPath : 0, bleedAvoidance, includeLogicalLeftEdge, includeLogicalRightEdge, antialias, overrideColor);
+        paintOneBorderSide(graphicsContext, style, outerBorder, innerBorder, sideRect, BSLeft, BSTop, BSBottom, edges, usePath ? &roundedPath : 0, bleedAvoidance, includeLogicalLeftEdge, includeLogicalRightEdge, antialias, overrideColor);
     }
 
     if (edges[BSRight].shouldRender() && includesEdge(edgeSet, BSRight)) {
@@ -1741,7 +1741,7 @@ void BoxPainter::paintBorderSides(RenderObject& obj, GraphicsContext* graphicsCo
         sideRect.shiftXEdgeTo(sideRect.maxX() - edges[BSRight].width - innerBorderAdjustment.x());
 
         bool usePath = renderRadii && (borderStyleHasInnerDetail(edges[BSRight].borderStyle()) || borderWillArcInnerEdge(innerBorder.radii().bottomRight(), innerBorder.radii().topRight()));
-        paintOneBorderSide(obj, graphicsContext, style, outerBorder, innerBorder, sideRect, BSRight, BSTop, BSBottom, edges, usePath ? &roundedPath : 0, bleedAvoidance, includeLogicalLeftEdge, includeLogicalRightEdge, antialias, overrideColor);
+        paintOneBorderSide(graphicsContext, style, outerBorder, innerBorder, sideRect, BSRight, BSTop, BSBottom, edges, usePath ? &roundedPath : 0, bleedAvoidance, includeLogicalLeftEdge, includeLogicalRightEdge, antialias, overrideColor);
     }
 }
 

@@ -49,13 +49,13 @@ private:
     static void applyBoxShadowForBackground(GraphicsContext*, RenderObject&);
     static bool fixedBackgroundPaintsInLocalCoordinates(const RenderObject&);
     static IntSize calculateFillTileSize(const RenderBoxModelObject&, const FillLayer&, const IntSize& scaledPositioningAreaSize);
-    static void paintTranslucentBorderSides(RenderObject&, GraphicsContext*, const RenderStyle*, const FloatRoundedRect& outerBorder, const FloatRoundedRect& innerBorder, const IntPoint& innerBorderAdjustment,
+    static void paintTranslucentBorderSides(GraphicsContext*, const RenderStyle*, const FloatRoundedRect& outerBorder, const FloatRoundedRect& innerBorder, const IntPoint& innerBorderAdjustment,
         const BorderEdge[], BorderEdgeFlags, BackgroundBleedAvoidance, bool includeLogicalLeftEdge, bool includeLogicalRightEdge, bool antialias = false);
     static LayoutRect borderInnerRectAdjustedForBleedAvoidance(GraphicsContext*, const LayoutRect&, BackgroundBleedAvoidance);
-    static void paintOneBorderSide(RenderObject&, GraphicsContext*, const RenderStyle*, const FloatRoundedRect& outerBorder, const FloatRoundedRect& innerBorder,
+    static void paintOneBorderSide(GraphicsContext*, const RenderStyle*, const FloatRoundedRect& outerBorder, const FloatRoundedRect& innerBorder,
         const FloatRect& sideRect, BoxSide, BoxSide adjacentSide1, BoxSide adjacentSide2, const BorderEdge[],
         const Path*, BackgroundBleedAvoidance, bool includeLogicalLeftEdge, bool includeLogicalRightEdge, bool antialias, const Color* overrideColor = 0);
-    static void paintBorderSides(RenderObject&, GraphicsContext*, const RenderStyle*, const FloatRoundedRect& outerBorder, const FloatRoundedRect& innerBorder,
+    static void paintBorderSides(GraphicsContext*, const RenderStyle*, const FloatRoundedRect& outerBorder, const FloatRoundedRect& innerBorder,
         const IntPoint& innerBorderAdjustment, const BorderEdge[], BorderEdgeFlags, BackgroundBleedAvoidance,
         bool includeLogicalLeftEdge, bool includeLogicalRightEdge, bool antialias = false, const Color* overrideColor = 0);
     static void drawBoxSideFromPath(GraphicsContext*, const LayoutRect&, const Path&, const BorderEdge[],
