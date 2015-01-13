@@ -654,6 +654,9 @@ void DeviceStatusCollector::GetHardwareStatus(
     *status->add_volume_info() = info;
   }
 
+  status->set_system_ram_free(base::SysInfo::AmountOfAvailablePhysicalMemory());
+  status->set_system_ram_total(base::SysInfo::AmountOfPhysicalMemory());
+
   status->clear_cpu_utilization_pct();
   for (const int cpu_usage : cpu_usage_percent_) {
     status->add_cpu_utilization_pct(cpu_usage);

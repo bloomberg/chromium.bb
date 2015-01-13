@@ -781,6 +781,15 @@ TEST_F(DeviceStatusCollectorTest, TestVolumeInfo) {
   EXPECT_EQ(0, status_.volume_info_size());
 }
 
+TEST_F(DeviceStatusCollectorTest, TestAvailableMemory) {
+  GetStatus();
+  EXPECT_TRUE(status_.has_system_ram_free());
+  EXPECT_TRUE(status_.has_system_ram_total());
+  // No good way to inject specific test values for available system RAM, so
+  // just make sure it's > 0.
+  EXPECT_GT(status_.system_ram_total(), 0);
+}
+
 TEST_F(DeviceStatusCollectorTest, TestCPUSamples) {
   // Mock 100% CPU usage and 2 processors.
   const int full_cpu_usage = 100;
