@@ -175,26 +175,6 @@ v8::Local<v8::Script> postStreamCompile(ScriptResource* resource, ScriptStreamer
     // streamer is started. Here we only need to get the data out.
     const v8::ScriptCompiler::CachedData* newCachedData = streamer->source()->GetCachedData();
     if (newCachedData) {
-        // Sanity check: when we associate cached data with the Resource, the
-        // encoding (which is also stored in the cache) must match the
-        // Streamer's view. For debugging purposes: If this is not true, produce
-        // a crash. FIXME: Remove debugging code after investigating why this
-        // happens.
-        v8::ScriptCompiler::StreamedSource::Encoding encoding;
-        if (!ScriptStreamer::convertEncoding(resource->encoding().ascii().data(), &encoding)
-            || streamer->encoding() != encoding) {
-            // For debugging, write the resource URL, the current encoding and
-            // the previous encoding on stack so that it can be read from the
-            // crash dump.
-            size_t urlLength = resource->url().string().ascii().length();
-            size_t encodingLength = resource->encoding().ascii().length();
-            char* ptr = reinterpret_cast<char*>(alloca(urlLength + encodingLength + 1));
-            memcpy(ptr, resource->url().string().ascii().data(), urlLength);
-            memcpy(ptr + urlLength, resource->encoding().ascii().data(), encodingLength);
-            *(ptr + urlLength + encodingLength) = static_cast<char>(streamer->encoding());
-            RELEASE_ASSERT_NOT_REACHED();
-        }
-
         resource->clearCachedMetadata();
         v8::ScriptCompiler::CompileOptions options = streamer->compileOptions();
         switch (options) {
