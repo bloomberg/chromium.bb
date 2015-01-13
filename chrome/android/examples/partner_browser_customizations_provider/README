@@ -1,0 +1,20 @@
+# Remount /system/ as read-write.
+adb root && adb wait-for-device
+adb shell mount -o rw,remount /system
+
+# Build an example customizations content provider APK.
+android update project --path . --name PartnerCustomizationProviderExample --target 1
+ant debug
+
+# Install the compiled APK.
+adb shell mkdir -p /system/app
+adb push bin/PartnerCustomizationProviderExample-debug.apk /system/app/ChromeCustomizations.apk
+
+# Restart Java services to ensure dex caching.
+adb shell stop && adb shell start
+
+# Start Chrome.
+adb shell am start -S -n com.android.chrome/.Main
+
+# If it worked correctly, Chrome should enable homepage button, disable incognito mode and partner bookmark editing mode.
+

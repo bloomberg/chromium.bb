@@ -11,6 +11,12 @@
          needed when building test cases. -->
     <application>
         <uses-library android:name="android.test.runner" />
+
+        <provider android:name="org.chromium.chrome.browser.partnercustomizations.TestPartnerBrowserCustomizationsProvider"
+            android:authorities="org.chromium.chrome.browser.partnercustomizations.TestPartnerBrowserCustomizationsProvider" />
+        <provider android:name="org.chromium.chrome.browser.partnercustomizations.TestPartnerBrowserCustomizationsDelayedProvider"
+            android:authorities="org.chromium.chrome.browser.partnercustomizations.TestPartnerBrowserCustomizationsDelayedProvider" />
+
         <activity android:name="org.chromium.sync.test.util.MockGrantCredentialsPermissionActivity"
             android:exported="false">
             <intent-filter>
