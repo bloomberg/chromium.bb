@@ -24,6 +24,14 @@ CONTENT_EXPORT bool IsDelegatedRendererEnabled();
 // for the renderer.
 CONTENT_EXPORT bool IsImplSidePaintingEnabled();
 
+// Returns true if one-copy uploads is on (via flags, or platform default).
+// Only one of one-copy and zero-copy can be enabled at a time.
+CONTENT_EXPORT bool IsOneCopyUploadEnabled();
+
+// Returns true if zero-copy uploads is on (via flags, or platform default).
+// Only one of one-copy and zero-copy can be enabled at a time.
+CONTENT_EXPORT bool IsZeroCopyUploadEnabled();
+
 // Returns true if gpu rasterization is on (via flags) for the renderer.
 CONTENT_EXPORT bool IsGpuRasterizationEnabled();
 
