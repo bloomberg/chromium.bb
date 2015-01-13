@@ -1,0 +1,3 @@
+Ill-formed uses of eventSender.mouseDown() while drag is under way should not crash.
+
+PASS(no crash)
