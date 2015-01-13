@@ -1434,6 +1434,12 @@ _FUNCTION_INFO = {
     'gen_func': 'GenBuffersARB',
     'unsafe': True,
   },
+  'BindBufferRange': {
+    'type': 'Bind',
+    'id_mapping': [ 'Buffer' ],
+    'gen_func': 'GenBuffersARB',
+    'unsafe': True,
+  },
   'BindFramebuffer': {
     'type': 'Bind',
     'decoder_func': 'DoBindFramebuffer',
@@ -4429,12 +4435,12 @@ TEST_P(%(test_name)s, %(name)sValidArgs) {
         valid_test += """
 TEST_P(%(test_name)s, %(name)sValidArgsNewId) {
   EXPECT_CALL(*gl_,
-              %(gl_func_name)s(%(all_except_last_gl_arg)s, kNewServiceId));
+              %(gl_func_name)s(%(gl_args_with_new_id)s));
   EXPECT_CALL(*gl_, %(gl_gen_func_name)s(1, _))
      .WillOnce(SetArgumentPointee<1>(kNewServiceId));
   SpecializedSetup<cmds::%(name)s, 0>(true);
   cmds::%(name)s cmd;
-  cmd.Init(%(all_except_last_arg)s, kNewClientId);"""
+  cmd.Init(%(args_with_new_id)s);"""
         if func.IsUnsafe():
           valid_test += """
   decoder_->set_unsafe_es3_apis_enabled(true);
@@ -4453,16 +4459,19 @@ TEST_P(%(test_name)s, %(name)sValidArgsNewId) {
 }
 """
 
-      all_except_last_arg = [
-        arg.GetValidArg(func) for arg in func.GetOriginalArgs()[:-1]
-      ]
-      all_except_last_gl_arg = [
-        arg.GetValidGLArg(func) for arg in func.GetOriginalArgs()[:-1]
-      ]
+      gl_args_with_new_id = []
+      args_with_new_id = []
+      for arg in func.GetOriginalArgs():
+        if hasattr(arg, 'resource_type'):
+          gl_args_with_new_id.append('kNewServiceId')
+          args_with_new_id.append('kNewClientId')
+        else:
+          gl_args_with_new_id.append(arg.GetValidGLArg(func))
+          args_with_new_id.append(arg.GetValidArg(func))
       self.WriteValidUnitTest(func, file, valid_test, {
-          'all_except_last_arg': ", ".join(all_except_last_arg),
-          'all_except_last_gl_arg': ", ".join(all_except_last_gl_arg),
-          'resource_type': func.GetOriginalArgs()[-1].resource_type,
+          'args_with_new_id': ", ".join(args_with_new_id),
+          'gl_args_with_new_id': ", ".join(gl_args_with_new_id),
+          'resource_type': func.GetResourceIdArg().resource_type,
           'gl_gen_func_name': func.GetInfo("gen_func"),
       }, *extras)
 
@@ -4505,14 +4514,7 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
 }
 
 """
-      name_arg = None
-      if len(func.GetOriginalArgs()) == 1:
-        # Bind functions that have no target (like BindVertexArrayOES)
-        name_arg = func.GetOriginalArgs()[0]
-      else:
-        # Bind functions that have both a target and a name (like BindTexture)
-        name_arg = func.GetOriginalArgs()[-1]
-
+      name_arg = func.GetResourceIdArg()
       file.Write(code % {
           'name': func.name,
           'arg_string': func.MakeOriginalArgString(""),
@@ -7555,6 +7557,12 @@ class Function(object):
 
   def GetLastOriginalPointerArg(self):
     return self.last_original_pointer_arg
+
+  def GetResourceIdArg(self):
+    for arg in self.original_args:
+      if hasattr(arg, 'resource_type'):
+        return arg
+    return None
 
   def __MaybePrependComma(self, arg_string, add_comma):
     """Adds a comma if arg_string is not empty and add_comma is true."""

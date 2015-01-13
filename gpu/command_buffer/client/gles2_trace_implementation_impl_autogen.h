@@ -41,6 +41,15 @@ void GLES2TraceImplementation::BindBufferBase(GLenum target,
   gl_->BindBufferBase(target, index, buffer);
 }
 
+void GLES2TraceImplementation::BindBufferRange(GLenum target,
+                                               GLuint index,
+                                               GLuint buffer,
+                                               GLintptr offset,
+                                               GLsizeiptr size) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::BindBufferRange");
+  gl_->BindBufferRange(target, index, buffer, offset, size);
+}
+
 void GLES2TraceImplementation::BindFramebuffer(GLenum target,
                                                GLuint framebuffer) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::BindFramebuffer");

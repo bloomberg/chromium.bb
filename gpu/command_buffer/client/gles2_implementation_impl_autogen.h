@@ -49,6 +49,32 @@ void GLES2Implementation::BindBufferBase(GLenum target,
   CheckGLError();
 }
 
+void GLES2Implementation::BindBufferRange(GLenum target,
+                                          GLuint index,
+                                          GLuint buffer,
+                                          GLintptr offset,
+                                          GLsizeiptr size) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glBindBufferRange("
+                     << GLES2Util::GetStringIndexedBufferTarget(target) << ", "
+                     << index << ", " << buffer << ", " << offset << ", "
+                     << size << ")");
+  if (offset < 0) {
+    SetGLError(GL_INVALID_VALUE, "glBindBufferRange", "offset < 0");
+    return;
+  }
+  if (size < 0) {
+    SetGLError(GL_INVALID_VALUE, "glBindBufferRange", "size < 0");
+    return;
+  }
+  if (IsBufferReservedId(buffer)) {
+    SetGLError(GL_INVALID_OPERATION, "BindBufferRange", "buffer reserved id");
+    return;
+  }
+  BindBufferRangeHelper(target, index, buffer, offset, size);
+  CheckGLError();
+}
+
 void GLES2Implementation::BindFramebuffer(GLenum target, GLuint framebuffer) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glBindFramebuffer("

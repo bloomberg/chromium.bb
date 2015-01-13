@@ -27,6 +27,13 @@ void GLES2BindBuffer(GLenum target, GLuint buffer) {
 void GLES2BindBufferBase(GLenum target, GLuint index, GLuint buffer) {
   gles2::GetGLContext()->BindBufferBase(target, index, buffer);
 }
+void GLES2BindBufferRange(GLenum target,
+                          GLuint index,
+                          GLuint buffer,
+                          GLintptr offset,
+                          GLsizeiptr size) {
+  gles2::GetGLContext()->BindBufferRange(target, index, buffer, offset, size);
+}
 void GLES2BindFramebuffer(GLenum target, GLuint framebuffer) {
   gles2::GetGLContext()->BindFramebuffer(target, framebuffer);
 }
@@ -1208,6 +1215,10 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
      "glBindBufferBase",
      reinterpret_cast<GLES2FunctionPointer>(glBindBufferBase),
+    },
+    {
+     "glBindBufferRange",
+     reinterpret_cast<GLES2FunctionPointer>(glBindBufferRange),
     },
     {
      "glBindFramebuffer",

@@ -12,6 +12,23 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_2_AUTOGEN_H_
 #define GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_2_AUTOGEN_H_
 
+TEST_P(GLES2DecoderTest2, IsBufferValidArgs) {
+  SpecializedSetup<cmds::IsBuffer, 0>(true);
+  cmds::IsBuffer cmd;
+  cmd.Init(client_buffer_id_, shared_memory_id_, shared_memory_offset_);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
+TEST_P(GLES2DecoderTest2, IsBufferInvalidArgsBadSharedMemoryId) {
+  SpecializedSetup<cmds::IsBuffer, 0>(false);
+  cmds::IsBuffer cmd;
+  cmd.Init(client_buffer_id_, kInvalidSharedMemoryId, shared_memory_offset_);
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
+  cmd.Init(client_buffer_id_, shared_memory_id_, kInvalidSharedMemoryOffset);
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
+}
+
 TEST_P(GLES2DecoderTest2, IsEnabledValidArgs) {
   SpecializedSetup<cmds::IsEnabled, 0>(true);
   cmds::IsEnabled cmd;
@@ -1311,5 +1328,4 @@ TEST_P(GLES2DecoderTest2, ViewportInvalidArgs3_0) {
 }
 // TODO(gman): TexStorage2DEXT
 // TODO(gman): GenQueriesEXTImmediate
-// TODO(gman): DeleteQueriesEXTImmediate
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_2_AUTOGEN_H_

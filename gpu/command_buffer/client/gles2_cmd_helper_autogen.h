@@ -49,6 +49,17 @@ void BindBufferBase(GLenum target, GLuint index, GLuint buffer) {
   }
 }
 
+void BindBufferRange(GLenum target,
+                     GLuint index,
+                     GLuint buffer,
+                     GLintptr offset,
+                     GLsizeiptr size) {
+  gles2::cmds::BindBufferRange* c = GetCmdSpace<gles2::cmds::BindBufferRange>();
+  if (c) {
+    c->Init(target, index, buffer, offset, size);
+  }
+}
+
 void BindFramebuffer(GLenum target, GLuint framebuffer) {
   gles2::cmds::BindFramebuffer* c = GetCmdSpace<gles2::cmds::BindFramebuffer>();
   if (c) {

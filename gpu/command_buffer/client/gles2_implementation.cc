@@ -2725,8 +2725,7 @@ void GLES2Implementation::BindBufferRangeHelper(
 void GLES2Implementation::BindBufferRangeStub(
     GLenum target, GLuint index, GLuint buffer,
     GLintptr offset, GLsizeiptr size) {
-  // TODO(zmo): uncomment the below call once the helper function is added.
-  // helper_->BindBufferRange(target, index, buffer, offset, size);
+  helper_->BindBufferRange(target, index, buffer, offset, size);
   if (share_group_->bind_generates_resource())
     helper_->CommandBufferHelper::Flush();
 }

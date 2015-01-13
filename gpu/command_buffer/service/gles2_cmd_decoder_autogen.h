@@ -73,6 +73,37 @@ error::Error GLES2DecoderImpl::HandleBindBufferBase(
   return error::kNoError;
 }
 
+error::Error GLES2DecoderImpl::HandleBindBufferRange(
+    uint32_t immediate_data_size,
+    const void* cmd_data) {
+  if (!unsafe_es3_apis_enabled())
+    return error::kUnknownCommand;
+  const gles2::cmds::BindBufferRange& c =
+      *static_cast<const gles2::cmds::BindBufferRange*>(cmd_data);
+  (void)c;
+  GLenum target = static_cast<GLenum>(c.target);
+  GLuint index = static_cast<GLuint>(c.index);
+  GLuint buffer = c.buffer;
+  GLintptr offset = static_cast<GLintptr>(c.offset);
+  GLsizeiptr size = static_cast<GLsizeiptr>(c.size);
+  if (size < 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glBindBufferRange", "size < 0");
+    return error::kNoError;
+  }
+  if (!group_->GetBufferServiceId(buffer, &buffer)) {
+    if (!group_->bind_generates_resource()) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBindBufferRange",
+                         "invalid buffer id");
+      return error::kNoError;
+    }
+    GLuint client_id = buffer;
+    glGenBuffersARB(1, &buffer);
+    CreateBuffer(client_id, buffer);
+  }
+  glBindBufferRange(target, index, buffer, offset, size);
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderImpl::HandleBindFramebuffer(
     uint32_t immediate_data_size,
     const void* cmd_data) {

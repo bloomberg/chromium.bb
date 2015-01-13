@@ -200,6 +200,65 @@ static_assert(offsetof(BindBufferBase, index) == 8,
 static_assert(offsetof(BindBufferBase, buffer) == 12,
               "offset of BindBufferBase buffer should be 12");
 
+struct BindBufferRange {
+  typedef BindBufferRange ValueType;
+  static const CommandId kCmdId = kBindBufferRange;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLenum _target,
+            GLuint _index,
+            GLuint _buffer,
+            GLintptr _offset,
+            GLsizeiptr _size) {
+    SetHeader();
+    target = _target;
+    index = _index;
+    buffer = _buffer;
+    offset = _offset;
+    size = _size;
+  }
+
+  void* Set(void* cmd,
+            GLenum _target,
+            GLuint _index,
+            GLuint _buffer,
+            GLintptr _offset,
+            GLsizeiptr _size) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_target, _index, _buffer, _offset, _size);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t target;
+  uint32_t index;
+  uint32_t buffer;
+  int32_t offset;
+  int32_t size;
+};
+
+static_assert(sizeof(BindBufferRange) == 24,
+              "size of BindBufferRange should be 24");
+static_assert(offsetof(BindBufferRange, header) == 0,
+              "offset of BindBufferRange header should be 0");
+static_assert(offsetof(BindBufferRange, target) == 4,
+              "offset of BindBufferRange target should be 4");
+static_assert(offsetof(BindBufferRange, index) == 8,
+              "offset of BindBufferRange index should be 8");
+static_assert(offsetof(BindBufferRange, buffer) == 12,
+              "offset of BindBufferRange buffer should be 12");
+static_assert(offsetof(BindBufferRange, offset) == 16,
+              "offset of BindBufferRange offset should be 16");
+static_assert(offsetof(BindBufferRange, size) == 20,
+              "offset of BindBufferRange size should be 20");
+
 struct BindFramebuffer {
   typedef BindFramebuffer ValueType;
   static const CommandId kCmdId = kBindFramebuffer;

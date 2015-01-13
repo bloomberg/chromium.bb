@@ -27,6 +27,12 @@ void GLES2InterfaceStub::BindBufferBase(GLenum /* target */,
                                         GLuint /* index */,
                                         GLuint /* buffer */) {
 }
+void GLES2InterfaceStub::BindBufferRange(GLenum /* target */,
+                                         GLuint /* index */,
+                                         GLuint /* buffer */,
+                                         GLintptr /* offset */,
+                                         GLsizeiptr /* size */) {
+}
 void GLES2InterfaceStub::BindFramebuffer(GLenum /* target */,
                                          GLuint /* framebuffer */) {
 }

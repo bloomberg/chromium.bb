@@ -50,6 +50,17 @@ TEST_F(GLES2ImplementationTest, BindBufferBase) {
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 
+TEST_F(GLES2ImplementationTest, BindBufferRange) {
+  struct Cmds {
+    cmds::BindBufferRange cmd;
+  };
+  Cmds expected;
+  expected.cmd.Init(GL_TRANSFORM_FEEDBACK_BUFFER, 2, 3, 4, 5);
+
+  gl_->BindBufferRange(GL_TRANSFORM_FEEDBACK_BUFFER, 2, 3, 4, 5);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
 TEST_F(GLES2ImplementationTest, BindFramebuffer) {
   struct Cmds {
     cmds::BindFramebuffer cmd;
