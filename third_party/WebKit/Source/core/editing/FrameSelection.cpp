@@ -393,7 +393,13 @@ static Position updatePositionAfterAdoptingTextReplacement(const Position& posit
     if (positionOffset > offset + oldLength)
         positionOffset = positionOffset - oldLength + newLength;
 
-    ASSERT_WITH_SECURITY_IMPLICATION(positionOffset <= node->length());
+    // Due to case folding (http://unicode.org/Public/UCD/latest/ucd/CaseFolding.txt),
+    // RenderText length may be different from Text length.  A correct implementation
+    // would translate the RenderText offset to a Text offset; this is just a safety
+    // precaution to avoid offset values that run off the end of the Text.
+    if (positionOffset > node->length())
+        positionOffset = node->length();
+
     // CharacterNode in VisibleSelection must be Text node, because Comment
     // and ProcessingInstruction node aren't visible.
     return Position(toText(node), positionOffset);
