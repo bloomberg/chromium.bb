@@ -240,13 +240,9 @@ class TestCameraListener
 
 class ImageCaptureDeviceManagerTest : public testing::Test {
  public:
-  virtual void SetUp() override {
-    monitor_ = TestStorageMonitor::CreateAndInstall();
-  }
+  void SetUp() override { monitor_ = TestStorageMonitor::CreateAndInstall(); }
 
-  virtual void TearDown() override {
-    TestStorageMonitor::Destroy();
-  }
+  void TearDown() override { TestStorageMonitor::Destroy(); }
 
   MockICCameraDevice* AttachDevice(ImageCaptureDeviceManager* manager) {
     // Ownership will be passed to the device browser delegate.

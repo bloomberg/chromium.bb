@@ -137,9 +137,8 @@ class PolicyLoaderMacTest : public PolicyTestBase {
  protected:
   PolicyLoaderMacTest()
       : prefs_(new MockPreferences()) {}
-  virtual ~PolicyLoaderMacTest() {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     PolicyTestBase::SetUp();
     scoped_ptr<AsyncPolicyLoader> loader(new PolicyLoaderMac(
         loop_.message_loop_proxy(), base::FilePath(), prefs_));
@@ -147,7 +146,7 @@ class PolicyLoaderMacTest : public PolicyTestBase {
     provider_->Init(&schema_registry_);
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     provider_->Shutdown();
     PolicyTestBase::TearDown();
   }
