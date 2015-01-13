@@ -39,7 +39,7 @@ const int kBackLog = 10;
 // instance of this gets created each time web debugging is enabled.
 class AwDevToolsServerDelegate : public content::DevToolsHttpHandlerDelegate {
  public:
-  AwDevToolsServerDelegate() : last_tethering_socket_(0) {
+  AwDevToolsServerDelegate() {
   }
 
   virtual ~AwDevToolsServerDelegate() {}
@@ -54,22 +54,7 @@ class AwDevToolsServerDelegate : public content::DevToolsHttpHandlerDelegate {
   base::FilePath GetDebugFrontendDir() override {
     return base::FilePath();
   }
-
-  scoped_ptr<net::ServerSocket>
-  CreateSocketForTethering(std::string* name) override {
-    *name = base::StringPrintf(
-        kTetheringSocketName, getpid(), ++last_tethering_socket_);
-    scoped_ptr<net::UnixDomainServerSocket> socket(
-        new net::UnixDomainServerSocket(
-            base::Bind(&content::CanUserConnectToDevTools), true));
-    if (socket->ListenWithAddressAndPort(*name, 0, kBackLog) != net::OK)
-      return scoped_ptr<net::ServerSocket>();
-
-    return socket.Pass();
-  }
-
  private:
-  int last_tethering_socket_;
 
   DISALLOW_COPY_AND_ASSIGN(AwDevToolsServerDelegate);
 };
@@ -90,16 +75,37 @@ class UnixDomainServerSocketFactory
     : public content::DevToolsHttpHandler::ServerSocketFactory {
  public:
   explicit UnixDomainServerSocketFactory(const std::string& socket_name)
-      : content::DevToolsHttpHandler::ServerSocketFactory(socket_name, 0, 1) {}
+      : socket_name_(socket_name),
+        last_tethering_socket_(0) {
+  }
 
  private:
   // content::DevToolsHttpHandler::ServerSocketFactory.
-  virtual scoped_ptr<net::ServerSocket> Create() const override {
-    return scoped_ptr<net::ServerSocket>(
+  virtual scoped_ptr<net::ServerSocket> CreateForHttpServer() override {
+    scoped_ptr<net::ServerSocket> socket(
         new net::UnixDomainServerSocket(
             base::Bind(&content::CanUserConnectToDevTools),
             true /* use_abstract_namespace */));
+    if (socket->ListenWithAddressAndPort(socket_name_, 0, kBackLog) != net::OK)
+      return scoped_ptr<net::ServerSocket>();
+
+    return socket;
   }
+
+  scoped_ptr<net::ServerSocket> CreateForTethering(std::string* name) override {
+    *name = base::StringPrintf(
+        kTetheringSocketName, getpid(), ++last_tethering_socket_);
+    scoped_ptr<net::UnixDomainServerSocket> socket(
+        new net::UnixDomainServerSocket(
+            base::Bind(&content::CanUserConnectToDevTools), true));
+    if (socket->ListenWithAddressAndPort(*name, 0, kBackLog) != net::OK)
+      return scoped_ptr<net::ServerSocket>();
+
+    return socket.Pass();
+  }
+
+  std::string socket_name_;
+  int last_tethering_socket_;
 
   DISALLOW_COPY_AND_ASSIGN(UnixDomainServerSocketFactory);
 };

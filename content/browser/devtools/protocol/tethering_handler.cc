@@ -5,7 +5,7 @@
 #include "content/browser/devtools/protocol/tethering_handler.h"
 
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/devtools_http_handler_delegate.h"
+#include "content/public/browser/devtools_http_handler.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/socket/server_socket.h"
@@ -30,17 +30,15 @@ using Response = DevToolsProtocolClient::Response;
 
 class SocketPump {
  public:
-  SocketPump(DevToolsHttpHandlerDelegate* delegate,
-             net::StreamSocket* client_socket)
+  SocketPump(net::StreamSocket* client_socket)
       : client_socket_(client_socket),
-        delegate_(delegate),
         pending_writes_(0),
         pending_destruction_(false) {
   }
 
-  std::string Init() {
+  std::string Init(DevToolsHttpHandler::ServerSocketFactory* socket_factory) {
     std::string channel_name;
-    server_socket_ = delegate_->CreateSocketForTethering(&channel_name);
+    server_socket_ = socket_factory->CreateForTethering(&channel_name);
     if (!server_socket_.get() || channel_name.empty())
       SelfDestruct();
 
@@ -150,7 +148,6 @@ class SocketPump {
   scoped_ptr<net::StreamSocket> client_socket_;
   scoped_ptr<net::ServerSocket> server_socket_;
   scoped_ptr<net::StreamSocket> accepted_socket_;
-  DevToolsHttpHandlerDelegate* delegate_;
   int pending_writes_;
   bool pending_destruction_;
 };
@@ -160,9 +157,9 @@ class BoundSocket {
   typedef base::Callback<void(uint16, const std::string&)> AcceptedCallback;
 
   BoundSocket(AcceptedCallback accepted_callback,
-              DevToolsHttpHandlerDelegate* delegate)
+              DevToolsHttpHandler::ServerSocketFactory* socket_factory)
       : accepted_callback_(accepted_callback),
-        delegate_(delegate),
+        socket_factory_(socket_factory),
         socket_(new net::TCPServerSocket(NULL, net::NetLog::Source())),
         port_(0) {
   }
@@ -215,14 +212,14 @@ class BoundSocket {
     if (result != net::OK)
       return;
 
-    SocketPump* pump = new SocketPump(delegate_, accept_socket_.release());
-    std::string name = pump->Init();
+    SocketPump* pump = new SocketPump(accept_socket_.release());
+    std::string name = pump->Init(socket_factory_);
     if (!name.empty())
       accepted_callback_.Run(port_, name);
   }
 
   AcceptedCallback accepted_callback_;
-  DevToolsHttpHandlerDelegate* delegate_;
+  DevToolsHttpHandler::ServerSocketFactory* socket_factory_;
   scoped_ptr<net::ServerSocket> socket_;
   scoped_ptr<net::StreamSocket> accept_socket_;
   uint16 port_;
@@ -236,7 +233,7 @@ class TetheringHandler::TetheringImpl {
  public:
   TetheringImpl(
       base::WeakPtr<TetheringHandler> handler,
-      DevToolsHttpHandlerDelegate* delegate);
+      DevToolsHttpHandler::ServerSocketFactory* socket_factory);
   ~TetheringImpl();
 
   void Bind(DevToolsCommandId command_id, uint16 port);
@@ -248,7 +245,7 @@ class TetheringHandler::TetheringImpl {
                          const std::string& message);
 
   base::WeakPtr<TetheringHandler> handler_;
-  DevToolsHttpHandlerDelegate* delegate_;
+  DevToolsHttpHandler::ServerSocketFactory* socket_factory_;
 
   typedef std::map<uint16, BoundSocket*> BoundSockets;
   BoundSockets bound_sockets_;
@@ -256,14 +253,13 @@ class TetheringHandler::TetheringImpl {
 
 TetheringHandler::TetheringImpl::TetheringImpl(
     base::WeakPtr<TetheringHandler> handler,
-    DevToolsHttpHandlerDelegate* delegate)
+    DevToolsHttpHandler::ServerSocketFactory* socket_factory)
     : handler_(handler),
-      delegate_(delegate) {
+      socket_factory_(socket_factory) {
 }
 
 TetheringHandler::TetheringImpl::~TetheringImpl() {
-  STLDeleteContainerPairSecondPointers(bound_sockets_.begin(),
-                                       bound_sockets_.end());
+  STLDeleteValues(&bound_sockets_);
 }
 
 void TetheringHandler::TetheringImpl::Bind(
@@ -275,7 +271,8 @@ void TetheringHandler::TetheringImpl::Bind(
 
   BoundSocket::AcceptedCallback callback = base::Bind(
       &TetheringHandler::TetheringImpl::Accepted, base::Unretained(this));
-  scoped_ptr<BoundSocket> bound_socket(new BoundSocket(callback, delegate_));
+  scoped_ptr<BoundSocket> bound_socket(
+      new BoundSocket(callback, socket_factory_));
   if (!bound_socket->Listen(port)) {
     SendInternalError(command_id, "Could not bind port");
     return;
@@ -330,9 +327,9 @@ void TetheringHandler::TetheringImpl::SendInternalError(
 TetheringHandler::TetheringImpl* TetheringHandler::impl_ = nullptr;
 
 TetheringHandler::TetheringHandler(
-    DevToolsHttpHandlerDelegate* delegate,
+    DevToolsHttpHandler::ServerSocketFactory* socket_factory,
     scoped_refptr<base::MessageLoopProxy> message_loop_proxy)
-    : delegate_(delegate),
+    : socket_factory_(socket_factory),
       message_loop_proxy_(message_loop_proxy),
       is_active_(false),
       weak_factory_(this) {
@@ -360,7 +357,7 @@ bool TetheringHandler::Activate() {
   if (impl_)
     return false;
   is_active_ = true;
-  impl_ = new TetheringImpl(weak_factory_.GetWeakPtr(), delegate_);
+  impl_ = new TetheringImpl(weak_factory_.GetWeakPtr(), socket_factory_);
   return true;
 }
 

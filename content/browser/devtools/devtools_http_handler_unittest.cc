@@ -33,12 +33,6 @@ class DummyServerSocket : public net::ServerSocket {
     return net::OK;
   }
 
-  int ListenWithAddressAndPort(const std::string& ip_address,
-                               uint16 port,
-                               int backlog) override {
-    return net::OK;
-  }
-
   int GetLocalAddress(net::IPEndPoint* address) const override {
     net::IPAddressNumber number;
     EXPECT_TRUE(net::ParseIPLiteralToNumber("127.0.0.1", &number));
@@ -61,8 +55,7 @@ class DummyServerSocketFactory
  public:
   DummyServerSocketFactory(base::Closure quit_closure_1,
                            base::Closure quit_closure_2)
-      : DevToolsHttpHandler::ServerSocketFactory("", 0, 0),
-        quit_closure_1_(quit_closure_1),
+      : quit_closure_1_(quit_closure_1),
         quit_closure_2_(quit_closure_2) {}
 
   ~DummyServerSocketFactory() override {
@@ -71,7 +64,7 @@ class DummyServerSocketFactory
   }
 
  protected:
-  scoped_ptr<net::ServerSocket> Create() const override {
+  scoped_ptr<net::ServerSocket> CreateForHttpServer() override {
     base::MessageLoopProxy::current()->PostTask(FROM_HERE,
         base::Bind(&QuitFromHandlerThread, quit_closure_1_));
     return scoped_ptr<net::ServerSocket>(new DummyServerSocket());
@@ -89,10 +82,10 @@ class FailingServerSocketFactory : public DummyServerSocketFactory {
   }
 
  private:
-  scoped_ptr<net::ServerSocket> Create() const override {
+  scoped_ptr<net::ServerSocket> CreateForHttpServer() override {
     base::MessageLoopProxy::current()->PostTask(FROM_HERE,
         base::Bind(&QuitFromHandlerThread, quit_closure_1_));
-    return nullptr;
+    return scoped_ptr<net::ServerSocket>();
   }
 };
 
@@ -103,11 +96,6 @@ class DummyDelegate : public DevToolsHttpHandlerDelegate {
   bool BundlesFrontendResources() override { return true; }
 
   base::FilePath GetDebugFrontendDir() override { return base::FilePath(); }
-
-  scoped_ptr<net::ServerSocket>
-  CreateSocketForTethering(std::string* name) override {
-    return scoped_ptr<net::ServerSocket>();
-  }
 };
 
 }

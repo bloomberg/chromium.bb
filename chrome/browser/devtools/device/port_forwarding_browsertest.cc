@@ -6,9 +6,9 @@
 #include "base/compiler_specific.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
-#include "chrome/browser/devtools/browser_list_tabcontents_provider.h"
 #include "chrome/browser/devtools/device/devtools_android_bridge.h"
 #include "chrome/browser/devtools/device/self_device_provider.h"
+#include "chrome/browser/devtools/remote_debugging_server.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -99,7 +99,7 @@ IN_PROC_BROWSER_TEST_F(PortForwardingTest,
   Listener wait_for_port_forwarding(profile);
   content::RunMessageLoop();
 
-  BrowserListTabContentsProvider::EnableTethering();
+  RemoteDebuggingServer::EnableTetheringForDebug();
 
   ui_test_utils::NavigateToURL(browser(), forwarding_url);
 

@@ -5,41 +5,17 @@
 #include "chrome/browser/devtools/browser_list_tabcontents_provider.h"
 
 #include "base/path_service.h"
-#include "base/strings/string_number_conversions.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_iterator.h"
-#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/common/chrome_paths.h"
-#include "content/public/common/url_constants.h"
 #include "grit/browser_resources.h"
-#include "net/base/net_errors.h"
-#include "net/socket/tcp_server_socket.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "ui/base/resource/resource_bundle.h"
-
-namespace {
-
-const uint16 kMinTetheringPort = 9333;
-const uint16 kMaxTetheringPort = 9444;
-
-const int kBackLog = 10;
-
-base::LazyInstance<bool>::Leaky g_tethering_enabled = LAZY_INSTANCE_INITIALIZER;
-
-}
-
-// static
-void BrowserListTabContentsProvider::EnableTethering() {
-  g_tethering_enabled.Get() = true;
-}
 
 BrowserListTabContentsProvider::BrowserListTabContentsProvider(
     chrome::HostDesktopType host_desktop_type)
-    : host_desktop_type_(host_desktop_type),
-      last_tethering_port_(kMinTetheringPort) {
-  g_tethering_enabled.Get() = false;
+    : host_desktop_type_(host_desktop_type) {
 }
 
 BrowserListTabContentsProvider::~BrowserListTabContentsProvider() {
@@ -75,22 +51,4 @@ base::FilePath BrowserListTabContentsProvider::GetDebugFrontendDir() {
 #else
   return base::FilePath();
 #endif
-}
-
-scoped_ptr<net::ServerSocket>
-BrowserListTabContentsProvider::CreateSocketForTethering(
-    std::string* name) {
-  if (!g_tethering_enabled.Get())
-    return scoped_ptr<net::ServerSocket>();
-
-  if (last_tethering_port_ == kMaxTetheringPort)
-    last_tethering_port_ = kMinTetheringPort;
-  uint16 port = ++last_tethering_port_;
-  *name = base::IntToString(port);
-  scoped_ptr<net::TCPServerSocket> socket(
-      new net::TCPServerSocket(nullptr, net::NetLog::Source()));
-  if (socket->ListenWithAddressAndPort("127.0.0.1", port, kBackLog) != net::OK)
-    return scoped_ptr<net::ServerSocket>();
-
-  return socket.Pass();
 }

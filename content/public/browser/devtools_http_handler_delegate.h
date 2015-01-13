@@ -29,11 +29,6 @@ class DevToolsHttpHandlerDelegate {
 
   // Returns path to the front-end files on the local filesystem for debugging.
   virtual base::FilePath GetDebugFrontendDir() = 0;
-
-  // Creates named socket for reversed tethering implementation (used with
-  // remote debugging, primarily for mobile).
-  virtual scoped_ptr<net::ServerSocket> CreateSocketForTethering(
-      std::string* name) = 0;
 };
 
 }  // namespace content

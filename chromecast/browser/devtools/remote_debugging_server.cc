@@ -17,6 +17,7 @@
 #include "content/public/browser/devtools_http_handler.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/user_agent.h"
+#include "net/base/net_errors.h"
 #include "net/socket/tcp_server_socket.h"
 
 #if defined(OS_ANDROID)
@@ -33,21 +34,29 @@ const char kFrontEndURL[] =
     "https://chrome-devtools-frontend.appspot.com/serve_rev/%s/inspector.html";
 const uint16 kDefaultRemoteDebuggingPort = 9222;
 
+const int kBackLog = 10;
+
 #if defined(OS_ANDROID)
 class UnixDomainServerSocketFactory
     : public content::DevToolsHttpHandler::ServerSocketFactory {
  public:
   explicit UnixDomainServerSocketFactory(const std::string& socket_name)
-      : content::DevToolsHttpHandler::ServerSocketFactory(socket_name, 0, 1) {}
+      : socket_name_(socket_name) {}
 
  private:
   // content::DevToolsHttpHandler::ServerSocketFactory.
-  scoped_ptr<net::ServerSocket> Create() const override {
-    return scoped_ptr<net::ServerSocket>(
+  scoped_ptr<net::ServerSocket> CreateForHttpServer() override {
+    scoped_ptr<net::ServerSocket> socket(
         new net::UnixDomainServerSocket(
             base::Bind(&content::CanUserConnectToDevTools),
             true /* use_abstract_namespace */));
+    if (socket->ListenWithAddressAndPort(socket_name_, 0, kBackLog) != net::OK)
+      return scoped_ptr<net::ServerSocket>();
+
+    return socket;
   }
+
+  std::string socket_name_;
 
   DISALLOW_COPY_AND_ASSIGN(UnixDomainServerSocketFactory);
 };
@@ -55,16 +64,23 @@ class UnixDomainServerSocketFactory
 class TCPServerSocketFactory
     : public content::DevToolsHttpHandler::ServerSocketFactory {
  public:
-  TCPServerSocketFactory(const std::string& address, uint16 port, int backlog)
-      : content::DevToolsHttpHandler::ServerSocketFactory(
-            address, port, backlog) {}
+  TCPServerSocketFactory(const std::string& address, uint16 port)
+      : address_(address), port_(port) {
+  }
 
  private:
   // content::DevToolsHttpHandler::ServerSocketFactory.
-  scoped_ptr<net::ServerSocket> Create() const override {
-    return scoped_ptr<net::ServerSocket>(
-        new net::TCPServerSocket(NULL, net::NetLog::Source()));
+  scoped_ptr<net::ServerSocket> CreateForHttpServer() override {
+    scoped_ptr<net::ServerSocket> socket(
+        new net::TCPServerSocket(nullptr, net::NetLog::Source()));
+    if (socket->ListenWithAddressAndPort(address_, port_, kBackLog) != net::OK)
+      return scoped_ptr<net::ServerSocket>();
+
+    return socket;
   }
+
+  std::string address_;
+  uint16 port_;
 
   DISALLOW_COPY_AND_ASSIGN(TCPServerSocketFactory);
 };
@@ -83,7 +99,7 @@ CreateSocketFactory(uint16 port) {
       new UnixDomainServerSocketFactory(socket_name));
 #else
   return scoped_ptr<content::DevToolsHttpHandler::ServerSocketFactory>(
-      new TCPServerSocketFactory("0.0.0.0", port, 1));
+      new TCPServerSocketFactory("0.0.0.0", port));
 #endif
 }
 

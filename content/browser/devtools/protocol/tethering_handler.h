@@ -8,11 +8,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "content/browser/devtools/protocol/devtools_protocol_handler.h"
+#include "content/public/browser/devtools_http_handler.h"
 
 namespace content {
-
-class DevToolsHttpHandlerDelegate;
-
 namespace devtools {
 namespace tethering {
 
@@ -21,7 +19,7 @@ class TetheringHandler {
  public:
   using Response = DevToolsProtocolClient::Response;
 
-  TetheringHandler(DevToolsHttpHandlerDelegate* delegate,
+  TetheringHandler(DevToolsHttpHandler::ServerSocketFactory* delegate,
                    scoped_refptr<base::MessageLoopProxy> message_loop_proxy);
   ~TetheringHandler();
 
@@ -42,7 +40,7 @@ class TetheringHandler {
                          const std::string& message);
 
   scoped_ptr<Client> client_;
-  DevToolsHttpHandlerDelegate* delegate_;
+  DevToolsHttpHandler::ServerSocketFactory* socket_factory_;
   scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
   bool is_active_;
   base::WeakPtrFactory<TetheringHandler> weak_factory_;

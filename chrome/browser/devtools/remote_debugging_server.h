@@ -17,6 +17,8 @@ class DevToolsHttpHandler;
 
 class RemoteDebuggingServer {
  public:
+  static void EnableTetheringForDebug();
+
   RemoteDebuggingServer(chrome::HostDesktopType host_desktop_type,
                         const std::string& ip,
                         uint16 port);

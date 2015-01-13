@@ -24,6 +24,7 @@
 #include "content/public/common/user_agent.h"
 #include "content/shell/browser/shell.h"
 #include "grit/shell_resources.h"
+#include "net/base/net_errors.h"
 #include "net/socket/tcp_server_socket.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -44,21 +45,29 @@ const char kTargetTypePage[] = "page";
 const char kTargetTypeServiceWorker[] = "service_worker";
 const char kTargetTypeOther[] = "other";
 
+const int kBackLog = 10;
+
 #if defined(OS_ANDROID)
 class UnixDomainServerSocketFactory
     : public DevToolsHttpHandler::ServerSocketFactory {
  public:
   explicit UnixDomainServerSocketFactory(const std::string& socket_name)
-      : DevToolsHttpHandler::ServerSocketFactory(socket_name, 0, 1) {}
+      : socket_name_(socket_name) {}
 
  private:
   // DevToolsHttpHandler::ServerSocketFactory.
-  virtual scoped_ptr<net::ServerSocket> Create() const override {
-    return scoped_ptr<net::ServerSocket>(
+  virtual scoped_ptr<net::ServerSocket> CreateForHttpServer() override {
+    scoped_ptr<net::ServerSocket> socket(
         new net::UnixDomainServerSocket(
             base::Bind(&CanUserConnectToDevTools),
             true /* use_abstract_namespace */));
+    if (socket->ListenWithAddressAndPort(socket_name_, 0, kBackLog) != net::OK)
+      return scoped_ptr<net::ServerSocket>();
+
+    return socket;
   }
+
+  std::string socket_name_;
 
   DISALLOW_COPY_AND_ASSIGN(UnixDomainServerSocketFactory);
 };
@@ -66,16 +75,23 @@ class UnixDomainServerSocketFactory
 class TCPServerSocketFactory
     : public DevToolsHttpHandler::ServerSocketFactory {
  public:
-  TCPServerSocketFactory(const std::string& address, uint16 port, int backlog)
-      : DevToolsHttpHandler::ServerSocketFactory(
-            address, port, backlog) {}
+  TCPServerSocketFactory(const std::string& address, uint16 port)
+      : address_(address), port_(port) {
+  }
 
  private:
   // DevToolsHttpHandler::ServerSocketFactory.
-  scoped_ptr<net::ServerSocket> Create() const override {
-    return scoped_ptr<net::ServerSocket>(
-        new net::TCPServerSocket(NULL, net::NetLog::Source()));
+  scoped_ptr<net::ServerSocket> CreateForHttpServer() override {
+    scoped_ptr<net::ServerSocket> socket(
+        new net::TCPServerSocket(nullptr, net::NetLog::Source()));
+    if (socket->ListenWithAddressAndPort(address_, port_, kBackLog) != net::OK)
+      return scoped_ptr<net::ServerSocket>();
+
+    return socket;
   }
+
+  std::string address_;
+  uint16 port_;
 
   DISALLOW_COPY_AND_ASSIGN(TCPServerSocketFactory);
 };
@@ -109,7 +125,7 @@ CreateSocketFactory() {
     }
   }
   return scoped_ptr<DevToolsHttpHandler::ServerSocketFactory>(
-      new TCPServerSocketFactory("127.0.0.1", port, 1));
+      new TCPServerSocketFactory("127.0.0.1", port));
 #endif
 }
 
@@ -180,8 +196,6 @@ class ShellDevToolsDelegate : public DevToolsHttpHandlerDelegate {
   std::string GetDiscoveryPageHTML() override;
   bool BundlesFrontendResources() override;
   base::FilePath GetDebugFrontendDir() override;
-  scoped_ptr<net::ServerSocket> CreateSocketForTethering(
-      std::string* name) override;
 
  private:
   BrowserContext* browser_context_;
@@ -215,11 +229,6 @@ bool ShellDevToolsDelegate::BundlesFrontendResources() {
 
 base::FilePath ShellDevToolsDelegate::GetDebugFrontendDir() {
   return base::FilePath();
-}
-
-scoped_ptr<net::ServerSocket>
-ShellDevToolsDelegate::CreateSocketForTethering(std::string* name) {
-  return scoped_ptr<net::ServerSocket>();
 }
 
 }  // namespace
