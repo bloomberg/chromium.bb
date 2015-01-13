@@ -662,9 +662,6 @@ const char kRegisterPepperPlugins[]         = "register-pepper-plugins";
 // Enables remote debug over HTTP on the specified port.
 const char kRemoteDebuggingPort[]           = "remote-debugging-port";
 
-// Causes the renderer process to throw an assertion on launch.
-const char kRendererAssertTest[]            = "renderer-assert-test";
-
 // On POSIX only: the contents of this flag are prepended to the renderer
 // command line. Useful values might be "valgrind" or "xterm -e gdb --args".
 const char kRendererCmdPrefix[]             = "renderer-cmd-prefix";

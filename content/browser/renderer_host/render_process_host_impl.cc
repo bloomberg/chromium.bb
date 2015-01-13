@@ -1274,7 +1274,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kReducedReferrerGranularity,
     switches::kReduceSecurityForTesting,
     switches::kRegisterPepperPlugins,
-    switches::kRendererAssertTest,
     switches::kRendererStartupDialog,
     switches::kRootLayerScrolls,
     switches::kShowPaintRects,

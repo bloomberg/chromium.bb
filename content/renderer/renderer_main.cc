@@ -64,11 +64,6 @@ static void HandleRendererErrorTestParameters(
 
   if (command_line.HasSwitch(switches::kRendererStartupDialog))
     ChildProcess::WaitForDebugger("Renderer");
-
-  // This parameter causes an assertion.
-  if (command_line.HasSwitch(switches::kRendererAssertTest)) {
-    DCHECK(false);
-  }
 }
 
 // This is a simplified version of the browser Jankometer, which measures
