@@ -673,7 +673,8 @@ int32_t RTCVideoEncoder::Release() {
   return WEBRTC_VIDEO_CODEC_OK;
 }
 
-int32_t RTCVideoEncoder::SetChannelParameters(uint32_t packet_loss, int rtt) {
+int32_t RTCVideoEncoder::SetChannelParameters(uint32_t packet_loss,
+                                              int64_t rtt) {
   DVLOG(3) << "SetChannelParameters(): packet_loss=" << packet_loss
            << ", rtt=" << rtt;
   // Ignored.

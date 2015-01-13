@@ -62,7 +62,7 @@ class CONTENT_EXPORT RTCVideoEncoder
   int32_t RegisterEncodeCompleteCallback(
       webrtc::EncodedImageCallback* callback) override;
   int32_t Release() override;
-  int32_t SetChannelParameters(uint32_t packet_loss, int rtt) override;
+  int32_t SetChannelParameters(uint32_t packet_loss, int64_t rtt) override;
   int32_t SetRates(uint32_t new_bit_rate, uint32_t frame_rate) override;
 
  private:
