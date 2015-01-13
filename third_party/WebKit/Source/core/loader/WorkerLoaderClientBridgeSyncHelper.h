@@ -34,6 +34,7 @@
 #include "core/loader/ThreadableLoaderClient.h"
 #include "wtf/Forward.h"
 #include "wtf/Functional.h"
+#include "wtf/ThreadingPrimitives.h"
 #include "wtf/Vector.h"
 
 namespace blink {
@@ -72,6 +73,7 @@ private:
     OwnPtr<blink::WebWaitableEvent> m_event;
     Vector<Vector<char>*> m_receivedData;
     Vector<OwnPtr<Closure>> m_clientTasks;
+    Mutex m_lock;
 };
 
 } // namespace blink

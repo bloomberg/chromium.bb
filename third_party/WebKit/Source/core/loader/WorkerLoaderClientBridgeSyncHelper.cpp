@@ -47,6 +47,7 @@ PassOwnPtr<WorkerLoaderClientBridgeSyncHelper> WorkerLoaderClientBridgeSyncHelpe
 
 WorkerLoaderClientBridgeSyncHelper::~WorkerLoaderClientBridgeSyncHelper()
 {
+    MutexLocker lock(m_lock);
     ASSERT(isMainThread());
     for (size_t i = 0; i < m_receivedData.size(); ++i)
         delete m_receivedData[i];
@@ -55,6 +56,7 @@ WorkerLoaderClientBridgeSyncHelper::~WorkerLoaderClientBridgeSyncHelper()
 void WorkerLoaderClientBridgeSyncHelper::run()
 {
     // This must be called only after m_event is signalled.
+    MutexLocker lock(m_lock);
     ASSERT(m_done);
     for (size_t i = 0; i < m_clientTasks.size(); ++i)
         (*m_clientTasks[i])();
@@ -62,6 +64,7 @@ void WorkerLoaderClientBridgeSyncHelper::run()
 
 void WorkerLoaderClientBridgeSyncHelper::didSendData(unsigned long long bytesSent, unsigned long long totalBytesToBeSent)
 {
+    MutexLocker lock(m_lock);
     ASSERT(isMainThread());
     m_clientTasks.append(bind(&ThreadableLoaderClient::didSendData, &m_client, bytesSent, totalBytesToBeSent));
 }
@@ -74,12 +77,14 @@ static void didReceiveResponseAdapter(ThreadableLoaderClient* client, unsigned l
 
 void WorkerLoaderClientBridgeSyncHelper::didReceiveResponse(unsigned long identifier, const ResourceResponse& response, PassOwnPtr<WebDataConsumerHandle> handle)
 {
+    MutexLocker lock(m_lock);
     ASSERT(isMainThread());
     m_clientTasks.append(bind(&didReceiveResponseAdapter, &m_client, identifier, response.copyData(), handle));
 }
 
 void WorkerLoaderClientBridgeSyncHelper::didReceiveData(const char* data, unsigned dataLength)
 {
+    MutexLocker lock(m_lock);
     ASSERT(isMainThread());
     Vector<char>* buffer = new Vector<char>(dataLength);
     memcpy(buffer->data(), data, dataLength);
@@ -89,12 +94,14 @@ void WorkerLoaderClientBridgeSyncHelper::didReceiveData(const char* data, unsign
 
 void WorkerLoaderClientBridgeSyncHelper::didDownloadData(int dataLength)
 {
+    MutexLocker lock(m_lock);
     ASSERT(isMainThread());
     m_clientTasks.append(bind(&ThreadableLoaderClient::didDownloadData, &m_client, dataLength));
 }
 
 void WorkerLoaderClientBridgeSyncHelper::didReceiveCachedMetadata(const char* data, int dataLength)
 {
+    MutexLocker lock(m_lock);
     ASSERT(isMainThread());
     Vector<char>* buffer = new Vector<char>(dataLength);
     memcpy(buffer->data(), data, dataLength);
@@ -104,6 +111,7 @@ void WorkerLoaderClientBridgeSyncHelper::didReceiveCachedMetadata(const char* da
 
 void WorkerLoaderClientBridgeSyncHelper::didFinishLoading(unsigned long identifier, double finishTime)
 {
+    MutexLocker lock(m_lock);
     ASSERT(isMainThread());
     m_clientTasks.append(bind(&ThreadableLoaderClient::didFinishLoading, &m_client, identifier, finishTime));
     m_done = true;
@@ -112,6 +120,7 @@ void WorkerLoaderClientBridgeSyncHelper::didFinishLoading(unsigned long identifi
 
 void WorkerLoaderClientBridgeSyncHelper::didFail(const ResourceError& error)
 {
+    MutexLocker lock(m_lock);
     ASSERT(isMainThread());
     m_clientTasks.append(bind(&ThreadableLoaderClient::didFail, &m_client, error.copy()));
     m_done = true;
@@ -120,6 +129,7 @@ void WorkerLoaderClientBridgeSyncHelper::didFail(const ResourceError& error)
 
 void WorkerLoaderClientBridgeSyncHelper::didFailAccessControlCheck(const ResourceError& error)
 {
+    MutexLocker lock(m_lock);
     ASSERT(isMainThread());
     m_clientTasks.append(bind(&ThreadableLoaderClient::didFailAccessControlCheck, &m_client, error.copy()));
     m_done = true;
@@ -128,6 +138,7 @@ void WorkerLoaderClientBridgeSyncHelper::didFailAccessControlCheck(const Resourc
 
 void WorkerLoaderClientBridgeSyncHelper::didFailRedirectCheck()
 {
+    MutexLocker lock(m_lock);
     ASSERT(isMainThread());
     m_clientTasks.append(bind(&ThreadableLoaderClient::didFailRedirectCheck, &m_client));
     m_done = true;
