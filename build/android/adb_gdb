@@ -262,7 +262,7 @@ the CHROMIUM_OUT_DIR environment variable is defined.
 You can restrict this search by using --release or --debug to specify the
 build type, or simply use --symbol-dir=<path> to specify the file manually.
 
-The script tries to extract the target architecture from your GYP_DEFINES,
+The script tries to extract the target architecture from your target device,
 but if this fails, will default to 'arm'. Use --target-arch=<name> to force
 its value.
 
@@ -354,15 +354,78 @@ if [ "$GDBINIT" -a ! -f "$GDBINIT" ]; then
   panic "Unknown --script file: $GDBINIT"
 fi
 
-# Find the target architecture from our $GYP_DEFINES
+# Check that ADB is in our path
+if [ -z "$ADB" ]; then
+  ADB=$(which adb 2>/dev/null)
+  if [ -z "$ADB" ]; then
+    panic "Can't find 'adb' tool in your path. Install it or use \
+--adb=<file>"
+  fi
+  log "Auto-config: --adb=$ADB"
+fi
+
+# Check that it works minimally
+ADB_VERSION=$($ADB version 2>/dev/null)
+echo "$ADB_VERSION" | fgrep -q -e "Android Debug Bridge"
+if [ $? != 0 ]; then
+  panic "Your 'adb' tool seems invalid, use --adb=<file> to specify a \
+different one: $ADB"
+fi
+
+# If there are more than one device connected, and ANDROID_SERIAL is not
+# defined, print an error message.
+NUM_DEVICES_PLUS2=$($ADB devices 2>/dev/null | wc -l)
+if [ "$NUM_DEVICES_PLUS2" -lt 3 -a -z "$ANDROID_SERIAL" ]; then
+  echo "ERROR: There is more than one Android device connected to ADB."
+  echo "Please define ANDROID_SERIAL to specify which one to use."
+  exit 1
+fi
+
+# Run a command through adb shell, strip the extra \r from the output
+# and return the correct status code to detect failures. This assumes
+# that the adb shell command prints a final \n to stdout.
+# $1+: command to run
+# Out: command's stdout
+# Return: command's status
+# Note: the command's stderr is lost
+adb_shell () {
+  local TMPOUT="$(mktemp)"
+  local LASTLINE RET
+  local ADB=${ADB:-adb}
+
+  # The weird sed rule is to strip the final \r on each output line
+  # Since 'adb shell' never returns the command's proper exit/status code,
+  # we force it to print it as '%%<status>' in the temporary output file,
+  # which we will later strip from it.
+  $ADB shell $@ ";" echo "%%\$?" 2>/dev/null | \
+      sed -e 's![[:cntrl:]]!!g' > $TMPOUT
+  # Get last line in log, which contains the exit code from the command
+  LASTLINE=$(sed -e '$!d' $TMPOUT)
+  # Extract the status code from the end of the line, which must
+  # be '%%<code>'.
+  RET=$(echo "$LASTLINE" | \
+    awk '{ if (match($0, "%%[0-9]+$")) { print substr($0,RSTART+2); } }')
+  # Remove the status code from the last line. Note that this may result
+  # in an empty line.
+  LASTLINE=$(echo "$LASTLINE" | \
+    awk '{ if (match($0, "%%[0-9]+$")) { print substr($0,1,RSTART-1); } }')
+  # The output itself: all lines except the status code.
+  sed -e '$d' $TMPOUT && printf "%s" "$LASTLINE"
+  # Remove temp file.
+  rm -f $TMPOUT
+  # Exit with the appropriate status.
+  return $RET
+}
+
+# Find the target architecture from the target device.
 # This returns an NDK-compatible architecture name.
 # out: NDK Architecture name, or empty string.
 get_gyp_target_arch () {
-  local ARCH=$(echo $GYP_DEFINES | tr ' ' '\n' | grep '^target_arch=' |\
-               cut -d= -f2)
+  local ARCH=$(adb_shell getprop ro.product.cpu.abi)
   case $ARCH in
-    ia32|i?86|x86) echo "x86";;
-    mips|arm|arm64|x86_64) echo "$ARCH";;
+    mips|x86|x86_64) echo "$ARCH";;
+    arm64*) echo "arm64";;
+    arm*) echo "arm";;
     *) echo "";
   esac
 }
@@ -579,35 +642,6 @@ valid one!"
   log "Auto-config: --gdbserver=$GDBSERVER"
 fi
 
-
-
-# Check that ADB is in our path
-if [ -z "$ADB" ]; then
-  ADB=$(which adb 2>/dev/null)
-  if [ -z "$ADB" ]; then
-    panic "Can't find 'adb' tool in your path. Install it or use \
---adb=<file>"
-  fi
-  log "Auto-config: --adb=$ADB"
-fi
-
-# Check that it works minimally
-ADB_VERSION=$($ADB version 2>/dev/null)
-echo "$ADB_VERSION" | fgrep -q -e "Android Debug Bridge"
-if [ $? != 0 ]; then
-  panic "Your 'adb' tool seems invalid, use --adb=<file> to specify a \
-different one: $ADB"
-fi
-
-# If there are more than one device connected, and ANDROID_SERIAL is not
-# defined, print an error message.
-NUM_DEVICES_PLUS2=$($ADB devices 2>/dev/null | wc -l)
-if [ "$NUM_DEVICES_PLUS2" -lt 3 -a -z "$ANDROID_SERIAL" ]; then
-  echo "ERROR: There is more than one Android device connected to ADB."
-  echo "Please define ANDROID_SERIAL to specify which one to use."
-  exit 1
-fi
-
 # A unique ID for this script's session. This needs to be the same in all
 # sub-shell commands we're going to launch, so take the PID of the launcher
 # process.
@@ -618,42 +652,6 @@ TMPDIR=/tmp/$USER-adb-gdb-tmp-$TMP_ID
 mkdir -p "$TMPDIR" && rm -rf "$TMPDIR"/*
 
 GDBSERVER_PIDFILE="$TMPDIR"/gdbserver-$TMP_ID.pid
-
-# Run a command through adb shell, strip the extra \r from the output
-# and return the correct status code to detect failures. This assumes
-# that the adb shell command prints a final \n to stdout.
-# $1+: command to run
-# Out: command's stdout
-# Return: command's status
-# Note: the command's stderr is lost
-adb_shell () {
-  local TMPOUT="$(mktemp)"
-  local LASTLINE RET
-  local ADB=${ADB:-adb}
-
-  # The weird sed rule is to strip the final \r on each output line
-  # Since 'adb shell' never returns the command's proper exit/status code,
-  # we force it to print it as '%%<status>' in the temporary output file,
-  # which we will later strip from it.
-  $ADB shell $@ ";" echo "%%\$?" 2>/dev/null | \
-      sed -e 's![[:cntrl:]]!!g' > $TMPOUT
-  # Get last line in log, which contains the exit code from the command
-  LASTLINE=$(sed -e '$!d' $TMPOUT)
-  # Extract the status code from the end of the line, which must
-  # be '%%<code>'.
-  RET=$(echo "$LASTLINE" | \
-    awk '{ if (match($0, "%%[0-9]+$")) { print substr($0,RSTART+2); } }')
-  # Remove the status code from the last line. Note that this may result
-  # in an empty line.
-  LASTLINE=$(echo "$LASTLINE" | \
-    awk '{ if (match($0, "%%[0-9]+$")) { print substr($0,1,RSTART-1); } }')
-  # The output itself: all lines except the status code.
-  sed -e '$d' $TMPOUT && printf "%s" "$LASTLINE"
-  # Remove temp file.
-  rm -f $TMPOUT
-  # Exit with the appropriate status.
-  return $RET
-}
 
 # If --force is specified, try to kill any gdbserver process started by the
 # same user on the device. Normally, these are killed automatically by the
