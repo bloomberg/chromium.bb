@@ -33,7 +33,9 @@
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/imports/HTMLImportsController.h"
+#include "core/loader/DocumentLoader.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "public/platform/Platform.h"
 
 namespace blink {
 
@@ -121,6 +123,17 @@ bool DocumentInit::shouldEnforceStrictMixedContentChecking() const
 {
     ASSERT(frameForSecurityContext());
     return frameForSecurityContext()->loader().shouldEnforceStrictMixedContentChecking();
+}
+
+bool DocumentInit::isHostedInReservedIPRange() const
+{
+    if (LocalFrame* frame = frameForSecurityContext()) {
+        if (DocumentLoader* loader = frame->loader().provisionalDocumentLoader() ? frame->loader().provisionalDocumentLoader() : frame->loader().documentLoader()) {
+            if (!loader->response().remoteIPAddress().isEmpty())
+                return Platform::current()->isReservedIPAddress(loader->response().remoteIPAddress());
+        }
+    }
+    return false;
 }
 
 Settings* DocumentInit::settings() const

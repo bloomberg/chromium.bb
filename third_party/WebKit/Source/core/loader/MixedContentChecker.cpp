@@ -402,13 +402,8 @@ void MixedContentChecker::checkMixedPrivatePublic(LocalFrame* frame, const Atomi
     if (!frame || !frame->document() || !frame->document()->loader())
         return;
 
-    KURL documentIP(ParsedURLString, "http://" + frame->document()->loader()->response().remoteIPAddress());
-    KURL resourceIP(ParsedURLString, "http://" + resourceIPAddress);
-
     // Just count these for the moment, don't block them.
-    //
-    // FIXME: Once we know how we want to check this, adjust the platform APIs to avoid the KURL construction.
-    if (Platform::current()->isReservedIPAddress(resourceIP) && !Platform::current()->isReservedIPAddress(documentIP))
+    if (Platform::current()->isReservedIPAddress(resourceIPAddress) && !frame->document()->isHostedInReservedIPRange())
         UseCounter::count(frame->document(), UseCounter::MixedContentPrivateHostnameInPublicHostname);
 }
 

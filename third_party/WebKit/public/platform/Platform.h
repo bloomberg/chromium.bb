@@ -313,6 +313,9 @@ public:
 
     virtual WebURLError cancelledError(const WebURL&) const { return WebURLError(); }
 
+    virtual bool isReservedIPAddress(const WebString& host) const { return false; }
+
+    // FIXME: Drop both of these once Chromium is updated.
     virtual bool isReservedIPAddress(const WebURL&) const { return false; }
     virtual bool isReservedIPAddress(const WebSecurityOrigin&) const { return false; }
 

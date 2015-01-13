@@ -55,6 +55,9 @@ public:
     bool isSandboxed(SandboxFlags mask) const { return m_sandboxFlags & mask; }
     void enforceSandboxFlags(SandboxFlags mask);
 
+    void setHostedInReservedIPRange() { m_hostedInReservedIPRange = true; }
+    bool isHostedInReservedIPRange() const { return m_hostedInReservedIPRange; }
+
 protected:
     SecurityContext();
     virtual ~SecurityContext();
@@ -70,6 +73,8 @@ private:
     RefPtr<ContentSecurityPolicy> m_contentSecurityPolicy;
 
     SandboxFlags m_sandboxFlags;
+
+    bool m_hostedInReservedIPRange;
 };
 
 } // namespace blink

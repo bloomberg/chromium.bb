@@ -4680,6 +4680,9 @@ void Document::initSecurityContext(const DocumentInit& initializer)
         return;
     }
 
+    if (initializer.isHostedInReservedIPRange())
+        setHostedInReservedIPRange();
+
     if (!initializer.hasSecurityContext()) {
         // No source for a security context.
         // This can occur via document.implementation.createDocument().
