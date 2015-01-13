@@ -93,10 +93,10 @@ AC_ARG_ENABLE(exynos-experimental-api,
 	      [Enable support for EXYNOS's experimental API (default: disabled)]),
 	      [EXYNOS=$enableval], [EXYNOS=no])
 
-AC_ARG_ENABLE(freedreno-experimental-api,
-	      AS_HELP_STRING([--enable-freedreno-experimental-api],
-	      [Enable support for freedreno's experimental API (default: disabled)]),
-	      [FREEDRENO=$enableval], [FREEDRENO=no])
+AC_ARG_ENABLE(freedreno,
+	      AS_HELP_STRING([--disable-freedreno],
+	      [Enable support for freedreno's KMS API (default: enabled)]),
+	      [FREEDRENO=$enableval], [FREEDRENO=yes])
 
 AC_ARG_ENABLE(freedreno-kgsl,
 	      AS_HELP_STRING([--enable-freedreno-kgsl],
