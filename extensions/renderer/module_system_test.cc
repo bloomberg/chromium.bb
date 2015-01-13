@@ -156,7 +156,7 @@ ModuleSystemTestEnvironment::ModuleSystemTestEnvironment(v8::Isolate* isolate)
 }
 
 ModuleSystemTestEnvironment::~ModuleSystemTestEnvironment() {
-  if (context_)
+  if (context_->is_valid())
     context_->v8_context()->Exit();
 }
 
@@ -197,7 +197,7 @@ void ModuleSystemTestEnvironment::ShutdownGin() {
 
 void ModuleSystemTestEnvironment::ShutdownModuleSystem() {
   context_->v8_context()->Exit();
-  context_.reset();
+  context_->Invalidate();
 }
 
 v8::Handle<v8::Object> ModuleSystemTestEnvironment::CreateGlobal(
