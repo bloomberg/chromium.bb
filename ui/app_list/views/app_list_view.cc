@@ -218,7 +218,7 @@ void AppListView::InitAsFramelessWindow(gfx::NativeView parent,
   // its own background at OnNativeThemeChanged(), which is called in
   // View::AddChildView() which is called at Widget::SetContentsView() to build
   // the views hierarchy in the widget.
-  set_background(new AppListBackground(0, app_list_main_view_));
+  set_background(new AppListBackground(0));
 
   InitChildWidgets();
 }
@@ -494,8 +494,7 @@ void AppListView::InitAsBubbleInternal(gfx::NativeView parent,
   aura::Window* window = GetWidget()->GetNativeWindow();
   window->layer()->SetMasksToBounds(true);
   GetBubbleFrameView()->set_background(new AppListBackground(
-      GetBubbleFrameView()->bubble_border()->GetBorderCornerRadius(),
-      app_list_main_view_));
+      GetBubbleFrameView()->bubble_border()->GetBorderCornerRadius()));
   set_background(NULL);
   window->SetEventTargeter(scoped_ptr<ui::EventTargeter>(
       new views::BubbleWindowTargeter(this)));

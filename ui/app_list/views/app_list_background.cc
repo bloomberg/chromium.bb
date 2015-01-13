@@ -9,7 +9,6 @@
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_switches.h"
-#include "ui/app_list/views/app_list_main_view.h"
 #include "ui/app_list/views/contents_view.h"
 #include "ui/app_list/views/search_box_view.h"
 #include "ui/gfx/canvas.h"
@@ -19,10 +18,8 @@
 
 namespace app_list {
 
-AppListBackground::AppListBackground(int corner_radius,
-                                     AppListMainView* main_view)
-    : corner_radius_(corner_radius),
-      main_view_(main_view) {
+AppListBackground::AppListBackground(int corner_radius)
+    : corner_radius_(corner_radius) {
 }
 
 AppListBackground::~AppListBackground() {
