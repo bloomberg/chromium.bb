@@ -160,9 +160,6 @@ class DeviceStatusCollector : public CloudPolicyClient::StatusProvider {
   void ReceiveVolumeInfo(
       const std::vector<enterprise_management::VolumeInfo>& info);
 
-  // How often to poll to see if the user is idle.
-  int poll_interval_seconds_;
-
   PrefService* local_state_;
 
   // The last time an idle state check was performed.

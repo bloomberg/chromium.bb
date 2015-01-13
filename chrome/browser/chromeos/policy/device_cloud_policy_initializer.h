@@ -25,7 +25,6 @@ class SequencedTaskRunner;
 }
 
 namespace chromeos {
-class DeviceSettingsService;
 class OwnerSettingsServiceChromeOS;
 }
 
@@ -56,8 +55,7 @@ class DeviceCloudPolicyInitializer : public CloudPolicyStore::Observer {
       EnterpriseInstallAttributes* install_attributes,
       ServerBackedStateKeysBroker* state_keys_broker,
       DeviceCloudPolicyStoreChromeOS* device_store,
-      DeviceCloudPolicyManagerChromeOS* manager,
-      chromeos::DeviceSettingsService* device_settings_service);
+      DeviceCloudPolicyManagerChromeOS* manager);
 
   virtual ~DeviceCloudPolicyInitializer();
 
@@ -115,7 +113,6 @@ class DeviceCloudPolicyInitializer : public CloudPolicyStore::Observer {
   ServerBackedStateKeysBroker* state_keys_broker_;
   DeviceCloudPolicyStoreChromeOS* device_store_;
   DeviceCloudPolicyManagerChromeOS* manager_;
-  chromeos::DeviceSettingsService* device_settings_service_;
   bool is_initialized_;
 
   // Non-NULL if there is an enrollment operation pending.

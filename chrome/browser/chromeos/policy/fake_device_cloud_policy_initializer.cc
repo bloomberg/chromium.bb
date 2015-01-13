@@ -20,8 +20,7 @@ FakeDeviceCloudPolicyInitializer::FakeDeviceCloudPolicyInitializer()
           NULL,  // install_attributes
           NULL,  // state_keys_broker
           NULL,  // device_store
-          NULL,  // manager
-          NULL),  // device_settings_service
+          NULL),  // manager
       was_start_enrollment_called_(false),
       enrollment_status_(EnrollmentStatus::ForStatus(
           EnrollmentStatus::STATUS_SUCCESS)) {

@@ -97,7 +97,6 @@ class LegacyPolicyCacheLoader : public UserPolicyTokenLoader::Delegate,
 
   std::string dm_token_;
   std::string device_id_;
-  bool has_policy_;
   scoped_ptr<em::PolicyFetchResponse> policy_;
   CloudPolicyStore::Status status_;
 
@@ -112,8 +111,7 @@ LegacyPolicyCacheLoader::LegacyPolicyCacheLoader(
     const base::FilePath& token_cache_file,
     const base::FilePath& policy_cache_file,
     scoped_refptr<base::SequencedTaskRunner> background_task_runner)
-    : has_policy_(false),
-      status_(CloudPolicyStore::STATUS_OK),
+    : status_(CloudPolicyStore::STATUS_OK),
       weak_factory_(this) {
   token_loader_ = new UserPolicyTokenLoader(weak_factory_.GetWeakPtr(),
                                             token_cache_file,

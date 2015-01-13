@@ -181,8 +181,7 @@ class DeviceCloudPolicyManagerChromeOSTest
         install_attributes_.get(),
         &state_keys_broker_,
         store_,
-        manager_.get(),
-        &device_settings_service_));
+        manager_.get()));
     initializer_->Init();
   }
 

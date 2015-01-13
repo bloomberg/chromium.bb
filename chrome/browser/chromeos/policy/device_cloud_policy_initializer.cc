@@ -20,7 +20,6 @@
 #include "chrome/browser/chromeos/policy/enrollment_status_chromeos.h"
 #include "chrome/browser/chromeos/policy/enterprise_install_attributes.h"
 #include "chrome/browser/chromeos/policy/server_backed_device_state.h"
-#include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/system/statistics_provider.h"
@@ -55,8 +54,7 @@ DeviceCloudPolicyInitializer::DeviceCloudPolicyInitializer(
     EnterpriseInstallAttributes* install_attributes,
     ServerBackedStateKeysBroker* state_keys_broker,
     DeviceCloudPolicyStoreChromeOS* device_store,
-    DeviceCloudPolicyManagerChromeOS* manager,
-    chromeos::DeviceSettingsService* device_settings_service)
+    DeviceCloudPolicyManagerChromeOS* manager)
     : local_state_(local_state),
       enterprise_service_(enterprise_service),
       consumer_service_(consumer_service),
@@ -65,7 +63,6 @@ DeviceCloudPolicyInitializer::DeviceCloudPolicyInitializer(
       state_keys_broker_(state_keys_broker),
       device_store_(device_store),
       manager_(manager),
-      device_settings_service_(device_settings_service),
       is_initialized_(false) {
 }
 
@@ -108,7 +105,7 @@ void DeviceCloudPolicyInitializer::StartEnrollment(
   manager_->core()->Disconnect();
   enrollment_handler_.reset(new EnrollmentHandlerChromeOS(
       device_store_, install_attributes_, state_keys_broker_,
-      device_settings_service_, owner_settings_service,
+      owner_settings_service,
       CreateClient(device_management_service), background_task_runner_,
       enrollment_config, auth_token, install_attributes_->GetDeviceId(),
       manager_->GetDeviceRequisition(), allowed_device_modes, management_mode,

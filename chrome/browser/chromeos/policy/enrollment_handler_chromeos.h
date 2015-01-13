@@ -27,7 +27,6 @@ class SequencedTaskRunner;
 }
 
 namespace chromeos {
-class DeviceSettingsService;
 class OwnerSettingsServiceChromeOS;
 }
 
@@ -66,7 +65,6 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
       DeviceCloudPolicyStoreChromeOS* store,
       EnterpriseInstallAttributes* install_attributes,
       ServerBackedStateKeysBroker* state_keys_broker,
-      chromeos::DeviceSettingsService* device_settings_service,
       chromeos::OwnerSettingsServiceChromeOS* owner_settings_service,
       scoped_ptr<CloudPolicyClient> client,
       scoped_refptr<base::SequencedTaskRunner> background_task_runner,
@@ -162,7 +160,6 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
   DeviceCloudPolicyStoreChromeOS* store_;
   EnterpriseInstallAttributes* install_attributes_;
   ServerBackedStateKeysBroker* state_keys_broker_;
-  chromeos::DeviceSettingsService* device_settings_service_;
   chromeos::OwnerSettingsServiceChromeOS* owner_settings_service_;
   scoped_ptr<CloudPolicyClient> client_;
   scoped_refptr<base::SequencedTaskRunner> background_task_runner_;

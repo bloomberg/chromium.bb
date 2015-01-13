@@ -181,8 +181,7 @@ void BrowserPolicyConnectorChromeOS::Init(
             install_attributes_.get(),
             state_keys_broker_.get(),
             device_cloud_policy_manager_->device_store(),
-            device_cloud_policy_manager_,
-            chromeos::DeviceSettingsService::Get()));
+            device_cloud_policy_manager_));
     device_cloud_policy_initializer_->Init();
   }
 

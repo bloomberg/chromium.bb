@@ -18,7 +18,6 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service_factory.h"
-#include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/chromeos_switches.h"
 #include "google_apis/gaia/gaia_urls.h"
@@ -71,7 +70,6 @@ EnrollmentHandlerChromeOS::EnrollmentHandlerChromeOS(
     DeviceCloudPolicyStoreChromeOS* store,
     EnterpriseInstallAttributes* install_attributes,
     ServerBackedStateKeysBroker* state_keys_broker,
-    chromeos::DeviceSettingsService* device_settings_service,
     chromeos::OwnerSettingsServiceChromeOS* owner_settings_service,
     scoped_ptr<CloudPolicyClient> client,
     scoped_refptr<base::SequencedTaskRunner> background_task_runner,
@@ -85,7 +83,6 @@ EnrollmentHandlerChromeOS::EnrollmentHandlerChromeOS(
     : store_(store),
       install_attributes_(install_attributes),
       state_keys_broker_(state_keys_broker),
-      device_settings_service_(device_settings_service),
       owner_settings_service_(owner_settings_service),
       client_(client.Pass()),
       background_task_runner_(background_task_runner),
