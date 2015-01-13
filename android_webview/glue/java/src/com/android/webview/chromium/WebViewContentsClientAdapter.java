@@ -52,6 +52,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewClient;
+import org.chromium.content.browser.ContentViewCore;
 
 import java.lang.ref.WeakReference;
 import java.net.URISyntaxException;
@@ -766,8 +767,9 @@ public class WebViewContentsClientAdapter extends AwContentsClient {
                         new JsPromptResultReceiverAdapter(receiver).getPromptResult();
                 if (TRACE) Log.d(TAG, "onJsAlert");
                 if (!mWebChromeClient.onJsAlert(mWebView, url, message, res)) {
-                    new JsDialogHelper(res, JsDialogHelper.ALERT, null, message, url)
-                            .showDialog(mContext);
+                    if (!showDefaultJsDialog(res, JsDialogHelper.ALERT, null, message, url)) {
+                        receiver.cancel();
+                    }
                 }
             } else {
                 receiver.cancel();
@@ -786,8 +788,9 @@ public class WebViewContentsClientAdapter extends AwContentsClient {
                         new JsPromptResultReceiverAdapter(receiver).getPromptResult();
                 if (TRACE) Log.d(TAG, "onJsBeforeUnload");
                 if (!mWebChromeClient.onJsBeforeUnload(mWebView, url, message, res)) {
-                    new JsDialogHelper(res, JsDialogHelper.UNLOAD, null, message, url)
-                            .showDialog(mContext);
+                    if (!showDefaultJsDialog(res, JsDialogHelper.UNLOAD, null, message, url)) {
+                        receiver.cancel();
+                    }
                 }
             } else {
                 receiver.cancel();
@@ -806,8 +809,9 @@ public class WebViewContentsClientAdapter extends AwContentsClient {
                         new JsPromptResultReceiverAdapter(receiver).getPromptResult();
                 if (TRACE) Log.d(TAG, "onJsConfirm");
                 if (!mWebChromeClient.onJsConfirm(mWebView, url, message, res)) {
-                    new JsDialogHelper(res, JsDialogHelper.CONFIRM, null, message, url)
-                            .showDialog(mContext);
+                    if (!showDefaultJsDialog(res, JsDialogHelper.CONFIRM, null, message, url)) {
+                        receiver.cancel();
+                    }
                 }
             } else {
                 receiver.cancel();
@@ -827,8 +831,10 @@ public class WebViewContentsClientAdapter extends AwContentsClient {
                         new JsPromptResultReceiverAdapter(receiver).getPromptResult();
                 if (TRACE) Log.d(TAG, "onJsPrompt");
                 if (!mWebChromeClient.onJsPrompt(mWebView, url, message, defaultValue, res)) {
-                    new JsDialogHelper(res, JsDialogHelper.PROMPT, defaultValue, message, url)
-                            .showDialog(mContext);
+                    if (!showDefaultJsDialog(
+                            res, JsDialogHelper.PROMPT, defaultValue, message, url)) {
+                        receiver.cancel();
+                    }
                 }
             } else {
                 receiver.cancel();
@@ -836,6 +842,23 @@ public class WebViewContentsClientAdapter extends AwContentsClient {
         } finally {
             TraceEvent.end("WebViewContentsClientAdapter.handleJsPrompt");
         }
+    }
+
+    /**
+     * Try to show the default JS dialog and return whether the dialog was shown.
+     */
+    private boolean showDefaultJsDialog(JsPromptResult res, int jsDialogType, String defaultValue,
+            String message, String url) {
+        Context activityContext = ContentViewCore.activityFromContext(mContext);
+        if (activityContext == null) {
+            return false;
+        }
+        // TODO(igsolla): the activity context should be retrieved inside JsDialogHelper.showDialog
+        // but for that we need it to return a boolean. Also, doing it here means that we can fix
+        // problem 2 in crbug/447607 before M is released.
+        new JsDialogHelper(res, jsDialogType, defaultValue, message, url)
+            .showDialog(activityContext);
+        return true;
     }
 
     @Override
