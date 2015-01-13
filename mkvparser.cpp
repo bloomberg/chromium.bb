@@ -5942,7 +5942,7 @@ long Tracks::ParseTrackEntry(long long track_start, long long track_size,
     if (v.start >= 0)
       return E_FILE_FORMAT_INVALID;
 
-    if (e.start >= 0)
+    if (info.type == Track::kMetadata && e.start >= 0)
       return E_FILE_FORMAT_INVALID;
 
     info.settings.start = -1;
