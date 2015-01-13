@@ -28,6 +28,9 @@ const char kCrashOnFailure[] = "crash-on-failure";
 // Request pages to be dumped as text once they finished loading.
 const char kDumpRenderTree[] = "dump-render-tree";
 
+// Enable impl-side painting in the compositor.
+const char kEnableImplSidePainting[] = "enable-impl-side-painting";
+
 // Expose window.ipcTester object for testing
 const char kExposeIpcEcho[] = "expose-ipc-echo";
 
