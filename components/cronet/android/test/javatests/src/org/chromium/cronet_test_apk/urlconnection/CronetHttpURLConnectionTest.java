@@ -153,9 +153,6 @@ public class CronetHttpURLConnectionTest extends CronetTestBase {
             // Expected.
         } catch (UrlRequestException e) {
             // Expected.
-            assertEquals(
-                    "Exception in CronetUrlRequest: net::ERR_NAME_NOT_RESOLVED",
-                    e.getMessage());
         }
         checkExceptionsAreThrown(urlConnection);
     }
