@@ -4,7 +4,7 @@
 
 #include "base/profiler/alternate_timer.h"
 
-#include "base/logging.h"
+#include "base/basictypes.h"
 
 namespace {
 
@@ -21,7 +21,6 @@ const char kAlternateProfilerTime[] = "CHROME_PROFILER_TIME";
 // Set an alternate timer function to replace the OS time function when
 // profiling.
 void SetAlternateTimeSource(NowFunction* now_function, TimeSourceType type) {
-  DCHECK_EQ(reinterpret_cast<NowFunction*>(NULL), g_time_function);
   g_time_function = now_function;
   g_time_source_type = type;
 }

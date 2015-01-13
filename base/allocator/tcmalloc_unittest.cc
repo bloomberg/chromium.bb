@@ -1,17 +1,32 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+#include <stddef.h>
 #include <stdio.h>
-#include "base/allocator/allocator_shim.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 
-// TCMalloc header files
+// TCMalloc header files.
 #include "common.h"  // For TCMalloc constants like page size, etc.
 
-using base::allocator::TCMallocDoMallocForTest;
-using base::allocator::TCMallocDoFreeForTest;
-using base::allocator::ExcludeSpaceForMarkForTest;
+// TCMalloc implementation.
+#include "debugallocation_shim.cc"
+
+namespace {
+
+void* TCMallocDoMallocForTest(size_t size) {
+  return do_malloc(size);
+}
+
+void TCMallocDoFreeForTest(void* ptr) {
+  do_free(ptr);
+}
+
+size_t ExcludeSpaceForMarkForTest(size_t size) {
+  return ExcludeSpaceForMark(size);
+}
+
+}  // namespace
 
 TEST(TCMallocFreeCheck, BadPointerInFirstPageOfTheLargeObject) {
   char* p = reinterpret_cast<char*>(

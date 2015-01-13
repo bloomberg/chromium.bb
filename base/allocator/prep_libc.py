@@ -4,8 +4,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 #
-# This script takes libcmt.lib for VS2005/08/10/12/13 and removes the allocation
-# related functions from it.
+# This script takes libcmt.lib for VS2013 and removes the allocation related
+# functions from it.
 #
 # Usage: prep_libc.py <VCLibDir> <OutputDir> <arch>
 #
@@ -19,16 +19,18 @@ import shutil
 import subprocess
 import sys
 
-def run(command, filter=None):
-  """Run |command|, removing any lines that match |filter|. The filter is
-  to remove the echoing of input filename that 'lib' does."""
+def run(command):
+  """Run |command|.  If any lines that match an error condition then
+      terminate."""
+  error = 'cannot find member object'
   popen = subprocess.Popen(
       command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
   out, _ = popen.communicate()
   for line in out.splitlines():
-    if filter and line.strip() != filter:
-      print line
-  return popen.returncode
+    print line
+    if error and line.find(error) != -1:
+      print 'prep_libc.py: Error stripping object from C runtime.'
+      sys.exit(1)
 
 def main():
   bindir = 'SELF_X86'
@@ -43,28 +45,24 @@ def main():
   shutil.copyfile(os.path.join(vs_install_dir, 'libcmt.lib'), output_lib)
   shutil.copyfile(os.path.join(vs_install_dir, 'libcmt.pdb'),
                   os.path.join(outdir, 'libcmt.pdb'))
+  cvspath = 'f:\\binaries\\Intermediate\\vctools\\crt_bld\\' + bindir + \
+      '\\crt\\prebuild\\build\\' + objdir + '\\mt_obj\\nativec\\\\';
+  cppvspath = 'f:\\binaries\\Intermediate\\vctools\\crt_bld\\' + bindir + \
+      '\\crt\\prebuild\\build\\' + objdir + '\\mt_obj\\nativecpp\\\\';
 
-  vspaths = [
-    'build\\intel\\mt_obj\\',
-    'f:\\dd\\vctools\\crt_bld\\' + bindir + \
-      '\\crt\\src\\build\\' + objdir + '\\mt_obj\\',
-    'F:\\dd\\vctools\\crt_bld\\' + bindir + \
-      '\\crt\\src\\build\\' + objdir + '\\mt_obj\\nativec\\\\',
-    'F:\\dd\\vctools\\crt_bld\\' + bindir + \
-      '\\crt\\src\\build\\' + objdir + '\\mt_obj\\nativecpp\\\\',
-    'f:\\binaries\\Intermediate\\vctools\\crt_bld\\' + bindir + \
-      '\\crt\\prebuild\\build\\INTEL\\mt_obj\\cpp_obj\\\\',
-    ]
-
-  objfiles = ['malloc', 'free', 'realloc', 'new', 'delete', 'new2', 'delete2',
-              'align', 'msize', 'heapinit', 'expand', 'heapchk', 'heapwalk',
-              'heapmin', 'sbheap', 'calloc', 'recalloc', 'calloc_impl',
-              'new_mode', 'newopnt', 'newaopnt']
-  for obj in objfiles:
-    for vspath in vspaths:
-      cmd = ('lib /nologo /ignore:4006,4014,4221 /remove:%s%s.obj %s' %
-             (vspath, obj, output_lib))
-      run(cmd, obj + '.obj')
+  cobjfiles = ['malloc', 'free', 'realloc', 'align', 'msize', 'heapinit',
+      'expand', 'heapchk', 'heapwalk', 'heapmin', 'calloc', 'recalloc',
+      'calloc_impl']
+  cppobjfiles = ['new', 'new2', 'delete', 'delete2', 'new_mode', 'newopnt',
+      'newaopnt']
+  for obj in cobjfiles:
+    cmd = ('lib /nologo /ignore:4006,4221 /remove:%s%s.obj %s' %
+           (cvspath, obj, output_lib))
+    run(cmd)
+  for obj in cppobjfiles:
+    cmd = ('lib /nologo /ignore:4006,4221 /remove:%s%s.obj %s' %
+           (cppvspath, obj, output_lib))
+    run(cmd)
 
 if __name__ == "__main__":
   sys.exit(main())

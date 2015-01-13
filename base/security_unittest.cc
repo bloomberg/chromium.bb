@@ -23,10 +23,45 @@
 #include <unistd.h>
 #endif
 
+#if defined(OS_WIN)
+#include <new.h>
+#endif
+
 using std::nothrow;
 using std::numeric_limits;
 
 namespace {
+
+#if defined(OS_WIN)
+// This is a permitted size but exhausts memory pretty quickly.
+const size_t kLargePermittedAllocation = 0x7FFFE000;
+
+int OnNoMemory(size_t) {
+  _exit(1);
+}
+
+void ExhaustMemoryWithMalloc() {
+  for (;;) {
+    void* buf = malloc(kLargePermittedAllocation);
+    if (!buf)
+      break;
+  }
+}
+
+void ExhaustMemoryWithRealloc() {
+  size_t size = kLargePermittedAllocation;
+  void* buf = malloc(size);
+  if (!buf)
+    return;
+  for (;;) {
+    size += kLargePermittedAllocation;
+    void* new_buf = realloc(buf, size);
+    if (!buf)
+      break;
+    buf = new_buf;
+  }
+}
+#endif
 
 // This function acts as a compiler optimization barrier. We use it to
 // prevent the compiler from making an expression a compile-time constant.
@@ -42,15 +77,18 @@ Type HideValueFromCompiler(volatile Type value) {
   return value;
 }
 
+// Tcmalloc and Windows allocator shim support setting malloc limits.
 // - NO_TCMALLOC (should be defined if compiled with use_allocator!="tcmalloc")
 // - ADDRESS_SANITIZER and SYZYASAN because they have their own memory allocator
 // - IOS does not use tcmalloc
 // - OS_MACOSX does not use tcmalloc
-#if !defined(NO_TCMALLOC) && !defined(ADDRESS_SANITIZER) && \
-    !defined(OS_IOS) && !defined(OS_MACOSX) && !defined(SYZYASAN)
-  #define TCMALLOC_TEST(function) function
+// - Windows allocator shim defines ALLOCATOR_SHIM
+#if (!defined(NO_TCMALLOC) || defined(ALLOCATOR_SHIM)) &&                     \
+    !defined(ADDRESS_SANITIZER) && !defined(OS_IOS) && !defined(OS_MACOSX) && \
+    !defined(SYZYASAN)
+#define MALLOC_OVERFLOW_TEST(function) function
 #else
-  #define TCMALLOC_TEST(function) DISABLED_##function
+#define MALLOC_OVERFLOW_TEST(function) DISABLED_##function
 #endif
 
 // TODO(jln): switch to std::numeric_limits<int>::max() when we switch to
@@ -63,12 +101,6 @@ bool IsTcMallocBypassed() {
   // This should detect a TCMalloc bypass from Valgrind.
   char* g_slice = getenv("G_SLICE");
   if (g_slice && !strcmp(g_slice, "always-malloc"))
-    return true;
-#elif defined(OS_WIN)
-  // This should detect a TCMalloc bypass from setting
-  // the CHROME_ALLOCATOR environment variable.
-  char* allocator = getenv("CHROME_ALLOCATOR");
-  if (allocator && strcmp(allocator, "tcmalloc"))
     return true;
 #endif
   return false;
@@ -89,7 +121,7 @@ bool CallocDiesOnOOM() {
 }
 
 // Fake test that allow to know the state of TCMalloc by looking at bots.
-TEST(SecurityTest, TCMALLOC_TEST(IsTCMallocDynamicallyBypassed)) {
+TEST(SecurityTest, MALLOC_OVERFLOW_TEST(IsTCMallocDynamicallyBypassed)) {
   printf("Malloc is dynamically bypassed: %s\n",
          IsTcMallocBypassed() ? "yes." : "no.");
 }
@@ -99,7 +131,7 @@ TEST(SecurityTest, TCMALLOC_TEST(IsTCMallocDynamicallyBypassed)) {
 // vulnerabilities in libraries that use int instead of size_t.  See
 // crbug.com/169327.
 
-TEST(SecurityTest, TCMALLOC_TEST(MemoryAllocationRestrictionsMalloc)) {
+TEST(SecurityTest, MALLOC_OVERFLOW_TEST(MemoryAllocationRestrictionsMalloc)) {
   if (!IsTcMallocBypassed()) {
     scoped_ptr<char, base::FreeDeleter> ptr(static_cast<char*>(
         HideValueFromCompiler(malloc(kTooBigAllocSize))));
@@ -107,7 +139,43 @@ TEST(SecurityTest, TCMALLOC_TEST(MemoryAllocationRestrictionsMalloc)) {
   }
 }
 
-TEST(SecurityTest, TCMALLOC_TEST(MemoryAllocationRestrictionsCalloc)) {
+#if defined(GTEST_HAS_DEATH_TEST) && defined(OS_WIN)
+TEST(SecurityTest, MALLOC_OVERFLOW_TEST(MemoryAllocationMallocDeathTest)) {
+  _set_new_handler(&OnNoMemory);
+  _set_new_mode(1);
+  {
+    scoped_ptr<char, base::FreeDeleter> ptr;
+    EXPECT_DEATH(ptr.reset(static_cast<char*>(
+                      HideValueFromCompiler(malloc(kTooBigAllocSize)))),
+                  "");
+    ASSERT_TRUE(!ptr);
+  }
+  _set_new_handler(NULL);
+  _set_new_mode(0);
+}
+
+TEST(SecurityTest, MALLOC_OVERFLOW_TEST(MemoryAllocationExhaustDeathTest)) {
+  _set_new_handler(&OnNoMemory);
+  _set_new_mode(1);
+  {
+    ASSERT_DEATH(ExhaustMemoryWithMalloc(), "");
+  }
+  _set_new_handler(NULL);
+  _set_new_mode(0);
+}
+
+TEST(SecurityTest, MALLOC_OVERFLOW_TEST(MemoryReallocationExhaustDeathTest)) {
+  _set_new_handler(&OnNoMemory);
+  _set_new_mode(1);
+  {
+    ASSERT_DEATH(ExhaustMemoryWithRealloc(), "");
+  }
+  _set_new_handler(NULL);
+  _set_new_mode(0);
+}
+#endif
+
+TEST(SecurityTest, MALLOC_OVERFLOW_TEST(MemoryAllocationRestrictionsCalloc)) {
   if (!IsTcMallocBypassed()) {
     scoped_ptr<char, base::FreeDeleter> ptr(static_cast<char*>(
         HideValueFromCompiler(calloc(kTooBigAllocSize, 1))));
@@ -115,7 +183,7 @@ TEST(SecurityTest, TCMALLOC_TEST(MemoryAllocationRestrictionsCalloc)) {
   }
 }
 
-TEST(SecurityTest, TCMALLOC_TEST(MemoryAllocationRestrictionsRealloc)) {
+TEST(SecurityTest, MALLOC_OVERFLOW_TEST(MemoryAllocationRestrictionsRealloc)) {
   if (!IsTcMallocBypassed()) {
     char* orig_ptr = static_cast<char*>(malloc(1));
     ASSERT_TRUE(orig_ptr);
@@ -131,7 +199,7 @@ typedef struct {
   char large_array[kTooBigAllocSize];
 } VeryLargeStruct;
 
-TEST(SecurityTest, TCMALLOC_TEST(MemoryAllocationRestrictionsNew)) {
+TEST(SecurityTest, MALLOC_OVERFLOW_TEST(MemoryAllocationRestrictionsNew)) {
   if (!IsTcMallocBypassed()) {
     scoped_ptr<VeryLargeStruct> ptr(
         HideValueFromCompiler(new (nothrow) VeryLargeStruct));
@@ -139,7 +207,20 @@ TEST(SecurityTest, TCMALLOC_TEST(MemoryAllocationRestrictionsNew)) {
   }
 }
 
-TEST(SecurityTest, TCMALLOC_TEST(MemoryAllocationRestrictionsNewArray)) {
+#if defined(GTEST_HAS_DEATH_TEST) && defined(OS_WIN)
+TEST(SecurityTest, MALLOC_OVERFLOW_TEST(MemoryAllocationNewDeathTest)) {
+  _set_new_handler(&OnNoMemory);
+  {
+    scoped_ptr<VeryLargeStruct> ptr;
+    EXPECT_DEATH(
+        ptr.reset(HideValueFromCompiler(new (nothrow) VeryLargeStruct)), "");
+    ASSERT_TRUE(!ptr);
+  }
+  _set_new_handler(NULL);
+}
+#endif
+
+TEST(SecurityTest, MALLOC_OVERFLOW_TEST(MemoryAllocationRestrictionsNewArray)) {
   if (!IsTcMallocBypassed()) {
     scoped_ptr<char[]> ptr(
         HideValueFromCompiler(new (nothrow) char[kTooBigAllocSize]));
@@ -242,7 +323,7 @@ bool ArePointersToSameArea(void* ptr1, void* ptr2, size_t size) {
 }
 
 // Check if TCMalloc uses an underlying random memory allocator.
-TEST(SecurityTest, TCMALLOC_TEST(RandomMemoryAllocations)) {
+TEST(SecurityTest, MALLOC_OVERFLOW_TEST(RandomMemoryAllocations)) {
   if (IsTcMallocBypassed())
     return;
   size_t kPageSize = 4096;  // We support x86_64 only.

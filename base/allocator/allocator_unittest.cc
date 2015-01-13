@@ -280,7 +280,7 @@ static void TestCalloc(size_t n, size_t s, bool ok) {
   } else {
     EXPECT_NE(reinterpret_cast<void*>(NULL), p) <<
         "calloc(n, s) should succeed";
-    for (int i = 0; i < n*s; i++) {
+    for (size_t i = 0; i < n*s; i++) {
       EXPECT_EQ('\0', p[i]);
     }
     free(p);
@@ -347,19 +347,19 @@ static void TestNothrowNew(void* (*func)(size_t)) {
 //-----------------------------------------------------------------------------
 
 TEST(Atomics, AtomicIncrementWord) {
-  TestAtomicIncrement<AtomicWord>();
+  TestAtomicIncrement<base::subtle::AtomicWord>();
 }
 
 TEST(Atomics, AtomicIncrement32) {
-  TestAtomicIncrement<Atomic32>();
+  TestAtomicIncrement<base::subtle::Atomic32>();
 }
 
 TEST(Atomics, AtomicOpsWord) {
-  TestAtomicIncrement<AtomicWord>();
+  TestAtomicIncrement<base::subtle::AtomicWord>();
 }
 
 TEST(Atomics, AtomicOps32) {
-  TestAtomicIncrement<Atomic32>();
+  TestAtomicIncrement<base::subtle::Atomic32>();
 }
 
 TEST(Allocators, Malloc) {
@@ -458,6 +458,9 @@ TEST(Allocators, Realloc2) {
   free(p);
 }
 
+// tcmalloc uses these semantics but system allocators can return NULL for
+// realloc(ptr, 0).
+#if defined(USE_TCMALLOC)
 TEST(Allocators, ReallocZero) {
   // Test that realloc to zero does not return NULL.
   for (int size = 0; size >= 0; size = NextSize(size)) {
@@ -469,6 +472,7 @@ TEST(Allocators, ReallocZero) {
       free(ptr);
   }
 }
+#endif
 
 #ifdef WIN32
 // Test recalloc

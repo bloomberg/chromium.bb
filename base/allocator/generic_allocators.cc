@@ -16,7 +16,7 @@ inline void* generic_cpp_alloc(size_t size, bool nothrow) {
     ptr = malloc(size);
     if (ptr)
       return ptr;
-    if (!call_new_handler(nothrow))
+    if (!call_new_handler(nothrow, size))
       break;
   }
   return ptr;
@@ -83,7 +83,7 @@ void* calloc(size_t n, size_t elem_size) {
   return result;
 }
 
-void cfree(void* p) __THROW {
+void cfree(void* p) {
   free(p);
 }
 

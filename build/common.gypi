@@ -1252,7 +1252,7 @@
     #  'win_use_allocator_shim': 0,
     #  'win_release_RuntimeLibrary': 2
     # to ~/.gyp/include.gypi, gclient runhooks --force, and do a release build.
-    'win_use_allocator_shim%': 0, # 1 = shim allocator via libcmt; 0 = msvcrt
+    'win_use_allocator_shim%': 1, # 1 = shim allocator via libcmt; 0 = msvcrt
 
     # TODO(bradnelson): eliminate this when possible.
     # To allow local gyp files to prevent release.vsprops from being included.
@@ -1950,6 +1950,8 @@
           # Native Client loader for 64-bit Windows.
           'NACL_WIN64',
         ],
+        # Need to include allocator target, but exclude tcmalloc files.
+        'use_allocator%': 'winheap',
       }],
 
       ['os_posix==1 and chromeos==0 and OS!="android" and OS!="ios" and embedded==0', {
@@ -2762,10 +2764,11 @@
       ['tracing_like_official_build!=0', {
         'defines': ['TRACING_IS_OFFICIAL_BUILD=1'],
       }],  # tracing_like_official_build!=0
-      ['win_use_allocator_shim==0', {
+      ['OS=="win"', {
+        'defines': ['NO_TCMALLOC'],
         'conditions': [
-          ['OS=="win"', {
-            'defines': ['NO_TCMALLOC'],
+          ['win_use_allocator_shim==1', {
+            'defines': ['ALLOCATOR_SHIM'],
           }],
         ],
       }],
@@ -3423,7 +3426,7 @@
               'WTF_USE_DYNAMIC_ANNOTATIONS=1',
             ],
           }],
-          ['OS=="win" and win_use_allocator_shim==0', {
+          ['OS=="win"', {
             'defines': ['NO_TCMALLOC'],
           }],
           # _FORTIFY_SOURCE isn't really supported by Clang now, see
