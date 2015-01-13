@@ -377,12 +377,6 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
            name:NSWorkspaceActiveSpaceDidChangeNotification
          object:nil];
 
-  [[[NSWorkspace sharedWorkspace] notificationCenter]
-      addObserver:self
-         selector:@selector(willPowerOff:)
-             name:NSWorkspaceWillPowerOffNotification
-           object:nil];
-
   // Set up the command updater for when there are no windows open
   [self initMenuState];
 
@@ -414,10 +408,6 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
 }
 
 - (BOOL)tryToTerminateApplication:(NSApplication*)app {
-  // Reset this now that we've received the call to terminate.
-  BOOL isPoweringOff = isPoweringOff_;
-  isPoweringOff_ = NO;
-
   // Check for in-process downloads, and prompt the user if they really want
   // to quit (and thus cancel downloads). Only check if we're not already
   // shutting down, else the user might be prompted multiple times if the
@@ -438,8 +428,8 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
 
   // Check for active apps. If quitting is prevented, only close browsers and
   // sessions.
-  if (!browser_shutdown::IsTryingToQuit() && !isPoweringOff &&
-      quitWithAppsController_.get() && !quitWithAppsController_->ShouldQuit()) {
+  if (!browser_shutdown::IsTryingToQuit() && quitWithAppsController_.get() &&
+      !quitWithAppsController_->ShouldQuit()) {
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kHostedAppQuitNotification)) {
       return NO;
@@ -678,13 +668,6 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
   if (!browserWindows.empty()) {
     ui::FocusWindowSetOnCurrentSpace(browserWindows);
   }
-}
-
-// Called when shutting down or logging out.
-- (void)willPowerOff:(NSNotification*)notify {
-  // Don't attempt any shutdown here. Cocoa will shortly call
-  // -[BrowserCrApplication terminate:].
-  isPoweringOff_ = YES;
 }
 
 // Called on Lion and later when a popover (e.g. dictionary) is shown.

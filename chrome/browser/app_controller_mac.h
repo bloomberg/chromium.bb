@@ -106,9 +106,6 @@ class WorkAreaWatcherObserver;
   // Observes changes to the active URL.
   scoped_ptr<HandoffActiveURLObserverBridge>
       handoff_active_url_observer_bridge_;
-
-  // This will be true after receiving a NSWorkspaceWillPowerOffNotification.
-  BOOL isPoweringOff_;
 }
 
 @property(readonly, nonatomic) BOOL startupComplete;
@@ -122,9 +119,6 @@ class WorkAreaWatcherObserver;
 // Stop trying to terminate the application. That is, prevent the final browser
 // window closure from causing the application to quit.
 - (void)stopTryingToTerminateApplication:(NSApplication*)app;
-
-// Indicate that the system is powering off or logging out.
-- (void)willPowerOff:(NSNotification*)inNotification;
 
 // Returns true if there is a modal window (either window- or application-
 // modal) blocking the active browser. Note that tab modal dialogs (HTTP auth

@@ -5,13 +5,10 @@
 #include "chrome/browser/ui/cocoa/apps/quit_with_apps_controller_mac.h"
 
 #include "base/command_line.h"
-#import "base/mac/foundation_util.h"
 #include "base/run_loop.h"
-#import "chrome/browser/app_controller_mac.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
 #include "chrome/browser/apps/app_window_registry_util.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chrome_browser_application_mac.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -138,27 +135,4 @@ IN_PROC_BROWSER_TEST_F(QuitWithAppsControllerInteractiveTest, QuitBehavior) {
   message_center->RemoveAllNotifications(false);
   EXPECT_FALSE(AppWindowRegistryUtil::IsAppWindowVisibleInAnyProfile(0));
   quit_observer.Wait();
-}
-
-// Test that, when powering off, Chrome will quit even if there are apps open.
-IN_PROC_BROWSER_TEST_F(QuitWithAppsControllerInteractiveTest, QuitOnPowerOff) {
-  // Open an app window.
-  app_ = LoadAndLaunchPlatformApp("minimal_id", "Launched");
-
-  // First try to terminate with a packaged app running. Chrome should stay
-  // running in the background.
-  [NSApp terminate:nil];
-  EXPECT_FALSE(browser_shutdown::IsTryingToQuit());
-
-  // Simulate a terminate triggered by a power off or log out.
-  // Cocoa will send an NSWorkspaceWillPowerOffNotification followed by
-  // -[NSApplication terminate:].
-  AppController* app_controller =
-      base::mac::ObjCCast<AppController>([NSApp delegate]);
-  NSNotification* notification =
-      [NSNotification notificationWithName:NSWorkspaceWillPowerOffNotification
-                                    object:nil];
-  [app_controller willPowerOff:notification];
-  [NSApp terminate:nil];
-  EXPECT_TRUE(browser_shutdown::IsTryingToQuit());
 }
