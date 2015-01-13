@@ -76,7 +76,9 @@ function runTest() {
     // Invalid fftSize: IndexSizeError
     shouldThrow("node.fftSize = 42");
     shouldThrow("node.fftSize = 16");
-    shouldThrow("node.fftSize = 4096");
+    shouldNotThrow("node.fftSize = 4096");
+    shouldNotThrow("node.fftSize = 32768");
+    shouldThrow("node.fftSize = 65536");
 
     shouldThrow("node.minDecibels = -10");
     shouldThrow("node.maxDecibels = -150");
