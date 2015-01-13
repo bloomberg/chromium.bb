@@ -78,13 +78,17 @@ public:
     virtual void contextDestroyed() override
     {
         ASSERT(executionContext());
-        // It is possible that resetAsyncCallChains() is already called and thus
-        // this ExecutionContextData is removed from m_executionContextDataMap.
         OwnPtrWillBeRawPtr<ExecutionContextData> self = m_tracker->m_executionContextDataMap.take(executionContext());
-        if (self) {
-            dispose();
-        }
+        ASSERT_UNUSED(self, self == this);
         ContextLifecycleObserver::contextDestroyed();
+        clearLifecycleContext();
+        disposeCallChains();
+    }
+
+    void unobserve()
+    {
+        disposeCallChains();
+        dispose();
     }
 
     int nextAsyncOperationUniqueId()
@@ -112,17 +116,6 @@ public:
         ContextLifecycleObserver::trace(visitor);
     }
 
-    void dispose()
-    {
-        m_timerCallChains.dispose();
-        m_animationFrameCallChains.dispose();
-        m_eventCallChains.dispose();
-        m_xhrCallChains.dispose();
-        m_mutationObserverCallChains.dispose();
-        m_executionContextTaskCallChains.dispose();
-        m_asyncOperationCallChains.dispose();
-    }
-
     RawPtrWillBeMember<AsyncCallTracker> m_tracker;
     HashSet<int> m_intervalTimerIds;
     AsyncCallChainMap<int> m_timerCallChains;
@@ -134,6 +127,17 @@ public:
     AsyncCallChainMap<int> m_asyncOperationCallChains;
 
 private:
+    void disposeCallChains()
+    {
+        m_timerCallChains.dispose();
+        m_animationFrameCallChains.dispose();
+        m_eventCallChains.dispose();
+        m_xhrCallChains.dispose();
+        m_mutationObserverCallChains.dispose();
+        m_executionContextTaskCallChains.dispose();
+        m_asyncOperationCallChains.dispose();
+    }
+
     int m_circularSequentialId;
 };
 
@@ -166,7 +170,7 @@ void AsyncCallTracker::asyncCallTrackingStateChanged(bool tracking)
 void AsyncCallTracker::resetAsyncCallChains()
 {
     for (auto& it : m_executionContextDataMap)
-        it.value->dispose();
+        it.value->unobserve();
     m_executionContextDataMap.clear();
 }
 
