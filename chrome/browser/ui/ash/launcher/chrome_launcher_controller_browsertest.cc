@@ -1868,7 +1868,8 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTestWithMultiMonitor,
 #endif
 
 // Do tests for removal of items from the shelf by dragging.
-IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, DragOffShelf) {
+// Disabled due to flake: http://crbug.com/448482
+IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, DISABLED_DragOffShelf) {
   ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow(),
                                      gfx::Point());
   ash::test::ShelfViewTestAPI test(
