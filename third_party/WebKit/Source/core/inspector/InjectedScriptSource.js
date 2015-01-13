@@ -746,7 +746,7 @@ InjectedScript.prototype = {
             return this._createThrownValue(e, objectGroup, false);
         } finally {
             try {
-                delete inspectedWindow["__customFormatterAPI"];
+                delete inspectedWindow["__remoteObjectAPI"];
             } catch(e) {
             }
         }
