@@ -106,7 +106,8 @@ class UsbServiceImpl : public UsbService,
 // device change notification window messages. It registers for notifications
 // regarding devices implementating the "UsbDevice" interface, which represents
 // most of the devices the UsbService will enumerate.
-class UsbServiceImpl::UIThreadHelper : DeviceMonitorWin::Observer {
+class UsbServiceImpl::UIThreadHelper final
+    : private DeviceMonitorWin::Observer {
  public:
   UIThreadHelper(base::WeakPtr<UsbServiceImpl> usb_service)
       : task_runner_(base::ThreadTaskRunnerHandle::Get()),
