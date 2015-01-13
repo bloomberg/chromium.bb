@@ -29,6 +29,7 @@ struct CONTENT_EXPORT MenuItem {
   ~MenuItem();
 
   base::string16 label;
+  base::string16 icon;
   base::string16 tool_tip;
   Type type;
   unsigned action;

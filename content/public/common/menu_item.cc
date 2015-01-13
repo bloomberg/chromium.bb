@@ -17,6 +17,7 @@ MenuItem::MenuItem()
 
 MenuItem::MenuItem(const MenuItem& item)
     : label(item.label),
+      icon(item.icon),
       tool_tip(item.tool_tip),
       type(item.type),
       action(item.action),
