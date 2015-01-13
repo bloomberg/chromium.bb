@@ -38,7 +38,7 @@ class CommonSwitches {
         surface_worker(switches::kSurfaceWorker,
                        FeatureSwitch::DEFAULT_DISABLED),
         trace_app_source(switches::kTraceAppSource,
-                         FeatureSwitch::DEFAULT_DISABLED) {
+                         FeatureSwitch::DEFAULT_ENABLED) {
   }
 
   // Enables extensions to be easily installed from sites other than the web
