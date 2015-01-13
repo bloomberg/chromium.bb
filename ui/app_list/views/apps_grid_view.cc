@@ -1330,12 +1330,12 @@ void AppsGridView::AnimationBetweenRows(AppListItemView* view,
 
 void AppsGridView::ExtractDragLocation(const ui::LocatedEvent& event,
                                        gfx::Point* drag_point) {
-#if defined(USE_AURA)
   // Use root location of |event| instead of location in |drag_view_|'s
   // coordinates because |drag_view_| has a scale transform and location
   // could have integer round error and causes jitter.
   *drag_point = event.root_location();
 
+#if defined(USE_AURA)
   // GetWidget() could be NULL for tests.
   if (GetWidget()) {
     aura::Window::ConvertPointToTarget(
@@ -1343,15 +1343,9 @@ void AppsGridView::ExtractDragLocation(const ui::LocatedEvent& event,
         GetWidget()->GetNativeWindow(),
         drag_point);
   }
+#endif
 
   views::View::ConvertPointFromWidget(this, drag_point);
-#else
-  // For non-aura, root location is not clearly defined but |drag_view_| does
-  // not have the scale transform. So no round error would be introduced and
-  // it's okay to use View::ConvertPointToTarget.
-  *drag_point = event.location();
-  views::View::ConvertPointToTarget(drag_view_, this, drag_point);
-#endif
 }
 
 void AppsGridView::CalculateDropTarget() {
