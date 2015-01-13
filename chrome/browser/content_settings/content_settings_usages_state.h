@@ -15,20 +15,27 @@
 class HostContentSettingsMap;
 class PrefService;
 
-namespace content {
-struct LoadCommittedDetails;
-}
-
 // This class manages a content setting state per tab for a given
 // |ContentSettingsType|, and provides information and presentation data about
 // the content setting usage.
 class ContentSettingsUsagesState {
  public:
+  // Information about navigation.
+  struct CommittedDetails {
+    CommittedDetails();
+    ~CommittedDetails();
+
+    bool current_url_valid;
+    GURL current_url;
+    GURL previous_url;
+  };
+
   ContentSettingsUsagesState(
       HostContentSettingsMap* host_content_settings_map,
-      PrefService* pref_service,
-      ContentSettingsType type);
-  virtual ~ContentSettingsUsagesState();
+      ContentSettingsType type,
+      const std::string& accept_language_pref,
+      PrefService* prefs);
+  ~ContentSettingsUsagesState();
 
   typedef std::map<GURL, ContentSetting> StateMap;
   const StateMap& state_map() const {
@@ -40,7 +47,7 @@ class ContentSettingsUsagesState {
 
   // Delegated by WebContents to indicate a navigation has happened and we
   // may need to clear our settings.
-  void DidNavigate(const content::LoadCommittedDetails& details);
+  void DidNavigate(const CommittedDetails& details);
 
   void ClearStateMap();
 
@@ -60,7 +67,6 @@ class ContentSettingsUsagesState {
   typedef std::map<ContentSetting, std::set<std::string> >
       FormattedHostsPerState;
 
-  // Returns an (optional) |formatted_hosts_per_state| and a mask of TabState.
   void GetDetailedInfo(FormattedHostsPerState* formatted_hosts_per_state,
                        unsigned int* tab_state_flags) const;
 
@@ -69,6 +75,7 @@ class ContentSettingsUsagesState {
 
   HostContentSettingsMap* const host_content_settings_map_;
   PrefService* const pref_service_;
+  std::string accept_language_pref_;
   ContentSettingsType type_;
   StateMap state_map_;
   GURL embedder_url_;

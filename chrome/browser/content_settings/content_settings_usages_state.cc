@@ -7,21 +7,24 @@
 #include <string>
 
 #include "base/prefs/pref_service.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/common/pref_names.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
-#include "content/public/browser/navigation_details.h"
-#include "content/public/browser/navigation_entry.h"
 #include "net/base/net_util.h"
+
+ContentSettingsUsagesState::CommittedDetails::CommittedDetails()
+    : current_url_valid(false) {
+}
+
+ContentSettingsUsagesState::CommittedDetails::~CommittedDetails() {}
 
 ContentSettingsUsagesState::ContentSettingsUsagesState(
     HostContentSettingsMap* host_content_settings_map,
-    PrefService* pref_service,
-    ContentSettingsType type)
+    ContentSettingsType type,
+    const std::string& accept_language_pref,
+    PrefService* prefs)
     : host_content_settings_map_(host_content_settings_map),
-      pref_service_(pref_service),
+      pref_service_(prefs),
+      accept_language_pref_(accept_language_pref),
       type_(type) {
 }
 
@@ -34,14 +37,13 @@ void ContentSettingsUsagesState::OnPermissionSet(
       allowed ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK;
 }
 
-void ContentSettingsUsagesState::DidNavigate(
-    const content::LoadCommittedDetails& details) {
-  if (details.entry)
-    embedder_url_ = details.entry->GetURL();
+void ContentSettingsUsagesState::DidNavigate(const CommittedDetails& details) {
+  if (details.current_url_valid)
+    embedder_url_ = details.current_url;
   if (state_map_.empty())
     return;
-  if (!details.entry ||
-      details.previous_url.GetOrigin() != details.entry->GetURL().GetOrigin()) {
+  if (!details.current_url_valid ||
+      details.previous_url.GetOrigin() != details.current_url.GetOrigin()) {
     state_map_.clear();
     return;
   }
@@ -104,7 +106,7 @@ void ContentSettingsUsagesState::GetDetailedInfo(
 std::string ContentSettingsUsagesState::GURLToFormattedHost(
     const GURL& url) const {
   base::string16 display_host;
-  net::AppendFormattedHost(
-      url, pref_service_->GetString(prefs::kAcceptLanguages), &display_host);
+  net::AppendFormattedHost(url, pref_service_->GetString(accept_language_pref_),
+                           &display_host);
   return base::UTF16ToUTF8(display_host);
 }

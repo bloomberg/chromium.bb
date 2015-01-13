@@ -7,36 +7,41 @@
 #include <string>
 
 #include "base/message_loop/message_loop.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
-#include "content/public/browser/navigation_details.h"
-#include "content/public/browser/navigation_entry.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
-using content::NavigationEntry;
 
 namespace {
+
+ContentSettingsUsagesState::CommittedDetails CreateDetailsWithURL(
+    const GURL& url) {
+  ContentSettingsUsagesState::CommittedDetails details;
+  details.current_url_valid = true;
+  details.current_url = url;
+  return details;
+}
 
 class ContentSettingsUsagesStateTests : public testing::Test {
  public:
   ContentSettingsUsagesStateTests()
-    : ui_thread_(BrowserThread::UI, &message_loop_) {
+      : ui_thread_(BrowserThread::UI, &message_loop_) {
   }
 
  protected:
   void ClearOnNewOrigin(ContentSettingsType type) {
     TestingProfile profile;
-    ContentSettingsUsagesState state(profile.GetHostContentSettingsMap(),
-                                     profile.GetPrefs(), type);
+    ContentSettingsUsagesState state(profile.GetHostContentSettingsMap(), type,
+                                     prefs::kAcceptLanguages,
+                                     profile.GetPrefs());
     GURL url_0("http://www.example.com");
 
-    scoped_ptr<NavigationEntry> entry(NavigationEntry::Create());
-    entry->SetURL(url_0);
-    content::LoadCommittedDetails load_committed_details;
-    load_committed_details.entry = entry.get();
-    state.DidNavigate(load_committed_details);
+    ContentSettingsUsagesState::CommittedDetails details =
+        CreateDetailsWithURL(url_0);
+    state.DidNavigate(details);
 
     profile.GetHostContentSettingsMap()->SetContentSetting(
         ContentSettingsPattern::FromURLNoWildcard(url_0),
@@ -112,16 +117,15 @@ class ContentSettingsUsagesStateTests : public testing::Test {
 
     state.OnPermissionSet(url_0, true);
 
-    load_committed_details.previous_url = url_0;
-    state.DidNavigate(load_committed_details);
+    details.previous_url = url_0;
+    state.DidNavigate(details);
 
     ContentSettingsUsagesState::StateMap new_state_map =
         state.state_map();
     EXPECT_EQ(state_map.size(), new_state_map.size());
 
-    GURL different_url("http://foo.com");
-    entry->SetURL(different_url);
-    state.DidNavigate(load_committed_details);
+    details.current_url = GURL("http://foo.com");
+    state.DidNavigate(details);
 
     EXPECT_TRUE(state.state_map().empty());
 
@@ -134,15 +138,14 @@ class ContentSettingsUsagesStateTests : public testing::Test {
 
   void ShowPortOnSameHost(ContentSettingsType type) {
     TestingProfile profile;
-    ContentSettingsUsagesState state(profile.GetHostContentSettingsMap(),
-                                     profile.GetPrefs(), type);
+    ContentSettingsUsagesState state(profile.GetHostContentSettingsMap(), type,
+                                     prefs::kAcceptLanguages,
+                                     profile.GetPrefs());
     GURL url_0("http://www.example.com");
 
-    scoped_ptr<NavigationEntry> entry(NavigationEntry::Create());
-    entry->SetURL(url_0);
-    content::LoadCommittedDetails load_committed_details;
-    load_committed_details.entry = entry.get();
-    state.DidNavigate(load_committed_details);
+    ContentSettingsUsagesState::CommittedDetails details =
+        CreateDetailsWithURL(url_0);
+    state.DidNavigate(details);
 
     profile.GetHostContentSettingsMap()->SetContentSetting(
         ContentSettingsPattern::FromURLNoWildcard(url_0),

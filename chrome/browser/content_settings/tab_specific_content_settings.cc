@@ -69,6 +69,16 @@ TabSpecificContentSettings* GetForFrame(int render_process_id,
   return TabSpecificContentSettings::FromWebContents(web_contents);
 }
 
+ContentSettingsUsagesState::CommittedDetails GetCommittedDetails(
+    const content::LoadCommittedDetails& details) {
+  ContentSettingsUsagesState::CommittedDetails committed_details;
+  committed_details.current_url_valid = !!details.entry;
+  if (details.entry)
+    committed_details.current_url = details.entry->GetURL();
+  committed_details.previous_url = details.previous_url;
+  return committed_details;
+}
+
 }  // namespace
 
 TabSpecificContentSettings::SiteDataObserver::SiteDataObserver(
@@ -95,13 +105,15 @@ TabSpecificContentSettings::TabSpecificContentSettings(WebContents* tab)
       geolocation_usages_state_(
           Profile::FromBrowserContext(tab->GetBrowserContext())
               ->GetHostContentSettingsMap(),
-          Profile::FromBrowserContext(tab->GetBrowserContext())->GetPrefs(),
-          CONTENT_SETTINGS_TYPE_GEOLOCATION),
+          CONTENT_SETTINGS_TYPE_GEOLOCATION,
+          prefs::kAcceptLanguages,
+          Profile::FromBrowserContext(tab->GetBrowserContext())->GetPrefs()),
       midi_usages_state_(
           Profile::FromBrowserContext(tab->GetBrowserContext())
               ->GetHostContentSettingsMap(),
-          Profile::FromBrowserContext(tab->GetBrowserContext())->GetPrefs(),
-          CONTENT_SETTINGS_TYPE_MIDI_SYSEX),
+          CONTENT_SETTINGS_TYPE_MIDI_SYSEX,
+          prefs::kAcceptLanguages,
+          Profile::FromBrowserContext(tab->GetBrowserContext())->GetPrefs()),
       pending_protocol_handler_(ProtocolHandler::EmptyProtocolHandler()),
       previous_protocol_handler_(ProtocolHandler::EmptyProtocolHandler()),
       pending_protocol_handler_setting_(CONTENT_SETTING_DEFAULT),
@@ -800,11 +812,11 @@ void TabSpecificContentSettings::ClearMidiContentSettings() {
 }
 
 void TabSpecificContentSettings::GeolocationDidNavigate(
-      const content::LoadCommittedDetails& details) {
-  geolocation_usages_state_.DidNavigate(details);
+    const content::LoadCommittedDetails& details) {
+  geolocation_usages_state_.DidNavigate(GetCommittedDetails(details));
 }
 
 void TabSpecificContentSettings::MidiDidNavigate(
     const content::LoadCommittedDetails& details) {
-  midi_usages_state_.DidNavigate(details);
+  midi_usages_state_.DidNavigate(GetCommittedDetails(details));
 }
