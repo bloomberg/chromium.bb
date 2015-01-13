@@ -997,11 +997,16 @@ class Host_7 {
 
   // Called by the CDM when it has a message for session |session_id|.
   // Size parameters should not include null termination.
+  // |legacy_destination_url| is only for supporting the prefixed EME API and
+  // is ignored by unprefixed EME. It should only be non-null if |message_type|
+  // is kLicenseRenewal.
   virtual void OnSessionMessage(const char* session_id,
                                 uint32_t session_id_size,
                                 MessageType message_type,
                                 const char* message,
-                                uint32_t message_size) = 0;
+                                uint32_t message_size,
+                                const char* legacy_destination_url,
+                                uint32_t legacy_destination_url_length) = 0;
 
   // Called by the CDM when there has been a change in keys or their status for
   // session |session_id|. |has_additional_usable_key| should be set if a
