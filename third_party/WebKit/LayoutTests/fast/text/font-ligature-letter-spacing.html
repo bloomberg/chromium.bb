@@ -19,6 +19,10 @@
 font-feature-settings:"frac" 1, "dlig" 1;
 }
 
+.fontVariantDiv {
+font-variant-ligatures: discretionary-ligatures;
+}
+
 .common {
 font-size: 24px;
 line-height: 100%;
@@ -34,23 +38,32 @@ p { font-family: serif; font-style: italic; }
 <script src="../../resources/testharnessreport.js"></script>
 <script>
     setup({ explicit_done: true });
-    function testLetterSpaceAndLigature() {
-        var elementWidthWithLigatureAndLetterSpacing = document.getElementsByClassName("dligSpan")[0].getBoundingClientRect().width;
-        var elementWidthWithLetterSpacing = document.getElementsByClassName("letterSpace")[0].getBoundingClientRect().width;
+    function testLetterSpaceAndLigature(element) {
+        var elementWidthWithLigatureAndLetterSpacing = element.getBoundingClientRect().width;
+        var elementWidthWithLetterSpacing = letterSpace.getBoundingClientRect().width;
         test(function() {
             assert_equals(elementWidthWithLigatureAndLetterSpacing, elementWidthWithLetterSpacing, "Ligature not applied due to letter spacing.");
             }, "Ligature expected not to be applied due to letter spacing.");
+    }
+
+    function runTest() {
+        testLetterSpaceAndLigature(dligSpan);
+        testLetterSpaceAndLigature(fontVariantSpan);
         done();
     }
 </script>
 </head>
-<body onload="testLetterSpaceAndLigature();">
+<body onload="runTest();">
 <div class="dligDiv common">
-    <span class="dligSpan">CACACACA</span>
+    <span id="dligSpan">CACACACA</span>
+</div>
+
+<div class="fontVariantDiv common">
+    <span id="fontVariantSpan">CACACACA</span>
 </div>
 
 <div class="common">
-    <span class="letterSpace">CACACACA</span>
+    <span id="letterSpace">CACACACA</span>
 </div>
 </body>
 </html>

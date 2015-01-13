@@ -201,7 +201,7 @@ public:
     void setFeatureSettings(PassRefPtr<FontFeatureSettings> settings) { m_featureSettings = settings; }
     void setTraits(FontTraits);
     void setWordSpacing(float s) { m_wordSpacing = s; }
-    void setLetterSpacing(float s) { m_letterSpacing = s; }
+    void setLetterSpacing(float s) { m_letterSpacing = s; updateTypesettingFeatures(); }
 
     TypesettingFeatures typesettingFeatures() const { return static_cast<TypesettingFeatures>(m_typesettingFeatures); }
 
