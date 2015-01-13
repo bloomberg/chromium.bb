@@ -5,6 +5,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/geolocation/geolocation_provider_impl.h"
 #include "content/common/geolocation_service.mojom.h"
+#include "content/public/common/mojo_geoposition.mojom.h"
 
 #ifndef CONTENT_BROWSER_GEOLOCATION_GEOLOCATION_SERVICE_IMPL_H_
 #define CONTENT_BROWSER_GEOLOCATION_GEOLOCATION_SERVICE_IMPL_H_
@@ -17,8 +18,9 @@ class GeolocationServiceContext;
 // Implements the GeolocationService Mojo interface.
 class GeolocationServiceImpl : public mojo::InterfaceImpl<GeolocationService> {
  public:
-  // |context| must outlive this object. |update_callback| will be
-  // called when location updates are sent.
+  // |context| must outlive this object. |update_callback| will be called when
+  // location updates are sent, allowing the client to know when the service
+  // is being used.
   GeolocationServiceImpl(GeolocationServiceContext* context,
                          const base::Closure& update_callback);
   ~GeolocationServiceImpl() override;
@@ -35,26 +37,40 @@ class GeolocationServiceImpl : public mojo::InterfaceImpl<GeolocationService> {
   void ClearOverride();
 
  private:
+  typedef mojo::Callback<void(MojoGeopositionPtr)> PositionCallback;
+
   // GeolocationService:
   void SetHighAccuracy(bool high_accuracy) override;
+  void QueryNextPosition(const PositionCallback& callback) override;
 
   // mojo::InterfaceImpl:
   void OnConnectionError() override;
 
   void OnLocationUpdate(const Geoposition& position);
+  void ReportCurrentPosition();
 
   // Owns this object.
   GeolocationServiceContext* context_;
   scoped_ptr<GeolocationProvider::Subscription> geolocation_subscription_;
+
+  // Callback that allows the instantiator of this class to be notified on
+  // position updates.
   base::Closure update_callback_;
+
+  // The queue of callbacks passed to QueryNextPosition.
+  std::vector<PositionCallback> position_callbacks_;
 
   // Valid iff SetOverride() has been called and ClearOverride() has not
   // subsequently been called.
   Geoposition position_override_;
 
+  MojoGeoposition current_position_;
+
   // Whether this instance is currently observing location updates with high
   // accuracy.
   bool high_accuracy_;
+
+  bool has_position_to_report_;
 
   DISALLOW_COPY_AND_ASSIGN(GeolocationServiceImpl);
 };

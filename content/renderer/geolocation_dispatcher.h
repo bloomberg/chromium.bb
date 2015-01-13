@@ -27,8 +27,7 @@ struct Geoposition;
 // It's the complement of GeolocationDispatcherHost.
 class GeolocationDispatcher
     : public RenderFrameObserver,
-      public blink::WebGeolocationClient,
-      public mojo::InterfaceImpl<GeolocationServiceClient> {
+      public blink::WebGeolocationClient {
  public:
   explicit GeolocationDispatcher(RenderFrame* render_frame);
   virtual ~GeolocationDispatcher();
@@ -45,8 +44,8 @@ class GeolocationDispatcher
   virtual void cancelPermissionRequest(
       const blink::WebGeolocationPermissionRequest& permissionRequest);
 
-  // GeolocationServiceClient
-  void OnLocationUpdate(MojoGeopositionPtr geoposition) override;
+  void QueryNextPosition();
+  void OnPositionUpdate(MojoGeopositionPtr geoposition);
 
   // Permission for using geolocation has been set.
   void OnPermissionSet(int permission_request_id, PermissionStatus status);

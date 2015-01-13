@@ -63,7 +63,8 @@ GeolocationServiceImpl::GeolocationServiceImpl(
     const base::Closure& update_callback)
     : context_(context),
       update_callback_(update_callback),
-      high_accuracy_(false) {
+      high_accuracy_(false),
+      has_position_to_report_(false) {
   DCHECK(context_);
 }
 
@@ -105,6 +106,14 @@ void GeolocationServiceImpl::SetHighAccuracy(bool high_accuracy) {
   StartListeningForUpdates();
 }
 
+void GeolocationServiceImpl::QueryNextPosition(
+    const PositionCallback& callback) {
+  position_callbacks_.push_back(callback);
+
+  if (has_position_to_report_)
+    ReportCurrentPosition();
+}
+
 void GeolocationServiceImpl::SetOverride(const Geoposition& position) {
   position_override_ = position;
   if (!position_override_.Validate()) {
@@ -135,21 +144,32 @@ void GeolocationServiceImpl::OnLocationUpdate(const Geoposition& position) {
   if (context_->paused())
     return;
 
-  MojoGeopositionPtr geoposition(MojoGeoposition::New());
-  geoposition->valid = position.Validate();
-  geoposition->latitude = position.latitude;
-  geoposition->longitude = position.longitude;
-  geoposition->altitude = position.altitude;
-  geoposition->accuracy = position.accuracy;
-  geoposition->altitude_accuracy = position.altitude_accuracy;
-  geoposition->heading = position.heading;
-  geoposition->speed = position.speed;
-  geoposition->timestamp = position.timestamp.ToDoubleT();
-  geoposition->error_code = MojoGeoposition::ErrorCode(position.error_code);
-  geoposition->error_message = position.error_message;
-
   update_callback_.Run();
-  client()->OnLocationUpdate(geoposition.Pass());
+
+  current_position_.valid = position.Validate();
+  current_position_.latitude = position.latitude;
+  current_position_.longitude = position.longitude;
+  current_position_.altitude = position.altitude;
+  current_position_.accuracy = position.accuracy;
+  current_position_.altitude_accuracy = position.altitude_accuracy;
+  current_position_.heading = position.heading;
+  current_position_.speed = position.speed;
+  current_position_.timestamp = position.timestamp.ToDoubleT();
+  current_position_.error_code =
+      MojoGeoposition::ErrorCode(position.error_code);
+  current_position_.error_message = position.error_message;
+
+  has_position_to_report_ = true;
+
+  if (!position_callbacks_.empty())
+    ReportCurrentPosition();
+}
+
+void GeolocationServiceImpl::ReportCurrentPosition() {
+  for (const auto& callback : position_callbacks_)
+    callback.Run(current_position_.Clone());
+  position_callbacks_.clear();
+  has_position_to_report_ = false;
 }
 
 }  // namespace content

@@ -32,13 +32,13 @@ GeolocationDispatcher::GeolocationDispatcher(RenderFrame* render_frame)
 GeolocationDispatcher::~GeolocationDispatcher() {}
 
 void GeolocationDispatcher::startUpdating() {
-  if (!geolocation_service_.get()) {
+  if (!geolocation_service_) {
     render_frame()->GetServiceRegistry()->ConnectToRemoteService(
         &geolocation_service_);
-    geolocation_service_.set_client(this);
   }
   if (enable_high_accuracy_)
     geolocation_service_->SetHighAccuracy(true);
+  QueryNextPosition();
 }
 
 void GeolocationDispatcher::stopUpdating() {
@@ -53,7 +53,7 @@ void GeolocationDispatcher::setEnableHighAccuracy(bool enable_high_accuracy) {
   bool has_changed = enable_high_accuracy_ != enable_high_accuracy;
   enable_high_accuracy_ = enable_high_accuracy;
   // We have a different accuracy requirement. Request browser to update.
-  if (geolocation_service_.get() && has_changed)
+  if (geolocation_service_ && has_changed)
     geolocation_service_->SetHighAccuracy(enable_high_accuracy_);
 }
 
@@ -107,8 +107,15 @@ void GeolocationDispatcher::OnPermissionSet(
   permissionRequest.setIsAllowed(status == PERMISSION_STATUS_GRANTED);
 }
 
-void GeolocationDispatcher::OnLocationUpdate(MojoGeopositionPtr geoposition) {
-  DCHECK(geolocation_service_.get());
+void GeolocationDispatcher::QueryNextPosition() {
+  DCHECK(geolocation_service_);
+  geolocation_service_->QueryNextPosition(
+      base::Bind(&GeolocationDispatcher::OnPositionUpdate,
+                 base::Unretained(this)));
+}
+
+void GeolocationDispatcher::OnPositionUpdate(MojoGeopositionPtr geoposition) {
+  QueryNextPosition();
 
   if (geoposition->valid) {
     controller_->positionChanged(WebGeolocationPosition(

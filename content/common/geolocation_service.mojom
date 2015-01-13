@@ -6,14 +6,15 @@ module content;
 
 import "content/public/common/mojo_geoposition.mojom";
 
-// The Geolocation service provides updates on the device's location to its
-// client. By default, it provides updates with low accuracy, but
-// |SetHighAccuracy()| can be called to change this.
-[Client=GeolocationServiceClient]
+// The Geolocation service provides updates on the device's location.  By
+// default, it provides updates with low accuracy, but |SetHighAccuracy()| may
+// be called to change this.
 interface GeolocationService {
   SetHighAccuracy(bool high_accuracy);
-};
 
-interface GeolocationServiceClient {
-  OnLocationUpdate(MojoGeoposition geoposition);
+  // Position is reported once it changes or immediately (to report the initial
+  // position) if this is the first call to QueryNextPosition on this instance.
+  // Position updates may be throttled by the service. Overlapping calls to
+  // this method are supported.
+  QueryNextPosition() => (MojoGeoposition geoposition);
 };
