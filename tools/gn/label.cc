@@ -29,7 +29,7 @@ bool ComputeBuildLocationFromDep(const Value& input_value,
                                  const base::StringPiece& input,
                                  SourceDir* result,
                                  Err* err) {
-  // No rule, use the current locaton.
+  // No rule, use the current location.
   if (input.empty()) {
     *result = current_dir;
     return true;

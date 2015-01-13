@@ -30,10 +30,9 @@ TEST(Label, Resolve) {
       { "//chrome/", "/:",                        false, "",                   "",     "",       "" },
       { "//chrome/", "blah",                      true,  "//chrome/blah/",     "blah", "//t/",   "d" },
       { "//chrome/", "blah:bar",                  true,  "//chrome/blah/",     "bar",  "//t/",   "d" },
-      // No single-leading slash.
-      { "//chrome/", "/chrome:bar",               false, "",                   "",     "",       "" },
-      // No trailing slash.
-      { "//chrome/", "/chrome/:bar",              false, "",                   "",     "",       "" },
+      // Absolute paths.
+      { "//chrome/", "/chrome:bar",               true , "/chrome/",           "bar",  "//t/",   "d" },
+      { "//chrome/", "/chrome/:bar",              true,  "/chrome/",           "bar",  "//t/",   "d" },
       // Refers to root dir.
       { "//chrome/", "//:bar",                    true,  "//",                 "bar",  "//t/",   "d" },
       // Implicit directory
@@ -57,7 +56,7 @@ TEST(Label, Resolve) {
       { "//chrome/", "//chrome:bar(()",           false, "",                   "",     "",       "" },
       { "//chrome/", "(t:b)",                     false, "",                   "",     "",       "" },
       { "//chrome/", ":bar(//t/b)",               true,  "//chrome/",          "bar",  "//t/b/", "b" },
-      { "//chrome/", ":bar(/t/b)",                false, "",                   "",     "",       "" },
+      { "//chrome/", ":bar(/t/b)",                true,  "//chrome/",          "bar",  "/t/b/",  "b" },
       { "//chrome/", ":bar(t/b)",                 true,  "//chrome/",          "bar",  "//chrome/t/b/", "b" },
   };
 
