@@ -1377,7 +1377,7 @@ bool PdfMaterialUIEnabled() {
     return false;
 
   // Default.
-  return true;
+  return false;
 }
 
 bool SettingsWindowEnabled() {
