@@ -918,23 +918,32 @@ public:
     static void onInterruptCallback(v8::Isolate* isolate, void* data)
     {
         V8IsolateInterruptor* interruptor = reinterpret_cast<V8IsolateInterruptor*>(data);
-        if (!interruptor->m_canceled)
+        if (!interruptor->canceled())
             interruptor->onInterrupted();
     }
 
     virtual void requestInterrupt() override
     {
+        MutexLocker locker(m_mutex);
         m_canceled = false;
         m_isolate->RequestInterrupt(&onInterruptCallback, this);
     }
 
     virtual void clearInterrupt() override
     {
+        MutexLocker locker(m_mutex);
         m_canceled = true;
+    }
+
+    bool canceled()
+    {
+        MutexLocker locker(m_mutex);
+        return m_canceled;
     }
 
 private:
     v8::Isolate* m_isolate;
+    Mutex m_mutex;
     bool m_canceled;
 };
 
