@@ -4,13 +4,25 @@
 
 #include "base/process/process.h"
 
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/process/kill.h"
 #include "base/test/multiprocess_test.h"
 #include "base/test/test_timeouts.h"
+#include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "base/threading/platform_thread.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/multiprocess_func_list.h"
 
+#if defined(OS_LINUX)
+#include <errno.h>
+#include <sched.h>
+#include <sys/syscall.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <unistd.h>
+#endif
 
 namespace {
 
@@ -200,5 +212,63 @@ TEST_F(ProcessTest, SetProcessBackgroundedSelf) {
   int new_priority = process.GetPriority();
   EXPECT_EQ(old_priority, new_priority);
 }
+
+#if defined(OS_LINUX)
+const int kSuccess = 0;
+
+MULTIPROCESS_TEST_MAIN(CheckPidProcess) {
+  const pid_t kInitPid = 1;
+  const pid_t pid = syscall(__NR_getpid);
+  CHECK(pid == kInitPid);
+  CHECK(getpid() == pid);
+  return kSuccess;
+}
+
+TEST_F(ProcessTest, CloneFlags) {
+  if (RunningOnValgrind() || !PathExists(FilePath("/proc/self/ns/user")) ||
+      !PathExists(FilePath("/proc/self/ns/pid"))) {
+    // User or PID namespaces are not supported.
+    return;
+  }
+
+  LaunchOptions options;
+  options.clone_flags = CLONE_NEWUSER | CLONE_NEWPID;
+
+  Process process(SpawnChildWithOptions("CheckPidProcess", options));
+  ASSERT_TRUE(process.IsValid());
+
+  int exit_code = 42;
+  EXPECT_TRUE(process.WaitForExit(&exit_code));
+  EXPECT_EQ(kSuccess, exit_code);
+}
+
+TEST(ForkWithFlagsTest, UpdatesPidCache) {
+  // The libc clone function, which allows ForkWithFlags to keep the pid cache
+  // up to date, does not work on Valgrind.
+  if (RunningOnValgrind()) {
+    return;
+  }
+
+  // Warm up the libc pid cache, if there is one.
+  ASSERT_EQ(syscall(__NR_getpid), getpid());
+
+  pid_t ctid = 0;
+  const pid_t pid = ForkWithFlags(SIGCHLD | CLONE_CHILD_SETTID, nullptr, &ctid);
+  if (pid == 0) {
+    // In child.  Check both the raw getpid syscall and the libc getpid wrapper
+    // (which may rely on a pid cache).
+    RAW_CHECK(syscall(__NR_getpid) == ctid);
+    RAW_CHECK(getpid() == ctid);
+    _exit(kSuccess);
+  }
+
+  ASSERT_NE(-1, pid);
+  int status = 42;
+  ASSERT_EQ(pid, HANDLE_EINTR(waitpid(pid, &status, 0)));
+  ASSERT_TRUE(WIFEXITED(status));
+  EXPECT_EQ(kSuccess, WEXITSTATUS(status));
+}
+
+#endif
 
 }  // namespace base

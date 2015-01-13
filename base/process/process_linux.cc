@@ -5,14 +5,21 @@
 #include "base/process/process.h"
 
 #include <errno.h>
+#include <pthread.h>
+#include <sched.h>
+#include <setjmp.h>
 #include <sys/resource.h>
+#include <sys/syscall.h>
 
+#include "base/compiler_specific.h"
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
+#include "base/third_party/valgrind/valgrind.h"
+#include "build/build_config.h"
 
 namespace base {
 
@@ -78,6 +85,52 @@ struct CheckForNicePermission {
   bool can_reraise_priority;
 };
 
+bool IsRunningOnValgrind() {
+  return RUNNING_ON_VALGRIND;
+}
+
+// This function runs on the stack specified on the clone call. It uses longjmp
+// to switch back to the original stack so the child can return from sys_clone.
+int CloneHelper(void* arg) {
+  jmp_buf* env_ptr = reinterpret_cast<jmp_buf*>(arg);
+  longjmp(*env_ptr, 1);
+
+  // Should not be reached.
+  RAW_CHECK(false);
+  return 1;
+}
+
+// This function is noinline to ensure that stack_buf is below the stack pointer
+// that is saved when setjmp is called below. This is needed because when
+// compiled with FORTIFY_SOURCE, glibc's longjmp checks that the stack is moved
+// upwards. See crbug.com/442912 for more details.
+#if defined(ADDRESS_SANITIZER)
+// Disable AddressSanitizer instrumentation for this function to make sure
+// |stack_buf| is allocated on thread stack instead of ASan's fake stack.
+// Under ASan longjmp() will attempt to clean up the area between the old and
+// new stack pointers and print a warning that may confuse the user.
+__attribute__((no_sanitize_address))
+#endif
+NOINLINE pid_t CloneAndLongjmpInChild(unsigned long flags,
+                                      pid_t* ptid,
+                                      pid_t* ctid,
+                                      jmp_buf* env) {
+  // We use the libc clone wrapper instead of making the syscall
+  // directly because making the syscall may fail to update the libc's
+  // internal pid cache. The libc interface unfortunately requires
+  // specifying a new stack, so we use setjmp/longjmp to emulate
+  // fork-like behavior.
+  char stack_buf[PTHREAD_STACK_MIN];
+#if defined(ARCH_CPU_X86_FAMILY) || defined(ARCH_CPU_ARM_FAMILY) || \
+    defined(ARCH_CPU_MIPS64_FAMILY) || defined(ARCH_CPU_MIPS_FAMILY)
+  // The stack grows downward.
+  void* stack = stack_buf + sizeof(stack_buf);
+#else
+#error "Unsupported architecture"
+#endif
+  return clone(&CloneHelper, stack, flags, env, ptid, nullptr, ctid);
+}
+
 }  // namespace
 
 // static
@@ -134,6 +187,45 @@ bool Process::SetProcessBackgrounded(bool background) {
   int result = setpriority(PRIO_PROCESS, process_, priority);
   DPCHECK(result == 0);
   return result == 0;
+}
+
+pid_t ForkWithFlags(unsigned long flags, pid_t* ptid, pid_t* ctid) {
+  const bool clone_tls_used = flags & CLONE_SETTLS;
+  const bool invalid_ctid =
+      (flags & (CLONE_CHILD_SETTID | CLONE_CHILD_CLEARTID)) && !ctid;
+  const bool invalid_ptid = (flags & CLONE_PARENT_SETTID) && !ptid;
+
+  // We do not support CLONE_VM.
+  const bool clone_vm_used = flags & CLONE_VM;
+
+  if (clone_tls_used || invalid_ctid || invalid_ptid || clone_vm_used) {
+    RAW_LOG(FATAL, "Invalid usage of ForkWithFlags");
+  }
+
+  // Valgrind's clone implementation does not support specifiying a child_stack
+  // without CLONE_VM, so we cannot use libc's clone wrapper when running under
+  // Valgrind. As a result, the libc pid cache may be incorrect under Valgrind.
+  // See crbug.com/442817 for more details.
+  if (IsRunningOnValgrind()) {
+    // See kernel/fork.c in Linux. There is different ordering of sys_clone
+    // parameters depending on CONFIG_CLONE_BACKWARDS* configuration options.
+#if defined(ARCH_CPU_X86_64)
+    return syscall(__NR_clone, flags, nullptr, ptid, ctid, nullptr);
+#elif defined(ARCH_CPU_X86) || defined(ARCH_CPU_ARM_FAMILY) || \
+    defined(ARCH_CPU_MIPS_FAMILY) || defined(ARCH_CPU_MIPS64_FAMILY)
+    // CONFIG_CLONE_BACKWARDS defined.
+    return syscall(__NR_clone, flags, nullptr, ptid, nullptr, ctid);
+#else
+#error "Unsupported architecture"
+#endif
+  }
+
+  jmp_buf env;
+  if (setjmp(env) == 0) {
+    return CloneAndLongjmpInChild(flags, ptid, ctid, &env);
+  }
+
+  return 0;
 }
 
 }  // namespace base
