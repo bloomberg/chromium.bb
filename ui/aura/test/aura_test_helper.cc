@@ -34,8 +34,7 @@ namespace test {
 
 AuraTestHelper::AuraTestHelper(base::MessageLoopForUI* message_loop)
     : setup_called_(false),
-      teardown_called_(false),
-      owns_host_(false) {
+      teardown_called_(false) {
   DCHECK(message_loop);
   message_loop_ = message_loop;
   // Disable animations during tests.
