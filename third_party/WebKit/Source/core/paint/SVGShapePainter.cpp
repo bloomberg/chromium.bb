@@ -106,7 +106,7 @@ void SVGShapePainter::paint(const PaintInfo& paintInfo)
     }
 
     if (m_renderSVGShape.style()->outlineWidth())
-        ObjectPainter(m_renderSVGShape).paintOutline(childPaintInfo, IntRect(boundingBox));
+        ObjectPainter(m_renderSVGShape).paintOutline(childPaintInfo, LayoutRect(boundingBox));
 }
 
 void SVGShapePainter::fillShape(GraphicsContext* context)

@@ -32,13 +32,14 @@ void SVGContainerPainter::paint(const PaintInfo& paintInfo)
         return;
 
     PaintInfo childPaintInfo(paintInfo);
-    childPaintInfo.context->save();
+    GraphicsContextStateSaver stateSaver(*childPaintInfo.context);
+    TransformRecorder transformRecorder(*childPaintInfo.context, m_renderSVGContainer.displayItemClient(), m_renderSVGContainer.localToParentTransform());
     {
         OwnPtr<FloatClipRecorder> clipRecorder;
-        if (m_renderSVGContainer.isSVGViewportContainer() && SVGRenderSupport::isOverflowHidden(&m_renderSVGContainer))
-            clipRecorder = adoptPtr(new FloatClipRecorder(*childPaintInfo.context, m_renderSVGContainer.displayItemClient(), childPaintInfo.phase, toRenderSVGViewportContainer(m_renderSVGContainer).viewport()));
-
-        TransformRecorder transformRecorder(*childPaintInfo.context, m_renderSVGContainer.displayItemClient(), m_renderSVGContainer.localToParentTransform());
+        if (m_renderSVGContainer.isSVGViewportContainer() && SVGRenderSupport::isOverflowHidden(&m_renderSVGContainer)) {
+            FloatRect viewport = m_renderSVGContainer.localToParentTransform().inverse().mapRect(toRenderSVGViewportContainer(m_renderSVGContainer).viewport());
+            clipRecorder = adoptPtr(new FloatClipRecorder(*childPaintInfo.context, m_renderSVGContainer.displayItemClient(), childPaintInfo.phase, viewport));
+        }
 
         SVGRenderingContext renderingContext;
         bool continueRendering = true;
@@ -53,17 +54,9 @@ void SVGContainerPainter::paint(const PaintInfo& paintInfo)
                 child->paint(childPaintInfo, IntPoint());
         }
     }
-    childPaintInfo.context->restore();
 
-    // FIXME: This really should be drawn from local coordinates, but currently we hack it
-    // to avoid our clip killing our outline rect. Thus we translate our
-    // outline rect into parent coords before drawing.
-    // FIXME: This means our focus ring won't share our rotation like it should.
-    // We should instead disable our clip during PaintPhaseOutline
-    if (paintInfo.phase == PaintPhaseForeground && m_renderSVGContainer.style()->outlineWidth() && m_renderSVGContainer.style()->visibility() == VISIBLE) {
-        IntRect paintRectInParent = enclosingIntRect(m_renderSVGContainer.localToParentTransform().mapRect(m_renderSVGContainer.paintInvalidationRectInLocalCoordinates()));
-        ObjectPainter(m_renderSVGContainer).paintOutline(paintInfo, paintRectInParent);
-    }
+    if (paintInfo.phase == PaintPhaseForeground && m_renderSVGContainer.style()->outlineWidth() && m_renderSVGContainer.style()->visibility() == VISIBLE)
+        ObjectPainter(m_renderSVGContainer).paintOutline(childPaintInfo, LayoutRect(m_renderSVGContainer.paintInvalidationRectInLocalCoordinates()));
 }
 
 } // namespace blink

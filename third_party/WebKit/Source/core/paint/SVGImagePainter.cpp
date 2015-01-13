@@ -56,7 +56,7 @@ void SVGImagePainter::paint(const PaintInfo& paintInfo)
     }
 
     if (m_renderSVGImage.style()->outlineWidth())
-        ObjectPainter(m_renderSVGImage).paintOutline(childPaintInfo, IntRect(boundingBox));
+        ObjectPainter(m_renderSVGImage).paintOutline(childPaintInfo, LayoutRect(boundingBox));
 }
 
 void SVGImagePainter::paintForeground(const PaintInfo& paintInfo)
