@@ -14,25 +14,22 @@ import unittest
 
 from pylib import constants
 from pylib.base import base_test_result
-from pylib.instrumentation import test_runner
+from pylib.instrumentation import instrumentation_test_instance
 
 sys.path.append(os.path.join(
     constants.DIR_SOURCE_ROOT, 'third_party', 'pymock'))
 import mock  # pylint: disable=F0401
 
 
-class InstrumentationTestRunnerTest(unittest.TestCase):
+class InstrumentationTestInstanceTest(unittest.TestCase):
 
   def setUp(self):
     options = mock.Mock()
     options.tool = ''
-    package = mock.Mock()
-    self.instance = test_runner.TestRunner(
-        options, '123456789abcdef0', 0, package)
 
   def testParseAmInstrumentRawOutput_nothing(self):
     code, result, statuses = (
-        test_runner.TestRunner._ParseAmInstrumentRawOutput(['']))
+        instrumentation_test_instance.ParseAmInstrumentRawOutput(['']))
     self.assertEqual(None, code)
     self.assertEqual([], result)
     self.assertEqual([], statuses)
@@ -48,7 +45,7 @@ class InstrumentationTestRunnerTest(unittest.TestCase):
     ]
 
     code, result, statuses = (
-        test_runner.TestRunner._ParseAmInstrumentRawOutput(raw_output))
+        instrumentation_test_instance.ParseAmInstrumentRawOutput(raw_output))
     self.assertEqual(None, code)
     self.assertEqual([], result)
     self.assertEqual([], statuses)
@@ -61,7 +58,7 @@ class InstrumentationTestRunnerTest(unittest.TestCase):
     ]
 
     code, result, _ = (
-        test_runner.TestRunner._ParseAmInstrumentRawOutput(raw_output))
+        instrumentation_test_instance.ParseAmInstrumentRawOutput(raw_output))
     self.assertEqual(-1, code)
     self.assertEqual(['foo', 'bar'], result)
 
@@ -76,7 +73,7 @@ class InstrumentationTestRunnerTest(unittest.TestCase):
     ]
 
     _, _, statuses = (
-        test_runner.TestRunner._ParseAmInstrumentRawOutput(raw_output))
+        instrumentation_test_instance.ParseAmInstrumentRawOutput(raw_output))
 
     expected = [
       (0, {
@@ -106,7 +103,7 @@ class InstrumentationTestRunnerTest(unittest.TestCase):
     ]
 
     _, _, statuses = (
-        test_runner.TestRunner._ParseAmInstrumentRawOutput(raw_output))
+        instrumentation_test_instance.ParseAmInstrumentRawOutput(raw_output))
 
     expected = [
       (1, {'class': ['foo'], 'test': ['bar'],}),
@@ -133,14 +130,14 @@ class InstrumentationTestRunnerTest(unittest.TestCase):
     ]
 
     code, result, statuses = (
-        test_runner.TestRunner._ParseAmInstrumentRawOutput(raw_output))
+        instrumentation_test_instance.ParseAmInstrumentRawOutput(raw_output))
 
     self.assertEqual(0, code)
     self.assertEqual(['hello', 'world', '', ''], result)
     self.assertEqual([(1, {'class': ['foo'], 'test': ['bar']})], statuses)
 
   def testGenerateTestResult_noStatus(self):
-    result = self.instance._GenerateTestResult(
+    result = instrumentation_test_instance.GenerateTestResult(
         'test.package.TestClass#testMethod', [], 0, 1000)
     self.assertEqual('test.package.TestClass#testMethod', result.GetName())
     self.assertEqual(base_test_result.ResultType.UNKNOWN, result.GetType())
@@ -158,7 +155,7 @@ class InstrumentationTestRunnerTest(unittest.TestCase):
         'test': ['testMethod'],
       }),
     ]
-    result = self.instance._GenerateTestResult(
+    result = instrumentation_test_instance.GenerateTestResult(
         'test.package.TestClass#testMethod', statuses, 0, 1000)
     self.assertEqual(base_test_result.ResultType.PASS, result.GetType())
 
@@ -176,7 +173,7 @@ class InstrumentationTestRunnerTest(unittest.TestCase):
         'test': ['testMethod'],
       }),
     ]
-    result = self.instance._GenerateTestResult(
+    result = instrumentation_test_instance.GenerateTestResult(
         'test.package.TestClass#testMethod', statuses, 0, 1000)
     self.assertEqual(base_test_result.ResultType.SKIP, result.GetType())
 
@@ -194,7 +191,7 @@ class InstrumentationTestRunnerTest(unittest.TestCase):
         'test_skipped': ['true'],
       }),
     ]
-    result = self.instance._GenerateTestResult(
+    result = instrumentation_test_instance.GenerateTestResult(
         'test.package.TestClass#testMethod', statuses, 0, 1000)
     self.assertEqual(base_test_result.ResultType.SKIP, result.GetType())
 
@@ -212,7 +209,7 @@ class InstrumentationTestRunnerTest(unittest.TestCase):
         'test': ['testMethod'],
       }),
     ]
-    result = self.instance._GenerateTestResult(
+    result = instrumentation_test_instance.GenerateTestResult(
         'test.package.TestClass#testMethod', statuses, 0, 1000)
     self.assertEqual(base_test_result.ResultType.PASS, result.GetType())
 
@@ -227,49 +224,10 @@ class InstrumentationTestRunnerTest(unittest.TestCase):
         'test': ['testMethod'],
       }),
     ]
-    self.instance.device.old_interface.DismissCrashDialogIfNeeded = mock.Mock(
-        return_value=None)
-    result = self.instance._GenerateTestResult(
+    result = instrumentation_test_instance.GenerateTestResult(
         'test.package.TestClass#testMethod', statuses, 0, 1000)
     self.assertEqual(base_test_result.ResultType.FAIL, result.GetType())
 
-  def testGenerateTestResult_testCrashed(self):
-    self.instance.test_pkg.GetPackageName = mock.Mock(
-        return_value='generate.test.result.test.package')
-    self.instance.device.old_interface.DismissCrashDialogIfNeeded = mock.Mock(
-        return_value='generate.test.result.test.package')
-    statuses = [
-      (1, {
-        'class': ['test.package.TestClass'],
-        'test': ['testMethod'],
-      }),
-      (-1, {
-        'class': ['test.package.TestClass'],
-        'test': ['testMethod'],
-        'stack': ['', 'foo/bar.py (27)', 'hello/world.py (42)'],
-      }),
-    ]
-    result = self.instance._GenerateTestResult(
-        'test.package.TestClass#testMethod', statuses, 0, 1000)
-    self.assertEqual(base_test_result.ResultType.CRASH, result.GetType())
-    self.assertEqual('\nfoo/bar.py (27)\nhello/world.py (42)', result.GetLog())
-
-  def test_RunTest_verifyAdbShellCommand(self):
-    self.instance.options.test_runner = 'MyTestRunner'
-    self.instance.device.StartInstrumentation = mock.Mock()
-    self.instance.test_pkg.GetPackageName = mock.Mock(
-        return_value='test.package')
-    self.instance._GetInstrumentationArgs = mock.Mock(
-        return_value={'test_arg_key': 'test_arg_value'})
-    self.instance._RunTest('test.package.TestClass#testMethod', 100)
-    self.instance.device.StartInstrumentation.assert_called_with(
-        'test.package/MyTestRunner', raw=True,
-        extras={
-            'test_arg_key': 'test_arg_value',
-            'class': 'test.package.TestClass#testMethod'
-        },
-        timeout=100, retries=0)
 
 if __name__ == '__main__':
   unittest.main(verbosity=2)
-

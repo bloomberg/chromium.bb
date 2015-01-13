@@ -293,6 +293,8 @@ def AddInstrumentationTestOptions(parser):
   group.add_argument('-w', '--wait_debugger', dest='wait_for_debugger',
                      action='store_true',
                      help='Wait for debugger.')
+  group.add_argument('--apk-under-test', dest='apk_under_test',
+                     help=('the name of the apk under test.'))
   group.add_argument('--test-apk', dest='test_apk', required=True,
                      help=('The name of the apk containing the tests '
                            '(without the .apk extension; '
@@ -301,6 +303,9 @@ def AddInstrumentationTestOptions(parser):
                      help=('Directory in which to place all generated '
                            'EMMA coverage files.'))
   group.add_argument('--device-flags', dest='device_flags', default='',
+                     help='The relative filepath to a file containing '
+                          'command-line flags to set on the device')
+  group.add_argument('--device-flags-file', default='',
                      help='The relative filepath to a file containing '
                           'command-line flags to set on the device')
   group.add_argument('--isolate_file_path',
@@ -898,7 +903,9 @@ def RunTestsCommand(args, parser):
 
 _SUPPORTED_IN_PLATFORM_MODE = [
   # TODO(jbudorick): Add support for more test types.
-  'gtest', 'uirobot',
+  'gtest',
+  'instrumentation',
+  'uirobot',
 ]
 
 
@@ -913,7 +920,7 @@ def RunTestsInPlatformMode(args, parser):
           args, env, test, parser.error) as test_run:
         results = test_run.RunTests()
 
-        if args.trigger:
+        if args.environment == 'remote_device' and args.trigger:
           return 0 # Not returning results, only triggering.
 
         report_results.LogFull(

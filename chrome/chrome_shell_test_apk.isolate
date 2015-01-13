@@ -6,7 +6,11 @@
     ['OS=="android"', {
       'variables': {
         'files': [
+          '<(DEPTH)/chrome/test/data/android/contextmenu/',
           '<(DEPTH)/chrome/test/data/android/device_files/',
+          '<(DEPTH)/chrome/test/data/geolocation/geolocation_on_load.html',
+          '<(DEPTH)/chrome/test/data/popup_blocker/popup-window-open.html',
+          '<(DEPTH)/chrome/test/data/translate/fr_test.html',
         ],
       },
     }],

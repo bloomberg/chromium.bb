@@ -16,8 +16,10 @@ from pylib import valgrind_tools
 from pylib.base import base_test_result
 from pylib.base import base_test_runner
 from pylib.device import device_errors
+from pylib.instrumentation import instrumentation_test_instance
 from pylib.instrumentation import json_perf_parser
 from pylib.instrumentation import test_result
+from pylib.local.device import local_device_instrumentation_test_run
 
 sys.path.append(os.path.join(constants.DIR_SOURCE_ROOT, 'build', 'util', 'lib',
                              'common'))
@@ -319,124 +321,6 @@ class TestRunner(base_test_runner.BaseTestRunner):
         '%s/%s' % (self.test_pkg.GetPackageName(), self.options.test_runner),
         raw=True, extras=extras, timeout=timeout, retries=0)
 
-  @staticmethod
-  def _ParseAmInstrumentRawOutput(raw_output):
-    """Parses the output of an |am instrument -r| call.
-
-    Args:
-      raw_output: the output of an |am instrument -r| call as a list of lines
-    Returns:
-      A 3-tuple containing:
-        - the instrumentation code as an integer
-        - the instrumentation result as a list of lines
-        - the instrumentation statuses received as a list of 2-tuples
-          containing:
-          - the status code as an integer
-          - the bundle dump as a dict mapping string keys to a list of
-            strings, one for each line.
-    """
-    INSTR_STATUS = 'INSTRUMENTATION_STATUS: '
-    INSTR_STATUS_CODE = 'INSTRUMENTATION_STATUS_CODE: '
-    INSTR_RESULT = 'INSTRUMENTATION_RESULT: '
-    INSTR_CODE = 'INSTRUMENTATION_CODE: '
-
-    last = None
-    instr_code = None
-    instr_result = []
-    instr_statuses = []
-    bundle = {}
-    for line in raw_output:
-      if line.startswith(INSTR_STATUS):
-        instr_var = line[len(INSTR_STATUS):]
-        if '=' in instr_var:
-          k, v = instr_var.split('=', 1)
-          bundle[k] = [v]
-          last = INSTR_STATUS
-          last_key = k
-        else:
-          logging.debug('Unknown "%s" line: %s' % (INSTR_STATUS, line))
-
-      elif line.startswith(INSTR_STATUS_CODE):
-        instr_status = line[len(INSTR_STATUS_CODE):]
-        instr_statuses.append((int(instr_status), bundle))
-        bundle = {}
-        last = INSTR_STATUS_CODE
-
-      elif line.startswith(INSTR_RESULT):
-        instr_result.append(line[len(INSTR_RESULT):])
-        last = INSTR_RESULT
-
-      elif line.startswith(INSTR_CODE):
-        instr_code = int(line[len(INSTR_CODE):])
-        last = INSTR_CODE
-
-      elif last == INSTR_STATUS:
-        bundle[last_key].append(line)
-
-      elif last == INSTR_RESULT:
-        instr_result.append(line)
-
-    return (instr_code, instr_result, instr_statuses)
-
-  def _GenerateTestResult(self, test, instr_statuses, start_ms, duration_ms):
-    """Generate the result of |test| from |instr_statuses|.
-
-    Args:
-      instr_statuses: A list of 2-tuples containing:
-        - the status code as an integer
-        - the bundle dump as a dict mapping string keys to string values
-        Note that this is the same as the third item in the 3-tuple returned by
-        |_ParseAmInstrumentRawOutput|.
-      start_ms: The start time of the test in milliseconds.
-      duration_ms: The duration of the test in milliseconds.
-    Returns:
-      An InstrumentationTestResult object.
-    """
-    INSTR_STATUS_CODE_START = 1
-    INSTR_STATUS_CODE_OK = 0
-    INSTR_STATUS_CODE_ERROR = -1
-    INSTR_STATUS_CODE_FAIL = -2
-
-    log = ''
-    result_type = base_test_result.ResultType.UNKNOWN
-
-    for status_code, bundle in instr_statuses:
-      if status_code == INSTR_STATUS_CODE_START:
-        pass
-      elif status_code == INSTR_STATUS_CODE_OK:
-        bundle_test = '%s#%s' % (
-            ''.join(bundle.get('class', [''])),
-            ''.join(bundle.get('test', [''])))
-        skipped = ''.join(bundle.get('test_skipped', ['']))
-
-        if (test == bundle_test and
-            result_type == base_test_result.ResultType.UNKNOWN):
-          result_type = base_test_result.ResultType.PASS
-        elif skipped.lower() in ('true', '1', 'yes'):
-          result_type = base_test_result.ResultType.SKIP
-          logging.info('Skipped ' + test)
-      else:
-        if status_code not in (INSTR_STATUS_CODE_ERROR,
-                               INSTR_STATUS_CODE_FAIL):
-          logging.info('Unrecognized status code %d. Handling as an error.',
-                       status_code)
-        result_type = base_test_result.ResultType.FAIL
-        if 'stack' in bundle:
-          log = '\n'.join(bundle['stack'])
-        # Dismiss any error dialogs. Limit the number in case we have an error
-        # loop or we are failing to dismiss.
-        for _ in xrange(10):
-          package = self.device.old_interface.DismissCrashDialogIfNeeded()
-          if not package:
-            break
-          # Assume test package convention of ".test" suffix
-          if package in self.test_pkg.GetPackageName():
-            result_type = base_test_result.ResultType.CRASH
-            break
-
-    return test_result.InstrumentationTestResult(
-        test, result_type, start_ms, duration_ms, log=log)
-
   #override
   def RunTest(self, test):
     results = base_test_result.TestRunResults()
@@ -458,8 +342,13 @@ class TestRunner(base_test_runner.BaseTestRunner):
       duration_ms = time_ms() - start_ms
 
       # Parse the test output
-      _, _, statuses = self._ParseAmInstrumentRawOutput(raw_output)
-      result = self._GenerateTestResult(test, statuses, start_ms, duration_ms)
+      _, _, statuses = (
+          instrumentation_test_instance.ParseAmInstrumentRawOutput(raw_output))
+      result = instrumentation_test_instance.GenerateTestResult(
+          test, statuses, start_ms, duration_ms)
+      if local_device_instrumentation_test_run.DidPackageCrashOnDevice(
+          self.test_pkg.GetPackageName(), self.device):
+        result.SetType(base_test_result.ResultType.CRASH)
       results.AddResult(result)
     except device_errors.CommandTimeoutError as e:
       results.AddResult(test_result.InstrumentationTestResult(

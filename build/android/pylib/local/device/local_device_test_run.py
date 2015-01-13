@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import logging
 
 from pylib import valgrind_tools
 from pylib.base import base_test_result
@@ -35,8 +36,12 @@ class LocalDeviceTestRun(test_run.TestRun):
 
     tries = 0
     results = base_test_result.TestRunResults()
-    fail_results = []
+    all_fail_results = {}
     while tries < self._env.max_tries and tests:
+      logging.debug('try %d, will run %d tests:', tries, len(tests))
+      for t in tests:
+        logging.debug('  %s', t)
+
       if self._ShouldShard():
         tc = test_collection.TestCollection(self._CreateShards(tests))
         try_results = self._env.parallel_devices.pMap(
@@ -44,26 +49,31 @@ class LocalDeviceTestRun(test_run.TestRun):
       else:
         try_results = self._env.parallel_devices.pMap(
             run_tests_on_device, tests).pGet(None)
-      fail_results = []
       for try_result in try_results:
         for result in try_result.GetAll():
           if result.GetType() in (base_test_result.ResultType.PASS,
                                   base_test_result.ResultType.SKIP):
             results.AddResult(result)
           else:
-            fail_results.append(result)
+            all_fail_results[result.GetName()] = result
 
       results_names = set(r.GetName() for r in results.GetAll())
       tests = [t for t in tests if t not in results_names]
       tries += 1
 
-    if tests:
+    all_unknown_test_names = set(tests)
+    all_failed_test_names = set(all_fail_results.iterkeys())
+
+    unknown_tests = all_unknown_test_names.difference(all_failed_test_names)
+    failed_tests = all_failed_test_names.intersection(all_unknown_test_names)
+
+    if unknown_tests:
       results.AddResults(
           base_test_result.BaseTestResult(
               t, base_test_result.ResultType.UNKNOWN)
           for t in tests)
-    if fail_results:
-      results.AddResults(fail_results)
+    if failed_tests:
+      results.AddResults(all_fail_results[f] for f in failed_tests)
     return results
 
   def GetTool(self, device):

@@ -63,7 +63,8 @@ def CommonChecks(input_api, output_api):
       unit_tests=[
           J('pylib', 'device', 'device_utils_test.py'),
           J('pylib', 'gtest', 'gtest_test_instance_test.py'),
-          J('pylib', 'instrumentation', 'test_runner_test.py'),
+          J('pylib', 'instrumentation',
+            'instrumentation_test_instance_test.py'),
           J('pylib', 'results', 'json_results_test.py'),
           J('pylib', 'utils', 'md5sum_test.py'),
       ],

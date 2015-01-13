@@ -64,6 +64,11 @@ class BaseTestResult(object):
     """Get the test name."""
     return self._name
 
+  def SetType(self, test_type):
+    """Set the test result type."""
+    assert test_type in ResultType.GetTypes()
+    self._test_type = test_type
+
   def GetType(self):
     """Get the test result type."""
     return self._test_type
