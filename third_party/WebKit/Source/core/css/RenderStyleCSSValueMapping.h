@@ -25,7 +25,7 @@ private:
     static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> currentColorOrValidColor(const RenderStyle&, const StyleColor&);
     static PassRefPtrWillBeRawPtr<CSSValue> valueForShadowData(const ShadowData&, const RenderStyle&, bool useSpread);
     static PassRefPtrWillBeRawPtr<CSSValue> valueForShadowList(const ShadowList*, const RenderStyle&, bool useSpread);
-    static PassRefPtrWillBeRawPtr<CSSValue> valueForFilter(const RenderObject* renderer, const RenderStyle&);
+    static PassRefPtrWillBeRawPtr<CSSValue> valueForFilter(const RenderStyle&);
 };
 
 } // namespace blink

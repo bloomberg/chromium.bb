@@ -1194,7 +1194,7 @@ PassRefPtrWillBeRawPtr<CSSValue> RenderStyleCSSValueMapping::valueForShadowList(
     return list.release();
 }
 
-PassRefPtrWillBeRawPtr<CSSValue> RenderStyleCSSValueMapping::valueForFilter(const RenderObject* renderer, const RenderStyle& style)
+PassRefPtrWillBeRawPtr<CSSValue> RenderStyleCSSValueMapping::valueForFilter(const RenderStyle& style)
 {
     if (style.filter().operations().isEmpty())
         return cssValuePool().createIdentifierValue(CSSValueNone);
@@ -2288,7 +2288,7 @@ PassRefPtrWillBeRawPtr<CSSValue> RenderStyleCSSValueMapping::get(CSSPropertyID p
     case CSSPropertyShapeOutside:
         return valueForShape(style, style.shapeOutside());
     case CSSPropertyWebkitFilter:
-        return valueForFilter(renderer, style);
+        return valueForFilter(style);
     case CSSPropertyMixBlendMode:
         return cssValuePool().createValue(style.blendMode());
 
