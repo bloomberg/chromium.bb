@@ -39,19 +39,16 @@ class RuleSet;
 class SelectorFilter;
 class StaticCSSRuleList;
 
-typedef unsigned CascadeScope;
 typedef unsigned CascadeOrder;
 
-const CascadeScope ignoreCascadeScope = 0;
 const CascadeOrder ignoreCascadeOrder = 0;
 
 class MatchedRule {
     ALLOW_ONLY_INLINE_ALLOCATION();
 public:
-    MatchedRule(const RuleData* ruleData, unsigned specificity, CascadeScope cascadeScope, CascadeOrder cascadeOrder, unsigned styleSheetIndex, const CSSStyleSheet* parentStyleSheet)
+    MatchedRule(const RuleData* ruleData, unsigned specificity, CascadeOrder cascadeOrder, unsigned styleSheetIndex, const CSSStyleSheet* parentStyleSheet)
         : m_ruleData(ruleData)
         , m_specificity(specificity)
-        , m_cascadeScope(cascadeScope)
         , m_parentStyleSheet(parentStyleSheet)
     {
         ASSERT(m_ruleData);
@@ -61,7 +58,6 @@ public:
     }
 
     const RuleData* ruleData() const { return m_ruleData; }
-    uint32_t cascadeScope() const { return m_cascadeScope; }
     uint64_t position() const { return m_position; }
     unsigned specificity() const { return ruleData()->specificity() + m_specificity; }
     const CSSStyleSheet* parentStyleSheet() const { return m_parentStyleSheet; }
@@ -77,7 +73,6 @@ private:
     // trace a raw rule data pointer at this point.
     const RuleData* m_ruleData;
     unsigned m_specificity;
-    CascadeScope m_cascadeScope;
     uint64_t m_position;
     RawPtrWillBeMember<const CSSStyleSheet> m_parentStyleSheet;
 };
@@ -127,23 +122,23 @@ public:
     PassRefPtrWillBeRawPtr<StyleRuleList> matchedStyleRuleList();
     PassRefPtrWillBeRawPtr<CSSRuleList> matchedCSSRuleList();
 
-    void collectMatchingRules(const MatchRequest&, RuleRange&, CascadeScope = ignoreCascadeScope, CascadeOrder = ignoreCascadeOrder, bool matchingTreeBoundaryRules = false);
-    void collectMatchingShadowHostRules(const MatchRequest&, RuleRange&, CascadeScope = ignoreCascadeScope, CascadeOrder = ignoreCascadeOrder, bool matchingTreeBoundaryRules = false);
+    void collectMatchingRules(const MatchRequest&, RuleRange&, CascadeOrder = ignoreCascadeOrder, bool matchingTreeBoundaryRules = false);
+    void collectMatchingShadowHostRules(const MatchRequest&, RuleRange&, CascadeOrder = ignoreCascadeOrder, bool matchingTreeBoundaryRules = false);
     void sortAndTransferMatchedRules();
     void clearMatchedRules();
     void addElementStyleProperties(const StylePropertySet*, bool isCacheable = true);
 
 private:
-    void collectRuleIfMatches(const RuleData&, CascadeScope, CascadeOrder, const MatchRequest&, RuleRange&);
+    void collectRuleIfMatches(const RuleData&, CascadeOrder, const MatchRequest&, RuleRange&);
 
     template<typename RuleDataListType>
-    void collectMatchingRulesForList(const RuleDataListType* rules, CascadeScope cascadeScope, CascadeOrder cascadeOrder, const MatchRequest& matchRequest, RuleRange& ruleRange)
+    void collectMatchingRulesForList(const RuleDataListType* rules, CascadeOrder cascadeOrder, const MatchRequest& matchRequest, RuleRange& ruleRange)
     {
         if (!rules)
             return;
 
         for (const auto& rule : *rules)
-            collectRuleIfMatches(rule, cascadeScope, cascadeOrder, matchRequest, ruleRange);
+            collectRuleIfMatches(rule, cascadeOrder, matchRequest, ruleRange);
     }
 
     bool ruleMatches(const RuleData&, const ContainerNode* scope, SelectorChecker::MatchResult*);
@@ -154,7 +149,7 @@ private:
     void appendCSSOMWrapperForRule(CSSStyleSheet*, StyleRule*);
 
     void sortMatchedRules();
-    void addMatchedRule(const RuleData*, unsigned specificity, CascadeScope, CascadeOrder, unsigned styleSheetIndex, const CSSStyleSheet* parentStyleSheet);
+    void addMatchedRule(const RuleData*, unsigned specificity, CascadeOrder, unsigned styleSheetIndex, const CSSStyleSheet* parentStyleSheet);
 
     StaticCSSRuleList* ensureRuleList();
     StyleRuleList* ensureStyleRuleList();

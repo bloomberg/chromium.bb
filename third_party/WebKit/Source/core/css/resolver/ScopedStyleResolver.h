@@ -61,8 +61,8 @@ public:
     void addKeyframeStyle(PassRefPtrWillBeRawPtr<StyleRuleKeyframes>);
 
     unsigned appendCSSStyleSheet(CSSStyleSheet*);
-    void collectMatchingAuthorRules(ElementRuleCollector&, bool includeEmptyRules, CascadeScope, CascadeOrder = ignoreCascadeOrder);
-    void collectMatchingShadowHostRules(ElementRuleCollector&, bool includeEmptyRules, CascadeScope, CascadeOrder = ignoreCascadeOrder);
+    void collectMatchingAuthorRules(ElementRuleCollector&, bool includeEmptyRules, CascadeOrder = ignoreCascadeOrder);
+    void collectMatchingShadowHostRules(ElementRuleCollector&, bool includeEmptyRules, CascadeOrder = ignoreCascadeOrder);
     void matchPageRules(PageRuleCollector&);
     void collectFeaturesTo(RuleFeatureSet&, HashSet<const StyleSheetContents*>& visitedSharedStyleSheetContents) const;
     void resetAuthorStyle();

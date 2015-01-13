@@ -83,7 +83,7 @@ void TreeBoundaryCrossingRules::collectTreeBoundaryCrossingRules(Element* elemen
         CascadeOrder cascadeOrder = isInnerTreeScope ? innerCascadeOrder : outerCascadeOrder;
         for (const auto& rules : *ruleSubSet) {
             MatchRequest request(rules->ruleSet.get(), includeEmptyRules, scopingNode, rules->parentStyleSheet, rules->parentIndex);
-            collector.collectMatchingRules(request, ruleRange, ignoreCascadeScope, cascadeOrder, true);
+            collector.collectMatchingRules(request, ruleRange, cascadeOrder, true);
         }
         ++innerCascadeOrder;
         --outerCascadeOrder;

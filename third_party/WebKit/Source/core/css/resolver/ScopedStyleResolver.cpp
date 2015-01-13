@@ -116,26 +116,26 @@ void ScopedStyleResolver::addKeyframeStyle(PassRefPtrWillBeRawPtr<StyleRuleKeyfr
     }
 }
 
-void ScopedStyleResolver::collectMatchingAuthorRules(ElementRuleCollector& collector, bool includeEmptyRules, CascadeScope cascadeScope, CascadeOrder cascadeOrder)
+void ScopedStyleResolver::collectMatchingAuthorRules(ElementRuleCollector& collector, bool includeEmptyRules, CascadeOrder cascadeOrder)
 {
     RuleRange ruleRange = collector.matchedResult().ranges.authorRuleRange();
     ASSERT(!collector.scopeContainsLastMatchedElement());
     collector.setScopeContainsLastMatchedElement(true);
     for (size_t i = 0; i < m_authorStyleSheets.size(); ++i) {
         MatchRequest matchRequest(&m_authorStyleSheets[i]->contents()->ruleSet(), includeEmptyRules, &m_scope->rootNode(), m_authorStyleSheets[i], i);
-        collector.collectMatchingRules(matchRequest, ruleRange, cascadeScope, cascadeOrder);
+        collector.collectMatchingRules(matchRequest, ruleRange, cascadeOrder);
     }
     collector.setScopeContainsLastMatchedElement(false);
 }
 
-void ScopedStyleResolver::collectMatchingShadowHostRules(ElementRuleCollector& collector, bool includeEmptyRules, CascadeScope cascadeScope, CascadeOrder cascadeOrder)
+void ScopedStyleResolver::collectMatchingShadowHostRules(ElementRuleCollector& collector, bool includeEmptyRules, CascadeOrder cascadeOrder)
 {
     RuleRange ruleRange = collector.matchedResult().ranges.authorRuleRange();
     ASSERT(!collector.scopeContainsLastMatchedElement());
     collector.setScopeContainsLastMatchedElement(true);
     for (size_t i = 0; i < m_authorStyleSheets.size(); ++i) {
         MatchRequest matchRequest(&m_authorStyleSheets[i]->contents()->ruleSet(), includeEmptyRules, &m_scope->rootNode(), m_authorStyleSheets[i], i);
-        collector.collectMatchingShadowHostRules(matchRequest, ruleRange, cascadeScope, cascadeOrder);
+        collector.collectMatchingShadowHostRules(matchRequest, ruleRange, cascadeOrder);
     }
     collector.setScopeContainsLastMatchedElement(false);
 }
