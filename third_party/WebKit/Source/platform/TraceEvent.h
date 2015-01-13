@@ -280,6 +280,26 @@
         category, name, TRACE_EVENT_FLAG_COPY, arg1_name, arg1_val, \
         arg2_name, arg2_val)
 
+#define TRACE_EVENT_MARK(category_group, name) \
+    INTERNAL_TRACE_EVENT_ADD( \
+        TRACE_EVENT_PHASE_MARK, category_group, name, TRACE_EVENT_FLAG_NONE)
+
+#define TRACE_EVENT__MEASURE(category_group, name, start_mark, end_mark) \
+    INTERNAL_TRACE_EVENT_ADD( \
+        TRACE_EVENT_PHASE_MEASURE, category_group, name, TRACE_EVENT_FLAG_NONE, \
+        "from", static_cast<const char *>(start_mark), \
+        "to", static_cast<const char *>(end_mark))
+
+#define TRACE_EVENT_COPY_MARK(category_group, name) \
+    INTERNAL_TRACE_EVENT_ADD( \
+        TRACE_EVENT_PHASE_MARK, category_group, name, TRACE_EVENT_FLAG_COPY)
+
+#define TRACE_EVENT_COPY_MEASURE(category_group, name, start_mark, end_mark) \
+    INTERNAL_TRACE_EVENT_ADD( \
+        TRACE_EVENT_PHASE_MEASURE, category_group, name, TRACE_EVENT_FLAG_COPY, \
+        "from", static_cast<const char *>(start_mark), \
+        "to", static_cast<const char *>(end_mark))
+
 // Records the value of a counter called "name" immediately. Value
 // must be representable as a 32 bit integer.
 // - category and name strings must have application lifetime (statics or
@@ -746,6 +766,8 @@
 #define TRACE_EVENT_PHASE_FLOW_BEGIN ('s')
 #define TRACE_EVENT_PHASE_FLOW_STEP  ('t')
 #define TRACE_EVENT_PHASE_FLOW_END   ('f')
+#define TRACE_EVENT_PHASE_MARK ('R')
+#define TRACE_EVENT_PHASE_MEASURE ('U')
 
 // Flags for changing the behavior of TRACE_EVENT_API_ADD_TRACE_EVENT.
 #define TRACE_EVENT_FLAG_NONE        (static_cast<unsigned char>(0))
