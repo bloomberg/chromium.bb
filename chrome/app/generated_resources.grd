@@ -6361,6 +6361,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Enable AVFoundation use for video capture and video device monitoring on OS X >= 10.7. QTKit will be used otherwise.
         </message>
       </if>
+      <message name="IDS_FLAGS_ENABLE_DELAY_AGNOSTIC_AEC_NAME" desc="Name of the flag to enable DA-AEC in WebRTC.">
+        Enable Delay Agnostic AEC in WebRTC.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_DELAY_AGNOSTIC_AEC_DESCRIPTION" desc="Description for the flag to enable DA-AEC in WebRTC.">
+        Enable Delay Agnostic AEC in WebRTC. Use if reported system delays are untrusted. Specifically applies to Mac OS X and CrOS, but also if audio is routed through a different device like TV.
+      </message>
 
       <!-- Data Reduction Proxy -->
       <if expr="is_android">

@@ -2112,6 +2112,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnablePotentiallyAnnoyingSecurityFeatures)
   },
 #endif
+  {
+    "enable-delay-agnostic-aec",
+    IDS_FLAGS_ENABLE_DELAY_AGNOSTIC_AEC_NAME,
+    IDS_FLAGS_ENABLE_DELAY_AGNOSTIC_AEC_DESCRIPTION,
+    kOsDesktop,
+    SINGLE_VALUE_TYPE(switches::kEnableDelayAgnosticAec)
+  },
 
   // NOTE: Adding new command-line switches requires adding corresponding
   // entries to enum "LoginCustomFlags" in histograms.xml. See note in

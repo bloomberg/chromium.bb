@@ -4,11 +4,11 @@
 
 #include "content/renderer/media/media_stream_audio_processor.h"
 
+#include "base/command_line.h"
 #include "base/debug/trace_event.h"
-#if defined(OS_MACOSX)
 #include "base/metrics/field_trial.h"
-#endif
 #include "base/metrics/histogram.h"
+#include "content/public/common/content_switches.h"
 #include "content/renderer/media/media_stream_audio_processor_options.h"
 #include "content/renderer/media/rtc_media_constraints.h"
 #include "content/renderer/media/webrtc_audio_device_impl.h"
@@ -77,6 +77,17 @@ void RecordProcessingState(AudioTrackProcessingStates state) {
                             state, AUDIO_PROCESSING_MAX);
 }
 
+bool isDelayAgnosticAecEnabled() {
+  // Note: It's important to query the field trial state first, to ensure that
+  // UMA reports the correct group.
+  const std::string group_name =
+      base::FieldTrialList::FindFullName("NoReportedDelayOnMac");
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kEnableDelayAgnosticAec))
+    return true;
+
+  return (!group_name.empty() && group_name == "Enabled");
+}
 }  // namespace
 
 // Wraps AudioBus to provide access to the array of channel pointers, since this
@@ -468,10 +479,8 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
     config.Set<webrtc::DelayCorrection>(new webrtc::DelayCorrection(true));
   if (goog_experimental_ns)
     config.Set<webrtc::ExperimentalNs>(new webrtc::ExperimentalNs(true));
-#if defined(OS_MACOSX)
-  if (base::FieldTrialList::FindFullName("NoReportedDelayOnMac") == "Enabled")
+  if (isDelayAgnosticAecEnabled())
     config.Set<webrtc::ReportedDelay>(new webrtc::ReportedDelay(false));
-#endif
   if (goog_beamforming) {
     ConfigureBeamforming(&config);
   }

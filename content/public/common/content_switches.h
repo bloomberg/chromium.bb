@@ -92,6 +92,7 @@ CONTENT_EXPORT extern const char kEnableBeginFrameScheduling[];
 CONTENT_EXPORT extern const char kEnablePreferCompositingToLCDText[];
 CONTENT_EXPORT extern const char kEnableBrowserSideNavigation[];
 CONTENT_EXPORT extern const char kEnableDeferredImageDecoding[];
+CONTENT_EXPORT extern const char kEnableDelayAgnosticAec[];
 CONTENT_EXPORT extern const char kEnableDelegatedRenderer[];
 CONTENT_EXPORT extern const char kEnableDisplayList2dCanvas[];
 CONTENT_EXPORT extern const char kEnableDistanceFieldText[];

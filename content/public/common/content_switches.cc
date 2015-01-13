@@ -298,6 +298,9 @@ const char kEnableBrowserSideNavigation[]   = "enable-browser-side-navigation";
 // Defer image decoding in WebKit until painting.
 const char kEnableDeferredImageDecoding[]   = "enable-deferred-image-decoding";
 
+// Enables Delay Agnostic AEC in WebRTC.
+const char kEnableDelayAgnosticAec[]        = "enable-delay-agnostic-aec";
+
 // Enables delegated renderer.
 const char kEnableDelegatedRenderer[]       = "enable-delegated-renderer";
 
