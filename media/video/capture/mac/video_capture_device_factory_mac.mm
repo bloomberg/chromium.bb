@@ -86,23 +86,6 @@ scoped_ptr<VideoCaptureDevice> VideoCaptureDeviceFactoryMac::Create(
   DCHECK_NE(device_name.capture_api_type(),
             VideoCaptureDevice::Name::API_TYPE_UNKNOWN);
 
-  // Check device presence only for AVFoundation API, since it is too expensive
-  // and brittle for QTKit. The actual initialization at device level will fail
-  // subsequently if the device is not present.
-  if (AVFoundationGlue::IsAVFoundationSupported()) {
-    scoped_ptr<VideoCaptureDevice::Names> device_names(
-        new VideoCaptureDevice::Names());
-    GetDeviceNames(device_names.get());
-
-    VideoCaptureDevice::Names::iterator it = device_names->begin();
-    for (; it != device_names->end(); ++it) {
-      if (it->id() == device_name.id())
-        break;
-    }
-    if (it == device_names->end())
-      return scoped_ptr<VideoCaptureDevice>();
-  }
-
   scoped_ptr<VideoCaptureDevice> capture_device;
   if (device_name.capture_api_type() == VideoCaptureDevice::Name::DECKLINK) {
     capture_device.reset(new VideoCaptureDeviceDeckLinkMac(device_name));
