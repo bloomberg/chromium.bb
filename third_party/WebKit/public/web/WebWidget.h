@@ -89,11 +89,6 @@ public:
 
     // Called to update imperative animation state. This should be called before
     // paint, although the client can rate-limit these calls.
-    // FIXME: Remove this function once Chrome side patch lands.
-    void animate(double monotonicFrameBeginTime)
-    {
-        beginFrame(WebBeginFrameArgs(monotonicFrameBeginTime, 0, 0));
-    }
     virtual void beginFrame(const WebBeginFrameArgs& frameTime) { }
 
     // Called to layout the WebWidget. This MUST be called before Paint,
