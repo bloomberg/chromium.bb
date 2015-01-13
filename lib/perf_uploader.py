@@ -27,6 +27,7 @@ import urllib
 import urllib2
 
 from chromite.lib import osutils
+from chromite.lib import retry_util
 
 
 _ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -332,7 +333,8 @@ def UploadPerfValues(perf_values, platform_name, cros_version, chrome_version,
     formatted_data = _FormatForUpload(perf_data, platform_name,
                                       cros_version, chrome_version,
                                       presentation_info)
-    _SendToDashboard(formatted_data)
+    retry_util.RetryException(PerfUploadingError, 3, _SendToDashboard,
+                              formatted_data)
   except PerfUploadingError:
     logging.exception('Error when uploading perf data to the perf '
                       'dashboard for test %s.', test_name)

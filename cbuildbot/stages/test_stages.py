@@ -21,7 +21,6 @@ from chromite.lib import cgroups
 from chromite.lib import cros_build_lib
 from chromite.lib import osutils
 from chromite.lib import perf_uploader
-from chromite.lib import retry_util
 from chromite.lib import timeout_util
 
 
@@ -371,7 +370,5 @@ class ImageTestStage(generic_stages.BoardSpecificBuilderStage,
     cros_ver = self._run.GetVersionInfo(self._run.buildroot).VersionString()
     chrome_ver = self._run.DetermineChromeVersion()
     for test_name, perf_values in perf_entries.iteritems():
-      retry_util.RetryException(perf_uploader.PerfUploadingError, 3,
-                                perf_uploader.UploadPerfValues,
-                                perf_values, platform_name, cros_ver,
-                                chrome_ver, test_name)
+      perf_uploader.UploadPerfValues(perf_values, platform_name, cros_ver,
+                                     chrome_ver, test_name)
