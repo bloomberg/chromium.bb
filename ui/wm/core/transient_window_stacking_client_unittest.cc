@@ -174,4 +174,19 @@ TEST_F(TransientWindowStackingClientTest, TransientChildrenGroupBelow) {
   EXPECT_EQ("2 22 21 213 211 212 1 11", ChildWindowIDsAsString(parent.get()));
 }
 
+// Tests that windows can be stacked above windows with a NULL layer delegate.
+// Windows have a NULL layer delegate when they are in the process of closing.
+// See crbug.com/443433
+TEST_F(TransientWindowStackingClientTest,
+       StackAboveWindowWithNULLLayerDelegate) {
+  scoped_ptr<Window> parent(CreateTestWindowWithId(0, root_window()));
+  scoped_ptr<Window> w1(CreateTestWindowWithId(1, parent.get()));
+  scoped_ptr<Window> w2(CreateTestWindowWithId(2, parent.get()));
+  w2->layer()->set_delegate(NULL);
+  EXPECT_EQ(w2.get(), parent->children().back());
+
+  parent->StackChildAbove(w1.get(), w2.get());
+  EXPECT_EQ(w1.get(), parent->children().back());
+}
+
 }  // namespace wm

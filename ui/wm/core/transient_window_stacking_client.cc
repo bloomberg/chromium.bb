@@ -94,12 +94,6 @@ bool TransientWindowStackingClient::AdjustStacking(
     *target = siblings[target_i];
   }
 
-  // If we couldn't find a valid target position, don't move anything.
-  if (*direction == Window::STACK_ABOVE &&
-      ((*target)->layer() && (*target)->layer()->delegate() == NULL)) {
-    return false;
-  }
-
   return *child != *target;
 }
 
