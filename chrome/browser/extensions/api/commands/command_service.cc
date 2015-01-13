@@ -308,7 +308,10 @@ void CommandService::OnExtensionWillBeInstalled(
     bool is_update,
     bool from_ephemeral,
     const std::string& old_name) {
-  UpdateKeybindings(extension);
+  // Component extensions don't generate normal install and uninstall events so
+  // those are handled in OnExtensionLoaded.
+  if (extension->location() != Manifest::COMPONENT)
+    UpdateKeybindings(extension);
 }
 
 void CommandService::OnExtensionUninstalled(
@@ -316,6 +319,12 @@ void CommandService::OnExtensionUninstalled(
     const Extension* extension,
     extensions::UninstallReason reason) {
   RemoveKeybindingPrefs(extension->id(), std::string());
+}
+
+void CommandService::OnExtensionLoaded(content::BrowserContext* browser_context,
+                                       const Extension* extension) {
+  if (extension->location() == Manifest::COMPONENT)
+    UpdateKeybindings(extension);
 }
 
 void CommandService::UpdateKeybindingPrefs(const std::string& extension_id,

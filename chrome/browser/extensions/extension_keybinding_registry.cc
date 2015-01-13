@@ -197,10 +197,17 @@ void ExtensionKeybindingRegistry::Observe(
         return;
 
       if (ExtensionMatchesFilter(extension)) {
-        if (type == extensions::NOTIFICATION_EXTENSION_COMMAND_ADDED)
+        if (type == extensions::NOTIFICATION_EXTENSION_COMMAND_ADDED) {
+          // Component extensions triggers OnExtensionLoaded for extension
+          // installs as well as loads. This can cause adding of multiple key
+          // targets.
+          if (extension->location() == Manifest::COMPONENT)
+            return;
+
           AddExtensionKeybindings(extension, payload->command_name);
-        else
+        } else {
           RemoveExtensionKeybinding(extension, payload->command_name);
+        }
       }
       break;
     }
