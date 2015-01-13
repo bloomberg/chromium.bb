@@ -312,6 +312,9 @@ char kTSanDefaultSuppressions[] =
 // https://crbug.com/430533
 "race:TileTaskGraphRunner::Run\n"
 
+// https://crbug.com/448203
+"race:blink::RemoteFrame::detach\n"
+
 // End of suppressions.
 ;  // Please keep this semicolon.
 
