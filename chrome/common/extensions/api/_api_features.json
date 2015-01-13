@@ -240,15 +240,19 @@
     "dependencies": ["permission:developerPrivate"],
     "contexts": ["blessed_extension"]
   },
+  // All devtools APIs are implemented by hand, so don't compile them.
   "devtools.inspectedWindow": {
+    "nocompile": true,
     "dependencies": ["manifest:devtools_page"],
     "contexts": ["blessed_extension"]
   },
   "devtools.network": {
+    "nocompile": true,
     "dependencies": ["manifest:devtools_page"],
     "contexts": ["blessed_extension"]
   },
   "devtools.panels": {
+    "nocompile": true,
     "dependencies": ["manifest:devtools_page"],
     "contexts": ["blessed_extension"]
   },

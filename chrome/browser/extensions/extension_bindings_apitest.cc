@@ -85,5 +85,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionBindingsApiTest, EventOverriding) {
   ASSERT_TRUE(RunExtensionTest("bindings/event_overriding")) << message_;
 }
 
+// Tests the effectiveness of the 'nocompile' feature file property.
+// Regression test for http://crbug.com/356133.
+IN_PROC_BROWSER_TEST_F(ExtensionBindingsApiTest, Nocompile) {
+  ASSERT_TRUE(RunExtensionSubtest("bindings/nocompile", "page.html"))
+      << message_;
+}
+
 }  // namespace
 }  // namespace extensions
