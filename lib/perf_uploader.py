@@ -30,6 +30,9 @@ from chromite.lib import osutils
 from chromite.lib import retry_util
 
 
+# Clearly mark perf values coming from chromite by default.
+_DEFAULT_TEST_PREFIX = 'cbuildbot.'
+_DEFAULT_PLATFORM_PREFIX = 'cros-'
 _ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 _PRESENTATION_CONFIG_FILE = os.path.join(_ROOT_DIR,
                                          'perf_dashboard_config.json')
@@ -222,7 +225,7 @@ def _GetPresentationInfo(test_name):
 
 
 def _FormatForUpload(perf_data, platform_name, cros_version, chrome_version,
-                     presentation_info):
+                     presentation_info, test_prefix=None, platform_prefix=None):
   """Formats perf data suitably to upload to the perf dashboard.
 
   The perf dashboard expects perf data to be uploaded as a
@@ -242,11 +245,20 @@ def _FormatForUpload(perf_data, platform_name, cros_version, chrome_version,
     perf_data: A dictionary of measured perf data. This is keyed by
       (description, graph name) tuple.
     presentation_info: A PresentationInfo object of the given test.
+    test_prefix: Arbitrary string to automatically prefix to the test name.
+      If None, then 'cbuildbot.' is used to guarantee namespacing.
+    platform_prefix: Arbitrary string to automatically prefix to
+      |platform_name|. If None, then 'cros-' is used to guarantee namespacing.
 
   Returns:
     A dictionary containing the formatted information ready to upload
       to the performance dashboard.
   """
+  if test_prefix is None:
+    test_prefix = _DEFAULT_TEST_PREFIX
+  if platform_prefix is None:
+    platform_prefix = _DEFAULT_PLATFORM_PREFIX
+
   dash_entries = []
   for (desc, graph), data in perf_data.iteritems():
     # Each perf metric is named by a path that encodes the test name,
@@ -254,15 +266,15 @@ def _FormatForUpload(perf_data, platform_name, cros_version, chrome_version,
     # according to rules set by the Chrome team, as implemented in:
     # chromium/tools/build/scripts/slave/results_dashboard.py.
     desc = desc.replace('/', '_')
+    test_name = test_prefix + presentation_info.test_name
+    test_parts = [test_name, desc]
     if graph:
-      test_path = 'cbuildbot.%s/%s/%s' % (presentation_info.test_name,
-                                          graph, desc)
-    else:
-      test_path = 'cbuildbot.%s/%s' % (presentation_info.test_name, desc)
+      test_parts.insert(1, graph)
+    test_path = '/'.join(test_parts)
 
     new_dash_entry = {
         'master': presentation_info.master_name,
-        'bot': 'cros-' + platform_name,  # Prefix to clarify it's chromeOS.
+        'bot': platform_prefix + platform_name,
         'test': test_path,
         'value': data['value'],
         'error': data['stddev'],
@@ -308,7 +320,8 @@ def _SendToDashboard(data_obj, dashboard=DASHBOARD_URL):
 
 
 def UploadPerfValues(perf_values, platform_name, cros_version, chrome_version,
-                     test_name, dashboard=DASHBOARD_URL, dry_run=False):
+                     test_name, dashboard=DASHBOARD_URL, master_name=None,
+                     test_prefix=None, platform_prefix=None, dry_run=False):
   """Uploads any perf data associated with a test to the perf dashboard.
 
   Args:
@@ -319,6 +332,12 @@ def UploadPerfValues(perf_values, platform_name, cros_version, chrome_version,
     chrome_version: A string identifying Chrome OS version e.g. '38.0.2091.2'.
     test_name: A string identifying the test
     dashboard: The dashboard to upload data to.
+    master_name: The "master" field to use; by default it is looked up in the
+      perf_dashboard_config.json database.
+    test_prefix: Arbitrary string to automatically prefix to the test name.
+      If None, then 'cbuildbot.' is used to guarantee namespacing.
+    platform_prefix: Arbitrary string to automatically prefix to
+      |platform_name|. If None, then 'cros-' is used to guarantee namespacing.
     dry_run: Do everything but upload the data to the server.
   """
   if not perf_values:
@@ -339,10 +358,15 @@ def UploadPerfValues(perf_values, platform_name, cros_version, chrome_version,
   # number *without* the milestone attached.
   cros_version = chrome_version[:chrome_version.find('.') + 1] + cros_version
   try:
-    presentation_info = _GetPresentationInfo(test_name)
+    if master_name is None:
+      presentation_info = _GetPresentationInfo(test_name)
+    else:
+      presentation_info = PresentationInfo(master_name, test_name)
     formatted_data = _FormatForUpload(perf_data, platform_name,
                                       cros_version, chrome_version,
-                                      presentation_info)
+                                      presentation_info,
+                                      test_prefix=test_prefix,
+                                      platform_prefix=platform_prefix)
     if dry_run:
       logging.debug('UploadPerfValues: skipping upload due to dry-run')
     else:
