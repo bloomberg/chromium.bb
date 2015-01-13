@@ -1324,6 +1324,7 @@ crbug.com/399507 inspector/tracing/update-layer-tree.html [ Failure Pass ]
 crbug.com/399507 virtual/deferred/inspector/tracing/update-layer-tree.html [ Failure Pass ]
 crbug.com/407915 inspector/tracing/timeline-event-dispatch.html [ Failure Pass ]
 crbug.com/407915 virtual/deferred/inspector/tracing/timeline-event-dispatch.html [ Failure Pass ]
+crbug.com/448440 [ Mac Linux ] virtual/deferred/inspector/tracing/timeline-script-tag-1.html [ Failure Pass ]
 
 crbug.com/407993 [ Win ] media/encrypted-media/prefixed/encrypted-media-events.html [ Crash Pass ]
 # Will be converted to requestMediaKeySystemAccess() tests.
@@ -1515,6 +1516,7 @@ crbug.com/447085 [ XP ] virtual/slimmingpaint/fast/borders/border-image-rotate-t
 crbug.com/447085 [ XP ] virtual/slimmingpaint/fast/borders/table-borders.html [ ImageOnlyFailure ]
 crbug.com/447085 [ XP ] virtual/slimmingpaint/fast/css/resize-corner-tracking-transformed-iframe.html [ ImageOnlyFailure ]
 crbug.com/447085 [ XP ] virtual/slimmingpaint/fast/css/resize-corner-tracking-transformed.html [ ImageOnlyFailure ]
+crbug.com/448442 [ XP ] virtual/slimmingpaint/fast/borders/border-image-side-reduction.html [ ImageOnlyFailure ]
 
 crbug.com/431152 inspector/audits/audits-panel-functional.html [ Pass Failure ]
 crbug.com/435864 http/tests/security/shape-image-cors-port.html [ Pass Crash ]
