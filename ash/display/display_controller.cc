@@ -153,6 +153,10 @@ void SetDisplayPropertiesOnHost(AshWindowTreeHost* ash_host,
         base::TimeDelta::FromMicroseconds(
             base::Time::kMicrosecondsPerSecond / mode.refresh_rate));
   }
+
+  // Just movnig the display requires the full redraw.
+  // chrome-os-partner:33558.
+  host->compositor()->ScheduleFullRedraw();
 }
 
 void ClearDisplayPropertiesOnHost(AshWindowTreeHost* ash_host,
