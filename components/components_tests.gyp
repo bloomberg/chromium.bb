@@ -195,6 +195,8 @@
             'password_manager/core/browser/affiliation_fetcher_unittest.cc',
             'password_manager/core/browser/affiliation_utils_unittest.cc',
             'password_manager/core/browser/browser_save_password_progress_logger_unittest.cc',
+            'password_manager/core/browser/export/csv_writer_unittest.cc',
+            'password_manager/core/browser/import/csv_reader_unittest.cc',
             'password_manager/core/browser/log_router_unittest.cc',
             'password_manager/core/browser/login_database_unittest.cc',
             'password_manager/core/browser/password_autofill_manager_unittest.cc',
