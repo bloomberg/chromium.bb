@@ -89,7 +89,7 @@ const int kAppTextFieldHeight = 22;
 const int kBookmarkAppBubbleViewWidth = 200;
 const int kBookmarkAppBubbleViewHeight = 46;
 
-const int kIconPreviewTargetSize = 64;
+const int kIconPreviewTargetSize = 128;
 
 }  // namespace
 
@@ -545,11 +545,14 @@ void BrowserWindowCocoa::ShowBookmarkAppBubble(
   // Find the image with target size.
   // Assumes that the icons are sorted in ascending order of size.
   if (!web_app_info.icons.empty()) {
-    const WebApplicationInfo::IconInfo& info = web_app_info.icons.back();
-    gfx::Image icon_image = gfx::Image::CreateFrom1xBitmap(info.data);
-    [icon_image.ToNSImage()
-        setSize:NSMakeSize(kIconPreviewTargetSize, kIconPreviewTargetSize)];
-    [alert setIcon:icon_image.ToNSImage()];
+    for (const WebApplicationInfo::IconInfo& info : web_app_info.icons) {
+      if (info.width == kIconPreviewTargetSize &&
+          info.height == kIconPreviewTargetSize) {
+        gfx::Image icon_image = gfx::Image::CreateFrom1xBitmap(info.data);
+        [alert setIcon:icon_image.ToNSImage()];
+        break;
+      }
+    }
   }
 
   ExtensionService* service =
