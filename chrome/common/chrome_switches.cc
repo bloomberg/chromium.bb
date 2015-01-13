@@ -1361,7 +1361,7 @@ bool OutOfProcessPdfEnabled() {
     return false;
 
   // Default.
-  return false;
+  return true;
 }
 
 bool PdfMaterialUIEnabled() {
