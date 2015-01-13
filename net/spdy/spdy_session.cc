@@ -2720,12 +2720,12 @@ bool SpdySession::TryCreatePushStream(SpdyStreamId stream_id,
 
   last_compressed_frame_len_ = 0;
 
-  DeleteExpiredPushedStreams();
   PushedStreamMap::iterator inserted_pushed_it =
       unclaimed_pushed_streams_.insert(
           pushed_it,
           std::make_pair(gurl, PushedStreamInfo(stream_id, time_func_())));
   DCHECK(inserted_pushed_it != pushed_it);
+  DeleteExpiredPushedStreams();
 
   InsertActivatedStream(stream.Pass());
 

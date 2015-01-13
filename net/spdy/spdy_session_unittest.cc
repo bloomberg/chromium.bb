@@ -1194,8 +1194,10 @@ TEST_P(SpdySessionTest, DeleteExpiredPushStreams) {
       NULL, 0, 2, 1, "http://www.google.com/a.dat"));
   scoped_ptr<SpdyFrame> push_a_body(
       spdy_util_.ConstructSpdyBodyFrame(2, false));
+  // In ascii "0" < "a". We use it to verify that we properly handle std::map
+  // iterators inside. See http://crbug.com/443490
   scoped_ptr<SpdyFrame> push_b(spdy_util_.ConstructSpdyPush(
-      NULL, 0, 4, 1, "http://www.google.com/b.dat"));
+      NULL, 0, 4, 1, "http://www.google.com/0.dat"));
   MockWrite writes[] = {CreateMockWrite(*req, 0), CreateMockWrite(*rst, 4)};
   MockRead reads[] = {
       CreateMockRead(*push_a, 1), CreateMockRead(*push_a_body, 2),
@@ -1248,7 +1250,7 @@ TEST_P(SpdySessionTest, DeleteExpiredPushStreams) {
   // Verify that the second pushed stream evicted the first pushed stream.
   EXPECT_EQ(1u, session->num_unclaimed_pushed_streams());
   iter = session->unclaimed_pushed_streams_.find(
-      GURL("http://www.google.com/b.dat"));
+      GURL("http://www.google.com/0.dat"));
   EXPECT_TRUE(session->unclaimed_pushed_streams_.end() != iter);
 
   if (session->flow_control_state_ ==
