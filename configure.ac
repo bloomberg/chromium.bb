@@ -98,6 +98,11 @@ AC_ARG_ENABLE(freedreno-experimental-api,
 	      [Enable support for freedreno's experimental API (default: disabled)]),
 	      [FREEDRENO=$enableval], [FREEDRENO=no])
 
+AC_ARG_ENABLE(freedreno-kgsl,
+	      AS_HELP_STRING([--enable-freedreno-kgsl],
+	      [Enable support for freedreno's to use downstream android kernel API (default: disabled)]),
+	      [FREEDRENO_KGSL=$enableval], [FREEDRENO_KGSL=no])
+
 AC_ARG_ENABLE(tegra-experimental-api,
 	      AS_HELP_STRING([--enable-tegra-experimental-api],
 	      [Enable support for Tegra's experimental API (default: disabled)]),
@@ -304,6 +309,11 @@ if test "x$FREEDRENO" = xyes; then
 	AC_DEFINE(HAVE_FREEDRENO, 1, [Have freedreno support])
 fi
 
+AM_CONDITIONAL(HAVE_FREEDRENO_KGSL, [test "x$FREEDRENO_KGSL" = xyes])
+if test "x$FREEDRENO_KGSL" = xyes; then
+	AC_DEFINE(HAVE_FREEDRENO_KGSL, 1, [Have freedreno support for KGSL kernel interface])
+fi
+
 AM_CONDITIONAL(HAVE_RADEON, [test "x$RADEON" = xyes])
 if test "x$RADEON" = xyes; then
 	AC_DEFINE(HAVE_RADEON, 1, [Have radeon support])
@@ -438,6 +448,6 @@ echo "  Radeon API     $RADEON"
 echo "  Nouveau API    $NOUVEAU"
 echo "  OMAP API       $OMAP"
 echo "  EXYNOS API     $EXYNOS"
-echo "  Freedreno API  $FREEDRENO"
+echo "  Freedreno API  $FREEDRENO (kgsl: $FREEDRENO_KGSL)"
 echo "  Tegra API      $TEGRA"
 echo ""

@@ -15,6 +15,9 @@ libdrm_freedreno_la_LDFLAGS = -version-number 1:0:0 -no-undefined
 libdrm_freedreno_la_LIBADD = ../libdrm.la @PTHREADSTUBS_LIBS@
 
 libdrm_freedreno_la_SOURCES = $(LIBDRM_FREEDRENO_FILES)
+if HAVE_FREEDRENO_KGSL
+libdrm_freedreno_la_SOURCES += $(LIBDRM_FREEDRENO_KGSL_FILES)
+endif
 
 libdrm_freedrenocommonincludedir = ${includedir}/freedreno
 libdrm_freedrenocommoninclude_HEADERS = $(LIBDRM_FREEDRENO_H_FILES)

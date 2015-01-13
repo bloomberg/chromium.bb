@@ -92,12 +92,14 @@ drm_public struct fd_device * fd_device_new(int fd)
 		return NULL;
 	}
 
-	if (!strcmp(version->name, "kgsl")) {
-		DEBUG_MSG("kgsl DRM device");
-		dev = kgsl_device_new(fd);
-	} else if (!strcmp(version->name, "msm")) {
+	if (!strcmp(version->name, "msm")) {
 		DEBUG_MSG("msm DRM device");
 		dev = msm_device_new(fd);
+#ifdef HAVE_FREEDRENO_KGSL
+	} else if (!strcmp(version->name, "kgsl")) {
+		DEBUG_MSG("kgsl DRM device");
+		dev = kgsl_device_new(fd);
+#endif
 	} else {
 		ERROR_MSG("unknown device: %s", version->name);
 		dev = NULL;
