@@ -201,7 +201,6 @@ extern const char kHideIcons[];
 extern const char kHistoryEnableGroupByDomain[];
 extern const char kHomePage[];
 extern const char kHostRules[];
-extern const char kHostResolverParallelism[];
 extern const char kHostResolverRetryAttempts[];
 extern const char kIgnoreUrlFetcherCertRequests[];
 extern const char kIncognito[];

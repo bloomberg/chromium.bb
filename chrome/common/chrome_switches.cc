@@ -711,11 +711,6 @@ const char kHomePage[]                      = "homepage";
 // proxy connection, and the endpoint host in a SOCKS proxy connection).
 const char kHostRules[]                     = "host-rules";
 
-// The maximum number of concurrent host resolve requests (i.e. DNS) to allow
-// (not counting backup attempts which would also consume threads).
-// --host-resolver-retry-attempts must be set to zero for this to be exact.
-const char kHostResolverParallelism[]       = "host-resolver-parallelism";
-
 // The maximum number of retry attempts to resolve the host. Set this to zero
 // to disable host resolver retry attempts.
 const char kHostResolverRetryAttempts[]     = "host-resolver-retry-attempts";
