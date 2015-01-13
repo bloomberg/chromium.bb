@@ -22,7 +22,7 @@ var ws = new WebSocket(url);
 
 ws.onopen = function()
 {
-    debug("FAIL: Connected");
+    testFailed("Unexpectedly Connected.");
 };
 
 ws.onmessage = function(messageEvent)
@@ -34,6 +34,11 @@ ws.onmessage = function(messageEvent)
 ws.onclose = function()
 {
     endTest();
+};
+
+ws.onerror = function(errorEvent)
+{
+    testPassed("onerror() was called");
 };
 
 function timeOutCallback()

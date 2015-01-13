@@ -45,6 +45,11 @@ function doTest(index)
         else
             doTest(index + 1);
     };
+
+    ws.onerror = function(errorEvent)
+    {
+        testPassed("onerror() was called");
+    };
 }
 
 doTest(0);

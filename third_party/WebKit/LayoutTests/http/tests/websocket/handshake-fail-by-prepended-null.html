@@ -44,6 +44,11 @@ ws.onclose = function()
     endTest();
 }
 
+ws.onerror = function(errorEvent)
+{
+    testPassed("onerror() was called");
+}
+
 function timeoutCallback()
 {
     debug('Timed out (state = ' + ws.readyState + ')');

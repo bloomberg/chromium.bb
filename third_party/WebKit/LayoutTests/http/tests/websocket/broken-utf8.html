@@ -19,6 +19,11 @@ ws.onopen = function()
     debug("onopen() was called.");
 };
 
+ws.onerror = function(event)
+{
+    debug("onerror() was called.");
+};
+
 ws.onmessage = function(event)
 {
     var message = event.data;

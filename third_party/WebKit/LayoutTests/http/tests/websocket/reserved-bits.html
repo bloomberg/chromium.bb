@@ -47,6 +47,11 @@ function doTest(curTestIndex)
         else
             doTest(curTestIndex + 1);
     };
+
+    ws.onerror = function(errorEvent)
+    {
+        testPassed("onerror() was called");
+    };
 }
 
 doTest(0);

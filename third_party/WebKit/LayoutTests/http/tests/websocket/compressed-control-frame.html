@@ -33,6 +33,11 @@ ws.onclose = function(event)
     finishJSTest();
 };
 
+ws.onerror = function(error)
+{
+    testPassed("onerror() was called");
+};
+
 </script>
 </body>
 </html>

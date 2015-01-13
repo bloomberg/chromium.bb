@@ -1,4 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<!DOCTYPE HTML>
 <html>
 <head>
 <script src="/js-test-resources/js-test.js"></script>
@@ -34,6 +34,11 @@ ws.onclose = function()
     debug("Closed.");
     shouldBe("ws.readyState", "3")
     endTest();
+};
+
+ws.onerror = function(errorEvent)
+{
+    testPassed("onerror() was called");
 };
 
 function timeOutCallback()

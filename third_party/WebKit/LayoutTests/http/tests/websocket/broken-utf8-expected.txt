@@ -4,6 +4,7 @@ Test whether WebSocket aborts the connection when it receives a text frame conta
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 onopen() was called.
+onerror() was called.
 onclose() was called.
 PASS closeEvent.wasClean is false
 PASS successfullyParsed is true

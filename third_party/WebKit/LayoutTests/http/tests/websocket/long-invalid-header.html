@@ -24,6 +24,10 @@ ws.onclose = function () {
     debug("WebSocket is closed");
     finish();
 };
+ws.onerror = function(errorEvent)
+{
+    testPassed("onerror() was called");
+};
 var timeoutID = setTimeout("finish()", 2000);
 
 </script>

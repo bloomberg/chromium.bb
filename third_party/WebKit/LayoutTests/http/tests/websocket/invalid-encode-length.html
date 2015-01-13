@@ -43,6 +43,11 @@ function doTest(curTest)
         else
             doTest(curTest + 1);
     };
+
+    ws.onerror = function(errorEvent)
+    {
+        testPassed("onerror() was called");
+    };
 }
 
 doTest(0);

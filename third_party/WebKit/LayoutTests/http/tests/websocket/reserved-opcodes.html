@@ -47,6 +47,11 @@ function doTest(opcode)
         shouldBeFalse("closeEvent.wasClean");
         doTest(opcode + 1);
     };
+
+    ws.onerror = function(errorEvent)
+    {
+        testPassed("onerror() was called");
+    };
 }
 
 doTest(0);
