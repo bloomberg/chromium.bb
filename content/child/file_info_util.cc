@@ -24,6 +24,7 @@ void FileInfoToWebFileInfo(const base::File::Info& file_info,
     web_file_info->type = blink::WebFileInfo::TypeFile;
 }
 
-COMPILE_ASSERT(std::numeric_limits<double>::has_quiet_NaN, has_quiet_NaN);
+static_assert(std::numeric_limits<double>::has_quiet_NaN,
+              "should have quiet NaN");
 
 }  // namespace content

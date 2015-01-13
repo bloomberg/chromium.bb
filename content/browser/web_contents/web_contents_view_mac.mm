@@ -43,16 +43,16 @@ using content::WebContentsViewMac;
 
 // Ensure that the blink::WebDragOperation enum values stay in sync with
 // NSDragOperation constants, since the code below static_casts between 'em.
-#define COMPILE_ASSERT_MATCHING_ENUM(name) \
-  COMPILE_ASSERT(int(NS##name) == int(blink::Web##name), enum_mismatch_##name)
-COMPILE_ASSERT_MATCHING_ENUM(DragOperationNone);
-COMPILE_ASSERT_MATCHING_ENUM(DragOperationCopy);
-COMPILE_ASSERT_MATCHING_ENUM(DragOperationLink);
-COMPILE_ASSERT_MATCHING_ENUM(DragOperationGeneric);
-COMPILE_ASSERT_MATCHING_ENUM(DragOperationPrivate);
-COMPILE_ASSERT_MATCHING_ENUM(DragOperationMove);
-COMPILE_ASSERT_MATCHING_ENUM(DragOperationDelete);
-COMPILE_ASSERT_MATCHING_ENUM(DragOperationEvery);
+#define STATIC_ASSERT_MATCHING_ENUM(name) \
+  static_assert(int(NS##name) == int(blink::Web##name), "enum mismatch: " #name)
+STATIC_ASSERT_MATCHING_ENUM(DragOperationNone);
+STATIC_ASSERT_MATCHING_ENUM(DragOperationCopy);
+STATIC_ASSERT_MATCHING_ENUM(DragOperationLink);
+STATIC_ASSERT_MATCHING_ENUM(DragOperationGeneric);
+STATIC_ASSERT_MATCHING_ENUM(DragOperationPrivate);
+STATIC_ASSERT_MATCHING_ENUM(DragOperationMove);
+STATIC_ASSERT_MATCHING_ENUM(DragOperationDelete);
+STATIC_ASSERT_MATCHING_ENUM(DragOperationEvery);
 
 @interface WebContentsViewCocoa (Private)
 - (id)initWithWebContentsViewMac:(WebContentsViewMac*)w;

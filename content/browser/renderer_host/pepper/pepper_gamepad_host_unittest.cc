@@ -51,9 +51,9 @@ inline ptrdiff_t AddressDiff(const void* a, const void* b) {
 // code can see both definitions so we do the validation here.
 TEST_F(PepperGamepadHostTest, ValidateHardwareBuffersMatch) {
   // Hardware buffer.
-  COMPILE_ASSERT(sizeof(ppapi::ContentGamepadHardwareBuffer) ==
-                     sizeof(GamepadHardwareBuffer),
-                 gamepad_hardware_buffers_must_match);
+  static_assert(sizeof(ppapi::ContentGamepadHardwareBuffer) ==
+                    sizeof(GamepadHardwareBuffer),
+                "gamepad hardware buffers must match");
   ppapi::ContentGamepadHardwareBuffer ppapi_buf;
   GamepadHardwareBuffer content_buf;
   EXPECT_EQ(AddressDiff(&content_buf.sequence, &content_buf),
@@ -64,8 +64,8 @@ TEST_F(PepperGamepadHostTest, ValidateHardwareBuffersMatch) {
 
 TEST_F(PepperGamepadHostTest, ValidateGamepadsMatch) {
   // Gamepads.
-  COMPILE_ASSERT(sizeof(ppapi::WebKitGamepads) == sizeof(blink::WebGamepads),
-                 gamepads_data_must_match);
+  static_assert(sizeof(ppapi::WebKitGamepads) == sizeof(blink::WebGamepads),
+                "gamepads data must match");
   ppapi::WebKitGamepads ppapi_gamepads;
   blink::WebGamepads web_gamepads;
   EXPECT_EQ(AddressDiff(&web_gamepads.length, &web_gamepads),
@@ -84,8 +84,8 @@ TEST_F(PepperGamepadHostTest, ValidateGamepadsMatch) {
 
 TEST_F(PepperGamepadHostTest, ValidateGamepadMatch) {
   // Gamepad.
-  COMPILE_ASSERT(sizeof(ppapi::WebKitGamepad) == sizeof(blink::WebGamepad),
-                 gamepad_data_must_match);
+  static_assert(sizeof(ppapi::WebKitGamepad) == sizeof(blink::WebGamepad),
+                "gamepad data must match");
   ppapi::WebKitGamepad ppapi_gamepad;
   blink::WebGamepad web_gamepad;
 

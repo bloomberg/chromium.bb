@@ -156,8 +156,8 @@ NPError PluginGetURLTest::NewStream(NPMIMEType type, NPStream* stream,
     return NPERR_NO_ERROR;
   }
 
-  COMPILE_ASSERT(sizeof(unsigned long) <= sizeof(stream->notifyData),
-                 cast_validity_check);
+  static_assert(sizeof(unsigned long) <= sizeof(stream->notifyData),
+                 "cast validity check");
 
   if (expect_404_response_) {
     NPObject *window_obj = NULL;
@@ -242,8 +242,8 @@ int32 PluginGetURLTest::WriteReady(NPStream *stream) {
     return STREAM_CHUNK;
   }
 
-  COMPILE_ASSERT(sizeof(unsigned long) <= sizeof(stream->notifyData),
-                 cast_validity_check);
+  static_assert(sizeof(unsigned long) <= sizeof(stream->notifyData),
+                 "cast validity check");
   unsigned long stream_id = reinterpret_cast<unsigned long>(
       stream->notifyData);
   if (stream_id == BOGUS_URL_STREAM_ID)
@@ -276,8 +276,8 @@ int32 PluginGetURLTest::Write(NPStream *stream, int32 offset, int32 len,
     return -1;
   }
 
-  COMPILE_ASSERT(sizeof(unsigned long) <= sizeof(stream->notifyData),
-                 cast_validity_check);
+  static_assert(sizeof(unsigned long) <= sizeof(stream->notifyData),
+                 "cast validity check");
   unsigned long stream_id = reinterpret_cast<unsigned long>(
       stream->notifyData);
   switch (stream_id) {
@@ -321,8 +321,8 @@ NPError PluginGetURLTest::DestroyStream(NPStream *stream, NPError reason) {
     return NPERR_INVALID_PARAM;
   }
 
-  COMPILE_ASSERT(sizeof(unsigned long) <= sizeof(stream->notifyData),
-                 cast_validity_check);
+  static_assert(sizeof(unsigned long) <= sizeof(stream->notifyData),
+                 "cast validity check");
 
   if (expect_404_response_) {
     if (npn_evaluate_context_) {
@@ -372,8 +372,8 @@ void PluginGetURLTest::StreamAsFile(NPStream* stream, const char* fname) {
     return;
   }
 
-  COMPILE_ASSERT(sizeof(unsigned long) <= sizeof(stream->notifyData),
-                 cast_validity_check);
+  static_assert(sizeof(unsigned long) <= sizeof(stream->notifyData),
+                 "cast validity check");
   unsigned long stream_id =
       reinterpret_cast<unsigned long>(stream->notifyData);
   switch (stream_id) {
@@ -400,7 +400,7 @@ void PluginGetURLTest::URLNotify(const char* url, NPReason reason, void* data) {
   if (check_cookies_)
     return;
 
-  COMPILE_ASSERT(sizeof(unsigned long) <= sizeof(data), cast_validity_check);
+  static_assert(sizeof(unsigned long) <= sizeof(data), "cast validity check");
   unsigned long stream_id = reinterpret_cast<unsigned long>(data);
   switch (stream_id) {
     case SELF_URL_STREAM_ID:

@@ -13,7 +13,7 @@ const int kSampleRate = 8000;  // 8 k samples per second for AMR encoding.
 // At 8 sample per second a 20 ms frame is 160 samples, which corrsponds
 // to the AMR codec.
 const int kFrameSize = kSampleRate / kFrameRate;  // 160 samples.
-COMPILE_ASSERT(kFrameSize == 160, invalid_frame_size);
+static_assert(kFrameSize == 160, "invalid frame size");
 }
 
 namespace content {

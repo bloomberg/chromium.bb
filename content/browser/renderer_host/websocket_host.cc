@@ -40,15 +40,15 @@ net::WebSocketFrameHeader::OpCode MessageTypeToOpCode(
   typedef net::WebSocketFrameHeader::OpCode OpCode;
   // These compile asserts verify that the same underlying values are used for
   // both types, so we can simply cast between them.
-  COMPILE_ASSERT(static_cast<OpCode>(WEB_SOCKET_MESSAGE_TYPE_CONTINUATION) ==
-                     net::WebSocketFrameHeader::kOpCodeContinuation,
-                 enum_values_must_match_for_opcode_continuation);
-  COMPILE_ASSERT(static_cast<OpCode>(WEB_SOCKET_MESSAGE_TYPE_TEXT) ==
-                     net::WebSocketFrameHeader::kOpCodeText,
-                 enum_values_must_match_for_opcode_text);
-  COMPILE_ASSERT(static_cast<OpCode>(WEB_SOCKET_MESSAGE_TYPE_BINARY) ==
-                     net::WebSocketFrameHeader::kOpCodeBinary,
-                 enum_values_must_match_for_opcode_binary);
+  static_assert(static_cast<OpCode>(WEB_SOCKET_MESSAGE_TYPE_CONTINUATION) ==
+                    net::WebSocketFrameHeader::kOpCodeContinuation,
+                "enum values must match for opcode continuation");
+  static_assert(static_cast<OpCode>(WEB_SOCKET_MESSAGE_TYPE_TEXT) ==
+                    net::WebSocketFrameHeader::kOpCodeText,
+                "enum values must match for opcode text");
+  static_assert(static_cast<OpCode>(WEB_SOCKET_MESSAGE_TYPE_BINARY) ==
+                    net::WebSocketFrameHeader::kOpCodeBinary,
+                "enum values must match for opcode binary");
   return static_cast<OpCode>(type);
 }
 
@@ -57,7 +57,7 @@ WebSocketMessageType OpCodeToMessageType(
   DCHECK(opCode == net::WebSocketFrameHeader::kOpCodeContinuation ||
          opCode == net::WebSocketFrameHeader::kOpCodeText ||
          opCode == net::WebSocketFrameHeader::kOpCodeBinary);
-  // This cast is guaranteed valid by the COMPILE_ASSERT() statements above.
+  // This cast is guaranteed valid by the static_assert() statements above.
   return static_cast<WebSocketMessageType>(opCode);
 }
 
@@ -71,12 +71,12 @@ ChannelState StateCast(WebSocketDispatcherHost::WebSocketHostState host_state) {
          host_state == WEBSOCKET_HOST_DELETED);
   // These compile asserts verify that we can get away with using static_cast<>
   // for the conversion.
-  COMPILE_ASSERT(static_cast<ChannelState>(WEBSOCKET_HOST_ALIVE) ==
-                     net::WebSocketEventInterface::CHANNEL_ALIVE,
-                 enum_values_must_match_for_state_alive);
-  COMPILE_ASSERT(static_cast<ChannelState>(WEBSOCKET_HOST_DELETED) ==
-                     net::WebSocketEventInterface::CHANNEL_DELETED,
-                 enum_values_must_match_for_state_deleted);
+  static_assert(static_cast<ChannelState>(WEBSOCKET_HOST_ALIVE) ==
+                    net::WebSocketEventInterface::CHANNEL_ALIVE,
+                "enum values must match for state_alive");
+  static_assert(static_cast<ChannelState>(WEBSOCKET_HOST_DELETED) ==
+                    net::WebSocketEventInterface::CHANNEL_DELETED,
+                "enum values must match for state_deleted");
   return static_cast<ChannelState>(host_state);
 }
 

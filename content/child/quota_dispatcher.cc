@@ -175,18 +175,18 @@ void QuotaDispatcher::DidFail(
   pending_quota_callbacks_.Remove(request_id);
 }
 
-COMPILE_ASSERT(int(blink::WebStorageQuotaTypeTemporary) ==
-                   int(storage::kStorageTypeTemporary),
-               mismatching_enums);
-COMPILE_ASSERT(int(blink::WebStorageQuotaTypePersistent) ==
-                   int(storage::kStorageTypePersistent),
-               mismatching_enums);
+static_assert(int(blink::WebStorageQuotaTypeTemporary) ==
+                  int(storage::kStorageTypeTemporary),
+              "mismatching enums: kStorageTypeTemporary");
+static_assert(int(blink::WebStorageQuotaTypePersistent) ==
+                  int(storage::kStorageTypePersistent),
+              "mismatching enums: kStorageTypePersistent");
 
-COMPILE_ASSERT(int(blink::WebStorageQuotaErrorNotSupported) ==
-                   int(storage::kQuotaErrorNotSupported),
-               mismatching_enums);
-COMPILE_ASSERT(int(blink::WebStorageQuotaErrorAbort) ==
-                   int(storage::kQuotaErrorAbort),
-               mismatching_enums);
+static_assert(int(blink::WebStorageQuotaErrorNotSupported) ==
+                  int(storage::kQuotaErrorNotSupported),
+              "mismatching enums: kQuotaErrorNotSupported");
+static_assert(int(blink::WebStorageQuotaErrorAbort) ==
+                  int(storage::kQuotaErrorAbort),
+              "mismatching enums: kQuotaErrorAbort");
 
 }  // namespace content

@@ -389,7 +389,7 @@ uint64 MediaStreamTrackMetrics::MakeUniqueIdImpl(uint64 pc_id,
   base::MD5Digest digest;
   base::MD5Final(&digest, &ctx);
 
-  COMPILE_ASSERT(sizeof(digest.a) > sizeof(uint64), NeedBiggerDigest);
+  static_assert(sizeof(digest.a) > sizeof(uint64), "need a bigger digest");
   return *reinterpret_cast<uint64*>(digest.a);
 }
 

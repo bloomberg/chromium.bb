@@ -193,8 +193,8 @@ int64 IndexedDBDispatcherHost::HostTransactionId(int64 transaction_id) {
   // transaction_id are guaranteed to be unique within that renderer.
   base::ProcessId pid = peer_pid();
   DCHECK(!(transaction_id >> 32)) << "Transaction ids can only be 32 bits";
-  COMPILE_ASSERT(sizeof(base::ProcessId) <= sizeof(int32),
-                 Process_ID_must_fit_in_32_bits);
+  static_assert(sizeof(base::ProcessId) <= sizeof(int32),
+                "Process ID must fit in 32 bits");
 
   return transaction_id | (static_cast<uint64>(pid) << 32);
 }

@@ -126,7 +126,7 @@ ${methods}\
   }
 
   scoped_ptr<base::DictionaryValue> ToValue() {
-    COMPILE_ASSERT(MASK == kAllSet, required_properties_missing);
+    static_assert(MASK == kAllSet, "required properties missing");
     return make_scoped_ptr(dict_->DeepCopy());
   }
 
@@ -137,7 +137,7 @@ ${methods}\
   }
 
   template<class T> T* ThisAs() {
-    COMPILE_ASSERT(sizeof(*this) == sizeof(T), cannot_cast);
+    static_assert(sizeof(*this) == sizeof(T), "cannot cast");
     return reinterpret_cast<T*>(this);
   }
 
@@ -152,7 +152,7 @@ typedef ${declared_name}Builder<0> ${declared_name};
 tmpl_builder_setter_req = string.Template("""\
   scoped_refptr<${declared_name}Builder<MASK & ~k${Param}>>
   set_${param}(${pass_type} ${param}) {
-    COMPILE_ASSERT(MASK & k${Param}, already_set);
+    static_assert(MASK & k${Param}, "already set");
     dict_->Set("${proto_param}", CreateValue(${param}));
     return ThisAs<${declared_name}Builder<MASK & ~k${Param}>>();
   }

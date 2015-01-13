@@ -205,8 +205,8 @@ bool CanCoalesce(const WebTouchEvent& event_to_coalesce,
       event.touchesLength > WebTouchEvent::touchesLengthCap)
     return false;
 
-  COMPILE_ASSERT(WebTouchEvent::touchesLengthCap <= sizeof(int32_t) * 8U,
-                 suboptimal_touches_length_cap_size);
+  static_assert(WebTouchEvent::touchesLengthCap <= sizeof(int32_t) * 8U,
+                "suboptimal touchesLengthCap size");
   // Ensure that we have a 1-to-1 mapping of pointer ids between touches.
   std::bitset<WebTouchEvent::touchesLengthCap> unmatched_event_touches(
       (1 << event.touchesLength) - 1);

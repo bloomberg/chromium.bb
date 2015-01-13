@@ -168,18 +168,18 @@ int GetInfoFromDataURL(const GURL& url,
   return net::OK;
 }
 
-#define COMPILE_ASSERT_MATCHING_ENUMS(content_name, blink_name)       \
-  COMPILE_ASSERT(                                                     \
+#define STATIC_ASSERT_MATCHING_ENUMS(content_name, blink_name)       \
+  static_assert(                                                     \
       static_cast<int>(content_name) == static_cast<int>(blink_name), \
-      mismatching_enums)
+      "mismatching enums: " #content_name)
 
-COMPILE_ASSERT_MATCHING_ENUMS(FETCH_REQUEST_MODE_SAME_ORIGIN,
-                              WebURLRequest::FetchRequestModeSameOrigin);
-COMPILE_ASSERT_MATCHING_ENUMS(FETCH_REQUEST_MODE_NO_CORS,
-                              WebURLRequest::FetchRequestModeNoCORS);
-COMPILE_ASSERT_MATCHING_ENUMS(FETCH_REQUEST_MODE_CORS,
-                              WebURLRequest::FetchRequestModeCORS);
-COMPILE_ASSERT_MATCHING_ENUMS(
+STATIC_ASSERT_MATCHING_ENUMS(FETCH_REQUEST_MODE_SAME_ORIGIN,
+                             WebURLRequest::FetchRequestModeSameOrigin);
+STATIC_ASSERT_MATCHING_ENUMS(FETCH_REQUEST_MODE_NO_CORS,
+                             WebURLRequest::FetchRequestModeNoCORS);
+STATIC_ASSERT_MATCHING_ENUMS(FETCH_REQUEST_MODE_CORS,
+                             WebURLRequest::FetchRequestModeCORS);
+STATIC_ASSERT_MATCHING_ENUMS(
     FETCH_REQUEST_MODE_CORS_WITH_FORCED_PREFLIGHT,
     WebURLRequest::FetchRequestModeCORSWithForcedPreflight);
 
@@ -187,99 +187,99 @@ FetchRequestMode GetFetchRequestMode(const WebURLRequest& request) {
   return static_cast<FetchRequestMode>(request.fetchRequestMode());
 }
 
-COMPILE_ASSERT_MATCHING_ENUMS(FETCH_CREDENTIALS_MODE_OMIT,
-                              WebURLRequest::FetchCredentialsModeOmit);
-COMPILE_ASSERT_MATCHING_ENUMS(FETCH_CREDENTIALS_MODE_SAME_ORIGIN,
-                              WebURLRequest::FetchCredentialsModeSameOrigin);
-COMPILE_ASSERT_MATCHING_ENUMS(FETCH_CREDENTIALS_MODE_INCLUDE,
-                              WebURLRequest::FetchCredentialsModeInclude);
+STATIC_ASSERT_MATCHING_ENUMS(FETCH_CREDENTIALS_MODE_OMIT,
+                             WebURLRequest::FetchCredentialsModeOmit);
+STATIC_ASSERT_MATCHING_ENUMS(FETCH_CREDENTIALS_MODE_SAME_ORIGIN,
+                             WebURLRequest::FetchCredentialsModeSameOrigin);
+STATIC_ASSERT_MATCHING_ENUMS(FETCH_CREDENTIALS_MODE_INCLUDE,
+                             WebURLRequest::FetchCredentialsModeInclude);
 
 FetchCredentialsMode GetFetchCredentialsMode(const WebURLRequest& request) {
   return static_cast<FetchCredentialsMode>(request.fetchCredentialsMode());
 }
 
-COMPILE_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_FRAME_TYPE_AUXILIARY,
-                              WebURLRequest::FrameTypeAuxiliary);
-COMPILE_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_FRAME_TYPE_NESTED,
-                              WebURLRequest::FrameTypeNested);
-COMPILE_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_FRAME_TYPE_NONE,
-                              WebURLRequest::FrameTypeNone);
-COMPILE_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_FRAME_TYPE_TOP_LEVEL,
-                              WebURLRequest::FrameTypeTopLevel);
+STATIC_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_FRAME_TYPE_AUXILIARY,
+                             WebURLRequest::FrameTypeAuxiliary);
+STATIC_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_FRAME_TYPE_NESTED,
+                             WebURLRequest::FrameTypeNested);
+STATIC_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_FRAME_TYPE_NONE,
+                             WebURLRequest::FrameTypeNone);
+STATIC_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_FRAME_TYPE_TOP_LEVEL,
+                             WebURLRequest::FrameTypeTopLevel);
 
 RequestContextFrameType GetRequestContextFrameType(
     const WebURLRequest& request) {
   return static_cast<RequestContextFrameType>(request.frameType());
 }
 
-COMPILE_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_UNSPECIFIED,
-                              WebURLRequest::RequestContextUnspecified);
-COMPILE_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_AUDIO,
-                              WebURLRequest::RequestContextAudio);
-COMPILE_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_BEACON,
-                              WebURLRequest::RequestContextBeacon);
-COMPILE_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_CSP_REPORT,
-                              WebURLRequest::RequestContextCSPReport);
-COMPILE_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_DOWNLOAD,
-                              WebURLRequest::RequestContextDownload);
-COMPILE_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_EMBED,
-                              WebURLRequest::RequestContextEmbed);
-COMPILE_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_EVENT_SOURCE,
-                              WebURLRequest::RequestContextEventSource);
-COMPILE_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_FAVICON,
-                              WebURLRequest::RequestContextFavicon);
-COMPILE_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_FETCH,
-                              WebURLRequest::RequestContextFetch);
-COMPILE_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_FONT,
-                              WebURLRequest::RequestContextFont);
-COMPILE_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_FORM,
-                              WebURLRequest::RequestContextForm);
-COMPILE_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_FRAME,
-                              WebURLRequest::RequestContextFrame);
-COMPILE_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_HYPERLINK,
-                              WebURLRequest::RequestContextHyperlink);
-COMPILE_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_IFRAME,
-                              WebURLRequest::RequestContextIframe);
-COMPILE_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_IMAGE,
-                              WebURLRequest::RequestContextImage);
-COMPILE_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_IMAGE_SET,
-                              WebURLRequest::RequestContextImageSet);
-COMPILE_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_IMPORT,
-                              WebURLRequest::RequestContextImport);
-COMPILE_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_INTERNAL,
-                              WebURLRequest::RequestContextInternal);
-COMPILE_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_LOCATION,
-                              WebURLRequest::RequestContextLocation);
-COMPILE_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_MANIFEST,
-                              WebURLRequest::RequestContextManifest);
-COMPILE_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_OBJECT,
-                              WebURLRequest::RequestContextObject);
-COMPILE_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_PING,
-                              WebURLRequest::RequestContextPing);
-COMPILE_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_PLUGIN,
-                              WebURLRequest::RequestContextPlugin);
-COMPILE_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_PREFETCH,
-                              WebURLRequest::RequestContextPrefetch);
-COMPILE_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_SCRIPT,
-                              WebURLRequest::RequestContextScript);
-COMPILE_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_SERVICE_WORKER,
-                              WebURLRequest::RequestContextServiceWorker);
-COMPILE_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_SHARED_WORKER,
-                              WebURLRequest::RequestContextSharedWorker);
-COMPILE_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_SUBRESOURCE,
-                              WebURLRequest::RequestContextSubresource);
-COMPILE_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_STYLE,
-                              WebURLRequest::RequestContextStyle);
-COMPILE_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_TRACK,
-                              WebURLRequest::RequestContextTrack);
-COMPILE_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_VIDEO,
-                              WebURLRequest::RequestContextVideo);
-COMPILE_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_WORKER,
-                              WebURLRequest::RequestContextWorker);
-COMPILE_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_XML_HTTP_REQUEST,
-                              WebURLRequest::RequestContextXMLHttpRequest);
-COMPILE_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_XSLT,
-                              WebURLRequest::RequestContextXSLT);
+STATIC_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_UNSPECIFIED,
+                             WebURLRequest::RequestContextUnspecified);
+STATIC_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_AUDIO,
+                             WebURLRequest::RequestContextAudio);
+STATIC_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_BEACON,
+                             WebURLRequest::RequestContextBeacon);
+STATIC_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_CSP_REPORT,
+                             WebURLRequest::RequestContextCSPReport);
+STATIC_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_DOWNLOAD,
+                             WebURLRequest::RequestContextDownload);
+STATIC_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_EMBED,
+                             WebURLRequest::RequestContextEmbed);
+STATIC_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_EVENT_SOURCE,
+                             WebURLRequest::RequestContextEventSource);
+STATIC_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_FAVICON,
+                             WebURLRequest::RequestContextFavicon);
+STATIC_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_FETCH,
+                             WebURLRequest::RequestContextFetch);
+STATIC_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_FONT,
+                             WebURLRequest::RequestContextFont);
+STATIC_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_FORM,
+                             WebURLRequest::RequestContextForm);
+STATIC_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_FRAME,
+                             WebURLRequest::RequestContextFrame);
+STATIC_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_HYPERLINK,
+                             WebURLRequest::RequestContextHyperlink);
+STATIC_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_IFRAME,
+                             WebURLRequest::RequestContextIframe);
+STATIC_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_IMAGE,
+                             WebURLRequest::RequestContextImage);
+STATIC_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_IMAGE_SET,
+                             WebURLRequest::RequestContextImageSet);
+STATIC_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_IMPORT,
+                             WebURLRequest::RequestContextImport);
+STATIC_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_INTERNAL,
+                             WebURLRequest::RequestContextInternal);
+STATIC_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_LOCATION,
+                             WebURLRequest::RequestContextLocation);
+STATIC_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_MANIFEST,
+                             WebURLRequest::RequestContextManifest);
+STATIC_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_OBJECT,
+                             WebURLRequest::RequestContextObject);
+STATIC_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_PING,
+                             WebURLRequest::RequestContextPing);
+STATIC_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_PLUGIN,
+                             WebURLRequest::RequestContextPlugin);
+STATIC_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_PREFETCH,
+                             WebURLRequest::RequestContextPrefetch);
+STATIC_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_SCRIPT,
+                             WebURLRequest::RequestContextScript);
+STATIC_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_SERVICE_WORKER,
+                             WebURLRequest::RequestContextServiceWorker);
+STATIC_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_SHARED_WORKER,
+                             WebURLRequest::RequestContextSharedWorker);
+STATIC_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_SUBRESOURCE,
+                             WebURLRequest::RequestContextSubresource);
+STATIC_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_STYLE,
+                             WebURLRequest::RequestContextStyle);
+STATIC_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_TRACK,
+                             WebURLRequest::RequestContextTrack);
+STATIC_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_VIDEO,
+                             WebURLRequest::RequestContextVideo);
+STATIC_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_WORKER,
+                             WebURLRequest::RequestContextWorker);
+STATIC_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_XML_HTTP_REQUEST,
+                             WebURLRequest::RequestContextXMLHttpRequest);
+STATIC_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_TYPE_XSLT,
+                             WebURLRequest::RequestContextXSLT);
 
 RequestContextType GetRequestContextType(const WebURLRequest& request) {
   return static_cast<RequestContextType>(request.requestContext());

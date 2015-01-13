@@ -14,8 +14,8 @@ namespace {
 
 static const size_t kHeaderLength = sizeof(uint32);
 
-COMPILE_ASSERT(sizeof(size_t) >= kHeaderLength,
-               ChunkedByteBufferNotSupportedOnThisArchitecture);
+static_assert(sizeof(size_t) >= kHeaderLength,
+              "chunked byte buffer not supported on this architecture");
 
 uint32 ReadBigEndian32(const uint8* buffer) {
   return (static_cast<uint32>(buffer[3])) |

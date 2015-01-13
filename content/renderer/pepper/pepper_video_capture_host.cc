@@ -139,9 +139,9 @@ void PepperVideoCaptureHost::OnFrameReady(
         return;
       }
       uint8* dst = reinterpret_cast<uint8*>(buffers_[i].data);
-      COMPILE_ASSERT(media::VideoFrame::kYPlane == 0, y_plane_should_be_0);
-      COMPILE_ASSERT(media::VideoFrame::kUPlane == 1, u_plane_should_be_1);
-      COMPILE_ASSERT(media::VideoFrame::kVPlane == 2, v_plane_should_be_2);
+      static_assert(media::VideoFrame::kYPlane == 0, "y plane should be 0");
+      static_assert(media::VideoFrame::kUPlane == 1, "u plane should be 1");
+      static_assert(media::VideoFrame::kVPlane == 2, "v plane should be 2");
       for (size_t j = 0; j < media::VideoFrame::NumPlanes(frame->format());
            ++j) {
         const uint8* src = frame->data(j);

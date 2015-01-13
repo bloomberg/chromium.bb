@@ -60,8 +60,8 @@ void StreamTextureHost::OnFrameAvailable() {
 
 void StreamTextureHost::OnMatrixChanged(
     const GpuStreamTextureMsg_MatrixChanged_Params& params) {
-  COMPILE_ASSERT(sizeof(params) == sizeof(float) * 16,
-                 bad_GpuStreamTextureMsg_MatrixChanged_Params_format);
+  static_assert(sizeof(params) == sizeof(float) * 16,
+                "bad GpuStreamTextureMsg MatrixChanged_Params format");
   if (listener_)
     listener_->OnMatrixChanged((const float*)&params);
 }

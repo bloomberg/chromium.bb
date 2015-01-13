@@ -601,10 +601,10 @@ long* BlinkPlatformImpl::getTraceSamplingState(
   return NULL;
 }
 
-COMPILE_ASSERT(
+static_assert(
     sizeof(blink::Platform::TraceEventHandle) ==
         sizeof(base::debug::TraceEventHandle),
-    TraceEventHandle_types_must_be_same_size);
+    "TraceEventHandle types must be same size");
 
 blink::Platform::TraceEventHandle BlinkPlatformImpl::addTraceEvent(
     char phase,

@@ -170,7 +170,7 @@ static int CheckFreeSpace(const char* const type,
                                        ? INT_MAX
                                        : free_disk_space_in_k_bytes;
   const uint64 histogram_max = static_cast<uint64>(1e9);
-  COMPILE_ASSERT(histogram_max <= INT_MAX, histogram_max_too_big);
+  static_assert(histogram_max <= INT_MAX, "histogram_max too big");
   base::Histogram::FactoryGet(name,
                               1,
                               histogram_max,

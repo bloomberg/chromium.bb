@@ -106,8 +106,8 @@ const int SpeechRecognizerImpl::kNoSpeechTimeoutMs = 8000;
 const int SpeechRecognizerImpl::kEndpointerEstimationTimeMs = 300;
 media::AudioManager* SpeechRecognizerImpl::audio_manager_for_tests_ = NULL;
 
-COMPILE_ASSERT(SpeechRecognizerImpl::kNumBitsPerAudioSample % 8 == 0,
-               kNumBitsPerAudioSample_must_be_a_multiple_of_8);
+static_assert(SpeechRecognizerImpl::kNumBitsPerAudioSample % 8 == 0,
+              "kNumBitsPerAudioSample must be a multiple of 8");
 
 // SpeechRecognizerImpl::OnDataConverter implementation
 

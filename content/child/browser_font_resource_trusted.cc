@@ -135,7 +135,7 @@ bool PPTextRunToWebTextRun(const PP_BrowserFont_Trusted_TextRun& text,
 // The PP_* version lacks "None", so is just one value shifted from the
 // WebFontDescription version. These values are checked in
 // PPFontDescToWebFontDesc to make sure the conversion is correct. This is a
-// macro so it can also be used in the COMPILE_ASSERTS.
+// macro so it can also be used in the static_asserts.
 #define PP_FAMILY_TO_WEB_FAMILY(f) \
   static_cast<WebFontDescription::GenericFamily>(f + 1)
 
@@ -144,24 +144,24 @@ WebFontDescription PPFontDescToWebFontDesc(
     const PP_BrowserFont_Trusted_Description& font,
     const ppapi::Preferences& prefs) {
   // Verify that the enums match so we can just static cast.
-  COMPILE_ASSERT(static_cast<int>(WebFontDescription::Weight100) ==
-                 static_cast<int>(PP_BROWSERFONT_TRUSTED_WEIGHT_100),
-                 FontWeight100);
-  COMPILE_ASSERT(static_cast<int>(WebFontDescription::Weight900) ==
-                 static_cast<int>(PP_BROWSERFONT_TRUSTED_WEIGHT_900),
-                 FontWeight900);
-  COMPILE_ASSERT(WebFontDescription::GenericFamilyStandard ==
-                 PP_FAMILY_TO_WEB_FAMILY(PP_FONTFAMILY_DEFAULT),
-                 StandardFamily);
-  COMPILE_ASSERT(WebFontDescription::GenericFamilySerif ==
-                 PP_FAMILY_TO_WEB_FAMILY(PP_FONTFAMILY_SERIF),
-                 SerifFamily);
-  COMPILE_ASSERT(WebFontDescription::GenericFamilySansSerif ==
-                 PP_FAMILY_TO_WEB_FAMILY(PP_FONTFAMILY_SANSSERIF),
-                 SansSerifFamily);
-  COMPILE_ASSERT(WebFontDescription::GenericFamilyMonospace ==
-                 PP_FAMILY_TO_WEB_FAMILY(PP_FONTFAMILY_MONOSPACE),
-                 MonospaceFamily);
+  static_assert(static_cast<int>(WebFontDescription::Weight100) ==
+                static_cast<int>(PP_BROWSERFONT_TRUSTED_WEIGHT_100),
+                "font Weight100");
+  static_assert(static_cast<int>(WebFontDescription::Weight900) ==
+                static_cast<int>(PP_BROWSERFONT_TRUSTED_WEIGHT_900),
+                "font Weight900");
+  static_assert(WebFontDescription::GenericFamilyStandard ==
+                PP_FAMILY_TO_WEB_FAMILY(PP_FONTFAMILY_DEFAULT),
+                "FamilyStandard");
+  static_assert(WebFontDescription::GenericFamilySerif ==
+                PP_FAMILY_TO_WEB_FAMILY(PP_FONTFAMILY_SERIF),
+                "FamilySerif");
+  static_assert(WebFontDescription::GenericFamilySansSerif ==
+                PP_FAMILY_TO_WEB_FAMILY(PP_FONTFAMILY_SANSSERIF),
+                "FamilySansSerif");
+  static_assert(WebFontDescription::GenericFamilyMonospace ==
+                PP_FAMILY_TO_WEB_FAMILY(PP_FONTFAMILY_MONOSPACE),
+                "FamilyMonospace");
 
   StringVar* face_name = StringVar::FromPPVar(font.face);  // Possibly null.
 

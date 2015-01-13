@@ -1256,10 +1256,10 @@ std::string KeyPrefix::EncodeInternal(int64 database_id,
                                           kMaxIndexIdSizeBits) |
       (object_store_id_string.size() - 1) << kMaxIndexIdSizeBits |
       (index_id_string.size() - 1);
-  COMPILE_ASSERT(kMaxDatabaseIdSizeBits + kMaxObjectStoreIdSizeBits +
-                         kMaxIndexIdSizeBits ==
-                     sizeof(first_byte) * 8,
-                 CANT_ENCODE_IDS);
+  static_assert(kMaxDatabaseIdSizeBits + kMaxObjectStoreIdSizeBits +
+                        kMaxIndexIdSizeBits ==
+                    sizeof(first_byte) * 8,
+                "cannot encode ids");
   std::string ret;
   ret.reserve(kDefaultInlineBufferSize);
   ret.push_back(first_byte);

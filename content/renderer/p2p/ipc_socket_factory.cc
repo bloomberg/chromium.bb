@@ -238,7 +238,7 @@ IpcPacketSocket::IpcPacketSocket()
       current_discard_bytes_sequence_(0),
       packets_discarded_(0),
       total_packets_(0) {
-  COMPILE_ASSERT(kMaximumInFlightBytes > 0, would_send_at_zero_rate);
+  static_assert(kMaximumInFlightBytes > 0, "would send at zero rate");
   std::fill_n(options_, static_cast<int> (P2P_SOCKET_OPT_MAX),
               kDefaultNonSetOptionValue);
 }

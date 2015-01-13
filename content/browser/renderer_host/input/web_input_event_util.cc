@@ -258,9 +258,9 @@ void UpdateWindowsKeyCodeAndKeyIdentifier(blink::WebKeyboardEvent* event,
 blink::WebTouchEvent CreateWebTouchEventFromMotionEvent(
     const ui::MotionEvent& event,
     bool may_cause_scrolling) {
-  COMPILE_ASSERT(static_cast<int>(MotionEvent::MAX_TOUCH_POINT_COUNT) ==
-                     static_cast<int>(blink::WebTouchEvent::touchesLengthCap),
-                 inconsistent_maximum_number_of_active_touch_points);
+  static_assert(static_cast<int>(MotionEvent::MAX_TOUCH_POINT_COUNT) ==
+                    static_cast<int>(blink::WebTouchEvent::touchesLengthCap),
+                "inconsistent maximum number of active touch points");
 
   blink::WebTouchEvent result;
 

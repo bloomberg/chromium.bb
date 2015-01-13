@@ -31,9 +31,9 @@ void ComputePluginsFromCommandLine(std::vector<PepperPluginInfo>* plugins) {
   // NOTE: In theory we could have unlimited number of plugins registered in
   // command line. But in practice, 64 plugins should be more than enough.
   static uint64 skip_file_check_flags = 0;
-  COMPILE_ASSERT(
+  static_assert(
       kMaxPluginsToRegisterFromCommandLine <= sizeof(skip_file_check_flags) * 8,
-      max_plugins_to_register_from_command_line_exceeds_limit);
+      "max plugins to register from command line exceeds limit");
 
   bool out_of_process = true;
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(

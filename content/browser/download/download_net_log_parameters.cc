@@ -34,10 +34,10 @@ static const char* download_danger_names[] = {
   "POTENTIALLY_UNWANTED"
 };
 
-COMPILE_ASSERT(arraysize(download_type_names) == SRC_SAVE_PAGE_AS + 1,
-               download_type_enum_has_changed);
-COMPILE_ASSERT(arraysize(download_danger_names) == DOWNLOAD_DANGER_TYPE_MAX,
-               download_danger_enum_has_changed);
+static_assert(arraysize(download_type_names) == SRC_SAVE_PAGE_AS + 1,
+              "download type enum has changed");
+static_assert(arraysize(download_danger_names) == DOWNLOAD_DANGER_TYPE_MAX,
+              "download danger enum has changed");
 
 }  // namespace
 

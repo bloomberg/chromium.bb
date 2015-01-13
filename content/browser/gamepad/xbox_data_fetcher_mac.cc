@@ -113,8 +113,8 @@ struct XboxOneButtonData {
 };
 #pragma pack(pop)
 
-COMPILE_ASSERT(sizeof(Xbox360ButtonData) == 18, xbox_button_data_wrong_size);
-COMPILE_ASSERT(sizeof(XboxOneButtonData) == 14, xbox_button_data_wrong_size);
+static_assert(sizeof(Xbox360ButtonData) == 18, "xbox button data wrong size");
+static_assert(sizeof(XboxOneButtonData) == 14, "xbox button data wrong size");
 
 // From MSDN:
 // http://msdn.microsoft.com/en-us/library/windows/desktop/ee417001(v=vs.85).aspx#dead_zone

@@ -17,64 +17,64 @@ namespace content {
 // "Zyyy" is the ISO 15924 script code for undetermined script aka Common.
 const char kCommonScript[] = "Zyyy";
 
-#define COMPILE_ASSERT_MATCHING_ENUMS(content_name, blink_name)         \
-    COMPILE_ASSERT(                                                     \
+#define STATIC_ASSERT_MATCHING_ENUMS(content_name, blink_name)         \
+    static_assert(                                                     \
         static_cast<int>(content_name) == static_cast<int>(blink_name), \
-        mismatching_enums)
+        "mismatching enums: " #content_name)
 
-COMPILE_ASSERT_MATCHING_ENUMS(EDITING_BEHAVIOR_MAC,
-                              WebSettings::EditingBehaviorMac);
-COMPILE_ASSERT_MATCHING_ENUMS(EDITING_BEHAVIOR_WIN,
-                              WebSettings::EditingBehaviorWin);
-COMPILE_ASSERT_MATCHING_ENUMS(EDITING_BEHAVIOR_UNIX,
-                              WebSettings::EditingBehaviorUnix);
-COMPILE_ASSERT_MATCHING_ENUMS(EDITING_BEHAVIOR_ANDROID,
-                              WebSettings::EditingBehaviorAndroid);
+STATIC_ASSERT_MATCHING_ENUMS(EDITING_BEHAVIOR_MAC,
+                             WebSettings::EditingBehaviorMac);
+STATIC_ASSERT_MATCHING_ENUMS(EDITING_BEHAVIOR_WIN,
+                             WebSettings::EditingBehaviorWin);
+STATIC_ASSERT_MATCHING_ENUMS(EDITING_BEHAVIOR_UNIX,
+                             WebSettings::EditingBehaviorUnix);
+STATIC_ASSERT_MATCHING_ENUMS(EDITING_BEHAVIOR_ANDROID,
+                             WebSettings::EditingBehaviorAndroid);
 
-COMPILE_ASSERT_MATCHING_ENUMS(V8_CACHE_OPTIONS_DEFAULT,
-                              WebSettings::V8CacheOptionsDefault);
-COMPILE_ASSERT_MATCHING_ENUMS(V8_CACHE_OPTIONS_PARSE,
-                              WebSettings::V8CacheOptionsParse);
-COMPILE_ASSERT_MATCHING_ENUMS(V8_CACHE_OPTIONS_CODE,
-                              WebSettings::V8CacheOptionsCode);
-COMPILE_ASSERT_MATCHING_ENUMS(V8_CACHE_OPTIONS_CODE_COMPRESSED,
-                              WebSettings::V8CacheOptionsCodeCompressed);
-COMPILE_ASSERT_MATCHING_ENUMS(V8_CACHE_OPTIONS_NONE,
-                              WebSettings::V8CacheOptionsNone);
-COMPILE_ASSERT_MATCHING_ENUMS(V8_CACHE_OPTIONS_PARSE_MEMORY,
-                              WebSettings::V8CacheOptionsParseMemory);
-COMPILE_ASSERT_MATCHING_ENUMS(V8_CACHE_OPTIONS_HEURISTICS,
-                              WebSettings::V8CacheOptionsHeuristics);
-COMPILE_ASSERT_MATCHING_ENUMS(V8_CACHE_OPTIONS_HEURISTICS_MOBILE,
-                              WebSettings::V8CacheOptionsHeuristicsMobile);
-COMPILE_ASSERT_MATCHING_ENUMS(V8_CACHE_OPTIONS_LAST,
-                              WebSettings::V8CacheOptionsHeuristicsMobile);
+STATIC_ASSERT_MATCHING_ENUMS(V8_CACHE_OPTIONS_DEFAULT,
+                             WebSettings::V8CacheOptionsDefault);
+STATIC_ASSERT_MATCHING_ENUMS(V8_CACHE_OPTIONS_PARSE,
+                             WebSettings::V8CacheOptionsParse);
+STATIC_ASSERT_MATCHING_ENUMS(V8_CACHE_OPTIONS_CODE,
+                             WebSettings::V8CacheOptionsCode);
+STATIC_ASSERT_MATCHING_ENUMS(V8_CACHE_OPTIONS_CODE_COMPRESSED,
+                             WebSettings::V8CacheOptionsCodeCompressed);
+STATIC_ASSERT_MATCHING_ENUMS(V8_CACHE_OPTIONS_NONE,
+                             WebSettings::V8CacheOptionsNone);
+STATIC_ASSERT_MATCHING_ENUMS(V8_CACHE_OPTIONS_PARSE_MEMORY,
+                             WebSettings::V8CacheOptionsParseMemory);
+STATIC_ASSERT_MATCHING_ENUMS(V8_CACHE_OPTIONS_HEURISTICS,
+                             WebSettings::V8CacheOptionsHeuristics);
+STATIC_ASSERT_MATCHING_ENUMS(V8_CACHE_OPTIONS_HEURISTICS_MOBILE,
+                             WebSettings::V8CacheOptionsHeuristicsMobile);
+STATIC_ASSERT_MATCHING_ENUMS(V8_CACHE_OPTIONS_LAST,
+                             WebSettings::V8CacheOptionsHeuristicsMobile);
 
-COMPILE_ASSERT_MATCHING_ENUMS(V8_SCRIPT_STREAMING_MODE_ALL,
-                              WebSettings::V8ScriptStreamingModeAll);
-COMPILE_ASSERT_MATCHING_ENUMS(
+STATIC_ASSERT_MATCHING_ENUMS(V8_SCRIPT_STREAMING_MODE_ALL,
+                             WebSettings::V8ScriptStreamingModeAll);
+STATIC_ASSERT_MATCHING_ENUMS(
     V8_SCRIPT_STREAMING_MODE_ONLY_ASYNC_AND_DEFER,
     WebSettings::V8ScriptStreamingModeOnlyAsyncAndDefer);
-COMPILE_ASSERT_MATCHING_ENUMS(
+STATIC_ASSERT_MATCHING_ENUMS(
     V8_SCRIPT_STREAMING_MODE_ALL_PLUS_BLOCK_PARSER_BLOCKING,
     WebSettings::V8ScriptStreamingModeAllPlusBlockParsingBlocking);
-COMPILE_ASSERT_MATCHING_ENUMS(
+STATIC_ASSERT_MATCHING_ENUMS(
     V8_SCRIPT_STREAMING_MODE_LAST,
     WebSettings::V8ScriptStreamingModeAllPlusBlockParsingBlocking);
 
-COMPILE_ASSERT_MATCHING_ENUMS(ui::POINTER_TYPE_NONE,
-                              WebSettings::PointerTypeNone);
-COMPILE_ASSERT_MATCHING_ENUMS(ui::POINTER_TYPE_COARSE,
-                              WebSettings::PointerTypeCoarse);
-COMPILE_ASSERT_MATCHING_ENUMS(ui::POINTER_TYPE_FINE,
-                              WebSettings::PointerTypeFine);
+STATIC_ASSERT_MATCHING_ENUMS(ui::POINTER_TYPE_NONE,
+                             WebSettings::PointerTypeNone);
+STATIC_ASSERT_MATCHING_ENUMS(ui::POINTER_TYPE_COARSE,
+                             WebSettings::PointerTypeCoarse);
+STATIC_ASSERT_MATCHING_ENUMS(ui::POINTER_TYPE_FINE,
+                             WebSettings::PointerTypeFine);
 
-COMPILE_ASSERT_MATCHING_ENUMS(ui::HOVER_TYPE_NONE,
-                              WebSettings::HoverTypeNone);
-COMPILE_ASSERT_MATCHING_ENUMS(ui::HOVER_TYPE_ON_DEMAND,
-                              WebSettings::HoverTypeOnDemand);
-COMPILE_ASSERT_MATCHING_ENUMS(ui::HOVER_TYPE_HOVER,
-                              WebSettings::HoverTypeHover);
+STATIC_ASSERT_MATCHING_ENUMS(ui::HOVER_TYPE_NONE,
+                             WebSettings::HoverTypeNone);
+STATIC_ASSERT_MATCHING_ENUMS(ui::HOVER_TYPE_ON_DEMAND,
+                             WebSettings::HoverTypeOnDemand);
+STATIC_ASSERT_MATCHING_ENUMS(ui::HOVER_TYPE_HOVER,
+                             WebSettings::HoverTypeHover);
 
 WebPreferences::WebPreferences()
     : default_font_size(16),

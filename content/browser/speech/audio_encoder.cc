@@ -108,7 +108,7 @@ const int kMaxSpeexFrameLength = 110;  // (44kbps rate sampled at 32kHz).
 
 // Since the frame length gets written out as a byte in the encoded packet,
 // make sure it is within the byte range.
-COMPILE_ASSERT(kMaxSpeexFrameLength <= 0xFF, invalidLength);
+static_assert(kMaxSpeexFrameLength <= 0xFF, "invalid length");
 
 class SpeexEncoder : public AudioEncoder {
  public:

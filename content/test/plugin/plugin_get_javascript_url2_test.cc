@@ -44,8 +44,8 @@ NPError ExecuteGetJavascriptUrl2Test::NewStream(NPMIMEType type, NPStream* strea
     return NPERR_INVALID_PARAM;
   }
 
-  COMPILE_ASSERT(sizeof(unsigned long) <= sizeof(stream->notifyData),
-                 cast_validity_check);
+  static_assert(sizeof(unsigned long) <= sizeof(stream->notifyData),
+                "cast validity check");
   unsigned long stream_id = reinterpret_cast<unsigned long>(stream->notifyData);
   switch (stream_id) {
     case SELF_URL_STREAM_ID:
@@ -72,8 +72,8 @@ int32 ExecuteGetJavascriptUrl2Test::Write(NPStream *stream, int32 offset, int32 
     return -1;
   }
 
-  COMPILE_ASSERT(sizeof(unsigned long) <= sizeof(stream->notifyData),
-                 cast_validity_check);
+  static_assert(sizeof(unsigned long) <= sizeof(stream->notifyData),
+                "cast validity check");
   unsigned long stream_id = reinterpret_cast<unsigned long>(stream->notifyData);
   switch (stream_id) {
     case SELF_URL_STREAM_ID:
@@ -94,8 +94,8 @@ NPError ExecuteGetJavascriptUrl2Test::DestroyStream(NPStream *stream, NPError re
     return NPERR_INVALID_PARAM;
   }
 
-  COMPILE_ASSERT(sizeof(unsigned long) <= sizeof(stream->notifyData),
-                 cast_validity_check);
+  static_assert(sizeof(unsigned long) <= sizeof(stream->notifyData),
+                "cast validity check");
   unsigned long stream_id = reinterpret_cast<unsigned long>(stream->notifyData);
   switch (stream_id) {
     case SELF_URL_STREAM_ID:
@@ -109,8 +109,8 @@ NPError ExecuteGetJavascriptUrl2Test::DestroyStream(NPStream *stream, NPError re
 }
 
 void ExecuteGetJavascriptUrl2Test::URLNotify(const char* url, NPReason reason, void* data) {
-  COMPILE_ASSERT(sizeof(unsigned long) <= sizeof(data),
-                 cast_validity_check);
+  static_assert(sizeof(unsigned long) <= sizeof(data),
+                "cast validity check");
 
   unsigned long stream_id = reinterpret_cast<unsigned long>(data);
   switch (stream_id) {

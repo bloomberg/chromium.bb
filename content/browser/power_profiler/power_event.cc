@@ -11,7 +11,7 @@ const char* kPowerTypeNames[] = {
   "Device"
 };
 
-COMPILE_ASSERT(arraysize(kPowerTypeNames) == PowerEvent::ID_COUNT,
-               kPowerTypeNames_incorrect_size);
+static_assert(arraysize(kPowerTypeNames) == PowerEvent::ID_COUNT,
+              "kPowerTypeNames array has incorrect size");
 
 }  // namespace content

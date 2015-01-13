@@ -65,9 +65,9 @@ SandboxTypeToResourceIDMapping kDefaultSandboxTypeToResourceIDMapping[] = {
   { SANDBOX_TYPE_PPAPI,    IDR_PPAPI_SANDBOX_PROFILE },
 };
 
-COMPILE_ASSERT(arraysize(kDefaultSandboxTypeToResourceIDMapping) == \
-               size_t(SANDBOX_TYPE_AFTER_LAST_TYPE), \
-               sandbox_type_to_resource_id_mapping_incorrect);
+static_assert(arraysize(kDefaultSandboxTypeToResourceIDMapping) == \
+              size_t(SANDBOX_TYPE_AFTER_LAST_TYPE), \
+              "sandbox type to resource id mapping incorrect");
 
 // Try to escape |c| as a "SingleEscapeCharacter" (\n, etc).  If successful,
 // returns true and appends the escape sequence to |dst|.
