@@ -184,9 +184,6 @@ class TestDragDropClient : public SimpleTestDragDropClient {
   // The XID of the window which initiated the drag.
   ::Window source_xid_;
 
-  // The move loop. Not owned.
-  TestMoveLoop* loop_;
-
   // Map of ::Windows to the collector which intercepts XClientMessageEvents
   // for that window.
   std::map< ::Window, ClientMessageEventCollector*> collectors_;
@@ -307,7 +304,6 @@ TestDragDropClient::TestDragDropClient(
     DesktopNativeCursorManager* cursor_manager)
     : SimpleTestDragDropClient(window, cursor_manager),
       source_xid_(window->GetHost()->GetAcceleratedWidget()),
-      loop_(NULL),
       atom_cache_(gfx::GetXDisplay(), kAtomsToCache) {
 }
 

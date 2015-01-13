@@ -54,7 +54,6 @@ X11WindowEventFilter::X11WindowEventFilter(
       x_root_window_(DefaultRootWindow(xdisplay_)),
       atom_cache_(xdisplay_, kAtomsToCache),
       window_tree_host_(window_tree_host),
-      is_active_(false),
       click_component_(HTNOWHERE) {
 }
 
