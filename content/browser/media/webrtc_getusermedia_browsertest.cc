@@ -239,7 +239,15 @@ class WebRtcGetUserMediaBrowserTest: public WebRtcContentBrowserTest {
 // These tests will all make a getUserMedia call with different constraints and
 // see that the success callback is called. If the error callback is called or
 // none of the callbacks are called the tests will simply time out and fail.
-IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest, GetVideoStreamAndStop) {
+
+// Test fails under MSan, http://crbug.com/448230
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_GetVideoStreamAndStop DISABLED_GetVideoStreamAndStop
+#else
+#define MAYBE_GetVideoStreamAndStop GetVideoStreamAndStop
+#endif
+IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
+                       MAYBE_GetVideoStreamAndStop) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
@@ -249,8 +257,16 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest, GetVideoStreamAndStop) {
       base::StringPrintf("%s({video: true});", kGetUserMediaAndStop));
 }
 
+// Test fails under MSan, http://crbug.com/448230
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_RenderSameTrackMediastreamAndStop \
+  DISABLED_RenderSameTrackMediastreamAndStop
+#else
+#define MAYBE_RenderSameTrackMediastreamAndStop \
+  RenderSameTrackMediastreamAndStop
+#endif
 IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
-                       RenderSameTrackMediastreamAndStop) {
+                       MAYBE_RenderSameTrackMediastreamAndStop) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
@@ -484,8 +500,16 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
                                                   expected_result);
 }
 
+// Test fails under MSan, http://crbug.com/448230
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_TwoGetUserMediaAndVerifyFrameRate \
+  DISABLED_TwoGetUserMediaAndVerifyFrameRate
+#else
+#define MAYBE_TwoGetUserMediaAndVerifyFrameRate \
+  TwoGetUserMediaAndVerifyFrameRate
+#endif
 IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
-                       TwoGetUserMediaAndVerifyFrameRate) {
+                       MAYBE_TwoGetUserMediaAndVerifyFrameRate) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
@@ -566,9 +590,16 @@ IN_PROC_BROWSER_TEST_F(
       "VideoCaptureController");
 }
 
+// Test fails under MSan, http://crbug.com/448230
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_TestGetUserMediaAspectRatio4To3 \
+  DISABLED_TestGetUserMediaAspectRatio4To3
+#else
+#define MAYBE_TestGetUserMediaAspectRatio4To3 TestGetUserMediaAspectRatio4To3
+#endif
 // This test calls getUserMedia and checks for aspect ratio behavior.
 IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
-                       TestGetUserMediaAspectRatio4To3) {
+                       MAYBE_TestGetUserMediaAspectRatio4To3) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
@@ -581,9 +612,16 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
             ExecuteJavascriptAndReturnResult(constraints_4_3));
 }
 
+// Test fails under MSan, http://crbug.com/448230
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_TestGetUserMediaAspectRatio16To9 \
+  DISABLED_TestGetUserMediaAspectRatio16To9
+#else
+#define MAYBE_TestGetUserMediaAspectRatio16To9 TestGetUserMediaAspectRatio16To9
+#endif
 // This test calls getUserMedia and checks for aspect ratio behavior.
 IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
-                       TestGetUserMediaAspectRatio16To9) {
+                       MAYBE_TestGetUserMediaAspectRatio16To9) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
@@ -596,9 +634,16 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
             ExecuteJavascriptAndReturnResult(constraints_16_9));
 }
 
+// Test fails under MSan, http://crbug.com/448230
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_TestGetUserMediaAspectRatio1To1 \
+  DISABLED_TestGetUserMediaAspectRatio1To1
+#else
+#define MAYBE_TestGetUserMediaAspectRatio1To1 TestGetUserMediaAspectRatio1To1
+#endif
 // This test calls getUserMedia and checks for aspect ratio behavior.
 IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
-                       TestGetUserMediaAspectRatio1To1) {
+                       MAYBE_TestGetUserMediaAspectRatio1To1) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
@@ -635,8 +680,15 @@ class WebRtcConstraintsBrowserTest
   UserMediaSizes user_media_;
 };
 
+// Test fails under MSan, http://crbug.com/448230
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_GetUserMediaConstraints DISABLED_GetUserMediaConstraints
+#else
+#define MAYBE_GetUserMediaConstraints GetUserMediaConstraints
+#endif
 // This test calls getUserMedia in sequence with different constraints.
-IN_PROC_BROWSER_TEST_P(WebRtcConstraintsBrowserTest, GetUserMediaConstraints) {
+IN_PROC_BROWSER_TEST_P(WebRtcConstraintsBrowserTest,
+                       MAYBE_GetUserMediaConstraints) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
