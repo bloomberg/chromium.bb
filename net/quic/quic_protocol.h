@@ -661,6 +661,7 @@ struct NET_EXPORT_PRIVATE QuicStreamFrame {
   QuicStreamOffset offset;  // Location of this data in the stream.
   IOVector data;
 
+  // TODO(rjshade): Remove with FLAGS_quic_attach_ack_notifiers_to_packets.
   // If this is set, then when this packet is ACKed the AckNotifier will be
   // informed.
   QuicAckNotifier* notifier;
@@ -1066,8 +1067,8 @@ struct NET_EXPORT_PRIVATE SerializedPacket {
   QuicPacketEntropyHash entropy_hash;
   RetransmittableFrames* retransmittable_frames;
 
-  // If set, these will be called when this packet is ACKed by the peer.
-  std::set<QuicAckNotifier*> notifiers;
+  // Optional notifiers which will be informed when this packet has been ACKed.
+  base::hash_set<QuicAckNotifier*> notifiers;
 };
 
 struct NET_EXPORT_PRIVATE TransmissionInfo {

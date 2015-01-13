@@ -119,7 +119,14 @@ int QuicSpdyClientStream::ParseResponseHeaders() {
 }
 
 void QuicSpdyClientStream::SendBody(const string& data, bool fin) {
-  WriteOrBufferData(data, fin, nullptr);
+  SendBody(data, fin, nullptr);
+}
+
+void QuicSpdyClientStream::SendBody(
+    const string& data,
+    bool fin,
+    QuicAckNotifier::DelegateInterface* delegate) {
+  WriteOrBufferData(data, fin, delegate);
 }
 
 }  // namespace tools

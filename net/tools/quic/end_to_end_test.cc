@@ -1002,8 +1002,6 @@ TEST_P(EndToEndTest, MinInitialRTT) {
 }
 
 TEST_P(EndToEndTest, 0ByteConnectionId) {
-  ValueRestore<bool> old_flag(&FLAGS_allow_truncated_connection_ids_for_quic,
-                              true);
   client_config_.SetBytesForConnectionIdToSend(0);
   ASSERT_TRUE(Initialize());
 
@@ -1017,8 +1015,6 @@ TEST_P(EndToEndTest, 0ByteConnectionId) {
 }
 
 TEST_P(EndToEndTest, 1ByteConnectionId) {
-  ValueRestore<bool> old_flag(&FLAGS_allow_truncated_connection_ids_for_quic,
-                              true);
   client_config_.SetBytesForConnectionIdToSend(1);
   ASSERT_TRUE(Initialize());
 
@@ -1031,8 +1027,6 @@ TEST_P(EndToEndTest, 1ByteConnectionId) {
 }
 
 TEST_P(EndToEndTest, 4ByteConnectionId) {
-  ValueRestore<bool> old_flag(&FLAGS_allow_truncated_connection_ids_for_quic,
-                              true);
   client_config_.SetBytesForConnectionIdToSend(4);
   ASSERT_TRUE(Initialize());
 
@@ -1045,8 +1039,6 @@ TEST_P(EndToEndTest, 4ByteConnectionId) {
 }
 
 TEST_P(EndToEndTest, 8ByteConnectionId) {
-  ValueRestore<bool> old_flag(&FLAGS_allow_truncated_connection_ids_for_quic,
-                              true);
   client_config_.SetBytesForConnectionIdToSend(8);
   ASSERT_TRUE(Initialize());
 
@@ -1059,8 +1051,6 @@ TEST_P(EndToEndTest, 8ByteConnectionId) {
 }
 
 TEST_P(EndToEndTest, 15ByteConnectionId) {
-  ValueRestore<bool> old_flag(&FLAGS_allow_truncated_connection_ids_for_quic,
-                              true);
   client_config_.SetBytesForConnectionIdToSend(15);
   ASSERT_TRUE(Initialize());
 
@@ -1376,6 +1366,75 @@ TEST_P(EndToEndTest, EnablePacingViaFlag) {
       *GetSentPacketManagerFromFirstServerSession();
   EXPECT_TRUE(server_sent_packet_manager.using_pacing());
   EXPECT_TRUE(client_sent_packet_manager.using_pacing());
+}
+
+// A TestAckNotifierDelegate verifies that its OnAckNotification method has been
+// called exactly once on destruction.
+class TestAckNotifierDelegate : public QuicAckNotifier::DelegateInterface {
+ public:
+  TestAckNotifierDelegate() {}
+
+  void OnAckNotification(int /*num_original_packets*/,
+                         int /*num_original_bytes*/,
+                         int /*num_retransmitted_packets*/,
+                         int /*num_retransmitted_bytes*/,
+                         QuicTime::Delta /*delta_largest_observed*/) override {
+    ASSERT_FALSE(has_been_notified_);
+    has_been_notified_ = true;
+  }
+
+  bool has_been_notified() const { return has_been_notified_; }
+
+ protected:
+  // Object is ref counted.
+  ~TestAckNotifierDelegate() override { EXPECT_TRUE(has_been_notified_); }
+
+ private:
+  bool has_been_notified_ = false;
+};
+
+TEST_P(EndToEndTest, AckNotifierWithPacketLoss) {
+  // Verify that even in the presence of packet loss, an AckNotifierDelegate
+  // will get informed that the data it is interested in has been ACKed. This
+  // tests end-to-end ACK notification, and demonstrates that retransmissions do
+  // not break this functionality.
+  ValueRestore<bool> old_flag(&FLAGS_quic_attach_ack_notifiers_to_packets,
+                              true);
+
+  SetPacketLossPercentage(5);
+  ASSERT_TRUE(Initialize());
+
+  // Wait for the server SHLO before upping the packet loss.
+  client_->client()->WaitForCryptoHandshakeConfirmed();
+  SetPacketLossPercentage(30);
+
+  // Create a POST request and send the headers only.
+  HTTPMessage request(HttpConstants::HTTP_1_1, HttpConstants::POST, "/foo");
+  request.set_has_complete_message(false);
+  client_->SendMessage(request);
+
+  // The TestAckNotifierDelegate will cause a failure if not notified.
+  scoped_refptr<TestAckNotifierDelegate> delegate(new TestAckNotifierDelegate);
+
+  // Test the AckNotifier's ability to track multiple packets by making the
+  // request body exceed the size of a single packet.
+  string request_string =
+      "a request body bigger than one packet" + string(kMaxPacketSize, '.');
+
+  // Send the request, and register the delegate for ACKs.
+  client_->SendData(request_string, true, delegate.get());
+  client_->WaitForResponse();
+  EXPECT_EQ(kFooResponseBody, client_->response_body());
+  EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
+
+  // Send another request to flush out any pending ACKs on the server.
+  client_->SendSynchronousRequest(request_string);
+
+  // Make sure the delegate does get the notification it expects.
+  while (!delegate->has_been_notified()) {
+    // Waits for up to 50 ms.
+    client_->client()->WaitForEvents();
+  }
 }
 
 }  // namespace

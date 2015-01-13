@@ -12,6 +12,7 @@
 
 #include "base/stl_util.h"
 #include "net/quic/quic_ack_notifier.h"
+#include "net/quic/quic_flags.h"
 #include "net/quic/quic_protocol.h"
 
 namespace net {
@@ -73,30 +74,49 @@ void AckNotifierManager::UpdateSequenceNumber(
 
 void AckNotifierManager::OnSerializedPacket(
     const SerializedPacket& serialized_packet) {
-  // AckNotifiers can only be attached to retransmittable frames.
-  RetransmittableFrames* frames = serialized_packet.retransmittable_frames;
-  if (frames == nullptr) {
-    return;
-  }
+  if (FLAGS_quic_attach_ack_notifiers_to_packets) {
+    // Inform each attached AckNotifier of the packet's sequence number.
+    for (QuicAckNotifier* notifier : serialized_packet.notifiers) {
+      if (notifier == nullptr) {
+        LOG(DFATAL) << "AckNotifier should not be nullptr.";
+        continue;
+      }
+      notifier->AddSequenceNumber(serialized_packet.sequence_number,
+                                  serialized_packet.packet->length());
 
-  // For each frame in |serialized_packet|, inform any attached AckNotifiers of
-  // the packet's sequence number.
-  for (const QuicFrame& quic_frame : frames->frames()) {
-    if (quic_frame.type != STREAM_FRAME ||
-        quic_frame.stream_frame->notifier == nullptr) {
-      continue;
+      // Update the mapping in the other direction, from sequence number to
+      // AckNotifier.
+      ack_notifier_map_[serialized_packet.sequence_number].insert(notifier);
+
+      // Take ownership of the AckNotifier.
+      ack_notifiers_.insert(notifier);
+    }
+  } else {
+    // AckNotifiers can only be attached to retransmittable frames.
+    RetransmittableFrames* frames = serialized_packet.retransmittable_frames;
+    if (frames == nullptr) {
+      return;
     }
 
-    QuicAckNotifier* notifier = quic_frame.stream_frame->notifier;
-    notifier->AddSequenceNumber(serialized_packet.sequence_number,
-                                serialized_packet.packet->length());
+    // For each frame in |serialized_packet|, inform any attached AckNotifiers
+    // of the packet's sequence number.
+    for (const QuicFrame& quic_frame : frames->frames()) {
+      if (quic_frame.type != STREAM_FRAME ||
+          quic_frame.stream_frame->notifier == nullptr) {
+        continue;
+      }
 
-    // Update the mapping in the other direction, from sequence number to
-    // AckNotifier.
-    ack_notifier_map_[serialized_packet.sequence_number].insert(notifier);
+      QuicAckNotifier* notifier = quic_frame.stream_frame->notifier;
+      notifier->AddSequenceNumber(serialized_packet.sequence_number,
+                                  serialized_packet.packet->length());
 
-    // Take ownership of the AckNotifier.
-    ack_notifiers_.insert(notifier);
+      // Update the mapping in the other direction, from sequence number to
+      // AckNotifier.
+      ack_notifier_map_[serialized_packet.sequence_number].insert(notifier);
+
+      // Take ownership of the AckNotifier.
+      ack_notifiers_.insert(notifier);
+    }
   }
 }
 

@@ -51,6 +51,10 @@ class QuicSpdyClientStream : public QuicDataStream {
 
   // Sends body data to the server, or buffers if it can't be sent immediately.
   void SendBody(const std::string& data, bool fin);
+  // As above, but |delegate| will be notified once |data| is ACKed.
+  void SendBody(const std::string& data,
+                bool fin,
+                QuicAckNotifier::DelegateInterface* delegate);
 
   // Returns the response data.
   const std::string& data() { return data_; }

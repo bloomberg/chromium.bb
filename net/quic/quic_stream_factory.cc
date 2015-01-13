@@ -1054,8 +1054,7 @@ int QuicStreamFactory::CreateSession(
   int64 srtt = GetServerNetworkStatsSmoothedRttInMicroseconds(server_id);
   if (srtt > 0)
     config.SetInitialRoundTripTimeUsToSend(static_cast<uint32>(srtt));
-  if (FLAGS_allow_truncated_connection_ids_for_quic &&
-      enable_truncated_connection_ids_)
+  if (enable_truncated_connection_ids_)
     config.SetBytesForConnectionIdToSend(0);
 
   if (quic_server_info_factory_ && !server_info) {

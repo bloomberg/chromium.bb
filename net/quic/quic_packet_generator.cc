@@ -183,7 +183,13 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(
     ++frames_created;
 
     // We want to track which packet this stream frame ends up in.
-    frame.stream_frame->notifier = notifier;
+    if (FLAGS_quic_attach_ack_notifiers_to_packets) {
+      if (notifier != nullptr) {
+        ack_notifiers_.insert(notifier);
+      }
+    } else {
+      frame.stream_frame->notifier = notifier;
+    }
 
     if (!AddFrame(frame)) {
       LOG(DFATAL) << "Failed to add stream frame.";
@@ -389,6 +395,13 @@ bool QuicPacketGenerator::AddFrame(const QuicFrame& frame) {
 void QuicPacketGenerator::SerializeAndSendPacket() {
   SerializedPacket serialized_packet = packet_creator_.SerializePacket();
   DCHECK(serialized_packet.packet);
+
+  // There may be AckNotifiers interested in this packet.
+  if (FLAGS_quic_attach_ack_notifiers_to_packets) {
+    serialized_packet.notifiers.swap(ack_notifiers_);
+    ack_notifiers_.clear();
+  }
+
   delegate_->OnSerializedPacket(serialized_packet);
   MaybeSendFecPacketAndCloseGroup(false);
 

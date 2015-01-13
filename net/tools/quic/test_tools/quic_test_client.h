@@ -84,6 +84,10 @@ class QuicTestClient : public SimpleClient,
 
   // Wraps data in a quic packet and sends it.
   ssize_t SendData(std::string data, bool last_data);
+  // As above, but |delegate| will be notified when |data| is ACKed.
+  ssize_t SendData(std::string data,
+                   bool last_data,
+                   QuicAckNotifier::DelegateInterface* delegate);
 
   // From SimpleClient
   // Clears any outstanding state and sends a simple GET of 'uri' to the

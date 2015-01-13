@@ -281,8 +281,7 @@ void QuicConnection::SetFromConfig(const QuicConfig& config) {
   }
 
   sent_packet_manager_.SetFromConfig(config);
-  if (FLAGS_allow_truncated_connection_ids_for_quic &&
-      config.HasReceivedBytesForConnectionId() &&
+  if (config.HasReceivedBytesForConnectionId() &&
       can_truncate_connection_ids_) {
     packet_generator_.SetConnectionIdLength(
         config.ReceivedBytesForConnectionId());

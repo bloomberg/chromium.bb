@@ -44,6 +44,8 @@ void QuicAckNotifier::AddSequenceNumber(
                                      PacketInfo(packet_payload_size)));
   ++original_packet_count_;
   original_byte_count_ += packet_payload_size;
+
+  DVLOG(1) << "AckNotifier waiting for packet: " << sequence_number;
 }
 
 bool QuicAckNotifier::OnAck(QuicPacketSequenceNumber sequence_number,
@@ -79,6 +81,9 @@ void QuicAckNotifier::UpdateSequenceNumber(
   ++retransmitted_packet_count_;
   retransmitted_byte_count_ += packet_info.packet_payload_size;
   sequence_numbers_.insert(make_pair(new_sequence_number, packet_info));
+
+  DVLOG(1) << "AckNotifier waiting for packet: " << new_sequence_number
+           << " (retransmitted " << old_sequence_number << ").";
 }
 
 };  // namespace net
