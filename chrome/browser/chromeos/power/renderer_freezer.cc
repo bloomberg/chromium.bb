@@ -26,8 +26,7 @@
 namespace chromeos {
 
 RendererFreezer::RendererFreezer(scoped_ptr<RendererFreezer::Delegate> delegate)
-    : frozen_(false),
-      delegate_(delegate.Pass()),
+    : delegate_(delegate.Pass()),
       weak_factory_(this) {
   delegate_->CheckCanFreezeRenderers(
       base::Bind(&RendererFreezer::OnCheckCanFreezeRenderersComplete,

@@ -64,8 +64,6 @@ class UIProxyConfigService {
   // Proxy configuration of |current_ui_network_|.
   UIProxyConfig current_ui_config_;
 
-  bool signin_screen_;
-
   // Not owned.
   PrefService* profile_prefs_;
 

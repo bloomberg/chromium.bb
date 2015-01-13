@@ -89,9 +89,6 @@ class CHROMEOS_EXPORT RendererFreezer
   // Called whenever a new renderer process is created.
   void OnRenderProcessCreated(content::RenderProcessHost* rph);
 
-  // Tracks if the renderers are currently frozen.
-  bool frozen_;
-
   // Delegate that takes care of actually freezing and thawing renderers for us.
   scoped_ptr<Delegate> delegate_;
 

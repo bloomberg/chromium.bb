@@ -19,7 +19,6 @@ SignInScreenController::SignInScreenController(
     OobeDisplay* oobe_display,
     LoginDisplay::Delegate* login_display_delegate)
     : oobe_display_(oobe_display),
-      login_display_delegate_(login_display_delegate),
       webui_handler_(NULL),
       gaia_screen_(new GaiaScreen()) {
   DCHECK(instance_ == NULL);

@@ -1206,7 +1206,6 @@ class KioskUpdateTest : public KioskTest {
 
     scoped_refptr<content::MessageLoopRunner> runner_;
     KioskAppManager* manager_;
-    bool wait_for_update_success_;
     const std::string app_id_;
     bool quit_;
     bool update_success_;

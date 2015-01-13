@@ -62,7 +62,6 @@ class SignInScreenController : public user_manager::RemoveUserDelegate,
   static SignInScreenController* instance_;
 
   OobeDisplay* oobe_display_;
-  LoginDisplay::Delegate* login_display_delegate_;
 
   // Reference to the WebUI handling layer for the login screen
   LoginDisplayWebUIHandler* webui_handler_;

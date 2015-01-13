@@ -81,7 +81,6 @@ class WimaxConfigView : public ChildNetworkConfigView,
   views::Textfield* identity_textfield_;
   views::Checkbox* save_credentials_checkbox_;
   views::Checkbox* share_network_checkbox_;
-  views::Label* shared_network_label_;
   views::Label* passphrase_label_;
   views::Textfield* passphrase_textfield_;
   views::ToggleImageButton* passphrase_visible_button_;

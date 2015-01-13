@@ -79,8 +79,6 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
 
   scoped_refptr<chromeos::ExternalMetrics> external_metrics_;
 
-  bool use_new_network_change_notifier_;
-
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainPartsChromeos);
 };
 

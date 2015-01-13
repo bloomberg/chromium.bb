@@ -31,24 +31,18 @@ const int64 kSessionMergeTimeout = 60;
 
 namespace chromeos {
 
-class MergeSessionLoadPageTest;
-
 // An MergeSessionLoadPage class that does not create windows.
 class TestMergeSessionLoadPage :  public MergeSessionLoadPage {
  public:
   TestMergeSessionLoadPage(WebContents* web_contents,
-                           const GURL& url,
-                           MergeSessionLoadPageTest* test_page)
+                           const GURL& url)
     : MergeSessionLoadPage(web_contents,
                            url,
-                           MergeSessionThrottle::CompletionCallback()),
-      test_page_(test_page) {
+                           MergeSessionThrottle::CompletionCallback()) {
     interstitial_page_->DontCreateViewForTesting();
   }
 
  private:
-  MergeSessionLoadPageTest* test_page_;
-
   DISALLOW_COPY_AND_ASSIGN(TestMergeSessionLoadPage);
 };
 
@@ -77,7 +71,7 @@ class MergeSessionLoadPageTest : public ChromeRenderViewHostTestHarness {
   }
 
   void ShowInterstitial(const char* url) {
-    (new TestMergeSessionLoadPage(web_contents(), GURL(url), this))->Show();
+    (new TestMergeSessionLoadPage(web_contents(), GURL(url)))->Show();
   }
 
   // Returns the MergeSessionLoadPage currently showing or NULL if none is

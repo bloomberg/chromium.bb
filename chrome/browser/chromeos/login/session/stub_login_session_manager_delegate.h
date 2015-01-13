@@ -26,8 +26,6 @@ class StubLoginSessionManagerDelegate
   // session_manager::SessionManagerDelegate implementation:
   virtual void Start() override;
 
-  Profile* profile_;
-
   DISALLOW_COPY_AND_ASSIGN(StubLoginSessionManagerDelegate);
 };
 

@@ -109,9 +109,6 @@ class SupervisedUserAuthentication {
  private:
   SupervisedUserManager* owner_;
 
-  // Controls if migration is enabled.
-  bool migration_enabled_;
-
   // Target schema version. Affects migration process and new user creation.
   Schema stable_schema_;
 

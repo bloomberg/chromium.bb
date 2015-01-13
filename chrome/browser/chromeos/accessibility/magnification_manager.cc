@@ -40,8 +40,7 @@ class MagnificationManagerImpl : public MagnificationManager,
                                  public ash::SessionStateObserver {
  public:
   MagnificationManagerImpl()
-      : first_time_update_(true),
-        profile_(NULL),
+      : profile_(NULL),
         magnifier_enabled_pref_handler_(
             prefs::kAccessibilityScreenMagnifierEnabled),
         magnifier_type_pref_handler_(prefs::kAccessibilityScreenMagnifierType),
@@ -268,7 +267,6 @@ class MagnificationManagerImpl : public MagnificationManager,
     }
   }
 
-  bool first_time_update_;
   Profile* profile_;
 
   AccessibilityManager::PrefHandler magnifier_enabled_pref_handler_;

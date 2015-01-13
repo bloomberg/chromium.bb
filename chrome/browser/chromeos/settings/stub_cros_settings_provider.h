@@ -12,8 +12,6 @@
 
 namespace chromeos {
 
-class CrosSettings;
-
 // CrosSettingsProvider implementation that stores settings in memory unsigned.
 class StubCrosSettingsProvider : public CrosSettingsProvider {
  public:
@@ -37,8 +35,6 @@ class StubCrosSettingsProvider : public CrosSettingsProvider {
 
   // In-memory settings storage.
   PrefValueMap values_;
-
-  CrosSettings* cros_settings_;
 
   DISALLOW_COPY_AND_ASSIGN(StubCrosSettingsProvider);
 };
