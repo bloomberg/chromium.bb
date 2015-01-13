@@ -16,7 +16,7 @@ class StartedPage(page_module.Page):
     action_runner.Wait(10)
 
   def RunPageInteractions(self, action_runner):
-    self.RunPageInteractions(action_runner)
+    self.RunNavigateSteps(action_runner)
 
 
 class StartupPagesPageSet(page_set_module.PageSet):
