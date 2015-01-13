@@ -239,7 +239,6 @@ public:
         : Visitor(Visitor::GenericVisitorType)
         , m_count(0)
     {
-        configureEagerTraceLimit();
     }
 
     virtual void mark(const void* object, TraceCallback) override

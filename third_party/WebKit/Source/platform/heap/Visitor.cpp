@@ -93,7 +93,7 @@ void GCInfoTable::shutdown()
     s_gcInfoTable = nullptr;
 }
 
-StackFrameDepth* Visitor::m_stackFrameDepth = nullptr;
+int Visitor::m_traceDepth = 0;
 
 #if ENABLE(ASSERT)
 void assertObjectHasGCInfo(const void* payload, size_t gcInfoIndex)
