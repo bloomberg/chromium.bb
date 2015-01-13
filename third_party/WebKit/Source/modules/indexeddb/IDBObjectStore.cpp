@@ -72,7 +72,7 @@ void IDBObjectStore::trace(Visitor* visitor)
 
 ScriptValue IDBObjectStore::keyPath(ScriptState* scriptState) const
 {
-    return idbAnyToScriptValue(scriptState, IDBAny::create(m_metadata.keyPath));
+    return idbKeyPathToScriptValue(scriptState, m_metadata.keyPath);
 }
 
 PassRefPtrWillBeRawPtr<DOMStringList> IDBObjectStore::indexNames() const

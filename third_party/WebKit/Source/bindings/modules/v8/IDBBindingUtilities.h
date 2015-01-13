@@ -48,7 +48,8 @@ bool injectV8KeyIntoV8Value(v8::Isolate*, v8::Local<v8::Value> key, v8::Local<v8
 IDBKey* createIDBKeyFromScriptValueAndKeyPath(v8::Isolate*, const ScriptValue&, const IDBKeyPath&);
 bool canInjectIDBKeyIntoScriptValue(v8::Isolate*, const ScriptValue&, const IDBKeyPath&);
 ScriptValue idbAnyToScriptValue(ScriptState*, IDBAny*);
-ScriptValue idbKeyToScriptValue(ScriptState*, IDBKey*);
+ScriptValue idbKeyToScriptValue(ScriptState*, const IDBKey*);
+ScriptValue idbKeyPathToScriptValue(ScriptState*, const IDBKeyPath&);
 IDBKey* scriptValueToIDBKey(v8::Isolate*, const ScriptValue&);
 IDBKeyRange* scriptValueToIDBKeyRange(v8::Isolate*, const ScriptValue&);
 ScriptValue deserializeScriptValue(ScriptState*, SerializedScriptValue*, const Vector<blink::WebBlobInfo>*);

@@ -67,7 +67,7 @@ void IDBIndex::trace(Visitor* visitor)
 
 ScriptValue IDBIndex::keyPath(ScriptState* scriptState) const
 {
-    return idbAnyToScriptValue(scriptState, IDBAny::create(m_metadata.keyPath));
+    return idbKeyPathToScriptValue(scriptState, m_metadata.keyPath);
 }
 
 IDBRequest* IDBIndex::openCursor(ScriptState* scriptState, const ScriptValue& range, const String& directionString, ExceptionState& exceptionState)

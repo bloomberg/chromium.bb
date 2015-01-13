@@ -40,37 +40,41 @@ class IDBCursor;
 class IDBCursorWithValue;
 class IDBDatabase;
 class IDBIndex;
-class IDBKeyPath;
 class IDBObjectStore;
 class WebBlobInfo;
+
+// IDBAny is used for:
+//  * source of IDBCursor (IDBObjectStore or IDBIndex)
+//  * source of IDBRequest (IDBObjectStore, IDBIndex, IDBCursor, or null)
+//  * result of IDBRequest (IDBDatabase, IDBCursor, DOMStringList, undefined, integer, key or value)
+//
+// This allows for lazy conversion to script values (via IDBBindingUtilities),
+// and avoids the need for many dedicated union types.
+//
+// Values may be represented as just serialized data plus blob references
+// (BufferType), or serialized data, blob references, and a key to be injected
+// at a given path (BufferKeyAndKeyPathType).
 
 class IDBAny : public GarbageCollectedFinalized<IDBAny> {
 public:
     static IDBAny* createUndefined();
     static IDBAny* createNull();
-    static IDBAny* createString(const String&);
     template<typename T>
     static IDBAny* create(T* idbObject)
     {
         return new IDBAny(idbObject);
     }
-    template<typename T>
-    static IDBAny* create(const T& idbObject)
+    static IDBAny* create(PassRefPtrWillBeRawPtr<DOMStringList> domStringList)
     {
-        return new IDBAny(idbObject);
-    }
-    static IDBAny* create(PassRefPtr<SharedBuffer> value, const Vector<WebBlobInfo>* blobInfo)
-    {
-        return new IDBAny(value, blobInfo);
-    }
-    template<typename T>
-    static IDBAny* create(PassRefPtr<T> idbObject)
-    {
-        return new IDBAny(idbObject);
+        return new IDBAny(domStringList);
     }
     static IDBAny* create(int64_t value)
     {
         return new IDBAny(value);
+    }
+    static IDBAny* create(PassRefPtr<SharedBuffer> value, const Vector<WebBlobInfo>* blobInfo)
+    {
+        return new IDBAny(value, blobInfo);
     }
     static IDBAny* create(PassRefPtr<SharedBuffer> value, const Vector<WebBlobInfo>* blobInfo, IDBKey* key, const IDBKeyPath& keyPath)
     {
@@ -89,10 +93,9 @@ public:
         IDBDatabaseType,
         IDBIndexType,
         IDBObjectStoreType,
-        BufferType,
         IntegerType,
-        KeyPathType,
         KeyType,
+        BufferType,
         BufferKeyAndKeyPathType,
     };
 
@@ -118,7 +121,6 @@ private:
     explicit IDBAny(IDBIndex*);
     explicit IDBAny(IDBObjectStore*);
     explicit IDBAny(IDBKey*);
-    explicit IDBAny(const IDBKeyPath&);
     IDBAny(PassRefPtr<SharedBuffer>, const Vector<WebBlobInfo>*);
     IDBAny(PassRefPtr<SharedBuffer>, const Vector<WebBlobInfo>*, IDBKey*, const IDBKeyPath&);
     explicit IDBAny(int64_t);

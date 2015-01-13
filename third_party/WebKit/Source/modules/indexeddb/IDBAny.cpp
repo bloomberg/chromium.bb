@@ -107,7 +107,7 @@ const IDBKey* IDBAny::key() const
 
 const IDBKeyPath& IDBAny::keyPath() const
 {
-    ASSERT(m_type == KeyPathType || m_type == BufferKeyAndKeyPathType);
+    ASSERT(m_type == BufferKeyAndKeyPathType);
     return m_idbKeyPath;
 }
 
@@ -185,13 +185,6 @@ IDBAny::IDBAny(PassRefPtr<SharedBuffer> value, const Vector<WebBlobInfo>* blobIn
 IDBAny::IDBAny(IDBKey* key)
     : m_type(KeyType)
     , m_idbKey(key)
-    , m_integer(0)
-{
-}
-
-IDBAny::IDBAny(const IDBKeyPath& value)
-    : m_type(KeyPathType)
-    , m_idbKeyPath(value)
     , m_integer(0)
 {
 }

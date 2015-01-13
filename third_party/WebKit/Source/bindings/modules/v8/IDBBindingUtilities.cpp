@@ -150,8 +150,6 @@ static v8::Local<v8::Value> toV8(const IDBAny* impl, v8::Local<v8::Object> creat
         return v8::Number::New(isolate, impl->integer());
     case IDBAny::KeyType:
         return toV8(impl->key(), creationContext, isolate);
-    case IDBAny::KeyPathType:
-        return toV8(impl->keyPath(), creationContext, isolate);
     case IDBAny::BufferKeyAndKeyPathType: {
         v8::Local<v8::Value> value = deserializeIDBValueBuffer(isolate, impl->buffer(), impl->blobInfo());
         v8::Local<v8::Value> key = toV8(impl->key(), creationContext, isolate);
@@ -408,11 +406,19 @@ ScriptValue idbAnyToScriptValue(ScriptState* scriptState, IDBAny* any)
     return ScriptValue(scriptState, v8Value);
 }
 
-ScriptValue idbKeyToScriptValue(ScriptState* scriptState, IDBKey* key)
+ScriptValue idbKeyToScriptValue(ScriptState* scriptState, const IDBKey* key)
 {
     v8::Isolate* isolate = scriptState->isolate();
     v8::HandleScope handleScope(isolate);
     v8::Local<v8::Value> v8Value(toV8(key, scriptState->context()->Global(), isolate));
+    return ScriptValue(scriptState, v8Value);
+}
+
+ScriptValue idbKeyPathToScriptValue(ScriptState* scriptState, const IDBKeyPath& keyPath)
+{
+    v8::Isolate* isolate = scriptState->isolate();
+    v8::HandleScope handleScope(isolate);
+    v8::Local<v8::Value> v8Value(toV8(keyPath, scriptState->context()->Global(), isolate));
     return ScriptValue(scriptState, v8Value);
 }
 
