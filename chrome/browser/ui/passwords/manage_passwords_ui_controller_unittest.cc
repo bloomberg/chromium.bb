@@ -347,7 +347,8 @@ TEST_F(ManagePasswordsUIControllerTest, ChooseCredential) {
   ASSERT_TRUE(credential_info());
   EXPECT_EQ(test_form().username_value, credential_info()->id);
   EXPECT_EQ(test_form().password_value, credential_info()->password);
-  EXPECT_EQ(password_manager::CREDENTIAL_TYPE_LOCAL, credential_info()->type);
+  EXPECT_EQ(password_manager::CredentialType::CREDENTIAL_TYPE_LOCAL,
+            credential_info()->type);
 }
 
 TEST_F(ManagePasswordsUIControllerTest, ChooseCredentialCancel) {
@@ -366,7 +367,8 @@ TEST_F(ManagePasswordsUIControllerTest, ChooseCredentialCancel) {
                                                               test_form());
   EXPECT_EQ(password_manager::ui::INACTIVE_STATE, controller()->state());
   ASSERT_TRUE(credential_info());
-  EXPECT_EQ(password_manager::CREDENTIAL_TYPE_EMPTY, credential_info()->type);
+  EXPECT_EQ(password_manager::CredentialType::CREDENTIAL_TYPE_EMPTY,
+            credential_info()->type);
 }
 
 TEST_F(ManagePasswordsUIControllerTest, InactiveOnPSLMatched) {

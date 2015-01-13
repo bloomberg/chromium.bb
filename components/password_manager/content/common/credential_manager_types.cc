@@ -12,16 +12,17 @@
 
 namespace password_manager {
 
-CredentialInfo::CredentialInfo() : type(CREDENTIAL_TYPE_EMPTY) {
+CredentialInfo::CredentialInfo() : type(CredentialType::CREDENTIAL_TYPE_EMPTY) {
 }
 
 CredentialInfo::CredentialInfo(const blink::WebCredential& credential)
     : id(credential.id()),
       name(credential.name()),
       avatar(credential.avatarURL()) {
-  type = credential.isLocalCredential() ? CREDENTIAL_TYPE_LOCAL
-                                        : CREDENTIAL_TYPE_FEDERATED;
-  if (type == CREDENTIAL_TYPE_LOCAL) {
+  type = credential.isLocalCredential()
+             ? CredentialType::CREDENTIAL_TYPE_LOCAL
+             : CredentialType::CREDENTIAL_TYPE_FEDERATED;
+  if (type == CredentialType::CREDENTIAL_TYPE_LOCAL) {
     DCHECK(credential.isLocalCredential());
     password = static_cast<const blink::WebLocalCredential&>(
         credential).password();
@@ -39,7 +40,8 @@ CredentialInfo::CredentialInfo(const autofill::PasswordForm& form)
       password(form.password_value),
       federation(form.federation_url) {
   DCHECK(!password.empty() || !federation.is_empty());
-  type = password.empty() ? CREDENTIAL_TYPE_FEDERATED : CREDENTIAL_TYPE_LOCAL;
+  type = password.empty() ? CredentialType::CREDENTIAL_TYPE_FEDERATED
+                          : CredentialType::CREDENTIAL_TYPE_LOCAL;
 }
 
 CredentialInfo::~CredentialInfo() {

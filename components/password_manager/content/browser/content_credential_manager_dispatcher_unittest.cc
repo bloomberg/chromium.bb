@@ -172,7 +172,7 @@ class ContentCredentialManagerDispatcherTest
 TEST_F(ContentCredentialManagerDispatcherTest,
        CredentialManagerOnNotifyFailedSignIn) {
   CredentialInfo info;
-  info.type = CREDENTIAL_TYPE_LOCAL;
+  info.type = CredentialType::CREDENTIAL_TYPE_LOCAL;
   dispatcher()->OnNotifyFailedSignIn(kRequestId, info);
 
   const uint32 kMsgID = CredentialManagerMsg_AcknowledgeFailedSignIn::ID;
@@ -234,7 +234,7 @@ TEST_F(ContentCredentialManagerDispatcherTest,
   EXPECT_TRUE(message);
   CredentialManagerMsg_SendCredential::Param param;
   CredentialManagerMsg_SendCredential::Read(message, &param);
-  EXPECT_EQ(CREDENTIAL_TYPE_EMPTY, get<1>(param).type);
+  EXPECT_EQ(CredentialType::CREDENTIAL_TYPE_EMPTY, get<1>(param).type);
   process()->sink().ClearMessages();
   EXPECT_FALSE(client_->did_prompt_user_to_choose());
 }
@@ -254,7 +254,7 @@ TEST_F(ContentCredentialManagerDispatcherTest,
   EXPECT_TRUE(message);
   CredentialManagerMsg_SendCredential::Param param;
   CredentialManagerMsg_SendCredential::Read(message, &param);
-  EXPECT_EQ(CREDENTIAL_TYPE_EMPTY, get<1>(param).type);
+  EXPECT_EQ(CredentialType::CREDENTIAL_TYPE_EMPTY, get<1>(param).type);
   process()->sink().ClearMessages();
   EXPECT_FALSE(client_->did_prompt_user_to_choose());
 }
@@ -305,7 +305,7 @@ TEST_F(ContentCredentialManagerDispatcherTest,
   EXPECT_TRUE(message);
   CredentialManagerMsg_SendCredential::Param send_param;
   CredentialManagerMsg_SendCredential::Read(message, &send_param);
-  EXPECT_NE(CREDENTIAL_TYPE_EMPTY, get<1>(send_param).type);
+  EXPECT_NE(CredentialType::CREDENTIAL_TYPE_EMPTY, get<1>(send_param).type);
   process()->sink().ClearMessages();
   EXPECT_TRUE(client_->did_prompt_user_to_choose());
 }
