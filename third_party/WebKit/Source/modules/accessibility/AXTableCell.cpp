@@ -195,8 +195,7 @@ AXObject* AXTableCell::titleUIElement() const
 
     // Table cells that are th cannot have title ui elements, since by definition
     // they are title ui elements
-    Node* node = m_renderer->node();
-    if (node && node->hasTagName(thTag))
+    if (isTableHeaderCell())
         return 0;
 
     RenderTableCell* renderCell = toRenderTableCell(m_renderer);
