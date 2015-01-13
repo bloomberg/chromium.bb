@@ -17,6 +17,7 @@
 #include "chrome/browser/android/compositor/layer_title_cache.h"
 #include "chrome/browser/android/compositor/tab_content_manager.h"
 #include "chrome/browser/android/content_view_util.h"
+#include "chrome/browser/android/cookies/cookies_fetcher.h"
 #include "chrome/browser/android/dev_tools_server.h"
 #include "chrome/browser/android/dom_distiller/feedback_reporter_android.h"
 #include "chrome/browser/android/enhanced_bookmarks/enhanced_bookmarks_bridge.h"
@@ -145,6 +146,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"ConfirmInfoBarDelegate", RegisterConfirmInfoBarDelegate},
     {"ContentViewUtil", RegisterContentViewUtil},
     {"ContextMenuHelper", RegisterContextMenuHelper},
+    {"CookiesFetcher", RegisterCookiesFetcher},
     {"CreditCardScanner", autofill::CreditCardScannerViewAndroid::Register},
     {"DataReductionProxyInfoBarDelegate", DataReductionProxyInfoBar::Register},
     {"DataReductionProxySettings", DataReductionProxySettingsAndroid::Register},
