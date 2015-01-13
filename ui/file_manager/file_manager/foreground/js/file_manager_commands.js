@@ -1037,8 +1037,8 @@ CommandHandler.COMMANDS_['cloud-import'] = /** @type {Command} */ ({
    */
   canExecute: function(event, fileManager) {
     if (fileManager.importController) {
-      var response = fileManager.importController.update();
-      event.command.label = str(response.label_id);
+      var response = fileManager.importController.getCommandUpdate();
+      event.command.label = response.label;
       event.canExecute = response.executable;
       event.command.setHidden(!response.visible);
     } else {

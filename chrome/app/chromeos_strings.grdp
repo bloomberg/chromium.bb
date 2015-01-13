@@ -443,7 +443,7 @@ Press any key to continue exploring.
     Share
   </message>
   <message name="IDS_FILE_BROWSER_CLOUD_IMPORT_BUTTON_LABEL" desc="Label for button that initiates media backup to the cloud.">
-    Import photos &amp; videos to Google Drive
+    Import <ph name="FILE_COUNT">$1<ex>5</ex></ph> files to Google Drive
   </message>
   <message name="IDS_FILE_BROWSER_CLOUD_IMPORT_INSUFFICIENT_SPACE_BUTTON_LABEL" desc="Label for button that tells user there is not enough space to perform a cloud import.">
     Insufficient space on your device!
@@ -452,7 +452,7 @@ Press any key to continue exploring.
     Scanning your media...
   </message>
   <message name="IDS_FILE_BROWSER_CLOUD_IMPORT_ITEMS_REMAINING" desc="File Manager status message.">
-    Importing $1 files...
+    Importing <ph name="FILE_COUNT">$1<ex>5</ex></ph> files...
   </message>
 
   <message name="IDS_FILE_BROWSER_COPY_FILE_NAME" desc="File Manager status message.">
