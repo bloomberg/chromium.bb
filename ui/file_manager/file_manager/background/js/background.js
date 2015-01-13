@@ -46,13 +46,12 @@ function FileBrowserBackground() {
   this.fileOperationManager = new FileOperationManager();
 
   /**
-   * Promise for the class that manages loading of import history
-   * necessary for decorating files in some views and integral to
-   * local dedupling files during the cloud import process.
+   * Class providing loading of import history, used in
+   * cloud import.
    *
    * @type {!importer.HistoryLoader}
    */
-  this.historyLoader = new FileBrowserBackground.HistoryLoader();
+  this.historyLoader = new importer.RuntimeHistoryLoader();
 
   /**
    * Event handler for progress center.
@@ -579,42 +578,6 @@ FileBrowserBackground.prototype.initContextMenu_ = function() {
     contexts: ['launcher'],
     title: str('NEW_WINDOW_BUTTON_LABEL')
   });
-};
-
-/**
- * History loader that provides an ImportHistorty appropriate
- * to user settings (if import history is enabled/disabled).
- *
- * TODO(smckay): Use SynchronizedHistoryLoader directly
- *     once cloud-import feature is enabled by default.
- *
- * @constructor
- * @implements {importer.HistoryLoader}
- */
-FileBrowserBackground.HistoryLoader = function() {
-  /** @private {Promise.<!importer.ImportHistory>} */
-  this.historyPromise_ = null;
-};
-
-/** @override */
-FileBrowserBackground.HistoryLoader.prototype.getHistory = function() {
-  return this.historyPromise_ ?
-      this.historyPromise_ :
-      importer.importEnabled()
-          .then(this.initHistoryPromise_.bind(this))
-          .then(
-              function() {
-                return this.historyPromise_;
-              }.bind(this));
-};
-
-/** @param {boolean} featureEnabled */
-FileBrowserBackground.HistoryLoader.prototype.initHistoryPromise_ =
-    function(featureEnabled) {
-  this.historyPromise_ = featureEnabled ?
-      new importer.SynchronizedHistoryLoader(
-          new importer.ChromeSyncFileEntryProvider()).getHistory() :
-      new importer.DummyImportHistory(false).getHistory();
 };
 
 /**

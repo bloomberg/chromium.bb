@@ -182,3 +182,196 @@ importer.createMetadataHashcode = function(fileEntry) {
       }.bind(this));
 };
 
+/**
+ * Factory interface for creating/accessing synced {@code FileEntry}
+ * instances and listening to sync events on those files.
+ *
+ * @interface
+ */
+importer.SyncFileEntryProvider = function() {};
+
+/**
+ * Adds a listener to be notified when the the FileEntry owned/managed
+ * by this class is updated via sync.
+ *
+ * @param {function()} syncListener
+ */
+importer.SyncFileEntryProvider.prototype.addSyncListener;
+
+/**
+ * Provides accsess to the sync FileEntry owned/managed by this class.
+ *
+ * @return {!Promise.<!FileEntry>}
+ */
+importer.SyncFileEntryProvider.prototype.getSyncFileEntry;
+
+/**
+ * Factory for synchronized files based on chrome.syncFileSystem.
+ *
+ * @constructor
+ * @implements {importer.SyncFileEntryProvider}
+ * @struct
+ *
+ * @param {string} fileName
+ */
+importer.ChromeSyncFileEntryProvider = function(fileName) {
+
+  /** @private {string} */
+  this.fileName_ = fileName;
+
+  /** @private {!Array.<function()>} */
+  this.syncListeners_ = [];
+
+  /** @private {Promise.<!FileEntry>} */
+  this.fileEntryPromise_ = null;
+
+  this.monitorSyncEvents_();
+};
+
+/**
+ * Wraps chrome.syncFileSystem.onFileStatusChanged
+ * so that we can report to our listeners when our file has changed.
+ * @private
+ */
+importer.ChromeSyncFileEntryProvider.prototype.monitorSyncEvents_ =
+    function() {
+  chrome.syncFileSystem.onFileStatusChanged.addListener(
+      this.handleSyncEvent_.bind(this));
+};
+
+/** @override */
+importer.ChromeSyncFileEntryProvider.prototype.addSyncListener =
+    function(listener) {
+  if (this.syncListeners_.indexOf(listener) === -1) {
+    this.syncListeners_.push(listener);
+  }
+};
+
+/** @override */
+importer.ChromeSyncFileEntryProvider.prototype.getSyncFileEntry = function() {
+  if (this.fileEntryPromise_) {
+    return /** @type {!Promise.<!FileEntry>} */ (this.fileEntryPromise_);
+  };
+
+  this.fileEntryPromise_ = this.getFileSystem_()
+      .then(
+          /**
+           * @param {!FileSystem} fileSystem
+           * @return {!Promise.<!FileEntry>}
+           * @this {importer.ChromeSyncFileEntryProvider}
+           */
+          function(fileSystem) {
+            return this.getFileEntry_(fileSystem);
+          }.bind(this));
+
+  return /** @type {!Promise.<!FileEntry>} */ (this.fileEntryPromise_);
+};
+
+/**
+ * Wraps chrome.syncFileSystem in a Promise.
+ *
+ * @return {!Promise.<!FileSystem>}
+ * @private
+ */
+importer.ChromeSyncFileEntryProvider.prototype.getFileSystem_ = function() {
+  return new Promise(
+      /**
+       * @param {function()} resolve
+       * @param {function()} reject
+       * @this {importer.ChromeSyncFileEntryProvider}
+       */
+      function(resolve, reject) {
+        chrome.syncFileSystem.requestFileSystem(
+            /**
+              * @param {FileSystem} fileSystem
+              * @this {importer.ChromeSyncFileEntryProvider}
+              */
+            function(fileSystem) {
+              if (chrome.runtime.lastError) {
+                reject(chrome.runtime.lastError.message);
+              } else {
+                resolve(/** @type {!FileSystem} */ (fileSystem));
+              }
+            });
+      }.bind(this));
+};
+
+/**
+ * @param {!FileSystem} fileSystem
+ * @return {!Promise.<!FileEntry>}
+ * @private
+ */
+importer.ChromeSyncFileEntryProvider.prototype.getFileEntry_ =
+    function(fileSystem) {
+  return new Promise(
+      /**
+       * @param {function()} resolve
+       * @param {function()} reject
+       * @this {importer.ChromeSyncFileEntryProvider}
+       */
+      function(resolve, reject) {
+        fileSystem.root.getFile(
+            this.fileName_,
+            {
+              create: true,
+              exclusive: false
+            },
+            resolve,
+            reject);
+      }.bind(this));
+};
+
+/**
+ * Handles sync events. Checks to see if the event is for the file
+ * we track, and sync-direction, and if so, notifies syncListeners.
+ *
+ * @see https://developer.chrome.com/apps/syncFileSystem
+ *     #event-onFileStatusChanged
+ *
+ * @param {!Object} event Having a structure not unlike: {
+ *     fileEntry: Entry,
+ *     status: string,
+ *     action: (string|undefined),
+ *     direction: (string|undefined)}
+ *
+ * @private
+ */
+importer.ChromeSyncFileEntryProvider.prototype.handleSyncEvent_ =
+    function(event) {
+  if (!this.fileEntryPromise_) {
+    return;
+  }
+
+  this.fileEntryPromise_.then(
+      /**
+       * @param {!FileEntry} fileEntry
+       * @this {importer.ChromeSyncFileEntryProvider}
+       */
+      function(fileEntry) {
+        if (event['fileEntry'].fullPath !== fileEntry.fullPath) {
+          return;
+        }
+
+        if (event.direction && event.direction !== 'remote_to_local') {
+          return;
+        }
+
+        if (event.action && event.action !== 'updated') {
+          console.error(
+              'Unexpected sync event action for sync file: ' + event.action);
+          return;
+        }
+
+        this.syncListeners_.forEach(
+            /**
+             * @param {function()} listener
+             * @this {importer.ChromeSyncFileEntryProvider}
+             */
+            function(listener) {
+              // Notify by way of a promise so that it is fully asynchronous
+              // (which can rationalize testing).
+              Promise.resolve().then(listener);
+            }.bind(this));
+      }.bind(this));
+};
+
