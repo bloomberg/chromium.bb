@@ -498,4 +498,20 @@ TEST(EventTest, AutoRepeat) {
 }
 #endif  // USE_X11 || OS_WIN
 
+TEST(EventTest, TouchEventRadiusDefaultsToOtherAxis) {
+  const base::TimeDelta time = base::TimeDelta::FromMilliseconds(0);
+  const float non_zero_length1 = 30;
+  const float non_zero_length2 = 46;
+
+  TouchEvent event1(ui::ET_TOUCH_PRESSED, gfx::Point(0, 0), 0, 0, time,
+                    non_zero_length1, 0, 0, 0);
+  DCHECK_EQ(non_zero_length1, event1.radius_x());
+  DCHECK_EQ(non_zero_length1, event1.radius_y());
+
+  TouchEvent event2(ui::ET_TOUCH_PRESSED, gfx::Point(0, 0), 0, 0, time,
+                    0, non_zero_length2, 0, 0);
+  DCHECK_EQ(non_zero_length2, event2.radius_x());
+  DCHECK_EQ(non_zero_length2, event2.radius_y());
+}
+
 }  // namespace ui
