@@ -51,7 +51,6 @@ ToastContentsView::ToastContentsView(
     base::WeakPtr<MessagePopupCollection> collection)
     : collection_(collection),
       id_(notification_id),
-      is_animating_bounds_(false),
       is_closing_(false),
       closing_animation_(NULL) {
   set_notify_enter_exit_on_child(true);

@@ -45,9 +45,6 @@ class MESSAGE_CENTER_EXPORT MessageCenterBubble
  private:
   MessageCenterView* message_center_view_;
 
-  // The maximum height
-  int max_height_;
-
   // Use settings view as the initially visible content if true.
   bool initially_settings_visible_;
 

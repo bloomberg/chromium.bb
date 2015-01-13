@@ -123,7 +123,6 @@ class ToastContentsView : public views::WidgetDelegateView,
   scoped_ptr<gfx::SlideAnimation> bounds_animation_;
   scoped_ptr<gfx::SlideAnimation> fade_animation_;
 
-  bool is_animating_bounds_;
   gfx::Rect animated_bounds_start_;
   gfx::Rect animated_bounds_end_;
   // Started closing animation, will close at the end.
