@@ -12,6 +12,13 @@
 # Fail if any command fails or if any undefined $variable is evaluated.
 set -u -e -o pipefail
 
+# Choose the appropriate svn command to use (taken from glibc_revision.sh).
+if [ "`uname -s`" = Darwin -o "`uname -o`" != "Cygwin" ]; then
+  GIT=git
+else
+  GIT=git.bat
+fi
+
 # These are the files whose commits represent "changing the toolchain".
 timestamp_files='Makefile REVISIONS'
 
@@ -22,7 +29,7 @@ timestamp_files='Makefile REVISIONS'
 #       20150107215550
 # Such strings are comparable as integers to deduce their order in time.
 git_timestamp() {
-  LC_ALL=C TZ=UTC git log -1 --format=%ci "$1" |
+  LC_ALL=C TZ=UTC ${GIT} log -1 --format=%ci "$1" |
   sed -n 's/^\([0-9]\{4\}\)-\([0-9]\{1,2\}\)-\([0-9]\{1,2\}\) \([0-9]\{1,2\}\):\([0-9]\{1,2\}\):\([0-9]\{1,2\}\) .*$/\1\2\3\4\5\6/p'
 }
 
