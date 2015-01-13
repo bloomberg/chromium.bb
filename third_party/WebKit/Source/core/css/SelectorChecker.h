@@ -112,7 +112,6 @@ public:
     static bool matchesFocusPseudoClass(const Element&);
     static bool matchesSpatialNavigationFocusPseudoClass(const Element&);
     static bool matchesListBoxPseudoClass(const Element&);
-    static bool checkExactAttribute(const Element&, const QualifiedName& selectorAttributeName, const StringImpl* value);
 
     enum LinkMatchMask { MatchLink = 1, MatchVisited = 2, MatchAll = MatchLink | MatchVisited };
     static unsigned determineLinkMatchType(const CSSSelector&);
@@ -163,15 +162,6 @@ inline bool SelectorChecker::tagMatches(const Element& element, const QualifiedN
         return false;
     const AtomicString& namespaceURI = tagQName.namespaceURI();
     return namespaceURI == starAtom || namespaceURI == element.namespaceURI();
-}
-
-inline bool SelectorChecker::checkExactAttribute(const Element& element, const QualifiedName& selectorAttributeName, const StringImpl* value)
-{
-    for (const auto& attribute : element.attributesWithoutUpdate()) {
-        if (attribute.matches(selectorAttributeName) && (!value || attribute.value().impl() == value))
-            return true;
-    }
-    return false;
 }
 
 inline bool SelectorChecker::isHostInItsShadowTree(const Element& element, const ContainerNode* scope)
