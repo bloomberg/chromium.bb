@@ -138,59 +138,6 @@ inline bool TimerBase::isActive() const
     return m_nextFireTime;
 }
 
-template <typename TimerFiredClass>
-class DeferrableOneShotTimer final : private TimerBase {
-public:
-    typedef void (TimerFiredClass::*TimerFiredFunction)(DeferrableOneShotTimer*);
-
-    DeferrableOneShotTimer(TimerFiredClass* o, TimerFiredFunction f, double delay)
-        : m_object(o)
-        , m_function(f)
-        , m_delay(delay)
-        , m_shouldRestartWhenTimerFires(false)
-    {
-    }
-
-    void restart(const TraceLocation& caller)
-    {
-        // Setting this boolean is much more efficient than calling startOneShot
-        // again, which might result in rescheduling the system timer which
-        // can be quite expensive.
-
-        if (isActive()) {
-            m_shouldRestartWhenTimerFires = true;
-            return;
-        }
-        startOneShot(m_delay, caller);
-    }
-
-    using TimerBase::stop;
-    using TimerBase::isActive;
-
-private:
-    virtual void fired() override
-    {
-        if (m_shouldRestartWhenTimerFires) {
-            m_shouldRestartWhenTimerFires = false;
-            // FIXME: This should not be FROM_HERE.
-            startOneShot(m_delay, FROM_HERE);
-            return;
-        }
-
-        (m_object->*m_function)(this);
-    }
-
-    // FIXME: oilpan: TimerBase should be moved to the heap and m_object should be traced.
-    // This raw pointer is safe as long as Timer<X> is held by the X itself (That's the case
-    // in the current code base).
-    GC_PLUGIN_IGNORE("363031")
-    TimerFiredClass* m_object;
-    TimerFiredFunction m_function;
-
-    double m_delay;
-    bool m_shouldRestartWhenTimerFires;
-};
-
 }
 
 #endif
