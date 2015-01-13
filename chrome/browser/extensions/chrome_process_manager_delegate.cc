@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/common/chrome_switches.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/process_manager.h"
@@ -40,11 +41,17 @@ bool ChromeProcessManagerDelegate::IsBackgroundPageAllowed(
     content::BrowserContext* context) const {
   Profile* profile = static_cast<Profile*>(context);
 
-  // Disallow if the current session is a Guest mode session but the current
-  // browser context is *not* off-the-record. Such context is artificial and
-  // background page shouldn't be created in it.
+  bool is_normal_session = true;
+#if defined(OS_CHROMEOS)
+  is_normal_session = user_manager::UserManager::Get()->IsUserLoggedIn() &&
+                      !profile->IsGuestSession();
+#endif
+
+  // Disallow if the current session is a Guest mode session or login screen but
+  // the current browser context is *not* off-the-record. Such context is
+  // artificial and background page shouldn't be created in it.
   // http://crbug.com/329498
-  return !(profile->IsGuestSession() && !profile->IsOffTheRecord());
+  return !(!is_normal_session && !profile->IsOffTheRecord());
 }
 
 bool ChromeProcessManagerDelegate::DeferCreatingStartupBackgroundHosts(
