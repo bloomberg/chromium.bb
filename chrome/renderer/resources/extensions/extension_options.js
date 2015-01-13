@@ -128,7 +128,7 @@ ExtensionOptionsImpl.prototype.handleAttributeMutation =
     if (!this.guest.getId())
       return;
 
-    this.guest.setAutoSize({
+    this.guest.setSize({
       'enableAutoSize': this.element.hasAttribute('autosize'),
       'min': {
         'width': parseInt(this.minwidth || 0),
@@ -177,7 +177,7 @@ ExtensionOptionsImpl.prototype.resize =
   if (newHeight > this.minheight)
     this.minheight = newHeight;
 
-  this.guest.setAutoSize({
+  this.guest.setSize({
     'enableAutoSize': this.element.hasAttribute('autosize'),
     'min': {
       'width': parseInt(this.minwidth || 0),

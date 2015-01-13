@@ -23,18 +23,25 @@
         }
       },
       {
-        "id": "AutoSizeParams",
+        "id": "SizeParams",
         "type": "object",
-        "description": "Autosize parameters.",
+        "description": "Size parameters.",
         "properties": {
           "enableAutoSize": {
-            "type": "boolean"
+            "type": "boolean",
+            "optional": true
           },
           "min": {
-            "$ref": "Size"
+            "$ref": "Size",
+            "optional": true
           },
           "max": {
-            "$ref": "Size"
+            "$ref": "Size",
+            "optional": true
+          },
+          "normal": {
+            "$ref": "Size",
+            "optional": true
           }
         }
       }
@@ -83,7 +90,7 @@
         ]
       },
       {
-        "name": "setAutoSize",
+        "name": "setSize",
         "type": "function",
         "parameters": [
           {
@@ -92,7 +99,7 @@
             "description": "The instance ID of the guest &lt;webview&gt; process. This not exposed to developers through the API."
           },
           {
-            "$ref": "AutoSizeParams",
+            "$ref": "SizeParams",
             "name": "params"
           },
           {
