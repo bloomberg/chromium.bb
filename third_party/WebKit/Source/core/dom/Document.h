@@ -908,7 +908,7 @@ public:
     bool loadEventFinished() const { return m_loadEventProgress >= LoadEventCompleted; }
     bool unloadStarted() const { return m_loadEventProgress >= PageHideInProgress; }
     bool processingBeforeUnload() const { return m_loadEventProgress == BeforeUnloadEventInProgress; }
-    void suppressLoadEvent() { m_loadEventProgress = LoadEventCompleted; }
+    void suppressLoadEvent();
 
     void setContainsPlugins() { m_containsPlugins = true; }
     bool containsPlugins() const { return m_containsPlugins; }
@@ -981,7 +981,7 @@ public:
     bool hasActiveParser();
     unsigned activeParserCount() { return m_activeParserCount; }
     void incrementActiveParserCount() { ++m_activeParserCount; }
-    void decrementActiveParserCount();
+    void decrementActiveParserCount() { --m_activeParserCount; }
 
     void setContextFeatures(ContextFeatures&);
     ContextFeatures& contextFeatures() const { return *m_contextFeatures; }

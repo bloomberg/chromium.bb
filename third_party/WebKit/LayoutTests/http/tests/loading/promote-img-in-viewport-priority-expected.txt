@@ -9,8 +9,8 @@ http://127.0.0.1:8000/misc/resources/image-slow-out-of-viewport.pl has priority 
 http://127.0.0.1:8000/misc/resources/image-slow.pl changed priority to Low, intra_priority 300
 frame "<!--framePath //<!--frame0-->-->" - didFinishDocumentLoadForFrame
 frame "<!--framePath //<!--frame0-->-->" - didHandleOnloadEventsForFrame
-main frame - didHandleOnloadEventsForFrame
 frame "<!--framePath //<!--frame0-->-->" - didFinishLoadForFrame
+main frame - didHandleOnloadEventsForFrame
 main frame - didFinishLoadForFrame
 PASS successfullyParsed is true
 

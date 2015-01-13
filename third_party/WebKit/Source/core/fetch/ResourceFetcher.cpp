@@ -1395,9 +1395,6 @@ void ResourceFetcher::willTerminateResourceLoader(ResourceLoader* loader)
         m_nonBlockingLoaders->remove(loader);
     else
         ASSERT_NOT_REACHED();
-
-    if (LocalFrame* frame = this->frame())
-        frame->loader().checkLoadComplete();
 }
 
 void ResourceFetcher::willStartLoadingResource(Resource* resource, ResourceRequest& request)

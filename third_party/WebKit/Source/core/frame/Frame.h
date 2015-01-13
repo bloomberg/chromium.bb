@@ -108,14 +108,13 @@ public:
     // method.
     bool isRemoteFrameTemporary() const { return m_remotePlatformLayer; }
 
-    virtual bool checkLoadComplete() = 0;
-
     // isLoading() is true when the embedder should think a load is in progress.
     // In the case of LocalFrames, it means that the frame has sent a didStartLoading()
     // callback, but not the matching didStopLoading(). Inside blink, you probably
     // want Document::loadEventFinished() instead.
     void setIsLoading(bool isLoading) { m_isLoading = isLoading; }
     bool isLoading() const { return m_isLoading; }
+    virtual bool isLoadingAsChild() const { return isLoading(); }
 
 protected:
     Frame(FrameClient*, FrameHost*, FrameOwner*);

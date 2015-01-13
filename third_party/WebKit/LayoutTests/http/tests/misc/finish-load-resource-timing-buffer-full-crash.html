@@ -3,7 +3,7 @@ if (window.testRunner)
     testRunner.dumpAsText();
 
 performance.onwebkitresourcetimingbufferfull = function() {
-  document.body.innerHTML = "PASS";
+  document.body.appendChild(document.createTextNode("PASS"));
 };
 performance.webkitSetResourceTimingBufferSize(1);
 </script>

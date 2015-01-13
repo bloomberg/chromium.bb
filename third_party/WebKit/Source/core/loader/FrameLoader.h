@@ -123,8 +123,6 @@ public:
     FrameLoadType loadType() const;
     void setLoadType(FrameLoadType loadType) { m_loadType = loadType; }
 
-    void checkLoadComplete();
-
     FrameLoaderClient* client() const;
 
     void setDefersLoading(bool);
@@ -182,11 +180,7 @@ public:
 
     void trace(Visitor*);
 
-    bool checkLoadCompleteForThisFrame();
-
 private:
-    bool allChildrenAreComplete() const; // immediate children, not all descendants
-
     void checkTimerFired(Timer<FrameLoader>*);
     void didAccessInitialDocumentTimerFired(Timer<FrameLoader>*);
 

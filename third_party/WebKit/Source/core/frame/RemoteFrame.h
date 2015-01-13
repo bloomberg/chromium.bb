@@ -29,7 +29,6 @@ public:
     virtual void reload(ReloadPolicy, ClientRedirectPolicy) override;
     virtual void detach() override;
     virtual RemoteSecurityContext* securityContext() const override;
-    bool checkLoadComplete() override;
     void printNavigationErrorMessage(const Frame&, const char* reason) { }
 
     // FIXME: Remove this method once we have input routing in the browser

@@ -5032,6 +5032,12 @@ Element* Document::pointerLockElement() const
     return 0;
 }
 
+void Document::suppressLoadEvent()
+{
+    if (!loadEventFinished())
+        m_loadEventProgress = LoadEventCompleted;
+}
+
 void Document::decrementLoadEventDelayCount()
 {
     ASSERT(m_loadEventDelayCount);
@@ -5209,14 +5215,6 @@ void Document::adjustFloatRectForScrollAndAbsoluteZoom(FloatRect& rect, RenderOb
 bool Document::hasActiveParser()
 {
     return m_activeParserCount || (m_parser && m_parser->processingData());
-}
-
-void Document::decrementActiveParserCount()
-{
-    --m_activeParserCount;
-    if (!frame())
-        return;
-    frame()->loader().checkLoadComplete();
 }
 
 void Document::setContextFeatures(ContextFeatures& features)

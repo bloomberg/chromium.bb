@@ -12,6 +12,7 @@ window.onload = function() {
         var serializedHTML = internals.serializeNavigationMarkup();
         var testiframe = document.getElementById('testiframe');
         testiframe.contentDocument.write(serializedHTML);
+        testiframe.contentDocument.close();
 
         transitionElement = document.getElementById('transitionElement');
         sourceElement = document.getElementById('boxTransitionElement');

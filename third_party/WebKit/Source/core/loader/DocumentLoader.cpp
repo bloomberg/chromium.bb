@@ -280,8 +280,6 @@ void DocumentLoader::finishedLoading(double finishTime)
     if (!m_mainDocumentError.isNull())
         return;
     clearMainResourceLoader();
-    if (!frameLoader()->stateMachine()->creatingInitialEmptyDocument())
-        frameLoader()->checkLoadComplete();
 
     // If the document specified an application cache manifest, it violates the author's intent if we store it in the memory cache
     // and deny the appcache the chance to intercept it in the future, so remove from the memory cache.

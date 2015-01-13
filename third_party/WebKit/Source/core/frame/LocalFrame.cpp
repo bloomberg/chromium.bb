@@ -293,11 +293,6 @@ SecurityContext* LocalFrame::securityContext() const
     return document();
 }
 
-bool LocalFrame::checkLoadComplete()
-{
-    return loader().checkLoadCompleteForThisFrame();
-}
-
 void LocalFrame::printNavigationErrorMessage(const Frame& targetFrame, const char* reason)
 {
     if (!targetFrame.isLocalFrame())
@@ -308,6 +303,11 @@ void LocalFrame::printNavigationErrorMessage(const Frame& targetFrame, const cha
 
     // FIXME: should we print to the console of the document performing the navigation instead?
     targetLocalFrame.localDOMWindow()->printErrorMessage(message);
+}
+
+bool LocalFrame::isLoadingAsChild() const
+{
+    return isLoading() || !document()->isLoadCompleted();
 }
 
 void LocalFrame::disconnectOwnerElement()

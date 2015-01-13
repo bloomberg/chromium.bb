@@ -8,5 +8,6 @@ Eval should be blocked in the iframe, but inline script should be allowed.
 <script>
 window.onload = function() {
     frames[0].document.write("<script>alert(/PASS/); eval('alert(/FAIL/);');<\/script>");
+    frames[0].document.close();
 }
 </script>

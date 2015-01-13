@@ -11,6 +11,7 @@ window.onload = function () {
     window.iframe = document.getElementById("iframe");
     alert("Ready");
     window.iframe.contentDocument.write("<!DOCTYPE html><html style='width: 100px; height: 100px; background-color: green'></html>");
+    window.iframe.contentDocument.close();
     alert("PASS");
 }
 </script>

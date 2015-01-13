@@ -5,7 +5,7 @@ CONSOLE ERROR: line 4: The XSS Auditor refused to execute a script in 'http://lo
 didDetectXSS
 frame "<!--framePath //<!--frame0-->-->" - didFinishDocumentLoadForFrame
 frame "<!--framePath //<!--frame0-->-->" - didHandleOnloadEventsForFrame
-main frame - didHandleOnloadEventsForFrame
 frame "<!--framePath //<!--frame0-->-->" - didFinishLoadForFrame
+main frame - didHandleOnloadEventsForFrame
 main frame - didFinishLoadForFrame
 

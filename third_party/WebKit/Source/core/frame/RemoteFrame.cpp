@@ -70,18 +70,6 @@ RemoteSecurityContext* RemoteFrame::securityContext() const
     return m_securityContext.get();
 }
 
-bool RemoteFrame::checkLoadComplete()
-{
-    if (isLoading())
-        return false;
-
-    bool allChildrenAreDoneLoading = true;
-    for (RefPtrWillBeRawPtr<Frame> child = tree().firstChild(); child; child = child->tree().nextSibling()) {
-        allChildrenAreDoneLoading &= child->checkLoadComplete();
-    }
-    return allChildrenAreDoneLoading;
-}
-
 void RemoteFrame::forwardInputEvent(Event* event)
 {
     remoteFrameClient()->forwardInputEvent(event);

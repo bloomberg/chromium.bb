@@ -6,8 +6,8 @@ frame "f" - didCommitLoadForFrame
 frame "f" - didReceiveTitle: Frame to test replaceChild "action"
 frame "f" - didFinishDocumentLoadForFrame
 frame "f" - didHandleOnloadEventsForFrame
-main frame - didHandleOnloadEventsForFrame
 frame "f" - didFinishLoadForFrame
+main frame - didHandleOnloadEventsForFrame
 main frame - didFinishLoadForFrame
 frame "f" - didStartProvisionalLoadForFrame
 frame "f" - didCommitLoadForFrame
