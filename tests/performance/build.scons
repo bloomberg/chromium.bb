@@ -42,5 +42,5 @@ node = env.CommandTest(
 # Disable this on Valgrind because TestThreadWakeup is very slow under
 # Valgrind, and because we don't particularly need to measure
 # performance under Valgrind.
-env.AddNodeToTestSuite(node, ['small_tests'], 'run_trusted_performance_test',
+env.AddNodeToTestSuite(node, ['large_tests'], 'run_trusted_performance_test',
                        is_broken=is_broken or env.Bit('running_on_valgrind'))

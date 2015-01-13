@@ -30,8 +30,10 @@ node = env.FileSizeTest('hello_world_size.out',
                         hello_nexe,
                         expected_max)
 
+# Mark all performance tests as large tests, to avoid
+# running them in parallel.
 env.AddNodeToTestSuite(node,
-                       ['small_tests', 'performance_tests'],
+                       ['large_tests'],
                        'run_hello_world_size_test')
 
 
