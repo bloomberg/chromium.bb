@@ -108,7 +108,7 @@ const char kParameterUserAgentOverride[] = "userAgentOverride";
 const char kMenuItemCommandId[] = "commandId";
 const char kMenuItemLabel[] = "label";
 const char kPersistPrefix[] = "persist:";
-const char kStoragePartitionId[] = "storagePartitionId";
+const char kStoragePartitionId[] = "partition";
 const unsigned int kMaxOutstandingPermissionRequests = 1024;
 const int kInvalidPermissionRequestID = 0;
 

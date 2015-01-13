@@ -1127,6 +1127,18 @@ function testContentLoadEvent() {
   document.body.appendChild(webview);
 }
 
+// This test verifies that the load event fires when the a new page is
+// loaded even if the <webview> is set to display:none.
+function testContentLoadEventWithDisplayNone() {
+  var webview = document.createElement('webview');
+  webview.style.display = 'none';
+  webview.addEventListener('contentload', function(e) {
+    embedder.test.succeed();
+  });
+  webview.setAttribute('src', 'data:text/html,trigger navigation');
+  document.body.appendChild(webview);
+}
+
 // This test verifies that the WebRequest API onBeforeRequest event fires on
 // webview.
 function testWebRequestAPI() {
@@ -2075,6 +2087,7 @@ embedder.test.testList = {
   'testNewWindowNoPreventDefault': testNewWindowNoPreventDefault,
   'testNewWindowNoReferrerLink': testNewWindowNoReferrerLink,
   'testContentLoadEvent': testContentLoadEvent,
+  'testContentLoadEventWithDisplayNone': testContentLoadEventWithDisplayNone,
   'testDeclarativeWebRequestAPI': testDeclarativeWebRequestAPI,
   'testDeclarativeWebRequestAPISendMessage':
       testDeclarativeWebRequestAPISendMessage,

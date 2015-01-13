@@ -96,7 +96,7 @@ class WebViewGuest : public GuestView<WebViewGuest>,
   void CreateWebContents(const base::DictionaryValue& create_params,
                          const WebContentsCreatedCallback& callback) override;
   void DidAttachToEmbedder() override;
-  void DidInitialize() override;
+  void DidInitialize(const base::DictionaryValue& create_params) override;
   void DidStopLoading() override;
   void EmbedderWillBeDestroyed() override;
   void GuestDestroyed() override;
@@ -162,6 +162,7 @@ class WebViewGuest : public GuestView<WebViewGuest>,
                           content::WebContents* new_contents) override;
 
   // BrowserPluginGuestDelegate implementation.
+  bool CanRunInDetachedState() const override;
   content::WebContents* CreateNewGuestWindow(
       const content::WebContents::CreateParams& create_params) override;
   void RequestPointerLockPermission(
@@ -319,6 +320,8 @@ class WebViewGuest : public GuestView<WebViewGuest>,
                                content::WebContents* guest_web_contents);
 
   bool HandleKeyboardShortcuts(const content::NativeWebKeyboardEvent& event);
+
+  void ApplyAttributes(const base::DictionaryValue& params);
 
   // Identifies the set of rules registries belonging to this guest.
   int rules_registry_id_;

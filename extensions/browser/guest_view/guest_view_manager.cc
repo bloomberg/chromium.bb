@@ -172,7 +172,7 @@ content::WebContents* GuestViewManager::CreateGuestWithWebContentsParams(
   guest_create_params.guest_delegate = guest;
   content::WebContents* guest_web_contents =
       WebContents::Create(guest_create_params);
-  guest->InitWithWebContents(guest_web_contents);
+  guest->InitWithWebContents(base::DictionaryValue(), guest_web_contents);
   return guest_web_contents;
 }
 

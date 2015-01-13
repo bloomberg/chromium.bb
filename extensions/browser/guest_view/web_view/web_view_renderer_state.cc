@@ -31,7 +31,11 @@ void WebViewRendererState::AddGuest(int guest_process_id,
                                     const WebViewInfo& webview_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   RenderId render_id(guest_process_id, guest_routing_id);
+  bool updating = webview_info_map_.find(render_id) != webview_info_map_.end();
   webview_info_map_[render_id] = webview_info;
+  if (updating)
+    return;
+
   WebViewPartitionIDMap::iterator iter =
       webview_partition_id_map_.find(guest_process_id);
   if (iter != webview_partition_id_map_.end()) {

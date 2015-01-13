@@ -58,7 +58,7 @@ class AppViewGuest : public GuestView<AppViewGuest>,
   void CreateWebContents(const base::DictionaryValue& create_params,
                          const WebContentsCreatedCallback& callback) override;
   void DidAttachToEmbedder() override;
-  void DidInitialize() override;
+  void DidInitialize(const base::DictionaryValue& create_params) override;
 
   // Sets the AppDelegate for this guest.
   void SetAppDelegateForTest(AppDelegate* delegate);

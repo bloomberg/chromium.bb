@@ -185,19 +185,22 @@ void GuestViewBase::Init(const base::DictionaryValue& create_params,
     return;
   }
 
+  scoped_ptr<base::DictionaryValue> params(create_params.DeepCopy());
   CreateWebContents(create_params,
                     base::Bind(&GuestViewBase::CompleteInit,
                                weak_ptr_factory_.GetWeakPtr(),
+                               base::Passed(&params),
                                callback));
 }
 
 void GuestViewBase::InitWithWebContents(
+    const base::DictionaryValue& create_params,
     content::WebContents* guest_web_contents) {
   DCHECK(guest_web_contents);
 
   // At this point, we have just created the guest WebContents, we need to add
-  // an observer to the embedder WebContents. This observer will be responsible
-  // for destroying the guest WebContents if the embedder goes away.
+  // an observer to the owner WebContents. This observer will be responsible
+  // for destroying the guest WebContents if the owner goes away.
   owner_lifetime_observer_.reset(
       new OwnerLifetimeObserver(this, owner_web_contents_));
 
@@ -211,8 +214,15 @@ void GuestViewBase::InitWithWebContents(
   // Create a ZoomController to allow the guest's contents to be zoomed.
   ui_zoom::ZoomController::CreateForWebContents(guest_web_contents);
 
+  // Populate the view instance ID if we have it on creation.
+  create_params.GetInteger(guestview::kParameterInstanceId,
+                           &view_instance_id_);
+
+  if (CanRunInDetachedState())
+    SetUpAutoSize(create_params);
+
   // Give the derived class an opportunity to perform additional initialization.
-  DidInitialize();
+  DidInitialize(create_params);
 }
 
 void GuestViewBase::SetAutoSize(bool enabled,
@@ -230,7 +240,7 @@ void GuestViewBase::SetAutoSize(bool enabled,
 
   auto_size_enabled_ = enabled;
 
-  if (!attached())
+  if (!attached() && !CanRunInDetachedState())
     return;
 
   content::RenderViewHost* rvh = web_contents()->GetRenderViewHost();
@@ -319,7 +329,7 @@ bool GuestViewBase::ZoomPropagatesFromEmbedderToGuest() const {
 void GuestViewBase::DidAttach(int guest_proxy_routing_id) {
   opener_lifetime_observer_.reset();
 
-  SetUpAutoSize();
+  SetUpAutoSize(*attach_params());
 
   // Give the derived class an opportunity to perform some actions.
   DidAttachToEmbedder();
@@ -541,7 +551,8 @@ void GuestViewBase::OnZoomChanged(
 void GuestViewBase::DispatchEventToEmbedder(Event* event) {
   scoped_ptr<Event> event_ptr(event);
 
-  if (!attached()) {
+  if (!attached() &&
+      (!CanRunInDetachedState() || !can_owner_receive_events())) {
     pending_events_.push_back(linked_ptr<Event>(event_ptr.release()));
     return;
   }
@@ -571,8 +582,10 @@ void GuestViewBase::SendQueuedEvents() {
   }
 }
 
-void GuestViewBase::CompleteInit(const WebContentsCreatedCallback& callback,
-                                 content::WebContents* guest_web_contents) {
+void GuestViewBase::CompleteInit(
+    scoped_ptr<base::DictionaryValue> create_params,
+    const WebContentsCreatedCallback& callback,
+    content::WebContents* guest_web_contents) {
   if (!guest_web_contents) {
     // The derived class did not create a WebContents so this class serves no
     // purpose. Let's self-destruct.
@@ -580,29 +593,29 @@ void GuestViewBase::CompleteInit(const WebContentsCreatedCallback& callback,
     callback.Run(NULL);
     return;
   }
-  InitWithWebContents(guest_web_contents);
+  InitWithWebContents(*create_params, guest_web_contents);
   callback.Run(guest_web_contents);
 }
 
-void GuestViewBase::SetUpAutoSize() {
+void GuestViewBase::SetUpAutoSize(const base::DictionaryValue& params) {
   // Read the autosize parameters passed in from the embedder.
   bool auto_size_enabled = false;
-  attach_params()->GetBoolean(guestview::kAttributeAutoSize,
-                              &auto_size_enabled);
+  params.GetBoolean(guestview::kAttributeAutoSize, &auto_size_enabled);
 
   int max_height = 0;
   int max_width = 0;
-  attach_params()->GetInteger(guestview::kAttributeMaxHeight, &max_height);
-  attach_params()->GetInteger(guestview::kAttributeMaxWidth, &max_width);
+  params.GetInteger(guestview::kAttributeMaxHeight, &max_height);
+  params.GetInteger(guestview::kAttributeMaxWidth, &max_width);
 
   int min_height = 0;
   int min_width = 0;
-  attach_params()->GetInteger(guestview::kAttributeMinHeight, &min_height);
-  attach_params()->GetInteger(guestview::kAttributeMinWidth, &min_width);
+  params.GetInteger(guestview::kAttributeMinHeight, &min_height);
+  params.GetInteger(guestview::kAttributeMinWidth, &min_width);
 
   // Call SetAutoSize to apply all the appropriate validation and clipping of
   // values.
-  SetAutoSize(auto_size_enabled, gfx::Size(min_width, min_height),
+  SetAutoSize(auto_size_enabled,
+              gfx::Size(min_width, min_height),
               gfx::Size(max_width, max_height));
 }
 

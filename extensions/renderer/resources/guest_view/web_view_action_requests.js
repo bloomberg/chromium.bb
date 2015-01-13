@@ -157,8 +157,8 @@ NewWindow.prototype.getInterfaceObject = function() {
 
       var webViewImpl = privates(webview).internal;
       // Update the partition.
-      if (this.event.storagePartitionId) {
-        webViewImpl.onAttach(this.event.storagePartitionId);
+      if (this.event.partition) {
+        webViewImpl.onAttach(this.event.partition);
       }
 
       var attached = webViewImpl.attachWindow(this.event.windowId);

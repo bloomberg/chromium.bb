@@ -235,7 +235,6 @@ void WebViewGuest::CreateWebContents(
       owner_web_contents()->GetRenderProcessHost();
   std::string storage_partition_id;
   bool persist_storage = false;
-  std::string storage_partition_string;
   ParsePartitionParam(create_params, &storage_partition_id, &persist_storage);
   // Validate that the partition id coming from the renderer is valid UTF-8,
   // since we depend on this in other parts of the code, such as FilePath
@@ -281,63 +280,10 @@ void WebViewGuest::CreateWebContents(
 }
 
 void WebViewGuest::DidAttachToEmbedder() {
-  std::string name;
-  if (attach_params()->GetString(webview::kAttributeName, &name)) {
-    // If the guest window's name is empty, then the WebView tag's name is
-    // assigned. Otherwise, the guest window's name takes precedence over the
-    // WebView tag's name.
-    if (name_.empty())
-      name_ = name;
-  }
-  ReportFrameNameChange(name_);
-
-  std::string user_agent_override;
-  if (attach_params()->GetString(webview::kParameterUserAgentOverride,
-                                 &user_agent_override)) {
-    SetUserAgentOverride(user_agent_override);
-  } else {
-    SetUserAgentOverride("");
-  }
-
-  bool is_pending_new_window = false;
-  if (GetOpener()) {
-    // We need to do a navigation here if the target URL has changed between
-    // the time the WebContents was created and the time it was attached.
-    // We also need to do an initial navigation if a RenderView was never
-    // created for the new window in cases where there is no referrer.
-    PendingWindowMap::iterator it =
-        GetOpener()->pending_new_windows_.find(this);
-    if (it != GetOpener()->pending_new_windows_.end()) {
-      const NewWindowInfo& new_window_info = it->second;
-      if (new_window_info.changed || !web_contents()->HasOpener())
-        NavigateGuest(new_window_info.url.spec(), false /* force_navigation */);
-
-      // Once a new guest is attached to the DOM of the embedder page, then the
-      // lifetime of the new guest is no longer managed by the opener guest.
-      GetOpener()->pending_new_windows_.erase(this);
-
-      is_pending_new_window = true;
-    }
-  }
-
-  // Only read the src attribute if this is not a New Window API flow.
-  if (!is_pending_new_window) {
-    std::string src;
-    if (attach_params()->GetString(webview::kAttributeSrc, &src) &&
-        !src.empty()) {
-      NavigateGuest(src, false /* force_navigation */);
-    }
-  }
-
-  bool allow_transparency = false;
-  attach_params()->GetBoolean(webview::kAttributeAllowTransparency,
-                              &allow_transparency);
-  // We need to set the background opaque flag after navigation to ensure that
-  // there is a RenderWidgetHostView available.
-  SetAllowTransparency(allow_transparency);
+  ApplyAttributes(*attach_params());
 }
 
-void WebViewGuest::DidInitialize() {
+void WebViewGuest::DidInitialize(const base::DictionaryValue& create_params) {
   script_executor_.reset(
       new ScriptExecutor(web_contents(), &script_observers_));
 
@@ -352,6 +298,18 @@ void WebViewGuest::DidInitialize() {
   if (web_view_guest_delegate_)
     web_view_guest_delegate_->OnDidInitialize();
   AttachWebViewHelpers(web_contents());
+
+  rules_registry_id_ = GetOrGenerateRulesRegistryID(
+      owner_web_contents()->GetRenderProcessHost()->GetID(),
+      view_instance_id());
+
+  // We must install the mapping from guests to WebViews prior to resuming
+  // suspended resource loads so that the WebRequest API will catch resource
+  // requests.
+  PushWebViewStateToIOThread();
+
+  // TODO(fsamuel): Once <webview> can run in a detached state, call
+  // ApplyAttributes here.
 }
 
 void WebViewGuest::AttachWebViewHelpers(WebContents* contents) {
@@ -528,6 +486,10 @@ void WebViewGuest::OnFrameNameChanged(bool is_top_level,
   ReportFrameNameChange(name);
 }
 
+bool WebViewGuest::CanRunInDetachedState() const {
+  return false;
+}
+
 void WebViewGuest::CreateNewGuestWebViewWindow(
     const content::OpenURLParams& params) {
   GuestViewManager* guest_manager =
@@ -641,8 +603,6 @@ void WebViewGuest::Reload() {
 
 void WebViewGuest::SetUserAgentOverride(
     const std::string& user_agent_override) {
-  if (!attached())
-    return;
   is_overriding_user_agent_ = !user_agent_override.empty();
   if (is_overriding_user_agent_) {
     content::RecordAction(UserMetricsAction("WebView.Guest.OverrideUA"));
@@ -795,8 +755,6 @@ void WebViewGuest::RenderProcessGone(base::TerminationStatus status) {
 }
 
 void WebViewGuest::UserAgentOverrideSet(const std::string& user_agent) {
-  if (!attached())
-    return;
   content::NavigationController& controller = web_contents()->GetController();
   content::NavigationEntry* entry = controller.GetVisibleEntry();
   if (!entry)
@@ -946,9 +904,6 @@ content::ColorChooser* WebViewGuest::OpenColorChooser(
 
 void WebViewGuest::NavigateGuest(const std::string& src,
                                  bool force_navigation) {
-  if (!attached())
-    return;
-
   if (src.empty())
     return;
 
@@ -980,6 +935,8 @@ void WebViewGuest::NavigateGuest(const std::string& src,
                     content::Referrer(),
                     ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
                     web_contents());
+
+  src_ = validated_url;
 }
 
 bool WebViewGuest::HandleKeyboardShortcuts(
@@ -1020,6 +977,58 @@ bool WebViewGuest::HandleKeyboardShortcuts(
 #endif
 
   return false;
+}
+
+void WebViewGuest::ApplyAttributes(const base::DictionaryValue& params) {
+  std::string name;
+  if (params.GetString(webview::kAttributeName, &name)) {
+    // If the guest window's name is empty, then the WebView tag's name is
+    // assigned. Otherwise, the guest window's name takes precedence over the
+    // WebView tag's name.
+    if (name_.empty())
+      SetName(name);
+  }
+  if (attached())
+    ReportFrameNameChange(name_);
+
+  std::string user_agent_override;
+  params.GetString(webview::kParameterUserAgentOverride, &user_agent_override);
+  SetUserAgentOverride(user_agent_override);
+
+  bool allow_transparency = false;
+  params.GetBoolean(webview::kAttributeAllowTransparency, &allow_transparency);
+  // We need to set the background opaque flag after navigation to ensure that
+  // there is a RenderWidgetHostView available.
+  SetAllowTransparency(allow_transparency);
+
+  bool is_pending_new_window = false;
+  if (GetOpener()) {
+    // We need to do a navigation here if the target URL has changed between
+    // the time the WebContents was created and the time it was attached.
+    // We also need to do an initial navigation if a RenderView was never
+    // created for the new window in cases where there is no referrer.
+    PendingWindowMap::iterator it =
+        GetOpener()->pending_new_windows_.find(this);
+    if (it != GetOpener()->pending_new_windows_.end()) {
+      const NewWindowInfo& new_window_info = it->second;
+      if (new_window_info.changed || !web_contents()->HasOpener())
+        NavigateGuest(new_window_info.url.spec(), false /* force_navigation */);
+
+      // Once a new guest is attached to the DOM of the embedder page, then the
+      // lifetime of the new guest is no longer managed by the opener guest.
+      GetOpener()->pending_new_windows_.erase(this);
+
+      is_pending_new_window = true;
+    }
+  }
+
+  // Only read the src attribute if this is not a New Window API flow.
+  if (!is_pending_new_window) {
+    std::string src;
+    params.GetString(webview::kAttributeSrc, &src);
+    NavigateGuest(src, false /* force_navigation */);
+  }
+
 }
 
 void WebViewGuest::ShowContextMenu(

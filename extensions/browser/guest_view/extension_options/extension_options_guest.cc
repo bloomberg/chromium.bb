@@ -129,7 +129,8 @@ void ExtensionOptionsGuest::DidAttachToEmbedder() {
   has_navigated_ = true;
 }
 
-void ExtensionOptionsGuest::DidInitialize() {
+void ExtensionOptionsGuest::DidInitialize(
+    const base::DictionaryValue& create_params) {
   extension_function_dispatcher_.reset(
       new extensions::ExtensionFunctionDispatcher(browser_context(), this));
   if (extension_options_guest_delegate_) {

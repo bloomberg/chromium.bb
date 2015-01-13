@@ -155,9 +155,14 @@ WebViewImpl.prototype.onSizeChanged = function(webViewEvent) {
 
 WebViewImpl.prototype.createGuest = function() {
   var params = {
-    'storagePartitionId': this.attributes[
-      WebViewConstants.ATTRIBUTE_PARTITION].getValue()
+    'instanceId': this.viewInstanceId,
+    'userAgentOverride': this.userAgentOverride,
+    'width': this.element.offsetWidth,
+    'height': this.element.offsetHeight,
   };
+  for (var i in this.attributes) {
+    params[i] = this.attributes[i].getValue();
+  }
 
   this.guest.create(params, function() {
     this.attachWindow();

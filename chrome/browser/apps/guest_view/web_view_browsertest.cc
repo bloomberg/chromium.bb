@@ -844,7 +844,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, AutoSize) {
 }
 
 // Test for http://crbug.com/419611.
-IN_PROC_BROWSER_TEST_F(WebViewTest, DisplayNoneSetSrc) {
+IN_PROC_BROWSER_TEST_F(WebViewTest, DISABLED_DisplayNoneSetSrc) {
   LoadAndLaunchPlatformApp("web_view/display_none_set_src",
                            "WebViewTest.LAUNCHED");
   // Navigate the guest while it's in "display: none" state.
@@ -1085,6 +1085,14 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestNewWindowNoReferrerLink) {
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestContentLoadEvent) {
   TestHelper("testContentLoadEvent", "web_view/shim", NO_TEST_SERVER);
+}
+
+// TODO(fsamuel): Enable this test once <webview> can run in a detached state.
+IN_PROC_BROWSER_TEST_F(WebViewTest,
+                       DISABLED_Shim_TestContentLoadEventWithDisplayNone) {
+  TestHelper("testContentLoadEventWithDisplayNone",
+             "web_view/shim",
+             NO_TEST_SERVER);
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestDeclarativeWebRequestAPI) {

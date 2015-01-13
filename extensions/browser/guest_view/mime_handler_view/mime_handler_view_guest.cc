@@ -126,7 +126,8 @@ void MimeHandlerViewGuest::DidAttachToEmbedder() {
       std::string());
 }
 
-void MimeHandlerViewGuest::DidInitialize() {
+void MimeHandlerViewGuest::DidInitialize(
+    const base::DictionaryValue& create_params) {
   extension_function_dispatcher_.reset(
       new ExtensionFunctionDispatcher(browser_context(), this));
   if (delegate_)

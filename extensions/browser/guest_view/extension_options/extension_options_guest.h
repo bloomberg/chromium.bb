@@ -31,7 +31,7 @@ class ExtensionOptionsGuest
   void CreateWebContents(const base::DictionaryValue& create_params,
                          const WebContentsCreatedCallback& callback) override;
   void DidAttachToEmbedder() override;
-  void DidInitialize() override;
+  void DidInitialize(const base::DictionaryValue& create_params) override;
   void DidStopLoading() override;
   const char* GetAPINamespace() const override;
   int GetTaskPrefix() const override;
