@@ -36,6 +36,16 @@ function test()
             testAgainstGolden(valuePrompt, "", false, ["aliceblue", "red", "inherit"], [], next);
         },
 
+        function testImportantDeclarationDoNotToggleOnExclamationMark(next)
+        {
+            testAgainstGolden(valuePrompt, "red !", false, [], ["!important"], next);
+        },
+
+        function testImportantDeclaration(next)
+        {
+            testAgainstGolden(valuePrompt, "red !i", false, ["!important"], [], next);
+        },
+
         function testValueR(next)
         {
             testAgainstGolden(valuePrompt, "R", false, ["RED", "ROSYBROWN"], ["aliceblue", "inherit"], next);

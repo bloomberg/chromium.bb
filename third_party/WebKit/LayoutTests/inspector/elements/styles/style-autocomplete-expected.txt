@@ -9,6 +9,10 @@ Running: testSingleCharName
 
 Running: testEmptyValue
 
+Running: testImportantDeclarationDoNotToggleOnExclamationMark
+
+Running: testImportantDeclaration
+
 Running: testValueR
 
 Running: testValueWithParenthesis
