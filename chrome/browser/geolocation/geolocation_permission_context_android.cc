@@ -98,3 +98,9 @@ void GeolocationPermissionContextAndroid::InterceptPermissionCheck(
     const BrowserPermissionCallback& callback, bool granted) {
   callback.Run(granted);
 }
+
+void GeolocationPermissionContextAndroid::
+    SetGoogleLocationSettingsHelperForTesting(
+        scoped_ptr<GoogleLocationSettingsHelper> helper) {
+  google_location_settings_helper_ = helper.Pass();
+}

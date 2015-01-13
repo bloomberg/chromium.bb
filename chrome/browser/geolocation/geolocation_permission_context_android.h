@@ -25,6 +25,10 @@
 // per site settings) are queried on the UI thread while the system level
 // permissions are considered I/O and thus checked in the blocking thread pool.
 
+// TODO(newt): investigate the comment above about threading. AFAICT, system
+// level permission checks actually happen on the UI thread, though they jump
+// through the IO thread unnecessarily. This should be fixed.
+
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/geolocation/geolocation_permission_context.h"
@@ -41,9 +45,11 @@ class GeolocationPermissionContextAndroid
     : public GeolocationPermissionContext {
  public:
   explicit GeolocationPermissionContextAndroid(Profile* profile);
-  virtual ~GeolocationPermissionContextAndroid();
+  ~GeolocationPermissionContextAndroid() override;
 
  private:
+  friend class GeolocationPermissionContextTests;
+
   struct PermissionRequestInfo {
     PermissionRequestInfo();
 
@@ -54,7 +60,7 @@ class GeolocationPermissionContextAndroid
   };
 
   // PermissionContextBase:
-  virtual void RequestPermission(
+  void RequestPermission(
       content::WebContents* web_contents,
        const PermissionRequestID& id,
        const GURL& requesting_frame_origin,
@@ -73,6 +79,11 @@ class GeolocationPermissionContextAndroid
   // granting the permission.
   void InterceptPermissionCheck(const BrowserPermissionCallback& callback,
                                 bool granted);
+
+  // Overrides the GoogleLocationSettingsHelper used to determine whether
+  // system and Chrome-wide location permissions are enabled.
+  void SetGoogleLocationSettingsHelperForTesting(
+      scoped_ptr<GoogleLocationSettingsHelper> helper);
 
   scoped_ptr<GoogleLocationSettingsHelper> google_location_settings_helper_;
   base::WeakPtrFactory<GeolocationPermissionContextAndroid> weak_factory_;

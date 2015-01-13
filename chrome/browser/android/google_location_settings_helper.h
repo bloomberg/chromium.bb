@@ -15,6 +15,7 @@ class GoogleLocationSettingsHelper {
  public:
   virtual ~GoogleLocationSettingsHelper() {}
 
+  // TODO(newt): remove this method once LocationSettings is all upstreamed.
   static GoogleLocationSettingsHelper* Create();
 
   virtual bool IsSystemLocationEnabled() = 0;

@@ -40,6 +40,7 @@
 #if defined(OS_ANDROID)
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/android/mock_google_location_settings_helper.h"
+#include "chrome/browser/geolocation/geolocation_permission_context_android.h"
 #endif
 
 #if defined(ENABLE_EXTENSIONS)
@@ -245,11 +246,16 @@ void GeolocationPermissionContextTests::SetUp() {
 #endif
   InfoBarService::CreateForWebContents(web_contents());
   TabSpecificContentSettings::CreateForWebContents(web_contents());
-#if defined(OS_ANDROID)
-  MockGoogleLocationSettingsHelper::SetLocationStatus(true, true);
-#endif
   geolocation_permission_context_ =
       GeolocationPermissionContextFactory::GetForProfile(profile());
+#if defined(OS_ANDROID)
+  scoped_ptr<GoogleLocationSettingsHelper> helper(
+                new MockGoogleLocationSettingsHelper());
+  static_cast<GeolocationPermissionContextAndroid*>(
+      geolocation_permission_context_)->
+          SetGoogleLocationSettingsHelperForTesting(helper.Pass());
+  MockGoogleLocationSettingsHelper::SetLocationStatus(true, true);
+#endif
 }
 
 void GeolocationPermissionContextTests::TearDown() {

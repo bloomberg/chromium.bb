@@ -10,16 +10,15 @@
 // Mock implementation of GoogleLocationSettingsHelper for unit tests.
 class MockGoogleLocationSettingsHelper : public GoogleLocationSettingsHelper {
  public:
+  MockGoogleLocationSettingsHelper();
+  ~MockGoogleLocationSettingsHelper() override;
+
   static void SetLocationStatus(bool master, bool google_apps);
 
-  virtual bool IsSystemLocationEnabled() override;
+  bool IsSystemLocationEnabled() override;
 
   bool IsMasterLocationSettingEnabled();
   bool IsGoogleAppsLocationSettingEnabled();
-
- protected:
-  MockGoogleLocationSettingsHelper();
-  virtual ~MockGoogleLocationSettingsHelper();
 
  private:
   friend class GoogleLocationSettingsHelper;
