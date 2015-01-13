@@ -153,6 +153,8 @@ function runTest() {
       testPassed("Invalid oversample value did not change node.oversample");
     else
       testFailed("node.oversample incorrectly changed to invalid value " + node.oversample);
+    shouldThrow("node.curve = new Float32Array(1)");
+    shouldNotThrow("node.curve = new Float32Array(2)");
 
     // Start/stop for AudioBufferSourceNodes
     buffer = context.createBuffer(1,1, context.sampleRate);
