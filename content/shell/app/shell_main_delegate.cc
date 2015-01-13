@@ -166,13 +166,11 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
     if (!command_line.HasSwitch(switches::kEnableThreadedCompositing)) {
       command_line.AppendSwitch(switches::kDisableThreadedCompositing);
       command_line.AppendSwitch(cc::switches::kDisableThreadedAnimation);
+      command_line.AppendSwitch(switches::kDisableImplSidePainting);
       // Text blobs are normally disabled when kDisableImplSidePainting is
       // present to ensure correct LCD behavior, but for layout tests we want
       // them on because LCD is always suppressed.
       command_line.AppendSwitch(switches::kForceTextBlobs);
-
-      if (!command_line.HasSwitch(switches::kEnableImplSidePainting))
-        command_line.AppendSwitch(switches::kDisableImplSidePainting);
     }
 
     if (!command_line.HasSwitch(switches::kEnableDisplayList2dCanvas)) {
