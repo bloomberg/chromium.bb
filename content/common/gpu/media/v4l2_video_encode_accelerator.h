@@ -154,9 +154,8 @@ class CONTENT_EXPORT V4L2VideoEncodeAccelerator
   // Error notification (using PostTask() to child thread, if necessary).
   void NotifyError(Error error);
 
-  // Set the encoder_thread_ state (using PostTask to encoder thread, if
-  // necessary).
-  void SetEncoderState(State state);
+  // Set the encoder_state_ to kError and notify the client (if necessary).
+  void SetErrorState(Error error);
 
   //
   // Other utility functions.  Called on encoder_thread_, unless

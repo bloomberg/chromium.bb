@@ -478,8 +478,8 @@ void GLRenderingVDAClient::CreateAndStartDecoder() {
     decoder_ = decoders[i].Pass();
     weak_decoder_factory_.reset(
         new base::WeakPtrFactory<VideoDecodeAccelerator>(decoder_.get()));
-    SetState(CS_DECODER_SET);
     if (decoder_->Initialize(profile_, client)) {
+      SetState(CS_DECODER_SET);
       FinishInitialization();
       return;
     }

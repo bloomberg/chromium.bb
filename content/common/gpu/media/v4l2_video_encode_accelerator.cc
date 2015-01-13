@@ -18,11 +18,10 @@
 #include "content/public/common/content_switches.h"
 #include "media/base/bitstream_buffer.h"
 
-#define NOTIFY_ERROR(x)                            \
-  do {                                             \
-    SetEncoderState(kError);                       \
-    LOG(ERROR) << "calling NotifyError(): " << x;  \
-    NotifyError(x);                                \
+#define NOTIFY_ERROR(x)                        \
+  do {                                         \
+    LOG(ERROR) << "Setting error state:" << x; \
+    SetErrorState(x);                          \
   } while (0)
 
 #define IOCTL_OR_ERROR_RETURN_VALUE(type, arg, value)              \
@@ -172,7 +171,7 @@ bool V4L2VideoEncodeAccelerator::Initialize(
 
   RequestEncodingParametersChange(initial_bitrate, kInitialFramerate);
 
-  SetEncoderState(kInitialized);
+  encoder_state_ = kInitialized;
 
   child_message_loop_proxy_->PostTask(
       FROM_HERE,
@@ -281,7 +280,7 @@ void V4L2VideoEncodeAccelerator::Destroy() {
   }
 
   // Set to kError state just in case.
-  SetEncoderState(kError);
+  encoder_state_ = kError;
 
   delete this;
 }
@@ -783,21 +782,23 @@ void V4L2VideoEncodeAccelerator::NotifyError(Error error) {
   }
 }
 
-void V4L2VideoEncodeAccelerator::SetEncoderState(State state) {
-  DVLOG(3) << "SetEncoderState(): state=" << state;
-
+void V4L2VideoEncodeAccelerator::SetErrorState(Error error) {
   // We can touch encoder_state_ only if this is the encoder thread or the
   // encoder thread isn't running.
   if (encoder_thread_.message_loop() != NULL &&
       encoder_thread_.message_loop() != base::MessageLoop::current()) {
     encoder_thread_.message_loop()->PostTask(
-        FROM_HERE,
-        base::Bind(&V4L2VideoEncodeAccelerator::SetEncoderState,
-                   base::Unretained(this),
-                   state));
-  } else {
-    encoder_state_ = state;
+        FROM_HERE, base::Bind(&V4L2VideoEncodeAccelerator::SetErrorState,
+                              base::Unretained(this), error));
+    return;
   }
+
+  // Post NotifyError only if we are already initialized, as the API does
+  // not allow doing so before that.
+  if (encoder_state_ != kError && encoder_state_ != kUninitialized)
+    NotifyError(error);
+
+  encoder_state_ = kError;
 }
 
 void V4L2VideoEncodeAccelerator::RequestEncodingParametersChangeTask(
