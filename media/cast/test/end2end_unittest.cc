@@ -1456,7 +1456,8 @@ TEST_F(End2EndTest, ShoveHighFrameRateDownYerThroat) {
   EXPECT_LT((video_ticks_.back().second - test_end).InMilliseconds(), 1000);
 }
 
-TEST_F(End2EndTest, OldPacketNetwork) {
+// Disabled due to flake: http://crbug.com/448511
+TEST_F(End2EndTest, DISABLED_OldPacketNetwork) {
   Configure(CODEC_VIDEO_FAKE, CODEC_AUDIO_PCM16, 32000, 1);
   sender_to_receiver_.SetPacketPipe(test::NewRandomDrop(0.01));
   scoped_ptr<test::PacketPipe> echo_chamber(
