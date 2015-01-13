@@ -899,9 +899,6 @@ Signing in anyway will merge Chrome information like bookmarks, history, and oth
         </message>
       </if>
 
-      <message name="IDS_AUTOFILL_CC_INFOBAR_TEXT" desc="Text to show in the Autofill credit card request infobar.">
-        Do you want Chrome to save this credit card information for completing web forms?
-      </message>
       <message name="IDS_AUTOFILL_DIALOG_SAVE_LOCALLY_CHECKBOX" desc="Checkbox that controls whether info the user types into the autofill dialog is saved by chrome.">
         Save details in Chrome
       </message>

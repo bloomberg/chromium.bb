@@ -164,8 +164,6 @@
       'browser/bitmap_fetcher/bitmap_fetcher_service_factory.h',
       'browser/autofill/android/personal_data_manager_android.cc',
       'browser/autofill/android/personal_data_manager_android.h',
-      'browser/autofill/autofill_cc_infobar_delegate.cc',
-      'browser/autofill/autofill_cc_infobar_delegate.h',
       'browser/autofill/personal_data_manager_factory.cc',
       'browser/autofill/personal_data_manager_factory.h',
       'browser/autofill/validation_rules_storage_factory.cc',

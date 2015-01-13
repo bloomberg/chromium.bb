@@ -50,6 +50,7 @@ class TestAutofillClient : public AutofillClient {
   void DidFillOrPreviewField(const base::string16& autofilled_value,
                              const base::string16& profile_full_name) override;
   void OnFirstUserGestureObserved() override;
+  void LinkClicked(const GURL& url, WindowOpenDisposition disposition) override;
 
   void SetPrefs(scoped_ptr<PrefService> prefs) { prefs_ = prefs.Pass(); }
 

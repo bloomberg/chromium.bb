@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/autofill/autofill_cc_infobar_delegate.h"
+#include "components/autofill/core/browser/autofill_cc_infobar_delegate.h"
 
 #include "base/memory/scoped_ptr.h"
 #include "base/test/histogram_tester.h"
@@ -43,6 +43,7 @@ class TestPersonalDataManager : public PersonalDataManager {
 
 class AutofillCCInfobarDelegateTest : public ChromeRenderViewHostTestHarness {
  public:
+  AutofillCCInfobarDelegateTest();
   ~AutofillCCInfobarDelegateTest() override;
 
   void SetUp() override;
@@ -52,7 +53,13 @@ class AutofillCCInfobarDelegateTest : public ChromeRenderViewHostTestHarness {
   scoped_ptr<ConfirmInfoBarDelegate> CreateDelegate();
 
   scoped_ptr<TestPersonalDataManager> personal_data_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(AutofillCCInfobarDelegateTest);
 };
+
+AutofillCCInfobarDelegateTest::AutofillCCInfobarDelegateTest() {
+}
 
 AutofillCCInfobarDelegateTest::~AutofillCCInfobarDelegateTest() {}
 
@@ -82,8 +89,9 @@ scoped_ptr<ConfirmInfoBarDelegate>
 AutofillCCInfobarDelegateTest::CreateDelegate() {
   base::HistogramTester histogram_tester;
   CreditCard credit_card;
-  scoped_ptr<ConfirmInfoBarDelegate> delegate(
-      AutofillCCInfoBarDelegate::Create(base::Bind(
+  scoped_ptr<ConfirmInfoBarDelegate> delegate(AutofillCCInfoBarDelegate::Create(
+      ChromeAutofillClient::FromWebContents(web_contents()),
+      base::Bind(
           base::IgnoreResult(&TestPersonalDataManager::SaveImportedCreditCard),
           base::Unretained(personal_data_.get()), credit_card)));
   histogram_tester.ExpectUniqueSample("Autofill.CreditCardInfoBar",

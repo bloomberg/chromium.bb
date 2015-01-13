@@ -91,6 +91,8 @@ class AwAutofillClient : public autofill::AutofillClient,
       const base::string16& autofilled_value,
       const base::string16& profile_full_name) override;
   virtual void OnFirstUserGestureObserved() override;
+  virtual void LinkClicked(const GURL& url,
+                           WindowOpenDisposition disposition) override;
 
   void SuggestionSelected(JNIEnv* env, jobject obj, jint position);
 

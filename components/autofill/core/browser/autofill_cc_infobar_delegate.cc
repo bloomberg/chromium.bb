@@ -2,37 +2,37 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/autofill/autofill_cc_infobar_delegate.h"
+#include "components/autofill/core/browser/autofill_cc_infobar_delegate.h"
 
 #include "base/logging.h"
-#include "chrome/browser/infobars/infobar_service.h"
-#include "chrome/grit/generated_resources.h"
-#include "chrome/grit/google_chrome_strings.h"
+#include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/infobars/core/infobar.h"
-#include "content/public/browser/page_navigator.h"
-#include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_delegate.h"
+#include "components/infobars/core/infobar_manager.h"
+#include "grit/components_scaled_resources.h"
 #include "grit/components_strings.h"
-#include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "url/gurl.h"
 
 namespace autofill {
 
 // static
 void AutofillCCInfoBarDelegate::Create(
-    InfoBarService* infobar_service,
+    infobars::InfoBarManager* infobar_manager,
+    AutofillClient* autofill_client,
     const base::Closure& save_card_callback) {
-  infobar_service->AddInfoBar(
-      infobar_service->CreateConfirmInfoBar(scoped_ptr<ConfirmInfoBarDelegate>(
-          new AutofillCCInfoBarDelegate(save_card_callback))));
+  infobar_manager->AddInfoBar(
+      infobar_manager->CreateConfirmInfoBar(scoped_ptr<ConfirmInfoBarDelegate>(
+          new AutofillCCInfoBarDelegate(autofill_client, save_card_callback))));
 }
 
 AutofillCCInfoBarDelegate::AutofillCCInfoBarDelegate(
+    AutofillClient* autofill_client,
     const base::Closure& save_card_callback)
     : ConfirmInfoBarDelegate(),
+      autofill_client_(autofill_client),
       save_card_callback_(save_card_callback),
       had_user_interaction_(false) {
   AutofillMetrics::LogCreditCardInfoBarMetric(AutofillMetrics::INFOBAR_SHOWN);
@@ -99,11 +99,10 @@ base::string16 AutofillCCInfoBarDelegate::GetLinkText() const {
 }
 
 bool AutofillCCInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
-  InfoBarService::WebContentsFromInfoBar(infobar())->OpenURL(
-      content::OpenURLParams(
-          GURL(autofill::kHelpURL), content::Referrer(),
-          (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
-          ui::PAGE_TRANSITION_LINK, false));
+  autofill_client_->LinkClicked(
+      GURL(autofill::kHelpURL),
+      (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition);
+
   return false;
 }
 

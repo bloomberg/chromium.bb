@@ -167,6 +167,11 @@ void AwAutofillClient::OnFirstUserGestureObserved() {
   NOTIMPLEMENTED();
 }
 
+void AwAutofillClient::LinkClicked(const GURL& url,
+                                   WindowOpenDisposition disposition) {
+  NOTIMPLEMENTED();
+}
+
 void AwAutofillClient::SuggestionSelected(JNIEnv* env,
                                           jobject object,
                                           jint position) {

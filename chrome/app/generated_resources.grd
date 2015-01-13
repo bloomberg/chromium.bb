@@ -11135,14 +11135,6 @@ Chrome ran out of memory.
         </message>
       </if>
 
-      <!-- Autofill infobar -->
-      <message name="IDS_AUTOFILL_CC_INFOBAR_ACCEPT" desc="Text to show for the Autofill credit card request infobar accept button.">
-        Save info
-      </message>
-      <message name="IDS_AUTOFILL_CC_INFOBAR_DENY" desc="Text to show for the Autofill credit card request infobar deny button.">
-        Don't save
-      </message>
-
       <!-- Auto-login infobar -->
       <if expr="is_ios">
         <message name="IDS_AUTOLOGIN_INFOBAR_MESSAGE" desc="The string shown in the infobar explaining that they can press one button to auto-login instead of entering their user name and password. [length: 60em]">

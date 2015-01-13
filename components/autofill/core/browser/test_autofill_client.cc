@@ -89,4 +89,8 @@ void TestAutofillClient::DidFillOrPreviewField(
 void TestAutofillClient::OnFirstUserGestureObserved() {
 }
 
+void TestAutofillClient::LinkClicked(const GURL& url,
+                                     WindowOpenDisposition disposition) {
+}
+
 }  // namespace autofill

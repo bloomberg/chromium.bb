@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"
-#include "chrome/browser/autofill/autofill_cc_infobar_delegate.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
@@ -24,6 +23,7 @@
 #include "chrome/common/url_constants.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/content/common/autofill_messages.h"
+#include "components/autofill/core/browser/autofill_cc_infobar_delegate.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/password_manager/content/browser/content_password_manager_driver.h"
 #include "content/public/browser/render_frame_host.h"
@@ -121,9 +121,9 @@ void ChromeAutofillClient::OnUnmaskVerificationResult(bool success) {
 
 void ChromeAutofillClient::ConfirmSaveCreditCard(
     const base::Closure& save_card_callback) {
-  InfoBarService* infobar_service =
-      InfoBarService::FromWebContents(web_contents());
-  AutofillCCInfoBarDelegate::Create(infobar_service, save_card_callback);
+  AutofillCCInfoBarDelegate::Create(
+      InfoBarService::FromWebContents(web_contents()), this,
+      save_card_callback);
 }
 
 bool ChromeAutofillClient::HasCreditCardScanFeature() {
@@ -250,6 +250,12 @@ void ChromeAutofillClient::DidFillOrPreviewField(
 void ChromeAutofillClient::OnFirstUserGestureObserved() {
   web_contents()->SendToAllFrames(
       new AutofillMsg_FirstUserGestureObservedInTab(routing_id()));
+}
+
+void ChromeAutofillClient::LinkClicked(const GURL& url,
+                                       WindowOpenDisposition disposition) {
+  web_contents()->OpenURL(content::OpenURLParams(
+      url, content::Referrer(), disposition, ui::PAGE_TRANSITION_LINK, false));
 }
 
 }  // namespace autofill

@@ -8,4 +8,5 @@
   <!-- This is not used on desktop, only Android, so use a placeholder file. -->
   <structure type="chrome_scaled_image" name="IDR_AUTOFILL_CC_SCAN_NEW" file="common/autofill/cc-generic.png" />
   <structure type="chrome_scaled_image" name="IDR_AUTOFILL_MAC_CONTACTS_ICON" file="common/autofill/mac_contacts_icon.png" />
+  <structure type="chrome_scaled_image" name="IDR_INFOBAR_AUTOFILL_CC" file="common/autofill/infobar_autofill_cc.png" />
 </grit-part>

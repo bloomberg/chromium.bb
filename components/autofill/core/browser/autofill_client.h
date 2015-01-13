@@ -11,6 +11,7 @@
 #include "base/i18n/rtl.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
+#include "ui/base/window_open_disposition.h"
 
 namespace content {
 class RenderFrameHost;
@@ -136,6 +137,10 @@ class AutofillClient {
 
   // Informs the client that a user gesture has been observed.
   virtual void OnFirstUserGestureObserved() = 0;
+
+  // Opens |url| with the supplied |disposition|.
+  virtual void LinkClicked(const GURL& url,
+                           WindowOpenDisposition disposition) = 0;
 };
 
 }  // namespace autofill
