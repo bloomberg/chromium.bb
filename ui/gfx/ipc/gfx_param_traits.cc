@@ -9,6 +9,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
+#include "ui/gfx/range/range.h"
 
 namespace {
 
@@ -264,5 +265,26 @@ bool ParamTraits<SkBitmap>::Read(const Message* m,
 void ParamTraits<SkBitmap>::Log(const SkBitmap& p, std::string* l) {
   l->append("<SkBitmap>");
 }
+
+void ParamTraits<gfx::Range>::Write(Message* m, const gfx::Range& r) {
+  m->WriteSizeT(r.start());
+  m->WriteSizeT(r.end());
+}
+
+bool ParamTraits<gfx::Range>::Read(const Message* m,
+                                   PickleIterator* iter,
+                                   gfx::Range* r) {
+  size_t start, end;
+  if (!iter->ReadSizeT(&start) || !iter->ReadSizeT(&end))
+    return false;
+  r->set_start(start);
+  r->set_end(end);
+  return true;
+}
+
+void ParamTraits<gfx::Range>::Log(const gfx::Range& r, std::string* l) {
+  l->append(base::StringPrintf("(%" PRIuS ", %" PRIuS ")", r.start(), r.end()));
+}
+
 
 }  // namespace IPC

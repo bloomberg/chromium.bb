@@ -16,6 +16,7 @@ class SkBitmap;
 namespace gfx {
 class Point;
 class PointF;
+class Range;
 class Rect;
 class RectF;
 class Size;
@@ -99,6 +100,14 @@ struct GFX_IPC_EXPORT ParamTraits<SkBitmap> {
   // r->SetConfig() and r->SetPixels() are called.
   static bool Read(const Message* m, PickleIterator* iter, param_type* r);
 
+  static void Log(const param_type& p, std::string* l);
+};
+
+template <>
+struct GFX_IPC_EXPORT ParamTraits<gfx::Range> {
+  typedef gfx::Range param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
 };
 
