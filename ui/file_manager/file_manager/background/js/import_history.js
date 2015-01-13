@@ -159,9 +159,13 @@ importer.Urls;
  * @implements {importer.ImportHistory}
  * @struct
  *
+ * @param {function(!FileEntry): !Promise.<string>} hashGenerator
  * @param {!importer.RecordStorage} storage
  */
-importer.PersistentImportHistory = function(storage) {
+importer.PersistentImportHistory = function(hashGenerator, storage) {
+
+  /** @private {function(!FileEntry): !Promise.<string>} */
+  this.createKey_ = hashGenerator;
 
   /** @private {!importer.RecordStorage} */
   this.storage_ = storage;
@@ -584,40 +588,6 @@ importer.PersistentImportHistory.prototype.getDestinations_ = function(key) {
 };
 
 /**
- * @param {!FileEntry} fileEntry
- * @return {!Promise.<string>} Resolves with a the key is available.
- * @private
- */
-importer.PersistentImportHistory.prototype.createKey_ = function(fileEntry) {
-  var entry = new importer.PromisingFileEntry(fileEntry);
-  return new Promise(
-      /**
-       * @param {function()} resolve
-       * @param {function()} reject
-       * @this {importer.PersistentImportHistory}
-       */
-      function(resolve, reject) {
-        entry.getMetadata()
-            .then(
-                /**
-                 * @param {!Object} metadata
-                 * @return {!Promise.<string>}
-                 * @this {importer.PersistentImportHistory}
-                 */
-                function(metadata) {
-                  if (!('modificationTime' in metadata)) {
-                    reject('File entry missing "modificationTime" field.');
-                  } else if (!('size' in metadata)) {
-                    reject('File entry missing "size" field.');
-                  } else {
-                    resolve(
-                      metadata['modificationTime'] + '_' + metadata['size']);
-                  }
-                }.bind(this));
-      }.bind(this));
-};
-
-/**
  * Provider of lazy loaded importer.ImportHistory. This is the main
  * access point for a fully prepared {@code importer.ImportHistory} object.
  *
@@ -674,7 +644,9 @@ importer.SynchronizedHistoryLoader.prototype.getHistory = function() {
            */
           function(fileEntry) {
             var storage = new importer.FileEntryRecordStorage(fileEntry);
-            var history = new importer.PersistentImportHistory(storage);
+            var history = new importer.PersistentImportHistory(
+                importer.createMetadataHashcode,
+                storage);
             new importer.DriveSyncWatcher(history);
             return history.refresh().then(
                 /**
@@ -1041,42 +1013,6 @@ importer.FileEntryRecordStorage.prototype.parse_ = function(text) {
     var json = '[' + text.substring(0, text.length - 2) + ']';
     return /** @type {!Array.<!Array.<*>>} */ (JSON.parse(json));
   }
-};
-
-/**
- * A wrapper for FileEntry that provides Promises.
- *
- * @param {!FileEntry} fileEntry
- *
- * @constructor
- * @struct
- */
-importer.PromisingFileEntry = function(fileEntry) {
-  /** @private {!FileEntry} */
-  this.fileEntry_ = fileEntry;
-};
-
-/**
- * A "Promisary" wrapper around entry.getWriter.
- * @return {!Promise.<!FileWriter>}
- */
-importer.PromisingFileEntry.prototype.createWriter = function() {
-  return new Promise(this.fileEntry_.createWriter.bind(this.fileEntry_));
-};
-
-/**
- * A "Promisary" wrapper around entry.file.
- * @return {!Promise.<!File>}
- */
-importer.PromisingFileEntry.prototype.file = function() {
-  return new Promise(this.fileEntry_.file.bind(this.fileEntry_));
-};
-
-/**
- * @return {!Promise.<!Object>}
- */
-importer.PromisingFileEntry.prototype.getMetadata = function() {
-  return new Promise(this.fileEntry_.getMetadata.bind(this.fileEntry_));
 };
 
 /**

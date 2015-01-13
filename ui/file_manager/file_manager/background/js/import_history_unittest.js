@@ -52,7 +52,9 @@ function setUp() {
 
   storage = new TestRecordStorage();
 
-  var history = new importer.PersistentImportHistory(storage);
+  var history = new importer.PersistentImportHistory(
+      importer.createMetadataHashcode,
+      storage);
   historyProvider = history.refresh();
 }
 

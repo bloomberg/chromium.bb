@@ -21,7 +21,12 @@ var importHistory;
 function setUp() {
 
   importHistory = new importer.TestImportHistory();
-  scanner = new importer.DefaultMediaScanner(importHistory);
+  scanner = new importer.DefaultMediaScanner(
+      /** @param {!FileEntry} entry */
+      function(entry) {
+        return Promise.resolve(entry.name);
+      },
+      importHistory);
 }
 
 /**
@@ -257,6 +262,55 @@ function testMultipleDirectories(callback) {
           .then(assertResults.bind(null, expectedFiles)),
       callback);
 }
+
+function testDedupesFiles(callback) {
+  var filenames = [
+    [
+      'a',
+      'foo.jpg',
+      'bar.jpg'
+    ],
+    [
+      'b',
+      'foo.jpg',
+      'bar.jpg',
+      'wee.jpg'
+    ]
+  ];
+  // Expected file paths from the scan.  We're scanning the two subdirectories
+  // only.
+  var expectedFiles = [
+    '/testDedupesFiles/a/foo.jpg',
+    '/testDedupesFiles/a/bar.jpg',
+    '/testDedupesFiles/b/wee.jpg'
+  ];
+
+  var getDirectory = function(root, dirname) {
+    return new Promise(function(resolve, reject) {
+      root.getDirectory(
+          dirname, {create: false}, resolve, reject);
+    });
+  };
+
+  reportPromise(
+      makeTestFileSystemRoot('testDedupesFiles')
+          .then(populateDir.bind(null, filenames))
+          .then(
+              /**
+               * Scans the directories.
+               * @param {!DirectoryEntry} root
+               */
+              function(root) {
+                return Promise.all(['a', 'b'].map(
+                    getDirectory.bind(null, root))).then(
+                        function(directories) {
+                          return scanner.scan(directories).whenFinal();
+                        });
+              })
+          .then(assertResults.bind(null, expectedFiles)),
+      callback);
+}
+
 
 /**
  * Verifies the results of the media scan are as expected.

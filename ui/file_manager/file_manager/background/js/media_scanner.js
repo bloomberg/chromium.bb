@@ -83,11 +83,18 @@ importer.ScanResult.prototype.whenFinal;
  * @struct
  * @implements {importer.MediaScanner}
  *
+ * @param {function(!FileEntry): !Promise.<string>} hashGenerator
  * @param {!importer.HistoryLoader} historyLoader
  */
-importer.DefaultMediaScanner = function(historyLoader) {
-  /** @private {!importer.HistoryLoader} */
-  this.historyLoader_ = historyLoader;
+importer.DefaultMediaScanner = function(hashGenerator, historyLoader) {
+  /**
+   * A little factory for DefaultScanResults which allows us to forgo
+   * the saving it's dependencies in our fields.
+   * @private {function(): !importer.DefaultScanResult}
+   */
+  this.createScanResult_ = function() {
+    return new importer.DefaultScanResult(hashGenerator, historyLoader);
+  };
 
   /** @private {!Array.<!importer.ScanObserver>} */
   this.observers_ = [];
@@ -114,7 +121,7 @@ importer.DefaultMediaScanner.prototype.scan = function(entries) {
     throw new Error('Cannot scan empty list of entries.');
   }
 
-  var scanResult = new importer.DefaultScanResult(this.historyLoader_);
+  var scanResult = this.createScanResult_();
   var scanPromises = entries.map(this.scanEntry_.bind(this, scanResult));
 
   Promise.all(scanPromises)
@@ -200,9 +207,14 @@ importer.DefaultMediaScanner.prototype.scanDirectory_ =
  * @struct
  * @implements {importer.ScanResult}
  *
+ * @param {function(!FileEntry): !Promise.<string>} hashGenerator
  * @param {!importer.HistoryLoader} historyLoader
  */
-importer.DefaultScanResult = function(historyLoader) {
+importer.DefaultScanResult = function(hashGenerator, historyLoader) {
+
+  /** @private {function(!FileEntry): !Promise.<string>} */
+  this.createHashcode_ = hashGenerator;
+
   /** @private {!importer.HistoryLoader} */
   this.historyLoader_ = historyLoader;
 
@@ -211,6 +223,14 @@ importer.DefaultScanResult = function(historyLoader) {
    * @private {!Array.<!FileEntry>}
    */
   this.fileEntries_ = [];
+
+  /**
+   * Hashcodes of all files included captured by this result object so-far.
+   * Used to dedupe newly discovered files against other files withing
+   * the ScanResult.
+   * @private {!Object.<string, !FileEntry>}
+   */
+  this.fileHashcodes_ = {};
 
   /** @private {number} */
   this.totalBytes_ = 0;
@@ -298,20 +318,20 @@ importer.DefaultScanResult.prototype.onFileEntryFound = function(entry) {
            * @this {importer.DefaultScanResult}
            */
           function(history) {
-            return history.wasImported(
-                entry,
-                importer.Destination.GOOGLE_DRIVE)
-                .then(
-                    /**
-                     * @param {boolean} imported
-                     * @return {!Promise}
-                     * @this {importer.DefaultScanResult}
-                     */
-                    function(imported) {
-                      return imported ?
-                          Promise.resolve() :
-                          this.addFileEntry_(entry);
-                    }.bind(this));
+            return Promise.all([
+              history.wasCopied(entry, importer.Destination.GOOGLE_DRIVE),
+              history.wasImported(entry, importer.Destination.GOOGLE_DRIVE)
+            ]).then(
+                /**
+                 * @param {!Array.<boolean>} results
+                 * @return {!Promise}
+                 * @this {importer.DefaultScanResult}
+                 */
+                function(results) {
+                  return results[0] || results[1] ?
+                      Promise.resolve() :
+                      this.addFileEntry_(entry);
+                }.bind(this));
           }.bind(this));
 };
 
@@ -326,27 +346,42 @@ importer.DefaultScanResult.prototype.onFileEntryFound = function(entry) {
 importer.DefaultScanResult.prototype.addFileEntry_ = function(entry) {
   return new Promise(
       function(resolve, reject) {
-        // TODO(smckay): Update to use MetadataCache.
-        entry.getMetadata(
-          /**
-           * @param {!Metadata} metadata
-           * @this {importer.DefaultScanResult}
-           */
-          function(metadata) {
-            this.lastScanActivity_ = new Date();
-            if ('size' in metadata) {
-              entry.size = metadata.size;
-              this.totalBytes_ += metadata['size'];
-              this.fileEntries_.push(entry);
-              // Closure compiler currently requires an arg to resolve
-              // and reject. If this is 2015, you can probably remove it.
-              resolve(undefined);
-            } else {
-              // Closure compiler currently requires an arg to resolve
-              // and reject. If this is 2015, you can probably remove it.
-              reject(undefined);
-            }
-          }.bind(this),
-          reject);
+        this.createHashcode_(entry).then(
+            /**
+             * @param {string} hashcode
+             * @this {importer.DefaultScanResult}
+             */
+            function(hashcode) {
+              // Ignore the entry if it is a duplicate.
+              if (hashcode in this.fileHashcodes_) {
+                resolve();
+                return;
+              }
+
+              entry.getMetadata(
+                  /**
+                   * @param {!Metadata} metadata
+                   * @this {importer.DefaultScanResult}
+                   */
+                  function(metadata) {
+                    console.assert(
+                        'size' in metadata,
+                        'size attribute missing from metadata.');
+                    this.lastScanActivity_ = new Date();
+
+                    // Double check that a dupe entry wasn't added while we were
+                    // busy looking up metadata.
+                    if (hashcode in this.fileHashcodes_) {
+                      resolve();
+                      return;
+                    }
+                    entry.size = metadata.size;
+                    this.totalBytes_ += metadata['size'];
+                    this.fileHashcodes_[hashcode] = entry;
+                    this.fileEntries_.push(entry);
+                    resolve();
+                }.bind(this));
+            }.bind(this));
       }.bind(this));
 };
+

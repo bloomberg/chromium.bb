@@ -112,3 +112,73 @@ importer.importEnabled = function() {
             });
       });
 };
+
+/**
+ * A wrapper for FileEntry that provides Promises.
+ *
+ * @param {!FileEntry} fileEntry
+ *
+ * @constructor
+ * @struct
+ */
+importer.PromisingFileEntry = function(fileEntry) {
+  /** @private {!FileEntry} */
+  this.fileEntry_ = fileEntry;
+};
+
+/**
+ * A "Promisary" wrapper around entry.getWriter.
+ * @return {!Promise.<!FileWriter>}
+ */
+importer.PromisingFileEntry.prototype.createWriter = function() {
+  return new Promise(this.fileEntry_.createWriter.bind(this.fileEntry_));
+};
+
+/**
+ * A "Promisary" wrapper around entry.file.
+ * @return {!Promise.<!File>}
+ */
+importer.PromisingFileEntry.prototype.file = function() {
+  return new Promise(this.fileEntry_.file.bind(this.fileEntry_));
+};
+
+/**
+ * @return {!Promise.<!Object>}
+ */
+importer.PromisingFileEntry.prototype.getMetadata = function() {
+  return new Promise(this.fileEntry_.getMetadata.bind(this.fileEntry_));
+};
+
+/**
+ * @param {!FileEntry} fileEntry
+ * @return {!Promise.<string>} Resolves with a "hashcode" consisting of
+ *     just the last modified time and the file size.
+ */
+importer.createMetadataHashcode = function(fileEntry) {
+  var entry = new importer.PromisingFileEntry(fileEntry);
+  return new Promise(
+      /**
+       * @param {function()} resolve
+       * @param {function()} reject
+       * @this {importer.PersistentImportHistory}
+       */
+      function(resolve, reject) {
+        entry.getMetadata()
+            .then(
+                /**
+                 * @param {!Object} metadata
+                 * @return {!Promise.<string>}
+                 * @this {importer.PersistentImportHistory}
+                 */
+                function(metadata) {
+                  if (!('modificationTime' in metadata)) {
+                    reject('File entry missing "modificationTime" field.');
+                  } else if (!('size' in metadata)) {
+                    reject('File entry missing "size" field.');
+                  } else {
+                    resolve(metadata.modificationTime + '_' + metadata.size);
+                  }
+                }.bind(this));
+      }.bind(this));
+};
+
