@@ -82,9 +82,6 @@ class WM_EXPORT CompoundEventFilter : public ui::EventHandler {
   // Additional pre-target event handlers.
   ObserverList<ui::EventHandler, true> handlers_;
 
-  // True if the cursur was hidden by the filter.
-  bool cursor_hidden_by_filter_;
-
   DISALLOW_COPY_AND_ASSIGN(CompoundEventFilter);
 };
 
