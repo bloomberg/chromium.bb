@@ -111,15 +111,15 @@ public class AutofillProfileEditor extends Fragment implements TextWatcher,
             mEmailText.setText(profile.getEmailAddress());
             mLanguageCodeString = profile.getLanguageCode();
 
-            address.set(AddressField.ADMIN_AREA, profile.getRegion());
-            address.set(AddressField.LOCALITY, profile.getLocality());
-            address.set(AddressField.RECIPIENT, profile.getFullName());
-            address.set(AddressField.ORGANIZATION, profile.getCompanyName());
-            address.set(AddressField.DEPENDENT_LOCALITY, profile.getDependentLocality());
-            address.set(AddressField.POSTAL_CODE, profile.getPostalCode());
-            address.set(AddressField.SORTING_CODE, profile.getSortingCode());
-            address.set(AddressField.ADDRESS_LINE_1, profile.getStreetAddress());
-            address.set(AddressField.COUNTRY, profile.getCountryCode());
+            address.setAdminArea(profile.getRegion());
+            address.setLocality(profile.getLocality());
+            address.setRecipient(profile.getFullName());
+            address.setOrganization(profile.getCompanyName());
+            address.setDependentLocality(profile.getDependentLocality());
+            address.setPostalCode(profile.getPostalCode());
+            address.setSortingCode(profile.getSortingCode());
+            address.setAddress(profile.getStreetAddress());
+            address.setCountry(profile.getCountryCode());
         }
 
         ViewGroup widgetRoot = (ViewGroup) v.findViewById(R.id.autofill_profile_widget_root);
@@ -138,17 +138,12 @@ public class AutofillProfileEditor extends Fragment implements TextWatcher,
     // Ignore empty fields.
     private void saveProfile() {
         AddressData input = mAddressWidget.getAddressData();
-        String addressLines = input.getAddressLine1();
-        if (!TextUtils.isEmpty(input.getAddressLine2())) {
-            addressLines += "\n" + input.getAddressLine2();
-        }
-
         AutofillProfile profile = new PersonalDataManager.AutofillProfile(
                 mGUID,
                 AutofillPreferences.SETTINGS_ORIGIN,
                 input.getRecipient(),
                 input.getOrganization(),
-                addressLines,
+                TextUtils.join("\n", input.getAddressLines()),
                 input.getAdministrativeArea(),
                 input.getLocality(),
                 input.getDependentLocality(),
