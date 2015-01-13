@@ -431,6 +431,7 @@ void RenderingHelper::UnInitialize(base::WaitableEvent* done) {
 
 #if defined(USE_OZONE) && defined(OS_CHROMEOS)
   display_configurator_->PrepareForExit();
+  display_configurator_.reset();
 #endif
 
   render_task_.Cancel();
