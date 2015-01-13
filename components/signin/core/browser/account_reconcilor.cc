@@ -66,7 +66,8 @@ AccountReconcilor::AccountReconcilor(ProfileOAuth2TokenService* token_service,
       registered_with_token_service_(false),
       is_reconcile_started_(false),
       first_execution_(true),
-      are_gaia_accounts_set_(false) {
+      are_gaia_accounts_set_(false),
+      chrome_accounts_changed_(false) {
   VLOG(1) << "AccountReconcilor::AccountReconcilor";
 }
 
@@ -181,6 +182,8 @@ void AccountReconcilor::OnCookieChanged(const net::CanonicalCookie& cookie,
 
 void AccountReconcilor::OnEndBatchChanges() {
   VLOG(1) << "AccountReconcilor::OnEndBatchChanges";
+  // Remember that accounts have changed if a reconcile is already started.
+  chrome_accounts_changed_ = is_reconcile_started_;
   StartReconcile();
 }
 
@@ -228,8 +231,6 @@ void AccountReconcilor::StartReconcile() {
   is_reconcile_started_ = true;
   m_reconcile_start_time_ = base::Time::Now();
 
-  StartFetchingExternalCcResult();
-
   // Reset state for validating gaia cookie.
   are_gaia_accounts_set_ = false;
   gaia_accounts_.clear();
@@ -249,10 +250,6 @@ void AccountReconcilor::GetAccountsFromCookie(
   get_gaia_accounts_callbacks_.push_back(callback);
   if (!gaia_fetcher_)
     MayBeDoNextListAccounts();
-}
-
-void AccountReconcilor::StartFetchingExternalCcResult() {
-  merge_session_helper_.StartFetchingExternalCcResult();
 }
 
 void AccountReconcilor::OnListAccountsSuccess(const std::string& data) {
@@ -446,11 +443,8 @@ void AccountReconcilor::ScheduleStartReconcileIfChromeAccountsChanged() {
 
   // Start a reconcile as the token accounts have changed.
   VLOG(1) << "AccountReconcilor::StartReconcileIfChromeAccountsChanged";
-  std::vector<std::string> reconciled_accounts(chrome_accounts_);
-  std::vector<std::string> new_chrome_accounts(token_service_->GetAccounts());
-  std::sort(reconciled_accounts.begin(), reconciled_accounts.end());
-  std::sort(new_chrome_accounts.begin(), new_chrome_accounts.end());
-  if (reconciled_accounts != new_chrome_accounts) {
+  if (chrome_accounts_changed_) {
+    chrome_accounts_changed_ = false;
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&AccountReconcilor::StartReconcile, base::Unretained(this)));

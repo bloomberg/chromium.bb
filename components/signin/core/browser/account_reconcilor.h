@@ -83,9 +83,6 @@ class AccountReconcilor : public KeyedService,
     return gaia_accounts_;
   }
 
-  // Virtual so that it can be overridden in tests.
-  virtual void StartFetchingExternalCcResult();
-
   friend class AccountReconcilorTest;
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, SigninManagerRegistration);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, Reauth);
@@ -194,6 +191,7 @@ class AccountReconcilor : public KeyedService,
   std::string primary_account_;
   std::vector<std::string> chrome_accounts_;
   std::vector<std::string> add_to_cookie_;
+  bool chrome_accounts_changed_;
 
   std::deque<GetAccountsFromCookieCallback> get_gaia_accounts_callbacks_;
 

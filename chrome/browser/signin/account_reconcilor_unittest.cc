@@ -45,11 +45,7 @@ class MockAccountReconcilor : public testing::StrictMock<AccountReconcilor> {
   MockAccountReconcilor(ProfileOAuth2TokenService* token_service,
                         SigninManagerBase* signin_manager,
                         SigninClient* client);
-  virtual ~MockAccountReconcilor() {}
-
-  virtual void StartFetchingExternalCcResult() override {
-    // Don't do this in tests.
-  }
+  ~MockAccountReconcilor() override {}
 
   MOCK_METHOD1(PerformMergeAction, void(const std::string& account_id));
   MOCK_METHOD0(PerformLogoutAllAccountsAction, void());
