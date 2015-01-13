@@ -149,22 +149,7 @@ void ki_exit(int status) {
 }
 
 char* ki_getcwd(char* buf, size_t size) {
-  // gtest uses getcwd in a static initializer and expects it to always
-  // succeed.  If we haven't initialized kernel-intercept yet, then try
-  // the IRT's getcwd, and fall back to just returning ".".
-  if (!ki_is_initialized()) {
-    int rtn = _real_getcwd(buf, size);
-    if (rtn != 0) {
-      if (rtn == ENOSYS) {
-        buf[0] = '.';
-        buf[1] = 0;
-      } else {
-        errno = rtn;
-        return NULL;
-      }
-    }
-    return buf;
-  }
+  ON_NOSYS_RETURN(NULL);
   return s_state.kp->getcwd(buf, size);
 }
 
