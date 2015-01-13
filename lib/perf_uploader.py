@@ -304,7 +304,7 @@ def _SendToDashboard(data_obj):
 
 
 def UploadPerfValues(perf_values, platform_name, cros_version, chrome_version,
-                     test_name):
+                     test_name, dry_run=False):
   """Uploads any perf data associated with a test to the perf dashboard.
 
   Args:
@@ -314,6 +314,7 @@ def UploadPerfValues(perf_values, platform_name, cros_version, chrome_version,
     cros_version: A string identifying Chrome OS version e.g. '6052.0.0'.
     chrome_version: A string identifying Chrome OS version e.g. '38.0.2091.2'.
     test_name: A string identifying the test
+    dry_run: Do everything but upload the data to the server.
   """
   if not perf_values:
     return
@@ -337,8 +338,11 @@ def UploadPerfValues(perf_values, platform_name, cros_version, chrome_version,
     formatted_data = _FormatForUpload(perf_data, platform_name,
                                       cros_version, chrome_version,
                                       presentation_info)
-    retry_util.RetryException(PerfUploadingError, 3, _SendToDashboard,
-                              formatted_data)
+    if dry_run:
+      logging.debug('UploadPerfValues: skipping upload due to dry-run')
+    else:
+      retry_util.RetryException(PerfUploadingError, 3, _SendToDashboard,
+                                formatted_data)
   except PerfUploadingError:
     logging.exception('Error when uploading perf data to the perf '
                       'dashboard for test %s.', test_name)

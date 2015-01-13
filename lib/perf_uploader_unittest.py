@@ -197,6 +197,14 @@ class UploadPerfValuesTest(PerfUploadTestCase):
     self.assertEqual(42, entry['value'])
     self.assertEqual(0, entry['error'])
 
+  def testDryRun(self):
+    """Make sure dryrun mode doesn't upload."""
+    self.send_func.side_effect = AssertionError('dryrun should not upload')
+    perf_uploader.OutputPerfValue(self.file_name, 'desc1', 40, 'unit')
+    perf_values = perf_uploader.LoadPerfValues(self.file_name)
+    perf_uploader.UploadPerfValues(perf_values, 'platform', 'cros', 'chrome',
+                                   'TestName', dry_run=True)
+
 
 if __name__ == '__main__':
   cros_test_lib.main()
