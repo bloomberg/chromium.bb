@@ -52,8 +52,7 @@ class ProviderNotificationDelegate
 NotificationManager::NotificationManager(
     Profile* profile,
     const ProvidedFileSystemInfo& file_system_info)
-    : profile_(profile),
-      file_system_info_(file_system_info),
+    : file_system_info_(file_system_info),
       icon_loader_(
           new extensions::AppIconLoaderImpl(profile, kIconSize, this)) {
 }

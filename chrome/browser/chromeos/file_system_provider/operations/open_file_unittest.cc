@@ -60,7 +60,6 @@ class CallbackLogger {
 
  private:
   ScopedVector<Event> events_;
-  bool dispatch_reply_;
 
   DISALLOW_COPY_AND_ASSIGN(CallbackLogger);
 };
