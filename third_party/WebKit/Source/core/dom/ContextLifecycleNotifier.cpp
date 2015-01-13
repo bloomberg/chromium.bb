@@ -46,7 +46,6 @@ void ContextLifecycleNotifier::addObserver(ContextLifecycleNotifier::Observer* o
 {
     LifecycleNotifier<ExecutionContext>::addObserver(observer);
 
-    RELEASE_ASSERT(m_iterating != IteratingOverContextObservers);
     if (observer->observerType() == Observer::ActiveDOMObjectType) {
         RELEASE_ASSERT(m_iterating != IteratingOverActiveDOMObjects);
         m_activeDOMObjects.add(static_cast<ActiveDOMObject*>(observer));
@@ -57,7 +56,6 @@ void ContextLifecycleNotifier::removeObserver(ContextLifecycleNotifier::Observer
 {
     LifecycleNotifier<ExecutionContext>::removeObserver(observer);
 
-    RELEASE_ASSERT(m_iterating != IteratingOverContextObservers);
     if (observer->observerType() == Observer::ActiveDOMObjectType) {
         m_activeDOMObjects.remove(static_cast<ActiveDOMObject*>(observer));
     }
@@ -69,12 +67,13 @@ void ContextLifecycleNotifier::notifyResumingActiveDOMObjects()
     Vector<ActiveDOMObject*> snapshotOfActiveDOMObjects;
     copyToVector(m_activeDOMObjects, snapshotOfActiveDOMObjects);
     for (ActiveDOMObject* obj : snapshotOfActiveDOMObjects) {
-        // FIXME: Oilpan: At the moment, it's possible that the ActiveDOMObject is destructed
-        // during the iteration. Once we move ActiveDOMObject to the heap and
-        // make m_activeDOMObjects a HeapHashSet<WeakMember<ActiveDOMObject>>,
-        // it's no longer possible that ActiveDOMObject is destructed during the iteration,
-        // so we can remove the hack (i.e., we can just iterate m_activeDOMObjects without
-        // taking a snapshot). For more details, see https://codereview.chromium.org/247253002/.
+        // FIXME: Oilpan: At the moment, it's possible that the ActiveDOMObject
+        // is destructed during the iteration. Once we enable Oilpan by default
+        // for ActiveDOMObjects, we can remove the hack by making
+        // m_activeDOMObjects a HeapHashSet<WeakMember<ActiveDOMObjects>>.
+        // (i.e., we can just iterate m_activeDOMObjects without taking
+        // a snapshot).
+        // For more details, see https://codereview.chromium.org/247253002/.
         if (m_activeDOMObjects.contains(obj)) {
             ASSERT(obj->executionContext() == context());
             ASSERT(obj->suspendIfNeededCalled());

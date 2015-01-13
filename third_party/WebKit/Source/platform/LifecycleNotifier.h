@@ -73,7 +73,6 @@ protected:
         IteratingNone,
         IteratingOverAll,
         IteratingOverActiveDOMObjects,
-        IteratingOverContextObservers,
         IteratingOverDocumentObservers,
         IteratingOverPageObservers,
         IteratingOverDOMWindowObservers
@@ -110,9 +109,18 @@ inline void LifecycleNotifier<T>::notifyContextDestroyed()
         return;
 
     TemporaryChange<IterationType> scope(this->m_iterating, IteratingOverAll);
-    for (Observer* observer : m_observers) {
-        ASSERT(observer->lifecycleContext() == m_context);
-        observer->contextDestroyed();
+    Vector<Observer*> snapshotOfObservers;
+    copyToVector(m_observers, snapshotOfObservers);
+    for (Observer* observer : snapshotOfObservers) {
+        // FIXME: Oilpan: At the moment, it's possible that the Observer is
+        // destructed during the iteration. Once we enable Oilpan by default
+        // for Observers, we can remove the hack by making m_observers
+        // a HeapHashSet<WeakMember<Observers>>. (i.e., we can just iterate
+        // m_observers without taking a snapshot).
+        if (m_observers.contains(observer)) {
+            ASSERT(observer->lifecycleContext() == m_context);
+            observer->contextDestroyed();
+        }
     }
     m_didCallContextDestroyed = true;
 }
@@ -127,7 +135,6 @@ inline void LifecycleNotifier<T>::addObserver(typename LifecycleNotifier<T>::Obs
 template<typename T>
 inline void LifecycleNotifier<T>::removeObserver(typename LifecycleNotifier<T>::Observer* observer)
 {
-    RELEASE_ASSERT(m_iterating != IteratingOverAll);
     m_observers.remove(observer);
 }
 
