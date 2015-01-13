@@ -31,6 +31,9 @@ declare_args() {
   # Debug build.
   is_debug = true
 
+  # Whether we're a traditional desktop unix.
+  is_desktop_linux = os == "linux" && os != "chromeos"
+
   # Set to true when compiling with the Clang compiler. Typically this is used
   # to configure warnings.
   is_clang = os == "mac" || os == "ios" || os == "linux" || os == "chromeos"
@@ -159,8 +162,6 @@ if (os == "win") {
   is_posix = true
   is_win = false
 }
-
-is_desktop_linux = is_linux && !is_chromeos
 
 # =============================================================================
 # CPU ARCHITECTURE
