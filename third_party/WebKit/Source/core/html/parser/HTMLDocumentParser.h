@@ -197,6 +197,7 @@ private:
     WeakPtrFactory<HTMLDocumentParser> m_weakFactory;
     WeakPtr<BackgroundHTMLParser> m_backgroundParser;
     OwnPtrWillBeMember<HTMLResourcePreloader> m_preloader;
+    PreloadRequestStream m_queuedPreloads;
 
     bool m_shouldUseThreading;
     bool m_endWasDelayed;
