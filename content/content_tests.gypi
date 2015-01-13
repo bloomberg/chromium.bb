@@ -1203,6 +1203,7 @@
     ['OS!="ios"', {
       'targets': [
         {
+          # GN version: //content/test:content_perftests
           'target_name': 'content_perftests',
           'type': '<(gtest_target_type)',
           'defines!': ['CONTENT_IMPLEMENTATION'],
@@ -1274,6 +1275,7 @@
           ],
         },
         {
+          # GN version: //content/test:web_ui_test_mojo_bindings
           'target_name': 'web_ui_test_mojo_bindings',
           'type': 'static_library',
           'dependencies': [
@@ -1462,6 +1464,7 @@
           ],
         },
         {
+          # GN version: //content/test:content_gl_tests
           'target_name': 'content_gl_tests',
           'type': '<(gtest_target_type)',
           'dependencies': [
@@ -1505,6 +1508,7 @@
           ],
         },
         {
+          # GN version: //content/test:content_gl_benchmark
           'target_name': 'content_gl_benchmark',
           'type': '<(gtest_target_type)',
           'dependencies': [

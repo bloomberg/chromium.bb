@@ -608,3 +608,81 @@ if (!is_mac) {  # TODO(GYP) enable on Mac once it links.
     }
   }
 }
+
+if (!is_mac) {  # TODO(GYP) enable on Mac once it links.
+  test("content_perftests") {
+    sources = [
+      "../browser/renderer_host/input/input_router_impl_perftest.cc",
+      "../common/cc_messages_perftest.cc",
+      "../test/run_all_perftests.cc",
+    ]
+    deps = [
+      "//base/allocator",
+      "//base/test:test_support",
+      "//content/public/browser",
+      "//content/public/common",
+      "//content/test:test_support",
+      "//cc",
+      "//skia",
+      "//testing/gtest",
+      "//testing/perf",
+      "//ui/gfx",
+      "//ui/gfx/geometry",
+    ]
+
+    if (is_android) {
+      deps += [ "//testing/android:native_test_native_code" ]
+    }
+  }
+
+  test("content_gl_tests") {
+    sources = [
+      "../common/gpu/client/gl_helper_unittest.cc",
+      "../common/gpu/client/gpu_in_process_context_tests.cc",
+    ]
+
+    deps = [
+      ":test_support",
+      "//base/allocator",
+      "//base/test:test_support",
+      "//content/public/common",
+      "//gpu/command_buffer/common",
+      "//testing/gtest",
+      "//third_party/WebKit/public:blink",
+      "//ui/base",
+      "//ui/gfx",
+      "//ui/gfx:test_support",
+      "//ui/gfx/geometry",
+      "//ui/gl",
+      "//v8",
+    ]
+
+    if (is_android) {
+      deps += [ "//testing/android:native_test_native_code" ]
+    } else {
+      data_deps = [
+        "//third_party/ffmpeg",
+        "//third_party/mesa:osmesa",
+      ]
+    }
+  }
+
+  test("content_gl_benchmark") {
+    sources = [
+      "../common/gpu/client/gl_helper_benchmark.cc",
+    ]
+
+    deps = [
+      ":test_support",
+      "//base/allocator",
+      "//base/test:test_support",
+      "//content/public/common",
+      "//testing/gtest",
+      "//third_party/WebKit/public:blink",
+      "//ui/base",
+      "//ui/gfx",
+      "//ui/gfx/geometry",
+      "//ui/gl",
+    ]
+  }
+}
