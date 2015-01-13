@@ -46,11 +46,14 @@ static_library("gcm_driver") {
   deps = [
     "//base",
     "//components/os_crypt",
-    "//components/timers",
     "//google_apis/gcm",
     "//net",
     "//sync/protocol",
   ]
+
+  if (is_chromeos) {
+    deps += [ "//components/timers" ]
+  }
 
   if (is_android) {
     sources -= [
@@ -71,10 +74,7 @@ static_library("gcm_driver") {
       "gcm_stats_recorder_impl.cc",
       "gcm_stats_recorder_impl.h",
     ]
-    deps -= [
-      "//components/timers",
-      "//google_apis/gcm",
-    ]
+    deps -= [ "//google_apis/gcm" ]
     deps += [ "android:jni_headers" ]
   }
 }
