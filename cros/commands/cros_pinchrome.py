@@ -483,6 +483,9 @@ class PinchromeCommand(cros.CrosCommand):
     git.UploadCL(priv_overlay, PRIV_OVERLAY_URL, self.options.branch,
                  dryrun=self.options.dryrun)
 
+    print('\n** Both of the changes above need to be submitted for chrome '
+          'to be pinned. **\n')
+
   def Run(self):
     """Run cros pinchrome."""
     self.options.Freeze()
