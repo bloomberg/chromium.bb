@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/pref_change_registrar.h"
+#include "base/scoped_observer.h"
 #include "chrome/browser/command_observer.h"
 #include "chrome/browser/profiles/avatar_menu.h"
 #include "chrome/browser/profiles/avatar_menu_observer.h"
@@ -18,8 +19,7 @@
 #include "chrome/browser/sessions/tab_restore_service_observer.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "components/history/core/browser/history_types.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
+#include "components/history/core/browser/top_sites_observer.h"
 #include "ui/base/glib/glib_signal.h"
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_observer_x11.h"
 
@@ -52,7 +52,7 @@ struct GlobalMenuBarCommand;
 class GlobalMenuBarX11 : public AvatarMenuObserver,
                          public chrome::BrowserListObserver,
                          public CommandObserver,
-                         public content::NotificationObserver,
+                         public history::TopSitesObserver,
                          public TabRestoreServiceObserver,
                          public views::DesktopWindowTreeHostObserverX11 {
  public:
@@ -130,10 +130,9 @@ class GlobalMenuBarX11 : public AvatarMenuObserver,
   // Overridden from CommandObserver:
   void EnabledStateChangedForCommand(int id, bool enabled) override;
 
-  // Overridden from content::NotificationObserver:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
+  // Overridden from history::TopSitesObserver:
+  void TopSitesLoaded(history::TopSites* top_sites) override;
+  void TopSitesChanged(history::TopSites* top_sites) override;
 
   // Overridden from TabRestoreServiceObserver:
   void TabRestoreServiceChanged(TabRestoreService* service) override;
@@ -179,7 +178,7 @@ class GlobalMenuBarX11 : public AvatarMenuObserver,
 
   scoped_ptr<AvatarMenu> avatar_menu_;
 
-  content::NotificationRegistrar registrar_;
+  ScopedObserver<history::TopSites, history::TopSitesObserver> scoped_observer_;
 
   // For callbacks may be run after destruction.
   base::WeakPtrFactory<GlobalMenuBarX11> weak_ptr_factory_;

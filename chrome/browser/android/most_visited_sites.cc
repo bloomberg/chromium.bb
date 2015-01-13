@@ -18,7 +18,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
@@ -30,7 +29,6 @@
 #include "components/suggestions/suggestions_service.h"
 #include "components/suggestions/suggestions_utils.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_source.h"
 #include "content/public/browser/url_data_source.h"
 #include "jni/MostVisitedSites_jni.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -192,7 +190,7 @@ SyncState GetSyncState(Profile* profile) {
 MostVisitedSites::MostVisitedSites(Profile* profile)
     : profile_(profile), num_sites_(0), is_control_group_(false),
       initial_load_done_(false), num_local_thumbs_(0), num_server_thumbs_(0),
-      num_empty_thumbs_(0), weak_ptr_factory_(this) {
+      num_empty_thumbs_(0), scoped_observer_(this), weak_ptr_factory_(this) {
   // Register the debugging page for the Suggestions Service and the thumbnails
   // debugging page.
   content::URLDataSource::Add(profile_,
@@ -238,10 +236,9 @@ void MostVisitedSites::SetMostVisitedURLsObserver(JNIEnv* env,
     // force an update now.
     top_sites->SyncWithHistory();
 
-    // Register for notification when TopSites changes so that we can update
-    // ourself.
-    registrar_.Add(this, chrome::NOTIFICATION_TOP_SITES_CHANGED,
-                   content::Source<history::TopSites>(top_sites));
+    // Register as TopSitesObserver so that we can update ourselves when the
+    // TopSites changes.
+    scoped_observer_.Add(top_sites);
   }
 }
 
@@ -334,17 +331,6 @@ void MostVisitedSites::RecordOpenedMostVisitedItem(JNIEnv* env,
       }
       break;
     }
-  }
-}
-
-void MostVisitedSites::Observe(int type,
-                               const content::NotificationSource& source,
-                               const content::NotificationDetails& details) {
-  DCHECK_EQ(type, chrome::NOTIFICATION_TOP_SITES_CHANGED);
-
-  if (mv_source_ == TOP_SITES) {
-    // The displayed suggestions are invalidated.
-    QueryMostVisitedURLs();
   }
 }
 
@@ -527,6 +513,16 @@ void MostVisitedSites::RecordUMAMetrics() {
   num_empty_thumbs_ = 0;
   UMA_HISTOGRAM_SPARSE_SLOWLY(kNumServerTilesHistogramName, num_server_thumbs_);
   num_server_thumbs_ = 0;
+}
+
+void MostVisitedSites::TopSitesLoaded(history::TopSites* top_sites) {
+}
+
+void MostVisitedSites::TopSitesChanged(history::TopSites* top_sites) {
+  if (mv_source_ == TOP_SITES) {
+    // The displayed suggestions are invalidated.
+    QueryMostVisitedURLs();
+  }
 }
 
 static jlong Init(JNIEnv* env, jobject obj, jobject jprofile) {

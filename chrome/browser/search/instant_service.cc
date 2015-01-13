@@ -93,11 +93,8 @@ InstantService::InstantService(Profile* profile)
                  content::NotificationService::AllSources());
 
   history::TopSites* top_sites = profile_->GetTopSites();
-  if (top_sites) {
-    registrar_.Add(this,
-                   chrome::NOTIFICATION_TOP_SITES_CHANGED,
-                   content::Source<history::TopSites>(top_sites));
-  }
+  if (top_sites)
+    top_sites->AddObserver(this);
 
   if (profile_ && profile_->GetResourceContext()) {
     content::BrowserThread::PostTask(
@@ -206,6 +203,11 @@ void InstantService::Shutdown() {
         base::Bind(&InstantIOContext::ClearInstantProcessesOnIO,
                    instant_io_context_));
   }
+
+  history::TopSites* top_sites = profile_->GetTopSites();
+  if (top_sites)
+    top_sites->RemoveObserver(this);
+
   instant_io_context_ = NULL;
 }
 
@@ -221,15 +223,6 @@ void InstantService::Observe(int type,
       OnRendererProcessTerminated(
           content::Source<content::RenderProcessHost>(source)->GetID());
       break;
-    case chrome::NOTIFICATION_TOP_SITES_CHANGED: {
-      history::TopSites* top_sites = profile_->GetTopSites();
-      if (top_sites) {
-        top_sites->GetMostVisitedURLs(
-            base::Bind(&InstantService::OnMostVisitedItemsReceived,
-                       weak_ptr_factory_.GetWeakPtr()), false);
-      }
-      break;
-    }
 #if defined(ENABLE_THEMES)
     case chrome::NOTIFICATION_BROWSER_THEME_CHANGED: {
       OnThemeChanged(content::Source<ThemeService>(source).ptr());
@@ -421,6 +414,16 @@ void InstantService::OnTemplateURLServiceChanged() {
     FOR_EACH_OBSERVER(InstantServiceObserver, observers_,
                       DefaultSearchProviderChanged());
   }
+}
+
+void InstantService::TopSitesLoaded(history::TopSites* top_sites) {
+}
+
+void InstantService::TopSitesChanged(history::TopSites* top_sites) {
+  top_sites->GetMostVisitedURLs(
+      base::Bind(&InstantService::OnMostVisitedItemsReceived,
+                 weak_ptr_factory_.GetWeakPtr()),
+      false);
 }
 
 void InstantService::ResetInstantSearchPrerenderer() {

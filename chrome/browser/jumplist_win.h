@@ -22,6 +22,7 @@
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sessions/tab_restore_service_observer.h"
 #include "components/history/core/browser/history_types.h"
+#include "components/history/core/browser/top_sites_observer.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace chrome {
@@ -56,8 +57,10 @@ class Profile;
 class JumpList : public TabRestoreServiceObserver,
                  public content::NotificationObserver,
                  public AvatarMenuObserver,
+                 public history::TopSitesObserver,
                  public base::RefCountedThreadSafe<
-                     JumpList, content::BrowserThread::DeleteOnUIThread> {
+                     JumpList,
+                     content::BrowserThread::DeleteOnUIThread> {
  public:
   explicit JumpList(Profile* profile);
 
@@ -144,6 +147,10 @@ class JumpList : public TabRestoreServiceObserver,
   // Called when the list of Profiles has changed. This function updates the
   // |profile_switcher_| ShellLinkItemList.
   void UpdateProfileSwitcher();
+
+  // history::TopSitesObserver implementation.
+  void TopSitesLoaded(history::TopSites* top_sites) override;
+  void TopSitesChanged(history::TopSites* top_sites) override;
 
   // Tracks FaviconService tasks.
   base::CancelableTaskTracker cancelable_task_tracker_;

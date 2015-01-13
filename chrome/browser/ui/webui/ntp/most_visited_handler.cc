@@ -20,7 +20,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread.h"
 #include "base/values.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/thumbnails/thumbnail_list_source.h"
@@ -38,7 +37,6 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
-#include "content/public/browser/notification_source.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
@@ -48,7 +46,8 @@
 using base::UserMetricsAction;
 
 MostVisitedHandler::MostVisitedHandler()
-    : got_first_most_visited_request_(false),
+    : scoped_observer_(this),
+      got_first_most_visited_request_(false),
       most_visited_viewed_(false),
       user_action_logged_(false),
       weak_ptr_factory_(this) {
@@ -83,17 +82,16 @@ void MostVisitedHandler::RegisterMessages() {
   content::URLDataSource::Add(
       profile, new FaviconSource(profile, FaviconSource::FAVICON));
 
-  history::TopSites* ts = profile->GetTopSites();
-  if (ts) {
+  history::TopSites* top_sites = profile->GetTopSites();
+  if (top_sites) {
     // TopSites updates itself after a delay. This is especially noticable when
     // your profile is empty. Ask TopSites to update itself when we're about to
     // show the new tab page.
-    ts->SyncWithHistory();
+    top_sites->SyncWithHistory();
 
-    // Register for notification when TopSites changes so that we can update
-    // ourself.
-    registrar_.Add(this, chrome::NOTIFICATION_TOP_SITES_CHANGED,
-                   content::Source<history::TopSites>(ts));
+    // Register as TopSitesObserver so that we can update ourselves when the
+    // TopSites changes.
+    scoped_observer_.Add(top_sites);
   }
 
   // We pre-emptively make a fetch for the most visited pages so we have the
@@ -243,11 +241,10 @@ void MostVisitedHandler::OnMostVisitedUrlsAvailable(
   }
 }
 
-void MostVisitedHandler::Observe(int type,
-                                 const content::NotificationSource& source,
-                                 const content::NotificationDetails& details) {
-  DCHECK_EQ(type, chrome::NOTIFICATION_TOP_SITES_CHANGED);
+void MostVisitedHandler::TopSitesLoaded(history::TopSites* top_sites) {
+}
 
+void MostVisitedHandler::TopSitesChanged(history::TopSites* top_sites) {
   // Most visited urls changed, query again.
   StartQueryForMostVisited();
 }

@@ -10,12 +10,12 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
+#include "base/scoped_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service_observer.h"
 #include "components/history/core/browser/history_types.h"
+#include "components/history/core/browser/top_sites_observer.h"
 #include "components/suggestions/proto/suggestions.pb.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 
 namespace suggestions {
 class SuggestionsService;
@@ -23,7 +23,7 @@ class SuggestionsService;
 
 // Provides the list of most visited sites and their thumbnails to Java.
 class MostVisitedSites : public ProfileSyncServiceObserver,
-                         public content::NotificationObserver {
+                         public history::TopSitesObserver {
  public:
   typedef base::Callback<
       void(base::android::ScopedJavaGlobalRef<jobject>* bitmap,
@@ -43,11 +43,6 @@ class MostVisitedSites : public ProfileSyncServiceObserver,
                        jobject j_callback);
   void BlacklistUrl(JNIEnv* env, jobject obj, jstring j_url);
   void RecordOpenedMostVisitedItem(JNIEnv* env, jobject obj, jint index);
-
-  // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
 
   // ProfileSyncServiceObserver implementation.
   virtual void OnStateChanged() override;
@@ -100,6 +95,10 @@ class MostVisitedSites : public ProfileSyncServiceObserver,
   // Records specific UMA histogram metrics.
   void RecordUMAMetrics();
 
+  // history::TopSitesObserver implementation.
+  void TopSitesLoaded(history::TopSites* top_sites) override;
+  void TopSitesChanged(history::TopSites* top_sites) override;
+
   // The profile whose most visited sites will be queried.
   Profile* profile_;
 
@@ -128,7 +127,7 @@ class MostVisitedSites : public ProfileSyncServiceObserver,
   // Copy of the server suggestions (if enabled). Used for logging.
   suggestions::SuggestionsProfile server_suggestions_;
 
-  content::NotificationRegistrar registrar_;
+  ScopedObserver<history::TopSites, history::TopSitesObserver> scoped_observer_;
 
   MostVisitedSource mv_source_;
 

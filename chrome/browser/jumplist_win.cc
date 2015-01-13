@@ -256,10 +256,9 @@ JumpList::JumpList(Profile* profile)
     // initialized.
     top_sites->SyncWithHistory();
     registrar_.reset(new content::NotificationRegistrar);
-    // Register for notification when TopSites changes so that we can update
-    // ourself.
-    registrar_->Add(this, chrome::NOTIFICATION_TOP_SITES_CHANGED,
-                    content::Source<history::TopSites>(top_sites));
+    // Register as TopSitesObserver so that we can update ourselves when the
+    // TopSites changes.
+    top_sites->AddObserver(this);
     // Register for notification when profile is destroyed to ensure that all
     // observers are detatched at that time.
     registrar_->Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
@@ -293,25 +292,9 @@ bool JumpList::Enabled() {
 void JumpList::Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_TOP_SITES_CHANGED: {
-      // Most visited urls changed, query again.
-      history::TopSites* top_sites = profile_->GetTopSites();
-      if (top_sites) {
-        top_sites->GetMostVisitedURLs(
-            base::Bind(&JumpList::OnMostVisitedURLsAvailable,
-                       weak_ptr_factory_.GetWeakPtr()), false);
-      }
-      break;
-    }
-    case chrome::NOTIFICATION_PROFILE_DESTROYED: {
-      // Profile was destroyed, do clean-up.
-      Terminate();
-      break;
-    }
-    default:
-      NOTREACHED() << "Unexpected notification type.";
-  }
+  DCHECK_EQ(type, chrome::NOTIFICATION_PROFILE_DESTROYED);
+  // Profile was destroyed, do clean-up.
+  Terminate();
 }
 
 void JumpList::CancelPendingUpdate() {
@@ -328,6 +311,9 @@ void JumpList::Terminate() {
         TabRestoreServiceFactory::GetForProfile(profile_);
     if (tab_restore_service)
       tab_restore_service->RemoveObserver(this);
+    history::TopSites* top_sites = profile_->GetTopSites();
+    if (top_sites)
+      top_sites->RemoveObserver(this);
     registrar_.reset();
     pref_change_registrar_.reset();
   }
@@ -614,4 +600,14 @@ void JumpList::UpdateProfileSwitcher() {
     base::AutoLock auto_lock(list_lock_);
     new_profile_switcher.swap(profile_switcher_);
   }
+}
+
+void JumpList::TopSitesLoaded(history::TopSites* top_sites) {
+}
+
+void JumpList::TopSitesChanged(history::TopSites* top_sites) {
+  top_sites->GetMostVisitedURLs(
+      base::Bind(&JumpList::OnMostVisitedURLsAvailable,
+                 weak_ptr_factory_.GetWeakPtr()),
+      false);
 }

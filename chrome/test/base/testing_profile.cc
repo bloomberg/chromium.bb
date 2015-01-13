@@ -224,9 +224,7 @@ KeyedService* BuildChromeBookmarkClient(
 KeyedService* BuildChromeHistoryClient(
     content::BrowserContext* context) {
   Profile* profile = static_cast<Profile*>(context);
-  return new ChromeHistoryClient(BookmarkModelFactory::GetForProfile(profile),
-                                 profile,
-                                 profile->GetTopSites());
+  return new ChromeHistoryClient(BookmarkModelFactory::GetForProfile(profile));
 }
 
 void TestProfileErrorCallback(WebDataServiceWrapper::ErrorType error_type,

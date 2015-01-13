@@ -9,9 +9,9 @@
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
+#include "base/scoped_observer.h"
 #include "components/history/core/browser/history_types.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
+#include "components/history/core/browser/top_sites_observer.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
 class GURL;
@@ -33,7 +33,7 @@ class PrefRegistrySyncable;
 //   is a dictionary for quick access (it associates a dummy boolean to the URL
 //   string).
 class MostVisitedHandler : public content::WebUIMessageHandler,
-                           public content::NotificationObserver {
+                           public history::TopSitesObserver {
  public:
 
   MostVisitedHandler();
@@ -59,11 +59,6 @@ class MostVisitedHandler : public content::WebUIMessageHandler,
 
   // Callback for the "mostVisitedSelected" message.
   void HandleMostVisitedSelected(const base::ListValue* args);
-
-  // content::NotificationObserver implementation.
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
 
   const std::vector<GURL>& most_visited_urls() const {
     return most_visited_urls_;
@@ -92,7 +87,12 @@ class MostVisitedHandler : public content::WebUIMessageHandler,
   // Sends pages_value_ to the javascript side and resets page_value_.
   void SendPagesValue();
 
-  content::NotificationRegistrar registrar_;
+  // history::TopSitesObserver implementation.
+  void TopSitesLoaded(history::TopSites* top_sites) override;
+  void TopSitesChanged(history::TopSites* top_sites) override;
+
+  // Scoped observer to help with TopSitesObserver registration.
+  ScopedObserver<history::TopSites, history::TopSitesObserver> scoped_observer_;
 
   // The most visited URLs, in priority order.
   // Only used for matching up clicks on the page to which most visited entry

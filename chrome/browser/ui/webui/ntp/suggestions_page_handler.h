@@ -7,10 +7,10 @@
 
 #include <string>
 
+#include "base/scoped_observer.h"
 #include "chrome/browser/ui/webui/ntp/suggestions_combiner.h"
 #include "components/history/core/browser/history_types.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
+#include "components/history/core/browser/top_sites_observer.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
 class GURL;
@@ -32,8 +32,8 @@ class PrefRegistrySyncable;
 //   is a dictionary for quick access (it associates a dummy boolean to the URL
 //   string).
 class SuggestionsHandler : public content::WebUIMessageHandler,
-                           public content::NotificationObserver,
-                           public SuggestionsCombiner::Delegate {
+                           public SuggestionsCombiner::Delegate,
+                           public history::TopSitesObserver {
  public:
   SuggestionsHandler();
   ~SuggestionsHandler() override;
@@ -59,10 +59,9 @@ class SuggestionsHandler : public content::WebUIMessageHandler,
   // Callback for the "suggestedSitesSelected" message.
   void HandleSuggestedSitesSelected(const base::ListValue* args);
 
-  // content::NotificationObserver implementation.
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
+  // history::TopSitesObserver implementation.
+  void TopSitesLoaded(history::TopSites* top_sites) override;
+  void TopSitesChanged(history::TopSites* top_sites) override;
 
   // SuggestionsCombiner::Delegate implementation.
   void OnSuggestionsReady() override;
@@ -79,7 +78,8 @@ class SuggestionsHandler : public content::WebUIMessageHandler,
   // Sends pages_value_ to the javascript side to and resets page_value_.
   void SendPagesValue();
 
-  content::NotificationRegistrar registrar_;
+  // Scoped observer to help with TopSitesObserver registration.
+  ScopedObserver<history::TopSites, history::TopSitesObserver> scoped_observer_;
 
   // We pre-fetch the first set of result pages.  This variable is false until
   // we get the first getSuggestions() call.

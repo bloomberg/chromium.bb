@@ -183,7 +183,7 @@ class TopSites
   ~TopSites() override;
 
  private:
-  ObserverList<TopSitesObserver> observer_list_;
+  ObserverList<TopSitesObserver, true> observer_list_;
   friend class base::RefCountedThreadSafe<TopSites>;
 };
 

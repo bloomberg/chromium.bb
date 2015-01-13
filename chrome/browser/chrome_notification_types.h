@@ -274,17 +274,6 @@ enum NotificationType {
   // The details are none and the source is a Profile*.
   NOTIFICATION_PROFILE_URL_REQUEST_CONTEXT_GETTER_INITIALIZED,
 
-  // TopSites ----------------------------------------------------------------
-
-  // Sent by TopSites when it finishes loading. The source is the profile the
-  // details the TopSites.
-  NOTIFICATION_TOP_SITES_LOADED,
-
-  // Sent by TopSites when the either one of the most visited urls changed, or
-  // one of the images changes. The source is the TopSites, the details not
-  // used.
-  NOTIFICATION_TOP_SITES_CHANGED,
-
   // Task Manager ------------------------------------------------------------
 
   // Sent when a renderer process is notified of new v8 heap statistics. The

@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "components/history/core/browser/history_types.h"
+#include "components/history/core/browser/top_sites_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/search_engines/template_url_service_observer.h"
 #include "content/public/browser/notification_observer.h"
@@ -35,7 +36,8 @@ class RenderProcessHost;
 // Tracks render process host IDs that are associated with Instant.
 class InstantService : public KeyedService,
                        public content::NotificationObserver,
-                       public TemplateURLServiceObserver {
+                       public TemplateURLServiceObserver,
+                       public history::TopSitesObserver {
  public:
   explicit InstantService(Profile* profile);
   ~InstantService() override;
@@ -117,6 +119,10 @@ class InstantService : public KeyedService,
   // base URL to filter out changes other than those affecting the Default
   // Search Provider.
   void OnTemplateURLServiceChanged() override;
+
+  // TopSitesObserver:
+  void TopSitesLoaded(history::TopSites* top_sites) override;
+  void TopSitesChanged(history::TopSites* top_sites) override;
 
   // Called when a renderer process is terminated.
   void OnRendererProcessTerminated(int process_id);

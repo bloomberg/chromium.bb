@@ -7,8 +7,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/cancelable_task_tracker.h"
-#include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/history_unittest_base.h"
 #include "chrome/browser/history/top_sites.h"
@@ -19,7 +17,6 @@
 #include "components/history/core/browser/history_db_task.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/history/core/browser/top_sites_cache.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -27,44 +24,6 @@
 #include "url/gurl.h"
 
 using content::BrowserThread;
-
-class TestTopSitesObserver : public history::TopSitesObserver {
- public:
-  explicit TestTopSitesObserver(Profile* profile, history::TopSites* top_sites);
-  virtual ~TestTopSitesObserver();
-  // TopSitesObserver:
-  void TopSitesLoaded(history::TopSites* top_sites) override;
-  void TopSitesChanged(history::TopSites* top_sites) override;
-
- private:
-  Profile* profile_;
-  history::TopSites* top_sites_;
-};
-
-TestTopSitesObserver::~TestTopSitesObserver() {
-  top_sites_->RemoveObserver(this);
-}
-
-TestTopSitesObserver::TestTopSitesObserver(Profile* profile,
-                                           history::TopSites* top_sites)
-    : profile_(profile), top_sites_(top_sites) {
-  DCHECK(top_sites_);
-  top_sites_->AddObserver(this);
-}
-
-void TestTopSitesObserver::TopSitesLoaded(history::TopSites* top_sites) {
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_TOP_SITES_LOADED,
-      content::Source<Profile>(profile_),
-      content::Details<history::TopSites>(top_sites));
-}
-
-void TestTopSitesObserver::TopSitesChanged(history::TopSites* top_sites) {
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_TOP_SITES_CHANGED,
-      content::Source<Profile>(profile_),
-      content::NotificationService::NoDetails());
-}
 
 namespace history {
 
@@ -178,13 +137,12 @@ class TopSitesImplTest : public HistoryUnitTestBase {
     profile_.reset(new TestingProfile);
     if (CreateHistoryAndTopSites()) {
       ASSERT_TRUE(profile_->CreateHistoryService(false, false));
-      CreateTopSitesAndObserver();
+      CreateTopSites();
       profile_->BlockUntilTopSitesLoaded();
     }
   }
 
   void TearDown() override {
-    top_sites_observer_.reset();
     profile_.reset();
   }
 
@@ -320,7 +278,7 @@ class TopSitesImplTest : public HistoryUnitTestBase {
   // Recreates top sites. This forces top sites to reread from the db.
   void RecreateTopSitesAndBlock() {
     // Recreate TopSites and wait for it to load.
-    CreateTopSitesAndObserver();
+    CreateTopSites();
     // As history already loaded we have to fake this call.
     profile()->BlockUntilTopSitesLoaded();
   }
@@ -365,21 +323,13 @@ class TopSitesImplTest : public HistoryUnitTestBase {
     top_sites()->thread_safe_cache_->SetTopSites(empty);
   }
 
-  void CreateTopSitesAndObserver() {
-    if (top_sites_observer_)
-      top_sites_observer_.reset();
-
-    profile_->CreateTopSites();
-    top_sites_observer_.reset(
-        new TestTopSitesObserver(profile_.get(), profile_->GetTopSites()));
-  }
+  void CreateTopSites() { profile_->CreateTopSites(); }
 
  private:
   base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread db_thread_;
   scoped_ptr<TestingProfile> profile_;
-  scoped_ptr<TestTopSitesObserver> top_sites_observer_;
   // To cancel HistoryService tasks.
   base::CancelableTaskTracker history_tracker_;
 
@@ -1030,7 +980,7 @@ TEST_F(TopSitesImplTest, GetUpdateDelay) {
 // has loaded.
 TEST_F(TopSitesImplTest, NotifyCallbacksWhenLoaded) {
   // Recreate top sites. It won't be loaded now.
-  CreateTopSitesAndObserver();
+  CreateTopSites();
 
   EXPECT_FALSE(IsTopSitesLoaded());
 
@@ -1071,7 +1021,7 @@ TEST_F(TopSitesImplTest, NotifyCallbacksWhenLoaded) {
   SetTopSites(pages);
 
   // Recreate top sites. It won't be loaded now.
-  CreateTopSitesAndObserver();
+  CreateTopSites();
 
   EXPECT_FALSE(IsTopSitesLoaded());
 
@@ -1116,7 +1066,7 @@ TEST_F(TopSitesImplTest, NotifyCallbacksWhenLoaded) {
 // Makes sure canceled requests are not notified.
 TEST_F(TopSitesImplTest, CancelingRequestsForTopSites) {
   // Recreate top sites. It won't be loaded now.
-  CreateTopSitesAndObserver();
+  CreateTopSites();
 
   EXPECT_FALSE(IsTopSitesLoaded());
 
