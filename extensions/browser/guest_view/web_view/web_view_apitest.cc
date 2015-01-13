@@ -390,7 +390,7 @@ IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestAssignSrcAfterCrash) {
   RunTest("testAssignSrcAfterCrash", "web_view/apitest");
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestAutosizeAfterNavigation) {
+IN_PROC_BROWSER_TEST_F(WebViewAPITest, DISABLED_TestAutosizeAfterNavigation) {
   RunTest("testAutosizeAfterNavigation", "web_view/apitest");
 }
 
