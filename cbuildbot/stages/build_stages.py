@@ -286,11 +286,13 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
     packages += ['virtual/target-os-dev']
     # Build test packages by default.
     packages += ['virtual/target-os-test']
-    # Build factory packages by default.
-    packages += ['chromeos-base/chromeos-installshim',
-                 'chromeos-base/chromeos-factory',
-                 'chromeos-base/chromeos-hwid',
-                 'chromeos-base/autotest-factory-install']
+    # Build factory packages if requested by config.
+    if self._run.config.factory:
+      packages += ['chromeos-base/chromeos-installshim',
+                   'chromeos-base/chromeos-factory',
+                   'chromeos-base/chromeos-hwid',
+                   'chromeos-base/autotest-factory-install']
+
     if self._run.ShouldBuildAutotest():
       packages += ['chromeos-base/autotest-all']
 

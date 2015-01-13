@@ -35,6 +35,7 @@
         "disk_layout": null,
         "do_not_apply_cq_patches": false,
         "doc": null,
+        "factory": true,
         "factory_install_netboot": true,
         "factory_toolkit": true,
         "gcc_githash": null,

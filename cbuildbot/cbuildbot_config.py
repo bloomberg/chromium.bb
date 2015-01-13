@@ -500,6 +500,9 @@ _settings = dict(
 # factory_toolkit -- Whether to build the factory toolkit.
   factory_toolkit=True,
 
+# factory -- Whether to build factory packages in BuildPackages.
+  factory=True,
+
 # packages -- Tuple of specific packages we want to build.  Most configs won't
 #             specify anything here and instead let build_packages calculate.
   packages=(),
