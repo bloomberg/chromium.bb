@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/devtools/device/adb/mock_adb_server.h"
+
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -165,8 +167,8 @@ class SimpleHttpServer : base::NonThreadSafe {
     virtual ~Parser() {}
   };
 
-  typedef base::Callback<void(const std::string&)> SendCallback;
-  typedef base::Callback<Parser*(const SendCallback&)> ParserFactory;
+  using SendCallback = base::Callback<void(const std::string&)>;
+  using ParserFactory = base::Callback<Parser*(const SendCallback&)>;
 
   SimpleHttpServer(const ParserFactory& factory, net::IPEndPoint endpoint);
   virtual ~SimpleHttpServer();
@@ -209,7 +211,7 @@ class SimpleHttpServer : base::NonThreadSafe {
 SimpleHttpServer::SimpleHttpServer(const ParserFactory& factory,
                                    net::IPEndPoint endpoint)
     : factory_(factory),
-      socket_(new net::TCPServerSocket(NULL, net::NetLog::Source())),
+      socket_(new net::TCPServerSocket(nullptr, net::NetLog::Source())),
       weak_factory_(this) {
   socket_->Listen(endpoint, 5);
   AcceptConnection();
@@ -362,29 +364,25 @@ void SimpleHttpServer::OnAccepted(int result) {
   AcceptConnection();
 }
 
-class AdbParser : SimpleHttpServer::Parser, base::NonThreadSafe {
+class AdbParser : public SimpleHttpServer::Parser,
+                  public base::NonThreadSafe,
+                  public MockAndroidConnection::Delegate {
  public:
   static Parser* Create(const SimpleHttpServer::SendCallback& callback) {
     return new AdbParser(callback);
   }
 
+  ~AdbParser() override {}
+ private:
   explicit AdbParser(const SimpleHttpServer::SendCallback& callback)
       : callback_(callback) {
   }
 
-  ~AdbParser() override {}
-
- private:
   int Consume(const char* data, int size) override {
     CHECK(CalledOnValidThread());
-    if (!selected_socket_.empty()) {
-      std::string message(data, size);
-      size_t request_end_pos = message.find(kHttpRequestTerminator);
-      if (request_end_pos != std::string::npos) {
-        ProcessHTTPRequest(message.substr(0, request_end_pos));
-        return request_end_pos + strlen(kHttpRequestTerminator);
-      }
-      return 0;
+    if (mock_connection_) {
+      mock_connection_->Receive(std::string(data, size));
+      return size;
     }
     if (size >= kAdbMessageHeaderSize) {
       std::string message_header(data, kAdbMessageHeaderSize);
@@ -401,80 +399,29 @@ class AdbParser : SimpleHttpServer::Parser, base::NonThreadSafe {
     return 0;
   }
 
-  void ProcessHTTPRequest(const std::string& request) {
-    CHECK(CalledOnValidThread());
-    std::vector<std::string> tokens;
-    Tokenize(request, " ", &tokens);
-    CHECK_EQ(3U, tokens.size());
-    CHECK_EQ("GET", tokens[0]);
-    CHECK_EQ("HTTP/1.1", tokens[2]);
-
-    std::string path(tokens[1]);
-    if (path == kJsonPath)
-      path = kJsonListPath;
-
-    if (selected_socket_ == "chrome_devtools_remote") {
-      if (path == kJsonVersionPath)
-        SendHTTPResponse(kSampleChromeVersion);
-      else if (path == kJsonListPath)
-        SendHTTPResponse(kSampleChromePages);
-      else
-        NOTREACHED() << "Unknown command " << request;
-    } else if (selected_socket_ == "chrome_devtools_remote_1002") {
-      if (path == kJsonVersionPath)
-        SendHTTPResponse(kSampleChromeBetaVersion);
-      else if (path == kJsonListPath)
-        SendHTTPResponse(kSampleChromeBetaPages);
-      else
-        NOTREACHED() << "Unknown command " << request;
-    } else if (selected_socket_.find("noprocess_devtools_remote") == 0) {
-      if (path == kJsonVersionPath)
-        SendHTTPResponse("{}");
-      else if (path == kJsonListPath)
-        SendHTTPResponse("[]");
-      else
-        NOTREACHED() << "Unknown command " << request;
-    } else if (selected_socket_ == "webview_devtools_remote_2425") {
-      if (path == kJsonVersionPath)
-        SendHTTPResponse(kSampleWebViewVersion);
-      else if (path == kJsonListPath)
-        SendHTTPResponse(kSampleWebViewPages);
-      else
-        NOTREACHED() << "Unknown command " << request;
-    } else {
-      NOTREACHED() << "Unknown socket " << selected_socket_;
-    }
-  }
-
   void ProcessCommand(const std::string& command) {
     CHECK(CalledOnValidThread());
     if (command == "host:devices") {
-      SendResponse(base::StringPrintf("%s\tdevice\n%s\toffline",
-                                      kSerialOnline,
-                                      kSerialOffline));
+      SendSuccess(base::StringPrintf("%s\tdevice\n%s\toffline",
+                                     kSerialOnline,
+                                     kSerialOffline));
     } else if (command.find(kHostTransportPrefix) == 0) {
-      selected_device_ = command.substr(strlen(kHostTransportPrefix));
-      SendResponse("");
-    } else if (selected_device_ != kSerialOnline) {
+      serial_ = command.substr(strlen(kHostTransportPrefix));
+      SendSuccess(std::string());
+    } else if (serial_ != kSerialOnline) {
       Send("FAIL", "device offline (x)");
-    } else if (command == kDeviceModelCommand) {
-      SendResponse(kDeviceModel);
-    } else if (command == kOpenedUnixSocketsCommand) {
-      SendResponse(kSampleOpenedUnixSockets);
-    } else if (command == kDumpsysCommand) {
-      SendResponse(kSampleDumpsys);
-    } else if (command == kListProcessesCommand) {
-      SendResponse(kSampleListProcesses);
-    } else if (command.find(kLocalAbstractPrefix) == 0) {
-      selected_socket_ = command.substr(strlen(kLocalAbstractPrefix));
-      SendResponse("");
     } else {
-      NOTREACHED() << "Unknown command - " << command;
+      mock_connection_ = make_scoped_ptr(
+          new MockAndroidConnection(this, serial_, command));
     }
   }
 
-  void SendResponse(const std::string& response) {
+  void SendSuccess(const std::string& response) override {
     Send("OKAY", response);
+  }
+
+  void SendRaw(const std::string& data) override {
+    callback_.Run(data);
   }
 
   void Send(const std::string& status, const std::string& response) {
@@ -494,17 +441,9 @@ class AdbParser : SimpleHttpServer::Parser, base::NonThreadSafe {
     callback_.Run(response_stream.str());
   }
 
-  void SendHTTPResponse(const std::string& body) {
-    CHECK(CalledOnValidThread());
-    std::string response_data(base::StringPrintf(kHttpResponse,
-                                                 static_cast<int>(body.size()),
-                                                 body.c_str()));
-    callback_.Run(response_data);
-  }
-
-  std::string selected_device_;
-  std::string selected_socket_;
   SimpleHttpServer::SendCallback callback_;
+  std::string serial_;
+  scoped_ptr<MockAndroidConnection> mock_connection_;
 };
 
 static SimpleHttpServer* mock_adb_server_ = NULL;
@@ -527,6 +466,95 @@ void StopMockAdbServerOnIOThread() {
 }
 
 } // namespace
+
+MockAndroidConnection::MockAndroidConnection(
+    Delegate* delegate,
+    const std::string& serial,
+    const std::string& command)
+    : delegate_(delegate),
+      serial_(serial) {
+  ProcessCommand(command);
+}
+
+MockAndroidConnection::~MockAndroidConnection() {
+}
+
+void MockAndroidConnection::Receive(const std::string& data) {
+  request_ += data;
+  size_t request_end_pos = data.find(kHttpRequestTerminator);
+  if (request_end_pos == std::string::npos)
+    return;
+
+  std::string request(request_.substr(0, request_end_pos));
+  std::vector<std::string> tokens;
+  Tokenize(request, " ", &tokens);
+  CHECK_EQ(3U, tokens.size());
+  CHECK_EQ("GET", tokens[0]);
+  CHECK_EQ("HTTP/1.1", tokens[2]);
+
+  std::string path(tokens[1]);
+  if (path == kJsonPath)
+    path = kJsonListPath;
+
+  if (socket_name_ == "chrome_devtools_remote") {
+    if (path == kJsonVersionPath)
+      SendHTTPResponse(kSampleChromeVersion);
+    else if (path == kJsonListPath)
+      SendHTTPResponse(kSampleChromePages);
+    else
+      NOTREACHED() << "Unknown command " << request;
+  } else if (socket_name_ == "chrome_devtools_remote_1002") {
+    if (path == kJsonVersionPath)
+      SendHTTPResponse(kSampleChromeBetaVersion);
+    else if (path == kJsonListPath)
+      SendHTTPResponse(kSampleChromeBetaPages);
+    else
+      NOTREACHED() << "Unknown command " << request;
+  } else if (socket_name_.find("noprocess_devtools_remote") == 0) {
+    if (path == kJsonVersionPath)
+      SendHTTPResponse("{}");
+    else if (path == kJsonListPath)
+      SendHTTPResponse("[]");
+    else
+      NOTREACHED() << "Unknown command " << request;
+  } else if (socket_name_ == "webview_devtools_remote_2425") {
+    if (path == kJsonVersionPath)
+      SendHTTPResponse(kSampleWebViewVersion);
+    else if (path == kJsonListPath)
+      SendHTTPResponse(kSampleWebViewPages);
+    else
+      NOTREACHED() << "Unknown command " << request;
+  } else {
+    NOTREACHED() << "Unknown socket " << socket_name_;
+  }
+}
+
+void MockAndroidConnection::ProcessCommand(const std::string& command) {
+  if (command.find(kLocalAbstractPrefix) == 0) {
+    socket_name_ = command.substr(strlen(kLocalAbstractPrefix));
+    delegate_->SendSuccess(std::string());
+  } else {
+    if (command == kDeviceModelCommand) {
+      delegate_->SendSuccess(kDeviceModel);
+    } else if (command == kOpenedUnixSocketsCommand) {
+      delegate_->SendSuccess(kSampleOpenedUnixSockets);
+    } else if (command == kDumpsysCommand) {
+      delegate_->SendSuccess(kSampleDumpsys);
+    } else if (command == kListProcessesCommand) {
+      delegate_->SendSuccess(kSampleListProcesses);
+    } else {
+      NOTREACHED() << "Unknown command - " << command;
+    }
+    delegate_->Close();
+  }
+}
+
+void MockAndroidConnection::SendHTTPResponse(const std::string& body) {
+  std::string response_data(base::StringPrintf(kHttpResponse,
+                                               static_cast<int>(body.size()),
+                                               body.c_str()));
+  delegate_->SendRaw(response_data);
+}
 
 void StartMockAdbServer() {
   BrowserThread::PostTaskAndReply(
