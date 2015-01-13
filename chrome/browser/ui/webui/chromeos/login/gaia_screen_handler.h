@@ -98,6 +98,7 @@ class GaiaScreenHandler : public BaseScreenHandler {
 
   // BaseScreenHandler implementation:
   virtual void DeclareLocalizedValues(LocalizedValuesBuilder* builder) override;
+  virtual void GetAdditionalParameters(base::DictionaryValue* dict) override;
   virtual void Initialize() override;
 
   // WebUIMessageHandler implementation:
@@ -121,6 +122,8 @@ class GaiaScreenHandler : public BaseScreenHandler {
   void HandleGaiaUIReady();
 
   void HandleSwitchToFullTab();
+
+  void HandleToggleWebviewSignin();
 
   // This is called when ConsumerManagementService::SetOwner() returns.
   void OnSetOwnerDone(const std::string& gaia_id,

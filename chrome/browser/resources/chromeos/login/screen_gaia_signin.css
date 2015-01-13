@@ -89,6 +89,12 @@
   width: 400px;
 }
 
+webview#signin-frame {
+  display: block;
+  overflow: hidden;
+  padding: 0;
+}
+
 /* Simpler alignment if no right panel. */
 .no-right-panel #signin-frame {
   margin-left: 0;
@@ -119,6 +125,12 @@
   -webkit-box-pack: center;
   display: -webkit-box;
   height: 100%;
+}
+
+#gaia-loading {
+  background-color: white;
+  height: 80%;
+  top: 80px;
 }
 
 #createSupervisedUserSeparator {

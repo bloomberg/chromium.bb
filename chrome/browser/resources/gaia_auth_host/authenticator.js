@@ -22,6 +22,7 @@ cr.define('cr.login', function() {
   var SIGN_IN_HEADER = 'google-accounts-signin';
   var EMBEDDED_FORM_HEADER = 'google-accounts-embedded';
   var SAML_HEADER = 'google-accounts-saml';
+  var SERVICE_ID = 'chromeoslogin';
 
   /**
    * The source URL parameter for the constrained signin flow.
@@ -113,6 +114,8 @@ cr.define('cr.login', function() {
         'message', this.onMessageFromWebview_.bind(this), false);
     window.addEventListener(
         'popstate', this.onPopState_.bind(this), false);
+
+    this.loaded_ = false;
   };
 
   /**
@@ -121,13 +124,14 @@ cr.define('cr.login', function() {
   Authenticator.prototype.reload = function() {
     this.webview_.src = this.reloadUrl_;
     this.authFlow_ = AuthFlow.DEFAULT;
+    this.loaded_ = false;
   };
 
   Authenticator.prototype.constructInitialFrameUrl_ = function(data) {
     var url = this.idpOrigin_ + (data.gaiaPath || IDP_PATH);
 
     url = appendParam(url, 'continue', this.continueUrl_);
-    url = appendParam(url, 'service', data.service);
+    url = appendParam(url, 'service', data.service || SERVICE_ID);
     if (data.hl)
       url = appendParam(url, 'hl', data.hl);
     if (data.email)
@@ -270,7 +274,7 @@ cr.define('cr.login', function() {
         new CustomEvent('authCompleted',
                         {detail: {email: this.email_,
                                   gaiaId: this.gaiaId_,
-                                  password: this.password_,
+                                  password: this.password_ || '',
                                   usingSAML: this.authFlow_ == AuthFlow.SAML,
                                   chooseWhatToSync: this.chooseWhatToSync_,
                                   skipForNow: this.skipForNow_,

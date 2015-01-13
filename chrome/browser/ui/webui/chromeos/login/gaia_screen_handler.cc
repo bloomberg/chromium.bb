@@ -14,12 +14,14 @@
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/language_preferences.h"
+#include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
 #include "chrome/browser/chromeos/policy/consumer_management_service.h"
 #include "chrome/browser/chromeos/policy/consumer_management_stage.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/io_thread.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/browser/ui/webui/signin/inline_login_ui.h"
 #include "chrome/common/chrome_version_info.h"
@@ -297,6 +299,10 @@ void GaiaScreenHandler::DeclareLocalizedValues(
   builder->Add("fatalErrorDismissButton", IDS_OK);
 }
 
+void GaiaScreenHandler::GetAdditionalParameters(base::DictionaryValue* dict) {
+  dict->SetBoolean("isWebviewSignin", StartupUtils::IsWebviewSigninEnabled());
+}
+
 void GaiaScreenHandler::Initialize() {
 }
 
@@ -313,6 +319,8 @@ void GaiaScreenHandler::RegisterMessages() {
               &GaiaScreenHandler::HandleScrapedPasswordVerificationFailed);
   AddCallback("loginWebuiReady", &GaiaScreenHandler::HandleGaiaUIReady);
   AddCallback("switchToFullTab", &GaiaScreenHandler::HandleSwitchToFullTab);
+  AddCallback("toggleWebviewSignin",
+              &GaiaScreenHandler::HandleToggleWebviewSignin);
 }
 
 void GaiaScreenHandler::HandleFrameLoadingCompleted(int status) {
@@ -406,6 +414,13 @@ void GaiaScreenHandler::HandleScrapedPasswordVerificationFailed() {
 
 void GaiaScreenHandler::HandleSwitchToFullTab() {
   CallJS("switchToFullTab");
+}
+
+void GaiaScreenHandler::HandleToggleWebviewSignin() {
+  if (StartupUtils::EnableWebviewSignin(
+        !StartupUtils::IsWebviewSigninEnabled())) {
+    chrome::AttemptRestart();
+  }
 }
 
 void GaiaScreenHandler::HandleGaiaUIReady() {

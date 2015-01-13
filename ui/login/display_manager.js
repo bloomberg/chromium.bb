@@ -50,6 +50,7 @@
     'app_launch_network_config';
 /** @const */ var ACCELERATOR_EMBEDDED_SIGNIN = 'embedded_signin';
 /** @const */ var ACCELERATOR_NEW_OOBE = 'new_oobe';
+/** @const */ var ACCELERATOR_TOGGLE_WEBVIEW_SIGNIN = 'toggle_webview_signin';
 
 /* Signin UI state constants. Used to control header bar UI. */
 /** @const */ var SIGNIN_UI_STATE = {
@@ -402,6 +403,9 @@ cr.define('cr.ui.login', function() {
           chrome.send('switchToEmbeddedSignin');
       } else if (name == ACCELERATOR_NEW_OOBE) {
         chrome.send('switchToNewOobe');
+      } else if (name == ACCELERATOR_TOGGLE_WEBVIEW_SIGNIN) {
+        if (currentStepId == SCREEN_GAIA_SIGNIN)
+          chrome.send('toggleWebviewSignin');
       }
 
       if (!this.forceKeyboardFlow_)

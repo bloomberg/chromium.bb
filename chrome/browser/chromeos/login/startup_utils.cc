@@ -57,6 +57,7 @@ void StartupUtils::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kEnrollmentRecoveryRequired, false);
   registry->RegisterStringPref(prefs::kInitialLocale, "en-US");
   registry->RegisterBooleanPref(prefs::kNewOobe, false);
+  registry->RegisterBooleanPref(prefs::kWebviewSigninEnabled, false);
 }
 
 // static
@@ -172,6 +173,28 @@ std::string StartupUtils::GetInitialLocale() {
   if (!l10n_util::IsValidLocaleSyntax(locale))
     locale = "en-US";
   return locale;
+}
+
+// static
+bool StartupUtils::IsWebviewSigninAllowed() {
+  return extensions::GetCurrentChannel() <= chrome::VersionInfo::CHANNEL_DEV;
+}
+
+// static
+bool StartupUtils::IsWebviewSigninEnabled() {
+  return IsWebviewSigninAllowed() &&
+      g_browser_process->local_state()->GetBoolean(
+          prefs::kWebviewSigninEnabled);
+}
+
+// static
+bool StartupUtils::EnableWebviewSignin(bool is_enabled) {
+  if (!IsWebviewSigninAllowed())
+    return false;
+
+  g_browser_process->local_state()->SetBoolean(prefs::kWebviewSigninEnabled,
+                                               is_enabled);
+  return true;
 }
 
 // static

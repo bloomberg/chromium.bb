@@ -6,8 +6,6 @@
  * @fileoverview Oobe signin screen implementation.
  */
 
-<include src="../../gaia_auth_host/gaia_auth_host.js">
-
 login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
   // Gaia loading time after which error message must be displayed and
   // lazy portal check should be fired.
@@ -89,9 +87,28 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      */
     samlPasswordConfirmAttempt_: 0,
 
+    /**
+     * Whether we should show webview based signin.
+     * @type {boolean}
+     * @private
+     */
+    isWebviewSignin: false,
+
     /** @override */
     decorate: function() {
-      this.gaiaAuthHost_ = new cr.login.GaiaAuthHost($('signin-frame'));
+      this.isWebviewSignin = loadTimeData.getValue('isWebviewSignin');
+      if (this.isWebviewSignin) {
+        // Replace iframe with webview.
+        var webview = this.ownerDocument.createElement('webview');
+        webview.id = 'signin-frame';
+        webview.name = 'signin-frame';
+        // TODO(dpolukhin): webview doesn't load page in hidden state,
+        // use curtain instead.
+        $('signin-frame').parentNode.replaceChild(webview, $('signin-frame'));
+        this.gaiaAuthHost_ = new cr.login.GaiaAuthHost(webview);
+      } else {
+        this.gaiaAuthHost_ = new cr.login.GaiaAuthHost($('signin-frame'));
+      }
       this.gaiaAuthHost_.addEventListener(
           'ready', this.onAuthReady_.bind(this));
       this.gaiaAuthHost_.confirmPasswordCallback =
@@ -106,12 +123,13 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
           this.samlApiUsed_.bind(this);
       this.gaiaAuthHost_.addEventListener('authFlowChange',
           this.onAuthFlowChange_.bind(this));
+      this.gaiaAuthHost_.addEventListener('authCompleted',
+          this.onAuthCompletedMessage_.bind(this));
 
       $('enterprise-info-hint-link').addEventListener('click', function(e) {
         chrome.send('launchHelpApp', [HELP_TOPIC_ENTERPRISE_REPORTING]);
         e.preventDefault();
       });
-
 
       this.updateLocalizedContent();
     },
@@ -148,7 +166,10 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      */
     showLoadingUI_: function(show) {
       $('gaia-loading').hidden = !show;
-      this.gaiaAuthHost_.frame.hidden = show;
+      if (!this.isWebviewSignin) {
+        // TODO(dpolukhin): proper implement curtain for webview signin.
+        this.gaiaAuthHost_.frame.hidden = show;
+      }
       $('signin-right').hidden = show;
       $('enterprise-info-container').hidden = show;
       $('gaia-signin-divider').hidden = show;
@@ -521,6 +542,15 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       Oobe.getInstance().headerHidden = true;
       // Clear any error messages that were shown before login.
       Oobe.clearErrors();
+    },
+
+    /**
+     * Invoked when onAuthCompleted message received.
+     * @param {!Object} e Payload of the received HTML5 message.
+     * @private
+     */
+    onAuthCompletedMessage_: function(e) {
+      this.onAuthCompleted_(e.detail);
     },
 
     /**

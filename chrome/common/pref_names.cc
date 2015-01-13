@@ -1938,6 +1938,11 @@ const char kConsumerManagementStage[] = "consumer_management.stage";
 
 // A boolean pref. If set to true, new experimental OOBE UI is displayed.
 const char kNewOobe[] = "NewOobe";
+
+// A boolean pref. If set to true, experimental webview based signin flow
+// activated.
+extern const char kWebviewSigninEnabled[] =
+    "webview_signin_enabled";
 #endif  // defined(OS_CHROMEOS)
 
 // Whether there is a Flash version installed that supports clearing LSO data.
