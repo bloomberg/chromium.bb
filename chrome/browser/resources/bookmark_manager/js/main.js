@@ -1034,7 +1034,7 @@ function newFolder(opt_target) {
   // Callback is called after tree and list data model updated.
   function createFolder(callback) {
     if (selectedItem && document.activeElement != bmm.tree &&
-        !bmm.isFolder(selectedItem)) {
+        !bmm.isFolder(selectedItem) && selectedItem.id != 'new') {
       newIndex = bmm.list.dataModel.indexOf(selectedItem) + 1;
     }
     chrome.bookmarks.create({
