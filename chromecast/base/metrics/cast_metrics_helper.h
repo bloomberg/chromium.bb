@@ -61,12 +61,12 @@ class CastMetricsHelper {
       scoped_refptr<base::MessageLoopProxy> message_loop_proxy);
   virtual ~CastMetricsHelper();
 
-  // This function stores the name and startup time of the active application.
-  virtual void TagAppStart(const std::string& app_name);
-  // This function updates the info for current active application.
+  // This function updates the info and stores the startup time of the current
+  // active application
   virtual void UpdateCurrentAppInfo(const std::string& app_id,
-                                    const std::string& session_id,
-                                    const std::string& sdk_version);
+                                    const std::string& session_id);
+  // This function updates the sdk version of the current active application
+  virtual void UpdateSDKInfo(const std::string& sdk_version);
 
   // Logs UMA record for media play/pause user actions.
   virtual void LogMediaPlay();
@@ -139,8 +139,7 @@ class CastMetricsHelper {
   // Start time of the most recent app.
   base::TimeTicks app_start_time_;
 
-  // Currently running app name. Used to construct histogram name.
-  std::string app_name_;
+  // Currently running app id. Used to construct histogram name.
   std::string app_id_;
   std::string session_id_;
   std::string sdk_version_;

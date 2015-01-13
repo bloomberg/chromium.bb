@@ -113,23 +113,19 @@ CastMetricsHelper::~CastMetricsHelper() {
   g_instance = NULL;
 }
 
-void CastMetricsHelper::TagAppStart(const std::string& arg_app_name) {
-  MAKE_SURE_THREAD(TagAppStart, arg_app_name);
-  app_name_ = arg_app_name;
-  app_start_time_ = base::TimeTicks::Now();
-  new_startup_time_ = true;
-
-  TagAppStartForGroupedHistograms(app_name_);
-  // Clear app info
-  UpdateCurrentAppInfo("", "", "");
-}
-
 void CastMetricsHelper::UpdateCurrentAppInfo(const std::string& app_id,
-                                             const std::string& session_id,
-                                             const std::string& sdk_version) {
-  MAKE_SURE_THREAD(UpdateCurrentAppInfo, app_id, session_id, sdk_version);
+                                             const std::string& session_id) {
+  MAKE_SURE_THREAD(UpdateCurrentAppInfo, app_id, session_id);
   app_id_ = app_id;
   session_id_ = session_id;
+  app_start_time_ = base::TimeTicks::Now();
+  new_startup_time_ = true;
+  TagAppStartForGroupedHistograms(app_id_);
+  sdk_version_.clear();
+}
+
+void CastMetricsHelper::UpdateSDKInfo(const std::string& sdk_version) {
+  MAKE_SURE_THREAD(UpdateSDKInfo, sdk_version);
   sdk_version_ = sdk_version;
 }
 
@@ -137,7 +133,7 @@ void CastMetricsHelper::LogMediaPlay() {
   MAKE_SURE_THREAD(LogMediaPlay);
   RecordSimpleAction(EncodeAppInfoIntoMetricsName(
       "MediaPlay",
-      app_id_.empty() ? app_name_ : app_id_,
+      app_id_,
       session_id_,
       sdk_version_));
 }
@@ -146,7 +142,7 @@ void CastMetricsHelper::LogMediaPause() {
   MAKE_SURE_THREAD(LogMediaPause);
   RecordSimpleAction(EncodeAppInfoIntoMetricsName(
       "MediaPause",
-      app_id_.empty() ? app_name_ : app_id_,
+      app_id_,
       session_id_,
       sdk_version_));
 }
@@ -255,10 +251,10 @@ std::string CastMetricsHelper::GetMetricsNameWithAppName(
     const std::string& suffix) const {
   DCHECK(message_loop_proxy_->BelongsToCurrentThread());
   std::string metrics_name(prefix);
-  if (!app_name_.empty()) {
+  if (!app_id_.empty()) {
     if (!metrics_name.empty())
       metrics_name.push_back('.');
-    metrics_name.append(app_name_);
+    metrics_name.append(app_id_);
   }
   if (!suffix.empty()) {
     if (!metrics_name.empty())
