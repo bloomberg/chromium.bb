@@ -62,13 +62,17 @@ importer.ImportController =
   /** @private {function()} */
   this.updateCommands_ = commandUpdateHandler;
 
-  /** @private {!importer.ScanObserver} */
-  this.scanObserverBound_ = this.onScanEvent_.bind(this);
+  /**
+   * A cache of scans by volumeId, directory URL.
+   * Currently only scans of directories are cached.
+   * @private {!Object.<string, !Object.<string, !importer.ScanResult>>}
+   */
+  this.cachedScans_ = {};
 
-  this.scanner_.addObserver(this.scanObserverBound_);
+  this.scanner_.addObserver(this.onScanEvent_.bind(this));
 
-  /** @private {!Object.<string, !importer.ScanResult>} */
-  this.directoryScans_ = {};
+  this.environment_.addVolumeUnmountListener(
+      this.onVolumeUnmounted_.bind(this));
 };
 
 /**
@@ -176,14 +180,31 @@ importer.ImportController.prototype.getScanForImport_ = function() {
 importer.ImportController.prototype.getCurrentDirectoryScan_ = function() {
   console.assert(this.isCurrentDirectoryScannable_());
   var directory = this.environment_.getCurrentDirectory();
+  var volumeId = this.environment_.getVolumeInfo(directory).volumeId;
+
+  // Lazily initialize the cache for volumeId.
+  if (!this.cachedScans_.hasOwnProperty(volumeId)) {
+    this.cachedScans_[volumeId] = {};
+  }
+
   var url = directory.toURL();
-  var scan = this.directoryScans_[url];
+  var scan = this.cachedScans_[volumeId][url];
   if (!scan) {
     scan = this.scanner_.scan([directory]);
-    // TODO(smckay): evict scans when a device is unmounted or changed.
-    this.directoryScans_[url] = scan;
+    this.cachedScans_[volumeId][url] = scan;
   }
   return scan;
+};
+
+/**
+ * @param {string} volumeId
+ * @private
+ */
+importer.ImportController.prototype.onVolumeUnmounted_ = function(volumeId) {
+  // Forget all scans related to the unmounted volume volume.
+  if (this.cachedScans_.hasOwnProperty(volumeId)) {
+    delete this.cachedScans_[volumeId];
+  }
 };
 
 /**
@@ -219,6 +240,12 @@ importer.ControllerEnvironment.prototype.setCurrentDirectory;
  */
 importer.ControllerEnvironment.prototype.isGoogleDriveMounted;
 
+/**
+ * Installs an 'unmount' listener. Listener is called with
+ * the corresponding volume id when a volume is unmounted.
+ * @param {function(string)} listener
+ */
+importer.ControllerEnvironment.prototype.addVolumeUnmountListener;
 
 /**
  * Class providing access to various pieces of information in the
@@ -266,4 +293,19 @@ importer.RuntimeControllerEnvironment.prototype.isGoogleDriveMounted =
   var drive = this.fileManager_.volumeManager.getCurrentProfileVolumeInfo(
       VolumeManagerCommon.VolumeType.DRIVE);
   return !!drive;
+};
+
+/** @override */
+importer.RuntimeControllerEnvironment.prototype.addVolumeUnmountListener =
+    function(listener) {
+  chrome.fileManagerPrivate.onMountCompleted.addListener(
+      /**
+       * @param {!MountCompletedEvent} event
+       * @this {importer.RuntimeControllerEnvironment}
+       */
+      function(event) {
+        if (event.eventType === 'unmount') {
+          listener(event.volumeMetadata.volumeId);
+        }
+      });
 };

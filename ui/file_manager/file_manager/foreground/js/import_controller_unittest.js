@@ -31,7 +31,7 @@ function setUp() {
   loadTimeData.data = {
     CLOUD_IMPORT_BUTTON_LABEL: 'Import it!',
     CLOUD_IMPORT_INSUFFICIENT_SPACE_BUTTON_LABEL: 'Not enough space!',
-    CLOUD_IMPORT_SCANNING_BUTTON_LABEL: 'Scanning... ...!',
+    CLOUD_IMPORT_SCANNING_BUTTON_LABEL: 'Scanning... ...!'
   };
 
   // Stub out metrics support.
@@ -76,6 +76,31 @@ function testUpdate_InitiatesScan() {
   assertEquals(importer.UpdateResponses.SCANNING, response);
 
   mediaScanner.assertScanCount(1);
+}
+
+function testUnmountInvalidatesScans() {
+  var controller = createController(
+      VolumeManagerCommon.VolumeType.MTP,
+      'mtp-volume',
+      [
+        '/DCIM/',
+        '/DCIM/photos0/',
+        '/DCIM/photos0/IMG00001.jpg',
+        '/DCIM/photos0/IMG00002.jpg',
+        '/DCIM/photos1/',
+        '/DCIM/photos1/IMG00001.jpg',
+        '/DCIM/photos1/IMG00003.jpg'
+      ],
+      '/DCIM');
+
+  controller.update();
+  mediaScanner.assertScanCount(1);
+
+  // Faux unmount the volume, then request an update again.
+  // A fresh new scan should be started.
+  environment.simulateUnmount();
+  controller.update();
+  mediaScanner.assertScanCount(2);
 }
 
 function testUpdate_CanExecuteAfterScanIsFinalized() {
@@ -221,7 +246,7 @@ TestImportRunner.prototype.setDestination = function(destination) {
 };
 
 /**
- * @param {number}
+ * @param {number} expected
  */
 TestImportRunner.prototype.assertImportsStarted = function(expected) {
   assertEquals(expected, this.imported.length);
@@ -234,18 +259,24 @@ TestImportRunner.prototype.assertImportsStarted = function(expected) {
  *
  * @constructor
  * @implements {importer.CommandInput}
+ *
+ * @param {!VolumeInfo} volumeInfo
+ * @param {!DirectoryEntry} directory
  */
 TestControllerEnvironment = function(volumeInfo, directory) {
-  /** @private {!volumeInfo} */
+  /** @private {!VolumeInfo} */
   this.volumeInfo_ = volumeInfo;
 
   /** @private {!DirectoryEntry} */
   this.directory_ = directory;
 
-  /** @private {!DirectoryEntry} */
+  /** @private {function(string)} */
+  this.volumeUnmountListener_;
+
+  /** @public {!DirectoryEntry} */
   this.selection = [];
 
-  /** @private {boolean} */
+  /** @public {boolean} */
   this.isDriveMounted = true;
 
   /** @private {function(!DirectoryEntry)} */
@@ -287,6 +318,19 @@ TestControllerEnvironment.prototype.isGoogleDriveMounted =
   return this.isDriveMounted;
 };
 
+/** @override */
+TestControllerEnvironment.prototype.addVolumeUnmountListener =
+    function(listener) {
+  this.volumeUnmountListener_ = listener;
+};
+
+/**
+ * Simulates an unmount event.
+ */
+TestControllerEnvironment.prototype.simulateUnmount = function() {
+  this.volumeUnmountListener_(this.volumeInfo_.volumeId);
+};
+
 /**
  * A promise that resolves when the current directory is set in the environment.
  * @return {!Promise<!DirectoryEntry>}
@@ -297,6 +341,7 @@ TestControllerEnvironment.prototype.whenCurrentDirectoryIsSet = function() {
 
 /**
  * @param {!VolumeManagerCommon.VolumeType} volumeType
+ * @param {string} volumeId
  * @param {!Array.<string>} fileNames
  * @param {string} currentDirectory
  * @return {!importer.ImportControler}
@@ -316,16 +361,17 @@ function createController(volumeType, volumeId, fileNames, currentDirectory) {
       mediaScanner,
       mediaImporter,
       commandUpdateRecorder.callback);
-};
+}
 
 /**
  * @param {!VolumeManagerCommon.VolumeType} volumeType
+ * @param {string} volumeId
  * @param {!Array.<string>} fileNames
  * @return {!VolumeInfo}
  */
-function setupFileSystem(volumeType, volumdId, fileNames) {
+function setupFileSystem(volumeType, volumeId, fileNames) {
   var volumeInfo = volumeManager.createVolumeInfo(
-      volumeType, volumdId, 'A volume known as ' + volumdId);
+      volumeType, volumeId, 'A volume known as ' + volumeId);
   assertTrue(volumeInfo != null);
   volumeInfo.fileSystem.populate(fileNames);
   return volumeInfo;
