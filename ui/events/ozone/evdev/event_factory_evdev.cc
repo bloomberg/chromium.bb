@@ -329,9 +329,12 @@ void EventFactoryEvdev::NotifyTouchscreensUpdated() {
   std::vector<TouchscreenDevice> touchscreens;
   for (auto it = converters_.begin(); it != converters_.end(); ++it) {
     if (it->second->HasTouchscreen()) {
+      // TODO(spang): Extract the number of touch-points supported by the
+      // device.
+      const int touch_points = 11;
       touchscreens.push_back(TouchscreenDevice(
           it->second->id(), it->second->type(), std::string() /* Device name */,
-          it->second->GetTouchscreenSize()));
+          it->second->GetTouchscreenSize(), touch_points));
     }
   }
 

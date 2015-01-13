@@ -157,10 +157,8 @@ class VirtualKeyboardControllerAutoTest : public VirtualKeyboardControllerTest,
 TEST_F(VirtualKeyboardControllerAutoTest, DisabledIfInternalKeyboardPresent) {
   std::vector<ui::TouchscreenDevice> screens;
   screens.push_back(
-      ui::TouchscreenDevice(1,
-                            ui::InputDeviceType::INPUT_DEVICE_INTERNAL,
-                            "Touchscreen",
-                            gfx::Size(1024, 768)));
+      ui::TouchscreenDevice(1, ui::InputDeviceType::INPUT_DEVICE_INTERNAL,
+                            "Touchscreen", gfx::Size(1024, 768), 0));
   UpdateTouchscreenDevices(screens);
   std::vector<ui::KeyboardDevice> keyboards;
   keyboards.push_back(ui::KeyboardDevice(
@@ -179,10 +177,8 @@ TEST_F(VirtualKeyboardControllerAutoTest, DisabledIfNoTouchScreen) {
   std::vector<ui::TouchscreenDevice> devices;
   // Add a touchscreen. Keyboard should deploy.
   devices.push_back(
-      ui::TouchscreenDevice(1,
-                            ui::InputDeviceType::INPUT_DEVICE_EXTERNAL,
-                            "Touchscreen",
-                            gfx::Size(800, 600)));
+      ui::TouchscreenDevice(1, ui::InputDeviceType::INPUT_DEVICE_EXTERNAL,
+                            "Touchscreen", gfx::Size(800, 600), 0));
   UpdateTouchscreenDevices(devices);
   EXPECT_TRUE(keyboard::IsKeyboardEnabled());
   // Remove touchscreen. Keyboard should hide.
@@ -193,10 +189,8 @@ TEST_F(VirtualKeyboardControllerAutoTest, DisabledIfNoTouchScreen) {
 TEST_F(VirtualKeyboardControllerAutoTest, SuppressedIfExternalKeyboardPresent) {
   std::vector<ui::TouchscreenDevice> screens;
   screens.push_back(
-      ui::TouchscreenDevice(1,
-                            ui::InputDeviceType::INPUT_DEVICE_INTERNAL,
-                            "Touchscreen",
-                            gfx::Size(1024, 768)));
+      ui::TouchscreenDevice(1, ui::InputDeviceType::INPUT_DEVICE_INTERNAL,
+                            "Touchscreen", gfx::Size(1024, 768), 0));
   UpdateTouchscreenDevices(screens);
   std::vector<ui::KeyboardDevice> keyboards;
   keyboards.push_back(ui::KeyboardDevice(

@@ -82,10 +82,13 @@ struct ValuatorClassInfo {
 // Stores a copy of the XITouchClassInfo values so X11 device processing can
 // happen on a worker thread. This is needed since X11 structs are not copyable.
 struct TouchClassInfo {
-  TouchClassInfo(const XITouchClassInfo& info)
-      : mode(info.mode) {}
+  TouchClassInfo() : mode(0), num_touches(0) {}
+
+  explicit TouchClassInfo(const XITouchClassInfo& info)
+      : mode(info.mode), num_touches(info.num_touches) {}
 
   int mode;
+  int num_touches;
 };
 
 struct DeviceInfo {
@@ -102,8 +105,11 @@ struct DeviceInfo {
               *reinterpret_cast<XIValuatorClassInfo*>(device.classes[i])));
           break;
         case XITouchClass:
-          touch_class_infos.push_back(TouchClassInfo(
-              *reinterpret_cast<XITouchClassInfo*>(device.classes[i])));
+          // A device can have at most one XITouchClassInfo. Ref:
+          // http://manpages.ubuntu.com/manpages/saucy/man3/XIQueryDevice.3.html
+          DCHECK(!touch_class_info.mode);
+          touch_class_info = TouchClassInfo(
+              *reinterpret_cast<XITouchClassInfo*>(device.classes[i]));
           break;
         default:
           break;
@@ -128,7 +134,7 @@ struct DeviceInfo {
 
   std::vector<ValuatorClassInfo> valuator_class_infos;
 
-  std::vector<TouchClassInfo> touch_class_infos;
+  TouchClassInfo touch_class_info;
 };
 
 // X11 display cache used on worker threads. This is filled on the UI thread and
@@ -263,9 +269,8 @@ void HandleTouchscreenDevicesInWorker(
       }
     }
 
-    for (const TouchClassInfo& info : device_info.touch_class_infos) {
-      is_direct_touch = info.mode == XIDirectTouch;
-    }
+    if (device_info.touch_class_info.mode)
+      is_direct_touch = device_info.touch_class_info.mode == XIDirectTouch;
 
     // Touchscreens should have absolute X and Y axes, and be direct touch
     // devices.
@@ -273,11 +278,10 @@ void HandleTouchscreenDevicesInWorker(
       InputDeviceType type = GetInputDeviceTypeFromPath(device_info.path);
       // |max_x| and |max_y| are inclusive values, so we need to add 1 to get
       // the size.
-      devices.push_back(TouchscreenDevice(
-          device_info.id,
-          type,
-          device_info.name,
-          gfx::Size(max_x + 1, max_y + 1)));
+      devices.push_back(
+          TouchscreenDevice(device_info.id, type, device_info.name,
+                            gfx::Size(max_x + 1, max_y + 1),
+                            device_info.touch_class_info.num_touches));
     }
   }
 

@@ -82,9 +82,6 @@ class EVENTS_DEVICES_EXPORT TouchFactory {
     return touchscreen_ids_;
   }
 
-  // Return maximum simultaneous touch points supported by device.
-  int GetMaxTouchPoints() const;
-
   // Resets the TouchFactory singleton.
   void ResetForTest();
 
@@ -136,12 +133,6 @@ class EVENTS_DEVICES_EXPORT TouchFactory {
   // Maps from a tracking id to the number of times |ReleaseSlotForTrackingID|
   // must be called before the tracking id is released.
   std::map<uint32, int> tracking_id_refcounts_;
-
-  // Maximum simultaneous touch points supported by device. In the case of
-  // devices with multiple digitizers (e.g. multiple touchscreens), the value
-  // is the maximum of the set of maximum supported contacts by each individual
-  // digitizer.
-  int max_touch_points_;
 
   // Device ID of the virtual core keyboard.
   int virtual_core_keyboard_device_;

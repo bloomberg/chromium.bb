@@ -18,10 +18,8 @@ void VirtualKeyboardTestHelper::SuppressKeyboard() {
       ui::DeviceDataManager::GetInstance();
   std::vector<ui::TouchscreenDevice> screens;
   screens.push_back(
-      ui::TouchscreenDevice(1,
-                            ui::InputDeviceType::INPUT_DEVICE_INTERNAL,
-                            "Touchscreen",
-                            gfx::Size(1024, 768)));
+      ui::TouchscreenDevice(1, ui::InputDeviceType::INPUT_DEVICE_INTERNAL,
+                            "Touchscreen", gfx::Size(1024, 768), 0));
   manager->OnTouchscreenDevicesUpdated(screens);
 
   std::vector<ui::KeyboardDevice> keyboards;

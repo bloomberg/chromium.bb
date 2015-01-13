@@ -30,7 +30,6 @@ TouchFactory::TouchFactory()
     : pointer_device_lookup_(),
       touch_events_disabled_(false),
       touch_device_list_(),
-      max_touch_points_(-1),
       virtual_core_keyboard_device_(-1),
       id_generator_(0) {
   if (!DeviceDataManagerX11::GetInstance()->IsXInput2Available())
@@ -83,7 +82,6 @@ void TouchFactory::UpdateDeviceList(Display* display) {
   touch_device_lookup_.reset();
   touch_device_list_.clear();
   touchscreen_ids_.clear();
-  max_touch_points_ = -1;
 
   // NOTE: The new API for retrieving the list of devices (XIQueryDevice) does
   // not provide enough information to detect a touch device. As a result, the
@@ -131,8 +129,6 @@ void TouchFactory::UpdateDeviceList(Display* display) {
           if (tci->mode == XIDirectTouch) {
             touch_device_lookup_[devinfo->deviceid] = true;
             touch_device_list_[devinfo->deviceid] = true;
-            if (tci->num_touches > 0 && tci->num_touches > max_touch_points_)
-              max_touch_points_ = tci->num_touches;
           }
         }
       }
@@ -268,10 +264,6 @@ bool TouchFactory::IsTouchDevicePresent() {
   return !touch_events_disabled_ && touch_device_lookup_.any();
 }
 
-int TouchFactory::GetMaxTouchPoints() const {
-  return max_touch_points_;
-}
-
 void TouchFactory::ResetForTest() {
   pointer_device_lookup_.reset();
   touch_device_lookup_.reset();
@@ -279,7 +271,6 @@ void TouchFactory::ResetForTest() {
   touch_device_list_.clear();
   touchscreen_ids_.clear();
   tracking_id_refcounts_.clear();
-  max_touch_points_ = -1;
   id_generator_.ResetForTest();
 }
 

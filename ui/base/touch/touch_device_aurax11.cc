@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "ui/events/devices/device_data_manager.h"
-#include "ui/events/devices/x11/touch_factory_x11.h"
 
 namespace ui {
 
@@ -15,7 +14,14 @@ bool IsTouchDevicePresent() {
 }
 
 int MaxTouchPoints() {
-  return ui::TouchFactory::GetInstance()->GetMaxTouchPoints();
+  int max_touch = -1;
+  const std::vector<ui::TouchscreenDevice>& touchscreen_devices =
+      ui::DeviceDataManager::GetInstance()->touchscreen_devices();
+  for (const ui::TouchscreenDevice& device : touchscreen_devices) {
+    if (device.touch_points > max_touch)
+      max_touch = device.touch_points;
+  }
+  return max_touch;
 }
 
 // TODO(mustaq@chromium.org): Use mouse detection logic. crbug.com/440503
