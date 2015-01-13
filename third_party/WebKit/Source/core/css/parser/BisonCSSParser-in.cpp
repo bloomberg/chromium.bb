@@ -232,51 +232,6 @@ bool BisonCSSParser::parseValue(MutableStylePropertySet* declaration, CSSPropert
     return ok;
 }
 
-// The color will only be changed when string contains a valid CSS color, so callers
-// can set it to a default color and ignore the boolean result.
-bool BisonCSSParser::parseColor(RGBA32& color, const String& string, bool strict)
-{
-    // First try creating a color specified by name, rgba(), rgb() or "#" syntax.
-    if (CSSPropertyParser::fastParseColor(color, string, strict))
-        return true;
-
-    BisonCSSParser parser(strictCSSParserContext());
-
-    // In case the fast-path parser didn't understand the color, try the full parser.
-    if (!parser.parseColor(string))
-        return false;
-
-    CSSValue* value = parser.m_parsedProperties.first().value();
-    if (!value->isPrimitiveValue())
-        return false;
-
-    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-    if (!primitiveValue->isRGBColor())
-        return false;
-
-    color = primitiveValue->getRGBA32Value();
-    return true;
-}
-
-StyleColor BisonCSSParser::colorFromRGBColorString(const String& colorString)
-{
-    // FIXME: Rework css parser so it is more SVG aware.
-    RGBA32 color;
-    if (parseColor(color, colorString.stripWhiteSpace()))
-        return StyleColor(color);
-    // FIXME: This branch catches the string currentColor, but we should error if we have an illegal color value.
-    return StyleColor::currentColor();
-}
-
-bool BisonCSSParser::parseColor(const String& string)
-{
-    setupParser("@-internal-decls color:", string, "");
-    cssyyparse(this);
-    m_rule = nullptr;
-
-    return !m_parsedProperties.isEmpty() && m_parsedProperties.first().id() == CSSPropertyColor;
-}
-
 bool BisonCSSParser::parseSystemColor(RGBA32& color, const String& string)
 {
     CSSParserString cssColor;

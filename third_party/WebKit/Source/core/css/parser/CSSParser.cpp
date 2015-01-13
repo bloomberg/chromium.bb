@@ -152,7 +152,12 @@ bool CSSParser::parseColor(RGBA32& color, const String& string, bool strict)
 
 StyleColor CSSParser::colorFromRGBColorString(const String& string)
 {
-    return BisonCSSParser::colorFromRGBColorString(string);
+    // FIXME: Rework css parser so it is more SVG aware.
+    RGBA32 color;
+    if (parseColor(color, string.stripWhiteSpace()))
+        return StyleColor(color);
+    // FIXME: This branch catches the string currentColor, but we should error if we have an illegal color value.
+    return StyleColor::currentColor();
 }
 
 bool CSSParser::parseSystemColor(RGBA32& color, const String& colorString)

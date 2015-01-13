@@ -82,8 +82,6 @@ public:
     PassRefPtrWillBeRawPtr<StyleRuleKeyframe> parseKeyframeRule(StyleSheetContents*, const String&);
     bool parseSupportsCondition(const String&);
     static bool parseValue(MutableStylePropertySet*, CSSPropertyID, const String&, bool important, const CSSParserContext&);
-    static bool parseColor(RGBA32& color, const String&, bool strict = false);
-    static StyleColor colorFromRGBColorString(const String&);
     static bool parseSystemColor(RGBA32& color, const String&);
     bool parseDeclaration(MutableStylePropertySet*, const String&, CSSParserObserver*, StyleSheetContents* contextStyleSheet);
     static PassRefPtrWillBeRawPtr<ImmutableStylePropertySet> parseInlineStyleDeclaration(const String&, Element*);
@@ -255,8 +253,6 @@ private:
 
     bool parseValue(MutableStylePropertySet*, CSSPropertyID, const String&, bool important);
     PassRefPtrWillBeRawPtr<ImmutableStylePropertySet> parseDeclaration(const String&, StyleSheetContents* contextStyleSheet);
-
-    bool parseColor(const String&);
 
     const String* m_source;
     TextPosition m_startPosition;
