@@ -1704,7 +1704,6 @@ TEST_P(QuicConnectionTest, RemoveFECFromInflightOnRetransmissionTimeout) {
   EXPECT_CALL(*send_algorithm_, OnRetransmissionTimeout(true));
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(1);
   connection_.GetRetransmissionAlarm()->Fire();
-  ;
 
   size_t data_only = QuicSentPacketManagerPeer::GetBytesInFlight(manager);
   EXPECT_LT(0u, data_only);

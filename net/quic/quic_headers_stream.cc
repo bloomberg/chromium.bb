@@ -144,7 +144,7 @@ class QuicHeadersStream::SpdyFramerVisitor
   }
 
   bool OnUnknownFrame(SpdyStreamId stream_id, int frame_type) override {
-    CloseConnection("SPDY unknown frame received.");
+    CloseConnection("Unknown frame type received.");
     return false;
   }
 
