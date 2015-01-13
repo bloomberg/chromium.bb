@@ -244,7 +244,7 @@ void BasicShapeInset::path(Path& path, const FloatRect& boundingBox)
 PassRefPtr<BasicShape> BasicShapeInset::blend(const BasicShape* other, double) const
 {
     ASSERT(type() == other->type());
-    // FIXME: Implement blend for BasicShapeInset.
+    // FIXME: Implement blend for BasicShapeInset (see: crbug.com/448295).
     return nullptr;
 }
 
