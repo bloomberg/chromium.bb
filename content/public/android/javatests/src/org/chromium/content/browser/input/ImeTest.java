@@ -47,6 +47,7 @@ public class ImeTest extends ContentShellTestBase {
             + "<br/><textarea id=\"textarea\" rows=\"4\" cols=\"20\"></textarea>"
             + "<br/><p><span id=\"plain_text\">This is Plain Text One</span></p>"
             + "</form></body></html>");
+    private static final int COMPOSITION_KEY_CODE = 229;
 
     private TestAdapterInputConnection mConnection;
     private ImeAdapter mImeAdapter;
@@ -708,7 +709,7 @@ public class ImeTest extends ContentShellTestBase {
         // H
         expectUpdateStateCall(mConnection);
         setComposingText(mConnection, "h", 1);
-        assertEquals(KeyEvent.KEYCODE_H, mImeAdapter.mLastSyntheticKeyCode);
+        assertEquals(COMPOSITION_KEY_CODE, mImeAdapter.mLastSyntheticKeyCode);
 
         // Simulate switch of input fields.
         finishComposingText(mConnection);
@@ -716,7 +717,7 @@ public class ImeTest extends ContentShellTestBase {
         // H
         expectUpdateStateCall(mConnection);
         setComposingText(mConnection, "h", 1);
-        assertEquals(KeyEvent.KEYCODE_H, mImeAdapter.mLastSyntheticKeyCode);
+        assertEquals(COMPOSITION_KEY_CODE, mImeAdapter.mLastSyntheticKeyCode);
     }
 
     @SmallTest

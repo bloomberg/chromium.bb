@@ -416,14 +416,25 @@ public class ImeAdapter {
                 keyCode = -1;
             }
 
-            // If this is a commit with no previous composition, then treat it as a native
-            // KeyDown/KeyUp pair with no composition rather than a synthetic pair with
+            // If this is a single-character commit with no previous composition, then treat it as
+            // a native KeyDown/KeyUp pair with no composition rather than a synthetic pair with
             // composition below.
-            if (keyCode > 0 && isCommit && mLastComposeText == null) {
+            if (keyCode > 0 && isCommit && mLastComposeText == null && textStr.length() == 1) {
                 mLastSyntheticKeyCode = keyCode;
                 return translateAndSendNativeEvents(keyEvent, 0)
                         && translateAndSendNativeEvents(
                                 KeyEvent.changeAction(keyEvent, KeyEvent.ACTION_UP), 0);
+            }
+
+            // FIXME: Use WebTextInputFlags.AutocompleteOff. We need this hack to enable merge into
+            // into Beta to fix http://crbug.com/422685 .
+            final int textInputFlagAutocompleteOff = 1 << 1;
+
+            // If we do not have autocomplete=off, then always send compose events rather than a
+            // guessed keyCode. This addresses http://crbug.com/422685 .
+            if ((mTextInputFlags & textInputFlagAutocompleteOff) == 0) {
+                keyCode = COMPOSITION_KEY_CODE;
+                modifiers = 0;
             }
 
             // When typing, there is no issue sending KeyDown and KeyUp events around the
