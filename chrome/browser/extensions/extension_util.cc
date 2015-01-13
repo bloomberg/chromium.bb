@@ -350,8 +350,8 @@ const gfx::ImageSkia& GetDefaultExtensionIcon() {
 }
 
 bool IsStreamlinedHostedAppsEnabled() {
-  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableNewBookmarkApps);
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableNewBookmarkApps);
 }
 
 }  // namespace util

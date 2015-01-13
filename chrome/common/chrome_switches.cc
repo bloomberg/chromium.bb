@@ -259,9 +259,6 @@ const char kDisableIPv6[]                   = "disable-ipv6";
 const char kDisableMinimizeOnSecondLauncherItemClick[] =
     "disable-minimize-on-second-launcher-item-click";
 
-// Disables the new bookmark app system.
-const char kDisableNewBookmarkApps[]   = "disable-new-bookmark-apps";
-
 // Disables the menu on the NTP for accessing sessions from other devices.
 const char kDisableNTPOtherSessionsMenu[]   = "disable-ntp-other-sessions-menu";
 
@@ -456,6 +453,9 @@ const char kEnableNaCl[]                    = "enable-nacl";
 
 // Enables the network-related benchmarking extensions.
 const char kEnableNetBenchmarking[]         = "enable-net-benchmarking";
+
+// Enables the new bookmark app system.
+const char kEnableNewBookmarkApps[] = "enable-new-bookmark-apps";
 
 // Enables NPN with HTTP. It means NPN is enabled but SPDY won't be used.
 // HTTP is still used for all requests.

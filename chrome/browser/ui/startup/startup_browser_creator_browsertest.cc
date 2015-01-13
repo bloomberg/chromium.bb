@@ -13,6 +13,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -325,9 +326,12 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, OpenAppShortcutNoPref) {
   Browser* new_browser = FindOneOtherBrowser(browser());
   ASSERT_TRUE(new_browser);
 
-  // It should be a standard tabbed window, not an app window.
-  EXPECT_FALSE(new_browser->is_app());
-  EXPECT_TRUE(new_browser->is_type_tabbed());
+  // If new bookmark apps are enabled, it should be a standard tabbed window,
+  // not an app window; otherwise the reverse should be true.
+  bool new_bookmark_apps_enabled =
+      extensions::util::IsStreamlinedHostedAppsEnabled();
+  EXPECT_EQ(!new_bookmark_apps_enabled, new_browser->is_app());
+  EXPECT_EQ(new_bookmark_apps_enabled, new_browser->is_type_tabbed());
 }
 
 IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, OpenAppShortcutWindowPref) {

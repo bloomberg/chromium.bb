@@ -20,6 +20,7 @@
 #include "chrome/browser/devtools/devtools_window_testing.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -1316,15 +1317,26 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, AppIdSwitch) {
   chrome::startup::IsFirstRun first_run = first_run::IsChromeFirstRun() ?
       chrome::startup::IS_FIRST_RUN : chrome::startup::IS_NOT_FIRST_RUN;
   StartupBrowserCreatorImpl launch(base::FilePath(), command_line, first_run);
-  EXPECT_FALSE(launch.OpenApplicationWindow(browser()->profile(), NULL));
-  EXPECT_TRUE(launch.OpenApplicationTab(browser()->profile()));
 
-  // Check that a new browser wasn't opened.
-  EXPECT_EQ(1u, chrome::GetBrowserCount(browser()->profile(),
-                                        browser()->host_desktop_type()));
+  bool new_bookmark_apps_enabled =
+      extensions::util::IsStreamlinedHostedAppsEnabled();
 
-  // Check that a new tab was opened.
-  EXPECT_EQ(2, browser()->tab_strip_model()->count());
+  // If the new bookmark app flow is enabled, the app should open as an tab.
+  // Otherwise the app should open as an app window.
+  EXPECT_EQ(!new_bookmark_apps_enabled,
+            launch.OpenApplicationWindow(browser()->profile(), NULL));
+  EXPECT_EQ(new_bookmark_apps_enabled,
+            launch.OpenApplicationTab(browser()->profile()));
+
+  // Check that a the number of browsers and tabs is correct.
+  unsigned int expected_browsers = 1;
+  int expected_tabs = 1;
+  new_bookmark_apps_enabled ? expected_tabs++ : expected_browsers++;
+
+  EXPECT_EQ(expected_browsers,
+            chrome::GetBrowserCount(browser()->profile(),
+                                    browser()->host_desktop_type()));
+  EXPECT_EQ(expected_tabs, browser()->tab_strip_model()->count());
 }
 
 // Open an app window and the dev tools window and ensure that the location
