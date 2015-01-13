@@ -224,8 +224,9 @@ def _GetPresentationInfo(test_name):
   raise PerfUploadingError('No presentation config found for %s' % test_name)
 
 
-def _FormatForUpload(perf_data, platform_name, cros_version, chrome_version,
-                     presentation_info, test_prefix=None, platform_prefix=None):
+def _FormatForUpload(perf_data, platform_name, presentation_info, revision=None,
+                     cros_version=None, chrome_version=None, test_prefix=None,
+                     platform_prefix=None):
   """Formats perf data suitably to upload to the perf dashboard.
 
   The perf dashboard expects perf data to be uploaded as a
@@ -240,11 +241,13 @@ def _FormatForUpload(perf_data, platform_name, cros_version, chrome_version,
 
   Args:
     platform_name: The string name of the platform.
-    cros_version: The string ChromeOS version number.
-    chrome_version: The string Chrome version number.
     perf_data: A dictionary of measured perf data. This is keyed by
       (description, graph name) tuple.
     presentation_info: A PresentationInfo object of the given test.
+    revision: The raw X-axis value; normally it represents a VCS repo, but may
+      be any monotonic increasing value integer.
+    cros_version: A string identifying Chrome OS version e.g. '6052.0.0'.
+    chrome_version: A string identifying Chrome OS version e.g. '38.0.2091.2'.
     test_prefix: Arbitrary string to automatically prefix to the test name.
       If None, then 'cbuildbot.' is used to guarantee namespacing.
     platform_prefix: Arbitrary string to automatically prefix to
@@ -272,6 +275,14 @@ def _FormatForUpload(perf_data, platform_name, cros_version, chrome_version,
       test_parts.insert(1, graph)
     test_path = '/'.join(test_parts)
 
+    supp_cols = {}
+    if data.get('stdio_uri'):
+      supp_cols['a_stdio_uri'] = data['stdio_uri']
+    if cros_version is not None:
+      supp_cols['r_cros_version'] = cros_version
+    if chrome_version is not None:
+      supp_cols['r_chrome_version'] = chrome_version
+
     new_dash_entry = {
         'master': presentation_info.master_name,
         'bot': platform_prefix + platform_name,
@@ -280,13 +291,10 @@ def _FormatForUpload(perf_data, platform_name, cros_version, chrome_version,
         'error': data['stddev'],
         'units': data['units'],
         'higher_is_better': data['higher_is_better'],
-        'supplemental_columns': {
-            'r_cros_version': cros_version,
-            'r_chrome_version': chrome_version,
-        }
+        'supplemental_columns': supp_cols,
     }
-    if data.get('stdio_uri'):
-      new_dash_entry['supplemental_columns']['a_stdio_uri'] = data['stdio_uri']
+    if revision is not None:
+      new_dash_entry['revision'] = revision
 
     dash_entries.append(new_dash_entry)
 
@@ -319,18 +327,25 @@ def _SendToDashboard(data_obj, dashboard=DASHBOARD_URL):
     raise PerfUploadingError('HTTPException for JSON %s\n' % data_obj['data'])
 
 
-def UploadPerfValues(perf_values, platform_name, cros_version, chrome_version,
-                     test_name, dashboard=DASHBOARD_URL, master_name=None,
+def UploadPerfValues(perf_values, platform_name, test_name, revision=None,
+                     cros_version=None, chrome_version=None,
+                     dashboard=DASHBOARD_URL, master_name=None,
                      test_prefix=None, platform_prefix=None, dry_run=False):
   """Uploads any perf data associated with a test to the perf dashboard.
+
+  Note: If |revision| is used, then |cros_version| & |chrome_version| are not
+  necessary.  Conversely, if |revision| is not used, then |cros_version| and
+  |chrome_version| must both be specified.
 
   Args:
     perf_values: List of PerformanceValue objects.
     platform_name: A string identifying platform e.g. 'x86-release'. 'cros-'
       will be prepended to |platform_name| internally, by _FormatForUpload.
+    test_name: A string identifying the test
+    revision: The raw X-axis value; normally it represents a VCS repo, but may
+      be any monotonic increasing value integer.
     cros_version: A string identifying Chrome OS version e.g. '6052.0.0'.
     chrome_version: A string identifying Chrome OS version e.g. '38.0.2091.2'.
-    test_name: A string identifying the test
     dashboard: The dashboard to upload data to.
     master_name: The "master" field to use; by default it is looked up in the
       perf_dashboard_config.json database.
@@ -356,15 +371,18 @@ def UploadPerfValues(perf_values, platform_name, cros_version, chrome_version,
   # Prefix the ChromeOS version number with the Chrome milestone.
   # TODO(dennisjeffrey): Modify the dashboard to accept the ChromeOS version
   # number *without* the milestone attached.
-  cros_version = chrome_version[:chrome_version.find('.') + 1] + cros_version
+  if revision is None:
+    cros_version = chrome_version[:chrome_version.find('.') + 1] + cros_version
   try:
     if master_name is None:
       presentation_info = _GetPresentationInfo(test_name)
     else:
       presentation_info = PresentationInfo(master_name, test_name)
     formatted_data = _FormatForUpload(perf_data, platform_name,
-                                      cros_version, chrome_version,
                                       presentation_info,
+                                      revision=revision,
+                                      cros_version=cros_version,
+                                      chrome_version=chrome_version,
                                       test_prefix=test_prefix,
                                       platform_prefix=platform_prefix)
     if dry_run:

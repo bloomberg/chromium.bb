@@ -370,5 +370,6 @@ class ImageTestStage(generic_stages.BoardSpecificBuilderStage,
     cros_ver = self._run.GetVersionInfo(self._run.buildroot).VersionString()
     chrome_ver = self._run.DetermineChromeVersion()
     for test_name, perf_values in perf_entries.iteritems():
-      perf_uploader.UploadPerfValues(perf_values, platform_name, cros_ver,
-                                     chrome_ver, test_name)
+      perf_uploader.UploadPerfValues(perf_values, platform_name, test_name,
+                                     cros_version=cros_ver,
+                                     chrome_version=chrome_ver)
