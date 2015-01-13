@@ -51,6 +51,9 @@ scoped_ptr<ScopedEventDispatcher> PlatformEventSource::OverrideDispatcher(
       new ScopedEventDispatcher(&overridden_dispatcher_, dispatcher));
 }
 
+void PlatformEventSource::StopCurrentEventStream() {
+}
+
 void PlatformEventSource::AddPlatformEventObserver(
     PlatformEventObserver* observer) {
   CHECK(observer);
@@ -95,9 +98,6 @@ uint32_t PlatformEventSource::DispatchEvent(PlatformEvent platform_event) {
   overridden_dispatcher_restored_ = false;
 
   return action;
-}
-
-void PlatformEventSource::StopCurrentEventStream() {
 }
 
 void PlatformEventSource::OnDispatcherListChanged() {

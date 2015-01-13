@@ -1673,19 +1673,7 @@ class BookmarkBarViewTest17 : public BookmarkBarViewEventTestBase {
   BookmarkContextMenuNotificationObserver observer_;
 };
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-// TODO(erg): linux_aura bringup: http://crbug.com/163931
-#define MAYBE_ContextMenus3 DISABLED_ContextMenus3
-#elif defined(USE_OZONE)
-// ozone bringup - http://crbug.com/401304
-#define MAYBE_ContextMenus3 DISABLED_ContextMenus3
-#elif defined(OS_WIN)  // http://crbug.com/128961
-#define MAYBE_ContextMenus3 DISABLED_ContextMenus3
-#else
-#define MAYBE_ContextMenus3 ContextMenus3
-#endif
-
-VIEW_TEST(BookmarkBarViewTest17, MAYBE_ContextMenus3)
+VIEW_TEST(BookmarkBarViewTest17, ContextMenus3)
 
 // Verifies sibling menus works. Clicks on the 'other bookmarks' folder, then
 // moves the mouse over the first item on the bookmark bar and makes sure the

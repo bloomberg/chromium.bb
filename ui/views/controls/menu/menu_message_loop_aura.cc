@@ -183,6 +183,13 @@ void MenuMessageLoopAura::Run(MenuController* controller,
 void MenuMessageLoopAura::QuitNow() {
   CHECK(!message_loop_quit_.is_null());
   message_loop_quit_.Run();
+
+#if !defined(OS_WIN)
+  // Ask PlatformEventSource to stop dispatching events in this message loop
+  // iteration. We want our menu's loop to return before the next event.
+  if (ui::PlatformEventSource::GetInstance())
+    ui::PlatformEventSource::GetInstance()->StopCurrentEventStream();
+#endif
 }
 
 void MenuMessageLoopAura::ClearOwner() {
