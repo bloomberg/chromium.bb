@@ -1168,12 +1168,6 @@ void AppsGridView::MoveSelected(int page_delta,
 }
 
 void AppsGridView::CalculateIdealBounds() {
-  // TODO(mgiuca): This is a work-around for http://crbug.com/422604. See
-  // comment in ContentsView::Layout for details. This should be removed once
-  // http://crbug.com/446407 is resolved.
-  if (GetContentsBounds().IsEmpty())
-    return;
-
   gfx::Size grid_size = GetTileGridSize();
 
   // Page size including padding pixels. A tile.x + page_width means the same
