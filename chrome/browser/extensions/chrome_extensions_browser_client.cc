@@ -73,7 +73,8 @@ bool ChromeExtensionsBrowserClient::AreExtensionsDisabled(
 bool ChromeExtensionsBrowserClient::IsValidContext(
     content::BrowserContext* context) {
   Profile* profile = static_cast<Profile*>(context);
-  return g_browser_process->profile_manager()->IsValidProfile(profile);
+  return g_browser_process->profile_manager() &&
+         g_browser_process->profile_manager()->IsValidProfile(profile);
 }
 
 bool ChromeExtensionsBrowserClient::IsSameContext(
