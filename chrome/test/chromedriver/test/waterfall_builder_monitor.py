@@ -130,7 +130,7 @@ class OfficialBuilderParser(object):
     json_url = self.builder_info['builds_url']
     data = GetJSONData(json_url)
     # Get a sorted list of all the keys in the json data.
-    keys = sorted(data)
+    keys = sorted(map(int, data.keys()))
     return self._GetLatestCompletedBuild(keys)
 
   def _GetLatestCompletedBuild(self, keys):
@@ -158,7 +158,7 @@ class GetBuilderStatus(OfficialBuilderParser):
       return {}
     result = {'platform': self.platform,
               'build_number': self.build,
-              'build_link': self.builder_url + self.build,
+              'build_link': self.builder_url + str(self.build),
               'build_date': None,
               'build_too_old': False,
               'error': 'unknown'}
