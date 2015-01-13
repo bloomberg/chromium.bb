@@ -456,12 +456,8 @@ def DriverOutputTypes(driver_flag, compiling_to_native):
 
 def ReadDriverRevision():
   rev_file = env.getone('DRIVER_REV_FILE')
-  # Might be an SVN version or a GIT hash (depending on the NaCl src client)
   nacl_ver = DriverOpen(rev_file, 'rb').readlines()[0]
-  m = re.search(r'\[SVN\].*/native_client:\s*(\d+)', nacl_ver)
-  if m:
-    return m.group(1)
-  m = re.search(r'\[GIT\].*/native_client.git:\s*(\w+)', nacl_ver)
+  m = re.search(r'\[GIT\].*/native_client(?:.git)?:\s*(\w+)', nacl_ver)
   if m:
     return m.group(1)
   # fail-fast: if the REV file exists but regex search failed,
