@@ -44,8 +44,8 @@
       'ash_touch_exploration_manager_chromeos.h',
       'cancel_mode.cc',
       'cancel_mode.h',
-      'content/display/screen_orientation_delegate_chromeos.cc',
-      'content/display/screen_orientation_delegate_chromeos.h',
+      'content/display/screen_orientation_controller_chromeos.cc',
+      'content/display/screen_orientation_controller_chromeos.h',
       'debug.cc',
       'debug.h',
       'default_accessibility_delegate.cc',
@@ -757,7 +757,7 @@
       'accelerators/spoken_feedback_toggler_unittest.cc',
       'ash_touch_exploration_manager_chromeos_unittest.cc',
       'autoclick/autoclick_unittest.cc',
-      'content/display/screen_orientation_delegate_chromeos_unittest.cc',
+      'content/display/screen_orientation_controller_chromeos_unittest.cc',
       'desktop_background/desktop_background_controller_unittest.cc',
       'dip_unittest.cc',
       'display/display_change_observer_chromeos_unittest.cc',
@@ -1096,7 +1096,6 @@
       'conditions': [
         ['chromeos==0', {
           'sources!': [
-            'content/display/screen_orientation_delegate_chromeos_unittest.cc',
             # TODO(zork): fix this test to build on Windows. See: crosbug.com/26906
             'focus_cycler_unittest.cc',
             # All tests for multiple displays: not supported on Windows Ash.
@@ -1107,6 +1106,7 @@
             'wm/workspace/workspace_window_resizer_unittest.cc',
             'sticky_keys/sticky_keys_overlay_unittest.cc',
             'sticky_keys/sticky_keys_unittest.cc',
+            'system/chromeos/rotation/tray_rotation_lock_unittest.cc',
             'system/tray/media_security/multi_profile_media_tray_item_unittest.cc',
             'autoclick/autoclick_unittest.cc',
             "virtual_keyboard_controller_unittest.cc"

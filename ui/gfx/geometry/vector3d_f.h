@@ -120,6 +120,17 @@ inline Vector3dF ScaleVector3d(const Vector3dF& v, float scale) {
   return ScaleVector3d(v, scale, scale, scale);
 }
 
+// Returns the angle between |base| and |other| in degrees.
+GFX_EXPORT float AngleBetweenVectorsInDegrees(const gfx::Vector3dF& base,
+                                              const gfx::Vector3dF& other);
+
+// Returns the clockwise angle between |base| and |other| where |normal| is the
+// normal of the virtual surface to measure clockwise according to.
+GFX_EXPORT float ClockwiseAngleBetweenVectorsInDegrees(
+    const gfx::Vector3dF& base,
+    const gfx::Vector3dF& other,
+    const gfx::Vector3dF& normal);
+
 // This is declared here for use in gtest-based unit tests but is defined in
 // the gfx_test_support target. Depend on that to use this in your unit test.
 // This should not be used in production code - call ToString() instead.

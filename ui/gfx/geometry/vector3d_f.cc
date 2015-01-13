@@ -8,6 +8,10 @@
 
 #include "base/strings/stringprintf.h"
 
+namespace {
+const float kRadiansToDegrees = 180.0f / 3.14159265f;
+}
+
 namespace gfx {
 
 Vector3dF::Vector3dF()
@@ -83,6 +87,27 @@ Vector3dF ScaleVector3d(const Vector3dF& v,
   Vector3dF scaled_v(v);
   scaled_v.Scale(x_scale, y_scale, z_scale);
   return scaled_v;
+}
+
+float AngleBetweenVectorsInDegrees(const gfx::Vector3dF& base,
+                                   const gfx::Vector3dF& other) {
+  return acos(gfx::DotProduct(base, other) / base.Length() / other.Length()) *
+         kRadiansToDegrees;
+}
+
+float ClockwiseAngleBetweenVectorsInDegrees(const gfx::Vector3dF& base,
+                                            const gfx::Vector3dF& other,
+                                            const gfx::Vector3dF& normal) {
+  float angle = AngleBetweenVectorsInDegrees(base, other);
+  gfx::Vector3dF cross(base);
+  cross.Cross(other);
+
+  // If the dot product of this cross product is normal, it means that the
+  // shortest angle between |base| and |other| was counterclockwise with respect
+  // to the surface represented by |normal| and this angle must be reversed.
+  if (gfx::DotProduct(cross, normal) > 0.0f)
+    angle = 360.0f - angle;
+  return angle;
 }
 
 }  // namespace gfx

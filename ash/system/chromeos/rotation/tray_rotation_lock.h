@@ -5,9 +5,9 @@
 #ifndef ASH_SYSTEM_CHROMEOS_ROTATION_TRAY_ROTATION_LOCK_H_
 #define ASH_SYSTEM_CHROMEOS_ROTATION_TRAY_ROTATION_LOCK_H_
 
+#include "ash/content/display/screen_orientation_controller_chromeos.h"
 #include "ash/shell_observer.h"
 #include "ash/system/tray/tray_image_item.h"
-#include "ash/wm/maximize_mode/maximize_mode_controller.h"
 
 namespace ash {
 
@@ -20,26 +20,27 @@ class RotationLockDefaultView;
 // the rotation lock for the display which it appears on. The default view can
 // be interacted with, it toggles the state of the rotation lock.
 // TrayRotationLock is only available on the primary display.
-class ASH_EXPORT TrayRotationLock : public TrayImageItem,
-                                    public MaximizeModeController::Observer,
-                                    public ShellObserver {
+class ASH_EXPORT TrayRotationLock
+    : public TrayImageItem,
+      public ScreenOrientationController::Observer,
+      public ShellObserver {
  public:
   explicit TrayRotationLock(SystemTray* system_tray);
-  virtual ~TrayRotationLock();
+  ~TrayRotationLock() override;
 
-  // MaximizeModeController::Observer:
-  virtual void OnRotationLockChanged(bool rotation_locked) override;
+  // ScreenOrientationController::Observer:
+  void OnRotationLockChanged(bool rotation_locked) override;
 
   // SystemTrayItem:
-  virtual views::View* CreateDefaultView(user::LoginStatus status) override;
+  views::View* CreateDefaultView(user::LoginStatus status) override;
 
   // ShellObserver:
-  virtual void OnMaximizeModeStarted() override;
-  virtual void OnMaximizeModeEnded() override;
+  void OnMaximizeModeStarted() override;
+  void OnMaximizeModeEnded() override;
 
  protected:
   // TrayImageItem:
-  virtual bool GetInitialVisibility() override;
+  bool GetInitialVisibility() override;
 
  private:
   friend class TrayRotationLockTest;

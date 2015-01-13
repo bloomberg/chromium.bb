@@ -58,6 +58,10 @@ const int kDelayBetweenReadsMs = 100;
 // The mean acceleration due to gravity on Earth in m/s^2.
 const float kMeanGravity = 9.80665f;
 
+// The maximum deviation from the acceleration expected due to gravity under
+// which to detect hinge angle and screen rotation in m/s^2
+const float kDeviationFromGravityThreshold = 1.0f;
+
 // Reads |path| to the unsigned int pointed to by |value|. Returns true on
 // success or false on failure.
 bool ReadFileToInt(const base::FilePath& path, int* value) {
@@ -206,10 +210,18 @@ void AccelerometerReader::Initialize(
 
 void AccelerometerReader::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
+  observer->OnAccelerometerUpdated(update_);
 }
 
 void AccelerometerReader::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
+}
+
+bool AccelerometerReader::IsReadingStable(const ui::AccelerometerUpdate& update,
+                                          ui::AccelerometerSource source) {
+  return update.has(source) &&
+         std::abs(update.get(source).Length() - kMeanGravity) <=
+             kDeviationFromGravityThreshold;
 }
 
 void AccelerometerReader::OnInitialized(

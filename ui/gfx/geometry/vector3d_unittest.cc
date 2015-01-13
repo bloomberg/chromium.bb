@@ -261,4 +261,57 @@ TEST(Vector3dFTest, ClampVector3dF) {
   EXPECT_EQ(Vector3dF(3.5f, 5.5f, 7.5f).ToString(), a.ToString());
 }
 
+TEST(Vector3dTest, AngleBetweenVectorsInDegress) {
+  const struct {
+    float expected;
+    gfx::Vector3dF input1;
+    gfx::Vector3dF input2;
+  } tests[] = {
+      {0, gfx::Vector3dF(0, 1, 0), gfx::Vector3dF(0, 1, 0)},
+      {90, gfx::Vector3dF(0, 1, 0), gfx::Vector3dF(0, 0, 1)},
+      {45,
+       gfx::Vector3dF(0, 1, 0),
+       gfx::Vector3dF(0, 0.70710678188f, 0.70710678188f)},
+      {180, gfx::Vector3dF(0, 1, 0), gfx::Vector3dF(0, -1, 0)},
+  };
+
+  for (size_t i = 0; i < arraysize(tests); ++i) {
+    float actual =
+        gfx::AngleBetweenVectorsInDegrees(tests[i].input1, tests[i].input2);
+    EXPECT_FLOAT_EQ(tests[i].expected, actual);
+    actual =
+        gfx::AngleBetweenVectorsInDegrees(tests[i].input2, tests[i].input1);
+    EXPECT_FLOAT_EQ(tests[i].expected, actual);
+  }
+}
+
+TEST(Vector3dTest, ClockwiseAngleBetweenVectorsInDegress) {
+  const struct {
+    float expected;
+    gfx::Vector3dF input1;
+    gfx::Vector3dF input2;
+  } tests[] = {
+      {0, gfx::Vector3dF(0, 1, 0), gfx::Vector3dF(0, 1, 0)},
+      {90, gfx::Vector3dF(0, 1, 0), gfx::Vector3dF(0, 0, -1)},
+      {45,
+       gfx::Vector3dF(0, -1, 0),
+       gfx::Vector3dF(0, -0.70710678188f, 0.70710678188f)},
+      {180, gfx::Vector3dF(0, -1, 0), gfx::Vector3dF(0, 1, 0)},
+      {270, gfx::Vector3dF(0, 1, 0), gfx::Vector3dF(0, 0, 1)},
+  };
+
+  const gfx::Vector3dF normal_vector(1.0f, 0.0f, 0.0f);
+
+  for (size_t i = 0; i < arraysize(tests); ++i) {
+    float actual = gfx::ClockwiseAngleBetweenVectorsInDegrees(
+        tests[i].input1, tests[i].input2, normal_vector);
+    EXPECT_FLOAT_EQ(tests[i].expected, actual);
+    actual = -gfx::ClockwiseAngleBetweenVectorsInDegrees(
+                 tests[i].input2, tests[i].input1, normal_vector);
+    if (actual < 0.0f)
+      actual += 360.0f;
+    EXPECT_FLOAT_EQ(tests[i].expected, actual);
+  }
+}
+
 }  // namespace gfx

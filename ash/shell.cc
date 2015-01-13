@@ -120,7 +120,7 @@
 #include "ash/accelerators/magnifier_key_scroller.h"
 #include "ash/accelerators/spoken_feedback_toggler.h"
 #include "ash/ash_constants.h"
-#include "ash/content/display/screen_orientation_delegate_chromeos.h"
+#include "ash/content/display/screen_orientation_controller_chromeos.h"
 #include "ash/display/display_change_observer_chromeos.h"
 #include "ash/display/display_configurator_animation.h"
 #include "ash/display/display_error_observer_chromeos.h"
@@ -485,9 +485,8 @@ void Shell::RemoveShellObserver(ShellObserver* observer) {
 
 #if defined(OS_CHROMEOS)
 bool Shell::ShouldSaveDisplaySettings() {
-  return !((maximize_mode_controller_->IsMaximizeModeWindowManagerEnabled() &&
-            maximize_mode_controller_->
-                ignore_display_configuration_updates()) ||
+  return !(screen_orientation_controller_
+               ->ignore_display_configuration_updates() ||
            resolution_notification_controller_->DoesNotificationTimeout());
 }
 #endif
@@ -694,15 +693,19 @@ Shell::~Shell() {
   // TooltipController is deleted with the Shell so removing its references.
   RemovePreTargetHandler(tooltip_controller_.get());
 
+#if defined(OS_CHROMEOS)
+  screen_orientation_controller_.reset();
+#endif
+
 // Destroy the virtual keyboard controller before the maximize mode controller
 // since the latters destructor triggers events that the former is listening
 // to but no longer cares about.
 #if defined(OS_CHROMEOS)
   virtual_keyboard_controller_.reset();
 #endif
+
   // Destroy maximize mode controller early on since it has some observers which
   // need to be removed.
-  maximize_mode_controller_->Shutdown();
   maximize_mode_controller_.reset();
 
   // AppList needs to be released before shelf layout manager, which is
@@ -1066,7 +1069,7 @@ void Shell::Init(const ShellInitParams& init_params) {
       new VideoActivityNotifier(video_detector_.get()));
   bluetooth_notification_controller_.reset(new BluetoothNotificationController);
   last_window_closed_logout_reminder_.reset(new LastWindowClosedLogoutReminder);
-  screen_orientation_delegate_.reset(new ScreenOrientationDelegate());
+  screen_orientation_controller_.reset(new ScreenOrientationController());
 #endif
   // The compositor thread and main message loop have to be running in
   // order to create mirror window. Run it after the main message loop

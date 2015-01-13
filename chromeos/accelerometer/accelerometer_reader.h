@@ -63,6 +63,12 @@ class CHROMEOS_EXPORT AccelerometerReader {
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
+  // A reading is considered stable if its deviation from gravity is small. This
+  // returns false if the deviation is too higher, or if |source| is not present
+  // in the update.
+  static bool IsReadingStable(const ui::AccelerometerUpdate& update,
+                              ui::AccelerometerSource source);
+
  private:
   // Dispatched when initialization is complete. If |success|, |configuration|
   // provides the details of the detected accelerometer.

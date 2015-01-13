@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "ash/content/display/screen_orientation_controller_chromeos.h"
 #include "ash/display/display_controller.h"
 #include "ash/display/display_layout_store.h"
 #include "ash/display/display_manager.h"
@@ -40,6 +41,12 @@ const char kOffsetKey[] = "offset";
 
 // The mean acceleration due to gravity on Earth in m/s^2.
 const float kMeanGravity = 9.80665f;
+
+bool IsRotationLocked() {
+  return ash::Shell::GetInstance()
+      ->screen_orientation_controller()
+      ->rotation_locked();
+}
 
 class DisplayPreferencesTest : public ash::test::AshTestBase {
  protected:
@@ -655,7 +662,6 @@ TEST_F(DisplayPreferencesTest, DontSaveAndRestoreAllOff) {
 // are not saved.
 TEST_F(DisplayPreferencesTest, DontSaveMaximizeModeControllerRotations) {
   ash::Shell* shell = ash::Shell::GetInstance();
-  ash::MaximizeModeController* controller = shell->maximize_mode_controller();
   gfx::Display::SetInternalDisplayId(
       gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().id());
   ash::DisplayManager* display_manager = shell->display_manager();
@@ -673,6 +679,7 @@ TEST_F(DisplayPreferencesTest, DontSaveMaximizeModeControllerRotations) {
              0.0f, 0.0f, kMeanGravity);
   update.Set(ui::ACCELEROMETER_SOURCE_SCREEN,
              0.0f, -kMeanGravity, 0.0f);
+  ash::MaximizeModeController* controller = shell->maximize_mode_controller();
   controller->OnAccelerometerUpdated(update);
   EXPECT_TRUE(controller->IsMaximizeModeWindowManagerEnabled());
 
@@ -682,6 +689,7 @@ TEST_F(DisplayPreferencesTest, DontSaveMaximizeModeControllerRotations) {
   update.Set(ui::ACCELEROMETER_SOURCE_SCREEN,
              -kMeanGravity, 0.0f, 0.0f);
   controller->OnAccelerometerUpdated(update);
+  shell->screen_orientation_controller()->OnAccelerometerUpdated(update);
   EXPECT_EQ(gfx::Display::ROTATE_90, display_manager->
                 GetDisplayInfo(gfx::Display::InternalDisplayId()).rotation());
 
@@ -701,8 +709,7 @@ TEST_F(DisplayPreferencesTest, StoreRotationStateNoLogin) {
             gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().id());
   EXPECT_FALSE(local_state()->HasPrefPath(prefs::kDisplayRotationLock));
 
-  bool current_rotation_lock =
-      ash::Shell::GetInstance()->maximize_mode_controller()->rotation_locked();
+  bool current_rotation_lock = IsRotationLocked();
   StoreDisplayRotationPrefs(current_rotation_lock);
   EXPECT_TRUE(local_state()->HasPrefPath(prefs::kDisplayRotationLock));
 
@@ -727,8 +734,7 @@ TEST_F(DisplayPreferencesTest, StoreRotationStateGuest) {
   EXPECT_FALSE(local_state()->HasPrefPath(prefs::kDisplayRotationLock));
   LoggedInAsGuest();
 
-  bool current_rotation_lock =
-      ash::Shell::GetInstance()->maximize_mode_controller()->rotation_locked();
+  bool current_rotation_lock = IsRotationLocked();
   StoreDisplayRotationPrefs(current_rotation_lock);
   EXPECT_TRUE(local_state()->HasPrefPath(prefs::kDisplayRotationLock));
 
@@ -753,8 +759,7 @@ TEST_F(DisplayPreferencesTest, StoreRotationStateNormalUser) {
   EXPECT_FALSE(local_state()->HasPrefPath(prefs::kDisplayRotationLock));
   LoggedInAsGuest();
 
-  bool current_rotation_lock =
-      ash::Shell::GetInstance()->maximize_mode_controller()->rotation_locked();
+  bool current_rotation_lock = IsRotationLocked();
   StoreDisplayRotationPrefs(current_rotation_lock);
   EXPECT_TRUE(local_state()->HasPrefPath(prefs::kDisplayRotationLock));
 
@@ -780,9 +785,7 @@ TEST_F(DisplayPreferencesTest, LoadRotationNoLogin) {
   ASSERT_FALSE(local_state()->HasPrefPath(prefs::kDisplayRotationLock));
 
   ash::Shell* shell = ash::Shell::GetInstance();
-  ash::MaximizeModeController* maximize_mode_controller =
-      shell->maximize_mode_controller();
-  bool initial_rotation_lock = maximize_mode_controller->rotation_locked();
+  bool initial_rotation_lock = IsRotationLocked();
   ASSERT_FALSE(initial_rotation_lock);
   ash::DisplayManager* display_manager = shell->display_manager();
   gfx::Display::Rotation initial_rotation = display_manager->
@@ -802,7 +805,7 @@ TEST_F(DisplayPreferencesTest, LoadRotationNoLogin) {
   EXPECT_TRUE(display_rotation_lock);
   EXPECT_EQ(gfx::Display::ROTATE_90, display_rotation);
 
-  bool rotation_lock = maximize_mode_controller->rotation_locked();
+  bool rotation_lock = IsRotationLocked();
   gfx::Display::Rotation before_maximize_mode_rotation = display_manager->
       GetDisplayInfo(gfx::Display::InternalDisplayId()).rotation();
 
@@ -816,48 +819,15 @@ TEST_F(DisplayPreferencesTest, LoadRotationNoLogin) {
              0.0f, 0.0f, kMeanGravity);
   update.Set(ui::ACCELEROMETER_SOURCE_SCREEN,
              0.0f, -kMeanGravity, 0.0f);
+  ash::MaximizeModeController* maximize_mode_controller =
+      shell->maximize_mode_controller();
   maximize_mode_controller->OnAccelerometerUpdated(update);
   EXPECT_TRUE(maximize_mode_controller->IsMaximizeModeWindowManagerEnabled());
-  bool maximize_mode_rotation_lock =
-      maximize_mode_controller->rotation_locked();
+  bool screen_orientation_rotation_lock = IsRotationLocked();
   gfx::Display::Rotation maximize_mode_rotation = display_manager->
       GetDisplayInfo(gfx::Display::InternalDisplayId()).rotation();
-  EXPECT_TRUE(maximize_mode_rotation_lock);
+  EXPECT_TRUE(screen_orientation_rotation_lock);
   EXPECT_EQ(gfx::Display::ROTATE_90, maximize_mode_rotation);
-}
-
-// Tests that loaded rotation state is ignored if the device starts in normal
-// mode, and that they are not applied upon first entering maximize mode.
-TEST_F(DisplayPreferencesTest, LoadRotationIgnoredInNormalMode) {
-  gfx::Display::SetInternalDisplayId(
-      gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().id());
-  ASSERT_FALSE(local_state()->HasPrefPath(prefs::kDisplayRotationLock));
-  StoreDisplayRotationPrefs(false /* rotation_lock*/);
-  ASSERT_TRUE(local_state()->HasPrefPath(prefs::kDisplayRotationLock));
-
-  StoreDisplayRotationPrefsForTest(true, gfx::Display::ROTATE_90);
-  LoadDisplayPreferences(false);
-
-  ash::MaximizeModeController* maximize_mode_controller =
-      ash::Shell::GetInstance()->maximize_mode_controller();
-  // Lid open to 90 degrees
-  ui::AccelerometerUpdate update;
-  update.Set(ui::ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD,
-             -kMeanGravity, 0.0f, 0.0f);
-  update.Set(ui::ACCELEROMETER_SOURCE_SCREEN,
-             -kMeanGravity, 0.0f, 0.0f);
-  maximize_mode_controller->OnAccelerometerUpdated(update);
-  EXPECT_FALSE(maximize_mode_controller->IsMaximizeModeWindowManagerEnabled());
-  EXPECT_FALSE(maximize_mode_controller->rotation_locked());
-
-  // Open up 270 degrees to trigger maximize mode
-  update.Set(ui::ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD,
-             0.0f, 0.0f, kMeanGravity);
-  update.Set(ui::ACCELEROMETER_SOURCE_SCREEN,
-             0.0f, -kMeanGravity, 0.0f);
-  maximize_mode_controller->OnAccelerometerUpdated(update);
-  EXPECT_TRUE(maximize_mode_controller->IsMaximizeModeWindowManagerEnabled());
-  EXPECT_FALSE(maximize_mode_controller->rotation_locked());
 }
 
 // Tests that rotation lock being set causes the rotation state to be saved.
@@ -866,9 +836,8 @@ TEST_F(DisplayPreferencesTest, RotationLockTriggersStore) {
     gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().id());
   ASSERT_FALSE(local_state()->HasPrefPath(prefs::kDisplayRotationLock));
 
-  ash::MaximizeModeController* maximize_mode_controller =
-      ash::Shell::GetInstance()->maximize_mode_controller();
-  maximize_mode_controller->SetRotationLocked(true);
+  ash::Shell::GetInstance()->screen_orientation_controller()->SetRotationLocked(
+      true);
 
   EXPECT_TRUE(local_state()->HasPrefPath(prefs::kDisplayRotationLock));
 

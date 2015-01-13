@@ -5,6 +5,7 @@
 #include "ash/system/chromeos/rotation/tray_rotation_lock.h"
 
 #include "ash/ash_switches.h"
+#include "ash/content/display/screen_orientation_controller_chromeos.h"
 #include "ash/display/display_manager.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf_widget.h"
@@ -53,8 +54,8 @@ class TrayRotationLockTest : public test::AshTestBase {
   void TearDownViews();
 
   // test::AshTestBase:
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
  private:
   scoped_ptr<TrayRotationLock> tray_;
@@ -118,7 +119,8 @@ TEST_F(TrayRotationLockTest, CreateTrayViewDuringMaximizeModeAndRotationLock) {
   TearDownViews();
   Shell::GetInstance()->maximize_mode_controller()->
       EnableMaximizeModeWindowManager(true);
-  Shell::GetInstance()-> maximize_mode_controller()->SetRotationLocked(true);
+  Shell::GetInstance()->screen_orientation_controller()->SetRotationLocked(
+      true);
   SetUpForStatusAreaWidget(StatusAreaWidgetTestHelper::GetStatusAreaWidget());
   EXPECT_TRUE(tray_view()->visible());
   Shell::GetInstance()->maximize_mode_controller()->
@@ -132,7 +134,8 @@ TEST_F(TrayRotationLockTest, TrayViewVisibilityChangesDuringMaximizeMode) {
   ASSERT_FALSE(tray_view()->visible());
   Shell::GetInstance()->maximize_mode_controller()->
       EnableMaximizeModeWindowManager(true);
-  Shell::GetInstance()->maximize_mode_controller()->SetRotationLocked(true);
+  Shell::GetInstance()->screen_orientation_controller()->SetRotationLocked(
+      true);
   EXPECT_TRUE(tray_view()->visible());
   Shell::GetInstance()->maximize_mode_controller()->
       EnableMaximizeModeWindowManager(false);
@@ -204,19 +207,19 @@ TEST_F(TrayRotationLockTest, CreateSecondaryDefaultView) {
 TEST_F(TrayRotationLockTest, PerformActionOnDefaultView) {
   MaximizeModeController* maximize_mode_controller = Shell::GetInstance()->
       maximize_mode_controller();
-  ASSERT_FALSE(maximize_mode_controller->rotation_locked());
-  Shell::GetInstance()->maximize_mode_controller()->
-      EnableMaximizeModeWindowManager(true);
+  ScreenOrientationController* screen_orientation_controller =
+      Shell::GetInstance()->screen_orientation_controller();
+  ASSERT_FALSE(screen_orientation_controller->rotation_locked());
+  maximize_mode_controller->EnableMaximizeModeWindowManager(true);
   ASSERT_FALSE(tray_view()->visible());
 
   ui::GestureEvent tap(
       0, 0, 0, base::TimeDelta(), ui::GestureEventDetails(ui::ET_GESTURE_TAP));
   default_view()->OnGestureEvent(&tap);
-  EXPECT_TRUE(maximize_mode_controller->rotation_locked());
+  EXPECT_TRUE(screen_orientation_controller->rotation_locked());
   EXPECT_TRUE(tray_view()->visible());
 
-  Shell::GetInstance()->maximize_mode_controller()->
-      EnableMaximizeModeWindowManager(false);
+  maximize_mode_controller->EnableMaximizeModeWindowManager(false);
 }
 
 }  // namespace ash
