@@ -1399,7 +1399,7 @@ void RenderWidget::QueueMessage(IPC::Message* msg,
                        policy,
                        frame_swap_message_queue_.get(),
                        RenderThreadImpl::current()->sync_message_filter(),
-                       compositor_->commitRequested(),
+                       compositor_->BeginMainFrameRequested(),
                        compositor_->GetSourceFrameNumber());
 
   if (swap_promise) {
