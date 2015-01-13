@@ -7,6 +7,7 @@
 
 #include <list>
 #include <set>
+#include <string>
 
 #include "base/values.h"
 #include "components/wifi/wifi_export.h"

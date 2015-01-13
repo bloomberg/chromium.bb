@@ -158,7 +158,7 @@
         },
         "ConnectionState": "NotConnected"
     },
-    "network-wifi-hexssid-invalid-length": {
+    "wifi-hexssid-invalid-length": {
         "GUID": "guid",
         "Type": "WiFi",
         "Name": "name",
@@ -168,7 +168,17 @@
             "Security": "WPA-PSK"
         }
     },
-    "network-wifi-invalid-hexssid": {
+    "wifi-ssid-invalid-length": {
+        "GUID": "guid",
+        "Type": "WiFi",
+        "Name": "name",
+        "WiFi": {
+            "Passphrase": "some passphrase",
+            "SSID": "a ssid longer than 32 bytes is invalid",
+            "Security": "WPA-PSK"
+        }
+    },
+    "wifi-invalid-hexssid": {
         "GUID": "guid",
         "Type": "WiFi",
         "Name": "name",
@@ -178,13 +188,34 @@
             "Security": "WPA-PSK"
         }
     },
-    "network-wifi-ssid-and-hexssid-inconsistent": {
+    "wifi-ssid-and-hexssid-inconsistent": {
         "GUID": "guid",
         "Type": "WiFi",
         "Name": "name",
         "WiFi": {
             "Passphrase": "some passphrase",
             "SSID": "ssid",
+            "HexSSID": "FFFFFF",
+            "Security": "WPA-PSK"
+        }
+    },
+    "wifi-ssid-and-hexssid-partially-invalid": {
+        "GUID": "guid",
+        "Type": "WiFi",
+        "Name": "name",
+        "WiFi": {
+            "Passphrase": "some passphrase",
+            "SSID": "a ssid longer than 32 bytes is invalid",
+            "HexSSID": "FFFFFF",
+            "Security": "WPA-PSK"
+        }
+    },
+    "wifi-ssid-and-hexssid-repaired": {
+        "GUID": "guid",
+        "Type": "WiFi",
+        "Name": "name",
+        "WiFi": {
+            "Passphrase": "some passphrase",
             "HexSSID": "FFFFFF",
             "Security": "WPA-PSK"
         }

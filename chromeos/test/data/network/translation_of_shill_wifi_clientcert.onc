@@ -8,7 +8,8 @@
       "SaveCredentials": true,
       "UseSystemCAs": true
     },
-    "SSID":"SomeWifi-XY",
+    "HexSSID":"4F70656E577274", // "OpenWrt"
+    "SSID":"OpenWrt",
     "Security":"WPA-EAP"
   }
 }

@@ -12,6 +12,9 @@
          "Effective": "UserPolicy",
          "UserPolicy": false
       },
+      "HexSSID": {
+         "Active": "7769666932" // "wifi2"
+      },
       "SSID": {
          "Active": "wifi2"
       },

@@ -7,5 +7,5 @@
    "SaveCredentials": true,
    "SecurityClass": "802_1x",
    "Type": "wifi",
-   "WiFi.HexSSID": "536F6D65576966692D5859" // "SomeWifi-XY"
+   "WiFi.HexSSID": "4F70656E577274", // "OpenWrt"
 }

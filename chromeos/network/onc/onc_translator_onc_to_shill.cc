@@ -204,11 +204,6 @@ void LocalTranslator::TranslateWiFi() {
                              shill::kSecurityClassProperty);
   }
 
-  std::string ssid;
-  onc_object_->GetStringWithoutPathExpansion(::onc::wifi::kSSID, &ssid);
-  if (!ssid.empty())
-    shill_property_util::SetSSID(ssid, shill_dictionary_);
-
   // We currently only support managed and no adhoc networks.
   shill_dictionary_->SetStringWithoutPathExpansion(shill::kModeProperty,
                                                    shill::kModeManaged);

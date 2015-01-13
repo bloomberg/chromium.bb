@@ -380,6 +380,16 @@ CertPEMsByGUIDMap GetServerAndCACertsByGUID(
   return certs_by_guid;
 }
 
+void FillInHexSSIDFieldsInNetworks(base::ListValue* network_configs) {
+  for (base::ListValue::iterator it = network_configs->begin();
+       it != network_configs->end(); ++it) {
+    base::DictionaryValue* network = NULL;
+    (*it)->GetAsDictionary(&network);
+    DCHECK(network);
+    FillInHexSSIDFieldsInOncObject(kNetworkConfigurationSignature, network);
+  }
+}
+
 }  // namespace
 
 bool ParseAndValidateOncForImport(const std::string& onc_blob,
@@ -432,9 +442,6 @@ bool ParseAndValidateOncForImport(const std::string& onc_blob,
       *toplevel_onc,
       &validation_result);
 
-  FillInHexSSIDFieldsInOncObject(kToplevelConfigurationSignature,
-                                 toplevel_onc.get());
-
   if (from_policy) {
     UMA_HISTOGRAM_BOOLEAN("Enterprise.ONC.PolicyValidation",
                           validation_result == Validator::VALID);
@@ -460,6 +467,8 @@ bool ParseAndValidateOncForImport(const std::string& onc_blob,
   base::ListValue* validated_networks = NULL;
   if (toplevel_onc->GetListWithoutPathExpansion(
           toplevel_config::kNetworkConfigurations, &validated_networks)) {
+    FillInHexSSIDFieldsInNetworks(validated_networks);
+
     CertPEMsByGUIDMap server_and_ca_certs =
         GetServerAndCACertsByGUID(*certificates);
 

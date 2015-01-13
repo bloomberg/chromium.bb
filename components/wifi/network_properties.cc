@@ -6,6 +6,7 @@
 
 #include "base/json/json_reader.h"
 #include "base/message_loop/message_loop.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "components/onc/onc_constants.h"
 
@@ -54,6 +55,8 @@ scoped_ptr<base::DictionaryValue> NetworkProperties::ToValue(
     if (!bssid.empty())
       wifi->SetString(onc::wifi::kBSSID, bssid);
     wifi->SetString(onc::wifi::kSSID, ssid);
+    wifi->SetString(onc::wifi::kHexSSID,
+                    base::HexEncode(ssid.c_str(), ssid.size()));
   }
   value->Set(onc::network_type::kWiFi, wifi.release());
 

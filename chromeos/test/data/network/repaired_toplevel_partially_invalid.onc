@@ -28,6 +28,16 @@
               "IKEVersion": 1
           }
       }
+    },
+    {
+      "GUID": "456",
+      "Type": "WiFi",
+      "Name": "My WiFi Network",
+      "WiFi": {
+        "HexSSID": "4F70656E577274", // "OpenWrt"
+        "Security": "None",
+        "SSID": "OpenWrt"
+      }
     }
   ],
   "Certificates": [

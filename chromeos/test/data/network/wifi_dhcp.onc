@@ -5,8 +5,8 @@
     "Type": "WiFi",
     "WiFi": {
         "AutoConnect": true,
+        "HexSSID": "576966695769746844484350", // "WifiWithDHCP"
         "Passphrase": "some passphrase",
-        "SSID": "WifiWithDHCP",
         "Security": "WPA-PSK"
     }
 }

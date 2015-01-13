@@ -269,7 +269,7 @@ const char* kPolicy =
     "    \"Type\": \"WiFi\","
     "    \"WiFi\": {"
     "      \"Security\": \"WPA-PSK\","
-    "      \"SSID\": \"wifi1\","
+    "      \"HexSSID\": \"7769666931\","  // "wifi1"
     "      \"Passphrase\": \"passphrase\""
     "    }"
     "} ]";
@@ -280,7 +280,7 @@ const char* kPolicyCertPattern =
     "    \"Type\": \"WiFi\","
     "    \"WiFi\": {"
     "      \"Security\": \"WPA-EAP\","
-    "      \"SSID\": \"wifi1\","
+    "      \"HexSSID\": \"7769666931\","  // "wifi1"
     "      \"EAP\": {"
     "        \"Outer\": \"EAP-TLS\","
     "        \"ClientCertType\": \"Pattern\","

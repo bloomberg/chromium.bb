@@ -36,7 +36,7 @@ CHROMEOS_EXPORT std::string GetSSIDFromProperties(
 CHROMEOS_EXPORT std::string GetNetworkIdFromProperties(
     const base::DictionaryValue& properties);
 
-  // Returns the name for the network represented by the Shill |properties|. For
+// Returns the name for the network represented by the Shill |properties|. For
 // WiFi it refers to the HexSSID.
 CHROMEOS_EXPORT std::string GetNameFromProperties(
     const std::string& service_path,

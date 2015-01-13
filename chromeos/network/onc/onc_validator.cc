@@ -253,7 +253,7 @@ bool Validator::ValidateRecommendedField(
   for (const base::Value* entry : *recommended_list) {
     std::string field_name;
     if (!entry->GetAsString(&field_name)) {
-      NOTREACHED(); // The types of field values are already verified.
+      NOTREACHED();  // The types of field values are already verified.
       continue;
     }
 
@@ -399,51 +399,62 @@ bool Validator::FieldExistsAndIsEmpty(const base::DictionaryValue& object,
   return true;
 }
 
-bool Validator::IsSSIDOrHexSSIDValid(const base::DictionaryValue& object) {
+bool Validator::ValidateSSIDAndHexSSID(base::DictionaryValue* object) {
   // Check SSID validity.
   std::string ssid_string;
-  if (object.GetStringWithoutPathExpansion(::onc::wifi::kSSID, &ssid_string)) {
-    if (ssid_string.size() <= 0 ||
-        ssid_string.size() > kMaximumSSIDLengthInBytes) {
-      LOG(ERROR) << MessageHeader() << ::onc::wifi::kSSID
-                 << " has an invalid length.";
-      error_or_warning_found_ = true;
+  if (object->GetStringWithoutPathExpansion(::onc::wifi::kSSID, &ssid_string) &&
+      (ssid_string.size() <= 0 ||
+       ssid_string.size() > kMaximumSSIDLengthInBytes)) {
+    error_or_warning_found_ = true;
+    const std::string msg =
+        MessageHeader() + ::onc::wifi::kSSID + " has an invalid length.";
+    // If the HexSSID field is present, ignore errors in SSID because these
+    // might be caused by the usage of a non-UTF-8 encoding when the SSID
+    // field was automatically added (see FillInHexSSIDField).
+    if (object->HasKey(::onc::wifi::kHexSSID)) {
+      LOG(WARNING) << msg;
+    } else {
+      LOG(ERROR) << msg;
       return false;
     }
   }
 
   // Check HexSSID validity.
   std::string hex_ssid_string;
-  if (object.GetStringWithoutPathExpansion(::onc::wifi::kHexSSID,
-                                           &hex_ssid_string)) {
-    std::vector<uint8> bytes;
-    if (!base::HexStringToBytes(hex_ssid_string, &bytes)) {
+  if (object->GetStringWithoutPathExpansion(::onc::wifi::kHexSSID,
+                                            &hex_ssid_string)) {
+    std::vector<uint8> decoded_ssid;
+    if (!base::HexStringToBytes(hex_ssid_string, &decoded_ssid)) {
       LOG(ERROR) << MessageHeader() << "Field " << ::onc::wifi::kHexSSID
                  << " is not a valid hex representation: \"" << hex_ssid_string
                  << "\"";
       error_or_warning_found_ = true;
       return false;
     }
-    if (bytes.size() <= 0 || bytes.size() > kMaximumSSIDLengthInBytes) {
+    if (decoded_ssid.size() <= 0 ||
+        decoded_ssid.size() > kMaximumSSIDLengthInBytes) {
       LOG(ERROR) << MessageHeader() << ::onc::wifi::kHexSSID
                  << " has an invalid length.";
       error_or_warning_found_ = true;
       return false;
     }
-  }
-  // If both SSID and HexSSID are set, ensure that they are consistent.
-  if (ssid_string.length() > 0 && hex_ssid_string.length() > 0) {
-    std::string hexified =
-        base::HexEncode(ssid_string.c_str(), ssid_string.size());
-    if (hexified != hex_ssid_string) {
-      LOG(ERROR) << MessageHeader() << "Fields " << ::onc::wifi::kSSID
-                 << " and " << ::onc::wifi::kHexSSID
-                 << " contain inconsistent values.";
-      error_or_warning_found_ = true;
-      return false;
+
+    // If both SSID and HexSSID are set, check whether they are consistent, i.e.
+    // HexSSID contains the UTF-8 encoding of SSID. If not, remove the SSID
+    // field.
+    if (ssid_string.length() > 0) {
+      std::string decoded_ssid_string(
+          reinterpret_cast<const char*>(&decoded_ssid[0]), decoded_ssid.size());
+      if (ssid_string != decoded_ssid_string) {
+        LOG(WARNING) << MessageHeader() << "Fields " << ::onc::wifi::kSSID
+                     << " and " << ::onc::wifi::kHexSSID
+                     << " contain inconsistent values. Removing "
+                     << ::onc::wifi::kSSID << ".";
+        error_or_warning_found_ = true;
+        object->RemoveWithoutPathExpansion(::onc::wifi::kSSID, nullptr);
+      }
     }
   }
-
   return true;
 }
 
@@ -645,8 +656,7 @@ bool Validator::ValidateWiFi(base::DictionaryValue* result) {
   if (FieldExistsAndHasNoValidValue(*result, kSecurity, valid_securities))
     return false;
 
-  // Validate SSID and HexSSID fields, if present.
-  if (!IsSSIDOrHexSSIDValid(*result))
+  if (!ValidateSSIDAndHexSSID(result))
     return false;
 
   bool all_required_exist = RequireField(*result, kSecurity);

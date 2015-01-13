@@ -1,4 +1,3 @@
-// Test ONC file for importing an open network.
 {
   "NetworkConfigurations": [
     {
@@ -7,7 +6,7 @@
       "Name": "My WiFi Network",
       "WiFi": {
         "SSID": "Google",
-        "HexSSID": "476F6F676C65",
+        "HexSSID": "476f6F676C65",
         "Security": "None"
       }
     }

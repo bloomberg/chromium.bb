@@ -115,10 +115,10 @@ bool IsPolicyMatching(const base::DictionaryValue& policy,
       return false;
 
     std::string policy_ssid;
-    policy_wifi->GetStringWithoutPathExpansion(::onc::wifi::kSSID,
+    policy_wifi->GetStringWithoutPathExpansion(::onc::wifi::kHexSSID,
                                                &policy_ssid);
     std::string actual_ssid;
-    actual_wifi->GetStringWithoutPathExpansion(::onc::wifi::kSSID,
+    actual_wifi->GetStringWithoutPathExpansion(::onc::wifi::kHexSSID,
                                                &actual_ssid);
     return (policy_ssid == actual_ssid);
   }
@@ -210,7 +210,7 @@ void ApplyGlobalAutoconnectPolicy(
   std::string policy_source;
   if (profile_type == NetworkProfile::TYPE_USER)
     policy_source = ::onc::kAugmentationUserPolicy;
-  else if(profile_type == NetworkProfile::TYPE_SHARED)
+  else if (profile_type == NetworkProfile::TYPE_SHARED)
     policy_source = ::onc::kAugmentationDevicePolicy;
   else
     NOTREACHED();

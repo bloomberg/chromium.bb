@@ -30,6 +30,15 @@
           }
       }
     },
+    {
+      "GUID": "456",
+      "Type": "WiFi",
+      "Name": "My WiFi Network",
+      "WiFi": {
+        "Security": "None",
+        "SSID": "OpenWrt"
+      }
+    },
     { "GUID": "guid",
       "Name": "name",
       "Ethernet": {

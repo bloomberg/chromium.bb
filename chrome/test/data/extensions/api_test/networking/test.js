@@ -300,6 +300,7 @@ var availableTests = [
                    },
                    "Type": "WiFi",
                    "WiFi": {
+                     "HexSSID": "7769666931", // "wifi1"
                      "Frequency": 2400,
                      "FrequencyList": [2400],
                      "SSID": "wifi1",
@@ -356,6 +357,11 @@ var availableTests = [
                        "Active": false,
                        "UserEditable": true
                      },
+                     "HexSSID": {
+                       "Active": "77696669325F50534B", // "wifi2_PSK"
+                       "Effective": "UserPolicy",
+                       "UserPolicy": "77696669325F50534B"
+                     },
                      "Frequency" : 5000,
                      "FrequencyList" : [2400, 5000],
                      "Passphrase": {
@@ -366,7 +372,6 @@ var availableTests = [
                      "SSID": {
                        "Active": "wifi2_PSK",
                        "Effective": "UserPolicy",
-                       "UserPolicy": "wifi2_PSK"
                      },
                      "Security": {
                        "Active": "WPA-PSK",

@@ -1,0 +1,11 @@
+{
+  "GUID":"{64c4f86b-cf6a-4e4a-8eff-456def}",
+  "Mode":"managed",
+  "Name":"OpenWrt",
+  "Passphrase":"some passphrase",
+  "SecurityClass":"psk",
+  "Type":"wifi",
+  // Hex of the latin-1, non UTF8 string "latin-1 \xc0\xcb\xcc\xd6\xfb"
+  "WiFi.HexSSID": "6C6174696E2D3120C0CBCCD6FB"
+}
+

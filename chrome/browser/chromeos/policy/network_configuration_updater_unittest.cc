@@ -150,7 +150,7 @@ const char kFakeONC[] =
     "      \"Type\": \"WiFi\","
     "      \"Name\": \"My WiFi Network\","
     "      \"WiFi\": {"
-    "        \"SSID\": \"ssid-none\","
+    "        \"HexSSID\": \"737369642D6E6F6E65\","  // "ssid-none"
     "        \"Security\": \"None\" }"
     "    }"
     "  ],"
@@ -160,7 +160,7 @@ const char kFakeONC[] =
     "  \"Certificates\": ["
     "    { \"GUID\": \"{f998f760-272b-6939-4c2beffe428697ac}\","
     "      \"PKCS12\": \"abc\","
-    "       \"Type\": \"Client\" }"
+    "      \"Type\": \"Client\" }"
     "  ],"
     "  \"Type\": \"UnencryptedConfiguration\""
     "}";

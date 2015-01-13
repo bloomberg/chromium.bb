@@ -3,7 +3,7 @@
     "Type": "WiFi",
     "Name": "SomeWifi-XY",
     "WiFi": {
-        "SSID": "SomeWifi-XY",
+        "HexSSID": "4F70656E577274", // "OpenWrt"
         "Security": "WPA-EAP",
         "Recommended": [ "AutoConnect" ],
         "EAP": {

@@ -4,6 +4,9 @@
 
 #include "chromeos/network/onc/onc_translator.h"
 
+#include <string>
+#include <utility>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chromeos/network/onc/onc_signature.h"
@@ -97,6 +100,8 @@ INSTANTIATE_TEST_CASE_P(
                        "translation_of_shill_ethernet_with_ipconfig.onc"),
         std::make_pair("shill_wifi_clientcert.json",
                        "translation_of_shill_wifi_clientcert.onc"),
+        std::make_pair("shill_wifi_non_utf8_ssid.json",
+                       "translation_of_shill_wifi_non_utf8_ssid.onc"),
         std::make_pair("shill_output_l2tpipsec.json",
                        "translation_of_shill_l2tpipsec.onc"),
         std::make_pair("shill_output_openvpn.json",

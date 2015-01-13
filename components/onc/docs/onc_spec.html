@@ -698,12 +698,7 @@
         a hex representation of <span class="field">SSID</span>)
         <span class="type">string</span>
       </span>
-      Hex representation of the network's SSID. If the
-      <span class="field">SSID</span> field is set, but
-      <span class="field">HexSSID</span> is not, converts the contents of the
-      <span class="field">SSID</span> field to UTF-8 encoding,
-      creates the hex representation and assigns the result to
-      <span class="field">HexSSID</span>.
+      Hex representation of the network's SSID.
     </dd>
 
     <dt class="field">HiddenSSID</dt>
@@ -748,12 +743,20 @@
     <dt class="field">SSID</dt>
     <dd>
       <span class="field_meta">
-        (optional if <span class="field">HexSSID</span> is set)
+        (optional if <span class="field">HexSSID</span> is set, otherwise
+        ignored)
         <span class="type">string</span>
       </span>
-      SSID of the network. This field can only used for unicode strings in the
-      UTF-8 encoding. For non-UTF-8 encodings the
-      <span class="field">HexSSID</span> field must be used.
+      Property to access the decoded SSID of a network.<br/>
+      If this field is set, but <span class="field">HexSSID</span> is not,
+      its value will be UTF-8 encoded and the hex representation will be
+      assigned to <span class="field">HexSSID</span>. To configure a non-UTF-8
+      SSID, field <span class="field">HexSSID</span> must be used.<br/>
+      When reading the configuration of a network, both this field and
+      <span class="field">HexSSID</span> might be set. Then this field is the
+      decoding of <span class="field">HexSSID</span>. If possible the HexSSID is
+      decoded using UTF-8, otherwise an encoding is guessed on a best effort
+      basis.
     </dd>
 
     <dt class="field">SignalStrength</dt>
