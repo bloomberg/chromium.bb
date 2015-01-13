@@ -305,6 +305,7 @@
       'child/webcrypto/openssl/ec_algorithm_openssl.h',
       'child/webcrypto/openssl/ecdh_openssl.cc',
       'child/webcrypto/openssl/ecdsa_openssl.cc',
+      'child/webcrypto/openssl/hkdf_openssl.cc',
       'child/webcrypto/openssl/hmac_openssl.cc',
       'child/webcrypto/openssl/key_openssl.cc',
       'child/webcrypto/openssl/key_openssl.h',

@@ -73,7 +73,7 @@ class DigestorOpenSsl : public blink::WebCryptoDigestor {
 
     const EVP_MD* digest_algorithm = GetDigest(algorithm_id_);
     if (!digest_algorithm)
-      return Status::ErrorUnexpected();
+      return Status::ErrorUnsupported();
 
     if (!digest_context_.get())
       return Status::OperationError();

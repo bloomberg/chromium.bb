@@ -256,6 +256,12 @@ class CONTENT_EXPORT Status {
   // The requested bit length for ECDH key derivation was too large.
   static Status ErrorEcdhLengthTooBig(unsigned int max_length_bits);
 
+  // The requested length for HKDF was too large.
+  static Status ErrorHkdfLengthTooLong();
+
+  // No length parameter was provided for HKDF's Derive Bits operation.
+  static Status ErrorHkdfDeriveBitsLengthNotSpecified();
+
  private:
   enum Type { TYPE_ERROR, TYPE_SUCCESS };
 

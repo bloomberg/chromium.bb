@@ -101,6 +101,11 @@ AlgorithmImplementation* CreatePlatformEcdhImplementation() {
   return NULL;
 }
 
+AlgorithmImplementation* CreatePlatformHkdfImplementation() {
+  // HKDF is only being imlemented for BoringSSL.
+  return NULL;
+}
+
 }  // namespace webcrypto
 
 }  // namespace content
