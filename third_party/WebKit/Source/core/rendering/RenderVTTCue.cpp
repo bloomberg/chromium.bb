@@ -27,7 +27,8 @@
 #include "core/rendering/RenderVTTCue.h"
 
 #include "core/html/track/vtt/VTTCue.h"
-#include "core/rendering/RenderView.h"
+#include "core/rendering/LayoutState.h"
+#include "core/rendering/RenderInline.h"
 
 namespace blink {
 
@@ -129,8 +130,7 @@ void RenderVTTCue::placeBoxInDefaultPosition(LayoutUnit position, bool& switched
 
     // 9. Default: Remember the position of all the boxes in boxes as their
     // default position.
-    // FIXME: Why the direct conversion between float and LayoutUnit? crbug.com/350474
-    m_fallbackPosition = FloatPoint(location());
+    m_defaultPosition = location();
 
     // 10. Let switched be false.
     switched = false;
@@ -200,8 +200,7 @@ bool RenderVTTCue::switchDirection(bool& switched, LayoutUnit& step)
 {
     // 15. Switch direction: Move all the boxes in boxes back to their
     // default position as determined in the step above labeled default.
-    setX(m_fallbackPosition.x());
-    setY(m_fallbackPosition.y());
+    setLocation(m_defaultPosition);
 
     // 16. If switched is true, jump to the step labeled done
     // positioning below.

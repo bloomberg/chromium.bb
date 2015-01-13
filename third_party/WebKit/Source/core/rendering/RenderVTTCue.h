@@ -27,8 +27,6 @@
 #define RenderVTTCue_h
 
 #include "core/rendering/RenderBlockFlow.h"
-#include "core/rendering/RenderInline.h"
-#include "platform/geometry/FloatPoint.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
@@ -58,7 +56,7 @@ private:
     void repositionCueSnapToLinesNotSet();
 
     RawPtrWillBeMember<VTTCue> m_cue;
-    FloatPoint m_fallbackPosition;
+    LayoutPoint m_defaultPosition;
 };
 
 } // namespace blink
