@@ -3153,11 +3153,6 @@ void EventHandler::defaultKeyboardEventHandler(KeyboardEvent* event)
     }
 }
 
-bool EventHandler::dragHysteresisExceeded(const FloatPoint& floatDragViewportLocation) const
-{
-    return dragHysteresisExceeded(flooredIntPoint(floatDragViewportLocation));
-}
-
 bool EventHandler::dragHysteresisExceeded(const IntPoint& dragViewportLocation) const
 {
     FrameView* view = m_frame->view();
