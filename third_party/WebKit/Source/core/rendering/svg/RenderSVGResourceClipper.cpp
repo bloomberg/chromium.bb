@@ -34,6 +34,8 @@
 #include "core/svg/SVGUseElement.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
+#include "platform/graphics/paint/ClipPathDisplayItem.h"
+#include "platform/graphics/paint/DisplayItemList.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "wtf/TemporaryChange.h"
 
@@ -72,7 +74,7 @@ bool RenderSVGResourceClipper::applyStatefulResource(RenderObject* object, Graph
     return applyClippingToContext(object, object->objectBoundingBox(), object->paintInvalidationRectInLocalCoordinates(), context, clipperState);
 }
 
-bool RenderSVGResourceClipper::tryPathOnlyClipping(GraphicsContext* context,
+bool RenderSVGResourceClipper::tryPathOnlyClipping(const DisplayItemClient client, GraphicsContext* context,
     const AffineTransform& animatedLocalTransform, const FloatRect& objectBoundingBox) {
     // If the current clip-path gets clipped itself, we have to fallback to masking.
     if (!style()->svgStyle().clipperResource().isEmpty())
@@ -131,7 +133,13 @@ bool RenderSVGResourceClipper::tryPathOnlyClipping(GraphicsContext* context,
     // The SVG specification wants us to clip everything, if clip-path doesn't have a child.
     if (clipPath.isEmpty())
         clipPath.addRect(FloatRect());
-    context->clipPath(clipPath, clipRule);
+
+    OwnPtr<BeginClipPathDisplayItem> clipPathDisplayItem = BeginClipPathDisplayItem::create(client, clipPath, clipRule);
+    if (RuntimeEnabledFeatures::slimmingPaintEnabled())
+        context->displayItemList()->add(clipPathDisplayItem.release());
+    else
+        clipPathDisplayItem->replay(context);
+
     return true;
 }
 
@@ -157,7 +165,7 @@ bool RenderSVGResourceClipper::applyClippingToContext(RenderObject* target, cons
     }
 
     // First, try to apply the clip as a clipPath.
-    if (tryPathOnlyClipping(context, animatedLocalTransform, targetBoundingBox)) {
+    if (tryPathOnlyClipping(target->displayItemClient(), context, animatedLocalTransform, targetBoundingBox)) {
         clipperState = ClipperAppliedPath;
         return true;
     }
@@ -197,11 +205,18 @@ bool RenderSVGResourceClipper::applyClippingToContext(RenderObject* target, cons
     return true;
 }
 
-void RenderSVGResourceClipper::postApplyStatefulResource(RenderObject*, GraphicsContext*& context, ClipperState& clipperState)
+void RenderSVGResourceClipper::postApplyStatefulResource(RenderObject* target, GraphicsContext*& context, ClipperState& clipperState)
 {
     switch (clipperState) {
     case ClipperAppliedPath:
-        // Path-only clipping, no layers to restore.
+        // Path-only clipping, no layers to restore but we need to emit an end to the clip path display item.
+        {
+            OwnPtr<EndClipPathDisplayItem> endClipPathDisplayItem = EndClipPathDisplayItem::create(target->displayItemClient());
+            if (RuntimeEnabledFeatures::slimmingPaintEnabled())
+                context->displayItemList()->add(endClipPathDisplayItem.release());
+            else
+                endClipPathDisplayItem->replay(context);
+        }
         break;
     case ClipperAppliedMask:
         // Transfer content layer -> mask layer (SrcIn)

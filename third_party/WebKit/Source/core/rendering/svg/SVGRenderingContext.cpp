@@ -51,14 +51,14 @@ SVGRenderingContext::~SVGRenderingContext()
             m_paintInfo->rect = m_savedPaintRect;
         }
 
-        if (m_clipper) {
-            ASSERT(SVGResourcesCache::cachedResourcesForRenderObject(m_object)->clipper() == m_clipper);
-            m_clipper->postApplyStatefulResource(m_object, m_paintInfo->context, m_clipperState);
-        }
-
         if (m_masker) {
             ASSERT(SVGResourcesCache::cachedResourcesForRenderObject(m_object)->masker() == m_masker);
             m_masker->finishEffect(m_object, m_paintInfo->context);
+        }
+
+        if (m_clipper) {
+            ASSERT(SVGResourcesCache::cachedResourcesForRenderObject(m_object)->clipper() == m_clipper);
+            m_clipper->postApplyStatefulResource(m_object, m_paintInfo->context, m_clipperState);
         }
     }
 }

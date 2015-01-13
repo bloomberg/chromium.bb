@@ -64,7 +64,7 @@ public:
     SVGUnitTypes::SVGUnitType clipPathUnits() const { return toSVGClipPathElement(element())->clipPathUnits()->currentValue()->enumValue(); }
 
 private:
-    bool tryPathOnlyClipping(GraphicsContext*, const AffineTransform&, const FloatRect&);
+    bool tryPathOnlyClipping(const DisplayItemClient, GraphicsContext*, const AffineTransform&, const FloatRect&);
     void drawClipMaskContent(GraphicsContext*, const FloatRect& targetBoundingBox);
     void createPicture(GraphicsContext*);
     void calculateClipContentPaintInvalidationRect();
