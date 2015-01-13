@@ -136,8 +136,8 @@ commands:
 
 [subs="quotes,attributes"]
 ----
-[white]**$ git config --global user.name ``John Doe''**
-[white]**$ git config --global user.email ``jdoe@email.com''**
+[white]**$ git config --global user.name "John Doe"**
+[white]**$ git config --global user.email "jdoe@email.com"**
 [white]**$ git config --global core.autocrlf false**
 [white]**$ git config --global core.filemode false**
 [white]**$** # and for fun!

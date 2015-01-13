@@ -902,7 +902,7 @@ autoupdate itself. You can use &#8220;Extract all&#8230;&#8221; from the context
 bundle to <code>C:\workspace\depot_tools</code>:</p></div>
 <div class="dlist"><dl>
 <dt class="hdlist1">
-With Administrator access:
+With Administrator access: 
 </dt>
 <dd>
 <p>
@@ -911,7 +911,7 @@ With Administrator access:
 <div class="paragraph"><p>Modify the PATH system variable to include <code>C:\workspace\depot_tools</code>.</p></div>
 </dd>
 <dt class="hdlist1">
-Without Administrator access:
+Without Administrator access: 
 </dt>
 <dd>
 <p>
@@ -965,8 +965,8 @@ configurations; substitute your name and email address in the following
 commands:</p></div>
 <div class="listingblock">
 <div class="content">
-<pre><code><strong><span class="white">$ git config --global user.name &#8220;John Doe&#8221;</span></strong>
-<strong><span class="white">$ git config --global user.email &#8220;jdoe@email.com&#8221;</span></strong>
+<pre><code><strong><span class="white">$ git config --global user.name "John Doe"</span></strong>
+<strong><span class="white">$ git config --global user.email "jdoe@email.com"</span></strong>
 <strong><span class="white">$ git config --global core.autocrlf false</span></strong>
 <strong><span class="white">$ git config --global core.filemode false</span></strong>
 <strong><span class="white">$</span></strong> # and for fun!
@@ -1238,9 +1238,9 @@ updating, and committing multiple CLs.</p></div>
 </code></pre></div></div><p><div class="paragraph"> Let's fix something!</p></div><div class="listingblock"><div class="content"><pre><code><span style="font-weight: bold; color: #ffffff">$ git new-branch fix_typo</span>
 <span style="font-weight: bold; color: #ffffff">$ echo -e '/Banana\ns/Banana/Kuun\nwq' | ed build/whitespace_file.txt</span>
 1503
-1501
 It was a Domo-Banana.
 It was a Domo-Kuun.
+1501
 <span style="font-weight: bold; color: #ffffff">$ git commit -am 'Fix terrible typo.'</span>
 [fix_typo 615ffa7] Fix terrible typo.
  1 file changed, 1 insertion(+), 1 deletion(-)
@@ -1290,9 +1290,9 @@ Your branch is ahead of 'origin/master' by 1 commit.
   (use "git push" to publish your local commits)
 <span style="font-weight: bold; color: #ffffff">$ echo -e '/Kuun\ns/Kuun/Kun\nwq' | ed build/whitespace_file.txt</span>
 1501
-1500
 It was a Domo-Kuun.
 It was a Domo-Kun.
+1500
 <span style="font-weight: bold; color: #ffffff">$ git upstream-diff --wordwise</span>
 <span style="font-weight: bold">diff --git a/build/whitespace_file.txt b/build/whitespace_file.txt</span>
 <span style="font-weight: bold">index 3eba355..57cdcee 100644</span>
@@ -1342,14 +1342,14 @@ do so (now or later) by using -b with the checkout command again. Example:
 
 HEAD is now at beec6f4... Make ReflectorImpl use mailboxes
 <span style="font-weight: bold; color: #ffffff">$ git nav-downstream</span>
-Please select a downstream branch
-  0. chap2
-  1. fix_typo
-Selection (0-1)[0]: 0
 Previous HEAD position was beec6f4... Make ReflectorImpl use mailboxes
 Switched to branch 'chap2'
 Your branch is ahead of 'origin/master' by 1 commit.
   (use "git push" to publish your local commits)
+Please select a downstream branch
+  0. chap2
+  1. fix_typo
+Selection (0-1)[0]: 0
 <span style="font-weight: bold; color: #ffffff">$ git map-branches</span>
 <span style="color: #e42e16"></span><span style="color: #e42e16">origin/master
 </span><span style="color: #33d6e5"></span><span style="font-weight: bold; color: #33d6e5">  chap2 *
@@ -1581,7 +1581,7 @@ from <a href="https://chromium.googlesource.com/chromium/tools/depot_tools.git">
 <div id="footnotes"><hr /></div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2014-05-09 17:43:43 PDT
+Last updated 2015-01-13 15:27:56 PST
 </div>
 </div>
 </body>
