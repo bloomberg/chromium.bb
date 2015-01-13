@@ -347,11 +347,6 @@ bool MessagePumpForUI::ProcessNextWindowsMessage() {
 }
 
 bool MessagePumpForUI::ProcessMessageHelper(const MSG& msg) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
-  tracked_objects::ScopedTracker tracking_profile1(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "440919 MessagePumpForUI::ProcessMessageHelper1"));
-
   TRACE_EVENT1("base", "MessagePumpForUI::ProcessMessageHelper",
                "message", msg.message);
   if (WM_QUIT == msg.message) {
@@ -393,11 +388,6 @@ bool MessagePumpForUI::ProcessMessageHelper(const MSG& msg) {
 }
 
 bool MessagePumpForUI::ProcessPumpReplacementMessage() {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "440919 MessagePumpForUI::ProcessPumpReplacementMessage"));
-
   // When we encounter a kMsgHaveWork message, this method is called to peek
   // and process a replacement message, such as a WM_PAINT or WM_TIMER.  The
   // goal is to make the kMsgHaveWork as non-intrusive as possible, even though

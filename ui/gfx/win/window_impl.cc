@@ -258,6 +258,10 @@ HICON WindowImpl::GetSmallWindowIcon() const {
 }
 
 LRESULT WindowImpl::OnWndProc(UINT message, WPARAM w_param, LPARAM l_param) {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
+  tracked_objects::ScopedTracker tracking_profile1(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION("440919 WindowImpl DefWindowProc1"));
+
   LRESULT result = 0;
 
   HWND hwnd = hwnd_;
@@ -268,8 +272,8 @@ LRESULT WindowImpl::OnWndProc(UINT message, WPARAM w_param, LPARAM l_param) {
   // handle it.
   if (!ProcessWindowMessage(hwnd, message, w_param, l_param, result)) {
     // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
-    tracked_objects::ScopedTracker tracking_profile(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION("440919 WindowImpl DefWindowProc"));
+    tracked_objects::ScopedTracker tracking_profile2(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION("440919 WindowImpl DefWindowProc2"));
 
     result = DefWindowProc(hwnd, message, w_param, l_param);
   }
@@ -288,10 +292,6 @@ LRESULT CALLBACK WindowImpl::WndProc(HWND hwnd,
                                      WPARAM w_param,
                                      LPARAM l_param) {
   if (message == WM_NCCREATE) {
-    // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
-    tracked_objects::ScopedTracker tracking_profile1(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION("440919 WindowImpl::WndProc1"));
-
     CREATESTRUCT* cs = reinterpret_cast<CREATESTRUCT*>(l_param);
     WindowImpl* window = reinterpret_cast<WindowImpl*>(cs->lpCreateParams);
     DCHECK(window);
@@ -302,10 +302,6 @@ LRESULT CALLBACK WindowImpl::WndProc(HWND hwnd,
       window->got_valid_hwnd_ = true;
     return TRUE;
   }
-
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
-  tracked_objects::ScopedTracker tracking_profile2(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("440919 WindowImpl::WndProc2"));
 
   WindowImpl* window = reinterpret_cast<WindowImpl*>(GetWindowUserData(hwnd));
   if (!window)
