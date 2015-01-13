@@ -84,7 +84,8 @@ ScopedVector<DeviceInfo> GetAllSignedInDevices(
   // and call the helper.
   DeviceInfoTracker* device_tracker =
       ProfileSyncServiceFactory::GetForProfile(profile)->GetDeviceInfoTracker();
-  if (device_tracker == NULL) {
+  DCHECK(device_tracker);
+  if (!device_tracker->IsSyncing()) {
     // Devices are not sync'ing.
     return ScopedVector<DeviceInfo>().Pass();
   }

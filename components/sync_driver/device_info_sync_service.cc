@@ -40,7 +40,7 @@ SyncMergeResult DeviceInfoSyncService::MergeDataAndStartSyncing(
   DCHECK(error_handler.get());
   DCHECK_EQ(type, syncer::DEVICE_INFO);
 
-  DCHECK(all_data_.empty());
+  DCHECK(!IsSyncing());
 
   sync_processor_ = sync_processor.Pass();
   error_handler_ = error_handler.Pass();
@@ -131,11 +131,21 @@ SyncMergeResult DeviceInfoSyncService::MergeDataAndStartSyncing(
   return result;
 }
 
+bool DeviceInfoSyncService::IsSyncing() const {
+  return !all_data_.empty();
+}
+
 void DeviceInfoSyncService::StopSyncing(syncer::ModelType type) {
+  bool was_syncing = IsSyncing();
+
   all_data_.clear();
   sync_processor_.reset();
   error_handler_.reset();
   clear_local_device_backup_time();
+
+  if (was_syncing) {
+    NotifyObservers();
+  }
 }
 
 SyncDataList DeviceInfoSyncService::GetAllSyncData(

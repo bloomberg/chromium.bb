@@ -22,6 +22,8 @@ class DeviceInfoTracker {
     virtual void OnDeviceInfoChange() = 0;
   };
 
+  // Returns true when DeviceInfo datatype is enabled and syncing.
+  virtual bool IsSyncing() const = 0;
   // Gets DeviceInfo the synced device with specified client ID.
   // Returns an empty scoped_ptr if device with the given |client_id| hasn't
   // been synced.

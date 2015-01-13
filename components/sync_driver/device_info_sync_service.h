@@ -37,6 +37,7 @@ class DeviceInfoSyncService : public syncer::SyncableService,
       const syncer::SyncChangeList& change_list) override;
 
   // DeviceInfoTracker implementation.
+  bool IsSyncing() const override;
   scoped_ptr<DeviceInfo> GetDeviceInfo(
       const std::string& client_id) const override;
   ScopedVector<DeviceInfo> GetAllDeviceInfo() const override;

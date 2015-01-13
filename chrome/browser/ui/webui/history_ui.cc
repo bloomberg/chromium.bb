@@ -252,28 +252,29 @@ void GetDeviceNameAndType(const ProfileSyncService* sync_service,
                           const std::string& client_id,
                           std::string* name,
                           std::string* type) {
-  // DeviceInfoTracker becomes available when Sync backend gets initialed.
-  // It must exist in order for remote history entries to be available.
-  if (sync_service && sync_service->GetDeviceInfoTracker()) {
-    scoped_ptr<sync_driver::DeviceInfo> device_info =
-        sync_service->GetDeviceInfoTracker()->GetDeviceInfo(client_id);
-    if (device_info.get()) {
-      *name = device_info->client_name();
-      switch (device_info->device_type()) {
-        case sync_pb::SyncEnums::TYPE_PHONE:
-          *type = kDeviceTypePhone;
-          break;
-        case sync_pb::SyncEnums::TYPE_TABLET:
-          *type = kDeviceTypeTablet;
-          break;
-        default:
-          *type = kDeviceTypeLaptop;
-      }
-      return;
+  // DeviceInfoTracker must be syncing in order for remote history entries to
+  // be available.
+  DCHECK(sync_service);
+  DCHECK(sync_service->GetDeviceInfoTracker());
+  DCHECK(sync_service->GetDeviceInfoTracker()->IsSyncing());
+
+  scoped_ptr<sync_driver::DeviceInfo> device_info =
+      sync_service->GetDeviceInfoTracker()->GetDeviceInfo(client_id);
+  if (device_info.get()) {
+    *name = device_info->client_name();
+    switch (device_info->device_type()) {
+      case sync_pb::SyncEnums::TYPE_PHONE:
+        *type = kDeviceTypePhone;
+        break;
+      case sync_pb::SyncEnums::TYPE_TABLET:
+        *type = kDeviceTypeTablet;
+        break;
+      default:
+        *type = kDeviceTypeLaptop;
     }
-  } else {
-    NOTREACHED() << "Got a remote history entry but no DeviceInfoTracker.";
+    return;
   }
+
   *name = l10n_util::GetStringUTF8(IDS_HISTORY_UNKNOWN_DEVICE);
   *type = kDeviceTypeLaptop;
 }

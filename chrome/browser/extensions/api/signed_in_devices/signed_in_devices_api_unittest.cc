@@ -31,6 +31,8 @@ class MockDeviceInfoTracker : public DeviceInfoTracker {
  public:
   ~MockDeviceInfoTracker() override {}
 
+  bool IsSyncing() const override { return !devices_.empty(); }
+
   scoped_ptr<DeviceInfo> GetDeviceInfo(
       const std::string& client_id) const override {
     NOTREACHED();
@@ -236,8 +238,10 @@ TEST_F(ExtensionSignedInDevicesTest, DeviceInfoTrackerNotInitialized) {
       static_cast<ProfileSyncServiceMockForExtensionTests*>(
           ProfileSyncServiceFactory::GetForProfile(profile()));
 
+  MockDeviceInfoTracker device_tracker;
+
   EXPECT_CALL(*pss_mock, GetDeviceInfoTracker())
-    .WillOnce(Return((DeviceInfoTracker*)NULL));
+      .WillOnce(Return(&device_tracker));
   EXPECT_CALL(*pss_mock, Shutdown());
 
   ScopedVector<DeviceInfo> output = GetAllSignedInDevices(

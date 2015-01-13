@@ -377,8 +377,7 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   // Returns DeviceInfo provider for the local device.
   virtual sync_driver::LocalDeviceInfoProvider* GetLocalDeviceInfoProvider();
 
-  // Returns synced devices tracker. If DEVICE_INFO model type isn't yet
-  // enabled or syncing, returns NULL.
+  // Returns synced devices tracker.
   virtual sync_driver::DeviceInfoTracker* GetDeviceInfoTracker() const;
 
   // Fills state_map with a map of current data types that are possible to

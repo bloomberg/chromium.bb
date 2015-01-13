@@ -44,14 +44,16 @@ SignedInDevicesChangeObserver::SignedInDevicesChangeObserver(
     Profile* profile) : extension_id_(extension_id),
                         profile_(profile) {
   ProfileSyncService* pss = ProfileSyncServiceFactory::GetForProfile(profile_);
-  if (pss && pss->GetDeviceInfoTracker()) {
+  if (pss) {
+    DCHECK(pss->GetDeviceInfoTracker());
     pss->GetDeviceInfoTracker()->AddObserver(this);
   }
 }
 
 SignedInDevicesChangeObserver::~SignedInDevicesChangeObserver() {
   ProfileSyncService* pss = ProfileSyncServiceFactory::GetForProfile(profile_);
-  if (pss && pss->GetDeviceInfoTracker()) {
+  if (pss) {
+    DCHECK(pss->GetDeviceInfoTracker());
     pss->GetDeviceInfoTracker()->RemoveObserver(this);
   }
 }

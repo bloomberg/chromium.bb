@@ -465,9 +465,6 @@ ProfileSyncService::GetSyncedWindowDelegatesGetter() const {
 
 sync_driver::DeviceInfoTracker* ProfileSyncService::GetDeviceInfoTracker()
     const {
-  if (!IsDataTypeControllerRunning(syncer::DEVICE_INFO))
-    return NULL;
-
   return device_info_sync_service_.get();
 }
 

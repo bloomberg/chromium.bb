@@ -156,12 +156,15 @@ class DeviceInfoSyncServiceTest : public testing::Test,
 
 // Sync with empty initial data.
 TEST_F(DeviceInfoSyncServiceTest, StartSyncEmptyInitialData) {
+  EXPECT_FALSE(sync_service_->IsSyncing());
+
   SyncMergeResult merge_result =
       sync_service_->MergeDataAndStartSyncing(syncer::DEVICE_INFO,
                                               SyncDataList(),
                                               PassProcessor(),
                                               CreateAndPassSyncErrorFactory());
 
+  EXPECT_TRUE(sync_service_->IsSyncing());
   EXPECT_EQ(0, merge_result.num_items_added());
   EXPECT_EQ(0, merge_result.num_items_modified());
   EXPECT_EQ(0, merge_result.num_items_deleted());
@@ -177,6 +180,17 @@ TEST_F(DeviceInfoSyncServiceTest, StartSyncEmptyInitialData) {
   EXPECT_EQ(1U, sync_service_->GetAllDeviceInfo().size());
   EXPECT_TRUE(sync_service_->GetDeviceInfo("guid_1"));
   EXPECT_FALSE(sync_service_->GetDeviceInfo("guid_0"));
+}
+
+TEST_F(DeviceInfoSyncServiceTest, StopSyncing) {
+  SyncMergeResult merge_result = sync_service_->MergeDataAndStartSyncing(
+      syncer::DEVICE_INFO, SyncDataList(), PassProcessor(),
+      CreateAndPassSyncErrorFactory());
+  EXPECT_TRUE(sync_service_->IsSyncing());
+  EXPECT_EQ(1, num_device_info_changed_callbacks_);
+  sync_service_->StopSyncing(syncer::DEVICE_INFO);
+  EXPECT_FALSE(sync_service_->IsSyncing());
+  EXPECT_EQ(2, num_device_info_changed_callbacks_);
 }
 
 // Sync with initial data matching the local device data.
