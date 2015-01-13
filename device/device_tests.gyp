@@ -55,6 +55,8 @@
         'hid/hid_device_filter_unittest.cc',
         'hid/hid_report_descriptor_unittest.cc',
         'hid/input_service_linux_unittest.cc',
+        'hid/test_report_descriptors.cc',
+        'hid/test_report_descriptors.h',
         'serial/data_sink_unittest.cc',
         'serial/data_source_unittest.cc',
         'serial/serial_connection_unittest.cc',

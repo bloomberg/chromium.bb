@@ -25,6 +25,19 @@ using net::IOBuffer;
 
 namespace device {
 
+// These report descriptors define two devices with 8-byte input, output and
+// feature reports. The first implements usage page 0xFF00 and has a single
+// report without and ID. The second implements usage page 0xFF01 and has a
+// single report with ID 1.
+const uint8 kReportDescriptor[] = {0x06, 0x00, 0xFF, 0x08, 0xA1, 0x01, 0x15,
+                                   0x00, 0x26, 0xFF, 0x00, 0x75, 0x08, 0x95,
+                                   0x08, 0x08, 0x81, 0x02, 0x08, 0x91, 0x02,
+                                   0x08, 0xB1, 0x02, 0xC0};
+const uint8 kReportDescriptorWithIDs[] = {
+    0x06, 0x01, 0xFF, 0x08, 0xA1, 0x01, 0x15, 0x00, 0x26,
+    0xFF, 0x00, 0x85, 0x01, 0x75, 0x08, 0x95, 0x08, 0x08,
+    0x81, 0x02, 0x08, 0x91, 0x02, 0x08, 0xB1, 0x02, 0xC0};
+
 class MockHidConnection : public HidConnection {
  public:
   MockHidConnection(scoped_refptr<HidDeviceInfo> device_info)
@@ -128,24 +141,18 @@ class MockHidService : public HidService {
                  int vendor_id,
                  int product_id,
                  bool report_id) {
-    scoped_refptr<HidDeviceInfo> device_info(new HidDeviceInfo());
-    device_info->device_id_ = device_id;
-    device_info->vendor_id_ = vendor_id;
-    device_info->product_id_ = product_id;
-    device_info->max_input_report_size_ = 128;
-    device_info->max_output_report_size_ = 128;
-    device_info->max_feature_report_size_ = 128;
-    {
-      HidCollectionInfo collection_info;
-      if (report_id) {
-        collection_info.usage =
-            HidUsageAndPage(0, HidUsageAndPage::kPageVendor);
-        collection_info.report_ids.insert(1);
-        device_info->has_report_id_ = true;
-      }
-      device_info->collections_.push_back(collection_info);
+    std::vector<uint8> report_descriptor;
+    if (report_id) {
+      report_descriptor.insert(
+          report_descriptor.begin(), kReportDescriptorWithIDs,
+          kReportDescriptorWithIDs + sizeof(kReportDescriptorWithIDs));
+    } else {
+      report_descriptor.insert(report_descriptor.begin(), kReportDescriptor,
+                               kReportDescriptor + sizeof(kReportDescriptor));
     }
-    HidService::AddDevice(device_info);
+    HidService::AddDevice(new HidDeviceInfo(device_id, vendor_id, product_id,
+                                            "", "", kHIDBusTypeUSB,
+                                            report_descriptor));
   }
 
   void RemoveDevice(const std::string& device_id) {

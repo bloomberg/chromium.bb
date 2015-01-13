@@ -5,6 +5,15 @@
 var kInvalidDeviceId = -1;
 var kInvalidConnectionId = -1;
 
+var kReportDescriptor = [0x06, 0x00, 0xFF, 0x08, 0xA1, 0x01, 0x15,
+                         0x00, 0x26, 0xFF, 0x00, 0x75, 0x08, 0x95,
+                         0x08, 0x08, 0x81, 0x02, 0x08, 0x91, 0x02,
+                         0x08, 0xB1, 0x02, 0xC0];
+var kReportDescriptorWithIDs = [
+    0x06, 0x01, 0xFF, 0x08, 0xA1, 0x01, 0x15, 0x00, 0x26,
+    0xFF, 0x00, 0x85, 0x01, 0x75, 0x08, 0x95, 0x08, 0x08,
+    0x81, 0x02, 0x08, 0x91, 0x02, 0x08, 0xB1, 0x02, 0xC0];
+
 function getDevice(wantReportIds, callback) {
   chrome.hid.getDevices({}, function (devices) {
     chrome.test.assertNoLastError();
@@ -53,6 +62,14 @@ function stringToArrayBuffer(string) {
     view[i] = string.charCodeAt(i);
   }
   return buffer;
+}
+
+function assertArrayBufferEqualsListOfBytes(expected, actual) {
+  chrome.test.assertEq(expected.length, actual.byteLength);
+  var byteView = new Uint8Array(actual);
+  for (var i = 0; i < expected.length; i++) {
+    chrome.test.assertEq(expected[i], byteView[i], 'index ' + i);
+  }
 }
 
 function testGetDevicesWithNoOptions() {
@@ -114,6 +131,38 @@ function testGetDevicesWithUnauthorizedDevice() {
     chrome.test.assertNoLastError();
     chrome.test.assertEq(0, devices.length, "Expected no enumerated devices.");
     chrome.test.succeed("Device enumeration successful.");
+  });
+};
+
+function testDeviceInfo() {
+  var expectedDevices = 2;
+  getDevice(false, function (deviceInfo) {
+    chrome.test.assertEq(0x18D1, deviceInfo.vendorId);
+    chrome.test.assertEq(0x58F0, deviceInfo.productId);
+    chrome.test.assertEq(1, deviceInfo.collections.length);
+    chrome.test.assertEq(0xFF00, deviceInfo.collections[0].usagePage);
+    chrome.test.assertEq(0, deviceInfo.collections[0].usage);
+    chrome.test.assertEq(0, deviceInfo.collections[0].reportIds.length);
+    assertArrayBufferEqualsListOfBytes(kReportDescriptor,
+                                       deviceInfo.reportDescriptor);
+    if (--expectedDevices == 0) {
+      chrome.test.succeed();
+    }
+  });
+
+  getDevice(true, function (deviceInfo) {
+    chrome.test.assertEq(0x18D1, deviceInfo.vendorId);
+    chrome.test.assertEq(0x58F0, deviceInfo.productId);
+    chrome.test.assertEq(1, deviceInfo.collections.length);
+    chrome.test.assertEq(0xFF01, deviceInfo.collections[0].usagePage);
+    chrome.test.assertEq(0, deviceInfo.collections[0].usage);
+    chrome.test.assertEq(1, deviceInfo.collections[0].reportIds.length);
+    chrome.test.assertEq(1, deviceInfo.collections[0].reportIds[0]);
+    assertArrayBufferEqualsListOfBytes(kReportDescriptorWithIDs,
+                                       deviceInfo.reportDescriptor);
+    if (--expectedDevices == 0) {
+      chrome.test.succeed();
+    }
   });
 };
 
@@ -339,6 +388,7 @@ chrome.test.runTests([
   testGetDevicesWithVidPidFilter,
   testGetDevicesWithUsageFilter,
   testGetDevicesWithUnauthorizedDevice,
+  testDeviceInfo,
   testConnectWithInvalidDeviceId,
   testConnectAndDisconnect,
   testDisconnectWithInvalidConnectionId,

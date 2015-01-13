@@ -60,70 +60,17 @@ std::string GetHidStringProperty(IOHIDDeviceRef device, CFStringRef key) {
   return value;
 }
 
-void GetReportIds(IOHIDElementRef element, std::set<int>* reportIDs) {
-  uint32_t reportID = IOHIDElementGetReportID(element);
-  if (reportID) {
-    reportIDs->insert(reportID);
-  }
-
-  CFArrayRef children = IOHIDElementGetChildren(element);
-  if (!children) {
-    return;
-  }
-
-  CFIndex childrenCount = CFArrayGetCount(children);
-  for (CFIndex j = 0; j < childrenCount; ++j) {
-    const IOHIDElementRef child = static_cast<IOHIDElementRef>(
-        const_cast<void*>(CFArrayGetValueAtIndex(children, j)));
-    GetReportIds(child, reportIDs);
-  }
-}
-
-bool GetCollectionInfos(IOHIDDeviceRef device,
-                        bool* has_report_id,
-                        std::vector<HidCollectionInfo>* top_level_collections) {
-  STLClearObject(top_level_collections);
-  CFMutableDictionaryRef collections_filter =
-      CFDictionaryCreateMutable(kCFAllocatorDefault,
-                                0,
-                                &kCFTypeDictionaryKeyCallBacks,
-                                &kCFTypeDictionaryValueCallBacks);
-  const int kCollectionTypeValue = kIOHIDElementTypeCollection;
-  CFNumberRef collection_type_id = CFNumberCreate(
-      kCFAllocatorDefault, kCFNumberIntType, &kCollectionTypeValue);
-  CFDictionarySetValue(
-      collections_filter, CFSTR(kIOHIDElementTypeKey), collection_type_id);
-  CFRelease(collection_type_id);
-  CFArrayRef collections = IOHIDDeviceCopyMatchingElements(
-      device, collections_filter, kIOHIDOptionsTypeNone);
-  if (!collections) {
+bool TryGetHidDataProperty(IOHIDDeviceRef device,
+                           CFStringRef key,
+                           std::vector<uint8>* result) {
+  CFDataRef ref =
+      base::mac::CFCast<CFDataRef>(IOHIDDeviceGetProperty(device, key));
+  if (!ref) {
     return false;
   }
-
-  CFIndex collectionsCount = CFArrayGetCount(collections);
-  *has_report_id = false;
-  for (CFIndex i = 0; i < collectionsCount; i++) {
-    const IOHIDElementRef collection = static_cast<IOHIDElementRef>(
-        const_cast<void*>(CFArrayGetValueAtIndex(collections, i)));
-    // Top-Level Collection has no parent
-    if (IOHIDElementGetParent(collection) == 0) {
-      HidCollectionInfo collection_info;
-      HidUsageAndPage::Page page = static_cast<HidUsageAndPage::Page>(
-          IOHIDElementGetUsagePage(collection));
-      uint32_t usage = IOHIDElementGetUsage(collection);
-      if (usage > std::numeric_limits<uint16_t>::max())
-        continue;
-      collection_info.usage =
-          HidUsageAndPage(static_cast<uint16_t>(usage), page);
-      // Explore children recursively and retrieve their report IDs
-      GetReportIds(collection, &collection_info.report_ids);
-      if (collection_info.report_ids.size() > 0) {
-        *has_report_id = true;
-      }
-      top_level_collections->push_back(collection_info);
-    }
-  }
-
+  STLClearObject(result);
+  const uint8* bytes = CFDataGetBytePtr(ref);
+  result->insert(result->begin(), bytes, bytes + CFDataGetLength(ref));
   return true;
 }
 
@@ -278,7 +225,6 @@ void HidServiceMac::RemoveDevices() {
 // static
 scoped_refptr<HidDeviceInfo> HidServiceMac::CreateDeviceInfo(
     io_service_t service) {
-  scoped_refptr<HidDeviceInfo> device_info(new HidDeviceInfo());
   io_string_t service_path;
   IOReturn result =
       IORegistryEntryGetPath(service, kIOServicePlane, service_path);
@@ -296,40 +242,20 @@ scoped_refptr<HidDeviceInfo> HidServiceMac::CreateDeviceInfo(
     return nullptr;
   }
 
-  device_info->device_id_ = service_path;
-  device_info->vendor_id_ =
-      GetHidIntProperty(hid_device, CFSTR(kIOHIDVendorIDKey));
-  device_info->product_id_ =
-      GetHidIntProperty(hid_device, CFSTR(kIOHIDProductIDKey));
-  device_info->product_name_ =
-      GetHidStringProperty(hid_device, CFSTR(kIOHIDProductKey));
-  device_info->serial_number_ =
-      GetHidStringProperty(hid_device, CFSTR(kIOHIDSerialNumberKey));
-  if (!GetCollectionInfos(hid_device, &device_info->has_report_id_,
-                          &device_info->collections_)) {
-    VLOG(1) << "Unable to get collection info for " << service_path << ".";
+  std::vector<uint8> report_descriptor;
+  if (!TryGetHidDataProperty(hid_device, CFSTR(kIOHIDReportDescriptorKey),
+                             &report_descriptor)) {
+    VLOG(1) << "Unable to get report descriptor for " << service_path << ".";
     return nullptr;
   }
-  device_info->max_input_report_size_ =
-      GetHidIntProperty(hid_device, CFSTR(kIOHIDMaxInputReportSizeKey));
-  if (device_info->has_report_id() &&
-      device_info->max_input_report_size() > 0) {
-    device_info->max_input_report_size_--;
-  }
-  device_info->max_output_report_size_ =
-      GetHidIntProperty(hid_device, CFSTR(kIOHIDMaxOutputReportSizeKey));
-  if (device_info->has_report_id() &&
-      device_info->max_output_report_size_ > 0) {
-    device_info->max_output_report_size_--;
-  }
-  device_info->max_feature_report_size_ =
-      GetHidIntProperty(hid_device, CFSTR(kIOHIDMaxFeatureReportSizeKey));
-  if (device_info->has_report_id() &&
-      device_info->max_feature_report_size_ > 0) {
-    device_info->max_feature_report_size_--;
-  }
 
-  return device_info;
+  return new HidDeviceInfo(
+      service_path, GetHidIntProperty(hid_device, CFSTR(kIOHIDVendorIDKey)),
+      GetHidIntProperty(hid_device, CFSTR(kIOHIDProductIDKey)),
+      GetHidStringProperty(hid_device, CFSTR(kIOHIDProductKey)),
+      GetHidStringProperty(hid_device, CFSTR(kIOHIDSerialNumberKey)),
+      kHIDBusTypeUSB,  // TODO(reillyg): Detect Bluetooth. crbug.com/443335
+      report_descriptor);
 }
 
 }  // namespace device

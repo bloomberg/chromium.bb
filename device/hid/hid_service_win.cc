@@ -156,83 +156,82 @@ void HidServiceWin::CollectInfoFromValueCaps(
 }
 
 void HidServiceWin::OnDeviceAdded(const std::string& device_path) {
-  // Try to open the device.
   base::win::ScopedHandle device_handle(OpenDevice(device_path));
   if (!device_handle.IsValid()) {
     return;
   }
 
-  // Get VID/PID pair.
   HIDD_ATTRIBUTES attrib = {0};
   attrib.Size = sizeof(HIDD_ATTRIBUTES);
   if (!HidD_GetAttributes(device_handle.Get(), &attrib)) {
+    VLOG(1) << "Failed to get device attributes.";
     return;
   }
 
-  scoped_refptr<HidDeviceInfo> device_info(new HidDeviceInfo());
-  device_info->device_id_ = device_path;
-  device_info->vendor_id_ = attrib.VendorID;
-  device_info->product_id_ = attrib.ProductID;
-
-  // Get usage and usage page (optional).
-  PHIDP_PREPARSED_DATA preparsed_data;
-  if (HidD_GetPreparsedData(device_handle.Get(), &preparsed_data) &&
-      preparsed_data) {
-    HIDP_CAPS capabilities = {0};
-    if (HidP_GetCaps(preparsed_data, &capabilities) == HIDP_STATUS_SUCCESS) {
-      device_info->max_input_report_size_ = capabilities.InputReportByteLength;
-      device_info->max_output_report_size_ =
-          capabilities.OutputReportByteLength;
-      device_info->max_feature_report_size_ =
-          capabilities.FeatureReportByteLength;
-      HidCollectionInfo collection_info;
-      collection_info.usage = HidUsageAndPage(
-          capabilities.Usage,
-          static_cast<HidUsageAndPage::Page>(capabilities.UsagePage));
-      CollectInfoFromButtonCaps(preparsed_data,
-                                HidP_Input,
-                                capabilities.NumberInputButtonCaps,
-                                &collection_info);
-      CollectInfoFromButtonCaps(preparsed_data,
-                                HidP_Output,
-                                capabilities.NumberOutputButtonCaps,
-                                &collection_info);
-      CollectInfoFromButtonCaps(preparsed_data,
-                                HidP_Feature,
-                                capabilities.NumberFeatureButtonCaps,
-                                &collection_info);
-      CollectInfoFromValueCaps(preparsed_data,
-                               HidP_Input,
-                               capabilities.NumberInputValueCaps,
-                               &collection_info);
-      CollectInfoFromValueCaps(preparsed_data,
-                               HidP_Output,
-                               capabilities.NumberOutputValueCaps,
-                               &collection_info);
-      CollectInfoFromValueCaps(preparsed_data,
-                               HidP_Feature,
-                               capabilities.NumberFeatureValueCaps,
-                               &collection_info);
-      if (!collection_info.report_ids.empty()) {
-        device_info->has_report_id_ = true;
-      }
-      device_info->collections_.push_back(collection_info);
-    }
-    // Whether or not the device includes report IDs in its reports the size
-    // of the report ID is included in the value provided by Windows. This
-    // appears contrary to the MSDN documentation.
-    if (device_info->max_input_report_size() > 0) {
-      device_info->max_input_report_size_--;
-    }
-    if (device_info->max_output_report_size() > 0) {
-      device_info->max_output_report_size_--;
-    }
-    if (device_info->max_feature_report_size() > 0) {
-      device_info->max_feature_report_size_--;
-    }
-    HidD_FreePreparsedData(preparsed_data);
+  PHIDP_PREPARSED_DATA preparsed_data = nullptr;
+  if (!HidD_GetPreparsedData(device_handle.Get(), &preparsed_data) ||
+      !preparsed_data) {
+    VLOG(1) << "Failed to get device data.";
+    return;
   }
 
+  HIDP_CAPS capabilities = {0};
+  if (HidP_GetCaps(preparsed_data, &capabilities) != HIDP_STATUS_SUCCESS) {
+    VLOG(1) << "Failed to get device capabilities.";
+    HidD_FreePreparsedData(preparsed_data);
+    return;
+  }
+
+  // Whether or not the device includes report IDs in its reports the size
+  // of the report ID is included in the value provided by Windows. This
+  // appears contrary to the MSDN documentation.
+  size_t max_input_report_size = 0;
+  size_t max_output_report_size = 0;
+  size_t max_feature_report_size = 0;
+  if (capabilities.InputReportByteLength > 0) {
+    max_input_report_size = capabilities.InputReportByteLength - 1;
+  }
+  if (capabilities.OutputReportByteLength > 0) {
+    max_output_report_size = capabilities.OutputReportByteLength - 1;
+  }
+  if (capabilities.FeatureReportByteLength > 0) {
+    max_feature_report_size = capabilities.FeatureReportByteLength - 1;
+  }
+
+  HidCollectionInfo collection_info;
+  collection_info.usage = HidUsageAndPage(
+      capabilities.Usage,
+      static_cast<HidUsageAndPage::Page>(capabilities.UsagePage));
+  CollectInfoFromButtonCaps(preparsed_data, HidP_Input,
+                            capabilities.NumberInputButtonCaps,
+                            &collection_info);
+  CollectInfoFromButtonCaps(preparsed_data, HidP_Output,
+                            capabilities.NumberOutputButtonCaps,
+                            &collection_info);
+  CollectInfoFromButtonCaps(preparsed_data, HidP_Feature,
+                            capabilities.NumberFeatureButtonCaps,
+                            &collection_info);
+  CollectInfoFromValueCaps(preparsed_data, HidP_Input,
+                           capabilities.NumberInputValueCaps, &collection_info);
+  CollectInfoFromValueCaps(preparsed_data, HidP_Output,
+                           capabilities.NumberOutputValueCaps,
+                           &collection_info);
+  CollectInfoFromValueCaps(preparsed_data, HidP_Feature,
+                           capabilities.NumberFeatureValueCaps,
+                           &collection_info);
+
+  // This populates the HidDeviceInfo instance without a raw report descriptor.
+  // The descriptor is unavailable on Windows because HID devices are exposed to
+  // user-space as individual top-level collections.
+  scoped_refptr<HidDeviceInfo> device_info(new HidDeviceInfo(
+      device_path, attrib.VendorID, attrib.ProductID,
+      "",              // TODO(reillyg): Get product name from Windows.
+      "",              // TODO(reillyg): Get serial number from Windows.
+      kHIDBusTypeUSB,  // TODO(reillyg): Detect Bluetooth. crbug.com/443335
+      collection_info, max_input_report_size, max_output_report_size,
+      max_feature_report_size));
+
+  HidD_FreePreparsedData(preparsed_data);
   AddDevice(device_info);
 }
 

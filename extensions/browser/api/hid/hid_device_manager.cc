@@ -49,6 +49,13 @@ void PopulateHidDeviceInfo(hid::HidDeviceInfo* output,
 
     output->collections.push_back(make_linked_ptr(api_collection));
   }
+
+  const std::vector<uint8>& report_descriptor = input->report_descriptor();
+  if (report_descriptor.size() > 0) {
+    output->report_descriptor =
+        std::string(reinterpret_cast<const char*>(&report_descriptor[0]),
+                    report_descriptor.size());
+  }
 }
 
 bool WillDispatchDeviceEvent(scoped_refptr<HidDeviceInfo> device_info,

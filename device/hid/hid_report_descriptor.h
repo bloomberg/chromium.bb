@@ -18,7 +18,7 @@ namespace device {
 class HidReportDescriptor {
 
  public:
-  HidReportDescriptor(const uint8_t* bytes, size_t size);
+  HidReportDescriptor(const std::vector<uint8>& bytes);
   ~HidReportDescriptor();
 
   const std::vector<linked_ptr<HidReportDescriptorItem> >& items() const {

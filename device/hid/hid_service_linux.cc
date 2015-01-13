@@ -5,6 +5,7 @@
 #include "device/hid/hid_service_linux.h"
 
 #include <fcntl.h>
+#include <limits>
 #include <string>
 
 #include "base/bind.h"
@@ -20,8 +21,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "device/hid/device_monitor_linux.h"
 #include "device/hid/hid_connection_linux.h"
-#include "device/hid/hid_device_info.h"
-#include "device/hid/hid_report_descriptor.h"
+#include "device/hid/hid_device_info_linux.h"
 #include "device/udev_linux/scoped_udev.h"
 
 #if defined(OS_CHROMEOS)
@@ -43,7 +43,7 @@ const char kSysfsReportDescriptorKey[] = "report_descriptor";
 }  // namespace
 
 struct HidServiceLinux::ConnectParams {
-  ConnectParams(scoped_refptr<HidDeviceInfo> device_info,
+  ConnectParams(scoped_refptr<HidDeviceInfoLinux> device_info,
                 const ConnectCallback& callback,
                 scoped_refptr<base::SingleThreadTaskRunner> task_runner,
                 scoped_refptr<base::SingleThreadTaskRunner> file_task_runner)
@@ -53,7 +53,7 @@ struct HidServiceLinux::ConnectParams {
         file_task_runner(file_task_runner) {}
   ~ConnectParams() {}
 
-  scoped_refptr<HidDeviceInfo> device_info;
+  scoped_refptr<HidDeviceInfoLinux> device_info;
   ConnectCallback callback;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner;
   scoped_refptr<base::SingleThreadTaskRunner> file_task_runner;
@@ -88,19 +88,18 @@ class HidServiceLinux::FileThreadHelper
     if (!device_path) {
       return;
     }
+    HidDeviceId device_id = device_path;
+
     const char* subsystem = udev_device_get_subsystem(device);
     if (!subsystem || strcmp(subsystem, kHidrawSubsystem) != 0) {
       return;
     }
 
-    scoped_refptr<HidDeviceInfo> device_info(new HidDeviceInfo());
-    device_info->device_id_ = device_path;
-
     const char* str_property = udev_device_get_devnode(device);
     if (!str_property) {
       return;
     }
-    device_info->device_node_ = str_property;
+    std::string device_node = str_property;
 
     udev_device* parent = udev_device_get_parent(device);
     if (!parent) {
@@ -119,22 +118,28 @@ class HidServiceLinux::FileThreadHelper
     }
 
     uint32_t int_property = 0;
-    if (HexStringToUInt(base::StringPiece(parts[1]), &int_property)) {
-      device_info->vendor_id_ = int_property;
+    if (!HexStringToUInt(base::StringPiece(parts[1]), &int_property) ||
+        int_property > std::numeric_limits<uint16_t>::max()) {
+      return;
     }
+    uint16_t vendor_id = int_property;
 
-    if (HexStringToUInt(base::StringPiece(parts[2]), &int_property)) {
-      device_info->product_id_ = int_property;
+    if (!HexStringToUInt(base::StringPiece(parts[2]), &int_property) ||
+        int_property > std::numeric_limits<uint16_t>::max()) {
+      return;
     }
+    uint16_t product_id = int_property;
 
+    std::string serial_number;
     str_property = udev_device_get_property_value(parent, kHIDUnique);
     if (str_property != NULL) {
-      device_info->serial_number_ = str_property;
+      serial_number = str_property;
     }
 
+    std::string product_name;
     str_property = udev_device_get_property_value(parent, kHIDName);
     if (str_property != NULL) {
-      device_info->product_name_ = str_property;
+      product_name = str_property;
     }
 
     const char* parent_sysfs_path = udev_device_get_syspath(parent);
@@ -149,14 +154,12 @@ class HidServiceLinux::FileThreadHelper
       return;
     }
 
-    HidReportDescriptor report_descriptor(
-        reinterpret_cast<uint8_t*>(&report_descriptor_str[0]),
-        report_descriptor_str.length());
-    report_descriptor.GetDetails(&device_info->collections_,
-                                 &device_info->has_report_id_,
-                                 &device_info->max_input_report_size_,
-                                 &device_info->max_output_report_size_,
-                                 &device_info->max_feature_report_size_);
+    scoped_refptr<HidDeviceInfo> device_info(new HidDeviceInfoLinux(
+        device_id, device_node, vendor_id, product_id, product_name,
+        serial_number,
+        kHIDBusTypeUSB,  // TODO(reillyg): Detect Bluetooth. crbug.com/443335
+        std::vector<uint8>(report_descriptor_str.begin(),
+                           report_descriptor_str.end())));
 
     task_runner_->PostTask(FROM_HERE, base::Bind(&HidServiceLinux::AddDevice,
                                                  service_, device_info));
@@ -217,7 +220,8 @@ void HidServiceLinux::Connect(const HidDeviceId& device_id,
     task_runner_->PostTask(FROM_HERE, base::Bind(callback, nullptr));
     return;
   }
-  scoped_refptr<HidDeviceInfo> device_info = map_entry->second;
+  scoped_refptr<HidDeviceInfoLinux> device_info =
+      static_cast<HidDeviceInfoLinux*>(map_entry->second.get());
 
   scoped_ptr<ConnectParams> params(new ConnectParams(
       device_info, callback, task_runner_, file_task_runner_));

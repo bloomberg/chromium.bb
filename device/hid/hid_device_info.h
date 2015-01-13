@@ -24,7 +24,24 @@ extern const char kInvalidHidDeviceId[];
 
 class HidDeviceInfo : public base::RefCountedThreadSafe<HidDeviceInfo> {
  public:
-  HidDeviceInfo();
+  HidDeviceInfo(const HidDeviceId& device_id,
+                uint16_t vendor_id,
+                uint16_t product_id,
+                const std::string& product_name,
+                const std::string& serial_number,
+                HidBusType bus_type,
+                const std::vector<uint8> report_descriptor);
+
+  HidDeviceInfo(const HidDeviceId& device_id,
+                uint16_t vendor_id,
+                uint16_t product_id,
+                const std::string& product_name,
+                const std::string& serial_number,
+                HidBusType bus_type,
+                const HidCollectionInfo& collection,
+                size_t max_input_report_size,
+                size_t max_output_report_size,
+                size_t max_feature_report_size);
 
   // Device identification.
   const HidDeviceId& device_id() const { return device_id_; }
@@ -43,22 +60,16 @@ class HidDeviceInfo : public base::RefCountedThreadSafe<HidDeviceInfo> {
   size_t max_output_report_size() const { return max_output_report_size_; }
   size_t max_feature_report_size() const { return max_feature_report_size_; }
 
-#if defined(OS_LINUX)
-  const std::string& device_node() const { return device_node_; }
-#endif
+  // The raw HID report descriptor is not available on Windows.
+  const std::vector<uint8>& report_descriptor() const {
+    return report_descriptor_;
+  }
+
+ protected:
+  virtual ~HidDeviceInfo();
 
  private:
   friend class base::RefCountedThreadSafe<HidDeviceInfo>;
-
-  // TODO(reillyg): Define public constructors that make some of these
-  // declarations unnecessary.
-  friend class HidServiceLinux;
-  friend class HidServiceMac;
-  friend class HidServiceWin;
-  friend class MockHidService;
-  friend class HidFilterTest;
-
-  ~HidDeviceInfo();
 
   // Device identification.
   HidDeviceId device_id_;
@@ -67,6 +78,7 @@ class HidDeviceInfo : public base::RefCountedThreadSafe<HidDeviceInfo> {
   std::string product_name_;
   std::string serial_number_;
   HidBusType bus_type_;
+  std::vector<uint8> report_descriptor_;
 
   // Top-Level Collections information.
   std::vector<HidCollectionInfo> collections_;
@@ -74,10 +86,6 @@ class HidDeviceInfo : public base::RefCountedThreadSafe<HidDeviceInfo> {
   size_t max_input_report_size_;
   size_t max_output_report_size_;
   size_t max_feature_report_size_;
-
-#if defined(OS_LINUX)
-  std::string device_node_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(HidDeviceInfo);
 };

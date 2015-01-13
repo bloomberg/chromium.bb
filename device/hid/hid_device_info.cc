@@ -3,20 +3,53 @@
 // found in the LICENSE file.
 
 #include "device/hid/hid_device_info.h"
+#include "device/hid/hid_report_descriptor.h"
 
 namespace device {
 
 const char kInvalidHidDeviceId[] = "";
 
-HidDeviceInfo::HidDeviceInfo()
-    : device_id_(kInvalidHidDeviceId),
-      vendor_id_(0),
-      product_id_(0),
-      bus_type_(kHIDBusTypeUSB),
-      has_report_id_(false),
-      max_input_report_size_(0),
-      max_output_report_size_(0),
-      max_feature_report_size_(0) {
+HidDeviceInfo::HidDeviceInfo(const HidDeviceId& device_id,
+                             uint16_t vendor_id,
+                             uint16_t product_id,
+                             const std::string& product_name,
+                             const std::string& serial_number,
+                             HidBusType bus_type,
+                             const std::vector<uint8> report_descriptor)
+    : device_id_(device_id),
+      vendor_id_(vendor_id),
+      product_id_(product_id),
+      product_name_(product_name),
+      serial_number_(serial_number),
+      bus_type_(bus_type),
+      report_descriptor_(report_descriptor) {
+  HidReportDescriptor descriptor_parser(report_descriptor_);
+  descriptor_parser.GetDetails(
+      &collections_, &has_report_id_, &max_input_report_size_,
+      &max_output_report_size_, &max_feature_report_size_);
+}
+
+HidDeviceInfo::HidDeviceInfo(const HidDeviceId& device_id,
+                             uint16_t vendor_id,
+                             uint16_t product_id,
+                             const std::string& product_name,
+                             const std::string& serial_number,
+                             HidBusType bus_type,
+                             const HidCollectionInfo& collection,
+                             size_t max_input_report_size,
+                             size_t max_output_report_size,
+                             size_t max_feature_report_size)
+    : device_id_(device_id),
+      vendor_id_(vendor_id),
+      product_id_(product_id),
+      product_name_(product_name),
+      serial_number_(serial_number),
+      bus_type_(bus_type),
+      max_input_report_size_(max_input_report_size),
+      max_output_report_size_(max_output_report_size),
+      max_feature_report_size_(max_feature_report_size) {
+  collections_.push_back(collection);
+  has_report_id_ = !collection.report_ids.empty();
 }
 
 HidDeviceInfo::~HidDeviceInfo() {}
