@@ -32,9 +32,9 @@ class IPC_MOJO_EXPORT AsyncHandleWaiter {
  private:
   void InvokeCallback(MojoResult result);
 
-  base::WeakPtrFactory<AsyncHandleWaiter> weak_factory_;
   scoped_refptr<Context> context_;
   base::Callback<void(MojoResult)> callback_;
+  base::WeakPtrFactory<AsyncHandleWaiter> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AsyncHandleWaiter);
 };

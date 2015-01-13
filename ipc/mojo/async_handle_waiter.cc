@@ -51,10 +51,10 @@ class AsyncHandleWaiter::Context
 };
 
 AsyncHandleWaiter::AsyncHandleWaiter(base::Callback<void(MojoResult)> callback)
-    : weak_factory_(this),
-      context_(new Context(base::MessageLoop::current()->task_runner(),
-                           weak_factory_.GetWeakPtr())),
-      callback_(callback) {
+    : callback_(callback),
+      weak_factory_(this) {
+  context_ = new Context(base::MessageLoop::current()->task_runner(),
+                         weak_factory_.GetWeakPtr());
 }
 
 AsyncHandleWaiter::~AsyncHandleWaiter() {
