@@ -32,6 +32,9 @@ class SpdyUtils {
   static SpdyHeaderBlock RequestHeadersToSpdyHeaders(
       const BalsaHeaders& request_headers);
 
+  static SpdyHeaderBlock RequestHeadersToSpdy4Headers(
+      const BalsaHeaders& request_headers);
+
   static SpdyHeaderBlock ResponseHeadersToSpdyHeaders(
       const BalsaHeaders& response_headers);
 

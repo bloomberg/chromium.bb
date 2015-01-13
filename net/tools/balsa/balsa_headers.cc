@@ -771,6 +771,11 @@ void BalsaHeaders::DumpToString(std::string* str) const {
     return;
   }
 
+  DumpHeadersToString(str);
+}
+
+void BalsaHeaders::DumpHeadersToString(std::string* str) const {
+  const base::StringPiece firstline = first_line();
   // If the header is complete, then just dump them with the logical key value
   // pair.
   str->reserve(str->size() + GetSizeForWriteBuffer());

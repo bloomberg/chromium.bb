@@ -28,6 +28,8 @@
 #define SO_RXQ_OVFL 40
 #endif
 
+using std::string;
+
 namespace net {
 namespace tools {
 
@@ -36,7 +38,6 @@ const int kEpollFlags = EPOLLIN | EPOLLOUT | EPOLLET;
 QuicClient::QuicClient(IPEndPoint server_address,
                        const QuicServerId& server_id,
                        const QuicVersionVector& supported_versions,
-                       bool print_response,
                        EpollServer* epoll_server)
     : server_address_(server_address),
       server_id_(server_id),
@@ -48,13 +49,13 @@ QuicClient::QuicClient(IPEndPoint server_address,
       packets_dropped_(0),
       overflow_supported_(false),
       supported_versions_(supported_versions),
-      print_response_(print_response) {
+      store_response_(false),
+      latest_response_code_(-1) {
 }
 
 QuicClient::QuicClient(IPEndPoint server_address,
                        const QuicServerId& server_id,
                        const QuicVersionVector& supported_versions,
-                       bool print_response,
                        const QuicConfig& config,
                        EpollServer* epoll_server)
     : server_address_(server_address),
@@ -68,7 +69,8 @@ QuicClient::QuicClient(IPEndPoint server_address,
       packets_dropped_(0),
       overflow_supported_(false),
       supported_versions_(supported_versions),
-      print_response_(print_response) {
+      store_response_(false),
+      latest_response_code_(-1) {
 }
 
 QuicClient::~QuicClient() {
@@ -245,21 +247,33 @@ void QuicClient::CleanUpUDPSocket() {
   }
 }
 
+void QuicClient::SendRequest(const BalsaHeaders& headers,
+                             StringPiece body,
+                             bool fin) {
+  QuicSpdyClientStream* stream = CreateReliableClientStream();
+  if (stream == nullptr) {
+    LOG(DFATAL) << "stream creation failed!";
+    return;
+  }
+  stream->SendRequest(headers, body, fin);
+  stream->set_visitor(this);
+}
+
+void QuicClient::SendRequestAndWaitForResponse(const BalsaHeaders& headers,
+                                               StringPiece body,
+                                               bool fin) {
+  SendRequest(headers, "", true);
+  while (WaitForEvents()) {
+  }
+}
+
 void QuicClient::SendRequestsAndWaitForResponse(
     const base::CommandLine::StringVector& args) {
   for (size_t i = 0; i < args.size(); ++i) {
     BalsaHeaders headers;
     headers.SetRequestFirstlineFromStringPieces("GET", args[i], "HTTP/1.1");
-    QuicSpdyClientStream* stream = CreateReliableClientStream();
-    DCHECK(stream != nullptr);
-    if (stream == nullptr) {
-      LOG(ERROR) << "stream creation failed!";
-      break;
-    }
-    stream->SendRequest(headers, "", true);
-    stream->set_visitor(this);
+    SendRequest(headers, "", true);
   }
-
   while (WaitForEvents()) {}
 }
 
@@ -318,19 +332,12 @@ void QuicClient::OnClose(QuicDataStream* stream) {
         stream->id(), client_stream->headers(), client_stream->data());
   }
 
-  if (!print_response_) {
-    return;
+  // Store response headers and body.
+  if (store_response_) {
+    latest_response_code_ = client_stream->headers().parsed_response_code();
+    client_stream->headers().DumpHeadersToString(&latest_response_headers_);
+    latest_response_body_ = client_stream->data();
   }
-
-  const BalsaHeaders& headers = client_stream->headers();
-  printf("%s\n", headers.first_line().as_string().c_str());
-  for (BalsaHeaders::const_header_lines_iterator i =
-           headers.header_lines_begin();
-       i != headers.header_lines_end(); ++i) {
-    printf("%s: %s\n", i->first.as_string().c_str(),
-           i->second.as_string().c_str());
-  }
-  printf("%s\n", client_stream->data().c_str());
 }
 
 bool QuicClient::connected() const {
@@ -340,6 +347,21 @@ bool QuicClient::connected() const {
 
 bool QuicClient::goaway_received() const {
   return session_ != nullptr && session_->goaway_received();
+}
+
+size_t QuicClient::latest_response_code() const {
+  LOG_IF(DFATAL, !store_response_) << "Response not stored!";
+  return latest_response_code_;
+}
+
+const string& QuicClient::latest_response_headers() const {
+  LOG_IF(DFATAL, !store_response_) << "Response not stored!";
+  return latest_response_headers_;
+}
+
+const string& QuicClient::latest_response_body() const {
+  LOG_IF(DFATAL, !store_response_) << "Response not stored!";
+  return latest_response_body_;
 }
 
 QuicConnectionId QuicClient::GenerateConnectionId() {

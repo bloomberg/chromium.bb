@@ -107,7 +107,6 @@ MockableQuicClient::MockableQuicClient(
     : QuicClient(server_address,
                  server_id,
                  supported_versions,
-                 false,
                  epoll_server),
       override_connection_id_(0),
       test_writer_(nullptr) {}
@@ -121,7 +120,6 @@ MockableQuicClient::MockableQuicClient(
     : QuicClient(server_address,
                  server_id,
                  supported_versions,
-                 false,
                  config,
                  epoll_server),
       override_connection_id_(0),

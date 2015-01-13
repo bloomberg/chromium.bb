@@ -13,11 +13,13 @@
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/strings/string_piece.h"
 #include "net/base/ip_endpoint.h"
 #include "net/quic/crypto/crypto_handshake.h"
 #include "net/quic/quic_config.h"
 #include "net/quic/quic_framer.h"
 #include "net/quic/quic_packet_creator.h"
+#include "net/tools/balsa/balsa_headers.h"
 #include "net/tools/epoll_server/epoll_server.h"
 #include "net/tools/quic/quic_client_session.h"
 #include "net/tools/quic/quic_spdy_client_stream.h"
@@ -52,12 +54,10 @@ class QuicClient : public EpollCallbackInterface,
   QuicClient(IPEndPoint server_address,
              const QuicServerId& server_id,
              const QuicVersionVector& supported_versions,
-             bool print_response,
              EpollServer* epoll_server);
   QuicClient(IPEndPoint server_address,
              const QuicServerId& server_id,
              const QuicVersionVector& supported_versions,
-             bool print_response,
              const QuicConfig& config,
              EpollServer* epoll_server);
 
@@ -84,6 +84,16 @@ class QuicClient : public EpollCallbackInterface,
 
   // Disconnects from the QUIC server.
   void Disconnect();
+
+  // Sends an HTTP request and does not wait for response before returning.
+  void SendRequest(const BalsaHeaders& headers,
+                   base::StringPiece body,
+                   bool fin);
+
+  // Sends an HTTP request and waits for response before returning.
+  void SendRequestAndWaitForResponse(const BalsaHeaders& headers,
+                                     base::StringPiece body,
+                                     bool fin);
 
   // Sends a request simple GET for each URL in |args|, and then waits for
   // each to complete.
@@ -172,6 +182,12 @@ class QuicClient : public EpollCallbackInterface,
   }
 
   QuicConfig* config() { return &config_; }
+
+  void set_store_response(bool val) { store_response_ = val; }
+
+  size_t latest_response_code() const;
+  const std::string& latest_response_headers() const;
+  const std::string& latest_response_body() const;
 
  protected:
   virtual QuicConnectionId GenerateConnectionId();
@@ -264,9 +280,14 @@ class QuicClient : public EpollCallbackInterface,
   // initial version to use.
   QuicVersionVector supported_versions_;
 
-  // If true, then the contents of each response will be printed to stdout
-  // when the stream is closed (in OnClose).
-  bool print_response_;
+  // If true, store the latest response code, headers, and body.
+  bool store_response_;
+  // HTTP response code from most recent response.
+  size_t latest_response_code_;
+  // HTTP headers from most recent response.
+  std::string latest_response_headers_;
+  // Body of most recent response.
+  std::string latest_response_body_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicClient);
 };

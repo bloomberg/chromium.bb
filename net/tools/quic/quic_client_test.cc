@@ -40,8 +40,7 @@ QuicClient* CreateAndInitializeQuicClient(EpollServer* eps, uint16 port) {
   QuicServerId server_id("hostname", server_address.port(), false,
                          PRIVACY_MODE_DISABLED);
   QuicVersionVector versions = QuicSupportedVersions();
-  QuicClient* client =
-      new QuicClient(server_address, server_id, versions, false, eps);
+  QuicClient* client = new QuicClient(server_address, server_id, versions, eps);
   EXPECT_TRUE(client->Initialize());
   return client;
 }
