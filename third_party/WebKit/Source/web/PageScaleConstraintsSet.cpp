@@ -206,7 +206,8 @@ void PageScaleConstraintsSet::adjustForAndroidWebViewQuirks(const ViewportDescri
 
     if (wideViewportQuirkEnabled) {
         if (useWideViewport && (description.maxWidth.isAuto() || description.maxWidth.type() == ExtendToZoom) && description.zoom != 1.0f) {
-            adjustedLayoutSizeWidth = layoutFallbackWidth;
+            if (layoutFallbackWidth)
+                adjustedLayoutSizeWidth = layoutFallbackWidth;
             adjustedLayoutSizeHeight = computeHeightByAspectRatio(adjustedLayoutSizeWidth, m_viewSize);
         } else if (!useWideViewport) {
             const float nonWideScale = description.zoom < 1 && description.maxWidth.type() != DeviceWidth && description.maxWidth.type() != DeviceHeight ? -1 : oldInitialScale;
