@@ -6,7 +6,7 @@
  * @filedescription Initializes the extension's popup page.
  */
 
-chrome.extension.sendRequest(
+chrome.runtime.sendMessage(
     {'type': 'getMostRequestedUrls'},
     function generateList(response) {
       var section = document.querySelector('body>section');

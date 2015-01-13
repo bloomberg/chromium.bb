@@ -64,7 +64,7 @@ function NavigationCollector() {
       this.onHistoryStateUpdatedListener_.bind(this));
 
   // Bind handler to extension messages for communication from popup.
-  chrome.extension.onRequest.addListener(this.onRequestListener_.bind(this));
+  chrome.runtime.onMessage.addListener(this.onMessageListener_.bind(this));
 
   this.loadDataStorage_();
 }
@@ -396,17 +396,17 @@ NavigationCollector.prototype = {
   },
 
   /**
-   * Handle request messages from the popup.
+   * Handle messages from the popup.
    *
-   * @param {!{type:string}} request The external request to answer.
+   * @param {!{type:string}} message The external message to answer.
    * @param {!MessageSender} sender Info about the script context that sent
-   *     the request.
+   *     the message.
    * @param {!function} sendResponse Function to call to send a response.
    * @private
    */
-  onRequestListener_: function(request, sender, sendResponse) {
-    if (request.type === 'getMostRequestedUrls')
-      sendResponse({result: this.getMostRequestedUrls(request.num)});
+  onMessageListener_: function(message, sender, sendResponse) {
+    if (message.type === 'getMostRequestedUrls')
+      sendResponse({result: this.getMostRequestedUrls(message.num)});
     else
       sendResponse({});
   },
