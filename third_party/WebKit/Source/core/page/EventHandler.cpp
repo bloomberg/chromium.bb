@@ -3201,26 +3201,8 @@ void EventHandler::dragSourceEndedAt(const PlatformMouseEvent& event, DragOperat
     prepareMouseEvent(request, event);
 
     if (dragState().m_dragSrc) {
-        // If an embedder tries to end a drag operation, but the page
-        // has initiated another from other input events received,
-        // we're in a tight corner. While Blink doesn't pretend to
-        // support concurrent drag operations on a page, it should try
-        // to gracefully handle any such overlapping drag operation
-        // attempts, whatever their cause/source.
-        //
-        // Hence, if the drag state here has a source, but not yet
-        // any drag data, this represents a drag operation just
-        // getting under way. The embedder is thus likely signalling
-        // the end of another, earlier drag operation here, which it
-        // is preferable to silently ignore.
-        // (cf. http://crbug.com/445308)
-        if (!dragState().m_dragDataTransfer)
-            return;
-
         dragState().m_dragDataTransfer->setDestinationOperation(operation);
-
-        // For now we don't care if the event handler cancels the default
-        // behavior, as there is none.
+        // for now we don't care if event handler cancels default behavior, since there is none
         dispatchDragSrcEvent(EventTypeNames::dragend, event);
     }
     clearDragDataTransfer();
