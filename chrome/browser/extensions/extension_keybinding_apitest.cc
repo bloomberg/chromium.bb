@@ -26,6 +26,7 @@
 #include "extensions/common/feature_switch.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/permissions/permissions_data.h"
+#include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
 
 using content::WebContents;
@@ -169,13 +170,7 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, Basic) {
   ASSERT_TRUE(result);
 }
 
-// Flaky on linux and chromeos, http://crbug.com/165825
-#if defined(OS_MACOSX) || defined(OS_WIN)
-#define MAYBE_PageAction PageAction
-#else
-#define MAYBE_PageAction DISABLED_PageAction
-#endif
-IN_PROC_BROWSER_TEST_F(CommandsApiTest, MAYBE_PageAction) {
+IN_PROC_BROWSER_TEST_F(CommandsApiTest, PageAction) {
   ASSERT_TRUE(test_server()->Start());
   ASSERT_TRUE(RunExtensionTest("keybinding/page_action")) << message_;
   const Extension* extension = GetSingleLoadedExtension();
@@ -198,22 +193,17 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, MAYBE_PageAction) {
       ExtensionActionManager::Get(browser()->profile())->
       GetPageAction(*extension);
   ASSERT_TRUE(action);
-  EXPECT_EQ("Make this page red", action->GetTitle(tab_id));
+  EXPECT_EQ("Send message", action->GetTitle(tab_id));
+
+  ExtensionTestMessageListener test_listener(false);  // Won't reply.
+  test_listener.set_extension_id(extension->id());
 
   // Activate the shortcut (Alt+Shift+F).
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
       browser(), ui::VKEY_F, false, true, true, false));
 
-  // Verify the command worked (the page action turns the page red).
-  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
-  bool result = false;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
-      tab,
-      "setInterval(function(){"
-      "  if(document.body.bgColor == 'red'){"
-      "    window.domAutomationController.send(true)}}, 100)",
-      &result));
-  ASSERT_TRUE(result);
+  test_listener.WaitUntilSatisfied();
+  EXPECT_EQ("clicked", test_listener.message());
 }
 
 IN_PROC_BROWSER_TEST_F(CommandsApiTest, PageActionKeyUpdated) {
@@ -236,20 +226,15 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, PageActionKeyUpdated) {
     ASSERT_TRUE(catcher.GetNextResult());
   }
 
-  // Activate the shortcut to make the page red.
+  ExtensionTestMessageListener test_listener(false);  // Won't reply.
+  test_listener.set_extension_id(extension->id());
+
+  // Activate the shortcut.
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
       browser(), ui::VKEY_G, false, true, true, false));
 
-  // Verify the command worked (the page action turns the page red).
-  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
-  bool result = false;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
-      tab,
-      std::string("setInterval(function() {") +
-      "  if (document.body.bgColor == 'red') {" +
-      "    window.domAutomationController.send(true)}}, 100)",
-      &result));
-  ASSERT_TRUE(result);
+  test_listener.WaitUntilSatisfied();
+  EXPECT_EQ("clicked", test_listener.message());
 }
 
 // This test validates that the getAll query API function returns registered

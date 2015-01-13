@@ -4,7 +4,7 @@
 
 // Called when the user clicks on the page action.
 chrome.pageAction.onClicked.addListener(function(tab) {
-  chrome.tabs.executeScript(null, { code: "document.body.bgColor='red'" });
+  chrome.test.sendMessage('clicked');
 });
 
 chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
