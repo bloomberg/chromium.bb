@@ -93,7 +93,7 @@ class TestRLZTracker : public RLZTracker {
     set_tracker(this);
   }
 
-  virtual ~TestRLZTracker() {
+  ~TestRLZTracker() override {
     set_tracker(NULL);
   }
 
@@ -106,28 +106,28 @@ class TestRLZTracker : public RLZTracker {
   }
 
  private:
-  virtual void ScheduleDelayedInit(base::TimeDelta delay) override {
+  void ScheduleDelayedInit(base::TimeDelta delay) override {
     // If the delay is 0, invoke the delayed init now. Otherwise,
     // don't schedule anything, it will be manually called during tests.
     if (delay == base::TimeDelta())
       DelayedInit();
   }
 
-  virtual void ScheduleFinancialPing() override {
+  void ScheduleFinancialPing() override {
     PingNowImpl();
   }
 
-  virtual bool ScheduleRecordProductEvent(rlz_lib::Product product,
+  bool ScheduleRecordProductEvent(rlz_lib::Product product,
                                           rlz_lib::AccessPoint point,
                                           rlz_lib::Event event_id) override {
     return !assume_not_ui_thread_;
   }
 
-  virtual bool ScheduleGetAccessPointRlz(rlz_lib::AccessPoint point) override {
+  bool ScheduleGetAccessPointRlz(rlz_lib::AccessPoint point) override {
     return !assume_not_ui_thread_;
   }
 
-  virtual bool ScheduleRecordFirstSearch(rlz_lib::AccessPoint point) override {
+  bool ScheduleRecordFirstSearch(rlz_lib::AccessPoint point) override {
     return !assume_not_ui_thread_;
   }
 
@@ -137,7 +137,7 @@ class TestRLZTracker : public RLZTracker {
   }
 #endif
 
-  virtual bool SendFinancialPing(const std::string& brand,
+  bool SendFinancialPing(const std::string& brand,
                                  const base::string16& lang,
                                  const base::string16& referral) override {
     // Don't ping the server during tests, just pretend as if we did.
@@ -163,7 +163,7 @@ class TestRLZTracker : public RLZTracker {
 
 class RlzLibTest : public RlzLibTestNoMachineState {
  protected:
-  virtual void SetUp() override;
+  void SetUp() override;
 
   void SetMainBrand(const char* brand);
   void SetReactivationBrand(const char* brand);

@@ -103,7 +103,7 @@ class RLZTracker : public content::NotificationObserver {
   // testing purposes. Production code should never need to call these.
  protected:
   RLZTracker();
-  virtual ~RLZTracker();
+  ~RLZTracker() override;
 
   // Called by InitRlzFromProfileDelayed with values taken from |profile|.
   static bool InitRlzDelayed(bool first_run,
@@ -118,7 +118,7 @@ class RLZTracker : public content::NotificationObserver {
   virtual void DelayedInit();
 
   // content::NotificationObserver implementation:
-  virtual void Observe(int type,
+  void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) override;
 
