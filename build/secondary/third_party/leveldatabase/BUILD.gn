@@ -14,9 +14,6 @@ config("leveldatabase_config") {
     "src",
     "src/include",
   ]
-  if (is_win) {
-    include_dirs += [ "src/port/win" ]
-  }
 }
 
 static_library("leveldatabase") {

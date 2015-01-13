@@ -71,7 +71,7 @@ template("json_schema_api") {
 
   generated_config_name = target_name + "_generated_config"
   config(generated_config_name) {
-    include_dirs = [ target_gen_dir ]
+    include_dirs = [ root_gen_dir ]
     visibility = target_visibility
   }
 
