@@ -81,12 +81,12 @@ class ImageFetcher : public net::URLFetcherDelegate {
   std::map<const net::URLFetcher*, ImageFetchedCallback> downloads_in_progress_;
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
 
+  // The task runner used to decode images if necessary.
+  const scoped_refptr<base::TaskRunner> task_runner_;
+
   // The WeakPtrFactory is used to cancel callbacks if ImageFetcher is destroyed
   // during WebP decoding.
   base::WeakPtrFactory<ImageFetcher> weak_factory_;
-
-  // The task runner used to decode images if necessary.
-  const scoped_refptr<base::TaskRunner> task_runner_;
 };
 
 }  // namespace image_fetcher

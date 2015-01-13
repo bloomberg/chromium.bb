@@ -63,8 +63,8 @@ namespace image_fetcher {
 
 ImageFetcher::ImageFetcher(const scoped_refptr<base::TaskRunner>& task_runner)
     : request_context_getter_(nullptr),
-      weak_factory_(this),
-      task_runner_(task_runner) {
+      task_runner_(task_runner),
+      weak_factory_(this) {
   DCHECK(task_runner_.get());
 }
 
