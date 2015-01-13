@@ -15,6 +15,7 @@
 #if defined(OS_WIN) && defined(USE_ASH)
 #include "chrome/browser/ui/ash/ash_util.h"
 #endif
+#include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
@@ -182,15 +183,14 @@ void PasswordManagerHandler::SetPasswordList(
   base::string16 placeholder(base::ASCIIToUTF16("        "));
   for (size_t i = 0; i < password_list.size(); ++i) {
     base::ListValue* entry = new base::ListValue();
-    entry->Append(new base::StringValue(net::FormatUrl(password_list[i]->origin,
-                                                       languages_)));
-    entry->Append(new base::StringValue(password_list[i]->username_value));
+    entry->AppendString(GetHumanReadableOrigin(*password_list[i], languages_));
+    entry->AppendString(password_list[i]->username_value);
     if (show_passwords) {
-      entry->Append(new base::StringValue(password_list[i]->password_value));
+      entry->AppendString(password_list[i]->password_value);
     } else {
       // Use a placeholder value with the same length as the password.
-      entry->Append(new base::StringValue(
-          base::string16(password_list[i]->password_value.length(), ' ')));
+      entry->AppendString(
+          base::string16(password_list[i]->password_value.length(), ' '));
     }
     entries.Append(entry);
   }
