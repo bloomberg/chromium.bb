@@ -19,4 +19,11 @@ public interface TabModelSelectorObserver {
      * Called when a new tab is created.
      */
     void onNewTabCreated(Tab tab);
+
+    /**
+     * Called when a different tab model has been selected.
+     * @param newModel The newly selected tab model.
+     * @param oldModel The previously selected tab model.
+     */
+    void onTabModelSelected(TabModel newModel, TabModel oldModel);
 }

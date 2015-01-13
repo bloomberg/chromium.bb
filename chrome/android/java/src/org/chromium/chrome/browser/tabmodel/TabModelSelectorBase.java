@@ -65,7 +65,15 @@ public abstract class TabModelSelectorBase implements TabModelSelector {
 
     @Override
     public void selectModel(boolean incognito) {
+        TabModel previousModel = getCurrentModel();
         mActiveModelIndex = incognito ? INCOGNITO_TAB_MODEL_INDEX : NORMAL_TAB_MODEL_INDEX;
+        TabModel newModel = getCurrentModel();
+
+        if (previousModel != newModel) {
+            for (TabModelSelectorObserver listener : mObservers) {
+                listener.onTabModelSelected(newModel, previousModel);
+            }
+        }
     }
 
     @Override
