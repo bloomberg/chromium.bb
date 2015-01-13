@@ -30,14 +30,6 @@ EVENTS_OZONE_LAYOUT_EXPORT KeyboardCode DomCodeToKeyboardCode(DomCode dom_code);
 EVENTS_OZONE_LAYOUT_EXPORT KeyboardCode
 DomCodeToNonLocatedKeyboardCode(DomCode dom_code);
 
-// Determine the non-located VKEY corresponding to a located VKEY.
-EVENTS_OZONE_LAYOUT_EXPORT KeyboardCode
-NonLocatedKeyboardCode(KeyboardCode key_code);
-
-// Determine the located VKEY corresponding to a non-located VKEY.
-EVENTS_OZONE_LAYOUT_EXPORT KeyboardCode
-LocatedKeyboardCode(KeyboardCode key_code, DomCode dom_code);
-
 // Returns true control character corresponding to a physical key.
 // In some contexts this is used instead of the key layout.
 EVENTS_OZONE_LAYOUT_EXPORT bool LookupControlCharacter(DomCode dom_code,

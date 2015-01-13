@@ -889,77 +889,8 @@ void KeyEvent::SetTranslated(bool translated) {
   }
 }
 
-bool KeyEvent::IsRightSideKey() const {
-  switch (key_code_) {
-    case VKEY_CONTROL:
-    case VKEY_SHIFT:
-    case VKEY_MENU:
-    case VKEY_LWIN:
-#if defined(USE_X11)
-      // Under X11, setting code_ requires platform-dependent information, and
-      // currently assumes that X keycodes are based on Linux evdev keycodes.
-      // In certain test environments this is not the case, and code_ is not
-      // set accurately, so we need a different mechanism. Fortunately X11 key
-      // mapping preserves the left-right distinction, so testing keysyms works
-      // if the value is available (as it is for all X11 native-based events).
-      if (platform_keycode_) {
-        return (platform_keycode_ == XK_Shift_R) ||
-               (platform_keycode_ == XK_Control_R) ||
-               (platform_keycode_ == XK_Alt_R) ||
-               (platform_keycode_ == XK_Meta_R) ||
-               (platform_keycode_ == XK_Super_R) ||
-               (platform_keycode_ == XK_Hyper_R);
-      }
-      // Fall through to the generic code if we have no platform_keycode_.
-      // Under X11, this must be a synthetic event, so we can require that
-      // code_ be set correctly.
-#endif
-      return (code_ == DomCode::SHIFT_RIGHT) ||
-             (code_ == DomCode::CONTROL_RIGHT) ||
-             (code_ == DomCode::ALT_RIGHT) ||
-             (code_ == DomCode::OS_RIGHT);
-    default:
-      return false;
-  }
-}
-
 KeyboardCode KeyEvent::GetLocatedWindowsKeyboardCode() const {
-  switch (key_code_) {
-    case VKEY_SHIFT:
-      return IsRightSideKey() ? VKEY_RSHIFT : VKEY_LSHIFT;
-    case VKEY_CONTROL:
-      return IsRightSideKey() ? VKEY_RCONTROL : VKEY_LCONTROL;
-    case VKEY_MENU:
-      return IsRightSideKey() ? VKEY_RMENU : VKEY_LMENU;
-    case VKEY_LWIN:
-      return IsRightSideKey() ? VKEY_RWIN : VKEY_LWIN;
-    // TODO(kpschoedel): EF_NUMPAD_KEY is present only on X11. Currently this
-    // function is only called on X11. Likely the tests here will be replaced
-    // with a DOM-based code enumeration test in the course of Ozone
-    // platform-indpendent key event work.
-    case VKEY_0:
-      return (flags() & EF_NUMPAD_KEY) ? VKEY_NUMPAD0 : VKEY_0;
-    case VKEY_1:
-      return (flags() & EF_NUMPAD_KEY) ? VKEY_NUMPAD1 : VKEY_1;
-    case VKEY_2:
-      return (flags() & EF_NUMPAD_KEY) ? VKEY_NUMPAD2 : VKEY_2;
-    case VKEY_3:
-      return (flags() & EF_NUMPAD_KEY) ? VKEY_NUMPAD3 : VKEY_3;
-    case VKEY_4:
-      return (flags() & EF_NUMPAD_KEY) ? VKEY_NUMPAD4 : VKEY_4;
-    case VKEY_5:
-      return (flags() & EF_NUMPAD_KEY) ? VKEY_NUMPAD5 : VKEY_5;
-    case VKEY_6:
-      return (flags() & EF_NUMPAD_KEY) ? VKEY_NUMPAD6 : VKEY_6;
-    case VKEY_7:
-      return (flags() & EF_NUMPAD_KEY) ? VKEY_NUMPAD7 : VKEY_7;
-    case VKEY_8:
-      return (flags() & EF_NUMPAD_KEY) ? VKEY_NUMPAD8 : VKEY_8;
-    case VKEY_9:
-      return (flags() & EF_NUMPAD_KEY) ? VKEY_NUMPAD9 : VKEY_9;
-    default:
-      return key_code_;
-  }
+  return NonLocatedToLocatedKeyboardCode(key_code_, code_);
 }
 
 uint16 KeyEvent::GetConflatedWindowsKeyCode() const {

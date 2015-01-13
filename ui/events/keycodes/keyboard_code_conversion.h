@@ -11,6 +11,7 @@
 
 namespace ui {
 
+enum class DomCode;
 enum class DomKey;
 
 // Helper functions to get the meaning of a Windows key code in a
@@ -39,6 +40,18 @@ EVENTS_BASE_EXPORT bool GetMeaningFromKeyCode(KeyboardCode key_code,
                                               int flags,
                                               DomKey* dom_key,
                                               base::char16* character);
+
+// Determine the non-located VKEY corresponding to a located VKEY.
+// Most modifier keys have two kinds of KeyboardCode: located (e.g.
+// VKEY_LSHIFT and VKEY_RSHIFT), that indentify one of two specific
+// physical keys, and non-located (e.g. VKEY_SHIFT) that identify
+// only the operation.
+EVENTS_BASE_EXPORT KeyboardCode
+LocatedToNonLocatedKeyboardCode(KeyboardCode key_code);
+
+// Determine the located VKEY corresponding to a non-located VKEY.
+EVENTS_BASE_EXPORT KeyboardCode
+NonLocatedToLocatedKeyboardCode(KeyboardCode key_code, DomCode dom_code);
 
 }  // namespace ui
 

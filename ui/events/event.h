@@ -749,9 +749,6 @@ class EVENTS_EXPORT KeyEvent : public Event {
   void set_is_char(bool is_char) { is_char_ = is_char; }
 
  private:
-  // True if the key press originated from a 'right' key (VKEY_RSHIFT, etc.).
-  bool IsRightSideKey() const;
-
   // Determine key_ and character_ on a keystroke event from code_ and flags().
   void ApplyLayout() const;
 

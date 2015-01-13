@@ -5,6 +5,7 @@
 #include "ui/events/keycodes/keyboard_code_conversion.h"
 
 #include "ui/events/event_constants.h"
+#include "ui/events/keycodes/dom3/dom_code.h"
 #include "ui/events/keycodes/dom3/dom_key.h"
 
 namespace ui {
@@ -123,6 +124,11 @@ const struct KeyboardCodeToMeaning {
     {VKEY_OEM_104, DomKey::MEDIA_FAST_FORWARD, 0, 0},
 #endif
 };
+
+bool IsRightSideDomCode(DomCode code) {
+  return (code == DomCode::SHIFT_RIGHT) || (code == DomCode::CONTROL_RIGHT) ||
+         (code == DomCode::ALT_RIGHT) || (code == DomCode::OS_RIGHT);
+}
 
 }  // anonymous namespace
 
@@ -259,6 +265,62 @@ bool GetMeaningFromKeyCode(KeyboardCode key_code,
   *dom_key = DomKey::UNIDENTIFIED;
   *character = 0;
   return false;
+}
+
+// Determine the non-located VKEY corresponding to a located VKEY.
+KeyboardCode LocatedToNonLocatedKeyboardCode(KeyboardCode key_code) {
+  switch (key_code) {
+    case VKEY_RWIN:
+      return VKEY_LWIN;
+    case VKEY_LSHIFT:
+    case VKEY_RSHIFT:
+      return VKEY_SHIFT;
+    case VKEY_LCONTROL:
+    case VKEY_RCONTROL:
+      return VKEY_CONTROL;
+    case VKEY_LMENU:
+    case VKEY_RMENU:
+      return VKEY_MENU;
+    default:
+      return key_code;
+  }
+}
+
+// Determine the located VKEY corresponding to a non-located VKEY.
+KeyboardCode NonLocatedToLocatedKeyboardCode(KeyboardCode key_code,
+                                             DomCode dom_code) {
+  switch (key_code) {
+    case VKEY_SHIFT:
+      return IsRightSideDomCode(dom_code) ? VKEY_RSHIFT : VKEY_LSHIFT;
+    case VKEY_CONTROL:
+      return IsRightSideDomCode(dom_code) ? VKEY_RCONTROL : VKEY_LCONTROL;
+    case VKEY_MENU:
+      return IsRightSideDomCode(dom_code) ? VKEY_RMENU : VKEY_LMENU;
+    case VKEY_LWIN:
+      return IsRightSideDomCode(dom_code) ? VKEY_RWIN : VKEY_LWIN;
+    case VKEY_0:
+      return (dom_code == DomCode::NUMPAD0) ? VKEY_NUMPAD0 : VKEY_0;
+    case VKEY_1:
+      return (dom_code == DomCode::NUMPAD1) ? VKEY_NUMPAD1 : VKEY_1;
+    case VKEY_2:
+      return (dom_code == DomCode::NUMPAD2) ? VKEY_NUMPAD2 : VKEY_2;
+    case VKEY_3:
+      return (dom_code == DomCode::NUMPAD3) ? VKEY_NUMPAD3 : VKEY_3;
+    case VKEY_4:
+      return (dom_code == DomCode::NUMPAD4) ? VKEY_NUMPAD4 : VKEY_4;
+    case VKEY_5:
+      return (dom_code == DomCode::NUMPAD5) ? VKEY_NUMPAD5 : VKEY_5;
+    case VKEY_6:
+      return (dom_code == DomCode::NUMPAD6) ? VKEY_NUMPAD6 : VKEY_6;
+    case VKEY_7:
+      return (dom_code == DomCode::NUMPAD7) ? VKEY_NUMPAD7 : VKEY_7;
+    case VKEY_8:
+      return (dom_code == DomCode::NUMPAD8) ? VKEY_NUMPAD8 : VKEY_8;
+    case VKEY_9:
+      return (dom_code == DomCode::NUMPAD9) ? VKEY_NUMPAD9 : VKEY_9;
+    default:
+      return key_code;
+  }
 }
 
 }  // namespace ui
