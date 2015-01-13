@@ -53,6 +53,7 @@ enum SSLInterstitialCause {
   LOCALHOST,
   PRIVATE_URL,
   AUTHORITY_ERROR_CAPTIVE_PORTAL,
+  SELF_SIGNED,
   UNUSED_INTERSTITIAL_CAUSE_ENTRY,
 };
 
@@ -334,6 +335,8 @@ void SSLErrorClassification::RecordUMAStatistics(
         RecordSSLInterstitialCause(overridable, PRIVATE_URL);
       if (captive_portal_probe_completed_ && captive_portal_detected_)
         RecordSSLInterstitialCause(overridable, AUTHORITY_ERROR_CAPTIVE_PORTAL);
+      if (net::X509Certificate::IsSelfSigned(cert_.os_cert_handle()))
+        RecordSSLInterstitialCause(overridable, SELF_SIGNED);
       break;
     }
     default:

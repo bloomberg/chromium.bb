@@ -11439,8 +11439,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
-<histogram name="interstitial.ssl.cause.nonoverridable"
-    enum="SSLNonAttackCauses">
+<histogram name="interstitial.ssl.cause.nonoverridable" enum="SSLErrorCauses">
   <owner>felt@chromium.org</owner>
   <summary>
     Possible non-attack causes of the non-overridable SSL interstitial. Many
@@ -11455,7 +11454,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
-<histogram name="interstitial.ssl.cause.overridable" enum="SSLNonAttackCauses">
+<histogram name="interstitial.ssl.cause.overridable" enum="SSLErrorCauses">
   <owner>felt@chromium.org</owner>
   <summary>
     Possible non-attack causes of the overridable SSL interstitial. Many errors
@@ -57089,35 +57088,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="52245" label="TLS_DHE_RSA_WITH_CHACHA20_POLY1305"/>
 </enum>
 
-<enum name="SSLErrorHandlerEvent" type="int">
-  <int value="0" label="HANDLE_ALL"/>
-  <int value="1" label="SHOW_CAPTIVE_PORTAL_INTERSTITIAL_NONOVERRIDABLE"/>
-  <int value="2" label="SHOW_CAPTIVE_PORTAL_INTERSTITIAL_OVERRIDABLE"/>
-  <int value="3" label="SHOW_SSL_INTERSTITIAL_NONOVERRIDABLE"/>
-  <int value="4" label="SHOW_SSL_INTERSTITIAL_OVERRIDABLE"/>
-</enum>
-
-<enum name="SSLErrorTypes" type="int">
-  <int value="0" label="CERT_COMMON_NAME_INVALID"/>
-  <int value="1" label="CERT_DATE_INVALID"/>
-  <int value="2" label="CERT_AUTHORITY_INVALID"/>
-  <int value="3" label="CERT_CONTAINS_ERRORS"/>
-  <int value="4" label="CERT_NO_REVOCATION_MECHANISM"/>
-  <int value="5" label="CERT_REVOKED"/>
-  <int value="6" label="CERT_INVALID"/>
-  <int value="7" label="CERT_WEAK_SIGNATURE_ALGORITHM"/>
-  <int value="8" label="CERT_WEAK_KEY"/>
-  <int value="9" label="UNKNOWN"/>
-</enum>
-
-<enum name="SSLIsExpiredAndDecision" type="int">
-  <int value="0" label="EXPIRED_AND_PROCEED"/>
-  <int value="1" label="EXPIRED_AND_DO_NOT_PROCEED"/>
-  <int value="2" label="NOT_EXPIRED_AND_PROCEED"/>
-  <int value="3" label="NOT_EXPIRED_AND_DO_NOT_PROCEED"/>
-</enum>
-
-<enum name="SSLNonAttackCauses" type="int">
+<enum name="SSLErrorCauses" type="int">
   <int value="0" label="CLOCK_PAST: System clock set early"/>
   <int value="1" label="CLOCK_FUTURE: System clock set late"/>
   <int value="2"
@@ -57170,6 +57141,37 @@ To add a new entry, add it with any value and run test to compute valid value.
       label="AUTHORTIY_ERROR_CAPTIVE_PORTAL: Captive portal was detected">
     This cause is recorded only for CERT_AUTHORITY_INVALID errors.
   </int>
+  <int value="11" label="SELF_SIGNED: The cert is self-signed">
+    This cause is recorded only for CERT_AUTHORITY_INVALID errors.
+  </int>
+</enum>
+
+<enum name="SSLErrorHandlerEvent" type="int">
+  <int value="0" label="HANDLE_ALL"/>
+  <int value="1" label="SHOW_CAPTIVE_PORTAL_INTERSTITIAL_NONOVERRIDABLE"/>
+  <int value="2" label="SHOW_CAPTIVE_PORTAL_INTERSTITIAL_OVERRIDABLE"/>
+  <int value="3" label="SHOW_SSL_INTERSTITIAL_NONOVERRIDABLE"/>
+  <int value="4" label="SHOW_SSL_INTERSTITIAL_OVERRIDABLE"/>
+</enum>
+
+<enum name="SSLErrorTypes" type="int">
+  <int value="0" label="CERT_COMMON_NAME_INVALID"/>
+  <int value="1" label="CERT_DATE_INVALID"/>
+  <int value="2" label="CERT_AUTHORITY_INVALID"/>
+  <int value="3" label="CERT_CONTAINS_ERRORS"/>
+  <int value="4" label="CERT_NO_REVOCATION_MECHANISM"/>
+  <int value="5" label="CERT_REVOKED"/>
+  <int value="6" label="CERT_INVALID"/>
+  <int value="7" label="CERT_WEAK_SIGNATURE_ALGORITHM"/>
+  <int value="8" label="CERT_WEAK_KEY"/>
+  <int value="9" label="UNKNOWN"/>
+</enum>
+
+<enum name="SSLIsExpiredAndDecision" type="int">
+  <int value="0" label="EXPIRED_AND_PROCEED"/>
+  <int value="1" label="EXPIRED_AND_DO_NOT_PROCEED"/>
+  <int value="2" label="NOT_EXPIRED_AND_PROCEED"/>
+  <int value="3" label="NOT_EXPIRED_AND_DO_NOT_PROCEED"/>
 </enum>
 
 <enum name="SSLProtocolNegotiation" type="int">
