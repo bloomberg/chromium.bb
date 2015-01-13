@@ -133,12 +133,27 @@ handle_pointer_axis(struct libinput_device *libinput_device,
 	struct evdev_device *device =
 		libinput_device_get_user_data(libinput_device);
 	double value;
+	enum libinput_pointer_axis axis;
 
-	value = libinput_event_pointer_get_axis_value(pointer_event);
-	notify_axis(device->seat,
-		    libinput_event_pointer_get_time(pointer_event),
-		    libinput_event_pointer_get_axis(pointer_event),
-		    wl_fixed_from_double(value));
+	axis = LIBINPUT_POINTER_AXIS_SCROLL_VERTICAL;
+	if (libinput_event_pointer_has_axis(pointer_event, axis)) {
+		value = libinput_event_pointer_get_axis_value(pointer_event,
+							      axis);
+		notify_axis(device->seat,
+			    libinput_event_pointer_get_time(pointer_event),
+			    WL_POINTER_AXIS_VERTICAL_SCROLL,
+			    wl_fixed_from_double(value));
+	}
+
+	axis = LIBINPUT_POINTER_AXIS_SCROLL_HORIZONTAL;
+	if (libinput_event_pointer_has_axis(pointer_event, axis)) {
+		value = libinput_event_pointer_get_axis_value(pointer_event,
+							      axis);
+		notify_axis(device->seat,
+			    libinput_event_pointer_get_time(pointer_event),
+			    WL_POINTER_AXIS_HORIZONTAL_SCROLL,
+			    wl_fixed_from_double(value));
+	}
 }
 
 static void
