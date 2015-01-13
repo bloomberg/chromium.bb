@@ -230,7 +230,7 @@ ScopedJavaLocalRef<jstring> PersonalDataManagerAndroid::SetProfile(
 
 jint PersonalDataManagerAndroid::GetCreditCardCount(JNIEnv* unused_env,
                                                     jobject unused_obj) {
-  return personal_data_manager_->GetCreditCards().size();
+  return personal_data_manager_->GetLocalCreditCards().size();
 }
 
 ScopedJavaLocalRef<jobject> PersonalDataManagerAndroid::GetCreditCardByIndex(
@@ -238,7 +238,7 @@ ScopedJavaLocalRef<jobject> PersonalDataManagerAndroid::GetCreditCardByIndex(
     jobject unused_obj,
     jint index) {
   const std::vector<CreditCard*>& credit_cards =
-      personal_data_manager_->GetCreditCards();
+      personal_data_manager_->GetLocalCreditCards();
   size_t index_size_t = static_cast<size_t>(index);
   DCHECK_LT(index_size_t, credit_cards.size());
   return CreateJavaCreditCardFromNative(env, *credit_cards[index_size_t]);

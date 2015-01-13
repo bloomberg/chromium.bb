@@ -134,6 +134,9 @@ class PersonalDataManager : public KeyedService,
   // auxiliary profiles.  |web_profiles()| returns only web profiles.
   virtual const std::vector<AutofillProfile*>& GetProfiles() const;
   virtual const std::vector<AutofillProfile*>& web_profiles() const;
+  // Returns just LOCAL_CARD cards.
+  virtual const std::vector<CreditCard*>& GetLocalCreditCards() const;
+  // Returns all credit cards, server and local.
   virtual const std::vector<CreditCard*>& GetCreditCards() const;
 
   // Loads profiles that can suggest data for |type|. |field_contents| is the

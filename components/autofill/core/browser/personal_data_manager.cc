@@ -655,6 +655,11 @@ const std::vector<AutofillProfile*>& PersonalDataManager::web_profiles() const {
   return web_profiles_.get();
 }
 
+const std::vector<CreditCard*>& PersonalDataManager::GetLocalCreditCards()
+    const {
+  return local_credit_cards_.get();
+}
+
 const std::vector<CreditCard*>& PersonalDataManager::GetCreditCards() const {
   credit_cards_.clear();
   credit_cards_.insert(credit_cards_.end(), local_credit_cards_.begin(),
