@@ -4,14 +4,15 @@
 
 """Uploads performance data to the performance dashboard.
 
-Image tests may output data that needs to be displayed on the performance
-dashboard.  The image test stage/runner invokes this module with each test
-associated with a job.  If a test has performance data associated with it, it
-is uploaded to the performance dashboard.  The performance dashboard is owned
-by Chrome team and is available here: https://chromeperf.appspot.com/.  Users
-must be logged in with an @google.com account to view chromeOS perf data there.
+The performance dashboard is owned by Chrome team and is available here:
+https://chromeperf.appspot.com/
+Users must be logged in with an @google.com account to view perf data there.
 
-This module is similar to src/third_party/autotest/files/tko/perf_uploader.py.
+For more information on sending data to the dashboard, see:
+http://dev.chromium.org/developers/testing/sending-data-to-the-performance-dashboard
+
+Note: This module started off from the autotest/tko/perf_uploader.py but has
+been extended significantly since.
 """
 
 from __future__ import print_function
@@ -22,7 +23,7 @@ import json
 import logging
 import math
 import os
-import string # pylint: disable=W0402
+import string
 import urllib
 import urllib2
 
