@@ -54,7 +54,6 @@ const char kKeyProfilePath[] = "profilePath";
 const char kKeyPublicAccount[] = "publicAccount";
 const char kKeySupervisedUser[] = "supervisedUser";
 const char kKeyChildUser[] = "childUser";
-const char kKeySignedIn[] = "signedIn";
 const char kKeyCanRemove[] = "canRemove";
 const char kKeyIsOwner[] = "isOwner";
 const char kKeyIsDesktop[] = "isDesktopUser";
@@ -377,12 +376,6 @@ void UserManagerScreenHandler::HandleRemoveUser(const base::ListValue* args) {
   if (!base::GetValueAsFilePath(*profile_path_value, &profile_path))
     return;
 
-  // This handler could have been called for a supervised user, for example
-  // because the user fiddled with the web inspector. Silently return in this
-  // case.
-  if (Profile::FromWebUI(web_ui())->IsSupervised())
-    return;
-
   if (!profiles::IsMultipleProfilesEnabled())
     return;
 
@@ -643,27 +636,19 @@ void UserManagerScreenHandler::GetLocalizedValues(
 
 void UserManagerScreenHandler::SendUserList() {
   base::ListValue users_list;
-  base::FilePath active_profile_path =
-      web_ui()->GetWebContents()->GetBrowserContext()->GetPath();
   const ProfileInfoCache& info_cache =
       g_browser_process->profile_manager()->GetProfileInfoCache();
 
   user_auth_type_map_.clear();
 
-  // If the active user is a supervised user, then they may not perform
-  // certain actions (i.e. delete another user).
-  bool active_user_is_supervised = Profile::FromWebUI(web_ui())->IsSupervised();
   for (size_t i = 0; i < info_cache.GetNumberOfProfiles(); ++i) {
     base::DictionaryValue* profile_value = new base::DictionaryValue();
-
     base::FilePath profile_path = info_cache.GetPathOfProfileAtIndex(i);
-    bool is_active_user = (profile_path == active_profile_path);
 
     profile_value->SetString(
         kKeyUsername, info_cache.GetUserNameOfProfileAtIndex(i));
     profile_value->SetString(
         kKeyEmailAddress, info_cache.GetUserNameOfProfileAtIndex(i));
-    // The profiles displayed in the User Manager are never guest profiles.
     profile_value->SetString(
         kKeyDisplayName,
         profiles::GetAvatarNameForProfile(profile_path));
@@ -673,20 +658,15 @@ void UserManagerScreenHandler::SendUserList() {
         kKeySupervisedUser, info_cache.ProfileIsSupervisedAtIndex(i));
     profile_value->SetBoolean(
         kKeyChildUser, info_cache.ProfileIsChildAtIndex(i));
-    profile_value->SetBoolean(kKeySignedIn, is_active_user);
     profile_value->SetBoolean(
         kKeyNeedsSignin, info_cache.ProfileIsSigninRequiredAtIndex(i));
     profile_value->SetBoolean(kKeyIsOwner, false);
-    profile_value->SetBoolean(kKeyCanRemove, !active_user_is_supervised);
+    profile_value->SetBoolean(kKeyCanRemove, true);
     profile_value->SetBoolean(kKeyIsDesktop, true);
     profile_value->SetString(
         kKeyAvatarUrl, GetAvatarImageAtIndex(i, info_cache));
 
-    // The row of user pods should display the active user first.
-    if (is_active_user)
-      users_list.Insert(0, profile_value);
-    else
-      users_list.Append(profile_value);
+    users_list.Append(profile_value);
   }
 
   web_ui()->CallJavascriptFunction("login.AccountPickerScreen.loadUsers",
