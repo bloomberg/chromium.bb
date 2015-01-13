@@ -80,7 +80,8 @@ public:
         ASSERT(executionContext());
         // It is possible that resetAsyncCallChains() is already called and thus
         // this ExecutionContextData is removed from m_executionContextDataMap.
-        if (m_tracker->m_executionContextDataMap.take(executionContext())) {
+        OwnPtrWillBeRawPtr<ExecutionContextData> self = m_tracker->m_executionContextDataMap.take(executionContext());
+        if (self) {
             dispose();
         }
         ContextLifecycleObserver::contextDestroyed();
