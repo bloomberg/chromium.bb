@@ -14,7 +14,6 @@
 #include "media/base/audio_decoder_config.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/cdm_key_information.h"
-#include "media/base/cdm_promise.h"
 #include "media/base/channel_layout.h"
 #include "media/base/data_buffer.h"
 #include "media/base/decoder_buffer.h"
@@ -33,7 +32,6 @@
 #include "ppapi/thunk/ppb_buffer_api.h"
 #include "ui/gfx/geometry/rect.h"
 
-using media::CdmPromise;
 using media::Decryptor;
 using media::MediaKeys;
 using media::NewSessionCdmPromise;
@@ -716,34 +714,16 @@ bool ContentDecryptorDelegate::DecryptAndDecodeVideo(
 }
 
 void ContentDecryptorDelegate::OnPromiseResolved(uint32 promise_id) {
-  scoped_ptr<CdmPromise> promise = cdm_promise_adapter_.TakePromise(promise_id);
-  if (!promise ||
-      promise->GetResolveParameterType() != media::CdmPromise::VOID_TYPE) {
-    NOTREACHED();
-    return;
-  }
-
-  SimpleCdmPromise* simple_promise =
-      static_cast<SimpleCdmPromise*>(promise.get());
-  simple_promise->resolve();
+  cdm_promise_adapter_.ResolvePromise(promise_id);
 }
 
 void ContentDecryptorDelegate::OnPromiseResolvedWithSession(
     uint32 promise_id,
     PP_Var web_session_id) {
-  scoped_ptr<CdmPromise> promise = cdm_promise_adapter_.TakePromise(promise_id);
-  if (!promise ||
-      promise->GetResolveParameterType() != media::CdmPromise::STRING_TYPE) {
-    NOTREACHED();
-    return;
-  }
-
   StringVar* web_session_id_string = StringVar::FromPPVar(web_session_id);
   DCHECK(web_session_id_string);
-
-  NewSessionCdmPromise* session_promise =
-      static_cast<NewSessionCdmPromise*>(promise.get());
-  session_promise->resolve(web_session_id_string->value());
+  cdm_promise_adapter_.ResolvePromise(promise_id,
+                                      web_session_id_string->value());
 }
 
 void ContentDecryptorDelegate::OnPromiseRejected(
@@ -755,14 +735,9 @@ void ContentDecryptorDelegate::OnPromiseRejected(
 
   StringVar* error_description_string = StringVar::FromPPVar(error_description);
   DCHECK(error_description_string);
-
-  scoped_ptr<CdmPromise> promise = cdm_promise_adapter_.TakePromise(promise_id);
-  DCHECK(promise);
-  if (promise) {
-    promise->reject(PpExceptionTypeToMediaException(exception_code),
-                    system_code,
-                    error_description_string->value());
-  }
+  cdm_promise_adapter_.RejectPromise(
+      promise_id, PpExceptionTypeToMediaException(exception_code), system_code,
+      error_description_string->value());
 }
 
 void ContentDecryptorDelegate::OnSessionMessage(PP_Var web_session_id,

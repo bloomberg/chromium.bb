@@ -12,12 +12,55 @@ CdmPromiseAdapter::CdmPromiseAdapter() : next_promise_id_(1) {
 }
 
 CdmPromiseAdapter::~CdmPromiseAdapter() {
+  DCHECK(promises_.empty());
+  Clear();
 }
 
 uint32_t CdmPromiseAdapter::SavePromise(scoped_ptr<CdmPromise> promise) {
   uint32_t promise_id = next_promise_id_++;
   promises_.add(promise_id, promise.Pass());
   return promise_id;
+}
+
+template <typename... T>
+void CdmPromiseAdapter::ResolvePromise(uint32_t promise_id,
+                                       const T&... result) {
+  scoped_ptr<CdmPromise> promise = TakePromise(promise_id);
+  if (!promise) {
+    NOTREACHED() << "Promise not found for " << promise_id;
+    return;
+  }
+
+  // Sanity check the type before we do static_cast.
+  CdmPromise::ResolveParameterType type = promise->GetResolveParameterType();
+  CdmPromise::ResolveParameterType expected = CdmPromiseTraits<T...>::kType;
+  if (type != expected) {
+    NOTREACHED() << "Promise type mismatch: " << type << " vs " << expected;
+    return;
+  }
+
+  static_cast<CdmPromiseTemplate<T...>*>(promise.get())->resolve(result...);
+}
+
+void CdmPromiseAdapter::RejectPromise(
+    uint32_t promise_id,
+    MediaKeys::Exception exception_code,
+    uint32 system_code,
+    const std::string& error_message) {
+  scoped_ptr<CdmPromise> promise = TakePromise(promise_id);
+  if (!promise) {
+    NOTREACHED()  << "No promise found for promise_id " << promise_id;
+    return;
+  }
+
+  promise->reject(exception_code, system_code, error_message);
+}
+
+void CdmPromiseAdapter::Clear() {
+  // Reject all outstanding promises.
+  for (auto& promise : promises_)
+    promise.second->reject(MediaKeys::UNKNOWN_ERROR, 0, "Operation aborted.");
+  promises_.clear();
 }
 
 scoped_ptr<CdmPromise> CdmPromiseAdapter::TakePromise(uint32_t promise_id) {
@@ -27,11 +70,10 @@ scoped_ptr<CdmPromise> CdmPromiseAdapter::TakePromise(uint32_t promise_id) {
   return promises_.take_and_erase(it);
 }
 
-void CdmPromiseAdapter::Clear() {
-  // Reject all outstanding promises.
-  for (auto& promise : promises_)
-    promise.second->reject(MediaKeys::UNKNOWN_ERROR, 0, "Operation aborted.");
-  promises_.clear();
-}
+// Explicit instantiation of function templates.
+template MEDIA_EXPORT void CdmPromiseAdapter::ResolvePromise(uint32_t);
+template MEDIA_EXPORT void CdmPromiseAdapter::ResolvePromise(
+    uint32_t,
+    const std::string&);
 
 }  // namespace media
