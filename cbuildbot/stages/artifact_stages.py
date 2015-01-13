@@ -575,7 +575,8 @@ class UploadPrebuiltsStage(generic_stages.BoardSpecificBuilderStage):
   option_name = 'prebuilts'
   config_name = 'prebuilts'
 
-  def __init__(self, builder_run, board, **kwargs):
+  def __init__(self, builder_run, board, version=None, **kwargs):
+    self.prebuilts_version = version
     super(UploadPrebuiltsStage, self).__init__(builder_run, board, **kwargs)
 
   def GenerateCommonArgs(self):
@@ -591,6 +592,9 @@ class UploadPrebuiltsStage(generic_stages.BoardSpecificBuilderStage):
     # Generate the version if we are a manifest_version build.
     if self._run.config.manifest_version:
       version = self._run.GetVersion()
+    else:
+      version = self.prebuilts_version
+    if version is not None:
       generated_args.extend(['--set-version', version])
 
     if self._run.config.git_sync:
@@ -671,21 +675,28 @@ class UploadPrebuiltsStage(generic_stages.BoardSpecificBuilderStage):
             private_builders.append(c['name'])
             private_args.extend(self._AddOptionsForSlave(c, board))
 
+    common_kwargs = {
+        'buildroot': self._build_root,
+        'category': prebuilt_type,
+        'chrome_rev': self._chrome_rev,
+        'version': self.prebuilts_version,
+    }
+
     # Upload the public prebuilts, if any.
     if public_builders or public:
       public_board = board if public else None
       prebuilts.UploadPrebuilts(
-          category=prebuilt_type, chrome_rev=self._chrome_rev,
-          private_bucket=False, buildroot=self._build_root,
-          board=public_board, extra_args=generated_args + public_args)
+          private_bucket=False, board=public_board,
+          extra_args=generated_args + public_args,
+          **common_kwargs)
 
     # Upload the private prebuilts, if any.
     if private_builders or not public:
       private_board = board if not public else None
       prebuilts.UploadPrebuilts(
-          category=prebuilt_type, chrome_rev=self._chrome_rev,
-          private_bucket=True, buildroot=self._build_root, board=private_board,
-          extra_args=generated_args + private_args)
+          private_bucket=True, board=private_board,
+          extra_args=generated_args + private_args,
+          **common_kwargs)
 
 
 class DevInstallerPrebuiltsStage(UploadPrebuiltsStage):

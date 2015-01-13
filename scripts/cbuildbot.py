@@ -11,6 +11,7 @@ full and pre-flight-queue builds.
 from __future__ import print_function
 
 import collections
+import datetime
 import distutils.version
 import glob
 import json
@@ -582,16 +583,19 @@ class SimpleBuilder(Builder):
 
   def _RunChrootBuilderTypeBuild(self):
     """Runs through stages of a CHROOT_BUILDER_TYPE build."""
+    # Unlike normal CrOS builds, the SDK has no concept of pinned CrOS manifest
+    # or specific Chrome version.  Use a datestamp instead.
+    version = datetime.datetime.now().strftime('%Y.%m.%d.%H%M%S')
     self._RunStage(build_stages.UprevStage, boards=[], enter_chroot=False)
     self._RunStage(build_stages.InitSDKStage)
     self._RunStage(build_stages.SetupBoardStage, constants.CHROOT_BUILDER_BOARD)
     self._RunStage(chrome_stages.SyncChromeStage)
     self._RunStage(chrome_stages.PatchChromeStage)
     self._RunStage(sdk_stages.SDKBuildToolchainsStage)
-    self._RunStage(sdk_stages.SDKPackageStage)
+    self._RunStage(sdk_stages.SDKPackageStage, version=version)
     self._RunStage(sdk_stages.SDKTestStage)
     self._RunStage(artifact_stages.UploadPrebuiltsStage,
-                   constants.CHROOT_BUILDER_BOARD)
+                   constants.CHROOT_BUILDER_BOARD, version=version)
 
   def _RunRefreshPackagesTypeBuild(self):
     """Runs through the stages of a REFRESH_PACKAGES_TYPE build."""

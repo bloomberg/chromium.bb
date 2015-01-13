@@ -6,7 +6,6 @@
 
 from __future__ import print_function
 
-from datetime import datetime
 import glob
 import os
 
@@ -64,19 +63,8 @@ def _AddPackagesForPrebuilt(filename):
     return None
 
 
-def _GenerateSdkVersion():
-  """Generate a version string for sdk builds
-
-  This needs to be global for test overrides.  It also needs to be done here
-  rather than in upload_prebuilts because we want to put toolchain tarballs
-  in a specific subdir and that requires keeping the version string in one
-  place.  Otherwise we'd have to have the various scripts re-interpret the
-  string and try and sync dates across.
-  """
-  return datetime.now().strftime('%Y.%m.%d.%H%M%S')
-
-
-def UploadPrebuilts(category, chrome_rev, private_bucket, buildroot, **kwargs):
+def UploadPrebuilts(category, chrome_rev, private_bucket, buildroot,
+                    version=None, **kwargs):
   """Upload Prebuilts for non-dev-installer use cases.
 
   Args:
@@ -84,6 +72,7 @@ def UploadPrebuilts(category, chrome_rev, private_bucket, buildroot, **kwargs):
     chrome_rev: Chrome_rev of type constants.VALID_CHROME_REVISIONS.
     private_bucket: True if we are uploading to a private bucket.
     buildroot: The root directory where the build occurs.
+    version: Specific version to set.
     board: Board type that was built on this machine.
     extra_args: Extra args to pass to prebuilts script.
   """
@@ -95,15 +84,14 @@ def UploadPrebuilts(category, chrome_rev, private_bucket, buildroot, **kwargs):
   else:
     extra_args.extend(['--binhost-conf-dir', _PUBLIC_BINHOST_CONF_DIR])
 
+  if version is not None:
+    extra_args.extend(['--set-version', version])
+
   if category == constants.CHROOT_BUILDER_TYPE:
     extra_args.extend(['--sync-host',
                        '--upload-board-tarball'])
     tarball_location = os.path.join(buildroot, 'built-sdk.tar.xz')
     extra_args.extend(['--prepackaged-tarball', tarball_location])
-
-    # See _GenerateSdkVersion comments for more details.
-    version = _GenerateSdkVersion()
-    extra_args.extend(['--set-version', version])
 
     # The local tarballs will be simply "<tuple>.tar.xz".  We need
     # them to be "<tuple>-<version>.tar.xz" to avoid collisions.

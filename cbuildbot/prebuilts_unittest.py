@@ -27,10 +27,11 @@ class PrebuiltTest(cros_build_lib_unittest.RunCommandTempDirTestCase):
     os.makedirs(os.path.join(self._buildroot, '.repo'))
 
   def testUploadPrebuilts(self, builder_type=constants.PFQ_TYPE, private=False,
-                          chrome_rev=None):
+                          chrome_rev=None, version=None):
     """Test UploadPrebuilts with a public location."""
     prebuilts.UploadPrebuilts(builder_type, chrome_rev, private,
-                              buildroot=self._buildroot, board=self._board)
+                              buildroot=self._buildroot, board=self._board,
+                              version=version)
     self.assertCommandContains([builder_type, 'gs://chromeos-prebuilt'])
 
   def testUploadPrivatePrebuilts(self):
@@ -60,9 +61,8 @@ class PrebuiltTest(cros_build_lib_unittest.RunCommandTempDirTestCase):
       tarball_arg = '%s:%s' % (tarball_base, tarball_path)
       tarball_args.append(['--toolchain-tarball', tarball_arg])
 
-    with mock.patch.object(prebuilts, '_GenerateSdkVersion',
-                           return_value=version):
-      self.testUploadPrebuilts(builder_type=constants.CHROOT_BUILDER_TYPE)
+    self.testUploadPrebuilts(builder_type=constants.CHROOT_BUILDER_TYPE,
+                             version=version)
     self.assertCommandContains(['--toolchain-upload-path',
                                 '1994/04/%%(target)s-%(version)s.tar.xz'])
     for args in tarball_args:
