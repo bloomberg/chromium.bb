@@ -182,6 +182,8 @@ CSSParserValueList::CSSParserValueList(CSSParserTokenRange range)
             continue;
         case EOFToken:
             ASSERT_NOT_REACHED();
+        case CDOToken:
+        case CDCToken:
         case AtKeywordToken:
         case IncludeMatchToken:
         case DashMatchToken:

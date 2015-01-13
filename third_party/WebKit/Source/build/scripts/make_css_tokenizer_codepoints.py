@@ -36,6 +36,7 @@ def token_type(i):
                   '.': 'plusOrFullStop',
                   '-': 'hyphenMinus',
                   '*': 'asterisk',
+                  '<': 'lessThan',
                   ',': 'comma',
                   '/': 'solidus',
                   '\\': 'reverseSolidus',

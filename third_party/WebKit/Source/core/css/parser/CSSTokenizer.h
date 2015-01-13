@@ -70,6 +70,7 @@ private:
     CSSParserToken comma(UChar);
     CSSParserToken hyphenMinus(UChar);
     CSSParserToken asterisk(UChar);
+    CSSParserToken lessThan(UChar);
     CSSParserToken solidus(UChar);
     CSSParserToken colon(UChar);
     CSSParserToken semiColon(UChar);

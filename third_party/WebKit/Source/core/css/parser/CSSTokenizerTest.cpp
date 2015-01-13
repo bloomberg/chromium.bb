@@ -111,6 +111,8 @@ DEFINE_STATIC_LOCAL(CSSParserToken, prefixMatch, (PrefixMatchToken));
 DEFINE_STATIC_LOCAL(CSSParserToken, suffixMatch, (SuffixMatchToken));
 DEFINE_STATIC_LOCAL(CSSParserToken, substringMatch, (SubstringMatchToken));
 DEFINE_STATIC_LOCAL(CSSParserToken, column, (ColumnToken));
+DEFINE_STATIC_LOCAL(CSSParserToken, cdo, (CDOToken));
+DEFINE_STATIC_LOCAL(CSSParserToken, cdc, (CDCToken));
 DEFINE_STATIC_LOCAL(CSSParserToken, leftParenthesis, (LeftParenthesisToken));
 DEFINE_STATIC_LOCAL(CSSParserToken, rightParenthesis, (RightParenthesisToken));
 DEFINE_STATIC_LOCAL(CSSParserToken, leftBracket, (LeftBracketToken));
@@ -152,6 +154,9 @@ TEST(CSSTokenizerTest, MultipleCharacterTokens)
     TEST_TOKENS("*=", substringMatch);
     TEST_TOKENS("||", column);
     TEST_TOKENS("|||", column, delim('|'));
+    TEST_TOKENS("<!--", cdo);
+    TEST_TOKENS("<!---", cdo, delim('-'));
+    TEST_TOKENS("-->", cdc);
 }
 
 TEST(CSSTokenizerTest, DelimiterToken)

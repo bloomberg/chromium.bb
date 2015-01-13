@@ -29,6 +29,8 @@ enum CSSParserTokenType {
     ColumnToken,
     UnicodeRangeToken,
     WhitespaceToken,
+    CDOToken,
+    CDCToken,
     ColonToken,
     SemicolonToken,
     CommaToken,

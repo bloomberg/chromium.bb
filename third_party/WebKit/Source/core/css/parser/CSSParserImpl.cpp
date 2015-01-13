@@ -159,8 +159,14 @@ WillBeHeapVector<RefPtrWillBeMember<StyleRuleBase>> CSSParserImpl::consumeRuleLi
             if (PassRefPtrWillBeRawPtr<StyleRuleBase> rule = consumeAtRule(range, allowedRules))
                 result.append(rule);
             break;
+        case CDOToken:
+        case CDCToken:
+            if (ruleListType == TopLevelRuleList) {
+                range.consume();
+                break;
+            }
+            // fallthrough
         default:
-            // FIXME: TopLevelRuleList should skip <CDO-token> and <CDC-token>
             if (PassRefPtrWillBeRawPtr<StyleRuleBase> rule = consumeQualifiedRule(range, allowedRules))
                 result.append(rule);
             break;

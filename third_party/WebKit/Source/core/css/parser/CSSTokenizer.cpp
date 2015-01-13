@@ -148,6 +148,16 @@ CSSParserToken CSSTokenizer::asterisk(UChar cc)
     return CSSParserToken(DelimiterToken, '*');
 }
 
+CSSParserToken CSSTokenizer::lessThan(UChar cc)
+{
+    ASSERT(cc == '<');
+    if (m_input.peek(0) == '!' && m_input.peek(1) == '-' && m_input.peek(2) == '-') {
+        consume(3);
+        return CSSParserToken(CDOToken);
+    }
+    return CSSParserToken(DelimiterToken, '<');
+}
+
 CSSParserToken CSSTokenizer::comma(UChar cc)
 {
     return CSSParserToken(CommaToken);
@@ -158,6 +168,10 @@ CSSParserToken CSSTokenizer::hyphenMinus(UChar cc)
     if (nextCharsAreNumber(cc)) {
         reconsume(cc);
         return consumeNumericToken();
+    }
+    if (m_input.peek(0) == '-' && m_input.peek(1) == '>') {
+        consume(2);
+        return CSSParserToken(CDCToken);
     }
     if (nextCharsAreIdentifier(cc)) {
         reconsume(cc);
