@@ -11,6 +11,7 @@ include_rules = [
   "+ios/public/provider/chrome",
   "+ios/web/public",
   "+net",
+  "+third_party/ocmock",
   "+ui",
 
   # Only parts of skia are compiled on iOS, so we explicitly list the

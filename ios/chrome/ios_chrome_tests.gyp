@@ -14,7 +14,9 @@
         '../../base/base.gyp:run_all_unittests',
         '../../base/base.gyp:test_support_base',
         '../../net/net.gyp:net_test_support',
+        '../../testing/gmock.gyp:gmock',
         '../../testing/gtest.gyp:gtest',
+        '../../third_party/ocmock/ocmock.gyp:ocmock',
         '../ios_tests.gyp:test_support_ios',
         '../web/ios_web.gyp:ios_web',
         '../web/ios_web.gyp:test_support_ios_web',
@@ -23,6 +25,9 @@
       'sources': [
         'browser/net/image_fetcher_unittest.mm',
         'browser/translate/translate_service_ios_unittest.cc',
+        'browser/ui/snapshots_util_unittest.mm',
+        'browser/ui/ui_util_unittest.mm',
+        'browser/ui/uikit_ui_util_unittest.mm',
       ],
     },
     {
