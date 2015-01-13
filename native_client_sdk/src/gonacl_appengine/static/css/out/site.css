@@ -15,7 +15,7 @@ html, body {
   background: #FAFAFA;
   font-family: 'Myriad Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   line-height: 1.35;
-  color: #444;
+  color: #666;
 }
 
 body {
@@ -188,7 +188,7 @@ section iframe {
   margin: 0;
   font-family: 'Open Sans';
   font-weight: 300;
-  color: #666;
+  color: #000;
   font-size: 62px;
   letter-spacing: -0.05em;
 }
@@ -234,7 +234,7 @@ section iframe {
 }
 
 .demo p {
-  font-size: 20px;
+  font-size: 16px;
 }
 
 .demo a {
@@ -281,7 +281,7 @@ section iframe {
   font-family: 'Open Sans';
   font-weight: 700;
   margin: 0 0 0.2em 0;
-  color: #777;
+  color: #000;
   letter-spacing: -0.06em;
 }
 
