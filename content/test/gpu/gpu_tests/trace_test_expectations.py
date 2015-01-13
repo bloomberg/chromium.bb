@@ -12,4 +12,6 @@ class TraceTestExpectations(GpuTestExpectations):
     # self.Fail('Pixel.Canvas2DRedBox',
     #     ['mac', 'amd', ('nvidia', 0x1234)], bug=123)
 
+    # Temporarily skip everything while bot recipes are being put in place.
+    self.Skip('*')
     pass
