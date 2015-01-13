@@ -11,7 +11,7 @@
     android:orientation="vertical">
 
     <TextView
-        android:id="@+id/card_unmask_instructions"
+        android:id="@+id/instructions"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textSize="20sp"
@@ -35,16 +35,22 @@
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
             android:ems="4"
-            android:hint="@string/card_unmask_input_hint"
-            />
+            android:hint="@string/card_unmask_input_hint" />
+
+        <ProgressBar
+            style="@android:style/Widget.ProgressBar.Small"
+            android:id="@+id/verification_progress_bar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:visibility="gone" />
 
         <TextView
-            android:id="@+id/card_unmask_verification_message"
+            android:id="@+id/verification_message"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:gravity="start"
-            android:visibility="gone"
-            />
+            android:visibility="gone" />
      </LinearLayout>
 
 </LinearLayout>

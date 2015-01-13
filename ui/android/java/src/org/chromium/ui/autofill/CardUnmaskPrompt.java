@@ -15,6 +15,7 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import org.chromium.ui.R;
@@ -54,7 +55,7 @@ public class CardUnmaskPrompt implements DialogInterface.OnDismissListener, Text
 
         LayoutInflater inflater = LayoutInflater.from(context);
         View v = inflater.inflate(R.layout.autofill_card_unmask_prompt, null);
-        ((TextView) v.findViewById(R.id.card_unmask_instructions)).setText(instructions);
+        ((TextView) v.findViewById(R.id.instructions)).setText(instructions);
 
         mDialog = new AlertDialog.Builder(context)
                           .setTitle(title)
@@ -96,20 +97,22 @@ public class CardUnmaskPrompt implements DialogInterface.OnDismissListener, Text
     public void disableAndWaitForVerification() {
         cardUnmaskInput().setEnabled(false);
         mDialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(false);
-        TextView message = verificationView();
-        message.setText("Verifying...");
-        message.setVisibility(View.VISIBLE);
+
+        getVerificationProgressBar().setVisibility(View.VISIBLE);
+        getVerificationView().setVisibility(View.GONE);
     }
 
     public void verificationFinished(boolean success) {
+        getVerificationProgressBar().setVisibility(View.GONE);
+        TextView message = getVerificationView();
         if (!success) {
-            verificationView().setText("Verification failed. Please try again.");
+            message.setText("Verification failed. Please try again.");
             EditText input = cardUnmaskInput();
             input.setEnabled(true);
             showKeyboardForUnmaskInput();
             // TODO(estade): UI decision - should we clear the input?
         } else {
-            verificationView().setText("Success!");
+            message.setText("Success!");
             Handler h = new Handler();
             h.postDelayed(new Runnable() {
                 public void run() {
@@ -117,6 +120,7 @@ public class CardUnmaskPrompt implements DialogInterface.OnDismissListener, Text
                 }
             }, 1000);
         }
+        message.setVisibility(View.VISIBLE);
     }
 
     @Override
@@ -146,7 +150,11 @@ public class CardUnmaskPrompt implements DialogInterface.OnDismissListener, Text
         return (EditText) mDialog.findViewById(R.id.card_unmask_input);
     }
 
-    private TextView verificationView() {
-        return (TextView) mDialog.findViewById(R.id.card_unmask_verification_message);
+    private ProgressBar getVerificationProgressBar() {
+        return (ProgressBar) mDialog.findViewById(R.id.verification_progress_bar);
+    }
+
+    private TextView getVerificationView() {
+        return (TextView) mDialog.findViewById(R.id.verification_message);
     }
 }
