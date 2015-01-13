@@ -46,11 +46,11 @@ class PerfUploadingError(Exception):
 
 PerformanceValue = collections.namedtuple(
     'PerformanceValue',
-    'description value units higher_is_better graph')
+    'description value units higher_is_better graph stdio_uri')
 
 
 def OutputPerfValue(filename, description, value, units,
-                    higher_is_better=True, graph=None):
+                    higher_is_better=True, graph=None, stdio_uri=None):
   """Record a measured performance value in an output file.
 
   This is originally from autotest/files/client/common_lib/test.py.
@@ -78,6 +78,7 @@ def OutputPerfValue(filename, description, value, units,
       allows multiple metrics to be grouped together on the same graph.
       Default to None, perf values should be graphed individually on separate
       graphs.
+    stdio_uri: A URL relevant to this data point (e.g. the buildbot log).
   """
   def ValidateString(param_name, value, max_len):
     if len(value) > max_len:
@@ -100,6 +101,7 @@ def OutputPerfValue(filename, description, value, units,
       'units': units,
       'higher_is_better': higher_is_better,
       'graph': graph,
+      'stdio_uri': stdio_uri,
   }
 
   data = (json.dumps(entry), '\n')
@@ -269,6 +271,8 @@ def _FormatForUpload(perf_data, platform_name, cros_version, chrome_version,
             'r_chrome_version': chrome_version,
         }
     }
+    if data.get('stdio_uri'):
+      new_dash_entry['supplemental_columns']['a_stdio_uri'] = data['stdio_uri']
 
     dash_entries.append(new_dash_entry)
 
