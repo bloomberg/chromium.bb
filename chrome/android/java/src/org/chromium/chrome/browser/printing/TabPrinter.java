@@ -33,7 +33,7 @@ public class TabPrinter implements Printable {
     @Override
     public boolean print() {
         Tab tab = mTab.get();
-        return tab != null && tab.print();
+        return tab != null && tab.isInitialized() && tab.print();
     }
 
     @Override
