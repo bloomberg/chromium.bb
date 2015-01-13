@@ -100,10 +100,8 @@ class SendToDashboardTest(PerfUploadTestCase):
     perf_uploader.UploadPerfValues(perf_values, 'platform', 'cros', 'chrome',
                                    'TestName')
     request = self.urlopen.call_args[0][0]
-    # pylint: disable=W0212
-    self.assertEqual(perf_uploader._DASHBOARD_UPLOAD_URL,
+    self.assertEqual(os.path.join(perf_uploader.DASHBOARD_URL, 'add_point'),
                      request.get_full_url())
-    # pylint: enable=W0212
     data = request.get_data()
     data = urlparse.parse_qs(data)['data']
     entries = [json.loads(x) for x in data]
@@ -112,6 +110,15 @@ class SendToDashboardTest(PerfUploadTestCase):
     self.assertEqual(42, entry['value'])
     self.assertEqual('cbuildbot.TestName/desc1', entry['test'])
     self.assertEqual('unit', entry['units'])
+
+  def testCustomDashboard(self):
+    """Verify we can set data to different dashboards."""
+    perf_uploader.OutputPerfValue(self.file_name, 'desc1', 42, 'unit')
+    perf_values = perf_uploader.LoadPerfValues(self.file_name)
+    perf_uploader.UploadPerfValues(perf_values, 'platform', 'cros', 'chrome',
+                                   'TestName', dashboard='http://localhost')
+    request = self.urlopen.call_args[0][0]
+    self.assertEqual('http://localhost/add_point', request.get_full_url())
 
 
 class UploadPerfValuesTest(PerfUploadTestCase):

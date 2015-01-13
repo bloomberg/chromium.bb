@@ -33,8 +33,10 @@ from chromite.lib import retry_util
 _ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 _PRESENTATION_CONFIG_FILE = os.path.join(_ROOT_DIR,
                                          'perf_dashboard_config.json')
-_DASHBOARD_UPLOAD_URL = 'https://chromeperf.appspot.com/add_point'
-#_DASHBOARD_UPLOAD_URL = 'http://localhost:8080/add_point'
+
+LOCAL_DASHBOARD_URL = 'http://localhost:8080'
+STAGE_DASHBOARD_URL = 'https://chrome-perf.googleplex.com'
+DASHBOARD_URL = 'https://chromeperf.appspot.com'
 
 _MAX_DESCRIPTION_LENGTH = 256
 _MAX_UNIT_LENGTH = 32
@@ -280,17 +282,19 @@ def _FormatForUpload(perf_data, platform_name, cros_version, chrome_version,
   return {'data': json_string}
 
 
-def _SendToDashboard(data_obj):
+def _SendToDashboard(data_obj, dashboard=DASHBOARD_URL):
   """Sends formatted perf data to the perf dashboard.
 
   Args:
     data_obj: A formatted data object as returned by _FormatForUpload().
+    dashboard: The dashboard to upload data to.
 
   Raises:
     PerfUploadingError if an exception was raised when uploading.
   """
+  upload_url = os.path.join(dashboard, 'add_point')
   encoded = urllib.urlencode(data_obj)
-  req = urllib2.Request(_DASHBOARD_UPLOAD_URL, encoded)
+  req = urllib2.Request(upload_url, encoded)
   try:
     urllib2.urlopen(req)
   except urllib2.HTTPError as e:
@@ -304,7 +308,7 @@ def _SendToDashboard(data_obj):
 
 
 def UploadPerfValues(perf_values, platform_name, cros_version, chrome_version,
-                     test_name, dry_run=False):
+                     test_name, dashboard=DASHBOARD_URL, dry_run=False):
   """Uploads any perf data associated with a test to the perf dashboard.
 
   Args:
@@ -314,6 +318,7 @@ def UploadPerfValues(perf_values, platform_name, cros_version, chrome_version,
     cros_version: A string identifying Chrome OS version e.g. '6052.0.0'.
     chrome_version: A string identifying Chrome OS version e.g. '38.0.2091.2'.
     test_name: A string identifying the test
+    dashboard: The dashboard to upload data to.
     dry_run: Do everything but upload the data to the server.
   """
   if not perf_values:
@@ -342,7 +347,7 @@ def UploadPerfValues(perf_values, platform_name, cros_version, chrome_version,
       logging.debug('UploadPerfValues: skipping upload due to dry-run')
     else:
       retry_util.RetryException(PerfUploadingError, 3, _SendToDashboard,
-                                formatted_data)
+                                formatted_data, dashboard=dashboard)
   except PerfUploadingError:
     logging.exception('Error when uploading perf data to the perf '
                       'dashboard for test %s.', test_name)
