@@ -64,7 +64,7 @@ void GCInfoTable::ensureGCInfoIndex(const GCInfo* gcInfo, size_t* gcInfoIndexSlo
         resize();
 
     s_gcInfoTable[gcInfoIndex] = gcInfo;
-    *gcInfoIndexSlot = gcInfoIndex;
+    releaseStore(reinterpret_cast<int*>(gcInfoIndexSlot), index);
 }
 
 void GCInfoTable::resize()
