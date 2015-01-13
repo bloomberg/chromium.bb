@@ -376,6 +376,9 @@ PDFViewer.prototype = {
         else
           this.passwordScreen_.deny();
         break;
+      case 'getSelectedTextReply':
+        this.sendScriptingMessage_(message.data);
+        break;
       case 'goToPage':
         this.viewport_.goToPage(message.data.page);
         break;
@@ -525,7 +528,10 @@ PDFViewer.prototype = {
   handleScriptingMessage: function(message) {
     switch (message.data.type.toString()) {
       case 'getAccessibilityJSON':
+      case 'getSelectedText':
       case 'loadPreviewPage':
+      case 'print':
+      case 'selectAll':
         this.plugin_.postMessage(message.data);
         break;
       case 'resetPrintPreviewMode':

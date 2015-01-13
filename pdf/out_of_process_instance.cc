@@ -127,6 +127,11 @@ const char kJSRotateClockwiseType[] = "rotateClockwise";
 const char kJSRotateCounterclockwiseType[] = "rotateCounterclockwise";
 // Select all text in the document (Page -> Plugin)
 const char kJSSelectAllType[] = "selectAll";
+// Get the selected text in the document (Page -> Plugin)
+const char kJSGetSelectedTextType[] = "getSelectedText";
+// Reply with selected text (Plugin -> Page)
+const char kJSGetSelectedTextReplyType[] = "getSelectedTextReply";
+const char kJSSelectedText[] = "selectedText";
 
 const int kFindResultCooldownMs = 100;
 
@@ -444,6 +449,14 @@ void OutOfProcessInstance::HandleMessage(const pp::Var& message) {
     PostMessage(reply);
   } else if (type == kJSStopScrollingType) {
     stop_scrolling_ = true;
+  } else if (type == kJSGetSelectedTextType) {
+    std::string selected_text = engine_->GetSelectedText();
+    // Always return unix newlines to JS.
+    base::ReplaceChars(selected_text, "\r", std::string(), &selected_text);
+    pp::VarDictionary reply;
+    reply.Set(pp::Var(kType), pp::Var(kJSGetSelectedTextReplyType));
+    reply.Set(pp::Var(kJSSelectedText), selected_text);
+    PostMessage(reply);
   } else {
     NOTREACHED();
   }
