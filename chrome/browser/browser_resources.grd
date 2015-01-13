@@ -255,7 +255,6 @@
       <include name="IDR_PRERENDER_URL_WHITELIST" file="resources\prerender_url_whitelist.dat" type="BINDATA"/>
       <if expr="enable_print_preview">
         <include name="IDR_PRINT_PREVIEW_HTML" file="resources\print_preview\print_preview.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
-        <include name="IDR_PRINT_PREVIEW_PAGE" file="resources\print_preview\print_preview_page.html" flattenhtml="true" allowexternalscript="false" type="BINDATA" />
         <include name="IDR_PRINT_PREVIEW_JS" file="resources\print_preview\print_preview.js" flattenhtml="true" type="BINDATA" />
         <include name="IDR_PRINT_PREVIEW_IMAGES_PRINTER"
                  file="resources\print_preview\images\printer.png" type="BINDATA" />
@@ -344,7 +343,7 @@
         <include name="IDR_BLUETOOTH_PAIR_DEVICE_HTML" file="resources\chromeos\bluetooth_pair_device.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_SIM_UNLOCK_HTML" file="resources\chromeos\sim_unlock.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_SLOW_HTML" file="resources\chromeos\slow.html" flattenhtml="true" type="BINDATA" />
-        <include name="IDR_SLOW_JS" file="resources\chromeos\slow.js" type="BINDATA" />        
+        <include name="IDR_SLOW_JS" file="resources\chromeos\slow.js" type="BINDATA" />
       </if>
       <if expr="chromeos">
         <include name="IDR_DEMO_APP_MANIFEST" file="resources\chromeos\demo_app\manifest.json" type="BINDATA" />

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/printing/print_web_view_helper.h"
+#include "components/printing/renderer/print_web_view_helper.h"
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/process/process_handle.h"
-#include "chrome/common/print_messages.h"
+#include "components/printing/common/print_messages.h"
 #include "content/public/renderer/render_thread.h"
 #include "printing/metafile_skia_wrapper.h"
 #include "printing/page_size_margins.h"

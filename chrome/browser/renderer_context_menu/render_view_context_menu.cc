@@ -103,7 +103,7 @@
 
 #if defined(ENABLE_PRINTING)
 #include "chrome/browser/printing/print_view_manager_common.h"
-#include "chrome/common/print_messages.h"
+#include "components/printing/common/print_messages.h"
 
 #if defined(ENABLE_PRINT_PREVIEW)
 #include "chrome/browser/printing/print_preview_context_menu_observer.h"

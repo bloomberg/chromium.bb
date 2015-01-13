@@ -140,6 +140,13 @@
         'webdata_services.gypi',
       ],
     }],
+    ['android_webview_build == 0 and OS != "ios"', {
+      'includes': [
+        # TODO(dgn) move it to a condition based on whether print is enabled
+        # once the duplicates have been removed from webview.
+        'printing.gypi',
+      ],
+    }],
     ['enable_plugins==1', {
       'includes': [
         'pdf.gypi',

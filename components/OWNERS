@@ -160,6 +160,11 @@ per-file pdf.gypi=thestig@chromium.org
 per-file precache*=bengr@chromium.org
 per-file precache*=sclittle@chromium.org
 
+per-file printing*=alekseys@chromium.org
+per-file printing*=gene@chromium.org
+per-file printing*=thestig@chromium.org
+per-file printing*=vitalybuka@chromium.org
+
 per-file policy*=mnissler@chromium.org
 per-file policy*=bartfab@chromium.org
 per-file policy*=atwilson@chromium.org

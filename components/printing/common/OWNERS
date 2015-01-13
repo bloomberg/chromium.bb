@@ -1,0 +1,14 @@
+# Changes to IPC messages require a security review to avoid introducing
+# new sandbox escapes.
+per-file *messages*.h=set noparent
+per-file *messages*.h=dcheng@chromium.org
+per-file *messages*.h=inferno@chromium.org
+per-file *messages*.h=jln@chromium.org
+per-file *messages*.h=jorgelo@chromium.org
+per-file *messages*.h=jschuh@chromium.org
+per-file *messages*.h=kenrb@chromium.org
+per-file *messages*.h=mkwst@chromium.org
+per-file *messages*.h=nasko@chromium.org
+per-file *messages*.h=palmer@chromium.org
+per-file *messages*.h=tsepez@chromium.org
+per-file *messages*.h=wfh@chromium.org

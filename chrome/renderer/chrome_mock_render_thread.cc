@@ -24,7 +24,7 @@
 #endif
 
 #if defined(ENABLE_PRINTING)
-#include "chrome/common/print_messages.h"
+#include "components/printing/common/print_messages.h"
 #endif
 
 ChromeMockRenderThread::ChromeMockRenderThread()

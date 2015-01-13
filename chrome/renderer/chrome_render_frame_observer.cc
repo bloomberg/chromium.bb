@@ -10,10 +10,10 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/prerender_messages.h"
-#include "chrome/common/print_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/prerender/prerender_helper.h"
-#include "chrome/renderer/printing/print_web_view_helper.h"
+#include "components/printing/common/print_messages.h"
+#include "components/printing/renderer/print_web_view_helper.h"
 #include "content/public/renderer/render_frame.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/WebKit/public/platform/WebImage.h"

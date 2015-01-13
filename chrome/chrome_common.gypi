@@ -87,8 +87,6 @@
       'common/pref_names_util.cc',
       'common/pref_names_util.h',
       'common/prerender_types.h',
-      'common/print_messages.cc',
-      'common/print_messages.h',
       'common/profiling.cc',
       'common/profiling.h',
       'common/ref_counted_util.h',
@@ -415,13 +413,9 @@
             'common/pepper_permission_util.h',
           ],
         }],
-        ['enable_basic_printing==0 and enable_print_preview==0', {
-          'sources!': [
-            'common/print_messages.cc',
-            'common/print_messages.h',
-          ]
-        }, {
+        ['enable_basic_printing==1 or enable_print_preview==1', {
           'dependencies': [
+            '<(DEPTH)/components/components.gyp:printing_common',
             '<(DEPTH)/printing/printing.gyp:printing',
           ],
         }],

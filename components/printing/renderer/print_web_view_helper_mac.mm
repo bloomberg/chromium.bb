@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/printing/print_web_view_helper.h"
+#include "components/printing/renderer/print_web_view_helper.h"
 
 #import <AppKit/AppKit.h>
 
 #include "base/logging.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/metrics/histogram.h"
-#include "chrome/common/print_messages.h"
+#include "components/printing/common/print_messages.h"
 #include "printing/metafile_skia_wrapper.h"
 #include "printing/page_size_margins.h"
 #include "skia/ext/platform_device.h"

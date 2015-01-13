@@ -57,6 +57,7 @@ include_rules = [
   "+components/power",
   "+components/precache",
   "+components/pref_registry",
+  "+components/printing/common",
   "+components/proximity_auth",
   "+components/query_parser",
   "+components/rappor",

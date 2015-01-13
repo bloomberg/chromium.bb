@@ -49,7 +49,6 @@
 #include "chrome/renderer/prerender/prerender_media_load_deferrer.h"
 #include "chrome/renderer/prerender/prerenderer_client.h"
 #include "chrome/renderer/principals_extension_bindings.h"
-#include "chrome/renderer/printing/print_web_view_helper.h"
 #include "chrome/renderer/safe_browsing/malware_dom_details.h"
 #include "chrome/renderer/safe_browsing/phishing_classifier_delegate.h"
 #include "chrome/renderer/searchbox/search_bouncer.h"
@@ -128,6 +127,7 @@
 
 #if defined(ENABLE_PRINTING)
 #include "chrome/renderer/printing/chrome_print_web_view_helper_delegate.h"
+#include "components/printing/renderer/print_web_view_helper.h"
 #endif
 
 #if defined(ENABLE_PRINT_PREVIEW)

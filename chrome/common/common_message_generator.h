@@ -28,7 +28,7 @@
 
 #if defined(ENABLE_PRINTING)
 #include "chrome/common/chrome_utility_printing_messages.h"
-#include "chrome/common/print_messages.h"
+#include "components/printing/common/print_messages.h"
 #endif
 
 #if defined(ENABLE_SPELLCHECK)

@@ -6,7 +6,7 @@
 
 #if defined(OS_ANDROID)
 #include "base/file_descriptor_posix.h"
-#include "chrome/common/print_messages.h"
+#include "components/printing/common/print_messages.h"
 #include "printing/printing_context_android.h"
 #endif
 

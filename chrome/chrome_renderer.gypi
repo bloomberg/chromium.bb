@@ -235,12 +235,6 @@
     'chrome_renderer_printing_sources': [
       'renderer/printing/chrome_print_web_view_helper_delegate.cc',
       'renderer/printing/chrome_print_web_view_helper_delegate.h',
-      'renderer/printing/print_web_view_helper.cc',
-      'renderer/printing/print_web_view_helper.h',
-      'renderer/printing/print_web_view_helper_android.cc',
-      'renderer/printing/print_web_view_helper_linux.cc',
-      'renderer/printing/print_web_view_helper_mac.mm',
-      'renderer/printing/print_web_view_helper_pdf_win.cc',
     ],
     'chrome_renderer_full_printing_sources': [
       'renderer/pepper/chrome_pdf_print_client.cc',
@@ -369,6 +363,7 @@
         }],
         ['enable_basic_printing==1 or enable_print_preview==1', {
           'dependencies': [
+            '../components/components.gyp:printing_renderer',
             '../printing/printing.gyp:printing',
           ],
           'sources': [

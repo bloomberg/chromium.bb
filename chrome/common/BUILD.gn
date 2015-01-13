@@ -59,6 +59,7 @@ static_library("common") {
     "//components/json_schema",
     "//components/metrics",
     "//components/policy:policy_component_common",
+    "//components/printing/common:printing_common",
     "//components/translate/core/common",
     "//components/variations",
     "//content/public/common",

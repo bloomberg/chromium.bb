@@ -14,6 +14,7 @@ include_rules = [
   "+components/metrics/metrics_pref_names.h",
   "+components/nacl/common",
   "+components/password_manager/core/common",
+  "+components/printing/common",
   "+components/policy/core/common",
   "+components/signin/core/common",
   "+components/translate/core/common",

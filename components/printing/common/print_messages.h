@@ -19,8 +19,8 @@
 #include "ui/gfx/ipc/gfx_param_traits.h"
 #include "ui/gfx/native_widget_types.h"
 
-#ifndef CHROME_COMMON_PRINT_MESSAGES_H_
-#define CHROME_COMMON_PRINT_MESSAGES_H_
+#ifndef COMPONENTS_PRINTING_COMMON_PRINT_MESSAGES_H_
+#define COMPONENTS_PRINTING_COMMON_PRINT_MESSAGES_H_
 
 struct PrintMsg_Print_Params {
   PrintMsg_Print_Params();
@@ -82,7 +82,7 @@ struct PrintHostMsg_SetOptionsFromDocument_Params {
   printing::PageRanges page_ranges;
 };
 
-#endif  // CHROME_COMMON_PRINT_MESSAGES_H_
+#endif  // COMPONENTS_PRINTING_COMMON_PRINT_MESSAGES_H_
 
 #define IPC_MESSAGE_START PrintMsgStart
 

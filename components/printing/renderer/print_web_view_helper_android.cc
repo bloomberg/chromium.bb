@@ -4,4 +4,4 @@
 
 // All the necessary logic already lives in print_web_view_helper_linux.cc.
 // We need a separate file for Android due to build/filename_rules.gypi rules.
-#include "chrome/renderer/printing/print_web_view_helper_linux.cc"
+#include "components/printing/renderer/print_web_view_helper_linux.cc"

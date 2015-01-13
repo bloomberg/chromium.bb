@@ -4,7 +4,7 @@
 
 #include "chrome/renderer/pepper/chrome_pdf_print_client.h"
 
-#include "chrome/renderer/printing/print_web_view_helper.h"
+#include "components/printing/renderer/print_web_view_helper.h"
 #include "content/public/renderer/pepper_plugin_instance.h"
 #include "content/public/renderer/render_view.h"
 #include "third_party/WebKit/public/web/WebDocument.h"

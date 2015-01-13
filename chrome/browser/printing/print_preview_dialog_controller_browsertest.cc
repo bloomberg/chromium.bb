@@ -8,14 +8,14 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/print_messages.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/printing/common/print_messages.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/browser_test_utils.h"
-#include "url/gurl.h"
 #include "ipc/ipc_message_macros.h"
+#include "url/gurl.h"
 
 using content::WebContents;
 using content::WebContentsObserver;
