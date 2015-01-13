@@ -349,11 +349,9 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, PushEventSuccess) {
   ASSERT_EQ("true - is controlled", script_result);
 
   GCMClient::IncomingMessage message;
-  GCMClient::MessageData messageData;
-  messageData.insert(std::pair<std::string, std::string>("data", "testdata"));
-  message.data = messageData;
+  message.data["data"] = "testdata";
   push_service()->OnMessage(app_id.ToString(), message);
-  ASSERT_TRUE(RunScript("pushData.get()", &script_result));
+  ASSERT_TRUE(RunScript("resultQueue.pop()", &script_result));
   EXPECT_EQ("testdata", script_result);
 }
 
@@ -385,16 +383,14 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, PushEventNoServiceWorker) {
                                                   base::Unretained(&callback)));
 
   GCMClient::IncomingMessage message;
-  GCMClient::MessageData messageData;
-  messageData.insert(std::pair<std::string, std::string>("data", "testdata"));
-  message.data = messageData;
+  message.data["data"] = "testdata";
   push_service()->OnMessage(app_id.ToString(), message);
 
   callback.WaitUntilSatisfied();
   EXPECT_EQ(app_id.ToString(), callback.app_id());
 
   // No push data should have been received.
-  ASSERT_TRUE(RunScript("pushData.getImmediately()", &script_result));
+  ASSERT_TRUE(RunScript("resultQueue.popImmediately()", &script_result));
   EXPECT_EQ("null", script_result);
 }
 
@@ -426,16 +422,14 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, PushEventNoPermission) {
                                                   base::Unretained(&callback)));
 
   GCMClient::IncomingMessage message;
-  GCMClient::MessageData messageData;
-  messageData.insert(std::pair<std::string, std::string>("data", "testdata"));
-  message.data = messageData;
+  message.data["data"] = "testdata";
   push_service()->OnMessage(app_id.ToString(), message);
 
   callback.WaitUntilSatisfied();
   EXPECT_EQ(app_id.ToString(), callback.app_id());
 
   // No push data should have been received.
-  ASSERT_TRUE(RunScript("pushData.getImmediately()", &script_result));
+  ASSERT_TRUE(RunScript("resultQueue.popImmediately()", &script_result));
   EXPECT_EQ("null", script_result);
 }
 

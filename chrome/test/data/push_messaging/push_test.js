@@ -4,7 +4,7 @@
 
 'use strict';
 
-var pushData = new FutureData();
+var resultQueue = new ResultQueue();
 var pushRegistration = null;
 
 // Sends data back to the test. This must be in response to an earlier
@@ -21,36 +21,39 @@ function sendErrorToTest(error) {
   sendResultToTest(error.name + ' - ' + error.message);
 }
 
-// A container for a single piece of data. The data does not have to be
-// available yet when the getter is called, as all responses to the test are
-// asynchronous.
-function FutureData() {
-  this.data = null;
-  this.waiting = false;
+// Queue storing asynchronous results received from the Service Worker. Results
+// are sent to the test when requested.
+function ResultQueue() {
+  // Invariant: this.queue.length == 0 || this.pendingGets == 0
+  this.queue = [];
+  this.pendingGets = 0;
 }
 
-// Sends the data to the test if it is available. Otherwise sets the
-// |waiting| flag.
-FutureData.prototype.get = function() {
-  if (this.data) {
-    sendResultToTest(this.data);
-  } else {
-    this.waiting = true;
-  }
-};
-
-// Sets a new data value. If the |waiting| flag is on, it is turned off and
-// the data is sent to the test.
-FutureData.prototype.set = function(data) {
-  this.data = data;
-  if (this.waiting) {
+// Adds a data item to the queue. Will be sent to the test if there are
+// pendingGets.
+ResultQueue.prototype.push = function(data) {
+  if (this.pendingGets > 0) {
+    this.pendingGets--;
     sendResultToTest(data);
-    this.waiting = false;
+  } else {
+    this.queue.unshift(data);
   }
 };
 
-FutureData.prototype.getImmediately = function() {
-  sendResultToTest(this.data);
+// Called by native. Sends the next data item to the test if it is available.
+// Otherwise increments pendingGets so it will be delivered when received.
+ResultQueue.prototype.pop = function() {
+  if (this.queue.length) {
+    sendResultToTest(this.queue.pop());
+  } else {
+    this.pendingGets++;
+  }
+};
+
+// Called by native. Immediately sends the next data item to the test if it is
+// available, otherwise sends null.
+ResultQueue.prototype.popImmediately = function() {
+  sendResultToTest(this.queue.length ? this.queue.pop() : null);
 };
 
 // Notification permission has been coalesced with Push permission. After
@@ -136,7 +139,6 @@ function unregister() {
 
 addEventListener('message', function(event) {
   var message = JSON.parse(event.data);
-  if (message.type == 'push') {
-    pushData.set(message.data);
-  }
+  if (message.type == 'push')
+    resultQueue.push(message.data);
 }, false);
