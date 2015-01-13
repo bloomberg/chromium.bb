@@ -266,7 +266,6 @@ DriveIntegrationService::DriveIntegrationService(
           profile_->GetPrefs(),
           logger_.get(),
           cache_.get(),
-          drive_service_.get(),
           scheduler_.get(),
           resource_metadata_.get(),
           blocking_task_runner_.get(),

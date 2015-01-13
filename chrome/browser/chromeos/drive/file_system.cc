@@ -30,7 +30,6 @@
 #include "chrome/browser/chromeos/drive/resource_entry_conversion.h"
 #include "chrome/browser/chromeos/drive/search_metadata.h"
 #include "chrome/browser/chromeos/drive/sync_client.h"
-#include "chrome/browser/drive/drive_service_interface.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/drive/drive_api_parser.h"
@@ -250,7 +249,6 @@ FileSystem::FileSystem(
     PrefService* pref_service,
     EventLogger* logger,
     internal::FileCache* cache,
-    DriveServiceInterface* drive_service,
     JobScheduler* scheduler,
     internal::ResourceMetadata* resource_metadata,
     base::SequencedTaskRunner* blocking_task_runner,
@@ -258,7 +256,6 @@ FileSystem::FileSystem(
     : pref_service_(pref_service),
       logger_(logger),
       cache_(cache),
-      drive_service_(drive_service),
       scheduler_(scheduler),
       resource_metadata_(resource_metadata),
       last_update_check_error_(FILE_ERROR_OK),

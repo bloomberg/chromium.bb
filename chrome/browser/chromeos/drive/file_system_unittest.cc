@@ -134,7 +134,6 @@ class FileSystemTest : public testing::Test {
         pref_service_.get(),
         logger_.get(),
         cache_.get(),
-        fake_drive_service_.get(),
         scheduler_.get(),
         resource_metadata_.get(),
         base::MessageLoopProxy::current().get(),

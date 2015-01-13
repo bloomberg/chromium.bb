@@ -29,7 +29,6 @@ class ResourceEntry;
 
 namespace drive {
 struct ClientContext;
-class DriveServiceInterface;
 class EventLogger;
 class FileCacheEntry;
 class FileSystemObserver;
@@ -67,7 +66,6 @@ class FileSystem : public FileSystemInterface,
   FileSystem(PrefService* pref_service,
              EventLogger* logger,
              internal::FileCache* cache,
-             DriveServiceInterface* drive_service,
              JobScheduler* scheduler,
              internal::ResourceMetadata* resource_metadata,
              base::SequencedTaskRunner* blocking_task_runner,
@@ -252,7 +250,6 @@ class FileSystem : public FileSystemInterface,
   // Sub components owned by DriveIntegrationService.
   EventLogger* logger_;
   internal::FileCache* cache_;
-  DriveServiceInterface* drive_service_;
   JobScheduler* scheduler_;
   internal::ResourceMetadata* resource_metadata_;
 
