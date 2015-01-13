@@ -211,21 +211,14 @@ PlatformFontWin::PlatformFontWin(const std::string& font_name,
 
 Font PlatformFontWin::DeriveFontWithHeight(int height, int style) {
   DCHECK_GE(height, 0);
-
-  // Create a font with a height near that of the target height.
-  LOGFONT font_info;
-  GetObject(GetNativeFont(), sizeof(LOGFONT), &font_info);
-  font_info.lfHeight = height;
-  SetLogFontStyle(style, &font_info);
-
-  HFONT hfont = CreateFontIndirect(&font_info);
-  Font font(new PlatformFontWin(CreateHFontRef(hfont)));
+  if (GetHeight() == height && GetStyle() == style)
+    return Font(this);
 
   // CreateFontIndirect() doesn't return the largest size for the given height
   // when decreasing the height. Iterate to find it.
-  if (font.GetHeight() > height) {
+  if (GetHeight() > height) {
     const int min_font_size = GetMinimumFontSize();
-    font = font.Derive(-1, style);
+    Font font = DeriveFont(-1, style);
     int font_height = font.GetHeight();
     int font_size = font.GetFontSize();
     while (font_height > height && font_size != min_font_size) {
@@ -238,14 +231,13 @@ Font PlatformFontWin::DeriveFontWithHeight(int height, int style) {
     return font;
   }
 
-  while (font.GetHeight() <= height) {
-    Font derived_font = font.Derive(1, style);
-    if (derived_font.GetHeight() > height)
-      break;
-    DCHECK_GT(derived_font.GetFontSize(), font.GetFontSize());
-    font = derived_font;
-  }
-  return font;
+  LOGFONT font_info;
+  GetObject(GetNativeFont(), sizeof(LOGFONT), &font_info);
+  font_info.lfHeight = height;
+  SetLogFontStyle(style, &font_info);
+
+  HFONT hfont = CreateFontIndirect(&font_info);
+  return DeriveWithCorrectedSize(hfont);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -431,6 +423,37 @@ PlatformFontWin::HFontRef* PlatformFontWin::CreateHFontRefFromGDI(
                       ave_char_width, style);
 }
 
+Font PlatformFontWin::DeriveWithCorrectedSize(HFONT base_font) {
+  base::win::ScopedGetDC screen_dc(NULL);
+  gfx::ScopedSetMapMode mode(screen_dc, MM_TEXT);
+
+  base::win::ScopedGDIObject<HFONT> best_font(base_font);
+  TEXTMETRIC best_font_metrics;
+  GetTextMetricsForFont(screen_dc, best_font, &best_font_metrics);
+
+  LOGFONT font_info;
+  GetObject(base_font, sizeof(LOGFONT), &font_info);
+
+  // Set |lfHeight| to negative value to indicate it's the size, not the height.
+  font_info.lfHeight =
+      -(best_font_metrics.tmHeight - best_font_metrics.tmInternalLeading);
+
+  do {
+    // Increment font size. Prefer font with greater size if its height isn't
+    // greater than height of base font.
+    font_info.lfHeight = AdjustFontSize(font_info.lfHeight, 1);
+    base::win::ScopedGDIObject<HFONT> font(CreateFontIndirect(&font_info));
+    TEXTMETRIC font_metrics;
+    GetTextMetricsForFont(screen_dc, font, &font_metrics);
+    if (font_metrics.tmHeight > best_font_metrics.tmHeight)
+      break;
+    best_font.Set(font.release());
+    best_font_metrics = font_metrics;
+  } while (true);
+
+  return Font(new PlatformFontWin(CreateHFontRef(best_font.release())));
+}
+
 // static
 PlatformFontWin::HFontRef* PlatformFontWin::CreateHFontRefFromSkia(
     HFONT gdi_font,
@@ -495,7 +518,8 @@ PlatformFontWin::HFontRef* PlatformFontWin::CreateHFontRefFromSkia(
   // The calculations below are similar to those in the CreateHFontRef
   // function. The height, baseline and cap height are rounded up to ensure
   // that they match up closely with GDI.
-  const int height = std::ceil(skia_metrics.fDescent - skia_metrics.fAscent);
+  const int height = std::ceil(
+      skia_metrics.fDescent - skia_metrics.fAscent + skia_metrics.fLeading);
   const int baseline = std::max<int>(1, std::ceil(-skia_metrics.fAscent));
   const int cap_height = std::ceil(paint.getTextSize() *
       static_cast<double>(dwrite_font_metrics.capHeight) /

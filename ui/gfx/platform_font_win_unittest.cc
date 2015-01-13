@@ -17,32 +17,72 @@
 
 namespace gfx {
 
+namespace {
+
+// Returns a font based on |base_font| with height at most |target_height| and
+// font size maximized. Returns |base_font| if height is already equal.
+gfx::Font AdjustFontSizeForHeight(const gfx::Font& base_font,
+                                  int target_height) {
+  Font expected_font = base_font;
+  if (base_font.GetHeight() < target_height) {
+    // Increase size while height is <= |target_height|.
+    Font larger_font = base_font.Derive(1, 0);
+    while (larger_font.GetHeight() <= target_height) {
+      expected_font = larger_font;
+      larger_font = larger_font.Derive(1, 0);
+    }
+  } else if (expected_font.GetHeight() > target_height) {
+    // Decrease size until height is <= |target_height|.
+    do {
+      expected_font = expected_font.Derive(-1, 0);
+    } while (expected_font.GetHeight() > target_height);
+  }
+  return expected_font;
+}
+
+}  // namespace
+
 TEST(PlatformFontWinTest, DeriveFontWithHeight) {
+  // TODO(ananta): Fix this test for DirectWrite. http://crbug.com/442010
+  if (gfx::win::IsDirectWriteEnabled())
+    return;
+
   const Font base_font;
   PlatformFontWin* platform_font =
       static_cast<PlatformFontWin*>(base_font.platform_font());
 
   for (int i = -10; i < 10; i++) {
     const int target_height = base_font.GetHeight() + i;
+    Font expected_font = AdjustFontSizeForHeight(base_font, target_height);
+    ASSERT_LE(expected_font.GetHeight(), target_height);
 
     Font derived_font = platform_font->DeriveFontWithHeight(target_height, 0);
-    EXPECT_LE(derived_font.GetHeight(), target_height);
-    EXPECT_GT(derived_font.Derive(1, 0).GetHeight(), target_height);
-    EXPECT_EQ(platform_font->GetActualFontNameForTesting(),
-              derived_font.GetActualFontNameForTesting());
+    EXPECT_EQ(expected_font.GetFontName(), derived_font.GetFontName());
+    EXPECT_EQ(expected_font.GetFontSize(), derived_font.GetFontSize());
+    EXPECT_LE(expected_font.GetHeight(), target_height);
     EXPECT_EQ(0, derived_font.GetStyle());
 
     derived_font = platform_font->DeriveFontWithHeight(target_height,
                                                        Font::BOLD);
-    EXPECT_LE(derived_font.GetHeight(), target_height);
-    EXPECT_GT(derived_font.Derive(1, 0).GetHeight(), target_height);
-    EXPECT_EQ(platform_font->GetActualFontNameForTesting(),
-              derived_font.GetActualFontNameForTesting());
+    EXPECT_EQ(expected_font.GetFontName(), derived_font.GetFontName());
+    EXPECT_EQ(expected_font.GetFontSize(), derived_font.GetFontSize());
+    EXPECT_LE(expected_font.GetHeight(), target_height);
     EXPECT_EQ(Font::BOLD, derived_font.GetStyle());
+
+    // Test that deriving from the new font has the expected result.
+    Font rederived_font = derived_font.Derive(1, 0);
+    expected_font = Font(derived_font.GetFontName(),
+                         derived_font.GetFontSize() + 1);
+    EXPECT_EQ(expected_font.GetFontName(), rederived_font.GetFontName());
+    EXPECT_EQ(expected_font.GetFontSize(), rederived_font.GetFontSize());
+    EXPECT_EQ(expected_font.GetHeight(), rederived_font.GetHeight());
   }
 }
 
 TEST(PlatformFontWinTest, DeriveFontWithHeight_Consistency) {
+  // TODO(ananta): Fix this test for DirectWrite. http://crbug.com/442010
+  if (gfx::win::IsDirectWriteEnabled())
+    return;
   gfx::Font arial_12("Arial", 12);
   ASSERT_GT(16, arial_12.GetHeight());
   gfx::Font derived_1 = static_cast<PlatformFontWin*>(
@@ -156,5 +196,6 @@ TEST(PlatformFontWinTest, Metrics_SkiaVersusGDI) {
     EXPECT_LE(abs(h_font_gdi->height() - h_font_skia->height()), 1);
   }
 }
+
 
 }  // namespace gfx

@@ -172,6 +172,10 @@ class GFX_EXPORT PlatformFontWin : public PlatformFont {
   static HFontRef* CreateHFontRefFromGDI(HFONT font,
                                          const TEXTMETRIC& font_metrics);
 
+  // Returns a largest derived Font whose height does not exceed the height of
+  // |base_font|.
+  static Font DeriveWithCorrectedSize(HFONT base_font);
+
   // Creates and returns a new HFontRef from the specified HFONT using metrics
   // from skia. Currently this is only used if we use DirectWrite for font
   // metrics.
