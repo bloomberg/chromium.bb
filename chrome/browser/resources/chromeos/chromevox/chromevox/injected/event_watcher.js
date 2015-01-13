@@ -1117,19 +1117,18 @@ cvox.ChromeVoxEventWatcher.handleControlChanged = function(control) {
     announceChange = true;
   }
 
+  var activeDescendant = cvox.AriaUtil.getActiveDescendant(control);
   if ((parentControl &&
       parentControl != control &&
       document.activeElement == control)) {
-    // If focus has been set on a child of the parent control, we need to
-    // sync to that node so that ChromeVox navigation will be in sync with
-    // focus navigation.
+    // Sync ChromeVox to the newly selected control.
     cvox.ApiImplementation.syncToNode(
-        control, true,
+        activeDescendant || control, true,
         cvox.ChromeVoxEventWatcher.queueMode_());
     announceChange = false;
-  } else if (cvox.AriaUtil.getActiveDescendant(control)) {
+  } else if (activeDescendant) {
     cvox.ChromeVox.navigationManager.updateSelToArbitraryNode(
-        cvox.AriaUtil.getActiveDescendant(control),
+        activeDescendant,
         true);
 
     announceChange = true;
