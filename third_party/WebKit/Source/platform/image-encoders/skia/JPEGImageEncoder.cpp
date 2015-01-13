@@ -209,6 +209,9 @@ bool JPEGImageEncoder::encode(const SkBitmap& bitmap, int quality, Vector<unsign
 
 bool JPEGImageEncoder::encode(const ImageDataBuffer& imageData, int quality, Vector<unsigned char>* output)
 {
+    if (!imageData.pixels())
+        return false;
+
     return encodePixels(IntSize(imageData.width(), imageData.height()), imageData.pixels(), false, quality, output);
 }
 

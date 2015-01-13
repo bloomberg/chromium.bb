@@ -126,6 +126,9 @@ bool PNGImageEncoder::encode(const SkBitmap& bitmap, Vector<unsigned char>* outp
 
 bool PNGImageEncoder::encode(const ImageDataBuffer& imageData, Vector<unsigned char>* output)
 {
+    if (!imageData.pixels())
+        return false;
+
     return encodePixels(IntSize(imageData.width(), imageData.height()), imageData.pixels(), false, output);
 }
 
