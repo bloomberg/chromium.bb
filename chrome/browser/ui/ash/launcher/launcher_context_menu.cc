@@ -184,8 +184,10 @@ void LauncherContextMenu::Init() {
                            &shelf_alignment_menu_);
   }
 #if defined(OS_CHROMEOS)
-  AddItem(MENU_CHANGE_WALLPAPER,
-       l10n_util::GetStringUTF16(IDS_AURA_SET_DESKTOP_WALLPAPER));
+  if (!controller_->IsLoggedInAsGuest()) {
+    AddItem(MENU_CHANGE_WALLPAPER,
+         l10n_util::GetStringUTF16(IDS_AURA_SET_DESKTOP_WALLPAPER));
+  }
 #endif
 }
 
