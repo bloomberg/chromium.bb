@@ -210,7 +210,7 @@ std::string RapporService::LoadSecret() {
   std::string secret_base64 = pref_service_->GetString(prefs::kRapporSecret);
   if (!secret_base64.empty()) {
     bool decoded = base::Base64Decode(secret_base64, &secret);
-    if (decoded && secret_.size() == HmacByteVectorGenerator::kEntropyInputSize)
+    if (decoded && secret.size() == HmacByteVectorGenerator::kEntropyInputSize)
       return secret;
     // If the preference fails to decode, or is the wrong size, it must be
     // corrupt, so continue as though it didn't exist yet and generate a new
