@@ -144,9 +144,9 @@ class DriWrapper::IOWatcher
   DISALLOW_COPY_AND_ASSIGN(IOWatcher);
 };
 
-DriWrapper::DriWrapper(const char* device_path, bool software_mode)
+DriWrapper::DriWrapper(const char* device_path, bool use_sync_flips)
     : fd_(-1),
-      software_mode_(software_mode),
+      use_sync_flips_(use_sync_flips),
       device_path_(device_path),
       io_thread_("DriIOThread") {
   plane_manager_.reset(new HardwareDisplayPlaneManagerLegacy());
@@ -169,7 +169,7 @@ void DriWrapper::Initialize() {
 }
 
 void DriWrapper::InitializeIOWatcher() {
-  if (!software_mode_ && !watcher_) {
+  if (!use_sync_flips_ && !watcher_) {
     if (!io_thread_.StartWithOptions(
             base::Thread::Options(base::MessageLoop::TYPE_IO, 0)))
       LOG(FATAL) << "Failed to start the IO helper thread";
@@ -278,7 +278,7 @@ bool DriWrapper::PageFlip(uint32_t crtc_id,
                        payload.get())) {
     // If successful the payload will be removed by a PageFlip event.
     ignore_result(payload.release());
-    if (software_mode_) {
+    if (use_sync_flips_) {
       TRACE_EVENT1("dri", "OnDrmEvent", "socket", fd_);
 
       drmEventContext event;

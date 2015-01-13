@@ -37,7 +37,7 @@ class DriWrapper {
                               unsigned int /* seconds */,
                               unsigned int /* useconds */)> PageFlipCallback;
 
-  DriWrapper(const char* device_path, bool software_mode);
+  DriWrapper(const char* device_path, bool use_sync_flips);
   virtual ~DriWrapper();
 
   // Open device.
@@ -163,10 +163,8 @@ class DriWrapper {
 
   scoped_ptr<HardwareDisplayPlaneManager> plane_manager_;
 
-  // If we're running in software mode this is true. In software mode we can't
-  // use the async page flip callbacks, so we need to block until the kernel
-  // responds to the page flip.
-  bool software_mode_;
+  // If we need to block when performing page flips this is set to true.
+  bool use_sync_flips_;
 
  private:
   class IOWatcher;

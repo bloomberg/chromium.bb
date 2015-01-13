@@ -21,7 +21,7 @@ class MockDriWrapper : public ui::DriWrapper {
  public:
   MockDriWrapper(int fd);
   MockDriWrapper(int fd,
-                 bool software_mode,
+                 bool use_sync_flips,
                  std::vector<uint32_t> crtcs,
                  size_t planes_per_crtc);
   ~MockDriWrapper() override;

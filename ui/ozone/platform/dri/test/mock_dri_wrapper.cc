@@ -58,10 +58,10 @@ MockDriWrapper::MockDriWrapper(int fd)
 }
 
 MockDriWrapper::MockDriWrapper(int fd,
-                               bool software_mode,
+                               bool use_sync_flips,
                                std::vector<uint32_t> crtcs,
                                size_t planes_per_crtc)
-    : DriWrapper("", software_mode),
+    : DriWrapper("", use_sync_flips),
       get_crtc_call_count_(0),
       set_crtc_call_count_(0),
       restore_crtc_call_count_(0),
@@ -139,7 +139,7 @@ bool MockDriWrapper::PageFlip(uint32_t crtc_id,
   page_flip_call_count_++;
   current_framebuffer_ = framebuffer;
   if (page_flip_expectation_) {
-    if (software_mode_)
+    if (use_sync_flips_)
       callback.Run(0, 0, 0);
     else
       callbacks_.push(callback);

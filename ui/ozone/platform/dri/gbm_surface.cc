@@ -132,8 +132,7 @@ bool GbmSurface::ResizeNativeWindow(const gfx::Size& viewport_size) {
 }
 
 bool GbmSurface::OnSwapBuffers() {
-  NOTREACHED();
-  return false;
+  return OnSwapBuffersAsync(base::Bind(&base::DoNothing));
 }
 
 bool GbmSurface::OnSwapBuffersAsync(const SwapCompletionCallback& callback) {
