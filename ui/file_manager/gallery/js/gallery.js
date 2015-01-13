@@ -879,6 +879,13 @@ Gallery.prototype.updateButtons_ = function() {
 };
 
 /**
+ * Enters the debug mode.
+ */
+Gallery.prototype.debugMe = function() {
+  this.mosaicMode_.debugMe();
+};
+
+/**
  * Singleton gallery.
  * @type {Gallery}
  */
@@ -900,4 +907,11 @@ window.initialize = function(backgroundComponents) {
  */
 window.loadEntries = function(entries, selectedEntries) {
   gallery.load(entries, selectedEntries);
+};
+
+/**
+ * Enteres the debug mode.
+ */
+window.debugMe = function() {
+  gallery.debugMe();
 };

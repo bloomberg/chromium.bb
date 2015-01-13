@@ -1339,3 +1339,28 @@ input[type='checkbox']:checked {
       url(chrome://resources/images/2x/apps/topbar_button_close.png) 2x)
       center;
 }
+
+.debug-me .load-target-content-metadata::before,
+.debug-me .load-target-external-metadata::before,
+.debug-me .load-target-file-entry::before {
+  bottom: 0;
+  content: '';
+  display: block;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  z-index: 1;
+}
+
+.debug-me .load-target-content-metadata::before {
+  background-color: rgba(255, 0, 0, 0.3);
+}
+
+.debug-me .load-target-external-metadata::before {
+  background-color: rgba(0, 255, 0, 0.3);
+}
+
+.debug-me .load-target-file-entry::before {
+  background-color: rgba(0, 0, 255, 0.3);
+}

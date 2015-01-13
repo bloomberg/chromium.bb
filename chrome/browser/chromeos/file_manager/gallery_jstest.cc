@@ -44,3 +44,8 @@ IN_PROC_BROWSER_TEST_F(GalleryJsTest, GalleryDataModelTest) {
   RunTest(base::FilePath(
       FILE_PATH_LITERAL("gallery_data_model_unittest.html")));
 }
+
+IN_PROC_BROWSER_TEST_F(GalleryJsTest, MosaicModeTest) {
+  RunTest(base::FilePath(
+      FILE_PATH_LITERAL("mosaic_mode_unittest.html")));
+}

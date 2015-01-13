@@ -68,6 +68,13 @@ MosaicMode.prototype.onKeyDown = function(event) {
   this.mosaic_.onKeyDown(event);
 };
 
+/**
+ * Enters the debug mode.
+ */
+MosaicMode.prototype.debugMe = function() {
+  this.mosaic_.debugMe();
+};
+
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
@@ -731,6 +738,13 @@ Mosaic.prototype.transform = function(tileRect, imageRect, opt_instant) {
  */
 Mosaic.prototype.getItemCount_ = function() {
   return this.dataModel_.length;
+};
+
+/**
+ * Enters the debug me.
+ */
+Mosaic.prototype.debugMe = function() {
+  this.classList.add('debug-me');
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2138,8 +2152,25 @@ Mosaic.Tile.prototype.load = function(loadMode, onImageLoaded) {
       else
         this.wrapper_.classList.remove('animated');
     }
+
+    // Add debug mode classes.
+    this.wrapper_.classList.remove('load-target-content-metadata');
+    this.wrapper_.classList.remove('load-target-external-metadata');
+    this.wrapper_.classList.remove('load-target-file-entry');
+    switch (loader.getLoadTarget()) {
+      case ThumbnailLoader.LoadTarget.CONTENT_METADATA:
+        this.wrapper_.classList.add('load-target-content-metadata');
+        break;
+      case ThumbnailLoader.LoadTarget.EXTERNAL_METADATA:
+        this.wrapper_.classList.add('load-target-external-metadata');
+        break;
+      case ThumbnailLoader.LoadTarget.FILE_ENTRY:
+        this.wrapper_.classList.add('load-target-file-entry');
+        break;
+    }
     loader.attachImage(this.wrapper_, ThumbnailLoader.FillMode.OVER_FILL);
     onImageLoaded(success);
+
     switch (mode) {
       case Mosaic.Tile.LoadMode.LOW_DPI:
         this.imagePreloading_ = false;
