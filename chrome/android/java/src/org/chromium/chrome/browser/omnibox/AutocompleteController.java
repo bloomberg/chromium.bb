@@ -4,10 +4,12 @@
 
 package org.chromium.chrome.browser.omnibox;
 
+import android.os.Bundle;
 import android.text.TextUtils;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.browser.omnibox.VoiceSuggestionProvider.VoiceResult;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.content_public.browser.WebContents;
 
@@ -18,9 +20,17 @@ import java.util.List;
  * Bridge to the native AutocompleteControllerAndroid.
  */
 public class AutocompleteController {
+    // Maximum number of search/history suggestions to show.
+    private static final int MAX_DEFAULT_SUGGESTION_COUNT = 5;
+
+    // Maximum number of voice suggestions to show.
+    private static final int MAX_VOICE_SUGGESTION_COUNT = 3;
+
     private long mNativeAutocompleteControllerAndroid;
     private long mCurrentNativeAutocompleteResult;
     private final OnSuggestionsReceivedListener mListener;
+    private final VoiceSuggestionProvider mVoiceSuggestionProvider = new VoiceSuggestionProvider();
+
 
     /**
      * Listener for receiving OmniboxSuggestions.
@@ -144,6 +154,7 @@ public class AutocompleteController {
      * @param clear Whether to clear the most recent autocomplete results.
      */
     public void stop(boolean clear) {
+        if (clear) mVoiceSuggestionProvider.clearVoiceSearchResults();
         mCurrentNativeAutocompleteResult = 0;
         if (mNativeAutocompleteControllerAndroid != 0) {
             nativeStop(mNativeAutocompleteControllerAndroid, clear);
@@ -183,6 +194,15 @@ public class AutocompleteController {
             List<OmniboxSuggestion> suggestions,
             String inlineAutocompleteText,
             long currentNativeAutocompleteResult) {
+        if (suggestions.size() > MAX_DEFAULT_SUGGESTION_COUNT) {
+            // Trim to the default amount of normal suggestions we can have.
+            suggestions.subList(MAX_DEFAULT_SUGGESTION_COUNT, suggestions.size()).clear();
+        }
+
+        // Run through new providers to get an updated list of suggestions.
+        suggestions = mVoiceSuggestionProvider.addVoiceSuggestions(
+                suggestions, MAX_VOICE_SUGGESTION_COUNT);
+
         mCurrentNativeAutocompleteResult = currentNativeAutocompleteResult;
 
         // Notify callbacks of suggestions.
@@ -207,12 +227,26 @@ public class AutocompleteController {
      *                                 modifying text in the omnibox and selecting a suggestion.
      * @param webContents The web contents for the tab where the selected suggestion will be shown.
      */
-    protected void onSuggestionSelected(int selectedIndex, OmniboxSuggestion.Type type,
+    public void onSuggestionSelected(int selectedIndex, OmniboxSuggestion.Type type,
             String currentPageUrl, boolean isQueryInOmnibox, boolean focusedFromFakebox,
             long elapsedTimeSinceModified, WebContents webContents) {
+        // Don't natively log voice suggestion results as we add them in Java.
+        if (type == OmniboxSuggestion.Type.VOICE_SUGGEST) return;
         nativeOnSuggestionSelected(mNativeAutocompleteControllerAndroid, selectedIndex,
                 currentPageUrl, isQueryInOmnibox, focusedFromFakebox, elapsedTimeSinceModified,
                 webContents);
+    }
+
+    /**
+     * Pass the autocomplete controller a {@link Bundle} representing the results of a voice
+     * recognition.
+     * @param data A {@link Bundle} containing the results of a voice recognition.
+     * @return The top voice match if one exists, {@code null} otherwise.
+     */
+    public VoiceResult onVoiceResults(Bundle data) {
+        mVoiceSuggestionProvider.setVoiceResultsFromIntentBundle(data);
+        List<VoiceResult> results = mVoiceSuggestionProvider.getResults();
+        return (results != null && results.size() > 0) ? results.get(0) : null;
     }
 
     @CalledByNative
