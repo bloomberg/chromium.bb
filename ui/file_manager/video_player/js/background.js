@@ -120,8 +120,8 @@ function openVideoPlayerWindow(playlist, reopen) {
     return new Promise(function(fulfill, reject) {
       var urls = util.entriesToURLs(entries);
       var videoPlayer = new AppWindowWrapper('video_player.html',
-                                             generateWindowId(),
-                                             windowCreateOptions);
+          generateWindowId(),
+          windowCreateOptions);
 
       videoPlayer.launch(
           {items: urls, position: position},

@@ -56,7 +56,7 @@ test.util.sync.isPlaying = function(contentWindow) {
  * @return {number} Error count.
  */
 test.util.sync.getErrorCount = function() {
-  var totalCount = JSErrorCount;
+  var totalCount = window.JSErrorCount;
   for (var appId in appWindowsForTest) {
     var contentWindow = appWindowsForTest[appId].contentWindow;
     if (contentWindow.JSErrorCount)

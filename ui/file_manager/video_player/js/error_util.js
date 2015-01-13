@@ -21,7 +21,7 @@ window.onerror = function() { window.JSErrorCount++; };
  *
  * @param {Object=} opt_thisObject Object to be used as this.
  * @param {...} var_args Arguments to be bound with the wrapped function.
- * @return {function} Wrapped function.
+ * @return {function(...)} Wrapped function.
  */
 Function.prototype.wrap = function(opt_thisObject, var_args) {
   var func = this;

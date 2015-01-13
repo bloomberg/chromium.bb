@@ -45,9 +45,9 @@ metrics.PLAY_TYPE = {
 
 /**
  * Utility function to check if the given value is in the given values.
- * @param {Object} values
+ * @param {!Object} values
  * @param {*} value
- * @reutrn {boolean} True if one or more elements of the given values hash have
+ * @return {boolean} True if one or more elements of the given values hash have
  *     the given value as value. False otherwise.
  */
 metrics.hasValue_ = function(values, value) {
@@ -115,7 +115,7 @@ metrics.recordOpenVideoPlayerAction = function() {
  */
 metrics.recordPlayType = function(type) {
   if (!metrics.hasValue_(metrics.PLAY_TYPE, type)) {
-    console.error('The given value "' + status + '" is invalid.');
+    console.error('The given value "' + type + '" is invalid.');
     return;
   }
 
