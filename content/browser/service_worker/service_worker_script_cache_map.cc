@@ -41,6 +41,8 @@ void ServiceWorkerScriptCacheMap::NotifyStartedCaching(
   DCHECK_EQ(kInvalidServiceWorkerResponseId, LookupResourceId(url));
   DCHECK(owner_->status() == ServiceWorkerVersion::NEW ||
          owner_->status() == ServiceWorkerVersion::INSTALLING);
+  if (!context_)
+    return;  // Our storage has been wiped via DeleteAndStartOver.
   resource_map_[url] =
       ServiceWorkerDatabase::ResourceRecord(resource_id, url, -1);
   context_->storage()->StoreUncommittedResponseId(resource_id);
@@ -53,6 +55,8 @@ void ServiceWorkerScriptCacheMap::NotifyFinishedCaching(
   DCHECK_NE(kInvalidServiceWorkerResponseId, LookupResourceId(url));
   DCHECK(owner_->status() == ServiceWorkerVersion::NEW ||
          owner_->status() == ServiceWorkerVersion::INSTALLING);
+  if (!context_)
+    return;  // Our storage has been wiped via DeleteAndStartOver.
   if (!status.is_success()) {
     context_->storage()->DoomUncommittedResponse(LookupResourceId(url));
     resource_map_.erase(url);
