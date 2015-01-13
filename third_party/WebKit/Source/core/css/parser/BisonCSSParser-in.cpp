@@ -77,7 +77,6 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/InspectorInstrumentation.h"
-#include "core/rendering/RenderTheme.h"
 #include "platform/FloatConversion.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "wtf/BitArray.h"
@@ -230,19 +229,6 @@ bool BisonCSSParser::parseValue(MutableStylePropertySet* declaration, CSSPropert
     }
 
     return ok;
-}
-
-bool BisonCSSParser::parseSystemColor(RGBA32& color, const String& string)
-{
-    CSSParserString cssColor;
-    cssColor.init(string);
-    CSSValueID id = cssValueKeywordID(cssColor);
-    if (!CSSPropertyParser::isSystemColor(id))
-        return false;
-
-    Color parsedColor = RenderTheme::theme().systemColor(id);
-    color = parsedColor.rgb();
-    return true;
 }
 
 void BisonCSSParser::parseSelector(const String& string, CSSSelectorList& selectorList)

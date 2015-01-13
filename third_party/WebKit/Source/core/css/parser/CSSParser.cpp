@@ -13,6 +13,7 @@
 #include "core/css/parser/CSSParserImpl.h"
 #include "core/css/parser/CSSSelectorParser.h"
 #include "core/css/parser/CSSTokenizer.h"
+#include "core/rendering/RenderTheme.h"
 
 namespace blink {
 
@@ -162,7 +163,15 @@ StyleColor CSSParser::colorFromRGBColorString(const String& string)
 
 bool CSSParser::parseSystemColor(RGBA32& color, const String& colorString)
 {
-    return BisonCSSParser::parseSystemColor(color, colorString);
+    CSSParserString cssColor;
+    cssColor.init(colorString);
+    CSSValueID id = cssValueKeywordID(cssColor);
+    if (!CSSPropertyParser::isSystemColor(id))
+        return false;
+
+    Color parsedColor = RenderTheme::theme().systemColor(id);
+    color = parsedColor.rgb();
+    return true;
 }
 
 } // namespace blink
