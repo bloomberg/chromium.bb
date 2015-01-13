@@ -35,6 +35,7 @@ import org.chromium.chrome.browser.fullscreen.FullscreenHtmlApiHandler.Fullscree
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.content.browser.ContentViewCore;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashSet;
 
@@ -149,6 +150,35 @@ public class ChromeFullscreenManager
         }
     };
 
+    // This static inner class holds a WeakReference to the outer object, to avoid triggering the
+    // lint HandlerLeak warning.
+    private static class FullscreenHandler extends Handler {
+        private final WeakReference<ChromeFullscreenManager> mChromeFullscreenManager;
+
+        public FullscreenHandler(ChromeFullscreenManager chromeFullscreenManager) {
+            mChromeFullscreenManager = new WeakReference<ChromeFullscreenManager>(
+                    chromeFullscreenManager);
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+            if (msg == null) return;
+            ChromeFullscreenManager chromeFullscreenManager = mChromeFullscreenManager.get();
+            if (chromeFullscreenManager == null) return;
+            switch (msg.what) {
+                case MSG_ID_CONTROLS_REQUEST_LAYOUT:
+                    chromeFullscreenManager.mControlContainer.requestLayout();
+                    break;
+                case MSG_ID_HIDE_CONTROLS:
+                    chromeFullscreenManager.update(false);
+                    break;
+                default:
+                    assert false : "Unexpected message for ID: " + msg.what;
+                    break;
+            }
+        }
+    }
+
     /**
      * Creates an instance of the fullscreen mode manager.
      * @param activity The activity that supports fullscreen.
@@ -167,23 +197,7 @@ public class ChromeFullscreenManager
                 .registerWindowFocusChangedListener(this);
 
         mWindow = activity.getWindow();
-        mHandler = new Handler() {
-            @Override
-            public void handleMessage(Message msg) {
-                if (msg == null) return;
-                switch (msg.what) {
-                    case MSG_ID_CONTROLS_REQUEST_LAYOUT:
-                        mControlContainer.requestLayout();
-                        break;
-                    case MSG_ID_HIDE_CONTROLS:
-                        update(false);
-                        break;
-                    default:
-                        assert false : "Unexpected message for ID: " + msg.what;
-                        break;
-                }
-            }
-        };
+        mHandler = new FullscreenHandler(this);
         setControlContainer(controlContainer);
         Resources resources = mWindow.getContext().getResources();
         mControlContainerHeight = resources.getDimensionPixelSize(resControlContainerHeight);

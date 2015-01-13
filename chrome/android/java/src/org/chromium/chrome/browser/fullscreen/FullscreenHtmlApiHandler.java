@@ -23,6 +23,8 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.widget.TextBubble;
 import org.chromium.content.browser.ContentViewCore;
 
+import java.lang.ref.WeakReference;
+
 /**
  * Handles updating the UI based on requests to the HTML Fullscreen API.
  */
@@ -104,6 +106,83 @@ public class FullscreenHtmlApiHandler {
         boolean shouldShowNotificationBubble();
     }
 
+    // This static inner class holds a WeakReference to the outer object, to avoid triggering the
+    // lint HandlerLeak warning.
+    private static class FullscreenHandler extends Handler {
+        private final WeakReference<FullscreenHtmlApiHandler> mFullscreenHtmlApiHandler;
+
+        public FullscreenHandler(FullscreenHtmlApiHandler fullscreenHtmlApiHandler) {
+            mFullscreenHtmlApiHandler = new WeakReference<FullscreenHtmlApiHandler>(
+                    fullscreenHtmlApiHandler);
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+            if (msg == null) return;
+            FullscreenHtmlApiHandler fullscreenHtmlApiHandler = mFullscreenHtmlApiHandler.get();
+            if (fullscreenHtmlApiHandler == null) return;
+            switch (msg.what) {
+                case MSG_ID_HIDE_NOTIFICATION_BUBBLE:
+                    fullscreenHtmlApiHandler.hideNotificationBubble();
+                    break;
+                case MSG_ID_SET_FULLSCREEN_SYSTEM_UI_FLAGS: {
+                    assert fullscreenHtmlApiHandler.getPersistentFullscreenMode() :
+                        "Calling after we exited fullscreen";
+                    final ContentViewCore contentViewCore =
+                            fullscreenHtmlApiHandler.mContentViewCoreInFullscreen;
+                    if (contentViewCore == null) return;
+                    final View contentView = contentViewCore.getContainerView();
+                    int systemUiVisibility = contentView.getSystemUiVisibility();
+                    if ((systemUiVisibility & SYSTEM_UI_FLAG_FULLSCREEN)
+                            == SYSTEM_UI_FLAG_FULLSCREEN) {
+                        return;
+                    }
+                    systemUiVisibility |= SYSTEM_UI_FLAG_FULLSCREEN;
+                    systemUiVisibility |= SYSTEM_UI_FLAG_LOW_PROFILE;
+                    contentView.setSystemUiVisibility(systemUiVisibility);
+
+                    // Trigger a update to clear the SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN flag
+                    // once the view has been laid out after this system UI update.  Without
+                    // clearing this flag, the keyboard appearing will not trigger a relayout
+                    // of the contents, which prevents updating the overdraw amount to the
+                    // renderer.
+                    contentView.addOnLayoutChangeListener(new OnLayoutChangeListener() {
+                        @Override
+                        public void onLayoutChange(View v, int left, int top, int right,
+                                int bottom, int oldLeft, int oldTop, int oldRight,
+                                int oldBottom) {
+                            sendEmptyMessageDelayed(MSG_ID_CLEAR_LAYOUT_FULLSCREEN_FLAG,
+                                    CLEAR_LAYOUT_FULLSCREEN_DELAY_MS);
+                            contentView.removeOnLayoutChangeListener(this);
+                        }
+                    });
+                    break;
+                }
+                case MSG_ID_CLEAR_LAYOUT_FULLSCREEN_FLAG: {
+                    // Change this assert to simply ignoring the message to work around
+                    // http://crbug/365638
+                    // TODO(aberent): Fix bug
+                    // assert mIsPersistentMode : "Calling after we exited fullscreen";
+                    if (!fullscreenHtmlApiHandler.getPersistentFullscreenMode()) return;
+                    final ContentViewCore contentViewCore =
+                            fullscreenHtmlApiHandler.mContentViewCoreInFullscreen;
+                    if (contentViewCore == null) return;
+                    final View view = contentViewCore.getContainerView();
+                    int systemUiVisibility = view.getSystemUiVisibility();
+                    if ((systemUiVisibility & SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN) == 0) {
+                        return;
+                    }
+                    systemUiVisibility &= ~SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
+                    view.setSystemUiVisibility(systemUiVisibility);
+                    break;
+                }
+                default:
+                    assert false : "Unexpected message for ID: " + msg.what;
+                    break;
+            }
+        }
+    }
+
     /**
      * Constructs the handler that will manage the UI transitions from the HTML fullscreen API.
      *
@@ -116,69 +195,7 @@ public class FullscreenHtmlApiHandler {
         mWindow = window;
         mDelegate = delegate;
         mPersistentFullscreenSupported = persistentFullscreenSupported;
-
-        mHandler = new Handler() {
-            @Override
-            public void handleMessage(Message msg) {
-                if (msg == null) return;
-                switch (msg.what) {
-                    case MSG_ID_HIDE_NOTIFICATION_BUBBLE:
-                        hideNotificationBubble();
-                        break;
-                    case MSG_ID_SET_FULLSCREEN_SYSTEM_UI_FLAGS: {
-                        assert mIsPersistentMode : "Calling after we exited fullscreen";
-                        final ContentViewCore contentViewCore = mContentViewCoreInFullscreen;
-                        if (contentViewCore == null) return;
-                        final View contentView = contentViewCore.getContainerView();
-                        int systemUiVisibility = contentView.getSystemUiVisibility();
-                        if ((systemUiVisibility & SYSTEM_UI_FLAG_FULLSCREEN)
-                                == SYSTEM_UI_FLAG_FULLSCREEN) {
-                            return;
-                        }
-                        systemUiVisibility |= SYSTEM_UI_FLAG_FULLSCREEN;
-                        systemUiVisibility |= SYSTEM_UI_FLAG_LOW_PROFILE;
-                        contentView.setSystemUiVisibility(systemUiVisibility);
-
-                        // Trigger a update to clear the SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN flag
-                        // once the view has been laid out after this system UI update.  Without
-                        // clearing this flag, the keyboard appearing will not trigger a relayout
-                        // of the contents, which prevents updating the overdraw amount to the
-                        // renderer.
-                        contentView.addOnLayoutChangeListener(new OnLayoutChangeListener() {
-                            @Override
-                            public void onLayoutChange(View v, int left, int top, int right,
-                                    int bottom, int oldLeft, int oldTop, int oldRight,
-                                    int oldBottom) {
-                                sendEmptyMessageDelayed(MSG_ID_CLEAR_LAYOUT_FULLSCREEN_FLAG,
-                                        CLEAR_LAYOUT_FULLSCREEN_DELAY_MS);
-                                contentView.removeOnLayoutChangeListener(this);
-                            }
-                        });
-                        break;
-                    }
-                    case MSG_ID_CLEAR_LAYOUT_FULLSCREEN_FLAG: {
-                        // Change this assert to simply ignoring the message to work around
-                        // http://crbug/365638
-                        // TODO(aberent): Fix bug
-                        // assert mIsPersistentMode : "Calling after we exited fullscreen";
-                        if (!mIsPersistentMode) return;
-                        if (mContentViewCoreInFullscreen == null) return;
-                        final View view = mContentViewCoreInFullscreen.getContainerView();
-                        int systemUiVisibility = view.getSystemUiVisibility();
-                        if ((systemUiVisibility & SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN) == 0) {
-                            return;
-                        }
-                        systemUiVisibility &= ~SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
-                        view.setSystemUiVisibility(systemUiVisibility);
-                        break;
-                    }
-                    default:
-                        assert false : "Unexpected message for ID: " + msg.what;
-                        break;
-                }
-            }
-        };
-
+        mHandler = new FullscreenHandler(this);
         Resources resources = mWindow.getContext().getResources();
         float density = resources.getDisplayMetrics().density;
         mNotificationMaxDimension = (int) (density * MAX_NOTIFICATION_DIMENSION_DP);
