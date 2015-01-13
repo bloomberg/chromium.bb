@@ -65,6 +65,11 @@ class CHROMEOS_EXPORT SessionManagerClient : public DBusClient {
   virtual void RemoveObserver(Observer* observer) = 0;
   virtual bool HasObserver(const Observer* observer) const = 0;
 
+  // Returns the most recent screen-lock state received from session_manager.
+  // This mirrors the last Observer::ScreenIsLocked() or ScreenIsUnlocked()
+  // call.
+  virtual bool IsScreenLocked() const = 0;
+
   // Kicks off an attempt to emit the "login-prompt-visible" upstart signal.
   virtual void EmitLoginPromptVisible() = 0;
 

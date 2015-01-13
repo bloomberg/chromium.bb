@@ -66,6 +66,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
  public:
   SessionManagerClientImpl()
       : session_manager_proxy_(NULL),
+        screen_is_locked_(false),
         weak_ptr_factory_(this) {}
 
   virtual ~SessionManagerClientImpl() {
@@ -87,6 +88,8 @@ class SessionManagerClientImpl : public SessionManagerClient {
   virtual bool HasObserver(const Observer* observer) const override {
     return observers_.HasObserver(observer);
   }
+
+  virtual bool IsScreenLocked() const override { return screen_is_locked_; }
 
   virtual void EmitLoginPromptVisible() override {
     SimpleMethodCallToSessionManager(
@@ -517,10 +520,12 @@ class SessionManagerClientImpl : public SessionManagerClient {
   }
 
   void ScreenIsLockedReceived(dbus::Signal* signal) {
+    screen_is_locked_ = true;
     FOR_EACH_OBSERVER(Observer, observers_, ScreenIsLocked());
   }
 
   void ScreenIsUnlockedReceived(dbus::Signal* signal) {
+    screen_is_locked_ = false;
     FOR_EACH_OBSERVER(Observer, observers_, ScreenIsUnlocked());
   }
 
@@ -568,6 +573,9 @@ class SessionManagerClientImpl : public SessionManagerClient {
   scoped_ptr<BlockingMethodCaller> blocking_method_caller_;
   ObserverList<Observer> observers_;
 
+  // Most recent screen-lock state received from session_manager.
+  bool screen_is_locked_;
+
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
   base::WeakPtrFactory<SessionManagerClientImpl> weak_ptr_factory_;
@@ -579,7 +587,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
 // which does nothing.
 class SessionManagerClientStubImpl : public SessionManagerClient {
  public:
-  SessionManagerClientStubImpl() : delegate_(NULL) {}
+  SessionManagerClientStubImpl() : delegate_(NULL), screen_is_locked_(false) {}
   virtual ~SessionManagerClientStubImpl() {}
 
   // SessionManagerClient overrides
@@ -596,6 +604,7 @@ class SessionManagerClientStubImpl : public SessionManagerClient {
   virtual bool HasObserver(const Observer* observer) const override {
     return observers_.HasObserver(observer);
   }
+  virtual bool IsScreenLocked() const override { return screen_is_locked_; }
   virtual void EmitLoginPromptVisible() override {}
   virtual void RestartJob(int pid, const std::string& command_line) override {}
   virtual void StartSession(const std::string& user_email) override {}
@@ -608,9 +617,11 @@ class SessionManagerClientStubImpl : public SessionManagerClient {
       delegate_->LockScreenForStub();
   }
   virtual void NotifyLockScreenShown() override {
+    screen_is_locked_ = true;
     FOR_EACH_OBSERVER(Observer, observers_, ScreenIsLocked());
   }
   virtual void NotifyLockScreenDismissed() override {
+    screen_is_locked_ = false;
     FOR_EACH_OBSERVER(Observer, observers_, ScreenIsUnlocked());
   }
   virtual void RetrieveActiveSessions(
@@ -732,6 +743,7 @@ class SessionManagerClientStubImpl : public SessionManagerClient {
   StubDelegate* delegate_;  // Weak pointer; may be NULL.
   ObserverList<Observer> observers_;
   std::string device_policy_;
+  bool screen_is_locked_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionManagerClientStubImpl);
 };

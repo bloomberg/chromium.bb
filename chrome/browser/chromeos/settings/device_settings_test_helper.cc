@@ -104,6 +104,8 @@ bool DeviceSettingsTestHelper::HasObserver(const Observer* observer) const {
   return false;
 }
 
+bool DeviceSettingsTestHelper::IsScreenLocked() const { return false; }
+
 void DeviceSettingsTestHelper::EmitLoginPromptVisible() {}
 
 void DeviceSettingsTestHelper::RestartJob(int pid,

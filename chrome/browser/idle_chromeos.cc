@@ -4,9 +4,9 @@
 
 #include "chrome/browser/idle.h"
 
-#include "ash/session/session_state_delegate.h"
-#include "ash/shell.h"
 #include "base/time/time.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/session_manager_client.h"
 #include "ui/base/user_activity/user_activity_detector.h"
 
 void CalculateIdleTime(IdleTimeCallback notify) {
@@ -16,9 +16,6 @@ void CalculateIdleTime(IdleTimeCallback notify) {
 }
 
 bool CheckIdleStateIsLocked() {
-#if defined(USE_ATHENA)
-  return false;
-#else
-  return ash::Shell::GetInstance()->session_state_delegate()->IsScreenLocked();
-#endif
+  return chromeos::DBusThreadManager::Get()->GetSessionManagerClient()->
+      IsScreenLocked();
 }

@@ -39,6 +39,10 @@ bool FakeSessionManagerClient::HasObserver(const Observer* observer) const {
   return observers_.HasObserver(observer);
 }
 
+bool FakeSessionManagerClient::IsScreenLocked() const {
+  return false;
+}
+
 void FakeSessionManagerClient::EmitLoginPromptVisible() {
 }
 
