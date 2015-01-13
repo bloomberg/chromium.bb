@@ -400,4 +400,26 @@ ui::AXTextDirection AXTextDirectionFromBlink(
   return ui::AX_TEXT_DIRECTION_NONE;
 }
 
+ui::AXInvalidState AXInvalidStateFromBlink(
+    blink::WebAXInvalidState invalid_state) {
+  switch (invalid_state) {
+    case blink::WebAXInvalidStateUndefined:
+      return ui::AX_INVALID_STATE_NONE;
+    case blink::WebAXInvalidStateFalse:
+      return ui::AX_INVALID_STATE_FALSE;
+    case blink::WebAXInvalidStateTrue:
+      return ui::AX_INVALID_STATE_TRUE;
+    case blink::WebAXInvalidStateSpelling:
+      return ui::AX_INVALID_STATE_SPELLING;
+    case blink::WebAXInvalidStateGrammar:
+      return ui::AX_INVALID_STATE_GRAMMAR;
+    case blink::WebAXInvalidStateOther:
+      return ui::AX_INVALID_STATE_OTHER;
+    default:
+      NOTREACHED();
+  }
+
+  return ui::AX_INVALID_STATE_NONE;
+}
+
 }  // namespace content

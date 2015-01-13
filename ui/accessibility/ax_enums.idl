@@ -235,6 +235,8 @@
     display,
     help,
     html_tag,
+    // Only used when invalid_state == invalid_state_other.
+    aria_invalid_value,
     name,
     live_relevant,
     live_status,
@@ -297,7 +299,11 @@
     tree_id,
 
     // Identifies a child tree which this node hosts.
-    child_tree_id
+    child_tree_id,
+
+    // Indicates if a form control has invalid input or
+    // if an element has an aria-invalid attribute.
+    invalid_state
   };
 
   [cpp_enum_prefix_override="ax_attr"] enum AXFloatAttribute {
@@ -388,4 +394,13 @@
     text_direction_tb,
     text_direction_bt
   };
+
+  [cpp_enum_prefix_override="ax"] enum AXInvalidState {
+    invalid_state_false,
+    invalid_state_true,
+    invalid_state_spelling,
+    invalid_state_grammar,
+    invalid_state_other
+  };
+
 };

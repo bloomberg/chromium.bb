@@ -14,5 +14,6 @@ Format for expected files:
 * All other constants are used exactly as normally named
 * See specific examples (e.g. ul-expected-win.txt) for more details
 
-Running the tests:
-browser_tests --gtest_filter="DumpAccessibilityTreeTest*"
+Compiling and running the tests:
+ninja -C out/Debug content_browsertests
+out/Debug/content_browsertests --gtest_filter="DumpAccessibilityTreeTest*"

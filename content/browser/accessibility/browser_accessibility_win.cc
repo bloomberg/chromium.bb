@@ -2980,6 +2980,43 @@ void BrowserAccessibilityWin::OnDataChanged() {
     }
   }
 
+  // Expose invalid state for form controls and elements with aria-invalid.
+  int invalid_state;
+  if (GetIntAttribute(ui::AX_ATTR_INVALID_STATE, &invalid_state)) {
+    // TODO(nektar): Handle the possibility of having multiple aria-invalid
+    // attributes defined, e.g., "invalid:spelling,grammar".
+    switch (invalid_state) {
+      case ui::AX_INVALID_STATE_NONE:
+        break;
+      case ui::AX_INVALID_STATE_FALSE:
+        ia2_attributes_.push_back(L"invalid:false");
+        break;
+      case ui::AX_INVALID_STATE_TRUE:
+        ia2_attributes_.push_back(L"invalid:true");
+        break;
+      case ui::AX_INVALID_STATE_SPELLING:
+        ia2_attributes_.push_back(L"invalid:spelling");
+        break;
+      case ui::AX_INVALID_STATE_GRAMMAR:
+        ia2_attributes_.push_back(L"invalid:grammar");
+        break;
+      case ui::AX_INVALID_STATE_OTHER:
+        {
+          base::string16 aria_invalid_value;
+          if (GetString16Attribute(ui::AX_ATTR_ARIA_INVALID_VALUE,
+                                   &aria_invalid_value)) {
+            ia2_attributes_.push_back(L"invalid:" + aria_invalid_value);
+          } else {
+            // Set the attribute to L"true", since we cannot be more specific.
+            ia2_attributes_.push_back(L"invalid:true");
+          }
+        }
+        break;
+      default:
+        NOTREACHED();
+    }
+  }
+
   // The calculation of the accessible name of an element has been
   // standardized in the HTML to Platform Accessibility APIs Implementation
   // Guide (http://www.w3.org/TR/html-aapi/). In order to return the
@@ -3294,16 +3331,22 @@ void BrowserAccessibilityWin::HandleSpecialTextOffset(
 ui::TextBoundaryType BrowserAccessibilityWin::IA2TextBoundaryToTextBoundary(
     IA2TextBoundaryType ia2_boundary) {
   switch(ia2_boundary) {
-    case IA2_TEXT_BOUNDARY_CHAR: return ui::CHAR_BOUNDARY;
-    case IA2_TEXT_BOUNDARY_WORD: return ui::WORD_BOUNDARY;
-    case IA2_TEXT_BOUNDARY_LINE: return ui::LINE_BOUNDARY;
-    case IA2_TEXT_BOUNDARY_SENTENCE: return ui::SENTENCE_BOUNDARY;
-    case IA2_TEXT_BOUNDARY_PARAGRAPH: return ui::PARAGRAPH_BOUNDARY;
-    case IA2_TEXT_BOUNDARY_ALL: return ui::ALL_BOUNDARY;
+    case IA2_TEXT_BOUNDARY_CHAR:
+      return ui::CHAR_BOUNDARY;
+    case IA2_TEXT_BOUNDARY_WORD:
+      return ui::WORD_BOUNDARY;
+    case IA2_TEXT_BOUNDARY_LINE:
+      return ui::LINE_BOUNDARY;
+    case IA2_TEXT_BOUNDARY_SENTENCE:
+      return ui::SENTENCE_BOUNDARY;
+    case IA2_TEXT_BOUNDARY_PARAGRAPH:
+      return ui::PARAGRAPH_BOUNDARY;
+    case IA2_TEXT_BOUNDARY_ALL:
+      return ui::ALL_BOUNDARY;
     default:
       NOTREACHED();
-      return ui::CHAR_BOUNDARY;
   }
+  return ui::CHAR_BOUNDARY;
 }
 
 LONG BrowserAccessibilityWin::FindBoundary(
@@ -3344,6 +3387,9 @@ void BrowserAccessibilityWin::InitRoleAndState() {
     ia_state_ |= STATE_SYSTEM_HOTTRACKED;
   if (HasState(ui::AX_STATE_INDETERMINATE))
     ia_state_ |= STATE_SYSTEM_INDETERMINATE;
+  if (HasIntAttribute(ui::AX_ATTR_INVALID_STATE) &&
+      GetIntAttribute(ui::AX_ATTR_INVALID_STATE) != ui::AX_INVALID_STATE_FALSE)
+    ia2_state_ |= IA2_STATE_INVALID_ENTRY;
   if (HasState(ui::AX_STATE_INVISIBLE))
     ia_state_ |= STATE_SYSTEM_INVISIBLE;
   if (HasState(ui::AX_STATE_LINKED))
@@ -3381,10 +3427,6 @@ void BrowserAccessibilityWin::InitRoleAndState() {
   // READONLY state for MSAA is below, after the switch.
   if (!HasState(ui::AX_STATE_READ_ONLY))
     ia2_state_ |= IA2_STATE_EDITABLE;
-
-  base::string16 invalid;
-  if (GetHtmlAttribute("aria-invalid", &invalid))
-    ia2_state_ |= IA2_STATE_INVALID_ENTRY;
 
   if (GetBoolAttribute(ui::AX_ATTR_BUTTON_MIXED))
     ia_state_ |= STATE_SYSTEM_MIXED;

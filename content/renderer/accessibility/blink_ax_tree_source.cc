@@ -236,6 +236,15 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
     dst->AddIntAttribute(ui::AX_ATTR_COLOR_VALUE_BLUE, b);
   }
 
+  if (src.invalidState()) {
+    dst->AddIntAttribute(ui::AX_ATTR_INVALID_STATE,
+                         AXInvalidStateFromBlink(src.invalidState()));
+  }
+  if (src.invalidState() == blink::WebAXInvalidStateOther) {
+    dst->AddStringAttribute(ui::AX_ATTR_ARIA_INVALID_VALUE,
+                            UTF16ToUTF8(src.ariaInvalidValue()));
+  }
+
   if (dst->role == ui::AX_ROLE_INLINE_TEXT_BOX) {
     dst->AddIntAttribute(ui::AX_ATTR_TEXT_DIRECTION,
                          AXTextDirectionFromBlink(src.textDirection()));
@@ -267,6 +276,7 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
     dst->AddStringAttribute(ui::AX_ATTR_ACCESS_KEY,
     UTF16ToUTF8(src.accessKey()));
   }
+
   if (src.actionVerb().length())
     dst->AddStringAttribute(ui::AX_ATTR_ACTION, UTF16ToUTF8(src.actionVerb()));
   if (src.ariaAutoComplete().length())

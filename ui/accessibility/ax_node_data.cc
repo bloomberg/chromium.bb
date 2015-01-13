@@ -226,6 +226,25 @@ std::string AXNodeData::ToString() const {
             break;
         }
         break;
+      case AX_ATTR_INVALID_STATE:
+        switch (int_attributes[i].second) {
+          case AX_INVALID_STATE_FALSE:
+            result += " invalid_state=false";
+            break;
+          case AX_INVALID_STATE_TRUE:
+            result += " invalid_state=true";
+            break;
+          case AX_INVALID_STATE_SPELLING:
+            result += " invalid_state=spelling";
+            break;
+          case AX_INVALID_STATE_GRAMMAR:
+            result += " invalid_state=grammar";
+            break;
+          case AX_INVALID_STATE_OTHER:
+            result += " invalid_state=other";
+            break;
+        }
+        break;
       case AX_INT_ATTRIBUTE_NONE:
         break;
     }
@@ -266,6 +285,9 @@ std::string AXNodeData::ToString() const {
         break;
       case AX_ATTR_HTML_TAG:
         result += " html_tag=" + value;
+        break;
+      case AX_ATTR_ARIA_INVALID_VALUE:
+        result += " aria_invalid_value=" + value;
         break;
       case AX_ATTR_LIVE_RELEVANT:
         result += " relevant=" + value;

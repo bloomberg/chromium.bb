@@ -1,14 +1,17 @@
-#<skip - IA2_STATE_INVALID_ENTRY not being set. http://crbug.com/169556>
 ROLE_SYSTEM_DOCUMENT READONLY FOCUSABLE
-    IA2_ROLE_SECTION IA2_STATE_INVALID_ENTRY
-        ROLE_SYSTEM_TEXT name='invalid=true' READONLY
-    IA2_ROLE_SECTION IA2_STATE_INVALID_ENTRY
-        ROLE_SYSTEM_TEXT name='invalid=spelling' READONLY
-    IA2_ROLE_SECTION IA2_STATE_INVALID_ENTRY
-        ROLE_SYSTEM_TEXT name='invalid=grammar' READONLY
-    IA2_ROLE_SECTION IA2_STATE_INVALID_ENTRY
-        ROLE_SYSTEM_TEXT name='invalid=false' READONLY
-    IA2_ROLE_SECTION IA2_STATE_INVALID_ENTRY
-        ROLE_SYSTEM_TEXT name='invalid=<empty>' READONLY
-    IA2_ROLE_SECTION IA2_STATE_INVALID_ENTRY
-        ROLE_SYSTEM_TEXT name='invalid=somethingelse' READONLY
+    IA2_ROLE_SECTION IA2_STATE_INVALID_ENTRY invalid:true
+        ROLE_SYSTEM_STATICTEXT name='invalid=true'
+    IA2_ROLE_SECTION IA2_STATE_INVALID_ENTRY invalid:spelling
+        ROLE_SYSTEM_STATICTEXT name='invalid=spelling'
+    IA2_ROLE_SECTION IA2_STATE_INVALID_ENTRY invalid:grammar
+        ROLE_SYSTEM_STATICTEXT name='invalid=grammar'
+    IA2_ROLE_SECTION invalid:false
+        ROLE_SYSTEM_STATICTEXT name='invalid=false'
+    IA2_ROLE_SECTION
+        ROLE_SYSTEM_STATICTEXT name='invalid=<empty>'
+    IA2_ROLE_SECTION
+        ROLE_SYSTEM_STATICTEXT name='invalid=<default>'
+    IA2_ROLE_SECTION IA2_STATE_INVALID_ENTRY invalid:unknown
+        ROLE_SYSTEM_STATICTEXT name='invalid=unknown'
+    IA2_ROLE_FORM
+        ROLE_SYSTEM_TEXT FOCUSABLE IA2_STATE_INVALID_ENTRY invalid:true

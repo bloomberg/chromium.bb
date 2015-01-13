@@ -4,4 +4,7 @@ android.webkit.WebView focusable focused scrollable
     android.view.View clickable name='invalid=grammar'
     android.view.View clickable name='invalid=false'
     android.view.View clickable name='invalid=<empty>'
-    android.view.View clickable name='invalid=somethingelse'
+    android.view.View clickable name='invalid=<default>'
+    android.view.View clickable name='invalid=unknown'
+    android.view.View
+        android.widget.EditText clickable editable_text focusable name='1234' input_type=1

@@ -391,15 +391,35 @@ NSDictionary* attributeToMethodNameMap = nil;
 }
 
 - (NSString*)invalid {
-  base::string16 invalidUTF;
-  if (!browserAccessibility_->GetHtmlAttribute("aria-invalid", &invalidUTF))
-    return NULL;
-  NSString* invalid = base::SysUTF16ToNSString(invalidUTF);
-  if ([invalid isEqualToString:@"false"] ||
-      [invalid isEqualToString:@""]) {
+  int invalidState;
+  if (!browserAccessibility_->GetIntAttribute(
+      ui::AX_ATTR_INVALID_STATE, &invalidState))
     return @"false";
+
+  switch (invalidState) {
+  case ui::AX_INVALID_STATE_FALSE:
+    return @"false";
+  case ui::AX_INVALID_STATE_TRUE:
+    return @"true";
+  case ui::AX_INVALID_STATE_SPELLING:
+    return @"spelling";
+  case ui::AX_INVALID_STATE_GRAMMAR:
+    return @"grammar";
+  case ui::AX_INVALID_STATE_OTHER:
+    {
+      std::string ariaInvalidValue;
+      if (browserAccessibility_->GetStringAttribute(
+          ui::AX_ATTR_ARIA_INVALID_VALUE,
+          &ariaInvalidValue))
+        return base::SysUTF8ToNSString(ariaInvalidValue);
+      // Return @"true" since we cannot be more specific about the value.
+      return @"true";
+    }
+  default:
+    NOTREACHED();
   }
-  return invalid;
+
+  return @"false";
 }
 
 - (NSString*)placeholder {

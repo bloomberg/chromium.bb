@@ -1,6 +1,7 @@
 <!--
 @MAC-ALLOW:AXInvalid=*
-@WIN-ALLOW:checkable:*
+@WIN-ALLOW:IA2_STATE_INVALID_ENTRY
+@WIN-ALLOW:invalid:*
 @WIN-DENY:name=''
 -->
 <html>
@@ -10,6 +11,10 @@
   <div aria-invalid="grammar">invalid=grammar</div>
   <div aria-invalid="false">invalid=false</div>
   <div aria-invalid="">invalid=&lt;empty&gt;</div>
-  <div aria-invalid="somethingelse">invalid=somethingelse</div>
+  <div>invalid=&lt;default&gt;</div>
+  <div aria-invalid="unknown">invalid=unknown</div>
+  <form>
+    <input type="text" name="invalid_text_field" pattern="[a-z]*" value="1234">
+  </form>
 </body>
 </html>
