@@ -309,7 +309,37 @@ def FindPrivateConfCL(overlay, pkg_dir):
 
 @cros.CommandDecorator('pinchrome')
 class PinchromeCommand(cros.CrosCommand):
-  """Pin chrome to an earlier revision."""
+  # pylint: disable=docstring-too-many-newlines
+  """Pin chrome to an earlier revision.
+
+
+  Pinning procedure:
+
+  When pinning chrome, this script first looks through the history of the
+  public overlay repository looking for changes which upreved chrome. It shows
+  the user what versions chrome has been at recently and when the uprevs
+  happened, and lets the user pick a point in that history to go back to.
+
+  Once an old version has been selected, the script creates a change which
+  overwrites the chrome ebuild(s) and binhost config files to what they were
+  at that version in the public overlay. It also adds entries to the portage
+  mask files to prevent newer versions from being installed.
+
+  Next, the script looks for a version of the binhost config file in the
+  private overlay directory which corresponds to the one in the public overlay.
+  It creates a change which overwrites the binhost config similar to above.
+
+  For safety, these two changes have CQ-DEPEND added to them and refer to each
+  other. The script uploads them, expecting the user to go to their review
+  pages and send them on their way.
+
+
+  Unpinning procedure:
+
+  To unpin, this script simply deletes the entries in the portage mask files
+  added above. After that, the Chrome PFQ can uprev chrome normally,
+  overwriting the ebuilds and binhost configs.
+  """
 
   def __init__(self, options):
     super(PinchromeCommand, self).__init__(options)
