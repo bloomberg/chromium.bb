@@ -15,7 +15,7 @@ class RenderWidgetHostIterator {
  public:
   virtual ~RenderWidgetHostIterator() {}
 
-  // Returns the next RenderWidgetHost in the list. Returns NULL if none is
+  // Returns the next RenderWidgetHost in the list. Returns nullptr if none is
   // available.
   virtual RenderWidgetHost* GetNextHost() = 0;
 };

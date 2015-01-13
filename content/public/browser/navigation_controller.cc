@@ -15,7 +15,7 @@ NavigationController::LoadURLParams::LoadURLParams(const GURL& url)
       frame_tree_node_id(-1),
       is_renderer_initiated(false),
       override_user_agent(UA_OVERRIDE_INHERIT),
-      browser_initiated_post_data(NULL),
+      browser_initiated_post_data(nullptr),
       can_load_local_resources(false),
       should_replace_current_entry(false),
       should_clear_history_list(false)  {

@@ -28,7 +28,7 @@ class ResourceThrottle {
   virtual void WillProcessResponse(bool* defer) {}
 
   // Returns the name of the throttle, as a UTF-8 C-string, for logging
-  // purposes.  NULL is not allowed.  Caller does *not* take ownership of the
+  // purposes.  nullptr is not allowed.  Caller does *not* take ownership of the
   // returned string.
   virtual const char* GetNameForLogging() const = 0;
 
@@ -37,7 +37,7 @@ class ResourceThrottle {
   }
 
  protected:
-  ResourceThrottle() : controller_(NULL) {}
+  ResourceThrottle() : controller_(nullptr) {}
   ResourceController* controller() { return controller_; }
 
  private:

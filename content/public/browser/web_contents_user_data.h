@@ -40,7 +40,7 @@ class WebContentsUserData : public base::SupportsUserData::Data {
 
   // Retrieves the instance of type T that was attached to the specified
   // WebContents (via CreateForWebContents above) and returns it. If no instance
-  // of the type was attached, returns NULL.
+  // of the type was attached, returns nullptr.
   static T* FromWebContents(WebContents* contents) {
     DCHECK(contents);
     return static_cast<T*>(contents->GetUserData(UserDataKey()));

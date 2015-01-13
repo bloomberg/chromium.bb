@@ -40,7 +40,7 @@ class SignedCertificateTimestampStore {
 
   // Tries to retrieve the previously stored SCT associated with the specified
   // |sct_id|. Returns whether the SCT could be found, and, if |sct| is
-  // non-NULL, copies it in.
+  // non-nullptr, copies it in.
   virtual bool Retrieve(
       int sct_id, scoped_refptr<net::ct::SignedCertificateTimestamp>* sct) = 0;
 

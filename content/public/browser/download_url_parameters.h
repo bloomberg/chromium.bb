@@ -38,7 +38,7 @@ class WebContents;
 
 class CONTENT_EXPORT DownloadUrlParameters {
  public:
-  // If there is an error, then |item| will be NULL.
+  // If there is an error, then |item| will be nullptr.
   typedef base::Callback<void(DownloadItem*, DownloadInterruptReason)>
       OnStartedCallback;
 

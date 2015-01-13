@@ -38,7 +38,7 @@ class BrowserMessageFilter::Internal : public IPC::MessageFilter {
   void OnFilterRemoved() override { filter_->OnFilterRemoved(); }
 
   void OnChannelClosing() override {
-    filter_->sender_ = NULL;
+    filter_->sender_ = nullptr;
     filter_->OnChannelClosing();
   }
 
@@ -98,8 +98,8 @@ class BrowserMessageFilter::Internal : public IPC::MessageFilter {
 };
 
 BrowserMessageFilter::BrowserMessageFilter(uint32 message_class_to_filter)
-    : internal_(NULL),
-      sender_(NULL),
+    : internal_(nullptr),
+      sender_(nullptr),
 #if defined(OS_WIN)
       peer_handle_(base::kNullProcessHandle),
 #endif
@@ -109,8 +109,8 @@ BrowserMessageFilter::BrowserMessageFilter(uint32 message_class_to_filter)
 BrowserMessageFilter::BrowserMessageFilter(
     const uint32* message_classes_to_filter,
     size_t num_message_classes_to_filter)
-    : internal_(NULL),
-      sender_(NULL),
+    : internal_(nullptr),
+      sender_(nullptr),
 #if defined(OS_WIN)
       peer_handle_(base::kNullProcessHandle),
 #endif
@@ -168,7 +168,7 @@ bool BrowserMessageFilter::Send(IPC::Message* message) {
 
 base::TaskRunner* BrowserMessageFilter::OverrideTaskRunnerForMessage(
     const IPC::Message& message) {
-  return NULL;
+  return nullptr;
 }
 
 bool BrowserMessageFilter::CheckCanDispatchOnUI(const IPC::Message& message,

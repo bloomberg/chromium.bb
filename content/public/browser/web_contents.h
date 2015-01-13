@@ -120,7 +120,7 @@ class WebContents : public PageNavigator,
     BrowserPluginGuestDelegate* guest_delegate;
 
     // Used to specify the location context which display the new view should
-    // belong. This can be NULL if not needed.
+    // belong. This can be nullptr if not needed.
     gfx::NativeView context;
   };
 
@@ -141,7 +141,7 @@ class WebContents : public PageNavigator,
       const CreateParams& params,
       const SessionStorageNamespaceMap& session_storage_namespace_map);
 
-  // Returns a WebContents that wraps the RenderViewHost, or NULL if the
+  // Returns a WebContents that wraps the RenderViewHost, or nullptr if the
   // render view host's delegate isn't a WebContents.
   CONTENT_EXPORT static WebContents* FromRenderViewHost(
       const RenderViewHost* rvh);
@@ -207,11 +207,11 @@ class WebContents : public PageNavigator,
   virtual int GetRoutingID() const = 0;
 
   // Returns the currently active RenderWidgetHostView. This may change over
-  // time and can be NULL (during setup and teardown).
+  // time and can be nullptr (during setup and teardown).
   virtual RenderWidgetHostView* GetRenderWidgetHostView() const = 0;
 
   // Returns the currently active fullscreen widget. If there is none, returns
-  // NULL.
+  // nullptr.
   virtual RenderWidgetHostView* GetFullscreenRenderWidgetHostView() const = 0;
 
   // Create a WebUI page for the given url. In most cases, this doesn't need to
@@ -440,7 +440,7 @@ class WebContents : public PageNavigator,
   // Various other systems need to know about our interstitials.
   virtual bool ShowingInterstitialPage() const = 0;
 
-  // Returns the currently showing interstitial, NULL if no interstitial is
+  // Returns the currently showing interstitial, nullptr if no interstitial is
   // showing.
   virtual InterstitialPage* GetInterstitialPage() const = 0;
 
@@ -542,7 +542,7 @@ class WebContents : public PageNavigator,
   // Does this have an opener associated with it?
   virtual bool HasOpener() const = 0;
 
-  // Returns the opener if HasOpener() is true, or NULL otherwise.
+  // Returns the opener if HasOpener() is true, or nullptr otherwise.
   virtual WebContents* GetOpener() const = 0;
 
   typedef base::Callback<void(

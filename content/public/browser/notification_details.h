@@ -18,7 +18,7 @@ namespace content {
 // NotificationService::NoDetails().
 class CONTENT_EXPORT NotificationDetails {
  public:
-  NotificationDetails() : ptr_(NULL) {}
+  NotificationDetails() : ptr_(nullptr) {}
   NotificationDetails(const NotificationDetails& other) : ptr_(other.ptr_) {}
   ~NotificationDetails() {}
 

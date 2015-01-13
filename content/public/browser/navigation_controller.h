@@ -199,10 +199,10 @@ class NavigationController {
   virtual ~NavigationController() {}
 
   // Returns the web contents associated with this controller. It can never be
-  // NULL.
+  // nullptr.
   virtual WebContents* GetWebContents() const = 0;
 
-  // Get/set the browser context for this controller. It can never be NULL.
+  // Get/set the browser context for this controller. It can never be nullptr.
   virtual BrowserContext* GetBrowserContext() const = 0;
   virtual void SetBrowserContext(BrowserContext* browser_context) = 0;
 
@@ -234,14 +234,14 @@ class NavigationController {
   //
   // Returns the active entry, which is the transient entry if any, the pending
   // entry if a navigation is in progress or the last committed entry otherwise.
-  // NOTE: This can be NULL!!
+  // NOTE: This can be nullptr!!
   virtual NavigationEntry* GetActiveEntry() const = 0;
 
   // Returns the entry that should be displayed to the user in the address bar.
   // This is the transient entry if any, the pending entry if a navigation is
   // in progress *and* is safe to display to the user (see below), or the last
   // committed entry otherwise.
-  // NOTE: This can be NULL if no entry has committed!
+  // NOTE: This can be nullptr if no entry has committed!
   //
   // A pending entry is safe to display if it started in the browser process or
   // if it's a renderer-initiated navigation in a new tab which hasn't been
@@ -272,7 +272,7 @@ class NavigationController {
 
   virtual NavigationEntry* GetEntryAtIndex(int index) const = 0;
 
-  // Returns the entry at the specified offset from current.  Returns NULL
+  // Returns the entry at the specified offset from current.  Returns nullptr
   // if out of bounds.
   virtual NavigationEntry* GetEntryAtOffset(int offset) const = 0;
 

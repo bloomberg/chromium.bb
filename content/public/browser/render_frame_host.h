@@ -30,7 +30,7 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
                                        public IPC::Sender {
  public:
   // Returns the RenderFrameHost given its ID and the ID of its render process.
-  // Returns NULL if the IDs do not correspond to a live RenderFrameHost.
+  // Returns nullptr if the IDs do not correspond to a live RenderFrameHost.
   static RenderFrameHost* FromID(int render_process_id, int render_frame_id);
 
   ~RenderFrameHost() override {}
@@ -46,9 +46,9 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // Returns the process for this frame.
   virtual RenderProcessHost* GetProcess() = 0;
 
-  // Returns the current RenderFrameHost of the parent frame, or NULL if there
-  // is no parent. The result may be in a different process than the current
-  // RenderFrameHost.
+  // Returns the current RenderFrameHost of the parent frame, or nullptr if
+  // there is no parent. The result may be in a different process than the
+  // current RenderFrameHost.
   virtual RenderFrameHost* GetParent() = 0;
 
   // Returns the assigned name of the frame, the name of the iframe tag

@@ -115,7 +115,8 @@ class CONTENT_EXPORT SiteInstance : public base::RefCounted<SiteInstance> {
   // from scratch (or similar circumstances).  Callers should ensure that
   // this SiteInstance becomes ref counted, by storing it in a scoped_refptr.
   //
-  // The render process host factory may be NULL. See SiteInstance constructor.
+  // The render process host factory may be nullptr. See SiteInstance
+  // constructor.
   //
   // TODO(creis): This may be an argument to build a pass_refptr<T> class, as
   // Darin suggests.

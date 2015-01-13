@@ -45,7 +45,7 @@ class CONTENT_EXPORT ResourceContext : public base::SupportsUserData {
   // with a BrowsingContext.
   virtual net::URLRequestContext* GetRequestContext() = 0;
 
-  // Get platform ClientCertStore. May return NULL.
+  // Get platform ClientCertStore. May return nullptr.
   virtual scoped_ptr<net::ClientCertStore> CreateClientCertStore();
 
   // Create a platform KeygenHandler and pass it to |callback|. The |callback|

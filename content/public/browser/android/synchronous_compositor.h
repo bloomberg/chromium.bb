@@ -37,7 +37,7 @@ class WebContents;
 class CONTENT_EXPORT SynchronousCompositor {
  public:
   // Must be called once per WebContents instance. Will create the compositor
-  // instance as needed, but only if |client| is non-NULL.
+  // instance as needed, but only if |client| is non-nullptr.
   static void SetClientForWebContents(WebContents* contents,
                                       SynchronousCompositorClient* client);
 

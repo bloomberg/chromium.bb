@@ -14,7 +14,7 @@
 
 namespace content {
 
-ScreenOrientationDelegate* ScreenOrientationProvider::delegate_ = NULL;
+ScreenOrientationDelegate* ScreenOrientationProvider::delegate_ = nullptr;
 
 ScreenOrientationProvider::LockInformation::LockInformation(int request_id,
     blink::WebScreenOrientationLockType lock)

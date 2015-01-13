@@ -10,26 +10,26 @@ namespace content {
 
 WebContents::CreateParams::CreateParams(BrowserContext* context)
     : browser_context(context),
-      site_instance(NULL),
-      opener(NULL),
+      site_instance(nullptr),
+      opener(nullptr),
       opener_suppressed(false),
       routing_id(MSG_ROUTING_NONE),
       main_frame_routing_id(MSG_ROUTING_NONE),
       initially_hidden(false),
-      guest_delegate(NULL),
-      context(NULL) {}
+      guest_delegate(nullptr),
+      context(nullptr) {}
 
 WebContents::CreateParams::CreateParams(
     BrowserContext* context, SiteInstance* site)
     : browser_context(context),
       site_instance(site),
-      opener(NULL),
+      opener(nullptr),
       opener_suppressed(false),
       routing_id(MSG_ROUTING_NONE),
       main_frame_routing_id(MSG_ROUTING_NONE),
       initially_hidden(false),
-      guest_delegate(NULL),
-      context(NULL) {}
+      guest_delegate(nullptr),
+      context(nullptr) {}
 
 WebContents::CreateParams::~CreateParams() {
 }

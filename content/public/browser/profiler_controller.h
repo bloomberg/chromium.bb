@@ -25,8 +25,8 @@ class ProfilerSubscriber;
 // object.
 class CONTENT_EXPORT ProfilerController {
  public:
-  // Returns the ProfilerController object for the current process, or NULL if
-  // none.
+  // Returns the ProfilerController object for the current process, or nullptr
+  // if none.
   static ProfilerController* GetInstance();
 
   virtual ~ProfilerController() {}

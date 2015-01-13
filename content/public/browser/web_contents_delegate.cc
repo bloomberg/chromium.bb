@@ -20,7 +20,7 @@ WebContentsDelegate::WebContentsDelegate() {
 
 WebContents* WebContentsDelegate::OpenURLFromTab(WebContents* source,
                                                  const OpenURLParams& params) {
-  return NULL;
+  return nullptr;
 }
 
 bool WebContentsDelegate::IsPopupOrPanel(const WebContents* source) const {
@@ -143,7 +143,7 @@ bool WebContentsDelegate::ShouldCreateWebContents(
 
 JavaScriptDialogManager* WebContentsDelegate::GetJavaScriptDialogManager(
     WebContents* source) {
-  return NULL;
+  return nullptr;
 }
 
 bool WebContentsDelegate::EmbedsFullscreenWidget() const {
@@ -159,7 +159,7 @@ content::ColorChooser* WebContentsDelegate::OpenColorChooser(
     WebContents* web_contents,
     SkColor color,
     const std::vector<ColorSuggestion>& suggestions) {
-  return NULL;
+  return nullptr;
 }
 
 void WebContentsDelegate::RequestMediaAccessPermission(
@@ -193,7 +193,7 @@ bool WebContentsDelegate::RequestPpapiBrokerPermission(
 WebContentsDelegate::~WebContentsDelegate() {
   while (!attached_contents_.empty()) {
     WebContents* web_contents = *attached_contents_.begin();
-    web_contents->SetDelegate(NULL);
+    web_contents->SetDelegate(nullptr);
   }
   DCHECK(attached_contents_.empty());
 }

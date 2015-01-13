@@ -46,7 +46,7 @@ class AuraWindowRegistry : public aura::WindowObserver {
 
   aura::Window* GetWindowById(int id) {
     std::map<int, aura::Window*>::iterator it = id_to_window_map_.find(id);
-    return (it != id_to_window_map_.end()) ? it->second : NULL;
+    return (it != id_to_window_map_.end()) ? it->second : nullptr;
   }
 
  private:

@@ -39,7 +39,7 @@ class CONTENT_EXPORT DevToolsAgentHost
     TYPE_EXTERNAL,
   };
 
-  // Returns DevToolsAgentHost with a given |id| or NULL of it does not exist.
+  // Returns DevToolsAgentHost with a given |id| or nullptr of it doesn't exist.
   static scoped_refptr<DevToolsAgentHost> GetForId(const std::string& id);
 
   // Returns DevToolsAgentHost that can be used for inspecting |web_contents|.

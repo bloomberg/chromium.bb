@@ -147,8 +147,8 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // This will never return ChildProcessHost::kInvalidUniqueID.
   virtual int GetID() const = 0;
 
-  // Returns true iff channel_ has been set to non-NULL. Use this for checking
-  // if there is connection or not. Virtual for mocking out for tests.
+  // Returns true iff channel_ has been set to non-nullptr. Use this for
+  // checking if there is connection or not. Virtual for mocking out for tests.
   virtual bool HasConnection() const = 0;
 
   // Call this to allow queueing of IPC messages that are sent before the
@@ -271,10 +271,10 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   static void SetRunRendererInProcess(bool value);
 
   // Allows iteration over all the RenderProcessHosts in the browser. Note
-  // that each host may not be active, and therefore may have NULL channels.
+  // that each host may not be active, and therefore may have nullptr channels.
   static iterator AllHostsIterator();
 
-  // Returns the RenderProcessHost given its ID.  Returns NULL if the ID does
+  // Returns the RenderProcessHost given its ID.  Returns nullptr if the ID does
   // not correspond to a live RenderProcessHost.
   static RenderProcessHost* FromID(int render_process_id);
 
@@ -293,7 +293,7 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // context, if possible.  The renderer process is chosen randomly from
   // suitable renderers that share the same context and type (determined by the
   // site url).
-  // Returns NULL if no suitable renderer process is available, in which case
+  // Returns nullptr if no suitable renderer process is available, in which case
   // the caller is free to create a new renderer.
   static RenderProcessHost* GetExistingProcessHost(
       content::BrowserContext* browser_context, const GURL& site_url);

@@ -74,10 +74,10 @@ class CONTENT_EXPORT WebContentsDelegate {
   // in the current front-most tab), unless |disposition| indicates the url
   // should be opened in a new tab or window.
   //
-  // A NULL source indicates the current tab (callers should probably use
+  // A nullptr source indicates the current tab (callers should probably use
   // OpenURL() for these cases which does it for you).
 
-  // Returns the WebContents the URL is opened in, or NULL if the URL wasn't
+  // Returns the WebContents the URL is opened in, or nullptr if the URL wasn't
   // opened immediately.
   virtual WebContents* OpenURLFromTab(WebContents* source,
                                       const OpenURLParams& params);
@@ -95,7 +95,7 @@ class CONTENT_EXPORT WebContentsDelegate {
   // Creates a new tab with the already-created WebContents 'new_contents'.
   // The window for the added contents should be reparented correctly when this
   // method returns.  If |disposition| is NEW_POPUP, |initial_pos| should hold
-  // the initial position. If |was_blocked| is non-NULL, then |*was_blocked|
+  // the initial position. If |was_blocked| is non-nullptr, then |*was_blocked|
   // will be set to true if the popup gets blocked, and left unchanged
   // otherwise.
   virtual void AddNewContents(WebContents* source,
@@ -342,13 +342,13 @@ class CONTENT_EXPORT WebContentsDelegate {
   virtual void DidNavigateToPendingEntry(WebContents* source) {}
 
   // Returns a pointer to a service to manage JavaScript dialogs. May return
-  // NULL in which case dialogs aren't shown.
+  // nullptr in which case dialogs aren't shown.
   virtual JavaScriptDialogManager* GetJavaScriptDialogManager(
       WebContents* source);
 
   // Called when color chooser should open. Returns the opened color chooser.
-  // Returns NULL if we failed to open the color chooser (e.g. when there is a
-  // ColorChooserDialog already open on Windows). Ownership of the returned
+  // Returns nullptr if we failed to open the color chooser (e.g. when there is
+  // a ColorChooserDialog already open on Windows). Ownership of the returned
   // pointer is transferred to the caller.
   virtual ColorChooser* OpenColorChooser(
       WebContents* web_contents,

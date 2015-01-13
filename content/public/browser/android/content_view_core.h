@@ -40,7 +40,7 @@ class WebContents;
 // public interface used by native code outside of the content module.
 class CONTENT_EXPORT ContentViewCore {
  public:
-  // Returns the existing ContentViewCore for |web_contents|, or NULL.
+  // Returns the existing ContentViewCore for |web_contents|, or nullptr.
   static ContentViewCore* FromWebContents(WebContents* web_contents);
   static ContentViewCore* GetNativeContentViewCore(JNIEnv* env, jobject obj);
 

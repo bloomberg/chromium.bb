@@ -71,7 +71,7 @@ class RenderWidgetHostView;
 //
 // The lifetime of the RenderWidgetHostView is tied to the render process. If
 // the render process dies, the RenderWidgetHostView goes away and all
-// references to it must become NULL.
+// references to it must become nullptr.
 //
 // RenderViewHost (a RenderWidgetHost subclass) is the conduit used to
 // communicate with the RenderView and is owned by the WebContents. If the
@@ -108,7 +108,7 @@ class RenderWidgetHostView;
 class CONTENT_EXPORT RenderWidgetHost : public IPC::Sender {
  public:
   // Returns the RenderWidgetHost given its ID and the ID of its render process.
-  // Returns NULL if the IDs do not correspond to a live RenderWidgetHost.
+  // Returns nullptr if the IDs do not correspond to a live RenderWidgetHost.
   static RenderWidgetHost* FromID(int32 process_id, int32 routing_id);
 
   // Returns an iterator to iterate over the global list of active render widget
@@ -202,10 +202,10 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Sender {
 
   virtual int GetRoutingID() const = 0;
 
-  // Gets the View of this RenderWidgetHost. Can be NULL, e.g. if the
+  // Gets the View of this RenderWidgetHost. Can be nullptr, e.g. if the
   // RenderWidget is being destroyed or the render process crashed. You should
-  // never cache this pointer since it can become NULL if the renderer crashes,
-  // instead you should always ask for it using the accessor.
+  // never cache this pointer since it can become nullptr if the renderer
+  // crashes, instead you should always ask for it using the accessor.
   virtual RenderWidgetHostView* GetView() const = 0;
 
   // Returns true if the renderer is loading, false if not.

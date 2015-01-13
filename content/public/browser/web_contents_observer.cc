@@ -11,12 +11,12 @@
 namespace content {
 
 WebContentsObserver::WebContentsObserver(WebContents* web_contents)
-    : web_contents_(NULL) {
+    : web_contents_(nullptr) {
   Observe(web_contents);
 }
 
 WebContentsObserver::WebContentsObserver()
-    : web_contents_(NULL) {
+    : web_contents_(nullptr) {
 }
 
 WebContentsObserver::~WebContentsObserver() {
@@ -69,7 +69,7 @@ int WebContentsObserver::routing_id() const {
 
 void WebContentsObserver::ResetWebContents() {
   web_contents_->RemoveObserver(this);
-  web_contents_ = NULL;
+  web_contents_ = nullptr;
 }
 
 }  // namespace content

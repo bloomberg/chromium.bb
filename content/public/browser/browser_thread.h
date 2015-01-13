@@ -224,7 +224,7 @@ class CONTENT_EXPORT BrowserThread {
   // Sets the delegate for the specified BrowserThread.
   //
   // Only one delegate may be registered at a time.  Delegates may be
-  // unregistered by providing a NULL pointer.
+  // unregistered by providing a nullptr pointer.
   //
   // If the caller unregisters a delegate before CleanUp has been
   // called, it must perform its own locking to ensure the delegate is

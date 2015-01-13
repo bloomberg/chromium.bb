@@ -332,7 +332,7 @@ class CONTENT_EXPORT ContentBrowserClient {
       const std::vector<std::pair<int, int> >& render_frames);
 
   // Allow the embedder to override the request context based on the URL for
-  // certain operations, like cookie access. Returns NULL to indicate the
+  // certain operations, like cookie access. Returns nullptr to indicate the
   // regular request context should be used.
   // This is called on the IO thread.
   virtual net::URLRequestContext* OverrideRequestContextForURL(
@@ -395,7 +395,7 @@ class CONTENT_EXPORT ContentBrowserClient {
                                      CertificateRequestResultType* result) {}
 
   // Selects a SSL client certificate and returns it to the |callback|. If no
-  // certificate was selected NULL is returned to the |callback|.
+  // certificate was selected nullptr is returned to the |callback|.
   virtual void SelectClientCertificate(
       int render_process_id,
       int render_frame_id,
@@ -405,7 +405,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Adds a new installable certificate or private key.
   // Typically used to install an X.509 user certificate.
   // Note that it's up to the embedder to verify that the data is
-  // well-formed. |cert_data| will be NULL if |cert_size| is 0.
+  // well-formed. |cert_data| will be nullptr if |cert_size| is 0.
   virtual void AddCertificate(net::CertificateMimeType cert_type,
                               const void* cert_data,
                               size_t cert_size,
@@ -413,7 +413,7 @@ class CONTENT_EXPORT ContentBrowserClient {
                               int render_frame_id) {}
 
   // Returns a class to get notifications about media event. The embedder can
-  // return NULL if they're not interested.
+  // return nullptr if they're not interested.
   virtual MediaObserver* GetMediaObserver();
 
   // Returns the platform notification service, capable of displaying Web
@@ -469,7 +469,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual void ResourceDispatcherHostCreated() {}
 
   // Allows the embedder to return a delegate for the SpeechRecognitionManager.
-  // The delegate will be owned by the manager. It's valid to return NULL.
+  // The delegate will be owned by the manager. It's valid to return nullptr.
   virtual SpeechRecognitionManagerDelegate*
       CreateSpeechRecognitionManagerDelegate();
 
@@ -517,7 +517,7 @@ class CONTENT_EXPORT ContentBrowserClient {
       int plugin_child_id);
 
   // Returns true if the socket operation specified by |params| is allowed from
-  // the given |browser_context| and |url|. If |params| is NULL, this method
+  // the given |browser_context| and |url|. If |params| is nullptr, this method
   // checks the basic "socket" permission, which is for those operations that
   // don't require a specific socket permission rule.
   // |private_api| indicates whether this permission check is for the private
@@ -527,7 +527,7 @@ class CONTENT_EXPORT ContentBrowserClient {
                                     bool private_api,
                                     const SocketPermissionRequest* params);
 
-  // Returns an implementation of a file selecition policy. Can return NULL.
+  // Returns an implementation of a file selecition policy. Can return nullptr.
   virtual ui::SelectFilePolicy* CreateSelectFilePolicy(
       WebContents* web_contents);
 
@@ -550,14 +550,14 @@ class CONTENT_EXPORT ContentBrowserClient {
       ScopedVector<storage::FileSystemBackend>* additional_backends) {}
 
   // Allows an embedder to return its own LocationProvider implementation.
-  // Return NULL to use the default one for the platform to be created.
+  // Return nullptr to use the default one for the platform to be created.
   // FYI: Used by an external project; please don't remove.
   // Contact Viatcheslav Ostapenko at sl.ostapenko@samsung.com for more
   // information.
   virtual LocationProvider* OverrideSystemLocationProvider();
 
   // Creates a new DevToolsManagerDelegate. The caller owns the returned value.
-  // It's valid to return NULL.
+  // It's valid to return nullptr.
   virtual DevToolsManagerDelegate* GetDevToolsManagerDelegate();
 
   // Returns true if plugin referred to by the url can use
@@ -571,8 +571,8 @@ class CONTENT_EXPORT ContentBrowserClient {
       BrowserContext* browser_context,
       const GURL& url);
 
-  // Returns a special cookie store to use for a given render process, or NULL
-  // if the default cookie store should be used
+  // Returns a special cookie store to use for a given render process, or
+  // nullptr if the default cookie store should be used.
   // This is called on the IO thread.
   virtual net::CookieStore* OverrideCookieStoreForRenderProcess(
       int render_process_id);
@@ -610,7 +610,7 @@ class CONTENT_EXPORT ContentBrowserClient {
 
 #if defined(VIDEO_HOLE)
   // Allows an embedder to provide its own ExternalVideoSurfaceContainer
-  // implementation.  Return NULL to disable external surface video.
+  // implementation.  Return nullptr to disable external surface video.
   virtual ExternalVideoSurfaceContainer*
   OverrideCreateExternalVideoSurfaceContainer(WebContents* web_contents);
 #endif

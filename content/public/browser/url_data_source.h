@@ -65,11 +65,11 @@ class CONTENT_EXPORT URLDataSource {
   // Returns the MessageLoop on which the delegate wishes to have
   // StartDataRequest called to handle the request for |path|. The default
   // implementation returns BrowserThread::UI. If the delegate does not care
-  // which thread StartDataRequest is called on, this should return NULL. It may
-  // be beneficial to return NULL for requests that are safe to handle directly
-  // on the IO thread.  This can improve performance by satisfying such requests
-  // more rapidly when there is a large amount of UI thread contention. Or the
-  // delegate can return a specific thread's Messageloop if they wish.
+  // which thread StartDataRequest is called on, this should return nullptr.
+  // It may be beneficial to return nullptr for requests that are safe to handle
+  // directly on the IO thread.  This can improve performance by satisfying such
+  // requests more rapidly when there is a large amount of UI thread contention.
+  // Or the delegate can return a specific thread's Messageloop if they wish.
   virtual base::MessageLoop* MessageLoopForRequestPath(
       const std::string& path) const;
 

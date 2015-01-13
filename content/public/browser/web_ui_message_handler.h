@@ -28,7 +28,7 @@ class WebUIImpl;
 // host is destroyed.
 class CONTENT_EXPORT WebUIMessageHandler {
  public:
-  WebUIMessageHandler() : web_ui_(NULL) {}
+  WebUIMessageHandler() : web_ui_(nullptr) {}
   virtual ~WebUIMessageHandler() {}
 
  protected:

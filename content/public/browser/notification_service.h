@@ -17,8 +17,8 @@ namespace content {
 
 class CONTENT_EXPORT NotificationService {
  public:
-  // Returns the NotificationService object for the current thread, or NULL if
-  // none.
+  // Returns the NotificationService object for the current thread, or nullptr
+  // if none.
   static NotificationService* current();
 
   static NotificationService* Create();
@@ -39,7 +39,7 @@ class CONTENT_EXPORT NotificationService {
 
   // Returns a NotificationSource that represents all notification sources
   // (for the purpose of registering an observer for events from all sources).
-  static Source<void> AllSources() { return Source<void>(NULL); }
+  static Source<void> AllSources() { return Source<void>(nullptr); }
 
   // Returns the same value as AllSources(). This function has semantic
   // differences to the programmer: We have checked that this AllSources()
@@ -52,12 +52,12 @@ class CONTENT_EXPORT NotificationService {
   // drop to almost nothing, because most usages are not multiprofile safe and
   // were done because it was easier to listen to everything.
   static Source<void> AllBrowserContextsAndSources() {
-    return Source<void>(NULL);
+    return Source<void>(nullptr);
   }
 
   // Returns a NotificationDetails object that represents a lack of details
   // associated with a notification.  (This is effectively a null pointer.)
-  static Details<void> NoDetails() { return Details<void>(NULL); }
+  static Details<void> NoDetails() { return Details<void>(nullptr); }
 };
 
 }  // namespace content

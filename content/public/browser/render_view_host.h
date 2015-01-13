@@ -60,7 +60,7 @@ struct WebPreferences;
 class CONTENT_EXPORT RenderViewHost : virtual public RenderWidgetHost {
  public:
   // Returns the RenderViewHost given its ID and the ID of its render process.
-  // Returns NULL if the IDs do not correspond to a live RenderViewHost.
+  // Returns nullptr if the IDs do not correspond to a live RenderViewHost.
   static RenderViewHost* FromID(int render_process_id, int render_view_id);
 
   // Downcasts from a RenderWidgetHost to a RenderViewHost.  Required

@@ -39,7 +39,7 @@ class CONTENT_EXPORT WebContentsViewDelegate {
  public:
   virtual ~WebContentsViewDelegate();
 
-  // Returns the native window containing the WebContents, or NULL if the
+  // Returns the native window containing the WebContents, or nullptr if the
   // WebContents is not in any window.
   virtual gfx::NativeWindow GetNativeWindow();
 

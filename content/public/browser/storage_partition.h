@@ -118,7 +118,8 @@ class CONTENT_EXPORT StoragePartition {
       OriginMatcherFunction;
 
   // Similar to ClearDataForOrigin().
-  // Deletes all data out fo the StoragePartition if |storage_origin| is NULL.
+  // Deletes all data out fo the StoragePartition if |storage_origin| is
+  // nullptr.
   // |origin_matcher| is present if special storage policy is to be handled,
   // otherwise the callback can be null (base::Callback::is_null() == true).
   // |callback| is called when data deletion is done or at least the deletion is

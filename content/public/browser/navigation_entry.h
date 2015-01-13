@@ -145,7 +145,7 @@ class NavigationEntry {
   // Note, this field:
   // 1) is not persisted in session restore.
   // 2) is shallow copied with the static copy Create method above.
-  // 3) may be NULL so check before use.
+  // 3) may be nullptr so check before use.
   virtual void SetBrowserInitiatedPostData(
       const base::RefCountedMemory* data) = 0;
   virtual const base::RefCountedMemory* GetBrowserInitiatedPostData() const = 0;

@@ -39,7 +39,7 @@ ResourceDispatcherHostLoginDelegate*
     ResourceDispatcherHostDelegate::CreateLoginDelegate(
         net::AuthChallengeInfo* auth_info,
         net::URLRequest* request) {
-  return NULL;
+  return nullptr;
 }
 
 bool ResourceDispatcherHostDelegate::HandleExternalProtocol(const GURL& url,

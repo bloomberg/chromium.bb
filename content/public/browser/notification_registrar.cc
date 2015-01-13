@@ -65,8 +65,8 @@ void NotificationRegistrar::Remove(NotificationObserver* observer,
 
   registered_.erase(found);
 
-  // This can be NULL if our owner outlives the NotificationService, e.g. if our
-  // owner is a Singleton.
+  // This can be nullptr if our owner outlives the NotificationService, e.g. if
+  // our owner is a Singleton.
   NotificationServiceImpl* service = NotificationServiceImpl::current();
   if (service)
     service->RemoveObserver(observer, type, source);
@@ -83,8 +83,8 @@ void NotificationRegistrar::RemoveAll() {
   if (registered_.empty())
     return;
 
-  // This can be NULL if our owner outlives the NotificationService, e.g. if our
-  // owner is a Singleton.
+  // This can be nullptr if our owner outlives the NotificationService, e.g. if
+  // our owner is a Singleton.
   NotificationServiceImpl* service = NotificationServiceImpl::current();
   if (service) {
     for (size_t i = 0; i < registered_.size(); i++) {

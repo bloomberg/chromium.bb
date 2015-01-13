@@ -84,15 +84,16 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
 
   // This method is invoked when a WebContents swaps its visible RenderViewHost
   // with another one, possibly changing processes. The RenderViewHost that has
-  // been replaced is in |old_host|, which is NULL if the old RVH was shut down.
+  // been replaced is in |old_host|, which is nullptr if the old RVH was shut
+  // down.
   virtual void RenderViewHostChanged(RenderViewHost* old_host,
                                      RenderViewHost* new_host) {}
 
   // This method is invoked whenever one of the current frames of a WebContents
   // swaps its RenderFrameHost with another one; for example because that frame
   // navigated and the new content is in a different process. The
-  // RenderFrameHost that has been replaced is in |old_host|, which can be NULL
-  // if the old RFH was shut down.
+  // RenderFrameHost that has been replaced is in |old_host|, which can be
+  // nullptr if the old RFH was shut down.
   //
   // This method, in combination with RenderFrameDeleted, is appropriate for
   // observers wishing to track the set of active RenderFrameHosts -- i.e.,
@@ -285,7 +286,7 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
 
   // Invoked when the WebContents is being destroyed. Gives subclasses a chance
   // to cleanup. After the whole loop over all WebContentsObservers has been
-  // finished, web_contents() returns NULL.
+  // finished, web_contents() returns nullptr.
   virtual void WebContentsDestroyed() {}
 
   // Called when the user agent override for a WebContents has been changed.

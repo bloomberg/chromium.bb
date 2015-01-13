@@ -12,12 +12,12 @@ namespace content {
 
 BrowserMainParts* ContentBrowserClient::CreateBrowserMainParts(
     const MainFunctionParams& parameters) {
-  return NULL;
+  return nullptr;
 }
 
 WebContentsViewDelegate* ContentBrowserClient::GetWebContentsViewDelegate(
     WebContents* web_contents) {
-  return NULL;
+  return nullptr;
 }
 
 GURL ContentBrowserClient::GetEffectiveURL(BrowserContext* browser_context,
@@ -34,7 +34,7 @@ net::URLRequestContextGetter* ContentBrowserClient::CreateRequestContext(
     BrowserContext* browser_context,
     ProtocolHandlerMap* protocol_handlers,
     URLRequestInterceptorScopedVector request_interceptors) {
-  return NULL;
+  return nullptr;
 }
 
 net::URLRequestContextGetter*
@@ -44,7 +44,7 @@ ContentBrowserClient::CreateRequestContextForStoragePartition(
     bool in_memory,
     ProtocolHandlerMap* protocol_handlers,
     URLRequestInterceptorScopedVector request_interceptors) {
-  return NULL;
+  return nullptr;
 }
 
 bool ContentBrowserClient::IsHandledURL(const GURL& url) {
@@ -173,7 +173,7 @@ bool ContentBrowserClient::AllowWorkerIndexedDB(
 }
 
 QuotaPermissionContext* ContentBrowserClient::CreateQuotaPermissionContext() {
-  return NULL;
+  return nullptr;
 }
 
 void ContentBrowserClient::SelectClientCertificate(
@@ -181,12 +181,12 @@ void ContentBrowserClient::SelectClientCertificate(
     int render_frame_id,
     net::SSLCertRequestInfo* cert_request_info,
     const base::Callback<void(net::X509Certificate*)>& callback) {
-  callback.Run(NULL);
+  callback.Run(nullptr);
 }
 
 net::URLRequestContext* ContentBrowserClient::OverrideRequestContextForURL(
     const GURL& url, ResourceContext* context) {
-  return NULL;
+  return nullptr;
 }
 
 std::string ContentBrowserClient::GetStoragePartitionIdForSite(
@@ -216,12 +216,12 @@ void ContentBrowserClient::GetStoragePartitionConfigForSite(
 }
 
 MediaObserver* ContentBrowserClient::GetMediaObserver() {
-  return NULL;
+  return nullptr;
 }
 
 PlatformNotificationService*
 ContentBrowserClient::GetPlatformNotificationService() {
-  return NULL;
+  return nullptr;
 }
 
 void ContentBrowserClient::RequestPermission(
@@ -263,15 +263,15 @@ bool ContentBrowserClient::CanCreateWindow(
 
 SpeechRecognitionManagerDelegate*
     ContentBrowserClient::CreateSpeechRecognitionManagerDelegate() {
-  return NULL;
+  return nullptr;
 }
 
 net::NetLog* ContentBrowserClient::GetNetLog() {
-  return NULL;
+  return nullptr;
 }
 
 AccessTokenStore* ContentBrowserClient::CreateAccessTokenStore() {
-  return NULL;
+  return nullptr;
 }
 
 bool ContentBrowserClient::IsFastShutdownPossible() {
@@ -288,7 +288,7 @@ std::string ContentBrowserClient::GetDefaultDownloadName() {
 
 BrowserPpapiHost*
     ContentBrowserClient::GetExternalBrowserPpapiHost(int plugin_process_id) {
-  return NULL;
+  return nullptr;
 }
 
 bool ContentBrowserClient::AllowPepperSocketAPI(
@@ -301,15 +301,15 @@ bool ContentBrowserClient::AllowPepperSocketAPI(
 
 ui::SelectFilePolicy* ContentBrowserClient::CreateSelectFilePolicy(
     WebContents* web_contents) {
-  return NULL;
+  return nullptr;
 }
 
 LocationProvider* ContentBrowserClient::OverrideSystemLocationProvider() {
-  return NULL;
+  return nullptr;
 }
 
 DevToolsManagerDelegate* ContentBrowserClient::GetDevToolsManagerDelegate() {
-  return NULL;
+  return nullptr;
 }
 
 bool ContentBrowserClient::IsPluginAllowedToCallRequestOSFileHandle(
@@ -326,7 +326,7 @@ bool ContentBrowserClient::IsPluginAllowedToUseDevChannelAPIs(
 
 net::CookieStore* ContentBrowserClient::OverrideCookieStoreForRenderProcess(
     int render_process_id) {
-  return NULL;
+  return nullptr;
 }
 
 bool ContentBrowserClient::CheckMediaAccessPermission(
@@ -338,7 +338,7 @@ bool ContentBrowserClient::CheckMediaAccessPermission(
 
 #if defined(OS_WIN)
 const wchar_t* ContentBrowserClient::GetResourceDllName() {
-  return NULL;
+  return nullptr;
 }
 #endif
 
@@ -346,7 +346,7 @@ const wchar_t* ContentBrowserClient::GetResourceDllName() {
 ExternalVideoSurfaceContainer*
 ContentBrowserClient::OverrideCreateExternalVideoSurfaceContainer(
     WebContents* web_contents) {
-  return NULL;
+  return nullptr;
 }
 #endif
 

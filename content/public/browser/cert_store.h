@@ -38,7 +38,7 @@ class CertStore  {
 
   // Tries to retrieve the previously stored cert associated with the specified
   // |cert_id|. Returns whether the cert could be found, and, if |cert| is
-  // non-NULL, copies it in.
+  // non-nullptr, copies it in.
   virtual bool RetrieveCert(int cert_id,
                             scoped_refptr<net::X509Certificate>* cert) = 0;
 
