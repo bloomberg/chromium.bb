@@ -10,12 +10,7 @@
 #include "base/basictypes.h"
 #include "base/files/scoped_file.h"
 #include "base/memory/scoped_ptr.h"
-
-namespace sandbox {
-namespace bpf_dsl {
-class Policy;
-}
-}
+#include "sandbox/linux/bpf_dsl/policy.h"
 
 namespace content {
 
