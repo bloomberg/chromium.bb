@@ -163,6 +163,14 @@ int KeyboardEvent::keyCode() const
     // We match IE.
     if (!m_keyEvent)
         return 0;
+
+#if OS(ANDROID)
+    // FIXME: Check to see if this applies to other OS.
+    // If the key event belongs to IME composition then propagate to JS.
+    if (m_keyEvent->nativeVirtualKeyCode() == 0xE5) // VKEY_PROCESSKEY
+        return m_keyEvent->nativeVirtualKeyCode();
+#endif
+
     if (type() == EventTypeNames::keydown || type() == EventTypeNames::keyup)
         return windowsVirtualKeyCodeWithoutLocation(m_keyEvent->windowsVirtualKeyCode());
 
