@@ -68,7 +68,7 @@ struct WALLPAPER_EXPORT WallpaperInfo {
   // Either file name of migrated wallpaper including first directory level
   // (corresponding to user id hash) or online wallpaper URL.
   std::string location;
-  wallpaper::WallpaperLayout layout;
+  WallpaperLayout layout;
   user_manager::User::WallpaperType type;
   base::Time date;
   bool operator==(const WallpaperInfo& other) {
@@ -206,7 +206,7 @@ class WALLPAPER_EXPORT WallpaperManagerBase
   // |preferred_height| while respecting the |layout| choice. |output_skia| is
   // optional (may be NULL). Returns true on success.
   static bool ResizeImage(const gfx::ImageSkia& image,
-                          wallpaper::WallpaperLayout layout,
+                          WallpaperLayout layout,
                           int preferred_width,
                           int preferred_height,
                           scoped_refptr<base::RefCountedBytes>* output,
@@ -218,7 +218,7 @@ class WALLPAPER_EXPORT WallpaperManagerBase
   // NULL). Returns true on success.
   static bool ResizeAndSaveWallpaper(const gfx::ImageSkia& image,
                                      const base::FilePath& path,
-                                     wallpaper::WallpaperLayout layout,
+                                     WallpaperLayout layout,
                                      int preferred_width,
                                      int preferred_height,
                                      gfx::ImageSkia* output_skia);
@@ -278,7 +278,7 @@ class WALLPAPER_EXPORT WallpaperManagerBase
   virtual void SetCustomWallpaper(const std::string& user_id,
                                   const std::string& user_id_hash,
                                   const std::string& file,
-                                  wallpaper::WallpaperLayout layout,
+                                  WallpaperLayout layout,
                                   user_manager::User::WallpaperType type,
                                   const gfx::ImageSkia& image,
                                   bool update_wallpaper) = 0;
@@ -316,7 +316,7 @@ class WALLPAPER_EXPORT WallpaperManagerBase
   // |update_wallpaper| is false, skip change wallpaper but only update cache.
   virtual void SetWallpaperFromImageSkia(const std::string& user_id,
                                          const gfx::ImageSkia& image,
-                                         wallpaper::WallpaperLayout layout,
+                                         WallpaperLayout layout,
                                          bool update_wallpaper) = 0;
 
   // Updates current wallpaper. It may switch the size of wallpaper based on the
@@ -370,7 +370,7 @@ class WALLPAPER_EXPORT WallpaperManagerBase
   // and starts resizing operation of the custom wallpaper if necessary.
   static void SaveCustomWallpaper(const std::string& user_id_hash,
                                   const base::FilePath& path,
-                                  wallpaper::WallpaperLayout layout,
+                                  WallpaperLayout layout,
                                   scoped_ptr<gfx::ImageSkia> image);
 
   // Moves custom wallpapers from |user_id| directory to |user_id_hash|
@@ -479,7 +479,7 @@ class WALLPAPER_EXPORT WallpaperManagerBase
   // because that's the callback interface provided by UserImageLoader.)
   virtual void OnWallpaperDecoded(
       const std::string& user_id,
-      wallpaper::WallpaperLayout layout,
+      WallpaperLayout layout,
       bool update_wallpaper,
       MovableOnDestroyCallbackHolder on_finish,
       const user_manager::UserImage& user_image) = 0;
@@ -543,7 +543,7 @@ class WALLPAPER_EXPORT WallpaperManagerBase
   // Sets wallpaper to decoded default.
   virtual void OnDefaultWallpaperDecoded(
       const base::FilePath& path,
-      const wallpaper::WallpaperLayout layout,
+      const WallpaperLayout layout,
       scoped_ptr<user_manager::UserImage>* result,
       MovableOnDestroyCallbackHolder on_finish,
       const user_manager::UserImage& user_image) = 0;
@@ -551,7 +551,7 @@ class WALLPAPER_EXPORT WallpaperManagerBase
   // Start decoding given default wallpaper.
   virtual void StartLoadAndSetDefaultWallpaper(
       const base::FilePath& path,
-      const wallpaper::WallpaperLayout layout,
+      const WallpaperLayout layout,
       MovableOnDestroyCallbackHolder on_finish,
       scoped_ptr<user_manager::UserImage>* result_out) = 0;
 
