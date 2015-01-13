@@ -268,7 +268,7 @@ def eliminate_duplicate_frames(directory):
             os.remove(duplicate)
 
     except:
-        logging.critical('Error processing frames for duplicates')
+        logging.exception('Error processing frames for duplicates')
 
 
 def get_decimate_filter():
@@ -352,7 +352,7 @@ def generate_orange_png(orange_file):
         del draw
         im.save(orange_file, 'PNG')
     except:
-        logging.debug('Error generating orange png ' + orange_file)
+        logging.exception('Error generating orange png ' + orange_file)
 
 
 def synchronize_to_timeline(directory, timeline_file):
@@ -401,8 +401,8 @@ def get_timeline_offset(timeline_file):
             offset = int(round(first_navigate - last_paint))
             logging.info(
                 "Trimming {0:d}ms from the start of the video based on timeline synchronization".format(offset))
-    except Exception as e:
-        logging.debug("Error processing timeline file " + timeline_file)
+    except:
+        logging.critical("Error processing timeline file " + timeline_file)
 
     return offset
 
@@ -502,7 +502,7 @@ def calculate_histograms(directory, histograms_file, force):
             else:
                 logging.critical('No video frames found in ' + directory)
         except:
-            logging.critical('Error calculating histograms')
+            logging.exception('Error calculating histograms')
     else:
         logging.debug('Histograms file {0} already exists'.format(histograms_file))
 
@@ -525,9 +525,9 @@ def calculate_image_histogram(file):
                     histogram['r'][pixel[0]] += 1
                     histogram['g'][pixel[1]] += 1
                     histogram['b'][pixel[2]] += 1
-    except Exception as e:
+    except:
         histogram = None
-        logging.error('Error calculating histogram for ' + file)
+        logging.exception('Error calculating histogram for ' + file)
     return histogram
 
 
@@ -727,7 +727,7 @@ def check_process(command, output):
 ########################################################################################################################
 
 
-if '__main__' == __name__:
+def main():
     import argparse
 
     parser = argparse.ArgumentParser(description='Calculate visual performance metrics from a video.',
@@ -810,6 +810,7 @@ if '__main__' == __name__:
         else:
             ok = check_config()
     except Exception as e:
+        logging.exception(e)
         ok = False
 
     # Clean up
@@ -818,3 +819,7 @@ if '__main__' == __name__:
         exit(0)
     else:
         exit(1)
+
+
+if '__main__' == __name__:
+    main()
