@@ -105,7 +105,10 @@ extensions::AppSorting* GetAppSorting(Profile* profile) {
   return extensions::ExtensionPrefs::Get(profile)->app_sorting();
 }
 
-const color_utils::HSL shift = {-1, 0, 0.6};
+gfx::ImageSkia CreateDisabledIcon(const gfx::ImageSkia& icon) {
+  const color_utils::HSL shift = {-1, 0, 0.6};
+  return gfx::ImageSkiaOperations::CreateHSLShiftedImage(icon, shift);
+}
 
 }  // namespace
 
@@ -121,9 +124,7 @@ ExtensionAppItem::ExtensionAppItem(
       extension_id_(extension_id),
       extension_enable_flow_controller_(NULL),
       extension_name_(extension_name),
-      installing_icon_(
-          gfx::ImageSkiaOperations::CreateHSLShiftedImage(installing_icon,
-                                                          shift)),
+      installing_icon_(CreateDisabledIcon(installing_icon)),
       is_platform_app_(is_platform_app),
       has_overlay_(false) {
   Reload();
@@ -185,10 +186,8 @@ void ExtensionAppItem::UpdateIcon() {
     icon = icon_->image_skia();
     const bool enabled = extensions::util::IsAppLaunchable(extension_id_,
                                                            profile_);
-    if (!enabled) {
-      const color_utils::HSL shift = {-1, 0, 0.6};
-      icon = gfx::ImageSkiaOperations::CreateHSLShiftedImage(icon, shift);
-    }
+    if (!enabled)
+      icon = CreateDisabledIcon(icon);
 
     if (GetExtension()->from_bookmark())
       icon = gfx::ImageSkia(new RoundedCornersImageSource(icon), icon.size());
