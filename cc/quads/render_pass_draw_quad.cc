@@ -99,9 +99,9 @@ void RenderPassDrawQuad::ExtendValue(base::debug::TracedValue* value) const {
   TracedValue::SetIDRef(render_pass_id.AsTracingId(), value, "render_pass_id");
   value->SetInteger("mask_resource_id", mask_resource_id);
 
-  value->BeginArray("mask_texture_size");
+  value->BeginDictionary("mask_texture_size");
   MathUtil::AddToTracedValue(mask_texture_size, value);
-  value->EndArray();
+  value->EndDictionary();
 
   value->BeginArray("mask_uv_scale");
   MathUtil::AddToTracedValue(mask_uv_scale, value);
