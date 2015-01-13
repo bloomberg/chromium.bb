@@ -127,7 +127,7 @@ def Main(args):
     upstream_branches = []
   else:
     pnacl_branch = 'origin/master'
-    # Skip changes merged (but not cherry-picked) from upstream SVN.
+    # Skip changes merged (but not cherry-picked) from upstream git.
     upstream_branches = ['origin/upstream/master']
 
   if not options.list_only:

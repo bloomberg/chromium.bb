@@ -43,14 +43,6 @@ def CheckGitOutput(args):
   return log_tools.CheckOutput(GitCmd() + args)
 
 
-def SvnCmd():
-  """Return the svn command to execute for the host platform."""
-  if platform.IsWindows():
-    return ['cmd.exe', '/c', 'svn.bat']
-  else:
-    return ['svn']
-
-
 def ValidateGitRepo(url, directory, clobber_mismatch=False, logger=None):
   """Validates a git repository tracks a particular URL.
 
@@ -256,28 +248,6 @@ def GitRevInfo(directory):
   rev = log_tools.CheckOutput(GitCmd() + ['rev-parse', 'HEAD'],
                               cwd=directory)
   return url.strip(), rev.strip()
-
-
-def SvnRevInfo(directory):
-  """Get the SVN revision information of an existing svn/gclient checkout.
-
-  Args:
-     directory: Directory where the svn repo is currently checked out
-  """
-  info = log_tools.CheckOutput(SvnCmd() + ['info'], cwd=directory)
-  url = ''
-  rev = ''
-  for line in info.splitlines():
-    pieces = line.split(':', 1)
-    if len(pieces) != 2:
-      continue
-    if pieces[0] == 'URL':
-      url = pieces[1].strip()
-    elif pieces[0] == 'Revision':
-      rev = pieces[1].strip()
-  if not url or not rev:
-    raise RuntimeError('Missing svn info url: %s and rev: %s' % (url, rev))
-  return url, rev
 
 
 def GetAuthenticatedGitURL(url):

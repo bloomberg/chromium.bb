@@ -147,13 +147,9 @@ fi
 if ${BUILD_PLATFORM_WIN}; then
    readonly GCLIENT="gclient.bat"
    readonly GIT="git.bat"
-   readonly HG="hg.bat"
-   readonly SVN="svn.bat"
 else
    readonly GCLIENT="gclient"
    readonly GIT="git"
-   readonly HG="hg"
-   readonly SVN="svn"
 fi
 
 # On Windows, scons expects Windows-style paths (C:\foo\bar)
@@ -191,82 +187,6 @@ git-assert-no-changes() {
 }
 
 ######################################################################
-# Subversion repository tools
-######################################################################
-
-svn-at-revision() {
-  local dir="$1"
-  local rev="$2"
-  local repo_rev=$(svn-get-revision "${dir}")
-  [ "${repo_rev}" == "${rev}" ]
-  return $?
-}
-
-#+ svn-get-revision <dir>
-svn-get-revision() {
-  local dir="$1"
-  spushd "${dir}"
-  local rev=$(${SVN} info | grep 'Revision: ' | cut -b 11-)
-  if ! [[ "${rev}" =~ ^[0-9]+$ ]]; then
-    echo "Invalid revision number '${rev}' or invalid repository '${dir}'" 1>&2
-    exit -1
-  fi
-  spopd
-  echo "${rev}"
-}
-
-#+ svn-checkout <url> <repodir> - Checkout an SVN repository
-svn-checkout() {
-  local url="$1"
-  local dir="$2"
-  local rev="$3"
-
-  if [ ! -d "${dir}" ]; then
-    StepBanner "SVN-CHECKOUT" "Checking out ${url}"
-    RunWithLog "svn-checkout" ${SVN} co "${url}" "${dir}" -r "${rev}"
-  else
-    SkipBanner "SVN-CHECKOUT" "Using existing SVN repository for ${url}"
-  fi
-}
-
-#+ svn-update <dir> <rev> - Update an SVN repository
-svn-update() {
-  local dir="$1"
-  local rev="$2"
-
-  assert-dir "$dir" \
-    "SVN repository $(basename "${dir}") doesn't exist."
-
-  spushd "${dir}"
-  if [[ "$rev" == "tip" ]]; then
-    RunWithLog "svn-update" ${SVN} update
-  else
-    RunWithLog "svn-update" ${SVN} update -r ${rev}
-  fi
-  spopd
-}
-
-svn-has-changes() {
-  local dir="$1"
-  spushd "${dir}"
-  local STATUS=$(${SVN} status)
-  spopd
-  [ "${STATUS}" != "" ]
-  return $?
-}
-
-#+ svn-assert-no-changes <dir> - Assert an svn repo has no local changes
-svn-assert-no-changes() {
-  local dir="$1"
-  if svn-has-changes "${dir}" ; then
-    local name=$(basename "${dir}")
-    Banner "ERROR: Repository ${name} has local changes"
-    exit -1
-  fi
-}
-
-
-######################################################################
 # vcs rev info helper
 ######################################################################
 get-field () {
@@ -280,18 +200,10 @@ git-one-line-rev-info() {
     echo "[GIT] ${url}: ${commit}"
 }
 
-svn-one-line-rev-info() {
-    local url=$(${SVN} info | egrep 'URL:' | get-field 2)
-    local rev=$(${SVN} info | egrep 'Revision:' | get-field 2)
-    echo "[SVN] ${url}: ${rev}"
-}
-
 #+ one-line-rev-info <dir> - show one line summmary for
 one-line-rev-info() {
   spushd $1
-  if [ -d .svn ]; then
-    svn-one-line-rev-info
-  elif [ -d .git ]; then
+  if [ -d .git ]; then
     # we currently only
     git-one-line-rev-info
   else

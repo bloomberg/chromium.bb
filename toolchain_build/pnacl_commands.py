@@ -113,13 +113,8 @@ def WriteREVFile(logger, subst, dstfile, base_url, repos, revisions):
   rev_file = subst.SubstituteAbsPaths(dstfile)
   logger.debug('  Installing: %s', rev_file)
   with open(rev_file, 'w') as f:
-    try:
-      url, rev = pynacl.repo_tools.GitRevInfo(NACL_DIR)
-      repotype = 'GIT'
-    except subprocess.CalledProcessError:
-      url, rev = pynacl.repo_tools.SvnRevInfo(NACL_DIR)
-      repotype = 'SVN'
-    print >> f, '[%s] %s: %s' % (repotype, url, rev)
+    url, rev = pynacl.repo_tools.GitRevInfo(NACL_DIR)
+    print >> f, '[GIT] %s: %s' % (url, rev)
 
     for name, revision in revisions.iteritems():
       repo = base_url + repos[name]
