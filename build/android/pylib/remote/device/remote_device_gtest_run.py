@@ -7,12 +7,21 @@
 import logging
 import os
 import sys
+import tempfile
 
 from pylib import constants
 from pylib.base import base_test_result
 from pylib.remote.device import appurify_sanitized
 from pylib.remote.device import remote_device_test_run
 from pylib.remote.device import remote_device_helper
+
+
+_EXTRA_COMMAND_LINE_FILE = (
+    'org.chromium.native_test.ChromeNativeTestActivity.CommandLineFile')
+# TODO(jbudorick): Remove this extra when b/18981674 is fixed.
+_EXTRA_ONLY_OUTPUT_FAILURES = (
+    'org.chromium.native_test.ChromeNativeTestInstrumentationTestRunner.'
+        'OnlyOutputFailures')
 
 
 class RemoteDeviceGtestRun(remote_device_test_run.RemoteDeviceTestRun):
@@ -43,8 +52,20 @@ class RemoteDeviceGtestRun(remote_device_test_run.RemoteDeviceTestRun):
 
     dummy_app_path = os.path.join(
         constants.GetOutDirectory(), 'apks', 'remote_device_dummy.apk')
-    self._AmInstrumentTestSetup(dummy_app_path, self._test_instance.apk,
-                                runner_package)
+    with tempfile.NamedTemporaryFile(suffix='.flags.txt') as flag_file:
+      env_vars = {}
+      filter_string = self._test_instance._GenerateDisabledFilterString(None)
+      if filter_string:
+        flag_file.write('_ --gtest_filter=%s' % filter_string)
+        flag_file.flush()
+        env_vars[_EXTRA_COMMAND_LINE_FILE] = os.path.basename(flag_file.name)
+        self._test_instance._data_deps.append(
+            (os.path.abspath(flag_file.name), None))
+      if self._env.only_output_failures:
+        env_vars[_EXTRA_ONLY_OUTPUT_FAILURES] = None
+      self._AmInstrumentTestSetup(
+          dummy_app_path, self._test_instance.apk, runner_package,
+          environment_variables=env_vars)
 
   _INSTRUMENTATION_STREAM_LEADER = 'INSTRUMENTATION_STATUS: stream='
 
@@ -62,6 +83,8 @@ class RemoteDeviceGtestRun(remote_device_test_run.RemoteDeviceTestRun):
                 if l.startswith(self._INSTRUMENTATION_STREAM_LEADER))
       results_list = self._test_instance.ParseGTestOutput(output)
       results.AddResults(results_list)
+      if self._env.only_output_failures:
+        logging.info('See logcat for more results information.')
       if not self._results['results']['pass']:
         results.AddResult(base_test_result.BaseTestResult(
             'Remote Service detected error.',

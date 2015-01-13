@@ -7,6 +7,7 @@ package org.chromium.native_test;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.util.Log;
 
@@ -15,6 +16,8 @@ import org.chromium.base.PathUtils;
 import org.chromium.base.PowerMonitor;
 import org.chromium.base.ResourceExtractor;
 import org.chromium.base.library_loader.NativeLibraries;
+
+import java.io.File;
 
 /**
  *  Android's NativeActivity is mostly useful for pure-native code.
@@ -75,7 +78,16 @@ public class ChromeNativeTestActivity extends Activity {
         if (commandLineFlags == null) commandLineFlags = "";
 
         String commandLineFilePath = getIntent().getStringExtra(EXTRA_COMMAND_LINE_FILE);
-        if (commandLineFilePath == null) commandLineFilePath = "";
+        if (commandLineFilePath == null) {
+            commandLineFilePath = "";
+        } else {
+            File commandLineFile = new File(commandLineFilePath);
+            if (!commandLineFile.isAbsolute()) {
+                commandLineFilePath = Environment.getExternalStorageDirectory() + "/"
+                        + commandLineFilePath;
+            }
+            Log.i(TAG, "command line file path: " + commandLineFilePath);
+        }
 
         // This directory is used by build/android/pylib/test_package_apk.py.
         nativeRunTests(commandLineFlags, commandLineFilePath, getFilesDir().getAbsolutePath(),

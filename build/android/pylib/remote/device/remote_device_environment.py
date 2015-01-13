@@ -166,37 +166,42 @@ class RemoteDeviceEnvironment(environment.Environment):
     raise remote_device_helper.RemoteDeviceError('No device found.')
 
   @property
+  def collect(self):
+    return self._collect
+
+  @property
   def device(self):
     return self._device
 
   @property
-  def token(self):
-    return self._access_token
+  def only_output_failures(self):
+    # TODO(jbudorick): Remove this once b/18981674 is fixed.
+    return True
 
   @property
   def results_path(self):
     return self._results_path
 
   @property
+  def runner_package(self):
+    return self._runner_package
+
+  @property
   def runner_type(self):
     return self._runner_type
 
   @property
-  def runner_package(self):
-    return self._runner_package
+  def timeouts(self):
+    return self._timeouts
+
+  @property
+  def token(self):
+    return self._access_token
 
   @property
   def trigger(self):
     return self._trigger
 
   @property
-  def collect(self):
-    return self._collect
-
-  @property
   def verbose_count(self):
     return self._verbose_count
-
-  @property
-  def timeouts(self):
-    return self._timeouts

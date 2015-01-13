@@ -170,8 +170,12 @@ class RemoteDeviceTestRun(test_run.TestRun):
     self._results = test_check_res.json()['response']
     return self._results['status']
 
-  def _AmInstrumentTestSetup(self, app_path, test_path, runner_package):
+  def _AmInstrumentTestSetup(self, app_path, test_path, runner_package,
+                             environment_variables):
     config = {'runner': runner_package}
+    if environment_variables:
+      config['environment_vars'] = ','.join(
+          '%s=%s' % (k, v) for k, v in environment_variables.iteritems())
 
     self._app_id = self._UploadAppToDevice(app_path)
 
@@ -183,11 +187,12 @@ class RemoteDeviceTestRun(test_run.TestRun):
         with zipfile.ZipFile(test_with_deps.name, 'w') as zip_file:
           zip_file.write(test_path, host_test, zipfile.ZIP_DEFLATED)
           for h, _ in data_deps:
-            zip_utils.WriteToZipFile(zip_file, h, '.')
             if os.path.isdir(h):
+              zip_utils.WriteToZipFile(zip_file, h, '.')
               sdcard_files.extend(os.listdir(h))
             else:
-              sdcard_files.extend(h)
+              zip_utils.WriteToZipFile(zip_file, h, os.path.basename(h))
+              sdcard_files.append(os.path.basename(h))
         config['sdcard_files'] = ','.join(sdcard_files)
         config['host_test'] = host_test
         self._test_id = self._UploadTestToDevice(
@@ -232,7 +237,13 @@ class RemoteDeviceTestRun(test_run.TestRun):
     """
     logging.info('Generating config file for test.')
     with tempfile.TemporaryFile() as config:
-      config_data = ['[appurify]', '[%s]' % runner_type]
+      config_data = [
+        '[appurify]',
+        'pcap=0',
+        'profiler=0',
+        'videocapture=0',
+        '[%s]' % runner_type
+      ]
       config_data.extend('%s=%s' % (k, v) for k, v in body.iteritems())
       config.write(''.join('%s\n' % l for l in config_data))
       config.flush()

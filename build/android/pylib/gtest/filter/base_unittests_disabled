@@ -20,6 +20,9 @@ FieldTrialTest.*
 ScopedJavaRefTest.RefCounts
 # Death tests are not supported with apks.
 *DeathTest*
+FileTest.MemoryCorruption
+MessagePumpLibeventTest.QuitOutsideOfRun
+ScopedFD.ScopedFDCrashesOnCloseFailure
 
 # http://crbug.com/245043
 StackContainer.BufferAlignment

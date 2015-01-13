@@ -123,39 +123,39 @@ def AddRemoteDeviceOptions(parser):
   group = parser.add_argument_group('Remote Device Options')
 
   group.add_argument('--trigger', default='',
-                   help=('Only triggers the test if set. Stores test_run_id '
-                         'in given file path. '))
+                     help=('Only triggers the test if set. Stores test_run_id '
+                           'in given file path. '))
   group.add_argument('--collect', default='',
-                   help=('Only collects the test results if set. '
-                         'Gets test_run_id from given file path.'))
+                     help=('Only collects the test results if set. '
+                           'Gets test_run_id from given file path.'))
   group.add_argument('--remote-device', default='',
-                   help=('Device type to run test on.'))
+                     help='Device type to run test on.')
   group.add_argument('--remote-device-os', default='',
-                   help=('OS to have on the device.'))
+                     help='OS to have on the device.')
   group.add_argument('--results-path', default='',
-                   help=('File path to download results to.'))
+                     help='File path to download results to.')
   group.add_argument('--api-protocol',
-                   help=('HTTP protocol to use. (http or https)'))
-  group.add_argument('--api-address', help=('Address to send HTTP requests.'))
-  group.add_argument('--api-port', help=('Port to send HTTP requests to.'))
+                     help='HTTP protocol to use. (http or https)')
+  group.add_argument('--api-address', help='Address to send HTTP requests.')
+  group.add_argument('--api-port', help='Port to send HTTP requests to.')
   group.add_argument('--runner-type', default='',
-                   help=('Type of test to run as.'))
+                     help='Type of test to run as.')
   group.add_argument('--runner-package', default='',
-                   help=('Package name of test.'))
+                     help='Package name of test.')
   group.add_argument('--apk-under-test', default='apks/Chrome.apk',
-                   help=('APK to run tests on.'))
+                     help='APK to run tests on.')
 
   api_secret_group = group.add_mutually_exclusive_group()
   api_secret_group.add_argument('--api-secret', default='',
-                   help=('API secret for remote devices.'))
+                                help='API secret for remote devices.')
   api_secret_group.add_argument('--api-secret-file', default='',
-                   help=('Path to file that contains API secret.'))
+                                help='Path to file that contains API secret.')
 
   api_key_group = group.add_mutually_exclusive_group()
   api_key_group.add_argument('--api-key', default='',
-                   help=('API key for remote devices.'))
+                             help='API key for remote devices.')
   api_key_group.add_argument('--api-key-file', default='',
-                   help=('Path to file that contains API key.'))
+                             help='Path to file that contains API key.')
 
 
 def AddDeviceOptions(parser):

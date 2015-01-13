@@ -27,9 +27,13 @@ import java.util.regex.Pattern;
  *  An Instrumentation that runs tests based on ChromeNativeTestActivity.
  */
 public class ChromeNativeTestInstrumentationTestRunner extends Instrumentation {
+    // TODO(jbudorick): Remove this extra when b/18981674 is fixed.
+    public static final String EXTRA_ONLY_OUTPUT_FAILURES =
+            "org.chromium.native_test.ChromeNativeTestInstrumentationTestRunner."
+                    + "OnlyOutputFailures";
 
     private static final String TAG = "ChromeNativeTestInstrumentationTestRunner";
-    private static final Pattern RE_TEST_OUTPUT = Pattern.compile("\\[ *([^ ]*) *\\] ?([^ ]*) .*");
+    private static final Pattern RE_TEST_OUTPUT = Pattern.compile("\\[ *([^ ]*) *\\] ?([^ ]+) .*");
 
     private static interface ResultsBundleGenerator {
         public Bundle generate(Map<String, TestResult> rawResults);
@@ -39,6 +43,7 @@ public class ChromeNativeTestInstrumentationTestRunner extends Instrumentation {
     private String mCommandLineFlags;
     private Bundle mLogBundle;
     private ResultsBundleGenerator mBundleGenerator;
+    private boolean mOnlyOutputFailures;
 
     @Override
     public void onCreate(Bundle arguments) {
@@ -46,6 +51,7 @@ public class ChromeNativeTestInstrumentationTestRunner extends Instrumentation {
         mCommandLineFlags = arguments.getString(ChromeNativeTestActivity.EXTRA_COMMAND_LINE_FLAGS);
         mLogBundle = new Bundle();
         mBundleGenerator = new RobotiumBundleGenerator();
+        mOnlyOutputFailures = arguments.containsKey(EXTRA_ONLY_OUTPUT_FAILURES);
         start();
     }
 
@@ -117,17 +123,27 @@ public class ChromeNativeTestInstrumentationTestRunner extends Instrumentation {
             for (String l = r.readLine(); l != null && !l.equals("<<ScopedMainEntryLogger");
                     l = r.readLine()) {
                 Matcher m = RE_TEST_OUTPUT.matcher(l);
+                boolean isFailure = false;
                 if (m.matches()) {
                     if (m.group(1).equals("RUN")) {
                         results.put(m.group(2), TestResult.UNKNOWN);
                     } else if (m.group(1).equals("FAILED")) {
                         results.put(m.group(2), TestResult.FAILED);
+                        isFailure = true;
+                        mLogBundle.putString(Instrumentation.REPORT_KEY_STREAMRESULT, l + "\n");
+                        sendStatus(0, mLogBundle);
                     } else if (m.group(1).equals("OK")) {
                         results.put(m.group(2), TestResult.PASSED);
                     }
                 }
-                mLogBundle.putString(Instrumentation.REPORT_KEY_STREAMRESULT, l + "\n");
-                sendStatus(0, mLogBundle);
+
+                // TODO(jbudorick): mOnlyOutputFailures is a workaround for b/18981674. Remove it
+                // once that issue is fixed.
+                if (!mOnlyOutputFailures || isFailure) {
+                    mLogBundle.putString(Instrumentation.REPORT_KEY_STREAMRESULT, l + "\n");
+                    sendStatus(0, mLogBundle);
+                }
+                Log.i(TAG, l);
             }
         } catch (InterruptedException e) {
             Log.e(TAG, "Interrupted while waiting for FIFO file creation: " + e.toString());
@@ -168,6 +184,9 @@ public class ChromeNativeTestInstrumentationTestRunner extends Instrumentation {
                         ++testsPassed;
                         break;
                     case FAILED:
+                        // TODO(jbudorick): Remove this log message once AMP execution and
+                        // results handling has been stabilized.
+                        Log.d(TAG, "FAILED: " + entry.getKey());
                         ++testsFailed;
                         break;
                     default:
@@ -178,11 +197,12 @@ public class ChromeNativeTestInstrumentationTestRunner extends Instrumentation {
             }
 
             StringBuilder resultBuilder = new StringBuilder();
-            resultBuilder.append("\nOK (" + Integer.toString(testsPassed) + " tests)");
             if (testsFailed > 0) {
                 resultBuilder.append(
                         "\nFAILURES!!! Tests run: " + Integer.toString(rawResults.size())
                         + ", Failures: " + Integer.toString(testsFailed) + ", Errors: 0");
+            } else {
+                resultBuilder.append("\nOK (" + Integer.toString(testsPassed) + " tests)");
             }
             resultsBundle.putString(Instrumentation.REPORT_KEY_STREAMRESULT,
                     resultBuilder.toString());
