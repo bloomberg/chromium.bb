@@ -32,7 +32,7 @@ class HeaderChecker : public base::RefCountedThreadSafe<HeaderChecker> {
  public:
   // Represents a dependency chain.
   struct ChainLink {
-    ChainLink() : target(NULL), is_public(false) {}
+    ChainLink() : target(nullptr), is_public(false) {}
     ChainLink(const Target* t, bool p) : target(t), is_public(p) {}
 
     const Target* target;
@@ -71,7 +71,7 @@ class HeaderChecker : public base::RefCountedThreadSafe<HeaderChecker> {
   ~HeaderChecker();
 
   struct TargetInfo {
-    TargetInfo() : target(NULL), is_public(false), is_generated(false) {}
+    TargetInfo() : target(nullptr), is_public(false), is_generated(false) {}
     TargetInfo(const Target* t, bool is_pub, bool is_gen)
         : target(t),
           is_public(is_pub),

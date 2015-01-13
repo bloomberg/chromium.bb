@@ -216,7 +216,7 @@ class Target : public Item {
   // or the error will be set and the function will return false. Unusually,
   // this function's "err" output is optional since this is commonly used
   // frequently by unit tests which become needlessly verbose.
-  bool SetToolchain(const Toolchain* toolchain, Err* err = NULL);
+  bool SetToolchain(const Toolchain* toolchain, Err* err = nullptr);
 
   // Returns outputs from this target. The link output file is the one that
   // other targets link to when they depend on this target. This will only be

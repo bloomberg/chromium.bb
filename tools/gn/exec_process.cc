@@ -35,11 +35,11 @@ bool ExecProcess(const base::CommandLine& cmdline,
   // Set the bInheritHandle flag so pipe handles are inherited.
   sa_attr.nLength = sizeof(SECURITY_ATTRIBUTES);
   sa_attr.bInheritHandle = TRUE;
-  sa_attr.lpSecurityDescriptor = NULL;
+  sa_attr.lpSecurityDescriptor = nullptr;
 
   // Create the pipe for the child process's STDOUT.
-  HANDLE out_read = NULL;
-  HANDLE out_write = NULL;
+  HANDLE out_read = nullptr;
+  HANDLE out_write = nullptr;
   if (!CreatePipe(&out_read, &out_write, &sa_attr, 0)) {
     NOTREACHED() << "Failed to create pipe";
     return false;
@@ -48,8 +48,8 @@ bool ExecProcess(const base::CommandLine& cmdline,
   base::win::ScopedHandle scoped_out_write(out_write);
 
   // Create the pipe for the child process's STDERR.
-  HANDLE err_read = NULL;
-  HANDLE err_write = NULL;
+  HANDLE err_read = nullptr;
+  HANDLE err_write = nullptr;
   if (!CreatePipe(&err_read, &err_write, &sa_attr, 0)) {
     NOTREACHED() << "Failed to create pipe";
     return false;
@@ -82,11 +82,11 @@ bool ExecProcess(const base::CommandLine& cmdline,
 
   // Create the child process.
   PROCESS_INFORMATION temp_process_info = {};
-  if (!CreateProcess(NULL,
+  if (!CreateProcess(nullptr,
                      &cmdline_str[0],
-                     NULL, NULL,
+                     nullptr, nullptr,
                      TRUE,  // Handles are inherited.
-                     0, NULL,
+                     0, nullptr,
                      startup_dir.value().c_str(),
                      &start_info, &temp_process_info)) {
     return false;
@@ -107,7 +107,8 @@ bool ExecProcess(const base::CommandLine& cmdline,
   // Also uncomment start_info code above.
   for (;;) {
     DWORD bytes_read = 0;
-    BOOL success = ReadFile(out_read, buffer, kBufferSize, &bytes_read, NULL);
+    BOOL success =
+        ReadFile(out_read, buffer, kBufferSize, &bytes_read, nullptr);
     if (!success || bytes_read == 0)
       break;
     std_out->append(buffer, bytes_read);

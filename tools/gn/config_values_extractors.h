@@ -47,7 +47,7 @@ class ConfigValuesIterator {
   // null for the config values of a target itself.
   const ParseNode* origin() const {
     if (cur_index_ == -1)
-      return NULL;
+      return nullptr;
     return target_->configs()[cur_index_].origin;
   }
 
@@ -59,7 +59,7 @@ class ConfigValuesIterator {
   // config values associated with the target itself.
   const Config* GetCurrentConfig() const {
     if (cur_index_ == -1)
-      return NULL;
+      return nullptr;
     return target_->configs()[cur_index_].ptr;
   }
 

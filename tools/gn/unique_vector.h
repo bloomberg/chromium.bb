@@ -26,8 +26,8 @@ template<typename T>
 class UniquifyRef {
  public:
   UniquifyRef()
-      : value_(NULL),
-        vect_(NULL),
+      : value_(nullptr),
+        vect_(nullptr),
         index_(static_cast<size_t>(-1)),
         hash_val_(0) {
   }
@@ -35,14 +35,14 @@ class UniquifyRef {
   // Initialize with a pointer to a value.
   UniquifyRef(const T* v)
       : value_(v),
-        vect_(NULL),
+        vect_(nullptr),
         index_(static_cast<size_t>(-1)) {
     FillHashValue();
   }
 
   // Initialize with an array + index.
   UniquifyRef(const std::vector<T>* v, size_t i)
-      : value_(NULL),
+      : value_(nullptr),
         vect_(v),
         index_(i) {
     FillHashValue();
@@ -51,7 +51,7 @@ class UniquifyRef {
   // Initialize with an array + index and a known hash value to prevent
   // re-hashing.
   UniquifyRef(const std::vector<T>* v, size_t i, size_t hash_value)
-      : value_(NULL),
+      : value_(nullptr),
         vect_(v),
         index_(i),
         hash_val_(hash_value) {

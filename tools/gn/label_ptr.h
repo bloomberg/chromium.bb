@@ -22,15 +22,15 @@ template<typename T>
 struct LabelPtrPair {
   typedef T DestType;
 
-  LabelPtrPair() : label(), ptr(NULL), origin(NULL) {}
+  LabelPtrPair() : label(), ptr(nullptr), origin(nullptr) {}
 
-  explicit LabelPtrPair(const Label& l) : label(l), ptr(NULL), origin(NULL) {
-  }
+  explicit LabelPtrPair(const Label& l)
+      : label(l), ptr(nullptr), origin(nullptr) {}
 
   // This contructor is typically used in unit tests, it extracts the label
   // automatically from a given pointer.
-  explicit LabelPtrPair(const T* p) : label(p->label()), ptr(p), origin(NULL) {
-  }
+  explicit LabelPtrPair(const T* p)
+      : label(p->label()), ptr(p), origin(nullptr) {}
 
   ~LabelPtrPair() {}
 
