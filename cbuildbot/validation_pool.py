@@ -1177,7 +1177,6 @@ class ValidationPool(object):
     kwargs.setdefault('pre_cq_trybot', True)
     kwargs.setdefault('is_master', True)
     pool = cls(*args, **kwargs)
-    pool.RecordPatchesInMetadataAndDatabase()
     return pool
 
   @staticmethod
@@ -1334,7 +1333,6 @@ class ValidationPool(object):
                    cls._WaitForQuery(query), time_left / 60)
       time.sleep(cls.SLEEP_TIMEOUT)
 
-    pool.RecordPatchesInMetadataAndDatabase()
     return pool
 
   def _GetFailStreak(self):
@@ -1416,7 +1414,6 @@ class ValidationPool(object):
     pool = ValidationPool(overlays, repo.directory, build_number, builder_name,
                           is_master, dryrun, builder_run=builder_run)
     pool.AddPendingCommitsIntoPool(manifest)
-    pool.RecordPatchesInMetadataAndDatabase()
     return pool
 
   @classmethod
@@ -1628,6 +1625,7 @@ class ValidationPool(object):
         else:
           applied.append(change)
 
+    self.RecordPatchesInMetadataAndDatabase(applied)
     self.PrintLinksToChanges(applied)
 
     if self.is_master and not self.pre_cq_trybot:
@@ -1826,7 +1824,7 @@ class ValidationPool(object):
       submitted_changes = set(changes) - set(p_errors.keys())
       return (submitted_changes, dict(p_errors))
 
-  def RecordPatchesInMetadataAndDatabase(self):
+  def RecordPatchesInMetadataAndDatabase(self, changes):
     """Mark all patches as having been picked up in metadata.json and cidb.
 
     If self._run is None, then this function does nothing.
@@ -1838,7 +1836,7 @@ class ValidationPool(object):
 
     _, db = self._run.GetCIDBHandle()
     timestamp = int(time.time())
-    for change in self.changes:
+    for change in changes:
       metadata.RecordCLAction(change, constants.CL_ACTION_PICKED_UP,
                               timestamp)
       # TODO(akeshet): If a separate query for each insert here becomes

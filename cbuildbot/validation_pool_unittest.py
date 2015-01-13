@@ -1041,8 +1041,6 @@ class TestCoreLogic(MoxBase):
     repo = repository.RepoRepository(directory, directory, 'master', depth=1)
     self.mox.StubOutWithMock(repo, 'Sync')
     self.mox.StubOutWithMock(validation_pool.ValidationPool, 'AcquireChanges')
-    self.mox.StubOutWithMock(validation_pool.ValidationPool,
-                             'RecordPatchesInMetadataAndDatabase')
     self.mox.StubOutWithMock(time, 'sleep')
     self.mox.StubOutWithMock(tree_status, 'WaitForTreeStatus')
 
@@ -1055,7 +1053,6 @@ class TestCoreLogic(MoxBase):
     # pylint: disable=no-value-for-parameter
     validation_pool.ValidationPool.AcquireChanges(
         mox.IgnoreArg(), mox.IgnoreArg(), mox.IgnoreArg()).AndReturn(True)
-    validation_pool.ValidationPool.RecordPatchesInMetadataAndDatabase()
 
     self.mox.ReplayAll()
 
@@ -1084,7 +1081,6 @@ class TestCoreLogic(MoxBase):
     repo.Sync()
     validation_pool.ValidationPool.AcquireChanges(
         mox.IgnoreArg(), mox.IgnoreArg(), mox.IgnoreArg()).AndReturn(True)
-    validation_pool.ValidationPool.RecordPatchesInMetadataAndDatabase()
     self.mox.ReplayAll()
 
     query = constants.CQ_READY_QUERY
@@ -1104,7 +1100,6 @@ class TestCoreLogic(MoxBase):
     repo.Sync()
     validation_pool.ValidationPool.AcquireChanges(
         mox.IgnoreArg(), mox.IgnoreArg(), mox.IgnoreArg()).AndReturn(True)
-    validation_pool.ValidationPool.RecordPatchesInMetadataAndDatabase()
 
     self.mox.ReplayAll()
     query = constants.CQ_READY_QUERY
@@ -1126,7 +1121,6 @@ class TestCoreLogic(MoxBase):
     repo.Sync()
     validation_pool.ValidationPool.AcquireChanges(
         mox.IgnoreArg(), mox.IgnoreArg(), mox.IgnoreArg()).AndReturn(True)
-    validation_pool.ValidationPool.RecordPatchesInMetadataAndDatabase()
 
     self.mox.ReplayAll()
 
