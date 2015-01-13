@@ -33,17 +33,18 @@ declare_args() {
   # information to analyze.
   # Requires profiling to be set to true.
   enable_full_stack_frames_for_profiling = false
-}
 
-use_gold = is_linux && cpu_arch == "x64"
+  # Use gold for linking on 64-bit Linux only (on 32-bit it runs out of
+  # address space, and it doesn't support cross-compiling).
+  use_gold = is_linux && cpu_arch == "x64"
 
-if (!is_win) {
-  # linux_use_debug_fission: whether to use split DWARF debug info
+  # use_debug_fission: whether to use split DWARF debug info
   # files. This can reduce link time significantly, but is incompatible
   # with some utilities such as icecc and ccache. Requires gold and
   # gcc >= 4.8 or clang.
   # http://gcc.gnu.org/wiki/DebugFission
-  use_debug_fission = use_gold && linux_use_bundled_binutils && !use_ccache
+  use_debug_fission =
+      !is_win && use_gold && linux_use_bundled_binutils && !use_ccache
 }
 
 # default_include_dirs ---------------------------------------------------------
@@ -310,8 +311,6 @@ config("compiler") {
     ldflags += [ "-pthread" ]
   }
   if (use_gold) {
-    # Use gold for linking on 64-bit Linux only (on 32-bit it runs out of
-    # address space, and it doesn't support cross-compiling).
     gold_path = rebase_path("//third_party/binutils/Linux_x64/Release/bin",
                             root_build_dir)
     ldflags += [
