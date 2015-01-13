@@ -27,6 +27,12 @@ TEST(CipherSuiteNamesTest, Basic) {
   EXPECT_TRUE(is_aead);
   EXPECT_EQ(NULL, mac);
 
+  SSLCipherSuiteToStrings(&key_exchange, &cipher, &mac, &is_aead, 0xcc15);
+  EXPECT_STREQ("DHE_RSA", key_exchange);
+  EXPECT_STREQ("CHACHA20_POLY1305", cipher);
+  EXPECT_TRUE(is_aead);
+  EXPECT_EQ(NULL, mac);
+
   SSLCipherSuiteToStrings(&key_exchange, &cipher, &mac, &is_aead, 0xff31);
   EXPECT_STREQ("???", key_exchange);
   EXPECT_STREQ("???", cipher);
@@ -70,6 +76,7 @@ TEST(CipherSuiteNamesTest, SecureCipherSuites) {
   // Secure ones.
   EXPECT_TRUE(IsSecureTLSCipherSuite(0xcc13));
   EXPECT_TRUE(IsSecureTLSCipherSuite(0xcc14));
+  EXPECT_TRUE(IsSecureTLSCipherSuite(0xcc15));
 }
 
 }  // anonymous namespace
