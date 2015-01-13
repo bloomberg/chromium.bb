@@ -28,6 +28,7 @@
 #include "bindings/core/v8/V8DOMActivityLogger.h"
 #include "core/CSSPropertyNames.h"
 #include "core/HTMLNames.h"
+#include "core/frame/UseCounter.h"
 #include "core/html/HTMLDocument.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/rendering/RenderIFrame.h"
@@ -100,6 +101,7 @@ void HTMLIFrameElement::parseAttribute(const QualifiedName& name, const AtomicSt
         setSandboxFlags(value.isNull() ? SandboxNone : parseSandboxPolicy(value, invalidTokens));
         if (!invalidTokens.isNull())
             document().addConsoleMessage(ConsoleMessage::create(OtherMessageSource, ErrorMessageLevel, "Error while parsing the 'sandbox' attribute: " + invalidTokens));
+        UseCounter::count(document(), UseCounter::SandboxViaIFrame);
     } else {
         HTMLFrameElementBase::parseAttribute(name, value);
     }

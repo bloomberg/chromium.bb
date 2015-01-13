@@ -30,6 +30,7 @@
 #include "bindings/core/v8/ScriptController.h"
 #include "core/dom/DOMStringList.h"
 #include "core/dom/Document.h"
+#include "core/dom/SandboxFlags.h"
 #include "core/events/SecurityPolicyViolationEvent.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
@@ -162,7 +163,10 @@ void ContentSecurityPolicy::applyPolicySideEffectsToExecutionContext()
     // If we're in a Document, set the referrer policy, mixed content checking, and sandbox
     // flags, then dump all the parsing error messages, then poke at histograms.
     if (Document* document = this->document()) {
-        document->enforceSandboxFlags(m_sandboxMask);
+        if (m_sandboxMask != SandboxNone) {
+            UseCounter::count(document, UseCounter::SandboxViaCSP);
+            document->enforceSandboxFlags(m_sandboxMask);
+        }
         if (m_enforceStrictMixedContentChecking)
             document->enforceStrictMixedContentChecking();
         if (didSetReferrerPolicy())
