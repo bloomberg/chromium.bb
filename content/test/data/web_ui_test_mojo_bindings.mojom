@@ -4,11 +4,7 @@
 
 module content;
 
-[Client=RendererTarget]
 interface BrowserTarget {
-  PingResponse();
-};
-
-interface RendererTarget {
-  Ping();
+  Start() => ();
+  Stop();
 };
