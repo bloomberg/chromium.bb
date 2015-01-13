@@ -207,7 +207,7 @@ public class AwTestContainerView extends FrameLayout {
             if (process) {
                 DrawGL.drawGL(mDrawGL, mViewContext, width, height, 0, 0, MODE_PROCESS);
             }
-            if (draw) {
+            if (process || draw) {
                 DrawGL.drawGL(mDrawGL, mViewContext, width, height,
                         mCommittedScrollX, mCommittedScrollY, MODE_DRAW);
             }
