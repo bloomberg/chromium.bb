@@ -1,8 +1,6 @@
+sdefresne@chromium.org
 sky@chromium.org
 
 per-file thumbnail_database.*=pkotwicz@chromium.org
 
 per-file download_database.*=benjhayden@chromium.org
-
-# Temporary owner, for refactoring changes only.
-sdefresne@chromium.org
