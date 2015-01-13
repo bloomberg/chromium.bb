@@ -245,7 +245,7 @@ TYPED_TEST(ImageStoreUnitTest, GetSize) {
   }
 
   if (this->use_persistent_store()) {
-    EXPECT_GE(this->store_->GetStoreSizeInBytes(),  90 * 1024); //  90kb
+    EXPECT_GE(this->store_->GetStoreSizeInBytes(),  80 * 1024); //  80kb
     EXPECT_LE(this->store_->GetStoreSizeInBytes(), 200 * 1024); // 200kb
   } else {
     EXPECT_GE(this->store_->GetStoreSizeInBytes(), 400 * 1024); // 400kb
