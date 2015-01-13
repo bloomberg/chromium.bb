@@ -32,6 +32,7 @@ var activeVisit = null;
 /** @const */ var FocusOutlineManager = cr.ui.FocusOutlineManager;
 /** @const */ var Menu = cr.ui.Menu;
 /** @const */ var MenuButton = cr.ui.MenuButton;
+/** @const */ var MenuItem = cr.ui.MenuItem;
 
 /**
  * Enum that shows the filtering behavior for a host or URL to a supervised
@@ -1935,18 +1936,14 @@ function load() {
       searchField.blur();  // Dismiss the keyboard.
   };
 
-  var mayRemoveVisits = loadTimeData.getBoolean('allowDeletingHistory');
-  $('remove-visit').disabled = !mayRemoveVisits;
+  var removeMenu = $('remove-visit');
+  // Decorate remove-visit before disabling/hiding because the values are
+  // overwritten when decorating a MenuItem that has a Command.
+  cr.ui.decorate(removeMenu, MenuItem);
+  removeMenu.disabled = !loadTimeData.getBoolean('allowDeletingHistory');
+  removeMenu.hidden = loadTimeData.getBoolean('hideDeleteVisitUI');
 
-  if (mayRemoveVisits) {
-    $('remove-visit').addEventListener('activate', function(e) {
-      activeVisit.removeFromHistory();
-      activeVisit = null;
-    });
-  }
-
-  if (loadTimeData.getBoolean('hideDeleteVisitUI'))
-    $('remove-visit').hidden = true;
+  document.addEventListener('command', handleCommand);
 
   searchField.addEventListener('search', doSearch);
   $('search-button').addEventListener('click', doSearch);
@@ -2014,6 +2011,26 @@ function load() {
   window.addEventListener('orientationchange', checkKeyboardVisibility);
   window.addEventListener('resize', checkKeyboardVisibility);
 </if> /* is_ios */
+}
+
+/**
+ * Handle all commands in the history page.
+ * @param {!Event} e is a command event.
+ */
+function handleCommand(e) {
+  switch (e.command.id) {
+    case 'remove-visit-command':
+      // Removing visited items needs to be done with a command in order to have
+      // proper focus. This is because the command event is handled after the
+      // menu dialog is no longer visible and focus has returned to the history
+      // items. The activate event is handled when the menu dialog is still
+      // visible and focus is lost.
+      // removeEntryFromHistory_ will update activeVisit to the newly focused
+      // history item.
+      assert(!$('remove-visit').disabled);
+      activeVisit.removeEntryFromHistory_(e);
+      break;
+  }
 }
 
 /**

@@ -149,6 +149,7 @@ BaseHistoryWebUITest.prototype = {
   /** @override */
   accessibilityIssuesAreErrors: true,
 
+  /** @override */
   isAsync: true,
 };
 
@@ -825,7 +826,10 @@ TEST_F('HistoryWebUIRealBackendTest', 'singleDeletion', function() {
     waitForCallback('onEntryRemoved', callback);
 
     cr.dispatchSimpleEvent(dropDownButton, 'mousedown');
-    cr.dispatchSimpleEvent(removeMenuItem, 'activate');
+
+    var e = new Event('command', {bubbles: true});
+    e.command = removeMenuItem.command;
+    removeMenuItem.dispatchEvent(e);
   };
 
   var secondTitle = document.querySelectorAll('.entry a')[1].textContent;
@@ -889,7 +893,7 @@ TEST_F('HistoryWebUIRealBackendTest', 'showConfirmDialogAndCancel', function() {
   var esc = document.createEvent('KeyboardEvent');
   esc.initKeyboardEvent('keydown', true, true, window, 'U+001B');
 
-  document.dispatchEvent(esc);
+  document.documentElement.dispatchEvent(esc);
   assertFalse($('alertOverlay').classList.contains('showing'));
 
   testDone();
@@ -906,7 +910,7 @@ TEST_F('HistoryWebUIRealBackendTest', 'showConfirmDialogAndRemove', function() {
 
   var enter = document.createEvent('KeyboardEvent');
   enter.initKeyboardEvent('keydown', true, true, window, 'Enter');
-  document.dispatchEvent(enter);
+  document.documentElement.dispatchEvent(enter);
   assertFalse($('alertOverlay').classList.contains('showing'));
 });
 
