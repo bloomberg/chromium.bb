@@ -11,10 +11,9 @@ class UnauthenticatedBrowserTest : public RemoteDesktopBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(UnauthenticatedBrowserTest, MANUAL_Unauthenticated) {
   Install();
-  LaunchChromotingApp(true);
-  LoadBrowserTestJavaScript(app_web_content());
+  content::WebContents* content = LaunchChromotingApp(true);
+  LoadBrowserTestJavaScript(content);
 
-  content::WebContents* content = app_web_content();
   LoadScript(content, FILE_PATH_LITERAL("unauthenticated_browser_test.js"));
   RunJavaScriptTest(content, "Unauthenticated", "{}");
 

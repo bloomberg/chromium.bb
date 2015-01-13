@@ -13,9 +13,7 @@ class ScrollbarBrowserTest : public RemoteDesktopBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(ScrollbarBrowserTest, MANUAL_Scrollbar_Visibility) {
-  SetUpTestForMe2Me();
-
-  content::WebContents* content = app_web_content();
+  content::WebContents* content = SetUpTest();
   LoadScript(content, FILE_PATH_LITERAL("scrollbar_browser_test.js"));
 
   RunJavaScriptTest(content, "Scrollbars", "{}");

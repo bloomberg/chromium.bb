@@ -78,7 +78,14 @@ class RemoteDesktopBrowserTest : public extensions::PlatformAppBrowserTest {
   // until StartChromotingApp is invoked. Test code can execute arbitrary
   // JavaScript in the context of the app between these two calls, for example
   // to set up appropriate mocks.
-  void LaunchChromotingApp(bool defer_start);
+  // |window_open_disposition| controls where the app will be launched.  For v2
+  // app, the value of |window_open_disposition| will always be NEW_WINDOW.
+  // Returns the content::Webconetns of the launched app. The lifetime of the
+  // returned value is managed by LaunchChromotingApp().
+  content::WebContents* LaunchChromotingApp(bool defer_start);
+  content::WebContents* LaunchChromotingApp(
+      bool defer_start,
+      WindowOpenDisposition window_open_disposition);
 
   // If the Chromoting app was launched in deferred mode, tell it to continue
   // its regular start-up sequence.
@@ -135,9 +142,9 @@ class RemoteDesktopBrowserTest : public extensions::PlatformAppBrowserTest {
   void LoadBrowserTestJavaScript(content::WebContents* content);
 
   // Perform all necessary steps (installation, authorization, authentication,
-  // expanding the me2me section) so that the app is ready for a me2me
-  // connection.
-  void SetUpTestForMe2Me();
+  // expanding the me2me section) so that the app is ready for a connection.
+  // Returns the content::WebContents instance of the Chromoting app.
+  content::WebContents* SetUpTest();
 
   // Clean up after the test.
   void Cleanup();
@@ -149,7 +156,7 @@ class RemoteDesktopBrowserTest : public extensions::PlatformAppBrowserTest {
 
   // Ensures that the host is started locally with |me2me_pin()|.
   // Browser_test.js must be loaded before calling this function.
-  void EnsureRemoteConnectionEnabled();
+  void EnsureRemoteConnectionEnabled(content::WebContents* app_web_content);
 
   // Connect to the local host through Me2Me.
   void ConnectToLocalHost(bool remember_pin);
@@ -206,10 +213,6 @@ class RemoteDesktopBrowserTest : public extensions::PlatformAppBrowserTest {
   // The client WebContents instance the test needs to interact with.
   content::WebContents* client_web_content() {
     return client_web_content_;
-  }
-
-  content::WebContents* app_web_content() {
-    return app_web_content_;
   }
 
   RemoteTestHelper* remote_test_helper() const {
@@ -363,9 +366,6 @@ class RemoteDesktopBrowserTest : public extensions::PlatformAppBrowserTest {
 
   // Helper class to assist in performing and verifying remote operations.
   scoped_ptr<RemoteTestHelper> remote_test_helper_;
-
-  // WebContent of the landing page in the chromoting app.
-  content::WebContents* app_web_content_;
 
   bool no_cleanup_;
   bool no_install_;

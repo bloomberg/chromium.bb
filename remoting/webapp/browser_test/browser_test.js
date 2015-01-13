@@ -64,6 +64,11 @@ browserTest.init = function() {
   };
 };
 
+/**
+ * Fails the C++ calling browser test with |message| if |expr| is false.
+ * @param {boolean} expr
+ * @param {string} message
+ */
 browserTest.expect = function(expr, message) {
   if (!expr) {
     message = (message) ? '<' + message + '>' : '';
@@ -167,12 +172,19 @@ browserTest.connectMe2Me = function() {
 
 browserTest.disconnect = function() {
   var AppMode = remoting.AppMode;
+  var finishedMode = AppMode.CLIENT_SESSION_FINISHED_ME2ME;
+  var finishedButton = 'client-finished-me2me-button';
+  if (remoting.clientSession.getMode() == remoting.ClientSession.Mode.IT2ME) {
+    finishedMode = AppMode.CLIENT_SESSION_FINISHED_IT2ME;
+    finishedButton = 'client-finished-it2me-button';
+  }
+
   remoting.disconnect();
-  return browserTest.onUIMode(AppMode.CLIENT_SESSION_FINISHED_ME2ME).then(
-    function() {
-      browserTest.clickOnControl('client-finished-me2me-button');
-      return browserTest.onUIMode(AppMode.HOME);
-    });
+
+  return browserTest.onUIMode(finishedMode).then(function() {
+    browserTest.clickOnControl(finishedButton);
+    return browserTest.onUIMode(AppMode.HOME);
+  });
 };
 
 browserTest.enterPIN = function(pin, opt_expectError) {
@@ -186,31 +198,40 @@ browserTest.enterPIN = function(pin, opt_expectError) {
     browserTest.clickOnControl('pin-connect-button');
   }).then(function() {
     if (opt_expectError) {
-      return browserTest.expectMe2MeError(remoting.Error.INVALID_ACCESS_CODE);
+      return browserTest.expectConnectionError(
+          remoting.ClientSession.Mode.ME2ME,
+          remoting.Error.INVALID_ACCESS_CODE);
     } else {
-      return browserTest.expectMe2MeConnected();
+      return browserTest.expectConnected();
     }
   });
 };
 
-browserTest.expectMe2MeError = function(errorTag) {
+browserTest.expectConnectionError = function(connectionMode, errorTag) {
   var AppMode = remoting.AppMode;
   var Timeout = browserTest.Timeout;
 
-  var onConnected = browserTest.onUIMode(AppMode.IN_SESSION, Timeout.None);
-  var onFailure = browserTest.onUIMode(AppMode.CLIENT_CONNECT_FAILED_ME2ME);
+  var finishButton = 'client-finished-me2me-button';
+  var failureMode = AppMode.CLIENT_CONNECT_FAILED_ME2ME;
+
+  if (connectionMode == remoting.ClientSession.Mode.IT2ME) {
+    failureMode = AppMode.CLIENT_CONNECT_FAILED_IT2ME;
+    finishButton = 'client-finished-it2me-button';
+  }
+
+  var onConnected = browserTest.onUIMode(AppMode.IN_SESSION, Timeout.NONE);
+  var onFailure = browserTest.onUIMode(failureMode);
 
   onConnected = onConnected.then(function() {
     return Promise.reject(
-        'Expected the Me2Me connection to fail.');
+        'Expected the connection to fail.');
   });
 
   onFailure = onFailure.then(function() {
     var errorDiv = document.getElementById('connect-error-message');
     var actual = errorDiv.innerText;
     var expected = l10n.getTranslationOrError(errorTag);
-
-    browserTest.clickOnControl('client-finished-me2me-button');
+    browserTest.clickOnControl(finishButton);
 
     if (actual != expected) {
       return Promise.reject('Unexpected failure. actual:' + actual +
@@ -221,7 +242,7 @@ browserTest.expectMe2MeError = function(errorTag) {
   return Promise.race([onConnected, onFailure]);
 };
 
-browserTest.expectMe2MeConnected = function() {
+browserTest.expectConnected = function() {
   var AppMode = remoting.AppMode;
   // Timeout if the session is not connected within 30 seconds.
   var SESSION_CONNECTION_TIMEOUT = 30000;

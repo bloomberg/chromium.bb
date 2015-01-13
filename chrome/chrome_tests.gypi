@@ -754,6 +754,7 @@
     'chrome_browser_tests_remoting_sources': [
       'test/remoting/auth_browsertest.cc',
       'test/remoting/fullscreen_browsertest.cc',
+      'test/remoting/it2me_browsertest.cc',
       'test/remoting/key_code_conv.cc',
       'test/remoting/key_code_conv.h',
       'test/remoting/key_code_map.h',

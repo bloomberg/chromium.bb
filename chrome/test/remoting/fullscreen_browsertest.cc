@@ -33,7 +33,7 @@ bool FullscreenBrowserTest::WaitForFullscreenChange(bool expect_fullscreen) {
 }
 
 IN_PROC_BROWSER_TEST_F(FullscreenBrowserTest, MANUAL_Me2Me_Fullscreen) {
-  SetUpTestForMe2Me();
+  SetUpTest();
   ConnectToLocalHost(false);
 
   // Verify that we're initially not full-screen.
@@ -62,9 +62,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenBrowserTest, MANUAL_Me2Me_Fullscreen) {
 }
 
 IN_PROC_BROWSER_TEST_F(FullscreenBrowserTest, MANUAL_Me2Me_Bump_Scroll) {
-  SetUpTestForMe2Me();
-
-  content::WebContents* content = app_web_content();
+  content::WebContents* content = SetUpTest();
   LoadScript(content, FILE_PATH_LITERAL("bump_scroll_browser_test.js"));
 
   RunJavaScriptTest(content, "Bump_Scroll", "{pin: '" + me2me_pin() + "'}");

@@ -169,8 +169,10 @@ void RemoteDesktopBrowserTest::VerifyChromotingLoaded(bool expected) {
   ASSERT_EQ(installed, expected);
 }
 
-void RemoteDesktopBrowserTest::LaunchChromotingApp(bool defer_start) {
-  ASSERT_TRUE(extension_);
+content::WebContents* RemoteDesktopBrowserTest::LaunchChromotingApp(
+    bool defer_start,
+    WindowOpenDisposition window_open_disposition) {
+  _ASSERT_TRUE(extension_);
 
   GURL chromoting_main = Chromoting_Main_URL();
   // We cannot simply wait for any page load because the first page
@@ -186,11 +188,15 @@ void RemoteDesktopBrowserTest::LaunchChromotingApp(bool defer_start) {
       extensions::FeatureSwitch::trace_app_source(),
       defer_start);
 
+  if (is_platform_app()) {
+    window_open_disposition = NEW_WINDOW;
+  }
+
   OpenApplication(AppLaunchParams(browser()->profile(), extension_,
                                   is_platform_app()
                                       ? extensions::LAUNCH_CONTAINER_NONE
                                       : extensions::LAUNCH_CONTAINER_TAB,
-                                  is_platform_app() ? NEW_WINDOW : CURRENT_TAB,
+                                  window_open_disposition,
                                   extensions::SOURCE_TEST));
 
   observer.Wait();
@@ -202,10 +208,10 @@ void RemoteDesktopBrowserTest::LaunchChromotingApp(bool defer_start) {
       content::Source<content::NavigationController>(observer.source()).ptr();
 
   content::WebContents* web_contents = controller->GetWebContents();
+  _ASSERT_TRUE(web_contents);
+
   if (web_contents != active_web_contents())
     web_contents_stack_.push_back(web_contents);
-
-  app_web_content_ = web_contents;
 
   if (is_platform_app()) {
     EXPECT_EQ(GetFirstAppWindowWebContents(), active_web_contents());
@@ -215,10 +221,16 @@ void RemoteDesktopBrowserTest::LaunchChromotingApp(bool defer_start) {
     // injection to work.
     // TODO(weitaosu): Find out whether there is a more appropriate notification
     // to wait for so we can get rid of this wait.
-    ASSERT_TRUE(TimeoutWaiter(base::TimeDelta::FromSeconds(5)).Wait());
+    _ASSERT_TRUE(TimeoutWaiter(base::TimeDelta::FromSeconds(5)).Wait());
   }
 
   EXPECT_EQ(Chromoting_Main_URL(), GetCurrentURL());
+  return web_contents;
+}
+
+content::WebContents* RemoteDesktopBrowserTest::LaunchChromotingApp(
+    bool defer_start) {
+  return LaunchChromotingApp(defer_start, CURRENT_TAB);
 }
 
 void RemoteDesktopBrowserTest::StartChromotingApp() {
@@ -485,18 +497,19 @@ void RemoteDesktopBrowserTest::Cleanup() {
   ASSERT_TRUE(TimeoutWaiter(base::TimeDelta::FromSeconds(2)).Wait());
 }
 
-void RemoteDesktopBrowserTest::SetUpTestForMe2Me() {
+content::WebContents* RemoteDesktopBrowserTest::SetUpTest() {
   VerifyInternetAccess();
   Install();
-  LaunchChromotingApp(false);
-  LoadBrowserTestJavaScript(app_web_content());
+  content::WebContents* app_web_content = LaunchChromotingApp(false);
   Auth();
+  LoadBrowserTestJavaScript(app_web_content);
   ExpandMe2Me();
   // The call to EnsureRemoteConnectionEnabled() does a PIN reset.
   // This causes the test to fail because of a recent bug:
   // crbug.com/430676
   // TODO(anandc): Reactivate this call after above bug is fixed.
-  //EnsureRemoteConnectionEnabled();
+  //EnsureRemoteConnectionEnabled(app_web_content);
+  return app_web_content;
 }
 
 void RemoteDesktopBrowserTest::Auth() {
@@ -508,7 +521,8 @@ void RemoteDesktopBrowserTest::Auth() {
   Approve();
 }
 
-void RemoteDesktopBrowserTest::EnsureRemoteConnectionEnabled() {
+void RemoteDesktopBrowserTest::EnsureRemoteConnectionEnabled(
+    content::WebContents* app_web_contents) {
   // browser_test.ensureRemoteConnectionEnabled is defined in
   // browser_test.js, which must be loaded before calling this function.
   // TODO(kelvinp): This function currently only works on linux when the user is
@@ -516,7 +530,7 @@ void RemoteDesktopBrowserTest::EnsureRemoteConnectionEnabled() {
   // to Mac (https://crbug.com/397576) and Windows (https://crbug.com/397575).
   bool result;
   EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
-      app_web_content(),
+      app_web_contents,
       "browserTest.ensureRemoteConnectionEnabled(" + me2me_pin() + ")",
       &result));
   EXPECT_TRUE(result) << "Cannot start the host with Pin:" << me2me_pin();

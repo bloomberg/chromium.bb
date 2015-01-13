@@ -10,9 +10,7 @@
 namespace remoting {
 
 IN_PROC_BROWSER_TEST_F(RemoteDesktopBrowserTest, MANUAL_Cancel_PIN) {
-  SetUpTestForMe2Me();
-
-  content::WebContents* content = app_web_content();
+  content::WebContents* content = SetUpTest();
   LoadScript(content, FILE_PATH_LITERAL("cancel_pin_browser_test.js"));
 
   RunJavaScriptTest(content, "Cancel_PIN", "{"
@@ -23,9 +21,7 @@ IN_PROC_BROWSER_TEST_F(RemoteDesktopBrowserTest, MANUAL_Cancel_PIN) {
 }
 
 IN_PROC_BROWSER_TEST_F(RemoteDesktopBrowserTest, MANUAL_Invalid_PIN) {
-  SetUpTestForMe2Me();
-
-  content::WebContents* content = app_web_content();
+  content::WebContents* content = SetUpTest();
   LoadScript(content, FILE_PATH_LITERAL("invalid_pin_browser_test.js"));
 
   RunJavaScriptTest(content, "Invalid_PIN", "{"
@@ -37,9 +33,7 @@ IN_PROC_BROWSER_TEST_F(RemoteDesktopBrowserTest, MANUAL_Invalid_PIN) {
 }
 
 IN_PROC_BROWSER_TEST_F(RemoteDesktopBrowserTest, MANUAL_Update_PIN) {
-  SetUpTestForMe2Me();
-
-  content::WebContents* content = app_web_content();
+  content::WebContents* content = SetUpTest();
   LoadScript(content, FILE_PATH_LITERAL("update_pin_browser_test.js"));
 
   RunJavaScriptTest(content, "Update_PIN", "{"

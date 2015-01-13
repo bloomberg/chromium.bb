@@ -147,6 +147,7 @@
       'webapp/browser_test/bump_scroll_browser_test.js',
       'webapp/browser_test/cancel_pin_browser_test.js',
       'webapp/browser_test/invalid_pin_browser_test.js',
+      'webapp/browser_test/it2me_browser_test.js',
       'webapp/browser_test/mock_client_plugin.js',
       'webapp/browser_test/mock_host_list_api.js',
       'webapp/browser_test/mock_identity.js',
