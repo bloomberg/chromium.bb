@@ -19,6 +19,8 @@ class CSSSelectorParser {
 public:
     static void parseSelector(CSSParserTokenRange, const CSSParserContext&, const AtomicString& defaultNamespace, StyleSheetContents*, CSSSelectorList&);
 
+    static bool consumeANPlusB(CSSParserTokenRange&, std::pair<int, int>&);
+
 private:
     CSSSelectorParser(const CSSParserContext&, const AtomicString& defaultNamespace, StyleSheetContents*);
 

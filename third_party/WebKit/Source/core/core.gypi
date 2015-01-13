@@ -3672,6 +3672,7 @@
             'css/parser/BisonCSSParserTest.cpp',
             'css/parser/CSSParserValuesTest.cpp',
             'css/parser/CSSPropertyParserTest.cpp',
+            'css/parser/CSSSelectorParserTest.cpp',
             'css/parser/CSSTokenizerTest.cpp',
             'css/parser/MediaConditionTest.cpp',
             'css/parser/SizesAttributeParserTest.cpp',

@@ -43,10 +43,11 @@ CSSParserToken::CSSParserToken(CSSParserTokenType type, String value, BlockType 
 {
 }
 
-CSSParserToken::CSSParserToken(CSSParserTokenType type, double numericValue, NumericValueType numericValueType)
+CSSParserToken::CSSParserToken(CSSParserTokenType type, double numericValue, NumericValueType numericValueType, NumericSign sign)
     : m_type(type)
     , m_delimiter(0)
     , m_numericValueType(numericValueType)
+    , m_numericSign(sign)
     , m_numericValue(numericValue)
     , m_unit(CSSPrimitiveValue::CSS_NUMBER)
     , m_blockType(NotBlock)
@@ -97,6 +98,14 @@ UChar CSSParserToken::delimiter() const
 {
     ASSERT(m_type == DelimiterToken);
     return m_delimiter;
+}
+
+NumericSign CSSParserToken::numericSign() const
+{
+    // This is valid for DimensionToken and PercentageToken, but only used
+    // in <an+b> parsing on NumberTokens.
+    ASSERT(m_type == NumberToken);
+    return m_numericSign;
 }
 
 NumericValueType CSSParserToken::numericValueType() const

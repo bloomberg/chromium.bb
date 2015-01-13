@@ -328,16 +328,17 @@ CSSParserToken CSSTokenizer::nextToken()
     return CSSParserToken(DelimiterToken, cc);
 }
 
-static int getSign(CSSTokenizerInputStream& input, unsigned& offset)
+static NumericSign getSign(CSSTokenizerInputStream& input, unsigned& offset)
 {
-    int sign = 1;
     if (input.nextInputChar() == '+') {
         ++offset;
-    } else if (input.peek(offset) == '-') {
-        sign = -1;
-        ++offset;
+        return PlusSign;
     }
-    return sign;
+    if (input.nextInputChar() == '-') {
+        ++offset;
+        return MinusSign;
+    }
+    return NoSign;
 }
 
 static unsigned long long getInteger(CSSTokenizerInputStream& input, unsigned& offset)
@@ -389,20 +390,22 @@ CSSParserToken CSSTokenizer::consumeNumber()
     double value = 0;
     unsigned offset = 0;
     int exponentSign = 1;
-    int sign = getSign(m_input, offset);
+    NumericSign sign = getSign(m_input, offset);
     unsigned long long integerPart = getInteger(m_input, offset);
     unsigned integerPartEndOffset = offset;
 
     double fractionPart = getFraction(m_input, offset);
     unsigned long long exponentPart = getExponent(m_input, offset, exponentSign);
     double exponent = pow(10, (float)exponentSign * (double)exponentPart);
-    value = (double)sign * ((double)integerPart + fractionPart) * exponent;
+    value = ((double)integerPart + fractionPart) * exponent;
+    if (sign == MinusSign)
+        value = -value;
 
     m_input.advance(offset);
     if (offset != integerPartEndOffset)
         type = NumberValueType;
 
-    return CSSParserToken(NumberToken, value, type);
+    return CSSParserToken(NumberToken, value, type, sign);
 }
 
 // http://www.w3.org/TR/css3-syntax/#consume-a-numeric-token

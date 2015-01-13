@@ -32,8 +32,12 @@ void compareTokens(const CSSParserToken& expected, const CSSParserToken& actual)
         break;
     case DimensionToken:
         ASSERT_EQ(expected.value(), actual.value());
-        // fallthrough
+        ASSERT_EQ(expected.numericValueType(), actual.numericValueType());
+        ASSERT_DOUBLE_EQ(expected.numericValue(), actual.numericValue());
+        break;
     case NumberToken:
+        ASSERT_EQ(expected.numericSign(), actual.numericSign());
+        // fallthrough
     case PercentageToken:
         ASSERT_EQ(expected.numericValueType(), actual.numericValueType());
         ASSERT_DOUBLE_EQ(expected.numericValue(), actual.numericValue());
@@ -78,21 +82,21 @@ static CSSParserToken hash(const String& string, HashTokenType type) { return CS
 static CSSParserToken delim(char c) { return CSSParserToken(DelimiterToken, c); }
 static CSSParserToken unicodeRange(UChar32 start, UChar32 end) { return CSSParserToken(UnicodeRangeToken, start, end); }
 
-static CSSParserToken number(NumericValueType type, double value)
+static CSSParserToken number(NumericValueType type, double value, NumericSign sign)
 {
-    return CSSParserToken(NumberToken, value, type);
+    return CSSParserToken(NumberToken, value, type, sign);
 }
 
 static CSSParserToken dimension(NumericValueType type, double value, const String& string)
 {
-    CSSParserToken token = number(type, value);
+    CSSParserToken token = number(type, value, NoSign); // sign ignored
     token.convertToDimensionWithUnit(string);
     return token;
 }
 
 static CSSParserToken percentage(NumericValueType type, double value)
 {
-    CSSParserToken token = number(type, value);
+    CSSParserToken token = number(type, value, NoSign); // sign ignored
     token.convertToPercentage();
     return token;
 }
@@ -171,7 +175,7 @@ TEST(CSSTokenizerTest, WhitespaceTokens)
     TEST_TOKENS("   ", whitespace);
     TEST_TOKENS("\n\rS", whitespace, ident("S"));
     TEST_TOKENS("   *", whitespace, delim('*'));
-    TEST_TOKENS("\r\n\f\t2", whitespace, number(IntegerValueType, 2));
+    TEST_TOKENS("\r\n\f\t2", whitespace, number(IntegerValueType, 2, NoSign));
 }
 
 TEST(CSSTokenizerTest, Escapes)
@@ -231,7 +235,7 @@ TEST(CSSTokenizerTest, IdentToken)
 
 TEST(CSSTokenizerTest, FunctionToken)
 {
-    TEST_TOKENS("scale(2)", function("scale"), number(IntegerValueType, 2), rightParenthesis);
+    TEST_TOKENS("scale(2)", function("scale"), number(IntegerValueType, 2, NoSign), rightParenthesis);
     TEST_TOKENS("foo-bar\\ baz(", function("foo-bar baz"));
     TEST_TOKENS("fun\\(ction(", function("fun(ction"));
     TEST_TOKENS("-foo(", function("-foo"));
@@ -254,8 +258,8 @@ TEST(CSSTokenizerTest, AtKeywordToken)
     TEST_TOKENS("@\\ ", atKeyword(" "));
     TEST_TOKENS("@-\\ ", atKeyword("- "));
     TEST_TOKENS("@@", delim('@'), delim('@'));
-    TEST_TOKENS("@2", delim('@'), number(IntegerValueType, 2));
-    TEST_TOKENS("@-1", delim('@'), number(IntegerValueType, -1));
+    TEST_TOKENS("@2", delim('@'), number(IntegerValueType, 2, NoSign));
+    TEST_TOKENS("@-1", delim('@'), number(IntegerValueType, -1, MinusSign));
 }
 
 TEST(CSSTokenizerTest, UrlToken)
@@ -318,28 +322,28 @@ TEST(CSSTokenizerTest, HashToken)
 
 TEST(CSSTokenizerTest, NumberToken)
 {
-    TEST_TOKENS("10", number(IntegerValueType, 10));
-    TEST_TOKENS("12.0", number(NumberValueType, 12));
-    TEST_TOKENS("+45.6", number(NumberValueType, 45.6));
-    TEST_TOKENS("-7", number(IntegerValueType, -7));
-    TEST_TOKENS("010", number(IntegerValueType, 10));
-    TEST_TOKENS("10e0", number(NumberValueType, 10));
-    TEST_TOKENS("12e3", number(NumberValueType, 12000));
-    TEST_TOKENS("3e+1", number(NumberValueType, 30));
-    TEST_TOKENS("12E-1", number(NumberValueType, 1.2));
-    TEST_TOKENS(".7", number(NumberValueType, 0.7));
-    TEST_TOKENS("-.3", number(NumberValueType, -0.3));
-    TEST_TOKENS("+637.54e-2", number(NumberValueType, 6.3754));
-    TEST_TOKENS("-12.34E+2", number(NumberValueType, -1234));
+    TEST_TOKENS("10", number(IntegerValueType, 10, NoSign));
+    TEST_TOKENS("12.0", number(NumberValueType, 12, NoSign));
+    TEST_TOKENS("+45.6", number(NumberValueType, 45.6, PlusSign));
+    TEST_TOKENS("-7", number(IntegerValueType, -7, MinusSign));
+    TEST_TOKENS("010", number(IntegerValueType, 10, NoSign));
+    TEST_TOKENS("10e0", number(NumberValueType, 10, NoSign));
+    TEST_TOKENS("12e3", number(NumberValueType, 12000, NoSign));
+    TEST_TOKENS("3e+1", number(NumberValueType, 30, NoSign));
+    TEST_TOKENS("12E-1", number(NumberValueType, 1.2, NoSign));
+    TEST_TOKENS(".7", number(NumberValueType, 0.7, NoSign));
+    TEST_TOKENS("-.3", number(NumberValueType, -0.3, MinusSign));
+    TEST_TOKENS("+637.54e-2", number(NumberValueType, 6.3754, PlusSign));
+    TEST_TOKENS("-12.34E+2", number(NumberValueType, -1234, MinusSign));
 
-    TEST_TOKENS("+ 5", delim('+'), whitespace, number(IntegerValueType, 5));
-    TEST_TOKENS("-+12", delim('-'), number(IntegerValueType, 12));
-    TEST_TOKENS("+-21", delim('+'), number(IntegerValueType, -21));
-    TEST_TOKENS("++22", delim('+'), number(IntegerValueType, 22));
-    TEST_TOKENS("13.", number(IntegerValueType, 13), delim('.'));
-    TEST_TOKENS("1.e2", number(IntegerValueType, 1), delim('.'), ident("e2"));
-    TEST_TOKENS("2e3.5", number(NumberValueType, 2000), number(NumberValueType, 0.5));
-    TEST_TOKENS("2e3.", number(NumberValueType, 2000), delim('.'));
+    TEST_TOKENS("+ 5", delim('+'), whitespace, number(IntegerValueType, 5, NoSign));
+    TEST_TOKENS("-+12", delim('-'), number(IntegerValueType, 12, PlusSign));
+    TEST_TOKENS("+-21", delim('+'), number(IntegerValueType, -21, MinusSign));
+    TEST_TOKENS("++22", delim('+'), number(IntegerValueType, 22, PlusSign));
+    TEST_TOKENS("13.", number(IntegerValueType, 13, NoSign), delim('.'));
+    TEST_TOKENS("1.e2", number(IntegerValueType, 1, NoSign), delim('.'), ident("e2"));
+    TEST_TOKENS("2e3.5", number(NumberValueType, 2000, NoSign), number(NumberValueType, 0.5, NoSign));
+    TEST_TOKENS("2e3.", number(NumberValueType, 2000, NoSign), delim('.'));
 }
 
 TEST(CSSTokenizerTest, DimensionToken)
@@ -357,8 +361,8 @@ TEST(CSSTokenizerTest, DimensionToken)
     TEST_TOKENS("0x10px", dimension(IntegerValueType, 0, "x10px"));
     TEST_TOKENS("4unit ", dimension(IntegerValueType, 4, "unit"), whitespace);
     TEST_TOKENS("5e+", dimension(IntegerValueType, 5, "e"), delim('+'));
-    TEST_TOKENS("2e.5", dimension(IntegerValueType, 2, "e"), number(NumberValueType, 0.5));
-    TEST_TOKENS("2e+.5", dimension(IntegerValueType, 2, "e"), number(NumberValueType, 0.5));
+    TEST_TOKENS("2e.5", dimension(IntegerValueType, 2, "e"), number(NumberValueType, 0.5, NoSign));
+    TEST_TOKENS("2e+.5", dimension(IntegerValueType, 2, "e"), number(NumberValueType, 0.5, PlusSign));
 }
 
 TEST(CSSTokenizerTest, PercentageToken)
@@ -381,17 +385,17 @@ TEST(CSSTokenizerTest, UnicodeRangeToken)
     TEST_TOKENS("u+??????", unicodeRange(0x000000, 0xffffff));
     TEST_TOKENS("u+??", unicodeRange(0x00, 0xff));
 
-    TEST_TOKENS("u+222+111", unicodeRange(0x222, 0x222), number(IntegerValueType, 111));
-    TEST_TOKENS("u+12345678", unicodeRange(0x123456, 0x123456), number(IntegerValueType, 78));
-    TEST_TOKENS("u+123-12345678", unicodeRange(0x123, 0x123456), number(IntegerValueType, 78));
+    TEST_TOKENS("u+222+111", unicodeRange(0x222, 0x222), number(IntegerValueType, 111, PlusSign));
+    TEST_TOKENS("u+12345678", unicodeRange(0x123456, 0x123456), number(IntegerValueType, 78, NoSign));
+    TEST_TOKENS("u+123-12345678", unicodeRange(0x123, 0x123456), number(IntegerValueType, 78, NoSign));
     TEST_TOKENS("u+cake", unicodeRange(0xca, 0xca), ident("ke"));
     TEST_TOKENS("u+1234-gggg", unicodeRange(0x1234, 0x1234), ident("-gggg"));
     TEST_TOKENS("U+ab12???", unicodeRange(0xab1200, 0xab12ff), delim('?'));
-    TEST_TOKENS("u+a1?-123", unicodeRange(0xa10, 0xa1f), number(IntegerValueType, -123));
-    TEST_TOKENS("u+1??4", unicodeRange(0x100, 0x1ff), number(IntegerValueType, 4));
+    TEST_TOKENS("u+a1?-123", unicodeRange(0xa10, 0xa1f), number(IntegerValueType, -123, MinusSign));
+    TEST_TOKENS("u+1??4", unicodeRange(0x100, 0x1ff), number(IntegerValueType, 4, NoSign));
     TEST_TOKENS("u+z", ident("u"), delim('+'), ident("z"));
     TEST_TOKENS("u+", ident("u"), delim('+'));
-    TEST_TOKENS("u+-543", ident("u"), delim('+'), number(IntegerValueType, -543));
+    TEST_TOKENS("u+-543", ident("u"), delim('+'), number(IntegerValueType, -543, MinusSign));
 }
 
 TEST(CSSTokenizerTest, CommentToken)

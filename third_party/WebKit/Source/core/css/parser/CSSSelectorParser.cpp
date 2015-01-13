@@ -315,7 +315,38 @@ PassOwnPtr<CSSParserSelector> CSSSelectorParser::consumePseudo(CSSParserTokenRan
         return selector.release();
     }
 
-    // FIXME: Support :nth-*(<an+b>)
+    if (colons == 1
+        && (equalIgnoringCase(token.value(), "nth-child")
+            || equalIgnoringCase(token.value(), "nth-last-child")
+            || equalIgnoringCase(token.value(), "nth-of-type")
+            || equalIgnoringCase(token.value(), "nth-last-of-type"))) {
+        std::pair<int, int> ab;
+        if (!consumeANPlusB(block, ab))
+            return nullptr;
+        block.consumeWhitespaceAndComments();
+        if (!block.atEnd())
+            return nullptr;
+        // FIXME: We shouldn't serialize here and reparse in CSSSelector!
+        // Serialization should be in CSSSelector::selectorText instead.
+        int a = ab.first;
+        int b = ab.second;
+        String string;
+        if (a == 0 && b == 0)
+            string = "0";
+        else if (a == 0)
+            string = String::number(b);
+        else if (b == 0)
+            string = String::format("%dn", a);
+        else if (ab.second < 0)
+            string = String::format("%dn%d", a, b);
+        else
+            string = String::format("%dn+%d", a, b);
+        selector->setArgument(AtomicString(string));
+        selector->pseudoType(); // FIXME: Do we need to force the pseudo type to be cached?
+        ASSERT(selector->pseudoType() != CSSSelector::PseudoUnknown);
+        return selector.release();
+    }
+
     // FIXME: Support :lang(<ident>)
 
     return nullptr;
@@ -390,6 +421,84 @@ CSSSelector::AttributeMatchType CSSSelectorParser::consumeAttributeFlags(CSSPars
     }
     m_failedParsing = true;
     return CSSSelector::CaseSensitive;
+}
+
+bool CSSSelectorParser::consumeANPlusB(CSSParserTokenRange& range, std::pair<int, int>& result)
+{
+    const CSSParserToken& token = range.consumeIncludingComments();
+    if (token.type() == NumberToken && token.numericValueType() == IntegerValueType) {
+        result = std::make_pair(0, static_cast<int>(token.numericValue()));
+        return true;
+    }
+    if (token.type() == IdentToken) {
+        if (equalIgnoringCase(token.value(), "odd")) {
+            result = std::make_pair(2, 1);
+            return true;
+        }
+        if (equalIgnoringCase(token.value(), "even")) {
+            result = std::make_pair(2, 0);
+            return true;
+        }
+    }
+
+    // The 'n' will end up as part of an ident or dimension. For a valid <an+b>,
+    // this will store a string of the form 'n', 'n-', or 'n-123'.
+    String nString;
+
+    if (token.type() == DelimiterToken && token.delimiter() == '+' && range.peek().type() == IdentToken) {
+        result.first = 1;
+        nString = range.consume().value();
+    } else if (token.type() == DimensionToken && token.numericValueType() == IntegerValueType) {
+        result.first = token.numericValue();
+        nString = token.value();
+    } else if (token.type() == IdentToken) {
+        if (token.value()[0] == '-') {
+            result.first = -1;
+            nString = token.value().substring(1);
+        } else {
+            result.first = 1;
+            nString = token.value();
+        }
+    }
+
+    range.consumeWhitespaceAndComments();
+
+    if (nString.isEmpty() || !isASCIIAlphaCaselessEqual(nString[0], 'n'))
+        return false;
+    if (nString.length() > 1 && nString[1] != '-')
+        return false;
+
+    if (nString.length() > 2) {
+        bool valid;
+        result.second = nString.substring(1).toIntStrict(&valid);
+        return valid;
+    }
+
+    NumericSign sign = nString.length() == 1 ? NoSign : MinusSign;
+    if (sign == NoSign && range.peek().type() == DelimiterToken) {
+        char delimiterSign = range.consumeIncludingWhitespaceAndComments().delimiter();
+        if (delimiterSign == '+')
+            sign = PlusSign;
+        else if (delimiterSign == '-')
+            sign = MinusSign;
+        else
+            return false;
+    }
+
+    if (sign == NoSign && range.peek().type() != NumberToken) {
+        result.second = 0;
+        return true;
+    }
+
+    const CSSParserToken& b = range.consume();
+    if (b.type() != NumberToken || b.numericValueType() != IntegerValueType)
+        return false;
+    if ((b.numericSign() == NoSign) == (sign == NoSign))
+        return false;
+    result.second = b.numericValue();
+    if (sign == MinusSign)
+        result.second = -result.second;
+    return true;
 }
 
 QualifiedName CSSSelectorParser::determineNameInNamespace(const AtomicString& prefix, const AtomicString& localName)
