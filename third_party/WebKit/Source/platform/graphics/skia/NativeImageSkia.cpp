@@ -63,12 +63,13 @@ void NativeImageSkia::draw(
 
     {
         SkPaint paint;
-        OwnPtr<GraphicsContext::AutoCanvasRestorer> restorer = context->preparePaintForDrawRectToRect(&paint, srcRect, destRect, compositeOp, blendMode, !isOpaque, isLazyDecoded, isDataComplete());
+        int initialSaveCount = context->preparePaintForDrawRectToRect(&paint, srcRect, destRect, compositeOp, blendMode, !isOpaque, isLazyDecoded, isDataComplete());
         // We want to filter it if we decided to do interpolation above, or if
         // there is something interesting going on with the matrix (like a rotation).
         // Note: for serialization, we will want to subset the bitmap first so we
         // don't send extra pixels.
         context->drawBitmapRect(bitmap(), &srcRect, destRect, &paint);
+        context->canvas()->restoreToCount(initialSaveCount);
     }
 
     if (isLazyDecoded)

@@ -385,20 +385,9 @@ public:
     void beginAnnotation(const AnnotationList&);
     void endAnnotation();
 
-    class AutoCanvasRestorer {
-    public:
-        AutoCanvasRestorer(SkCanvas* canvas, int restoreCount)
-            : m_canvas(canvas)
-            , m_restoreCount(restoreCount)
-        { }
-
-        ~AutoCanvasRestorer();
-    private:
-        SkCanvas* m_canvas;
-        int m_restoreCount;
-    };
-
-    WARN_UNUSED_RETURN PassOwnPtr<AutoCanvasRestorer> preparePaintForDrawRectToRect(
+    // This method can potentially push saves onto the canvas. It returns the initial save count,
+    // and should be balanced with a call to context->canvas()->restoreToCount(initialSaveCount).
+    WARN_UNUSED_RETURN int preparePaintForDrawRectToRect(
         SkPaint*,
         const SkRect& srcRect,
         const SkRect& destRect,

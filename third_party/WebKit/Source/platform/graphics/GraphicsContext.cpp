@@ -1930,7 +1930,7 @@ void GraphicsContext::didDrawTextInRect(const SkRect& textRect)
     }
 }
 
-PassOwnPtr<GraphicsContext::AutoCanvasRestorer> GraphicsContext::preparePaintForDrawRectToRect(
+int GraphicsContext::preparePaintForDrawRectToRect(
     SkPaint* paint,
     const SkRect& srcRect,
     const SkRect& destRect,
@@ -1940,9 +1940,10 @@ PassOwnPtr<GraphicsContext::AutoCanvasRestorer> GraphicsContext::preparePaintFor
     bool isLazyDecoded,
     bool isDataComplete) const
 {
+    int initialSaveCount = m_canvas->getSaveCount();
+
     paint->setColorFilter(this->colorFilter());
     paint->setAlpha(this->getNormalizedAlpha());
-    OwnPtr<AutoCanvasRestorer> restorer;
     bool usingImageFilter = false;
     if (dropShadowImageFilter() && isBitmapWithAlpha) {
         SkMatrix ctm = getTotalMatrix();
@@ -1965,8 +1966,6 @@ PassOwnPtr<GraphicsContext::AutoCanvasRestorer> GraphicsContext::preparePaintFor
             layerPaint.setImageFilter(dropShadowImageFilter());
             m_canvas->saveLayer(&filteredBounds, &layerPaint);
             m_canvas->concat(ctm);
-            // Need two calls to restore to undo state setup performed here
-            restorer = adoptPtr(new AutoCanvasRestorer(m_canvas, 2));
         }
     }
 
@@ -2002,16 +2001,8 @@ PassOwnPtr<GraphicsContext::AutoCanvasRestorer> GraphicsContext::preparePaintFor
     }
     resampling = limitInterpolationQuality(this, resampling);
     paint->setFilterLevel(static_cast<SkPaint::FilterLevel>(resampling));
-    return restorer.release();
-}
 
-GraphicsContext::AutoCanvasRestorer::~AutoCanvasRestorer()
-{
-    while (m_restoreCount) {
-        m_canvas->restore();
-        m_restoreCount--;
-    }
-
+    return initialSaveCount;
 }
 
 } // namespace blink
