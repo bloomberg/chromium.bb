@@ -4,21 +4,63 @@
 Release Notes
 #############
 
+The dates in the following release notes denote when Chrome and the NaCl SDK
+reached canary status. The stable release is typically 6 weeks later.
+
+Chrome/Pepper 42 (20 February 2015)
+===================================
+
+NaCl
+----
+
+* The x86 NaCl validators accept instructions from the FMA3 extensions.
+
+
+PNaCl
+-----
+
+* PNaCl supports C11/C++11 memory orders `acquire`, `release`, and `acq_rel`. It
+  used to upgrade all accesses to `seq_cst`. It still upgrades `consume` to
+  `acquire` (no compiler currently implements `consume`), and `relaxed` to
+  `seq_cst` (to conservatively avoid platform differences due to out-of-thin-air
+  problems).
+* PNaCl handles nested struct type expansion, which allows it to better support
+  non-C languages such as Rust.
+* PNaCl breaks up many integer operations over 64-bits into individual 64-bit
+  operations. This is often encountered when using large consecutive bitfields.
+
+Chrome/Pepper 41 (09 January 2015)
+==================================
+
+NaCl
+----
+
+* The x86 NaCl validators accept instructions from the AVX1 extensions.
+
+PNaCl
+-----
+
+* PNaCl is now based on LLVM 3.5.
+
+Chrome/Pepper 40 (November 07 2014)
+===================================
+
+* `VideoDecoder
+  </native-client/pepper_stable/cpp/classpp_1_1_video_decoder.html>`_ is now
+  stable, see the SDK example in ``pepper_canary/examples/api/video_decode``.
+
 Chrome/Pepper 39 (26 September 2014)
 ====================================
 
 Pepper
 ------
 
-.. TODO(jfb): Change to VideoDecoder to pepper_stable when it hits stable.
-
 * Support for ``DEBUG_ONLY:dev://postmessage`` has been removed in favor of
   :ref:`other more useful debugging approaches <devcycle-debugging>`.
-* `VideoDecoder
-  </native-client/pepper_beta/cpp/classpp_1_1_video_decoder.html>`_ is now
-  stable, see the SDK example in ``pepper_canary/examples/api/video_decode``.
 * ``postMessageAndAwaitResponse`` is now stable and allows JavaScript to
-  communicate synchronously with PNaCl embeds.
+  `communicate synchronously
+  </native-client/pepper_stable/cpp/classpp_1_1_message_handler>`_ with PNaCl
+  embeds.
 
 Chrome/Pepper 38 (15 August 2014)
 =================================
