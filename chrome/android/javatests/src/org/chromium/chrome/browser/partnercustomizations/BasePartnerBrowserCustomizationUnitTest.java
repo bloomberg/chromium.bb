@@ -9,6 +9,9 @@ import android.content.ContextWrapper;
 import android.net.Uri;
 import android.test.AndroidTestCase;
 
+import org.chromium.chrome.test.partnercustomizations.TestPartnerBrowserCustomizationsDelayedProvider;
+import org.chromium.chrome.test.partnercustomizations.TestPartnerBrowserCustomizationsProvider;
+
 import java.util.concurrent.Semaphore;
 
 /**

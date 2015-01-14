@@ -8,6 +8,8 @@ import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.test.partnercustomizations.TestPartnerBrowserCustomizationsDelayedProvider;
+import org.chromium.chrome.test.partnercustomizations.TestPartnerBrowserCustomizationsProvider;
 
 /**
  * Unit test suite for partner homepage.

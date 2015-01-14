@@ -12,10 +12,10 @@
     <application>
         <uses-library android:name="android.test.runner" />
 
-        <provider android:name="org.chromium.chrome.browser.partnercustomizations.TestPartnerBrowserCustomizationsProvider"
-            android:authorities="org.chromium.chrome.browser.partnercustomizations.TestPartnerBrowserCustomizationsProvider" />
-        <provider android:name="org.chromium.chrome.browser.partnercustomizations.TestPartnerBrowserCustomizationsDelayedProvider"
-            android:authorities="org.chromium.chrome.browser.partnercustomizations.TestPartnerBrowserCustomizationsDelayedProvider" />
+        <provider android:name="org.chromium.chrome.test.partnercustomizations.TestPartnerBrowserCustomizationsProvider"
+            android:authorities="org.chromium.chrome.test.partnercustomizations.TestPartnerBrowserCustomizationsProvider" />
+        <provider android:name="org.chromium.chrome.test.partnercustomizations.TestPartnerBrowserCustomizationsDelayedProvider"
+            android:authorities="org.chromium.chrome.test.partnercustomizations.TestPartnerBrowserCustomizationsDelayedProvider" />
 
         <activity android:name="org.chromium.sync.test.util.MockGrantCredentialsPermissionActivity"
             android:exported="false">
