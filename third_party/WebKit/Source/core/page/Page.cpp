@@ -57,6 +57,7 @@
 #include "core/rendering/RenderView.h"
 #include "core/rendering/TextAutosizer.h"
 #include "core/storage/StorageNamespace.h"
+#include "platform/graphics/GraphicsLayer.h"
 #include "platform/plugins/PluginData.h"
 #include "wtf/HashMap.h"
 #include "wtf/RefCountedLeakCounter.h"
@@ -184,16 +185,14 @@ String Page::mainThreadScrollingReasonsAsText()
 
 PassRefPtrWillBeRawPtr<ClientRectList> Page::nonFastScrollableRects(const LocalFrame* frame)
 {
-    if (m_mainFrame->isLocalFrame() && deprecatedLocalMainFrame()->document())
-        deprecatedLocalMainFrame()->document()->updateLayout();
-
-    Vector<IntRect> rects;
     if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator()) {
         // Hits in compositing/iframes/iframe-composited-scrolling.html
         DisableCompositingQueryAsserts disabler;
-        rects = scrollingCoordinator->computeShouldHandleScrollGestureOnMainThreadRegion(frame, IntPoint()).rects();
+        scrollingCoordinator->updateAfterCompositingChangeIfNeeded();
     }
 
+    // Now retain non-fast scrollable regions
+    WebVector<WebRect> rects = frame->view()->layerForScrolling()->platformLayer()->nonFastScrollableRegion();
     Vector<FloatQuad> quads(rects.size());
     for (size_t i = 0; i < rects.size(); ++i)
         quads[i] = FloatRect(rects[i]);

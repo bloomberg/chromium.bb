@@ -66,6 +66,9 @@ public:
     void updateHaveWheelEventHandlers();
     void updateHaveScrollEventHandlers();
 
+    // Should be called whenever scrollable area set changes.
+    void scrollableAreasDidChange();
+
     // Should be called whenever the slow repaint objects counter changes between zero and one.
     void frameViewHasSlowRepaintObjectsDidChange(FrameView*);
 

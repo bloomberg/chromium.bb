@@ -119,6 +119,18 @@ void ScrollingCoordinator::notifyLayoutUpdated()
     m_shouldScrollOnMainThreadDirty = true;
 }
 
+void ScrollingCoordinator::scrollableAreasDidChange()
+{
+    // Layout may update scrollable area bounding boxes. It also sets the same dirty
+    // flag making this one redundant (See |ScrollingCoordinator::notifyLayoutUpdated|).
+    // So if layout is expected, ignore this call allowing scrolling coordinator
+    // to be notified post-layout to recompute gesture regions.
+    if (!m_page->deprecatedLocalMainFrame()->view() || m_page->deprecatedLocalMainFrame()->view()->needsLayout())
+        return;
+
+    m_scrollGestureRegionIsDirty = true;
+}
+
 void ScrollingCoordinator::updateAfterCompositingChangeIfNeeded()
 {
     if (!m_page->mainFrame()->isLocalFrame())

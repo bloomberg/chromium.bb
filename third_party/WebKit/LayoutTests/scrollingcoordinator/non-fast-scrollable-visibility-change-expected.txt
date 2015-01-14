@@ -1,0 +1,19 @@
+This should be covered by the ONLY visible green overlay.
+This test ensures that changing visibility of a non-fast scrollable area correctly updates list of non-fast scrollable areas. (See http://crbug.com/434982)
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS nonFastScrollableRects.length is 1
+PASS rectToString(nonFastScrollableRects[0]) is "[0, 300, 250, 250]"
+PASS window.internals.needsLayoutCount() is 0
+PASS nonFastScrollableRects.length is 2
+PASS rectToString(nonFastScrollableRects[0]) is "[0, 0, 250, 250]"
+PASS rectToString(nonFastScrollableRects[1]) is "[0, 300, 250, 250]"
+PASS window.internals.needsLayoutCount() is 0
+PASS nonFastScrollableRects.length is 1
+PASS rectToString(nonFastScrollableRects[0]) is "[0, 0, 250, 250]"
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

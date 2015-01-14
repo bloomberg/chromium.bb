@@ -17,8 +17,10 @@ iframe {
       var frame = document.getElementById('scrollable-iframe');
       shouldBe('internals.nonFastScrollableRects(document).length', '1');
       frame.style.display = 'none';
+      document.body.offsetTop; // Force layout
       shouldBe('internals.nonFastScrollableRects(document).length', '0');
       frame.style.display = '';
+      document.body.offsetTop; // Force layout
       shouldBe('internals.nonFastScrollableRects(document).length', '1');
     }
   }

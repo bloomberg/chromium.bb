@@ -59,6 +59,7 @@ class RenderObject;
 class RenderPart;
 class RenderScrollbarPart;
 class RenderView;
+class ScrollingCoordinator;
 struct CompositedSelectionBound;
 
 typedef unsigned long long DOMTimeStamp;
@@ -684,6 +685,8 @@ private:
     void updateOverhangAreas();
 
     bool isFrameViewScrollbar(const Widget* child) const { return horizontalScrollbar() == child || verticalScrollbar() == child; }
+
+    ScrollingCoordinator* scrollingCoordinator();
 
     static double s_currentFrameTimeStamp; // used for detecting decoded resource thrash in the cache
 

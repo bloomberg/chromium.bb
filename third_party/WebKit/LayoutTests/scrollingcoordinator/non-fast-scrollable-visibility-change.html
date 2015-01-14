@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<style>
+  body {
+    margin: 0;
+  }
+  .non-fast {
+      height: 250px;
+      width: 250px;
+      display: block;
+      background-color: red;
+      overflow: scroll;
+  }
+  .non-fast > div {
+    height: 1000px;
+    width: 1000px;
+    display: block;
+    background: linear-gradient(to bottom, red, white);
+  }
+</style>
+
+<div id="first" class="non-fast">
+  This should be covered by the ONLY visible green overlay.
+</div>
+<div id="second" class="non-fast" style="margin-top:50px;">
+  This should not be visible.
+  <div></div>
+</div>
+
+<div id="console"></div>
+
+<script src="../resources/js-test.js"></script>
+<script src="resources/non-fast-scrollable-region-testing.js"></script>
+<script>
+  window.jsTestIsAsync = true;
+  description('This test ensures that changing visibility of a non-fast ' +
+              'scrollable area correctly updates list of non-fast scrollable ' +
+              'areas. (See http://crbug.com/434982)');
+
+  onload = function() {
+    awaitCompsitingUpdate(runTest);
+  };
+
+  function runTest() {
+    var first = document.getElementById('first'),
+        second = document.getElementById('second');
+
+    nonFastScrollableRects = internals.nonFastScrollableRects(document);
+    shouldBe('nonFastScrollableRects.length', '1');
+    shouldBeEqualToString('rectToString(nonFastScrollableRects[0])',
+                          '[0, 300, 250, 250]'); // second div
+
+    // Hide container before making it non-fast scrollable to ensure any
+    // layout occurs while it is invisible.
+    first.style.visibility = 'hidden';
+    makeNonFastScrollable(first);
+
+    // Change visibility (hidden -> visible), which should not cause any layout,
+    // and verify that non-fast scrollable areas are correctly updated.
+    awaitCompsitingUpdate(function() {
+      first.style.visibility = 'visible';
+      shouldBe('window.internals.needsLayoutCount()', '0');
+
+      awaitCompsitingUpdate(function() {
+        nonFastScrollableRects = internals.nonFastScrollableRects(document);
+        shouldBe('nonFastScrollableRects.length', '2');
+        shouldBeEqualToString('rectToString(nonFastScrollableRects[0])',
+                              '[0, 0, 250, 250]'); // first div
+        shouldBeEqualToString('rectToString(nonFastScrollableRects[1])',
+                              '[0, 300, 250, 250]'); // second div
+
+        // Change visibility (visible -> hidden)
+        second.style.visibility = 'hidden';
+        shouldBe('window.internals.needsLayoutCount()', '0');
+
+        awaitCompsitingUpdate(function() {
+          // This has no functional impact just visual
+          runNonFastScrollableRegionTest();
+
+          nonFastScrollableRects = internals.nonFastScrollableRects(document);
+          shouldBe('nonFastScrollableRects.length', '1');
+          shouldBeEqualToString('rectToString(nonFastScrollableRects[0])',
+                                '[0, 0, 250, 250]'); // first div
+
+          finishJSTest();
+        });
+      });
+    });
+  }
+
+  // Makes the container non-fast scrollable area by appending a large element to it.
+  function makeNonFastScrollable(container) {
+    var inner = document.createElement('div');
+    container.appendChild(inner);
+  }
+
+  // Waits for one RAF call to ensure compositing update has occurred and invokes task.
+  function awaitCompsitingUpdate(task) {
+    window.requestAnimationFrame(task);
+  }
+
+  function rectToString(rect) {
+    return '[' + [rect.left, rect.top, rect.width, rect.height].join(', ') + ']';
+  }
+</script>
