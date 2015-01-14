@@ -272,7 +272,6 @@ const int LoginDisplayHostImpl::kShowLoginWebUIid = 0x1111;
 
 LoginDisplayHostImpl::LoginDisplayHostImpl(const gfx::Rect& background_bounds)
     : background_bounds_(background_bounds),
-      pointer_factory_(this),
       shutting_down_(false),
       oobe_progress_bar_visible_(false),
       session_starting_(false),
@@ -288,6 +287,7 @@ LoginDisplayHostImpl::LoginDisplayHostImpl(const gfx::Rect& background_bounds)
       startup_sound_played_(false),
       startup_sound_honors_spoken_feedback_(false),
       is_observing_keyboard_(false),
+      pointer_factory_(this),
       animation_weak_ptr_factory_(this) {
   DBusThreadManager::Get()->GetSessionManagerClient()->AddObserver(this);
   CrasAudioHandler::Get()->AddAudioObserver(this);

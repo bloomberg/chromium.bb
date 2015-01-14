@@ -209,8 +209,6 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
 
   content::NotificationRegistrar registrar_;
 
-  base::WeakPtrFactory<LoginDisplayHostImpl> pointer_factory_;
-
   // Default LoginDisplayHost.
   static LoginDisplayHost* default_host_;
 
@@ -325,6 +323,7 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
   scoped_ptr<aura::Window> login_screen_container_;
 #endif
 
+  base::WeakPtrFactory<LoginDisplayHostImpl> pointer_factory_;
   base::WeakPtrFactory<LoginDisplayHostImpl> animation_weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginDisplayHostImpl);
