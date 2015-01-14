@@ -161,3 +161,7 @@ red-green.h264.md5:
 bear_320x192_40frames.yuv
   First 40 raw i420 frames of bear-1280x720.mp4 scaled down to 320x192 for
   video_encode_accelerator_unittest.
+
+// JPEG test files:
+pixel-1280x720.jpg - single MJEPG encoded frame of 1280x720, captured on
+ Chromebook Pixel.
