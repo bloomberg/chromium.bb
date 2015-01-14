@@ -58,6 +58,9 @@ protected:
 
 private:
     bool isTableHeaderCell() const;
+    bool isRowHeaderCell() const;
+    bool isColumnHeaderCell() const;
+
     AccessibilityRole scanToDecideHeaderRole();
     // If a table cell is not exposed as a table cell, a TH element can serve as its title UI element.
     virtual AXObject* titleUIElement() const override final;
