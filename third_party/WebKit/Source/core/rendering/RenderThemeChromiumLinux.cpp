@@ -5,7 +5,7 @@
 #include "config.h"
 #include "core/rendering/RenderThemeChromiumLinux.h"
 
-#include "platform/PlatformResourceLoader.h"
+#include "core/UserAgentStyleSheets.h"
 
 namespace blink {
 
@@ -23,7 +23,7 @@ RenderTheme& RenderTheme::theme()
 String RenderThemeChromiumLinux::extraDefaultStyleSheet()
 {
     return RenderThemeChromiumDefault::extraDefaultStyleSheet() +
-        loadResourceAsASCIIString("themeChromiumLinux.css");
+        String(themeChromiumLinuxCss, sizeof(themeChromiumLinuxCss));
 }
 
 } // namespace blink

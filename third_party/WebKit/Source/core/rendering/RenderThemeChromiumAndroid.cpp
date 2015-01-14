@@ -28,13 +28,13 @@
 
 #include "core/CSSValueKeywords.h"
 #include "core/InputTypeNames.h"
+#include "core/UserAgentStyleSheets.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderMediaControls.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderProgress.h"
 #include "core/rendering/RenderSlider.h"
 #include "platform/LayoutTestSupport.h"
-#include "platform/PlatformResourceLoader.h"
 #include "platform/graphics/Color.h"
 #include "platform/scroll/ScrollbarTheme.h"
 #include "public/platform/Platform.h"
@@ -60,15 +60,14 @@ RenderThemeChromiumAndroid::~RenderThemeChromiumAndroid()
 
 String RenderThemeChromiumAndroid::extraMediaControlsStyleSheet()
 {
-    return loadResourceAsASCIIString("mediaControlsAndroid.css");
+    return String(mediaControlsAndroidCss, sizeof(mediaControlsAndroidCss));
 }
 
 String RenderThemeChromiumAndroid::extraDefaultStyleSheet()
 {
     return RenderThemeChromiumDefault::extraDefaultStyleSheet() +
-        loadResourceAsASCIIString("themeChromiumLinux.css") +
-        loadResourceAsASCIIString("themeChromiumAndroid.css");
-
+        String(themeChromiumLinuxCss, sizeof(themeChromiumLinuxCss)) +
+        String(themeChromiumAndroidCss, sizeof(themeChromiumAndroidCss));
 }
 
 void RenderThemeChromiumAndroid::adjustInnerSpinButtonStyle(RenderStyle* style, Element*) const

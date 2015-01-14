@@ -23,6 +23,7 @@
 
 #import "core/CSSValueKeywords.h"
 #import "core/HTMLNames.h"
+#import "core/UserAgentStyleSheets.h"
 #import "core/css/CSSValueList.h"
 #import "core/dom/Document.h"
 #import "core/dom/Element.h"
@@ -43,7 +44,6 @@
 #import "core/rendering/RenderView.h"
 #import "core/rendering/style/ShadowList.h"
 #import "platform/LayoutTestSupport.h"
-#import "platform/PlatformResourceLoader.h"
 #import "platform/SharedBuffer.h"
 #import "platform/geometry/FloatRoundedRect.h"
 #import "platform/graphics/BitmapImage.h"
@@ -1797,9 +1797,9 @@ String RenderThemeChromiumMac::extraFullScreenStyleSheet()
 String RenderThemeChromiumMac::extraDefaultStyleSheet()
 {
     return RenderTheme::extraDefaultStyleSheet() +
-        loadResourceAsASCIIString("themeChromium.css") +
-        loadResourceAsASCIIString("themeInputMultipleFields.css") +
-        loadResourceAsASCIIString("themeMac.css");
+        String(themeChromiumCss, sizeof(themeChromiumCss)) +
+        String(themeInputMultipleFieldsCss, sizeof(themeInputMultipleFieldsCss)) +
+        String(themeMacCss, sizeof(themeMacCss));
 }
 
 bool RenderThemeChromiumMac::paintMediaVolumeSliderContainer(RenderObject* object, const PaintInfo& paintInfo, const IntRect& rect)
