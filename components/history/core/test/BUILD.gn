@@ -3,14 +3,19 @@
 # found in the LICENSE file.
 
 static_library("test") {
+  testonly = true
   sources = [
     "history_client_fake_bookmarks.cc",
     "history_client_fake_bookmarks.h",
+    "history_unittest_base.cc",
+    "history_unittest_base.h",
   ]
 
   deps = [
     "//base",
     "//components/history/core/browser",
+    "//sql",
+    "//testing/gtest",
     "//url",
   ]
 }

@@ -8,11 +8,11 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
 #include "chrome/browser/history/history_database.h"
-#include "chrome/browser/history/history_unittest_base.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/history/core/browser/history_constants.h"
+#include "components/history/core/test/history_unittest_base.h"
 
 namespace history {
 

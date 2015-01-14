@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_HISTORY_HISTORY_UNITTEST_BASE_H_
-#define CHROME_BROWSER_HISTORY_HISTORY_UNITTEST_BASE_H_
+#ifndef COMPONENTS_HISTORY_CORE_TEST_HISTORY_UNITTEST_BASE_H_
+#define COMPONENTS_HISTORY_CORE_TEST_HISTORY_UNITTEST_BASE_H_
 
+#include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -33,4 +34,4 @@ class HistoryUnitTestBase : public testing::Test {
 
 }  // namespace history
 
-#endif  // CHROME_BROWSER_HISTORY_HISTORY_UNITTEST_BASE_H_
+#endif  // COMPONENTS_HISTORY_CORE_TEST_HISTORY_UNITTEST_BASE_H_

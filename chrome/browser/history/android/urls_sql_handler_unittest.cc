@@ -4,15 +4,14 @@
 
 #include <vector>
 
-#include "chrome/browser/history/android/urls_sql_handler.h"
-
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/history/android/visit_sql_handler.h"
 #include "chrome/browser/history/history_database.h"
 #include "chrome/common/chrome_constants.h"
+#include "components/history/core/android/urls_sql_handler.h"
+#include "components/history/core/android/visit_sql_handler.h"
 #include "components/history/core/browser/history_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

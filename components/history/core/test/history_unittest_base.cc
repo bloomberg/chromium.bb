@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/history/core/test/history_unittest_base.h"
+
 #include <vector>
 
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/history/history_unittest_base.h"
 #include "sql/connection.h"
 
 namespace history {

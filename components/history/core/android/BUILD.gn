@@ -11,10 +11,16 @@ static_library("android") {
     "android_time.h",
     "android_urls_database.cc",
     "android_urls_database.h",
+    "android_urls_sql_handler.cc",
+    "android_urls_sql_handler.h",
     "favicon_sql_handler.cc",
     "favicon_sql_handler.h",
     "sql_handler.cc",
     "sql_handler.h",
+    "urls_sql_handler.cc",
+    "urls_sql_handler.h",
+    "visit_sql_handler.cc",
+    "visit_sql_handler.h",
   ]
 
   deps = [
