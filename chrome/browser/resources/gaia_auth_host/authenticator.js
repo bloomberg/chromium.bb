@@ -248,7 +248,7 @@ cr.define('cr.login', function() {
    */
   Authenticator.prototype.onMessageFromWebview_ = function(e) {
     // The event origin does not have a trailing slash.
-    if (e.origin != this.idpOrigin_.substring(0, this.idpOrigin_ - 1)) {
+    if (e.origin != this.idpOrigin_.substring(0, this.idpOrigin_.length - 1)) {
       return;
     }
 
