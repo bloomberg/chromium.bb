@@ -249,7 +249,8 @@ struct MEDIA_EXPORT H264SliceHeader {
   int idr_pic_id;
   int pic_order_cnt_lsb;
   int delta_pic_order_cnt_bottom;
-  int delta_pic_order_cnt[2];
+  int delta_pic_order_cnt0;
+  int delta_pic_order_cnt1;
   int redundant_pic_cnt;
   bool direct_spatial_mv_pred_flag;
 
@@ -285,6 +286,11 @@ struct MEDIA_EXPORT H264SliceHeader {
   int disable_deblocking_filter_idc;
   int slice_alpha_c0_offset_div2;
   int slice_beta_offset_div2;
+
+  // Calculated.
+  // Size in bits of dec_ref_pic_marking() syntax element.
+  size_t dec_ref_pic_marking_bit_size;
+  size_t pic_order_cnt_bit_size;
 };
 
 struct H264SEIRecoveryPoint {

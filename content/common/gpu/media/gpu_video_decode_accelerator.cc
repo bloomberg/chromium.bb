@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/stl_util.h"
 
@@ -300,14 +301,14 @@ GpuVideoDecodeAccelerator::CreateV4L2VDA() {
   scoped_ptr<media::VideoDecodeAccelerator> decoder;
 #if defined(OS_CHROMEOS) && (defined(ARCH_CPU_ARMEL) || \
     (defined(USE_OZONE) && defined(USE_V4L2_CODEC)))
-  scoped_ptr<V4L2Device> device = V4L2Device::Create(V4L2Device::kDecoder);
+  scoped_refptr<V4L2Device> device = V4L2Device::Create(V4L2Device::kDecoder);
   if (device.get()) {
     decoder.reset(new V4L2VideoDecodeAccelerator(
         gfx::GLSurfaceEGL::GetHardwareDisplay(),
         stub_->decoder()->GetGLContext()->GetHandle(),
         weak_factory_for_io_.GetWeakPtr(),
         make_context_current_,
-        device.Pass(),
+        device,
         io_message_loop_));
   }
 #endif

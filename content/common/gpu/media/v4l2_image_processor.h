@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/memory/linked_ptr.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread.h"
 #include "content/common/content_export.h"
@@ -22,7 +23,7 @@ namespace content {
 // hardware accelerators (see V4L2VideoDecodeAccelerator) for more details.
 class CONTENT_EXPORT V4L2ImageProcessor {
  public:
-  explicit V4L2ImageProcessor(scoped_ptr<V4L2Device> device);
+  explicit V4L2ImageProcessor(const scoped_refptr<V4L2Device>& device);
   virtual ~V4L2ImageProcessor();
 
   // Initializes the processor to convert from |input_format| to |output_format|
@@ -136,7 +137,7 @@ class CONTENT_EXPORT V4L2ImageProcessor {
   const scoped_refptr<base::MessageLoopProxy> child_message_loop_proxy_;
 
   // V4L2 device in use.
-  scoped_ptr<V4L2Device> device_;
+  scoped_refptr<V4L2Device> device_;
 
   // Thread to communicate with the device on.
   base::Thread device_thread_;

@@ -11,8 +11,8 @@
 #include "base/memory/linked_ptr.h"
 #include "base/threading/thread.h"
 #include "content/common/content_export.h"
-#include "content/common/gpu/media/h264_dpb.h"
 #include "content/common/gpu/media/va_surface.h"
+#include "content/common/gpu/media/vaapi_h264_dpb.h"
 #include "content/common/gpu/media/vaapi_wrapper.h"
 #include "media/filters/h264_bitstream_buffer.h"
 #include "media/video/video_encode_accelerator.h"
@@ -211,7 +211,7 @@ class CONTENT_EXPORT VaapiVideoEncodeAccelerator
   media::H264BitstreamBuffer packed_pps_;
 
   // Picture currently being prepared for encode.
-  H264Picture current_pic_;
+  VaapiH264Picture current_pic_;
 
   // VA surfaces available for reuse.
   std::vector<VASurfaceID> available_va_surface_ids_;

@@ -92,13 +92,13 @@ struct MEDIA_EXPORT Vp8FrameHeader {
   bool IsKeyframe() const { return key_frame == KEYFRAME; }
 
   enum GoldenRefreshMode {
-    kCopyLastToGolden = 1,
-    kCopyAltToGolden = 2,
+    COPY_LAST_TO_GOLDEN = 1,
+    COPY_ALT_TO_GOLDEN = 2,
   };
 
   enum AltRefreshMode {
-    kCopyLastToAlt = 1,
-    kCopyGoldenToAlt = 2,
+    COPY_LAST_TO_ALT = 1,
+    COPY_GOLDEN_TO_ALT = 2,
   };
 
   FrameType key_frame;

@@ -15,7 +15,7 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/common/gpu/media/h264_dpb.h"
+#include "content/common/gpu/media/vaapi_h264_dpb.h"
 #include "content/common/gpu/media/vaapi_wrapper.h"
 #include "media/base/limits.h"
 #include "media/filters/h264_parser.h"
@@ -116,7 +116,7 @@ class CONTENT_EXPORT VaapiH264Decoder {
   // smoothness improvement during testing.
   enum {
     kPicsInPipeline = media::limits::kMaxVideoFrames + 2,
-    kMaxNumReqPictures = H264DPB::kDPBMaxSize + kPicsInPipeline,
+    kMaxNumReqPictures = VaapiH264DPB::kDPBMaxSize + kPicsInPipeline,
   };
 
   // Internal state of the decoder.
@@ -154,8 +154,8 @@ class CONTENT_EXPORT VaapiH264Decoder {
   void ConstructReferencePicListsB(media::H264SliceHeader* slice_hdr);
 
   // Helper functions for reference list construction, per spec.
-  int PicNumF(H264Picture *pic);
-  int LongTermPicNumF(H264Picture *pic);
+  int PicNumF(VaapiH264Picture *pic);
+  int LongTermPicNumF(VaapiH264Picture *pic);
 
   // Perform the reference picture lists' modification (reordering), as
   // specified in spec (8.2.4).
@@ -194,14 +194,14 @@ class CONTENT_EXPORT VaapiH264Decoder {
   bool QueueSlice(media::H264SliceHeader* slice_hdr);
 
   // Helper methods for filling HW structures.
-  void FillVAPicture(VAPictureH264 *va_pic, H264Picture* pic);
+  void FillVAPicture(VAPictureH264 *va_pic, VaapiH264Picture* pic);
   int FillVARefFramesFromDPB(VAPictureH264 *va_pics, int num_pics);
 
   // Commits all pending data for HW decoder and starts HW decoder.
   bool DecodePicture();
 
   // Notifies client that a picture is ready for output.
-  bool OutputPic(H264Picture* pic);
+  bool OutputPic(VaapiH264Picture* pic);
 
   // Output all pictures in DPB that have not been outputted yet.
   bool OutputAllRemainingPics();
@@ -228,15 +228,15 @@ class CONTENT_EXPORT VaapiH264Decoder {
   media::H264Parser parser_;
 
   // DPB in use.
-  H264DPB dpb_;
+  VaapiH264DPB dpb_;
 
   // Picture currently being processed/decoded.
-  scoped_ptr<H264Picture> curr_pic_;
+  scoped_ptr<VaapiH264Picture> curr_pic_;
 
   // Reference picture lists, constructed for each picture before decoding.
   // Those lists are not owners of the pointers (DPB is).
-  H264Picture::PtrVector ref_pic_list0_;
-  H264Picture::PtrVector ref_pic_list1_;
+  VaapiH264Picture::PtrVector ref_pic_list0_;
+  VaapiH264Picture::PtrVector ref_pic_list1_;
 
   // Global state values, needed in decoding. See spec.
   int max_pic_order_cnt_lsb_;
@@ -255,7 +255,7 @@ class CONTENT_EXPORT VaapiH264Decoder {
   int prev_ref_top_field_order_cnt_;
   int prev_ref_pic_order_cnt_msb_;
   int prev_ref_pic_order_cnt_lsb_;
-  H264Picture::Field prev_ref_field_;
+  VaapiH264Picture::Field prev_ref_field_;
 
   // Currently active SPS and PPS.
   int curr_sps_id_;

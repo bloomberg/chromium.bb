@@ -831,8 +831,19 @@
       'conditions': [
         ['target_arch == "arm"', {
           'sources': [
+            'common/gpu/media/accelerated_video_decoder.h',
+            'common/gpu/media/h264_decoder.cc',
+            'common/gpu/media/h264_decoder.h',
+            'common/gpu/media/h264_dpb.cc',
+            'common/gpu/media/h264_dpb.h',
             'common/gpu/media/tegra_v4l2_video_device.cc',
             'common/gpu/media/tegra_v4l2_video_device.h',
+            'common/gpu/media/v4l2_slice_video_decode_accelerator.cc',
+            'common/gpu/media/v4l2_slice_video_decode_accelerator.h',
+            'common/gpu/media/vp8_decoder.cc',
+            'common/gpu/media/vp8_decoder.h',
+            'common/gpu/media/vp8_picture.cc',
+            'common/gpu/media/vp8_picture.h',
           ],
         }],
       ],
@@ -843,11 +854,11 @@
         '../third_party/libyuv/libyuv.gyp:libyuv',
       ],
       'sources': [
-        'common/gpu/media/h264_dpb.cc',
-        'common/gpu/media/h264_dpb.h',
         'common/gpu/media/va_surface.h',
         'common/gpu/media/vaapi_h264_decoder.cc',
         'common/gpu/media/vaapi_h264_decoder.h',
+        'common/gpu/media/vaapi_h264_dpb.cc',
+        'common/gpu/media/vaapi_h264_dpb.h',
         'common/gpu/media/vaapi_picture.cc',
         'common/gpu/media/vaapi_picture.h',
         'common/gpu/media/vaapi_video_decode_accelerator.cc',
