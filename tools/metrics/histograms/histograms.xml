@@ -26558,7 +26558,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Prerender.Event" enum="PrerenderEvent">
-  <owner>tburkard@chromium.org</owner>
+  <obsolete>
+    Deprecated Dec 12 2014.
+  </obsolete>
   <summary>
     Enumeration of what events related to prerendering have occurred.
   </summary>
@@ -27256,6 +27258,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Prerender.SessionStorageNamespaceMergeTime"
     units="milliseconds">
+  <obsolete>
+    Deprecated Dec 12 2014.
+  </obsolete>
   <owner>tburkard@chromium.org</owner>
   <summary>Time to perform the session storage namespace merge.</summary>
 </histogram>

@@ -2986,35 +2986,16 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPrint) {
                    0);
 }
 
-// Checks that if a page is opened in a new window by javascript and both the
-// pages are in the same domain, the prerendered page is not used, due to
-// there being other tabs in the same browsing instance.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       PrerenderSameDomainWindowOpenerWindowOpen) {
-  PrerenderTestURL("files/prerender/prerender_page.html",
-                   FINAL_STATUS_NON_EMPTY_BROWSING_INSTANCE,
-                   1);
-  OpenDestURLViaWindowOpen();
-}
-
-// Checks that if a page is opened due to click on a href with target="_blank"
-// and both pages are in the same domain the prerendered page is not used, due
-// there being other tabs in the same browsing instance.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       PrerenderSameDomainWindowOpenerClickTarget) {
-  PrerenderTestURL("files/prerender/prerender_page.html",
-                   FINAL_STATUS_NON_EMPTY_BROWSING_INSTANCE,
-                   1);
-  OpenDestURLViaClickTarget();
-}
-
 // Checks that prerenders do not get swapped into target pages that have opened
-// a popup, even if the target page itself does not have an opener.
+// popups; the BrowsingInstance is not empty.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderTargetHasPopup) {
   PrerenderTestURL("files/prerender/prerender_page.html",
                    FINAL_STATUS_NON_EMPTY_BROWSING_INSTANCE,
                    1);
   OpenURLViaWindowOpen(GURL(url::kAboutBlankURL));
+
+  // Switch back to the current tab and attempt to swap it in.
+  current_browser()->tab_strip_model()->ActivateTabAt(0, true);
   NavigateToDestURLWithDisposition(CURRENT_TAB, false);
 }
 
@@ -3372,20 +3353,14 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderClickNavigateGoBack) {
 }
 
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderClickNewWindow) {
-  // Prerender currently doesn't interpose on this navigation.
-  // http://crbug.com/345474.
   PrerenderTestURL("files/prerender/prerender_page_with_link.html",
-                   FINAL_STATUS_USED,
-                   1);
+                   FINAL_STATUS_APP_TERMINATING, 1);
   OpenDestURLViaClickNewWindow();
 }
 
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderClickNewForegroundTab) {
-  // Prerender currently doesn't interpose on this navigation.
-  // http://crbug.com/345474.
   PrerenderTestURL("files/prerender/prerender_page_with_link.html",
-                   FINAL_STATUS_USED,
-                   1);
+                   FINAL_STATUS_APP_TERMINATING, 1);
   OpenDestURLViaClickNewForegroundTab();
 }
 
@@ -3462,59 +3437,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, MatchCompleteDummy) {
       "Prerender.websame_PrerenderNotSwappedInPLT", 1);
 
   NavigateToDestURL();
-  histogram_tester().ExpectTotalCount("Prerender.websame_PerceivedPLT", 1);
-  histogram_tester().ExpectTotalCount("Prerender.websame_PerceivedPLTMatched",
-                                      0);
-  histogram_tester().ExpectTotalCount(
-      "Prerender.websame_PerceivedPLTMatchedComplete", 1);
-}
-
-// Verify that a navigation that hits a MatchComplete dummy while another is in
-// progress does not also classify the previous navigation as a MatchComplete.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       MatchCompleteDummyCancelNavigation) {
-  RestorePrerenderMode restore_prerender_mode;
-  PrerenderManager::SetMode(
-      PrerenderManager::PRERENDER_MODE_EXPERIMENT_MATCH_COMPLETE_GROUP);
-
-  // Arrange for a URL to hang.
-  const GURL kNoCommitUrl("http://never-respond.example.com");
-  base::FilePath file(FILE_PATH_LITERAL(
-      "chrome/test/data/prerender/prerender_page.html"));
-  base::RunLoop hang_loop;
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&CreateHangingFirstRequestInterceptorOnIO, kNoCommitUrl,
-                 file, hang_loop.QuitClosure()));
-
-  // First, fire a prerender that aborts after it completes its load.
-  std::vector<FinalStatus> expected_final_status_queue;
-  expected_final_status_queue.push_back(FINAL_STATUS_INVALID_HTTP_METHOD);
-  expected_final_status_queue.push_back(FINAL_STATUS_WOULD_HAVE_BEEN_USED);
-  PrerenderTestURL("files/prerender/prerender_xhr_put.html",
-                   expected_final_status_queue, 1);
-  histogram_tester().ExpectTotalCount("Prerender.none_PerceivedPLT", 1);
-  histogram_tester().ExpectTotalCount("Prerender.none_PerceivedPLTMatched", 0);
-  histogram_tester().ExpectTotalCount(
-      "Prerender.none_PerceivedPLTMatchedComplete", 0);
-  histogram_tester().ExpectTotalCount(
-      "Prerender.websame_PrerenderNotSwappedInPLT", 1);
-
-  // Open the hanging URL in a new tab. Wait for both the new tab to open and
-  // the hanging request to be scheduled.
-  ui_test_utils::NavigateToURLWithDisposition(
-      current_browser(), kNoCommitUrl, NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
-  hang_loop.Run();
-
-  // Now interrupt that navigation and navigate to the destination URL. This
-  // should forcibly complete the previous navigation and also complete a
-  // WOULD_HAVE_BEEN_PRERENDERED navigation.
-  NavigateToDestURL();
-  histogram_tester().ExpectTotalCount("Prerender.none_PerceivedPLT", 2);
-  histogram_tester().ExpectTotalCount("Prerender.none_PerceivedPLTMatched", 0);
-  histogram_tester().ExpectTotalCount(
-      "Prerender.none_PerceivedPLTMatchedComplete", 0);
   histogram_tester().ExpectTotalCount("Prerender.websame_PerceivedPLT", 1);
   histogram_tester().ExpectTotalCount("Prerender.websame_PerceivedPLTMatched",
                                       0);
@@ -4046,121 +3968,19 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderNewNavigationEntry) {
                    1);
 }
 
-// Attempt a swap-in in a new tab, verifying that session storage namespace
-// merging works.
+// Attempt a swap-in in a new tab. The session storage doesn't match, so it
+// should not swap.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPageNewTab) {
-  // Mock out some URLs and count the number of requests to one of them. Both
-  // prerender_session_storage.html and init_session_storage.html need to be
-  // mocked so they are same-origin.
-  const GURL kInitURL("http://prerender.test/init_session_storage.html");
-  base::FilePath init_file = GetTestPath("init_session_storage.html");
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&CreateMockInterceptorOnIO, kInitURL, init_file));
-
-  const GURL kTestURL("http://prerender.test/prerender_session_storage.html");
-  base::FilePath test_file = GetTestPath("prerender_session_storage.html");
-  RequestCounter counter;
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&CreateCountingInterceptorOnIO,
-                 kTestURL, test_file, counter.AsWeakPtr()));
-
-  PrerenderTestURL(kTestURL, FINAL_STATUS_USED, 1);
-
-  // Open a new tab to navigate in.
-  ui_test_utils::NavigateToURLWithDisposition(
-      current_browser(), kInitURL, NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
-
-  // Now navigate in the new tab. Set expect_swap_to_succeed to false because
-  // the swap does not occur synchronously.
-  //
-  // TODO(davidben): When all swaps become asynchronous, remove the OpenURL
-  // return value assertion and let this go through the usual successful-swap
-  // codepath.
-  NavigateToDestURLWithDisposition(CURRENT_TAB, false);
-
-  // Verify DidDisplayPass manually since the previous call skipped it.
-  EXPECT_TRUE(DidDisplayPass(
-      current_browser()->tab_strip_model()->GetActiveWebContents()));
-
-  // Only one request to the test URL started.
-  //
-  // TODO(davidben): Re-enable this check when the races in attaching the
-  // throttle are resolved. http://crbug.com/335835
-  // EXPECT_EQ(1, counter.count());
-}
-
-// Attempt a swap-in in a new tab, verifying that session storage namespace
-// merging works. Unlike the above test, the swap is for a navigation that would
-// normally be cross-process.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPageNewTabCrossProcess) {
-  base::FilePath test_data_dir;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir));
-
-  // Mock out some URLs and count the number of requests to one of them. Both
-  // prerender_session_storage.html and init_session_storage.html need to be
-  // mocked so they are same-origin.
-  const GURL kInitURL("http://prerender.test/init_session_storage.html");
-  base::FilePath init_file = GetTestPath("init_session_storage.html");
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&CreateMockInterceptorOnIO, kInitURL, init_file));
-
-  const GURL kTestURL("http://prerender.test/prerender_session_storage.html");
-  base::FilePath test_file = GetTestPath("prerender_session_storage.html");
-  RequestCounter counter;
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&CreateCountingInterceptorOnIO,
-                 kTestURL, test_file, counter.AsWeakPtr()));
-
-  PrerenderTestURL(kTestURL, FINAL_STATUS_USED, 1);
-
-  // Open a new tab to navigate in.
-  ui_test_utils::NavigateToURLWithDisposition(
-      current_browser(), kInitURL, NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
-
-  // Navigate to about:blank so the next navigation is cross-process.
-  ui_test_utils::NavigateToURL(current_browser(), GURL(url::kAboutBlankURL));
-
-  // Now navigate in the new tab. Set expect_swap_to_succeed to false because
-  // the swap does not occur synchronously.
-  //
-  // TODO(davidben): When all swaps become asynchronous, remove the OpenURL
-  // return value assertion and let this go through the usual successful-swap
-  // codepath.
-  NavigateToDestURLWithDisposition(CURRENT_TAB, false);
-
-  // Verify DidDisplayPass manually since the previous call skipped it.
-  EXPECT_TRUE(DidDisplayPass(GetActiveWebContents()));
-
-  // Only one request to the test URL started.
-  //
-  // TODO(davidben): Re-enable this check when the races in attaching the
-  // throttle are resolved. http://crbug.com/335835
-  // EXPECT_EQ(1, counter.count());
-}
-
-// Verify that session storage conflicts don't merge.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSessionStorageConflict) {
-  PrerenderTestURL("files/prerender/prerender_session_storage_conflict.html",
+  PrerenderTestURL("files/prerender/prerender_page.html",
                    FINAL_STATUS_APP_TERMINATING, 1);
 
   // Open a new tab to navigate in.
   ui_test_utils::NavigateToURLWithDisposition(
-      current_browser(),
-      test_server()->GetURL("files/prerender/init_session_storage.html"),
-      NEW_FOREGROUND_TAB,
+      current_browser(), GURL(url::kAboutBlankURL), NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
 
   // Now navigate in the new tab.
   NavigateToDestURLWithDisposition(CURRENT_TAB, false);
-
-  // Verify DidDisplayPass in the new tab.
-  EXPECT_TRUE(DidDisplayPass(GetActiveWebContents()));
 }
 
 // Checks that prerenders honor |should_replace_current_entry|.
@@ -4179,99 +3999,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderReplaceCurrentEntry) {
   EXPECT_EQ(2, controller.GetEntryCount());
   EXPECT_EQ(GURL(url::kAboutBlankURL), controller.GetEntryAtIndex(0)->GetURL());
   EXPECT_EQ(dest_url(), controller.GetEntryAtIndex(1)->GetURL());
-}
-
-// Checks prerender does not hit DCHECKs and behaves properly if two pending
-// swaps occur in a row.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderDoublePendingSwap) {
-  GetPrerenderManager()->mutable_config().max_link_concurrency = 2;
-  GetPrerenderManager()->mutable_config().max_link_concurrency_per_launcher = 2;
-
-  GURL url1 = test_server()->GetURL("files/prerender/prerender_page.html?1");
-  scoped_ptr<TestPrerender> prerender1 =
-      PrerenderTestURL(url1, FINAL_STATUS_APP_TERMINATING, 1);
-
-  GURL url2 = test_server()->GetURL("files/prerender/prerender_page.html?2");
-  scoped_ptr<TestPrerender> prerender2 = ExpectPrerender(FINAL_STATUS_USED);
-  AddPrerender(url2, 1);
-  prerender2->WaitForStart();
-  prerender2->WaitForLoads(1);
-
-  // There's no reason the second prerender can't be used, but the swap races
-  // with didStartProvisionalLoad and didFailProvisionalLoad from the previous
-  // navigation. The current logic will conservatively fail to swap under such
-  // races. However, if the renderer is slow enough, it's possible for the
-  // prerender to still be used, so don't program in either expectation.
-  ASSERT_TRUE(prerender2->contents());
-  prerender2->contents()->set_skip_final_checks(true);
-
-  // Open a new tab to navigate in.
-  ui_test_utils::NavigateToURLWithDisposition(
-      current_browser(),
-      GURL(url::kAboutBlankURL),
-      NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
-
-  // Fire off two navigations, without running the event loop between them.
-  NavigationOrSwapObserver swap_observer(
-      current_browser()->tab_strip_model(),
-      GetActiveWebContents(), 2);
-  current_browser()->OpenURL(OpenURLParams(
-      url1, Referrer(), CURRENT_TAB, ui::PAGE_TRANSITION_TYPED, false));
-  current_browser()->OpenURL(OpenURLParams(
-      url2, Referrer(), CURRENT_TAB, ui::PAGE_TRANSITION_TYPED, false));
-  swap_observer.Wait();
-
-  // The WebContents should be on url2. There may be 2 or 3 entries, depending
-  // on whether the first one managed to complete.
-  //
-  // TODO(davidben): When http://crbug.com/335835 is fixed, the 3 entry case
-  // shouldn't be possible because it's throttled by the pending swap that
-  // cannot complete.
-  const NavigationController& controller =
-      GetActiveWebContents()->GetController();
-  EXPECT_TRUE(controller.GetPendingEntry() == NULL);
-  EXPECT_LE(2, controller.GetEntryCount());
-  EXPECT_GE(3, controller.GetEntryCount());
-  EXPECT_EQ(GURL(url::kAboutBlankURL), controller.GetEntryAtIndex(0)->GetURL());
-  EXPECT_EQ(url2, controller.GetEntryAtIndex(
-      controller.GetEntryCount() - 1)->GetURL());
-}
-
-// Verify that pending swaps get aborted on new navigations.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       PrerenderPendingSwapNewNavigation) {
-  PrerenderManager::HangSessionStorageMergesForTesting();
-
-  PrerenderTestURL("files/prerender/prerender_page.html",
-                   FINAL_STATUS_APP_TERMINATING, 1);
-
-  // Open a new tab to navigate in.
-  ui_test_utils::NavigateToURLWithDisposition(
-      current_browser(),
-      GURL(url::kAboutBlankURL),
-      NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
-
-  // Navigate to the URL. Wait for DidStartLoading, just so it's definitely
-  // progressed somewhere.
-  content::WindowedNotificationObserver page_load_observer(
-      content::NOTIFICATION_LOAD_START,
-      content::Source<NavigationController>(
-          &GetActiveWebContents()->GetController()));
-  current_browser()->OpenURL(OpenURLParams(
-      dest_url(), Referrer(), CURRENT_TAB,
-      ui::PAGE_TRANSITION_TYPED, false));
-  page_load_observer.Wait();
-
-  // Navigate somewhere else. This should succeed and abort the pending swap.
-  TestNavigationObserver nav_observer(GetActiveWebContents());
-  current_browser()->OpenURL(OpenURLParams(GURL(url::kAboutBlankURL),
-                                           Referrer(),
-                                           CURRENT_TAB,
-                                           ui::PAGE_TRANSITION_TYPED,
-                                           false));
-  nav_observer.Wait();
 }
 
 // Checks that <a ping> requests are not dropped in prerender.

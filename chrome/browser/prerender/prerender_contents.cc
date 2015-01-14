@@ -322,9 +322,7 @@ void PrerenderContents::StartPrerendering(
 
   prerendering_has_started_ = true;
 
-  alias_session_storage_namespace = session_storage_namespace->CreateAlias();
-  prerender_contents_.reset(
-      CreateWebContents(alias_session_storage_namespace.get()));
+  prerender_contents_.reset(CreateWebContents(session_storage_namespace));
   TabHelpers::AttachTabHelpers(prerender_contents_.get());
   content::WebContentsObserver::Observe(prerender_contents_.get());
 
@@ -335,10 +333,6 @@ void PrerenderContents::StartPrerendering(
 
   child_id_ = GetRenderViewHost()->GetProcess()->GetID();
   route_id_ = GetRenderViewHost()->GetRoutingID();
-
-  // Log transactions to see if we could merge session storage namespaces in
-  // the event of a mismatch.
-  alias_session_storage_namespace->AddTransactionLogProcessId(child_id_);
 
   // Add the RenderProcessHost to the Prerender Manager.
   prerender_manager()->AddPrerenderProcessHost(
@@ -588,6 +582,8 @@ bool PrerenderContents::AddAliasURL(const GURL& url) {
 bool PrerenderContents::Matches(
     const GURL& url,
     const SessionStorageNamespace* session_storage_namespace) const {
+  // TODO(davidben): Remove any consumers that pass in a NULL
+  // session_storage_namespace and only test with matches.
   if (session_storage_namespace &&
       session_storage_namespace_id_ != session_storage_namespace->id()) {
     return false;
@@ -746,8 +742,6 @@ void PrerenderContents::DestroyWhenUsingTooManyResources() {
 WebContents* PrerenderContents::ReleasePrerenderContents() {
   prerender_contents_->SetDelegate(NULL);
   content::WebContentsObserver::Observe(NULL);
-  if (alias_session_storage_namespace.get())
-    alias_session_storage_namespace->RemoveTransactionLogProcessId(child_id_);
   return prerender_contents_.release();
 }
 
@@ -807,13 +801,6 @@ void PrerenderContents::PrepareForUse() {
       FROM_HERE,
       base::Bind(&ResumeThrottles, resource_throttles_));
   resource_throttles_.clear();
-}
-
-SessionStorageNamespace* PrerenderContents::GetSessionStorageNamespace() const {
-  if (!prerender_contents())
-    return NULL;
-  return prerender_contents()->GetController().
-      GetDefaultSessionStorageNamespace();
 }
 
 void PrerenderContents::OnCancelPrerenderForPrinting() {

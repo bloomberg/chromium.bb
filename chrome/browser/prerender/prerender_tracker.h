@@ -23,8 +23,6 @@ class URLRequestContextGetter;
 
 namespace prerender {
 
-class PrerenderPendingSwapThrottle;
-
 // Global object for maintaining various prerender state on the IO thread.
 class PrerenderTracker {
  public:
@@ -32,29 +30,6 @@ class PrerenderTracker {
 
   PrerenderTracker();
   virtual ~PrerenderTracker();
-
-  // Returns whether or not a RenderFrame and URL are regarding a pending
-  // prerender swap. Can only be called on the IO thread.
-  bool IsPendingSwapRequestOnIOThread(int render_process_id,
-                                      int render_frame_id,
-                                      const GURL& url) const;
-
-  // Called when a PrerenderPendingSwapThrottle defers a request. Cancel or
-  // Resume will be called on |throttle| when the prerender is canceled or used,
-  // respectively.
-  void AddPendingSwapThrottleOnIOThread(
-      int render_process_id, int render_frame_id, const GURL& url,
-      const base::WeakPtr<PrerenderPendingSwapThrottle>& throttle);
-
-  // Called to add throttles for a pending prerender swap.
-  void AddPrerenderPendingSwap(
-      const ChildRouteIdPair& render_frame_route_id_pair,
-      const GURL& url);
-
-  // Called to remove the throttles for a pending prerender swap.
-  void RemovePrerenderPendingSwap(
-      const ChildRouteIdPair& render_frame_route_id_pair,
-      bool swap_successful);
 
   // Gets the Prerender Cookie Store for a specific render process, if it
   // is a prerender. Only to be called from the IO thread.
@@ -76,27 +51,6 @@ class PrerenderTracker {
   void RemovePrerenderCookieStoreOnIOThread(int process_id, bool was_swapped);
 
  private:
-  // Add/remove prerenders pending swap on the IO Thread.
-  void AddPrerenderPendingSwapOnIOThread(
-      const ChildRouteIdPair& render_frame_route_id_pair, const GURL& url);
-  void RemovePrerenderPendingSwapOnIOThread(
-      const ChildRouteIdPair& render_frame_route_id_pair,
-      bool swap_successful);
-
-  struct PendingSwapThrottleData {
-    explicit PendingSwapThrottleData(const GURL& swap_url);
-    ~PendingSwapThrottleData();
-    GURL url;
-    base::WeakPtr<PrerenderPendingSwapThrottle> throttle;
-  };
-
-  // Map of pending prerender swaps and their associated throttles,
-  // maintained on the IO thread. The key is the routing ID pair
-  // of a RenderFrame.
-  typedef std::map<ChildRouteIdPair, PendingSwapThrottleData>
-      PendingSwapThrottleMap;
-  PendingSwapThrottleMap pending_swap_throttle_map_;
-
   // Map of prerendering render process ids to PrerenderCookieStore used for
   // the prerender. Only to be used on the IO thread.
   typedef base::hash_map<int, scoped_refptr<PrerenderCookieStore> >

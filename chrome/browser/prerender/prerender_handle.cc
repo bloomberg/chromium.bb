@@ -136,17 +136,4 @@ bool PrerenderHandle::RepresentingSamePrerenderAs(
       && prerender_data_.get() == other->prerender_data_.get();
 }
 
-content::SessionStorageNamespace*
-PrerenderHandle::GetSessionStorageNamespace() const {
-  if (!prerender_data_.get())
-    return NULL;
-  return prerender_data_->contents()->GetSessionStorageNamespace();
-}
-
-int PrerenderHandle::GetChildId() const {
-  if (!prerender_data_.get())
-    return -1;
-  return prerender_data_->contents()->child_id();
-}
-
 }  // namespace prerender

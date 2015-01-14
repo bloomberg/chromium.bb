@@ -190,7 +190,6 @@ class PrerenderContents : public content::NotificationObserver,
 
   Origin origin() const { return origin_; }
   uint8 experiment_id() const { return experiment_id_; }
-  int child_id() const { return child_id_; }
 
   base::TimeTicks load_start_time() const { return load_start_time_; }
 
@@ -265,8 +264,6 @@ class PrerenderContents : public content::NotificationObserver,
 
   // Marks prerender as used and releases any throttled resource requests.
   void PrepareForUse();
-
-  content::SessionStorageNamespace* GetSessionStorageNamespace() const;
 
   // Cookie events
   enum CookieEvent {
@@ -435,10 +432,6 @@ class PrerenderContents : public content::NotificationObserver,
 
   // Caches pages to be added to the history.
   AddPageVector add_page_vector_;
-
-  // The alias session storage namespace for this prerender.
-  scoped_refptr<content::SessionStorageNamespace>
-      alias_session_storage_namespace;
 
   // Indicates what internal cookie events (see prerender_contents.cc) have
   // occurred, using 1 bit for each possible InternalCookieEvent.

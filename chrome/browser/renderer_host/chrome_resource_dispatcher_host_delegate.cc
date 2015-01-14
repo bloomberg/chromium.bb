@@ -19,7 +19,6 @@
 #include "chrome/browser/prefetch/prefetch.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
-#include "chrome/browser/prerender/prerender_pending_swap_throttle.h"
 #include "chrome/browser/prerender/prerender_resource_throttle.h"
 #include "chrome/browser/prerender/prerender_tracker.h"
 #include "chrome/browser/prerender/prerender_util.h"
@@ -542,11 +541,6 @@ void ChromeResourceDispatcherHostDelegate::AppendStandardResourceThrottles(
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
   if (info->GetVisibilityState() == blink::WebPageVisibilityStatePrerender) {
     throttles->push_back(new prerender::PrerenderResourceThrottle(request));
-  }
-  if (prerender_tracker_->IsPendingSwapRequestOnIOThread(
-          info->GetChildID(), info->GetRenderFrameID(), request->url())) {
-    throttles->push_back(new prerender::PrerenderPendingSwapThrottle(
-        request, prerender_tracker_));
   }
 }
 

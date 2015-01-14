@@ -16,7 +16,6 @@
 #include "base/timer/timer.h"
 #include "components/history/core/browser/history_service_observer.h"
 #include "components/history/core/browser/visit_database.h"
-#include "content/public/browser/session_storage_namespace.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
 
@@ -43,6 +42,8 @@ class PrerenderManager;
 // predictions.
 // At this point, the class is not actually creating prerenders, but just
 // recording timing stats about the effect prerendering would have.
+//
+// TODO(davidben): Prune this class down to only what it's still being used for.
 class PrerenderLocalPredictor : public history::HistoryServiceObserver,
                                 public net::URLFetcherDelegate {
  public:
@@ -62,7 +63,7 @@ class PrerenderLocalPredictor : public history::HistoryServiceObserver,
     EVENT_ADD_VISIT_RELEVANT_TRANSITION = 8,
     EVENT_ADD_VISIT_IDENTIFIED_PRERENDER_CANDIDATE = 9,
     EVENT_ADD_VISIT_PRERENDERING = 10,
-    EVENT_GOT_PRERENDER_URL = 11,
+    // Obsolete: EVENT_GOT_PRERENDER_URL = 11,
     EVENT_ERROR_NO_PRERENDER_URL_FOR_PLT = 12,
     EVENT_ADD_VISIT_PRERENDERING_EXTENDED = 13,
     EVENT_PRERENDER_URL_LOOKUP_RESULT = 14,
@@ -72,7 +73,7 @@ class PrerenderLocalPredictor : public history::HistoryServiceObserver,
     EVENT_PRERENDER_URL_LOOKUP_RESULT_CONTAINS_LOGOUT = 18,
     EVENT_PRERENDER_URL_LOOKUP_RESULT_CONTAINS_LOGIN = 19,
     EVENT_START_URL_LOOKUP = 20,
-    EVENT_ADD_VISIT_NOT_ROOTPAGE = 21,
+    // Obsolete: EVENT_ADD_VISIT_NOT_ROOTPAGE = 21,
     EVENT_URL_WHITELIST_ERROR = 22,
     EVENT_URL_WHITELIST_OK = 23,
     EVENT_PRERENDER_URL_LOOKUP_RESULT_ON_WHITELIST = 24,
@@ -124,19 +125,19 @@ class PrerenderLocalPredictor : public history::HistoryServiceObserver,
     EVENT_CONTINUE_PRERENDER_CHECK_EXAMINE_NEXT_URL_SERVICE = 70,
     EVENT_ADD_VISIT_RELEVANT_TRANSITION_REPEAT_URL = 71,
     EVENT_ADD_VISIT_RELEVANT_TRANSITION_NEW_URL = 72,
-    EVENT_TAB_HELPER_URL_SEEN_NAMESPACE_MISMATCH_NO_NAMESPACE = 73,
-    EVENT_TAB_HELPER_URL_SEEN_NAMESPACE_MISMATCH_MERGE_ISSUED = 74,
-    EVENT_NAMESPACE_MISMATCH_MERGE_RESULT_RECEIVED = 75,
-    EVENT_NAMESPACE_MISMATCH_MERGE_RESULT_NAMESPACE_NOT_FOUND = 76,
-    EVENT_NAMESPACE_MISMATCH_MERGE_RESULT_NOT_LOGGING = 77,
-    EVENT_NAMESPACE_MISMATCH_MERGE_RESULT_NO_TRANSACTIONS = 78,
-    EVENT_NAMESPACE_MISMATCH_MERGE_RESULT_TOO_MANY_TRANSACTIONS = 79,
-    EVENT_NAMESPACE_MISMATCH_MERGE_RESULT_NOT_MERGEABLE = 80,
-    EVENT_NAMESPACE_MISMATCH_MERGE_RESULT_MERGEABLE = 81,
+    // Obsolete: EVENT_TAB_HELPER_URL_SEEN_NAMESPACE_MISMATCH_NO_NAMESPACE = 73,
+    // Obsolete: EVENT_TAB_HELPER_URL_SEEN_NAMESPACE_MISMATCH_MERGE_ISSUED = 74,
+    // Obsolete: EVENT_NAMESPACE_MISMATCH_MERGE_RESULT_RECEIVED = 75,
+    // Obsolete: EVENT_NAMESPACE_MISMATCH_MERGE_RESULT_NAMESPACE_NOT_FOUND = 76,
+    // Obsolete: EVENT_NAMESPACE_MISMATCH_MERGE_RESULT_NOT_LOGGING = 77,
+    // Obsolete: EVENT_NAMESPACE_MISMATCH_MERGE_RESULT_NO_TRANSACTIONS = 78,
+    // Obsolete: EVENT_NAMESPACE_MISMATCH_MERGE_RESULT_TOO_MANY_TRANSACTIONS = 79,
+    // Obsolete: EVENT_NAMESPACE_MISMATCH_MERGE_RESULT_NOT_MERGEABLE = 80,
+    // Obsolete: EVENT_NAMESPACE_MISMATCH_MERGE_RESULT_MERGEABLE = 81,
     EVENT_INIT_FAILED_UNENCRYPTED_SYNC_NOT_ENABLED = 82,
     EVENT_CONTINUE_PRERENDER_CHECK_EXAMINE_NEXT_URL_NOT_SKIPPED = 83,
     EVENT_PRERENDER_SERVICE_RETURNED_HINTING_CANDIDATES = 84,
-    EVENT_NAMESPACE_MISMATCH_MERGE_RESULT_NAMESPACE_NOT_ALIAS = 85,
+    // Obsolete: EVENT_NAMESPACE_MISMATCH_MERGE_RESULT_NAMESPACE_NOT_ALIAS = 85,
     EVENT_TAB_HELPER_URL_SEEN_MATCH_ENTRY = 86,
     EVENT_TAB_HELPER_URL_SEEN_MATCH_BROWSER_NAVIGATE = 87,
     EVENT_TAB_HELPER_URL_SEEN_NAMESPACE_MATCH_ENTRY = 88,
@@ -209,8 +210,6 @@ class PrerenderLocalPredictor : public history::HistoryServiceObserver,
       bool* hinting_timed_out,
       bool* hinting_url_lookup_timed_out,
       bool* candidate_url_lookup_timed_out);
-  void ProcessNamespaceMergeResult(
-      content::SessionStorageNamespace::MergeResult result);
   typedef std::map<net::URLFetcher*, CandidatePrerenderInfo*>
       OutstandingFetchers;
   OutstandingFetchers outstanding_prerender_service_requests_;

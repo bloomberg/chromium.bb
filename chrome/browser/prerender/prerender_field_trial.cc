@@ -80,8 +80,6 @@ const int kDefaultPrefetchListTimeoutSeconds = 300;
 const char kSkipPrerenderLocalCanadidates[] = "SkipPrerenderLocalCandidates";
 const char kSkipPrerenderServiceCanadidates[] =
     "SkipPrerenderServiceCandidates";
-const char kDisableSessionStorageNamespaceMerging[] =
-    "DisableSessionStorageNamespaceMerging";
 const char kPrerenderCookieStore[] = "PrerenderCookieStore";
 
 void SetupPrerenderFieldTrial() {
@@ -478,11 +476,6 @@ bool SkipLocalPredictorLocalCandidates() {
 bool SkipLocalPredictorServiceCandidates() {
   return GetLocalPredictorSpecValue(kSkipPrerenderServiceCanadidates) ==
       kEnabledGroup;
-}
-
-bool ShouldMergeSessionStorageNamespaces() {
-  return GetLocalPredictorSpecValue(kDisableSessionStorageNamespaceMerging) !=
-      kDisabledGroup;
 }
 
 bool IsPrerenderCookieStoreEnabled() {

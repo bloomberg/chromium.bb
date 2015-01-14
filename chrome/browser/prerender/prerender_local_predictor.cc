@@ -1524,52 +1524,7 @@ void PrerenderLocalPredictor::OnTabHelperURLSeen(
         RecordEvent(EVENT_TAB_HELPER_URL_SEEN_NAMESPACE_MATCH_ENTRY);
       if (browser_navigate_initiated)
         RecordEvent(EVENT_TAB_HELPER_URL_SEEN_NAMESPACE_MATCH_BROWSER_NAVIGATE);
-    } else {
-      SessionStorageNamespace* prerender_session_storage_namespace =
-          best_matched_prerender->prerender_handle->
-          GetSessionStorageNamespace();
-      if (!prerender_session_storage_namespace) {
-        RecordEvent(EVENT_TAB_HELPER_URL_SEEN_NAMESPACE_MISMATCH_NO_NAMESPACE);
-      } else {
-        RecordEvent(EVENT_TAB_HELPER_URL_SEEN_NAMESPACE_MISMATCH_MERGE_ISSUED);
-        prerender_session_storage_namespace->Merge(
-            false,
-            best_matched_prerender->prerender_handle->GetChildId(),
-            tab_session_storage_namespace,
-            base::Bind(&PrerenderLocalPredictor::ProcessNamespaceMergeResult,
-                       weak_factory_.GetWeakPtr()));
-      }
     }
-  }
-}
-
-void PrerenderLocalPredictor::ProcessNamespaceMergeResult(
-    content::SessionStorageNamespace::MergeResult result) {
-  RecordEvent(EVENT_NAMESPACE_MISMATCH_MERGE_RESULT_RECEIVED);
-  switch (result) {
-    case content::SessionStorageNamespace::MERGE_RESULT_NAMESPACE_NOT_FOUND:
-      RecordEvent(EVENT_NAMESPACE_MISMATCH_MERGE_RESULT_NAMESPACE_NOT_FOUND);
-      break;
-    case content::SessionStorageNamespace::MERGE_RESULT_NAMESPACE_NOT_ALIAS:
-      RecordEvent(EVENT_NAMESPACE_MISMATCH_MERGE_RESULT_NAMESPACE_NOT_ALIAS);
-      break;
-    case content::SessionStorageNamespace::MERGE_RESULT_NOT_LOGGING:
-      RecordEvent(EVENT_NAMESPACE_MISMATCH_MERGE_RESULT_NOT_LOGGING);
-      break;
-    case content::SessionStorageNamespace::MERGE_RESULT_NO_TRANSACTIONS:
-      RecordEvent(EVENT_NAMESPACE_MISMATCH_MERGE_RESULT_NO_TRANSACTIONS);
-      break;
-    case content::SessionStorageNamespace::MERGE_RESULT_TOO_MANY_TRANSACTIONS:
-      RecordEvent(EVENT_NAMESPACE_MISMATCH_MERGE_RESULT_TOO_MANY_TRANSACTIONS);
-      break;
-    case content::SessionStorageNamespace::MERGE_RESULT_NOT_MERGEABLE:
-      RecordEvent(EVENT_NAMESPACE_MISMATCH_MERGE_RESULT_NOT_MERGEABLE);
-      break;
-    case content::SessionStorageNamespace::MERGE_RESULT_MERGEABLE:
-      RecordEvent(EVENT_NAMESPACE_MISMATCH_MERGE_RESULT_MERGEABLE);
-      break;
-    default:
-      NOTREACHED();
   }
 }
 

@@ -68,7 +68,7 @@ std::string GetHistogramName(Origin origin, uint8 experiment_id,
     default:
       NOTREACHED();
       break;
-  };
+  }
 
   // Dummy return value to make the compiler happy.
   NOTREACHED();
@@ -396,14 +396,6 @@ void PrerenderHistograms::RecordFinalStatus(
         "FinalStatusMatchComplete", origin, experiment_id,
         UMA_HISTOGRAM_ENUMERATION(name, final_status, FINAL_STATUS_MAX));
   }
-}
-
-void PrerenderHistograms::RecordEvent(Origin origin, uint8 experiment_id,
-                                      PrerenderEvent event) const {
-  DCHECK_LT(event, PRERENDER_EVENT_MAX);
-  PREFIXED_HISTOGRAM_ORIGIN_EXPERIMENT(
-      "Event", origin, experiment_id,
-      UMA_HISTOGRAM_ENUMERATION(name, event, PRERENDER_EVENT_MAX));
 }
 
 void PrerenderHistograms::RecordCookieStatus(Origin origin,

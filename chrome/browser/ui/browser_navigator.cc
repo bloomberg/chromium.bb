@@ -622,15 +622,11 @@ void Navigate(NavigateParams* params) {
       // same as the source.
       DCHECK(params->source_contents);
       params->target_contents = params->source_contents;
-    }
 
-    // Note: at this point, if |params->disposition| is not CURRENT_TAB,
-    // |params->target_contents| has not been attached to a Browser yet. (That
-    // happens later in this function.) However, in that case, the
-    // sessionStorage namespace could not match, so prerender will use the
-    // asynchronous codepath and still swap.
-    DCHECK(params->target_contents);
-    swapped_in_prerender = SwapInPrerender(params->url, params);
+      // Prerender can only swap in CURRENT_TAB navigations; others have
+      // different sessionStorage namespaces.
+      swapped_in_prerender = SwapInPrerender(params->url, params);
+    }
 
     if (user_initiated)
       params->target_contents->UserGestureDone();
