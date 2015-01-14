@@ -155,11 +155,6 @@ class WebRtcApprtcBrowserTest : public WebRtcTestBase {
                                   tab_contents);
   }
 
-  bool WaitForCallToHangUp(content::WebContents* tab_contents) {
-    return test::PollingWaitUntil(kIsApprtcCallUpJavascript, "false",
-                                  tab_contents);
-  }
-
   bool EvalInJavascriptFile(content::WebContents* tab_contents,
                             const base::FilePath& path) {
     std::string javascript;
@@ -188,11 +183,6 @@ class WebRtcApprtcBrowserTest : public WebRtcTestBase {
     StartDetectingVideo(tab_contents, "remote-video");
     WaitForVideoToPlay(tab_contents);
     return true;
-  }
-
-  bool HangUpApprtcCall(content::WebContents* tab_contents) {
-    // This is the same as clicking the Hangup button in the AppRTC call.
-    return content::ExecuteScript(tab_contents, "hangup()");
   }
 
   base::FilePath GetSourceDir() {
@@ -259,11 +249,6 @@ IN_PROC_BROWSER_TEST_F(WebRtcApprtcBrowserTest, MANUAL_WorksOnApprtc) {
 
   ASSERT_TRUE(DetectRemoteVideoPlaying(left_tab));
   ASSERT_TRUE(DetectRemoteVideoPlaying(right_tab));
-
-  ASSERT_TRUE(HangUpApprtcCall(left_tab));
-
-  ASSERT_TRUE(WaitForCallToHangUp(left_tab));
-  ASSERT_TRUE(WaitForCallToHangUp(right_tab));
 
   chrome::CloseWebContents(browser(), left_tab, false);
   chrome::CloseWebContents(browser(), right_tab, false);
