@@ -168,6 +168,60 @@ a > b ? a : b
 Correct mapping for <?>
 Correct mapping for <:>
 
+Running: labeledStatementFormatting
+====== 8< ------
+firstLoop: while (true) {
+    break firstLoop;
+    continue firstLoop;
+}
+
+------ >8 ======
+Correct mapping for <break>
+Correct mapping for <continue>
+Correct mapping for <while>
+
+Running: withStatementFormatting
+====== 8< ------
+with (obj)
+    log('first');
+with (nice) {
+    log(1);
+    log(2);
+}
+done();
+
+------ >8 ======
+Correct mapping for <first>
+Correct mapping for <obj>
+Correct mapping for <nice>
+Correct mapping for <1>
+Correct mapping for <2>
+Correct mapping for <done>
+
+Running: switchStatementFormatting
+====== 8< ------
+switch (a) {
+    case 1, 3:
+        log("odd");
+        break;
+    case 2:
+        log("even");
+        break;
+    case 42:
+    case 89:
+        log(a);
+    default:
+        log("interesting");
+        log(a);
+}
+log("done");
+
+------ >8 ======
+Correct mapping for <even>
+Correct mapping for <odd>
+Correct mapping for <89>
+Correct mapping for <done>
+
 Running: whileFormatting
 ====== 8< ------
 while (true) {
