@@ -519,8 +519,7 @@ TEST(FilePolicyTest, FileGetDiskSpace) {
   EXPECT_EQ(SBOX_TEST_DENIED, runner.RunTest(L"File_Win32Create notepad.exe"));
 }
 
-// http://crbug.com/146944
-TEST(FilePolicyTest, DISABLED_TestReparsePoint) {
+TEST(FilePolicyTest, TestReparsePoint) {
   TestRunner runner;
 
   // Create a temp file because we need write access to it.
