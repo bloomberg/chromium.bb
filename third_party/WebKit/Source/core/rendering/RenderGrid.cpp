@@ -46,11 +46,15 @@ public:
     {
     }
 
-    const LayoutUnit& baseSize() const { return m_baseSize; }
+    const LayoutUnit& baseSize() const
+    {
+        ASSERT(isGrowthLimitBiggerThanBaseSize());
+        return m_baseSize;
+    }
 
     const LayoutUnit& growthLimit() const
     {
-        ASSERT(m_growthLimit >= m_baseSize);
+        ASSERT(isGrowthLimitBiggerThanBaseSize());
         return m_growthLimit;
     }
 
@@ -75,6 +79,7 @@ public:
 
     void growGrowthLimit(LayoutUnit growth)
     {
+        ASSERT(growth >= 0);
         if (m_growthLimit == infinity)
             m_growthLimit = m_baseSize + growth;
         else
@@ -90,10 +95,13 @@ public:
 
     const LayoutUnit& growthLimitIfNotInfinite() const
     {
+        ASSERT(isGrowthLimitBiggerThanBaseSize());
         return (m_growthLimit == infinity) ? m_baseSize : m_growthLimit;
     }
 
 private:
+    bool isGrowthLimitBiggerThanBaseSize() const { return growthLimitIsInfinite() || m_growthLimit >= m_baseSize; }
+
     void ensureGrowthLimitIsBiggerThanBaseSize()
     {
         if (m_growthLimit != infinity && m_growthLimit < m_baseSize)
