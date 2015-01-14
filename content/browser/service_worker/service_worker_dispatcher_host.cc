@@ -18,6 +18,7 @@
 #include "content/browser/service_worker/service_worker_utils.h"
 #include "content/common/service_worker/embedded_worker_messages.h"
 #include "content/common/service_worker/service_worker_messages.h"
+#include "content/common/service_worker/service_worker_types.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_client.h"
 #include "ipc/ipc_message_macros.h"
@@ -256,10 +257,9 @@ void ServiceWorkerDispatcherHost::OnRegisterServiceWorker(
                "ServiceWorkerDispatcherHost::OnRegisterServiceWorker");
   if (!GetContext()) {
     Send(new ServiceWorkerMsg_ServiceWorkerRegistrationError(
-        thread_id,
-        request_id,
-        WebServiceWorkerError::ErrorTypeAbort,
-        base::ASCIIToUTF16(kShutdownErrorMessage)));
+        thread_id, request_id, WebServiceWorkerError::ErrorTypeAbort,
+        base::ASCIIToUTF16(kServiceWorkerRegisterErrorPrefix) +
+            base::ASCIIToUTF16(kShutdownErrorMessage)));
     return;
   }
   if (!pattern.is_valid() || !script_url.is_valid()) {
@@ -275,10 +275,9 @@ void ServiceWorkerDispatcherHost::OnRegisterServiceWorker(
   }
   if (!provider_host->IsContextAlive()) {
     Send(new ServiceWorkerMsg_ServiceWorkerRegistrationError(
-        thread_id,
-        request_id,
-        WebServiceWorkerError::ErrorTypeAbort,
-        base::ASCIIToUTF16(kShutdownErrorMessage)));
+        thread_id, request_id, WebServiceWorkerError::ErrorTypeAbort,
+        base::ASCIIToUTF16(kServiceWorkerRegisterErrorPrefix) +
+            base::ASCIIToUTF16(kShutdownErrorMessage)));
     return;
   }
 
@@ -287,10 +286,9 @@ void ServiceWorkerDispatcherHost::OnRegisterServiceWorker(
   // once crbug.com/439697 is fixed.
   if (provider_host->document_url().is_empty()) {
     Send(new ServiceWorkerMsg_ServiceWorkerRegistrationError(
-        thread_id,
-        request_id,
-        WebServiceWorkerError::ErrorTypeSecurity,
-        base::ASCIIToUTF16(kNoDocumentURLErrorMessage)));
+        thread_id, request_id, WebServiceWorkerError::ErrorTypeSecurity,
+        base::ASCIIToUTF16(kServiceWorkerRegisterErrorPrefix) +
+            base::ASCIIToUTF16(kNoDocumentURLErrorMessage)));
     return;
   }
 
@@ -304,20 +302,18 @@ void ServiceWorkerDispatcherHost::OnRegisterServiceWorker(
   if (!ServiceWorkerUtils::IsPathRestrictionSatisfied(
           pattern, script_url, &error_message)) {
     Send(new ServiceWorkerMsg_ServiceWorkerRegistrationError(
-        thread_id,
-        request_id,
-        WebServiceWorkerError::ErrorTypeSecurity,
-        base::UTF8ToUTF16(error_message)));
+        thread_id, request_id, WebServiceWorkerError::ErrorTypeSecurity,
+        base::ASCIIToUTF16(kServiceWorkerRegisterErrorPrefix) +
+            base::UTF8ToUTF16(error_message)));
     return;
   }
 
   if (!GetContentClient()->browser()->AllowServiceWorker(
           pattern, provider_host->topmost_frame_url(), resource_context_)) {
     Send(new ServiceWorkerMsg_ServiceWorkerRegistrationError(
-        thread_id,
-        request_id,
-        WebServiceWorkerError::ErrorTypeUnknown,
-        base::ASCIIToUTF16(kUserDeniedPermissionMessage)));
+        thread_id, request_id, WebServiceWorkerError::ErrorTypeUnknown,
+        base::ASCIIToUTF16(kServiceWorkerRegisterErrorPrefix) +
+            base::ASCIIToUTF16(kUserDeniedPermissionMessage)));
     return;
   }
 
@@ -419,10 +415,9 @@ void ServiceWorkerDispatcherHost::OnGetRegistration(
                "ServiceWorkerDispatcherHost::OnGetRegistration");
   if (!GetContext()) {
     Send(new ServiceWorkerMsg_ServiceWorkerGetRegistrationError(
-        thread_id,
-        request_id,
-        blink::WebServiceWorkerError::ErrorTypeAbort,
-        base::ASCIIToUTF16(kShutdownErrorMessage)));
+        thread_id, request_id, blink::WebServiceWorkerError::ErrorTypeAbort,
+        base::ASCIIToUTF16(kServiceWorkerGetRegistrationErrorPrefix) +
+            base::ASCIIToUTF16(kShutdownErrorMessage)));
     return;
   }
   if (!document_url.is_valid()) {
@@ -438,20 +433,18 @@ void ServiceWorkerDispatcherHost::OnGetRegistration(
   }
   if (!provider_host->IsContextAlive()) {
     Send(new ServiceWorkerMsg_ServiceWorkerGetRegistrationError(
-        thread_id,
-        request_id,
-        blink::WebServiceWorkerError::ErrorTypeAbort,
-        base::ASCIIToUTF16(kShutdownErrorMessage)));
+        thread_id, request_id, blink::WebServiceWorkerError::ErrorTypeAbort,
+        base::ASCIIToUTF16(kServiceWorkerGetRegistrationErrorPrefix) +
+            base::ASCIIToUTF16(kShutdownErrorMessage)));
     return;
   }
 
   // TODO(ksakamoto): This check can be removed once crbug.com/439697 is fixed.
   if (provider_host->document_url().is_empty()) {
     Send(new ServiceWorkerMsg_ServiceWorkerGetRegistrationError(
-        thread_id,
-        request_id,
-        WebServiceWorkerError::ErrorTypeSecurity,
-        base::ASCIIToUTF16(kNoDocumentURLErrorMessage)));
+        thread_id, request_id, WebServiceWorkerError::ErrorTypeSecurity,
+        base::ASCIIToUTF16(kServiceWorkerGetRegistrationErrorPrefix) +
+            base::ASCIIToUTF16(kNoDocumentURLErrorMessage)));
     return;
   }
 
@@ -465,10 +458,9 @@ void ServiceWorkerDispatcherHost::OnGetRegistration(
           provider_host->topmost_frame_url(),
           resource_context_)) {
     Send(new ServiceWorkerMsg_ServiceWorkerGetRegistrationError(
-        thread_id,
-        request_id,
-        WebServiceWorkerError::ErrorTypeUnknown,
-        base::ASCIIToUTF16(kUserDeniedPermissionMessage)));
+        thread_id, request_id, WebServiceWorkerError::ErrorTypeUnknown,
+        base::ASCIIToUTF16(kServiceWorkerGetRegistrationErrorPrefix) +
+            base::ASCIIToUTF16(kUserDeniedPermissionMessage)));
     return;
   }
 
@@ -867,7 +859,8 @@ void ServiceWorkerDispatcherHost::SendRegistrationError(
   GetServiceWorkerRegistrationStatusResponse(
       status, &error_type, &error_message);
   Send(new ServiceWorkerMsg_ServiceWorkerRegistrationError(
-      thread_id, request_id, error_type, error_message));
+      thread_id, request_id, error_type,
+      base::ASCIIToUTF16(kServiceWorkerRegisterErrorPrefix) + error_message));
 }
 
 void ServiceWorkerDispatcherHost::SendUnregistrationError(
@@ -879,7 +872,8 @@ void ServiceWorkerDispatcherHost::SendUnregistrationError(
   GetServiceWorkerRegistrationStatusResponse(
       status, &error_type, &error_message);
   Send(new ServiceWorkerMsg_ServiceWorkerUnregistrationError(
-      thread_id, request_id, error_type, error_message));
+      thread_id, request_id, error_type,
+      base::ASCIIToUTF16(kServiceWorkerUnregisterErrorPrefix) + error_message));
 }
 
 void ServiceWorkerDispatcherHost::SendGetRegistrationError(
@@ -891,7 +885,9 @@ void ServiceWorkerDispatcherHost::SendGetRegistrationError(
   GetServiceWorkerRegistrationStatusResponse(
       status, &error_type, &error_message);
   Send(new ServiceWorkerMsg_ServiceWorkerGetRegistrationError(
-      thread_id, request_id, error_type, error_message));
+      thread_id, request_id, error_type,
+      base::ASCIIToUTF16(kServiceWorkerGetRegistrationErrorPrefix) +
+          error_message));
 }
 
 ServiceWorkerContextCore* ServiceWorkerDispatcherHost::GetContext() {

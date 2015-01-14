@@ -13,11 +13,6 @@ namespace content {
 
 namespace {
 
-const char kDisallowedCharacterErrorMessage[] =
-    "The scope/script URL includes disallowed escaped character.";
-const char kPathRestrictionErrorMessage[] =
-    "The scope must be under the directory of the script URL.";
-
 bool ContainsDisallowedCharacter(const GURL& url) {
   std::string path = url.path();
   DCHECK(base::IsStringUTF8(path));
@@ -65,13 +60,18 @@ bool ServiceWorkerUtils::IsPathRestrictionSatisfied(
 
   if (ContainsDisallowedCharacter(scope) ||
       ContainsDisallowedCharacter(script_url)) {
-    *error_message = kDisallowedCharacterErrorMessage;
+    *error_message = "The provided scope ('" + scope.spec() +
+                     "') or scriptURL ('" + script_url.spec() +
+                     "') includes a disallowed escape character.";
     return false;
   }
 
   // |scope|'s path should be under the |script_url|'s directory.
   if (!StartsWithASCII(scope.path(), GetDirectoryPath(script_url), true)) {
-    *error_message = kPathRestrictionErrorMessage;
+    *error_message =
+        "The path of the provided scope ('" + scope.spec() +
+        "') is not under the directory of the provided scriptURL ('" +
+        script_url.spec() + "').";
     return false;
   }
   return true;

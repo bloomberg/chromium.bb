@@ -17,9 +17,11 @@
 #include "content/child/thread_safe_sender.h"
 #include "content/child/webmessageportchannel_impl.h"
 #include "content/common/service_worker/service_worker_messages.h"
+#include "content/common/service_worker/service_worker_types.h"
 #include "content/public/common/url_utils.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerClientsInfo.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerProviderClient.h"
+#include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebSecurityOrigin.h"
 
 using blink::WebServiceWorkerError;
@@ -102,8 +104,11 @@ void ServiceWorkerDispatcher::RegisterServiceWorker(
       script_url.possibly_invalid_spec().size() > GetMaxURLChars()) {
     scoped_ptr<WebServiceWorkerRegistrationCallbacks>
         owned_callbacks(callbacks);
-    scoped_ptr<WebServiceWorkerError> error(new WebServiceWorkerError(
-        WebServiceWorkerError::ErrorTypeSecurity, "URL too long"));
+    std::string error_message(kServiceWorkerRegisterErrorPrefix);
+    error_message += "The provided scriptURL or scope is too long.";
+    scoped_ptr<WebServiceWorkerError> error(
+        new WebServiceWorkerError(WebServiceWorkerError::ErrorTypeSecurity,
+                                  blink::WebString::fromUTF8(error_message)));
     callbacks->onError(error.release());
     return;
   }
@@ -127,8 +132,11 @@ void ServiceWorkerDispatcher::UnregisterServiceWorker(
   if (pattern.possibly_invalid_spec().size() > GetMaxURLChars()) {
     scoped_ptr<WebServiceWorkerUnregistrationCallbacks>
         owned_callbacks(callbacks);
-    scoped_ptr<WebServiceWorkerError> error(new WebServiceWorkerError(
-        WebServiceWorkerError::ErrorTypeSecurity, "URL too long"));
+    std::string error_message(kServiceWorkerUnregisterErrorPrefix);
+    error_message += "The provided scope is too long.";
+    scoped_ptr<WebServiceWorkerError> error(
+        new WebServiceWorkerError(WebServiceWorkerError::ErrorTypeSecurity,
+                                  blink::WebString::fromUTF8(error_message)));
     callbacks->onError(error.release());
     return;
   }
@@ -151,8 +159,11 @@ void ServiceWorkerDispatcher::GetRegistration(
   if (document_url.possibly_invalid_spec().size() > GetMaxURLChars()) {
     scoped_ptr<WebServiceWorkerRegistrationCallbacks>
         owned_callbacks(callbacks);
-    scoped_ptr<WebServiceWorkerError> error(new WebServiceWorkerError(
-        WebServiceWorkerError::ErrorTypeSecurity, "URL too long"));
+    std::string error_message(kServiceWorkerGetRegistrationErrorPrefix);
+    error_message += "The provided documentURL is too long.";
+    scoped_ptr<WebServiceWorkerError> error(
+        new WebServiceWorkerError(WebServiceWorkerError::ErrorTypeSecurity,
+                                  blink::WebString::fromUTF8(error_message)));
     callbacks->onError(error.release());
     return;
   }

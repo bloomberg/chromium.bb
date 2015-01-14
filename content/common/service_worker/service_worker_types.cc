@@ -6,6 +6,13 @@
 
 namespace content {
 
+const char kServiceWorkerRegisterErrorPrefix[] =
+    "Failed to register a ServiceWorker: ";
+const char kServiceWorkerUnregisterErrorPrefix[] =
+    "Failed to unregister a ServiceWorkerRegistration: ";
+const char kServiceWorkerGetRegistrationErrorPrefix[] =
+    "Failed to get a ServiceWorkerRegistration: ";
+
 ServiceWorkerFetchRequest::ServiceWorkerFetchRequest()
     : mode(FETCH_REQUEST_MODE_NO_CORS),
       request_context_type(REQUEST_CONTEXT_TYPE_UNSPECIFIED),
