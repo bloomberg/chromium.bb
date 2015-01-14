@@ -724,8 +724,8 @@ unsigned Internals::activeMarkerCountForNode(Node* node)
     DocumentMarkerVector markers = node->document().markers().markersFor(node, markerType);
 
     unsigned activeMarkerCount = 0;
-    for (DocumentMarkerVector::iterator iter = markers.begin(); iter != markers.end(); ++iter) {
-        if ((*iter)->activeMatch())
+    for (const auto& marker : markers) {
+        if (marker->activeMatch())
             activeMarkerCount++;
     }
 
@@ -1152,8 +1152,8 @@ static unsigned eventHandlerCount(Document& document, EventHandlerRegistry::Even
     unsigned count = 0;
     const EventTargetSet* targets = registry->eventHandlerTargets(handlerClass);
     if (targets) {
-        for (EventTargetSet::const_iterator iter = targets->begin(); iter != targets->end(); ++iter)
-            count += iter->value;
+        for (const auto& target : *targets)
+            count += target.value;
     }
     return count;
 }
@@ -1682,9 +1682,8 @@ Vector<String> Internals::iconURLs(Document* document, int iconTypesMask) const
     Vector<IconURL> iconURLs = document->iconURLs(iconTypesMask);
     Vector<String> array;
 
-    Vector<IconURL>::const_iterator iter(iconURLs.begin());
-    for (; iter != iconURLs.end(); ++iter)
-        array.append(iter->m_iconURL.string());
+    for (auto& iconURL : iconURLs)
+        array.append(iconURL.m_iconURL.string());
 
     return array;
 }
@@ -2283,9 +2282,8 @@ String Internals::serializeNavigationMarkup()
     frame()->document()->getTransitionElementData(elementData);
 
     StringBuilder markup;
-    Vector<Document::TransitionElementData>::iterator iter = elementData.begin();
-    for (; iter != elementData.end(); ++iter)
-        markup.append(iter->markup);
+    for (const auto& element : elementData)
+        markup.append(element.markup);
 
     return markup.toString();
 }
@@ -2326,9 +2324,8 @@ void Internals::hideAllTransitionElements()
     Vector<Document::TransitionElementData> elementData;
     frame()->document()->getTransitionElementData(elementData);
 
-    Vector<Document::TransitionElementData>::iterator iter = elementData.begin();
-    for (; iter != elementData.end(); ++iter)
-        frame()->document()->hideTransitionElements(AtomicString(iter->selector));
+    for (const auto& element : elementData)
+        frame()->document()->hideTransitionElements(AtomicString(element.selector));
 }
 
 void Internals::showAllTransitionElements()
@@ -2336,9 +2333,8 @@ void Internals::showAllTransitionElements()
     Vector<Document::TransitionElementData> elementData;
     frame()->document()->getTransitionElementData(elementData);
 
-    Vector<Document::TransitionElementData>::iterator iter = elementData.begin();
-    for (; iter != elementData.end(); ++iter)
-        frame()->document()->showTransitionElements(AtomicString(iter->selector));
+    for (const auto& element : elementData)
+        frame()->document()->showTransitionElements(AtomicString(element.selector));
 }
 
 void Internals::setExitTransitionStylesheetsEnabled(bool enabled)

@@ -2031,8 +2031,8 @@ void Node::notifyMutationObserversNodeWillDetach()
         }
 
         if (WillBeHeapHashSet<RawPtrWillBeMember<MutationObserverRegistration>>* transientRegistry = node->transientMutationObserverRegistry()) {
-            for (WillBeHeapHashSet<RawPtrWillBeMember<MutationObserverRegistration>>::iterator iter = transientRegistry->begin(); iter != transientRegistry->end(); ++iter)
-                (*iter)->observedSubtreeNodeWillDetach(*this);
+            for (auto& registration : *transientRegistry)
+                registration->observedSubtreeNodeWillDetach(*this);
         }
     }
 }

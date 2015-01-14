@@ -194,9 +194,8 @@ void ScriptedAnimationController::callMediaQueryListListeners()
     MediaQueryListListeners listeners;
     listeners.swap(m_mediaQueryListListeners);
 
-    for (MediaQueryListListeners::const_iterator it = listeners.begin(), end = listeners.end();
-        it != end; ++it) {
-        (*it)->notifyMediaQueryChanged();
+    for (const auto& listener : listeners) {
+        listener->notifyMediaQueryChanged();
     }
 }
 

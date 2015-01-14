@@ -49,10 +49,10 @@ PassRefPtrWillBeRawPtr<DataObject> DataObject::createFromPasteboard(PasteMode pa
     ListHashSet<String> types;
     for (size_t i = 0; i < webTypes.size(); ++i)
         types.add(webTypes[i]);
-    for (ListHashSet<String>::const_iterator it = types.begin(); it != types.end(); ++it) {
-        if (pasteMode == PlainTextOnly && *it != mimeTypeTextPlain)
+    for (const String& type : types) {
+        if (pasteMode == PlainTextOnly && type != mimeTypeTextPlain)
             continue;
-        dataObject->m_itemList.append(DataObjectItem::createFromPasteboard(*it, sequenceNumber));
+        dataObject->m_itemList.append(DataObjectItem::createFromPasteboard(type, sequenceNumber));
     }
     return dataObject.release();
 }

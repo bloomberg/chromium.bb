@@ -56,8 +56,8 @@ MutationObserverInterestGroup::MutationObserverInterestGroup(WillBeHeapHashMap<R
 
 bool MutationObserverInterestGroup::isOldValueRequested()
 {
-    for (WillBeHeapHashMap<RawPtrWillBeMember<MutationObserver>, MutationRecordDeliveryOptions>::iterator iter = m_observers.begin(); iter != m_observers.end(); ++iter) {
-        if (hasOldValue(iter->value))
+    for (auto& observer : m_observers) {
+        if (hasOldValue(observer.value))
             return true;
     }
     return false;
@@ -67,9 +67,9 @@ void MutationObserverInterestGroup::enqueueMutationRecord(PassRefPtrWillBeRawPtr
 {
     RefPtrWillBeRawPtr<MutationRecord> mutation = prpMutation;
     RefPtrWillBeRawPtr<MutationRecord> mutationWithNullOldValue = nullptr;
-    for (WillBeHeapHashMap<RawPtrWillBeMember<MutationObserver>, MutationRecordDeliveryOptions>::iterator iter = m_observers.begin(); iter != m_observers.end(); ++iter) {
-        MutationObserver* observer = iter->key;
-        if (hasOldValue(iter->value)) {
+    for (auto& iter : m_observers) {
+        MutationObserver* observer = iter.key;
+        if (hasOldValue(iter.value)) {
             observer->enqueueMutationRecord(mutation);
             continue;
         }

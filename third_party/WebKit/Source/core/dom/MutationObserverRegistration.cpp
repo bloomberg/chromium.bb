@@ -97,8 +97,8 @@ void MutationObserverRegistration::clearTransientRegistrations()
         return;
     }
 
-    for (NodeHashSet::iterator iter = m_transientRegistrationNodes->begin(); iter != m_transientRegistrationNodes->end(); ++iter)
-        (*iter)->unregisterTransientMutationObserver(this);
+    for (auto& node : *m_transientRegistrationNodes)
+        node->unregisterTransientMutationObserver(this);
 
     m_transientRegistrationNodes.clear();
 

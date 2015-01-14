@@ -339,11 +339,11 @@ void Fullscreen::exitFullscreen()
 
     // 4. For each descendant in descendants, empty descendant's fullscreen element stack, and queue a
     // task to fire an event named fullscreenchange with its bubbles attribute set to true on descendant.
-    for (WillBeHeapDeque<RefPtrWillBeMember<Document> >::iterator i = descendants.begin(); i != descendants.end(); ++i) {
-        ASSERT(*i);
-        RequestType requestType = from(**i).m_fullScreenElementStack.last().second;
-        from(**i).clearFullscreenElementStack();
-        enqueueChangeEvent(**i, requestType);
+    for (auto& descendant : descendants) {
+        ASSERT(descendant);
+        RequestType requestType = from(*descendant).m_fullScreenElementStack.last().second;
+        from(*descendant).clearFullscreenElementStack();
+        enqueueChangeEvent(*descendant, requestType);
     }
 
     // 5. While doc is not null, run these substeps:

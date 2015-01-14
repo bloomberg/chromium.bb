@@ -55,15 +55,15 @@ bool NodeToWeakNodeMaps::removedFromMap(Node* node, WeakNodeMap* map)
 void NodeToWeakNodeMaps::nodeDestroyed(Node* node)
 {
     OwnPtr<NodeToWeakNodeMaps::MapList> maps = m_nodeToMapList.take(node);
-    for (size_t i = 0; i < maps->size(); i++)
-        (*maps)[i]->nodeDestroyed(node);
+    for (auto& map : *maps)
+        map->nodeDestroyed(node);
 }
 
 WeakNodeMap::~WeakNodeMap()
 {
     NodeToWeakNodeMaps& allMaps = NodeToWeakNodeMaps::instance();
-    for (NodeToValue::iterator it = m_nodeToValue.begin(); it != m_nodeToValue.end(); ++it) {
-        Node* node = it->key;
+    for (auto& map : m_nodeToValue) {
+        Node* node = map.key;
         if (allMaps.removedFromMap(node, this))
             node->clearFlag(Node::HasWeakReferencesFlag);
     }

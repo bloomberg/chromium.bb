@@ -35,16 +35,14 @@ namespace blink {
 
 void NodeListsNodeData::invalidateCaches(const QualifiedName* attrName)
 {
-    NodeListAtomicNameCacheMap::const_iterator atomicNameCacheEnd = m_atomicNameCaches.end();
-    for (NodeListAtomicNameCacheMap::const_iterator it = m_atomicNameCaches.begin(); it != atomicNameCacheEnd; ++it)
-        it->value->invalidateCacheForAttribute(attrName);
+    for (const auto& cache : m_atomicNameCaches)
+        cache.value->invalidateCacheForAttribute(attrName);
 
     if (attrName)
         return;
 
-    TagCollectionCacheNS::iterator tagCacheEnd = m_tagCollectionCacheNS.end();
-    for (TagCollectionCacheNS::iterator it = m_tagCollectionCacheNS.begin(); it != tagCacheEnd; ++it)
-        it->value->invalidateCache();
+    for (auto& cache : m_tagCollectionCacheNS)
+        cache.value->invalidateCache();
 }
 
 void NodeListsNodeData::trace(Visitor* visitor)

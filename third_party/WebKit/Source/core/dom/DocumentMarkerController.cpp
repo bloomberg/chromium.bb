@@ -444,10 +444,7 @@ DocumentMarkerVector DocumentMarkerController::markersInRange(Range* range, Docu
 
     Node* pastLastNode = range->pastLastNode();
     for (Node* node = range->firstNode(); node != pastLastNode; node = NodeTraversal::next(*node)) {
-        DocumentMarkerVector markers = markersFor(node);
-        DocumentMarkerVector::const_iterator end = markers.end();
-        for (DocumentMarkerVector::const_iterator it = markers.begin(); it != end; ++it) {
-            DocumentMarker* marker = *it;
+        for (DocumentMarker* marker : markersFor(node)) {
             if (!markerTypes.contains(marker->type()))
                 continue;
             if (node == startContainer && marker->endOffset() <= static_cast<unsigned>(range->startOffset()))
@@ -721,10 +718,7 @@ bool DocumentMarkerController::hasMarkers(Range* range, DocumentMarker::MarkerTy
 
     Node* pastLastNode = range->pastLastNode();
     for (Node* node = range->firstNode(); node != pastLastNode; node = NodeTraversal::next(*node)) {
-        DocumentMarkerVector markers = markersFor(node);
-        DocumentMarkerVector::const_iterator end = markers.end();
-        for (DocumentMarkerVector::const_iterator it = markers.begin(); it != end; ++it) {
-            DocumentMarker* marker = *it;
+        for (const DocumentMarker* marker : markersFor(node)) {
             if (!markerTypes.contains(marker->type()))
                 continue;
             if (node == startContainer && marker->endOffset() <= static_cast<unsigned>(range->startOffset()))
