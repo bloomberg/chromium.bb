@@ -311,6 +311,36 @@ TEST_F(FieldTrialTest, ActiveGroups) {
   }
 }
 
+TEST_F(FieldTrialTest, AllGroups) {
+  FieldTrial::FieldTrialState field_trial_state;
+  std::string one_winner("One Winner");
+  scoped_refptr<FieldTrial> trial =
+      CreateFieldTrial(one_winner, 10, "Default", NULL);
+  std::string winner("Winner");
+  trial->AppendGroup(winner, 10);
+  EXPECT_TRUE(trial->GetState(&field_trial_state));
+  EXPECT_EQ(one_winner, field_trial_state.trial_name);
+  EXPECT_EQ(winner, field_trial_state.group_name);
+  trial->group();
+  EXPECT_TRUE(trial->GetState(&field_trial_state));
+  EXPECT_EQ(one_winner, field_trial_state.trial_name);
+  EXPECT_EQ(winner, field_trial_state.group_name);
+
+  std::string multi_group("MultiGroup");
+  scoped_refptr<FieldTrial> multi_group_trial =
+      CreateFieldTrial(multi_group, 9, "Default", NULL);
+
+  multi_group_trial->AppendGroup("Me", 3);
+  multi_group_trial->AppendGroup("You", 3);
+  multi_group_trial->AppendGroup("Them", 3);
+  EXPECT_TRUE(multi_group_trial->GetState(&field_trial_state));
+  // Finalize the group selection by accessing the selected group.
+  multi_group_trial->group();
+  EXPECT_TRUE(multi_group_trial->GetState(&field_trial_state));
+  EXPECT_EQ(multi_group, field_trial_state.trial_name);
+  EXPECT_EQ(multi_group_trial->group_name(), field_trial_state.group_name);
+}
+
 TEST_F(FieldTrialTest, ActiveGroupsNotFinalized) {
   const char kTrialName[] = "TestTrial";
   const char kSecondaryGroupName[] = "SecondaryGroup";
@@ -386,6 +416,44 @@ TEST_F(FieldTrialTest, Save) {
 
   FieldTrialList::StatesToString(&save_string);
   EXPECT_EQ("Some name/Winner/xxx/yyyy/zzz/default/", save_string);
+}
+
+TEST_F(FieldTrialTest, SaveAll) {
+  std::string save_string;
+
+  scoped_refptr<FieldTrial> trial =
+      CreateFieldTrial("Some name", 10, "Default some name", NULL);
+  EXPECT_EQ("", trial->group_name_internal());
+  FieldTrialList::AllStatesToString(&save_string);
+  EXPECT_EQ("Some name/Default some name/", save_string);
+  save_string.clear();
+
+  // Create a winning group.
+  trial->AppendGroup("Winner", 10);
+  // Finalize the group selection by accessing the selected group.
+  trial->group();
+  FieldTrialList::AllStatesToString(&save_string);
+  EXPECT_EQ("*Some name/Winner/", save_string);
+  save_string.clear();
+
+  // Create a second trial and winning group.
+  scoped_refptr<FieldTrial> trial2 =
+      CreateFieldTrial("xxx", 10, "Default xxx", NULL);
+  trial2->AppendGroup("yyyy", 10);
+  // Finalize the group selection by accessing the selected group.
+  trial2->group();
+
+  FieldTrialList::AllStatesToString(&save_string);
+  // We assume names are alphabetized... though this is not critical.
+  EXPECT_EQ("*Some name/Winner/*xxx/yyyy/", save_string);
+  save_string.clear();
+
+  // Create a third trial with only the default group.
+  scoped_refptr<FieldTrial> trial3 =
+      CreateFieldTrial("zzz", 10, "default", NULL);
+
+  FieldTrialList::AllStatesToString(&save_string);
+  EXPECT_EQ("*Some name/Winner/*xxx/yyyy/zzz/default/", save_string);
 }
 
 TEST_F(FieldTrialTest, Restore) {
@@ -1012,6 +1080,43 @@ TEST_F(FieldTrialTest, CreateSimulatedFieldTrial) {
     FieldTrialList::StatesToString(&states);
     EXPECT_TRUE(states.empty());
   }
+}
+
+TEST(FieldTrialTestWithoutList, StatesStringFormat) {
+  std::string save_string;
+
+  // Scoping the first FieldTrialList, as we need another one to test the
+  // importing function.
+  {
+    FieldTrialList field_trial_list(NULL);
+    scoped_refptr<FieldTrial> trial =
+        CreateFieldTrial("Abc", 10, "Default some name", NULL);
+    trial->AppendGroup("cba", 10);
+    trial->group();
+    scoped_refptr<FieldTrial> trial2 =
+        CreateFieldTrial("Xyz", 10, "Default xxx", NULL);
+    trial2->AppendGroup("zyx", 10);
+    trial2->group();
+    scoped_refptr<FieldTrial> trial3 =
+        CreateFieldTrial("zzz", 10, "default", NULL);
+
+    FieldTrialList::AllStatesToString(&save_string);
+  }
+
+  // Starting with a new blank FieldTrialList.
+  FieldTrialList field_trial_list(NULL);
+  ASSERT_TRUE(field_trial_list.CreateTrialsFromString(
+      save_string, FieldTrialList::DONT_ACTIVATE_TRIALS,
+      std::set<std::string>()));
+
+  FieldTrial::ActiveGroups active_groups;
+  field_trial_list.GetActiveFieldTrialGroups(&active_groups);
+  ASSERT_EQ(2U, active_groups.size());
+  EXPECT_EQ("Abc", active_groups[0].trial_name);
+  EXPECT_EQ("cba", active_groups[0].group_name);
+  EXPECT_EQ("Xyz", active_groups[1].trial_name);
+  EXPECT_EQ("zyx", active_groups[1].group_name);
+  EXPECT_TRUE(field_trial_list.TrialExists("zzz"));
 }
 
 #if GTEST_HAS_DEATH_TEST

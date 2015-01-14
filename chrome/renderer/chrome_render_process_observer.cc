@@ -305,6 +305,8 @@ ChromeRenderProcessObserver::ChromeRenderProcessObserver(
 #endif
   // Setup initial set of crash dump data for Field Trials in this renderer.
   chrome_variations::SetChildProcessLoggingVariationList();
+  // Listen for field trial activations to report them to the browser.
+  base::FieldTrialList::AddObserver(this);
 }
 
 ChromeRenderProcessObserver::~ChromeRenderProcessObserver() {
@@ -371,8 +373,8 @@ void ChromeRenderProcessObserver::OnSetFieldTrialGroup(
       base::FieldTrialList::CreateFieldTrial(field_trial_name, group_name);
   // TODO(mef): Remove this check after the investigation of 359406 is complete.
   CHECK(trial) << field_trial_name << ":" << group_name;
-  // Ensure the trial is marked as "used" by calling group() on it. This is
-  // needed to ensure the trial is properly reported in renderer crash reports.
+  // Ensure the trial is marked as "used" by calling group() on it if it is
+  // marked as activated.
   trial->group();
   chrome_variations::SetChildProcessLoggingVariationList();
 }
@@ -384,4 +386,11 @@ void ChromeRenderProcessObserver::OnGetV8HeapStats() {
 const RendererContentSettingRules*
 ChromeRenderProcessObserver::content_setting_rules() const {
   return &content_setting_rules_;
+}
+
+void ChromeRenderProcessObserver::OnFieldTrialGroupFinalized(
+    const std::string& trial_name,
+    const std::string& group_name) {
+  content::RenderThread::Get()->Send(
+      new ChromeViewHostMsg_FieldTrialActivated(trial_name));
 }

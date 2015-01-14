@@ -673,3 +673,7 @@ IPC_MESSAGE_CONTROL2(ChromeViewMsg_SetSearchURLs,
 IPC_SYNC_MESSAGE_CONTROL0_1(ChromeViewHostMsg_IsCrashReportingEnabled,
                             bool /* enabled */)
 #endif
+
+// Sent by the renderer to indicate that a fields trial has been activated.
+IPC_MESSAGE_CONTROL1(ChromeViewHostMsg_FieldTrialActivated,
+                     std::string /* name */)

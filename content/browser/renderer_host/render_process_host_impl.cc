@@ -1144,7 +1144,7 @@ void RenderProcessHostImpl::AppendRendererCommandLine(
   // renderer so that it can act in accordance with each state, or record
   // histograms relating to the base::FieldTrial states.
   std::string field_trial_states;
-  base::FieldTrialList::StatesToString(&field_trial_states);
+  base::FieldTrialList::AllStatesToString(&field_trial_states);
   if (!field_trial_states.empty()) {
     command_line->AppendSwitchASCII(switches::kForceFieldTrials,
                                     field_trial_states);

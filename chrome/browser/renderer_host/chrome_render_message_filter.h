@@ -122,6 +122,10 @@ class ChromeRenderMessageFilter : public content::BrowserMessageFilter {
   void OnIsCrashReportingEnabled(bool* enabled);
 #endif
 
+  // Called when a message is received from a renderer that a trial has been
+  // activated (ChromeViewHostMsg_FieldTrialActivated).
+  void OnFieldTrialActivated(const std::string& trial_name);
+
   const int render_process_id_;
 
   // The Profile associated with our renderer process.  This should only be

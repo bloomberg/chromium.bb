@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/metrics/field_trial.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "content/public/renderer/render_process_observer.h"
 
@@ -25,7 +26,8 @@ class ResourceDispatcherDelegate;
 // a RenderView) for Chrome specific messages that the content layer doesn't
 // happen.  If a few messages are related, they should probably have their own
 // observer.
-class ChromeRenderProcessObserver : public content::RenderProcessObserver {
+class ChromeRenderProcessObserver : public content::RenderProcessObserver,
+                                    public base::FieldTrialList::Observer {
  public:
   explicit ChromeRenderProcessObserver(
       ChromeContentRendererClient* client);
@@ -42,6 +44,10 @@ class ChromeRenderProcessObserver : public content::RenderProcessObserver {
   bool OnControlMessageReceived(const IPC::Message& message) override;
   void WebKitInitialized() override;
   void OnRenderProcessShutdown() override;
+
+  // Observer implementation.
+  void OnFieldTrialGroupFinalized(const std::string& trial_name,
+                                  const std::string& group_name) override;
 
   void OnSetIsIncognitoProcess(bool is_incognito_process);
   void OnSetContentSettingsForCurrentURL(
