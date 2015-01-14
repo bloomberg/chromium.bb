@@ -1,4 +1,27 @@
 
+f32 value is: -nan
+sqrtf (math.h): nan
+sqrtf (builtin): nan
+sqrtf (llvm): nan
+logf (math.h): -nan
+logf (builtin): -nan
+log2f (math.h): -nan
+log2f (builtin): -nan
+log10f (math.h): -nan
+log10f (builtin): -nan
+expf (math.h): -nan
+expf (builtin): -nan
+exp2f (math.h): nan
+exp2f (builtin): nan
+sinf (math.h): nan
+sinf (builtin): nan
+cosf (math.h): nan
+cosf (builtin): nan
+powf(-2.000000, nan) (math.h): nan
+powf(-2.000000, nan) (builtin): nan
+powf(2.000000, nan) (math.h): nan
+powf(2.000000, nan) (builtin): nan
+
 f32 value is: nan
 sqrtf (math.h): nan
 sqrtf (builtin): nan
@@ -412,6 +435,29 @@ powf(-2.000000, inf) (math.h): inf
 powf(-2.000000, inf) (builtin): inf
 powf(2.000000, inf) (math.h): inf
 powf(2.000000, inf) (builtin): inf
+
+f64 value is: -nan
+sqrt (math.h): nan
+sqrt (builtin): nan
+sqrt (llvm): nan
+log (math.h): -nan
+log (builtin): -nan
+log2 (math.h): -nan
+log2 (builtin): -nan
+log10 (math.h): -nan
+log10 (builtin): -nan
+exp (math.h): -nan
+exp (builtin): -nan
+exp2 (math.h): nan
+exp2 (builtin): nan
+sin (math.h): nan
+sin (builtin): nan
+cos (math.h): nan
+cos (builtin): nan
+pow(-2.000000, nan) (math.h): nan
+pow(-2.000000, nan) (builtin): nan
+pow(2.000000, nan) (math.h): nan
+pow(2.000000, nan) (builtin): nan
 
 f64 value is: nan
 sqrt (math.h): nan
