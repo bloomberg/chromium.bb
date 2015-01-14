@@ -41,6 +41,7 @@
 #include "core/css/StylePropertySet.h"
 #include "core/css/parser/CSSParser.h"
 #include "core/css/resolver/StyleResolver.h"
+#include "core/dom/DOMTypedArray.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/StyleEngine.h"
 #include "core/events/Event.h"
@@ -67,10 +68,10 @@
 #include "platform/graphics/GraphicsContextStateSaver.h"
 #include "platform/text/BidiTextRun.h"
 #include "platform/text/TextRun.h"
+#include "wtf/ArrayBufferContents.h"
 #include "wtf/CheckedArithmetic.h"
 #include "wtf/MathExtras.h"
 #include "wtf/OwnPtr.h"
-#include "wtf/Uint8ClampedArray.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace blink {
@@ -1688,19 +1689,9 @@ GraphicsContext* CanvasRenderingContext2D::drawingContext() const
     return canvas()->drawingContext();
 }
 
-static PassRefPtrWillBeRawPtr<ImageData> createEmptyImageData(const IntSize& size)
-{
-    if (RefPtrWillBeRawPtr<ImageData> data = ImageData::create(size)) {
-        data->data()->zeroFill();
-        return data.release();
-    }
-
-    return nullptr;
-}
-
 PassRefPtrWillBeRawPtr<ImageData> CanvasRenderingContext2D::createImageData(PassRefPtrWillBeRawPtr<ImageData> imageData) const
 {
-    return createEmptyImageData(imageData->size());
+    return ImageData::create(imageData->size());
 }
 
 PassRefPtrWillBeRawPtr<ImageData> CanvasRenderingContext2D::createImageData(float sw, float sh, ExceptionState& exceptionState) const
@@ -1720,7 +1711,7 @@ PassRefPtrWillBeRawPtr<ImageData> CanvasRenderingContext2D::createImageData(floa
     if (size.height() < 1)
         size.setHeight(1);
 
-    return createEmptyImageData(size);
+    return ImageData::create(size);
 }
 
 PassRefPtrWillBeRawPtr<ImageData> CanvasRenderingContext2D::getImageData(float sx, float sy, float sw, float sh, ExceptionState& exceptionState) const
@@ -1753,13 +1744,16 @@ PassRefPtrWillBeRawPtr<ImageData> CanvasRenderingContext2D::getImageData(float s
     IntRect imageDataRect = enclosingIntRect(logicalRect);
     ImageBuffer* buffer = canvas()->buffer();
     if (!buffer || isContextLost())
-        return createEmptyImageData(imageDataRect.size());
+        return ImageData::create(imageDataRect.size());
 
-    RefPtr<Uint8ClampedArray> byteArray = buffer->getImageData(Unmultiplied, imageDataRect);
-    if (!byteArray)
+    WTF::ArrayBufferContents contents;
+    if (!buffer->getImageData(Unmultiplied, imageDataRect, contents))
         return nullptr;
 
-    return ImageData::create(imageDataRect.size(), byteArray.release());
+    RefPtr<DOMArrayBuffer> arrayBuffer = DOMArrayBuffer::create(contents);
+    return ImageData::create(
+        imageDataRect.size(),
+        DOMUint8ClampedArray::create(arrayBuffer, 0, arrayBuffer->byteLength()));
 }
 
 void CanvasRenderingContext2D::putImageData(ImageData* data, float dx, float dy)
@@ -1794,7 +1788,7 @@ void CanvasRenderingContext2D::putImageData(ImageData* data, float dx, float dy,
     IntRect sourceRect(destRect);
     sourceRect.move(-destOffset);
 
-    buffer->putByteArray(Unmultiplied, data->data(), IntSize(data->width(), data->height()), sourceRect, IntPoint(destOffset));
+    buffer->putByteArray(Unmultiplied, data->data()->data(), IntSize(data->width(), data->height()), sourceRect, IntPoint(destOffset));
 
     didDraw(destRect);
 }

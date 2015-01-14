@@ -46,6 +46,12 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 
+namespace WTF {
+
+class ArrayBufferContents;
+
+} // namespace WTF
+
 namespace blink {
 
 class Extensions3DUtil;
@@ -163,7 +169,7 @@ public:
     void setPackAlignment(GLint param);
 
     void paintRenderingResultsToCanvas(ImageBuffer*);
-    PassRefPtr<Uint8ClampedArray> paintRenderingResultsToImageData(int&, int&, SourceDrawingBuffer);
+    bool paintRenderingResultsToImageData(int&, int&, SourceDrawingBuffer, WTF::ArrayBufferContents&);
 
     int sampleCount() const { return m_sampleCount; }
     bool explicitResolveOfMultisampleData() const { return m_multisampleMode == ExplicitResolve; };

@@ -90,6 +90,7 @@
 #include "platform/graphics/gpu/AcceleratedImageBufferSurface.h"
 #include "platform/graphics/gpu/DrawingBuffer.h"
 #include "public/platform/Platform.h"
+#include "wtf/ArrayBufferContents.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/StringBuilder.h"
 
@@ -952,12 +953,14 @@ PassRefPtrWillBeRawPtr<ImageData> WebGLRenderingContextBase::paintRenderingResul
     drawingBuffer()->commit();
     ScopedFramebufferRestorer restorer(this);
     int width, height;
-    RefPtr<Uint8ClampedArray> imageDataPixels =
-        drawingBuffer()->paintRenderingResultsToImageData(width, height, sourceBuffer);
-    if (!imageDataPixels)
+    WTF::ArrayBufferContents contents;
+    if (!drawingBuffer()->paintRenderingResultsToImageData(width, height, sourceBuffer, contents))
         return nullptr;
+    RefPtr<DOMArrayBuffer> imageDataPixels = DOMArrayBuffer::create(contents);
 
-    return ImageData::create(IntSize(width, height), imageDataPixels);
+    return ImageData::create(
+        IntSize(width, height),
+        DOMUint8ClampedArray::create(imageDataPixels, 0, imageDataPixels->byteLength()));
 }
 
 void WebGLRenderingContextBase::reshape(int width, int height)

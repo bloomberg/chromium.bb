@@ -29,7 +29,6 @@
  */
 
 #include "config.h"
-
 #include "platform/graphics/gpu/DrawingBuffer.h"
 
 #include "platform/RuntimeEnabledFeatures.h"
@@ -43,6 +42,7 @@
 #include "public/platform/WebExternalTextureLayer.h"
 #include "public/platform/WebGraphicsContext3D.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
+#include "wtf/ArrayBufferContents.h"
 #include <algorithm>
 #ifndef NDEBUG
 #include "wtf/RefCountedLeakCounter.h"
@@ -901,10 +901,10 @@ void DrawingBuffer::paintRenderingResultsToCanvas(ImageBuffer* imageBuffer)
     paintFramebufferToCanvas(framebuffer(), size().width(), size().height(), !m_actualAttributes.premultipliedAlpha, imageBuffer);
 }
 
-PassRefPtr<Uint8ClampedArray> DrawingBuffer::paintRenderingResultsToImageData(int& width, int& height, SourceDrawingBuffer sourceBuffer)
+bool DrawingBuffer::paintRenderingResultsToImageData(int& width, int& height, SourceDrawingBuffer sourceBuffer, WTF::ArrayBufferContents& contents)
 {
     if (m_actualAttributes.premultipliedAlpha)
-        return nullptr;
+        return false;
 
     width = size().width();
     height = size().height();
@@ -913,9 +913,9 @@ PassRefPtr<Uint8ClampedArray> DrawingBuffer::paintRenderingResultsToImageData(in
     dataSize *= width;
     dataSize *= height;
     if (dataSize.hasOverflowed())
-        return nullptr;
+        return false;
 
-    RefPtr<Uint8ClampedArray> pixels = Uint8ClampedArray::createUninitialized(width * height * 4);
+    WTF::ArrayBufferContents pixels(width * height, 4, WTF::ArrayBufferContents::DontInitialize);
 
     GLint fbo = 0;
     if (sourceBuffer == FrontBuffer && m_frontColorBuffer.texInfo.textureId) {
@@ -926,8 +926,8 @@ PassRefPtr<Uint8ClampedArray> DrawingBuffer::paintRenderingResultsToImageData(in
         m_context->bindFramebuffer(GL_FRAMEBUFFER, framebuffer());
     }
 
-    readBackFramebuffer(pixels->data(), width, height, ReadbackRGBA, WebGLImageConversion::AlphaDoNothing);
-    flipVertically(pixels->data(), width, height);
+    readBackFramebuffer(static_cast<unsigned char*>(pixels.data()), width, height, ReadbackRGBA, WebGLImageConversion::AlphaDoNothing);
+    flipVertically(static_cast<uint8_t*>(pixels.data()), width, height);
 
     if (fbo) {
         m_context->framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, 0, 0);
@@ -940,7 +940,8 @@ PassRefPtr<Uint8ClampedArray> DrawingBuffer::paintRenderingResultsToImageData(in
         bind();
     }
 
-    return pixels.release();
+    pixels.transfer(contents);
+    return true;
 }
 
 void DrawingBuffer::paintFramebufferToCanvas(int framebuffer, int width, int height, bool premultiplyAlpha, ImageBuffer* imageBuffer)

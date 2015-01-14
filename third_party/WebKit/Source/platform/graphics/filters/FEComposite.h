@@ -74,8 +74,6 @@ private:
 
     PassRefPtr<SkImageFilter> createImageFilterInternal(SkiaImageFilterBuilder*, bool requiresPMColorValidation);
 
-    inline void platformArithmeticSoftware(Uint8ClampedArray* source, Uint8ClampedArray* destination,
-        float k1, float k2, float k3, float k4);
     template <int b1, int b4>
     static inline void computeArithmeticPixelsNeon(unsigned char* source, unsigned  char* destination,
         unsigned pixelArrayLength, float k1, float k2, float k3, float k4);
