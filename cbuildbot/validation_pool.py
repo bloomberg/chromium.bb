@@ -1968,16 +1968,14 @@ class ValidationPool(object):
     self._helper_pool.ForChange(change).RemoveReady(change, dryrun=self.dryrun)
     if self._run:
       metadata = self._run.attrs.metadata
-      _, db = self._run.GetCIDBHandle()
       timestamp = int(time.time())
       metadata.RecordCLAction(change, constants.CL_ACTION_KICKED_OUT,
                               timestamp)
-      if db:
-        self._InsertCLActionToDatabase(change, constants.CL_ACTION_KICKED_OUT,
-                                       reason)
-        if self.pre_cq_trybot:
-          self._InsertCLActionToDatabase(
-              change, constants.CL_ACTION_PRE_CQ_FAILED)
+
+    self._InsertCLActionToDatabase(change, constants.CL_ACTION_KICKED_OUT,
+                                   reason)
+    if self.pre_cq_trybot:
+      self.UpdateCLPreCQStatus(change, constants.CL_STATUS_FAILED)
 
   def MarkForgiven(self, change, reason=None):
     """Mark |change| as forgiven with |reason|.
