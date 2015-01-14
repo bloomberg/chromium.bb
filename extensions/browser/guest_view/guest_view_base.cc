@@ -52,9 +52,6 @@ static base::LazyInstance<WebContentsGuestViewMap> webcontents_guestview_map =
 
 }  // namespace
 
-SetSizeParams::SetSizeParams() {}
-SetSizeParams::~SetSizeParams() {}
-
 GuestViewBase::Event::Event(const std::string& name,
                             scoped_ptr<base::DictionaryValue> args)
     : name_(name), args_(args.Pass()) {
@@ -222,58 +219,38 @@ void GuestViewBase::InitWithWebContents(
                            &view_instance_id_);
 
   if (CanRunInDetachedState())
-    SetUpSizing(create_params);
+    SetUpAutoSize(create_params);
 
   // Give the derived class an opportunity to perform additional initialization.
   DidInitialize(create_params);
 }
 
-void GuestViewBase::SetSize(const SetSizeParams& params) {
-  bool enable_auto_size =
-      params.enable_auto_size ? *params.enable_auto_size : auto_size_enabled_;
-  gfx::Size min_size = params.min_size ? *params.min_size : min_auto_size_;
-  gfx::Size max_size = params.max_size ? *params.max_size : max_auto_size_;
-
-  if (params.normal_size)
-    normal_size_ = *params.normal_size;
-
+void GuestViewBase::SetAutoSize(bool enabled,
+                                const gfx::Size& min_size,
+                                const gfx::Size& max_size) {
   min_auto_size_ = min_size;
   min_auto_size_.SetToMin(max_size);
   max_auto_size_ = max_size;
   max_auto_size_.SetToMax(min_size);
 
-  enable_auto_size &= !min_auto_size_.IsEmpty() && !max_auto_size_.IsEmpty() &&
-                      IsAutoSizeSupported();
+  enabled &= !min_auto_size_.IsEmpty() && !max_auto_size_.IsEmpty() &&
+      IsAutoSizeSupported();
+  if (!enabled && !auto_size_enabled_)
+    return;
+
+  auto_size_enabled_ = enabled;
+
+  if (!attached() && !CanRunInDetachedState())
+    return;
 
   content::RenderViewHost* rvh = web_contents()->GetRenderViewHost();
-  if (enable_auto_size) {
-    // Autosize is being enabled.
+  if (auto_size_enabled_) {
     rvh->EnableAutoResize(min_auto_size_, max_auto_size_);
-    normal_size_.SetSize(0, 0);
   } else {
-    // Autosize is being disabled.
-    // Use default width/height if missing from partially defined normal size.
-    if (normal_size_.width() && !normal_size_.height())
-      normal_size_.set_height(guestview::kDefaultHeight);
-    if (!normal_size_.width() && normal_size_.height())
-      normal_size_.set_width(guestview::kDefaultWidth);
-
-    gfx::Size new_size = !normal_size_.IsEmpty() ? normal_size_ :
-        !guest_size_.IsEmpty() ? guest_size_ :
-        gfx::Size(guestview::kDefaultWidth, guestview::kDefaultHeight);
-    if (auto_size_enabled_) {
-      // Autosize was previously enabled.
-      rvh->DisableAutoResize(new_size);
-      GuestSizeChangedDueToAutoSize(guest_size_, new_size);
-    } else {
-      // Autosize was already disabled.
-      guest_sizer_->SizeContents(new_size);
-    }
-    // TODO (paulmeyer): Launch the onResize event here.
-    guest_size_ = new_size;
+    rvh->DisableAutoResize(element_size_);
+    guest_size_ = element_size_;
+    GuestSizeChangedDueToAutoSize(guest_size_, element_size_);
   }
-
-  auto_size_enabled_ = enable_auto_size;
 }
 
 // static
@@ -352,7 +329,7 @@ bool GuestViewBase::ZoomPropagatesFromEmbedderToGuest() const {
 void GuestViewBase::DidAttach(int guest_proxy_routing_id) {
   opener_lifetime_observer_.reset();
 
-  SetUpSizing(*attach_params());
+  SetUpAutoSize(*attach_params());
 
   // Give the derived class an opportunity to perform some actions.
   DidAttachToEmbedder();
@@ -375,11 +352,11 @@ void GuestViewBase::DidDetach() {
 }
 
 void GuestViewBase::ElementSizeChanged(const gfx::Size& size) {
-  // Only resize if needed.
-  if (size.IsEmpty())
-    return;
+  element_size_ = size;
 
-  guest_sizer_->SizeContents(size);
+  // Only resize if needed.
+  if (!size.IsEmpty())
+    guest_sizer_->SizeContents(size);
 }
 
 WebContents* GuestViewBase::GetOwnerWebContents() const {
@@ -620,7 +597,7 @@ void GuestViewBase::CompleteInit(
   callback.Run(guest_web_contents);
 }
 
-void GuestViewBase::SetUpSizing(const base::DictionaryValue& params) {
+void GuestViewBase::SetUpAutoSize(const base::DictionaryValue& params) {
   // Read the autosize parameters passed in from the embedder.
   bool auto_size_enabled = false;
   params.GetBoolean(guestview::kAttributeAutoSize, &auto_size_enabled);
@@ -635,22 +612,11 @@ void GuestViewBase::SetUpSizing(const base::DictionaryValue& params) {
   params.GetInteger(guestview::kAttributeMinHeight, &min_height);
   params.GetInteger(guestview::kAttributeMinWidth, &min_width);
 
-  // Set the normal size to the element size so that the guestview will fit the
-  // element initially if autosize is disabled.
-  int normal_height = 0;
-  int normal_width = 0;
-  params.GetInteger(guestview::kElementHeight, &normal_height);
-  params.GetInteger(guestview::kElementWidth, &normal_width);
-
-  SetSizeParams set_size_params;
-  set_size_params.enable_auto_size.reset(new bool(auto_size_enabled));
-  set_size_params.min_size.reset(new gfx::Size(min_width, min_height));
-  set_size_params.max_size.reset(new gfx::Size(max_width, max_height));
-  set_size_params.normal_size.reset(new gfx::Size(normal_width, normal_height));
-
-  // Call SetSize to apply all the appropriate validation and clipping of
+  // Call SetAutoSize to apply all the appropriate validation and clipping of
   // values.
-  SetSize(set_size_params);
+  SetAutoSize(auto_size_enabled,
+              gfx::Size(min_width, min_height),
+              gfx::Size(max_width, max_height));
 }
 
 void GuestViewBase::StartTrackingEmbedderZoomLevel() {

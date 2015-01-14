@@ -81,22 +81,14 @@ GuestViewContainer.prototype.setupFocusPropagation = function() {
   }.bind(this));
 };
 
-GuestViewContainer.prototype.attach = function() {
-  // Augment the attach parameters with the element size, so that the guestview
-  // can fit the element initially.
-  var attachParams = this.buildAttachParams();
-  attachParams['elementWidth'] = parseInt(this.element.offsetWidth);
-  attachParams['elementHeight'] = parseInt(this.element.offsetHeight);
-
-  this.guest.attach(this.internalInstanceId, this.viewInstanceId, attachParams);
-};
-
 GuestViewContainer.prototype.attachWindow = function() {
   if (!this.internalInstanceId) {
     return true;
   }
 
-  this.attach();
+  this.guest.attach(this.internalInstanceId,
+                    this.viewInstanceId,
+                    this.buildAttachParams());
   return true;
 };
 
@@ -109,7 +101,9 @@ GuestViewContainer.prototype.handleBrowserPluginAttributeMutation =
     if (!this.guest.getId()) {
       return;
     }
-    this.attach();
+    this.guest.attach(this.internalInstanceId,
+                      this.viewInstanceId,
+                      this.buildAttachParams());
   }
 };
 

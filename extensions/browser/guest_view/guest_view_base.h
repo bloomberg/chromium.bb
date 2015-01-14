@@ -22,22 +22,6 @@ struct RendererContentSettingRules;
 
 namespace extensions {
 
-// A struct of parameters for SetSize(). The parameters are all declared as
-// scoped pointers since they are all optional. Null pointers indicate that the
-// parameter has not been provided, and the last used value should be used. Note
-// that when |enable_auto_size| is true, providing |normal_size| is not
-// meaningful. This is because the normal size of the guestview is overridden
-// whenever autosizing occurs.
-struct SetSizeParams {
-  SetSizeParams();
-  ~SetSizeParams();
-
-  scoped_ptr<bool> enable_auto_size;
-  scoped_ptr<gfx::Size> min_size;
-  scoped_ptr<gfx::Size> max_size;
-  scoped_ptr<gfx::Size> normal_size;
-};
-
 // A GuestViewBase is the base class browser-side API implementation for a
 // <*view> tag. GuestViewBase maintains an association between a guest
 // WebContents and an owner WebContents. It receives events issued from
@@ -206,9 +190,10 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
     return !strcmp(GetViewType(), view_type);
   }
 
-  // Used to toggle autosize mode for this GuestView, and set both the automatic
-  // and normal sizes.
-  void SetSize(const SetSizeParams& params);
+  // Toggles autosize mode for this GuestView.
+  void SetAutoSize(bool enabled,
+                   const gfx::Size& min_size,
+                   const gfx::Size& max_size);
 
   bool initialized() const { return initialized_; }
 
@@ -306,7 +291,7 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
                     const WebContentsCreatedCallback& callback,
                     content::WebContents* guest_web_contents);
 
-  void SetUpSizing(const base::DictionaryValue& params);
+  void SetUpAutoSize(const base::DictionaryValue& params);
 
   void StartTrackingEmbedderZoomLevel();
   void StopTrackingEmbedderZoomLevel();
@@ -378,6 +363,9 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   // away then this guest also self-destructs.
   scoped_ptr<OpenerLifetimeObserver> opener_lifetime_observer_;
 
+  // The size of the container element.
+  gfx::Size element_size_;
+
   // The size of the guest content. Note: In autosize mode, the container
   // element may not match the size of the guest.
   gfx::Size guest_size_;
@@ -393,9 +381,6 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
 
   // The minimum size constraints of the container element in autosize mode.
   gfx::Size min_auto_size_;
-
-  // The size that will be used when autosize mode is disabled.
-  gfx::Size normal_size_;
 
   // Whether the guest view is inside a plugin document.
   bool is_full_page_plugin_;
