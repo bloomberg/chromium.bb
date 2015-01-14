@@ -807,10 +807,12 @@ TEST_F(XkbLayoutEngineVkTest, XkbRuleNamesForLayoutName) {
   for (size_t i = 0; i < arraysize(kVkeyTestCase); ++i) {
     SCOPED_TRACE(i);
     const VkTestXkbKeyboardLayoutEngine::RuleNames* e = &kVkeyTestCase[i];
-    scoped_ptr<xkb_rule_names> names =
-        layout_engine_->GetXkbRuleNames(e->layout_name);
-    EXPECT_EQ(names.get()->layout, e->layout);
-    EXPECT_EQ(names.get()->variant, e->variant);
+    std::string layout_id;
+    std::string layout_variant;
+    XkbKeyboardLayoutEngine::ParseLayoutName(e->layout_name, &layout_id,
+                                             &layout_variant);
+    EXPECT_EQ(layout_id, e->layout);
+    EXPECT_EQ(layout_variant, e->variant);
   }
 }
 

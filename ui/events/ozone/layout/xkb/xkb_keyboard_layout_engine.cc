@@ -625,20 +625,51 @@ const PrintableSimpleEntry kSimpleMap[] = {
     {0x0259, VKEY_OEM_3},      // schwa
 };
 
+void ParseLayoutName(const std::string& layout_name,
+                     std::string* layout_id,
+                     std::string* layout_variant) {
+  size_t dash_index = layout_name.find('-');
+  size_t parentheses_index = layout_name.find('(');
+  *layout_id = layout_name;
+  *layout_variant = "";
+  if (parentheses_index != std::string::npos) {
+    *layout_id = layout_name.substr(0, parentheses_index);
+    size_t close_index = layout_name.find(')', parentheses_index);
+    if (close_index == std::string::npos)
+      close_index = layout_name.size();
+    *layout_variant = layout_name.substr(parentheses_index + 1,
+                                         close_index - parentheses_index - 1);
+  } else if (dash_index != std::string::npos) {
+    *layout_id = layout_name.substr(0, dash_index);
+    *layout_variant = layout_name.substr(dash_index + 1);
+  }
+}
+
 void LoadKeymap(const std::string& layout_name,
-                scoped_ptr<xkb_rule_names> names,
                 scoped_refptr<base::SingleThreadTaskRunner> reply_runner,
                 const LoadKeymapCallback& reply_callback) {
+  std::string layout_id;
+  std::string layout_variant;
+  ParseLayoutName(layout_name, &layout_id, &layout_variant);
+  xkb_rule_names names = {.rules = NULL,
+                          .model = "pc101",
+                          .layout = layout_id.c_str(),
+                          .variant = layout_variant.c_str(),
+                          .options = ""};
   scoped_ptr<xkb_context, XkbContextDeleter> context;
   context.reset(xkb_context_new(XKB_CONTEXT_NO_DEFAULT_INCLUDES));
   xkb_context_include_path_append(context.get(), "/usr/share/X11/xkb");
   scoped_ptr<xkb_keymap, XkbKeymapDeleter> keymap;
-  keymap.reset(xkb_keymap_new_from_names(context.get(), names.get(),
+  keymap.reset(xkb_keymap_new_from_names(context.get(), &names,
                                          XKB_KEYMAP_COMPILE_NO_FLAGS));
-  char* keymap_str =
-      xkb_keymap_get_as_string(keymap.get(), XKB_KEYMAP_FORMAT_TEXT_V1);
-  reply_runner->PostTask(FROM_HERE, base::Bind(reply_callback, layout_name,
-                                               base::Owned(keymap_str)));
+  if (keymap) {
+    char* keymap_str =
+        xkb_keymap_get_as_string(keymap.get(), XKB_KEYMAP_FORMAT_TEXT_V1);
+    reply_runner->PostTask(FROM_HERE, base::Bind(reply_callback, layout_name,
+                                                 base::Owned(keymap_str)));
+  } else {
+    LOG(ERROR) << "Keymap file failed to load: " << layout_name;
+  }
 }
 
 }  // anonymous namespace
@@ -686,11 +717,10 @@ bool XkbKeyboardLayoutEngine::SetCurrentLayoutByName(
   }
   LoadKeymapCallback reply_callback = base::Bind(
       &XkbKeyboardLayoutEngine::OnKeymapLoaded, weak_ptr_factory_.GetWeakPtr());
-  scoped_ptr<xkb_rule_names> names = GetXkbRuleNames(layout_name);
   base::WorkerPool::PostTask(
       FROM_HERE,
-      base::Bind(&LoadKeymap, layout_name, base::Passed(&names),
-                 base::ThreadTaskRunnerHandle::Get(), reply_callback),
+      base::Bind(&LoadKeymap, layout_name, base::ThreadTaskRunnerHandle::Get(),
+                 reply_callback),
       true);
 #else
   xkb_keymap* keymap = xkb_map_new_from_string(
@@ -701,31 +731,6 @@ bool XkbKeyboardLayoutEngine::SetCurrentLayoutByName(
   SetKeymap(keymap);
 #endif  // defined(OS_CHROMEOS)
   return true;
-}
-
-scoped_ptr<xkb_rule_names> XkbKeyboardLayoutEngine::GetXkbRuleNames(
-    const std::string& layout_name) {
-  size_t dash_index = layout_name.find('-');
-  size_t parentheses_index = layout_name.find('(');
-  std::string layout_id = layout_name;
-  std::string layout_variant = "";
-  if (parentheses_index != std::string::npos) {
-    layout_id = layout_name.substr(0, parentheses_index);
-    size_t close_index = layout_name.find(')', parentheses_index);
-    if (close_index == std::string::npos)
-      close_index = layout_name.size();
-    layout_variant = layout_name.substr(parentheses_index + 1,
-                                        close_index - parentheses_index - 1);
-  } else if (dash_index != std::string::npos) {
-    layout_id = layout_name.substr(0, dash_index);
-    layout_variant = layout_name.substr(dash_index + 1);
-  }
-  return make_scoped_ptr<xkb_rule_names>(
-      new xkb_rule_names{.rules = NULL,
-                         .model = "pc101",
-                         .layout = layout_id.c_str(),
-                         .variant = layout_variant.c_str(),
-                         .options = ""});
 }
 
 void XkbKeyboardLayoutEngine::OnKeymapLoaded(const std::string& layout_name,
@@ -739,7 +744,7 @@ void XkbKeyboardLayoutEngine::OnKeymapLoaded(const std::string& layout_name,
     if (layout_name == current_layout_name_)
       SetKeymap(keymap);
   } else {
-    LOG(ERROR) << "Keymap file fail to load: " << layout_name;
+    LOG(ERROR) << "Keymap file failed to load: " << layout_name;
   }
 }
 
