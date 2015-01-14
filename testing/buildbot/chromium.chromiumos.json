@@ -86,7 +86,6 @@
       },
       "sql_unittests",
       "nacl_loader_unittests",
-      "athena_unittests",
       "app_shell_browsertests",
       "app_shell_unittests",
       "chromevox_tests",
@@ -100,7 +99,6 @@
       "app_shell_browsertests",
       "app_shell_unittests",
       "ash_unittests",
-      "athena_unittests",
       "aura_unittests",
       "base_unittests",
       "cacheinvalidation_unittests",
@@ -250,7 +248,6 @@
           "shards": 2
         }
       },
-      "athena_unittests",
       "gcm_unit_tests",
       "skia_unittests",
       {

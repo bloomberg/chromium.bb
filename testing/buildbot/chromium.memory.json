@@ -233,7 +233,6 @@
           "can_use_on_swarming_builders": true
         }
       },
-      "athena_unittests",
       "aura_unittests",
       {
         "test": "base_unittests",
