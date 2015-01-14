@@ -852,8 +852,8 @@ ExtensionFunction::ResponseAction IdentityGetProfileUserInfoFunction::Run() {
   if (extension()->permissions_data()->HasAPIPermission(
           APIPermission::kIdentityEmail)) {
     profile_user_info.email = account.email;
+    profile_user_info.id = account.gaia;
   }
-  profile_user_info.id = account.gaia;
 
   return RespondNow(OneArgument(profile_user_info.ToValue().release()));
 }

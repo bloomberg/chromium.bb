@@ -13,12 +13,15 @@ namespace identity {
 
   dictionary ProfileUserInfo {
     // An email address for the user account signed into the current
-    // profile. Empty if the user is not signed in.
+    // profile. Empty if the user is not signed in or the
+    // <code>identity.email</code> manifest permission is not
+    // specified.
     DOMString email;
 
     // A unique identifier for the account. This ID will not change
     // for the lifetime of the account. Empty if the user is not
-    // signed in.
+    // signed in or (in M41+) the <code>identity.email</code>
+    // manifest permission is not specified.
     DOMString id;
   };
 

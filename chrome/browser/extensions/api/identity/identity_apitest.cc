@@ -653,7 +653,7 @@ IN_PROC_BROWSER_TEST_F(IdentityGetProfileUserInfoFunctionTest,
   SignIn("president@example.com", "12345");
   scoped_ptr<api::identity::ProfileUserInfo> info = RunGetProfileUserInfo();
   EXPECT_TRUE(info->email.empty());
-  EXPECT_EQ("12345", info->id);
+  EXPECT_TRUE(info->id.empty());
 }
 
 class GetAuthTokenFunctionTest : public IdentityTestWithSignin {
