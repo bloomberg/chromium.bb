@@ -87,10 +87,10 @@ NativeThemeAura::NativeThemeAura() {
 #endif
 
   // Images and alphas declarations assume the following order.
-  COMPILE_ASSERT(kDisabled == 0, states_unexpectedly_changed);
-  COMPILE_ASSERT(kHovered == 1, states_unexpectedly_changed);
-  COMPILE_ASSERT(kNormal == 2, states_unexpectedly_changed);
-  COMPILE_ASSERT(kPressed == 3, states_unexpectedly_changed);
+  static_assert(kDisabled == 0, "states unexpectedly changed");
+  static_assert(kHovered == 1, "states unexpectedly changed");
+  static_assert(kNormal == 2, "states unexpectedly changed");
+  static_assert(kPressed == 3, "states unexpectedly changed");
 }
 
 NativeThemeAura::~NativeThemeAura() {

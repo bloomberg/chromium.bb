@@ -34,8 +34,8 @@ const int kTimerPeriodMs = 100;
 // The amount of time to wait for a request to complete before aborting it.
 const int kRequestTimeoutMs = 10000;
 
-COMPILE_ASSERT(kTimerPeriodMs <= kRequestTimeoutMs,
-               timer_period_must_be_less_or_equal_to_request_timeout);
+static_assert(kTimerPeriodMs <= kRequestTimeoutMs,
+              "timer period must be <= request timeout");
 
 // Combines |data| into a single RefCountedMemory object.
 scoped_refptr<base::RefCountedMemory> CombineRefCountedMemory(

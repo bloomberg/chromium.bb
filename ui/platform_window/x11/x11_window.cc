@@ -173,7 +173,8 @@ void X11Window::Show() {
   // Likewise, the X server needs to know this window's pid so it knows which
   // program to kill if the window hangs.
   // XChangeProperty() expects "pid" to be long.
-  COMPILE_ASSERT(sizeof(long) >= sizeof(pid_t), pid_t_bigger_than_long);
+  static_assert(sizeof(long) >= sizeof(pid_t),
+                "pid_t should not be larger than long");
   long pid = getpid();
   XChangeProperty(xdisplay_,
                   xwindow_,

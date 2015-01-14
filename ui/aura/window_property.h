@@ -129,26 +129,26 @@ class AURA_EXPORT PropertyHelper {
     DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(, T)
 
 #define DEFINE_WINDOW_PROPERTY_KEY(TYPE, NAME, DEFAULT) \
-  COMPILE_ASSERT(sizeof(TYPE) <= sizeof(int64), property_type_too_large);  \
-  namespace {                                                              \
-    const aura::WindowProperty<TYPE> NAME ## _Value =                      \
-        {DEFAULT, #NAME, nullptr};                                         \
-  }                                                                        \
+  static_assert(sizeof(TYPE) <= sizeof(int64), "property type too large");  \
+  namespace {                                                               \
+    const aura::WindowProperty<TYPE> NAME ## _Value =                       \
+        {DEFAULT, #NAME, nullptr};                                          \
+  }                                                                         \
   const aura::WindowProperty<TYPE>* const NAME = & NAME ## _Value;
 
 #define DEFINE_LOCAL_WINDOW_PROPERTY_KEY(TYPE, NAME, DEFAULT) \
-  COMPILE_ASSERT(sizeof(TYPE) <= sizeof(int64), property_type_too_large);  \
-  namespace {                                                              \
-    const aura::WindowProperty<TYPE> NAME ## _Value =                      \
-        {DEFAULT, #NAME, nullptr};                                         \
-    const aura::WindowProperty<TYPE>* const NAME = & NAME ## _Value;       \
+  static_assert(sizeof(TYPE) <= sizeof(int64), "property type too large");  \
+  namespace {                                                               \
+    const aura::WindowProperty<TYPE> NAME ## _Value =                       \
+        {DEFAULT, #NAME, nullptr};                                          \
+    const aura::WindowProperty<TYPE>* const NAME = & NAME ## _Value;        \
   }
 
 #define DEFINE_OWNED_WINDOW_PROPERTY_KEY(TYPE, NAME, DEFAULT)   \
   namespace {                                                   \
     void Deallocator ## NAME (int64 p) {                        \
       enum { type_must_be_complete = sizeof(TYPE) };            \
-      delete aura::WindowPropertyCaster<TYPE*>::FromInt64(p); \
+      delete aura::WindowPropertyCaster<TYPE*>::FromInt64(p);   \
     }                                                           \
     const aura::WindowProperty<TYPE*> NAME ## _Value =          \
         {DEFAULT,#NAME,&Deallocator ## NAME};                   \

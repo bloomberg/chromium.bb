@@ -40,8 +40,8 @@ const int kTimerPeriodMs = 1000;
 // sent by the selection owner before aborting an incremental data transfer.
 const int kIncrementalTransferTimeoutMs = 10000;
 
-COMPILE_ASSERT(kTimerPeriodMs <= kIncrementalTransferTimeoutMs,
-               timer_period_must_be_less_or_equal_to_transfer_timeout);
+static_assert(kTimerPeriodMs <= kIncrementalTransferTimeoutMs,
+              "timer period must be <= transfer timeout");
 
 // Returns a conservative max size of the data we can pass into
 // XChangeProperty(). Copied from GTK.

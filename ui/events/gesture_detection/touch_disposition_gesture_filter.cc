@@ -12,8 +12,8 @@ namespace ui {
 namespace {
 
 // A BitSet32 is used for tracking dropped gesture types.
-COMPILE_ASSERT(ET_GESTURE_TYPE_END - ET_GESTURE_TYPE_START < 32,
-               gesture_type_count_too_large);
+static_assert(ET_GESTURE_TYPE_END - ET_GESTURE_TYPE_START < 32,
+              "gesture type count too large");
 
 GestureEventData CreateGesture(EventType type,
                                int motion_event_id,

@@ -32,7 +32,7 @@ class VelocityTrackerStrategy {
 
 namespace {
 
-COMPILE_ASSERT(MotionEvent::MAX_POINTER_ID < 32, max_pointer_id_too_large);
+static_assert(MotionEvent::MAX_POINTER_ID < 32, "max pointer id too large");
 
 // Threshold between ACTION_MOVE events for determining that a pointer has
 // stopped moving. Some input devices do not send ACTION_MOVE events in the case
