@@ -354,6 +354,20 @@ source_set("common") {
     ]
     include_dirs += [ "//third_party/khronos" ]
     deps += [ "//ui/gl" ]
+    libs += [
+      "d3d9.lib",
+      "dxva2.lib",
+      "strmiids.lib",
+      "mf.lib",
+      "mfplat.lib",
+      "mfuuid.lib",
+    ]
+    ldflags += [
+      "/DELAYLOAD:d3d9.dll",
+      "/DELAYLOAD:dxva2.dll",
+      "/DELAYLOAD:mf.dll",
+      "/DELAYLOAD:mfplat.dll",
+    ]
 
     # TODO(GYP): extract_xinput action.
   }

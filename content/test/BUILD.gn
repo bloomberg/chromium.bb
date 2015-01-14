@@ -325,7 +325,7 @@ if (!is_mac) {
       #         '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.rc',
       #       ],
       deps += [
-        "//contemt/app/strings",
+        "//content/app/strings",
         "//net:net_resources",
         "//third_party/WebKit/public:resources",
         "//third_party/iaccessible2",
