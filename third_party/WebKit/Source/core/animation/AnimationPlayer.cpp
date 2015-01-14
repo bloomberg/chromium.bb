@@ -544,6 +544,16 @@ void AnimationPlayer::finish(ExceptionState& exceptionState)
     ASSERT(limited());
 }
 
+ScriptPromise AnimationPlayer::finished(ScriptState* scriptState)
+{
+    if (!m_finishedPromise) {
+        m_finishedPromise = new AnimationPlayerPromise(scriptState->executionContext(), this, AnimationPlayerPromise::Finished);
+        if (playStateInternal() == Finished)
+            m_finishedPromise->resolve(this);
+    }
+    return m_finishedPromise->promise(scriptState->world());
+}
+
 const AtomicString& AnimationPlayer::interfaceName() const
 {
     return EventTargetNames::AnimationPlayer;
@@ -768,7 +778,7 @@ void AnimationPlayer::endUpdatingState()
 
 AnimationPlayer::PlayStateUpdateScope::PlayStateUpdateScope(AnimationPlayer& player, TimingUpdateReason reason, CompositorPendingChange compositorPendingChange)
     : m_player(player)
-    , m_initial(m_player->playStateInternal())
+    , m_initialPlayState(m_player->playStateInternal())
     , m_compositorPendingChange(compositorPendingChange)
 {
     m_player->beginUpdatingState();
@@ -777,7 +787,7 @@ AnimationPlayer::PlayStateUpdateScope::PlayStateUpdateScope(AnimationPlayer& pla
 
 AnimationPlayer::PlayStateUpdateScope::~PlayStateUpdateScope()
 {
-    AnimationPlayState oldPlayState = m_initial;
+    AnimationPlayState oldPlayState = m_initialPlayState;
     AnimationPlayState newPlayState = m_player->calculatePlayState();
     if (oldPlayState != newPlayState) {
         bool wasActive = oldPlayState == Pending || oldPlayState == Running;
@@ -795,6 +805,23 @@ AnimationPlayer::PlayStateUpdateScope::~PlayStateUpdateScope()
         }
         if (isActive) {
             TRACE_EVENT_ASYNC_STEP_INTO0("blink", "Animation", &m_player, playStateString(newPlayState));
+        }
+    }
+
+    if (m_player->m_finishedPromise && newPlayState != oldPlayState) {
+        if (newPlayState == Idle) {
+            if (m_player->m_finishedPromise->state() == AnimationPlayerPromise::Pending) {
+                m_player->m_finishedPromise->reject(DOMException::create(AbortError));
+            }
+            m_player->m_finishedPromise->reset();
+        }
+
+        if (newPlayState == Finished) {
+            m_player->m_finishedPromise->resolve(m_player);
+        }
+
+        if (oldPlayState == Finished) {
+            m_player->m_finishedPromise->reset();
         }
     }
 
@@ -856,6 +883,7 @@ void AnimationPlayer::trace(Visitor* visitor)
     visitor->trace(m_content);
     visitor->trace(m_timeline);
     visitor->trace(m_pendingFinishedEvent);
+    visitor->trace(m_finishedPromise);
     EventTargetWithInlineData::trace(visitor);
     ActiveDOMObject::trace(visitor);
 }

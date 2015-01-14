@@ -46,4 +46,5 @@ enum AnimationPlayState { "idle", "pending", "running", "paused", "finished" };
 
     void cancel();
     [MeasureAs=AnimationPlayerFinishEvent] attribute EventHandler onfinish;
+    [RuntimeEnabled=WebAnimationsAPI, CallWith=ScriptState] readonly attribute Promise<AnimationPlayer> finished;
 };
