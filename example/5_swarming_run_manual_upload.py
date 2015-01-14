@@ -76,6 +76,8 @@ def main():
       '--task-name', options.task_name,
       isolated_sha1,
     ]
+    if options.idempotent:
+      cmd.append('--idempotent')
     if options.priority is not None:
       cmd.extend(('--priority', str(options.priority)))
     common.run(cmd, options.verbose)

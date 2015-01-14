@@ -40,6 +40,9 @@ def parse_args(use_isolate_server, use_swarming):
       getpass.getuser(),
       datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S'))
     parser.add_option(
+        '--idempotent', action='store_true',
+        help='Tells Swarming to reused previous task result if possible')
+    parser.add_option(
         '-S', '--swarming',
         metavar='URL', default=os.environ.get('SWARMING_SERVER', ''),
         help='Swarming server to use')

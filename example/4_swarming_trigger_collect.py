@@ -58,6 +58,8 @@ def main():
         '--dump-json', json_file,
         hashval,
       ]
+      if options.idempotent:
+        cmd.append('--idempotent')
       if options.priority is not None:
         cmd.extend(('--priority', str(options.priority)))
       common.run(cmd, options.verbose)
