@@ -1237,8 +1237,6 @@
       'browser/content_settings/chrome_content_settings_client.h',
       'browser/content_settings/chrome_content_settings_utils.cc',
       'browser/content_settings/chrome_content_settings_utils.h',
-      'browser/content_settings/content_settings_usages_state.cc',
-      'browser/content_settings/content_settings_usages_state.h',
       'browser/content_settings/cookie_settings.cc',
       'browser/content_settings/cookie_settings.h',
       'browser/content_settings/local_shared_objects_container.cc',
