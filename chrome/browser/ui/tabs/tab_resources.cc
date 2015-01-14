@@ -13,14 +13,14 @@ namespace {
 const SkScalar kTabCapWidth = 15;
 const SkScalar kTabTopCurveWidth = 4;
 const SkScalar kTabBottomCurveWidth = 3;
-#if defined(TOOLKIT_VIEWS)
-// Windows and Ash have shadows in the left, right and top parts of the tab.
-const SkScalar kTabInset = 6;
-const SkScalar kTabTop = 2;
-#else
-// Linux GTK and Mac don't have the shadows.
+#if defined(OS_MACOSX)
+// Mac's Cocoa UI doesn't have shadows.
 const SkScalar kTabInset = 0;
 const SkScalar kTabTop = 0;
+#elif defined(TOOLKIT_VIEWS)
+// The views browser UI has shadows in the left, right and top parts of the tab.
+const SkScalar kTabInset = 6;
+const SkScalar kTabTop = 2;
 #endif
 
 }  // namespace

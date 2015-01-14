@@ -10,14 +10,14 @@
 #endif
 
 // static
-#if defined(TOOLKIT_VIEWS)
-// Views comes first since Mac may eventually be Views-based.
+#if defined(OS_MACOSX)
+const int InfoBarContainerDelegate::kSeparatorLineHeight = 1;
+const int InfoBarContainerDelegate::kDefaultArrowTargetHeight = 11;
+#elif defined(TOOLKIT_VIEWS)
+// Views comes second until the Mac browser is Views-based.
 const int InfoBarContainerDelegate::kSeparatorLineHeight =
     views::NonClientFrameView::kClientEdgeThickness;
 const int InfoBarContainerDelegate::kDefaultArrowTargetHeight = 9;
-#elif defined(OS_MACOSX)
-const int InfoBarContainerDelegate::kSeparatorLineHeight = 1;
-const int InfoBarContainerDelegate::kDefaultArrowTargetHeight = 11;
 #endif
 
 const int InfoBarContainerDelegate::kDefaultBarTargetHeight = 36;

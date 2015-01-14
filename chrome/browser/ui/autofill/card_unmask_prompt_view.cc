@@ -7,7 +7,7 @@
 
 namespace autofill {
 
-#if !defined(OS_ANDROID) && !defined(TOOLKIT_VIEWS)
+#if defined(OS_MACOSX)
 // static
 CardUnmaskPromptView* CardUnmaskPromptView::CreateAndShow(
     CardUnmaskPromptController* controller) {
