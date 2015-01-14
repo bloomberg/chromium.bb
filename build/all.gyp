@@ -277,11 +277,6 @@
             '../extensions/shell/app_shell.gyp:*',
           ],
         }],
-        ['chromeos==1', {
-          'dependencies': [
-            '../athena/main/athena_main.gyp:*',
-          ],
-        }],
         ['envoy==1', {
           'dependencies': [
             '../envoy/envoy.gyp:*',
@@ -1337,7 +1332,6 @@
             }],
             ['chromeos==1', {
               'dependencies': [
-                '../athena/main/athena_main.gyp:*',
                 '../chromeos/chromeos.gyp:chromeos_unittests',
                 '../ui/chromeos/ui_chromeos.gyp:ui_chromeos_unittests',
               ],
