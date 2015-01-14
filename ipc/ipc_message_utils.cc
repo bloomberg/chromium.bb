@@ -13,10 +13,9 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "ipc/ipc_channel_handle.h"
+#include "ipc/ipc_message_attachment_set.h"
 
-#if defined(OS_POSIX)
-#include "ipc/file_descriptor_set_posix.h"
-#elif defined(OS_WIN)
+#if defined(OS_WIN)
 #include <tchar.h>
 #endif
 

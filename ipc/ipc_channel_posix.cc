@@ -37,10 +37,10 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/synchronization/lock.h"
-#include "ipc/file_descriptor_set_posix.h"
 #include "ipc/ipc_descriptors.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_logging.h"
+#include "ipc/ipc_message_attachment_set.h"
 #include "ipc/ipc_message_utils.h"
 #include "ipc/ipc_switches.h"
 #include "ipc/unix_domain_socket_util.h"
@@ -395,13 +395,13 @@ void ChannelPosix::CloseFileDescriptors(Message* msg) {
   // descriptor. For more information, see:
   // http://crbug.com/298276
   std::vector<int> to_close;
-  msg->file_descriptor_set()->ReleaseFDsToClose(&to_close);
+  msg->attachment_set()->ReleaseFDsToClose(&to_close);
   for (size_t i = 0; i < to_close.size(); i++) {
     fds_to_close_.insert(to_close[i]);
     QueueCloseFDMessage(to_close[i], 2);
   }
 #else
-  msg->file_descriptor_set()->CommitAll();
+  msg->attachment_set()->CommitAll();
 #endif
 }
 
@@ -428,20 +428,19 @@ bool ChannelPosix::ProcessOutgoingMessages() {
     struct iovec iov = {const_cast<char*>(out_bytes), amt_to_write};
     msgh.msg_iov = &iov;
     msgh.msg_iovlen = 1;
-    char buf[CMSG_SPACE(
-        sizeof(int) * FileDescriptorSet::kMaxDescriptorsPerMessage)];
+    char buf[CMSG_SPACE(sizeof(int) *
+                        MessageAttachmentSet::kMaxDescriptorsPerMessage)];
 
     ssize_t bytes_written = 1;
     int fd_written = -1;
 
-    if (message_send_bytes_written_ == 0 &&
-        !msg->file_descriptor_set()->empty()) {
+    if (message_send_bytes_written_ == 0 && !msg->attachment_set()->empty()) {
       // This is the first chunk of a message which has descriptors to send
       struct cmsghdr *cmsg;
-      const unsigned num_fds = msg->file_descriptor_set()->size();
+      const unsigned num_fds = msg->attachment_set()->size();
 
-      DCHECK(num_fds <= FileDescriptorSet::kMaxDescriptorsPerMessage);
-      if (msg->file_descriptor_set()->ContainsDirectoryDescriptor()) {
+      DCHECK(num_fds <= MessageAttachmentSet::kMaxDescriptorsPerMessage);
+      if (msg->attachment_set()->ContainsDirectoryDescriptor()) {
         LOG(FATAL) << "Panic: attempting to transport directory descriptor over"
                       " IPC. Aborting to maintain sandbox isolation.";
         // If you have hit this then something tried to send a file descriptor
@@ -457,7 +456,7 @@ bool ChannelPosix::ProcessOutgoingMessages() {
       cmsg->cmsg_level = SOL_SOCKET;
       cmsg->cmsg_type = SCM_RIGHTS;
       cmsg->cmsg_len = CMSG_LEN(sizeof(int) * num_fds);
-      msg->file_descriptor_set()->PeekDescriptors(
+      msg->attachment_set()->PeekDescriptors(
           reinterpret_cast<int*>(CMSG_DATA(cmsg)));
       msgh.msg_controllen = cmsg->cmsg_len;
 
@@ -488,7 +487,7 @@ bool ChannelPosix::ProcessOutgoingMessages() {
       fd_written = pipe_.get();
 #if defined(IPC_USES_READWRITE)
       if ((mode_ & MODE_CLIENT_FLAG) && IsHelloMessage(*msg)) {
-        DCHECK_EQ(msg->file_descriptor_set()->size(), 1U);
+        DCHECK_EQ(msg->attachment_set()->size(), 1U);
       }
       if (!msgh.msg_controllen) {
         bytes_written =
@@ -795,7 +794,7 @@ void ChannelPosix::QueueHelloMessage() {
     if (!msg->WriteBorrowingFile(remote_fd_pipe_.get())) {
       NOTREACHED() << "Unable to pickle hello message file descriptors";
     }
-    DCHECK_EQ(msg->file_descriptor_set()->size(), 1U);
+    DCHECK_EQ(msg->attachment_set()->size(), 1U);
   }
 #endif  // IPC_USES_READWRITE
   output_queue_.push(msg.release());
@@ -903,7 +902,7 @@ bool ChannelPosix::WillDispatchInputMessage(Message* msg) {
       error = "Message needs unreceived descriptors";
   }
 
-  if (header_fds > FileDescriptorSet::kMaxDescriptorsPerMessage)
+  if (header_fds > MessageAttachmentSet::kMaxDescriptorsPerMessage)
     error = "Message requires an excessive number of descriptors";
 
   if (error) {
@@ -919,8 +918,7 @@ bool ChannelPosix::WillDispatchInputMessage(Message* msg) {
   // The shenaniganery below with &foo.front() requires input_fds_ to have
   // contiguous underlying storage (such as a simple array or a std::vector).
   // This is why the header warns not to make input_fds_ a deque<>.
-  msg->file_descriptor_set()->AddDescriptorsToOwn(&input_fds_.front(),
-                                                  header_fds);
+  msg->attachment_set()->AddDescriptorsToOwn(&input_fds_.front(), header_fds);
   input_fds_.erase(input_fds_.begin(), input_fds_.begin() + header_fds);
   return true;
 }
@@ -1013,7 +1011,7 @@ void ChannelPosix::HandleInternalMessage(const Message& msg) {
         // With IPC_USES_READWRITE, the Hello message from the client to the
         // server also contains the fd_pipe_, which  will be used for all
         // subsequent file descriptor passing.
-        DCHECK_EQ(msg.file_descriptor_set()->size(), 1U);
+        DCHECK_EQ(msg.attachment_set()->size(), 1U);
         base::ScopedFD descriptor;
         if (!msg.ReadFile(&iter, &descriptor)) {
           NOTREACHED();

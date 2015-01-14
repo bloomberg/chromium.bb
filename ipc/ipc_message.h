@@ -21,13 +21,12 @@
 #include "base/memory/ref_counted.h"
 #endif
 
-class FileDescriptorSet;
-
 namespace IPC {
 
 //------------------------------------------------------------------------------
 
 struct LogData;
+class MessageAttachmentSet;
 
 class IPC_EXPORT Message : public Pickle {
  public:
@@ -250,21 +249,19 @@ class IPC_EXPORT Message : public Pickle {
   // Used internally to support IPC::Listener::OnBadMessageReceived.
   mutable bool dispatch_error_;
 
-#if defined(OS_POSIX)
   // The set of file descriptors associated with this message.
-  scoped_refptr<FileDescriptorSet> file_descriptor_set_;
+  scoped_refptr<MessageAttachmentSet> attachment_set_;
 
-  // Ensure that a FileDescriptorSet is allocated
-  void EnsureFileDescriptorSet();
+  // Ensure that a MessageAttachmentSet is allocated
+  void EnsureMessageAttachmentSet();
 
-  FileDescriptorSet* file_descriptor_set() {
-    EnsureFileDescriptorSet();
-    return file_descriptor_set_.get();
+  MessageAttachmentSet* attachment_set() {
+    EnsureMessageAttachmentSet();
+    return attachment_set_.get();
   }
-  const FileDescriptorSet* file_descriptor_set() const {
-    return file_descriptor_set_.get();
+  const MessageAttachmentSet* attachment_set() const {
+    return attachment_set_.get();
   }
-#endif
 
 #ifdef IPC_MESSAGE_LOG_ENABLED
   // Used for logging.

@@ -95,11 +95,12 @@ class IPC_MOJO_EXPORT ChannelMojo
 
   // These access protected API of IPC::Message, which has ChannelMojo
   // as a friend class.
-  static MojoResult WriteToFileDescriptorSet(
+  static MojoResult WriteToMessageAttachmentSet(
       const std::vector<MojoHandle>& handle_buffer,
       Message* message);
-  static MojoResult ReadFromFileDescriptorSet(Message* message,
-                                              std::vector<MojoHandle>* handles);
+  static MojoResult ReadFromMessageAttachmentSet(
+      Message* message,
+      std::vector<MojoHandle>* handles);
 
 #endif  // defined(OS_POSIX) && !defined(OS_NACL)
 

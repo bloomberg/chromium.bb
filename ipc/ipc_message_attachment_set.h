@@ -2,27 +2,38 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IPC_FILE_DESCRIPTOR_SET_POSIX_H_
-#define IPC_FILE_DESCRIPTOR_SET_POSIX_H_
+#ifndef IPC_IPC_MESSAGE_ATTACHMENT_SET_H_
+#define IPC_IPC_MESSAGE_ATTACHMENT_SET_H_
 
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/files/file.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
 #include "ipc/ipc_export.h"
 
+#if defined(OS_POSIX)
+#include "base/files/file.h"
+#endif
+
+namespace IPC {
+
 // -----------------------------------------------------------------------------
-// A FileDescriptorSet is an ordered set of POSIX file descriptors. These are
+// A MessageAttachmentSet is an ordered set of POSIX file descriptors. These are
 // associated with IPC messages so that descriptors can be transmitted over a
 // UNIX domain socket.
 // -----------------------------------------------------------------------------
-class IPC_EXPORT FileDescriptorSet
-    : public base::RefCountedThreadSafe<FileDescriptorSet> {
+class IPC_EXPORT MessageAttachmentSet
+    : public base::RefCountedThreadSafe<MessageAttachmentSet> {
  public:
-  FileDescriptorSet();
+  MessageAttachmentSet();
 
+  // Return the number of descriptors
+  unsigned size() const;
+  // Return true if no unconsumed descriptors remain
+  bool empty() const { return 0 == size(); }
+
+#if defined(OS_POSIX)
   // This is the maximum number of descriptors per message. We need to know this
   // because the control message kernel interface has to be given a buffer which
   // is large enough to store all the descriptor numbers. Otherwise the kernel
@@ -30,7 +41,7 @@ class IPC_EXPORT FileDescriptorSet
   // lost.
   //
   // In debugging mode, it's a fatal error to try and add more than this number
-  // of descriptors to a FileDescriptorSet.
+  // of descriptors to a MessageAttachmentSet.
   static const size_t kMaxDescriptorsPerMessage = 7;
 
   // ---------------------------------------------------------------------------
@@ -43,15 +54,9 @@ class IPC_EXPORT FileDescriptorSet
   bool AddToOwn(base::ScopedFD fd);
 
   // ---------------------------------------------------------------------------
-
-
   // ---------------------------------------------------------------------------
   // Interfaces for accessing during message deserialisation...
 
-  // Return the number of descriptors
-  unsigned size() const { return descriptors_.size(); }
-  // Return true if no unconsumed descriptors remain
-  bool empty() const { return 0 == size(); }
   // Take the nth descriptor from the beginning of the set,
   // transferring the ownership of the descriptor taken. Code using this
   // /must/ access the descriptors in order, and must do it at most once.
@@ -62,7 +67,6 @@ class IPC_EXPORT FileDescriptorSet
   base::PlatformFile TakeDescriptorAt(unsigned n);
 
   // ---------------------------------------------------------------------------
-
 
   // ---------------------------------------------------------------------------
   // Interfaces for transmission...
@@ -84,7 +88,6 @@ class IPC_EXPORT FileDescriptorSet
 
   // ---------------------------------------------------------------------------
 
-
   // ---------------------------------------------------------------------------
   // Interfaces for receiving...
 
@@ -93,19 +96,23 @@ class IPC_EXPORT FileDescriptorSet
   // unconsumed descriptors are closed on destruction.
   void AddDescriptorsToOwn(const base::PlatformFile* buffer, unsigned count);
 
+#endif  // OS_POSIX
+
   // ---------------------------------------------------------------------------
 
  private:
-  friend class base::RefCountedThreadSafe<FileDescriptorSet>;
+  friend class base::RefCountedThreadSafe<MessageAttachmentSet>;
 
-  ~FileDescriptorSet();
+  ~MessageAttachmentSet();
 
+#if defined(OS_POSIX)
   // A vector of descriptors and close flags. If this message is sent, then
   // these descriptors are sent as control data. After sending, any descriptors
   // with a true flag are closed. If this message has been received, then these
   // are the descriptors which were received and all close flags are true.
   std::vector<base::PlatformFile> descriptors_;
   ScopedVector<base::ScopedFD> owned_descriptors_;
+#endif
 
   // This contains the index of the next descriptor which should be consumed.
   // It's used in a couple of ways. Firstly, at destruction we can check that
@@ -113,7 +120,9 @@ class IPC_EXPORT FileDescriptorSet
   // can check that they are read in order.
   mutable unsigned consumed_descriptor_highwater_;
 
-  DISALLOW_COPY_AND_ASSIGN(FileDescriptorSet);
+  DISALLOW_COPY_AND_ASSIGN(MessageAttachmentSet);
 };
 
-#endif  // IPC_FILE_DESCRIPTOR_SET_POSIX_H_
+}  // namespace IPC
+
+#endif  // IPC_IPC_MESSAGE_ATTACHMENT_SET_H_

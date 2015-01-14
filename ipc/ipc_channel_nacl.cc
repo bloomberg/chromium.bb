@@ -16,9 +16,9 @@
 #include "base/synchronization/lock.h"
 #include "base/task_runner_util.h"
 #include "base/threading/simple_thread.h"
-#include "ipc/file_descriptor_set_posix.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_logging.h"
+#include "ipc/ipc_message_attachment_set.h"
 #include "native_client/src/public/imc_syscalls.h"
 #include "native_client/src/public/imc_types.h"
 
@@ -37,7 +37,7 @@ bool ReadDataOnReaderThread(int pipe, MessageContents* contents) {
     return false;
 
   contents->data.resize(Channel::kReadBufferSize);
-  contents->fds.resize(FileDescriptorSet::kMaxDescriptorsPerMessage);
+  contents->fds.resize(MessageAttachmentSet::kMaxDescriptorsPerMessage);
 
   NaClAbiNaClImcMsgIoVec iov = { &contents->data[0], contents->data.size() };
   NaClAbiNaClImcMsgHdr msg = {
@@ -275,10 +275,10 @@ bool ChannelNacl::ProcessOutgoingMessages() {
     linked_ptr<Message> msg = output_queue_.front();
     output_queue_.pop_front();
 
-    int fds[FileDescriptorSet::kMaxDescriptorsPerMessage];
-    const size_t num_fds = msg->file_descriptor_set()->size();
-    DCHECK(num_fds <= FileDescriptorSet::kMaxDescriptorsPerMessage);
-    msg->file_descriptor_set()->PeekDescriptors(fds);
+    int fds[MessageAttachmentSet::kMaxDescriptorsPerMessage];
+    const size_t num_fds = msg->attachment_set()->size();
+    DCHECK(num_fds <= MessageAttachmentSet::kMaxDescriptorsPerMessage);
+    msg->attachment_set()->PeekDescriptors(fds);
 
     NaClAbiNaClImcMsgIoVec iov = {
       const_cast<void*>(msg->data()), msg->size()
@@ -298,7 +298,7 @@ bool ChannelNacl::ProcessOutgoingMessages() {
                   << msg->size();
       return false;
     } else {
-      msg->file_descriptor_set()->CommitAll();
+      msg->attachment_set()->CommitAll();
     }
 
     // Message sent OK!
@@ -352,8 +352,7 @@ bool ChannelNacl::WillDispatchInputMessage(Message* msg) {
   // The shenaniganery below with &foo.front() requires input_fds_ to have
   // contiguous underlying storage (such as a simple array or a std::vector).
   // This is why the header warns not to make input_fds_ a deque<>.
-  msg->file_descriptor_set()->AddDescriptorsToOwn(&input_fds_.front(),
-                                                  header_fds);
+  msg->attachment_set()->AddDescriptorsToOwn(&input_fds_.front(), header_fds);
   input_fds_.clear();
   return true;
 }

@@ -7,10 +7,10 @@
 #include "base/atomic_sequence_num.h"
 #include "base/logging.h"
 #include "build/build_config.h"
+#include "ipc/ipc_message_attachment_set.h"
 
 #if defined(OS_POSIX)
 #include "base/file_descriptor_posix.h"
-#include "ipc/file_descriptor_set_posix.h"
 #endif
 
 namespace {
@@ -71,7 +71,7 @@ Message::Message(const char* data, int data_len) : Pickle(data, data_len) {
 Message::Message(const Message& other) : Pickle(other) {
   Init();
 #if defined(OS_POSIX)
-  file_descriptor_set_ = other.file_descriptor_set_;
+  attachment_set_ = other.attachment_set_;
 #endif
 }
 
@@ -87,7 +87,7 @@ void Message::Init() {
 Message& Message::operator=(const Message& other) {
   *static_cast<Pickle*>(this) = other;
 #if defined(OS_POSIX)
-  file_descriptor_set_ = other.file_descriptor_set_;
+  attachment_set_ = other.attachment_set_;
 #endif
   return *this;
 }
@@ -99,6 +99,11 @@ void Message::SetHeaderValues(int32 routing, uint32 type, uint32 flags) {
   header()->routing = routing;
   header()->type = type;
   header()->flags = flags;
+}
+
+void Message::EnsureMessageAttachmentSet() {
+  if (attachment_set_.get() == NULL)
+    attachment_set_ = new MessageAttachmentSet;
 }
 
 #ifdef IPC_MESSAGE_LOG_ENABLED
@@ -126,15 +131,15 @@ void Message::set_received_time(int64 time) const {
 bool Message::WriteFile(base::ScopedFD descriptor) {
   // We write the index of the descriptor so that we don't have to
   // keep the current descriptor as extra decoding state when deserialising.
-  WriteInt(file_descriptor_set()->size());
-  return file_descriptor_set()->AddToOwn(descriptor.Pass());
+  WriteInt(attachment_set()->size());
+  return attachment_set()->AddToOwn(descriptor.Pass());
 }
 
 bool Message::WriteBorrowingFile(const base::PlatformFile& descriptor) {
   // We write the index of the descriptor so that we don't have to
   // keep the current descriptor as extra decoding state when deserialising.
-  WriteInt(file_descriptor_set()->size());
-  return file_descriptor_set()->AddToBorrow(descriptor);
+  WriteInt(attachment_set()->size());
+  return attachment_set()->AddToBorrow(descriptor);
 }
 
 bool Message::ReadFile(PickleIterator* iter, base::ScopedFD* descriptor) const {
@@ -142,12 +147,11 @@ bool Message::ReadFile(PickleIterator* iter, base::ScopedFD* descriptor) const {
   if (!iter->ReadInt(&descriptor_index))
     return false;
 
-  FileDescriptorSet* file_descriptor_set = file_descriptor_set_.get();
-  if (!file_descriptor_set)
+  MessageAttachmentSet* attachment_set = attachment_set_.get();
+  if (!attachment_set)
     return false;
 
-  base::PlatformFile file =
-      file_descriptor_set->TakeDescriptorAt(descriptor_index);
+  base::PlatformFile file = attachment_set->TakeDescriptorAt(descriptor_index);
   if (file < 0)
     return false;
 
@@ -156,12 +160,7 @@ bool Message::ReadFile(PickleIterator* iter, base::ScopedFD* descriptor) const {
 }
 
 bool Message::HasFileDescriptors() const {
-  return file_descriptor_set_.get() && !file_descriptor_set_->empty();
-}
-
-void Message::EnsureFileDescriptorSet() {
-  if (file_descriptor_set_.get() == NULL)
-    file_descriptor_set_ = new FileDescriptorSet;
+  return attachment_set_.get() && !attachment_set_->empty();
 }
 
 #endif

@@ -11,8 +11,6 @@
       # This part is shared between the targets defined below.
       ['ipc_target==1', {
         'sources': [
-          'file_descriptor_set_posix.cc',
-          'file_descriptor_set_posix.h',
           'ipc_channel.cc',
           'ipc_channel.h',
           'ipc_channel_factory.cc',
@@ -38,6 +36,8 @@
           'ipc_logging.h',
           'ipc_message.cc',
           'ipc_message.h',
+          'ipc_message_attachment_set.cc',
+          'ipc_message_attachment_set.h',
           'ipc_message_macros.h',
           'ipc_message_start.h',
           'ipc_message_utils.cc',

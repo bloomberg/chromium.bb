@@ -4,15 +4,16 @@
 
 // This test is POSIX only.
 
-#include "ipc/file_descriptor_set_posix.h"
+#include "ipc/ipc_message_attachment_set.h"
 
-#include <unistd.h>
 #include <fcntl.h>
+#include <unistd.h>
 
 #include "base/basictypes.h"
 #include "base/posix/eintr_wrapper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace IPC {
 namespace {
 
 // Get a safe file descriptor for test purposes.
@@ -31,13 +32,13 @@ bool VerifyClosed(int fd) {
   return true;
 }
 
-// The FileDescriptorSet will try and close some of the descriptor numbers
+// The MessageAttachmentSet will try and close some of the descriptor numbers
 // which we given it. This is the base descriptor value. It's great enough such
 // that no real descriptor will accidently be closed.
 static const int kFDBase = 50000;
 
-TEST(FileDescriptorSet, BasicAdd) {
-  scoped_refptr<FileDescriptorSet> set(new FileDescriptorSet);
+TEST(MessageAttachmentSet, BasicAdd) {
+  scoped_refptr<MessageAttachmentSet> set(new MessageAttachmentSet);
 
   ASSERT_EQ(set->size(), 0u);
   ASSERT_TRUE(set->empty());
@@ -50,8 +51,8 @@ TEST(FileDescriptorSet, BasicAdd) {
   set->CommitAll();
 }
 
-TEST(FileDescriptorSet, BasicAddAndClose) {
-  scoped_refptr<FileDescriptorSet> set(new FileDescriptorSet);
+TEST(MessageAttachmentSet, BasicAddAndClose) {
+  scoped_refptr<MessageAttachmentSet> set(new MessageAttachmentSet);
 
   ASSERT_EQ(set->size(), 0u);
   ASSERT_TRUE(set->empty());
@@ -64,10 +65,10 @@ TEST(FileDescriptorSet, BasicAddAndClose) {
 
   ASSERT_TRUE(VerifyClosed(fd));
 }
-TEST(FileDescriptorSet, MaxSize) {
-  scoped_refptr<FileDescriptorSet> set(new FileDescriptorSet);
+TEST(MessageAttachmentSet, MaxSize) {
+  scoped_refptr<MessageAttachmentSet> set(new MessageAttachmentSet);
 
-  for (size_t i = 0; i < FileDescriptorSet::kMaxDescriptorsPerMessage; ++i)
+  for (size_t i = 0; i < MessageAttachmentSet::kMaxDescriptorsPerMessage; ++i)
     ASSERT_TRUE(set->AddToBorrow(kFDBase + 1 + i));
 
   ASSERT_TRUE(!set->AddToBorrow(kFDBase));
@@ -75,8 +76,8 @@ TEST(FileDescriptorSet, MaxSize) {
   set->CommitAll();
 }
 
-TEST(FileDescriptorSet, SetDescriptors) {
-  scoped_refptr<FileDescriptorSet> set(new FileDescriptorSet);
+TEST(MessageAttachmentSet, SetDescriptors) {
+  scoped_refptr<MessageAttachmentSet> set(new MessageAttachmentSet);
 
   ASSERT_TRUE(set->empty());
   set->AddDescriptorsToOwn(NULL, 0);
@@ -93,8 +94,8 @@ TEST(FileDescriptorSet, SetDescriptors) {
   ASSERT_TRUE(VerifyClosed(fd));
 }
 
-TEST(FileDescriptorSet, PeekDescriptors) {
-  scoped_refptr<FileDescriptorSet> set(new FileDescriptorSet);
+TEST(MessageAttachmentSet, PeekDescriptors) {
+  scoped_refptr<MessageAttachmentSet> set(new MessageAttachmentSet);
 
   set->PeekDescriptors(NULL);
   ASSERT_TRUE(set->AddToBorrow(kFDBase));
@@ -107,8 +108,8 @@ TEST(FileDescriptorSet, PeekDescriptors) {
   ASSERT_TRUE(set->empty());
 }
 
-TEST(FileDescriptorSet, WalkInOrder) {
-  scoped_refptr<FileDescriptorSet> set(new FileDescriptorSet);
+TEST(MessageAttachmentSet, WalkInOrder) {
+  scoped_refptr<MessageAttachmentSet> set(new MessageAttachmentSet);
 
   // TODO(morrita): This test is wrong. TakeDescriptorAt() shouldn't be
   // used to retrieve borrowed descriptors. That never happens in production.
@@ -123,8 +124,8 @@ TEST(FileDescriptorSet, WalkInOrder) {
   set->CommitAll();
 }
 
-TEST(FileDescriptorSet, WalkWrongOrder) {
-  scoped_refptr<FileDescriptorSet> set(new FileDescriptorSet);
+TEST(MessageAttachmentSet, WalkWrongOrder) {
+  scoped_refptr<MessageAttachmentSet> set(new MessageAttachmentSet);
 
   // TODO(morrita): This test is wrong. TakeDescriptorAt() shouldn't be
   // used to retrieve borrowed descriptors. That never happens in production.
@@ -138,8 +139,8 @@ TEST(FileDescriptorSet, WalkWrongOrder) {
   set->CommitAll();
 }
 
-TEST(FileDescriptorSet, WalkCycle) {
-  scoped_refptr<FileDescriptorSet> set(new FileDescriptorSet);
+TEST(MessageAttachmentSet, WalkCycle) {
+  scoped_refptr<MessageAttachmentSet> set(new MessageAttachmentSet);
 
   // TODO(morrita): This test is wrong. TakeDescriptorAt() shouldn't be
   // used to retrieve borrowed descriptors. That never happens in production.
@@ -160,8 +161,8 @@ TEST(FileDescriptorSet, WalkCycle) {
   set->CommitAll();
 }
 
-TEST(FileDescriptorSet, DontClose) {
-  scoped_refptr<FileDescriptorSet> set(new FileDescriptorSet);
+TEST(MessageAttachmentSet, DontClose) {
+  scoped_refptr<MessageAttachmentSet> set(new MessageAttachmentSet);
 
   const int fd = GetSafeFd();
   ASSERT_TRUE(set->AddToBorrow(fd));
@@ -170,8 +171,8 @@ TEST(FileDescriptorSet, DontClose) {
   ASSERT_FALSE(VerifyClosed(fd));
 }
 
-TEST(FileDescriptorSet, DoClose) {
-  scoped_refptr<FileDescriptorSet> set(new FileDescriptorSet);
+TEST(MessageAttachmentSet, DoClose) {
+  scoped_refptr<MessageAttachmentSet> set(new MessageAttachmentSet);
 
   const int fd = GetSafeFd();
   ASSERT_TRUE(set->AddToOwn(base::ScopedFD(fd)));
@@ -181,3 +182,4 @@ TEST(FileDescriptorSet, DoClose) {
 }
 
 }  // namespace
+}  // namespace IPC

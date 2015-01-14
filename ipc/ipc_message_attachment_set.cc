@@ -2,20 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ipc/file_descriptor_set_posix.h"
-
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
+#include "ipc/ipc_message_attachment_set.h"
 
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
 
-FileDescriptorSet::FileDescriptorSet()
+#if defined(OS_POSIX)
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#endif // OS_POSIX
+
+namespace IPC {
+
+MessageAttachmentSet::MessageAttachmentSet()
     : consumed_descriptor_highwater_(0) {
 }
 
-FileDescriptorSet::~FileDescriptorSet() {
+MessageAttachmentSet::~MessageAttachmentSet() {
   if (consumed_descriptor_highwater_ == size())
     return;
 
@@ -27,15 +31,25 @@ FileDescriptorSet::~FileDescriptorSet() {
   // (which could a DOS against the browser by a rogue renderer) then all
   // the descriptors have their close flag set and we free all the extra
   // kernel resources.
-  LOG(WARNING) << "FileDescriptorSet destroyed with unconsumed descriptors: "
+  LOG(WARNING) << "MessageAttachmentSet destroyed with unconsumed descriptors: "
                << consumed_descriptor_highwater_ << "/" << size();
 }
 
-bool FileDescriptorSet::AddToBorrow(base::PlatformFile fd) {
+unsigned MessageAttachmentSet::size() const {
+#if defined(OS_POSIX)
+  return descriptors_.size();
+#else
+  return 0;
+#endif
+}
+
+#if defined(OS_POSIX)
+
+bool MessageAttachmentSet::AddToBorrow(base::PlatformFile fd) {
   DCHECK_EQ(consumed_descriptor_highwater_, 0u);
 
   if (size() == kMaxDescriptorsPerMessage) {
-    DLOG(WARNING) << "Cannot add file descriptor. FileDescriptorSet full.";
+    DLOG(WARNING) << "Cannot add file descriptor. MessageAttachmentSet full.";
     return false;
   }
 
@@ -43,11 +57,11 @@ bool FileDescriptorSet::AddToBorrow(base::PlatformFile fd) {
   return true;
 }
 
-bool FileDescriptorSet::AddToOwn(base::ScopedFD fd) {
+bool MessageAttachmentSet::AddToOwn(base::ScopedFD fd) {
   DCHECK_EQ(consumed_descriptor_highwater_, 0u);
 
   if (size() == kMaxDescriptorsPerMessage) {
-    DLOG(WARNING) << "Cannot add file descriptor. FileDescriptorSet full.";
+    DLOG(WARNING) << "Cannot add file descriptor. MessageAttachmentSet full.";
     return false;
   }
 
@@ -57,13 +71,11 @@ bool FileDescriptorSet::AddToOwn(base::ScopedFD fd) {
   return true;
 }
 
-base::PlatformFile FileDescriptorSet::TakeDescriptorAt(unsigned index) {
+base::PlatformFile MessageAttachmentSet::TakeDescriptorAt(unsigned index) {
   if (index >= size()) {
-    DLOG(WARNING) << "Accessing out of bound index:"
-                  << index << "/" << size();
+    DLOG(WARNING) << "Accessing out of bound index:" << index << "/" << size();
     return -1;
   }
-
 
   // We should always walk the descriptors in order, so it's reasonable to
   // enforce this. Consider the case where a compromised renderer sends us
@@ -102,8 +114,7 @@ base::PlatformFile FileDescriptorSet::TakeDescriptorAt(unsigned index) {
   // changed to exercise with own-able descriptors.
   for (ScopedVector<base::ScopedFD>::const_iterator i =
            owned_descriptors_.begin();
-       i != owned_descriptors_.end();
-       ++i) {
+       i != owned_descriptors_.end(); ++i) {
     if ((*i)->get() == file) {
       ignore_result((*i)->release());
       break;
@@ -113,16 +124,15 @@ base::PlatformFile FileDescriptorSet::TakeDescriptorAt(unsigned index) {
   return file;
 }
 
-void FileDescriptorSet::PeekDescriptors(base::PlatformFile* buffer) const {
+void MessageAttachmentSet::PeekDescriptors(base::PlatformFile* buffer) const {
   std::copy(descriptors_.begin(), descriptors_.end(), buffer);
 }
 
-bool FileDescriptorSet::ContainsDirectoryDescriptor() const {
+bool MessageAttachmentSet::ContainsDirectoryDescriptor() const {
   struct stat st;
 
   for (std::vector<base::PlatformFile>::const_iterator i = descriptors_.begin();
-       i != descriptors_.end();
-       ++i) {
+       i != descriptors_.end(); ++i) {
     if (fstat(*i, &st) == 0 && S_ISDIR(st.st_mode))
       return true;
   }
@@ -130,25 +140,24 @@ bool FileDescriptorSet::ContainsDirectoryDescriptor() const {
   return false;
 }
 
-void FileDescriptorSet::CommitAll() {
+void MessageAttachmentSet::CommitAll() {
   descriptors_.clear();
   owned_descriptors_.clear();
   consumed_descriptor_highwater_ = 0;
 }
 
-void FileDescriptorSet::ReleaseFDsToClose(
+void MessageAttachmentSet::ReleaseFDsToClose(
     std::vector<base::PlatformFile>* fds) {
   for (ScopedVector<base::ScopedFD>::iterator i = owned_descriptors_.begin();
-       i != owned_descriptors_.end();
-       ++i) {
+       i != owned_descriptors_.end(); ++i) {
     fds->push_back((*i)->release());
   }
 
   CommitAll();
 }
 
-void FileDescriptorSet::AddDescriptorsToOwn(const base::PlatformFile* buffer,
-                                            unsigned count) {
+void MessageAttachmentSet::AddDescriptorsToOwn(const base::PlatformFile* buffer,
+                                               unsigned count) {
   DCHECK(count <= kMaxDescriptorsPerMessage);
   DCHECK_EQ(size(), 0u);
   DCHECK_EQ(consumed_descriptor_highwater_, 0u);
@@ -160,3 +169,9 @@ void FileDescriptorSet::AddDescriptorsToOwn(const base::PlatformFile* buffer,
     owned_descriptors_.push_back(new base::ScopedFD(buffer[i]));
   }
 }
+
+#endif  // OS_POSIX
+
+}  // namespace IPC
+
+

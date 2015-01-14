@@ -4,8 +4,6 @@
 
 component("ipc") {
   sources = [
-    "file_descriptor_set_posix.cc",
-    "file_descriptor_set_posix.h",
     "ipc_channel.cc",
     "ipc_channel.h",
     "ipc_channel_factory.cc",
@@ -31,6 +29,8 @@ component("ipc") {
     "ipc_logging.h",
     "ipc_message.cc",
     "ipc_message.h",
+    "ipc_message_attachment_set.cc",
+    "ipc_message_attachment_set.h",
     "ipc_message_macros.h",
     "ipc_message_start.h",
     "ipc_message_utils.cc",
@@ -86,10 +86,10 @@ component("ipc") {
 if (!is_android) {
   test("ipc_tests") {
     sources = [
-      "file_descriptor_set_posix_unittest.cc",
       "ipc_channel_posix_unittest.cc",
       "ipc_channel_unittest.cc",
       "ipc_fuzzing_tests.cc",
+      "ipc_message_attachment_set_posix_unittest.cc",
       "ipc_message_unittest.cc",
       "ipc_message_utils_unittest.cc",
       "ipc_send_fds_test.cc",

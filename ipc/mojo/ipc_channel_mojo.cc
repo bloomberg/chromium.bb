@@ -9,15 +9,12 @@
 #include "base/lazy_instance.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_logging.h"
+#include "ipc/ipc_message_attachment_set.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/mojo/client_channel.mojom.h"
 #include "ipc/mojo/ipc_mojo_bootstrap.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/error_handler.h"
-
-#if defined(OS_POSIX) && !defined(OS_NACL)
-#include "ipc/file_descriptor_set_posix.h"
-#endif
 
 namespace IPC {
 
@@ -342,7 +339,7 @@ base::ScopedFD ChannelMojo::TakeClientFileDescriptor() {
 }
 
 // static
-MojoResult ChannelMojo::WriteToFileDescriptorSet(
+MojoResult ChannelMojo::WriteToMessageAttachmentSet(
     const std::vector<MojoHandle>& handle_buffer,
     Message* message) {
   for (size_t i = 0; i < handle_buffer.size(); ++i) {
@@ -355,7 +352,7 @@ MojoResult ChannelMojo::WriteToFileDescriptorSet(
       return unwrap_result;
     }
 
-    bool ok = message->file_descriptor_set()->AddToOwn(
+    bool ok = message->attachment_set()->AddToOwn(
         base::ScopedFD(platform_handle.release().fd));
     DCHECK(ok);
   }
@@ -364,14 +361,14 @@ MojoResult ChannelMojo::WriteToFileDescriptorSet(
 }
 
 // static
-MojoResult ChannelMojo::ReadFromFileDescriptorSet(
+MojoResult ChannelMojo::ReadFromMessageAttachmentSet(
     Message* message,
     std::vector<MojoHandle>* handles) {
   // We dup() the handles in IPC::Message to transmit.
-  // IPC::FileDescriptorSet has intricate lifecycle semantics
+  // IPC::MessageAttachmentSet has intricate lifecycle semantics
   // of FDs, so just to dup()-and-own them is the safest option.
   if (message->HasFileDescriptors()) {
-    FileDescriptorSet* fdset = message->file_descriptor_set();
+    MessageAttachmentSet* fdset = message->attachment_set();
     std::vector<base::PlatformFile> fds_to_send(fdset->size());
     fdset->PeekDescriptors(&fds_to_send[0]);
     for (size_t i = 0; i < fds_to_send.size(); ++i) {
