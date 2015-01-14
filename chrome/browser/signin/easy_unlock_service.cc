@@ -524,8 +524,12 @@ void EasyUnlockService::LoadApp() {
 
   if (!easy_unlock_path.empty()) {
     extensions::ComponentLoader* loader = GetComponentLoader(profile_);
-    if (!loader->Exists(extension_misc::kEasyUnlockAppId))
-      loader->Add(IDR_EASY_UNLOCK_MANIFEST, easy_unlock_path);
+    if (!loader->Exists(extension_misc::kEasyUnlockAppId)) {
+      int manifest_id =
+          GetType() == TYPE_REGULAR ? IDR_EASY_UNLOCK_MANIFEST :
+                                      IDR_EASY_UNLOCK_MANIFEST_SIGNIN;
+      loader->Add(manifest_id, easy_unlock_path);
+    }
 
     ExtensionService* extension_service =
         extensions::ExtensionSystem::Get(profile_)->extension_service();

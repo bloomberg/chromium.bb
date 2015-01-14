@@ -50,7 +50,7 @@ KeyedService* EasyUnlockServiceFactory::BuildServiceInstanceFor(
 #if defined(OS_CHROMEOS)
   if (chromeos::ProfileHelper::IsSigninProfile(
           Profile::FromBrowserContext(context))) {
-    if (EasyUnlockService::IsSignInEnabled()) {
+    if (EasyUnlockService::IsSignInEnabled() && context->IsOffTheRecord()) {
       return new EasyUnlockServiceSignin(Profile::FromBrowserContext(context));
     } else {
       return NULL;
@@ -62,6 +62,12 @@ KeyedService* EasyUnlockServiceFactory::BuildServiceInstanceFor(
 
 content::BrowserContext* EasyUnlockServiceFactory::GetBrowserContextToUse(
       content::BrowserContext* context) const {
+#if defined(OS_CHROMEOS)
+  if (chromeos::ProfileHelper::IsSigninProfile(
+          Profile::FromBrowserContext(context))) {
+    return chrome::GetBrowserContextOwnInstanceInIncognito(context);
+  }
+#endif
   return chrome::GetBrowserContextRedirectedInIncognito(context);
 }
 
