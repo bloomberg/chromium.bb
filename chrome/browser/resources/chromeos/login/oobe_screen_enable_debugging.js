@@ -106,8 +106,10 @@ login.createScreen('EnableDebuggingScreen', 'debugging', function() {
         return $('debugging-remove-protection-button');
       else if (this.state_ == this.UI_STATE.SETUP)
         return $('enable-debugging-password');
-      else if (this.state_ == this.UI_STATE.DONE)
+      else if (this.state_ == this.UI_STATE.DONE ||
+               this.state_ == this.UI_STATE.ERROR) {
         return $('debugging-ok-button');
+      }
 
       return $('debugging-cancel-button');
     },
