@@ -13,17 +13,17 @@ namespace views {
 class MenuMessageLoopMac : public MenuMessageLoop {
  public:
   MenuMessageLoopMac();
-  virtual ~MenuMessageLoopMac();
+  ~MenuMessageLoopMac() override;
 
   // Overridden from MenuMessageLoop:
-  virtual void Run(MenuController* controller,
-                   Widget* owner,
-                   bool nested_menu) override;
-  virtual void QuitNow() override;
-  virtual void RepostEventToWindow(const ui::LocatedEvent& event,
-                                   gfx::NativeWindow window,
-                                   const gfx::Point& screen_loc) override;
-  virtual void ClearOwner() override;
+  void Run(MenuController* controller,
+           Widget* owner,
+           bool nested_menu) override;
+  void QuitNow() override;
+  void RepostEventToWindow(const ui::LocatedEvent& event,
+                           gfx::NativeWindow window,
+                           const gfx::Point& screen_loc) override;
+  void ClearOwner() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MenuMessageLoopMac);

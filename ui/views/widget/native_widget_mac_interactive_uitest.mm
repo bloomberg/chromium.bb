@@ -42,7 +42,7 @@ class NativeWidgetMacInteractiveUITest::Observer : public TestWidgetObserver {
   Observer(NativeWidgetMacInteractiveUITest* parent, Widget* widget)
       : TestWidgetObserver(widget), parent_(parent) {}
 
-  virtual void OnWidgetActivationChanged(Widget* widget, bool active) override {
+  void OnWidgetActivationChanged(Widget* widget, bool active) override {
     if (active)
       parent_->activationCount_++;
     else

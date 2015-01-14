@@ -242,53 +242,48 @@ class EventGeneratorDelegateMac : public ui::EventTarget,
   }
 
   // Overridden from ui::EventTarget:
-  virtual bool CanAcceptEvent(const ui::Event& event) override { return true; }
-  virtual ui::EventTarget* GetParentTarget()  override { return NULL; }
-  virtual scoped_ptr<ui::EventTargetIterator> GetChildIterator() const override;
-  virtual ui::EventTargeter* GetEventTargeter() override {
-    return this;
-  }
+  bool CanAcceptEvent(const ui::Event& event) override { return true; }
+  ui::EventTarget* GetParentTarget() override { return NULL; }
+  scoped_ptr<ui::EventTargetIterator> GetChildIterator() const override;
+  ui::EventTargeter* GetEventTargeter() override { return this; }
 
   // Overridden from ui::EventHandler (via ui::EventTarget):
-  virtual void OnMouseEvent(ui::MouseEvent* event) override;
+  void OnMouseEvent(ui::MouseEvent* event) override;
 
   // Overridden from ui::EventSource:
-  virtual ui::EventProcessor* GetEventProcessor() override { return this; }
+  ui::EventProcessor* GetEventProcessor() override { return this; }
 
   // Overridden from ui::EventProcessor:
-  virtual ui::EventTarget* GetRootTarget() override { return this; }
+  ui::EventTarget* GetRootTarget() override { return this; }
 
   // Overridden from ui::EventDispatcherDelegate (via ui::EventProcessor):
-  virtual bool CanDispatchToTarget(EventTarget* target) override {
-    return true;
-  }
+  bool CanDispatchToTarget(EventTarget* target) override { return true; }
 
   // Overridden from ui::test::EventGeneratorDelegate:
-  virtual void SetContext(ui::test::EventGenerator* owner,
-                          gfx::NativeWindow root_window,
-                          gfx::NativeWindow window) override;
-  virtual ui::EventTarget* GetTargetAt(const gfx::Point& location) override {
+  void SetContext(ui::test::EventGenerator* owner,
+                  gfx::NativeWindow root_window,
+                  gfx::NativeWindow window) override;
+  ui::EventTarget* GetTargetAt(const gfx::Point& location) override {
     return this;
   }
-  virtual ui::EventSource* GetEventSource(ui::EventTarget* target) override {
+  ui::EventSource* GetEventSource(ui::EventTarget* target) override {
     return this;
   }
-  virtual gfx::Point CenterOfTarget(
-      const ui::EventTarget* target) const override;
-  virtual gfx::Point CenterOfWindow(gfx::NativeWindow window) const override;
+  gfx::Point CenterOfTarget(const ui::EventTarget* target) const override;
+  gfx::Point CenterOfWindow(gfx::NativeWindow window) const override;
 
-  virtual void ConvertPointFromTarget(const ui::EventTarget* target,
-                                      gfx::Point* point) const override {}
-  virtual void ConvertPointToTarget(const ui::EventTarget* target,
-                                    gfx::Point* point) const override {}
-  virtual void ConvertPointFromHost(const ui::EventTarget* hosted_target,
-                                    gfx::Point* point) const override {}
+  void ConvertPointFromTarget(const ui::EventTarget* target,
+                              gfx::Point* point) const override {}
+  void ConvertPointToTarget(const ui::EventTarget* target,
+                            gfx::Point* point) const override {}
+  void ConvertPointFromHost(const ui::EventTarget* hosted_target,
+                            gfx::Point* point) const override {}
 
  private:
   friend struct DefaultSingletonTraits<EventGeneratorDelegateMac>;
 
   EventGeneratorDelegateMac();
-  virtual ~EventGeneratorDelegateMac();
+  ~EventGeneratorDelegateMac() override;
 
   ui::test::EventGenerator* owner_;
   NSWindow* window_;

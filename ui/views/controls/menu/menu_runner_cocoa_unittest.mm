@@ -15,9 +15,9 @@ namespace test {
 class MenuRunnerCocoaTest : public ViewsTestBase {
  public:
   MenuRunnerCocoaTest() : runner_(NULL) {}
-  virtual ~MenuRunnerCocoaTest() {}
+  ~MenuRunnerCocoaTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ViewsTestBase::SetUp();
 
     menu_.reset(new ui::SimpleMenuModel(NULL));
@@ -27,7 +27,7 @@ class MenuRunnerCocoaTest : public ViewsTestBase {
     EXPECT_FALSE(runner_->IsRunning());
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     if (runner_) {
       runner_->Release();
       runner_ = NULL;

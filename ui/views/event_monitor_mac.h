@@ -15,7 +15,7 @@ class EventMonitorMac : public EventMonitor {
  public:
   EventMonitorMac(ui::EventHandler* event_handler,
                   gfx::NativeWindow target_window);
-  virtual ~EventMonitorMac();
+  ~EventMonitorMac() override;
 
  private:
   id monitor_;

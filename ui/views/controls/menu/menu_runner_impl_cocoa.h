@@ -20,18 +20,18 @@ class VIEWS_EXPORT MenuRunnerImplCocoa : public MenuRunnerImplInterface {
  public:
   explicit MenuRunnerImplCocoa(ui::MenuModel* menu);
 
-  virtual bool IsRunning() const override;
-  virtual void Release() override;
-  virtual MenuRunner::RunResult RunMenuAt(Widget* parent,
-                                          MenuButton* button,
-                                          const gfx::Rect& bounds,
-                                          MenuAnchorPosition anchor,
-                                          int32 run_types) override;
-  virtual void Cancel() override;
-  virtual base::TimeDelta GetClosingEventTime() const override;
+  bool IsRunning() const override;
+  void Release() override;
+  MenuRunner::RunResult RunMenuAt(Widget* parent,
+                                  MenuButton* button,
+                                  const gfx::Rect& bounds,
+                                  MenuAnchorPosition anchor,
+                                  int32 run_types) override;
+  void Cancel() override;
+  base::TimeDelta GetClosingEventTime() const override;
 
  private:
-  virtual ~MenuRunnerImplCocoa();
+  ~MenuRunnerImplCocoa() override;
 
   // The Cocoa menu controller that this instance is bridging.
   base::scoped_nsobject<MenuController> menu_controller_;

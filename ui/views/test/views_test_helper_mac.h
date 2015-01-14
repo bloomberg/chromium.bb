@@ -17,7 +17,7 @@ namespace views {
 class ViewsTestHelperMac : public ViewsTestHelper {
  public:
   ViewsTestHelperMac();
-  virtual ~ViewsTestHelperMac();
+  ~ViewsTestHelperMac() override;
 
  private:
   // Disable animations during tests.
