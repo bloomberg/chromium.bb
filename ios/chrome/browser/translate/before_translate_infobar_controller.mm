@@ -216,15 +216,15 @@ NSTimeInterval kPickerAnimationDurationInSeconds = 0.2;
       languagePickerFrame.size.height + navigationBarFrame.size.height;
   languagePickerFrame.origin.y += animationHeight;
   navigationBarFrame.origin.y += animationHeight;
-  base::scoped_nsobject<UIView> blockLanguagePicker(_languagePicker);
-  base::scoped_nsobject<UIView> blockNavigationBar(_navigationBar);
+  auto blockLanguagePicker(_languagePicker);
+  auto blockNavigationBar(_navigationBar);
   _languagePicker.reset();
   _navigationBar.reset();
   void (^animations)(void) = ^{
     blockLanguagePicker.get().frame = languagePickerFrame;
     blockNavigationBar.get().frame = navigationBarFrame;
   };
-  base::scoped_nsobject<UIView> blockSelectionView(_languageSelectionView);
+  auto blockSelectionView(_languageSelectionView);
   _languageSelectionView.reset();
   void (^completion)(BOOL finished) = ^(BOOL finished) {
     [blockSelectionView removeFromSuperview];
@@ -336,8 +336,8 @@ NSTimeInterval kPickerAnimationDurationInSeconds = 0.2;
   [_languagePicker setBackgroundColor:[infoBarView_ backgroundColor]];
   [_languagePicker selectRow:selectedRow inComponent:0 animated:NO];
 
-  base::scoped_nsobject<UIView> blockLanguagePicker(_languagePicker);
-  base::scoped_nsobject<UIView> blockNavigationBar(_navigationBar);
+  auto blockLanguagePicker(_languagePicker);
+  auto blockNavigationBar(_navigationBar);
   [UIView animateWithDuration:kPickerAnimationDurationInSeconds
                    animations:^{
                      blockLanguagePicker.get().frame = finalPickerFrame;
