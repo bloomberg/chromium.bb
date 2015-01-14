@@ -281,15 +281,7 @@ LDFLAGS.target ?= $(LDFLAGS)
 AR.target ?= $(AR)
 
 # C++ apps need to be linked with g++.
-#
-# Note: flock is used to seralize linking. Linking is a memory-intensive
-# process so running parallel links can often lead to thrashing.  To disable
-# the serialization, override LINK via an envrionment variable as follows:
-#
-#   export LINK=g++
-#
-# This will allow make to invoke N linker processes as specified in -jN.
-LINK ?= %(flock)s $(builddir)/linker.lock $(CXX.target)
+LINK ?= $(CXX.target)
 
 # TODO(evan): move all cross-compilation logic to gyp-time so we don't need
 # to replicate this environment fallback in make as well.
@@ -2074,7 +2066,6 @@ def GenerateOutput(target_list, target_dicts, data, params):
   build_file, _, _ = gyp.common.ParseQualifiedTarget(target_list[0])
   make_global_settings_array = data[build_file].get('make_global_settings', [])
   wrappers = {}
-  wrappers['LINK'] = '%s $(builddir)/linker.lock' % flock_command
   for key, value in make_global_settings_array:
     if key.endswith('_wrapper'):
       wrappers[key[:-len('_wrapper')]] = '$(abspath %s)' % value
