@@ -6,12 +6,14 @@ package org.chromium.content.browser;
 
 import junit.framework.Assert;
 
+import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.content_public.browser.LoadUrlParams;
 
 /**
  * Common functionality for testing the Java Bridge.
  */
 public class JavaBridgeTestBase extends ContentViewTestBase {
+    @SuppressFBWarnings("CHROMIUM_SYNCHRONIZED_METHOD")
     protected class Controller {
         private boolean mIsResultReady;
 

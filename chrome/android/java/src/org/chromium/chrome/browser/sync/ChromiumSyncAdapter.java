@@ -19,6 +19,7 @@ import com.google.protos.ipc.invalidation.Types;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.browser.invalidation.InvalidationServiceFactory;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -102,6 +103,7 @@ public abstract class ChromiumSyncAdapter extends AbstractThreadedSyncAdapter {
         try {
             ThreadUtils.runOnUiThreadBlocking(new Runnable() {
                 @Override
+                @SuppressFBWarnings("DM_EXIT")
                 public void run() {
                     ContentApplication.initCommandLine(getContext());
                     if (mAsyncStartup) {
@@ -126,6 +128,7 @@ public abstract class ChromiumSyncAdapter extends AbstractThreadedSyncAdapter {
         }
     }
 
+    @SuppressFBWarnings("DM_EXIT")
     private void startBrowserProcessesSync(
             final BrowserStartupController.StartupCallback callback) {
         try {
