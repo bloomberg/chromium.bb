@@ -290,7 +290,7 @@ base::Value* NetLogBadProxyListCallback(const ProxyRetryInfoMap* retry_info,
 
 // Returns NetLog parameters on a successfuly proxy resolution.
 base::Value* NetLogFinishedResolvingProxyCallback(
-    ProxyInfo* result,
+    const ProxyInfo* result,
     NetLog::LogLevel /* log_level */) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetString("pac_string", result->ToPacString());
