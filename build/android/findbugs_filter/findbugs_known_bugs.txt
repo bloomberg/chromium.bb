@@ -20,6 +20,7 @@ M V EI2: org.chromium.chrome.browser.ChromeBrowserProvider$BookmarkNode.setThumb
 M V EI: org.chromium.chrome.browser.ChromeBrowserProvider$BookmarkNode.favicon() may expose internal representation by returning ChromeBrowserProvider$BookmarkNode.mFavicon  At ChromeBrowserProvider.java
 M V EI: org.chromium.chrome.browser.ChromeBrowserProvider$BookmarkNode.thumbnail() may expose internal representation by returning ChromeBrowserProvider$BookmarkNode.mThumbnail  At ChromeBrowserProvider.java
 M M LI: Incorrect lazy initialization of static field org.chromium.chrome.browser.sync.ProfileSyncService.sSyncSetupManager in org.chromium.chrome.browser.sync.ProfileSyncService.get(Context)  At ProfileSyncService.java
+M M LI: Incorrect lazy initialization of static field org.chromium.chrome.browser.download.DownloadManagerService.sDownloadManagerService in org.chromium.chrome.browser.download.DownloadManagerService.getDownloadManagerService(Context)  At DownloadManagerService.java
 M V EI2: org.chromium.content_public.browser.LoadUrlParams.setPostData(byte[]) may expose internal representation by storing an externally mutable object into LoadUrlParams.mPostData  At LoadUrlParams.java
 M V EI: org.chromium.content_public.browser.LoadUrlParams.getPostData() may expose internal representation by returning LoadUrlParams.mPostData  At LoadUrlParams.java
 M V EI2: org.chromium.net.ChromiumUrlRequest.setUploadData(String, byte[]) may expose internal representation by storing an externally mutable object into ChromiumUrlRequest.mUploadData  At ChromiumUrlRequest.java

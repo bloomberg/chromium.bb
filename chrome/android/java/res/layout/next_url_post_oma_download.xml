@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2015 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file.
+-->
+
+<!-- Dialog to confirm that user want to open the next URL after download
+     finishes.
+-->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/next_url_post_oma_download"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <TextView
+        android:id="@+id/oma_download_next_url"
+        android:gravity="start"
+        android:textColor="@android:color/black"
+        android:padding="3dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+</FrameLayout>
