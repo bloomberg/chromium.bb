@@ -5,11 +5,15 @@
             "trybots": {
                 "launched": {
                     "tryserver.chromium.linux": {
-                        "linux_chromium_asan_rel_ng": ["defaulttests"]
+                        "linux_chromium_asan_rel_ng": ["defaulttests"],
+                        "linux_chromium_gn_chromeos_rel": ["defaulttests"]
                     },
                     "tryserver.chromium.mac": {
+                        "ios_dbg_simulator_ng": ["defaulttests"],
+                        "mac_chromium_gn_rel": ["defaulttests"]
                     },
                     "tryserver.chromium.win": {
+                        "win8_chromium_gn_rel": ["defaulttests"],
                         "win8_chromium_ng": ["defaulttests"],
                         "win_chromium_compile_dbg_ng": ["defaulttests"]
                     }
