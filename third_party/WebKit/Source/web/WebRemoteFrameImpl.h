@@ -186,7 +186,9 @@ public:
     virtual bool selectionStartHasSpellingMarkerFor(int from, int length) const override;
     virtual WebString layerTreeAsText(bool showDebugInfo = false) const override;
 
+    // FIXME(alexmos): This will go away once the Chromium side is updated to pass sandbox flags.
     virtual WebLocalFrame* createLocalChild(const WebString& name, WebFrameClient*) override;
+    virtual WebLocalFrame* createLocalChild(const WebString& name, WebSandboxFlags, WebFrameClient*) override;
     virtual WebRemoteFrame* createRemoteChild(const WebString& name, WebRemoteFrameClient*) override;
 
     void initializeCoreFrame(FrameHost*, FrameOwner*, const AtomicString& name);
@@ -201,6 +203,8 @@ public:
     virtual void initializeFromFrame(WebLocalFrame*) const override;
 
     virtual void setReplicatedOrigin(const WebSecurityOrigin&) const override;
+    virtual void setReplicatedSandboxFlags(WebSandboxFlags) const override;
+
     void didStartLoading() override;
     void didStopLoading() override;
 

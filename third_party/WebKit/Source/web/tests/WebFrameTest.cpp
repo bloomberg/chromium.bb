@@ -6664,7 +6664,7 @@ TEST_F(WebFrameTest, EmbedderTriggeredDetachWithRemoteMainFrame)
     WebView* view = WebView::create(&viewClient);
     view->setMainFrame(WebRemoteFrame::create(&remoteClient));
     FrameTestHelpers::TestWebFrameClient childFrameClient;
-    WebLocalFrame* childFrame = view->mainFrame()->toWebRemoteFrame()->createLocalChild("", &childFrameClient);
+    WebLocalFrame* childFrame = view->mainFrame()->toWebRemoteFrame()->createLocalChild("", WebSandboxFlags::None, &childFrameClient);
 
     // Purposely keep the LocalFrame alive so it's the last thing to be destroyed.
     RefPtrWillBePersistent<Frame> childCoreFrame = toCoreFrame(childFrame);

@@ -31,25 +31,40 @@ namespace {
 class RemoteBridgeFrameOwner : public NoBaseWillBeGarbageCollectedFinalized<RemoteBridgeFrameOwner>, public FrameOwner {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(RemoteBridgeFrameOwner);
 public:
-    static PassOwnPtrWillBeRawPtr<RemoteBridgeFrameOwner> create(PassRefPtrWillBeRawPtr<WebLocalFrameImpl> frame)
+    static PassOwnPtrWillBeRawPtr<RemoteBridgeFrameOwner> create(PassRefPtrWillBeRawPtr<WebLocalFrameImpl> frame, SandboxFlags flags)
     {
-        return adoptPtrWillBeNoop(new RemoteBridgeFrameOwner(frame));
+        return adoptPtrWillBeNoop(new RemoteBridgeFrameOwner(frame, flags));
     }
 
-    virtual bool isLocal() const override;
-    virtual SandboxFlags sandboxFlags() const override;
+    virtual bool isLocal() const override
+    {
+        return false;
+    }
+
+    virtual SandboxFlags sandboxFlags() const override
+    {
+        return m_sandboxFlags;
+    }
+
+    void setSandboxFlags(SandboxFlags flags)
+    {
+        m_sandboxFlags = flags;
+    }
+
     virtual void dispatchLoad() override;
 
     virtual void trace(Visitor*);
 
 private:
-    explicit RemoteBridgeFrameOwner(PassRefPtrWillBeRawPtr<WebLocalFrameImpl>);
+    explicit RemoteBridgeFrameOwner(PassRefPtrWillBeRawPtr<WebLocalFrameImpl>, SandboxFlags);
 
     RefPtrWillBeMember<WebLocalFrameImpl> m_frame;
+    SandboxFlags m_sandboxFlags;
 };
 
-RemoteBridgeFrameOwner::RemoteBridgeFrameOwner(PassRefPtrWillBeRawPtr<WebLocalFrameImpl> frame)
+RemoteBridgeFrameOwner::RemoteBridgeFrameOwner(PassRefPtrWillBeRawPtr<WebLocalFrameImpl> frame, SandboxFlags flags)
     : m_frame(frame)
+    , m_sandboxFlags(flags)
 {
 }
 
@@ -57,17 +72,6 @@ void RemoteBridgeFrameOwner::trace(Visitor* visitor)
 {
     visitor->trace(m_frame);
     FrameOwner::trace(visitor);
-}
-
-bool RemoteBridgeFrameOwner::isLocal() const
-{
-    return false;
-}
-
-SandboxFlags RemoteBridgeFrameOwner::sandboxFlags() const
-{
-    // FIXME: Implement. Most likely grab it from m_frame.
-    return 0;
 }
 
 void RemoteBridgeFrameOwner::dispatchLoad()
@@ -794,11 +798,17 @@ WebString WebRemoteFrameImpl::layerTreeAsText(bool showDebugInfo) const
     return WebString();
 }
 
+// FIXME(alexmos): This will go away once the Chromium side is updated to pass sandbox flags.
 WebLocalFrame* WebRemoteFrameImpl::createLocalChild(const WebString& name, WebFrameClient* client)
 {
+    return createLocalChild(name, WebSandboxFlags::None, client);
+}
+
+WebLocalFrame* WebRemoteFrameImpl::createLocalChild(const WebString& name, WebSandboxFlags sandboxFlags, WebFrameClient* client)
+{
     WebLocalFrameImpl* child = toWebLocalFrameImpl(WebLocalFrame::create(client));
-    WillBeHeapHashMap<WebFrame*, OwnPtrWillBeMember<FrameOwner>>::AddResult result =
-        m_ownersForChildren.add(child, RemoteBridgeFrameOwner::create(child));
+    WillBeHeapHashMap<WebFrame*, OwnPtrWillBeMember<FrameOwner> >::AddResult result =
+        m_ownersForChildren.add(child, RemoteBridgeFrameOwner::create(child, static_cast<SandboxFlags>(sandboxFlags)));
     appendChild(child);
     // FIXME: currently this calls LocalFrame::init() on the created LocalFrame, which may
     // result in the browser observing two navigations to about:blank (one from the initial
@@ -852,6 +862,12 @@ void WebRemoteFrameImpl::setReplicatedOrigin(const WebSecurityOrigin& origin) co
 {
     ASSERT(frame());
     frame()->securityContext()->setReplicatedOrigin(origin);
+}
+
+void WebRemoteFrameImpl::setReplicatedSandboxFlags(WebSandboxFlags flags) const
+{
+    ASSERT(frame());
+    frame()->securityContext()->enforceSandboxFlags(static_cast<SandboxFlags>(flags));
 }
 
 void WebRemoteFrameImpl::didStartLoading()

@@ -122,6 +122,7 @@
 #include "public/web/WebInputEvent.h"
 #include "public/web/WebNavigationPolicy.h"
 #include "public/web/WebNavigatorContentUtilsClient.h"
+#include "public/web/WebSandboxFlags.h"
 #include "public/web/WebSecurityPolicy.h"
 #include "public/web/WebSerializedScriptValueVersion.h"
 #include "public/web/WebSettings.h"
@@ -666,4 +667,16 @@ STATIC_ASSERT_MATCHING_ENUM(WebSecurityPolicy::PolicyAreaAll, SchemeRegistry::Po
 
 STATIC_ASSERT_MATCHING_UINT64(kSerializedScriptValueVersion, SerializedScriptValue::wireFormatVersion);
 
+STATIC_ASSERT_MATCHING_ENUM(WebSandboxFlags::None, SandboxNone);
+STATIC_ASSERT_MATCHING_ENUM(WebSandboxFlags::Navigation, SandboxNavigation);
+STATIC_ASSERT_MATCHING_ENUM(WebSandboxFlags::Plugins, SandboxPlugins);
+STATIC_ASSERT_MATCHING_ENUM(WebSandboxFlags::Origin, SandboxOrigin);
+STATIC_ASSERT_MATCHING_ENUM(WebSandboxFlags::Forms, SandboxForms);
+STATIC_ASSERT_MATCHING_ENUM(WebSandboxFlags::Scripts, SandboxScripts);
+STATIC_ASSERT_MATCHING_ENUM(WebSandboxFlags::TopNavigation, SandboxTopNavigation);
+STATIC_ASSERT_MATCHING_ENUM(WebSandboxFlags::Popups, SandboxPopups);
+STATIC_ASSERT_MATCHING_ENUM(WebSandboxFlags::AutomaticFeatures, SandboxAutomaticFeatures);
+STATIC_ASSERT_MATCHING_ENUM(WebSandboxFlags::PointerLock, SandboxPointerLock);
+STATIC_ASSERT_MATCHING_ENUM(WebSandboxFlags::DocumentDomain, SandboxDocumentDomain);
+STATIC_ASSERT_MATCHING_ENUM(WebSandboxFlags::OrientationLock, SandboxOrientationLock);
 } // namespace blink
