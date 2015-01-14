@@ -13,6 +13,7 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_mac.h"
 #include "content/browser/renderer_host/webmenurunner_mac.h"
+#include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #import "ui/base/cocoa/base_view.h"
@@ -31,6 +32,9 @@ PopupMenuHelper::PopupMenuHelper(RenderFrameHost* render_frame_host)
       popup_was_hidden_(false) {
   notification_registrar_.Add(
       this, NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
+      Source<RenderWidgetHost>(render_frame_host->GetRenderViewHost()));
+  notification_registrar_.Add(
+      this, NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
       Source<RenderWidgetHost>(render_frame_host->GetRenderViewHost()));
 }
 
@@ -119,10 +123,20 @@ RenderWidgetHostViewMac* PopupMenuHelper::GetRenderWidgetHostView() const {
 void PopupMenuHelper::Observe(int type,
                               const NotificationSource& source,
                               const NotificationDetails& details) {
-  DCHECK(type == NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED);
   DCHECK_EQ(Source<RenderWidgetHost>(source).ptr(),
             render_frame_host_->GetRenderViewHost());
-  render_frame_host_ = NULL;
+  switch (type) {
+    case NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED: {
+      render_frame_host_ = NULL;
+      break;
+    }
+    case NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED: {
+      bool is_visible = *Details<bool>(details).ptr();
+      if (!is_visible)
+        Hide();
+      break;
+    }
+  }
 }
 
 }  // namespace content
