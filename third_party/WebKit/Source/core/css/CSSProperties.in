@@ -98,7 +98,7 @@ font-weight animatable, inherited, font, type_name=FontWeight, name_for_methods=
 text-rendering inherited, font, type_name=TextRenderingMode
 zoom animatable, custom_all
 
-align-content
+align-content custom_all
 align-items custom_all
 alignment-baseline svg
 align-self custom_all

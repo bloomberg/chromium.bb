@@ -150,7 +150,9 @@ public:
     unsigned m_transformStyle3D : 1; // ETransformStyle3D
     unsigned m_backfaceVisibility : 1; // EBackfaceVisibility
 
-    unsigned m_alignContent : 3; // EAlignContent
+    unsigned m_alignContent : 4; // ContentPosition
+    unsigned m_alignContentDistribution : 3; // ContentDistributionType
+    unsigned m_alignContentOverflowAlignment : 2; // OverflowAlignment
     unsigned m_alignItems : 4; // ItemPosition
     unsigned m_alignItemsOverflowAlignment : 2; // OverflowAlignment
     unsigned m_alignSelf : 4; // ItemPosition

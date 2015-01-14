@@ -1531,6 +1531,10 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
         parsedValue = parseScrollBlocksOn();
         break;
 
+    case CSSPropertyAlignContent:
+        parsedValue = parseContentDistributionOverflowPosition();
+        break;
+
     case CSSPropertyAlignSelf:
         ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
         return parseItemPositionOverflowPosition(propId, important);
@@ -4140,7 +4144,7 @@ bool CSSPropertyParser::parseLegacyPosition(CSSPropertyID propId, bool important
 
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseContentDistributionOverflowPosition()
 {
-    // auto | <baseline-position> | [ <content-distribution>? && <content-position>? ]! && <overflow-position>?
+    // auto | <baseline-position> | <content-distribution> || [ <overflow-position>? && <content-position> ]
     // <baseline-position> = baseline | last-baseline;
     // <content-distribution> = space-between | space-around | space-evenly | stretch;
     // <content-position> = center | start | end | flex-start | flex-end | left | right;
@@ -4156,27 +4160,32 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseContentDistributionOver
     CSSValueID distribution = CSSValueInvalid;
     CSSValueID position = CSSValueInvalid;
     CSSValueID overflow = CSSValueInvalid;
-    if (isAlignmentOverflowKeyword(value->id)) {
-        overflow = value->id;
-        value = m_valueList->next();
-    }
-    if (value && isContentDistributionKeyword(value->id)) {
-        distribution = value->id;
-        value = m_valueList->next();
-    }
-    if (value && isContentPositionKeyword(value->id)) {
-        position = value->id;
-        value = m_valueList->next();
-    }
-    if (value) {
-        if (overflow != CSSValueInvalid || !isAlignmentOverflowKeyword(value->id))
+    while (value) {
+        if (isContentDistributionKeyword(value->id)) {
+            if (distribution != CSSValueInvalid)
+                return nullptr;
+            distribution = value->id;
+        } else if (isContentPositionKeyword(value->id)) {
+            if (position != CSSValueInvalid)
+                return nullptr;
+            position = value->id;
+        } else if (isAlignmentOverflowKeyword(value->id)) {
+            if (overflow != CSSValueInvalid)
+                return nullptr;
+            overflow = value->id;
+        } else {
             return nullptr;
-        overflow = value->id;
+        }
+        value = m_valueList->next();
     }
 
     // The grammar states that we should have at least <content-distribution> or
-    // <content-position> ([ <content-distribution>? && <content-position>? ]!).
-    if (m_valueList->next() || (position == CSSValueInvalid && distribution == CSSValueInvalid))
+    // <content-position> ( <content-distribution> || <content-position> ).
+    if (position == CSSValueInvalid && distribution == CSSValueInvalid)
+        return nullptr;
+
+    // The grammar states that <overflow-position> must be associated to <content-position>.
+    if (overflow != CSSValueInvalid && position == CSSValueInvalid)
         return nullptr;
 
     return CSSContentDistributionValue::create(distribution, position, overflow);

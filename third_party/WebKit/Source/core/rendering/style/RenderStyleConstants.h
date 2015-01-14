@@ -162,7 +162,6 @@ enum EBoxDirection { BNORMAL, BREVERSE };
 
 // CSS3 Flexbox Properties
 
-enum EAlignContent { AlignContentFlexStart, AlignContentFlexEnd, AlignContentCenter, AlignContentSpaceBetween, AlignContentSpaceAround, AlignContentStretch };
 enum EFlexDirection { FlowRow, FlowRowReverse, FlowColumn, FlowColumnReverse };
 enum EFlexWrap { FlexNoWrap, FlexWrap, FlexWrapReverse };
 

@@ -144,7 +144,7 @@ zoom: 1;
 -webkit-column-rule-width: 0px;
 -webkit-column-span: none;
 -webkit-column-width: auto;
-align-content: stretch;
+align-content: start;
 align-items: start;
 align-self: start;
 flex-direction: row;

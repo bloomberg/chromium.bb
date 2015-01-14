@@ -1367,56 +1367,6 @@ template<> inline CSSPrimitiveValue::operator EFlexDirection() const
     return FlowRow;
 }
 
-template<> inline CSSPrimitiveValue::CSSPrimitiveValue(EAlignContent e)
-    : CSSValue(PrimitiveClass)
-{
-    m_primitiveUnitType = CSS_VALUE_ID;
-    switch (e) {
-    case AlignContentFlexStart:
-        m_value.valueID = CSSValueFlexStart;
-        break;
-    case AlignContentFlexEnd:
-        m_value.valueID = CSSValueFlexEnd;
-        break;
-    case AlignContentCenter:
-        m_value.valueID = CSSValueCenter;
-        break;
-    case AlignContentSpaceBetween:
-        m_value.valueID = CSSValueSpaceBetween;
-        break;
-    case AlignContentSpaceAround:
-        m_value.valueID = CSSValueSpaceAround;
-        break;
-    case AlignContentStretch:
-        m_value.valueID = CSSValueStretch;
-        break;
-    }
-}
-
-template<> inline CSSPrimitiveValue::operator EAlignContent() const
-{
-    ASSERT(isValueID());
-    switch (m_value.valueID) {
-    case CSSValueFlexStart:
-        return AlignContentFlexStart;
-    case CSSValueFlexEnd:
-        return AlignContentFlexEnd;
-    case CSSValueCenter:
-        return AlignContentCenter;
-    case CSSValueSpaceBetween:
-        return AlignContentSpaceBetween;
-    case CSSValueSpaceAround:
-        return AlignContentSpaceAround;
-    case CSSValueStretch:
-        return AlignContentStretch;
-    default:
-        break;
-    }
-
-    ASSERT_NOT_REACHED();
-    return AlignContentStretch;
-}
-
 template<> inline CSSPrimitiveValue::CSSPrimitiveValue(EFlexWrap e)
     : CSSValue(PrimitiveClass)
 {

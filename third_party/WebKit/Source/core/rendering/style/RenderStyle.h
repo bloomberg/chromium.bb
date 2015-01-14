@@ -724,7 +724,9 @@ public:
     float flexGrow() const { return rareNonInheritedData->m_flexibleBox->m_flexGrow; }
     float flexShrink() const { return rareNonInheritedData->m_flexibleBox->m_flexShrink; }
     const Length& flexBasis() const { return rareNonInheritedData->m_flexibleBox->m_flexBasis; }
-    EAlignContent alignContent() const { return static_cast<EAlignContent>(rareNonInheritedData->m_alignContent); }
+    ContentPosition alignContent() const { return static_cast<ContentPosition>(rareNonInheritedData->m_alignContent); }
+    ContentDistributionType alignContentDistribution() const { return static_cast<ContentDistributionType>(rareNonInheritedData->m_alignContentDistribution); }
+    OverflowAlignment alignContentOverflowAlignment() const { return static_cast<OverflowAlignment>(rareNonInheritedData->m_alignContentOverflowAlignment); }
     ItemPosition alignItems() const { return static_cast<ItemPosition>(rareNonInheritedData->m_alignItems); }
     OverflowAlignment alignItemsOverflowAlignment() const { return static_cast<OverflowAlignment>(rareNonInheritedData->m_alignItemsOverflowAlignment); }
     ItemPosition alignSelf() const { return static_cast<ItemPosition>(rareNonInheritedData->m_alignSelf); }
@@ -1211,7 +1213,9 @@ public:
     // We restrict the smallest value to int min + 2 because we use int min and int min + 1 as special values in a hash set.
     void setOrder(int o) { SET_VAR(rareNonInheritedData, m_order, max(std::numeric_limits<int>::min() + 2, o)); }
     void addCallbackSelector(const String& selector);
-    void setAlignContent(EAlignContent p) { SET_VAR(rareNonInheritedData, m_alignContent, p); }
+    void setAlignContent(ContentPosition p) { SET_VAR(rareNonInheritedData, m_alignContent, p); }
+    void setAlignContentDistribution(ContentDistributionType p) { SET_VAR(rareNonInheritedData, m_alignContentDistribution, p); }
+    void setAlignContentOverflowAlignment(OverflowAlignment overflowAlignment) { SET_VAR(rareNonInheritedData, m_alignContentOverflowAlignment, overflowAlignment); }
     void setAlignItems(ItemPosition a) { SET_VAR(rareNonInheritedData, m_alignItems, a); }
     void setAlignItemsOverflowAlignment(OverflowAlignment overflowAlignment) { SET_VAR(rareNonInheritedData, m_alignItemsOverflowAlignment, overflowAlignment); }
     void setAlignSelf(ItemPosition a) { SET_VAR(rareNonInheritedData, m_alignSelf, a); }
@@ -1543,7 +1547,9 @@ public:
     static float initialFlexShrink() { return 1; }
     static Length initialFlexBasis() { return Length(Auto); }
     static int initialOrder() { return 0; }
-    static EAlignContent initialAlignContent() { return AlignContentStretch; }
+    static ContentPosition initialAlignContent() { return ContentPositionAuto; }
+    static ContentDistributionType initialAlignContentDistribution() { return ContentDistributionDefault; }
+    static OverflowAlignment initialAlignContentOverflowAlignment() { return OverflowAlignmentDefault; }
     static ItemPosition initialAlignItems() { return ItemPositionAuto; }
     static OverflowAlignment initialAlignItemsOverflowAlignment() { return OverflowAlignmentDefault; }
     static ItemPosition initialAlignSelf() { return ItemPositionAuto; }

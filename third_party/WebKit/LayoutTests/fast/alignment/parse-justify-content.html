@@ -30,18 +30,6 @@
     justify-content: stretch;
 }
 
-#justifyContentSpaceBetweenSafe {
-    justify-content: space-between safe;
-}
-
-#justifyContentSpaceAroundTrue {
-    justify-content: space-around true;
-}
-
-#justifyContentStretchTrue {
-    justify-content: stretch true;
-}
-
 #justifyContentStart {
     justify-content: start;
 }
@@ -118,6 +106,26 @@
     justify-content: space-evenly flex-start safe;
 }
 
+<!-- Invalid CSS cases -->
+#justifyContentSpaceBetweenSafe {
+    justify-content: space-between safe;
+}
+
+#justifyContentSpaceBetweenStretch {
+    justify-content: space-between stretch;
+}
+
+#justifyContentSafe {
+    justify-content: safe;
+}
+
+#justifyContentRightSafeTrue {
+    justify-content: right safe true;
+}
+
+#justifyContentCenterLeft {
+    justify-content: center left;
+}
 </style>
 <script src="../../resources/js-test.js"></script>
 </head>
@@ -129,10 +137,6 @@
 <div id="justifyContentSpaceAround"></div>
 <div id="justifyContentSpaceEvenly"></div>
 <div id="justifyContentStretch"></div>
-<div id="justifyContentSpaceBetweenSafe"></div>
-<div id="justifyContentSpaceAroundTrue"></div>
-<div id="justifyContentStretchTrue"></div>
-<div id="justifyContentStretchrue"></div>
 <div id="justifyContentStart"></div>
 <div id="justifyContentEnd"></div>
 <div id="justifyContentCenter"></div>
@@ -152,6 +156,12 @@
 <div id="justifyContentStretchStartSafe"></div>
 <div id="justifyContentSpaceAroundEndTrue"></div>
 <div id="justifyContentSpaceEvenlyFlexStartSafe"></div>
+
+<div id="justifyContentSpaceBetweenSafe"></div>
+<div id="justifyContentSpaceBetweenStretch"></div>
+<div id="justifyContentSafe"></div>
+<div id="justifyContentRightSafeTrue"></div>
+<div id="justifyContentCenterLeft"></div>
 
 <script src="resources/alignment-parsing-utils.js"></script>
 <script>
@@ -178,15 +188,6 @@ shouldBeEqualToString("getComputedStyle(justifyContentSpaceEvenly, '').getProper
 
 var justifyContentStretch = document.getElementById("justifyContentStretch");
 shouldBeEqualToString("getComputedStyle(justifyContentStretch, '').getPropertyValue('justify-content')", "stretch");
-
-var justifyContentSpaceBetweenSafe = document.getElementById("justifyContentSpaceBetweenSafe");
-shouldBeEqualToString("getComputedStyle(justifyContentSpaceBetweenSafe, '').getPropertyValue('justify-content')", "space-between safe");
-
-var justifyContentSpaceAroundTrue = document.getElementById("justifyContentSpaceAroundTrue");
-shouldBeEqualToString("getComputedStyle(justifyContentSpaceAroundTrue, '').getPropertyValue('justify-content')", "space-around true");
-
-var justifyContentStretchTrue = document.getElementById("justifyContentStretchTrue");
-shouldBeEqualToString("getComputedStyle(justifyContentStretchTrue, '').getPropertyValue('justify-content')", "stretch true");
 
 var justifyContentStart = document.getElementById("justifyContentStart");
 shouldBeEqualToString("getComputedStyle(justifyContentStart, '').getPropertyValue('justify-content')", "start");
@@ -245,6 +246,21 @@ shouldBeEqualToString("getComputedStyle(justifyContentSpaceAroundEndTrue, '').ge
 var justifyContentSpaceEvenlyFlexStartSafe = document.getElementById("justifyContentSpaceEvenlyFlexStartSafe");
 shouldBeEqualToString("getComputedStyle(justifyContentSpaceEvenlyFlexStartSafe, '').getPropertyValue('justify-content')", "space-evenly flex-start safe");
 
+var justifyContentSpaceBetweenSafe = document.getElementById("justifyContentSpaceBetweenSafe");
+shouldBeEqualToString("getComputedStyle(justifyContentSpaceBetweenSafe, '').getPropertyValue('justify-content')", "start");
+
+var justifyContentSpaceAroundTrue = document.getElementById("justifyContentSpaceBetweenStretch");
+shouldBeEqualToString("getComputedStyle(justifyContentSpaceBetweenStretch, '').getPropertyValue('justify-content')", "start");
+
+var justifyContentSpaceAroundTrue = document.getElementById("justifyContentSafe");
+shouldBeEqualToString("getComputedStyle(justifyContentSafe, '').getPropertyValue('justify-content')", "start");
+
+var justifyContentSpaceAroundTrue = document.getElementById("justifyContentRightSafeTrue");
+shouldBeEqualToString("getComputedStyle(justifyContentRightSafeTrue, '').getPropertyValue('justify-content')", "start");
+
+var justifyContentSpaceAroundTrue = document.getElementById("justifyContentCenterLeft");
+shouldBeEqualToString("getComputedStyle(justifyContentCenterLeft, '').getPropertyValue('justify-content')", "start");
+
 debug("");
 debug("Test initial value of justify-content through JS");
 element = document.createElement("div");
@@ -267,11 +283,11 @@ checkValues(element, "justifyContent", "justify-content",  "flex-end safe", "fle
 element.style.justifyContent = "space-between right safe";
 checkValues(element, "justifyContent", "justify-content",  "space-between right safe", "space-between right safe");
 
-element.style.justifyContent = "stretch center";
+element.style.justifyContent = "center stretch";
 checkValues(element, "justifyContent", "justify-content",  "stretch center", "stretch center");
 
-element.style.justifyContent = "true space-around";
-checkValues(element, "justifyContent", "justify-content",  "space-around true", "space-around true");
+element.style.justifyContent = "right true";
+checkValues(element, "justifyContent", "justify-content",  "right true", "right true");
 
 element.style.justifyContent = "auto";
 checkValues(element, "justifyContent", "justify-content",  "auto", "start");
@@ -306,11 +322,11 @@ checkBadValues(element, "justifyContent", "justify-content",  "true baseline");
 checkBadValues(element, "justifyContent", "justify-content",  "true safe left");
 checkBadValues(element, "justifyContent", "justify-content",  "true left safe");
 checkBadValues(element, "justifyContent", "justify-content",  "left safe true safe");
-checkBadValues(element, "justifyContent", "justify-content",  "start space-between");
-checkBadValues(element, "justifyContent", "justify-content",  "safe end stretch");
+checkBadValues(element, "justifyContent", "justify-content",  "start right space-between");
+checkBadValues(element, "justifyContent", "justify-content",  "safe stretch");
 checkBadValues(element, "justifyContent", "justify-content",  "space-around stretch");
-checkBadValues(element, "justifyContent", "justify-content",  "end start");
-checkBadValues(element, "justifyContent", "justify-content",  "right safe space-evenly");
+checkBadValues(element, "justifyContent", "justify-content",  "end space-between start");
+checkBadValues(element, "justifyContent", "justify-content",  "right safe left");
 checkBadValues(element, "justifyContent", "justify-content",  "true");
 checkBadValues(element, "justifyContent", "justify-content",  "safe");
 

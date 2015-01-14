@@ -303,9 +303,6 @@ bool CSSParserFastPaths::isValidKeywordPropertyAndValue(CSSPropertyID propertyId
     case CSSPropertyColumnFill:
         ASSERT(RuntimeEnabledFeatures::regionBasedColumnsEnabled());
         return valueID == CSSValueAuto || valueID == CSSValueBalance;
-    case CSSPropertyAlignContent:
-        // FIXME: Per CSS alignment, this property should accept an optional <overflow-position>. We should share this parsing code with 'justify-self'.
-        return valueID == CSSValueFlexStart || valueID == CSSValueFlexEnd || valueID == CSSValueCenter || valueID == CSSValueSpaceBetween || valueID == CSSValueSpaceAround || valueID == CSSValueStretch;
     case CSSPropertyAlignItems:
         // FIXME: Per CSS alignment, this property should accept the same arguments as 'justify-self' so we should share its parsing code.
         return valueID == CSSValueFlexStart || valueID == CSSValueFlexEnd || valueID == CSSValueCenter || valueID == CSSValueBaseline || valueID == CSSValueStretch;
@@ -425,7 +422,6 @@ bool CSSParserFastPaths::isKeywordPropertyID(CSSPropertyID propertyId)
     case CSSPropertyWebkitColumnBreakInside:
     case CSSPropertyColumnFill:
     case CSSPropertyWebkitColumnRuleStyle:
-    case CSSPropertyAlignContent:
     case CSSPropertyFlexDirection:
     case CSSPropertyFlexWrap:
     case CSSPropertyFontKerning:

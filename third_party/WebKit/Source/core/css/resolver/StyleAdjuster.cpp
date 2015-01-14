@@ -321,6 +321,19 @@ void StyleAdjuster::adjustStyleForAlignment(RenderStyle& style, const RenderStyl
                 style.setJustifyContent(ContentPositionStart);
         }
     }
+
+    // Block Containers: For table cells, the behavior of the 'auto' depends on the computed
+    // value of 'vertical-align', otherwise behaves as 'start'.
+    // Flex Containers: 'auto' computes to 'stretch'.
+    // Grid Containers: 'auto' computes to 'start', and 'stretch' behaves like 'start'.
+    if (style.alignContent() == ContentPositionAuto && style.alignContentDistribution() == ContentDistributionDefault) {
+        if (style.isDisplayFlexibleOrGridBox()) {
+            if (style.isDisplayFlexibleBox())
+                style.setAlignContentDistribution(ContentDistributionStretch);
+            else
+                style.setAlignContent(ContentPositionStart);
+        }
+    }
 }
 
 void StyleAdjuster::adjustStyleForHTMLElement(RenderStyle* style, RenderStyle* parentStyle, HTMLElement& element)

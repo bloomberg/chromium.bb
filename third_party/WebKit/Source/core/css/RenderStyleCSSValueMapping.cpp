@@ -1494,7 +1494,7 @@ PassRefPtrWillBeRawPtr<CSSValue> RenderStyleCSSValueMapping::get(CSSPropertyID p
     case CSSPropertyEmptyCells:
         return cssValuePool().createValue(style.emptyCells());
     case CSSPropertyAlignContent:
-        return cssValuePool().createValue(style.alignContent());
+        return valueForContentPositionAndDistributionWithOverflowAlignment(resolveContentAlignmentAuto(style.alignContent(), style.alignContentDistribution(), styledNode), style.alignContentOverflowAlignment(), style.alignContentDistribution());
     case CSSPropertyAlignItems:
         return valueForItemPositionWithOverflowAlignment(resolveAlignmentAuto(style.alignItems(), styledNode), style.alignItemsOverflowAlignment(), NonLegacyPosition);
     case CSSPropertyAlignSelf:

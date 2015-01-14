@@ -169,7 +169,7 @@ flexbox.style.display = 'none';
 shouldBeEqualToString('flexbox.style.webkitAlignItems', '');
 shouldBeEqualToString('window.getComputedStyle(flexbox, null).alignItems', 'start');
 shouldBeEqualToString('window.getComputedStyle(flexitem, null).alignSelf', 'start');
-flexbox.style.display = '';
+flexbox.style.display = 'flex';
 
 
 // FIXME: This should probably return stretch. See https://bugs.webkit.org/show_bug.cgi?id=14563.
@@ -276,7 +276,7 @@ for (var i = 0; i < computedStyle.length; ++i) {
 }
 shouldBeFalse('foundFlexFlow');
 
-// The initial value is 'stretch'.
+// The initial value is 'auto', which will be resolved to 'stretch' in case of flexbox containers.
 shouldBeEqualToString('flexbox.style.webkitAlignContent', '');
 shouldBeEqualToString('window.getComputedStyle(flexbox, null).webkitAlignContent', 'stretch');
 

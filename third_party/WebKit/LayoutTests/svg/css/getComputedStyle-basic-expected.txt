@@ -142,7 +142,7 @@ rect: style.getPropertyValue(-webkit-column-rule-style) : none
 rect: style.getPropertyValue(-webkit-column-rule-width) : 0px
 rect: style.getPropertyValue(-webkit-column-span) : none
 rect: style.getPropertyValue(-webkit-column-width) : auto
-rect: style.getPropertyValue(align-content) : stretch
+rect: style.getPropertyValue(align-content) : start
 rect: style.getPropertyValue(align-items) : start
 rect: style.getPropertyValue(align-self) : start
 rect: style.getPropertyValue(flex-direction) : row
@@ -375,7 +375,7 @@ g: style.getPropertyValue(-webkit-column-rule-style) : none
 g: style.getPropertyValue(-webkit-column-rule-width) : 0px
 g: style.getPropertyValue(-webkit-column-span) : none
 g: style.getPropertyValue(-webkit-column-width) : auto
-g: style.getPropertyValue(align-content) : stretch
+g: style.getPropertyValue(align-content) : start
 g: style.getPropertyValue(align-items) : start
 g: style.getPropertyValue(align-self) : start
 g: style.getPropertyValue(flex-direction) : row
