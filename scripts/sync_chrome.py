@@ -7,7 +7,9 @@
 from __future__ import print_function
 
 import functools
+import os
 
+from chromite.cbuildbot import constants
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import gclient
@@ -29,7 +31,7 @@ def GetParser():
   parser.add_argument('--reset', help='Revert local changes',
                       action='store_true', default=False)
   parser.add_argument('--gclient', help=commandline.argparse.SUPPRESS,
-                      default='gclient')
+                      default=None)
   parser.add_argument('--gclient_template', help='Template gclient input file')
   parser.add_argument('chrome_root', help='Directory to sync chrome in')
 
@@ -40,20 +42,26 @@ def main(argv):
   parser = GetParser()
   options = parser.parse_args(argv)
 
+  if options.gclient is '':
+    parser.error('--gclient can not be an empty string!')
+  gclient_path = options.gclient or osutils.Which('gclient')
+  if not gclient_path:
+    gclient_path = os.path.join(constants.DEPOT_TOOLS_DIR, 'gclient')
+
   # Revert any lingering local changes.
   if not osutils.SafeMakedirs(options.chrome_root) and options.reset:
     try:
-      gclient.Revert(options.gclient, options.chrome_root)
+      gclient.Revert(gclient_path, options.chrome_root)
     except cros_build_lib.RunCommandError:
       osutils.RmDir(options.chrome_root)
       osutils.SafeMakedirs(options.chrome_root)
 
   # Sync new Chrome.
-  gclient.WriteConfigFile(options.gclient, options.chrome_root,
+  gclient.WriteConfigFile(gclient_path, options.chrome_root,
                           options.internal, options.version,
                           options.gclient_template)
   sync_fn = functools.partial(
-      gclient.Sync, options.gclient, options.chrome_root, reset=options.reset)
+      gclient.Sync, gclient_path, options.chrome_root, reset=options.reset)
 
   # Sync twice when run with --reset, which implies 'gclient sync -D'.
   #
