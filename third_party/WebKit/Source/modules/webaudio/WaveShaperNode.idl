@@ -32,5 +32,5 @@ enum OverSampleType {
     Conditional=WEB_AUDIO
 ] interface WaveShaperNode : AudioNode {
     [RaisesException=Setter] attribute Float32Array curve;
-    [RaisesException=Setter] attribute OverSampleType oversample;
+    attribute OverSampleType oversample;
 };

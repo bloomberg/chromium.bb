@@ -61,7 +61,7 @@ DOMFloat32Array* WaveShaperNode::curve()
     return waveShaperProcessor()->curve();
 }
 
-void WaveShaperNode::setOversample(const String& type, ExceptionState& exceptionState)
+void WaveShaperNode::setOversample(const String& type)
 {
     ASSERT(isMainThread());
 

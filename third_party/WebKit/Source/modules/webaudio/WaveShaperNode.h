@@ -46,7 +46,7 @@ public:
     void setCurve(DOMFloat32Array*, ExceptionState&);
     DOMFloat32Array* curve();
 
-    void setOversample(const String& , ExceptionState&);
+    void setOversample(const String&);
     String oversample() const;
 
 private:
