@@ -6,22 +6,22 @@
   technologies that you're already familiar with from web development: HTML,
   CSS, and JavaScript. If you've ever built a web page, you should feel right at
   home with extensions pretty quickly; we'll put that to the test right now by
-  walking through the construction of a simple extension that will give you
-  one-click access to pictures of kittens. Kittens!
+  walking through the construction of a simple extension that will fetch an
+  image from Google using the current page's URL as a search term.
 </p>
 
 <p>
   We'll do so by implementing a UI element we call a
   <a href="browserAction">browser action</a>, which allows us to place a
   clickable icon right next to Chrome's Omnibox for easy access. Clicking that
-  icon will open a popup window filled with kittenish goodness, which will look
-  something like this:
+  icon will open a popup window filled with an image derived from the current
+  page, which will look something like this:
 </p>
 
-<img src="{{static}}/images/gettingstarted-1.jpg"
-     width="600"
-     height="420"
-     alt="Chrome, with an extension's popup open and displaying many kittens.">
+<img src="{{static}}/images/gettingstarted-preview"
+     width="558"
+     height="264"
+     alt="Chrome with an extension's popup open.">
 
 <p>
   If you'd like to follow along at home (and you should!), create a shiny new
@@ -33,35 +33,38 @@
 
 <p>
   The very first thing we'll need to create is a <dfn>manifest file</dfn> named
-  <code>manifest.json</code>. The manifest is nothing more than a JSON-formatted
-  table of contents, containing properties like your extension's name and
-  description, its version number, and so on. At a high level, we'll use it to
+  <code>manifest.json</code>. This manifest is nothing more than a metadata file
+  in JSON format that contains properties like your extension's name,
+  description, version number and so on. At a high level, we will use it to
   declare to Chrome what the extension is going to do, and what permissions it
-  requires in order to do those things.
+  requires in order to do those things. To learn more about the manifest, read
+  the <a href="manifest">Manifest File Format documentation</a>.
 </p>
 
 <p>
-  In order to display kittens, we'll want to tell Chrome that we'd like to
-  create a browser action, and that we'd like free-reign to access kittens from
-  a particular source on the net. A manifest file containing those instructions
-  looks like this:
+  In our example's manifest,
+  we will declare a <a href="browserAction">browser action</a>,
+  the <a href="activeTab">activeTab permission</a> to see the URL of the current
+  tab, and the host <a href="declare_permissions">permission</a> to access the
+  external Google Image search API.
 </p>
 
 <pre data-filename="manifest.json">
 {
   "manifest_version": 2,
 
-  "name": "One-click Kittens",
-  "description": "This extension demonstrates a browser action with kittens.",
+  "name": "Getting started example",
+  "description": "This extension shows a Google Image search result for the current page",
   "version": "1.0",
 
-  "permissions": [
-    "https://secure.flickr.com/"
-  ],
   "browser_action": {
     "default_icon": "icon.png",
     "default_popup": "popup.html"
-  }
+  },
+  "permissions": [
+    "activeTab",
+    "https://ajax.googleapis.com/"
+  ]
 }
 </pre>
 
@@ -71,35 +74,6 @@
   <a href="examples/tutorials/getstarted/manifest.json" download="manifest.json">
     download a copy of <code>manifest.json</code> from our sample repository
   </a>.
-</p>
-
-<h3 id="manifest">What does it mean?</h3>
-
-<p>
-  The attribute names are fairly self-descriptive, but let's walk through the
-  manifest line-by-line to make sure we're all on the same page.
-</p>
-
-<p>
-  The first line, which declares that we're using version 2 of the manifest file
-  format, is mandatory (version 1 is old, deprecated, and generally not
-  awesome).
-</p>
-
-<p>
-  The next block defines the extension's name, description, and version. These
-  will be used both inside of Chrome to show a user which extensions you have
-  installed, and also on the Chrome Web Store to display your extension to
-  potentially new users. The name should be short and snappy, and the
-  description no longer than a sentence or so (you'll have more room for a
-  detailed description later).
-</p>
-
-<p>
-  The final block first requests permission to work with data on
-  <code>https://secure.flickr.com/</code>, and declares that this extension
-  implements a browser action, assigning it a default icon and popup in the
-  process.
 </p>
 
 <h2 id="resources">Resources</h2>
@@ -117,9 +91,10 @@
       <img src="{{static}}/images/gettingstarted-icon.png"
            width="127"
            height="127"
+           style="float:right"
            alt="The popup's icon will be displayed right next to the Omnibox.">
       <code>icon.png</code> will be displayed next to the Omnibox, waiting for
-      user interaction. Download a copy of icon.png from our sample repository,
+      user interaction.
       <a href="examples/tutorials/getstarted/icon.png" download="icon.png">
         Download a copy of <code>icon.png</code> from our sample repository
       </a>, and save it into the directory you're working in. You could also
@@ -128,25 +103,21 @@
   </li>
   <li>
     <p>
-      <img src="{{static}}/images/gettingstarted-popup.jpg"
-           width="165"
-           height="200"
-           alt="The popup's HTML will be rendered directly below the icon when clicked.">
       <code>popup.html</code> will be rendered inside the popup window that's
       created in response to a user's click on the browser action. It's a
       standard HTML file, just like you're used to from web development, giving
       you more or less free reign over what the popup displays.
       <a href="examples/tutorials/getstarted/popup.html" download="popup.html">
         Download a copy of <code>popup.html</code> from our sample repository
-      </a>, and save it into
-      the directory you're working in.
+      </a>, and save it into the directory you're working in.
     </p>
     <p>
-      <code>popup.html</code> requires an additional JavaScript file in order to
-      do the work of grabbing kitten images from the web and loading them into
-      the popup. To save you some effort, just
+      The actual logic of rendering the content of the popup is implemented by
+      <a href="examples/tutorials/getstarted/popup.js">popup.js</a>. You are
+      encouraged to read the elaborate comments in this file to learn more
+      about the logic.<br>
       <a href="examples/tutorials/getstarted/popup.js" download="popup.js">
-        download a copy of <code>popup.js</code> from our sample repository
+        Download a copy of <code>popup.js</code> from our sample repository
       </a>, and save it into the directory you're working in.
     </p>
   </li>
@@ -178,7 +149,7 @@
       <img src="{{static}}/images/hotdogmenu.png"
            height="29"
            width="29"
-           alt="The menu's icon is three horizontal bars.">. and
+           alt="The menu's icon is three horizontal bars."> and
       select <strong>Extensions</strong> under the <strong>Tools</strong> menu
       to get to the same place).
     </p>
@@ -219,40 +190,59 @@
 <p>
   Now that you've got your first extension up and running, let's fiddle with
   things so that you have an idea what your development process might look like.
-  As a trivial example, let's change the data source to search for pictures of
-  puppies instead of kittens.
+  For example, let's set a tooltip on the browser action button.
+</p>
+<p>
+  According to the browserAction documentation, tooltips can be set by
+  specifying the <code>default_title</code> key in the manifest file. Open
+  <code>manifest.json</code>, and add the <code>default_title</code> key to the
+  <code>browser_action</code>.
+  Make sure that the JSON is valid, so quote the key and add a comma where necessary.
+</p>
+
+<pre data-filename="manifest.json">
+{
+  ...
+  "browser_action": {
+    "default_icon": "icon.png",
+    "default_popup": "popup.html",
+    "default_title": "Click here!"
+  },
+  ...
+}
+</pre>
+
+<p>
+  The manifest file is only parsed when the extension is loaded. If you want to
+  see the previous changes in action, the extension has to be reloaded.
+  Visit the extensions page (go to <strong>chrome://extensions</strong>, or
+  <strong>Tools &gt; Extensions</strong> under the Chrome menu), and click
+  <strong>Reload</strong> under your extension.
+  All extensions are also reloaded when the extensions page is reloaded, e.g.
+  after hitting <kbd>F5<kbd> or <kbd>Ctrl</kbd>-<kbd>R</kbd>.
 </p>
 
 <p>
-  Hop into <code>popup.js</code>, and edit line 11 from
-  <code>var QUERY = 'kittens';</code> to read
-  <code>var QUERY = 'puppies';</code>, and save your changes.
-</p>
+  Once you've reloaded the extension, hover over the browser action badge to see
+  the new tooltip!<br>
+  <img src="{{static}}/images/gettingstarted-tooltip-before.png"
+       width="160"
+       height="120"
+       alt="&quot;Getting started example&quot; tooltip.">
 
-<p>
-  If you click on your extension's browser action again, you'll note that your
-  change hasn't yet had an effect. You'll need to let Chrome know that something
-  has happened, either explicitly by going back to the extension page
-  (<strong>chrome://extensions</strong>, or
-  <strong>Tools &gt; Extensions</strong> under the Chrome menu), and clicking
-  <strong>Reload</strong> under your extension, or by reloading the extensions
-  page itself (either via the reload button to the left of the Omnibox, or by
-  hitting F5 or Ctrl-R).
-</p>
-
-<p>
-  Once you've reloaded the extension, click the browser action icon again.
-  Puppies galore!
+  <img src="{{static}}/images/gettingstarted-tooltip-after.png"
+       width="160"
+       height="120"
+       alt="&quot;Click here!&quot; tooltip, after modifying manifest.json and reloading the extension.">
 </p>
 
 <h2 id="next-steps">What next?</h2>
 
 <p>
   You now know about the manifest file's central role in bringing things
-  together, and you've mastered the basics of declaring a browser action, and
-  rendering some kittens (or puppies!) in response to a user's click. That's a
-  great start, and has hopefully gotten you interested enough to explore
-  further. There's a lot more out there to play around with.
+  together, and you've mastered the basics of declaring a browser action.
+  That's a great start, and has hopefully gotten you interested enough to
+  explore further. There's a lot more out there to play around with.
 </p>
 
 <ul>
