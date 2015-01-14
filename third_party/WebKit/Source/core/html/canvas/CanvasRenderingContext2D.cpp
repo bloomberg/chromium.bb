@@ -48,7 +48,6 @@
 #include "core/fetch/ImageResource.h"
 #include "core/frame/ImageBitmap.h"
 #include "core/frame/Settings.h"
-#include "core/frame/UseCounter.h"
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLMediaElement.h"
@@ -767,9 +766,6 @@ void CanvasRenderingContext2D::setGlobalCompositeOperation(const String& operati
     WebBlendMode blendMode = WebBlendModeNormal;
     if (!parseCompositeAndBlendOperator(operation, op, blendMode))
         return;
-    // crbug.com/425628: Count the use of "darker" to remove it.
-    if (op == CompositePlusDarker)
-        UseCounter::count(canvas()->document(), UseCounter::CanvasRenderingContext2DCompositeOperationDarker);
     if ((state().m_globalComposite == op) && (state().m_globalBlend == blendMode))
         return;
     GraphicsContext* c = drawingContext();

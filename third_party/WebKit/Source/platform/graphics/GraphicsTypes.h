@@ -67,9 +67,7 @@ enum CompositeOperator {
     CompositeDestinationOut,
     CompositeDestinationAtop,
     CompositeXOR,
-    CompositePlusDarker,
-    CompositePlusLighter,
-    CompositeDifference
+    CompositePlusLighter
 };
 
 enum ShadowMode {

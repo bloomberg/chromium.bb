@@ -204,7 +204,6 @@ destination-in
 destination-out
 destination-atop
 xor
-plus-darker
 // highlight
 plus-lighter
 //

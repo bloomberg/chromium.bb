@@ -44,7 +44,6 @@ static const char* const compositeOperatorNames[] = {
     "destination-out",
     "destination-atop",
     "xor",
-    "darker",
     "lighter"
 };
 

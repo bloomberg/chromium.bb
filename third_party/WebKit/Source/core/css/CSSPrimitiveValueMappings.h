@@ -348,13 +348,10 @@ template<> inline CSSPrimitiveValue::CSSPrimitiveValue(CompositeOperator e)
     case CompositeXOR:
         m_value.valueID = CSSValueXor;
         break;
-    case CompositePlusDarker:
-        m_value.valueID = CSSValuePlusDarker;
-        break;
     case CompositePlusLighter:
         m_value.valueID = CSSValuePlusLighter;
         break;
-    case CompositeDifference:
+    default:
         ASSERT_NOT_REACHED();
         break;
     }
@@ -386,8 +383,6 @@ template<> inline CSSPrimitiveValue::operator CompositeOperator() const
         return CompositeDestinationAtop;
     case CSSValueXor:
         return CompositeXOR;
-    case CSSValuePlusDarker:
-        return CompositePlusDarker;
     case CSSValuePlusLighter:
         return CompositePlusLighter;
     default:

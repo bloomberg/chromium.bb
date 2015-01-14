@@ -54,7 +54,6 @@ static const struct CompositOpToXfermodeMode {
     { CompositeDestinationOut,  SkXfermode::kDstOut_Mode },
     { CompositeDestinationAtop, SkXfermode::kDstATop_Mode },
     { CompositeXOR,             SkXfermode::kXor_Mode },
-    { CompositePlusDarker,      SkXfermode::kDarken_Mode },
     { CompositePlusLighter,     SkXfermode::kPlus_Mode }
 };
 
