@@ -93,7 +93,7 @@ ProvidedFileSystem::ProvidedFileSystem(
 ProvidedFileSystem::~ProvidedFileSystem() {
   const std::vector<int> request_ids = request_manager_->GetActiveRequestIds();
   for (size_t i = 0; i < request_ids.size(); ++i) {
-    Abort(request_ids[i], base::Bind(&EmptyStatusCallback));
+    Abort(request_ids[i]);
   }
 }
 
@@ -557,20 +557,16 @@ base::WeakPtr<ProvidedFileSystemInterface> ProvidedFileSystem::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 
-void ProvidedFileSystem::Abort(
-    int operation_request_id,
-    const storage::AsyncFileUtil::StatusCallback& callback) {
+void ProvidedFileSystem::Abort(int operation_request_id) {
   request_manager_->RejectRequest(operation_request_id,
                                   make_scoped_ptr(new RequestValue()),
                                   base::File::FILE_ERROR_ABORT);
   if (!request_manager_->CreateRequest(
           ABORT,
-          scoped_ptr<RequestManager::HandlerInterface>(
-              new operations::Abort(event_router_,
-                                    file_system_info_,
-                                    operation_request_id,
-                                    callback)))) {
-    callback.Run(base::File::FILE_ERROR_SECURITY);
+          scoped_ptr<RequestManager::HandlerInterface>(new operations::Abort(
+              event_router_, file_system_info_, operation_request_id,
+              base::Bind(&EmptyStatusCallback))))) {
+    LOG(ERROR) << "Failed to create an abort request.";
   }
 }
 

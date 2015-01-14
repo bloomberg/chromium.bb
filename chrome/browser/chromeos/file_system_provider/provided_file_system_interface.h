@@ -57,7 +57,8 @@ struct EntryMetadata {
 // and clients. All of the request methods return an abort callback in order to
 // terminate it while running. They must be called on the same thread as the
 // request methods. The cancellation callback may be null if the operation
-// fails synchronously.
+// fails synchronously. It must not be called once the operation is completed
+// with either a success or an error.
 class ProvidedFileSystemInterface {
  public:
   struct Change;

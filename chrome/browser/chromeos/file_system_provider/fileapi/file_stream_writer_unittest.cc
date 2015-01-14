@@ -187,6 +187,22 @@ TEST_F(FileSystemProviderFileStreamWriter, Cancel) {
   EXPECT_EQ(net::OK, cancel_log[0]);
 }
 
+TEST_F(FileSystemProviderFileStreamWriter, Cancel_NotRunning) {
+  std::vector<int> write_log;
+
+  const int64 initial_offset = 0;
+  FileStreamWriter writer(file_url_, initial_offset);
+  scoped_refptr<net::IOBuffer> io_buffer(new net::StringIOBuffer(kTextToWrite));
+
+  std::vector<int> cancel_log;
+  const int cancel_result = writer.Cancel(base::Bind(&LogValue, &cancel_log));
+  EXPECT_EQ(net::ERR_UNEXPECTED, cancel_result);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(0u, write_log.size());
+  EXPECT_EQ(0u, cancel_log.size());  // Result returned synchronously.
+}
+
 TEST_F(FileSystemProviderFileStreamWriter, Write_WrongFile) {
   std::vector<int> write_log;
 

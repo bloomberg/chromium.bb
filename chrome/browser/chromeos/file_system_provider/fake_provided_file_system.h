@@ -173,14 +173,12 @@ class FakeProvidedFileSystem : public ProvidedFileSystemInterface {
 
   // Aborts a request. |task_id| refers to a posted callback returning a
   // response for the operation, which will be cancelled, hence not called.
-  void Abort(int task_id,
-             const storage::AsyncFileUtil::StatusCallback& callback);
+  void Abort(int task_id);
 
   // Aborts a request. |task_ids| refers to a vector of posted callbacks
   // returning a response for the operation, which will be cancelled, hence not
   // called.
-  void AbortMany(const std::vector<int>& task_ids,
-                 const storage::AsyncFileUtil::StatusCallback& callback);
+  void AbortMany(const std::vector<int>& task_ids);
 
   ProvidedFileSystemInfo file_system_info_;
   Entries entries_;

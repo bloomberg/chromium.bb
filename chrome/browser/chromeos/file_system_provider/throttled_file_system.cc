@@ -57,7 +57,7 @@ AbortCallback ThrottledFileSystem::OpenFile(const base::FilePath& file_path,
                                             OpenFileMode mode,
                                             const OpenFileCallback& callback) {
   const size_t task_token = open_queue_->NewToken();
-  return open_queue_->Enqueue(
+  open_queue_->Enqueue(
       task_token,
       base::Bind(
           &ProvidedFileSystemInterface::OpenFile,
@@ -65,6 +65,8 @@ AbortCallback ThrottledFileSystem::OpenFile(const base::FilePath& file_path,
           file_path, mode,
           base::Bind(&ThrottledFileSystem::OnOpenFileCompleted,
                      weak_ptr_factory_.GetWeakPtr(), task_token, callback)));
+  return base::Bind(&ThrottledFileSystem::Abort, weak_ptr_factory_.GetWeakPtr(),
+                    task_token);
 }
 
 AbortCallback ThrottledFileSystem::CloseFile(
@@ -179,6 +181,10 @@ void ThrottledFileSystem::Notify(
 
 base::WeakPtr<ProvidedFileSystemInterface> ThrottledFileSystem::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
+}
+
+void ThrottledFileSystem::Abort(int queue_token) {
+  open_queue_->Abort(queue_token);
 }
 
 void ThrottledFileSystem::OnOpenFileCompleted(int queue_token,

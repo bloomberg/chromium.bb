@@ -122,6 +122,9 @@ class ThrottledFileSystem : public ProvidedFileSystemInterface {
   virtual base::WeakPtr<ProvidedFileSystemInterface> GetWeakPtr() override;
 
  private:
+  // Called when an operation enqueued with |queue_token| is aborted.
+  void Abort(int queue_token);
+
   // Called when opening a file is completed with either a success or an error.
   void OnOpenFileCompleted(int queue_token,
                            const OpenFileCallback& callback,

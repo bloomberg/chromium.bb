@@ -389,20 +389,14 @@ AbortCallback FakeProvidedFileSystem::PostAbortableTask(
       &FakeProvidedFileSystem::Abort, weak_ptr_factory_.GetWeakPtr(), task_id);
 }
 
-void FakeProvidedFileSystem::Abort(
-    int task_id,
-    const storage::AsyncFileUtil::StatusCallback& callback) {
+void FakeProvidedFileSystem::Abort(int task_id) {
   tracker_.TryCancel(task_id);
-  callback.Run(base::File::FILE_OK);
 }
 
-void FakeProvidedFileSystem::AbortMany(
-    const std::vector<int>& task_ids,
-    const storage::AsyncFileUtil::StatusCallback& callback) {
+void FakeProvidedFileSystem::AbortMany(const std::vector<int>& task_ids) {
   for (size_t i = 0; i < task_ids.size(); ++i) {
     tracker_.TryCancel(task_ids[i]);
   }
-  callback.Run(base::File::FILE_OK);
 }
 
 }  // namespace file_system_provider

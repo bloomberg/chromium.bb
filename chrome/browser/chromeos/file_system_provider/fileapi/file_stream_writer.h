@@ -40,7 +40,7 @@ class FileStreamWriter : public storage::FileStreamWriter {
   class OperationRunner;
 
   // State of the file stream writer.
-  enum State { NOT_INITIALIZED, INITIALIZING, INITIALIZED, FAILED };
+  enum State { NOT_INITIALIZED, INITIALIZING, INITIALIZED, EXECUTING, FAILED };
 
   // Called when OperationRunner::WriteOnUIThread is completed.
   void OnWriteFileCompleted(int buffer_length,
@@ -50,11 +50,6 @@ class FileStreamWriter : public storage::FileStreamWriter {
   // Called when Write() operation is completed with either a success or an
   // error.
   void OnWriteCompleted(net::CompletionCallback callback, int result);
-
-  // Called when Abort() operation is completed with either a success or an
-  // error.
-  void OnAbortCompleted(const net::CompletionCallback& callback,
-                        base::File::Error result);
 
   // Initializes the writer by opening the file. When completed with success,
   // runs the |pending_closure|. Otherwise, calls the |error_callback|.

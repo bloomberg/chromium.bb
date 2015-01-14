@@ -44,6 +44,7 @@ class FileStreamReader::OperationRunner
       const storage::FileSystemURL& url,
       const storage::AsyncFileUtil::StatusCallback& callback) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    DCHECK(abort_callback_.is_null());
 
     util::FileSystemURLParser parser(url);
     if (!parser.Parse()) {
@@ -67,6 +68,8 @@ class FileStreamReader::OperationRunner
   // Must be called on UI thread.
   void CloseFileOnUIThread() {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    DCHECK(abort_callback_.is_null());
+
     if (file_system_.get() && file_handle_ != -1) {
       // Closing a file must not be aborted, since we could end up on files
       // which are never closed.
@@ -84,6 +87,7 @@ class FileStreamReader::OperationRunner
       int length,
       const ProvidedFileSystemInterface::ReadChunkReceivedCallback& callback) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    DCHECK(abort_callback_.is_null());
 
     // If the file system got unmounted, then abort the reading operation.
     if (!file_system_.get()) {
@@ -109,6 +113,7 @@ class FileStreamReader::OperationRunner
   void GetMetadataOnUIThread(
       const ProvidedFileSystemInterface::GetMetadataCallback& callback) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    DCHECK(abort_callback_.is_null());
 
     // If the file system got unmounted, then abort the get length operation.
     if (!file_system_.get()) {
@@ -130,22 +135,14 @@ class FileStreamReader::OperationRunner
   }
 
   // Aborts the most recent operation (if exists), and calls the callback.
-  void AbortOnUIThread(const storage::AsyncFileUtil::StatusCallback& callback) {
+  void AbortOnUIThread() {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-    if (abort_callback_.is_null()) {
-      // No operation to be cancelled. At most a callback call, which will be
-      // discarded.
-      BrowserThread::PostTask(BrowserThread::IO,
-                              FROM_HERE,
-                              base::Bind(callback, base::File::FILE_OK));
+    if (abort_callback_.is_null())
       return;
-    }
 
     const AbortCallback last_abort_callback = abort_callback_;
     abort_callback_ = AbortCallback();
-    last_abort_callback.Run(base::Bind(
-        &OperationRunner::OnAbortCompletedOnUIThread, this, callback));
+    last_abort_callback.Run();
   }
 
  private:
@@ -160,6 +157,7 @@ class FileStreamReader::OperationRunner
       int file_handle,
       base::File::Error result) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    abort_callback_ = AbortCallback();
 
     if (result == base::File::FILE_OK)
       file_handle_ = file_handle;
@@ -174,6 +172,8 @@ class FileStreamReader::OperationRunner
       scoped_ptr<EntryMetadata> metadata,
       base::File::Error result) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    abort_callback_ = AbortCallback();
+
     BrowserThread::PostTask(
         BrowserThread::IO,
         FROM_HERE,
@@ -188,19 +188,13 @@ class FileStreamReader::OperationRunner
       bool has_more,
       base::File::Error result) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    if (!has_more)
+      abort_callback_ = AbortCallback();
+
     BrowserThread::PostTask(
         BrowserThread::IO,
         FROM_HERE,
         base::Bind(chunk_received_callback, chunk_length, has_more, result));
-  }
-
-  // Forwards a response of aborting an operation to the IO thread.
-  void OnAbortCompletedOnUIThread(
-      const storage::AsyncFileUtil::StatusCallback& callback,
-      base::File::Error result) {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE, base::Bind(callback, result));
   }
 
   AbortCallback abort_callback_;
@@ -227,11 +221,9 @@ FileStreamReader::FileStreamReader(storage::FileSystemContext* context,
 FileStreamReader::~FileStreamReader() {
   // FileStreamReader doesn't have a Cancel() method like in FileStreamWriter.
   // Therefore, aborting is done from the destructor.
-  BrowserThread::PostTask(BrowserThread::UI,
-                          FROM_HERE,
-                          base::Bind(&OperationRunner::AbortOnUIThread,
-                                     runner_,
-                                     base::Bind(&EmptyStatusCallback)));
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&OperationRunner::AbortOnUIThread, runner_));
 
   BrowserThread::PostTask(
       BrowserThread::UI,

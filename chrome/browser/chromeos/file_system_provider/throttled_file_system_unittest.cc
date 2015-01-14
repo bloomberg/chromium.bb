@@ -156,21 +156,7 @@ TEST_F(FileSystemProviderThrottledFileSystemTest, AbortAfterRun) {
   ASSERT_EQ(1u, first_open_log.size());
   EXPECT_EQ(base::File::FILE_OK, first_open_log[0].second);
   EXPECT_EQ(0u, second_open_log.size());
-
-  // The first file is opened, so the opening operation has completed, then
-  // aborting it should result in an error. This is tested, as from the queue
-  // point of view, the opening task stays in the queue until closing the file.
-  StatusLog abort_log;
-  abort_callback.Run(base::Bind(&LogStatus, &abort_log));
-  base::RunLoop().RunUntilIdle();
-
-  ASSERT_EQ(1u, abort_log.size());
-  EXPECT_EQ(base::File::FILE_ERROR_INVALID_OPERATION, abort_log[0]);
-
-  // Confirm, that the second task is not executed after a invalid abort of the
-  // first one.
-  EXPECT_EQ(1u, first_open_log.size());
-  EXPECT_EQ(0u, second_open_log.size());
 }
+
 }  // namespace file_system_provider
 }  // namespace chromeos

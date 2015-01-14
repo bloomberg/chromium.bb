@@ -11,8 +11,7 @@
 namespace chromeos {
 namespace file_system_provider {
 
-typedef base::Callback<void(
-    const storage::AsyncFileUtil::StatusCallback& callback)> AbortCallback;
+typedef base::Closure AbortCallback;
 
 }  // namespace file_system_provider
 }  // namespace chromeos

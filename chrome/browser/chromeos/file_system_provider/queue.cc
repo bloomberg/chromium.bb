@@ -12,11 +12,11 @@
 namespace chromeos {
 namespace file_system_provider {
 
-Queue::Task::Task() : token(0), completed(false) {
+Queue::Task::Task() : token(0) {
 }
 
 Queue::Task::Task(size_t token, const AbortableCallback& callback)
-    : token(token), completed(false), callback(callback) {
+    : token(token), callback(callback) {
 }
 
 Queue::Task::~Task() {
@@ -36,10 +36,9 @@ size_t Queue::NewToken() {
   return next_token_++;
 }
 
-AbortCallback Queue::Enqueue(size_t token, const AbortableCallback& callback) {
+void Queue::Enqueue(size_t token, const AbortableCallback& callback) {
 #if !NDEBUG
-  const auto it = executed_.find(token);
-  DCHECK(it == executed_.end());
+  DCHECK(executed_.find(token) == executed_.end());
   for (auto& task : pending_) {
     DCHECK(token != task.token);
   }
@@ -47,20 +46,30 @@ AbortCallback Queue::Enqueue(size_t token, const AbortableCallback& callback) {
   pending_.push_back(Task(token, callback));
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&Queue::MaybeRun, weak_ptr_factory_.GetWeakPtr()));
-  return base::Bind(&Queue::Abort, weak_ptr_factory_.GetWeakPtr(), token);
 }
 
 void Queue::Complete(size_t token) {
   const auto it = executed_.find(token);
-  DCHECK(it != executed_.end() && !it->second.completed);
-  it->second.completed = true;
+  DCHECK(it != executed_.end());
+  completed_[token] = it->second;
+  executed_.erase(it);
 }
 
 void Queue::Remove(size_t token) {
-  const auto it = executed_.find(token);
-  DCHECK(it != executed_.end() && it->second.completed);
+  const auto it = completed_.find(token);
+  if (it != completed_.end()) {
+    completed_.erase(it);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::Bind(&Queue::MaybeRun, weak_ptr_factory_.GetWeakPtr()));
+    return;
+  }
 
-  executed_.erase(it);
+  // If not completed, then it must have been aborted.
+  const auto aborted_it = aborted_.find(token);
+  DCHECK(aborted_it != aborted_.end());
+  aborted_.erase(aborted_it);
+
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&Queue::MaybeRun, weak_ptr_factory_.GetWeakPtr()));
 }
@@ -78,20 +87,15 @@ void Queue::MaybeRun() {
   executed_[task.token].abort_callback = task.callback.Run();
 }
 
-void Queue::Abort(size_t token,
-                  const storage::AsyncFileUtil::StatusCallback& callback) {
+void Queue::Abort(size_t token) {
   // Check if it's running.
   const auto it = executed_.find(token);
   if (it != executed_.end()) {
-    const Task& task = it->second;
-    // If the task is marked as completed, then it's impossible to abort it.
-    if (task.completed) {
-      callback.Run(base::File::FILE_ERROR_INVALID_OPERATION);
-      return;
-    }
-    DCHECK(!task.abort_callback.is_null());
-    it->second.abort_callback.Run(callback);
+    Task task = it->second;
+    aborted_[token] = task;
     executed_.erase(it);
+    DCHECK(!task.abort_callback.is_null());
+    task.abort_callback.Run();
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&Queue::MaybeRun, weak_ptr_factory_.GetWeakPtr()));
@@ -101,8 +105,8 @@ void Queue::Abort(size_t token,
   // Aborting not running tasks is linear. TODO(mtomasz): Optimize if feasible.
   for (auto it = pending_.begin(); it != pending_.end(); ++it) {
     if (token == it->token) {
+      aborted_[token] = *it;
       pending_.erase(it);
-      callback.Run(base::File::FILE_OK);
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
           base::Bind(&Queue::MaybeRun, weak_ptr_factory_.GetWeakPtr()));
@@ -110,8 +114,8 @@ void Queue::Abort(size_t token,
     }
   }
 
-  // The task is already removed.
-  callback.Run(base::File::FILE_ERROR_INVALID_OPERATION);
+  // The task is already removed, marked as completed or aborted.
+  NOTREACHED();
 }
 
 }  // namespace file_system_provider
