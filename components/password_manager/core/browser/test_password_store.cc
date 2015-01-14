@@ -45,10 +45,6 @@ bool TestPasswordStore::FormsAreEquivalent(const autofill::PasswordForm& lhs,
       lhs.signon_realm == rhs.signon_realm;
 }
 
-void TestPasswordStore::WrapModificationTask(ModificationTask task) {
-  task.Run();
-}
-
 void TestPasswordStore::GetAutofillableLoginsImpl(
     PasswordStore::GetLoginsRequest* request) {
   for (auto& forms_for_realm : stored_passwords_) {

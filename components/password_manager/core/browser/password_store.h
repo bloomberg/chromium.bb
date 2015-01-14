@@ -275,7 +275,7 @@ class PasswordStore : protected PasswordStoreSync,
   // observers that the password store may have been modified via
   // NotifyLoginsChanged(). Note that there is no guarantee that the called
   // method will actually modify the password store data.
-  virtual void WrapModificationTask(ModificationTask task);
+  void WrapModificationTask(ModificationTask task);
 
   // Temporary specializations of WrapModificationTask for a better stack trace.
   void AddLoginInternal(const autofill::PasswordForm& form);

@@ -50,7 +50,6 @@ class TestPasswordStore : public PasswordStore {
   void GetLoginsImpl(const autofill::PasswordForm& form,
                      PasswordStore::AuthorizationPromptPolicy prompt_policy,
                      const ConsumerCallbackRunner& runner) override;
-  void WrapModificationTask(ModificationTask task) override;
   void GetAutofillableLoginsImpl(
       PasswordStore::GetLoginsRequest* request) override;
 
