@@ -277,9 +277,13 @@ void CloseSuperfluousFds(const base::InjectiveMultimap& saved_mapping) {
   }
 }
 
-bool LaunchProcess(const std::vector<std::string>& argv,
-                   const LaunchOptions& options,
-                   ProcessHandle* process_handle) {
+Process LaunchProcess(const CommandLine& cmdline,
+                      const LaunchOptions& options) {
+  return LaunchProcess(cmdline.argv(), options);
+}
+
+Process LaunchProcess(const std::vector<std::string>& argv,
+                      const LaunchOptions& options) {
   size_t fd_shuffle_size = 0;
   if (options.fds_to_remap) {
     fd_shuffle_size = options.fds_to_remap->size();
@@ -335,7 +339,7 @@ bool LaunchProcess(const std::vector<std::string>& argv,
 
   if (pid < 0) {
     DPLOG(ERROR) << "fork";
-    return false;
+    return Process();
   } else if (pid == 0) {
     // Child process
 
@@ -475,37 +479,9 @@ bool LaunchProcess(const std::vector<std::string>& argv,
       pid_t ret = HANDLE_EINTR(waitpid(pid, 0, 0));
       DPCHECK(ret > 0);
     }
-
-    if (process_handle)
-      *process_handle = pid;
   }
 
-  return true;
-}
-
-Process LaunchProcess(const std::vector<std::string>& argv,
-                      const LaunchOptions& options) {
-  ProcessHandle process_handle;
-  if (LaunchProcess(argv, options, &process_handle))
-    return Process(process_handle);
-
-  return Process();
-}
-
-
-bool LaunchProcess(const CommandLine& cmdline,
-                   const LaunchOptions& options,
-                   ProcessHandle* process_handle) {
-  return LaunchProcess(cmdline.argv(), options, process_handle);
-}
-
-Process LaunchProcess(const CommandLine& cmdline,
-                      const LaunchOptions& options) {
-  ProcessHandle process_handle;
-  if (LaunchProcess(cmdline, options, &process_handle))
-    return Process(process_handle);
-
-  return Process();
+  return Process(pid);
 }
 
 void RaiseProcessToHighPriority() {

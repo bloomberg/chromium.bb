@@ -159,12 +159,6 @@ struct BASE_EXPORT LaunchOptions {
 BASE_EXPORT Process LaunchProcess(const CommandLine& cmdline,
                                   const LaunchOptions& options);
 
-// Deprecated version.
-// TODO(rvargas) crbug.com/417532: Remove this after migrating all consumers.
-BASE_EXPORT bool LaunchProcess(const CommandLine& cmdline,
-                               const LaunchOptions& options,
-                               ProcessHandle* process_handle);
-
 #if defined(OS_WIN)
 // Windows-specific LaunchProcess that takes the command line as a
 // string.  Useful for situations where you need to control the
@@ -194,12 +188,6 @@ BASE_EXPORT Process LaunchElevatedProcess(const CommandLine& cmdline,
 // CommandLine version if launching Chrome itself.
 BASE_EXPORT Process LaunchProcess(const std::vector<std::string>& argv,
                                   const LaunchOptions& options);
-
-// Deprecated version.
-// TODO(rvargas) crbug.com/417532: Remove this after migrating all consumers.
-BASE_EXPORT bool LaunchProcess(const std::vector<std::string>& argv,
-                               const LaunchOptions& options,
-                               ProcessHandle* process_handle);
 
 // Close all file descriptors, except those which are a destination in the
 // given multimap. Only call this function in a child process where you know

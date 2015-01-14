@@ -607,7 +607,7 @@ std::string TestLaunchProcess(const std::vector<std::string>& args,
 #else
   CHECK_EQ(0, clone_flags);
 #endif  // OS_LINUX
-  EXPECT_TRUE(base::LaunchProcess(args, options, NULL));
+  EXPECT_TRUE(base::LaunchProcess(args, options).IsValid());
   PCHECK(IGNORE_EINTR(close(fds[1])) == 0);
 
   char buf[512];
