@@ -100,34 +100,153 @@ CommandLine GetCommandLineForChildGTestProcess(
   return new_cmd_line;
 }
 
-class UnitTestLauncherDelegate : public TestLauncherDelegate {
- public:
-  explicit UnitTestLauncherDelegate(size_t batch_limit, bool use_job_objects)
-      : batch_limit_(batch_limit),
-        use_job_objects_(use_job_objects) {
+bool GetSwitchValueAsInt(const std::string& switch_name, int* result) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switch_name))
+    return true;
+
+  std::string switch_value =
+      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(switch_name);
+  if (!StringToInt(switch_value, result) || *result < 1) {
+    LOG(ERROR) << "Invalid value for " << switch_name << ": " << switch_value;
+    return false;
   }
 
-  ~UnitTestLauncherDelegate() override {
-    DCHECK(thread_checker_.CalledOnValidThread());
+  return true;
+}
+
+int LaunchUnitTestsInternal(const RunTestSuiteCallback& run_test_suite,
+                            int default_jobs,
+                            bool use_job_objects,
+                            const Closure& gtest_init) {
+#if defined(OS_ANDROID)
+  // We can't easily fork on Android, just run the test suite directly.
+  return run_test_suite.Run();
+#else
+  bool force_single_process = false;
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kTestLauncherDebugLauncher)) {
+    fprintf(stdout, "Forcing test launcher debugging mode.\n");
+    fflush(stdout);
+  } else {
+    if (base::debug::BeingDebugged()) {
+      fprintf(stdout,
+              "Debugger detected, switching to single process mode.\n"
+              "Pass --test-launcher-debug-launcher to debug the launcher "
+              "itself.\n");
+      fflush(stdout);
+      force_single_process = true;
+    }
   }
 
- private:
-  struct GTestCallbackState {
-    TestLauncher* test_launcher;
-    std::vector<std::string> test_names;
-    FilePath output_file;
-  };
+  if (CommandLine::ForCurrentProcess()->HasSwitch(kGTestHelpFlag) ||
+      CommandLine::ForCurrentProcess()->HasSwitch(kGTestListTestsFlag) ||
+      CommandLine::ForCurrentProcess()->HasSwitch(kSingleProcessTestsFlag) ||
+      force_single_process) {
+    return run_test_suite.Run();
+  }
+#endif
 
-  bool ShouldRunTest(const std::string& test_case_name,
-                     const std::string& test_name) override {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(kHelpFlag)) {
+    PrintUsage();
+    return 0;
+  }
+
+  base::TimeTicks start_time(base::TimeTicks::Now());
+
+  gtest_init.Run();
+  TestTimeouts::Initialize();
+
+  int batch_limit = kDefaultTestBatchLimit;
+  if (!GetSwitchValueAsInt(switches::kTestLauncherBatchLimit, &batch_limit))
+    return 1;
+
+  fprintf(stdout,
+          "IMPORTANT DEBUGGING NOTE: batches of tests are run inside their\n"
+          "own process. For debugging a test inside a debugger, use the\n"
+          "--gtest_filter=<your_test_name> flag along with\n"
+          "--single-process-tests.\n");
+  fflush(stdout);
+
+  MessageLoopForIO message_loop;
+
+  UnitTestLauncherDelegate delegate(batch_limit, use_job_objects);
+  base::TestLauncher launcher(&delegate, default_jobs);
+  bool success = launcher.Run();
+
+  fprintf(stdout, "Tests took %" PRId64 " seconds.\n",
+          (base::TimeTicks::Now() - start_time).InSeconds());
+  fflush(stdout);
+
+  return (success ? 0 : 1);
+}
+
+void InitGoogleTestChar(int* argc, char** argv) {
+  testing::InitGoogleTest(argc, argv);
+}
+
+#if defined(OS_WIN)
+void InitGoogleTestWChar(int* argc, wchar_t** argv) {
+  testing::InitGoogleTest(argc, argv);
+}
+#endif  // defined(OS_WIN)
+
+}  // namespace
+
+int LaunchUnitTests(int argc,
+                    char** argv,
+                    const RunTestSuiteCallback& run_test_suite) {
+  CommandLine::Init(argc, argv);
+  return LaunchUnitTestsInternal(run_test_suite, SysInfo::NumberOfProcessors(),
+                                 true, Bind(&InitGoogleTestChar, &argc, argv));
+}
+
+int LaunchUnitTestsSerially(int argc,
+                            char** argv,
+                            const RunTestSuiteCallback& run_test_suite) {
+  CommandLine::Init(argc, argv);
+  return LaunchUnitTestsInternal(run_test_suite, 1, true,
+                                 Bind(&InitGoogleTestChar, &argc, argv));
+}
+
+#if defined(OS_WIN)
+int LaunchUnitTests(int argc,
+                    wchar_t** argv,
+                    bool use_job_objects,
+                    const RunTestSuiteCallback& run_test_suite) {
+  // Windows CommandLine::Init ignores argv anyway.
+  CommandLine::Init(argc, NULL);
+  return LaunchUnitTestsInternal(run_test_suite, SysInfo::NumberOfProcessors(),
+                                 use_job_objects,
+                                 Bind(&InitGoogleTestWChar, &argc, argv));
+}
+#endif  // defined(OS_WIN)
+
+UnitTestLauncherDelegate::UnitTestLauncherDelegate(size_t batch_limit,
+                                                   bool use_job_objects)
+    : batch_limit_(batch_limit), use_job_objects_(use_job_objects) {
+}
+
+UnitTestLauncherDelegate::~UnitTestLauncherDelegate() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+}
+
+UnitTestLauncherDelegate::GTestCallbackState::GTestCallbackState() {
+}
+
+UnitTestLauncherDelegate::GTestCallbackState::~GTestCallbackState() {
+}
+
+bool UnitTestLauncherDelegate::ShouldRunTest(const std::string& test_case_name,
+                                             const std::string& test_name) {
     DCHECK(thread_checker_.CalledOnValidThread());
 
     // There is no additional logic to disable specific tests.
     return true;
   }
 
-  size_t RunTests(TestLauncher* test_launcher,
-                  const std::vector<std::string>& test_names) override {
+  size_t UnitTestLauncherDelegate::RunTests(
+      TestLauncher* test_launcher,
+      const std::vector<std::string>& test_names) {
     DCHECK(thread_checker_.CalledOnValidThread());
 
     std::vector<std::string> batch;
@@ -145,8 +264,9 @@ class UnitTestLauncherDelegate : public TestLauncherDelegate {
     return test_names.size();
   }
 
-  size_t RetryTests(TestLauncher* test_launcher,
-                    const std::vector<std::string>& test_names) override {
+  size_t UnitTestLauncherDelegate::RetryTests(
+      TestLauncher* test_launcher,
+      const std::vector<std::string>& test_names) {
     MessageLoop::current()->PostTask(
         FROM_HERE,
         Bind(&UnitTestLauncherDelegate::RunSerially,
@@ -156,8 +276,9 @@ class UnitTestLauncherDelegate : public TestLauncherDelegate {
     return test_names.size();
   }
 
-  void RunSerially(TestLauncher* test_launcher,
-                   const std::vector<std::string>& test_names) {
+  void UnitTestLauncherDelegate::RunSerially(
+      TestLauncher* test_launcher,
+      const std::vector<std::string>& test_names) {
     if (test_names.empty())
       return;
 
@@ -193,8 +314,9 @@ class UnitTestLauncherDelegate : public TestLauncherDelegate {
              new_test_names));
   }
 
-  void RunBatch(TestLauncher* test_launcher,
-                const std::vector<std::string>& test_names) {
+  void UnitTestLauncherDelegate::RunBatch(
+      TestLauncher* test_launcher,
+      const std::vector<std::string>& test_names) {
     DCHECK(thread_checker_.CalledOnValidThread());
 
     if (test_names.empty())
@@ -234,11 +356,12 @@ class UnitTestLauncherDelegate : public TestLauncherDelegate {
              callback_state));
   }
 
-  void GTestCallback(const GTestCallbackState& callback_state,
-                     int exit_code,
-                     const TimeDelta& elapsed_time,
-                     bool was_timeout,
-                     const std::string& output) {
+  void UnitTestLauncherDelegate::GTestCallback(
+      const GTestCallbackState& callback_state,
+      int exit_code,
+      const TimeDelta& elapsed_time,
+      bool was_timeout,
+      const std::string& output) {
     DCHECK(thread_checker_.CalledOnValidThread());
     std::vector<std::string> tests_to_relaunch;
     ProcessTestResults(callback_state.test_launcher,
@@ -262,12 +385,13 @@ class UnitTestLauncherDelegate : public TestLauncherDelegate {
     DeleteFile(callback_state.output_file.DirName(), true);
   }
 
-  void SerialGTestCallback(const GTestCallbackState& callback_state,
-                           const std::vector<std::string>& test_names,
-                           int exit_code,
-                           const TimeDelta& elapsed_time,
-                           bool was_timeout,
-                           const std::string& output) {
+  void UnitTestLauncherDelegate::SerialGTestCallback(
+      const GTestCallbackState& callback_state,
+      const std::vector<std::string>& test_names,
+      int exit_code,
+      const TimeDelta& elapsed_time,
+      bool was_timeout,
+      const std::string& output) {
     DCHECK(thread_checker_.CalledOnValidThread());
     std::vector<std::string> tests_to_relaunch;
     bool called_any_callbacks =
@@ -297,7 +421,8 @@ class UnitTestLauncherDelegate : public TestLauncherDelegate {
              test_names));
   }
 
-  static bool ProcessTestResults(
+  // static
+  bool UnitTestLauncherDelegate::ProcessTestResults(
       TestLauncher* test_launcher,
       const std::vector<std::string>& test_names,
       const base::FilePath& output_file,
@@ -433,144 +558,5 @@ class UnitTestLauncherDelegate : public TestLauncherDelegate {
 
     return called_any_callback;
   }
-
-  ThreadChecker thread_checker_;
-
-  // Maximum number of tests to run in a single batch.
-  size_t batch_limit_;
-
-  // Determines whether we use job objects on Windows.
-  bool use_job_objects_;
-};
-
-bool GetSwitchValueAsInt(const std::string& switch_name, int* result) {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switch_name))
-    return true;
-
-  std::string switch_value =
-      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(switch_name);
-  if (!StringToInt(switch_value, result) || *result < 1) {
-    LOG(ERROR) << "Invalid value for " << switch_name << ": " << switch_value;
-    return false;
-  }
-
-  return true;
-}
-
-int LaunchUnitTestsInternal(const RunTestSuiteCallback& run_test_suite,
-                            int default_jobs,
-                            bool use_job_objects,
-                            const Closure& gtest_init) {
-#if defined(OS_ANDROID)
-  // We can't easily fork on Android, just run the test suite directly.
-  return run_test_suite.Run();
-#else
-  bool force_single_process = false;
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kTestLauncherDebugLauncher)) {
-    fprintf(stdout, "Forcing test launcher debugging mode.\n");
-    fflush(stdout);
-  } else {
-    if (base::debug::BeingDebugged()) {
-      fprintf(stdout,
-              "Debugger detected, switching to single process mode.\n"
-              "Pass --test-launcher-debug-launcher to debug the launcher "
-              "itself.\n");
-      fflush(stdout);
-      force_single_process = true;
-    }
-  }
-
-  if (CommandLine::ForCurrentProcess()->HasSwitch(kGTestHelpFlag) ||
-      CommandLine::ForCurrentProcess()->HasSwitch(kGTestListTestsFlag) ||
-      CommandLine::ForCurrentProcess()->HasSwitch(kSingleProcessTestsFlag) ||
-      force_single_process) {
-    return run_test_suite.Run();
-  }
-#endif
-
-  if (CommandLine::ForCurrentProcess()->HasSwitch(kHelpFlag)) {
-    PrintUsage();
-    return 0;
-  }
-
-  base::TimeTicks start_time(base::TimeTicks::Now());
-
-  gtest_init.Run();
-  TestTimeouts::Initialize();
-
-  int batch_limit = kDefaultTestBatchLimit;
-  if (!GetSwitchValueAsInt(switches::kTestLauncherBatchLimit, &batch_limit))
-    return 1;
-
-  fprintf(stdout,
-          "IMPORTANT DEBUGGING NOTE: batches of tests are run inside their\n"
-          "own process. For debugging a test inside a debugger, use the\n"
-          "--gtest_filter=<your_test_name> flag along with\n"
-          "--single-process-tests.\n");
-  fflush(stdout);
-
-  MessageLoopForIO message_loop;
-
-  UnitTestLauncherDelegate delegate(batch_limit, use_job_objects);
-  base::TestLauncher launcher(&delegate, default_jobs);
-  bool success = launcher.Run();
-
-  fprintf(stdout,
-          "Tests took %" PRId64 " seconds.\n",
-          (base::TimeTicks::Now() - start_time).InSeconds());
-  fflush(stdout);
-
-  return (success ? 0 : 1);
-}
-
-void InitGoogleTestChar(int* argc, char** argv) {
-  testing::InitGoogleTest(argc, argv);
-}
-
-#if defined(OS_WIN)
-void InitGoogleTestWChar(int* argc, wchar_t** argv) {
-  testing::InitGoogleTest(argc, argv);
-}
-#endif  // defined(OS_WIN)
-
-}  // namespace
-
-int LaunchUnitTests(int argc,
-                    char** argv,
-                    const RunTestSuiteCallback& run_test_suite) {
-  CommandLine::Init(argc, argv);
-  return LaunchUnitTestsInternal(
-      run_test_suite,
-      SysInfo::NumberOfProcessors(),
-      true,
-      Bind(&InitGoogleTestChar, &argc, argv));
-}
-
-int LaunchUnitTestsSerially(int argc,
-                            char** argv,
-                            const RunTestSuiteCallback& run_test_suite) {
-  CommandLine::Init(argc, argv);
-  return LaunchUnitTestsInternal(
-      run_test_suite,
-      1,
-      true,
-      Bind(&InitGoogleTestChar, &argc, argv));
-}
-
-#if defined(OS_WIN)
-int LaunchUnitTests(int argc,
-                    wchar_t** argv,
-                    bool use_job_objects,
-                    const RunTestSuiteCallback& run_test_suite) {
-  // Windows CommandLine::Init ignores argv anyway.
-  CommandLine::Init(argc, NULL);
-  return LaunchUnitTestsInternal(
-      run_test_suite,
-      SysInfo::NumberOfProcessors(),
-      use_job_objects,
-      Bind(&InitGoogleTestWChar, &argc, argv));
-}
-#endif  // defined(OS_WIN)
 
 }  // namespace base
