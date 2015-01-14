@@ -10,6 +10,7 @@
 #include "base/threading/thread_local_storage.h"
 #include "base/timer/timer.h"
 #include "cc/blink/web_compositor_support_impl.h"
+#include "mojo/services/html_viewer/blink_resource_map.h"
 #include "mojo/services/html_viewer/webmimeregistry_impl.h"
 #include "mojo/services/html_viewer/webthemeengine_impl.h"
 #include "third_party/WebKit/public/platform/Platform.h"
@@ -52,6 +53,7 @@ class BlinkPlatformImpl : public blink::Platform {
   virtual blink::WebScrollbarBehavior* scrollbarBehavior();
   virtual const unsigned char* getTraceCategoryEnabledFlag(
       const char* category_name);
+  virtual blink::WebData loadResource(const char* name);
 
  private:
   void SuspendSharedTimer();
@@ -75,6 +77,7 @@ class BlinkPlatformImpl : public blink::Platform {
   WebThemeEngineImpl theme_engine_;
   WebMimeRegistryImpl mime_registry_;
   blink::WebScrollbarBehavior scrollbar_behavior_;
+  BlinkResourceMap blink_resource_map_;
 
   DISALLOW_COPY_AND_ASSIGN(BlinkPlatformImpl);
 };

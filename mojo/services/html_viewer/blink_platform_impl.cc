@@ -11,6 +11,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
+#include "mojo/services/html_viewer/blink_resource_constants.h"
 #include "mojo/services/html_viewer/webthread_impl.h"
 #include "net/base/data_url.h"
 #include "net/base/mime_util.h"
@@ -141,6 +142,20 @@ const unsigned char* BlinkPlatformImpl::getTraceCategoryEnabledFlag(
     const char* category_name) {
   static const unsigned char buf[] = "*";
   return buf;
+}
+
+blink::WebData BlinkPlatformImpl::loadResource(const char* resource) {
+  for (size_t i = 0; i < arraysize(kDataResources); ++i) {
+    if (!strcmp(resource, kDataResources[i].name)) {
+      int length;
+      const char* data =
+          blink_resource_map_.GetResource(kDataResources[i].id, &length);
+      CHECK(data != nullptr && length > 0);
+      return blink::WebData(data, length);
+    }
+  }
+  NOTREACHED() << "Requested resource is unavailable!";
+  return blink::WebData();
 }
 
 blink::WebURLLoader* BlinkPlatformImpl::createURLLoader() {

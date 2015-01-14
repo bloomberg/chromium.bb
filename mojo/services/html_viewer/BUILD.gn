@@ -5,8 +5,29 @@
 import("//mojo/public/mojo.gni")
 import("//mojo/public/mojo_application.gni")
 
+action("generate_blink_resource_map") {
+  script = "//mojo/services/html_viewer/generate_blink_resource_map.py"
+  args = [
+    "--pak-file",
+    rebase_path("$root_out_dir/gen/blink/public/resources/blink_resources.pak"),
+    "--header",
+    rebase_path("$target_gen_dir/blink_resource_map.h"),
+    "--cpp",
+    rebase_path("$target_gen_dir/blink_resource_map.cc"),
+  ]
+  outputs = [
+    "$target_gen_dir/blink_resource_map.cc",
+    "$target_gen_dir/blink_resource_map.h",
+  ]
+  public_deps = [
+    "//third_party/WebKit/public:resources",
+  ]
+}
+
 source_set("lib") {
   sources = [
+    "$target_gen_dir/blink_resource_map.cc",
+    "$target_gen_dir/blink_resource_map.h",
     "ax_provider_impl.cc",
     "ax_provider_impl.h",
     "blink_basic_type_converters.cc",
@@ -15,6 +36,7 @@ source_set("lib") {
     "blink_input_events_type_converters.h",
     "blink_platform_impl.cc",
     "blink_platform_impl.h",
+    "blink_resource_constants.h",
     "blink_url_request_type_converters.cc",
     "blink_url_request_type_converters.h",
     "html_document.cc",
@@ -81,6 +103,7 @@ source_set("lib") {
   public_deps = [
     "//mojo/public/cpp/bindings",
     "//third_party/WebKit/public:blink",
+    ":generate_blink_resource_map",
   ]
 }
 
