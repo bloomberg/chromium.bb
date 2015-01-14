@@ -10,6 +10,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
+#include "net/base/completion_callback.h"
 
 using content::BrowserContext;
 using content::BrowserThread;
@@ -35,11 +36,9 @@ void BrowsingDataAppCacheHelper::StartFetching(const base::Closure& callback) {
   }
 
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  appcache_info_callback_.Reset(
-      base::Bind(&BrowsingDataAppCacheHelper::OnFetchComplete,
-                 base::Unretained(this)));
-  appcache_service_->GetAllAppCacheInfo(info_collection_.get(),
-                                        appcache_info_callback_.callback());
+  appcache_service_->GetAllAppCacheInfo(
+      info_collection_.get(),
+      base::Bind(&BrowsingDataAppCacheHelper::OnFetchComplete, this));
 }
 
 void BrowsingDataAppCacheHelper::DeleteAppCacheGroup(
