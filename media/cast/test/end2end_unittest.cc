@@ -1357,6 +1357,16 @@ TEST_F(End2EndTest, BasicFakeSoftwareVideo) {
   EXPECT_EQ(1000ul, video_ticks_.size());
 }
 
+// The following tests run many many iterations to make sure that
+// buffers don't fill, timers don't go askew etc. However, these
+// high-level tests are too expensive in debug mode, so we reduce
+// the iterations in debug mode.
+#if defined(NDEBUG)
+const size_t kLongTestIterations = 10000;
+#else
+const size_t kLongTestIterations = 1000;
+#endif
+
 TEST_F(End2EndTest, ReceiverClockFast) {
   Configure(CODEC_VIDEO_FAKE, CODEC_AUDIO_PCM16, 32000,
             1);
@@ -1364,13 +1374,14 @@ TEST_F(End2EndTest, ReceiverClockFast) {
   StartBasicPlayer();
   SetReceiverSkew(2.0, base::TimeDelta::FromMicroseconds(1234567));
 
-  int frames_counter = 0;
-  for (; frames_counter < 10000; ++frames_counter) {
+  for (size_t frames_counter = 0;
+       frames_counter < kLongTestIterations;
+       ++frames_counter) {
     SendFakeVideoFrame(testing_clock_sender_->NowTicks());
     RunTasks(kFrameTimerMs);
   }
   RunTasks(2 * kFrameTimerMs + 1);  // Empty the pipeline.
-  EXPECT_EQ(10000ul, video_ticks_.size());
+  EXPECT_EQ(kLongTestIterations, video_ticks_.size());
 }
 
 TEST_F(End2EndTest, ReceiverClockSlow) {
@@ -1380,13 +1391,14 @@ TEST_F(End2EndTest, ReceiverClockSlow) {
   StartBasicPlayer();
   SetReceiverSkew(0.5, base::TimeDelta::FromMicroseconds(-765432));
 
-  int frames_counter = 0;
-  for (; frames_counter < 10000; ++frames_counter) {
+  for (size_t frames_counter = 0;
+       frames_counter < kLongTestIterations;
+       ++frames_counter) {
     SendFakeVideoFrame(testing_clock_sender_->NowTicks());
     RunTasks(kFrameTimerMs);
   }
   RunTasks(2 * kFrameTimerMs + 1);  // Empty the pipeline.
-  EXPECT_EQ(10000ul, video_ticks_.size());
+  EXPECT_EQ(kLongTestIterations, video_ticks_.size());
 }
 
 TEST_F(End2EndTest, SmoothPlayoutWithFivePercentClockRateSkew) {
@@ -1402,13 +1414,14 @@ TEST_F(End2EndTest, SmoothPlayoutWithFivePercentClockRateSkew) {
       base::TimeDelta::FromMilliseconds(kFrameTimerMs) * 110 / 100,
       base::TimeDelta::FromMilliseconds(kFrameTimerMs) / 10);
 
-  int frames_counter = 0;
-  for (; frames_counter < 10000; ++frames_counter) {
+  for (size_t frames_counter = 0;
+       frames_counter < kLongTestIterations;
+       ++frames_counter) {
     SendFakeVideoFrame(testing_clock_sender_->NowTicks());
     RunTasks(kFrameTimerMs);
   }
   RunTasks(2 * kFrameTimerMs + 1);  // Empty the pipeline.
-  EXPECT_EQ(10000ul, video_ticks_.size());
+  EXPECT_EQ(kLongTestIterations, video_ticks_.size());
 }
 
 TEST_F(End2EndTest, EvilNetwork) {
@@ -1419,16 +1432,16 @@ TEST_F(End2EndTest, EvilNetwork) {
   Create();
   StartBasicPlayer();
 
-  int frames_counter = 0;
-  for (; frames_counter < 10000; ++frames_counter) {
+  for (size_t frames_counter = 0;
+       frames_counter < kLongTestIterations;
+       ++frames_counter) {
     SendFakeVideoFrame(testing_clock_sender_->NowTicks());
     RunTasks(kFrameTimerMs);
   }
   base::TimeTicks test_end = testing_clock_receiver_->NowTicks();
   RunTasks(100 * kFrameTimerMs + 1);  // Empty the pipeline.
-  EXPECT_GT(video_ticks_.size(), 100ul);
-  VLOG(1) << "Fully transmitted " << video_ticks_.size()
-          << " out of 10000 frames.";
+  EXPECT_GT(video_ticks_.size(), kLongTestIterations / 100);
+  VLOG(1) << "Fully transmitted " << video_ticks_.size() << " frames.";
   EXPECT_LT((video_ticks_.back().second - test_end).InMilliseconds(), 1000);
 }
 
@@ -1442,22 +1455,21 @@ TEST_F(End2EndTest, ShoveHighFrameRateDownYerThroat) {
   Create();
   StartBasicPlayer();
 
-  int frames_counter = 0;
-  for (; frames_counter < 10000; ++frames_counter) {
+  for (size_t frames_counter = 0;
+       frames_counter < kLongTestIterations;
+       ++frames_counter) {
     SendFakeVideoFrame(testing_clock_sender_->NowTicks());
     RunTasks(10 /* 10 ms, but 33.3 expected by system */);
   }
   base::TimeTicks test_end = testing_clock_receiver_->NowTicks();
   RunTasks(100 * kFrameTimerMs + 1);  // Empty the pipeline.
-  EXPECT_LT(100ul, video_ticks_.size());
-  EXPECT_GE(3334ul, video_ticks_.size());
-  VLOG(1) << "Fully transmitted " << video_ticks_.size()
-          << " out of 10000 frames.";
+  EXPECT_LT(kLongTestIterations / 100, video_ticks_.size());
+  EXPECT_GE(kLongTestIterations / 3, video_ticks_.size());
+  VLOG(1) << "Fully transmitted " << video_ticks_.size() << " frames.";
   EXPECT_LT((video_ticks_.back().second - test_end).InMilliseconds(), 1000);
 }
 
-// Disabled due to flake: http://crbug.com/448511
-TEST_F(End2EndTest, DISABLED_OldPacketNetwork) {
+TEST_F(End2EndTest, OldPacketNetwork) {
   Configure(CODEC_VIDEO_FAKE, CODEC_AUDIO_PCM16, 32000, 1);
   sender_to_receiver_.SetPacketPipe(test::NewRandomDrop(0.01));
   scoped_ptr<test::PacketPipe> echo_chamber(
@@ -1480,14 +1492,15 @@ TEST_F(End2EndTest, DISABLED_OldPacketNetwork) {
       base::TimeDelta::FromMilliseconds(kFrameTimerMs) * 110 / 100,
       base::TimeDelta::FromMilliseconds(kFrameTimerMs) / 10);
 
-  int frames_counter = 0;
-  for (; frames_counter < 10000; ++frames_counter) {
+  for (size_t frames_counter = 0;
+       frames_counter < kLongTestIterations;
+       ++frames_counter) {
     SendFakeVideoFrame(testing_clock_sender_->NowTicks());
     RunTasks(kFrameTimerMs);
   }
   RunTasks(100 * kFrameTimerMs + 1);  // Empty the pipeline.
 
-  EXPECT_EQ(10000ul, video_ticks_.size());
+  EXPECT_EQ(kLongTestIterations, video_ticks_.size());
 }
 
 TEST_F(End2EndTest, TestSetPlayoutDelay) {
