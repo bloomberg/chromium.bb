@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.cookies;
 
+import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
@@ -28,27 +29,29 @@ import javax.crypto.CipherInputStream;
 import javax.crypto.CipherOutputStream;
 
 /**
- * Responsible for fetching, (de)serializing and restoring cookies between the
- * CookieJar and an encrypted file storage.
+ * Responsible for fetching, (de)serializing, and restoring cookies between the CookieJar and an
+ * encrypted file storage.
  */
 public class CookiesFetcher {
     /** The default file name for the encrypted cookies storage. */
-    public static final String DEFAULT_COOKIE_FILE_NAME = "COOKIES.DAT";
+    private static final String DEFAULT_COOKIE_FILE_NAME = "COOKIES.DAT";
 
-    public static final String TAG = "CookiesFetcher";
+    /** Used for logging. */
+    private static final String TAG = "CookiesFetcher";
 
-    // To make sure the current decipher key matches the one from
-    // before. Otherwise, we end up restoring some garbage data on a stale
-    // file.
-    // TODO(acleung): May be use real cryptographic integrity checks on the
-    // whole file instead.
+    /**
+     * Used to confirm that the current cipher key matches the previously used cipher key when
+     * restoring data.  If this value cannot be read from the file, the file is likely garbage.
+     * TODO(acleung): May be use real cryptographic integrity checks on the whole file, instead.
+     */
     private static final String MAGIC_STRING = "c0Ok135";
 
-    // Full path of the file that we are fetching / loading
-    // cookies from.
+    /** Full path of the file that we are fetching/loading cookies from. */
     private final String mFileName;
 
+    /** Native-side pointer. */
     private final long mNativeCookiesFetcher;
+
     private final CleanupReference mCleanupReference;
 
     /**
@@ -62,71 +65,51 @@ public class CookiesFetcher {
      * counter part will hold a strong reference to this Java class so the GC
      * would not collect it until the callback has been invoked.
      */
-    private CookiesFetcher(String filename) {
+    private CookiesFetcher(Context context) {
         mNativeCookiesFetcher = nativeInit();
-        mFileName = filename;
-        mCleanupReference = new CleanupReference(this,
-                new DestroyRunnable(mNativeCookiesFetcher));
+        mFileName = context.getFileStreamPath(DEFAULT_COOKIE_FILE_NAME).getAbsolutePath();
+        mCleanupReference = new CleanupReference(this, new DestroyRunnable(mNativeCookiesFetcher));
     }
 
     /**
-     * Asynchronously fetches cookies from the incognito profile and saving
-     * it to file specified in the constructor.
+     * Asynchronously fetches cookies from the incognito profile and saves them to a file.
      *
-     * @param filename Full path of the file.
+     * @param context Context for accessing the file system.
      */
-    public static void fetchFromCookieJar(String filename) {
+    public static void persistCookies(Context context) {
         try {
-            new CookiesFetcher(filename).fetchFromCookieJarInternal();
+            new CookiesFetcher(context).persistCookiesInternal();
         } catch (RuntimeException e) {
             e.printStackTrace();
         }
     }
 
-    private void fetchFromCookieJarInternal() {
-        nativeFetchFromCookieJar(mNativeCookiesFetcher);
+    private void persistCookiesInternal() {
+        nativePersistCookies(mNativeCookiesFetcher);
     }
 
     /**
-     * Synchronously fetches cookies from the file specified and populating
-     * the incognito profile with it.
+     * If an incognito profile exists, synchronously fetch cookies from the file specified and
+     * populate the incognito profile with it.  Otherwise deletes the file and does not restore the
+     * cookies.
      *
-     * @param filename Full path of the file.
+     * @param context Context for accessing the file system.
      */
-    public static void restoreToCookieJar(String filename) {
+    public static void restoreCookies(Context context) {
         try {
-            CookiesFetcher fetcher = new CookiesFetcher(filename);
-            if (deleteCookieJarIfNecessary(filename)) return;
-            fetcher.restoreToCookieJarInternal();
+            CookiesFetcher fetcher = new CookiesFetcher(context);
+            if (deleteCookiesIfNecessary(context)) return;
+            fetcher.restoreCookiesInternal();
         } catch (RuntimeException e) {
             e.printStackTrace();
         }
     }
 
-    /**
-     * Ensure the incognito cookies are deleted when the incognito profile is gone.
-     *
-     * @param filename Full path of the file.
-     * @return Whether or not the cookies were deleted.
-     */
-    public static boolean deleteCookieJarIfNecessary(String filename) {
-        try {
-            CookiesFetcher fetcher = new CookiesFetcher(filename);
-            if (Profile.getLastUsedProfile().hasOffTheRecordProfile()) return false;
-            fetcher.scheduleDeleteCookiesFile();
-        } catch (RuntimeException e) {
-            e.printStackTrace();
-            return false;
-        }
-        return true;
-    }
-
-    private void restoreToCookieJarInternal() {
-        // Use an AsyncTask to read the cookies from disk to avoid strict
-        // mode violations.
+    private void restoreCookiesInternal() {
         new AsyncTask<Void, Void, List<CanonicalCookie>>() {
             @Override
             protected List<CanonicalCookie> doInBackground(Void... voids) {
+                // Read cookies from disk on a background thread to avoid strict mode violations.
                 ArrayList<CanonicalCookie> cookies = new ArrayList<CanonicalCookie>();
                 DataInputStream in = null;
                 try {
@@ -177,10 +160,9 @@ public class CookiesFetcher {
 
             @Override
             protected void onPostExecute(List<CanonicalCookie> cookies) {
-                // onPostExecute is back on the UI thread. We can only access
-                // cookies and profiles on the UI thread.
+                // We can only access cookies and profiles on the UI thread.
                 for (CanonicalCookie cookie : cookies) {
-                    nativeRestoreToCookieJar(mNativeCookiesFetcher,
+                    nativeRestoreCookies(mNativeCookiesFetcher,
                             cookie.getUrl(),
                             cookie.getName(),
                             cookie.getValue(),
@@ -196,6 +178,24 @@ public class CookiesFetcher {
                 }
             }
         }.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+    }
+
+    /**
+     * Ensure the incognito cookies are deleted when the incognito profile is gone.
+     *
+     * @param context Context for accessing the file system.
+     * @return Whether or not the cookies were deleted.
+     */
+    public static boolean deleteCookiesIfNecessary(Context context) {
+        try {
+            CookiesFetcher fetcher = new CookiesFetcher(context);
+            if (Profile.getLastUsedProfile().hasOffTheRecordProfile()) return false;
+            fetcher.scheduleDeleteCookiesFile();
+        } catch (RuntimeException e) {
+            e.printStackTrace();
+            return false;
+        }
+        return true;
     }
 
     @CalledByNative
@@ -256,8 +256,7 @@ public class CookiesFetcher {
     }
 
     /**
-     * Delete the cookies file. This happens when we detect that all incognito
-     * tabs have been closed.
+     * Delete the cookies file. Called when we detect that all incognito tabs have been closed.
      */
     private void scheduleDeleteCookiesFile() {
         new AsyncTask<Void, Void, Void>() {
@@ -292,8 +291,8 @@ public class CookiesFetcher {
 
     private native long nativeInit();
     private static native void nativeDestroy(long nativeCookiesFetcher);
-    private native void nativeFetchFromCookieJar(long nativeCookiesFetcher);
-    private native void nativeRestoreToCookieJar(long nativeCookiesFetcher,
+    private native void nativePersistCookies(long nativeCookiesFetcher);
+    private native void nativeRestoreCookies(long nativeCookiesFetcher,
             String url, String name, String value, String domain, String path,
             long creation, long expiration, long lastAccess, boolean secure,
             boolean httpOnly, int priority);

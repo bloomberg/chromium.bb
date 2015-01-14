@@ -32,25 +32,25 @@ class CookiesFetcher {
   void OnCookiesFetchFinished(const net::CookieList& cookies);
 
   // Fetches all cookies from the cookie jar.
-  void FetchFromCookieJar(JNIEnv* env, jobject obj);
+  void PersistCookies(JNIEnv* env, jobject obj);
 
   // Saves a cookie to the cookie jar.
-  void RestoreToCookieJar(JNIEnv* env,
-                          jobject obj,
-                          jstring url,
-                          jstring name,
-                          jstring value,
-                          jstring domain,
-                          jstring path,
-                          int64 creation,
-                          int64 expiration,
-                          int64 last_access,
-                          bool secure,
-                          bool httponly,
-                          int priority);
+  void RestoreCookies(JNIEnv* env,
+                      jobject obj,
+                      jstring url,
+                      jstring name,
+                      jstring value,
+                      jstring domain,
+                      jstring path,
+                      int64 creation,
+                      int64 expiration,
+                      int64 last_access,
+                      bool secure,
+                      bool httponly,
+                      int priority);
 
  private:
-  void FetchFromCookieJarInternal(net::URLRequestContextGetter* getter);
+  void PersistCookiesInternal(net::URLRequestContextGetter* getter);
   void RestoreToCookieJarInternal(net::URLRequestContextGetter* getter,
                                   const net::CanonicalCookie& cookie);
 

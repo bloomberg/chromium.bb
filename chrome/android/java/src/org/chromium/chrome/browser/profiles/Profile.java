@@ -4,18 +4,27 @@
 
 package org.chromium.chrome.browser.profiles;
 
+import android.content.Context;
+
+import org.chromium.base.ApplicationStatus;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.browser.cookies.CookiesFetcher;
 
 /**
  * Wrapper that allows passing a Profile reference around in the Java layer.
  */
 public class Profile {
 
+    /** Whether this wrapper corresponds to an off the record Profile. */
+    private final boolean mIsOffTheRecord;
+
+    /** Pointer to the Native-side ProfileAndroid. */
     private long mNativeProfileAndroid;
 
     private Profile(long nativeProfileAndroid) {
         mNativeProfileAndroid = nativeProfileAndroid;
+        mIsOffTheRecord = nativeIsOffTheRecord(mNativeProfileAndroid);
     }
 
     public static Profile getLastUsedProfile() {
@@ -44,7 +53,7 @@ public class Profile {
     }
 
     public boolean isOffTheRecord() {
-        return nativeIsOffTheRecord(mNativeProfileAndroid);
+        return mIsOffTheRecord;
     }
 
     /**
@@ -63,6 +72,11 @@ public class Profile {
     @CalledByNative
     private void onNativeDestroyed() {
         mNativeProfileAndroid = 0;
+
+        if (mIsOffTheRecord) {
+            Context context = ApplicationStatus.getApplicationContext();
+            CookiesFetcher.deleteCookiesIfNecessary(context);
+        }
     }
 
     @CalledByNative

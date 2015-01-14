@@ -24,7 +24,7 @@ void CookiesFetcher::Destroy(JNIEnv* env, jobject obj) {
   delete this;
 }
 
-void CookiesFetcher::FetchFromCookieJar(JNIEnv* env, jobject obj) {
+void CookiesFetcher::PersistCookies(JNIEnv* env, jobject obj) {
   Profile* profile = ProfileManager::GetPrimaryUserProfile();
   if (!profile->HasOffTheRecordProfile()) {
     // There is no work to be done. We might consider calling
@@ -43,11 +43,11 @@ void CookiesFetcher::FetchFromCookieJar(JNIEnv* env, jobject obj) {
 
   // The rest must be done from the IO thread.
   content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&CookiesFetcher::FetchFromCookieJarInternal,
+      base::Bind(&CookiesFetcher::PersistCookiesInternal,
       base::Unretained(this), getter));
 }
 
-void CookiesFetcher::FetchFromCookieJarInternal(
+void CookiesFetcher::PersistCookiesInternal(
     net::URLRequestContextGetter* getter) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 
@@ -99,18 +99,19 @@ void CookiesFetcher::OnCookiesFetchFinished(const net::CookieList& cookies) {
   jobject_.Reset();
 }
 
-void CookiesFetcher::RestoreToCookieJar(JNIEnv* env, jobject obj,
-                                        jstring url,
-                                        jstring name,
-                                        jstring value,
-                                        jstring domain,
-                                        jstring path,
-                                        int64 creation,
-                                        int64 expiration,
-                                        int64 last_access,
-                                        bool secure,
-                                        bool httponly,
-                                        int priority) {
+void CookiesFetcher::RestoreCookies(JNIEnv* env,
+                                    jobject obj,
+                                    jstring url,
+                                    jstring name,
+                                    jstring value,
+                                    jstring domain,
+                                    jstring path,
+                                    int64 creation,
+                                    int64 expiration,
+                                    int64 last_access,
+                                    bool secure,
+                                    bool httponly,
+                                    int priority) {
   Profile* profile = ProfileManager::GetPrimaryUserProfile();
   if (!profile->HasOffTheRecordProfile()) {
       return; // Don't create it. There is nothing to do.
