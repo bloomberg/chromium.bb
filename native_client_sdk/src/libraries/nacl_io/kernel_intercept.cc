@@ -26,6 +26,20 @@ using namespace nacl_io;
     return x;                 \
   }
 
+#define TRACE_KP_CALLS 0
+
+#if TRACE_KP_CALLS
+#define KP_TRACE nacl_io_log
+#else
+#define KP_TRACE(...)
+#endif
+
+#define KP_CALL(METHOD, ARGS) \
+  ON_NOSYS_RETURN(-1); \
+  int rtn = s_state.kp-> METHOD ARGS; \
+  KP_TRACE("ki_" #METHOD " -> %d\n", rtn); \
+  return rtn;
+
 struct KernelInterceptState {
   KernelProxy* kp;
   PepperInterface* ppapi;
@@ -136,12 +150,8 @@ nacl_io::KernelProxy* ki_get_proxy() {
   return s_state.kp;
 }
 
-int ki_chdir(const char* path) {
-  ON_NOSYS_RETURN(-1);
-  return s_state.kp->chdir(path);
-}
-
 void ki_exit(int status) {
+  KP_TRACE("ki_exit\n");
   if (ki_is_initialized())
     s_state.kp->exit(status);
 
@@ -150,52 +160,50 @@ void ki_exit(int status) {
 
 char* ki_getcwd(char* buf, size_t size) {
   ON_NOSYS_RETURN(NULL);
+  KP_TRACE("ki_getcwd\n");
   return s_state.kp->getcwd(buf, size);
 }
 
 char* ki_getwd(char* buf) {
   ON_NOSYS_RETURN(NULL);
+  KP_TRACE("ki_getwd\n");
   return s_state.kp->getwd(buf);
 }
 
+int ki_chdir(const char* path) {
+  KP_CALL(chdir, (path));
+}
+
 int ki_dup(int oldfd) {
-  ON_NOSYS_RETURN(-1);
-  return s_state.kp->dup(oldfd);
+  KP_CALL(dup, (oldfd));
 }
 
 int ki_dup2(int oldfd, int newfd) {
-  ON_NOSYS_RETURN(-1);
-  return s_state.kp->dup2(oldfd, newfd);
+  KP_CALL(dup2, (oldfd, newfd));
 }
 
 int ki_chmod(const char* path, mode_t mode) {
-  ON_NOSYS_RETURN(-1);
-  return s_state.kp->chmod(path, mode);
+  KP_CALL(chmod, (path, mode));
 }
 
 int ki_fchdir(int fd) {
-  ON_NOSYS_RETURN(-1);
-  return s_state.kp->fchdir(fd);
+  KP_CALL(fchdir, (fd));
 }
 
 int ki_fchmod(int fd, mode_t mode) {
-  ON_NOSYS_RETURN(-1);
-  return s_state.kp->fchmod(fd, mode);
+  KP_CALL(fchmod, (fd, mode));
 }
 
 int ki_stat(const char* path, struct stat* buf) {
-  ON_NOSYS_RETURN(-1);
-  return s_state.kp->stat(path, buf);
+  KP_CALL(stat, (path, buf));
 }
 
 int ki_mkdir(const char* path, mode_t mode) {
-  ON_NOSYS_RETURN(-1);
-  return s_state.kp->mkdir(path, mode);
+  KP_CALL(mkdir, (path, mode));
 }
 
 int ki_rmdir(const char* path) {
-  ON_NOSYS_RETURN(-1);
-  return s_state.kp->rmdir(path);
+  KP_CALL(rmdir, (path));
 }
 
 int ki_mount(const char* source,
@@ -203,122 +211,108 @@ int ki_mount(const char* source,
              const char* filesystemtype,
              unsigned long mountflags,
              const void* data) {
-  ON_NOSYS_RETURN(-1);
-  return s_state.kp->mount(source, target, filesystemtype, mountflags, data);
+  KP_CALL(mount, (source, target, filesystemtype, mountflags, data));
 }
 
 int ki_umount(const char* path) {
-  ON_NOSYS_RETURN(-1);
-  return s_state.kp->umount(path);
+  KP_CALL(umount, (path));
 }
 
 int ki_open(const char* path, int oflag, mode_t mode) {
-  ON_NOSYS_RETURN(-1);
-  return s_state.kp->open(path, oflag, mode);
+  KP_CALL(open, (path, oflag, mode));
 }
 
 int ki_pipe(int pipefds[2]) {
-  ON_NOSYS_RETURN(-1);
-  return s_state.kp->pipe(pipefds);
+  KP_CALL(pipe, (pipefds));
 }
 
 ssize_t ki_read(int fd, void* buf, size_t nbyte) {
   ON_NOSYS_RETURN(-1);
+  KP_TRACE("ki_read\n");
   return s_state.kp->read(fd, buf, nbyte);
 }
 
 ssize_t ki_write(int fd, const void* buf, size_t nbyte) {
   ON_NOSYS_RETURN(-1);
+  KP_TRACE("ki_write\n");
   return s_state.kp->write(fd, buf, nbyte);
 }
 
 int ki_fstat(int fd, struct stat* buf) {
-  ON_NOSYS_RETURN(-1);
-  return s_state.kp->fstat(fd, buf);
+  KP_CALL(fstat, (fd, buf));
 }
 
 int ki_getdents(int fd, void* buf, unsigned int count) {
-  ON_NOSYS_RETURN(-1);
-  return s_state.kp->getdents(fd, buf, count);
+  KP_CALL(getdents, (fd, buf, count));
 }
 
 int ki_ftruncate(int fd, off_t length) {
-  ON_NOSYS_RETURN(-1);
-  return s_state.kp->ftruncate(fd, length);
+  KP_CALL(ftruncate, (fd, length));
 }
 
 int ki_fsync(int fd) {
-  ON_NOSYS_RETURN(-1);
-  return s_state.kp->fsync(fd);
+  KP_CALL(fsync, (fd));
 }
 
 int ki_fdatasync(int fd) {
-  ON_NOSYS_RETURN(-1);
-  return s_state.kp->fdatasync(fd);
+  KP_CALL(fdatasync, (fd));
 }
 
 int ki_isatty(int fd) {
   ON_NOSYS_RETURN(0);
+  KP_TRACE("ki_isatty\n");
   return s_state.kp->isatty(fd);
 }
 
 int ki_close(int fd) {
-  ON_NOSYS_RETURN(-1);
-  return s_state.kp->close(fd);
+  KP_CALL(close, (fd));
 }
 
 off_t ki_lseek(int fd, off_t offset, int whence) {
   ON_NOSYS_RETURN(-1);
+  KP_TRACE("ki_lseek\n");
   return s_state.kp->lseek(fd, offset, whence);
 }
 
 int ki_remove(const char* path) {
-  ON_NOSYS_RETURN(-1);
-  return s_state.kp->remove(path);
+  KP_CALL(remove, (path));
 }
 
 int ki_unlink(const char* path) {
-  ON_NOSYS_RETURN(-1);
-  return s_state.kp->unlink(path);
+  KP_CALL(unlink, (path));
 }
 
 int ki_truncate(const char* path, off_t length) {
-  ON_NOSYS_RETURN(-1);
-  return s_state.kp->truncate(path, length);
+  KP_CALL(truncate, (path, length));
 }
 
 int ki_lstat(const char* path, struct stat* buf) {
-  ON_NOSYS_RETURN(-1);
-  return s_state.kp->lstat(path, buf);
+  KP_CALL(lstat, (path, buf));
 }
 
 int ki_link(const char* oldpath, const char* newpath) {
-  ON_NOSYS_RETURN(-1);
-  return s_state.kp->link(oldpath, newpath);
+  KP_CALL(link, (oldpath, newpath));
 }
 
 int ki_rename(const char* path, const char* newpath) {
-  ON_NOSYS_RETURN(-1);
-  return s_state.kp->rename(path, newpath);
+  KP_CALL(rename, (path, newpath));
 }
 
 int ki_symlink(const char* oldpath, const char* newpath) {
-  ON_NOSYS_RETURN(-1);
-  return s_state.kp->symlink(oldpath, newpath);
+  KP_CALL(symlink, (oldpath, newpath));
 }
 
 int ki_access(const char* path, int amode) {
-  ON_NOSYS_RETURN(-1);
-  return s_state.kp->access(path, amode);
+  KP_CALL(access, (path, amode));
 }
 
 int ki_readlink(const char* path, char* buf, size_t count) {
-  ON_NOSYS_RETURN(-1);
-  return s_state.kp->readlink(path, buf, count);
+  KP_CALL(readlink, (path, buf, count));
 }
 
 int ki_utimes(const char* path, const struct timeval times[2]) {
   ON_NOSYS_RETURN(-1);
+  KP_TRACE("ki_utimes");
   // Implement in terms of utimens.
   if (!times) {
     return s_state.kp->utimens(path, NULL);
@@ -334,6 +328,7 @@ int ki_utimes(const char* path, const struct timeval times[2]) {
 
 int ki_futimes(int fd, const struct timeval times[2]) {
   ON_NOSYS_RETURN(-1);
+  KP_TRACE("ki_futimes");
   // Implement in terms of futimens.
   if (!times) {
     return s_state.kp->futimens(fd, NULL);
@@ -354,46 +349,45 @@ void* ki_mmap(void* addr,
               int fd,
               off_t offset) {
   ON_NOSYS_RETURN(MAP_FAILED);
+  KP_TRACE("ki_mmap\n");
   return s_state.kp->mmap(addr, length, prot, flags, fd, offset);
 }
 
 int ki_munmap(void* addr, size_t length) {
   ON_NOSYS_RETURN(-1);
+  KP_TRACE("ki_munmap\n");
   return s_state.kp->munmap(addr, length);
 }
 
 int ki_open_resource(const char* file) {
   ON_NOSYS_RETURN(-1);
+  KP_TRACE("ki_open_resource\n");
   return s_state.kp->open_resource(file);
 }
 
 int ki_fcntl(int d, int request, va_list args) {
-  ON_NOSYS_RETURN(-1);
-  return s_state.kp->fcntl(d, request, args);
+  KP_CALL(fcntl, (d, request, args));
 }
 
 int ki_ioctl(int d, int request, va_list args) {
-  ON_NOSYS_RETURN(-1);
-  return s_state.kp->ioctl(d, request, args);
+  KP_CALL(ioctl, (d, request, args));
 }
 
 int ki_chown(const char* path, uid_t owner, gid_t group) {
-  ON_NOSYS_RETURN(-1);
-  return s_state.kp->chown(path, owner, group);
+  KP_CALL(chown, (path, owner, group));
 }
 
 int ki_fchown(int fd, uid_t owner, gid_t group) {
-  ON_NOSYS_RETURN(-1);
-  return s_state.kp->fchown(fd, owner, group);
+  KP_CALL(fchown, (fd, owner, group));
 }
 
 int ki_lchown(const char* path, uid_t owner, gid_t group) {
-  ON_NOSYS_RETURN(-1);
-  return s_state.kp->lchown(path, owner, group);
+  KP_CALL(lchown, (path, owner, group));
 }
 
 int ki_utime(const char* filename, const struct utimbuf* times) {
   ON_NOSYS_RETURN(-1);
+  KP_TRACE("ki_utime\n");
   // Implement in terms of utimens.
   if (!times) {
     return s_state.kp->utimens(filename, NULL);
@@ -408,17 +402,17 @@ int ki_utime(const char* filename, const struct utimbuf* times) {
 }
 
 int ki_futimens(int fd, const struct timespec times[2]) {
-  ON_NOSYS_RETURN(-1);
-  return s_state.kp->futimens(fd, times);
+  KP_CALL(futimens, (fd, times));
 }
 
 mode_t ki_umask(mode_t mask) {
   ON_NOSYS_RETURN(0);
+  KP_TRACE("ki_umask\n");
   return s_state.kp->umask(mask);
 }
 
 int ki_poll(struct pollfd* fds, nfds_t nfds, int timeout) {
-  return s_state.kp->poll(fds, nfds, timeout);
+  KP_CALL(poll, (fds, nfds, timeout));
 }
 
 int ki_select(int nfds,
@@ -426,29 +420,25 @@ int ki_select(int nfds,
               fd_set* writefds,
               fd_set* exceptfds,
               struct timeval* timeout) {
-  return s_state.kp->select(nfds, readfds, writefds, exceptfds, timeout);
+  KP_CALL(select, (nfds, readfds, writefds, exceptfds, timeout));
 }
 
 int ki_tcflush(int fd, int queue_selector) {
-  ON_NOSYS_RETURN(-1);
-  return s_state.kp->tcflush(fd, queue_selector);
+  KP_CALL(tcflush, (fd, queue_selector));
 }
 
 int ki_tcgetattr(int fd, struct termios* termios_p) {
-  ON_NOSYS_RETURN(-1);
-  return s_state.kp->tcgetattr(fd, termios_p);
+  KP_CALL(tcgetattr, (fd, termios_p));
 }
 
 int ki_tcsetattr(int fd,
                  int optional_actions,
                  const struct termios* termios_p) {
-  ON_NOSYS_RETURN(-1);
-  return s_state.kp->tcsetattr(fd, optional_actions, termios_p);
+  KP_CALL(tcsetattr, (fd, optional_actions, termios_p));
 }
 
 int ki_kill(pid_t pid, int sig) {
-  ON_NOSYS_RETURN(-1);
-  return s_state.kp->kill(pid, sig);
+  KP_CALL(kill, (pid, sig));
 }
 
 int ki_killpg(pid_t pid, int sig) {
@@ -459,8 +449,7 @@ int ki_killpg(pid_t pid, int sig) {
 int ki_sigaction(int signum,
                  const struct sigaction* action,
                  struct sigaction* oaction) {
-  ON_NOSYS_RETURN(-1);
-  return s_state.kp->sigaction(signum, action, oaction);
+  KP_CALL(sigaction, (signum, action, oaction));
 }
 
 int ki_sigpause(int sigmask) {
@@ -484,6 +473,7 @@ sighandler_t ki_signal(int signum, sighandler_t handler) {
 
 sighandler_t ki_sigset(int signum, sighandler_t handler) {
   ON_NOSYS_RETURN(SIG_ERR);
+  KP_TRACE("ki_sigset\n");
   // Implement sigset(2) in terms of sigaction(2).
   struct sigaction action;
   struct sigaction oaction;
@@ -499,18 +489,15 @@ sighandler_t ki_sigset(int signum, sighandler_t handler) {
 #ifdef PROVIDES_SOCKET_API
 // Socket Functions
 int ki_accept(int fd, struct sockaddr* addr, socklen_t* len) {
-  ON_NOSYS_RETURN(-1);
-  return s_state.kp->accept(fd, addr, len);
+  KP_CALL(accept, (fd, addr, len));
 }
 
 int ki_bind(int fd, const struct sockaddr* addr, socklen_t len) {
-  ON_NOSYS_RETURN(-1);
-  return s_state.kp->bind(fd, addr, len);
+  KP_CALL(bind, (fd, addr, len));
 }
 
 int ki_connect(int fd, const struct sockaddr* addr, socklen_t len) {
-  ON_NOSYS_RETURN(-1);
-  return s_state.kp->connect(fd, addr, len);
+  KP_CALL(connect, (fd, addr, len));
 }
 
 struct hostent* ki_gethostbyname(const char* name) {
@@ -526,6 +513,7 @@ int ki_getnameinfo(const struct sockaddr *sa,
                    size_t servlen,
                    unsigned int flags) {
   ON_NOSYS_RETURN(EAI_SYSTEM);
+  KP_TRACE("ki_getnameinfo\n");
   return s_state.kp->getnameinfo(sa, salen, host, hostlen, serv, servlen,
                                  flags);
 }
@@ -535,35 +523,34 @@ int ki_getaddrinfo(const char* node,
                    const struct addrinfo* hints,
                    struct addrinfo** res) {
   ON_NOSYS_RETURN(EAI_SYSTEM);
+  KP_TRACE("ki_getaddrinfo\n");
   return s_state.kp->getaddrinfo(node, service, hints, res);
 }
 
 void ki_freeaddrinfo(struct addrinfo* res) {
+  KP_TRACE("ki_freeaddrinfo\n");
   s_state.kp->freeaddrinfo(res);
 }
 
 int ki_getpeername(int fd, struct sockaddr* addr, socklen_t* len) {
-  ON_NOSYS_RETURN(-1);
-  return s_state.kp->getpeername(fd, addr, len);
+  KP_CALL(getpeername, (fd, addr, len));
 }
 
 int ki_getsockname(int fd, struct sockaddr* addr, socklen_t* len) {
-  ON_NOSYS_RETURN(-1);
-  return s_state.kp->getsockname(fd, addr, len);
+  KP_CALL(getsockname, (fd, addr, len));
 }
 
 int ki_getsockopt(int fd, int lvl, int optname, void* optval, socklen_t* len) {
-  ON_NOSYS_RETURN(-1);
-  return s_state.kp->getsockopt(fd, lvl, optname, optval, len);
+  KP_CALL(getsockopt, (fd, lvl, optname, optval, len));
 }
 
 int ki_listen(int fd, int backlog) {
-  ON_NOSYS_RETURN(-1);
-  return s_state.kp->listen(fd, backlog);
+  KP_CALL(listen, (fd, backlog));
 }
 
 ssize_t ki_recv(int fd, void* buf, size_t len, int flags) {
   ON_NOSYS_RETURN(-1);
+  KP_TRACE("ki_recv\n");
   return s_state.kp->recv(fd, buf, len, flags);
 }
 
@@ -574,16 +561,19 @@ ssize_t ki_recvfrom(int fd,
                     struct sockaddr* addr,
                     socklen_t* addrlen) {
   ON_NOSYS_RETURN(-1);
+  KP_TRACE("ki_recvfrom\n");
   return s_state.kp->recvfrom(fd, buf, len, flags, addr, addrlen);
 }
 
 ssize_t ki_recvmsg(int fd, struct msghdr* msg, int flags) {
   ON_NOSYS_RETURN(-1);
+  KP_TRACE("ki_recvmsg\n");
   return s_state.kp->recvmsg(fd, msg, flags);
 }
 
 ssize_t ki_send(int fd, const void* buf, size_t len, int flags) {
   ON_NOSYS_RETURN(-1);
+  KP_TRACE("ki_send\n");
   return s_state.kp->send(fd, buf, len, flags);
 }
 
@@ -594,11 +584,13 @@ ssize_t ki_sendto(int fd,
                   const struct sockaddr* addr,
                   socklen_t addrlen) {
   ON_NOSYS_RETURN(-1);
+  KP_TRACE("ki_sendto\n");
   return s_state.kp->sendto(fd, buf, len, flags, addr, addrlen);
 }
 
 ssize_t ki_sendmsg(int fd, const struct msghdr* msg, int flags) {
   ON_NOSYS_RETURN(-1);
+  KP_TRACE("ki_sendmsg\n");
   return s_state.kp->sendmsg(fd, msg, flags);
 }
 
@@ -607,22 +599,18 @@ int ki_setsockopt(int fd,
                   int optname,
                   const void* optval,
                   socklen_t len) {
-  ON_NOSYS_RETURN(-1);
-  return s_state.kp->setsockopt(fd, lvl, optname, optval, len);
+  KP_CALL(setsockopt, (fd, lvl, optname, optval, len));
 }
 
 int ki_shutdown(int fd, int how) {
-  ON_NOSYS_RETURN(-1);
-  return s_state.kp->shutdown(fd, how);
+  KP_CALL(shutdown, (fd, how));
 }
 
 int ki_socket(int domain, int type, int protocol) {
-  ON_NOSYS_RETURN(-1);
-  return s_state.kp->socket(domain, type, protocol);
+  KP_CALL(socket, (domain, type, protocol));
 }
 
 int ki_socketpair(int domain, int type, int protocol, int* sv) {
-  ON_NOSYS_RETURN(-1);
-  return s_state.kp->socketpair(domain, type, protocol, sv);
+  KP_CALL(socketpair, (domain, type, protocol, sv));
 }
 #endif  // PROVIDES_SOCKET_API
