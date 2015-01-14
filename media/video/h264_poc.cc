@@ -172,9 +172,10 @@ bool H264POC::ComputePicOrderCnt(
 
       // 8-10. Derive |top_field_order_cnt| and |bottom_field_order_cnt|
       //       (assuming no interlacing).
-      int32_t top_foc = expected_pic_order_cnt + slice_hdr.delta_pic_order_cnt0;
+      int32_t top_foc = expected_pic_order_cnt +
+                        slice_hdr.delta_pic_order_cnt[0];
       int32_t bottom_foc = top_foc + sps->offset_for_top_to_bottom_field +
-                           slice_hdr.delta_pic_order_cnt1;
+                           slice_hdr.delta_pic_order_cnt[1];
       *pic_order_cnt = std::min(top_foc, bottom_foc);
 
       // Store state.
