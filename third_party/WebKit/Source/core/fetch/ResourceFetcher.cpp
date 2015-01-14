@@ -889,6 +889,8 @@ void ResourceFetcher::addAdditionalRequestHeaders(ResourceRequest& request, Reso
         determineRequestContext(request, type);
     if (type == Resource::LinkPrefetch || type == Resource::LinkSubresource)
         request.setHTTPHeaderField("Purpose", "prefetch");
+    if (frame()->document())
+        request.setOriginatesFromReservedIPRange(frame()->document()->isHostedInReservedIPRange());
 
     context().addAdditionalRequestHeaders(document(), request, (type == Resource::MainResource) ? FetchMainResource : FetchSubresource);
 }

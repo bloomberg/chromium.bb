@@ -279,6 +279,11 @@ public:
     BLINK_PLATFORM_EXPORT WebURLRequest::InputToLoadPerfMetricReportPolicy inputPerfMetricReportPolicy() const;
     BLINK_PLATFORM_EXPORT void setInputPerfMetricReportPolicy(WebURLRequest::InputToLoadPerfMetricReportPolicy);
 
+    // Does the request originate from a SecurityContext hosted in a reserved
+    // (RFC1918) IP range?
+    BLINK_PLATFORM_EXPORT bool originatesFromReservedIPRange() const;
+    BLINK_PLATFORM_EXPORT void setOriginatesFromReservedIPRange(bool);
+
 #if INSIDE_BLINK
     BLINK_PLATFORM_EXPORT ResourceRequest& toMutableResourceRequest();
     BLINK_PLATFORM_EXPORT const ResourceRequest& toResourceRequest() const;

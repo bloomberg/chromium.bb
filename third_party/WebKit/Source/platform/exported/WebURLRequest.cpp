@@ -402,6 +402,16 @@ void WebURLRequest::setUiStartTime(double time)
     m_private->m_resourceRequest->setUIStartTime(time);
 }
 
+bool WebURLRequest::originatesFromReservedIPRange() const
+{
+    return m_private->m_resourceRequest->originatesFromReservedIPRange();
+}
+
+void WebURLRequest::setOriginatesFromReservedIPRange(bool value)
+{
+    m_private->m_resourceRequest->setOriginatesFromReservedIPRange(value);
+}
+
 WebURLRequest::InputToLoadPerfMetricReportPolicy WebURLRequest::inputPerfMetricReportPolicy() const
 {
     return static_cast<WebURLRequest::InputToLoadPerfMetricReportPolicy>(

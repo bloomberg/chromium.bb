@@ -221,6 +221,9 @@ public:
     double uiStartTime() const { return m_uiStartTime; }
     void setUIStartTime(double uiStartTime) { m_uiStartTime = uiStartTime; }
 
+    bool originatesFromReservedIPRange() const { return m_originatesFromReservedIPRange; }
+    void setOriginatesFromReservedIPRange(bool value) { m_originatesFromReservedIPRange = value; }
+
     InputToLoadPerfMetricReportPolicy inputPerfMetricReportPolicy() const { return m_inputPerfMetricReportPolicy; }
     void setInputPerfMetricReportPolicy(InputToLoadPerfMetricReportPolicy inputPerfMetricReportPolicy) { m_inputPerfMetricReportPolicy = inputPerfMetricReportPolicy; }
 
@@ -257,6 +260,7 @@ private:
     ReferrerPolicy m_referrerPolicy;
     bool m_checkForBrowserSideNavigation;
     double m_uiStartTime;
+    bool m_originatesFromReservedIPRange;
     InputToLoadPerfMetricReportPolicy m_inputPerfMetricReportPolicy;
 
     mutable CacheControlHeader m_cacheControlHeaderCache;
@@ -301,6 +305,7 @@ public:
     ReferrerPolicy m_referrerPolicy;
     bool m_checkForBrowserSideNavigation;
     double m_uiStartTime;
+    bool m_originatesFromReservedIPRange;
     InputToLoadPerfMetricReportPolicy m_inputPerfMetricReportPolicy;
 };
 
