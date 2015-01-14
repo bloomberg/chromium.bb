@@ -28,13 +28,16 @@
       'include_dirs': [
         '../skia/config',
       ],
+      'direct_dependent_settings': {
+        'ldflags': [
+          # Some android targets still depend on --gc-sections to link.
+          # TODO: remove --gc-sections for Debug builds (crbug.com/159847).
+          '-Wl,--gc-sections',
+        ],
+      },
       'conditions': [
         [ 'order_profiling!=0', {
-          'conditions': [
-            [ 'OS=="android"', {
-              'dependencies': [ '../tools/cygprofile/cygprofile.gyp:cygprofile', ],
-            }],
-          ],
+          'dependencies': [ '../tools/cygprofile/cygprofile.gyp:cygprofile', ],
         }],
         [ 'use_allocator!="none"', {
           'dependencies': [
@@ -44,15 +47,6 @@
           'dependencies': [
             # Chrome shell should always use the statically-linked CLD data.
             '<(DEPTH)/third_party/cld_2/cld_2.gyp:cld2_static', ],
-        }],
-        ['OS=="android"', {
-          'direct_dependent_settings': {
-            'ldflags': [
-              # Some android targets still depend on --gc-sections to link.
-              # TODO: remove --gc-sections for Debug builds (crbug.com/159847).
-              '-Wl,--gc-sections',
-            ],
-          },
         }],
       ],
     },

@@ -188,11 +188,7 @@ static_library("chrome_shell_base") {
 
   # TODO(GYP):
   #[ 'order_profiling!=0', {
-  #'conditions': [
-  #[ 'OS=="android"', {
   #'dependencies': [ '../tools/cygprofile/cygprofile.gyp:cygprofile', ],
-  #}],
-  #],
   #}],
 }
 
