@@ -244,7 +244,7 @@
         '-Wno-unused-function',
       ],
     }],
-    [ 'use_cairo == 1', {
+    [ 'use_cairo == 1 and use_pango == 1', {
       'dependencies': [
         '../build/linux/system.gyp:pangocairo',
       ],
