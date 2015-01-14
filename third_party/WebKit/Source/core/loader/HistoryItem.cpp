@@ -29,6 +29,8 @@
 #include "core/dom/Document.h"
 #include "core/html/forms/FormController.h"
 #include "platform/network/ResourceRequest.h"
+#include "platform/weborigin/SecurityPolicy.h"
+#include "wtf/Assertions.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/text/CString.h"
 
@@ -97,6 +99,7 @@ void HistoryItem::setURL(const KURL& url)
 
 void HistoryItem::setReferrer(const Referrer& referrer)
 {
+    RELEASE_ASSERT(SecurityPolicy::generateReferrer(referrer.referrerPolicy, url(), referrer.referrer).referrer == referrer.referrer);
     m_referrer = referrer;
 }
 
