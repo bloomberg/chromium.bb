@@ -30,13 +30,13 @@ layer at (0,0) size 785x809 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                   text run at (4,431) width 114: "Colors & Themes"
               RenderText {#text} at (4,544) size 16x15
                 text run at (4,544) width 14: " \x{2022} "
-              RenderInline {A} at (0,0) size 16x48
-                RenderText {#text} at (4,558) size 16x48
+              RenderInline {A} at (0,0) size 16x47
+                RenderText {#text} at (4,558) size 16x47
                   text run at (4,558) width 47: "Sign In"
-              RenderText {#text} at (4,605) size 16x185
-                text run at (4,605) width 8: "  "
-                text run at (4,613) width 92: "   My Links:   "
-                text run at (4,704) width 86: "  Lite \x{2022} Email"
+              RenderText {#text} at (4,604) size 16x186
+                text run at (4,604) width 8: "  "
+                text run at (4,612) width 92: "   My Links:   "
+                text run at (4,703) width 86: "  Lite \x{2022} Email"
           RenderTableRow {TR} at (0,24) size 280x793
             RenderTableCell {TD} at (24,136) size 280x-50 [border: (1px solid #008000)] [r=1 c=0 rs=1 cs=1]
             RenderTableCell {TD} at (24,222) size 280x349 [border: (1px solid #008000)] [r=1 c=1 rs=1 cs=1]

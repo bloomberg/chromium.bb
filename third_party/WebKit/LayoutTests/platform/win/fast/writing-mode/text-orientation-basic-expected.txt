@@ -11,23 +11,23 @@ layer at (0,0) size 800x686 backgroundClip at (0,0) size 800x600 clip at (0,0) s
           text run at (686,18) width 85: "two different"
           text run at (0,36) width 36: "fonts."
       RenderBlock {DIV} at (0,70) size 340x600
-        RenderBlock {DIV} at (0,0) size 170x411 [border: (1px solid #008000)]
+        RenderBlock {DIV} at (0,0) size 170x442 [border: (1px solid #008000)]
           RenderInline {SPAN} at (0,0) size 40x173
             RenderText {#text} at (2,1) size 40x173
               text run at (2,1) width 173: "Hello world"
           RenderBR {BR} at (10,173) size 0x1
-          RenderInline {SPAN} at (0,0) size 40x409
-            RenderText {#text} at (44,1) size 40x409
-              text run at (44,1) width 409: "Hello world"
-          RenderBR {BR} at (52,410) size 0x0
+          RenderInline {SPAN} at (0,0) size 40x440
+            RenderText {#text} at (44,1) size 40x440
+              text run at (44,1) width 440: "Hello world"
+          RenderBR {BR} at (52,441) size 0x0
           RenderInline {SPAN} at (0,0) size 40x173
             RenderText {#text} at (86,1) size 40x173
               text run at (86,1) width 173: "Hello world"
           RenderBR {BR} at (94,173) size 0x1
-          RenderInline {SPAN} at (0,0) size 40x409
-            RenderText {#text} at (128,1) size 40x409
-              text run at (128,1) width 409: "Hello world"
-          RenderBR {BR} at (136,410) size 0x0
+          RenderInline {SPAN} at (0,0) size 40x440
+            RenderText {#text} at (128,1) size 40x440
+              text run at (128,1) width 440: "Hello world"
+          RenderBR {BR} at (136,441) size 0x0
         RenderText {#text} at (0,0) size 0x0
         RenderBlock {DIV} at (170,0) size 170x442 [border: (1px solid #008000)]
           RenderInline {SPAN} at (0,0) size 40x173

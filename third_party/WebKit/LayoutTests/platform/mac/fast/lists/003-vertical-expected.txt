@@ -17,16 +17,16 @@ layer at (0,0) size 416x600
             RenderText {#text} at (17,300) size 29x347
               text run at (17,300) width 47: "float:"
               text run at (33,0) width 32: "left"
-          RenderText {#text} at (32,31) size 16x33
-            text run at (32,31) width 33: " div. "
+          RenderText {#text} at (32,31) size 16x32
+            text run at (32,31) width 32: " div. "
           RenderInline {A} at (0,0) size 16x197 [color=#0000EE]
-            RenderText {#text} at (32,63) size 16x197
-              text run at (32,63) width 196: "Screenshot of correct behavior"
-          RenderText {#text} at (32,259) size 16x10
-            text run at (32,259) width 9: "; "
-          RenderInline {A} at (0,0) size 32x336 [color=#0000EE]
-            RenderText {#text} at (32,268) size 32x336
-              text run at (32,268) width 68: "screenshot"
+            RenderText {#text} at (32,62) size 16x197
+              text run at (32,62) width 196: "Screenshot of correct behavior"
+          RenderText {#text} at (32,258) size 16x9
+            text run at (32,258) width 9: "; "
+          RenderInline {A} at (0,0) size 32x335 [color=#0000EE]
+            RenderText {#text} at (32,266) size 32x335
+              text run at (32,266) width 68: "screenshot"
               text run at (48,0) width 56: "of Safari"
           RenderText {#text} at (48,55) size 16x5
             text run at (48,55) width 4: "."
@@ -34,9 +34,9 @@ layer at (0,0) size 416x600
           RenderText {#text} at (0,0) size 32x309
             text run at (0,0) width 309: "This bug only occurs on pages with a standards-"
             text run at (16,0) width 150: "compliant DOCTYPE. "
-          RenderInline {A} at (0,0) size 32x334 [color=#0000EE]
-            RenderText {#text} at (16,149) size 32x334
-              text run at (16,149) width 184: "View this test case without a"
+          RenderInline {A} at (0,0) size 32x333 [color=#0000EE]
+            RenderText {#text} at (16,149) size 32x333
+              text run at (16,149) width 183: "View this test case without a"
               text run at (32,0) width 74: "DOCTYPE"
           RenderText {#text} at (32,73) size 16x5
             text run at (32,73) width 4: "."
@@ -44,8 +44,8 @@ layer at (0,0) size 416x600
           RenderListItem {LI} at (0,40) size 32x310.39
             RenderListMarker at (0,-20) size 16x16: "1"
             RenderText {#text} at (0,0) size 32x304
-              text run at (0,0) width 160: "New larger PowerBook. "
-              text run at (0,159) width 145: "Still 1 GHz, but with a"
+              text run at (0,0) width 159: "New larger PowerBook. "
+              text run at (0,158) width 145: "Still 1 GHz, but with a"
               text run at (16,0) width 146: "17-inch screen. $3299."
           RenderListItem {LI} at (32,40) size 32x310.39
             RenderListMarker at (0,-20) size 16x16: "2"
@@ -67,16 +67,16 @@ layer at (0,0) size 416x600
                 text run at (0,204) width 77: "open source"
             RenderText {#text} at (0,281) size 16x17
               text run at (0,281) width 17: " (a"
-            RenderInline {A} at (0,0) size 16x109 [color=#0000EE]
-              RenderText {#text} at (16,0) size 16x109
-                text run at (16,0) width 109: "modified version"
-            RenderText {#text} at (16,108) size 16x23
-              text run at (16,108) width 22: " of "
+            RenderInline {A} at (0,0) size 16x108 [color=#0000EE]
+              RenderText {#text} at (16,0) size 16x108
+                text run at (16,0) width 108: "modified version"
+            RenderText {#text} at (16,107) size 16x23
+              text run at (16,107) width 22: " of "
             RenderInline {A} at (0,0) size 16x58 [color=#0000EE]
-              RenderText {#text} at (16,130) size 16x58
-                text run at (16,130) width 57: "KHTML"
-            RenderText {#text} at (16,187) size 64x305
-              text run at (16,187) width 78: "), rest of the"
+              RenderText {#text} at (16,129) size 16x58
+                text run at (16,129) width 57: "KHTML"
+            RenderText {#text} at (16,186) size 64x305
+              text run at (16,186) width 78: "), rest of the"
               text run at (32,0) width 305: "application is free but not open source (just like"
               text run at (48,0) width 58: "the OS). "
               text run at (48,57) width 124: "Only runs on 10.2. "
@@ -102,11 +102,11 @@ layer at (0,0) size 416x600
                 text run at (0,163) width 42: "iPhoto"
             RenderText {#text} at (0,204) size 16x9
               text run at (0,204) width 8: ", "
-            RenderInline {A} at (0,0) size 16x45 [color=#0000EE]
-              RenderText {#text} at (0,212) size 16x45
-                text run at (0,212) width 44: "iTunes"
-            RenderText {#text} at (0,256) size 32x261
-              text run at (0,256) width 4: "."
+            RenderInline {A} at (0,0) size 16x44 [color=#0000EE]
+              RenderText {#text} at (0,212) size 16x44
+                text run at (0,212) width 43: "iTunes"
+            RenderText {#text} at (0,255) size 32x260
+              text run at (0,255) width 4: "."
               text run at (16,0) width 169: "Bundled into a box called "
             RenderInline {A} at (0,0) size 16x32 [color=#0000EE]
               RenderText {#text} at (16,168) size 16x32
@@ -179,14 +179,14 @@ layer at (0,0) size 416x600
         RenderBlock {UL} at (176,0) size 96x584
           RenderListItem {LI} at (0,40) size 16x544
             RenderListMarker at (0,294.39) size 16x6: bullet
-            RenderInline {A} at (0,0) size 16x93 [color=#0000EE]
-              RenderText {#text} at (0,451) size 16x93
-                text run at (0,451) width 93: "RSS Validator"
+            RenderInline {A} at (0,0) size 16x91 [color=#0000EE]
+              RenderText {#text} at (0,453) size 16x91
+                text run at (0,453) width 91: "RSS Validator"
           RenderListItem {LI} at (16,40) size 16x544
             RenderListMarker at (0,294.39) size 16x6: bullet
-            RenderInline {A} at (0,0) size 16x149 [color=#0000EE]
-              RenderText {#text} at (0,395) size 16x149
-                text run at (0,395) width 149: "Dive Into Accessibility"
+            RenderInline {A} at (0,0) size 16x148 [color=#0000EE]
+              RenderText {#text} at (0,396) size 16x148
+                text run at (0,396) width 148: "Dive Into Accessibility"
           RenderListItem {LI} at (32,40) size 16x544
             RenderListMarker at (0,294.39) size 16x6: bullet
             RenderInline {A} at (0,0) size 16x101 [color=#0000EE]

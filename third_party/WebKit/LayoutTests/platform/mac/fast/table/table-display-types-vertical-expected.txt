@@ -174,7 +174,7 @@ layer at (0,0) size 785x1166 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 text run at (1,369) width 60: "velit esse"
                 text run at (1,385) width 86: "cillum dolore"
                 text run at (1,401) width 93: "eu fugiat nulla"
-                text run at (1,417) width 54: "pariatur."
+                text run at (1,417) width 53: "pariatur."
                 text run at (1,433) width 92: "Excepteur sint"
                 text run at (1,449) width 56: "occaecat"
                 text run at (1,465) width 87: "cupidatat non"

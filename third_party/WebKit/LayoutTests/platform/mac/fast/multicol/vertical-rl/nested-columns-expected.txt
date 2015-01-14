@@ -15,14 +15,14 @@ layer at (277,8) size 500x750 backgroundClip at (0,0) size 785x600 clip at (0,0)
         text run at (48,0) width 367: "purus, vulputate vel, varius ut, euismod et, nisi. Sed vitae"
         text run at (64,0) width 354: "felis vel orci sagittis aliquam. Cras convallis adipiscing"
         text run at (80,0) width 347: "sem. Nam nonummy enim. Nullam bibendum lobortis"
-        text run at (96,0) width 353: "neque. Vestibulum velit orci, tempus euismod, pretium"
+        text run at (96,0) width 351: "neque. Vestibulum velit orci, tempus euismod, pretium"
         text run at (112,0) width 353: "quis, interdum vitae, nulla. Phasellus eget ante et tortor"
         text run at (128,0) width 351: "condimentum vestibulum. Suspendisse hendrerit quam"
         text run at (144,0) width 333: "nec felis. Sed varius turpis vitae pede. Lorem ipsum"
         text run at (160,0) width 275: "dolor sit amet, consectetuer adipiscing elit."
     RenderBlock {H1} at (250.88,0) size 32x367
-      RenderText {#text} at (0,0) size 32x170
-        text run at (0,0) width 170: "Header Two"
+      RenderText {#text} at (0,0) size 32x167
+        text run at (0,0) width 167: "Header Two"
     RenderBlock (anonymous) at (304.31,0) size 176x367
       RenderText {#text} at (0,0) size 176x367
         text run at (0,0) width 364: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit."
@@ -31,14 +31,14 @@ layer at (277,8) size 500x750 backgroundClip at (0,0) size 785x600 clip at (0,0)
         text run at (48,0) width 367: "purus, vulputate vel, varius ut, euismod et, nisi. Sed vitae"
         text run at (64,0) width 354: "felis vel orci sagittis aliquam. Cras convallis adipiscing"
         text run at (80,0) width 347: "sem. Nam nonummy enim. Nullam bibendum lobortis"
-        text run at (96,0) width 353: "neque. Vestibulum velit orci, tempus euismod, pretium"
+        text run at (96,0) width 351: "neque. Vestibulum velit orci, tempus euismod, pretium"
         text run at (112,0) width 353: "quis, interdum vitae, nulla. Phasellus eget ante et tortor"
         text run at (128,0) width 351: "condimentum vestibulum. Suspendisse hendrerit quam"
         text run at (144,0) width 333: "nec felis. Sed varius turpis vitae pede. Lorem ipsum"
         text run at (160,0) width 275: "dolor sit amet, consectetuer adipiscing elit."
     RenderBlock {H1} at (500,0) size 32x367
-      RenderText {#text} at (0,0) size 32x192
-        text run at (0,0) width 192: "Header Three"
+      RenderText {#text} at (0,0) size 32x190
+        text run at (0,0) width 190: "Header Three"
     RenderBlock {H1} at (782.88,0) size 32x367
       RenderText {#text} at (0,0) size 32x177
         text run at (0,0) width 177: "Header Four"
@@ -64,7 +64,7 @@ layer at (16,8) size 208x367
       text run at (192,0) width 135: "adipiscing sem. Nam"
       text run at (208,0) width 157: "nonummy enim. Nullam"
       text run at (224,0) width 164: "bibendum lobortis neque."
-      text run at (240,0) width 140: "Vestibulum velit orci,"
+      text run at (240,0) width 139: "Vestibulum velit orci,"
       text run at (256,0) width 163: "tempus euismod, pretium"
       text run at (272,0) width 172: "quis, interdum vitae, nulla."
       text run at (288,0) width 138: "Phasellus eget ante et"
