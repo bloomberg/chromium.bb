@@ -46,7 +46,7 @@ readonly TOOLCHAIN_BUILD="${NACL_ROOT}/toolchain_build/toolchain_build_pnacl.py"
 readonly PNACL_CONCURRENCY=${PNACL_CONCURRENCY:-8}
 # Concurrency for builds using the host's system compiler (which might be goma)
 readonly PNACL_CONCURRENCY_HOST=${PNACL_CONCURRENCY_HOST:-${PNACL_CONCURRENCY}}
-PNACL_PRUNE=${PNACL_PRUNE:-false}
+PNACL_PRUNE=${PNACL_PRUNE:-true}
 PNACL_BUILD_ARM=true
 PNACL_BUILD_MIPS=${PNACL_BUILD_MIPS:-false}
 
@@ -112,20 +112,13 @@ readonly EXPORT_HEADER_SCRIPT="${SERVICE_RUNTIME_SRC}/export_header.py"
 readonly NACL_SYS_HEADERS="${SERVICE_RUNTIME_SRC}/include"
 readonly NEWLIB_INCLUDE_DIR="${TC_SRC_NEWLIB}/newlib/libc/sys/nacl"
 
-# The location of each project. These should be absolute paths.
-readonly TC_BUILD="${PNACL_ROOT}/build"
-readonly TC_BUILD_LLVM="${TC_BUILD}/llvm_${HOST_ARCH}"
-readonly TC_BUILD_BINUTILS="${TC_BUILD}/binutils_${HOST_ARCH}"
-readonly TC_BUILD_BINUTILS_LIBERTY="${TC_BUILD}/binutils-liberty"
-TC_BUILD_NEWLIB="${TC_BUILD}/newlib"
-readonly TC_BUILD_COMPILER_RT="${TC_BUILD}/compiler_rt"
-readonly TC_BUILD_GCC="${TC_BUILD}/gcc"
-readonly NACL_HEADERS_TS="${TC_BUILD}/nacl.sys.timestamp"
+
+readonly TOOLCHAIN_BUILD_OUT="${NACL_ROOT}/toolchain_build/out"
 
 readonly TIMESTAMP_FILENAME="make-timestamp"
 
 # PNaCl toolchain installation directories (absolute paths)
-readonly INSTALL_ROOT="${TOOLCHAIN_BASE}/pnacl_newlib"
+readonly INSTALL_ROOT="${TOOLCHAIN_BUILD_OUT}/translator_compiler_install"
 readonly INSTALL_BIN="${INSTALL_ROOT}/bin"
 
 # Bitcode lib directories (including static bitcode libs)
@@ -140,7 +133,7 @@ readonly INSTALL_LIB_X8664="${INSTALL_LIB_NATIVE}x86-64/lib"
 readonly INSTALL_LIB_MIPS32="${INSTALL_LIB_NATIVE}mips32/lib"
 
 # PNaCl client-translators (sandboxed) binary locations
-readonly INSTALL_TRANSLATOR="${TOOLCHAIN_BASE}/pnacl_translator"
+readonly INSTALL_TRANSLATOR="${TOOLCHAIN_BUILD_OUT}/sandboxed_translators_install"
 
 
 # The INSTALL_HOST directory has host binaries and libs which
@@ -251,26 +244,10 @@ ArgumentToAbsolutePath() {
 
 #@-------------------------------------------------------------------------
 
-#+ translator-clean-all  - Clean all translator install/build directories
-translator-clean-all() {
-  StepBanner "TRANSLATOR" "Clean all"
-  rm -rf "${TC_BUILD}"/translator*
-  rm -rf "${INSTALL_TRANSLATOR}"*
-}
-
 #@ translator-all   -  Build and install all of the translators.
 translator-all() {
   StepBanner \
     "SANDBOXED TC [prod=${SBTC_PRODUCTION}] [arches=${SBTC_ARCHES_ALL}]"
-
-  # Build the SDK if it not already present.
-  sdk
-  # Also build private libs to allow building nexes without the IRT
-  # segment gap.  Specifically, only the sandboxed translator nexes
-  # are built without IRT support to gain address space and reduce
-  # swap file usage. Also libsrpc and its dependencies are now considered
-  # private libs because they are not in the real SDK
-  sdk-private-libs
 
   if ${SBTC_PRODUCTION}; then
     # Build each architecture separately.
@@ -298,10 +275,6 @@ translator-all() {
   cp -a ${INSTALL_LIB_NATIVE}* ${INSTALL_TRANSLATOR}/translator
 
   driver-install-translator
-
-  if ${PNACL_PRUNE}; then
-    sdk-clean
-  fi
 }
 
 
@@ -319,147 +292,6 @@ translator-clean() {
   StepBanner "TRANSLATOR" "Clean ${arch}"
   rm -rf "$(GetTranslatorInstallDir ${arch})"
   rm -rf "$(GetTranslatorBuildDir ${arch})"
-}
-
-speculative-add() {
-  local mod="$1"
-  SPECULATIVE_REBUILD_SET="${SPECULATIVE_REBUILD_SET} ${mod}"
-}
-
-speculative-check() {
-  local mod="$1"
-  local search=$(echo "${SPECULATIVE_REBUILD_SET}" | grep -F "$mod")
-  [ ${#search} -gt 0 ]
-  return $?
-}
-
-
-
-#@ clean                 - Clean the build and install directories.
-clean() {
-  StepBanner "CLEAN" "Cleaning build, log, and install directories."
-
-  clean-logs
-  clean-build
-  clean-install
-  clean-scons
-}
-
-#@ fast-clean            - Clean everything except LLVM.
-fast-clean() {
-  local did_backup=false
-  local backup_dir="${PNACL_ROOT}/fast-clean-llvm-backup"
-
-  if [ -d "${TC_BUILD_LLVM}" ]; then
-    rm -rf "${backup_dir}"
-    mv "${TC_BUILD_LLVM}" "${backup_dir}"
-    did_backup=true
-  fi
-
-  clean
-
-  if ${did_backup} ; then
-    mkdir -p "${TC_BUILD}"
-    mv "${backup_dir}" "${TC_BUILD_LLVM}"
-  fi
-}
-
-#+ clean-scons           - Clean scons-out directory
-clean-scons() {
-  rm -rf "${SCONS_OUT}"
-}
-
-#+ clean-build           - Clean all build directories
-clean-build() {
-  rm -rf "${TC_BUILD}"
-}
-
-#+ clean-install         - Clean install directories
-clean-install() {
-  rm -rf "${INSTALL_ROOT}"
-}
-
-#+ libs-clean            - Removes the library directories
-libs-clean() {
-  StepBanner "LIBS-CLEAN" "Cleaning ${INSTALL_ROOT}/libs-*"
-  rm -rf "${INSTALL_LIB}"/*
-  rm -rf "${INSTALL_LIB_NATIVE}"*
-}
-
-
-#@-------------------------------------------------------------------------
-
-prune-host() {
-  echo "stripping binaries (binutils)"
-  strip "${BINUTILS_INSTALL_DIR}"/bin/*
-
-  echo "stripping binaries (llvm)"
-  if ! strip "${LLVM_INSTALL_DIR}"/bin/* ; then
-    echo "NOTE: some failures during stripping are expected"
-  fi
-
-  echo "removing unused clang shared lib"
-  rm -rf "${LLVM_INSTALL_DIR}"/${SO_DIR}/*clang${SO_EXT}
-
-  echo "removing unused binutils binaries"
-  rm -rf "${LLVM_INSTALL_DIR}"/bin/le32-nacl-elfedit
-  rm -rf "${LLVM_INSTALL_DIR}"/bin/le32-nacl-gprof
-  rm -rf "${LLVM_INSTALL_DIR}"/bin/le32-nacl-objcopy
-
-  echo "removing unused LLVM/Clang binaries"
-  rm -rf "${LLVM_INSTALL_DIR}"/bin/bc-wrap
-  rm -rf "${LLVM_INSTALL_DIR}"/bin/bugpoint
-  rm -rf "${LLVM_INSTALL_DIR}"/bin/c-index-test
-  rm -rf "${LLVM_INSTALL_DIR}"/bin/clang-*
-  rm -rf "${LLVM_INSTALL_DIR}"/bin/llc
-  rm -rf "${LLVM_INSTALL_DIR}"/bin/lli
-  rm -rf "${LLVM_INSTALL_DIR}"/bin/llvm-ar
-  rm -rf "${LLVM_INSTALL_DIR}"/bin/llvm-bcanalyzer
-  rm -rf "${LLVM_INSTALL_DIR}"/bin/llvm-config
-  rm -rf "${LLVM_INSTALL_DIR}"/bin/llvm-cov
-  rm -rf "${LLVM_INSTALL_DIR}"/bin/llvm-diff
-  rm -rf "${LLVM_INSTALL_DIR}"/bin/llvm-dwarfdump
-  rm -rf "${LLVM_INSTALL_DIR}"/bin/llvm-extract
-  rm -rf "${LLVM_INSTALL_DIR}"/bin/llvm-mcmarkup
-  rm -rf "${LLVM_INSTALL_DIR}"/bin/llvm-prof
-  rm -rf "${LLVM_INSTALL_DIR}"/bin/llvm-ranlib
-  rm -rf "${LLVM_INSTALL_DIR}"/bin/llvm-readobj
-  rm -rf "${LLVM_INSTALL_DIR}"/bin/llvm-rtdyld
-  rm -rf "${LLVM_INSTALL_DIR}"/bin/llvm-size
-  rm -rf "${LLVM_INSTALL_DIR}"/bin/llvm-stress
-  rm -rf "${LLVM_INSTALL_DIR}"/bin/llvm-symbolizer
-  rm -rf "${LLVM_INSTALL_DIR}"/bin/macho-dump
-  rm -rf "${LLVM_INSTALL_DIR}"/bin/pso-stub
-  rm -rf "${LLVM_INSTALL_DIR}"/bin/*-tblgen
-
-  echo "removing llvm & clang headers"
-  rm -rf "${LLVM_INSTALL_DIR}"/include
-
-  echo "removing docs/ and share/"
-  rm -rf "${LLVM_INSTALL_DIR}"/docs
-  rm -rf "${LLVM_INSTALL_DIR}"/share
-
-  echo "removing unused libs"
-  rm -rf "${LLVM_INSTALL_DIR}"/lib/*.a
-  rm -rf "${LLVM_INSTALL_DIR}"/lib/bfd-plugins
-  rm -rf "${LLVM_INSTALL_DIR}"/lib/BugpointPasses.so
-  rm -rf "${LLVM_INSTALL_DIR}"/lib/LLVMHello.so
-}
-
-#+ prune                 - Prune toolchain
-prune() {
-  StepBanner "PRUNE" "Pruning toolchain"
-  local dir_size_before=$(get_dir_size_in_mb ${INSTALL_ROOT})
-
-  SubBanner "Size before: ${INSTALL_ROOT} ${dir_size_before}MB"
-
-  prune-host
-
-  echo "removing .pyc files"
-  rm -f "${INSTALL_BIN}"/pydir/*.pyc
-
-  local dir_size_after=$(get_dir_size_in_mb "${INSTALL_ROOT}")
-  SubBanner "Size after: ${INSTALL_ROOT} ${dir_size_after}MB"
 }
 
 #+ tarball <filename>    - Produce tarball file
@@ -505,8 +337,8 @@ llvm-sb-setup() {
   LLVM_SB_OBJDIR="$(GetTranslatorBuildDir ${arch})/llvm-sb"
 
   # The SRPC headers are included directly from the nacl tree, as they are
-  # not in the SDK. libsrpc should have already been built by the
-  # build.sh sdk-private-libs step.
+  # not in the SDK. libsrpc should have already been built in the
+  # translator_compiler step in toolchain_build.
   # This is always statically linked.
   # The LLVM sandboxed build uses the normally-disallowed external
   # function __nacl_get_arch().  Allow that for now.
@@ -750,7 +582,7 @@ install-sb-tool() {
 
 GetTranslatorBuildDir() {
   local arch="$1"
-  echo "${TC_BUILD}/translator-${arch//_/-}"
+  echo "${TOOLCHAIN_BUILD_OUT}/sandboxed_translators_work/translator-${arch//_/-}"
 }
 
 GetTranslatorInstallDir() {
@@ -804,8 +636,8 @@ binutils-gold-sb-configure() {
   local installbin="$(GetTranslatorInstallDir ${arch})/bin"
 
   # The SRPC headers are included directly from the nacl tree, as they are
-  # not in the SDK. libsrpc should have already been built by the
-  # build.sh sdk-private-libs step
+  # not in the SDK. libsrpc should have already been built in the
+  # translator_compiler step in toolchain_build.
   # The Gold sandboxed build uses the normally-disallowed external
   # function __nacl_get_arch().  Allow that for now.
   #
@@ -1034,38 +866,6 @@ sdk-libs() {
       pnacl_newlib_dir="${INSTALL_ROOT}" \
       install_lib \
       libdir="$(PosixToSysPath "${SDK_INSTALL_LIB}")"
-  spopd
-}
-
-# This builds lib*_private.a, to allow building the llc and ld nexes without
-# the IRT and without the segment gap.
-sdk-private-libs() {
-  sdk-setup "$@"
-  StepBanner "SDK" "Private (non-IRT) libs"
-  spushd "${NACL_ROOT}"
-
-  local neutral_platform="x86-32"
-  RunWithLog "sdk.libs_private.bitcode" \
-    ./scons \
-    -j${PNACL_CONCURRENCY} \
-    bitcode=1 \
-    platform=${neutral_platform} \
-    pnacl_newlib_dir="${INSTALL_ROOT}" \
-    --verbose \
-    libnacl_sys_private \
-    libpthread_private \
-    libnacl_dyncode_private \
-    libplatform \
-    libimc \
-    libimc_syscalls \
-    libsrpc \
-    libgio
-
-  local out_dir_prefix="${SCONS_OUT}"/nacl-x86-32-pnacl-pexe-clang
-  local outdir="${out_dir_prefix}"/lib
-  mkdir -p "${SDK_INSTALL_LIB}"
-  cp "${outdir}"/lib*_private.a \
-     "${outdir}"/lib{platform,imc,imc_syscalls,srpc,gio}.a "${SDK_INSTALL_LIB}"
   spopd
 }
 

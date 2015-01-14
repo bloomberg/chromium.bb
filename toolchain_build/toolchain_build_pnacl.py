@@ -26,6 +26,7 @@ import pynacl.repo_tools
 
 import command
 import pnacl_commands
+import pnacl_sandboxed_translator
 import pnacl_targetlibs
 import toolchain_main
 
@@ -109,6 +110,8 @@ BINUTILS_PROGS = ['addr2line', 'ar', 'as', 'c++filt', 'elfedit', 'ld',
 
 TRANSLATOR_ARCHES = ('x86-32', 'x86-64', 'arm', 'mips32',
                      'x86-32-nonsfi', 'arm-nonsfi')
+
+SANDBOXED_TRANSLATOR_ARCHES = ('x86-32', 'x86-64', 'arm', 'mips32')
 # MIPS32 doesn't use biased bitcode, and nonsfi targets don't need it.
 BITCODE_BIASES = tuple(
     bias for bias in ('le32', 'i686_bc', 'x86_64_bc', 'arm_bc'))
@@ -781,6 +784,7 @@ def HostToolsDirectToNacl(host):
   })
   return tools
 
+
 def ParseComponentRevisionsFile(filename):
   ''' Parse a simple-format deps file, with fields of the form:
 key=value
@@ -924,6 +928,8 @@ def GetUploadPackageTargets():
     complete_packages = raw_packages + common_complete_packages
     package_targets[package_target]['pnacl_newlib'] = complete_packages
 
+  package_targets['linux_x86']['pnacl_translator'] = ['sandboxed_translators']
+
   return package_targets
 
 if __name__ == '__main__':
@@ -946,6 +952,8 @@ if __name__ == '__main__':
   parser.add_argument('--testsuite-sync', action='store_true', default=False,
                       help=('Sync the sources for the LLVM testsuite. '
                       'Only useful if --sync/ is also enabled'))
+  parser.add_argument('--build-sbtc', action='store_true', default=False,
+                      help='Build the sandboxed translators')
   args, leftover_args = parser.parse_known_args()
   if '-h' in leftover_args or '--help' in leftover_args:
     print 'The following arguments are specific to toolchain_build_pnacl.py:'
@@ -1015,6 +1023,9 @@ if __name__ == '__main__':
       packages.update(pnacl_targetlibs.UnsandboxedIRT(
           'x86-32-%s' % pynacl.platform.GetOS(), unsandboxed_irt_canonical))
 
+    if pynacl.platform.IsLinux64() and args.build_sbtc:
+      packages.update(pnacl_sandboxed_translator.SandboxedTranslators(
+        SANDBOXED_TRANSLATOR_ARCHES))
 
   tb = toolchain_main.PackageBuilder(packages,
                                      upload_packages,

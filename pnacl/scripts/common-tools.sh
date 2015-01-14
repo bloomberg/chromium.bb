@@ -10,10 +10,10 @@ set -o errexit
 readonly PNACL_DEBUG=${PNACL_DEBUG:-false}
 
 # True if the scripts are running on the build bots.
-readonly PNACL_BUILDBOT=${PNACL_BUILDBOT:-false}
+readonly PNACL_BUILDBOT=${PNACL_BUILDBOT:-true}
 
 # Dump all build output to stdout
-readonly PNACL_VERBOSE=${PNACL_VERBOSE:-false}
+readonly PNACL_VERBOSE=${PNACL_VERBOSE:-true}
 
 readonly TIME_AT_STARTUP=$(date '+%s')
 

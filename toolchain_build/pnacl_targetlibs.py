@@ -714,10 +714,6 @@ def SDKCompiler(arches):
   arch_packages = ([GSDJoin('newlib', arch) for arch in arches] +
                    [GSDJoin('libcxx', arch) for arch in arches])
   compiler = {
-      # TODO(dschuff): When we get a sandboxed translator build, move this
-      # target out to somewhere shareable. It's necessary for now because
-      # there's no way to inject the right -i and -L flags into SCons to find
-      # newlib.
       'sdk_compiler': {
           'type': 'work',
           'output_subdir': 'sdk_compiler',

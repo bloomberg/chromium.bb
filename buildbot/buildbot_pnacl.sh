@@ -340,16 +340,9 @@ tc-tests-fast() {
 }
 
 mode-buildbot-tc-x8664-linux() {
-  local is_try=$1
   FAIL_FAST=false
   export PNACL_TOOLCHAIN_DIR=linux_x86/pnacl_newlib
-  export PNACL_PRUNE=true
 
-  tc-build-translator
-  if ! ${is_try} ; then
-    tc-prune-translator-pexes
-    tc-archive-translator
-  fi
   HOST_ARCH=x86_64 tc-tests-all
 }
 
