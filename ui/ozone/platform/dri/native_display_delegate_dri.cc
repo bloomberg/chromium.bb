@@ -49,19 +49,19 @@ uint32_t GetContentProtectionValue(drmModePropertyRes* property,
 
 class DisplaySnapshotComparator {
  public:
-  DisplaySnapshotComparator(const DisplaySnapshotDri* snapshot)
-      : snapshot_(snapshot) {}
+  explicit DisplaySnapshotComparator(const DisplaySnapshotDri* snapshot)
+      : crtc_(snapshot->crtc()), connector_(snapshot->connector()) {}
+
+  DisplaySnapshotComparator(uint32_t crtc, uint32_t connector)
+      : crtc_(crtc), connector_(connector) {}
 
   bool operator()(const DisplaySnapshotDri* other) const {
-    if (snapshot_->connector() == other->connector() &&
-        snapshot_->crtc() == other->crtc())
-      return true;
-
-    return false;
+    return connector_ == other->connector() && crtc_ == other->crtc();
   }
 
  private:
-  const DisplaySnapshotDri* snapshot_;
+  uint32_t crtc_;
+  uint32_t connector_;
 };
 
 }  // namespace
@@ -140,13 +140,25 @@ void NativeDisplayDelegateDri::ForceDPMSOn() {
 
 std::vector<DisplaySnapshot*> NativeDisplayDelegateDri::GetDisplays() {
   ScopedVector<DisplaySnapshotDri> old_displays(cached_displays_.Pass());
-  cached_modes_.clear();
+  ScopedVector<const DisplayMode> old_modes(cached_modes_.Pass());
 
   ScopedVector<HardwareDisplayControllerInfo> displays =
       GetAvailableDisplayControllerInfos(dri_->get_fd());
   for (size_t i = 0; i < displays.size(); ++i) {
     DisplaySnapshotDri* display = new DisplaySnapshotDri(
         dri_, displays[i]->connector(), displays[i]->crtc(), i);
+
+    // If the display exists make sure to sync up the new snapshot with the old
+    // one to keep the user configured details.
+    auto it = std::find_if(
+        old_displays.begin(), old_displays.end(),
+        DisplaySnapshotComparator(displays[i]->crtc()->crtc_id,
+                                  displays[i]->connector()->connector_id));
+    // Origin is only used within the platform code to keep track of the display
+    // location.
+    if (it != old_displays.end())
+      display->set_origin((*it)->origin());
+
     cached_displays_.push_back(display);
     cached_modes_.insert(cached_modes_.end(), display->modes().begin(),
                          display->modes().end());

@@ -313,8 +313,13 @@ void DriGpuPlatformSupport::OnConfigureNativeDisplay(
     return;
   }
 
-  sender_->Send(new OzoneHostMsg_DisplayConfigured(
-      id, ndd_->Configure(*display, mode, origin)));
+  bool success = ndd_->Configure(*display, mode, origin);
+  if (success) {
+    display->set_origin(origin);
+    display->set_current_mode(mode);
+  }
+
+  sender_->Send(new OzoneHostMsg_DisplayConfigured(id, success));
 }
 
 void DriGpuPlatformSupport::OnDisableNativeDisplay(int64_t id) {

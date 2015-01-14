@@ -127,8 +127,9 @@ DisplaySnapshotDri::~DisplaySnapshotDri() {
 
 std::string DisplaySnapshotDri::ToString() const {
   return base::StringPrintf(
-      "[type=%d, connector=%" PRIu32 ", crtc=%" PRIu32 ", mode=%s, dim=%s]",
-      type_, connector_, crtc_,
+      "[type=%d, connector=%" PRIu32 ", crtc=%" PRIu32
+      ", origin=%s, mode=%s, dim=%s]",
+      type_, connector_, crtc_, origin_.ToString().c_str(),
       current_mode_ ? current_mode_->ToString().c_str() : "NULL",
       physical_size_.ToString().c_str());
 }
