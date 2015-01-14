@@ -238,5 +238,30 @@ TEST(STLUtilTest, STLIncludes) {
   EXPECT_TRUE(STLIncludes<std::set<int> >(a3, a2));
 }
 
+TEST(StringAsArrayTest, Empty) {
+  std::string empty;
+  EXPECT_EQ(nullptr, string_as_array(&empty));
+}
+
+TEST(StringAsArrayTest, NullTerminated) {
+  // If any std::string implementation is not null-terminated, this should
+  // fail. All compilers we use return a null-terminated buffer, but please do
+  // not rely on this fact in your code.
+  std::string str("abcde");
+  str.resize(3);
+  EXPECT_STREQ("abc", string_as_array(&str));
+}
+
+TEST(StringAsArrayTest, WriteCopy) {
+  // With a COW implementation, this test will fail if
+  // string_as_array(&str) is implemented as
+  // const_cast<char*>(str->data()).
+  std::string s1("abc");
+  const std::string s2(s1);
+  string_as_array(&s1)[1] = 'x';
+  EXPECT_EQ("axc", s1);
+  EXPECT_EQ("abc", s2);
+}
+
 }  // namespace
 }  // namespace base
