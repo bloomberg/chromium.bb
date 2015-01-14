@@ -1436,6 +1436,9 @@ void RenderObject::showRenderObject(int printedCharacters) const
 {
     printedCharacters += fprintf(stderr, "%s %p", renderName(), this);
 
+    if (isText() && toRenderText(this)->isTextFragment())
+        printedCharacters += fprintf(stderr, " \"%s\" ", toRenderText(this)->text().ascii().data());
+
     if (node()) {
         if (printedCharacters)
             for (; printedCharacters < showTreeCharacterOffset; printedCharacters++)
