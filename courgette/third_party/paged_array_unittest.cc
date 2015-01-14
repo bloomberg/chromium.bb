@@ -14,6 +14,9 @@ class PagedArrayTest : public testing::Test {
   static const int kSize = 200 * 1024 * 1024 / sizeof(int);  // 200MB
 };
 
+// AddressSanitizer on Windows adds additional memory overhead, which
+// causes these tests to go OOM and fail.
+#if !defined(ADDRESS_SANITIZER) || !defined(OS_WIN)
 TEST_F(PagedArrayTest, TestManyAllocationsDestructorFree) {
   for (int i = 0; i < kIterations; ++i) {
     courgette::PagedArray<int> a;
@@ -28,6 +31,7 @@ TEST_F(PagedArrayTest, TestManyAllocationsManualFree) {
     a.clear();
   }
 }
+#endif
 
 TEST_F(PagedArrayTest, TestAccess) {
   const int kAccessSize = 3 * 1024 * 1024;
