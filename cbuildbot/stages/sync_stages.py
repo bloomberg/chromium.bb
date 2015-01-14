@@ -906,7 +906,7 @@ class PreCQLauncherStage(SyncStage):
   # The number of minutes we allow before considering an in-flight
   # job failed. If this window isn't hit in a given launcher run, the window
   # will start again from scratch in the next run.
-  INFLIGHT_TIMEOUT = 180
+  INFLIGHT_TIMEOUT = 120
 
   # The maximum number of patches we will allow in a given trybot run. This is
   # needed because our trybot infrastructure can only handle so many patches at
@@ -1135,7 +1135,6 @@ class PreCQLauncherStage(SyncStage):
       timeout = self.LAUNCH_TIMEOUT if launched else self.INFLIGHT_TIMEOUT
       msg = (PRECQ_LAUNCH_TIMEOUT_MSG if launched
              else PRECQ_INFLIGHT_TIMEOUT_MSG) % (config, timeout)
-      timeout = self.LAUNCH_TIMEOUT
 
       if self._HasTimedOut(timestamp, current_time, timeout):
         pool.SendNotification(change, '%(details)s', details=msg)
