@@ -1,6 +1,5 @@
 
 Recording started
-Recording stopped
 Tracing complete
 SUCCESS: found click event
 SUCCESS: found beforeunload event

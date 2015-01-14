@@ -22,7 +22,7 @@ InspectorTest.stopTracing = function(callback)
 {
     InspectorTest.eventHandler["Tracing.tracingComplete"] = tracingComplete;
     InspectorTest.eventHandler["Tracing.dataCollected"] = dataCollected;
-    InspectorTest.sendCommand("Tracing.end", { }, onStop);
+    InspectorTest.sendCommand("Tracing.end", { });
 
     InspectorTest.devtoolsEvents = [];
     function dataCollected(reply)
@@ -40,11 +40,6 @@ InspectorTest.stopTracing = function(callback)
         InspectorTest.eventHandler["Tracing.tracingComplete"] = null;
         InspectorTest.eventHandler["Tracing.dataCollected"] = null;
         callback(InspectorTest.devtoolsEvents);
-    }
-
-    function onStop(response)
-    {
-        InspectorTest.log("Recording stopped");
     }
 }
 
