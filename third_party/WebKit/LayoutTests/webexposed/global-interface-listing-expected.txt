@@ -401,6 +401,11 @@ interface DataTransfer
     method getData
     method setData
     method setDragImage
+interface DataTransferItem
+    method constructor
+    method getAsFile
+    method getAsString
+    method webkitGetAsEntry
 interface DataTransferItemList
     method add
     method clear
