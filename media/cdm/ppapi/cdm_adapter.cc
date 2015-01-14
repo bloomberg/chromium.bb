@@ -718,11 +718,11 @@ void CdmAdapter::OnSessionMessage(const char* session_id,
                                   uint32_t message_size,
                                   const char* legacy_destination_url,
                                   uint32_t legacy_destination_url_size) {
-  // Only license renewals should specify |legacy_destination_url|.
+  // License requests should not specify |legacy_destination_url|.
   // |legacy_destination_url| is not passed to unprefixed EME applications,
   // so it can be removed when the prefixed API is removed.
   PP_DCHECK(legacy_destination_url_size == 0 ||
-            message_type == cdm::MessageType::kLicenseRenewal);
+            message_type != cdm::MessageType::kLicenseRequest);
 
   PostOnMain(callback_factory_.NewCallback(
       &CdmAdapter::SendSessionMessageInternal,
