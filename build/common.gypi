@@ -989,9 +989,9 @@
           'optimize_jni_generation%': 0,
         }],
 
-        # TODO(baixo): Enable v8_use_external_startup_data
+        # TODO(rmcilroy): Enable v8_use_external_startup_data on ChromeOS
         # http://crbug.com/421063
-        ['android_webview_build==0 and chromecast==0 and chromeos==0 and (OS=="android" or OS=="linux" or OS=="mac")', {
+        ['android_webview_build==0 and chromecast==0 and chromeos==0 and OS!="ios"', {
           'v8_use_external_startup_data%': 1,
         }, {
           'v8_use_external_startup_data%': 0,
