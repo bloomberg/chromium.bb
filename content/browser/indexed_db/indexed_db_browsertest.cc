@@ -697,8 +697,16 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, VersionChangeCrashResilience) {
                           "pass - part3 - rolled back");
 }
 
+// crbug.com/427529
+// Disable this test for ASAN on Android because it takes too long to run.
+#if defined(ANDROID) && defined(ADDRESS_SANITIZER)
+#define MAYBE_ConnectionsClosedOnTabClose DISABLED_ConnectionsClosedOnTabClose
+#else
+#define MAYBE_ConnectionsClosedOnTabClose ConnectionsClosedOnTabClose
+#endif
 // Verify that open DB connections are closed when a tab is destroyed.
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, ConnectionsClosedOnTabClose) {
+IN_PROC_BROWSER_TEST_F(
+    IndexedDBBrowserTest, MAYBE_ConnectionsClosedOnTabClose) {
   NavigateAndWaitForTitle(shell(), "version_change_blocked.html", "#tab1",
                           "setVersion(2) complete");
 
