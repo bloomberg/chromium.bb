@@ -283,9 +283,6 @@ class SiteInstanceImplPrinter(object):
             yield ('browsing_instance_', self.val['browsing_instance_']['ptr_'])
         if self.val['process_']:
             yield ('process_', typed_ptr(self.val['process_']))
-        if self.val['render_process_host_factory_']:
-            yield ('render_process_host_factory_',
-                   self.val['render_process_host_factory_'])
 pp_set.add_printer('content::SiteInstanceImpl', '^content::SiteInstanceImpl$',
                    SiteInstanceImplPrinter)
 
