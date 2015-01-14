@@ -11,4 +11,10 @@ PASS: -webkit-clip-path from [none] to [circle(3px at 1px 2px)] was [none] at 0.
 PASS: -webkit-clip-path from [none] to [circle(3px at 1px 2px)] was [circle(3px at 1px 2px)] at 0.6
 PASS: -webkit-clip-path from [none] to [circle(3px at 1px 2px)] was [circle(3px at 1px 2px)] at 1
 PASS: -webkit-clip-path from [none] to [circle(3px at 1px 2px)] was [circle(3px at 1px 2px)] at 1.5
+PASS: -webkit-clip-path from [inset(0%)] to [inset(20%)] was [inset(-6%)] at -0.3
+PASS: -webkit-clip-path from [inset(0%)] to [inset(20%)] was [inset(0%)] at 0
+PASS: -webkit-clip-path from [inset(0%)] to [inset(20%)] was [inset(6%)] at 0.3
+PASS: -webkit-clip-path from [inset(0%)] to [inset(20%)] was [inset(12%)] at 0.6
+PASS: -webkit-clip-path from [inset(0%)] to [inset(20%)] was [inset(20%)] at 1
+PASS: -webkit-clip-path from [inset(0%)] to [inset(20%)] was [inset(30%)] at 1.5
 

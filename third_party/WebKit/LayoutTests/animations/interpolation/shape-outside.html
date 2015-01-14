@@ -59,6 +59,19 @@ assertInterpolation({
 
 assertInterpolation({
   property: 'shape-outside',
+  from: 'inset(0%)',
+  to: 'inset(20%)',
+}, [
+  {at: -0.3, is: 'inset(-6%)'},
+  {at: 0, is: 'inset(0%)'},
+  {at: 0.3, is: 'inset(6%)'},
+  {at: 0.6, is: 'inset(12%)'},
+  {at: 1, is: 'inset(20%)'},
+  {at: 1.5, is: 'inset(30%)'},
+]);
+
+assertInterpolation({
+  property: 'shape-outside',
   from: 'none',
   to: 'ellipse(100% 100% at 0% 0%)',
 }, [

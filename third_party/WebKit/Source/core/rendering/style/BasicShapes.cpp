@@ -241,11 +241,29 @@ void BasicShapeInset::path(Path& path, const FloatRect& boundingBox)
     );
 }
 
-PassRefPtr<BasicShape> BasicShapeInset::blend(const BasicShape* other, double) const
+static inline LengthSize blendLengthSize(const LengthSize& to, const LengthSize& from, double progress)
 {
-    ASSERT(type() == other->type());
-    // FIXME: Implement blend for BasicShapeInset (see: crbug.com/448295).
-    return nullptr;
+    return LengthSize(to.width().blend(from.width(), progress, ValueRangeAll),
+        to.height().blend(from.height(), progress, ValueRangeAll));
+}
+
+PassRefPtr<BasicShape> BasicShapeInset::blend(const BasicShape* other, double progress) const
+{
+    ASSERT(other && isSameType(*other));
+
+    const BasicShapeInset& otherInset = toBasicShapeInset(*other);
+    RefPtr<BasicShapeInset> result = BasicShapeInset::create();
+    result->setTop(m_top.blend(otherInset.top(), progress, ValueRangeAll));
+    result->setRight(m_right.blend(otherInset.right(), progress, ValueRangeAll));
+    result->setBottom(m_bottom.blend(otherInset.bottom(), progress, ValueRangeAll));
+    result->setLeft(m_left.blend(otherInset.left(), progress, ValueRangeAll));
+
+    result->setTopLeftRadius(blendLengthSize(m_topLeftRadius, otherInset.topLeftRadius(), progress));
+    result->setTopRightRadius(blendLengthSize(m_topRightRadius, otherInset.topRightRadius(), progress));
+    result->setBottomRightRadius(blendLengthSize(m_bottomRightRadius, otherInset.bottomRightRadius(), progress));
+    result->setBottomLeftRadius(blendLengthSize(m_bottomLeftRadius, otherInset.bottomLeftRadius(), progress));
+
+    return result.release();
 }
 
 bool BasicShapeInset::operator==(const BasicShape& o) const
