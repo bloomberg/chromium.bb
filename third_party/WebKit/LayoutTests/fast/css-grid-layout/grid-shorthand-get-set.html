@@ -24,12 +24,6 @@
 #gridWithAutoFlowDenseRow {
     grid: dense row 10px;
 }
-#gridWithAutoFlowStackColumn {
-    grid: stack column 10px;
-}
-#gridWithAutoFlowRowStack {
-    grid: row stack 10px;
-}
 #gridWithAutoFlowAndColumnsAndRows {
     grid: column 10px / 20px;
 }
@@ -48,9 +42,6 @@
 #gridWithMisplacedDense {
     grid: dense column dense;
 }
-#gridWithMisplacedStack {
-    grid: stack row stack;
-}
 </style>
 <script src="../../resources/js-test.js"></script>
 </head>
@@ -67,14 +58,11 @@
 <div class="grid" id="gridWithAutoFlowNone"></div>
 <div class="grid" id="gridWithAutoFlowColumnDense"></div>
 <div class="grid" id="gridWithAutoFlowDenseRow"></div>
-<div class="grid" id="gridWithAutoFlowStackColumn"></div>
-<div class="grid" id="gridWithAutoFlowRowStack"></div>
 <div class="grid" id="gridWithAutoFlowAndColumnsAndRows"></div>
 <div class="grid" id="gridWithExplicitAndImplicit"></div>
 <div class="grid" id="gridWithMisplacedNone1"></div>
 <div class="grid" id="gridWithMisplacedNone2"></div>
 <div class="grid" id="gridWithMisplacedDense"></div>
-<div class="grid" id="gridWithMisplacedStack"></div>
 <script src="resources/grid-shorthand-parsing-utils.js"></script>
 <script>
     description("This test checks that the 'grid' shorthand is properly parsed and the longhand properties correctly assigned.");
@@ -88,8 +76,6 @@
     testGridDefinitionsValues(document.getElementById("gridWithAutoFlowNone"), "none", "none", "none", "row", "auto", "auto");
     testGridDefinitionsValues(document.getElementById("gridWithAutoFlowColumnDense"), "none", "none", "none", "column dense", "10px", "10px");
     testGridDefinitionsValues(document.getElementById("gridWithAutoFlowDenseRow"), "none", "none", "none", "row dense", "10px", "10px");
-    testGridDefinitionsValues(document.getElementById("gridWithAutoFlowStackColumn"), "none", "none", "none", "stack column", "10px", "10px");
-    testGridDefinitionsValues(document.getElementById("gridWithAutoFlowRowStack"), "none", "none", "none", "stack row", "10px", "10px");
     testGridDefinitionsValues(document.getElementById("gridWithAutoFlowAndColumnsAndRows"), "none", "none", "none", "column", "10px", "20px");
 
     debug("");
@@ -98,7 +84,6 @@
     testGridDefinitionsValues(document.getElementById("gridWithMisplacedNone1"), "none", "none", "none", "row", "auto", "auto");
     testGridDefinitionsValues(document.getElementById("gridWithMisplacedNone2"), "none", "none", "none", "row", "auto", "auto");
     testGridDefinitionsValues(document.getElementById("gridWithMisplacedDense"), "none", "none", "none", "row", "auto", "auto");
-    testGridDefinitionsValues(document.getElementById("gridWithMisplacedStack"), "none", "none", "none", "row", "auto", "auto");
 
     debug("");
     debug("Test getting and setting 'grid' shorthand through JS");

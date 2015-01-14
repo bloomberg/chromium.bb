@@ -542,7 +542,6 @@ wrap-reverse
 
 // grid-auto-flow
 dense
-stack
 
 //
 // -webkit-user-modify

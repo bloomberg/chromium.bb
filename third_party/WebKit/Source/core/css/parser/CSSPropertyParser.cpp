@@ -3820,7 +3820,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseGridTemplateAreas()
 
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseGridAutoFlow(CSSParserValueList& list)
 {
-    // [ row | column ] && dense? | stack && [ row | column ]?
+    // [ row | column ] || dense
     ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
 
     CSSParserValue* value = list.current();
@@ -3831,24 +3831,20 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseGridAutoFlow(CSSParserV
 
     // First parameter.
     CSSValueID firstId = value->id;
-    if (firstId != CSSValueRow && firstId != CSSValueColumn && firstId != CSSValueDense && firstId != CSSValueStack)
+    if (firstId != CSSValueRow && firstId != CSSValueColumn && firstId != CSSValueDense)
         return nullptr;
     parsedValues->append(cssValuePool().createIdentifierValue(firstId));
 
     // Second parameter, if any.
     value = list.next();
-    if (!value && firstId == CSSValueDense)
-        return nullptr;
-
     if (value) {
         switch (firstId) {
         case CSSValueRow:
         case CSSValueColumn:
-            if (value->id != CSSValueDense && value->id != CSSValueStack)
+            if (value->id != CSSValueDense)
                 return parsedValues;
             break;
         case CSSValueDense:
-        case CSSValueStack:
             if (value->id != CSSValueRow && value->id != CSSValueColumn)
                 return parsedValues;
             break;

@@ -248,73 +248,14 @@ RenderGrid::~RenderGrid()
 
 void RenderGrid::addChild(RenderObject* newChild, RenderObject* beforeChild)
 {
-    // If the new requested beforeChild is not one of our children is because it's wrapped by an anonymous container. If
-    // we do not special case this situation we could end up calling addChild() twice for the newChild, one with the
-    // initial beforeChild and another one with its parent.
-    if (beforeChild && beforeChild->parent() != this) {
-        ASSERT(beforeChild->parent()->isAnonymous());
-        beforeChild = splitAnonymousBoxesAroundChild(beforeChild);
-        dirtyGrid();
-    }
-
     RenderBlock::addChild(newChild, beforeChild);
 
     if (gridIsDirty())
         return;
 
-    if (!newChild->isBox()) {
-        dirtyGrid();
-        return;
-    }
-
-    // Positioned items shouldn't take up space or otherwise participate in the layout of the grid.
-    if (newChild->isOutOfFlowPositioned())
-        return;
-
-    // If the new child has been inserted inside an existent anonymous block, we can simply ignore it as the anonymous
-    // block is an already known grid item.
-    if (newChild->parent() != this)
-        return;
-
-    // FIXME: Implement properly "stack" value in auto-placement algorithm.
-    if (!style()->isGridAutoFlowAlgorithmStack()) {
-        // The grid needs to be recomputed as it might contain auto-placed items that will change their position.
-        dirtyGrid();
-        return;
-    }
-
-    RenderBox* newChildBox = toRenderBox(newChild);
-    OwnPtr<GridSpan> rowPositions = GridResolvedPosition::resolveGridPositionsFromStyle(*style(), *newChildBox, ForRows);
-    OwnPtr<GridSpan> columnPositions = GridResolvedPosition::resolveGridPositionsFromStyle(*style(), *newChildBox, ForColumns);
-    if (!rowPositions || !columnPositions) {
-        // The new child requires the auto-placement algorithm to run so we need to recompute the grid fully.
-        dirtyGrid();
-        return;
-    } else {
-        insertItemIntoGrid(*newChildBox, GridCoordinate(*rowPositions, *columnPositions));
-        addChildToIndexesMap(*newChildBox);
-    }
-}
-
-void RenderGrid::addChildToIndexesMap(RenderBox& child)
-{
-    ASSERT(!m_gridItemsIndexesMap.contains(&child));
-    RenderBox* sibling = child.nextInFlowSiblingBox();
-    bool lastSibling = !sibling;
-
-    if (lastSibling)
-        sibling = child.previousInFlowSiblingBox();
-
-    size_t index = 0;
-    if (sibling)
-        index = lastSibling ? m_gridItemsIndexesMap.get(sibling) + 1 : m_gridItemsIndexesMap.get(sibling);
-
-    if (sibling && !lastSibling) {
-        for (; sibling; sibling = sibling->nextInFlowSiblingBox())
-            m_gridItemsIndexesMap.set(sibling, m_gridItemsIndexesMap.get(sibling) + 1);
-    }
-
-    m_gridItemsIndexesMap.set(&child, index);
+    // The grid needs to be recomputed as it might contain auto-placed items that will change their position.
+    dirtyGrid();
+    return;
 }
 
 void RenderGrid::removeChild(RenderObject* child)
@@ -324,29 +265,9 @@ void RenderGrid::removeChild(RenderObject* child)
     if (gridIsDirty())
         return;
 
-    ASSERT(child->isBox());
-
-    // FIXME: Implement properly "stack" value in auto-placement algorithm.
-    if (!style()->isGridAutoFlowAlgorithmStack()) {
-        // The grid needs to be recomputed as it might contain auto-placed items that will change their position.
-        dirtyGrid();
-        return;
-    }
-
-    if (child->isOutOfFlowPositioned())
-        return;
-
-    const RenderBox* childBox = toRenderBox(child);
-    GridCoordinate coordinate = m_gridItemCoordinate.take(childBox);
-
-    for (GridSpan::iterator row = coordinate.rows.begin(); row != coordinate.rows.end(); ++row) {
-        for (GridSpan::iterator column = coordinate.columns.begin(); column != coordinate.columns.end(); ++column) {
-            GridCell& cell = m_grid[row.toInt()][column.toInt()];
-            cell.remove(cell.find(childBox));
-        }
-    }
-
-    m_gridItemsIndexesMap.remove(childBox);
+    // The grid needs to be recomputed as it might contain auto-placed items that will change their position.
+    dirtyGrid();
+    return;
 }
 
 void RenderGrid::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle)
@@ -969,14 +890,6 @@ void RenderGrid::placeItemsOnGrid()
 
     ASSERT(gridRowCount() >= GridResolvedPosition::explicitGridRowCount(*style()));
     ASSERT(gridColumnCount() >= GridResolvedPosition::explicitGridColumnCount(*style()));
-
-    // FIXME: Implement properly "stack" value in auto-placement algorithm.
-    if (style()->isGridAutoFlowAlgorithmStack()) {
-        // If we did collect some grid items, they won't be placed thus never laid out.
-        ASSERT(!autoMajorAxisAutoGridItems.size());
-        ASSERT(!specifiedMajorAxisAutoGridItems.size());
-        return;
-    }
 
     placeSpecifiedMajorAxisItemsOnGrid(specifiedMajorAxisAutoGridItems);
     placeAutoMajorAxisItemsOnGrid(autoMajorAxisAutoGridItems);

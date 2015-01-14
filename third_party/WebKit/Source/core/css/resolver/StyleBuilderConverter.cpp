@@ -334,27 +334,17 @@ GridAutoFlow StyleBuilderConverter::convertGridAutoFlow(StyleResolverState&, CSS
 
     switch (first->getValueID()) {
     case CSSValueRow:
-        if (second) {
-            if (second->getValueID() == CSSValueDense)
-                return AutoFlowRowDense;
-            return AutoFlowStackRow;
-        }
+        if (second && second->getValueID() == CSSValueDense)
+            return AutoFlowRowDense;
         return AutoFlowRow;
     case CSSValueColumn:
-        if (second) {
-            if (second->getValueID() == CSSValueDense)
-                return AutoFlowColumnDense;
-            return AutoFlowStackColumn;
-        }
+        if (second && second->getValueID() == CSSValueDense)
+            return AutoFlowColumnDense;
         return AutoFlowColumn;
     case CSSValueDense:
         if (second && second->getValueID() == CSSValueColumn)
             return AutoFlowColumnDense;
         return AutoFlowRowDense;
-    case CSSValueStack:
-        if (second && second->getValueID() == CSSValueColumn)
-            return AutoFlowStackColumn;
-        return AutoFlowStackRow;
     default:
         ASSERT_NOT_REACHED();
         return RenderStyle::initialGridAutoFlow();

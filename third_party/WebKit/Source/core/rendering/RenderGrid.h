@@ -66,7 +66,6 @@ private:
     virtual void computePreferredLogicalWidths() override;
 
     virtual void addChild(RenderObject* newChild, RenderObject* beforeChild = 0) override;
-    void addChildToIndexesMap(RenderBox&);
     virtual void removeChild(RenderObject*) override;
 
     virtual void styleDidChange(StyleDifference, const RenderStyle*) override;

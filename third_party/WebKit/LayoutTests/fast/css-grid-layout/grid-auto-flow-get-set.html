@@ -3,6 +3,9 @@
 <head>
 <link href="resources/grid.css" rel="stylesheet">
 <style>
+.gridAutoFlowDense {
+    grid-auto-flow: dense;
+}
 .gridAutoFlowColumnDense {
     grid-auto-flow: column dense;
 }
@@ -14,18 +17,6 @@
 }
 .gridAutoFlowDenseRow {
     grid-auto-flow: dense row;
-}
-.gridAutoFlowStackColumn {
-    grid-auto-flow: stack column;
-}
-.gridAutoFlowStackRow {
-    grid-auto-flow: stack row;
-}
-.gridAutoFlowColumnStack {
-    grid-auto-flow: column stack;
-}
-.gridAutoFlowRowStack {
-    grid-auto-flow: row stack;
 }
 .gridAutoFlowInherit {
     grid-auto-flow: inherit;
@@ -40,23 +31,23 @@
 .gridAutoFlowColumns {
     grid-auto-flow: columns;
 }
-.gridAutoFlowDense {
-    grid-auto-flow: dense;
-}
 .gridAutoFlowColumnFoo {
     grid-auto-flow: column foo;
 }
 .gridAutoFlowColumnColumn {
     grid-auto-flow: column column;
 }
-.gridAutoFlowDenseColumnStack {
-    grid-auto-flow: dense column stack;
+.gridAutoFlowStackRow {
+    grid-auto-flow: stack row;
+}
+.gridAutoFlowColumnStack {
+    grid-auto-flow: column stack;
+}
+.gridAutoFlowDenseColumnDense {
+    grid-auto-flow: dense column dense;
 }
 .gridAutoFlowDenseRowStack {
     grid-auto-flow: dense row stack;
-}
-.gridAutoFlowStackRowRow {
-    grid-auto-flow: stack row row;
 }
 </style>
 <script src="../../resources/js-test.js"></script>
@@ -65,15 +56,11 @@
 <div class="grid" id="gridInitial"></div>
 <div class="grid gridAutoFlowColumnSparse" id="gridAutoFlowColumnSparse"></div>
 <div class="grid gridAutoFlowRowSparse" id="gridAutoFlowRowSparse"></div>
+<div class="grid gridAutoFlowDense" id="gridAutoFlowDense"></div>
 <div class="grid gridAutoFlowColumnDense" id="gridAutoFlowColumnDense"></div>
 <div class="grid gridAutoFlowRowDense" id="gridAutoFlowRowDense"></div>
 <div class="grid gridAutoFlowDenseColumn" id="gridAutoFlowDenseColumn"></div>
 <div class="grid gridAutoFlowDenseRow" id="gridAutoFlowDenseRow"></div>
-<div class="grid gridAutoFlowStack" id="gridAutoFlowStack"></div>
-<div class="grid gridAutoFlowStackColumn" id="gridAutoFlowStackColumn"></div>
-<div class="grid gridAutoFlowStackRow" id="gridAutoFlowStackRow"></div>
-<div class="grid gridAutoFlowColumnStack" id="gridAutoFlowColumnStack"></div>
-<div class="grid gridAutoFlowRowStack" id="gridAutoFlowRowStack"></div>
 <div class="grid gridAutoFlowColumnSparse">
     <div class="grid gridAutoFlowInherit" id="gridAutoFlowInherit"></div>
 </div>
@@ -83,12 +70,12 @@
 <div class="grid gridAutoFlowNone" id="gridAutoFlowNone"></div>
 <div class="grid gridAutoFlowColumns" id="gridAutoFlowColumns"></div>
 <div class="grid gridAutoFlowRows" id="gridAutoFlowRows"></div>
-<div class="grid gridAutoFlowDense" id="gridAutoFlowDense"></div>
 <div class="grid gridAutoFlowColumnFoo" id="gridAutoFlowColumnFoo"></div>
 <div class="grid gridAutoFlowColumnColumn" id="gridAutoFlowColumnColumn"></div>
-<div class="grid gridAutoFlowDenseColumnStack" id="gridAutoFlowDenseColumnStack"></div>
+<div class="grid gridAutoFlowStackRow" id="gridAutoFlowStackRow"></div>
+<div class="grid gridAutoFlowColumnStack" id="gridAutoFlowColumnStack"></div>
+<div class="grid gridAutoFlowDenseColumnDense" id="gridAutoFlowDenseColumnDense"></div>
 <div class="grid gridAutoFlowDenseRowStack" id="gridAutoFlowDenseRowStack"></div>
-<div class="grid gridAutoFlowStackRowRow" id="gridAutoFlowStackRowRow"></div>
 <script src="resources/grid-definitions-parsing-utils.js"></script>
 <script>
     description('Test that setting and getting grid-auto-flow works as expected');
@@ -96,15 +83,11 @@
     debug("Test getting grid-auto-flow set through CSS");
     checkGridAutoFlowSetCSSValue("gridAutoFlowColumnSparse", "column");
     checkGridAutoFlowSetCSSValue("gridAutoFlowRowSparse", "row");
+    checkGridAutoFlowSetCSSValue("gridAutoFlowDense", "row dense");
     checkGridAutoFlowSetCSSValue("gridAutoFlowColumnDense", "column dense");
     checkGridAutoFlowSetCSSValue("gridAutoFlowRowDense", "row dense");
     checkGridAutoFlowSetCSSValue("gridAutoFlowDenseColumn", "column dense");
     checkGridAutoFlowSetCSSValue("gridAutoFlowDenseRow", "row dense");
-    checkGridAutoFlowSetCSSValue("gridAutoFlowStack", "stack row");
-    checkGridAutoFlowSetCSSValue("gridAutoFlowStackColumn", "stack column");
-    checkGridAutoFlowSetCSSValue("gridAutoFlowStackRow", "stack row");
-    checkGridAutoFlowSetCSSValue("gridAutoFlowColumnStack", "stack column");
-    checkGridAutoFlowSetCSSValue("gridAutoFlowRowStack", "stack row");
     checkGridAutoFlowSetCSSValue("gridAutoFlowInherit", "column");
     checkGridAutoFlowSetCSSValue("gridAutoFlowNoInherit", "row");
 
@@ -113,12 +96,12 @@
     checkGridAutoFlowSetCSSValue("gridAutoFlowNone", "row");
     checkGridAutoFlowSetCSSValue("gridAutoFlowColumns", "row");
     checkGridAutoFlowSetCSSValue("gridAutoFlowRows", "row");
-    checkGridAutoFlowSetCSSValue("gridAutoFlowDense", "row");
     checkGridAutoFlowSetCSSValue("gridAutoFlowColumnFoo", "row");
     checkGridAutoFlowSetCSSValue("gridAutoFlowColumnColumn", "row");
-    checkGridAutoFlowSetCSSValue("gridAutoFlowDenseColumnStack", "row");
+    checkGridAutoFlowSetCSSValue("gridAutoFlowStackRow", "row");
+    checkGridAutoFlowSetCSSValue("gridAutoFlowColumnStack", "row");
+    checkGridAutoFlowSetCSSValue("gridAutoFlowDenseColumnDense", "row");
     checkGridAutoFlowSetCSSValue("gridAutoFlowDenseRowStack", "row");
-    checkGridAutoFlowSetCSSValue("gridAutoFlowStackRowRow", "row");
 
     debug("");
     debug("Test the initial value");
@@ -131,20 +114,16 @@
     checkGridAutoFlowSetJSValue("dense column", "dense column", "column dense");
     checkGridAutoFlowSetJSValue("dense row", "dense row", "row dense");
     checkGridAutoFlowSetJSValue("row", "row", "row");
-    checkGridAutoFlowSetJSValue("stack", "stack", "stack row");
-    checkGridAutoFlowSetJSValue("stack column", "stack column", "stack column");
-    checkGridAutoFlowSetJSValue("stack row", "stack row", "stack row");
-    checkGridAutoFlowSetJSValue("column stack", "column stack", "stack column");
-    checkGridAutoFlowSetJSValue("row stack", "row stack", "stack row");
 
     debug("");
     debug("Test getting and setting bad values for grid-auto-flow through JS");
     checkGridAutoFlowSetJSValue("noone", "", "row");
-    checkGridAutoFlowSetJSValue("dense", "", "row");
+    checkGridAutoFlowSetJSValue("dense row dense", "", "row");
     checkGridAutoFlowSetJSValue("column column", "", "row");
-    checkGridAutoFlowSetJSValue("dense column stack", "", "row");
+    checkGridAutoFlowSetJSValue("stack row", "", "row");
+    checkGridAutoFlowSetJSValue("column stack", "", "row");
+    checkGridAutoFlowSetJSValue("dense column dense", "", "row");
     checkGridAutoFlowSetJSValue("dense row stack", "", "row");
-    checkGridAutoFlowSetJSValue("stack row row", "", "row");
 
     debug("");
     debug("Test setting grid-auto-flow to 'initial' through JS");

@@ -1573,10 +1573,6 @@ PassRefPtrWillBeRawPtr<CSSValue> RenderStyleCSSValueMapping::get(CSSPropertyID p
         case AutoFlowColumnDense:
             list->append(cssValuePool().createIdentifierValue(CSSValueColumn));
             break;
-        case AutoFlowStackRow:
-        case AutoFlowStackColumn:
-            list->append(cssValuePool().createIdentifierValue(CSSValueStack));
-            break;
         default:
             ASSERT_NOT_REACHED();
         }
@@ -1585,12 +1581,6 @@ PassRefPtrWillBeRawPtr<CSSValue> RenderStyleCSSValueMapping::get(CSSPropertyID p
         case AutoFlowRowDense:
         case AutoFlowColumnDense:
             list->append(cssValuePool().createIdentifierValue(CSSValueDense));
-            break;
-        case AutoFlowStackRow:
-            list->append(cssValuePool().createIdentifierValue(CSSValueRow));
-            break;
-        case AutoFlowStackColumn:
-            list->append(cssValuePool().createIdentifierValue(CSSValueColumn));
             break;
         default:
             // Do nothing.
