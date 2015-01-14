@@ -105,6 +105,7 @@ Status WebCryptoCurveToJwkCrv(blink::WebCryptoNamedCurve named_curve,
 
 // Verifies that an EC key imported from PKCS8 or SPKI format is correct.
 // This involves verifying the key validity, and the NID for the named curve.
+// Also removes the EC_PKEY_NO_PUBKEY flag if present.
 Status VerifyEcKeyAfterSpkiOrPkcs8Import(
     EVP_PKEY* pkey,
     blink::WebCryptoNamedCurve expected_named_curve) {
@@ -113,6 +114,14 @@ Status VerifyEcKeyAfterSpkiOrPkcs8Import(
   crypto::ScopedEC_KEY ec(EVP_PKEY_get1_EC_KEY(pkey));
   if (!ec.get())
     return Status::ErrorUnexpected();
+
+  // When importing an ECPrivateKey, the public key is optional. If it was
+  // omitted then the public key will be calculated by BoringSSL and added into
+  // the EC_KEY. However an encoding flag is set such that when exporting to
+  // PKCS8 format the public key is once again omitted. Remove this flag.
+  unsigned int enc_flags = EC_KEY_get_enc_flags(ec.get());
+  enc_flags &= ~EC_PKEY_NO_PUBKEY;
+  EC_KEY_set_enc_flags(ec.get(), enc_flags);
 
   // TODO(eroman): Is this necessary? From my tests it seems that BoringSSL
   // already does these checks when setting the public key's affine coordinates.

@@ -301,7 +301,8 @@ TEST(WebCryptoEcdsaTest, ImportExportPrivateKey) {
     const base::DictionaryValue* jwk_dict;
     EXPECT_TRUE(test->GetDictionary("jwk", &jwk_dict));
     std::vector<uint8_t> jwk_bytes = MakeJsonVector(*jwk_dict);
-    std::vector<uint8_t> pkcs8_bytes = GetBytesFromHexString(test, "pkcs8");
+    std::vector<uint8_t> pkcs8_bytes = GetBytesFromHexString(
+        test, test->HasKey("exported_pkcs8") ? "exported_pkcs8" : "pkcs8");
 
     // -------------------------------------------------
     // Test from JWK, and then export to {JWK, PKCS8}
@@ -345,9 +346,17 @@ TEST(WebCryptoEcdsaTest, ImportExportPrivateKey) {
     // Test from PKCS8, and then export to {JWK, PKCS8}
     // -------------------------------------------------
 
+    // The imported PKCS8 bytes may differ from the exported bytes (in the case
+    // where the publicKey was missing, it will be synthesized and written back
+    // during export).
+    std::vector<uint8_t> pkcs8_input_bytes = GetBytesFromHexString(
+        test, test->HasKey("original_pkcs8") ? "original_pkcs8" : "pkcs8");
+    CryptoData pkcs8_input_data(pkcs8_input_bytes.empty() ? pkcs8_bytes
+                                                          : pkcs8_input_bytes);
+
     // Import the key using PKCS8
     ASSERT_EQ(Status::Success(),
-              ImportKey(blink::WebCryptoKeyFormatPkcs8, CryptoData(pkcs8_bytes),
+              ImportKey(blink::WebCryptoKeyFormatPkcs8, pkcs8_input_data,
                         CreateEcdsaImportAlgorithm(curve), true,
                         blink::WebCryptoKeyUsageSign, &key));
 
