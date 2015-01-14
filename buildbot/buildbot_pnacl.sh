@@ -21,38 +21,7 @@ BUILD_MODE_HOST=OPT
 FAIL_FAST=${FAIL_FAST:-true}
 # This remembers when any build steps failed, but we ended up continuing.
 RETCODE=0
-# For scons builds an empty target indicates all targets should be built.
-# This does not run any tests, though.
-# Large tests are not included in this group because they cannot be run
-# in parallel (they can do things like bind to local TCP ports). Large
-# tests are run separately in the functions below.
-readonly SCONS_EVERYTHING=""
-readonly SCONS_S_M="small_tests medium_tests"
-readonly SCONS_S_M_IRT="small_tests_irt medium_tests_irt"
 
-# This uses the newlib-based nonsfi_loader.
-readonly SCONS_NONSFI_NEWLIB="\
-    nonsfi_nacl=1 \
-    nonsfi_tests_irt"
-# Build with pnacl_generate_pexe=0 to allow using pnacl-clang with
-# direct-to-native mode. This allows assembly to be used in tests.
-readonly SCONS_NONSFI_NEWLIB_NOPNACL_GENERATE_PEXE="\
-    nonsfi_nacl=1 \
-    pnacl_generate_pexe=0 \
-    nonsfi_tests"
-# This uses the host-libc-based nonsfi_loader.
-# Using skip_nonstable_bitcode=1 here disables the tests for zero-cost C++
-# exception handling, which don't pass for Non-SFI mode yet because we
-# don't build libgcc_eh for Non-SFI mode.
-readonly SCONS_NONSFI="\
-    nonsfi_nacl=1 \
-    nonsfi_tests \
-    nonsfi_tests_irt \
-    toolchain_tests_irt \
-    skip_nonstable_bitcode=1 \
-    use_newlib_nonsfi_loader=0"
-
-readonly SCONS_COMMON="./scons --verbose bitcode=1"
 readonly UP_DOWN_LOAD="buildbot/file_up_down_load.sh"
 # This script is used by toolchain bots (i.e. tc-xxx functions)
 readonly PNACL_BUILD="pnacl/build.sh"
@@ -83,30 +52,6 @@ tc-archive-translator() {
 
   ${NATIVE_PYTHON} build/package_version/package_version.py --annotate upload \
       --upload-package=pnacl_translator --revision=${BUILDBOT_GOT_REVISION}
-}
-
-
-# extract the relevant scons flags for reporting
-relevant() {
-  for i in "$@" ; do
-    case $i in
-      use_sandboxed_translator=1)
-        echo -n "sbtc "
-        ;;
-      do_not_run_tests=1)
-        echo -n "no_tests "
-        ;;
-      pnacl_generate_pexe=0)
-        echo -n "no_pexe "
-        ;;
-      translate_fast=1)
-        echo -n "fast "
-        ;;
-      --nacl_glibc)
-        echo -n "glibc "
-        ;;
-    esac
-  done
 }
 
 # called when a scons invocation fails
@@ -273,48 +218,6 @@ gyp-mips32-build() {
   make -C .. -k -j8 V=1 BUILDTYPE=${gypmode}
 }
 
-build-sbtc-prerequisites() {
-  local platform=$1
-  # Sandboxed translators currently only require irt_core since they do not
-  # use PPAPI.
-  ${SCONS_COMMON} platform=${platform} sel_ldr sel_universal irt_core
-}
-
-# Run a single invocation of scons as its own buildbot stage and handle errors
-scons-stage-irt() {
-  local platform=$1
-  local extra=$2
-  local test=$3
-  local info="$(relevant ${extra})"
-  # TODO(robertm): do we really need both nacl and nacl_irt_test
-  local mode="--mode=opt-host,nacl,nacl_irt_test"
-  if [ "${BUILD_MODE_HOST}" = "DEBUG" ] ; then
-      mode="--mode=dbg-host,nacl,nacl_irt_test"
-  fi
-
-  # We truncate the test list ($test) because long BUILD_STEP strings cause
-  # Buildbot to fail (because the Buildbot master tries to use the string
-  # as a filename).
-  echo "@@@BUILD_STEP scons-irt [${platform}] [${test:0:100}] [${info}]@@@"
-  ${SCONS_COMMON} ${extra} ${mode} platform=${platform} ${test} || handle-error
-}
-
-# Run a single invocation of scons as its own buildbot stage and handle errors
-scons-stage-noirt() {
-  local platform=$1
-  local extra=$2
-  local test=$3
-  local info="$(relevant ${extra})"
-  local mode="--mode=opt-host,nacl"
-  if [ "${BUILD_MODE_HOST}" = "DEBUG" ] ; then
-      mode="--mode=dbg-host,nacl"
-  fi
-
-  echo "@@@BUILD_STEP scons [${platform}] [${test}] [${info}]@@@"
-  ${SCONS_COMMON} ${extra} ${mode} platform=${platform} ${test} || handle-error
-}
-
-
 driver-tests() {
   local arch=$1
   echo "@@@BUILD_STEP driver_tests ${arch}@@@"
@@ -325,82 +228,29 @@ driver-tests() {
 # QEMU upload bot runs this function, and the hardware download bot runs
 # mode-buildbot-arm-hw
 mode-buildbot-arm() {
-  FAIL_FAST=false
-  # "force_emulator=" disables use of QEMU, which enables building
-  # tests which don't work under QEMU.
-  local qemuflags="-j8 -k do_not_run_tests=1 force_emulator="
-
   clobber
 
   gyp-arm-build
 
-  # Sanity check
-  scons-stage-noirt "arm" "-j8" "run_hello_world_test"
-
-  # Don't run the rest of the tests on qemu, only build them.
+  # Don't run the tests on qemu, only build them.
   # QEMU is too flaky for the main waterfall
-
-  # Normal pexe mode build.
-  scons-stage-noirt "arm" "${qemuflags}" "${SCONS_EVERYTHING}"
-  # This extra step is required to translate the pexes (because translation
-  # happens as part of CommandSelLdrTestNacl and not part of the
-  # build-everything step)
-  scons-stage-noirt "arm" "${qemuflags}" "${SCONS_S_M}"
-  # Large tests cannot be run in parallel
-  scons-stage-noirt "arm" "${qemuflags} -j1" "large_tests"
-
-  # Normal pexe mode build.
-  scons-stage-irt "arm" "${qemuflags}" "${SCONS_EVERYTHING}"
-  # Also run tests with the irt
-  scons-stage-irt "arm" "${qemuflags}" "${SCONS_S_M_IRT}"
-  scons-stage-irt "arm" "${qemuflags} -j1" "large_tests_irt"
-
-  # non-pexe-mode tests
-  scons-stage-noirt "arm" "${qemuflags} pnacl_generate_pexe=0" "nonpexe_tests"
-
-  build-sbtc-prerequisites "arm"
-
-  scons-stage-irt "arm" \
-    "${qemuflags} use_sandboxed_translator=1 translate_in_build_step=0" \
-    "toolchain_tests"
-  scons-stage-irt "arm" \
-    "${qemuflags} use_sandboxed_translator=1 translate_fast=1 \
-       translate_in_build_step=0" \
-    "toolchain_tests"
-
-  # Test Non-SFI Mode.
-  scons-stage-irt "arm" "${qemuflags}" "${SCONS_NONSFI_NEWLIB}"
-  scons-stage-irt "arm" "${qemuflags}" \
-    "${SCONS_NONSFI_NEWLIB_NOPNACL_GENERATE_PEXE}"
-  scons-stage-irt "arm" "${qemuflags}" "${SCONS_NONSFI}"
+  local mode
+  if [ "${BUILD_MODE_HOST}" = "DEBUG" ] ; then
+    mode="dbg"
+  else
+    mode="opt"
+  fi
+  buildbot/buildbot_pnacl.py --skip-run ${mode} arm pnacl
 }
 
 mode-buildbot-arm-hw() {
-  FAIL_FAST=false
-  local hwflags="-j2 -k naclsdk_validate=0 built_elsewhere=1"
-
-  scons-stage-noirt "arm" "${hwflags}" "${SCONS_S_M}"
-  # Large tests cannot be run in parallel
-  scons-stage-noirt "arm" "${hwflags} -j1" "large_tests"
-
-  # Also run tests with the irt
-  scons-stage-irt "arm" "${hwflags}" "${SCONS_S_M_IRT}"
-  scons-stage-irt "arm" "${hwflags} -j1" "large_tests_irt"
-
-  scons-stage-noirt "arm" "${hwflags} pnacl_generate_pexe=0" "nonpexe_tests"
-  scons-stage-irt "arm" \
-    "${hwflags} use_sandboxed_translator=1 translate_in_build_step=0" \
-    "toolchain_tests"
-  scons-stage-irt "arm" \
-    "${hwflags} use_sandboxed_translator=1 translate_fast=1 \
-       translate_in_build_step=0" \
-    "toolchain_tests"
-
-  # Test Non-SFI Mode.
-  scons-stage-irt "arm" "${hwflags}" "${SCONS_NONSFI_NEWLIB}"
-  scons-stage-irt "arm" "${hwflags}" \
-    "${SCONS_NONSFI_NEWLIB_NOPNACL_GENERATE_PEXE}"
-  scons-stage-irt "arm" "${hwflags}" "${SCONS_NONSFI}"
+  local mode
+  if [ "${BUILD_MODE_HOST}" = "DEBUG" ] ; then
+    mode="dbg"
+  else
+    mode="opt"
+  fi
+  buildbot/buildbot_pnacl.py --skip-build ${mode} arm pnacl
 }
 
 mode-trybot-qemu() {
@@ -455,12 +305,6 @@ mode-buildbot-arm-hw-try() {
 
 # These 2 functions are also suitable for local TC sanity testing.
 tc-tests-all() {
-  local is_try=$1
-
-  local label="pnacl_newlib_dir=toolchain/${PNACL_TOOLCHAIN_DIR}"
-  local scons_flags="-k skip_trusted_tests=1 -j8 ${label}"
-
-  # newlib
   for arch in x86-32 x86-64 arm; do
     driver-tests "${arch}"
   done
@@ -489,7 +333,6 @@ tc-tests-all() {
 
 tc-tests-fast() {
   local arch="$1"
-  local scons_flags="-k skip_trusted_tests=1"
 
   driver-tests "${arch}"
 
@@ -507,11 +350,10 @@ mode-buildbot-tc-x8664-linux() {
     tc-prune-translator-pexes
     tc-archive-translator
   fi
-  HOST_ARCH=x86_64 tc-tests-all ${is_try}
+  HOST_ARCH=x86_64 tc-tests-all
 }
 
 mode-buildbot-tc-x8632-linux() {
-  local is_try=$1
   FAIL_FAST=false
   export PNACL_TOOLCHAIN_DIR=linux_x86/pnacl_newlib
 

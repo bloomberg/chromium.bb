@@ -3,6 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import os
 import sys
 
 from buildbot_lib import (
@@ -10,29 +11,56 @@ from buildbot_lib import (
     RemoveSconsBuildDirectories, RunBuild, SetupLinuxEnvironment,
     SetupMacEnvironment, SetupWindowsEnvironment, SCons, Step )
 
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+import pynacl.platform
 
 def RunSconsTests(status, context):
-  # Clean out build directories.
-  with Step('clobber scons', status):
-    RemoveSconsBuildDirectories()
+  # Clean out build directories, unless we have built elsewhere.
+  if not context['skip_build']:
+    with Step('clobber scons', status):
+      RemoveSconsBuildDirectories()
 
   # Run checkdeps script to vet #includes.
   with Step('checkdeps', status):
     Command(context, cmd=[sys.executable, 'tools/checkdeps/checkdeps.py'])
 
-  # Unlike their arm counterparts we do not run trusted tests on x86 bots.
-  # Trusted tests get plenty of coverage by other bots, e.g. nacl-gcc bots.
-  # We make the assumption here that there are no "exotic tests" which
-  # are trusted in nature but are somehow depedent on the untrusted TC.
-  flags_build = ['skip_trusted_tests=1', 'do_not_run_tests=1']
-  flags_run = ['skip_trusted_tests=1']
-  smoke_tests = ['small_tests', 'medium_tests']
-
   arch = context['default_scons_platform']
 
-  with Step('build_all ' + arch, status):
-    SCons(context, parallel=True, args=flags_build)
+  flags_build = ['do_not_run_tests=1']
+  flags_run = []
 
+  # This file is run 3 different ways for ARM builds. The qemu-only trybot does
+  # a normal build-and-run with the emulator just like the x86 bots. The panda
+  # build side runs on an x86 machines with skip_run, and then packs up the
+  # result and triggers an ARM hardware tester that run with skip_build
+  if arch != 'arm':
+    # Unlike their arm counterparts we do not run trusted tests on x86 bots.
+    # Trusted tests get plenty of coverage by other bots, e.g. nacl-gcc bots.
+    # We make the assumption here that there are no "exotic tests" which
+    # are trusted in nature but are somehow depedent on the untrusted TC.
+    flags_build.append('skip_trusted_tests=1')
+    flags_run.append('skip_trusted_tests=1')
+
+  if context['skip_run']:
+    flags_run.append('do_not_run_tests=1')
+    if arch == 'arm':
+      # For ARM hardware bots, force_emulator= disables use of QEMU, which
+      # enables building tests which don't work under QEMU.
+      flags_build.append('force_emulator=')
+      flags_run.append('force_emulator=')
+  if context['skip_build']:
+    flags_run.extend(['naclsdk_validate=0', 'built_elsewhere=1'])
+
+  if not context['skip_build']:
+    # For ARM builders which will trigger hardware testers, run the hello world
+    # test with the emulator as a basic sanity check before doing anything else.
+    if arch == 'arm' and context['skip_run']:
+        with Step('hello_world ' + arch, status):
+          SCons(context, parallel=True, args=['run_hello_world_test'])
+    with Step('build_all ' + arch, status):
+      SCons(context, parallel=True, args=flags_build)
+
+  smoke_tests = ['small_tests', 'medium_tests']
   # Normal pexe-mode tests
   with Step('smoke_tests ' + arch, status, halt_on_fail=False):
     SCons(context, parallel=True, args=flags_run + smoke_tests)
@@ -45,6 +73,10 @@ def RunSconsTests(status, context):
           args=flags_run + ['pnacl_generate_pexe=0', 'nonpexe_tests'])
 
   irt_mode = context['default_scons_mode'] + ['nacl_irt_test']
+  # Build all the tests with the IRT
+  if not context['skip_build']:
+    with Step('build_all_irt ' + arch, status):
+      SCons(context, parallel=True, mode=irt_mode, args=flags_build)
   smoke_tests_irt = ['small_tests_irt', 'medium_tests_irt']
   # Run tests with the IRT.
   with Step('smoke_tests_irt ' + arch, status, halt_on_fail=False):
@@ -59,8 +91,9 @@ def RunSconsTests(status, context):
     # buildbot_standard with nacl_clang and this can be split out.
     context['pnacl'] = False
     context['nacl_clang'] = True
-    with Step('build_nacl_clang ' + arch, status, halt_on_fail=False):
-      SCons(context, parallel=True, args=flags_build)
+    if not context['skip_build']:
+      with Step('build_nacl_clang ' + arch, status, halt_on_fail=False):
+        SCons(context, parallel=True, args=flags_build)
     with Step('smoke_tests_nacl_clang ' + arch, status, halt_on_fail=False):
       SCons(context, parallel=True,
             args=flags_run + ['small_tests', 'medium_tests'])
@@ -71,30 +104,36 @@ def RunSconsTests(status, context):
     context['nacl_clang'] = False
 
   # Test sandboxed translation
+  # TODO(dschuff): The standalone sandboxed translator driver does not have
+  # the batch script wrappers, so it can't run on Windows. Either add them to
+  # the translator package or make SCons use the pnacl_newlib drivers except
+  # on the ARM bots where we don't have the pnacl_newlib drivers.
+  # The mac standalone sandboxed translator is flaky.
+  # https://code.google.com/p/nativeclient/issues/detail?id=3856
   if not context.Windows() and not context.Mac():
-    # TODO(dschuff): The standalone sandboxed translator driver does not have
-    # the batch script wrappers, so it can't run on Windows. Either add them to
-    # the translator package or make SCons use the pnacl_newlib drivers except
-    # on the ARM bots where we don't have the pnacl_newlib drivers.
-    # The mac standalone sandboxed translator is flaky.
-    # https://code.google.com/p/nativeclient/issues/detail?id=3856
-
+    flags_run_sbtc = ['use_sandboxed_translator=1']
+    sbtc_tests = ['toolchain_tests_irt']
     if arch == 'arm':
-      # The ARM sandboxed translator is flaky under qemu, so run a very small
-      # set of tests there.
-      sbtc_tests = ['run_hello_world_test_irt']
+      # When splitting the build from the run, translate_in_build_step forces
+      # the translation to run on the run side (it usually runs on the build
+      # side because that runs with more parallelism)
+      if context['skip_build'] or context['skip_run']:
+        flags_run_sbtc.append('translate_in_build_step=0')
+      else:
+        # The ARM sandboxed translator is flaky under qemu, so run a very small
+        # set of tests on the qemu-only trybot.
+        sbtc_tests = ['run_hello_world_test_irt']
     else:
-      sbtc_tests = ['toolchain_tests_irt', 'large_code']
+      sbtc_tests.append('large_code')
 
     with Step('sandboxed_translator_tests ' + arch, status,
               halt_on_fail=False):
       SCons(context, parallel=True, mode=irt_mode,
-            args=flags_run + ['use_sandboxed_translator=1'] + sbtc_tests)
+            args=flags_run + flags_run_sbtc + sbtc_tests)
     with Step('sandboxed_translator_fast_tests ' + arch, status,
               halt_on_fail=False):
       SCons(context, parallel=True, mode=irt_mode,
-            args=flags_run + ['use_sandboxed_translator=1',
-                              'translate_fast=1'] + sbtc_tests)
+            args=flags_run + flags_run_sbtc + ['translate_fast=1'] + sbtc_tests)
 
   # Test Non-SFI Mode.
   # The only architectures that the PNaCl toolchain supports Non-SFI
@@ -127,7 +166,7 @@ def RunSconsTests(status, context):
       SCons(context, parallel=True, mode=irt_mode,
             args=flags_run +
                 ['nonsfi_nacl=1', 'use_newlib_nonsfi_loader=0',
-                 'nonsfi_tests_irt',
+                 'nonsfi_tests', 'nonsfi_tests_irt',
                  'toolchain_tests_irt', 'skip_nonstable_bitcode=1'])
 
   # Test unsandboxed mode.
@@ -164,6 +203,10 @@ def Main():
     SetupMacEnvironment(context)
   else:
     raise Exception('Unsupported platform')
+
+  # Panda bots only have 2 cores.
+  if pynacl.platform.GetArch() == 'arm':
+    context['max_jobs'] = 2
 
   RunBuild(RunSconsTests, status)
 

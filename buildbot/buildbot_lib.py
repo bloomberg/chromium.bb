@@ -187,6 +187,12 @@ def ParseStandardCommandLine(context):
   parser.add_option('--use-breakpad-tools', dest='use_breakpad_tools',
                     default=False, action='store_true',
                     help='Use breakpad tools for testing')
+  parser.add_option('--skip-build', dest='skip_build', default=False,
+                    action='store_true',
+                    help='Skip building steps in buildbot_pnacl')
+  parser.add_option('--skip-run', dest='skip_run', default=False,
+                    action='store_true',
+                    help='Skip test-running steps in buildbot_pnacl')
 
   options, args = parser.parse_args()
 
@@ -248,6 +254,8 @@ def ParseStandardCommandLine(context):
   context['coverage'] = options.coverage
   context['use_breakpad_tools'] = options.use_breakpad_tools
   context['scons_args'] = options.scons_args
+  context['skip_build'] = options.skip_build
+  context['skip_run'] = options.skip_run
   # Don't run gyp on coverage builds.
   if context['coverage']:
     context['no_gyp'] = True
