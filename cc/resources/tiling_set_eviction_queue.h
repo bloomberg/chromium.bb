@@ -74,7 +74,6 @@ namespace cc {
 // eviction queue.
 class CC_EXPORT TilingSetEvictionQueue {
  public:
-  TilingSetEvictionQueue();
   TilingSetEvictionQueue(PictureLayerTilingSet* tiling_set,
                          TreePriority tree_priority,
                          bool skip_shared_out_of_order_tiles);

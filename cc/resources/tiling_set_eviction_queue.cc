@@ -8,21 +8,6 @@
 
 namespace cc {
 
-TilingSetEvictionQueue::TilingSetEvictionQueue()
-    : tiling_set_(nullptr),
-      tree_(ACTIVE_TREE),
-      tree_priority_(SAME_PRIORITY_FOR_BOTH_TREES),
-      skip_all_shared_tiles_(false),
-      skip_shared_out_of_order_tiles_(false),
-      processing_soon_border_rect_(false),
-      processing_tiling_with_required_for_activation_tiles_(false),
-      tiling_index_with_required_for_activation_tiles_(0u),
-      current_priority_bin_(TilePriority::EVENTUALLY),
-      current_tiling_index_(0u),
-      current_tiling_range_type_(PictureLayerTilingSet::HIGHER_THAN_HIGH_RES),
-      current_eviction_tile_(nullptr) {
-}
-
 TilingSetEvictionQueue::TilingSetEvictionQueue(
     PictureLayerTilingSet* tiling_set,
     TreePriority tree_priority,
