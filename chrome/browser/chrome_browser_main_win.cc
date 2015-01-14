@@ -310,7 +310,6 @@ void ChromeBrowserMainPartsWin::PrepareRestartOnCrashEnviroment(
   // If the known command-line test options are used we don't create the
   // environment block which means we don't get the restart dialog.
   if (parsed_command_line.HasSwitch(switches::kBrowserCrashTest) ||
-      parsed_command_line.HasSwitch(switches::kBrowserAssertTest) ||
       parsed_command_line.HasSwitch(switches::kNoErrorDialogs))
     return;
 

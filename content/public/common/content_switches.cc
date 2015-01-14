@@ -54,9 +54,6 @@ const char kBlinkPlatformLogChannels[]      = "blink-platform-log-channels";
 // is enabled.
 const char kBlockCrossSiteDocuments[]     = "block-cross-site-documents";
 
-// Causes the browser process to throw an assertion on startup.
-const char kBrowserAssertTest[]             = "assert-test";
-
 // Causes the browser process to crash on startup.
 const char kBrowserCrashTest[]              = "crash-test";
 

@@ -24,7 +24,6 @@ extern const char kAuditAllHandles[];
 extern const char kAuditHandles[];
 CONTENT_EXPORT extern const char kBlinkPlatformLogChannels[];
 CONTENT_EXPORT extern const char kBlockCrossSiteDocuments[];
-CONTENT_EXPORT extern const char kBrowserAssertTest[];
 CONTENT_EXPORT extern const char kBrowserCrashTest[];
 CONTENT_EXPORT extern const char kBrowserSubprocessPath[];
 extern const char kDebugPluginLoading[];

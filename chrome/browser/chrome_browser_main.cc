@@ -225,11 +225,6 @@ namespace {
 // This function provides some ways to test crash and assertion handling
 // behavior of the program.
 void HandleTestParameters(const base::CommandLine& command_line) {
-  // This parameter causes an assertion.
-  if (command_line.HasSwitch(switches::kBrowserAssertTest)) {
-    DCHECK(false);
-  }
-
   // This parameter causes a null pointer crash (crash reporter trigger).
   if (command_line.HasSwitch(switches::kBrowserCrashTest)) {
     int* bad_pointer = NULL;
