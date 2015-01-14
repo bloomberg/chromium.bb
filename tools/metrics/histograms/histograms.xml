@@ -28367,6 +28367,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="RecoveryComponent.Event" enum="RecoveryComponentEvent">
+  <owner>robertshield@chromium.org</owner>
+  <summary>Log each stage of a recovery component event.</summary>
+</histogram>
+
 <histogram name="Renderer.AcceleratedFixedRootBackground"
     enum="AcceleratedFixedRootBackground">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
@@ -55167,6 +55172,19 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1" label="Other Device Tab"/>
   <int value="2" label="Restore Window"/>
   <int value="3" label="Show More"/>
+</enum>
+
+<enum name="RecoveryComponentEvent" type="int">
+  <int value="0" label="RunningNonElevated"/>
+  <int value="1" label="ElevationNeeded"/>
+  <int value="2" label="RunFailed"/>
+  <int value="3" label="RunSucceeded"/>
+  <int value="4" label="RunSkipped"/>
+  <int value="5" label="RunningElevated"/>
+  <int value="6" label="RunElevatedFailed"/>
+  <int value="7" label="RunElevatedSucceeded"/>
+  <int value="8" label="RunElevatedSkipped"/>
+  <int value="9" label="DownloadError"/>
 </enum>
 
 <enum name="RemotePlaybackDeviceType" type="int">
