@@ -414,40 +414,24 @@ static inline ScopedStyleResolver* scopedResolverFor(const Element* element)
     return treeScope->scopedStyleResolver();
 }
 
-void StyleResolver::matchAuthorRulesForShadowHost(Element* element, ElementRuleCollector& collector, bool includeEmptyRules, WillBeHeapVector<RawPtrWillBeMember<ScopedStyleResolver>, 8>& resolversInShadowTree)
-{
-    CascadeOrder cascadeOrder = 0;
-    for (int j = resolversInShadowTree.size() - 1; j >= 0; --j)
-        resolversInShadowTree.at(j)->collectMatchingShadowHostRules(collector, includeEmptyRules, cascadeOrder++);
-
-    if (ScopedStyleResolver* resolver = scopedResolverFor(element))
-        resolver->collectMatchingAuthorRules(collector, includeEmptyRules, cascadeOrder);
-}
-
 void StyleResolver::matchAuthorRules(Element* element, ElementRuleCollector& collector, bool includeEmptyRules)
 {
     collector.clearMatchedRules();
     collector.matchedResult().ranges.lastAuthorRule = collector.matchedResult().matchedProperties.size() - 1;
 
-    if (document().styleEngine()->onlyDocumentHasStyles()) {
-        ScopedStyleResolver* resolver = document().scopedStyleResolver();
-        // If we have no resolver for a document, the document has no styles.
-        // We don't need to see any rules (including treeboundary crossing ones).
-        if (!resolver)
-            return;
-        resolver->collectMatchingAuthorRules(collector, includeEmptyRules);
-        m_treeBoundaryCrossingRules.collectTreeBoundaryCrossingRules(element, collector, includeEmptyRules);
-        collector.sortAndTransferMatchedRules();
-        return;
-    }
-
+    CascadeOrder cascadeOrder = 0;
     WillBeHeapVector<RawPtrWillBeMember<ScopedStyleResolver>, 8> resolversInShadowTree;
     collectScopedResolversForHostedShadowTrees(element, resolversInShadowTree);
-    if (!resolversInShadowTree.isEmpty())
-        matchAuthorRulesForShadowHost(element, collector, includeEmptyRules, resolversInShadowTree);
-    else if (ScopedStyleResolver* resolver = scopedResolverFor(element))
-        resolver->collectMatchingAuthorRules(collector, includeEmptyRules, resolver->treeScope().rootNode().isShadowRoot() ? 0 : 1);
 
+    // Apply :host and :host-context rules from inner scopes.
+    for (int j = resolversInShadowTree.size() - 1; j >= 0; --j)
+        resolversInShadowTree.at(j)->collectMatchingShadowHostRules(collector, includeEmptyRules, ++cascadeOrder);
+
+    // Apply normal rules from element scope.
+    if (ScopedStyleResolver* resolver = scopedResolverFor(element))
+        resolver->collectMatchingAuthorRules(collector, includeEmptyRules, ++cascadeOrder);
+
+    // Apply /deep/ and ::shadow rules from outer scopes, and ::content from inner.
     m_treeBoundaryCrossingRules.collectTreeBoundaryCrossingRules(element, collector, includeEmptyRules);
     collector.sortAndTransferMatchedRules();
 }

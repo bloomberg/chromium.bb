@@ -216,7 +216,6 @@ private:
     void matchRuleSet(ElementRuleCollector&, RuleSet*);
     void matchUARules(ElementRuleCollector&);
     void matchAuthorRules(Element*, ElementRuleCollector&, bool includeEmptyRules);
-    void matchAuthorRulesForShadowHost(Element*, ElementRuleCollector&, bool includeEmptyRules, WillBeHeapVector<RawPtrWillBeMember<ScopedStyleResolver>, 8>& resolversInShadowTree);
     void matchAllRules(StyleResolverState&, ElementRuleCollector&, bool includeSMILProperties);
     void collectFeatures();
     void resetRuleFeatures();
