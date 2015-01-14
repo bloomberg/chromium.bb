@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <grit-part>
-  <structure type="chrome_scaled_image" name="IDR_AUTOFILL_CC_AMEX" file="common/autofill/amex.png" />
-  <structure type="chrome_scaled_image" name="IDR_AUTOFILL_CC_DISCOVER" file="common/autofill/discover.png" />
-  <structure type="chrome_scaled_image" name="IDR_AUTOFILL_CC_GENERIC" file="common/autofill/cc-generic.png" />
-  <structure type="chrome_scaled_image" name="IDR_AUTOFILL_CC_MASTERCARD" file="common/autofill/mastercard.png" />
-  <structure type="chrome_scaled_image" name="IDR_AUTOFILL_CC_VISA" file="common/autofill/visa.png" />
+  <structure type="chrome_scaled_image" name="IDR_AUTOFILL_CC_AMEX" file="autofill/amex.png" />
+  <structure type="chrome_scaled_image" name="IDR_AUTOFILL_CC_DISCOVER" file="autofill/discover.png" />
+  <structure type="chrome_scaled_image" name="IDR_AUTOFILL_CC_GENERIC" file="autofill/cc-generic.png" />
+  <structure type="chrome_scaled_image" name="IDR_AUTOFILL_CC_MASTERCARD" file="autofill/mastercard.png" />
+  <structure type="chrome_scaled_image" name="IDR_AUTOFILL_CC_VISA" file="autofill/visa.png" />
   <!-- This is not used on desktop, only Android, so use a placeholder file. -->
-  <structure type="chrome_scaled_image" name="IDR_AUTOFILL_CC_SCAN_NEW" file="common/autofill/cc-generic.png" />
-  <structure type="chrome_scaled_image" name="IDR_AUTOFILL_MAC_CONTACTS_ICON" file="common/autofill/mac_contacts_icon.png" />
-  <structure type="chrome_scaled_image" name="IDR_INFOBAR_AUTOFILL_CC" file="common/autofill/infobar_autofill_cc.png" />
+  <structure type="chrome_scaled_image" name="IDR_AUTOFILL_CC_SCAN_NEW" file="autofill/cc-generic.png" />
+  <structure type="chrome_scaled_image" name="IDR_AUTOFILL_MAC_CONTACTS_ICON" file="autofill/mac_contacts_icon.png" />
+  <structure type="chrome_scaled_image" name="IDR_INFOBAR_AUTOFILL_CC" file="autofill/infobar_autofill_cc.png" />
 </grit-part>

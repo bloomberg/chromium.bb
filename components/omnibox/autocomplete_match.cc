@@ -135,30 +135,54 @@ AutocompleteMatch& AutocompleteMatch::operator=(
 
 // static
 int AutocompleteMatch::TypeToIcon(Type type) {
-  int icons[] = {
-    IDR_OMNIBOX_HTTP,
-    IDR_OMNIBOX_HTTP,
-    IDR_OMNIBOX_HTTP,
-    IDR_OMNIBOX_HTTP,
-    IDR_OMNIBOX_HTTP,
-    IDR_OMNIBOX_HTTP,
-    IDR_OMNIBOX_SEARCH,
-    IDR_OMNIBOX_SEARCH,
-    IDR_OMNIBOX_SEARCH,
-    IDR_OMNIBOX_SEARCH,
-    IDR_OMNIBOX_SEARCH,
-    IDR_OMNIBOX_SEARCH,
-    IDR_OMNIBOX_SEARCH,
-    IDR_OMNIBOX_SEARCH,
-    IDR_OMNIBOX_EXTENSION_APP,
-    IDR_OMNIBOX_SEARCH,
-    IDR_OMNIBOX_HTTP,
-    IDR_OMNIBOX_HTTP,
-    IDR_OMNIBOX_SEARCH,
+#if !defined(OS_IOS)
+  static const int kIcons[] = {
+      IDR_OMNIBOX_HTTP,           // URL_WHAT_YOU_TYPE
+      IDR_OMNIBOX_HTTP,           // HISTORY_URL
+      IDR_OMNIBOX_HTTP,           // HISTORY_TITLE
+      IDR_OMNIBOX_HTTP,           // HISTORY_BODY
+      IDR_OMNIBOX_HTTP,           // HISTORY_KEYWORD
+      IDR_OMNIBOX_HTTP,           // NAVSUGGEST
+      IDR_OMNIBOX_SEARCH,         // SEARCH_WHAT_YOU_TYPED
+      IDR_OMNIBOX_SEARCH,         // SEARCH_HISTORY
+      IDR_OMNIBOX_SEARCH,         // SEARCH_SUGGEST
+      IDR_OMNIBOX_SEARCH,         // SEARCH_SUGGEST_ENTITY
+      IDR_OMNIBOX_SEARCH,         // SEARCH_SUGGEST_INFINITE
+      IDR_OMNIBOX_SEARCH,         // SEARCH_SUGGEST_PERSONALIZED
+      IDR_OMNIBOX_SEARCH,         // SEARCH_SUGGEST_PROFILE
+      IDR_OMNIBOX_SEARCH,         // SEARCH_OTHER_ENGINE
+      IDR_OMNIBOX_EXTENSION_APP,  // EXTENSION_APP
+      IDR_OMNIBOX_SEARCH,         // CONTACT_DEPRECATED
+      IDR_OMNIBOX_HTTP,           // BOOKMARK_TITLE
+      IDR_OMNIBOX_HTTP,           // NAVSUGGEST_PERSONALIZED
+      IDR_OMNIBOX_SEARCH,         // SEARCH_SUGGEST_ANSWER
   };
-  static_assert(arraysize(icons) == AutocompleteMatchType::NUM_TYPES,
+#else
+  static const int kIcons[] = {
+      IDR_OMNIBOX_HTTP,           // URL_WHAT_YOU_TYPE
+      IDR_OMNIBOX_HISTORY,        // HISTORY_URL
+      IDR_OMNIBOX_HISTORY,        // HISTORY_TITLE
+      IDR_OMNIBOX_HISTORY,        // HISTORY_BODY
+      IDR_OMNIBOX_HISTORY,        // HISTORY_KEYWORD
+      IDR_OMNIBOX_HTTP,           // NAVSUGGEST
+      IDR_OMNIBOX_SEARCH,         // SEARCH_WHAT_YOU_TYPED
+      IDR_OMNIBOX_HISTORY,        // SEARCH_HISTORY
+      IDR_OMNIBOX_SEARCH,         // SEARCH_SUGGEST
+      IDR_OMNIBOX_SEARCH,         // SEARCH_SUGGEST_ENTITY
+      IDR_OMNIBOX_SEARCH,         // SEARCH_SUGGEST_INFINITE
+      IDR_OMNIBOX_SEARCH,         // SEARCH_SUGGEST_PERSONALIZED
+      IDR_OMNIBOX_SEARCH,         // SEARCH_SUGGEST_PROFILE
+      IDR_OMNIBOX_SEARCH,         // SEARCH_OTHER_ENGINE
+      IDR_OMNIBOX_EXTENSION_APP,  // EXTENSION_APP
+      IDR_OMNIBOX_SEARCH,         // CONTACT_DEPRECATED
+      IDR_OMNIBOX_HTTP,           // BOOKMARK_TITLE
+      IDR_OMNIBOX_HTTP,           // NAVSUGGEST_PERSONALIZED
+      IDR_OMNIBOX_SEARCH,         // SEARCH_SUGGEST_ANSWER
+  };
+#endif
+  static_assert(arraysize(kIcons) == AutocompleteMatchType::NUM_TYPES,
                 "icons array must have NUM_TYPES elements");
-  return icons[type];
+  return kIcons[type];
 }
 
 // static
