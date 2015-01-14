@@ -8,8 +8,6 @@ import android.os.Debug;
 import android.os.Debug.MemoryInfo;
 import android.util.Log;
 
-import org.chromium.base.annotations.SuppressFBWarnings;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -38,7 +36,6 @@ import java.util.List;
  * the @TracePerf annotation.  Thus, unlike TraceEvent, we do not
  * support an implicit trace name based on the callstack.
  */
-@SuppressFBWarnings("CHROMIUM_SYNCHRONIZED_METHOD")
 public class PerfTraceEvent {
     private static final int MAX_NAME_LENGTH = 40;
     private static final String MEMORY_TRACE_NAME_SUFFIX = "_BZR_PSS";

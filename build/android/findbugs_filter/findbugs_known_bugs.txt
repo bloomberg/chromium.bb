@@ -1,7 +1,29 @@
+M C CSM: Shouldn't use synchronized method, please narrow down the synchronization scope.  At JavaBridgeArrayCoercionTest.java
+M C CSM: Shouldn't use synchronized method, please narrow down the synchronization scope.  At JavaBridgeArrayTest.java
+M C CSM: Shouldn't use synchronized method, please narrow down the synchronization scope.  At JavaBridgeBasicsTest.java
+M C CSM: Shouldn't use synchronized method, please narrow down the synchronization scope.  At JavaBridgeChildFrameTest.java
+M C CSM: Shouldn't use synchronized method, please narrow down the synchronization scope.  At JavaBridgeCoercionTest.java
+M C CSM: Shouldn't use synchronized method, please narrow down the synchronization scope.  At JavaBridgeFieldsTest.java
+M C CSM: Shouldn't use synchronized method, please narrow down the synchronization scope.  At JavaBridgeReturnValuesTest.java
+M C CSM: Shouldn't use synchronized method, please narrow down the synchronization scope.  At JavaBridgeTestBase.java
+M C CSM: Shouldn't use synchronized method, please narrow down the synchronization scope.  At PerfTraceEvent.java
 M C CSM: Shouldn't use synchronized method, please narrow down the synchronization scope.  At SimpleSynchronizedMethod.java
 M C CSM: Shouldn't use synchronized method, please narrow down the synchronization scope.  At SimpleSynchronizedStaticMethod.java
 M C CST: Shouldn't use synchronized(this), please narrow down the synchronization scope.  At SimpleSynchronizedThis.java
+M D DMI: Hard coded reference to an absolute pathname in org.chromium.android_webview.test.ArchiveTest.testAutoBadPath()  At ArchiveTest.java
+M D DMI: Hard coded reference to an absolute pathname in org.chromium.android_webview.test.ArchiveTest.testExplicitBadPath()  At ArchiveTest.java
+M D SF: Switch statement found in org.chromium.chrome.browser.ChromeBrowserProvider.insert(Uri, ContentValues) where one case falls through to the next case  At ChromeBrowserProvider.java
+M M UG: org.chromium.content.browser.JavaBridgeReturnValuesTest$TestObject.getBooleanValue() is unsynchronized, org.chromium.content.browser.JavaBridgeReturnValuesTest$TestObject.setBooleanValue(boolean) is synchronized  At JavaBridgeReturnValuesTest.java
+M M UG: org.chromium.content.browser.JavaBridgeReturnValuesTest$TestObject.getStringValue() is unsynchronized, org.chromium.content.browser.JavaBridgeReturnValuesTest$TestObject.setStringValue(String) is synchronized  At JavaBridgeReturnValuesTest.java
+M V EI2: org.chromium.chrome.browser.ChromeBrowserProvider$BookmarkNode.setFavicon(byte[]) may expose internal representation by storing an externally mutable object into ChromeBrowserProvider$BookmarkNode.mFavicon  At ChromeBrowserProvider.java
+M V EI2: org.chromium.chrome.browser.ChromeBrowserProvider$BookmarkNode.setThumbnail(byte[]) may expose internal representation by storing an externally mutable object into ChromeBrowserProvider$BookmarkNode.mThumbnail  At ChromeBrowserProvider.java
+M V EI: org.chromium.chrome.browser.ChromeBrowserProvider$BookmarkNode.favicon() may expose internal representation by returning ChromeBrowserProvider$BookmarkNode.mFavicon  At ChromeBrowserProvider.java
+M V EI: org.chromium.chrome.browser.ChromeBrowserProvider$BookmarkNode.thumbnail() may expose internal representation by returning ChromeBrowserProvider$BookmarkNode.mThumbnail  At ChromeBrowserProvider.java
+M M LI: Incorrect lazy initialization of static field org.chromium.chrome.browser.sync.ProfileSyncService.sSyncSetupManager in org.chromium.chrome.browser.sync.ProfileSyncService.get(Context)  At ProfileSyncService.java
 M M LI: Incorrect lazy initialization of static field org.chromium.chrome.browser.download.DownloadManagerService.sDownloadManagerService in org.chromium.chrome.browser.download.DownloadManagerService.getDownloadManagerService(Context)  At DownloadManagerService.java
+M V EI2: org.chromium.content_public.browser.LoadUrlParams.setPostData(byte[]) may expose internal representation by storing an externally mutable object into LoadUrlParams.mPostData  At LoadUrlParams.java
+M V EI: org.chromium.content_public.browser.LoadUrlParams.getPostData() may expose internal representation by returning LoadUrlParams.mPostData  At LoadUrlParams.java
+M V EI2: org.chromium.net.ChromiumUrlRequest.setUploadData(String, byte[]) may expose internal representation by storing an externally mutable object into ChromiumUrlRequest.mUploadData  At ChromiumUrlRequest.java
 M D UrF: Unread public/protected field: org.chromium.chrome.browser.document.PendingDocumentData.extraHeaders  At DocumentTabModelSelector.java
 M D UrF: Unread public/protected field: org.chromium.chrome.browser.document.PendingDocumentData.postData  At DocumentTabModelSelector.java
 M D UrF: Unread public/protected field: org.chromium.chrome.browser.document.PendingDocumentData.referrer  At DocumentTabModelSelector.java

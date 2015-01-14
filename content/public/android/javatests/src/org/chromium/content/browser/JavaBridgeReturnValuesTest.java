@@ -6,7 +6,6 @@ package org.chromium.content.browser;
 
 import android.test.suitebuilder.annotation.SmallTest;
 
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.Feature;
 
 /**
@@ -23,27 +22,26 @@ import org.chromium.base.test.util.Feature;
 public class JavaBridgeReturnValuesTest extends JavaBridgeTestBase {
     // An instance of this class is injected into the page to test returning
     // Java values to JavaScript.
-    @SuppressFBWarnings("CHROMIUM_SYNCHRONIZED_METHOD")
     private class TestObject extends Controller {
-        private String mStringResult;
-        private boolean mBooleanResult;
+        private String mStringValue;
+        private boolean mBooleanValue;
 
         // These four methods are used to control the test.
-        public synchronized void setStringResult(String x) {
-            mStringResult = x;
+        public synchronized void setStringValue(String x) {
+            mStringValue = x;
             notifyResultIsReady();
         }
-        public synchronized String waitForStringResult() {
+        public synchronized String waitForStringValue() {
             waitForResult();
-            return mStringResult;
+            return mStringValue;
         }
-        public synchronized void setBooleanResult(boolean x) {
-            mBooleanResult = x;
+        public synchronized void setBooleanValue(boolean x) {
+            mBooleanValue = x;
             notifyResultIsReady();
         }
-        public synchronized boolean waitForBooleanResult() {
+        public synchronized boolean waitForBooleanValue() {
             waitForResult();
-            return mBooleanResult;
+            return mBooleanValue;
         }
 
         public boolean getBooleanValue() {
@@ -113,14 +111,14 @@ public class JavaBridgeReturnValuesTest extends JavaBridgeTestBase {
 
     // Note that this requires that we can pass a JavaScript string to Java.
     protected String executeJavaScriptAndGetStringResult(String script) throws Throwable {
-        executeJavaScript("testObject.setStringResult(" + script + ");");
-        return mTestObject.waitForStringResult();
+        executeJavaScript("testObject.setStringValue(" + script + ");");
+        return mTestObject.waitForStringValue();
     }
 
     // Note that this requires that we can pass a JavaScript boolean to Java.
     private boolean executeJavaScriptAndGetBooleanResult(String script) throws Throwable {
-        executeJavaScript("testObject.setBooleanResult(" + script + ");");
-        return mTestObject.waitForBooleanResult();
+        executeJavaScript("testObject.setBooleanValue(" + script + ");");
+        return mTestObject.waitForBooleanValue();
     }
 
     @SmallTest

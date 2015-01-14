@@ -17,8 +17,29 @@ In particular, ~ at the start of a string means it's a regex.
   <Match>
     <Class name="~org\.chromium\..*\.Manifest(\$\w+)?" />
   </Match>
+  <!-- Ignore bugs in NativeLibraries.java (the auto-generation confuses findbugs). -->
+  <Match>
+    <Class name="~org\.chromium\.base\..*\.NativeLibraries.*?" />
+  </Match>
+  <!--
+  Ignore bugs in CleanupReferenceTest.java (redundant null check)
+  TODO(joth): Group all GC related tests and filter them out, since the null
+  check is necessary to make sure the nullification is flushed to memory.
+  -->
+  <Match>
+    <Class name="~org\.chromium\.content\..*\.CleanupReferenceTest.*?" />
+  </Match>
+  <!-- Ignore errors in JavaBridge due to reflection. -->
+  <Match>
+    <Class name="~.*\.JavaBridge.*"/>
+    <Bug code="UuF,UrF,UMAC" />
+  </Match>
+  <!-- "Struct" like classes expect to have unused public data members -->
+  <Match>
+    <Class name="~.*android_webview.*FileChooserParams"/>
+    <Bug code="UrF" />
+  </Match>
   <!-- Ignore "reliance on default String encoding" warnings, as we're not multi-platform -->
-
   <Bug pattern="DM_DEFAULT_ENCODING" />
   <!-- Ignore bugs that are often false-positives in test code -->
   <Match>
@@ -27,5 +48,69 @@ In particular, ~ at the start of a string means it's a regex.
       <Bug code="DLS,UrF" />
       <Bug pattern="DM_GC" />
     </Or>
+  </Match>
+  <!--
+  Ignore calls to System.exit() following errors during loading the native library.
+  There is no way to recover from such errors without restarting the application,
+  so System.exit() is the best solution.
+  -->
+  <Match>
+    <Class name="~org\.chromium\.chrome\..*\.ChromiumSyncAdapter.*" />
+    <Method name="run" />
+    <Bug code="Dm" />
+  </Match>
+  <Match>
+    <Class name="~org\.chromium\.chrome\..*\.ChromiumSyncAdapter" />
+    <Method name="startBrowserProcessesSync" />
+    <Bug code="Dm" />
+  </Match>
+  <Match>
+    <Class name="~org\.chromium\.chrome\..*\.ChromeShellActivity" />
+    <Method name="onCreate" />
+    <Bug code="Dm" />
+  </Match>
+  <Match>
+    <Class name="~org\.chromium\.chrome\..*\.AccountsChangedReceiver.*" />
+    <Method name="run" />
+    <Bug code="Dm" />
+  </Match>
+  <Match>
+    <Class name="~org\.chromium\.chrome\..*\.NotificationService" />
+    <Method name="dispatchIntentOnUIThread" />
+    <Bug code="Dm" />
+  </Match>
+  <Match>
+    <Class name="org.chromium.chrome.browser.preferences.Preferences" />
+    <Method name="onCreate" />
+    <Bug code="Dm" />
+  </Match>
+  <Match>
+    <Class name="~org\.chromium\.content\..*\.ChildProcessService.*" />
+    <Method name="run" />
+    <Bug code="Dm" />
+  </Match>
+  <Match>
+    <Class name="~org\.chromium\..*ContentBrowserTestsActivity" />
+    <Method name="onCreate" />
+    <Bug code="Dm" />
+  </Match>
+  <Match>
+    <Class name="~org\.chromium\..*ContentShellActivity" />
+    <Method name="onCreate" />
+    <Bug code="Dm" />
+  </Match>
+  <Match>
+    <Class name="~org\.chromium\.components\.gcm_driver\..*\.GCMDriver" />
+    <Method name="launchNativeThen" />
+    <Bug code="Dm" />
+  </Match>
+  <!--
+  Ignore write to static field in GCMDriver, as it's the cleanest way to mark
+  the singleton as null when the native counterpart is destroyed.
+  -->
+  <Match>
+    <Class name="~org\.chromium\.components\.gcm_driver\..*\.GCMDriver" />
+    <Method name="destroy" />
+    <Bug code="ST" />
   </Match>
 </FindBugsFilter>

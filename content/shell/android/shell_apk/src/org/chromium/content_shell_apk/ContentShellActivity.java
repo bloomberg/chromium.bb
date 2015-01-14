@@ -15,7 +15,6 @@ import android.widget.Toast;
 import org.chromium.base.BaseSwitches;
 import org.chromium.base.CommandLine;
 import org.chromium.base.MemoryPressureListener;
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.content.app.ContentApplication;
@@ -43,7 +42,6 @@ public class ContentShellActivity extends Activity {
     private WindowAndroid mWindowAndroid;
 
     @Override
-    @SuppressFBWarnings("DM_EXIT")
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 

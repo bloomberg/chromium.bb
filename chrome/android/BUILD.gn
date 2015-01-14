@@ -351,7 +351,6 @@ jinja_template("chrome_shell_manifest") {
 android_apk("chrome_shell_apk") {
   testonly = true
   deps = [
-    "//base:base_java",
     ":chrome_shell_resources",
     ":chrome_shell_java",
     ":chrome_shell_assets",
@@ -388,7 +387,6 @@ jinja_template("chrome_sync_shell_manifest") {
 android_apk("chrome_sync_shell_apk") {
   testonly = true
   deps = [
-    "//base:base_java",
     ":chrome_shell_resources",
     ":chrome_shell_java",
     ":chrome_shell_assets",

@@ -5,7 +5,6 @@
 package org.chromium.content_public.browser;
 
 import org.chromium.base.JNINamespace;
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.content_public.browser.navigation_controller.LoadURLType;
 import org.chromium.content_public.browser.navigation_controller.UserAgentOverrideOption;
 import org.chromium.content_public.common.Referrer;
@@ -321,7 +320,6 @@ public class LoadUrlParams {
      * LoadURLType.BROWSER_INITIATED_HTTP_POST.
      * @param postData Post data for this http post load.
      */
-    @SuppressFBWarnings("EI_EXPOSE_REP2")
     public void setPostData(byte[] postData) {
         mPostData = postData;
     }
@@ -329,7 +327,6 @@ public class LoadUrlParams {
     /**
      * @return the data to be sent through POST
      */
-    @SuppressFBWarnings("EI_EXPOSE_REP")
     public byte[] getPostData() {
         return mPostData;
     }
