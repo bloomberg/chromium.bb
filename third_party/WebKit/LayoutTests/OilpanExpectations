@@ -50,3 +50,6 @@ crbug.com/389648 [ Mac Debug ] fast/text-autosizing/table-inflation-crash.html [
 # We should explicitly clear LocalDOMWindow::frame() instead of relying it on GC.
 # See https://codereview.chromium.org/827653003/ for more details.
 crbug.com/446452 http/tests/fetch/chromium/discarded-window.html [ Failure ]
+
+# The crash can be reproduced without Oilpan, but only Oilpan bots are crashing.
+crbug.com/448670 [ Linux ] http/tests/serviceworker/register-same-scope-different-script-url.html [ Pass Crash ]
