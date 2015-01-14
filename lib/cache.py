@@ -281,7 +281,9 @@ class TarballCache(RemoteCache):
                          base_dir=self.staging_dir) as tempdir:
 
       o = urlparse.urlsplit(tarball_path)
-      if o.scheme:
+      if o.scheme == 'file':
+        tarball_path = o.path
+      elif o.scheme:
         url = tarball_path
         tarball_path = os.path.join(tempdir, os.path.basename(o.path))
         self._Fetch(url, tarball_path)
