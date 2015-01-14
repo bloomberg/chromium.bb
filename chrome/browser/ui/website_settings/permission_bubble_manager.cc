@@ -67,6 +67,7 @@ bool PermissionBubbleManager::Enabled() {
 PermissionBubbleManager::PermissionBubbleManager(
     content::WebContents* web_contents)
   : content::WebContentsObserver(web_contents),
+    require_user_gesture_(false),
     bubble_showing_(false),
     view_(NULL),
     request_url_has_loaded_(false),
@@ -135,7 +136,7 @@ void PermissionBubbleManager::AddRequest(PermissionBubbleRequest* request) {
     queued_frame_requests_.push_back(request);
   }
 
-  if (request->HasUserGesture())
+  if (!require_user_gesture_ || request->HasUserGesture())
     ScheduleShowBubble();
 }
 
@@ -200,6 +201,10 @@ void PermissionBubbleManager::SetView(PermissionBubbleView* view) {
 
   view->SetDelegate(this);
   TriggerShowBubble();
+}
+
+void PermissionBubbleManager::RequireUserGesture(bool required) {
+  require_user_gesture_ = required;
 }
 
 void PermissionBubbleManager::DocumentOnLoadCompletedInMainFrame() {

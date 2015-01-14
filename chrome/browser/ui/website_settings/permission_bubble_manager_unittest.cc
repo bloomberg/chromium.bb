@@ -521,3 +521,43 @@ TEST_F(PermissionBubbleManagerTest, AllUserGestureRequests) {
   EXPECT_TRUE(iframe_request_other_domain_.finished());
   EXPECT_FALSE(view_.shown_);
 }
+
+TEST_F(PermissionBubbleManagerTest, RequestsWithoutUserGesture) {
+  manager_->RequireUserGesture(true);
+  manager_->SetView(&view_);
+  WaitForFrameLoad();
+  WaitForCoalescing();
+  manager_->AddRequest(&request1_);
+  manager_->AddRequest(&iframe_request_other_domain_);
+  manager_->AddRequest(&request2_);
+  base::MessageLoop::current()->RunUntilIdle();
+
+  EXPECT_FALSE(view_.shown_);
+}
+
+TEST_F(PermissionBubbleManagerTest, RequestsWithUserGesture) {
+  manager_->RequireUserGesture(true);
+  manager_->SetView(&view_);
+  WaitForFrameLoad();
+  WaitForCoalescing();
+  request1_.SetHasUserGesture();
+  manager_->AddRequest(&request1_);
+  manager_->AddRequest(&iframe_request_other_domain_);
+  manager_->AddRequest(&request2_);
+  base::MessageLoop::current()->RunUntilIdle();
+
+  EXPECT_TRUE(view_.shown_);
+}
+
+TEST_F(PermissionBubbleManagerTest, RequestsDontNeedUserGesture) {
+  manager_->SetView(&view_);
+  WaitForFrameLoad();
+  WaitForCoalescing();
+  manager_->AddRequest(&request1_);
+  manager_->AddRequest(&iframe_request_other_domain_);
+  manager_->AddRequest(&request2_);
+  base::MessageLoop::current()->RunUntilIdle();
+
+  EXPECT_TRUE(view_.shown_);
+}
+

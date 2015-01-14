@@ -57,6 +57,12 @@ class PermissionBubbleManager
   // take ownership of the view.
   void SetView(PermissionBubbleView* view) override;
 
+  // Controls whether incoming permission requests require user gestures.
+  // If |required| is false, requests will be displayed as soon as they come in.
+  // If |required| is true, requests will be silently queued until a request
+  // comes in with a user gesture.
+  void RequireUserGesture(bool required);
+
  private:
   friend class DownloadRequestLimiterTest;
   friend class PermissionBubbleManagerTest;
@@ -109,6 +115,10 @@ class PermissionBubbleManager
   // gesture.  Returns false otherwise.
   bool HasUserGestureRequest(
       const std::vector<PermissionBubbleRequest*>& queue);
+
+  // Whether to delay displaying the bubble until a request with a user gesture.
+  // False by default, unless RequireUserGesture(bool) changes the value.
+  bool require_user_gesture_;
 
   // Whether or not we are showing the bubble in this tab.
   bool bubble_showing_;
