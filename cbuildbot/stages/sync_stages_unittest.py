@@ -580,6 +580,34 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
     progress_map = clactions.GetPreCQProgressMap([change], action_history)
     self.assertEqual(progress_map, {})
 
+  def testRetryInPreCQ(self):
+    # Create a change that is ready to be tested.
+    change = self._PrepareChangesWithPendingVerifications([['orange']])[0]
+    change.approval_timestamp = 0
+
+    # Change should be launched now.
+    self.PerformSync(pre_cq_status=None, changes=[change], runs=2)
+    self.assertAllStatuses([change], constants.CL_PRECQ_CONFIG_STATUS_LAUNCHED)
+
+    # Fake all these tryjobs starting
+    build_ids = self._FakeLaunchTryjobs([change])
+
+    # After 1 more Sync all configs should now be inflight.
+    self.PerformSync(pre_cq_status=None, changes=[change], patch_objects=False)
+    self.assertAllStatuses([change], constants.CL_PRECQ_CONFIG_STATUS_INFLIGHT)
+
+    # Pretend that the build failed with an infrastructure failure so the change
+    # should be retried.
+    self.fake_db.InsertCLActions(
+        build_ids['orange'],
+        [clactions.CLAction.FromGerritPatchAndAction(
+            change, constants.CL_ACTION_FORGIVEN)])
+
+    # Change should relaunch again.
+    self.PerformSync(pre_cq_status=None, changes=[change], runs=1,
+                     patch_objects=False)
+    self.assertAllStatuses([change], constants.CL_PRECQ_CONFIG_STATUS_LAUNCHED)
+
   def testPreCQ(self):
     changes = self._PrepareChangesWithPendingVerifications(
         [['orange', 'apple'], ['banana'], ['banana'], ['banana'], ['banana']])

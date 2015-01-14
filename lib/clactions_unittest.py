@@ -268,6 +268,13 @@ class TestCLActionHistory(cros_test_lib.TestCase):
       self.assertEqual(constants.CL_PRECQ_CONFIG_STATUS_INFLIGHT,
                        s()[c][0])
 
+    # Simulate the changes being retried.
+    self._Act(banana_build_id, change, constants.CL_ACTION_FORGIVEN)
+    self._Act(launcher_build_id, change, constants.CL_ACTION_FORGIVEN,
+              'pineapple-pre-cq')
+    for c in configs:
+      self.assertEqual(constants.CL_PRECQ_CONFIG_STATUS_PENDING,
+                       s()[c][0])
     # Simulate the changes being rejected, either by the configs themselves
     # or by the pre-cq-launcher.
     self._Act(banana_build_id, change, constants.CL_ACTION_KICKED_OUT)

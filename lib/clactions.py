@@ -272,10 +272,12 @@ def GetCLPreCQProgress(change, action_history):
                                       a.timestamp, a.build_id)
 
   # Loop through actions_for_patch several times, in order of status priority.
-  # CL_PRECQ_CONFIG_STATUS_LAUNCHED,
-  # CL_PRECQ_CONFIG_STATUS_FAILED,
-  # CL_PRECQ_CONFIG_STATUS_INFLIGHT
-  # All have the same priority
+  # Each action maps to a status:
+  #   CL_ACTION_TRYBOT_LAUNCHING -> CL_PRECQ_CONFIG_STATUS_LAUNCHED
+  #   CL_ACTION_PICKED_UP -> CL_PRECQ_CONFIG_STATUS_INFLIGHT
+  #   CL_ACTION_KICKED_OUT -> CL_PRECQ_CONFIG_STATUS_FAILED
+  #   CL_ACTION_FORGIVEN -> CL_PRECQ_CONFIG_STATUS_PENDING
+  # All have the same priority.
   for a in actions_for_patch:
     if (a.action == constants.CL_ACTION_TRYBOT_LAUNCHING and
         a.reason in config_status_dict):
@@ -286,11 +288,18 @@ def GetCLPreCQProgress(change, action_history):
       config_status_dict[a.build_config] = (
           constants.CL_PRECQ_CONFIG_STATUS_INFLIGHT, a.timestamp, a.build_id)
     elif (a.action == constants.CL_ACTION_KICKED_OUT and
-        (a.build_config in config_status_dict or
-         a.reason in config_status_dict)):
+          (a.build_config in config_status_dict or
+           a.reason in config_status_dict)):
       config = (a.build_config if a.build_config in config_status_dict else
                 a.reason)
       config_status_dict[config] = (constants.CL_PRECQ_CONFIG_STATUS_FAILED,
+                                    a.timestamp, a.build_id)
+    elif (a.action == constants.CL_ACTION_FORGIVEN and
+          (a.build_config in config_status_dict or
+           a.reason in config_status_dict)):
+      config = (a.build_config if a.build_config in config_status_dict else
+                a.reason)
+      config_status_dict[config] = (constants.CL_PRECQ_CONFIG_STATUS_PENDING,
                                     a.timestamp, a.build_id)
 
   for a in actions_for_patch:
