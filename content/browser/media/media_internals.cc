@@ -200,6 +200,7 @@ class MediaInternals::MediaInternalsUMAHandler : public NotificationObserver {
     bool has_audio;
     bool has_video;
     bool video_dds;
+    bool video_decoder_changed;
     std::string audio_codec_name;
     std::string video_codec_name;
     std::string video_decoder;
@@ -207,7 +208,8 @@ class MediaInternals::MediaInternalsUMAHandler : public NotificationObserver {
         : last_pipeline_status(media::PIPELINE_OK),
           has_audio(false),
           has_video(false),
-          video_dds(false) {}
+          video_dds(false),
+          video_decoder_changed(false) {}
   };
 
   // Helper function to report PipelineStatus associated with a player to UMA.
@@ -260,10 +262,6 @@ void MediaInternals::MediaInternalsUMAHandler::SavePlayerState(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   PlayerInfoMap& player_info = renderer_info_[render_process_id];
   switch (event.type) {
-    case media::MediaLogEvent::WEBMEDIAPLAYER_CREATED: {
-      // Nothing to do here
-      break;
-    }
     case media::MediaLogEvent::PIPELINE_ERROR: {
       int status;
       event.params.GetInteger("pipeline_error", &status);
@@ -289,8 +287,13 @@ void MediaInternals::MediaInternalsUMAHandler::SavePlayerState(
                                &player_info[event.id].video_codec_name);
       }
       if (event.params.HasKey("video_decoder")) {
+        std::string previous_video_decoder(player_info[event.id].video_decoder);
         event.params.GetString("video_decoder",
                                &player_info[event.id].video_decoder);
+        if (!previous_video_decoder.empty() &&
+            previous_video_decoder != player_info[event.id].video_decoder) {
+          player_info[event.id].video_decoder_changed = true;
+        }
       }
       if (event.params.HasKey("video_dds")) {
         event.params.GetBoolean("video_dds", &player_info[event.id].video_dds);
@@ -355,6 +358,12 @@ void MediaInternals::MediaInternalsUMAHandler::ReportUMAForPipelineStatus(
     UMA_HISTOGRAM_ENUMERATION("Media.PipelineStatus.Unsupported",
                               player_info.last_pipeline_status,
                               media::PIPELINE_STATUS_MAX + 1);
+  }
+  // Report whether video decoder fallback happened, but only if a video decoder
+  // was reported.
+  if (!player_info.video_decoder.empty()) {
+    UMA_HISTOGRAM_BOOLEAN("Media.VideoDecoderFallback",
+                          player_info.video_decoder_changed);
   }
 }
 

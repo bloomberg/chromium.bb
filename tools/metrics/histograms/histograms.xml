@@ -12997,6 +12997,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Media.VideoDecoderFallback" enum="BooleanDidFallBack">
+  <owner>watk@chromium.org</owner>
+  <summary>
+    Whether Chrome had to fall back to a secondary video decoder after the
+    primary decoder failed reinitialization.
+  </summary>
+</histogram>
+
 <histogram name="Media.VideoPixelFormat" enum="VideoPixelFormat">
   <owner>scherkus@chromium.org</owner>
   <summary>Pixel format used in HTML5 video. Emitted on video load.</summary>
@@ -42961,6 +42969,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <enum name="BooleanDidEvict" type="int">
   <int value="0" label="Did not evict"/>
   <int value="1" label="Did evict"/>
+</enum>
+
+<enum name="BooleanDidFallBack" type="int">
+  <int value="0" label="Did not fall back"/>
+  <int value="1" label="Did fall back"/>
 </enum>
 
 <enum name="BooleanDistillable" type="int">
