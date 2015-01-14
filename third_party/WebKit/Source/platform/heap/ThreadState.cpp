@@ -857,13 +857,26 @@ void ThreadState::completeSweep()
             m_heaps[i]->completeSweep();
     }
 
-    if (isMainThread()) {
+    if (isMainThread() && m_allocatedObjectSizeBeforeGC) {
         // FIXME: Heap::markedObjectSize() may not be accurate because other
         // threads may not have finished sweeping.
-        m_collectionRate = 1.0 * Heap::markedObjectSize() / m_allocatedObjectSizeBeforeSweeping;
+        m_collectionRate = 1.0 * Heap::markedObjectSize() / m_allocatedObjectSizeBeforeGC;
+        ASSERT(m_collectionRate >= 0);
+
+        // The main thread might be at a safe point, with other
+        // threads leaving theirs and accumulating marked object size
+        // while continuing to sweep. That accumulated size might end up
+        // exceeding what the main thread sampled in preGC() (recorded
+        // in m_allocatedObjectSizeBeforeGC), resulting in a non-sensical
+        // > 1.0 rate.
+        //
+        // This is rare (cf. HeapTest.Threading for a case though);
+        // reset the invalid rate if encountered.
+        //
+        if (m_collectionRate > 1.0)
+            m_collectionRate = 1.0;
     } else {
-        // FIXME: We should make m_lowCollectionRate available in non-main
-        // threads.
+        // FIXME: We should make m_collectionRate available in non-main threads.
         m_collectionRate = 1.0;
     }
 
@@ -893,6 +906,8 @@ void ThreadState::preGC()
     makeConsistentForSweeping();
     prepareRegionTree();
     flushHeapDoesNotContainCacheIfNeeded();
+    if (isMainThread())
+        m_allocatedObjectSizeBeforeGC = Heap::allocatedObjectSize() + Heap::markedObjectSize();
 }
 
 void ThreadState::postGC(GCType gcType)
@@ -1037,8 +1052,6 @@ void ThreadState::postGCProcessing()
         return;
 
     m_didV8GCAfterLastGC = false;
-    if (isMainThread())
-        m_allocatedObjectSizeBeforeSweeping = Heap::allocatedObjectSize();
 
 #if ENABLE(GC_PROFILE_HEAP)
     // We snapshot the heap prior to sweeping to get numbers for both resources

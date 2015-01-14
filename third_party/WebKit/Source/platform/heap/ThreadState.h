@@ -634,7 +634,7 @@ private:
     bool m_didV8GCAfterLastGC;
     bool m_sweepForbidden;
     size_t m_noAllocationCount;
-    size_t m_allocatedObjectSizeBeforeSweeping;
+    size_t m_allocatedObjectSizeBeforeGC;
     ThreadHeap* m_heaps[NumberOfHeaps];
 
     Vector<OwnPtr<CleanupTask>> m_cleanupTasks;
