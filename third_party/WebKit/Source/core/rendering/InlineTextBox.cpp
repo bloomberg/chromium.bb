@@ -515,6 +515,7 @@ TextRun InlineTextBox::constructTextRun(RenderStyle* style, const Font& font, St
     run.setTabSize(!style->collapseWhiteSpace(), style->tabSize());
     run.setCharacterScanForCodePath(!renderer().canUseSimpleFontCodePath());
     run.setTextJustify(style->textJustify());
+    run.setUseComplexCodePath(!renderer().canUseSimpleFontCodePath());
 
     // Propagate the maximum length of the characters buffer to the TextRun, even when we're only processing a substring.
     run.setCharactersLength(maximumLength);

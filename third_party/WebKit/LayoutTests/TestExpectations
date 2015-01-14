@@ -1454,7 +1454,7 @@ crbug.com/412570 [ Win7 ] virtual/gpu/fast/canvas/setWidthResetAfterForcedRender
 crbug.com/413604 http/tests/loading/script-priorities.html [ Failure Pass ]
 
 crbug.com/415620 media/media-controller-media-fragment-uri-initial-playback-position.html [ Pass Failure ]
-
+crbug.com/436490 [ Win ] virtual/antialiasedtext/fast/text/international/bidi-listbox-atsui.html [ NeedsRebaseline ]
 crbug.com/415872 http/tests/xmlhttprequest/xmlhttprequest-responseXML-abort.html [ Pass Timeout ]
 
 crbug.com/417174 compositing/scaling/tiled-layer-recursion.html [ Pass ImageOnlyFailure ]
