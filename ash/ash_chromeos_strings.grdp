@@ -346,6 +346,12 @@ Press Shift + Alt to switch.
   <message name="IDS_ASH_STATUS_TRAY_KEYBOARD_ENABLED" desc="The text shown in the tray menu when the virtual keyboard is enabled.">
     On-screen keyboard enabled
   </message>
+  <message name="IDS_ASH_STATUS_TRAY_ENABLE_KEYBOARD" desc="A button label in the tray menu to enable the keyboard.">
+    Enable on-screen keyboard
+  </message>
+  <message name="IDS_ASH_STATUS_TRAY_DISABLE_KEYBOARD" desc="A button label in the tray menu to disable the keyboard.">
+    Disable on-screen keyboard
+  </message>
   <message name="IDS_ASH_VIRTUAL_KEYBOARD_TRAY_ACCESSIBLE_NAME" desc="The accessible text for virtual keyboard icon in status tray.">
     Show on-screen keyboard
   </message>

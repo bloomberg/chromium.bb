@@ -12,7 +12,6 @@
 #include "ash/system/audio/tray_audio.h"
 #include "ash/system/bluetooth/tray_bluetooth.h"
 #include "ash/system/date/tray_date.h"
-#include "ash/system/ime/tray_ime.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray_item.h"
@@ -59,6 +58,7 @@
 #include "ash/system/chromeos/tray_caps_lock.h"
 #include "ash/system/chromeos/tray_display.h"
 #include "ash/system/chromeos/tray_tracing.h"
+#include "ash/system/ime/tray_ime_chromeos.h"
 #include "ash/system/tray/media_security/multi_profile_media_tray_item.h"
 #include "ui/message_center/message_center.h"
 #elif defined(OS_WIN)
@@ -201,7 +201,6 @@ void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
   AddTrayItem(new TrayUpdate(this));
   AddTrayItem(tray_date_);
 #elif defined(OS_LINUX)
-  AddTrayItem(new TrayIME(this));
   AddTrayItem(tray_accessibility_);
   AddTrayItem(new TrayBluetooth(this));
   AddTrayItem(new TrayUpdate(this));
