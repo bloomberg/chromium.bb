@@ -4,8 +4,10 @@
 
 #include "ui/ozone/demo/surfaceless_gl_renderer.h"
 
+#include "base/bind.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_image.h"
+#include "ui/gl/gl_surface.h"
 
 namespace ui {
 
@@ -77,7 +79,10 @@ void SurfacelessGlRenderer::BufferWrapper::SchedulePlane() {
 
 SurfacelessGlRenderer::SurfacelessGlRenderer(gfx::AcceleratedWidget widget,
                                              const gfx::Size& size)
-    : GlRenderer(widget, size), back_buffer_(0) {
+    : GlRenderer(widget, size),
+      back_buffer_(0),
+      is_swapping_buffers_(false),
+      weak_ptr_factory_(this) {
 }
 
 SurfacelessGlRenderer::~SurfacelessGlRenderer() {
@@ -95,11 +100,28 @@ bool SurfacelessGlRenderer::Initialize() {
 }
 
 void SurfacelessGlRenderer::RenderFrame() {
-  buffers_[back_buffer_].BindFramebuffer();
-  buffers_[back_buffer_].SchedulePlane();
-  back_buffer_ ^= 1;
+  if (is_swapping_buffers_)
+    return;
 
-  GlRenderer::RenderFrame();
+  float fraction = NextFraction();
+
+  buffers_[back_buffer_].BindFramebuffer();
+
+  glViewport(0, 0, size_.width(), size_.height());
+  glClearColor(1 - fraction, fraction, 0.0, 1.0);
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+  buffers_[back_buffer_].SchedulePlane();
+  is_swapping_buffers_ = true;
+  if (!surface_->SwapBuffersAsync(
+          base::Bind(&SurfacelessGlRenderer::OnSwapBuffersAck,
+                     weak_ptr_factory_.GetWeakPtr())))
+    LOG(FATAL) << "Failed to swap buffers";
+}
+
+void SurfacelessGlRenderer::OnSwapBuffersAck() {
+  is_swapping_buffers_ = false;
+  back_buffer_ ^= 1;
 }
 
 }  // namespace ui
