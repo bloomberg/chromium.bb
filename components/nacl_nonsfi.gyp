@@ -39,6 +39,7 @@
             # Rename the output binary file to nacl_helper_nonsfi and put it
             # directly under out/{Debug,Release}/.
             'out_newlib32_nonsfi': '<(PRODUCT_DIR)/nacl_helper_nonsfi',
+            'out_newlib_arm_nonsfi': '<(PRODUCT_DIR)/nacl_helper_nonsfi',
 
             'build_glibc': 0,
             'build_newlib': 0,

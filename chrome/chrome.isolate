@@ -19,9 +19,8 @@
         ]
       }
     }],
-    # TODO(hidehiko,mazda): Include nacl_helper_nonsfi for ARM when supported.
     ['disable_nacl==0 and OS=="linux" and '
-         '(target_arch=="x64" or target_arch=="ia32")', {
+         '(target_arch=="x64" or target_arch=="ia32" or target_arch=="arm")', {
       'variables': {
         'files': [
           '<(PRODUCT_DIR)/nacl_helper_nonsfi<(EXECUTABLE_SUFFIX)',
