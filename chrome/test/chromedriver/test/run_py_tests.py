@@ -57,7 +57,7 @@ _VERSION_SPECIFIC_FILTER['HEAD'] = [
     # https://code.google.com/p/chromedriver/issues/detail?id=992
     'ChromeDownloadDirTest.testDownloadDirectoryOverridesExistingPreferences',
     # https://code.google.com/p/chromedriver/issues/detail?id=1016
-    'ChromeDriverBaseTest.testShadowDomClick',
+    'ChromeDriverTest.testShadowDomClick',
 ]
 _VERSION_SPECIFIC_FILTER['37'] = [
     # https://code.google.com/p/chromedriver/issues/detail?id=954
@@ -137,7 +137,7 @@ _ANDROID_NEGATIVE_FILTER['chrome'] = (
         # Android doesn't support multiple sessions on one device.
         'SessionHandlingTest.testGetSessions',
         # https://code.google.com/p/chromedriver/issues/detail?id=1016
-        'ChromeDriverBaseTest.testShadowDomClick',
+        'ChromeDriverTest.testShadowDomClick',
     ]
 )
 _ANDROID_NEGATIVE_FILTER['chrome_stable'] = (
@@ -157,6 +157,7 @@ _ANDROID_NEGATIVE_FILTER['chromedriver_webview_shell'] = (
         # https://code.google.com/p/chromedriver/issues/detail?id=913
         'ChromeDriverTest.testChromeDriverSendLargeData',
         'PerformanceLoggerTest.testPerformanceLogger',
+        'ChromeDriverTest.testShadowDom*',
     ]
 )
 
