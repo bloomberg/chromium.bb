@@ -692,15 +692,7 @@ void AutofillOptionsHandler::ValidatePhoneNumbers(const base::ListValue* args) {
 }
 
 void AutofillOptionsHandler::RemaskServerCards(const base::ListValue* args) {
-  const std::vector<CreditCard*>& cards = personal_data_->GetCreditCards();
-  for (const auto card : cards) {
-    CreditCard card_copy = *card;
-    if (card_copy.record_type() == CreditCard::FULL_SERVER_CARD) {
-      card_copy.set_record_type(CreditCard::MASKED_SERVER_CARD);
-      card_copy.SetNumber(card->LastFourDigits());
-      personal_data_->UpdateServerCreditCard(card_copy);
-    }
-  }
+  personal_data_->ResetFullServerCards();
 }
 
 bool AutofillOptionsHandler::IsPersonalDataLoaded() const {

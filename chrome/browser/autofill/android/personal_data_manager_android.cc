@@ -6,18 +6,23 @@
 
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
+#include "base/command_line.h"
 #include "base/format_macros.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "components/autofill/core/browser/autofill_country.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/core/common/autofill_switches.h"
 #include "jni/PersonalDataManager_jni.h"
 
 using base::android::ConvertJavaStringToUTF8;
@@ -28,9 +33,12 @@ using base::android::ScopedJavaLocalRef;
 namespace autofill {
 namespace {
 
+Profile* GetProfile() {
+  return ProfileManager::GetActiveUserProfile()->GetOriginalProfile();
+}
+
 PrefService* GetPrefs() {
-  return
-      ProfileManager::GetActiveUserProfile()->GetOriginalProfile()->GetPrefs();
+  return GetProfile()->GetPrefs();
 }
 
 ScopedJavaLocalRef<jobject> CreateJavaProfileFromNative(
@@ -297,6 +305,11 @@ void PersonalDataManagerAndroid::RemoveByGUID(JNIEnv* env,
   personal_data_manager_->RemoveByGUID(ConvertJavaStringToUTF8(env, jguid));
 }
 
+void PersonalDataManagerAndroid::ClearUnmaskedCache(JNIEnv* env,
+                                                    jobject unused_obj) {
+  personal_data_manager_->ResetFullServerCards();
+}
+
 void PersonalDataManagerAndroid::OnPersonalDataChanged() {
   JNIEnv* env = base::android::AttachCurrentThread();
   if (weak_java_obj_.get(env).is_null())
@@ -321,9 +334,33 @@ static void SetAutofillEnabled(JNIEnv* env, jclass clazz, jboolean enable) {
   GetPrefs()->SetBoolean(autofill::prefs::kAutofillEnabled, enable);
 }
 
-// Returns whether Autofill feature is managed.
+// Returns whether the Autofill feature is managed.
 static jboolean IsAutofillManaged(JNIEnv* env, jclass clazz) {
   return GetPrefs()->IsManagedPreference(autofill::prefs::kAutofillEnabled);
+}
+
+// Returns whether the Wallet import feature is available.
+static jboolean IsWalletImportFeatureAvailable(JNIEnv* env, jclass clazz) {
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          autofill::switches::kEnableWalletCardImport)) {
+    return false;
+  }
+
+  // TODO(estade): what to do in the IsManaged case?
+  ProfileSyncService* service =
+      ProfileSyncServiceFactory::GetInstance()->GetForProfile(GetProfile());
+  return service->IsSyncEnabledAndLoggedIn();
+}
+
+// Returns whether the Wallet import feature is enabled.
+static jboolean IsWalletImportEnabled(JNIEnv* env, jclass clazz) {
+  // TODO(estade): there is no pref yet, so just pretend yes.
+  return true;
+}
+
+// Enables or disables the Wallet import feature.
+static void SetWalletImportEnabled(JNIEnv* env, jclass clazz, jboolean enable) {
+  // TODO(estade): there is no pref yet, so no-op.
 }
 
 // Returns an ISO 3166-1-alpha-2 country code for a |jcountry_name| using

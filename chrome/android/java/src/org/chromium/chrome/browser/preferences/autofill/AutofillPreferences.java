@@ -18,6 +18,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
+import org.chromium.chrome.browser.preferences.ChromeBasePreference;
 import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
 
 /**
@@ -34,6 +35,7 @@ public class AutofillPreferences extends PreferenceFragment
     private static final String PREF_AUTOFILL_SWITCH = "autofill_switch";
     private static final String PREF_AUTOFILL_PROFILES = "autofill_profiles";
     private static final String PREF_AUTOFILL_CREDIT_CARDS = "autofill_credit_cards";
+    private static final String PREF_AUTOFILL_WALLET = "autofill_wallet";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -54,6 +56,16 @@ public class AutofillPreferences extends PreferenceFragment
                 return true;
             }
         });
+
+        ChromeBasePreference walletPref =
+                (ChromeBasePreference) findPreference(PREF_AUTOFILL_WALLET);
+        if (!PersonalDataManager.isWalletImportFeatureAvailable()) {
+            getPreferenceScreen().removePreference(walletPref);
+        } else {
+            walletPref.setSummary(getResources().getString(
+                    PersonalDataManager.isWalletImportEnabled() ? R.string.text_on
+                                                                : R.string.text_off));
+        }
 
         setPreferenceCategoryIcons();
     }

@@ -191,6 +191,26 @@
         Card expiration year
       </message>
 
+      <!-- Autofill/Wallet integration preferences -->
+      <message name="IDS_AUTOFILL_WALLET_TITLE" desc="Title for Autofill Wallet settings, which controls import of Wallet cards.">
+        Import Wallet data
+      </message>
+      <message name="IDS_AUTOFILL_WALLET_DESCRIPTION" desc="Description of the Wallet import feature.">
+        With this feature is turned on, Chrome will offer to fill forms using addresses and credit cards from your Wallet.
+      </message>
+      <message name="IDS_AUTOFILL_WALLET_MANAGEMENT_LINK_TEXT" desc="Text for hyperlink to manage wallet address and credit cards.">
+        Manage Wallet data
+      </message>
+      <message name="IDS_AUTOFILL_WALLET_CACHE_EXPLANATION" desc="Explanation of how Chrome caches imported Wallet cards.">
+        After you authenticate a card, Chrome will cache it locally.
+      </message>
+      <message name="IDS_AUTOFILL_WALLET_CLEAR_UNMASKED_CARDS" desc="Text for button that allows user to clear Wallet card cache.">
+        Clear cache
+      </message>
+      <message name="IDS_AUTOFILL_MANAGE_WALLET_CARDS_URL" desc="URL for managing wallet credit cards" translateable="false">
+        https://wallet.google.com/manage/w/0/paymentMethods
+      </message>
+
       <!-- Save passwords preferences -->
       <message name="IDS_PREFS_SAVED_PASSWORDS" desc="Title for the Saved Passwords preferences. [CHAR-LIMIT=32]">
         Save passwords

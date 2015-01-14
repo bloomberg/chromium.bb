@@ -422,6 +422,10 @@ public class PersonalDataManager {
         nativeRemoveByGUID(mPersonalDataManagerAndroid, guid);
     }
 
+    public void clearUnmaskedCache() {
+        nativeClearUnmaskedCache(mPersonalDataManagerAndroid);
+    }
+
     /**
      * @return Whether the Autofill feature is enabled.
      */
@@ -444,6 +448,28 @@ public class PersonalDataManager {
         return nativeIsAutofillManaged();
     }
 
+    /**
+     * @return Whether to offer the Wallet import feature.
+     */
+    public static boolean isWalletImportFeatureAvailable() {
+        return nativeIsWalletImportFeatureAvailable();
+    }
+
+    /**
+     * @return Whether the Wallet import feature is enabled.
+     */
+    public static boolean isWalletImportEnabled() {
+        return nativeIsWalletImportEnabled();
+    }
+
+    /**
+     * Enables or disables the Autofill Wallet integration.
+     * @param enable True to enable Wallet data import.
+     */
+    public static void setWalletImportEnabled(boolean enable) {
+        nativeSetWalletImportEnabled(enable);
+    }
+
     private native long nativeInit();
     private native int nativeGetProfileCount(long nativePersonalDataManagerAndroid);
     private native String[] nativeGetProfileLabels(long nativePersonalDataManagerAndroid);
@@ -461,8 +487,12 @@ public class PersonalDataManager {
     private native String nativeSetCreditCard(long nativePersonalDataManagerAndroid,
             CreditCard card);
     private native void nativeRemoveByGUID(long nativePersonalDataManagerAndroid, String guid);
+    private native void nativeClearUnmaskedCache(long nativePersonalDataManagerAndroid);
     private static native boolean nativeIsAutofillEnabled();
     private static native void nativeSetAutofillEnabled(boolean enable);
     private static native boolean nativeIsAutofillManaged();
+    private static native boolean nativeIsWalletImportFeatureAvailable();
+    private static native boolean nativeIsWalletImportEnabled();
+    private static native void nativeSetWalletImportEnabled(boolean enable);
     private static native String nativeToCountryCode(String countryName);
 }
