@@ -5,7 +5,10 @@
 #include "cc/layers/picture_image_layer.h"
 
 #include "cc/layers/picture_image_layer_impl.h"
+#include "cc/resources/drawing_display_item.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkPictureRecorder.h"
+#include "ui/gfx/skia_util.h"
 
 namespace cc {
 
@@ -63,8 +66,16 @@ void PictureImageLayer::PaintContents(
 scoped_refptr<DisplayItemList> PictureImageLayer::PaintContentsToDisplayList(
     const gfx::Rect& clip,
     GraphicsContextStatus gc_status) {
-  NOTIMPLEMENTED();
-  return DisplayItemList::Create();
+  scoped_refptr<DisplayItemList> display_item_list = DisplayItemList::Create();
+
+  SkPictureRecorder recorder;
+  SkCanvas* canvas = recorder.beginRecording(gfx::RectToSkRect(clip));
+  PaintContents(canvas, clip, gc_status);
+
+  skia::RefPtr<SkPicture> picture = skia::AdoptRef(recorder.endRecording());
+  display_item_list->AppendItem(
+      DrawingDisplayItem::Create(picture, gfx::Point()));
+  return display_item_list;
 }
 
 bool PictureImageLayer::FillsBoundsCompletely() const {
