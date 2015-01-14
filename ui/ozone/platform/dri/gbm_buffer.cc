@@ -86,8 +86,7 @@ GbmPixmap::~GbmPixmap() {
 }
 
 void* GbmPixmap::GetEGLClientBuffer() {
-  // TODO(achaulk): change back to null when dma_buf bug is fixed.
-  return buffer_->bo();
+  return nullptr;
 }
 
 int GbmPixmap::GetDmaBufFd() {
