@@ -55,9 +55,10 @@ void ExecuteScriptOnFileThread(const std::vector<std::string>& argv) {
   if (!ScriptExists(script))
     return;
 
-  base::ProcessHandle handle;
-  base::LaunchProcess(base::CommandLine(argv), base::LaunchOptions(), &handle);
-  base::EnsureProcessGetsReaped(handle);
+  base::Process process =
+      base::LaunchProcess(base::CommandLine(argv), base::LaunchOptions());
+  if (process.IsValid())
+    base::EnsureProcessGetsReaped(process.pid());
 }
 
 void ExecuteScript(const std::vector<std::string>& argv) {

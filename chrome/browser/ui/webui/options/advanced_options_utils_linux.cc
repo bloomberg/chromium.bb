@@ -92,12 +92,12 @@ bool StartProxyConfigUtil(const char* command[]) {
   std::vector<std::string> argv;
   for (size_t i = 0; command[i]; ++i)
     argv.push_back(command[i]);
-  base::ProcessHandle handle;
-  if (!base::LaunchProcess(argv, base::LaunchOptions(), &handle)) {
+  base::Process process = base::LaunchProcess(argv, base::LaunchOptions());
+  if (!process.IsValid()) {
     LOG(ERROR) << "StartProxyConfigUtil failed to start " << command[0];
     return false;
   }
-  base::EnsureProcessGetsReaped(handle);
+  base::EnsureProcessGetsReaped(process.pid());
   return true;
 }
 

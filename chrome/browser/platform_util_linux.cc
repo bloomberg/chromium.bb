@@ -37,9 +37,9 @@ void XDGUtil(const std::string& util, const std::string& arg) {
       disable_gnome_bug_buddy == std::string("SET_BY_GOOGLE_CHROME"))
     options.environ["GNOME_DISABLE_CRASH_DIALOG"] = std::string();
 
-  base::ProcessHandle handle;
-  if (base::LaunchProcess(argv, options, &handle))
-    base::EnsureProcessGetsReaped(handle);
+  base::Process process = base::LaunchProcess(argv, options);
+  if (process.IsValid())
+    base::EnsureProcessGetsReaped(process.pid());
 }
 
 void XDGOpen(const std::string& path) {

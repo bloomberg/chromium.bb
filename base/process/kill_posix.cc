@@ -473,12 +473,12 @@ void EnsureProcessTerminated(Process process) {
   PlatformThread::CreateNonJoinable(0, reaper);
 }
 
-void EnsureProcessGetsReaped(ProcessHandle process) {
+void EnsureProcessGetsReaped(ProcessId pid) {
   // If the child is already dead, then there's nothing to do.
-  if (IsChildDead(process))
+  if (IsChildDead(pid))
     return;
 
-  BackgroundReaper* reaper = new BackgroundReaper(process, 0);
+  BackgroundReaper* reaper = new BackgroundReaper(pid, 0);
   PlatformThread::CreateNonJoinable(0, reaper);
 }
 

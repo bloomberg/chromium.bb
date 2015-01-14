@@ -49,12 +49,12 @@ void DetectAndOpenPrinterConfigDialog() {
 
   std::vector<std::string> argv;
   argv.push_back(command);
-  base::ProcessHandle handle;
-  if (!base::LaunchProcess(argv, base::LaunchOptions(), &handle)) {
+  base::Process process = base::LaunchProcess(argv, base::LaunchOptions());
+  if (!process.IsValid()) {
     LOG(ERROR) << "Failed to open printer manager dialog ";
     return;
   }
-  base::EnsureProcessGetsReaped(handle);
+  base::EnsureProcessGetsReaped(process.pid());
 }
 
 }  // anonymous namespace

@@ -158,10 +158,9 @@ void ZygoteHostImpl::Init(const std::string& sandbox_cmd) {
     sandbox_client->SetupLaunchEnvironment();
   }
 
-  base::ProcessHandle process = -1;
   options.fds_to_remap = &fds_to_map;
-  base::LaunchProcess(cmd_line.argv(), options, &process);
-  CHECK(process != -1) << "Failed to launch zygote process";
+  base::Process process = base::LaunchProcess(cmd_line.argv(), options);
+  CHECK(process.IsValid()) << "Failed to launch zygote process";
   dummy_fd.reset();
 
   if (using_suid_sandbox_) {
@@ -188,13 +187,15 @@ void ZygoteHostImpl::Init(const std::string& sandbox_cmd) {
         fds[0], kZygoteHelloMessage, sizeof(kZygoteHelloMessage), &pid_));
     CHECK_GT(pid_, 1);
 
-    if (process != pid_) {
+    if (process.pid() != pid_) {
       // Reap the sandbox.
-      base::EnsureProcessGetsReaped(process);
+      base::EnsureProcessGetsReaped(process.pid());
     }
   } else {
     // Not using the SUID sandbox.
-    pid_ = process;
+    // Note that ~base::Process() will reset the internal value, but there's no
+    // real "handle" on POSIX so that is safe.
+    pid_ = process.pid();
   }
 
   close(fds[1]);
@@ -471,16 +472,16 @@ void ZygoteHostImpl::AdjustRendererOOMScore(base::ProcessHandle pid,
     adj_oom_score_cmdline.push_back(base::Int64ToString(pid));
     adj_oom_score_cmdline.push_back(base::IntToString(score));
 
-    base::ProcessHandle sandbox_helper_process;
+    base::Process sandbox_helper_process;
     base::LaunchOptions options;
 
     // sandbox_helper_process is a setuid binary.
     options.allow_new_privs = true;
 
-    if (base::LaunchProcess(adj_oom_score_cmdline, options,
-                            &sandbox_helper_process)) {
-      base::EnsureProcessGetsReaped(sandbox_helper_process);
-    }
+    sandbox_helper_process =
+        base::LaunchProcess(adj_oom_score_cmdline, options);
+    if (sandbox_helper_process.IsValid())
+      base::EnsureProcessGetsReaped(sandbox_helper_process.pid());
   } else if (!using_suid_sandbox_) {
     if (!base::AdjustOOMScore(pid, score))
       PLOG(ERROR) << "Failed to adjust OOM score of renderer with pid " << pid;

@@ -154,8 +154,8 @@ BASE_EXPORT void EnsureProcessTerminated(Process process);
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 // The nicer version of EnsureProcessTerminated() that is patient and will
-// wait for |process_handle| to finish and then reap it.
-BASE_EXPORT void EnsureProcessGetsReaped(ProcessHandle process_handle);
+// wait for |pid| to finish and then reap it.
+BASE_EXPORT void EnsureProcessGetsReaped(ProcessId pid);
 #endif
 
 }  // namespace base

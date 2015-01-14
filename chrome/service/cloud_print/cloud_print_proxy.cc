@@ -43,9 +43,9 @@ void LaunchBrowserProcessWithSwitch(const std::string& switch_string) {
   cmd_line.AppendSwitch(switch_string);
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
-  base::ProcessHandle pid = 0;
-  base::LaunchProcess(cmd_line, base::LaunchOptions(), &pid);
-  base::EnsureProcessGetsReaped(pid);
+  base::Process process = base::LaunchProcess(cmd_line, base::LaunchOptions());
+  if (process.IsValid())
+    base::EnsureProcessGetsReaped(process.pid());
 #else
   base::LaunchOptions launch_options;
 #if defined(OS_WIN)
