@@ -1592,7 +1592,8 @@ void HeapPage::sweep(ThreadHeap* heap)
     if (startOfGap != payloadEnd())
         heap->addToFreeList(startOfGap, payloadEnd() - startOfGap);
 
-    Heap::increaseMarkedObjectSize(markedObjectSize);
+    if (markedObjectSize)
+        Heap::increaseMarkedObjectSize(markedObjectSize);
 }
 
 void HeapPage::markUnmarkedObjectsDead()
