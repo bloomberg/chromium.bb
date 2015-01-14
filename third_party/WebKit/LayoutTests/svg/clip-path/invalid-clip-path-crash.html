@@ -10,11 +10,10 @@
 </style>
 <script src="../../fast/repaint/resources/text-based-repaint.js"></script>
 <script>
+  testIsAsync = true;
   onload = runRepaintTest();
   function repaintTest() {
-    runAfterDisplay(function() {
-      repaintTestDone();
-    });
+    runAfterDisplay(finishRepaintTest);
   };
 </script>
 Test for crbug.com/448227: This test passes if it does not crash.
