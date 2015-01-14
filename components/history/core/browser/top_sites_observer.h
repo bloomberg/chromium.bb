@@ -5,18 +5,26 @@
 #ifndef COMPONENTS_HISTORY_CORE_BROWSER_TOP_SITES_OBSERVER_H_
 #define COMPONENTS_HISTORY_CORE_BROWSER_TOP_SITES_OBSERVER_H_
 
+#include "base/macros.h"
+
 namespace history {
 class TopSites;
 
 // Interface for observing notifications from TopSites.
 class TopSitesObserver {
  public:
+  TopSitesObserver() {}
+  virtual ~TopSitesObserver() {}
+
   // Is called when TopSites finishes loading.
   virtual void TopSitesLoaded(history::TopSites* top_sites) = 0;
 
   // Is called when either one of the most visited urls
   // changed, or one of the images changes.
   virtual void TopSitesChanged(history::TopSites* top_sites) = 0;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TopSitesObserver);
 };
 
 }  // namespace history
