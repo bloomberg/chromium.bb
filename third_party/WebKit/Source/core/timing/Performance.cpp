@@ -221,12 +221,12 @@ void Performance::addResourceTiming(const ResourceTimingInfo& info, Document* in
         ResourceLoadTiming* finalTiming = finalResponse.resourceLoadTiming();
         ASSERT(finalTiming);
         if (finalTiming)
-            startTime = finalTiming->requestTime;
+            startTime = finalTiming->requestTime();
     }
 
     ResourceLoadTiming* lastRedirectTiming = redirectChain.last().resourceLoadTiming();
     ASSERT(lastRedirectTiming);
-    double lastRedirectEndTime = lastRedirectTiming->receiveHeadersEnd;
+    double lastRedirectEndTime = lastRedirectTiming->receiveHeadersEnd();
 
     RefPtrWillBeRawPtr<PerformanceEntry> entry = PerformanceResourceTiming::create(info, initiatorDocument, startTime, lastRedirectEndTime, allowTimingDetails, allowRedirectDetails);
     addResourceTimingBuffer(entry);

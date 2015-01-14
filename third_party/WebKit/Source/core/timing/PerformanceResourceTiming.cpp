@@ -91,7 +91,7 @@ double PerformanceResourceTiming::fetchStart() const
         // FIXME: ASSERT(m_timing) should be in constructor once timeticks of
         // AppCache is exposed from chrome network stack, crbug/251100
         ASSERT(m_timing);
-        return monotonicTimeToDocumentMilliseconds(m_requestingDocument.get(), m_timing->requestTime);
+        return monotonicTimeToDocumentMilliseconds(m_requestingDocument.get(), m_timing->requestTime());
     }
 
     return PerformanceEntry::startTime();
@@ -102,10 +102,10 @@ double PerformanceResourceTiming::domainLookupStart() const
     if (!m_allowTimingDetails)
         return 0.0;
 
-    if (!m_timing || m_timing->dnsStart == 0.0)
+    if (!m_timing || m_timing->dnsStart() == 0.0)
         return fetchStart();
 
-    return monotonicTimeToDocumentMilliseconds(m_requestingDocument.get(), m_timing->dnsStart);
+    return monotonicTimeToDocumentMilliseconds(m_requestingDocument.get(), m_timing->dnsStart());
 }
 
 double PerformanceResourceTiming::domainLookupEnd() const
@@ -113,10 +113,10 @@ double PerformanceResourceTiming::domainLookupEnd() const
     if (!m_allowTimingDetails)
         return 0.0;
 
-    if (!m_timing || m_timing->dnsEnd == 0.0)
+    if (!m_timing || m_timing->dnsEnd() == 0.0)
         return domainLookupStart();
 
-    return monotonicTimeToDocumentMilliseconds(m_requestingDocument.get(), m_timing->dnsEnd);
+    return monotonicTimeToDocumentMilliseconds(m_requestingDocument.get(), m_timing->dnsEnd());
 }
 
 double PerformanceResourceTiming::connectStart() const
@@ -125,13 +125,13 @@ double PerformanceResourceTiming::connectStart() const
         return 0.0;
 
     // connectStart will be zero when a network request is not made.
-    if (!m_timing || m_timing->connectStart == 0.0 || m_didReuseConnection)
+    if (!m_timing || m_timing->connectStart() == 0.0 || m_didReuseConnection)
         return domainLookupEnd();
 
     // connectStart includes any DNS time, so we may need to trim that off.
-    double connectStart = m_timing->connectStart;
-    if (m_timing->dnsEnd > 0.0)
-        connectStart = m_timing->dnsEnd;
+    double connectStart = m_timing->connectStart();
+    if (m_timing->dnsEnd() > 0.0)
+        connectStart = m_timing->dnsEnd();
 
     return monotonicTimeToDocumentMilliseconds(m_requestingDocument.get(), connectStart);
 }
@@ -142,10 +142,10 @@ double PerformanceResourceTiming::connectEnd() const
         return 0.0;
 
     // connectStart will be zero when a network request is not made.
-    if (!m_timing || m_timing->connectEnd == 0.0 || m_didReuseConnection)
+    if (!m_timing || m_timing->connectEnd() == 0.0 || m_didReuseConnection)
         return connectStart();
 
-    return monotonicTimeToDocumentMilliseconds(m_requestingDocument.get(), m_timing->connectEnd);
+    return monotonicTimeToDocumentMilliseconds(m_requestingDocument.get(), m_timing->connectEnd());
 }
 
 double PerformanceResourceTiming::secureConnectionStart() const
@@ -153,10 +153,10 @@ double PerformanceResourceTiming::secureConnectionStart() const
     if (!m_allowTimingDetails)
         return 0.0;
 
-    if (!m_timing || m_timing->sslStart == 0.0) // Secure connection not negotiated.
+    if (!m_timing || m_timing->sslStart() == 0.0) // Secure connection not negotiated.
         return 0.0;
 
-    return monotonicTimeToDocumentMilliseconds(m_requestingDocument.get(), m_timing->sslStart);
+    return monotonicTimeToDocumentMilliseconds(m_requestingDocument.get(), m_timing->sslStart());
 }
 
 double PerformanceResourceTiming::requestStart() const
@@ -167,7 +167,7 @@ double PerformanceResourceTiming::requestStart() const
     if (!m_timing)
         return connectEnd();
 
-    return monotonicTimeToDocumentMilliseconds(m_requestingDocument.get(), m_timing->sendStart);
+    return monotonicTimeToDocumentMilliseconds(m_requestingDocument.get(), m_timing->sendStart());
 }
 
 double PerformanceResourceTiming::responseStart() const
@@ -179,7 +179,7 @@ double PerformanceResourceTiming::responseStart() const
         return requestStart();
 
     // FIXME: This number isn't exactly correct. See the notes in PerformanceTiming::responseStart().
-    return monotonicTimeToDocumentMilliseconds(m_requestingDocument.get(), m_timing->receiveHeadersEnd);
+    return monotonicTimeToDocumentMilliseconds(m_requestingDocument.get(), m_timing->receiveHeadersEnd());
 }
 
 double PerformanceResourceTiming::responseEnd() const

@@ -53,152 +53,152 @@ void WebURLLoadTiming::assign(const WebURLLoadTiming& other)
 
 double WebURLLoadTiming::requestTime() const
 {
-    return m_private->requestTime;
+    return m_private->requestTime();
 }
 
 void WebURLLoadTiming::setRequestTime(double time)
 {
-    m_private->requestTime = time;
+    m_private->setRequestTime(time);
 }
 
 double WebURLLoadTiming::proxyStart() const
 {
-    return m_private->proxyStart;
+    return m_private->proxyStart();
 }
 
 void WebURLLoadTiming::setProxyStart(double start)
 {
-    m_private->proxyStart = start;
+    m_private->setProxyStart(start);
 }
 
 double WebURLLoadTiming::proxyEnd() const
 {
-    return m_private->proxyEnd;
+    return m_private->proxyEnd();
 }
 
 void WebURLLoadTiming::setProxyEnd(double end)
 {
-    m_private->proxyEnd = end;
+    m_private->setProxyEnd(end);
 }
 
 double WebURLLoadTiming::dnsStart() const
 {
-    return m_private->dnsStart;
+    return m_private->dnsStart();
 }
 
 void WebURLLoadTiming::setDNSStart(double start)
 {
-    m_private->dnsStart = start;
+    m_private->setDnsStart(start);
 }
 
 double WebURLLoadTiming::dnsEnd() const
 {
-    return m_private->dnsEnd;
+    return m_private->dnsEnd();
 }
 
 void WebURLLoadTiming::setDNSEnd(double end)
 {
-    m_private->dnsEnd = end;
+    m_private->setDnsEnd(end);
 }
 
 double WebURLLoadTiming::connectStart() const
 {
-    return m_private->connectStart;
+    return m_private->connectStart();
 }
 
 void WebURLLoadTiming::setConnectStart(double start)
 {
-    m_private->connectStart = start;
+    m_private->setConnectStart(start);
 }
 
 double WebURLLoadTiming::connectEnd() const
 {
-    return m_private->connectEnd;
+    return m_private->connectEnd();
 }
 
 void WebURLLoadTiming::setConnectEnd(double end)
 {
-    m_private->connectEnd = end;
+    m_private->setConnectEnd(end);
 }
 
 double WebURLLoadTiming::serviceWorkerFetchStart() const
 {
-    return m_private->serviceWorkerFetchStart;
+    return m_private->serviceWorkerFetchStart();
 }
 
 void WebURLLoadTiming::setServiceWorkerFetchStart(double start)
 {
-    m_private->serviceWorkerFetchStart = start;
+    m_private->setServiceWorkerFetchStart(start);
 }
 
 double WebURLLoadTiming::serviceWorkerFetchReady() const
 {
-    return m_private->serviceWorkerFetchReady;
+    return m_private->serviceWorkerFetchReady();
 }
 
 void WebURLLoadTiming::setServiceWorkerFetchReady(double time)
 {
-    m_private->serviceWorkerFetchReady = time;
+    m_private->setServiceWorkerFetchReady(time);
 }
 
 double WebURLLoadTiming::serviceWorkerFetchEnd() const
 {
-    return m_private->serviceWorkerFetchEnd;
+    return m_private->serviceWorkerFetchEnd();
 }
 
 void WebURLLoadTiming::setServiceWorkerFetchEnd(double end)
 {
-    m_private->serviceWorkerFetchEnd = end;
+    m_private->setServiceWorkerFetchEnd(end);
 }
 
 double WebURLLoadTiming::sendStart() const
 {
-    return m_private->sendStart;
+    return m_private->sendStart();
 }
 
 void WebURLLoadTiming::setSendStart(double start)
 {
-    m_private->sendStart = start;
+    m_private->setSendStart(start);
 }
 
 double WebURLLoadTiming::sendEnd() const
 {
-    return m_private->sendEnd;
+    return m_private->sendEnd();
 }
 
 void WebURLLoadTiming::setSendEnd(double end)
 {
-    m_private->sendEnd = end;
+    m_private->setSendEnd(end);
 }
 
 double WebURLLoadTiming::receiveHeadersEnd() const
 {
-    return m_private->receiveHeadersEnd;
+    return m_private->receiveHeadersEnd();
 }
 
 void WebURLLoadTiming::setReceiveHeadersEnd(double end)
 {
-    m_private->receiveHeadersEnd = end;
+    m_private->setReceiveHeadersEnd(end);
 }
 
 double WebURLLoadTiming::sslStart() const
 {
-    return m_private->sslStart;
+    return m_private->sslStart();
 }
 
 void WebURLLoadTiming::setSSLStart(double start)
 {
-    m_private->sslStart = start;
+    m_private->setSslStart(start);
 }
 
 double WebURLLoadTiming::sslEnd() const
 {
-    return m_private->sslEnd;
+    return m_private->sslEnd();
 }
 
 void WebURLLoadTiming::setSSLEnd(double end)
 {
-    m_private->sslEnd = end;
+    m_private->setSslEnd(end);
 }
 
 WebURLLoadTiming::WebURLLoadTiming(const PassRefPtr<ResourceLoadTiming>& value)
