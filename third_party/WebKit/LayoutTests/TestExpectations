@@ -1416,7 +1416,7 @@ crbug.com/407915 inspector/tracing/timeline-event-dispatch.html [ Failure Pass ]
 crbug.com/407915 virtual/deferred/inspector/tracing/timeline-event-dispatch.html [ Failure Pass ]
 crbug.com/448440 virtual/deferred/inspector/tracing/timeline-script-tag-1.html [ Failure Pass ]
 crbug.com/448440 inspector/tracing/timeline-script-tag-1.html [ Failure Pass ]
-crbug.com/448461 [ Mac ] http/tests/loading/simple-subframe.html [ Failure Pass ]
+crbug.com/448461 http/tests/loading/simple-subframe.html [ Failure Pass ]
 
 crbug.com/407993 [ Win ] media/encrypted-media/prefixed/encrypted-media-events.html [ Crash Pass ]
 # Will be converted to requestMediaKeySystemAccess() tests.
