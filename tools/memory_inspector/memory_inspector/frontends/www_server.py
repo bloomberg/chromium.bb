@@ -21,7 +21,6 @@ The following HTTP status code are returned by the server:
 import cgi
 import collections
 import datetime
-import dateutil.parser
 import glob
 import json
 import memory_inspector
@@ -187,7 +186,7 @@ def _CreateProfile(args, req_vars):  # pylint: disable=W0613
       return _HTTP_GONE, [], 'Cannot open archive %s' % req_vars['archive']
     first_timestamp = None
     for timestamp_str in req_vars['snapshots']:
-      timestamp = dateutil.parser.parse(timestamp_str)
+      timestamp = file_storage.Archive.StrToTimestamp(timestamp_str)
       first_timestamp = first_timestamp or timestamp
       time_delta = int((timestamp - first_timestamp).total_seconds())
       if req_vars['type'] == 'mmap':
@@ -545,7 +544,8 @@ def _ListStorage(args, req_vars):  # pylint: disable=W0613
       time_delta = '%d s.' % (timestamp - first_timestamp).total_seconds()
       resp['rows'] += [{'c': [
           {'v': archive_name, 'f': None},
-          {'v': timestamp.isoformat(), 'f': time_delta},
+          {'v': file_storage.Archive.TimestampToStr(timestamp),
+           'f': time_delta},
           {'v': archive.HasMemMaps(timestamp), 'f': None},
           {'v': archive.HasNativeHeap(timestamp), 'f': None},
       ]}]
@@ -558,7 +558,7 @@ def _LoadMmapsFromStorage(args, req_vars):  # pylint: disable=W0613
   if not archive:
     return _HTTP_GONE, [], 'Cannot open archive %s' % req_vars['archive']
 
-  timestamp = dateutil.parser.parse(args[1])
+  timestamp = file_storage.Archive.StrToTimestamp(args[1])
   if not archive.HasMemMaps(timestamp):
     return _HTTP_GONE, [], 'No mmaps for snapshot %s' % timestamp
   mmap = archive.LoadMemMaps(timestamp)
@@ -572,7 +572,7 @@ def _LoadNheapFromStorage(args, req_vars):
   if not archive:
     return _HTTP_GONE, [], 'Cannot open archive %s' % req_vars['archive']
 
-  timestamp = dateutil.parser.parse(args[1])
+  timestamp = file_storage.Archive.StrToTimestamp(args[1])
   if not archive.HasNativeHeap(timestamp):
     return _HTTP_GONE, [], 'No native heap dump for snapshot %s' % timestamp
 

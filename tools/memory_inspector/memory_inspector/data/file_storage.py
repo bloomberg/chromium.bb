@@ -108,7 +108,7 @@ class Archive(object):
 
   def StartNewSnapshot(self):
     """Creates a 2014-01-01_02:03:04.snapshot marker (an empty file)."""
-    self._cur_snapshot = Archive._TimestampToStr(datetime.datetime.now())
+    self._cur_snapshot = Archive.TimestampToStr(datetime.datetime.now())
     file_path = os.path.join(self._path,
                             self._cur_snapshot + Archive._SNAP_EXT)
     assert(not os.path.exists(file_path))
@@ -136,7 +136,7 @@ class Archive(object):
 
   def LoadMemMaps(self, timestamp):
     assert(self.HasMemMaps(timestamp))
-    snapshot_name = Archive._TimestampToStr(timestamp)
+    snapshot_name = Archive.TimestampToStr(timestamp)
     file_path = os.path.join(self._path, snapshot_name + Archive._MMAP_EXT)
     with open(file_path) as f:
       return json.load(f, cls=serialization.MmapDecoder)
@@ -154,15 +154,19 @@ class Archive(object):
 
   def LoadNativeHeap(self, timestamp):
     assert(self.HasNativeHeap(timestamp))
-    snapshot_name = Archive._TimestampToStr(timestamp)
+    snapshot_name = Archive.TimestampToStr(timestamp)
     file_path = os.path.join(self._path, snapshot_name + Archive._NHEAP_EXT)
     with open(file_path) as f:
       return json.load(f, cls=serialization.NativeHeapDecoder)
 
   def _HasSnapshotFile(self, timestamp, ext):
-    name = Archive._TimestampToStr(timestamp)
+    name = Archive.TimestampToStr(timestamp)
     return os.path.exists(os.path.join(self._path, name + ext))
 
   @staticmethod
-  def _TimestampToStr(timestamp):
+  def TimestampToStr(timestamp):
     return timestamp.strftime(Archive._TIME_FMT)
+
+  @staticmethod
+  def StrToTimestamp(timestr):
+    return datetime.datetime.strptime(timestr, Archive._TIME_FMT)
