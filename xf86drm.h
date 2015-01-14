@@ -79,6 +79,7 @@ extern "C" {
 #define DRM_DIR_NAME  "/dev/dri"
 #define DRM_DEV_NAME  "%s/card%d"
 #define DRM_CONTROL_DEV_NAME  "%s/controlD%d"
+#define DRM_RENDER_DEV_NAME  "%s/renderD%d"
 #define DRM_PROC_NAME "/proc/dri/" /* For backward Linux compatibility */
 
 #define DRM_ERR_NO_DEVICE  (-1001)
@@ -552,6 +553,7 @@ do {	register unsigned int __old __asm("o0");		\
 extern int           drmAvailable(void);
 extern int           drmOpen(const char *name, const char *busid);
 extern int drmOpenControl(int minor);
+extern int           drmOpenRender(int minor);
 extern int           drmClose(int fd);
 extern drmVersionPtr drmGetVersion(int fd);
 extern drmVersionPtr drmGetLibVersion(int fd);

@@ -87,6 +87,7 @@
 
 #define DRM_NODE_CONTROL 0
 #define DRM_NODE_PRIMARY 1
+#define DRM_NODE_RENDER 2
 
 static drmServerInfoPtr drm_server_info;
 
@@ -305,6 +306,7 @@ static int chown_check_return(const char *path, uid_t owner, gid_t group)
 static int drmOpenDevice(long dev, int minor, int type)
 {
     stat_t          st;
+    const char      *dev_name;
     char            buf[64];
     int             fd;
     mode_t          devmode = DRM_DEV_MODE, serv_mode;
@@ -312,7 +314,21 @@ static int drmOpenDevice(long dev, int minor, int type)
     uid_t           user    = DRM_DEV_UID;
     gid_t           group   = DRM_DEV_GID, serv_group;
     
-    sprintf(buf, type ? DRM_DEV_NAME : DRM_CONTROL_DEV_NAME, DRM_DIR_NAME, minor);
+    switch (type) {
+    case DRM_NODE_PRIMARY:
+	    dev_name = DRM_DEV_NAME;
+	    break;
+    case DRM_NODE_CONTROL:
+	    dev_name = DRM_CONTROL_DEV_NAME;
+	    break;
+    case DRM_NODE_RENDER:
+	    dev_name = DRM_RENDER_DEV_NAME;
+	    break;
+    default:
+	    return -EINVAL;
+    };
+
+    sprintf(buf, dev_name, DRM_DIR_NAME, minor);
     drmMsg("drmOpenDevice: node name is %s\n", buf);
 
     if (drm_server_info) {
@@ -417,11 +433,26 @@ static int drmOpenMinor(int minor, int create, int type)
 {
     int  fd;
     char buf[64];
+    const char *dev_name;
     
     if (create)
 	return drmOpenDevice(makedev(DRM_MAJOR, minor), minor, type);
     
-    sprintf(buf, type ? DRM_DEV_NAME : DRM_CONTROL_DEV_NAME, DRM_DIR_NAME, minor);
+    switch (type) {
+    case DRM_NODE_PRIMARY:
+	    dev_name = DRM_DEV_NAME;
+	    break;
+    case DRM_NODE_CONTROL:
+	    dev_name = DRM_CONTROL_DEV_NAME;
+	    break;
+    case DRM_NODE_RENDER:
+	    dev_name = DRM_RENDER_DEV_NAME;
+	    break;
+    default:
+	    return -EINVAL;
+    };
+
+    sprintf(buf, dev_name, DRM_DIR_NAME, minor);
     if ((fd = open(buf, O_RDWR, 0)) >= 0)
 	return fd;
     return -errno;
@@ -644,6 +675,11 @@ int drmOpen(const char *name, const char *busid)
 int drmOpenControl(int minor)
 {
     return drmOpenMinor(minor, 0, DRM_NODE_CONTROL);
+}
+
+int drmOpenRender(int minor)
+{
+    return drmOpenMinor(minor, 0, DRM_NODE_RENDER);
 }
 
 /**
