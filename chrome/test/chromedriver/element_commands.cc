@@ -445,7 +445,7 @@ Status ExecuteGetElementLocationOnceScrolledIntoView(
     scoped_ptr<base::Value>* value) {
   WebPoint location;
   Status status = ScrollElementIntoView(
-      session, web_view, element_id, &location);
+      session, web_view, element_id, nullptr, &location);
   if (status.IsError())
     return status;
   value->reset(CreateValueFrom(location));

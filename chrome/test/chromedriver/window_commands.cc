@@ -470,22 +470,15 @@ Status ExecuteMouseMoveTo(
 
   WebPoint location;
   if (has_element) {
-    Status status = ScrollElementIntoView(
-        session, web_view, element_id, &location);
+    WebPoint offset(x_offset, y_offset);
+    Status status = ScrollElementIntoView(session, web_view, element_id,
+        has_offset ? &offset : nullptr, &location);
     if (status.IsError())
       return status;
   } else {
     location = session->mouse_position;
-  }
-
-  if (has_offset) {
-    location.Offset(x_offset, y_offset);
-  } else {
-    WebSize size;
-    Status status = GetElementSize(session, web_view, element_id, &size);
-    if (status.IsError())
-      return status;
-    location.Offset(size.width / 2, size.height / 2);
+    if (has_offset)
+      location.Offset(x_offset, y_offset);
   }
 
   std::list<MouseEvent> events;

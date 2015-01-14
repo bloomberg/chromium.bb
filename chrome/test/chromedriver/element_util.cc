@@ -577,14 +577,21 @@ Status ScrollElementIntoView(
     Session* session,
     WebView* web_view,
     const std::string& id,
+    const WebPoint* offset,
     WebPoint* location) {
-  WebSize size;
-  Status status = GetElementSize(session, web_view, id, &size);
+  WebRect region;
+  Status status = GetElementRegion(session, web_view, id, &region);
   if (status.IsError())
     return status;
-  return ScrollElementRegionIntoView(
-      session, web_view, id, WebRect(WebPoint(0, 0), size),
+  status = ScrollElementRegionIntoView(session, web_view, id, region,
       false /* center */, std::string(), location);
+  if (status.IsError())
+    return status;
+  if (offset)
+    location->Offset(offset->x, offset->y);
+  else
+    location->Offset(region.size.width / 2, region.size.height / 2);
+  return Status(kOk);
 }
 
 Status ScrollElementRegionIntoView(

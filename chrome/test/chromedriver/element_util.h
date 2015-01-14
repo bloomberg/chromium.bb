@@ -131,6 +131,7 @@ Status ScrollElementIntoView(
     Session* session,
     WebView* web_view,
     const std::string& element_id,
+    const WebPoint* offset,
     WebPoint* location);
 
 // |element_id| refers to the element which is to be scrolled into view.

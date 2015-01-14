@@ -571,6 +571,29 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     self._driver.MouseMoveTo(div, 10, 10)
     self.assertEquals(1, len(self._driver.FindElements('tag name', 'br')))
 
+  def testMoveToElementAndClick(self):
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/multiline.html'))
+
+    # Check that link element spans two lines and that the first ClientRect is
+    # above the second.
+    link = self._driver.FindElements('tag name', 'a')[0]
+    client_rects = self._driver.ExecuteScript(
+        'return arguments[0].getClientRects();', link)
+    self.assertEquals(2, len(client_rects))
+    self.assertTrue(client_rects[0]['bottom'] < client_rects[1]['top'])
+
+    # Check that the center of the link's bounding ClientRect is outside the
+    # element.
+    bounding_client_rect = self._driver.ExecuteScript(
+        'return arguments[0].getBoundingClientRect();', link)
+    center = bounding_client_rect['left'] + bounding_client_rect['width'] / 2
+    self.assertTrue(client_rects[1]['right'] < center)
+    self.assertTrue(center < client_rects[0]['left'])
+
+    self._driver.MouseMoveTo(link)
+    self._driver.MouseClick()
+    self.assertTrue(self._driver.GetCurrentUrl().endswith('#top'))
+
   def testMouseClick(self):
     div = self._driver.ExecuteScript(
         'document.body.innerHTML = "<div>old</div>";'
