@@ -103,7 +103,9 @@ MediaKeySystemAccessInitializer::MediaKeySystemAccessInitializer(ScriptState* sc
             webConfig.audioCapabilities = convertCapabilities(config.audioCapabilities());
         if (config.hasVideoCapabilities())
             webConfig.videoCapabilities = convertCapabilities(config.videoCapabilities());
+        ASSERT(config.hasDistinctiveIdentifier());
         webConfig.distinctiveIdentifier = convertMediaKeysRequirement(config.distinctiveIdentifier());
+        ASSERT(config.hasPersistentState());
         webConfig.persistentState = convertMediaKeysRequirement(config.persistentState());
         m_supportedConfigurations[i] = webConfig;
     }

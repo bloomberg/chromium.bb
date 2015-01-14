@@ -85,6 +85,28 @@
                 {
                     exception: 'NotSupportedError',
                     func: function() { return navigator.requestMediaKeySystemAccess('org.w3\u263A.clearkey'); }
+                },
+                // Empty sequence of MediaKeySystemConfiguration.
+                {
+                    exception: 'InvalidAccessError',
+                    func: function() { return navigator.requestMediaKeySystemAccess('org.w3.clearkey', []); }
+                },
+                // Invalid sequences of MediaKeySystemConfigurations.
+                {
+                    exception: 'TypeError',
+                    func: function() { return navigator.requestMediaKeySystemAccess('org.w3.clearkey', {}); }
+                },
+                {
+                    exception: 'TypeError',
+                    func: function() { return navigator.requestMediaKeySystemAccess('org.w3.clearkey', "invalid"); }
+                },
+                {
+                    exception: 'TypeError',
+                    func: function() { return navigator.requestMediaKeySystemAccess('org.w3.clearkey', [{}, 6]); }
+                },
+                {
+                    exception: 'TypeError',
+                    func: function() { return navigator.requestMediaKeySystemAccess('org.w3.clearkey', ["invalid", "upsupported"]); }
                 }
             ];
 
