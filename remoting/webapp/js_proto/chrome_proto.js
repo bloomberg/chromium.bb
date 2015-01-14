@@ -41,7 +41,11 @@ chrome.app.window = {
    * @param {string} id
    * @param {function()=} opt_callback
    */
-  get: function(id, opt_callback) {}
+  get: function(id, opt_callback) {},
+  /**
+   * @return {Array.<AppWindow>}
+   */
+  getAll: function() {}
 };
 
 

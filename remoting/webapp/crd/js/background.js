@@ -7,32 +7,57 @@ var remoting = remoting || {};
 
 (function(){
 
-/** @param {remoting.AppLauncher} appLauncher */
-function initializeAppV2(appLauncher) {
-  /** @type {string} */
-  var kNewWindowId = 'new-window';
+/**
+ * A class that handles application activation.
+ *
+ * @param {remoting.AppLauncher} appLauncher
+ * @constructor
+ */
+function ActivationHandler(appLauncher) {
+  /**
+   * @type {remoting.AppLauncher}
+   * @private
+   */
+  this.appLauncher_ = appLauncher;
 
-  /** @param {OnClickData} info */
-  function onContextMenu(info) {
-    if (info.menuItemId == kNewWindowId) {
-      appLauncher.launch();
-    }
-  }
+  chrome.contextMenus.create({
+     id: ActivationHandler.NEW_WINDOW_MENU_ID_,
+     contexts: ['launcher'],
+     title: chrome.i18n.getMessage(/*i18n-content*/'NEW_WINDOW')
+  });
 
-  function initializeContextMenu() {
-    chrome.contextMenus.create({
-       id: kNewWindowId,
-       contexts: ['launcher'],
-       title: chrome.i18n.getMessage(/*i18n-content*/'NEW_WINDOW')
-    });
-    chrome.contextMenus.onClicked.addListener(onContextMenu);
-  }
-
-  initializeContextMenu();
-  chrome.app.runtime.onLaunched.addListener(
-      appLauncher.launch.bind(appLauncher)
-  );
+  chrome.contextMenus.onClicked.addListener(this.onContextMenu_.bind(this));
+  chrome.app.runtime.onLaunched.addListener(this.onLaunched_.bind(this));
 }
+
+/** @type {string} */
+ActivationHandler.NEW_WINDOW_MENU_ID_ = 'new-window';
+
+/**
+ * @param {OnClickData} info
+ * @private
+ */
+ActivationHandler.prototype.onContextMenu_ = function(info) {
+  if (info.menuItemId == ActivationHandler.NEW_WINDOW_MENU_ID_) {
+    this.appLauncher_.launch();
+  }
+};
+
+/**
+ * Called when the App is activated (e.g. from the Chrome App Launcher).  It
+ * creates a new window if there are no existing ones.  Otherwise, it will put
+ * focus on the last window created.
+ *
+ * @private
+ */
+ActivationHandler.prototype.onLaunched_ = function() {
+  var windows = chrome.app.window.getAll();
+  if (windows.length >= 1) {
+    windows[windows.length - 1].focus();
+  } else {
+    this.appLauncher_.launch();
+  }
+};
 
 /**
  * The background service is responsible for listening to incoming connection
@@ -61,8 +86,7 @@ function initializeBackgroundService(appLauncher) {
 
 function main() {
   if (base.isAppsV2()) {
-    var appLauncher = new remoting.V2AppLauncher();
-    initializeAppV2(appLauncher);
+    new ActivationHandler(new remoting.V2AppLauncher());
   }
 }
 
