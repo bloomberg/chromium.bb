@@ -277,6 +277,15 @@ class PasswordStore : protected PasswordStoreSync,
   // method will actually modify the password store data.
   virtual void WrapModificationTask(ModificationTask task);
 
+  // Temporary specializations of WrapModificationTask for a better stack trace.
+  void AddLoginInternal(const autofill::PasswordForm& form);
+  void UpdateLoginInternal(const autofill::PasswordForm& form);
+  void RemoveLoginInternal(const autofill::PasswordForm& form);
+  void RemoveLoginsCreatedBetweenInternal(base::Time delete_begin,
+                                          base::Time delete_end);
+  void RemoveLoginsSyncedBetweenInternal(base::Time delete_begin,
+                                         base::Time delete_end);
+
   // Copies |matched_forms| into the request's result vector, then calls
   // |ForwardLoginsResult|. Temporarily used as an adapter between the API of
   // |GetLoginsImpl| and |PasswordStoreConsumer|.

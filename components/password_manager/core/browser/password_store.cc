@@ -96,41 +96,28 @@ bool PasswordStore::Init(const syncer::SyncableService::StartSyncFlare& flare) {
 
 void PasswordStore::AddLogin(const PasswordForm& form) {
   CheckForEmptyUsernameAndPassword(form);
-  ScheduleTask(
-      base::Bind(&PasswordStore::WrapModificationTask, this,
-                 base::Bind(&PasswordStore::AddLoginImpl, this, form)));
+  ScheduleTask(base::Bind(&PasswordStore::AddLoginInternal, this, form));
 }
 
 void PasswordStore::UpdateLogin(const PasswordForm& form) {
   CheckForEmptyUsernameAndPassword(form);
-  ScheduleTask(
-      base::Bind(&PasswordStore::WrapModificationTask, this,
-                 base::Bind(&PasswordStore::UpdateLoginImpl, this, form)));
+  ScheduleTask(base::Bind(&PasswordStore::UpdateLoginInternal, this, form));
 }
 
 void PasswordStore::RemoveLogin(const PasswordForm& form) {
-  ScheduleTask(
-      base::Bind(&PasswordStore::WrapModificationTask, this,
-                 base::Bind(&PasswordStore::RemoveLoginImpl, this, form)));
+  ScheduleTask(base::Bind(&PasswordStore::RemoveLoginInternal, this, form));
 }
 
 void PasswordStore::RemoveLoginsCreatedBetween(base::Time delete_begin,
                                                base::Time delete_end) {
-  ScheduleTask(
-      base::Bind(&PasswordStore::WrapModificationTask, this,
-                 base::Bind(&PasswordStore::RemoveLoginsCreatedBetweenImpl,
-                            this, delete_begin, delete_end)));
+  ScheduleTask(base::Bind(&PasswordStore::RemoveLoginsCreatedBetweenInternal,
+                          this, delete_begin, delete_end));
 }
 
 void PasswordStore::RemoveLoginsSyncedBetween(base::Time delete_begin,
                                               base::Time delete_end) {
-  ScheduleTask(
-      base::Bind(&PasswordStore::WrapModificationTask,
-                 this,
-                 base::Bind(&PasswordStore::RemoveLoginsSyncedBetweenImpl,
-                            this,
-                            delete_begin,
-                            delete_end)));
+  ScheduleTask(base::Bind(&PasswordStore::RemoveLoginsSyncedBetweenInternal,
+                          this, delete_begin, delete_end));
 }
 
 void PasswordStore::GetLogins(
@@ -268,6 +255,35 @@ void PasswordStore::Schedule(
 
 void PasswordStore::WrapModificationTask(ModificationTask task) {
   PasswordStoreChangeList changes = task.Run();
+  NotifyLoginsChanged(changes);
+}
+
+void PasswordStore::AddLoginInternal(const PasswordForm& form) {
+  PasswordStoreChangeList changes = AddLoginImpl(form);
+  NotifyLoginsChanged(changes);
+}
+
+void PasswordStore::UpdateLoginInternal(const PasswordForm& form) {
+  PasswordStoreChangeList changes = UpdateLoginImpl(form);
+  NotifyLoginsChanged(changes);
+}
+
+void PasswordStore::RemoveLoginInternal(const PasswordForm& form) {
+  PasswordStoreChangeList changes = RemoveLoginImpl(form);
+  NotifyLoginsChanged(changes);
+}
+
+void PasswordStore::RemoveLoginsCreatedBetweenInternal(base::Time delete_begin,
+                                                       base::Time delete_end) {
+  PasswordStoreChangeList changes =
+      RemoveLoginsCreatedBetweenImpl(delete_begin, delete_end);
+  NotifyLoginsChanged(changes);
+}
+
+void PasswordStore::RemoveLoginsSyncedBetweenInternal(base::Time delete_begin,
+                                                      base::Time delete_end) {
+  PasswordStoreChangeList changes =
+      RemoveLoginsSyncedBetweenImpl(delete_begin, delete_end);
   NotifyLoginsChanged(changes);
 }
 
