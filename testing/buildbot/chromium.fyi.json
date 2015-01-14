@@ -367,5 +367,33 @@
       { "test": "content_unittests", "args": ["--enable-browser-side-navigation", "--gtest_filter=-ResourceDispatcherHostTest.TransferNavigationHtml:ResourceDispatcherHostTest.TransferNavigationText:ResourceDispatcherHostTest.TransferNavigationWithProcessCrash:ResourceDispatcherHostTest.TransferNavigationWithTwoRedirects:ResourceDispatcherHostTest.TransferTwoNavigationsHtml:RenderFrameHostManagerTest.CancelPendingProperlyDeletesOrSwaps:WebContentsImplTest.CrossSiteNotPreemptedDuringBeforeUnload"] },
       { "test": "content_browsertests", "args": ["--enable-browser-side-navigation"] }
     ]
+  },
+  "CrWinClang tester": {
+    "gtest_tests": [
+      "base_unittests",
+      "browser_tests",
+      "cacheinvalidation_unittests",
+      "chrome_elf_unittests",
+      "components_unittests",
+      "content_browsertests",
+      "content_unittests",
+      "courgette_unittests",
+      "crypto_unittests",
+      "device_unittests",
+      "extensions_unittests",
+      "gcm_unit_tests",
+      "google_apis_unittests",
+      "gpu",
+      "installer",
+      "jingle",
+      "media",
+      "net",
+      "ppapi_unittests",
+      "printing",
+      "remoting",
+      "sandbox",
+      "unit",
+      "url_unittests"
+    ]
   }
 }
