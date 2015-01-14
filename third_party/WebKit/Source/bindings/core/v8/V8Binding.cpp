@@ -60,7 +60,6 @@
 #include "core/xml/XPathNSResolver.h"
 #include "platform/EventTracer.h"
 #include "platform/JSONValues.h"
-#include "wtf/ArrayBufferContents.h"
 #include "wtf/MainThread.h"
 #include "wtf/MathExtras.h"
 #include "wtf/StdLibExtras.h"
@@ -93,33 +92,6 @@ v8::Local<v8::Value> createMinimumArityTypeErrorForConstructor(v8::Isolate* isol
 void setMinimumArityTypeError(ExceptionState& exceptionState, unsigned expected, unsigned provided)
 {
     exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(expected, provided));
-}
-
-class ArrayBufferAllocator : public v8::ArrayBuffer::Allocator {
-    virtual void* Allocate(size_t size) override
-    {
-        void* data;
-        WTF::ArrayBufferContents::allocateMemory(size, WTF::ArrayBufferContents::ZeroInitialize, data);
-        return data;
-    }
-
-    virtual void* AllocateUninitialized(size_t size) override
-    {
-        void* data;
-        WTF::ArrayBufferContents::allocateMemory(size, WTF::ArrayBufferContents::DontInitialize, data);
-        return data;
-    }
-
-    virtual void Free(void* data, size_t size) override
-    {
-        WTF::ArrayBufferContents::freeMemory(data, size);
-    }
-};
-
-v8::ArrayBuffer::Allocator* v8ArrayBufferAllocator()
-{
-    DEFINE_STATIC_LOCAL(ArrayBufferAllocator, arrayBufferAllocator, ());
-    return &arrayBufferAllocator;
 }
 
 PassRefPtrWillBeRawPtr<NodeFilter> toNodeFilter(v8::Handle<v8::Value> callback, v8::Handle<v8::Object> creationContext, ScriptState* scriptState)

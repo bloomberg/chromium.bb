@@ -70,8 +70,6 @@ v8::Local<v8::Value> createMinimumArityTypeErrorForMethod(v8::Isolate*, const ch
 v8::Local<v8::Value> createMinimumArityTypeErrorForConstructor(v8::Isolate*, const char* type, unsigned expected, unsigned provided);
 void setMinimumArityTypeError(ExceptionState&, unsigned expected, unsigned provided);
 
-v8::ArrayBuffer::Allocator* v8ArrayBufferAllocator();
-
 template<typename CallbackInfo, typename S>
 inline void v8SetReturnValue(const CallbackInfo& info, const v8::Persistent<S>& handle)
 {
