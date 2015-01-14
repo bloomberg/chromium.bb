@@ -11,7 +11,7 @@ test(function() {
       return count;
     }
 
-    var expectedMap = {
+    var expectedValueMap = {
       'content-language': 'ja',
       'content-type': 'text/html; charset=UTF-8',
       'x-fetch-test': 'response test field'
@@ -28,9 +28,9 @@ test(function() {
     var key = 'Content-Type';
     assert_true(headers.has(key));
     assert_true(headers.has(key.toUpperCase()));
-    assert_equals(headers.get(key), expectedMap[key.toLowerCase()]);
+    assert_equals(headers.get(key), expectedValueMap[key.toLowerCase()]);
     assert_equals(headers.get(key.toUpperCase()),
-                  expectedMap[key.toLowerCase()]);
+                  expectedValueMap[key.toLowerCase()]);
     assert_equals(headers.get('dummy'), null);
     assert_false(headers.has('dummy'));
 
@@ -38,7 +38,7 @@ test(function() {
     var deleteKey = 'Content-Type';
     headers.delete(deleteKey);
     assert_equals(size(headers), 2, 'headers size should have -1 size');
-    Object.keys(expectedMap).forEach(function(key) {
+    Object.keys(expectedValueMap).forEach(function(key) {
         if (key == deleteKey.toLowerCase())
           assert_false(headers.has(key));
         else
@@ -82,19 +82,46 @@ test(function() {
         assert_true(headers.has(key));
         assert_equals(headers.get(key), expectedValue);
         if (testCase.isUpdate)
-          assert_true(headers.get(key) != expectedMap[key.toLowerCase()]);
+          assert_not_equals(headers.get(key), expectedValueMap[key.toLowerCase()]);
         assert_equals(size(headers), expectedHeaderSize);
 
-        // Update expectedMap too for forEach() test below.
-        expectedMap[key.toLowerCase()] = expectedValue;
+        // Update expectedValueMap too for forEach() test below.
+        expectedValueMap[key.toLowerCase()] = expectedValue;
       });
 
     // '[Symbol.iterator]()'
     for (var header of headers) {
       var key = header[0], value = header[1];
-      assert_true(key != deleteKey.toLowerCase());
-      assert_true(key in expectedMap);
-      assert_equals(headers.get(key), expectedMap[key]);
+      assert_not_equals(key, deleteKey.toLowerCase());
+      assert_true(key in expectedValueMap);
+      assert_equals(headers.get(key), expectedValueMap[key]);
+      assert_equals(value, expectedValueMap[key]);
+    }
+
+    // 'keys()'
+    for (var key of headers.keys()) {
+      assert_not_equals(key, deleteKey.toLowerCase());
+      assert_true(key in expectedValueMap);
+      assert_equals(headers.get(key), expectedValueMap[key]);
+    }
+
+    // 'values()'
+    var expectedKeyMap = {};
+    for (var key in expectedValueMap)
+      expectedKeyMap[expectedValueMap[key]] = key;
+    for (var value of headers.values()) {
+      assert_true(value in expectedKeyMap);
+      var key = expectedKeyMap[value];
+      assert_not_equals(key, deleteKey.toLowerCase());
+    }
+
+    // 'entries()'
+    for (var header of headers.entries()) {
+      var key = header[0], value = header[1];
+      assert_not_equals(key, deleteKey.toLowerCase());
+      assert_true(key in expectedValueMap);
+      assert_equals(headers.get(key), expectedValueMap[key]);
+      assert_equals(value, expectedValueMap[key]);
     }
 
     // 'append()', 'getAll()'

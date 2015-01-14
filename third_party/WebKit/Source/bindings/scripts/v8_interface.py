@@ -124,26 +124,6 @@ def interface_context(interface):
     # [DependentLifetime]
     is_dependent_lifetime = 'DependentLifetime' in extended_attributes
 
-    # [Iterable], iterable<>, maplike<> and setlike<>
-    iterator_method = None
-    # FIXME: support Iterable in partial interfaces. However, we don't
-    # need to support iterator overloads between interface and
-    # partial interface definitions.
-    # http://heycam.github.io/webidl/#idl-overloading
-    if (not interface.is_partial
-        and (interface.iterable or interface.maplike or interface.setlike
-             or 'Iterable' in extended_attributes)):
-        iterator_operation = IdlOperation(interface.idl_name)
-        iterator_operation.name = 'iterator'
-        iterator_operation.idl_type = IdlType('Iterator')
-        iterator_operation.extended_attributes['RaisesException'] = None
-        iterator_operation.extended_attributes['CallWith'] = 'ScriptState'
-        iterator_method = v8_methods.method_context(interface,
-                                                    iterator_operation)
-        # FIXME: iterable<>, maplike<> and setlike<> should also imply the
-        # presence of a subset of keys(), values(), entries(), forEach(), has(),
-        # get(), add(), set(), delete() and clear(), and a 'size' attribute.
-
     # [MeasureAs]
     is_measure_as = 'MeasureAs' in extended_attributes
     if is_measure_as:
@@ -208,7 +188,6 @@ def interface_context(interface):
         'is_node': inherits_interface(interface.name, 'Node'),
         'is_partial': interface.is_partial,
         'is_typed_array_type': is_typed_array_type,
-        'iterator_method': iterator_method,
         'lifetime': 'Dependent'
             if (has_visit_dom_wrapper or
                 is_active_dom_object or
@@ -343,18 +322,57 @@ def interface_context(interface):
                             if operation.name])
     compute_method_overloads_context(interface, methods)
 
+    def generated_method(return_type, name, arguments=None, extended_attributes=None):
+        operation = IdlOperation(interface.idl_name)
+        operation.idl_type = return_type
+        operation.name = name
+        if arguments:
+            operation.arguments = arguments
+        if extended_attributes:
+            operation.extended_attributes.update(extended_attributes)
+        return v8_methods.method_context(interface, operation)
+
+    # [Iterable], iterable<>, maplike<> and setlike<>
+    iterator_method = None
+    # FIXME: support Iterable in partial interfaces. However, we don't
+    # need to support iterator overloads between interface and
+    # partial interface definitions.
+    # http://heycam.github.io/webidl/#idl-overloading
+    if (not interface.is_partial
+        and (interface.iterable or interface.maplike or interface.setlike
+             or 'Iterable' in extended_attributes)):
+
+        def generated_iterator_method(name):
+            return generated_method(
+                return_type=IdlType('Iterator'),
+                name=name,
+                extended_attributes={'RaisesException': None, 'CallWith': 'ScriptState'})
+
+        iterator_method = generated_iterator_method('iterator')
+
+        if interface.iterable:
+            methods.extend([
+                generated_iterator_method('keys'),
+                generated_iterator_method('values'),
+                generated_iterator_method('entries'),
+            ])
+
+        # FIXME: maplike<> and setlike<> should also imply the presence of a
+        # subset of keys(), values(), entries(), forEach(), has(), get(), add(),
+        # set(), delete() and clear(), and a 'size' attribute.
+
     # Stringifier
     if interface.stringifier:
         stringifier = interface.stringifier
-        method = IdlOperation(interface.idl_name)
-        method.name = 'toString'
-        method.idl_type = IdlType('DOMString')
-        method.extended_attributes.update(stringifier.extended_attributes)
+        stringifier_ext_attrs = stringifier.extended_attributes.copy()
         if stringifier.attribute:
-            method.extended_attributes['ImplementedAs'] = stringifier.attribute.name
+            stringifier_ext_attrs['ImplementedAs'] = stringifier.attribute.name
         elif stringifier.operation:
-            method.extended_attributes['ImplementedAs'] = stringifier.operation.name
-        methods.append(v8_methods.method_context(interface, method))
+            stringifier_ext_attrs['ImplementedAs'] = stringifier.operation.name
+        methods.append(generated_method(
+            return_type=IdlType('DOMString'),
+            name='toString',
+            extended_attributes=stringifier_ext_attrs))
 
     conditionally_enabled_methods = []
     custom_registration_methods = []
@@ -420,6 +438,7 @@ def interface_context(interface):
             for method in methods),
         'has_private_script': any(attribute['is_implemented_in_private_script'] for attribute in attributes) or
             any(method['is_implemented_in_private_script'] for method in methods),
+        'iterator_method': iterator_method,
         'method_configuration_methods': method_configuration_methods,
         'methods': methods,
     })

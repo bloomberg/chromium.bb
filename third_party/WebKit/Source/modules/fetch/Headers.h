@@ -7,6 +7,7 @@
 
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "core/dom/Iterable.h"
 #include "modules/fetch/FetchHeaderList.h"
 #include "wtf/Forward.h"
 #include "wtf/PassOwnPtr.h"
@@ -18,7 +19,7 @@ class ExceptionState;
 class Iterator;
 
 // http://fetch.spec.whatwg.org/#headers-class
-class Headers final : public GarbageCollected<Headers>, public ScriptWrappable {
+class Headers final : public GarbageCollectedFinalized<Headers>, public ScriptWrappable, public PairIterable<String, String> {
     DEFINE_WRAPPERTYPEINFO();
 public:
     enum Guard { ImmutableGuard, RequestGuard, RequestNoCORSGuard, ResponseGuard, NoneGuard };
@@ -42,9 +43,6 @@ public:
     bool has(const String& key, ExceptionState&);
     void set(const String& key, const String& value, ExceptionState&);
 
-    // iterable<ByteString, ByteString>
-    Iterator* iterator(ScriptState*, ExceptionState&);
-
     void setGuard(Guard guard) { m_guard = guard; }
     Guard guard() const { return m_guard; }
 
@@ -63,6 +61,8 @@ private:
 
     Member<FetchHeaderList> m_headerList;
     Guard m_guard;
+
+    IterationSource* startIteration(ScriptState*, ExceptionState&) override;
 };
 
 } // namespace blink

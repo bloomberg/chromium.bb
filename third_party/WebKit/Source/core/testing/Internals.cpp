@@ -156,27 +156,15 @@ namespace blink {
 
 namespace {
 
-class InternalsIterator final : public Iterator {
+class InternalsIterationSource final : public ValueIterable<int>::IterationSource {
 public:
-    InternalsIterator() : m_current(0) { }
-
-    virtual ScriptValue next(ScriptState* scriptState, ExceptionState& exceptionState) override
+    bool next(ScriptState* scriptState, int& value, ExceptionState& exceptionState) override
     {
-        int value = m_current * m_current;
-        if (m_current >= 5)
-            return v8IteratorResultDone(scriptState);
-        ++m_current;
-        return v8IteratorResult(scriptState, value);
+        if (m_index >= 5)
+            return false;
+        value = m_index * m_index;
+        return true;
     }
-
-    virtual ScriptValue next(ScriptState* scriptState, ScriptValue value, ExceptionState& exceptionState) override
-    {
-        exceptionState.throwTypeError("Not implemented");
-        return ScriptValue();
-    }
-
-private:
-    int m_current;
 };
 
 } // namespace
@@ -2360,14 +2348,14 @@ void Internals::forcePluginPlaceholder(HTMLElement* element, const PluginPlaceho
     toHTMLPlugInElement(element)->setPlaceholder(DictionaryPluginPlaceholder::create(element->document(), options));
 }
 
-Iterator* Internals::iterator(ScriptState* scriptState, ExceptionState& exceptionState)
-{
-    return new InternalsIterator;
-}
-
 void Internals::forceBlinkGCWithoutV8GC()
 {
     ThreadState::current()->scheduleGC();
+}
+
+ValueIterable<int>::IterationSource* Internals::startIteration(ScriptState*, ExceptionState&)
+{
+    return new InternalsIterationSource();
 }
 
 } // namespace blink

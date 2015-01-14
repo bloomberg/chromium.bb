@@ -19,53 +19,31 @@ namespace blink {
 
 namespace {
 
-class HeadersIterator final : public Iterator {
+class HeadersIterationSource final : public PairIterable<String, String>::IterationSource {
 public:
-    // Only KeyValue is currently used; the other types are to support
-    // Map-like iteration with entries(), keys() and values(), but this has
-    // not yet been added to any spec.
-    enum IterationType { KeyValue, Key, Value };
+    explicit HeadersIterationSource(FetchHeaderList* headers) : m_headers(headers), m_current(0) { }
 
-    HeadersIterator(FetchHeaderList* headers, IterationType type) : m_headers(headers), m_type(type), m_current(0) { }
-
-    virtual ScriptValue next(ScriptState* scriptState, ExceptionState& exception) override
+    bool next(ScriptState* scriptState, String& key, String& value, ExceptionState& exception) override
     {
         // FIXME: This simply advances an index and returns the next value if
         // any, so if the iterated object is mutated values may be skipped.
         if (m_current >= m_headers->size())
-            return v8IteratorResultDone(scriptState);
+            return false;
 
         const FetchHeaderList::Header& header = m_headers->entry(m_current++);
-        switch (m_type) {
-        case KeyValue: {
-            Vector<String> pair;
-            pair.append(header.first);
-            pair.append(header.second);
-            return v8IteratorResult(scriptState, pair);
-        }
-        case Key:
-            return v8IteratorResult(scriptState, header.first);
-        case Value:
-            return v8IteratorResult(scriptState, header.second);
-        }
-        ASSERT_NOT_REACHED();
-        return ScriptValue();
+        key = header.first;
+        value = header.second;
+        return true;
     }
 
-    virtual ScriptValue next(ScriptState* scriptState, ScriptValue, ExceptionState& exceptionState) override
+    void trace(Visitor* visitor) override
     {
-        return next(scriptState, exceptionState);
-    }
-
-    virtual void trace(Visitor* visitor)
-    {
-        Iterator::trace(visitor);
         visitor->trace(m_headers);
+        PairIterable<String, String>::IterationSource::trace(visitor);
     }
 
 private:
     const Member<FetchHeaderList> m_headers;
-    const IterationType m_type;
     size_t m_current;
 };
 
@@ -340,14 +318,14 @@ Headers::Headers(FetchHeaderList* headerList)
 {
 }
 
-Iterator* Headers::iterator(ScriptState*, ExceptionState&)
-{
-    return new HeadersIterator(m_headerList, HeadersIterator::KeyValue);
-}
-
 void Headers::trace(Visitor* visitor)
 {
     visitor->trace(m_headerList);
+}
+
+PairIterable<String, String>::IterationSource* Headers::startIteration(ScriptState*, ExceptionState&)
+{
+    return new HeadersIterationSource(m_headerList);
 }
 
 } // namespace blink

@@ -16,6 +16,18 @@ for (var value of internals[Symbol.iterator]()) {
     debug('value = ' + value);
 }
 
+for (var key of internals.keys()) {
+    debug('key = ' + key);
+}
+
+for (var value of internals.values()) {
+    debug('value = ' + value);
+}
+
+for (var entry of internals.entries()) {
+    debug('entry = ' + entry);
+}
+
 </script>
 </body>
 </html>
