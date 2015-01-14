@@ -417,7 +417,7 @@ class SpdyNetworkTransactionTest
     DataVector data_vector_;
     AlternateVector alternate_vector_;
     AlternateDeterministicVector alternate_deterministic_vector_;
-    const BoundNetLog& log_;
+    const BoundNetLog log_;
     SpdyNetworkTransactionTestParams test_params_;
     int port_;
     bool deterministic_;
