@@ -281,6 +281,26 @@ KeyboardCode LocatedToNonLocatedKeyboardCode(KeyboardCode key_code) {
     case VKEY_LMENU:
     case VKEY_RMENU:
       return VKEY_MENU;
+    case VKEY_NUMPAD0:
+      return VKEY_0;
+    case VKEY_NUMPAD1:
+      return VKEY_1;
+    case VKEY_NUMPAD2:
+      return VKEY_2;
+    case VKEY_NUMPAD3:
+      return VKEY_3;
+    case VKEY_NUMPAD4:
+      return VKEY_4;
+    case VKEY_NUMPAD5:
+      return VKEY_5;
+    case VKEY_NUMPAD6:
+      return VKEY_6;
+    case VKEY_NUMPAD7:
+      return VKEY_7;
+    case VKEY_NUMPAD8:
+      return VKEY_8;
+    case VKEY_NUMPAD9:
+      return VKEY_9;
     default:
       return key_code;
   }
