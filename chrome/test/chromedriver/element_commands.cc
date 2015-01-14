@@ -443,9 +443,10 @@ Status ExecuteGetElementLocationOnceScrolledIntoView(
     const std::string& element_id,
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value) {
+  WebPoint offset(0, 0);
   WebPoint location;
   Status status = ScrollElementIntoView(
-      session, web_view, element_id, nullptr, &location);
+      session, web_view, element_id, &offset, &location);
   if (status.IsError())
     return status;
   value->reset(CreateValueFrom(location));
