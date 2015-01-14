@@ -16,7 +16,22 @@ source_set("favicon_base") {
   deps = [
     "//base",
     "//skia",
+    "//ui/base",
     "//ui/gfx",
     "//url",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "select_favicon_frames_unittest.cc",
+  ]
+
+  deps = [
+    ":favicon_base",
+    "//testing/gtest",
+    "//ui/base",
+    "//ui/gfx",
   ]
 }

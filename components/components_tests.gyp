@@ -129,6 +129,7 @@
             'domain_reliability/test_util.h',
             'domain_reliability/uploader_unittest.cc',
             'domain_reliability/util_unittest.cc',
+            'favicon_base/select_favicon_frames_unittest.cc',
             # Note: GN tests converted to here, need to do the rest.
             'enhanced_bookmarks/enhanced_bookmark_model_unittest.cc',
             'enhanced_bookmarks/image_store_ios_unittest.mm',
@@ -356,7 +357,7 @@
             'components.gyp:content_settings_core_browser',
             'components.gyp:content_settings_core_common',
             'components.gyp:content_settings_core_test_support',
-            
+
             # Dependencies of packed CT EV white list
             'components.gyp:packed_ct_ev_whitelist',
 
@@ -382,6 +383,9 @@
             # Dependencies of enhanced_bookmarks
             'components.gyp:enhanced_bookmarks',
             'components.gyp:enhanced_bookmarks_test_support',
+
+            # Dependencies of favicon_base
+            'components.gyp:favicon_base',
 
             # Dependencies of feedback
             'components.gyp:feedback_component',
