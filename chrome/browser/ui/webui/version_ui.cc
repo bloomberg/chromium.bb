@@ -83,6 +83,11 @@ WebUIDataSource* CreateVersionUIDataSource() {
   html_source->AddLocalizedString("official",
       version_info.IsOfficialBuild() ? IDS_ABOUT_VERSION_OFFICIAL :
                                        IDS_ABOUT_VERSION_UNOFFICIAL);
+#if defined(ARCH_CPU_64_BITS)
+  html_source->AddLocalizedString("version_bitsize", IDS_ABOUT_VERSION_64BIT);
+#else
+  html_source->AddLocalizedString("version_bitsize", IDS_ABOUT_VERSION_32BIT);
+#endif
   html_source->AddLocalizedString("user_agent_name",
                                   IDS_ABOUT_VERSION_USER_AGENT);
   html_source->AddString("useragent", GetUserAgent());
