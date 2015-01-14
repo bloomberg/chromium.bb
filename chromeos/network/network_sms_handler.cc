@@ -70,8 +70,8 @@ class NetworkSmsHandler::ModemManagerNetworkSmsDeviceHandler
   std::string service_name_;
   dbus::ObjectPath object_path_;
   bool deleting_messages_;
-  base::WeakPtrFactory<ModemManagerNetworkSmsDeviceHandler> weak_ptr_factory_;
   std::vector<uint32> delete_queue_;
+  base::WeakPtrFactory<ModemManagerNetworkSmsDeviceHandler> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ModemManagerNetworkSmsDeviceHandler);
 };
@@ -194,9 +194,9 @@ class NetworkSmsHandler::ModemManager1NetworkSmsDeviceHandler
   dbus::ObjectPath object_path_;
   bool deleting_messages_;
   bool retrieving_messages_;
-  base::WeakPtrFactory<ModemManager1NetworkSmsDeviceHandler> weak_ptr_factory_;
   std::vector<dbus::ObjectPath> delete_queue_;
   std::deque<dbus::ObjectPath> retrieval_queue_;
+  base::WeakPtrFactory<ModemManager1NetworkSmsDeviceHandler> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ModemManager1NetworkSmsDeviceHandler);
 };

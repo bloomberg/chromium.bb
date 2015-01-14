@@ -44,9 +44,10 @@ class CHROMEOS_EXPORT DhcpProxyScriptFetcherChromeos
   net::URLRequestContext* url_request_context_;  // Weak ptr
   scoped_ptr<net::ProxyScriptFetcher> proxy_script_fetcher_;
   scoped_refptr<base::MessageLoopProxy> network_handler_message_loop_;
-  base::WeakPtrFactory<DhcpProxyScriptFetcherChromeos> weak_ptr_factory_;
 
   GURL pac_url_;
+
+  base::WeakPtrFactory<DhcpProxyScriptFetcherChromeos> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DhcpProxyScriptFetcherChromeos);
 };
