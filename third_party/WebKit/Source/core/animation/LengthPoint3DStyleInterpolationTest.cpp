@@ -35,21 +35,43 @@ protected:
     static void testPrimitiveValue(RefPtrWillBeRawPtr<CSSValue> value, double x, double y, double z, CSSPrimitiveValue::UnitType unitTypeX, CSSPrimitiveValue::UnitType unitTypeY, CSSPrimitiveValue::UnitType unitTypeZ)
     {
         EXPECT_TRUE(value->isValueList());
-        const int sizeOfList = 3;
-        const CSSPrimitiveValue* length[sizeOfList] = {
-        toCSSPrimitiveValue(toCSSValueList(*value).item(0)),
-        toCSSPrimitiveValue(toCSSValueList(*value).item(1)),
-        toCSSPrimitiveValue(toCSSValueList(*value).item(2)) };
+        if (unitTypeZ == CSSPrimitiveValue::CSS_UNKNOWN) {
+            const int sizeOfList = 2;
+            const CSSPrimitiveValue* length[sizeOfList] = {
+                toCSSPrimitiveValue(toCSSValueList(*value).item(0)),
+                toCSSPrimitiveValue(toCSSValueList(*value).item(1)) };
 
-        EXPECT_EQ(length[0]->getDoubleValue(), x);
-        EXPECT_EQ(length[1]->getDoubleValue(), y);
-        EXPECT_EQ(length[2]->getDoubleValue(), z);
+            EXPECT_EQ(length[0]->getDoubleValue(), x);
+            EXPECT_EQ(length[1]->getDoubleValue(), y);
 
-        EXPECT_EQ(unitTypeX, length[0]->primitiveType());
-        EXPECT_EQ(unitTypeY, length[1]->primitiveType());
-        EXPECT_EQ(unitTypeZ, length[2]->primitiveType());
+            EXPECT_EQ(unitTypeX, length[0]->primitiveType());
+            EXPECT_EQ(unitTypeY, length[1]->primitiveType());
+        } else {
+            const int sizeOfList = 3;
+            const CSSPrimitiveValue* length[sizeOfList] = {
+                toCSSPrimitiveValue(toCSSValueList(*value).item(0)),
+                toCSSPrimitiveValue(toCSSValueList(*value).item(1)),
+                toCSSPrimitiveValue(toCSSValueList(*value).item(2)) };
+
+            EXPECT_EQ(length[0]->getDoubleValue(), x);
+            EXPECT_EQ(length[1]->getDoubleValue(), y);
+            EXPECT_EQ(length[2]->getDoubleValue(), z);
+
+            EXPECT_EQ(unitTypeX, length[0]->primitiveType());
+            EXPECT_EQ(unitTypeY, length[1]->primitiveType());
+            EXPECT_EQ(unitTypeZ, length[2]->primitiveType());
+        }
     }
 };
+
+TEST_F(AnimationLengthPoint3DStyleInterpolationTest, MultipleValuePoint2D)
+{
+    RefPtrWillBeRawPtr<CSSValueList> lengthPoint2DPx = CSSValueList::createCommaSeparated();
+    lengthPoint2DPx->append(CSSPrimitiveValue::create(10, CSSPrimitiveValue::CSS_PX));
+    lengthPoint2DPx->append(CSSPrimitiveValue::create(30, CSSPrimitiveValue::CSS_PERCENTAGE));
+    RefPtrWillBeRawPtr<CSSValue> value = roundTrip(lengthPoint2DPx.release());
+    testPrimitiveValue(value, 10, 30, 0, CSSPrimitiveValue::CSS_PX, CSSPrimitiveValue::CSS_PERCENTAGE, CSSPrimitiveValue::CSS_UNKNOWN);
+}
 
 TEST_F(AnimationLengthPoint3DStyleInterpolationTest, ZeroPoint3D)
 {
@@ -90,6 +112,5 @@ TEST_F(AnimationLengthPoint3DStyleInterpolationTest, NegativeValuePoint3D)
     RefPtrWillBeRawPtr<CSSValue> value = roundTrip(lengthPoint3DPx.release());
     testPrimitiveValue(value, -10, -30, -20, CSSPrimitiveValue::CSS_PX, CSSPrimitiveValue::CSS_PERCENTAGE, CSSPrimitiveValue::CSS_EMS);
 }
-
 
 }

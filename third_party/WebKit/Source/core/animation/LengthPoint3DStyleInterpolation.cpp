@@ -16,27 +16,25 @@ bool LengthPoint3DStyleInterpolation::canCreateFrom(const CSSValue& value)
     if (!value.isValueList())
         return false;
     const CSSValueList& valueList = toCSSValueList(value);
-    return valueList.length() == 3
-        && LengthStyleInterpolation::canCreateFrom(*valueList.item(0))
-        && LengthStyleInterpolation::canCreateFrom(*valueList.item(1))
-        && LengthStyleInterpolation::canCreateFrom(*valueList.item(2));
+    if (valueList.length() == 2 || valueList.length() == 3) {
+        for (size_t i = 0; i < valueList.length(); i++) {
+            if (!LengthStyleInterpolation::canCreateFrom(*valueList.item(i)))
+                return false;
+        }
+    }
+    return true;
 }
 
 PassOwnPtrWillBeRawPtr<InterpolableValue> LengthPoint3DStyleInterpolation::lengthPoint3DtoInterpolableValue(const CSSValue& value)
 {
-    const int sizeOfList = 3;
-
-    OwnPtrWillBeRawPtr<InterpolableList> result = InterpolableList::create(sizeOfList);
     ASSERT(value.isValueList());
     const CSSValueList& valueList = toCSSValueList(value);
-
-    const CSSPrimitiveValue* length[sizeOfList] =
-        { toCSSPrimitiveValue(valueList.item(0))
-        , toCSSPrimitiveValue(valueList.item(1))
-        , toCSSPrimitiveValue(valueList.item(2)) };
+    const size_t sizeOfList = valueList.length();
+    OwnPtrWillBeRawPtr<InterpolableList> result = InterpolableList::create(sizeOfList);
 
     for (size_t i = 0; i < sizeOfList; i ++) {
-        result->set(i, LengthStyleInterpolation::lengthToInterpolableValue(*length[i]));
+        const CSSPrimitiveValue* length = toCSSPrimitiveValue(valueList.item(i));
+        result->set(i, LengthStyleInterpolation::lengthToInterpolableValue(*length));
     }
     return result.release();
 }
@@ -45,7 +43,7 @@ PassRefPtrWillBeRawPtr<CSSValue> LengthPoint3DStyleInterpolation::interpolableVa
 {
     InterpolableList* lengthPoint3D = toInterpolableList(value);
     RefPtrWillBeRawPtr<CSSValueList> result = CSSValueList::createCommaSeparated();
-    const int sizeOfList = 3;
+    const size_t sizeOfList = lengthPoint3D->length();
 
     for (size_t i = 0; i < sizeOfList; i++)
         result->append(LengthStyleInterpolation::interpolableValueToLength(lengthPoint3D->get(i), ValueRangeAll));

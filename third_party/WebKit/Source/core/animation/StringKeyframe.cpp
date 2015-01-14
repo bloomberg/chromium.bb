@@ -173,19 +173,15 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
     case CSSPropertyBorderTopRightRadius:
         range = ValueRangeNonNegative;
         // Fall through
-    case CSSPropertyPerspectiveOrigin:
     case CSSPropertyObjectPosition:
         if (LengthPairStyleInterpolation::canCreateFrom(*fromCSSValue) && LengthPairStyleInterpolation::canCreateFrom(*toCSSValue))
             return LengthPairStyleInterpolation::create(*fromCSSValue, *toCSSValue, property, range);
-        // FIXME: Handle CSSValueLists.
-        useDefaultStyleInterpolation = false;
         break;
 
+    case CSSPropertyPerspectiveOrigin:
     case CSSPropertyTransformOrigin:
         if (LengthPoint3DStyleInterpolation::canCreateFrom(*fromCSSValue) && LengthPoint3DStyleInterpolation::canCreateFrom(*toCSSValue))
             return LengthPoint3DStyleInterpolation::create(*fromCSSValue, *toCSSValue, property);
-        // FIXME: Handle 2D origins.
-        useDefaultStyleInterpolation = false;
         break;
 
     case CSSPropertyWebkitMaskBoxImageSlice:
