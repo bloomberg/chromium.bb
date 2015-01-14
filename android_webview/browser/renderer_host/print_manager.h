@@ -8,6 +8,7 @@
 #include "base/callback_forward.h"
 #include "base/threading/non_thread_safe.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/browser/web_contents_user_data.h"
 
 class GURL;
 
@@ -26,9 +27,6 @@ class PrintManagerDelegate {
   virtual ~PrintManagerDelegate() { }
   virtual void DidExportPdf(bool success) = 0;
   virtual bool IsCancelled() = 0;
-
- private:
-  //  DISALLOW_COPY_AND_ASSIGN(PrintManagerDelegate);
 };
 
 // Provides RenderViewHost wrapper functionality for sending WebView-specific
@@ -38,14 +36,17 @@ class PrintManagerDelegate {
 // This class manages the print (an export to PDF file essentially) task for
 // a webview. There can be at most one active print task per webview.
 class PrintManager : public content::WebContentsObserver,
+                     public content::WebContentsUserData<PrintManager>,
                      public base::NonThreadSafe {
  public:
-  // To send receive messages to a RenderView we take the WebContents instance,
-  // as it internally handles RenderViewHost instances changing underneath us.
-  PrintManager(content::WebContents* contents,
-               printing::PrintSettings* settings,
-               int fd,
-               PrintManagerDelegate* delegate);
+  // Creates a PrintManager for the provided webcontents. If the printmanager
+  // already exists, it is destroyed and a new one is created.
+  static PrintManager* CreateForWebContents(
+      content::WebContents* contents,
+      printing::PrintSettings* settings,
+      int fd,
+      PrintManagerDelegate* delegate);
+
   virtual ~PrintManager();
 
   // Prints the current document immediately. Since the rendering is
@@ -56,16 +57,24 @@ class PrintManager : public content::WebContentsObserver,
   // already busy printing.
   bool PrintNow();
 
+  void OnAllocateTempFileForPrinting(base::FileDescriptor* temp_file_fd,
+                                     int* sequence_number);
+  void OnTempFileForPrintingWritten(int sequence_number);
  private:
+   // To send receive messages to a RenderView we take the WebContents instance,
+   // as it internally handles RenderViewHost instances changing underneath us.
+   PrintManager(content::WebContents* contents,
+                printing::PrintSettings* settings,
+                int fd,
+                PrintManagerDelegate* delegate);
+  friend class content::WebContentsUserData<PrintManager>;
+
   virtual bool OnMessageReceived(const IPC::Message& message) override;
   void OnDidGetPrintedPagesCount(int cookie, int number_pages);
   void OnDidGetDocumentCookie(int cookie);
   void OnPrintingFailed(int cookie);
   void OnGetDefaultPrintSettingsReply(IPC::Message* reply_msg);
   void OnGetDefaultPrintSettings(IPC::Message* reply_msg);
-  void OnAllocateTempFileForPrinting(base::FileDescriptor* temp_file_fd,
-                                     int* sequence_number);
-  void OnTempFileForPrintingWritten(int sequence_number);
 
   // Print Settings.
   printing::PrintSettings* settings_;

@@ -376,11 +376,13 @@ IPC_SYNC_MESSAGE_ROUTED1_1(PrintHostMsg_ScriptedPrint,
 #if defined(OS_ANDROID)
 // Asks the browser to create a temporary file for the renderer to fill
 // in resulting PdfMetafileSkia in printing.
-IPC_SYNC_MESSAGE_ROUTED0_2(PrintHostMsg_AllocateTempFileForPrinting,
-                           base::FileDescriptor /* temp file fd */,
-                           int /* fd in browser*/)
-IPC_MESSAGE_ROUTED1(PrintHostMsg_TempFileForPrintingWritten,
-                    int /* fd in browser */)
+IPC_SYNC_MESSAGE_CONTROL1_2(PrintHostMsg_AllocateTempFileForPrinting,
+                            int /* render_view_id */,
+                            base::FileDescriptor /* temp file fd */,
+                            int /* fd in browser*/)
+IPC_MESSAGE_CONTROL2(PrintHostMsg_TempFileForPrintingWritten,
+                     int /* render_view_id */,
+                     int /* fd in browser */)
 #endif
 // Asks the browser to do print preview.
 IPC_MESSAGE_ROUTED1(PrintHostMsg_RequestPrintPreview,

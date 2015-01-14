@@ -17,7 +17,21 @@
 using content::BrowserThread;
 using printing::PrintSettings;
 
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(android_webview::PrintManager);
+
 namespace android_webview {
+
+// static
+PrintManager* PrintManager::CreateForWebContents(
+    content::WebContents* contents,
+    PrintSettings* settings,
+    int fd,
+    PrintManagerDelegate* delegate) {
+  PrintManager* print_manager =
+      new PrintManager(contents, settings, fd, delegate);
+  contents->SetUserData(UserDataKey(), print_manager);
+  return print_manager;
+}
 
 PrintManager::PrintManager(content::WebContents* contents,
                            PrintSettings* settings,
@@ -45,10 +59,6 @@ bool PrintManager::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(PrintHostMsg_PrintingFailed, OnPrintingFailed)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(PrintHostMsg_GetDefaultPrintSettings,
                                     OnGetDefaultPrintSettings)
-    IPC_MESSAGE_HANDLER(PrintHostMsg_AllocateTempFileForPrinting,
-                        OnAllocateTempFileForPrinting)
-    IPC_MESSAGE_HANDLER(PrintHostMsg_TempFileForPrintingWritten,
-                        OnTempFileForPrintingWritten)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 

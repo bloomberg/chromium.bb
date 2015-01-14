@@ -158,6 +158,8 @@
         'browser/aw_login_delegate.h',
         'browser/aw_pref_store.cc',
         'browser/aw_pref_store.h',
+        'browser/aw_printing_message_filter.cc',
+        'browser/aw_printing_message_filter.h',
         'browser/aw_quota_manager_bridge.cc',
         'browser/aw_quota_manager_bridge.h',
         'browser/aw_quota_permission_context.cc',
