@@ -1403,6 +1403,10 @@ void RenderFrameHostImpl::CommitNavigation(
   // TODO(clamy): Check if we have to add security checks for the browser plugin
   // guests.
 
+  // Get back to a clean state, in case we start a new navigation without
+  // completing a RFH swap or unload handler.
+  SetState(RenderFrameHostImpl::STATE_DEFAULT);
+
   Send(new FrameMsg_CommitNavigation(
       routing_id_, response->head, body->GetURL(),
       common_params, commit_params));

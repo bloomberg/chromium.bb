@@ -55,6 +55,11 @@ TestRenderViewHost* TestWebContents::GetRenderViewHost() const {
 }
 
 TestRenderFrameHost* TestWebContents::GetPendingMainFrame() const {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableBrowserSideNavigation)) {
+    return static_cast<TestRenderFrameHost*>(
+        GetRenderManager()->speculative_render_frame_host_.get());
+  }
   return static_cast<TestRenderFrameHost*>(
       GetRenderManager()->pending_frame_host());
 }

@@ -778,10 +778,12 @@ void NavigatorImpl::OnBeginNavigation(
   info->parent_is_main_frame = !frame_tree_node->parent() ?
       false : frame_tree_node->parent()->IsMainFrame();
 
-  // TODO(clamy): Inform the RenderFrameHostManager that a navigation is about
-  // to begin, so that it can speculatively spawn a new renderer if needed.
-
+  // First start the request on the IO thread.
   navigation_request->BeginNavigation(info.Pass(), params.request_body);
+
+  // Then notify the RenderFrameHostManager so it can speculatively create a
+  // RenderFrameHost (and potentially a new renderer process) in parallel.
+  frame_tree_node->render_manager()->BeginNavigation(common_params);
 }
 
 // PlzNavigate
@@ -822,6 +824,9 @@ void NavigatorImpl::CancelNavigation(FrameTreeNode* frame_tree_node) {
   CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableBrowserSideNavigation));
   navigation_request_map_.erase(frame_tree_node->frame_tree_node_id());
+  // TODO(carlosk): move this cleanup into the NavigationRequest destructor once
+  // we properly cancel ongoing navigations.
+  frame_tree_node->render_manager()->CleanUpNavigation();
 }
 
 // PlzNavigate

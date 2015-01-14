@@ -62,6 +62,8 @@ class WebContentsTester {
 
   // Gets the pending RenderFrameHost, if any, for the main frame. For the
   // current RenderFrameHost of the main frame, use WebContents::GetMainFrame().
+  // PlzNavigate: When browser side navigation is enabled it returns the
+  // speculative RenderFrameHost for the main frame if one exists.
   virtual RenderFrameHost* GetPendingMainFrame() const = 0;
 
   // Creates a pending navigation to the given URL with the default parameters

@@ -60,7 +60,8 @@ RenderFrameHostManager::RenderFrameHostManager(
       render_frame_delegate_(render_frame_delegate),
       render_view_delegate_(render_view_delegate),
       render_widget_delegate_(render_widget_delegate),
-      interstitial_page_(NULL),
+      interstitial_page_(nullptr),
+      should_reuse_web_ui_(false),
       weak_factory_(this) {
   DCHECK(frame_tree_node_);
 }
@@ -68,6 +69,9 @@ RenderFrameHostManager::RenderFrameHostManager(
 RenderFrameHostManager::~RenderFrameHostManager() {
   if (pending_render_frame_host_)
     UnsetPendingRenderFrameHost();
+
+  if (speculative_render_frame_host_)
+    UnsetSpeculativeRenderFrameHost();
 
   if (render_frame_host_ &&
       render_frame_host_->GetSiteInstance()->active_frame_count() <= 1U) {
@@ -292,6 +296,8 @@ void RenderFrameHostManager::OnBeforeUnloadACK(
     bool proceed,
     const base::TimeTicks& proceed_time) {
   if (for_cross_site_transition) {
+    DCHECK(!base::CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kEnableBrowserSideNavigation));
     // Ignore if we're not in a cross-site navigation.
     if (!cross_navigation_pending_)
       return;
@@ -418,6 +424,22 @@ void RenderFrameHostManager::ClearNavigationTransitionData() {
 void RenderFrameHostManager::DidNavigateFrame(
     RenderFrameHostImpl* render_frame_host,
     bool was_caused_by_user_gesture) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableBrowserSideNavigation)) {
+    if (render_frame_host == speculative_render_frame_host_.get()) {
+      CommitPending();
+    } else if (render_frame_host == render_frame_host_.get()) {
+      // TODO(carlosk): this code doesn't properly handle in-page navigation or
+      // interwoven navigation requests.
+      DCHECK(!speculative_render_frame_host_);
+    } else {
+      // No one else should be sending us a DidNavigate in this state.
+      DCHECK(false);
+    }
+    DCHECK(!speculative_render_frame_host_);
+    return;
+  }
+
   if (!cross_navigation_pending_) {
     DCHECK(!pending_render_frame_host_);
 
@@ -578,7 +600,12 @@ void RenderFrameHostManager::DiscardUnusedFrame(
     RenderFrameProxyHost* proxy =
         new RenderFrameProxyHost(site_instance, frame_tree_node_);
     proxy_hosts_[site_instance->GetId()] = proxy;
-    render_frame_host->SwapOut(proxy, false);
+
+    // Check if the RenderFrameHost is already swapped out, to avoid swapping it
+    // out again.
+    if (!render_frame_host->is_swapped_out())
+      render_frame_host->SwapOut(proxy, false);
+
     if (frame_tree_node_->IsMainFrame())
       proxy->TakeFrameHostOwnership(render_frame_host.Pass());
   } else {
@@ -623,35 +650,109 @@ void RenderFrameHostManager::ResetProxyHosts() {
 }
 
 // PlzNavigate
-RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
-      const GURL& url,
-      ui::PageTransition transition) {
+void RenderFrameHostManager::BeginNavigation(
+    const CommonNavigationParams& common_params) {
   CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableBrowserSideNavigation));
-  // TODO(clamy): When we handle renderer initiated navigations, make sure not
-  // to use a different process for subframes if --site-per-process is not
-  // enabled.
+  // Clean up any state in case there's an ongoing navigation.
+  // TODO(carlosk): remove this cleanup here once we properly cancel ongoing
+  // navigations.
+  CleanUpNavigation();
 
-  // Pick the right RenderFrameHost to commit the navigation.
-  // TODO(clamy): Replace the default values by the right ones.
-  RenderFrameHostImpl* render_frame_host = UpdateStateForNavigate(
-      url, nullptr, nullptr, transition, false, false, GlobalRequestID(),
-      NavigationEntryImpl::kInvalidBindings);
+  RenderFrameHostImpl* dest_rfh =
+      GetFrameHostForNavigation(common_params.url, common_params.transition);
+  DCHECK(dest_rfh);
+}
 
-  // If the renderer that needs to navigate is not live (it was just created or
-  // it crashed), initialize it.
-  if (!render_frame_host->render_view_host()->IsRenderViewLive()) {
+// PlzNavigate
+RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
+    const GURL& url,
+    ui::PageTransition transition) {
+  CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableBrowserSideNavigation));
+
+  SiteInstance* current_site_instance = render_frame_host_->GetSiteInstance();
+
+  // TODO(carlosk): Replace the default values with the right ones for
+  // source_instance, dest_instance, dest_is_restore, dest_is_view_source_mode.
+  scoped_refptr<SiteInstance> dest_site_instance = GetSiteInstanceForNavigation(
+      url, nullptr, nullptr, transition, false, false);
+  // The appropriate RenderFrameHost to commit the navigation.
+  RenderFrameHostImpl* navigation_rfh = nullptr;
+
+  // TODO(carlosk): do not swap processes for renderer initiated navigations
+  // (see crbug.com/440266).
+  if (current_site_instance == dest_site_instance.get() ||
+      (!frame_tree_node_->IsMainFrame() &&
+       !base::CommandLine::ForCurrentProcess()->HasSwitch(
+           switches::kSitePerProcess))) {
+    // Reuse the current RFH if its SiteInstance matches the the navigation's
+    // or if this is a subframe navigation. We only swap RFHs for subframes when
+    // --site-per-process is enabled.
+    CleanUpNavigation();
+    navigation_rfh = render_frame_host_.get();
+  } else {
+    // If the current render_frame_host_ isn't live, we should create it so
+    // that we don't show a sad tab while the navigation is ongoing.
+    // (Bug 1145340)
+    if (!render_frame_host_->IsRenderFrameLive()) {
+      // Note: we don't call InitRenderView here because we are navigating away
+      // soon anyway, and we don't have the NavigationEntry for this host.
+      delegate_->CreateRenderViewForRenderManager(
+          render_frame_host_->render_view_host(), MSG_ROUTING_NONE,
+          MSG_ROUTING_NONE, frame_tree_node_->IsMainFrame());
+    }
+
+    // If the SiteInstance for the final URL doesn't match the one from the
+    // speculatively created RenderFrameHost, create a new RenderFrameHost using
+    // this new SiteInstance.
+    if (!speculative_render_frame_host_ ||
+        speculative_render_frame_host_->GetSiteInstance() !=
+            dest_site_instance.get()) {
+      CleanUpNavigation();
+      // TODO(carlosk): Replace the binding value with the right one.
+      bool success = CreateSpeculativeRenderFrameHost(
+          url, current_site_instance, dest_site_instance.get(),
+          NavigationEntryImpl::kInvalidBindings);
+      DCHECK(success);
+    }
+    DCHECK(speculative_render_frame_host_);
+    navigation_rfh = speculative_render_frame_host_.get();
+  }
+  DCHECK(navigation_rfh &&
+         (navigation_rfh == render_frame_host_.get() ||
+          navigation_rfh == speculative_render_frame_host_.get()));
+
+  // If the RenderFrame that needs to navigate is not live (its process was just
+  // created or has crashed), initialize it.
+  if (!navigation_rfh->IsRenderFrameLive()) {
     // Recreate the opener chain.
     int opener_route_id = delegate_->CreateOpenerRenderViewsForRenderManager(
-        render_frame_host->GetSiteInstance());
-    if (!InitRenderView(render_frame_host->render_view_host(),
-                        opener_route_id,
-                        MSG_ROUTING_NONE,
-                        frame_tree_node_->IsMainFrame())) {
+        navigation_rfh->GetSiteInstance());
+    if (!InitRenderView(navigation_rfh->render_view_host(), opener_route_id,
+                        MSG_ROUTING_NONE, frame_tree_node_->IsMainFrame())) {
       return nullptr;
     }
   }
-  return render_frame_host;
+
+  return navigation_rfh;
+}
+
+// PlzNavigate
+void RenderFrameHostManager::CleanUpNavigation() {
+  if (speculative_render_frame_host_)
+    DiscardUnusedFrame(UnsetSpeculativeRenderFrameHost());
+}
+
+// PlzNavigate
+scoped_ptr<RenderFrameHostImpl>
+RenderFrameHostManager::UnsetSpeculativeRenderFrameHost() {
+  CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableBrowserSideNavigation));
+  speculative_web_ui_.reset();
+  should_reuse_web_ui_ = false;
+  speculative_render_frame_host_->GetProcess()->RemovePendingView();
+  return speculative_render_frame_host_.Pass();
 }
 
 void RenderFrameHostManager::OnDidStartLoading() {
@@ -1094,7 +1195,7 @@ scoped_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrameHost(
 
   // Create a RVH for main frames, or find the existing one for subframes.
   FrameTree* frame_tree = frame_tree_node_->frame_tree();
-  RenderViewHostImpl* render_view_host = NULL;
+  RenderViewHostImpl* render_view_host = nullptr;
   if (frame_tree_node_->IsMainFrame()) {
     render_view_host = frame_tree->CreateRenderViewHost(
         site_instance, view_routing_id, frame_routing_id, swapped_out, hidden);
@@ -1110,6 +1211,43 @@ scoped_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrameHost(
                           render_view_host, render_frame_delegate_, frame_tree,
                           frame_tree_node_, frame_routing_id, flags).release());
   return render_frame_host.Pass();
+}
+
+// PlzNavigate
+bool RenderFrameHostManager::CreateSpeculativeRenderFrameHost(
+    const GURL& url,
+    SiteInstance* old_instance,
+    SiteInstance* new_instance,
+    int bindings) {
+  CHECK(new_instance);
+  CHECK_NE(old_instance, new_instance);
+
+  const NavigationEntry* current_navigation_entry =
+      delegate_->GetLastCommittedNavigationEntryForRenderManager();
+  scoped_ptr<WebUIImpl> new_web_ui;
+  bool should_reuse_web_ui = ShouldReuseWebUI(current_navigation_entry, url);
+  if (!should_reuse_web_ui)
+    new_web_ui = CreateWebUI(url, bindings);
+
+  int opener_route_id =
+      CreateOpenerRenderViewsIfNeeded(old_instance, new_instance);
+
+  int create_render_frame_flags = 0;
+  if (frame_tree_node_->IsMainFrame())
+    create_render_frame_flags |= CREATE_RF_FOR_MAIN_FRAME_NAVIGATION;
+  if (delegate_->IsHidden())
+    create_render_frame_flags |= CREATE_RF_HIDDEN;
+  scoped_ptr<RenderFrameHostImpl> new_render_frame_host =
+      CreateRenderFrame(new_instance, new_web_ui.get(), opener_route_id,
+                        create_render_frame_flags, nullptr);
+
+  if (!new_render_frame_host)
+    return false;
+
+  speculative_render_frame_host_ = new_render_frame_host.Pass();
+  speculative_web_ui_ = new_web_ui.Pass();
+  should_reuse_web_ui_ = should_reuse_web_ui;
+  return true;
 }
 
 scoped_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrame(
@@ -1133,8 +1271,8 @@ scoped_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrame(
   if (view_routing_id_ptr)
     *view_routing_id_ptr = MSG_ROUTING_NONE;
 
-  // We are creating a pending or swapped out RFH here. We should never create
-  // it in the same SiteInstance as our current RFH.
+  // We are creating a pending, speculative or swapped out RFH here. We should
+  // never create it in the same SiteInstance as our current RFH.
   CHECK_NE(render_frame_host_->GetSiteInstance(), instance);
 
   // Check if we've already created an RFH for this SiteInstance.  If so, try
@@ -1247,11 +1385,19 @@ bool RenderFrameHostManager::InitRenderView(
   if (render_view_host->IsRenderViewLive())
     return true;
 
-  // If the pending navigation is to a WebUI and the RenderView is not in a
+  // If the ongoing navigation is to a WebUI and the RenderView is not in a
   // guest process, tell the RenderViewHost about any bindings it will need
   // enabled.
-  if (pending_web_ui() && !render_view_host->GetProcess()->IsIsolatedGuest()) {
-    render_view_host->AllowBindings(pending_web_ui()->GetBindings());
+  WebUIImpl* dest_web_ui = nullptr;
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableBrowserSideNavigation)) {
+    dest_web_ui =
+        should_reuse_web_ui_ ? web_ui_.get() : speculative_web_ui_.get();
+  } else {
+    dest_web_ui = pending_web_ui();
+  }
+  if (dest_web_ui && !render_view_host->GetProcess()->IsIsolatedGuest()) {
+    render_view_host->AllowBindings(dest_web_ui->GetBindings());
   } else {
     // Ensure that we don't create an unprivileged RenderView in a WebUI-enabled
     // process unless it's swapped out.
@@ -1313,29 +1459,40 @@ int RenderFrameHostManager::GetRoutingIdForSiteInstance(
 void RenderFrameHostManager::CommitPending() {
   TRACE_EVENT1("navigation", "RenderFrameHostManager::CommitPending",
                "FrameTreeNode id", frame_tree_node_->frame_tree_node_id());
+  bool browser_side_navigation =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableBrowserSideNavigation);
   // First check whether we're going to want to focus the location bar after
   // this commit.  We do this now because the navigation hasn't formally
   // committed yet, so if we've already cleared |pending_web_ui_| the call chain
   // this triggers won't be able to figure out what's going on.
   bool will_focus_location_bar = delegate_->FocusLocationBarByDefault();
 
-  // Next commit the Web UI, if any. Either replace |web_ui_| with
-  // |pending_web_ui_|, or clear |web_ui_| if there is no pending WebUI, or
-  // leave |web_ui_| as is if reusing it.
-  DCHECK(!(pending_web_ui_.get() && pending_and_current_web_ui_.get()));
-  if (pending_web_ui_) {
-    web_ui_.reset(pending_web_ui_.release());
-  } else if (!pending_and_current_web_ui_.get()) {
-    web_ui_.reset();
+  if (!browser_side_navigation) {
+    DCHECK(!speculative_web_ui_);
+    // Next commit the Web UI, if any. Either replace |web_ui_| with
+    // |pending_web_ui_|, or clear |web_ui_| if there is no pending WebUI, or
+    // leave |web_ui_| as is if reusing it.
+    DCHECK(!(pending_web_ui_.get() && pending_and_current_web_ui_.get()));
+    if (pending_web_ui_) {
+      web_ui_.reset(pending_web_ui_.release());
+    } else if (!pending_and_current_web_ui_.get()) {
+      web_ui_.reset();
+    } else {
+      DCHECK_EQ(pending_and_current_web_ui_.get(), web_ui_.get());
+      pending_and_current_web_ui_.reset();
+    }
   } else {
-    DCHECK_EQ(pending_and_current_web_ui_.get(), web_ui_.get());
-    pending_and_current_web_ui_.reset();
+    // PlzNavigate
+    if (!should_reuse_web_ui_)
+      web_ui_.reset(speculative_web_ui_.release());
+    DCHECK(!speculative_web_ui_);
   }
 
-  // It's possible for the pending_render_frame_host_ to be NULL when we aren't
-  // crossing process boundaries. If so, we just needed to handle the Web UI
-  // committing above and we're done.
-  if (!pending_render_frame_host_) {
+  // It's possible for the pending_render_frame_host_ to be nullptr when we
+  // aren't crossing process boundaries. If so, we just needed to handle the Web
+  // UI committing above and we're done.
+  if (!pending_render_frame_host_ && !speculative_render_frame_host_) {
     if (will_focus_location_bar)
       delegate_->SetFocusToLocationBar(false);
     return;
@@ -1349,10 +1506,20 @@ void RenderFrameHostManager::CommitPending() {
 
   bool is_main_frame = frame_tree_node_->IsMainFrame();
 
-  // Swap in the pending frame and make it active. Also ensure the FrameTree
-  // stays in sync.
-  scoped_ptr<RenderFrameHostImpl> old_render_frame_host =
-      SetRenderFrameHost(pending_render_frame_host_.Pass());
+  // Swap in the pending or speculative frame and make it active. Also ensure
+  // the FrameTree stays in sync.
+  scoped_ptr<RenderFrameHostImpl> old_render_frame_host;
+  if (!browser_side_navigation) {
+    DCHECK(!speculative_render_frame_host_);
+    old_render_frame_host =
+        SetRenderFrameHost(pending_render_frame_host_.Pass());
+  } else {
+    // PlzNavigate
+    DCHECK(speculative_render_frame_host_);
+    old_render_frame_host =
+        SetRenderFrameHost(speculative_render_frame_host_.Pass());
+  }
+
   if (is_main_frame)
     render_frame_host_->render_view_host()->AttachToFrameTree();
 
@@ -1498,17 +1665,17 @@ RenderFrameHostImpl* RenderFrameHostManager::UpdateStateForNavigate(
     // New SiteInstance: create a pending RFH to navigate.
     DCHECK(!cross_navigation_pending_);
 
-    // This will possibly create (set to NULL) a Web UI object for the pending
-    // page. We'll use this later to give the page special access. This must
-    // happen before the new renderer is created below so it will get bindings.
-    // It must also happen after the above conditional call to CancelPending(),
-    // otherwise CancelPending may clear the pending_web_ui_ and the page will
-    // not have its bindings set appropriately.
+    // This will possibly create (set to nullptr) a Web UI object for the
+    // pending page. We'll use this later to give the page special access. This
+    // must happen before the new renderer is created below so it will get
+    // bindings. It must also happen after the above conditional call to
+    // CancelPending(), otherwise CancelPending may clear the pending_web_ui_
+    // and the page will not have its bindings set appropriately.
     SetPendingWebUI(dest_url, bindings);
     CreatePendingRenderFrameHost(current_instance, new_instance.get(),
                                  frame_tree_node_->IsMainFrame());
     if (!pending_render_frame_host_.get()) {
-      return NULL;
+      return nullptr;
     }
 
     // Check if our current RFH is live before we set up a transition.
@@ -1531,14 +1698,6 @@ RenderFrameHostImpl* RenderFrameHostManager::UpdateStateForNavigate(
     // We now have a pending RFH.
     DCHECK(!cross_navigation_pending_);
     cross_navigation_pending_ = true;
-
-    // PlzNavigate: There is no notion of transfer navigations, and the old
-    // renderer before unload handler has already run at that point, so return
-    // here.
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableBrowserSideNavigation)) {
-      return pending_render_frame_host_.get();
-    }
 
     // We need to wait until the beforeunload handler has run, unless we are
     // transferring an existing request (in which case it has already run).
