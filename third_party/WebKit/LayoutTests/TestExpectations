@@ -878,7 +878,6 @@ crbug.com/357075 [ Win Release ] http/tests/security/contentSecurityPolicy/repor
 crbug.com/357082 [ Win Debug ] virtual/threaded/animations/animation-hit-test.html [ Failure Pass ]
 crbug.com/357084 [ Linux Win Debug ] virtual/threaded/animations/keyframe-timing-functions2.html [ Pass Timeout ]
 crbug.com/357085 [ Win Debug ] virtual/threaded/animations/unanimated-style.html [ Pass Timeout ]
-crbug.com/357088 [ Debug ] web-animations-api/timeline-updates-players.html [ Failure Pass ]
 crbug.com/357088 [ Linux Release ] web-animations-api/timeline-updates-players.html [ Failure Pass ]
 crbug.com/357427 http/tests/workers/terminate-during-sync-operation-file.html [ Crash Pass Slow Timeout ]
 crbug.com/357427 http/tests/workers/terminate-during-sync-operation-filesystem.html [ Crash Pass Slow Timeout ]
@@ -1626,3 +1625,5 @@ crbug.com/445955 [ Mac ] web-animations-api/player-cancel-finishes.html [ Pass F
 crbug.com/447425 [ Win Mac Linux ] fast/dynamic/011.html [ Pass Failure ]
 
 crbug.com/448274 [ Win Mac Linux ] http/tests/misc/prefetch-purpose.html [ Failure ]
+
+crbug.com/448641 [ Debug ] web-animations-api/timeline-updates-players.html [ Crash Pass ]
