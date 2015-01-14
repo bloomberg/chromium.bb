@@ -41,7 +41,8 @@ importer.TaskQueue = function() {
 importer.TaskQueue.UpdateType = {
   PROGRESS: 'PROGRESS',
   SUCCESS: 'SUCCESS',
-  ERROR: 'ERROR'
+  ERROR: 'ERROR',
+  CANCELED: 'CANCELED'
 };
 
 /**
