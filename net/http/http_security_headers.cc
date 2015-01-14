@@ -118,12 +118,15 @@ StringPair Split(const std::string& source, char delimiter) {
 bool ParseAndAppendPin(const std::string& value,
                        HashValueTag tag,
                        HashValueVector* hashes) {
-  std::string unquoted = HttpUtil::Unquote(value);
-  std::string decoded;
+  // Pins are always quoted.
+  if (value.empty() || !HttpUtil::IsQuote(value[0]))
+    return false;
 
+  std::string unquoted = HttpUtil::Unquote(value);
   if (unquoted.empty())
       return false;
 
+  std::string decoded;
   if (!base::Base64Decode(unquoted, &decoded))
     return false;
 

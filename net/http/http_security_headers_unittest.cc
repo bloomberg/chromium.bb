@@ -26,21 +26,38 @@ HashValue GetTestHashValue(uint8 label, HashValueTag tag) {
   return hash_value;
 }
 
-std::string GetTestPin(uint8 label, HashValueTag tag) {
+std::string GetTestPinImpl(uint8 label, HashValueTag tag, bool quoted) {
   HashValue hash_value = GetTestHashValue(label, tag);
   std::string base64;
   base::Base64Encode(base::StringPiece(
       reinterpret_cast<char*>(hash_value.data()), hash_value.size()), &base64);
 
+  std::string ret;
   switch (hash_value.tag) {
     case HASH_VALUE_SHA1:
-      return std::string("pin-sha1=\"") + base64 + "\"";
+      ret = "pin-sha1=";
+      break;
     case HASH_VALUE_SHA256:
-      return std::string("pin-sha256=\"") + base64 + "\"";
+      ret = "pin-sha256=";
+      break;
     default:
       NOTREACHED() << "Unknown HashValueTag " << hash_value.tag;
       return std::string("ERROR");
   }
+  if (quoted)
+    ret += '\"';
+  ret += base64;
+  if (quoted)
+    ret += '\"';
+  return ret;
+}
+
+std::string GetTestPin(uint8 label, HashValueTag tag) {
+  return GetTestPinImpl(label, tag, true);
+}
+
+std::string GetTestPinUnquoted(uint8 label, HashValueTag tag) {
+  return GetTestPinImpl(label, tag, false);
 }
 
 };
@@ -142,6 +159,7 @@ static void TestBogusPinsHeaders(HashValueTag tag) {
 
   // The good pin must be in the chain, the backup pin must not be
   std::string good_pin = GetTestPin(2, tag);
+  std::string good_pin_unquoted = GetTestPinUnquoted(2, tag);
   std::string backup_pin = GetTestPin(4, tag);
 
   EXPECT_FALSE(ParseHPKPHeader(std::string(), chain_hashes, &max_age,
@@ -213,6 +231,9 @@ static void TestBogusPinsHeaders(HashValueTag tag) {
                                &hashes));
   EXPECT_FALSE(ParseHPKPHeader("max-age=34889.23", chain_hashes, &max_age,
                                &include_subdomains, &hashes));
+  EXPECT_FALSE(
+      ParseHPKPHeader("max-age=243; " + good_pin_unquoted + ";" + backup_pin,
+                      chain_hashes, &max_age, &include_subdomains, &hashes));
 
   // Check the out args were not updated by checking the default
   // values for its predictable fields.
