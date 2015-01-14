@@ -236,7 +236,7 @@ scoped_ptr<base::ListValue> HidDeviceManager::CreateApiDeviceList(
   DCHECK(hid_service);
 
   scoped_ptr<base::ListValue> api_devices(new base::ListValue());
-  for (const std::pair<int, HidDeviceId>& map_entry : device_ids_) {
+  for (const ResourceIdToDeviceIdMap::value_type& map_entry : device_ids_) {
     int resource_id = map_entry.first;
     const HidDeviceId& device_id = map_entry.second;
 

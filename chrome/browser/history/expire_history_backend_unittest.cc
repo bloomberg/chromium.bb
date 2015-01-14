@@ -333,7 +333,7 @@ void ExpireHistoryTest::EnsureURLInfoGone(const URLRow& row, bool expired) {
   // EXPECT_FALSE(HasThumbnail(row.id()));
 
   bool found_delete_notification = false;
-  for (const std::pair<bool, URLRows>& pair : urls_deleted_notifications_) {
+  for (const auto& pair : urls_deleted_notifications_) {
     EXPECT_EQ(expired, pair.first);
     const history::URLRows& rows(pair.second);
     history::URLRows::const_iterator it_row = std::find_if(
