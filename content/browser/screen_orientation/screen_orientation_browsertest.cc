@@ -180,7 +180,7 @@ IN_PROC_BROWSER_TEST_F(ScreenOrientationBrowserTest, WindowOrientationChange) {
 }
 
 // Chromium Android does not support fullscreen
-IN_PROC_BROWSER_TEST_F(ScreenOrientationBrowserTest, LockSmoke) {
+IN_PROC_BROWSER_TEST_F(ScreenOrientationBrowserTest, DISABLED_LockSmoke) {
   GURL test_url = GetTestUrl("screen_orientation",
                              "screen_orientation_lock_smoke.html");
 
