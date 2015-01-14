@@ -36,7 +36,6 @@
 #include "SkCanvas.h"
 #include "bindings/core/v8/SerializedScriptValueFactory.h"
 #include "bindings/core/v8/V8Node.h"
-#include "core/UserAgentStyleSheets.h"
 #include "core/clipboard/DataTransfer.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/css/resolver/StyleResolver.h"
@@ -76,6 +75,7 @@
 #include "modules/mediastream/MediaStream.h"
 #include "modules/mediastream/MediaStreamRegistry.h"
 #include "platform/DragImage.h"
+#include "platform/PlatformResourceLoader.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/geometry/FloatRect.h"
@@ -187,7 +187,7 @@ protected:
     void applyViewportStyleOverride(FrameTestHelpers::WebViewHelper* webViewHelper)
     {
         RefPtrWillBeRawPtr<StyleSheetContents> styleSheet = StyleSheetContents::create(CSSParserContext(UASheetMode, 0));
-        styleSheet->parseString(String(blink::viewportAndroidCss, sizeof(blink::viewportAndroidCss)));
+        styleSheet->parseString(loadResourceAsASCIIString("viewportAndroid.css"));
         OwnPtrWillBeRawPtr<RuleSet> ruleSet = RuleSet::create();
         ruleSet->addRulesFromSheet(styleSheet.get(), MediaQueryEvaluator("screen"));
 

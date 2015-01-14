@@ -14,7 +14,7 @@ String loadResourceAsASCIIString(const char* resource)
 {
     const WebData& resourceData = Platform::current()->loadResource(resource);
     String dataString(resourceData.data(), resourceData.size());
-    ASSERT(!dataString.isEmpty() && dataString.containsOnlyASCII());
+    RELEASE_ASSERT(!dataString.isEmpty() && dataString.containsOnlyASCII());
     return dataString;
 }
 
