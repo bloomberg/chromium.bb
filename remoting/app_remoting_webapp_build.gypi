@@ -258,7 +258,6 @@
               'success_stamp': '<(PRODUCT_DIR)/>(_target_name)_main_jscompile.stamp',
             },
             'inputs': [
-              'tools/jscompile.py',
               '<@(ar_main_js_files)',
               '<@(remoting_webapp_js_proto_files)',
               # Include zip as input so that this action is run after the build.
@@ -268,11 +267,12 @@
               '<(success_stamp)',
             ],
             'action': [
-              'python', 'tools/jscompile.py',
+              'python', '../third_party/closure_compiler/checker.py',
+              '--strict',
+              '--no-single-file',
+              '--success-stamp', '<(success_stamp)',
               '<@(ar_main_js_files)',
               '<@(remoting_webapp_js_proto_files)',
-              '--success-stamp',
-              '<(success_stamp)'
             ],
           },
           {
@@ -281,7 +281,6 @@
               'success_stamp': '<(PRODUCT_DIR)/>(_target_name)_background_jscompile.stamp',
             },
             'inputs': [
-              'tools/jscompile.py',
               '<@(ar_background_js_files)',
               '<@(remoting_webapp_js_proto_files)',
               # Include zip as input so that this action is run after the build.
@@ -291,11 +290,12 @@
               '<(success_stamp)',
             ],
             'action': [
-              'python', 'tools/jscompile.py',
+              'python', '../third_party/closure_compiler/checker.py',
+              '--strict',
+              '--no-single-file',
+              '--success-stamp', '<(success_stamp)',
               '<@(ar_background_js_files)',
               '<@(remoting_webapp_js_proto_files)',
-              '--success-stamp',
-              '<(success_stamp)'
             ],
           },
         ],  # actions

@@ -125,15 +125,17 @@ MessageWindowImpl.prototype.onMessage_ = function(event) {
         infoboxDiv.hidden = true;
       }
 
+      var messageIdStr = messageId.toString();
+
       this.initButton_(
           button,
           buttonLabel,
-          this.sendReply_.bind(this, event.source, messageId, 1));
+          this.sendReply_.bind(this, event.source, messageIdStr, 1));
 
       this.initButton_(
           cancelButton,
           cancelButtonLabel,
-          this.sendReply_.bind(this, event.source, messageId, 0));
+          this.sendReply_.bind(this, event.source, messageIdStr, 0));
 
       var buttonToFocus = (cancelButtonLabel) ? cancelButton : button;
       buttonToFocus.focus();
@@ -143,7 +145,7 @@ MessageWindowImpl.prototype.onMessage_ = function(event) {
       // Note that when a button is pressed, this will result in sendReply_
       // being called multiple times (once for the button, once for close).
       chrome.app.window.current().onClosed.addListener(
-          this.sendReply_.bind(this, event.source, messageId, 0));
+          this.sendReply_.bind(this, event.source, messageIdStr, 0));
 
       this.updateSize_();
       chrome.app.window.current().show();

@@ -169,7 +169,10 @@ remoting.ClientSession = function(signalStrategy, container, hostDisplayName,
   this.callPluginLostFocus_ = this.pluginLostFocus_.bind(this);
   /** @private */
   this.callPluginGotFocus_ = this.pluginGotFocus_.bind(this);
-  /** @private */
+  /**
+   * @type {function(boolean=):void}
+   * @private
+   */
   this.callOnFullScreenChanged_ = this.onFullScreenChanged_.bind(this)
 
   /** @type {Element} @private */
@@ -475,8 +478,8 @@ remoting.ClientSession.prototype.createPluginAndConnect =
 };
 
 /**
- * @param {Object.<string>} options The current options for the host, or {}
- *     if this client has no saved settings for the host.
+ * @param {Object.<string|boolean|number>} options The current options for the
+ *     host, or {} if this client has no saved settings for the host.
  * @private
  */
 remoting.ClientSession.prototype.onHostSettingsLoaded_ = function(options) {
@@ -484,25 +487,25 @@ remoting.ClientSession.prototype.onHostSettingsLoaded_ = function(options) {
       typeof(options[remoting.ClientSession.KEY_REMAP_KEYS]) ==
           'string') {
     this.remapKeys_ = /** @type {string} */
-        options[remoting.ClientSession.KEY_REMAP_KEYS];
+        (options[remoting.ClientSession.KEY_REMAP_KEYS]);
   }
   if (remoting.ClientSession.KEY_RESIZE_TO_CLIENT in options &&
       typeof(options[remoting.ClientSession.KEY_RESIZE_TO_CLIENT]) ==
           'boolean') {
     this.resizeToClient_ = /** @type {boolean} */
-        options[remoting.ClientSession.KEY_RESIZE_TO_CLIENT];
+        (options[remoting.ClientSession.KEY_RESIZE_TO_CLIENT]);
   }
   if (remoting.ClientSession.KEY_SHRINK_TO_FIT in options &&
       typeof(options[remoting.ClientSession.KEY_SHRINK_TO_FIT]) ==
           'boolean') {
     this.shrinkToFit_ = /** @type {boolean} */
-        options[remoting.ClientSession.KEY_SHRINK_TO_FIT];
+        (options[remoting.ClientSession.KEY_SHRINK_TO_FIT]);
   }
   if (remoting.ClientSession.KEY_DESKTOP_SCALE in options &&
       typeof(options[remoting.ClientSession.KEY_DESKTOP_SCALE]) ==
           'number') {
     this.desktopScale_ = /** @type {number} */
-        options[remoting.ClientSession.KEY_DESKTOP_SCALE];
+        (options[remoting.ClientSession.KEY_DESKTOP_SCALE]);
   }
 
   /** @param {boolean} result */
@@ -714,9 +717,9 @@ remoting.ClientSession.prototype.getError = function() {
  * Sends a key combination to the remoting client, by sending down events for
  * the given keys, followed by up events in reverse order.
  *
- * @private
- * @param {[number]} keys Key codes to be sent.
+ * @param {Array.<number>} keys Key codes to be sent.
  * @return {void} Nothing.
+ * @private
  */
 remoting.ClientSession.prototype.sendKeyCombination_ = function(keys) {
   for (var i = 0; i < keys.length; i++) {
@@ -881,9 +884,9 @@ remoting.ClientSession.prototype.hasReceivedFrame = function() {
 /**
  * Sends a signaling message.
  *
- * @private
  * @param {string} message XML string of IQ stanza to send to server.
  * @return {void} Nothing.
+ * @private
  */
 remoting.ClientSession.prototype.sendIq_ = function(message) {
   // Extract the session id, so we can close the session later.
@@ -908,16 +911,16 @@ remoting.ClientSession.prototype.sendIq_ = function(message) {
 };
 
 /**
- * @private
  * @param {string} msg
+ * @private
  */
 remoting.ClientSession.prototype.onDebugMessage_ = function(msg) {
   console.log('plugin: ' + msg.trimRight());
 };
 
 /**
- * @private
  * @param {Element} message
+ * @private
  */
 remoting.ClientSession.prototype.onIncomingMessage_ = function(message) {
   if (!this.plugin_) {
@@ -991,9 +994,9 @@ remoting.ClientSession.prototype.getSharedSecret_ = function(callback) {
  * Callback that the plugin invokes to indicate that the connection
  * status has changed.
  *
- * @private
  * @param {number} status The plugin's status.
  * @param {number} error The plugin's error state, if any.
+ * @private
  */
 remoting.ClientSession.prototype.onConnectionStatusUpdate_ =
     function(status, error) {
@@ -1038,9 +1041,9 @@ remoting.ClientSession.prototype.onConnectionStatusUpdate_ =
  * Callback that the plugin invokes to indicate that the connection type for
  * a channel has changed.
  *
- * @private
  * @param {string} channel The channel name.
  * @param {string} connectionType The new connection type.
+ * @private
  */
 remoting.ClientSession.prototype.onRouteChanged_ =
     function(channel, connectionType) {
@@ -1053,8 +1056,8 @@ remoting.ClientSession.prototype.onRouteChanged_ =
  * Callback that the plugin invokes to indicate when the connection is
  * ready.
  *
- * @private
  * @param {boolean} ready True if the connection is ready.
+ * @private
  */
 remoting.ClientSession.prototype.onConnectionReady_ = function(ready) {
   // TODO(jamiewalch): Currently, the logic for determining whether or not the
@@ -1106,9 +1109,9 @@ remoting.ClientSession.prototype.onSetCapabilities_ = function(capabilities) {
 };
 
 /**
- * @private
  * @param {remoting.ClientSession.State} newState The new state for the session.
  * @return {void} Nothing.
+ * @private
  */
 remoting.ClientSession.prototype.setState_ = function(newState) {
   var oldState = this.state_;
@@ -1202,8 +1205,8 @@ remoting.ClientSession.prototype.pauseAudio = function(pause) {
  * This is a callback that gets called when the plugin notifies us of a change
  * in the size of the remote desktop.
  *
- * @private
  * @return {void} Nothing.
+ * @private
  */
 remoting.ClientSession.prototype.onDesktopSizeChanged_ = function() {
   console.log('desktop size changed: ' +
@@ -1219,10 +1222,10 @@ remoting.ClientSession.prototype.onDesktopSizeChanged_ = function() {
  * Sets the non-click-through area of the client in response to notifications
  * from the plugin of desktop shape changes.
  *
- * @private
  * @param {Array.<Array.<number>>} rects List of rectangles comprising the
  *     desktop shape.
  * @return {void} Nothing.
+ * @private
  */
 remoting.ClientSession.prototype.onDesktopShapeChanged_ = function(rects) {
   // Build the list of rects for the input region.
@@ -1376,7 +1379,7 @@ remoting.ClientSession.prototype.requestPairing = function(clientName, onDone) {
  * Called when the full-screen status has changed, either via the
  * remoting.Fullscreen class, or via a system event such as the Escape key
  *
- * @param {boolean} fullscreen True if the app is entering full-screen mode;
+ * @param {boolean=} fullscreen True if the app is entering full-screen mode;
  *     false if it is leaving it.
  * @private
  */
@@ -1440,11 +1443,11 @@ remoting.ClientSession.prototype.resetScroll_ = function() {
 /**
  * Enable or disable bump-scrolling. When disabling bump scrolling, also reset
  * the scroll offsets to (0, 0).
+ * @param {boolean=} enable True to enable bump-scrolling, false to disable it.
  * @private
- * @param {boolean} enable True to enable bump-scrolling, false to disable it.
  */
 remoting.ClientSession.prototype.enableBumpScroll_ = function(enable) {
-  var element = /*@type{HTMLElement} */ document.documentElement;
+  var element = /** @type{HTMLElement} */ (document.documentElement);
   if (enable) {
     /** @type {null|function(Event):void} */
     this.onMouseMoveRef_ = this.onMouseMove_.bind(this);
@@ -1556,9 +1559,8 @@ remoting.ClientSession.prototype.processGnubbyAuthMessage_ = function(data) {
   if (this.gnubbyAuthHandler_) {
     try {
       this.gnubbyAuthHandler_.onMessage(data);
-    } catch (err) {
-      console.error('Failed to process gnubby message: ',
-          /** @type {*} */ (err));
+    } catch (/** @type {*} */ err) {
+      console.error('Failed to process gnubby message: ', err);
     }
   } else {
     console.error('Received unexpected gnubby message');
@@ -1672,9 +1674,8 @@ remoting.ClientSession.prototype.processCastExtensionMessage_ = function(data) {
   if (this.castExtensionHandler_) {
     try {
       this.castExtensionHandler_.onMessage(data);
-    } catch (err) {
-      console.error('Failed to process cast message: ',
-          /** @type {*} */ (err));
+    } catch (/** @type {*} */ err) {
+      console.error('Failed to process cast message: ', err);
     }
   } else {
     console.error('Received unexpected cast message');

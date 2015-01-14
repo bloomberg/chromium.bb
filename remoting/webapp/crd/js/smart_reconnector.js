@@ -81,7 +81,7 @@ remoting.SmartReconnector.prototype = {
   },
 
   /**
-   * @param {remoting.ClientSession.StateEvent} event
+   * @param {remoting.ClientSession.StateEvent=} event
    */
   stateChanged_: function(event) {
     var State = remoting.ClientSession.State;
@@ -96,7 +96,7 @@ remoting.SmartReconnector.prototype = {
   },
 
   /**
-   * @param {boolean} active  True if the video channel is active.
+   * @param {boolean=} active  True if the video channel is active.
    */
   videoChannelStateChanged_: function (active) {
     this.cancelPending_();

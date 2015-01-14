@@ -78,8 +78,7 @@ remoting.VideoFrameRecorder.prototype.handleMessage =
     }
 
     console.log("Received frame");
-    /* jscompile gets confused if you refer to this as just atob(). */
-    var videoPacketString = /** @type {string?} */ window.atob(messageData);
+    var videoPacketString = window.atob(messageData);
 
     console.log("Converted from Base64 - length:" + videoPacketString.length);
     var byteArrays = [];
@@ -97,10 +96,6 @@ remoting.VideoFrameRecorder.prototype.handleMessage =
     console.log("Writing frame");
     videoPacketString = null;
     /**
-     * Our current compiler toolchain only understands the old (deprecated)
-     * Blob constructor, which does not accept any parameters.
-     * TODO(wez): Remove this when compiler is updated (see crbug.com/405298).
-     * @suppress {checkTypes}
      * @param {Array} parts
      * @return {Blob}
      */
@@ -119,16 +114,20 @@ remoting.VideoFrameRecorder.prototype.handleMessage =
   return true;
 }
 
-/** @param {FileEntry} fileEntry */
-remoting.VideoFrameRecorder.prototype.onFileChosen_ = function(fileEntry) {
-  if (!fileEntry) {
+/**
+ * @param {Entry} entry The single file entry if multiple files are not allowed.
+ * @param {Array.<FileEntry>} fileEntries List of file entries if multiple files
+ *     are allowed.
+ */
+remoting.VideoFrameRecorder.prototype.onFileChosen_ = function(
+    entry, fileEntries) {
+  if (!entry) {
     console.log("Cancelled save of video frames.");
   } else {
-    /** @type {function(string):void} */
-    chrome.fileSystem.getDisplayPath(fileEntry, function(path) {
+    chrome.fileSystem.getDisplayPath(entry, function(path) {
       console.log("Saving video frames to:" + path);
     });
-    fileEntry.createWriter(this.onFileWriter_.bind(this));
+    entry.createWriter(this.onFileWriter_.bind(this));
   }
 }
 

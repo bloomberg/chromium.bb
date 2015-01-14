@@ -70,7 +70,7 @@ remoting.Clipboard.prototype.startSession = function() {
  *
  * Currently only text items are supported.
  *
- * @param {remoting.ClipboardData} clipboardData
+ * @param {ClipboardData} clipboardData
  * @return {void} Nothing.
  */
 remoting.Clipboard.prototype.toHost = function(clipboardData) {
@@ -137,7 +137,7 @@ remoting.Clipboard.prototype.fromHost = function(mimeType, item) {
 /**
  * Moves any pending clipboard items to a ClipboardData object.
  *
- * @param {remoting.ClipboardData} clipboardData
+ * @param {ClipboardData} clipboardData
  * @return {boolean} Whether any clipboard items were moved to the ClipboardData
  *     object.
  */

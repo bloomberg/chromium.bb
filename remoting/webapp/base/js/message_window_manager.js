@@ -66,7 +66,7 @@ remoting.MessageWindowManager.closeAllMessageWindows = function() {
   for (var win_id in remoting.MessageWindowManager.messageWindows_) {
     /** @type {remoting.MessageWindow} */
     var win = remoting.MessageWindowManager.getMessageWindow(
-        /** @type {number} */(win_id));
+        parseInt(win_id, 10));
     base.debug.assert(win != null);
     windows.push(win);
   }

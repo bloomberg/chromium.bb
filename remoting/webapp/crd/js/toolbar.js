@@ -26,7 +26,8 @@ remoting.Toolbar = function(toolbar) {
    * @type {HTMLElement}
    * @private
    */
-  this.stub_ = /** @type {HTMLElement} */toolbar.querySelector('.toolbar-stub');
+  this.stub_ =
+      /** @type {HTMLElement} */(toolbar.querySelector('.toolbar-stub'));
   /**
    * @type {number?} The id of the preview timer, if any.
    * @private

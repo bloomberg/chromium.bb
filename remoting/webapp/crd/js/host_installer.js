@@ -122,30 +122,32 @@ remoting.HostInstaller.prototype.downloadAndWaitForInstall = function() {
    */
   var CHECK_INSTALL_INTERVAL_IN_MILLISECONDS = 1000;
 
-  /** @param {boolean} installed */
-  return this.isInstalled().then(function(installed){
-    if (installed) {
-      return Promise.resolve(true);
-    }
+  return this.isInstalled().then(
+      /** @param {boolean} installed */
+      function(installed){
+        if (installed) {
+          return Promise.resolve(true);
+        }
 
-    if (that.downloadAndWaitForInstallPromise_ === null) {
-      that.downloadAndWaitForInstallPromise_ = new Promise(
-        /** @param {Function} resolve */
-        function(resolve){
-          that.download();
-          that.checkInstallIntervalId_ = window.setInterval(function() {
-            /** @param {boolean} installed */
-            that.isInstalled().then(function(installed) {
-              if (installed) {
-                that.cancel();
-                resolve();
-              }
-            });
-          }, CHECK_INSTALL_INTERVAL_IN_MILLISECONDS);
+        if (that.downloadAndWaitForInstallPromise_ === null) {
+          that.downloadAndWaitForInstallPromise_ = new Promise(
+              /** @param {Function} resolve */
+              function(resolve){
+                that.download();
+                that.checkInstallIntervalId_ = window.setInterval(function() {
+                  that.isInstalled().then(
+                      /** @param {boolean} installed */
+                      function(installed) {
+                        if (installed) {
+                          that.cancel();
+                          resolve();
+                        }
+                      });
+                }, CHECK_INSTALL_INTERVAL_IN_MILLISECONDS);
+              });
+        }
+        return that.downloadAndWaitForInstallPromise_;
       });
-    }
-    return that.downloadAndWaitForInstallPromise_;
-  });
 };
 
 /**

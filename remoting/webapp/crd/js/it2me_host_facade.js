@@ -67,7 +67,7 @@ remoting.It2MeHostFacade = function() {
   /**
    * Called if the It2Me Native Messaging host sends a malformed message:
    * missing required attributes, attributes with incorrect types, etc.
-   * @param {remoting.Error} error
+   * @type {?function(remoting.Error):void}
    * @private
    */
   this.onError_ = function(error) {};
@@ -91,9 +91,9 @@ remoting.It2MeHostFacade = function() {
  * native messaging host is not installed, onInitializationFailed is invoked.
  * Otherwise, onInitialized is invoked.
  *
- * @param {function():void} onInitialized Called after successful
+ * @param {function(*=):void} onInitialized Called after successful
  *     initialization.
- * @param {function():void} onInitializationFailed Called if cannot connect to
+ * @param {function(*=):void} onInitializationFailed Called if cannot connect to
  *     the native messaging host.
  * @return {void}
  */
@@ -108,9 +108,8 @@ remoting.It2MeHostFacade.prototype.initialize =
     this.port_.onMessage.addListener(this.onIncomingMessage_.bind(this));
     this.port_.onDisconnect.addListener(this.onHostDisconnect_.bind(this));
     this.port_.postMessage({type: 'hello'});
-  } catch (err) {
-    console.log('Native Messaging initialization failed: ',
-                /** @type {*} */ (err));
+  } catch (/** @type {*} */ err) {
+    console.log('Native Messaging initialization failed: ', err);
     onInitializationFailed();
     return;
   }

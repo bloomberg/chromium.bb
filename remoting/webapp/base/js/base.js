@@ -46,8 +46,7 @@ base.debug.assert = function(expr, opt_msg) {
 base.debug.callstack = function() {
   try {
     throw new Error();
-  } catch (e) {
-    var error = /** @type {Error} */ e;
+  } catch (/** @type {Error} */ error) {
     var callstack = error.stack
       .replace(/^\s+(at eval )?at\s+/gm, '') // Remove 'at' and indentation.
       .split('\n');
@@ -91,7 +90,7 @@ base.mix = function(dest, src) {
  * Adds a mixin to a class.
  * @param {Object} dest
  * @param {Object} src
- * @suppress {checkTypes}
+ * @suppress {checkTypes|reportUnknownTypes}
  */
 base.extend = function(dest, src) {
   base.mix(dest.prototype, src.prototype || src);
@@ -195,32 +194,32 @@ base.escapeHTML = function(str) {
  */
 base.Deferred = function() {
   /**
-   * @type {?function(?=)}
+   * @type {?function(?):void}
    * @private
    */
   this.resolve_ = null;
 
   /**
-   * @type {?function(?)}
+   * @type {?function(?):void}
    * @private
    */
   this.reject_ = null;
 
   /**
+   * @this {base.Deferred}
+   * @param {function(?):void} resolve
+   * @param {function(*):void} reject
+   */
+  var initPromise = function(resolve, reject) {
+    this.resolve_ = resolve;
+    this.reject_ = reject;
+  };
+
+  /**
    * @type {Promise}
    * @private
    */
-  this.promise_ = new Promise(
-    /**
-     * @param {function(?=):void} resolve
-     * @param {function(?):void} reject
-     * @this {base.Deferred}
-     */
-    function(resolve, reject) {
-      this.resolve_ = resolve;
-      this.reject_ = reject;
-    }.bind(this)
-  );
+  this.promise_ = new Promise(initPromise.bind(this));
 };
 
 /** @param {*} reason */
@@ -246,7 +245,7 @@ base.Promise = function() {};
  */
 base.Promise.sleep = function(delay) {
   return new Promise(
-    /** @param {function():void} fulfill */
+    /** @param {function(*):void} fulfill */
     function(fulfill) {
       window.setTimeout(fulfill, delay);
     });
@@ -436,11 +435,12 @@ base.generateXsrfToken = function() {
 
 /**
  * @param {string} jsonString A JSON-encoded string.
- * @return {*} The decoded object, or undefined if the string cannot be parsed.
+ * @return {Object|undefined} The decoded object, or undefined if the string
+ *     cannot be parsed.
  */
 base.jsonParseSafe = function(jsonString) {
   try {
-    return JSON.parse(jsonString);
+    return /** @type {Object} */ (JSON.parse(jsonString));
   } catch (err) {
     return undefined;
   }

@@ -240,7 +240,7 @@ remoting.AppRemoting.prototype.handleConnected = function(clientSession) {
   // Cancel the ping when the connection closes.
   clientSession.addEventListener(
       remoting.ClientSession.Events.stateChanged,
-      /** @param {remoting.ClientSession.StateEvent} state */
+      /** @param {remoting.ClientSession.StateEvent=} state */
       function(state) {
         if (state.current === remoting.ClientSession.State.CLOSED ||
             state.current === remoting.ClientSession.State.FAILED) {

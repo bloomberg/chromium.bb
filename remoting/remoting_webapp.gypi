@@ -34,10 +34,12 @@
             '<(success_stamp)',
           ],
           'action': [
-            'python', 'tools/jscompile.py',
+            'python', '../third_party/closure_compiler/checker.py',
+            '--strict',
+            '--no-single-file',
+            '--success-stamp', '<(success_stamp)',
             '<@(remoting_webapp_crd_js_files)',
             '<@(remoting_webapp_js_proto_files)',
-            '--success-stamp', '<(success_stamp)'
           ],
         },
       ],  # actions

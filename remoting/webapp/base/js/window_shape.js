@@ -70,8 +70,7 @@ remoting.WindowShape.prototype.updateClientWindowShape = function() {
     this.clientUICallbacks_[i].addToRegion(rects);
   }
   for (var i = 0; i < rects.length; ++i) {
-    /** @type {ClientRect} */
-    var rect = rects[i];
+    var rect = /** @type {ClientRect} */ (rects[i]);
     var left = Math.floor(rect.left);
     var right = Math.ceil(rect.left + rect.width);
     var top = Math.floor(rect.top);

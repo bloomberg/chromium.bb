@@ -163,7 +163,7 @@ remoting.Identity.prototype.onAuthComplete_ = function(interactive, token) {
   if (token) {
     while (this.pendingCallbacks_.length > 0) {
       var callback = /** @type {remoting.Identity.Callbacks} */
-          this.pendingCallbacks_.shift();
+          (this.pendingCallbacks_.shift());
       callback.onOk(token);
     }
     return;
@@ -178,7 +178,7 @@ remoting.Identity.prototype.onAuthComplete_ = function(interactive, token) {
     console.error(error_message);
     while (this.pendingCallbacks_.length > 0) {
       var callback = /** @type {remoting.Identity.Callbacks} */
-          this.pendingCallbacks_.shift();
+          (this.pendingCallbacks_.shift());
       callback.onError(remoting.Error.NOT_AUTHENTICATED);
     }
     return;

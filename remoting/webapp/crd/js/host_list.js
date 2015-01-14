@@ -116,7 +116,7 @@ remoting.HostList.prototype.load = function(onDone) {
     if (items[remoting.HostList.HOSTS_KEY]) {
       var cached = base.jsonParseSafe(items[remoting.HostList.HOSTS_KEY]);
       if (cached) {
-        that.hosts_ = /** @type {Array.<remoting.Host>} */ cached;
+        that.hosts_ = /** @type {Array.<remoting.Host>} */ (cached);
       } else {
         console.error('Invalid value for ' + remoting.HostList.HOSTS_KEY);
       }
@@ -188,11 +188,26 @@ remoting.HostList.prototype.refresh = function(onDone) {
  */
 remoting.HostList.prototype.onHostListResponse_ = function(onDone, hosts) {
   this.lastError_ = '';
+  this.hosts_ = hosts;
+  this.sortHosts_();
+  this.save_();
+  this.loadingIndicator_.classList.remove('loading');
+  onDone(this.lastError_ == '');
+};
+
+/**
+ * Sort the internal list of hosts.
+ *
+ * @suppress {reportUnknownTypes}
+ * @return {void} Nothing.
+ */
+remoting.HostList.prototype.sortHosts_ = function() {
   /**
    * Sort hosts, first by ONLINE/OFFLINE status and then by host-name.
    *
    * @param {remoting.Host} a
    * @param {remoting.Host} b
+   * @return {number}
    */
   var cmp = function(a, b) {
     if (a.status < b.status) {
@@ -208,10 +223,8 @@ remoting.HostList.prototype.onHostListResponse_ = function(onDone, hosts) {
     }
     return 0;
   };
-  this.hosts_ = /** @type {Array.<remoting.Host>} */ hosts.sort(cmp);
-  this.save_();
-  this.loadingIndicator_.classList.remove('loading');
-  onDone(this.lastError_ == '');
+
+  this.hosts_ = this.hosts_.sort(cmp);
 };
 
 /**

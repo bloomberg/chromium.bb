@@ -41,24 +41,24 @@ remoting.ContextMenuDom = function(root) {
    * @private
    */
   this.stub_ = /** @type {HTMLElement} */
-      this.root_.querySelector('.context-menu-stub');
+      (this.root_.querySelector('.context-menu-stub'));
   /**
    * @type {HTMLElement}
    * @private
    */
   this.icon_ = /** @type {HTMLElement} */
-      this.root_.querySelector('.context-menu-icon');
+      (this.root_.querySelector('.context-menu-icon'));
   /**
    * @type {HTMLElement}
    * @private
    */
   this.screen_ = /** @type {HTMLElement} */
-      this.root_.querySelector('.context-menu-screen');
+      (this.root_.querySelector('.context-menu-screen'));
   /**
    * @type {HTMLElement}
    * @private
    */
-  this.menu_ = /** @type {HTMLElement} */ this.root_.querySelector('ul');
+  this.menu_ = /** @type {HTMLElement} */ (this.root_.querySelector('ul'));
   /**
    * @type {number}
    * @private
@@ -84,7 +84,7 @@ remoting.ContextMenuDom = function(root) {
    */
   this.stubDragged_ = false;
 
-  /*
+  /**
    * @private
    */
   this.dragAndDrop_ = new remoting.DragAndDrop(
@@ -194,7 +194,7 @@ remoting.ContextMenuDom.prototype.remove = function(id) {
 };
 
 /**
- * @param {function(OnClickData):void} listener
+ * @param {function(OnClickData=):void} listener
  */
 remoting.ContextMenuDom.prototype.addListener = function(listener) {
   this.eventSource_.addEventListener(this.eventName_, listener);

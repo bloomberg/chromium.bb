@@ -166,7 +166,7 @@ remoting.KeyboardLayoutsMenu.prototype.makeMenuId_ = function(layout) {
 /**
  * Handle a click on the application's context menu.
  *
- * @param {OnClickData} info
+ * @param {OnClickData=} info
  * @private
  */
 remoting.KeyboardLayoutsMenu.prototype.onContextMenu_ = function(info) {

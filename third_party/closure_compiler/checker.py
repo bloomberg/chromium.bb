@@ -42,13 +42,24 @@ class Checker(object):
     "--jscomp_error=unknownDefines",
     "--jscomp_error=uselessCode",
     "--jscomp_error=visibility",
+    "--language_in=ECMASCRIPT5_STRICT",
+    "--summary_detail_level=3",
+  ]
+
+  # These are the extra flags used when compiling in 'strict' mode.
+  # Flags that are normally disabled are turned on for strict mode.
+  _STRICT_CLOSURE_ARGS = [
+    "--jscomp_error=reportUnknownTypes",
+    "--jscomp_error=duplicate",
+    "--jscomp_error=misplacedTypeAnnotation",
+  ]
+
+  _DISABLED_CLOSURE_ARGS = [
     # TODO(dbeam): happens when the same file is <include>d multiple times.
     "--jscomp_off=duplicate",
     # TODO(fukino): happens when cr.defineProperty() has a type annotation.
     # Avoiding parse-time warnings needs 2 pass compiling. crbug.com/421562.
     "--jscomp_off=misplacedTypeAnnotation",
-    "--language_in=ECMASCRIPT5_STRICT",
-    "--summary_detail_level=3",
   ]
 
   _JAR_COMMAND = [
@@ -61,12 +72,12 @@ class Checker(object):
 
   _found_java = False
 
-  def __init__(self, verbose=False):
+  def __init__(self, verbose=False, strict=False):
     current_dir = os.path.join(os.path.dirname(__file__))
-    self._compiler_jar = os.path.join(current_dir, "lib", "compiler.jar")
     self._runner_jar = os.path.join(current_dir, "runner", "runner.jar")
     self._temp_files = []
     self._verbose = verbose
+    self._strict = strict
     self._error_filter = error_filter.PromiseErrorFilter()
 
   def _clean_up(self):
@@ -85,6 +96,12 @@ class Checker(object):
   def _error(self, msg):
     print >> sys.stderr, "(ERROR) %s" % msg
     self._clean_up()
+
+  def _common_args(self):
+    """Returns an array of the common closure compiler args."""
+    if self._strict:
+      return self._COMMON_CLOSURE_ARGS + self._STRICT_CLOSURE_ARGS
+    return self._COMMON_CLOSURE_ARGS + self._DISABLED_CLOSURE_ARGS
 
   def _run_command(self, cmd):
     """Runs a shell command.
@@ -160,6 +177,30 @@ class Checker(object):
       tmp_file.write(contents)
     return tmp_file.name
 
+  def run_js_check(self, sources, externs=None):
+    if not self._check_java_path():
+      return 1, ""
+
+    args = ["--js=%s" % s for s in sources]
+    if externs:
+      args += ["--externs=%s" % e for e in externs]
+    args_file_content = " %s" % " ".join(self._common_args() + args)
+    self._debug("Args: %s" % args_file_content.strip())
+
+    args_file = self._create_temp_file(args_file_content)
+    self._debug("Args file: %s" % args_file)
+
+    runner_args = ["--compiler-args-file=%s" % args_file]
+    runner_cmd = self._run_jar(self._runner_jar, args=runner_args)
+    _, stderr = runner_cmd.communicate()
+
+    errors = stderr.strip().split("\n\n")
+    self._debug("Summary: %s" % errors.pop())
+
+    self._clean_up()
+
+    return errors, stderr
+
   def check(self, source_file, depends=None, externs=None):
     """Closure compile a file and check for errors.
 
@@ -170,8 +211,8 @@ class Checker(object):
         externs: @extern files that inform the compiler about custom globals.
 
     Returns:
-        (exitcode, output) The exit code of the Closure compiler (as a number)
-            and its output (as a string).
+        (has_errors, output) A boolean indicating if there were errors and the
+            Closure compiler output (as a string).
     """
     depends = depends or []
     externs = externs or set()
@@ -199,25 +240,11 @@ class Checker(object):
     self._expanded_file = self._create_temp_file(self._processor.contents)
     self._debug("Expanded file: %s" % self._expanded_file)
 
-    args = ["--js=%s" % self._expanded_file]
-    args += ["--externs=%s" % e for e in externs]
-    args_file_content = " %s" % " ".join(self._COMMON_CLOSURE_ARGS + args)
-    self._debug("Args: %s" % args_file_content.strip())
-
-    args_file = self._create_temp_file(args_file_content)
-    self._debug("Args file: %s" % args_file)
-
-    runner_args = ["--compiler-args-file=%s" % args_file]
-    runner_cmd = self._run_jar(self._runner_jar, args=runner_args)
-    (_, stderr) = runner_cmd.communicate()
-
-    errors = stderr.strip().split("\n\n")
+    errors, stderr = self.run_js_check(self._expanded_file, depends)
 
     # Filter out false-positive promise chain errors.
     # See https://github.com/google/closure-compiler/issues/715 for details.
     errors = self._error_filter.filter(errors);
-
-    self._debug("Summary: %s" % errors.pop())
 
     output = self._format_errors(map(self._fix_up_error, errors))
     if errors:
@@ -226,36 +253,73 @@ class Checker(object):
     elif output:
       self._debug("Output: %s" % output)
 
-    self._clean_up()
-
     return bool(errors), output
 
+  def check_multiple(self, sources):
+    """Closure compile a set of files and check for errors.
+
+    Args:
+        sources: An array of files to check.
+
+    Returns:
+        (has_errors, output) A boolean indicating if there were errors and the
+            Closure compiler output (as a string).
+    """
+
+    errors, stderr = self.run_js_check(sources)
+    return bool(errors), stderr
 
 if __name__ == "__main__":
   parser = argparse.ArgumentParser(
       description="Typecheck JavaScript using Closure compiler")
   parser.add_argument("sources", nargs=argparse.ONE_OR_MORE,
                       help="Path to a source file to typecheck")
+  single_file_group = parser.add_mutually_exclusive_group()
+  single_file_group.add_argument("--single-file", dest="single_file",
+                                 action="store_true",
+                                 help="Process each source file individually")
+  single_file_group.add_argument("--no-single-file", dest="single_file",
+                                 action="store_false",
+                                 help="Process all source files as a group")
   parser.add_argument("-d", "--depends", nargs=argparse.ZERO_OR_MORE)
   parser.add_argument("-e", "--externs", nargs=argparse.ZERO_OR_MORE)
   parser.add_argument("-o", "--out_file", help="A place to output results")
   parser.add_argument("-v", "--verbose", action="store_true",
                       help="Show more information as this script runs")
+  parser.add_argument("--strict", action="store_true",
+                      help="Enable strict type checking")
+  parser.add_argument("--success-stamp",
+                      help="Timestamp file to update upon success")
+
+  parser.set_defaults(single_file=True, strict=False)
   opts = parser.parse_args()
 
-  checker = Checker(verbose=opts.verbose)
-  for source in opts.sources:
-    depends, externs = build.inputs.resolve_recursive_dependencies(
-        source,
-        opts.depends,
-        opts.externs)
-    exit, _ = checker.check(source, depends=depends, externs=externs)
-    if exit != 0:
-      sys.exit(exit)
+  depends = opts.depends or []
+  externs = opts.externs or set()
 
-    if opts.out_file:
-      out_dir = os.path.dirname(opts.out_file)
-      if not os.path.exists(out_dir):
-        os.makedirs(out_dir)
-      # TODO(dbeam): write compiled file to |opts.out_file|.
-      open(opts.out_file, "w").write("")
+  checker = Checker(verbose=opts.verbose, strict=opts.strict)
+  if opts.single_file:
+    for source in opts.sources:
+      depends, externs = build.inputs.resolve_recursive_dependencies(
+          source,
+          depends,
+          externs)
+      has_errors, _ = checker.check(source, depends=depends, externs=externs)
+      if has_errors:
+        sys.exit(1)
+
+      if opts.out_file:
+        out_dir = os.path.dirname(opts.out_file)
+        if not os.path.exists(out_dir):
+          os.makedirs(out_dir)
+        # TODO(dbeam): write compiled file to |opts.out_file|.
+        open(opts.out_file, "w").write("")
+  else:
+    has_errors, errors = checker.check_multiple(opts.sources)
+    if has_errors:
+      print errors
+      sys.exit(1)
+
+  if opts.success_stamp:
+    with open(opts.success_stamp, 'w'):
+      os.utime(opts.success_stamp, None)

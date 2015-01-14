@@ -51,7 +51,7 @@ remoting.ButterBar.prototype.show_ =
   var messageElement = document.getElementById(remoting.ButterBar.kMessageId_);
   l10n.localizeElementFromTag(messageElement, messageId, substitutions, true);
   var acceptLink =
-      /** @type{Element} */ messageElement.getElementsByTagName('a')[0];
+      /** @type{Element} */ (messageElement.getElementsByTagName('a')[0]);
   acceptLink.addEventListener(
       'click', this.dismiss.bind(this, true), false);
 

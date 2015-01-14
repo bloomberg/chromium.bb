@@ -7,29 +7,54 @@
 /** @suppress {duplicate} */
 var remoting = remoting || {};
 
+/** @constructor */
+remoting.MessageWindowOptions = function() {
+  /** @type {string} */
+  this.title = '';
+
+  /** @type {string} */
+  this.message = '';
+
+  /** @type {string} */
+  this.buttonLabel = '';
+
+  /** @type {string} */
+  this.cancelButtonLabel = '';
+
+  /** @type {function(number):void} */
+  this.onResult = function() {};
+
+  /** @type {number} */
+  this.duration = 0;
+
+  /** @type {string} */
+  this.infobox = '';
+
+  /** @type {?function():void} */
+  this.onTimeout = function() {};
+};
+
 /**
  * Create a new message window.
  *
- * @param {Object} options Message window create options
+ * @param {remoting.MessageWindowOptions} options Message window create options
  * @constructor
  */
 remoting.MessageWindow = function(options) {
-  var title = /** @type {string} */ (options.title);
-  var message = /** @type {string} */ (options.message);
-  var okButtonLabel = /** @type {string} */ (options.buttonLabel);
-  var cancelButtonLabel = /** @type {string} */ (options.cancelButtonLabel);
-  var onResult = /** @type {function(number):void} */(options.onResult);
-  /** @type {number} */
+  var title = options.title;
+  var message = options.message;
+  var okButtonLabel = options.buttonLabel;
+  var cancelButtonLabel = options.cancelButtonLabel;
+  var onResult = options.onResult;
   var duration = 0;
-  if (/** @type {number?} */(options.duration)) {
-    duration = /** @type {number} */(options.duration);
+  if (options.duration) {
+    duration = options.duration;
   }
-  /** @type {string} */
   var infobox = '';
-  if (/** @type {string?} */(options.infobox)) {
-    infobox = /** @type {string} */(options.infobox);
+  if (options.infobox) {
+    infobox = options.infobox;
   }
-  var onTimeout = /** @type {?function():void} */ (options.onTimeout);
+  var onTimeout = options.onTimeout;
 
   /** @type {number} */
   this.id_ = remoting.MessageWindowManager.addMessageWindow(this);
@@ -183,13 +208,13 @@ remoting.MessageWindow.prototype.setWindow_ = function(window) {
  */
 remoting.MessageWindow.showConfirmWindow = function(
     title, message, okButtonLabel, cancelButtonLabel, onResult) {
-  var options = {
+  var options = /** @type {remoting.MessageWindowOptions} */ ({
     title: title,
     message: message,
     buttonLabel: okButtonLabel,
     cancelButtonLabel: cancelButtonLabel,
     onResult: onResult
-  };
+  });
   return new remoting.MessageWindow(options);
 };
 
@@ -205,12 +230,12 @@ remoting.MessageWindow.showConfirmWindow = function(
  */
 remoting.MessageWindow.showMessageWindow = function(
     title, message, buttonLabel, onResult) {
-  var options = {
+  var options = /** @type {remoting.MessageWindowOptions} */ ({
     title: title,
     message: message,
     buttonLabel: buttonLabel,
     onResult: onResult
-  };
+  });
   return new remoting.MessageWindow(options);
 };
 
@@ -223,12 +248,12 @@ remoting.MessageWindow.showMessageWindow = function(
  * @return {remoting.MessageWindow}
  */
 remoting.MessageWindow.showErrorMessage = function(title, message) {
-  var options = {
+  var options = /** @type {remoting.MessageWindowOptions} */ ({
     title: title,
     message: message,
     buttonLabel: chrome.i18n.getMessage(/**i18n-content*/'OK'),
     onResult: remoting.MessageWindow.quitApp
-  };
+  });
   return new remoting.MessageWindow(options);
 };
 
@@ -248,7 +273,7 @@ remoting.MessageWindow.showErrorMessage = function(title, message) {
  */
 remoting.MessageWindow.showTimedMessageWindow = function(
     title, message, infobox, buttonLabel, onResult, duration, onTimeout) {
-  var options = {
+  var options = /** @type {remoting.MessageWindowOptions} */ ({
     title: title,
     message: message,
     infobox: infobox,
@@ -256,7 +281,7 @@ remoting.MessageWindow.showTimedMessageWindow = function(
     onResult: onResult,
     duration: duration,
     onTimeout: onTimeout
-  };
+  });
   return new remoting.MessageWindow(options);
 };
 

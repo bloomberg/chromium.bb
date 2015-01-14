@@ -127,7 +127,7 @@ remoting.connectMe2MeHostVersionAcknowledged_ = function(host) {
 
         remoting.setMode(remoting.AppMode.CLIENT_CONNECTING);
         onPinFetched(pin);
-        if (/** @type {boolean} */(rememberPinCheckbox.checked)) {
+        if (rememberPinCheckbox.checked) {
           /** @type {boolean} */
           remoting.pairingRequested = true;
         }

@@ -57,26 +57,27 @@ remoting.HostTableEntry = function(
  */
 remoting.HostTableEntry.prototype.createDom = function() {
   // Create the top-level <div>
-  var tableRow = /** @type {HTMLElement} */ document.createElement('div');
+  var tableRow = /** @type {HTMLElement} */ (document.createElement('div'));
   tableRow.classList.add('section-row');
   // Create the host icon cell.
-  var hostIconDiv = /** @type {HTMLElement} */ document.createElement('div');
+  var hostIconDiv = /** @type {HTMLElement} */ (document.createElement('div'));
   hostIconDiv.classList.add('host-list-main-icon');
   var warningOverlay =
-      /** @type {HTMLElement} */ document.createElement('span');
+      /** @type {HTMLElement} */ (document.createElement('span'));
   hostIconDiv.appendChild(warningOverlay);
-  var hostIcon = /** @type {HTMLElement} */ document.createElement('img');
+  var hostIcon = /** @type {HTMLElement} */ (document.createElement('img'));
   hostIcon.src = 'icon_host.webp';
   hostIconDiv.appendChild(hostIcon);
   tableRow.appendChild(hostIconDiv);
   // Create the host name cell.
-  var hostNameCell = /** @type {HTMLElement} */ document.createElement('div');
+  var hostNameCell = /** @type {HTMLElement} */ (document.createElement('div'));
   hostNameCell.classList.add('box-spacer');
   hostNameCell.id = 'host_' + this.host.hostId;
   tableRow.appendChild(hostNameCell);
   // Create the host rename cell.
-  var editButton = /** @type {HTMLElement} */ document.createElement('span');
-  var editButtonImg = /** @type {HTMLElement} */ document.createElement('img');
+  var editButton = /** @type {HTMLElement} */ (document.createElement('span'));
+  var editButtonImg =
+      /** @type {HTMLElement} */ (document.createElement('img'));
   editButtonImg.title = chrome.i18n.getMessage(
       /*i18n-content*/'TOOLTIP_RENAME');
   editButtonImg.src = 'icon_pencil.webp';
@@ -87,9 +88,10 @@ remoting.HostTableEntry.prototype.createDom = function() {
   editButton.appendChild(editButtonImg);
   tableRow.appendChild(editButton);
   // Create the host delete cell.
-  var deleteButton = /** @type {HTMLElement} */ document.createElement('span');
+  var deleteButton =
+      /** @type {HTMLElement} */ (document.createElement('span'));
   var deleteButtonImg =
-      /** @type {HTMLElement} */ document.createElement('img');
+      /** @type {HTMLElement} */ (document.createElement('img'));
   deleteButtonImg.title =
       chrome.i18n.getMessage(/*i18n-content*/'TOOLTIP_DELETE');
   deleteButtonImg.src = 'icon_cross.webp';
@@ -211,7 +213,8 @@ remoting.HostTableEntry.prototype.updateStatus = function(opt_forEdit) {
  * @private
  */
 remoting.HostTableEntry.prototype.beginRename_ = function() {
-  var editBox = /** @type {HTMLInputElement} */ document.createElement('input');
+  var editBox =
+      /** @type {HTMLInputElement} */ (document.createElement('input'));
   editBox.type = 'text';
   editBox.value = this.host.hostName;
   this.hostNameCell_.innerText = '';
@@ -316,7 +319,7 @@ remoting.HostTableEntry.prototype.removeEditBox_ = function() {
  * @private
  */
 remoting.HostTableEntry.prototype.setHostName_ = function() {
-  var hostNameNode = /** @type {HTMLElement} */ document.createElement('a');
+  var hostNameNode = /** @type {HTMLElement} */ (document.createElement('a'));
   if (this.host.status == 'ONLINE') {
     if (remoting.Host.needsUpdate(this.host, this.webappMajorVersion_)) {
       hostNameNode.innerText = chrome.i18n.getMessage(

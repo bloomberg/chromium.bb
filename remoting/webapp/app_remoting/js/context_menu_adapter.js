@@ -50,7 +50,7 @@ remoting.ContextMenuAdapter.prototype.remove = function(id) {
 };
 
 /**
- * @param {function(OnClickData):void} listener
+ * @param {function(OnClickData=):void} listener
  */
 remoting.ContextMenuAdapter.prototype.addListener = function(listener) {
 };

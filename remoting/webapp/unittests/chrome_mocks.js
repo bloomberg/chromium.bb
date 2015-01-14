@@ -5,6 +5,8 @@
 // This file contains various mock objects for the chrome platform to make
 // unit testing easier.
 
+Entry = function() {};
+
 (function(scope){
 
 var chromeMocks = {};

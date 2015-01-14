@@ -156,7 +156,7 @@ remoting.OAuth2.prototype.setAccessToken_ = function(token, expiration) {
  *
  * @private
  * @return {{token: string, expiration: number}} The current access token, or
- * an invalid token if not authenticated.
+ *     an invalid token if not authenticated.
  */
 remoting.OAuth2.prototype.getAccessTokenInternal_ = function() {
   if (!window.localStorage.getItem(this.KEY_ACCESS_TOKEN_)) {
@@ -167,7 +167,7 @@ remoting.OAuth2.prototype.getAccessTokenInternal_ = function() {
   if (typeof accessToken == 'string') {
     var result = base.jsonParseSafe(accessToken);
     if (result && 'token' in result && 'expiration' in result) {
-      return /** @type {{token: string, expiration: number}} */ result;
+      return /** @type {{token: string, expiration: number}} */(result);
     }
   }
   console.log('Invalid access token stored.');

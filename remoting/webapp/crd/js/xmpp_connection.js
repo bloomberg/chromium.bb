@@ -286,7 +286,7 @@ remoting.XmppConnection.prototype.onRead_ = function(readInfo) {
         if (!responseMatches) {
           var formatted = "";
           for (var i = 0; i < this.fakeSslHandshakeResponse_.length; ++i) {
-            var x = /** @type {number} */ this.fakeSslHandshakeResponse_[i];
+            var x = /** @type {number} */ (this.fakeSslHandshakeResponse_[i]);
             formatted += " 0x" + x.toString(16);
           };
           console.error(

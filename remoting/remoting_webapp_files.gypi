@@ -14,7 +14,6 @@
     # These provide type information for jscompile.
     'remoting_webapp_js_proto_files': [
       'webapp/js_proto/chrome_proto.js',
-      'webapp/js_proto/console_proto.js',
       'webapp/js_proto/dom_proto.js',
       'webapp/js_proto/remoting_proto.js',
     ],
@@ -167,8 +166,8 @@
     ],
     # The unit test cases for the webapp
     'remoting_webapp_unittest_js_files': [
-      'webapp/js_proto/chrome_proto.js',
       'webapp/unittests/chrome_mocks.js',
+      'webapp/js_proto/chrome_proto.js',
       'webapp/unittests/base_unittest.js',
       'webapp/unittests/it2me_helpee_channel_unittest.js',
       'webapp/unittests/it2me_helper_channel_unittest.js',

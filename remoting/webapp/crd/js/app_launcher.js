@@ -78,7 +78,7 @@ remoting.V1AppLauncher.prototype.close = function(id) {
       if (!tab) {
         reject(new Error(chrome.runtime.lastError.message));
       } else {
-        chrome.tabs.remove(tab.id, resolve);
+        chrome.tabs.remove(tab.id, /** @type {function(*=):void} */ (resolve));
       }
     });
   });
@@ -111,7 +111,7 @@ remoting.V2AppLauncher.prototype.launch = function(opt_launchArgs) {
         'frame': 'none',
         'id': String(remoting.V2AppLauncher.nextWindowId_++)
       },
-      /** @param {AppWindow} appWindow */
+      /** @param {AppWindow=} appWindow */
       function(appWindow) {
         if (!appWindow) {
           reject(new Error(chrome.runtime.lastError.message));

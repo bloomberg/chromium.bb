@@ -43,16 +43,15 @@ remoting.HangoutSession.prototype.init = function() {
 };
 
 /**
- * @param {remoting.ClientSession.State} state
+ * @param {remoting.ClientSession.State=} state
  */
 remoting.HangoutSession.prototype.onSessionStateChanged_ = function(state) {
   var State = remoting.ClientSession.State;
   try {
     this.port_.postMessage({method: 'sessionStateChanged', state: state});
-  } catch (e) {
+  } catch (/** @type {Error} */ error) {
     // postMessage will throw an exception if the port is disconnected.
     // We can safely ignore this exception.
-    var error = /** @type {Error} */ e;
     console.error(error);
   } finally {
     if (state === State.FAILED || state === State.CLOSED) {

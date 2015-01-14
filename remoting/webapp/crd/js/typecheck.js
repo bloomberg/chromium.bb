@@ -137,7 +137,7 @@ function getStringAttr(dict, key, opt_default) {
  * @return {Object} The JSON object created from the |jsonString|.
  */
 function getJsonObjectFromString(jsonString) {
-  var value = /** @type {Object} */ JSON.parse(jsonString);
+  var value = base.jsonParseSafe(jsonString);
   if (typeof value != 'object') {
     throw 'Invalid data type (expected: Object, actual: ' + typeof value + ')';
   }

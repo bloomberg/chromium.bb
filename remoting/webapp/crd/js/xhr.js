@@ -188,7 +188,8 @@ remoting.xhr.doMethod = function(methodName, url, onDone,
   return xhr;
 };
 
-/** Generic success/failure response proxy.
+/**
+ * Generic success/failure response proxy.
  *
  * @param {function():void} onDone
  * @param {function(remoting.Error):void} onError
@@ -196,13 +197,14 @@ remoting.xhr.doMethod = function(methodName, url, onDone,
  */
 remoting.xhr.defaultResponse = function(onDone, onError) {
   /** @param {XMLHttpRequest} xhr */
-  return function(xhr) {
+  var result = function(xhr) {
     /** @type {remoting.Error} */
-    var error = remoting.Error.fromHttpError(xhr.status)
+    var error = remoting.Error.fromHttpError(/** @type {number} */ (xhr.status))
     if (error == remoting.Error.NONE) {
       onDone();
     } else {
       onError(error);
     }
   };
+  return result;
 };

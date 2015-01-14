@@ -65,7 +65,7 @@ remoting.ApplicationContextMenu.prototype.updateConnectionRTT =
                                  rttText));
 };
 
-/** @param {OnClickData} info */
+/** @param {OnClickData=} info */
 remoting.ApplicationContextMenu.prototype.onClicked_ = function(info) {
   switch (info.menuItemId) {
 

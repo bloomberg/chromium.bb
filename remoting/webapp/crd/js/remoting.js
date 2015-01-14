@@ -39,8 +39,8 @@ remoting.initGlobalObjects = function() {
   remoting.formatIq = new remoting.FormatIq();
 
   remoting.clipboard = new remoting.Clipboard();
-  var sandbox = /** @type {HTMLIFrameElement} */
-      document.getElementById('wcs-sandbox');
+  var sandbox =
+      /** @type {HTMLIFrameElement} */ (document.getElementById('wcs-sandbox'));
   remoting.wcsSandbox = new remoting.WcsSandboxContainer(sandbox.contentWindow);
 
   // The plugin's onFocus handler sends a paste command to |window|, because
@@ -126,11 +126,10 @@ remoting.signOut = function() {
 /**
  * Callback function called when the browser window gets a paste operation.
  *
- * @param {Event} eventUncast
+ * @param {Event} event
  * @return {void} Nothing.
  */
-function pluginGotPaste_(eventUncast) {
-  var event = /** @type {remoting.ClipboardEvent} */ eventUncast;
+function pluginGotPaste_(event) {
   if (event && event.clipboardData) {
     remoting.clipboard.toHost(event.clipboardData);
   }
@@ -139,11 +138,10 @@ function pluginGotPaste_(eventUncast) {
 /**
  * Callback function called when the browser window gets a copy operation.
  *
- * @param {Event} eventUncast
+ * @param {Event} event
  * @return {void} Nothing.
  */
-function pluginGotCopy_(eventUncast) {
-  var event = /** @type {remoting.ClipboardEvent} */ eventUncast;
+function pluginGotCopy_(event) {
   if (event && event.clipboardData) {
     if (remoting.clipboard.toOs(event.clipboardData)) {
       // The default action may overwrite items that we added to clipboardData.

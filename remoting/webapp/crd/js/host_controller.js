@@ -133,7 +133,7 @@ remoting.HostController.prototype.start = function(hostPin, consent, onDone,
     /** @type {Array.<string>} */
     var e = new Array();
     for (var i = 0; i < 8; i++) {
-      e[i] = (/** @type {number} */random[i] + 0x10000).
+      e[i] = (/** @type {number} */ (random[i]) + 0x10000).
           toString(16).substring(1);
     }
     return e[0] + e[1] + '-' + e[2] + '-' + e[3] + '-' +
@@ -169,9 +169,9 @@ remoting.HostController.prototype.start = function(hostPin, consent, onDone,
    * @param {string} hostName
    * @param {string} publicKey
    * @param {string} privateKey
-   * @param {string} xmppLogin
-   * @param {string} refreshToken
-   * @param {string} clientBaseJid
+   * @param {?string} xmppLogin
+   * @param {?string} refreshToken
+   * @param {?string} clientBaseJid
    * @param {string} hostSecretHash
    */
   function startHostWithHash(hostName, publicKey, privateKey, xmppLogin,
@@ -268,7 +268,7 @@ remoting.HostController.prototype.start = function(hostPin, consent, onDone,
    * @param {string} hostName
    * @param {string} privateKey
    * @param {string} publicKey
-   * @param {string} hostClientId
+   * @param {?string} hostClientId
    * @param {string} oauthToken
    */
   function doRegisterHost(
@@ -474,7 +474,7 @@ remoting.HostController.prototype.getLocalHostId = function(onDone) {
   function onConfig(config) {
     var hostId = null;
     if (isHostConfigValid_(config)) {
-      hostId = /** @type {string} */ config['host_id'];
+      hostId = /** @type {string} */ (config['host_id']);
     }
     onDone(hostId);
   };

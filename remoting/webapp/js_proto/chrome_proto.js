@@ -6,9 +6,6 @@
 // WebKit- and Chrome-specific properties and methods. It is used only with
 // JSCompiler to verify the type-correctness of our code.
 
-/** @type {Object} */
-var chrome = {};
-
 /** @constructor */
 chrome.Event = function() {};
 
@@ -33,7 +30,7 @@ chrome.app.window = {
   /**
    * @param {string} name
    * @param {Object} parameters
-   * @param {function()=} opt_callback
+   * @param {function(AppWindow)=} opt_callback
    */
   create: function(name, parameters, opt_callback) {},
   /**
@@ -225,7 +222,7 @@ chrome.contextMenus.remove = function(menuItemId, opt_callback) {};
 chrome.contextMenus.removeAll = function(opt_callback) {};
 
 /** @constructor */
-function OnClickData() {}
+function OnClickData() {};
 /** @type {string|number} */
 OnClickData.prototype.menuItemId;
 /** @type {string|number} */
@@ -258,11 +255,14 @@ chrome.fileSystem = {
    */
   chooseEntry: function(options, callback) {},
   /**
-   * @param {FileEntry} fileEntry
+   * @param {Entry} entry
    * @param {function(string):void} callback
    */
-  getDisplayPath: function(fileEntry, callback) {}
+  getDisplayPath: function(entry, callback) {}
 };
+
+/** @param {function(FileWriter):void} callback */
+Entry.prototype.createWriter = function(callback) {};
 
 /** @type {Object} */
 chrome.identity = {
@@ -319,7 +319,7 @@ chrome.tabs.get = function(id, callback) {};
 
 /**
  * @param {string} id
- * @param {function()=} opt_callback
+ * @param {function(*=):void=} opt_callback
  */
 chrome.tabs.remove = function(id, opt_callback) {};
 
@@ -416,22 +416,6 @@ function Bounds() {
   this.height = 0;
 };
 
-/** @constructor */
-function ClientRect() {
-  /** @type {number} */
-  this.width = 0;
-  /** @type {number} */
-  this.height = 0;
-  /** @type {number} */
-  this.top = 0;
-  /** @type {number} */
-  this.bottom = 0;
-  /** @type {number} */
-  this.left = 0;
-  /** @type {number} */
-  this.right = 0;
-};
-
 /** @type {Object} */
 chrome.cast = {};
 
@@ -507,7 +491,7 @@ chrome.cast.Session.prototype.addUpdateListener = function(listener) {};
 
 /**
  * @param {string} namespace
- * @param {function(chrome.cast.media.Media):void} listener
+ * @param {function(string, string):void} listener
  */
 chrome.cast.Session.prototype.addMessageListener =
     function(namespace, listener){};

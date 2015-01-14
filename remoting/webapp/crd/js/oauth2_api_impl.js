@@ -82,9 +82,8 @@ remoting.OAuth2ApiImpl.prototype.refreshAccessToken = function(
         // TODO(jamiewalch): Fix this once we're no longer using the trampoline.
         var tokens = JSON.parse(xhr.responseText);
         onDone(tokens['access_token'], tokens['expires_in']);
-      } catch (err) {
-        console.error('Invalid "token" response from server:',
-                      /** @type {*} */ (err));
+      } catch (/** @type {Error} */ err) {
+        console.error('Invalid "token" response from server:', err);
         onError(remoting.Error.UNEXPECTED);
       }
     } else {
@@ -130,9 +129,8 @@ remoting.OAuth2ApiImpl.prototype.exchangeCodeForTokens = function(
         var tokens = JSON.parse(xhr.responseText);
         onDone(tokens['refresh_token'],
                tokens['access_token'], tokens['expires_in']);
-      } catch (err) {
-        console.error('Invalid "token" response from server:',
-                      /** @type {*} */ (err));
+      } catch (/** @type {Error} */ err) {
+        console.error('Invalid "token" response from server:', err);
         onError(remoting.Error.UNEXPECTED);
       }
     } else {
@@ -169,9 +167,8 @@ remoting.OAuth2ApiImpl.prototype.getEmail = function(onDone, onError, token) {
       try {
         var result = JSON.parse(xhr.responseText);
         onDone(result['email']);
-      } catch (err) {
-        console.error('Invalid "userinfo" response from server:',
-                      /** @type {*} */ (err));
+      } catch (/** @type {Error} */ err) {
+        console.error('Invalid "userinfo" response from server:', err);
         onError(remoting.Error.UNEXPECTED);
       }
     } else {
@@ -203,9 +200,8 @@ remoting.OAuth2ApiImpl.prototype.getUserInfo =
       try {
         var result = JSON.parse(xhr.responseText);
         onDone(result['email'], result['name']);
-      } catch (err) {
-        console.error('Invalid "userinfo" response from server:',
-                      /** @type {*} */ (err));
+      } catch (/** @type {Error} */ err) {
+        console.error('Invalid "userinfo" response from server:', err);
         onError(remoting.Error.UNEXPECTED);
       }
     } else {

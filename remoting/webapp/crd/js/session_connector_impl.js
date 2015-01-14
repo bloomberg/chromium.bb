@@ -20,8 +20,8 @@ var remoting = remoting || {};
  * @param {function(string, string):boolean} onExtensionMessage The handler for
  *     protocol extension messages. Returns true if a message is recognized;
  *     false otherwise.
- * @param {function(string):void} onConnectionFailed Callback for when the
- *     connection fails.
+ * @param {function(remoting.Error):void} onConnectionFailed Callback for when
+ *     the connection fails.
  * @param {Array.<string>} requiredCapabilities Connector capabilities
  *     required by this application.
  * @param {string} defaultRemapKeys The default set of key mappings for the
@@ -59,7 +59,7 @@ remoting.SessionConnectorImpl = function(clientContainer, onConnected, onError,
   this.onExtensionMessage_ = onExtensionMessage;
 
   /**
-   * @type {function(string):void}
+   * @type {function(remoting.Error):void}
    * @private
    */
   this.onConnectionFailed_ = onConnectionFailed;
@@ -486,7 +486,7 @@ remoting.SessionConnectorImpl.prototype.onIT2MeHostInfo_ = function(xhr) {
   this.pendingXhr_ = null;
   if (xhr.status == 200) {
     var host = /** @type {{data: {jabberId: string, publicKey: string}}} */
-        base.jsonParseSafe(xhr.responseText);
+        (base.jsonParseSafe(xhr.responseText));
     if (host && host.data && host.data.jabberId && host.data.publicKey) {
       this.hostJid_ = host.data.jabberId;
       this.hostPublicKey_ = host.data.publicKey;
@@ -535,7 +535,7 @@ remoting.SessionConnectorImpl.prototype.createSession_ = function() {
  * events). Errors that occur while connecting either trigger a reconnect
  * or notify the onError handler.
  *
- * @param  {remoting.ClientSession.StateEvent} event
+ * @param {remoting.ClientSession.StateEvent=} event
  * @return {void} Nothing.
  * @private
  */
@@ -644,8 +644,8 @@ remoting.DefaultSessionConnectorFactory = function() {
  * @param {function(string, string):boolean} onExtensionMessage The handler for
  *     protocol extension messages. Returns true if a message is recognized;
  *     false otherwise.
- * @param {function(string):void} onConnectionFailed Callback for when the
- *     connection fails.
+ * @param {function(remoting.Error):void} onConnectionFailed Callback for when
+ *     the connection fails.
  * @param {Array.<string>} requiredCapabilities Connector capabilities
  *     required by this application.
  * @param {string} defaultRemapKeys The default set of key mappings to use

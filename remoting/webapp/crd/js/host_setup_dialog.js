@@ -143,7 +143,7 @@ remoting.HostSetupDialog = function(hostController) {
 
   this.usageStats_ = document.getElementById('usagestats-consent');
   this.usageStatsCheckbox_ = /** @type {HTMLInputElement} */
-      document.getElementById('usagestats-consent-checkbox');
+      (document.getElementById('usagestats-consent-checkbox'));
 };
 
 /**

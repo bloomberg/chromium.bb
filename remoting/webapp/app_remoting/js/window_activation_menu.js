@@ -66,7 +66,7 @@ remoting.WindowActivationMenu.prototype.makeMenuId_ = function(windowId) {
 /**
  * Handle a click on the application's context menu.
  *
- * @param {OnClickData} info
+ * @param {OnClickData=} info
  * @private
  */
 remoting.WindowActivationMenu.prototype.onContextMenu_ = function(info) {

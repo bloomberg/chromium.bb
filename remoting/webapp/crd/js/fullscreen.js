@@ -30,20 +30,21 @@ remoting.Fullscreen.prototype.isActive = function() { };
 
 /**
  * Toggle full-screen mode.
+ * @return {void}
  */
 remoting.Fullscreen.prototype.toggle = function() { };
 
 /**
  * Add a listener for the full-screen-changed event.
  *
- * @param {function(boolean):void} callback
+ * @param {function(boolean=):void} callback
  */
 remoting.Fullscreen.prototype.addListener = function(callback) { };
 
 /**
  * Remove a listener for the full-screen-changed event.
  *
- * @param {function(boolean):void} callback
+ * @param {function(boolean=):void} callback
  */
 remoting.Fullscreen.prototype.removeListener = function(callback) { };
 

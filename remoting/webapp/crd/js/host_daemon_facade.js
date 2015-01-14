@@ -91,26 +91,25 @@ remoting.HostDaemonFacade.prototype.initialize_ = function() {
  * @private
  */
 remoting.HostDaemonFacade.prototype.connectNative_ = function() {
-  return new Promise(
-    /**
-     * @param {function(*=):void} resolve
-     * @param {function(*=):void} reject
-     * @this {remoting.HostDaemonFacade}
-     */
-    function(resolve, reject) {
-      try {
-        this.port_ = chrome.runtime.connectNative(
-            'com.google.chrome.remote_desktop');
-        this.port_.onMessage.addListener(this.onIncomingMessageCallback_);
-        this.port_.onDisconnect.addListener(this.onDisconnectCallback_);
-        this.postMessageInternal_({type: 'hello'}, resolve, reject);
-      } catch (err) {
-        console.log('Native Messaging initialization failed: ',
-                    /** @type {*} */ (err));
-        reject();
-      }
-    }.bind(this)
-  );
+  /**
+   * @this {remoting.HostDaemonFacade}
+   * @param {function(?):void} resolve
+   * @param {function(*):void} reject
+   */
+  var connect = function(resolve, reject) {
+    try {
+      this.port_ = chrome.runtime.connectNative(
+          'com.google.chrome.remote_desktop');
+      this.port_.onMessage.addListener(this.onIncomingMessageCallback_);
+      this.port_.onDisconnect.addListener(this.onDisconnectCallback_);
+      this.postMessageInternal_({type: 'hello'}, resolve, reject);
+    } catch (/** @type {*} */ err) {
+      console.log('Native Messaging initialization failed: ', err);
+      reject(false);
+    }
+  };
+
+  return new Promise(connect.bind(this));
 };
 
 /**
@@ -213,9 +212,8 @@ remoting.HostDaemonFacade.prototype.onIncomingMessage_ = function(message) {
     }
 
     this.handleIncomingMessage_(message, reply.onDone);
-  } catch (e) {
-    console.error('Error while processing native message' +
-                  /** @type {*} */ (e));
+  } catch (/** @type {*} */ e) {
+    console.error('Error while processing native message' + e);
     reply.onError(remoting.Error.UNEXPECTED);
   }
 }
@@ -340,7 +338,8 @@ remoting.HostDaemonFacade.prototype.onDisconnect_ = function() {
   var pendingReplies = this.pendingReplies_;
   this.pendingReplies_ = {};
   for (var id in pendingReplies) {
-    pendingReplies[/** @type {number} */(id)].onError(this.error_);
+    var num_id = parseInt(id, 10);
+    pendingReplies[num_id].onError(this.error_);
   }
 }
 

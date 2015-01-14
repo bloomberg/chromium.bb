@@ -92,7 +92,7 @@ remoting.tryShareWithToken_ = function(hostFacade, token) {
   disableTimeoutCountdown_();
 
   remoting.hostSession = new remoting.HostSession();
-  var email = /** @type {string} */remoting.identity.getCachedEmail();
+  var email = /** @type {string} */ (remoting.identity.getCachedEmail());
   remoting.hostSession.connect(
       hostFacade, email, token, onHostStateChanged_,
       onNatTraversalPolicyChanged_, logDebugInfo_, it2meConnectFailed_);
@@ -223,10 +223,8 @@ remoting.cancelShare = function() {
   remoting.lastShareWasCancelled = true;
   try {
     remoting.hostSession.disconnect();
-  } catch (error) {
-    // Hack to force JSCompiler type-safety.
-    var errorTyped = /** @type {{description: string}} */ error;
-    console.error('Error disconnecting: ' + errorTyped.description +
+  } catch (/** @type {*} */ error) {
+    console.error('Error disconnecting: ' + error +
                   '. The host probably crashed.');
     // TODO(jamiewalch): Clean this up. We should have a class representing
     // the host plugin, like we do for the client, which should handle crash

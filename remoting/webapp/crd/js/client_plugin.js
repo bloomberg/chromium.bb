@@ -44,7 +44,7 @@ remoting.ClientPlugin.prototype.getDesktopYDpi = function() {};
 remoting.ClientPlugin.prototype.element = function() {};
 
 /**
- * @param {function():void} onDone Completion callback.
+ * @param {function(boolean):void} onDone Completion callback.
  */
 remoting.ClientPlugin.prototype.initialize = function(onDone) {};
 
@@ -223,8 +223,8 @@ remoting.ClientPlugin.prototype.setDesktopSizeUpdateHandler =
     function(handler) {};
 
 /**
- * @param {function():void} handler Callback for desktop shape change
- *     notifications.
+ * @param {function(Array.<Array.<number>>):void} handler Callback for desktop
+ *     shape change notifications.
  */
 remoting.ClientPlugin.prototype.setDesktopShapeUpdateHandler =
     function(handler) {};

@@ -61,13 +61,13 @@ remoting.DragAndDrop = function(element, dragUpdate,
   this.seenNonZeroDelta_ = false;
 
   /**
-   * @type {function():void}
+   * @type {function(Event):void}
    * @private
    */
   this.callOnMouseUp_ = this.onMouseUp_.bind(this);
 
   /**
-   * @type {function():void}
+   * @type {function(Event):void}
    * @private
    */
   this.callOnMouseMove_ = this.onMouseMove_.bind(this);

@@ -64,7 +64,7 @@ remoting.disconnect = function() {
  * Callback function called when the state of the client plugin changes. The
  * current and previous states are available via the |state| member variable.
  *
- * @param {remoting.ClientSession.StateEvent} state
+ * @param {remoting.ClientSession.StateEvent=} state
  */
 function onClientStateChange_(state) {
   switch (state.current) {

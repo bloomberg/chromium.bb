@@ -63,19 +63,20 @@ remoting.initHostlist_ = function() {
         remoting.connectMe2Me(hostId);
         return;
       } else if (urlParams['mode'] === 'hangout') {
-        /** @param {*} id */
-        getCurrentId().then(function(id) {
-          /** @type {string} */
-          var accessCode = urlParams['accessCode'];
-          var connector = remoting.app.getSessionConnector();
-          remoting.setMode(remoting.AppMode.CLIENT_CONNECTING);
-          connector.connectIT2Me(accessCode);
+        getCurrentId().then(
+            /** @param {*} id */
+            function(id) {
+              /** @type {string} */
+              var accessCode = urlParams['accessCode'];
+              var connector = remoting.app.getSessionConnector();
+              remoting.setMode(remoting.AppMode.CLIENT_CONNECTING);
+              connector.connectIT2Me(accessCode);
 
-          document.body.classList.add('hangout-remote-desktop');
-          var senderId = /** @type {string} */ String(id);
-          var hangoutSession = new remoting.HangoutSession(senderId);
-          hangoutSession.init();
-        });
+              document.body.classList.add('hangout-remote-desktop');
+              var senderId = /** @type {string} */ (String(id));
+              var hangoutSession = new remoting.HangoutSession(senderId);
+              hangoutSession.init();
+            });
         return;
       }
     }

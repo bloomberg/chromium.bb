@@ -53,8 +53,8 @@ remoting.GnubbyAuthHandler.prototype.callback_ =
       'connectionId': connectionId,
       'data': getArrayAttr(response, 'data')
     });
-  } catch (err) {
-    console.error('gnubby callback failed: ', /** @type {*} */ (err));
+  } catch (/** @type {*} */ err) {
+    console.error('gnubby callback failed: ', err);
     this.clientSession_.sendGnubbyAuthMessage({
       'type': 'error',
       'connectionId': connectionId

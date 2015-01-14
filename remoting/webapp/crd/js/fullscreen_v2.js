@@ -76,10 +76,16 @@ remoting.FullscreenAppsV2.prototype.isActive = function() {
   return chrome.app.window.current().isFullscreen();
 };
 
+/**
+ * @param {function(boolean=):void} callback
+ */
 remoting.FullscreenAppsV2.prototype.addListener = function(callback) {
   this.eventSource_.addEventListener(this.kEventName_, callback);
 };
 
+/**
+ * @param {function(boolean=):void} callback
+ */
 remoting.FullscreenAppsV2.prototype.removeListener = function(callback) {
   this.eventSource_.removeEventListener(this.kEventName_, callback);
 };

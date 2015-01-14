@@ -188,8 +188,7 @@ remoting.It2MeHelpeeChannel.prototype.onHangoutMessage_ = function(message) {
         return true;
     }
     throw new Error('Unsupported message method=' + message.method);
-  } catch(e) {
-    var error = /** @type {Error} */ e;
+  } catch(/** @type {Error} */ error) {
     this.sendErrorResponse_(message, error.message);
   }
   return false;
@@ -217,7 +216,7 @@ remoting.It2MeHelpeeChannel.prototype.handleIsHostInstalled_ =
 
   this.hostInstaller_.isInstalled().then(
     sendResponse,
-    this.sendErrorResponse_.bind(this, message)
+    /** @type {function(*):void} */(this.sendErrorResponse_.bind(this, message))
   );
 };
 
@@ -228,8 +227,8 @@ remoting.It2MeHelpeeChannel.prototype.handleIsHostInstalled_ =
 remoting.It2MeHelpeeChannel.prototype.handleDownloadHost_ = function(message) {
   try {
     this.hostInstaller_.download();
-  } catch (e) {
-    var error = /** @type {Error} */ e;
+  } catch (/** @type {*} */ e) {
+    var error = /** @type {Error} */ (e);
     this.sendErrorResponse_(message, error.message);
   }
 };
@@ -265,8 +264,8 @@ remoting.It2MeHelpeeChannel.prototype.handleConnect_ =
   ).then(
     this.fetchOAuthToken_.bind(this)
   ).then(
-    this.connectToHost_.bind(this, email),
-    this.sendErrorResponse_.bind(this, message)
+    /** @type {function(*):void} */(this.connectToHost_.bind(this, email)),
+    /** @type {function(*):void} */(this.sendErrorResponse_.bind(this, message))
   );
 };
 
@@ -335,7 +334,7 @@ remoting.It2MeHelpeeChannel.prototype.showConfirmDialogV2_ = function() {
     /** @param {number} result */
     function confirmDialogCallback(result) {
       if (result === 1) {
-        resolve();
+        resolve(true);
       } else {
         reject(new Error(remoting.Error.CANCELLED));
       }
@@ -366,9 +365,10 @@ remoting.It2MeHelpeeChannel.prototype.initializeHost_ = function() {
    */
   return new Promise(function(resolve, reject) {
     if (host.initialized()) {
-      resolve();
+      resolve(true);
     } else {
-      host.initialize(resolve, reject);
+      host.initialize(/** @type {function(*=):void} */ (resolve),
+                      /** @type {function(*=):void} */ (reject));
     }
   });
 };

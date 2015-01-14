@@ -88,13 +88,13 @@ remoting.updateModalUi = function(mode, attr) {
   // Hide elements first so that we don't end up trying to show two modal
   // dialogs at once (which would break keyboard-navigation confinement).
   for (var i = 0; i < elements.length; ++i) {
-    var element = /** @type {Element} */ elements[i];
+    var element = /** @type {Element} */ (elements[i]);
     if (!remoting.hasModeAttribute(element, attr, modes)) {
       element.hidden = true;
     }
   }
   for (var i = 0; i < elements.length; ++i) {
-    var element = /** @type {Element} */ elements[i];
+    var element = /** @type {Element} */ (elements[i]);
     if (remoting.hasModeAttribute(element, attr, modes)) {
       element.hidden = false;
       var autofocusNode = element.querySelector('[autofocus]');
@@ -162,26 +162,41 @@ remoting.getMajorMode = function() {
  * whether or not the user has already dismissed it.
  *
  * @param {string} mode
- * @param {!Object} items
+ * @param {Object<?,string>} items
  */
 remoting.showOrHideCallback = function(mode, items) {
   // Get the first element of a dictionary or array, without needing to know
   // the key.
+  var obj = /** @type {!Object} */(items);
   /** @type {string} */
-  var key = Object.keys(items)[0];
+  var key = Object.keys(obj)[0];
   var visited = !!items[key];
   document.getElementById(mode + '-first-run').hidden = visited;
   document.getElementById(mode + '-content').hidden = !visited;
 };
 
+/**
+ * @param {Object<?,string>} items
+ */
+remoting.showOrHideCallbackIT2Me = function(items) {
+  remoting.showOrHideCallback('it2me', items);
+}
+
+/**
+ * @param {Object<?,string>} items
+ */
+remoting.showOrHideCallbackMe2Me = function(items) {
+  remoting.showOrHideCallback('me2me', items);
+}
+
 remoting.showOrHideIT2MeUi = function() {
   chrome.storage.local.get(remoting.kIT2MeVisitedStorageKey,
-                           remoting.showOrHideCallback.bind(null, 'it2me'));
+                           remoting.showOrHideCallbackIT2Me);
 };
 
 remoting.showOrHideMe2MeUi = function() {
   chrome.storage.local.get(remoting.kMe2MeVisitedStorageKey,
-                           remoting.showOrHideCallback.bind(null, 'me2me'));
+                           remoting.showOrHideCallbackMe2Me);
 };
 
 remoting.showIT2MeUiAndSave = function() {
@@ -214,10 +229,10 @@ remoting.resetInfographics = function() {
 remoting.initModalDialogs = function() {
   var dialogs = document.querySelectorAll('.kd-modaldialog');
   var observer = new MutationObserver(confineOrRestoreFocus_);
-  var options = {
+  var options = /** @type {MutationObserverInit} */({
     subtree: false,
     attributes: true
-  };
+  });
   for (var i = 0; i < dialogs.length; ++i) {
     observer.observe(dialogs[i], options);
   }
@@ -230,9 +245,9 @@ remoting.initModalDialogs = function() {
 function confineOrRestoreFocus_(mutations) {
   // The list of mutations can include duplicates, so reduce it to a canonical
   // show/hide list.
-  /** @type {Array.<Element>} */
+  /** @type {Array.<Node>} */
   var shown = [];
-  /** @type {Array.<Element>} */
+  /** @type {Array.<Node>} */
   var hidden = [];
   for (var i = 0; i < mutations.length; ++i) {
     var mutation = mutations[i];
@@ -251,7 +266,7 @@ function confineOrRestoreFocus_(mutations) {
   if (hidden.length != 0) {
     var elements = document.querySelectorAll('[' + kSavedAttributeName + ']');
     for (var i = 0 ; i < elements.length; ++i) {
-      var element = /** @type {Element} */ elements[i];
+      var element = /** @type {Element} */ (elements[i]);
       element.tabIndex = element.getAttribute(kSavedAttributeName);
       element.removeAttribute(kSavedAttributeName);
     }
@@ -263,7 +278,7 @@ function confineOrRestoreFocus_(mutations) {
     var disable = document.querySelectorAll(selector);
     var except = shown[0].querySelectorAll(selector);
     for (var i = 0; i < disable.length; ++i) {
-      var element = /** @type {Element} */ disable[i];
+      var element = /** @type {Element} */ (disable[i]);
       var removeFromKeyboardNavigation = true;
       for (var j = 0; j < except.length; ++j) {  // No indexOf on NodeList
         if (element == except[j]) {

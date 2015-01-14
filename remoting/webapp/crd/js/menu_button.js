@@ -106,9 +106,9 @@ remoting.MenuButton.prototype.menu = function() {
  */
 remoting.MenuButton.select = function(item, selected) {
   if (selected) {
-    /** @type {DOMTokenList} */(item.classList).add('selected');
+    item.classList.add('selected');
   } else {
-    /** @type {DOMTokenList} */(item.classList).remove('selected');
+    item.classList.remove('selected');
   }
 };
 

@@ -93,9 +93,8 @@ remoting.HostSettings.loadInternal_ = function(hostId, callback) {
           return;
         }
       }
-    } catch (err) {
-      var typedErr = /** @type {*} */ (err);
-      console.error('Error loading host settings:', typedErr);
+    } catch (/** @type {*} */ err) {
+      console.error('Error loading host settings:', err);
     }
     callback({}, /** @type {Object} */ (result));
   };

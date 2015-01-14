@@ -79,8 +79,8 @@ remoting.It2MeService.prototype.onConnectExternal_ = function(port) {
       default:
         throw new Error('Unsupported port - ' + port.name);
     }
-  } catch (e) {
-    var error = /**@type {Error} */ e;
+  } catch (/** @type {*} */ e) {
+    var error = /**@type {Error} */ (e);
     console.error(error);
     port.disconnect();
   }
@@ -111,8 +111,8 @@ remoting.It2MeService.prototype.onWebappConnect_ = function(port) {
       }
     }
     throw new Error('No matching hangout connection found for ' + port.name);
-  } catch (e) {
-    var error = /** @type {Error} */ e;
+  } catch (/** @type {*} */ e) {
+    var error = /** @type {Error} */ (e);
     console.error(error);
     port.disconnect();
   }

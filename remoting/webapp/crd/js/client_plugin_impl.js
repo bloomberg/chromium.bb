@@ -16,6 +16,15 @@
 /** @suppress {duplicate} */
 var remoting = remoting || {};
 
+/** @constructor */
+remoting.ClientPluginMessage = function() {
+  /** @type {string} */
+  this.method = '';
+
+  /** @type {Object.<string,*>} */
+  this.data = {};
+};
+
 /**
  * @param {Element} container The container for the embed element.
  * @param {function(string, string):boolean} onExtensionMessage The handler for
@@ -164,7 +173,8 @@ remoting.ClientPluginImpl = function(container, onExtensionMessage,
   var that = this;
   /** @param {Event} event Message event from the plugin. */
   this.plugin_.addEventListener('message', function(event) {
-      that.handleMessage_(event.data);
+      that.handleMessage_(
+          /** @type {remoting.ClientPluginMessage} */ (event.data));
     }, false);
 
   if (remoting.settings.CLIENT_PLUGIN_TYPE == 'native') {
@@ -175,11 +185,11 @@ remoting.ClientPluginImpl = function(container, onExtensionMessage,
 /**
  * Creates plugin element without adding it to a container.
  *
- * @return {remoting.ViewerPlugin} Plugin element
+ * @return {HTMLEmbedElement} Plugin element
  */
 remoting.ClientPluginImpl.createPluginElement_ = function() {
-  var plugin = /** @type {remoting.ViewerPlugin} */
-      document.createElement('embed');
+  var plugin =
+      /** @type {HTMLEmbedElement} */ (document.createElement('embed'));
   if (remoting.settings.CLIENT_PLUGIN_TYPE == 'pnacl') {
     plugin.src = 'remoting_client_pnacl.nmf';
     plugin.type = 'application/x-pnacl';
@@ -190,8 +200,8 @@ remoting.ClientPluginImpl.createPluginElement_ = function() {
     plugin.src = 'about://none';
     plugin.type = 'application/vnd.chromium.remoting-viewer';
   }
-  plugin.width = 0;
-  plugin.height = 0;
+  plugin.width = '0';
+  plugin.height = '0';
   plugin.tabIndex = 0;  // Required, otherwise focus() doesn't work.
   return plugin;
 }
@@ -263,7 +273,7 @@ remoting.ClientPluginImpl.prototype.setDesktopSizeUpdateHandler =
 };
 
 /**
- * @param {function():void} handler
+ * @param {function(Array.<Array.<number>>):void} handler
  */
 remoting.ClientPluginImpl.prototype.setDesktopShapeUpdateHandler =
     function(handler) {
@@ -315,13 +325,13 @@ remoting.ClientPluginImpl.prototype.setFetchPinHandler = function(handler) {
 };
 
 /**
- * @param {string|{method:string, data:Object.<string,*>}}
+ * @param {string|remoting.ClientPluginMessage}
  *    rawMessage Message from the plugin.
  * @private
  */
 remoting.ClientPluginImpl.prototype.handleMessage_ = function(rawMessage) {
   var message =
-      /** @type {{method:string, data:Object.<string,*>}} */
+      /** @type {remoting.ClientPluginMessage} */
       ((typeof(rawMessage) == 'string') ? base.jsonParseSafe(rawMessage)
                                         : rawMessage);
   if (!message || !('method' in message) || !('data' in message)) {
@@ -331,13 +341,13 @@ remoting.ClientPluginImpl.prototype.handleMessage_ = function(rawMessage) {
 
   try {
     this.handleMessageMethod_(message);
-  } catch(e) {
-    console.error(/** @type {*} */ (e));
+  } catch(/** @type {*} */ e) {
+    console.error(e);
   }
 }
 
 /**
- * @param {{method:string, data:Object.<string,*>}}
+ * @param {remoting.ClientPluginMessage}
  *    message Parsed message from the plugin.
  * @private
  */
@@ -443,7 +453,7 @@ remoting.ClientPluginImpl.prototype.handleMessageMethod_ = function(message) {
     getNumberAttr(message.data, 'renderLatency');
     getNumberAttr(message.data, 'roundtripLatency');
     this.perfStats_ =
-        /** @type {remoting.ClientSession.PerfStats} */ message.data;
+        /** @type {remoting.ClientSession.PerfStats} */ (message.data);
 
   } else if (message.method == 'injectClipboardItem') {
     var mimetype = getStringAttr(message.data, 'mimeType');

@@ -114,7 +114,7 @@ remoting.Application.prototype.onVideoStreamingStarted = function() {
  * @return {boolean} Return true if the extension message was recognized.
  */
 remoting.Application.prototype.onExtensionMessage = function(type, data) {
-  var message = /** @type {Object} */base.jsonParseSafe(data);
+  var message = /** @type {Object} */ (base.jsonParseSafe(data));
   if (typeof message != 'object') {
     return false;
   }
