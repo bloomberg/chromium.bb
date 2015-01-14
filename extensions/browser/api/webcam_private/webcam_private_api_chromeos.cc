@@ -5,6 +5,7 @@
 #include "extensions/browser/api/webcam_private/webcam_private_api.h"
 
 #include <fcntl.h>
+#include <linux/uvcvideo.h>
 #include <linux/videodev2.h>
 #include <stdio.h>
 #include <sys/ioctl.h>
@@ -20,6 +21,15 @@
 
 #define V4L2_CID_PAN_SPEED (V4L2_CID_CAMERA_CLASS_BASE+32)
 #define V4L2_CID_TILT_SPEED (V4L2_CID_CAMERA_CLASS_BASE+33)
+#define V4L2_CID_PANTILT_CMD (V4L2_CID_CAMERA_CLASS_BASE+34)
+
+// GUID of the Extension Unit for Logitech CC3300e motor control:
+// {212de5ff-3080-2c4e-82d9-f587d00540bd}
+#define UVC_GUID_LOGITECH_CC3000E_MOTORS          \
+ {0x21, 0x2d, 0xe5, 0xff, 0x30, 0x80, 0x2c, 0x4e, \
+  0x82, 0xd9, 0xf5, 0x87, 0xd0, 0x05, 0x40, 0xbd}
+
+#define LOGITECH_MOTORCONTROL_PANTILT_CMD 2
 
 namespace webcam_private = extensions::core_api::webcam_private;
 
@@ -28,6 +38,24 @@ class BrowserContext;
 }  // namespace content
 
 namespace {
+const int kLogitechMenuIndexGoHome = 2;
+
+const uvc_menu_info kLogitechCmdMenu[] = {
+  {1, "Set Preset"}, {2, "Get Preset"}, {3, "Go Home"}
+};
+
+const uvc_xu_control_mapping kLogitechCmdMapping = {
+  V4L2_CID_PANTILT_CMD,
+  "Pan/Tilt Go",
+  UVC_GUID_LOGITECH_CC3000E_MOTORS,
+  LOGITECH_MOTORCONTROL_PANTILT_CMD,
+  8,
+  0,
+  V4L2_CTRL_TYPE_MENU,
+  UVC_CTRL_DATA_TYPE_ENUM,
+  const_cast<uvc_menu_info*>(&kLogitechCmdMenu[0]),
+  arraysize(kLogitechCmdMenu),
+};
 
 base::ScopedFD OpenWebcam(const std::string& extension_id,
                           content::BrowserContext* browser_context,
@@ -62,6 +90,12 @@ bool GetWebcamParameter(int fd, uint32_t control_id, int* value) {
 
   *value = v4l2_ctrl.value;
   return true;
+}
+
+bool EnsureLogitechCommandsMapped(int fd) {
+  int res = ioctl(fd, UVCIOC_CTRL_MAP, &kLogitechCmdMapping);
+  // If mapping is successful or it's already mapped, this is a Logitech camera.
+  return res >= 0 || errno == EEXIST;
 }
 
 const char kUnknownWebcam[] = "Unknown webcam id";
@@ -200,6 +234,13 @@ bool WebcamPrivateResetFunction::RunSync() {
   if (!fd.is_valid()) {
     SetError(kUnknownWebcam);
     return false;
+  }
+
+  if (params->config.pan || params->config.tilt) {
+    if (EnsureLogitechCommandsMapped(fd.get())) {
+      SetWebcamParameter(fd.get(), V4L2_CID_PANTILT_CMD,
+                         kLogitechMenuIndexGoHome);
+    }
   }
 
   if (params->config.pan) {
