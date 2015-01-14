@@ -75,10 +75,10 @@ class SSOAccessTokenFetcher : public OAuth2AccessTokenFetcher {
                              NSError* error);
 
  private:
-  base::WeakPtrFactory<SSOAccessTokenFetcher> weak_factory_;
   ios::ProfileOAuth2TokenServiceIOSProvider* provider_;  // weak
   std::string account_id_;
   bool request_was_cancelled_;
+  base::WeakPtrFactory<SSOAccessTokenFetcher> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SSOAccessTokenFetcher);
 };
@@ -88,10 +88,10 @@ SSOAccessTokenFetcher::SSOAccessTokenFetcher(
     ios::ProfileOAuth2TokenServiceIOSProvider* provider,
     const std::string account_id)
     : OAuth2AccessTokenFetcher(consumer),
-      weak_factory_(this),
       provider_(provider),
       account_id_(account_id),
-      request_was_cancelled_(false) {
+      request_was_cancelled_(false),
+      weak_factory_(this) {
   DCHECK(provider_);
 }
 
