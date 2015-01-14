@@ -47,7 +47,7 @@ std::string VideoCaptureFormat::PixelFormatToString(VideoPixelFormat format) {
   case PIXEL_FORMAT_YUY2:
     return "YUY2";
   case PIXEL_FORMAT_UYVY:
-    return "UYUY";
+    return "UYVY";
   case PIXEL_FORMAT_RGB24:
     return "RGB24";
   case PIXEL_FORMAT_ARGB:
