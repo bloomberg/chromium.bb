@@ -9,23 +9,14 @@
 #include "base/time/time.h"
 #include "third_party/WebKit/public/platform/Platform.h"
 #include "third_party/WebKit/public/platform/WebHTTPBody.h"
+#include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
-#include "third_party/WebKit/public/platform/WebURLError.h"
 #include "third_party/WebKit/public/platform/WebURLLoader.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebSecurityPolicy.h"
-
-using base::TimeDelta;
-using blink::WebFrame;
-using blink::WebHTTPBody;
-using blink::WebSecurityPolicy;
-using blink::WebURLError;
-using blink::WebURLLoader;
-using blink::WebURLRequest;
-using blink::WebURLResponse;
 
 namespace content {
 
@@ -54,7 +45,7 @@ void ResourceFetcherImpl::SetBody(const std::string& body) {
   DCHECK(!request_.isNull());
   DCHECK(!loader_);
 
-  WebHTTPBody web_http_body;
+  blink::WebHTTPBody web_http_body;
   web_http_body.initialize();
   web_http_body.appendData(blink::WebData(body));
   request_.setHTTPBody(web_http_body);
@@ -66,10 +57,11 @@ void ResourceFetcherImpl::SetHeader(const std::string& header,
   DCHECK(!loader_);
 
   if (LowerCaseEqualsASCII(header, "referer")) {
-    blink::WebString referrer = WebSecurityPolicy::generateReferrerHeader(
-        blink::WebReferrerPolicyDefault,
-        request_.url(),
-        blink::WebString::fromUTF8(value));
+    blink::WebString referrer =
+        blink::WebSecurityPolicy::generateReferrerHeader(
+            blink::WebReferrerPolicyDefault,
+            request_.url(),
+            blink::WebString::fromUTF8(value));
     request_.setHTTPReferrer(referrer, blink::WebReferrerPolicyDefault);
   } else {
     request_.setHTTPHeaderField(blink::WebString::fromUTF8(header),
@@ -77,11 +69,27 @@ void ResourceFetcherImpl::SetHeader(const std::string& header,
   }
 }
 
-void ResourceFetcherImpl::Start(WebFrame* frame,
-                                WebURLRequest::RequestContext request_context,
-                                WebURLRequest::FrameType frame_type,
-                                LoaderType loader_type,
-                                const Callback& callback) {
+void ResourceFetcherImpl::SetSkipServiceWorker(bool skip_service_worker) {
+  DCHECK(!request_.isNull());
+  DCHECK(!loader_);
+
+  request_.setSkipServiceWorker(skip_service_worker);
+}
+
+void ResourceFetcherImpl::SetLoaderOptions(
+    const blink::WebURLLoaderOptions& options) {
+  DCHECK(!request_.isNull());
+  DCHECK(!loader_);
+
+  options_ = options;
+}
+
+void ResourceFetcherImpl::Start(
+    blink::WebFrame* frame,
+    blink::WebURLRequest::RequestContext request_context,
+    blink::WebURLRequest::FrameType frame_type,
+    LoaderType loader_type,
+    const Callback& callback) {
   DCHECK(!loader_);
   DCHECK(!request_.isNull());
   DCHECK(callback_.is_null());
@@ -101,7 +109,7 @@ void ResourceFetcherImpl::Start(WebFrame* frame,
       loader_.reset(blink::Platform::current()->createURLLoader());
       break;
     case FRAME_ASSOCIATED_LOADER:
-      loader_.reset(frame->createAssociatedURLLoader());
+      loader_.reset(frame->createAssociatedURLLoader(options_));
       break;
   }
   loader_->loadAsynchronously(request_, this);
