@@ -641,6 +641,15 @@ or verify this branch is set up to track another (via the --track argument to
   def GitSanityChecks(self, upstream_git_obj):
     """Checks git repo status and ensures diff is from local commits."""
 
+    if upstream_git_obj is None:
+      if self.GetBranch() is None:
+        print >> sys.stderr, (
+            'ERROR: unable to dertermine current branch (detached HEAD?)')
+      else:
+        print >> sys.stderr, (
+            'ERROR: no upstream branch')
+      return False
+
     # Verify the commit we're diffing against is in our current branch.
     upstream_sha = RunGit(['rev-parse', '--verify', upstream_git_obj]).strip()
     common_ancestor = RunGit(['merge-base', upstream_sha, 'HEAD']).strip()

@@ -399,7 +399,7 @@ def get_or_create_merge_base(branch, parent=None):
   base = branch_config(branch, 'base')
   base_upstream = branch_config(branch, 'base-upstream')
   parent = parent or upstream(branch)
-  if not parent:
+  if parent is None or branch is None:
     return None
   actual_merge_base = run('merge-base', parent, branch)
 
