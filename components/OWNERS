@@ -68,9 +68,7 @@ per-file error_page*=ttuttle@chromium.org
 per-file favicon*=sky@chromium.org
 per-file favicon*=stevenjb@chromium.org
 # Temporary for the duration of the favicon componentization.
-per-file favicon*=blundell@chromium.org
-# Temporary for the duration of the favicon componentization.
-per-file favicon*=droger@chromium.org
+per-file favicon*=sdefresne@chromium.org
 
 per-file feedback.gypi=bsimonnet@chromium.org
 per-file feedback.gypi=zork@chromium.org
