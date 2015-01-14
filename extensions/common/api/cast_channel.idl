@@ -73,6 +73,10 @@ namespace cast.channel {
 
     // The authentication method required for the channel.
     ChannelAuthType auth;
+
+    // If set, CastDeviceCapability bitmask values describing capability of the
+    // cast device.
+    long? capabilities;
   };
 
   // Describes the state of a channel to a Cast receiver.

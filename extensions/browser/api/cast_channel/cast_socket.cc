@@ -89,7 +89,8 @@ CastSocketImpl::CastSocketImpl(const std::string& owner_extension_id,
                                ChannelAuthType channel_auth,
                                net::NetLog* net_log,
                                const base::TimeDelta& timeout,
-                               const scoped_refptr<Logger>& logger)
+                               const scoped_refptr<Logger>& logger,
+                               long device_capabilities)
     : CastSocket(owner_extension_id),
       auth_delegate_(this),
       owner_extension_id_(owner_extension_id),
@@ -101,6 +102,7 @@ CastSocketImpl::CastSocketImpl(const std::string& owner_extension_id,
       connect_timeout_(timeout),
       connect_timeout_timer_(new base::OneShotTimer<CastSocketImpl>),
       is_canceled_(false),
+      device_capabilities_(device_capabilities),
       connect_state_(proto::CONN_STATE_NONE),
       error_state_(CHANNEL_ERROR_NONE),
       ready_state_(READY_STATE_NONE) {
@@ -216,10 +218,24 @@ bool CastSocketImpl::ExtractPeerCert(std::string* cert) {
   return result;
 }
 
+bool CastSocketImpl::VerifyChannelPolicy(const AuthResult& result) {
+  if ((device_capabilities_ & CastDeviceCapability::VIDEO_OUT) != 0 &&
+      (result.channel_policies & AuthResult::POLICY_AUDIO_ONLY) != 0) {
+    LOG(ERROR) << "Audio only policy enforced";
+    logger_->LogSocketEventWithDetails(
+        channel_id_, proto::CHANNEL_POLICY_ENFORCED, std::string());
+    return false;
+  }
+  return true;
+}
+
 bool CastSocketImpl::VerifyChallengeReply() {
   AuthResult result = AuthenticateChallengeReply(*challenge_reply_, peer_cert_);
   if (result.success()) {
     VLOG(1) << result.error_message;
+    if (!VerifyChannelPolicy(result)) {
+      return false;
+    }
   }
   logger_->LogSocketChallengeReplyEvent(channel_id_, result);
   return result.success();

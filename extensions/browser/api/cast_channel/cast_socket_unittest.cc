@@ -13,6 +13,7 @@
 #include "base/sys_byteorder.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/timer/mock_timer.h"
+#include "extensions/browser/api/cast_channel/cast_auth_util.h"
 #include "extensions/browser/api/cast_channel/cast_framer.h"
 #include "extensions/browser/api/cast_channel/cast_message_util.h"
 #include "extensions/browser/api/cast_channel/cast_transport.h"
@@ -175,28 +176,34 @@ class CompleteHandler {
 
 class TestCastSocket : public CastSocketImpl {
  public:
-  static scoped_ptr<TestCastSocket> Create(Logger* logger) {
+  static scoped_ptr<TestCastSocket> Create(
+      Logger* logger,
+      long device_capabilities = cast_channel::CastDeviceCapability::NONE) {
     return scoped_ptr<TestCastSocket>(
         new TestCastSocket(CreateIPEndPointForTest(), CHANNEL_AUTH_TYPE_SSL,
-                           kDistantTimeoutMillis, logger));
+                           kDistantTimeoutMillis, logger, device_capabilities));
   }
 
-  static scoped_ptr<TestCastSocket> CreateSecure(Logger* logger) {
+  static scoped_ptr<TestCastSocket> CreateSecure(
+      Logger* logger,
+      long device_capabilities = cast_channel::CastDeviceCapability::NONE) {
     return scoped_ptr<TestCastSocket>(new TestCastSocket(
         CreateIPEndPointForTest(), CHANNEL_AUTH_TYPE_SSL_VERIFIED,
-        kDistantTimeoutMillis, logger));
+        kDistantTimeoutMillis, logger, device_capabilities));
   }
 
   explicit TestCastSocket(const net::IPEndPoint& ip_endpoint,
                           ChannelAuthType channel_auth,
                           int64 timeout_ms,
-                          Logger* logger)
+                          Logger* logger,
+                          long device_capabilities)
       : CastSocketImpl("some_extension_id",
                        ip_endpoint,
                        channel_auth,
                        &capturing_net_log_,
                        base::TimeDelta::FromMilliseconds(timeout_ms),
-                       logger),
+                       logger,
+                       device_capabilities),
         ip_(ip_endpoint),
         connect_index_(0),
         extract_cert_result_(true),
@@ -260,6 +267,17 @@ class TestCastSocket : public CastSocketImpl {
 
   void TriggerTimeout() {
     mock_timer_->Fire();
+  }
+
+  bool TestVerifyChannelPolicyNone() {
+    AuthResult authResult;
+    return VerifyChannelPolicy(authResult);
+  }
+
+  bool TestVerifyChannelPolicyAudioOnly() {
+    AuthResult authResult;
+    authResult.channel_policies |= AuthResult::POLICY_AUDIO_ONLY;
+    return VerifyChannelPolicy(authResult);
   }
 
   void DisallowVerifyChallengeResult() { verify_challenge_disallow_ = true; }
@@ -860,6 +878,22 @@ TEST_F(CastSocketTest, TestConnectEndToEndWithRealTransportSync) {
 
   EXPECT_EQ(cast_channel::READY_STATE_OPEN, socket_->ready_state());
   EXPECT_EQ(cast_channel::CHANNEL_ERROR_NONE, socket_->error_state());
+}
+
+// Tests channel policy verification for device with no capabilities.
+TEST_F(CastSocketTest, TestChannelPolicyVerificationCapabilitiesNone) {
+  socket_ =
+      TestCastSocket::Create(logger_, cast_channel::CastDeviceCapability::NONE);
+  EXPECT_TRUE(socket_->TestVerifyChannelPolicyNone());
+  EXPECT_TRUE(socket_->TestVerifyChannelPolicyAudioOnly());
+}
+
+// Tests channel policy verification for device with video out capability.
+TEST_F(CastSocketTest, TestChannelPolicyVerificationCapabilitiesVideoOut) {
+  socket_ = TestCastSocket::Create(
+      logger_, cast_channel::CastDeviceCapability::VIDEO_OUT);
+  EXPECT_TRUE(socket_->TestVerifyChannelPolicyNone());
+  EXPECT_FALSE(socket_->TestVerifyChannelPolicyAudioOnly());
 }
 }  // namespace cast_channel
 }  // namespace core_api

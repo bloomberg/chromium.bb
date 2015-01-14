@@ -17,6 +17,9 @@ namespace {
 
 const char* const kParseErrorPrefix = "Failed to parse auth message: ";
 
+const unsigned char kAudioOnlyPolicy[] =
+    {0x06, 0x0A, 0x2B, 0x06, 0x01, 0x04, 0x01, 0xD6, 0x79, 0x02, 0x05, 0x02};
+
 // Extracts an embedded DeviceAuthMessage payload from an auth challenge reply
 // message.
 AuthResult ParseAuthMessage(const CastMessage& challenge_reply,
@@ -54,7 +57,8 @@ AuthResult ParseAuthMessage(const CastMessage& challenge_reply,
 
 }  // namespace
 
-AuthResult::AuthResult() : error_type(ERROR_NONE), nss_error_code(0) {
+AuthResult::AuthResult()
+    : error_type(ERROR_NONE), nss_error_code(0), channel_policies(POLICY_NONE) {
 }
 
 AuthResult::~AuthResult() {
@@ -101,7 +105,12 @@ AuthResult AuthenticateChallengeReply(const CastMessage& challenge_reply,
     return result;
   }
 
-  return AuthResult();
+  if (response.client_auth_certificate().find(reinterpret_cast<const char*>(
+          kAudioOnlyPolicy)) != std::string::npos) {
+    result.channel_policies |= AuthResult::POLICY_AUDIO_ONLY;
+  }
+
+  return result;
 }
 
 }  // namespace cast_channel

@@ -37,6 +37,7 @@ namespace OnError = cast_channel::OnError;
 namespace OnMessage = cast_channel::OnMessage;
 namespace Open = cast_channel::Open;
 namespace Send = cast_channel::Send;
+using cast_channel::CastDeviceCapability;
 using cast_channel::CastMessage;
 using cast_channel::CastSocket;
 using cast_channel::ChannelAuthType;
@@ -347,7 +348,9 @@ void CastChannelOpenFunction::AsyncWorkStart() {
         base::TimeDelta::FromMilliseconds(connect_info_->timeout.get()
                                               ? *connect_info_->timeout
                                               : kDefaultConnectTimeoutMillis),
-        api_->GetLogger());
+        api_->GetLogger(),
+        connect_info_->capabilities ? *connect_info_->capabilities
+                                    : CastDeviceCapability::NONE);
   }
   new_channel_id_ = AddSocket(socket);
   scoped_ptr<CastMessageHandler> delegate(new CastMessageHandler(api_, socket));

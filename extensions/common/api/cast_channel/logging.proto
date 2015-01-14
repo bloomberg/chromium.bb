@@ -36,6 +36,7 @@ enum EventType {
   NOTIFY_ON_ERROR = 24;
   SOCKET_CLOSED = 25;
   SSL_CERT_EXCESSIVE_LIFETIME = 26;
+  CHANNEL_POLICY_ENFORCED = 27;
 }
 
 enum ChannelAuth {

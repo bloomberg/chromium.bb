@@ -33,6 +33,8 @@ struct AuthResult {
     ERROR_UNEXPECTED_AUTH_LIBRARY_RESULT
   };
 
+  enum PolicyType { POLICY_NONE = 0, POLICY_AUDIO_ONLY = 1 << 0 };
+
   // Constructs a AuthResult that corresponds to success.
   AuthResult();
   ~AuthResult();
@@ -48,6 +50,7 @@ struct AuthResult {
   std::string error_message;
   ErrorType error_type;
   int nss_error_code;
+  unsigned int channel_policies;
 
  private:
   AuthResult(const std::string& error_message,
