@@ -48,6 +48,9 @@ IdlDefinitions
         IdlOperation < TypedObject
             IdlArgument < TypedObject
         IdlStringifier
+        IdlIterable < IdlIterableOrMaplikeOrSetlike
+        IdlMaplike < IdlIterableOrMaplikeOrSetlike
+        IdlSetlike < IdlIterableOrMaplikeOrSetlike
     IdlException < IdlInterface
         (same contents as IdlInterface)
 
@@ -652,49 +655,61 @@ class IdlStringifier(object):
 # Iterable, Maplike, Setlike
 ################################################################################
 
-class IdlIterable(object):
+class IdlIterableOrMaplikeOrSetlike(object):
     def __init__(self, idl_name, node):
-        children = node.GetChildren()
+        self.extended_attributes = {}
+        self.type_children = []
 
-        # FIXME: Support extended attributes.
+        for child in node.GetChildren():
+            child_class = child.GetClass()
+            if child_class == 'ExtAttributes':
+                self.extended_attributes = ext_attributes_node_to_extended_attributes(idl_name, child)
+            elif child_class == 'Type':
+                self.type_children.append(child)
+            else:
+                raise ValueError('Unrecognized node class: %s' % child_class)
 
-        if len(children) == 1:
+
+class IdlIterable(IdlIterableOrMaplikeOrSetlike):
+    def __init__(self, idl_name, node):
+        super(IdlIterable, self).__init__(idl_name, node)
+
+        if len(self.type_children) == 1:
             self.key_type = None
-            self.value_type = type_node_to_type(children[0])
-        elif len(children) == 2:
-            self.key_type = type_node_to_type(children[0])
-            self.value_type = type_node_to_type(children[1])
+            self.value_type = type_node_to_type(self.type_children[0])
+        elif len(self.type_children) == 2:
+            self.key_type = type_node_to_type(self.type_children[0])
+            self.value_type = type_node_to_type(self.type_children[1])
         else:
-            raise ValueError('Unexpected number of children: %d' % len(children))
+            raise ValueError('Unexpected number of type children: %d' % len(self.type_children))
+        del self.type_children
 
 
-class IdlMaplike(object):
+class IdlMaplike(IdlIterableOrMaplikeOrSetlike):
     def __init__(self, idl_name, node):
+        super(IdlMaplike, self).__init__(idl_name, node)
+
         self.is_read_only = bool(node.GetProperty('READONLY'))
 
-        children = node.GetChildren()
-
-        # FIXME: Support extended attributes.
-
-        if len(children) == 2:
-            self.key_type = type_node_to_type(children[0])
-            self.value_type = type_node_to_type(children[1])
+        if len(self.type_children) == 2:
+            self.key_type = type_node_to_type(self.type_children[0])
+            self.value_type = type_node_to_type(self.type_children[1])
         else:
-            raise ValueError('Unexpected number of children: %d' % len(children))
+            raise ValueError('Unexpected number of children: %d' % len(self.type_children))
+        del self.type_children
 
 
-class IdlSetlike(object):
+class IdlSetlike(IdlIterableOrMaplikeOrSetlike):
     def __init__(self, idl_name, node):
+        super(IdlSetlike, self).__init__(idl_name, node)
+
         self.is_read_only = bool(node.GetProperty('READONLY'))
 
-        children = node.GetChildren()
-
-        # FIXME: Support extended attributes.
-
-        if len(children) == 1:
-            self.value_type = type_node_to_type(children[0])
+        if len(self.type_children) == 1:
+            self.value_type = type_node_to_type(self.type_children[0])
         else:
-            raise ValueError('Unexpected number of children: %d' % len(children))
+            raise ValueError('Unexpected number of children: %d' % len(self.type_children))
+        del self.type_children
 
 
 ################################################################################

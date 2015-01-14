@@ -342,11 +342,30 @@ def interface_context(interface):
         and (interface.iterable or interface.maplike or interface.setlike
              or 'Iterable' in extended_attributes)):
 
+        used_extended_attributes = {}
+
+        if interface.iterable:
+            used_extended_attributes.update(interface.iterable.extended_attributes)
+        elif interface.maplike:
+            used_extended_attributes.update(interface.maplike.extended_attributes)
+        elif interface.setlike:
+            used_extended_attributes.update(interface.setlike.extended_attributes)
+
+        if 'RaisesException' in used_extended_attributes:
+            raise ValueError('[RaisesException] is implied for iterable<>/maplike<>/setlike<>')
+        if 'CallWith' in used_extended_attributes:
+            raise ValueError('[CallWith=ScriptState] is implied for iterable<>/maplike<>/setlike<>')
+
+        used_extended_attributes.update({
+            'RaisesException': None,
+            'CallWith': 'ScriptState',
+        })
+
         def generated_iterator_method(name):
             return generated_method(
                 return_type=IdlType('Iterator'),
                 name=name,
-                extended_attributes={'RaisesException': None, 'CallWith': 'ScriptState'})
+                extended_attributes=used_extended_attributes)
 
         iterator_method = generated_iterator_method('iterator')
 

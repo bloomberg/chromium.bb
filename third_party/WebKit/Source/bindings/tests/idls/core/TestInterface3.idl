@@ -45,5 +45,5 @@
     [Custom] setter Node (DOMString name, Node value);
     [Custom] deleter boolean (DOMString name);
 
-    iterable<any>;
+    [RuntimeEnabled=FeatureName] iterable<any>;
 };

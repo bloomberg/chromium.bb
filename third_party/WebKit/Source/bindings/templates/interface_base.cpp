@@ -379,8 +379,14 @@ static void install{{v8_class}}Template(v8::Local<v8::FunctionTemplate> function
     functionTemplate->{{set_on_template}}()->SetHandler(v8::NamedPropertyHandlerConfiguration({{named_property_getter_callback}}, {{named_property_setter_callback}}, {{named_property_query_callback}}, {{named_property_deleter_callback}}, {{named_property_enumerator_callback}}));
     {% endif %}
     {% if iterator_method %}
+    {% filter per_context_enabled(iterator_method.per_context_enabled_function) %}
+    {% filter exposed(iterator_method.exposed_test) %}
+    {% filter runtime_enabled(iterator_method.runtime_enabled_function) %}
     static const V8DOMConfiguration::SymbolKeyedMethodConfiguration symbolKeyedIteratorConfiguration = { v8::Symbol::GetIterator, {{cpp_class_or_partial}}V8Internal::iteratorMethodCallback, 0, V8DOMConfiguration::ExposedToAllScripts };
     V8DOMConfiguration::installMethod(prototypeTemplate, defaultSignature, v8::DontDelete, symbolKeyedIteratorConfiguration, isolate);
+    {% endfilter %}{# runtime_enabled() #}
+    {% endfilter %}{# exposed() #}
+    {% endfilter %}{# per_context_enabled() #}
     {% endif %}
     {# End special operations #}
     {% if has_custom_legacy_call_as_function %}

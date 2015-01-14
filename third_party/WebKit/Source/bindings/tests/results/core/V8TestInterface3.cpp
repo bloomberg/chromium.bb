@@ -170,12 +170,6 @@ static void namedPropertyEnumeratorCallback(const v8::PropertyCallbackInfo<v8::A
 
 } // namespace TestInterface3V8Internal
 
-static const V8DOMConfiguration::MethodConfiguration V8TestInterface3Methods[] = {
-    {"keys", TestInterface3V8Internal::keysMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
-    {"values", TestInterface3V8Internal::valuesMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
-    {"entries", TestInterface3V8Internal::entriesMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
-};
-
 static void installV8TestInterface3Template(v8::Local<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate)
 {
     functionTemplate->ReadOnlyPrototype();
@@ -184,15 +178,35 @@ static void installV8TestInterface3Template(v8::Local<v8::FunctionTemplate> func
     defaultSignature = V8DOMConfiguration::installDOMClassTemplate(isolate, functionTemplate, "TestInterface3", v8::Local<v8::FunctionTemplate>(), V8TestInterface3::internalFieldCount,
         0, 0,
         0, 0,
-        V8TestInterface3Methods, WTF_ARRAY_LENGTH(V8TestInterface3Methods));
+        0, 0);
     v8::Local<v8::ObjectTemplate> instanceTemplate = functionTemplate->InstanceTemplate();
     ALLOW_UNUSED_LOCAL(instanceTemplate);
     v8::Local<v8::ObjectTemplate> prototypeTemplate = functionTemplate->PrototypeTemplate();
     ALLOW_UNUSED_LOCAL(prototypeTemplate);
     functionTemplate->InstanceTemplate()->SetHandler(v8::IndexedPropertyHandlerConfiguration(TestInterface3V8Internal::indexedPropertyGetterCallback, TestInterface3V8Internal::indexedPropertySetterCallback, 0, TestInterface3V8Internal::indexedPropertyDeleterCallback, indexedPropertyEnumerator<TestInterface3>));
     functionTemplate->InstanceTemplate()->SetHandler(v8::NamedPropertyHandlerConfiguration(TestInterface3V8Internal::namedPropertyGetterCallback, TestInterface3V8Internal::namedPropertySetterCallback, TestInterface3V8Internal::namedPropertyQueryCallback, TestInterface3V8Internal::namedPropertyDeleterCallback, TestInterface3V8Internal::namedPropertyEnumeratorCallback));
-    static const V8DOMConfiguration::SymbolKeyedMethodConfiguration symbolKeyedIteratorConfiguration = { v8::Symbol::GetIterator, TestInterface3V8Internal::iteratorMethodCallback, 0, V8DOMConfiguration::ExposedToAllScripts };
-    V8DOMConfiguration::installMethod(prototypeTemplate, defaultSignature, v8::DontDelete, symbolKeyedIteratorConfiguration, isolate);
+    if (RuntimeEnabledFeatures::featureNameEnabled()) {
+        static const V8DOMConfiguration::SymbolKeyedMethodConfiguration symbolKeyedIteratorConfiguration = { v8::Symbol::GetIterator, TestInterface3V8Internal::iteratorMethodCallback, 0, V8DOMConfiguration::ExposedToAllScripts };
+        V8DOMConfiguration::installMethod(prototypeTemplate, defaultSignature, v8::DontDelete, symbolKeyedIteratorConfiguration, isolate);
+    }
+    if (RuntimeEnabledFeatures::featureNameEnabled()) {
+        const V8DOMConfiguration::MethodConfiguration keysMethodConfiguration = {
+            "keys", TestInterface3V8Internal::keysMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts,
+        };
+        V8DOMConfiguration::installMethod(prototypeTemplate, defaultSignature, v8::None, keysMethodConfiguration, isolate);
+    }
+    if (RuntimeEnabledFeatures::featureNameEnabled()) {
+        const V8DOMConfiguration::MethodConfiguration valuesMethodConfiguration = {
+            "values", TestInterface3V8Internal::valuesMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts,
+        };
+        V8DOMConfiguration::installMethod(prototypeTemplate, defaultSignature, v8::None, valuesMethodConfiguration, isolate);
+    }
+    if (RuntimeEnabledFeatures::featureNameEnabled()) {
+        const V8DOMConfiguration::MethodConfiguration entriesMethodConfiguration = {
+            "entries", TestInterface3V8Internal::entriesMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts,
+        };
+        V8DOMConfiguration::installMethod(prototypeTemplate, defaultSignature, v8::None, entriesMethodConfiguration, isolate);
+    }
 
     // Custom toString template
     functionTemplate->Set(v8AtomicString(isolate, "toString"), V8PerIsolateData::from(isolate)->toStringTemplate());
