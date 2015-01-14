@@ -102,6 +102,9 @@ html, body, div, a {
 Running test: testInvalidSelectorText
 Expected protocol error: SyntaxError Selector text is not valid.
 
+Running test: testEmptySelector
+Expected protocol error: SyntaxError Selector text is not valid.
+
 Running test: testSelectorTextWithUnclosedComment
 Expected protocol error: SyntaxError Selector text is not valid.
 

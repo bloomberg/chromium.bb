@@ -1230,7 +1230,7 @@ bool InspectorStyleSheet::verifySelectorText(const String& selectorText)
     DEFINE_STATIC_LOCAL(String, bogusPropertyName, ("-webkit-boguz-propertee"));
     RuleSourceDataList sourceData;
     RefPtrWillBeRawPtr<StyleSheetContents> styleSheetContents = StyleSheetContents::create(strictCSSParserContext());
-    String text = selectorText + " div { " + bogusPropertyName + ": none; }";
+    String text = selectorText + " { " + bogusPropertyName + ": none; }";
     StyleSheetHandler handler(text, ownerDocument(), styleSheetContents.get(), &sourceData);
     CSSParser::parseSheet(parserContextForDocument(ownerDocument()), styleSheetContents.get(), text, TextPosition::minimumPosition(), &handler);
 

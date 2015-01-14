@@ -104,6 +104,14 @@ function test()
             }, next);
         },
 
+        function testEmptySelector(next)
+        {
+            verifyProtocolError({
+                range: firstSelectorRange,
+                selector: ""
+            }, next);
+        },
+
         function testSelectorTextWithUnclosedComment(next)
         {
             verifyProtocolError({
