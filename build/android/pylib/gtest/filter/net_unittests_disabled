@@ -45,3 +45,7 @@ HttpCache.TypicalGET_ConditionalRequest
 # These are death tests and thus also disabled.
 PrioritizedDispatcherTest.CancelNull
 PrioritizedDispatcherTest.CancelMissing
+
+# http://crbug.com/447837
+Spdy/SpdyNetworkTransactionTest.HTTP11RequiredRetry/4
+Spdy/SpdyNetworkTransactionTest.HTTP11RequiredRetry/7
