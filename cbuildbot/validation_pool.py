@@ -2389,11 +2389,11 @@ class ValidationPool(object):
           msg.append('One of the following changes is probably at fault: %s'
                      % other_suspects_str)
 
-        will_retry_automatically = not pre_cq_trybot
+        will_retry_automatically = True
 
     if will_retry_automatically:
-      msg.insert(
-          0, 'NOTE: The Commit Queue will retry your change automatically.')
+      bot = 'The Pre-Commit Queue' if pre_cq_trybot else 'The Commit Queue'
+      msg.insert(0, 'NOTE: %s will retry your change automatically.' % bot)
 
     return will_retry_automatically, '\n\n'.join(msg)
 
