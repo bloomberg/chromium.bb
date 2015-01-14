@@ -972,7 +972,23 @@ void VaapiVideoEncodeAccelerator::GeneratePackedSPS() {
       packed_sps_.AppendBool(current_sps_.low_delay_hrd_flag);
 
     packed_sps_.AppendBool(false);  // pic_struct_present_flag
-    packed_sps_.AppendBool(false);  // bitstream_restriction_flag
+    packed_sps_.AppendBool(true);  // bitstream_restriction_flag
+
+    packed_sps_.AppendBool(false);  // motion_vectors_over_pic_boundaries_flag
+    packed_sps_.AppendUE(2);  // max_bytes_per_pic_denom
+    packed_sps_.AppendUE(1);  // max_bits_per_mb_denom
+    packed_sps_.AppendUE(16);  // log2_max_mv_length_horizontal
+    packed_sps_.AppendUE(16);  // log2_max_mv_length_vertical
+
+    // Explicitly set max_num_reorder_frames to 0 to allow the decoder to
+    // output pictures early.
+    packed_sps_.AppendUE(0);  // max_num_reorder_frames
+
+    // The value of max_dec_frame_buffering shall be greater than or equal to
+    // max_num_ref_frames.
+    const unsigned int max_dec_frame_buffering =
+        current_sps_.max_num_ref_frames;
+    packed_sps_.AppendUE(max_dec_frame_buffering);
   }
 
   packed_sps_.FinishNALU();
