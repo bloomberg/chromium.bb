@@ -694,7 +694,7 @@ class ValidationFailureOrTimeout(MoxBase):
         triage_lib.CalculateSuspects, 'FindSuspects',
         return_value=self._patches)
     self.PatchObject(validation_pool.ValidationPool, 'SendNotification')
-    self.PatchObject(validation_pool.ValidationPool, 'RemoveReady')
+    self.remove = self.PatchObject(gerrit.GerritHelper, 'RemoveReady')
     self.PatchObject(gerrit, 'GetGerritPatchInfoWithPatchQueries',
                      lambda x: x)
     self.PatchObject(triage_lib.CalculateSuspects, 'OnlyLabFailures',
@@ -702,39 +702,52 @@ class ValidationFailureOrTimeout(MoxBase):
     self.PatchObject(triage_lib.CalculateSuspects, 'OnlyInfraFailures',
                      return_value=False)
     self.StartPatcher(parallel_unittest.ParallelMock())
+    self._AssertActions(self._patches, [])
+
+  def _AssertActions(self, changes, actions):
+    """Assert that each change in |changes| has |actions|."""
+    for change in changes:
+      action_history = self.fake_db.GetActionsForChanges([change])
+      self.assertEqual([x.action for x in action_history], actions)
 
   def testPatchesWereRejectedByFailure(self):
     """Tests that all patches are rejected by failure."""
     self._pool.HandleValidationFailure([self._BUILD_MESSAGE])
-    self.assertEqual(len(self._patches), self._pool.RemoveReady.call_count)
+    self.assertEqual(len(self._patches), self.remove.call_count)
+    self._AssertActions(self._patches, [constants.CL_ACTION_KICKED_OUT])
 
   def testPatchesWereRejectedByTimeout(self):
     self._pool.HandleValidationTimeout()
-    self.assertEqual(len(self._patches), self._pool.RemoveReady.call_count)
+    self.assertEqual(len(self._patches), self.remove.call_count)
+    self._AssertActions(self._patches, [constants.CL_ACTION_KICKED_OUT])
 
   def testOnlyChromitePatchesWereRejectedByTimeout(self):
     self._patches[-1].project = 'chromiumos/tacos'
     self._pool.HandleValidationTimeout()
-    self.assertEqual(len(self._patches), self._pool.SendNotification.call_count)
-    self.assertEqual(len(self._patches) - 1, self._pool.RemoveReady.call_count)
+    self.assertEqual(len(self._patches) - 1, self.remove.call_count)
+    self._AssertActions(self._patches[:-1], [constants.CL_ACTION_KICKED_OUT])
+    self._AssertActions(self._patches[-1:], [constants.CL_ACTION_FORGIVEN])
 
   def testNoSuspectsWithFailure(self):
     """Tests no change is blamed when there is no suspect."""
     self.PatchObject(triage_lib.CalculateSuspects, 'FindSuspects',
                      return_value=[])
     self._pool.HandleValidationFailure([self._BUILD_MESSAGE])
-    self.assertEqual(0, self._pool.RemoveReady.call_count)
+    self.assertEqual(0, self.remove.call_count)
+    self._AssertActions(self._patches, [constants.CL_ACTION_FORGIVEN])
 
   def testPreCQ(self):
     for change in self._patches:
       self._pool.UpdateCLPreCQStatus(change, constants.CL_STATUS_PASSED)
     self._pool.pre_cq_trybot = True
     self._pool.HandleValidationFailure([self._BUILD_MESSAGE])
-    self.assertEqual(0, self._pool.RemoveReady.call_count)
+    self.assertEqual(0, self.remove.call_count)
+    self._AssertActions(self._patches, [constants.CL_ACTION_PRE_CQ_PASSED])
 
   def testPatchesWereNotRejectedByInsaneFailure(self):
     self._pool.HandleValidationFailure([self._BUILD_MESSAGE], sanity=False)
-    self.assertEqual(0, self._pool.RemoveReady.call_count)
+    self.assertEqual(0, self.remove.call_count)
+    self._AssertActions(self._patches, [constants.CL_ACTION_FORGIVEN])
 
 
 class TestCoreLogic(MoxBase):

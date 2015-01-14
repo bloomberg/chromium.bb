@@ -1979,6 +1979,15 @@ class ValidationPool(object):
           self._InsertCLActionToDatabase(
               change, constants.CL_ACTION_PRE_CQ_FAILED)
 
+  def MarkForgiven(self, change, reason=None):
+    """Mark |change| as forgiven with |reason|.
+
+    Args:
+      change: A GerritPatch or GerritPatchTuple object.
+      reason: Optional reason field for the CLAction that will be inserted.
+    """
+    self._InsertCLActionToDatabase(change, constants.CL_ACTION_FORGIVEN, reason)
+
   def _InsertCLActionToDatabase(self, change, action, reason=None):
     """If cidb is set up and not None, insert given cl action to cidb.
 
@@ -2238,6 +2247,7 @@ class ValidationPool(object):
                'issues, so your change will not be blamed for the failure.'
                % base_msg)
         self.SendNotification(change, msg)
+        self.MarkForgiven(change)
 
   def SendNotification(self, change, msg, **kwargs):
     if not kwargs.get('build_log'):
@@ -2409,7 +2419,9 @@ class ValidationPool(object):
         self.pre_cq_trybot, change, suspects, messages,
         sanity, infra_fail, lab_fail, no_stat)
     self.SendNotification(change, '%(details)s', details=msg)
-    if not retry:
+    if retry:
+      self.MarkForgiven(change)
+    else:
       self.RemoveReady(change)
 
   def HandleValidationFailure(self, messages, changes=None, sanity=True,
