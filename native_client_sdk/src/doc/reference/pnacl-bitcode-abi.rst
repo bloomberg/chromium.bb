@@ -169,8 +169,8 @@ Memory Model for Concurrent Operations
 `LLVM LangRef: Memory Model for Concurrent Operations
 <http://llvm.org/releases/3.3/docs/LangRef.html#memmodel>`_
 
-See the `PNaCl Developer's Guide <PNaClDeveloperGuide.html>`_ for more
-details.
+See the :doc:`PNaCl C/C++ Language Support <pnacl-c-cpp-language-support>`
+for details.
 
 Fast-Math Flags
 ---------------

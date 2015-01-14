@@ -485,7 +485,7 @@ Visual Studio.
 
 NaCl64 executables (.nexe files) are compiled using one of the Native Client
 toolchains in the SDK, which create an `ELF-formatted
-<`http://en.wikipedia.org/wiki/Executable_and_Linkable_Format>`_ executable. To
+<http://en.wikipedia.org/wiki/Executable_and_Linkable_Format>`_ executable. To
 debug a running .nexe you must use nacl-gdb, which is a command line debugger
 that is not directly integrated with Visual Studio. When you start a debugging
 session running from a NaCl64 platform, Visual Studio automatically launches

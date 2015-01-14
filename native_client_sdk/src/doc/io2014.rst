@@ -203,4 +203,4 @@ Thanks for checking out our environment.
 Things are rapidly changing and in the coming months you can expect to see
 further improvements and filling out of our platform and library support.
 
-Follow the status of the NaCl Dev Environment at `this page <naclenv>`_.
+Follow the status of the NaCl Dev Environment at :doc:`this page <nacldev>`.

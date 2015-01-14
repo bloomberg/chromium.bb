@@ -50,8 +50,8 @@ Memory Model for Concurrent Operations
 
 The memory model offered by PNaCl relies on the same coding guidelines
 as the C11/C++11 one: concurrent accesses must always occur through
-atomic primitives (offered by `atomic intrinsics
-<PNaClLangRef.html#atomicintrinsics>`_), and these accesses must always
+atomic primitives (offered by :ref:`atomic intrinsics 
+<bitcode_atomicintrinsics>`), and these accesses must always
 occur with the same size for the same memory location. Visibility of
 stores is provided on a happens-before basis that relates memory
 locations to each other as the C11/C++11 standards do.

@@ -54,11 +54,6 @@ Recent talks and demos
      - ---
      - `Native Client Update and Showcase
        <https://www.youtube.com/watch?v=g3aBfkFbPWk>`_
-   * - 2011/05/11
-     - `Google I/O 2011
-       <https://www.google.com/events/io/2011/index-live.html>`_
-     - `Beyond JavaScript: Programming the Web with Native Client
-       <https://www.google.com/events/io/2011/sessions/beyond-javascript-programming-the-web-with-native-client.html>`_
    * - 2010/11/04
      - `2010 LLVM Developers' Meeting
        <http://llvm.org/devmtg/2010-11/>`_

@@ -64,7 +64,7 @@ with other NaCl toolchains.</p>
 <h3 id="memory-model-for-concurrent-operations">Memory Model for Concurrent Operations</h3>
 <p>The memory model offered by PNaCl relies on the same coding guidelines
 as the C11/C++11 one: concurrent accesses must always occur through
-atomic primitives (offered by <a class="reference external" href="PNaClLangRef.html#atomicintrinsics">atomic intrinsics</a>), and these accesses must always
+atomic primitives (offered by <a class="reference internal" href="/native-client/reference/pnacl-bitcode-abi.html#bitcode-atomicintrinsics"><em>atomic intrinsics</em></a>), and these accesses must always
 occur with the same size for the same memory location. Visibility of
 stores is provided on a happens-before basis that relates memory
 locations to each other as the C11/C++11 standards do.</p>
