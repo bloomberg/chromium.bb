@@ -45,7 +45,7 @@ class RenderingTest : public testing::Test,
 
   // WindowHooks overrides.
   void WillOnDraw() override {}
-  void DidOnDraw() override {}
+  void DidOnDraw(bool success) override {}
   void WillSyncOnRT(SharedRendererState* functor) override {}
   void DidSyncOnRT(SharedRendererState* functor) override {}
   void WillProcessOnRT(SharedRendererState* functor) override {}

@@ -52,6 +52,8 @@ FakeWindow::FakeWindow(BrowserViewRenderer* view,
   CheckCurrentlyOnUIThread();
   DCHECK(view_);
   view_->OnAttachedToWindow(location_.width(), location_.height());
+  view_->SetWindowVisibility(true);
+  view_->SetViewVisibility(true);
 }
 
 FakeWindow::~FakeWindow() {
@@ -117,7 +119,9 @@ void FakeWindow::OnDrawHardware() {
   DCHECK(on_draw_hardware_pending_);
   on_draw_hardware_pending_ = false;
 
+  hooks_->WillOnDraw();
   bool success = view_->OnDrawHardware();
+  hooks_->DidOnDraw(success);
   if (success) {
     CreateRenderThreadIfNeeded();
 

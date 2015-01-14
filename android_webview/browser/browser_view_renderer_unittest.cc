@@ -23,4 +23,40 @@ class SmokeTest : public RenderingTest {
 
 RENDERING_TEST_F(SmokeTest);
 
+class ClearViewTest : public RenderingTest {
+ public:
+  ClearViewTest() : on_draw_count_(0u) {}
+
+  void StartTest() override {
+    browser_view_renderer_->SetContinuousInvalidate(true);
+    browser_view_renderer_->ClearView();
+  }
+
+  void WillOnDraw() override {
+    on_draw_count_++;
+    if (on_draw_count_ == 2u) {
+      browser_view_renderer_->SetContinuousInvalidate(false);
+    }
+  }
+
+  void DidOnDraw(bool success) override {
+    if (on_draw_count_ == 1u) {
+      // First OnDraw should be skipped due to ClearView.
+      EXPECT_FALSE(success);
+      browser_view_renderer_->DidUpdateContent();  // Unset ClearView.
+    } else {
+      // Following OnDraws should succeed.
+      EXPECT_TRUE(success);
+    }
+  }
+
+  void DidDrawOnRT(SharedRendererState* functor) override {
+    EndTest();
+  }
+ private:
+  size_t on_draw_count_;
+};
+
+RENDERING_TEST_F(ClearViewTest);
+
 }  // namespace android_webview

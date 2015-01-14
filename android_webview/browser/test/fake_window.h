@@ -29,7 +29,7 @@ class WindowHooks {
   virtual ~WindowHooks() {}
 
   virtual void WillOnDraw() = 0;
-  virtual void DidOnDraw() = 0;
+  virtual void DidOnDraw(bool success) = 0;
 
   virtual void WillSyncOnRT(SharedRendererState* functor) = 0;
   virtual void DidSyncOnRT(SharedRendererState* functor) = 0;

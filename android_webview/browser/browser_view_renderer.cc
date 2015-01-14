@@ -143,12 +143,26 @@ void BrowserViewRenderer::PrepareToDraw(const gfx::Vector2d& scroll,
   last_on_draw_global_visible_rect_ = global_visible_rect;
 }
 
-bool BrowserViewRenderer::OnDrawHardware() {
-  TRACE_EVENT0("android_webview", "BrowserViewRenderer::OnDrawHardware");
-  shared_renderer_state_.InitializeHardwareDrawIfNeededOnUI();
+bool BrowserViewRenderer::CanOnDraw() {
   if (!compositor_) {
     TRACE_EVENT_INSTANT0("android_webview", "EarlyOut_NoCompositor",
                          TRACE_EVENT_SCOPE_THREAD);
+    return false;
+  }
+  if (clear_view_) {
+    TRACE_EVENT_INSTANT0("android_webview", "EarlyOut_ClearView",
+                         TRACE_EVENT_SCOPE_THREAD);
+    return false;
+  }
+
+  return true;
+}
+
+bool BrowserViewRenderer::OnDrawHardware() {
+  TRACE_EVENT0("android_webview", "BrowserViewRenderer::OnDrawHardware");
+  shared_renderer_state_.InitializeHardwareDrawIfNeededOnUI();
+
+  if (!CanOnDraw()) {
     return false;
   }
 
@@ -270,13 +284,7 @@ void BrowserViewRenderer::InvalidateOnFunctorDestroy() {
 }
 
 bool BrowserViewRenderer::OnDrawSoftware(SkCanvas* canvas) {
-  if (!compositor_) {
-    TRACE_EVENT_INSTANT0(
-        "android_webview", "EarlyOut_NoCompositor", TRACE_EVENT_SCOPE_THREAD);
-    return false;
-  }
-
-  return CompositeSW(canvas);
+  return CanOnDraw() && CompositeSW(canvas);
 }
 
 skia::RefPtr<SkPicture> BrowserViewRenderer::CapturePicture(int width,

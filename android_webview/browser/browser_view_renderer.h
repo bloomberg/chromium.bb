@@ -105,6 +105,7 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient {
 
  private:
   void SetTotalRootLayerScrollOffset(gfx::Vector2dF new_value_dip);
+  bool CanOnDraw();
   // Checks the continuous invalidate and block invalidate state, and schedule
   // invalidates appropriately. If |force_invalidate| is true, then send a view
   // invalidate regardless of compositor expectation. If |skip_reschedule_tick|
