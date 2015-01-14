@@ -285,9 +285,6 @@ deps = {
   'src/third_party/cld_2/src':
     Var('chromium_git') + '/external/cld2.git' + '@' + '14d9ef8d4766326f8aa7de54402d1b9c782d4481', # from svn revision 193
 
-  'src/chrome/browser/resources/pdf/html_office':
-    Var('chromium_git') + '/chromium/html-office-public.git' + '@' + 'eeff97614f65e0578529490d44d412032c3d7359',
-
   'src/third_party/pdfium':
    'https://pdfium.googlesource.com/pdfium.git' + '@' +  Var('pdfium_revision'),
 
