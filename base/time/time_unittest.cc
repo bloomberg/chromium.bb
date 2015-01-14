@@ -6,6 +6,7 @@
 
 #include <time.h>
 
+#include <limits>
 #include <string>
 
 #include "base/compiler_specific.h"
@@ -642,12 +643,10 @@ TEST(TimeTicks, Deltas) {
 }
 
 static void HighResClockTest(TimeTicks (*GetTicks)()) {
-#if defined(OS_WIN)
   // HighResNow doesn't work on some systems.  Since the product still works
   // even if it doesn't work, it makes this entire test questionable.
-  if (!TimeTicks::IsHighResClockWorking())
+  if (!TimeTicks::IsHighResolution())
     return;
-#endif
 
   // Why do we loop here?
   // We're trying to measure that intervals increment in a VERY small amount
@@ -790,6 +789,26 @@ std::string AnyToString(Any any) {
   std::ostringstream oss;
   oss << any;
   return oss.str();
+}
+
+TEST(TimeDelta, Magnitude) {
+  const int64 zero = 0;
+  EXPECT_EQ(TimeDelta::FromMicroseconds(zero),
+            TimeDelta::FromMicroseconds(zero).magnitude());
+
+  const int64 one = 1;
+  const int64 negative_one = -1;
+  EXPECT_EQ(TimeDelta::FromMicroseconds(one),
+            TimeDelta::FromMicroseconds(one).magnitude());
+  EXPECT_EQ(TimeDelta::FromMicroseconds(one),
+            TimeDelta::FromMicroseconds(negative_one).magnitude());
+
+  const int64 max_int64_minus_one = std::numeric_limits<int64>::max() - 1;
+  const int64 min_int64_plus_two = std::numeric_limits<int64>::min() + 2;
+  EXPECT_EQ(TimeDelta::FromMicroseconds(max_int64_minus_one),
+            TimeDelta::FromMicroseconds(max_int64_minus_one).magnitude());
+  EXPECT_EQ(TimeDelta::FromMicroseconds(max_int64_minus_one),
+            TimeDelta::FromMicroseconds(min_int64_plus_two).magnitude());
 }
 
 TEST(TimeDeltaLogging, DCheckEqCompiles) {

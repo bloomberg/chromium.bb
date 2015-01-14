@@ -6,6 +6,10 @@
 #include <mmsystem.h>
 #include <process.h>
 
+#include <cmath>
+#include <limits>
+#include <vector>
+
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -114,7 +118,7 @@ TEST(TimeTicks, WinRollover) {
 TEST(TimeTicks, SubMillisecondTimers) {
   // HighResNow doesn't work on some systems.  Since the product still works
   // even if it doesn't work, it makes this entire test questionable.
-  if (!TimeTicks::IsHighResClockWorking())
+  if (!TimeTicks::IsHighResolution())
     return;
 
   const int kRetries = 1000;
@@ -183,7 +187,7 @@ TEST(TimeTicks, TimerPerformance) {
   TestCase cases[] = {
     { reinterpret_cast<TestFunc>(Time::Now), "Time::Now" },
     { TimeTicks::Now, "TimeTicks::Now" },
-    { TimeTicks::HighResNow, "TimeTicks::HighResNow" },
+    { TimeTicks::NowFromSystemTraceTime, "TimeTicks::NowFromSystemTraceTime" },
     { NULL, "" }
   };
 
@@ -207,65 +211,57 @@ TEST(TimeTicks, TimerPerformance) {
   }
 }
 
-// http://crbug.com/396384
-TEST(TimeTicks, DISABLED_Drift) {
-  // If QPC is disabled, this isn't measuring anything.
-  if (!TimeTicks::IsHighResClockWorking())
-    return;
-
-  const int kIterations = 100;
-  int64 total_drift = 0;
-
-  for (int i = 0; i < kIterations; ++i) {
-    int64 drift_microseconds = TimeTicks::GetQPCDriftMicroseconds();
-
-    // Make sure the drift never exceeds our limit.
-    EXPECT_LT(drift_microseconds, 50000);
-
-    // Sleep for a few milliseconds (note that it means 1000 microseconds).
-    // If we check the drift too frequently, it's going to increase
-    // monotonically, making our measurement less realistic.
-    base::PlatformThread::Sleep(
-        base::TimeDelta::FromMilliseconds((i % 2 == 0) ? 1 : 2));
-
-    total_drift += drift_microseconds;
-  }
-
-  // Sanity check. We expect some time drift to occur, especially across
-  // the number of iterations we do.
-  EXPECT_LT(0, total_drift);
-
-  printf("average time drift in microseconds: %lld\n",
-         total_drift / kIterations);
-}
-
-int64 QPCValueToMicrosecondsSafely(LONGLONG qpc_value,
-                                   int64 ticks_per_second) {
-  int64 whole_seconds = qpc_value / ticks_per_second;
-  int64 leftover_ticks = qpc_value % ticks_per_second;
-  int64 microseconds = (whole_seconds * Time::kMicrosecondsPerSecond) +
-                       ((leftover_ticks * Time::kMicrosecondsPerSecond) /
-                        ticks_per_second);
-  return microseconds;
-}
-
 TEST(TimeTicks, FromQPCValue) {
-  if (!TimeTicks::IsHighResClockWorking())
+  if (!TimeTicks::IsHighResolution())
     return;
+
   LARGE_INTEGER frequency;
-  QueryPerformanceFrequency(&frequency);
-  int64 ticks_per_second = frequency.QuadPart;
-  LONGLONG qpc_value = Time::kQPCOverflowThreshold;
-  TimeTicks expected_value = TimeTicks::FromInternalValue(
-    QPCValueToMicrosecondsSafely(qpc_value + 1, ticks_per_second));
-  EXPECT_EQ(expected_value,
-            TimeTicks::FromQPCValue(qpc_value + 1));
-  expected_value = TimeTicks::FromInternalValue(
-    QPCValueToMicrosecondsSafely(qpc_value, ticks_per_second));
-  EXPECT_EQ(expected_value,
-            TimeTicks::FromQPCValue(qpc_value));
-  expected_value = TimeTicks::FromInternalValue(
-    QPCValueToMicrosecondsSafely(qpc_value - 1, ticks_per_second));
-  EXPECT_EQ(expected_value,
-            TimeTicks::FromQPCValue(qpc_value - 1));
+  ASSERT_TRUE(QueryPerformanceFrequency(&frequency));
+  const int64 ticks_per_second = frequency.QuadPart;
+  ASSERT_GT(ticks_per_second, 0);
+
+  // Generate the tick values to convert, advancing the tick count by varying
+  // amounts.  These values will ensure that both the fast and overflow-safe
+  // conversion logic in FromQPCValue() is tested, and across the entire range
+  // of possible QPC tick values.
+  std::vector<int64> test_cases;
+  test_cases.push_back(0);
+  const int kNumAdvancements = 100;
+  int64 ticks = 0;
+  int64 ticks_increment = 10;
+  for (int i = 0; i < kNumAdvancements; ++i) {
+    test_cases.push_back(ticks);
+    ticks += ticks_increment;
+    ticks_increment = ticks_increment * 6 / 5;
+  }
+  test_cases.push_back(Time::kQPCOverflowThreshold - 1);
+  test_cases.push_back(Time::kQPCOverflowThreshold);
+  test_cases.push_back(Time::kQPCOverflowThreshold + 1);
+  ticks = Time::kQPCOverflowThreshold + 10;
+  ticks_increment = 10;
+  for (int i = 0; i < kNumAdvancements; ++i) {
+    test_cases.push_back(ticks);
+    ticks += ticks_increment;
+    ticks_increment = ticks_increment * 6 / 5;
+  }
+  test_cases.push_back(std::numeric_limits<int64>::max());
+
+  // Test that the conversions using FromQPCValue() match those computed here
+  // using simple floating-point arithmetic.  The floating-point math provides
+  // enough precision to confirm the implementation is correct to the
+  // microsecond for all |test_cases| (though it would be insufficient to
+  // confirm many "very large" tick values which are not being tested here).
+  for (int64 ticks : test_cases) {
+    const double expected_microseconds_since_origin =
+        (static_cast<double>(ticks) * Time::kMicrosecondsPerSecond) /
+            ticks_per_second;
+    const TimeTicks converted_value = TimeTicks::FromQPCValue(ticks);
+    const double converted_microseconds_since_origin =
+        static_cast<double>((converted_value - TimeTicks()).InMicroseconds());
+    EXPECT_NEAR(expected_microseconds_since_origin,
+                converted_microseconds_since_origin,
+                1.0)
+        << "ticks=" << ticks << ", to be converted via logic path: "
+        << (ticks < Time::kQPCOverflowThreshold ? "FAST" : "SAFE");
+  }
 }

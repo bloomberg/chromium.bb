@@ -15,8 +15,6 @@ namespace gfx {
 class FrameTime {
  public:
   static base::TimeTicks Now() {
-    if (TimestampsAreHighRes())
-      return base::TimeTicks::HighResNow();
     return base::TimeTicks::Now();
   }
 
@@ -29,8 +27,10 @@ class FrameTime {
 
   static bool TimestampsAreHighRes() {
 #if defined(OS_WIN)
-    return base::TimeTicks::IsHighResClockWorking();
+    return base::TimeTicks::IsHighResolution();
 #else
+    // TODO(miu): Mac/Linux always provide high-resolution timestamps.  Consider
+    // returning base::TimeTicks::IsHighResolution() for all platforms.
     return false;
 #endif
   }
