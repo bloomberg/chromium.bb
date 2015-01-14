@@ -80,6 +80,14 @@ private:
         return *static_cast<InlinedGlobalMarkingVisitor*>(helper);
     }
 
+#if ENABLE(ASSERT)
+    inline void checkMarkingAllowed() { m_visitor->checkMarkingAllowed(); }
+    inline void setAllowMarkingForHashTableWeakProcessing(bool allow)
+    {
+        m_visitor->setAllowMarkingForHashTableWeakProcessing(allow);
+    }
+#endif
+
     Visitor* m_visitor;
 };
 

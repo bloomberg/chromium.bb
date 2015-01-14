@@ -344,6 +344,7 @@ public:
             return;
 #if ENABLE(ASSERT)
         TraceTrait<T>::checkGCInfo(t);
+        Derived::fromHelper(this)->checkMarkingAllowed();
 #endif
         TraceTrait<T>::mark(Derived::fromHelper(this), t);
 
@@ -632,6 +633,10 @@ public:
 
     inline bool isGlobalMarkingVisitor() const { return m_isGlobalMarkingVisitor; }
 
+#if ENABLE(ASSERT)
+    virtual void setAllowMarkingForHashTableWeakProcessing(bool) { }
+#endif
+
 protected:
     explicit Visitor(VisitorType type)
         : m_isGlobalMarkingVisitor(type == GlobalMarkingVisitorType)
@@ -648,6 +653,10 @@ protected:
 
     void* m_hostObject;
     String m_hostName;
+#endif
+
+#if ENABLE(ASSERT)
+    virtual void checkMarkingAllowed() { }
 #endif
 
 private:

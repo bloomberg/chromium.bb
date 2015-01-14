@@ -1852,6 +1852,9 @@ public:
 
     MarkingVisitor()
         : Visitor(Mode == GlobalMarking ? Visitor::GlobalMarkingVisitorType : Visitor::GenericVisitorType)
+#if ENABLE(ASSERT)
+        , m_allowMarkingForHashTableWeakProcessing(false)
+#endif
     {
     }
 
@@ -2024,6 +2027,20 @@ protected:
         // does, the object should not be marked & traced.
         return page->terminating();
     }
+
+#if ENABLE(ASSERT)
+    virtual void checkMarkingAllowed() override
+    {
+        ASSERT(ThreadState::current()->isInGC() || m_allowMarkingForHashTableWeakProcessing);
+    }
+
+    virtual void setAllowMarkingForHashTableWeakProcessing(bool allow) override
+    {
+        m_allowMarkingForHashTableWeakProcessing = allow;
+    }
+
+    bool m_allowMarkingForHashTableWeakProcessing;
+#endif
 };
 
 void Heap::init()
