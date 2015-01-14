@@ -5,6 +5,7 @@
 #ifndef UI_EVENTS_OZONE_EVDEV_EVENT_FACTORY_EVDEV_H_
 #define UI_EVENTS_OZONE_EVDEV_EVENT_FACTORY_EVDEV_H_
 
+#include <set>
 #include <vector>
 
 #include "base/callback.h"
@@ -33,6 +34,7 @@ namespace ui {
 class CursorDelegateEvdev;
 class DeviceManager;
 class SystemInputInjector;
+enum class DomCode;
 
 #if !defined(USE_EVDEV)
 #error Missing dependency on ui/events/ozone:events_ozone_evdev
@@ -58,6 +60,19 @@ class EVENTS_OZONE_EVDEV_EXPORT EventFactoryEvdev : public DeviceEventObserver,
 
   void WarpCursorTo(gfx::AcceleratedWidget widget,
                     const gfx::PointF& location);
+
+  // Disables the internal touchpad.
+  void DisableInternalTouchpad();
+
+  // Enables the internal touchpad.
+  void EnableInternalTouchpad();
+
+  // Disables all keys on the internal keyboard except |excepted_keys|.
+  void DisableInternalKeyboardExceptKeys(
+      scoped_ptr<std::set<DomCode>> excepted_keys);
+
+  // Enables all keys on the internal keyboard.
+  void EnableInternalKeyboard();
 
   scoped_ptr<SystemInputInjector> CreateSystemInputInjector();
 

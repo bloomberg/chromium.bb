@@ -74,6 +74,10 @@ component("ash") {
     ]
   }
 
+  if (use_ozone) {
+    deps += [ "//ui/ozone" ]
+  }
+
   if (is_chromeos) {
     deps += [
       "//device/bluetooth",

@@ -10,7 +10,7 @@
 #include "base/message_loop/message_loop.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/dom4/keycode_converter.h"
-#include "ui/events/keycodes/keyboard_codes.h"
+#include "ui/events/ozone/evdev/keyboard_evdev.h"
 
 namespace ui {
 
@@ -31,6 +31,7 @@ EventConverterEvdevImpl::EventConverterEvdevImpl(
     const EventDispatchCallback& callback)
     : EventConverterEvdev(fd, path, id, type),
       has_keyboard_(devinfo.HasKeyboard()),
+      has_touchpad_(devinfo.HasTouchpad()),
       x_offset_(0),
       y_offset_(0),
       cursor_(cursor),
@@ -57,12 +58,32 @@ void EventConverterEvdevImpl::OnFileCanReadWithoutBlocking(int fd) {
     return;
   }
 
+  // TODO(spang): Re-implement this by releasing buttons & temporarily closing
+  // the device.
+  if (ignore_events_)
+    return;
+
   DCHECK_EQ(read_size % sizeof(*inputs), 0u);
   ProcessEvents(inputs, read_size / sizeof(*inputs));
 }
 
 bool EventConverterEvdevImpl::HasKeyboard() const {
   return has_keyboard_;
+}
+
+bool EventConverterEvdevImpl::HasTouchpad() const {
+  return has_touchpad_;
+}
+
+void EventConverterEvdevImpl::SetAllowedKeys(
+    scoped_ptr<std::set<DomCode>> allowed_keys) {
+  DCHECK(HasKeyboard());
+  allowed_keys_ = allowed_keys.Pass();
+}
+
+void EventConverterEvdevImpl::AllowAllKeys() {
+  DCHECK(HasKeyboard());
+  allowed_keys_.reset();
 }
 
 void EventConverterEvdevImpl::ProcessEvents(const input_event* inputs,
@@ -95,7 +116,10 @@ void EventConverterEvdevImpl::ConvertKeyEvent(const input_event& input) {
   }
 
   // Keyboard processing.
-  keyboard_->OnKeyChange(input.code, input.value != kKeyReleaseValue);
+  DomCode key_code = KeycodeConverter::NativeKeycodeToDomCode(
+      KeyboardEvdev::EvdevCodeToNativeCode(input.code));
+  if (!allowed_keys_ || allowed_keys_->count(key_code))
+    keyboard_->OnKeyChange(input.code, input.value != kKeyReleaseValue);
 }
 
 void EventConverterEvdevImpl::ConvertMouseMoveEvent(const input_event& input) {

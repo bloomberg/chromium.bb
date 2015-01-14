@@ -155,6 +155,9 @@ void TouchEventConverterEvdev::OnFileCanReadWithoutBlocking(int fd) {
     return;
   }
 
+  if (ignore_events_)
+    return;
+
   for (unsigned i = 0; i < read_size / sizeof(*inputs); i++) {
     ProcessInputEvent(inputs[i]);
   }

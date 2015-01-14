@@ -36,6 +36,11 @@ class StubInputController : public InputController {
   void SetMouseSensitivity(int value) override;
   void SetPrimaryButtonRight(bool right) override;
   void SetTapToClickPaused(bool state) override;
+  void DisableInternalTouchpad() override;
+  void EnableInternalTouchpad() override;
+  void DisableInternalKeyboardExceptKeys(
+      scoped_ptr<std::set<DomCode>> excepted_keys) override;
+  void EnableInternalKeyboard() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(StubInputController);
@@ -116,6 +121,23 @@ void StubInputController::SetPrimaryButtonRight(bool right) {
 }
 
 void StubInputController::SetTapToClickPaused(bool state) {
+  NOTIMPLEMENTED();
+}
+
+void StubInputController::DisableInternalTouchpad() {
+  NOTIMPLEMENTED();
+}
+
+void StubInputController::EnableInternalTouchpad() {
+  NOTIMPLEMENTED();
+}
+
+void StubInputController::DisableInternalKeyboardExceptKeys(
+    scoped_ptr<std::set<DomCode>> excepted_keys) {
+  NOTIMPLEMENTED();
+}
+
+void StubInputController::EnableInternalKeyboard() {
   NOTIMPLEMENTED();
 }
 

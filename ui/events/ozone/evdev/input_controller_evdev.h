@@ -55,6 +55,11 @@ class EVENTS_OZONE_EVDEV_EXPORT InputControllerEvdev : public InputController {
   void SetMouseSensitivity(int value) override;
   void SetPrimaryButtonRight(bool right) override;
   void SetTapToClickPaused(bool state) override;
+  void DisableInternalTouchpad() override;
+  void EnableInternalTouchpad() override;
+  void DisableInternalKeyboardExceptKeys(
+      scoped_ptr<std::set<DomCode>> excepted_keys) override;
+  void EnableInternalKeyboard() override;
 
  private:
   // Set a property value for all devices of one type.

@@ -56,6 +56,9 @@ class EVENTS_OZONE_EVDEV_EXPORT GestureInterpreterLibevdevCros
   void OnLibEvdevCrosEvent(Evdev* evdev,
                            EventStateRec* evstate,
                            const timeval& time) override;
+  void SetAllowedKeys(
+      scoped_ptr<std::set<DomCode>> allowed_keys) override;
+  void AllowAllKeys() override;
 
   // Handler for gesture events generated from libgestures.
   void OnGestureReady(const Gesture* gesture);
@@ -88,6 +91,10 @@ class EVENTS_OZONE_EVDEV_EXPORT GestureInterpreterLibevdevCros
   // True if the device may be regarded as a mouse. This includes normal mice
   // and multi-touch mice.
   bool is_mouse_;
+
+  // The evdev codes of the keys which should be processed. nullptr if all keys
+  // should be processed.
+  scoped_ptr<std::set<int>> allowed_keys_;
 
   // Shared modifier state.
   EventModifiersEvdev* modifiers_;

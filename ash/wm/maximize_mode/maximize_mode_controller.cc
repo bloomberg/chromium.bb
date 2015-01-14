@@ -24,6 +24,10 @@
 #include "ash/wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard_x11.h"
 #endif
 
+#if defined(USE_OZONE)
+#include "ash/wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard_ozone.h"
+#endif
+
 #if defined(OS_CHROMEOS)
 #include "chromeos/dbus/dbus_thread_manager.h"
 #endif  // OS_CHROMEOS
@@ -226,6 +230,8 @@ void MaximizeModeController::HandleHingeRotation(const gfx::Vector3dF& base,
     }
 #if defined(USE_X11)
     event_blocker_.reset(new ScopedDisableInternalMouseAndKeyboardX11);
+#elif defined(USE_OZONE)
+    event_blocker_.reset(new ScopedDisableInternalMouseAndKeyboardOzone);
 #endif
   }
 }

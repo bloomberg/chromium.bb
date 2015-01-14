@@ -528,6 +528,8 @@
       'wm/maximize_mode/maximize_mode_window_state.cc',
       'wm/maximize_mode/maximize_mode_window_state.h',
       'wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard.h',
+      'wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard_ozone.cc',
+      'wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard_ozone.h',
       'wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard_x11.cc',
       'wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard_x11.h',
       'wm/maximize_mode/workspace_backdrop_delegate.cc',
@@ -929,6 +931,11 @@
           'dependencies': [
             '../build/linux/system.gyp:xfixes',
            ],
+        }],
+        ['use_ozone==1', {
+          'dependencies': [
+            '../ui/ozone/ozone.gyp:ozone',
+          ],
         }],
         ['chromeos==1', {
           'dependencies': [

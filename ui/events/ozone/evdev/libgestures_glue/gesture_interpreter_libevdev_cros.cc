@@ -11,6 +11,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/timer/timer.h"
 #include "ui/events/event.h"
+#include "ui/events/keycodes/dom4/keycode_converter.h"
 #include "ui/events/ozone/evdev/cursor_delegate_evdev.h"
 #include "ui/events/ozone/evdev/event_device_info.h"
 #include "ui/events/ozone/evdev/event_device_util.h"
@@ -233,6 +234,25 @@ void GestureInterpreterLibevdevCros::OnLibEvdevCrosEvent(Evdev* evdev,
   }
 
   GestureInterpreterPushHardwareState(interpreter_, &hwstate);
+}
+
+void GestureInterpreterLibevdevCros::SetAllowedKeys(
+    scoped_ptr<std::set<DomCode>> allowed_keys) {
+  if (!allowed_keys) {
+    allowed_keys_.reset();
+    return;
+  }
+
+  allowed_keys_.reset(new std::set<int>());
+  for (const auto& it : *allowed_keys) {
+    int evdev_code = KeyboardEvdev::NativeCodeToEvdevCode(
+        KeycodeConverter::DomCodeToNativeKeycode(it));
+    allowed_keys_->insert(evdev_code);
+  }
+}
+
+void GestureInterpreterLibevdevCros::AllowAllKeys() {
+  allowed_keys_.reset();
 }
 
 void GestureInterpreterLibevdevCros::OnGestureReady(const Gesture* gesture) {
@@ -473,6 +493,9 @@ void GestureInterpreterLibevdevCros::DispatchChangedKeys(Evdev* evdev,
 
       // Ignore digi buttons (e.g. BTN_TOOL_FINGER).
       if (key >= BTN_DIGI && key < BTN_WHEEL)
+        continue;
+
+      if (allowed_keys_ && !allowed_keys_->count(key))
         continue;
 
       // Dispatch key press or release to keyboard.

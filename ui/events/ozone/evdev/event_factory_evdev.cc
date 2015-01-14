@@ -62,9 +62,8 @@ struct OpenInputDeviceParams {
 
 #if defined(USE_EVDEV_GESTURES)
 bool UseGesturesLibraryForDevice(const EventDeviceInfo& devinfo) {
-  if ((devinfo.HasAbsXY() || devinfo.HasMTAbsXY()) &&
-      !devinfo.IsMappedToScreen())
-    return true;  // touchpad
+  if (devinfo.HasTouchpad())
+    return true;
 
   if (devinfo.HasRelXY())
     return true;  // mouse
@@ -312,6 +311,49 @@ void EventFactoryEvdev::WarpCursorTo(gfx::AcceleratedWidget widget,
                                                cursor_->GetLocation(),
                                                modifiers_.GetModifierFlags(),
                                                /* changed_button_flags */ 0)));
+  }
+}
+
+void EventFactoryEvdev::DisableInternalTouchpad() {
+  for (const auto& it : converters_) {
+    EventConverterEvdev* converter = it.second;
+    if (converter->type() == InputDeviceType::INPUT_DEVICE_INTERNAL &&
+        converter->HasTouchpad()) {
+      DCHECK(!converter->HasKeyboard());
+      converter->set_ignore_events(true);
+    }
+  }
+}
+
+void EventFactoryEvdev::EnableInternalTouchpad() {
+  for (const auto& it : converters_) {
+    EventConverterEvdev* converter = it.second;
+    if (converter->type() == InputDeviceType::INPUT_DEVICE_INTERNAL &&
+        converter->HasTouchpad()) {
+      DCHECK(!converter->HasKeyboard());
+      converter->set_ignore_events(false);
+    }
+  }
+}
+
+void EventFactoryEvdev::DisableInternalKeyboardExceptKeys(
+    scoped_ptr<std::set<DomCode>> excepted_keys) {
+  for (const auto& it : converters_) {
+    EventConverterEvdev* converter = it.second;
+    if (converter->type() == InputDeviceType::INPUT_DEVICE_INTERNAL &&
+        converter->HasKeyboard()) {
+      converter->SetAllowedKeys(excepted_keys.Pass());
+    }
+  }
+}
+
+void EventFactoryEvdev::EnableInternalKeyboard() {
+  for (const auto& it : converters_) {
+    EventConverterEvdev* converter = it.second;
+    if (converter->type() == InputDeviceType::INPUT_DEVICE_INTERNAL &&
+        converter->HasKeyboard()) {
+      converter->AllowAllKeys();
+    }
   }
 }
 

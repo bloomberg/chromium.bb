@@ -75,6 +75,9 @@ class EVENTS_OZONE_EVDEV_EXPORT EventDeviceInfo {
   // Determine whether there's a keyboard on this device.
   bool HasKeyboard() const;
 
+  // Determine whether there's a touchpad on this device.
+  bool HasTouchpad() const;
+
  private:
   // Return the slot vector in |slot_values_| for |code|.
   const std::vector<int32_t>& GetMtSlotsForCode(int code) const;

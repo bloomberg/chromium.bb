@@ -5,6 +5,8 @@
 #ifndef UI_EVENTS_OZONE_EVDEV_EVENT_CONVERTER_EVDEV_H_
 #define UI_EVENTS_OZONE_EVDEV_EVENT_CONVERTER_EVDEV_H_
 
+#include <set>
+
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/message_loop/message_loop.h"
@@ -14,6 +16,7 @@
 #include "ui/gfx/geometry/size.h"
 
 namespace ui {
+enum class DomCode;
 
 class EVENTS_OZONE_EVDEV_EXPORT EventConverterEvdev
     : public base::MessagePumpLibevent::Watcher {
@@ -30,21 +33,32 @@ class EVENTS_OZONE_EVDEV_EXPORT EventConverterEvdev
 
   InputDeviceType type() const { return type_; }
 
+  void set_ignore_events(bool ignore_events) { ignore_events_ = ignore_events; }
+
   // Start reading events.
   void Start();
 
   // Stop reading events.
   void Stop();
 
-  // Returns true of the converter is used for a keyboard device.
+  // Returns true if the converter is used for a keyboard device.
   virtual bool HasKeyboard() const;
 
-  // Returns true of the converter is used for a touchscreen device.
+  // Returns true if the converter is used for a touchpad device.
+  virtual bool HasTouchpad() const;
+
+  // Returns true if the converter is used for a touchscreen device.
   virtual bool HasTouchscreen() const;
 
   // Returns the size of the touchscreen device if the converter is used for a
   // touchscreen device.
   virtual gfx::Size GetTouchscreenSize() const;
+
+  // Sets which keyboard keys should be processed.
+  virtual void SetAllowedKeys(scoped_ptr<std::set<DomCode>> allowed_keys);
+
+  // Allows all keys to be processed.
+  virtual void AllowAllKeys();
 
  protected:
   // base::MessagePumpLibevent::Watcher:
@@ -61,6 +75,9 @@ class EVENTS_OZONE_EVDEV_EXPORT EventConverterEvdev
 
   // Type (internal or external).
   InputDeviceType type_;
+
+  // Whether events from the device should be ignored.
+  bool ignore_events_;
 
   // Controller for watching the input fd.
   base::MessagePumpLibevent::FileDescriptorWatcher controller_;

@@ -18,6 +18,7 @@
 namespace ui {
 
 class EventModifiersEvdev;
+enum class DomCode;
 
 // Keyboard for evdev.
 //
@@ -35,6 +36,7 @@ class EVENTS_OZONE_EVDEV_EXPORT KeyboardEvdev {
   ~KeyboardEvdev();
 
   static int NativeCodeToEvdevCode(int native_code);
+  static int EvdevCodeToNativeCode(int evdev_code);
 
   // Handlers for raw key presses & releases.
   void OnKeyChange(unsigned int code, bool down);

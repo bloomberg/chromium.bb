@@ -156,7 +156,7 @@ void KeyboardEvdev::OnRepeatIntervalTimeout() {
 
 void KeyboardEvdev::DispatchKey(unsigned int key, bool down, bool repeat) {
   DomCode dom_code =
-      KeycodeConverter::NativeKeycodeToDomCode(key + kXkbKeycodeOffset);
+      KeycodeConverter::NativeKeycodeToDomCode(EvdevCodeToNativeCode(key));
   // DomCode constants are not included here because of conflicts with
   // evdev preprocessor macros.
   if (!static_cast<int>(dom_code))
@@ -187,6 +187,13 @@ int KeyboardEvdev::NativeCodeToEvdevCode(int native_code) {
     return KEY_RESERVED;
   }
   return native_code - kXkbKeycodeOffset;
+}
+
+// static
+int KeyboardEvdev::EvdevCodeToNativeCode(int evdev_code) {
+  if (evdev_code == KEY_RESERVED)
+    return KeycodeConverter::InvalidNativeKeycode();
+  return evdev_code + kXkbKeycodeOffset;
 }
 
 }  // namespace ui

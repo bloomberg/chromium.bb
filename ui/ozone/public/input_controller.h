@@ -5,6 +5,8 @@
 #ifndef UI_OZONE_PUBLIC_INPUT_CONTROLLER_H_
 #define UI_OZONE_PUBLIC_INPUT_CONTROLLER_H_
 
+#include <set>
+
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/ozone/ozone_export.h"
@@ -14,6 +16,8 @@ class TimeDelta;
 }
 
 namespace ui {
+
+enum class DomCode;
 
 // Platform-specific interface for controlling input devices.
 //
@@ -54,6 +58,19 @@ class OZONE_EXPORT InputController {
   // Temporarily enable/disable Tap-to-click. Used to enhance the user
   // experience in some use cases (e.g., typing, watching video).
   virtual void SetTapToClickPaused(bool state) = 0;
+
+  // Disables the internal touchpad.
+  virtual void DisableInternalTouchpad() = 0;
+
+  // Enables the internal touchpad.
+  virtual void EnableInternalTouchpad() = 0;
+
+  // Disables all keys on the internal keyboard except |excepted_keys|.
+  virtual void DisableInternalKeyboardExceptKeys(
+      scoped_ptr<std::set<DomCode>> excepted_keys) = 0;
+
+  // Enables all keys on the internal keyboard.
+  virtual void EnableInternalKeyboard() = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InputController);

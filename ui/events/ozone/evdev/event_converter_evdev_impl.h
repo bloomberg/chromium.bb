@@ -5,6 +5,8 @@
 #ifndef UI_EVENTS_OZONE_EVDEV_EVENT_CONVERTER_EVDEV_IMPL_H_
 #define UI_EVENTS_OZONE_EVDEV_EVENT_CONVERTER_EVDEV_IMPL_H_
 
+#include <set>
+
 #include "base/files/file_path.h"
 #include "base/message_loop/message_pump_libevent.h"
 #include "ui/events/devices/input_device.h"
@@ -39,6 +41,9 @@ class EVENTS_OZONE_EVDEV_EXPORT EventConverterEvdevImpl
   // EventConverterEvdev:
   void OnFileCanReadWithoutBlocking(int fd) override;
   bool HasKeyboard() const override;
+  bool HasTouchpad() const override;
+  void SetAllowedKeys(scoped_ptr<std::set<DomCode>> allowed_keys) override;
+  void AllowAllKeys() override;
 
   void ProcessEvents(const struct input_event* inputs, int count);
 
@@ -55,6 +60,7 @@ class EVENTS_OZONE_EVDEV_EXPORT EventConverterEvdevImpl
 
   // Input modalities for this device.
   bool has_keyboard_;
+  bool has_touchpad_;
 
   // Save x-axis events of relative devices to be flushed at EV_SYN time.
   int x_offset_;
@@ -64,6 +70,10 @@ class EVENTS_OZONE_EVDEV_EXPORT EventConverterEvdevImpl
 
   // Controller for watching the input fd.
   base::MessagePumpLibevent::FileDescriptorWatcher controller_;
+
+  // The keys which should be processed. nullptr if all keys should be
+  // processed.
+  scoped_ptr<std::set<DomCode>> allowed_keys_;
 
   // Shared cursor state.
   CursorDelegateEvdev* cursor_;

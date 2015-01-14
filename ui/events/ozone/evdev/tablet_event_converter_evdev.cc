@@ -50,6 +50,9 @@ void TabletEventConverterEvdev::OnFileCanReadWithoutBlocking(int fd) {
     return;
   }
 
+  if (ignore_events_)
+    return;
+
   DCHECK_EQ(read_size % sizeof(*inputs), 0u);
   ProcessEvents(inputs, read_size / sizeof(*inputs));
 }

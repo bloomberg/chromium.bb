@@ -34,6 +34,12 @@ class EventReaderLibevdevCros : public EventConverterEvdev {
     virtual void OnLibEvdevCrosEvent(Evdev* evdev,
                                      EventStateRec* state,
                                      const timeval& time) = 0;
+
+    // Sets which keyboard keys should be processed.
+    virtual void SetAllowedKeys(scoped_ptr<std::set<DomCode>> allowed_keys) = 0;
+
+    // Allows all keys to be processed.
+    virtual void AllowAllKeys() = 0;
   };
 
   EventReaderLibevdevCros(int fd,
@@ -47,6 +53,9 @@ class EventReaderLibevdevCros : public EventConverterEvdev {
   // EventConverterEvdev:
   void OnFileCanReadWithoutBlocking(int fd) override;
   bool HasKeyboard() const override;
+  bool HasTouchpad() const override;
+  void SetAllowedKeys(scoped_ptr<std::set<DomCode>> allowed_keys) override;
+  void AllowAllKeys() override;
 
  private:
   static void OnSynReport(void* data,
@@ -56,6 +65,7 @@ class EventReaderLibevdevCros : public EventConverterEvdev {
 
   // Input modalities for this device.
   bool has_keyboard_;
+  bool has_touchpad_;
 
   // Libevdev state.
   Evdev evdev_;

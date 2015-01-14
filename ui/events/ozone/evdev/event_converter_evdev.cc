@@ -15,7 +15,7 @@ EventConverterEvdev::EventConverterEvdev(int fd,
                                          const base::FilePath& path,
                                          int id,
                                          InputDeviceType type)
-    : fd_(fd), path_(path), id_(id), type_(type) {
+    : fd_(fd), path_(path), id_(id), type_(type), ignore_events_(false) {
 }
 
 EventConverterEvdev::~EventConverterEvdev() {
@@ -39,6 +39,10 @@ bool EventConverterEvdev::HasKeyboard() const {
   return false;
 }
 
+bool EventConverterEvdev::HasTouchpad() const {
+  return false;
+}
+
 bool EventConverterEvdev::HasTouchscreen() const {
   return false;
 }
@@ -46,6 +50,15 @@ bool EventConverterEvdev::HasTouchscreen() const {
 gfx::Size EventConverterEvdev::GetTouchscreenSize() const {
   NOTREACHED();
   return gfx::Size();
+}
+
+void EventConverterEvdev::SetAllowedKeys(
+    scoped_ptr<std::set<DomCode>> allowed_keys) {
+  NOTREACHED();
+}
+
+void EventConverterEvdev::AllowAllKeys() {
+  NOTREACHED();
 }
 
 }  // namespace ui

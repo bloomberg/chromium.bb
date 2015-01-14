@@ -104,6 +104,23 @@ void InputControllerEvdev::GetAutoRepeatRate(base::TimeDelta* delay,
   keyboard_->GetAutoRepeatRate(delay, interval);
 }
 
+void InputControllerEvdev::DisableInternalTouchpad() {
+  event_factory_->DisableInternalTouchpad();
+}
+
+void InputControllerEvdev::EnableInternalTouchpad() {
+  event_factory_->EnableInternalTouchpad();
+}
+
+void InputControllerEvdev::DisableInternalKeyboardExceptKeys(
+    scoped_ptr<std::set<DomCode>> excepted_keys) {
+  event_factory_->DisableInternalKeyboardExceptKeys(excepted_keys.Pass());
+}
+
+void InputControllerEvdev::EnableInternalKeyboard() {
+  event_factory_->EnableInternalKeyboard();
+}
+
 void InputControllerEvdev::SetIntPropertyForOneType(const EventDeviceType type,
                                                     const std::string& name,
                                                     int value) {
