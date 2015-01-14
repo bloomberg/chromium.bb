@@ -273,8 +273,8 @@ TEST_F(AppListMainViewTest, MouseHoverToHighlight) {
   delegate_->GetTestModel()->PopulateApps(2);
   main_widget_->Show();
 
-  ui::test::EventGenerator generator(
-      main_widget_->GetNativeWindow()->GetRootWindow());
+  ui::test::EventGenerator generator(GetContext(),
+                                     main_widget_->GetNativeWindow());
   AppListItemView* item0 = RootViewModel()->view_at(0);
   AppListItemView* item1 = RootViewModel()->view_at(1);
 
@@ -298,13 +298,20 @@ TEST_F(AppListMainViewTest, MouseHoverToHighlight) {
   EXPECT_FALSE(item1->is_highlighted());
 }
 
+// No touch on desktop Mac. Tracked in http://crbug.com/445520.
+#if defined(OS_MACOSX) && !defined(USE_AURA)
+#define MAYBE_TapGestureToHighlight DISABLED_TapGestureToHighlight
+#else
+#define MAYBE_TapGestureToHighlight TapGestureToHighlight
+#endif
+
 // Tests that tap gesture on app item highlights it
-TEST_F(AppListMainViewTest, TapGestureToHighlight) {
+TEST_F(AppListMainViewTest, MAYBE_TapGestureToHighlight) {
   delegate_->GetTestModel()->PopulateApps(1);
   main_widget_->Show();
 
-  ui::test::EventGenerator generator(
-      main_widget_->GetNativeWindow()->GetRootWindow());
+  ui::test::EventGenerator generator(GetContext(),
+                                     main_widget_->GetNativeWindow());
   AppListItemView* item = RootViewModel()->view_at(0);
 
   // If experimental launcher, switch to All Apps page
