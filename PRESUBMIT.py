@@ -1683,6 +1683,15 @@ def GetPreferredTryMasters(project, change):
       for triggered_bot in master_config:
         builders.get(master, {}).pop(triggered_bot, None)
 
+    # Explicitly iterate over copies of dicts since we mutate them.
+    for master in builders.keys():
+      for builder in builders[master].keys():
+        # Do not trigger presubmit builders, since they're likely to fail
+        # (e.g. OWNERS checks before finished code review), and we're
+        # running local presubmit anyway.
+        if 'presubmit' in builder:
+          builders[master].pop(builder)
+
   # Match things like path/aura/file.cc and path/file_aura.cc.
   # Same for chromeos.
   if any(re.search(r'[\\\/_](aura|chromeos)', f) for f in files):
