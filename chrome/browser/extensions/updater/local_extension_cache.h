@@ -195,11 +195,11 @@ class LocalExtensionCache {
   // This contains info about all cached extensions.
   CacheMap cached_extensions_;
 
-  // Weak factory for callbacks from the backend and delayed tasks.
-  base::WeakPtrFactory<LocalExtensionCache> weak_ptr_factory_;
-
   // Delay between polling cache status.
   base::TimeDelta cache_status_polling_delay_;
+
+  // Weak factory for callbacks from the backend and delayed tasks.
+  base::WeakPtrFactory<LocalExtensionCache> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalExtensionCache);
 };

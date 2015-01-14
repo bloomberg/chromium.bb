@@ -38,9 +38,9 @@ LocalExtensionCache::LocalExtensionCache(
       min_cache_age_(base::Time::Now() - max_cache_age),
       backend_task_runner_(backend_task_runner),
       state_(kUninitialized),
-      weak_ptr_factory_(this),
       cache_status_polling_delay_(
-          base::TimeDelta::FromMilliseconds(kCacheStatusPollingDelayMs)) {
+          base::TimeDelta::FromMilliseconds(kCacheStatusPollingDelayMs)),
+      weak_ptr_factory_(this) {
 }
 
 LocalExtensionCache::~LocalExtensionCache() {
