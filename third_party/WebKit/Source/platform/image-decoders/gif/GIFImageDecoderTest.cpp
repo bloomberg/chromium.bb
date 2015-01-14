@@ -47,9 +47,16 @@ using namespace blink;
 
 namespace {
 
-PassRefPtr<SharedBuffer> readFile(const char* fileName)
+const char decodersTestingDir[] = "Source/platform/image-decoders/testing";
+const char layoutTestResourcesDir[] = "LayoutTests/fast/images/resources";
+const char webTestsDataDir[] = "Source/web/tests/data";
+
+PassRefPtr<SharedBuffer> readFile(const char* dir, const char* fileName)
 {
     String filePath = Platform::current()->unitTestSupport()->webKitRootDir();
+    filePath.append("/");
+    filePath.append(dir);
+    filePath.append("/");
     filePath.append(fileName);
 
     return Platform::current()->unitTestSupport()->readFromFile(filePath);
@@ -76,11 +83,11 @@ void createDecodingBaseline(SharedBuffer* data, Vector<unsigned>* baselineHashes
     }
 }
 
-void testRandomFrameDecode(const char* gifFile)
+void testRandomFrameDecode(const char* dir, const char* gifFile)
 {
     SCOPED_TRACE(gifFile);
 
-    RefPtr<SharedBuffer> fullData = readFile(gifFile);
+    RefPtr<SharedBuffer> fullData = readFile(dir, gifFile);
     ASSERT_TRUE(fullData.get());
     Vector<unsigned> baselineHashes;
     createDecodingBaseline(fullData.get(), &baselineHashes);
@@ -108,11 +115,11 @@ void testRandomFrameDecode(const char* gifFile)
     }
 }
 
-void testRandomDecodeAfterClearFrameBufferCache(const char* gifFile)
+void testRandomDecodeAfterClearFrameBufferCache(const char* dir, const char* gifFile)
 {
     SCOPED_TRACE(gifFile);
 
-    RefPtr<SharedBuffer> data = readFile(gifFile);
+    RefPtr<SharedBuffer> data = readFile(dir, gifFile);
     ASSERT_TRUE(data.get());
     Vector<unsigned> baselineHashes;
     createDecodingBaseline(data.get(), &baselineHashes);
@@ -139,7 +146,7 @@ TEST(GIFImageDecoderTest, decodeTwoFrames)
 {
     OwnPtr<GIFImageDecoder> decoder = createDecoder();
 
-    RefPtr<SharedBuffer> data = readFile("/LayoutTests/fast/images/resources/animated.gif");
+    RefPtr<SharedBuffer> data = readFile(layoutTestResourcesDir, "animated.gif");
     ASSERT_TRUE(data.get());
     decoder->setData(data.get(), true);
     EXPECT_EQ(cAnimationLoopOnce, decoder->repetitionCount());
@@ -165,7 +172,7 @@ TEST(GIFImageDecoderTest, parseAndDecode)
 {
     OwnPtr<GIFImageDecoder> decoder = createDecoder();
 
-    RefPtr<SharedBuffer> data = readFile("/LayoutTests/fast/images/resources/animated.gif");
+    RefPtr<SharedBuffer> data = readFile(layoutTestResourcesDir, "animated.gif");
     ASSERT_TRUE(data.get());
     decoder->setData(data.get(), true);
     EXPECT_EQ(cAnimationLoopOnce, decoder->repetitionCount());
@@ -189,7 +196,7 @@ TEST(GIFImageDecoderTest, parseByteByByte)
 {
     OwnPtr<GIFImageDecoder> decoder = createDecoder();
 
-    RefPtr<SharedBuffer> data = readFile("/LayoutTests/fast/images/resources/animated.gif");
+    RefPtr<SharedBuffer> data = readFile(layoutTestResourcesDir, "animated.gif");
     ASSERT_TRUE(data.get());
 
     size_t frameCount = 0;
@@ -214,7 +221,7 @@ TEST(GIFImageDecoderTest, parseAndDecodeByteByByte)
 {
     OwnPtr<GIFImageDecoder> decoder = createDecoder();
 
-    RefPtr<SharedBuffer> data = readFile("/LayoutTests/fast/images/resources/animated-gif-with-offsets.gif");
+    RefPtr<SharedBuffer> data = readFile(layoutTestResourcesDir, "animated-gif-with-offsets.gif");
     ASSERT_TRUE(data.get());
 
     size_t frameCount = 0;
@@ -242,7 +249,7 @@ TEST(GIFImageDecoderTest, brokenSecondFrame)
 {
     OwnPtr<GIFImageDecoder> decoder = createDecoder();
 
-    RefPtr<SharedBuffer> data = readFile("/Source/web/tests/data/broken.gif");
+    RefPtr<SharedBuffer> data = readFile(webTestsDataDir, "broken.gif");
     ASSERT_TRUE(data.get());
     decoder->setData(data.get(), true);
 
@@ -254,7 +261,7 @@ TEST(GIFImageDecoderTest, brokenSecondFrame)
 
 TEST(GIFImageDecoderTest, progressiveDecode)
 {
-    RefPtr<SharedBuffer> fullData = readFile("/Source/web/tests/data/radient.gif");
+    RefPtr<SharedBuffer> fullData = readFile(webTestsDataDir, "radient.gif");
     ASSERT_TRUE(fullData.get());
     const size_t fullLength = fullData->size();
 
@@ -307,7 +314,7 @@ TEST(GIFImageDecoderTest, allDataReceivedTruncation)
 {
     OwnPtr<GIFImageDecoder> decoder = createDecoder();
 
-    RefPtr<SharedBuffer> data = readFile("/LayoutTests/fast/images/resources/animated.gif");
+    RefPtr<SharedBuffer> data = readFile(layoutTestResourcesDir, "animated.gif");
     ASSERT_TRUE(data.get());
 
     ASSERT_GE(data->size(), 10u);
@@ -327,7 +334,7 @@ TEST(GIFImageDecoderTest, frameIsComplete)
 {
     OwnPtr<GIFImageDecoder> decoder = createDecoder();
 
-    RefPtr<SharedBuffer> data = readFile("/LayoutTests/fast/images/resources/animated.gif");
+    RefPtr<SharedBuffer> data = readFile(layoutTestResourcesDir, "animated.gif");
     ASSERT_TRUE(data.get());
     decoder->setData(data.get(), true);
 
@@ -342,7 +349,7 @@ TEST(GIFImageDecoderTest, frameIsCompleteLoading)
 {
     OwnPtr<GIFImageDecoder> decoder = createDecoder();
 
-    RefPtr<SharedBuffer> data = readFile("/LayoutTests/fast/images/resources/animated.gif");
+    RefPtr<SharedBuffer> data = readFile(layoutTestResourcesDir, "animated.gif");
     ASSERT_TRUE(data.get());
 
     ASSERT_GE(data->size(), 10u);
@@ -362,8 +369,8 @@ TEST(GIFImageDecoderTest, frameIsCompleteLoading)
 
 TEST(GIFImageDecoderTest, badTerminator)
 {
-    RefPtr<SharedBuffer> referenceData = readFile("/Source/web/tests/data/radient.gif");
-    RefPtr<SharedBuffer> testData = readFile("/Source/web/tests/data/radient-bad-terminator.gif");
+    RefPtr<SharedBuffer> referenceData = readFile(webTestsDataDir, "radient.gif");
+    RefPtr<SharedBuffer> testData = readFile(webTestsDataDir, "radient-bad-terminator.gif");
     ASSERT_TRUE(referenceData.get());
     ASSERT_TRUE(testData.get());
 
@@ -386,7 +393,7 @@ TEST(GIFImageDecoderTest, updateRequiredPreviousFrameAfterFirstDecode)
 {
     OwnPtr<GIFImageDecoder> decoder = createDecoder();
 
-    RefPtr<SharedBuffer> fullData = readFile("/LayoutTests/fast/images/resources/animated-10color.gif");
+    RefPtr<SharedBuffer> fullData = readFile(layoutTestResourcesDir, "animated-10color.gif");
     ASSERT_TRUE(fullData.get());
 
     // Give it data that is enough to parse but not decode in order to check the status
@@ -411,24 +418,24 @@ TEST(GIFImageDecoderTest, updateRequiredPreviousFrameAfterFirstDecode)
 TEST(GIFImageDecoderTest, randomFrameDecode)
 {
     // Single frame image.
-    testRandomFrameDecode("/Source/web/tests/data/radient.gif");
+    testRandomFrameDecode(webTestsDataDir, "radient.gif");
     // Multiple frame images.
-    testRandomFrameDecode("/LayoutTests/fast/images/resources/animated-gif-with-offsets.gif");
-    testRandomFrameDecode("/LayoutTests/fast/images/resources/animated-10color.gif");
+    testRandomFrameDecode(layoutTestResourcesDir, "animated-gif-with-offsets.gif");
+    testRandomFrameDecode(layoutTestResourcesDir, "animated-10color.gif");
 }
 
 TEST(GIFImageDecoderTest, randomDecodeAfterClearFrameBufferCache)
 {
     // Single frame image.
-    testRandomDecodeAfterClearFrameBufferCache("/Source/web/tests/data/radient.gif");
+    testRandomDecodeAfterClearFrameBufferCache(webTestsDataDir, "radient.gif");
     // Multiple frame images.
-    testRandomDecodeAfterClearFrameBufferCache("/LayoutTests/fast/images/resources/animated-gif-with-offsets.gif");
-    testRandomDecodeAfterClearFrameBufferCache("/LayoutTests/fast/images/resources/animated-10color.gif");
+    testRandomDecodeAfterClearFrameBufferCache(layoutTestResourcesDir, "animated-gif-with-offsets.gif");
+    testRandomDecodeAfterClearFrameBufferCache(layoutTestResourcesDir, "animated-10color.gif");
 }
 
 TEST(GIFImageDecoderTest, resumePartialDecodeAfterClearFrameBufferCache)
 {
-    RefPtr<SharedBuffer> fullData = readFile("/LayoutTests/fast/images/resources/animated-10color.gif");
+    RefPtr<SharedBuffer> fullData = readFile(layoutTestResourcesDir, "animated-10color.gif");
     ASSERT_TRUE(fullData.get());
     Vector<unsigned> baselineHashes;
     createDecodingBaseline(fullData.get(), &baselineHashes);
@@ -461,7 +468,7 @@ TEST(GIFImageDecoderTest, resumePartialDecodeAfterClearFrameBufferCache)
 // in the dictionary. Decoding should fail, but not infinitely loop or corrupt memory.
 TEST(GIFImageDecoderTest, badInitialCode)
 {
-    RefPtr<SharedBuffer> testData = readFile("/Source/platform/image-decoders/testing/bad-initial-code.gif");
+    RefPtr<SharedBuffer> testData = readFile(decodersTestingDir, "bad-initial-code.gif");
     ASSERT_TRUE(testData.get());
 
     OwnPtr<GIFImageDecoder> testDecoder(createDecoder());
@@ -474,7 +481,7 @@ TEST(GIFImageDecoderTest, badInitialCode)
 // The image has an invalid LZW code that exceeds dictionary size. Decoding should fail.
 TEST(GIFImageDecoderTest, badCode)
 {
-    RefPtr<SharedBuffer> testData = readFile("/Source/platform/image-decoders/testing/bad-code.gif");
+    RefPtr<SharedBuffer> testData = readFile(decodersTestingDir, "bad-code.gif");
     ASSERT_TRUE(testData.get());
 
     OwnPtr<GIFImageDecoder> testDecoder(createDecoder());
@@ -489,7 +496,7 @@ TEST(GIFImageDecoderTest, invalidDisposalMethod)
     OwnPtr<GIFImageDecoder> decoder = createDecoder();
 
     // The image has 2 frames, with disposal method 4 and 5, respectively.
-    RefPtr<SharedBuffer> data = readFile("/Source/web/tests/data/invalid-disposal-method.gif");
+    RefPtr<SharedBuffer> data = readFile(webTestsDataDir, "invalid-disposal-method.gif");
     ASSERT_TRUE(data.get());
     decoder->setData(data.get(), true);
 
@@ -498,4 +505,28 @@ TEST(GIFImageDecoderTest, invalidDisposalMethod)
     EXPECT_EQ(ImageFrame::DisposeOverwritePrevious, decoder->frameBufferAtIndex(0)->disposalMethod());
     // Disposal method 5 is ignored.
     EXPECT_EQ(ImageFrame::DisposeNotSpecified, decoder->frameBufferAtIndex(1)->disposalMethod());
+}
+
+TEST(GIFImageDecoderTest, firstFrameHasGreaterSizeThanScreenSize)
+{
+    RefPtr<SharedBuffer> fullData = readFile(decodersTestingDir, "first-frame-has-greater-size-than-screen-size.gif");
+    ASSERT_TRUE(fullData.get());
+
+    OwnPtr<GIFImageDecoder> decoder;
+    IntSize frameSize;
+
+    // Compute hashes when the file is truncated.
+    for (size_t i = 1; i <= fullData->size(); ++i) {
+        decoder = createDecoder();
+        RefPtr<SharedBuffer> data = SharedBuffer::create(fullData->data(), i);
+        decoder->setData(data.get(), i == fullData->size());
+
+        if (decoder->isSizeAvailable() && !frameSize.width() && !frameSize.height()) {
+            frameSize = decoder->decodedSize();
+            continue;
+        }
+
+        ASSERT_EQ(frameSize.width(), decoder->decodedSize().width());
+        ASSERT_EQ(frameSize.height(), decoder->decodedSize().height());
+    }
 }

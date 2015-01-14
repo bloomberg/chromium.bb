@@ -434,16 +434,14 @@ bool GIFImageReader::parseData(size_t dataPosition, size_t len, GIFImageDecoder:
         }
 
         case GIFGlobalHeader: {
-            // This is the height and width of the "screen" or frame into which images are rendered. The
-            // individual images can be smaller than the screen size and located with an origin anywhere
-            // within the screen.
+            // This is the height and width of the "screen" or frame into which
+            // images are rendered. The individual images can be smaller than
+            // the screen size and located with an origin anywhere within the
+            // screen.
+            // Note that we don't inform the client of the size yet, as it might
+            // change after we read the first frame's image header.
             m_screenWidth = GETINT16(currentComponent);
             m_screenHeight = GETINT16(currentComponent + 2);
-
-            // CALLBACK: Inform the decoderplugin of our size.
-            // Note: A subsequent frame might have dimensions larger than the "screen" dimensions.
-            if (m_client && !m_client->setSize(m_screenWidth, m_screenHeight))
-                return false;
 
             const size_t globalColorMapColors = 2 << (currentComponent[4] & 0x07);
 
@@ -632,29 +630,26 @@ bool GIFImageReader::parseData(size_t dataPosition, size_t len, GIFImageDecoder:
             width  = GETINT16(currentComponent + 4);
             height = GETINT16(currentComponent + 6);
 
-            /* Work around broken GIF files where the logical screen
-             * size has weird width or height.  We assume that GIF87a
-             * files don't contain animations.
-             */
-            if (currentFrameIsFirstFrame()
-                && ((m_screenHeight < height) || (m_screenWidth < width) || (m_version == 87))) {
-                m_screenHeight = height;
-                m_screenWidth = width;
-                xOffset = 0;
-                yOffset = 0;
-
-                // CALLBACK: Inform the decoderplugin of our size.
-                if (m_client && !m_client->setSize(m_screenWidth, m_screenHeight))
-                    return false;
+            // Some GIF files have frames that don't fit in the specified
+            // overall image size. For the first frame, we can simply enlarge
+            // the image size to allow the frame to be visible.  We can't do
+            // this on subsequent frames because the rest of the decoding
+            // infrastructure assumes the image size won't change as we
+            // continue decoding, so any subsequent frames that are even
+            // larger will be cropped.
+            // Luckily, handling just the first frame is sufficient to deal
+            // with most cases, e.g. ones where the image size is erroneously
+            // set to zero, since usually the first frame completely fills
+            // the image.
+            if (currentFrameIsFirstFrame()) {
+                m_screenHeight = std::max(m_screenHeight, yOffset + height);
+                m_screenWidth = std::max(m_screenWidth, xOffset + width);
             }
 
-            // Work around more broken GIF files that have zero image width or height
-            if (!height || !width) {
-                height = m_screenHeight;
-                width = m_screenWidth;
-                if (!height || !width)
-                    return false;
-            }
+            // Inform the client of the final size.
+            if (!m_sentSizeToClient && m_client && !m_client->setSize(m_screenWidth, m_screenHeight))
+                return false;
+            m_sentSizeToClient = true;
 
             if (query == GIFImageDecoder::GIFSizeQuery) {
                 // The decoder needs to stop. Hand back the number of bytes we consumed from
@@ -668,9 +663,16 @@ bool GIFImageReader::parseData(size_t dataPosition, size_t len, GIFImageDecoder:
             GIFFrameContext* currentFrame = m_frames.last().get();
 
             currentFrame->setHeaderDefined();
+
+            // Work around more broken GIF files that have zero image width or
+            // height.
+            if (!height || !width) {
+                height = m_screenHeight;
+                width = m_screenWidth;
+                if (!height || !width)
+                    return false;
+            }
             currentFrame->setRect(xOffset, yOffset, width, height);
-            m_screenWidth = std::max(m_screenWidth, width);
-            m_screenHeight = std::max(m_screenHeight, height);
             currentFrame->setInterlaced(currentComponent[8] & 0x40);
 
             // Overlaying interlaced, transparent GIFs over
