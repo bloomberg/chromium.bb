@@ -12,8 +12,7 @@ var default_content_settings = {
   "javascript": "block",
   "plugins": "allow",
   "popups": "block",
-  // TODO(bauerb)
-  // "geolocation": "ask",
+  "location": "ask",
   "notifications": "ask"
 };
 
@@ -23,7 +22,7 @@ var settings = {
   "javascript": "block",
   "plugins": "block",
   "popups": "allow",
-  // "geolocation": "block",
+  "location": "block",
   "notifications": "block"
 };
 
