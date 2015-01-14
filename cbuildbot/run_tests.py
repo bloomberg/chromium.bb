@@ -415,10 +415,14 @@ def main(argv):
     stack.Add(osutils.TempDir, prefix='chromite.run_tests.', set_global=True,
               sudo_rm=True)
 
-    if RunTests(tests, jobs=jobs, chroot_available=ChrootAvailable(),
-                network=opts.network, dryrun=opts.dryrun):
-      cros_build_lib.Info('All tests succeeded!')
-    else:
+    def _Finished(_log_level, _log_msg, result, delta):
+      if result:
+        cros_build_lib.Info('All tests succeeded! (%s total)', delta)
+
+    ret = cros_build_lib.TimedCommand(
+        RunTests, tests, jobs=jobs, chroot_available=ChrootAvailable(),
+        network=opts.network, dryrun=opts.dryrun, timed_log_callback=_Finished)
+    if not ret:
       return 1
 
   if not opts.network:

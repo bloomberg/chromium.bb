@@ -823,7 +823,7 @@ def TimedCommand(functor, *args, **kwargs):
   ret = functor(*args, **kwargs)
   delta = datetime.now() - start
   log_msg %= {
-      'name': functor.__name__,
+      'name': getattr(functor, '__name__', repr(functor)),
       'args': args,
       'kwargs': kwargs,
       'ret': ret,
