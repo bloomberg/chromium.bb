@@ -176,7 +176,8 @@ void Canvas2DLayerBridge::willAccessPixels()
     // the compositor's behavior. Therefore, we must trigger copy-on-write
     // even though we are not technically writing to the texture, only to its
     // parameters.
-    m_surface->notifyContentWillChange(SkSurface::kRetain_ContentChangeMode);
+    if (m_isSurfaceValid)
+        m_surface->notifyContentWillChange(SkSurface::kRetain_ContentChangeMode);
 }
 
 void Canvas2DLayerBridge::freeTransientResources()
