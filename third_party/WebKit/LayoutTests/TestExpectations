@@ -574,8 +574,8 @@ crbug.com/309675 compositing/gestures/gesture-tapHighlight-simple-longPress.html
 # As such:
 #
 #  (a) Support for RSA is not guaranteed as the system NSS may be ancient.
-#  (b) RSA-PSS, AES-CTR, ECDH and ECDSA have only been implemented for BoringSSL
-#      based WebCrypto.
+#  (b) RSA-PSS, AES-CTR, ECDH, ECDSA, and HKDF have only been implemented for
+#      BoringSSL based WebCrypto.
 #
 # These issue will be resolved once Linux switches to BoringSSL
 # (http://crbug.com/338887).
@@ -608,6 +608,15 @@ crbug.com/338883 [ Linux ] crypto/subtle/ecdh-import-jwk.html [ Failure Pass ]
 crbug.com/338883 [ Linux ] crypto/subtle/ecdh-deriveKey-aes.html [ Failure Pass ]
 crbug.com/338883 [ Linux ] crypto/subtle/ecdh-deriveKey-failures.html [ Failure Pass ]
 crbug.com/338883 [ Linux ] crypto/subtle/ecdh-deriveKey-hmac.html [ Failure Pass ]
+crbug.com/338887 [ Linux ] crypto/subtle/clone-hkdfKey.html [ Failure Pass ]
+crbug.com/338887 [ Linux ] crypto/subtle/derive-hkdf-keys.html [ Failure Pass ]
+crbug.com/338887 [ Linux ] crypto/subtle/hkdf-deriveBits-failures.html [ Failure Pass ]
+crbug.com/338887 [ Linux ] crypto/subtle/hkdf-deriveBits.html [ Failure Pass ]
+crbug.com/338887 [ Linux ] crypto/subtle/hkdf-deriveBits-rfc5869-test-vectors.html [ Failure Pass ]
+crbug.com/338887 [ Linux ] crypto/subtle/hkdf-deriveKey.html [ Failure Pass ]
+crbug.com/338887 [ Linux ] crypto/subtle/hkdf-exportKey.html [ Failure Pass ]
+crbug.com/338887 [ Linux ] crypto/subtle/hkdf-importKey-failures.html [ Failure Pass ]
+crbug.com/338887 [ Linux ] crypto/subtle/hkdf-unwrapKey.html [ Failure Pass ]
 
 # There are some unresolved problems with the teardown of WebWorkers that make
 # the "abandon" WebCrypto tests flaky-crash. This flakiness can also affect the
