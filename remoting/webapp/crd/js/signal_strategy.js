@@ -23,6 +23,8 @@ remoting.SignalStrategy = function() {};
  *    CONNECTING -> FAILED (connection failed).
  *    HANDSHAKE -> FAILED (authentication failed).
  *    * -> CLOSED (dispose() called).
+ *
+ * Do not re-order these values without updating fallback_signal_strategy.js.
  */
 remoting.SignalStrategy.State = {
   NOT_CONNECTED: 0,
@@ -76,7 +78,30 @@ remoting.SignalStrategy.create = function(onStateChangedCallback) {
   // not the case for V1 app (socket API is available only to platform apps)
   // and for Chrome releases before 38.
   if (chrome.socket && chrome.socket.secure) {
-    return new remoting.XmppConnection(onStateChangedCallback);
+    /**
+     * @param {function(remoting.SignalStrategy.State): void} onStateChanged
+     */
+    var xmppFactory = function(onStateChanged) {
+      return new remoting.XmppConnection(onStateChanged);
+    };
+
+    /**
+     * @param {function(remoting.SignalStrategy.State): void} onStateChanged
+     */
+    var wcsFactory = function(onStateChanged) {
+      return new remoting.WcsAdapter(onStateChanged);
+    };
+
+    /**
+     * @param {remoting.FallbackSignalStrategy.Progress} progress
+     */
+    var progressCallback = function(progress) {
+      console.log('FallbackSignalStrategy progress: ' + progress);
+    };
+
+    return new remoting.FallbackSignalStrategy(
+        xmppFactory, wcsFactory, onStateChangedCallback, progressCallback);
+
   } else {
     return new remoting.WcsAdapter(onStateChangedCallback);
   }

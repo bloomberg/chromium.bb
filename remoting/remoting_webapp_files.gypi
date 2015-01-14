@@ -118,6 +118,7 @@
     ],
     # Remoting signaling files.
     'remoting_webapp_js_signaling_files': [
+      'webapp/crd/js/fallback_signal_strategy.js',
       'webapp/crd/js/signal_strategy.js',
       'webapp/crd/js/wcs_adapter.js',
       'webapp/crd/js/wcs_sandbox_container.js',
@@ -169,6 +170,7 @@
       'webapp/unittests/chrome_mocks.js',
       'webapp/js_proto/chrome_proto.js',
       'webapp/unittests/base_unittest.js',
+      'webapp/unittests/fallback_signal_strategy_unittest.js',
       'webapp/unittests/it2me_helpee_channel_unittest.js',
       'webapp/unittests/it2me_helper_channel_unittest.js',
       'webapp/unittests/it2me_service_unittest.js',
