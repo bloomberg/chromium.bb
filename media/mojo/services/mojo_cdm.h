@@ -59,7 +59,8 @@ class MojoCdm : public MediaKeys, public mojo::ContentDecryptionModuleClient {
   // mojo::ContentDecryptionModuleClient implementation.
   void OnSessionMessage(const mojo::String& session_id,
                         mojo::CdmMessageType message_type,
-                        mojo::Array<uint8_t> message) final;
+                        mojo::Array<uint8_t> message,
+                        const mojo::String& legacy_destination_url) final;
   void OnSessionClosed(const mojo::String& session_id) final;
   void OnSessionError(const mojo::String& session_id,
                       mojo::CdmException exception,

@@ -479,7 +479,8 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   void SessionMessage(PP_Instance instance,
                       PP_Var web_session_id_var,
                       PP_CdmMessageType message_type,
-                      PP_Var message_var) override;
+                      PP_Var message_var,
+                      PP_Var legacy_destination_url) override;
   void SessionKeysChange(
       PP_Instance instance,
       PP_Var web_session_id_var,

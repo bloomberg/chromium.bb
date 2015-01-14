@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From private/ppb_content_decryptor_private.idl modified Wed Jan  7 16:48:10
+// From private/ppb_content_decryptor_private.idl modified Mon Jan 12 17:33:29
 // 2015.
 
 #include "ppapi/c/pp_errors.h"
@@ -51,13 +51,14 @@ void PromiseRejected(PP_Instance instance,
 void SessionMessage(PP_Instance instance,
                     struct PP_Var web_session_id,
                     PP_CdmMessageType message_type,
-                    struct PP_Var message) {
+                    struct PP_Var message,
+                    struct PP_Var legacy_destination_url) {
   VLOG(4) << "PPB_ContentDecryptor_Private::SessionMessage()";
   EnterInstance enter(instance);
   if (enter.failed())
     return;
   enter.functions()->SessionMessage(instance, web_session_id, message_type,
-                                    message);
+                                    message, legacy_destination_url);
 }
 
 void SessionKeysChange(PP_Instance instance,

@@ -4,7 +4,7 @@
  */
 
 /* From private/ppb_content_decryptor_private.idl,
- *   modified Wed Jan  7 16:48:10 2015.
+ *   modified Mon Jan 12 17:33:29 2015.
  */
 
 #ifndef PPAPI_C_PRIVATE_PPB_CONTENT_DECRYPTOR_PRIVATE_H_
@@ -102,11 +102,16 @@ struct PPB_ContentDecryptor_Private_0_13 {
    *
    * @param[in] message A <code>PP_Var</code> of type
    * <code>PP_VARTYPE_ARRAY_BUFFER</code> that contains the message.
+   *
+   * @param[in] legacy_destination_url A <code>PP_Var</code> of type
+   * <code>PP_VARTYPE_STRING</code> containing the destination URL for the
+   * message.
    */
   void (*SessionMessage)(PP_Instance instance,
                          struct PP_Var web_session_id,
                          PP_CdmMessageType message_type,
-                         struct PP_Var message);
+                         struct PP_Var message,
+                         struct PP_Var legacy_destination_url);
   /**
    * The keys for a session have changed.
    *

@@ -1134,11 +1134,12 @@ IPC_MESSAGE_ROUTED5(PpapiHostMsg_PPBInstance_PromiseRejected,
                     PP_CdmExceptionCode /* exception_code */,
                     int32_t /* system_code */,
                     ppapi::proxy::SerializedVar /* error_description, String */)
-IPC_MESSAGE_ROUTED4(PpapiHostMsg_PPBInstance_SessionMessage,
+IPC_MESSAGE_ROUTED5(PpapiHostMsg_PPBInstance_SessionMessage,
                     PP_Instance /* instance */,
                     ppapi::proxy::SerializedVar /* web_session_id, String */,
                     PP_CdmMessageType /* message_type */,
-                    ppapi::proxy::SerializedVar /* message, ArrayBuffer */)
+                    ppapi::proxy::SerializedVar /* message, ArrayBuffer */,
+                    ppapi::proxy::SerializedVar /* destination_url, String */)
 IPC_MESSAGE_ROUTED4(PpapiHostMsg_PPBInstance_SessionKeysChange,
                     PP_Instance /* instance */,
                     std::string /* web_session_id */,

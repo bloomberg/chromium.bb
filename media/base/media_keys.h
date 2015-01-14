@@ -139,7 +139,8 @@ class MEDIA_EXPORT MediaKeys{
 // https://dvcs.w3.org/hg/html-media/raw-file/default/encrypted-media/encrypted-media.html#event-summary
 typedef base::Callback<void(const std::string& web_session_id,
                             MediaKeys::MessageType message_type,
-                            const std::vector<uint8>& message)>
+                            const std::vector<uint8>& message,
+                            const GURL& legacy_destination_url)>
     SessionMessageCB;
 
 typedef base::Callback<void(const std::string& web_session_id)> SessionClosedCB;

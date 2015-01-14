@@ -715,11 +715,21 @@ void CdmAdapter::OnSessionMessage(const char* session_id,
                                   uint32_t session_id_size,
                                   cdm::MessageType message_type,
                                   const char* message,
-                                  uint32_t message_size) {
+                                  uint32_t message_size,
+                                  const char* legacy_destination_url,
+                                  uint32_t legacy_destination_url_size) {
+  // Only license renewals should specify |legacy_destination_url|.
+  // |legacy_destination_url| is not passed to unprefixed EME applications,
+  // so it can be removed when the prefixed API is removed.
+  PP_DCHECK(legacy_destination_url_size == 0 ||
+            message_type == cdm::MessageType::kLicenseRenewal);
+
   PostOnMain(callback_factory_.NewCallback(
       &CdmAdapter::SendSessionMessageInternal,
-      std::string(session_id, session_id_size), message_type,
-      std::vector<uint8_t>(message, message + message_size)));
+      SessionMessage(
+          std::string(session_id, session_id_size), message_type, message,
+          message_size,
+          std::string(legacy_destination_url, legacy_destination_url_size))));
 }
 
 // cdm::Host_6 only.
@@ -729,16 +739,17 @@ void CdmAdapter::OnSessionMessage(const char* session_id,
                                   uint32_t message_size,
                                   const char* destination_url,
                                   uint32_t destination_url_size) {
-  // |destination_url| is no longer passed to EME applications, so it is
-  // dropped. All messages will appear as license renewals if |destination_url|
-  // is provided, license request if not.
+  // |destination_url| is no longer passed to unprefixed EME applications,
+  // so it will be dropped. All messages will appear as license renewals
+  // if |destination_url| is provided, license request if not.
   cdm::MessageType message_type = (destination_url_size > 0)
                                       ? cdm::MessageType::kLicenseRenewal
                                       : cdm::MessageType::kLicenseRequest;
   PostOnMain(callback_factory_.NewCallback(
       &CdmAdapter::SendSessionMessageInternal,
-      std::string(session_id, session_id_size), message_type,
-      std::vector<uint8_t>(message, message + message_size)));
+      SessionMessage(std::string(session_id, session_id_size), message_type,
+                     message, message_size,
+                     std::string(destination_url, destination_url_size))));
 }
 
 // cdm::Host_7 only.
@@ -851,21 +862,19 @@ void CdmAdapter::SendPromiseRejectedInternal(int32_t result,
       error.error_description);
 }
 
-void CdmAdapter::SendSessionMessageInternal(
-    int32_t result,
-    const std::string& session_id,
-    cdm::MessageType message_type,
-    const std::vector<uint8_t>& message) {
+void CdmAdapter::SendSessionMessageInternal(int32_t result,
+                                            const SessionMessage& message) {
   PP_DCHECK(result == PP_OK);
 
-  pp::VarArrayBuffer message_array_buffer(message.size());
-  if (message.size() > 0) {
-    memcpy(message_array_buffer.Map(), message.data(), message.size());
+  pp::VarArrayBuffer message_array_buffer(message.message.size());
+  if (message.message.size() > 0) {
+    memcpy(message_array_buffer.Map(), message.message.data(),
+           message.message.size());
   }
 
   pp::ContentDecryptor_Private::SessionMessage(
-      session_id, CdmMessageTypeToPpMessageType(message_type),
-      message_array_buffer);
+      message.session_id, CdmMessageTypeToPpMessageType(message.message_type),
+      message_array_buffer, message.legacy_destination_url);
 }
 
 void CdmAdapter::SendSessionClosedInternal(int32_t result,
@@ -1300,10 +1309,22 @@ void CdmAdapter::QueryOutputProtectionStatusDone(int32_t result) {
 
 CdmAdapter::SessionError::SessionError(cdm::Error error,
                                        uint32_t system_code,
-                                       std::string error_description)
+                                       const std::string& error_description)
     : error(error),
       system_code(system_code),
       error_description(error_description) {
+}
+
+CdmAdapter::SessionMessage::SessionMessage(
+    const std::string& session_id,
+    cdm::MessageType message_type,
+    const char* message,
+    uint32_t message_size,
+    const std::string& legacy_destination_url)
+    : session_id(session_id),
+      message_type(message_type),
+      message(message, message + message_size),
+      legacy_destination_url(legacy_destination_url) {
 }
 
 void* GetCdmHost(int host_interface_version, void* user_data) {

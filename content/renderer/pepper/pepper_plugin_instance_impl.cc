@@ -2427,9 +2427,10 @@ void PepperPluginInstanceImpl::PromiseRejected(
 void PepperPluginInstanceImpl::SessionMessage(PP_Instance instance,
                                               PP_Var web_session_id_var,
                                               PP_CdmMessageType message_type,
-                                              PP_Var message_var) {
-  content_decryptor_delegate_->OnSessionMessage(web_session_id_var,
-                                                message_type, message_var);
+                                              PP_Var message_var,
+                                              PP_Var legacy_destination_url) {
+  content_decryptor_delegate_->OnSessionMessage(
+      web_session_id_var, message_type, message_var, legacy_destination_url);
 }
 
 void PepperPluginInstanceImpl::SessionKeysChange(

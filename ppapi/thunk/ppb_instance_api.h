@@ -174,7 +174,8 @@ class PPB_Instance_API {
   virtual void SessionMessage(PP_Instance instance,
                               PP_Var web_session_id_var,
                               PP_CdmMessageType message_type,
-                              PP_Var message_var) = 0;
+                              PP_Var message_var,
+                              PP_Var legacy_destination_url_var) = 0;
   virtual void SessionKeysChange(
       PP_Instance instance,
       PP_Var web_session_id_var,

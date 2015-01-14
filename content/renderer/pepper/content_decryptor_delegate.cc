@@ -742,7 +742,8 @@ void ContentDecryptorDelegate::OnPromiseRejected(
 
 void ContentDecryptorDelegate::OnSessionMessage(PP_Var web_session_id,
                                                 PP_CdmMessageType message_type,
-                                                PP_Var message) {
+                                                PP_Var message,
+                                                PP_Var legacy_destination_url) {
   if (session_message_cb_.is_null())
     return;
 
@@ -756,9 +757,23 @@ void ContentDecryptorDelegate::OnSessionMessage(PP_Var web_session_id,
     message_vector.assign(data, data + message_array_buffer->ByteLength());
   }
 
+  StringVar* destination_url_string =
+      StringVar::FromPPVar(legacy_destination_url);
+  if (!destination_url_string) {
+    NOTREACHED();
+    return;
+  }
+
+  GURL verified_gurl = GURL(destination_url_string->value());
+  if (!verified_gurl.is_valid()) {
+    DLOG(WARNING) << "SessionMessage legacy_destination_url is invalid : "
+                  << verified_gurl.possibly_invalid_spec();
+    verified_gurl = GURL::EmptyGURL();  // Replace invalid destination_url.
+  }
+
   session_message_cb_.Run(web_session_id_string->value(),
                           PpCdmMessageTypeToMediaMessageType(message_type),
-                          message_vector);
+                          message_vector, verified_gurl);
 }
 
 void ContentDecryptorDelegate::OnSessionKeysChange(

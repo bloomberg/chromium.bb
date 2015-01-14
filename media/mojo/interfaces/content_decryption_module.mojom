@@ -117,7 +117,8 @@ interface ContentDecryptionModule {
 
 // Session callbacks. See media/base/media_keys.h for details.
 interface ContentDecryptionModuleClient {
-  OnSessionMessage(string session_id, CdmMessageType message_type, array<uint8> message);
+  OnSessionMessage(string session_id, CdmMessageType message_type,
+                   array<uint8> message, string legacy_destination_url);
 
   OnSessionClosed(string session_id);
 

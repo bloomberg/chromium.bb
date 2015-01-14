@@ -81,7 +81,8 @@ class ContentDecryptor_Private {
                        const std::string& error_description);
   void SessionMessage(const std::string& web_session_id,
                       PP_CdmMessageType message_type,
-                      pp::VarArrayBuffer message);
+                      pp::VarArrayBuffer message,
+                      const std::string& legacy_destination_url);
   void SessionKeysChange(const std::string& web_session_id,
                          bool has_additional_usable_key,
                          const std::vector<PP_KeyInformation>& key_information);

@@ -144,7 +144,8 @@ class PPB_Instance_Proxy : public InterfaceProxy,
   virtual void SessionMessage(PP_Instance instance,
                               PP_Var web_session_id_var,
                               PP_CdmMessageType message_type,
-                              PP_Var message_var) override;
+                              PP_Var message_var,
+                              PP_Var legacy_destination_url_var) override;
   virtual void SessionKeysChange(
       PP_Instance instance,
       PP_Var web_session_id_var,
@@ -273,10 +274,12 @@ class PPB_Instance_Proxy : public InterfaceProxy,
       PP_CdmExceptionCode exception_code,
       uint32_t system_code,
       SerializedVarReceiveInput error_description);
-  virtual void OnHostMsgSessionMessage(PP_Instance instance,
-                                       SerializedVarReceiveInput web_session_id,
-                                       PP_CdmMessageType message_type,
-                                       SerializedVarReceiveInput message);
+  virtual void OnHostMsgSessionMessage(
+      PP_Instance instance,
+      SerializedVarReceiveInput web_session_id,
+      PP_CdmMessageType message_type,
+      SerializedVarReceiveInput message,
+      SerializedVarReceiveInput legacy_destination_url);
   virtual void OnHostMsgSessionKeysChange(
       PP_Instance instance,
       const std::string& web_session_id,

@@ -103,7 +103,8 @@ class CdmSessionAdapter : public base::RefCounted<CdmSessionAdapter> {
   // Callbacks for firing session events.
   void OnSessionMessage(const std::string& web_session_id,
                         MediaKeys::MessageType message_type,
-                        const std::vector<uint8>& message);
+                        const std::vector<uint8>& message,
+                        const GURL& legacy_destination_url);
   void OnSessionKeysChange(const std::string& web_session_id,
                            bool has_additional_usable_key,
                            CdmKeysInfo keys_info);

@@ -308,14 +308,17 @@ void ContentDecryptor_Private::PromiseRejected(
   }
 }
 
-void ContentDecryptor_Private::SessionMessage(const std::string& web_session_id,
-                                              PP_CdmMessageType message_type,
-                                              pp::VarArrayBuffer message) {
+void ContentDecryptor_Private::SessionMessage(
+    const std::string& web_session_id,
+    PP_CdmMessageType message_type,
+    pp::VarArrayBuffer message,
+    const std::string& legacy_destination_url) {
   if (has_interface<PPB_ContentDecryptor_Private>()) {
     pp::Var web_session_id_var(web_session_id);
+    pp::Var legacy_destination_url_var(legacy_destination_url);
     get_interface<PPB_ContentDecryptor_Private>()->SessionMessage(
         associated_instance_.pp_instance(), web_session_id_var.pp_var(),
-        message_type, message.pp_var());
+        message_type, message.pp_var(), legacy_destination_url_var.pp_var());
   }
 }
 

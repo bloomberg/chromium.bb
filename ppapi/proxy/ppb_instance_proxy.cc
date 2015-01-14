@@ -600,11 +600,13 @@ void PPB_Instance_Proxy::PromiseRejected(PP_Instance instance,
 void PPB_Instance_Proxy::SessionMessage(PP_Instance instance,
                                         PP_Var web_session_id_var,
                                         PP_CdmMessageType message_type,
-                                        PP_Var message_var) {
+                                        PP_Var message_var,
+                                        PP_Var legacy_destination_url_var) {
   dispatcher()->Send(new PpapiHostMsg_PPBInstance_SessionMessage(
       API_ID_PPB_INSTANCE, instance,
       SerializedVarSendInput(dispatcher(), web_session_id_var), message_type,
-      SerializedVarSendInput(dispatcher(), message_var)));
+      SerializedVarSendInput(dispatcher(), message_var),
+      SerializedVarSendInput(dispatcher(), legacy_destination_url_var)));
 }
 
 void PPB_Instance_Proxy::SessionKeysChange(
@@ -1274,14 +1276,15 @@ void PPB_Instance_Proxy::OnHostMsgSessionMessage(
     PP_Instance instance,
     SerializedVarReceiveInput web_session_id,
     PP_CdmMessageType message_type,
-    SerializedVarReceiveInput message) {
+    SerializedVarReceiveInput message,
+    SerializedVarReceiveInput legacy_destination_url) {
   if (!dispatcher()->permissions().HasPermission(PERMISSION_PRIVATE))
     return;
   EnterInstanceNoLock enter(instance);
   if (enter.succeeded()) {
-    enter.functions()->SessionMessage(instance,
-                                      web_session_id.Get(dispatcher()),
-                                      message_type, message.Get(dispatcher()));
+    enter.functions()->SessionMessage(
+        instance, web_session_id.Get(dispatcher()), message_type,
+        message.Get(dispatcher()), legacy_destination_url.Get(dispatcher()));
   }
 }
 

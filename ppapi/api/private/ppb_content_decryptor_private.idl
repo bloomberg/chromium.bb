@@ -89,12 +89,17 @@ interface PPB_ContentDecryptor_Private {
    *
    * @param[in] message A <code>PP_Var</code> of type
    * <code>PP_VARTYPE_ARRAY_BUFFER</code> that contains the message.
+   *
+   * @param[in] legacy_destination_url A <code>PP_Var</code> of type
+   * <code>PP_VARTYPE_STRING</code> containing the destination URL for the
+   * message.
    */
   void SessionMessage(
       [in] PP_Instance instance,
       [in] PP_Var web_session_id,
       [in] PP_CdmMessageType message_type,
-      [in] PP_Var message);
+      [in] PP_Var message,
+      [in] PP_Var legacy_destination_url);
 
   /**
    * The keys for a session have changed.

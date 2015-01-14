@@ -108,7 +108,8 @@ class PpapiDecryptor : public media::MediaKeys,
   // Callbacks for |plugin_cdm_delegate_| to fire session events.
   void OnSessionMessage(const std::string& web_session_id,
                         MediaKeys::MessageType message_type,
-                        const std::vector<uint8>& message);
+                        const std::vector<uint8>& message,
+                        const GURL& legacy_destination_url);
   void OnSessionKeysChange(const std::string& web_session_id,
                            bool has_additional_usable_key,
                            media::CdmKeysInfo keys_info);

@@ -115,7 +115,9 @@ class CdmAdapter : public pp::Instance,
                         uint32_t session_id_size,
                         cdm::MessageType message_type,
                         const char* message,
-                        uint32_t message_size) override;
+                        uint32_t message_size,
+                        const char* legacy_destination_url,
+                        uint32_t legacy_destination_url_size) override;
   void OnSessionKeysChange(const char* session_id,
                            uint32_t session_id_size,
                            bool has_additional_usable_key,
@@ -164,10 +166,22 @@ class CdmAdapter : public pp::Instance,
   struct SessionError {
     SessionError(cdm::Error error,
                  uint32_t system_code,
-                 std::string error_description);
+                 const std::string& error_description);
     cdm::Error error;
     uint32_t system_code;
     std::string error_description;
+  };
+
+  struct SessionMessage {
+    SessionMessage(const std::string& session_id,
+                   cdm::MessageType message_type,
+                   const char* message,
+                   uint32_t message_size,
+                   const std::string& legacy_destination_url);
+    std::string session_id;
+    cdm::MessageType message_type;
+    std::vector<uint8_t> message;
+    std::string legacy_destination_url;
   };
 
   bool CreateCdmInstance(const std::string& key_system);
@@ -183,9 +197,7 @@ class CdmAdapter : public pp::Instance,
                                    uint32_t promise_id,
                                    const SessionError& error);
   void SendSessionMessageInternal(int32_t result,
-                                  const std::string& session_id,
-                                  cdm::MessageType message_type,
-                                  const std::vector<uint8_t>& message);
+                                  const SessionMessage& message);
   void SendSessionClosedInternal(int32_t result, const std::string& session_id);
   void SendSessionErrorInternal(int32_t result,
                                 const std::string& session_id,
