@@ -182,10 +182,10 @@ TEST(SafeBrowsingEnvironmentDataCollectionWinTest, VerifyLoadedModules) {
   // Edit the first byte of the function exported by the first module. Calling
   // GetModuleHandle so we do not increment the library ref count.
   HMODULE module_handle = GetModuleHandle(safe_browsing::kTestDllNames[0]);
-  EXPECT_NE(reinterpret_cast<HANDLE>(NULL), module_handle);
+  ASSERT_NE(reinterpret_cast<HANDLE>(NULL), module_handle);
   uint8_t* export_addr = reinterpret_cast<uint8_t*>(
       GetProcAddress(module_handle, safe_browsing::kTestExportName));
-  EXPECT_NE(reinterpret_cast<uint8_t*>(NULL), export_addr);
+  ASSERT_NE(reinterpret_cast<uint8_t*>(NULL), export_addr);
 
   uint8_t new_val = (*export_addr) + 1;
   SIZE_T bytes_written = 0;
@@ -194,7 +194,7 @@ TEST(SafeBrowsingEnvironmentDataCollectionWinTest, VerifyLoadedModules) {
                      reinterpret_cast<void*>(&new_val),
                      1,
                      &bytes_written);
-  EXPECT_EQ(1, bytes_written);
+  ASSERT_EQ(1, bytes_written);
 
   safe_browsing::ClientIncidentReport_EnvironmentData_Process process_report;
   safe_browsing::CollectModuleVerificationData(
@@ -205,7 +205,14 @@ TEST(SafeBrowsingEnvironmentDataCollectionWinTest, VerifyLoadedModules) {
   // CollectModuleVerificationData should return the single modified module and
   // its modified export.  The other module, being unmodified, is omitted from
   // the returned list of modules.
+  // AddressSanitizer build is special though, as it patches the code at
+  // startup, which makes every single module modified and introduces extra
+  // exports.
+  ASSERT_LE(1, process_report.module_state_size());
+#if !defined(ADDRESS_SANITIZER)
   EXPECT_EQ(1, process_report.module_state_size());
+  EXPECT_EQ(1, process_report.module_state(0).modified_export_size());
+#endif
 
   EXPECT_EQ(base::WideToUTF8(safe_browsing::kTestDllNames[0]),
             process_report.module_state(0).name());
@@ -213,7 +220,6 @@ TEST(SafeBrowsingEnvironmentDataCollectionWinTest, VerifyLoadedModules) {
       safe_browsing::ClientIncidentReport_EnvironmentData_Process_ModuleState::
           MODULE_STATE_MODIFIED,
       process_report.module_state(0).modified_state());
-  EXPECT_EQ(1, process_report.module_state(0).modified_export_size());
   EXPECT_EQ(std::string(safe_browsing::kTestExportName),
             process_report.module_state(0).modified_export(0));
 }
