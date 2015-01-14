@@ -2309,7 +2309,8 @@ class ValidationPool(object):
   @staticmethod
   def _CreateValidationFailureMessage(pre_cq_trybot, change, suspects, messages,
                                       sanity=True, infra_fail=False,
-                                      lab_fail=False, no_stat=None):
+                                      lab_fail=False, no_stat=None,
+                                      retry=False):
     """Create a message explaining why a validation failure occurred.
 
     Args:
@@ -2325,10 +2326,10 @@ class ValidationPool(object):
       lab_fail: The build failed purely due to test lab infrastructure failures.
       no_stat: A list of builders which failed prematurely without reporting
         status.
+      retry: Whether we should retry automatically.
 
     Returns:
-      (retry, msg): retry is a boolean indicating whether the failure should be
-      retried. msg is a message to communicate what happened.
+      A string that communicates what happened.
     """
     msg = []
     if no_stat:
@@ -2356,16 +2357,15 @@ class ValidationPool(object):
       other_suspects_str = ('%d other changes. See the blamelist for more '
                             'details.' % (len(other_suspects),))
 
-    will_retry_automatically = False
     if not sanity:
       msg.append('The build was consider not sane because the sanity check '
                  'builder(s) failed. Your change will not be blamed for the '
                  'failure.')
-      will_retry_automatically = True
+      assert retry
     elif lab_fail:
       msg.append('The build encountered Chrome OS Lab infrastructure issues. '
                  ' Your change will not be blamed for the failure.')
-      will_retry_automatically = True
+      assert retry
     else:
       if infra_fail:
         msg.append('The build failure may have been caused by infrastructure '
@@ -2389,13 +2389,13 @@ class ValidationPool(object):
           msg.append('One of the following changes is probably at fault: %s'
                      % other_suspects_str)
 
-        will_retry_automatically = True
+        assert retry
 
-    if will_retry_automatically:
+    if retry:
       bot = 'The Pre-Commit Queue' if pre_cq_trybot else 'The Commit Queue'
       msg.insert(0, 'NOTE: %s will retry your change automatically.' % bot)
 
-    return will_retry_automatically, '\n\n'.join(msg)
+    return '\n\n'.join(msg)
 
   def _ChangeFailedValidation(self, change, messages, suspects, sanity,
                               infra_fail, lab_fail, no_stat):
@@ -2413,9 +2413,10 @@ class ValidationPool(object):
       no_stat: A list of builders which failed prematurely without reporting
         status.
     """
-    retry, msg = self._CreateValidationFailureMessage(
+    retry = not sanity or lab_fail or change not in suspects
+    msg = self._CreateValidationFailureMessage(
         self.pre_cq_trybot, change, suspects, messages,
-        sanity, infra_fail, lab_fail, no_stat)
+        sanity, infra_fail, lab_fail, no_stat, retry)
     self.SendNotification(change, '%(details)s', details=msg)
     if retry:
       self.MarkForgiven(change)

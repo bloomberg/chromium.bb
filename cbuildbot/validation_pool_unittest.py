@@ -1340,12 +1340,13 @@ class TestCreateValidationFailureMessage(MoxBase):
       no_stat: List of builders that did not start.
       xretry: Whether we expect the change to be retried.
     """
-    retry, msg = validation_pool.ValidationPool._CreateValidationFailureMessage(
+    msg = validation_pool.ValidationPool._CreateValidationFailureMessage(
         False, change, set(suspects), [], sanity=sanity,
-        infra_fail=infra_fail, lab_fail=lab_fail, no_stat=no_stat)
+        infra_fail=infra_fail, lab_fail=lab_fail, no_stat=no_stat,
+        retry=xretry)
     for x in messages:
       self.assertTrue(x in msg)
-    self.assertEqual(retry, xretry)
+    self.assertEqual(xretry, 'retry your change automatically' in msg)
     return msg
 
   def testSuspectChange(self):
