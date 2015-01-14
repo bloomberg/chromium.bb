@@ -181,6 +181,14 @@
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app", "platform_app"]
   },
+  "mojoPrivate": {
+    "contexts": ["blessed_extension"],
+    "channel": "stable",
+    "extension_types": ["platform_app", "extension"],
+    "whitelist": [
+      "63ED55E43214C211F82122ED56407FF1A807F2A3"   // http://crbug.com/448569
+    ]
+  },
   "power": {
     "dependencies": ["permission:power"],
     "contexts": ["blessed_extension"]

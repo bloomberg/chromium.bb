@@ -235,6 +235,7 @@ if (false) {
       "common/url_pattern_unittest.cc",
       "common/user_script_unittest.cc",
       "renderer/activity_log_converter_strategy_unittest.cc",
+      "renderer/api/mojo_private/mojo_private_unittest.cc",
       "renderer/api/serial/data_receiver_unittest.cc",
       "renderer/api/serial/data_sender_unittest.cc",
       "renderer/api/serial/serial_api_unittest.cc",

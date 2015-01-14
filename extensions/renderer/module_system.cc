@@ -657,17 +657,20 @@ v8::Handle<v8::Value> ModuleSystem::LoadModule(const std::string& module_name) {
 void ModuleSystem::OnDidAddPendingModule(
     const std::string& id,
     const std::vector<std::string>& dependencies) {
-  if (!source_map_->Contains(id))
-    return;
+  bool module_system_managed = source_map_->Contains(id);
 
   gin::ModuleRegistry* registry =
       gin::ModuleRegistry::From(context_->v8_context());
   DCHECK(registry);
-  for (std::vector<std::string>::const_iterator it = dependencies.begin();
-       it != dependencies.end();
-       ++it) {
-    if (registry->available_modules().count(*it) == 0)
-      LoadModule(*it);
+  for (const auto& dependency : dependencies) {
+    // If a dependency is not available, and either the module or this
+    // dependency is managed by ModuleSystem, attempt to load it. Other
+    // gin::ModuleRegistry users (WebUI and users of the mojoPrivate API) are
+    // responsible for loading their module dependencies when required.
+    if (registry->available_modules().count(dependency) == 0 &&
+        (module_system_managed || source_map_->Contains(dependency))) {
+      LoadModule(dependency);
+    }
   }
   registry->AttemptToLoadMoreModules(GetIsolate());
 }
