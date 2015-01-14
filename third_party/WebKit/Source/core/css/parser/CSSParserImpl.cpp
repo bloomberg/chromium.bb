@@ -429,10 +429,11 @@ void CSSParserImpl::consumeDeclarationList(CSSParserTokenRange range, CSSRuleSou
 void CSSParserImpl::consumeDeclaration(CSSParserTokenRange range, CSSRuleSourceData::Type ruleType)
 {
     ASSERT(range.peek().type() == IdentToken);
-    CSSPropertyID id = range.consume().parseAsCSSPropertyID();
-    range.consumeWhitespaceAndComments();
+    CSSPropertyID id = range.consumeIncludingWhitespaceAndComments().parseAsCSSPropertyID();
+    if (id == CSSPropertyInvalid)
+        return;
     if (range.consume().type() != ColonToken)
-        return; // Parser error
+        return; // Parse error
 
     // FIXME: We shouldn't allow !important in @keyframes or @font-face
     const CSSParserToken* last = range.end() - 1;
