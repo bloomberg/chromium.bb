@@ -401,19 +401,6 @@ def _TryParseResultValuesFromOutput(metric, text):
   values_list = [float(v) for v in values_list
                  if bisect_utils.IsStringFloat(v)]
 
-  # If the metric is times/t, we need to sum the timings in order to get
-  # similar regression results as the try-bots.
-  metrics_to_sum = [
-      ['times', 't'],
-      ['times', 'page_load_time'],
-      ['cold_times', 'page_load_time'],
-      ['warm_times', 'page_load_time'],
-  ]
-
-  if metric in metrics_to_sum:
-    if values_list:
-      values_list = [reduce(lambda x, y: float(x) + float(y), values_list)]
-
   return values_list
 
 
@@ -1331,7 +1318,8 @@ class BisectPerformanceMetrics(object):
         print output
 
       if metric and self._IsBisectModeUsingMetric():
-        metric_values += _ParseMetricValuesFromOutput(metric, output)
+        metric_values.append(math_utils.Mean(
+            _ParseMetricValuesFromOutput(metric, output)))
         # If we're bisecting on a metric (ie, changes in the mean or
         # standard deviation) and no metric values are produced, bail out.
         if not metric_values:
