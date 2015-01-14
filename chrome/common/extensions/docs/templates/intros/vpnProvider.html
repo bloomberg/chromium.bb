@@ -20,8 +20,8 @@ Typical usage of vpnProvider is as follows:
     $(ref:notifyConnectionStateChanged).</li>
   <li>When the steps above are completed without errors, a virtual tunnel is
     created to the network stack of Chrome OS. IP packets can be sent through
-    the tunnel using $(ref:sendPacket) and any incoming packets will be received
-    using the event $(ref:onPacketReceived).</li>
+    the tunnel using $(ref:sendPacket) and any packets originating on the Chrome
+    OS device will be received using the event $(ref:onPacketReceived).</li>
   <li>When the user disconnects from the VPN configuration,
     $(ref:onPlatformMessage) will be fired with the message
     <code>"disconnected"</code>.</li>
