@@ -354,7 +354,8 @@ TEST_F(CastAuthUtilTest, VerifyBadCA) {
   AuthResult result = VerifyCredentials(
       auth_response, CreatePeerCert());
   EXPECT_FALSE(result.success());
-  EXPECT_EQ(AuthResult::ERROR_CERT_NOT_SIGNED_BY_TRUSTED_CA, result.error_type);
+  EXPECT_EQ(AuthResult::ERROR_FINGERPRINT_NOT_FOUND,
+            result.error_type);
 }
 
 TEST_F(CastAuthUtilTest, VerifyBadClientAuthCert) {

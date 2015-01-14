@@ -38,8 +38,8 @@ bool DecodeAndVerifyCredentials(
     return false;
   }
   *verified = networking_private_crypto::VerifyCredentials(
-      credentials.certificate, credentials.intermediate_certificates,
-      decoded_signed_data, credentials.unsigned_data, credentials.device_bssid);
+      credentials.certificate, decoded_signed_data, credentials.unsigned_data,
+      credentials.device_bssid);
   return true;
 }
 
@@ -158,8 +158,6 @@ void VerifyAndEncryptCredentialsCompleted(
 CryptoVerifyImpl::Credentials::Credentials(
     const VerificationProperties& properties) {
   certificate = properties.certificate;
-  if (properties.intermediate_certificates.get())
-    intermediate_certificates = *properties.intermediate_certificates;
   signed_data = properties.signed_data;
 
   std::vector<std::string> data_parts;

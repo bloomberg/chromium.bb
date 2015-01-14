@@ -4,14 +4,11 @@
 
 #include "extensions/browser/api/cast_channel/cast_auth_util.h"
 
-#include <vector>
-
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "extensions/browser/api/cast_channel/cast_message_util.h"
 #include "extensions/common/api/cast_channel/cast_channel.pb.h"
-#include "extensions/common/cast/cast_cert_validator.h"
 
 namespace extensions {
 namespace core_api {
@@ -22,8 +19,6 @@ const char* const kParseErrorPrefix = "Failed to parse auth message: ";
 
 const unsigned char kAudioOnlyPolicy[] =
     {0x06, 0x0A, 0x2B, 0x06, 0x01, 0x04, 0x01, 0xD6, 0x79, 0x02, 0x05, 0x02};
-
-namespace cast_crypto = ::extensions::core_api::cast_crypto;
 
 // Extracts an embedded DeviceAuthMessage payload from an auth challenge reply
 // message.
@@ -58,33 +53,6 @@ AuthResult ParseAuthMessage(const CastMessage& challenge_reply,
         "Auth message has no response field", AuthResult::ERROR_NO_RESPONSE);
   }
   return AuthResult();
-}
-
-AuthResult TranslateVerificationResult(
-    const cast_crypto::VerificationResult& result) {
-  AuthResult translated;
-  translated.error_message = result.error_message;
-  translated.nss_error_code = result.library_error_code;
-  switch (result.error_type) {
-    case cast_crypto::VerificationResult::ERROR_NONE:
-      translated.error_type = AuthResult::ERROR_NONE;
-      break;
-    case cast_crypto::VerificationResult::ERROR_CERT_INVALID:
-      translated.error_type = AuthResult::ERROR_CERT_PARSING_FAILED;
-      break;
-    case cast_crypto::VerificationResult::ERROR_CERT_UNTRUSTED:
-      translated.error_type = AuthResult::ERROR_CERT_NOT_SIGNED_BY_TRUSTED_CA;
-      break;
-    case cast_crypto::VerificationResult::ERROR_SIGNATURE_INVALID:
-      translated.error_type = AuthResult::ERROR_SIGNED_BLOBS_MISMATCH;
-      break;
-    case cast_crypto::VerificationResult::ERROR_INTERNAL:
-      translated.error_type = AuthResult::ERROR_UNEXPECTED_AUTH_LIBRARY_RESULT;
-      break;
-    default:
-      translated.error_type = AuthResult::ERROR_CERT_NOT_SIGNED_BY_TRUSTED_CA;
-  };
-  return translated;
 }
 
 }  // namespace
@@ -143,31 +111,6 @@ AuthResult AuthenticateChallengeReply(const CastMessage& challenge_reply,
   }
 
   return result;
-}
-
-// This function does the following
-// * Verifies that the trusted CA |response.intermediate_certificate| is
-//   whitelisted for use.
-// * Verifies that |response.client_auth_certificate| is signed
-//   by the trusted CA certificate.
-// * Verifies that |response.signature| matches the signature
-//   of |peer_cert| by |response.client_auth_certificate|'s public
-//   key.
-AuthResult VerifyCredentials(const AuthResponse& response,
-                             const std::string& peer_cert) {
-  // Verify the certificate
-  scoped_ptr<cast_crypto::CertVerificationContext> verification_context;
-  cast_crypto::VerificationResult ret = cast_crypto::VerifyDeviceCert(
-      response.client_auth_certificate(),
-      std::vector<std::string>(response.intermediate_certificate().begin(),
-                               response.intermediate_certificate().end()),
-      &verification_context);
-
-  if (ret.Success())
-    ret = verification_context->VerifySignatureOverData(response.signature(),
-                                                        peer_cert);
-
-  return TranslateVerificationResult(ret);
 }
 
 }  // namespace cast_channel
