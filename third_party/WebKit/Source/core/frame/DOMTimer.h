@@ -30,9 +30,10 @@
 #include "bindings/core/v8/ScheduledAction.h"
 #include "core/frame/SuspendableTimer.h"
 #include "platform/UserGestureIndicator.h"
-#include "wtf/Compiler.h"
+#include "platform/heap/Handle.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
+#include "wtf/RefPtr.h"
 
 namespace blink {
 
