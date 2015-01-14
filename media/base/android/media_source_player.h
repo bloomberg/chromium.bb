@@ -273,9 +273,9 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid,
   bool prerolling_;
 
   // Weak pointer passed to media decoder jobs for callbacks.
+  base::WeakPtr<MediaSourcePlayer> weak_this_;
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<MediaSourcePlayer> weak_factory_;
-  base::WeakPtr<MediaSourcePlayer> weak_this_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaSourcePlayer);
 };

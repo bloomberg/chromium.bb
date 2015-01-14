@@ -227,9 +227,9 @@ class MediaSourceDelegate : public media::DemuxerHost {
   const scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
+  base::WeakPtr<MediaSourceDelegate> main_weak_this_;
   base::WeakPtrFactory<MediaSourceDelegate> main_weak_factory_;
   base::WeakPtrFactory<MediaSourceDelegate> media_weak_factory_;
-  base::WeakPtr<MediaSourceDelegate> main_weak_this_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaSourceDelegate);
 };

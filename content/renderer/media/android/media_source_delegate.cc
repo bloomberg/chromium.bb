@@ -65,8 +65,8 @@ MediaSourceDelegate::MediaSourceDelegate(
       main_task_runner_(base::MessageLoopProxy::current()),
       media_task_runner_(media_task_runner),
       main_weak_factory_(this),
-      media_weak_factory_(this),
-      main_weak_this_(main_weak_factory_.GetWeakPtr()) {
+      media_weak_factory_(this) {
+  main_weak_this_ = main_weak_factory_.GetWeakPtr();
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 }
 
