@@ -522,11 +522,14 @@ bool ScriptController::canExecuteScripts(ReasonForCallingCanExecuteScripts reaso
         return true;
     }
 
+    FrameLoaderClient* client = m_frame->loader().client();
+    if (!client)
+        return false;
     Settings* settings = m_frame->settings();
-    const bool allowed = m_frame->loader().client()->allowScript(settings && settings->scriptEnabled())
+    const bool allowed = client->allowScript(settings && settings->scriptEnabled())
         || isInPrivateScriptIsolateWorld(m_isolate);
     if (!allowed && reason == AboutToExecuteScript)
-        m_frame->loader().client()->didNotAllowScript();
+        client->didNotAllowScript();
     return allowed;
 }
 
