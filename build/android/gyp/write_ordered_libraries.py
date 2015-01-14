@@ -31,7 +31,7 @@ _readelf = None
 _library_dirs = None
 
 _library_re = re.compile(
-    '.*NEEDED.*Shared library: \[(?P<library_name>[\w/.]+)\]')
+    '.*NEEDED.*Shared library: \[(?P<library_name>.+)\]')
 
 
 def SetReadelfPath(path):
