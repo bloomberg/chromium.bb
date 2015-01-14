@@ -113,9 +113,13 @@ importer.MediaImportHandler.prototype.onTaskProgress_ =
           strf('CLOUD_IMPORT_ITEMS_REMAINING', task.remainingFilesCount);
       break;
     case UpdateType.SUCCESS:
+      item.message = '';
+      item.progressValue = item.progressMax;
       item.state = ProgressItemState.COMPLETED;
       break;
     case UpdateType.ERROR:
+      item.message = '';
+      item.progressValue = item.progressMax;
       item.state = ProgressItemState.ERROR;
       break;
   }
@@ -281,9 +285,9 @@ importer.MediaImportHandler.ImportTask.prototype.importOne_ =
 
   /** @this {importer.MediaImportHandler.ImportTask} */
   var onComplete = function() {
-    completionCallback();
     this.markAsCopied_(entry, destination);
     this.notify(importer.TaskQueue.UpdateType.PROGRESS);
+    completionCallback();
   };
 
   fileOperationUtil.copyTo(
