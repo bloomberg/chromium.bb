@@ -154,6 +154,20 @@ int CountNodesWithTitlesMatching(BookmarkModel* model,
   return count;
 }
 
+// Returns the number of nodes of node type |node_type| in |model|.
+int CountNodes(BookmarkModel* model, BookmarkNode::Type node_type) {
+  ui::TreeNodeIterator<const BookmarkNode> iterator(model->root_node());
+  // Walk through the model tree looking for bookmark nodes of node type
+  // |node_type|.
+  int count = 0;
+  while (iterator.has_next()) {
+    const BookmarkNode* node = iterator.Next();
+    if (node->type() == node_type)
+      ++count;
+  }
+  return count;
+}
+
 // Checks if the favicon data in |bitmap_a| and |bitmap_b| are equivalent.
 // Returns true if they match.
 bool FaviconRawBitmapsMatch(const SkBitmap& bitmap_a,
@@ -772,6 +786,10 @@ const BookmarkNode* GetUniqueNodeByURL(int profile, const GURL& url) {
   if (nodes.empty())
     return NULL;
   return nodes[0];
+}
+
+int CountAllBookmarks(int profile) {
+  return CountNodes(GetBookmarkModel(profile), BookmarkNode::URL);
 }
 
 int CountBookmarksWithTitlesMatching(int profile, const std::string& title) {

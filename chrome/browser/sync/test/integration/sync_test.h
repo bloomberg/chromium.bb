@@ -26,6 +26,7 @@
 class ProfileSyncService;
 class ProfileSyncServiceHarness;
 class P2PInvalidationForwarder;
+class P2PSyncRefresher;
 
 namespace base {
 class CommandLine;
@@ -364,6 +365,10 @@ class SyncTest : public InProcessBrowserTest {
   // A set of objects to listen for commit activity and broadcast notifications
   // of this activity to its peer sync clients.
   ScopedVector<P2PInvalidationForwarder> invalidation_forwarders_;
+
+  // A set of objects to listen for commit activity and broadcast refresh
+  // notifications of this activity to its peer sync clients.
+  ScopedVector<P2PSyncRefresher> sync_refreshers_;
 
   // Collection of pointers to FakeServerInvalidation objects for each profile.
   std::vector<fake_server::FakeServerInvalidationService*>

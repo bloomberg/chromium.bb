@@ -34,6 +34,7 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/test/integration/fake_server_invalidation_service.h"
 #include "chrome/browser/sync/test/integration/p2p_invalidation_forwarder.h"
+#include "chrome/browser/sync/test/integration/p2p_sync_refresher.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
@@ -387,6 +388,7 @@ bool SyncTest::SetupClients() {
   browsers_.resize(num_clients_);
   clients_.resize(num_clients_);
   invalidation_forwarders_.resize(num_clients_);
+  sync_refreshers_.resize(num_clients_);
   fake_server_invalidation_services_.resize(num_clients_);
   for (int i = 0; i < num_clients_; ++i) {
     InitializeInstance(i);
@@ -482,7 +484,8 @@ void SyncTest::InitializeInvalidations(int index) {
     fake_server_invalidation_services_[index] = invalidation_service;
   } else if (server_type_ == EXTERNAL_LIVE_SERVER) {
     // DO NOTHING. External live sync servers use GCM to notify profiles of any
-    // invalidations in sync'ed data.
+    // invalidations in sync'ed data. In this case, to notify other profiles of
+    // invalidations, we use sync refresh notifications instead.
   } else {
     invalidation::P2PInvalidationService* p2p_invalidation_service =
         static_cast<invalidation::P2PInvalidationService*>(
@@ -526,6 +529,19 @@ bool SyncTest::SetupSync() {
     AwaitQuiescence();
   }
 
+  // SyncRefresher is used instead of invalidations to notify other profiles to
+  // do a sync refresh on committed data sets. This is only needed when running
+  // tests against external live server, otherwise invalidation service is used.
+  // With external live servers, the profiles commit data on first sync cycle
+  // automatically after signing in. To avoid misleading sync commit
+  // notifications at start up, we start the SyncRefresher observers post
+  // client set up.
+  if (server_type_ == EXTERNAL_LIVE_SERVER) {
+    for (int i = 0; i < num_clients_; ++i) {
+      sync_refreshers_[i] = new P2PSyncRefresher(clients_[i]->service());
+    }
+  }
+
   return true;
 }
 
@@ -553,6 +569,7 @@ void SyncTest::TearDownOnMainThread() {
   // corruption in QuitBrowser().
   CHECK_EQ(0U, chrome::GetTotalBrowserCount());
   invalidation_forwarders_.clear();
+  sync_refreshers_.clear();
   fake_server_invalidation_services_.clear();
   clients_.clear();
 }

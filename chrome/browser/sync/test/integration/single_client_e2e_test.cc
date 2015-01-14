@@ -14,6 +14,7 @@ class SingleClientE2ETest : public SyncTest {
   DISALLOW_COPY_AND_ASSIGN(SingleClientE2ETest);
 };
 
+// http://crbug.com/431366
 IN_PROC_BROWSER_TEST_F(SingleClientE2ETest, DISABLED_SanitySetup) {
   ASSERT_TRUE(SetupSync()) <<  "SetupSync() failed.";
   // TODO(shadi): Add AwaitCommitActivityCompletion() once GCM servers are added

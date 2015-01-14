@@ -171,6 +171,9 @@ const BookmarkNode* GetUniqueNodeByURL(
     int profile,
     const GURL& url) WARN_UNUSED_RESULT;
 
+// Returns the number of bookmarks in bookmark model of profile |profile|.
+int CountAllBookmarks(int profile) WARN_UNUSED_RESULT;
+
 // Returns the number of bookmarks in bookmark model of profile |profile|
 // whose titles match the string |title|.
 int CountBookmarksWithTitlesMatching(
