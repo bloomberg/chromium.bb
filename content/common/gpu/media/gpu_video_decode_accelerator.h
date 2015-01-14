@@ -77,7 +77,6 @@ class GpuVideoDecodeAccelerator
   std::vector<CreateVDAFp> CreateVDAFps();
   scoped_ptr<media::VideoDecodeAccelerator> CreateDXVAVDA();
   scoped_ptr<media::VideoDecodeAccelerator> CreateV4L2VDA();
-  scoped_ptr<media::VideoDecodeAccelerator> CreateV4L2SliceVDA();
   scoped_ptr<media::VideoDecodeAccelerator> CreateVaapiVDA();
   scoped_ptr<media::VideoDecodeAccelerator> CreateVTVDA();
   scoped_ptr<media::VideoDecodeAccelerator> CreateOzoneVDA();
