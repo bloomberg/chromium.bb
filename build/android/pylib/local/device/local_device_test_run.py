@@ -58,7 +58,7 @@ class LocalDeviceTestRun(test_run.TestRun):
             all_fail_results[result.GetName()] = result
 
       results_names = set(r.GetName() for r in results.GetAll())
-      tests = [t for t in tests if t not in results_names]
+      tests = [t for t in tests if self._GetTestName(t) not in results_names]
       tries += 1
 
     all_unknown_test_names = set(tests)
@@ -84,6 +84,9 @@ class LocalDeviceTestRun(test_run.TestRun):
 
   def _CreateShards(self, tests):
     raise NotImplementedError
+
+  def _GetTestName(self, test):
+    return test
 
   def _GetTests(self):
     raise NotImplementedError

@@ -152,7 +152,7 @@ class InstrumentationTestInstance(test_instance.TestInstance):
     self._test_package = None
     self._test_runner = None
     self._test_support_apk = None
-    self.__inititalizeApkAttributes(args, error_func)
+    self.__initializeApkAttributes(args, error_func)
 
     self._data_deps = None
     self._isolate_abs_path = None

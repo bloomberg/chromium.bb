@@ -321,6 +321,10 @@ class TestRunner(base_test_runner.BaseTestRunner):
         '%s/%s' % (self.test_pkg.GetPackageName(), self.options.test_runner),
         raw=True, extras=extras, timeout=timeout, retries=0)
 
+  def _GenerateTestResult(self, test, instr_statuses, start_ms, duration_ms):
+    return instrumentation_test_instance.GenerateTestResult(
+        test, instr_statuses, start_ms, duration_ms)
+
   #override
   def RunTest(self, test):
     results = base_test_result.TestRunResults()
@@ -344,8 +348,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
       # Parse the test output
       _, _, statuses = (
           instrumentation_test_instance.ParseAmInstrumentRawOutput(raw_output))
-      result = instrumentation_test_instance.GenerateTestResult(
-          test, statuses, start_ms, duration_ms)
+      result = self._GenerateTestResult(test, statuses, start_ms, duration_ms)
       if local_device_instrumentation_test_run.DidPackageCrashOnDevice(
           self.test_pkg.GetPackageName(), self.device):
         result.SetType(base_test_result.ResultType.CRASH)
