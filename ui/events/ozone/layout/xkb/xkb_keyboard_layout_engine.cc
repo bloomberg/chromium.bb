@@ -625,32 +625,13 @@ const PrintableSimpleEntry kSimpleMap[] = {
     {0x0259, VKEY_OEM_3},      // schwa
 };
 
-void ParseLayoutName(const std::string& layout_name,
-                     std::string* layout_id,
-                     std::string* layout_variant) {
-  size_t dash_index = layout_name.find('-');
-  size_t parentheses_index = layout_name.find('(');
-  *layout_id = layout_name;
-  *layout_variant = "";
-  if (parentheses_index != std::string::npos) {
-    *layout_id = layout_name.substr(0, parentheses_index);
-    size_t close_index = layout_name.find(')', parentheses_index);
-    if (close_index == std::string::npos)
-      close_index = layout_name.size();
-    *layout_variant = layout_name.substr(parentheses_index + 1,
-                                         close_index - parentheses_index - 1);
-  } else if (dash_index != std::string::npos) {
-    *layout_id = layout_name.substr(0, dash_index);
-    *layout_variant = layout_name.substr(dash_index + 1);
-  }
-}
-
 void LoadKeymap(const std::string& layout_name,
                 scoped_refptr<base::SingleThreadTaskRunner> reply_runner,
                 const LoadKeymapCallback& reply_callback) {
   std::string layout_id;
   std::string layout_variant;
-  ParseLayoutName(layout_name, &layout_id, &layout_variant);
+  XkbKeyboardLayoutEngine::ParseLayoutName(layout_name, &layout_id,
+                                           &layout_variant);
   xkb_rule_names names = {.rules = NULL,
                           .model = "pc101",
                           .layout = layout_id.c_str(),
@@ -951,4 +932,23 @@ base::char16 XkbKeyboardLayoutEngine::XkbSubCharacter(
   return character;
 }
 
+void XkbKeyboardLayoutEngine::ParseLayoutName(const std::string& layout_name,
+                                              std::string* layout_id,
+                                              std::string* layout_variant) {
+  size_t dash_index = layout_name.find('-');
+  size_t parentheses_index = layout_name.find('(');
+  *layout_id = layout_name;
+  *layout_variant = "";
+  if (parentheses_index != std::string::npos) {
+    *layout_id = layout_name.substr(0, parentheses_index);
+    size_t close_index = layout_name.find(')', parentheses_index);
+    if (close_index == std::string::npos)
+      close_index = layout_name.size();
+    *layout_variant = layout_name.substr(parentheses_index + 1,
+                                         close_index - parentheses_index - 1);
+  } else if (dash_index != std::string::npos) {
+    *layout_id = layout_name.substr(0, dash_index);
+    *layout_variant = layout_name.substr(dash_index + 1);
+  }
+}
 }  // namespace ui
