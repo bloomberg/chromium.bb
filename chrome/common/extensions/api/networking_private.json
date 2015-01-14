@@ -27,11 +27,17 @@
         "properties": {
           "certificate": {
             "type": "string",
-            "description": "A string containing a PEM-encoded X.509 certificate for use in verifying the signed data."
+            "description": "A string containing a PEM-encoded (including the \"BEGIN CERTIFICATE\" header and \"END CERTIFICATE\" footer) X.509 certificate for use in verifying the signed data."
+          },
+          "intermediateCertificates": {
+            "type": "array",
+            "items": { "type": "string" },
+            "optional": true,
+            "description": "An array of PEM-encoded X.509 intermediate certificate authority certificates. Each PEM-encoded certificate is expected to have the \"BEGIN CERTIFICATE\" header and \"END CERTIFICATE\" footer."
           },
           "publicKey": {
             "type": "string",
-            "description": "A string containing a PEM-encoded RSA public key to be used to compare with the one in signedData"
+            "description": "A string containing a Base64-encoded RSAPublicKey ASN.1 structure, representing the public key to be used by verifyAndEncryptCredentials and verifyAndEncryptData methods."
           },
           "nonce": {
             "type": "string",
