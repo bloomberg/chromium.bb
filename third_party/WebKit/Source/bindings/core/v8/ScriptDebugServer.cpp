@@ -691,7 +691,9 @@ void ScriptDebugServer::compileScript(ScriptState* scriptState, const String& ex
             *exceptionDetailsText = toCoreStringWithUndefinedOrNullCheck(message->Get());
             *lineNumber = message->GetLineNumber();
             *columnNumber = message->GetStartColumn();
-            *stackTrace = createScriptCallStack(m_isolate, message->GetStackTrace(), message->GetStackTrace()->GetFrameCount());
+            v8::Handle<v8::StackTrace> messageStackTrace = message->GetStackTrace();
+            if (!messageStackTrace.IsEmpty() && messageStackTrace->GetFrameCount() > 0)
+                *stackTrace = createScriptCallStack(m_isolate, messageStackTrace, messageStackTrace->GetFrameCount());
         }
         return;
     }
@@ -732,7 +734,9 @@ void ScriptDebugServer::runScript(ScriptState* scriptState, const String& script
             *exceptionDetailsText = toCoreStringWithUndefinedOrNullCheck(message->Get());
             *lineNumber = message->GetLineNumber();
             *columnNumber = message->GetStartColumn();
-            *stackTrace = createScriptCallStack(m_isolate, message->GetStackTrace(), message->GetStackTrace()->GetFrameCount());
+            v8::Handle<v8::StackTrace> messageStackTrace = message->GetStackTrace();
+            if (!messageStackTrace.IsEmpty() && messageStackTrace->GetFrameCount() > 0)
+                *stackTrace = createScriptCallStack(m_isolate, messageStackTrace, messageStackTrace->GetFrameCount());
         }
     } else {
         *result = ScriptValue(scriptState, value);

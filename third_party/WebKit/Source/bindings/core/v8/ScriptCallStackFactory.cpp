@@ -87,6 +87,7 @@ static void toScriptCallFramesVector(v8::Handle<v8::StackTrace> stackTrace, Vect
 static PassRefPtrWillBeRawPtr<ScriptCallStack> createScriptCallStack(v8::Isolate* isolate, v8::Handle<v8::StackTrace> stackTrace, size_t maxStackSize, bool emptyStackIsAllowed)
 {
     ASSERT(isolate->InContext());
+    ASSERT(!stackTrace.IsEmpty());
     v8::HandleScope scope(isolate);
     Vector<ScriptCallFrame> scriptCallFrames;
     toScriptCallFramesVector(stackTrace, scriptCallFrames, maxStackSize, emptyStackIsAllowed, isolate);
