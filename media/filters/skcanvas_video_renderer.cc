@@ -429,10 +429,14 @@ void SkCanvasVideoRenderer::Paint(const scoped_refptr<VideoFrame>& video_frame,
     if (accelerated_last_frame_.isNull() ||
         video_frame->timestamp() != accelerated_last_frame_timestamp_) {
       if (video_frame->format() == VideoFrame::NATIVE_TEXTURE) {
+        // Draw HW Video on HW Canvas.
         DCHECK(context_3d.gl);
         DCHECK(context_3d.gr_context);
-        // Draw HW Video on HW Canvas.
-        DCHECK(!accelerated_generator_);
+        if (accelerated_generator_) {
+          // Reset SkBitmap used in SWVideo-to-HWCanvas path.
+          accelerated_last_frame_.reset();
+          accelerated_generator_ = nullptr;
+        }
         if (!CopyVideoFrameTextureToSkBitmapTexture(
                 video_frame.get(), &accelerated_last_frame_, context_3d)) {
           NOTREACHED();
@@ -440,6 +444,10 @@ void SkCanvasVideoRenderer::Paint(const scoped_refptr<VideoFrame>& video_frame,
         }
       } else {
         // Draw SW Video on HW Canvas.
+        if (!accelerated_generator_ && !accelerated_last_frame_.isNull()) {
+          // Reset SkBitmap used in HWVideo-to-HWCanvas path.
+          accelerated_last_frame_.reset();
+        }
         accelerated_generator_ = new VideoImageGenerator(video_frame);
 
         // Note: This takes ownership of |accelerated_generator_|.
