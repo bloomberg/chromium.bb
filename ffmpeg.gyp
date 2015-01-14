@@ -327,6 +327,7 @@
                   '-L<(shared_generated_dir)',
                 ],
                 'libraries': [
+                  '-lm',
                   '-lz',
                 ],
               },
