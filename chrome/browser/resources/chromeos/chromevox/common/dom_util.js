@@ -2447,9 +2447,14 @@ cvox.DomUtil.isMathImg = function(node) {
   if (node.tagName != 'IMG') {
     return false;
   }
-  var className = node.className.toLowerCase();
-  return cvox.DomUtil.ALT_MATH_CLASSES.tex.indexOf(className) != -1 ||
-      cvox.DomUtil.ALT_MATH_CLASSES.asciimath.indexOf(className) != -1;
+  for (var i = 0, className; className = node.classList.item(i); i++) {
+    className = className.toLowerCase();
+    if (cvox.DomUtil.ALT_MATH_CLASSES.tex.indexOf(className) != -1 ||
+        cvox.DomUtil.ALT_MATH_CLASSES.asciimath.indexOf(className) != -1) {
+      return true;
+    }
+  }
+  return false;
 };
 
 
