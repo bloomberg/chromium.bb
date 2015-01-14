@@ -78,7 +78,7 @@ class VpnDefaultView : public TrayItemMore,
         NetworkHandler::Get()->network_state_handler();
     const NetworkState* vpn =
         handler->FirstNetworkByType(NetworkTypePattern::VPN());
-    if (!vpn || (vpn->connection_state() == shill::kStateIdle)) {
+    if (!vpn || (!vpn->IsConnectedState() && !vpn->IsConnectingState())) {
       *image = ui::network_icon::GetImageForDisconnectedNetwork(
           ui::network_icon::ICON_TYPE_DEFAULT_VIEW, shill::kTypeVPN);
       if (label) {
