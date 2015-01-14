@@ -28,21 +28,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebImageGenerator_h
-#define WebImageGenerator_h
+#include "config.h"
+#include "public/platform/WebImageGenerator.h"
 
-#include "WebCommon.h"
-
-class SkData;
-class SkImageGenerator;
+#include "platform/graphics/DecodingImageGenerator.h"
 
 namespace blink {
 
-class WebImageGenerator {
-public:
-    static SkImageGenerator* create(SkData*);
-};
+SkImageGenerator* WebImageGenerator::create(SkData* data)
+{
+    return DecodingImageGenerator::create(data);
+}
 
 } // namespace blink
-
-#endif

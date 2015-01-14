@@ -172,6 +172,7 @@
       'WebIDBMetadata.cpp',
       'WebImageCache.cpp',
       'WebImageDecoder.cpp',
+      'WebImageGenerator.cpp',
       'WebInputElement.cpp',
       'WebInputEvent.cpp',
       'WebInputEventConversion.cpp',
