@@ -1629,8 +1629,7 @@ chrome_pfq.add_config('alex-chrome-pfq',
 chrome_pfq.add_config('lumpy-chrome-pfq',
   _base_configs['lumpy'],
   afdo_generate=True,
-  hw_tests=[AFDORecordTest()] + HWTestConfig.DefaultListPFQ(
-      minimum_duts=0, timeout=2*HWTestConfig.DEFAULT_HW_TEST_TIMEOUT),
+  hw_tests=[AFDORecordTest()] + HWTestConfig.DefaultListPFQ(),
 )
 
 chrome_pfq.add_config('daisy_skate-chrome-pfq',
