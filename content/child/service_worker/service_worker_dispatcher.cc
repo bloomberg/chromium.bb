@@ -196,18 +196,18 @@ void ServiceWorkerDispatcher::RemoveProviderContext(
   worker_to_provider_.erase(provider_context->controller_handle_id());
 }
 
-void ServiceWorkerDispatcher::AddScriptClient(
+void ServiceWorkerDispatcher::AddProviderClient(
     int provider_id,
     blink::WebServiceWorkerProviderClient* client) {
   DCHECK(client);
-  DCHECK(!ContainsKey(script_clients_, provider_id));
-  script_clients_[provider_id] = client;
+  DCHECK(!ContainsKey(provider_clients_, provider_id));
+  provider_clients_[provider_id] = client;
 }
 
-void ServiceWorkerDispatcher::RemoveScriptClient(int provider_id) {
+void ServiceWorkerDispatcher::RemoveProviderClient(int provider_id) {
   // This could be possibly called multiple times to ensure termination.
-  if (ContainsKey(script_clients_, provider_id))
-    script_clients_.erase(provider_id);
+  if (ContainsKey(provider_clients_, provider_id))
+    provider_clients_.erase(provider_id);
 }
 
 ServiceWorkerDispatcher*
@@ -601,8 +601,8 @@ void ServiceWorkerDispatcher::SetReadyRegistration(
     return;
   }
 
-  ScriptClientMap::iterator client = script_clients_.find(provider_id);
-  if (client == script_clients_.end())
+  ProviderClientMap::iterator client = provider_clients_.find(provider_id);
+  if (client == provider_clients_.end())
     return;
 
   ServiceWorkerRegistrationObjectInfo info =
@@ -640,8 +640,8 @@ void ServiceWorkerDispatcher::OnSetControllerServiceWorker(
     provider->second->OnSetControllerServiceWorker(info);
   }
 
-  ScriptClientMap::iterator found = script_clients_.find(provider_id);
-  if (found != script_clients_.end()) {
+  ProviderClientMap::iterator found = provider_clients_.find(provider_id);
+  if (found != provider_clients_.end()) {
     // Populate the .controller field with the new worker object.
     found->second->setController(GetServiceWorker(info, false),
                                  should_notify_controllerchange);
@@ -661,8 +661,8 @@ void ServiceWorkerDispatcher::OnPostMessage(
                "ServiceWorkerDispatcher::OnPostMessage",
                "Thread ID", thread_id);
 
-  ScriptClientMap::iterator found = script_clients_.find(provider_id);
-  if (found == script_clients_.end()) {
+  ProviderClientMap::iterator found = provider_clients_.find(provider_id);
+  if (found == provider_clients_.end()) {
     // For now we do no queueing for messages sent to nonexistent / unattached
     // client.
     return;
@@ -686,10 +686,10 @@ void ServiceWorkerDispatcher::OnGetClientInfo(int thread_id,
                                               int request_id,
                                               int provider_id) {
   blink::WebServiceWorkerClientInfo info;
-  ScriptClientMap::iterator found = script_clients_.find(provider_id);
+  ProviderClientMap::iterator found = provider_clients_.find(provider_id);
   // TODO(ksakamoto): Could we track these values in the browser side? Except
   // for |isFocused|, it would be pretty easy.
-  if (found != script_clients_.end() && found->second->getClientInfo(&info)) {
+  if (found != provider_clients_.end() && found->second->getClientInfo(&info)) {
     ServiceWorkerClientInfo result;
     result.client_id = info.clientID;
     result.page_visibility_state = info.pageVisibilityState;

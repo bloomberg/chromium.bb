@@ -48,7 +48,7 @@ class WebServiceWorkerProviderImpl
   int provider_id() const { return provider_id_; }
 
  private:
-  void RemoveScriptClient();
+  void RemoveProviderClient();
   ServiceWorkerDispatcher* GetDispatcher();
 
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;

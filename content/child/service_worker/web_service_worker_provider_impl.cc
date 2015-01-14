@@ -31,14 +31,14 @@ WebServiceWorkerProviderImpl::WebServiceWorkerProviderImpl(
 }
 
 WebServiceWorkerProviderImpl::~WebServiceWorkerProviderImpl() {
-  // Make sure the script client is removed.
-  RemoveScriptClient();
+  // Make sure the provider client is removed.
+  RemoveProviderClient();
 }
 
 void WebServiceWorkerProviderImpl::setClient(
     blink::WebServiceWorkerProviderClient* client) {
   if (!client) {
-    RemoveScriptClient();
+    RemoveProviderClient();
     return;
   }
 
@@ -47,7 +47,7 @@ void WebServiceWorkerProviderImpl::setClient(
   // (e.g. on document and on dedicated workers) can properly share
   // the single provider context across threads. (http://crbug.com/366538
   // for more context)
-  GetDispatcher()->AddScriptClient(provider_id_, client);
+  GetDispatcher()->AddProviderClient(provider_id_, client);
 
   if (!context_->registration()) {
     // This provider is not associated with any registration.
@@ -101,13 +101,13 @@ void WebServiceWorkerProviderImpl::getRegistration(
   GetDispatcher()->GetRegistration(provider_id_, document_url, callbacks);
 }
 
-void WebServiceWorkerProviderImpl::RemoveScriptClient() {
-  // Remove the script client, but only if the dispatcher is still there.
+void WebServiceWorkerProviderImpl::RemoveProviderClient() {
+  // Remove the provider client, but only if the dispatcher is still there.
   // (For cleanup path we don't need to bother creating a new dispatcher)
   ServiceWorkerDispatcher* dispatcher =
       ServiceWorkerDispatcher::GetThreadSpecificInstance();
   if (dispatcher)
-    dispatcher->RemoveScriptClient(provider_id_);
+    dispatcher->RemoveProviderClient(provider_id_);
 }
 
 ServiceWorkerDispatcher* WebServiceWorkerProviderImpl::GetDispatcher() {

@@ -83,9 +83,9 @@ class ServiceWorkerDispatcher : public WorkerTaskRunner::Observer {
 
   // Called when navigator.serviceWorker is instantiated or detached
   // for a document whose provider can be identified by |provider_id|.
-  void AddScriptClient(int provider_id,
-                       blink::WebServiceWorkerProviderClient* client);
-  void RemoveScriptClient(int provider_id);
+  void AddProviderClient(int provider_id,
+                         blink::WebServiceWorkerProviderClient* client);
+  void RemoveProviderClient(int provider_id);
 
   // If an existing WebServiceWorkerImpl exists for the Service
   // Worker, it is returned; otherwise a WebServiceWorkerImpl is
@@ -136,10 +136,12 @@ class ServiceWorkerDispatcher : public WorkerTaskRunner::Observer {
       IDMapOwnPointer> UnregistrationCallbackMap;
   typedef IDMap<WebServiceWorkerGetRegistrationCallbacks,
       IDMapOwnPointer> GetRegistrationCallbackMap;
-  typedef std::map<int, blink::WebServiceWorkerProviderClient*> ScriptClientMap;
+
+  typedef std::map<int, blink::WebServiceWorkerProviderClient*>
+      ProviderClientMap;
   typedef std::map<int, ServiceWorkerProviderContext*> ProviderContextMap;
-  typedef std::map<int, WebServiceWorkerImpl*> WorkerObjectMap;
   typedef std::map<int, ServiceWorkerProviderContext*> WorkerToProviderMap;
+  typedef std::map<int, WebServiceWorkerImpl*> WorkerObjectMap;
   typedef std::map<int, WebServiceWorkerRegistrationImpl*>
       RegistrationObjectMap;
 
@@ -237,8 +239,10 @@ class ServiceWorkerDispatcher : public WorkerTaskRunner::Observer {
   RegistrationCallbackMap pending_registration_callbacks_;
   UnregistrationCallbackMap pending_unregistration_callbacks_;
   GetRegistrationCallbackMap pending_get_registration_callbacks_;
-  ScriptClientMap script_clients_;
+
+  ProviderClientMap provider_clients_;
   ProviderContextMap provider_contexts_;
+
   WorkerObjectMap service_workers_;
   RegistrationObjectMap registrations_;
 
