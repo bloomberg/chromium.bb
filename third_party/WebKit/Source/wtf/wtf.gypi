@@ -77,7 +77,6 @@
             'Locker.h',
             'MainThread.cpp',
             'MainThread.h',
-            'MallocZoneSupport.h',
             'MathExtras.h',
             'MessageQueue.h',
             'NonCopyingSort.h',
