@@ -9,6 +9,8 @@
 #include "base/timer/timer.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/dom3/dom_code.h"
+#include "ui/events/ozone/layout/keyboard_layout_engine.h"
+#include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gl/gl_surface.h"
@@ -136,6 +138,8 @@ int main(int argc, char** argv) {
   base::MessageLoopForUI message_loop;
 
   ui::OzonePlatform::InitializeForUI();
+  ui::KeyboardLayoutEngineManager::GetKeyboardLayoutEngine()
+      ->SetCurrentLayoutByName("us");
 
   base::RunLoop run_loop;
 
