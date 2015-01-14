@@ -9,6 +9,7 @@
 #ifndef CONTENT_COMMON_GPU_MEDIA_V4L2_VIDEO_DEVICE_H_
 #define CONTENT_COMMON_GPU_MEDIA_V4L2_VIDEO_DEVICE_H_
 
+#include "base/memory/ref_counted.h"
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_frame.h"
 #include "ui/gfx/geometry/size.h"
@@ -16,17 +17,16 @@
 
 namespace content {
 
-class V4L2Device {
+class V4L2Device : public base::RefCountedThreadSafe<V4L2Device> {
  public:
   // Utility format conversion functions
   static media::VideoFrame::Format V4L2PixFmtToVideoFrameFormat(uint32 format);
   static uint32 VideoFrameFormatToV4L2PixFmt(media::VideoFrame::Format format);
-  static uint32 VideoCodecProfileToV4L2PixFmt(media::VideoCodecProfile profile);
+  static uint32 VideoCodecProfileToV4L2PixFmt(media::VideoCodecProfile profile,
+                                              bool slice_based);
   static uint32_t V4L2PixFmtToDrmFormat(uint32_t format);
   // Convert format requirements requested by a V4L2 device to gfx::Size.
   static gfx::Size CodedSizeFromV4L2Format(struct v4l2_format format);
-
-  virtual ~V4L2Device();
 
   enum Type {
     kDecoder,
@@ -36,7 +36,7 @@ class V4L2Device {
 
   // Creates and initializes an appropriate V4L2Device of |type| for the
   // current platform and returns a scoped_ptr<V4L2Device> on success, or NULL.
-  static scoped_ptr<V4L2Device> Create(Type type);
+  static scoped_refptr<V4L2Device> Create(Type type);
 
   // Parameters and return value are the same as for the standard ioctl() system
   // call.
@@ -98,6 +98,10 @@ class V4L2Device {
 
   // Returns the preferred V4L2 input format or 0 if don't care.
   virtual uint32 PreferredInputFormat() = 0;
+
+ protected:
+  friend class base::RefCountedThreadSafe<V4L2Device>;
+  virtual ~V4L2Device();
 };
 
 }  //  namespace content

@@ -19,7 +19,6 @@ namespace content {
 class TegraV4L2Device : public V4L2Device {
  public:
   explicit TegraV4L2Device(Type type);
-  virtual ~TegraV4L2Device();
 
   int Ioctl(int flags, void* arg) override;
   bool Poll(bool poll_device, bool* event_pending) override;
@@ -46,6 +45,7 @@ class TegraV4L2Device : public V4L2Device {
   uint32 PreferredInputFormat() override;
 
  private:
+  ~TegraV4L2Device() override;
   const Type type_;
 
   // The actual device fd.

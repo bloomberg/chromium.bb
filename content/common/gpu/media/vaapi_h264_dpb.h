@@ -5,29 +5,25 @@
 // This file contains an implementation of an H.264 Decoded Picture Buffer
 // used in H264 decoders.
 
-#ifndef CONTENT_COMMON_GPU_MEDIA_H264_DPB_H_
-#define CONTENT_COMMON_GPU_MEDIA_H264_DPB_H_
+#ifndef CONTENT_COMMON_GPU_MEDIA_VAAPI_H264_DPB_H_
+#define CONTENT_COMMON_GPU_MEDIA_VAAPI_H264_DPB_H_
 
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_vector.h"
 #include "media/filters/h264_parser.h"
 
 namespace content {
 
-class V4L2H264Picture;
-
 // A picture (a frame or a field) in the H.264 spec sense.
 // See spec at http://www.itu.int/rec/T-REC-H.264
-struct H264PictureBase {
+struct VaapiH264Picture {
   enum Field {
     FIELD_NONE,
     FIELD_TOP,
     FIELD_BOTTOM,
   };
-
-  H264PictureBase();
 
   // Values calculated per H.264 specification or taken from slice header.
   // See spec for more details on each (some names have been converted from
@@ -63,36 +59,19 @@ struct H264PictureBase {
   media::H264DecRefPicMarking
       ref_pic_marking[media::H264SliceHeader::kRefListSize];
 
-  // Position in DPB (i.e. index in DPB).
-  int dpb_position;
-};
-
-class H264Picture : public H264PictureBase,
-                    public base::RefCounted<H264Picture> {
- public:
-  H264Picture();
-
-  virtual V4L2H264Picture* AsV4L2H264Picture();
-
-  using Vector = std::vector<scoped_refptr<H264Picture>>;
-
- protected:
-  friend class base::RefCounted<H264Picture>;
-  virtual ~H264Picture();
-
-  DISALLOW_COPY_AND_ASSIGN(H264Picture);
+  typedef std::vector<VaapiH264Picture*> PtrVector;
 };
 
 // DPB - Decoded Picture Buffer.
 // Stores decoded pictures that will be used for future display
 // and/or reference.
-class H264DPB {
+class VaapiH264DPB {
  public:
-  H264DPB();
-  ~H264DPB();
+  VaapiH264DPB();
+  ~VaapiH264DPB();
 
   void set_max_num_pics(size_t max_num_pics);
-  size_t max_num_pics() const { return max_num_pics_; }
+  size_t max_num_pics() { return max_num_pics_; }
 
   // Remove unused (not reference and already outputted) pictures from DPB
   // and free it.
@@ -105,7 +84,7 @@ class H264DPB {
   void Clear();
 
   // Store picture in DPB. DPB takes ownership of its resources.
-  void StorePic(const scoped_refptr<H264Picture>& pic);
+  void StorePic(VaapiH264Picture* pic);
 
   // Return the number of reference pictures in DPB.
   int CountRefPics();
@@ -114,33 +93,32 @@ class H264DPB {
   void MarkAllUnusedForRef();
 
   // Return a short-term reference picture by its pic_num.
-  scoped_refptr<H264Picture> GetShortRefPicByPicNum(int pic_num);
+  VaapiH264Picture* GetShortRefPicByPicNum(int pic_num);
 
   // Return a long-term reference picture by its long_term_pic_num.
-  scoped_refptr<H264Picture> GetLongRefPicByLongTermPicNum(int pic_num);
+  VaapiH264Picture* GetLongRefPicByLongTermPicNum(int pic_num);
 
   // Return the short reference picture with lowest frame_num. Used for sliding
   // window memory management.
-  scoped_refptr<H264Picture> GetLowestFrameNumWrapShortRefPic();
+  VaapiH264Picture* GetLowestFrameNumWrapShortRefPic();
 
   // Append all pictures that have not been outputted yet to the passed |out|
   // vector, sorted by lowest pic_order_cnt (in output order).
-  void GetNotOutputtedPicsAppending(H264Picture::Vector* out);
+  void GetNotOutputtedPicsAppending(VaapiH264Picture::PtrVector& out);
 
   // Append all short term reference pictures to the passed |out| vector.
-  void GetShortTermRefPicsAppending(H264Picture::Vector* out);
+  void GetShortTermRefPicsAppending(VaapiH264Picture::PtrVector& out);
 
   // Append all long term reference pictures to the passed |out| vector.
-  void GetLongTermRefPicsAppending(H264Picture::Vector* out);
+  void GetLongTermRefPicsAppending(VaapiH264Picture::PtrVector& out);
 
   // Iterators for direct access to DPB contents.
   // Will be invalidated after any of Remove* calls.
-  H264Picture::Vector::iterator begin() { return pics_.begin(); }
-  H264Picture::Vector::iterator end() { return pics_.end(); }
-  H264Picture::Vector::const_iterator begin() const { return pics_.begin(); }
-  H264Picture::Vector::const_iterator end() const { return pics_.end(); }
-  H264Picture::Vector::reverse_iterator rbegin() { return pics_.rbegin(); }
-  H264Picture::Vector::reverse_iterator rend() { return pics_.rend(); }
+  typedef ScopedVector<VaapiH264Picture> Pictures;
+  Pictures::iterator begin() { return pics_.begin(); }
+  Pictures::iterator end() { return pics_.end(); }
+  Pictures::reverse_iterator rbegin() { return pics_.rbegin(); }
+  Pictures::reverse_iterator rend() { return pics_.rend(); }
 
   size_t size() const { return pics_.size(); }
   bool IsFull() const { return pics_.size() == max_num_pics_; }
@@ -149,14 +127,12 @@ class H264DPB {
   enum { kDPBMaxSize = 16, };
 
  private:
-  void UpdatePicPositions();
-
-  H264Picture::Vector pics_;
+  Pictures pics_;
   size_t max_num_pics_;
 
-  DISALLOW_COPY_AND_ASSIGN(H264DPB);
+  DISALLOW_COPY_AND_ASSIGN(VaapiH264DPB);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_COMMON_GPU_MEDIA_H264_DPB_H_
+#endif  // CONTENT_COMMON_GPU_MEDIA_VAAPI_H264_DPB_H_

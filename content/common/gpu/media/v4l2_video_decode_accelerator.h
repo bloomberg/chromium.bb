@@ -14,6 +14,7 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/linked_ptr.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
@@ -80,7 +81,7 @@ class CONTENT_EXPORT V4L2VideoDecodeAccelerator
       EGLContext egl_context,
       const base::WeakPtr<Client>& io_client_,
       const base::Callback<bool(void)>& make_context_current,
-      scoped_ptr<V4L2Device> device,
+      const scoped_refptr<V4L2Device>& device,
       const scoped_refptr<base::MessageLoopProxy>& io_message_loop_proxy);
   virtual ~V4L2VideoDecodeAccelerator();
 
@@ -340,7 +341,7 @@ class CONTENT_EXPORT V4L2VideoDecodeAccelerator
   // BitstreamBuffer we're presently reading.
   scoped_ptr<BitstreamBufferRef> decoder_current_bitstream_buffer_;
   // The V4L2Device this class is operating upon.
-  scoped_ptr<V4L2Device> device_;
+  scoped_refptr<V4L2Device> device_;
   // FlushTask() and ResetTask() should not affect buffers that have been
   // queued afterwards.  For flushing or resetting the pipeline then, we will
   // delay these buffers until after the flush or reset completes.

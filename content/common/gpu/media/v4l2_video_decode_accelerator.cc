@@ -158,14 +158,14 @@ V4L2VideoDecodeAccelerator::V4L2VideoDecodeAccelerator(
     EGLContext egl_context,
     const base::WeakPtr<Client>& io_client,
     const base::Callback<bool(void)>& make_context_current,
-    scoped_ptr<V4L2Device> device,
+    const scoped_refptr<V4L2Device>& device,
     const scoped_refptr<base::MessageLoopProxy>& io_message_loop_proxy)
     : child_message_loop_proxy_(base::MessageLoopProxy::current()),
       io_message_loop_proxy_(io_message_loop_proxy),
       io_client_(io_client),
       decoder_thread_("V4L2DecoderThread"),
       decoder_state_(kUninitialized),
-      device_(device.Pass()),
+      device_(device),
       decoder_delay_bitstream_buffer_id_(-1),
       decoder_current_input_buffer_(-1),
       decoder_decode_buffer_tasks_scheduled_(0),
@@ -1703,7 +1703,7 @@ bool V4L2VideoDecodeAccelerator::SetupFormats() {
   DCHECK(!output_streamon_);
 
   __u32 input_format_fourcc =
-      V4L2Device::VideoCodecProfileToV4L2PixFmt(video_profile_);
+      V4L2Device::VideoCodecProfileToV4L2PixFmt(video_profile_, false);
   if (!input_format_fourcc) {
     NOTREACHED();
     return false;
