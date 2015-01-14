@@ -317,25 +317,31 @@ void HTMLDocumentParser::didReceiveParsedChunkFromBackgroundParser(PassOwnPtr<Pa
 {
     TRACE_EVENT0("blink", "HTMLDocumentParser::didReceiveParsedChunkFromBackgroundParser");
 
-    // alert(), runModalDialog, and the JavaScript Debugger all run nested event loops
-    // which can cause this method to be re-entered. We detect re-entry using
-    // hasActiveParser(), save the chunk as a speculation, and return.
-    if (isWaitingForScripts() || !m_speculations.isEmpty() || document()->activeParserCount() > 0 || m_tasksWereSuspended || isScheduledForResume()) {
-        if (m_tasksWereSuspended)
-            m_parserScheduler->forceResumeAfterYield();
-        m_preloader->takeAndPreload(chunk->preloads);
-        m_speculations.append(chunk);
+    if (!isParsing())
         return;
+
+    // ApplicationCache needs to be initialized before issuing preloads.
+    // We suspend preload until HTMLHTMLElement is inserted and
+    // ApplicationCache is initialized.
+    if (!document()->documentElement()) {
+        for (auto& request : chunk->preloads)
+            m_queuedPreloads.append(request.release());
+    } else {
+        // We can safely assume that there are no queued preloads request after
+        // the document element is available, as we empty the queue immediately
+        // after the document element is created in pumpPendingSpeculations().
+        ASSERT(m_queuedPreloads.isEmpty());
+        m_preloader->takeAndPreload(chunk->preloads);
     }
 
-    // processParsedChunkFromBackgroundParser can cause this parser to be detached from the Document,
-    // but we need to ensure it isn't deleted yet.
-    RefPtrWillBeRawPtr<HTMLDocumentParser> protect(this);
-
-    ASSERT(m_speculations.isEmpty());
-    chunk->preloads.clear(); // We don't need to preload because we're going to parse immediately.
     m_speculations.append(chunk);
-    pumpPendingSpeculations();
+
+    if (!isWaitingForScripts() && !isScheduledForResume()) {
+        if (m_tasksWereSuspended)
+            m_parserScheduler->forceResumeAfterYield();
+        else
+            m_parserScheduler->scheduleForResume();
+    }
 }
 
 void HTMLDocumentParser::didReceiveEncodingDataFromBackgroundParser(const DocumentEncodingData& data)
@@ -452,6 +458,9 @@ size_t HTMLDocumentParser::processParsedChunkFromBackgroundParser(PassOwnPtr<Par
         m_textPosition = it->textPosition();
 
         constructTreeFromCompactHTMLToken(*it);
+
+        if (!m_queuedPreloads.isEmpty() && document()->documentElement())
+            m_preloader->takeAndPreload(m_queuedPreloads);
 
         if (isStopped())
             break;

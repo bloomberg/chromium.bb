@@ -7,6 +7,14 @@ ParseHTML
 ParseHTML
 ----> EvaluateScript
 --------> Timestamp: SCRIPT TAG
+----> EventDispatch
+----> EventDispatch
+----> EventDispatch
+----> EventDispatch
+--------> FunctionCall
+------------> FunctionCall
+----> EventDispatch
+----> EventDispatch
 EvaluateScript Properties:
 {
     children : <object>
@@ -23,14 +31,4 @@ EvaluateScript Properties:
     thread : <string>
     type : "EvaluateScript"
 }
-ParseHTML
-ParseHTML
-----> EventDispatch
-----> EventDispatch
-----> EventDispatch
-----> EventDispatch
---------> FunctionCall
-------------> FunctionCall
-----> EventDispatch
-----> EventDispatch
 
