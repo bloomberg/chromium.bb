@@ -265,7 +265,7 @@ void LocalFrame::detach()
     // detached, so protect a reference to it.
     RefPtrWillBeRawPtr<LocalFrame> protect(this);
     m_loader.stopAllLoaders();
-    m_loader.closeURL();
+    m_loader.dispatchUnloadEvent();
     detachChildren();
     // stopAllLoaders() needs to be called after detachChildren(), because detachChildren()
     // will trigger the unload event handlers of any child frames, and those event

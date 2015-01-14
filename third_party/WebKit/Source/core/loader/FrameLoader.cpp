@@ -182,23 +182,6 @@ void FrameLoader::setDefersLoading(bool defers)
     }
 }
 
-void FrameLoader::stopLoading()
-{
-    if (m_frame->document() && m_frame->document()->parsing()) {
-        finishedParsing();
-        m_frame->document()->setParsingState(Document::FinishedParsing);
-    }
-
-    if (Document* doc = m_frame->document()) {
-        // FIXME: HTML5 doesn't tell us to set the state to complete when aborting, but we do anyway to match legacy behavior.
-        // http://www.w3.org/Bugs/Public/show_bug.cgi?id=10537
-        doc->setReadyState(Document::Complete);
-    }
-
-    // FIXME: This will cancel redirection timer, which really needs to be restarted when restoring the frame from b/f cache.
-    m_frame->navigationScheduler().cancel();
-}
-
 void FrameLoader::saveScrollState()
 {
     if (!m_currentItem || !m_frame->view())
@@ -230,18 +213,15 @@ void FrameLoader::clearScrollPositionAndViewState()
     m_currentItem->setPageScaleFactor(0);
 }
 
-bool FrameLoader::closeURL()
+void FrameLoader::dispatchUnloadEvent()
 {
     saveScrollState();
 
-    // Should only send the pagehide event here if the current document exists.
     if (m_frame->document())
         m_frame->document()->dispatchUnloadEvents();
-    stopLoading();
 
     if (Page* page = m_frame->page())
         page->undoStack().didUnloadFrame(*m_frame);
-    return true;
 }
 
 void FrameLoader::didExplicitOpen()
@@ -907,6 +887,13 @@ void FrameLoader::stopAllLoaders()
     }
 
     m_frame->document()->suppressLoadEvent();
+    // FIXME: This is an odd set of steps to shut down parsing and it's unclear why it works.
+    // It's also unclear why other steps don't work.
+    if (m_frame->document()->parsing()) {
+        finishedParsing();
+        m_frame->document()->setParsingState(Document::FinishedParsing);
+    }
+    m_frame->document()->setReadyState(Document::Complete);
     if (m_provisionalDocumentLoader)
         m_provisionalDocumentLoader->stopLoading();
     if (m_documentLoader)
@@ -917,6 +904,7 @@ void FrameLoader::stopAllLoaders()
     m_provisionalDocumentLoader = nullptr;
 
     m_checkTimer.stop();
+    m_frame->navigationScheduler().cancel();
 
     m_inStopAllLoaders = false;
 
@@ -962,13 +950,13 @@ void FrameLoader::commitProvisionalLoad()
         pdl->timing()->setHasSameOriginAsPreviousDocument(securityOrigin->canRequest(m_frame->document()->url()));
     }
 
-    // The call to closeURL() invokes the unload event handler, which can execute arbitrary
-    // JavaScript. If the script initiates a new load, we need to abandon the current load,
+    // The call to dispatchUnloadEvent() can execute arbitrary JavaScript.
+    // If the script initiates a new load, we need to abandon the current load,
     // or the two will stomp each other.
     // detachChildren will similarly trigger child frame unload event handlers.
     if (m_documentLoader) {
         client()->dispatchWillClose();
-        closeURL();
+        dispatchUnloadEvent();
     }
     m_frame->detachChildren();
     if (pdl != m_provisionalDocumentLoader)

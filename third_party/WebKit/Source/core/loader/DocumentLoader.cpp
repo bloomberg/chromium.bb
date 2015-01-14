@@ -158,11 +158,6 @@ const KURL& DocumentLoader::urlForHistory() const
     return unreachableURL().isEmpty() ? url() : unreachableURL();
 }
 
-void DocumentLoader::setMainDocumentError(const ResourceError& error)
-{
-    m_mainDocumentError = error;
-}
-
 void DocumentLoader::mainReceivedError(const ResourceError& error)
 {
     ASSERT(!error.isNull());
@@ -170,7 +165,7 @@ void DocumentLoader::mainReceivedError(const ResourceError& error)
     m_applicationCacheHost->failedLoadingMainResource();
     if (!frameLoader())
         return;
-    setMainDocumentError(error);
+    m_mainDocumentError = error;
     clearMainResourceLoader();
     frameLoader()->receivedMainResourceError(this, error);
     clearMainResourceHandle();
@@ -185,39 +180,9 @@ void DocumentLoader::stopLoading()
     RefPtrWillBeRawPtr<LocalFrame> protectFrame(m_frame);
     RefPtr<DocumentLoader> protectLoader(this);
 
-    // In some rare cases, calling FrameLoader::stopLoading could cause isLoading() to return false.
-    // (This can happen when there's a single XMLHttpRequest currently loading and stopLoading causes it
-    // to stop loading. Because of this, we need to save it so we don't return early.
-    bool loading = isLoading();
-
-    if (m_committed) {
-        // Attempt to stop the frame if the document loader is loading, or if it is done loading but
-        // still  parsing. Failure to do so can cause a world leak.
-        Document* doc = m_frame->document();
-
-        if (loading || doc->parsing())
-            m_frame->loader().stopLoading();
-    }
-
-    if (!loading) {
-        m_fetcher->stopFetching();
-        return;
-    }
-
-    if (m_loadingMainResource) {
-        // Stop the main resource loader and let it send the cancelled message.
-        cancelMainResourceLoad(ResourceError::cancelledError(m_request.url()));
-    } else if (m_fetcher->isFetching()) {
-        // The main resource loader already finished loading. Set the cancelled error on the
-        // document and let the resourceLoaders send individual cancelled messages below.
-        setMainDocumentError(ResourceError::cancelledError(m_request.url()));
-    } else {
-        // If there are no resource loaders, we need to manufacture a cancelled message.
-        // (A back/forward navigation has no resource loaders because its resources are cached.)
-        mainReceivedError(ResourceError::cancelledError(m_request.url()));
-    }
-
     m_fetcher->stopFetching();
+    if (isLoading())
+        cancelMainResourceLoad(ResourceError::cancelledError(m_request.url()));
 }
 
 void DocumentLoader::commitIfReady()

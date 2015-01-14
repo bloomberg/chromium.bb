@@ -702,7 +702,7 @@ void WebLocalFrameImpl::dispatchUnloadEvent()
 {
     if (!frame())
         return;
-    frame()->loader().closeURL();
+    frame()->loader().dispatchUnloadEvent();
 }
 
 NPObject* WebLocalFrameImpl::windowObject() const

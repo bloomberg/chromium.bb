@@ -144,7 +144,6 @@ namespace blink {
 
         void commitIfReady();
         void commitData(const char* bytes, size_t length);
-        void setMainDocumentError(const ResourceError&);
         void clearMainResourceLoader();
         ResourceLoader* mainResourceLoader() const;
         void clearMainResourceHandle();

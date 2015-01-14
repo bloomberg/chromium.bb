@@ -86,12 +86,9 @@ public:
 
     static void reportLocalLoadFailed(LocalFrame*, const String& url);
 
-    // FIXME: These are all functions which stop loads. We have too many.
     // Warning: stopAllLoaders can and will detach the LocalFrame out from under you. All callers need to either protect the LocalFrame
     // or guarantee they won't in any way access the LocalFrame after stopAllLoaders returns.
     void stopAllLoaders();
-    void stopLoading();
-    bool closeURL();
 
     // FIXME: clear() is trying to do too many things. We should break it down into smaller functions.
     void clear();
@@ -167,6 +164,7 @@ public:
     bool allAncestorsAreComplete() const; // including this
 
     bool shouldClose();
+    void dispatchUnloadEvent();
 
     bool allowPlugins(ReasonForCallingAllowPlugins);
 
