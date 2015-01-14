@@ -109,6 +109,8 @@ bool MediaControls::initializeControls()
 {
     TrackExceptionState exceptionState;
 
+    setShadowPseudoId(AtomicString("-webkit-media-controls", AtomicString::ConstructFromLiteral));
+
     RefPtrWillBeRawPtr<MediaControlOverlayEnclosureElement> overlayEnclosure = MediaControlOverlayEnclosureElement::create(*this);
 
     if (document().settings() && document().settings()->mediaControlsOverlayPlayButtonEnabled()) {
@@ -539,12 +541,6 @@ void MediaControls::resetHideMediaControlsTimer()
         startHideMediaControlsTimer();
 }
 
-
-const AtomicString& MediaControls::shadowPseudoId() const
-{
-    DEFINE_STATIC_LOCAL(AtomicString, id, ("-webkit-media-controls", AtomicString::ConstructFromLiteral));
-    return id;
-}
 
 bool MediaControls::containsRelatedTarget(Event* event)
 {

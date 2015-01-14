@@ -110,9 +110,6 @@ private:
     virtual void defaultEventHandler(Event*) override;
     bool containsRelatedTarget(Event*);
 
-    // Element
-    virtual const AtomicString& shadowPseudoId() const override;
-
     RawPtrWillBeMember<HTMLMediaElement> m_mediaElement;
 
     // Container for the media control elements.

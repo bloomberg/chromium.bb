@@ -48,7 +48,6 @@ public:
 private:
     explicit MediaControlPanelElement(MediaControls&);
 
-    virtual const AtomicString& shadowPseudoId() const override;
     virtual void defaultEventHandler(Event*) override;
 
     void startTimer();
@@ -70,7 +69,6 @@ public:
 
 private:
     explicit MediaControlPanelEnclosureElement(MediaControls&);
-    virtual const AtomicString& shadowPseudoId() const override;
 };
 
 // ----------------------------
@@ -81,7 +79,6 @@ public:
 
 private:
     explicit MediaControlOverlayEnclosureElement(MediaControls&);
-    virtual const AtomicString& shadowPseudoId() const override;
     virtual void* preDispatchEventHandler(Event*) override;
 };
 
@@ -97,7 +94,6 @@ public:
 private:
     explicit MediaControlMuteButtonElement(MediaControls&);
 
-    virtual const AtomicString& shadowPseudoId() const override;
     virtual void defaultEventHandler(Event*) override;
 };
 
@@ -113,7 +109,6 @@ public:
 private:
     explicit MediaControlPlayButtonElement(MediaControls&);
 
-    virtual const AtomicString& shadowPseudoId() const override;
     virtual void defaultEventHandler(Event*) override;
 };
 
@@ -128,7 +123,6 @@ public:
 private:
     explicit MediaControlOverlayPlayButtonElement(MediaControls&);
 
-    virtual const AtomicString& shadowPseudoId() const override;
     virtual void defaultEventHandler(Event*) override;
     virtual bool keepEventInNode(Event*) override;
 };
@@ -146,7 +140,6 @@ public:
 private:
     explicit MediaControlToggleClosedCaptionsButtonElement(MediaControls&);
 
-    virtual const AtomicString& shadowPseudoId() const override;
     virtual void defaultEventHandler(Event*) override;
 };
 
@@ -166,7 +159,6 @@ public:
 private:
     explicit MediaControlTimelineElement(MediaControls&);
 
-    virtual const AtomicString& shadowPseudoId() const override;
     virtual void defaultEventHandler(Event*) override;
     virtual bool keepEventInNode(Event*) override;
 };
@@ -184,7 +176,6 @@ public:
 private:
     explicit MediaControlFullscreenButtonElement(MediaControls&);
 
-    virtual const AtomicString& shadowPseudoId() const override;
     virtual void defaultEventHandler(Event*) override;
 };
 
@@ -221,7 +212,6 @@ public:
 private:
     explicit MediaControlVolumeSliderElement(MediaControls&);
 
-    virtual const AtomicString& shadowPseudoId() const override;
     virtual void defaultEventHandler(Event*) override;
     virtual bool keepEventInNode(Event*) override;
 };
@@ -234,7 +224,6 @@ public:
 
 private:
     explicit MediaControlTimeRemainingDisplayElement(MediaControls&);
-    virtual const AtomicString& shadowPseudoId() const override;
 };
 
 // ----------------------------
@@ -245,7 +234,6 @@ public:
 
 private:
     explicit MediaControlCurrentTimeDisplayElement(MediaControls&);
-    virtual const AtomicString& shadowPseudoId() const override;
 };
 
 // ----------------------------
@@ -256,11 +244,9 @@ public:
 
     void updateDisplay();
     void updateSizes();
-    static const AtomicString& textTrackContainerElementShadowPseudoId();
 
 private:
     explicit MediaControlTextTrackContainerElement(MediaControls&);
-    virtual const AtomicString& shadowPseudoId() const override;
 
     virtual RenderObject* createRenderer(RenderStyle*) override;
 
