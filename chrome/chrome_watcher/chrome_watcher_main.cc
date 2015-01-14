@@ -116,6 +116,16 @@ void BrowserMonitor::OnEndSession(LPARAM lparam) {
   DCHECK_EQ(main_thread_, base::MessageLoopProxy::current());
 
   exit_funnel_.RecordEvent(L"WatcherLogoff");
+  if (lparam & ENDSESSION_CLOSEAPP)
+    exit_funnel_.RecordEvent(L"ES_CloseApp");
+  if (lparam & ENDSESSION_CRITICAL)
+    exit_funnel_.RecordEvent(L"ES_Critical");
+  if (lparam & ENDSESSION_LOGOFF)
+    exit_funnel_.RecordEvent(L"ES_Logoff");
+  const LPARAM kKnownBits =
+      ENDSESSION_CLOSEAPP | ENDSESSION_CRITICAL | ENDSESSION_LOGOFF;
+  if (lparam & ~kKnownBits)
+    exit_funnel_.RecordEvent(L"ES_Other");
 
   // Belt-and-suspenders; make sure our message loop exits ASAP.
   if (browser_exited_)
