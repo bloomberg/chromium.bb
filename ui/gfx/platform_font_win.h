@@ -49,11 +49,10 @@ class GFX_EXPORT PlatformFontWin : public PlatformFont {
   // name could not be retrieved, returns GetFontName().
   std::string GetLocalizedFontName() const;
 
-  // Returns a derived Font with the specified |style| and with height at most
-  // |height|. If the height and style of the receiver already match, it is
-  // returned. Otherwise, the returned Font will have the largest size such that
-  // its height is less than or equal to |height| (since there may not exist a
-  // size that matches the exact |height| specified).
+  // Returns a derived Font with the specified |style| and maximum |height|.
+  // The returned Font will be the largest font size with a height <= |height|,
+  // since a size with the exact specified |height| may not necessarily exist.
+  // GetMinimumFontSize() may impose a font size that is taller than |height|.
   Font DeriveFontWithHeight(int height, int style);
 
   // Overridden from PlatformFont:
@@ -171,10 +170,6 @@ class GFX_EXPORT PlatformFontWin : public PlatformFont {
   // |font_metrics| instead of calculating new one.
   static HFontRef* CreateHFontRefFromGDI(HFONT font,
                                          const TEXTMETRIC& font_metrics);
-
-  // Returns a largest derived Font whose height does not exceed the height of
-  // |base_font|.
-  static Font DeriveWithCorrectedSize(HFONT base_font);
 
   // Creates and returns a new HFontRef from the specified HFONT using metrics
   // from skia. Currently this is only used if we use DirectWrite for font

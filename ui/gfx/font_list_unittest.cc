@@ -266,24 +266,24 @@ TEST(FontListTest, Fonts_GetHeight_GetBaseline) {
   EXPECT_EQ(font1.GetBaseline(), font_list1.GetBaseline());
 
   // If there are two different fonts, the font list returns the max value
-  // for ascent and descent.
+  // for the baseline (ascent) and height.
   Font font2("Symbol", 16);
   ASSERT_EQ("symbol",
             base::StringToLowerASCII(font2.GetActualFontNameForTesting()));
   EXPECT_NE(font1.GetBaseline(), font2.GetBaseline());
-  EXPECT_NE(font1.GetHeight() - font1.GetBaseline(),
-            font2.GetHeight() - font2.GetBaseline());
+  // TODO(ananta): Find a size and font pair with reliably distinct descents.
+  EXPECT_NE(font1.GetHeight(), font2.GetHeight());
   std::vector<Font> fonts;
   fonts.push_back(font1);
   fonts.push_back(font2);
   FontList font_list_mix(fonts);
   // ascent of FontList == max(ascent of Fonts)
+  EXPECT_EQ(std::max(font1.GetBaseline(), font2.GetBaseline()),
+            font_list_mix.GetBaseline());
+  // descent of FontList == max(descent of Fonts)
   EXPECT_EQ(std::max(font1.GetHeight() - font1.GetBaseline(),
                      font2.GetHeight() - font2.GetBaseline()),
             font_list_mix.GetHeight() - font_list_mix.GetBaseline());
-  // descent of FontList == max(descent of Fonts)
-  EXPECT_EQ(std::max(font1.GetBaseline(), font2.GetBaseline()),
-            font_list_mix.GetBaseline());
 }
 
 TEST(FontListTest, Fonts_DeriveWithHeightUpperBound) {
