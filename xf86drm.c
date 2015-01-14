@@ -86,7 +86,7 @@
 #define DRM_MSG_VERBOSITY 3
 
 #define DRM_NODE_CONTROL 0
-#define DRM_NODE_RENDER 1
+#define DRM_NODE_PRIMARY 1
 
 static drmServerInfoPtr drm_server_info;
 
@@ -444,7 +444,7 @@ int drmAvailable(void)
     int           retval = 0;
     int           fd;
 
-    if ((fd = drmOpenMinor(0, 1, DRM_NODE_RENDER)) < 0) {
+    if ((fd = drmOpenMinor(0, 1, DRM_NODE_PRIMARY)) < 0) {
 #ifdef __linux__
 	/* Try proc for backward Linux compatibility */
 	if (!access("/proc/dri/0", R_OK))
@@ -485,7 +485,7 @@ static int drmOpenByBusid(const char *busid)
 
     drmMsg("drmOpenByBusid: Searching for BusID %s\n", busid);
     for (i = 0; i < DRM_MAX_MINOR; i++) {
-	fd = drmOpenMinor(i, 1, DRM_NODE_RENDER);
+	fd = drmOpenMinor(i, 1, DRM_NODE_PRIMARY);
 	drmMsg("drmOpenByBusid: drmOpenMinor returns %d\n", fd);
 	if (fd >= 0) {
 	    /* We need to try for 1.4 first for proper PCI domain support
@@ -547,7 +547,7 @@ static int drmOpenByName(const char *name)
      * already in use.  If it's in use it will have a busid assigned already.
      */
     for (i = 0; i < DRM_MAX_MINOR; i++) {
-	if ((fd = drmOpenMinor(i, 1, DRM_NODE_RENDER)) >= 0) {
+	if ((fd = drmOpenMinor(i, 1, DRM_NODE_PRIMARY)) >= 0) {
 	    if ((version = drmGetVersion(fd))) {
 		if (!strcmp(version->name, name)) {
 		    drmFreeVersion(version);
@@ -591,7 +591,7 @@ static int drmOpenByName(const char *name)
 			if (*pt) { /* Found busid */
 			    return drmOpenByBusid(++pt);
 			} else { /* No busid */
-			    return drmOpenDevice(strtol(devstring, NULL, 0),i, DRM_NODE_RENDER);
+			    return drmOpenDevice(strtol(devstring, NULL, 0),i, DRM_NODE_PRIMARY);
 			}
 		    }
 		}
