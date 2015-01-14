@@ -755,16 +755,17 @@ static bool overflowDefinesAutomaticScrollbar(EOverflow overflow)
 // handled externally in the RLC.
 static bool canHaveOverflowScrollbars(const RenderBox& box)
 {
-    return !box.isRenderView() && box.document().viewportDefiningElement() != box.node();
+    bool rootLayerScrolls = box.document().settings() && box.document().settings()->rootLayerScrolls();
+    return (rootLayerScrolls || !box.isRenderView()) && box.document().viewportDefiningElement() != box.node();
 }
 
 void RenderLayerScrollableArea::updateAfterStyleChange(const RenderStyle* oldStyle)
 {
-    if (!canHaveOverflowScrollbars(box()))
-        return;
-
     if (!m_scrollDimensionsDirty)
         updateScrollableAreaSet(hasScrollableHorizontalOverflow() || hasScrollableVerticalOverflow());
+
+    if (!canHaveOverflowScrollbars(box()))
+        return;
 
     EOverflow overflowX = box().style()->overflowX();
     EOverflow overflowY = box().style()->overflowY();
@@ -1319,9 +1320,10 @@ void RenderLayerScrollableArea::updateScrollableAreaSet(bool hasOverflow)
     if (didScrollOverflow == scrollsOverflow())
         return;
 
-    if (m_scrollsOverflow)
+    if (m_scrollsOverflow) {
+        ASSERT(canHaveOverflowScrollbars(box()));
         frameView->addScrollableArea(this);
-    else
+    } else
         frameView->removeScrollableArea(this);
 }
 
