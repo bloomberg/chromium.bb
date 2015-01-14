@@ -136,7 +136,7 @@ struct FrameReceiverConfig {
 
   // RTP timebase: The number of RTP units advanced per one second.  For audio,
   // this is the sampling rate.  For video, by convention, this is 90 kHz.
-  int frequency;  // TODO(miu): Rename to rtp_timebase for clarity.
+  int rtp_timebase;
 
   // Number of channels.  For audio, this is normally 2.  For video, this must
   // be 1 as Cast does not have support for stereoscopic video.

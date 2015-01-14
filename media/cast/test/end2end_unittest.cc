@@ -486,13 +486,13 @@ class End2EndTest : public ::testing::Test {
     audio_receiver_config_.rtp_max_delay_ms = kTargetPlayoutDelayMs;
     audio_receiver_config_.rtp_payload_type =
         audio_sender_config_.rtp_payload_type;
-    audio_receiver_config_.frequency = audio_sender_config_.frequency;
+    audio_receiver_config_.rtp_timebase = audio_sender_config_.frequency;
     audio_receiver_config_.channels = kAudioChannels;
     audio_receiver_config_.target_frame_rate = 100;
     audio_receiver_config_.codec = audio_sender_config_.codec;
 
     test_receiver_audio_callback_->SetExpectedSamplingFrequency(
-        audio_receiver_config_.frequency);
+        audio_receiver_config_.rtp_timebase);
 
     video_sender_config_.ssrc = 3;
     video_sender_config_.receiver_ssrc = 4;
@@ -518,7 +518,7 @@ class End2EndTest : public ::testing::Test {
     video_receiver_config_.rtp_max_delay_ms = kTargetPlayoutDelayMs;
     video_receiver_config_.rtp_payload_type =
         video_sender_config_.rtp_payload_type;
-    video_receiver_config_.frequency = kVideoFrequency;
+    video_receiver_config_.rtp_timebase = kVideoFrequency;
     video_receiver_config_.channels = 1;
     video_receiver_config_.target_frame_rate =
         video_sender_config_.max_frame_rate;

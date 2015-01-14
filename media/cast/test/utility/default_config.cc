@@ -31,7 +31,7 @@ FrameReceiverConfig GetDefaultAudioReceiverConfig() {
   config.incoming_ssrc = 1;
   config.rtp_max_delay_ms = kDefaultRtpMaxDelayMs;
   config.rtp_payload_type = 127;
-  config.frequency = 48000;
+  config.rtp_timebase = 48000;
   config.channels = 2;
   config.target_frame_rate = 100;  // 10ms of signal per frame
   config.codec = media::cast::CODEC_AUDIO_OPUS;
@@ -44,7 +44,7 @@ FrameReceiverConfig GetDefaultVideoReceiverConfig() {
   config.incoming_ssrc = 11;
   config.rtp_max_delay_ms = kDefaultRtpMaxDelayMs;
   config.rtp_payload_type = 96;
-  config.frequency = kVideoFrequency;
+  config.rtp_timebase = kVideoFrequency;
   config.channels = 1;
   config.target_frame_rate = kDefaultMaxFrameRate;
   config.codec = media::cast::CODEC_VIDEO_VP8;
@@ -58,7 +58,7 @@ AudioSenderConfig GetDefaultAudioSenderConfig() {
   config.receiver_ssrc = recv_config.feedback_ssrc;
   config.rtp_payload_type = recv_config.rtp_payload_type;
   config.use_external_encoder = false;
-  config.frequency = recv_config.frequency;
+  config.frequency = recv_config.rtp_timebase;
   config.channels = recv_config.channels;
   config.bitrate = kDefaultAudioEncoderBitrate;
   config.codec = recv_config.codec;

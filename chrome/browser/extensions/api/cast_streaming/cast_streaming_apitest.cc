@@ -176,7 +176,7 @@ class TestPatternReceiver : public media::cast::InProcessReceiver {
     }
     crossings /= audio_frame->channels();  // Take the average.
     const float seconds_per_frame =
-        audio_frame->frames() / static_cast<float>(audio_config().frequency);
+        audio_frame->frames() / static_cast<float>(audio_config().rtp_timebase);
     const float frequency = crossings / seconds_per_frame / 2.0f;
     VLOG(1) << "Current audio tone frequency: " << frequency;
 

@@ -120,7 +120,7 @@ class FrameReceiverTest : public ::testing::Test {
   void FeedLipSyncInfoIntoReceiver() {
     const base::TimeTicks now = testing_clock_->NowTicks();
     const int64 rtp_timestamp = (now - start_time_) *
-        config_.frequency / base::TimeDelta::FromSeconds(1);
+        config_.rtp_timebase / base::TimeDelta::FromSeconds(1);
     CHECK_LE(0, rtp_timestamp);
     uint32 ntp_seconds;
     uint32 ntp_fraction;
@@ -217,7 +217,7 @@ TEST_F(FrameReceiverTest, ReceivesFramesSkippingWhenAppropriate) {
       .WillRepeatedly(testing::Return());
 
   const uint32 rtp_advance_per_frame =
-      config_.frequency / config_.target_frame_rate;
+      config_.rtp_timebase / config_.target_frame_rate;
   const base::TimeDelta time_advance_per_frame =
       base::TimeDelta::FromSeconds(1) / config_.target_frame_rate;
 
@@ -320,7 +320,7 @@ TEST_F(FrameReceiverTest, ReceivesFramesRefusingToSkipAny) {
       .WillRepeatedly(testing::Return());
 
   const uint32 rtp_advance_per_frame =
-      config_.frequency / config_.target_frame_rate;
+      config_.rtp_timebase / config_.target_frame_rate;
   const base::TimeDelta time_advance_per_frame =
       base::TimeDelta::FromSeconds(1) / config_.target_frame_rate;
 

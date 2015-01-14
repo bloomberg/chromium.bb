@@ -30,7 +30,7 @@ FrameReceiver::FrameReceiver(
       stats_(cast_environment->Clock()),
       event_media_type_(event_media_type),
       event_subscriber_(kReceiverRtcpEventHistorySize, event_media_type),
-      rtp_timebase_(config.frequency),
+      rtp_timebase_(config.rtp_timebase),
       target_playout_delay_(
           base::TimeDelta::FromMilliseconds(config.rtp_max_delay_ms)),
       expected_frame_duration_(
