@@ -327,8 +327,6 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs(const GURL& url) {
 
   prefs.web_security_enabled =
       !command_line.HasSwitch(switches::kDisableWebSecurity);
-  prefs.plugins_enabled =
-      !command_line.HasSwitch(switches::kDisablePlugins);
   prefs.java_enabled =
       !command_line.HasSwitch(switches::kDisableJava);
 

@@ -199,9 +199,6 @@ const char kDisablePepper3d[]               = "disable-pepper-3d";
 // Disables compositor-accelerated touch-screen pinch gestures.
 const char kDisablePinch[]                  = "disable-pinch";
 
-// Prevent plugins from running.
-const char kDisablePlugins[]                = "disable-plugins";
-
 // Disable discovering third-party plug-ins. Effectively loading only
 // ones shipped with the browser plus third-party ones as specified by
 // --extra-plugin-dir and --load-plugin switches.

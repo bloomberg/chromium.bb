@@ -67,7 +67,6 @@ CONTENT_EXPORT extern const char kDisableMediaSource[];
 CONTENT_EXPORT extern const char kDisableOneCopy[];
 extern const char kDisablePepper3d[];
 CONTENT_EXPORT extern const char kDisablePinch[];
-CONTENT_EXPORT extern const char kDisablePlugins[];
 CONTENT_EXPORT extern const char kDisablePluginsDiscovery[];
 extern const char kDisableRemoteFonts[];
 extern const char kDisableRendererAccessibility[];
