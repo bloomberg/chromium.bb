@@ -14,13 +14,13 @@ import urllib2
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 TOOLS_DIR = os.path.dirname(SCRIPT_DIR)
 CHROME_SRC = os.path.dirname(os.path.dirname(os.path.dirname(TOOLS_DIR)))
-MOCK_DIR = os.path.join(CHROME_SRC, "third_party", "pymock")
+MOCK_DIR = os.path.join(CHROME_SRC, 'third_party', 'pymock')
 
 sys.path.append(TOOLS_DIR)
 sys.path.append(MOCK_DIR)
 
 import httpd
-from mock import patch
+from mock import patch, Mock
 
 
 class HTTPDTest(unittest.TestCase):
@@ -36,6 +36,16 @@ class HTTPDTest(unittest.TestCase):
     urllib2.urlopen(self.server.GetURL('?quit=1'))
     self.server.process.join(10)  # Wait 10 seconds for the process to finish.
     self.assertFalse(self.server.process.is_alive())
+
+
+class MainTest(unittest.TestCase):
+  @patch('httpd.LocalHTTPServer')
+  @patch('sys.stdout', Mock())
+  def testArgs(self, mock_server_ctor):
+    mock_server = Mock()
+    mock_server_ctor.return_value = mock_server
+    httpd.main(['-p', '123', '-C', 'dummy'])
+    mock_server_ctor.assert_called_once_with('dummy', 123)
 
 
 class RunTest(unittest.TestCase):

@@ -3,8 +3,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import argparse
 import json
-import optparse
 import os
 import re
 import sys
@@ -77,8 +77,8 @@ def GetStrip(pepperdir, platform, arch, toolchain):
 
 
 def main(args):
-  parser = optparse.OptionParser()
-  parser.add_option('-c', '--channel',
+  parser = argparse.ArgumentParser()
+  parser.add_argument('-c', '--channel',
       help='Channel to display in the name of the package.')
 
   # To setup bash completion for this command first install optcomplete
@@ -90,7 +90,7 @@ def main(args):
   except ImportError:
     pass
 
-  options, args = parser.parse_args(args)
+  options = parser.parse_args(args)
 
   if options.channel:
     if options.channel not in ('Dev', 'Beta'):

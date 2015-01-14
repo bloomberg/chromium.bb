@@ -3,8 +3,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import argparse
 import multiprocessing
-import optparse
 import os
 import posixpath
 import sys
@@ -243,28 +243,30 @@ def BuildProjects(pepperdir, project_tree, deps=True,
     BuildProjectsBranch(pepperdir, branch, deps, clean, config)
 
 
-def main(argv):
-  parser = optparse.OptionParser()
-  parser.add_option('-c', '--clobber',
+def main(args):
+  parser = argparse.ArgumentParser(description=__doc__)
+  parser.add_argument('-c', '--clobber',
       help='Clobber project directories before copying new files',
       action='store_true', default=False)
-  parser.add_option('-b', '--build',
+  parser.add_argument('-b', '--build',
       help='Build the projects. Otherwise the projects are only copied.',
       action='store_true')
-  parser.add_option('--config',
+  parser.add_argument('--config',
       help='Choose configuration to build (Debug or Release).  Builds both '
            'by default')
-  parser.add_option('--bionic',
+  parser.add_argument('--bionic',
       help='Enable bionic projects', action='store_true')
-  parser.add_option('-x', '--experimental',
+  parser.add_argument('-x', '--experimental',
       help='Build experimental projects', action='store_true')
-  parser.add_option('-t', '--toolchain',
+  parser.add_argument('-t', '--toolchain',
       help='Build using toolchain. Can be passed more than once.',
       action='append', default=[])
-  parser.add_option('-d', '--dest',
+  parser.add_argument('-d', '--dest',
       help='Select which build destinations (project types) are valid.',
       action='append')
-  parser.add_option('-v', '--verbose', action='store_true')
+  parser.add_argument('projects', nargs='*',
+      help='Select which projects to build.')
+  parser.add_argument('-v', '--verbose', action='store_true')
 
   # To setup bash completion for this command first install optcomplete
   # and then add this line to your .bashrc:
@@ -275,7 +277,7 @@ def main(argv):
   except ImportError:
     pass
 
-  options, args = parser.parse_args(argv)
+  options = parser.parse_args(args)
 
   global verbose
   if options.verbose:
@@ -316,9 +318,9 @@ def main(argv):
   if options.dest:
     filters['DEST'] = options.dest
     Trace('Filter by type: ' + str(options.dest))
-  if args:
-    filters['NAME'] = args
-    Trace('Filter by name: ' + str(args))
+  if options.projects:
+    filters['NAME'] = options.projects
+    Trace('Filter by name: ' + str(options.projects))
 
   try:
     project_tree = parse_dsc.LoadProjectTree(SDK_SRC_DIR, include=filters)

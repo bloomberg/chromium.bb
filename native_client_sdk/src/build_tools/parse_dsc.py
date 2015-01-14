@@ -3,9 +3,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import argparse
 import collections
 import fnmatch
-import optparse
 import os
 import sys
 
@@ -244,23 +244,17 @@ def PrintProjectTree(tree):
       print '\t' + val['NAME']
 
 
-def main(argv):
-  parser = optparse.OptionParser(usage='%prog [options] <dir>')
-  parser.add_option('-e', '--experimental',
+def main(args):
+  parser = argparse.ArgumentParser(description=__doc__)
+  parser.add_argument('-e', '--experimental',
       help='build experimental examples and libraries', action='store_true')
-  parser.add_option('-t', '--toolchain',
+  parser.add_argument('-t', '--toolchain',
       help='Build using toolchain. Can be passed more than once.',
       action='append')
+  parser.add_argument('project_root', default='.')
 
-  options, args = parser.parse_args(argv)
+  options = parser.parse_args(args)
   filters = {}
-
-  load_from_dir = '.'
-  if len(args) > 1:
-    parser.error('Expected 0 or 1 args, got %d.' % len(args))
-
-  if args:
-    load_from_dir = args[0]
 
   if options.toolchain:
     filters['TOOLS'] = options.toolchain
@@ -269,7 +263,7 @@ def main(argv):
     filters['EXPERIMENTAL'] = False
 
   try:
-    tree = LoadProjectTree(load_from_dir, include=filters)
+    tree = LoadProjectTree(options.project_root, include=filters)
   except ValidationError as e:
     sys.stderr.write(str(e) + '\n')
     return 1

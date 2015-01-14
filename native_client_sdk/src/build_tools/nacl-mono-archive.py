@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import optparse
+import argparse
 import os
 import sys
 import tarfile
@@ -12,28 +12,28 @@ import buildbot_common
 
 
 def main(args):
-  parser = optparse.OptionParser()
-  parser.add_option('--install-dir',
+  parser = argparse.ArgumentParser()
+  parser.add_argument('--install-dir',
                     help='Install Directory',
                     dest='install_dir',
                     default='naclmono')
-  parser.add_option('--tar-path',
+  parser.add_argument('--tar-path',
                     help='Tarfile path',
                     dest='tar_path',
                     default='naclmono_%pepperrev%.bz2')
-  parser.add_option('--upload-path',
+  parser.add_argument('--upload-path',
                     help='Upload path (nativeclient-mirror/nacl/nacl_sdk/XXX)',
                     dest='upload_path',
                     default=None)
-  parser.add_option('--pepper-revision',
+  parser.add_argument('--pepper-revision',
                     help='Pepper revision',
                     dest='pepper_revision',
                     default=None)
-  parser.add_option('--skip-upload',
+  parser.add_argument('--skip-upload',
                     help='Skips upload step',
                     action="store_true",
                     dest='skip_upload')
-  (options, args) = parser.parse_args(args)
+  options = parser.parse_args(args)
 
   if not options.upload_path:
     buildbot_common.ErrorExit('--upload-path is required')

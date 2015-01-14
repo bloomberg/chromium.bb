@@ -11,8 +11,8 @@ For each file, the mode bits, size and path relative to the CWD are written
 to the output file which is stdout by default.
 """
 
+import argparse
 import glob
-import optparse
 import os
 import sys
 import urllib
@@ -21,19 +21,19 @@ class Error(Exception):
   pass
 
 
-def main(argv):
-  parser = optparse.OptionParser(description=__doc__,
-      usage='Usage: %prog [options] <filename>...')
-  parser.add_option('-C', '--srcdir',
-                    help='Change directory.', dest='srcdir', default=None)
-  parser.add_option('-o', '--output',
-                    help='Output file name.', dest='output', default=None)
-  parser.add_option('-v', '--verbose',
-                    help='Verbose output.',  dest='verbose',
-                    action='store_true')
-  parser.add_option('-r', '--recursive',
-                    help='Recursive search.', action='store_true')
-  options, args = parser.parse_args(argv)
+def main(args):
+  parser = argparse.ArgumentParser(description=__doc__)
+  parser.add_argument('-C', '--srcdir',
+                      help='Change directory.', dest='srcdir', default=None)
+  parser.add_argument('-o', '--output',
+                      help='Output file name.', dest='output', default=None)
+  parser.add_argument('-v', '--verbose',
+                      help='Verbose output.',  dest='verbose',
+                      action='store_true')
+  parser.add_argument('-r', '--recursive',
+                      help='Recursive search.', action='store_true')
+  parser.add_argument('paths', nargs='+')
+  options = parser.parse_args(args)
 
   if options.output:
     outfile = open(options.output, 'w')
@@ -43,12 +43,9 @@ def main(argv):
   if options.srcdir:
     os.chdir(options.srcdir)
 
-  if not args:
-    parser.error("One or more pathnames must be specified. See --help.")
-
   # Generate a set of unique file names bases on the input globs
   fileset = set()
-  for fileglob in args:
+  for fileglob in options.paths:
     filelist = glob.glob(fileglob)
     if not filelist:
       raise Error('Could not find match for "%s".\n' % fileglob)

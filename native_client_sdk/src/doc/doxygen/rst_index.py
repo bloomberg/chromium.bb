@@ -3,9 +3,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+"""Script to generate rst index file doxygen generated html files.
+"""
+
+import argparse
 import cStringIO
 import fnmatch
-import optparse
 import os
 import re
 import sys
@@ -227,24 +230,18 @@ def GenerateCppIndex(root_dir, channel, version, out_filename):
 
 
 def main(argv):
-  usage = 'Usage: %prog [options] <--root|--c|--cpp> directory'
-  parser = optparse.OptionParser(usage=usage)
-  parser.add_option('--channel', help='pepper channel (stable, beta, dev)')
-  parser.add_option('--version', help='pepper version (e.g. 32, 33, 34, etc.)')
-  parser.add_option('--root', help='Generate root API index',
-                    action='store_true', default=False)
-  parser.add_option('--c', help='Generate C API index', action='store_true',
-                    default=False)
-  parser.add_option('--cpp', help='Generate C++ API index', action='store_true',
-                    default=False)
-  parser.add_option('-o', '--output', help='output file.')
-  options, files = parser.parse_args(argv)
-
-  if len(files) != 1:
-    parser.error('Expected one directory')
-
-  if not options.output:
-    parser.error('Need output file')
+  parser = argparse.ArgumentParser(description=__doc__)
+  parser.add_argument('--channel', help='pepper channel (stable, beta, dev)')
+  parser.add_argument('--version', help='pepper version (e.g. 32, 33, etc.)')
+  parser.add_argument('--root', help='Generate root API index',
+                      action='store_true', default=False)
+  parser.add_argument('--c', help='Generate C API index', action='store_true',
+                      default=False)
+  parser.add_argument('--cpp', help='Generate C++ API index',
+                      action='store_true', default=False)
+  parser.add_argument('directory', help='input directory')
+  parser.add_argument('output_file', help='output file')
+  options = parser.parse_args(argv)
 
   if options.channel not in VALID_CHANNELS:
     parser.error('Expected channel to be one of %s' % ', '.join(VALID_CHANNELS))
@@ -252,14 +249,16 @@ def main(argv):
   if sum((options.c, options.cpp, options.root)) != 1:
     parser.error('Exactly one of --c/--cpp/--root flags is required.')
 
-  root_dir = files[0]
 
   if options.c:
-    GenerateCIndex(root_dir, options.channel, options.version, options.output)
+    GenerateCIndex(options.directory, options.channel, options.version,
+                   options.output_file)
   elif options.cpp:
-    GenerateCppIndex(root_dir, options.channel, options.version, options.output)
+    GenerateCppIndex(options.directory, options.channel, options.version,
+                     options.output_file)
   elif options.root:
-    GenerateRootIndex(options.channel, options.version, options.output)
+    GenerateRootIndex(options.channel, options.version,
+                      options.output_file)
   else:
     assert(False)
   return 0

@@ -3,9 +3,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+"""Utility script for emulating common unix commands."""
+
+from __future__ import print_function
+
 import fnmatch
 import glob
-import optparse
+import argparse
 import os
 import posixpath
 import shutil
@@ -23,7 +27,8 @@ def IncludeFiles(filters, files):
   """Filter files based on inclusion lists
 
   Return a list of files which match and of the Unix shell-style wildcards
-  provided, or return all the files if no filter is provided."""
+  provided, or return all the files if no filter is provided.
+  """
   if not filters:
     return files
   match = set()
@@ -36,7 +41,8 @@ def ExcludeFiles(filters, files):
   """Filter files based on exclusions lists
 
   Return a list of files which do not match any of the Unix shell-style
-  wildcards provided, or return all the files if no filter is provided."""
+  wildcards provided, or return all the files if no filter is provided.
+  """
   if not filters:
     return files
   match = set()
@@ -52,7 +58,8 @@ def CopyPath(options, src, dst):
   Copy a fully specified src to a fully specified dst.  If src and dst are
   both files, the dst file is removed first to prevent error.  If and include
   or exclude list are provided, the destination is first matched against that
-  filter."""
+  filter.
+  """
   if options.includes:
     if not IncludeFiles(options.includes, [src]):
       return
@@ -62,7 +69,7 @@ def CopyPath(options, src, dst):
       return
 
   if options.verbose:
-    print 'cp %s %s' % (src, dst)
+    print('cp %s %s' % (src, dst))
 
   # If the source is a single file, copy it individually
   if os.path.isfile(src):
@@ -82,7 +89,7 @@ def CopyPath(options, src, dst):
   # Otherwise it's a directory, ignore it unless allowed
   if os.path.isdir(src):
     if not options.recursive:
-      print "cp: omitting directory '%s'" % src
+      print("cp: omitting directory '%s'" % src)
       return
 
     # We can not copy over a file with a directory.
@@ -107,31 +114,31 @@ def Copy(args):
 
   Copies multiple sources to a single destination using the normal cp
   semantics.  In addition, it support inclusion and exclusion filters which
-  allows the copy to skip certain types of files."""
-  parser = optparse.OptionParser(usage='usage: cp [Options] sources... dest')
-  parser.add_option(
+  allows the copy to skip certain types of files.
+  """
+  parser = argparse.ArgumentParser(usage='cp [Options] sources... dest',
+                                   description=Copy.__doc__)
+  parser.add_argument(
       '-R', '-r', '--recursive', dest='recursive', action='store_true',
       default=False,
       help='copy directories recursively.')
-  parser.add_option(
+  parser.add_argument(
       '-v', '--verbose', dest='verbose', action='store_true',
       default=False,
       help='verbose output.')
-  parser.add_option(
+  parser.add_argument(
       '--include', dest='includes', action='append', default=[],
       help='include files matching this expression.')
-  parser.add_option(
+  parser.add_argument(
       '--exclude', dest='excludes', action='append', default=[],
       help='exclude files matching this expression.')
-  options, files = parser.parse_args(args)
-  if len(files) < 2:
-    parser.error('ERROR: expecting SOURCE(s) and DEST.')
+  parser.add_argument('srcs', nargs='+', help='files to copy')
+  parser.add_argument('dest', help='destination')
 
-  srcs = files[:-1]
-  dst = files[-1]
+  options = parser.parse_args(args)
 
   src_list = []
-  for src in srcs:
+  for src in options.srcs:
     files = glob.glob(src)
     if not files:
       raise OSError('cp: no such file or directory: ' + src)
@@ -141,31 +148,31 @@ def Copy(args):
   for src in src_list:
     # If the destination is a directory, then append the basename of the src
     # to the destination.
-    if os.path.isdir(dst):
-      CopyPath(options, src, os.path.join(dst, os.path.basename(src)))
+    if os.path.isdir(options.dest):
+      CopyPath(options, src, os.path.join(options.dest, os.path.basename(src)))
     else:
-      CopyPath(options, src, dst)
+      CopyPath(options, src, options.dest)
 
 
 def Mkdir(args):
-  """A Unix style mkdir"""
-  parser = optparse.OptionParser(usage='usage: mkdir [Options] DIRECTORY...')
-  parser.add_option(
+  """A Unix style mkdir."""
+  parser = argparse.ArgumentParser(usage='mkdir [Options] DIRECTORY...',
+                                   description=Mkdir.__doc__)
+  parser.add_argument(
       '-p', '--parents', dest='parents', action='store_true',
       default=False,
       help='ignore existing parents, create parents as needed.')
-  parser.add_option(
+  parser.add_argument(
       '-v', '--verbose', dest='verbose', action='store_true',
       default=False,
       help='verbose output.')
+  parser.add_argument('dirs', nargs='+', help='directory(s) to create')
 
-  options, dsts = parser.parse_args(args)
-  if len(dsts) < 1:
-    parser.error('ERROR: expecting DIRECTORY...')
+  options = parser.parse_args(args)
 
-  for dst in dsts:
+  for dst in options.dirs:
     if options.verbose:
-      print 'mkdir ' + dst
+      print('mkdir %s' % dst)
     try:
       os.makedirs(dst)
     except OSError:
@@ -179,12 +186,13 @@ def Mkdir(args):
 
 
 def MovePath(options, src, dst):
-  """MovePath from src to dst
+  """MovePath from src to dst.
 
   Moves the src to the dst much like the Unix style mv command, except it
   only handles one source at a time.  Because of possible temporary failures
   do to locks (such as anti-virus software on Windows), the function will retry
-  up to five times."""
+  up to five times.
+  """
   # if the destination is not an existing directory, then overwrite it
   if os.path.isdir(dst):
     dst = os.path.join(dst, os.path.basename(src))
@@ -200,36 +208,38 @@ def MovePath(options, src, dst):
   for _ in range(5):
     try:
       os.rename(src, dst)
-      return
+      break
     except OSError as error:
-      print 'Failed on %s with %s, retrying' % (src, error)
+      print('Failed on %s with %s, retrying' % (src, error))
       time.sleep(5)
-  print 'Gave up.'
-  raise OSError('mv: ' + error)
+  else:
+    print('Gave up.')
+    raise OSError('mv: ' + error)
 
 
 def Move(args):
-  parser = optparse.OptionParser(usage='usage: mv [Options] sources... dest')
-  parser.add_option(
+  """A Unix style mv."""
+
+  parser = argparse.ArgumentParser(usage='mv [Options] sources... dest',
+                                   description=Move.__doc__)
+  parser.add_argument(
       '-v', '--verbose', dest='verbose', action='store_true',
       default=False,
       help='verbose output.')
-  parser.add_option(
+  parser.add_argument(
       '-f', '--force', dest='force', action='store_true',
       default=False,
       help='force, do not error it files already exist.')
-  options, files = parser.parse_args(args)
-  if len(files) < 2:
-    parser.error('ERROR: expecting SOURCE... and DEST.')
+  parser.add_argument('srcs', nargs='+')
+  parser.add_argument('dest')
 
-  srcs = files[:-1]
-  dst = files[-1]
+  options = parser.parse_args(args)
 
   if options.verbose:
-    print 'mv %s %s' % (' '.join(srcs), dst)
+    print('mv %s %s' % (' '.join(options.srcs), options.dest))
 
-  for src in srcs:
-    MovePath(options, src, dst)
+  for src in options.srcs:
+    MovePath(options, src, options.dest)
   return 0
 
 
@@ -238,26 +248,27 @@ def Remove(args):
 
   Removes the list of paths.  Because of possible temporary failures do to locks
   (such as anti-virus software on Windows), the function will retry up to five
-  times."""
-  parser = optparse.OptionParser(usage='usage: rm [Options] PATHS...')
-  parser.add_option(
+  times.
+  """
+  parser = argparse.ArgumentParser(usage='rm [Options] PATHS...',
+                                   description=Remove.__doc__)
+  parser.add_argument(
       '-R', '-r', '--recursive', dest='recursive', action='store_true',
       default=False,
       help='remove directories recursively.')
-  parser.add_option(
+  parser.add_argument(
       '-v', '--verbose', dest='verbose', action='store_true',
       default=False,
       help='verbose output.')
-  parser.add_option(
+  parser.add_argument(
       '-f', '--force', dest='force', action='store_true',
       default=False,
       help='force, do not error it files does not exist.')
-  options, files = parser.parse_args(args)
-  if len(files) < 1:
-    parser.error('ERROR: expecting FILE...')
+  parser.add_argument('files', nargs='+')
+  options = parser.parse_args(args)
 
   try:
-    for pattern in files:
+    for pattern in options.files:
       dst_files = glob.glob(pattern)
       if not dst_files:
         # Ignore non existing files when using force
@@ -267,10 +278,10 @@ def Remove(args):
 
       for dst in dst_files:
         if options.verbose:
-          print 'rm ' + dst
+          print('rm ' + dst)
 
         if os.path.isfile(dst) or os.path.islink(dst):
-          for i in range(5):
+          for _ in range(5):
             try:
               # Check every time, since it may have been deleted after the
               # previous failed attempt.
@@ -278,27 +289,28 @@ def Remove(args):
                 os.remove(dst)
               break
             except OSError as error:
-              if i == 5:
-                print 'Gave up.'
-                raise OSError('rm: ' + str(error))
-              print 'Failed remove with %s, retrying' % error
+              print('Failed remove with %s, retrying' % error)
               time.sleep(5)
+          else:
+            print('Gave up.')
+            raise OSError('rm: ' + str(error))
 
         if options.recursive:
-          for i in range(5):
+          for _ in range(5):
             try:
               if os.path.isdir(dst):
                 shutil.rmtree(dst)
               break
             except OSError as error:
-              if i == 5:
-                print 'Gave up.'
-                raise OSError('rm: ' + str(error))
-              print 'Failed rmtree with %s, retrying' % error
+              print('Failed rmtree with %s, retrying' % error)
               time.sleep(5)
+          else:
+            print('Gave up.')
+            raise OSError('rm: ' + str(error))
 
   except OSError as error:
-    print error
+    print(error)
+
   return 0
 
 
@@ -342,29 +354,27 @@ def OSMakeZipPath(os_path):
 def Zip(args):
   """A Unix style zip.
 
-  Compresses the listed files."""
-  parser = optparse.OptionParser(usage='usage: zip [Options] zipfile list')
-  parser.add_option(
+  Compresses the listed files.
+  """
+  parser = argparse.ArgumentParser(description=Zip.__doc__)
+  parser.add_argument(
       '-r', dest='recursive', action='store_true',
       default=False,
       help='recurse into directories')
-  parser.add_option(
+  parser.add_argument(
       '-q', dest='quiet', action='store_true',
       default=False,
       help='quiet operation')
-  options, files = parser.parse_args(args)
-  if len(files) < 2:
-    parser.error('ERROR: expecting ZIPFILE and LIST.')
-
-  dest_zip = files[0]
-  src_args = files[1:]
+  parser.add_argument('zipfile')
+  parser.add_argument('filenames', nargs='+')
+  options = parser.parse_args(args)
 
   src_files = []
-  for src_arg in src_args:
-    globbed_src_args = glob.glob(src_arg)
+  for filename in options.filenames:
+    globbed_src_args = glob.glob(filename)
     if not globbed_src_args:
       if not options.quiet:
-        print 'zip warning: name not matched: %s' % (src_arg,)
+        print('zip warning: name not matched: %s' % filename)
 
     for src_file in globbed_src_args:
       src_file = os.path.normpath(src_file)
@@ -376,7 +386,6 @@ def Zip(args):
           for filename in files:
             src_files.append(os.path.join(root, filename))
 
-  zip_stream = None
   # zip_data represents a list of the data to be written or appended to the
   # zip_stream. It is a list of tuples:
   #   (OS file path, zip path/zip file info, and file data)
@@ -389,39 +398,37 @@ def Zip(args):
   zip_path_to_os_path_dict = dict((new_files_to_add[i], src_files[i])
                                   for i in range(len(src_files)))
   write_mode = 'a'
-  try:
-    zip_stream = zipfile.ZipFile(dest_zip, 'r')
-    files_to_update = set(new_files_to_add).intersection(
-        set(zip_stream.namelist()))
-    if files_to_update:
-      # As far as I can tell, there is no way to update a zip entry using
-      # zipfile; the best you can do is rewrite the archive.
-      # Iterate through the zipfile to maintain file order.
-      write_mode = 'w'
-      for zip_path in zip_stream.namelist():
-        if zip_path in files_to_update:
-          os_path = zip_path_to_os_path_dict[zip_path]
-          zip_data.append((os_path, zip_path, None))
-          new_files_to_add.remove(zip_path)
-        else:
-          file_bytes = zip_stream.read(zip_path)
-          file_info = zip_stream.getinfo(zip_path)
-          zip_data.append((None, file_info, file_bytes))
-  except IOError:
-    pass
-  finally:
-    if zip_stream:
-      zip_stream.close()
+  if os.path.exists(options.zipfile):
+    with zipfile.ZipFile(options.zipfile, 'r') as zip_stream:
+      try:
+        files_to_update = set(new_files_to_add).intersection(
+            set(zip_stream.namelist()))
+        if files_to_update:
+          # As far as I can tell, there is no way to update a zip entry using
+          # zipfile; the best you can do is rewrite the archive.
+          # Iterate through the zipfile to maintain file order.
+          write_mode = 'w'
+          for zip_path in zip_stream.namelist():
+            if zip_path in files_to_update:
+              os_path = zip_path_to_os_path_dict[zip_path]
+              zip_data.append((os_path, zip_path, None))
+              new_files_to_add.remove(zip_path)
+            else:
+              file_bytes = zip_stream.read(zip_path)
+              file_info = zip_stream.getinfo(zip_path)
+              zip_data.append((None, file_info, file_bytes))
+      except IOError:
+        pass
 
   for zip_path in new_files_to_add:
     zip_data.append((zip_path_to_os_path_dict[zip_path], zip_path, None))
 
   if not zip_data:
-    print 'zip error: Nothing to do! (%s)' % (dest_zip,)
+    print('zip error: Nothing to do! (%s)' % options.zipfile)
     return 1
 
-  try:
-    zip_stream = zipfile.ZipFile(dest_zip, write_mode, zipfile.ZIP_DEFLATED)
+  with zipfile.ZipFile(options.zipfile, write_mode,
+                       zipfile.ZIP_DEFLATED) as zip_stream:
     for os_path, file_info_or_zip_path, file_bytes in zip_data:
       if isinstance(file_info_or_zip_path, zipfile.ZipInfo):
         zip_path = file_info_or_zip_path.filename
@@ -458,12 +465,10 @@ def Zip(args):
         zip_info = zip_stream.getinfo(zip_path)
         if (zip_info.compress_type == zipfile.ZIP_STORED or
             zip_info.file_size == 0):
-          print '  %s: %s (stored 0%%)' % (operation, zip_path)
+          print('  %s: %s (stored 0%%)' % (operation, zip_path))
         elif zip_info.compress_type == zipfile.ZIP_DEFLATED:
-          print '  %s: %s (deflated %d%%)' % (operation, zip_path,
-              100 - zip_info.compress_size * 100 / zip_info.file_size)
-  finally:
-    zip_stream.close()
+          print('  %s: %s (deflated %d%%)' % (operation, zip_path,
+              100 - zip_info.compress_size * 100 / zip_info.file_size))
 
   return 0
 
@@ -494,16 +499,15 @@ def Which(args):
   Note: If you pass an argument with a path to which, it will just test if it
   is executable, not if it is in the path.
   """
-  parser = optparse.OptionParser(usage='usage: which args...')
-  _, files = parser.parse_args(args)
-  if not files:
-    return 0
+  parser = argparse.ArgumentParser(description=Which.__doc__)
+  parser.add_argument('files', nargs='+')
+  options = parser.parse_args(args)
 
   retval = 0
-  for filename in files:
+  for filename in options.files:
     fullname = FindExeInPath(filename)
     if fullname:
-      print fullname
+      print(fullname)
     else:
       retval = 1
 
@@ -522,19 +526,19 @@ FuncMap = {
 
 def main(args):
   if not args:
-    print 'No command specified'
-    print 'Available commands: %s' % ' '.join(FuncMap)
+    print('No command specified')
+    print('Available commands: %s' % ' '.join(FuncMap))
     return 1
   func_name = args[0]
   func = FuncMap.get(func_name)
   if not func:
-    print 'Do not recognize command: %s' % func_name
-    print 'Available commands: %s' % ' '.join(FuncMap)
+    print('Do not recognize command: %s' % func_name)
+    print('Available commands: %s' % ' '.join(FuncMap))
     return 1
   try:
     return func(args[1:])
   except KeyboardInterrupt:
-    print '%s: interrupted' % func_name
+    print('%s: interrupted' % func_name)
     return 1
 
 if __name__ == '__main__':

@@ -12,7 +12,7 @@ import unittest
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 TOOLS_DIR = os.path.dirname(SCRIPT_DIR)
 CHROME_SRC = os.path.dirname(os.path.dirname(os.path.dirname(TOOLS_DIR)))
-MOCK_DIR = os.path.join(CHROME_SRC, "third_party", "pymock")
+MOCK_DIR = os.path.join(CHROME_SRC, 'third_party', 'pymock')
 
 # For the mock library
 sys.path.append(MOCK_DIR)
@@ -102,6 +102,24 @@ class TestGetos(TestCaseExtended):
       mock_chrome_path.return_value = '/bin/ls'
       arch = getos.GetNaClArch(platform)
       self.assertIn(arch, ('x86_64', 'x86_32', 'arm'))
+
+  def testMainInvalidArgs(self):
+    with self.assertRaises(SystemExit):
+      with mock.patch('sys.stderr'):
+        getos.main('--foo')
+
+  @mock.patch('sys.stdout', mock.Mock())
+  @mock.patch('getos.GetPlatform')
+  def testMainNoArgs(self, mock_get_platform):
+    mock_get_platform.return_value = 'platform'
+    getos.main([])
+
+  @mock.patch('sys.stdout', mock.Mock())
+  @mock.patch('getos.GetSystemArch')
+  def testMainArgsParsing(self, mock_system_arch):
+    mock_system_arch.return_value = 'dummy'
+    getos.main(['--arch'])
+    mock_system_arch.assert_called()
 
 
 class TestGetosWithTempdir(TestCaseExtended):

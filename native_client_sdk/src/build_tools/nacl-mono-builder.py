@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import optparse
+import argparse
 import os
 import sys
 import tarfile
@@ -17,25 +17,25 @@ MONO_DIR = os.path.join(MONO_BUILD_DIR, 'nacl-mono')
 
 
 def main(args):
-  parser = optparse.OptionParser()
-  parser.add_option('--arch',
+  parser = argparse.ArgumentParser()
+  parser.add_argument('--arch',
                     help='Target architecture',
                     dest='arch',
                     default='x86-32')
-  parser.add_option('--sdk-revision',
+  parser.add_argument('--sdk-revision',
                     help='SDK Revision'
                          ' (default=buildbot revision)',
                     dest='sdk_revision',
                     default=None)
-  parser.add_option('--sdk-url',
+  parser.add_argument('--sdk-url',
                     help='SDK Download URL',
                     dest='sdk_url',
                     default=None)
-  parser.add_option('--install-dir',
+  parser.add_argument('--install-dir',
                     help='Install Directory',
                     dest='install_dir',
                     default='naclmono')
-  (options, args) = parser.parse_args(args)
+  options = parser.parse_args(args)
 
   assert sys.platform.find('linux') != -1
 

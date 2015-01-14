@@ -10,7 +10,7 @@ import unittest
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 TOOLS_DIR = os.path.dirname(SCRIPT_DIR)
 CHROME_SRC = os.path.dirname(os.path.dirname(os.path.dirname(TOOLS_DIR)))
-MOCK_DIR = os.path.join(CHROME_SRC, "third_party", "pymock")
+MOCK_DIR = os.path.join(CHROME_SRC, 'third_party', 'pymock')
 
 # For the mock library
 sys.path.append(MOCK_DIR)
@@ -39,6 +39,13 @@ class TestNaclConfig(unittest.TestCase):
     patch = mock.patch(name)
     self.patches.append(patch)
     return patch.start()
+
+  @mock.patch('nacl_config.GetCFlags')
+  def testMainArgParsing(self, mock_get_cflags):
+    mock_get_cflags.return_value = 'flags'
+    with mock.patch('sys.stdout'):
+      nacl_config.main(['--cflags'])
+    mock_get_cflags.assert_called()
 
   def testCFlags(self):
     cases = {

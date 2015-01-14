@@ -3,9 +3,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+"""Script to regenerate API docs using doxygen.
+"""
+
+import argparse
 import collections
 import json
-import optparse
 import os
 import shutil
 import subprocess
@@ -227,7 +230,7 @@ def RunRstIndex(kind, channel, pepper_version, out_dirname, out_rst_filename):
          '--channel', channel,
          '--version', pepper_version,
          out_dirname,
-         '-o', out_rst_filename]
+         out_rst_filename]
   Trace('Running rst_index:\n  %s' % ' '.join(cmd))
   subprocess.check_call(cmd)
 
@@ -288,20 +291,18 @@ def GenerateDocs(root_dirname, channel, pepper_version, branch):
 
 
 def main(argv):
-  parser = optparse.OptionParser(usage='Usage: %prog [options] <out_directory>')
-  parser.add_option('-v', '--verbose',
-                    help='Verbose output', action='store_true')
-  options, dirs = parser.parse_args(argv)
+  parser = argparse.ArgumentParser(description=__doc__)
+  parser.add_argument('-v', '--verbose',
+                      help='Verbose output', action='store_true')
+  parser.add_argument('out_directory')
+  options = parser.parse_args(argv)
 
   if options.verbose:
     Trace.verbose = True
 
-  if len(dirs) != 1:
-    parser.error('Expected an output directory')
-
   channel_info = GetChannelInfo()
   for channel, info in channel_info.iteritems():
-    GenerateDocs(dirs[0], channel, info.version, info.branch)
+    GenerateDocs(options.out_directory, channel, info.version, info.branch)
 
   return 0
 

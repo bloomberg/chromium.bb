@@ -8,7 +8,7 @@
 It is similar in behavior to pkg-config or sdl-config.
 """
 
-import optparse
+import argparse
 import os
 import posixpath
 import sys
@@ -222,27 +222,25 @@ def GetLDFlags():
 
 
 def main(args):
-  usage = 'Usage: %prog [options] <command>'
-  parser = optparse.OptionParser(usage=usage, description=__doc__)
-  parser.add_option('-t', '--toolchain', help='toolchain name. This can also '
-                    'be specified with the NACL_TOOLCHAIN environment '
-                    'variable.')
-  parser.add_option('-a', '--arch', help='architecture name. This can also be '
-                    'specified with the NACL_ARCH environment variable.')
+  parser = argparse.ArgumentParser(description=__doc__)
+  parser.add_argument('-t', '--toolchain', help='toolchain name. This can also '
+                      'be specified with the NACL_TOOLCHAIN environment '
+                      'variable.')
+  parser.add_argument('-a', '--arch', help='architecture name. This can also '
+                      'be specified with the NACL_ARCH environment variable.')
 
-  group = optparse.OptionGroup(parser, 'Commands')
-  group.add_option('--tool', help='get tool path')
-  group.add_option('--cflags',
-                    help='output all preprocessor and compiler flags',
-                    action='store_true')
-  group.add_option('--libs', '--ldflags', help='output all linker flags',
-                    action='store_true')
-  group.add_option('--include-dirs',
-                   help='output include dirs, separated by spaces',
-                   action='store_true')
-  parser.add_option_group(group)
+  group = parser.add_argument_group('Commands')
+  group.add_argument('--tool', help='get tool path')
+  group.add_argument('--cflags',
+                     help='output all preprocessor and compiler flags',
+                     action='store_true')
+  group.add_argument('--libs', '--ldflags', help='output all linker flags',
+                     action='store_true')
+  group.add_argument('--include-dirs',
+                     help='output include dirs, separated by spaces',
+                     action='store_true')
 
-  options, _ = parser.parse_args(args)
+  options = parser.parse_args(args)
 
   # Get toolchain/arch from environment, if not specified on commandline
   options.toolchain = options.toolchain or os.getenv('NACL_TOOLCHAIN')

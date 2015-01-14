@@ -6,7 +6,7 @@
 """Build the NOTICE file distributed with the NaCl SDK from a set of given
 license files."""
 
-import optparse
+import argparse
 import os
 import sys
 
@@ -68,13 +68,14 @@ def Generate(output_filename, root, files):
 
 
 def main(args):
-  parser = optparse.OptionParser()
-  parser.add_option('-v', '--verbose', help='Verbose output.',
+  parser = argparse.ArgumentParser(description=__doc__)
+  parser.add_argument('-v', '--verbose', help='Verbose output.',
       action='store_true')
-  parser.add_option('-o', '--output', help='Output file')
-  parser.add_option('--root', help='Root for all paths')
+  parser.add_argument('-o', '--output', help='Output file')
+  parser.add_argument('--root', help='Root for all paths')
+  parser.add_argument('files', nargs='*')
 
-  options, args = parser.parse_args(args)
+  options = parser.parse_args(args)
   Trace.verbose = options.verbose
 
   if not options.output:
@@ -82,7 +83,7 @@ def main(args):
   if not options.root:
     parser.error('No root directory given. See --root.')
 
-  Generate(options.output, options.root, args)
+  Generate(options.output, options.root, options.files)
   Trace('Done.')
 
   return 0

@@ -9,9 +9,9 @@ As well as creating the nmf file this tool can also find and stage
 any shared libraries dependencies that the executables might have.
 """
 
+import argparse
 import errno
 import json
-import optparse
 import os
 import posixpath
 import shutil
@@ -158,7 +158,7 @@ class ArchFile(object):
     self.path = path
     self.url = url
     self.arch = arch
-    if not arch:
+    if arch is None:
       self.arch = ParseElfHeader(path)[0]
 
   def __repr__(self):
@@ -402,7 +402,7 @@ class NmfUtils(object):
 
   def GetManifest(self):
     """Returns a JSON-formatted dict containing the NaCl dependencies"""
-    if not self.manifest:
+    if self.manifest is None:
       if self.pnacl:
         self._GeneratePNaClManifest()
       else:
@@ -541,60 +541,60 @@ def GetDefaultLibPath(config):
   return libpath
 
 
-def main(argv):
-  parser = optparse.OptionParser(
-      usage='Usage: %prog [options] nexe [extra_libs...]', description=__doc__)
-  parser.add_option('-o', '--output', dest='output',
-                    help='Write manifest file to FILE (default is stdout)',
-                    metavar='FILE')
-  parser.add_option('-D', '--objdump', dest='objdump',
-                    help='Override the default "objdump" tool used to find '
-                         'shared object dependencies',
-                    metavar='TOOL')
-  parser.add_option('--no-default-libpath', action='store_true',
-                    help="Don't include the SDK default library paths")
-  parser.add_option('--debug-libs', action='store_true',
-                    help='Use debug library paths when constructing default '
-                         'library path.')
-  parser.add_option('-L', '--library-path', dest='lib_path',
-                    action='append', default=[],
-                    help='Add DIRECTORY to library search path',
-                    metavar='DIRECTORY')
-  parser.add_option('-P', '--path-prefix', dest='path_prefix', default='',
-                    help='Deprecated. An alias for --lib-prefix.',
-                    metavar='DIRECTORY')
-  parser.add_option('-p', '--lib-prefix', dest='lib_prefix', default='',
-                    help='A path to prepend to shared libraries in the .nmf',
-                    metavar='DIRECTORY')
-  parser.add_option('-N', '--nexe-prefix', dest='nexe_prefix', default='',
-                    help='A path to prepend to nexes in the .nmf',
-                    metavar='DIRECTORY')
-  parser.add_option('-s', '--stage-dependencies', dest='stage_dependencies',
-                    help='Destination directory for staging libraries',
-                    metavar='DIRECTORY')
-  parser.add_option('--no-arch-prefix', action='store_true',
-                    help='Don\'t put shared libraries in the lib32/lib64 '
-                    'directories. Instead, they will be put in the same '
-                    'directory as the .nexe that matches its architecture.')
-  parser.add_option('-t', '--toolchain', help='Legacy option, do not use')
-  parser.add_option('-n', '--name', dest='name',
-                    help='Rename FOO as BAR',
-                    action='append', default=[], metavar='FOO,BAR')
-  parser.add_option('-x', '--extra-files',
-                    help=('Add extra key:file tuple to the "files"' +
-                          ' section of the .nmf'),
-                    action='append', default=[], metavar='FILE')
-  parser.add_option('-O', '--pnacl-optlevel',
-                    help='Set the optimization level to N in PNaCl manifests',
-                    metavar='N')
-  parser.add_option('--pnacl-debug-optlevel',
-                    help='Set the optimization level to N for debugging '
-                         'sections in PNaCl manifests',
-                    metavar='N')
-  parser.add_option('-v', '--verbose',
-                    help='Verbose output', action='store_true')
-  parser.add_option('-d', '--debug-mode',
-                    help='Debug mode', action='store_true')
+def main(args):
+  parser = argparse.ArgumentParser(description=__doc__)
+  parser.add_argument('-o', '--output', dest='output',
+                      help='Write manifest file to FILE (default is stdout)',
+                      metavar='FILE')
+  parser.add_argument('-D', '--objdump', dest='objdump',
+                      help='Override the default "objdump" tool used to find '
+                           'shared object dependencies',
+                      metavar='TOOL')
+  parser.add_argument('--no-default-libpath', action='store_true',
+                      help="Don't include the SDK default library paths")
+  parser.add_argument('--debug-libs', action='store_true',
+                      help='Use debug library paths when constructing default '
+                           'library path.')
+  parser.add_argument('-L', '--library-path', dest='lib_path',
+                      action='append', default=[],
+                      help='Add DIRECTORY to library search path',
+                      metavar='DIRECTORY')
+  parser.add_argument('-P', '--path-prefix', dest='path_prefix', default='',
+                      help='Deprecated. An alias for --lib-prefix.',
+                      metavar='DIRECTORY')
+  parser.add_argument('-p', '--lib-prefix', dest='lib_prefix', default='',
+                      help='A path to prepend to shared libraries in the .nmf',
+                      metavar='DIRECTORY')
+  parser.add_argument('-N', '--nexe-prefix', dest='nexe_prefix', default='',
+                      help='A path to prepend to nexes in the .nmf',
+                      metavar='DIRECTORY')
+  parser.add_argument('-s', '--stage-dependencies', dest='stage_dependencies',
+                      help='Destination directory for staging libraries',
+                      metavar='DIRECTORY')
+  parser.add_argument('--no-arch-prefix', action='store_true',
+                      help='Don\'t put shared libraries in the lib32/lib64 '
+                      'directories. Instead, they will be put in the same '
+                      'directory as the .nexe that matches its architecture.')
+  parser.add_argument('-t', '--toolchain', help='Legacy option, do not use')
+  parser.add_argument('-n', '--name', dest='name',
+                      help='Rename FOO as BAR',
+                      action='append', default=[], metavar='FOO,BAR')
+  parser.add_argument('-x', '--extra-files',
+                      help=('Add extra key:file tuple to the "files"' +
+                            ' section of the .nmf'),
+                      action='append', default=[], metavar='FILE')
+  parser.add_argument('-O', '--pnacl-optlevel',
+                      help='Set the optimization level to N in PNaCl manifests',
+                      metavar='N')
+  parser.add_argument('--pnacl-debug-optlevel',
+                      help='Set the optimization level to N for debugging '
+                           'sections in PNaCl manifests',
+                      metavar='N')
+  parser.add_argument('-v', '--verbose',
+                      help='Verbose output', action='store_true')
+  parser.add_argument('-d', '--debug-mode',
+                      help='Debug mode', action='store_true')
+  parser.add_argument('executables', metavar='EXECUTABLE', nargs='+')
 
   # To enable bash completion for this command first install optcomplete
   # and then add this line to your .bashrc:
@@ -605,7 +605,7 @@ def main(argv):
   except ImportError:
     pass
 
-  options, args = parser.parse_args(argv)
+  options = parser.parse_args(args)
   if options.verbose:
     Trace.verbose = True
   if options.debug_mode:
@@ -613,9 +613,6 @@ def main(argv):
 
   if options.toolchain is not None:
     sys.stderr.write('warning: option -t/--toolchain is deprecated.\n')
-
-  if len(args) < 1:
-    parser.error('No nexe files specified.  See --help for more info')
 
   canonicalized = ParseExtraFiles(options.extra_files, sys.stderr)
   if canonicalized is None:
@@ -661,7 +658,7 @@ def main(argv):
     nmf_root = os.path.dirname(options.output)
 
   nmf = NmfUtils(objdump=options.objdump,
-                 main_files=args,
+                 main_files=options.executables,
                  lib_path=options.lib_path,
                  extra_files=canonicalized,
                  lib_prefix=options.lib_prefix,

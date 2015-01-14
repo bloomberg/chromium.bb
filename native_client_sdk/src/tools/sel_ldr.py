@@ -6,7 +6,7 @@
 """Wrapper script for launching application within the sel_ldr.
 """
 
-import optparse
+import argparse
 import os
 import subprocess
 import sys
@@ -49,16 +49,17 @@ def FindQemu():
 
 
 def main(argv):
-  usage = 'Usage: %prog [options] <.nexe>'
   epilog = 'Example: sel_ldr.py my_nexe.nexe'
-  parser = optparse.OptionParser(usage, description=__doc__, epilog=epilog)
-  parser.add_option('-v', '--verbose', action='store_true',
-                    help='Verbose output')
-  parser.add_option('-d', '--debug', action='store_true',
-                    help='Enable debug stub')
-  parser.add_option('--debug-libs', action='store_true',
-                    help='For dynamic executables, reference debug '
-                         'libraries rather then release')
+  parser = argparse.ArgumentParser(description=__doc__, epilog=epilog)
+  parser.add_argument('-v', '--verbose', action='store_true',
+                      help='Verbose output')
+  parser.add_argument('-d', '--debug', action='store_true',
+                      help='Enable debug stub')
+  parser.add_argument('--debug-libs', action='store_true',
+                      help='For dynamic executables, reference debug '
+                           'libraries rather then release')
+  parser.add_argument('executable', help='executable (.nexe) to run')
+  parser.add_argument('args', nargs='*', help='argument to pass to exectuable')
 
   # To enable bash completion for this command first install optcomplete
   # and then add this line to your .bashrc:
@@ -69,21 +70,18 @@ def main(argv):
   except ImportError:
     pass
 
-  options, args = parser.parse_args(argv)
-  if not args:
-    parser.error('No executable file specified')
+  options = parser.parse_args(argv)
 
-  nexe = args[0]
   if options.verbose:
     Log.verbose = True
 
   osname = getos.GetPlatform()
-  if not os.path.exists(nexe):
-    raise Error('executable not found: %s' % nexe)
-  if not os.path.isfile(nexe):
-    raise Error('not a file: %s' % nexe)
+  if not os.path.exists(options.executable):
+    raise Error('executable not found: %s' % options.executable)
+  if not os.path.isfile(options.executable):
+    raise Error('not a file: %s' % options.executable)
 
-  arch, dynamic = create_nmf.ParseElfHeader(nexe)
+  arch, dynamic = create_nmf.ParseElfHeader(options.executable)
 
   if arch == 'arm' and osname != 'linux':
     raise Error('Cannot run ARM executables under sel_ldr on ' + osname)
@@ -150,13 +148,12 @@ def main(argv):
     cmd.append(libpath)
 
 
-  if args:
-    # Append arguments for the executable itself.
-    cmd += args
+  # Append arguments for the executable itself.
+  cmd.append(options.executable)
+  cmd += options.args
 
   Log(cmd)
-  rtn = subprocess.call(cmd)
-  return rtn
+  return subprocess.call(cmd)
 
 
 if __name__ == '__main__':

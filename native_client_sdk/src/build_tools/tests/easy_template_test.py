@@ -10,10 +10,18 @@ import sys
 import unittest
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+TOOLS_DIR = os.path.dirname(SCRIPT_DIR)
+CHROME_SRC = os.path.dirname(os.path.dirname(os.path.dirname(TOOLS_DIR)))
+MOCK_DIR = os.path.join(CHROME_SRC, 'third_party', 'pymock')
 BUILD_TOOLS_DIR = os.path.dirname(SCRIPT_DIR)
 
 sys.path.append(BUILD_TOOLS_DIR)
+sys.path.append(MOCK_DIR)
+
 import easy_template
+import mock
+
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 class EasyTemplateTestCase(unittest.TestCase):
   def _RunTest(self, template, expected, template_dict):
@@ -115,6 +123,12 @@ struct Foo {
     self._RunTest('{{2**8}} % after', '256 % after', {})
     self._RunTest('inside {{8 % 3}}', 'inside 2', {})
     self._RunTest('Everywhere % {{8 % 3}} %', 'Everywhere % 2 %', {})
+
+  @mock.patch('easy_template.TemplateToPython')
+  @mock.patch('sys.stdout', mock.Mock())
+  def testMainArgParsing(self, mock_template_to_python):
+    easy_template.main([__file__])
+    mock_template_to_python.assert_called()
 
 
 if __name__ == '__main__':

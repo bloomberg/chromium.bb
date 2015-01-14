@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import optparse
+import argparse
 import os
 import subprocess
 import sys
@@ -27,7 +27,7 @@ browser_path = find_chrome.FindChrome(SRC_DIR, ['Debug', 'Release'])
 
 # Fall back to using CHROME_PATH (same as in common.mk)
 if not browser_path:
-  browser_path = os.environ['CHROME_PATH']
+  browser_path = os.environ.get('CHROME_PATH')
 
 
 pepper_ver = str(int(build_version.ChromeMajorVersion()))
@@ -313,25 +313,26 @@ def GetProjectTree(include):
 
 
 def main(args):
-  parser = optparse.OptionParser()
-  parser.add_option('-c', '--config',
+  parser = argparse.ArgumentParser(description=__doc__)
+  parser.add_argument('-c', '--config',
       help='Choose configuration to run (Debug or Release).  Runs both '
            'by default', action='append')
-  parser.add_option('-x', '--experimental',
+  parser.add_argument('-x', '--experimental',
       help='Run experimental projects', action='store_true')
-  parser.add_option('-t', '--toolchain',
+  parser.add_argument('-t', '--toolchain',
       help='Run using toolchain. Can be passed more than once.',
       action='append', default=[])
-  parser.add_option('-d', '--dest',
+  parser.add_argument('-d', '--dest',
       help='Select which destinations (project types) are valid.',
       action='append')
-  parser.add_option('-b', '--build',
+  parser.add_argument('-b', '--build',
       help='Build each project before testing.', action='store_true')
-  parser.add_option('--retry-times',
+  parser.add_argument('--retry-times',
       help='Number of types to retry on failure (Default: %default)',
-          type='int', default=1)
+      type=int, default=1)
+  parser.add_argument('projects', nargs='*')
 
-  options, args = parser.parse_args(args)
+  options = parser.parse_args(args)
 
   if not options.toolchain:
     options.toolchain = ['newlib', 'glibc', 'pnacl', 'host']
@@ -352,9 +353,9 @@ def main(args):
   if options.dest:
     include['DEST'] = options.dest
     print 'Filter by type: ' + str(options.dest)
-  if args:
-    include['NAME'] = args
-    print 'Filter by name: ' + str(args)
+  if options.projects:
+    include['NAME'] = options.projects
+    print 'Filter by name: ' + str(options.projects)
   if not options.config:
     options.config = ALL_CONFIGS
 

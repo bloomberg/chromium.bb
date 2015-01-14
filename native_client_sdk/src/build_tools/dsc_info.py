@@ -5,7 +5,7 @@
 
 """Extracts information from a library.dsc file."""
 
-import optparse
+import argparse
 import os
 import sys
 
@@ -32,25 +32,23 @@ def GetSources(lib_dir, tree, target_name):
   return result
 
 
-def DoMain(argv):
-  "Entry point for gyp's pymod_do_main command."
-  parser = optparse.OptionParser(usage='%prog: [OPTIONS] TARGET')
+def DoMain(args):
+  """Entry point for gyp's pymod_do_main command."""
+  parser = argparse.ArgumentParser(description=__doc__)
   # Give a clearer error message when this is used as a module.
   parser.prog = 'dsc_info'
-  parser.add_option('-s', '--sources',
+  parser.add_argument('-s', '--sources',
                     help='Print a list of source files for the target',
                     action='store_true', default=False)
-  parser.add_option('-l', '--libdir',
+  parser.add_argument('-l', '--libdir',
                     help='Directory where the library.dsc file is located',
                     metavar='DIR')
-  options, args = parser.parse_args(argv)
-  if len(args) != 1:
-    parser.error('Expecting exactly one argument.')
-  target = args[0]
+  parser.add_argument('target')
+  options = parser.parse_args(args)
   libdir = options.libdir or ''
   tree = parse_dsc.LoadProject(os.path.join(libdir, 'library.dsc'))
   if options.sources:
-    return '\n'.join(GetSources(libdir, tree, target))
+    return '\n'.join(GetSources(libdir, tree, options.target))
   parser.error('No action specified')
 
 

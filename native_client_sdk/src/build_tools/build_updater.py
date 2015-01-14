@@ -9,10 +9,10 @@ This script packages the files necessary to generate the SDK updater -- the
 tool users run to download new bundles, update existing bundles, etc.
 """
 
+import argparse
 import buildbot_common
 import build_version
 import glob
-import optparse
 import os
 import sys
 
@@ -174,13 +174,13 @@ def BuildUpdater(out_dir, revision_number=None):
 
 
 def main(args):
-  parser = optparse.OptionParser()
-  parser.add_option('-o', '--out', help='output directory',
+  parser = argparse.ArgumentParser(description=__doc__)
+  parser.add_argument('-o', '--out', help='output directory',
       dest='out_dir', default=os.path.join(SRC_DIR, 'out'))
-  parser.add_option('-r', '--revision', help='revision number of this updater',
-      dest='revision', default=None)
-  parser.add_option('-v', '--verbose', help='verbose output')
-  options, args = parser.parse_args(args)
+  parser.add_argument('-r', '--revision', dest='revision', default=None,
+      help='revision number of this updater')
+  parser.add_argument('-v', '--verbose', help='verbose output')
+  options = parser.parse_args(args)
 
   buildbot_common.verbose = options.verbose
 

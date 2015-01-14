@@ -55,6 +55,7 @@ TEST_MODULES = [
     'quote_test',
     'sdktools_config_test',
     'sel_ldr_test',
+    'test_projects_test',
     'update_nacl_manifest_test',
     'verify_filelist_test',
     'verify_ppapi_test',

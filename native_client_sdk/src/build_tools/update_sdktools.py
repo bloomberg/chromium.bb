@@ -16,10 +16,10 @@ update_nacl_manifest.py is customarily run by a cron job, and does not check in
 any changes. Instead it modifies the manifest file in cloud storage."""
 
 
+import argparse
 import collections
 import difflib
 import json
-import optparse
 import re
 import sys
 import urllib2
@@ -107,12 +107,10 @@ def UpdateManifestFileToRevision(filename, revision):
 
 
 def main(args):
-  parser = optparse.OptionParser(description=__doc__)
-  parser.add_option('-r', '--revision',
+  parser = argparse.ArgumentParser(description=__doc__)
+  parser.add_argument('-r', '--revision',
       help='set revision manually, rather than using the latest version')
-  options, args = parser.parse_args(args)
-  if len(args) != 0:
-    parser.error('Unexpected args: %s' % ', '.join(args))
+  options = parser.parse_args(args)
 
   # TODO(binji): http://crbug.com/169047. Rename RealDelegate to something else.
   delegate = RealDelegate()

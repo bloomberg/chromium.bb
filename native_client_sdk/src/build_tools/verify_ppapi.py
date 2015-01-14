@@ -11,7 +11,7 @@ For example, if a user adds "ppapi/c/foo.h", we check that the interface has
 been added to "native_client_sdk/src/libraries/ppapi/library.dsc".
 """
 
-import optparse
+import argparse
 import os
 import sys
 
@@ -167,15 +167,12 @@ def VerifyOrPrintError(dsc_filename, dsc_sources_and_headers, changed_filenames,
 
 
 def main(args):
-  usage = '%prog <file>...'
-  description = __doc__
-  parser = optparse.OptionParser(usage=usage, description=description)
-  args = parser.parse_args(args)[1]
-  if not args:
-    parser.error('Expected a PPAPI header or source file.')
+  parser = argparse.ArgumentParser(description=__doc__)
+  parser.add_argument('sources', nargs='+')
+  options = parser.parse_args(args)
 
   retval = 0
-  lib_files = PartitionFiles(args)
+  lib_files = PartitionFiles(options.sources)
   directory_list = GetDirectoryList(PPAPI_DIR, relative_to=SRC_DIR)
   for lib_name, filenames in lib_files.iteritems():
     if not filenames:

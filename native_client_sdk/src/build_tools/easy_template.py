@@ -3,9 +3,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import argparse
 import copy
 import cStringIO
-import optparse
 import os
 import re
 import sys
@@ -98,12 +98,11 @@ def RunTemplateString(src, template_dict, statement_re=None, expr_re=None):
 
 
 def main(args):
-  parser = optparse.OptionParser()
-  _, args = parser.parse_args(args)
-  if not args:
-    return
+  parser = argparse.ArgumentParser()
+  parser.add_argument('template')
+  options = parser.parse_args(args)
 
-  with open(args[0]) as f:
+  with open(options.template) as f:
     print TemplateToPython(
         f.read(), re.compile(STATEMENT_RE), re.compile(EXPR_RE))
 

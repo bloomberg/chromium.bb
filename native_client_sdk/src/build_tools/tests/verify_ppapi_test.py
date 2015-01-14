@@ -10,7 +10,7 @@ import unittest
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 BUILD_TOOLS_DIR = os.path.dirname(SCRIPT_DIR)
 CHROME_SRC = os.path.dirname(os.path.dirname(os.path.dirname(BUILD_TOOLS_DIR)))
-MOCK_DIR = os.path.join(CHROME_SRC, "third_party", "pymock")
+MOCK_DIR = os.path.join(CHROME_SRC, 'third_party', 'pymock')
 
 # For the mock library
 sys.path.append(MOCK_DIR)

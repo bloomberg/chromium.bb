@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import optparse
+import argparse
 import os
 import re
 import sys
@@ -182,28 +182,24 @@ def SortFile(rule_path):
 
 
 def main(args):
-  parser = optparse.OptionParser(usage='%prog <rule file> <directory>')
-  parser.add_option('-p', '--platform',
+  parser = argparse.ArgumentParser(description=__doc__)
+  parser.add_argument('-p', '--platform',
       help='Test with this platform, instead of the system\'s platform')
-  parser.add_option('-s', '--sort', action='store_true',
+  parser.add_argument('-s', '--sort', action='store_true',
       help='Sort the file list in place, rather than verifying the contents.')
-  options, args = parser.parse_args(args)
-
-  if not args:
-    args = [os.path.join(SCRIPT_DIR, 'sdk_files.list')]
+  parser.add_argument('rule_file', nargs='?',
+                      default=os.path.join(SCRIPT_DIR, 'sdk_files.list'))
+  parser.add_argument('directory_path', nargs='?')
+  options = parser.parse_args(args)
 
   if options.sort:
-    if not args:
-      parser.error('Expected rule file.')
-    SortFile(args[0])
+    SortFile(options.rule_file)
     return 0
 
-  if len(args) < 2:
+  if not options.directory_path:
     version = build_version.ChromeMajorVersion()
-    args.append(os.path.join(OUT_DIR, 'pepper_%s' % version))
+    options.directory_path = os.path.join(OUT_DIR, 'pepper_%s' % version)
 
-  rule_path = args[0]
-  directory_path = args[1]
   if options.platform:
     if options.platform not in VALID_PLATFORMS:
       parser.error('Unknown platform: %s' % options.platform)
@@ -212,12 +208,12 @@ def main(args):
     platform = getos.GetPlatform()
 
   try:
-    return Verify(rule_path, directory_path, platform)
+    return Verify(options.rule_file, options.directory_path, platform)
   except ParseException, e:
-    print >> sys.stderr, 'Error parsing rules:\n', e
+    sys.stderr.write('Error parsing rules:\n%s\n' % e)
     return 1
   except VerifyException, e:
-    print >> sys.stderr, 'Error verifying file list:\n', e
+    sys.stderr.write('Error verifying file list:\n%s\n' % e)
     return 1
   return 0
 

@@ -18,9 +18,9 @@ and whether it should upload an SDK to file storage (GSTORE)
 # pylint: disable=W0621
 
 # std python includes
+import argparse
 import datetime
 import glob
-import optparse
 import os
 import re
 import sys
@@ -903,32 +903,32 @@ def BuildStepBuildAppEngine(pepperdir, chrome_revision):
 
 
 def main(args):
-  parser = optparse.OptionParser(description=__doc__)
-  parser.add_option('--nacl-tree-path',
+  parser = argparse.ArgumentParser(description=__doc__)
+  parser.add_argument('--nacl-tree-path',
       help='Path to native client tree for bionic build.',
       dest='nacl_tree_path')
-  parser.add_option('--qemu', help='Add qemu for ARM.',
+  parser.add_argument('--qemu', help='Add qemu for ARM.',
       action='store_true')
-  parser.add_option('--bionic', help='Add bionic build.',
+  parser.add_argument('--bionic', help='Add bionic build.',
       action='store_true')
-  parser.add_option('--tar', help='Force the tar step.',
+  parser.add_argument('--tar', help='Force the tar step.',
       action='store_true')
-  parser.add_option('--archive', help='Force the archive step.',
+  parser.add_argument('--archive', help='Force the archive step.',
       action='store_true')
-  parser.add_option('--release', help='PPAPI release version.',
+  parser.add_argument('--release', help='PPAPI release version.',
       dest='release', default=None)
-  parser.add_option('--build-ports',
+  parser.add_argument('--build-ports',
       help='Build naclport bundle.', action='store_true')
-  parser.add_option('--build-app-engine',
+  parser.add_argument('--build-app-engine',
       help='Build AppEngine demos.', action='store_true')
-  parser.add_option('--experimental',
+  parser.add_argument('--experimental',
       help='build experimental examples and libraries', action='store_true',
       dest='build_experimental')
-  parser.add_option('--skip-toolchain', help='Skip toolchain untar',
+  parser.add_argument('--skip-toolchain', help='Skip toolchain untar',
       action='store_true')
-  parser.add_option('--mac-sdk',
+  parser.add_argument('--mac-sdk',
       help='Set the mac-sdk (e.g. 10.6) to use when building with ninja.')
-  parser.add_option('--no-arm-trusted', action='store_true',
+  parser.add_argument('--no-arm-trusted', action='store_true',
       help='Disable building of ARM trusted components (sel_ldr, etc).')
 
   # To setup bash completion for this command first install optcomplete
@@ -941,9 +941,7 @@ def main(args):
     pass
 
   global options
-  options, args = parser.parse_args(args)
-  if args:
-    parser.error("Unexpected arguments: %s" % str(args))
+  options = parser.parse_args(args)
 
   if options.nacl_tree_path:
     options.bionic = True

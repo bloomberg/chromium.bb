@@ -3,10 +3,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import argparse
 import BaseHTTPServer
 import logging
 import multiprocessing
-import optparse
 import os
 import SimpleHTTPServer  # pylint: disable=W0611
 import socket
@@ -185,13 +185,13 @@ def _HTTPServerProcess(conn, dirname, port, server_kwargs):
 
 
 def main(args):
-  parser = optparse.OptionParser()
-  parser.add_option('-C', '--serve-dir',
+  parser = argparse.ArgumentParser()
+  parser.add_argument('-C', '--serve-dir',
       help='Serve files out of this directory.',
       default=os.path.abspath('.'))
-  parser.add_option('-p', '--port',
+  parser.add_argument('-p', '--port',
       help='Run server on this port.', default=5103)
-  parser.add_option('--no-dir-check', '--no_dir_check',
+  parser.add_argument('--no-dir-check', '--no_dir_check',
       help='No check to ensure serving from safe directory.',
       dest='do_safe_check', action='store_false', default=True)
 
@@ -204,7 +204,7 @@ def main(args):
   except ImportError:
     pass
 
-  options, args = parser.parse_args(args)
+  options = parser.parse_args(args)
   if options.do_safe_check:
     SanityCheckDirectory(options.serve_dir)
 

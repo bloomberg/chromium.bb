@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import optparse
+import argparse
 import os
 import sys
 import unittest
@@ -92,53 +92,51 @@ class TestQuote(unittest.TestCase):
 
 # Invoke this file directly for simple manual testing.  For running
 # the unittests, use the -t flag.  Any flags to be passed to the
-# unittest module should be passed as after the optparse processing,
+# unittest module should be passed as after the argparse processing,
 # e.g., "quote_test.py -t -- -v" to pass the -v flag to the unittest
 # module.
 
-def main(argv):
+def main(args):
   global verbose
-  parser = optparse.OptionParser(
-    usage='Usage: %prog [options] word...')
-  parser.add_option('-s', '--special-chars', dest='special_chars', default=':',
-                    help='Special characters to quote (default is ":")')
-  parser.add_option('-q', '--quote', dest='quote', default='\\',
-                    help='Quote or escape character (default is "\")')
-  parser.add_option('-t', '--run-tests', dest='tests', action='store_true',
-                    help='Run built-in tests\n')
-  parser.add_option('-u', '--unquote-input', dest='unquote_input',
-                    action='store_true', help='Unquote command line argument')
-  parser.add_option('-v', '--verbose', dest='verbose', action='store_true',
-                    help='Verbose test output')
-  options, args = parser.parse_args(argv)
+  parser = argparse.ArgumentParser()
+  parser.add_argument('-s', '--special-chars',
+                      dest='special_chars', default=':',
+                      help='Special characters to quote (default is ":")')
+  parser.add_argument('-q', '--quote', dest='quote', default='\\',
+                      help='Quote or escape character (default is "\")')
+  parser.add_argument('-u', '--unquote-input', dest='unquote_input',
+                      action='store_true', help='Unquote command line argument')
+  parser.add_argument('-v', '--verbose', dest='verbose', action='store_true',
+                      help='Verbose test output')
+  parser.add_argument('words', nargs='*')
+  options = parser.parse_args(args)
 
   if options.verbose:
     verbose = True
 
-  num_errors = 0
-  if options.tests:
-    sys.argv = [sys.argv[0]] + args
+  if not options.words:
     unittest.main()
-  else:
-    for word in args:
-      # NB: there are inputs x for which quote(unquote(x) != x, but
-      # there should be no input x for which unquote(quote(x)) != x.
-      if options.unquote_input:
-        qq = quote.unquote(word, options.special_chars, options.quote)
-        sys.stdout.write('unquote(%s) = %s\n'
-                         % (word, ''.join(qq)))
-        # There is no expected output for unquote -- this is just for
-        # manual testing, so it is okay that we do not (and cannot)
-        # update num_errors here.
-      else:
-        q = quote.quote(word, options.special_chars, options.quote)
-        qq = quote.unquote(q, options.special_chars, options.quote)
-        sys.stdout.write('quote(%s) = %s, unquote(%s) = %s\n'
-                         % (word, q, q, ''.join(qq)))
-        if word != ''.join(qq):
-          num_errors += 1
-    if num_errors > 0:
-      sys.stderr.write('[  FAILED  ] %d test failures\n' % num_errors)
+
+  num_errors = 0
+  for word in options.words:
+    # NB: there are inputs x for which quote(unquote(x) != x, but
+    # there should be no input x for which unquote(quote(x)) != x.
+    if options.unquote_input:
+      qq = quote.unquote(word, options.special_chars, options.quote)
+      sys.stdout.write('unquote(%s) = %s\n'
+                       % (word, ''.join(qq)))
+      # There is no expected output for unquote -- this is just for
+      # manual testing, so it is okay that we do not (and cannot)
+      # update num_errors here.
+    else:
+      q = quote.quote(word, options.special_chars, options.quote)
+      qq = quote.unquote(q, options.special_chars, options.quote)
+      sys.stdout.write('quote(%s) = %s, unquote(%s) = %s\n'
+                       % (word, q, q, ''.join(qq)))
+      if word != ''.join(qq):
+        num_errors += 1
+  if num_errors > 0:
+    sys.stderr.write('[  FAILED  ] %d test failures\n' % num_errors)
   return num_errors
 
 if __name__ == '__main__':

@@ -12,8 +12,8 @@ the build to be broken.
 See http://mad-scientist.net/make/autodep.html for more details of the problem.
 """
 
+import argparse
 import os
-import optparse
 import sys
 
 TAG_LINE = '# Updated by fix_deps.py\n'
@@ -82,24 +82,20 @@ def FixupDepFile(filename, output_filename=None):
 
 
 def main(argv):
-  usage = "usage: %prog [options] <dep_file>"
-  parser = optparse.OptionParser(usage=usage, description=__doc__)
-  parser.add_option('-o', '--output', help='Output filename (defaults to '
+  parser = argparse.ArgumentParser(description=__doc__)
+  parser.add_argument('-o', '--output', help='Output filename (defaults to '
                     'input name with .deps extension')
-  parser.add_option('-c', '--clean', action='store_true',
+  parser.add_argument('-c', '--clean', action='store_true',
                     help='Remove input file after writing output')
-  options, args = parser.parse_args(argv)
-  if not args:
-    raise parser.error('No input file specified')
-  if len(args) > 1:
-    raise parser.error('Only one argument supported')
-  input_filename = args[0]
+  parser.add_argument('dep_file')
+  options = parser.parse_args(argv)
   output_filename = options.output
   if not output_filename:
-    output_filename = os.path.splitext(input_filename)[0] + '.deps'
-  FixupDepFile(input_filename, output_filename)
-  if options.clean and input_filename != output_filename:
-    os.remove(input_filename)
+    output_filename = os.path.splitext(options.dep_file)[0] + '.deps'
+  FixupDepFile(options.dep_file, output_filename)
+  if options.clean and options.dep_file != output_filename:
+    os.remove(options.dep_file)
+
   return 0
 
 

@@ -15,7 +15,7 @@ the nmf files.  If it is given an nmf it will only create
 the html file.
 """
 
-import optparse
+import argparse
 import os
 import sys
 import subprocess
@@ -160,18 +160,18 @@ def CreateHTML(filenames, options):
 
 
 def main(argv):
-  usage = 'Usage: %prog [options] <.nexe/.pexe or .nmf>'
-  epilog = 'Example: create_html.py -o index.html my_nexe.nexe'
-  parser = optparse.OptionParser(usage, description=__doc__, epilog=epilog)
-  parser.add_option('-v', '--verbose', action='store_true',
-                    help='Verbose output')
-  parser.add_option('-d', '--debug-libs', action='store_true',
-                    help='When calling create_nmf request debug libaries')
-  parser.add_option('-o', '--output', dest='output',
-                    help='Name of html file to write (default is '
-                         'input name with .html extension)',
-                    metavar='FILE')
-
+  parser = argparse.ArgumentParser(description=__doc__)
+  parser.add_argument('-v', '--verbose', action='store_true',
+                      help='Verbose output')
+  parser.add_argument('-d', '--debug-libs', action='store_true',
+                      help='When calling create_nmf request debug libaries')
+  parser.add_argument('-o', '--output', dest='output',
+                      help='Name of html file to write (default is '
+                           'input name with .html extension)',
+                      metavar='FILE')
+  parser.add_argument('exe', metavar='EXE_OR_NMF', nargs='+',
+                      help='Executable (.nexe/.pexe) or nmf file to generate '
+                           'html for.')
   # To enable bash completion for this command first install optcomplete
   # and then add this line to your .bashrc:
   #  complete -F _optcomplete create_html.py
@@ -181,15 +181,12 @@ def main(argv):
   except ImportError:
     pass
 
-  options, args = parser.parse_args(argv)
-
-  if not args:
-    parser.error('no input file specified')
+  options = parser.parse_args(argv)
 
   if options.verbose:
     Log.enabled = True
 
-  CreateHTML(args, options)
+  CreateHTML(options.exe, options)
   return 0
 
 

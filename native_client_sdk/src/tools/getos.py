@@ -10,7 +10,7 @@ the location of Chrome.  This is used, for example, to determine the correct
 Toolchain to invoke.
 """
 
-import optparse
+import argparse
 import os
 import re
 import subprocess
@@ -216,36 +216,32 @@ def CheckVersion(required_version):
 
 
 def main(args):
-  parser = optparse.OptionParser()
-  parser.add_option('--arch', action='store_true',
+  parser = argparse.ArgumentParser()
+  parser.add_argument('--arch', action='store_true',
       help='Print architecture of current machine (x86_32, x86_64 or arm).')
-  parser.add_option('--chrome', action='store_true',
+  parser.add_argument('--chrome', action='store_true',
       help='Print the path chrome (by first looking in $CHROME_PATH and '
            'then $PATH).')
-  parser.add_option('--nacl-arch', action='store_true',
+  parser.add_argument('--nacl-arch', action='store_true',
       help='Print architecture used by NaCl on the current machine.')
-  parser.add_option('--sdk-version', action='store_true',
+  parser.add_argument('--sdk-version', action='store_true',
       help='Print major version of the NaCl SDK.')
-  parser.add_option('--sdk-revision', action='store_true',
+  parser.add_argument('--sdk-revision', action='store_true',
       help='Print revision number of the NaCl SDK.')
-  parser.add_option('--sdk-commit-position', action='store_true',
+  parser.add_argument('--sdk-commit-position', action='store_true',
       help='Print commit position of the NaCl SDK.')
-  parser.add_option('--check-version',
+  parser.add_argument('--check-version',
       metavar='MAJOR.POSITION',
       help='Check that the SDK version is at least as great as the '
            'version passed in. MAJOR is the major version number and POSITION '
            'is the Cr-Commit-Position number.')
 
-  options, _ = parser.parse_args(args)
-
-  platform = GetPlatform()
-
   if len(args) > 1:
     parser.error('Only one option can be specified at a time.')
 
-  if not args:
-    print platform
-    return 0
+  options = parser.parse_args(args)
+
+  platform = GetPlatform()
 
   if options.arch:
     out = GetSystemArch(platform)
@@ -263,6 +259,8 @@ def main(args):
     required_version = ParseVersion(options.check_version)
     CheckVersion(required_version)
     out = None
+  else:
+    out = platform
 
   if out:
     print out

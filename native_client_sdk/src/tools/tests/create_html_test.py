@@ -11,7 +11,7 @@ import tempfile
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PARENT_DIR = os.path.dirname(SCRIPT_DIR)
 CHROME_SRC = os.path.dirname(os.path.dirname(os.path.dirname(PARENT_DIR)))
-MOCK_DIR = os.path.join(CHROME_SRC, "third_party", "pymock")
+MOCK_DIR = os.path.join(CHROME_SRC, 'third_party', 'pymock')
 
 sys.path.append(PARENT_DIR)
 sys.path.append(MOCK_DIR)

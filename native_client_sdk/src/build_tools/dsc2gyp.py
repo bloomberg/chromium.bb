@@ -2,10 +2,11 @@
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+
+import argparse
 import StringIO
 import sys
 import os
-import optparse
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(os.path.dirname(SCRIPT_DIR), 'tools'))
@@ -359,19 +360,17 @@ def ProcessDSC(filename, outfile=None):
 
 
 def main(args):
-  parser = optparse.OptionParser()
-  parser.add_option('-o', help='Set output filename.', dest='output')
-  options, args = parser.parse_args(args)
-  if not args:
-    Error('No .dsc file specified.')
+  parser = argparse.ArgumentParser()
+  parser.add_argument('-o', help='Set output filename.', dest='output')
+  parser.add_argument('dsc', help='dsc to convert')
+  options = parser.parse_args(args)
 
   if options.output:
     outdir = os.path.dirname(options.output)
     if not os.path.exists(outdir):
       os.makedirs(outdir)
 
-  assert len(args) == 1
-  ProcessDSC(args[0], options.output)
+  ProcessDSC(options.dsc, options.output)
   return 0
 
 

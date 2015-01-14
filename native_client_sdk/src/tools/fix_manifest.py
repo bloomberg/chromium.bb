@@ -34,9 +34,9 @@ Becomes
     ...
 """
 
+import argparse
 import collections
 import json
-import optparse
 import os
 import sys
 
@@ -57,28 +57,23 @@ def Trace(msg):
 Trace.verbose = False
 
 
-def main(argv):
-  parser = optparse.OptionParser(
-      usage='Usage: %prog [options] manifest.json', description=__doc__)
-  parser.add_option('-p', '--prefix',
-                    help='Prefix to set for all sub_package_paths in the '
-                    'manifest. If none is specified, the prefix will be '
-                    'removed; i.e. the start of the path will be '
-                    '"_platform_specific/..."')
-  parser.add_option('-v', '--verbose',
-                    help='Verbose output', action='store_true')
+def main(args):
+  parser = argparse.ArgumentParser(description=__doc__)
+  parser.add_argument('-p', '--prefix',
+                      help='Prefix to set for all sub_package_paths in the '
+                      'manifest. If none is specified, the prefix will be '
+                      'removed; i.e. the start of the path will be '
+                      '"_platform_specific/..."')
+  parser.add_argument('-v', '--verbose',
+                      help='Verbose output', action='store_true')
+  parser.add_argument('manifest_json')
 
-  options, args = parser.parse_args(argv)
+  options = parser.parse_args(args)
   if options.verbose:
     Trace.verbose = True
 
-  if not args:
-    parser.error('Expected manifest file.')
-
-  manifest = args[0]
-
-  Trace('Reading %s' % manifest)
-  with open(manifest) as f:
+  Trace('Reading %s' % options.manifest_json)
+  with open(options.manifest_json) as f:
     # Keep the dictionary order. This is only supported on Python 2.7+
     if sys.version_info >= (2, 7, 0):
       data = json.load(f, object_pairs_hook=collections.OrderedDict)
@@ -86,7 +81,7 @@ def main(argv):
       data = json.load(f)
 
   if 'platforms' not in data:
-    raise Error('%s does not have "platforms" key.' % manifest)
+    raise Error('%s does not have "platforms" key.' % options.manifest_json)
 
   platforms = data['platforms']
   if type(platforms) is not list:
@@ -114,7 +109,7 @@ def main(argv):
 
     Trace('  %s: "%s" -> "%s"' % (nacl_arch, sub_package_path, new_path))
 
-  with open(manifest, 'w') as f:
+  with open(options.manifest_json, 'w') as f:
     json.dump(data, f, indent=2)
 
   return 0
