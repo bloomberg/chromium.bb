@@ -349,7 +349,7 @@ TEST_PPAPI_OUT_OF_PROCESS_WITH_SSL_SERVER(TCPSocketPrivateTrusted)
       LIST_TEST(UDPSocket_ReadWrite) \
       LIST_TEST(UDPSocket_SetOption) \
       LIST_TEST(MAYBE_UDPSocket_Broadcast) \
-  )
+      LIST_TEST(UDPSocket_ParallelSend))
 
 IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, UDPSocket) {
   RUN_UDPSOCKET_SUBTESTS;

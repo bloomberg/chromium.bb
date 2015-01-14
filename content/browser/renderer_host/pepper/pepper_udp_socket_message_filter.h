@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_PEPPER_PEPPER_UDP_SOCKET_MESSAGE_FILTER_H_
 #define CONTENT_BROWSER_RENDERER_HOST_PEPPER_PEPPER_UDP_SOCKET_MESSAGE_FILTER_H_
 
+#include <queue>
 #include <string>
 
 #include "base/basictypes.h"
@@ -63,6 +64,19 @@ class CONTENT_EXPORT PepperUDPSocketMessageFilter
     SOCKET_OPTION_SNDBUF_SIZE = 1 << 3
   };
 
+  struct PendingSend {
+    PendingSend(const net::IPAddressNumber& address,
+                int port,
+                const scoped_refptr<net::IOBufferWithSize>& buffer,
+                const ppapi::host::ReplyMessageContext& context);
+    ~PendingSend();
+
+    net::IPAddressNumber address;
+    int port;
+    scoped_refptr<net::IOBufferWithSize> buffer;
+    ppapi::host::ReplyMessageContext context;
+  };
+
   // ppapi::host::ResourceMessageFilter overrides.
   scoped_refptr<base::TaskRunner> OverrideTaskRunnerForMessage(
       const IPC::Message& message) override;
@@ -88,11 +102,12 @@ class CONTENT_EXPORT PepperUDPSocketMessageFilter
   void DoSendTo(const ppapi::host::ReplyMessageContext& context,
                 const std::string& data,
                 const PP_NetAddress_Private& addr);
+  int StartPendingSend();
   void Close();
 
   void OnRecvFromCompleted(int net_result);
-  void OnSendToCompleted(const ppapi::host::ReplyMessageContext& context,
-                         int net_result);
+  void OnSendToCompleted(int net_result);
+  void FinishPendingSend(int net_result);
 
   void SendBindReply(const ppapi::host::ReplyMessageContext& context,
                      int32_t result,
@@ -122,7 +137,8 @@ class CONTENT_EXPORT PepperUDPSocketMessageFilter
   bool closed_;
 
   scoped_refptr<net::IOBuffer> recvfrom_buffer_;
-  scoped_refptr<net::IOBufferWithSize> sendto_buffer_;
+
+  std::queue<PendingSend> pending_sends_;
 
   net::IPEndPoint recvfrom_address_;
 

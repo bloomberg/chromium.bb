@@ -45,6 +45,9 @@ class PPAPI_PROXY_EXPORT UDPSocketResourceBase: public PluginResource {
   // The maximum number of received packets that we allow instances of this
   // class to buffer.
   static const size_t kPluginReceiveBufferSlots;
+  // The maximum number of buffers that we allow instances of this class to be
+  // sending before we block the plugin.
+  static const size_t kPluginSendBufferSlots;
 
  protected:
   UDPSocketResourceBase(Connection connection,
@@ -117,7 +120,6 @@ class PPAPI_PROXY_EXPORT UDPSocketResourceBase: public PluginResource {
 
   scoped_refptr<TrackedCallback> bind_callback_;
   scoped_refptr<TrackedCallback> recvfrom_callback_;
-  scoped_refptr<TrackedCallback> sendto_callback_;
 
   char* read_buffer_;
   int32_t bytes_to_read_;
@@ -127,6 +129,8 @@ class PPAPI_PROXY_EXPORT UDPSocketResourceBase: public PluginResource {
   PP_NetAddress_Private bound_addr_;
 
   std::queue<RecvBuffer> recv_buffers_;
+
+  std::queue<scoped_refptr<TrackedCallback>> sendto_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(UDPSocketResourceBase);
 };

@@ -28,6 +28,7 @@ const int32_t UDPSocketResourceBase::kMaxSendBufferSize =
 const int32_t UDPSocketResourceBase::kMaxReceiveBufferSize =
     1024 * UDPSocketResourceBase::kMaxReadSize;
 const size_t UDPSocketResourceBase::kPluginReceiveBufferSlots = 32u;
+const size_t UDPSocketResourceBase::kPluginSendBufferSlots = 8u;
 
 UDPSocketResourceBase::UDPSocketResourceBase(Connection connection,
                                              PP_Instance instance,
@@ -193,13 +194,13 @@ int32_t UDPSocketResourceBase::SendToImpl(
     return PP_ERROR_BADARGUMENT;
   if (!bound_)
     return PP_ERROR_FAILED;
-  if (TrackedCallback::IsPending(sendto_callback_))
+  if (sendto_callbacks_.size() == kPluginSendBufferSlots)
     return PP_ERROR_INPROGRESS;
 
   if (num_bytes > kMaxWriteSize)
     num_bytes = kMaxWriteSize;
 
-  sendto_callback_ = callback;
+  sendto_callbacks_.push(callback);
 
   // Send the request, the browser will call us back via SendToReply.
   Call<PpapiPluginMsg_UDPSocket_SendToReply>(
@@ -222,7 +223,11 @@ void UDPSocketResourceBase::CloseImpl() {
 
   PostAbortIfNecessary(&bind_callback_);
   PostAbortIfNecessary(&recvfrom_callback_);
-  PostAbortIfNecessary(&sendto_callback_);
+  while (!sendto_callbacks_.empty()) {
+    scoped_refptr<TrackedCallback> callback = sendto_callbacks_.front();
+    sendto_callbacks_.pop();
+    PostAbortIfNecessary(&callback);
+  }
 
   read_buffer_ = NULL;
   bytes_to_read_ = -1;
@@ -315,13 +320,15 @@ void UDPSocketResourceBase::OnPluginMsgPushRecvResult(
 void UDPSocketResourceBase::OnPluginMsgSendToReply(
     const ResourceMessageReplyParams& params,
     int32_t bytes_written) {
-  if (!TrackedCallback::IsPending(sendto_callback_))
+  scoped_refptr<TrackedCallback> callback = sendto_callbacks_.front();
+  sendto_callbacks_.pop();
+  if (!TrackedCallback::IsPending(callback))
     return;
 
   if (params.result() == PP_OK)
-    RunCallback(sendto_callback_, bytes_written);
+    RunCallback(callback, bytes_written);
   else
-    RunCallback(sendto_callback_, params.result());
+    RunCallback(callback, params.result());
 }
 
 void UDPSocketResourceBase::RunCallback(scoped_refptr<TrackedCallback> callback,

@@ -43,6 +43,7 @@ class TestUDPSocket: public TestCase {
   std::string TestReadWrite();
   std::string TestBroadcast();
   std::string TestSetOption();
+  std::string TestParallelSend();
 
   pp::NetAddress address_;
 };

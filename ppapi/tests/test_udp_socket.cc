@@ -83,6 +83,7 @@ void TestUDPSocket::RunTests(const std::string& filter) {
   RUN_CALLBACK_TEST(TestUDPSocket, ReadWrite, filter);
   RUN_CALLBACK_TEST(TestUDPSocket, Broadcast, filter);
   RUN_CALLBACK_TEST(TestUDPSocket, SetOption, filter);
+  RUN_CALLBACK_TEST(TestUDPSocket, ParallelSend, filter);
 }
 
 std::string TestUDPSocket::GetLocalAddress(pp::NetAddress* address) {
@@ -312,6 +313,76 @@ std::string TestUDPSocket::TestSetOption() {
       callback.GetCallback()));
   CHECK_CALLBACK_BEHAVIOR(callback);
   ASSERT_EQ(PP_OK, callback.result());
+
+  PASS();
+}
+
+std::string TestUDPSocket::TestParallelSend() {
+  // This test only makes sense when callbacks are optional.
+  if (callback_type() != PP_OPTIONAL)
+    PASS();
+
+  pp::UDPSocket server_socket(instance_), client_socket(instance_);
+  pp::NetAddress server_address, client_address;
+
+  ASSERT_SUBTEST_SUCCESS(
+      LookupPortAndBindUDPSocket(&server_socket, &server_address));
+  ASSERT_SUBTEST_SUCCESS(
+      LookupPortAndBindUDPSocket(&client_socket, &client_address));
+  const std::string message = "Simple message that will be sent via UDP";
+  pp::NetAddress recvfrom_address;
+
+  const size_t kParallelSends = 10;
+  std::vector<TestCompletionCallback*> sendto_callbacks(kParallelSends);
+  std::vector<int32_t> sendto_results(kParallelSends);
+  size_t pending = 0;
+  for (size_t i = 0; i < kParallelSends; i++) {
+    sendto_callbacks[i] =
+        new TestCompletionCallback(instance_->pp_instance(), callback_type());
+    sendto_results[i] =
+        client_socket.SendTo(message.c_str(),
+                             message.size(),
+                             server_address,
+                             sendto_callbacks[i]->GetCallback());
+
+    if (sendto_results[i] == PP_ERROR_INPROGRESS) {
+      // Run a pending send to completion to free a slot for the current send.
+      ASSERT_GT(i, pending);
+      sendto_callbacks[pending]->WaitForResult(sendto_results[pending]);
+      CHECK_CALLBACK_BEHAVIOR(*sendto_callbacks[pending]);
+      ASSERT_EQ(message.size(),
+                static_cast<size_t>(sendto_callbacks[pending]->result()));
+      pending++;
+      // Try to send the message again.
+      sendto_results[i] =
+          client_socket.SendTo(message.c_str(),
+                               message.size(),
+                               server_address,
+                               sendto_callbacks[i]->GetCallback());
+      ASSERT_NE(PP_ERROR_INPROGRESS, sendto_results[i]);
+    }
+  }
+
+  // Finish all pending sends.
+  for (size_t i = pending; i < kParallelSends; i++) {
+    sendto_callbacks[i]->WaitForResult(sendto_results[i]);
+    CHECK_CALLBACK_BEHAVIOR(*sendto_callbacks[i]);
+    ASSERT_EQ(message.size(),
+              static_cast<size_t>(sendto_callbacks[i]->result()));
+  }
+
+  for (size_t i = 0; i < kParallelSends; ++i)
+    delete sendto_callbacks[i];
+
+  for (size_t i = 0; i < kParallelSends; i++) {
+    std::string str;
+    ASSERT_SUBTEST_SUCCESS(
+        ReadSocket(&server_socket, &recvfrom_address, message.size(), &str));
+    ASSERT_EQ(message, str);
+  }
+
+  server_socket.Close();
+  client_socket.Close();
 
   PASS();
 }

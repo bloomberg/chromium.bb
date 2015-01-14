@@ -32,6 +32,7 @@
 
 using ppapi::NetAddressPrivateImpl;
 using ppapi::host::NetErrorToPepperError;
+using ppapi::proxy::UDPSocketResourceBase;
 
 namespace {
 
@@ -41,6 +42,17 @@ size_t g_num_instances = 0;
 
 namespace content {
 
+PepperUDPSocketMessageFilter::PendingSend::PendingSend(
+    const net::IPAddressNumber& address,
+    int port,
+    const scoped_refptr<net::IOBufferWithSize>& buffer,
+    const ppapi::host::ReplyMessageContext& context)
+    : address(address), port(port), buffer(buffer), context(context) {
+}
+
+PepperUDPSocketMessageFilter::PendingSend::~PendingSend() {
+}
+
 PepperUDPSocketMessageFilter::PepperUDPSocketMessageFilter(
     BrowserPpapiHostImpl* host,
     PP_Instance instance,
@@ -49,8 +61,7 @@ PepperUDPSocketMessageFilter::PepperUDPSocketMessageFilter(
       rcvbuf_size_(0),
       sndbuf_size_(0),
       closed_(false),
-      remaining_recv_slots_(
-          ppapi::proxy::UDPSocketResourceBase::kPluginReceiveBufferSlots),
+      remaining_recv_slots_(UDPSocketResourceBase::kPluginReceiveBufferSlots),
       external_plugin_(host->external_plugin()),
       private_api_(private_api),
       render_process_id_(0),
@@ -263,7 +274,7 @@ int32_t PepperUDPSocketMessageFilter::OnMsgRecvSlotAvailable(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (remaining_recv_slots_ <
-          ppapi::proxy::UDPSocketResourceBase::kPluginReceiveBufferSlots) {
+      UDPSocketResourceBase::kPluginReceiveBufferSlots) {
     remaining_recv_slots_++;
   }
 
@@ -370,8 +381,7 @@ void PepperUDPSocketMessageFilter::DoRecvFrom() {
   DCHECK(!recvfrom_buffer_.get());
   DCHECK_GT(remaining_recv_slots_, 0u);
 
-  recvfrom_buffer_ = new net::IOBuffer(
-      ppapi::proxy::UDPSocketResourceBase::kMaxReadSize);
+  recvfrom_buffer_ = new net::IOBuffer(UDPSocketResourceBase::kMaxReadSize);
 
   // Use base::Unretained(this), so that the lifespan of this object doesn't
   // have to last until the callback is called.
@@ -380,7 +390,7 @@ void PepperUDPSocketMessageFilter::DoRecvFrom() {
   // called.
   int net_result = socket_->RecvFrom(
       recvfrom_buffer_.get(),
-      ppapi::proxy::UDPSocketResourceBase::kMaxReadSize,
+      UDPSocketResourceBase::kMaxReadSize,
       &recvfrom_address_,
       base::Bind(&PepperUDPSocketMessageFilter::OnRecvFromCompleted,
                  base::Unretained(this)));
@@ -400,23 +410,14 @@ void PepperUDPSocketMessageFilter::DoSendTo(
     return;
   }
 
-  if (sendto_buffer_.get()) {
-    SendSendToError(context, PP_ERROR_INPROGRESS);
-    return;
-  }
-
   size_t num_bytes = data.size();
   if (num_bytes == 0 ||
-      num_bytes > static_cast<size_t>(
-                      ppapi::proxy::UDPSocketResourceBase::kMaxWriteSize)) {
+      num_bytes > static_cast<size_t>(UDPSocketResourceBase::kMaxWriteSize)) {
     // Size of |data| is checked on the plugin side.
     NOTREACHED();
     SendSendToError(context, PP_ERROR_BADARGUMENT);
     return;
   }
-
-  sendto_buffer_ = new net::IOBufferWithSize(num_bytes);
-  memcpy(sendto_buffer_->data(), data.data(), num_bytes);
 
   net::IPAddressNumber address;
   uint16 port;
@@ -425,17 +426,38 @@ void PepperUDPSocketMessageFilter::DoSendTo(
     return;
   }
 
-  // Please see OnMsgRecvFrom() for the reason why we use base::Unretained(this)
+  scoped_refptr<net::IOBufferWithSize> buffer(
+      new net::IOBufferWithSize(num_bytes));
+  memcpy(buffer->data(), data.data(), num_bytes);
+
+  // Make sure a malicious plugin can't queue up an unlimited number of buffers.
+  size_t num_pending_sends = pending_sends_.size();
+  if (num_pending_sends == UDPSocketResourceBase::kPluginSendBufferSlots) {
+    SendSendToError(context, PP_ERROR_FAILED);
+    return;
+  }
+
+  pending_sends_.push(PendingSend(address, port, buffer, context));
+  // If there are other sends pending, we can't start yet.
+  if (num_pending_sends)
+    return;
+  int net_result = StartPendingSend();
+  if (net_result != net::ERR_IO_PENDING)
+    FinishPendingSend(net_result);
+}
+
+int PepperUDPSocketMessageFilter::StartPendingSend() {
+  DCHECK(!pending_sends_.empty());
+  const PendingSend& pending_send = pending_sends_.front();
+  // See OnMsgRecvFrom() for the reason why we use base::Unretained(this)
   // when calling |socket_| methods.
   int net_result = socket_->SendTo(
-      sendto_buffer_.get(),
-      sendto_buffer_->size(),
-      net::IPEndPoint(address, port),
+      pending_send.buffer.get(),
+      pending_send.buffer->size(),
+      net::IPEndPoint(pending_send.address, pending_send.port),
       base::Bind(&PepperUDPSocketMessageFilter::OnSendToCompleted,
-                 base::Unretained(this),
-                 context));
-  if (net_result != net::ERR_IO_PENDING)
-    OnSendToCompleted(context, net_result);
+                 base::Unretained(this)));
+  return net_result;
 }
 
 void PepperUDPSocketMessageFilter::Close() {
@@ -476,18 +498,29 @@ void PepperUDPSocketMessageFilter::OnRecvFromCompleted(int net_result) {
     DoRecvFrom();
 }
 
-void PepperUDPSocketMessageFilter::OnSendToCompleted(
-    const ppapi::host::ReplyMessageContext& context,
-    int net_result) {
+void PepperUDPSocketMessageFilter::OnSendToCompleted(int net_result) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(sendto_buffer_.get());
+  FinishPendingSend(net_result);
 
+  // Start pending sends until none are left or a send doesn't complete.
+  while (!pending_sends_.empty()) {
+    net_result = StartPendingSend();
+    if (net_result == net::ERR_IO_PENDING)
+      break;
+    FinishPendingSend(net_result);
+  }
+}
+
+void PepperUDPSocketMessageFilter::FinishPendingSend(int net_result) {
+  DCHECK(!pending_sends_.empty());
+  const PendingSend& pending_send = pending_sends_.front();
   int32_t pp_result = NetErrorToPepperError(net_result);
   if (pp_result < 0)
-    SendSendToError(context, pp_result);
+    SendSendToError(pending_send.context, pp_result);
   else
-    SendSendToReply(context, PP_OK, pp_result);
-  sendto_buffer_ = NULL;
+    SendSendToReply(pending_send.context, PP_OK, pp_result);
+
+  pending_sends_.pop();
 }
 
 void PepperUDPSocketMessageFilter::SendBindReply(
