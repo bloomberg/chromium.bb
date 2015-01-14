@@ -11076,7 +11076,7 @@ Chrome ran out of memory.
 
       <!-- Misc advanced option description strings. -->
       <message name="IDS_NETWORK_PREDICTION_ENABLED_DESCRIPTION" desc="In the advanced options tab, the text next to the checkbox that enables prediction of network actions.  Actions include DNS prefetching, TCP and SSL preconnection, and prerendering of webpages.">
-        Predict network actions to improve page load performance
+        Prefetch resources to load pages more quickly
       </message>
 
       <!-- Collected cookies window -->
