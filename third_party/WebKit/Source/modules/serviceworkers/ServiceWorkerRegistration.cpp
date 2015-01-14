@@ -105,7 +105,7 @@ ScriptPromise ServiceWorkerRegistration::unregister(ScriptState* scriptState)
     ScriptPromise promise = resolver->promise();
 
     if (!m_provider) {
-        resolver->reject(DOMException::create(InvalidStateError, "No associated provider is available"));
+        resolver->reject(DOMException::create(InvalidStateError, "Failed to unregister a ServiceWorkerRegistration: No associated provider is available."));
         return promise;
     }
 
@@ -113,7 +113,8 @@ ScriptPromise ServiceWorkerRegistration::unregister(ScriptState* scriptState)
     KURL scopeURL = scriptState->executionContext()->completeURL(scope());
     scopeURL.removeFragmentIdentifier();
     if (!scope().isEmpty() && !documentOrigin->canRequest(scopeURL)) {
-        resolver->reject(DOMException::create(SecurityError, "Can only unregister for scopes in the document's origin."));
+        RefPtr<SecurityOrigin> scopeOrigin = SecurityOrigin::create(scopeURL);
+        resolver->reject(DOMException::create(SecurityError, "Failed to unregister a ServiceWorkerRegistration: The origin of the registration's scope ('" + scopeOrigin->toString() + "') does not match the current origin ('" + documentOrigin->toString() + "')."));
         return promise;
     }
 

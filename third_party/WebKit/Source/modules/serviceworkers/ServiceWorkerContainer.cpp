@@ -115,7 +115,7 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(ScriptState* scriptS
     ScriptPromise promise = resolver->promise();
 
     if (!m_provider) {
-        resolver->reject(DOMException::create(InvalidStateError, "The document is in an invalid state."));
+        resolver->reject(DOMException::create(InvalidStateError, "Failed to register a ServiceWorker: The document is in an invalid state."));
         return promise;
     }
 
@@ -131,14 +131,15 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(ScriptState* scriptS
 
     KURL pageURL = KURL(KURL(), documentOrigin->toString());
     if (!pageURL.protocolIsInHTTPFamily()) {
-        resolver->reject(DOMException::create(SecurityError, "The URL protocol of the current origin is not supported: " + pageURL.protocol()));
+        resolver->reject(DOMException::create(SecurityError, "Failed to register a ServiceWorker: The URL protocol of the current origin ('" + documentOrigin->toString() + "') is not supported."));
         return promise;
     }
 
     KURL scriptURL = executionContext->completeURL(url);
     scriptURL.removeFragmentIdentifier();
     if (!documentOrigin->canRequest(scriptURL)) {
-        resolver->reject(DOMException::create(SecurityError, "The origin of the script must match the current origin."));
+        RefPtr<SecurityOrigin> scriptOrigin = SecurityOrigin::create(scriptURL);
+        resolver->reject(DOMException::create(SecurityError, "Failed to register a ServiceWorker: The origin of the provided scriptURL ('" + scriptOrigin->toString() + "') does not match the current origin ('" + documentOrigin->toString() + "')."));
         return promise;
     }
 
@@ -150,7 +151,8 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(ScriptState* scriptS
     patternURL.removeFragmentIdentifier();
 
     if (!documentOrigin->canRequest(patternURL)) {
-        resolver->reject(DOMException::create(SecurityError, "The scope must match the current origin."));
+        RefPtr<SecurityOrigin> patternOrigin = SecurityOrigin::create(patternURL);
+        resolver->reject(DOMException::create(SecurityError, "Failed to register a ServiceWorker: The origin of the provided scope ('" + patternOrigin->toString() + "') does not match the current origin ('" + documentOrigin->toString() + "')."));
         return promise;
     }
 
@@ -179,7 +181,7 @@ ScriptPromise ServiceWorkerContainer::getRegistration(ScriptState* scriptState, 
     ScriptPromise promise = resolver->promise();
 
     if (!m_provider) {
-        resolver->reject(DOMException::create(InvalidStateError, "The document is in an invalid state."));
+        resolver->reject(DOMException::create(InvalidStateError, "Failed to get a ServiceWorkerRegistration: The document is in an invalid state."));
         return promise;
     }
 
@@ -195,14 +197,15 @@ ScriptPromise ServiceWorkerContainer::getRegistration(ScriptState* scriptState, 
 
     KURL pageURL = KURL(KURL(), documentOrigin->toString());
     if (!pageURL.protocolIsInHTTPFamily()) {
-        resolver->reject(DOMException::create(SecurityError, "The URL protocol of the current origin is not supported: " + pageURL.protocol()));
+        resolver->reject(DOMException::create(SecurityError, "Failed to get a ServiceWorkerRegistration: The URL protocol of the current origin ('" + documentOrigin->toString() + "') is not supported."));
         return promise;
     }
 
     KURL completedURL = executionContext->completeURL(documentURL);
     completedURL.removeFragmentIdentifier();
     if (!documentOrigin->canRequest(completedURL)) {
-        resolver->reject(DOMException::create(SecurityError, "The documentURL must match the current origin."));
+        RefPtr<SecurityOrigin> documentURLOrigin = SecurityOrigin::create(completedURL);
+        resolver->reject(DOMException::create(SecurityError, "Failed to get a ServiceWorkerRegistration: The origin of the provided documentURL ('" + documentURLOrigin->toString() + "') does not match the current origin ('" + documentOrigin->toString() + "')."));
         return promise;
     }
     m_provider->getRegistration(completedURL, new GetRegistrationCallback(resolver));

@@ -14,7 +14,8 @@ async_test(function(t) {
             'register() on local file should fail');
           assert_equals(
             e.message,
-            'The URL protocol of the current origin is not supported: file',
+            'Failed to register a ServiceWorker: The URL protocol of the ' +
+            'current origin (\'file://\') is not supported.',
             'register() should fail due to unsupported URL protocol');
           t.done();
         })
@@ -34,7 +35,8 @@ async_test(function(t) {
             'getRegistration() on local file should fail');
           assert_equals(
             e.message,
-            'The URL protocol of the current origin is not supported: file',
+            'Failed to get a ServiceWorkerRegistration: The URL protocol of ' +
+            'the current origin (\'file://\') is not supported.',
             'getRegistration() should fail due to unsupported URL protocol');
           t.done();
         })

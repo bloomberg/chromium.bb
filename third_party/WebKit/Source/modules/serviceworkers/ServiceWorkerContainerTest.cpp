@@ -229,7 +229,7 @@ TEST_F(ServiceWorkerContainerTest, Register_CrossOriginScriptIsRejected)
     testRegisterRejected(
         "https://www.example.com:8080/", // Differs by port
         "https://www.example.com/",
-        ExpectDOMException("SecurityError", "The origin of the script must match the current origin."));
+        ExpectDOMException("SecurityError", "Failed to register a ServiceWorker: The origin of the provided scriptURL ('https://www.example.com:8080') does not match the current origin ('https://www.example.com')."));
 }
 
 TEST_F(ServiceWorkerContainerTest, Register_CrossOriginScopeIsRejected)
@@ -238,7 +238,7 @@ TEST_F(ServiceWorkerContainerTest, Register_CrossOriginScopeIsRejected)
     testRegisterRejected(
         "https://www.example.com",
         "wss://www.example.com/", // Differs by protocol
-        ExpectDOMException("SecurityError", "The scope must match the current origin."));
+        ExpectDOMException("SecurityError", "Failed to register a ServiceWorker: The origin of the provided scope ('wss://www.example.com') does not match the current origin ('https://www.example.com')."));
 }
 
 TEST_F(ServiceWorkerContainerTest, GetRegistration_NonSecureOriginIsRejected)
@@ -254,7 +254,7 @@ TEST_F(ServiceWorkerContainerTest, GetRegistration_CrossOriginURLIsRejected)
     setPageURL("https://www.example.com/");
     testGetRegistrationRejected(
         "https://foo.example.com/", // Differs by host
-        ExpectDOMException("SecurityError", "The documentURL must match the current origin."));
+        ExpectDOMException("SecurityError", "Failed to get a ServiceWorkerRegistration: The origin of the provided documentURL ('https://foo.example.com') does not match the current origin ('https://www.example.com')."));
 }
 
 class StubWebServiceWorkerProvider {
