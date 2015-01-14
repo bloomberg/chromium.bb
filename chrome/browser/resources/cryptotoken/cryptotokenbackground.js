@@ -12,6 +12,9 @@
 var BROWSER_SUPPORTS_TLS_CHANNEL_ID = true;
 
 /** @const */
+var HTTP_ORIGINS_ALLOWED = false;
+
+/** @const */
 var LOG_SAVER_EXTENSION_ID = 'fjajfjhkeibgmiggdfehjplbhmfkialk';
 
 // Singleton tracking available devices.

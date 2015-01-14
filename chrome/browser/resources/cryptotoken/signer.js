@@ -43,6 +43,10 @@ function handleWebSignRequest(messageSender, request, sendResponse) {
     sendErrorResponse({errorCode: ErrorCodes.BAD_REQUEST});
     return null;
   }
+  if (sender.origin.indexOf('http://') == 0 && !HTTP_ORIGINS_ALLOWED) {
+    sendErrorResponse({errorCode: ErrorCodes.BAD_REQUEST});
+    return null;
+  }
 
   queuedSignRequest =
       validateAndEnqueueSignRequest(
@@ -79,6 +83,10 @@ function handleU2fSignRequest(messageSender, request, sendResponse) {
 
   var sender = createSenderFromMessageSender(messageSender);
   if (!sender) {
+    sendErrorResponse({errorCode: ErrorCodes.BAD_REQUEST});
+    return null;
+  }
+  if (sender.origin.indexOf('http://') == 0 && !HTTP_ORIGINS_ALLOWED) {
     sendErrorResponse({errorCode: ErrorCodes.BAD_REQUEST});
     return null;
   }
