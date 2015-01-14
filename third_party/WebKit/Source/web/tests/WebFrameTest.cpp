@@ -4192,6 +4192,26 @@ TEST_F(WebFrameTest, MoveRangeSelectionExtentCannotCollapse)
     EXPECT_EQ("This text is initially selected.", selectionAsString(frame));
 }
 
+TEST_F(WebFrameTest, MoveRangeSelectionExtentScollsInputField)
+{
+    WebLocalFrameImpl* frame;
+    WebRect startWebRect;
+    WebRect endWebRect;
+
+    registerMockedHttpURLLoad("move_range_selection_extent_input_field.html");
+
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    initializeTextSelectionWebView(m_baseURL + "move_range_selection_extent_input_field.html", &webViewHelper);
+    frame = toWebLocalFrameImpl(webViewHelper.webView()->mainFrame());
+    EXPECT_EQ("Length", selectionAsString(frame));
+    webViewHelper.webView()->selectionBounds(startWebRect, endWebRect);
+
+    EXPECT_EQ(0, frame->frame()->selection().rootEditableElement()->scrollLeft());
+    frame->moveRangeSelectionExtent(WebPoint(endWebRect.x + 500, endWebRect.y));
+    EXPECT_GE(frame->frame()->selection().rootEditableElement()->scrollLeft(), 1);
+    EXPECT_EQ("Lengthy text goes here.", selectionAsString(frame));
+}
+
 static int computeOffset(RenderObject* renderer, int x, int y)
 {
     return VisiblePosition(renderer->positionForPoint(LayoutPoint(x, y))).deepEquivalent().computeOffsetInContainerNode();

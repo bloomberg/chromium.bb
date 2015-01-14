@@ -1211,7 +1211,7 @@ void WebLocalFrameImpl::moveRangeSelectionExtent(const WebPoint& point)
         return;
 
     VisibleSelection newSelection = VisibleSelection(basePosition, extentPosition);
-    frame()->selection().setSelection(newSelection, CharacterGranularity);
+    frame()->selection().setSelection(newSelection, FrameSelection::CloseTyping | FrameSelection::ClearTypingStyle | UserTriggered, FrameSelection::AlignCursorOnScrollIfNeeded, CharacterGranularity);
 }
 
 void WebLocalFrameImpl::moveRangeSelection(const WebPoint& base, const WebPoint& extent)
