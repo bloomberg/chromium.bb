@@ -69,7 +69,8 @@ def CommonChecks(input_api, output_api):
           J('pylib', 'utils', 'md5sum_test.py'),
       ],
       env=pylib_test_env))
-  output.extend(_CheckDeletionsOnlyFiles(input_api, output_api))
+  # TODO(jbudorick): Reenable this check once upstreaming is finished.
+  # output.extend(_CheckDeletionsOnlyFiles(input_api, output_api))
   return output
 
 
