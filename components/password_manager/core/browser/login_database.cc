@@ -28,7 +28,7 @@ using autofill::PasswordForm;
 
 namespace password_manager {
 
-const int kCurrentVersionNumber = 9;
+const int kCurrentVersionNumber = 10;
 static const int kCompatibleVersionNumber = 1;
 
 Pickle SerializeVector(const std::vector<base::string16>& vec) {
@@ -269,13 +269,12 @@ bool LoginDatabase::MigrateOldVersionsAsNeeded() {
       }
       meta_table_.SetVersionNumber(7);
       // Fall through.
-    case 7:
+    case 7: {
       // Keep version 8 around even though no changes are made. See
       // crbug.com/423716 for context.
       meta_table_.SetVersionNumber(8);
       // Fall through.
-      // TODO(gcasto): Remove use_additional_auth by copying table.
-      // https://www.sqlite.org/lang_altertable.html
+    }
     case 8: {
       sql::Statement s;
       s.Assign(db_.GetCachedStatement(SQL_FROM_HERE,
@@ -288,6 +287,35 @@ bool LoginDatabase::MigrateOldVersionsAsNeeded() {
         return false;
       meta_table_.SetVersionNumber(9);
       // Fall through.
+    }
+    case 9: {
+      // Remove use_additional_auth column from database schema
+      // crbug.com/423716 for context.
+      std::string fields_to_copy =
+          "origin_url, action_url, username_element, username_value, "
+          "password_element, password_value, submit_element, "
+          "signon_realm, ssl_valid, preferred, date_created, "
+          "blacklisted_by_user, scheme, password_type, possible_usernames, "
+          "times_used, form_data, date_synced, display_name, avatar_url, "
+          "federation_url, is_zero_click";
+      auto copy_data_query =
+          [&fields_to_copy](const std::string& from, const std::string& to) {
+        return "INSERT INTO " + to + " SELECT " + fields_to_copy + " FROM " +
+               from;
+      };
+
+      if (!db_.Execute(("CREATE TEMPORARY TABLE logins_data(" + fields_to_copy +
+                        ")").c_str()) ||
+          !db_.Execute(copy_data_query("logins", "logins_data").c_str()) ||
+          !db_.Execute("DROP TABLE logins") ||
+          !db_.Execute(
+              ("CREATE TABLE logins(" + fields_to_copy + ")").c_str()) ||
+          !db_.Execute(copy_data_query("logins_data", "logins").c_str()) ||
+          !db_.Execute("DROP TABLE logins_data") ||
+          !db_.Execute("CREATE INDEX logins_signon ON logins (signon_realm)"))
+        return false;
+
+      meta_table_.SetVersionNumber(10);
     }
     case kCurrentVersionNumber:
       // Already up to date

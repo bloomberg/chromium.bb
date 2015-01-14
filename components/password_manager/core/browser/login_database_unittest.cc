@@ -1132,12 +1132,11 @@ class LoginDatabaseMigrationTest : public testing::Test {
   }
 
   // Creates database of specific |version|.
-  void CreateDatabase(int version) {
+  void CreateDatabase(std::string version) {
     base::FilePath database_dump;
     PathService::Get(base::DIR_SOURCE_ROOT, &database_dump);
-    database_dump =
-        database_dump.Append(database_dump_location_)
-            .AppendASCII("login_db_v" + base::IntToString(version) + ".sql");
+    database_dump = database_dump.Append(database_dump_location_)
+                        .AppendASCII("login_db_v" + version + ".sql");
     ASSERT_TRUE(
         sql::test::CreateDatabaseFromSQL(database_path_, database_dump));
   }
@@ -1184,12 +1183,28 @@ class LoginDatabaseMigrationTest : public testing::Test {
 // will be changed to 10, because file login_db_v10.sql doesn't exist.
 // It has to be added in order to fix test.
 TEST_F(LoginDatabaseMigrationTest, MigrationV1ToVCurrent) {
-  for (int version = 1; version < kCurrentVersionNumber; ++version) {
+  std::vector<std::string> versions;
+  for (int version = 1; version < kCurrentVersionNumber; ++version)
+    versions.push_back(base::IntToString(version));
+  versions.push_back("9_without_use_additional_auth_field");
+
+  for (const auto& version : versions) {
     CreateDatabase(version);
+    SCOPED_TRACE(testing::Message("Version = ") << version);
     // Original date, in seconds since UTC epoch.
     std::vector<int64_t> date_created(GetDateCreated());
-    ASSERT_EQ(1402955745, date_created[0]);
-    ASSERT_EQ(1402950000, date_created[1]);
+    int table_version;
+    base::StringToInt(version, &table_version);
+    // Migration to version 8 performs changes dates to the new format.
+    // So for versions less of equal to 8 create date should be in old
+    // format before migration and in new format after.
+    if (table_version <= 8) {
+      ASSERT_EQ(1402955745, date_created[0]);
+      ASSERT_EQ(1402950000, date_created[1]);
+    } else {
+      ASSERT_EQ(13047429345000000, date_created[0]);
+      ASSERT_EQ(13047423600000000, date_created[1]);
+    }
 
     {
       // Assert that the database was successfully opened and updated
@@ -1212,10 +1227,12 @@ TEST_F(LoginDatabaseMigrationTest, MigrationV1ToVCurrent) {
     std::vector<int64_t> new_date_created(GetDateCreated());
     ASSERT_EQ(13047429345000000, new_date_created[0]);
     ASSERT_EQ(13047423600000000, new_date_created[1]);
-    // Check that the two dates match up.
-    for (size_t i = 0; i < date_created.size(); ++i) {
-      EXPECT_EQ(base::Time::FromInternalValue(new_date_created[i]),
-                base::Time::FromTimeT(date_created[i]));
+    if (table_version <= 8) {
+     // Check that the two dates match up.
+     for (size_t i = 0; i < date_created.size(); ++i) {
+       EXPECT_EQ(base::Time::FromInternalValue(new_date_created[i]),
+                 base::Time::FromTimeT(date_created[i]));
+     }
     }
     DestroyDatabase();
   }
