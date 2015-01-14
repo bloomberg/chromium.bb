@@ -20,6 +20,7 @@
 #include "chrome/app_installer/win/app_installer_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
+#include "chrome/installer/launcher_support/chrome_launcher_support.h"
 #include "chrome/installer/util/util_constants.h"
 #include "content/public/common/user_agent.h"
 
@@ -121,14 +122,15 @@ int WINAPI wWinMain(HINSTANCE instance,
     return COULD_NOT_PARSE_INLINE_INSTALL_DATA;
   }
 
-  base::FilePath chrome_path = GetChromeExePath(is_canary);
+  base::FilePath chrome_path =
+      chrome_launcher_support::GetAnyChromePath(is_canary);
   // If none found, show EULA, download, and install Chrome.
   if (chrome_path.empty()) {
     ExitCode get_chrome_result = GetChrome(is_canary, inline_install_json);
     if (get_chrome_result != SUCCESS)
       return get_chrome_result;
 
-    chrome_path = GetChromeExePath(is_canary);
+    chrome_path = chrome_launcher_support::GetAnyChromePath(is_canary);
     if (chrome_path.empty())
       return COULD_NOT_FIND_CHROME;
   }

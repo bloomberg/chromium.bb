@@ -198,7 +198,8 @@ void ChromeLauncher::Run() {
 
   for (base::TimeDelta time_out = default_time_out;;
        time_out = std::min(time_out * 2, max_time_out)) {
-    base::FilePath chrome_path = chrome_launcher_support::GetAnyChromePath();
+    base::FilePath chrome_path =
+        chrome_launcher_support::GetAnyChromePath(false /* is_sxs */);
 
     if (!chrome_path.empty()) {
       base::CommandLine cmd(chrome_path);
@@ -258,7 +259,8 @@ std::string ChromeLauncher::CreateServiceStateFile(
     return std::string();
   }
 
-  base::FilePath chrome_path = chrome_launcher_support::GetAnyChromePath();
+  base::FilePath chrome_path =
+      chrome_launcher_support::GetAnyChromePath(false /* is_sxs */);
   if (chrome_path.empty()) {
     LOG(ERROR) << "Can't find Chrome.";
     return std::string();

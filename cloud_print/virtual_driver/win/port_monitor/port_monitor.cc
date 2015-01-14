@@ -308,7 +308,7 @@ base::FilePath GetChromeExePath() {
   base::FilePath path = ReadPathFromAnyRegistry(kChromeExePathRegValue);
   if (!path.empty())
     return path;
-  return chrome_launcher_support::GetAnyChromePath();
+  return chrome_launcher_support::GetAnyChromePath(false /* is_sxs */);
 }
 
 base::FilePath GetChromeProfilePath() {

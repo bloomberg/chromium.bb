@@ -113,39 +113,29 @@ base::FilePath FindExeRelativeToSetupExe(const base::FilePath setup_exe_path,
   return base::FilePath();
 }
 
-// Returns the path to an installed SxS chrome.exe at the specified level, if
-// it can be found via the registry.
-base::FilePath GetChromeSxSPathForInstallationLevel(InstallationLevel level) {
-#if defined(GOOGLE_CHROME_BUILD)
-  return FindExeRelativeToSetupExe(
-      GetSetupExeFromRegistry(level, kSxSBrowserAppGuid), kChromeExe);
-#else
-  // There is no SxS build for Chromium.
-  return base::FilePath();
-#endif
-}
-
 }  // namespace
 
-base::FilePath GetChromePathForInstallationLevel(InstallationLevel level) {
-  return FindExeRelativeToSetupExe(
-      GetSetupExeForInstallationLevel(level), kChromeExe);
+base::FilePath GetChromePathForInstallationLevel(InstallationLevel level,
+                                                 bool is_sxs) {
+  if (is_sxs) {
+#if defined(GOOGLE_CHROME_BUILD)
+    return FindExeRelativeToSetupExe(
+        GetSetupExeFromRegistry(level, kSxSBrowserAppGuid), kChromeExe);
+#else
+    // There is no SxS build for Chromium.
+    return base::FilePath();
+#endif
+  } else {
+    return FindExeRelativeToSetupExe(GetSetupExeForInstallationLevel(level),
+                                     kChromeExe);
+  }
 }
 
-base::FilePath GetAnyChromePath() {
-  base::FilePath chrome_path;
-  if (chrome_path.empty())
-    chrome_path = GetChromePathForInstallationLevel(SYSTEM_LEVEL_INSTALLATION);
-  if (chrome_path.empty())
-    chrome_path = GetChromePathForInstallationLevel(USER_LEVEL_INSTALLATION);
-  return chrome_path;
-}
-
-base::FilePath GetAnyChromeSxSPath() {
-  base::FilePath path =
-      GetChromeSxSPathForInstallationLevel(USER_LEVEL_INSTALLATION);
+base::FilePath GetAnyChromePath(bool is_sxs) {
+  base::FilePath path;
+  path = GetChromePathForInstallationLevel(SYSTEM_LEVEL_INSTALLATION, is_sxs);
   if (path.empty())
-    path = GetChromeSxSPathForInstallationLevel(SYSTEM_LEVEL_INSTALLATION);
+    path = GetChromePathForInstallationLevel(USER_LEVEL_INSTALLATION, is_sxs);
   return path;
 }
 

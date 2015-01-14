@@ -35,8 +35,9 @@ std::string GetEnvironment(const base::FilePath& user_data_dir) {
                          printing::XPSModule::Init());
   environment.SetString(SetupListener::kUserNameJsonValueName,
                         GetCurrentUserName());
-  environment.SetString(SetupListener::kChromePathJsonValueName,
-                        chrome_launcher_support::GetAnyChromePath().value());
+  environment.SetString(
+      SetupListener::kChromePathJsonValueName,
+      chrome_launcher_support::GetAnyChromePath(false /* is_sxs */).value());
   if (base::CreateDirectory(user_data_dir)) {
     base::FilePath temp_file;
     if (base::CreateTemporaryFileInDir(user_data_dir, &temp_file)) {

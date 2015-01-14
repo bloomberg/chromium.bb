@@ -391,11 +391,11 @@ bool GetGoogleChromePath(base::FilePath* chrome_exe_path) {
 
   // Now grab the uninstall string from the appropriate ClientState key
   // and use that as the base for a path to chrome.exe.
-  *chrome_exe_path =
-      chrome_launcher_support::GetChromePathForInstallationLevel(
-          install_key == HKEY_LOCAL_MACHINE ?
-              chrome_launcher_support::SYSTEM_LEVEL_INSTALLATION :
-              chrome_launcher_support::USER_LEVEL_INSTALLATION);
+  *chrome_exe_path = chrome_launcher_support::GetChromePathForInstallationLevel(
+      install_key == HKEY_LOCAL_MACHINE
+          ? chrome_launcher_support::SYSTEM_LEVEL_INSTALLATION
+          : chrome_launcher_support::USER_LEVEL_INSTALLATION,
+      false /* is_sxs */);
   return !chrome_exe_path->empty();
 }
 

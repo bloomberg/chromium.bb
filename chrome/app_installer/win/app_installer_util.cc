@@ -298,11 +298,6 @@ bool FetchUrl(const base::string16& user_agent,
   return ReadHttpData(request_handle.Get(), response_data);
 }
 
-base::FilePath GetChromeExePath(bool is_canary) {
-  return is_canary ? chrome_launcher_support::GetAnyChromeSxSPath()
-                   : chrome_launcher_support::GetAnyChromePath();
-}
-
 ExitCode GetChrome(bool is_canary, const std::string& inline_install_json) {
   // Show UI to install Chrome. The UI returns a download URL.
   base::string16 download_url =

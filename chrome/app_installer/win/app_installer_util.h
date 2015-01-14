@@ -50,8 +50,6 @@ bool FetchUrl(const base::string16& user_agent,
               const base::string16& object_name,
               std::vector<uint8_t>* response_data);
 
-base::FilePath GetChromeExePath(bool is_canary);
-
 // Shows UI to download and install Chrome. Returns a failure code, or SUCCESS
 // if the installation completed successfully.
 ExitCode GetChrome(bool is_canary, const std::string& inline_install_json);
