@@ -18,7 +18,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "9.16",
+  "version": "9.15",
   "entries": [
     {
       "id": 1,
@@ -508,11 +508,25 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 48,
-      "description": "Accelerated video decode is unavailable on Linux",
-      "cr_bugs": [137247],
-      "os": {
-        "type": "linux"
-      },
+      "description": "Accelerated video decode is unavailable on Mac and Linux",
+      "cr_bugs": [137247, 133828],
+      "exceptions": [
+        {
+          "os": {
+            "type": "chromeos"
+          }
+        },
+        {
+          "os": {
+            "type": "win"
+          }
+        },
+        {
+          "os": {
+            "type": "android"
+          }
+        }
+      ],
       "features": [
         "accelerated_video_decode"
       ]
