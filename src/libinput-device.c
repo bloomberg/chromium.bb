@@ -126,6 +126,44 @@ handle_pointer_button(struct libinput_device *libinput_device,
 		      libinput_event_pointer_get_button_state(pointer_event));
 }
 
+static double
+normalize_scroll(struct libinput_event_pointer *pointer_event,
+		 enum libinput_pointer_axis axis)
+{
+	static int warned;
+	enum libinput_pointer_axis_source source;
+	double value;
+
+	source = libinput_event_pointer_get_axis_source(pointer_event);
+	/* libinput < 0.8 sent wheel click events with value 10. Since 0.8
+	   the value is the angle of the click in degrees. To keep
+	   backwards-compat with existing clients, we just send multiples of
+	   the click count.
+	 */
+	switch (source) {
+	case LIBINPUT_POINTER_AXIS_SOURCE_WHEEL:
+		value = 10 * libinput_event_pointer_get_axis_value_discrete(
+								   pointer_event,
+								   axis);
+		break;
+	case LIBINPUT_POINTER_AXIS_SOURCE_FINGER:
+	case LIBINPUT_POINTER_AXIS_SOURCE_CONTINUOUS:
+		value = libinput_event_pointer_get_axis_value(pointer_event,
+							      axis);
+		break;
+	default:
+		value = 0;
+		if (warned < 5) {
+			weston_log("Unknown scroll source %d. Event discarded\n",
+				   source);
+			warned++;
+		}
+		break;
+	}
+
+	return value;
+}
+
 static void
 handle_pointer_axis(struct libinput_device *libinput_device,
 		    struct libinput_event_pointer *pointer_event)
@@ -137,8 +175,7 @@ handle_pointer_axis(struct libinput_device *libinput_device,
 
 	axis = LIBINPUT_POINTER_AXIS_SCROLL_VERTICAL;
 	if (libinput_event_pointer_has_axis(pointer_event, axis)) {
-		value = libinput_event_pointer_get_axis_value(pointer_event,
-							      axis);
+		value = normalize_scroll(pointer_event, axis);
 		notify_axis(device->seat,
 			    libinput_event_pointer_get_time(pointer_event),
 			    WL_POINTER_AXIS_VERTICAL_SCROLL,
@@ -147,8 +184,7 @@ handle_pointer_axis(struct libinput_device *libinput_device,
 
 	axis = LIBINPUT_POINTER_AXIS_SCROLL_HORIZONTAL;
 	if (libinput_event_pointer_has_axis(pointer_event, axis)) {
-		value = libinput_event_pointer_get_axis_value(pointer_event,
-							      axis);
+		value = normalize_scroll(pointer_event, axis);
 		notify_axis(device->seat,
 			    libinput_event_pointer_get_time(pointer_event),
 			    WL_POINTER_AXIS_HORIZONTAL_SCROLL,
