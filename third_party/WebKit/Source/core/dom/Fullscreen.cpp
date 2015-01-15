@@ -440,7 +440,9 @@ void Fullscreen::didEnterFullScreenForElement(Element* element)
 
     m_fullScreenElement->setContainsFullScreenElementOnAncestorsCrossingFrameBoundaries(true);
 
+    // FIXME: This should not call updateStyleIfNeeded.
     document()->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::FullScreen));
+    document()->updateRenderTreeIfNeeded();
 
     m_fullScreenElement->didBecomeFullscreenElement();
 
