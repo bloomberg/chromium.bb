@@ -928,7 +928,7 @@ void InspectorDebuggerAgent::compileScript(ErrorString* errorString, const Strin
     String exceptionDetailsText;
     int lineNumberValue = 0;
     int columnNumberValue = 0;
-    RefPtrWillBeRawPtr<ScriptCallStack> stackTraceValue;
+    RefPtrWillBeRawPtr<ScriptCallStack> stackTraceValue = nullptr;
     scriptDebugServer().compileScript(injectedScript.scriptState(), expression, sourceURL, &scriptIdValue, &exceptionDetailsText, &lineNumberValue, &columnNumberValue, &stackTraceValue);
     if (!scriptIdValue && !exceptionDetailsText) {
         *errorString = "Script compilation failed";
@@ -965,7 +965,7 @@ void InspectorDebuggerAgent::runScript(ErrorString* errorString, const ScriptId&
     String exceptionDetailsText;
     int lineNumberValue = 0;
     int columnNumberValue = 0;
-    RefPtrWillBeRawPtr<ScriptCallStack> stackTraceValue;
+    RefPtrWillBeRawPtr<ScriptCallStack> stackTraceValue = nullptr;
     scriptDebugServer().runScript(injectedScript.scriptState(), scriptId, &value, &wasThrownValue, &exceptionDetailsText, &lineNumberValue, &columnNumberValue, &stackTraceValue);
     if (value.isEmpty()) {
         *errorString = "Script execution failed";
