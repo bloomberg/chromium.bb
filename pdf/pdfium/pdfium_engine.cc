@@ -16,6 +16,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "pdf/draw_utils.h"
+#include "pdf/pdfium/pdfium_api_string_buffer_adapter.h"
 #include "pdf/pdfium/pdfium_mem_buffer_file_read.h"
 #include "pdf/pdfium/pdfium_mem_buffer_file_write.h"
 #include "ppapi/c/pp_errors.h"
@@ -2068,18 +2069,16 @@ void PDFiumEngine::SearchUsingICU(const base::string16& term,
   if (text_length <= 0)
     return;
 
+  PDFiumAPIStringBufferAdapter<base::string16> api_string_adapter(&page_text,
+                                                                  text_length,
+                                                                  false);
   unsigned short* data =
-      reinterpret_cast<unsigned short*>(WriteInto(&page_text, text_length + 1));
-  // |written| includes the trailing terminator, so get rid of the trailing
-  // NUL character by calling resize().
+      reinterpret_cast<unsigned short*>(api_string_adapter.GetData());
   int written = FPDFText_GetText(pages_[current_page]->GetTextPage(),
                                  character_to_start_searching_from,
                                  text_length,
                                  data);
-  if (written < 1)
-    page_text.resize(0);
-  else
-    page_text.resize(written - 1);
+  api_string_adapter.Close(written);
 
   std::vector<PDFEngine::Client::SearchStringResult> results;
   client_->SearchString(

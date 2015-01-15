@@ -71,6 +71,8 @@
       'conditions': [
         ['pdf_engine==0', {
           'sources': [
+            'pdfium/pdfium_api_string_buffer_adapter.cc',
+            'pdfium/pdfium_api_string_buffer_adapter.h',
             'pdfium/pdfium_assert_matching_enums.cc',
             'pdfium/pdfium_engine.cc',
             'pdfium/pdfium_engine.h',

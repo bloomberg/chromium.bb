@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/strings/string_util.h"
+#include "pdf/pdfium/pdfium_api_string_buffer_adapter.h"
 
 namespace chrome_pdf {
 
@@ -66,15 +67,13 @@ base::string16 PDFiumRange::GetText() {
   }
 
   if (count > 0) {
+    PDFiumAPIStringBufferAdapter<base::string16> api_string_adapter(&rv,
+                                                                    count,
+                                                                    false);
     unsigned short* data =
-        reinterpret_cast<unsigned short*>(WriteInto(&rv, count + 1));
-    // |written| includes the trailing terminator, so get rid of the trailing
-    // NUL character by calling resize().
+        reinterpret_cast<unsigned short*>(api_string_adapter.GetData());
     int written = FPDFText_GetText(page_->GetTextPage(), index, count, data);
-    if (written < 1)
-      rv.resize(0);
-    else
-      rv.resize(written - 1);
+    api_string_adapter.Close(written);
   }
 
   return rv;
