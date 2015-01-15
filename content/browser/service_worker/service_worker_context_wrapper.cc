@@ -21,6 +21,7 @@
 #include "content/browser/service_worker/service_worker_process_manager.h"
 #include "content/browser/service_worker/service_worker_quota_client.h"
 #include "content/browser/service_worker/service_worker_request_handler.h"
+#include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/service_worker_context.h"
@@ -73,7 +74,9 @@ ServiceWorkerContextWrapper::ServiceWorkerContextWrapper(
     : observer_list_(
           new ObserverListThreadSafe<ServiceWorkerContextObserver>()),
       process_manager_(new ServiceWorkerProcessManager(browser_context)),
-      is_incognito_(false) {
+      is_incognito_(false),
+      storage_partition_(nullptr) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 ServiceWorkerContextWrapper::~ServiceWorkerContextWrapper() {
@@ -83,6 +86,8 @@ void ServiceWorkerContextWrapper::Init(
     const base::FilePath& user_data_directory,
     storage::QuotaManagerProxy* quota_manager_proxy,
     storage::SpecialStoragePolicy* special_storage_policy) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   is_incognito_ = user_data_directory.empty();
   base::SequencedWorkerPool* pool = BrowserThread::GetBlockingPool();
   scoped_ptr<ServiceWorkerDatabaseTaskManager> database_task_manager(
@@ -103,6 +108,8 @@ void ServiceWorkerContextWrapper::Init(
 
 void ServiceWorkerContextWrapper::Shutdown() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  storage_partition_ = nullptr;
   process_manager_->Shutdown();
   BrowserThread::PostTask(
       BrowserThread::IO,
@@ -119,6 +126,17 @@ void ServiceWorkerContextWrapper::DeleteAndStartOver() {
 ServiceWorkerContextCore* ServiceWorkerContextWrapper::context() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return context_core_.get();
+}
+
+StoragePartitionImpl* ServiceWorkerContextWrapper::storage_partition() const {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  return storage_partition_;
+}
+
+void ServiceWorkerContextWrapper::set_storage_partition(
+    StoragePartitionImpl* storage_partition) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  storage_partition_ = storage_partition;
 }
 
 static void FinishRegistrationOnIO(

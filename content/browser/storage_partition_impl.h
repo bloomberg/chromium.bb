@@ -65,6 +65,9 @@ class StoragePartitionImpl : public StoragePartition {
 
   WebRTCIdentityStore* GetWebRTCIdentityStore();
 
+  // Can return nullptr while |this| is being destroyed.
+  BrowserContext* browser_context() const;
+
   struct DataDeletionHelper;
   struct QuotaManagedDataDeletionHelper;
 
@@ -113,6 +116,7 @@ class StoragePartitionImpl : public StoragePartition {
                                       const base::FilePath& profile_path);
 
   CONTENT_EXPORT StoragePartitionImpl(
+      BrowserContext* browser_context,
       const base::FilePath& partition_path,
       storage::QuotaManager* quota_manager,
       ChromeAppCacheService* appcache_service,
@@ -168,6 +172,11 @@ class StoragePartitionImpl : public StoragePartition {
   scoped_refptr<GeofencingManager> geofencing_manager_;
   scoped_refptr<HostZoomLevelContext> host_zoom_level_context_;
   scoped_refptr<NavigatorConnectContext> navigator_connect_context_;
+
+  // Raw pointer that should always be valid. The BrowserContext owns the
+  // StoragePartitionImplMap which then owns StoragePartitionImpl. When the
+  // BrowserContext is destroyed, |this| will be destroyed too.
+  BrowserContext* browser_context_;
 
   DISALLOW_COPY_AND_ASSIGN(StoragePartitionImpl);
 };

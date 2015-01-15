@@ -126,6 +126,7 @@ class CONTENT_EXPORT ServiceWorkerContextCore
                               int line_number,
                               const GURL& source_url) override;
 
+  ServiceWorkerContextWrapper* wrapper() const { return wrapper_; }
   ServiceWorkerStorage* storage() { return storage_.get(); }
   ServiceWorkerCacheStorageManager* cache_manager() {
     return cache_manager_.get();

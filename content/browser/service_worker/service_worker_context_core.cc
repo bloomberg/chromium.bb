@@ -497,9 +497,7 @@ void ServiceWorkerContextCore::OnReportConsoleMessage(
 }
 
 ServiceWorkerProcessManager* ServiceWorkerContextCore::process_manager() {
-  if (wrapper_)
-    return wrapper_->process_manager();
-  return NULL;
+  return wrapper_->process_manager();
 }
 
 }  // namespace content

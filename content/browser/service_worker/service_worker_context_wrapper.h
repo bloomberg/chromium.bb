@@ -35,6 +35,7 @@ class BrowserContext;
 class ChromeBlobStorageContext;
 class ServiceWorkerContextCore;
 class ServiceWorkerContextObserver;
+class StoragePartitionImpl;
 
 // A refcounted wrapper class for our core object. Higher level content lib
 // classes keep references to this class on mutliple threads. The inner core
@@ -60,6 +61,12 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
 
   // The core context is only for use on the IO thread.
   ServiceWorkerContextCore* context();
+
+  // The StoragePartition should only be used on the UI thread.
+  // Can be null before/during init and during/after shutdown.
+  StoragePartitionImpl* storage_partition() const;
+
+  void set_storage_partition(StoragePartitionImpl* storage_partition);
 
   // The process manager can be used on either UI or IO.
   ServiceWorkerProcessManager* process_manager() {
@@ -130,6 +137,9 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
 
   // Initialized in Init(); true if the user data directory is empty.
   bool is_incognito_;
+
+  // Raw pointer to the StoragePartitionImpl owning |this|.
+  StoragePartitionImpl* storage_partition_;
 };
 
 }  // namespace content
