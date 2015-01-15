@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser;
 
 import org.chromium.base.CalledByNative;
+import org.chromium.chrome.browser.preferences.LocationSettings;
 import org.chromium.content.app.ContentApplication;
 
 /**
@@ -29,6 +30,13 @@ public abstract class ChromiumApplication extends ContentApplication {
 
     @CalledByNative
     protected void showPasswordSettings() {}
+
+    /**
+     * Returns an instance of LocationSettings to be installed as a singleton.
+     */
+    public LocationSettings createLocationSettings() {
+        return new LocationSettings(this);
+    }
 
     /**
      * Opens the UI to clear browsing data.

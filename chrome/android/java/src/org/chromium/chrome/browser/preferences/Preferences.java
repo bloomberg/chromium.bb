@@ -69,6 +69,11 @@ public abstract class Preferences extends ActionBarActivity implements
      */
     public abstract void showUrl(int titleResId, int urlResId);
 
+    /**
+     * Launches the help page for Google translate.
+     */
+    public void showGoogleTranslateHelp() {}
+
     @SuppressFBWarnings("DM_EXIT")
     @Override
     protected void onCreate(Bundle savedInstanceState) {

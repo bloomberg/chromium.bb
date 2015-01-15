@@ -17,6 +17,9 @@
         android:fragment="org.chromium.chrome.browser.preferences.AccessibilityPreferences"
         android:title="@string/prefs_accessibility" />
     <Preference
+        android:fragment="org.chromium.chrome.browser.preferences.website.ContentPreferences"
+        android:title="@string/prefs_content_settings" />
+    <Preference
         android:fragment="org.chromium.chrome.browser.preferences.AboutChromePreferences"
         android:title="@string/prefs_about_chrome" />
 </PreferenceScreen>

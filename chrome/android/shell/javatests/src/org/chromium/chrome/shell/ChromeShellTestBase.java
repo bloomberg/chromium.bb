@@ -21,6 +21,7 @@ import org.chromium.chrome.test.util.ApplicationData;
 import org.chromium.content.browser.BrowserStartupController;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.LoadUrlParams;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -123,6 +124,19 @@ public class ChromeShellTestBase extends ActivityInstrumentationTestCase2<Chrome
     }
 
     /**
+     * Navigates the currently active tab to {@code url} and waits for the page to finish loading.
+     */
+    public void loadUrl(final String url) throws InterruptedException {
+        getInstrumentation().runOnMainSync(new Runnable() {
+            @Override
+            public void run() {
+                getActivity().getActiveTab().loadUrl(new LoadUrlParams(url));
+            }
+        });
+        waitForActiveShellToBeDoneLoading();
+    }
+
+    /**
      * Navigates the currently active tab to a sanitized version of {@code url}.
      * @param url The potentially unsanitized URL to navigate to.
      */
@@ -147,8 +161,8 @@ public class ChromeShellTestBase extends ActivityInstrumentationTestCase2<Chrome
         assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return getActivity().getActiveTab().getContentViewCore().getScale() ==
-                        expectedScale;
+                return getActivity().getActiveTab().getContentViewCore().getScale()
+                        == expectedScale;
             }
         }));
     }

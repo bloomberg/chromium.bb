@@ -9,6 +9,7 @@
 #include "base/debug/trace_event.h"
 #include "chrome/browser/android/accessibility/font_size_prefs_android.h"
 #include "chrome/browser/android/accessibility_util.h"
+#include "chrome/browser/android/app_google_location_settings_helper.h"
 #include "chrome/browser/android/appmenu/app_menu_drag_helper.h"
 #include "chrome/browser/android/banners/app_banner_manager.h"
 #include "chrome/browser/android/bookmarks/bookmarks_bridge.h"
@@ -37,6 +38,7 @@
 #include "chrome/browser/android/omnibox/omnibox_prerender.h"
 #include "chrome/browser/android/password_ui_view_android.h"
 #include "chrome/browser/android/preferences/pref_service_bridge.h"
+#include "chrome/browser/android/preferences/website_preference_bridge.h"
 #include "chrome/browser/android/profiles/profile_downloader_android.h"
 #include "chrome/browser/android/provider/chrome_browser_provider.h"
 #include "chrome/browser/android/recently_closed_tabs_bridge.h"
@@ -179,6 +181,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"JavascriptAppModalDialog",
      JavascriptAppModalDialogAndroid::RegisterJavascriptAppModalDialog},
     {"LayerTitleCache", chrome::android::RegisterLayerTitleCache},
+    {"LocationSettings", AppGoogleLocationSettingsHelper::Register},
     {"LogoBridge", RegisterLogoBridge},
     {"MostVisitedSites", MostVisitedSites::Register},
     {"NativeInfoBar", RegisterNativeInfoBar},
@@ -221,6 +224,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"UrlUtilities", RegisterUrlUtilities},
     {"Variations", variations::android::RegisterVariations},
     {"VoiceSearchTabHelper", RegisterVoiceSearchTabHelper},
+    {"WebsitePreferenceBridge", RegisterWebsitePreferenceBridge},
     {"WebsiteSettingsPopupAndroid",
      WebsiteSettingsPopupAndroid::RegisterWebsiteSettingsPopupAndroid},
     {"WebsiteSettingsPopupLegacyAndroid",

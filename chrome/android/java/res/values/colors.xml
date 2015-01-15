@@ -68,6 +68,7 @@
     <color name="pref_accent_color">#03a9f4</color>
     <color name="pref_button_pressed_color">#038ecd</color>
     <color name="pref_button_disabled_color">#83d7fd</color>
+    <color name="expandable_group_dark_gray">#484848</color>
 
     <!-- Compositor Tab Title Colors -->
     <color name="compositor_tab_title_bar_text">#555555</color>

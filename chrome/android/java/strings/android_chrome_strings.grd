@@ -120,6 +120,9 @@
       <message name="IDS_PREFERENCES" desc="Title for Chrome's Settings.">
         Settings
       </message>
+      <message name="IDS_MENU_HELP" desc="Menu item for opening the help page. [CHAR-LIMIT=27]">
+        Help &amp; feedback
+      </message>
       <message name="IDS_HELP" desc="Title for the help view.">
         Help
       </message>
@@ -253,6 +256,146 @@
         Override a website’s request to prevent zooming in
       </message>
 
+      <!-- Site settings -->
+      <message name="IDS_PREFS_CONTENT_SETTINGS" desc="Title of the Website Settings screen. [CHAR-LIMIT=32]">
+        Site settings
+      </message>
+      <message name="IDS_ALL_SITES" desc='Title of the "All sites" settings screen that allows the user to see permissions for all websites. [CHAR-LIMIT=32]'>
+        All sites
+      </message>
+      <message name="IDS_COOKIES_TITLE" desc="Title for the Cookies settings screen [CHAR-LIMIT=32]">
+        Cookies
+      </message>
+      <message name="IDS_ALLOW_THIRD_PARTY_COOKIES_TITLE" desc="Title for Allow Third Party Cookies preference">
+        Allow third-party cookies
+      </message>
+      <message name="IDS_ALLOW_THIRD_PARTY_COOKIES_SUMMARY" desc="Summary text for Allow Third Party Cookies preference">
+        Third-party websites can save and read cookie data
+      </message>
+      <message name="IDS_ENABLE_JAVASCRIPT_TITLE" desc="Title for Enable javascript preference [CHAR-LIMIT=32]">
+        JavaScript
+      </message>
+      <message name="IDS_ENABLE_JAVASCRIPT_SUMMARY" desc="Summary text for Enable Javascript preference">
+        Allow sites to run JavaScript
+      </message>
+      <message name="IDS_POPUP_PERMISSION_TITLE" desc="Title of the permission to display pop-up windows [CHAR-LIMIT=32]">
+        Pop-ups
+      </message>
+      <message name="IDS_PUSH_NOTIFICATIONS_PERMISSION_TITLE" desc="Title for the permission for showing push notifications [CHAR-LIMIT=32]">
+        Notifications
+      </message>
+      <message name="IDS_MIDI_SYSEX_PERMISSION_TITLE" desc="Title of the permission that allows a website to get full control of MIDI devices [CHAR-LIMIT=32]">
+        Allow full control of MIDI devices
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_SITE_CATEGORY" desc="The headline above the website name on the website details page.">
+        Site
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_USAGE_CATEGORY" desc="The headline above the usage stats (how much storage the site is using) on the website details page.">
+        Usage
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_PERMISSIONS_CATEGORY" desc="The headline above all the permissions on the website details page.">
+        Permissions
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_CATEGORY_ALLOWED" desc="Summary text explaining that a permission is allowed, e.g. JavaScript: allowed.">
+        Allowed
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_CATEGORY_BLOCKED" desc="Summary text explaining that a permission is blocked, e.g. JavaScript: blocked.">
+        Blocked
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_CATEGORY_ALLOWED_EXCEPT_THIRD_PARTY" desc="Summary text for when only third-party cookies are blocked.">
+        Allowed, except third-party
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_CATEGORY_ASK" desc="Summary text explaining that Chrome will ask the user before allowing a site to use a certain permission, e.g. JavaScript: ask first.">
+        Ask first
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_BLOCKED_GROUP_HEADING" desc="The heading for a list of websites that have been blocked from using a particular permission, e.g. blocked from accessing the user's location.">
+        Blocked
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_ALLOWED_GROUP_HEADING" desc="The heading for a list of websites that have been allowed to use a particular permission, e.g. allowed to access a user's location.">
+        Allowed
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_EXCEPTIONS_GROUP_HEADING" desc="The heading for a list of websites that have been granted an exception to access a particular permission, e.g. to access the user's location.">
+        Exceptions
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_CATEGORY_BLOCK_ALL" desc="Summary text explaining that a permission is blocked for all sites.">
+        Block all sites
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_CATEGORY_BLOCK_RECOMMENDED" desc="Summary text explaining that a permission is blocked, which is the recommended setting.">
+        Block (recommended)
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_CATEGORY_ASK_BEFORE_SENDING" desc="Summary text explaining that permission will be requested before sending things, e.g. notifications.">
+        Ask before sending (recommended)
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_CATEGORY_ASK_BEFORE_ACCESSING" desc="Summary text explaining that permission will be requested before accessing something, like location.">
+        Ask before accessing (recommended)
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_CATEGORY_ASK_BEFORE_ACCESSING_CAMERA_MIC" desc="Summary text explaining that permission will be requested before accessing the camera and microphone.">
+        Ask before accessing camera and microphone (recommended)
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_CATEGORY_COOKIE_ALLOWED" desc="Summary text explaining that sites are allowed to use cookies and that it is the recommended setting.">
+        Allow sites to save and read cookie data (recommended)
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_PERMISSIONS_ALLOW" desc="Summary text explaining that the user will allow a website to access some permission, e.g. JavaScript: allow.">
+        Allow
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_PERMISSIONS_BLOCK" desc="Summary text explaining that the user will block a website from accessing some permission, e.g. JavaScript: block.">
+        Block
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_SEARCH" desc="The label for the search button on the content settings page.">
+        Search
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_CHANGE" desc="The label for the text allowing users to change the Location/Protected content default setting.">
+        Change
+      </message>
+      <message name="IDS_WEBSITE_RESET" desc="The label for the button allowing users to clear all data and reset the permissions for a website.">
+        Clear &amp; reset
+      </message>
+      <message name="IDS_WEBSITE_RESET_CONFIRMATION" desc="The confirmation text asking if the user is sure about clearing all data and reset the permissions for a site.">
+        Are you sure you want to clear all data for this website and reset all its permissions?
+      </message>
+      <message name="IDS_WEBSTORAGE_CLEAR_DATA_DIALOG_TITLE" desc="Title of the confirmation dialog when the user ask to clear all data for an origin">
+        Clear stored data
+      </message>
+      <message name="IDS_WEBSTORAGE_CLEAR_DATA_DIALOG_MESSAGE" desc="Text of the confirmation dialog when the user ask to clear all data for an origin">
+        All data stored by this website will be deleted
+      </message>
+      <message name="IDS_WEBSTORAGE_CLEAR_DATA_DIALOG_OK_BUTTON" desc="Button confirming site data cleanup [CHAR-LIMIT=20]">
+        Clear all
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_EMBEDDED_IN" desc="String used to indicate the embedder origin of a site">
+        Embedded in <ph name="WEBSITE_URL">%1$s<ex>google.com</ex></ph>
+      </message>
+
+      <!-- Single site settings -->
+      <message name="IDS_NO_SAVED_WEBSITE_SETTINGS" desc="Text to display when there are no saved webiste settings.">
+        You have no saved website settings.
+      </message>
+
+      <!-- Location preferences -->
+      <message name="IDS_WEBSITE_SETTINGS_DEVICE_LOCATION" desc="Title for Location settings, which control which websites can access your location.">
+        Location
+      </message>
+      <message name="IDS_GEOLOCATION_PERMISSION_TITLE" desc="Title for the permission of accessing the current location of a device [CHAR-LIMIT=32]">
+        Location access
+      </message>
+      <message name="IDS_ANDROID_LOCATION_OFF" desc="Text at the top of the Website list, explaining to the user that the location service in Android is turned off. Contains a link to the settings menu to change it.">
+        Turn on location in <ph name="BEGIN_LINK">&lt;link&gt;</ph>Android Settings<ph name="END_LINK">&lt;/link&gt;</ph>.
+      </message>
+
+      <!-- Camera and microphone preferences -->
+      <message name="IDS_WEBSITE_SETTINGS_USE_CAMERA_OR_MIC" desc="The category filter 'Camera/Mic' for content settings.">
+        Camera or microphone
+      </message>
+      <message name="IDS_VIDEO_PERMISSION_TITLE" desc="Title text to be shown when the user has allowed/denied video access for the website [CHAR-LIMIT=32]">
+        Access your camera
+      </message>
+      <message name="IDS_VOICE_PERMISSION_TITLE" desc="Title text to be shown when the user has allowed/denied voice access for the website [CHAR-LIMIT=32]">
+        Access your microphone
+      </message>
+      <message name="IDS_VOICE_AND_VIDEO_PERMISSION_TITLE" desc="Title text to be shown when the user has allowed/denied voice and video access for the website [CHAR-LIMIT=32]">
+        Access your mic and camera
+      </message>
+
       <!-- Protected content preferences -->
       <message name="IDS_PROTECTED_CONTENT" desc="Title for link to protected content settings [CHAR-LIMIT=32]">
         Protected content
@@ -278,6 +421,43 @@ To obtain new licenses, connect to the internet and play your downloaded content
       </message>
       <message name="IDS_PROTECTED_CONTENT_LEARN_MORE_URL" desc="URL for learning more about device credential reset menu preference" translateable="false">
         https://support.google.com/chrome/?p=mobile_protected_content
+      </message>
+
+      <!-- Google translate preferences -->
+      <message name="IDS_GOOGLE_TRANSLATE" desc='Title for the Google Translate settings screen. [CHAR-LIMIT=32]'>
+        Google Translate
+      </message>
+      <message name="IDS_TRANSLATE_PREFS_DESCRIPTION" desc="Translate preference description">
+        When this feature is turned on, Chrome will offer to translate pages written in other languages using Google Translate.
+      </message>
+      <message name="IDS_TRANSLATE_PREFS_TOAST_DESCRIPTION" desc="Translate settings reset toast when resetting defaults">
+        Your translate settings have been reset.
+      </message>
+      <message name="IDS_RESET_TRANSLATE_DEFAULTS" desc="Title for translate reset menu preference">
+        Reset translate settings
+      </message>
+
+      <!-- Storage preferences -->
+      <message name="IDS_WEBSITE_SETTINGS_STORAGE" desc="Title for Storage settings which show how much data websites are storing on the user's device. [CHAR-LIMIT=32]">
+        Storage
+      </message>
+      <message name="IDS_ORIGIN_SETTINGS_STORAGE_USAGE_BRIEF" desc="Explanation of how much local storage a website is using">
+        <ph name="STORAGE_AMOUNT">%1$s<ex>2 MB</ex></ph> stored data
+      </message>
+      <message name="IDS_ORIGIN_SETTINGS_STORAGE_BYTES" desc="Unit appended to the storage usage value representing bytes">
+        bytes
+      </message>
+      <message name="IDS_ORIGIN_SETTINGS_STORAGE_KBYTES" desc="Unit appended to the storage usage value representing kilobytes">
+        KB
+      </message>
+      <message name="IDS_ORIGIN_SETTINGS_STORAGE_MBYTES" desc="Unit appended to the storage usage value representing megabytes">
+        MB
+      </message>
+      <message name="IDS_ORIGIN_SETTINGS_STORAGE_GBYTES" desc="Unit appended to the storage usage value representing gigabytes">
+        GB
+      </message>
+      <message name="IDS_ORIGIN_SETTINGS_STORAGE_TBYTES" desc="Unit appended to the storage usage value representing terabytes">
+        TB
       </message>
 
       <!-- About Chrome preferences -->

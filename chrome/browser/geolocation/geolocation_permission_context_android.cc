@@ -5,6 +5,7 @@
 #include "chrome/browser/geolocation/geolocation_permission_context_android.h"
 
 #include "base/prefs/pref_service.h"
+#include "chrome/browser/android/app_google_location_settings_helper.h"
 #include "chrome/browser/android/google_location_settings_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
@@ -19,8 +20,7 @@ PermissionRequestInfo::PermissionRequestInfo()
 GeolocationPermissionContextAndroid::
     GeolocationPermissionContextAndroid(Profile* profile)
     : GeolocationPermissionContext(profile),
-      google_location_settings_helper_(
-          GoogleLocationSettingsHelper::Create()),
+      google_location_settings_helper_(new AppGoogleLocationSettingsHelper()),
       weak_factory_(this) {
 }
 
