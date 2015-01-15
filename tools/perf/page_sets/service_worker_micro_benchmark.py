@@ -13,7 +13,7 @@ class ServiceWorkerBenchmarkPage(page.Page):
   """Page for workload to measure some specific functions in JS"""
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.NavigateToPage(self)
+    super(ServiceWorkerBenchmarkPage, self).RunNavigateSteps(action_runner)
     action_runner.WaitForJavaScriptCondition('window.done')
 
 

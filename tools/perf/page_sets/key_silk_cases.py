@@ -14,7 +14,7 @@ class KeySilkCasesPage(page_module.Page):
     self.archive_data_file = 'data/key_silk_cases.json'
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.NavigateToPage(self)
+    super(KeySilkCasesPage, self).RunNavigateSteps(action_runner)
     action_runner.Wait(2)
 
   def RunPageInteractions(self, action_runner):
@@ -273,10 +273,6 @@ class Page16(KeySilkCasesPage):
       url='file://key_silk_cases/inbox_app.html?swipe_to_dismiss',
       page_set=page_set)
 
-  def RunNavigateSteps(self, action_runner):
-    action_runner.NavigateToPage(self)
-    action_runner.Wait(2)
-
   def SwipeToDismiss(self, action_runner):
     interaction = action_runner.BeginGestureInteraction(
         'SwipeAction', is_smooth=True)
@@ -296,10 +292,6 @@ class Page17(KeySilkCasesPage):
     super(Page17, self).__init__(
       url='file://key_silk_cases/inbox_app.html?stress_hidey_bars',
       page_set=page_set)
-
-  def RunNavigateSteps(self, action_runner):
-    action_runner.NavigateToPage(self)
-    action_runner.Wait(2)
 
   def RunPageInteractions(self, action_runner):
     self.StressHideyBars(action_runner)
@@ -328,10 +320,6 @@ class Page18(KeySilkCasesPage):
     super(Page18, self).__init__(
       url='file://key_silk_cases/inbox_app.html?toggle_drawer',
       page_set=page_set)
-
-  def RunNavigateSteps(self, action_runner):
-    action_runner.NavigateToPage(self)
-    action_runner.Wait(2)
 
   def RunPageInteractions(self, action_runner):
     for _ in xrange(6):
@@ -366,7 +354,7 @@ class Page19(KeySilkCasesPage):
     interaction.End()
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.NavigateToPage(self)
+    super(Page19, self).RunNavigateSteps(action_runner)
     action_runner.Wait(2)
     self.ToggleDrawer(action_runner)
 
@@ -406,7 +394,7 @@ class GwsExpansionPage(KeySilkCasesPage):
   """Abstract base class for pages that expand Google knowledge panels."""
 
   def NavigateWait(self, action_runner):
-    action_runner.NavigateToPage(self)
+    super(GwsExpansionPage, self).RunNavigateSteps(action_runner)
     action_runner.Wait(3)
 
   def ExpandKnowledgeCard(self, action_runner):
@@ -465,7 +453,7 @@ class Page22(KeySilkCasesPage):
     self.credentials = 'google'
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.NavigateToPage(self)
+    super(Page22, self).RunNavigateSteps(action_runner)
     action_runner.WaitForJavaScriptCondition(
         'document.getElementsByClassName("fHa").length > 0')
     action_runner.Wait(2)
@@ -514,7 +502,7 @@ class Page24(KeySilkCasesPage):
       page_set=page_set)
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.NavigateToPage(self)
+    super(Page24, self).RunNavigateSteps(action_runner)
     action_runner.WaitForJavaScriptCondition(
         'document.getElementById(":h") != null')
     action_runner.Wait(1)
@@ -537,7 +525,7 @@ class Page25(KeySilkCasesPage):
       page_set=page_set)
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.NavigateToPage(self)
+    super(Page25, self).RunNavigateSteps(action_runner)
     action_runner.WaitForJavaScriptCondition(
         'document.getElementById(":h") != null')
     action_runner.Wait(1)
@@ -564,7 +552,7 @@ class Page26(KeySilkCasesPage):
       page_set=page_set)
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.NavigateToPage(self)
+    super(Page26, self).RunNavigateSteps(action_runner)
     action_runner.WaitForJavaScriptCondition(
         'document.getElementsByClassName("tweet").length > 0')
     action_runner.Wait(1)
@@ -586,7 +574,7 @@ class SVGIconRaster(KeySilkCasesPage):
       page_set=page_set)
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.NavigateToPage(self)
+    super(SVGIconRaster, self).RunNavigateSteps(action_runner)
     action_runner.WaitForJavaScriptCondition(
         'loaded = true')
     action_runner.Wait(1)
@@ -612,7 +600,7 @@ class UpdateHistoryState(KeySilkCasesPage):
       page_set=page_set)
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.NavigateToPage(self)
+    super(UpdateHistoryState, self).RunNavigateSteps(action_runner)
     action_runner.ExecuteJavaScript('''
         window.requestAnimationFrame(function() {
             window.__history_state_loaded = true;

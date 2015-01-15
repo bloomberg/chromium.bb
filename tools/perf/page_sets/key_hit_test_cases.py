@@ -14,7 +14,7 @@ class KeyHitTestCasesPage(page_module.Page):
     self.user_agent_type = 'mobile'
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.NavigateToPage(self)
+    super(KeyHitTestCasesPage, self).RunNavigateSteps(action_runner)
     action_runner.Wait(2)
 
   def RunPageInteractions(self, action_runner):

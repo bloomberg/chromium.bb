@@ -13,7 +13,7 @@ class ToughAnimationCasesPage(page_module.Page):
     self._need_measurement_ready = need_measurement_ready
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.NavigateToPage(self)
+    super(ToughAnimationCasesPage, self).RunNavigateSteps(action_runner)
     if self._need_measurement_ready:
       action_runner.WaitForJavaScriptCondition('window.measurementReady')
 

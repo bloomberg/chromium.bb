@@ -11,7 +11,7 @@ class MseCasesPage(page_module.Page):
     super(MseCasesPage, self).__init__(url=url, page_set=page_set)
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.NavigateToPage(self)
+    super(MseCasesPage, self).RunNavigateSteps(action_runner)
     action_runner.WaitForJavaScriptCondition('window.__testDone == true')
 
 

@@ -81,7 +81,7 @@ class MapsPage(page.Page):
     self.pixel_expectations = 'data/maps_002_expectations.json'
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.NavigateToPage(self)
+    super(MapsPage, self).RunNavigateSteps(action_runner)
     action_runner.WaitForJavaScriptCondition(
         'window.testDone', timeout_in_seconds=180)
 

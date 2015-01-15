@@ -37,7 +37,7 @@ class ScreenshotSyncPage(page.Page):
     self.user_agent_type = 'desktop'
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.NavigateToPage(self)
+    super(ScreenshotSyncPage, self).RunNavigateSteps(action_runner)
     action_runner.WaitForJavaScriptCondition(
         'window.__testComplete', timeout_in_seconds=120)
 

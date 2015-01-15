@@ -14,7 +14,7 @@ class PixelTestsPage(page_module.Page):
     self.revision = revision
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.NavigateToPage(self)
+    super(PixelTestsPage, self).RunNavigateSteps(action_runner)
     action_runner.WaitForJavaScriptCondition(
         'domAutomationController._finished', timeout_in_seconds=30)
 

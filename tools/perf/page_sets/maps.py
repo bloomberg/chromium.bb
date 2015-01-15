@@ -24,7 +24,7 @@ class MapsPage(page_module.Page):
     return True
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.NavigateToPage(self)
+    super(MapsPage, self).RunNavigateSteps(action_runner)
     action_runner.Wait(3)
 
   def RunPageInteractions(self, action_runner):

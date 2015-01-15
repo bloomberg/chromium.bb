@@ -31,7 +31,7 @@ class GoogleSearchPage(ToughPinchZoomCasesPage):
       page_set=page_set)
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.NavigateToPage(self)
+    super(GoogleSearchPage, self).RunNavigateSteps(action_runner)
     action_runner.WaitForElement(text='Next')
 
 
@@ -47,7 +47,7 @@ class GmailPage(ToughPinchZoomCasesPage):
     self.credentials = 'google'
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.NavigateToPage(self)
+    super(GmailPage, self).RunNavigateSteps(action_runner)
     action_runner.WaitForJavaScriptCondition(
         'window.gmonkey !== undefined &&'
         'document.getElementById("gb") !== null')
@@ -65,7 +65,7 @@ class GoogleCalendarPage(ToughPinchZoomCasesPage):
     self.credentials = 'google'
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.NavigateToPage(self)
+    super(GoogleCalendarPage, self).RunNavigateSteps(action_runner)
     action_runner.Wait(2)
 
   def RunPageInteractions(self, action_runner):
@@ -99,7 +99,7 @@ class GooglePlusPage(ToughPinchZoomCasesPage):
     self.credentials = 'google'
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.NavigateToPage(self)
+    super(GooglePlusPage, self).RunNavigateSteps(action_runner)
     action_runner.WaitForElement(text='Home')
 
   def RunPageInteractions(self, action_runner):
@@ -121,7 +121,7 @@ class YoutubePage(ToughPinchZoomCasesPage):
     self.credentials = 'google'
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.NavigateToPage(self)
+    super(YoutubePage, self).RunNavigateSteps(action_runner)
     action_runner.Wait(2)
 
 class BlogSpotPage(ToughPinchZoomCasesPage):
@@ -137,7 +137,7 @@ class BlogSpotPage(ToughPinchZoomCasesPage):
       page_set=page_set, name='Blogger')
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.NavigateToPage(self)
+    super(BlogSpotPage, self).RunNavigateSteps(action_runner)
     action_runner.WaitForElement(text='accessibility')
 
 
@@ -152,7 +152,7 @@ class FacebookPage(ToughPinchZoomCasesPage):
     self.credentials = 'facebook'
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.NavigateToPage(self)
+    super(FacebookPage, self).RunNavigateSteps(action_runner)
     action_runner.WaitForElement(text='About')
 
 
@@ -186,7 +186,7 @@ class TwitterPage(ToughPinchZoomCasesPage):
       page_set=page_set, name='Twitter')
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.NavigateToPage(self)
+    super(TwitterPage, self).RunNavigateSteps(action_runner)
     action_runner.Wait(2)
 
 class ESPNPage(ToughPinchZoomCasesPage):
@@ -220,7 +220,7 @@ class YahooGamePage(ToughPinchZoomCasesPage):
       page_set=page_set)
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.NavigateToPage(self)
+    super(YahooGamePage, self).RunNavigateSteps(action_runner)
     action_runner.Wait(2)
 
 

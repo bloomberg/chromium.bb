@@ -37,7 +37,7 @@ class GoogleWebSearchPage(Top7StressPage):
       page_set=page_set)
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.NavigateToPage(self)
+    super(GoogleWebSearchPage, self).RunNavigateSteps(action_runner)
     action_runner.WaitForElement(text='Next')
 
   def RunPageInteractions(self, action_runner):
@@ -111,7 +111,7 @@ class GmailPage(Top7StressPage):
     self.credentials = 'google'
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.NavigateToPage(self)
+    super(GmailPage, self).RunNavigateSteps(action_runner)
     action_runner.WaitForJavaScriptCondition(
         'window.gmonkey !== undefined &&'
         'document.getElementById("gb") !== null')
@@ -139,7 +139,7 @@ class GoogleCalendarPage(Top7StressPage):
     self.credentials = 'google'
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.NavigateToPage(self)
+    super(GoogleCalendarPage, self).RunNavigateSteps(action_runner)
     action_runner.Wait(2)
     action_runner.WaitForElement('div[class~="navForward"]')
     action_runner.ExecuteJavaScript('''
@@ -190,7 +190,7 @@ class GooglePlusPage(Top7StressPage):
     self.credentials = 'google'
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.NavigateToPage(self)
+    super(GooglePlusPage, self).RunNavigateSteps(action_runner)
     action_runner.WaitForElement(text='Home')
 
   def RunPageInteractions(self, action_runner):
@@ -223,7 +223,7 @@ class BlogspotPage(Top7StressPage):
       name='Blogger')
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.NavigateToPage(self)
+    super(BlogspotPage, self).RunNavigateSteps(action_runner)
     action_runner.WaitForElement(text='accessibility')
 
   def RunPageInteractions(self, action_runner):
@@ -261,7 +261,7 @@ class WordpressPage(Top7StressPage):
       name='Wordpress')
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.NavigateToPage(self)
+    super(WordpressPage, self).RunNavigateSteps(action_runner)
     action_runner.WaitForElement(
         # pylint: disable=C0301
         'a[href="http://en.blog.wordpress.com/2012/08/30/new-themes-able-and-sight/"]')
@@ -305,7 +305,7 @@ class FacebookPage(Top7StressPage):
     self.credentials = 'facebook'
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.NavigateToPage(self)
+    super(FacebookPage, self).RunNavigateSteps(action_runner)
     action_runner.WaitForElement(text='About')
 
   def RunPageInteractions(self, action_runner):

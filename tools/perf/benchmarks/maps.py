@@ -41,7 +41,7 @@ class MapsPage(page_module.Page):
         make_javascript_deterministic=False)
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.NavigateToPage(self)
+    super(MapsPage, self).RunNavigateSteps(action_runner)
     action_runner.WaitForJavaScriptCondition('window.testDone')
 
 

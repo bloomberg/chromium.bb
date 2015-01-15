@@ -215,7 +215,7 @@ class GPUProcessCrashesExactlyOnce(page.Page):
     self.hide_tab_and_lose_context = False
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.NavigateToPage(self)
+    super(GPUProcessCrashesExactlyOnce, self).RunNavigateSteps(action_runner)
     action_runner.WaitForJavaScriptCondition(
         'window.domAutomationController._loaded')
 
@@ -234,7 +234,8 @@ class WebGLContextLostFromGPUProcessExitPage(page.Page):
     self.hide_tab_and_lose_context = False
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.NavigateToPage(self)
+    super(WebGLContextLostFromGPUProcessExitPage, self).RunNavigateSteps(
+        action_runner)
     action_runner.WaitForJavaScriptCondition(
         'window.domAutomationController._loaded')
 
@@ -253,7 +254,8 @@ class WebGLContextLostFromLoseContextExtensionPage(page.Page):
     self.hide_tab_and_lose_context = False
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.NavigateToPage(self)
+    super(WebGLContextLostFromLoseContextExtensionPage, self).RunNavigateSteps(
+        action_runner)
     action_runner.WaitForJavaScriptCondition(
         'window.domAutomationController._finished')
 
@@ -272,7 +274,7 @@ class WebGLContextLostInHiddenTabPage(page.Page):
     self.hide_tab_and_lose_context = True
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.NavigateToPage(self)
+    super(WebGLContextLostInHiddenTabPage, self).RunNavigateSteps(action_runner)
     action_runner.WaitForJavaScriptCondition(
         'window.domAutomationController._loaded')
 
@@ -291,7 +293,8 @@ class WebGLContextLostFromQuantityPage(page.Page):
     self.hide_tab_and_lose_context = False
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.NavigateToPage(self)
+    super(WebGLContextLostFromQuantityPage, self).RunNavigateSteps(
+        action_runner)
     action_runner.WaitForJavaScriptCondition(
         'window.domAutomationController._loaded')
 
@@ -309,7 +312,8 @@ class WebGLContextLostFromSelectElementPage(page.Page):
     self.hide_tab_and_lose_context = False
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.NavigateToPage(self)
+    super(WebGLContextLostFromSelectElementPage, self).RunNavigateSteps(
+        action_runner)
     action_runner.WaitForJavaScriptCondition(
         'window.domAutomationController._loaded')
 

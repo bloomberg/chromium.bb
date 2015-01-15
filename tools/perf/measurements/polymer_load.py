@@ -24,8 +24,8 @@ class PageForPolymerLoad(page.Page):
     ''' % ready_event
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.NavigateToPage(self)
-    action_runner.WaitForJavaScriptCondition('window.__polymer_ready')
+   super(PageForPolymerLoad, self).RunNavigateSteps(action_runner)
+   action_runner.WaitForJavaScriptCondition('window.__polymer_ready')
 
 
 class PolymerLoadMeasurement(page_test.PageTest):

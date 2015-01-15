@@ -17,7 +17,7 @@ class PolymerPage(page_module.Page):
     '''
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.NavigateToPage(self)
+    super(PolymerPage, self).RunNavigateSteps(action_runner)
     action_runner.WaitForJavaScriptCondition(
         'window.__polymer_ready')
 

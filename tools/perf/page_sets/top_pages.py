@@ -25,7 +25,7 @@ class GoogleWebSearchPage(TopPages):
         page_set=page_set)
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.NavigateToPage(self)
+    super(GoogleWebSearchPage, self).RunNavigateSteps(action_runner)
     action_runner.WaitForElement(text='Next')
 
 
@@ -50,7 +50,7 @@ class GmailPage(TopPages):
         credentials='google')
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.NavigateToPage(self)
+    super(GmailPage, self).RunNavigateSteps(action_runner)
     action_runner.WaitForJavaScriptCondition(
         'window.gmonkey !== undefined &&'
         'document.getElementById("gb") !== null')
@@ -67,7 +67,7 @@ class GoogleCalendarPage(TopPages):
         credentials='google')
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.NavigateToPage(self)
+    super(GoogleCalendarPage, self).RunNavigateSteps(action_runner)
     action_runner.Wait(2)
     action_runner.WaitForElement('div[class~="navForward"]')
     action_runner.ExecuteJavaScript('''
@@ -93,7 +93,7 @@ class GoogleDocPage(TopPages):
         credentials='google')
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.NavigateToPage(self)
+    super(GoogleDocPage, self).RunNavigateSteps(action_runner)
     action_runner.Wait(2)
     action_runner.WaitForJavaScriptCondition(
         'document.getElementsByClassName("kix-appview-editor").length')
@@ -110,7 +110,7 @@ class GooglePlusPage(TopPages):
         credentials='google')
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.NavigateToPage(self)
+    super(GooglePlusPage, self).RunNavigateSteps(action_runner)
     action_runner.WaitForElement(text='Home')
 
 
@@ -124,7 +124,7 @@ class YoutubePage(TopPages):
         page_set=page_set, credentials='google')
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.NavigateToPage(self)
+    super(YoutubePage, self).RunNavigateSteps(action_runner)
     action_runner.Wait(2)
 
 
@@ -140,7 +140,7 @@ class BlogspotPage(TopPages):
         name='Blogger')
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.NavigateToPage(self)
+    super(BlogspotPage, self).RunNavigateSteps(action_runner)
     action_runner.WaitForElement(text='accessibility')
 
 
@@ -156,7 +156,7 @@ class WordpressPage(TopPages):
         name='Wordpress')
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.NavigateToPage(self)
+    super(WordpressPage, self).RunNavigateSteps(action_runner)
     action_runner.WaitForElement(
         # pylint: disable=C0301
         'a[href="http://en.blog.wordpress.com/2012/08/30/new-themes-able-and-sight/"]')
@@ -173,7 +173,7 @@ class FacebookPage(TopPages):
         name='Facebook', credentials='facebook2')
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.NavigateToPage(self)
+    super(FacebookPage, self).RunNavigateSteps(action_runner)
     action_runner.WaitForElement(text='Chat')
 
 
@@ -208,7 +208,7 @@ class TwitterPage(TopPages):
         name='Twitter')
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.NavigateToPage(self)
+    super(TwitterPage, self).RunNavigateSteps(action_runner)
     action_runner.Wait(2)
 
 
@@ -255,5 +255,5 @@ class YahooGamesPage(TopPages):
         page_set=page_set)
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.NavigateToPage(self)
+    super(YahooGamesPage, self).RunNavigateSteps(action_runner)
     action_runner.Wait(2)

@@ -30,7 +30,7 @@ class GmailComposeDiscardPage(page_module.Page):
     self.user_agent_type = 'desktop'
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.NavigateToPage(self)
+    super(GmailComposeDiscardPage, self).RunNavigateSteps(action_runner)
     action_runner.WaitForJavaScriptCondition(
         'window.gmonkey !== undefined &&'
         'document.getElementById("gb") !== null')

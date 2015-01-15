@@ -26,7 +26,7 @@ class CapitolVolkswagenPage(KeyMobileSitesPage):
       page_set=page_set)
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.NavigateToPage(self)
+    super(CapitolVolkswagenPage, self).RunNavigateSteps(action_runner)
     action_runner.WaitForElement(text='Next 35')
     action_runner.WaitForJavaScriptCondition(
         'document.body.scrollHeight > 2560')
@@ -44,7 +44,7 @@ class TheVergeArticlePage(KeyMobileSitesPage):
       page_set=page_set)
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.NavigateToPage(self)
+    super(TheVergeArticlePage, self).RunNavigateSteps(action_runner)
     action_runner.WaitForJavaScriptCondition(
         'window.Chorus !== undefined &&'
         'window.Chorus.Comments !== undefined &&'
@@ -64,7 +64,7 @@ class CnnArticlePage(KeyMobileSitesPage):
       page_set=page_set)
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.NavigateToPage(self)
+    super(CnnArticlePage, self).RunNavigateSteps(action_runner)
     action_runner.Wait(8)
 
 
@@ -79,7 +79,7 @@ class FacebookPage(KeyMobileSitesPage):
       page_set=page_set)
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.NavigateToPage(self)
+    super(FacebookPage, self).RunNavigateSteps(action_runner)
     action_runner.WaitForJavaScriptCondition(
         'document.getElementById("u_0_c") !== null &&'
         'document.body.scrollHeight > window.innerHeight')
@@ -95,7 +95,7 @@ class YoutubeMobilePage(KeyMobileSitesPage):
       page_set=page_set)
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.NavigateToPage(self)
+    super(YoutubeMobilePage, self).RunNavigateSteps(action_runner)
     action_runner.WaitForJavaScriptCondition(
         'document.getElementById("paginatortarget") !== null')
 
@@ -111,7 +111,7 @@ class LinkedInPage(KeyMobileSitesPage):
       name='LinkedIn')
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.NavigateToPage(self)
+    super(LinkedInPage, self).RunNavigateSteps(action_runner)
     action_runner.WaitForJavaScriptCondition(
         'document.getElementById("profile-view-scroller") !== null')
 
@@ -128,7 +128,7 @@ class YahooAnswersPage(KeyMobileSitesPage):
       page_set=page_set)
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.NavigateToPage(self)
+    super(YahooAnswersPage, self).RunNavigateSteps(action_runner)
     action_runner.WaitForElement(text='Other Answers (1 - 20 of 149)')
     action_runner.ClickElement(text='Other Answers (1 - 20 of 149)')
 
@@ -145,7 +145,7 @@ class GmailPage(KeyMobileSitesPage):
     self.credentials = 'google'
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.NavigateToPage(self)
+    super(GmailPage, self).RunNavigateSteps(action_runner)
     action_runner.WaitForJavaScriptCondition(
         'document.getElementById("og_user_warning") !== null')
     action_runner.WaitForJavaScriptCondition(
@@ -163,7 +163,7 @@ class GroupClonedPage(KeyMobileSitesPage):
 
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.NavigateToPage(self)
+    super(GroupClonedPage, self).RunNavigateSteps(action_runner)
     action_runner.Wait(5)
     action_runner.WaitForJavaScriptCondition('''
         document.getElementById("element-19") !== null &&
@@ -184,7 +184,7 @@ class GroupClonedListImagesPage(KeyMobileSitesPage):
       page_set=page_set)
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.NavigateToPage(self)
+    super(GroupClonedListImagesPage, self).RunNavigateSteps(action_runner)
     action_runner.WaitForJavaScriptCondition(
         'document.getElementById("element-5") !== null')
 
@@ -199,7 +199,7 @@ class GoogleNewsMobilePage(KeyMobileSitesPage):
       page_set=page_set)
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.NavigateToPage(self)
+    super(GoogleNewsMobilePage, self).RunNavigateSteps(action_runner)
     action_runner.WaitForJavaScriptCondition(
         'typeof NEWS_telemetryReady !== "undefined" && '
         'NEWS_telemetryReady == true')
@@ -217,7 +217,7 @@ class GoogleNewsMobile2Page(KeyMobileSitesPage):
       page_set=page_set)
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.NavigateToPage(self)
+    super(GoogleNewsMobile2Page, self).RunNavigateSteps(action_runner)
     action_runner.WaitForJavaScriptCondition(
         'document.getElementById(":h") != null')
     action_runner.Wait(1)
