@@ -373,18 +373,20 @@ void VideoEncoderVpx::PrepareImage(const webrtc::DesktopFrame& frame,
   }
 
   // Align the region to macroblocks, to avoid encoding artefacts.
+  // If VP9 is in use then we also pad the rectangles before aligning them, to
+  // avoid edge artefacts.
   // This also ensures that all rectangles have even-aligned top-left, which
   // is required for ConvertRGBToYUVWithRect() to work.
-  std::vector<webrtc::DesktopRect> aligned_rects;
+  updated_region->Clear();
+  int padding = use_vp9_ ? 8 : 0;
   for (webrtc::DesktopRegion::Iterator r(frame.updated_region());
        !r.IsAtEnd(); r.Advance()) {
     const webrtc::DesktopRect& rect = r.rect();
-    aligned_rects.push_back(AlignRect(webrtc::DesktopRect::MakeLTRB(
-        rect.left(), rect.top(), rect.right(), rect.bottom())));
+    updated_region->AddRect(AlignRect(webrtc::DesktopRect::MakeLTRB(
+        rect.left() - padding, rect.top() - padding, rect.right() + padding,
+        rect.bottom() + padding)));
   }
-  DCHECK(!aligned_rects.empty());
-  updated_region->Clear();
-  updated_region->AddRects(&aligned_rects[0], aligned_rects.size());
+  DCHECK(!updated_region->is_empty());
 
   // Clip back to the screen dimensions, in case they're not macroblock aligned.
   // The conversion routines don't require even width & height, so this is safe
