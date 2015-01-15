@@ -29,7 +29,8 @@ const char kBookmarkKeybinding[] = "Ctrl+D";
 
 // Test that clicking the star brings up the bookmark UI, if no extension
 // requests to override ctrl-D and the user has assigned it to an extension.
-IN_PROC_BROWSER_TEST_F(BookmarkOverrideTest, NonOverrideStarClick) {
+// Flaky on all platforms: https://crbug.com/448956.
+IN_PROC_BROWSER_TEST_F(BookmarkOverrideTest, DISABLED_NonOverrideStarClick) {
   ASSERT_TRUE(test_server()->Start());
   ASSERT_TRUE(RunExtensionTest("keybinding/basics")) << message_;
   const extensions::Extension* extension = GetSingleLoadedExtension();
@@ -66,7 +67,8 @@ IN_PROC_BROWSER_TEST_F(BookmarkOverrideTest, NonOverrideStarClick) {
 // Test that invoking the IDC_BOOKMARK_PAGE command (as done by the wrench menu)
 // brings up the bookmark UI, if no extension requests to override ctrl-D and
 // the user has assigned it to an extension.
-IN_PROC_BROWSER_TEST_F(BookmarkOverrideTest, NonOverrideBookmarkPage) {
+// Flaky on all platforms: https://crbug.com/448956.
+IN_PROC_BROWSER_TEST_F(BookmarkOverrideTest, DISABLED_NonOverrideBookmarkPage) {
   ASSERT_TRUE(test_server()->Start());
   ASSERT_TRUE(RunExtensionTest("keybinding/basics")) << message_;
   const extensions::Extension* extension = GetSingleLoadedExtension();
