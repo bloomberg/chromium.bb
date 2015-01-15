@@ -1500,6 +1500,10 @@ _minimal_profile_boards = frozenset([
   'bobcat',
 ])
 
+_nofactory_boards = frozenset([
+  'daisy_winter',
+])
+
 _toolchains_from_source = frozenset([
   'mipseb-n32-generic',
   'mipseb-n64-generic',
@@ -1527,6 +1531,8 @@ def _CreateBaseConfigs():
       base.update(moblab)
     if board in _minimal_profile_boards:
       base.update(profile='minimal')
+    if board in _nofactory_boards:
+      base.update(factory=False)
     if board in _freon_boards:
       base.update(vm_tests=[])
     if board in _toolchains_from_source:
