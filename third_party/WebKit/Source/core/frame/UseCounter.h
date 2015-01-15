@@ -611,6 +611,7 @@ public:
         DeviceOrientationSecureOrigin = 671,
         SandboxViaIFrame = 672,
         SandboxViaCSP = 673,
+        BlockedSniffingImageToScript = 674,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
