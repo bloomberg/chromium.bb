@@ -908,6 +908,7 @@ void AnimationPlayer::trace(Visitor* visitor)
     visitor->trace(m_timeline);
     visitor->trace(m_pendingFinishedEvent);
     visitor->trace(m_finishedPromise);
+    visitor->trace(m_readyPromise);
     EventTargetWithInlineData::trace(visitor);
     ActiveDOMObject::trace(visitor);
 }
