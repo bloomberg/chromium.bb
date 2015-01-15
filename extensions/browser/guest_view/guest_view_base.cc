@@ -550,12 +550,15 @@ GuestViewBase::~GuestViewBase() {
 
 void GuestViewBase::OnZoomChanged(
     const ui_zoom::ZoomController::ZoomChangedEventData& data) {
-  if (content::ZoomValuesEqual(data.old_zoom_level, data.new_zoom_level))
+  auto guest_zoom_controller =
+      ui_zoom::ZoomController::FromWebContents(web_contents());
+  if (content::ZoomValuesEqual(data.new_zoom_level,
+                               guest_zoom_controller->GetZoomLevel())) {
     return;
-  // When the embedder's zoom level is changed, then we also update the
+  }
+  // When the embedder's zoom level doesn't match the guest's, then update the
   // guest's zoom level to match.
-  ui_zoom::ZoomController::FromWebContents(web_contents())
-      ->SetZoomLevel(data.new_zoom_level);
+  guest_zoom_controller->SetZoomLevel(data.new_zoom_level);
 }
 
 void GuestViewBase::DispatchEventToEmbedder(Event* event) {
