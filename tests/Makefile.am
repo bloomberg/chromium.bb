@@ -199,7 +199,7 @@ TESTS =				\
 
 TESTS_ENVIRONMENT =												\
 	LOUIS_TABLEPATH=$(top_srcdir)/tables,$(top_srcdir)/tests/tables,$(top_srcdir)/tests/tables/moreTables	\
-	PYTHONPATH=$(HARNESS_DIR):$(top_srcdir)/python:$$PYTHONPATH						\
+	PYTHONPATH=$(HARNESS_DIR):$(top_builddir)/python:$$PYTHONPATH						\
 	HARNESS_DIR=$(HARNESS_DIR)										\
-	LD_LIBRARY_PATH=$(top_srcdir)/liblouis/.libs:$$LD_LIBRARY_PATH						\
-	PATH=$(top_srcdir)/tools:$$PATH
+	LD_LIBRARY_PATH=$(top_builddir)/liblouis/.libs:$$LD_LIBRARY_PATH					\
+	PATH=$(top_builddir)/tools:$$PATH

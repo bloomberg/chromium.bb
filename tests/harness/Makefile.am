@@ -29,17 +29,17 @@ HARNESS_DIR = $(top_srcdir)/tests/harness
 harness_ENVIRONMENT =												\
 	HARNESS_DIR=$(HARNESS_DIR)										\
 	LOUIS_TABLEPATH=$(top_srcdir)/tables,$(top_srcdir)/tests/tables,$(top_srcdir)/tests/tables/moreTables	\
-	PYTHONPATH=$(HARNESS_DIR):$(top_srcdir)/python:$$PYTHONPATH						\
-	LD_LIBRARY_PATH=$(top_srcdir)/liblouis/.libs:$$LD_LIBRARY_PATH						\
-	PATH=$(top_srcdir)/tools:$$PATH
+	PYTHONPATH=$(HARNESS_DIR):$(top_builddir)/python:$$PYTHONPATH						\
+	LD_LIBRARY_PATH=$(top_builddir)/liblouis/.libs:$$LD_LIBRARY_PATH					\
+	PATH=$(top_builddir)/tools:$$PATH
 
 if HAVE_PYTHON
 if HAVE_UCS4
 runall runAll:
-	@$(harness_ENVIRONMENT) ./runHarness.py
+	@$(harness_ENVIRONMENT) $(HARNESS_DIR)/runHarness.py
 
 $(harness_TESTS):
-	@$(harness_ENVIRONMENT) ./runHarness.py --compact_output $@
+	@$(harness_ENVIRONMENT) $(HARNESS_DIR)/runHarness.py --compact_output $@
 else
 runall runAll:
 	@echo Please configure with --enable-ucs4
