@@ -46,6 +46,7 @@ void OpenNaClExecutable(
     scoped_refptr<nacl::NaClHostMessageFilter> nacl_host_message_filter,
     int render_view_id,
     const GURL& file_url,
+    bool enable_validation_caching,
     IPC::Message* reply_msg);
 
 }  // namespace nacl_file_host

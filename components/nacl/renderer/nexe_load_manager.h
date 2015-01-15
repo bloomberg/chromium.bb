@@ -121,6 +121,9 @@ class NexeLoadManager {
     crash_info_shmem_handle_ = h;
   }
 
+  bool nonsfi() const { return nonsfi_; }
+  void set_nonsfi(bool nonsfi) { nonsfi_ = nonsfi; }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(NexeLoadManager);
 
@@ -181,6 +184,9 @@ class NexeLoadManager {
   std::string mime_type_;
 
   base::Time pnacl_start_time_;
+
+  // A flag that indicates if the plugin is using Non-SFI mode.
+  bool nonsfi_;
 
   base::SharedMemoryHandle crash_info_shmem_handle_;
 

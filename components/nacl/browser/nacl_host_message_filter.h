@@ -66,6 +66,7 @@ class NaClHostMessageFilter : public content::BrowserMessageFilter {
   void OnMissingArchError(int render_view_id);
   void OnOpenNaClExecutable(int render_view_id,
                             const GURL& file_url,
+                            bool enable_validation_caching,
                             IPC::Message* reply_msg);
   void SyncReturnTemporaryFile(IPC::Message* reply_msg,
                                base::File file);

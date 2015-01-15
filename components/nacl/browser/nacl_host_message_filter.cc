@@ -284,10 +284,15 @@ void NaClHostMessageFilter::OnMissingArchError(int render_view_id) {
       ShowMissingArchInfobar(render_process_id_, render_view_id);
 }
 
-void NaClHostMessageFilter::OnOpenNaClExecutable(int render_view_id,
-                                                 const GURL& file_url,
-                                                 IPC::Message* reply_msg) {
-  nacl_file_host::OpenNaClExecutable(this, render_view_id, file_url,
+void NaClHostMessageFilter::OnOpenNaClExecutable(
+    int render_view_id,
+    const GURL& file_url,
+    bool enable_validation_caching,
+    IPC::Message* reply_msg) {
+  nacl_file_host::OpenNaClExecutable(this,
+                                     render_view_id,
+                                     file_url,
+                                     enable_validation_caching,
                                      reply_msg);
 }
 
