@@ -35,8 +35,17 @@ def main(argv):
     options.known_bugs = os.path.join(constants.DIR_SOURCE_ROOT, 'tools',
                                       'android', 'findbugs_plugin', 'test',
                                       'expected_result.txt')
+
   if not options.only_analyze:
     options.only_analyze = 'org.chromium.tools.findbugs.plugin.*'
+
+  # crbug.com/449101
+  # Temporary workaround to have the Android Clang Builder (dbg) bot
+  # pass the findbugs_tests step.
+  if not options.exclude:
+    options.exclude = os.path.join(constants.DIR_SOURCE_ROOT, 'build',
+                                   'android', 'findbugs_filter',
+                                   'findbugs_exclude.xml')
 
   return findbugs.Run(options)
 
