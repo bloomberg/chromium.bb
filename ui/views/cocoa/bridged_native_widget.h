@@ -114,6 +114,9 @@ class VIEWS_EXPORT BridgedNativeWidget : public ui::LayerDelegate,
   // Called by the NSWindowDelegate on a scale factor or color space change.
   void OnBackingPropertiesChanged();
 
+  // Called by the NSWindowDelegate when the window becomes or resigns key.
+  void OnWindowKeyStatusChangedTo(bool is_key);
+
   // See widget.h for documentation.
   InputMethod* CreateInputMethod();
   ui::InputMethod* GetHostInputMethod();

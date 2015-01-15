@@ -146,6 +146,81 @@ class NestedLoopCaptureView : public View {
   DISALLOW_COPY_AND_ASSIGN(NestedLoopCaptureView);
 };
 
+// Spins a run loop until a Widget's active state matches a desired state.
+class WidgetActivationWaiter : public WidgetObserver {
+ public:
+  WidgetActivationWaiter(Widget* widget, bool active) : observed_(false) {
+    // Always expect a change for tests using this.
+    EXPECT_NE(active, widget->IsActive());
+    widget->AddObserver(this);
+  }
+
+  void Wait() {
+    if (!observed_)
+      run_loop_.Run();
+  }
+
+  void OnWidgetActivationChanged(Widget* widget, bool active) override {
+    observed_ = true;
+    widget->RemoveObserver(this);
+    if (run_loop_.running())
+      run_loop_.Quit();
+  }
+
+ private:
+  base::RunLoop run_loop_;
+  bool observed_;
+
+  DISALLOW_COPY_AND_ASSIGN(WidgetActivationWaiter);
+};
+
+ui::WindowShowState GetWidgetShowState(const Widget* widget) {
+  // Use IsMaximized/IsMinimized/IsFullScreen instead of GetWindowPlacement
+  // because the former is implemented on all platforms but the latter is not.
+  return widget->IsFullscreen() ? ui::SHOW_STATE_FULLSCREEN :
+      widget->IsMaximized() ? ui::SHOW_STATE_MAXIMIZED :
+      widget->IsMinimized() ? ui::SHOW_STATE_MINIMIZED :
+      widget->IsActive() ? ui::SHOW_STATE_NORMAL :
+                           ui::SHOW_STATE_INACTIVE;
+}
+
+// Give the OS an opportunity to process messages for an activation change, when
+// there is actually no change expected (e.g. ShowInactive()).
+void RunPendingMessagesForActiveStatusChange() {
+#if defined(OS_MACOSX)
+  // On Mac, a single spin is *usually* enough. It isn't when a widget is shown
+  // and made active in two steps, so tests should follow up with a ShowSync()
+  // or ActivateSync to ensure a consistent state.
+  base::RunLoop().RunUntilIdle();
+#endif
+  // TODO(tapted): Check for desktop aura widgets.
+}
+
+// Activate a widget, and wait for it to become active. On non-desktop Aura
+// this is just an activation. For other widgets, it means activating and then
+// spinning the run loop until the OS has activated the window.
+void ActivateSync(Widget* widget) {
+  WidgetActivationWaiter waiter(widget, true);
+  widget->Activate();
+  waiter.Wait();
+}
+
+// Like for ActivateSync(), wait for a widget to become active, but Show() the
+// widget rather than calling Activate().
+void ShowSync(Widget* widget) {
+  WidgetActivationWaiter waiter(widget, true);
+  widget->Show();
+  waiter.Wait();
+}
+
+// Calls ShowInactive() on a Widget, and spins a run loop. The goal is to give
+// the OS a chance to activate a widget. However, for this case, the test
+// doesn't expect that to happen, so there is nothing to wait for.
+void ShowInactiveSync(Widget* widget) {
+  widget->ShowInactive();
+  RunPendingMessagesForActiveStatusChange();
+}
+
 }  // namespace
 
 class WidgetTestInteractive : public WidgetTest {
@@ -498,12 +573,12 @@ TEST_F(WidgetTestInteractive, ViewFocusOnWidgetActivationChanges) {
   widget2->GetContentsView()->AddChildView(view2a);
   widget2->GetContentsView()->AddChildView(view2b);
 
-  widget1->Show();
+  ShowSync(widget1);
   EXPECT_TRUE(widget1->IsActive());
   view1->RequestFocus();
   EXPECT_EQ(view1, widget1->GetFocusManager()->GetFocusedView());
 
-  widget2->Show();
+  ShowSync(widget2);
   EXPECT_TRUE(widget2->IsActive());
   EXPECT_FALSE(widget1->IsActive());
   EXPECT_EQ(NULL, widget1->GetFocusManager()->GetFocusedView());
@@ -512,13 +587,13 @@ TEST_F(WidgetTestInteractive, ViewFocusOnWidgetActivationChanges) {
   view2b->RequestFocus();
   EXPECT_EQ(view2b, widget2->GetFocusManager()->GetFocusedView());
 
-  widget1->Activate();
+  ActivateSync(widget1);
   EXPECT_TRUE(widget1->IsActive());
   EXPECT_EQ(view1, widget1->GetFocusManager()->GetFocusedView());
   EXPECT_FALSE(widget2->IsActive());
   EXPECT_EQ(NULL, widget2->GetFocusManager()->GetFocusedView());
 
-  widget2->Activate();
+  ActivateSync(widget2);
   EXPECT_TRUE(widget2->IsActive());
   EXPECT_EQ(view2b, widget2->GetFocusManager()->GetFocusedView());
   EXPECT_FALSE(widget1->IsActive());
@@ -666,6 +741,7 @@ TEST_F(WidgetTestInteractive, WindowModalWindowDestroyedActivationTest) {
   top_level_widget.Show();
 
   gfx::NativeView top_level_native_view = top_level_widget.GetNativeView();
+  ASSERT_FALSE(focus_listener.focus_changes().empty());
   EXPECT_EQ(1u, focus_changes.size());
   EXPECT_EQ(NativeViewPair(NULL, top_level_native_view), focus_changes[0]);
 
@@ -714,8 +790,9 @@ TEST_F(WidgetTestInteractive, SystemModalWindowReleasesCapture) {
   init_params.native_widget =
       new PlatformDesktopNativeWidget(&top_level_widget);
   top_level_widget.Init(init_params);
-  top_level_widget.Show();
+  ShowSync(&top_level_widget);
 
+  ASSERT_FALSE(focus_listener.focus_changes().empty());
   EXPECT_EQ(top_level_widget.GetNativeView(),
             focus_listener.focus_changes().back().second);;
 
@@ -730,7 +807,7 @@ TEST_F(WidgetTestInteractive, SystemModalWindowReleasesCapture) {
   Widget* modal_dialog_widget = views::DialogDelegate::CreateDialogWidget(
       dialog_delegate, NULL, top_level_widget.GetNativeView());
   modal_dialog_widget->SetBounds(gfx::Rect(100, 100, 200, 200));
-  modal_dialog_widget->Show();
+  ShowSync(modal_dialog_widget);
 
   EXPECT_FALSE(top_level_widget.HasCapture());
 
@@ -757,8 +834,17 @@ TEST_F(WidgetTestInteractive, CanActivateFlagIsHonored) {
   EXPECT_FALSE(widget.IsActive());
 }
 
+// No touch on desktop Mac. Tracked in http://crbug.com/445520.
+#if defined(OS_MACOSX) && !defined(USE_AURA)
+#define MAYBE_TouchSelectionQuickMenuIsNotActivated \
+    DISABLED_TouchSelectionQuickMenuIsNotActivated
+#else
+#define MAYBE_TouchSelectionQuickMenuIsNotActivated \
+    TouchSelectionQuickMenuIsNotActivated
+#endif
+
 // Test that touch selection quick menu is not activated when opened.
-TEST_F(WidgetTestInteractive, TouchSelectionQuickMenuIsNotActivated) {
+TEST_F(WidgetTestInteractive, MAYBE_TouchSelectionQuickMenuIsNotActivated) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableTouchEditing);
 #if defined(OS_WIN)
@@ -811,8 +897,7 @@ TEST_F(WidgetTestInteractive, DisableViewDoesNotActivateWidget) {
   view1->SetFocusable(true);
   widget1.GetRootView()->AddChildView(view1);
 
-  widget1.Activate();
-  EXPECT_TRUE(widget1.IsActive());
+  ActivateSync(&widget1);
 
   FocusManager* focus_manager1 = widget1.GetFocusManager();
   ASSERT_TRUE(focus_manager1);
@@ -830,7 +915,7 @@ TEST_F(WidgetTestInteractive, DisableViewDoesNotActivateWidget) {
   view2->SetFocusable(true);
   widget2.GetRootView()->AddChildView(view2);
 
-  widget2.Activate();
+  ActivateSync(&widget2);
   EXPECT_TRUE(widget2.IsActive());
   EXPECT_FALSE(widget1.IsActive());
 
@@ -845,6 +930,139 @@ TEST_F(WidgetTestInteractive, DisableViewDoesNotActivateWidget) {
   EXPECT_NE(view1, focus_manager1->GetFocusedView());
   EXPECT_FALSE(widget1.IsActive());
   EXPECT_TRUE(widget2.IsActive());
+}
+
+TEST_F(WidgetTestInteractive, ShowCreatesActiveWindow) {
+  Widget* widget = CreateTopLevelPlatformWidget();
+
+  ShowSync(widget);
+  EXPECT_EQ(GetWidgetShowState(widget), ui::SHOW_STATE_NORMAL);
+
+  widget->CloseNow();
+}
+
+TEST_F(WidgetTestInteractive, ShowInactive) {
+  Widget* widget = CreateTopLevelPlatformWidget();
+
+  ShowInactiveSync(widget);
+  EXPECT_EQ(GetWidgetShowState(widget), ui::SHOW_STATE_INACTIVE);
+
+  widget->CloseNow();
+}
+
+TEST_F(WidgetTestInteractive, InactiveBeforeShow) {
+  Widget* widget = CreateTopLevelPlatformWidget();
+
+  EXPECT_FALSE(widget->IsActive());
+  EXPECT_FALSE(widget->IsVisible());
+
+  ShowSync(widget);
+
+  EXPECT_TRUE(widget->IsActive());
+  EXPECT_TRUE(widget->IsVisible());
+
+  widget->CloseNow();
+}
+
+TEST_F(WidgetTestInteractive, ShowInactiveAfterShow) {
+  // Create 2 widgets to ensure window layering does not change.
+  Widget* widget = CreateTopLevelPlatformWidget();
+  Widget* widget2 = CreateTopLevelPlatformWidget();
+
+  ShowSync(widget2);
+  EXPECT_FALSE(widget->IsActive());
+  EXPECT_TRUE(widget2->IsVisible());
+  EXPECT_TRUE(widget2->IsActive());
+
+  ShowSync(widget);
+  EXPECT_TRUE(widget->IsActive());
+  EXPECT_FALSE(widget2->IsActive());
+
+  ShowInactiveSync(widget);
+  EXPECT_TRUE(widget->IsActive());
+  EXPECT_FALSE(widget2->IsActive());
+  EXPECT_EQ(GetWidgetShowState(widget), ui::SHOW_STATE_NORMAL);
+
+  widget2->CloseNow();
+  widget->CloseNow();
+}
+
+TEST_F(WidgetTestInteractive, ShowAfterShowInactive) {
+  Widget* widget = CreateTopLevelPlatformWidget();
+  widget->SetBounds(gfx::Rect(100, 100, 100, 100));
+
+  ShowInactiveSync(widget);
+  ShowSync(widget);
+  EXPECT_EQ(GetWidgetShowState(widget), ui::SHOW_STATE_NORMAL);
+
+  widget->CloseNow();
+}
+
+#if !defined(OS_CHROMEOS)
+TEST_F(WidgetTestInteractive, InactiveWidgetDoesNotGrabActivation) {
+  Widget* widget = CreateTopLevelPlatformWidget();
+  ShowSync(widget);
+  EXPECT_EQ(GetWidgetShowState(widget), ui::SHOW_STATE_NORMAL);
+
+  Widget widget2;
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
+  params.native_widget = new PlatformDesktopNativeWidget(&widget2);
+  params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  widget2.Init(params);
+  widget2.Show();
+  RunPendingMessagesForActiveStatusChange();
+
+  EXPECT_EQ(GetWidgetShowState(&widget2), ui::SHOW_STATE_INACTIVE);
+  EXPECT_EQ(GetWidgetShowState(widget), ui::SHOW_STATE_NORMAL);
+
+  widget->CloseNow();
+  widget2.CloseNow();
+}
+#endif  // !defined(OS_CHROMEOS)
+
+// ExitFullscreenRestoreState doesn't use DesktopAura widgets. On Mac, there are
+// currently only Desktop widgets and fullscreen changes have to coordinate with
+// the OS. See BridgedNativeWidgetUITest for native Mac fullscreen tests.
+// Maximize on mac is also (intentionally) a no-op.
+#if defined(OS_MACOSX) && !defined(USE_AURA)
+#define MAYBE_ExitFullscreenRestoreState DISABLED_ExitFullscreenRestoreState
+#else
+#define MAYBE_ExitFullscreenRestoreState ExitFullscreenRestoreState
+#endif
+
+// Test that window state is not changed after getting out of full screen.
+TEST_F(WidgetTestInteractive, MAYBE_ExitFullscreenRestoreState) {
+  Widget* toplevel = CreateTopLevelPlatformWidget();
+
+  toplevel->Show();
+  RunPendingMessages();
+
+  // This should be a normal state window.
+  EXPECT_EQ(ui::SHOW_STATE_NORMAL, GetWidgetShowState(toplevel));
+
+  toplevel->SetFullscreen(true);
+  EXPECT_EQ(ui::SHOW_STATE_FULLSCREEN, GetWidgetShowState(toplevel));
+  toplevel->SetFullscreen(false);
+  EXPECT_NE(ui::SHOW_STATE_FULLSCREEN, GetWidgetShowState(toplevel));
+
+  // And it should still be in normal state after getting out of full screen.
+  EXPECT_EQ(ui::SHOW_STATE_NORMAL, GetWidgetShowState(toplevel));
+
+  // Now, make it maximized.
+  toplevel->Maximize();
+  EXPECT_EQ(ui::SHOW_STATE_MAXIMIZED, GetWidgetShowState(toplevel));
+
+  toplevel->SetFullscreen(true);
+  EXPECT_EQ(ui::SHOW_STATE_FULLSCREEN, GetWidgetShowState(toplevel));
+  toplevel->SetFullscreen(false);
+  EXPECT_NE(ui::SHOW_STATE_FULLSCREEN, GetWidgetShowState(toplevel));
+
+  // And it stays maximized after getting out of full screen.
+  EXPECT_EQ(ui::SHOW_STATE_MAXIMIZED, GetWidgetShowState(toplevel));
+
+  // Clean up.
+  toplevel->Close();
+  RunPendingMessages();
 }
 
 namespace {

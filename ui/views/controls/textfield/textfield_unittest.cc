@@ -30,6 +30,7 @@
 #include "ui/views/ime/mock_input_method.h"
 #include "ui/views/test/test_views_delegate.h"
 #include "ui/views/test/views_test_base.h"
+#include "ui/views/test/widget_test.h"
 #include "ui/views/widget/widget.h"
 #include "url/gurl.h"
 
@@ -226,6 +227,12 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
     // Activate the widget and focus the textfield for input handling.
     widget_->Activate();
     textfield_->RequestFocus();
+
+    // On Mac, activation is asynchronous since desktop widgets are used. We
+    // don't want parallel tests to steal active status either, so fake it.
+#if defined(OS_MACOSX) && !defined(USE_AURA)
+    fake_activation_ = test::WidgetTest::FakeWidgetIsActiveAlways();
+#endif
   }
 
   ui::MenuModel* GetContextMenuModel() {
@@ -349,6 +356,7 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
 
  private:
   ui::ClipboardType copied_to_clipboard_;
+  scoped_ptr<test::WidgetTest::FakeActivation> fake_activation_;
 
   DISALLOW_COPY_AND_ASSIGN(TextfieldTest);
 };

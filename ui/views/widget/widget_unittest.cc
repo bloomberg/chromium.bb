@@ -219,16 +219,6 @@ class CloseWidgetView : public View {
   DISALLOW_COPY_AND_ASSIGN(CloseWidgetView);
 };
 
-ui::WindowShowState GetWidgetShowState(const Widget* widget) {
-  // Use IsMaximized/IsMinimized/IsFullScreen instead of GetWindowPlacement
-  // because the former is implemented on all platforms but the latter is not.
-  return widget->IsFullscreen() ? ui::SHOW_STATE_FULLSCREEN :
-      widget->IsMaximized() ? ui::SHOW_STATE_MAXIMIZED :
-      widget->IsMinimized() ? ui::SHOW_STATE_MINIMIZED :
-      widget->IsActive() ? ui::SHOW_STATE_NORMAL :
-                           ui::SHOW_STATE_INACTIVE;
-}
-
 TEST_F(WidgetTest, WidgetInitParams) {
   // Widgets are not transparent by default.
   Widget::InitParams init1;
@@ -1157,51 +1147,6 @@ TEST_F(WidgetTest, GetRestoredBounds) {
   EXPECT_GT(toplevel->GetRestoredBounds().height(), 0);
 }
 #endif
-
-// ExitFullscreenRestoreState doesn't use DesktopAura widgets. On Mac, there are
-// currently only Desktop widgets and fullscreen changes need to occur in an
-// interactive test to avoid flakes. Maximize on mac is also (intentionally) a
-// no-op.
-#if defined(OS_MACOSX) && !defined(USE_AURA)
-#define MAYBE_ExitFullscreenRestoreState DISABLED_ExitFullscreenRestoreState
-#else
-#define MAYBE_ExitFullscreenRestoreState ExitFullscreenRestoreState
-#endif
-
-// Test that window state is not changed after getting out of full screen.
-TEST_F(WidgetTest, MAYBE_ExitFullscreenRestoreState) {
-  Widget* toplevel = CreateTopLevelPlatformWidget();
-
-  toplevel->Show();
-  RunPendingMessages();
-
-  // This should be a normal state window.
-  EXPECT_EQ(ui::SHOW_STATE_NORMAL, GetWidgetShowState(toplevel));
-
-  toplevel->SetFullscreen(true);
-  EXPECT_EQ(ui::SHOW_STATE_FULLSCREEN, GetWidgetShowState(toplevel));
-  toplevel->SetFullscreen(false);
-  EXPECT_NE(ui::SHOW_STATE_FULLSCREEN, GetWidgetShowState(toplevel));
-
-  // And it should still be in normal state after getting out of full screen.
-  EXPECT_EQ(ui::SHOW_STATE_NORMAL, GetWidgetShowState(toplevel));
-
-  // Now, make it maximized.
-  toplevel->Maximize();
-  EXPECT_EQ(ui::SHOW_STATE_MAXIMIZED, GetWidgetShowState(toplevel));
-
-  toplevel->SetFullscreen(true);
-  EXPECT_EQ(ui::SHOW_STATE_FULLSCREEN, GetWidgetShowState(toplevel));
-  toplevel->SetFullscreen(false);
-  EXPECT_NE(ui::SHOW_STATE_FULLSCREEN, GetWidgetShowState(toplevel));
-
-  // And it stays maximized after getting out of full screen.
-  EXPECT_EQ(ui::SHOW_STATE_MAXIMIZED, GetWidgetShowState(toplevel));
-
-  // Clean up.
-  toplevel->Close();
-  RunPendingMessages();
-}
 
 // The key-event propagation from Widget happens differently on aura and
 // non-aura systems because of the difference in IME. So this test works only on
@@ -3221,99 +3166,6 @@ TEST_F(WidgetTest, WindowModalityActivationTest) {
   top_level_widget.CloseNow();
 }
 #endif  // defined(OS_WIN)
-#endif  // !defined(OS_CHROMEOS)
-
-TEST_F(WidgetTest, ShowCreatesActiveWindow) {
-  Widget* widget = CreateTopLevelPlatformWidget();
-
-  widget->Show();
-  EXPECT_EQ(GetWidgetShowState(widget), ui::SHOW_STATE_NORMAL);
-
-  widget->CloseNow();
-}
-
-// OSX does not have a per-application "active" window such as provided by
-// ::GetActiveWindow() on Windows. There is only a system-wide "keyWindow" which
-// is updated asynchronously.
-#if defined(OS_MACOSX)
-#define MAYBE_ShowInactive DISABLED_ShowInactive
-#else
-#define MAYBE_ShowInactive ShowInactive
-#endif
-TEST_F(WidgetTest, MAYBE_ShowInactive) {
-  Widget* widget = CreateTopLevelPlatformWidget();
-
-  widget->ShowInactive();
-  EXPECT_EQ(GetWidgetShowState(widget), ui::SHOW_STATE_INACTIVE);
-
-  widget->CloseNow();
-}
-
-TEST_F(WidgetTest, InactiveBeforeShow) {
-  Widget* widget = CreateTopLevelPlatformWidget();
-
-  EXPECT_FALSE(widget->IsActive());
-  EXPECT_FALSE(widget->IsVisible());
-
-  widget->Show();
-
-  EXPECT_TRUE(widget->IsActive());
-  EXPECT_TRUE(widget->IsVisible());
-
-  widget->CloseNow();
-}
-
-TEST_F(WidgetTest, ShowInactiveAfterShow) {
-  // Create 2 widgets to ensure window layering does not change.
-  Widget* widget = CreateTopLevelPlatformWidget();
-  Widget* widget2 = CreateTopLevelPlatformWidget();
-
-  widget2->Show();
-  EXPECT_FALSE(widget->IsActive());
-  EXPECT_TRUE(widget2->IsVisible());
-  EXPECT_TRUE(widget2->IsActive());
-
-  widget->Show();
-  EXPECT_TRUE(widget->IsActive());
-  EXPECT_FALSE(widget2->IsActive());
-  widget->ShowInactive();
-  EXPECT_TRUE(widget->IsActive());
-  EXPECT_FALSE(widget2->IsActive());
-  EXPECT_EQ(GetWidgetShowState(widget), ui::SHOW_STATE_NORMAL);
-
-  widget2->CloseNow();
-  widget->CloseNow();
-}
-
-TEST_F(WidgetTest, ShowAfterShowInactive) {
-  Widget* widget = CreateTopLevelPlatformWidget();
-
-  widget->ShowInactive();
-  widget->Show();
-  EXPECT_EQ(GetWidgetShowState(widget), ui::SHOW_STATE_NORMAL);
-
-  widget->CloseNow();
-}
-
-#if !defined(OS_CHROMEOS)
-TEST_F(WidgetTest, InactiveWidgetDoesNotGrabActivation) {
-  Widget* widget = CreateTopLevelPlatformWidget();
-  widget->Show();
-  EXPECT_EQ(GetWidgetShowState(widget), ui::SHOW_STATE_NORMAL);
-
-  Widget widget2;
-  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
-  params.native_widget = new PlatformDesktopNativeWidget(&widget2);
-  params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  widget2.Init(params);
-  widget2.Show();
-
-  EXPECT_EQ(GetWidgetShowState(&widget2), ui::SHOW_STATE_INACTIVE);
-  EXPECT_EQ(GetWidgetShowState(widget), ui::SHOW_STATE_NORMAL);
-
-  widget->CloseNow();
-  widget2.CloseNow();
-}
 #endif  // !defined(OS_CHROMEOS)
 
 namespace {

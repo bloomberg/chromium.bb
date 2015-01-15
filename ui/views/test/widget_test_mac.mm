@@ -7,10 +7,37 @@
 #include <Cocoa/Cocoa.h>
 
 #import "base/mac/scoped_nsobject.h"
+#import "base/mac/scoped_objc_class_swizzler.h"
 #include "ui/views/widget/root_view.h"
+
+@interface IsKeyWindowDonor : NSObject
+@end
+
+@implementation IsKeyWindowDonor
+- (BOOL)isKeyWindow {
+  return YES;
+}
+@end
 
 namespace views {
 namespace test {
+
+namespace {
+
+class FakeActivationMac : public WidgetTest::FakeActivation {
+ public:
+  FakeActivationMac()
+      : swizzler_([NSWindow class],
+                  [IsKeyWindowDonor class],
+                  @selector(isKeyWindow)) {}
+
+ private:
+  base::mac::ScopedObjCClassSwizzler swizzler_;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeActivationMac);
+};
+
+}  // namespace
 
 // static
 void WidgetTest::SimulateNativeDestroy(Widget* widget) {
@@ -48,6 +75,11 @@ bool WidgetTest::IsWindowStackedAbove(Widget* above, Widget* below) {
 // static
 ui::EventProcessor* WidgetTest::GetEventProcessor(Widget* widget) {
   return static_cast<internal::RootView*>(widget->GetRootView());
+}
+
+// static
+scoped_ptr<WidgetTest::FakeActivation> WidgetTest::FakeWidgetIsActiveAlways() {
+  return scoped_ptr<FakeActivation>(new FakeActivationMac);
 }
 
 }  // namespace test

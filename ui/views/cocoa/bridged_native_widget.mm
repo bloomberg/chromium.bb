@@ -373,6 +373,19 @@ void BridgedNativeWidget::OnBackingPropertiesChanged() {
   UpdateLayerProperties();
 }
 
+void BridgedNativeWidget::OnWindowKeyStatusChangedTo(bool is_key) {
+  Widget* widget = native_widget_mac()->GetWidget();
+  widget->OnNativeWidgetActivationChanged(is_key);
+  // The contentView is the BridgedContentView hosting the views::RootView. The
+  // focus manager will already know if a native subview has focus.
+  if ([window_ contentView] == [window_ firstResponder]) {
+    if (is_key)
+      widget->GetFocusManager()->RestoreFocusedView();
+    else
+      widget->GetFocusManager()->StoreFocusedView(true);
+  }
+}
+
 InputMethod* BridgedNativeWidget::CreateInputMethod() {
   if (switches::IsTextInputFocusManagerEnabled())
     return new NullInputMethod();

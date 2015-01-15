@@ -6,9 +6,11 @@
 
 #include "base/mac/foundation_util.h"
 #import "ui/views/cocoa/views_nswindow_delegate.h"
+#include "ui/views/widget/native_widget_mac.h"
 
 @interface NativeWidgetMacNSWindow ()
 - (ViewsNSWindowDelegate*)viewsNSWindowDelegate;
+- (views::Widget*)viewsWidget;
 @end
 
 @implementation NativeWidgetMacNSWindow
@@ -17,14 +19,20 @@
   return base::mac::ObjCCastStrict<ViewsNSWindowDelegate>([self delegate]);
 }
 
-// Override canBecome{Key,Main}Window to always return YES, otherwise Windows
-// with a styleMask of NSBorderlessWindowMask default to NO.
+- (views::Widget*)viewsWidget {
+  return [[self viewsNSWindowDelegate] nativeWidgetMac]->GetWidget();
+}
+
+// Ignore [super canBecome{Key,Main}Window]. The default is NO for windows with
+// NSBorderlessWindowMask, which is not the desired behavior.
+// Note these can be called via -[NSWindow close] while the widget is being torn
+// down, so check for a delegate.
 - (BOOL)canBecomeKeyWindow {
-  return YES;
+  return [self delegate] && [self viewsWidget]->CanActivate();
 }
 
 - (BOOL)canBecomeMainWindow {
-  return YES;
+  return [self delegate] && [self viewsWidget]->CanActivate();
 }
 
 // Override display, since this is the first opportunity Cocoa gives to detect
