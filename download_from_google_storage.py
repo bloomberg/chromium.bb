@@ -384,7 +384,18 @@ def main(args):
 
   # Set the boto file to /dev/null if we don't need auth.
   if options.no_auth:
-    options.boto = os.devnull
+    if (set(('http_proxy', 'https_proxy')).intersection(
+        env.lower() for env in os.environ) and
+        'NO_AUTH_BOTO_CONFIG' not in os.environ):
+      print >> sys.stderr, ('NOTICE: You have PROXY values set in your '
+                            'environment, but gsutil in depot_tools does not '
+                            '(yet) obey them.')
+      print >> sys.stderr, ('Also, --no_auth prevents the normal BOTO_CONFIG '
+                            'environment variable from being used.')
+      print >> sys.stderr, ('To use a proxy in this situation, please supply '
+                            'those settings in a .boto file pointed to by '
+                            'the NO_AUTH_BOTO_CONFIG environment var.')
+    options.boto = os.environ.get('NO_AUTH_BOTO_CONFIG', os.devnull)
 
   # Make sure gsutil exists where we expect it to.
   if os.path.exists(GSUTIL_DEFAULT_PATH):
