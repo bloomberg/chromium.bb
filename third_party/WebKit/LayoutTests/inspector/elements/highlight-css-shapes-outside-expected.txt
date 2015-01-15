@@ -27,7 +27,14 @@ circle: {
     }
   ],
   "showRulers": true,
-  "showExtensionLines": true
+  "showExtensionLines": true,
+  "elementInfo": {
+    "tagName": "div",
+    "idValue": "circle",
+    "className": ".float.circle",
+    "nodeWidth": "128",
+    "nodeHeight": "128"
+  }
 }
 
 insetSimpleRound: {
@@ -59,7 +66,14 @@ insetSimpleRound: {
     }
   ],
   "showRulers": true,
-  "showExtensionLines": true
+  "showExtensionLines": true,
+  "elementInfo": {
+    "tagName": "div",
+    "idValue": "insetSimpleRound",
+    "className": ".float.insetSimpleRound",
+    "nodeWidth": "128",
+    "nodeHeight": "128"
+  }
 }
 
 insetComplexRound: {
@@ -91,7 +105,14 @@ insetComplexRound: {
     }
   ],
   "showRulers": true,
-  "showExtensionLines": true
+  "showExtensionLines": true,
+  "elementInfo": {
+    "tagName": "div",
+    "idValue": "insetComplexRound",
+    "className": ".float.insetComplexRound",
+    "nodeWidth": "128",
+    "nodeHeight": "128"
+  }
 }
 
 ellipse: {
@@ -123,7 +144,14 @@ ellipse: {
     }
   ],
   "showRulers": true,
-  "showExtensionLines": true
+  "showExtensionLines": true,
+  "elementInfo": {
+    "tagName": "div",
+    "idValue": "ellipse",
+    "className": ".float.ellipse",
+    "nodeWidth": "128",
+    "nodeHeight": "80"
+  }
 }
 
 contentBox: {
@@ -155,7 +183,14 @@ contentBox: {
     }
   ],
   "showRulers": true,
-  "showExtensionLines": true
+  "showExtensionLines": true,
+  "elementInfo": {
+    "tagName": "div",
+    "idValue": "contentBox",
+    "className": ".float.contentBox",
+    "nodeWidth": "176",
+    "nodeHeight": "160"
+  }
 }
 
 polygon: {
@@ -183,7 +218,14 @@ polygon: {
     }
   ],
   "showRulers": true,
-  "showExtensionLines": true
+  "showExtensionLines": true,
+  "elementInfo": {
+    "tagName": "div",
+    "idValue": "polygon",
+    "className": ".float.polygon",
+    "nodeWidth": "128",
+    "nodeHeight": "128"
+  }
 }
 
 raster: {
@@ -215,7 +257,14 @@ raster: {
     }
   ],
   "showRulers": true,
-  "showExtensionLines": true
+  "showExtensionLines": true,
+  "elementInfo": {
+    "tagName": "div",
+    "idValue": "raster",
+    "className": ".float.raster",
+    "nodeWidth": "128",
+    "nodeHeight": "128"
+  }
 }
 
 

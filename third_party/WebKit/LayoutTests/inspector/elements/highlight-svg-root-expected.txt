@@ -21,7 +21,13 @@ svg-root: {
     }
   ],
   "showRulers": true,
-  "showExtensionLines": true
+  "showExtensionLines": true,
+  "elementInfo": {
+    "tagName": "svg",
+    "idValue": "svg-root",
+    "nodeWidth": "150",
+    "nodeHeight": "150"
+  }
 }
 
 

@@ -8,7 +8,13 @@ svg-rect: {
     }
   ],
   "showRulers": true,
-  "showExtensionLines": true
+  "showExtensionLines": true,
+  "elementInfo": {
+    "tagName": "rect",
+    "idValue": "svg-rect",
+    "nodeWidth": "60",
+    "nodeHeight": "80"
+  }
 }
 
 

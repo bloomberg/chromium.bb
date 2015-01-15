@@ -32,6 +32,7 @@
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/V8InspectorOverlayHost.h"
+#include "core/dom/ClientRect.h"
 #include "core/dom/Element.h"
 #include "core/dom/Node.h"
 #include "core/dom/PseudoElement.h"
@@ -664,10 +665,11 @@ PassRefPtr<JSONObject> buildElementInfo(Element* element)
     if (!renderer || !containingView)
         return elementInfo;
 
-    IntRect boundingBox = pixelSnappedIntRect(containingView->contentsToRootView(renderer->absoluteBoundingBoxRect()));
-    RenderBoxModelObject* modelObject = renderer->isBoxModelObject() ? toRenderBoxModelObject(renderer) : 0;
-    elementInfo->setString("nodeWidth", String::number(modelObject ? adjustForAbsoluteZoom(modelObject->pixelSnappedOffsetWidth(), modelObject) : boundingBox.width()));
-    elementInfo->setString("nodeHeight", String::number(modelObject ? adjustForAbsoluteZoom(modelObject->pixelSnappedOffsetHeight(), modelObject) : boundingBox.height()));
+    // Render the getBoundingClientRect() data in the tooltip
+    // to be consistent with the rulers (see http://crbug.com/262338).
+    RefPtrWillBeRawPtr<ClientRect> boundingBox = element->getBoundingClientRect();
+    elementInfo->setString("nodeWidth", String::number(boundingBox->width()));
+    elementInfo->setString("nodeHeight", String::number(boundingBox->height()));
 
     return elementInfo;
 }
@@ -866,6 +868,8 @@ PassRefPtr<JSONObject> InspectorOverlay::highlightJSONForNode(Node* node)
     Highlight highlight;
     appendPathsForShapeOutside(highlight, config, node);
     buildNodeHighlight(*node, config, &highlight);
+    if (node->isElementNode())
+        highlight.setElementInfo(buildElementInfo(toElement(node)));
     return highlight.asJSONObject();
 }
 

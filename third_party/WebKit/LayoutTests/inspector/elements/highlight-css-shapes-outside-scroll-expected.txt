@@ -27,7 +27,14 @@ circle: {
     }
   ],
   "showRulers": true,
-  "showExtensionLines": true
+  "showExtensionLines": true,
+  "elementInfo": {
+    "tagName": "div",
+    "idValue": "circle",
+    "className": ".float.circle",
+    "nodeWidth": "128",
+    "nodeHeight": "128"
+  }
 }
 
 circle: {
@@ -59,7 +66,14 @@ circle: {
     }
   ],
   "showRulers": true,
-  "showExtensionLines": true
+  "showExtensionLines": true,
+  "elementInfo": {
+    "tagName": "div",
+    "idValue": "circle",
+    "className": ".float.circle",
+    "nodeWidth": "128",
+    "nodeHeight": "128"
+  }
 }
 
 

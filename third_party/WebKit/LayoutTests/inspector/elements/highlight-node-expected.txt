@@ -21,7 +21,13 @@ inspectedElement: {
     }
   ],
   "showRulers": true,
-  "showExtensionLines": true
+  "showExtensionLines": true,
+  "elementInfo": {
+    "tagName": "div",
+    "idValue": "inspectedElement",
+    "nodeWidth": "250",
+    "nodeHeight": "250"
+  }
 }
 
 
