@@ -647,7 +647,24 @@ bool EventHandler::handleMouseDraggedEvent(const MouseEventWithHitTestResults& e
 {
     TRACE_EVENT0("blink", "EventHandler::handleMouseDraggedEvent");
 
-    if (!m_mousePressed || event.event().button() != LeftButton)
+    // While resetting m_mousePressed here may seem out of place, it turns out
+    // to be needed to handle some bugs^Wfeatures in Blink mouse event handling:
+    // 1. Certain elements, such as <embed>, capture mouse events. They do not
+    //    bubble back up. One way for a <embed> to start capturing mouse events
+    //    is on a mouse press. The problem is the <embed> node only starts
+    //    capturing mouse events *after* m_mousePressed for the containing frame
+    //    has already been set to true. As a result, the frame's EventHandler
+    //    never sees the mouse release event, which is supposed to reset
+    //    m_mousePressed... so m_mousePressed ends up remaining true until the
+    //    event handler finally gets another mouse released event. Oops.
+    // 2. Dragging doesn't start until after a mouse press event, but a drag
+    //    that ends as a result of a mouse release does not send a mouse release
+    //    event. As a result, m_mousePressed also ends up remaining true until
+    //    the next mouse release event seen by the EventHandler.
+    if (event.event().button() != LeftButton)
+        m_mousePressed = false;
+
+    if (!m_mousePressed)
         return false;
 
     if (handleDrag(event, DragInitiator::Mouse))
