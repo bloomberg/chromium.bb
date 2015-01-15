@@ -28,6 +28,7 @@
             android:singleLine="true"
             android:textAlignment="viewStart"
             android:textSize="18sp"
+            android:textColor="#333"
             android:includeFontPadding="false"/>
         <TextView android:id="@+id/dropdown_sublabel"
             android:layout_width="wrap_content"
