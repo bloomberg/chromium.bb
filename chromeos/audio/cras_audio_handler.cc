@@ -776,7 +776,16 @@ void CrasAudioHandler::NotifyActiveNodeChanged(bool is_input) {
 
 void CrasAudioHandler::UpdateDevicesAndSwitchActive(
     const AudioNodeList& nodes) {
-  size_t old_audio_devices_size = audio_devices_.size();
+  size_t old_output_device_size = 0;
+  size_t old_input_device_size = 0;
+  for (AudioDeviceMap::const_iterator it = audio_devices_.begin();
+       it != audio_devices_.end(); ++it) {
+    if (it->second.is_input)
+      ++old_input_device_size;
+    else
+      ++old_output_device_size;
+  }
+
   bool output_devices_changed = HasDeviceChange(nodes, false);
   bool input_devices_changed = HasDeviceChange(nodes, true);
   audio_devices_.clear();
@@ -788,6 +797,8 @@ void CrasAudioHandler::UpdateDevicesAndSwitchActive(
   while (!output_devices_pq_.empty())
     output_devices_pq_.pop();
 
+  size_t new_output_device_size = 0;
+  size_t new_input_device_size = 0;
   for (size_t i = 0; i < nodes.size(); ++i) {
     AudioDevice device(nodes[i]);
     audio_devices_[device.id] = device;
@@ -803,18 +814,21 @@ void CrasAudioHandler::UpdateDevicesAndSwitchActive(
       has_alternative_output_ = true;
     }
 
-    if (device.is_input)
+    if (device.is_input) {
       input_devices_pq_.push(device);
-    else
+      ++new_input_device_size;
+    } else {
       output_devices_pq_.push(device);
+      ++new_output_device_size;
+    }
   }
 
   // If audio nodes change is caused by unplugging some non-active audio
   // devices, the previously set active audio device will stay active.
   // Otherwise, switch to a new active audio device according to their priority.
   if (input_devices_changed &&
-      !NonActiveDeviceUnplugged(old_audio_devices_size,
-                                audio_devices_.size(),
+      !NonActiveDeviceUnplugged(old_input_device_size,
+                                new_input_device_size,
                                 active_input_node_id_)) {
     // Some devices like chromeboxes don't have the internal audio input. In
     // that case the active input node id should be reset.
@@ -826,8 +840,8 @@ void CrasAudioHandler::UpdateDevicesAndSwitchActive(
     }
   }
   if (output_devices_changed &&
-      !NonActiveDeviceUnplugged(old_audio_devices_size,
-                                audio_devices_.size(),
+      !NonActiveDeviceUnplugged(old_output_device_size,
+                                new_output_device_size,
                                 active_output_node_id_)) {
     // This is really unlikely to happen because all ChromeOS devices have the
     // internal audio output.
