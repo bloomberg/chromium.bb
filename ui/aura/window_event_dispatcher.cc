@@ -81,7 +81,7 @@ WindowEventDispatcher::WindowEventDispatcher(WindowTreeHost* host)
       old_dispatch_target_(NULL),
       synthesize_mouse_move_(false),
       move_hold_count_(0),
-      dispatching_held_event_(false),
+      dispatching_held_event_(nullptr),
       observer_manager_(this),
       repost_event_factory_(this),
       held_event_factory_(this) {
@@ -435,7 +435,7 @@ void WindowEventDispatcher::OnEventProcessingStarted(ui::Event* event) {
   // The held events are already in |window()|'s coordinate system. So it is
   // not necessary to apply the transform to convert from the host's
   // coordinate system to |window()|'s coordinate system.
-  if (event->IsLocatedEvent() && !dispatching_held_event_)
+  if (event->IsLocatedEvent() && dispatching_held_event_ != event)
     TransformEventForDeviceScaleFactor(static_cast<ui::LocatedEvent*>(event));
 }
 
@@ -655,13 +655,13 @@ ui::EventDispatchDetails WindowEventDispatcher::DispatchHeldEvents() {
     return DispatchDetails();
 
   CHECK(!dispatching_held_event_);
-  dispatching_held_event_ = true;
 
   DispatchDetails dispatch_details;
   if (held_repostable_event_) {
     if (held_repostable_event_->type() == ui::ET_MOUSE_PRESSED) {
       scoped_ptr<ui::MouseEvent> mouse_event(
           static_cast<ui::MouseEvent*>(held_repostable_event_.release()));
+      dispatching_held_event_ = mouse_event.get();
       dispatch_details = OnEventFromSource(mouse_event.get());
     } else {
       // TODO(rbyers): GESTURE_TAP_DOWN not yet supported: crbug.com/170987.
@@ -676,6 +676,7 @@ ui::EventDispatchDetails WindowEventDispatcher::DispatchHeldEvents() {
     // so drop the held mouse event.
     if (held_move_event_->IsTouchEvent() ||
         (held_move_event_->IsMouseEvent() && !synthesize_mouse_move_)) {
+      dispatching_held_event_ = held_move_event_.get();
       dispatch_details = OnEventFromSource(held_move_event_.get());
     }
     if (!dispatch_details.dispatcher_destroyed)
@@ -683,7 +684,7 @@ ui::EventDispatchDetails WindowEventDispatcher::DispatchHeldEvents() {
   }
 
   if (!dispatch_details.dispatcher_destroyed)
-    dispatching_held_event_ = false;
+    dispatching_held_event_ = nullptr;
   return dispatch_details;
 }
 

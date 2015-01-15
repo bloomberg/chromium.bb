@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
+#include "base/thread_task_runner_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/event_client.h"
@@ -1984,6 +1985,10 @@ class WindowEventDispatcherTestInHighDPI : public WindowEventDispatcherTest {
   WindowEventDispatcherTestInHighDPI() {}
   ~WindowEventDispatcherTestInHighDPI() override {}
 
+  void DispatchEvent(ui::Event* event) {
+    DispatchEventUsingWindowDispatcher(event);
+  }
+
  protected:
   void SetUp() override {
     WindowEventDispatcherTest::SetUp();
@@ -2056,6 +2061,75 @@ TEST_F(WindowEventDispatcherTestInHighDPI, TouchMovesHeldOnScroll) {
             recorder.touch_locations()[0].ToString());
   EXPECT_EQ(gfx::Point(-40, 10).ToString(),
             recorder.touch_locations()[1].ToString());
+}
+
+// This handler triggers a nested message loop when it receives a right click
+// event, and runs a single callback in the nested message loop.
+class TriggerNestedLoopOnRightMousePress : public ui::test::TestEventHandler {
+ public:
+  explicit TriggerNestedLoopOnRightMousePress(const base::Closure& callback)
+      : callback_(callback) {}
+  ~TriggerNestedLoopOnRightMousePress() override {}
+
+  const gfx::Point mouse_move_location() const { return mouse_move_location_; }
+
+ private:
+  void OnMouseEvent(ui::MouseEvent* mouse) override {
+    TestEventHandler::OnMouseEvent(mouse);
+    if (mouse->type() == ui::ET_MOUSE_PRESSED &&
+        mouse->IsOnlyRightMouseButton()) {
+      base::MessageLoop::ScopedNestableTaskAllower allow(
+          base::MessageLoopForUI::current());
+      base::RunLoop run_loop;
+      scoped_refptr<base::TaskRunner> task_runner =
+          base::ThreadTaskRunnerHandle::Get();
+      if (!callback_.is_null())
+        task_runner->PostTask(FROM_HERE, callback_);
+      task_runner->PostTask(FROM_HERE, run_loop.QuitClosure());
+      run_loop.Run();
+    } else if (mouse->type() == ui::ET_MOUSE_MOVED) {
+      mouse_move_location_ = mouse->location();
+    }
+  }
+
+  base::Closure callback_;
+  gfx::Point mouse_move_location_;
+
+  DISALLOW_COPY_AND_ASSIGN(TriggerNestedLoopOnRightMousePress);
+};
+
+// Tests that if dispatching a 'held' event triggers a nested message loop, then
+// the events that are dispatched from the nested message loop are transformed
+// correctly.
+TEST_F(WindowEventDispatcherTestInHighDPI,
+       EventsTransformedInRepostedEventTriggeredNestedLoop) {
+  scoped_ptr<Window> window(CreateNormalWindow(1, root_window(), NULL));
+  // Make sure the window is visible.
+  RunAllPendingInMessageLoop();
+
+  ui::MouseEvent mouse_move(ui::ET_MOUSE_MOVED, gfx::Point(80, 80),
+                            gfx::Point(80, 80), ui::EF_NONE, ui::EF_NONE);
+  const base::Closure callback_on_right_click = base::Bind(
+      base::IgnoreResult(&WindowEventDispatcherTestInHighDPI::DispatchEvent),
+      base::Unretained(this), base::Unretained(&mouse_move));
+  TriggerNestedLoopOnRightMousePress handler(callback_on_right_click);
+  window->AddPreTargetHandler(&handler);
+
+  scoped_ptr<ui::MouseEvent> mouse(new ui::MouseEvent(
+      ui::ET_MOUSE_PRESSED, gfx::Point(10, 10), gfx::Point(10, 10),
+      ui::EF_RIGHT_MOUSE_BUTTON, ui::EF_RIGHT_MOUSE_BUTTON));
+  host()->dispatcher()->RepostEvent(*mouse);
+  EXPECT_EQ(0, handler.num_mouse_events());
+
+  base::RunLoop run_loop;
+  run_loop.RunUntilIdle();
+  // The window should receive the mouse-press and the mouse-move events.
+  EXPECT_EQ(2, handler.num_mouse_events());
+  // The mouse-move event location should be transformed because of the DSF
+  // before it reaches the window.
+  EXPECT_EQ(gfx::Point(40, 40).ToString(),
+            handler.mouse_move_location().ToString());
+  window->RemovePreTargetHandler(&handler);
 }
 
 class SelfDestructDelegate : public test::TestWindowDelegate {

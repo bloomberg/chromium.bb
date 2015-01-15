@@ -258,7 +258,7 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
   scoped_ptr<ui::LocatedEvent> held_repostable_event_;
 
   // Set when dispatching a held event.
-  bool dispatching_held_event_;
+  ui::LocatedEvent* dispatching_held_event_;
 
   ScopedObserver<aura::Window, aura::WindowObserver> observer_manager_;
 
