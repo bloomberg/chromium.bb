@@ -37,7 +37,7 @@
     </tr>
     </table>
     <br>
-    <button onclick='Play();'>Play</button>
+    <button onclick='start();'>Play</button>
     <br><br>
     Decoded fps: <span id='decodedFPS'></span>
     <br>
@@ -84,7 +84,7 @@
       video.removeEventListener('timeupdate', onTimeUpdate);
     }
 
-    function Play(video) {
+    function play(video) {
       Utils.resetTitleChange();
       // Ended should not fire before onTimeUpdate.
       video.addEventListener('ended', Utils.failTest);
@@ -102,8 +102,12 @@
         element.style['display'] = '';
     }
 
-    emeApp.createPlayer()
-        .then(function(player) { Play(player.video); })
-        .catch(function(error) { Utils.failTest('Unable to play video.'); });
+    function start() {
+      emeApp.createPlayer()
+          .then(function(player) { play(player.video); })
+          .catch(function(error) { Utils.failTest('Unable to play video.'); });
+    }
+
+    start();
   </script>
 </html>
