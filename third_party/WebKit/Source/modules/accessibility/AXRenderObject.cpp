@@ -2366,8 +2366,11 @@ bool AXRenderObject::inheritsPresentationalRole() const
         return false;
 
     QualifiedName tagName = toElement(elementNode)->tagQName();
-    if (tagName == ulTag || tagName == olTag || tagName == dlTag)
-        return (parent->roleValue() == NoneRole || parent->roleValue() == PresentationalRole);
+    if (tagName != ulTag && tagName != olTag && tagName != dlTag)
+        return false;
+
+    if (parent->roleValue() == NoneRole || parent->roleValue() == PresentationalRole)
+        return ariaRoleAttribute() == UnknownRole;
 
     return false;
 }
