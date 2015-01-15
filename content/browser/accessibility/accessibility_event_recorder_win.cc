@@ -42,8 +42,23 @@ HRESULT QueryIAccessible2(IAccessible* accessible, IAccessible2** accessible2) {
       service_provider->QueryService(IID_IAccessible2, accessible2) : hr;
 }
 
+HRESULT QueryIAccessibleText(IAccessible* accessible,
+                             IAccessibleText** accessible_text) {
+  base::win::ScopedComPtr<IServiceProvider> service_provider;
+  HRESULT hr = accessible->QueryInterface(service_provider.Receive());
+  return SUCCEEDED(hr) ?
+      service_provider->QueryService(IID_IAccessibleText, accessible_text) : hr;
+}
+
 std::string BstrToUTF8(BSTR bstr) {
   base::string16 str16(bstr, SysStringLen(bstr));
+
+  // IAccessibleText returns the text you get by appending all static text
+  // children, with an "embedded object character" for each non-text child.
+  // Pretty-print the embedded object character as <obj> so that test output
+  // is human-readable.
+  base::ReplaceChars(str16, L"\xfffc", L"<obj>", &str16);
+
   return base::UTF16ToUTF8(str16);
 }
 
@@ -168,6 +183,12 @@ void AccessibilityEventRecorderWin::OnWinEventHook(
     return;
   }
 
+  std::string event_str = AccessibilityEventToStringUTF8(event);
+  if (event_str.empty()) {
+    VLOG(1) << "Ignoring event " << event;
+    return;
+  }
+
   base::win::ScopedVariant childid_self(CHILDID_SELF);
   base::win::ScopedVariant role;
   iaccessible->get_accRole(childid_self, role.Receive());
@@ -177,13 +198,36 @@ void AccessibilityEventRecorderWin::OnWinEventHook(
   iaccessible->get_accValue(childid_self, value_bstr.Receive());
 
   std::string log = base::StringPrintf(
-      "%s on role=%s",
-      AccessibilityEventToStringUTF8(event).c_str(),
-      RoleVariantToString(role).c_str());
+      "%s on role=%s", event_str.c_str(), RoleVariantToString(role).c_str());
   if (name_bstr.Length() > 0)
     log += base::StringPrintf(" name=\"%s\"", BstrToUTF8(name_bstr).c_str());
   if (value_bstr.Length() > 0)
     log += base::StringPrintf(" value=\"%s\"", BstrToUTF8(value_bstr).c_str());
+
+  // For TEXT_REMOVED and TEXT_INSERTED events, query the text that was
+  // inserted or removed and include that in the log.
+  IAccessibleText* accessible_text;
+  hr = QueryIAccessibleText(iaccessible.get(), &accessible_text);
+  if (SUCCEEDED(hr)) {
+    if (event == IA2_EVENT_TEXT_REMOVED) {
+      IA2TextSegment old_text;
+      if (SUCCEEDED(accessible_text->get_oldText(&old_text))) {
+        log += base::StringPrintf(" old_text={'%s' start=%d end=%d}",
+                                  BstrToUTF8(old_text.text).c_str(),
+                                  old_text.start,
+                                  old_text.end);
+      }
+    }
+    if (event == IA2_EVENT_TEXT_INSERTED) {
+      IA2TextSegment new_text;
+      if (SUCCEEDED(accessible_text->get_newText(&new_text))) {
+        log += base::StringPrintf(" new_text={'%s' start=%d end=%d}",
+                                  BstrToUTF8(new_text.text).c_str(),
+                                  new_text.start,
+                                  new_text.end);
+      }
+    }
+  }
 
   event_logs_.push_back(log);
 }

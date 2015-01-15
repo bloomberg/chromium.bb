@@ -88,7 +88,7 @@ std::vector<std::string> DumpAccessibilityEventsTest::Dump() {
   waiter.reset(new AccessibilityNotificationWaiter(
       shell(), AccessibilityModeComplete, ui::AX_EVENT_NONE));
 
-  // Execute the "go" function in the script.
+
   web_contents->GetMainFrame()->ExecuteJavaScript(
       base::ASCIIToUTF16("go()"));
 
@@ -150,13 +150,96 @@ void DumpAccessibilityEventsTest::RunEventTest(
 #if defined(OS_WIN) || defined(OS_MACOSX)
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
+                       AccessibilityEventsAddAlert) {
+  RunEventTest(FILE_PATH_LITERAL("add-alert.html"));
+}
+
+// http://crbug.com/447962 - change that makes this test pass will land soon.
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
+                       DISABLED_AccessibilityEventsAddChild) {
+  RunEventTest(FILE_PATH_LITERAL("add-child.html"));
+}
+
+// http://crbug.com/447962 - change that makes this test pass will land soon.
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
+                       DISABLED_AccessibilityEventsAddHiddenAttribute) {
+  RunEventTest(FILE_PATH_LITERAL("add-hidden-attribute.html"));
+}
+
+// http://crbug.com/447962 - change that makes this test pass will land soon.
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
+                       DISABLED_AccessibilityEventsAddHiddenAttributeSubtree) {
+  RunEventTest(FILE_PATH_LITERAL("add-hidden-attribute-subtree.html"));
+}
+
+// http://crbug.com/447962 - change that makes this test pass will land soon.
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
+                       DISABLED_AccessibilityEventsAddSubtree) {
+  RunEventTest(FILE_PATH_LITERAL("add-subtree.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
                        AccessibilityEventsCheckedStateChanged) {
-  RunEventTest(FILE_PATH_LITERAL("events-checked-state-changed.html"));
+  RunEventTest(FILE_PATH_LITERAL("checked-state-changed.html"));
+}
+
+// http://crbug.com/447962 - change that makes this test pass will land soon.
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
+                       DISABLED_AccessibilityEventsCSSDisplay) {
+  RunEventTest(FILE_PATH_LITERAL("css-display.html"));
+}
+
+// http://crbug.com/447962 - change that makes this test pass will land soon.
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
+                       DISABLED_AccessibilityEventsCSSVisibility) {
+  RunEventTest(FILE_PATH_LITERAL("css-visibility.html"));
+}
+
+// http://crbug.com/447962 - change that makes this test pass will land soon.
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
+                       DISABLED_AccessibilityEventsDescriptionChange) {
+  RunEventTest(FILE_PATH_LITERAL("description-change.html"));
 }
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
                        AccessibilityEventsInputTypeTextValueChanged) {
-  RunEventTest(FILE_PATH_LITERAL("events-input-type-text-value-changed.html"));
+  RunEventTest(FILE_PATH_LITERAL("input-type-text-value-changed.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
+                       AccessibilityEventsNameChange) {
+  RunEventTest(FILE_PATH_LITERAL("name-change.html"));
+}
+
+// http://crbug.com/447962 - change that makes this test pass will land soon.
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
+                       DISABLED_AccessibilityEventsRemoveChild) {
+  RunEventTest(FILE_PATH_LITERAL("remove-child.html"));
+}
+
+// http://crbug.com/447962 - change that makes this test pass will land soon.
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
+                       DISABLED_AccessibilityEventsRemoveHiddenAttribute) {
+  RunEventTest(FILE_PATH_LITERAL("remove-hidden-attribute.html"));
+}
+
+// http://crbug.com/447962 - change that makes this test pass will land soon.
+IN_PROC_BROWSER_TEST_F(
+    DumpAccessibilityEventsTest,
+    DISABLED_AccessibilityEventsRemoveHiddenAttributeSubtree) {
+  RunEventTest(FILE_PATH_LITERAL("remove-hidden-attribute-subtree.html"));
+}
+
+// http://crbug.com/447962 - change that makes this test pass will land soon.
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
+                       DISABLED_AccessibilityEventsRemoveSubtree) {
+  RunEventTest(FILE_PATH_LITERAL("remove-subtree.html"));
+}
+
+// http://crbug.com/447962 - change that makes this test pass will land soon.
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
+                       DISABLED_AccessibilityEventsTextChanged) {
+  RunEventTest(FILE_PATH_LITERAL("text-changed.html"));
 }
 
 #endif  // defined(OS_WIN)
