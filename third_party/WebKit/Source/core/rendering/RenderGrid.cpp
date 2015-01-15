@@ -1088,9 +1088,9 @@ void RenderGrid::layoutGridItems()
     populateGridPositions(sizingData, availableSpaceForColumns, availableSpaceForRows);
     m_gridItemsOverflowingGridArea.resize(0);
 
-    unsigned numberOfColumnTracks = m_columnPositions.size() - 1;
-    LayoutUnit columnOffset = contentPositionAndDistributionColumnOffset(availableSpaceForColumns, style()->justifyContent(), style()->justifyContentDistribution(), numberOfColumnTracks);
-    LayoutSize contentPositionOffset(columnOffset, 0);
+    LayoutUnit columnOffset = contentPositionAndDistributionColumnOffset(availableSpaceForColumns, style()->justifyContent(), style()->justifyContentDistribution(), m_columnPositions.size() - 1);
+    LayoutUnit rowOffset = contentPositionAndDistributionRowOffset(availableSpaceForRows, style()->alignContent(), style()->alignContentDistribution(), m_rowPositions.size() - 1);
+    LayoutSize contentPositionOffset(columnOffset, rowOffset);
 
     for (RenderBox* child = firstChildBox(); child; child = child->nextSiblingBox()) {
         if (child->isOutOfFlowPositioned()) {
@@ -1242,14 +1242,16 @@ LayoutUnit RenderGrid::gridAreaBreadthForChild(const RenderBox& child, GridTrack
 void RenderGrid::populateGridPositions(const GridSizingData& sizingData, LayoutUnit availableSpaceForColumns, LayoutUnit availableSpaceForRows)
 {
     unsigned numberOfColumnTracks = sizingData.columnTracks.size();
+    unsigned numberOfRowTracks = sizingData.rowTracks.size();
+
     m_columnPositions.resize(numberOfColumnTracks + 1);
     m_columnPositions[0] = borderAndPaddingStart();
     for (unsigned i = 0; i < numberOfColumnTracks; ++i)
         m_columnPositions[i + 1] = m_columnPositions[i] + sizingData.columnTracks[i].baseSize();
 
-    m_rowPositions.resize(sizingData.rowTracks.size() + 1);
+    m_rowPositions.resize(numberOfRowTracks + 1);
     m_rowPositions[0] = borderAndPaddingBefore();
-    for (size_t i = 0; i < m_rowPositions.size() - 1; ++i)
+    for (unsigned i = 0; i < numberOfRowTracks; ++i)
         m_rowPositions[i + 1] = m_rowPositions[i] + sizingData.rowTracks[i].baseSize();
 }
 
@@ -1624,6 +1626,48 @@ LayoutUnit RenderGrid::contentPositionAndDistributionColumnOffset(LayoutUnit ava
         // FIXME: Implement the previous values. For now, we always 'start' align.
         // crbug.com/234191
         return offsetToStartEdge(style()->isLeftToRightDirection(), availableFreeSpace);
+    case ContentPositionAuto:
+        break;
+    }
+
+    ASSERT_NOT_REACHED();
+    return 0;
+}
+
+LayoutUnit RenderGrid::contentPositionAndDistributionRowOffset(LayoutUnit availableFreeSpace, ContentPosition position, ContentDistributionType distribution, unsigned numberOfGridTracks) const
+{
+    if (availableFreeSpace <= 0)
+        return 0;
+
+    // FIXME: for the time being, spec states that it will always fallback for Grids, but
+    // discussion is ongoing.
+    if (distribution != ContentDistributionDefault && position == ContentPositionAuto)
+        position = resolveContentDistributionFallback(distribution);
+
+    // FIXME: still pending of implementing support for the <overflow-position> keyword
+    // in justify-content and align-content properties.
+    switch (position) {
+    case ContentPositionLeft:
+        // The align-content's axis is always orthogonal to the inline-axis.
+        return 0;
+    case ContentPositionRight:
+        // The align-content's axis is always orthogonal to the inline-axis.
+        return 0;
+    case ContentPositionCenter:
+        return availableFreeSpace / 2;
+    case ContentPositionFlexEnd:
+        // Only used in flex layout, for other layout, it's equivalent to 'End'.
+    case ContentPositionEnd:
+        return availableFreeSpace;
+    case ContentPositionFlexStart:
+        // Only used in flex layout, for other layout, it's equivalent to 'Start'.
+    case ContentPositionStart:
+        return 0;
+    case ContentPositionBaseline:
+    case ContentPositionLastBaseline:
+        // FIXME: Implement the previous values. For now, we always start align.
+        // crbug.com/234191
+        return 0;
     case ContentPositionAuto:
         break;
     }

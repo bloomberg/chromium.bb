@@ -125,6 +125,7 @@ private:
     LayoutUnit centeredRowPositionForChild(const RenderBox&) const;
     LayoutUnit rowPositionForChild(const RenderBox&) const;
     LayoutUnit contentPositionAndDistributionColumnOffset(LayoutUnit availableFreeSpace, ContentPosition, ContentDistributionType, unsigned numberOfItems) const;
+    LayoutUnit contentPositionAndDistributionRowOffset(LayoutUnit availableFreeSpace, ContentPosition, ContentDistributionType, unsigned numberOfItems) const;
     LayoutPoint findChildLogicalPosition(const RenderBox&, LayoutSize contentAlignmentOffset) const;
     GridCoordinate cachedGridCoordinate(const RenderBox&) const;
 
