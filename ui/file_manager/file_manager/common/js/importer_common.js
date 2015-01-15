@@ -114,6 +114,64 @@ importer.importEnabled = function() {
 };
 
 /**
+ * A Promise wrapper that provides public access to resolve and reject methods.
+ *
+ * @constructor
+ * @struct
+ * @template T
+ */
+importer.Resolver = function() {
+  /** @private {boolean} */
+  this.settled_ = false;
+
+  /** @private {function(T)} */
+  this.resolve_;
+
+  /** @private {function(*=)} */
+  this.reject_;
+
+  /** @private {!Promise.<T>} */
+  this.promise_ = new Promise(
+      function(resolve, reject) {
+        this.resolve_ = resolve;
+        this.reject_ = reject;
+      }.bind(this));
+
+  this.promise_.then(
+    function() {
+      this.settled_ = true;
+    }.bind(this));
+};
+
+importer.Resolver.prototype = /** @struct */ {
+  /**
+   * @return {function(T)}
+   * @template T
+   */
+  get resolve() {
+    return this.resolve_;
+  },
+  /**
+   * @return {function(*=)}
+   * @template T
+   */
+  get reject() {
+    return this.reject_;
+  },
+  /**
+   * @return {!Promise.<T>}
+   * @template T
+   */
+  get promise() {
+    return this.promise_;
+  },
+  /** @return {boolean} */
+  get settled() {
+    return this.settled_;
+  }
+};
+
+/**
  * A wrapper for FileEntry that provides Promises.
  *
  * @constructor

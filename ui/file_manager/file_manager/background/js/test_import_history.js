@@ -21,12 +21,49 @@ importer.TestImportHistory = function() {
   /** @type {!Object.<string, Array.<string>>} */
   this.importedPaths = {};
 
+  /**
+   * If null, history has been loaded and listeners notified.
+   *
+   * @private {Array.<!importer.ImportHistory>}
+   */
+  this.loadListeners_ = [];
 };
 
 /** @override */
 importer.TestImportHistory.prototype.getHistory =
     function() {
+  Promise.resolve().then(
+      /** @this {importer.TestImportHistory} */
+      function() {
+        if (this.loadListeners_) {
+          this.loadListeners_.forEach(
+              /** @param {!Array.<!importer.ImportHistory>} listener */
+              function(listener) {
+                listener(this);
+              }.bind(this));
+          // Null out listeners...this is our signal that history has
+          // been loaded ... resulting in all future listener added
+          // being notified immediately
+          this.loadListeners_ = null;
+        }
+      }.bind(this));
+
   return Promise.resolve(this);
+};
+
+/** @override */
+importer.TestImportHistory.prototype.addHistoryLoadedListener =
+    function(listener) {
+  // Notify immediately if history is already loaded.
+  if (this.loadListeners_ === null) {
+    Promise.resolve(this.history_).then(
+        /** @param {!importer.ImportHistory} history */
+        function(history) {
+          listener(history);
+        });
+  } else {
+    this.loadListeners_.push(listeners);
+  }
 };
 
 /**

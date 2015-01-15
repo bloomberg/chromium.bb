@@ -790,18 +790,18 @@ FileManager.prototype = /** @struct */ {
    * @private
    */
   FileManager.prototype.addHistoryObserver_ = function() {
-    // Monitor changes to history so that when it changes we update
-    // metadata... which results in badges being updated.
-    this.historyLoader_.getHistory()
-        .then(
-            /**
-             * @param {!importer.ImportHistory} history
-             * @this {FileManager}
-             */
-            function(history) {
-              this.importHistory_ = history;
-              history.addObserver(this.onHistoryChangedBound_);
-            }.bind(this));
+    // If, and only if history is ever fully loaded (it may not be),
+    // we want to update grid/list view when it changes.
+    this.historyLoader_.addHistoryLoadedListener(
+        /**
+         * @param {!importer.ImportHistory} history
+         * @this {FileManager}
+         */
+        function(history) {
+          this.importHistory_ = history;
+          history.addObserver(this.onHistoryChangedBound_);
+        }.bind(this));
+
   };
 
   /**
