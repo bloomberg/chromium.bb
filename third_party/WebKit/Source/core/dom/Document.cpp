@@ -2744,6 +2744,11 @@ double Document::timerAlignmentInterval() const
     return p->timerAlignmentInterval();
 }
 
+DOMTimerCoordinator* Document::timers()
+{
+    return &m_timers;
+}
+
 EventTarget* Document::errorEventTarget()
 {
     return domWindow();
@@ -5741,6 +5746,7 @@ void Document::trace(Visitor* visitor)
     visitor->trace(m_associatedFormControls);
     visitor->trace(m_useElementsNeedingUpdate);
     visitor->trace(m_layerUpdateSVGFilterElements);
+    visitor->trace(m_timers);
     visitor->trace(m_templateDocument);
     visitor->trace(m_templateDocumentHost);
     visitor->trace(m_visibilityObservers);

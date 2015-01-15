@@ -1125,6 +1125,8 @@
             'frame/ConsoleBase.h',
             'frame/DOMTimer.cpp',
             'frame/DOMTimer.h',
+            'frame/DOMTimerCoordinator.cpp',
+            'frame/DOMTimerCoordinator.h',
             'frame/DOMWindow.cpp',
             'frame/DOMWindow.h',
             'frame/DOMWindowBase64.cpp',

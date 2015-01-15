@@ -31,6 +31,7 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/events/EventListener.h"
 #include "core/events/EventTarget.h"
+#include "core/frame/DOMTimerCoordinator.h"
 #include "core/frame/DOMWindowBase64.h"
 #include "core/frame/UseCounter.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
@@ -108,6 +109,7 @@ public:
     virtual bool isJSExecutionForbidden() const override final;
 
     virtual double timerAlignmentInterval() const override final;
+    virtual DOMTimerCoordinator* timers() override final;
 
     WorkerInspectorController* workerInspectorController() { return m_workerInspectorController.get(); }
 
@@ -166,6 +168,8 @@ private:
     OwnPtrWillBeMember<WorkerEventQueue> m_eventQueue;
 
     OwnPtrWillBeMember<WorkerClients> m_workerClients;
+
+    DOMTimerCoordinator m_timers;
 
     double m_timeOrigin;
 

@@ -62,9 +62,8 @@ public:
     void dispose();
 
 private:
-    friend class ExecutionContext; // For create().
+    friend class DOMTimerCoordinator; // For create().
 
-    // Should only be used by ExecutionContext.
     static PassRefPtrWillBeRawPtr<DOMTimer> create(ExecutionContext* context, PassOwnPtr<ScheduledAction> action, int timeout, bool singleShot, int timeoutID)
     {
         return adoptRefWillBeNoop(new DOMTimer(context, action, timeout, singleShot, timeoutID));

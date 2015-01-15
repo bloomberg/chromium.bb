@@ -69,7 +69,6 @@ public:
 
 ExecutionContext::ExecutionContext()
     : m_circularSequentialID(0)
-    , m_timerNestingLevel(0)
     , m_inDispatchErrorEvent(false)
     , m_activeDOMObjectsAreSuspended(false)
     , m_activeDOMObjectsAreStopped(false)
@@ -186,45 +185,11 @@ int ExecutionContext::circularSequentialID()
     return m_circularSequentialID;
 }
 
-int ExecutionContext::installNewTimeout(PassOwnPtr<ScheduledAction> action, int timeout, bool singleShot)
-{
-    int timeoutID;
-    while (true) {
-        timeoutID = circularSequentialID();
-        if (!m_timeouts.contains(timeoutID))
-            break;
-    }
-    TimeoutMap::AddResult result = m_timeouts.add(timeoutID, DOMTimer::create(this, action, timeout, singleShot, timeoutID));
-    ASSERT(result.isNewEntry);
-    DOMTimer* timer = result.storedValue->value.get();
-
-    timer->suspendIfNeeded();
-
-    return timer->timeoutID();
-}
-
-void ExecutionContext::removeTimeoutByID(int timeoutID)
-{
-    if (timeoutID <= 0)
-        return;
-
-    if (DOMTimer* removedTimer = m_timeouts.get(timeoutID))
-        removedTimer->dispose();
-
-    m_timeouts.remove(timeoutID);
-}
-
 PublicURLManager& ExecutionContext::publicURLManager()
 {
     if (!m_publicURLManager)
         m_publicURLManager = PublicURLManager::create(this);
     return *m_publicURLManager;
-}
-
-void ExecutionContext::didChangeTimerAlignmentInterval()
-{
-    for (TimeoutMap::iterator iter = m_timeouts.begin(); iter != m_timeouts.end(); ++iter)
-        iter->value->didChangeAlignmentInterval();
 }
 
 SecurityOrigin* ExecutionContext::securityOrigin()
@@ -287,7 +252,6 @@ void ExecutionContext::trace(Visitor* visitor)
 #if ENABLE(OILPAN)
     visitor->trace(m_pendingExceptions);
     visitor->trace(m_publicURLManager);
-    visitor->trace(m_timeouts);
     HeapSupplementable<ExecutionContext>::trace(visitor);
 #endif
     LifecycleContext<ExecutionContext>::trace(visitor);

@@ -153,6 +153,11 @@ double WorkerGlobalScope::timerAlignmentInterval() const
     return DOMTimer::visiblePageAlignmentInterval();
 }
 
+DOMTimerCoordinator* WorkerGlobalScope::timers()
+{
+    return &m_timers;
+}
+
 WorkerLocation* WorkerGlobalScope::location() const
 {
     if (!m_location)
@@ -353,6 +358,7 @@ void WorkerGlobalScope::trace(Visitor* visitor)
     visitor->trace(m_workerInspectorController);
     visitor->trace(m_eventQueue);
     visitor->trace(m_workerClients);
+    visitor->trace(m_timers);
     visitor->trace(m_messageStorage);
     visitor->trace(m_pendingMessages);
     HeapSupplementable<WorkerGlobalScope>::trace(visitor);

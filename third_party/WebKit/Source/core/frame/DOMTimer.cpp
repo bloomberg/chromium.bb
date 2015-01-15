@@ -68,7 +68,7 @@ double DOMTimer::visiblePageAlignmentInterval()
 
 int DOMTimer::install(ExecutionContext* context, PassOwnPtr<ScheduledAction> action, int timeout, bool singleShot)
 {
-    int timeoutID = context->installNewTimeout(action, timeout, singleShot);
+    int timeoutID = context->timers()->installNewTimeout(context, action, timeout, singleShot);
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "TimerInstall", "data", InspectorTimerInstallEvent::data(context, timeoutID, timeout, singleShot));
     // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
     InspectorInstrumentation::didInstallTimer(context, timeoutID, timeout, singleShot);
@@ -79,7 +79,7 @@ int DOMTimer::install(ExecutionContext* context, PassOwnPtr<ScheduledAction> act
 void DOMTimer::removeByID(ExecutionContext* context, int timeoutID)
 {
     WTF_LOG(Timers, "DOMTimer::removeByID: timeoutID = %d", timeoutID);
-    context->removeTimeoutByID(timeoutID);
+    context->timers()->removeTimeoutByID(timeoutID);
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "TimerRemove", "data", InspectorTimerRemoveEvent::data(context, timeoutID));
     // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
     InspectorInstrumentation::didRemoveTimer(context, timeoutID);
@@ -88,7 +88,7 @@ void DOMTimer::removeByID(ExecutionContext* context, int timeoutID)
 DOMTimer::DOMTimer(ExecutionContext* context, PassOwnPtr<ScheduledAction> action, int interval, bool singleShot, int timeoutID)
     : SuspendableTimer(context)
     , m_timeoutID(timeoutID)
-    , m_nestingLevel(context->timerNestingLevel() + 1)
+    , m_nestingLevel(context->timers()->timerNestingLevel() + 1)
     , m_action(action)
 {
     ASSERT(timeoutID > 0);
@@ -124,7 +124,7 @@ void DOMTimer::fired()
 {
     ExecutionContext* context = executionContext();
     ASSERT(context);
-    context->setTimerNestingLevel(m_nestingLevel);
+    context->timers()->setTimerNestingLevel(m_nestingLevel);
     ASSERT(!context->activeDOMObjectsAreSuspended());
     // Only the first execution of a multi-shot timer should get an affirmative user gesture indicator.
     UserGestureIndicator gestureIndicator(m_userGestureToken.release());
@@ -158,7 +158,7 @@ void DOMTimer::fired()
     // Unregister the timer from ExecutionContext before executing the action
     // for one-shot timers.
     OwnPtr<ScheduledAction> action = m_action.release();
-    context->removeTimeoutByID(m_timeoutID);
+    context->timers()->removeTimeoutByID(m_timeoutID);
 
     action->execute(context);
 
@@ -167,7 +167,7 @@ void DOMTimer::fired()
 
     // ExecutionContext might be already gone when we executed action->execute().
     if (executionContext())
-        executionContext()->setTimerNestingLevel(0);
+        executionContext()->timers()->setTimerNestingLevel(0);
 }
 
 void DOMTimer::stop()

@@ -29,6 +29,7 @@
 #include "core/events/Event.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/frame/DOMTimer.h"
+#include "core/frame/DOMTimerCoordinator.h"
 #include "core/frame/FrameConsole.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
@@ -410,8 +411,14 @@ void Page::setTimerAlignmentInterval(double interval)
 
     m_timerAlignmentInterval = interval;
     for (Frame* frame = mainFrame(); frame; frame = frame->tree().traverseNextWithWrap(false)) {
-        if (frame->isLocalFrame() && toLocalFrame(frame)->document())
-            toLocalFrame(frame)->document()->didChangeTimerAlignmentInterval();
+        if (!frame->isLocalFrame())
+            continue;
+
+        if (Document* document = toLocalFrame(frame)->document()) {
+            if (DOMTimerCoordinator* timers = document->timers()) {
+                timers->didChangeTimerAlignmentInterval();
+            }
+        }
     }
 }
 

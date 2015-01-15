@@ -24,7 +24,7 @@ public:
 
     virtual void postTask(PassOwnPtr<ExecutionContextTask>) override;
 
-    virtual EventTarget* errorEventTarget() override { return 0; }
+    virtual EventTarget* errorEventTarget() override { return nullptr; }
     virtual EventQueue* eventQueue() const override { return m_queue.get(); }
 
     virtual bool tasksNeedSuspension() override { return m_tasksNeedSuspension; }
@@ -33,6 +33,7 @@ public:
     virtual void reportBlockedScriptExecutionToInspector(const String& directiveText) override { }
     virtual void didUpdateSecurityOrigin() override { }
     virtual SecurityContext& securityContext() override { return *this; }
+    virtual DOMTimerCoordinator* timers() override { return nullptr; }
 
     double timerAlignmentInterval() const;
 
