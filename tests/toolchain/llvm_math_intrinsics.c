@@ -26,7 +26,10 @@
 
 #include <math.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include "native_client/tests/toolchain/utils.h"
+
+typedef float v4f32 __attribute__((vector_size(16)));
 
 /* Volatile to prevent library-call constant folding optimizations. */
 volatile float f32[] = {-NAN, NAN, -INFINITY, -HUGE_VALF,
@@ -48,8 +51,16 @@ volatile double neg_base64 = -2.0;
  * In practice hardware sqrt instructions returns NaN in that case.
  * We will need to guarantee this behavior.
  */
-double llvm_intrinsic_sqrt(double) __asm__("llvm.sqrt.f64");
 float llvm_intrinsic_sqrtf(float) __asm__("llvm.sqrt.f32");
+double llvm_intrinsic_sqrt(double) __asm__("llvm.sqrt.f64");
+
+/*
+ * Floating point abs should always clear the sign bit. E.g., from -nan to nan
+ * and -inf to inf.
+ */
+float llvm_intrinsic_fabsf(float) __asm__("llvm.fabs.f32");
+double llvm_intrinsic_fabs(double) __asm__("llvm.fabs.f64");
+v4f32 llvm_intrinsic_vec_fabs(v4f32) __asm__("llvm.fabs.v4f32");
 
 /*
  * Normally, printf can end up printing NAN and INFINITY values
@@ -76,37 +87,54 @@ float llvm_intrinsic_sqrtf(float) __asm__("llvm.sqrt.f32");
  * if it's okay to print the sign of the nan for the golden output
  * (consistent / no known platform difference), and false otherwise.
  */
-void sprint_double(char *buf, const char *format_with_prec,
-                   double x, int nan_sign) {
+static int sprint_double(char *buf, const char *format_with_prec,
+                          double x, int nan_sign) {
   if (isnan(x)) {
     if (nan_sign && signbit(x) != 0)
-      sprintf(buf, "-nan");
+      return sprintf(buf, "-nan");
     else
-      sprintf(buf, "nan");
+      return sprintf(buf, "nan");
   } else if (isinf(x)) {
     if (signbit(x) != 0)
-      sprintf(buf, "-inf");
+      return sprintf(buf, "-inf");
     else
-      sprintf(buf, "inf");
+      return sprintf(buf, "inf");
   } else {
-    sprintf(buf, format_with_prec, x);
+    return sprintf(buf, format_with_prec, x);
   }
 }
 
+/* Print a v4f32 vector to a string buffer. Should probably rewrite this
+ * to C++ and use templates if we need to test more vector variants.
+ */
+static void sprint_v4f32(char *buf, const char *format_with_prec,
+                         v4f32 vec, int nan_sign) {
+  size_t num_elems = sizeof(vec) / sizeof(vec[0]);
+  for (int i = 0; i < num_elems; ++i) {
+    if (i != 0) {
+      int r = sprintf(buf, ", ");
+      buf += r;
+    }
+    int r = sprint_double(buf, format_with_prec, vec[i], nan_sign);
+    buf += r;
+  }
+}
+
+
+/* NOTE: These macros depend on a "sprint_buf" local var. */
+
 #define print_op1_libm(prec, op, x, ns)                      \
   do {                                                       \
-    char buf[prec + 10];                                     \
     __typeof(x) res = op(x);                                 \
-    sprint_double(buf, "%." #prec "f", res, ns);             \
-    printf("%s (math.h): %s\n", #op, buf);                   \
+    sprint_double(sprint_buf, "%." #prec "f", res, ns);      \
+    printf("%s (math.h): %s\n", #op, sprint_buf);            \
   } while (0)
 
 #define print_op1_builtin(prec, op, x, ns)                   \
   do {                                                       \
-    char buf[prec + 10];                                     \
     __typeof(x) res = __builtin_ ## op(x);                   \
-    sprint_double(buf, "%." #prec "f", res, ns);             \
-    printf("%s (builtin): %s\n", #op, buf);                  \
+    sprint_double(sprint_buf, "%." #prec "f", res, ns);      \
+    printf("%s (builtin): %s\n", #op, sprint_buf);           \
   } while (0)
 
 #define print_op1(prec, op, x, ns)                           \
@@ -115,25 +143,34 @@ void sprint_double(char *buf, const char *format_with_prec,
 
 #define print_op1_llvm(prec, op, x, ns)                      \
   do {                                                       \
-    char buf[prec + 10];                                     \
     __typeof(x) res = llvm_intrinsic_ ## op(x);              \
-    sprint_double(buf, "%." #prec "f", res, ns);             \
-    printf("%s (llvm): %s\n", #op, buf);                     \
+    sprint_double(sprint_buf, "%." #prec "f", res, ns);      \
+    printf("%s (llvm): %s\n", #op, sprint_buf);              \
   } while (0)
 
 #define print_op2(prec, op, x, y, ns)                        \
   do {                                                       \
     __typeof(x) res = op(x, y);                              \
-    sprint_double(buf, "%." #prec "f", res, ns);             \
-    printf("%s(%f, %f) (math.h): %s\n", #op, x, y, buf);     \
+    sprint_double(sprint_buf, "%f", y, ns);                  \
+    printf("%s(%f, %s) (math.h): ", #op, x, sprint_buf);     \
+    sprint_double(sprint_buf, "%." #prec "f", res, ns);      \
+    printf("%s\n", sprint_buf);                              \
     res = __builtin_ ## op(x, y);                            \
-    sprint_double(buf, "%." #prec "f", res, ns);             \
-    printf("%s(%f, %f) (builtin): %s\n", #op, x, y, buf);    \
+    sprint_double(sprint_buf, "%f", y, ns);                  \
+    printf("%s(%f, %s) (builtin): ", #op, x, sprint_buf);    \
+    sprint_double(sprint_buf, "%." #prec "f", res, ns);      \
+    printf("%s\n", sprint_buf);                              \
+  } while (0)
+
+#define print_vec_op_llvm(prec, op, x, ns)                   \
+  do {                                                       \
+    __typeof(x) res = llvm_intrinsic_ ## op(x);              \
+    sprint_v4f32(sprint_buf, "%." #prec "f", res, ns);       \
+    printf("%s (llvm): %s\n", #op, sprint_buf);              \
   } while (0)
 
 int main(int argc, char* argv[]) {
-  int i;
-  char buf[20];
+  char sprint_buf[512];
   /*
    * Use no_nan_sign when the sign bit of a NaN is not consistent,
    * and just print a positive nan always in that case to get the
@@ -141,9 +178,10 @@ int main(int argc, char* argv[]) {
    */
   int no_nan_sign = 0;
   int nan_sign = 1;
-  for (i = 0; i < ARRAY_SIZE_UNSAFE(f32); ++i) {
-    sprint_double(buf, "%.6f", f32[i], nan_sign);
-    printf("\nf32 value is: %s\n", buf);
+
+  for (int i = 0; i < ARRAY_SIZE_UNSAFE(f32); ++i) {
+    sprint_double(sprint_buf, "%.6f", f32[i], nan_sign);
+    printf("\nf32 value is: %s\n", sprint_buf);
     /*
      * We may want to fix this to have a consistent nan sign bit.
      * On x86, the llvm.sqrt intrinsic returns -nan for negative values
@@ -179,11 +217,13 @@ int main(int argc, char* argv[]) {
     print_op1(5, cosf, f32[i], no_nan_sign);
     print_op2(5, powf, neg_base32, f32[i], nan_sign);
     print_op2(5, powf, base32, f32[i], nan_sign);
+    print_op1(5, fabsf, f32[i], nan_sign);
+    print_op1_llvm(5, fabsf, f32[i], nan_sign);
   }
 
-  for (i = 0; i < ARRAY_SIZE_UNSAFE(f64); ++i) {
-    sprint_double(buf, "%.6f", f64[i], nan_sign);
-    printf("\nf64 value is: %s\n", buf);
+  for (int i = 0; i < ARRAY_SIZE_UNSAFE(f64); ++i) {
+    sprint_double(sprint_buf, "%.6f", f64[i], nan_sign);
+    printf("\nf64 value is: %s\n", sprint_buf);
     print_op1_libm(6, sqrt, f64[i], no_nan_sign);
     print_op1_builtin(6, sqrt, f64[i], no_nan_sign);
     print_op1_llvm(6, sqrt, f64[i], no_nan_sign);
@@ -196,6 +236,33 @@ int main(int argc, char* argv[]) {
     print_op1(6, cos, f64[i], no_nan_sign);
     print_op2(6, pow, neg_base64, f64[i], nan_sign);
     print_op2(6, pow, base64, f64[i], nan_sign);
+    print_op1(6, fabs, f64[i], nan_sign);
+    print_op1_llvm(6, fabs, f64[i], nan_sign);
+  }
+
+  /* Test vectors on the intrinsic with a few samples (no libm equiv). */
+  printf("\nTesting vectors (forward samples)\n");
+  v4f32 test_vec;
+  int num_elems = sizeof(test_vec) / sizeof(test_vec[0]);
+  for (int i = 0; i + (num_elems - 1) < ARRAY_SIZE_UNSAFE(f32); i += 2) {
+    for (int j = 0; j < num_elems; ++j) {
+      test_vec[j] = f32[i + j];
+    }
+    sprint_v4f32(sprint_buf, "%.6f", test_vec, nan_sign);
+    printf("vec value is: %s\n", sprint_buf);
+    print_vec_op_llvm(6, vec_fabs, test_vec, nan_sign);
+  }
+
+  printf("\nTesting vectors (pseudo-random samples)\n");
+  srand48(1234);
+  int num_samples = 16;
+  for (int i = 0; i < num_samples; ++i) {
+    for (int j = 0; j < num_elems; ++j) {
+      test_vec[j] = f32[lrand48() % ARRAY_SIZE_UNSAFE(f32)];
+    }
+    sprint_v4f32(sprint_buf, "%.6f", test_vec, nan_sign);
+    printf("vec value is: %s\n", sprint_buf);
+    print_vec_op_llvm(6, vec_fabs, test_vec, nan_sign);
   }
 
   return 0;

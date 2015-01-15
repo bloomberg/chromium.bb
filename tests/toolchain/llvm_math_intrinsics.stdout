@@ -17,10 +17,13 @@ sinf (math.h): nan
 sinf (builtin): nan
 cosf (math.h): nan
 cosf (builtin): nan
-powf(-2.000000, nan) (math.h): nan
-powf(-2.000000, nan) (builtin): nan
-powf(2.000000, nan) (math.h): nan
-powf(2.000000, nan) (builtin): nan
+powf(-2.000000, -nan) (math.h): nan
+powf(-2.000000, -nan) (builtin): nan
+powf(2.000000, -nan) (math.h): nan
+powf(2.000000, -nan) (builtin): nan
+fabsf (math.h): nan
+fabsf (builtin): nan
+fabsf (llvm): nan
 
 f32 value is: nan
 sqrtf (math.h): nan
@@ -44,6 +47,9 @@ powf(-2.000000, nan) (math.h): nan
 powf(-2.000000, nan) (builtin): nan
 powf(2.000000, nan) (math.h): nan
 powf(2.000000, nan) (builtin): nan
+fabsf (math.h): nan
+fabsf (builtin): nan
+fabsf (llvm): nan
 
 f32 value is: -inf
 sqrtf (math.h): nan
@@ -67,6 +73,9 @@ powf(-2.000000, -inf) (math.h): 0.00000
 powf(-2.000000, -inf) (builtin): 0.00000
 powf(2.000000, -inf) (math.h): 0.00000
 powf(2.000000, -inf) (builtin): 0.00000
+fabsf (math.h): inf
+fabsf (builtin): inf
+fabsf (llvm): inf
 
 f32 value is: -inf
 sqrtf (math.h): nan
@@ -90,6 +99,9 @@ powf(-2.000000, -inf) (math.h): 0.00000
 powf(-2.000000, -inf) (builtin): 0.00000
 powf(2.000000, -inf) (math.h): 0.00000
 powf(2.000000, -inf) (builtin): 0.00000
+fabsf (math.h): inf
+fabsf (builtin): inf
+fabsf (llvm): inf
 
 f32 value is: -2.718282
 sqrtf (math.h): nan
@@ -113,6 +125,9 @@ powf(-2.000000, -2.718282) (math.h): nan
 powf(-2.000000, -2.718282) (builtin): nan
 powf(2.000000, -2.718282) (math.h): 0.15196
 powf(2.000000, -2.718282) (builtin): 0.15196
+fabsf (math.h): 2.71828
+fabsf (builtin): 2.71828
+fabsf (llvm): 2.71828
 
 f32 value is: -1.570796
 sqrtf (math.h): nan
@@ -136,6 +151,9 @@ powf(-2.000000, -1.570796) (math.h): nan
 powf(-2.000000, -1.570796) (builtin): nan
 powf(2.000000, -1.570796) (math.h): 0.33662
 powf(2.000000, -1.570796) (builtin): 0.33662
+fabsf (math.h): 1.57080
+fabsf (builtin): 1.57080
+fabsf (llvm): 1.57080
 
 f32 value is: -3.141593
 sqrtf (math.h): nan
@@ -159,6 +177,9 @@ powf(-2.000000, -3.141593) (math.h): nan
 powf(-2.000000, -3.141593) (builtin): nan
 powf(2.000000, -3.141593) (math.h): 0.11331
 powf(2.000000, -3.141593) (builtin): 0.11331
+fabsf (math.h): 3.14159
+fabsf (builtin): 3.14159
+fabsf (llvm): 3.14159
 
 f32 value is: -16.000000
 sqrtf (math.h): nan
@@ -182,6 +203,9 @@ powf(-2.000000, -16.000000) (math.h): 0.00002
 powf(-2.000000, -16.000000) (builtin): 0.00002
 powf(2.000000, -16.000000) (math.h): 0.00002
 powf(2.000000, -16.000000) (builtin): 0.00002
+fabsf (math.h): 16.00000
+fabsf (builtin): 16.00000
+fabsf (llvm): 16.00000
 
 f32 value is: -0.500000
 sqrtf (math.h): nan
@@ -205,6 +229,9 @@ powf(-2.000000, -0.500000) (math.h): nan
 powf(-2.000000, -0.500000) (builtin): nan
 powf(2.000000, -0.500000) (math.h): 0.70711
 powf(2.000000, -0.500000) (builtin): 0.70711
+fabsf (math.h): 0.50000
+fabsf (builtin): 0.50000
+fabsf (llvm): 0.50000
 
 f32 value is: -0.000000
 sqrtf (math.h): -0.00000
@@ -228,6 +255,9 @@ powf(-2.000000, -0.000000) (math.h): 1.00000
 powf(-2.000000, -0.000000) (builtin): 1.00000
 powf(2.000000, -0.000000) (math.h): 1.00000
 powf(2.000000, -0.000000) (builtin): 1.00000
+fabsf (math.h): 0.00000
+fabsf (builtin): 0.00000
+fabsf (llvm): 0.00000
 
 f32 value is: 0.000000
 sqrtf (math.h): 0.00000
@@ -251,6 +281,9 @@ powf(-2.000000, 0.000000) (math.h): 1.00000
 powf(-2.000000, 0.000000) (builtin): 1.00000
 powf(2.000000, 0.000000) (math.h): 1.00000
 powf(2.000000, 0.000000) (builtin): 1.00000
+fabsf (math.h): 0.00000
+fabsf (builtin): 0.00000
+fabsf (llvm): 0.00000
 
 f32 value is: 5.000000
 sqrtf (math.h): 2.23607
@@ -274,6 +307,9 @@ powf(-2.000000, 5.000000) (math.h): -32.00000
 powf(-2.000000, 5.000000) (builtin): -32.00000
 powf(2.000000, 5.000000) (math.h): 32.00000
 powf(2.000000, 5.000000) (builtin): 32.00000
+fabsf (math.h): 5.00000
+fabsf (builtin): 5.00000
+fabsf (llvm): 5.00000
 
 f32 value is: 16.000000
 sqrtf (math.h): 4.00000
@@ -297,6 +333,9 @@ powf(-2.000000, 16.000000) (math.h): 65536.00000
 powf(-2.000000, 16.000000) (builtin): 65536.00000
 powf(2.000000, 16.000000) (math.h): 65536.00000
 powf(2.000000, 16.000000) (builtin): 65536.00000
+fabsf (math.h): 16.00000
+fabsf (builtin): 16.00000
+fabsf (llvm): 16.00000
 
 f32 value is: 10.000000
 sqrtf (math.h): 3.16228
@@ -320,6 +359,9 @@ powf(-2.000000, 10.000000) (math.h): 1024.00000
 powf(-2.000000, 10.000000) (builtin): 1024.00000
 powf(2.000000, 10.000000) (math.h): 1024.00000
 powf(2.000000, 10.000000) (builtin): 1024.00000
+fabsf (math.h): 10.00000
+fabsf (builtin): 10.00000
+fabsf (llvm): 10.00000
 
 f32 value is: 3.141593
 sqrtf (math.h): 1.77245
@@ -343,6 +385,9 @@ powf(-2.000000, 3.141593) (math.h): nan
 powf(-2.000000, 3.141593) (builtin): nan
 powf(2.000000, 3.141593) (math.h): 8.82498
 powf(2.000000, 3.141593) (builtin): 8.82498
+fabsf (math.h): 3.14159
+fabsf (builtin): 3.14159
+fabsf (llvm): 3.14159
 
 f32 value is: 1.570796
 sqrtf (math.h): 1.25331
@@ -366,6 +411,9 @@ powf(-2.000000, 1.570796) (math.h): nan
 powf(-2.000000, 1.570796) (builtin): nan
 powf(2.000000, 1.570796) (math.h): 2.97069
 powf(2.000000, 1.570796) (builtin): 2.97069
+fabsf (math.h): 1.57080
+fabsf (builtin): 1.57080
+fabsf (llvm): 1.57080
 
 f32 value is: 2.718282
 sqrtf (math.h): 1.64872
@@ -389,6 +437,9 @@ powf(-2.000000, 2.718282) (math.h): nan
 powf(-2.000000, 2.718282) (builtin): nan
 powf(2.000000, 2.718282) (math.h): 6.58089
 powf(2.000000, 2.718282) (builtin): 6.58089
+fabsf (math.h): 2.71828
+fabsf (builtin): 2.71828
+fabsf (llvm): 2.71828
 
 f32 value is: inf
 sqrtf (math.h): inf
@@ -412,6 +463,9 @@ powf(-2.000000, inf) (math.h): inf
 powf(-2.000000, inf) (builtin): inf
 powf(2.000000, inf) (math.h): inf
 powf(2.000000, inf) (builtin): inf
+fabsf (math.h): inf
+fabsf (builtin): inf
+fabsf (llvm): inf
 
 f32 value is: inf
 sqrtf (math.h): inf
@@ -435,6 +489,9 @@ powf(-2.000000, inf) (math.h): inf
 powf(-2.000000, inf) (builtin): inf
 powf(2.000000, inf) (math.h): inf
 powf(2.000000, inf) (builtin): inf
+fabsf (math.h): inf
+fabsf (builtin): inf
+fabsf (llvm): inf
 
 f64 value is: -nan
 sqrt (math.h): nan
@@ -454,10 +511,13 @@ sin (math.h): nan
 sin (builtin): nan
 cos (math.h): nan
 cos (builtin): nan
-pow(-2.000000, nan) (math.h): nan
-pow(-2.000000, nan) (builtin): nan
-pow(2.000000, nan) (math.h): nan
-pow(2.000000, nan) (builtin): nan
+pow(-2.000000, -nan) (math.h): nan
+pow(-2.000000, -nan) (builtin): nan
+pow(2.000000, -nan) (math.h): nan
+pow(2.000000, -nan) (builtin): nan
+fabs (math.h): nan
+fabs (builtin): nan
+fabs (llvm): nan
 
 f64 value is: nan
 sqrt (math.h): nan
@@ -481,6 +541,9 @@ pow(-2.000000, nan) (math.h): nan
 pow(-2.000000, nan) (builtin): nan
 pow(2.000000, nan) (math.h): nan
 pow(2.000000, nan) (builtin): nan
+fabs (math.h): nan
+fabs (builtin): nan
+fabs (llvm): nan
 
 f64 value is: -inf
 sqrt (math.h): nan
@@ -504,6 +567,9 @@ pow(-2.000000, -inf) (math.h): 0.000000
 pow(-2.000000, -inf) (builtin): 0.000000
 pow(2.000000, -inf) (math.h): 0.000000
 pow(2.000000, -inf) (builtin): 0.000000
+fabs (math.h): inf
+fabs (builtin): inf
+fabs (llvm): inf
 
 f64 value is: -inf
 sqrt (math.h): nan
@@ -527,6 +593,9 @@ pow(-2.000000, -inf) (math.h): 0.000000
 pow(-2.000000, -inf) (builtin): 0.000000
 pow(2.000000, -inf) (math.h): 0.000000
 pow(2.000000, -inf) (builtin): 0.000000
+fabs (math.h): inf
+fabs (builtin): inf
+fabs (llvm): inf
 
 f64 value is: -2.718282
 sqrt (math.h): nan
@@ -550,6 +619,9 @@ pow(-2.000000, -2.718282) (math.h): nan
 pow(-2.000000, -2.718282) (builtin): nan
 pow(2.000000, -2.718282) (math.h): 0.151955
 pow(2.000000, -2.718282) (builtin): 0.151955
+fabs (math.h): 2.718282
+fabs (builtin): 2.718282
+fabs (llvm): 2.718282
 
 f64 value is: -1.570796
 sqrt (math.h): nan
@@ -573,6 +645,9 @@ pow(-2.000000, -1.570796) (math.h): nan
 pow(-2.000000, -1.570796) (builtin): nan
 pow(2.000000, -1.570796) (math.h): 0.336623
 pow(2.000000, -1.570796) (builtin): 0.336623
+fabs (math.h): 1.570796
+fabs (builtin): 1.570796
+fabs (llvm): 1.570796
 
 f64 value is: -3.141593
 sqrt (math.h): nan
@@ -596,6 +671,9 @@ pow(-2.000000, -3.141593) (math.h): nan
 pow(-2.000000, -3.141593) (builtin): nan
 pow(2.000000, -3.141593) (math.h): 0.113315
 pow(2.000000, -3.141593) (builtin): 0.113315
+fabs (math.h): 3.141593
+fabs (builtin): 3.141593
+fabs (llvm): 3.141593
 
 f64 value is: -16.000000
 sqrt (math.h): nan
@@ -619,6 +697,9 @@ pow(-2.000000, -16.000000) (math.h): 0.000015
 pow(-2.000000, -16.000000) (builtin): 0.000015
 pow(2.000000, -16.000000) (math.h): 0.000015
 pow(2.000000, -16.000000) (builtin): 0.000015
+fabs (math.h): 16.000000
+fabs (builtin): 16.000000
+fabs (llvm): 16.000000
 
 f64 value is: -0.500000
 sqrt (math.h): nan
@@ -642,6 +723,9 @@ pow(-2.000000, -0.500000) (math.h): nan
 pow(-2.000000, -0.500000) (builtin): nan
 pow(2.000000, -0.500000) (math.h): 0.707107
 pow(2.000000, -0.500000) (builtin): 0.707107
+fabs (math.h): 0.500000
+fabs (builtin): 0.500000
+fabs (llvm): 0.500000
 
 f64 value is: -0.000000
 sqrt (math.h): -0.000000
@@ -665,6 +749,9 @@ pow(-2.000000, -0.000000) (math.h): 1.000000
 pow(-2.000000, -0.000000) (builtin): 1.000000
 pow(2.000000, -0.000000) (math.h): 1.000000
 pow(2.000000, -0.000000) (builtin): 1.000000
+fabs (math.h): 0.000000
+fabs (builtin): 0.000000
+fabs (llvm): 0.000000
 
 f64 value is: 0.000000
 sqrt (math.h): 0.000000
@@ -688,6 +775,9 @@ pow(-2.000000, 0.000000) (math.h): 1.000000
 pow(-2.000000, 0.000000) (builtin): 1.000000
 pow(2.000000, 0.000000) (math.h): 1.000000
 pow(2.000000, 0.000000) (builtin): 1.000000
+fabs (math.h): 0.000000
+fabs (builtin): 0.000000
+fabs (llvm): 0.000000
 
 f64 value is: 5.000000
 sqrt (math.h): 2.236068
@@ -711,6 +801,9 @@ pow(-2.000000, 5.000000) (math.h): -32.000000
 pow(-2.000000, 5.000000) (builtin): -32.000000
 pow(2.000000, 5.000000) (math.h): 32.000000
 pow(2.000000, 5.000000) (builtin): 32.000000
+fabs (math.h): 5.000000
+fabs (builtin): 5.000000
+fabs (llvm): 5.000000
 
 f64 value is: 16.000000
 sqrt (math.h): 4.000000
@@ -734,6 +827,9 @@ pow(-2.000000, 16.000000) (math.h): 65536.000000
 pow(-2.000000, 16.000000) (builtin): 65536.000000
 pow(2.000000, 16.000000) (math.h): 65536.000000
 pow(2.000000, 16.000000) (builtin): 65536.000000
+fabs (math.h): 16.000000
+fabs (builtin): 16.000000
+fabs (llvm): 16.000000
 
 f64 value is: 10.000000
 sqrt (math.h): 3.162278
@@ -757,6 +853,9 @@ pow(-2.000000, 10.000000) (math.h): 1024.000000
 pow(-2.000000, 10.000000) (builtin): 1024.000000
 pow(2.000000, 10.000000) (math.h): 1024.000000
 pow(2.000000, 10.000000) (builtin): 1024.000000
+fabs (math.h): 10.000000
+fabs (builtin): 10.000000
+fabs (llvm): 10.000000
 
 f64 value is: 3.141593
 sqrt (math.h): 1.772454
@@ -780,6 +879,9 @@ pow(-2.000000, 3.141593) (math.h): nan
 pow(-2.000000, 3.141593) (builtin): nan
 pow(2.000000, 3.141593) (math.h): 8.824978
 pow(2.000000, 3.141593) (builtin): 8.824978
+fabs (math.h): 3.141593
+fabs (builtin): 3.141593
+fabs (llvm): 3.141593
 
 f64 value is: 1.570796
 sqrt (math.h): 1.253314
@@ -803,6 +905,9 @@ pow(-2.000000, 1.570796) (math.h): nan
 pow(-2.000000, 1.570796) (builtin): nan
 pow(2.000000, 1.570796) (math.h): 2.970686
 pow(2.000000, 1.570796) (builtin): 2.970686
+fabs (math.h): 1.570796
+fabs (builtin): 1.570796
+fabs (llvm): 1.570796
 
 f64 value is: 2.718282
 sqrt (math.h): 1.648721
@@ -826,6 +931,9 @@ pow(-2.000000, 2.718282) (math.h): nan
 pow(-2.000000, 2.718282) (builtin): nan
 pow(2.000000, 2.718282) (math.h): 6.580886
 pow(2.000000, 2.718282) (builtin): 6.580886
+fabs (math.h): 2.718282
+fabs (builtin): 2.718282
+fabs (llvm): 2.718282
 
 f64 value is: inf
 sqrt (math.h): inf
@@ -849,6 +957,9 @@ pow(-2.000000, inf) (math.h): inf
 pow(-2.000000, inf) (builtin): inf
 pow(2.000000, inf) (math.h): inf
 pow(2.000000, inf) (builtin): inf
+fabs (math.h): inf
+fabs (builtin): inf
+fabs (llvm): inf
 
 f64 value is: inf
 sqrt (math.h): inf
@@ -872,3 +983,58 @@ pow(-2.000000, inf) (math.h): inf
 pow(-2.000000, inf) (builtin): inf
 pow(2.000000, inf) (math.h): inf
 pow(2.000000, inf) (builtin): inf
+fabs (math.h): inf
+fabs (builtin): inf
+fabs (llvm): inf
+
+Testing vectors (forward samples)
+vec value is: -nan, nan, -inf, -inf
+vec_fabs (llvm): nan, nan, inf, inf
+vec value is: -inf, -inf, -2.718282, -1.570796
+vec_fabs (llvm): inf, inf, 2.718282, 1.570796
+vec value is: -2.718282, -1.570796, -3.141593, -16.000000
+vec_fabs (llvm): 2.718282, 1.570796, 3.141593, 16.000000
+vec value is: -3.141593, -16.000000, -0.500000, -0.000000
+vec_fabs (llvm): 3.141593, 16.000000, 0.500000, 0.000000
+vec value is: -0.500000, -0.000000, 0.000000, 5.000000
+vec_fabs (llvm): 0.500000, 0.000000, 0.000000, 5.000000
+vec value is: 0.000000, 5.000000, 16.000000, 10.000000
+vec_fabs (llvm): 0.000000, 5.000000, 16.000000, 10.000000
+vec value is: 16.000000, 10.000000, 3.141593, 1.570796
+vec_fabs (llvm): 16.000000, 10.000000, 3.141593, 1.570796
+vec value is: 3.141593, 1.570796, 2.718282, inf
+vec_fabs (llvm): 3.141593, 1.570796, 2.718282, inf
+
+Testing vectors (pseudo-random samples)
+vec value is: -inf, 2.718282, nan, 0.000000
+vec_fabs (llvm): inf, 2.718282, nan, 0.000000
+vec value is: 2.718282, 2.718282, 16.000000, 10.000000
+vec_fabs (llvm): 2.718282, 2.718282, 16.000000, 10.000000
+vec value is: -0.000000, 2.718282, 16.000000, 5.000000
+vec_fabs (llvm): 0.000000, 2.718282, 16.000000, 5.000000
+vec value is: 3.141593, 2.718282, 3.141593, 3.141593
+vec_fabs (llvm): 3.141593, 2.718282, 3.141593, 3.141593
+vec value is: -0.000000, -0.000000, 2.718282, 16.000000
+vec_fabs (llvm): 0.000000, 0.000000, 2.718282, 16.000000
+vec value is: -1.570796, -2.718282, -inf, -2.718282
+vec_fabs (llvm): 1.570796, 2.718282, inf, 2.718282
+vec value is: -2.718282, 0.000000, -inf, -3.141593
+vec_fabs (llvm): 2.718282, 0.000000, inf, 3.141593
+vec value is: -3.141593, -inf, -0.500000, -0.000000
+vec_fabs (llvm): 3.141593, inf, 0.500000, 0.000000
+vec value is: -nan, inf, -16.000000, 3.141593
+vec_fabs (llvm): nan, inf, 16.000000, 3.141593
+vec value is: -0.500000, 5.000000, -0.500000, 0.000000
+vec_fabs (llvm): 0.500000, 5.000000, 0.500000, 0.000000
+vec value is: -0.500000, -1.570796, -16.000000, 2.718282
+vec_fabs (llvm): 0.500000, 1.570796, 16.000000, 2.718282
+vec value is: 10.000000, -16.000000, 3.141593, 16.000000
+vec_fabs (llvm): 10.000000, 16.000000, 3.141593, 16.000000
+vec value is: -nan, -0.500000, -1.570796, 3.141593
+vec_fabs (llvm): nan, 0.500000, 1.570796, 3.141593
+vec value is: -1.570796, 2.718282, inf, 2.718282
+vec_fabs (llvm): 1.570796, 2.718282, inf, 2.718282
+vec value is: -0.000000, 16.000000, 0.000000, 0.000000
+vec_fabs (llvm): 0.000000, 16.000000, 0.000000, 0.000000
+vec value is: -2.718282, inf, nan, -2.718282
+vec_fabs (llvm): 2.718282, inf, nan, 2.718282
