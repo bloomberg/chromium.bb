@@ -4,6 +4,9 @@
 
 package org.chromium.base.library_loader;
 
+import org.chromium.base.annotations.SuppressFBWarnings;
+
+@SuppressFBWarnings
 public class NativeLibraries {
     /**
      * IMPORTANT NOTE: The variables defined here must _not_ be 'final'.

@@ -10,6 +10,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 
 import junit.framework.Assert;
 
+import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -36,6 +37,7 @@ import java.util.concurrent.CountDownLatch;
  * - Inheritance
  */
 public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
+    @SuppressFBWarnings("CHROMIUM_SYNCHRONIZED_METHOD")
     private class TestController extends Controller {
         private int mIntValue;
         private long mLongValue;
@@ -143,14 +145,23 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
     }
 
     // Note that this requires that we can pass a JavaScript boolean to Java.
-    private void assertRaisesException(String script) throws Throwable {
+    private void executeAndSetIfException(String script) throws Throwable {
         executeJavaScript("try {"
                 + script + ";"
                 + "  testController.setBooleanValue(false);"
                 + "} catch (exception) {"
                 + "  testController.setBooleanValue(true);"
                 + "}");
+    }
+
+    private void assertRaisesException(String script) throws Throwable {
+        executeAndSetIfException(script);
         assertTrue(mTestController.waitForBooleanValue());
+    }
+
+    private void assertNoRaisedException(String script) throws Throwable {
+        executeAndSetIfException(script);
+        assertFalse(mTestController.waitForBooleanValue());
     }
 
     @SmallTest
@@ -631,7 +642,9 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
         injectObjectAndReload(new Object() {
             public void method() {}
             private void privateMethod() {}
+            @SuppressFBWarnings("UUF_UNUSED")
             public int field;
+            @SuppressFBWarnings("UUF_UNUSED")
             private int mPrivateField;
         }, "testObject");
         executeJavaScript(
@@ -699,13 +712,16 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
                 return getClass();
             }
 
+            @SuppressFBWarnings("UUF_UNUSED")
             private int mField;
         }, "testObject");
-        assertRaisesException("testObject.myGetClass().getField('field')");
+        String fieldName = "mField";
+        assertRaisesException("testObject.myGetClass().getField('" + fieldName + "')");
         // getDeclaredField() is able to access a private field, but getInt()
         // throws a Java exception.
+        assertNoRaisedException("testObject.myGetClass().getDeclaredField('" + fieldName + "')");
         assertRaisesException(
-                "testObject.myGetClass().getDeclaredField('field').getInt(testObject)");
+                "testObject.myGetClass().getDeclaredField('" + fieldName + "').getInt(testObject)");
     }
 
     @SmallTest

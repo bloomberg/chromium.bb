@@ -6,6 +6,7 @@ package org.chromium.content.browser;
 
 import android.test.suitebuilder.annotation.SmallTest;
 
+import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content_public.browser.JavaScriptCallback;
 import org.chromium.content_public.browser.WebContents;
@@ -17,6 +18,7 @@ import org.chromium.content_public.browser.WebContents;
  * main frame.
  */
 public class JavaBridgeChildFrameTest extends JavaBridgeTestBase {
+    @SuppressFBWarnings("CHROMIUM_SYNCHRONIZED_METHOD")
     private class TestController extends Controller {
         private String mStringValue;
 

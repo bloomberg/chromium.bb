@@ -12,6 +12,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 
 import org.chromium.base.JNINamespace;
+import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.content.browser.BrowserStartupController;
@@ -30,6 +31,7 @@ public class ContentBrowserTestsActivity extends Activity {
     private WindowAndroid mWindowAndroid;
 
     @Override
+    @SuppressFBWarnings("DM_EXIT")
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
