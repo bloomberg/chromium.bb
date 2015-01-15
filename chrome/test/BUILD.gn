@@ -693,7 +693,7 @@ if (!is_android) {
     if (!enable_one_click_signin) {
       sources -= [ "../browser/ui/sync/one_click_signin_bubble_links_delegate_browsertest.cc" ]
     }
-    if (enable_nacl && !use_athena) {
+    if (enable_nacl) {
       sources += [
         "../browser/extensions/extension_nacl_browsertest.cc",
         "../browser/nacl_host/test/gdb_debug_stub_browsertest.cc",
@@ -759,30 +759,6 @@ if (!is_android) {
     }
     if (use_aura || toolkit_views) {
       deps += [ "//ui/events:test_support" ]
-    }
-    if (use_athena) {
-      deps += [
-        "//dbus",
-        "//dbus:test_support",
-
-        #'../ui/login/login.gyp:login_resources',  TODO(GYP)
-        #'../athena/resources/athena_resources.gyp:athena_pak',  TODO(GYP)
-        #'../athena/athena.gyp:athena_browsertest_support',  TODO(GYP)
-      ]
-
-      # Disable all browser tests except for Athena ones.
-      sources = []
-      sources += [
-        "../athena/content/app_activity_browsertest.cc",
-        "../athena/content/chrome/web_activity_browsertest.cc",
-        "../athena/content/chrome/web_activity_helpers_browsertest.cc",
-        "../athena/content/content_proxy_browsertest.cc",
-        "../athena/main/placeholder_for_browsertest.cc",
-        "../athena/test/chrome/athena_app_browser_test.cc",
-        "../athena/test/chrome/athena_app_browser_test.h",
-        "../athena/test/chrome/athena_chrome_browser_test.cc",
-        "../athena/test/chrome/athena_chrome_browser_test.h",
-      ]
     }
     if (toolkit_views) {
       sources += rebase_path(gypi_values.chrome_browser_tests_views_sources,
@@ -969,13 +945,13 @@ if (!is_android) {
         "../browser/prefs/pref_hash_browsertest.cc",
       ]
     }
-    if (is_chromeos && !use_athena) {
+    if (is_chromeos) {
       sources += [
         "../browser/extensions/api/networking_private/networking_private_apitest.cc",
         "../browser/extensions/api/networking_private/networking_private_chromeos_apitest.cc",
       ]
     }
-    if (!is_android && !is_ios && !use_athena) {
+    if (!is_android && !is_ios) {
       sources +=
           [ "../browser/copresence/chrome_whispernet_client_browsertest.cc" ]
       deps += [ "//components/copresence" ]
@@ -1021,7 +997,7 @@ if (!is_android) {
     if (!enable_basic_printing && !enable_print_preview) {
       sources -= [ "../renderer/printing/print_web_view_helper_browsertest.cc" ]
     }
-    if (enable_mdns && !use_athena) {
+    if (enable_mdns) {
       sources += [ "../browser/ui/webui/local_discovery/local_discovery_ui_browsertest.cc" ]
     }
     if (use_brlapi) {

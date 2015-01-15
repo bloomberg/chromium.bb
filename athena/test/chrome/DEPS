@@ -1,6 +1,0 @@
-include_rules = [
-  "+chrome/browser/apps",
-  "+chrome/browser/profiles",
-  "+chrome/test/base",
-  "+content/public",
-]

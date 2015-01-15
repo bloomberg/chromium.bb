@@ -2014,7 +2014,7 @@
             'browser/ui/autofill/autofill_dialog_controller_browsertest.cc',
           ]
         }],
-        ['disable_nacl==0 and use_athena==0', {
+        ['disable_nacl==0', {
           'sources':[
             'browser/extensions/extension_nacl_browsertest.cc',
             'browser/nacl_host/test/gdb_debug_stub_browsertest.cc',
@@ -2100,29 +2100,6 @@
         ['use_aura==1 or toolkit_views==1', {
           'dependencies': [
             '../ui/events/events.gyp:events_test_support',
-          ],
-        }],
-        ['use_athena==1', {
-          'dependencies': [
-            '../dbus/dbus.gyp:dbus_test_support',
-            '../build/linux/system.gyp:dbus',
-            '../ui/login/login.gyp:login_resources',
-            '../athena/resources/athena_resources.gyp:athena_pak',
-            '../athena/athena.gyp:athena_browsertest_support',
-          ],
-          'sources!': [
-             '<@(chrome_browser_tests_sources)',
-          ],
-          'sources': [
-            '../athena/content/app_activity_browsertest.cc',
-            '../athena/content/chrome/web_activity_browsertest.cc',
-            '../athena/content/chrome/web_activity_helpers_browsertest.cc',
-            '../athena/content/content_proxy_browsertest.cc',
-            '../athena/main/placeholder_for_browsertest.cc',
-            '../athena/test/chrome/athena_app_browser_test.cc',
-            '../athena/test/chrome/athena_app_browser_test.h',
-            '../athena/test/chrome/athena_chrome_browser_test.cc',
-            '../athena/test/chrome/athena_chrome_browser_test.h',
           ],
         }],
         ['chromeos == 1', {
@@ -2318,7 +2295,7 @@
             }],
           ],
         }],
-        ['chromeos == 1 and use_athena == 0', {
+        ['chromeos == 1', {
           'sources': [
             'browser/extensions/api/networking_private/networking_private_apitest.cc',
             'browser/extensions/api/networking_private/networking_private_chromeos_apitest.cc',
@@ -2330,7 +2307,7 @@
             '../ui/views/views.gyp:views',
           ],
         }],
-        ['OS!="android" and OS!="ios" and use_athena==0', {
+        ['OS!="android" and OS!="ios"', {
           'sources': [
             'browser/copresence/chrome_whispernet_client_browsertest.cc',
           ],
@@ -2385,7 +2362,7 @@
             'renderer/printing/print_web_view_helper_browsertest.cc',
           ],
         }],
-        ['enable_mdns==1 and use_athena==0', {
+        ['enable_mdns==1', {
           'sources' : [
             'browser/ui/webui/local_discovery/local_discovery_ui_browsertest.cc',
           ]
