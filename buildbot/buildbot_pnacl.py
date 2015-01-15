@@ -86,8 +86,8 @@ def RunSconsTests(status, context):
     SCons(context, parallel=False, mode=irt_mode,
           args=flags_run + ['large_tests_irt'])
 
-  if arch != 'arm' and not context.Windows():
-    # Run a some nacl_clang tests. Eventually we will have bots that just run
+  if arch != 'arm':
+    # Run some nacl_clang tests. Eventually we will have bots that just run
     # buildbot_standard with nacl_clang and this can be split out.
     context['pnacl'] = False
     context['nacl_clang'] = True
