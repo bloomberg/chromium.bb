@@ -179,8 +179,16 @@ IN_PROC_BROWSER_TEST_F(ScreenOrientationBrowserTest, WindowOrientationChange) {
   }
 }
 
+// LockSmoke test seems to have become flaky on MacOS X. The cause is
+// unfortunately unknown. See https://crbug.com/448876
+#if defined(OS_MACOSX)
+#define MAYBE_LockSmoke DISABLED_LockSmoke
+#else
+#define MAYBE_LockSmoke LockSmoke
+#endif
+
 // Chromium Android does not support fullscreen
-IN_PROC_BROWSER_TEST_F(ScreenOrientationBrowserTest, DISABLED_LockSmoke) {
+IN_PROC_BROWSER_TEST_F(ScreenOrientationBrowserTest, MAYBE_LockSmoke) {
   GURL test_url = GetTestUrl("screen_orientation",
                              "screen_orientation_lock_smoke.html");
 
