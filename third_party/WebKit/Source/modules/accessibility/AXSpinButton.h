@@ -45,11 +45,13 @@ public:
 private:
     explicit AXSpinButton(AXObjectCacheImpl*);
 
-    virtual AccessibilityRole roleValue() const override { return SpinButtonRole; }
+    virtual AccessibilityRole roleValue() const override;
     virtual bool isSpinButton() const override { return true; }
     virtual bool isNativeSpinButton() const override { return true; }
     virtual void addChildren() override;
     virtual LayoutRect elementRect() const override;
+    virtual void detach() override;
+    virtual void detachFromParent() override;
 
     SpinButtonElement* m_spinButtonElement;
 };

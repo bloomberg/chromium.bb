@@ -1,0 +1,14 @@
+Tests that the incrementor control as part of input type=number is garbage-collected when the input is deleted or changed.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS axincrementor.role is "AXRole: AXSpinButton"
+PASS axincrementor.role is "AXRole: AXUnknown"
+PASS axincrementor.role is "AXRole: AXSpinButton"
+PASS axincrementor.role is "AXRole: AXUnknown"
+PASS successfullyParsed is true
+
+TEST COMPLETE
+ 
+

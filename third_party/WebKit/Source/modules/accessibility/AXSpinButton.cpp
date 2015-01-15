@@ -48,12 +48,27 @@ AXSpinButton::~AXSpinButton()
 
 LayoutRect AXSpinButton::elementRect() const
 {
-    ASSERT(m_spinButtonElement);
-
     if (!m_spinButtonElement || !m_spinButtonElement->renderer())
         return LayoutRect();
 
     return m_spinButtonElement->renderer()->absoluteFocusRingBoundingBoxRect();
+}
+
+void AXSpinButton::detach()
+{
+    AXObject::detach();
+    m_spinButtonElement = 0;
+}
+
+void AXSpinButton::detachFromParent()
+{
+    AXObject::detachFromParent();
+    m_spinButtonElement = 0;
+}
+
+AccessibilityRole AXSpinButton::roleValue() const
+{
+    return m_spinButtonElement ? SpinButtonRole : UnknownRole;
 }
 
 void AXSpinButton::addChildren()
