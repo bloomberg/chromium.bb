@@ -57,35 +57,34 @@ class OwnerSettingsServiceChromeOS : public ownership::OwnerSettingsService,
     std::string device_id;
   };
 
-  virtual ~OwnerSettingsServiceChromeOS();
+  ~OwnerSettingsServiceChromeOS() override;
 
   static OwnerSettingsServiceChromeOS* FromWebUI(content::WebUI* web_ui);
 
   void OnTPMTokenReady(bool tpm_token_enabled);
 
   // ownership::OwnerSettingsService implementation:
-  virtual bool HandlesSetting(const std::string& setting) override;
-  virtual bool Set(const std::string& setting,
-                   const base::Value& value) override;
-  virtual bool AppendToList(const std::string& setting,
-                            const base::Value& value) override;
-  virtual bool RemoveFromList(const std::string& setting,
-                              const base::Value& value) override;
-  virtual bool CommitTentativeDeviceSettings(
+  bool HandlesSetting(const std::string& setting) override;
+  bool Set(const std::string& setting, const base::Value& value) override;
+  bool AppendToList(const std::string& setting,
+                    const base::Value& value) override;
+  bool RemoveFromList(const std::string& setting,
+                      const base::Value& value) override;
+  bool CommitTentativeDeviceSettings(
       scoped_ptr<enterprise_management::PolicyData> policy) override;
 
   // NotificationObserver implementation:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // SessionManagerClient::Observer:
-  virtual void OwnerKeySet(bool success) override;
+  void OwnerKeySet(bool success) override;
 
   // DeviceSettingsService::Observer:
-  virtual void OwnershipStatusChanged() override;
-  virtual void DeviceSettingsUpdated() override;
-  virtual void OnDeviceSettingsServiceShutdown() override;
+  void OwnershipStatusChanged() override;
+  void DeviceSettingsUpdated() override;
+  void OnDeviceSettingsServiceShutdown() override;
 
   // Sets the management related settings.
   void SetManagementSettings(const ManagementSettings& settings,
@@ -127,13 +126,13 @@ class OwnerSettingsServiceChromeOS : public ownership::OwnerSettingsService,
   // OwnerSettingsService protected interface overrides:
 
   // Reloads private key from profile's NSS slots, responds via |callback|.
-  virtual void ReloadKeypairImpl(const base::Callback<
+  void ReloadKeypairImpl(const base::Callback<
       void(const scoped_refptr<ownership::PublicKey>& public_key,
            const scoped_refptr<ownership::PrivateKey>& private_key)>& callback)
       override;
 
   // Possibly notifies DeviceSettingsService that owner's keypair is loaded.
-  virtual void OnPostKeypairLoadedActions() override;
+  void OnPostKeypairLoadedActions() override;
 
   // Tries to apply recent changes to device settings proto, sign it and store.
   void StorePendingChanges();

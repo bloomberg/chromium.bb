@@ -138,10 +138,10 @@ class GenerateRSAKeyState : public NSSOperationState {
  public:
   GenerateRSAKeyState(unsigned int modulus_length_bits,
                       const subtle::GenerateKeyCallback& callback);
-  virtual ~GenerateRSAKeyState() {}
+  ~GenerateRSAKeyState() override {}
 
-  virtual void OnError(const tracked_objects::Location& from,
-                       const std::string& error_message) override {
+  void OnError(const tracked_objects::Location& from,
+               const std::string& error_message) override {
     CallBack(from, std::string() /* no public key */, error_message);
   }
 
@@ -165,10 +165,10 @@ class SignState : public NSSOperationState {
             HashAlgorithm hash_algorithm,
             const std::string& data,
             const subtle::SignCallback& callback);
-  virtual ~SignState() {}
+  ~SignState() override {}
 
-  virtual void OnError(const tracked_objects::Location& from,
-                       const std::string& error_message) override {
+  void OnError(const tracked_objects::Location& from,
+               const std::string& error_message) override {
     CallBack(from, std::string() /* no signature */, error_message);
   }
 
@@ -191,10 +191,10 @@ class SignState : public NSSOperationState {
 class GetCertificatesState : public NSSOperationState {
  public:
   explicit GetCertificatesState(const GetCertificatesCallback& callback);
-  virtual ~GetCertificatesState() {}
+  ~GetCertificatesState() override {}
 
-  virtual void OnError(const tracked_objects::Location& from,
-                       const std::string& error_message) override {
+  void OnError(const tracked_objects::Location& from,
+               const std::string& error_message) override {
     CallBack(from,
              scoped_ptr<net::CertificateList>() /* no certificates */,
              error_message);
@@ -218,10 +218,10 @@ class ImportCertificateState : public NSSOperationState {
  public:
   ImportCertificateState(scoped_refptr<net::X509Certificate> certificate,
                          const ImportCertificateCallback& callback);
-  virtual ~ImportCertificateState() {}
+  ~ImportCertificateState() override {}
 
-  virtual void OnError(const tracked_objects::Location& from,
-                       const std::string& error_message) override {
+  void OnError(const tracked_objects::Location& from,
+               const std::string& error_message) override {
     CallBack(from, error_message);
   }
 
@@ -241,10 +241,10 @@ class RemoveCertificateState : public NSSOperationState {
  public:
   RemoveCertificateState(scoped_refptr<net::X509Certificate> certificate,
                          const RemoveCertificateCallback& callback);
-  virtual ~RemoveCertificateState() {}
+  ~RemoveCertificateState() override {}
 
-  virtual void OnError(const tracked_objects::Location& from,
-                       const std::string& error_message) override {
+  void OnError(const tracked_objects::Location& from,
+               const std::string& error_message) override {
     CallBack(from, error_message);
   }
 
@@ -263,10 +263,10 @@ class RemoveCertificateState : public NSSOperationState {
 class GetTokensState : public NSSOperationState {
  public:
   explicit GetTokensState(const GetTokensCallback& callback);
-  virtual ~GetTokensState() {}
+  ~GetTokensState() override {}
 
-  virtual void OnError(const tracked_objects::Location& from,
-                       const std::string& error_message) override {
+  void OnError(const tracked_objects::Location& from,
+               const std::string& error_message) override {
     CallBack(from,
              scoped_ptr<std::vector<std::string> >() /* no token ids */,
              error_message);

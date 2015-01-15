@@ -137,11 +137,11 @@ class AutomaticRebootManagerBasicTest : public testing::Test {
   typedef base::OneShotTimer<AutomaticRebootManager> Timer;
 
   AutomaticRebootManagerBasicTest();
-  virtual ~AutomaticRebootManagerBasicTest();
+  ~AutomaticRebootManagerBasicTest() override;
 
   // testing::Test:
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
   void SetUpdateRebootNeededUptime(const base::TimeDelta& uptime);
   void SetRebootAfterUpdate(bool reboot_after_update, bool expect_reboot);

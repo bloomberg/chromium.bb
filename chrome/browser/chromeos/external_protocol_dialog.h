@@ -29,20 +29,19 @@ class ExternalProtocolDialog : public views::DialogDelegate {
   // RunExternalProtocolDialog calls this private constructor.
   ExternalProtocolDialog(content::WebContents* web_contents, const GURL& url);
 
-  virtual ~ExternalProtocolDialog();
+  ~ExternalProtocolDialog() override;
 
   // views::DialogDelegate Methods:
-  virtual int GetDialogButtons() const override;
-  virtual base::string16 GetDialogButtonLabel(
-      ui::DialogButton button) const override;
-  virtual base::string16 GetWindowTitle() const override;
-  virtual void DeleteDelegate() override;
-  virtual bool Accept() override;
-  virtual views::View* GetContentsView() override;
+  int GetDialogButtons() const override;
+  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
+  base::string16 GetWindowTitle() const override;
+  void DeleteDelegate() override;
+  bool Accept() override;
+  views::View* GetContentsView() override;
 
   // views::WidgetDelegate Methods:
-  virtual const views::Widget* GetWidget() const override;
-  virtual views::Widget* GetWidget() override;
+  const views::Widget* GetWidget() const override;
+  views::Widget* GetWidget() override;
 
  private:
   // The message box view whose commands we handle.

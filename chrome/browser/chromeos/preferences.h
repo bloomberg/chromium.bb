@@ -45,7 +45,7 @@ class Preferences : public PrefServiceSyncableObserver,
   Preferences();
   explicit Preferences(
       input_method::InputMethodManager* input_method_manager);  // for testing
-  virtual ~Preferences();
+  ~Preferences() override;
 
   // These method will register the prefs associated with Chrome OS settings.
   static void RegisterPrefs(PrefRegistrySimple* registry);
@@ -101,14 +101,13 @@ class Preferences : public PrefServiceSyncableObserver,
   void ForceNaturalScrollDefault();
 
   // PrefServiceSyncableObserver implementation.
-  virtual void OnIsSyncingChanged() override;
+  void OnIsSyncingChanged() override;
 
   // Overriden from ash::ShellObserver.
-  virtual void OnTouchHudProjectionToggled(bool enabled) override;
+  void OnTouchHudProjectionToggled(bool enabled) override;
 
   // Overriden form user_manager::UserManager::UserSessionStateObserver.
-  virtual void ActiveUserChanged(
-      const user_manager::User* active_user) override;
+  void ActiveUserChanged(const user_manager::User* active_user) override;
 
   void ActivateInputMethods(const user_manager::User* active_user);
 

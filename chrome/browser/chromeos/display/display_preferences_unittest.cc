@@ -55,9 +55,9 @@ class DisplayPreferencesTest : public ash::test::AshTestBase {
         user_manager_enabler_(mock_user_manager_) {
   }
 
-  virtual ~DisplayPreferencesTest() {}
+  ~DisplayPreferencesTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     EXPECT_CALL(*mock_user_manager_, IsUserLoggedIn())
         .WillRepeatedly(testing::Return(false));
     EXPECT_CALL(*mock_user_manager_, Shutdown());
@@ -67,7 +67,7 @@ class DisplayPreferencesTest : public ash::test::AshTestBase {
     observer_.reset(new DisplayConfigurationObserver());
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     observer_.reset();
     TestingBrowserProcess::GetGlobal()->SetLocalState(NULL);
     ash::test::AshTestBase::TearDown();

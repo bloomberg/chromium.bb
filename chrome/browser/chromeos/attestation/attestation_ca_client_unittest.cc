@@ -23,8 +23,7 @@ class AttestationCAClientTest : public ::testing::Test {
         result_(false) {
   }
 
-  virtual ~AttestationCAClientTest() {
-  }
+  ~AttestationCAClientTest() override {}
 
   void DataCallback (bool result, const std::string& data) {
     ++num_invocations_;

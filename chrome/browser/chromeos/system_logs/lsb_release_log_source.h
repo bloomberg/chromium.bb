@@ -12,10 +12,10 @@ namespace system_logs {
 class LsbReleaseLogSource : public SystemLogsSource {
  public:
   LsbReleaseLogSource();
-  virtual ~LsbReleaseLogSource();
+  ~LsbReleaseLogSource() override;
 
   // SystemLogsSource override.
-  virtual void Fetch(const SysLogsSourceCallback& callback) override;
+  void Fetch(const SysLogsSourceCallback& callback) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LsbReleaseLogSource);

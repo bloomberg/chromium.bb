@@ -49,7 +49,7 @@ class EventRewriter : public ui::EventRewriter {
   // be NULL (for testing without ash), in which case sticky key operations
   // don't happen.
   explicit EventRewriter(ash::StickyKeysController* sticky_keys_controller);
-  virtual ~EventRewriter();
+  ~EventRewriter() override;
 
   // Calls KeyboardDeviceAddedInternal.
   DeviceType KeyboardDeviceAddedForTesting(int device_id,
@@ -75,10 +75,10 @@ class EventRewriter : public ui::EventRewriter {
   }
 
   // EventRewriter overrides:
-  virtual ui::EventRewriteStatus RewriteEvent(
+  ui::EventRewriteStatus RewriteEvent(
       const ui::Event& event,
       scoped_ptr<ui::Event>* rewritten_event) override;
-  virtual ui::EventRewriteStatus NextDispatchEvent(
+  ui::EventRewriteStatus NextDispatchEvent(
       const ui::Event& last_event,
       scoped_ptr<ui::Event>* new_event) override;
 

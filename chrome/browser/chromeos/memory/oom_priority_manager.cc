@@ -121,10 +121,10 @@ class OomMemoryDetails : public MemoryDetails {
   OomMemoryDetails();
 
   // MemoryDetails overrides:
-  virtual void OnDetailsAvailable() override;
+  void OnDetailsAvailable() override;
 
  private:
-  virtual ~OomMemoryDetails() {}
+  ~OomMemoryDetails() override {}
 
   TimeTicks start_time_;
 

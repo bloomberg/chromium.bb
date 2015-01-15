@@ -44,14 +44,14 @@ class ProxyConfigServiceImpl : public PrefProxyConfigTrackerImpl,
   // local state (e.g., for system request context or sigin-in screen).
   explicit ProxyConfigServiceImpl(PrefService* profile_prefs,
                                   PrefService* local_state_prefs);
-  virtual ~ProxyConfigServiceImpl();
+  ~ProxyConfigServiceImpl() override;
 
   // PrefProxyConfigTrackerImpl implementation.
-  virtual void OnProxyConfigChanged(ProxyPrefs::ConfigState config_state,
-                                    const net::ProxyConfig& config) override;
+  void OnProxyConfigChanged(ProxyPrefs::ConfigState config_state,
+                            const net::ProxyConfig& config) override;
 
   // NetworkStateHandlerObserver implementation.
-  virtual void DefaultNetworkChanged(const NetworkState* network) override;
+  void DefaultNetworkChanged(const NetworkState* network) override;
 
  protected:
   friend class UIProxyConfigService;

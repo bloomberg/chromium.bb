@@ -85,10 +85,10 @@ class DriveOfflineNotificationDelegate
       : profile_(profile) {}
 
   // message_center::NotificationDelegate overrides:
-  virtual void ButtonClick(int button_index) override;
+  void ButtonClick(int button_index) override;
 
  protected:
-  virtual ~DriveOfflineNotificationDelegate() {}
+  ~DriveOfflineNotificationDelegate() override {}
 
  private:
   Profile* profile_;
@@ -128,7 +128,7 @@ class DriveWebContentsManager : public content::WebContentsObserver,
                           const std::string& app_id,
                           const std::string& endpoint_url,
                           const CompletionCallback& completion_callback);
-  virtual ~DriveWebContentsManager();
+  ~DriveWebContentsManager() override;
 
   // Start loading the WebContents for the endpoint in the context of the Drive
   // hosted app that will initialize offline mode and open a background page.
@@ -148,19 +148,18 @@ class DriveWebContentsManager : public content::WebContentsObserver,
                              DriveFirstRunController::UMAOutcome outcome);
 
   // content::WebContentsObserver overrides:
-  virtual void DidFailProvisionalLoad(
-      content::RenderFrameHost* render_frame_host,
-      const GURL& validated_url,
-      int error_code,
-      const base::string16& error_description) override;
+  void DidFailProvisionalLoad(content::RenderFrameHost* render_frame_host,
+                              const GURL& validated_url,
+                              int error_code,
+                              const base::string16& error_description) override;
 
-  virtual void DidFailLoad(content::RenderFrameHost* render_frame_host,
-                           const GURL& validated_url,
-                           int error_code,
-                           const base::string16& error_description) override;
+  void DidFailLoad(content::RenderFrameHost* render_frame_host,
+                   const GURL& validated_url,
+                   int error_code,
+                   const base::string16& error_description) override;
 
   // content::WebContentsDelegate overrides:
-  virtual bool ShouldCreateWebContents(
+  bool ShouldCreateWebContents(
       content::WebContents* web_contents,
       int route_id,
       int main_frame_route_id,
@@ -171,9 +170,9 @@ class DriveWebContentsManager : public content::WebContentsObserver,
       content::SessionStorageNamespace* session_storage_namespace) override;
 
   // content::NotificationObserver overrides:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   Profile* profile_;
   const std::string app_id_;

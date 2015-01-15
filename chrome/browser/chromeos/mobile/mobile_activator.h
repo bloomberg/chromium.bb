@@ -160,11 +160,11 @@ class MobileActivator
   friend class MobileActivatorTest;
 
   MobileActivator();
-  virtual ~MobileActivator();
+  ~MobileActivator() override;
 
   // NetworkStateHandlerObserver overrides.
-  virtual void DefaultNetworkChanged(const NetworkState* network) override;
-  virtual void NetworkPropertiesUpdated(const NetworkState* network) override;
+  void DefaultNetworkChanged(const NetworkState* network) override;
+  void NetworkPropertiesUpdated(const NetworkState* network) override;
 
   // Continue activation after inital setup (config load). Makes an
   // asynchronous call to NetworkConfigurationHandler::GetProperties.

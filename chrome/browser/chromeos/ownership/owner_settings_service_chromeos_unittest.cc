@@ -41,10 +41,10 @@ class PrefsChecker : public ownership::OwnerSettingsService::Observer {
     service_->AddObserver(this);
   }
 
-  virtual ~PrefsChecker() { service_->RemoveObserver(this); }
+  ~PrefsChecker() override { service_->RemoveObserver(this); }
 
   // OwnerSettingsService::Observer implementation:
-  virtual void OnSignedPolicyStored(bool success) override {
+  void OnSignedPolicyStored(bool success) override {
     if (service_->has_pending_changes())
       return;
 
@@ -88,7 +88,7 @@ class OwnerSettingsServiceChromeOSTest : public DeviceSettingsTestBase {
         user_data_dir_override_(chrome::DIR_USER_DATA),
         management_settings_set_(false) {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     DeviceSettingsTestBase::SetUp();
     provider_.reset(new DeviceSettingsProvider(base::Bind(&OnPrefChanged),
                                                &device_settings_service_));
@@ -108,7 +108,7 @@ class OwnerSettingsServiceChromeOSTest : public DeviceSettingsTestBase {
     ReloadDeviceSettings();
   }
 
-  virtual void TearDown() override { DeviceSettingsTestBase::TearDown(); }
+  void TearDown() override { DeviceSettingsTestBase::TearDown(); }
 
   void TestSingleSet(OwnerSettingsServiceChromeOS* service,
                      const std::string& setting,
@@ -298,9 +298,9 @@ class OwnerSettingsServiceChromeOSNoOwnerTest
     : public OwnerSettingsServiceChromeOSTest {
  public:
   OwnerSettingsServiceChromeOSNoOwnerTest() {}
-  virtual ~OwnerSettingsServiceChromeOSNoOwnerTest() {}
+  ~OwnerSettingsServiceChromeOSNoOwnerTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     DeviceSettingsTestBase::SetUp();
     provider_.reset(new DeviceSettingsProvider(base::Bind(&OnPrefChanged),
                                                &device_settings_service_));
@@ -311,7 +311,7 @@ class OwnerSettingsServiceChromeOSNoOwnerTest
     ASSERT_FALSE(service_->IsOwner());
   }
 
-  virtual void TearDown() override { DeviceSettingsTestBase::TearDown(); }
+  void TearDown() override { DeviceSettingsTestBase::TearDown(); }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(OwnerSettingsServiceChromeOSNoOwnerTest);

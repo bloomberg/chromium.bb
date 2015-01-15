@@ -117,7 +117,7 @@ class StartupCustomizationDocument : public CustomizationDocument {
   StartupCustomizationDocument(system::StatisticsProvider* provider,
                                const std::string& manifest);
 
-  virtual ~StartupCustomizationDocument();
+  ~StartupCustomizationDocument() override;
 
   void Init(system::StatisticsProvider* provider);
 
@@ -216,16 +216,16 @@ class ServicesCustomizationDocument : public CustomizationDocument,
   // C-tor for test construction.
   explicit ServicesCustomizationDocument(const std::string& manifest);
 
-  virtual ~ServicesCustomizationDocument();
+  ~ServicesCustomizationDocument() override;
 
   // Save applied state in machine settings.
   static void SetApplied(bool val);
 
   // Overriden from CustomizationDocument:
-  virtual bool LoadManifestFromString(const std::string& manifest) override;
+  bool LoadManifestFromString(const std::string& manifest) override;
 
   // Overriden from net::URLFetcherDelegate:
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   // Initiate file fetching. Wait for online status.
   void StartFileFetch();

@@ -17,7 +17,7 @@ namespace chromeos {  // Need this because of the FRIEND_TEST
 
 class ExternalMetricsTest : public testing::Test {
  public:
-  virtual void SetUp() override {
+  void SetUp() override {
     ASSERT_TRUE(dir_.CreateUniqueTempDir());
     external_metrics_ = ExternalMetrics::CreateForTesting(
         dir_.path().Append("testfile").value());

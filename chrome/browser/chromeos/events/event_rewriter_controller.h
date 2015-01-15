@@ -25,7 +25,7 @@ namespace chromeos {
 class EventRewriterController : public aura::EnvObserver {
  public:
   EventRewriterController();
-  virtual ~EventRewriterController();
+  ~EventRewriterController() override;
 
   // Takes ownership of an EventRewriter; can only be called before Init().
   void AddEventRewriter(scoped_ptr<ui::EventRewriter> rewriter);
@@ -35,8 +35,8 @@ class EventRewriterController : public aura::EnvObserver {
   void Init();
 
   // aura::EnvObserver overrides:
-  virtual void OnWindowInitialized(aura::Window* window) override {}
-  virtual void OnHostInitialized(aura::WindowTreeHost* host) override;
+  void OnWindowInitialized(aura::Window* window) override {}
+  void OnHostInitialized(aura::WindowTreeHost* host) override;
 
  private:
   typedef std::list<ui::EventSource*> EventSourceList;

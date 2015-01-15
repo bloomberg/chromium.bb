@@ -26,7 +26,7 @@ const char kMouseId[] = "mouse";
 class InputServiceLinuxTestImpl : public InputServiceLinux {
  public:
   InputServiceLinuxTestImpl() {}
-  virtual ~InputServiceLinuxTestImpl() {}
+  ~InputServiceLinuxTestImpl() override {}
 
   void AddDeviceForTesting(const InputDeviceInfo& info) { AddDevice(info); }
   void RemoveDeviceForTesting(const std::string& id) { RemoveDevice(id); }
@@ -39,16 +39,16 @@ class TestObserver : public InputServiceProxy::Observer {
  public:
   TestObserver()
       : wait_for_device_addition_(false), wait_for_device_removal_(false) {}
-  virtual ~TestObserver() {}
+  ~TestObserver() override {}
 
-  virtual void OnInputDeviceAdded(const InputDeviceInfo& info) override {
+  void OnInputDeviceAdded(const InputDeviceInfo& info) override {
     if (!wait_for_device_addition_)
       return;
     EXPECT_TRUE(Equals(expected_info_, info));
     done_.Run();
   }
 
-  virtual void OnInputDeviceRemoved(const std::string& id) override {
+  void OnInputDeviceRemoved(const std::string& id) override {
     if (!wait_for_device_removal_)
       return;
     EXPECT_EQ(expected_id_, id);
@@ -146,7 +146,7 @@ void OnGetMouse(const base::Closure& done,
 class InputServiceProxyTest : public InProcessBrowserTest {
  public:
   InputServiceProxyTest() {}
-  virtual ~InputServiceProxyTest() {}
+  ~InputServiceProxyTest() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InputServiceProxyTest);

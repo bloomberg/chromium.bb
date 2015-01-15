@@ -32,7 +32,7 @@ class TestOfflineLoadPage :  public chromeos::OfflineLoadPage {
   }
 
   // chromeos::OfflineLoadPage override.
-  virtual void NotifyBlockingPageComplete(bool proceed) override;
+  void NotifyBlockingPageComplete(bool proceed) override;
 
  private:
   OfflineLoadPageTest* test_page_;
@@ -49,7 +49,7 @@ class OfflineLoadPageTest : public ChromeRenderViewHostTestHarness {
     CANCEL
   };
 
-  virtual void SetUp() {
+  void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
     user_response_ = PENDING;
   }

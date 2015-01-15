@@ -15,7 +15,7 @@ namespace system {
 class PointerDeviceObserver : public DeviceHierarchyObserver {
  public:
   PointerDeviceObserver();
-  virtual ~PointerDeviceObserver();
+  ~PointerDeviceObserver() override;
 
   // Start observing device hierarchy.
   void Init();
@@ -37,9 +37,9 @@ class PointerDeviceObserver : public DeviceHierarchyObserver {
 
  private:
   // DeviceHierarchyObserver implementation.
-  virtual void DeviceHierarchyChanged() override;
-  virtual void DeviceAdded(int device_id) override {}
-  virtual void DeviceRemoved(int device_id) override {}
+  void DeviceHierarchyChanged() override;
+  void DeviceAdded(int device_id) override {}
+  void DeviceRemoved(int device_id) override {}
 
   // Check for pointer devices.
   void CheckTouchpadExists();

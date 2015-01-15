@@ -16,12 +16,12 @@ namespace chromeos {
 class DisplayConfigurationObserver : public ash::DisplayController::Observer {
  public:
   DisplayConfigurationObserver();
-  virtual ~DisplayConfigurationObserver();
+  ~DisplayConfigurationObserver() override;
 
  protected:
   // ash::DisplayController::Observer overrides:
-  virtual void OnDisplaysInitialized() override;
-  virtual void OnDisplayConfigurationChanged() override;
+  void OnDisplaysInitialized() override;
+  void OnDisplayConfigurationChanged() override;
 
   DISALLOW_COPY_AND_ASSIGN(DisplayConfigurationObserver);
 };

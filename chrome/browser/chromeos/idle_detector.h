@@ -17,13 +17,13 @@ namespace chromeos {
 class IdleDetector : public ui::UserActivityObserver {
  public:
   explicit IdleDetector(const base::Closure& on_idle_callback);
-  virtual ~IdleDetector();
+  ~IdleDetector() override;
 
   void Start(const base::TimeDelta& timeout);
 
  private:
   // ui::UserActivityObserver overrides:
-  virtual void OnUserActivity(const ui::Event* event) override;
+  void OnUserActivity(const ui::Event* event) override;
 
   // Resets |timer_| to fire when we reach our idle timeout.
   void ResetTimer();

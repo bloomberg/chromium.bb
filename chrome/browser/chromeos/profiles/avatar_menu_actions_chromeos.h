@@ -17,14 +17,14 @@ namespace chromeos {
 class AvatarMenuActionsChromeOS : public AvatarMenuActions {
  public:
   AvatarMenuActionsChromeOS();
-  virtual ~AvatarMenuActionsChromeOS();
+  ~AvatarMenuActionsChromeOS() override;
 
   // AvatarMenuActions overrides:
-  virtual void AddNewProfile(ProfileMetrics::ProfileAdd type) override;
-  virtual void EditProfile(Profile* profile, size_t index) override;
-  virtual bool ShouldShowAddNewProfileLink() const override;
-  virtual bool ShouldShowEditProfileLink() const override;
-  virtual void ActiveBrowserChanged(Browser* browser) override;
+  void AddNewProfile(ProfileMetrics::ProfileAdd type) override;
+  void EditProfile(Profile* profile, size_t index) override;
+  bool ShouldShowAddNewProfileLink() const override;
+  bool ShouldShowEditProfileLink() const override;
+  void ActiveBrowserChanged(Browser* browser) override;
 
  private:
   // Browser in which this avatar menu resides. Weak.

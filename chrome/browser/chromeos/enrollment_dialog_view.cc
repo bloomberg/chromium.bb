@@ -40,7 +40,7 @@ const int kDefaultHeight = 100;
 // certificate enrollment URI.
 class EnrollmentDialogView : public views::DialogDelegateView {
  public:
-  virtual ~EnrollmentDialogView();
+  ~EnrollmentDialogView() override;
 
   static void ShowDialog(gfx::NativeWindow owning_window,
                          const std::string& network_name,
@@ -49,18 +49,17 @@ class EnrollmentDialogView : public views::DialogDelegateView {
                          const base::Closure& connect);
 
   // views::DialogDelegateView overrides
-  virtual int GetDialogButtons() const override;
-  virtual bool Accept() override;
-  virtual void OnClosed() override;
-  virtual base::string16 GetDialogButtonLabel(
-      ui::DialogButton button) const override;
+  int GetDialogButtons() const override;
+  bool Accept() override;
+  void OnClosed() override;
+  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
 
   // views::WidgetDelegate overrides
-  virtual ui::ModalType GetModalType() const override;
-  virtual base::string16 GetWindowTitle() const override;
+  ui::ModalType GetModalType() const override;
+  base::string16 GetWindowTitle() const override;
 
   // views::View overrides
-  virtual gfx::Size GetPreferredSize() const override;
+  gfx::Size GetPreferredSize() const override;
 
  private:
   EnrollmentDialogView(const std::string& network_name,

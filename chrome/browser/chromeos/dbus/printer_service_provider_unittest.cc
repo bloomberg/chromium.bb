@@ -20,13 +20,11 @@ class MockPrinterServiceProvider : public PrinterServiceProvider {
 
 class PrinterServiceProviderTest : public testing::Test {
  public:
-  virtual void SetUp() override {
+  void SetUp() override {
     test_helper_.SetUp(kPrinterAdded, &service_provider_);
   }
 
-  virtual void TearDown() override {
-    test_helper_.TearDown();
-  }
+  void TearDown() override { test_helper_.TearDown(); }
 
  protected:
   MockPrinterServiceProvider service_provider_;

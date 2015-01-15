@@ -48,7 +48,7 @@ class OfflineLoadPage
   void Show();
 
  protected:
-  virtual ~OfflineLoadPage();
+  ~OfflineLoadPage() override;
 
   // Overridden by tests.
   virtual void NotifyBlockingPageComplete(bool proceed);
@@ -57,15 +57,14 @@ class OfflineLoadPage
   friend class TestOfflineLoadPage;
 
   // InterstitialPageDelegate implementation.
-  virtual std::string GetHTMLContents() override;
-  virtual void CommandReceived(const std::string& command) override;
-  virtual void OverrideRendererPrefs(
-      content::RendererPreferences* prefs) override;
-  virtual void OnProceed() override;
-  virtual void OnDontProceed() override;
+  std::string GetHTMLContents() override;
+  void CommandReceived(const std::string& command) override;
+  void OverrideRendererPrefs(content::RendererPreferences* prefs) override;
+  void OnProceed() override;
+  void OnDontProceed() override;
 
   // net::NetworkChangeNotifier::ConnectionTypeObserver overrides.
-  virtual void OnConnectionTypeChanged(
+  void OnConnectionTypeChanged(
       net::NetworkChangeNotifier::ConnectionType type) override;
 
   CompletionCallback callback_;

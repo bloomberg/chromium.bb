@@ -16,23 +16,22 @@ namespace system {
 class FakeInputDeviceSettings : public InputDeviceSettings {
  public:
   FakeInputDeviceSettings();
-  virtual ~FakeInputDeviceSettings();
+  ~FakeInputDeviceSettings() override;
 
   // Overridden from InputDeviceSettings.
-  virtual void TouchpadExists(const DeviceExistsCallback& callback) override;
-  virtual void UpdateTouchpadSettings(const TouchpadSettings& settings)
-      override;
-  virtual void SetTouchpadSensitivity(int value) override;
-  virtual void SetTapToClick(bool enabled) override;
-  virtual void SetThreeFingerClick(bool enabled) override;
-  virtual void SetTapDragging(bool enabled) override;
-  virtual void MouseExists(const DeviceExistsCallback& callback) override;
-  virtual void UpdateMouseSettings(const MouseSettings& settings) override;
-  virtual void SetMouseSensitivity(int value) override;
-  virtual void SetPrimaryButtonRight(bool right) override;
-  virtual void SetNaturalScroll(bool enabled) override;
-  virtual void ReapplyTouchpadSettings() override;
-  virtual void ReapplyMouseSettings() override;
+  void TouchpadExists(const DeviceExistsCallback& callback) override;
+  void UpdateTouchpadSettings(const TouchpadSettings& settings) override;
+  void SetTouchpadSensitivity(int value) override;
+  void SetTapToClick(bool enabled) override;
+  void SetThreeFingerClick(bool enabled) override;
+  void SetTapDragging(bool enabled) override;
+  void MouseExists(const DeviceExistsCallback& callback) override;
+  void UpdateMouseSettings(const MouseSettings& settings) override;
+  void SetMouseSensitivity(int value) override;
+  void SetPrimaryButtonRight(bool right) override;
+  void SetNaturalScroll(bool enabled) override;
+  void ReapplyTouchpadSettings() override;
+  void ReapplyMouseSettings() override;
 
   const TouchpadSettings& current_touchpad_settings() const {
     return current_touchpad_settings_;

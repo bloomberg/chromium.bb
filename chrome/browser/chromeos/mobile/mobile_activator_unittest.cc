@@ -110,14 +110,14 @@ class MobileActivatorTest : public testing::Test {
     cellular_network_.PropertyChanged(shill::kTypeProperty,
                                       base::StringValue(shill::kTypeCellular));
   }
-  virtual ~MobileActivatorTest() {}
+  ~MobileActivatorTest() override {}
 
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     DBusThreadManager::Initialize();
     NetworkHandler::Initialize();
   }
-  virtual void TearDown() {
+  void TearDown() override {
     NetworkHandler::Shutdown();
     DBusThreadManager::Shutdown();
   }

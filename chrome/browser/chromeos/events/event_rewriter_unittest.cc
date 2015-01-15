@@ -225,9 +225,9 @@ class EventRewriterTest : public ash::test::AshTestBase {
       : fake_user_manager_(new chromeos::FakeUserManager),
         user_manager_enabler_(fake_user_manager_),
         input_method_manager_mock_(NULL) {}
-  virtual ~EventRewriterTest() {}
+  ~EventRewriterTest() override {}
 
-  virtual void SetUp() {
+  void SetUp() override {
     input_method_manager_mock_ =
         new chromeos::input_method::MockInputMethodManager;
     chromeos::input_method::InitializeForTesting(
@@ -236,7 +236,7 @@ class EventRewriterTest : public ash::test::AshTestBase {
     AshTestBase::SetUp();
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     AshTestBase::TearDown();
     // Shutdown() deletes the IME mock object.
     chromeos::input_method::Shutdown();
@@ -1775,7 +1775,7 @@ TEST_F(EventRewriterTest, TestRewriteNonNativeEvent) {
 class EventBuffer : public ui::test::TestEventProcessor {
  public:
   EventBuffer() {}
-  virtual ~EventBuffer() {}
+  ~EventBuffer() override {}
 
   void PopEvents(ScopedVector<ui::Event>* events) {
     events->clear();
@@ -1784,8 +1784,7 @@ class EventBuffer : public ui::test::TestEventProcessor {
 
  private:
   // ui::EventProcessor overrides:
-  virtual ui::EventDispatchDetails OnEventFromSource(
-      ui::Event* event) override {
+  ui::EventDispatchDetails OnEventFromSource(ui::Event* event) override {
     if (event->IsKeyEvent()) {
       events_.push_back(new ui::KeyEvent(*static_cast<ui::KeyEvent*>(event)));
     } else if (event->IsMouseWheelEvent()) {
@@ -1808,9 +1807,7 @@ class TestEventSource : public ui::EventSource {
  public:
   explicit TestEventSource(ui::EventProcessor* processor)
       : processor_(processor) {}
-  virtual ui::EventProcessor* GetEventProcessor() override {
-    return processor_;
-  }
+  ui::EventProcessor* GetEventProcessor() override { return processor_; }
   ui::EventDispatchDetails Send(ui::Event* event) {
     return SendEventToProcessor(event);
   }
@@ -1826,7 +1823,7 @@ class EventRewriterAshTest : public ash::test::AshTestBase {
       : source_(&buffer_),
         fake_user_manager_(new chromeos::FakeUserManager),
         user_manager_enabler_(fake_user_manager_) {}
-  virtual ~EventRewriterAshTest() {}
+  ~EventRewriterAshTest() override {}
 
   bool RewriteFunctionKeys(const ui::Event& event,
                            scoped_ptr<ui::Event>* rewritten_event) {
@@ -1855,7 +1852,7 @@ class EventRewriterAshTest : public ash::test::AshTestBase {
     buffer_.PopEvents(events);
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     AshTestBase::SetUp();
     sticky_keys_controller_ =
         ash::Shell::GetInstance()->sticky_keys_controller();
@@ -1869,7 +1866,7 @@ class EventRewriterAshTest : public ash::test::AshTestBase {
     sticky_keys_controller_->Enable(true);
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     rewriter_.reset();
     AshTestBase::TearDown();
   }
@@ -2307,9 +2304,9 @@ class StickyKeysOverlayTest : public EventRewriterAshTest {
  public:
   StickyKeysOverlayTest() : overlay_(NULL) {}
 
-  virtual ~StickyKeysOverlayTest() {}
+  ~StickyKeysOverlayTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     EventRewriterAshTest::SetUp();
     overlay_ = sticky_keys_controller_->GetOverlayForTest();
     ASSERT_TRUE(overlay_);

@@ -63,11 +63,11 @@ class TestWallpaperObserver : public WallpaperManager::Observer {
     wallpaper_manager_->AddObserver(this);
   }
 
-  virtual ~TestWallpaperObserver() {
+  ~TestWallpaperObserver() override {
     wallpaper_manager_->RemoveObserver(this);
   }
 
-  virtual void OnWallpaperAnimationFinished(const std::string&) override {
+  void OnWallpaperAnimationFinished(const std::string&) override {
     finished_ = true;
     base::MessageLoop::current()->Quit();
   }
@@ -223,19 +223,19 @@ class CustomizationWallpaperDownloaderBrowserTest
         local_state_(NULL) {
   }
 
-  virtual ~CustomizationWallpaperDownloaderBrowserTest() {}
+  ~CustomizationWallpaperDownloaderBrowserTest() override {}
 
-  virtual void SetUpOnMainThread() override {
+  void SetUpOnMainThread() override {
     controller_ = ash::Shell::GetInstance()->desktop_background_controller();
     local_state_ = g_browser_process->local_state();
   }
 
-  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(chromeos::switches::kLoginManager);
     command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile, "user");
   }
 
-  virtual void TearDownOnMainThread() override { controller_ = NULL; }
+  void TearDownOnMainThread() override { controller_ = NULL; }
 
  protected:
   void CreateCmdlineWallpapers() {

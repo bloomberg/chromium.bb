@@ -31,12 +31,12 @@ class PlatformKeysServiceFactory : public BrowserContextKeyedServiceFactory {
   friend struct DefaultSingletonTraits<PlatformKeysServiceFactory>;
 
   PlatformKeysServiceFactory();
-  virtual ~PlatformKeysServiceFactory();
+  ~PlatformKeysServiceFactory() override;
 
   // BrowserContextKeyedServiceFactory:
-  virtual content::BrowserContext* GetBrowserContextToUse(
+  content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const override;
-  virtual KeyedService* BuildServiceInstanceFor(
+  KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const override;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformKeysServiceFactory);

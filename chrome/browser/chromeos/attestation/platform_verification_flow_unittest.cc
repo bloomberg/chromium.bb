@@ -59,7 +59,7 @@ class FakeDelegate : public PlatformVerificationFlow::Delegate {
     // Configure a user for the mock user manager.
     mock_user_manager_.SetActiveUser(kTestEmail);
   }
-  virtual ~FakeDelegate() {}
+  ~FakeDelegate() override {}
 
   void SetUp() {
     ProfileImpl::RegisterProfilePrefs(pref_service_.registry());
@@ -73,7 +73,7 @@ class FakeDelegate : public PlatformVerificationFlow::Delegate {
     content_settings_->ShutdownOnUIThread();
   }
 
-  virtual void ShowConsentPrompt(
+  void ShowConsentPrompt(
       content::WebContents* web_contents,
       const PlatformVerificationFlow::Delegate::ConsentCallback& callback)
       override {
@@ -81,25 +81,24 @@ class FakeDelegate : public PlatformVerificationFlow::Delegate {
     callback.Run(response_);
   }
 
-  virtual PrefService* GetPrefs(content::WebContents* web_contents) override {
+  PrefService* GetPrefs(content::WebContents* web_contents) override {
     return &pref_service_;
   }
 
-  virtual const GURL& GetURL(content::WebContents* web_contents) override {
+  const GURL& GetURL(content::WebContents* web_contents) override {
     return url_;
   }
 
-  virtual user_manager::User* GetUser(
-      content::WebContents* web_contents) override {
+  user_manager::User* GetUser(content::WebContents* web_contents) override {
     return mock_user_manager_.GetActiveUser();
   }
 
-  virtual HostContentSettingsMap* GetContentSettings(
+  HostContentSettingsMap* GetContentSettings(
       content::WebContents* web_contents) override {
     return content_settings_.get();
   }
 
-  virtual bool IsGuestOrIncognito(content::WebContents* web_contents) override {
+  bool IsGuestOrIncognito(content::WebContents* web_contents) override {
     return is_incognito_;
   }
 
@@ -140,7 +139,7 @@ class CustomFakeCryptohomeClient : public FakeCryptohomeClient {
   CustomFakeCryptohomeClient() : call_status_(DBUS_METHOD_CALL_SUCCESS),
                                  attestation_enrolled_(true),
                                  attestation_prepared_(true) {}
-  virtual void TpmAttestationIsEnrolled(
+  void TpmAttestationIsEnrolled(
       const BoolDBusMethodCallback& callback) override {
     base::MessageLoop::current()->PostTask(FROM_HERE,
                                            base::Bind(callback,
@@ -148,7 +147,7 @@ class CustomFakeCryptohomeClient : public FakeCryptohomeClient {
                                                       attestation_enrolled_));
   }
 
-  virtual void TpmAttestationIsPrepared(
+  void TpmAttestationIsPrepared(
       const BoolDBusMethodCallback& callback) override {
     base::MessageLoop::current()->PostTask(FROM_HERE,
                                            base::Bind(callback,

@@ -25,14 +25,14 @@ namespace chromeos {
 class DataPromoNotification : public NetworkStateHandlerObserver {
  public:
   DataPromoNotification();
-  virtual ~DataPromoNotification();
+  ~DataPromoNotification() override;
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
  private:
   // NetworkStateHandlerObserver
-  virtual void NetworkPropertiesUpdated(const NetworkState* network) override;
-  virtual void DefaultNetworkChanged(const NetworkState* network) override;
+  void NetworkPropertiesUpdated(const NetworkState* network) override;
+  void DefaultNetworkChanged(const NetworkState* network) override;
 
   // Shows 3G promo notification if needed.
   void ShowOptionalMobileDataPromoNotification();

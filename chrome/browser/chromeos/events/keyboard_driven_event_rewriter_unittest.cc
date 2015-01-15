@@ -17,7 +17,7 @@ class KeyboardDrivenEventRewriterTest : public testing::Test {
  public:
   KeyboardDrivenEventRewriterTest() {}
 
-  virtual ~KeyboardDrivenEventRewriterTest() {}
+  ~KeyboardDrivenEventRewriterTest() override {}
 
  protected:
   std::string GetRewrittenEventAsString(ui::KeyboardCode ui_keycode,

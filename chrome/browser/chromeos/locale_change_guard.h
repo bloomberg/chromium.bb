@@ -34,11 +34,11 @@ class LocaleChangeGuard : public content::NotificationObserver,
                           public base::SupportsWeakPtr<LocaleChangeGuard> {
  public:
   explicit LocaleChangeGuard(Profile* profile);
-  virtual ~LocaleChangeGuard();
+  ~LocaleChangeGuard() override;
 
   // ash::LocaleChangeDelegate implementation.
-  virtual void AcceptLocaleChange() override;
-  virtual void RevertLocaleChange() override;
+  void AcceptLocaleChange() override;
+  void RevertLocaleChange() override;
 
   // Called just before changing locale.
   void PrepareChangingLocale(
@@ -57,9 +57,9 @@ class LocaleChangeGuard : public content::NotificationObserver,
   void Check();
 
   // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // Returns true if we should notify user about automatic locale change.
   static bool ShouldShowLocaleChangeNotification(const std::string& from_locale,

@@ -175,7 +175,7 @@ class ServicesCustomizationExternalLoader
   }
 
   // Implementation of extensions::ExternalLoader:
-  virtual void StartLoading() override {
+  void StartLoading() override {
     if (!is_apps_set_) {
       ServicesCustomizationDocument::GetInstance()->StartFetching();
       // In case of missing customization ID, SetCurrentApps will be called
@@ -195,7 +195,7 @@ class ServicesCustomizationExternalLoader
   }
 
  protected:
-  virtual ~ServicesCustomizationExternalLoader() {}
+  ~ServicesCustomizationExternalLoader() override {}
 
  private:
   bool is_apps_set_;

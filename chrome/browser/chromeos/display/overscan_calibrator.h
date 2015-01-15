@@ -24,7 +24,7 @@ class OverscanCalibrator : public ui::LayerDelegate {
  public:
   OverscanCalibrator(const gfx::Display& target_display,
                      const gfx::Insets& initial_insets);
-  virtual ~OverscanCalibrator();
+  ~OverscanCalibrator() override;
 
   // Commits the current insets data to the system.
   void Commit();
@@ -41,11 +41,10 @@ class OverscanCalibrator : public ui::LayerDelegate {
 
  private:
   // ui::LayerDelegate overrides:
-  virtual void OnPaintLayer(gfx::Canvas* canvas) override;
-  virtual void OnDelegatedFrameDamage(
-      const gfx::Rect& damage_rect_in_dip) override;
-  virtual void OnDeviceScaleFactorChanged(float device_scale_factor) override;
-  virtual base::Closure PrepareForLayerBoundsChange() override;
+  void OnPaintLayer(gfx::Canvas* canvas) override;
+  void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override;
+  void OnDeviceScaleFactorChanged(float device_scale_factor) override;
+  base::Closure PrepareForLayerBoundsChange() override;
 
   // The target display.
   const gfx::Display display_;

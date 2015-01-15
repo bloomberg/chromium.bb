@@ -206,7 +206,7 @@ class ServicesCustomizationDocumentTest : public testing::Test {
   }
 
   // testing::Test:
-  virtual void SetUp() override {
+  void SetUp() override {
     ServicesCustomizationDocument::InitializeForTesting();
 
     DBusThreadManager::Initialize();
@@ -233,7 +233,7 @@ class ServicesCustomizationDocumentTest : public testing::Test {
     ServicesCustomizationDocument::RegisterPrefs(local_state_.registry());
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     TestingBrowserProcess::GetGlobal()->SetLocalState(NULL);
     NetworkHandler::Shutdown();
     DBusThreadManager::Shutdown();

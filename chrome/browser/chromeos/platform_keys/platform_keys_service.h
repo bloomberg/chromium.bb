@@ -40,7 +40,7 @@ class PlatformKeysService : public KeyedService {
   //   key's SPKI.
   explicit PlatformKeysService(content::BrowserContext* browser_context,
                                extensions::StateStore* state_store);
-  virtual ~PlatformKeysService();
+  ~PlatformKeysService() override;
 
   // If the generation was successful, |public_key_spki_der| will contain the
   // DER encoding of the SubjectPublicKeyInfo of the generated key and

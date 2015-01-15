@@ -81,8 +81,8 @@ class MyMockInputMethodManager : public MockInputMethodManager {
       input_method_extensions_.reset(new InputMethodDescriptors);
     }
 
-    virtual void ChangeInputMethod(const std::string& input_method_id,
-                                   bool show_message) override {
+    void ChangeInputMethod(const std::string& input_method_id,
+                           bool show_message) override {
       manager_->last_input_method_id_ = input_method_id;
       // Do the same thing as BrowserStateMonitor::UpdateUserPreferences.
       const std::string current_input_method_on_pref =
@@ -93,12 +93,11 @@ class MyMockInputMethodManager : public MockInputMethodManager {
       manager_->current_->SetValue(input_method_id);
     }
 
-    virtual void
-    GetInputMethodExtensions(InputMethodDescriptors* result) override {
+    void GetInputMethodExtensions(InputMethodDescriptors* result) override {
       *result = *input_method_extensions_;
     }
 
-    virtual void AddInputMethodExtension(
+    void AddInputMethodExtension(
         const std::string& id,
         const InputMethodDescriptors& descriptors,
         InputMethodEngineInterface* instance) override {
@@ -109,7 +108,7 @@ class MyMockInputMethodManager : public MockInputMethodManager {
     }
 
    protected:
-    virtual ~State() {};
+    ~State() override{};
 
    private:
     MyMockInputMethodManager* const manager_;
@@ -123,10 +122,9 @@ class MyMockInputMethodManager : public MockInputMethodManager {
     state_ = new State(this);
   }
 
-  virtual ~MyMockInputMethodManager() {}
+  ~MyMockInputMethodManager() override {}
 
-  virtual scoped_ptr<InputMethodDescriptors>
-  GetSupportedInputMethods() const override {
+  scoped_ptr<InputMethodDescriptors> GetSupportedInputMethods() const override {
     return whitelist_.GetSupportedInputMethods().Pass();
   }
 
@@ -144,9 +142,9 @@ class MyMockInputMethodManager : public MockInputMethodManager {
 class PreferencesTest : public testing::Test {
  public:
   PreferencesTest() {}
-  virtual ~PreferencesTest() {}
+  ~PreferencesTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     profile_manager_.reset(
         new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
     ASSERT_TRUE(profile_manager_->SetUp());
@@ -180,7 +178,7 @@ class PreferencesTest : public testing::Test {
     prefs_.reset(new Preferences(mock_manager_));
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     input_method::Shutdown();
     // UserSessionManager doesn't listen to profile destruction, so make sure
     // the default IME state isn't still cached in case test_profile_ is
@@ -222,9 +220,9 @@ TEST_F(PreferencesTest, TestUpdatePrefOnBrowserScreenDetails) {
 class InputMethodPreferencesTest : public PreferencesTest {
  public:
   InputMethodPreferencesTest() {}
-  virtual ~InputMethodPreferencesTest() {}
+  ~InputMethodPreferencesTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     PreferencesTest::SetUp();
 
     // Initialize pref members.

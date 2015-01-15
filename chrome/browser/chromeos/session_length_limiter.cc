@@ -34,10 +34,10 @@ const int kSessionLengthLimitMaxMs = 24 * 60 * 60 * 1000; // 24 hours.
 class SessionLengthLimiterDelegateImpl : public SessionLengthLimiter::Delegate {
  public:
   SessionLengthLimiterDelegateImpl();
-  virtual ~SessionLengthLimiterDelegateImpl();
+  ~SessionLengthLimiterDelegateImpl() override;
 
-  virtual const base::TimeTicks GetCurrentTime() const override;
-  virtual void StopSession() override;
+  const base::TimeTicks GetCurrentTime() const override;
+  void StopSession() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SessionLengthLimiterDelegateImpl);

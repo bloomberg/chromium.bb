@@ -35,10 +35,10 @@ class SessionLengthLimiter : public ui::UserActivityObserver {
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
   SessionLengthLimiter(Delegate* delegate, bool browser_restarted);
-  virtual ~SessionLengthLimiter();
+  ~SessionLengthLimiter() override;
 
   // ui::UserActivityObserver:
-  virtual void OnUserActivity(const ui::Event* event) override;
+  void OnUserActivity(const ui::Event* event) override;
 
  private:
   // Attempt to restore the session start time and the flag indicating user

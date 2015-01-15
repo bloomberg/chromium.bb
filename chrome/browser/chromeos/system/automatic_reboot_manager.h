@@ -90,7 +90,7 @@ class AutomaticRebootManager : public PowerManagerClient::Observer,
   };
 
   explicit AutomaticRebootManager(scoped_ptr<base::TickClock> clock);
-  virtual ~AutomaticRebootManager();
+  ~AutomaticRebootManager() override;
 
   AutomaticRebootManagerObserver::Reason reboot_reason() const {
     return reboot_reason_;
@@ -101,19 +101,18 @@ class AutomaticRebootManager : public PowerManagerClient::Observer,
   void RemoveObserver(AutomaticRebootManagerObserver* observer);
 
   // PowerManagerClient::Observer:
-  virtual void SuspendDone(const base::TimeDelta& sleep_duration) override;
+  void SuspendDone(const base::TimeDelta& sleep_duration) override;
 
   // UpdateEngineClient::Observer:
-  virtual void UpdateStatusChanged(
-      const UpdateEngineClient::Status& status) override;
+  void UpdateStatusChanged(const UpdateEngineClient::Status& status) override;
 
   // ui::UserActivityObserver:
-  virtual void OnUserActivity(const ui::Event* event) override;
+  void OnUserActivity(const ui::Event* event) override;
 
   // content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
 

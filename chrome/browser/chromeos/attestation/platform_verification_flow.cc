@@ -75,39 +75,38 @@ namespace attestation {
 class DefaultDelegate : public PlatformVerificationFlow::Delegate {
  public:
   DefaultDelegate() {}
-  virtual ~DefaultDelegate() {}
+  ~DefaultDelegate() override {}
 
-  virtual void ShowConsentPrompt(
+  void ShowConsentPrompt(
       content::WebContents* web_contents,
       const PlatformVerificationFlow::Delegate::ConsentCallback& callback)
       override {
     PlatformVerificationDialog::ShowDialog(web_contents, callback);
   }
 
-  virtual PrefService* GetPrefs(content::WebContents* web_contents) override {
+  PrefService* GetPrefs(content::WebContents* web_contents) override {
     return user_prefs::UserPrefs::Get(web_contents->GetBrowserContext());
   }
 
-  virtual const GURL& GetURL(content::WebContents* web_contents) override {
+  const GURL& GetURL(content::WebContents* web_contents) override {
     const GURL& url = web_contents->GetLastCommittedURL();
     if (!url.is_valid())
       return web_contents->GetVisibleURL();
     return url;
   }
 
-  virtual user_manager::User* GetUser(
-      content::WebContents* web_contents) override {
+  user_manager::User* GetUser(content::WebContents* web_contents) override {
     return ProfileHelper::Get()->GetUserByProfile(
         Profile::FromBrowserContext(web_contents->GetBrowserContext()));
   }
 
-  virtual HostContentSettingsMap* GetContentSettings(
+  HostContentSettingsMap* GetContentSettings(
       content::WebContents* web_contents) override {
     return Profile::FromBrowserContext(web_contents->GetBrowserContext())->
         GetHostContentSettingsMap();
   }
 
-  virtual bool IsGuestOrIncognito(content::WebContents* web_contents) override {
+  bool IsGuestOrIncognito(content::WebContents* web_contents) override {
     Profile* profile =
         Profile::FromBrowserContext(web_contents->GetBrowserContext());
     return (profile->IsOffTheRecord() || profile->IsGuestSession());

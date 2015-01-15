@@ -14,10 +14,10 @@ namespace system_logs {
 class CommandLineLogSource : public SystemLogsSource {
  public:
   CommandLineLogSource();
-  virtual ~CommandLineLogSource();
+  ~CommandLineLogSource() override;
 
   // SystemLogsSource override.
-  virtual void Fetch(const SysLogsSourceCallback& callback) override;
+  void Fetch(const SysLogsSourceCallback& callback) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CommandLineLogSource);

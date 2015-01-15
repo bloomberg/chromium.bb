@@ -214,7 +214,7 @@ class ProxyConfigServiceImplTest : public testing::Test {
       : ui_thread_(BrowserThread::UI, &loop_),
         io_thread_(BrowserThread::IO, &loop_) {}
 
-  virtual void SetUp() {
+  void SetUp() override {
     DBusThreadManager::Initialize();
     NetworkHandler::Initialize();
 
@@ -259,7 +259,7 @@ class ProxyConfigServiceImplTest : public testing::Test {
     loop_.RunUntilIdle();
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     config_service_impl_->DetachFromPrefService();
     loop_.RunUntilIdle();
     config_service_impl_.reset();

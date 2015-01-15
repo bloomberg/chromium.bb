@@ -60,11 +60,11 @@ class DialogLauncher : public content::NotificationObserver {
                    content::NotificationService::AllSources());
   }
 
-  virtual ~DialogLauncher() {}
+  ~DialogLauncher() override {}
 
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override {
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override {
     DCHECK(type == chrome::NOTIFICATION_SESSION_STARTED);
     DCHECK(content::Details<const user_manager::User>(details).ptr() ==
            ProfileHelper::Get()->GetUserByProfile(profile_));

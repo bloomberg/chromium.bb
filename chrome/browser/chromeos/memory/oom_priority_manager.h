@@ -39,7 +39,7 @@ class LowMemoryObserver;
 class OomPriorityManager : public content::NotificationObserver {
  public:
   OomPriorityManager();
-  virtual ~OomPriorityManager();
+  ~OomPriorityManager() override;
 
   // Number of discard events since Chrome started.
   int discard_count() const { return discard_count_; }
@@ -135,9 +135,9 @@ class OomPriorityManager : public content::NotificationObserver {
 
   static bool CompareTabStats(TabStats first, TabStats second);
 
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // Called by the memory pressure listener when the memory pressure rises.
   void OnMemoryPressure(

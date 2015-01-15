@@ -43,22 +43,22 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
  public:
   explicit ChromeBrowserMainPartsChromeos(
       const content::MainFunctionParams& parameters);
-  virtual ~ChromeBrowserMainPartsChromeos();
+  ~ChromeBrowserMainPartsChromeos() override;
 
   // ChromeBrowserMainParts overrides.
-  virtual void PreEarlyInitialization() override;
-  virtual void PreMainMessageLoopStart() override;
-  virtual void PostMainMessageLoopStart() override;
-  virtual void PreMainMessageLoopRun() override;
+  void PreEarlyInitialization() override;
+  void PreMainMessageLoopStart() override;
+  void PostMainMessageLoopStart() override;
+  void PreMainMessageLoopRun() override;
 
   // Stages called from PreMainMessageLoopRun.
-  virtual void PreProfileInit() override;
-  virtual void PostProfileInit() override;
-  virtual void PreBrowserStart() override;
-  virtual void PostBrowserStart() override;
+  void PreProfileInit() override;
+  void PostProfileInit() override;
+  void PreBrowserStart() override;
+  void PostBrowserStart() override;
 
-  virtual void PostMainMessageLoopRun() override;
-  virtual void PostDestroyThreads() override;
+  void PostMainMessageLoopRun() override;
+  void PostDestroyThreads() override;
 
  private:
   scoped_ptr<default_app_order::ExternalLoader> app_order_loader_;

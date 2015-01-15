@@ -23,42 +23,38 @@ class FirstRunUIBrowserTest : public InProcessBrowserTest,
   }
 
   // FirstRunActor::Delegate overrides.
-  virtual void OnActorInitialized() override {
+  void OnActorInitialized() override {
     initialized_ = true;
     if (!on_initialized_callback_.is_null())
       on_initialized_callback_.Run();
     controller()->OnActorInitialized();
   }
 
-  virtual void OnNextButtonClicked(const std::string& step_name) override {
+  void OnNextButtonClicked(const std::string& step_name) override {
     controller()->OnNextButtonClicked(step_name);
   }
 
-  virtual void OnStepShown(const std::string& step_name) override {
+  void OnStepShown(const std::string& step_name) override {
     current_step_name_ = step_name;
     if (!on_step_shown_callback_.is_null())
       on_step_shown_callback_.Run();
     controller()->OnStepShown(step_name);
   }
 
-  virtual void OnStepHidden(const std::string& step_name) override {
+  void OnStepHidden(const std::string& step_name) override {
     controller()->OnStepHidden(step_name);
   }
 
-  virtual void OnHelpButtonClicked() override {
-    controller()->OnHelpButtonClicked();
-  }
+  void OnHelpButtonClicked() override { controller()->OnHelpButtonClicked(); }
 
-  virtual void OnActorFinalized() override {
+  void OnActorFinalized() override {
     finalized_ = true;
     if (!on_finalized_callback_.is_null())
       on_finalized_callback_.Run();
     controller()->OnActorFinalized();
   }
 
-  virtual void OnActorDestroyed() override {
-    controller()->OnActorDestroyed();
-  }
+  void OnActorDestroyed() override { controller()->OnActorDestroyed(); }
 
   void LaunchTutorial() {
     chromeos::first_run::LaunchTutorial();

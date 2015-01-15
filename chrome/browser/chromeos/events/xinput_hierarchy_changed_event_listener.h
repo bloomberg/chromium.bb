@@ -33,11 +33,11 @@ class XInputHierarchyChangedEventListener : public ui::PlatformEventObserver {
   friend struct DefaultSingletonTraits<XInputHierarchyChangedEventListener>;
 
   XInputHierarchyChangedEventListener();
-  virtual ~XInputHierarchyChangedEventListener();
+  ~XInputHierarchyChangedEventListener() override;
 
   // ui::PlatformEventObserver:
-  virtual void WillProcessEvent(const ui::PlatformEvent& event) override;
-  virtual void DidProcessEvent(const ui::PlatformEvent& event) override;
+  void WillProcessEvent(const ui::PlatformEvent& event) override;
+  void DidProcessEvent(const ui::PlatformEvent& event) override;
 
   // Returns true if the event was processed, false otherwise.
   void ProcessedXEvent(XEvent* xevent);

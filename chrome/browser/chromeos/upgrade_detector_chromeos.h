@@ -16,7 +16,7 @@ template <typename T> struct DefaultSingletonTraits;
 class UpgradeDetectorChromeos : public UpgradeDetector,
                                 public chromeos::UpdateEngineClient::Observer {
  public:
-  virtual ~UpgradeDetectorChromeos();
+  ~UpgradeDetectorChromeos() override;
 
   static UpgradeDetectorChromeos* GetInstance();
 
@@ -35,7 +35,7 @@ class UpgradeDetectorChromeos : public UpgradeDetector,
   UpgradeDetectorChromeos();
 
   // chromeos::UpdateEngineClient::Observer implementation.
-  virtual void UpdateStatusChanged(
+  void UpdateStatusChanged(
       const chromeos::UpdateEngineClient::Status& status) override;
 
   // The function that sends out a notification (after a certain time has

@@ -21,13 +21,13 @@ namespace system_logs {
 class DebugDaemonLogSource : public SystemLogsSource {
  public:
   explicit DebugDaemonLogSource(bool scrub);
-  virtual ~DebugDaemonLogSource();
+  ~DebugDaemonLogSource() override;
 
   // SystemLogsSource override:
   // Fetches logs from the daemon over dbus. After the fetch is complete, the
   // results will be forwarded to the request supplied to the constructor and
   // this instance will free itself.
-  virtual void Fetch(const SysLogsSourceCallback& callback) override;
+  void Fetch(const SysLogsSourceCallback& callback) override;
 
  private:
   typedef std::map<std::string, std::string> KeyValueMap;

@@ -26,11 +26,10 @@ class ScreenLockServiceProvider
     : public CrosDBusService::ServiceProviderInterface {
  public:
   ScreenLockServiceProvider();
-  virtual ~ScreenLockServiceProvider();
+  ~ScreenLockServiceProvider() override;
 
   // CrosDBusService::ServiceProviderInterface overrides:
-  virtual void Start(
-      scoped_refptr<dbus::ExportedObject> exported_object) override;
+  void Start(scoped_refptr<dbus::ExportedObject> exported_object) override;
 
  private:
   // Called from ExportedObject when a handler is exported as a D-Bus

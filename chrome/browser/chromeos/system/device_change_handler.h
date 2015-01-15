@@ -16,12 +16,12 @@ namespace system {
 class DeviceChangeHandler : public PointerDeviceObserver::Observer {
  public:
   DeviceChangeHandler();
-  virtual ~DeviceChangeHandler();
+  ~DeviceChangeHandler() override;
 
  private:
   // PointerDeviceObserver::Observer implementation.
-  virtual void TouchpadExists(bool exists) override;
-  virtual void MouseExists(bool exists) override;
+  void TouchpadExists(bool exists) override;
+  void MouseExists(bool exists) override;
 
   scoped_ptr<PointerDeviceObserver> pointer_device_observer_;
 };
