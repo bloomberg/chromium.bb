@@ -33,30 +33,32 @@ void SVGImagePainter::paint(const PaintInfo& paintInfo)
 
     FloatRect boundingBox = m_renderSVGImage.paintInvalidationRectInLocalCoordinates();
 
-    PaintInfo childPaintInfo(paintInfo);
-    GraphicsContextStateSaver stateSaver(*childPaintInfo.context);
-    TransformRecorder transformRecorder(*childPaintInfo.context, m_renderSVGImage.displayItemClient(), m_renderSVGImage.localToParentTransform());
-    SVGRenderingContext renderingContext(&m_renderSVGImage, childPaintInfo);
-    if (renderingContext.isRenderingPrepared()) {
-        RenderDrawingRecorder recorder(childPaintInfo.context, m_renderSVGImage, childPaintInfo.phase, boundingBox);
-        if (!recorder.canUseCachedDrawing()) {
-            if (m_renderSVGImage.style()->svgStyle().bufferedRendering() != BR_STATIC) {
-                paintForeground(childPaintInfo);
-            } else {
-                RefPtr<const SkPicture>& bufferedForeground = m_renderSVGImage.bufferedForeground();
-                if (!bufferedForeground) {
-                    childPaintInfo.context->beginRecording(m_renderSVGImage.objectBoundingBox());
+    TransformRecorder transformRecorder(*paintInfo.context, m_renderSVGImage.displayItemClient(), m_renderSVGImage.localToParentTransform());
+    {
+        PaintInfo childPaintInfo(paintInfo);
+        GraphicsContextStateSaver stateSaver(*childPaintInfo.context);
+        SVGRenderingContext renderingContext(&m_renderSVGImage, childPaintInfo);
+        if (renderingContext.isRenderingPrepared()) {
+            RenderDrawingRecorder recorder(childPaintInfo.context, m_renderSVGImage, childPaintInfo.phase, boundingBox);
+            if (!recorder.canUseCachedDrawing()) {
+                if (m_renderSVGImage.style()->svgStyle().bufferedRendering() != BR_STATIC) {
                     paintForeground(childPaintInfo);
-                    bufferedForeground = childPaintInfo.context->endRecording();
-                }
+                } else {
+                    RefPtr<const SkPicture>& bufferedForeground = m_renderSVGImage.bufferedForeground();
+                    if (!bufferedForeground) {
+                        childPaintInfo.context->beginRecording(m_renderSVGImage.objectBoundingBox());
+                        paintForeground(childPaintInfo);
+                        bufferedForeground = childPaintInfo.context->endRecording();
+                    }
 
-                childPaintInfo.context->drawPicture(bufferedForeground.get());
+                    childPaintInfo.context->drawPicture(bufferedForeground.get());
+                }
             }
         }
     }
 
     if (m_renderSVGImage.style()->outlineWidth())
-        ObjectPainter(m_renderSVGImage).paintOutline(childPaintInfo, LayoutRect(boundingBox));
+        ObjectPainter(m_renderSVGImage).paintOutline(paintInfo, LayoutRect(boundingBox));
 }
 
 void SVGImagePainter::paintForeground(const PaintInfo& paintInfo)
