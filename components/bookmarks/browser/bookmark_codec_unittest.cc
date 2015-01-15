@@ -112,32 +112,33 @@ class BookmarkCodecTest : public testing::Test {
                                  base::DictionaryValue** result_value) {
     ASSERT_EQ(base::Value::TYPE_DICTIONARY, value->GetType());
 
-    base::DictionaryValue* d_value = static_cast<base::DictionaryValue*>(value);
+    base::DictionaryValue* d_value = nullptr;
+    value->GetAsDictionary(&d_value);
     base::Value* roots;
     ASSERT_TRUE(d_value->Get(BookmarkCodec::kRootsKey, &roots));
     ASSERT_EQ(base::Value::TYPE_DICTIONARY, roots->GetType());
 
-    base::DictionaryValue* roots_d_value =
-        static_cast<base::DictionaryValue*>(roots);
+    base::DictionaryValue* roots_d_value = nullptr;
+    roots->GetAsDictionary(&roots_d_value);
     base::Value* bb_value;
     ASSERT_TRUE(
         roots_d_value->Get(BookmarkCodec::kRootFolderNameKey, &bb_value));
     ASSERT_EQ(base::Value::TYPE_DICTIONARY, bb_value->GetType());
 
-    base::DictionaryValue* bb_d_value =
-        static_cast<base::DictionaryValue*>(bb_value);
+    base::DictionaryValue* bb_d_value = nullptr;
+    bb_value->GetAsDictionary(&bb_d_value);
     base::Value* bb_children_value;
     ASSERT_TRUE(
         bb_d_value->Get(BookmarkCodec::kChildrenKey, &bb_children_value));
     ASSERT_EQ(base::Value::TYPE_LIST, bb_children_value->GetType());
 
-    base::ListValue* bb_children_l_value =
-        static_cast<base::ListValue*>(bb_children_value);
+    base::ListValue* bb_children_l_value = nullptr;
+    bb_children_value->GetAsList(&bb_children_l_value);
     base::Value* child_value;
     ASSERT_TRUE(bb_children_l_value->Get(index, &child_value));
     ASSERT_EQ(base::Value::TYPE_DICTIONARY, child_value->GetType());
 
-    *result_value = static_cast<base::DictionaryValue*>(child_value);
+    child_value->GetAsDictionary(result_value);
   }
 
   base::Value* EncodeHelper(BookmarkModel* model, std::string* checksum) {

@@ -161,18 +161,16 @@ bool BookmarkCodec::DecodeHelper(BookmarkNode* bb_node,
                                  BookmarkNode* other_folder_node,
                                  BookmarkNode* mobile_folder_node,
                                  const base::Value& value) {
-  if (value.GetType() != base::Value::TYPE_DICTIONARY)
+  const base::DictionaryValue* d_value = nullptr;
+  if (!value.GetAsDictionary(&d_value))
     return false;  // Unexpected type.
 
-  const base::DictionaryValue& d_value =
-      static_cast<const base::DictionaryValue&>(value);
-
   int version;
-  if (!d_value.GetInteger(kVersionKey, &version) || version != kCurrentVersion)
+  if (!d_value->GetInteger(kVersionKey, &version) || version != kCurrentVersion)
     return false;  // Unknown version.
 
   const base::Value* checksum_value;
-  if (d_value.Get(kChecksumKey, &checksum_value)) {
+  if (d_value->Get(kChecksumKey, &checksum_value)) {
     if (checksum_value->GetType() != base::Value::TYPE_STRING)
       return false;
     if (!checksum_value->GetAsString(&stored_checksum_))
@@ -180,36 +178,34 @@ bool BookmarkCodec::DecodeHelper(BookmarkNode* bb_node,
   }
 
   const base::Value* roots;
-  if (!d_value.Get(kRootsKey, &roots))
+  if (!d_value->Get(kRootsKey, &roots))
     return false;  // No roots.
 
-  if (roots->GetType() != base::Value::TYPE_DICTIONARY)
+  const base::DictionaryValue* roots_d_value = nullptr;
+  if (!roots->GetAsDictionary(&roots_d_value))
     return false;  // Invalid type for roots.
-
-  const base::DictionaryValue* roots_d_value =
-      static_cast<const base::DictionaryValue*>(roots);
   const base::Value* root_folder_value;
-  const base::Value* other_folder_value = NULL;
+  const base::Value* other_folder_value = nullptr;
+  const base::DictionaryValue* root_folder_d_value = nullptr;
+  const base::DictionaryValue* other_folder_d_value = nullptr;
   if (!roots_d_value->Get(kRootFolderNameKey, &root_folder_value) ||
-      root_folder_value->GetType() != base::Value::TYPE_DICTIONARY ||
+      !root_folder_value->GetAsDictionary(&root_folder_d_value) ||
       !roots_d_value->Get(kOtherBookmarkFolderNameKey, &other_folder_value) ||
-      other_folder_value->GetType() != base::Value::TYPE_DICTIONARY) {
+      !other_folder_value->GetAsDictionary(&other_folder_d_value)) {
     return false;  // Invalid type for root folder and/or other
                    // folder.
   }
-  DecodeNode(*static_cast<const base::DictionaryValue*>(root_folder_value),
-             NULL, bb_node);
-  DecodeNode(*static_cast<const base::DictionaryValue*>(other_folder_value),
-             NULL, other_folder_node);
+  DecodeNode(*root_folder_d_value, nullptr, bb_node);
+  DecodeNode(*other_folder_d_value, nullptr, other_folder_node);
 
   // Fail silently if we can't deserialize mobile bookmarks. We can't require
   // them to exist in order to be backwards-compatible with older versions of
   // chrome.
   const base::Value* mobile_folder_value;
+  const base::DictionaryValue* mobile_folder_d_value = nullptr;
   if (roots_d_value->Get(kMobileBookmarkFolderNameKey, &mobile_folder_value) &&
-      mobile_folder_value->GetType() == base::Value::TYPE_DICTIONARY) {
-    DecodeNode(*static_cast<const base::DictionaryValue*>(mobile_folder_value),
-               NULL, mobile_folder_node);
+      mobile_folder_value->GetAsDictionary(&mobile_folder_d_value)) {
+    DecodeNode(*mobile_folder_d_value, nullptr, mobile_folder_node);
   } else {
     // If we didn't find the mobile folder, we're almost guaranteed to have a
     // duplicate id when we add the mobile folder. Consequently, if we don't
@@ -253,11 +249,10 @@ bool BookmarkCodec::DecodeChildren(const base::ListValue& child_value_list,
     if (!child_value_list.Get(i, &child_value))
       return false;
 
-    if (child_value->GetType() != base::Value::TYPE_DICTIONARY)
+    const base::DictionaryValue* child_d_value = nullptr;
+    if (!child_value->GetAsDictionary(&child_d_value))
       return false;
-
-    DecodeNode(*static_cast<const base::DictionaryValue*>(child_value),
-               parent, NULL);
+    DecodeNode(*child_d_value, parent, nullptr);
   }
   return true;
 }
@@ -346,10 +341,11 @@ bool BookmarkCodec::DecodeNode(const base::DictionaryValue& value,
 
     UpdateChecksumWithFolderNode(id_string, title);
 
-    if (!DecodeChildren(*static_cast<const base::ListValue*>(child_values),
-                        node)) {
+    const base::ListValue* child_l_values = nullptr;
+    if (!child_values->GetAsList(&child_l_values))
       return false;
-    }
+    if (!DecodeChildren(*child_l_values, node))
+      return false;
   }
 
   node->SetTitle(title);
@@ -391,7 +387,7 @@ bool BookmarkCodec::DecodeMetaInfo(const base::DictionaryValue& value,
     std::string meta_info_str;
     meta_info->GetAsString(&meta_info_str);
     JSONStringValueSerializer serializer(meta_info_str);
-    deserialized_holder.reset(serializer.Deserialize(NULL, NULL));
+    deserialized_holder.reset(serializer.Deserialize(nullptr, nullptr));
     if (!deserialized_holder)
       return false;
     meta_info = deserialized_holder.get();
