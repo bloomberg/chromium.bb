@@ -140,6 +140,22 @@ crbug.com/338794 crbug.com/192172 compositing/rtl/rtl-iframe-fixed-overflow.html
 
 crbug.com/239811 crbug.com/229113 http/tests/history/redirect-js-location-assign-0-seconds.html [ Failure Pass ]
 
+Bug(eae) fast/text/international/bidi-linebreak-001.html [ NeedsRebaseline ]
+Bug(eae) fast/text/international/bidi-linebreak-002.html [ NeedsRebaseline ]
+Bug(eae) fast/text/international/bidi-linebreak-003.html [ NeedsRebaseline ]
+Bug(eae) fast/text/international/hindi-whitespace.html [ NeedsRebaseline ]
+Bug(eae) virtual/antialiasedtext/fast/text/international/bidi-linebreak-001.html [ NeedsRebaseline ]
+Bug(eae) virtual/antialiasedtext/fast/text/international/bidi-linebreak-002.html [ NeedsRebaseline ]
+Bug(eae) virtual/antialiasedtext/fast/text/international/bidi-linebreak-003.html [ NeedsRebaseline ]
+Bug(eae) virtual/antialiasedtext/fast/text/international/hindi-whitespace.html [ NeedsRebaseline ]
+Bug(eae) virtual/slimmingpaint/fast/text/international/bidi-linebreak-001.html [ NeedsRebaseline ]
+Bug(eae) virtual/slimmingpaint/fast/text/international/bidi-linebreak-002.html [ NeedsRebaseline ]
+Bug(eae) virtual/slimmingpaint/fast/text/international/bidi-linebreak-003.html [ NeedsRebaseline ]
+Bug(eae) virtual/slimmingpaint/fast/text/international/hindi-whitespace.html [ NeedsRebaseline ]
+
+crbug.com/449242 fast/css/word-spacing-characters-complex-text.html [ Pass ImageOnlyFailure ]
+crbug.com/449242 virtual/slimmingpaint/fast/css/word-spacing-characters-complex-text.html [ Pass ImageOnlyFailure Crash ]
+
 crbug.com/438589 fast/repaint/obscured-background-no-repaint.html [ Failure Pass ]
 
 # Crashing after V8 roll to 3.28.43.1.
@@ -184,7 +200,6 @@ crbug.com/387740 imported/web-platform-tests/mediacapture-streams/stream-api/med
 
 crbug.com/443804 virtual/slimmingpaint/fast/css/ZeroOpacityLayers.html [ ImageOnlyFailure ]
 crbug.com/443804 virtual/slimmingpaint/fast/css/ZeroOpacityLayers2.html [ ImageOnlyFailure ]
-crbug.com/443804 [ SnowLeopard Linux ] virtual/slimmingpaint/fast/css/word-spacing-characters-complex-text.html [ ImageOnlyFailure Crash ]
 crbug.com/242735 virtual/slimmingpaint/fast/css/ex-unit-with-no-x-height.html [ Failure ]
 crbug.com/444591 virtual/slimmingpaint/fast/css/mask-missing-image-crash.html [ Pass Failure ]
 crbug.com/444591 [ Win ] virtual/slimmingpaint/fast/css/css3-ch-unit.html [ Failure ]
@@ -206,8 +221,6 @@ crbug.com/360889 [ Win ] fast/css/css3-ch-unit.html [ Failure ]
 crbug.com/360889 [ Win ] fast/text/whitespace/nowrap-line-break-after-white-space.html [ Failure ]
 crbug.com/360889 [ Win ] virtual/antialiasedtext/fast/text/whitespace/nowrap-line-break-after-white-space.html [ Failure ]
 crbug.com/360889 [ Win ] virtual/slimmingpaint/fast/text/whitespace/nowrap-line-break-after-white-space.html [ Failure ]
-
-crbug.com/410461 [ Linux ] fast/css/word-spacing-characters-complex-text.html [ ImageOnlyFailure ]
 
 crbug.com/325673 imported/web-platform-tests/custom-elements/concepts/custom-elements-type-allowed-chars-first-char.html [ Failure Timeout ]
 crbug.com/325673 imported/web-platform-tests/custom-elements/concepts/custom-elements-type-allowed-chars.html [ Failure Timeout ]
@@ -819,7 +832,6 @@ crbug.com/334269 [ Mac ] svg/text/tspan-multiple-outline.svg [ ImageOnlyFailure 
 crbug.com/334269 [ Mac ] svg/transforms/transformed-text-fill-gradient.html [ ImageOnlyFailure ]
 crbug.com/334269 [ Mac ] virtual/antialiasedtext/fast/text/international/complex-text-missing-glyph-fallback.html [ ImageOnlyFailure ]
 crbug.com/334269 [ Mac ] virtual/antialiasedtext/fast/text/international/vertical-positioning-with-combining-marks.html [ ImageOnlyFailure ]
-crbug.com/334269 [ Mac ] fast/css/word-spacing-characters-complex-text.html [ Skip ]
 crbug.com/334269 [ Mac ] fast/multicol/multicol-with-child-renderLayer-for-input.html [ ImageOnlyFailure Crash ]
 
 crbug.com/334269 [ SnowLeopard Debug ] fast/text/zero-width-characters-complex-script.html [ Crash ]

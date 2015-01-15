@@ -513,9 +513,8 @@ TextRun InlineTextBox::constructTextRun(RenderStyle* style, const Font& font, St
 
     TextRun run(string, textPos(), expansion(), expansionBehavior(), direction(), dirOverride() || style->rtlOrdering() == VisualOrder, !renderer().canUseSimpleFontCodePath());
     run.setTabSize(!style->collapseWhiteSpace(), style->tabSize());
-    run.setCharacterScanForCodePath(!renderer().canUseSimpleFontCodePath());
+    run.setCodePath(renderer().canUseSimpleFontCodePath() ? TextRun::ForceSimple : TextRun::ForceComplex);
     run.setTextJustify(style->textJustify());
-    run.setUseComplexCodePath(!renderer().canUseSimpleFontCodePath());
 
     // Propagate the maximum length of the characters buffer to the TextRun, even when we're only processing a substring.
     run.setCharactersLength(maximumLength);

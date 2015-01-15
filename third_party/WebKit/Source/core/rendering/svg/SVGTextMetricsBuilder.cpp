@@ -81,8 +81,7 @@ SVGTextMetricsCalculator::SVGTextMetricsCalculator(RenderSVGInlineText* text)
     const Font& scaledFont = text->scaledFont();
     CodePath codePath = scaledFont.codePath(TextRunPaintInfo(m_run));
     m_isComplexText = codePath == ComplexPath;
-    m_run.setCharacterScanForCodePath(!m_isComplexText);
-    m_run.setUseComplexCodePath(m_isComplexText);
+    m_run.setCodePath(m_isComplexText ? TextRun::ForceComplex : TextRun::ForceSimple);
 
     if (!m_isComplexText)
         m_simpleShaper = adoptPtr(new SimpleShaper(&scaledFont, m_run));

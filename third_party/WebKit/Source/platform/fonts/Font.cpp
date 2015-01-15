@@ -372,10 +372,10 @@ CodePath Font::codePath(const TextRunPaintInfo& runInfo) const
     if (fontDescription().textRendering() == OptimizeLegibility || fontDescription().textRendering() == GeometricPrecision)
         return ComplexPath;
 
-    if (run.useComplexCodePath())
+    if (run.codePath() == TextRun::ForceComplex)
         return ComplexPath;
 
-    if (!run.characterScanForCodePath())
+    if (run.codePath() == TextRun::ForceSimple)
         return SimplePath;
 
     if (run.is8Bit())

@@ -764,9 +764,7 @@ ALWAYS_INLINE float RenderText::widthFromCache(const Font& f, int start, int len
     TextRun run = constructTextRun(const_cast<RenderText*>(this), f, this, start, len, style(), textDirection);
     run.setCharactersLength(textLength() - start);
     ASSERT(run.charactersLength() >= run.length());
-
-    run.setCharacterScanForCodePath(!canUseSimpleFontCodePath());
-    run.setUseComplexCodePath(!canUseSimpleFontCodePath());
+    run.setCodePath(canUseSimpleFontCodePath() ? TextRun::ForceSimple : TextRun::ForceComplex);
     run.setTabSize(!style()->collapseWhiteSpace(), style()->tabSize());
     run.setXPos(xPos);
     return f.width(run, fallbackFonts, glyphOverflow);
@@ -819,7 +817,7 @@ void RenderText::trimmedPrefWidths(float leadWidth,
         if (stripFrontSpaces) {
             const UChar spaceChar = space;
             TextRun run = constructTextRun(this, font, &spaceChar, 1, style(), direction);
-            run.setUseComplexCodePath(!canUseSimpleFontCodePath());
+            run.setCodePath(canUseSimpleFontCodePath() ? TextRun::ForceSimple : TextRun::ForceComplex);
             float spaceWidth = font.width(run);
             maxWidth -= spaceWidth;
         } else {
@@ -1118,7 +1116,7 @@ void RenderText::computePreferredLogicalWidths(float leadWidth, HashSet<const Si
             } else {
                 TextRun run = constructTextRun(this, f, this, i, 1, styleToUse, textDirection);
                 run.setCharactersLength(len - i);
-                run.setUseComplexCodePath(!canUseSimpleFontCodePath());
+                run.setCodePath(canUseSimpleFontCodePath() ? TextRun::ForceSimple : TextRun::ForceComplex);
                 ASSERT(run.charactersLength() >= run.length());
                 run.setTabSize(!style()->collapseWhiteSpace(), style()->tabSize());
                 run.setXPos(leadWidth + currMaxWidth);
@@ -1530,8 +1528,7 @@ float RenderText::width(unsigned from, unsigned len, const Font& f, float xPos, 
         run.setCharactersLength(textLength() - from);
         ASSERT(run.charactersLength() >= run.length());
 
-        run.setCharacterScanForCodePath(!canUseSimpleFontCodePath());
-        run.setUseComplexCodePath(!canUseSimpleFontCodePath());
+        run.setCodePath(canUseSimpleFontCodePath() ? TextRun::ForceSimple : TextRun::ForceComplex);
         run.setTabSize(!style()->collapseWhiteSpace(), style()->tabSize());
         run.setXPos(xPos);
         w = f.width(run, fallbackFonts, glyphOverflow);

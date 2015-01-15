@@ -54,21 +54,26 @@ public:
         AllowLeadingExpansion = 1 << 1,
     };
 
+    enum TextCodePath {
+        Auto = 0,
+        ForceSimple = 1,
+        ForceComplex = 2
+    };
+
     typedef unsigned ExpansionBehavior;
 
-    TextRun(const LChar* c, unsigned len, float xpos = 0, float expansion = 0, ExpansionBehavior expansionBehavior = AllowTrailingExpansion | ForbidLeadingExpansion, TextDirection direction = LTR, bool directionalOverride = false, bool characterScanForCodePath = true)
+    TextRun(const LChar* c, unsigned len, float xpos = 0, float expansion = 0, ExpansionBehavior expansionBehavior = AllowTrailingExpansion | ForbidLeadingExpansion, TextDirection direction = LTR, bool directionalOverride = false)
         : m_charactersLength(len)
         , m_len(len)
         , m_xpos(xpos)
         , m_horizontalGlyphStretch(1)
         , m_expansion(expansion)
         , m_expansionBehavior(expansionBehavior)
+        , m_codePath(Auto)
         , m_is8Bit(true)
         , m_allowTabs(false)
         , m_direction(direction)
         , m_directionalOverride(directionalOverride)
-        , m_characterScanForCodePath(characterScanForCodePath)
-        , m_useComplexCodePath(false)
         , m_disableSpacing(false)
         , m_textJustify(TextJustifyAuto)
         , m_tabSize(0)
@@ -77,19 +82,18 @@ public:
         m_data.characters8 = c;
     }
 
-    TextRun(const UChar* c, unsigned len, float xpos = 0, float expansion = 0, ExpansionBehavior expansionBehavior = AllowTrailingExpansion | ForbidLeadingExpansion, TextDirection direction = LTR, bool directionalOverride = false, bool characterScanForCodePath = true)
+    TextRun(const UChar* c, unsigned len, float xpos = 0, float expansion = 0, ExpansionBehavior expansionBehavior = AllowTrailingExpansion | ForbidLeadingExpansion, TextDirection direction = LTR, bool directionalOverride = false)
         : m_charactersLength(len)
         , m_len(len)
         , m_xpos(xpos)
         , m_horizontalGlyphStretch(1)
         , m_expansion(expansion)
         , m_expansionBehavior(expansionBehavior)
+        , m_codePath(Auto)
         , m_is8Bit(false)
         , m_allowTabs(false)
         , m_direction(direction)
         , m_directionalOverride(directionalOverride)
-        , m_characterScanForCodePath(characterScanForCodePath)
-        , m_useComplexCodePath(false)
         , m_disableSpacing(false)
         , m_textJustify(TextJustifyAuto)
         , m_tabSize(0)
@@ -98,18 +102,17 @@ public:
         m_data.characters16 = c;
     }
 
-    TextRun(const String& string, float xpos = 0, float expansion = 0, ExpansionBehavior expansionBehavior = AllowTrailingExpansion | ForbidLeadingExpansion, TextDirection direction = LTR, bool directionalOverride = false, bool characterScanForCodePath = true, bool normalizeSpace = false)
+    TextRun(const String& string, float xpos = 0, float expansion = 0, ExpansionBehavior expansionBehavior = AllowTrailingExpansion | ForbidLeadingExpansion, TextDirection direction = LTR, bool directionalOverride = false, bool normalizeSpace = false)
         : m_charactersLength(string.length())
         , m_len(string.length())
         , m_xpos(xpos)
         , m_horizontalGlyphStretch(1)
         , m_expansion(expansion)
         , m_expansionBehavior(expansionBehavior)
+        , m_codePath(Auto)
         , m_allowTabs(false)
         , m_direction(direction)
         , m_directionalOverride(directionalOverride)
-        , m_characterScanForCodePath(characterScanForCodePath)
-        , m_useComplexCodePath(false)
         , m_disableSpacing(false)
         , m_textJustify(TextJustifyAuto)
         , m_tabSize(0)
@@ -127,18 +130,17 @@ public:
         }
     }
 
-    TextRun(const StringView& string, float xpos = 0, float expansion = 0, ExpansionBehavior expansionBehavior = AllowTrailingExpansion | ForbidLeadingExpansion, TextDirection direction = LTR, bool directionalOverride = false, bool characterScanForCodePath = true, bool normalizeSpace = false)
+    TextRun(const StringView& string, float xpos = 0, float expansion = 0, ExpansionBehavior expansionBehavior = AllowTrailingExpansion | ForbidLeadingExpansion, TextDirection direction = LTR, bool directionalOverride = false, bool normalizeSpace = false)
         : m_charactersLength(string.length())
         , m_len(string.length())
         , m_xpos(xpos)
         , m_horizontalGlyphStretch(1)
         , m_expansion(expansion)
         , m_expansionBehavior(expansionBehavior)
+        , m_codePath(Auto)
         , m_allowTabs(false)
         , m_direction(direction)
         , m_directionalOverride(directionalOverride)
-        , m_characterScanForCodePath(characterScanForCodePath)
-        , m_useComplexCodePath(false)
         , m_disableSpacing(false)
         , m_textJustify(TextJustifyAuto)
         , m_tabSize(0)
@@ -205,15 +207,17 @@ public:
     bool rtl() const { return m_direction == RTL; }
     bool ltr() const { return m_direction == LTR; }
     bool directionalOverride() const { return m_directionalOverride; }
-    bool characterScanForCodePath() const { return m_characterScanForCodePath; }
-    bool useComplexCodePath() const { return m_useComplexCodePath; }
+    TextCodePath codePath() const { return static_cast<TextCodePath>(m_codePath); }
     bool spacingDisabled() const { return m_disableSpacing; }
 
     void disableSpacing() { m_disableSpacing = true; }
     void setDirection(TextDirection direction) { m_direction = direction; }
     void setDirectionalOverride(bool override) { m_directionalOverride = override; }
-    void setCharacterScanForCodePath(bool scan) { m_characterScanForCodePath = scan; }
-    void setUseComplexCodePath(bool useComplex) { m_useComplexCodePath = useComplex; }
+#if ENABLE(ASSERT)
+    void setCodePath(TextCodePath);
+#else
+    void setCodePath(TextCodePath codePath) { m_codePath = codePath; }
+#endif // ENABLE(ASSERT)
 
     void setTextJustify(TextJustify textJustify) { m_textJustify = static_cast<unsigned>(textJustify); }
     TextJustify textJustify() const { return static_cast<TextJustify>(m_textJustify); }
@@ -242,12 +246,11 @@ private:
 
     float m_expansion;
     ExpansionBehavior m_expansionBehavior : 2;
+    unsigned m_codePath : 2;
     unsigned m_is8Bit : 1;
     unsigned m_allowTabs : 1;
     unsigned m_direction : 1;
     unsigned m_directionalOverride : 1; // Was this direction set by an override character.
-    unsigned m_characterScanForCodePath : 1;
-    unsigned m_useComplexCodePath : 1;
     unsigned m_disableSpacing : 1;
     unsigned m_textJustify : 2;
     unsigned m_tabSize;
