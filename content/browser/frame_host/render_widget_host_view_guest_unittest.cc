@@ -71,12 +71,6 @@ TEST_F(RenderWidgetHostViewGuestTest, VisibilityTest) {
 
   view_->Hide();
   ASSERT_FALSE(view_->IsShowing());
-
-  view_->WasShown();
-  ASSERT_TRUE(view_->IsShowing());
-
-  view_->WasHidden();
-  ASSERT_FALSE(view_->IsShowing());
 }
 
 }  // namespace content

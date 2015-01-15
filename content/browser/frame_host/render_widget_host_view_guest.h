@@ -55,6 +55,8 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   void SetBounds(const gfx::Rect& rect) override;
   void Focus() override;
   bool HasFocus() const override;
+  void Show() override;
+  void Hide() override;
   gfx::NativeView GetNativeView() const override;
   gfx::NativeViewId GetNativeViewId() const override;
   gfx::NativeViewAccessible GetNativeViewAccessible() override;
@@ -67,8 +69,6 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   void InitAsPopup(RenderWidgetHostView* parent_host_view,
                    const gfx::Rect& pos) override;
   void InitAsFullscreen(RenderWidgetHostView* reference_host_view) override;
-  void WasShown() override;
-  void WasHidden() override;
   void MovePluginWindows(const std::vector<WebPluginGeometry>& moves) override;
   void UpdateCursor(const WebCursor& cursor) override;
   void SetIsLoading(bool is_loading) override;

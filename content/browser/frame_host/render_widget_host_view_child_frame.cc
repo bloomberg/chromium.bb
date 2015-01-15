@@ -53,11 +53,15 @@ bool RenderWidgetHostViewChildFrame::IsSurfaceAvailableForCopy() const {
 }
 
 void RenderWidgetHostViewChildFrame::Show() {
-  WasShown();
+  if (!host_->is_hidden())
+    return;
+  host_->WasShown(ui::LatencyInfo());
 }
 
 void RenderWidgetHostViewChildFrame::Hide() {
-  WasHidden();
+  if (host_->is_hidden())
+    return;
+  host_->WasHidden();
 }
 
 bool RenderWidgetHostViewChildFrame::IsShowing() {
@@ -120,18 +124,6 @@ void RenderWidgetHostViewChildFrame::ImeCompositionRangeChanged(
     const gfx::Range& range,
     const std::vector<gfx::Rect>& character_bounds) {
   NOTREACHED();
-}
-
-void RenderWidgetHostViewChildFrame::WasShown() {
-  if (!host_->is_hidden())
-    return;
-  host_->WasShown(ui::LatencyInfo());
-}
-
-void RenderWidgetHostViewChildFrame::WasHidden() {
-  if (host_->is_hidden())
-    return;
-  host_->WasHidden();
 }
 
 void RenderWidgetHostViewChildFrame::MovePluginWindows(

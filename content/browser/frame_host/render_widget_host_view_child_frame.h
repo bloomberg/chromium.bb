@@ -59,8 +59,6 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   void InitAsPopup(RenderWidgetHostView* parent_host_view,
                    const gfx::Rect& pos) override;
   void InitAsFullscreen(RenderWidgetHostView* reference_host_view) override;
-  void WasShown() override;
-  void WasHidden() override;
   void MovePluginWindows(const std::vector<WebPluginGeometry>& moves) override;
   void Blur() override;
   void UpdateCursor(const WebCursor& cursor) override;

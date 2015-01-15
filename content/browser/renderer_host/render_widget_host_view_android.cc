@@ -410,31 +410,6 @@ RenderWidgetHostViewAndroid::GetRenderWidgetHost() const {
   return host_;
 }
 
-void RenderWidgetHostViewAndroid::WasShown() {
-  if (!host_ || !host_->is_hidden())
-    return;
-
-  host_->WasShown(ui::LatencyInfo());
-
-  if (content_view_core_) {
-    StartObservingRootWindow();
-    RequestVSyncUpdate(BEGIN_FRAME);
-  }
-}
-
-void RenderWidgetHostViewAndroid::WasHidden() {
-  RunAckCallbacks();
-
-  if (!host_ || host_->is_hidden())
-    return;
-
-  // Inform the renderer that we are being hidden so it can reduce its resource
-  // utilization.
-  host_->WasHidden();
-
-  StopObservingRootWindow();
-}
-
 void RenderWidgetHostViewAndroid::WasResized() {
   host_->WasResized();
 }
@@ -581,7 +556,16 @@ void RenderWidgetHostViewAndroid::Show() {
     overscroll_controller_->Enable();
 
   frame_evictor_->SetVisible(true);
-  WasShown();
+
+  if (!host_ || !host_->is_hidden())
+    return;
+
+  host_->WasShown(ui::LatencyInfo());
+
+  if (content_view_core_) {
+    StartObservingRootWindow();
+    RequestVSyncUpdate(BEGIN_FRAME);
+  }
 }
 
 void RenderWidgetHostViewAndroid::Hide() {
@@ -599,7 +583,17 @@ void RenderWidgetHostViewAndroid::Hide() {
   // We don't know if we will ever get a frame if we are hiding the renderer, so
   // we need to cancel all requests
   AbortPendingReadbackRequests();
-  WasHidden();
+
+  RunAckCallbacks();
+
+  if (!host_ || host_->is_hidden())
+    return;
+
+  // Inform the renderer that we are being hidden so it can reduce its resource
+  // utilization.
+  host_->WasHidden();
+
+  StopObservingRootWindow();
 }
 
 bool RenderWidgetHostViewAndroid::IsShowing() {

@@ -99,8 +99,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   virtual void InitAsFullscreen(
       RenderWidgetHostView* reference_host_view) override;
   virtual RenderWidgetHost* GetRenderWidgetHost() const override;
-  virtual void WasShown() override;
-  virtual void WasHidden() override;
   virtual void SetSize(const gfx::Size& size) override;
   virtual void SetBounds(const gfx::Rect& rect) override;
   virtual gfx::Vector2dF GetLastScrollOffset() const override;

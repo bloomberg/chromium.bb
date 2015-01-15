@@ -820,7 +820,10 @@ RenderWidgetHost* RenderWidgetHostViewMac::GetRenderWidgetHost() const {
   return render_widget_host_;
 }
 
-void RenderWidgetHostViewMac::WasShown() {
+
+void RenderWidgetHostViewMac::Show() {
+  [cocoa_view_ setHidden:NO];
+
   if (!render_widget_host_->is_hidden())
     return;
 
@@ -837,7 +840,9 @@ void RenderWidgetHostViewMac::WasShown() {
   PauseForPendingResizeOrRepaintsAndDraw();
 }
 
-void RenderWidgetHostViewMac::WasHidden() {
+void RenderWidgetHostViewMac::Hide() {
+  [cocoa_view_ setHidden:YES];
+
   if (render_widget_host_->is_hidden())
     return;
 
@@ -945,18 +950,6 @@ bool RenderWidgetHostViewMac::IsSurfaceAvailableForCopy() const {
   if (delegated_frame_host_)
     return delegated_frame_host_->CanCopyToBitmap();
   return false;
-}
-
-void RenderWidgetHostViewMac::Show() {
-  [cocoa_view_ setHidden:NO];
-
-  WasShown();
-}
-
-void RenderWidgetHostViewMac::Hide() {
-  [cocoa_view_ setHidden:YES];
-
-  WasHidden();
 }
 
 bool RenderWidgetHostViewMac::IsShowing() {

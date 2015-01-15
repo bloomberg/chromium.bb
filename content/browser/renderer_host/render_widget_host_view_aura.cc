@@ -560,7 +560,9 @@ RenderWidgetHost* RenderWidgetHostViewAura::GetRenderWidgetHost() const {
   return host_;
 }
 
-void RenderWidgetHostViewAura::WasShown() {
+void RenderWidgetHostViewAura::Show() {
+  window_->Show();
+
   DCHECK(host_);
   if (!host_->is_hidden())
     return;
@@ -599,27 +601,37 @@ void RenderWidgetHostViewAura::WasShown() {
   }
   LPARAM lparam = reinterpret_cast<LPARAM>(this);
   EnumChildWindows(ui::GetHiddenWindow(), ShowWindowsCallback, lparam);
+
+  if (legacy_render_widget_host_HWND_)
+    legacy_render_widget_host_HWND_->Show();
 #endif
 }
 
-void RenderWidgetHostViewAura::WasHidden() {
-  if (!host_ || host_->is_hidden())
-    return;
-  host_->WasHidden();
-  delegated_frame_host_->WasHidden();
+void RenderWidgetHostViewAura::Hide() {
+  window_->Hide();
+
+  if (host_ && !host_->is_hidden()) {
+    host_->WasHidden();
+    delegated_frame_host_->WasHidden();
 
 #if defined(OS_WIN)
-  constrained_rects_.clear();
-  aura::WindowTreeHost* host = window_->GetHost();
-  if (host) {
-    HWND parent = host->GetAcceleratedWidget();
-    LPARAM lparam = reinterpret_cast<LPARAM>(this);
-    EnumChildWindows(parent, HideWindowsCallback, lparam);
-    // We reparent the legacy Chrome_RenderWidgetHostHWND window to the global
-    // hidden window on the same lines as Windowed plugin windows.
-    if (legacy_render_widget_host_HWND_)
-      legacy_render_widget_host_HWND_->UpdateParent(ui::GetHiddenWindow());
+    constrained_rects_.clear();
+    aura::WindowTreeHost* host = window_->GetHost();
+    if (host) {
+      HWND parent = host->GetAcceleratedWidget();
+      LPARAM lparam = reinterpret_cast<LPARAM>(this);
+      EnumChildWindows(parent, HideWindowsCallback, lparam);
+      // We reparent the legacy Chrome_RenderWidgetHostHWND window to the global
+      // hidden window on the same lines as Windowed plugin windows.
+      if (legacy_render_widget_host_HWND_)
+        legacy_render_widget_host_HWND_->UpdateParent(ui::GetHiddenWindow());
+    }
+#endif
   }
+
+#if defined(OS_WIN)
+  if (legacy_render_widget_host_HWND_)
+    legacy_render_widget_host_HWND_->Hide();
 #endif
 }
 
@@ -777,24 +789,6 @@ bool RenderWidgetHostViewAura::HasFocus() const {
 
 bool RenderWidgetHostViewAura::IsSurfaceAvailableForCopy() const {
   return delegated_frame_host_->CanCopyToBitmap();
-}
-
-void RenderWidgetHostViewAura::Show() {
-  window_->Show();
-  WasShown();
-#if defined(OS_WIN)
-  if (legacy_render_widget_host_HWND_)
-    legacy_render_widget_host_HWND_->Show();
-#endif
-}
-
-void RenderWidgetHostViewAura::Hide() {
-  window_->Hide();
-  WasHidden();
-#if defined(OS_WIN)
-  if (legacy_render_widget_host_HWND_)
-    legacy_render_widget_host_HWND_->Hide();
-#endif
 }
 
 bool RenderWidgetHostViewAura::IsShowing() {

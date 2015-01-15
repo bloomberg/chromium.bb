@@ -199,12 +199,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // helps to position the full screen widget on the correct monitor.
   virtual void InitAsFullscreen(RenderWidgetHostView* reference_host_view) = 0;
 
-  // Notifies the View that it has become visible.
-  virtual void WasShown() = 0;
-
-  // Notifies the View that it has been hidden.
-  virtual void WasHidden() = 0;
-
   // Moves all plugin windows as described in the given list.
   // |scroll_offset| is the scroll offset of the render view.
   virtual void MovePluginWindows(
