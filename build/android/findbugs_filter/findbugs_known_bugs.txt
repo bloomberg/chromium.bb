@@ -1,6 +1,3 @@
-M C CSM: Shouldn't use synchronized method, please narrow down the synchronization scope.  At SimpleSynchronizedMethod.java
-M C CSM: Shouldn't use synchronized method, please narrow down the synchronization scope.  At SimpleSynchronizedStaticMethod.java
-M C CST: Shouldn't use synchronized(this), please narrow down the synchronization scope.  At SimpleSynchronizedThis.java
 M M LI: Incorrect lazy initialization of static field org.chromium.chrome.browser.download.DownloadManagerService.sDownloadManagerService in org.chromium.chrome.browser.download.DownloadManagerService.getDownloadManagerService(Context)  At DownloadManagerService.java
 M D UrF: Unread public/protected field: org.chromium.chrome.browser.document.PendingDocumentData.extraHeaders  At DocumentTabModelSelector.java
 M D UrF: Unread public/protected field: org.chromium.chrome.browser.document.PendingDocumentData.postData  At DocumentTabModelSelector.java
