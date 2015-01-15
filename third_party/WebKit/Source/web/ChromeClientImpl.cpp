@@ -841,6 +841,12 @@ void ChromeClientImpl::showImeIfNeeded()
         m_webView->client()->showImeIfNeeded();
 }
 
+void ChromeClientImpl::showUnhandledTapUIIfNeeded(IntPoint tappedPosition, Node* tappedNode, bool pageChanged)
+{
+    if (m_webView->client())
+        m_webView->client()->showUnhandledTapUIIfNeeded(WebPoint(tappedPosition), WebNode(tappedNode), pageChanged);
+}
+
 void ChromeClientImpl::handleKeyboardEventOnTextField(HTMLInputElement& inputElement, KeyboardEvent& event)
 {
     WebLocalFrameImpl* webframe = WebLocalFrameImpl::fromFrame(inputElement.document().frame());

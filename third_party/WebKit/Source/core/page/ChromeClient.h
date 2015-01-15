@@ -232,6 +232,8 @@ public:
 
     virtual void registerViewportLayers() const { }
 
+    virtual void showUnhandledTapUIIfNeeded(IntPoint, Node*, bool) { }
+
 protected:
     virtual ~ChromeClient() { }
 };
