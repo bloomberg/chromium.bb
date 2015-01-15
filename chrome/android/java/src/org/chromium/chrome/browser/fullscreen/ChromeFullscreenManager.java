@@ -33,6 +33,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.fullscreen.FullscreenHtmlApiHandler.FullscreenHtmlApiDelegate;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.content.browser.ContentVideoView;
 import org.chromium.content.browser.ContentViewCore;
 
 import java.lang.ref.WeakReference;
@@ -243,7 +244,12 @@ public class ChromeFullscreenManager
 
     @Override
     public void onWindowFocusChanged(Activity activity, boolean hasFocus) {
-        if (mActivity == activity) onWindowFocusChanged(hasFocus);
+        if (mActivity != activity) return;
+        onWindowFocusChanged(hasFocus);
+        ContentVideoView videoView = ContentVideoView.getContentVideoView();
+        if (videoView != null) {
+            videoView.onFullscreenWindowFocused();
+        }
     }
 
     @Override

@@ -32,7 +32,7 @@ public class ActivityContentVideoViewClient implements ContentVideoViewClient {
                         ViewGroup.LayoutParams.MATCH_PARENT,
                         ViewGroup.LayoutParams.MATCH_PARENT,
                         Gravity.CENTER));
-        setSystemUiVisibility(decor, true);
+        setSystemUiVisibility(true);
         mView = view;
     }
 
@@ -40,7 +40,7 @@ public class ActivityContentVideoViewClient implements ContentVideoViewClient {
     public void exitFullscreenVideo() {
         FrameLayout decor = (FrameLayout) mActivity.getWindow().getDecorView();
         decor.removeView(mView);
-        setSystemUiVisibility(decor, false);
+        setSystemUiVisibility(false);
         mView = null;
     }
 
@@ -49,13 +49,10 @@ public class ActivityContentVideoViewClient implements ContentVideoViewClient {
         return null;
     }
 
-    /**
-     * Returns the system ui visibility after entering or exiting fullscreen.
-     * @param view The decor view belongs to the activity window
-     * @param enterFullscreen True if video is going fullscreen, or false otherwise.
-     */
+    @Override
     @SuppressLint("InlinedApi")
-    private void setSystemUiVisibility(View view, boolean enterFullscreen) {
+    public void setSystemUiVisibility(boolean enterFullscreen) {
+        View decor = mActivity.getWindow().getDecorView();
         if (enterFullscreen) {
             mActivity.getWindow().setFlags(
                     WindowManager.LayoutParams.FLAG_FULLSCREEN,
@@ -67,7 +64,7 @@ public class ActivityContentVideoViewClient implements ContentVideoViewClient {
             return;
         }
 
-        int systemUiVisibility = view.getSystemUiVisibility();
+        int systemUiVisibility = decor.getSystemUiVisibility();
         int flags = View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                 | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
                 | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
@@ -78,6 +75,6 @@ public class ActivityContentVideoViewClient implements ContentVideoViewClient {
         } else {
             systemUiVisibility &= ~flags;
         }
-        view.setSystemUiVisibility(systemUiVisibility);
+        decor.setSystemUiVisibility(systemUiVisibility);
     }
 }

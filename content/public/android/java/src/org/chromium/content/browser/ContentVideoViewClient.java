@@ -37,4 +37,10 @@ public interface ContentVideoViewClient {
      * If null is returned, the default video loading view is used.
      */
     public View getVideoLoadingProgressView();
+
+    /**
+     * Sets the system ui visibility after entering or exiting fullscreen.
+     * @param enterFullscreen True if video is going fullscreen, or false otherwise.
+     */
+    public void setSystemUiVisibility(boolean enterFullscreen);
 }

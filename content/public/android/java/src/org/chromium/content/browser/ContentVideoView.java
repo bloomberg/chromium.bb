@@ -391,6 +391,13 @@ public class ContentVideoView extends FrameLayout
         }
     }
 
+    /**
+     * Called when the fullscreen window gets focused.
+     */
+    public void onFullscreenWindowFocused() {
+        mClient.setSystemUiVisibility(true);
+    }
+
     @CalledByNative
     private void onExitFullscreen() {
         exitFullscreen(false);
