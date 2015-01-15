@@ -28,4 +28,15 @@ In particular, ~ at the start of a string means it's a regex.
       <Bug pattern="DM_GC" />
     </Or>
   </Match>
+  <!--
+  crbug.com/449101
+  Ignore findbugs plugin test cases.
+  -->
+  <Match>
+    <Or>
+      <Class name="~org\.chromium\.tools\.findbugs\.plugin\.SimpleSynchronizedMethod" />
+      <Class name="~org\.chromium\.tools\.findbugs\.plugin\.SimpleSynchronizedStaticMethod" />
+      <Class name="~org\.chromium\.tools\.findbugs\.plugin\.SimpleSynchronizedThis" />
+    </Or>
+  </Match>
 </FindBugsFilter>
