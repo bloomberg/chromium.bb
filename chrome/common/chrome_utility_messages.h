@@ -23,13 +23,6 @@
 
 #define IPC_MESSAGE_START ChromeUtilityMsgStart
 
-#ifndef CHROME_COMMON_CHROME_UTILITY_MESSAGES_H_
-#define CHROME_COMMON_CHROME_UTILITY_MESSAGES_H_
-
-typedef std::vector<Tuple<SkBitmap, base::FilePath>> DecodedImages;
-
-#endif  // CHROME_COMMON_CHROME_UTILITY_MESSAGES_H_
-
 #if defined(FULL_SAFE_BROWSING)
 IPC_STRUCT_TRAITS_BEGIN(safe_browsing::zip_analyzer::Results)
   IPC_STRUCT_TRAITS_MEMBER(success)

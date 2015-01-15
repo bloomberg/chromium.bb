@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_UTILITY_EXTENSIONS_UNPACKER_H_
-#define CHROME_UTILITY_EXTENSIONS_UNPACKER_H_
+#ifndef EXTENSIONS_UTILITY_UNPACKER_H_
+#define EXTENSIONS_UTILITY_UNPACKER_H_
 
 #include <string>
 #include <vector>
@@ -47,9 +47,7 @@ class Unpacker {
   bool DumpMessageCatalogsToFile();
 
   const base::string16& error_message() { return error_message_; }
-  base::DictionaryValue* parsed_manifest() {
-    return parsed_manifest_.get();
-  }
+  base::DictionaryValue* parsed_manifest() { return parsed_manifest_.get(); }
   base::DictionaryValue* parsed_catalogs() { return parsed_catalogs_.get(); }
 
  private:
@@ -107,4 +105,4 @@ class Unpacker {
 
 }  // namespace extensions
 
-#endif  // CHROME_UTILITY_EXTENSIONS_UNPACKER_H_
+#endif  // EXTENSIONS_UTILITY_UNPACKER_H_

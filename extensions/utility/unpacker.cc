@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/utility/extensions/unpacker.h"
+#include "extensions/utility/unpacker.h"
 
 #include <set>
 
@@ -16,18 +16,18 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread.h"
 #include "base/values.h"
-#include "chrome/common/chrome_utility_messages.h"
-#include "chrome/grit/generated_resources.h"
 #include "content/public/child/image_decoder_utils.h"
 #include "content/public/common/common_param_traits.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_l10n_util.h"
+#include "extensions/common/extension_utility_messages.h"
 #include "extensions/common/extensions_client.h"
 #include "extensions/common/file_util.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/default_locale_handler.h"
+#include "extensions/strings/grit/extensions_strings.h"
 #include "ipc/ipc_message_utils.h"
 #include "net/base/file_stream.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -56,9 +56,8 @@ SkBitmap DecodeImage(const base::FilePath& path) {
   // Decode the image using WebKit's image decoder.
   const unsigned char* data =
       reinterpret_cast<const unsigned char*>(file_contents.data());
-  SkBitmap bitmap = content::DecodeImage(data,
-                                         gfx::Size(),
-                                         file_contents.length());
+  SkBitmap bitmap =
+      content::DecodeImage(data, gfx::Size(), file_contents.length());
   if (bitmap.computeSize64() > kMaxImageCanvas)
     return SkBitmap();
   return bitmap;
@@ -71,11 +70,11 @@ bool PathContainsParentDirectory(const base::FilePath& path) {
   const size_t npos = base::FilePath::StringType::npos;
   const base::FilePath::StringType& value = path.value();
 
-  for (size_t i = 0; i < value.length(); ) {
+  for (size_t i = 0; i < value.length();) {
     i = value.find(kParentDirectory, i);
     if (i != npos) {
-      if ((i == 0 || kSeparators.find(value[i-1]) == npos) &&
-          (i+1 < value.length() || kSeparators.find(value[i+1]) == npos)) {
+      if ((i == 0 || kSeparators.find(value[i - 1]) == npos) &&
+          (i + 1 < value.length() || kSeparators.find(value[i + 1]) == npos)) {
         return true;
       }
       ++i;
@@ -113,8 +112,7 @@ Unpacker::~Unpacker() {
 }
 
 base::DictionaryValue* Unpacker::ReadManifest() {
-  base::FilePath manifest_path =
-      temp_install_dir_.Append(kManifestFilename);
+  base::FilePath manifest_path = temp_install_dir_.Append(kManifestFilename);
   if (!base::PathExists(manifest_path)) {
     SetError(errors::kInvalidManifest);
     return NULL;
@@ -137,12 +135,10 @@ base::DictionaryValue* Unpacker::ReadManifest() {
 }
 
 bool Unpacker::ReadAllMessageCatalogs(const std::string& default_locale) {
-  base::FilePath locales_path =
-    temp_install_dir_.Append(kLocaleFolder);
+  base::FilePath locales_path = temp_install_dir_.Append(kLocaleFolder);
 
   // Not all folders under _locales have to be valid locales.
-  base::FileEnumerator locales(locales_path,
-                               false,
+  base::FileEnumerator locales(locales_path, false,
                                base::FileEnumerator::DIRECTORIES);
 
   std::set<std::string> all_locales;
@@ -166,15 +162,13 @@ bool Unpacker::Run() {
   DVLOG(1) << "Installing extension " << extension_path_.value();
 
   // <profile>/Extensions/CRX_INSTALL
-  temp_install_dir_ =
-      extension_path_.DirName().AppendASCII(kTempExtensionName);
+  temp_install_dir_ = extension_path_.DirName().AppendASCII(kTempExtensionName);
 
   if (!base::CreateDirectory(temp_install_dir_)) {
-    SetUTF16Error(
-        l10n_util::GetStringFUTF16(
-            IDS_EXTENSION_PACKAGE_DIRECTORY_ERROR,
-            base::i18n::GetDisplayStringInLTRDirectionality(
-                temp_install_dir_.LossyDisplayName())));
+    SetUTF16Error(l10n_util::GetStringFUTF16(
+        IDS_EXTENSION_PACKAGE_DIRECTORY_ERROR,
+        base::i18n::GetDisplayStringInLTRDirectionality(
+            temp_install_dir_.LossyDisplayName())));
     return false;
   }
 
@@ -189,13 +183,9 @@ bool Unpacker::Run() {
     return false;  // Error was already reported.
 
   std::string error;
-  scoped_refptr<Extension> extension(Extension::Create(
-      temp_install_dir_,
-      location_,
-      *parsed_manifest_,
-      creation_flags_,
-      extension_id_,
-      &error));
+  scoped_refptr<Extension> extension(
+      Extension::Create(temp_install_dir_, location_, *parsed_manifest_,
+                        creation_flags_, extension_id_, &error));
   if (!extension.get()) {
     SetError(error);
     return false;
@@ -212,8 +202,7 @@ bool Unpacker::Run() {
   std::set<base::FilePath> image_paths =
       ExtensionsClient::Get()->GetBrowserImagePaths(extension.get());
   for (std::set<base::FilePath>::iterator it = image_paths.begin();
-       it != image_paths.end();
-       ++it) {
+       it != image_paths.end(); ++it) {
     if (!AddDecodedImage(*it))
       return false;  // Error was already reported.
   }
@@ -232,8 +221,8 @@ bool Unpacker::DumpImagesToFile() {
   IPC::Message pickle;  // We use a Message so we can use WriteParam.
   IPC::WriteParam(&pickle, internal_data_->decoded_images);
 
-  base::FilePath path = extension_path_.DirName().AppendASCII(
-      kDecodedImagesFilename);
+  base::FilePath path =
+      extension_path_.DirName().AppendASCII(kDecodedImagesFilename);
   if (!WritePickle(pickle, path)) {
     SetError("Could not write image data to disk.");
     return false;
@@ -246,8 +235,8 @@ bool Unpacker::DumpMessageCatalogsToFile() {
   IPC::Message pickle;
   IPC::WriteParam(&pickle, *parsed_catalogs_.get());
 
-  base::FilePath path = extension_path_.DirName().AppendASCII(
-      kDecodedMessageCatalogsFilename);
+  base::FilePath path =
+      extension_path_.DirName().AppendASCII(kDecodedMessageCatalogsFilename);
   if (!WritePickle(pickle, path)) {
     SetError("Could not write message catalogs to disk.");
     return false;
@@ -259,21 +248,19 @@ bool Unpacker::DumpMessageCatalogsToFile() {
 bool Unpacker::AddDecodedImage(const base::FilePath& path) {
   // Make sure it's not referencing a file outside the extension's subdir.
   if (path.IsAbsolute() || PathContainsParentDirectory(path)) {
-    SetUTF16Error(
-        l10n_util::GetStringFUTF16(
-            IDS_EXTENSION_PACKAGE_IMAGE_PATH_ERROR,
-            base::i18n::GetDisplayStringInLTRDirectionality(
-                path.LossyDisplayName())));
+    SetUTF16Error(l10n_util::GetStringFUTF16(
+        IDS_EXTENSION_PACKAGE_IMAGE_PATH_ERROR,
+        base::i18n::GetDisplayStringInLTRDirectionality(
+            path.LossyDisplayName())));
     return false;
   }
 
   SkBitmap image_bitmap = DecodeImage(temp_install_dir_.Append(path));
   if (image_bitmap.isNull()) {
-    SetUTF16Error(
-        l10n_util::GetStringFUTF16(
-            IDS_EXTENSION_PACKAGE_IMAGE_ERROR,
-            base::i18n::GetDisplayStringInLTRDirectionality(
-                path.BaseName().LossyDisplayName())));
+    SetUTF16Error(l10n_util::GetStringFUTF16(
+        IDS_EXTENSION_PACKAGE_IMAGE_ERROR,
+        base::i18n::GetDisplayStringInLTRDirectionality(
+            path.BaseName().LossyDisplayName())));
     return false;
   }
 
@@ -293,9 +280,8 @@ bool Unpacker::ReadMessageCatalog(const base::FilePath& message_path) {
       SetError(base::StringPrintf("%s %s", errors::kLocalesMessagesFileMissing,
                                   base::UTF16ToUTF8(messages_file).c_str()));
     } else {
-      SetError(base::StringPrintf("%s: %s",
-                                  base::UTF16ToUTF8(messages_file).c_str(),
-                                  error.c_str()));
+      SetError(base::StringPrintf(
+          "%s: %s", base::UTF16ToUTF8(messages_file).c_str(), error.c_str()));
     }
     return false;
   }
@@ -317,7 +303,7 @@ bool Unpacker::ReadMessageCatalog(const base::FilePath& message_path) {
   return true;
 }
 
-void Unpacker::SetError(const std::string &error) {
+void Unpacker::SetError(const std::string& error) {
   SetUTF16Error(base::UTF8ToUTF16(error));
 }
 

@@ -4755,18 +4755,6 @@ Even if you have downloaded files from this website before, the website might ha
       <message name="IDS_EXTENSION_INSTALL_PROCESS_CRASHED" desc="Error message in case package fails to install because a utility process crashed.">
         Could not install package because a utility process crashed. Try restarting Chrome and trying again.
       </message>
-      <message name="IDS_EXTENSION_PACKAGE_DIRECTORY_ERROR" desc="Message for when an error occurs while trying to create the temporary directory needed to unzip a packaged extension or app.">
-        Could not create directory for unzipping: '<ph name="DIRECTORY_PATH">$1<ex>profile/Extensions/CRX_INSTALL</ex></ph>'
-      </message>
-      <message name="IDS_EXTENSION_PACKAGE_UNZIP_ERROR" desc="Message for when an error occurs while unzipping a packaged extension or app.">
-        Could not unzip extension
-      </message>
-      <message name="IDS_EXTENSION_PACKAGE_IMAGE_PATH_ERROR" desc="Error message for when a packaged extension or app contains a reference to an image that could be outside the package.">
-        Illegal path (absolute or relative with '..'): '<ph name="IMAGE_PATH">$1<ex>../image.png</ex></ph>'
-      </message>
-      <message name="IDS_EXTENSION_PACKAGE_IMAGE_ERROR" desc="Message for when an error occurs while trying to decode an image found within a packaged extension or app.">
-        Could not decode image: '<ph name="IMAGE_NAME">$1<ex>image.png</ex></ph>'
-      </message>
 
       <!-- Extension installed bubble -->
       <message name="IDS_EXTENSION_BUNDLE_INSTALLED_HEADING_EXTENSIONS" desc="First line in the content area of the extension bundle installed bubble. Instructs which extensions were installed.">

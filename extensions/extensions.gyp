@@ -1031,12 +1031,15 @@
       'type': 'static_library',
       'dependencies': [
         '../content/content.gyp:content_utility',
+        '../third_party/zlib/google/zip.gyp:zip',
         'extensions_common',
       ],
       'include_dirs': [
         '..',
       ],
       'sources': [
+        'utility/unpacker.cc',
+        'utility/unpacker.h',
         'utility/utility_handler.cc',
         'utility/utility_handler.h',
       ],
@@ -1185,6 +1188,7 @@
         'extensions_shell_and_test_pak',
         'extensions_strings.gyp:extensions_strings',
         'extensions_test_support',
+        'extensions_utility',
       ],
       # Needed for third_party libraries like leveldb.
       'include_dirs': [

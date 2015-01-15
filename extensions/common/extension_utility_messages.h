@@ -8,8 +8,17 @@
 
 #include "extensions/common/update_manifest.h"
 #include "ipc/ipc_message_macros.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/ipc/gfx_param_traits.h"
 
 #define IPC_MESSAGE_START ExtensionUtilityMsgStart
+
+#ifndef EXTENSIONS_COMMON_EXTENSION_UTILITY_MESSAGES_H_
+#define EXTENSIONS_COMMON_EXTENSION_UTILITY_MESSAGES_H_
+
+typedef std::vector<Tuple<SkBitmap, base::FilePath>> DecodedImages;
+
+#endif  //  EXTENSIONS_COMMON_EXTENSION_UTILITY_MESSAGES_H_
 
 IPC_STRUCT_TRAITS_BEGIN(UpdateManifest::Result)
   IPC_STRUCT_TRAITS_MEMBER(extension_id)
