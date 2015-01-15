@@ -335,6 +335,7 @@
             '<(DEPTH)/extensions/extensions.gyp:extensions_common',
             '<(DEPTH)/extensions/extensions_resources.gyp:extensions_resources',
             '<(DEPTH)/extensions/extensions_strings.gyp:extensions_strings',
+            '<(DEPTH)/media/cast/cast.gyp:cast_net',
           ],
           'export_dependent_settings': [
             '<(DEPTH)/chrome/common/extensions/api/api.gyp:chrome_api',
@@ -363,7 +364,6 @@
             '<(DEPTH)/components/components.gyp:visitedlink_common',
             '<(DEPTH)/extensions/extensions.gyp:extensions_common_constants',
             '<(DEPTH)/ipc/ipc.gyp:ipc',
-            '<(DEPTH)/media/cast/cast.gyp:cast_net',
             '<(DEPTH)/third_party/re2/re2.gyp:re2',
             '<(DEPTH)/third_party/widevine/cdm/widevine_cdm.gyp:widevine_cdm_version_h',
           ],

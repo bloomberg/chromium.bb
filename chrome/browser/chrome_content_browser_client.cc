@@ -36,7 +36,6 @@
 #include "chrome/browser/geolocation/chrome_access_token_store.h"
 #include "chrome/browser/geolocation/geolocation_permission_context.h"
 #include "chrome/browser/geolocation/geolocation_permission_context_factory.h"
-#include "chrome/browser/media/cast_transport_host_filter.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/midi_permission_context.h"
 #include "chrome/browser/media/midi_permission_context_factory.h"
@@ -225,6 +224,7 @@
 #if defined(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/chrome_content_browser_client_extensions_part.h"
 #include "chrome/browser/extensions/extension_util.h"
+#include "chrome/browser/media/cast_transport_host_filter.h"
 #include "chrome/browser/speech/extension_api/tts_engine_extension_api.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/guest_view/guest_view_base.h"
@@ -847,7 +847,9 @@ void ChromeContentBrowserClient::RenderProcessWillLaunch(
       profile->GetRequestContextForRenderProcess(id);
 
   host->AddFilter(new ChromeRenderMessageFilter(id, profile));
+#if defined(ENABLE_EXTENSIONS)
   host->AddFilter(new cast::CastTransportHostFilter);
+#endif
 #if defined(ENABLE_PRINTING)
   host->AddFilter(new printing::PrintingMessageFilter(id, profile));
 #endif

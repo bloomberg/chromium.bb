@@ -241,7 +241,6 @@ static_library("browser") {
       "//components/web_modal",
       "//content/app/resources",
       "//media",
-      "//media/cast:net",
       "//mojo/common",
       "//mojo/edk/system",
       "//mojo/environment:chromium",
@@ -318,6 +317,7 @@ static_library("browser") {
       "//chrome/common/extensions/api:api_registration",
       "//components/proximity_auth/cryptauth",
       "//extensions/components/javascript_dialog_extensions_client",
+      "//media/cast:net",
     ]
     sources += rebase_path(gypi_values.chrome_browser_extensions_sources,
                            ".",

@@ -52,9 +52,6 @@ static_library("renderer") {
     "//content/app/resources",
     "//content/app/strings",
     "//content/public/renderer",
-    "//media/cast:net",
-    "//media/cast:sender",
-    "//media/cast/logging/proto",
     "//net",
     "//skia",
     "//storage/common",
@@ -118,6 +115,9 @@ static_library("renderer") {
       "//chrome/common/extensions/api",
       "//extensions:extensions_resources",
       "//extensions/renderer",
+      "//media/cast:net",
+      "//media/cast:sender",
+      "//media/cast/logging/proto",
     ]
   }
   if (enable_webrtc) {

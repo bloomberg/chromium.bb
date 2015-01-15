@@ -33,7 +33,6 @@
 #include "chrome/renderer/content_settings_observer.h"
 #include "chrome/renderer/external_extension.h"
 #include "chrome/renderer/loadtimes_extension_bindings.h"
-#include "chrome/renderer/media/cast_ipc_dispatcher.h"
 #include "chrome/renderer/media/chrome_key_systems.h"
 #include "chrome/renderer/net/net_error_helper.h"
 #include "chrome/renderer/net_benchmarking_extension.h"
@@ -112,6 +111,7 @@
 #include "chrome/renderer/extensions/extension_frame_helper.h"
 #include "chrome/renderer/extensions/renderer_permissions_policy_delegate.h"
 #include "chrome/renderer/extensions/resource_request_policy.h"
+#include "chrome/renderer/media/cast_ipc_dispatcher.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/extension_urls.h"
@@ -342,8 +342,10 @@ void ChromeContentRendererClient::RenderThreadStarted() {
 #if defined(ENABLE_WEBRTC)
   thread->AddFilter(webrtc_logging_message_filter_.get());
 #endif
+#if defined(ENABLE_EXTENSIONS)
   thread->AddFilter(new CastIPCDispatcher(
       content::RenderThread::Get()->GetIOMessageLoopProxy()));
+#endif
 
   thread->RegisterExtension(extensions_v8::ExternalExtension::Get());
   thread->RegisterExtension(extensions_v8::LoadTimesExtension::Get());
