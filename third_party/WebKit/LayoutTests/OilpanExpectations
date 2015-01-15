@@ -53,3 +53,5 @@ crbug.com/446452 http/tests/fetch/chromium/discarded-window.html [ Failure ]
 
 # The crash can be reproduced without Oilpan, but only Oilpan bots are crashing.
 crbug.com/448670 [ Linux ] http/tests/serviceworker/register-same-scope-different-script-url.html [ Pass Crash ]
+
+crbug.com/449035 inspector/sources/debugger/debugger-compile-and-run.html [ Crash ]
