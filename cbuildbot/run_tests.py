@@ -13,6 +13,7 @@ You can add a .testignore file to a dir to disable scanning it.
 from __future__ import print_function
 
 import errno
+import json
 import multiprocessing
 import os
 import signal
@@ -28,6 +29,7 @@ from chromite.lib import cros_logging as logging
 from chromite.lib import gs
 from chromite.lib import namespaces
 from chromite.lib import osutils
+from chromite.lib import path_util
 from chromite.lib import proctitle
 from chromite.lib import timeout_util
 
@@ -41,6 +43,12 @@ TEST_SIG_TIMEOUT = 5
 SIGINT_TIMEOUT = 5
 # How long (in seconds) to let all children clean up after CTRL+C is sent.
 CTRL_C_TIMEOUT = SIGINT_TIMEOUT + 5
+
+
+# The cache file holds various timing information.  This is used later on to
+# optimistically sort tests so the slowest ones run first.  That way we don't
+# wait until all of the fast ones finish before we launch the slow ones.
+TIMING_CACHE_FILE = None
 
 
 # Test has to run inside the chroot.
@@ -129,6 +137,17 @@ def RunTest(test, cmd, tmpfile, finished, total):
         msg = 'Finished'
       func('%s [%i/%i] %s (%s)', msg, finished.value, total, test, delta)
 
+      # Save the timing for this test run for future usage.
+      seconds = delta.total_seconds()
+      try:
+        cache = json.load(open(TIMING_CACHE_FILE))
+      except (IOError, ValueError):
+        cache = {}
+      if test in cache:
+        seconds = (cache[test] + seconds) / 2
+      cache[test] = seconds
+      json.dump(cache, open(TIMING_CACHE_FILE, 'w'))
+
   ret = cros_build_lib.TimedCommand(
       cros_build_lib.RunCommand, cmd, capture_output=True, error_code_ok=True,
       combine_stdout_stderr=True, debug_level=logging.DEBUG,
@@ -142,7 +161,69 @@ def RunTest(test, cmd, tmpfile, finished, total):
   return ret.returncode
 
 
-def BuildTestSets(tests, chroot_available, network):
+def SortTests(tests, jobs=1, timing_cache_file=None):
+  """Interleave the slowest & fastest
+
+  Hopefully we can pipeline the overall process better by queueing the slowest
+  tests first while also using half the slots for fast tests.  We don't need
+  the timing info to be exact, just ballpark.
+
+  Args:
+    tests: The list of tests to sort.
+    jobs: How many jobs will we run in parallel.
+    timing_cache_file: Where to read test timing info.
+
+  Returns:
+    The tests ordered for best execution timing (we hope).
+  """
+  if timing_cache_file is None:
+    timing_cache_file = TIMING_CACHE_FILE
+
+  # Usually |tests| will be a generator -- break it down.
+  tests = list(tests)
+
+  # If we have enough spare cpus to crunch the jobs, just do so.
+  if len(tests) <= jobs:
+    return tests
+
+  # Create a dict mapping tests to their timing information using the cache.
+  try:
+    with cros_build_lib.Open(timing_cache_file) as f:
+      cache = json.load(f)
+  except (IOError, ValueError):
+    cache = {}
+
+  # Sort the cached list of tests from slowest to fastest.
+  sorted_tests = [test for (test, _timing) in
+                  sorted(cache.iteritems(), key=lambda x: x[1], reverse=True)]
+  # Then extract the tests from the cache list that we care about -- remember
+  # that the cache could be stale and contain tests that no longer exist, or
+  # the user only wants to run a subset of tests.
+  ret = []
+  for test in sorted_tests:
+    if test in tests:
+      ret.append(test)
+      tests.remove(test)
+  # Any tests not in the cache we just throw on the end.  No real way to
+  # predict their speed ahead of time, and we'll get useful data when they
+  # run the test a second time.
+  ret += tests
+
+  # Now interleave the fast & slow tests so every other one mixes.
+  # On systems with fewer cores, this can help out in two ways:
+  # (1) Better utilization of resources when some slow tests are I/O or time
+  #     bound, so the other cores can spawn/fork fast tests faster (generally).
+  # (2) If there is common code that is broken, we get quicker feedback if we
+  #     churn through the fast tests.
+  # Worse case, this interleaving doesn't slow things down overall.
+  fast = ret[:int(round(len(ret) / 2.0)) - 1:-1]
+  slow = ret[:-len(fast)]
+  ret[::2] = slow
+  ret[1::2] = fast
+  return ret
+
+
+def BuildTestSets(tests, chroot_available, network, jobs=1):
   """Build the tests to execute.
 
   Take care of special test handling like whether it needs to be inside or
@@ -152,12 +233,13 @@ def BuildTestSets(tests, chroot_available, network):
     tests: List of tests to execute.
     chroot_available: Whether we can execute tests inside the sdk.
     network: Whether to execute network tests.
+    jobs: How many jobs will we run in parallel.
 
   Returns:
     List of tests to execute and their full command line.
   """
   testsets = []
-  for test in tests:
+  for test in SortTests(tests, jobs=jobs):
     cmd = [test]
 
     # See if this test requires special consideration.
@@ -225,7 +307,7 @@ def RunTests(tests, jobs=1, chroot_available=True, network=False, dryrun=False,
   # Launch all the tests!
   try:
     # Build up the testsets.
-    testsets = BuildTestSets(tests, chroot_available, network)
+    testsets = BuildTestSets(tests, chroot_available, network, jobs=jobs)
 
     # Fork each test and add it to the list.
     for test, cmd, tmpfile in testsets:
@@ -436,6 +518,10 @@ def main(argv):
 
   if opts.quick:
     SPECIAL_TESTS.update(SLOW_TESTS)
+
+  global TIMING_CACHE_FILE  # pylint: disable=global-statement
+  TIMING_CACHE_FILE = os.path.join(
+      path_util.GetCacheDir(), constants.COMMON_CACHE, 'run_tests.cache.json')
 
   jobs = opts.jobs or multiprocessing.cpu_count()
 

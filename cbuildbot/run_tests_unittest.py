@@ -56,6 +56,38 @@ class FindTestsTest(cros_test_lib.TempDirTestCase):
     self.assertEqual(list(found), [])
 
 
+class SortTest(cros_test_lib.TempDirTestCase):
+  """Tests for the SortTests() func"""
+
+  def SortTests(self, tests, **kwargs):
+    """Helper to set cache file to a local temp one"""
+    kwargs['timing_cache_file'] = os.path.join(self.tempdir, 'cache.json')
+    return run_tests.SortTests(tests, **kwargs)
+
+  def testEmpty(self):
+    """Verify handling of empty test lists"""
+    self.SortTests([])
+    self.SortTests([], jobs=100)
+
+  def testSmallSet(self):
+    """Do nothing when number of tests is lower than number of jobs."""
+    tests = ['small', 'test', 'list', 'is', 'ignored']
+    ret = self.SortTests(tests, jobs=100)
+    self.assertEqual(tests, ret)
+
+  def testOddSet(self):
+    """Verify we can sort odd number of tests."""
+    tests = ['1', '2', '3']
+    ret = self.SortTests(tests, jobs=1)
+    self.assertEqual(set(tests), set(ret))
+
+  def testEvenSet(self):
+    """Verify we can sort even number of tests."""
+    tests = ['1', '2', '3', '4']
+    ret = self.SortTests(tests, jobs=1)
+    self.assertEqual(set(tests), set(ret))
+
+
 class MainTest(cros_test_lib.MockOutputTestCase):
   """Tests for the main() func"""
 
