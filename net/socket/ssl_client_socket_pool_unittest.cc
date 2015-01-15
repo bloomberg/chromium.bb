@@ -129,7 +129,6 @@ class SSLClientSocketPoolTest
         http_proxy_socket_pool_(kMaxSockets,
                                 kMaxSocketsPerGroup,
                                 &http_proxy_histograms_,
-                                &host_resolver_,
                                 &transport_socket_pool_,
                                 NULL,
                                 NULL),
@@ -143,8 +142,8 @@ class SSLClientSocketPoolTest
     ssl_histograms_.reset(new ClientSocketPoolHistograms("SSLUnitTest"));
     pool_.reset(new SSLClientSocketPool(
         kMaxSockets, kMaxSocketsPerGroup, ssl_histograms_.get(),
-        NULL /* host_resolver */, NULL /* cert_verifier */,
-        NULL /* channel_id_service */, NULL /* transport_security_state */,
+        NULL /* cert_verifier */, NULL /* channel_id_service */,
+        NULL /* transport_security_state */,
         NULL /* cert_transparency_verifier */, NULL /* cert_policy_enforcer */,
         std::string() /* ssl_session_cache_shard */, &socket_factory_,
         transport_pool ? &transport_socket_pool_ : NULL,

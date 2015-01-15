@@ -591,7 +591,6 @@ SSLClientSocketPool::SSLConnectJobFactory::SSLConnectJobFactory(
     SOCKSClientSocketPool* socks_pool,
     HttpProxyClientSocketPool* http_proxy_pool,
     ClientSocketFactory* client_socket_factory,
-    HostResolver* host_resolver,
     const SSLClientSocketContext& context,
     const SSLConnectJob::GetMessengerCallback& get_messenger_callback,
     NetLog* net_log)
@@ -599,7 +598,6 @@ SSLClientSocketPool::SSLConnectJobFactory::SSLConnectJobFactory(
       socks_pool_(socks_pool),
       http_proxy_pool_(http_proxy_pool),
       client_socket_factory_(client_socket_factory),
-      host_resolver_(host_resolver),
       context_(context),
       get_messenger_callback_(get_messenger_callback),
       net_log_(net_log) {
@@ -628,7 +626,6 @@ SSLClientSocketPool::SSLClientSocketPool(
     int max_sockets,
     int max_sockets_per_group,
     ClientSocketPoolHistograms* histograms,
-    HostResolver* host_resolver,
     CertVerifier* cert_verifier,
     ChannelIDService* channel_id_service,
     TransportSecurityState* transport_security_state,
@@ -656,7 +653,6 @@ SSLClientSocketPool::SSLClientSocketPool(
                 socks_pool,
                 http_proxy_pool,
                 client_socket_factory,
-                host_resolver,
                 SSLClientSocketContext(cert_verifier,
                                        channel_id_service,
                                        transport_security_state,

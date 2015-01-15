@@ -79,7 +79,6 @@ ClientSocketPoolManagerImpl::ClientSocketPoolManagerImpl(
       ssl_socket_pool_(new SSLClientSocketPool(max_sockets_per_pool(pool_type),
                                                max_sockets_per_group(pool_type),
                                                &ssl_pool_histograms_,
-                                               host_resolver,
                                                cert_verifier,
                                                channel_id_service,
                                                transport_security_state,
@@ -295,18 +294,17 @@ ClientSocketPoolManagerImpl::GetSocketPoolForHTTPProxy(
 
   std::pair<SSLSocketPoolMap::iterator, bool> ssl_https_ret =
       ssl_socket_pools_for_https_proxies_.insert(std::make_pair(
-          http_proxy,
-          new SSLClientSocketPool(
-              max_sockets_per_proxy_server(pool_type_),
-              max_sockets_per_group(pool_type_),
-              &ssl_for_https_proxy_pool_histograms_, host_resolver_,
-              cert_verifier_, channel_id_service_, transport_security_state_,
-              cert_transparency_verifier_, cert_policy_enforcer_,
-              ssl_session_cache_shard_, socket_factory_,
-              tcp_https_ret.first->second /* https proxy */,
-              NULL /* no socks proxy */, NULL /* no http proxy */,
-              ssl_config_service_.get(), enable_ssl_connect_job_waiting_,
-              net_log_)));
+          http_proxy, new SSLClientSocketPool(
+                          max_sockets_per_proxy_server(pool_type_),
+                          max_sockets_per_group(pool_type_),
+                          &ssl_for_https_proxy_pool_histograms_, cert_verifier_,
+                          channel_id_service_, transport_security_state_,
+                          cert_transparency_verifier_, cert_policy_enforcer_,
+                          ssl_session_cache_shard_, socket_factory_,
+                          tcp_https_ret.first->second /* https proxy */,
+                          NULL /* no socks proxy */, NULL /* no http proxy */,
+                          ssl_config_service_.get(),
+                          enable_ssl_connect_job_waiting_, net_log_)));
   DCHECK(tcp_https_ret.second);
 
   std::pair<HTTPProxySocketPoolMap::iterator, bool> ret =
@@ -317,7 +315,6 @@ ClientSocketPoolManagerImpl::GetSocketPoolForHTTPProxy(
                   max_sockets_per_proxy_server(pool_type_),
                   max_sockets_per_group(pool_type_),
                   &http_proxy_pool_histograms_,
-                  host_resolver_,
                   tcp_http_ret.first->second,
                   ssl_https_ret.first->second,
                   net_log_)));
@@ -334,8 +331,8 @@ SSLClientSocketPool* ClientSocketPoolManagerImpl::GetSocketPoolForSSLWithProxy(
 
   SSLClientSocketPool* new_pool = new SSLClientSocketPool(
       max_sockets_per_proxy_server(pool_type_),
-      max_sockets_per_group(pool_type_), &ssl_pool_histograms_, host_resolver_,
-      cert_verifier_, channel_id_service_, transport_security_state_,
+      max_sockets_per_group(pool_type_), &ssl_pool_histograms_, cert_verifier_,
+      channel_id_service_, transport_security_state_,
       cert_transparency_verifier_, cert_policy_enforcer_,
       ssl_session_cache_shard_, socket_factory_,
       NULL, /* no tcp pool, we always go through a proxy */

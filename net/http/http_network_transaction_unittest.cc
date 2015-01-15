@@ -564,19 +564,18 @@ CaptureGroupNameSocketPool<ParentPool>::CaptureGroupNameSocketPool(
 
 template <>
 CaptureGroupNameHttpProxySocketPool::CaptureGroupNameSocketPool(
-    HostResolver* host_resolver,
+    HostResolver* /* host_resolver */,
     CertVerifier* /* cert_verifier */)
-    : HttpProxyClientSocketPool(0, 0, NULL, host_resolver, NULL, NULL, NULL) {
+    : HttpProxyClientSocketPool(0, 0, NULL, NULL, NULL, NULL) {
 }
 
 template <>
 CaptureGroupNameSSLSocketPool::CaptureGroupNameSocketPool(
-    HostResolver* host_resolver,
+    HostResolver* /* host_resolver */,
     CertVerifier* cert_verifier)
     : SSLClientSocketPool(0,
                           0,
                           NULL,
-                          host_resolver,
                           cert_verifier,
                           NULL,
                           NULL,

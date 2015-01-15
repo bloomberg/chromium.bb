@@ -395,11 +395,9 @@ HttpProxyClientSocketPool::
 HttpProxyConnectJobFactory::HttpProxyConnectJobFactory(
     TransportClientSocketPool* transport_pool,
     SSLClientSocketPool* ssl_pool,
-    HostResolver* host_resolver,
     NetLog* net_log)
     : transport_pool_(transport_pool),
       ssl_pool_(ssl_pool),
-      host_resolver_(host_resolver),
       net_log_(net_log) {
   base::TimeDelta max_pool_timeout = base::TimeDelta();
 
@@ -443,7 +441,6 @@ HttpProxyClientSocketPool::HttpProxyClientSocketPool(
     int max_sockets,
     int max_sockets_per_group,
     ClientSocketPoolHistograms* histograms,
-    HostResolver* host_resolver,
     TransportClientSocketPool* transport_pool,
     SSLClientSocketPool* ssl_pool,
     NetLog* net_log)
@@ -454,7 +451,6 @@ HttpProxyClientSocketPool::HttpProxyClientSocketPool(
             ClientSocketPool::used_idle_socket_timeout(),
             new HttpProxyConnectJobFactory(transport_pool,
                                            ssl_pool,
-                                           host_resolver,
                                            net_log)) {
   // We should always have a |transport_pool_| except in unit tests.
   if (transport_pool_)

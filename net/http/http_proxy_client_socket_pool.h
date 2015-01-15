@@ -25,7 +25,6 @@
 
 namespace net {
 
-class HostResolver;
 class HttpAuthCache;
 class HttpAuthHandlerFactory;
 class ProxyDelegate;
@@ -187,14 +186,12 @@ class NET_EXPORT_PRIVATE HttpProxyClientSocketPool
  public:
   typedef HttpProxySocketParams SocketParams;
 
-  HttpProxyClientSocketPool(
-      int max_sockets,
-      int max_sockets_per_group,
-      ClientSocketPoolHistograms* histograms,
-      HostResolver* host_resolver,
-      TransportClientSocketPool* transport_pool,
-      SSLClientSocketPool* ssl_pool,
-      NetLog* net_log);
+  HttpProxyClientSocketPool(int max_sockets,
+                            int max_sockets_per_group,
+                            ClientSocketPoolHistograms* histograms,
+                            TransportClientSocketPool* transport_pool,
+                            SSLClientSocketPool* ssl_pool,
+                            NetLog* net_log);
 
   ~HttpProxyClientSocketPool() override;
 
@@ -253,11 +250,9 @@ class NET_EXPORT_PRIVATE HttpProxyClientSocketPool
 
   class HttpProxyConnectJobFactory : public PoolBase::ConnectJobFactory {
    public:
-    HttpProxyConnectJobFactory(
-        TransportClientSocketPool* transport_pool,
-        SSLClientSocketPool* ssl_pool,
-        HostResolver* host_resolver,
-        NetLog* net_log);
+    HttpProxyConnectJobFactory(TransportClientSocketPool* transport_pool,
+                               SSLClientSocketPool* ssl_pool,
+                               NetLog* net_log);
 
     // ClientSocketPoolBase::ConnectJobFactory methods.
     scoped_ptr<ConnectJob> NewConnectJob(
@@ -270,7 +265,6 @@ class NET_EXPORT_PRIVATE HttpProxyClientSocketPool
    private:
     TransportClientSocketPool* const transport_pool_;
     SSLClientSocketPool* const ssl_pool_;
-    HostResolver* const host_resolver_;
     NetLog* net_log_;
     base::TimeDelta timeout_;
 

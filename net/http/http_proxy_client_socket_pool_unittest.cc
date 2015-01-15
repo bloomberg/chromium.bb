@@ -166,7 +166,6 @@ class HttpProxyClientSocketPoolTest
         ssl_socket_pool_(kMaxSockets,
                          kMaxSocketsPerGroup,
                          &ssl_histograms_,
-                         session_deps_.host_resolver.get(),
                          session_deps_.cert_verifier.get(),
                          NULL /* channel_id_store */,
                          NULL /* transport_security_state */,
@@ -186,7 +185,6 @@ class HttpProxyClientSocketPoolTest
         pool_(kMaxSockets,
               kMaxSocketsPerGroup,
               &http_proxy_histograms_,
-              NULL,
               &transport_socket_pool_,
               &ssl_socket_pool_,
               NULL) {}

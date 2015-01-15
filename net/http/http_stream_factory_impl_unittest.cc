@@ -389,26 +389,19 @@ CapturePreconnectsSocketPool<ParentPool>::CapturePreconnectsSocketPool(
 
 template <>
 CapturePreconnectsHttpProxySocketPool::CapturePreconnectsSocketPool(
-    HostResolver* host_resolver,
+    HostResolver* /* host_resolver */,
     CertVerifier* /* cert_verifier */)
-    : HttpProxyClientSocketPool(0,
-                                0,
-                                nullptr,
-                                host_resolver,
-                                nullptr,
-                                nullptr,
-                                nullptr),
+    : HttpProxyClientSocketPool(0, 0, nullptr, nullptr, nullptr, nullptr),
       last_num_streams_(-1) {
 }
 
 template <>
 CapturePreconnectsSSLSocketPool::CapturePreconnectsSocketPool(
-    HostResolver* host_resolver,
+    HostResolver* /* host_resolver */,
     CertVerifier* cert_verifier)
     : SSLClientSocketPool(0,
                           0,
                           nullptr,  // ssl_histograms
-                          host_resolver,
                           cert_verifier,
                           nullptr,        // channel_id_store
                           nullptr,        // transport_security_state

@@ -13,7 +13,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "net/base/privacy_mode.h"
-#include "net/dns/host_resolver.h"
 #include "net/http/http_response_info.h"
 #include "net/socket/client_socket_pool.h"
 #include "net/socket/client_socket_pool_base.h"
@@ -279,7 +278,6 @@ class NET_EXPORT_PRIVATE SSLClientSocketPool
   SSLClientSocketPool(int max_sockets,
                       int max_sockets_per_group,
                       ClientSocketPoolHistograms* histograms,
-                      HostResolver* host_resolver,
                       CertVerifier* cert_verifier,
                       ChannelIDService* channel_id_service,
                       TransportSecurityState* transport_security_state,
@@ -370,7 +368,6 @@ class NET_EXPORT_PRIVATE SSLClientSocketPool
         SOCKSClientSocketPool* socks_pool,
         HttpProxyClientSocketPool* http_proxy_pool,
         ClientSocketFactory* client_socket_factory,
-        HostResolver* host_resolver,
         const SSLClientSocketContext& context,
         const SSLConnectJob::GetMessengerCallback& get_messenger_callback,
         NetLog* net_log);
@@ -390,7 +387,6 @@ class NET_EXPORT_PRIVATE SSLClientSocketPool
     SOCKSClientSocketPool* const socks_pool_;
     HttpProxyClientSocketPool* const http_proxy_pool_;
     ClientSocketFactory* const client_socket_factory_;
-    HostResolver* const host_resolver_;
     const SSLClientSocketContext context_;
     base::TimeDelta timeout_;
     SSLConnectJob::GetMessengerCallback get_messenger_callback_;
