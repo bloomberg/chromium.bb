@@ -52,6 +52,9 @@ void MultiColumnSetPainter::paintColumnRules(const PaintInfo& paintInfo, const L
         return;
 
     DrawingRecorder drawingRecorder(paintInfo.context, m_renderMultiColumnSet.displayItemClient(), DisplayItem::ColumnRules, m_renderMultiColumnSet.visualOverflowRect());
+    if (drawingRecorder.canUseCachedDrawing())
+        return;
+
     bool antialias = BoxPainter::shouldAntialiasLines(paintInfo.context);
     bool leftToRight = m_renderMultiColumnSet.style()->isLeftToRightDirection();
     LayoutUnit currLogicalLeftOffset = leftToRight ? LayoutUnit() : m_renderMultiColumnSet.contentLogicalWidth();

@@ -1974,6 +1974,15 @@ void RenderBlockFlow::styleDidChange(StyleDifference diff, const RenderStyle* ol
 
     if (diff.needsFullLayout() || !oldStyle)
         createOrDestroyMultiColumnFlowThreadIfNeeded(oldStyle);
+    if (oldStyle) {
+        if (RenderMultiColumnFlowThread* flowThread = multiColumnFlowThread()) {
+            if (!style()->columnRuleEquivalent(oldStyle)) {
+                // Column rules are painted by anonymous column set children of the multicol
+                // container. We need to notify them.
+                flowThread->columnRuleStyleDidChange();
+            }
+        }
+    }
 }
 
 void RenderBlockFlow::updateBlockChildDirtyBitsBeforeLayout(bool relayoutChildren, RenderBox& child)

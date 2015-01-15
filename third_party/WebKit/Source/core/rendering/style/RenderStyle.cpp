@@ -1510,6 +1510,13 @@ void RenderStyle::resetMotionPath()
     rareNonInheritedData.access()->m_transform.access()->m_motion.m_path = nullptr;
 }
 
+bool RenderStyle::columnRuleEquivalent(const RenderStyle* otherStyle) const
+{
+    return columnRuleStyle() == otherStyle->columnRuleStyle()
+        && columnRuleWidth() == otherStyle->columnRuleWidth()
+        && visitedDependentColor(CSSPropertyWebkitColumnRuleColor) == otherStyle->visitedDependentColor(CSSPropertyWebkitColumnRuleColor);
+}
+
 TextEmphasisMark RenderStyle::textEmphasisMark() const
 {
     TextEmphasisMark mark = static_cast<TextEmphasisMark>(rareInheritedData->textEmphasisMark);

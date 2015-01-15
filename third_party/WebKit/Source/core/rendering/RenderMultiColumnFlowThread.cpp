@@ -216,6 +216,12 @@ bool RenderMultiColumnFlowThread::recalculateColumnHeights()
     return needsRelayout;
 }
 
+void RenderMultiColumnFlowThread::columnRuleStyleDidChange()
+{
+    for (RenderMultiColumnSet* columnSet = firstMultiColumnSet(); columnSet; columnSet = columnSet->nextSiblingMultiColumnSet())
+        columnSet->setShouldDoFullPaintInvalidation(PaintInvalidationStyleChange);
+}
+
 void RenderMultiColumnFlowThread::calculateColumnCountAndWidth(LayoutUnit& width, unsigned& count) const
 {
     RenderBlock* columnBlock = multiColumnBlockFlow();

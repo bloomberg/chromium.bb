@@ -152,6 +152,8 @@ public:
 
     bool recalculateColumnHeights();
 
+    void columnRuleStyleDidChange();
+
 protected:
     RenderMultiColumnFlowThread();
     void setProgressionIsInline(bool isInline) { m_progressionIsInline = isInline; }
