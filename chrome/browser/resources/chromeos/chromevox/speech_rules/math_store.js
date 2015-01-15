@@ -35,7 +35,7 @@ cvox.MathStore = function() {
   /**
    * @override
    */
-  this.defaultTtsProps = [cvox.AbstractTts.PITCH, cvox.AbstractTts.RATE];
+  this.defaultTtsProps = [cvox.AbstractTts.PITCH];
 };
 goog.inherits(cvox.MathStore, cvox.BaseRuleStore);
 
