@@ -194,6 +194,38 @@ class ActionXmlTest(unittest.TestCase):
                                           comment=COMMENT)
     self.assertEqual(COMMENT_EXPECTED_XML, xml_result)
 
+  def testUserMetricsActionSpanningTwoLines(self):
+    code = 'base::UserMetricsAction(\n"Foo.Bar"));'
+    finder = extract_actions.ActionNameFinder('dummy', code)
+    self.assertEqual('Foo.Bar', finder.FindNextAction())
+    self.assertFalse(finder.FindNextAction())
+
+  def testUserMetricsActionAsAParam(self):
+    code = 'base::UserMetricsAction("Test.Foo"), "Test.Bar");'
+    finder = extract_actions.ActionNameFinder('dummy', code)
+    self.assertEqual('Test.Foo', finder.FindNextAction())
+    self.assertFalse(finder.FindNextAction())
+
+  def testNonLiteralUserMetricsAction(self):
+    code = 'base::UserMetricsAction(FOO)'
+    finder = extract_actions.ActionNameFinder('dummy', code)
+    with self.assertRaises(Exception):
+      finder.FindNextAction()
+
+  def testTernaryUserMetricsAction(self):
+    code = 'base::UserMetricsAction(foo ? "Foo.Bar" : "Bar.Foo"));'
+    finder = extract_actions.ActionNameFinder('dummy', code)
+    with self.assertRaises(Exception):
+      finder.FindNextAction()
+
+  def testTernaryUserMetricsActionWithNewLines(self):
+    code = """base::UserMetricsAction(
+      foo_bar ? "Bar.Foo" :
+      "Foo.Car")"""
+    finder = extract_actions.ActionNameFinder('dummy', code)
+    with self.assertRaises(extract_actions.InvalidStatementException):
+      finder.FindNextAction()
+
 
 if __name__ == '__main__':
   unittest.main()

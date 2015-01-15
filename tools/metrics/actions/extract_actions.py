@@ -14,7 +14,6 @@ there are many possible actions.
 
 See also:
   base/metrics/user_metrics.h
-  http://wiki.corp.google.com/twiki/bin/view/Main/ChromeUserExperienceMetrics
 
 After extracting all actions, the content will go through a pretty print
 function to make sure it's well formatted. If the file content needs to be
@@ -41,6 +40,19 @@ from google import path_utils
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'common'))
 import diff_util
 import pretty_print_xml
+
+USER_METRICS_ACTION_RE = re.compile(r"""
+  [^a-zA-Z]                   # Preceded by a non-alphabetical character.
+  UserMetricsAction           # Name of the function.
+  \(                          # Opening parenthesis.
+  \s*                         # Any amount of whitespace, including new lines.
+  (.+?)                       # A sequence of characters for the param.
+  \)                          # Closing parenthesis.
+  """,
+  re.VERBOSE | re.DOTALL      # Verbose syntax and makes . also match new lines.
+)
+COMPUTED_ACTION_RE = re.compile(r'RecordComputedAction')
+QUOTED_STRING_RE = re.compile(r'\"(.+?)\"')
 
 # Files that are known to use content::RecordComputedAction(), which means
 # they require special handling code in this script.
@@ -410,6 +422,49 @@ def AddExtensionActions(actions):
   # Actions sent by 'Ok Google' Hotwording.
   actions.add('Hotword.HotwordTrigger')
 
+
+class InvalidStatementException(Exception):
+  """Indicates an invalid statement was found."""
+
+
+class ActionNameFinder:
+  """Helper class to find action names in source code file."""
+
+  def __init__(self, path, contents):
+    self.__path = path
+    self.__pos = 0
+    self.__contents = contents
+
+  def FindNextAction(self):
+    """Finds the next action name in the file.
+
+    Returns:
+      The name of the action found or None if there are no more actions.
+    Raises:
+      InvalidStatementException if the next action statement is invalid
+      and could not be parsed. There may still be more actions in the file,
+      so FindNextAction() can continue to be called to find following ones.
+    """
+    match = USER_METRICS_ACTION_RE.search(self.__contents, pos=self.__pos)
+    if not match:
+      return None
+    match_start = match.start()
+    self.__pos = match.end()
+    match = QUOTED_STRING_RE.match(match.group(1))
+    if not match:
+      self._RaiseException(match_start, self.__pos)
+    return match.group(1)
+
+  def _RaiseException(self, match_start, match_end):
+    """Raises an InvalidStatementException for the specified code range."""
+    line_number = self.__contents.count('\n', 0, match_start) + 1
+    # Add 1 to |match_start| since the RE checks the preceding character.
+    statement = self.__contents[match_start + 1:match_end]
+    raise InvalidStatementException(
+      '%s uses UserMetricsAction incorrectly on line %d:\n%s' %
+      (self.__path, line_number, statement))
+
+
 def GrepForActions(path, actions):
   """Grep a source file for calls to UserMetrics functions.
 
@@ -419,26 +474,25 @@ def GrepForActions(path, actions):
   """
   global number_of_files_total
   number_of_files_total = number_of_files_total + 1
-  # we look for the UserMetricsAction structure constructor
-  # this should be on one line
-  action_re = re.compile(r'[^a-zA-Z]UserMetricsAction\("([^"]*)')
-  malformed_action_re = re.compile(r'[^a-zA-Z]UserMetricsAction\([^"]')
-  computed_action_re = re.compile(r'RecordComputedAction')
+
+  finder = ActionNameFinder(path, open(path).read())
+  while True:
+    try:
+      action_name = finder.FindNextAction()
+      if not action_name:
+        break
+      actions.add(action_name)
+    except InvalidStatementException, e:
+      log.warning(str(e))
+
   line_number = 0
   for line in open(path):
     line_number = line_number + 1
-    match = action_re.search(line)
-    if match:  # Plain call to RecordAction
-      actions.add(match.group(1))
-    elif malformed_action_re.search(line):
-      # Warn if this line is using RecordAction incorrectly.
-      print >>sys.stderr, ('WARNING: %s has malformed call to RecordAction'
-                           ' at %d' % (path, line_number))
-    elif computed_action_re.search(line):
+    if COMPUTED_ACTION_RE.search(line):
       # Warn if this file shouldn't be calling RecordComputedAction.
       if os.path.basename(path) not in KNOWN_COMPUTED_USERS:
-        print >>sys.stderr, ('WARNING: %s has RecordComputedAction at %d' %
-                             (path, line_number))
+        log.warning('%s has RecordComputedAction statement on line %d' %
+                    (path, line_number))
 
 class WebUIActionsParser(HTMLParser):
   """Parses an HTML file, looking for all tags with a 'metric' attribute.
