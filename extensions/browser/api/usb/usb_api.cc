@@ -858,9 +858,7 @@ void UsbSetConfigurationFunction::AsyncWorkStart() {
     return;
   }
 
-  if (device_handle->SetConfiguration(parameters_->configuration_value)) {
-    SetResult(new base::FundamentalValue(true));
-  } else {
+  if (!device_handle->SetConfiguration(parameters_->configuration_value)) {
     SetError(kErrorCannotSetConfiguration);
   }
   AsyncWorkCompleted();

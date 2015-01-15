@@ -10,9 +10,8 @@ var tests = [
       var device = devices[0];
       usb.getConfiguration(device, function (result) {
         chrome.test.assertLastError("The device is not in a configured state.");
-        usb.setConfiguration(device, 1, function (result) {
+        usb.setConfiguration(device, 1, function () {
           chrome.test.assertNoLastError();
-          chrome.test.assertTrue(result);
           usb.getConfiguration(device, function (result) {
             chrome.test.assertNoLastError();
             chrome.test.succeed();
