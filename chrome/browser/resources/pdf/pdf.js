@@ -361,9 +361,7 @@ PDFViewer.prototype = {
         var href = 'mailto:' + message.data.to + '?cc=' + message.data.cc +
             '&bcc=' + message.data.bcc + '&subject=' + message.data.subject +
             '&body=' + message.data.body;
-        var w = window.open(href, '_blank', 'width=1,height=1');
-        if (w)
-          w.close();
+        window.location.href = href;
         break;
       case 'getAccessibilityJSONReply':
         this.sendScriptingMessage_(message.data);
@@ -387,7 +385,7 @@ PDFViewer.prototype = {
         break;
       case 'navigate':
         if (message.data.newTab)
-          window.open(message.data.url);
+          chrome.tabs.create({ url: message.data.url });
         else
           window.location.href = message.data.url;
         break;
