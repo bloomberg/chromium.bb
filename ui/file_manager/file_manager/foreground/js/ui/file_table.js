@@ -117,14 +117,14 @@ FileTableColumnModel.prototype.initializeColumnPos = function() {
   for (var i = 0; i < this.columns_.length; i++) {
     this.columnPos_[i + 1] = this.columns_[i].width + this.columnPos_[i];
   }
-}
+};
 
 /**
  * Destroy columnPos_ which is used in setWidthAndKeepTotal().
  */
 FileTableColumnModel.prototype.destroyColumnPos = function() {
   this.columnPos_ = null;
-}
+};
 
 /**
  * Sets the width of column with keeping the total width of table.
@@ -241,33 +241,50 @@ FileTable.prototype.__proto__ = cr.ui.Table.prototype;
  * @param {!Element} self Table to decorate.
  * @param {MetadataCache} metadataCache To retrieve metadata.
  * @param {VolumeManagerWrapper} volumeManager To retrieve volume info.
+ * @param {!importer.HistoryLoader} historyLoader
  * @param {boolean} fullPage True if it's full page File Manager,
  *                           False if a file open/save dialog.
  */
-FileTable.decorate = function(self, metadataCache, volumeManager, fullPage) {
+FileTable.decorate =
+    function(self, metadataCache, volumeManager, historyLoader, fullPage) {
   cr.ui.Table.decorate(self);
   self.__proto__ = FileTable.prototype;
   self.metadataCache_ = metadataCache;
   self.volumeManager_ = volumeManager;
+  self.historyLoader_ = historyLoader;
+
+  var nameColumn = new cr.ui.table.TableColumn(
+      'name', str('NAME_COLUMN_LABEL'), fullPage ? 386 : 324);
+  nameColumn.renderFunction = self.renderName_.bind(self);
+
+  var sizeColumn = new cr.ui.table.TableColumn(
+      'size', str('SIZE_COLUMN_LABEL'), 110, true);
+  sizeColumn.renderFunction = self.renderSize_.bind(self);
+  sizeColumn.defaultOrder = 'desc';
+
+  var statusColumn = new cr.ui.table.TableColumn(
+      'status', str('STATUS_COLUMN_LABEL'), 50, true);
+  statusColumn.renderFunction = self.renderStatus_.bind(self);
+
+  var typeColumn = new cr.ui.table.TableColumn(
+      'type', str('TYPE_COLUMN_LABEL'), fullPage ? 110 : 110);
+  typeColumn.renderFunction = self.renderType_.bind(self);
+
+  var modTimeColumn = new cr.ui.table.TableColumn(
+      'modificationTime', str('DATE_COLUMN_LABEL'), fullPage ? 150 : 210);
+  modTimeColumn.renderFunction = self.renderDate_.bind(self);
+  modTimeColumn.defaultOrder = 'desc';
 
   var columns = [
-    new cr.ui.table.TableColumn('name', str('NAME_COLUMN_LABEL'),
-                                fullPage ? 386 : 324),
-    new cr.ui.table.TableColumn('size', str('SIZE_COLUMN_LABEL'),
-                                110, true),
-    new cr.ui.table.TableColumn('type', str('TYPE_COLUMN_LABEL'),
-                                fullPage ? 110 : 110),
-    new cr.ui.table.TableColumn('modificationTime',
-                                str('DATE_COLUMN_LABEL'),
-                                fullPage ? 150 : 210)
+      nameColumn,
+      sizeColumn,
+      typeColumn,
+      modTimeColumn
   ];
-
-  columns[0].renderFunction = self.renderName_.bind(self);
-  columns[1].renderFunction = self.renderSize_.bind(self);
-  columns[1].defaultOrder = 'desc';
-  columns[2].renderFunction = self.renderType_.bind(self);
-  columns[3].renderFunction = self.renderDate_.bind(self);
-  columns[3].defaultOrder = 'desc';
+  // Display the status column only if cloud imports are enabled.
+  if (self.importEnabled) {
+    columns.splice(2, 0, statusColumn);
+  }
 
   var columnModel = new FileTableColumnModel(columns);
 
@@ -517,6 +534,79 @@ FileTable.prototype.updateSize_ = function(div, entry) {
 };
 
 /**
+ * Render the Status column of the detail table.
+ *
+ * @param {Entry} entry The Entry object to render.
+ * @param {string} columnId The id of the column to be rendered.
+ * @param {cr.ui.Table} table The table doing the rendering.
+ * @return {!HTMLDivElement} Created element.
+ * @private
+ */
+FileTable.prototype.renderStatus_ = function(entry, columnId, table) {
+  var div = /** @type {!HTMLDivElement} */ (
+      this.ownerDocument.createElement('div'));
+  div.className = 'status status-icon';
+  if (entry) {
+    this.updateStatus_(div, entry);
+  }
+
+  return div;
+};
+
+/**
+ * Returns the status of the entry w.r.t. the given import destination.
+ * @param {Entry} entry
+ * @param {!importer.Destination} destination
+ * @return {!Promise<string>} The import status - will be 'imported', 'copied',
+ *     or 'unknown'.
+ */
+FileTable.prototype.getImportStatus_ = function(entry, destination) {
+  if (!entry.isFile) {
+    // Our import history doesn't deal with directories.
+    // TODO(kenobi): May need to revisit this if the above assumption changes.
+    return Promise.resolve('unknown');
+  }
+  // For the compiler.
+  var fileEntry = /** @type {!FileEntry} */ (entry);
+
+  return this.historyLoader_.getHistory()
+      .then(
+          /** @param {!importer.ImportHistory} history */
+          function(history) {
+            return Promise.all([
+                history.wasImported(fileEntry, destination),
+                history.wasCopied(fileEntry, destination)
+            ]);
+          })
+      .then(
+          /** @param {!Array<boolean>} status */
+          function(status) {
+            if (status[0]) {
+              return 'imported';
+            } else if (status[1]) {
+              return 'copied';
+            } else {
+              return 'unknown';
+            }
+          });
+};
+
+/**
+ * Render the status icon of the detail table.
+ *
+ * @param {HTMLDivElement} div
+ * @param {Entry} entry The Entry object to render.
+ * @private
+ */
+FileTable.prototype.updateStatus_ = function(div, entry) {
+  this.getImportStatus_(entry, importer.Destination.GOOGLE_DRIVE).then(
+      /** @param {string} status */
+      function(status) {
+        div.setAttribute('file-status-icon', status);
+      });
+};
+
+/**
  * Render the Type column of the detail table.
  *
  * @param {Entry} entry The Entry object to render.
@@ -602,6 +692,8 @@ FileTable.prototype.updateFileMetadata = function(item, entry) {
       /** @type {!HTMLDivElement} */ (item.querySelector('.date')), entry);
   this.updateSize_(
       /** @type {!HTMLDivElement} */ (item.querySelector('.size')), entry);
+  this.updateStatus_(
+      /** @type {!HTMLDivElement} */ (item.querySelector('.status')), entry);
 };
 
 /**
@@ -633,6 +725,10 @@ FileTable.prototype.updateListItemsMetadata = function(type, entries) {
     forEachCell('.table-row-cell > .date', function(item, entry, listItem) {
       var props = this.metadataCache_.getCached(entry, 'external');
       filelist.updateListItemExternalProps(listItem, props);
+    });
+  } else if (type === 'import-history') {
+    forEachCell('.table-row-cell > .status', function(item, entry, unused) {
+      this.updateStatus_(item, entry);
     });
   }
 };

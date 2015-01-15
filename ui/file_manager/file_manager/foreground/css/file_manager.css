@@ -1115,6 +1115,11 @@ li[renaming=''] .filename-label {
   width: 24px;
 }
 
+.status-icon {
+  height: 24px;
+  width: 24px;
+}
+
 #detail-table .detail-icon {
   /* To shift the icon position. */
   margin-bottom: 2px;

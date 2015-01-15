@@ -251,6 +251,13 @@ function FileManager() {
    */
   this.initializeQueue_ = new AsyncUtil.Group();
 
+  /**
+   * Indicates whether cloud import is enabled.  This is initialized in
+   * #initSettings.
+   * @private {?boolean}
+   */
+  this.importEnabled_ = null;
+
   // Object.seal() has big performance/memory overhead for now, so we use
   // Object.preventExtensions() here. crbug.com/412239.
   Object.preventExtensions(this);
@@ -354,7 +361,17 @@ FileManager.prototype = /** @struct */ {
 (function() {
   FileManager.prototype.initSettings_ = function(callback) {
     this.appStateController_ = new AppStateController(this.dialogType);
-    this.appStateController_.loadInitialViewOptions().then(callback);
+    var whenViewOptionsLoaded =
+        this.appStateController_.loadInitialViewOptions();
+    var whenImportFlagLoaded = importer.importEnabled().then(
+        function(enabled) {
+          this.importEnabled_ = enabled;
+        }.bind(this));
+
+    Promise.all([
+      whenViewOptionsLoaded,
+      whenImportFlagLoaded
+    ]).then(callback);
   };
 
   /**
@@ -717,11 +734,12 @@ FileManager.prototype = /** @struct */ {
     FileManagerDialogBase.setFileManager(this);
 
     var table = queryRequiredElement(dom, '.detail-table');
-    // TODO(smckay): Work out the cloud import UI when in list view.
+    table.importEnabled = this.importEnabled_;
     FileTable.decorate(
         table,
         this.metadataCache_,
         this.volumeManager_,
+        this.historyLoader_,
         this.dialogType == DialogType.FULL_PAGE);
     var grid = queryRequiredElement(dom, '.thumbnail-grid');
     FileGrid.decorate(
@@ -803,8 +821,10 @@ FileManager.prototype = /** @struct */ {
              */
             function(isChild) {
               if (isChild) {
-                // TODO(smckay): Update listview when that view is visible.
                 this.ui_.listContainer.grid.updateListItemsMetadata(
+                    'import-history',
+                    [event.entry]);
+                this.ui_.listContainer.table.updateListItemsMetadata(
                     'import-history',
                     [event.entry]);
               }

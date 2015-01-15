@@ -1,0 +1,39 @@
+/* Copyright (c) 2015 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+/* Small icons for file statuses, used in lists and menus. */
+[file-status-icon] {
+  background-image: none;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 16px 16px;
+}
+
+[file-status-icon='copied'] {
+  background-image: -webkit-image-set(
+      url(../images/files/ui/copied_badge_gray.png) 1x,
+      url(../images/files/ui/2x/copied_badge_gray.png) 2x);
+}
+
+tree:focus .tree-item[selected] > .tree-row > [file-status-icon='copied'],
+list:focus [selected] [file-status-icon='copied'],
+list.autocomplete-suggestions [selected] [file-status-icon='copied'] {
+  background-image: -webkit-image-set(
+      url(../images/files/ui/copied_badge.png) 1x,
+      url(../images/files/ui/2x/copied_badge.png) 2x);
+}
+
+[file-status-icon='imported'] {
+  background-image: -webkit-image-set(
+      url(../images/files/ui/drive_badge.png) 1x,
+      url(../images/files/ui/2x/drive_badge.png) 2x);
+}
+
+tree:focus .tree-item[selected] > .tree-row > [file-status-icon='imported'],
+list:focus [selected] [file-status-icon='imported'],
+list.autocomplete-suggestions [selected] [file-status-icon='imported'] {
+  background-image: -webkit-image-set(
+      url(../images/files/ui/drive_badge_white.png) 1x,
+      url(../images/files/ui/2x/drive_badge_white.png) 2x);
+}
