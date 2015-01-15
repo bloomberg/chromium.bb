@@ -706,11 +706,6 @@ base.dll!scoped_refptr<>::Release
 base.dll!base::internal::CallbackBase::~CallbackBase
 
 UNADDRESSABLE ACCESS
-name=https://crbug.com/447788
-...
-*!gpu::gles2::GLES2ImplementationTest_TexImage3DSingleCommand_Test::TestBody
-
-UNADDRESSABLE ACCESS
 name=https://crbug.com/448189
 ...
 aura.dll!aura::GetDeviceScaleFactorFromDisplay
