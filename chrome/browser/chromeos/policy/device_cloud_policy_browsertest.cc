@@ -2,61 +2,41 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/compiler_specific.h"
-#include "base/logging.h"
-#include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/memory/scoped_ptr.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
-#include "chrome/test/base/testing_browser_process.h"
+#include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
+#include "chrome/test/base/in_process_browser_test.h"
+#include "components/policy/core/common/cloud/cloud_policy_client.h"
+#include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace policy {
-namespace {
 
-// A test fixture simulating a browser that is already managed.
-class DeviceCloudPolicyManagedBrowserTest : public DevicePolicyCrosBrowserTest {
- protected:
-  DeviceCloudPolicyManagedBrowserTest() {}
-
-  virtual void SetUpInProcessBrowserTestFixture() override {
-    DevicePolicyCrosBrowserTest::SetUpInProcessBrowserTestFixture();
-
-    InstallOwnerKey();
-    MarkAsEnterpriseOwned();
-    RefreshDevicePolicy();
+class DeviceCloudPolicyBrowserTest : public InProcessBrowserTest {
+ public:
+  DeviceCloudPolicyBrowserTest() : mock_client_(new MockCloudPolicyClient) {
   }
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(DeviceCloudPolicyManagedBrowserTest);
+  MockCloudPolicyClient* mock_client_;
 };
 
-IN_PROC_BROWSER_TEST_F(DeviceCloudPolicyManagedBrowserTest, NoInitializer) {
+IN_PROC_BROWSER_TEST_F(DeviceCloudPolicyBrowserTest, Initializer) {
   BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  // Initializer exists at first.
+  EXPECT_TRUE(connector->GetDeviceCloudPolicyInitializer());
+
+  // Initializer is deleted when the manager connects.
+  connector->GetDeviceCloudPolicyManager()->StartConnection(
+      make_scoped_ptr(mock_client_),
+      connector->GetInstallAttributes());
   EXPECT_FALSE(connector->GetDeviceCloudPolicyInitializer());
-}
 
-// A test fixture simulating a browser that is still unmanaged.
-class DeviceCloudPolicyUnmanagedBrowserTest
-    : public DevicePolicyCrosBrowserTest {
- protected:
-  DeviceCloudPolicyUnmanagedBrowserTest() {}
-
-  virtual void SetUpInProcessBrowserTestFixture() override {
-    DevicePolicyCrosBrowserTest::SetUpInProcessBrowserTestFixture();
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DeviceCloudPolicyUnmanagedBrowserTest);
-};
-
-IN_PROC_BROWSER_TEST_F(DeviceCloudPolicyUnmanagedBrowserTest,
-                       StillHasInitializer) {
-  BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  // Initializer is restarted when the manager disconnects.
+  connector->GetDeviceCloudPolicyManager()->Disconnect();
   EXPECT_TRUE(connector->GetDeviceCloudPolicyInitializer());
 }
 
-}  // namespace
 }  // namespace policy

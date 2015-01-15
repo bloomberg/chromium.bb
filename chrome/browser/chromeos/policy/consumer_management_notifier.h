@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POLICY_CONSUMER_MANAGEMENT_NOTIFIER_H_
 #define CHROME_BROWSER_CHROMEOS_POLICY_CONSUMER_MANAGEMENT_NOTIFIER_H_
 
+#include <string>
+
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/policy/consumer_management_service.h"
@@ -34,14 +37,23 @@ class ConsumerManagementNotifier
   void OnConsumerManagementStatusChanged() override;
 
  private:
+  // Shows a notification based on |stage|.
+  void ShowNotification(const ConsumerManagementStage& stage);
+
   // Shows a desktop notification.
-  void ShowDesktopNotification(const ConsumerManagementStage& stage);
+  void ShowDesktopNotification(
+      const std::string& notification_id,
+      const std::string& notification_url,
+      int title_message_id,
+      int body_message_id,
+      int button_label_message_id,
+      const base::Closure& button_click_callback);
 
   // Opens the settings page.
   void OpenSettingsPage() const;
 
-  // Opens the enrollment confirmation dialog in the settings page.
-  void TryEnrollmentAgain() const;
+  // Opens the enrollment/unenrollment confirmation dialog in the settings page.
+  void TryAgain() const;
 
   Profile* profile_;
   ConsumerManagementService* consumer_management_service_;

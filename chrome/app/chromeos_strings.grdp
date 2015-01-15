@@ -5966,6 +5966,18 @@ All users must sign out to continue.
   <message name="IDS_CONSUMER_MANAGEMENT_ENROLLMENT_FAILURE_NOTIFICATION_BODY" desc="The body of the desktop notification shown when consumer management enrollment fails">
     Enrollment in Google Device Manager was not successful.
   </message>
+  <message name="IDS_CONSUMER_MANAGEMENT_UNENROLLMENT_NOTIFICATION_TITLE" desc="The title of the desktop notification shown when consumer management unenrollment is completed">
+    Unenrolled
+  </message>
+  <message name="IDS_CONSUMER_MANAGEMENT_UNENROLLMENT_NOTIFICATION_BODY" desc="The body of the desktop notification shown when consumer management unenrollment is completed">
+    This device can no longer be managed remotely by the owner (you).
+  </message>
+  <message name="IDS_CONSUMER_MANAGEMENT_UNENROLLMENT_FAILURE_NOTIFICATION_TITLE" desc="The title of the desktop notification shown when consumer management unenrollment fails">
+    Failed to unenroll
+  </message>
+  <message name="IDS_CONSUMER_MANAGEMENT_UNENROLLMENT_FAILURE_NOTIFICATION_BODY" desc="The body of the desktop notification shown when consumer management unenrollment fails">
+    Unenrollment from remote management was not successful.
+  </message>
   <message name="IDS_CONSUMER_MANAGEMENT_NOTIFICATION_MODIFY_SETTINGS_BUTTON" desc="The label of the modify settings button on the desktop notification shown when consumer management enrollment or unenrollment is completed">
     Modify settings
   </message>

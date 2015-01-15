@@ -34,6 +34,9 @@ namespace {
 // Desktop notification constants.
 const char kEnrollmentNotificationId[] = "consumer_management.enroll";
 const char kEnrollmentNotificationUrl[] = "chrome://consumer-management/enroll";
+const char kUnenrollmentNotificationId[] = "consumer_management.unenroll";
+const char kUnenrollmentNotificationUrl[] =
+    "chrome://consumer-management/unenroll";
 
 // The path to the consumer management enrollment/unenrollment confirmation
 // overlay, relative to the settings page URL.
@@ -103,59 +106,79 @@ void ConsumerManagementNotifier::OnConsumerManagementStatusChanged() {
   if (stage.HasPendingNotification()) {
     // Reset the stage so that we won't show the same notification, again.
     consumer_management_service_->SetStage(ConsumerManagementStage::None());
-    ShowDesktopNotification(stage);
+    ShowNotification(stage);
+  }
+}
+
+void ConsumerManagementNotifier::ShowNotification(
+    const ConsumerManagementStage& stage) {
+  if (stage.HasEnrollmentSucceeded()) {
+    ShowDesktopNotification(
+        kEnrollmentNotificationId,
+        kEnrollmentNotificationUrl,
+        IDS_CONSUMER_MANAGEMENT_ENROLLMENT_NOTIFICATION_TITLE,
+        IDS_CONSUMER_MANAGEMENT_ENROLLMENT_NOTIFICATION_BODY,
+        IDS_CONSUMER_MANAGEMENT_NOTIFICATION_MODIFY_SETTINGS_BUTTON,
+        base::Bind(&ConsumerManagementNotifier::OpenSettingsPage,
+                   weak_ptr_factory_.GetWeakPtr()));
+  } else if (stage.HasEnrollmentFailed()) {
+    ShowDesktopNotification(
+        kEnrollmentNotificationId,
+        kEnrollmentNotificationUrl,
+        IDS_CONSUMER_MANAGEMENT_ENROLLMENT_FAILURE_NOTIFICATION_TITLE,
+        IDS_CONSUMER_MANAGEMENT_ENROLLMENT_FAILURE_NOTIFICATION_BODY,
+        IDS_CONSUMER_MANAGEMENT_NOTIFICATION_TRY_AGAIN_BUTTON,
+        base::Bind(&ConsumerManagementNotifier::TryAgain,
+                   weak_ptr_factory_.GetWeakPtr()));
+  } else if (stage.HasUnenrollmentSucceeded()) {
+    ShowDesktopNotification(
+        kUnenrollmentNotificationId,
+        kUnenrollmentNotificationUrl,
+        IDS_CONSUMER_MANAGEMENT_UNENROLLMENT_NOTIFICATION_TITLE,
+        IDS_CONSUMER_MANAGEMENT_UNENROLLMENT_NOTIFICATION_BODY,
+        IDS_CONSUMER_MANAGEMENT_NOTIFICATION_MODIFY_SETTINGS_BUTTON,
+        base::Bind(&ConsumerManagementNotifier::OpenSettingsPage,
+                   weak_ptr_factory_.GetWeakPtr()));
+  } else if (stage.HasUnenrollmentFailed()) {
+    ShowDesktopNotification(
+        kUnenrollmentNotificationId,
+        kUnenrollmentNotificationUrl,
+        IDS_CONSUMER_MANAGEMENT_UNENROLLMENT_FAILURE_NOTIFICATION_TITLE,
+        IDS_CONSUMER_MANAGEMENT_UNENROLLMENT_FAILURE_NOTIFICATION_BODY,
+        IDS_CONSUMER_MANAGEMENT_NOTIFICATION_TRY_AGAIN_BUTTON,
+        base::Bind(&ConsumerManagementNotifier::TryAgain,
+                   weak_ptr_factory_.GetWeakPtr()));
+  } else {
+    NOTREACHED();
   }
 }
 
 void ConsumerManagementNotifier::ShowDesktopNotification(
-    const ConsumerManagementStage& stage) {
-  base::string16 title;
-  base::string16 body;
-  base::string16 button_label;
-  base::Closure button_click_callback;
-
-  if (stage.HasEnrollmentSucceeded()) {
-    title = l10n_util::GetStringUTF16(
-        IDS_CONSUMER_MANAGEMENT_ENROLLMENT_NOTIFICATION_TITLE);
-    body = l10n_util::GetStringUTF16(
-        IDS_CONSUMER_MANAGEMENT_ENROLLMENT_NOTIFICATION_BODY);
-    button_label = l10n_util::GetStringUTF16(
-        IDS_CONSUMER_MANAGEMENT_NOTIFICATION_MODIFY_SETTINGS_BUTTON);
-    button_click_callback = base::Bind(
-        &ConsumerManagementNotifier::OpenSettingsPage,
-        weak_ptr_factory_.GetWeakPtr());
-  } else if (stage.HasEnrollmentFailed()) {
-    title = l10n_util::GetStringUTF16(
-        IDS_CONSUMER_MANAGEMENT_ENROLLMENT_FAILURE_NOTIFICATION_TITLE);
-    body = l10n_util::GetStringUTF16(
-        IDS_CONSUMER_MANAGEMENT_ENROLLMENT_FAILURE_NOTIFICATION_BODY);
-    button_label = l10n_util::GetStringUTF16(
-        IDS_CONSUMER_MANAGEMENT_NOTIFICATION_TRY_AGAIN_BUTTON);
-    button_click_callback = base::Bind(
-        &ConsumerManagementNotifier::TryEnrollmentAgain,
-        weak_ptr_factory_.GetWeakPtr());
-  } else {
-    NOTREACHED();
-    return;
-  }
-
+    const std::string& notification_id,
+    const std::string& notification_url,
+    int title_message_id,
+    int body_message_id,
+    int button_label_message_id,
+    const base::Closure& button_click_callback) {
   message_center::RichNotificationData optional_field;
-  optional_field.buttons.push_back(message_center::ButtonInfo(button_label));
+  optional_field.buttons.push_back(message_center::ButtonInfo(
+      l10n_util::GetStringUTF16(button_label_message_id)));
+
   Notification notification(
       message_center::NOTIFICATION_TYPE_SIMPLE,
-      GURL(kEnrollmentNotificationUrl),
-      title,
-      body,
+      GURL(notification_url),
+      l10n_util::GetStringUTF16(title_message_id),
+      l10n_util::GetStringUTF16(body_message_id),
       ui::ResourceBundle::GetSharedInstance().GetImageNamed(
           IDR_CONSUMER_MANAGEMENT_NOTIFICATION_ICON),
       blink::WebTextDirectionDefault,
       message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
-                                 kEnrollmentNotificationId),
+                                 notification_id),
       base::string16(),  // display_source
-      base::UTF8ToUTF16(kEnrollmentNotificationId),
+      base::UTF8ToUTF16(notification_id),
       optional_field,
-      new DesktopNotificationDelegate(kEnrollmentNotificationId,
-                                      button_click_callback));
+      new DesktopNotificationDelegate(notification_id, button_click_callback));
+
   notification.SetSystemPriority();
   g_browser_process->notification_ui_manager()->Add(notification, profile_);
 }
@@ -167,7 +190,7 @@ void ConsumerManagementNotifier::OpenSettingsPage() const {
   chrome::Navigate(&params);
 }
 
-void ConsumerManagementNotifier::TryEnrollmentAgain() const {
+void ConsumerManagementNotifier::TryAgain() const {
   const GURL base_url(chrome::kChromeUISettingsURL);
   const GURL url = base_url.Resolve(kConsumerManagementOverlay);
 
