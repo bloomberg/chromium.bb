@@ -432,6 +432,21 @@ bool FakeShillServiceClient::SetServiceProperty(const std::string& service_path,
     provider->SetWithoutPathExpansion(key, value.DeepCopy());
     new_properties.SetWithoutPathExpansion(shill::kProviderProperty, provider);
     changed_property = shill::kProviderProperty;
+  } else if (value.GetType() == base::Value::TYPE_DICTIONARY) {
+    const base::DictionaryValue* new_dict = NULL;
+    value.GetAsDictionary(&new_dict);
+    CHECK(new_dict);
+    scoped_ptr<base::Value> cur_value;
+    base::DictionaryValue* cur_dict;
+    if (dict->RemoveWithoutPathExpansion(property, &cur_value) &&
+        cur_value->GetAsDictionary(&cur_dict)) {
+      cur_dict->Clear();
+      cur_dict->MergeDictionary(new_dict);
+      new_properties.SetWithoutPathExpansion(property, cur_value.release());
+    } else {
+      new_properties.SetWithoutPathExpansion(property, value.DeepCopy());
+    }
+    changed_property = property;
   } else {
     new_properties.SetWithoutPathExpansion(property, value.DeepCopy());
     changed_property = property;

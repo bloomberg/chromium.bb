@@ -592,9 +592,9 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
   // IPConfigs
   base::DictionaryValue ipconfig_v4_dictionary;
   ipconfig_v4_dictionary.SetStringWithoutPathExpansion(
-      shill::kAddressProperty, "0.0.0.0");
+      shill::kAddressProperty, "100.0.0.1");
   ipconfig_v4_dictionary.SetStringWithoutPathExpansion(
-      shill::kGatewayProperty, "0.0.0.1");
+      shill::kGatewayProperty, "100.0.0.2");
   ipconfig_v4_dictionary.SetIntegerWithoutPathExpansion(
       shill::kPrefixlenProperty, 1);
   ipconfig_v4_dictionary.SetStringWithoutPathExpansion(
@@ -602,7 +602,7 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
   ip_configs->AddIPConfig("ipconfig_v4_path", ipconfig_v4_dictionary);
   base::DictionaryValue ipconfig_v6_dictionary;
   ipconfig_v6_dictionary.SetStringWithoutPathExpansion(
-      shill::kAddressProperty, "0:0:0:0:0:0:0:0");
+      shill::kAddressProperty, "0:0:0:0:100:0:0:1");
   ipconfig_v6_dictionary.SetStringWithoutPathExpansion(
       shill::kMethodProperty, shill::kTypeIPv6);
   ip_configs->AddIPConfig("ipconfig_v6_path", ipconfig_v6_dictionary);
@@ -647,7 +647,7 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
     devices->AddDevice("/device/wifi1", shill::kTypeWifi, "stub_wifi_device1");
     devices->SetDeviceProperty("/device/wifi1",
                                shill::kAddressProperty,
-                               base::StringValue("23456789abc"));
+                               base::StringValue("23456789abcd"));
     base::ListValue wifi_ip_configs;
     wifi_ip_configs.AppendString("ipconfig_v4_path");
     wifi_ip_configs.AppendString("ipconfig_v6_path");
@@ -680,11 +680,19 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
     services->SetServiceProperty(kWifi2Path,
                                  shill::kSecurityClassProperty,
                                  base::StringValue(shill::kSecurityPsk));
-
-    base::FundamentalValue strength_value(80);
     services->SetServiceProperty(
-        kWifi2Path, shill::kSignalStrengthProperty, strength_value);
+        kWifi2Path, shill::kSignalStrengthProperty, base::FundamentalValue(80));
     profiles->AddService(shared_profile, kWifi2Path);
+
+    const std::string kWifi3Path = "/service/wifi3";
+    services->AddService(kWifi3Path,
+                         "",  /* empty GUID */
+                         "wifi3" /* name */,
+                         shill::kTypeWifi,
+                         shill::kStateIdle,
+                         add_to_visible);
+    services->SetServiceProperty(
+        kWifi3Path, shill::kSignalStrengthProperty, base::FundamentalValue(40));
 
     if (portaled) {
       const std::string kPortaledWifiPath = "/service/portaled_wifi";

@@ -382,16 +382,18 @@ class MergeToAugmented : public MergeToEffective {
 
     if (IsIdentifierField(*signature_, key)) {
       // Don't augment the GUID but write the plain value.
-      if (!effective_value) {
-        LOG(ERROR) << "GUID field has no effective value";
-        return nullptr;
+      if (effective_value) {
+        // DCHECK that all provided GUIDs are identical.
+        DCHECK(AllPresentValuesEqual(values, *effective_value));
+        // Return the un-augmented GUID.
+        return effective_value.Pass();
       }
-
-      // DCHECK that all provided GUIDs are identical.
-      DCHECK(AllPresentValuesEqual(values, *effective_value));
-
-      // Return the un-augmented GUID.
-      return effective_value.Pass();
+      if (values.active_setting) {
+        // Unmanaged networks have assigned (active) GUID values.
+        return make_scoped_ptr(values.active_setting->DeepCopy());
+      }
+      LOG(ERROR) << "GUID field has no effective value";
+      return nullptr;
     }
 
     scoped_ptr<base::DictionaryValue> augmented_value(

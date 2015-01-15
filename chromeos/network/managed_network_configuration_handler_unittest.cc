@@ -21,6 +21,7 @@
 #include "chromeos/network/network_configuration_handler.h"
 #include "chromeos/network/network_policy_observer.h"
 #include "chromeos/network/network_profile_handler.h"
+#include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/onc/onc_test_utils.h"
 #include "chromeos/network/onc/onc_utils.h"
 #include "dbus/object_path.h"
@@ -241,15 +242,16 @@ class ManagedNetworkConfigurationHandlerTest : public testing::Test {
         .WillByDefault(Invoke(&services_stub_,
                               &ShillServiceTestClient::GetProperties));
 
+    network_state_handler_.reset(NetworkStateHandler::InitializeForTest());
     network_profile_handler_.reset(new TestNetworkProfileHandler());
     network_configuration_handler_.reset(
         NetworkConfigurationHandler::InitializeForTest(
-            NULL /* no NetworkStateHandler */,
+            network_state_handler_.get(),
             NULL /* no NetworkDeviceHandler */));
     managed_network_configuration_handler_.reset(
         new ManagedNetworkConfigurationHandlerImpl());
     managed_network_configuration_handler_->Init(
-        NULL /* no NetworkStateHandler */,
+        network_state_handler_.get(),
         network_profile_handler_.get(),
         network_configuration_handler_.get(),
         NULL /* no DeviceHandler */);
@@ -261,6 +263,7 @@ class ManagedNetworkConfigurationHandlerTest : public testing::Test {
   void TearDown() override {
     if (managed_network_configuration_handler_)
       managed_network_configuration_handler_->RemoveObserver(&policy_observer_);
+    network_state_handler_.reset();
     managed_network_configuration_handler_.reset();
     network_configuration_handler_.reset();
     network_profile_handler_.reset();
@@ -360,6 +363,7 @@ class ManagedNetworkConfigurationHandlerTest : public testing::Test {
   ShillProfileTestClient profiles_stub_;
   ShillServiceTestClient services_stub_;
   TestNetworkPolicyObserver policy_observer_;
+  scoped_ptr<NetworkStateHandler> network_state_handler_;
   scoped_ptr<TestNetworkProfileHandler> network_profile_handler_;
   scoped_ptr<NetworkConfigurationHandler> network_configuration_handler_;
   scoped_ptr<ManagedNetworkConfigurationHandlerImpl>

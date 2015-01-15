@@ -739,6 +739,22 @@ void ManagedNetworkConfigurationHandlerImpl::GetPropertiesCallback(
   scoped_ptr<base::DictionaryValue> shill_properties_copy(
       shill_properties.DeepCopy());
 
+  std::string guid;
+  shill_properties.GetStringWithoutPathExpansion(shill::kGuidProperty, &guid);
+  if (guid.empty()) {
+    // Unmanaged networks are assigned a GUID in NetworkState. Provide this
+    // value in the ONC dictionary.
+    const NetworkState* state =
+        network_state_handler_->GetNetworkState(service_path);
+    if (state && !state->guid().empty()) {
+      guid = state->guid();
+      shill_properties_copy->SetStringWithoutPathExpansion(shill::kGuidProperty,
+                                                           guid);
+    } else {
+      LOG(ERROR) << "Network has no GUID specified: " << service_path;
+    }
+  }
+
   std::string type;
   shill_properties_copy->GetStringWithoutPathExpansion(shill::kTypeProperty,
                                                        &type);
