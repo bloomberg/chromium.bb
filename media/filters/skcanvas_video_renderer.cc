@@ -560,6 +560,7 @@ void SkCanvasVideoRenderer::CopyVideoFrameTextureToGLTexture(
   DCHECK(video_frame && video_frame->format() == VideoFrame::NATIVE_TEXTURE);
   const gpu::MailboxHolder* mailbox_holder = video_frame->mailbox_holder();
   DCHECK(mailbox_holder->texture_target == GL_TEXTURE_2D ||
+         mailbox_holder->texture_target == GL_TEXTURE_RECTANGLE_ARB ||
          mailbox_holder->texture_target == GL_TEXTURE_EXTERNAL_OES);
 
   gl->WaitSyncPointCHROMIUM(mailbox_holder->sync_point);
