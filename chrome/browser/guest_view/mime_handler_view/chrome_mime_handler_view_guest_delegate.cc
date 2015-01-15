@@ -4,11 +4,11 @@
 
 #include "chrome/browser/guest_view/mime_handler_view/chrome_mime_handler_view_guest_delegate.h"
 
-#include "chrome/browser/chrome_page_zoom.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu.h"
 #include "chrome/browser/ui/pdf/chrome_pdf_web_contents_helper_client.h"
 #include "components/pdf/browser/pdf_web_contents_helper.h"
 #include "components/renderer_context_menu/context_menu_delegate.h"
+#include "components/ui/zoom/page_zoom.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
 
 #if defined(ENABLE_PRINTING)
@@ -50,7 +50,7 @@ void ChromeMimeHandlerViewGuestDelegate::AttachHelpers() {
 void ChromeMimeHandlerViewGuestDelegate::ChangeZoom(bool zoom_in) {
   // TODO(lazyboy): Move this to //extensions once ZoomController and friends
   // move to //extensions.
-  chrome_page_zoom::Zoom(
+  ui_zoom::PageZoom::Zoom(
       guest_->embedder_web_contents(),
       zoom_in ? content::PAGE_ZOOM_IN : content::PAGE_ZOOM_OUT);
 }

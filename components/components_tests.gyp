@@ -280,6 +280,7 @@
             'translate/ios/browser/js_translate_manager_unittest.mm',
             'translate/ios/browser/language_detection_controller_unittest.mm',
             'translate/ios/browser/translate_controller_unittest.mm',
+            'ui/zoom/page_zoom_unittests.cc',
             'update_client/update_query_params_unittest.cc',
             'url_matcher/regex_set_matcher_unittest.cc',
             'url_matcher/string_pattern_unittest.cc',
@@ -495,6 +496,9 @@
 
             # Dependencies of wallpaper
             'components.gyp:wallpaper',
+
+            # Dependencies of ui/zoom
+            'components.gyp:ui_zoom',
 
             # Dependencies of update_client
             'components.gyp:update_client',

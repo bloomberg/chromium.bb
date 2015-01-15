@@ -6,10 +6,10 @@
 
 #include "base/mac/foundation_util.h"
 #include "base/strings/string_number_conversions.h"
-#include "chrome/browser/chrome_page_zoom.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/ui/zoom/page_zoom.h"
 #include "components/ui/zoom/zoom_controller.h"
 #include "content/public/common/page_zoom.h"
 #include "skia/ext/skia_utils_mac.h"
@@ -314,7 +314,7 @@ void SetZoomBubbleAutoCloseDelayForTesting(NSTimeInterval time_interval) {
   // there haven't been associated crashes in the wild, so it seems
   // fine in practice.  It might make sense to close the bubble in
   // that case, though.
-  chrome_page_zoom::Zoom(webContents, alterPageZoom);
+  ui_zoom::PageZoom::Zoom(webContents, alterPageZoom);
 }
 
 @end

@@ -1,14 +1,14 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chrome_page_zoom.h"
+#include "components/ui/zoom/page_zoom.h"
 
 #include <algorithm>
 #include <cmath>
 
 #include "base/prefs/pref_service.h"
-#include "chrome/browser/chrome_page_zoom_constants.h"
+#include "components/ui/zoom/page_zoom_constants.h"
 #include "components/ui/zoom/zoom_controller.h"
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/render_view_host.h"
@@ -19,7 +19,7 @@
 
 using base::UserMetricsAction;
 
-namespace chrome_page_zoom {
+namespace {
 
 enum PageZoomValueType {
   PAGE_ZOOM_VALUE_TYPE_FACTOR,
@@ -33,8 +33,8 @@ std::vector<double> PresetZoomValues(PageZoomValueType value_type,
   // sorted order.
   std::vector<double> zoom_values;
   bool found_custom = false;
-  for (size_t i = 0; i < kPresetZoomFactorsSize; i++) {
-    double zoom_value = kPresetZoomFactors[i];
+  for (size_t i = 0; i < ui_zoom::kPresetZoomFactorsSize; i++) {
+    double zoom_value = ui_zoom::kPresetZoomFactors[i];
     if (value_type == PAGE_ZOOM_VALUE_TYPE_LEVEL)
       zoom_value = content::ZoomFactorToZoomLevel(zoom_value);
     if (content::ZoomValuesEqual(zoom_value, custom_value))
@@ -56,15 +56,23 @@ std::vector<double> PresetZoomValues(PageZoomValueType value_type,
   return zoom_values;
 }
 
-std::vector<double> PresetZoomFactors(double custom_factor) {
+}  // namespace anonymous
+
+namespace ui_zoom {
+
+// static
+std::vector<double> PageZoom::PresetZoomFactors(double custom_factor) {
   return PresetZoomValues(PAGE_ZOOM_VALUE_TYPE_FACTOR, custom_factor);
 }
 
-std::vector<double> PresetZoomLevels(double custom_level) {
+// static
+std::vector<double> PageZoom::PresetZoomLevels(double custom_level) {
   return PresetZoomValues(PAGE_ZOOM_VALUE_TYPE_LEVEL, custom_level);
 }
 
-void Zoom(content::WebContents* web_contents, content::PageZoom zoom) {
+// static
+void PageZoom::Zoom(content::WebContents* web_contents,
+                    content::PageZoom zoom) {
   ui_zoom::ZoomController* zoom_controller =
       ui_zoom::ZoomController::FromWebContents(web_contents);
   DCHECK(zoom_controller);
@@ -115,4 +123,4 @@ void Zoom(content::WebContents* web_contents, content::PageZoom zoom) {
   }
 }
 
-}  // namespace chrome_page_zoom
+}  // namespace ui_zoom

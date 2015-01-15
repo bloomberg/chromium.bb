@@ -19,6 +19,10 @@
         '../url/url.gyp:url_lib',
       ],
       'sources': [
+        'ui/zoom/page_zoom.cc',
+        'ui/zoom/page_zoom.h',
+        'ui/zoom/page_zoom_constants.cc',
+        'ui/zoom/page_zoom_constants.h',
         'ui/zoom/zoom_controller.cc',
         'ui/zoom/zoom_controller.h',
         'ui/zoom/zoom_event_manager.cc',

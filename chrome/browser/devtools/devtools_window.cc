@@ -11,7 +11,6 @@
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "chrome/browser/chrome_page_zoom.h"
 #include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
@@ -31,6 +30,7 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/ui/zoom/page_zoom.h"
 #include "components/ui/zoom/zoom_controller.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host.h"
@@ -691,7 +691,7 @@ DevToolsWindow::DevToolsWindow(Profile* profile,
 
   // Bindings take ownership over devtools as its delegate.
   bindings_->SetDelegate(this);
-  // DevTools uses chrome_page_zoom::Zoom(), so main_web_contents_ requires a
+  // DevTools uses PageZoom::Zoom(), so main_web_contents_ requires a
   // ZoomController.
   ui_zoom::ZoomController::CreateForWebContents(main_web_contents_);
   ui_zoom::ZoomController::FromWebContents(main_web_contents_)
@@ -881,8 +881,8 @@ void DevToolsWindow::CloseContents(WebContents* source) {
 
 void DevToolsWindow::ContentsZoomChange(bool zoom_in) {
   DCHECK(is_docked_);
-  chrome_page_zoom::Zoom(main_web_contents_,
-      zoom_in ? content::PAGE_ZOOM_IN : content::PAGE_ZOOM_OUT);
+  ui_zoom::PageZoom::Zoom(main_web_contents_, zoom_in ? content::PAGE_ZOOM_IN
+                                                      : content::PAGE_ZOOM_OUT);
 }
 
 void DevToolsWindow::BeforeUnloadFired(WebContents* tab,

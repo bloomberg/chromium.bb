@@ -17,7 +17,6 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
-#include "chrome/browser/chrome_page_zoom.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_impl.h"
 #include "chrome/browser/ui/browser.h"
@@ -31,6 +30,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/signin/core/common/profile_management_switches.h"
+#include "components/ui/zoom/page_zoom.h"
 #include "components/ui/zoom/zoom_event_manager.h"
 #include "content/public/test/test_utils.h"
 #include "net/dns/mock_host_resolver.h"
@@ -302,12 +302,12 @@ IN_PROC_BROWSER_TEST_F(HostZoomMapBrowserTest, ToggleDefaultZoomLevel) {
 
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  chrome_page_zoom::Zoom(web_contents, content::PAGE_ZOOM_OUT);
+  ui_zoom::PageZoom::Zoom(web_contents, content::PAGE_ZOOM_OUT);
   observer.BlockUntilZoomLevelForHostHasChanged(test_url2.host());
   EXPECT_FALSE(
       content::ZoomValuesEqual(default_zoom_level, GetZoomLevel(test_url2)));
 
-  chrome_page_zoom::Zoom(web_contents, content::PAGE_ZOOM_IN);
+  ui_zoom::PageZoom::Zoom(web_contents, content::PAGE_ZOOM_IN);
   observer.BlockUntilZoomLevelForHostHasChanged(test_url2.host());
   EXPECT_TRUE(
       content::ZoomValuesEqual(default_zoom_level, GetZoomLevel(test_url2)));

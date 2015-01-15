@@ -17,8 +17,8 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
-#include "chrome/browser/chrome_page_zoom_constants.h"
 #include "chrome/common/content_restriction.h"
+#include "components/ui/zoom/page_zoom_constants.h"
 #include "content/public/common/page_zoom.h"
 #include "net/base/escape.h"
 #include "pdf/draw_utils.h"
@@ -2574,14 +2574,14 @@ void Instance::UpdateZoomScale() {
 
 double Instance::CalculateZoom(uint32 control_id) const {
   if (control_id == kZoomInButtonId) {
-    for (size_t i = 0; i < chrome_page_zoom::kPresetZoomFactorsSize; ++i) {
-      double current_zoom = chrome_page_zoom::kPresetZoomFactors[i];
+    for (size_t i = 0; i < ui_zoom::kPresetZoomFactorsSize; ++i) {
+      double current_zoom = ui_zoom::kPresetZoomFactors[i];
       if (current_zoom - content::kEpsilon > zoom_)
         return current_zoom;
     }
   } else {
-    for (size_t i = chrome_page_zoom::kPresetZoomFactorsSize; i > 0; --i) {
-      double current_zoom = chrome_page_zoom::kPresetZoomFactors[i - 1];
+    for (size_t i = ui_zoom::kPresetZoomFactorsSize; i > 0; --i) {
+      double current_zoom = ui_zoom::kPresetZoomFactors[i - 1];
       if (current_zoom + content::kEpsilon < zoom_)
         return current_zoom;
     }

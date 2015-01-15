@@ -8,7 +8,6 @@
 #include "base/command_line.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
-#include "chrome/browser/chrome_page_zoom.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/host_desktop.h"
@@ -18,6 +17,7 @@
 #include "chrome/browser/ui/views/frame/taskbar_decorator.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_switches.h"
+#include "components/ui/zoom/page_zoom.h"
 #include "components/ui/zoom/zoom_controller.h"
 #include "extensions/common/extension.h"
 #include "ui/aura/window.h"
@@ -584,16 +584,16 @@ bool ChromeNativeAppWindowViews::AcceleratorPressed(
       Close();
       return true;
     case IDC_ZOOM_MINUS:
-      chrome_page_zoom::Zoom(web_view()->GetWebContents(),
-                             content::PAGE_ZOOM_OUT);
+      ui_zoom::PageZoom::Zoom(web_view()->GetWebContents(),
+                              content::PAGE_ZOOM_OUT);
       return true;
     case IDC_ZOOM_NORMAL:
-      chrome_page_zoom::Zoom(web_view()->GetWebContents(),
-                             content::PAGE_ZOOM_RESET);
+      ui_zoom::PageZoom::Zoom(web_view()->GetWebContents(),
+                              content::PAGE_ZOOM_RESET);
       return true;
     case IDC_ZOOM_PLUS:
-      chrome_page_zoom::Zoom(web_view()->GetWebContents(),
-                             content::PAGE_ZOOM_IN);
+      ui_zoom::PageZoom::Zoom(web_view()->GetWebContents(),
+                              content::PAGE_ZOOM_IN);
       return true;
     default:
       NOTREACHED() << "Unknown accelerator sent to app window.";

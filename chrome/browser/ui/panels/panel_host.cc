@@ -8,7 +8,6 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chrome_page_zoom.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/extensions/window_controller.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
@@ -17,6 +16,7 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/prefs/prefs_tab_helper.h"
+#include "components/ui/zoom/page_zoom.h"
 #include "components/ui/zoom/zoom_controller.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/navigation_controller.h"
@@ -55,7 +55,7 @@ void PanelHost::Init(const GURL& url) {
   web_contents_.reset(content::WebContents::Create(create_params));
   extensions::SetViewType(web_contents_.get(), extensions::VIEW_TYPE_PANEL);
   web_contents_->SetDelegate(this);
-  // web_contents_ may be passed to chrome_page_zoom::Zoom(), so it needs
+  // web_contents_ may be passed to PageZoom::Zoom(), so it needs
   // a ZoomController.
   ui_zoom::ZoomController::CreateForWebContents(web_contents_.get());
   content::WebContentsObserver::Observe(web_contents_.get());
@@ -269,5 +269,5 @@ void PanelHost::StopLoading() {
 }
 
 void PanelHost::Zoom(content::PageZoom zoom) {
-  chrome_page_zoom::Zoom(web_contents_.get(), zoom);
+  ui_zoom::PageZoom::Zoom(web_contents_.get(), zoom);
 }

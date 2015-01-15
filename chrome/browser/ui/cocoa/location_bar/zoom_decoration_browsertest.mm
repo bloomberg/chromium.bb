@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/auto_reset.h"
-#include "chrome/browser/chrome_page_zoom.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
@@ -14,6 +13,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/test_toolbar_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "components/ui/zoom/page_zoom.h"
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/test/test_utils.h"
 
@@ -56,7 +56,7 @@ class ZoomDecorationTest : public InProcessBrowserTest {
         browser()->tab_strip_model()->GetActiveWebContents();
 
     base::AutoReset<bool> reset(&should_quit_on_zoom_, true);
-    chrome_page_zoom::Zoom(web_contents, zoom);
+    ui_zoom::PageZoom::Zoom(web_contents, zoom);
     content::RunMessageLoop();
   }
 

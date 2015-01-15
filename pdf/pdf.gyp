@@ -65,7 +65,7 @@
         'resource_consts.h',
         'thumbnail_control.cc',
         'thumbnail_control.h',
-        '../chrome/browser/chrome_page_zoom_constants.cc',
+        '../components/ui/zoom/page_zoom_constants.cc',
         '../content/common/page_zoom.cc',
       ],
       'conditions': [

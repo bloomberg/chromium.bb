@@ -7,7 +7,6 @@
 #include "base/i18n/rtl.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chrome_page_zoom.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
@@ -17,6 +16,7 @@
 #include "chrome/browser/ui/views/location_bar/zoom_view.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/ui/zoom/page_zoom.h"
 #include "components/ui/zoom/zoom_controller.h"
 #include "content/public/browser/notification_source.h"
 #include "extensions/browser/extension_zoom_request_client.h"
@@ -235,7 +235,7 @@ void ZoomBubbleView::ButtonPressed(views::Button* sender,
                                          extension_info_.id.c_str())),
         ui::PAGE_TRANSITION_FROM_API);
   } else {
-    chrome_page_zoom::Zoom(web_contents_, content::PAGE_ZOOM_RESET);
+    ui_zoom::PageZoom::Zoom(web_contents_, content::PAGE_ZOOM_RESET);
   }
 }
 

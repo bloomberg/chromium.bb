@@ -14,7 +14,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chrome_page_zoom.h"
 #include "chrome/browser/devtools/devtools_target_impl.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -33,6 +32,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar.h"
+#include "components/ui/zoom/page_zoom.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/navigation_controller.h"
@@ -621,15 +621,15 @@ void DevToolsUIBindings::SetWhitelistedShortcuts(
 }
 
 void DevToolsUIBindings::ZoomIn() {
-  chrome_page_zoom::Zoom(web_contents(), content::PAGE_ZOOM_IN);
+  ui_zoom::PageZoom::Zoom(web_contents(), content::PAGE_ZOOM_IN);
 }
 
 void DevToolsUIBindings::ZoomOut() {
-  chrome_page_zoom::Zoom(web_contents(), content::PAGE_ZOOM_OUT);
+  ui_zoom::PageZoom::Zoom(web_contents(), content::PAGE_ZOOM_OUT);
 }
 
 void DevToolsUIBindings::ResetZoom() {
-  chrome_page_zoom::Zoom(web_contents(), content::PAGE_ZOOM_RESET);
+  ui_zoom::PageZoom::Zoom(web_contents(), content::PAGE_ZOOM_RESET);
 }
 
 static void InspectTarget(Profile* profile, DevToolsTargetImpl* target) {
