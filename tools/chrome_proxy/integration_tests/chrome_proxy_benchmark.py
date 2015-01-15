@@ -112,30 +112,30 @@ class ChromeProxySafeBrowsing(benchmark.Benchmark):
 
 @benchmark.Enabled('android')
 class ChromeProxyHTTPFallbackProbeURL(benchmark.Benchmark):
-  tag = 'fallback-probe'
+  tag = 'fallback_probe'
   test = measurements.ChromeProxyHTTPFallbackProbeURL
   page_set = pagesets.SyntheticPageSet
 
 
 @benchmark.Enabled('android')
 class ChromeProxyHTTPFallbackViaHeader(benchmark.Benchmark):
-  tag = 'fallback-viaheader'
+  tag = 'fallback_viaheader'
   test = measurements.ChromeProxyHTTPFallbackViaHeader
   page_set = pagesets.FallbackViaHeaderPageSet
 
 
 @benchmark.Enabled('android')
 class ChromeProxyHTTPToDirectFallback(benchmark.Benchmark):
-  tag = 'http-to-direct-fallback'
+  tag = 'http_to_direct_fallback'
   test = measurements.ChromeProxyHTTPToDirectFallback
   page_set = pagesets.HTTPToDirectFallbackPageSet
 
 
 @benchmark.Enabled('android')
-class ChromeProxyExplicitBypass(benchmark.Benchmark):
-  tag = 'explicit-bypass'
-  test = measurements.ChromeProxyExplicitBypass
-  page_set = pagesets.ExplicitBypassPageSet
+class ChromeProxyReenableAfterBypass(benchmark.Benchmark):
+  tag = 'reenable_after_bypass'
+  test = measurements.ChromeProxyReenableAfterBypass
+  page_set = pagesets.ReenableAfterBypassPageSet
 
 
 @benchmark.Enabled('android')

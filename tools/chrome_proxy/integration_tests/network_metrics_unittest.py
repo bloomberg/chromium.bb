@@ -27,7 +27,8 @@ class NetworkMetricTest(unittest.TestCase):
   @staticmethod
   def MakeNetworkTimelineEvent(
       url, response_headers, body=None, base64_encoded_body=False,
-      served_from_cache=False, request_headers=None, status=200):
+      served_from_cache=False, request_headers=None, status=200,
+      remote_port=None):
     if not request_headers:
       request_headers = {}
     e = event.TimelineEvent('network', 'HTTPResponse', 0, 0)
@@ -38,6 +39,7 @@ class NetworkMetricTest(unittest.TestCase):
         'url': url,
         'headers': response_headers,
         'requestHeaders': request_headers,
+        'remotePort': remote_port,
         }
     e.args['body'] = body
     e.args['base64_encoded_body'] = base64_encoded_body

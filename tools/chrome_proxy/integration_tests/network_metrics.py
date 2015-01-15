@@ -26,11 +26,18 @@ class HTTPResponse(object):
   def __init__(self, event):
     self._response = (
         inspector_network.InspectorNetworkResponseData.FromTimelineEvent(event))
+    self._remote_port = None
+    if 'response' in event.args and 'remotePort' in event.args['response']:
+      self._remote_port = event.args['response']['remotePort']
     self._content_length = None
 
   @property
   def response(self):
     return self._response
+
+  @property
+  def remote_port(self):
+    return self._remote_port
 
   @property
   def url_signature(self):

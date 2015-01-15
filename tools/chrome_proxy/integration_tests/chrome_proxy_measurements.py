@@ -229,16 +229,9 @@ class ChromeProxyHTTPFallbackViaHeader(ChromeProxyValidation):
     options.AppendExtraBrowserArgs('--ignore-certificate-errors')
     options.AppendExtraBrowserArgs(
         '--spdy-proxy-auth-origin=http://%s' % _TEST_SERVER)
-    options.AppendExtraBrowserArgs(
-        '--spdy-proxy-auth-value=%s' % _FAKE_PROXY_AUTH_VALUE)
 
   def AddResults(self, tab, results):
-    proxies = [
-        _TEST_SERVER + ":80",
-        self._metrics.effective_proxies['fallback'],
-        self._metrics.effective_proxies['direct']]
-    bad_proxies = [_TEST_SERVER + ":80", metrics.PROXY_SETTING_HTTP]
-    self._metrics.AddResultsForHTTPFallback(tab, results, proxies, bad_proxies)
+    self._metrics.AddResultsForHTTPFallback(tab, results)
 
 
 class ChromeProxyClientVersion(ChromeProxyValidation):
@@ -299,66 +292,33 @@ class ChromeProxyHTTPToDirectFallback(ChromeProxyValidation):
         '--spdy-proxy-auth-origin=http://nonexistent.googlezip.net')
 
   def WillNavigateToPage(self, page, tab):
+    super(ChromeProxyHTTPToDirectFallback, self).WillNavigateToPage(page, tab)
     # Attempt to load a page through the nonexistent primary proxy in order to
     # cause a proxy fallback, and have this test run starting from the HTTP
     # fallback proxy.
     tab.Navigate(_TEST_SERVER_DEFAULT_URL)
     tab.WaitForJavaScriptExpression('performance.timing.loadEventStart', 300)
-    proxies = [
-        'nonexistent.googlezip.net:80',
-        self._metrics.effective_proxies['fallback'],
-        self._metrics.effective_proxies['direct']]
-    # TODO(sclittle): Remove this dependency on net-internals#proxy once an
-    # alternative method of verifying that Chrome is on the fallback proxy
-    # exists.
-    self._metrics.VerifyProxyInfo(tab, proxies, proxies[:1])
-    super(ChromeProxyHTTPToDirectFallback, self).WillNavigateToPage(page, tab)
 
   def AddResults(self, tab, results):
     self._metrics.AddResultsForHTTPToDirectFallback(tab, results)
 
 
-class ChromeProxyExplicitBypass(ChromeProxyValidation):
-  """Correctness measurement for explicit proxy bypasses.
+class ChromeProxyReenableAfterBypass(ChromeProxyValidation):
+  """Correctness measurement for re-enabling proxies after bypasses.
 
-  In this test, the configured proxy is the chromeproxy-test server which
-  will send back a response without the expected Via header. Chrome is
-  expected to use the fallback proxy and add the configured proxy to the
-  bad proxy list.
+  This test loads a page that causes all data reduction proxies to be bypassed
+  for 1 to 5 minutes, then waits 5 minutes and verifies that the proxy is no
+  longer bypassed.
   """
 
   def __init__(self):
-    super(ChromeProxyExplicitBypass, self).__init__(
+    super(ChromeProxyReenableAfterBypass, self).__init__(
         restart_after_each_page=True)
 
-  def CustomizeBrowserOptions(self, options):
-    super(ChromeProxyExplicitBypass,
-          self).CustomizeBrowserOptions(options)
-    options.AppendExtraBrowserArgs('--ignore-certificate-errors')
-    options.AppendExtraBrowserArgs(
-        '--spdy-proxy-auth-origin=http://%s' % _TEST_SERVER)
-    options.AppendExtraBrowserArgs(
-        '--spdy-proxy-auth-value=%s' % _FAKE_PROXY_AUTH_VALUE)
-
   def AddResults(self, tab, results):
-    bad_proxies = [{
-        'proxy': _TEST_SERVER + ':80',
-        'retry_seconds_low': self._page.bypass_seconds_low,
-        'retry_seconds_high': self._page.bypass_seconds_high
-    }]
-    if self._page.num_bypassed_proxies == 2:
-      bad_proxies.append({
-          'proxy': self._metrics.effective_proxies['fallback'],
-          'retry_seconds_low': self._page.bypass_seconds_low,
-          'retry_seconds_high': self._page.bypass_seconds_high
-      })
-    else:
-      # Even if the test page only causes the primary proxy to be bypassed,
-      # Chrome will attempt to fetch the favicon for the test server through
-      # the data reduction proxy, which will cause a "block=0" bypass.
-      bad_proxies.append({'proxy': self._metrics.effective_proxies['fallback']})
-
-    self._metrics.AddResultsForExplicitBypass(tab, results, bad_proxies)
+    self._metrics.AddResultsForReenableAfterBypass(
+        tab, results, self._page.bypass_seconds_min,
+        self._page.bypass_seconds_max)
 
 
 class ChromeProxySmoke(ChromeProxyValidation):
