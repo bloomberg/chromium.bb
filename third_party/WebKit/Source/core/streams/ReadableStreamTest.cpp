@@ -545,6 +545,39 @@ TEST_F(ReadableStreamTest, EnqueueTwiceAndRead)
     stream->error(DOMException::create(AbortError, "done"));
 }
 
+TEST_F(ReadableStreamTest, InternalRead)
+{
+    StringStream* stream = construct();
+    Checkpoint checkpoint;
+
+    {
+        InSequence s;
+        EXPECT_CALL(checkpoint, Call(0));
+        EXPECT_CALL(*m_underlyingSource, pullSource()).Times(1);
+        EXPECT_CALL(checkpoint, Call(1));
+    }
+
+    Deque<std::pair<String, size_t>> queue;
+
+    EXPECT_TRUE(stream->enqueue("hello"));
+    EXPECT_TRUE(stream->enqueue("bye"));
+    EXPECT_EQ(ReadableStream::Readable, stream->state());
+    EXPECT_FALSE(stream->isPulling());
+
+    String chunk;
+    checkpoint.Call(0);
+    stream->read(queue);
+    checkpoint.Call(1);
+    ASSERT_EQ(2u, queue.size());
+
+    EXPECT_EQ(std::make_pair(String("hello"), static_cast<size_t>(5)), queue[0]);
+    EXPECT_EQ(std::make_pair(String("bye"), static_cast<size_t>(3)), queue[1]);
+
+    EXPECT_EQ(ReadableStream::Waiting, stream->state());
+    EXPECT_TRUE(stream->isPulling());
+    EXPECT_FALSE(stream->isDraining());
+}
+
 TEST_F(ReadableStreamTest, CloseWhenReadable)
 {
     StringStream* stream = construct();

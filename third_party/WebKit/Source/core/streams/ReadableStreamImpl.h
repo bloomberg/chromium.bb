@@ -86,6 +86,12 @@ public:
 
     bool enqueue(typename ChunkTypeTraits::PassType);
 
+    // This function is intended to be used by internal code to withdraw
+    // queued data. This pulls all data from this stream's queue, but
+    // ReadableStream public APIs can work with the behavior (i.e. it behaves
+    // as if multiple read-one-buffer calls were made).
+    void read(Deque<std::pair<typename ChunkTypeTraits::HoldType, size_t>>& queue);
+
     void trace(Visitor* visitor) override
     {
         visitor->trace(m_strategy);
@@ -106,7 +112,7 @@ private:
     }
 
     Member<Strategy> m_strategy;
-    Deque<std::pair<typename ChunkTypeTraits::HoldType, size_t> > m_queue;
+    Deque<std::pair<typename ChunkTypeTraits::HoldType, size_t>> m_queue;
     size_t m_totalQueueSize;
 };
 
@@ -136,6 +142,19 @@ ScriptValue ReadableStreamImpl<ChunkTypeTraits>::read(ScriptState* scriptState, 
     m_totalQueueSize -= size;
     readPostAction();
     return ChunkTypeTraits::toScriptValue(scriptState, chunk);
+}
+
+template <typename ChunkTypeTraits>
+void ReadableStreamImpl<ChunkTypeTraits>::read(Deque<std::pair<typename ChunkTypeTraits::HoldType, size_t>>& queue)
+{
+    // We omit the preliminary check. Check it by yourself.
+    ASSERT(state() == Readable);
+    ASSERT(!m_queue.isEmpty());
+    ASSERT(queue.isEmpty());
+
+    queue.swap(m_queue);
+    m_totalQueueSize = 0;
+    readPostAction();
 }
 
 } // namespace blink

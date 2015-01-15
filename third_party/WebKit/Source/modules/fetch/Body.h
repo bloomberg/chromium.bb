@@ -69,7 +69,7 @@ private:
     class BlobHandleReceiver;
 
     void pullSource();
-    void readAllFromStream(ScriptState*);
+    void readAllFromStream();
     ScriptPromise readAsync(ScriptState*, ResponseType);
     void readAsyncFromBlob(PassRefPtr<BlobDataHandle>);
     void resolveJSON(const String&);
@@ -90,7 +90,7 @@ private:
     virtual BodyStreamBuffer* buffer() const = 0;
     virtual String contentTypeForBuffer() const = 0;
 
-    void didFinishLoadingViaStream(DOMArrayBuffer*);
+    void didFinishLoadingViaStream(PassRefPtr<DOMArrayBuffer>);
 
     OwnPtr<FileReaderLoader> m_loader;
     bool m_bodyUsed;
