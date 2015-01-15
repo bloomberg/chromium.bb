@@ -174,7 +174,13 @@ tmpl_builder_none_set = string.Template("""\
     kNoneSet = ${all_fields}
 """)
 
-tmpl_enum = string.Template("""\
+tmpl_named_enum = string.Template("""\
+namespace ${domain} {
+${values}\
+}  // namespace ${domain}
+""")
+
+tmpl_inline_enum = string.Template("""\
 namespace ${domain} {
 namespace ${subdomain} {
 ${values}\
@@ -183,11 +189,11 @@ ${values}\
 """)
 
 tmpl_enum_value = string.Template("""\
-extern const char k${Param}${Value}[];
+extern const char k${Enum}${Value}[];
 """)
 
 tmpl_enum_value_def = string.Template("""\
-const char k${Param}${Value}[] = "${value}";
+const char k${Enum}${Value}[] = "${value}";
 """)
 
 tmpl_handler = string.Template("""\
@@ -462,6 +468,8 @@ def DeclareStruct(json_properties, mapping):
     prop_map["proto_param"] = json_prop["name"]
     prop_map["param"] = Uncamelcase(json_prop["name"])
     prop_map["Param"] = Capitalize(json_prop["name"])
+    prop_map["subdomain"] = Uncamelcase(prop_map["declared_name"])
+    del prop_map["declared_name"]
     ResolveType(json_prop, prop_map)
     prop_map["declared_name"] = mapping["declared_name"]
     if json_prop.get("optional"):
@@ -482,6 +490,27 @@ def DeclareStruct(json_properties, mapping):
       methods = "\n".join(methods),
       fields_enum = "".join(fields_enum)))
 
+def DeclareEnum(json, mapping):
+  values = []
+  value_defs = []
+  tmpl_enum = tmpl_inline_enum
+  if "declared_name" in mapping:
+    mapping["Enum"] = mapping["declared_name"]
+    tmpl_enum = tmpl_named_enum
+  else:
+    mapping["Enum"] = Capitalize(mapping["proto_param"])
+
+  for enum_value in json["enum"]:
+    values.append(tmpl_enum_value.substitute(mapping,
+        Value = Capitalize(enum_value)))
+    value_defs.append(tmpl_enum_value_def.substitute(mapping,
+        value = enum_value,
+        Value = Capitalize(enum_value)))
+  type_decls.append(tmpl_enum.substitute(mapping,
+      values = "".join(values)))
+  type_impls.append(tmpl_enum.substitute(mapping,
+      values = "".join(value_defs)))
+
 def ResolveRef(json, mapping):
   dot_pos = json["$ref"].find(".")
   if dot_pos == -1:
@@ -495,16 +524,14 @@ def ResolveRef(json, mapping):
   mapping["Domain"] = domain_name
   mapping["domain"] = Uncamelcase(domain_name)
   mapping["param_type"] = tmpl_typename.substitute(mapping)
-  if json_type.get("enum"):
-    # TODO(vkuzkokov) Implement. Approximate template:
-    # namespace ${domain} { const char k${declared_name}${Value}; }
-    raise Exception("Named enumerations are not implemented")
   ResolveType(json_type, mapping)
-  if not "___struct_declared" in json_type:
-    json_type["___struct_declared"] = True;
+  if not "___type_declared" in json_type:
+    json_type["___type_declared"] = True;
     if (json_type.get("type") == "object") and ("properties" in json_type):
       DeclareStruct(json_type["properties"], mapping)
     else:
+      if ("enum" in json_type):
+        DeclareEnum(json_type, mapping)
       type_decls.append(tmpl_typedef.substitute(mapping))
 
 def ResolveArray(json, mapping):
@@ -556,24 +583,10 @@ def ResolvePrimitive(json, mapping):
     mapping["param_type"] = "std::string"
     mapping["pass_type"] = "const std::string&"
     mapping["Type"] = "String"
-    if "enum" in json:
-      values = []
-      value_defs = []
-      if "declared_name" in mapping:
-        mapping["subdomain"] = Uncamelcase(mapping["declared_name"])
-      else:
+    if "enum" in json and not "declared_name" in mapping:
+      if not "subdomain" in mapping:
         mapping["subdomain"] = Uncamelcase(mapping["command"])
-      mapping["Param"] = Capitalize(mapping["proto_param"])
-      for enum_value in json["enum"]:
-        values.append(tmpl_enum_value.substitute(mapping,
-            Value = Capitalize(enum_value)))
-        value_defs.append(tmpl_enum_value_def.substitute(mapping,
-            value = enum_value,
-            Value = Capitalize(enum_value)))
-      type_decls.append(tmpl_enum.substitute(mapping,
-          values = "".join(values)))
-      type_impls.append(tmpl_enum.substitute(mapping,
-          values = "".join(value_defs)))
+      DeclareEnum(json, mapping)
   else:
     raise Exception("Unknown type: %s" % json_type)
   mapping["prep_req"] = tmpl_prep_req.substitute(mapping)
