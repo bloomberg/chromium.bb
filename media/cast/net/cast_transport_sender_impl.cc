@@ -169,7 +169,7 @@ void CastTransportSenderImpl::InitializeAudio(
     return;
   }
 
-  audio_sender_.reset(new RtpSender(clock_, transport_task_runner_, &pacer_));
+  audio_sender_.reset(new RtpSender(transport_task_runner_, &pacer_));
   if (audio_sender_->Initialize(config)) {
     // Audio packets have a higher priority.
     pacer_.RegisterAudioSsrc(config.ssrc);
@@ -208,7 +208,7 @@ void CastTransportSenderImpl::InitializeVideo(
     return;
   }
 
-  video_sender_.reset(new RtpSender(clock_, transport_task_runner_, &pacer_));
+  video_sender_.reset(new RtpSender(transport_task_runner_, &pacer_));
   if (!video_sender_->Initialize(config)) {
     video_sender_.reset();
     status_callback_.Run(TRANSPORT_VIDEO_UNINITIALIZED);

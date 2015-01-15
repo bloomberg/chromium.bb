@@ -34,8 +34,7 @@ PulseAudioInputStream::PulseAudioInputStream(AudioManagerPulse* audio_manager,
             kNumberOfBlocksBufferInFifo),
       pa_mainloop_(mainloop),
       pa_context_(context),
-      handle_(NULL),
-      context_state_changed_(false) {
+      handle_(NULL) {
   DCHECK(mainloop);
   DCHECK(context);
   CHECK(params_.IsValid());

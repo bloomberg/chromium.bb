@@ -76,9 +76,6 @@ class PulseAudioInputStream : public AgcAudioStream<AudioInputStream> {
   pa_context* pa_context_;  // Weak.
   pa_stream* handle_;
 
-  // Flag indicating the state of the context has been changed.
-  bool context_state_changed_;
-
   base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(PulseAudioInputStream);

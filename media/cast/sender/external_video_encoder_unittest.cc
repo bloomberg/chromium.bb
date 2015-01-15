@@ -92,7 +92,6 @@ class TestVideoEncoderCallback
  private:
   friend class base::RefCountedThreadSafe<TestVideoEncoderCallback>;
 
-  bool expected_key_frame_;
   uint32 expected_frame_id_;
   uint32 expected_last_referenced_frame_id_;
   uint32 expected_rtp_timestamp_;

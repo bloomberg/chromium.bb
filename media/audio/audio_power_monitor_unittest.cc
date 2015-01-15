@@ -91,9 +91,9 @@ class TestScenario {
 // should make progress towards the goal value.
 class MeasurementObserver {
  public:
-  MeasurementObserver(float goal_power_measurement, bool goal_clipped)
+  explicit MeasurementObserver(float goal_power_measurement)
       : goal_power_measurement_(goal_power_measurement),
-        goal_clipped_(goal_clipped), measurement_count_(0),
+        measurement_count_(0),
         last_power_measurement_(AudioPowerMonitor::zero_power()),
         last_clipped_(false) {}
 
@@ -140,7 +140,6 @@ class MeasurementObserver {
 
  private:
   const float goal_power_measurement_;
-  const bool goal_clipped_;
   int measurement_count_;
   bool measurements_should_increase_;
   float last_power_measurement_;
@@ -163,7 +162,7 @@ class AudioPowerMonitorTest : public ::testing::TestWithParam<TestScenario> {
     // Feed the AudioPowerMonitor, read measurements from it, and record them in
     // MeasurementObserver.
     static const int kNumFeedIters = 100;
-    MeasurementObserver observer(power, clipped);
+    MeasurementObserver observer(power);
     for (int i = 0; i < kNumFeedIters; ++i) {
       power_monitor_.Scan(bus, bus.frames());
       const std::pair<float, bool>& reading =

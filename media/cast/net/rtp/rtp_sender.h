@@ -12,7 +12,6 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_environment.h"
@@ -32,7 +31,6 @@ namespace cast {
 class RtpSender {
  public:
   RtpSender(
-      base::TickClock* clock,
       const scoped_refptr<base::SingleThreadTaskRunner>& transport_task_runner,
       PacedSender* const transport);
 
@@ -69,7 +67,6 @@ class RtpSender {
  private:
   void UpdateSequenceNumber(Packet* packet);
 
-  base::TickClock* clock_;  // Not owned by this class.
   RtpPacketizerConfig config_;
   PacketStorage storage_;
   scoped_ptr<RtpPacketizer> packetizer_;

@@ -27,8 +27,7 @@ namespace {
 
 class TestEncodedAudioFrameReceiver {
  public:
-  explicit TestEncodedAudioFrameReceiver(Codec codec)
-      : codec_(codec), frames_received_(0), rtp_lower_bound_(0) {}
+  TestEncodedAudioFrameReceiver() : frames_received_(0), rtp_lower_bound_(0) {}
   virtual ~TestEncodedAudioFrameReceiver() {}
 
   int frames_received() const { return frames_received_; }
@@ -64,7 +63,6 @@ class TestEncodedAudioFrameReceiver {
   }
 
  private:
-  const Codec codec_;
   int frames_received_;
   uint32 rtp_lower_bound_;
   int samples_per_frame_;
@@ -151,7 +149,7 @@ class AudioEncoderTest : public ::testing::TestWithParam<TestScenario> {
                                 TestAudioBusFactory::kMiddleANoteFreq,
                                 0.5f));
 
-    receiver_.reset(new TestEncodedAudioFrameReceiver(codec));
+    receiver_.reset(new TestEncodedAudioFrameReceiver());
 
     audio_encoder_.reset(new AudioEncoder(
         cast_environment_,
