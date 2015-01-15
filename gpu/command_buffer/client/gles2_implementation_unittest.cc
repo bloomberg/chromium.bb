@@ -2647,6 +2647,9 @@ TEST_F(GLES2ImplementationTest, TexImage3DSingleCommand) {
       &size, &unpadded_row_size, &padded_row_size));
   // Makes sure we can just send over the data in one command.
   const GLsizei kHeight = MaxTransferBufferSize() / padded_row_size / kDepth;
+  ASSERT_TRUE(GLES2Util::ComputeImageDataSizes(
+      kWidth, kHeight, kDepth, kFormat, kType, kPixelStoreUnpackAlignment,
+      &size, NULL, NULL));
 
   scoped_ptr<uint8[]> pixels(new uint8[size]);
   for (uint32 ii = 0; ii < size; ++ii) {
