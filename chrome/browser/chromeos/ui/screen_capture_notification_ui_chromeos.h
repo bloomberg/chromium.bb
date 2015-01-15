@@ -15,11 +15,10 @@ class ScreenCaptureNotificationUIChromeOS : public ScreenCaptureNotificationUI {
  public:
   // |text| is used to specify the text for the notification.
   explicit ScreenCaptureNotificationUIChromeOS(const base::string16& text);
-  virtual ~ScreenCaptureNotificationUIChromeOS();
+  ~ScreenCaptureNotificationUIChromeOS() override;
 
   // ScreenCaptureNotificationUI overrides.
-  virtual gfx::NativeViewId OnStarted(const base::Closure& stop_callback)
-      override;
+  gfx::NativeViewId OnStarted(const base::Closure& stop_callback) override;
 
  private:
   const base::string16 text_;

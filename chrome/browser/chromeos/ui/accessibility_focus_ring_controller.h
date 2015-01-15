@@ -36,7 +36,7 @@ class AccessibilityFocusRingController
 
  protected:
   AccessibilityFocusRingController();
-  virtual ~AccessibilityFocusRingController();
+  ~AccessibilityFocusRingController() override;
 
   // Given an unordered vector of bounding rectangles that cover everything
   // that currently has focus, populate a vector of one or more
@@ -50,10 +50,10 @@ class AccessibilityFocusRingController
 
  private:
   // FocusRingLayerDelegate.
-  virtual void OnDeviceScaleFactorChanged() override;
+  void OnDeviceScaleFactorChanged() override;
 
   // CompositorAnimationObserver.
-  virtual void OnAnimationStep(base::TimeTicks timestamp) override;
+  void OnAnimationStep(base::TimeTicks timestamp) override;
 
   void Update();
 

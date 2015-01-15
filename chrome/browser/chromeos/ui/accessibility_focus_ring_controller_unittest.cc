@@ -15,16 +15,14 @@ class TestableAccessibilityFocusRingController
     // By default use an easy round number for testing.
     margin_ = 10;
   }
-  virtual ~TestableAccessibilityFocusRingController() {}
+  ~TestableAccessibilityFocusRingController() override {}
 
   void RectsToRings(const std::vector<gfx::Rect>& rects,
                     std::vector<AccessibilityFocusRing>* rings) const {
     AccessibilityFocusRingController::RectsToRings(rects, rings);
   }
 
-  virtual int GetMargin() const override {
-    return margin_;
-  }
+  int GetMargin() const override { return margin_; }
 
  private:
   int margin_;
@@ -33,7 +31,7 @@ class TestableAccessibilityFocusRingController
 class AccessibilityFocusRingControllerTest : public testing::Test {
  public:
   AccessibilityFocusRingControllerTest() {}
-  virtual ~AccessibilityFocusRingControllerTest() {}
+  ~AccessibilityFocusRingControllerTest() override {}
 
  protected:
   gfx::Rect AddMargin(gfx::Rect r) {

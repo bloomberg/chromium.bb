@@ -28,14 +28,14 @@ class FocusRingController : public FocusRingLayerDelegate,
                             public views::FocusChangeListener {
  public:
   FocusRingController();
-  virtual ~FocusRingController();
+  ~FocusRingController() override;
 
   // Turns on/off the focus ring.
   void SetVisible(bool visible);
 
  private:
   // FocusRingLayerDelegate.
-  virtual void OnDeviceScaleFactorChanged() override;
+  void OnDeviceScaleFactorChanged() override;
 
   // Sets the focused |widget|.
   void SetWidget(views::Widget* widget);
@@ -45,19 +45,19 @@ class FocusRingController : public FocusRingLayerDelegate,
   void UpdateFocusRing();
 
   // views::WidgetObserver overrides:
-  virtual void OnWidgetDestroying(views::Widget* widget) override;
-  virtual void OnWidgetBoundsChanged(views::Widget* widget,
-                                     const gfx::Rect& new_bounds) override;
+  void OnWidgetDestroying(views::Widget* widget) override;
+  void OnWidgetBoundsChanged(views::Widget* widget,
+                             const gfx::Rect& new_bounds) override;
 
   // views::WidgetFocusChangeListener overrides:
-  virtual void OnNativeFocusChange(gfx::NativeView focused_before,
-                                   gfx::NativeView focused_now) override;
+  void OnNativeFocusChange(gfx::NativeView focused_before,
+                           gfx::NativeView focused_now) override;
 
   // views::FocusChangeListener overrides:
-  virtual void OnWillChangeFocus(views::View* focused_before,
-                                 views::View* focused_now) override;
-  virtual void OnDidChangeFocus(views::View* focused_before,
-                                views::View* focused_now) override;
+  void OnWillChangeFocus(views::View* focused_before,
+                         views::View* focused_now) override;
+  void OnDidChangeFocus(views::View* focused_before,
+                        views::View* focused_now) override;
 
   bool visible_;
 

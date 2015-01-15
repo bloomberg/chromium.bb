@@ -16,14 +16,14 @@ namespace chromeos {
 class AccessibilityFocusRingLayer : public FocusRingLayer {
  public:
   explicit AccessibilityFocusRingLayer(FocusRingLayerDelegate* delegate);
-  virtual ~AccessibilityFocusRingLayer();
+  ~AccessibilityFocusRingLayer() override;
 
   // Create the layer and update its bounds and position in the hierarchy.
   void Set(const AccessibilityFocusRing& ring);
 
  private:
   // ui::LayerDelegate overrides:
-  virtual void OnPaintLayer(gfx::Canvas* canvas) override;
+  void OnPaintLayer(gfx::Canvas* canvas) override;
 
   // The outline of the current focus ring.
   AccessibilityFocusRing ring_;

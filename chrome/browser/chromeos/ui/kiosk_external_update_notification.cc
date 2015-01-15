@@ -38,7 +38,7 @@ class KioskExternalUpdateNotificationView : public views::WidgetDelegateView {
     SetLayoutManager(new views::FillLayout);
   }
 
-  virtual ~KioskExternalUpdateNotificationView() {
+  ~KioskExternalUpdateNotificationView() override {
     widget_closed_ = true;
     InformOwnerForDismiss();
   }
@@ -55,7 +55,7 @@ class KioskExternalUpdateNotificationView : public views::WidgetDelegateView {
   void SetMessage(const base::string16& message) { label_->SetText(message); }
 
   // views::WidgetDelegateView overrides:
-  virtual void OnPaint(gfx::Canvas* canvas) override {
+  void OnPaint(gfx::Canvas* canvas) override {
     SkPaint paint;
     paint.setStyle(SkPaint::kFill_Style);
     paint.setColor(kWindowBackgroundColor);
@@ -63,7 +63,7 @@ class KioskExternalUpdateNotificationView : public views::WidgetDelegateView {
     views::WidgetDelegateView::OnPaint(canvas);
   }
 
-  virtual gfx::Size GetPreferredSize() const override {
+  gfx::Size GetPreferredSize() const override {
     return gfx::Size(kPreferredWidth, kPreferredHeight);
   }
 
