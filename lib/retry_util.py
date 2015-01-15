@@ -145,7 +145,8 @@ def ShouldRetryCommandCommon(exc):
   if not isinstance(exc, cros_build_lib.RunCommandError):
     return False
   if exc.result.returncode is None:
-    logging.info('Child process failed to launch; not retrying.')
+    logging.error('Child process failed to launch; not retrying:\n'
+                  'command: %s', exc.result.cmdstr)
     return False
   return True
 
