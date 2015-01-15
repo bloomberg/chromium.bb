@@ -106,11 +106,11 @@ namespace internal {
 class ProviderTypeComboboxModel : public ui::ComboboxModel {
  public:
   ProviderTypeComboboxModel();
-  virtual ~ProviderTypeComboboxModel();
+  ~ProviderTypeComboboxModel() override;
 
   // Overridden from ui::ComboboxModel:
-  virtual int GetItemCount() const override;
-  virtual base::string16 GetItemAt(int index) override;
+  int GetItemCount() const override;
+  base::string16 GetItemAt(int index) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ProviderTypeComboboxModel);
@@ -119,11 +119,11 @@ class ProviderTypeComboboxModel : public ui::ComboboxModel {
 class VpnServerCACertComboboxModel : public ui::ComboboxModel {
  public:
   VpnServerCACertComboboxModel();
-  virtual ~VpnServerCACertComboboxModel();
+  ~VpnServerCACertComboboxModel() override;
 
   // Overridden from ui::ComboboxModel:
-  virtual int GetItemCount() const override;
-  virtual base::string16 GetItemAt(int index) override;
+  int GetItemCount() const override;
+  base::string16 GetItemAt(int index) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(VpnServerCACertComboboxModel);
@@ -132,11 +132,11 @@ class VpnServerCACertComboboxModel : public ui::ComboboxModel {
 class VpnUserCertComboboxModel : public ui::ComboboxModel {
  public:
   VpnUserCertComboboxModel();
-  virtual ~VpnUserCertComboboxModel();
+  ~VpnUserCertComboboxModel() override;
 
   // Overridden from ui::ComboboxModel:
-  virtual int GetItemCount() const override;
-  virtual base::string16 GetItemAt(int index) override;
+  int GetItemCount() const override;
+  base::string16 GetItemAt(int index) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(VpnUserCertComboboxModel);

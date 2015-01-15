@@ -33,25 +33,24 @@ class WimaxConfigView : public ChildNetworkConfigView,
   // Configuration dialog for a WiMax network. If |service_path| is not empty
   // it identifies the network to be configured.
   WimaxConfigView(NetworkConfigView* parent, const std::string& service_path);
-  virtual ~WimaxConfigView();
+  ~WimaxConfigView() override;
 
   // views::TextfieldController:
-  virtual void ContentsChanged(views::Textfield* sender,
-                               const base::string16& new_contents) override;
-  virtual bool HandleKeyEvent(views::Textfield* sender,
-                              const ui::KeyEvent& key_event) override;
+  void ContentsChanged(views::Textfield* sender,
+                       const base::string16& new_contents) override;
+  bool HandleKeyEvent(views::Textfield* sender,
+                      const ui::KeyEvent& key_event) override;
 
   // views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) override;
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // ChildNetworkConfigView:
-  virtual base::string16 GetTitle() const override;
-  virtual views::View* GetInitiallyFocusedView() override;
-  virtual bool CanLogin() override;
-  virtual bool Login() override;
-  virtual void Cancel() override;
-  virtual void InitFocus() override;
+  base::string16 GetTitle() const override;
+  views::View* GetInitiallyFocusedView() override;
+  bool CanLogin() override;
+  bool Login() override;
+  void Cancel() override;
+  void InitFocus() override;
 
  private:
   // Initializes UI.

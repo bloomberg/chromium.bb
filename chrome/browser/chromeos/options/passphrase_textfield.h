@@ -21,8 +21,8 @@ class PassphraseTextfield : public views::Textfield {
   // Override views::Textfield so that when focus is gained, then clear out the
   // fake password if appropriate. Replace it when focus is lost if the user has
   // not typed in a new password.
-  virtual void OnFocus() override;
-  virtual void OnBlur() override;
+  void OnFocus() override;
+  void OnBlur() override;
 
   // Returns the passphrase. If it's unchanged, then returns an empty string.
   std::string GetPassphrase();

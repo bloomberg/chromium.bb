@@ -51,8 +51,8 @@ class ComboboxWithWidth : public views::Combobox {
       : Combobox(model),
         width_(width) {
   }
-  virtual ~ComboboxWithWidth() {}
-  virtual gfx::Size GetPreferredSize() const override {
+  ~ComboboxWithWidth() override {}
+  gfx::Size GetPreferredSize() const override {
     gfx::Size size = Combobox::GetPreferredSize();
     size.set_width(width_);
     return size;
@@ -102,11 +102,11 @@ namespace internal {
 class SecurityComboboxModel : public ui::ComboboxModel {
  public:
   SecurityComboboxModel();
-  virtual ~SecurityComboboxModel();
+  ~SecurityComboboxModel() override;
 
   // Overridden from ui::ComboboxModel:
-  virtual int GetItemCount() const override;
-  virtual base::string16 GetItemAt(int index) override;
+  int GetItemCount() const override;
+  base::string16 GetItemAt(int index) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SecurityComboboxModel);
@@ -115,11 +115,11 @@ class SecurityComboboxModel : public ui::ComboboxModel {
 class EAPMethodComboboxModel : public ui::ComboboxModel {
  public:
   EAPMethodComboboxModel();
-  virtual ~EAPMethodComboboxModel();
+  ~EAPMethodComboboxModel() override;
 
   // Overridden from ui::ComboboxModel:
-  virtual int GetItemCount() const override;
-  virtual base::string16 GetItemAt(int index) override;
+  int GetItemCount() const override;
+  base::string16 GetItemAt(int index) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(EAPMethodComboboxModel);
@@ -128,11 +128,11 @@ class EAPMethodComboboxModel : public ui::ComboboxModel {
 class Phase2AuthComboboxModel : public ui::ComboboxModel {
  public:
   explicit Phase2AuthComboboxModel(views::Combobox* eap_method_combobox);
-  virtual ~Phase2AuthComboboxModel();
+  ~Phase2AuthComboboxModel() override;
 
   // Overridden from ui::ComboboxModel:
-  virtual int GetItemCount() const override;
-  virtual base::string16 GetItemAt(int index) override;
+  int GetItemCount() const override;
+  base::string16 GetItemAt(int index) override;
 
  private:
   views::Combobox* eap_method_combobox_;
@@ -143,11 +143,11 @@ class Phase2AuthComboboxModel : public ui::ComboboxModel {
 class ServerCACertComboboxModel : public ui::ComboboxModel {
  public:
   ServerCACertComboboxModel();
-  virtual ~ServerCACertComboboxModel();
+  ~ServerCACertComboboxModel() override;
 
   // Overridden from ui::ComboboxModel:
-  virtual int GetItemCount() const override;
-  virtual base::string16 GetItemAt(int index) override;
+  int GetItemCount() const override;
+  base::string16 GetItemAt(int index) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ServerCACertComboboxModel);
@@ -156,11 +156,11 @@ class ServerCACertComboboxModel : public ui::ComboboxModel {
 class UserCertComboboxModel : public ui::ComboboxModel {
  public:
   explicit UserCertComboboxModel(WifiConfigView* owner);
-  virtual ~UserCertComboboxModel();
+  ~UserCertComboboxModel() override;
 
   // Overridden from ui::ComboboxModel:
-  virtual int GetItemCount() const override;
-  virtual base::string16 GetItemAt(int index) override;
+  int GetItemCount() const override;
+  base::string16 GetItemAt(int index) override;
 
  private:
   WifiConfigView* owner_;

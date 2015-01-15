@@ -13,7 +13,7 @@ namespace chromeos {
 class NetworkPropertyUIDataTest : public testing::Test {
  protected:
   NetworkPropertyUIDataTest() {}
-  virtual ~NetworkPropertyUIDataTest() {}
+  ~NetworkPropertyUIDataTest() override {}
 
   void CheckProperty(const NetworkPropertyUIData& property,
                      const base::Value* expected_default_value,
