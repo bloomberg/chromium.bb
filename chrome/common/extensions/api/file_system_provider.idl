@@ -89,6 +89,10 @@ namespace fileSystemProvider {
     // of the file system (such as creating, deleting or writing to files).
     boolean writable;
 
+    // The maximum number of files that can be opened at once. If 0, then not
+    // limited.
+    long openedFilesLimit;
+
     // Whether the file system supports the <code>tag</code> field for observing
     // directories.
     [nodoc] boolean? supportsNotifyTag;
@@ -111,7 +115,7 @@ namespace fileSystemProvider {
     boolean? writable;
 
     // The maximum number of files that can be opened at once. If not specified,
-    // then not limited.
+    // or 0, then not limited.
     long? openedFilesLimit;
 
     // Whether the file system supports the <code>tag</code> field for observed

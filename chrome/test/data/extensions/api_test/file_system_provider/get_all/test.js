@@ -13,7 +13,9 @@ chrome.test.runTests([
     chrome.fileSystemProvider.mount(
         {
           fileSystemId: test_util.FILE_SYSTEM_ID,
-          displayName: test_util.FILE_SYSTEM_NAME
+          displayName: test_util.FILE_SYSTEM_NAME,
+          writable: true,
+          openedFilesLimit: 2
         },
         chrome.test.callbackPass(function() {
           chrome.fileSystemProvider.getAll(chrome.test.callbackPass(
@@ -23,7 +25,8 @@ chrome.test.runTests([
                     test_util.FILE_SYSTEM_ID, fileSystems[0].fileSystemId);
                 chrome.test.assertEq(
                     test_util.FILE_SYSTEM_NAME, fileSystems[0].displayName);
-                chrome.test.assertFalse(fileSystems[0].writable);
+                chrome.test.assertTrue(fileSystems[0].writable);
+                chrome.test.assertEq(2, fileSystems[0].openedFilesLimit);
               }));
         }));
   },

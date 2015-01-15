@@ -151,6 +151,7 @@ bool FileSystemProviderGetAllFunction::RunSync() {
       item->file_system_id = file_system_info.file_system_id();
       item->display_name = file_system_info.display_name();
       item->writable = file_system_info.writable();
+      item->opened_files_limit = file_system_info.opened_files_limit();
 
       chromeos::file_system_provider::ProvidedFileSystemInterface* const
           file_system =
