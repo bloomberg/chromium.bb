@@ -163,8 +163,6 @@ class WebViewGuest : public GuestView<WebViewGuest>,
 
   // BrowserPluginGuestDelegate implementation.
   bool CanRunInDetachedState() const override;
-  content::WebContents* CreateNewGuestWindow(
-      const content::WebContents::CreateParams& create_params) override;
   void RequestPointerLockPermission(
       bool user_gesture,
       bool last_unlocked_by_target,

@@ -326,6 +326,16 @@ bool GuestViewBase::ZoomPropagatesFromEmbedderToGuest() const {
   return true;
 }
 
+content::WebContents* GuestViewBase::CreateNewGuestWindow(
+    const content::WebContents::CreateParams& create_params) {
+  GuestViewManager* guest_manager =
+      GuestViewManager::FromBrowserContext(browser_context());
+  return guest_manager->CreateGuestWithWebContentsParams(
+      GetViewType(),
+      owner_web_contents(),
+      create_params);
+}
+
 void GuestViewBase::DidAttach(int guest_proxy_routing_id) {
   opener_lifetime_observer_.reset();
 

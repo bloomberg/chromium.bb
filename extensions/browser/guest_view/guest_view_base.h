@@ -254,6 +254,8 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   void SetOpener(GuestViewBase* opener);
 
   // BrowserPluginGuestDelegate implementation.
+  content::WebContents* CreateNewGuestWindow(
+      const content::WebContents::CreateParams& create_params) final;
   void DidAttach(int guest_proxy_routing_id) final;
   void DidDetach() final;
   void ElementSizeChanged(const gfx::Size& size) final;

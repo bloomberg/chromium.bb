@@ -829,16 +829,6 @@ void WebViewGuest::RemoveWebViewStateFromIOThread(
           web_contents->GetRoutingID()));
 }
 
-content::WebContents* WebViewGuest::CreateNewGuestWindow(
-    const content::WebContents::CreateParams& create_params) {
-  GuestViewManager* guest_manager =
-      GuestViewManager::FromBrowserContext(browser_context());
-  return guest_manager->CreateGuestWithWebContentsParams(
-      WebViewGuest::Type,
-      embedder_web_contents(),
-      create_params);
-}
-
 void WebViewGuest::RequestMediaAccessPermission(
     content::WebContents* source,
     const content::MediaStreamRequest& request,

@@ -12,6 +12,7 @@ bool BrowserPluginGuestDelegate::CanRunInDetachedState() const {
 
 WebContents* BrowserPluginGuestDelegate::CreateNewGuestWindow(
     const WebContents::CreateParams& create_params) {
+  NOTREACHED();
   return nullptr;
 }
 
