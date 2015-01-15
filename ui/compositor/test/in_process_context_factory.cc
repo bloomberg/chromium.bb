@@ -21,7 +21,6 @@
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface.h"
 #include "webkit/common/gpu/context_provider_in_process.h"
-#include "webkit/common/gpu/grcontext_for_webgraphicscontext3d.h"
 
 namespace ui {
 namespace {
