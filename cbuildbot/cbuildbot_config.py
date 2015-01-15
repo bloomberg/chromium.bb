@@ -2735,8 +2735,9 @@ _AddGroupConfig('sandybridge', 'parrot', (
 ))
 
 # ivybridge chipset boards
-_AddGroupConfig('ivybridge', 'stout', (), (
+_AddGroupConfig('ivybridge', 'stout', (
     'link',
+), (
     'parrot_ivb',
 ))
 
