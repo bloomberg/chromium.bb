@@ -37,6 +37,8 @@ enum EventType {
   SOCKET_CLOSED = 25;
   SSL_CERT_EXCESSIVE_LIFETIME = 26;
   CHANNEL_POLICY_ENFORCED = 27;
+  TCP_SOCKET_CONNECT_COMPLETE = 28;  // Logged with RV.
+  SSL_SOCKET_CONNECT_COMPLETE = 29;  // Logged with RV.
 }
 
 enum ChannelAuth {

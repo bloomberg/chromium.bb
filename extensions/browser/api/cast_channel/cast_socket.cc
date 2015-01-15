@@ -379,6 +379,8 @@ int CastSocketImpl::DoTcpConnect() {
 
 int CastSocketImpl::DoTcpConnectComplete(int connect_result) {
   VLOG_WITH_CONNECTION(1) << "DoTcpConnectComplete: " << connect_result;
+  logger_->LogSocketEventWithRv(channel_id_, proto::TCP_SOCKET_CONNECT_COMPLETE,
+                                connect_result);
   if (connect_result == net::OK) {
     // Enable TCP-level keep-alive handling.
     // TODO(kmarshall): Remove TCP keep-alive once protocol-level ping handling
@@ -407,6 +409,8 @@ int CastSocketImpl::DoSslConnect() {
 }
 
 int CastSocketImpl::DoSslConnectComplete(int result) {
+  logger_->LogSocketEventWithRv(channel_id_, proto::SSL_SOCKET_CONNECT_COMPLETE,
+                                result);
   VLOG_WITH_CONNECTION(1) << "DoSslConnectComplete: " << result;
   if (result == net::ERR_CERT_AUTHORITY_INVALID &&
       peer_cert_.empty() && ExtractPeerCert(&peer_cert_)) {
