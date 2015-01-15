@@ -97,6 +97,7 @@ public:
 
     bool playing() const { return !(playStateInternal() == Idle || limited() || m_paused || m_isPausedForTesting); }
     bool limited() const { return limited(currentTimeInternal()); }
+    bool finishedInternal() const { return m_finished; }
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(finish);
 
