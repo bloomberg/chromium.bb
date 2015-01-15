@@ -86,16 +86,17 @@ ResourceRequest createAccessControlPreflightRequest(const ResourceRequest& reque
 
     if (requestHeaderFields.size() > 0) {
         StringBuilder headerBuffer;
-        HTTPHeaderMap::const_iterator it = requestHeaderFields.begin();
-        headerBuffer.append(it->key);
-        ++it;
-
-        HTTPHeaderMap::const_iterator end = requestHeaderFields.end();
-        for (; it != end; ++it) {
-            headerBuffer.appendLiteral(", ");
-            headerBuffer.append(it->key);
+        for (const auto& header : requestHeaderFields) {
+            if (equalIgnoringCase(header.key, "referer")) {
+                // When the request is from a Worker, referrer header was added
+                // by WorkerThreadableLoader. But it should not be added to
+                // Access-Control-Request-Headers header.
+                continue;
+            }
+            if (!headerBuffer.isEmpty())
+                headerBuffer.appendLiteral(", ");
+            headerBuffer.append(header.key);
         }
-
         preflightRequest.setHTTPHeaderField("Access-Control-Request-Headers", AtomicString(headerBuffer.toString().lower()));
     }
 
