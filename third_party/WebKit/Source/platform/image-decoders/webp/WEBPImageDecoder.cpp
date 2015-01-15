@@ -30,7 +30,6 @@
 #include "platform/image-decoders/webp/WEBPImageDecoder.h"
 
 #include "platform/PlatformInstrumentation.h"
-#include "platform/RuntimeEnabledFeatures.h"
 
 #if USE(QCMSLIB)
 #include "qcms.h"
@@ -132,13 +131,11 @@ WEBPImageDecoder::WEBPImageDecoder(ImageSource::AlphaOption alphaOption, ImageSo
     , m_frameBackgroundHasAlpha(false)
     , m_hasColorProfile(false)
 #if USE(QCMSLIB)
-    , m_haveReadProfile(false)
     , m_transform(0)
 #endif
     , m_demux(0)
     , m_demuxState(WEBP_DEMUX_PARSING_HEADER)
     , m_haveAlreadyParsedThisData(false)
-    , m_haveReadAnimationParameters(false)
     , m_repetitionCount(cAnimationLoopOnce)
     , m_decodedHeight(0)
 {
@@ -234,6 +231,7 @@ void WEBPImageDecoder::setData(SharedBuffer* data, bool allDataReceived)
 {
     if (failed())
         return;
+
     ImageDecoder::setData(data, allDataReceived);
     m_haveAlreadyParsedThisData = false;
 }
@@ -268,9 +266,9 @@ bool WEBPImageDecoder::updateDemuxer()
 
     m_haveAlreadyParsedThisData = true;
 
-    const unsigned webpHeaderSize = 20;
+    const unsigned webpHeaderSize = 30;
     if (m_data->size() < webpHeaderSize)
-        return false; // Wait for headers so that WebPDemuxPartial doesn't return null.
+        return false; // Await VP8X header so WebPDemuxPartial succeeds.
 
     WebPDemuxDelete(m_demux);
     WebPData inputData = { reinterpret_cast<const uint8_t*>(m_data->data()), m_data->size() };
@@ -278,48 +276,51 @@ bool WEBPImageDecoder::updateDemuxer()
     if (!m_demux || (isAllDataReceived() && m_demuxState != WEBP_DEMUX_DONE))
         return setFailed();
 
-    if (m_demuxState <= WEBP_DEMUX_PARSING_HEADER)
-        return false; // Not enough data for parsing canvas width/height yet.
+    ASSERT(m_demuxState > WEBP_DEMUX_PARSING_HEADER);
+    size_t newFrameCount = WebPDemuxGetI(m_demux, WEBP_FF_FRAME_COUNT);
+    if (!newFrameCount)
+        return false; // Wait until the encoded image frame data arrives.
 
-    bool hasAnimation = (m_formatFlags & ANIMATION_FLAG);
     if (!ImageDecoder::isSizeAvailable()) {
+        int width = WebPDemuxGetI(m_demux, WEBP_FF_CANVAS_WIDTH);
+        int height = WebPDemuxGetI(m_demux, WEBP_FF_CANVAS_HEIGHT);
+        if (!setSize(width, height))
+            return setFailed();
+
         m_formatFlags = WebPDemuxGetI(m_demux, WEBP_FF_FORMAT_FLAGS);
-        hasAnimation = (m_formatFlags & ANIMATION_FLAG);
-        if (!hasAnimation)
+        if (!(m_formatFlags & ANIMATION_FLAG)) {
             m_repetitionCount = cAnimationNone;
-        else
-            m_formatFlags &= ~ICCP_FLAG; // FIXME: Implement ICC profile support for animated images.
+        } else {
+            // Since we have parsed at least one frame, even if partially,
+            // the global animation (ANIM) properties have been read since
+            // an ANIM chunk must precede the ANMF frame chunks.
+            m_repetitionCount = WebPDemuxGetI(m_demux, WEBP_FF_LOOP_COUNT);
+            // Repetition count is always <= 16 bits.
+            ASSERT(m_repetitionCount == (m_repetitionCount & 0xffff));
+            // Repetition count is the number of animation cycles to show,
+            // where 0 means "infinite". But ImageSource::repetitionCount()
+            // returns -1 for "infinite", and 0 and up for "show the image
+            // animation one cycle more than the value". Subtract one here
+            // to correctly handle the finite and infinite cases.
+            --m_repetitionCount;
+            // FIXME: Implement ICC profile support for animated images.
+            m_formatFlags &= ~ICCP_FLAG;
+        }
+
 #if USE(QCMSLIB)
         if ((m_formatFlags & ICCP_FLAG) && !ignoresGammaAndColorProfile())
-            m_hasColorProfile = true;
+            readColorProfile();
 #endif
-        if (!setSize(WebPDemuxGetI(m_demux, WEBP_FF_CANVAS_WIDTH), WebPDemuxGetI(m_demux, WEBP_FF_CANVAS_HEIGHT)))
-            return setFailed();
     }
 
     ASSERT(ImageDecoder::isSizeAvailable());
-    const size_t newFrameCount = WebPDemuxGetI(m_demux, WEBP_FF_FRAME_COUNT);
-    if (hasAnimation && !m_haveReadAnimationParameters && newFrameCount) {
-        // As we have parsed at least one frame (even if partially),
-        // we must already have parsed the animation properties.
-        // This is because ANIM chunk always precedes ANMF chunks.
-        m_repetitionCount = WebPDemuxGetI(m_demux, WEBP_FF_LOOP_COUNT);
-        ASSERT(m_repetitionCount == (m_repetitionCount & 0xffff)); // Loop count is always <= 16 bits.
-        // |m_repetitionCount| is the total number of animation cycles to show,
-        // with 0 meaning "infinite". But ImageSource::repetitionCount()
-        // returns -1 for "infinite", and 0 and up for "show the animation one
-        // cycle more than this value". By subtracting one here, we convert
-        // both finite and infinite cases correctly.
-        --m_repetitionCount;
-        m_haveReadAnimationParameters = true;
-    }
 
     const size_t oldFrameCount = m_frameBufferCache.size();
     if (newFrameCount > oldFrameCount) {
         m_frameBufferCache.resize(newFrameCount);
         for (size_t i = oldFrameCount; i < newFrameCount; ++i) {
             m_frameBufferCache[i].setPremultiplyAlpha(m_premultiplyAlpha);
-            if (!hasAnimation) {
+            if (!(m_formatFlags & ANIMATION_FLAG)) {
                 ASSERT(!i);
                 m_frameBufferCache[i].setRequiredPreviousFrameIndex(kNotFound);
                 continue;
@@ -456,7 +457,7 @@ void WEBPImageDecoder::readColorProfile()
         ignoreProfile = true;
 
     if (!ignoreProfile)
-        createColorTransform(profileData, profileSize);
+        m_hasColorProfile = createColorTransform(profileData, profileSize);
 
     WebPDemuxReleaseChunkIterator(&chunkIterator);
 }
@@ -480,16 +481,11 @@ void WEBPImageDecoder::applyPostProcessing(size_t frameIndex)
     const int top = frameRect.y();
 
 #if USE(QCMSLIB)
-    if ((m_formatFlags & ICCP_FLAG) && !ignoresGammaAndColorProfile()) {
-        if (!m_haveReadProfile) {
-            readColorProfile();
-            m_haveReadProfile = true;
-        }
+    if (qcms_transform* transform = colorTransform()) {
         for (int y = m_decodedHeight; y < decodedHeight; ++y) {
             const int canvasY = top + y;
             uint8_t* row = reinterpret_cast<uint8_t*>(buffer.getAddr(left, canvasY));
-            if (qcms_transform* transform = colorTransform())
-                qcms_transform_data_type(transform, row, row, width, QCMS_OUTPUT_RGBX);
+            qcms_transform_data_type(transform, row, row, width, QCMS_OUTPUT_RGBX);
             uint8_t* pixel = row;
             for (int x = 0; x < width; ++x, pixel += 4) {
                 const int canvasX = left + x;
@@ -561,7 +557,7 @@ bool WEBPImageDecoder::decode(const uint8_t* dataBytes, size_t dataSize, size_t 
         if (!m_premultiplyAlpha)
             mode = outputMode(false);
 #if USE(QCMSLIB)
-        if ((m_formatFlags & ICCP_FLAG) && !ignoresGammaAndColorProfile())
+        if (colorTransform())
             mode = MODE_RGBA; // Decode to RGBA for input to libqcms.
 #endif
         WebPInitDecBuffer(&m_decoderBuffer);
