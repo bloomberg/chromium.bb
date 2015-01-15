@@ -236,9 +236,9 @@ class TabHelper : public content::WebContentsObserver,
   // from a WebContents.
   WebAppAction pending_web_app_action_;
 
-  // Which page id was active when the GetApplicationInfo request was sent, for
-  // verification when the reply returns.
-  int32 last_committed_page_id_;
+  // Which navigation entry was active when the GetApplicationInfo request was
+  // sent, for verification when the reply returns.
+  int last_committed_nav_entry_unique_id_;
 
   // Whether to trigger an update when the page load completes.
   bool update_shortcut_on_load_complete_;

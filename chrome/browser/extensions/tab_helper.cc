@@ -84,7 +84,7 @@ TabHelper::TabHelper(content::WebContents* web_contents)
           Profile::FromBrowserContext(web_contents->GetBrowserContext()),
           this),
       pending_web_app_action_(NONE),
-      last_committed_page_id_(-1),
+      last_committed_nav_entry_unique_id_(0),
       update_shortcut_on_load_complete_(false),
       script_executor_(
           new ScriptExecutor(web_contents, &script_execution_observers_)),
@@ -297,9 +297,9 @@ void TabHelper::OnDidGetWebApplicationInfo(const WebApplicationInfo& info) {
 
   NavigationEntry* entry =
       web_contents()->GetController().GetLastCommittedEntry();
-  if (!entry || last_committed_page_id_ != entry->GetPageID())
+  if (!entry || last_committed_nav_entry_unique_id_ != entry->GetUniqueID())
     return;
-  last_committed_page_id_ = -1;
+  last_committed_nav_entry_unique_id_ = 0;
 
   switch (pending_web_app_action_) {
 #if !defined(OS_MACOSX)
@@ -571,7 +571,7 @@ void TabHelper::GetApplicationInfo(WebAppAction action) {
     return;
 
   pending_web_app_action_ = action;
-  last_committed_page_id_ = entry->GetPageID();
+  last_committed_nav_entry_unique_id_ = entry->GetUniqueID();
 
   Send(new ChromeViewMsg_GetWebApplicationInfo(routing_id()));
 }
