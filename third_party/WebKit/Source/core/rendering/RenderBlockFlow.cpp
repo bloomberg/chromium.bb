@@ -1754,16 +1754,14 @@ LayoutUnit RenderBlockFlow::applyAfterBreak(RenderBox& child, LayoutUnit logical
     bool checkAfterAlways = (checkColumnBreaks && child.style()->columnBreakAfter() == PBALWAYS)
         || (checkPageBreaks && child.style()->pageBreakAfter() == PBALWAYS);
     if (checkAfterAlways && inNormalFlow(&child)) {
-        LayoutUnit marginOffset = marginInfo.canCollapseWithMarginBefore() ? LayoutUnit() : marginInfo.margin();
-
         // So our margin doesn't participate in the next collapsing steps.
         marginInfo.clearMargin();
 
         if (checkColumnBreaks) {
             if (isInsideMulticolFlowThread) {
                 LayoutUnit offsetBreakAdjustment = 0;
-                if (flowThread->addForcedRegionBreak(offsetFromLogicalTopOfFirstPage() + logicalOffset + marginOffset, &child, false, &offsetBreakAdjustment))
-                    return logicalOffset + marginOffset + offsetBreakAdjustment;
+                if (flowThread->addForcedRegionBreak(offsetFromLogicalTopOfFirstPage() + logicalOffset, &child, false, &offsetBreakAdjustment))
+                    return logicalOffset + offsetBreakAdjustment;
             } else {
                 view()->layoutState()->addForcedColumnBreak(child, logicalOffset);
             }
