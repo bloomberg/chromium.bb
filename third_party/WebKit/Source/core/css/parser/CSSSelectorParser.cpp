@@ -315,6 +315,17 @@ PassOwnPtr<CSSParserSelector> CSSSelectorParser::consumePseudo(CSSParserTokenRan
         return selector.release();
     }
 
+    if (colons == 1 && equalIgnoringCase(token.value(), "lang")) {
+        // FIXME: CSS Selectors Level 4 allows :lang(*-foo)
+        const CSSParserToken& ident = block.consumeIncludingWhitespaceAndComments();
+        if (ident.type() != IdentToken || !block.atEnd())
+            return nullptr;
+        selector->setArgument(AtomicString(ident.value()));
+        selector->pseudoType(); // FIXME: Do we need to force the pseudo type to be cached?
+        ASSERT(selector->pseudoType() == CSSSelector::PseudoLang);
+        return selector.release();
+    }
+
     if (colons == 1
         && (equalIgnoringCase(token.value(), "nth-child")
             || equalIgnoringCase(token.value(), "nth-last-child")
@@ -346,8 +357,6 @@ PassOwnPtr<CSSParserSelector> CSSSelectorParser::consumePseudo(CSSParserTokenRan
         ASSERT(selector->pseudoType() != CSSSelector::PseudoUnknown);
         return selector.release();
     }
-
-    // FIXME: Support :lang(<ident>)
 
     return nullptr;
 }
