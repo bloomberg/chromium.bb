@@ -150,15 +150,15 @@ class MockMagnificationObserver {
 class MagnificationManagerTest : public InProcessBrowserTest {
  protected:
   MagnificationManagerTest() {}
-  virtual ~MagnificationManagerTest() {}
+  ~MagnificationManagerTest() override {}
 
-  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kLoginManager);
     command_line->AppendSwitchASCII(switches::kLoginProfile,
                                     TestingProfile::kTestUserProfileDir);
   }
 
-  virtual void SetUpOnMainThread() override {
+  void SetUpOnMainThread() override {
     // Set the login-screen profile.
     MagnificationManager::Get()->SetProfileForTest(
         ProfileManager::GetActiveUserProfile());

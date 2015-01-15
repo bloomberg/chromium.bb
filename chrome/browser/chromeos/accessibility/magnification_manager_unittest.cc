@@ -40,14 +40,14 @@ class MagnificationManagerTest : public ash::test::AshTestBase {
   MagnificationManagerTest() {
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ash::test::AshTestBase::SetUp();
     MagnificationManager::Initialize();
     ASSERT_TRUE(MagnificationManager::Get());
     MagnificationManager::Get()->SetProfileForTest(&profile_);
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     MagnificationManager::Shutdown();
     ash::test::AshTestBase::TearDown();
   }

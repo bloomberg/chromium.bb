@@ -19,7 +19,7 @@ namespace chromeos {
 class SpeechMonitor : public TtsPlatformImpl {
  public:
   SpeechMonitor();
-  virtual ~SpeechMonitor();
+  ~SpeechMonitor() override;
 
   // Blocks until the next utterance is spoken, and returns its text.
   std::string GetNextUtterance();
@@ -29,23 +29,22 @@ class SpeechMonitor : public TtsPlatformImpl {
   bool SkipChromeVoxEnabledMessage();
 
   // TtsPlatformImpl implementation.
-  virtual bool PlatformImplAvailable() override;
-  virtual bool Speak(
-      int utterance_id,
-      const std::string& utterance,
-      const std::string& lang,
-      const VoiceData& voice,
-      const UtteranceContinuousParameters& params) override;
-  virtual bool StopSpeaking() override;
-  virtual bool IsSpeaking() override;
-  virtual void GetVoices(std::vector<VoiceData>* out_voices) override;
-  virtual void Pause() override {}
-  virtual void Resume() override {}
-  virtual std::string error() override;
-  virtual void clear_error() override {}
-  virtual void set_error(const std::string& error) override {}
-  virtual void WillSpeakUtteranceWithVoice(
-      const Utterance* utterance, const VoiceData& voice_data) override;
+  bool PlatformImplAvailable() override;
+  bool Speak(int utterance_id,
+             const std::string& utterance,
+             const std::string& lang,
+             const VoiceData& voice,
+             const UtteranceContinuousParameters& params) override;
+  bool StopSpeaking() override;
+  bool IsSpeaking() override;
+  void GetVoices(std::vector<VoiceData>* out_voices) override;
+  void Pause() override {}
+  void Resume() override {}
+  std::string error() override;
+  void clear_error() override {}
+  void set_error(const std::string& error) override {}
+  void WillSpeakUtteranceWithVoice(const Utterance* utterance,
+                                   const VoiceData& voice_data) override;
 
  private:
   scoped_refptr<content::MessageLoopRunner> loop_runner_;

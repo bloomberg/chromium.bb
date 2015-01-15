@@ -162,7 +162,7 @@ class AccessibilityManager
   bool IsBrailleDisplayConnected() const;
 
   // SessionStateObserver overrides:
-  virtual void ActiveUserChanged(const std::string& user_id) override;
+  void ActiveUserChanged(const std::string& user_id) override;
 
   void SetProfileForTest(Profile* profile);
 
@@ -197,7 +197,7 @@ class AccessibilityManager
 
  protected:
   AccessibilityManager();
-  virtual ~AccessibilityManager();
+  ~AccessibilityManager() override;
 
  private:
   void LoadChromeVox();
@@ -226,22 +226,21 @@ class AccessibilityManager
   void UpdateChromeOSAccessibilityHistograms();
 
   // content::NotificationObserver
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // extensions::api::braille_display_private::BrailleObserver implementation.
   // Enables spoken feedback if a braille display becomes available.
-  virtual void OnBrailleDisplayStateChanged(
+  void OnBrailleDisplayStateChanged(
       const extensions::api::braille_display_private::DisplayState&
           display_state) override;
-  virtual void OnBrailleKeyEvent(
+  void OnBrailleKeyEvent(
       const extensions::api::braille_display_private::KeyEvent& event) override;
 
   // InputMethodManager::Observer
-  virtual void InputMethodChanged(input_method::InputMethodManager* manager,
-                                  bool show_message) override;
-
+  void InputMethodChanged(input_method::InputMethodManager* manager,
+                          bool show_message) override;
 
   // Profile which has the current a11y context.
   Profile* profile_;

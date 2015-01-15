@@ -36,7 +36,7 @@ class StickyKeysBrowserTest : public InProcessBrowserTest {
 
  protected:
   StickyKeysBrowserTest() {}
-  virtual ~StickyKeysBrowserTest() {}
+  ~StickyKeysBrowserTest() override {}
 
   void EnableStickyKeys() {
     AccessibilityManager::Get()->EnableStickyKeys(true);

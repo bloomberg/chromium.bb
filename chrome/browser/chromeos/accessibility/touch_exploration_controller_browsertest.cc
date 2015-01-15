@@ -30,10 +30,10 @@ class TouchExplorationTest : public InProcessBrowserTest {
     // Tests fail if time is ever 0.
     simulated_clock_->Advance(base::TimeDelta::FromMilliseconds(10));
   }
-  virtual ~TouchExplorationTest() {}
+  ~TouchExplorationTest() override {}
 
  protected:
-  virtual void SetUpOnMainThread() override {
+  void SetUpOnMainThread() override {
     // The RenderView for WebContents is created as a result of the
     // navigation to the New Tab page which is done as part of the test
     // SetUp. The creation involves sending a resize message to the renderer
@@ -49,7 +49,7 @@ class TouchExplorationTest : public InProcessBrowserTest {
     root_window_->AddPreTargetHandler(event_handler_.get());
   }
 
-  virtual void TearDownOnMainThread() override {
+  void TearDownOnMainThread() override {
     SwitchTouchExplorationMode(false);
     root_window_->RemovePreTargetHandler(event_handler_.get());
   }
