@@ -726,13 +726,8 @@ void TextIterator::handleTextBox()
             //   FirstLetter takes the punctuation + first letter, and BIDI will
             //   split out the punctuation and possibly reorder it.
             if (nextTextBox && nextTextBox->renderer() != renderer) {
-                if (runStart < runEnd && static_cast<unsigned>(m_positionEndOffset) < textBoxEnd)
-                    return;
-
-                m_textBox = nextTextBox;
-                if (renderer->containsReversedText())
-                    ++m_sortedTextBoxesPosition;
-                continue;
+                m_textBox = 0;
+                return;
             }
             ASSERT(!nextTextBox || nextTextBox->renderer() == renderer);
 
