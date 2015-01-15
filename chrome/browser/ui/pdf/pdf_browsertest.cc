@@ -26,8 +26,7 @@ namespace {
 
 // Tests basic PDF rendering.  This can be broken depending on bad merges with
 // the vendor, so it's important that we have basic sanity checking.
-// TODO(eustas): This is failing on CROS offical build. crbug.com/446347.
-#if defined(GOOGLE_CHROME_BUILD) && defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#if defined(GOOGLE_CHROME_BUILD) && defined(OS_LINUX)
 #define MAYBE_Basic Basic
 #else
 #define MAYBE_Basic DISABLED_Basic

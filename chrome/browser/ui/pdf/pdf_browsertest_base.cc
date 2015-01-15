@@ -133,6 +133,7 @@ void PDFBrowserTest::CopyFromBackingStoreCallback(
       gfx::PNGCodec::FORMAT_BGRA, &decoded, &w, &h));
   int32* ref_pixels = reinterpret_cast<int32*>(&decoded[0]);
 
+  SkAutoLockPixels lock_image(bitmap);
   int32* pixels = static_cast<int32*>(bitmap.getPixels());
 
   // Get the background color, and use it to figure out the x-offsets in
