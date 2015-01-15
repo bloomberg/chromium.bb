@@ -11,6 +11,7 @@
 #include <openssl/bio.h>
 #include <openssl/err.h>
 #include <openssl/ssl.h>
+#include <string.h>
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -1900,9 +1901,10 @@ int SSLClientSocketOpenSSL::SelectNextProtoCallback(unsigned char** out,
 
   // If we didn't find a protocol, we select the first one from our list.
   if (npn_status_ == kNextProtoNoOverlap) {
-    const std::string proto = NextProtoToString(ssl_config_.next_protos[0]);
-    *out = reinterpret_cast<uint8*>(const_cast<char*>(proto.data()));
-    *outlen = proto.size();
+    // NextProtoToString returns a pointer to a static string.
+    const char* proto = NextProtoToString(ssl_config_.next_protos[0]);
+    *out = reinterpret_cast<unsigned char*>(const_cast<char*>(proto));
+    *outlen = strlen(proto);
   }
 
   npn_proto_.assign(reinterpret_cast<const char*>(*out), *outlen);
