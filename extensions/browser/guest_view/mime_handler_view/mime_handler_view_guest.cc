@@ -155,11 +155,6 @@ content::WebContents* MimeHandlerViewGuest::OpenURLFromTab(
       embedder_web_contents(), params);
 }
 
-void MimeHandlerViewGuest::ContentsZoomChange(bool zoom_in) {
-  if (delegate_)
-    delegate_->ChangeZoom(zoom_in);
-}
-
 bool MimeHandlerViewGuest::HandleContextMenu(
     const content::ContextMenuParams& params) {
   if (delegate_)

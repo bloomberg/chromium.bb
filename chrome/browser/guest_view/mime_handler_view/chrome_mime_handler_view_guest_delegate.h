@@ -23,7 +23,6 @@ class ChromeMimeHandlerViewGuestDelegate : public MimeHandlerViewGuestDelegate {
   void AttachHelpers() override;
   bool HandleContextMenu(content::WebContents* web_contents,
                          const content::ContextMenuParams& params) override;
-  void ChangeZoom(bool zoom_in) override;
 
  private:
   MimeHandlerViewGuest* guest_;  // Owns us.

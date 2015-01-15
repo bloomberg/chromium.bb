@@ -47,14 +47,6 @@ void ChromeMimeHandlerViewGuestDelegate::AttachHelpers() {
           new ChromePDFWebContentsHelperClient()));
 }
 
-void ChromeMimeHandlerViewGuestDelegate::ChangeZoom(bool zoom_in) {
-  // TODO(lazyboy): Move this to //extensions once ZoomController and friends
-  // move to //extensions.
-  ui_zoom::PageZoom::Zoom(
-      guest_->embedder_web_contents(),
-      zoom_in ? content::PAGE_ZOOM_IN : content::PAGE_ZOOM_OUT);
-}
-
 bool ChromeMimeHandlerViewGuestDelegate::HandleContextMenu(
     content::WebContents* web_contents,
     const content::ContextMenuParams& params) {

@@ -6,6 +6,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/ui/zoom/page_zoom.h"
 #include "components/ui/zoom/zoom_controller.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/render_frame_host.h"
@@ -511,6 +512,12 @@ void GuestViewBase::DeactivateContents(WebContents* web_contents) {
 
   embedder_web_contents()->GetDelegate()->DeactivateContents(
       embedder_web_contents());
+}
+
+void GuestViewBase::ContentsZoomChange(bool zoom_in) {
+  ui_zoom::PageZoom::Zoom(
+      embedder_web_contents(),
+      zoom_in ? content::PAGE_ZOOM_IN : content::PAGE_ZOOM_OUT);
 }
 
 void GuestViewBase::RunFileChooser(WebContents* web_contents,

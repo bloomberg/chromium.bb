@@ -48,7 +48,6 @@ class MimeHandlerViewGuest : public GuestView<MimeHandlerViewGuest>,
   content::WebContents* OpenURLFromTab(
       content::WebContents* source,
       const content::OpenURLParams& params) override;
-  void ContentsZoomChange(bool zoom_in) override;
   bool HandleContextMenu(const content::ContextMenuParams& params) override;
   void HandleKeyboardEvent(
       content::WebContents* source,
