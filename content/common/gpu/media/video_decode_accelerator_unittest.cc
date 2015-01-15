@@ -57,6 +57,9 @@
 #include "base/win/windows_version.h"
 #include "content/common/gpu/media/dxva_video_decode_accelerator.h"
 #elif defined(OS_CHROMEOS)
+#if defined(ARCH_CPU_ARMEL) && defined(USE_LIBV4L2)
+#include "content/common/gpu/media/v4l2_slice_video_decode_accelerator.h"
+#endif  // defined(ARCH_CPU_ARMEL)
 #if defined(ARCH_CPU_ARMEL) || (defined(USE_OZONE) && defined(USE_V4L2_CODEC))
 #include "content/common/gpu/media/v4l2_video_decode_accelerator.h"
 #include "content/common/gpu/media/v4l2_video_device.h"
@@ -292,6 +295,7 @@ class GLRenderingVDAClient
 
   scoped_ptr<media::VideoDecodeAccelerator> CreateDXVAVDA();
   scoped_ptr<media::VideoDecodeAccelerator> CreateV4L2VDA();
+  scoped_ptr<media::VideoDecodeAccelerator> CreateV4L2SliceVDA();
   scoped_ptr<media::VideoDecodeAccelerator> CreateVaapiVDA();
 
   void SetState(ClientState new_state);
@@ -458,6 +462,24 @@ GLRenderingVDAClient::CreateV4L2VDA() {
 }
 
 scoped_ptr<media::VideoDecodeAccelerator>
+GLRenderingVDAClient::CreateV4L2SliceVDA() {
+  scoped_ptr<media::VideoDecodeAccelerator> decoder;
+#if defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL) && defined(USE_LIBV4L2)
+  scoped_refptr<V4L2Device> device = V4L2Device::Create(V4L2Device::kDecoder);
+  if (device.get()) {
+    base::WeakPtr<VideoDecodeAccelerator::Client> weak_client = AsWeakPtr();
+    decoder.reset(new V4L2SliceVideoDecodeAccelerator(
+        device,
+        static_cast<EGLDisplay>(rendering_helper_->GetGLDisplay()),
+        static_cast<EGLContext>(rendering_helper_->GetGLContextHandle()),
+        weak_client,
+        base::Bind(&DoNothingReturnTrue),
+        base::MessageLoopProxy::current()));
+  }
+#endif
+  return decoder.Pass();
+}
+scoped_ptr<media::VideoDecodeAccelerator>
 GLRenderingVDAClient::CreateVaapiVDA() {
   scoped_ptr<media::VideoDecodeAccelerator> decoder;
 #if defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
@@ -476,7 +498,8 @@ void GLRenderingVDAClient::CreateAndStartDecoder() {
   scoped_ptr<media::VideoDecodeAccelerator> decoders[] = {
     CreateDXVAVDA(),
     CreateV4L2VDA(),
-    CreateVaapiVDA()
+    CreateV4L2SliceVDA(),
+    CreateVaapiVDA(),
   };
 
   for (size_t i = 0; i < arraysize(decoders); ++i) {

@@ -30,6 +30,9 @@
 #elif defined(OS_MACOSX)
 #include "content/common/gpu/media/vt_video_decode_accelerator.h"
 #elif defined(OS_CHROMEOS)
+#if defined(ARCH_CPU_ARMEL) && defined(USE_LIBV4L2)
+#include "content/common/gpu/media/v4l2_slice_video_decode_accelerator.h"
+#endif  // defined(ARCH_CPU_ARMEL)
 #if defined(ARCH_CPU_ARMEL) || (defined(USE_OZONE) && defined(USE_V4L2_CODEC))
 #include "content/common/gpu/media/v4l2_video_decode_accelerator.h"
 #include "content/common/gpu/media/v4l2_video_device.h"
@@ -275,6 +278,7 @@ GpuVideoDecodeAccelerator::CreateVDAFps() {
   std::vector<GpuVideoDecodeAccelerator::CreateVDAFp> create_vda_fps;
   create_vda_fps.push_back(&GpuVideoDecodeAccelerator::CreateDXVAVDA);
   create_vda_fps.push_back(&GpuVideoDecodeAccelerator::CreateV4L2VDA);
+  create_vda_fps.push_back(&GpuVideoDecodeAccelerator::CreateV4L2SliceVDA);
   create_vda_fps.push_back(&GpuVideoDecodeAccelerator::CreateVaapiVDA);
   create_vda_fps.push_back(&GpuVideoDecodeAccelerator::CreateVTVDA);
   create_vda_fps.push_back(&GpuVideoDecodeAccelerator::CreateOzoneVDA);
@@ -309,6 +313,24 @@ GpuVideoDecodeAccelerator::CreateV4L2VDA() {
         weak_factory_for_io_.GetWeakPtr(),
         make_context_current_,
         device,
+        io_message_loop_));
+  }
+#endif
+  return decoder.Pass();
+}
+
+scoped_ptr<media::VideoDecodeAccelerator>
+GpuVideoDecodeAccelerator::CreateV4L2SliceVDA() {
+  scoped_ptr<media::VideoDecodeAccelerator> decoder;
+#if defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL) && defined(USE_LIBV4L2)
+  scoped_refptr<V4L2Device> device = V4L2Device::Create(V4L2Device::kDecoder);
+  if (device.get()) {
+    decoder.reset(new V4L2SliceVideoDecodeAccelerator(
+        device,
+        gfx::GLSurfaceEGL::GetHardwareDisplay(),
+        stub_->decoder()->GetGLContext()->GetHandle(),
+        weak_factory_for_io_.GetWeakPtr(),
+        make_context_current_,
         io_message_loop_));
   }
 #endif
