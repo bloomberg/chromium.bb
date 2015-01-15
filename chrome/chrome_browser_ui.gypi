@@ -1335,6 +1335,8 @@
       'browser/ui/views/frame/browser_desktop_window_tree_host.h',
       'browser/ui/views/frame/browser_desktop_window_tree_host_x11.cc',
       'browser/ui/views/frame/browser_desktop_window_tree_host_x11.h',
+      'browser/ui/views/frame/desktop_browser_frame_auralinux.cc',
+      'browser/ui/views/frame/desktop_browser_frame_auralinux.h',
       'browser/ui/views/frame/native_browser_frame_factory_auralinux.cc',
       'browser/ui/views/frame/native_browser_frame_factory_desktop_ash.cc',
       'browser/ui/views/javascript_app_modal_dialog_views_x11.cc',

@@ -23,6 +23,10 @@ views::Widget::InitParams BrowserFrameMac::GetWidgetParams() {
   return params;
 }
 
+bool BrowserFrameMac::UseCustomFrame() const {
+  return false;
+}
+
 bool BrowserFrameMac::UsesNativeSystemMenu() const {
   return true;
 }

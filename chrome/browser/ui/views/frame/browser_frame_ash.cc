@@ -139,6 +139,10 @@ views::Widget::InitParams BrowserFrameAsh::GetWidgetParams() {
   return params;
 }
 
+bool BrowserFrameAsh::UseCustomFrame() const {
+  return true;
+}
+
 bool BrowserFrameAsh::UsesNativeSystemMenu() const {
   return false;
 }

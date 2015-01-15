@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/views/frame/native_browser_frame_factory.h"
 
 #include "chrome/browser/ui/views/frame/browser_frame_ash.h"
-#include "chrome/browser/ui/views/frame/desktop_browser_frame_aura.h"
+#include "chrome/browser/ui/views/frame/desktop_browser_frame_auralinux.h"
 
 NativeBrowserFrame* NativeBrowserFrameFactory::Create(
     BrowserFrame* browser_frame,
@@ -13,5 +13,5 @@ NativeBrowserFrame* NativeBrowserFrameFactory::Create(
   if (ShouldCreateForAshDesktop(browser_view))
     return new BrowserFrameAsh(browser_frame, browser_view);
 
-  return new DesktopBrowserFrameAura(browser_frame, browser_view);
+  return new DesktopBrowserFrameAuraLinux(browser_frame, browser_view);
 }

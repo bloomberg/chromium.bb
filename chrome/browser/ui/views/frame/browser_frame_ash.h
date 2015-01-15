@@ -35,6 +35,7 @@ class BrowserFrameAsh : public views::NativeWidgetAura,
 
   // Overridden from NativeBrowserFrame:
   views::Widget::InitParams GetWidgetParams() override;
+  bool UseCustomFrame() const override;
   bool UsesNativeSystemMenu() const override;
   int GetMinimizeButtonOffset() const override;
   bool ShouldSaveWindowPlacement() const override;

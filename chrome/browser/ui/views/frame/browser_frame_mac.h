@@ -22,6 +22,7 @@ class BrowserFrameMac : public views::NativeWidgetMac,
 
   // Overridden from NativeBrowserFrame:
   views::Widget::InitParams GetWidgetParams() override;
+  bool UseCustomFrame() const override;
   bool UsesNativeSystemMenu() const override;
   bool ShouldSaveWindowPlacement() const override;
   void GetWindowPlacement(gfx::Rect* bounds,

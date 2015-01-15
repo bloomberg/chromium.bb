@@ -23,6 +23,9 @@ class NativeBrowserFrame {
   // Returns the platform specific InitParams for initializing our widget.
   virtual views::Widget::InitParams GetWidgetParams() = 0;
 
+  // Returns |true| if we should use the custom frame.
+  virtual bool UseCustomFrame() const = 0;
+
   // Returns true if the OS takes care of showing the system menu. Returning
   // false means BrowserFrame handles showing the system menu.
   virtual bool UsesNativeSystemMenu() const = 0;
