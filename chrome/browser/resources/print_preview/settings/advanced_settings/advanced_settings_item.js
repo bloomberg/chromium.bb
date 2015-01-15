@@ -151,10 +151,11 @@ cr.define('print_preview', function() {
       if (this.query_) {
         var optionMatches = (this.selectedValue_ || '').match(this.query_);
         // Even if there's no match anymore, keep the item visible to do not
-        // surprise user.
-        if (optionMatches)
-          this.showSearchBubble_(optionMatches[0]);
-        else
+        // surprise user. Even if there's a match, do not show the bubble, user
+        // is already aware that this option is visible and matches the search.
+        // Showing the bubble will only create a distraction by moving UI
+        // elements around.
+        if (!optionMatches)
           this.hideSearchBubble_();
       }
     },
