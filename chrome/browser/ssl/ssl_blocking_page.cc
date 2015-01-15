@@ -400,24 +400,6 @@ const void* SSLBlockingPage::GetTypeForTesting() const {
 }
 
 SSLBlockingPage::~SSLBlockingPage() {
-  // InvalidCommonNameSeverityScore() and InvalidDateSeverityScore() are in the
-  // destructor because they depend on knowing whether captive portal detection
-  // happened before the user made a decision.
-  SSLErrorInfo::ErrorType type =
-      SSLErrorInfo::NetErrorToErrorType(cert_error_);
-  switch (type) {
-    case SSLErrorInfo::CERT_DATE_INVALID:
-      ssl_error_classification_->InvalidDateSeverityScore();
-      break;
-    case SSLErrorInfo::CERT_COMMON_NAME_INVALID:
-      ssl_error_classification_->InvalidCommonNameSeverityScore();
-      break;
-    case SSLErrorInfo::CERT_AUTHORITY_INVALID:
-      ssl_error_classification_->InvalidAuthoritySeverityScore();
-      break;
-    default:
-      break;
-  }
   if (!callback_.is_null()) {
     RecordSSLBlockingPageDetailedStats(false,
                                        cert_error_,

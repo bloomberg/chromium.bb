@@ -11469,6 +11469,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="interstitial.ssl.connection_type"
+    enum="ResourcePrefetchPredictorNetworkType">
+  <owner>felt@chromium.org</owner>
+  <summary>
+    The histogram shows the connection types associated with SSL warnings. E.g.,
+    do more warnings occur on WiFi?
+  </summary>
+</histogram>
+
 <histogram name="interstitial.ssl.did_user_revoke_decisions"
     enum="BooleanRevoked">
   <owner>jww@chromium.org</owner>
@@ -11501,6 +11510,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="interstitial.ssl.severity_score.authority_invalid" units="%">
+  <obsolete>
+    Deprecated Jan 2015 (M42).
+  </obsolete>
   <owner>felt@chromium.org</owner>
   <summary>
     The likelihood of a |CERT_AUTHORITY_INVALID| error being an attack.
@@ -11508,6 +11520,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="interstitial.ssl.severity_score.common_name_invalid" units="%">
+  <obsolete>
+    Deprecated Jan 2015 (M42).
+  </obsolete>
   <owner>felt@chromium.org</owner>
   <summary>
     The likelihood of a |CERT_COMMON_NAME_INVALID| error being an attack.
@@ -11515,6 +11530,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="interstitial.ssl.severity_score.date_invalid" units="%">
+  <obsolete>
+    Deprecated Jan 2015 (M42).
+  </obsolete>
   <owner>felt@chromium.org</owner>
   <summary>
     The likelihood of a |CERT_DATE_INVALID| error being an attack.
@@ -57188,6 +57206,9 @@ To add a new entry, add it with any value and run test to compute valid value.
   </int>
   <int value="11" label="SELF_SIGNED: The cert is self-signed">
     This cause is recorded only for CERT_AUTHORITY_INVALID errors.
+  </int>
+  <int value="12" label="EXPIRED_RECENTLY: Cert expired within last 28 days.">
+
   </int>
 </enum>
 

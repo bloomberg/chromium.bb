@@ -28,46 +28,6 @@ class SSLErrorClassificationTest : public ChromeRenderViewHostTestHarness {
   }
 };
 
-TEST_F(SSLErrorClassificationTest, TestDateInvalidScore) {
-  base::FilePath certs_dir = net::GetTestCertsDirectory();
-  scoped_refptr<net::X509Certificate> expired_cert =
-      net::ImportCertFromFile(certs_dir, "expired_cert.pem");
-  base::Time time;
-  GURL origin("https://example.com");
-  int cert_error = net::ERR_CERT_DATE_INVALID;
-  WebContents* contents = web_contents();
-
-  {
-    EXPECT_TRUE(base::Time::FromString("Wed, 03 Jan 2007 12:00:00 GMT", &time));
-    SSLErrorClassification ssl_error(contents,
-                                     time,
-                                     origin,
-                                     cert_error,
-                                     *expired_cert);
-    EXPECT_FLOAT_EQ(0.2f, ssl_error.CalculateScoreTimePassedSinceExpiry());
-  }
-
-  {
-    EXPECT_TRUE(base::Time::FromString("Sat, 06 Jan 2007 12:00:00 GMT", &time));
-    SSLErrorClassification ssl_error(contents,
-                                     time,
-                                     origin,
-                                     cert_error,
-                                     *expired_cert);
-    EXPECT_FLOAT_EQ(0.3f, ssl_error.CalculateScoreTimePassedSinceExpiry());
-  }
-
-  {
-    EXPECT_TRUE(base::Time::FromString("Mon, 08 Jan 2007 12:00:00 GMT", &time));
-    SSLErrorClassification ssl_error(contents,
-                                     time,
-                                     origin,
-                                     cert_error,
-                                     *expired_cert);
-    EXPECT_FLOAT_EQ(0.4f, ssl_error.CalculateScoreTimePassedSinceExpiry());
-  }
-}
-
 TEST_F(SSLErrorClassificationTest, TestNameMismatch) {
   scoped_refptr<net::X509Certificate> google_cert(
       net::X509Certificate::CreateFromBytes(

@@ -54,6 +54,7 @@ enum SSLInterstitialCause {
   PRIVATE_URL,
   AUTHORITY_ERROR_CAPTIVE_PORTAL,
   SELF_SIGNED,
+  EXPIRED_RECENTLY,
   UNUSED_INTERSTITIAL_CAUSE_ENTRY,
 };
 
@@ -69,29 +70,6 @@ enum SSLInterstitialCauseCaptivePortal {
   CAPTIVE_PORTAL_DETECTED_OVERRIDABLE,
   UNUSED_CAPTIVE_PORTAL_EVENT,
 };
-
-void RecordSSLInterstitialSeverityScore(float ssl_severity_score,
-                                        int cert_error) {
-  if (SSLErrorInfo::NetErrorToErrorType(cert_error) ==
-      SSLErrorInfo::CERT_DATE_INVALID) {
-    UMA_HISTOGRAM_COUNTS_100("interstitial.ssl.severity_score.date_invalid",
-                             static_cast<int>(ssl_severity_score * 100));
-  } else if (SSLErrorInfo::NetErrorToErrorType(cert_error) ==
-      SSLErrorInfo::CERT_COMMON_NAME_INVALID) {
-    UMA_HISTOGRAM_COUNTS_100(
-        "interstitial.ssl.severity_score.common_name_invalid",
-        static_cast<int>(ssl_severity_score * 100));
-  } else if (SSLErrorInfo::NetErrorToErrorType(cert_error) ==
-             SSLErrorInfo::CERT_AUTHORITY_INVALID) {
-    UMA_HISTOGRAM_COUNTS_100(
-        "interstitial.ssl.severity_score.authority_invalid",
-        static_cast<int>(ssl_severity_score * 100));
-  }
-}
-
-// Scores/weights which will be constant through all the SSL error types.
-static const float kServerWeight = 0.5f;
-static const float kClientWeight = 0.5f;
 
 void RecordSSLInterstitialCause(bool overridable, SSLInterstitialCause event) {
   if (overridable) {
@@ -194,115 +172,19 @@ void SSLErrorClassification::RecordCaptivePortalUMAStatistics(
 #endif
 }
 
-void SSLErrorClassification::InvalidDateSeverityScore() {
-  SSLErrorInfo::ErrorType type =
-      SSLErrorInfo::NetErrorToErrorType(cert_error_);
-  DCHECK_EQ(type, SSLErrorInfo::CERT_DATE_INVALID);
-
-  // Client-side characteristics. Check whether or not the system's clock is
-  // wrong and whether or not the user has encountered this error before.
-  float severity_date_score = 0.0f;
-
-  static const float kCertificateExpiredWeight = 0.3f;
-  static const float kNotYetValidWeight = 0.2f;
-
-  static const float kSystemClockWeight = 0.75f;
-  static const float kSystemClockWrongWeight = 0.1f;
-  static const float kSystemClockRightWeight = 1.0f;
-
-  if (IsUserClockInThePast(current_time_)  ||
-      IsUserClockInTheFuture(current_time_)) {
-    severity_date_score += kClientWeight * kSystemClockWeight *
-        kSystemClockWrongWeight;
-  } else {
-    severity_date_score += kClientWeight * kSystemClockWeight *
-        kSystemClockRightWeight;
-  }
-  // TODO(felt): (crbug.com/393262) Check website settings.
-
-  // Server-side characteristics. Check whether the certificate has expired or
-  // is not yet valid. If the certificate has expired then factor the time which
-  // has passed since expiry.
-  if (cert_.HasExpired()) {
-    severity_date_score += kServerWeight * kCertificateExpiredWeight *
-        CalculateScoreTimePassedSinceExpiry();
-  }
-  if (current_time_ < cert_.valid_start())
-    severity_date_score += kServerWeight * kNotYetValidWeight;
-
-  RecordSSLInterstitialSeverityScore(severity_date_score, cert_error_);
-}
-
-void SSLErrorClassification::InvalidCommonNameSeverityScore() {
-  SSLErrorInfo::ErrorType type =
-      SSLErrorInfo::NetErrorToErrorType(cert_error_);
-  DCHECK_EQ(type, SSLErrorInfo::CERT_COMMON_NAME_INVALID);
-  float severity_name_score = 0.0f;
-
-  static const float kWWWDifferenceWeight = 0.3f;
-  static const float kNameUnderAnyNamesWeight = 0.2f;
-  static const float kAnyNamesUnderNameWeight = 1.0f;
-  static const float kLikelyMultiTenantHostingWeight = 0.1f;
-
-  std::string host_name = request_url_.host();
-  if (IsHostNameKnownTLD(host_name)) {
-    Tokens host_name_tokens = Tokenize(host_name);
-    if (IsWWWSubDomainMatch())
-      severity_name_score += kServerWeight * kWWWDifferenceWeight;
-    if (IsSubDomainOutsideWildcard(host_name_tokens))
-      severity_name_score += kServerWeight * kWWWDifferenceWeight;
-
-    std::vector<std::string> dns_names;
-    cert_.GetDNSNames(&dns_names);
-    std::vector<Tokens> dns_name_tokens = GetTokenizedDNSNames(dns_names);
-    if (NameUnderAnyNames(host_name_tokens, dns_name_tokens))
-      severity_name_score += kServerWeight * kNameUnderAnyNamesWeight;
-    // Inverse case is more likely to be a MITM attack.
-    if (AnyNamesUnderName(dns_name_tokens, host_name_tokens))
-      severity_name_score += kServerWeight * kAnyNamesUnderNameWeight;
-    if (IsCertLikelyFromMultiTenantHosting())
-      severity_name_score += kServerWeight * kLikelyMultiTenantHostingWeight;
-  }
-
-  static const float kEnvironmentWeight = 0.25f;
-
-  severity_name_score += kClientWeight * kEnvironmentWeight *
-      CalculateScoreEnvironments();
-
-  RecordSSLInterstitialSeverityScore(severity_name_score, cert_error_);
-}
-
-void SSLErrorClassification::InvalidAuthoritySeverityScore() {
-  SSLErrorInfo::ErrorType type = SSLErrorInfo::NetErrorToErrorType(cert_error_);
-  DCHECK_EQ(type, SSLErrorInfo::CERT_AUTHORITY_INVALID);
-
-  // For |CERT_AUTHORITY_INVALID| errors if captive portals have been detected
-  // then don't calculate the score, just return.
-  if (captive_portal_probe_completed_ && captive_portal_detected_)
-    return;
-
-  float severity_authority_score = 0.0f;
-
-  static const float kLocalhostWeight = 0.7f;
-  static const float kPrivateURLWeight = 0.3f;
-  if (net::IsLocalhost(request_url_.HostNoBrackets()))
-    severity_authority_score += kClientWeight * kLocalhostWeight;
-  if (IsHostnameNonUniqueOrDotless(request_url_.HostNoBrackets()))
-    severity_authority_score += kClientWeight * kPrivateURLWeight;
-
-  RecordSSLInterstitialSeverityScore(severity_authority_score, cert_error_);
-}
-
 void SSLErrorClassification::RecordUMAStatistics(
     bool overridable) const {
   SSLErrorInfo::ErrorType type =
       SSLErrorInfo::NetErrorToErrorType(cert_error_);
   switch (type) {
     case SSLErrorInfo::CERT_DATE_INVALID: {
-      if (IsUserClockInThePast(base::Time::NowFromSystemTime()))
+      if (IsUserClockInThePast(base::Time::NowFromSystemTime())) {
         RecordSSLInterstitialCause(overridable, CLOCK_PAST);
-      if (IsUserClockInTheFuture(base::Time::NowFromSystemTime()))
+      } else if (IsUserClockInTheFuture(base::Time::NowFromSystemTime())) {
         RecordSSLInterstitialCause(overridable, CLOCK_FUTURE);
+      } else if (cert_.HasExpired() && TimePassedSinceExpiry().InDays() < 28) {
+        RecordSSLInterstitialCause(overridable, EXPIRED_RECENTLY);
+      }
       break;
     }
     case SSLErrorInfo::CERT_COMMON_NAME_INVALID: {
@@ -342,53 +224,14 @@ void SSLErrorClassification::RecordUMAStatistics(
     default:
       break;
   }
+  UMA_HISTOGRAM_ENUMERATION("interstitial.ssl.connection_type",
+                            net::NetworkChangeNotifier::GetConnectionType(),
+                            net::NetworkChangeNotifier::CONNECTION_LAST);
 }
 
 base::TimeDelta SSLErrorClassification::TimePassedSinceExpiry() const {
   base::TimeDelta delta = current_time_ - cert_.valid_expiry();
   return delta;
-}
-
-float SSLErrorClassification::CalculateScoreTimePassedSinceExpiry() const {
-  base::TimeDelta delta = TimePassedSinceExpiry();
-  int64 time_passed = delta.InDays();
-  const int64 kHighThreshold = 7;
-  const int64 kLowThreshold = 4;
-  static const float kHighThresholdWeight = 0.4f;
-  static const float kMediumThresholdWeight = 0.3f;
-  static const float kLowThresholdWeight = 0.2f;
-  if (time_passed >= kHighThreshold)
-    return kHighThresholdWeight;
-  else if (time_passed >= kLowThreshold)
-    return kMediumThresholdWeight;
-  else
-    return kLowThresholdWeight;
-}
-
-float SSLErrorClassification::CalculateScoreEnvironments() const {
-  static const float kWifiWeight = 0.7f;
-  static const float kCellularWeight = 0.7f;
-  static const float kEthernetWeight = 0.7f;
-  static const float kOtherWeight = 0.7f;
-  net::NetworkChangeNotifier::ConnectionType type =
-      net::NetworkChangeNotifier::GetConnectionType();
-  if (type == net::NetworkChangeNotifier::CONNECTION_WIFI)
-    return kWifiWeight;
-  if (type == net::NetworkChangeNotifier::CONNECTION_2G ||
-      type == net::NetworkChangeNotifier::CONNECTION_3G ||
-      type == net::NetworkChangeNotifier::CONNECTION_4G ) {
-    return kCellularWeight;
-  }
-  if (type == net::NetworkChangeNotifier::CONNECTION_ETHERNET)
-    return kEthernetWeight;
-#if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
-  // Assume if captive portals are detected then the user is connected using a
-  // hot spot.
-  static const float kHotspotWeight = 0.2f;
-  if (captive_portal_probe_completed_ && captive_portal_detected_)
-      return kHotspotWeight;
-#endif
-  return kOtherWeight;
 }
 
 bool SSLErrorClassification::IsUserClockInThePast(const base::Time& time_now) {
