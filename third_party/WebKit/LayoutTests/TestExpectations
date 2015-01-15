@@ -1635,3 +1635,5 @@ crbug.com/448931 permissionclient/image-permissions.html [ Pass Failure ]
 crbug.com/448980 fast/forms/select/styling-option-checked.html [ Pass ImageOnlyFailure ]
 
 crbug.com/449021 http/tests/misc/script-after-slow-stylesheet-removed.html [ Pass Failure ]
+
+crbug.com/449023 http/tests/security/mixedContent/strict-mode-via-pref-image-blocked.https.html [ Pass Failure ]
