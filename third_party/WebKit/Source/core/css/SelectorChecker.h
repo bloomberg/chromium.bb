@@ -137,6 +137,7 @@ private:
     bool checkPseudoHost(const SelectorCheckingContext&, const SiblingTraversalStrategy&, unsigned*) const;
 
     static bool isFrameFocused(const Element&);
+    bool shouldMatchHoverOrActive(const SelectorCheckingContext&) const;
 
     bool m_strictParsing;
     Mode m_mode;
@@ -167,6 +168,14 @@ inline bool SelectorChecker::tagMatches(const Element& element, const QualifiedN
 inline bool SelectorChecker::isHostInItsShadowTree(const Element& element, const ContainerNode* scope)
 {
     return scope && scope->isInShadowTree() && scope->shadowHost() == element;
+}
+
+inline bool SelectorChecker::shouldMatchHoverOrActive(const SelectorCheckingContext& context) const
+{
+    // If we're in quirks mode, then :hover and :active should never match anchors with no
+    // href and *:hover and *:active should not match anything. This is specified in
+    // https://quirks.spec.whatwg.org/#the-:active-and-:hover-quirk
+    return m_strictParsing || context.isSubSelector || (context.selector->relation() == CSSSelector::SubSelector && context.selector->tagHistory()) || context.element->isLink();
 }
 
 }
