@@ -11,6 +11,7 @@ import os
 import sys
 
 sys.path.insert(0, os.path.abspath('%s/../../..' % os.path.dirname(__file__)))
+from chromite.cbuildbot import cbuildbot_run
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import failures_lib
@@ -311,12 +312,12 @@ class CommitQueueCompletionStageTest(
         return_value=True)
 
     self.alert_email_mock = self.PatchObject(alerts, '_SendEmailHelper')
+    self.PatchObject(cbuildbot_run._BuilderRunBase,
+                     'InProduction', return_value=True)
     self.PatchObject(completion_stages.MasterSlaveSyncCompletionStage,
                      'HandleFailure')
     self.PatchObject(completion_stages.CommitQueueCompletionStage,
                      '_GetFailedMessages')
-    self.PatchObject(completion_stages.CommitQueueCompletionStage,
-                     'ShouldDisableAlerts', return_value=False)
     self.PatchObject(completion_stages.CommitQueueCompletionStage,
                      '_GetSlaveMappingAndCLActions',
                      return_value=(dict(), []))

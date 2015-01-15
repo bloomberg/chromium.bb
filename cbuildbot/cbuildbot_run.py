@@ -726,6 +726,12 @@ class _BuilderRunBase(object):
     """Return True if this run should patch changes after sync stage."""
     return self.options.postsync_patch and self.config.postsync_patch
 
+  def InProduction(self):
+    """Return True if this is a production run."""
+    options = self.options
+    pre_cq = options.remote_trybot and (options.pre_cq or self.config.pre_cq)
+    return (options.buildbot or pre_cq) and not options.debug
+
   @classmethod
   def GetVersionInfo(cls, buildroot):
     """Helper for picking apart various version bits.
@@ -873,6 +879,7 @@ class _RealBuilderRun(object):
       if config.name:
         bot_ids.append(config.name)
     return bot_ids
+
 
 class BuilderRun(_RealBuilderRun):
   """A standard BuilderRun for a top-level build config."""

@@ -20,7 +20,6 @@ from chromite.cbuildbot import tree_status
 from chromite.cbuildbot.stages import completion_stages
 from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import sync_stages
-from chromite.lib import alerts
 from chromite.lib import cidb
 from chromite.lib import cros_build_lib
 from chromite.lib import gs
@@ -337,12 +336,11 @@ class ReportStage(generic_stages.BuilderStage,
             -streak_value,
             builder_run.config.health_alert_recipients)
 
-        if not self._run.debug:
-          alerts.SendEmail('%s health alert' % builder_run.config.name,
-                           tree_status.GetHealthAlertRecipients(builder_run),
-                           message=self._HealthAlertMessage(-streak_value),
-                           smtp_server=constants.GOLO_SMTP_SERVER,
-                           extra_fields={'X-cbuildbot-alert': 'cq-health'})
+        subject = '%s health alert' % builder_run.config.name
+        body = self._HealthAlertMessage(-streak_value)
+        extra_fields = {'X-cbuildbot-alert': 'cq-health'}
+        tree_status.SendHealthAlert(builder_run, subject, body,
+                                    extra_fields=extra_fields)
 
   def _UpdateStreakCounter(self, final_status, counter_name,
                            dry_run=False):

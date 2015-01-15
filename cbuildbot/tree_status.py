@@ -16,6 +16,7 @@ import urllib
 import urllib2
 
 from chromite.cbuildbot import constants
+from chromite.lib import alerts
 from chromite.lib import osutils
 from chromite.lib import timeout_util
 
@@ -363,6 +364,27 @@ def GetHealthAlertRecipients(builder_run):
       recipients.extend(GetSheriffEmailAddresses(entry))
 
   return recipients
+
+
+def SendHealthAlert(builder_run, subject, body, extra_fields=None):
+  """Send a health alert.
+
+  Health alerts are only sent for regular buildbots and Pre-CQ buildbots.
+
+  Args:
+    builder_run: BuilderRun for the main cbuildbot run.
+    subject: The subject of the health alert email.
+    body: The body of the health alert email.
+    extra_fields: (optional) A dictionary of additional message header fields
+                  to be added to the message. Custom field names should begin
+                  with the prefix 'X-'.
+  """
+  if builder_run.InProduction():
+    alerts.SendEmail(subject,
+                     GetHealthAlertRecipients(builder_run),
+                     message=body,
+                     smtp_server=constants.GOLO_SMTP_SERVER,
+                     extra_fields=extra_fields)
 
 
 def ConstructDashboardURL(waterfall, builder_name, build_number, stage=None):
