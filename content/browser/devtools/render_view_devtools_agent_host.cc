@@ -102,14 +102,17 @@ std::vector<WebContents*> DevToolsAgentHostImpl::GetInspectableWebContents() {
 
 // static
 void RenderViewDevToolsAgentHost::OnCancelPendingNavigation(
-    RenderViewHost* pending,
-    RenderViewHost* current) {
-  WebContents* web_contents = WebContents::FromRenderViewHost(pending);
+    RenderFrameHost* pending,
+    RenderFrameHost* current) {
+  if (current->GetParent())
+    return;
+  WebContents* web_contents =
+      WebContents::FromRenderViewHost(pending->GetRenderViewHost());
   RenderViewDevToolsAgentHost* agent_host = FindAgentHost(web_contents);
   if (!agent_host)
     return;
   agent_host->DisconnectRenderViewHost();
-  agent_host->ConnectRenderViewHost(current);
+  agent_host->ConnectRenderViewHost(current->GetRenderViewHost());
 }
 
 RenderViewDevToolsAgentHost::RenderViewDevToolsAgentHost(RenderViewHost* rvh)
@@ -266,6 +269,8 @@ void RenderViewDevToolsAgentHost::AboutToNavigateRenderFrame(
     RenderFrameHost* render_frame_host) {
   if (!render_view_host_)
     return;
+  if (render_frame_host->GetParent())
+    return;
 
   // TODO(creis): This will need to be updated for --site-per-process, since
   // RenderViewHost is going away and navigations could happen in any frame.
@@ -280,6 +285,8 @@ void RenderViewDevToolsAgentHost::AboutToNavigateRenderFrame(
 void RenderViewDevToolsAgentHost::RenderViewHostChanged(
     RenderViewHost* old_host,
     RenderViewHost* new_host) {
+  if (new_host->GetMainFrame()->GetParent())
+    return;
   if (new_host != render_view_host_) {
     // AboutToNavigateRenderFrame was not called for renderer-initiated
     // navigation.

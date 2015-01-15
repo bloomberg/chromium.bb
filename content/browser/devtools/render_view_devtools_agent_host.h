@@ -46,10 +46,10 @@ class CONTENT_EXPORT RenderViewDevToolsAgentHost
       private WebContentsObserver,
       public NotificationObserver {
  public:
-  static void OnCancelPendingNavigation(RenderViewHost* pending,
-                                        RenderViewHost* current);
+  static void OnCancelPendingNavigation(RenderFrameHost* pending,
+                                        RenderFrameHost* current);
 
-  RenderViewDevToolsAgentHost(RenderViewHost*);
+  explicit RenderViewDevToolsAgentHost(RenderViewHost*);
 
   void SynchronousSwapCompositorFrame(
       const cc::CompositorFrameMetadata& frame_metadata);

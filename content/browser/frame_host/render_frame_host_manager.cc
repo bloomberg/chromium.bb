@@ -1782,8 +1782,8 @@ RenderFrameHostManager::UnsetPendingRenderFrameHost() {
       pending_render_frame_host_.Pass();
 
   RenderViewDevToolsAgentHost::OnCancelPendingNavigation(
-      pending_render_frame_host->render_view_host(),
-      render_frame_host_->render_view_host());
+      pending_render_frame_host.get(),
+      render_frame_host_.get());
 
   // We no longer need to prevent the process from exiting.
   pending_render_frame_host->GetProcess()->RemovePendingView();
