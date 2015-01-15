@@ -53,6 +53,9 @@ class ExtensionCacheImpl : public ExtensionCache,
   // Callback that is called when local cache is ready.
   void OnCacheInitialized();
 
+  // Check if this extension is allowed to be cached.
+  bool CachingAllowed(const std::string& id);
+
   // Cache implementation that uses local cache dir.
   scoped_ptr<LocalExtensionCache> cache_;
 

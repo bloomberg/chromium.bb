@@ -13,6 +13,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/updater/local_extension_cache.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
@@ -90,13 +91,17 @@ void ExtensionCacheImpl::Shutdown(const base::Closure& callback) {
 }
 
 void ExtensionCacheImpl::AllowCaching(const std::string& id) {
+  // Temporary workaround for M41, this extension should not be cached.
+  // TODO(ginkage): Implement id/hash-based map instead of id/version.
+  if (id == extension_misc::kHotwordSharedModuleId)
+    return;
   allowed_extensions_.insert(id);
 }
 
 bool ExtensionCacheImpl::GetExtension(const std::string& id,
                                       base::FilePath* file_path,
                                       std::string* version) {
-  if (cache_)
+  if (cache_ && CachingAllowed(id))
     return cache_->GetExtension(id, file_path, version);
   else
     return false;
@@ -106,10 +111,15 @@ void ExtensionCacheImpl::PutExtension(const std::string& id,
                                       const base::FilePath& file_path,
                                       const std::string& version,
                                       const PutExtensionCallback& callback) {
-  if (cache_ && ContainsKey(allowed_extensions_, id))
+  if (cache_ && CachingAllowed(id))
     cache_->PutExtension(id, file_path, version, callback);
   else
     callback.Run(file_path, true);
+}
+
+bool ExtensionCacheImpl::CachingAllowed(const std::string& id) {
+  return ContainsKey(allowed_extensions_, id) &&
+      id != extension_misc::kHotwordSharedModuleId;
 }
 
 void ExtensionCacheImpl::OnCacheInitialized() {
