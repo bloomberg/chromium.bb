@@ -198,10 +198,10 @@
 
     [RaisesException, TypeChecking=Interface] void setIsCursorVisible(Document document, boolean isVisible);
 
-    void mediaPlayerRequestFullscreen(HTMLMediaElement mediaElement);
-    double effectiveMediaVolume(HTMLMediaElement mediaElement);
-    void mediaPlayerRemoteRouteAvailabilityChanged(HTMLMediaElement mediaElement, boolean available);
-    void mediaPlayerPlayingRemotelyChanged(HTMLMediaElement mediaElement, boolean remote);
+    [TypeChecking=Interface] void mediaPlayerRequestFullscreen(HTMLMediaElement mediaElement);
+    [TypeChecking=Interface] double effectiveMediaVolume(HTMLMediaElement mediaElement);
+    [TypeChecking=Interface] void mediaPlayerRemoteRouteAvailabilityChanged(HTMLMediaElement mediaElement, boolean available);
+    [TypeChecking=Interface] void mediaPlayerPlayingRemotelyChanged(HTMLMediaElement mediaElement, boolean remote);
 
     void registerURLSchemeAsBypassingContentSecurityPolicy(DOMString scheme);
     void registerURLSchemeAsBypassingContentSecurityPolicy(DOMString scheme, sequence<DOMString> policyAreas);

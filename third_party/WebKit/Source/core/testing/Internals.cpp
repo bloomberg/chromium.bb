@@ -1737,21 +1737,25 @@ void Internals::setIsCursorVisible(Document* document, bool isVisible, Exception
 
 void Internals::mediaPlayerRequestFullscreen(HTMLMediaElement* mediaElement)
 {
+    ASSERT(mediaElement);
     mediaElement->mediaPlayerRequestFullscreen();
 }
 
 double Internals::effectiveMediaVolume(HTMLMediaElement* mediaElement)
 {
+    ASSERT(mediaElement);
     return mediaElement->effectiveMediaVolume();
 }
 
 void Internals::mediaPlayerRemoteRouteAvailabilityChanged(HTMLMediaElement* mediaElement, bool available)
 {
+    ASSERT(mediaElement);
     mediaElement->remoteRouteAvailabilityChanged(available);
 }
 
 void Internals::mediaPlayerPlayingRemotelyChanged(HTMLMediaElement* mediaElement, bool remote)
 {
+    ASSERT(mediaElement);
     if (remote)
         mediaElement->connectedToRemoteDevice();
     else
