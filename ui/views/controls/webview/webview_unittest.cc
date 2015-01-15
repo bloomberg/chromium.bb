@@ -5,7 +5,7 @@
 #include "ui/views/controls/webview/webview.h"
 
 #include "base/memory/scoped_ptr.h"
-#include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread.h"
@@ -44,7 +44,7 @@ class WebViewTestViewsDelegate : public views::TestViewsDelegate {
 class WebViewTestWebContentsObserver : public content::WebContentsObserver {
  public:
   WebViewTestWebContentsObserver(content::WebContents* web_contents)
-      : web_contents_(static_cast<content::WebContentsImpl*>(web_contents)),
+      : web_contents_(web_contents),
         was_shown_(false),
         shown_count_(0),
         hidden_count_(0) {
@@ -83,7 +83,7 @@ class WebViewTestWebContentsObserver : public content::WebContentsObserver {
   bool valid_root_while_shown() const { return valid_root_while_shown_; }
 
  private:
-  content::WebContentsImpl* web_contents_;
+  content::WebContents* web_contents_;
   bool was_shown_;
   int32 shown_count_;
   int32 hidden_count_;
