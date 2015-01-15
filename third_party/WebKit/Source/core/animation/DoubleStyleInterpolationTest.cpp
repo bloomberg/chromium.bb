@@ -8,6 +8,7 @@
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/StylePropertySet.h"
+#include "wtf/MathExtras.h"
 
 #include <gtest/gtest.h>
 
@@ -25,9 +26,9 @@ protected:
         return DoubleStyleInterpolation::motionRotationToInterpolableValue(value);
     }
 
-    static PassRefPtrWillBeRawPtr<CSSValue> interpolableValueToDouble(InterpolableValue* value, ClampRange clamp)
+    static PassRefPtrWillBeRawPtr<CSSValue> interpolableValueToDouble(InterpolableValue* value, bool isNumber, ClampRange clamp)
     {
-        return DoubleStyleInterpolation::interpolableValueToDouble(value, clamp);
+        return DoubleStyleInterpolation::interpolableValueToDouble(value, isNumber, clamp);
     }
 
     static PassRefPtrWillBeRawPtr<CSSValue> interpolableValueToMotionRotation(InterpolableValue* value, bool flag)
@@ -37,7 +38,7 @@ protected:
 
     static PassRefPtrWillBeRawPtr<CSSValue> roundTrip(PassRefPtrWillBeRawPtr<CSSValue> value)
     {
-        return interpolableValueToDouble(doubleToInterpolableValue(*value).get(), NoClamp);
+        return interpolableValueToDouble(doubleToInterpolableValue(*value).get(), toCSSPrimitiveValue(value.get())->primitiveType() == CSSPrimitiveValue::CSS_NUMBER, NoClamp);
     }
 
     static PassRefPtrWillBeRawPtr<CSSValue> roundTripMotionRotation(PassRefPtrWillBeRawPtr<CSSValue> value, bool flag)
@@ -84,10 +85,16 @@ TEST_F(AnimationDoubleStyleInterpolationTest, ZeroValue)
     testPrimitiveValue(value, 0, CSSPrimitiveValue::CSS_NUMBER);
 }
 
-TEST_F(AnimationDoubleStyleInterpolationTest, Value)
+TEST_F(AnimationDoubleStyleInterpolationTest, AngleValue)
 {
-    RefPtrWillBeRawPtr<CSSValue> value = roundTrip(CSSPrimitiveValue::create(10, CSSPrimitiveValue::CSS_NUMBER));
-    testPrimitiveValue(value, 10, CSSPrimitiveValue::CSS_NUMBER);
+    RefPtrWillBeRawPtr<CSSValue> value = roundTrip(CSSPrimitiveValue::create(10, CSSPrimitiveValue::CSS_DEG));
+    testPrimitiveValue(value, 10, CSSPrimitiveValue::CSS_DEG);
+
+    value = roundTrip(CSSPrimitiveValue::create(10, CSSPrimitiveValue::CSS_RAD));
+    testPrimitiveValue(value, rad2deg(10.0), CSSPrimitiveValue::CSS_DEG);
+
+    value = roundTrip(CSSPrimitiveValue::create(10, CSSPrimitiveValue::CSS_GRAD));
+    testPrimitiveValue(value, grad2deg(10.0), CSSPrimitiveValue::CSS_DEG);
 }
 
 TEST_F(AnimationDoubleStyleInterpolationTest, Clamping)
