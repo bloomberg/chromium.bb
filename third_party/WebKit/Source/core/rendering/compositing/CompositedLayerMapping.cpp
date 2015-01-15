@@ -438,14 +438,14 @@ bool CompositedLayerMapping::updateGraphicsLayerConfiguration()
     if (updateClippingLayers(needsAncestorClip, needsDescendantsClippingLayer))
         layerConfigChanged = true;
 
-    if (updateOverflowControlsLayers(requiresHorizontalScrollbarLayer(), requiresVerticalScrollbarLayer(), requiresScrollCornerLayer(), needsAncestorClip))
-        layerConfigChanged = true;
-
     bool scrollingConfigChanged = false;
     if (updateScrollingLayers(m_owningLayer.needsCompositedScrolling())) {
         layerConfigChanged = true;
         scrollingConfigChanged = true;
     }
+
+    if (updateOverflowControlsLayers(requiresHorizontalScrollbarLayer(), requiresVerticalScrollbarLayer(), requiresScrollCornerLayer(), needsAncestorClip))
+        layerConfigChanged = true;
 
     bool hasPerspective = false;
     if (RenderStyle* style = renderer->style())

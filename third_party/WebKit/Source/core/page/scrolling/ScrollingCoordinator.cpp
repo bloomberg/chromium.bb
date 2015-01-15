@@ -324,16 +324,20 @@ void ScrollingCoordinator::scrollableAreaScrollbarLayerDidChange(ScrollableArea*
     static const bool platformSupportsCoordinatedScrollbar = true;
     static const bool platformSupportsMainFrameOnly = true;
 #endif
-    if (!platformSupportsCoordinatedScrollbar)
-        return;
 
     bool isMainFrame = isForMainFrame(scrollableArea);
-    if (!isMainFrame && platformSupportsMainFrameOnly)
-        return;
-
     GraphicsLayer* scrollbarGraphicsLayer = orientation == HorizontalScrollbar
         ? scrollableArea->layerForHorizontalScrollbar()
         : scrollableArea->layerForVerticalScrollbar();
+
+    bool shouldCreateCoordinatedScrollbar = platformSupportsCoordinatedScrollbar && !(platformSupportsMainFrameOnly && !isMainFrame);
+    if (!shouldCreateCoordinatedScrollbar) {
+        if (scrollbarGraphicsLayer) {
+            WebLayer* scrollbarLayer = toWebLayer(scrollbarGraphicsLayer);
+            scrollbarLayer->setShouldScrollOnMainThread(true);
+        }
+        return;
+    }
 
     if (scrollbarGraphicsLayer) {
         Scrollbar* scrollbar = orientation == HorizontalScrollbar ? scrollableArea->horizontalScrollbar() : scrollableArea->verticalScrollbar();

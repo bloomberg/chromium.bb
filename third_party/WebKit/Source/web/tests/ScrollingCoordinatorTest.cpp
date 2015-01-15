@@ -49,16 +49,16 @@ using namespace blink;
 
 namespace {
 
-class ScrollingCoordinatorChromiumTest : public testing::Test {
+class ScrollingCoordinatorTest : public testing::Test {
 public:
-    ScrollingCoordinatorChromiumTest()
+    ScrollingCoordinatorTest()
         : m_baseURL("http://www.test.com/")
     {
         m_helper.initialize(true, 0, &m_mockWebViewClient, &configureSettings);
         webViewImpl()->resize(IntSize(320, 240));
     }
 
-    virtual ~ScrollingCoordinatorChromiumTest()
+    virtual ~ScrollingCoordinatorTest()
     {
         Platform::current()->unitTestSupport()->unregisterAllMockedURLs();
     }
@@ -111,7 +111,7 @@ public:
     virtual WebLayer* contentsLayer() const { return GraphicsLayer::contentsLayer(); }
 };
 
-TEST_F(ScrollingCoordinatorChromiumTest, fastScrollingByDefault)
+TEST_F(ScrollingCoordinatorTest, fastScrollingByDefault)
 {
     navigateTo("about:blank");
     forceFullCompositingUpdate();
@@ -129,7 +129,7 @@ TEST_F(ScrollingCoordinatorChromiumTest, fastScrollingByDefault)
     ASSERT_FALSE(rootScrollLayer->haveWheelEventHandlers());
 }
 
-TEST_F(ScrollingCoordinatorChromiumTest, fastScrollingCanBeDisabledWithSetting)
+TEST_F(ScrollingCoordinatorTest, fastScrollingCanBeDisabledWithSetting)
 {
     navigateTo("about:blank");
     webViewImpl()->settings()->setThreadedScrollingEnabled(false);
@@ -148,7 +148,7 @@ TEST_F(ScrollingCoordinatorChromiumTest, fastScrollingCanBeDisabledWithSetting)
 }
 
 
-TEST_F(ScrollingCoordinatorChromiumTest, fastFractionalScrollingDiv)
+TEST_F(ScrollingCoordinatorTest, fastFractionalScrollingDiv)
 {
     registerMockedHttpURLLoad("fractional-scroll-div.html");
     navigateTo(m_baseURL + "fractional-scroll-div.html");
@@ -201,7 +201,7 @@ static WebLayer* webLayerFromElement(Element* element)
 }
 
 
-TEST_F(ScrollingCoordinatorChromiumTest, fractionalScrollingNonLayerFixedPosition)
+TEST_F(ScrollingCoordinatorTest, fractionalScrollingNonLayerFixedPosition)
 {
     registerMockedHttpURLLoad("fractional-scroll-fixed-position.html");
     navigateTo(m_baseURL + "fractional-scroll-fixed-position.html");
@@ -221,7 +221,7 @@ TEST_F(ScrollingCoordinatorChromiumTest, fractionalScrollingNonLayerFixedPositio
     ASSERT_EQ(0.0, rootScrollLayer->position().y);
 }
 
-TEST_F(ScrollingCoordinatorChromiumTest, fastScrollingForFixedPosition)
+TEST_F(ScrollingCoordinatorTest, fastScrollingForFixedPosition)
 {
     registerMockedHttpURLLoad("fixed-position.html");
     navigateTo(m_baseURL + "fixed-position.html");
@@ -306,7 +306,7 @@ TEST_F(ScrollingCoordinatorChromiumTest, fastScrollingForFixedPosition)
     }
 }
 
-TEST_F(ScrollingCoordinatorChromiumTest, wheelEventHandler)
+TEST_F(ScrollingCoordinatorTest, wheelEventHandler)
 {
     registerMockedHttpURLLoad("wheel-event-handler.html");
     navigateTo(m_baseURL + "wheel-event-handler.html");
@@ -316,7 +316,7 @@ TEST_F(ScrollingCoordinatorChromiumTest, wheelEventHandler)
     ASSERT_TRUE(rootScrollLayer->haveWheelEventHandlers());
 }
 
-TEST_F(ScrollingCoordinatorChromiumTest, scrollEventHandler)
+TEST_F(ScrollingCoordinatorTest, scrollEventHandler)
 {
     registerMockedHttpURLLoad("scroll-event-handler.html");
     navigateTo(m_baseURL + "scroll-event-handler.html");
@@ -326,7 +326,7 @@ TEST_F(ScrollingCoordinatorChromiumTest, scrollEventHandler)
     ASSERT_TRUE(rootScrollLayer->haveScrollEventHandlers());
 }
 
-TEST_F(ScrollingCoordinatorChromiumTest, updateEventHandlersDuringTeardown)
+TEST_F(ScrollingCoordinatorTest, updateEventHandlersDuringTeardown)
 {
     registerMockedHttpURLLoad("scroll-event-handler-window.html");
     navigateTo(m_baseURL + "scroll-event-handler-window.html");
@@ -337,7 +337,7 @@ TEST_F(ScrollingCoordinatorChromiumTest, updateEventHandlersDuringTeardown)
     frame()->document()->prepareForDestruction();
 }
 
-TEST_F(ScrollingCoordinatorChromiumTest, clippedBodyTest)
+TEST_F(ScrollingCoordinatorTest, clippedBodyTest)
 {
     registerMockedHttpURLLoad("clipped-body.html");
     navigateTo(m_baseURL + "clipped-body.html");
@@ -347,7 +347,7 @@ TEST_F(ScrollingCoordinatorChromiumTest, clippedBodyTest)
     ASSERT_EQ(0u, rootScrollLayer->nonFastScrollableRegion().size());
 }
 
-TEST_F(ScrollingCoordinatorChromiumTest, overflowScrolling)
+TEST_F(ScrollingCoordinatorTest, overflowScrolling)
 {
     registerMockedHttpURLLoad("overflow-scrolling.html");
     navigateTo(m_baseURL + "overflow-scrolling.html");
@@ -387,7 +387,7 @@ TEST_F(ScrollingCoordinatorChromiumTest, overflowScrolling)
 #endif
 }
 
-TEST_F(ScrollingCoordinatorChromiumTest, overflowHidden)
+TEST_F(ScrollingCoordinatorTest, overflowHidden)
 {
     registerMockedHttpURLLoad("overflow-hidden.html");
     navigateTo(m_baseURL + "overflow-hidden.html");
@@ -442,7 +442,7 @@ TEST_F(ScrollingCoordinatorChromiumTest, overflowHidden)
     ASSERT_TRUE(webScrollLayer->userScrollableVertical());
 }
 
-TEST_F(ScrollingCoordinatorChromiumTest, iframeScrolling)
+TEST_F(ScrollingCoordinatorTest, iframeScrolling)
 {
     registerMockedHttpURLLoad("iframe-scrolling.html");
     registerMockedHttpURLLoad("iframe-scrolling-inner.html");
@@ -486,7 +486,7 @@ TEST_F(ScrollingCoordinatorChromiumTest, iframeScrolling)
 #endif
 }
 
-TEST_F(ScrollingCoordinatorChromiumTest, rtlIframe)
+TEST_F(ScrollingCoordinatorTest, rtlIframe)
 {
     registerMockedHttpURLLoad("rtl-iframe.html");
     registerMockedHttpURLLoad("rtl-iframe-inner.html");
@@ -525,7 +525,7 @@ TEST_F(ScrollingCoordinatorChromiumTest, rtlIframe)
     ASSERT_EQ(expectedScrollPosition, webScrollLayer->scrollPositionDouble().x);
 }
 
-TEST_F(ScrollingCoordinatorChromiumTest, setupScrollbarLayerShouldNotCrash)
+TEST_F(ScrollingCoordinatorTest, setupScrollbarLayerShouldNotCrash)
 {
     registerMockedHttpURLLoad("setup_scrollbar_layer_crash.html");
     navigateTo(m_baseURL + "setup_scrollbar_layer_crash.html");
@@ -534,10 +534,34 @@ TEST_F(ScrollingCoordinatorChromiumTest, setupScrollbarLayerShouldNotCrash)
     // an empty document by javascript.
 }
 
+TEST_F(ScrollingCoordinatorTest, scrollbarsForceMainThreadOrHaveWebScrollbarLayer)
+{
+    blink::FrameTestHelpers::UseMockScrollbarSettings mockScrollbarSettings;
+
+    registerMockedHttpURLLoad("trivial-scroller.html");
+    navigateTo(m_baseURL + "trivial-scroller.html");
+    forceFullCompositingUpdate();
+
+    Document* document = frame()->document();
+    Element* scrollableElement = document->getElementById("scroller");
+    ASSERT(scrollableElement);
+
+    RenderObject* renderer = scrollableElement->renderer();
+    ASSERT_TRUE(renderer->isBox());
+    RenderBox* box = toRenderBox(renderer);
+    ASSERT_TRUE(box->usesCompositedScrolling());
+    CompositedLayerMapping* compositedLayerMapping = box->layer()->compositedLayerMapping();
+    GraphicsLayerForScrollTesting* scrollbarGraphicsLayer = static_cast<GraphicsLayerForScrollTesting*>(compositedLayerMapping->layerForVerticalScrollbar());
+    ASSERT_TRUE(scrollbarGraphicsLayer);
+
+    bool hasWebScrollbarLayer = !scrollbarGraphicsLayer->drawsContent();
+    ASSERT_TRUE(hasWebScrollbarLayer || scrollbarGraphicsLayer->platformLayer()->shouldScrollOnMainThread());
+}
+
 #if OS(MACOSX)
-TEST_F(ScrollingCoordinatorChromiumTest, DISABLED_setupScrollbarLayerShouldSetScrollLayerOpaque)
+TEST_F(ScrollingCoordinatorTest, DISABLED_setupScrollbarLayerShouldSetScrollLayerOpaque)
 #else
-TEST_F(ScrollingCoordinatorChromiumTest, setupScrollbarLayerShouldSetScrollLayerOpaque)
+TEST_F(ScrollingCoordinatorTest, setupScrollbarLayerShouldSetScrollLayerOpaque)
 #endif
 {
     registerMockedHttpURLLoad("wide_document.html");
