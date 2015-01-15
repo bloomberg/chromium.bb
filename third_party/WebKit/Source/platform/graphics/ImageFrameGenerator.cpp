@@ -350,6 +350,11 @@ bool ImageFrameGenerator::getYUVComponentSizes(SkISize componentSizes[3])
     if (!decoder)
         return false;
 
+    // JPEG images support YUV decoding: other decoders do not. So don't pump data into decoders
+    // that always return false to updateYUVComponentSizes() requests.
+    if (decoder->filenameExtension() != "jpg")
+        return false;
+
     // Setting a dummy ImagePlanes object signals to the decoder that we want to do YUV decoding.
     decoder->setData(data, allDataReceived);
     OwnPtr<ImagePlanes> dummyImagePlanes = adoptPtr(new ImagePlanes);
