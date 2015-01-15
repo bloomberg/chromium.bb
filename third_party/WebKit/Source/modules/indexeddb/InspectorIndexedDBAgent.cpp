@@ -275,13 +275,13 @@ public:
 
         RefPtr<TypeBuilder::Array<TypeBuilder::IndexedDB::ObjectStore> > objectStores = TypeBuilder::Array<TypeBuilder::IndexedDB::ObjectStore>::create();
 
-        for (IDBDatabaseMetadata::ObjectStoreMap::const_iterator it = databaseMetadata.objectStores.begin(); it != databaseMetadata.objectStores.end(); ++it) {
-            const IDBObjectStoreMetadata& objectStoreMetadata = it->value;
+        for (const auto& storeMapEntry : databaseMetadata.objectStores) {
+            const IDBObjectStoreMetadata& objectStoreMetadata = storeMapEntry.value;
 
             RefPtr<TypeBuilder::Array<TypeBuilder::IndexedDB::ObjectStoreIndex> > indexes = TypeBuilder::Array<TypeBuilder::IndexedDB::ObjectStoreIndex>::create();
 
-            for (IDBObjectStoreMetadata::IndexMap::const_iterator it = objectStoreMetadata.indexes.begin(); it != objectStoreMetadata.indexes.end(); ++it) {
-                const IDBIndexMetadata& indexMetadata = it->value;
+            for (const auto& metadataMapEntry : objectStoreMetadata.indexes) {
+                const IDBIndexMetadata& indexMetadata = metadataMapEntry.value;
 
                 RefPtr<ObjectStoreIndex> objectStoreIndex = ObjectStoreIndex::create()
                     .setName(indexMetadata.name)
@@ -323,27 +323,27 @@ static IDBKey* idbKeyFromInspectorObject(JSONObject* key)
     if (!key->getString("type", &type))
         return 0;
 
-    DEFINE_STATIC_LOCAL(String, number, ("number"));
-    DEFINE_STATIC_LOCAL(String, string, ("string"));
-    DEFINE_STATIC_LOCAL(String, date, ("date"));
-    DEFINE_STATIC_LOCAL(String, array, ("array"));
+    DEFINE_STATIC_LOCAL(String, s_number, ("number"));
+    DEFINE_STATIC_LOCAL(String, s_string, ("string"));
+    DEFINE_STATIC_LOCAL(String, s_date, ("date"));
+    DEFINE_STATIC_LOCAL(String, s_array, ("array"));
 
-    if (type == number) {
+    if (type == s_number) {
         double number;
         if (!key->getNumber("number", &number))
             return 0;
         idbKey = IDBKey::createNumber(number);
-    } else if (type == string) {
+    } else if (type == s_string) {
         String string;
         if (!key->getString("string", &string))
             return 0;
         idbKey = IDBKey::createString(string);
-    } else if (type == date) {
+    } else if (type == s_date) {
         double date;
         if (!key->getNumber("date", &date))
             return 0;
         idbKey = IDBKey::createDate(date);
-    } else if (type == array) {
+    } else if (type == s_array) {
         IDBKey::KeyArray keyArray;
         RefPtr<JSONArray> array = key->getArray("array");
         for (size_t i = 0; i < array->length(); ++i) {

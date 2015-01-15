@@ -155,7 +155,7 @@ void IDBParseKeyPath(const String& keyPath, Vector<String>& elements, IDBKeyPath
     while (1) {
         switch (state) {
         case Identifier : {
-            IDBKeyPathLexer::TokenType tokenType = lexer.currentTokenType();
+            tokenType = lexer.currentTokenType();
             ASSERT(tokenType == IDBKeyPathLexer::TokenIdentifier);
 
             String element = lexer.currentElement();
@@ -173,7 +173,7 @@ void IDBParseKeyPath(const String& keyPath, Vector<String>& elements, IDBKeyPath
             break;
         }
         case Dot: {
-            IDBKeyPathLexer::TokenType tokenType = lexer.currentTokenType();
+            tokenType = lexer.currentTokenType();
             ASSERT(tokenType == IDBKeyPathLexer::TokenDot);
 
             tokenType = lexer.nextTokenType();
