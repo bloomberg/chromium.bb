@@ -459,7 +459,14 @@ ConfigParsePosixResult ConvertResStateToDnsConfig(const struct __res_state& res,
 #if defined(RES_ROTATE)
   dns_config->rotate = res.options & RES_ROTATE;
 #endif
+#if defined(RES_USE_EDNS0)
   dns_config->edns0 = res.options & RES_USE_EDNS0;
+#endif
+#if !defined(RES_USE_DNSSEC)
+  // Some versions of libresolv don't have support for the DO bit. In this
+  // case, we proceed without it.
+  static const int RES_USE_DNSSEC = 0;
+#endif
 
   // The current implementation assumes these options are set. They normally
   // cannot be overwritten by /etc/resolv.conf
