@@ -26,6 +26,12 @@ std::vector<SplitTestName> GetCompiledInTests();
 // current executable as a JSON file. Returns true on success.
 bool WriteCompiledInTestsToFile(const FilePath& path) WARN_UNUSED_RESULT;
 
+// Reads the list of gtest-based tests from |path| into |output|.
+// Returns true on success.
+bool ReadTestNamesFromFile(
+    const FilePath& path,
+    std::vector<SplitTestName>* output) WARN_UNUSED_RESULT;
+
 }  // namespace base
 
 #endif  // BASE_TEST_GTEST_UTIL_H_

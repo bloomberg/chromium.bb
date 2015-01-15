@@ -40,4 +40,39 @@ bool WriteCompiledInTestsToFile(const FilePath& path) {
   return serializer.Serialize(root);
 }
 
+bool ReadTestNamesFromFile(const FilePath& path,
+                           std::vector<SplitTestName>* output) {
+  JSONFileValueSerializer deserializer(path);
+  int error_code = 0;
+  std::string error_message;
+  scoped_ptr<base::Value> value(
+      deserializer.Deserialize(&error_code, &error_message));
+  if (!value.get())
+    return false;
+
+  base::ListValue* tests = nullptr;
+  if (!value->GetAsList(&tests))
+    return false;
+
+  std::vector<base::SplitTestName> result;
+  for (base::ListValue::iterator i = tests->begin(); i != tests->end(); ++i) {
+    base::DictionaryValue* test = nullptr;
+    if (!(*i)->GetAsDictionary(&test))
+      return false;
+
+    std::string test_case_name;
+    if (!test->GetStringASCII("test_case_name", &test_case_name))
+      return false;
+
+    std::string test_name;
+    if (!test->GetStringASCII("test_name", &test_name))
+      return false;
+
+    result.push_back(std::make_pair(test_case_name, test_name));
+  }
+
+  output->swap(result);
+  return true;
+}
+
 }  // namespace

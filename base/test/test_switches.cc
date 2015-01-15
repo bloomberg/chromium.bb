@@ -42,6 +42,10 @@ const char switches::kTestLauncherSummaryOutput[] =
 const char switches::kTestLauncherPrintTestStdio[] =
     "test-launcher-print-test-stdio";
 
+// Print a writable path and exit (for internal use).
+const char switches::kTestLauncherPrintWritablePath[] =
+    "test-launcher-print-writable-path";
+
 // Index of the test shard to run, starting from 0 (first shard) to total shards
 // minus one (last shard).
 const char switches::kTestLauncherShardIndex[] =

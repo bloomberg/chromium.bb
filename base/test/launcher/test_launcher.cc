@@ -829,6 +829,11 @@ bool TestLauncher::Init() {
     }
   }
 
+  if (!launcher_delegate_->GetTests(&tests_)) {
+    LOG(ERROR) << "Failed to get list of tests.";
+    return false;
+  }
+
   if (!results_tracker_.Init(*command_line)) {
     LOG(ERROR) << "Failed to initialize test results tracker.";
     return 1;
@@ -900,12 +905,10 @@ bool TestLauncher::Init() {
 }
 
 void TestLauncher::RunTests() {
-  std::vector<SplitTestName> tests(GetCompiledInTests());
-
   std::vector<std::string> test_names;
-
-  for (size_t i = 0; i < tests.size(); i++) {
-    std::string test_name = FormatFullTestName(tests[i].first, tests[i].second);
+  for (size_t i = 0; i < tests_.size(); i++) {
+    std::string test_name = FormatFullTestName(
+        tests_[i].first, tests_[i].second);
 
     results_tracker_.AddTest(test_name);
 
@@ -918,7 +921,7 @@ void TestLauncher::RunTests() {
         continue;
     }
 
-    if (!launcher_delegate_->ShouldRunTest(tests[i].first, tests[i].second))
+    if (!launcher_delegate_->ShouldRunTest(tests_[i].first, tests_[i].second))
       continue;
 
     // Skip the test that doesn't match the filter (if given).

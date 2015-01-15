@@ -50,6 +50,7 @@ class UnitTestLauncherDelegate : public TestLauncherDelegate {
   };
 
   // TestLauncherDelegate:
+  bool GetTests(std::vector<SplitTestName>* output) override;
   bool ShouldRunTest(const std::string& test_case_name,
                      const std::string& test_name) override;
   size_t RunTests(TestLauncher* test_launcher,

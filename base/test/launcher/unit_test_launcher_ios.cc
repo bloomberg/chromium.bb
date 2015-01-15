@@ -6,7 +6,9 @@
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/mac/foundation_util.h"
 #include "base/test/gtest_util.h"
 #include "base/test/test_switches.h"
 
@@ -27,6 +29,11 @@ int LaunchUnitTests(int argc,
       LOG(ERROR) << "Failed to write list of tests.";
       return 1;
     }
+  } else if (command_line->HasSwitch(
+                 switches::kTestLauncherPrintWritablePath)) {
+    fprintf(stdout, "%s", mac::GetUserLibraryPath().value().c_str());
+    fflush(stdout);
+    return 0;
   }
 
   return run_test_suite.Run();

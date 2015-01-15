@@ -236,6 +236,12 @@ UnitTestLauncherDelegate::GTestCallbackState::GTestCallbackState() {
 UnitTestLauncherDelegate::GTestCallbackState::~GTestCallbackState() {
 }
 
+bool UnitTestLauncherDelegate::GetTests(std::vector<SplitTestName>* output) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  *output = GetCompiledInTests();
+  return true;
+}
+
 bool UnitTestLauncherDelegate::ShouldRunTest(const std::string& test_case_name,
                                              const std::string& test_name) {
     DCHECK(thread_checker_.CalledOnValidThread());
