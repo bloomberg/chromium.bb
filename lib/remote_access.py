@@ -517,7 +517,7 @@ class RemoteDevice(object):
     return RemoteAccess(self.hostname, self.tempdir.tempdir, port=self.port,
                         username=self.username, private_key=self.private_key)
 
-  def _HasRsync(self):
+  def HasRsync(self):
     """Checks if rsync exists on the device."""
     result = self.agent.RemoteSh(['PATH=%s:$PATH rsync' % DEV_BIN_PATHS,
                                   '--version'], error_code_ok=True)
@@ -547,7 +547,7 @@ class RemoteDevice(object):
     msg = 'Could not copy %s to device.' % src
     if mode is None:
       # Use rsync by default if it exists.
-      mode = 'rsync' if self._HasRsync() else 'scp'
+      mode = 'rsync' if self.HasRsync() else 'scp'
 
     if mode == 'scp':
       # scp always follow symlinks
@@ -563,7 +563,7 @@ class RemoteDevice(object):
     msg = 'Could not copy %s from device.' % src
     if mode is None:
       # Use rsync by default if it exists.
-      mode = 'rsync' if self._HasRsync() else 'scp'
+      mode = 'rsync' if self.HasRsync() else 'scp'
 
     if mode == 'scp':
       # scp always follow symlinks

@@ -248,6 +248,10 @@ class DeployChrome(object):
     logging.info('Copying Chrome to %s on device...', self.options.target_dir)
     # Show the output (status) for this command.
     dest_path = _CHROME_DIR
+    if not self.device.HasRsync():
+      raise DeployFailure(
+            'rsync is not found on the device.\n'
+            'Run dev_install on the device to get rsync installed')
     self.device.CopyToDevice('%s/' % os.path.abspath(self.staging_dir),
                              self.options.target_dir,
                              inplace=True, debug_level=logging.INFO,
