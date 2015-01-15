@@ -90,12 +90,17 @@ class MacHistorySwiperTest : public CocoaTest {
     CocoaTest::TearDown();
   }
 
+  // These methods send all 3 types of events: gesture, scroll, and touch.
   void startGestureInMiddle();
   void moveGestureInMiddle();
   void moveGestureAtPoint(NSPoint point);
   void momentumMoveGestureAtPoint(NSPoint point);
   void endGestureAtPoint(NSPoint point);
   void rendererACKForBeganEvent();
+
+  // These methods send a single type of event.
+  void sendBeginGestureEventInMiddle();
+  void sendEndGestureEventAtPoint(NSPoint point);
 
   HistorySwiper* historySwiper_;
   NSView* view_;
@@ -189,12 +194,24 @@ void MacHistorySwiperTest::endGestureAtPoint(NSPoint point) {
 
   NSEvent* scrollEvent = scrollWheelEventWithPhase(NSEventPhaseEnded);
   [historySwiper_ handleEvent:scrollEvent];
+
+  sendEndGestureEventAtPoint(point);
 }
 
 void MacHistorySwiperTest::rendererACKForBeganEvent() {
   blink::WebMouseWheelEvent event;
   event.phase = blink::WebMouseWheelEvent::PhaseBegan;
   [historySwiper_ rendererHandledWheelEvent:event consumed:NO];
+}
+
+void MacHistorySwiperTest::sendBeginGestureEventInMiddle() {
+  NSEvent* event = mockEventWithPoint(makePoint(0.5, 0.5), NSEventTypeGesture);
+  [historySwiper_ beginGestureWithEvent:event];
+}
+
+void MacHistorySwiperTest::sendEndGestureEventAtPoint(NSPoint point) {
+  NSEvent* event = mockEventWithPoint(point, NSEventTypeGesture);
+  [historySwiper_ endGestureWithEvent:event];
 }
 
 // Test that a simple left-swipe causes navigation.
@@ -471,4 +488,60 @@ TEST_F(MacHistorySwiperTest, SubstantialVerticalThenHorizontal) {
   EXPECT_EQ(end_count_, 1);
   EXPECT_FALSE(navigated_right_);
   EXPECT_FALSE(navigated_left_);
+}
+
+// Magic Mouse gestures don't send -touches*WithEvent: callbacks. The history
+// swiper should still handle this gracefully. It should not turn vertical
+// motion into history swipes.
+TEST_F(MacHistorySwiperTest, MagicMouseStateResetsCorrectly) {
+  // These tests require 10.7+ APIs.
+  if (![NSEvent
+          respondsToSelector:@selector(isSwipeTrackingFromScrollEventsEnabled)])
+    return;
+
+  // Magic mouse events don't generate '-touches*WithEvent:' callbacks.
+  // Send the following events:
+  //  - beginGesture
+  //  - scrollWheel: (phase=Began)
+  //  - scrollWheel: (phase=Changed), significant horizontal motion.
+  //  - scrollWheel: (phase=Ended)
+  //  - endGesture
+  sendBeginGestureEventInMiddle();
+  [historySwiper_ handleEvent:scrollWheelEventWithPhase(NSEventPhaseBegan)];
+
+  // Callback from Blink to set the relevant state for history swiping.
+  rendererACKForBeganEvent();
+
+  NSEvent* scrollEvent = scrollWheelEventWithPhase(NSEventPhaseChanged,
+                                                   NSEventPhaseNone, 200.0, 0);
+  [historySwiper_ handleEvent:scrollEvent];
+  [historySwiper_ handleEvent:scrollWheelEventWithPhase(NSEventPhaseEnded)];
+  sendEndGestureEventAtPoint(makePoint(0.7, 0.5));
+
+  // Expect this sequence of events to trigger a magic mouse history swipe.
+  EXPECT_TRUE(magic_mouse_history_swipe_);
+
+  // Reset state.
+  magic_mouse_history_swipe_ = false;
+
+  // Send the following events:
+  //  - beginGesture
+  //  - scrollWheel: (phase=Began)
+  //  - scrollWheel: (phase=Changed), significant vertical motion.
+  //  - scrollWheel: (phase=Ended)
+  //  - endGesture
+  sendBeginGestureEventInMiddle();
+  [historySwiper_ handleEvent:scrollWheelEventWithPhase(NSEventPhaseBegan)];
+
+  // Callback from Blink to set the relevant state for history swiping.
+  rendererACKForBeganEvent();
+
+  scrollEvent =
+      scrollWheelEventWithPhase(NSEventPhaseChanged, NSEventPhaseNone, 0, 20);
+  [historySwiper_ handleEvent:scrollEvent];
+  [historySwiper_ handleEvent:scrollWheelEventWithPhase(NSEventPhaseEnded)];
+  sendEndGestureEventAtPoint(makePoint(0.5, 0.7));
+
+  // Vertical motion should never trigger a history swipe!
+  EXPECT_FALSE(magic_mouse_history_swipe_);
 }

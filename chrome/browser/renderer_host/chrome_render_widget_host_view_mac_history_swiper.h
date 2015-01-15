@@ -113,6 +113,18 @@ enum RecognitionState {
 //   that it can decide whether to consume the events and prevent them from
 //   being passed to the renderer. This API is used to transition from kPending
 //   -> kPotential.
+//
+//  This class is also responsible for handling gestures from a Magic Mouse.
+//  Magic Mouse gestures do not generate -touches*WithEvent: callbacks, so this
+//  class must use the API -[NSEvent trackSwipeEventWithOptions:...] to track
+//  the Magic Mouse gesture. Due to an AppKit bug, once this API is invoked,
+//  views no longer reliable receive -touches*WithEvent: callbacks. As such,
+//  once this class invokes the -[NSEvent trackSwipeEventWithOptions:...] API,
+//  it must continue to use that API, since it no longer receives touch events.
+//
+//  TODO(erikchen): Even for users that do not have a Magic Mouse, this class
+//  will sometime transition into Magic Mouse mode. This is very undesirable.
+//  See http://crbug.com/317161 for more details.
 @class HistoryOverlayController;
 @interface HistorySwiper : NSObject {
  @private
@@ -149,7 +161,7 @@ enum RecognitionState {
   id<HistorySwiperDelegate> delegate_;
 
   // Cumulative scroll delta since scroll gesture start. Only valid during
-  // scroll gesture handling. Used for history swiping.
+  // scroll gesture handling. Only used to trigger Magic Mouse history swiping.
   NSSize mouseScrollDelta_;
 }
 
@@ -162,10 +174,14 @@ enum RecognitionState {
 
 // The event passed in is a gesture event, and has touch data associated with
 // the trackpad.
+// Once the method -[NSEvent trackSwipeEventWithOptions:...] is invoked, the
+// methods -touches*WithEvent: are no longer guaranteed to be called for
+// subsequent gestures. http://crbug.com/317161
 - (void)touchesBeganWithEvent:(NSEvent*)event;
 - (void)touchesMovedWithEvent:(NSEvent*)event;
 - (void)touchesCancelledWithEvent:(NSEvent*)event;
 - (void)touchesEndedWithEvent:(NSEvent*)event;
+
 - (void)beginGestureWithEvent:(NSEvent*)event;
 - (void)endGestureWithEvent:(NSEvent*)event;
 
