@@ -488,8 +488,8 @@ void BrowserMainLoop::MainMessageLoopStart() {
   InitializeMainThread();
 
 #if defined(OS_CHROMEOS)
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kUseMemoryPressureSystemChromeOS)) {
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kDisableMemoryPressureSystemChromeOS)) {
     memory_pressure_observer_.reset(new base::MemoryPressureObserverChromeOS);
   }
 #endif

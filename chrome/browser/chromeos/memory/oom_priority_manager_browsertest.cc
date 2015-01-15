@@ -25,22 +25,6 @@ namespace {
 
 typedef InProcessBrowserTest OomPriorityManagerTest;
 
-class OomPriorityManagerUsingPressureListenerTest
-    : public InProcessBrowserTest {
- public:
-  OomPriorityManagerUsingPressureListenerTest() {}
-  ~OomPriorityManagerUsingPressureListenerTest() override {}
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(
-        chromeos::switches::kUseMemoryPressureSystemChromeOS);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(OomPriorityManagerUsingPressureListenerTest);
-};
-
-
 IN_PROC_BROWSER_TEST_F(OomPriorityManagerTest, OomPriorityManagerBasics) {
   using content::WindowedNotificationObserver;
 
@@ -180,8 +164,7 @@ IN_PROC_BROWSER_TEST_F(OomPriorityManagerTest, OomPriorityManagerBasics) {
 
 // Test that the MemoryPressureListener event is properly triggering a tab
 // discard upon |MEMORY_PRESSURE_LEVEL_CRITICAL| event.
-IN_PROC_BROWSER_TEST_F(OomPriorityManagerUsingPressureListenerTest,
-                       OomPressureListener) {
+IN_PROC_BROWSER_TEST_F(OomPriorityManagerTest, OomPressureListener) {
   chromeos::OomPriorityManager* oom_priority_manager =
       g_browser_process->platform_part()->oom_priority_manager();
   // Get three tabs open.

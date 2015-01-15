@@ -1989,11 +1989,11 @@ const Experiment kExperiments[] = {
 #endif
 #if defined(OS_CHROMEOS)
   {
-    "use-memory-pressure-chromeos",
-    IDS_FLAGS_USE_MEMORY_PRESSURE_NAME,
-    IDS_FLAGS_USE_MEMORY_PRESSURE_DESCRIPTION,
+    "disable-memory-pressure-chromeos",
+    IDS_FLAGS_DISABLE_MEMORY_PRESSURE_NAME,
+    IDS_FLAGS_DISABLE_MEMORY_PRESSURE_DESCRIPTION,
     kOsCrOS,
-    SINGLE_VALUE_TYPE(chromeos::switches::kUseMemoryPressureSystemChromeOS)
+    SINGLE_VALUE_TYPE(chromeos::switches::kDisableMemoryPressureSystemChromeOS)
   },
   {
     "wake-on-packets",
