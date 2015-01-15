@@ -15,7 +15,6 @@ import android.graphics.drawable.Drawable;
 import android.text.Layout;
 import android.text.TextPaint;
 import android.text.TextUtils;
-import android.util.FloatMath;
 import android.util.Log;
 import android.view.InflateException;
 
@@ -73,7 +72,7 @@ public class TitleBitmapFactory {
         mTextPaint.density = res.getDisplayMetrics().density;
 
         FontMetrics textFontMetrics = mTextPaint.getFontMetrics();
-        mTextHeight = FloatMath.ceil(textFontMetrics.bottom - textFontMetrics.top);
+        mTextHeight = (float) Math.ceil(textFontMetrics.bottom - textFontMetrics.top);
         mTextYOffset = -textFontMetrics.top;
 
         mFaviconDimension = res.getDimensionPixelSize(R.dimen.compositor_tab_title_favicon_size);
@@ -130,7 +129,7 @@ public class TitleBitmapFactory {
         try {
             boolean drawText = !TextUtils.isEmpty(title);
             int textWidth =
-                    drawText ? (int) FloatMath.ceil(Layout.getDesiredWidth(title, mTextPaint)) : 0;
+                    drawText ? (int) Math.ceil(Layout.getDesiredWidth(title, mTextPaint)) : 0;
             // Minimum 1 width bitmap to avoid createBitmap function's IllegalArgumentException,
             // when textWidth == 0.
             Bitmap b = Bitmap.createBitmap(Math.max(Math.min(mMaxWidth, textWidth), 1), mViewHeight,
