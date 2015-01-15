@@ -17,18 +17,17 @@ namespace input_method {
 class UI_BASE_EXPORT FakeImeKeyboard : public ImeKeyboard {
  public:
   FakeImeKeyboard();
-  virtual ~FakeImeKeyboard();
+  ~FakeImeKeyboard() override;
 
-  virtual bool SetCurrentKeyboardLayoutByName(const std::string& layout_name)
-      override;
-  virtual bool SetAutoRepeatRate(const AutoRepeatRate& rate) override;
-  virtual bool SetAutoRepeatEnabled(bool enabled) override;
-  virtual bool GetAutoRepeatEnabled() override;
-  virtual bool ReapplyCurrentKeyboardLayout() override;
-  virtual void ReapplyCurrentModifierLockStatus() override;
-  virtual void DisableNumLock() override;
-  virtual bool IsISOLevel5ShiftAvailable() const override;
-  virtual bool IsAltGrAvailable() const override;
+  bool SetCurrentKeyboardLayoutByName(const std::string& layout_name) override;
+  bool SetAutoRepeatRate(const AutoRepeatRate& rate) override;
+  bool SetAutoRepeatEnabled(bool enabled) override;
+  bool GetAutoRepeatEnabled() override;
+  bool ReapplyCurrentKeyboardLayout() override;
+  void ReapplyCurrentModifierLockStatus() override;
+  void DisableNumLock() override;
+  bool IsISOLevel5ShiftAvailable() const override;
+  bool IsAltGrAvailable() const override;
 
   int set_current_keyboard_layout_by_name_count_;
   AutoRepeatRate last_auto_repeat_rate_;

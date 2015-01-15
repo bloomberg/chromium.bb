@@ -60,7 +60,7 @@ DisplaySnapshotX11* CreateInternalOutput(RROutput output, RRCrtc crtc) {
 class TestHelperDelegate : public NativeDisplayDelegateX11::HelperDelegate {
  public:
   TestHelperDelegate();
-  virtual ~TestHelperDelegate();
+  ~TestHelperDelegate() override;
 
   int num_calls_update_xrandr_config() const {
     return num_calls_update_xrandr_config_;
@@ -73,11 +73,9 @@ class TestHelperDelegate : public NativeDisplayDelegateX11::HelperDelegate {
   }
 
   // NativeDisplayDelegateX11::HelperDelegate overrides:
-  virtual void UpdateXRandRConfiguration(const base::NativeEvent& event)
-      override;
-  virtual const std::vector<DisplaySnapshot*>& GetCachedDisplays() const
-      override;
-  virtual void NotifyDisplayObservers() override;
+  void UpdateXRandRConfiguration(const base::NativeEvent& event) override;
+  const std::vector<DisplaySnapshot*>& GetCachedDisplays() const override;
+  void NotifyDisplayObservers() override;
 
  private:
   int num_calls_update_xrandr_config_;
@@ -113,7 +111,7 @@ void TestHelperDelegate::NotifyDisplayObservers() {
 class NativeDisplayEventDispatcherX11Test : public testing::Test {
  public:
   NativeDisplayEventDispatcherX11Test();
-  virtual ~NativeDisplayEventDispatcherX11Test();
+  ~NativeDisplayEventDispatcherX11Test() override;
 
  protected:
   void DispatchScreenChangeEvent();

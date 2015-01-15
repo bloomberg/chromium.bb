@@ -23,7 +23,7 @@ class TestObserver : public DisplayConfigurator::Observer {
     Reset();
     configurator_->AddObserver(this);
   }
-  virtual ~TestObserver() { configurator_->RemoveObserver(this); }
+  ~TestObserver() override { configurator_->RemoveObserver(this); }
 
   int num_changes() const { return num_changes_; }
   int num_failures() const { return num_failures_; }
@@ -42,14 +42,14 @@ class TestObserver : public DisplayConfigurator::Observer {
   }
 
   // DisplayConfigurator::Observer overrides:
-  virtual void OnDisplayModeChanged(
+  void OnDisplayModeChanged(
       const DisplayConfigurator::DisplayStateList& outputs) override {
     num_changes_++;
     latest_outputs_ = outputs;
   }
 
-  virtual void OnDisplayModeChangeFailed(MultipleDisplayState failed_new_state)
-      override {
+  void OnDisplayModeChangeFailed(
+      MultipleDisplayState failed_new_state) override {
     num_failures_++;
     latest_failed_state_ = failed_new_state;
   }
@@ -71,17 +71,17 @@ class TestObserver : public DisplayConfigurator::Observer {
 class TestStateController : public DisplayConfigurator::StateController {
  public:
   TestStateController() : state_(MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED) {}
-  virtual ~TestStateController() {}
+  ~TestStateController() override {}
 
   void set_state(MultipleDisplayState state) { state_ = state; }
 
   // DisplayConfigurator::StateController overrides:
-  virtual MultipleDisplayState GetStateForDisplayIds(
+  MultipleDisplayState GetStateForDisplayIds(
       const std::vector<int64_t>& outputs) const override {
     return state_;
   }
-  virtual bool GetResolutionForDisplayId(int64_t display_id,
-                                         gfx::Size* size) const override {
+  bool GetResolutionForDisplayId(int64_t display_id,
+                                 gfx::Size* size) const override {
     return false;
   }
 
@@ -95,13 +95,13 @@ class TestMirroringController
     : public DisplayConfigurator::SoftwareMirroringController {
  public:
   TestMirroringController() : software_mirroring_enabled_(false) {}
-  virtual ~TestMirroringController() {}
+  ~TestMirroringController() override {}
 
-  virtual void SetSoftwareMirroring(bool enabled) override {
+  void SetSoftwareMirroring(bool enabled) override {
     software_mirroring_enabled_ = enabled;
   }
 
-  virtual bool SoftwareMirroringEnabled() const override {
+  bool SoftwareMirroringEnabled() const override {
     return software_mirroring_enabled_;
   }
 
@@ -118,9 +118,9 @@ class DisplayConfiguratorTest : public testing::Test {
         big_mode_(gfx::Size(2560, 1600), false, 60.0f),
         observer_(&configurator_),
         test_api_(&configurator_) {}
-  virtual ~DisplayConfiguratorTest() {}
+  ~DisplayConfiguratorTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     log_.reset(new ActionLogger());
 
     native_display_delegate_ = new TestNativeDisplayDelegate(log_.get());

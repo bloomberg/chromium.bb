@@ -30,7 +30,7 @@ class UI_CHROMEOS_EXPORT NetworkListView
     : public network_icon::AnimationObserver {
  public:
   explicit NetworkListView(NetworkListDelegate* delegate);
-  virtual ~NetworkListView();
+  ~NetworkListView() override;
 
   void UpdateNetworkList();
 
@@ -56,7 +56,7 @@ class UI_CHROMEOS_EXPORT NetworkListView
   bool UpdateInfoLabel(int message_id, int index, views::Label** label);
 
   // network_icon::AnimationObserver:
-  virtual void NetworkIconChanged() override;
+  void NetworkIconChanged() override;
 
   NetworkListDelegate* delegate_;
   views::View* content_;

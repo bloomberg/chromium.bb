@@ -21,7 +21,7 @@ class DISPLAY_EXPORT TestDisplaySnapshot : public DisplaySnapshot {
                       const std::vector<const DisplayMode*>& modes,
                       const DisplayMode* current_mode,
                       const DisplayMode* native_mode);
-  virtual ~TestDisplaySnapshot();
+  ~TestDisplaySnapshot() override;
 
   void set_type(DisplayConnectionType type) { type_ = type; }
   void set_modes(const std::vector<const DisplayMode*>& modes) {
@@ -35,7 +35,7 @@ class DISPLAY_EXPORT TestDisplaySnapshot : public DisplaySnapshot {
   void set_display_id(int64_t id) { display_id_ = id; }
 
   // DisplaySnapshot overrides:
-  virtual std::string ToString() const override;
+  std::string ToString() const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestDisplaySnapshot);

@@ -24,14 +24,13 @@ class UI_BASE_EXPORT FakeInputMethodDelegate : public InputMethodDelegate {
       GetLocalizedStringCallback;
 
   FakeInputMethodDelegate();
-  virtual ~FakeInputMethodDelegate();
+  ~FakeInputMethodDelegate() override;
 
   // InputMethodDelegate implementation:
-  virtual std::string GetHardwareKeyboardLayouts() const override;
-  virtual base::string16 GetLocalizedString(int resource_id) const override;
-  virtual void SetHardwareKeyboardLayoutForTesting(
-      const std::string& layout) override;
-  virtual base::string16 GetDisplayLanguageName(
+  std::string GetHardwareKeyboardLayouts() const override;
+  base::string16 GetLocalizedString(int resource_id) const override;
+  void SetHardwareKeyboardLayoutForTesting(const std::string& layout) override;
+  base::string16 GetDisplayLanguageName(
       const std::string& language_code) const override;
 
   void set_hardware_keyboard_layout(const std::string& value) {

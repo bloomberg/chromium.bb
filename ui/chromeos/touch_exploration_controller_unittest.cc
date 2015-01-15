@@ -27,13 +27,13 @@ namespace {
 class EventCapturer : public ui::EventHandler {
  public:
   EventCapturer() {}
-  virtual ~EventCapturer() {}
+  ~EventCapturer() override {}
 
   void Reset() {
     events_.clear();
   }
 
-  virtual void OnEvent(ui::Event* event) override {
+  void OnEvent(ui::Event* event) override {
     if (event->IsMouseEvent()) {
       events_.push_back(
           new ui::MouseEvent(static_cast<ui::MouseEvent&>(*event)));
@@ -75,23 +75,14 @@ int Factorial(int n) {
 class MockTouchExplorationControllerDelegate
     : public ui::TouchExplorationControllerDelegate {
  public:
-  virtual void SetOutputLevel(int volume) override {
+  void SetOutputLevel(int volume) override {
     volume_changes_.push_back(volume);
   }
-  virtual void SilenceSpokenFeedback() override {
-  }
-  virtual void PlayVolumeAdjustEarcon() override {
-    ++num_times_adjust_sound_played_;
-  }
-  virtual void PlayPassthroughEarcon() override {
-    ++num_times_passthrough_played_;
-  }
-  virtual void PlayExitScreenEarcon() override {
-    ++num_times_exit_screen_played_;
-  }
-  virtual void PlayEnterScreenEarcon() override {
-    ++num_times_enter_screen_played_;
-  }
+  void SilenceSpokenFeedback() override {}
+  void PlayVolumeAdjustEarcon() override { ++num_times_adjust_sound_played_; }
+  void PlayPassthroughEarcon() override { ++num_times_passthrough_played_; }
+  void PlayExitScreenEarcon() override { ++num_times_exit_screen_played_; }
+  void PlayEnterScreenEarcon() override { ++num_times_enter_screen_played_; }
 
   const std::vector<float> VolumeChanges() { return volume_changes_; }
   size_t NumAdjustSounds() { return num_times_adjust_sound_played_; }
@@ -202,9 +193,9 @@ class TouchExplorationTest : public aura::test::AuraTestBase {
     // Tests fail if time is ever 0.
     simulated_clock_->Advance(base::TimeDelta::FromMilliseconds(10));
   }
-  virtual ~TouchExplorationTest() {}
+  ~TouchExplorationTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     if (gfx::GetGLImplementation() == gfx::kGLImplementationNone)
       gfx::GLSurface::InitializeOneOffForTests();
     aura::test::AuraTestBase::SetUp();
@@ -217,7 +208,7 @@ class TouchExplorationTest : public aura::test::AuraTestBase {
     cursor_client()->DisableMouseEvents();
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     root_window()->RemovePreTargetHandler(&event_capturer_);
     SwitchTouchExplorationMode(false);
     cursor_client_.reset();

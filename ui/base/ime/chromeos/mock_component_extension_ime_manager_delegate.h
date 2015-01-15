@@ -15,16 +15,16 @@ class UI_BASE_EXPORT MockComponentExtIMEManagerDelegate
     : public ComponentExtensionIMEManagerDelegate {
  public:
   MockComponentExtIMEManagerDelegate();
-  virtual ~MockComponentExtIMEManagerDelegate();
+  ~MockComponentExtIMEManagerDelegate() override;
 
-  virtual std::vector<ComponentExtensionIME> ListIME() override;
-  virtual void Load(Profile*,
-                    const std::string& extension_id,
-                    const std::string& manifest,
-                    const base::FilePath& path) override;
-  virtual void Unload(Profile*,
-                      const std::string& extension_id,
-                      const base::FilePath& path) override;
+  std::vector<ComponentExtensionIME> ListIME() override;
+  void Load(Profile*,
+            const std::string& extension_id,
+            const std::string& manifest,
+            const base::FilePath& path) override;
+  void Unload(Profile*,
+              const std::string& extension_id,
+              const base::FilePath& path) override;
 
   int load_call_count() const { return load_call_count_; }
   int unload_call_count() const { return unload_call_count_; }

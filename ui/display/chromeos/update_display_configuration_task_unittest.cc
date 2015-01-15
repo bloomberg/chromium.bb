@@ -47,11 +47,11 @@ class TestDisplayLayoutManager
     return display_state_;
   }
 
-  virtual chromeos::DisplayPowerState GetPowerState() const override {
+  chromeos::DisplayPowerState GetPowerState() const override {
     return power_state_;
   }
 
-  virtual std::vector<DisplayConfigurator::DisplayState> ParseDisplays(
+  std::vector<DisplayConfigurator::DisplayState> ParseDisplays(
       const std::vector<DisplaySnapshot*>& displays) const override {
     std::vector<DisplayConfigurator::DisplayState> parsed_displays;
     for (DisplaySnapshot* display : displays) {
@@ -67,7 +67,7 @@ class TestDisplayLayoutManager
     return parsed_displays;
   }
 
-  virtual bool GetDisplayLayout(
+  bool GetDisplayLayout(
       const std::vector<DisplayConfigurator::DisplayState>& displays,
       MultipleDisplayState new_display_state,
       chromeos::DisplayPowerState new_power_state,

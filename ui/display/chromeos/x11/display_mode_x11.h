@@ -20,7 +20,7 @@ class DISPLAY_EXPORT DisplayModeX11 : public DisplayMode {
                  bool interlaced,
                  float refresh_rate,
                  RRMode mode_id);
-  virtual ~DisplayModeX11();
+  ~DisplayModeX11() override;
 
   RRMode mode_id() const { return mode_id_; }
 

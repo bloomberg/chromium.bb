@@ -20,10 +20,10 @@ class UI_CHROMEOS_EXPORT UserActivityPowerManagerNotifier
     : public UserActivityObserver {
  public:
   explicit UserActivityPowerManagerNotifier(UserActivityDetector* detector);
-  virtual ~UserActivityPowerManagerNotifier();
+  ~UserActivityPowerManagerNotifier() override;
 
   // UserActivityObserver implementation.
-  virtual void OnUserActivity(const Event* event) override;
+  void OnUserActivity(const Event* event) override;
 
  private:
   UserActivityDetector* detector_;  // not owned

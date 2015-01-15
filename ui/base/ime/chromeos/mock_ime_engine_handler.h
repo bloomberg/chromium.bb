@@ -14,20 +14,21 @@ namespace chromeos {
 class UI_BASE_EXPORT MockIMEEngineHandler : public IMEEngineHandlerInterface {
  public:
   MockIMEEngineHandler();
-  virtual ~MockIMEEngineHandler();
+  ~MockIMEEngineHandler() override;
 
-  virtual void FocusIn(const InputContext& input_context) override;
-  virtual void FocusOut() override;
-  virtual void Enable(const std::string& component_id) override;
-  virtual void Disable() override;
-  virtual void PropertyActivate(const std::string& property_name) override;
-  virtual void Reset() override;
-  virtual void ProcessKeyEvent(const ui::KeyEvent& key_event,
-                               const KeyEventDoneCallback& callback) override;
-  virtual void CandidateClicked(uint32 index) override;
-  virtual void SetSurroundingText(const std::string& text, uint32 cursor_pos,
-                                  uint32 anchor_pos) override;
-  virtual void SetCompositionBounds(const gfx::Rect& bounds) override;
+  void FocusIn(const InputContext& input_context) override;
+  void FocusOut() override;
+  void Enable(const std::string& component_id) override;
+  void Disable() override;
+  void PropertyActivate(const std::string& property_name) override;
+  void Reset() override;
+  void ProcessKeyEvent(const ui::KeyEvent& key_event,
+                       const KeyEventDoneCallback& callback) override;
+  void CandidateClicked(uint32 index) override;
+  void SetSurroundingText(const std::string& text,
+                          uint32 cursor_pos,
+                          uint32 anchor_pos) override;
+  void SetCompositionBounds(const gfx::Rect& bounds) override;
 
   int focus_in_call_count() const { return focus_in_call_count_; }
   int focus_out_call_count() const { return focus_out_call_count_; }

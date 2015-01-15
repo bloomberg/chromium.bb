@@ -25,21 +25,21 @@ class UI_BASE_EXPORT InputMethodChromeOS
       public chromeos::IMEInputContextHandlerInterface {
  public:
   explicit InputMethodChromeOS(internal::InputMethodDelegate* delegate);
-  virtual ~InputMethodChromeOS();
+  ~InputMethodChromeOS() override;
 
   // Overridden from InputMethod:
-  virtual void OnFocus() override;
-  virtual void OnBlur() override;
-  virtual bool OnUntranslatedIMEMessage(const base::NativeEvent& event,
-                                        NativeEventResult* result) override;
-  virtual bool DispatchKeyEvent(const ui::KeyEvent& event) override;
-  virtual void OnTextInputTypeChanged(const TextInputClient* client) override;
-  virtual void OnCaretBoundsChanged(const TextInputClient* client) override;
-  virtual void CancelComposition(const TextInputClient* client) override;
-  virtual void OnInputLocaleChanged() override;
-  virtual std::string GetInputLocale() override;
-  virtual bool IsActive() override;
-  virtual bool IsCandidatePopupOpen() const override;
+  void OnFocus() override;
+  void OnBlur() override;
+  bool OnUntranslatedIMEMessage(const base::NativeEvent& event,
+                                NativeEventResult* result) override;
+  bool DispatchKeyEvent(const ui::KeyEvent& event) override;
+  void OnTextInputTypeChanged(const TextInputClient* client) override;
+  void OnCaretBoundsChanged(const TextInputClient* client) override;
+  void CancelComposition(const TextInputClient* client) override;
+  void OnInputLocaleChanged() override;
+  std::string GetInputLocale() override;
+  bool IsActive() override;
+  bool IsCandidatePopupOpen() const override;
 
  protected:
   // Converts |text| into CompositionText.
@@ -58,10 +58,10 @@ class UI_BASE_EXPORT InputMethodChromeOS
   class PendingKeyEvent;
 
   // Overridden from InputMethodBase:
-  virtual void OnWillChangeFocusedClient(TextInputClient* focused_before,
-                                         TextInputClient* focused) override;
-  virtual void OnDidChangeFocusedClient(TextInputClient* focused_before,
-                                        TextInputClient* focused) override;
+  void OnWillChangeFocusedClient(TextInputClient* focused_before,
+                                 TextInputClient* focused) override;
+  void OnDidChangeFocusedClient(TextInputClient* focused_before,
+                                TextInputClient* focused) override;
 
   // Asks the client to confirm current composition text.
   void ConfirmCompositionText();
@@ -100,11 +100,11 @@ class UI_BASE_EXPORT InputMethodChromeOS
   bool ExecuteCharacterComposer(const ui::KeyEvent& event);
 
   // chromeos::IMEInputContextHandlerInterface overrides:
-  virtual void CommitText(const std::string& text) override;
-  virtual void UpdateCompositionText(const chromeos::CompositionText& text,
-                                     uint32 cursor_pos,
-                                     bool visible) override;
-  virtual void DeleteSurroundingText(int32 offset, uint32 length) override;
+  void CommitText(const std::string& text) override;
+  void UpdateCompositionText(const chromeos::CompositionText& text,
+                             uint32 cursor_pos,
+                             bool visible) override;
+  void DeleteSurroundingText(int32 offset, uint32 length) override;
 
   // Hides the composition text.
   void HidePreeditText();

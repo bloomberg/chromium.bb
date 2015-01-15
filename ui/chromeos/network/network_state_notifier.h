@@ -38,13 +38,11 @@ class UI_CHROMEOS_EXPORT NetworkStateNotifier :
       public chromeos::NetworkStateHandlerObserver {
  public:
   explicit NetworkStateNotifier(NetworkConnect* network_connect);
-  virtual ~NetworkStateNotifier();
+  ~NetworkStateNotifier() override;
 
   // NetworkStateHandlerObserver
-  virtual void DefaultNetworkChanged(
-      const chromeos::NetworkState* network) override;
-  virtual void NetworkPropertiesUpdated(
-      const chromeos::NetworkState* network) override;
+  void DefaultNetworkChanged(const chromeos::NetworkState* network) override;
+  void NetworkPropertiesUpdated(const chromeos::NetworkState* network) override;
 
   // Show a connection error notification. If |error_name| matches an error
   // defined in NetworkConnectionHandler for connect, configure, or activation

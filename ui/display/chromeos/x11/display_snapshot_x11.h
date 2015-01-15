@@ -30,14 +30,14 @@ class DISPLAY_EXPORT DisplaySnapshotX11 : public DisplaySnapshot {
                      RROutput output,
                      RRCrtc crtc,
                      int index);
-  virtual ~DisplaySnapshotX11();
+  ~DisplaySnapshotX11() override;
 
   RROutput output() const { return output_; }
   RRCrtc crtc() const { return crtc_; }
   int index() const { return index_; }
 
   // DisplaySnapshot overrides:
-  virtual std::string ToString() const override;
+  std::string ToString() const override;
 
  private:
   RROutput output_;

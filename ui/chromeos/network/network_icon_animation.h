@@ -22,7 +22,7 @@ class AnimationObserver;
 class UI_CHROMEOS_EXPORT NetworkIconAnimation : public gfx::AnimationDelegate {
  public:
   NetworkIconAnimation();
-  virtual ~NetworkIconAnimation();
+  ~NetworkIconAnimation() override;
 
   // Returns the current animation value, [0-1].
   double GetAnimation();
@@ -33,7 +33,7 @@ class UI_CHROMEOS_EXPORT NetworkIconAnimation : public gfx::AnimationDelegate {
   void RemoveObserver(AnimationObserver* observer);
 
   // gfx::AnimationDelegate implementation.
-  virtual void AnimationProgressed(const gfx::Animation* animation) override;
+  void AnimationProgressed(const gfx::Animation* animation) override;
 
   static NetworkIconAnimation* GetInstance();
 

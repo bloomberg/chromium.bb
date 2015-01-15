@@ -172,7 +172,7 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
       const gfx::Size& size);
 
   DisplayConfigurator();
-  virtual ~DisplayConfigurator();
+  ~DisplayConfigurator() override;
 
   MultipleDisplayState display_state() const { return current_display_state_; }
   chromeos::DisplayPowerState requested_power_state() const {
@@ -232,7 +232,7 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
   void SetDisplayMode(MultipleDisplayState new_state);
 
   // NativeDisplayDelegate::Observer overrides:
-  virtual void OnConfigurationChanged() override;
+  void OnConfigurationChanged() override;
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
