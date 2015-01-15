@@ -18,7 +18,8 @@ typedef object JSON;
     [CallWith=ScriptState] Promise<JSON> json();
     [CallWith=ScriptState] Promise<USVString> text();
 
-    // FIXME: .body is temporarily disabled for M41 branch cut.
+    // body attribute is defined in sub-interfaces, because the IDL processor
+    // cannot deal with attribute inheritance with runtime enabled flag.
     // [RuntimeEnabled=Stream] readonly attribute ReadableStream body;
 
     // Still to be implemented.

@@ -2,9 +2,6 @@ if (self.importScripts) {
   importScripts('../resources/fetch-test-helpers.js');
 }
 
-/*
-FIXME: .body is temporarily disabled for M41 branch cut.
-
 function arrayBufferToString(buffer) {
   return new Promise(function(resolve) {
       var reader = new FileReader();
@@ -73,7 +70,6 @@ promise_test(function(test) {
           assert_equals(string, '<!DOCTYPE html>\n');
         })
     }, 'FetchStreamTest');
-*/
 
 promise_test(function(test) {
     return fetch('/fetch/resources/doctype.html')

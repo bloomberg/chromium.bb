@@ -26,6 +26,10 @@ typedef (Blob or ArrayBuffer or ArrayBufferView or USVString) BodyInit;
     readonly attribute Headers headers;
 
     [RaisesException] Response clone();
+
+    // FIXME: Move this attribute into Body when the extended-attribute
+    // is removed.
+    [RuntimeEnabled=Stream] readonly attribute ReadableStream body;
 };
 
 Response implements Body;

@@ -28,6 +28,10 @@ enum RequestCredentials { "omit", "same-origin", "include" };
 
     [RaisesException] Request clone();
 
+    // FIXME: Move this attribute into Body when the extended-attribute
+    // is removed.
+    [RuntimeEnabled=Stream] readonly attribute ReadableStream body;
+
     // FIXME: Implement the following:
     // readonly attribute RequestContext context;
 };
