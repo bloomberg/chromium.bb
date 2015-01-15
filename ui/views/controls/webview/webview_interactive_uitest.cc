@@ -51,6 +51,15 @@ TEST_F(WebViewInteractiveUiTest, TextInputClientIsUpToDate) {
   widget->Show();
   webview->RequestFocus();
 
+  // Mac needs to spin a run loop to activate. Don't fake it, so that the Widget
+  // still gets didBecomeKey notifications. There is just one widget, so a
+  // single spin of the runloop should be enough (it didn't flake in local tests
+  // but a WidgetObserver might be needed).
+#if defined(OS_MACOSX)
+  RunPendingMessages();
+#endif
+  EXPECT_TRUE(widget->IsActive());
+
   ui::TextInputFocusManager* text_input_focus_manager =
       ui::TextInputFocusManager::GetInstance();
   const ui::TextInputClient* null_text_input_client = NULL;

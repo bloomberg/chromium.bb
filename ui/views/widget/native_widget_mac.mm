@@ -598,6 +598,15 @@ void NativeWidgetPrivate::GetAllChildWidgets(gfx::NativeView native_view,
   if (!bridge)
     return;
 
+  // If |native_view| is a subview of the contentView, it will share an
+  // NSWindow, but will itself be a native child of the Widget. That is, adding
+  // bridge->..->GetWidget() to |children| would be adding the _parent_ of
+  // |native_view|, not the Widget for |native_view|. |native_view| doesn't have
+  // a corresponding Widget of its own in this case (and so can't have Widget
+  // children of its own on Mac).
+  if (bridge->ns_view() != native_view)
+    return;
+
   // Code expects widget for |native_view| to be added to |children|.
   if (bridge->native_widget_mac()->GetWidget())
     children->insert(bridge->native_widget_mac()->GetWidget());
