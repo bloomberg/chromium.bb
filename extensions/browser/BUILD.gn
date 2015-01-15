@@ -99,6 +99,8 @@ source_set("browser") {
       "api/cast_channel/cast_socket.h",
       "api/cast_channel/cast_transport.cc",
       "api/cast_channel/cast_transport.h",
+      "api/cast_channel/keep_alive_delegate.cc",
+      "api/cast_channel/keep_alive_delegate.h",
       "api/cast_channel/logger.cc",
       "api/cast_channel/logger.h",
       "api/cast_channel/logger_util.cc",

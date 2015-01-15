@@ -188,6 +188,7 @@ if (false) {
       "browser/api/cast_channel/cast_framer_unittest.cc",
       "browser/api/cast_channel/cast_socket_unittest.cc",
       "browser/api/cast_channel/cast_transport_unittest.cc",
+      "browser/api/cast_channel/keep_alive_delegate_unittest.cc",
       "browser/api/cast_channel/logger_unittest.cc",
       "browser/computed_hashes_unittest.cc",
       "browser/content_hash_tree_unittest.cc",

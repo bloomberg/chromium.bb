@@ -62,7 +62,7 @@ class CastSocket : public ApiResource {
   static const char* service_name() { return "CastSocketImplManager"; }
 
   // Connects the channel to the peer. If successful, the channel will be in
-  // READY_STATE_OPEN.  DO NOT delete the CastSocketImpl object in |callback|.
+  // READY_STATE_OPEN.  DO NOT delete the CastSocket object in |callback|.
   // Instead use Close().
   // |callback| will be invoked with any ChannelError that occurred, or
   // CHANNEL_ERROR_NONE if successful.
@@ -100,6 +100,9 @@ class CastSocket : public ApiResource {
   // CHANNEL_ERROR_NONE if no error has occurred.
   virtual ChannelError error_state() const = 0;
 
+  // True when keep-alive signaling is handled for this socket.
+  virtual bool keep_alive() const = 0;
+
   // Marks a socket as invalid due to an error. Errors close the socket
   // and any further socket operations will return the error code
   // net::SOCKET_NOT_CORRECTED.
@@ -135,6 +138,7 @@ class CastSocketImpl : public CastSocket {
                  ChannelAuthType channel_auth,
                  net::NetLog* net_log,
                  const base::TimeDelta& connect_timeout,
+                 bool keep_alive,
                  const scoped_refptr<Logger>& logger,
                  long device_capabilities);
 
@@ -153,6 +157,7 @@ class CastSocketImpl : public CastSocket {
   std::string cast_url() const override;
   ReadyState ready_state() const override;
   ChannelError error_state() const override;
+  bool keep_alive() const override;
 
   // Required by ApiResourceManager.
   static const char* service_name() { return "CastSocketManager"; }
@@ -167,6 +172,7 @@ class CastSocketImpl : public CastSocket {
     void OnError(ChannelError error_state,
                  const LastErrors& last_errors) override;
     void OnMessage(const CastMessage& message) override;
+    void Start() override;
 
    private:
     CastSocketImpl* socket_;
@@ -271,6 +277,8 @@ class CastSocketImpl : public CastSocket {
   net::NetLog* net_log_;
   // The NetLog source for this service.
   net::NetLog::Source net_log_source_;
+  // True when keep-alive signaling should be handled for this socket.
+  bool keep_alive_;
 
   // Shared logging object, used to log CastSocket events for diagnostics.
   scoped_refptr<Logger> logger_;

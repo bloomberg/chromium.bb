@@ -65,6 +65,13 @@ class CastChannelAPI : public BrowserContextKeyedAPI {
   // Returns the API browser context.
   content::BrowserContext* GetBrowserContext() const;
 
+  // Sets injected ping timeout timer for testing.
+  void SetPingTimeoutTimerForTest(scoped_ptr<base::Timer> timer);
+
+  // Gets the injected ping timeout timer, if set.
+  // Returns a null scoped ptr if there is no injected timer.
+  scoped_ptr<base::Timer> GetInjectedTimeoutTimerForTest();
+
  private:
   friend class BrowserContextKeyedAPIFactory<CastChannelAPI>;
   friend class ::CastChannelAPITest;
@@ -78,6 +85,7 @@ class CastChannelAPI : public BrowserContextKeyedAPI {
   content::BrowserContext* const browser_context_;
   scoped_refptr<cast_channel::Logger> logger_;
   scoped_ptr<cast_channel::CastSocket> socket_for_test_;
+  scoped_ptr<base::Timer> injected_timeout_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(CastChannelAPI);
 };
@@ -141,16 +149,18 @@ class CastChannelOpenFunction : public CastChannelAsyncApiFunction {
  private:
   DECLARE_EXTENSION_FUNCTION("cast.channel.open", CAST_CHANNEL_OPEN)
 
-  // Processes incoming cast message events and errors,
-  // and provides additional API and socket context for those events.
+  // Receives incoming messages and errors and provides additional API and
+  // origin socket context.
   class CastMessageHandler : public cast_channel::CastTransport::Delegate {
    public:
     CastMessageHandler(CastChannelAPI* api, cast_channel::CastSocket* socket);
     ~CastMessageHandler() override;
 
+    // CastTransport::Delegate implementation.
     void OnError(cast_channel::ChannelError error_state,
                  const cast_channel::LastErrors& last_errors) override;
     void OnMessage(const cast_channel::CastMessage& message) override;
+    void Start() override;
 
    private:
     CastChannelAPI* const api;
@@ -179,6 +189,8 @@ class CastChannelOpenFunction : public CastChannelAsyncApiFunction {
   scoped_ptr<cast_channel::ConnectInfo> connect_info_;
   scoped_ptr<net::IPEndPoint> ip_endpoint_;
   cast_channel::ChannelAuthType channel_auth_;
+  base::TimeDelta liveness_timeout_;
+  base::TimeDelta ping_interval_;
 
   FRIEND_TEST_ALL_PREFIXES(CastChannelOpenFunctionTest, TestParseChannelUrl);
   FRIEND_TEST_ALL_PREFIXES(CastChannelOpenFunctionTest, TestParseConnectInfo);

@@ -17,6 +17,7 @@
 #include "extensions/browser/api/cast_channel/cast_auth_ica.h"
 #include "extensions/browser/api/cast_channel/cast_message_util.h"
 #include "extensions/browser/api/cast_channel/cast_socket.h"
+#include "extensions/browser/api/cast_channel/keep_alive_delegate.h"
 #include "extensions/browser/api/cast_channel/logger.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/common/api/cast_channel/cast_channel.pb.h"
@@ -73,6 +74,7 @@ void FillChannelInfo(const CastSocket& socket, ChannelInfo* channel_info) {
   channel_info->connect_info.auth = socket.channel_auth();
   channel_info->ready_state = socket.ready_state();
   channel_info->error_state = socket.error_state();
+  channel_info->keep_alive = socket.keep_alive();
 }
 
 // Fills |error_info| from |error_state| and |last_errors|.
@@ -146,6 +148,14 @@ scoped_ptr<CastSocket> CastChannelAPI::GetSocketForTest() {
 
 content::BrowserContext* CastChannelAPI::GetBrowserContext() const {
   return browser_context_;
+}
+
+void CastChannelAPI::SetPingTimeoutTimerForTest(scoped_ptr<base::Timer> timer) {
+  injected_timeout_timer_ = timer.Pass();
+}
+
+scoped_ptr<base::Timer> CastChannelAPI::GetInjectedTimeoutTimerForTest() {
+  return injected_timeout_timer_.Pass();
 }
 
 CastChannelAPI::~CastChannelAPI() {}
@@ -325,10 +335,33 @@ bool CastChannelOpenFunction::Prepare() {
     SetError("Invalid connect_info (invalid auth)");
   } else if (!IsValidConnectInfoIpAddress(*connect_info_)) {
     SetError("Invalid connect_info (invalid IP address)");
+  } else {
+    // Parse timeout parameters if they are set.
+    if (connect_info_->liveness_timeout) {
+      liveness_timeout_ =
+          base::TimeDelta::FromMilliseconds(*connect_info_->liveness_timeout);
+    }
+    if (connect_info_->ping_interval) {
+      ping_interval_ =
+          base::TimeDelta::FromMilliseconds(*connect_info_->ping_interval);
+    }
+
+    // Validate timeout parameters.
+    if (liveness_timeout_ < base::TimeDelta() ||
+        ping_interval_ < base::TimeDelta()) {
+      SetError("livenessTimeout and pingInterval must be greater than 0.");
+    } else if ((liveness_timeout_ > base::TimeDelta()) !=
+               (ping_interval_ > base::TimeDelta())) {
+      SetError("livenessTimeout and pingInterval must be set together.");
+    } else if (liveness_timeout_ < ping_interval_) {
+      SetError("livenessTimeout must be longer than pingTimeout.");
+    }
   }
+
   if (!GetError().empty()) {
     return false;
   }
+
   channel_auth_ = connect_info_->auth;
   ip_endpoint_.reset(ParseConnectInfo(*connect_info_));
   return true;
@@ -348,12 +381,31 @@ void CastChannelOpenFunction::AsyncWorkStart() {
         base::TimeDelta::FromMilliseconds(connect_info_->timeout.get()
                                               ? *connect_info_->timeout
                                               : kDefaultConnectTimeoutMillis),
-        api_->GetLogger(),
+        liveness_timeout_ > base::TimeDelta(), api_->GetLogger(),
         connect_info_->capabilities ? *connect_info_->capabilities
                                     : CastDeviceCapability::NONE);
   }
   new_channel_id_ = AddSocket(socket);
-  scoped_ptr<CastMessageHandler> delegate(new CastMessageHandler(api_, socket));
+  api_->GetLogger()->LogNewSocketEvent(*socket);
+
+  // Construct read delegates.
+  scoped_ptr<core_api::cast_channel::CastTransport::Delegate> delegate(
+      make_scoped_ptr(new CastMessageHandler(api_, socket)));
+  if (socket->keep_alive()) {
+    // Wrap read delegate in a KeepAliveDelegate for timeout handling.
+    core_api::cast_channel::KeepAliveDelegate* keep_alive =
+        new core_api::cast_channel::KeepAliveDelegate(
+            socket, delegate.Pass(), ping_interval_, liveness_timeout_);
+    scoped_ptr<base::Timer> injected_timer =
+        api_->GetInjectedTimeoutTimerForTest();
+    if (injected_timer) {
+      keep_alive->SetTimersForTest(
+          make_scoped_ptr(new base::Timer(false, false)),
+          injected_timer.Pass());
+    }
+    delegate.reset(keep_alive);
+  }
+
   api_->GetLogger()->LogNewSocketEvent(*socket);
   socket->Connect(delegate.Pass(),
                   base::Bind(&CastChannelOpenFunction::OnOpen, this));
@@ -546,6 +598,9 @@ void CastChannelOpenFunction::CastMessageHandler::OnMessage(
   scoped_ptr<Event> event(new Event(OnMessage::kEventName, results.Pass()));
   extensions::EventRouter::Get(api->GetBrowserContext())
       ->DispatchEventToExtension(socket->owner_extension_id(), event.Pass());
+}
+
+void CastChannelOpenFunction::CastMessageHandler::Start() {
 }
 
 CastChannelSetAuthorityKeysFunction::CastChannelSetAuthorityKeysFunction() {

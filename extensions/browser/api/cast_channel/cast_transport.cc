@@ -27,13 +27,12 @@ namespace core_api {
 namespace cast_channel {
 
 CastTransportImpl::CastTransportImpl(net::Socket* socket,
-                                     Delegate* read_delegate,
                                      int channel_id,
                                      const net::IPEndPoint& ip_endpoint,
                                      ChannelAuthType channel_auth,
                                      scoped_refptr<Logger> logger)
-    : socket_(socket),
-      read_delegate_(read_delegate),
+    : started_(false),
+      socket_(socket),
       write_state_(WRITE_STATE_NONE),
       read_state_(READ_STATE_NONE),
       error_state_(CHANNEL_ERROR_NONE),
@@ -42,7 +41,6 @@ CastTransportImpl::CastTransportImpl(net::Socket* socket,
       channel_auth_(channel_auth),
       logger_(logger) {
   DCHECK(socket);
-  DCHECK(read_delegate);
 
   // Buffer is reused across messages to minimize unnecessary buffer
   // [re]allocations.
@@ -125,9 +123,13 @@ proto::ErrorState CastTransportImpl::ErrorStateToProto(ChannelError state) {
   }
 }
 
-void CastTransportImpl::SetReadDelegate(Delegate* read_delegate) {
+void CastTransportImpl::SetReadDelegate(scoped_ptr<Delegate> read_delegate) {
+  DCHECK(CalledOnValidThread());
   DCHECK(read_delegate);
-  read_delegate_ = read_delegate;
+  read_delegate_ = read_delegate.Pass();
+  if (started_) {
+    read_delegate_->Start();
+  }
 }
 
 void CastTransportImpl::FlushWriteQueue() {
@@ -315,13 +317,18 @@ int CastTransportImpl::DoWriteError(int result) {
   return net::ERR_FAILED;
 }
 
-void CastTransportImpl::StartReading() {
+void CastTransportImpl::Start() {
   DCHECK(CalledOnValidThread());
+  DCHECK(!started_);
+  DCHECK(read_delegate_)
+      << "Read delegate must be set prior to calling Start()";
+  read_delegate_->Start();
   if (read_state_ == READ_STATE_NONE) {
     // Initialize and run the read state machine.
     SetReadState(READ_STATE_READ);
     OnReadResult(net::OK);
   }
+  started_ = true;
 }
 
 void CastTransportImpl::OnReadResult(int result) {

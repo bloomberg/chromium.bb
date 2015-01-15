@@ -8,9 +8,32 @@ namespace extensions {
 namespace core_api {
 namespace cast_channel {
 
+const char kTestExtensionId[] = "ddchlicdkolnonkihahngkmmmjnjlkkf";
+
 MockCastTransport::MockCastTransport() {
 }
 MockCastTransport::~MockCastTransport() {
+}
+
+CastTransport::Delegate* MockCastTransport::current_delegate() const {
+  CHECK(delegate_);
+  return delegate_.get();
+}
+
+void MockCastTransport::SetReadDelegate(
+    scoped_ptr<CastTransport::Delegate> delegate) {
+  delegate_ = delegate.Pass();
+}
+
+MockCastTransportDelegate::MockCastTransportDelegate() {
+}
+MockCastTransportDelegate::~MockCastTransportDelegate() {
+}
+
+MockCastSocket::MockCastSocket()
+    : CastSocket(kTestExtensionId), mock_transport_(new MockCastTransport) {
+}
+MockCastSocket::~MockCastSocket() {
 }
 
 net::IPEndPoint CreateIPEndPointForTest() {

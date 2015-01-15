@@ -5,6 +5,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/timer/mock_timer.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -18,6 +19,7 @@
 #include "extensions/common/api/cast_channel/cast_channel.pb.h"
 #include "extensions/common/switches.h"
 #include "extensions/common/test_util.h"
+#include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
 #include "net/base/capturing_net_log.h"
 #include "net/base/completion_callback.h"
@@ -38,6 +40,7 @@ using cast_channel::CreateIPEndPointForTest;
 using cast_channel::ErrorInfo;
 using cast_channel::Logger;
 using cast_channel::MessageInfo;
+using cast_channel::MockCastSocket;
 using cast_channel::MockCastTransport;
 using cast_channel::ReadyState;
 using extensions::Extension;
@@ -57,7 +60,6 @@ using ::testing::SaveArg;
 
 namespace {
 
-const char kTestExtensionId[] = "ddchlicdkolnonkihahngkmmmjnjlkkf";
 const char kTestCastUrl[] = "cast://192.168.1.1:8009";
 
 static void FillCastMessage(const std::string& message,
@@ -79,45 +81,6 @@ ACTION_P2(InvokeDelegateOnError, api_test, api) {
   api_test->CallOnError(api);
 }
 
-class MockCastSocket : public CastSocket {
- public:
-  MockCastSocket()
-      : CastSocket(kTestExtensionId), mock_transport_(new MockCastTransport) {}
-  virtual ~MockCastSocket() {}
-
-  // Mockable version of Connect. Accepts a bare pointer to a mock object.
-  // (GMock won't compile with scoped_ptr method parameters.)
-  MOCK_METHOD2(ConnectWeakPtr,
-               void(CastTransport::Delegate* delegate,
-                    base::Callback<void(ChannelError)> callback));
-
-  // Proxy for ConnectWeakPtr. Unpacks scoped_ptr into a GMock-friendly bare
-  // ptr.
-  virtual void Connect(scoped_ptr<CastTransport::Delegate> delegate,
-                       base::Callback<void(ChannelError)> callback) override {
-    delegate_ = delegate.Pass();
-    ConnectWeakPtr(delegate_.get(), callback);
-  }
-
-  MOCK_METHOD1(Close, void(const net::CompletionCallback& callback));
-  MOCK_CONST_METHOD0(ip_endpoint, const net::IPEndPoint&());
-  MOCK_CONST_METHOD0(id, int());
-  MOCK_METHOD1(set_id, void(int id));
-  MOCK_CONST_METHOD0(channel_auth, ChannelAuthType());
-  MOCK_CONST_METHOD0(cast_url, std::string());
-  MOCK_CONST_METHOD0(ready_state, ReadyState());
-  MOCK_CONST_METHOD0(error_state, ChannelError());
-  MOCK_METHOD1(SetErrorState, void(ChannelError error_state));
-
-  CastTransport* transport() const override { return mock_transport_.get(); }
-
-  MockCastTransport* mock_transport() const { return mock_transport_.get(); }
-
- private:
-  scoped_ptr<MockCastTransport> mock_transport_;
-  scoped_ptr<CastTransport::Delegate> delegate_;
-};
-
 }  // namespace
 
 class CastChannelAPITest : public ExtensionApiTest {
@@ -128,11 +91,14 @@ class CastChannelAPITest : public ExtensionApiTest {
     ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(
         extensions::switches::kWhitelistedExtensionID,
-        kTestExtensionId);
+        cast_channel::kTestExtensionId);
   }
 
   void SetUpMockCastSocket() {
     extensions::CastChannelAPI* api = GetApi();
+    timeout_timer_ = new base::MockTimer(true, false);
+    api->SetPingTimeoutTimerForTest(make_scoped_ptr(timeout_timer_));
+
     net::IPAddressNumber ip_number;
     net::ParseIPLiteralToNumber("192.168.1.1", &ip_number);
     net::IPEndPoint ip_endpoint(ip_number, 8009);
@@ -148,6 +114,7 @@ class CastChannelAPITest : public ExtensionApiTest {
         .WillByDefault(ReturnRef(ip_endpoint_));
     ON_CALL(*mock_cast_socket_, channel_auth())
         .WillByDefault(Return(cast_channel::CHANNEL_AUTH_TYPE_SSL));
+    ON_CALL(*mock_cast_socket_, keep_alive()).WillByDefault(Return(false));
     ON_CALL(*mock_cast_socket_, cast_url()).WillByDefault(Return(kTestCastUrl));
   }
 
@@ -157,7 +124,7 @@ class CastChannelAPITest : public ExtensionApiTest {
         .WillRepeatedly(Return(cast_channel::CHANNEL_ERROR_NONE));
     {
       InSequence sequence;
-      EXPECT_CALL(*mock_cast_socket_, ConnectWeakPtr(_, _))
+      EXPECT_CALL(*mock_cast_socket_, ConnectRawPtr(_, _))
           .WillOnce(
               InvokeCompletionCallback<1>(cast_channel::CHANNEL_ERROR_NONE));
       EXPECT_CALL(*mock_cast_socket_, ready_state())
@@ -169,6 +136,25 @@ class CastChannelAPITest : public ExtensionApiTest {
           .WillOnce(Return(cast_channel::READY_STATE_OPEN));
       EXPECT_CALL(*mock_cast_socket_, Close(_))
           .WillOnce(InvokeCompletionCallback<0>(net::OK));
+      EXPECT_CALL(*mock_cast_socket_, ready_state())
+          .WillOnce(Return(cast_channel::READY_STATE_CLOSED));
+    }
+  }
+
+  void SetUpOpenPingTimeout() {
+    SetUpMockCastSocket();
+    EXPECT_CALL(*mock_cast_socket_, error_state())
+        .WillRepeatedly(Return(cast_channel::CHANNEL_ERROR_NONE));
+    EXPECT_CALL(*mock_cast_socket_, keep_alive()).WillRepeatedly(Return(true));
+    {
+      InSequence sequence;
+      EXPECT_CALL(*mock_cast_socket_, ConnectRawPtr(_, _))
+          .WillOnce(DoAll(
+              SaveArg<0>(&message_delegate_),
+              InvokeCompletionCallback<1>(cast_channel::CHANNEL_ERROR_NONE)));
+      EXPECT_CALL(*mock_cast_socket_, ready_state())
+          .WillOnce(Return(cast_channel::READY_STATE_OPEN))
+          .RetiresOnSaturation();
       EXPECT_CALL(*mock_cast_socket_, ready_state())
           .WillOnce(Return(cast_channel::READY_STATE_CLOSED));
     }
@@ -204,6 +190,22 @@ class CastChannelAPITest : public ExtensionApiTest {
     message_delegate_->OnMessage(cast_message);
   }
 
+  // Starts the read delegate on the IO thread.
+  void StartDelegate() {
+    CHECK(message_delegate_);
+    content::BrowserThread::PostTask(
+        content::BrowserThread::IO, FROM_HERE,
+        base::Bind(&cast_channel::CastTransport::Delegate::Start,
+                   base::Unretained(message_delegate_)));
+  }
+
+  // Fires a timer on the IO thread.
+  void FireTimeout() {
+    content::BrowserThread::PostTask(
+        content::BrowserThread::IO, FROM_HERE,
+        base::Bind(&base::MockTimer::Fire, base::Unretained(timeout_timer_)));
+  }
+
   extensions::CastChannelOpenFunction* CreateOpenFunction(
         scoped_refptr<Extension> extension) {
     extensions::CastChannelOpenFunction* cast_channel_open_function =
@@ -230,13 +232,14 @@ class CastChannelAPITest : public ExtensionApiTest {
   }
 
   MockCastSocket* mock_cast_socket_;
+  base::MockTimer* timeout_timer_;
   net::IPEndPoint ip_endpoint_;
   CastTransport::Delegate* message_delegate_;
   net::CapturingNetLog capturing_net_log_;
   int channel_id_;
 };
 
-// TODO(munjal): Win Dbg has a workaround that makes RunExtensionSubtest
+// TODO(kmarshall): Win Dbg has a workaround that makes RunExtensionSubtest
 // always return true without actually running the test. Remove when fixed.
 #if defined(OS_WIN) && !defined(NDEBUG)
 #define MAYBE_TestOpenSendClose DISABLED_TestOpenSendClose
@@ -252,7 +255,52 @@ IN_PROC_BROWSER_TEST_F(CastChannelAPITest, MAYBE_TestOpenSendClose) {
                                   "test_open_send_close.html"));
 }
 
-// TODO(munjal): Win Dbg has a workaround that makes RunExtensionSubtest
+// TODO(kmarshall): Win Dbg has a workaround that makes RunExtensionSubtest
+// always return true without actually running the test. Remove when fixed.
+#if defined(OS_WIN) && !defined(NDEBUG)
+#define MAYBE_TestPingTimeout DISABLED_TestPingTimeout
+#else
+#define MAYBE_TestPingTimeout TestPingTimeout
+#endif
+// Verify that timeout events are propagated through the API layer.
+// (SSL, non-verified).
+IN_PROC_BROWSER_TEST_F(CastChannelAPITest, MAYBE_TestPingTimeout) {
+  SetUpOpenPingTimeout();
+
+  ExtensionTestMessageListener channel_opened("channel_opened_ssl", false);
+  ExtensionTestMessageListener timeout("timeout_ssl", false);
+  EXPECT_TRUE(
+      RunExtensionSubtest("cast_channel/api", "test_open_timeout.html"));
+  EXPECT_TRUE(channel_opened.WaitUntilSatisfied());
+  StartDelegate();
+  FireTimeout();
+  EXPECT_TRUE(timeout.WaitUntilSatisfied());
+}
+
+// TODO(kmarshall): Win Dbg has a workaround that makes RunExtensionSubtest
+// always return true without actually running the test. Remove when fixed.
+#if defined(OS_WIN) && !defined(NDEBUG)
+#define MAYBE_TestPingTimeoutSslVerified DISABLED_TestPingTimeoutSslVerified
+#else
+#define MAYBE_TestPingTimeoutSslVerified TestPingTimeoutSslVerified
+#endif
+// Verify that timeout events are propagated through the API layer.
+// (SSL, verified).
+IN_PROC_BROWSER_TEST_F(CastChannelAPITest, MAYBE_TestPingTimeoutSslVerified) {
+  SetUpOpenPingTimeout();
+
+  ExtensionTestMessageListener channel_opened("channel_opened_ssl_verified",
+                                              false);
+  ExtensionTestMessageListener timeout("timeout_ssl_verified", false);
+  EXPECT_TRUE(RunExtensionSubtest("cast_channel/api",
+                                  "test_open_timeout_verified.html"));
+  EXPECT_TRUE(channel_opened.WaitUntilSatisfied());
+  StartDelegate();
+  FireTimeout();
+  EXPECT_TRUE(timeout.WaitUntilSatisfied());
+}
+
+// TODO(kmarshall): Win Dbg has a workaround that makes RunExtensionSubtest
 // always return true without actually running the test. Remove when fixed.
 #if defined(OS_WIN) && !defined(NDEBUG)
 #define MAYBE_TestOpenSendCloseWithUrl DISABLED_TestOpenSendCloseWithUrl
@@ -268,7 +316,7 @@ IN_PROC_BROWSER_TEST_F(CastChannelAPITest, MAYBE_TestOpenSendCloseWithUrl) {
                                   "test_open_send_close_url.html"));
 }
 
-// TODO(munjal): Win Dbg has a workaround that makes RunExtensionSubtest
+// TODO(kmarshall): Win Dbg has a workaround that makes RunExtensionSubtest
 // always return true without actually running the test. Remove when fixed.
 #if defined(OS_WIN) && !defined(NDEBUG)
 #define MAYBE_TestOpenReceiveClose DISABLED_TestOpenReceiveClose
@@ -284,7 +332,7 @@ IN_PROC_BROWSER_TEST_F(CastChannelAPITest, MAYBE_TestOpenReceiveClose) {
 
   {
     InSequence sequence;
-    EXPECT_CALL(*mock_cast_socket_, ConnectWeakPtr(NotNull(), _))
+    EXPECT_CALL(*mock_cast_socket_, ConnectRawPtr(NotNull(), _))
         .WillOnce(DoAll(
             SaveArg<0>(&message_delegate_),
             InvokeCompletionCallback<1>(cast_channel::CHANNEL_ERROR_NONE)));
@@ -320,7 +368,7 @@ IN_PROC_BROWSER_TEST_F(CastChannelAPITest, MAYBE_TestGetLogs) {
   EXPECT_TRUE(RunExtensionSubtest("cast_channel/api", "test_get_logs.html"));
 }
 
-// TODO(munjal): Win Dbg has a workaround that makes RunExtensionSubtest
+// TODO(kmarshall): Win Dbg has a workaround that makes RunExtensionSubtest
 // always return true without actually running the test. Remove when fixed.
 #if defined(OS_WIN) && !defined(NDEBUG)
 #define MAYBE_TestOpenError DISABLED_TestOpenError
@@ -331,7 +379,7 @@ IN_PROC_BROWSER_TEST_F(CastChannelAPITest, MAYBE_TestGetLogs) {
 IN_PROC_BROWSER_TEST_F(CastChannelAPITest, MAYBE_TestOpenError) {
   SetUpMockCastSocket();
 
-  EXPECT_CALL(*mock_cast_socket_, ConnectWeakPtr(NotNull(), _))
+  EXPECT_CALL(*mock_cast_socket_, ConnectRawPtr(NotNull(), _))
       .WillOnce(DoAll(SaveArg<0>(&message_delegate_),
                       InvokeDelegateOnError(this, GetApi()),
                       InvokeCompletionCallback<1>(
@@ -402,6 +450,7 @@ IN_PROC_BROWSER_TEST_F(CastChannelAPITest, TestSendInvalidMessageInfo) {
   std::string error(utils::RunFunctionAndReturnError(
       cast_channel_send_function.get(),
       "[{\"channelId\": 1, \"url\": \"cast://127.0.0.1:8009\", "
+      "\"keepAlive\": true, "
       "\"connectInfo\": "
       "{\"ipAddress\": \"127.0.0.1\", \"port\": 8009, "
       "\"auth\": \"ssl\"}, \"readyState\": \"open\"}, "
@@ -415,6 +464,7 @@ IN_PROC_BROWSER_TEST_F(CastChannelAPITest, TestSendInvalidMessageInfo) {
   error = utils::RunFunctionAndReturnError(
       cast_channel_send_function.get(),
       "[{\"channelId\": 1, \"url\": \"cast://127.0.0.1:8009\", "
+      "\"keepAlive\": true, "
       "\"connectInfo\": "
       "{\"ipAddress\": \"127.0.0.1\", \"port\": 8009, "
       "\"auth\": \"ssl\"}, \"readyState\": \"open\"}, "
@@ -428,6 +478,7 @@ IN_PROC_BROWSER_TEST_F(CastChannelAPITest, TestSendInvalidMessageInfo) {
   error = utils::RunFunctionAndReturnError(
       cast_channel_send_function.get(),
       "[{\"channelId\": 1, \"url\": \"cast://127.0.0.1:8009\", "
+      "\"keepAlive\": true, "
       "\"connectInfo\": "
       "{\"ipAddress\": \"127.0.0.1\", \"port\": 8009, "
       "\"auth\": \"ssl\"}, \"readyState\": \"open\"}, "
@@ -441,6 +492,7 @@ IN_PROC_BROWSER_TEST_F(CastChannelAPITest, TestSendInvalidMessageInfo) {
   error = utils::RunFunctionAndReturnError(
       cast_channel_send_function.get(),
       "[{\"channelId\": 1, \"url\": \"cast://127.0.0.1:8009\", "
+      "\"keepAlive\": true, "
       "\"connectInfo\": "
       "{\"ipAddress\": \"127.0.0.1\", \"port\": 8009, "
       "\"auth\": \"ssl\"}, \"readyState\": \"open\"}, "

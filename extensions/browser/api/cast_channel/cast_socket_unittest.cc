@@ -47,23 +47,6 @@ namespace core_api {
 namespace cast_channel {
 const char kAuthNamespace[] = "urn:x-cast:com.google.cast.tp.deviceauth";
 
-// Checks if two proto messages are the same.
-// From
-// third_party/cacheinvalidation/overrides/google/cacheinvalidation/deps/gmock.h
-// TODO(kmarshall): promote to a shared testing library.
-MATCHER_P(EqualsProto, message, "") {
-  std::string expected_serialized, actual_serialized;
-  message.SerializeToString(&expected_serialized);
-  arg.SerializeToString(&actual_serialized);
-  return expected_serialized == actual_serialized;
-}
-
-ACTION_TEMPLATE(RunCompletionCallback,
-                HAS_1_TEMPLATE_PARAMS(int, cb_idx),
-                AND_1_VALUE_PARAMS(rv)) {
-  testing::get<cb_idx>(args).Run(rv);
-}
-
 // Returns an auth challenge message inline.
 CastMessage CreateAuthChallenge() {
   CastMessage output;
@@ -157,6 +140,7 @@ class MockDelegate : public CastTransport::Delegate {
   MOCK_METHOD2(OnError,
                void(ChannelError error_state, const LastErrors& last_errors));
   MOCK_METHOD1(OnMessage, void(const CastMessage& message));
+  MOCK_METHOD0(Start, void());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockDelegate);
@@ -202,6 +186,7 @@ class TestCastSocket : public CastSocketImpl {
                        channel_auth,
                        &capturing_net_log_,
                        base::TimeDelta::FromMilliseconds(timeout_ms),
+                       false,
                        logger,
                        device_capabilities),
         ip_(ip_endpoint),
@@ -384,13 +369,14 @@ class CastSocketTest : public testing::Test {
     EXPECT_CALL(*socket_->GetMockTransport(),
                 SendMessage(EqualsProto(challenge_proto), _))
         .WillOnce(RunCompletionCallback<1>(net::OK));
-    EXPECT_CALL(*socket_->GetMockTransport(), StartReading());
+    EXPECT_CALL(*socket_->GetMockTransport(), Start());
     EXPECT_CALL(handler_, OnConnectComplete(CHANNEL_ERROR_NONE));
     socket_->Connect(read_delegate_.Pass(),
                      base::Bind(&CompleteHandler::OnConnectComplete,
                                 base::Unretained(&handler_)));
     RunPendingTasks();
-    socket_->auth_delegate_.OnMessage(CreateAuthReply());
+    socket_->GetMockTransport()->current_delegate()->OnMessage(
+        CreateAuthReply());
     RunPendingTasks();
   }
 
@@ -576,7 +562,7 @@ TEST_F(CastSocketTest, TestConnectAuthMessageCorrupted) {
   EXPECT_CALL(*socket_->GetMockTransport(),
               SendMessage(EqualsProto(challenge_proto), _))
       .WillOnce(RunCompletionCallback<1>(net::OK));
-  EXPECT_CALL(*socket_->GetMockTransport(), StartReading());
+  EXPECT_CALL(*socket_->GetMockTransport(), Start());
   EXPECT_CALL(handler_, OnConnectComplete(CHANNEL_ERROR_TRANSPORT_ERROR));
   socket_->Connect(read_delegate_.Pass(),
                    base::Bind(&CompleteHandler::OnConnectComplete,
@@ -585,7 +571,8 @@ TEST_F(CastSocketTest, TestConnectAuthMessageCorrupted) {
   CastMessage mangled_auth_reply = CreateAuthReply();
   mangled_auth_reply.set_namespace_("BOGUS_NAMESPACE");
 
-  socket_->auth_delegate_.OnMessage(mangled_auth_reply);
+  socket_->GetMockTransport()->current_delegate()->OnMessage(
+      mangled_auth_reply);
   RunPendingTasks();
 
   EXPECT_EQ(cast_channel::READY_STATE_CLOSED, socket_->ready_state());
@@ -753,10 +740,12 @@ TEST_F(CastSocketTest, TestConnectChallengeReplyReceiveError) {
   socket_->AddReadResult(net::SYNCHRONOUS, net::ERR_FAILED);
 
   EXPECT_CALL(handler_, OnConnectComplete(CHANNEL_ERROR_SOCKET_ERROR));
+  EXPECT_CALL(*socket_->GetMockTransport(), Start());
   socket_->Connect(read_delegate_.Pass(),
                    base::Bind(&CompleteHandler::OnConnectComplete,
                               base::Unretained(&handler_)));
-  socket_->auth_delegate_.OnError(CHANNEL_ERROR_SOCKET_ERROR, LastErrors());
+  socket_->GetMockTransport()->current_delegate()->OnError(
+      CHANNEL_ERROR_SOCKET_ERROR, LastErrors());
   RunPendingTasks();
 
   EXPECT_EQ(cast_channel::READY_STATE_CLOSED, socket_->ready_state());
@@ -777,11 +766,12 @@ TEST_F(CastSocketTest, TestConnectChallengeVerificationFails) {
               SendMessage(EqualsProto(challenge_proto), _))
       .WillOnce(RunCompletionCallback<1>(net::OK));
   EXPECT_CALL(handler_, OnConnectComplete(CHANNEL_ERROR_AUTHENTICATION_ERROR));
+  EXPECT_CALL(*socket_->GetMockTransport(), Start());
   socket_->Connect(read_delegate_.Pass(),
                    base::Bind(&CompleteHandler::OnConnectComplete,
                               base::Unretained(&handler_)));
   RunPendingTasks();
-  socket_->auth_delegate_.OnMessage(CreateAuthReply());
+  socket_->GetMockTransport()->current_delegate()->OnMessage(CreateAuthReply());
   RunPendingTasks();
 
   EXPECT_EQ(cast_channel::READY_STATE_CLOSED, socket_->ready_state());

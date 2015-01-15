@@ -41,11 +41,16 @@ class CastTransport {
    public:
     virtual ~Delegate() {}
 
+    // Called once Transport is successfully initialized and started.
+    // Owned read delegates are Start()ed automatically.
+    virtual void Start() = 0;
+
     // An error occurred on the channel. |last_errors| contains the last errors
     // logged for the channel from the implementation.
     // The caller is responsible for closing |socket| if an error occurred.
     virtual void OnError(ChannelError error_state,
                          const LastErrors& last_errors) = 0;
+
     // A message was received on the channel.
     virtual void OnMessage(const CastMessage& message) = 0;
   };
@@ -60,24 +65,25 @@ class CastTransport {
   // Initializes the reading state machine and starts reading from the
   // underlying socket.
   // Virtual for testing.
-  virtual void StartReading() = 0;
+  virtual void Start() = 0;
 
   // Changes the delegate for processing read events. Pending reads remain
   // in-flight.
-  virtual void SetReadDelegate(Delegate* delegate) = 0;
+  // Ownership of the pointee of |delegate| is assumed by the transport.
+  // Prior delegates are deleted automatically.
+  virtual void SetReadDelegate(scoped_ptr<Delegate> delegate) = 0;
 };
 
 // Manager class for reading and writing messages to/from a socket.
-// TODO(kmarshall): Handle heartbeat messages in this layer.
 class CastTransportImpl : public CastTransport, public base::NonThreadSafe {
  public:
   // Adds a CastMessage read/write layer to a socket.
   // Message read events are propagated to the owner via |read_delegate|.
-  // |socket|, |read_delegate| and |logger| must all out-live the
-  // CastTransportImpl instance.
   // |vlog_prefix| sets the prefix used for all VLOGged output.
+  // |socket| and |logger| must all out-live the
+  // CastTransportImpl instance.
+  // |read_delegate| is owned by this CastTransportImpl object.
   CastTransportImpl(net::Socket* socket,
-                    Delegate* read_delegate,
                     int channel_id,
                     const net::IPEndPoint& ip_endpoint_,
                     ChannelAuthType channel_auth_,
@@ -88,8 +94,8 @@ class CastTransportImpl : public CastTransport, public base::NonThreadSafe {
   // CastTransport interface.
   void SendMessage(const CastMessage& message,
                    const net::CompletionCallback& callback) override;
-  void StartReading() override;
-  void SetReadDelegate(Delegate* delegate) override;
+  void Start() override;
+  void SetReadDelegate(scoped_ptr<Delegate> delegate) override;
 
  private:
   // Internal write states.
@@ -161,6 +167,10 @@ class CastTransportImpl : public CastTransport, public base::NonThreadSafe {
   int DoReadCallback();
   int DoReadError(int result);
 
+  // Indicates that the transport object is started and may receive and send
+  // messages.
+  bool started_;
+
   // Queue of pending writes. The message at the front of the queue is the one
   // being written.
   std::queue<WriteRequest> write_queue_;
@@ -178,7 +188,7 @@ class CastTransportImpl : public CastTransport, public base::NonThreadSafe {
   net::Socket* const socket_;
 
   // Methods for communicating message receipt and error status to client code.
-  Delegate* read_delegate_;
+  scoped_ptr<Delegate> read_delegate_;
 
   // Write flow state machine state.
   WriteState write_state_;
