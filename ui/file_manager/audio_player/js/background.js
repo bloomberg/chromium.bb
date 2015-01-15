@@ -162,3 +162,6 @@ function open(playlist, reopen) {
     return Promise.reject(error);
   });
 }
+
+// Register the test utils.
+test.util.registerRemoteTestUtils();
