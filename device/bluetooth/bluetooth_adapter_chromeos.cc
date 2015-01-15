@@ -283,6 +283,17 @@ void BluetoothAdapterChromeOS::CreateL2capService(
                  error_callback);
 }
 
+void BluetoothAdapterChromeOS::RegisterAudioSink(
+    const device::BluetoothAudioSink::Options& options,
+    const device::BluetoothAdapter::AcquiredCallback& callback,
+    const device::BluetoothAudioSink::ErrorCallback& error_callback) {
+  // TODO(mcchou): Create and register a BluetoothAudioSink. Add the
+  // newly-created audio sink as an observer of the adapter.
+  // Add OnRegisterAudioSink(AcquiredCallback& , BluetoothAudioSink*) and pass
+  // it as an argument to BluetoothAudioSinkChromeOS::Register.
+  error_callback.Run(device::BluetoothAudioSink::ERRORCODE_NOT_SUPPORTED);
+}
+
 void BluetoothAdapterChromeOS::RemovePairingDelegateInternal(
     BluetoothDevice::PairingDelegate* pairing_delegate) {
   // Before removing a pairing delegate make sure that there aren't any devices
@@ -579,7 +590,6 @@ void BluetoothAdapterChromeOS::OnRegisterAgent() {
                      weak_ptr_factory_.GetWeakPtr()),
           base::Bind(&BluetoothAdapterChromeOS::OnRequestDefaultAgentError,
                      weak_ptr_factory_.GetWeakPtr()));
-
 }
 
 void BluetoothAdapterChromeOS::OnRegisterAgentError(
@@ -619,8 +629,7 @@ BluetoothAdapterChromeOS::GetDeviceWithPath(
 }
 
 BluetoothPairingChromeOS* BluetoothAdapterChromeOS::GetPairing(
-    const dbus::ObjectPath& object_path)
-{
+    const dbus::ObjectPath& object_path) {
   BluetoothDeviceChromeOS* device_chromeos = GetDeviceWithPath(object_path);
   if (!device_chromeos) {
     LOG(WARNING) << "Pairing Agent request for unknown device: "

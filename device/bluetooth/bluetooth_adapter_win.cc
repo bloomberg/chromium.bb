@@ -184,6 +184,14 @@ void BluetoothAdapterWin::CreateL2capService(
   NOTIMPLEMENTED();
 }
 
+void BluetoothAdapterWin::RegisterAudioSink(
+    const BluetoothAudioSink::Options& options,
+    const AcquiredCallback& callback,
+    const BluetoothAudioSink::ErrorCallback& error_callback) {
+  NOTIMPLEMENTED();
+  error_callback.Run(BluetoothAudioSink::ERRORCODE_NOT_SUPPORTED);
+}
+
 void BluetoothAdapterWin::RemovePairingDelegateInternal(
     BluetoothDevice::PairingDelegate* pairing_delegate) {
 }

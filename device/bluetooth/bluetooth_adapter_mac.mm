@@ -141,6 +141,14 @@ void BluetoothAdapterMac::CreateL2capService(
       this, uuid, options, base::Bind(callback, socket), error_callback);
 }
 
+void BluetoothAdapterMac::RegisterAudioSink(
+    const BluetoothAudioSink::Options& options,
+    const AcquiredCallback& callback,
+    const BluetoothAudioSink::ErrorCallback& error_callback) {
+  NOTIMPLEMENTED();
+  error_callback.Run(BluetoothAudioSink::ERRORCODE_NOT_SUPPORTED);
+}
+
 void BluetoothAdapterMac::DeviceFound(IOBluetoothDevice* device) {
   DeviceAdded(device);
 }

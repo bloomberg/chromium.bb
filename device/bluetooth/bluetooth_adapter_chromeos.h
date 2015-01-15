@@ -7,6 +7,8 @@
 
 #include <queue>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
@@ -16,6 +18,7 @@
 #include "chromeos/dbus/bluetooth_input_client.h"
 #include "dbus/object_path.h"
 #include "device/bluetooth/bluetooth_adapter.h"
+#include "device/bluetooth/bluetooth_audio_sink.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_export.h"
 
@@ -77,6 +80,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterChromeOS
       const ServiceOptions& options,
       const CreateServiceCallback& callback,
       const CreateServiceErrorCallback& error_callback) override;
+  void RegisterAudioSink(
+      const device::BluetoothAudioSink::Options& options,
+      const device::BluetoothAdapter::AcquiredCallback& callback,
+      const device::BluetoothAudioSink::ErrorCallback& error_callback) override;
 
   // Locates the device object by object path (the devices map and
   // BluetoothDevice methods are by address).

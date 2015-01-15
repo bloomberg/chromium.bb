@@ -64,6 +64,11 @@ class TestBluetoothAdapter : public BluetoothAdapter {
       const CreateServiceCallback& callback,
       const CreateServiceErrorCallback& error_callback) override {}
 
+  void RegisterAudioSink(
+      const BluetoothAudioSink::Options& options,
+      const AcquiredCallback& callback,
+      const BluetoothAudioSink::ErrorCallback& error_callback) override {}
+
  protected:
   ~TestBluetoothAdapter() override {}
 
@@ -78,15 +83,15 @@ class TestBluetoothAdapter : public BluetoothAdapter {
 };
 
 class TestPairingDelegate : public BluetoothDevice::PairingDelegate {
-  public:
-   void RequestPinCode(BluetoothDevice* device) override {}
-   void RequestPasskey(BluetoothDevice* device) override {}
-   void DisplayPinCode(BluetoothDevice* device,
-                       const std::string& pincode) override {}
-   void DisplayPasskey(BluetoothDevice* device, uint32 passkey) override {}
-   void KeysEntered(BluetoothDevice* device, uint32 entered) override {}
-   void ConfirmPasskey(BluetoothDevice* device, uint32 passkey) override {}
-   void AuthorizePairing(BluetoothDevice* device) override {}
+ public:
+  void RequestPinCode(BluetoothDevice* device) override {}
+  void RequestPasskey(BluetoothDevice* device) override {}
+  void DisplayPinCode(BluetoothDevice* device,
+                      const std::string& pincode) override {}
+  void DisplayPasskey(BluetoothDevice* device, uint32 passkey) override {}
+  void KeysEntered(BluetoothDevice* device, uint32 entered) override {}
+  void ConfirmPasskey(BluetoothDevice* device, uint32 passkey) override {}
+  void AuthorizePairing(BluetoothDevice* device) override {}
 };
 
 

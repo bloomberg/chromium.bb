@@ -35,6 +35,13 @@ class BluetoothAudioSink : public base::RefCounted<BluetoothAudioSink> {
     STATE_ACTIVE,  // Connected, streaming and acquired.
   };
 
+  // Possible types of error raised by Audio Sink object.
+  enum ErrorCode {
+    ERRORCODE_NOT_SUPPORTED,  // A2DP sink not supported on current platform.
+    ERRORCODE_INVALID_ADAPTER,  // BluetoothAdapter not presented/powered.
+    ERRORCODE_NOT_REGISTERED,  // BluetoothAudioSink not registered.
+  };
+
   // Options to configure an A2DP audio sink.
   struct Options {
     Options();
@@ -68,17 +75,18 @@ class BluetoothAudioSink : public base::RefCounted<BluetoothAudioSink> {
     // specific IOBuffer wrapping fd, read_mtu and write_mtu.
   };
 
-  // The AudioSinkAcquiredCallback is used to return a BluetoothAudioSink object
-  // after it is registered successfully.
-  typedef base::Callback<void(
-      scoped_refptr<BluetoothAudioSink>)> AudioSinkAcquiredCallback;
-
   // The ErrorCallback is used for the methods that can fail in which case it
   // is called.
-  typedef base::Callback<void(const std::string& error_message)> ErrorCallback;
+  typedef base::Callback<void(ErrorCode)> ErrorCallback;
 
-  // Adds and removes a observer for events on the BluetoothAudioSink object. If
-  // monitoring multiple audio sinks, check the |audio_sink| parameter of
+  // Unregisters the audio sink. An audio sink will unregister itself
+  // automatically in its destructor, but calling Unregister is recommended,
+  // since user applications can be notified of an error returned by the call.
+  virtual void Unregister(const base::Closure& callback,
+                          const ErrorCallback& error_callback) = 0;
+
+  // Adds and removes an observer for events on the BluetoothAudioSink object.
+  // If monitoring multiple audio sinks, check the |audio_sink| parameter of
   // observer methods to determine which audio sink is issuing the event.
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
