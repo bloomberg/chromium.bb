@@ -25,8 +25,8 @@
 #ifndef SVGRenderingContext_h
 #define SVGRenderingContext_h
 
+#include "core/paint/CompositingRecorder.h"
 #include "core/paint/FloatClipRecorder.h"
-#include "core/paint/TransparencyRecorder.h"
 #include "core/rendering/svg/RenderSVGResourceClipper.h"
 #include "platform/graphics/paint/ClipPathRecorder.h"
 #include "platform/transforms/AffineTransform.h"
@@ -103,7 +103,7 @@ private:
     RawPtrWillBeMember<RenderSVGResourceClipper> m_clipper;
     RenderSVGResourceClipper::ClipperState m_clipperState;
     RawPtrWillBeMember<RenderSVGResourceMasker> m_masker;
-    OwnPtr<TransparencyRecorder> m_transparencyRecorder;
+    OwnPtr<CompositingRecorder> m_compositingRecorder;
     OwnPtr<FloatClipRecorder> m_clipRecorder;
     OwnPtr<ClipPathRecorder> m_clipPathRecorder;
 };

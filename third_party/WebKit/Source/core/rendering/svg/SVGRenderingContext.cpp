@@ -92,7 +92,7 @@ void SVGRenderingContext::prepareToRenderSVGContent(RenderObject* object, PaintI
         m_clipRecorder = adoptPtr(new FloatClipRecorder(*m_paintInfo->context, m_object->displayItemClient(), m_paintInfo->phase, m_object->paintInvalidationRectInLocalCoordinates()));
         WebBlendMode blendMode = hasBlendMode ? style->blendMode() : WebBlendModeNormal;
         CompositeOperator compositeOp = hasBlendMode ? CompositeSourceOver : m_paintInfo->context->compositeOperation();
-        m_transparencyRecorder = adoptPtr(new TransparencyRecorder(m_paintInfo->context, object->displayItemClient(), compositeOp, blendMode, opacity, compositeOp));
+        m_compositingRecorder = adoptPtr(new CompositingRecorder(m_paintInfo->context, object->displayItemClient(), compositeOp, blendMode, opacity, compositeOp));
     }
 
     SVGResources* resources = SVGResourcesCache::cachedResourcesForRenderObject(m_object);
@@ -150,14 +150,14 @@ void SVGRenderingContext::prepareToRenderSVGContent(RenderObject* object, PaintI
     }
 
     if (!isIsolationInstalled() && SVGRenderSupport::isIsolationRequired(object))
-        m_transparencyRecorder = adoptPtr(new TransparencyRecorder(m_paintInfo->context, object->displayItemClient(), m_paintInfo->context->compositeOperation(), WebBlendModeNormal, 1, m_paintInfo->context->compositeOperation()));
+        m_compositingRecorder = adoptPtr(new CompositingRecorder(m_paintInfo->context, object->displayItemClient(), m_paintInfo->context->compositeOperation(), WebBlendModeNormal, 1, m_paintInfo->context->compositeOperation()));
 
     m_renderingFlags |= RenderingPrepared;
 }
 
 bool SVGRenderingContext::isIsolationInstalled() const
 {
-    if (m_transparencyRecorder)
+    if (m_compositingRecorder)
         return true;
     if (m_masker || m_filter)
         return true;

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef TransparencyRecorder_h
-#define TransparencyRecorder_h
+#ifndef CompositingRecorder_h
+#define CompositingRecorder_h
 
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/graphics/paint/DisplayItem.h"
@@ -14,11 +14,11 @@ namespace blink {
 class GraphicsContext;
 class RenderObject;
 
-class TransparencyRecorder {
+class CompositingRecorder {
 public:
-    explicit TransparencyRecorder(GraphicsContext*, DisplayItemClient, const CompositeOperator preTransparencyLayerCompositeOp, const WebBlendMode& preTransparencyLayerBlendMode, const float opacity, const CompositeOperator postTransparencyLayerCompositeOp);
+    explicit CompositingRecorder(GraphicsContext*, DisplayItemClient, const CompositeOperator preCompositeOp, const WebBlendMode& preBlendMode, const float opacity, const CompositeOperator postCompositeOp);
 
-    ~TransparencyRecorder();
+    ~CompositingRecorder();
 
 private:
     DisplayItemClient m_client;
@@ -27,4 +27,4 @@ private:
 
 } // namespace blink
 
-#endif // TransparencyRecorder_h
+#endif // CompositingRecorder_h

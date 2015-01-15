@@ -37,9 +37,9 @@
 #include "core/frame/Settings.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/page/Chrome.h"
+#include "core/paint/CompositingRecorder.h"
 #include "core/paint/FloatClipRecorder.h"
 #include "core/paint/TransformRecorder.h"
-#include "core/paint/TransparencyRecorder.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "core/rendering/svg/RenderSVGRoot.h"
 #include "core/svg/SVGDocumentExtensions.h"
@@ -285,12 +285,11 @@ void SVGImage::draw(GraphicsContext* context, const FloatRect& dstRect, const Fl
     {
         ClipRecorder clipRecorder(displayItemClient(), &recordingContext, DisplayItem::ClipNodeImage, enclosingIntRect(dstRect));
 
-        bool compositingRequiresTransparencyLayer = compositeOp != CompositeSourceOver || blendMode != blink::WebBlendModeNormal;
-        bool requiresTransparencyLayer = compositingRequiresTransparencyLayer || opacity < 1;
-        OwnPtr<TransparencyRecorder> transparencyRecorder;
-        if (requiresTransparencyLayer) {
-            CompositeOperator postTransparencyLayerCompositeOp = compositingRequiresTransparencyLayer ? CompositeSourceOver : compositeOp;
-            transparencyRecorder = adoptPtr(new TransparencyRecorder(&recordingContext, displayItemClient(), compositeOp, blendMode, opacity, postTransparencyLayerCompositeOp));
+        bool hasCompositing = compositeOp != CompositeSourceOver || blendMode != blink::WebBlendModeNormal;
+        OwnPtr<CompositingRecorder> compositingRecorder;
+        if (hasCompositing || opacity < 1) {
+            CompositeOperator postCompositeOp = hasCompositing ? CompositeSourceOver : compositeOp;
+            compositingRecorder = adoptPtr(new CompositingRecorder(&recordingContext, displayItemClient(), compositeOp, blendMode, opacity, postCompositeOp));
         }
 
         // We can only draw the entire frame, clipped to the rect we want. So compute where the top left

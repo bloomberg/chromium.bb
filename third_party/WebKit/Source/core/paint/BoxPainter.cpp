@@ -26,7 +26,7 @@
 #include "platform/LengthFunctions.h"
 #include "platform/geometry/LayoutPoint.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
-#include "platform/graphics/paint/TransparencyDisplayItem.h"
+#include "platform/graphics/paint/CompositingDisplayItem.h"
 
 namespace blink {
 

@@ -7,11 +7,11 @@
 
 #include "core/frame/Settings.h"
 #include "core/page/Page.h"
+#include "core/paint/CompositingRecorder.h"
 #include "core/paint/FilterPainter.h"
 #include "core/paint/LayerClipRecorder.h"
 #include "core/paint/ScrollableAreaPainter.h"
 #include "core/paint/TransformRecorder.h"
-#include "core/paint/TransparencyRecorder.h"
 #include "core/rendering/ClipPathOperation.h"
 #include "core/rendering/FilterEffectRenderer.h"
 #include "core/rendering/PaintInfo.h"
@@ -20,9 +20,9 @@
 #include "core/rendering/RenderView.h"
 #include "core/rendering/svg/RenderSVGResourceClipper.h"
 #include "platform/graphics/GraphicsLayer.h"
+#include "platform/graphics/paint/CompositingDisplayItem.h"
 #include "platform/graphics/paint/DisplayItemList.h"
 #include "platform/graphics/paint/TransformDisplayItem.h"
-#include "platform/graphics/paint/TransparencyDisplayItem.h"
 
 namespace blink {
 
@@ -202,22 +202,22 @@ void LayerPainter::paintLayerContents(GraphicsContext* context, const LayerPaint
     LayoutRect rootRelativeBounds;
     bool rootRelativeBoundsComputed = false;
 
-    // These helpers output clip and transparency layers using a RAII pattern. Stack-allocated-varibles are destructed in the reverse order of construction,
+    // These helpers output clip and compositing operations using a RAII pattern. Stack-allocated-varibles are destructed in the reverse order of construction,
     // so they are nested properly.
     ClipPathHelper clipPathHelper(context, m_renderLayer, paintingInfo, rootRelativeBounds, rootRelativeBoundsComputed, offsetFromRoot, paintFlags);
 
-    OwnPtr<TransparencyRecorder> transparencyRecorder;
+    OwnPtr<CompositingRecorder> compositingRecorder;
     OwnPtr<LayerClipRecorder> clipRecorder;
     // Blending operations must be performed only with the nearest ancestor stacking context.
-    // Note that there is no need to create a transparency layer if we're painting the root.
+    // Note that there is no need to composite if we're painting the root.
     // FIXME: this should be unified further into RenderLayer::paintsWithTransparency().
-    bool shouldUseTransparencyLayerForBlendMode = (!m_renderLayer.renderer()->isDocumentElement() || m_renderLayer.renderer()->isSVGRoot()) && m_renderLayer.stackingNode()->isStackingContext() && m_renderLayer.hasNonIsolatedDescendantWithBlendMode();
-    if (shouldUseTransparencyLayerForBlendMode || m_renderLayer.paintsWithTransparency(paintingInfo.paintBehavior)) {
+    bool shouldCompositeForBlendMode = (!m_renderLayer.renderer()->isDocumentElement() || m_renderLayer.renderer()->isSVGRoot()) && m_renderLayer.stackingNode()->isStackingContext() && m_renderLayer.hasNonIsolatedDescendantWithBlendMode();
+    if (shouldCompositeForBlendMode || m_renderLayer.paintsWithTransparency(paintingInfo.paintBehavior)) {
         clipRecorder = adoptPtr(new LayerClipRecorder(m_renderLayer.renderer(), context, DisplayItem::TransparencyClip,
             m_renderLayer.paintingExtent(paintingInfo.rootLayer, paintingInfo.paintDirtyRect, paintingInfo.subPixelAccumulation, paintingInfo.paintBehavior),
             &paintingInfo, LayoutPoint(), paintFlags));
 
-        transparencyRecorder = adoptPtr(new TransparencyRecorder(context, m_renderLayer.renderer()->displayItemClient(),
+        compositingRecorder = adoptPtr(new CompositingRecorder(context, m_renderLayer.renderer()->displayItemClient(),
             context->compositeOperation(), m_renderLayer.renderer()->style()->blendMode(), m_renderLayer.renderer()->opacity(), context->compositeOperation()));
     }
 
