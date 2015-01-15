@@ -21,6 +21,7 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
+#include "content/public/browser/browser_child_process_host.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/process_type.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -51,8 +52,13 @@ enum BrowserType {
 MemoryDetails::MemoryDetails()
     : user_metrics_mode_(UPDATE_USER_METRICS),
       memory_growth_tracker_(NULL) {
+  const base::FilePath browser_process_path =
+      base::GetProcessExecutablePath(base::GetCurrentProcessHandle());
+  const std::string browser_process_name =
+      browser_process_path.BaseName().value();
   const std::string google_browser_name =
       l10n_util::GetStringUTF8(IDS_PRODUCT_NAME);
+
   // (Human and process) names of browsers; should match the ordering for
   // |BrowserProcess| (i.e., |BrowserType|).
   // TODO(viettrungluu): The current setup means that we can't detect both
@@ -63,7 +69,7 @@ MemoryDetails::MemoryDetails()
     const char* name;
     const char* process_name;
   } process_template[MAX_BROWSERS] = {
-    { google_browser_name.c_str(), chrome::kBrowserProcessExecutableName, },
+    { google_browser_name.c_str(), browser_process_name.c_str(), },
     { "Safari", "Safari", },
     { "Firefox", "firefox-bin", },
     { "Camino", "Camino", },
@@ -144,11 +150,9 @@ void MemoryDetails::CollectProcessData(
 
   // Handle the other processes first.
   for (size_t index = CHROME_BROWSER + 1; index < MAX_BROWSERS; index++) {
-    for (std::vector<base::ProcessId>::const_iterator it =
-         pids_by_browser[index].begin();
-         it != pids_by_browser[index].end(); ++it) {
+    for (const base::ProcessId& pid : pids_by_browser[index]) {
       ProcessMemoryInformation info;
-      info.pid = *it;
+      info.pid = pid;
       info.process_type = content::PROCESS_TYPE_UNKNOWN;
 
       // Try to get version information. To do this, we need first to get the
@@ -185,17 +189,12 @@ void MemoryDetails::CollectProcessData(
   }
 
   // Collect data about Chrome/Chromium.
-  for (std::vector<base::ProcessId>::const_iterator it =
-       pids_by_browser[CHROME_BROWSER].begin();
-       it != pids_by_browser[CHROME_BROWSER].end(); ++it) {
-    CollectProcessDataChrome(child_info, *it, process_info);
-  }
+  for (const base::ProcessId& pid : pids_by_browser[CHROME_BROWSER])
+    CollectProcessDataChrome(child_info, pid, process_info);
 
   // And collect data about the helpers.
-  for (std::vector<base::ProcessId>::const_iterator it = helper_pids.begin();
-       it != helper_pids.end(); ++it) {
-    CollectProcessDataChrome(child_info, *it, process_info);
-  }
+  for (const base::ProcessId& pid : helper_pids)
+    CollectProcessDataChrome(child_info, pid, process_info);
 
   // Finally return to the browser thread.
   BrowserThread::PostTask(
@@ -218,8 +217,8 @@ void MemoryDetails::CollectProcessDataChrome(
   info.product_name = base::ASCIIToUTF16(version_info.Name());
   info.version = base::ASCIIToUTF16(version_info.Version());
 
-  // Check if this is one of the child processes whose data we collected
-  // on the IO thread, and if so copy over that data.
+  // Check if this is one of the child processes whose data was already
+  // collected and exists in |child_data|.
   for (size_t child = 0; child < child_info.size(); child++) {
     if (child_info[child].pid == info.pid) {
       info.titles = child_info[child].titles;
@@ -231,6 +230,14 @@ void MemoryDetails::CollectProcessDataChrome(
   // Memory info.
   process_info.GetCommittedKBytesOfPID(info.pid, &info.committed);
   process_info.GetWorkingSetKBytesOfPID(info.pid, &info.working_set);
+  // On 10.9+, ProcessInfoSnapshot is not able to provide working set info. Fall
+  // back to using base::ProcessMetrics in that case.
+  if (info.working_set.priv == 0) {
+    scoped_ptr<base::ProcessMetrics> metrics;
+    metrics.reset(base::ProcessMetrics::CreateProcessMetrics(
+        pid, content::BrowserChildProcessHost::GetPortProvider()));
+    metrics->GetWorkingSetKBytes(&info.working_set);
+  }
 
   // Add the process info to our list.
   process_data_[CHROME_BROWSER].processes.push_back(info);

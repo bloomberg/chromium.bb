@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/file_version_info.h"
 #include "base/files/file_path.h"
+#include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/scoped_handle.h"
@@ -39,13 +40,18 @@ enum {
 MemoryDetails::MemoryDetails()
     : user_metrics_mode_(UPDATE_USER_METRICS),
       memory_growth_tracker_(NULL) {
-  static const base::string16 google_browser_name =
+  base::FilePath browser_process_path;
+  PathService::Get(base::FILE_EXE, &browser_process_path);
+  const base::string16 browser_process_name =
+      browser_process_path.BaseName().value();
+  const base::string16 google_browser_name =
       l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
+
   struct {
     const wchar_t* name;
     const wchar_t* process_name;
   } process_template[MAX_BROWSERS] = {
-    { google_browser_name.c_str(), L"chrome.exe", },
+    { google_browser_name.c_str(), browser_process_name.c_str(), },
     { google_browser_name.c_str(), L"nacl64.exe", },
     { L"IE", L"iexplore.exe", },
     { L"Firefox", L"firefox.exe", },
