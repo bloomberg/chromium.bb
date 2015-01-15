@@ -16,4 +16,5 @@ elif env.Bit('build_arm'):
 else:
   raise Exception('Unsupported architecture')
 env.ComponentLibrary('libnacl_sys_private', ['linux_sys_private.c',
+                                             'directory.c',
                                              'irt_exception_handling.c'])

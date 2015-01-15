@@ -45,6 +45,16 @@ node = env.CommandSelLdrTestNacl('socket_test.out', nexe)
 
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_socket_test')
 
+nexe = env.ComponentProgram('directory_test',
+                            'directory_test.cc',
+                            EXTRA_LIBS=['${NONIRT_LIBS}'])
+
+node = env.CommandSelLdrTestNacl(
+    'directory_test.out', nexe,
+    args=[env.MakeTempDir(prefix='tmp_directory')])
+
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_directory_test')
+
 nexe = env.ComponentProgram('prctl_test',
                             'prctl_test.cc',
                             EXTRA_LIBS=['${NONIRT_LIBS}'])

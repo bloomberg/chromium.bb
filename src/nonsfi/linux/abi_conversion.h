@@ -7,6 +7,8 @@
 #ifndef NATIVE_CLIENT_SRC_NONSFI_LINUX_ABI_CONVERSION_H_
 #define NATIVE_CLIENT_SRC_NONSFI_LINUX_ABI_CONVERSION_H_ 1
 
+#include <assert.h>
+#include <dirent.h>
 #include <fcntl.h>
 #include <stdint.h>
 #include <string.h>
@@ -15,6 +17,7 @@
 #include <time.h>
 
 #include "native_client/src/nonsfi/linux/linux_syscall_defines.h"
+#include "native_client/src/nonsfi/linux/linux_syscall_structs.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 
 #if defined(__i386__) || defined(__arm__)
@@ -187,6 +190,29 @@ static inline void linux_stat_to_nacl_stat(
   nacl_stat->st_atime = linux_stat->st_atime;
   nacl_stat->st_mtime = linux_stat->st_mtime;
   nacl_stat->st_ctime = linux_stat->st_ctime;
+}
+
+/* Converts the linux_abi_dirent64 struct to NaCl's dirent. */
+static inline void linux_dirent_to_nacl_dirent(
+    const struct linux_abi_dirent64 *linux_dirent,
+    struct dirent *nacl_dirent) {
+  nacl_dirent->d_ino = linux_dirent->d_ino;
+  nacl_dirent->d_off = linux_dirent->d_off;
+  /*
+   * linux_abi_dirent64 has one byte d_type between d_off and d_name,
+   * while NaCl's dirent has no d_type field at all. We remove it here,
+   * so that the d_reclen should be decreased.
+   */
+  nacl_dirent->d_reclen =
+      linux_dirent->d_reclen
+      - offsetof(struct linux_abi_dirent64, d_name)
+      + offsetof(struct dirent, d_name);
+
+  assert(sizeof(nacl_dirent->d_name) == sizeof(linux_dirent->d_name));
+  size_t copy_length =
+      linux_dirent->d_reclen - offsetof(struct linux_abi_dirent64, d_name);
+  assert(copy_length <= sizeof(nacl_dirent->d_name));
+  memcpy(nacl_dirent->d_name, linux_dirent->d_name, copy_length);
 }
 
 #endif

@@ -547,6 +547,11 @@ pid_t waitpid(pid_t pid, int *status, int options) {
                      0  /* rusage */));
 }
 
+int linux_getdents64(int fd, struct linux_abi_dirent64 *dirp, int count) {
+  return errno_value_call(
+      linux_syscall3(__NR_getdents64, fd, (uintptr_t) dirp, count));
+}
+
 int linux_sigaction(int signum, const struct linux_sigaction *act,
                     struct linux_sigaction *oldact) {
   /*

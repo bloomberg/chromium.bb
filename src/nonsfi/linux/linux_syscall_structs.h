@@ -60,6 +60,19 @@ static inline struct linux_user_desc create_linux_user_desc(
 
 #endif  /* __i386__ */
 
+/*
+ * The ABI for linux's getdents64 is different from the one for getdents
+ * for 32 bits. The biggest difference is the position of d_type.
+ * cf) https://github.com/torvalds/linux/blob/master/include/linux/dirent.h
+ */
+struct linux_abi_dirent64 {
+  uint64_t d_ino;
+  uint64_t d_off;
+  uint16_t d_reclen;
+  uint8_t d_type;
+  char d_name[256];
+};
+
 typedef struct {
   int si_signo;
   int si_errno;

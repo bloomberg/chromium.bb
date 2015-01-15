@@ -25,6 +25,7 @@
         '../../untrusted/pthread/nc_thread.c',
         '../../untrusted/pthread/stack_end.c',
         '../../untrusted/valgrind/dynamic_annotations.c',
+        '../linux/directory.c',
         '../linux/irt_exception_handling.c',
         '../linux/linux_futex.c',
         '../linux/linux_pthread_private.c',
