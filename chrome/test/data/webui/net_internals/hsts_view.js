@@ -169,7 +169,8 @@ CheckQueryResultTask.prototype = {
  *     case.
  * @param {bool} pkpSubdomains Whether the pinning subdomain checkbox should be
  *     selected. Also the corresponding expected return value, in the success
- *     case.
+ *     case. When publicKeyHashes is INVALID_HASH, the expected return value
+ *     is false.
  * @param {number} stsObserved The time the STS policy was observed.
  * @param {number} pkpObserved The time the PKP policy was observed.
  * @param {string} publicKeyHashes Public key hash to send.  Also the
@@ -181,8 +182,11 @@ CheckQueryResultTask.prototype = {
 function AddTask(domain, stsSubdomains, pkpSubdomains, publicKeyHashes,
                  stsObserved, pkpObserved, queryResultType) {
   this.requestedPublicKeyHashes_ = publicKeyHashes;
-  if (publicKeyHashes == INVALID_HASH)
+  this.requestedPkpSubdomains_ = pkpSubdomains;
+  if (publicKeyHashes == INVALID_HASH) {
+    pkpSubdomains = false;
     publicKeyHashes = '';
+  }
   CheckQueryResultTask.call(this, domain, stsSubdomains, pkpSubdomains,
                             stsObserved, pkpObserved, publicKeyHashes,
                             queryResultType);
@@ -198,7 +202,7 @@ AddTask.prototype = {
   start: function() {
     $(HSTSView.ADD_INPUT_ID).value = this.domain_;
     $(HSTSView.ADD_STS_CHECK_ID).checked = this.stsSubdomains_;
-    $(HSTSView.ADD_PKP_CHECK_ID).checked = this.pkpSubdomains_;
+    $(HSTSView.ADD_PKP_CHECK_ID).checked = this.requestedPkpSubdomains_;
     $(HSTSView.ADD_PINS_ID).value = this.requestedPublicKeyHashes_;
     $(HSTSView.ADD_SUBMIT_ID).click();
     CheckQueryResultTask.prototype.start.call(this);
@@ -383,13 +387,13 @@ TEST_F('NetInternalsTest', 'netInternalsHSTSViewAddTwice', function() {
                                 now, now, QueryResultType.SUCCESS));
   taskQueue.addTask(new QueryTask('somewhereelse.com', false, false, now, now,
                                   '', QueryResultType.NOT_FOUND));
-  taskQueue.addTask(new AddTask('somewhereelse.com', true, true, '',
+  taskQueue.addTask(new AddTask('somewhereelse.com', true, false, '',
                                 now, now, QueryResultType.SUCCESS));
   taskQueue.addTask(new QueryTask('somewhere.com', false, false, now, now,
                                   VALID_HASH, QueryResultType.SUCCESS));
   taskQueue.addTask(new DeleteTask('somewhere.com', QueryResultType.NOT_FOUND));
-  taskQueue.addTask(new QueryTask('somewhereelse.com', true, true, now, now, '',
-                                  QueryResultType.SUCCESS));
+  taskQueue.addTask(new QueryTask('somewhereelse.com', true, false, now, now,
+                                  '', QueryResultType.SUCCESS));
   taskQueue.addTask(new DeleteTask('somewhereelse.com',
                                    QueryResultType.NOT_FOUND));
   taskQueue.run(true);

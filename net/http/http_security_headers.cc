@@ -326,21 +326,7 @@ bool ParseHPKPHeader(const std::string& value,
 
   *max_age = base::TimeDelta::FromSeconds(max_age_candidate);
   *include_subdomains = include_subdomains_candidate;
-  for (HashValueVector::const_iterator i = pins.begin();
-       i != pins.end(); ++i) {
-    bool found = false;
-
-    for (HashValueVector::const_iterator j = hashes->begin();
-         j != hashes->end(); ++j) {
-      if (j->Equals(*i)) {
-        found = true;
-        break;
-      }
-    }
-
-    if (!found)
-      hashes->push_back(*i);
-  }
+  hashes->swap(pins);
 
   return true;
 }

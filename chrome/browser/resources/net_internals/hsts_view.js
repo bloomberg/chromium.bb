@@ -119,11 +119,14 @@ var HSTSView = (function() {
       s.innerHTML = '<b>Found:</b><br/>';
 
       var keys = [
-        'domain', 'static_upgrade_mode', 'static_sts_include_subdomains',
-        'static_pkp_include_subdomains', 'static_sts_observed',
-        'static_pkp_observed', 'static_spki_hashes', 'dynamic_upgrade_mode',
-        'dynamic_sts_include_subdomains', 'dynamic_pkp_include_subdomains',
-        'dynamic_sts_observed', 'dynamic_pkp_observed', 'dynamic_spki_hashes'
+        'static_sts_domain', 'static_upgrade_mode',
+        'static_sts_include_subdomains', 'static_sts_observed',
+        'static_pkp_domain', 'static_pkp_include_subdomains',
+        'static_pkp_observed', 'static_spki_hashes', 'dynamic_sts_domain',
+        'dynamic_upgrade_mode', 'dynamic_sts_include_subdomains',
+        'dynamic_sts_observed', 'dynamic_pkp_domain',
+        'dynamic_pkp_include_subdomains', 'dynamic_pkp_observed',
+        'dynamic_spki_hashes',
       ];
 
       var kStaticHashKeys = [

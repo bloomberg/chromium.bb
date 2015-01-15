@@ -818,6 +818,8 @@ void NetInternalsMessageHandler::IOThreadImpl::OnHSTSQuery(
                           static_state.pkp.expiry.ToDoubleT());
         result->SetString("static_spki_hashes",
                           HashesToBase64String(static_state.pkp.spki_hashes));
+        result->SetString("static_sts_domain", static_state.sts.domain);
+        result->SetString("static_pkp_domain", static_state.pkp.domain);
       }
 
       net::TransportSecurityState::DomainState dynamic_state;
@@ -841,16 +843,11 @@ void NetInternalsMessageHandler::IOThreadImpl::OnHSTSQuery(
                           dynamic_state.pkp.expiry.ToDoubleT());
         result->SetString("dynamic_spki_hashes",
                           HashesToBase64String(dynamic_state.pkp.spki_hashes));
+        result->SetString("dynamic_sts_domain", dynamic_state.sts.domain);
+        result->SetString("dynamic_pkp_domain", dynamic_state.pkp.domain);
       }
 
       result->SetBoolean("result", found_static || found_dynamic);
-      if (found_static) {
-        result->SetString("domain", static_state.domain);
-      } else if (found_dynamic) {
-        result->SetString("domain", dynamic_state.domain);
-      } else {
-        result->SetString("domain", domain);
-      }
     }
   }
 
