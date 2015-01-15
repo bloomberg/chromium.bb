@@ -547,6 +547,16 @@ ScriptPromise AnimationPlayer::finished(ScriptState* scriptState)
     return m_finishedPromise->promise(scriptState->world());
 }
 
+ScriptPromise AnimationPlayer::ready(ScriptState* scriptState)
+{
+    if (!m_readyPromise) {
+        m_readyPromise = new AnimationPlayerPromise(scriptState->executionContext(), this, AnimationPlayerPromise::Ready);
+        if (playStateInternal() != Pending)
+            m_readyPromise->resolve(this);
+    }
+    return m_readyPromise->promise(scriptState->world());
+}
+
 const AtomicString& AnimationPlayer::interfaceName() const
 {
     return EventTargetNames::AnimationPlayer;
@@ -801,19 +811,32 @@ AnimationPlayer::PlayStateUpdateScope::~PlayStateUpdateScope()
         }
     }
 
+    // Ordering is important, the ready promise should resolve/reject before
+    // the finished promise.
+    if (m_player->m_readyPromise && newPlayState != oldPlayState) {
+        if (newPlayState == Idle) {
+            if (m_player->m_readyPromise->state() == AnimationPlayerPromise::Pending) {
+                m_player->m_readyPromise->reject(DOMException::create(AbortError));
+            }
+            m_player->m_readyPromise->reset();
+            m_player->m_readyPromise->resolve(m_player);
+        } else if (oldPlayState == Pending) {
+            m_player->m_readyPromise->resolve(m_player);
+        } else if (newPlayState == Pending) {
+            ASSERT(m_player->m_readyPromise->state() != AnimationPlayerPromise::Pending);
+            m_player->m_readyPromise->reset();
+        }
+    }
+
     if (m_player->m_finishedPromise && newPlayState != oldPlayState) {
         if (newPlayState == Idle) {
             if (m_player->m_finishedPromise->state() == AnimationPlayerPromise::Pending) {
                 m_player->m_finishedPromise->reject(DOMException::create(AbortError));
             }
             m_player->m_finishedPromise->reset();
-        }
-
-        if (newPlayState == Finished) {
+        } else if (newPlayState == Finished) {
             m_player->m_finishedPromise->resolve(m_player);
-        }
-
-        if (oldPlayState == Finished) {
+        } else if (oldPlayState == Finished) {
             m_player->m_finishedPromise->reset();
         }
     }

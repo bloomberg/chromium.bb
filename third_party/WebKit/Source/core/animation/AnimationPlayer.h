@@ -93,6 +93,7 @@ public:
     void finish(ExceptionState&);
 
     ScriptPromise finished(ScriptState*);
+    ScriptPromise ready(ScriptState*);
 
     bool playing() const { return !(playStateInternal() == Idle || limited() || m_paused || m_isPausedForTesting); }
     bool limited() const { return limited(currentTimeInternal()); }
@@ -190,6 +191,7 @@ private:
 
     typedef ScriptPromiseProperty<RawPtrWillBeMember<AnimationPlayer>, RawPtrWillBeMember<AnimationPlayer>, RefPtrWillBeMember<DOMException> > AnimationPlayerPromise;
     PersistentWillBeMember<AnimationPlayerPromise> m_finishedPromise;
+    PersistentWillBeMember<AnimationPlayerPromise> m_readyPromise;
 
     RefPtrWillBeMember<AnimationNode> m_content;
     RawPtrWillBeMember<AnimationTimeline> m_timeline;
