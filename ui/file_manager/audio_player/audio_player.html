@@ -48,7 +48,7 @@
   <!-- Definition of <track-list> tag. -->
   <polymer-element name="track-list" attributes="tracks">
     <template>
-      <link rel="stylesheet" href="elements/track_list.css"></link>
+      <link rel="stylesheet" href="elements/track_list.css">
       <template id="tracks" repeat="{{track, index in tracks}}">
         <div class="track" active?="{{track.active}}" index="{{index}}" on-click="{{trackClicked}}">
           <div class="data">
@@ -63,7 +63,7 @@
   <!-- Definition of <control-panel> tag. -->
   <polymer-element name="control-panel">
     <template>
-      <link rel="stylesheet" href="elements/control_panel.css"></link>
+      <link rel="stylesheet" href="elements/control_panel.css">
 
       <div class="controls">
         <div class="upper-controls time-controls">
@@ -90,7 +90,7 @@
             <label>
               <input id="shuffleCheckbox"
                      type="checkbox"
-                     checked="{{model.shuffle}}"></input>
+                     checked="{{model.shuffle}}">
               <span class="icon"></span>
             </label>
           </button>
@@ -100,7 +100,7 @@
             <label>
               <input id="repeatCheckbox"
                      type="checkbox"
-                     checked="{{model.repeat}}"></input>
+                     checked="{{model.repeat}}">
               <span class="icon"></span>
             </label>
           </button>
@@ -147,7 +147,7 @@
                   on-click="{{volumeButtonClick}}"
                   anchor-point="bottom center">
             <label>
-              <input type="checkbox" checked="{{volumeSliderShown}}"></input>
+              <input type="checkbox" checked="{{volumeSliderShown}}">
               <span class="icon"></span>
             </label>
           </button>
@@ -157,7 +157,7 @@
                   class="playlist media-button toggle"
                   state="default">
             <label>
-              <input type="checkbox" checked="{{model.expanded}}"></input>
+              <input type="checkbox" checked="{{model.expanded}}">
               <span class="icon"></span>
             </label>
           </button>
@@ -169,7 +169,7 @@
   <!-- Definition of <volume-controller> tag. -->
   <polymer-element name="volume-controller" attributes="width height value">
     <template>
-      <link rel="stylesheet" href="elements/volume_controller.css"></link>
+      <link rel="stylesheet" href="elements/volume_controller.css">
 
       <div id="background"></div>
       <input name="rawValueInput" id="rawValueInput"
@@ -186,7 +186,7 @@
   <polymer-element name="audio-player"
                    attributes="playing currenttrackurl playcount">
     <template>
-      <link rel="stylesheet" href="elements/audio_player.css"></link>
+      <link rel="stylesheet" href="elements/audio_player.css">
 
       <track-list id="trackList" expanded?="{{model.expanded}}"
                   on-replay="{{onReplayCurrentTrack}}"></track-list>
