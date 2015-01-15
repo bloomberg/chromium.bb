@@ -51,7 +51,7 @@ MediaController::MediaController(ExecutionContext* context)
     : m_paused(false)
     , m_defaultPlaybackRate(1)
     , m_volume(1)
-    , m_position(MediaPlayer::invalidTime())
+    , m_position(std::numeric_limits<double>::quiet_NaN())
     , m_muted(false)
     , m_readyState(HTMLMediaElement::HAVE_NOTHING)
     , m_playbackState(WAITING)
@@ -148,7 +148,7 @@ double MediaController::currentTime() const
     if (m_mediaElements.isEmpty())
         return 0;
 
-    if (m_position == MediaPlayer::invalidTime()) {
+    if (std::isnan(m_position)) {
         // Some clocks may return times outside the range of [0..duration].
         m_position = std::max(0.0, std::min(duration(), m_clock->currentTime()));
         m_clearPositionTimer.startOneShot(0, FROM_HERE);
@@ -568,7 +568,7 @@ void MediaController::scheduleEvent(const AtomicString& eventName)
 
 void MediaController::clearPositionTimerFired(Timer<MediaController>*)
 {
-    m_position = MediaPlayer::invalidTime();
+    m_position = std::numeric_limits<double>::quiet_NaN();
 }
 
 const AtomicString& MediaController::interfaceName() const

@@ -26,7 +26,6 @@
 #include "config.h"
 #include "core/html/MediaFragmentURIParser.h"
 
-#include "platform/graphics/media/MediaPlayer.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/WTFString.h"
@@ -63,23 +62,18 @@ static String collectFraction(const LChar* input, unsigned length, unsigned& pos
     return digits.toString();
 }
 
-double MediaFragmentURIParser::invalidTimeValue()
-{
-    return MediaPlayer::invalidTime();
-}
-
 MediaFragmentURIParser::MediaFragmentURIParser(const KURL& url)
     : m_url(url)
     , m_timeFormat(None)
-    , m_startTime(MediaPlayer::invalidTime())
-    , m_endTime(MediaPlayer::invalidTime())
+    , m_startTime(std::numeric_limits<double>::quiet_NaN())
+    , m_endTime(std::numeric_limits<double>::quiet_NaN())
 {
 }
 
 double MediaFragmentURIParser::startTime()
 {
     if (!m_url.isValid())
-        return MediaPlayer::invalidTime();
+        return std::numeric_limits<double>::quiet_NaN();
     if (m_timeFormat == None)
         parseTimeFragment();
     return m_startTime;
@@ -88,7 +82,7 @@ double MediaFragmentURIParser::startTime()
 double MediaFragmentURIParser::endTime()
 {
     if (!m_url.isValid())
-        return MediaPlayer::invalidTime();
+        return std::numeric_limits<double>::quiet_NaN();
     if (m_timeFormat == None)
         parseTimeFragment();
     return m_endTime;
@@ -176,8 +170,8 @@ void MediaFragmentURIParser::parseTimeFragment()
         // in the same format. The format is specified by name, followed by a colon (:), with npt: being
         // the default.
 
-        double start = MediaPlayer::invalidTime();
-        double end = MediaPlayer::invalidTime();
+        double start = std::numeric_limits<double>::quiet_NaN();
+        double end = std::numeric_limits<double>::quiet_NaN();
         if (parseNPTFragment(fragment.second.characters8(), fragment.second.length(), start, end)) {
             m_startTime = start;
             m_endTime = end;

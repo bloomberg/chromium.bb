@@ -350,8 +350,8 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document& docum
     , m_webLayer(nullptr)
     , m_preload(MediaPlayer::Auto)
     , m_displayMode(Unknown)
-    , m_cachedTime(MediaPlayer::invalidTime())
-    , m_fragmentEndTime(MediaPlayer::invalidTime())
+    , m_cachedTime(std::numeric_limits<double>::quiet_NaN())
+    , m_fragmentEndTime(std::numeric_limits<double>::quiet_NaN())
     , m_pendingActionFlags(0)
     , m_userGestureRequiredForPlay(false)
     , m_playing(false)
@@ -1852,7 +1852,7 @@ void HTMLMediaElement::setReadyState(ReadyState state)
         m_defaultPlaybackStartPosition = 0;
 
         double initialPlaybackPosition = fragmentParser.startTime();
-        if (initialPlaybackPosition == MediaPlayer::invalidTime())
+        if (std::isnan(initialPlaybackPosition))
             initialPlaybackPosition = 0;
 
         if (!jumped && initialPlaybackPosition > 0) {
@@ -2103,7 +2103,7 @@ void HTMLMediaElement::refreshCachedTime() const
 void HTMLMediaElement::invalidateCachedTime()
 {
     WTF_LOG(Media, "HTMLMediaElement::invalidateCachedTime(%p)", this);
-    m_cachedTime = MediaPlayer::invalidTime();
+    m_cachedTime = std::numeric_limits<double>::quiet_NaN();
 }
 
 // playback state
@@ -2120,7 +2120,7 @@ double HTMLMediaElement::currentTime() const
         return m_lastSeekTime;
     }
 
-    if (m_cachedTime != MediaPlayer::invalidTime() && m_paused) {
+    if (!std::isnan(m_cachedTime) && m_paused) {
 #if LOG_CACHED_TIME_WARNINGS
         static const double minCachedDeltaForWarning = 0.01;
         double delta = m_cachedTime - webMediaPlayer()->currentTime();
@@ -2493,8 +2493,8 @@ void HTMLMediaElement::playbackProgressTimerFired(Timer<HTMLMediaElement>*)
 {
     ASSERT(m_player);
 
-    if (m_fragmentEndTime != MediaPlayer::invalidTime() && currentTime() >= m_fragmentEndTime && directionOfPlayback() == Forward) {
-        m_fragmentEndTime = MediaPlayer::invalidTime();
+    if (!std::isnan(m_fragmentEndTime) && currentTime() >= m_fragmentEndTime && directionOfPlayback() == Forward) {
+        m_fragmentEndTime = std::numeric_limits<double>::quiet_NaN();
         if (!m_mediaController && !m_paused) {
             UseCounter::count(document(), UseCounter::HTMLMediaElementPauseAtFragmentEnd);
             // changes paused to true and fires a simple event named pause at the media element.

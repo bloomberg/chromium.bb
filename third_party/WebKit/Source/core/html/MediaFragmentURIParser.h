@@ -41,8 +41,6 @@ public:
     double startTime();
     double endTime();
 
-    static double invalidTimeValue();
-
 private:
 
     void parseFragments();

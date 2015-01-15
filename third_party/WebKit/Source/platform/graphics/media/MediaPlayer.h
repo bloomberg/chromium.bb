@@ -89,8 +89,6 @@ public:
     static PassOwnPtr<MediaPlayer> create(MediaPlayerClient*);
     static void setMediaEngineCreateFunction(CreateMediaEnginePlayer);
 
-    static double invalidTime() { return -1.0; }
-
     MediaPlayer() { }
     virtual ~MediaPlayer() { }
 
