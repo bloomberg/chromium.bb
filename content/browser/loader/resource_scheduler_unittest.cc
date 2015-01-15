@@ -191,6 +191,7 @@ class ResourceSchedulerTest : public testing::Test {
         false,                                   // has_user_gesture
         false,                                   // enable_load_timing
         false,                                   // enable_upload_progress
+        false,                                   // do_not_prompt_for_login
         blink::WebReferrerPolicyDefault,         // referrer_policy
         blink::WebPageVisibilityStateVisible,    // visibility_state
         NULL,                                    // context

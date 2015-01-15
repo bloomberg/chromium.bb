@@ -45,7 +45,6 @@ void CaptivePortalDetector::DetectCaptivePortal(
   // since then the connection may be reused without checking the cert.
   url_fetcher_->SetLoadFlags(
       net::LOAD_BYPASS_CACHE |
-      net::LOAD_DO_NOT_PROMPT_FOR_LOGIN |
       net::LOAD_DO_NOT_SAVE_COOKIES |
       net::LOAD_DO_NOT_SEND_COOKIES |
       net::LOAD_DO_NOT_SEND_AUTH_DATA);

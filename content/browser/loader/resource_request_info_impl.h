@@ -58,6 +58,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
       bool has_user_gesture,
       bool enable_load_timing,
       bool enable_upload_progress,
+      bool do_not_prompt_for_login,
       blink::WebReferrerPolicy referrer_policy,
       blink::WebPageVisibilityState visibility_state,
       ResourceContext* context,
@@ -167,6 +168,11 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
 
   bool is_upload_progress_enabled() const { return enable_upload_progress_; }
 
+  bool do_not_prompt_for_login() const { return do_not_prompt_for_login_; }
+  void set_do_not_prompt_for_login(bool do_not_prompt) {
+    do_not_prompt_for_login_ = do_not_prompt;
+  }
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ResourceDispatcherHostTest,
                            DeletedFilterDetached);
@@ -192,6 +198,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   bool has_user_gesture_;
   bool enable_load_timing_;
   bool enable_upload_progress_;
+  bool do_not_prompt_for_login_;
   bool was_ignored_by_handler_;
   bool counted_as_in_flight_request_;
   ResourceType resource_type_;

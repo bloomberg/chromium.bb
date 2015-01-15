@@ -209,10 +209,6 @@ int GetLoadFlagsForWebURLRequest(const blink::WebURLRequest& request) {
   if (!request.allowStoredCredentials())
     load_flags |= net::LOAD_DO_NOT_SEND_AUTH_DATA;
 
-  if (request.requestContext() == WebURLRequest::RequestContextXMLHttpRequest &&
-      (url.has_username() || url.has_password())) {
-    load_flags |= net::LOAD_DO_NOT_PROMPT_FOR_LOGIN;
-  }
   return load_flags;
 }
 

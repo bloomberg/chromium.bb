@@ -871,6 +871,7 @@ void RenderMessageFilter::DownloadUrl(int render_view_id,
       render_process_id_,
       render_view_id,
       false,
+      false,
       save_info.Pass(),
       DownloadItem::kInvalidId,
       ResourceDispatcherHostImpl::DownloadStartedCallback());

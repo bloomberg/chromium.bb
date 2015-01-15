@@ -20,14 +20,14 @@ DownloadUrlParameters::DownloadUrlParameters(
     int render_view_host_routing_id,
     ResourceContext* resource_context)
     : content_initiated_(false),
-      load_flags_(0),
       method_("GET"),
       post_id_(-1),
       prefer_cache_(false),
       render_process_host_id_(render_process_host_id),
       render_view_host_routing_id_(render_view_host_routing_id),
       resource_context_(resource_context),
-      url_(url) {
+      url_(url),
+      do_not_prompt_for_login_(false) {
 }
 
 DownloadUrlParameters::~DownloadUrlParameters() {

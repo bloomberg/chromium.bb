@@ -61,6 +61,7 @@ void ResourceRequestInfo::AllocateForTesting(net::URLRequest* request,
           false,                             // has_user_gesture
           false,                             // enable load timing
           false,                             // enable upload progress
+          false,                             // do_not_prompt_for_login
           blink::WebReferrerPolicyDefault,   // referrer_policy
           blink::WebPageVisibilityStateVisible,  // visibility_state
           context,                           // context
@@ -117,6 +118,7 @@ ResourceRequestInfoImpl::ResourceRequestInfoImpl(
     bool has_user_gesture,
     bool enable_load_timing,
     bool enable_upload_progress,
+    bool do_not_prompt_for_login,
     blink::WebReferrerPolicy referrer_policy,
     blink::WebPageVisibilityState visibility_state,
     ResourceContext* context,
@@ -140,6 +142,7 @@ ResourceRequestInfoImpl::ResourceRequestInfoImpl(
       has_user_gesture_(has_user_gesture),
       enable_load_timing_(enable_load_timing),
       enable_upload_progress_(enable_upload_progress),
+      do_not_prompt_for_login_(do_not_prompt_for_login),
       was_ignored_by_handler_(false),
       counted_as_in_flight_request_(false),
       resource_type_(resource_type),

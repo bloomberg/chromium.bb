@@ -49,7 +49,7 @@ void AffiliationFetcher::StartRequest() {
   fetcher_->SetLoadFlags(
       net::LOAD_DO_NOT_SAVE_COOKIES | net::LOAD_DO_NOT_SEND_COOKIES |
       net::LOAD_DO_NOT_SEND_AUTH_DATA | net::LOAD_BYPASS_CACHE |
-      net::LOAD_DISABLE_CACHE | net::LOAD_DO_NOT_PROMPT_FOR_LOGIN);
+      net::LOAD_DISABLE_CACHE);
   fetcher_->SetAutomaticallyRetryOn5xx(false);
   fetcher_->SetAutomaticallyRetryOnNetworkChanges(0);
   fetcher_->Start();

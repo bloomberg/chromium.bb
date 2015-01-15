@@ -111,9 +111,7 @@ class StreamRequestImpl : public WebSocketStreamRequest {
     url_request_->SetUserData(
         WebSocketHandshakeStreamBase::CreateHelper::DataKey(),
         create_helper_);
-    url_request_->SetLoadFlags(LOAD_DISABLE_CACHE |
-                               LOAD_BYPASS_CACHE |
-                               LOAD_DO_NOT_PROMPT_FOR_LOGIN);
+    url_request_->SetLoadFlags(LOAD_DISABLE_CACHE | LOAD_BYPASS_CACHE);
   }
 
   // Destroying this object destroys the URLRequest, which cancels the request

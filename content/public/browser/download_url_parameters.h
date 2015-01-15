@@ -67,7 +67,6 @@ class CONTENT_EXPORT DownloadUrlParameters {
   void set_referrer_encoding(const std::string& referrer_encoding) {
     referrer_encoding_ = referrer_encoding;
   }
-  void set_load_flags(int load_flags) { load_flags_ |= load_flags; }
   void set_last_modified(const std::string& last_modified) {
     last_modified_ = last_modified;
   }
@@ -101,10 +100,12 @@ class CONTENT_EXPORT DownloadUrlParameters {
   void set_file(base::File file) {
     save_info_.file = file.Pass();
   }
+  void set_do_not_prompt_for_login(bool do_not_prompt) {
+    do_not_prompt_for_login_ = do_not_prompt;
+  }
 
   const OnStartedCallback& callback() const { return callback_; }
   bool content_initiated() const { return content_initiated_; }
-  int load_flags() const { return load_flags_; }
   const std::string& last_modified() const { return last_modified_; }
   const std::string& etag() const { return etag_; }
   const std::string& method() const { return method_; }
@@ -134,6 +135,7 @@ class CONTENT_EXPORT DownloadUrlParameters {
   const std::string& hash_state() const { return save_info_.hash_state; }
   bool prompt() const { return save_info_.prompt_for_save_location; }
   const GURL& url() const { return url_; }
+  bool do_not_prompt_for_login() const { return do_not_prompt_for_login_; }
 
   // Note that this is state changing--the DownloadUrlParameters object
   // will not have a file attached to it after this call.
@@ -143,7 +145,6 @@ class CONTENT_EXPORT DownloadUrlParameters {
   OnStartedCallback callback_;
   bool content_initiated_;
   RequestHeadersType request_headers_;
-  int load_flags_;
   std::string last_modified_;
   std::string etag_;
   std::string method_;
@@ -157,6 +158,7 @@ class CONTENT_EXPORT DownloadUrlParameters {
   ResourceContext* resource_context_;
   DownloadSaveInfo save_info_;
   GURL url_;
+  bool do_not_prompt_for_login_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadUrlParameters);
 };

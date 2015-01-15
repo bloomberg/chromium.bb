@@ -90,6 +90,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       int child_id,
       int route_id,
       bool prefer_cache,
+      bool do_not_prompt_for_login,
       scoped_ptr<DownloadSaveInfo> save_info,
       uint32 download_id,
       const DownloadStartedCallback& started_callback) override;

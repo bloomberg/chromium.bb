@@ -101,23 +101,19 @@ LOAD_FLAG(PREFETCH, 1 << 21)
 // immediately.
 LOAD_FLAG(IGNORE_LIMITS, 1 << 22)
 
-// Suppress login prompts for this request. Cached credentials or
-// default credentials may still be used for authentication.
-LOAD_FLAG(DO_NOT_PROMPT_FOR_LOGIN, 1 << 23)
-
 // Indicates that the operation is somewhat likely to be due to an
 // explicit user action. This can be used as a hint to treat the
 // request with higher priority.
-LOAD_FLAG(MAYBE_USER_GESTURE, 1 << 24)
+LOAD_FLAG(MAYBE_USER_GESTURE, 1 << 23)
 
 // Indicates that the username:password portion of the URL should not
 // be honored, but that other forms of authority may be used.
-LOAD_FLAG(DO_NOT_USE_EMBEDDED_IDENTITY, 1 << 25)
+LOAD_FLAG(DO_NOT_USE_EMBEDDED_IDENTITY, 1 << 24)
 
 // Send request directly to the origin if the effective proxy is the data
 // reduction proxy.
 // TODO(rcs): Remove this flag as soon as http://crbug.com/339237 is resolved.
-LOAD_FLAG(BYPASS_DATA_REDUCTION_PROXY, 1 << 26)
+LOAD_FLAG(BYPASS_DATA_REDUCTION_PROXY, 1 << 25)
 
 // Indicates the the request is an asynchronous revalidation.
-LOAD_FLAG(ASYNC_REVALIDATION, 1 << 27)
+LOAD_FLAG(ASYNC_REVALIDATION, 1 << 26)

@@ -24,6 +24,7 @@ RequestInfo::RequestInfo()
       fetch_credentials_mode(FETCH_CREDENTIALS_MODE_OMIT),
       enable_load_timing(false),
       enable_upload_progress(false),
+      do_not_prompt_for_login(false),
       extra_data(NULL) {
 }
 

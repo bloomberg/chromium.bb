@@ -123,7 +123,6 @@ PrecacheFetcher::Fetcher::Fetcher(
     : callback_(callback) {
   url_fetcher_.reset(URLFetcher::Create(url, URLFetcher::GET, this));
   url_fetcher_->SetRequestContext(request_context);
-  url_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_PROMPT_FOR_LOGIN);
   url_fetcher_->Start();
 }
 

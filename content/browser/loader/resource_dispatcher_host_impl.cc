@@ -595,6 +595,7 @@ DownloadInterruptReason ResourceDispatcherHostImpl::BeginDownload(
     int child_id,
     int route_id,
     bool prefer_cache,
+    bool do_not_prompt_for_login,
     scoped_ptr<DownloadSaveInfo> save_info,
     uint32 download_id,
     const DownloadStartedCallback& started_callback) {
@@ -657,6 +658,7 @@ DownloadInterruptReason ResourceDispatcherHostImpl::BeginDownload(
 
   ResourceRequestInfoImpl* extra_info =
       CreateRequestInfo(child_id, route_id, true, context);
+  extra_info->set_do_not_prompt_for_login(do_not_prompt_for_login);
   extra_info->AssociateWithRequest(request.get());  // Request takes ownership.
 
   if (request->url().SchemeIs(url::kBlobScheme)) {
@@ -1150,19 +1152,6 @@ void ResourceDispatcherHostImpl::BeginRequest(
     return;
   }
 
-  bool is_sync_load = sync_result != NULL;
-  int load_flags =
-      BuildLoadFlagsForRequest(request_data, child_id, is_sync_load);
-
-  // Sync loads should have maximum priority and should be the only
-  // requets that have the ignore limits flag set.
-  if (is_sync_load) {
-    DCHECK_EQ(request_data.priority, net::MAXIMUM_PRIORITY);
-    DCHECK_NE(load_flags & net::LOAD_IGNORE_LIMITS, 0);
-  } else {
-    DCHECK_EQ(load_flags & net::LOAD_IGNORE_LIMITS, 0);
-  }
-
   // Construct the request.
   net::CookieStore* cookie_store =
       GetContentClient()->browser()->OverrideCookieStoreForRenderProcess(
@@ -1189,8 +1178,6 @@ void ResourceDispatcherHostImpl::BeginRequest(
   headers.AddHeadersFromString(request_data.headers);
   new_request->SetExtraRequestHeaders(headers);
 
-  new_request->SetLoadFlags(load_flags);
-
   storage::BlobStorageContext* blob_context =
       GetBlobStorageContext(filter_->blob_storage_context());
   // Resolve elements from request_body and prepare upload data.
@@ -1216,6 +1203,39 @@ void ResourceDispatcherHostImpl::BeginRequest(
 
   bool allow_download = request_data.allow_download &&
       IsResourceTypeFrame(request_data.resource_type);
+  bool do_not_prompt_for_login = request_data.do_not_prompt_for_login;
+  bool is_sync_load = sync_result != NULL;
+  int load_flags =
+      BuildLoadFlagsForRequest(request_data, child_id, is_sync_load);
+  if (request_data.resource_type == RESOURCE_TYPE_PREFETCH ||
+      request_data.resource_type == RESOURCE_TYPE_FAVICON) {
+    do_not_prompt_for_login = true;
+  }
+  if (request_data.resource_type == RESOURCE_TYPE_IMAGE &&
+      HTTP_AUTH_RELATION_BLOCKED_CROSS ==
+          HttpAuthRelationTypeOf(request_data.url,
+                                 request_data.first_party_for_cookies)) {
+    // Prevent third-party image content from prompting for login, as this
+    // is often a scam to extract credentials for another domain from the user.
+    // Only block image loads, as the attack applies largely to the "src"
+    // property of the <img> tag. It is common for web properties to allow
+    // untrusted values for <img src>; this is considered a fair thing for an
+    // HTML sanitizer to do. Conversely, any HTML sanitizer that didn't
+    // filter sources for <script>, <link>, <embed>, <object>, <iframe> tags
+    // would be considered vulnerable in and of itself.
+    do_not_prompt_for_login = true;
+    load_flags |= net::LOAD_DO_NOT_USE_EMBEDDED_IDENTITY;
+  }
+
+  // Sync loads should have maximum priority and should be the only
+  // requets that have the ignore limits flag set.
+  if (is_sync_load) {
+    DCHECK_EQ(request_data.priority, net::MAXIMUM_PRIORITY);
+    DCHECK_NE(load_flags & net::LOAD_IGNORE_LIMITS, 0);
+  } else {
+    DCHECK_EQ(load_flags & net::LOAD_IGNORE_LIMITS, 0);
+  }
+  new_request->SetLoadFlags(load_flags);
 
   // Make extra info and read footer (contains request ID).
   ResourceRequestInfoImpl* extra_info =
@@ -1238,6 +1258,7 @@ void ResourceDispatcherHostImpl::BeginRequest(
           request_data.has_user_gesture,
           request_data.enable_load_timing,
           request_data.enable_upload_progress,
+          do_not_prompt_for_login,
           request_data.referrer_policy,
           request_data.visiblity_state,
           resource_context,
@@ -1481,9 +1502,9 @@ ResourceRequestInfoImpl* ResourceDispatcherHostImpl::CreateRequestInfo(
       0,
       request_id_,
       MSG_ROUTING_NONE,  // render_frame_id
-      false,     // is_main_frame
-      false,     // parent_is_main_frame
-      -1,        // parent_render_frame_id
+      false,             // is_main_frame
+      false,             // parent_is_main_frame
+      -1,                // parent_render_frame_id
       RESOURCE_TYPE_SUB_RESOURCE,
       ui::PAGE_TRANSITION_LINK,
       false,     // should_replace_current_entry
@@ -1493,6 +1514,7 @@ ResourceRequestInfoImpl* ResourceDispatcherHostImpl::CreateRequestInfo(
       false,     // has_user_gesture
       false,     // enable_load_timing
       false,     // enable_upload_progress
+      false,     // do_not_prompt_for_login
       blink::WebReferrerPolicyDefault,
       blink::WebPageVisibilityStateVisible,
       context,
@@ -1947,6 +1969,7 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
           info.navigation_params.has_user_gesture,
           true,   // enable_load_timing
           false,  // enable_upload_progress
+          false,  // do_not_prompt_for_login
           params.referrer.policy,
           // TODO(davidben): This is only used for prerenders. Replace
           // is_showing with something for that. Or maybe it just comes from the
@@ -2321,24 +2344,7 @@ int ResourceDispatcherHostImpl::BuildLoadFlagsForRequest(
   } else if (request_data.resource_type == RESOURCE_TYPE_SUB_FRAME) {
     load_flags |= net::LOAD_SUB_FRAME;
   } else if (request_data.resource_type == RESOURCE_TYPE_PREFETCH) {
-    load_flags |= (net::LOAD_PREFETCH | net::LOAD_DO_NOT_PROMPT_FOR_LOGIN);
-  } else if (request_data.resource_type == RESOURCE_TYPE_FAVICON) {
-    load_flags |= net::LOAD_DO_NOT_PROMPT_FOR_LOGIN;
-  } else if (request_data.resource_type == RESOURCE_TYPE_IMAGE) {
-    // Prevent third-party image content from prompting for login, as this
-    // is often a scam to extract credentials for another domain from the user.
-    // Only block image loads, as the attack applies largely to the "src"
-    // property of the <img> tag. It is common for web properties to allow
-    // untrusted values for <img src>; this is considered a fair thing for an
-    // HTML sanitizer to do. Conversely, any HTML sanitizer that didn't
-    // filter sources for <script>, <link>, <embed>, <object>, <iframe> tags
-    // would be considered vulnerable in and of itself.
-    HttpAuthRelationType relation_type = HttpAuthRelationTypeOf(
-        request_data.url, request_data.first_party_for_cookies);
-    if (relation_type == HTTP_AUTH_RELATION_BLOCKED_CROSS) {
-      load_flags |= (net::LOAD_DO_NOT_USE_EMBEDDED_IDENTITY |
-                     net::LOAD_DO_NOT_PROMPT_FOR_LOGIN);
-    }
+    load_flags |= net::LOAD_PREFETCH;
   }
 
   if (is_sync_load)

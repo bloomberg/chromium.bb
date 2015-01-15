@@ -231,6 +231,9 @@ IPC_STRUCT_BEGIN(ResourceHostMsg_Request)
   // True if upload progress should be available for request.
   IPC_STRUCT_MEMBER(bool, enable_upload_progress)
 
+  // True if login prompts for this request should be supressed.
+  IPC_STRUCT_MEMBER(bool, do_not_prompt_for_login)
+
   // The routing id of the RenderFrame.
   IPC_STRUCT_MEMBER(int, render_frame_id)
 

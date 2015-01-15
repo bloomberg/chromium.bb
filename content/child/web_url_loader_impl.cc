@@ -486,6 +486,10 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   request_info.load_flags = GetLoadFlagsForWebURLRequest(request);
   request_info.enable_load_timing = true;
   request_info.enable_upload_progress = request.reportUploadProgress();
+  if (request.requestContext() == WebURLRequest::RequestContextXMLHttpRequest &&
+      (url.has_username() || url.has_password())) {
+    request_info.do_not_prompt_for_login = true;
+  }
   // requestor_pid only needs to be non-zero if the request originates outside
   // the render process, so we can use requestorProcessID even for requests
   // from in-process plugins.

@@ -96,6 +96,10 @@ struct CONTENT_EXPORT RequestInfo {
   // True if upload progress should be available.
   bool enable_upload_progress;
 
+  // True if login prompts for this request should be supressed. Cached
+  // credentials or default credentials may still be used for authentication.
+  bool do_not_prompt_for_login;
+
   // Extra data associated with this request.  We do not own this pointer.
   blink::WebURLRequest::ExtraData* extra_data;
 

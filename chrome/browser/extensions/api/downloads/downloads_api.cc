@@ -1012,7 +1012,7 @@ bool DownloadsDownloadFunction::RunAsync() {
       &DownloadsDownloadFunction::OnStarted, this,
       creator_suggested_filename, options.conflict_action));
   // Prevent login prompts for 401/407 responses.
-  download_params->set_load_flags(net::LOAD_DO_NOT_PROMPT_FOR_LOGIN);
+  download_params->set_do_not_prompt_for_login(true);
 
   DownloadManager* manager = BrowserContext::GetDownloadManager(
       current_profile);

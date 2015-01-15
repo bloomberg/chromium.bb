@@ -89,7 +89,7 @@ void ImageFetcher::StartDownload(
   downloads_in_progress_[fetcher] = [callback copy];
   fetcher->SetLoadFlags(
       net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES |
-      net::LOAD_DO_NOT_SEND_AUTH_DATA | net::LOAD_DO_NOT_PROMPT_FOR_LOGIN);
+      net::LOAD_DO_NOT_SEND_AUTH_DATA);
   fetcher->SetRequestContext(request_context_getter_.get());
   fetcher->SetReferrer(referrer);
   fetcher->SetReferrerPolicy(referrer_policy);

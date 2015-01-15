@@ -105,7 +105,7 @@ class WebSocketHandshakeStreamCreateHelperTest : public ::testing::Test {
     HttpRequestInfo request_info;
     request_info.url = GURL(socket_url);
     request_info.method = "GET";
-    request_info.load_flags = LOAD_DISABLE_CACHE | LOAD_DO_NOT_PROMPT_FOR_LOGIN;
+    request_info.load_flags = LOAD_DISABLE_CACHE;
     int rv = handshake->InitializeStream(
         &request_info, DEFAULT_PRIORITY, BoundNetLog(), CompletionCallback());
     EXPECT_EQ(OK, rv);
