@@ -97,6 +97,13 @@ class CONTENT_EXPORT FrameTreeNode {
     return replication_state_;
   }
 
+  void set_is_loading(bool is_loading) {
+    is_loading_ = is_loading;
+  }
+  bool is_loading() const {
+    return is_loading_;
+  }
+
   RenderFrameHostImpl* current_frame_host() const {
     return render_manager_.current_frame_host();
   }
@@ -144,6 +151,15 @@ class CONTENT_EXPORT FrameTreeNode {
   // Track information that needs to be replicated to processes that have
   // proxies for this frame.
   FrameReplicationState replication_state_;
+
+  // Boolean value indicating whether the frame is in the process of loading
+  // a document or not. In cross-process transfer navigation the DidStartLoading
+  // message is received from both existing RenderFrame and from the pending
+  // RenderFrame. However, there will be only one DidStopLoading message sent by
+  // the pending-which-becomes-current RenderFrame. Since both renderers belong
+  // to the FrameTreeNode, it is better to ask it about the loading status than
+  // RenderFrameHost or using a counter to balance the events out.
+  bool is_loading_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameTreeNode);
 };

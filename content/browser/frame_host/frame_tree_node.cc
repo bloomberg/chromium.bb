@@ -34,7 +34,8 @@ FrameTreeNode::FrameTreeNode(FrameTree* frame_tree,
                       manager_delegate),
       frame_tree_node_id_(next_frame_tree_node_id_++),
       frame_name_(name),
-      parent_(NULL) {}
+      parent_(NULL),
+      is_loading_(false) {}
 
 FrameTreeNode::~FrameTreeNode() {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(

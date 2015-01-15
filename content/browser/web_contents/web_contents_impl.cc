@@ -2760,6 +2760,7 @@ void WebContentsImpl::OnDidStartLoading(bool to_different_document) {
   if (to_different_document && !rfh->GetParent()) {
     ResetLoadProgressState();
     loading_frames_in_progress_ = 0;
+    rfh->frame_tree_node()->set_is_loading(false);
   }
 
   // It is possible to get multiple calls to OnDidStartLoading that don't have
@@ -2774,12 +2775,15 @@ void WebContentsImpl::OnDidStartLoading(bool to_different_document) {
   //   stopping will all be handled by the browser. When that happens, there
   //   should no longer be a start/stop call imbalance. TODO(avi): When this
   //   future arrives, update this code to not allow this case.
+  if (rfh->frame_tree_node()->is_loading())
+    return;
+
   DCHECK_GE(loading_frames_in_progress_, 0);
-  if (loading_progresses_.find(render_frame_id) == loading_progresses_.end()) {
-    if (loading_frames_in_progress_ == 0)
-      DidStartLoading(rfh, to_different_document);
-    ++loading_frames_in_progress_;
-  }
+  if (loading_frames_in_progress_ == 0)
+    DidStartLoading(rfh, to_different_document);
+
+  ++loading_frames_in_progress_;
+  rfh->frame_tree_node()->set_is_loading(true);
 
   // Notify the RenderFrameHostManager of the event.
   rfh->frame_tree_node()->render_manager()->OnDidStartLoading();
@@ -2792,6 +2796,7 @@ void WebContentsImpl::OnDidStopLoading() {
   RenderFrameHostImpl* rfh =
       static_cast<RenderFrameHostImpl*>(render_frame_message_source_);
   int64 render_frame_id = rfh->frame_tree_node()->frame_tree_node_id();
+  rfh->frame_tree_node()->set_is_loading(false);
 
   if (loading_progresses_.find(render_frame_id) != loading_progresses_.end()) {
     // Load stopped while we were still tracking load.  Make sure we update

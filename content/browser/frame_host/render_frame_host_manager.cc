@@ -79,11 +79,15 @@ RenderFrameHostManager::~RenderFrameHostManager() {
         render_frame_host_->GetSiteInstance()->GetId());
   }
 
+  // Delete any RenderFrameProxyHosts and swapped out RenderFrameHosts.
+  // It is important to delete those prior to deleting the current
+  // RenderFrameHost, since the CrossProcessFrameConnector (owned by
+  // RenderFrameProxyHost) points to the RenderWidgetHostView associated with
+  // the current RenderFrameHost and uses it during its destructor.
+  STLDeleteValues(&proxy_hosts_);
+
   // We should always have a current RenderFrameHost except in some tests.
   SetRenderFrameHost(scoped_ptr<RenderFrameHostImpl>());
-
-  // Delete any swapped out RenderFrameHosts.
-  STLDeleteValues(&proxy_hosts_);
 }
 
 void RenderFrameHostManager::Init(BrowserContext* browser_context,

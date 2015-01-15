@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/frame_host/cross_site_transferring_request.h"
@@ -25,6 +26,7 @@
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_constants.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
 #include "content/public/test/mock_render_process_host.h"
@@ -2688,6 +2690,134 @@ TEST_F(WebContentsImplTest, ActiveContentsCountChangeBrowsingInstance) {
   contents.reset();
   EXPECT_EQ(0u, instance->GetRelatedActiveContentsCount());
   EXPECT_EQ(0u, instance_webui->GetRelatedActiveContentsCount());
+}
+
+class LoadingWebContentsObserver : public WebContentsObserver {
+ public:
+  explicit LoadingWebContentsObserver(WebContents* contents)
+      : WebContentsObserver(contents),
+        is_loading_(false) {
+  }
+  ~LoadingWebContentsObserver() override {}
+
+  void DidStartLoading(RenderViewHost* rvh) override {
+    is_loading_ = true;
+  }
+  void DidStopLoading(RenderViewHost* rvh) override {
+    is_loading_ = false;
+  }
+
+  bool is_loading() const { return is_loading_; }
+
+ private:
+  bool is_loading_;
+
+  DISALLOW_COPY_AND_ASSIGN(LoadingWebContentsObserver);
+};
+
+// Ensure that DidStartLoading/DidStopLoading events balance out properly with
+// interleaving cross-process navigations in multiple subframes.
+// See https://crbug.com/448601 for details of the underlying issue. The
+// sequence of events that reproduce it are as follows:
+// * Navigate top-level frame with one subframe.
+// * Subframe navigates more than once before the top-level frame has had a
+//   chance to complete the load.
+// The subframe navigations cause the loading_frames_in_progress_ to drop down
+// to 0, while the loading_progresses_ map is not reset.
+TEST_F(WebContentsImplTest, StartStopEventsBalance) {
+  // The bug manifests itself in regular mode as well, but browser-initiated
+  // navigation of subframes is only possible in --site-per-process mode within
+  // unit tests.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kSitePerProcess);
+  const GURL main_url("http://www.chromium.org");
+  const GURL foo_url("http://foo.chromium.org");
+  const GURL bar_url("http://bar.chromium.org");
+  TestRenderFrameHost* orig_rfh = contents()->GetMainFrame();
+
+  // Use a WebContentsObserver to approximate the behavior of the tab's spinner.
+  LoadingWebContentsObserver observer(contents());
+
+  // Navigate the main RenderFrame, simulate the DidStartLoading, and commit.
+  // The frame should still be loading.
+  controller().LoadURL(
+      main_url, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
+  orig_rfh->OnMessageReceived(
+      FrameHostMsg_DidStartLoading(orig_rfh->GetRoutingID(), false));
+  contents()->TestDidNavigate(orig_rfh, 1, main_url, ui::PAGE_TRANSITION_TYPED);
+  EXPECT_FALSE(contents()->cross_navigation_pending());
+  EXPECT_EQ(orig_rfh, contents()->GetMainFrame());
+  EXPECT_TRUE(contents()->IsLoading());
+  EXPECT_TRUE(observer.is_loading());
+
+  // Create a child frame to navigate multiple times.
+  TestRenderFrameHost* subframe = orig_rfh->AppendChild("subframe");
+
+  // Navigate the child frame to about:blank, which will send both
+  // DidStartLoading and DidStopLoading messages.
+  {
+    subframe->OnMessageReceived(
+        FrameHostMsg_DidStartLoading(subframe->GetRoutingID(), true));
+    subframe->SendNavigateWithTransition(
+        1, GURL("about:blank"), ui::PAGE_TRANSITION_AUTO_SUBFRAME);
+    subframe->OnMessageReceived(
+        FrameHostMsg_DidStopLoading(subframe->GetRoutingID()));
+  }
+
+  // Navigate the frame to another URL, which will send again
+  // DidStartLoading and DidStopLoading messages.
+  {
+    subframe->OnMessageReceived(
+        FrameHostMsg_DidStartLoading(subframe->GetRoutingID(), true));
+    subframe->SendNavigateWithTransition(
+        1, foo_url, ui::PAGE_TRANSITION_AUTO_SUBFRAME);
+    subframe->OnMessageReceived(
+        FrameHostMsg_DidStopLoading(subframe->GetRoutingID()));
+  }
+
+  // Since the main frame hasn't sent any DidStopLoading messages, it is
+  // expected that the WebContents is still in loading state.
+  EXPECT_TRUE(contents()->IsLoading());
+  EXPECT_TRUE(observer.is_loading());
+
+  // Navigate the frame again, this time using LoadURLWithParams. This causes
+  // RenderFrameHost to call into WebContents::DidStartLoading, which starts
+  // the spinner.
+  {
+    NavigationController::LoadURLParams load_params(bar_url);
+    load_params.referrer =
+        Referrer(GURL("http://referrer"), blink::WebReferrerPolicyDefault);
+    load_params.transition_type = ui::PAGE_TRANSITION_GENERATED;
+    load_params.extra_headers = "content-type: text/plain";
+    load_params.load_type = NavigationController::LOAD_TYPE_DEFAULT;
+    load_params.is_renderer_initiated = false;
+    load_params.override_user_agent = NavigationController::UA_OVERRIDE_TRUE;
+    load_params.frame_tree_node_id =
+        subframe->frame_tree_node()->frame_tree_node_id();
+    controller().LoadURLWithParams(load_params);
+
+    subframe->OnMessageReceived(
+        FrameHostMsg_DidStartLoading(subframe->GetRoutingID(), true));
+
+    // Commit the navigation in the child frame and send the DidStopLoading
+    // message.
+    contents()->TestDidNavigate(
+        subframe, 3, bar_url, ui::PAGE_TRANSITION_TYPED);
+    subframe->OnMessageReceived(
+        FrameHostMsg_DidStopLoading(subframe->GetRoutingID()));
+  }
+
+  // At this point the status should still be loading, since the main frame
+  // hasn't sent the DidstopLoading message yet.
+  EXPECT_TRUE(contents()->IsLoading());
+  EXPECT_TRUE(observer.is_loading());
+
+  // Send the DidStopLoading for the main frame and ensure it isn't loading
+  // anymore.
+  orig_rfh->OnMessageReceived(
+      FrameHostMsg_DidStopLoading(orig_rfh->GetRoutingID()));
+  EXPECT_FALSE(contents()->IsLoading());
+  EXPECT_FALSE(observer.is_loading());
 }
 
 // ChromeOS doesn't use WebContents based power save blocking.

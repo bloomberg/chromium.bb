@@ -141,7 +141,8 @@ void CrossProcessFrameConnector::OnForwardInputEvent(
 
 void CrossProcessFrameConnector::SetDeviceScaleFactor(float scale_factor) {
   device_scale_factor_ = scale_factor;
-  if (view_) {
+  // The RenderWidgetHost is null in unit tests.
+  if (view_ && view_->GetRenderWidgetHost()) {
     RenderWidgetHostImpl* child_widget =
         RenderWidgetHostImpl::From(view_->GetRenderWidgetHost());
     child_widget->NotifyScreenInfoChanged();
