@@ -34,10 +34,10 @@ class ViewsContentClientMainPartsMac : public ViewsContentClientMainParts {
   ViewsContentClientMainPartsMac(
       const content::MainFunctionParams& content_params,
       ViewsContentClient* views_content_client);
-  virtual ~ViewsContentClientMainPartsMac();
+  ~ViewsContentClientMainPartsMac() override;
 
   // content::BrowserMainParts:
-  virtual void PreMainMessageLoopRun() override;
+  void PreMainMessageLoopRun() override;
 
  private:
   base::scoped_nsobject<ViewsContentClientAppController> app_controller_;
