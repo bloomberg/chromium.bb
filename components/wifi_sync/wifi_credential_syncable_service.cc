@@ -21,7 +21,6 @@ WifiCredentialSyncableService::WifiCredentialSyncableService() {
 WifiCredentialSyncableService::~WifiCredentialSyncableService() {
 }
 
-// Implementation of syncer::SyncableService API.
 syncer::SyncMergeResult WifiCredentialSyncableService::MergeDataAndStartSyncing(
     syncer::ModelType type,
     const syncer::SyncDataList& initial_sync_data,

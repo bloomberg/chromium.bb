@@ -41,7 +41,7 @@ class WifiCredentialSyncableServiceFactory
   WifiCredentialSyncableServiceFactory();
   ~WifiCredentialSyncableServiceFactory() override;
 
-  // Implementation of BrowserContextKeyedServiceFactory.
+  // BrowserContextKeyedServiceFactory implementation.
   KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const override;
 
