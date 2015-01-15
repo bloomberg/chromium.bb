@@ -211,33 +211,47 @@ PlatformFontWin::PlatformFontWin(const std::string& font_name,
 
 Font PlatformFontWin::DeriveFontWithHeight(int height, int style) {
   DCHECK_GE(height, 0);
-  if (GetHeight() == height && GetStyle() == style)
-    return Font(this);
 
-  // CreateFontIndirect() doesn't return the largest size for the given height
-  // when decreasing the height. Iterate to find it.
-  if (GetHeight() > height) {
-    const int min_font_size = GetMinimumFontSize();
-    Font font = DeriveFont(-1, style);
-    int font_height = font.GetHeight();
-    int font_size = font.GetFontSize();
-    while (font_height > height && font_size != min_font_size) {
-      font = font.Derive(-1, style);
-      if (font_height == font.GetHeight() && font_size == font.GetFontSize())
-        break;
-      font_height = font.GetHeight();
-      font_size = font.GetFontSize();
-    }
-    return font;
-  }
-
+  // Create a font with a height near that of the target height.
   LOGFONT font_info;
   GetObject(GetNativeFont(), sizeof(LOGFONT), &font_info);
   font_info.lfHeight = height;
   SetLogFontStyle(style, &font_info);
 
   HFONT hfont = CreateFontIndirect(&font_info);
-  return DeriveWithCorrectedSize(hfont);
+  Font font(new PlatformFontWin(CreateHFontRef(hfont)));
+
+  // Respect the minimum font size constraint.
+  const int min_font_size = GetMinimumFontSize();
+
+  // Used to avoid shrinking the font and expanding it.
+  bool ran_shrink_loop = false;
+
+  // Iterate to find the largest font with a height <= |height|.
+  while ((font.GetHeight() > height) &&
+         (font.GetFontSize() >= min_font_size)) {
+    ran_shrink_loop = true;
+    Font derived_font = font.Derive(-1, style);
+    // Break the loop if the derived font is too small or hasn't shrunk at all.
+    if ((derived_font.GetFontSize() < min_font_size) ||
+        ((derived_font.GetFontSize() == font.GetFontSize()) &&
+         (derived_font.GetHeight() == font.GetHeight())))
+      break;
+    font = derived_font;
+  }
+
+  while ((!ran_shrink_loop && font.GetHeight() <= height) ||
+         (font.GetFontSize() < min_font_size)) {
+    Font derived_font = font.Derive(1, style);
+    // Break the loop if the derived font is too large or hasn't grown at all.
+    if (((derived_font.GetHeight() > height) &&
+         (font.GetFontSize() >= min_font_size)) ||
+        ((derived_font.GetFontSize() == font.GetFontSize()) &&
+         (derived_font.GetHeight() == font.GetHeight())))
+      break;
+    font = derived_font;
+  }
+  return font;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -423,37 +437,6 @@ PlatformFontWin::HFontRef* PlatformFontWin::CreateHFontRefFromGDI(
                       ave_char_width, style);
 }
 
-Font PlatformFontWin::DeriveWithCorrectedSize(HFONT base_font) {
-  base::win::ScopedGetDC screen_dc(NULL);
-  gfx::ScopedSetMapMode mode(screen_dc, MM_TEXT);
-
-  base::win::ScopedGDIObject<HFONT> best_font(base_font);
-  TEXTMETRIC best_font_metrics;
-  GetTextMetricsForFont(screen_dc, best_font, &best_font_metrics);
-
-  LOGFONT font_info;
-  GetObject(base_font, sizeof(LOGFONT), &font_info);
-
-  // Set |lfHeight| to negative value to indicate it's the size, not the height.
-  font_info.lfHeight =
-      -(best_font_metrics.tmHeight - best_font_metrics.tmInternalLeading);
-
-  do {
-    // Increment font size. Prefer font with greater size if its height isn't
-    // greater than height of base font.
-    font_info.lfHeight = AdjustFontSize(font_info.lfHeight, 1);
-    base::win::ScopedGDIObject<HFONT> font(CreateFontIndirect(&font_info));
-    TEXTMETRIC font_metrics;
-    GetTextMetricsForFont(screen_dc, font, &font_metrics);
-    if (font_metrics.tmHeight > best_font_metrics.tmHeight)
-      break;
-    best_font.Set(font.release());
-    best_font_metrics = font_metrics;
-  } while (true);
-
-  return Font(new PlatformFontWin(CreateHFontRef(best_font.release())));
-}
-
 // static
 PlatformFontWin::HFontRef* PlatformFontWin::CreateHFontRefFromSkia(
     HFONT gdi_font,
@@ -518,8 +501,7 @@ PlatformFontWin::HFontRef* PlatformFontWin::CreateHFontRefFromSkia(
   // The calculations below are similar to those in the CreateHFontRef
   // function. The height, baseline and cap height are rounded up to ensure
   // that they match up closely with GDI.
-  const int height = std::ceil(
-      skia_metrics.fDescent - skia_metrics.fAscent + skia_metrics.fLeading);
+  const int height = std::ceil(skia_metrics.fDescent - skia_metrics.fAscent);
   const int baseline = std::max<int>(1, std::ceil(-skia_metrics.fAscent));
   const int cap_height = std::ceil(paint.getTextSize() *
       static_cast<double>(dwrite_font_metrics.capHeight) /
@@ -572,8 +554,16 @@ PlatformFontWin::HFontRef::HFontRef(HFONT hfont,
   LOGFONT font_info;
   GetObject(hfont_, sizeof(LOGFONT), &font_info);
   font_name_ = base::UTF16ToUTF8(base::string16(font_info.lfFaceName));
-  if (font_info.lfHeight < 0)
-    requested_font_size_ = -font_info.lfHeight;
+
+  // Retrieve the font size from the GetTextMetrics API instead of referencing
+  // it from the LOGFONT structure. This is because the height as reported by
+  // the LOGFONT structure is not always correct. For small fonts with size 1
+  // the LOGFONT structure reports the height as -1, while the actual font size
+  // is different. (2 on my XP machine).
+  base::win::ScopedGetDC screen_dc(NULL);
+  TEXTMETRIC font_metrics = {0};
+  PlatformFontWin::GetTextMetricsForFont(screen_dc, hfont_, &font_metrics);
+  requested_font_size_ = font_metrics.tmHeight - font_metrics.tmInternalLeading;
 }
 
 int PlatformFontWin::HFontRef::GetDluBaseX() {
