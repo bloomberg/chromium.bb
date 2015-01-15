@@ -2002,7 +2002,6 @@ _paladin_important_boards = frozenset([
   'butterfly',
   'daisy',
   'daisy_spring',
-  'duck',
   'falco',
   'gizmo',
   'kayle',
@@ -2557,7 +2556,7 @@ _brillo_release.add_config('duck-release',
 
   # Hw Lab can't test, yet.
   paygen_skip_testing=True,
-  important=True,
+  important=False,
 )
 
 _brillo_release.add_config('gizmo-release',

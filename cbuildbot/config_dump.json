@@ -11689,7 +11689,6 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
-        "important": true,
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -11769,7 +11768,6 @@
             "test",
             "factory_install"
         ],
-        "important": true,
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
