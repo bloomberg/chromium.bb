@@ -32,7 +32,6 @@
 class Browser;
 class BrowserWindow;
 class BrowserWindowCocoa;
-@class BrowserWindowEnterFullscreenTransition;
 @class DevToolsController;
 @class DownloadShelfController;
 class ExtensionKeybindingRegistryCocoa;
@@ -84,8 +83,6 @@ class Command;
   base::scoped_nsobject<PresentationModeController> presentationModeController_;
   base::scoped_nsobject<ExclusiveAccessBubbleWindowController>
       exclusiveAccessBubbleWindowController_;
-  base::scoped_nsobject<BrowserWindowEnterFullscreenTransition>
-      enterFullscreenTransition_;
 
   // Strong. StatusBubble is a special case of a strong reference that
   // we don't wrap in a scoped_ptr because it is acting the same

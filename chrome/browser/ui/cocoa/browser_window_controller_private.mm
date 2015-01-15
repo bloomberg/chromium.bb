@@ -22,7 +22,6 @@
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window_state.h"
-#import "chrome/browser/ui/cocoa/browser_window_enter_fullscreen_transition.h"
 #import "chrome/browser/ui/cocoa/browser_window_layout.h"
 #import "chrome/browser/ui/cocoa/dev_tools_controller.h"
 #import "chrome/browser/ui/cocoa/fast_resize_view.h"
@@ -683,8 +682,6 @@ willPositionSheet:(NSWindow*)sheet
 }
 
 - (void)windowDidEnterFullScreen:(NSNotification*)notification {
-  enterFullscreenTransition_.reset();
-
   // In Yosemite, some combination of the titlebar and toolbar always show in
   // full-screen mode. We do not want either to show. Search for the window that
   // contains the views, and hide it. There is no need to ever unhide the view.
@@ -1005,68 +1002,19 @@ willPositionSheet:(NSWindow*)sheet
   }
 }
 
-+ (BOOL)systemSettingsRequireMavericksAppKitFullscreenHack {
+- (BOOL)shouldUseMavericksAppKitFullscreenHack {
   if (!base::mac::IsOSMavericks())
     return NO;
-  return [NSScreen respondsToSelector:@selector(screensHaveSeparateSpaces)] &&
-         [NSScreen screensHaveSeparateSpaces];
-}
-
-- (BOOL)shouldUseMavericksAppKitFullscreenHack {
-  if (![[self class] systemSettingsRequireMavericksAppKitFullscreenHack])
+  if (![NSScreen respondsToSelector:@selector(screensHaveSeparateSpaces)] ||
+      ![NSScreen screensHaveSeparateSpaces]) {
     return NO;
+  }
   if (!enteringAppKitFullscreen_)
     return NO;
   if (enteringAppKitFullscreenOnPrimaryScreen_)
     return NO;
 
   return YES;
-}
-
-- (BOOL)shouldUseCustomAppKitFullscreenTransition {
-  if (base::mac::IsOSMountainLionOrEarlier())
-    return NO;
-
-  NSView* root = [[self.window contentView] superview];
-  if (!root.layer)
-    return NO;
-
-  // AppKit on OSX 10.9 has a bug for applications linked against OSX 10.8 SDK
-  // and earlier. Under specific circumstances, it prevents the custom AppKit
-  // transition from working well. See http://crbug.com/396980 for more
-  // details.
-  if ([[self class] systemSettingsRequireMavericksAppKitFullscreenHack] &&
-      ![[[self window] screen] isEqual:[[NSScreen screens] objectAtIndex:0]]) {
-    return NO;
-  }
-
-  return YES;
-}
-
-- (NSArray*)customWindowsToEnterFullScreenForWindow:(NSWindow*)window {
-  DCHECK([window isEqual:self.window]);
-
-  if (![self shouldUseCustomAppKitFullscreenTransition])
-    return nil;
-
-  enterFullscreenTransition_.reset(
-      [[BrowserWindowEnterFullscreenTransition alloc]
-          initWithWindow:self.window]);
-  return [enterFullscreenTransition_ customWindowsToEnterFullScreen];
-}
-
-- (void)window:(NSWindow*)window
-    startCustomAnimationToEnterFullScreenWithDuration:(NSTimeInterval)duration {
-  DCHECK([window isEqual:self.window]);
-  [enterFullscreenTransition_
-      startCustomAnimationToEnterFullScreenWithDuration:duration];
-}
-
-- (BOOL)shouldConstrainFrameRect {
-  if ([enterFullscreenTransition_ shouldWindowBeUnconstrained])
-    return NO;
-
-  return [super shouldConstrainFrameRect];
 }
 
 @end  // @implementation BrowserWindowController(Private)

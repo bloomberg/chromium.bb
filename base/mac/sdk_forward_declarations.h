@@ -105,7 +105,6 @@ typedef NSUInteger NSWindowButton;
 - (void)setAnimationBehavior:(NSWindowAnimationBehavior)newAnimationBehavior;
 - (void)toggleFullScreen:(id)sender;
 - (void)setRestorable:(BOOL)flag;
-- (NSRect)convertRectFromScreen:(NSRect)aRect;
 @end
 
 @interface NSCursor (LionSDKDeclarations)

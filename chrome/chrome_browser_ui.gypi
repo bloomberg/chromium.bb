@@ -302,8 +302,6 @@
       'browser/ui/cocoa/browser_window_layout.mm',
       'browser/ui/cocoa/browser_window_controller_private.h',
       'browser/ui/cocoa/browser_window_controller_private.mm',
-      'browser/ui/cocoa/browser_window_enter_fullscreen_transition.h',
-      'browser/ui/cocoa/browser_window_enter_fullscreen_transition.mm',
       'browser/ui/cocoa/browser_window_factory_cocoa.mm',
       'browser/ui/cocoa/browser_window_utils.h',
       'browser/ui/cocoa/browser_window_utils.mm',
