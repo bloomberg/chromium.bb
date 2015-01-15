@@ -129,15 +129,15 @@ scoped_ptr<UserCloudPolicyManagerChromeOS>
       chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
   CHECK(user);
 
-  // Only users with gaia accounts have user cloud policy.
-  // USER_TYPE_RETAIL_MODE, USER_TYPE_KIOSK_APP, USER_TYPE_GUEST
-  // and USER_TYPE_SUPERVISED are not signed in and can't authenticate the
-  // policy registration.
-  // USER_TYPE_PUBLIC_ACCOUNT gets its policy from the
-  // DeviceLocalAccountPolicyService.
-  // Non-managed domains will be skipped by the below check
+  // User policy exists for enterprise accounts only:
+  // - For regular enterprise users (those who have a GAIA account), a
+  //   |UserCloudPolicyManagerChromeOS| is created here.
+  // - For device-local accounts, policy is provided by
+  //   |DeviceLocalAccountPolicyService|.
+  // All other user types do not have user policy.
   const std::string& username = user->email();
   if (!user->HasGaiaAccount() ||
+      user->IsSupervised() ||
       BrowserPolicyConnector::IsNonEnterpriseUser(username)) {
     return scoped_ptr<UserCloudPolicyManagerChromeOS>();
   }
