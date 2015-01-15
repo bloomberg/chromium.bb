@@ -16,9 +16,9 @@ Wheel: 1
 TouchStart: 1
 TouchMove: 0
 TouchEnd: 0
-GestureTapDown: 1
-GestureShowPress: 1
-GestureTap: 3
+GestureTapDown: 2
+GestureShowPress: 2
+GestureTap: 4
 GestureScrollBegin: 1
 GestureTapCancel: 1
 GestureScrollUpdate: 0
@@ -34,9 +34,9 @@ Wheel: 1 1 1
 TouchStart: 1 1 1
 TouchMove: 0 0 0
 TouchEnd: 0 0 0
-GestureTapDown: 1 1 1
-GestureShowPress: 1 1 1
-GestureTap: 1 1 3
+GestureTapDown: 1 1 2
+GestureShowPress: 1 1 2
+GestureTap: 1 1 4
 GestureScrollBegin: 1 1 1
 GestureTapCancel: 1 1 1
 GestureScrollUpdate: 0 0 0
