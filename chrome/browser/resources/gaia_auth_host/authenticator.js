@@ -50,6 +50,22 @@ cr.define('cr.login', function() {
   };
 
   /**
+   * Supported Authenticator params.
+   * @type {!Array.<string>}
+   * @const
+   */
+  var SUPPORTED_PARAMS = [
+    'gaiaUrl',       // Gaia url to use;
+    'gaiaPath',      // Gaia path to use without a leading slash;
+    'hl',            // Language code for the user interface;
+    'email',         // Pre-fill the email field in Gaia UI;
+    'service',       // Name of Gaia service;
+    'continueUrl',   // Continue url to use;
+    'frameUrl',      // Initial frame URL to use. If empty defaults to gaiaUrl.
+    'constrained'    // Whether the extension is loaded in a constrained window;
+  ];
+
+  /**
    * Initializes the authenticator component.
    * @param {webview|string} webview The webview element or its ID to host IdP
    *     web pages.
@@ -304,6 +320,7 @@ cr.define('cr.login', function() {
 
   Authenticator.AuthFlow = AuthFlow;
   Authenticator.AuthMode = AuthMode;
+  Authenticator.SUPPORTED_PARAMS = SUPPORTED_PARAMS;
 
   return {
     // TODO(guohui, xiyuan): Rename GaiaAuthHost to Authenticator once the old
