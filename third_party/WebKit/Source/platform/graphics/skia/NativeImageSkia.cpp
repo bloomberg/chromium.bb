@@ -113,22 +113,19 @@ void NativeImageSkia::drawPattern(
     SkRect destRectTarget;
     totalMatrix.mapRect(&destRectTarget, normSrcRect);
 
-    bool isLazyDecoded = DeferredImageDecoder::isLazyDecoded(bitmap());
+    float destBitmapWidth = SkScalarToFloat(destRectTarget.width());
+    float destBitmapHeight = SkScalarToFloat(destRectTarget.height());
 
-    // smallImageDetected takes precedence over isLazyDecoded.
-    bool smallImageDetected = isSmallImage(normSrcRect) || isSmallImage(destRectTarget);
+    bool isLazyDecoded = DeferredImageDecoder::isLazyDecoded(bitmap());
 
     // Compute the resampling mode.
     InterpolationQuality resampling;
-    if (context->printing())
+    if (context->isAccelerated() || context->printing())
         resampling = InterpolationLow;
-    else if (context->isAccelerated() && !smallImageDetected)
-        resampling = InterpolationLow;
-    else if (isLazyDecoded && !smallImageDetected)
+    else if (isLazyDecoded)
         resampling = InterpolationHigh;
     else
-        resampling = computeInterpolationQuality(totalMatrix, normSrcRect, destRectTarget, isDataComplete());
-
+        resampling = computeInterpolationQuality(totalMatrix, normSrcRect.width(), normSrcRect.height(), destBitmapWidth, destBitmapHeight, isDataComplete());
     resampling = limitInterpolationQuality(context, resampling);
 
     SkMatrix localMatrix;

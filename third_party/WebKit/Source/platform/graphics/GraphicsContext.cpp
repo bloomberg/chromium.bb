@@ -1990,7 +1990,10 @@ int GraphicsContext::preparePaintForDrawRectToRect(
         if (!(totalMatrix.getType() & (SkMatrix::kAffine_Mask | SkMatrix::kPerspective_Mask)))
             totalMatrix.mapRect(&destRectTarget, destRect);
 
-        resampling = computeInterpolationQuality(totalMatrix, srcRect, destRectTarget, isDataComplete);
+        resampling = computeInterpolationQuality(totalMatrix,
+            SkScalarToFloat(srcRect.width()), SkScalarToFloat(srcRect.height()),
+            SkScalarToFloat(destRectTarget.width()), SkScalarToFloat(destRectTarget.height()),
+            isDataComplete);
     }
 
     if (resampling == InterpolationNone) {
