@@ -60,8 +60,8 @@ public class CardUnmaskPrompt implements DialogInterface.OnDismissListener, Text
         mDialog = new AlertDialog.Builder(context)
                           .setTitle(title)
                           .setView(v)
-                          .setNegativeButton("Back", null)
-                          .setPositiveButton("Rock on", null)
+                          .setNegativeButton(R.string.cancel, null)
+                          .setPositiveButton(R.string.card_unmask_confirm_button, null)
                           .setOnDismissListener(this)
                           .create();
     }

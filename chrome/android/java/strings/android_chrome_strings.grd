@@ -93,29 +93,6 @@
   </translations>
   <release allow_pseudo="false" seq="1">
     <messages fallback_to_english="true">
-      <!-- Generic strings -->
-      <message name="IDS_OK" desc="Label for a confirm button. Used in multiple contexts. [CHAR-LIMIT=20]">
-        OK
-      </message>
-      <message name="IDS_CANCEL" desc="Label for a cancel button. Used in multiple contexts. [CHAR-LIMIT=20]">
-        Cancel
-      </message>
-      <message name="IDS_SAVE" desc="Label for a button to save a change. Used in multiple contexts. [CHAR-LIMIT=20]">
-        Save
-      </message>
-      <message name="IDS_DELETE" desc="Label for a delete button. Used in multiple contexts. [CHAR-LIMIT=20]">
-        Delete
-      </message>
-      <message name="IDS_TEXT_ON" desc="Text indicating that an option is turned on. [CHAR-LIMIT=20]">
-        On
-      </message>
-      <message name="IDS_TEXT_OFF" desc="Text indicating that an option is turned off. [CHAR-LIMIT=20]">
-        Off
-      </message>
-      <message name="IDS_LEARN_MORE" desc="Generic label for menu item to learn more about a feature. [CHAR-LIMIT=32]">
-        Learn more
-      </message>
-
       <!-- Main Preferences -->
       <message name="IDS_PREFERENCES" desc="Title for Chrome's Settings.">
         Settings
