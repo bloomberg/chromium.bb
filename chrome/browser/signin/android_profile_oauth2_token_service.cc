@@ -55,9 +55,9 @@ class AndroidAccessTokenFetcher : public OAuth2AccessTokenFetcher {
  private:
   std::string CombineScopes(const std::vector<std::string>& scopes);
 
-  base::WeakPtrFactory<AndroidAccessTokenFetcher> weak_factory_;
   std::string account_id_;
   bool request_was_cancelled_;
+  base::WeakPtrFactory<AndroidAccessTokenFetcher> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AndroidAccessTokenFetcher);
 };
@@ -66,9 +66,9 @@ AndroidAccessTokenFetcher::AndroidAccessTokenFetcher(
     OAuth2AccessTokenConsumer* consumer,
     const std::string& account_id)
     : OAuth2AccessTokenFetcher(consumer),
-      weak_factory_(this),
       account_id_(account_id),
-      request_was_cancelled_(false) {
+      request_was_cancelled_(false),
+      weak_factory_(this) {
 }
 
 AndroidAccessTokenFetcher::~AndroidAccessTokenFetcher() {}

@@ -115,8 +115,8 @@ class TabContentManager : public ThumbnailStoreObserver {
   LayerMap live_layer_list_;
   TabReadbackRequestMap pending_tab_readbacks_;
 
-  base::WeakPtrFactory<TabContentManager> weak_factory_;
   JavaObjectWeakGlobalRef weak_java_tab_content_manager_;
+  base::WeakPtrFactory<TabContentManager> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TabContentManager);
 };
