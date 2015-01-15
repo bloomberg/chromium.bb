@@ -27,14 +27,11 @@ const base::FilePath::CharType kTestFile[] =
 class DefaultAppOrderTest : public testing::Test {
  public:
   DefaultAppOrderTest() {}
-  virtual ~DefaultAppOrderTest() {}
+  ~DefaultAppOrderTest() override {}
 
   // testing::Test overrides:
-  virtual void SetUp() override {
-    default_app_order::Get(&built_in_default_);
-  }
-  virtual void TearDown() override {
-  }
+  void SetUp() override { default_app_order::Get(&built_in_default_); }
+  void TearDown() override {}
 
   bool IsBuiltInDefault(const std::vector<std::string>& apps) {
     if (apps.size() != built_in_default_.size())

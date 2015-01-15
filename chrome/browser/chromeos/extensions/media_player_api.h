@@ -23,7 +23,7 @@ class MediaPlayerEventRouter;
 class MediaPlayerAPI : public BrowserContextKeyedAPI {
  public:
   explicit MediaPlayerAPI(content::BrowserContext* context);
-  virtual ~MediaPlayerAPI();
+  ~MediaPlayerAPI() override;
 
   // Convenience method to get the MediaPlayerAPI for a profile.
   static MediaPlayerAPI* Get(content::BrowserContext* context);

@@ -162,21 +162,21 @@ class FileManagerPrivateApiTest : public ExtensionApiTest {
     InitMountPoints();
   }
 
-  virtual ~FileManagerPrivateApiTest() {
+  ~FileManagerPrivateApiTest() override {
     DCHECK(!disk_mount_manager_mock_);
     DCHECK(!testing_profile_);
     DCHECK(!event_router_);
     STLDeleteValues(&volumes_);
   }
 
-  virtual void SetUpOnMainThread() override {
+  void SetUpOnMainThread() override {
     ExtensionApiTest::SetUpOnMainThread();
 
     testing_profile_.reset(new TestingProfile());
     event_router_.reset(new file_manager::EventRouter(testing_profile_.get()));
   }
 
-  virtual void TearDownOnMainThread() override {
+  void TearDownOnMainThread() override {
     event_router_->Shutdown();
 
     event_router_.reset();
@@ -186,7 +186,7 @@ class FileManagerPrivateApiTest : public ExtensionApiTest {
   }
 
   // ExtensionApiTest override
-  virtual void SetUpInProcessBrowserTestFixture() override {
+  void SetUpInProcessBrowserTestFixture() override {
     ExtensionApiTest::SetUpInProcessBrowserTestFixture();
     disk_mount_manager_mock_ = new chromeos::disks::MockDiskMountManager;
     chromeos::disks::DiskMountManager::InitializeForTesting(
@@ -203,7 +203,7 @@ class FileManagerPrivateApiTest : public ExtensionApiTest {
   }
 
   // ExtensionApiTest override
-  virtual void TearDownInProcessBrowserTestFixture() override {
+  void TearDownInProcessBrowserTestFixture() override {
     chromeos::disks::DiskMountManager::Shutdown();
     disk_mount_manager_mock_ = NULL;
 

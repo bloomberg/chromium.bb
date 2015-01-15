@@ -26,13 +26,13 @@ class WallpaperSetWallpaperFunction : public WallpaperFunctionBase {
   WallpaperSetWallpaperFunction();
 
  protected:
-  virtual ~WallpaperSetWallpaperFunction();
+  ~WallpaperSetWallpaperFunction() override;
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 
  private:
-  virtual void OnWallpaperDecoded(const gfx::ImageSkia& image) override;
+  void OnWallpaperDecoded(const gfx::ImageSkia& image) override;
 
   // Generates thumbnail of custom wallpaper. A simple STRETCH is used for
   // generating thumbnail.

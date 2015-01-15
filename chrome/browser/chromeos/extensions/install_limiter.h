@@ -31,7 +31,7 @@ class InstallLimiter : public KeyedService,
   static InstallLimiter* Get(Profile* profile);
 
   InstallLimiter();
-  virtual ~InstallLimiter();
+  ~InstallLimiter() override;
 
   void DisableForTest();
 
@@ -68,9 +68,9 @@ class InstallLimiter : public KeyedService,
                   const base::FilePath& path);
 
   // content::NotificationObserver overrides:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   content::NotificationRegistrar registrar_;
 

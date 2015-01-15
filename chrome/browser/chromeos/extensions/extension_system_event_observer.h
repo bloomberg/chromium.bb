@@ -18,14 +18,14 @@ class ExtensionSystemEventObserver : public PowerManagerClient::Observer,
  public:
   // This class registers/unregisters itself as an observer in ctor/dtor.
   ExtensionSystemEventObserver();
-  virtual ~ExtensionSystemEventObserver();
+  ~ExtensionSystemEventObserver() override;
 
   // PowerManagerClient::Observer overrides:
-  virtual void BrightnessChanged(int level, bool user_initiated) override;
-  virtual void SuspendDone(const base::TimeDelta& sleep_duration) override;
+  void BrightnessChanged(int level, bool user_initiated) override;
+  void SuspendDone(const base::TimeDelta& sleep_duration) override;
 
   // SessionManagerClient::Observer override.
-  virtual void ScreenIsUnlocked() override;
+  void ScreenIsUnlocked() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ExtensionSystemEventObserver);

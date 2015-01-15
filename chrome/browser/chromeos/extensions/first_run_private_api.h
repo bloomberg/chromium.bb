@@ -16,10 +16,10 @@ class FirstRunPrivateGetLocalizedStringsFunction
                              FIRSTRUNPRIVATE_GETLOCALIZEDSTRINGS)
 
  protected:
-  virtual ~FirstRunPrivateGetLocalizedStringsFunction() {}
+  ~FirstRunPrivateGetLocalizedStringsFunction() override {}
 
   // SyncExtensionFunction overrides.
-  virtual bool RunSync() override;
+  bool RunSync() override;
 };
 
 class FirstRunPrivateLaunchTutorialFunction
@@ -29,10 +29,10 @@ class FirstRunPrivateLaunchTutorialFunction
                              FIRSTRUNPRIVATE_LAUNCHTUTORIAL)
 
  protected:
-  virtual ~FirstRunPrivateLaunchTutorialFunction() {}
+  ~FirstRunPrivateLaunchTutorialFunction() override {}
 
   // SyncExtensionFunction overrides.
-  virtual bool RunSync() override;
+  bool RunSync() override;
 };
 
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FIRST_RUN_PRIVATE_API_H_

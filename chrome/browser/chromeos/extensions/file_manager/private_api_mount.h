@@ -28,10 +28,10 @@ class FileManagerPrivateAddMountFunction : public LoggedAsyncExtensionFunction {
                              FILEMANAGERPRIVATE_ADDMOUNT)
 
  protected:
-  virtual ~FileManagerPrivateAddMountFunction() {}
+  ~FileManagerPrivateAddMountFunction() override {}
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 
  private:
   // Part of Run(). Called after GetFile for Drive File System.
@@ -56,10 +56,10 @@ class FileManagerPrivateRemoveMountFunction
                              FILEMANAGERPRIVATE_REMOVEMOUNT)
 
  protected:
-  virtual ~FileManagerPrivateRemoveMountFunction() {}
+  ~FileManagerPrivateRemoveMountFunction() override {}
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 };
 
 // Implements chrome.fileManagerPrivate.getVolumeMetadataList method.
@@ -70,10 +70,10 @@ class FileManagerPrivateGetVolumeMetadataListFunction
                              FILEMANAGERPRIVATE_GETVOLUMEMETADATALIST)
 
  protected:
-  virtual ~FileManagerPrivateGetVolumeMetadataListFunction() {}
+  ~FileManagerPrivateGetVolumeMetadataListFunction() override {}
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 };
 
 }  // namespace extensions

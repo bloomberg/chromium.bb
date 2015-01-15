@@ -26,10 +26,10 @@ class FileManagerPrivateCancelDialogFunction
                              FILEMANAGERPRIVATE_CANCELDIALOG)
 
  protected:
-  virtual ~FileManagerPrivateCancelDialogFunction() {}
+  ~FileManagerPrivateCancelDialogFunction() override {}
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 };
 
 class FileManagerPrivateSelectFileFunction
@@ -39,10 +39,10 @@ class FileManagerPrivateSelectFileFunction
                              FILEMANAGERPRIVATE_SELECTFILE)
 
  protected:
-  virtual ~FileManagerPrivateSelectFileFunction() {}
+  ~FileManagerPrivateSelectFileFunction() override {}
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 
  private:
   // A callback method to handle the result of GetSelectedFileInfo.
@@ -59,10 +59,10 @@ class FileManagerPrivateSelectFilesFunction
                              FILEMANAGERPRIVATE_SELECTFILES)
 
  protected:
-  virtual ~FileManagerPrivateSelectFilesFunction() {}
+  ~FileManagerPrivateSelectFilesFunction() override {}
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 
  private:
   // A callback method to handle the result of GetSelectedFileInfo.

@@ -40,10 +40,10 @@ class FileManagerPrivateRequestFileSystemFunction
                              FILEMANAGERPRIVATE_REQUESTFILESYSTEM)
 
  protected:
-  virtual ~FileManagerPrivateRequestFileSystemFunction() {}
+  ~FileManagerPrivateRequestFileSystemFunction() override {}
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 
  private:
   void RespondSuccessOnUIThread(const std::string& name,
@@ -77,7 +77,7 @@ class FileWatchFunctionBase : public LoggedAsyncExtensionFunction {
   void Respond(bool success);
 
  protected:
-  virtual ~FileWatchFunctionBase() {}
+  ~FileWatchFunctionBase() override {}
 
   // Performs a file watch operation (ex. adds or removes a file watch).
   virtual void PerformFileWatchOperation(
@@ -86,7 +86,7 @@ class FileWatchFunctionBase : public LoggedAsyncExtensionFunction {
       const std::string& extension_id) = 0;
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 };
 
 // Implements the chrome.fileManagerPrivate.addFileWatch method.
@@ -97,10 +97,10 @@ class FileManagerPrivateAddFileWatchFunction : public FileWatchFunctionBase {
                              FILEMANAGERPRIVATE_ADDFILEWATCH)
 
  protected:
-  virtual ~FileManagerPrivateAddFileWatchFunction() {}
+  ~FileManagerPrivateAddFileWatchFunction() override {}
 
   // FileWatchFunctionBase override.
-  virtual void PerformFileWatchOperation(
+  void PerformFileWatchOperation(
       scoped_refptr<storage::FileSystemContext> file_system_context,
       const storage::FileSystemURL& file_system_url,
       const std::string& extension_id) override;
@@ -115,10 +115,10 @@ class FileManagerPrivateRemoveFileWatchFunction : public FileWatchFunctionBase {
                              FILEMANAGERPRIVATE_REMOVEFILEWATCH)
 
  protected:
-  virtual ~FileManagerPrivateRemoveFileWatchFunction() {}
+  ~FileManagerPrivateRemoveFileWatchFunction() override {}
 
   // FileWatchFunctionBase override.
-  virtual void PerformFileWatchOperation(
+  void PerformFileWatchOperation(
       scoped_refptr<storage::FileSystemContext> file_system_context,
       const storage::FileSystemURL& file_system_url,
       const std::string& extension_id) override;
@@ -132,10 +132,10 @@ class FileManagerPrivateGetSizeStatsFunction
                              FILEMANAGERPRIVATE_GETSIZESTATS)
 
  protected:
-  virtual ~FileManagerPrivateGetSizeStatsFunction() {}
+  ~FileManagerPrivateGetSizeStatsFunction() override {}
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 
  private:
   void GetDriveAvailableSpaceCallback(drive::FileError error,
@@ -154,12 +154,12 @@ class FileManagerPrivateValidatePathNameLengthFunction
                              FILEMANAGERPRIVATE_VALIDATEPATHNAMELENGTH)
 
  protected:
-  virtual ~FileManagerPrivateValidatePathNameLengthFunction() {}
+  ~FileManagerPrivateValidatePathNameLengthFunction() override {}
 
   void OnFilePathLimitRetrieved(size_t current_length, size_t max_length);
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 };
 
 // Implements the chrome.fileManagerPrivate.formatVolume method.
@@ -171,10 +171,10 @@ class FileManagerPrivateFormatVolumeFunction
                              FILEMANAGERPRIVATE_FORMATVOLUME)
 
  protected:
-  virtual ~FileManagerPrivateFormatVolumeFunction() {}
+  ~FileManagerPrivateFormatVolumeFunction() override {}
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 };
 
 // Implements the chrome.fileManagerPrivate.startCopy method.
@@ -185,10 +185,10 @@ class FileManagerPrivateStartCopyFunction
                              FILEMANAGERPRIVATE_STARTCOPY)
 
  protected:
-  virtual ~FileManagerPrivateStartCopyFunction() {}
+  ~FileManagerPrivateStartCopyFunction() override {}
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 
  private:
   // Part of RunAsync(). Called after Copy() is started on IO thread.
@@ -203,10 +203,10 @@ class FileManagerPrivateCancelCopyFunction
                              FILEMANAGERPRIVATE_CANCELCOPY)
 
  protected:
-  virtual ~FileManagerPrivateCancelCopyFunction() {}
+  ~FileManagerPrivateCancelCopyFunction() override {}
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 };
 
 // Implements the chrome.fileManagerPrivateInternal.resolveIsolatedEntries
@@ -219,10 +219,10 @@ class FileManagerPrivateInternalResolveIsolatedEntriesFunction
       FILEMANAGERPRIVATE_RESOLVEISOLATEDENTRIES)
 
  protected:
-  virtual ~FileManagerPrivateInternalResolveIsolatedEntriesFunction() {}
+  ~FileManagerPrivateInternalResolveIsolatedEntriesFunction() override {}
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 
  private:
   void RunAsyncAfterConvertFileDefinitionListToEntryDefinitionList(scoped_ptr<
@@ -236,10 +236,10 @@ class FileManagerPrivateComputeChecksumFunction
                              FILEMANAGERPRIVATE_COMPUTECHECKSUM)
 
  protected:
-  virtual ~FileManagerPrivateComputeChecksumFunction() {}
+  ~FileManagerPrivateComputeChecksumFunction() override {}
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 
  private:
   void Respond(const std::string& hash);

@@ -35,30 +35,28 @@ class DeviceEventRouter : public VolumeManagerObserver,
   // |so that the tasks are executed by RunLoop::RunUntilIdle.
   explicit DeviceEventRouter(base::TimeDelta overriding_time_delta);
 
-  virtual ~DeviceEventRouter();
+  ~DeviceEventRouter() override;
 
   // Turns the startup flag on, and then turns it off after few seconds.
   void Startup();
 
   // VolumeManagerObserver overrides.
-  virtual void OnDiskAdded(const chromeos::disks::DiskMountManager::Disk& disk,
-                           bool mounting) override;
-  virtual void OnDiskRemoved(
+  void OnDiskAdded(const chromeos::disks::DiskMountManager::Disk& disk,
+                   bool mounting) override;
+  void OnDiskRemoved(
       const chromeos::disks::DiskMountManager::Disk& disk) override;
-  virtual void OnDeviceAdded(const std::string& device_path) override;
-  virtual void OnDeviceRemoved(const std::string& device_path) override;
-  virtual void OnVolumeMounted(chromeos::MountError error_code,
-                               const VolumeInfo& volume_info) override;
-  virtual void OnVolumeUnmounted(chromeos::MountError error_code,
-                                 const VolumeInfo& volume_info) override;
-  virtual void OnFormatStarted(const std::string& device_path,
-                               bool success) override;
-  virtual void OnFormatCompleted(const std::string& device_path,
-                                 bool success) override;
+  void OnDeviceAdded(const std::string& device_path) override;
+  void OnDeviceRemoved(const std::string& device_path) override;
+  void OnVolumeMounted(chromeos::MountError error_code,
+                       const VolumeInfo& volume_info) override;
+  void OnVolumeUnmounted(chromeos::MountError error_code,
+                         const VolumeInfo& volume_info) override;
+  void OnFormatStarted(const std::string& device_path, bool success) override;
+  void OnFormatCompleted(const std::string& device_path, bool success) override;
 
   // PowerManagerClient::Observer overrides.
-  virtual void SuspendImminent() override;
-  virtual void SuspendDone(const base::TimeDelta& sleep_duration) override;
+  void SuspendImminent() override;
+  void SuspendDone(const base::TimeDelta& sleep_duration) override;
 
   bool is_resuming() const { return is_resuming_; }
   bool is_starting_up() const { return is_starting_up_; }

@@ -32,10 +32,10 @@ class FileManagerPrivateExecuteTaskFunction
                              FILEMANAGERPRIVATE_EXECUTETASK)
 
  protected:
-  virtual ~FileManagerPrivateExecuteTaskFunction() {}
+  ~FileManagerPrivateExecuteTaskFunction() override {}
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 
  private:
   void OnTaskExecuted(
@@ -52,10 +52,10 @@ class FileManagerPrivateGetFileTasksFunction
                              FILEMANAGERPRIVATE_GETFILETASKS)
 
  protected:
-  virtual ~FileManagerPrivateGetFileTasksFunction();
+  ~FileManagerPrivateGetFileTasksFunction() override;
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 
  private:
   void OnMimeTypesCollected(scoped_ptr<std::vector<std::string> > mime_types);
@@ -77,10 +77,10 @@ class FileManagerPrivateSetDefaultTaskFunction
                              FILEMANAGERPRIVATE_SETDEFAULTTASK)
 
  protected:
-  virtual ~FileManagerPrivateSetDefaultTaskFunction() {}
+  ~FileManagerPrivateSetDefaultTaskFunction() override {}
 
   // SyncExtensionFunction overrides.
-  virtual bool RunSync() override;
+  bool RunSync() override;
 };
 
 }  // namespace extensions

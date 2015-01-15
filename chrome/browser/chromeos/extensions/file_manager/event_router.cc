@@ -340,8 +340,8 @@ class DeviceEventRouterImpl : public DeviceEventRouter {
   explicit DeviceEventRouterImpl(Profile* profile) : profile_(profile) {}
 
   // DeviceEventRouter overrides.
-  virtual void OnDeviceEvent(file_manager_private::DeviceEventType type,
-                             const std::string& device_path) override {
+  void OnDeviceEvent(file_manager_private::DeviceEventType type,
+                     const std::string& device_path) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     file_manager_private::DeviceEvent event;
@@ -354,7 +354,7 @@ class DeviceEventRouterImpl : public DeviceEventRouter {
   }
 
   // DeviceEventRouter overrides.
-  virtual bool IsExternalStorageDisabled() override {
+  bool IsExternalStorageDisabled() override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     return profile_->GetPrefs()->GetBoolean(prefs::kExternalStorageDisabled);
   }

@@ -20,12 +20,12 @@ class DeviceLocalAccountManagementPolicyProvider
  public:
   explicit DeviceLocalAccountManagementPolicyProvider(
       policy::DeviceLocalAccount::Type account_type);
-  virtual ~DeviceLocalAccountManagementPolicyProvider();
+  ~DeviceLocalAccountManagementPolicyProvider() override;
 
   // extensions::ManagementPolicy::Provider:
-  virtual std::string GetDebugPolicyProviderName() const override;
-  virtual bool UserMayLoad(const extensions::Extension* extension,
-                           base::string16* error) const override;
+  std::string GetDebugPolicyProviderName() const override;
+  bool UserMayLoad(const extensions::Extension* extension,
+                   base::string16* error) const override;
 
  private:
   const policy::DeviceLocalAccount::Type account_type_;

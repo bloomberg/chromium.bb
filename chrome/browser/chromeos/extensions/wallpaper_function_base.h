@@ -22,7 +22,7 @@ class WallpaperFunctionBase : public AsyncExtensionFunction {
   WallpaperFunctionBase();
 
  protected:
-  virtual ~WallpaperFunctionBase();
+  ~WallpaperFunctionBase() override;
 
   // A class to decode JPEG file.
   class UnsafeWallpaperDecoder;

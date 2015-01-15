@@ -106,11 +106,11 @@ class FileBrowserHandlerInternalSelectFileFunction
 
  protected:
   // The class is ref counted, so destructor should not be public.
-  virtual ~FileBrowserHandlerInternalSelectFileFunction();
+  ~FileBrowserHandlerInternalSelectFileFunction() override;
 
   // AsyncExtensionFunction implementation.
   // Runs the extension function implementation.
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 
  private:
   // Respond to the API with selected entry definition.

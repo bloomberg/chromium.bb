@@ -65,10 +65,10 @@ class EventRouter : public KeyedService,
       DispatchDirectoryChangeEventImplCallback;
 
   explicit EventRouter(Profile* profile);
-  virtual ~EventRouter();
+  ~EventRouter() override;
 
   // KeyedService overrides.
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
   typedef base::Callback<void(bool success)> BoolCallback;
 
@@ -111,45 +111,41 @@ class EventRouter : public KeyedService,
       storage::WatcherManager::ChangeType change_type);
 
   // chromeos::NetworkStateHandlerObserver overrides.
-  virtual void DefaultNetworkChanged(
-      const chromeos::NetworkState* network) override;
+  void DefaultNetworkChanged(const chromeos::NetworkState* network) override;
 
   // drive::JobListObserver overrides.
-  virtual void OnJobAdded(const drive::JobInfo& job_info) override;
-  virtual void OnJobUpdated(const drive::JobInfo& job_info) override;
-  virtual void OnJobDone(const drive::JobInfo& job_info,
-                         drive::FileError error) override;
+  void OnJobAdded(const drive::JobInfo& job_info) override;
+  void OnJobUpdated(const drive::JobInfo& job_info) override;
+  void OnJobDone(const drive::JobInfo& job_info,
+                 drive::FileError error) override;
 
   // drive::DriveServiceObserver overrides.
-  virtual void OnRefreshTokenInvalid() override;
+  void OnRefreshTokenInvalid() override;
 
   // drive::FileSystemObserver overrides.
-  virtual void OnDirectoryChanged(const base::FilePath& drive_path) override;
-  virtual void OnFileChanged(const drive::FileChange& changed_files) override;
-  virtual void OnDriveSyncError(drive::file_system::DriveSyncErrorType type,
-                                const base::FilePath& drive_path) override;
+  void OnDirectoryChanged(const base::FilePath& drive_path) override;
+  void OnFileChanged(const drive::FileChange& changed_files) override;
+  void OnDriveSyncError(drive::file_system::DriveSyncErrorType type,
+                        const base::FilePath& drive_path) override;
 
   // VolumeManagerObserver overrides.
-  virtual void OnDiskAdded(
-      const chromeos::disks::DiskMountManager::Disk& disk,
-      bool mounting) override;
-  virtual void OnDiskRemoved(
+  void OnDiskAdded(const chromeos::disks::DiskMountManager::Disk& disk,
+                   bool mounting) override;
+  void OnDiskRemoved(
       const chromeos::disks::DiskMountManager::Disk& disk) override;
-  virtual void OnDeviceAdded(const std::string& device_path) override;
-  virtual void OnDeviceRemoved(const std::string& device_path) override;
-  virtual void OnVolumeMounted(chromeos::MountError error_code,
-                               const VolumeInfo& volume_info) override;
-  virtual void OnVolumeUnmounted(chromeos::MountError error_code,
-                                 const VolumeInfo& volume_info) override;
-  virtual void OnFormatStarted(
-      const std::string& device_path, bool success) override;
-  virtual void OnFormatCompleted(
-      const std::string& device_path, bool success) override;
+  void OnDeviceAdded(const std::string& device_path) override;
+  void OnDeviceRemoved(const std::string& device_path) override;
+  void OnVolumeMounted(chromeos::MountError error_code,
+                       const VolumeInfo& volume_info) override;
+  void OnVolumeUnmounted(chromeos::MountError error_code,
+                         const VolumeInfo& volume_info) override;
+  void OnFormatStarted(const std::string& device_path, bool success) override;
+  void OnFormatCompleted(const std::string& device_path, bool success) override;
 
   // content::NotificationObserver overrides.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // Set custom dispatch directory change event implementation for testing.
   void SetDispatchDirectoryChangeEventImplForTesting(

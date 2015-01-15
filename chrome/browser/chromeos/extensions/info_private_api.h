@@ -21,9 +21,9 @@ class ChromeosInfoPrivateGetFunction : public AsyncExtensionFunction {
   ChromeosInfoPrivateGetFunction();
 
  protected:
-  virtual ~ChromeosInfoPrivateGetFunction();
+  ~ChromeosInfoPrivateGetFunction() override;
 
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 
  private:
   // Returns a newly allocate value, or null.
@@ -40,9 +40,9 @@ class ChromeosInfoPrivateSetFunction : public SyncExtensionFunction {
   ChromeosInfoPrivateSetFunction();
 
  protected:
-  virtual ~ChromeosInfoPrivateSetFunction();
+  ~ChromeosInfoPrivateSetFunction() override;
 
-  virtual bool RunSync() override;
+  bool RunSync() override;
 
  private:
   DECLARE_EXTENSION_FUNCTION("chromeosInfoPrivate.set", CHROMEOSINFOPRIVATE_SET)

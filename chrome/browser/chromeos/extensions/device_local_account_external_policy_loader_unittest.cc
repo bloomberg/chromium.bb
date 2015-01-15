@@ -95,10 +95,10 @@ MockExternalPolicyProviderVisitor::~MockExternalPolicyProviderVisitor() {
 class DeviceLocalAccountExternalPolicyLoaderTest : public testing::Test {
  protected:
   DeviceLocalAccountExternalPolicyLoaderTest();
-  virtual ~DeviceLocalAccountExternalPolicyLoaderTest();
+  ~DeviceLocalAccountExternalPolicyLoaderTest() override;
 
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
   void VerifyAndResetVisitorCallExpectations();
   void SetForceInstallListPolicy();

@@ -112,7 +112,7 @@ class WindowStateManager : public aura::WindowObserver {
  private:
   WindowStateManager();
 
-  virtual ~WindowStateManager();
+  ~WindowStateManager() override;
 
   // Store all unminimized windows except |active_window| and minimize them.
   // All the windows are saved in a map and the key value is |user_id_hash|.
@@ -127,7 +127,7 @@ class WindowStateManager : public aura::WindowObserver {
   void RemoveObserverIfUnreferenced(aura::Window* window);
 
   // aura::WindowObserver overrides.
-  virtual void OnWindowDestroyed(aura::Window* window) override;
+  void OnWindowDestroyed(aura::Window* window) override;
 
   // Map of user id hash and associated list of minimized windows.
   UserIDHashWindowListMap user_id_hash_window_list_map_;

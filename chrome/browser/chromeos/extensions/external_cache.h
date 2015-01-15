@@ -73,7 +73,7 @@ class ExternalCache : public content::NotificationObserver,
                 Delegate* delegate,
                 bool always_check_updates,
                 bool wait_for_cache_initialization);
-  virtual ~ExternalCache();
+  ~ExternalCache() override;
 
   // Returns already cached extensions.
   const base::DictionaryValue* cached_extensions() {
@@ -81,30 +81,28 @@ class ExternalCache : public content::NotificationObserver,
   }
 
   // Implementation of content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // Implementation of ExtensionDownloaderDelegate:
-  virtual void OnExtensionDownloadFailed(
-      const std::string& id,
-      Error error,
-      const PingResult& ping_result,
-      const std::set<int>& request_ids) override;
+  void OnExtensionDownloadFailed(const std::string& id,
+                                 Error error,
+                                 const PingResult& ping_result,
+                                 const std::set<int>& request_ids) override;
 
-  virtual void OnExtensionDownloadFinished(
-      const std::string& id,
-      const base::FilePath& path,
-      bool file_ownership_passed,
-      const GURL& download_url,
-      const std::string& version,
-      const PingResult& ping_result,
-      const std::set<int>& request_ids) override;
+  void OnExtensionDownloadFinished(const std::string& id,
+                                   const base::FilePath& path,
+                                   bool file_ownership_passed,
+                                   const GURL& download_url,
+                                   const std::string& version,
+                                   const PingResult& ping_result,
+                                   const std::set<int>& request_ids) override;
 
-  virtual bool IsExtensionPending(const std::string& id) override;
+  bool IsExtensionPending(const std::string& id) override;
 
-  virtual bool GetExtensionExistingVersion(const std::string& id,
-                                           std::string* version) override;
+  bool GetExtensionExistingVersion(const std::string& id,
+                                   std::string* version) override;
 
   // Shut down the cache. The |callback| will be invoked when the cache has shut
   // down completely and there are no more pending file I/O operations.

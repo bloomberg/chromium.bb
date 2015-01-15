@@ -48,12 +48,12 @@ class TestMinimizeFunction
  public:
   TestMinimizeFunction() {}
 
-  virtual bool RunAsync() override {
+  bool RunAsync() override {
     return WallpaperPrivateMinimizeInactiveWindowsFunction::RunAsync();
   }
 
  protected:
-  virtual ~TestMinimizeFunction() {}
+  ~TestMinimizeFunction() override {}
 };
 
 class TestRestoreFunction
@@ -61,11 +61,11 @@ class TestRestoreFunction
  public:
   TestRestoreFunction() {}
 
-  virtual bool RunAsync() override {
+  bool RunAsync() override {
     return WallpaperPrivateRestoreMinimizedWindowsFunction::RunAsync();
   }
  protected:
-  virtual ~TestRestoreFunction() {}
+  ~TestRestoreFunction() override {}
 };
 
 }  // namespace
@@ -183,8 +183,8 @@ class WallpaperPrivateApiMultiUserUnittest
       : multi_user_window_manager_(NULL),
         session_state_delegate_(NULL) {}
 
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
  protected:
   void SetUpMultiUserWindowManager(

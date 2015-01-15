@@ -38,7 +38,7 @@ class WallpaperFetcher : public net::URLFetcherDelegate {
  public:
   WallpaperFetcher() {}
 
-  virtual ~WallpaperFetcher() {}
+  ~WallpaperFetcher() override {}
 
   void FetchWallpaper(const GURL& url, FetchCallback callback) {
     CancelPreviousFetch();
@@ -54,7 +54,7 @@ class WallpaperFetcher : public net::URLFetcherDelegate {
 
  private:
   // URLFetcherDelegate overrides:
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) override {
+  void OnURLFetchComplete(const net::URLFetcher* source) override {
     DCHECK(url_fetcher_.get() == source);
 
     bool success = source->GetStatus().is_success() &&

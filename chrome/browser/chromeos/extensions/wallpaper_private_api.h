@@ -21,10 +21,10 @@ class WallpaperPrivateGetStringsFunction : public SyncExtensionFunction {
                              WALLPAPERPRIVATE_GETSTRINGS)
 
  protected:
-  virtual ~WallpaperPrivateGetStringsFunction() {}
+  ~WallpaperPrivateGetStringsFunction() override {}
 
   // SyncExtensionFunction overrides.
-  virtual bool RunSync() override;
+  bool RunSync() override;
 };
 
 // Check if sync themes setting is enabled.
@@ -34,10 +34,10 @@ class WallpaperPrivateGetSyncSettingFunction : public SyncExtensionFunction {
                              WALLPAPERPRIVATE_GETSYNCSETTING)
 
  protected:
-  virtual ~WallpaperPrivateGetSyncSettingFunction() {}
+  ~WallpaperPrivateGetSyncSettingFunction() override {}
 
   // SyncExtensionFunction overrides.
-  virtual bool RunSync() override;
+  bool RunSync() override;
 };
 
 class WallpaperPrivateSetWallpaperIfExistsFunction
@@ -49,13 +49,13 @@ class WallpaperPrivateSetWallpaperIfExistsFunction
   WallpaperPrivateSetWallpaperIfExistsFunction();
 
  protected:
-  virtual ~WallpaperPrivateSetWallpaperIfExistsFunction();
+  ~WallpaperPrivateSetWallpaperIfExistsFunction() override;
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 
  private:
-  virtual void OnWallpaperDecoded(const gfx::ImageSkia& image) override;
+  void OnWallpaperDecoded(const gfx::ImageSkia& image) override;
 
   // File doesn't exist. Sets javascript callback parameter to false.
   void OnFileNotExists(const std::string& error);
@@ -84,13 +84,13 @@ class WallpaperPrivateSetWallpaperFunction : public WallpaperFunctionBase {
   WallpaperPrivateSetWallpaperFunction();
 
  protected:
-  virtual ~WallpaperPrivateSetWallpaperFunction();
+  ~WallpaperPrivateSetWallpaperFunction() override;
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 
  private:
-  virtual void OnWallpaperDecoded(const gfx::ImageSkia& image) override;
+  void OnWallpaperDecoded(const gfx::ImageSkia& image) override;
 
   // Saves the image data to a file.
   void SaveToFile();
@@ -121,10 +121,10 @@ class WallpaperPrivateResetWallpaperFunction
   WallpaperPrivateResetWallpaperFunction();
 
  protected:
-  virtual ~WallpaperPrivateResetWallpaperFunction();
+  ~WallpaperPrivateResetWallpaperFunction() override;
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 };
 
 class WallpaperPrivateSetCustomWallpaperFunction
@@ -136,13 +136,13 @@ class WallpaperPrivateSetCustomWallpaperFunction
   WallpaperPrivateSetCustomWallpaperFunction();
 
  protected:
-  virtual ~WallpaperPrivateSetCustomWallpaperFunction();
+  ~WallpaperPrivateSetCustomWallpaperFunction() override;
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 
  private:
-  virtual void OnWallpaperDecoded(const gfx::ImageSkia& wallpaper) override;
+  void OnWallpaperDecoded(const gfx::ImageSkia& wallpaper) override;
 
   // Generates thumbnail of custom wallpaper. A simple STRETCH is used for
   // generating thunbail.
@@ -175,10 +175,10 @@ class WallpaperPrivateSetCustomWallpaperLayoutFunction
   WallpaperPrivateSetCustomWallpaperLayoutFunction();
 
  protected:
-  virtual ~WallpaperPrivateSetCustomWallpaperLayoutFunction();
+  ~WallpaperPrivateSetCustomWallpaperLayoutFunction() override;
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 };
 
 class WallpaperPrivateMinimizeInactiveWindowsFunction
@@ -190,10 +190,10 @@ class WallpaperPrivateMinimizeInactiveWindowsFunction
   WallpaperPrivateMinimizeInactiveWindowsFunction();
 
  protected:
-  virtual ~WallpaperPrivateMinimizeInactiveWindowsFunction();
+  ~WallpaperPrivateMinimizeInactiveWindowsFunction() override;
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 };
 
 class WallpaperPrivateRestoreMinimizedWindowsFunction
@@ -205,10 +205,10 @@ class WallpaperPrivateRestoreMinimizedWindowsFunction
   WallpaperPrivateRestoreMinimizedWindowsFunction();
 
  protected:
-  virtual ~WallpaperPrivateRestoreMinimizedWindowsFunction();
+  ~WallpaperPrivateRestoreMinimizedWindowsFunction() override;
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 };
 
 class WallpaperPrivateGetThumbnailFunction : public AsyncExtensionFunction {
@@ -219,10 +219,10 @@ class WallpaperPrivateGetThumbnailFunction : public AsyncExtensionFunction {
   WallpaperPrivateGetThumbnailFunction();
 
  protected:
-  virtual ~WallpaperPrivateGetThumbnailFunction();
+  ~WallpaperPrivateGetThumbnailFunction() override;
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 
  private:
   // Failed to get thumbnail for |file_name|.
@@ -252,10 +252,10 @@ class WallpaperPrivateSaveThumbnailFunction : public AsyncExtensionFunction {
   WallpaperPrivateSaveThumbnailFunction();
 
  protected:
-  virtual ~WallpaperPrivateSaveThumbnailFunction();
+  ~WallpaperPrivateSaveThumbnailFunction() override;
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 
  private:
   // Failed to save thumbnail for |file_name|.
@@ -280,10 +280,10 @@ class WallpaperPrivateGetOfflineWallpaperListFunction
   WallpaperPrivateGetOfflineWallpaperListFunction();
 
  protected:
-  virtual ~WallpaperPrivateGetOfflineWallpaperListFunction();
+  ~WallpaperPrivateGetOfflineWallpaperListFunction() override;
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 
  private:
   // Enumerates the list of files in online wallpaper directory.

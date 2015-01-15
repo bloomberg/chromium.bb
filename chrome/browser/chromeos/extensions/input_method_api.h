@@ -23,9 +23,9 @@ class GetInputMethodConfigFunction : public UIThreadExtensionFunction {
   GetInputMethodConfigFunction() {}
 
  protected:
-  virtual ~GetInputMethodConfigFunction() {}
+  ~GetInputMethodConfigFunction() override {}
 
-  virtual ResponseAction Run() override;
+  ResponseAction Run() override;
 
  private:
   DECLARE_EXTENSION_FUNCTION("inputMethodPrivate.getInputMethodConfig",
@@ -39,9 +39,9 @@ class GetCurrentInputMethodFunction : public UIThreadExtensionFunction {
   GetCurrentInputMethodFunction() {}
 
  protected:
-  virtual ~GetCurrentInputMethodFunction() {}
+  ~GetCurrentInputMethodFunction() override {}
 
-  virtual ResponseAction Run() override;
+  ResponseAction Run() override;
 
  private:
   DECLARE_EXTENSION_FUNCTION("inputMethodPrivate.getCurrentInputMethod",
@@ -55,9 +55,9 @@ class SetCurrentInputMethodFunction : public UIThreadExtensionFunction {
   SetCurrentInputMethodFunction() {}
 
  protected:
-  virtual ~SetCurrentInputMethodFunction() {}
+  ~SetCurrentInputMethodFunction() override {}
 
-  virtual ResponseAction Run() override;
+  ResponseAction Run() override;
 
  private:
   DECLARE_EXTENSION_FUNCTION("inputMethodPrivate.setCurrentInputMethod",
@@ -71,9 +71,9 @@ class GetInputMethodsFunction : public UIThreadExtensionFunction {
   GetInputMethodsFunction() {}
 
  protected:
-  virtual ~GetInputMethodsFunction() {}
+  ~GetInputMethodsFunction() override {}
 
-  virtual ResponseAction Run() override;
+  ResponseAction Run() override;
 
  private:
   DECLARE_EXTENSION_FUNCTION("inputMethodPrivate.getInputMethods",
@@ -87,7 +87,7 @@ class InputMethodAPI : public BrowserContextKeyedAPI,
   static const char kOnInputMethodChanged[];
 
   explicit InputMethodAPI(content::BrowserContext* context);
-  virtual ~InputMethodAPI();
+  ~InputMethodAPI() override;
 
   // Returns input method name for the given XKB (X keyboard extensions in X
   // Window System) id.
@@ -97,11 +97,10 @@ class InputMethodAPI : public BrowserContextKeyedAPI,
   static BrowserContextKeyedAPIFactory<InputMethodAPI>* GetFactoryInstance();
 
   // BrowserContextKeyedAPI implementation.
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
   // EventRouter::Observer implementation.
-  virtual void OnListenerAdded(const extensions::EventListenerInfo& details)
-      override;
+  void OnListenerAdded(const extensions::EventListenerInfo& details) override;
 
  private:
   friend class BrowserContextKeyedAPIFactory<InputMethodAPI>;

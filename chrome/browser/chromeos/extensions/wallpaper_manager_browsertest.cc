@@ -23,7 +23,7 @@ const char kWallpaperManagerExtensionID[] = "obklkkbkpaoaejdabbfldmcfplpdgolj";
 class WallpaperManagerBrowserTest : public extensions::PlatformAppBrowserTest {
  public:
   WallpaperManagerBrowserTest();
-  virtual ~WallpaperManagerBrowserTest();
+  ~WallpaperManagerBrowserTest() override;
 
  protected:
   void VerifyWallpaperManagerLoaded();

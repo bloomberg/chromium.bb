@@ -11,7 +11,7 @@ class FileSystemProviderApiTest : public ExtensionApiTest {
   FileSystemProviderApiTest() {}
 
   // Loads a helper testing extension.
-  virtual void SetUpOnMainThread() override {
+  void SetUpOnMainThread() override {
     ExtensionApiTest::SetUpOnMainThread();
     const extensions::Extension* extension = LoadExtensionWithFlags(
         test_data_dir_.AppendASCII("file_system_provider/test_util"),
