@@ -156,12 +156,37 @@ function testGetCommandUpdate_CanExecuteAfterScanIsFinalized() {
       ],
       '/DCIM');
 
+  mediaScanner.fileEntries.push(
+      new MockFileEntry(null, '/DCIM/photos0/IMG00001.jpg', {size: 0}));
   controller.getCommandUpdate();
   mediaScanner.finalizeScans();
 
   var response = controller.getCommandUpdate();
   assertTrue(response.visible);
   assertTrue(response.executable);
+}
+
+function testGetCommandUpdate_CannotExecuteEmptyScanResult() {
+  var controller = createController(
+      VolumeManagerCommon.VolumeType.MTP,
+      'mtp-volume',
+      [
+        '/DCIM/',
+        '/DCIM/photos0/',
+        '/DCIM/photos0/IMG00001.trader',
+        '/DCIM/photos0/IMG00002.joes',
+        '/DCIM/photos1/',
+        '/DCIM/photos1/IMG00001.parking',
+        '/DCIM/photos1/IMG00003.lots'
+      ],
+      '/DCIM');
+
+  controller.getCommandUpdate();
+  mediaScanner.finalizeScans();
+
+  var response = controller.getCommandUpdate();
+  assertTrue(response.visible);
+  assertFalse(response.executable);
 }
 
 function testExecute_StartsImport() {

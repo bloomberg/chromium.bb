@@ -448,7 +448,10 @@ Press any key to continue exploring.
   <message name="IDS_FILE_BROWSER_CLOUD_IMPORT_BUTTON_LABEL" desc="Label for button that initiates media backup to the cloud.">
     Import <ph name="FILE_COUNT">$1<ex>5</ex></ph> files to Google Drive
   </message>
-  <message name="IDS_FILE_BROWSER_CLOUD_IMPORT_INSUFFICIENT_SPACE_BUTTON_LABEL" desc="Label for button that tells user there is not enough space to perform a cloud import.">
+  <message name="IDS_FILE_BROWSER_CLOUD_IMPORT_EMPTY_SCAN_BUTTON_LABEL" desc="Message to user that no new files were found, so cloud import is not possible.">
+    No new media
+  </message>
+  <message name="IDS_FILE_BROWSER_CLOUD_IMPORT_INSUFFICIENT_SPACE_BUTTON_LABEL" desc="Message to user that there is not enough space to perform a cloud import.">
     Insufficient space on your device!
   </message>
   <message name="IDS_FILE_BROWSER_CLOUD_IMPORT_SCANNING_BUTTON_LABEL" desc="Label for button showing that scanning is in progress...prior to being enabled when scanning is complete.">

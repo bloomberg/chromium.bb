@@ -9,6 +9,7 @@ var importer = importer || {};
 importer.ResponseId = {
   HIDDEN: 'hidden',
   SCANNING: 'scanning',
+  NO_MEDIA: 'no_media',
   EXECUTABLE: 'executable'
 };
 
@@ -123,9 +124,14 @@ importer.ImportController.prototype.getCommandUpdate = function() {
     } else if (this.isCurrentDirectoryScannable_()) {
       var scan = this.getCurrentDirectoryScan_();
       if (scan.isFinal()) {
-        return importer.ImportController.createUpdate_(
-            importer.ResponseId.EXECUTABLE,
-            scan.getFileEntries().length);
+        if (scan.getFileEntries().length === 0) {
+          return importer.ImportController.createUpdate_(
+              importer.ResponseId.NO_MEDIA);
+        } else {
+          return importer.ImportController.createUpdate_(
+              importer.ResponseId.EXECUTABLE,
+              scan.getFileEntries().length);
+        }
       } else {
         return importer.ImportController.createUpdate_(
             importer.ResponseId.SCANNING);
@@ -160,6 +166,13 @@ importer.ImportController.createUpdate_ =
         visible: true,
         executable: false,
         label: str('CLOUD_IMPORT_SCANNING_BUTTON_LABEL')
+      };
+    case importer.ResponseId.NO_MEDIA:
+      return {
+        id: responseId,
+        visible: true,
+        executable: false,
+        label: str('CLOUD_IMPORT_EMPTY_SCAN_BUTTON_LABEL')
       };
     case importer.ResponseId.EXECUTABLE:
       return {
