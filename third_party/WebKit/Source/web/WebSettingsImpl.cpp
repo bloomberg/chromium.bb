@@ -567,6 +567,11 @@ void WebSettingsImpl::setAllowRunningOfInsecureContent(bool enabled)
     m_settings->setAllowRunningOfInsecureContent(enabled);
 }
 
+void WebSettingsImpl::setDisableReadingFromCanvas(bool enabled)
+{
+    m_settings->setDisableReadingFromCanvas(enabled);
+}
+
 void WebSettingsImpl::setStrictMixedContentChecking(bool enabled)
 {
     m_settings->setStrictMixedContentChecking(enabled);

@@ -484,7 +484,7 @@ String HTMLCanvasElement::toDataURLInternal(const String& mimeType, const double
 
 String HTMLCanvasElement::toDataURL(const String& mimeType, const double* quality, ExceptionState& exceptionState) const
 {
-    if (!m_originClean) {
+    if (!originClean()) {
         exceptionState.throwSecurityError("Tainted canvases may not be exported.");
         return String();
     }
@@ -495,6 +495,13 @@ String HTMLCanvasElement::toDataURL(const String& mimeType, const double* qualit
 SecurityOrigin* HTMLCanvasElement::securityOrigin() const
 {
     return document().securityOrigin();
+}
+
+bool HTMLCanvasElement::originClean() const
+{
+    if (document().settings() && document().settings()->disableReadingFromCanvas())
+        return false;
+    return m_originClean;
 }
 
 bool HTMLCanvasElement::shouldAccelerate(const IntSize& size) const

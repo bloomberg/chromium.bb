@@ -85,6 +85,7 @@ public:
     virtual void setDeviceSupportsMouse(bool) override;
     virtual void setDeviceSupportsTouch(bool) override;
 
+    virtual void setDisableReadingFromCanvas(bool) override;
     virtual void setDoubleTapToZoomEnabled(bool) override;
     virtual void setDownloadableBinaryFontsEnabled(bool) override;
     virtual void setEditingBehavior(EditingBehavior) override;

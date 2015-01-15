@@ -315,5 +315,6 @@ inlineTextBoxAccessibilityEnabled initial=false
 # Typically enabled on Windows to match platform convention.
 showContextMenuOnMouseUp initial=false
 
+disableReadingFromCanvas initial=false
 strictMixedContentChecking initial=false
 strictPowerfulFeatureRestrictions initial=false

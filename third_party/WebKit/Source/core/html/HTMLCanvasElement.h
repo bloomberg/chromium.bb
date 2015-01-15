@@ -129,7 +129,7 @@ public:
     void clearCopiedImage();
 
     SecurityOrigin* securityOrigin() const;
-    bool originClean() const { return m_originClean; }
+    bool originClean() const;
     void setOriginTainted() { m_originClean = false; }
 
     AffineTransform baseTransform() const;
