@@ -24,18 +24,14 @@
  */
 
 #include "config.h"
-
 #include "core/rendering/RenderVideo.h"
 
 #include "core/HTMLNames.h"
 #include "core/dom/Document.h"
-#include "core/frame/FrameView.h"
-#include "core/frame/LocalFrame.h"
 #include "core/html/HTMLVideoElement.h"
 #include "core/paint/VideoPainter.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderFullScreen.h"
-#include "platform/graphics/media/MediaPlayer.h"
 #include "public/platform/WebLayer.h"
 
 namespace blink {

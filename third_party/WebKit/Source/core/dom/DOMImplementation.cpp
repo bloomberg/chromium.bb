@@ -55,7 +55,6 @@
 #include "platform/ContentType.h"
 #include "platform/MIMETypeRegistry.h"
 #include "platform/graphics/Image.h"
-#include "platform/graphics/media/MediaPlayer.h"
 #include "platform/plugins/PluginData.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/StdLibExtras.h"
@@ -356,7 +355,7 @@ PassRefPtrWillBeRawPtr<Document> DOMImplementation::createDocument(const String&
     if (Image::supportsType(type))
         return ImageDocument::create(init);
 
-    // Check to see if the type can be played by our MediaPlayer, if so create a MediaDocument
+    // Check to see if the type can be played by our media player, if so create a MediaDocument
     if (HTMLMediaElement::supportsType(ContentType(type)))
         return MediaDocument::create(init);
 

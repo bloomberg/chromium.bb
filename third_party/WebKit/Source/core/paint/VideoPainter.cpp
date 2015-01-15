@@ -12,8 +12,6 @@
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderVideo.h"
 #include "platform/geometry/LayoutPoint.h"
-#include "platform/graphics/GraphicsContextStateSaver.h"
-#include "platform/graphics/media/MediaPlayer.h"
 
 namespace blink {
 

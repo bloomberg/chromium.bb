@@ -60,7 +60,6 @@
 #include "core/loader/FrameLoader.h"
 #include "core/storage/Storage.h"
 #include "platform/PlatformScreen.h"
-#include "platform/graphics/media/MediaPlayer.h"
 #include "wtf/Assertions.h"
 #include "wtf/OwnPtr.h"
 

@@ -69,7 +69,6 @@ public:
     void paintCurrentFrameInContext(GraphicsContext*, const IntRect&) const;
 
     // Used by WebGL to do GPU-GPU textures copy if possible.
-    // See more details at MediaPlayer::copyVideoTextureToPlatformTexture() defined in Source/WebCore/platform/graphics/MediaPlayer.h.
     bool copyVideoTextureToPlatformTexture(WebGraphicsContext3D*, Platform3DObject texture, GC3Dint level, GLenum internalFormat, GLenum type, bool premultiplyAlpha, bool flipY);
 
     bool shouldDisplayPosterImage() const { return displayMode() == Poster; }

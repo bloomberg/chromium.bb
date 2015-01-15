@@ -9,7 +9,6 @@
 #include "core/dom/DOMTypedArray.h"
 #include "core/events/EventTarget.h"
 #include "platform/Supplementable.h"
-#include "platform/graphics/media/MediaPlayer.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebMediaPlayerClient.h"
 
