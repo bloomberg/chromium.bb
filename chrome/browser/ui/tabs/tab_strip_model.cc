@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <map>
+#include <set>
 #include <string>
 
 #include "base/metrics/histogram.h"
@@ -598,11 +599,19 @@ int TabStripModel::GetIndexOfLastWebContentsOpenedBy(const WebContents* opener,
   DCHECK(opener);
   DCHECK(ContainsIndex(start_index));
 
-  for (int i = contents_data_.size() - 1; i > start_index; --i) {
-    if (contents_data_[i]->opener() == opener)
-      return i;
+  std::set<const WebContents*> opener_and_descendants;
+  opener_and_descendants.insert(opener);
+  int last_index = kNoTab;
+
+  for (int i = start_index + 1; i < count(); ++i) {
+    // Test opened by transitively, i.e. include tabs opened by tabs opened by
+    // opener, etc. Stop when we find the first non-descendant.
+    if (!opener_and_descendants.count(contents_data_[i]->opener()))
+      break;
+    opener_and_descendants.insert(contents_data_[i]->web_contents());
+    last_index = i;
   }
-  return kNoTab;
+  return last_index;
 }
 
 void TabStripModel::TabNavigating(WebContents* contents,
