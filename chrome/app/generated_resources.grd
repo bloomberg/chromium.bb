@@ -6324,16 +6324,16 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Enable the experimental Chrome suggestions service.
       </message>
       <message name="IDS_FLAGS_ENABLE_SUPERVISED_USER_BLACKLIST_NAME" desc="Name of the flag to enable the supervised user host blacklist.">
-        Enable the supervised user host blacklist
+        Enable the child account host blacklist
       </message>
       <message name="IDS_FLAGS_ENABLE_SUPERVISED_USER_BLACKLIST_DESCRIPTION" desc="Description for the flag to enable the supervised user host blacklist.">
-        Enable the host blacklist for use by supervised users.
+        Enable the host blacklist for use by child accounts.
       </message>
       <message name="IDS_FLAGS_ENABLE_SUPERVISED_USER_SAFESITES_NAME" desc="Name of the flag to enable the supervised user SafeSites feature.">
-        Enable the supervised user SafeSites filter
+        Enable the child account SafeSites filter
       </message>
       <message name="IDS_FLAGS_ENABLE_SUPERVISED_USER_SAFESITES_DESCRIPTION" desc="Description for the flag to enable the supervised user SafeSites feature.">
-        Enable SafeSites filtering for supervised users.
+        Enable SafeSites filtering for child accounts.
       </message>
       <message name="IDS_FLAGS_ENABLE_SYNC_APP_LIST_NAME" desc="Name of the flag to enable syncing the app list.">
         Enable App Launcher sync
