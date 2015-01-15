@@ -18,6 +18,7 @@
 #include "content/renderer/media/video_frame_provider.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
+#include "gpu/blink/webgraphicscontext3d_impl.h"
 #include "media/base/media_log.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_rotation.h"
@@ -386,6 +387,39 @@ unsigned WebMediaPlayerMS::videoDecodedByteCount() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   NOTIMPLEMENTED();
   return 0;
+}
+
+bool WebMediaPlayerMS::copyVideoTextureToPlatformTexture(
+    blink::WebGraphicsContext3D* web_graphics_context,
+    unsigned int texture,
+    unsigned int level,
+    unsigned int internal_format,
+    unsigned int type,
+    bool premultiply_alpha,
+    bool flip_y) {
+  TRACE_EVENT0("media", "WebMediaPlayerMS:copyVideoTextureToPlatformTexture");
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  scoped_refptr<media::VideoFrame> video_frame;
+  {
+    base::AutoLock auto_lock(current_frame_lock_);
+    video_frame = current_frame_;
+  }
+
+  if (!video_frame.get() ||
+      video_frame->format() != media::VideoFrame::NATIVE_TEXTURE) {
+    return false;
+  }
+
+  // TODO(dshwang): need more elegant way to convert WebGraphicsContext3D to
+  // GLES2Interface.
+  gpu::gles2::GLES2Interface* gl =
+      static_cast<gpu_blink::WebGraphicsContext3DImpl*>(web_graphics_context)
+          ->GetGLInterface();
+  media::SkCanvasVideoRenderer::CopyVideoFrameTextureToGLTexture(
+      gl, video_frame.get(), texture, level, internal_format, type,
+      premultiply_alpha, flip_y);
+  return true;
 }
 
 void WebMediaPlayerMS::SetVideoFrameProviderClient(

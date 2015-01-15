@@ -18,6 +18,7 @@
 
 namespace blink {
 class WebFrame;
+class WebGraphicsContext3D;
 class WebMediaPlayerClient;
 }
 
@@ -112,6 +113,15 @@ class WebMediaPlayerMS
   virtual unsigned droppedFrameCount() const;
   virtual unsigned audioDecodedByteCount() const;
   virtual unsigned videoDecodedByteCount() const;
+
+  bool copyVideoTextureToPlatformTexture(
+      blink::WebGraphicsContext3D* web_graphics_context,
+      unsigned int texture,
+      unsigned int level,
+      unsigned int internal_format,
+      unsigned int type,
+      bool premultiply_alpha,
+      bool flip_y) override;
 
   // VideoFrameProvider implementation.
   void SetVideoFrameProviderClient(
