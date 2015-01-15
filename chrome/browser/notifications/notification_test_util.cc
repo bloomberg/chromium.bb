@@ -66,16 +66,27 @@ std::set<std::string>
 StubNotificationUIManager::GetAllIdsByProfileAndSourceOrigin(
     Profile* profile,
     const GURL& source) {
-  return std::set<std::string>();
+  std::set<std::string> delegate_ids;
+  for (const auto& pair : notifications_) {
+    if (pair.second == profile && pair.first.origin_url() == source)
+      delegate_ids.insert(pair.first.delegate_id());
+  }
+  return delegate_ids;
 }
 
 bool StubNotificationUIManager::CancelAllBySourceOrigin(
     const GURL& source_origin) {
+  NOTIMPLEMENTED();
   return false;
 }
 
 bool StubNotificationUIManager::CancelAllByProfile(ProfileID profile_id) {
+  NOTIMPLEMENTED();
   return false;
 }
 
-void StubNotificationUIManager::CancelAll() {}
+void StubNotificationUIManager::CancelAll() {
+  for (const auto& pair : notifications_)
+    pair.first.delegate()->Close(false /* by_user */);
+  notifications_.clear();
+}

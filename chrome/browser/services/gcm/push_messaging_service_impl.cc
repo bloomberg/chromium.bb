@@ -219,9 +219,14 @@ void PushMessagingServiceImpl::DeliverMessageCallback(
 void PushMessagingServiceImpl::RequireUserVisibleUX(
     const PushMessagingApplicationId& application_id) {
 #if defined(ENABLE_NOTIFICATIONS)
-  // TODO(johnme): Add test.
   // TODO(johnme): Relax this heuristic slightly.
-  int notification_count = g_browser_process->notification_ui_manager()->
+  PlatformNotificationServiceImpl* notification_service =
+      PlatformNotificationServiceImpl::GetInstance();
+  // Can't use g_browser_process->notification_ui_manager(), since the test uses
+  // PlatformNotificationServiceImpl::SetNotificationUIManagerForTesting.
+  // TODO(peter): Remove the need to use both APIs here once Notification.get()
+  // is supported.
+  int notification_count = notification_service->GetNotificationUIManager()->
       GetAllIdsByProfileAndSourceOrigin(profile_, application_id.origin).size();
   if (notification_count > 0)
     return;
@@ -240,9 +245,9 @@ void PushMessagingServiceImpl::RequireUserVisibleUX(
   notification_data.body =
       l10n_util::GetStringUTF16(IDS_PUSH_MESSAGING_GENERIC_NOTIFICATION_BODY);
   notification_data.tag =
-      base::ASCIIToUTF16("user_visible_auto_notification");
+      base::ASCIIToUTF16(kPushMessagingForcedNotificationTag);
   notification_data.icon = GURL();  // TODO(johnme): Better icon?
-  PlatformNotificationServiceImpl::GetInstance()->DisplayPersistentNotification(
+  notification_service->DisplayPersistentNotification(
       profile_,
       application_id.service_worker_registration_id,
       application_id.origin,

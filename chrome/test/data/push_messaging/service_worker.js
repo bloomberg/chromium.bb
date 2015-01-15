@@ -8,7 +8,20 @@ this.onpush = function(event) {
   if (typeof data !== 'string')
     data = data.text();
 
-  sendMessageToClients('push', data);
+  if (data !== 'shownotification') {
+    sendMessageToClients('push', data);
+    return;
+  }
+
+  // TODO(peter): Switch to self.registration.showNotification once implemented.
+  event.waitUntil(showLegacyNonPersistentNotification('Push test title', {
+    body: 'Push test body',
+    tag: 'push_test_tag'
+  }).then(function(notification) {
+    sendMessageToClients('push', data);
+  }, function(ex) {
+    sendMessageToClients('push', String(ex));
+  }));
 };
 
 function sendMessageToClients(type, data) {
@@ -22,5 +35,13 @@ function sendMessageToClients(type, data) {
     });
   }, function(error) {
     console.log(error);
+  });
+}
+
+function showLegacyNonPersistentNotification(title, options) {
+  return new Promise(function(resolve, reject) {
+    var notification = new Notification(title, options);
+    notification.onshow = function() { resolve(notification); };
+    notification.onerror = function() { reject(new Error('Failed to show')); };
   });
 }

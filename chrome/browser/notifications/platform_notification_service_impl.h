@@ -16,6 +16,10 @@ class NotificationDelegate;
 class NotificationUIManager;
 class Profile;
 
+namespace gcm {
+class PushMessagingBrowserTest;
+}
+
 // The platform notification service is the profile-agnostic entry point through
 // which Web Notifications can be controlled.
 class PlatformNotificationServiceImpl
@@ -69,6 +73,7 @@ class PlatformNotificationServiceImpl
   friend struct DefaultSingletonTraits<PlatformNotificationServiceImpl>;
   friend class PlatformNotificationServiceBrowserTest;
   friend class PlatformNotificationServiceTest;
+  friend class gcm::PushMessagingBrowserTest;
   FRIEND_TEST_ALL_PREFIXES(
       PlatformNotificationServiceTest, DisplayNameForOrigin);
 

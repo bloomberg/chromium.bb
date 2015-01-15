@@ -8,7 +8,10 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/notifications/notification_test_util.h"
+#include "chrome/browser/notifications/platform_notification_service_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/services/gcm/fake_gcm_profile_service.h"
 #include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
@@ -126,6 +129,12 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
         base::FilePath(FILE_PATH_LITERAL("chrome/test/data/"))));
     ASSERT_TRUE(https_server_->Start());
 
+#if defined(ENABLE_NOTIFICATIONS)
+    notification_manager_.reset(new StubNotificationUIManager);
+    notification_service()->SetNotificationUIManagerForTesting(
+        notification_manager());
+#endif
+
     InProcessBrowserTest::SetUp();
   }
 
@@ -139,6 +148,15 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
     LoadTestPage();
 
     InProcessBrowserTest::SetUpOnMainThread();
+  }
+
+  // InProcessBrowserTest:
+  void TearDown() override {
+#if defined(ENABLE_NOTIFICATIONS)
+    notification_service()->SetNotificationUIManagerForTesting(nullptr);
+#endif
+
+    InProcessBrowserTest::TearDown();
   }
 
   void LoadTestPage(const std::string& path) {
@@ -163,6 +181,16 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
 
   FakeGCMProfileService* gcm_service() const { return gcm_service_; }
 
+#if defined(ENABLE_NOTIFICATIONS)
+  StubNotificationUIManager* notification_manager() const {
+    return notification_manager_.get();
+  }
+
+  PlatformNotificationServiceImpl* notification_service() const {
+    return PlatformNotificationServiceImpl::GetInstance();
+  }
+#endif
+
   PushMessagingServiceImpl* push_service() {
     return static_cast<PushMessagingServiceImpl*>(
         gcm_service_->push_messaging_service());
@@ -176,6 +204,7 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
  private:
   scoped_ptr<net::SpawnedTestServer> https_server_;
   FakeGCMProfileService* gcm_service_;
+  scoped_ptr<StubNotificationUIManager> notification_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(PushMessagingBrowserTest);
 };
@@ -432,6 +461,62 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, PushEventNoPermission) {
   ASSERT_TRUE(RunScript("resultQueue.popImmediately()", &script_result));
   EXPECT_EQ("null", script_result);
 }
+
+#if defined(ENABLE_NOTIFICATIONS)
+IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
+                       PushEventEnforcesUserVisibleNotification) {
+  std::string script_result;
+
+  TryToRegisterSuccessfully("1-0" /* expected_push_registration_id */);
+
+  PushMessagingApplicationId app_id(https_server()->GetURL(""), 0LL);
+  EXPECT_EQ(app_id.ToString(), gcm_service()->last_registered_app_id());
+  EXPECT_EQ("1234567890", gcm_service()->last_registered_sender_ids()[0]);
+
+  ASSERT_TRUE(RunScript("isControlled()", &script_result));
+  ASSERT_EQ("false - is not controlled", script_result);
+
+  LoadTestPage();  // Reload to become controlled.
+
+  ASSERT_TRUE(RunScript("isControlled()", &script_result));
+  ASSERT_EQ("true - is controlled", script_result);
+
+  notification_manager()->CancelAll();
+  ASSERT_EQ(0u, notification_manager()->GetNotificationCount());
+
+  // If the Service Worker push event handler shows a notification, we should
+  // not show a forced one.
+  GCMClient::IncomingMessage message;
+  message.data["data"] = "shownotification";
+  push_service()->OnMessage(app_id.ToString(), message);
+  ASSERT_TRUE(RunScript("resultQueue.pop()", &script_result));
+  EXPECT_EQ("shownotification", script_result);
+  ASSERT_EQ(1u, notification_manager()->GetNotificationCount());
+  EXPECT_EQ(base::ASCIIToUTF16("push_test_tag"),
+            notification_manager()->GetNotificationAt(0).replace_id());
+
+  notification_manager()->CancelAll();
+  ASSERT_EQ(0u, notification_manager()->GetNotificationCount());
+
+  // However if the Service Worker push event handler does not show a
+  // notification, we should show a forced one.
+  message.data["data"] = "testdata";
+  push_service()->OnMessage(app_id.ToString(), message);
+  ASSERT_TRUE(RunScript("resultQueue.pop()", &script_result));
+  EXPECT_EQ("testdata", script_result);
+  ASSERT_EQ(1u, notification_manager()->GetNotificationCount());
+  EXPECT_EQ(base::ASCIIToUTF16(kPushMessagingForcedNotificationTag),
+            notification_manager()->GetNotificationAt(0).replace_id());
+
+  // Currently, this notification will stick around until the user or webapp
+  // explicitly dismisses it (though we may change this later).
+  message.data["data"] = "shownotification";
+  push_service()->OnMessage(app_id.ToString(), message);
+  ASSERT_TRUE(RunScript("resultQueue.pop()", &script_result));
+  EXPECT_EQ("shownotification", script_result);
+  ASSERT_EQ(2u, notification_manager()->GetNotificationCount());
+}
+#endif
 
 IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, HasPermissionSaysDefault) {
   std::string script_result;

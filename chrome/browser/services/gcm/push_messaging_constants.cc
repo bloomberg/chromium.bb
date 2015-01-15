@@ -8,4 +8,7 @@ namespace gcm {
 
 const char kPushMessagingEndpoint[] = "https://android.googleapis.com/gcm/send";
 
+const char kPushMessagingForcedNotificationTag[] =
+    "user_visible_auto_notification";
+
 }  // namespace gcm
