@@ -152,6 +152,10 @@ class SupervisedUserURLFilter
   // Returns whether the asynchronous checker is set up.
   bool HasAsyncURLChecker() const;
 
+  // Removes all filter entries, clears the blacklist and async checker if
+  // present, and resets the default behavior to "allow".
+  void Clear();
+
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 

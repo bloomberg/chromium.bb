@@ -361,8 +361,13 @@ bool SupervisedUserInterstitial::ShouldProceed() {
   SupervisedUserURLFilter* url_filter =
       supervised_user_service->GetURLFilterForUIThread();
   SupervisedUserURLFilter::FilteringBehavior behavior;
-  return (url_filter->GetManualFilteringBehaviorForURL(url_, &behavior) &&
-          behavior != SupervisedUserURLFilter::BLOCK);
+  if (url_filter->HasAsyncURLChecker()) {
+    if (!url_filter->GetManualFilteringBehaviorForURL(url_, &behavior))
+      return false;
+  } else {
+    behavior = url_filter->GetFilteringBehaviorForURL(url_);
+  }
+  return behavior != SupervisedUserURLFilter::BLOCK;
 }
 
 void SupervisedUserInterstitial::DispatchContinueRequest(

@@ -65,6 +65,21 @@ using base::DictionaryValue;
 using base::UserMetricsAction;
 using content::BrowserThread;
 
+namespace {
+
+const char* const kCustodianInfoPrefs[] = {
+  prefs::kSupervisedUserCustodianName,
+  prefs::kSupervisedUserCustodianEmail,
+  prefs::kSupervisedUserCustodianProfileImageURL,
+  prefs::kSupervisedUserCustodianProfileURL,
+  prefs::kSupervisedUserSecondCustodianName,
+  prefs::kSupervisedUserSecondCustodianEmail,
+  prefs::kSupervisedUserSecondCustodianProfileImageURL,
+  prefs::kSupervisedUserSecondCustodianProfileURL,
+};
+
+}  // namespace
+
 base::FilePath SupervisedUserService::Delegate::GetBlacklistPath() const {
   return base::FilePath();
 }
@@ -140,6 +155,15 @@ void SupervisedUserService::URLFilterContext::SetManualURLs(
       FROM_HERE,
       base::Bind(&SupervisedUserURLFilter::SetManualURLs,
                  io_url_filter_, base::Owned(url_map.release())));
+}
+
+void SupervisedUserService::URLFilterContext::Clear() {
+  ui_url_filter_->Clear();
+  BrowserThread::PostTask(
+      BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(&SupervisedUserURLFilter::Clear,
+                 io_url_filter_));
 }
 
 void SupervisedUserService::URLFilterContext::OnBlacklistLoaded(
@@ -222,32 +246,12 @@ void SupervisedUserService::RegisterProfilePrefs(
       prefs::kDefaultSupervisedUserFilteringBehavior,
       SupervisedUserURLFilter::ALLOW,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterStringPref(
-      prefs::kSupervisedUserCustodianEmail, std::string(),
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterStringPref(
-      prefs::kSupervisedUserCustodianName, std::string(),
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterStringPref(
-      prefs::kSupervisedUserCustodianProfileImageURL, std::string(),
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterStringPref(
-      prefs::kSupervisedUserCustodianProfileURL, std::string(),
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterStringPref(
-      prefs::kSupervisedUserSecondCustodianEmail, std::string(),
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterStringPref(
-      prefs::kSupervisedUserSecondCustodianName, std::string(),
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterStringPref(
-      prefs::kSupervisedUserSecondCustodianProfileImageURL, std::string(),
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterStringPref(
-      prefs::kSupervisedUserSecondCustodianProfileURL, std::string(),
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterBooleanPref(prefs::kSupervisedUserCreationAllowed, true,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  for (const char* pref : kCustodianInfoPrefs) {
+    registry->RegisterStringPref(pref, std::string(),
+        user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  }
 }
 
 void SupervisedUserService::SetDelegate(Delegate* delegate) {
@@ -733,31 +737,11 @@ void SupervisedUserService::SetActive(bool active) {
     pref_change_registrar_.Add(prefs::kSupervisedUserManualURLs,
         base::Bind(&SupervisedUserService::UpdateManualURLs,
                    base::Unretained(this)));
-    pref_change_registrar_.Add(prefs::kSupervisedUserCustodianName,
-        base::Bind(&SupervisedUserService::OnCustodianInfoChanged,
-                   base::Unretained(this)));
-    pref_change_registrar_.Add(prefs::kSupervisedUserCustodianEmail,
-        base::Bind(&SupervisedUserService::OnCustodianInfoChanged,
-                   base::Unretained(this)));
-    pref_change_registrar_.Add(prefs::kSupervisedUserCustodianProfileImageURL,
-        base::Bind(&SupervisedUserService::OnCustodianInfoChanged,
-                   base::Unretained(this)));
-    pref_change_registrar_.Add(prefs::kSupervisedUserCustodianProfileURL,
-        base::Bind(&SupervisedUserService::OnCustodianInfoChanged,
-                   base::Unretained(this)));
-    pref_change_registrar_.Add(prefs::kSupervisedUserSecondCustodianName,
-        base::Bind(&SupervisedUserService::OnCustodianInfoChanged,
-                   base::Unretained(this)));
-    pref_change_registrar_.Add(prefs::kSupervisedUserSecondCustodianEmail,
-        base::Bind(&SupervisedUserService::OnCustodianInfoChanged,
-                   base::Unretained(this)));
-    pref_change_registrar_.Add(
-        prefs::kSupervisedUserSecondCustodianProfileImageURL,
-        base::Bind(&SupervisedUserService::OnCustodianInfoChanged,
-                   base::Unretained(this)));
-    pref_change_registrar_.Add(prefs::kSupervisedUserSecondCustodianProfileURL,
-        base::Bind(&SupervisedUserService::OnCustodianInfoChanged,
-                   base::Unretained(this)));
+    for (const char* pref : kCustodianInfoPrefs) {
+      pref_change_registrar_.Add(pref,
+          base::Bind(&SupervisedUserService::OnCustodianInfoChanged,
+                     base::Unretained(this)));
+    }
 
     // Initialize the filter.
     OnDefaultFilteringBehaviorChanged();
@@ -793,6 +777,13 @@ void SupervisedUserService::SetActive(bool active) {
         prefs::kDefaultSupervisedUserFilteringBehavior);
     pref_change_registrar_.Remove(prefs::kSupervisedUserManualHosts);
     pref_change_registrar_.Remove(prefs::kSupervisedUserManualURLs);
+    for (const char* pref : kCustodianInfoPrefs) {
+      pref_change_registrar_.Remove(pref);
+    }
+
+    url_filter_context_.Clear();
+    FOR_EACH_OBSERVER(
+        SupervisedUserServiceObserver, observer_list_, OnURLFilterChanged());
 
     if (waiting_for_sync_initialization_)
       ProfileSyncServiceFactory::GetForProfile(profile_)->RemoveObserver(this);

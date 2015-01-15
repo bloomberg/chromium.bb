@@ -11,7 +11,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_service.h"
-#include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
@@ -36,6 +35,9 @@
 #endif
 
 const char kIsChildAccountServiceFlagName[] = "uca";
+
+const int kStatusFlagUpdateIntervalSeconds = 24 * 60 * 60;
+const int kStatusFlagUpdateIntervalOnFailureSeconds = 30;
 
 ChildAccountService::ChildAccountService(Profile* profile)
     : profile_(profile), active_(false), weak_ptr_factory_(this) {}
@@ -64,13 +66,12 @@ void ChildAccountService::Init() {
   // If we're already signed in, fetch the flag again just to be sure.
   // (Previously, the browser might have been closed before we got the flag.
   // This also handles the graduation use case in a basic way.)
-  std::string account_id = SigninManagerFactory::GetForProfile(profile_)
-      ->GetAuthenticatedAccountId();
-  if (!account_id.empty())
-    StartFetchingServiceFlags(account_id);
+  if (SigninManagerFactory::GetForProfile(profile_)->IsAuthenticated())
+    StartFetchingServiceFlags();
 }
 
 void ChildAccountService::Shutdown() {
+  family_fetcher_.reset();
   CancelFetchingServiceFlags();
   SupervisedUserServiceFactory::GetForProfile(profile_)->SetDelegate(NULL);
   DCHECK(!active_);
@@ -164,8 +165,11 @@ void ChildAccountService::GoogleSigninSucceeded(const std::string& account_id,
                                                 const std::string& username,
                                                 const std::string& password) {
   DCHECK(!account_id.empty());
+  DCHECK_EQ(SigninManagerFactory::GetForProfile(profile_)
+                ->GetAuthenticatedAccountId(),
+            account_id);
 
-  StartFetchingServiceFlags(account_id);
+  StartFetchingServiceFlags();
 }
 
 void ChildAccountService::GoogleSignedOut(const std::string& account_id,
@@ -195,16 +199,18 @@ void ChildAccountService::OnGetFamilyMembersSuccess(
   }
   if (!parent_found)
     ClearSecondCustodianPrefs();
+  family_fetcher_.reset();
 }
 
 void ChildAccountService::OnFailure(FamilyInfoFetcher::ErrorCode error) {
   DLOG(WARNING) << "GetFamilyMembers failed with code " << error;
+  family_fetcher_.reset();
   // TODO(treib): Retry after a while?
 }
 
-void ChildAccountService::StartFetchingServiceFlags(
-    const std::string& account_id) {
-  account_id_ = account_id;
+void ChildAccountService::StartFetchingServiceFlags() {
+  account_id_ = SigninManagerFactory::GetForProfile(profile_)
+      ->GetAuthenticatedAccountId();
   flag_fetcher_.reset(new AccountServiceFlagFetcher(
       account_id_,
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile_),
@@ -216,6 +222,7 @@ void ChildAccountService::StartFetchingServiceFlags(
 void ChildAccountService::CancelFetchingServiceFlags() {
   flag_fetcher_.reset();
   account_id_.clear();
+  flag_fetch_timer_.Stop();
 }
 
 void ChildAccountService::OnFlagsFetched(
@@ -229,24 +236,29 @@ void ChildAccountService::OnFlagsFetched(
   if (account_id_.empty() || account_id_ != new_account_id)
     return;
 
-  // In case of an error, retry after a while.
+  account_id_.clear();
+
+  // In case of an error, retry after a short while.
   if (result != AccountServiceFlagFetcher::SUCCESS) {
     DLOG(WARNING) << "AccountServiceFlagFetcher returned error code " << result;
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&ChildAccountService::StartFetchingServiceFlags,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   account_id_),
-        base::TimeDelta::FromSeconds(10));
+    // TODO(treib): Implement exponential backoff.
+    ScheduleNextStatusFlagUpdate(base::TimeDelta::FromSeconds(
+        kStatusFlagUpdateIntervalOnFailureSeconds));
     return;
   }
-
-  account_id_.clear();
 
   bool is_child_account =
       std::find(flags.begin(), flags.end(),
                 kIsChildAccountServiceFlagName) != flags.end();
   SetIsChildAccount(is_child_account);
+
+  ScheduleNextStatusFlagUpdate(base::TimeDelta::FromSeconds(
+      kStatusFlagUpdateIntervalSeconds));
+}
+
+void ChildAccountService::ScheduleNextStatusFlagUpdate(base::TimeDelta delay) {
+  flag_fetch_timer_.Start(
+      FROM_HERE, delay, this, &ChildAccountService::StartFetchingServiceFlags);
 }
 
 void ChildAccountService::PropagateChildStatusToUser(bool is_child) {

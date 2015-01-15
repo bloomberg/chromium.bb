@@ -11,6 +11,8 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/supervised_user/child_accounts/family_info_fetcher.h"
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -67,10 +69,11 @@ class ChildAccountService : public KeyedService,
       const std::vector<FamilyInfoFetcher::FamilyMember>& members) override;
   void OnFailure(FamilyInfoFetcher::ErrorCode error) override;
 
-  void StartFetchingServiceFlags(const std::string& account_id);
+  void StartFetchingServiceFlags();
   void CancelFetchingServiceFlags();
   void OnFlagsFetched(AccountServiceFlagFetcher::ResultCode,
                       const std::vector<std::string>& flags);
+  void ScheduleNextStatusFlagUpdate(base::TimeDelta delay);
 
   void PropagateChildStatusToUser(bool is_child);
 
@@ -92,6 +95,7 @@ class ChildAccountService : public KeyedService,
   std::string account_id_;
 
   scoped_ptr<AccountServiceFlagFetcher> flag_fetcher_;
+  base::OneShotTimer<ChildAccountService> flag_fetch_timer_;
 
   scoped_ptr<FamilyInfoFetcher> family_fetcher_;
 

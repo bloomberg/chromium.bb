@@ -447,6 +447,15 @@ bool SupervisedUserURLFilter::HasAsyncURLChecker() const {
   return !!async_url_checker_;
 }
 
+void SupervisedUserURLFilter::Clear() {
+  default_behavior_ = ALLOW;
+  SetContents(make_scoped_ptr(new Contents()));
+  url_map_.clear();
+  host_map_.clear();
+  blacklist_ = nullptr;
+  async_url_checker_.reset();
+}
+
 void SupervisedUserURLFilter::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
 }

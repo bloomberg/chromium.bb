@@ -219,6 +219,8 @@ class SupervisedUserService : public KeyedService,
     void InitAsyncURLChecker(net::URLRequestContextGetter* context,
                              const std::string& cx);
 
+    void Clear();
+
    private:
     void OnBlacklistLoaded(const base::Closure& callback);
 
