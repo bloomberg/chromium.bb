@@ -286,12 +286,26 @@ class VersionInfo(object):
     return '%s.%s.%s' % (self.build_number, self.branch_build_number,
                          self.patch_number)
 
+  def VersionComponents(self):
+    """Return an array of ints of the version fields for comparing."""
+    return map(int, [self.build_number, self.branch_build_number,
+                     self.patch_number])
+
   @classmethod
   def VersionCompare(cls, version_string):
     """Useful method to return a comparable version of a LKGM string."""
-    info = cls(version_string)
-    return map(int, [info.build_number, info.branch_build_number,
-                     info.patch_number])
+    return cls(version_string).VersionComponents()
+
+  def __cmp__(self, other):
+    sinfo = self.VersionComponents()
+    oinfo = other.VersionComponents()
+
+    for s, o in zip(sinfo, oinfo):
+      if s != o:
+        return -1 if s < o else 1
+    return 0
+
+  __hash__ = None
 
   def BuildPrefix(self):
     """Returns the build prefix to match the buildspecs in  manifest-versions"""
@@ -302,6 +316,9 @@ class VersionInfo(object):
         return '%s.%s.' % (self.build_number, self.branch_build_number)
     # Default to build incr_type.
     return ''
+
+  def __str__(self):
+    return '%s(%s)' % (self.__class__, self.VersionString())
 
 
 class BuilderStatus(object):

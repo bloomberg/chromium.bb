@@ -100,12 +100,10 @@ class _LKGMCandidateInfo(manifest_version.VersionInfo):
     return '%s.%s.%s-rc%s' % (self.build_number, self.branch_build_number,
                               self.patch_number, self.revision_number)
 
-  @classmethod
-  def VersionCompare(cls, version_string):
-    """Useful method to return a comparable version of a LKGM string."""
-    lkgm = cls(version_string)
-    return map(int, [lkgm.build_number, lkgm.branch_build_number,
-                     lkgm.patch_number, lkgm.revision_number])
+  def VersionComponents(self):
+    """Return an array of ints of the version fields for comparing."""
+    return map(int, [self.build_number, self.branch_build_number,
+                     self.patch_number, self.revision_number])
 
   def IncrementVersion(self):
     """Increments the version by incrementing the revision #."""
