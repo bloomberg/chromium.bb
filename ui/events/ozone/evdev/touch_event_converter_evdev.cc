@@ -222,6 +222,11 @@ void TouchEventConverterEvdev::ProcessAbs(const input_event& input) {
       events_[current_slot_].pressure_ /= pressure_max_ - pressure_min_;
       break;
     case ABS_MT_SLOT:
+      if (input.value >= MAX_FINGERS) {
+        LOG(ERROR) << "multi-touch slot " << input.value
+                   << " exceeds MAX_FINGERS";
+        break;
+      }
       current_slot_ = input.value;
       altered_slots_.set(current_slot_);
       break;

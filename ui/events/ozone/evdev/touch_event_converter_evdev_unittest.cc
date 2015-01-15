@@ -538,3 +538,25 @@ TEST_F(TouchEventConverterEvdevTest,
   EXPECT_EQ(666, ev1->y());
   EXPECT_FLOAT_EQ(0.4666666f, ev1->force());
 }
+
+// crbug.com/446939
+TEST_F(TouchEventConverterEvdevTest, CheckSlotLimit) {
+  ui::MockTouchEventConverterEvdev* dev = device();
+
+  struct input_event mock_kernel_queue[] = {
+      {{0, 0}, EV_ABS, ABS_MT_SLOT, 0},
+      {{0, 0}, EV_ABS, ABS_MT_TRACKING_ID, 100},
+      {{0, 0}, EV_ABS, ABS_MT_POSITION_X, 999},
+      {{0, 0}, EV_ABS, ABS_MT_POSITION_Y, 888},
+      {{0, 0}, EV_ABS, ABS_MT_SLOT, ui::TouchEventConverterEvdev::MAX_FINGERS},
+      {{0, 0}, EV_ABS, ABS_MT_TRACKING_ID, 200},
+      {{0, 0}, EV_ABS, ABS_MT_POSITION_X, 777},
+      {{0, 0}, EV_ABS, ABS_MT_POSITION_Y, 666},
+      {{0, 0}, EV_SYN, SYN_REPORT, 0},
+  };
+
+  // Check that one 1 event is generated
+  dev->ConfigureReadMock(mock_kernel_queue, arraysize(mock_kernel_queue), 0);
+  dev->ReadNow();
+  EXPECT_EQ(1u, dev->size());
+}
