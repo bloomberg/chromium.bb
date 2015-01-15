@@ -240,7 +240,7 @@ class Checker(object):
     self._expanded_file = self._create_temp_file(self._processor.contents)
     self._debug("Expanded file: %s" % self._expanded_file)
 
-    errors, stderr = self.run_js_check(self._expanded_file, depends)
+    errors, stderr = self.run_js_check([self._expanded_file], externs)
 
     # Filter out false-positive promise chain errors.
     # See https://github.com/google/closure-compiler/issues/715 for details.
