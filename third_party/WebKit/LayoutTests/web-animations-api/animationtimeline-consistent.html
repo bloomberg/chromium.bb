@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script>
+var t = async_test('timeline.currentTime should be consistent despite 0 playback rate');
+
+document.timeline.playbackRate = 0;
+document.timeline.currentTime = 0;
+
+requestAnimationFrame(function() {
+  setTimeout(function() {
+    t.step(function() {
+      document.timeline.currentTime = 100;
+      assert_approx_equals(document.timeline.currentTime, 100, 0.1);
+    });
+    t.done();
+  });
+});
+</script>

@@ -63,9 +63,8 @@ PassRefPtrWillBeRawPtr<AnimationTimeline> AnimationTimeline::create(Document* do
 
 AnimationTimeline::AnimationTimeline(Document* document, PassOwnPtrWillBeRawPtr<PlatformTiming> timing)
     : m_document(document)
-    , m_zeroTime(0)
-    , m_documentCurrentTimeSnapshot(0)
-    , m_zeroTimeOffset(0)
+    , m_zeroTime(0) // 0 is used by unit tests which cannot initialize from the loader
+    , m_zeroTimeInitialized(false)
     , m_playbackRate(1)
     , m_lastCurrentTimeInternal(0)
 {
@@ -182,10 +181,11 @@ void AnimationTimeline::AnimationTimelineTiming::trace(Visitor* visitor)
 
 double AnimationTimeline::zeroTime()
 {
-    if (!m_zeroTime && m_document && m_document->loader()) {
+    if (!m_zeroTimeInitialized && m_document && m_document->loader()) {
         m_zeroTime = m_document->loader()->timing()->referenceMonotonicTime();
+        m_zeroTimeInitialized = true;
     }
-    return m_zeroTime + m_zeroTimeOffset;
+    return m_zeroTime;
 }
 
 double AnimationTimeline::currentTime(bool& isNull)
@@ -199,9 +199,9 @@ double AnimationTimeline::currentTimeInternal(bool& isNull)
         isNull = true;
         return std::numeric_limits<double>::quiet_NaN();
     }
-    // New currentTime = currentTime when the playback rate was last changed + time delta since then * playback rate
-    double delta = document()->animationClock().currentTime() - m_documentCurrentTimeSnapshot;
-    double result = m_documentCurrentTimeSnapshot - zeroTime() + delta * playbackRate();
+    double result = m_playbackRate == 0
+        ? zeroTime()
+        : (document()->animationClock().currentTime() - zeroTime()) * m_playbackRate;
     isNull = std::isnan(result);
     return result;
 }
@@ -224,7 +224,18 @@ void AnimationTimeline::setCurrentTime(double currentTime)
 
 void AnimationTimeline::setCurrentTimeInternal(double currentTime)
 {
-    m_zeroTimeOffset = document()->animationClock().currentTime() - m_zeroTime - currentTime;
+    m_zeroTime = m_playbackRate == 0
+        ? currentTime
+        : (document()->animationClock().currentTime() - currentTime) / m_playbackRate;
+    m_zeroTimeInitialized = true;
+
+    for (const auto& player : m_players) {
+        // The Player needs a timing update to pick up a new time.
+        player->setOutdated();
+        // Any corresponding compositor animation will need to be restarted. Marking the
+        // source changed forces this.
+        player->setCompositorPending(true);
+    }
 }
 
 double AnimationTimeline::effectiveTime()
@@ -264,13 +275,16 @@ void AnimationTimeline::setOutdatedAnimationPlayer(AnimationPlayer* player)
 
 void AnimationTimeline::setPlaybackRate(double playbackRate)
 {
-    // FIXME: floating point error difference between current time before and after the playback rate changes
-    if (!m_documentCurrentTimeSnapshot)
-        m_documentCurrentTimeSnapshot = m_zeroTime;
-    m_zeroTimeOffset += (document()->animationClock().currentTime() - m_documentCurrentTimeSnapshot) * (1 - m_playbackRate);
-    m_documentCurrentTimeSnapshot = document()->animationClock().currentTime();
+    double currentTime = currentTimeInternal();
     m_playbackRate = playbackRate;
+    m_zeroTime = playbackRate == 0
+        ? currentTime
+        : document()->animationClock().currentTime() - currentTime / playbackRate;
+    m_zeroTimeInitialized = true;
+
     for (const auto& player : m_players) {
+        // Corresponding compositor animation may need to be restarted to pick up
+        // the new playback rate. Marking the source changed forces this.
         player->setCompositorPending(true);
     }
 }
