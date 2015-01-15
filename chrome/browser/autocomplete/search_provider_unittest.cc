@@ -237,8 +237,9 @@ class SearchProviderTest : public testing::Test,
 
   void ResetFieldTrialList();
 
-  // Create a field trial, with ZeroSuggest activation based on |enabled|.
-  base::FieldTrial* CreateZeroSuggestFieldTrial(bool enabled);
+  // Enable or disable the specified Omnibox field trial rule.
+  base::FieldTrial* CreateFieldTrial(const char* field_trial_rule,
+                                     bool enabled);
 
   void ClearAllResults();
 
@@ -552,11 +553,11 @@ void SearchProviderTest::ResetFieldTrialList() {
       "AutocompleteDynamicTrial_0", "DefaultGroup");
   trial->group();
 }
-
-base::FieldTrial* SearchProviderTest::CreateZeroSuggestFieldTrial(
+base::FieldTrial* SearchProviderTest::CreateFieldTrial(
+    const char* field_trial_rule,
     bool enabled) {
   std::map<std::string, std::string> params;
-  params[std::string(OmniboxFieldTrial::kZeroSuggestRule)] = enabled ?
+  params[std::string(field_trial_rule)] = enabled ?
       "true" : "false";
   variations::AssociateVariationParams(
       OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A", params);
@@ -895,6 +896,75 @@ TEST_F(SearchProviderTest, ScoreNewerSearchesHigher) {
   EXPECT_TRUE(term_match_b.allowed_to_be_default_match);
   EXPECT_TRUE(term_match_a.allowed_to_be_default_match);
   EXPECT_TRUE(wyt_match.allowed_to_be_default_match);
+}
+
+// If ScoreHistoryResults doesn't properly clear its output vector it can skip
+// scoring the actual results and just return results from a previous run.
+TEST_F(SearchProviderTest, ResetResultsBetweenRuns) {
+  GURL term_url_a(AddSearchToHistory(default_t_url_,
+                                     ASCIIToUTF16("games"), 1));
+  GURL term_url_b(AddSearchToHistory(default_t_url_,
+                                     ASCIIToUTF16("gangnam style"), 1));
+  GURL term_url_c(AddSearchToHistory(default_t_url_,
+                                     ASCIIToUTF16("gundam"), 1));
+  profile_.BlockUntilHistoryProcessesPendingRequests();
+
+  AutocompleteMatch wyt_match;
+  ASSERT_NO_FATAL_FAILURE(QueryForInputAndSetWYTMatch(ASCIIToUTF16("f"),
+                                                      &wyt_match));
+  ASSERT_EQ(1u, provider_->matches().size());
+
+  ASSERT_NO_FATAL_FAILURE(QueryForInputAndSetWYTMatch(ASCIIToUTF16("g"),
+                                                      &wyt_match));
+  ASSERT_EQ(4u, provider_->matches().size());
+
+  ASSERT_NO_FATAL_FAILURE(QueryForInputAndSetWYTMatch(ASCIIToUTF16("ga"),
+                                                      &wyt_match));
+  ASSERT_EQ(3u, provider_->matches().size());
+
+  ASSERT_NO_FATAL_FAILURE(QueryForInputAndSetWYTMatch(ASCIIToUTF16("gan"),
+                                                      &wyt_match));
+  ASSERT_EQ(2u, provider_->matches().size());
+
+  ASSERT_NO_FATAL_FAILURE(QueryForInputAndSetWYTMatch(ASCIIToUTF16("gans"),
+                                                      &wyt_match));
+  ASSERT_EQ(1u, provider_->matches().size());
+}
+
+// This test is identical to the previous one except that it enables the Answers
+// in Suggest field trial which triggers a different code path in
+// SearchProvider. When Answers launches, this can be removed.
+TEST_F(SearchProviderTest, ResetResultsBetweenRunsAnswersInSuggestEnabled) {
+  CreateFieldTrial(OmniboxFieldTrial::kAnswersInSuggestRule, true);
+
+  GURL term_url_a(AddSearchToHistory(default_t_url_,
+                                     ASCIIToUTF16("games"), 1));
+  GURL term_url_b(AddSearchToHistory(default_t_url_,
+                                     ASCIIToUTF16("gangnam style"), 1));
+  GURL term_url_c(AddSearchToHistory(default_t_url_,
+                                     ASCIIToUTF16("gundam"), 1));
+  profile_.BlockUntilHistoryProcessesPendingRequests();
+
+  AutocompleteMatch wyt_match;
+  ASSERT_NO_FATAL_FAILURE(QueryForInputAndSetWYTMatch(ASCIIToUTF16("f"),
+                                                      &wyt_match));
+  ASSERT_EQ(1u, provider_->matches().size());
+
+  ASSERT_NO_FATAL_FAILURE(QueryForInputAndSetWYTMatch(ASCIIToUTF16("g"),
+                                                      &wyt_match));
+  ASSERT_EQ(4u, provider_->matches().size());
+
+  ASSERT_NO_FATAL_FAILURE(QueryForInputAndSetWYTMatch(ASCIIToUTF16("ga"),
+                                                      &wyt_match));
+  ASSERT_EQ(3u, provider_->matches().size());
+
+  ASSERT_NO_FATAL_FAILURE(QueryForInputAndSetWYTMatch(ASCIIToUTF16("gan"),
+                                                      &wyt_match));
+  ASSERT_EQ(2u, provider_->matches().size());
+
+  ASSERT_NO_FATAL_FAILURE(QueryForInputAndSetWYTMatch(ASCIIToUTF16("gans"),
+                                                      &wyt_match));
+  ASSERT_EQ(1u, provider_->matches().size());
 }
 
 // An autocompleted multiword search should not be replaced by a different
@@ -3114,7 +3184,7 @@ TEST_F(SearchProviderTest, CanSendURL) {
   TemplateURL google_template_url(template_url_data);
 
   // Create field trial.
-  CreateZeroSuggestFieldTrial(true);
+  CreateFieldTrial(OmniboxFieldTrial::kZeroSuggestRule, true);
 
   ChromeAutocompleteProviderClient client(&profile_);
 
@@ -3134,13 +3204,13 @@ TEST_F(SearchProviderTest, CanSendURL) {
 
   // Not in field trial.
   ResetFieldTrialList();
-  CreateZeroSuggestFieldTrial(false);
+  CreateFieldTrial(OmniboxFieldTrial::kZeroSuggestRule, false);
   EXPECT_FALSE(SearchProvider::CanSendURL(
       GURL("http://www.google.com/search"),
       GURL("https://www.google.com/complete/search"), &google_template_url,
       metrics::OmniboxEventProto::OTHER, SearchTermsData(), &client));
   ResetFieldTrialList();
-  CreateZeroSuggestFieldTrial(true);
+  CreateFieldTrial(OmniboxFieldTrial::kZeroSuggestRule, true);
 
   // Invalid page URL.
   EXPECT_FALSE(SearchProvider::CanSendURL(
@@ -3326,9 +3396,6 @@ TEST_F(SearchProviderTest, CheckDuplicateMatchesSaved) {
 }
 
 TEST_F(SearchProviderTest, SuggestQueryUsesToken) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableAnswersInSuggest);
-
   TemplateURLService* turl_model =
       TemplateURLServiceFactory::GetForProfile(&profile_);
 

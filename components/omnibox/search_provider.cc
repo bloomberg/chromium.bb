@@ -280,9 +280,6 @@ void SearchProvider::Start(const AutocompleteInput& input,
     // Raw results are not needed any more.
     raw_default_history_results_.clear();
     raw_keyword_history_results_.clear();
-  } else {
-    transformed_default_history_results_.clear();
-    transformed_keyword_history_results_.clear();
   }
 
   StartOrStopSuggestQuery(minimal_changes);
@@ -1161,8 +1158,9 @@ void SearchProvider::ScoreHistoryResults(
     bool is_keyword,
     SearchSuggestionParser::SuggestResults* scored_results) {
   DCHECK(scored_results);
+  scored_results->clear();
+
   if (results.empty()) {
-    scored_results->clear();
     return;
   }
 
