@@ -104,23 +104,23 @@ public class CardUnmaskPrompt implements DialogInterface.OnDismissListener, Text
 
     public void verificationFinished(boolean success) {
         getVerificationProgressBar().setVisibility(View.GONE);
-        TextView message = getVerificationView();
         if (!success) {
+            TextView message = getVerificationView();
             message.setText("Verification failed. Please try again.");
+            message.setVisibility(View.VISIBLE);
             EditText input = cardUnmaskInput();
             input.setEnabled(true);
             showKeyboardForUnmaskInput();
             // TODO(estade): UI decision - should we clear the input?
         } else {
-            message.setText("Success!");
+            mDialog.findViewById(R.id.verification_success).setVisibility(View.VISIBLE);
             Handler h = new Handler();
             h.postDelayed(new Runnable() {
                 public void run() {
                     dismiss();
                 }
-            }, 1000);
+            }, 500);
         }
-        message.setVisibility(View.VISIBLE);
     }
 
     @Override
