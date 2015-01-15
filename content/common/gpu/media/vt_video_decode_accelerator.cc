@@ -75,17 +75,73 @@ BuildImageConfig(CMVideoDimensions coded_dimensions) {
   return image_config;
 }
 
+// Create a VTDecompressionSession using the provided |pps| and |sps|. If
+// |require_hardware| is true, the session must uses real hardware decoding
+// (as opposed to software decoding inside of VideoToolbox) to be considered
+// successful.
+//
+// TODO(sandersd): Merge with ConfigureDecoder(), as the code is very similar.
+static bool CreateVideoToolboxSession(const uint8_t* sps, size_t sps_size,
+                                      const uint8_t* pps, size_t pps_size,
+                                      bool require_hardware) {
+  const uint8_t* data_ptrs[] = {sps, pps};
+  const size_t data_sizes[] = {sps_size, pps_size};
+
+  base::ScopedCFTypeRef<CMFormatDescriptionRef> format;
+  OSStatus status = CMVideoFormatDescriptionCreateFromH264ParameterSets(
+      kCFAllocatorDefault,
+      2,                          // parameter_set_count
+      data_ptrs,                  // &parameter_set_pointers
+      data_sizes,                 // &parameter_set_sizes
+      kNALUHeaderLength,          // nal_unit_header_length
+      format.InitializeInto());
+  if (status) {
+    OSSTATUS_LOG(ERROR, status) << "Failed to create CMVideoFormatDescription.";
+    return false;
+  }
+
+  base::ScopedCFTypeRef<CFMutableDictionaryRef> decoder_config(
+      CFDictionaryCreateMutable(
+          kCFAllocatorDefault,
+          1,  // capacity
+          &kCFTypeDictionaryKeyCallBacks,
+          &kCFTypeDictionaryValueCallBacks));
+
+  if (require_hardware) {
+    CFDictionarySetValue(
+        decoder_config,
+        // kVTVideoDecoderSpecification_RequireHardwareAcceleratedVideoDecoder
+        CFSTR("RequireHardwareAcceleratedVideoDecoder"),
+        kCFBooleanTrue);
+  }
+
+  base::ScopedCFTypeRef<CFMutableDictionaryRef> image_config(
+      BuildImageConfig(CMVideoFormatDescriptionGetDimensions(format)));
+
+  VTDecompressionOutputCallbackRecord callback = {0};
+
+  base::ScopedCFTypeRef<VTDecompressionSessionRef> session;
+  status = VTDecompressionSessionCreate(
+      kCFAllocatorDefault,
+      format,               // video_format_description
+      decoder_config,       // video_decoder_specification
+      image_config,         // destination_image_buffer_attributes
+      &callback,            // output_callback
+      session.InitializeInto());
+  if (status) {
+    OSSTATUS_LOG(ERROR, status) << "Failed to create VTDecompressionSession";
+    return false;
+  }
+
+  return true;
+}
+
 // The purpose of this function is to preload the generic and hardware-specific
 // libraries required by VideoToolbox before the GPU sandbox is enabled.
 // VideoToolbox normally loads the hardware-specific libraries lazily, so we
-// must actually create a decompression session.
-//
-// If creating a decompression session fails, hardware decoding will be disabled
-// (Initialize() will always return false). If it succeeds but a required
-// library is not loaded yet (I have not experienced this, but the details are
-// not documented), then VideoToolbox will fall back on software decoding
-// internally. If that happens, the likely solution is to expand the scope of
-// this initialization.
+// must actually create a decompression session. If creating a decompression
+// session fails, hardware decoding will be disabled (Initialize() will always
+// return false).
 static bool InitializeVideoToolboxInternal() {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableAcceleratedVideoDecode)) {
@@ -104,58 +160,25 @@ static bool InitializeVideoToolboxInternal() {
       return false;
   }
 
-  // Create a decoding session.
-  // SPS and PPS data were taken from the 480p encoding of Big Buck Bunny.
-  const uint8_t sps[] = {0x67, 0x64, 0x00, 0x1e, 0xac, 0xd9, 0x80, 0xd4, 0x3d,
-                         0xa1, 0x00, 0x00, 0x03, 0x00, 0x01, 0x00, 0x00, 0x03,
-                         0x00, 0x30, 0x8f, 0x16, 0x2d, 0x9a};
-  const uint8_t pps[] = {0x68, 0xe9, 0x7b, 0xcb};
-  const uint8_t* data_ptrs[] = {sps, pps};
-  const size_t data_sizes[] = {arraysize(sps), arraysize(pps)};
-
-  base::ScopedCFTypeRef<CMFormatDescriptionRef> format;
-  OSStatus status = CMVideoFormatDescriptionCreateFromH264ParameterSets(
-      kCFAllocatorDefault,
-      2,                          // parameter_set_count
-      data_ptrs,                  // &parameter_set_pointers
-      data_sizes,                 // &parameter_set_sizes
-      kNALUHeaderLength,          // nal_unit_header_length
-      format.InitializeInto());
-  if (status) {
-    OSSTATUS_LOG(ERROR, status) << "Failed to create CMVideoFormatDescription "
-                                << "while initializing VideoToolbox";
+  // Create a hardware decoding session.
+  // SPS and PPS data are taken from a 480p sample (buck2.mp4).
+  const uint8_t sps_normal[] = {0x67, 0x64, 0x00, 0x1e, 0xac, 0xd9, 0x80, 0xd4,
+                                0x3d, 0xa1, 0x00, 0x00, 0x03, 0x00, 0x01, 0x00,
+                                0x00, 0x03, 0x00, 0x30, 0x8f, 0x16, 0x2d, 0x9a};
+  const uint8_t pps_normal[] = {0x68, 0xe9, 0x7b, 0xcb};
+  if (!CreateVideoToolboxSession(sps_normal, arraysize(sps_normal), pps_normal,
+                                 arraysize(pps_normal), true)) {
     return false;
   }
 
-  base::ScopedCFTypeRef<CFMutableDictionaryRef> decoder_config(
-      CFDictionaryCreateMutable(
-          kCFAllocatorDefault,
-          1,  // capacity
-          &kCFTypeDictionaryKeyCallBacks,
-          &kCFTypeDictionaryValueCallBacks));
-
-  CFDictionarySetValue(
-      decoder_config,
-      // kVTVideoDecoderSpecification_RequireHardwareAcceleratedVideoDecoder
-      CFSTR("RequireHardwareAcceleratedVideoDecoder"),
-      kCFBooleanTrue);
-
-  base::ScopedCFTypeRef<CFMutableDictionaryRef> image_config(
-      BuildImageConfig(CMVideoFormatDescriptionGetDimensions(format)));
-
-  VTDecompressionOutputCallbackRecord callback = {0};
-
-  base::ScopedCFTypeRef<VTDecompressionSessionRef> session;
-  status = VTDecompressionSessionCreate(
-      kCFAllocatorDefault,
-      format,               // video_format_description
-      decoder_config,       // video_decoder_specification
-      image_config,         // destination_image_buffer_attributes
-      &callback,            // output_callback
-      session.InitializeInto());
-  if (status) {
-    OSSTATUS_LOG(ERROR, status) << "Failed to create VTDecompressionSession "
-                                << "while initializing VideoToolbox";
+  // Create a software decoding session.
+  // SPS and PPS data are taken from a 18p sample (small2.mp4).
+  const uint8_t sps_small[] = {0x67, 0x64, 0x00, 0x0a, 0xac, 0xd9, 0x89, 0x7e,
+                               0x22, 0x10, 0x00, 0x00, 0x3e, 0x90, 0x00, 0x0e,
+                               0xa6, 0x08, 0xf1, 0x22, 0x59, 0xa0};
+  const uint8_t pps_small[] = {0x68, 0xe9, 0x79, 0x72, 0xc0};
+  if (!CreateVideoToolboxSession(sps_small, arraysize(sps_small), pps_small,
+                                 arraysize(pps_small), false)) {
     return false;
   }
 
@@ -363,6 +386,8 @@ bool VTVideoDecodeAccelerator::ConfigureDecoder() {
           using_hardware.InitializeInto()) == 0) {
     UMA_HISTOGRAM_BOOLEAN("Media.VTVDA.HardwareAccelerated",
                           CFBooleanGetValue(using_hardware));
+  } else {
+    UMA_HISTOGRAM_BOOLEAN("Media.VTVDA.HardwareAccelerated", false);
   }
 
   return true;
