@@ -82,7 +82,8 @@ public:
 private:
     explicit Location(LocalFrame*);
 
-    void setLocation(const String&, LocalDOMWindow* callingWindow, LocalDOMWindow* enteredWindow);
+    enum class SetLocation { Normal, ReplaceThisFrame };
+    void setLocation(const String&, LocalDOMWindow* callingWindow, LocalDOMWindow* enteredWindow, SetLocation = SetLocation::Normal);
 
     const KURL& url() const;
 };

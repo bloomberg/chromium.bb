@@ -30,6 +30,7 @@
 #include "core/frame/Location.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/V8DOMActivityLogger.h"
 #include "core/dom/DOMURLUtilsReadOnly.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
@@ -230,10 +231,7 @@ void Location::replace(LocalDOMWindow* callingWindow, LocalDOMWindow* enteredWin
 {
     if (!m_frame)
         return;
-    // Note: We call LocalDOMWindow::setLocation directly here because replace() always operates on the current frame.
-    // FIXME: setLocation() probably belongs on DOMWindow, since you can trigger
-    // navigations across different origins.
-    m_frame->localDOMWindow()->setLocation(url, callingWindow, enteredWindow, LockHistoryAndBackForwardList);
+    setLocation(url, callingWindow, enteredWindow, SetLocation::ReplaceThisFrame);
 }
 
 void Location::reload(LocalDOMWindow* callingWindow)
@@ -245,15 +243,37 @@ void Location::reload(LocalDOMWindow* callingWindow)
     m_frame->reload(NormalReload, ClientRedirect);
 }
 
-void Location::setLocation(const String& url, LocalDOMWindow* callingWindow, LocalDOMWindow* enteredWindow)
+void Location::setLocation(const String& url, LocalDOMWindow* callingWindow, LocalDOMWindow* enteredWindow, SetLocation locationPolicy)
 {
     ASSERT(m_frame);
-    Frame* frame = m_frame->findFrameForNavigation(nullAtom, *callingWindow->frame());
-    if (!frame || !frame->isLocalFrame())
+    Frame* frame = (locationPolicy == SetLocation::ReplaceThisFrame) ? m_frame.get() : m_frame->findFrameForNavigation(nullAtom, *callingWindow->frame());
+    if (!frame || !frame->host())
         return;
-    // FIXME: setLocation() probably belongs on DOMWindow, since you can trigger
-    // navigations across different origins.
-    toLocalFrame(frame)->localDOMWindow()->setLocation(url, callingWindow, enteredWindow);
+
+    if (!callingWindow->frame() || !callingWindow->frame()->canNavigate(*frame))
+        return;
+
+    Document* enteredDocument = enteredWindow->document();
+    if (!enteredDocument)
+        return;
+
+    KURL completedURL = enteredDocument->completeURL(url);
+    if (completedURL.isNull())
+        return;
+
+    if (frame->domWindow()->isInsecureScriptAccess(*callingWindow, completedURL))
+        return;
+
+    V8DOMActivityLogger* activityLogger = V8DOMActivityLogger::currentActivityLoggerIfIsolatedWorld();
+    if (activityLogger) {
+        Vector<String> argv;
+        argv.append("LocalDOMWindow");
+        argv.append("url");
+        argv.append(enteredDocument->url());
+        argv.append(completedURL);
+        activityLogger->logEvent("blinkSetAttribute", argv.size(), argv.data());
+    }
+    frame->navigate(*callingWindow->document(), completedURL, locationPolicy == SetLocation::ReplaceThisFrame);
 }
 
 } // namespace blink

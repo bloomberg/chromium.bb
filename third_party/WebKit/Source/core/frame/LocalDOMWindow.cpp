@@ -35,7 +35,6 @@
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/SerializedScriptValue.h"
 #include "bindings/core/v8/V8AbstractEventListener.h"
-#include "bindings/core/v8/V8DOMActivityLogger.h"
 #include "core/css/CSSComputedStyleDeclaration.h"
 #include "core/css/CSSRuleList.h"
 #include "core/css/DOMWindowCSS.h"
@@ -634,11 +633,6 @@ void LocalDOMWindow::reset()
 #endif
 
     LocalDOMWindow::notifyContextDestroyed();
-}
-
-bool LocalDOMWindow::isCurrentlyDisplayedInFrame() const
-{
-    return frame() && frame()->domWindow() == this && frame()->host();
 }
 
 void LocalDOMWindow::sendOrientationChangeEvent()
@@ -1705,44 +1699,6 @@ void LocalDOMWindow::finishedLoading()
     }
 }
 
-void LocalDOMWindow::setLocation(const String& urlString, LocalDOMWindow* callingWindow, LocalDOMWindow* enteredWindow, SetLocationLocking locking)
-{
-    if (!isCurrentlyDisplayedInFrame())
-        return;
-
-    Document* activeDocument = callingWindow->document();
-    if (!activeDocument)
-        return;
-
-    ASSERT(frame());
-    if (!activeDocument->frame() || !activeDocument->frame()->canNavigate(*frame()))
-        return;
-
-    LocalFrame* firstFrame = enteredWindow->frame();
-    if (!firstFrame)
-        return;
-
-    KURL completedURL = firstFrame->document()->completeURL(urlString);
-    if (completedURL.isNull())
-        return;
-
-    if (isInsecureScriptAccess(*callingWindow, completedURL))
-        return;
-
-    V8DOMActivityLogger* activityLogger = V8DOMActivityLogger::currentActivityLoggerIfIsolatedWorld();
-    if (activityLogger) {
-        Vector<String> argv;
-        argv.append("LocalDOMWindow");
-        argv.append("url");
-        argv.append(firstFrame->document()->url());
-        argv.append(completedURL);
-        activityLogger->logEvent("blinkSetAttribute", argv.size(), argv.data());
-    }
-
-    // We want a new history item if we are processing a user gesture.
-    frame()->navigationScheduler().scheduleLocationChange(activeDocument, completedURL, locking != LockHistoryBasedOnGestureState);
-}
-
 void LocalDOMWindow::printErrorMessage(const String& message)
 {
     if (!isCurrentlyDisplayedInFrame())
@@ -1822,31 +1778,17 @@ String LocalDOMWindow::crossDomainAccessErrorMessage(LocalDOMWindow* callingWind
     return message + "Protocols, domains, and ports must match.";
 }
 
-bool LocalDOMWindow::isInsecureScriptAccess(LocalDOMWindow& callingWindow, const String& urlString)
+bool LocalDOMWindow::isInsecureScriptAccess(DOMWindow& callingWindow, const String& urlString)
 {
-    if (!protocolIsJavaScript(urlString))
+    if (!DOMWindow::isInsecureScriptAccess(callingWindow, urlString))
         return false;
 
-    // If this LocalDOMWindow isn't currently active in the LocalFrame, then there's no
-    // way we should allow the access.
-    // FIXME: Remove this check if we're able to disconnect LocalDOMWindow from
-    // LocalFrame on navigation: https://bugs.webkit.org/show_bug.cgi?id=62054
-    if (isCurrentlyDisplayedInFrame()) {
-        // FIXME: Is there some way to eliminate the need for a separate "callingWindow == this" check?
-        if (&callingWindow == this)
-            return false;
-
-        // FIXME: The name canAccess seems to be a roundabout way to ask "can execute script".
-        // Can we name the SecurityOrigin function better to make this more clear?
-        if (callingWindow.document()->securityOrigin()->canAccess(document()->securityOrigin()))
-            return false;
-    }
-
-    printErrorMessage(crossDomainAccessErrorMessage(&callingWindow));
+    if (callingWindow.isLocalDOMWindow())
+        printErrorMessage(crossDomainAccessErrorMessage(static_cast<LocalDOMWindow*>(&callingWindow)));
     return true;
 }
 
-PassRefPtrWillBeRawPtr<LocalDOMWindow> LocalDOMWindow::open(const String& urlString, const AtomicString& frameName, const String& windowFeaturesString,
+PassRefPtrWillBeRawPtr<DOMWindow> LocalDOMWindow::open(const String& urlString, const AtomicString& frameName, const String& windowFeaturesString,
     LocalDOMWindow* callingWindow, LocalDOMWindow* enteredWindow)
 {
     if (!isCurrentlyDisplayedInFrame())
@@ -1880,27 +1822,26 @@ PassRefPtrWillBeRawPtr<LocalDOMWindow> LocalDOMWindow::open(const String& urlStr
         else
             targetFrame = frame();
     }
-    // FIXME: Navigating RemoteFrames is not yet supported.
-    if (targetFrame && targetFrame->isLocalFrame()) {
-        LocalFrame* localTargetFrame = toLocalFrame(targetFrame);
-        if (!activeDocument->frame() || !activeDocument->frame()->canNavigate(*localTargetFrame))
+
+    if (targetFrame) {
+        if (!activeDocument->frame() || !activeDocument->frame()->canNavigate(*targetFrame))
             return nullptr;
 
         KURL completedURL = firstFrame->document()->completeURL(urlString);
 
-        if (localTargetFrame->localDOMWindow()->isInsecureScriptAccess(*callingWindow, completedURL))
-            return localTargetFrame->localDOMWindow();
+        if (targetFrame->domWindow()->isInsecureScriptAccess(*callingWindow, completedURL))
+            return targetFrame->domWindow();
 
         if (urlString.isEmpty())
-            return localTargetFrame->localDOMWindow();
+            return targetFrame->domWindow();
 
-        localTargetFrame->navigationScheduler().scheduleLocationChange(activeDocument, completedURL, false);
-        return localTargetFrame->localDOMWindow();
+        targetFrame->navigate(*activeDocument, completedURL, false);
+        return targetFrame->domWindow();
     }
 
     WindowFeatures windowFeatures(windowFeaturesString);
     LocalFrame* result = createWindow(urlString, frameName, windowFeatures, *callingWindow, *firstFrame, *frame());
-    return result ? result->localDOMWindow() : nullptr;
+    return result ? result->domWindow() : nullptr;
 }
 
 void LocalDOMWindow::showModalDialog(const String& urlString, const String& dialogFeaturesString,

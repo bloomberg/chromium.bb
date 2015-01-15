@@ -524,10 +524,10 @@ bool SecurityOrigin::isSameSchemeHostPort(const SecurityOrigin* other) const
     return true;
 }
 
-const String& SecurityOrigin::urlWithUniqueSecurityOrigin()
+const KURL& SecurityOrigin::urlWithUniqueSecurityOrigin()
 {
     ASSERT(isMainThread());
-    DEFINE_STATIC_LOCAL(const String, uniqueSecurityOriginURL, ("data:,"));
+    DEFINE_STATIC_LOCAL(const KURL, uniqueSecurityOriginURL, (ParsedURLString, "data:,"));
     return uniqueSecurityOriginURL;
 }
 

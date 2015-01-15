@@ -201,7 +201,7 @@ public:
 
     bool needsDatabaseIdentifierQuirkForFiles() const { return m_needsDatabaseIdentifierQuirkForFiles; }
 
-    static const String& urlWithUniqueSecurityOrigin();
+    static const KURL& urlWithUniqueSecurityOrigin();
 
     // Transfer origin privileges from another security origin.
     // The following privileges are currently copied over:

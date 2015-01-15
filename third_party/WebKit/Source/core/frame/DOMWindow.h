@@ -184,6 +184,14 @@ public:
     // origin replication work.
     virtual String sanitizedCrossDomainAccessErrorMessage(LocalDOMWindow* callingWindow) = 0;
     virtual String crossDomainAccessErrorMessage(LocalDOMWindow* callingWindow) = 0;
+    virtual bool isInsecureScriptAccess(DOMWindow& callingWindow, const String& urlString);
+
+    // FIXME: When this DOMWindow is no longer the active DOMWindow (i.e.,
+    // when its document is no longer the document that is displayed in its
+    // frame), we would like to zero out m_frame to avoid being confused
+    // by the document that is currently active in m_frame.
+    // See https://bugs.webkit.org/show_bug.cgi?id=62054
+    bool isCurrentlyDisplayedInFrame() const;
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(animationend);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(animationiteration);

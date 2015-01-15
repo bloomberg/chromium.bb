@@ -120,7 +120,7 @@ void ApplicationCacheHost::selectCacheWithManifest(const KURL& manifestURL)
         // during navigation.
         // see ApplicationCacheGroup::selectCache()
         LocalFrame* frame = m_documentLoader->frame();
-        frame->navigationScheduler().scheduleLocationChange(frame->document(), frame->document()->url());
+        frame->navigate(*frame->document(), frame->document()->url(), true);
     }
 }
 

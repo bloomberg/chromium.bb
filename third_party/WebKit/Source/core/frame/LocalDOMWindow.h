@@ -59,8 +59,6 @@ enum PageshowEventPersistence {
     PageshowEventPersisted = 1
 };
 
-enum SetLocationLocking { LockHistoryBasedOnGestureState, LockHistoryAndBackForwardList };
-
 // Note: if you're thinking of returning something DOM-related by reference,
 // please ping dcheng@chromium.org first. You probably don't want to do that.
 class LocalDOMWindow final : public DOMWindow, public WillBeHeapSupplementable<LocalDOMWindow>, public LifecycleContext<LocalDOMWindow> {
@@ -164,13 +162,9 @@ public:
     static bool allowPopUp(LocalFrame& firstFrame);
     static bool canShowModalDialogNow(const LocalFrame*);
 
-    // DOM Level 0
-    void setLocation(const String& location, LocalDOMWindow* callingWindow, LocalDOMWindow* enteredWindow,
-        SetLocationLocking = LockHistoryBasedOnGestureState);
-
     Element* frameElement() const;
 
-    PassRefPtrWillBeRawPtr<LocalDOMWindow> open(const String& urlString, const AtomicString& frameName, const String& windowFeaturesString,
+    PassRefPtrWillBeRawPtr<DOMWindow> open(const String& urlString, const AtomicString& frameName, const String& windowFeaturesString,
         LocalDOMWindow* callingWindow, LocalDOMWindow* enteredWindow);
 
     typedef void (*PrepareDialogFunction)(LocalDOMWindow*, void* context);
@@ -206,15 +200,9 @@ public:
     // recurse on its child frames.
     void sendOrientationChangeEvent();
 
-    // FIXME: When this LocalDOMWindow is no longer the active LocalDOMWindow (i.e.,
-    // when its document is no longer the document that is displayed in its
-    // frame), we would like to zero out m_frame to avoid being confused
-    // by the document that is currently active in m_frame.
-    bool isCurrentlyDisplayedInFrame() const;
-
     void willDetachDocumentFromFrame();
 
-    bool isInsecureScriptAccess(LocalDOMWindow& callingWindow, const String& urlString);
+    bool isInsecureScriptAccess(DOMWindow& callingWindow, const String& urlString) override;
 
     PassOwnPtr<LifecycleNotifier<LocalDOMWindow>> createLifecycleNotifier();
 

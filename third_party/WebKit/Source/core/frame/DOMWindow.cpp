@@ -5,8 +5,11 @@
 #include "config.h"
 #include "core/frame/DOMWindow.h"
 
+#include "core/dom/SecurityContext.h"
 #include "core/frame/Frame.h"
 #include "core/frame/FrameClient.h"
+#include "platform/weborigin/KURL.h"
+#include "platform/weborigin/SecurityOrigin.h"
 
 namespace blink {
 
@@ -62,6 +65,31 @@ DOMWindow* DOMWindow::anonymousIndexedGetter(uint32_t index) const
 
     Frame* child = frame()->tree().scopedChild(index);
     return child ? child->domWindow() : nullptr;
+}
+
+bool DOMWindow::isCurrentlyDisplayedInFrame() const
+{
+    return frame() && frame()->domWindow() == this && frame()->host();
+}
+
+bool DOMWindow::isInsecureScriptAccess(DOMWindow& callingWindow, const String& urlString)
+{
+    if (!protocolIsJavaScript(urlString))
+        return false;
+
+    // If this DOMWindow isn't currently active in the Frame, then there's no
+    // way we should allow the access.
+    if (isCurrentlyDisplayedInFrame()) {
+        // FIXME: Is there some way to eliminate the need for a separate "callingWindow == this" check?
+        if (&callingWindow == this)
+            return false;
+
+        // FIXME: The name canAccess seems to be a roundabout way to ask "can execute script".
+        // Can we name the SecurityOrigin function better to make this more clear?
+        if (callingWindow.frame()->securityContext()->securityOrigin()->canAccess(frame()->securityContext()->securityOrigin()))
+            return false;
+    }
+    return true;
 }
 
 } // namespace blink

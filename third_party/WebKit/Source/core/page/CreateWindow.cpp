@@ -165,7 +165,7 @@ LocalFrame* createWindow(const String& urlString, const AtomicString& frameName,
     if (created)
         newFrame->loader().load(FrameLoadRequest(callingWindow.document(), completedURL));
     else if (!urlString.isEmpty())
-        newFrame->navigationScheduler().scheduleLocationChange(callingWindow.document(), completedURL.string(), false);
+        newFrame->navigate(*callingWindow.document(), completedURL, false);
     return newFrame;
 }
 
