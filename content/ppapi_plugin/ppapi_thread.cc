@@ -42,10 +42,12 @@
 #include "ppapi/proxy/plugin_message_filter.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/resource_reply_thread_registrar.h"
+#include "ppapi/shared_impl/proxy_lock.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "ui/base/ui_base_switches.h"
 
 #if defined(OS_WIN)
+#include "base/win/iat_patch_function.h"
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "sandbox/win/src/sandbox.h"
@@ -91,6 +93,53 @@ static void WarmupWindowsLocales(const ppapi::PpapiPermissions& permissions) {
     }
   }
 }
+
+// TODO(scottmg): http://crbug.com/448473. This code should be removed from the
+// renderer once PDF is always OOP and/or PDF is made to use Skia instead of GDI
+// directly.
+const wchar_t kPdfFileName[] = L"pdf.dll";
+
+static base::win::IATPatchFunction g_iat_patch_createdca;
+HDC WINAPI CreateDCAPatch(LPCSTR driver_name,
+                          LPCSTR device_name,
+                          LPCSTR output,
+                          const void* init_data) {
+  DCHECK(std::string("DISPLAY") == std::string(driver_name));
+  DCHECK(!device_name);
+  DCHECK(!output);
+  DCHECK(!init_data);
+
+  // CreateDC fails behind the sandbox, but not CreateCompatibleDC.
+  return CreateCompatibleDC(NULL);
+}
+
+static base::win::IATPatchFunction g_iat_patch_get_font_data;
+DWORD WINAPI GetFontDataPatch(HDC hdc,
+                              DWORD table,
+                              DWORD offset,
+                              LPVOID buffer,
+                              DWORD length) {
+  int rv = GetFontData(hdc, table, offset, buffer, length);
+  if (rv == GDI_ERROR && hdc) {
+    HFONT font = static_cast<HFONT>(GetCurrentObject(hdc, OBJ_FONT));
+
+    LOGFONT logfont;
+    if (GetObject(font, sizeof(LOGFONT), &logfont)) {
+      std::vector<char> font_data;
+      {
+        ppapi::ProxyAutoLock lock;
+        // In the sandbox, font loading will fail. We ask the browser to load it
+        // which causes it to be loaded by the kernel, which then makes the
+        // subsequent call succeed.
+        ppapi::proxy::PluginGlobals::Get()->PreCacheFontForFlash(
+            reinterpret_cast<const void*>(&logfont));
+      }
+      rv = GetFontData(hdc, table, offset, buffer, length);
+    }
+  }
+  return rv;
+}
+
 #else
 extern void* g_target_services;
 #endif
@@ -324,6 +373,15 @@ void PpapiThread::OnLoadPlugin(const base::FilePath& path,
   // If code subsequently tries to exit using abort(), force a crash (since
   // otherwise these would be silent terminations and fly under the radar).
   base::win::SetAbortBehaviorForCrashReporting();
+
+  // Need to patch a few functions for font loading to work correctly. This can
+  // be removed once we switch PDF to use Skia.
+  if (GetModuleHandle(kPdfFileName)) {
+    g_iat_patch_createdca.Patch(kPdfFileName, "gdi32.dll", "CreateDCA",
+                                CreateDCAPatch);
+    g_iat_patch_get_font_data.Patch(kPdfFileName, "gdi32.dll", "GetFontData",
+                                    GetFontDataPatch);
+  }
 
   // Once we lower the token the sandbox is locked down and no new modules
   // can be loaded. TODO(cpu): consider changing to the loading style of

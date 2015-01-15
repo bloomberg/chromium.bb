@@ -281,14 +281,18 @@ ChromeRenderProcessObserver::ChromeRenderProcessObserver(
   net::NetModule::SetResourceProvider(chrome_common_net::NetResourceProvider);
 
 #if defined(OS_WIN)
-  // Need to patch a few functions for font loading to work correctly.
-  base::FilePath pdf;
-  if (PathService::Get(chrome::FILE_PDF_PLUGIN, &pdf) &&
-      base::PathExists(pdf)) {
-    g_iat_patch_createdca.Patch(
-        pdf.value().c_str(), "gdi32.dll", "CreateDCA", CreateDCAPatch);
-    g_iat_patch_get_font_data.Patch(
-        pdf.value().c_str(), "gdi32.dll", "GetFontData", GetFontDataPatch);
+  // TODO(scottmg): http://crbug.com/448473. This code should be removed once
+  // PDF is always OOP and/or PDF is made to use Skia instead of GDI directly.
+  if (!command_line.HasSwitch(switches::kEnableOutOfProcessPdf)) {
+    // Need to patch a few functions for font loading to work correctly.
+    base::FilePath pdf;
+    if (PathService::Get(chrome::FILE_PDF_PLUGIN, &pdf) &&
+        base::PathExists(pdf)) {
+      g_iat_patch_createdca.Patch(pdf.value().c_str(), "gdi32.dll", "CreateDCA",
+                                  CreateDCAPatch);
+      g_iat_patch_get_font_data.Patch(pdf.value().c_str(), "gdi32.dll",
+                                      "GetFontData", GetFontDataPatch);
+    }
   }
 #endif
 
