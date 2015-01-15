@@ -35,8 +35,8 @@ class UnpackerTest : public testing::Test {
     base::FilePath original_path;
     ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &original_path));
     original_path = original_path.AppendASCII("extensions")
-        .AppendASCII("unpacker")
-        .AppendASCII(crx_name);
+                        .AppendASCII("unpacker")
+                        .AppendASCII(crx_name);
     ASSERT_TRUE(base::PathExists(original_path)) << original_path.value();
 
     // Try bots won't let us write into DIR_TEST_DATA, so we have to create
@@ -44,13 +44,11 @@ class UnpackerTest : public testing::Test {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
     base::FilePath crx_path = temp_dir_.path().AppendASCII(crx_name);
-    ASSERT_TRUE(base::CopyFile(original_path, crx_path)) <<
-        "Original path " << original_path.value() <<
-        ", Crx path " << crx_path.value();
+    ASSERT_TRUE(base::CopyFile(original_path, crx_path))
+        << "Original path " << original_path.value() << ", Crx path "
+        << crx_path.value();
 
-    unpacker_.reset(new Unpacker(crx_path,
-                                 std::string(),
-                                 Manifest::INTERNAL,
+    unpacker_.reset(new Unpacker(crx_path, std::string(), Manifest::INTERNAL,
                                  Extension::NO_FLAGS));
   }
 
@@ -83,9 +81,12 @@ TEST_F(UnpackerTest, InvalidDefaultLocale) {
 TEST_F(UnpackerTest, InvalidMessagesFile) {
   SetupUnpacker("invalid_messages_file.crx");
   EXPECT_FALSE(unpacker_->Run());
-  EXPECT_TRUE(MatchPattern(unpacker_->error_message(),
-    ASCIIToUTF16("*_locales?en_US?messages.json: Line: 2, column: 11,"
-        " Syntax error."))) << unpacker_->error_message();
+  EXPECT_TRUE(
+      MatchPattern(unpacker_->error_message(),
+                   ASCIIToUTF16(
+                       "*_locales?en_US?messages.json: Line: 2, column: 11,"
+                       " Syntax error.")))
+      << unpacker_->error_message();
 }
 
 TEST_F(UnpackerTest, MissingDefaultData) {
@@ -106,8 +107,8 @@ TEST_F(UnpackerTest, MissingMessagesFile) {
   SetupUnpacker("missing_messages_file.crx");
   EXPECT_FALSE(unpacker_->Run());
   EXPECT_TRUE(MatchPattern(unpacker_->error_message(),
-    ASCIIToUTF16(errors::kLocalesMessagesFileMissing) +
-    ASCIIToUTF16("*_locales?en_US?messages.json")));
+                           ASCIIToUTF16(errors::kLocalesMessagesFileMissing) +
+                               ASCIIToUTF16("*_locales?en_US?messages.json")));
 }
 
 TEST_F(UnpackerTest, NoLocaleData) {
@@ -134,15 +135,13 @@ TEST_F(UnpackerTest, NoL10n) {
 TEST_F(UnpackerTest, UnzipDirectoryError) {
   const char kExpected[] = "Could not create directory for unzipping: ";
   SetupUnpacker("good_package.crx");
-  base::FilePath path =
-      temp_dir_.path().AppendASCII(kTempExtensionName);
+  base::FilePath path = temp_dir_.path().AppendASCII(kTempExtensionName);
   ASSERT_TRUE(base::WriteFile(path, "foo", 3));
   EXPECT_FALSE(unpacker_->Run());
-  EXPECT_TRUE(StartsWith(unpacker_->error_message(),
-              ASCIIToUTF16(kExpected),
-              false)) << "Expected prefix: \"" << kExpected
-                      << "\", actual error: \"" << unpacker_->error_message()
-                      << "\"";
+  EXPECT_TRUE(
+      StartsWith(unpacker_->error_message(), ASCIIToUTF16(kExpected), false))
+      << "Expected prefix: \"" << kExpected << "\", actual error: \""
+      << unpacker_->error_message() << "\"";
 }
 
 TEST_F(UnpackerTest, UnzipError) {
@@ -156,23 +155,20 @@ TEST_F(UnpackerTest, BadPathError) {
   const char kExpected[] = "Illegal path (absolute or relative with '..'): ";
   SetupUnpacker("bad_path.crx");
   EXPECT_FALSE(unpacker_->Run());
-  EXPECT_TRUE(StartsWith(unpacker_->error_message(),
-              ASCIIToUTF16(kExpected),
-              false)) << "Expected prefix: \"" << kExpected
-                      << "\", actual error: \"" << unpacker_->error_message()
-                      << "\"";
+  EXPECT_TRUE(
+      StartsWith(unpacker_->error_message(), ASCIIToUTF16(kExpected), false))
+      << "Expected prefix: \"" << kExpected << "\", actual error: \""
+      << unpacker_->error_message() << "\"";
 }
-
 
 TEST_F(UnpackerTest, ImageDecodingError) {
   const char kExpected[] = "Could not decode image: ";
   SetupUnpacker("bad_image.crx");
   EXPECT_FALSE(unpacker_->Run());
-  EXPECT_TRUE(StartsWith(unpacker_->error_message(),
-              ASCIIToUTF16(kExpected),
-              false)) << "Expected prefix: \"" << kExpected
-                      << "\", actual error: \"" << unpacker_->error_message()
-                      << "\"";
+  EXPECT_TRUE(
+      StartsWith(unpacker_->error_message(), ASCIIToUTF16(kExpected), false))
+      << "Expected prefix: \"" << kExpected << "\", actual error: \""
+      << unpacker_->error_message() << "\"";
 }
 
 }  // namespace extensions
