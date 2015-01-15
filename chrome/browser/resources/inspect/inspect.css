@@ -97,7 +97,7 @@ img {
 }
 
 .device-serial {
-  color: #888;
+  color: #999;
   font-size: 80%;
   margin-left: 6px;
 }
@@ -147,6 +147,11 @@ img {
 .browser-header > .browser-name {
   font-size: 110%;
   font-weight: bold;
+}
+
+.browser-header > .browser-user {
+  color: #999;
+  margin-left: 6px;
 }
 
 .used-for-port-forwarding {
@@ -214,7 +219,7 @@ img {
 }
 
 .url {
-  color: #A0A0A0;
+  color: #999;
 }
 
 .list {

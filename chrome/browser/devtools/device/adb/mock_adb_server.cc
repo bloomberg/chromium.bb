@@ -29,6 +29,7 @@ const char kOpenedUnixSocketsCommand[] = "shell:cat /proc/net/unix";
 const char kDeviceModelCommand[] = "shell:getprop ro.product.model";
 const char kDumpsysCommand[] = "shell:dumpsys window policy";
 const char kListProcessesCommand[] = "shell:ps";
+const char kListUsersCommand[] = "shell:dumpsys user";
 
 const char kSerialOnline[] = "01498B321301A00A";
 const char kSerialOffline[] = "01498B2B0D01300E";
@@ -61,19 +62,28 @@ const char kSampleOpenedUnixSockets[] =
     " 00010000 0001 01 20895 @noprocess_devtools_remote\n";
 
 const char kSampleListProcesses[] =
-    "USER   PID  PPID VSIZE  RSS    WCHAN    PC         NAME\n"
-    "root   1    0    688    508    ffffffff 00000000 S /init\r\n"
-    "u0_a75 2425 123  933736 193024 ffffffff 00000000 S com.sample.feed\r\n"
-    "nfc    741  123  706448 26316  ffffffff 00000000 S com.android.nfc\r\n"
-    "u0_a76 1001 124  111111 222222 ffffffff 00000000 S com.android.chrome\r\n"
-    "u0_a77 1002 125  111111 222222 ffffffff 00000000 S com.chrome.beta\r\n"
-    "u0_a78 1003 126  111111 222222 ffffffff 00000000 S com.noprocess.app\r\n";
+    "USER    PID  PPID VSIZE  RSS    WCHAN    PC         NAME\n"
+    "root    1    0    688    508    ffffffff 00000000 S /init\r\n"
+    "u0_a75  2425 123  933736 193024 ffffffff 00000000 S com.sample.feed\r\n"
+    "nfc     741  123  706448 26316  ffffffff 00000000 S com.android.nfc\r\n"
+    "u0_a76  1001 124  111111 222222 ffffffff 00000000 S com.android.chrome\r\n"
+    "u10_a77 1002 125  111111 222222 ffffffff 00000000 S com.chrome.beta\r\n"
+    "u0_a78  1003 126  111111 222222 ffffffff 00000000 S com.noprocess.app\r\n";
 
 const char kSampleDumpsys[] =
     "WINDOW MANAGER POLICY STATE (dumpsys window policy)\r\n"
     "    mSafeMode=false mSystemReady=true mSystemBooted=true\r\n"
     "    mStable=(0,50)-(720,1184)\r\n" // Only mStable parameter is parsed
     "    mForceStatusBar=false mForceStatusBarFromKeyguard=false\r\n";
+
+const char kSampleListUsers[] =
+    "Users:\r\n"
+    "  UserInfo{0:Test User:13} serialNo=0\r\n"
+    "    Created: <unknown>\r\n"
+    "    Last logged in: +17m18s871ms ago\r\n"
+    "  UserInfo{10:Test User : 2:10} serialNo=10\r\n"
+    "    Created: +3d4h35m1s139ms ago\r\n"
+    "    Last logged in: +17m26s287ms ago\r\n";
 
 char kSampleChromeVersion[] = "{\n"
     "   \"Browser\": \"Chrome/32.0.1679.0\",\n"
@@ -542,6 +552,8 @@ void MockAndroidConnection::ProcessCommand(const std::string& command) {
       delegate_->SendSuccess(kSampleDumpsys);
     } else if (command == kListProcessesCommand) {
       delegate_->SendSuccess(kSampleListProcesses);
+    } else if (command == kListUsersCommand) {
+      delegate_->SendSuccess(kSampleListUsers);
     } else {
       NOTREACHED() << "Unknown command - " << command;
     }

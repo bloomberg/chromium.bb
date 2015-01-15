@@ -97,6 +97,7 @@ class DevToolsAndroidBridge : public KeyedService {
     const std::string& serial() { return browser_id_.first; }
     const std::string& socket() { return browser_id_.second; }
     const std::string& display_name() { return display_name_; }
+    const std::string& user() { return user_; }
     const std::string& version() { return version_; }
     const RemotePages& pages() { return pages_; }
 
@@ -117,6 +118,7 @@ class DevToolsAndroidBridge : public KeyedService {
 
     BrowserId browser_id_;
     std::string display_name_;
+    std::string user_;
     AndroidDeviceManager::BrowserInfo::Type type_;
     std::string version_;
     RemotePages pages_;

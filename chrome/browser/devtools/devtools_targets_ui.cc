@@ -50,6 +50,7 @@ const char kAdbBrowsersList[] = "browsers";
 const char kAdbDeviceIdFormat[] = "device:%s";
 
 const char kAdbBrowserNameField[] = "adbBrowserName";
+const char kAdbBrowserUserField[] = "adbBrowserUser";
 const char kAdbBrowserVersionField[] = "adbBrowserVersion";
 const char kAdbBrowserChromeVersionField[] = "adbBrowserChromeVersion";
 const char kCompatibleVersion[] = "compatibleVersion";
@@ -372,6 +373,7 @@ void AdbTargetsUIHandler::DeviceListChanged(
       DevToolsAndroidBridge::RemoteBrowser* browser = bit->get();
       base::DictionaryValue* browser_data = new base::DictionaryValue();
       browser_data->SetString(kAdbBrowserNameField, browser->display_name());
+      browser_data->SetString(kAdbBrowserUserField, browser->user());
       browser_data->SetString(kAdbBrowserVersionField, browser->version());
       DevToolsAndroidBridge::RemoteBrowser::ParsedVersion parsed =
           browser->GetParsedVersion();

@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_DEVTOOLS_DEVICE_ADB_ADB_DEVICE_INFO_QUERY_H_
 #define CHROME_BROWSER_DEVTOOLS_DEVICE_ADB_ADB_DEVICE_INFO_QUERY_H_
 
-#include "base/threading/non_thread_safe.h"
+#include "base/memory/ref_counted.h"
 #include "chrome/browser/devtools/device/android_device_manager.h"
 
-class AdbDeviceInfoQuery : public base::NonThreadSafe {
+class AdbDeviceInfoQuery : public base::RefCounted<AdbDeviceInfoQuery> {
  public:
   static AndroidDeviceManager::BrowserInfo::Type GetBrowserType(
       const std::string& socket);
@@ -26,34 +26,27 @@ class AdbDeviceInfoQuery : public base::NonThreadSafe {
                     const DeviceInfoCallback& callback);
 
  private:
+  friend class base::RefCounted<AdbDeviceInfoQuery>;
+
   AdbDeviceInfoQuery(const RunCommandCallback& command_callback,
                      const DeviceInfoCallback& callback);
 
   virtual ~AdbDeviceInfoQuery();
 
   void ReceivedModel(int result, const std::string& response);
+  void ReceivedWindowPolicy(int result, const std::string& response);
+  void ReceivedProcesses(int result, const std::string& response);
+  void ReceivedSockets(int result, const std::string& response);
+  void ReceivedUsers(int result, const std::string& response);
 
-  void ReceivedDumpsys(int result, const std::string& response);
+  void ParseBrowserInfo();
 
-  void ParseDumpsysResponse(const std::string& response);
-
-  void ParseScreenSize(const std::string& str);
-
-  void ReceivedProcesses(int result,
-                         const std::string& processes_response);
-
-  void ReceivedSockets(const std::string& processes_response,
-                       int result,
-                       const std::string& sockets_response);
-
-  void ParseBrowserInfo(const std::string& processes_response,
-                        const std::string& sockets_response);
-
-  void Respond();
-
-  RunCommandCallback command_callback_;
   DeviceInfoCallback callback_;
+  std::string processes_response_;
+  std::string sockets_response_;
+  std::string users_response_;
   AndroidDeviceManager::DeviceInfo device_info_;
+  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(AdbDeviceInfoQuery);
 };

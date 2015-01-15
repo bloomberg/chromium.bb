@@ -39,6 +39,7 @@ class AndroidDeviceManager : public base::NonThreadSafe {
 
     std::string socket_name;
     std::string display_name;
+    std::string user;
     Type type;
   };
 

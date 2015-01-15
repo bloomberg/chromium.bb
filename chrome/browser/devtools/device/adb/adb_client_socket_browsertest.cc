@@ -93,6 +93,10 @@ class AdbClientSocketTest : public InProcessBrowserTest,
     ASSERT_EQ("31.0.1599.0", chrome_beta->version());
     ASSERT_EQ("4.0", webview->version());
 
+    ASSERT_EQ("Test User", chrome->user());
+    ASSERT_EQ("Test User : 2", chrome_beta->user());
+    ASSERT_EQ("Test User", webview->user());
+
     DevToolsAndroidBridge::RemotePages chrome_pages =
         chrome->pages();
     DevToolsAndroidBridge::RemotePages chrome_beta_pages =

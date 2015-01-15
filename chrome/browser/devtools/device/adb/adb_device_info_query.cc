@@ -14,8 +14,10 @@ namespace {
 const char kDeviceModelCommand[] = "shell:getprop ro.product.model";
 const char kOpenedUnixSocketsCommand[] = "shell:cat /proc/net/unix";
 const char kListProcessesCommand[] = "shell:ps";
-const char kDumpsysCommand[] = "shell:dumpsys window policy";
-const char kDumpsysScreenSizePrefix[] = "mStable=";
+const char kWindowPolicyCommand[] = "shell:dumpsys window policy";
+const char kListUsersCommand[] = "shell:dumpsys user";
+const char kScreenSizePrefix[] = "mStable=";
+const char kUserInfoPrefix[] = "UserInfo{";
 
 const char kDevToolsSocketSuffix[] = "_devtools_remote";
 
@@ -76,17 +78,18 @@ const BrowserDescriptor kBrowserDescriptors[] = {
 
 const BrowserDescriptor* FindBrowserDescriptor(const std::string& package) {
   int count = sizeof(kBrowserDescriptors) / sizeof(kBrowserDescriptors[0]);
-  for (int i = 0; i < count; i++)
+  for (int i = 0; i < count; i++) {
     if (kBrowserDescriptors[i].package == package)
       return &kBrowserDescriptors[i];
-  return NULL;
+  }
+  return nullptr;
 }
 
-typedef std::map<std::string, std::string> StringMap;
+using StringMap = std::map<std::string, std::string>;
 
-static void MapProcessesToPackages(const std::string& response,
-                                   StringMap& pid_to_package,
-                                   StringMap& package_to_pid) {
+void MapProcessesToPackages(const std::string& response,
+                            StringMap* pid_to_package,
+                            StringMap* pid_to_user) {
   // Parse 'ps' output which on Android looks like this:
   //
   // USER PID PPID VSIZE RSS WCHAN PC ? NAME
@@ -99,14 +102,12 @@ static void MapProcessesToPackages(const std::string& response,
     if (fields.size() < 9)
       continue;
     std::string pid = fields[1];
-    std::string package = fields[8];
-    pid_to_package[pid] = package;
-    package_to_pid[package] = pid;
+    (*pid_to_package)[pid] = fields[8];
+    (*pid_to_user)[pid] = fields[0];
   }
 }
 
-static StringMap MapSocketsToProcesses(const std::string& response,
-                                       const std::string& channel_pattern) {
+StringMap MapSocketsToProcesses(const std::string& response) {
   // Parse 'cat /proc/net/unix' output which on Android looks like this:
   //
   // Num       RefCount Protocol Flags    Type St Inode Path
@@ -129,14 +130,14 @@ static StringMap MapSocketsToProcesses(const std::string& response,
     std::string path_field = fields[7];
     if (path_field.size() < 1 || path_field[0] != '@')
       continue;
-    size_t socket_name_pos = path_field.find(channel_pattern);
+    size_t socket_name_pos = path_field.find(kDevToolsSocketSuffix);
     if (socket_name_pos == std::string::npos)
       continue;
 
     std::string socket = path_field.substr(1);
 
     std::string pid;
-    size_t socket_name_end = socket_name_pos + channel_pattern.size();
+    size_t socket_name_end = socket_name_pos + strlen(kDevToolsSocketSuffix);
     if (socket_name_end < path_field.size() &&
         path_field[socket_name_end] == '_') {
       pid = path_field.substr(socket_name_end + 1);
@@ -144,6 +145,83 @@ static StringMap MapSocketsToProcesses(const std::string& response,
     socket_to_pid[socket] = pid;
   }
   return socket_to_pid;
+}
+
+gfx::Size ParseScreenSize(const std::string& str) {
+  std::vector<std::string> pairs;
+  Tokenize(str, "-", &pairs);
+  if (pairs.size() != 2)
+    return gfx::Size();
+
+  int width;
+  int height;
+  std::vector<std::string> numbers;
+  Tokenize(pairs[1].substr(1, pairs[1].size() - 2), ",", &numbers);
+  if (numbers.size() != 2 ||
+      !base::StringToInt(numbers[0], &width) ||
+      !base::StringToInt(numbers[1], &height))
+    return gfx::Size();
+
+  return gfx::Size(width, height);
+}
+
+gfx::Size ParseWindowPolicyResponse(const std::string& response) {
+  std::vector<std::string> lines;
+  Tokenize(response, "\r", &lines);
+  for (const std::string& line : lines) {
+    size_t pos = line.find(kScreenSizePrefix);
+    if (pos != std::string::npos) {
+      return ParseScreenSize(
+          line.substr(pos + strlen(kScreenSizePrefix)));
+    }
+  }
+  return gfx::Size();
+}
+
+StringMap MapIdsToUsers(const std::string& response) {
+  // Parse 'dumpsys user' output which looks like this:
+  // Users:
+  //   UserInfo{0:Test User:13} serialNo=0
+  //     Created: <unknown>
+  //     Last logged in: +17m18s871ms ago
+  //   UserInfo{10:User with : (colon):10} serialNo=10
+  //     Created: +3d4h35m1s139ms ago
+  //     Last logged in: +17m26s287ms ago
+
+  StringMap id_to_username;
+  std::vector<std::string> lines;
+  Tokenize(response, "\r", &lines);
+  for (const std::string& line : lines) {
+    size_t pos = line.find(kUserInfoPrefix);
+    if (pos != std::string::npos) {
+      std::string fields = line.substr(pos + strlen(kUserInfoPrefix));
+      size_t first_pos = fields.find_first_of(":");
+      size_t last_pos = fields.find_last_of(":");
+      if (first_pos != std::string::npos && last_pos != std::string::npos) {
+        std::string id = fields.substr(0, first_pos);
+        std::string name = fields.substr(first_pos + 1,
+                                         last_pos - first_pos - 1);
+        id_to_username[id] = name;
+      }
+    }
+  }
+  return id_to_username;
+}
+
+std::string GetUserName(const std::string& unix_user,
+                        const StringMap id_to_username) {
+  // Parse username as returned by ps which looks like 'u0_a31'
+  // where '0' is user id and '31' is app id.
+  if (!unix_user.empty() && unix_user[0] == 'u') {
+    size_t pos = unix_user.find('_');
+    if (pos != std::string::npos) {
+      StringMap::const_iterator it =
+          id_to_username.find(unix_user.substr(1, pos - 1));
+      if (it != id_to_username.end())
+        return it->second;
+    }
+  }
+  return std::string();
 }
 
 }  // namespace
@@ -190,142 +268,108 @@ void AdbDeviceInfoQuery::Start(const RunCommandCallback& command_callback,
 AdbDeviceInfoQuery::AdbDeviceInfoQuery(
     const RunCommandCallback& command_callback,
     const DeviceInfoCallback& callback)
-    : command_callback_(command_callback),
-      callback_(callback) {
-  DCHECK(CalledOnValidThread());
-  command_callback_.Run(
+    : callback_(callback) {
+  AddRef();
+  command_callback.Run(
       kDeviceModelCommand,
-      base::Bind(&AdbDeviceInfoQuery::ReceivedModel, base::Unretained(this)));
+      base::Bind(&AdbDeviceInfoQuery::ReceivedModel, this));
+  command_callback.Run(
+      kWindowPolicyCommand,
+      base::Bind(&AdbDeviceInfoQuery::ReceivedWindowPolicy, this));
+  command_callback.Run(
+      kListProcessesCommand,
+      base::Bind(&AdbDeviceInfoQuery::ReceivedProcesses, this));
+  command_callback.Run(
+      kOpenedUnixSocketsCommand,
+      base::Bind(&AdbDeviceInfoQuery::ReceivedSockets, this));
+  command_callback.Run(
+      kListUsersCommand,
+      base::Bind(&AdbDeviceInfoQuery::ReceivedUsers, this));
+  Release();
 }
 
 AdbDeviceInfoQuery::~AdbDeviceInfoQuery() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  ParseBrowserInfo();
+  callback_.Run(device_info_);
 }
 
 void AdbDeviceInfoQuery::ReceivedModel(int result,
                                        const std::string& response) {
-  DCHECK(CalledOnValidThread());
-  if (result < 0) {
-    Respond();
-    return;
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (result >= 0) {
+    TrimWhitespaceASCII(response, base::TRIM_ALL, &device_info_.model);
+    device_info_.connected = true;
   }
-  TrimWhitespaceASCII(response, base::TRIM_ALL, &device_info_.model);
-  device_info_.connected = true;
-  command_callback_.Run(
-      kDumpsysCommand,
-      base::Bind(&AdbDeviceInfoQuery::ReceivedDumpsys, base::Unretained(this)));
 }
 
-void AdbDeviceInfoQuery::ReceivedDumpsys(int result,
-                                         const std::string& response) {
-  DCHECK(CalledOnValidThread());
+void AdbDeviceInfoQuery::ReceivedWindowPolicy(int result,
+                                              const std::string& response) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (result >= 0)
-    ParseDumpsysResponse(response);
-
-  command_callback_.Run(
-      kListProcessesCommand,
-      base::Bind(&AdbDeviceInfoQuery::ReceivedProcesses,
-                 base::Unretained(this)));
+    device_info_.screen_size = ParseWindowPolicyResponse(response);
 }
 
-void AdbDeviceInfoQuery::ParseDumpsysResponse(const std::string& response) {
-  std::vector<std::string> lines;
-  Tokenize(response, "\r", &lines);
-  for (size_t i = 0; i < lines.size(); ++i) {
-    std::string line = lines[i];
-    size_t pos = line.find(kDumpsysScreenSizePrefix);
-    if (pos != std::string::npos) {
-      ParseScreenSize(
-          line.substr(pos + std::string(kDumpsysScreenSizePrefix).size()));
-      break;
+void AdbDeviceInfoQuery::ReceivedProcesses(int result,
+                                           const std::string& response) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (result >= 0)
+    processes_response_ = response;
+}
+
+void AdbDeviceInfoQuery::ReceivedSockets(int result,
+                                         const std::string& response) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (result >= 0)
+    sockets_response_ = response;
+}
+
+void AdbDeviceInfoQuery::ReceivedUsers(int result,
+                                       const std::string& response) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (result >= 0)
+    users_response_ = response;
+}
+
+void AdbDeviceInfoQuery::ParseBrowserInfo() {
+  StringMap pid_to_package;
+  StringMap pid_to_user;
+  MapProcessesToPackages(processes_response_,
+                         &pid_to_package,
+                         &pid_to_user);
+  StringMap socket_to_pid = MapSocketsToProcesses(sockets_response_);
+  StringMap id_to_username = MapIdsToUsers(users_response_);
+  std::set<std::string> used_pids;
+  for (const auto& pair : socket_to_pid)
+    used_pids.insert(pair.second);
+
+  for (const auto& pair : pid_to_package) {
+    std::string pid = pair.first;
+    std::string package = pair.second;
+    if (used_pids.find(pid) == used_pids.end()) {
+      const BrowserDescriptor* descriptor = FindBrowserDescriptor(package);
+      if (descriptor)
+        socket_to_pid[descriptor->socket] = pid;
     }
   }
-}
 
-void AdbDeviceInfoQuery::ParseScreenSize(const std::string& str) {
-  std::vector<std::string> pairs;
-  Tokenize(str, "-", &pairs);
-  if (pairs.size() != 2)
-    return;
-
-  int width;
-  int height;
-  std::vector<std::string> numbers;
-  Tokenize(pairs[1].substr(1, pairs[1].size() - 2), ",", &numbers);
-  if (numbers.size() != 2 ||
-      !base::StringToInt(numbers[0], &width) ||
-      !base::StringToInt(numbers[1], &height))
-    return;
-
-  device_info_.screen_size = gfx::Size(width, height);
-}
-
-
-void AdbDeviceInfoQuery::ReceivedProcesses(
-    int result,
-    const std::string& processes_response) {
-  DCHECK(CalledOnValidThread());
-  if (result < 0) {
-    Respond();
-    return;
-  }
-  command_callback_.Run(
-      kOpenedUnixSocketsCommand,
-      base::Bind(&AdbDeviceInfoQuery::ReceivedSockets,
-                 base::Unretained(this),
-                 processes_response));
-}
-
-void AdbDeviceInfoQuery::ReceivedSockets(
-    const std::string& processes_response,
-    int result,
-    const std::string& sockets_response) {
-  DCHECK(CalledOnValidThread());
-  if (result >= 0)
-    ParseBrowserInfo(processes_response, sockets_response);
-  Respond();
-}
-
-void AdbDeviceInfoQuery::ParseBrowserInfo(
-    const std::string& processes_response,
-    const std::string& sockets_response) {
-  DCHECK(CalledOnValidThread());
-  StringMap pid_to_package;
-  StringMap package_to_pid;
-  MapProcessesToPackages(processes_response, pid_to_package, package_to_pid);
-
-  StringMap socket_to_pid = MapSocketsToProcesses(sockets_response,
-                                                  kDevToolsSocketSuffix);
-
-  std::set<std::string> packages_for_running_browsers;
-
-  typedef std::map<std::string, int> BrowserMap;
-  BrowserMap socket_to_unnamed_browser_index;
-
-  for (StringMap::iterator it = socket_to_pid.begin();
-      it != socket_to_pid.end(); ++it) {
-    std::string socket = it->first;
-    std::string pid = it->second;
-
+  for (const auto& pair : socket_to_pid) {
+    std::string socket = pair.first;
+    std::string pid = pair.second;
     std::string package;
     StringMap::iterator pit = pid_to_package.find(pid);
-    if (pit != pid_to_package.end()) {
+    if (pit != pid_to_package.end())
       package = pit->second;
-      packages_for_running_browsers.insert(package);
-    } else {
-      socket_to_unnamed_browser_index[socket] =
-          device_info_.browser_info.size();
-    }
 
     AndroidDeviceManager::BrowserInfo browser_info;
     browser_info.socket_name = socket;
     browser_info.type = GetBrowserType(socket);
     browser_info.display_name = GetDisplayName(socket, package);
+
+    StringMap::iterator uit = pid_to_user.find(pid);
+    if (uit != pid_to_user.end())
+      browser_info.user = GetUserName(uit->second, id_to_username);
+
     device_info_.browser_info.push_back(browser_info);
   }
-}
-
-void AdbDeviceInfoQuery::Respond() {
-  DCHECK(CalledOnValidThread());
-  callback_.Run(device_info_);
-  delete this;
 }

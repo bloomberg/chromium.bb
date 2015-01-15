@@ -150,6 +150,26 @@ function updateBrowserVisibility(browserSection) {
                           (!icon || icon.hidden);
 }
 
+function updateUsernameVisibility(deviceSection) {
+  var users = new Set();
+  var browsers = deviceSection.querySelectorAll('.browser');
+
+  Array.prototype.forEach.call(browsers, function(browserSection) {
+    if (!browserSection.hidden) {
+      var browserUser = browserSection.querySelector('.browser-user');
+      if (browserUser)
+        users.add(browserUser.textContent);
+    }
+  });
+  var hasSingleUser = users.size <= 1;
+
+  Array.prototype.forEach.call(browsers, function(browserSection) {
+    var browserUser = browserSection.querySelector('.browser-user');
+    if (browserUser)
+      browserUser.hidden = hasSingleUser;
+  });
+}
+
 function populateRemoteTargets(devices) {
   if (!devices)
     return;
@@ -268,6 +288,12 @@ function populateRemoteTargets(devices) {
         browserName.textContent = browser.adbBrowserName;
         if (browser.adbBrowserVersion)
           browserName.textContent += ' (' + browser.adbBrowserVersion + ')';
+        if (browser.adbBrowserUser) {
+          var browserUser = document.createElement('div');
+          browserUser.className = 'browser-user';
+          browserUser.textContent = browser.adbBrowserUser;
+          browserHeader.appendChild(browserUser);
+        }
         browserSection.appendChild(browserHeader);
 
         if (!incompatibleVersion && majorChromeVersion >= MIN_VERSION_NEW_TAB) {
@@ -359,6 +385,7 @@ function populateRemoteTargets(devices) {
       }
       updateBrowserVisibility(browserSection);
     }
+    updateUsernameVisibility(deviceSection);
   }
 }
 
@@ -923,6 +950,8 @@ function populatePortStatus(devicesStatusMap) {
 
     Array.prototype.forEach.call(
         deviceSection.querySelectorAll('.browser'), updatePortForwardingInfo);
+
+    updateUsernameVisibility(deviceSection);
   }
 
   function clearPorts(deviceSection) {

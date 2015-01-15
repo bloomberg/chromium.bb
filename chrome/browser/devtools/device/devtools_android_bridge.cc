@@ -598,6 +598,7 @@ DevToolsAndroidBridge::RemoteBrowser::RemoteBrowser(
     const AndroidDeviceManager::BrowserInfo& browser_info)
     : browser_id_(std::make_pair(serial, browser_info.socket_name)),
       display_name_(browser_info.display_name),
+      user_(browser_info.user),
       type_(browser_info.type) {
 }
 
