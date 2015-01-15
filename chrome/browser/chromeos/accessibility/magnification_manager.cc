@@ -204,7 +204,6 @@ class MagnificationManagerImpl : public MagnificationManager,
         type_,
         ui::A11Y_NOTIFICATION_NONE);
 
-#if defined(OS_CHROMEOS)
     if (AccessibilityManager::Get()) {
       AccessibilityManager::Get()->NotifyAccessibilityStatusChanged(details);
       if (ash::Shell::GetInstance()) {
@@ -212,7 +211,6 @@ class MagnificationManagerImpl : public MagnificationManager,
             AccessibilityManager::Get()->ShouldEnableCursorCompositing());
       }
     }
-#endif
   }
 
   void MonitorFocusInPageChange() {

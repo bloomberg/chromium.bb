@@ -7,6 +7,7 @@
 
 #include <set>
 
+#include "ash/session/session_state_observer.h"
 #include "base/callback_forward.h"
 #include "base/callback_list.h"
 #include "base/memory/weak_ptr.h"
@@ -21,10 +22,6 @@
 #include "extensions/browser/extension_system.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/chromeos/accessibility_types.h"
-
-#if !defined(USE_ATHENA)
-#include "ash/session/session_state_observer.h"
-#endif
 
 namespace content {
 class RenderViewHost;
@@ -76,9 +73,7 @@ typedef AccessibilityStatusCallbackList::Subscription
 class AccessibilityManager
     : public content::NotificationObserver,
       public extensions::api::braille_display_private::BrailleObserver,
-#if !defined(USE_ATHENA)
       public ash::SessionStateObserver,
-#endif
       public input_method::InputMethodManager::Observer {
  public:
   // Creates an instance of AccessibilityManager, this should be called once,
@@ -166,10 +161,8 @@ class AccessibilityManager
   // false.
   bool IsBrailleDisplayConnected() const;
 
-#if !defined(USE_ATHENA)
   // SessionStateObserver overrides:
   virtual void ActiveUserChanged(const std::string& user_id) override;
-#endif
 
   void SetProfileForTest(Profile* profile);
 
@@ -261,9 +254,7 @@ class AccessibilityManager
   content::NotificationRegistrar notification_registrar_;
   scoped_ptr<PrefChangeRegistrar> pref_change_registrar_;
   scoped_ptr<PrefChangeRegistrar> local_state_pref_change_registrar_;
-#if !defined(USE_ATHENA)
   scoped_ptr<ash::ScopedSessionStateObserver> session_state_observer_;
-#endif
 
   PrefHandler large_cursor_pref_handler_;
   PrefHandler spoken_feedback_pref_handler_;
