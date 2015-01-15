@@ -802,7 +802,7 @@ public:
     RenderStyle* firstLineStyle() const;
     RenderStyle* style(bool firstLine) const;
 
-    inline Color resolveColor(const RenderStyle* styleToUse, int colorProperty) const
+    static inline Color resolveColor(const RenderStyle* styleToUse, int colorProperty)
     {
         return styleToUse->visitedDependentColor(colorProperty);
     }
