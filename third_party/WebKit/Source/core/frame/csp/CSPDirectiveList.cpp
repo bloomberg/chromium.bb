@@ -237,44 +237,42 @@ bool CSPDirectiveList::checkAncestorsAndReportViolation(SourceListDirective* dir
 
 bool CSPDirectiveList::allowJavaScriptURLs(const String& contextURL, const WTF::OrdinalNumber& contextLine, ContentSecurityPolicy::ReportingStatus reportingStatus) const
 {
-    DEFINE_STATIC_LOCAL(String, consoleMessage, ("Refused to execute JavaScript URL because it violates the following Content Security Policy directive: "));
-    if (reportingStatus == ContentSecurityPolicy::SendReport)
-        return checkInlineAndReportViolation(operativeDirective(m_scriptSrc.get()), consoleMessage, contextURL, contextLine, true);
-
+    if (reportingStatus == ContentSecurityPolicy::SendReport) {
+        return checkInlineAndReportViolation(operativeDirective(m_scriptSrc.get()), "Refused to execute JavaScript URL because it violates the following Content Security Policy directive: ", contextURL, contextLine, true);
+    }
     return checkInline(operativeDirective(m_scriptSrc.get()));
 }
 
 bool CSPDirectiveList::allowInlineEventHandlers(const String& contextURL, const WTF::OrdinalNumber& contextLine, ContentSecurityPolicy::ReportingStatus reportingStatus) const
 {
-    DEFINE_STATIC_LOCAL(String, consoleMessage, ("Refused to execute inline event handler because it violates the following Content Security Policy directive: "));
-    if (reportingStatus == ContentSecurityPolicy::SendReport)
-        return checkInlineAndReportViolation(operativeDirective(m_scriptSrc.get()), consoleMessage, contextURL, contextLine, true);
+    if (reportingStatus == ContentSecurityPolicy::SendReport) {
+        return checkInlineAndReportViolation(operativeDirective(m_scriptSrc.get()), "Refused to execute inline event handler because it violates the following Content Security Policy directive: ", contextURL, contextLine, true);
+    }
     return checkInline(operativeDirective(m_scriptSrc.get()));
 }
 
 bool CSPDirectiveList::allowInlineScript(const String& contextURL, const WTF::OrdinalNumber& contextLine, ContentSecurityPolicy::ReportingStatus reportingStatus) const
 {
-    DEFINE_STATIC_LOCAL(String, consoleMessage, ("Refused to execute inline script because it violates the following Content Security Policy directive: "));
-    return reportingStatus == ContentSecurityPolicy::SendReport ?
-        checkInlineAndReportViolation(operativeDirective(m_scriptSrc.get()), consoleMessage, contextURL, contextLine, true) :
-        checkInline(operativeDirective(m_scriptSrc.get()));
+    if (reportingStatus == ContentSecurityPolicy::SendReport) {
+        return checkInlineAndReportViolation(operativeDirective(m_scriptSrc.get()), "Refused to execute inline script because it violates the following Content Security Policy directive: ", contextURL, contextLine, true);
+    }
+    return checkInline(operativeDirective(m_scriptSrc.get()));
 }
 
 bool CSPDirectiveList::allowInlineStyle(const String& contextURL, const WTF::OrdinalNumber& contextLine, ContentSecurityPolicy::ReportingStatus reportingStatus) const
 {
-    DEFINE_STATIC_LOCAL(String, consoleMessage, ("Refused to apply inline style because it violates the following Content Security Policy directive: "));
-    return reportingStatus == ContentSecurityPolicy::SendReport ?
-        checkInlineAndReportViolation(operativeDirective(m_styleSrc.get()), consoleMessage, contextURL, contextLine, false) :
-        checkInline(operativeDirective(m_styleSrc.get()));
+    if (reportingStatus == ContentSecurityPolicy::SendReport) {
+        return checkInlineAndReportViolation(operativeDirective(m_styleSrc.get()), "Refused to apply inline style because it violates the following Content Security Policy directive: ", contextURL, contextLine, false);
+    }
+    return checkInline(operativeDirective(m_styleSrc.get()));
 }
 
 bool CSPDirectiveList::allowEval(ScriptState* scriptState, ContentSecurityPolicy::ReportingStatus reportingStatus) const
 {
-    DEFINE_STATIC_LOCAL(String, consoleMessage, ("Refused to evaluate a string as JavaScript because 'unsafe-eval' is not an allowed source of script in the following Content Security Policy directive: "));
-
-    return reportingStatus == ContentSecurityPolicy::SendReport ?
-        checkEvalAndReportViolation(operativeDirective(m_scriptSrc.get()), consoleMessage, scriptState) :
-        checkEval(operativeDirective(m_scriptSrc.get()));
+    if (reportingStatus == ContentSecurityPolicy::SendReport) {
+        return checkEvalAndReportViolation(operativeDirective(m_scriptSrc.get()), "Refused to evaluate a string as JavaScript because 'unsafe-eval' is not an allowed source of script in the following Content Security Policy directive: ", scriptState);
+    }
+    return checkEval(operativeDirective(m_scriptSrc.get()));
 }
 
 bool CSPDirectiveList::allowPluginType(const String& type, const String& typeAttribute, const KURL& url, ContentSecurityPolicy::ReportingStatus reportingStatus) const
