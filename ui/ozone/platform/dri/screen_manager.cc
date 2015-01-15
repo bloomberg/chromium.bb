@@ -121,10 +121,12 @@ bool ScreenManager::ConfigureDisplayController(uint32_t crtc,
         return HandleMirrorMode(it, mirror, crtc, connector);
     }
 
+    // Just re-enable the controller to re-use the current state.
+    bool enabled = controller->Enable();
     FOR_EACH_OBSERVER(DisplayChangeObserver, observers_,
                       OnDisplayChanged(controller));
-    // Just re-enable the controller to re-use the current state.
-    return controller->Enable();
+
+    return enabled;
   }
 
   // Either the mode or the location of the display changed, so exit mirror
