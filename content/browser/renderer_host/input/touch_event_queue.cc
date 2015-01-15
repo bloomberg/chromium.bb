@@ -520,10 +520,10 @@ void TouchEventQueue::ForwardNextEventToRenderer() {
     }
   }
 
-  // Note: Marking touchstart events as not-cancelable prevents them from
-  // blocking subsequent gestures, but it may not be the best long term solution
-  // for tracking touch point dispatch.
-  if (send_touch_events_async_)
+  // Note: Touchstart events are marked cancelable to allow transitions between
+  // platform scrolling and JS pinching. Touchend events, however, remain
+  // uncancelable, mitigating the risk of jank when transitioning to a fling.
+  if (send_touch_events_async_ && touch.event.type != WebInputEvent::TouchStart)
     touch.event.cancelable = false;
 
   // A synchronous ack will reset |dispatching_touch_|, in which case
@@ -761,6 +761,10 @@ void TouchEventQueue::UpdateTouchConsumerStates(const WebTouchEvent& event,
         touch_consumer_states_.clear_bit(point.id);
     }
   } else if (event.type == WebInputEvent::TouchStart) {
+    if (touch_scrolling_mode_ == TOUCH_SCROLLING_MODE_ASYNC_TOUCHMOVE &&
+        ack_result == INPUT_EVENT_ACK_STATE_CONSUMED) {
+      send_touch_events_async_ = false;
+    }
     for (unsigned i = 0; i < event.touchesLength; ++i) {
       const WebTouchPoint& point = event.touches[i];
       if (point.state == WebTouchPoint::StatePressed) {

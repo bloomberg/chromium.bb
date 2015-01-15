@@ -1875,7 +1875,7 @@ TEST_F(TouchEventQueueTest, AsyncTouchThrottledAfterScroll) {
   // that the flushed touchmove's ack will not reach the client (its
   // constituent events have already been ack'ed).
   SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  EXPECT_FALSE(sent_event().cancelable);
+  EXPECT_TRUE(sent_event().cancelable);
   EXPECT_EQ(WebInputEvent::TouchStart, sent_event().type);
   EXPECT_EQ(1U, queued_event_count());
   EXPECT_EQ(1U, GetAndResetSentEventCount());
@@ -2154,6 +2154,67 @@ TEST_F(TouchEventQueueTest, TouchAbsorptionWithConsumedFirstMove) {
   SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
   EXPECT_EQ(0U, queued_event_count());
   EXPECT_EQ(0U, GetAndResetSentEventCount());
+}
+
+TEST_F(TouchEventQueueTest, TouchStartCancelableDuringScroll) {
+  SetTouchScrollingMode(TouchEventQueue::TOUCH_SCROLLING_MODE_ASYNC_TOUCHMOVE);
+
+  // Queue a touchstart and touchmove that go unconsumed, transitioning to an
+  // active scroll sequence.
+  PressTouchPoint(0, 1);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  ASSERT_EQ(1U, GetAndResetSentEventCount());
+  EXPECT_TRUE(sent_event().cancelable);
+
+  MoveTouchPoint(0, 20, 5);
+  EXPECT_TRUE(sent_event().cancelable);
+  SendGestureEvent(blink::WebInputEvent::GestureScrollBegin);
+  SendGestureEvent(blink::WebInputEvent::GestureScrollUpdate);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  ASSERT_EQ(1U, GetAndResetSentEventCount());
+  EXPECT_TRUE(sent_event().cancelable);
+
+  // Even though scrolling has begun, touchstart events should be cancelable,
+  // allowing, for example, customized pinch processing.
+  PressTouchPoint(10, 11);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
+  ASSERT_EQ(1U, GetAndResetSentEventCount());
+  EXPECT_TRUE(sent_event().cancelable);
+
+  // As the touch start was consumed, touchmoves should no longer be throttled.
+  MoveTouchPoint(1, 11, 11);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
+  ASSERT_EQ(1U, GetAndResetSentEventCount());
+  EXPECT_TRUE(sent_event().cancelable);
+
+  // With throttling disabled, touchend and touchmove events should also be
+  // cancelable.
+  MoveTouchPoint(1, 12, 12);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
+  ASSERT_EQ(1U, GetAndResetSentEventCount());
+  EXPECT_TRUE(sent_event().cancelable);
+  ReleaseTouchPoint(1);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
+  ASSERT_EQ(1U, GetAndResetSentEventCount());
+  EXPECT_TRUE(sent_event().cancelable);
+
+  // If subsequent touchmoves aren't consumed, the generated scroll events
+  // will restore async touch dispatch.
+  MoveTouchPoint(0, 25, 5);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendGestureEvent(blink::WebInputEvent::GestureScrollUpdate);
+  ASSERT_EQ(1U, GetAndResetSentEventCount());
+  EXPECT_TRUE(sent_event().cancelable);
+  AdvanceTouchTime(kMinSecondsBetweenThrottledTouchmoves + 0.1);
+  MoveTouchPoint(0, 30, 5);
+  ASSERT_EQ(1U, GetAndResetSentEventCount());
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_IGNORED);
+  EXPECT_FALSE(sent_event().cancelable);
+
+  // The touchend will be uncancelable during an active scroll sequence.
+  ReleaseTouchPoint(0);
+  ASSERT_EQ(1U, GetAndResetSentEventCount());
+  EXPECT_FALSE(sent_event().cancelable);
 }
 
 TEST_F(TouchEventQueueTest, UnseenTouchPointerIdsNotForwarded) {
