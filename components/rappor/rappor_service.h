@@ -82,15 +82,6 @@ class RapporService {
   // Sets the recording level.
   void SetRecordingLevel(RecordingLevel parameters);
 
-  // Retrieves the cohort number this client was assigned to, generating it if
-  // doesn't already exist. The cohort should be persistent.
-  int32_t LoadCohort();
-
-  // Retrieves the value for secret_ from preferences, generating it if doesn't
-  // already exist. The secret should be persistent, so that additional bits
-  // from the client do not get exposed over time.
-  std::string LoadSecret();
-
   // Cancels the next call to OnLogInterval.
   virtual void CancelNextLogRotation();
 

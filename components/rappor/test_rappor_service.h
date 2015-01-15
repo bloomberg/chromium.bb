@@ -32,12 +32,6 @@ class TestRapporService : public RapporService {
   // This clears the internal map of metrics.
   void GetReports(RapporReports* reports);
 
-  // Loads the cohort from TestingPrefService.
-  int32_t LoadCohortForTesting();
-
-  // Loads the secret from TestingPrefService.
-  std::string LoadSecretForTesting();
-
   void set_is_incognito(bool is_incognito) { is_incognito_ = is_incognito; }
 
   TestingPrefServiceSimple* test_prefs() { return &test_prefs_; }

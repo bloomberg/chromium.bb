@@ -7,6 +7,7 @@
 #include "components/rappor/byte_vector_utils.h"
 #include "components/rappor/proto/rappor_metric.pb.h"
 #include "components/rappor/rappor_parameters.h"
+#include "components/rappor/rappor_prefs.h"
 #include "components/rappor/test_log_uploader.h"
 
 namespace rappor {
@@ -41,14 +42,6 @@ int TestRapporService::GetReportsCount() {
 
 void TestRapporService::GetReports(RapporReports* reports) {
   ExportMetrics(reports);
-}
-
-int32_t TestRapporService::LoadCohortForTesting() {
-  return LoadCohort();
-}
-
-std::string TestRapporService::LoadSecretForTesting() {
-  return LoadSecret();
 }
 
 // Cancel the next call to OnLogInterval.

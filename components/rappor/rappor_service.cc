@@ -4,11 +4,7 @@
 
 #include "components/rappor/rappor_service.h"
 
-#include "base/base64.h"
 #include "base/metrics/field_trial.h"
-#include "base/prefs/pref_registry_simple.h"
-#include "base/prefs/pref_service.h"
-#include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
 #include "components/metrics/metrics_hashes.h"
@@ -16,6 +12,7 @@
 #include "components/rappor/proto/rappor_metric.pb.h"
 #include "components/rappor/rappor_metric.h"
 #include "components/rappor/rappor_pref_names.h"
+#include "components/rappor/rappor_prefs.h"
 #include "components/variations/variations_associated_data.h"
 
 namespace rappor {
@@ -106,8 +103,8 @@ void RapporService::Initialize(net::URLRequestContextGetter* request_context) {
   InitializeInternal(make_scoped_ptr(new LogUploader(server_url,
                                                      kMimeType,
                                                      request_context)),
-                     LoadCohort(),
-                     LoadSecret());
+                     internal::LoadCohort(pref_service_),
+                     internal::LoadSecret(pref_service_));
 }
 
 void RapporService::Update(RecordingLevel recording_level, bool may_upload) {
@@ -135,6 +132,11 @@ void RapporService::Update(RecordingLevel recording_level, bool may_upload) {
   } else {
     uploader_->Stop();
   }
+}
+
+// static
+void RapporService::RegisterPrefs(PrefRegistrySimple* registry) {
+  internal::RegisterPrefs(registry);
 }
 
 void RapporService::InitializeInternal(
@@ -178,50 +180,6 @@ void RapporService::OnLogInterval() {
     uploader_->QueueLog(log_text);
   }
   ScheduleNextLogRotation(base::TimeDelta::FromSeconds(kLogIntervalSeconds));
-}
-
-// static
-void RapporService::RegisterPrefs(PrefRegistrySimple* registry) {
-  registry->RegisterStringPref(prefs::kRapporSecret, std::string());
-  registry->RegisterIntegerPref(prefs::kRapporCohortDeprecated, -1);
-  registry->RegisterIntegerPref(prefs::kRapporCohortSeed, -1);
-  metrics::DailyEvent::RegisterPref(registry, prefs::kRapporLastDailySample);
-}
-
-int32_t RapporService::LoadCohort() {
-  // Ignore and delete old cohort parameter.
-  pref_service_->ClearPref(prefs::kRapporCohortDeprecated);
-
-  int32_t cohort = pref_service_->GetInteger(prefs::kRapporCohortSeed);
-  // If the user is already assigned to a valid cohort, we're done.
-  if (cohort >= 0 && cohort < RapporParameters::kMaxCohorts)
-    return cohort;
-
-  // This is the first time the client has started the service (or their
-  // preferences were corrupted).  Randomly assign them to a cohort.
-  cohort = base::RandGenerator(RapporParameters::kMaxCohorts);
-  DVLOG(2) << "Selected a new Rappor cohort: " << cohort;
-  pref_service_->SetInteger(prefs::kRapporCohortSeed, cohort);
-  return cohort;
-}
-
-std::string RapporService::LoadSecret() {
-  std::string secret;
-  std::string secret_base64 = pref_service_->GetString(prefs::kRapporSecret);
-  if (!secret_base64.empty()) {
-    bool decoded = base::Base64Decode(secret_base64, &secret);
-    if (decoded && secret.size() == HmacByteVectorGenerator::kEntropyInputSize)
-      return secret;
-    // If the preference fails to decode, or is the wrong size, it must be
-    // corrupt, so continue as though it didn't exist yet and generate a new
-    // one.
-  }
-
-  DVLOG(2) << "Generated a new Rappor secret.";
-  secret = HmacByteVectorGenerator::GenerateEntropyInput();
-  base::Base64Encode(secret, &secret_base64);
-  pref_service_->SetString(prefs::kRapporSecret, secret_base64);
-  return secret;
 }
 
 bool RapporService::ExportMetrics(RapporReports* reports) {

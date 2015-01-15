@@ -220,6 +220,7 @@
             'rappor/byte_vector_utils_unittest.cc',
             'rappor/log_uploader_unittest.cc',
             'rappor/rappor_metric_unittest.cc',
+            'rappor/rappor_prefs_unittest.cc',
             'rappor/rappor_service_unittest.cc',
             'search/search_android_unittest.cc',
             'search/search_unittest.cc',

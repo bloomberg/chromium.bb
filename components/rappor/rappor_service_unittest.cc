@@ -16,21 +16,6 @@
 
 namespace rappor {
 
-TEST(RapporServiceTest, LoadCohort) {
-  TestRapporService rappor_service;
-  rappor_service.test_prefs()->SetInteger(prefs::kRapporCohortSeed, 1);
-  EXPECT_EQ(1, rappor_service.LoadCohortForTesting());
-}
-
-TEST(RapporServiceTest, LoadSecret) {
-  TestRapporService rappor_service;
-  std::string secret = HmacByteVectorGenerator::GenerateEntropyInput();
-  std::string secret_base64;
-  base::Base64Encode(secret, &secret_base64);
-  rappor_service.test_prefs()->SetString(prefs::kRapporSecret, secret_base64);
-  EXPECT_EQ(secret, rappor_service.LoadSecretForTesting());
-}
-
 TEST(RapporServiceTest, Update) {
   TestRapporService rappor_service;
   EXPECT_LT(base::TimeDelta(), rappor_service.next_rotation());

@@ -35,6 +35,8 @@
         'rappor/rappor_parameters.h',
         'rappor/rappor_pref_names.cc',
         'rappor/rappor_pref_names.h',
+        'rappor/rappor_prefs.cc',
+        'rappor/rappor_prefs.h',
         'rappor/rappor_service.cc',
         'rappor/rappor_service.h',
       ],
