@@ -244,30 +244,30 @@ class CppTypeGenerator(object):
         deps |= self._TypeDependencies(p.type_, hard=not p.optional)
     return deps
 
-  def GeneratePropertyValues(self, property, line, nodoc=False):
+  def GeneratePropertyValues(self, prop, line, nodoc=False):
     """Generates the Code to display all value-containing properties.
     """
     c = Code()
     if not nodoc:
-      c.Comment(property.description)
+      c.Comment(prop.description)
 
-    if property.value is not None:
+    if prop.value is not None:
       c.Append(line % {
-          "type": self.GetCppType(property.type_),
-          "name": property.name,
-          "value": property.value
+          "type": self.GetCppType(prop.type_),
+          "name": prop.name,
+          "value": prop.value
         })
     else:
       has_child_code = False
-      c.Sblock('namespace %s {' % property.name)
-      for child_property in property.type_.properties.values():
+      c.Sblock('namespace %s {' % prop.name)
+      for child_property in prop.type_.properties.values():
         child_code = self.GeneratePropertyValues(child_property,
                                                  line,
                                                  nodoc=nodoc)
         if child_code:
           has_child_code = True
           c.Concat(child_code)
-      c.Eblock('}  // namespace %s' % property.name)
+      c.Eblock('}  // namespace %s' % prop.name)
       if not has_child_code:
         c = None
     return c

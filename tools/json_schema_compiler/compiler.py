@@ -85,7 +85,7 @@ def GenerateSchema(generator_name,
     else:
       src_path = os.path.commonprefix((src_path, namespace.source_file_dir))
 
-    path, filename = os.path.split(file_path)
+    _, filename = os.path.split(file_path)
     filename_base, _ = os.path.splitext(filename)
 
   # Construct the type generator with all the namespaces in this model.
@@ -123,7 +123,7 @@ def GenerateSchema(generator_name,
           dart_overrides_dir))
     ]
   else:
-    raise Exception('Unrecognised generator %s' % generator)
+    raise Exception('Unrecognised generator %s' % generator_name)
 
   output_code = []
   for filename, generator in generators:

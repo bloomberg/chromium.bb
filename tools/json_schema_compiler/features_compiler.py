@@ -23,7 +23,9 @@ def _GenerateSchema(filename, root, destdir, namespace):
   # Load in the feature permissions from the JSON file.
   schema = os.path.normpath(filename)
   schema_loader = SchemaLoader(os.path.dirname(os.path.relpath(schema, root)),
-    os.path.dirname(schema))
+                               os.path.dirname(schema),
+                               [],
+                               None)
   schema_filename = os.path.splitext(schema)[0]
   feature_defs = schema_loader.LoadSchema(schema)
 

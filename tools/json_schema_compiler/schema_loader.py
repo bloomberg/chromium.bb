@@ -54,13 +54,16 @@ class SchemaLoader(object):
   def ResolveNamespace(self, full_namespace):
     filenames = GenerateFilenames(full_namespace)
     for path, cpp_namespace in self._include_rules:
+      cpp_namespace_environment = None
+      if cpp_namespace:
+        cpp_namespace_environment = CppNamespaceEnvironment(cpp_namespace)
       for filename in reversed(filenames):
         filepath = os.path.join(path, filename);
         if os.path.exists(os.path.join(self._root, filepath)):
           return Model().AddNamespace(
               self.LoadSchema(filepath)[0],
               filepath,
-              environment=CppNamespaceEnvironment(cpp_namespace))
+              environment=cpp_namespace_environment)
     return None
 
   def ResolveType(self, full_name, default_namespace):
@@ -78,7 +81,7 @@ class SchemaLoader(object):
   def LoadSchema(self, schema):
     '''Load a schema definition. The schema parameter must be a file name
     with the full path relative to the root.'''
-    schema_filename, schema_extension = os.path.splitext(schema)
+    _, schema_extension = os.path.splitext(schema)
 
     schema_path = os.path.join(self._root, schema)
     if schema_extension == '.json':

@@ -60,9 +60,9 @@ class _Generator(object):
         .Append('//')
         .Append()
       )
-      for property in self._namespace.properties.values():
+      for prop in self._namespace.properties.values():
         property_code = self._type_helper.GeneratePropertyValues(
-            property,
+            prop,
             'const %(type)s %(name)s = %(value)s;',
             nodoc=True)
         if property_code:
@@ -454,8 +454,7 @@ class _Generator(object):
 
     # Results::Create function
     if function.callback:
-      c.Concat(self._GenerateCreateCallbackArguments(function_namespace,
-                                                     'Results',
+      c.Concat(self._GenerateCreateCallbackArguments('Results',
                                                      function.callback))
 
     c.Append('}  // namespace %s' % function_namespace)
@@ -467,10 +466,8 @@ class _Generator(object):
     event_namespace = cpp_util.Classname(event.name)
     (c.Append('namespace %s {' % event_namespace)
       .Append()
-      .Cblock(self._GenerateEventNameConstant(None, event))
-      .Cblock(self._GenerateCreateCallbackArguments(event_namespace,
-                                                    None,
-                                                    event))
+      .Cblock(self._GenerateEventNameConstant(event))
+      .Cblock(self._GenerateCreateCallbackArguments(None, event))
       .Append('}  // namespace %s' % event_namespace)
     )
     return c
@@ -884,7 +881,6 @@ class _Generator(object):
     cpp_type_namespace = ''
     if type_.namespace != self._namespace:
       cpp_type_namespace = '%s::' % type_.namespace.unix_name
-    cpp_type_name = self._type_helper.GetCppType(type_)
     (c.Append('std::string %s;' % enum_as_string)
       .Sblock('if (!%s->GetAsString(&%s)) {' % (src_var, enum_as_string))
       .Concat(self._GenerateError(
@@ -965,7 +961,7 @@ class _Generator(object):
 
     c.Sblock('%s%s %sParse%s(const std::string& enum_string) {' %
                  (maybe_namespace, classname, maybe_namespace, classname))
-    for i, enum_value in enumerate(
+    for _, enum_value in enumerate(
           self._type_helper.FollowRef(type_).enum_values):
       # This is broken up into all ifs with no else ifs because we get
       # "fatal error C1061: compiler limit : blocks nested too deeply"
@@ -979,7 +975,6 @@ class _Generator(object):
     return c
 
   def _GenerateCreateCallbackArguments(self,
-                                       cpp_namespace,
                                        function_scope,
                                        callback):
     """Generate all functions to create Value parameters for a callback.
@@ -1017,7 +1012,7 @@ class _Generator(object):
     })
     return c
 
-  def _GenerateEventNameConstant(self, function_scope, event):
+  def _GenerateEventNameConstant(self, event):
     """Generates a constant string array for the event name.
     """
     c = Code()

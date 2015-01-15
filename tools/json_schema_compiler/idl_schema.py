@@ -271,7 +271,6 @@ class Typeref(object):
         properties['additionalProperties'] = OrderedDict()
       properties['additionalProperties']['type'] = 'any'
     elif self.parent.GetPropertyLocal('Union'):
-      choices = []
       properties['choices'] = [Typeref(node.GetProperty('TYPEREF'),
                                        node,
                                        OrderedDict()).process(callbacks)
@@ -303,7 +302,7 @@ class Enum(object):
     self.node = enum_node
     self.description = ''
 
-  def process(self, callbacks):
+  def process(self):
     enum = []
     for node in self.node.GetChildren():
       if node.cls == 'EnumItem':
@@ -327,7 +326,7 @@ class Enum(object):
       if self.node.GetProperty(property_name):
         result[property_name] = self.node.GetProperty(property_name)
     if self.node.GetProperty('deprecated'):
-        result[deprecated] = self.node.GetProperty('deprecated')
+      result['deprecated'] = self.node.GetProperty('deprecated')
     return result
 
 
@@ -369,7 +368,7 @@ class Namespace(object):
       elif node.cls == 'Interface' and node.GetName() == 'Events':
         self.events = self.process_interface(node)
       elif node.cls == 'Enum':
-        self.types.append(Enum(node).process(self.callbacks))
+        self.types.append(Enum(node).process())
       else:
         sys.exit('Did not process %s %s' % (node.cls, node))
     if self.compiler_options is not None:
@@ -391,7 +390,7 @@ class Namespace(object):
     members = []
     for member in node.GetChildren():
       if member.cls == 'Member':
-        name, properties = Member(member).process(self.callbacks)
+        _, properties = Member(member).process(self.callbacks)
         members.append(properties)
     return members
 

@@ -191,7 +191,7 @@ class _Generator(object):
              else self._GenerateGetter(type_, prop))
     override = self._GetOverride([type_.name, prop.name, '.set'])
     c.Cblock(override if override is not None
-             else self._GenerateSetter(type_, prop))
+             else self._GenerateSetter(prop))
     return c
 
   def _GenerateGetter(self, type_, prop):
@@ -241,8 +241,8 @@ class _Generator(object):
       )
     return c
 
-  def _GenerateSetter(self, type_, prop):
-    """Given a Type and Property, returns the Code object for the setter for
+  def _GenerateSetter(self, prop):
+    """Given a Property, returns the Code object for the setter for
     that property.
     """
     c = Code()

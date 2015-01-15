@@ -201,7 +201,6 @@ updateEverything();
            namespace)
 
       # Generate code
-      cpp_namespace = 'generated_api_schemas'
       if file_ext == '.h':
         cpp_code = (h_generator.HGenerator(type_generator)
             .Generate(namespace).Render())
@@ -286,7 +285,7 @@ updateEverything();
     # Each file under path/
     for filename in sorted(os.listdir(path)):
       full_path = os.path.join(path, filename)
-      (file_root, file_ext) = os.path.splitext(full_path)
+      _, file_ext = os.path.splitext(full_path)
       if os.path.isdir(full_path) and not full_path.endswith('.xcodeproj'):
         html.Append('<li><a href="/%s/">%s/</a>' % (full_path, filename))
       elif file_ext in ['.json', '.idl']:

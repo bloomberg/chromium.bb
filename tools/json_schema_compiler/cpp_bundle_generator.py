@@ -125,8 +125,6 @@ class CppBundleGenerator(object):
       if namespace_ifdefs is not None:
         c.Append("#if %s" % namespace_ifdefs, indent_level=0)
 
-      namespace_name = CapitalizeFirstLetter(namespace.name.replace(
-          "experimental.", ""))
       for function in namespace.functions.values():
         if function.nocompile:
           continue
