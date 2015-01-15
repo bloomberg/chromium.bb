@@ -16,11 +16,13 @@
           '../content/test/data/gpu/',
           # For GpuProcess.video
           '../content/test/data/media/bear.ogv',
+          '../testing/test_env.py',
           '../third_party/trace-viewer/',
           # For webgl_conformance
           '../third_party/webgl/',
         ],
         'command': [
+          '../testing/test_env.py',
           '../content/test/gpu/run_gpu_test.py',
         ],
       },
