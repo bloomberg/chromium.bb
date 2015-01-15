@@ -66,10 +66,9 @@ class DumpAccessibilityTreeTest : public DumpAccessibilityTestBase {
   void RunAriaTest(const base::FilePath::CharType* file_path) {
     base::FilePath dir_test_data;
     ASSERT_TRUE(PathService::Get(DIR_TEST_DATA, &dir_test_data));
-    base::FilePath test_path(
-        dir_test_data.AppendASCII("accessibility/aria"));
-    ASSERT_TRUE(base::PathExists(test_path))
-        << test_path.LossyDisplayName();
+    base::FilePath test_path(dir_test_data.AppendASCII("accessibility")
+        .AppendASCII("aria"));
+    ASSERT_TRUE(base::PathExists(test_path)) << test_path.LossyDisplayName();
 
     base::FilePath aria_file = test_path.Append(base::FilePath(file_path));
     RunTest(aria_file, "accessibility/aria");
@@ -78,10 +77,9 @@ class DumpAccessibilityTreeTest : public DumpAccessibilityTestBase {
   void RunHtmlTest(const base::FilePath::CharType* file_path) {
     base::FilePath dir_test_data;
     ASSERT_TRUE(PathService::Get(DIR_TEST_DATA, &dir_test_data));
-    base::FilePath test_path(
-        dir_test_data.AppendASCII("accessibility/html"));
-    ASSERT_TRUE(base::PathExists(test_path))
-        << test_path.LossyDisplayName();
+    base::FilePath test_path(dir_test_data.AppendASCII("accessibility")
+        .AppendASCII("html"));
+    ASSERT_TRUE(base::PathExists(test_path)) << test_path.LossyDisplayName();
 
     base::FilePath html_file = test_path.Append(base::FilePath(file_path));
     RunTest(html_file, "accessibility/html");

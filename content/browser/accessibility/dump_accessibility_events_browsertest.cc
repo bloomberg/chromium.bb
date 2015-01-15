@@ -138,10 +138,9 @@ void DumpAccessibilityEventsTest::RunEventTest(
     const base::FilePath::CharType* file_path) {
   base::FilePath dir_test_data;
   ASSERT_TRUE(PathService::Get(DIR_TEST_DATA, &dir_test_data));
-  base::FilePath test_path(
-      dir_test_data.AppendASCII("accessibility/event"));
-  ASSERT_TRUE(base::PathExists(test_path))
-      << test_path.LossyDisplayName();
+  base::FilePath test_path(dir_test_data.AppendASCII("accessibility")
+      .AppendASCII("event"));
+  ASSERT_TRUE(base::PathExists(test_path)) << test_path.LossyDisplayName();
 
   base::FilePath event_file = test_path.Append(base::FilePath(file_path));
   RunTest(event_file, "accessibility/event");
