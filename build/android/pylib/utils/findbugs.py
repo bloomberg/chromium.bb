@@ -32,8 +32,11 @@ def _StripLineNumbers(current_warnings):
 
 
 def _DiffKnownWarnings(current_warnings_set, known_bugs_file):
-  with open(known_bugs_file, 'r') as known_bugs:
-    known_bugs_set = set(known_bugs.read().splitlines())
+  if os.path.exists(known_bugs_file):
+    with open(known_bugs_file, 'r') as known_bugs:
+      known_bugs_set = set(known_bugs.read().splitlines())
+  else:
+    known_bugs_set = set()
 
   new_warnings = current_warnings_set - known_bugs_set
   _PrintMessage(sorted(new_warnings), 'New', 'Please fix, or perhaps add to',
