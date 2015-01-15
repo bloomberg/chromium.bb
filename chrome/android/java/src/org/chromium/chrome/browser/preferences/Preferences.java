@@ -23,7 +23,6 @@ import android.view.MenuItem;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.R;
 
@@ -69,7 +68,6 @@ public abstract class Preferences extends ActionBarActivity implements
      */
     public abstract void showUrl(int titleResId, int urlResId);
 
-    @SuppressFBWarnings("DM_EXIT")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         ensureActivityNotExported();

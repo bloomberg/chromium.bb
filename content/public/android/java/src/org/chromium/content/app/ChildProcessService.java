@@ -20,7 +20,6 @@ import org.chromium.base.BaseSwitches;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.CommandLine;
 import org.chromium.base.JNINamespace;
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.Linker;
 import org.chromium.base.library_loader.ProcessInitException;
@@ -129,7 +128,6 @@ public class ChildProcessService extends Service {
 
         mMainThread = new Thread(new Runnable() {
             @Override
-            @SuppressFBWarnings("DM_EXIT")
             public void run()  {
                 try {
                     // CommandLine must be initialized before others, e.g., Linker.isUsed()

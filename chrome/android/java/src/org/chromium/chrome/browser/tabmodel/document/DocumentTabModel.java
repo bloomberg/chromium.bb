@@ -8,7 +8,6 @@ import android.content.Intent;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.TabState;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -19,7 +18,6 @@ import org.chromium.chrome.browser.tabmodel.TabModel;
  */
 public interface DocumentTabModel extends TabModel {
     /** Stores information about a DocumentActivity. */
-    @SuppressFBWarnings({"URF_UNREAD", "UUF_UNUSED"})
     public static final class Entry {
         public final int tabId;
         public boolean canGoBack;

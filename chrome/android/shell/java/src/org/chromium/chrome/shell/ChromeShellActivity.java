@@ -23,7 +23,6 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.ContentUriUtils;
 import org.chromium.base.MemoryPressureListener;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.browser.DevToolsServer;
 import org.chromium.chrome.browser.FileProviderHelper;
@@ -106,7 +105,6 @@ public class ChromeShellActivity extends ActionBarActivity implements AppMenuPro
     private AppMenuHandler mAppMenuHandler;
 
     @Override
-    @SuppressFBWarnings("DM_EXIT")
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 

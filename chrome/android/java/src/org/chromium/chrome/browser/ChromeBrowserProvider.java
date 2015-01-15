@@ -33,7 +33,6 @@ import org.chromium.base.CalledByNative;
 import org.chromium.base.CalledByNativeUnchecked;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.chrome.browser.database.SQLiteCursor;
 import org.chromium.sync.notifier.SyncStatusHelper;
 
@@ -387,7 +386,6 @@ public class ChromeBrowserProvider extends ContentProvider {
     }
 
     @Override
-    @SuppressFBWarnings("SF_SWITCH_FALLTHROUGH")
     public Uri insert(Uri uri, ContentValues values) {
         if (!canHandleContentProviderApiCall() || !hasWriteAccess()) return null;
 
@@ -834,7 +832,6 @@ public class ChromeBrowserProvider extends ContentProvider {
         /**
          * @return The bookmark favicon, if any.
          */
-        @SuppressFBWarnings("EI_EXPOSE_REP")
         public byte[] favicon() {
             return mFavicon;
         }
@@ -842,7 +839,6 @@ public class ChromeBrowserProvider extends ContentProvider {
         /**
          * @return The bookmark thumbnail, if any.
          */
-        @SuppressFBWarnings("EI_EXPOSE_REP")
         public byte[] thumbnail() {
             return mThumbnail;
         }
@@ -911,13 +907,11 @@ public class ChromeBrowserProvider extends ContentProvider {
         }
 
         @VisibleForTesting
-        @SuppressFBWarnings("EI_EXPOSE_REP2")
         public void setFavicon(byte[] favicon) {
             mFavicon = favicon;
         }
 
         @VisibleForTesting
-        @SuppressFBWarnings("EI_EXPOSE_REP2")
         public void setThumbnail(byte[] thumbnail) {
             mThumbnail = thumbnail;
         }
