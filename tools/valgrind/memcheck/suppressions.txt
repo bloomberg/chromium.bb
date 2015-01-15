@@ -3551,3 +3551,53 @@
    fun:_ZN10extensions11ApiTestBase7RunTestERKSsS2_
    fun:_ZN10extensions30MojoPrivateApiTest_Define_Test8TestBodyEv
 }
+{
+   bug_449156_a
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN7leveldb2DB4OpenERKNS_7OptionsERKSsPPS0_
+   fun:_ZN7storage21SandboxOriginDatabase4InitENS0_10InitOptionENS0_14RecoveryOptionE
+   fun:_ZN7storage21SandboxOriginDatabase16GetPathForOriginERKSsPN4base8FilePathE
+   fun:_ZN7storage32SandboxPrioritizedOriginDatabase16GetPathForOriginERKSsPN4base8FilePathE
+   fun:_ZN7storage18ObfuscatedFileUtil21GetDirectoryForOriginERK4GURLbPN4base4File5ErrorE
+   fun:_ZN7storage18ObfuscatedFileUtil28GetDirectoryForOriginAndTypeERK4GURLRKSsbPN4base4File5ErrorE
+   fun:_ZN7storage12_GLOBAL__N_130OpenFileSystemOnFileTaskRunnerEPNS_18ObfuscatedFileUtilERK4GURLNS_14FileSystemTypeENS_18OpenFileSystemModeEPN4base4File5ErrorE
+}
+{
+   bug_449156_b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN7storage18ObfuscatedFileUtil8MarkUsedEv
+   fun:_ZN7storage18ObfuscatedFileUtil20GetDirectoryDatabaseERKNS_13FileSystemURLEb
+}
+{
+   bug_449175_a
+   Memcheck:Leak
+   fun:_Zna*
+   fun:_ZN4mojo6system17UserPointerReaderIKjE4InitEPS2_mb
+   fun:_ZN4mojo6system17UserPointerReaderIKjEC2ENS0_11UserPointerIS2_EEm
+   fun:_ZN4mojo6system4Core8WaitManyENS0_11UserPointerIKjEES4_jmNS2_IjEENS2_I22MojoHandleSignalsStateEE
+   fun:MojoWaitMany
+   fun:_ZN4mojo8WaitManyISt6vectorINS_6HandleESaIS2_EES1_IjSaIjEEEEiRKT_RKT0_m
+   fun:_ZN4mojo6common15MessagePumpMojo14DoInternalWorkERKNS1_8RunStateEb
+   fun:_ZN4mojo6common15MessagePumpMojo9DoRunLoopEPNS1_8RunStateEPN4base11MessagePump8DelegateE
+   fun:_ZN4mojo6common15MessagePumpMojo3RunEPN4base11MessagePump8DelegateE
+   fun:_ZN4base11MessageLoop10RunHandlerEv
+   fun:_ZN4base7RunLoop3RunEv
+   fun:_ZN4base11MessageLoop3RunEv
+   fun:_ZN4base6Thread3RunEPNS_11MessageLoopE
+   fun:_ZN4base6Thread10ThreadMainEv
+   fun:_ZN4base12_GLOBAL__N_110ThreadFuncEPv
+}
+{
+   bug_449175_b
+   Memcheck:Leak
+   fun:calloc
+   fun:pthread_setspecific
+   fun:_ZN4base8internal19ThreadLocalPlatform14SetValueInSlotEjPv
+   fun:_ZN4base18ThreadLocalPointerIN4mojo6common15MessagePumpMojoEE3SetEPS3_
+   fun:_ZN4mojo6common15MessagePumpMojoC1Ev
+   fun:_ZN4mojo6common15MessagePumpMojo6CreateEv
+}
+
