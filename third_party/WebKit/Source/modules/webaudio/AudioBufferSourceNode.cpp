@@ -364,6 +364,11 @@ void AudioBufferSourceNode::setBuffer(AudioBuffer* buffer, ExceptionState& excep
 
         for (unsigned i = 0; i < numberOfChannels; ++i)
             m_sourceChannels[i] = buffer->getChannelData(i)->data();
+
+        // If this is a grain (as set by a previous call to start()), validate the grain parameters
+        // now since it wasn't validated when start was called (because there was no buffer then).
+        if (m_isGrain)
+            clampGrainParameters(buffer);
     }
 
     m_virtualReadIndex = 0;
@@ -373,6 +378,23 @@ void AudioBufferSourceNode::setBuffer(AudioBuffer* buffer, ExceptionState& excep
 unsigned AudioBufferSourceNode::numberOfChannels()
 {
     return output(0)->numberOfChannels();
+}
+
+void AudioBufferSourceNode::clampGrainParameters(const AudioBuffer* buffer)
+{
+    ASSERT(buffer);
+
+    // We have a buffer so we can clip the offset and duration to lie within the buffer.
+    double bufferDuration = buffer->duration();
+
+    m_grainOffset = clampTo(m_grainOffset, 0.0, bufferDuration);
+    m_grainDuration = clampTo(m_grainDuration, 0.0, bufferDuration - m_grainOffset);
+
+    // We call timeToSampleFrame here since at playbackRate == 1 we don't want to go through
+    // linear interpolation at a sub-sample position since it will degrade the quality. When
+    // aligned to the sample-frame the playback will be identical to the PCM data stored in the
+    // buffer. Since playbackRate == 1 is very common, it's worth considering quality.
+    m_virtualReadIndex = AudioUtilities::timeToSampleFrame(m_grainOffset, buffer->sampleRate());
 }
 
 void AudioBufferSourceNode::start(double when, ExceptionState& exceptionState)
@@ -417,31 +439,14 @@ void AudioBufferSourceNode::start(double when, double grainOffset, double grainD
         return;
     }
 
-    if (!buffer())
-        return;
-
-    // Do sanity checking of grain parameters versus buffer size.
-    double bufferDuration = buffer()->duration();
-
-    grainOffset = std::max(0.0, grainOffset);
-    grainOffset = std::min(bufferDuration, grainOffset);
+    m_isGrain = true;
     m_grainOffset = grainOffset;
-
-    double maxDuration = bufferDuration - grainOffset;
-
-    grainDuration = std::max(0.0, grainDuration);
-    grainDuration = std::min(maxDuration, grainDuration);
     m_grainDuration = grainDuration;
 
-    m_isGrain = true;
+    if (buffer())
+        clampGrainParameters(buffer());
+
     m_startTime = when;
-
-    // We call timeToSampleFrame here since at playbackRate == 1 we don't want to go through linear interpolation
-    // at a sub-sample position since it will degrade the quality.
-    // When aligned to the sample-frame the playback will be identical to the PCM data stored in the buffer.
-    // Since playbackRate == 1 is very common, it's worth considering quality.
-    m_virtualReadIndex = AudioUtilities::timeToSampleFrame(m_grainOffset, buffer()->sampleRate());
-
     m_playbackState = SCHEDULED_STATE;
 }
 

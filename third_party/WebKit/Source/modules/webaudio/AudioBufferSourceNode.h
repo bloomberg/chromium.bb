@@ -102,6 +102,9 @@ private:
     // Render silence starting from "index" frame in AudioBus.
     inline bool renderSilenceAndFinishIfNotLooping(AudioBus*, unsigned index, size_t framesToProcess);
 
+    // Clamps grain parameters to the duration of the given AudioBuffer.
+    void clampGrainParameters(const AudioBuffer*);
+
     // m_buffer holds the sample data which this node outputs.
     Member<AudioBuffer> m_buffer;
 

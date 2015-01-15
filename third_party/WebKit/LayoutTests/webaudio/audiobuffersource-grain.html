@@ -1,0 +1,71 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Test Start Grain with Delayed Buffer Setting </title>
+    <script src="resources/compatibility.js"></script>
+    <script src="resources/audio-testing.js"></script>
+    <script src="../resources/js-test.js"></script>
+  </head>
+
+  <body>
+    <script>
+      description("Test setting the source buffer after starting the grain");
+
+      var context;
+      var source;
+      var buffer;
+      var renderedData;
+
+      var sampleRate = 44100;
+
+      var testDurationSec = 1;
+      var testDurationSamples = testDurationSec * sampleRate;
+      var startTime = 0.9 * testDurationSec;
+
+      function runTest() {
+          window.jsTestIsAsync = true;
+
+          context = new OfflineAudioContext(1, testDurationSamples, sampleRate);
+          context.oncomplete = checkResult;
+
+          buffer = createConstantBuffer(context, testDurationSamples, 1);
+          source = context.createBufferSource();
+          source.connect(context.destination);
+
+          // Start the source BEFORE we set the buffer. The grain offset and duration aren't
+          // important, as long as we specify some offset.
+          source.start(startTime, .1);
+          source.buffer = buffer;
+
+          // Render it!
+          context.startRendering();
+      }
+
+      function checkResult(event) {
+          var success = false;
+
+          renderedData = event.renderedBuffer.getChannelData(0);
+
+          // Check that the rendered data is not all zeroes.  Any non-zero data means the test
+          // passed.
+          var startFrame = Math.round(startTime * sampleRate);
+          for (k = 0; k < renderedData.length; ++k) {
+              if (renderedData[k]) {
+                  success = true;
+                  break;
+              }
+          }
+
+          if (success)
+              testPassed("Buffer was played.");
+          else
+              testFailed("Buffer was not played.");
+
+          finishJSTest();
+      }
+
+      runTest();
+      successfullyParsed = true;
+    </script>
+  </body>
+</html>
