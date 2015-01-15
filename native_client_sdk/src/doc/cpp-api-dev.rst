@@ -248,4 +248,3 @@ Files
   * `view.h <pepper_dev/cpp/view_8h.html>`__
 
   * `websocket.h <pepper_dev/cpp/websocket_8h.html>`__
-

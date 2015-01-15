@@ -830,12 +830,28 @@
             "href": "/native-client/c-api",
             "items": [
               {
-                "title": "Pepper C API",
+                "title": "Pepper C API (Stable)",
                 "href": "/native-client/c-api"
               },
               {
-                "title": "Pepper C++ API",
+                "title": "Pepper C++ API (Stable)",
                 "href": "/native-client/cpp-api"
+              },
+              {
+                "title": "Pepper C API (Beta)",
+                "href": "/native-client/c-api-beta"
+              },
+              {
+                "title": "Pepper C++ API (Beta)",
+                "href": "/native-client/cpp-api-beta"
+              },
+              {
+                "title": "Pepper C API (Dev)",
+                "href": "/native-client/c-api-dev"
+              },
+              {
+                "title": "Pepper C++ API (Dev)",
+                "href": "/native-client/cpp-api-dev"
               }
             ]
           },
