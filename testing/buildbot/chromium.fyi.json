@@ -397,7 +397,6 @@
       "unit_tests",
       "sql_unittests",
       "ui_base_unittests",
-      "content_unittests_1",
       "views_unittests",
       "browser_tests",
       "content_browsertests",
