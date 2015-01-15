@@ -46,9 +46,7 @@ public:
         : m_type(LengthTrackSizing)
         , m_minTrackBreadth(length)
         , m_maxTrackBreadth(length)
-        , m_minTrackBreadthIsMinOrMaxContent(false)
         , m_minTrackBreadthIsMaxContent(false)
-        , m_maxTrackBreadthIsMinOrMaxContent(false)
         , m_maxTrackBreadthIsMaxContent(false)
     {
         cacheMinMaxTrackBreadthTypes();
@@ -58,9 +56,7 @@ public:
         : m_type(MinMaxTrackSizing)
         , m_minTrackBreadth(minTrackBreadth)
         , m_maxTrackBreadth(maxTrackBreadth)
-        , m_minTrackBreadthIsMinOrMaxContent(false)
         , m_minTrackBreadthIsMaxContent(false)
-        , m_maxTrackBreadthIsMinOrMaxContent(false)
         , m_maxTrackBreadthIsMaxContent(false)
     {
         cacheMinMaxTrackBreadthTypes();
@@ -105,30 +101,29 @@ public:
 
     void cacheMinMaxTrackBreadthTypes()
     {
-        bool minTrackBreadthIsMinContent = minTrackBreadth().isLength() && minTrackBreadth().length().isMinContent();
+        m_minTrackBreadthIsMinContent = minTrackBreadth().isLength() && minTrackBreadth().length().isMinContent();
         m_minTrackBreadthIsMaxContent = minTrackBreadth().isLength() && minTrackBreadth().length().isMaxContent();
-        m_minTrackBreadthIsMinOrMaxContent = m_minTrackBreadthIsMaxContent || minTrackBreadthIsMinContent;
         m_maxTrackBreadthIsMaxContent = maxTrackBreadth().isLength() && maxTrackBreadth().length().isMaxContent();
-        m_maxTrackBreadthIsMinOrMaxContent = m_maxTrackBreadthIsMaxContent || (maxTrackBreadth().isLength() && maxTrackBreadth().length().isMinContent());
-        m_minTrackBreadthIsMinContentAndMaxTrackBreadthIsMinOrMaxContent = minTrackBreadthIsMinContent && m_maxTrackBreadthIsMinOrMaxContent;
+        m_maxTrackBreadthIsMinContent = maxTrackBreadth().isLength() && maxTrackBreadth().length().isMinContent();
     }
 
-    bool hasMinOrMaxContentMinTrackBreadth() const { return m_minTrackBreadthIsMinOrMaxContent; }
+    bool hasMinOrMaxContentMinTrackBreadth() const { return m_minTrackBreadthIsMaxContent || m_minTrackBreadthIsMinContent; }
     bool hasMaxContentMinTrackBreadth() const { return m_minTrackBreadthIsMaxContent; }
-    bool hasMinOrMaxContentMaxTrackBreadth() const { return m_maxTrackBreadthIsMinOrMaxContent; }
+    bool hasMinContentMinTrackBreadth() const { return m_minTrackBreadthIsMinContent; }
+    bool hasMinOrMaxContentMaxTrackBreadth() const { return m_maxTrackBreadthIsMaxContent || m_maxTrackBreadthIsMinContent; }
     bool hasMaxContentMaxTrackBreadth() const { return m_maxTrackBreadthIsMaxContent; }
-    bool hasMinContentMinTrackBreadthAndMinOrMaxContentMaxTrackBreadth() const { return m_minTrackBreadthIsMinContentAndMaxTrackBreadthIsMinOrMaxContent; }
+    bool hasMinContentMaxTrackBreadth() const { return m_maxTrackBreadthIsMinContent; }
+    bool hasMinContentMinTrackBreadthAndMinOrMaxContentMaxTrackBreadth() const { return m_minTrackBreadthIsMinContent && hasMinOrMaxContentMaxTrackBreadth(); }
     bool hasMaxContentMinTrackBreadthAndMaxContentMaxTrackBreadth() const { return m_minTrackBreadthIsMaxContent && m_maxTrackBreadthIsMaxContent; }
 
 private:
     GridTrackSizeType m_type;
     GridLength m_minTrackBreadth;
     GridLength m_maxTrackBreadth;
-    bool m_minTrackBreadthIsMinOrMaxContent;
     bool m_minTrackBreadthIsMaxContent;
-    bool m_maxTrackBreadthIsMinOrMaxContent;
+    bool m_minTrackBreadthIsMinContent;
     bool m_maxTrackBreadthIsMaxContent;
-    bool m_minTrackBreadthIsMinContentAndMaxTrackBreadthIsMinOrMaxContent;
+    bool m_maxTrackBreadthIsMinContent;
 };
 
 } // namespace blink
