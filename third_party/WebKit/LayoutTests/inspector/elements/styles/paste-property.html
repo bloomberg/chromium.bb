@@ -13,7 +13,6 @@ function test()
         InspectorTest.addResult("Before pasting:");
         InspectorTest.dumpSelectedElementStyles(true);
         var section = InspectorTest.inlineStyleSection();
-        section.expand();
 
         var treeElement = section.addNewBlankProperty(0);
         pasteProperty(treeElement, "margin-left: 1px", pasteTwoProperties);

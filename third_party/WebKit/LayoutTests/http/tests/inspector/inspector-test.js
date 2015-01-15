@@ -442,12 +442,29 @@ InspectorTest.textContentWithLineBreaks = function(node)
     var buffer = "";
     var currentNode = node;
     while (currentNode = currentNode.traverseNextNode(node)) {
+        if (currentNode.nodeType === Node.TEXT_NODE) {
+            buffer += currentNode.nodeValue;
+        } else if (currentNode.nodeName === "LI") {
+            buffer += "\n" + padding(currentNode);
+        } else if (currentNode.nodeName === "STYLE") {
+            currentNode = currentNode.traverseNextNode(node);
+            continue;
+        } else if (currentNode.classList.contains("console-message")) {
+            buffer += "\n\n";
+        }
+    }
+    return buffer;
+}
+
+InspectorTest.textContentWithoutStyles = function(node)
+{
+    var buffer = "";
+    var currentNode = node;
+    while (currentNode = currentNode.traverseNextNode(node)) {
         if (currentNode.nodeType === Node.TEXT_NODE)
             buffer += currentNode.nodeValue;
-        else if (currentNode.nodeName === "LI")
-            buffer += "\n" + padding(currentNode);
-        else if (currentNode.classList.contains("console-message"))
-            buffer += "\n\n";
+        else if (currentNode.nodeName === "STYLE")
+            currentNode = currentNode.traverseNextNode(node);
     }
     return buffer;
 }

@@ -259,7 +259,7 @@ function printStyleSection(section, omitLonghands, includeSelectorGroupMarks)
 {
     if (!section)
         return;
-    InspectorTest.addResult((section.expanded ? "[expanded] " : "[collapsed] ") + (section.element.classList.contains("no-affect") ? "[no-affect] " : ""));
+    InspectorTest.addResult("[expanded] " + (section.element.classList.contains("no-affect") ? "[no-affect] " : ""));
     var chainEntries = section.titleElement.querySelectorAll(".media-list .media");
     chainEntries = Array.prototype.slice.call(chainEntries);
     if (section.titleElement.children[1])
@@ -273,7 +273,6 @@ function printStyleSection(section, omitLonghands, includeSelectorGroupMarks)
         entryLine += " (" + extractText(chainEntry.children[0]) + ")";
         InspectorTest.addResult(entryLine);
     }
-    section.expand();
     InspectorTest.dumpStyleTreeOutline(section.propertiesTreeOutline, omitLonghands ? 1 : 2);
     InspectorTest.addResult("");
 }

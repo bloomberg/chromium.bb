@@ -18,14 +18,7 @@ function test()
     InspectorTest.runTestSuite([
         function testInit(next)
         {
-            InspectorTest.selectNodeAndWaitForStyles("inspected", expandSection);
-
-            function expandSection()
-            {
-                var section = InspectorTest.firstMatchedStyleSection();
-                section.expand();
-                next();
-            }
+            InspectorTest.selectNodeAndWaitForStyles("inspected", next);
         },
 
         function testAlterColor(next)
