@@ -22,25 +22,25 @@ class NetworkPortalWebDialog : public ui::WebDialogDelegate {
  public:
   explicit NetworkPortalWebDialog(
       base::WeakPtr<NetworkPortalNotificationController> controller);
-  virtual ~NetworkPortalWebDialog();
+  ~NetworkPortalWebDialog() override;
 
   void SetWidget(views::Widget* widget);
   void Close();
 
  private:
   // ui::WebDialogDelegate:
-  virtual ui::ModalType GetDialogModalType() const override;
-  virtual base::string16 GetDialogTitle() const override;
-  virtual GURL GetDialogContentURL() const override;
-  virtual void GetWebUIMessageHandlers(
+  ui::ModalType GetDialogModalType() const override;
+  base::string16 GetDialogTitle() const override;
+  GURL GetDialogContentURL() const override;
+  void GetWebUIMessageHandlers(
       std::vector<content::WebUIMessageHandler*>* handlers) const override;
-  virtual void GetDialogSize(gfx::Size* size) const override;
-  virtual std::string GetDialogArgs() const override;
-  virtual bool CanResizeDialog() const override;
-  virtual void OnDialogClosed(const std::string& json_retval) override;
-  virtual void OnCloseContents(content::WebContents* source,
-                               bool* out_close_dialog) override;
-  virtual bool ShouldShowDialogTitle() const override;
+  void GetDialogSize(gfx::Size* size) const override;
+  std::string GetDialogArgs() const override;
+  bool CanResizeDialog() const override;
+  void OnDialogClosed(const std::string& json_retval) override;
+  void OnCloseContents(content::WebContents* source,
+                       bool* out_close_dialog) override;
+  bool ShouldShowDialogTitle() const override;
 
   base::WeakPtr<NetworkPortalNotificationController> controller_;
 

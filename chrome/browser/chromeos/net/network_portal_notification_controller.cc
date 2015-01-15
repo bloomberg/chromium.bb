@@ -63,12 +63,12 @@ class NetworkPortalNotificationControllerDelegate
       : clicked_(false), controller_(controller) {}
 
   // Overridden from message_center::NotificationDelegate:
-  virtual void Display() override;
-  virtual void Close(bool by_user) override;
-  virtual void Click() override;
+  void Display() override;
+  void Close(bool by_user) override;
+  void Click() override;
 
  private:
-  virtual ~NetworkPortalNotificationControllerDelegate() {}
+  ~NetworkPortalNotificationControllerDelegate() override {}
 
   bool clicked_;
 

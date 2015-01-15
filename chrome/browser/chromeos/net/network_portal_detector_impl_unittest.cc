@@ -66,7 +66,7 @@ class NetworkPortalDetectorImplTest
     : public testing::Test,
       public captive_portal::CaptivePortalDetectorTestBase {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
     cl->AppendSwitch(switches::kDisableNetworkPortalNotification);
 
@@ -91,7 +91,7 @@ class NetworkPortalDetectorImplTest
     }
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     network_portal_detector_.reset();
     profile_.reset();
     NetworkHandler::Shutdown();

@@ -28,17 +28,16 @@ class CertVerifyProcChromeOS : public net::CertVerifyProcNSS {
   explicit CertVerifyProcChromeOS(crypto::ScopedPK11Slot public_slot);
 
  protected:
-  virtual ~CertVerifyProcChromeOS();
+  ~CertVerifyProcChromeOS() override;
 
  private:
   // net::CertVerifyProcNSS implementation:
-  virtual int VerifyInternal(
-      net::X509Certificate* cert,
-      const std::string& hostname,
-      int flags,
-      net::CRLSet* crl_set,
-      const net::CertificateList& additional_trust_anchors,
-      net::CertVerifyResult* verify_result) override;
+  int VerifyInternal(net::X509Certificate* cert,
+                     const std::string& hostname,
+                     int flags,
+                     net::CRLSet* crl_set,
+                     const net::CertificateList& additional_trust_anchors,
+                     net::CertVerifyResult* verify_result) override;
 
   // Check if the trust root of |current_chain| is allowed.
   // |is_chain_valid_arg| is actually a ChainVerifyArgs*, which is used to pass
