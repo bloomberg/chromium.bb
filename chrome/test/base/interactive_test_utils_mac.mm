@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
@@ -104,6 +105,15 @@ bool ShowAndFocusNativeWindow(gfx::NativeWindow window) {
   SetFrontProcess(&psn);
 
   [window makeKeyAndOrderFront:nil];
+
+  // Wait until |window| becomes key window, then make sure the shortcuts for
+  // "Close Window" and "Close Tab" are updated.
+  // This is because normal AppKit menu updating does not get invoked when
+  // events are sent via ui_test_utils::SendKeyPressSync.
+  base::RunLoop().RunUntilIdle();
+  NSMenu* file_menu = [[[NSApp mainMenu] itemWithTag:IDC_FILE_MENU] submenu];
+  [[file_menu delegate] menuNeedsUpdate:file_menu];
+
   return true;
 }
 
