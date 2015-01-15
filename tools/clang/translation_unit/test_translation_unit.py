@@ -68,9 +68,16 @@ def main():
       actual_output = f.readlines()
     has_same_filepaths = True
     for expected_line, actual_line in zip(expected_output, actual_output):
+      if '//' in actual_output:
+        if actual_output.split('//')[1] != expected_output:
+          sys.stdout.write('expected: %s' % expected_output)
+          sys.stdout.write('actual: %s' % actual_output.split('//')[1])
+          break
+        else:
+          continue
       if ntpath.basename(expected_line) != ntpath.basename(actual_line):
-        sys.stdout.write(ntpath.basename(expected_line))
-        sys.stdout.write(ntpath.basename(actual_line))
+        sys.stdout.write('expected: %s' % ntpath.basename(expected_line))
+        sys.stdout.write('actual: %s' % ntpath.basename(actual_line))
         has_same_filepaths = False
         break
     if not has_same_filepaths:

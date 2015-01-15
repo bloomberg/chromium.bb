@@ -18,6 +18,7 @@
 #include <string>
 #include <vector>
 
+#include "clang/Basic/Diagnostic.h"
 #include "clang/Basic/FileManager.h"
 #include "clang/Basic/SourceManager.h"
 #include "clang/Frontend/CompilerInstance.h"
@@ -136,7 +137,13 @@ void IncludeFinderPPCallbacks::InclusionDirective(
     // file, and append the relative path.
     last_inclusion_directive_ = parent + "/" + relative_path.str();
   } else if (!search_path.empty()) {
-    last_inclusion_directive_ = string(search_path) + "/" + relative_path.str();
+    // We want to be able to extract the search path relative to which the
+    // include statement is defined. Therefore if search_path is an absolute
+    // path (indicating it is most likely a system header) we use "//" as a
+    // separator between the search path and the relative path.
+    last_inclusion_directive_ = search_path.str() +
+        (llvm::sys::path::is_absolute(search_path) ? "//" : "/") +
+        relative_path.str();
   } else {
     last_inclusion_directive_ = file_name.str();
   }
@@ -184,7 +191,7 @@ void CompilationIndexerAction::Preprocess() {
       &getCompilerInstance().getSourceManager(),
       &main_source_file_,
       &source_file_paths_));
-  preprocessor.IgnorePragmas();
+  preprocessor.getDiagnostics().setIgnoreAllWarnings(true);
   preprocessor.SetSuppressIncludeNotFoundError(true);
   preprocessor.EnterMainSourceFile();
   clang::Token token;

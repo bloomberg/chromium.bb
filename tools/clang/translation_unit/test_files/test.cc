@@ -4,6 +4,8 @@
 
 #include "test.h"
 
+#include <bits/wchar.h>
+
 #include "binomial.h"
 
 // Notice that "binomial.h" is included both here and in the "test.h" file.
