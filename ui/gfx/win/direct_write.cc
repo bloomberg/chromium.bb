@@ -80,15 +80,18 @@ void MaybeInitializeDirectWrite() {
       reinterpret_cast<DWriteCreateFactoryProc>(
           GetProcAddress(dwrite_dll, "DWriteCreateFactory"));
   // Not finding the DWriteCreateFactory function indicates a corrupt dll.
-  CHECK(dwrite_create_factory_proc);
+  if (!dwrite_create_factory_proc)
+    return;
 
   base::win::ScopedComPtr<IDWriteFactory> factory;
 
-  CHECK(SUCCEEDED(
-      dwrite_create_factory_proc(
+  // Failure to create the DirectWrite factory indicates a corrupt dll.
+  if (FAILED(dwrite_create_factory_proc(
           DWRITE_FACTORY_TYPE_SHARED,
         __uuidof(IDWriteFactory),
-        reinterpret_cast<IUnknown**>(factory.Receive()))));
+        reinterpret_cast<IUnknown**>(factory.Receive()))))
+    return;
+
   // The skia call to create a new DirectWrite font manager instance can fail
   // if we are unable to get the system font collection from the DirectWrite
   // factory. The GetSystemFontCollection method in the IDWriteFactory
