@@ -3158,9 +3158,6 @@ if nacl_env.Bit('nacl_clang'):
   # https://code.google.com/p/nativeclient/issues/detail?id=3974
   # TODO(dschuff): change it to __asm__ and remove this suppression.
   nacl_env.Append(CCFLAGS=['-Wno-language-extension-token'])
-  # src/untrusted/valgrind/valgrind_interceptors.c uses a non-string-literal
-  # variable for printf.
-  nacl_env.Append(CCFLAGS=['-Wno-format-security'])
 
 # We use a special environment for building the IRT image because it must
 # always use the newlib toolchain, regardless of --nacl_glibc.  We clone

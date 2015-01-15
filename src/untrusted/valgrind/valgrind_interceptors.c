@@ -221,11 +221,9 @@ static inline size_t handle_free_before(size_t ptr) {
   VG_CREQ_v_W(TSREQ_FREE, base + kRedZoneSize);
   VALGRIND_MAKE_MEM_DEFINED(base, kRedZoneSize);
   if (((size_t*)ptr)[0] != kMallocMagic) {
-    char buf[100];
-    snprintf(buf, 100,
+    VALGRIND_PRINTF_BACKTRACE(
         "Bad free(%p). Did we miss a memory allocation? Please file a bug.\n",
         (void*)orig_ptr);
-    VALGRIND_PRINTF_BACKTRACE(buf);
     assert(0 && "bad free");
   }
   size = ((size_t*)ptr)[1];
