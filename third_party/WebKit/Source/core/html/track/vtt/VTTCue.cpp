@@ -664,14 +664,13 @@ void VTTCue::calculateDisplayParameters()
     // 10.9 Determine the value of whichever of x-position or y-position is not
     // yet calculated for cue as per the appropriate rules from the following
     // list:
-    if (m_snapToLines && m_displayPosition.second == undefinedPosition && m_writingDirection == Horizontal)
+    if (m_snapToLines && m_writingDirection == Horizontal)
         m_displayPosition.second = 0;
 
-    if (!m_snapToLines && m_displayPosition.second == undefinedPosition && m_writingDirection == Horizontal)
+    if (!m_snapToLines && m_writingDirection == Horizontal)
         m_displayPosition.second = m_computedLinePosition;
 
-    if (m_snapToLines && m_displayPosition.first == undefinedPosition
-        && (m_writingDirection == VerticalGrowingLeft || m_writingDirection == VerticalGrowingRight))
+    if (m_snapToLines && (m_writingDirection == VerticalGrowingLeft || m_writingDirection == VerticalGrowingRight))
         m_displayPosition.first = 0;
 
     if (!m_snapToLines && (m_writingDirection == VerticalGrowingLeft || m_writingDirection == VerticalGrowingRight))
