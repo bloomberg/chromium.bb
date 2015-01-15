@@ -61933,39 +61933,28 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="Prerender.TimeUntilUsed2"/>
 </histogram_suffixes>
 
-<histogram_suffixes name="Profile.AndroidAccountManagementMenu" separator=".">
-  <suffix name="NonGAIA" label="Interaction was not initiated from GAIA"/>
-  <suffix name="GAIASignout"
-      label="GAIA-initiated interaction indicating a service type of Signout"/>
-  <suffix name="GAIASignoutIncognito"
-      label="GAIA-initiated interaction indicating a service type of Signout
-             and go Incogntio"/>
-  <suffix name="GAIAAddSession"
-      label="GAIA-initiated interaction indicating a service type of Add a
-             Session"/>
-  <suffix name="GAIAReAuth"
-      label="GAIA-initiated interaction indicating a service type of
-             Reauthenticate this user"/>
-  <suffix name="GAIADefault"
-      label="GAIA-initiated interaction indicating the default service type"/>
-  <affected-histogram name="Profile.AndroidAccountManagementMenu"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="Profile.DesktopMenu" separator=".">
+<histogram_suffixes name="ProfileMenuGAIASource" separator=".">
   <suffix name="NonGAIA" label="Interaction was not initiated from GAIA"/>
   <suffix name="GAIASignout"
       label="GAIA-initiated interaction indicating a service type of Signout"/>
   <suffix name="GAIAIncognito"
       label="GAIA-initiated interaction indicating a service type of
-             Incogntio"/>
+             Incognito (used for DesktopMenu)"/>
+  <suffix name="GAIASignoutIncognito"
+      label="GAIA-initiated interaction indicating a service type of Signout
+             and go Incognito (used for AndroidAccountManagementMenu)"/>
   <suffix name="GAIAAddSession"
       label="GAIA-initiated interaction indicating a service type of Add a
              Session"/>
   <suffix name="GAIAReAuth"
       label="GAIA-initiated interaction indicating a service type of
              Reauthenticate this user"/>
+  <suffix name="GAIASignup"
+      label="GAIA-initiated interaction indicating a service type of Add an
+             account"/>
   <suffix name="GAIADefault"
       label="GAIA-initiated interaction indicating the default service type"/>
+  <affected-histogram name="Profile.AndroidAccountManagementMenu"/>
   <affected-histogram name="Profile.DesktopMenu"/>
 </histogram_suffixes>
 
