@@ -17,6 +17,9 @@ from pylib.remote.device import remote_device_helper
 class RemoteDeviceEnvironment(environment.Environment):
   """An environment for running on remote devices."""
 
+  _ENV_KEY = 'env'
+  _DEVICE_KEY = 'device'
+
   def __init__(self, args, error_func):
     """Constructor.
 
@@ -102,6 +105,16 @@ class RemoteDeviceEnvironment(environment.Environment):
     """Tears down the test run when used as a context manager."""
     self.TearDown()
 
+  def DumpTo(self, persisted_data):
+    env_data = {
+      self._DEVICE_KEY: self._device,
+    }
+    persisted_data[self._ENV_KEY] = env_data
+
+  def LoadFrom(self, persisted_data):
+    env_data = persisted_data[self._ENV_KEY]
+    self._device = env_data[self._DEVICE_KEY]
+
   def _GetAccessToken(self):
     """Generates access token for remote device service."""
     logging.info('Generating remote service access token')
@@ -145,7 +158,7 @@ class RemoteDeviceEnvironment(environment.Environment):
           or device['available_devices_count']):
         logging.info('Found device: %s %s',
                      device['name'], device['os_version'])
-        return device['device_type_id']
+        return device
     self._NoDeviceFound(device_list)
 
   def _PrintAvailableDevices(self, device_list):
@@ -170,8 +183,8 @@ class RemoteDeviceEnvironment(environment.Environment):
     return self._collect
 
   @property
-  def device(self):
-    return self._device
+  def device_type_id(self):
+    return self._device['device_type_id']
 
   @property
   def only_output_failures(self):

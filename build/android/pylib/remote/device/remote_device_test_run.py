@@ -4,6 +4,7 @@
 
 """Run specific test on specific environment."""
 
+import json
 import logging
 import os
 import sys
@@ -19,6 +20,9 @@ from pylib.utils import zip_utils
 
 class RemoteDeviceTestRun(test_run.TestRun):
   """Run gtests and uirobot tests on a remote device."""
+
+  _TEST_RUN_KEY = 'test_run'
+  _TEST_RUN_ID_KEY = 'test_run_id'
 
   WAIT_TIME = 5
   COMPLETE = 'complete'
@@ -40,29 +44,37 @@ class RemoteDeviceTestRun(test_run.TestRun):
     self._test_run_id = ''
 
   #override
+  def SetUp(self):
+    """Set up a test run."""
+    if self._env.trigger:
+      self._TriggerSetUp()
+    elif self._env.collect:
+      assert isinstance(self._env.trigger, basestring), (
+                        'File for storing test_run_id must be a string.')
+      with open(self._env.collect, 'r') as persisted_data_file:
+        persisted_data = json.loads(persisted_data_file.read())
+        self._env.LoadFrom(persisted_data)
+        self.LoadFrom(persisted_data)
+
+  def _TriggerSetUp(self):
+    """Set up the triggering of a test run."""
+    raise NotImplementedError
+
+  #override
   def RunTests(self):
     """Run the test."""
     if self._env.trigger:
       with appurify_sanitized.SanitizeLogging(self._env.verbose_count,
                                               logging.WARNING):
         test_start_res = appurify_sanitized.api.tests_run(
-            self._env.token, self._env.device, self._app_id, self._test_id)
+            self._env.token, self._env.device_type_id, self._app_id,
+            self._test_id)
       remote_device_helper.TestHttpResponse(
         test_start_res, 'Unable to run test.')
       self._test_run_id = test_start_res.json()['response']['test_run_id']
       logging.info('Test run id: %s' % self._test_run_id)
-      if not self._env.collect:
-        assert isinstance(self._env.trigger, basestring), (
-                          'File for storing test_run_id must be a string.')
-        with open(self._env.trigger, 'w') as test_run_id_file:
-          test_run_id_file.write(self._test_run_id)
 
     if self._env.collect:
-      if not self._env.trigger:
-        assert isinstance(self._env.trigger, basestring), (
-                          'File for storing test_run_id must be a string.')
-        with open(self._env.collect, 'r') as test_run_id_file:
-          self._test_run_id = test_run_id_file.read().strip()
       current_status = ''
       timeout_counter = 0
       heartbeat_counter = 0
@@ -91,8 +103,19 @@ class RemoteDeviceTestRun(test_run.TestRun):
   #override
   def TearDown(self):
     """Tear down the test run."""
-    if (self._env.collect
-        and self._GetTestStatus(self._test_run_id) != self.COMPLETE):
+    if self._env.collect:
+      self._CollectTearDown()
+    elif self._env.trigger:
+      assert isinstance(self._env.trigger, basestring), (
+                        'File for storing test_run_id must be a string.')
+      with open(self._env.trigger, 'w') as persisted_data_file:
+        persisted_data = {}
+        self.DumpTo(persisted_data)
+        self._env.DumpTo(persisted_data)
+        persisted_data_file.write(json.dumps(persisted_data))
+
+  def _CollectTearDown(self):
+    if self._GetTestStatus(self._test_run_id) != self.COMPLETE:
       with appurify_sanitized.SanitizeLogging(self._env.verbose_count,
                                               logging.WARNING):
         test_abort_res = appurify_sanitized.api.tests_abort(
@@ -109,15 +132,15 @@ class RemoteDeviceTestRun(test_run.TestRun):
     """Tear down the test run when used as a context manager."""
     self.TearDown()
 
-  #override
-  def SetUp(self):
-    """Set up a test run."""
-    if self._env.trigger:
-      self._TriggerSetUp()
+  def DumpTo(self, persisted_data):
+    test_run_data = {
+      self._TEST_RUN_ID_KEY: self._test_run_id,
+    }
+    persisted_data[self._TEST_RUN_KEY] = test_run_data
 
-  def _TriggerSetUp(self):
-    """Set up the triggering of a test run."""
-    raise NotImplementedError
+  def LoadFrom(self, persisted_data):
+    test_run_data = persisted_data[self._TEST_RUN_KEY]
+    self._test_run_id = test_run_data[self._TEST_RUN_ID_KEY]
 
   def _ParseTestResults(self):
     raise NotImplementedError
