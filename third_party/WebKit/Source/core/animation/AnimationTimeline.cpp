@@ -84,22 +84,26 @@ AnimationTimeline::~AnimationTimeline()
 #endif
 }
 
-AnimationPlayer* AnimationTimeline::createAnimationPlayer(AnimationNode* child)
+void AnimationTimeline::playerAttached(AnimationPlayer& player)
 {
-    RefPtrWillBeRawPtr<AnimationPlayer> player = AnimationPlayer::create(m_document->contextDocument().get(), *this, child);
-    AnimationPlayer* result = player.get();
-    m_players.add(result);
-    setOutdatedAnimationPlayer(result);
-    InspectorInstrumentation::didCreateAnimationPlayer(m_document, *result);
-    return result;
+    ASSERT(player.timeline() == this);
+    ASSERT(!m_players.contains(&player));
+    m_players.add(&player);
+    InspectorInstrumentation::didCreateAnimationPlayer(m_document, player);
 }
 
 AnimationPlayer* AnimationTimeline::play(AnimationNode* child)
 {
     if (!m_document)
         return nullptr;
-    AnimationPlayer* player = createAnimationPlayer(child);
-    return player;
+
+    RefPtrWillBeRawPtr<AnimationPlayer> player = AnimationPlayer::create(child, this);
+    ASSERT(m_players.contains(player.get()));
+
+    player->play();
+    ASSERT(m_playersNeedingUpdate.contains(player));
+
+    return player.get();
 }
 
 WillBeHeapVector<RefPtrWillBeMember<AnimationPlayer>> AnimationTimeline::getAnimationPlayers()

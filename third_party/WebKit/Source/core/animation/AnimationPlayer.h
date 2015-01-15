@@ -62,7 +62,7 @@ public:
     };
 
     ~AnimationPlayer();
-    static PassRefPtrWillBeRawPtr<AnimationPlayer> create(ExecutionContext*, AnimationTimeline&, AnimationNode*);
+    static PassRefPtrWillBeRawPtr<AnimationPlayer> create(AnimationNode*, AnimationTimeline*);
 
     // Returns whether the player is finished.
     bool update(TimingUpdateReason);

@@ -395,7 +395,7 @@ TEST_F(AnimationAnimationTimelineTest, PlayAfterDocumentDeref)
 
 TEST_F(AnimationAnimationTimelineTest, UseAnimationPlayerAfterTimelineDeref)
 {
-    RefPtrWillBeRawPtr<AnimationPlayer> player = timeline->createAnimationPlayer(0);
+    RefPtrWillBeRawPtr<AnimationPlayer> player = timeline->play(0);
     timeline.clear();
     // Test passes if this does not crash.
     player->setStartTime(0);

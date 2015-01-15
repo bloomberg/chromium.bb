@@ -58,7 +58,7 @@ protected:
         document = Document::create();
         document->animationClock().resetTimeForTesting();
         timeline = AnimationTimeline::create(document.get());
-        player = timeline->createAnimationPlayer(0);
+        player = timeline->play(0);
         player->setStartTime(0);
         player->setSource(makeAnimation().get());
     }
@@ -93,7 +93,7 @@ protected:
 TEST_F(AnimationAnimationPlayerTest, InitialState)
 {
     setUpWithoutStartingTimeline();
-    player = timeline->createAnimationPlayer(0);
+    player = timeline->play(0);
     EXPECT_EQ(AnimationPlayer::Pending, player->playStateInternal());
     EXPECT_EQ(0, player->currentTimeInternal());
     EXPECT_FALSE(player->paused());
@@ -634,7 +634,7 @@ TEST_F(AnimationAnimationPlayerTest, SetPlaybackRateMax)
 
 TEST_F(AnimationAnimationPlayerTest, SetSource)
 {
-    player = timeline->createAnimationPlayer(0);
+    player = timeline->play(0);
     player->setStartTime(0);
     RefPtrWillBeRawPtr<AnimationNode> source1 = makeAnimation();
     RefPtrWillBeRawPtr<AnimationNode> source2 = makeAnimation();
@@ -672,7 +672,7 @@ TEST_F(AnimationAnimationPlayerTest, SetSourceUnlimitsAnimationPlayer)
 
 TEST_F(AnimationAnimationPlayerTest, EmptyAnimationPlayersDontUpdateEffects)
 {
-    player = timeline->createAnimationPlayer(0);
+    player = timeline->play(0);
     player->update(TimingUpdateOnDemand);
     EXPECT_EQ(std::numeric_limits<double>::infinity(), player->timeToEffectChange());
 
@@ -683,7 +683,7 @@ TEST_F(AnimationAnimationPlayerTest, EmptyAnimationPlayersDontUpdateEffects)
 TEST_F(AnimationAnimationPlayerTest, AnimationPlayersDisassociateFromSource)
 {
     AnimationNode* animationNode = player->source();
-    AnimationPlayer* player2 = timeline->createAnimationPlayer(animationNode);
+    AnimationPlayer* player2 = timeline->play(animationNode);
     EXPECT_EQ(0, player->source());
     player->setSource(animationNode);
     EXPECT_EQ(0, player2->source());
@@ -696,7 +696,7 @@ TEST_F(AnimationAnimationPlayerTest, AnimationPlayersReturnTimeToNextEffect)
     timing.iterationDuration = 1;
     timing.endDelay = 1;
     RefPtrWillBeRawPtr<Animation> animation = Animation::create(0, nullptr, timing);
-    player = timeline->createAnimationPlayer(animation.get());
+    player = timeline->play(animation.get());
     player->setStartTime(0);
 
     simulateFrame(0);
@@ -797,7 +797,7 @@ TEST_F(AnimationAnimationPlayerTest, AttachedAnimationPlayers)
 
     Timing timing;
     RefPtrWillBeRawPtr<Animation> animation = Animation::create(element.get(), nullptr, timing);
-    RefPtrWillBeRawPtr<AnimationPlayer> player = timeline->createAnimationPlayer(animation.get());
+    RefPtrWillBeRawPtr<AnimationPlayer> player = timeline->play(animation.get());
     simulateFrame(0);
     timeline->serviceAnimations(TimingUpdateForAnimationFrame);
     EXPECT_EQ(1U, element->activeAnimations()->players().find(player.get())->value);
@@ -809,8 +809,8 @@ TEST_F(AnimationAnimationPlayerTest, AttachedAnimationPlayers)
 
 TEST_F(AnimationAnimationPlayerTest, HasLowerPriority)
 {
-    RefPtrWillBeRawPtr<AnimationPlayer> player1 = timeline->createAnimationPlayer(0);
-    RefPtrWillBeRawPtr<AnimationPlayer> player2 = timeline->createAnimationPlayer(0);
+    RefPtrWillBeRawPtr<AnimationPlayer> player1 = timeline->play(0);
+    RefPtrWillBeRawPtr<AnimationPlayer> player2 = timeline->play(0);
     EXPECT_TRUE(AnimationPlayer::hasLowerPriority(player1.get(), player2.get()));
 }
 

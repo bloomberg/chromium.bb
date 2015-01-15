@@ -52,12 +52,20 @@ static unsigned nextSequenceNumber()
 
 }
 
-PassRefPtrWillBeRawPtr<AnimationPlayer> AnimationPlayer::create(ExecutionContext* executionContext, AnimationTimeline& timeline, AnimationNode* content)
+PassRefPtrWillBeRawPtr<AnimationPlayer> AnimationPlayer::create(AnimationNode* source, AnimationTimeline* timeline)
 {
-    RefPtrWillBeRawPtr<AnimationPlayer> player = adoptRefWillBeNoop(new AnimationPlayer(executionContext, timeline, content));
-    player->play();
-    timeline.document()->compositorPendingAnimations().add(player.get());
+    if (!timeline) {
+        // FIXME: Support creating players without a timeline.
+        return nullptr;
+    }
+
+    RefPtrWillBeRawPtr<AnimationPlayer> player = adoptRefWillBeNoop(new AnimationPlayer(timeline->document()->contextDocument().get(), *timeline, source));
     player->suspendIfNeeded();
+
+    if (timeline) {
+        timeline->playerAttached(*player);
+    }
+
     return player.release();
 }
 
@@ -73,10 +81,10 @@ AnimationPlayer::AnimationPlayer(ExecutionContext* executionContext, AnimationTi
     , m_paused(false)
     , m_held(true)
     , m_isPausedForTesting(false)
-    , m_outdated(true)
+    , m_outdated(false)
     , m_finished(true)
     , m_compositorState(nullptr)
-    , m_compositorPending(true)
+    , m_compositorPending(false)
     , m_compositorGroup(0)
     , m_currentTimePending(false)
     , m_stateIsBeingUpdated(false)
