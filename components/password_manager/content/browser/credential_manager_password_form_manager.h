@@ -14,7 +14,7 @@ struct PasswordForm;
 
 namespace password_manager {
 
-class ContentCredentialManagerDispatcher;
+class CredentialManagerDispatcher;
 class PasswordManagerClient;
 class PasswordManagerDriver;
 
@@ -32,14 +32,14 @@ class CredentialManagerPasswordFormManager : public PasswordFormManager {
       PasswordManagerClient* client,
       base::WeakPtr<PasswordManagerDriver> driver,
       const autofill::PasswordForm& observed_form,
-      ContentCredentialManagerDispatcher* dispatcher);
+      CredentialManagerDispatcher* dispatcher);
   ~CredentialManagerPasswordFormManager() override;
 
   void OnGetPasswordStoreResults(
       const std::vector<autofill::PasswordForm*>& results) override;
 
  private:
-  ContentCredentialManagerDispatcher* dispatcher_;
+  CredentialManagerDispatcher* dispatcher_;
 
   DISALLOW_COPY_AND_ASSIGN(CredentialManagerPasswordFormManager);
 };

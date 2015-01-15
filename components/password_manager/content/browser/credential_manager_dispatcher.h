@@ -9,7 +9,6 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "components/password_manager/core/browser/credential_manager_dispatcher.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "content/public/browser/web_contents_observer.h"
 
@@ -31,25 +30,34 @@ class PasswordManagerDriver;
 class PasswordStore;
 struct CredentialInfo;
 
-class ContentCredentialManagerDispatcher : public CredentialManagerDispatcher,
-                                           public content::WebContentsObserver,
-                                           public PasswordStoreConsumer {
+class CredentialManagerDispatcher : public content::WebContentsObserver,
+                                    public PasswordStoreConsumer {
  public:
-  ContentCredentialManagerDispatcher(content::WebContents* web_contents,
-                                     PasswordManagerClient* client);
-  ~ContentCredentialManagerDispatcher() override;
+  CredentialManagerDispatcher(content::WebContents* web_contents,
+                              PasswordManagerClient* client);
+  ~CredentialManagerDispatcher() override;
 
   void OnProvisionalSaveComplete();
 
-  // CredentialManagerDispatcher implementation.
-  void OnNotifyFailedSignIn(int request_id,
-                            const password_manager::CredentialInfo&) override;
-  void OnNotifySignedIn(int request_id,
-                        const password_manager::CredentialInfo&) override;
-  void OnNotifySignedOut(int request_id) override;
-  void OnRequestCredential(int request_id,
-                           bool zero_click_only,
-                           const std::vector<GURL>& federations) override;
+  // Called in response to an IPC from the renderer, triggered by a page's call
+  // to 'navigator.credentials.notifyFailedSignIn'.
+  virtual void OnNotifyFailedSignIn(int request_id,
+                                    const password_manager::CredentialInfo&);
+
+  // Called in response to an IPC from the renderer, triggered by a page's call
+  // to 'navigator.credentials.notifySignedIn'.
+  virtual void OnNotifySignedIn(int request_id,
+                                const password_manager::CredentialInfo&);
+
+  // Called in response to an IPC from the renderer, triggered by a page's call
+  // to 'navigator.credentials.notifySignedOut'.
+  virtual void OnNotifySignedOut(int request_id);
+
+  // Called in response to an IPC from the renderer, triggered by a page's call
+  // to 'navigator.credentials.request'.
+  virtual void OnRequestCredential(int request_id,
+                                   bool zero_click_only,
+                                   const std::vector<GURL>& federations);
 
   // content::WebContentsObserver implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
@@ -80,7 +88,7 @@ class ContentCredentialManagerDispatcher : public CredentialManagerDispatcher,
   // respond to the request once the PasswordStore gives us data.
   scoped_ptr<PendingRequestParameters> pending_request_;
 
-  DISALLOW_COPY_AND_ASSIGN(ContentCredentialManagerDispatcher);
+  DISALLOW_COPY_AND_ASSIGN(CredentialManagerDispatcher);
 };
 
 }  // namespace password_manager

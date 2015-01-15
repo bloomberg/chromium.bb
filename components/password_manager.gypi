@@ -34,7 +34,6 @@
         'password_manager/core/browser/affiliation_utils.h',
         'password_manager/core/browser/browser_save_password_progress_logger.cc',
         'password_manager/core/browser/browser_save_password_progress_logger.h',
-        'password_manager/core/browser/credential_manager_dispatcher.h',
         'password_manager/core/browser/export/csv_writer.cc',
         'password_manager/core/browser/export/csv_writer.h',
         'password_manager/core/browser/import/csv_reader.cc',
@@ -252,12 +251,12 @@
           ],
           'sources': [
             # Note: sources list duplicated in GN build.
-            'password_manager/content/browser/content_credential_manager_dispatcher.cc',
-            'password_manager/content/browser/content_credential_manager_dispatcher.h',
             'password_manager/content/browser/content_password_manager_driver.cc',
             'password_manager/content/browser/content_password_manager_driver.h',
             'password_manager/content/browser/content_password_manager_driver_factory.cc',
             'password_manager/content/browser/content_password_manager_driver_factory.h',
+            'password_manager/content/browser/credential_manager_dispatcher.cc',
+            'password_manager/content/browser/credential_manager_dispatcher.h',
             'password_manager/content/browser/credential_manager_password_form_manager.cc',
             'password_manager/content/browser/credential_manager_password_form_manager.h',
             'password_manager/content/browser/password_manager_internals_service_factory.cc',

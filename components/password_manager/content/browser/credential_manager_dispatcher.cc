@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/password_manager/content/browser/content_credential_manager_dispatcher.h"
+#include "components/password_manager/content/browser/credential_manager_dispatcher.h"
 
 #include "base/bind.h"
 #include "base/memory/scoped_vector.h"
@@ -22,7 +22,7 @@
 
 namespace password_manager {
 
-struct ContentCredentialManagerDispatcher::PendingRequestParameters {
+struct CredentialManagerDispatcher::PendingRequestParameters {
   PendingRequestParameters(int request_id,
                            bool request_zero_click_only,
                            GURL request_origin,
@@ -38,19 +38,19 @@ struct ContentCredentialManagerDispatcher::PendingRequestParameters {
   std::vector<GURL> federations;
 };
 
-ContentCredentialManagerDispatcher::ContentCredentialManagerDispatcher(
+CredentialManagerDispatcher::CredentialManagerDispatcher(
     content::WebContents* web_contents,
     PasswordManagerClient* client)
     : WebContentsObserver(web_contents), client_(client) {
   DCHECK(web_contents);
 }
 
-ContentCredentialManagerDispatcher::~ContentCredentialManagerDispatcher() {}
+CredentialManagerDispatcher::~CredentialManagerDispatcher() {}
 
-bool ContentCredentialManagerDispatcher::OnMessageReceived(
+bool CredentialManagerDispatcher::OnMessageReceived(
     const IPC::Message& message) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(ContentCredentialManagerDispatcher, message)
+  IPC_BEGIN_MESSAGE_MAP(CredentialManagerDispatcher, message)
     IPC_MESSAGE_HANDLER(CredentialManagerHostMsg_NotifyFailedSignIn,
                         OnNotifyFailedSignIn);
     IPC_MESSAGE_HANDLER(CredentialManagerHostMsg_NotifySignedIn,
@@ -64,7 +64,7 @@ bool ContentCredentialManagerDispatcher::OnMessageReceived(
   return handled;
 }
 
-void ContentCredentialManagerDispatcher::OnNotifyFailedSignIn(
+void CredentialManagerDispatcher::OnNotifyFailedSignIn(
     int request_id, const CredentialInfo&) {
   DCHECK(request_id);
   // TODO(mkwst): This is a stub.
@@ -73,7 +73,7 @@ void ContentCredentialManagerDispatcher::OnNotifyFailedSignIn(
           web_contents()->GetRenderViewHost()->GetRoutingID(), request_id));
 }
 
-void ContentCredentialManagerDispatcher::OnNotifySignedIn(
+void CredentialManagerDispatcher::OnNotifySignedIn(
     int request_id,
     const password_manager::CredentialInfo& credential) {
   DCHECK(request_id);
@@ -93,12 +93,12 @@ void ContentCredentialManagerDispatcher::OnNotifySignedIn(
           web_contents()->GetRenderViewHost()->GetRoutingID(), request_id));
 }
 
-void ContentCredentialManagerDispatcher::OnProvisionalSaveComplete() {
+void CredentialManagerDispatcher::OnProvisionalSaveComplete() {
   DCHECK(form_manager_);
   client_->PromptUserToSavePassword(form_manager_.Pass());
 }
 
-void ContentCredentialManagerDispatcher::OnNotifySignedOut(int request_id) {
+void CredentialManagerDispatcher::OnNotifySignedOut(int request_id) {
   DCHECK(request_id);
   // TODO(mkwst): This is a stub.
   web_contents()->GetRenderViewHost()->Send(
@@ -106,7 +106,7 @@ void ContentCredentialManagerDispatcher::OnNotifySignedOut(int request_id) {
           web_contents()->GetRenderViewHost()->GetRoutingID(), request_id));
 }
 
-void ContentCredentialManagerDispatcher::OnRequestCredential(
+void CredentialManagerDispatcher::OnRequestCredential(
     int request_id,
     bool zero_click_only,
     const std::vector<GURL>& federations) {
@@ -130,7 +130,7 @@ void ContentCredentialManagerDispatcher::OnRequestCredential(
   store->GetAutofillableLogins(this);
 }
 
-void ContentCredentialManagerDispatcher::OnGetPasswordStoreResults(
+void CredentialManagerDispatcher::OnGetPasswordStoreResults(
     const std::vector<autofill::PasswordForm*>& results) {
   DCHECK(pending_request_);
 
@@ -165,18 +165,18 @@ void ContentCredentialManagerDispatcher::OnGetPasswordStoreResults(
   if (!client_->PromptUserToChooseCredentials(
           local_results,
           federated_results,
-          base::Bind(&ContentCredentialManagerDispatcher::SendCredential,
+          base::Bind(&CredentialManagerDispatcher::SendCredential,
                      base::Unretained(this), pending_request_->id))) {
     SendCredential(pending_request_->id, CredentialInfo());
   }
 }
 
-PasswordStore* ContentCredentialManagerDispatcher::GetPasswordStore() {
+PasswordStore* CredentialManagerDispatcher::GetPasswordStore() {
   return client_ ? client_->GetPasswordStore() : nullptr;
 }
 
 base::WeakPtr<PasswordManagerDriver>
-ContentCredentialManagerDispatcher::GetDriver() {
+CredentialManagerDispatcher::GetDriver() {
   ContentPasswordManagerDriverFactory* driver_factory =
         ContentPasswordManagerDriverFactory::FromWebContents(web_contents());
   DCHECK(driver_factory);
@@ -185,7 +185,7 @@ ContentCredentialManagerDispatcher::GetDriver() {
   return driver->AsWeakPtr();
 }
 
-void ContentCredentialManagerDispatcher::SendCredential(
+void CredentialManagerDispatcher::SendCredential(
     int request_id, const CredentialInfo& info) {
   DCHECK(pending_request_);
   DCHECK_EQ(pending_request_->id, request_id);

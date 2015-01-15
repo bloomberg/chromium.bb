@@ -7,8 +7,8 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "components/password_manager/content/browser/content_credential_manager_dispatcher.h"
 #include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
+#include "components/password_manager/content/browser/credential_manager_dispatcher.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -152,7 +152,7 @@ class ChromePasswordManagerClient
 
   password_manager::ContentPasswordManagerDriverFactory* driver_factory_;
 
-  password_manager::ContentCredentialManagerDispatcher
+  password_manager::CredentialManagerDispatcher
       credential_manager_dispatcher_;
 
   // Observer for password generation popup.

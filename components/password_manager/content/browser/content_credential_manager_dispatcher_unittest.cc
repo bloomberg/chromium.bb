@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/password_manager/content/browser/content_credential_manager_dispatcher.h"
+#include "components/password_manager/content/browser/credential_manager_dispatcher.h"
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -81,10 +81,10 @@ class TestPasswordManagerClient
   scoped_ptr<password_manager::PasswordFormManager> manager_;
 };
 
-class TestContentCredentialManagerDispatcher
-    : public password_manager::ContentCredentialManagerDispatcher {
+class TestCredentialManagerDispatcher
+    : public password_manager::CredentialManagerDispatcher {
  public:
-  TestContentCredentialManagerDispatcher(
+  TestCredentialManagerDispatcher(
       content::WebContents* web_contents,
       password_manager::PasswordManagerClient* client,
       password_manager::PasswordManagerDriver* driver);
@@ -95,16 +95,16 @@ class TestContentCredentialManagerDispatcher
   base::WeakPtr<password_manager::PasswordManagerDriver> driver_;
 };
 
-TestContentCredentialManagerDispatcher::TestContentCredentialManagerDispatcher(
+TestCredentialManagerDispatcher::TestCredentialManagerDispatcher(
     content::WebContents* web_contents,
     password_manager::PasswordManagerClient* client,
     password_manager::PasswordManagerDriver* driver)
-    : ContentCredentialManagerDispatcher(web_contents, client),
+    : CredentialManagerDispatcher(web_contents, client),
       driver_(driver->AsWeakPtr()) {
 }
 
 base::WeakPtr<password_manager::PasswordManagerDriver>
-TestContentCredentialManagerDispatcher::GetDriver() {
+TestCredentialManagerDispatcher::GetDriver() {
   return driver_;
 }
 
@@ -119,17 +119,17 @@ void RunAllPendingTasks() {
 
 namespace password_manager {
 
-class ContentCredentialManagerDispatcherTest
+class CredentialManagerDispatcherTest
     : public content::RenderViewHostTestHarness {
  public:
-  ContentCredentialManagerDispatcherTest() {}
+  CredentialManagerDispatcherTest() {}
 
   void SetUp() override {
     content::RenderViewHostTestHarness::SetUp();
     store_ = new TestPasswordStore;
     client_.reset(new TestPasswordManagerClient(store_.get()));
     dispatcher_.reset(
-        new TestContentCredentialManagerDispatcher(web_contents(),
+        new TestCredentialManagerDispatcher(web_contents(),
                                                    client_.get(),
                                                    &stub_driver_));
 
@@ -158,18 +158,18 @@ class ContentCredentialManagerDispatcherTest
     content::RenderViewHostTestHarness::TearDown();
   }
 
-  ContentCredentialManagerDispatcher* dispatcher() { return dispatcher_.get(); }
+  CredentialManagerDispatcher* dispatcher() { return dispatcher_.get(); }
 
  protected:
   autofill::PasswordForm form_;
   autofill::PasswordForm cross_origin_form_;
   scoped_refptr<TestPasswordStore> store_;
-  scoped_ptr<ContentCredentialManagerDispatcher> dispatcher_;
+  scoped_ptr<CredentialManagerDispatcher> dispatcher_;
   scoped_ptr<TestPasswordManagerClient> client_;
   StubPasswordManagerDriver stub_driver_;
 };
 
-TEST_F(ContentCredentialManagerDispatcherTest,
+TEST_F(CredentialManagerDispatcherTest,
        CredentialManagerOnNotifyFailedSignIn) {
   CredentialInfo info;
   info.type = CredentialType::CREDENTIAL_TYPE_LOCAL;
@@ -182,7 +182,7 @@ TEST_F(ContentCredentialManagerDispatcherTest,
   process()->sink().ClearMessages();
 }
 
-TEST_F(ContentCredentialManagerDispatcherTest,
+TEST_F(CredentialManagerDispatcherTest,
        CredentialManagerOnNotifySignedIn) {
   CredentialInfo info(form_);
   dispatcher()->OnNotifySignedIn(kRequestId, info);
@@ -210,7 +210,7 @@ TEST_F(ContentCredentialManagerDispatcherTest,
   EXPECT_EQ(autofill::PasswordForm::SCHEME_HTML, new_form.scheme);
 }
 
-TEST_F(ContentCredentialManagerDispatcherTest,
+TEST_F(CredentialManagerDispatcherTest,
        CredentialManagerOnNotifySignedOut) {
   dispatcher()->OnNotifySignedOut(kRequestId);
 
@@ -221,7 +221,7 @@ TEST_F(ContentCredentialManagerDispatcherTest,
   process()->sink().ClearMessages();
 }
 
-TEST_F(ContentCredentialManagerDispatcherTest,
+TEST_F(CredentialManagerDispatcherTest,
        CredentialManagerOnRequestCredentialWithEmptyPasswordStore) {
   std::vector<GURL> federations;
   dispatcher()->OnRequestCredential(kRequestId, false, federations);
@@ -239,7 +239,7 @@ TEST_F(ContentCredentialManagerDispatcherTest,
   EXPECT_FALSE(client_->did_prompt_user_to_choose());
 }
 
-TEST_F(ContentCredentialManagerDispatcherTest,
+TEST_F(CredentialManagerDispatcherTest,
        CredentialManagerOnRequestCredentialWithCrossOriginPasswordStore) {
   store_->AddLogin(cross_origin_form_);
 
@@ -259,7 +259,7 @@ TEST_F(ContentCredentialManagerDispatcherTest,
   EXPECT_FALSE(client_->did_prompt_user_to_choose());
 }
 
-TEST_F(ContentCredentialManagerDispatcherTest,
+TEST_F(CredentialManagerDispatcherTest,
        CredentialManagerOnRequestCredentialWithFullPasswordStore) {
   store_->AddLogin(form_);
 
@@ -275,7 +275,7 @@ TEST_F(ContentCredentialManagerDispatcherTest,
   EXPECT_TRUE(client_->did_prompt_user_to_choose());
 }
 
-TEST_F(ContentCredentialManagerDispatcherTest,
+TEST_F(CredentialManagerDispatcherTest,
        CredentialManagerOnRequestCredentialWhileRequestPending) {
   store_->AddLogin(form_);
 
