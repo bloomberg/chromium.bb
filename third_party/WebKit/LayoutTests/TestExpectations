@@ -1633,3 +1633,5 @@ crbug.com/448274 [ Win Mac Linux ] http/tests/misc/prefetch-purpose.html [ Failu
 crbug.com/448641 [ Debug ] web-animations-api/timeline-updates-players.html [ Crash Pass ]
 crbug.com/448931 permissionclient/image-permissions.html [ Pass Failure ]
 crbug.com/448980 fast/forms/select/styling-option-checked.html [ Pass ImageOnlyFailure ]
+
+crbug.com/449021 http/tests/misc/script-after-slow-stylesheet-removed.html [ Pass Failure ]
