@@ -223,10 +223,6 @@ public:
     // Note: this has no effect on plugins.
     virtual float setTextZoomFactor(float) = 0;
 
-    // Sets the initial page scale to the given factor. This scale setting overrides
-    // page scale set in the page's viewport meta tag.
-    virtual void setInitialPageScaleOverride(float) = 0;
-
     // Gets the scale factor of the page, where 1.0 is the normal size, > 1.0
     // is scaled up, < 1.0 is scaled down.
     virtual float pageScaleFactor() const = 0;
@@ -255,6 +251,16 @@ public:
     // Gets the pinch viewport's current offset within the page's main frame,
     // in partial CSS pixels.
     virtual WebFloatPoint pinchViewportOffset() const = 0;
+
+    // Sets the default minimum, and maximum page scale. These will be overridden
+    // by the page or by the overrides below if they are set.
+    virtual void setDefaultPageScaleLimits(
+        float minScale,
+        float maxScale) = 0;
+
+    // Sets the initial page scale to the given factor. This scale setting overrides
+    // page scale set in the page's viewport meta tag.
+    virtual void setInitialPageScaleOverride(float) = 0;
 
     // PageScaleFactor will be force-clamped between minPageScale and maxPageScale
     // (and these values will persist until setPageScaleFactorLimits is called

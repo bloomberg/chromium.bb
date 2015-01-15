@@ -3163,6 +3163,10 @@ void WebViewImpl::setUserAgentPageScaleConstraints(PageScaleConstraints newConst
     mainFrameImpl()->frameView()->setNeedsLayout();
 }
 
+void WebViewImpl::setDefaultPageScaleLimits(float minScale, float maxScale)
+{
+}
+
 void WebViewImpl::setInitialPageScaleOverride(float initialPageScaleFactorOverride)
 {
     PageScaleConstraints constraints = m_pageScaleConstraintsSet.userAgentConstraints();
