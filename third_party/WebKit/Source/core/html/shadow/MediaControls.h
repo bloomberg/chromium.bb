@@ -77,7 +77,7 @@ public:
 private:
     explicit MediaControls(HTMLMediaElement&);
 
-    bool initializeControls();
+    void initializeControls();
 
     void makeOpaque();
     void makeTransparent();

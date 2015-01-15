@@ -74,11 +74,9 @@ MediaControls::MediaControls(HTMLMediaElement& mediaElement)
 PassRefPtrWillBeRawPtr<MediaControls> MediaControls::create(HTMLMediaElement& mediaElement)
 {
     RefPtrWillBeRawPtr<MediaControls> controls = adoptRefWillBeNoop(new MediaControls(mediaElement));
-
-    if (controls->initializeControls())
-        return controls.release();
-
-    return nullptr;
+    controls->setShadowPseudoId(AtomicString("-webkit-media-controls", AtomicString::ConstructFromLiteral));
+    controls->initializeControls();
+    return controls.release();
 }
 
 // The media controls DOM structure looks like:
@@ -105,32 +103,22 @@ PassRefPtrWillBeRawPtr<MediaControls> MediaControls::create(HTMLMediaElement& me
 // Most of the structure is built by MediaControls::initializeControls() - the
 // exception being MediaControlTextTrackContainerElement which is added
 // on-demand by MediaControls::createTextTrackDisplay().
-bool MediaControls::initializeControls()
+void MediaControls::initializeControls()
 {
-    TrackExceptionState exceptionState;
-
-    setShadowPseudoId(AtomicString("-webkit-media-controls", AtomicString::ConstructFromLiteral));
-
     RefPtrWillBeRawPtr<MediaControlOverlayEnclosureElement> overlayEnclosure = MediaControlOverlayEnclosureElement::create(*this);
 
     if (document().settings() && document().settings()->mediaControlsOverlayPlayButtonEnabled()) {
         RefPtrWillBeRawPtr<MediaControlOverlayPlayButtonElement> overlayPlayButton = MediaControlOverlayPlayButtonElement::create(*this);
         m_overlayPlayButton = overlayPlayButton.get();
-        overlayEnclosure->appendChild(overlayPlayButton.release(), exceptionState);
-        if (exceptionState.hadException())
-            return false;
+        overlayEnclosure->appendChild(overlayPlayButton.release());
     }
 
     RefPtrWillBeRawPtr<MediaControlCastButtonElement> overlayCastButton = MediaControlCastButtonElement::create(*this, true);
     m_overlayCastButton = overlayCastButton.get();
-    overlayEnclosure->appendChild(overlayCastButton.release(), exceptionState);
-    if (exceptionState.hadException())
-        return false;
+    overlayEnclosure->appendChild(overlayCastButton.release());
 
     m_overlayEnclosure = overlayEnclosure.get();
-    appendChild(overlayEnclosure.release(), exceptionState);
-    if (exceptionState.hadException())
-        return false;
+    appendChild(overlayEnclosure.release());
 
     // Create an enclosing element for the panel so we can visually offset the controls correctly.
     RefPtrWillBeRawPtr<MediaControlPanelEnclosureElement> enclosure = MediaControlPanelEnclosureElement::create(*this);
@@ -139,70 +127,46 @@ bool MediaControls::initializeControls()
 
     RefPtrWillBeRawPtr<MediaControlPlayButtonElement> playButton = MediaControlPlayButtonElement::create(*this);
     m_playButton = playButton.get();
-    panel->appendChild(playButton.release(), exceptionState);
-    if (exceptionState.hadException())
-        return false;
+    panel->appendChild(playButton.release());
 
     RefPtrWillBeRawPtr<MediaControlTimelineElement> timeline = MediaControlTimelineElement::create(*this);
     m_timeline = timeline.get();
-    panel->appendChild(timeline.release(), exceptionState);
-    if (exceptionState.hadException())
-        return false;
+    panel->appendChild(timeline.release());
 
     RefPtrWillBeRawPtr<MediaControlCurrentTimeDisplayElement> currentTimeDisplay = MediaControlCurrentTimeDisplayElement::create(*this);
     m_currentTimeDisplay = currentTimeDisplay.get();
     m_currentTimeDisplay->hide();
-    panel->appendChild(currentTimeDisplay.release(), exceptionState);
-    if (exceptionState.hadException())
-        return false;
+    panel->appendChild(currentTimeDisplay.release());
 
     RefPtrWillBeRawPtr<MediaControlTimeRemainingDisplayElement> durationDisplay = MediaControlTimeRemainingDisplayElement::create(*this);
     m_durationDisplay = durationDisplay.get();
-    panel->appendChild(durationDisplay.release(), exceptionState);
-    if (exceptionState.hadException())
-        return false;
+    panel->appendChild(durationDisplay.release());
 
     RefPtrWillBeRawPtr<MediaControlMuteButtonElement> muteButton = MediaControlMuteButtonElement::create(*this);
     m_muteButton = muteButton.get();
-    panel->appendChild(muteButton.release(), exceptionState);
-    if (exceptionState.hadException())
-        return false;
+    panel->appendChild(muteButton.release());
 
     RefPtrWillBeRawPtr<MediaControlVolumeSliderElement> slider = MediaControlVolumeSliderElement::create(*this);
     m_volumeSlider = slider.get();
-    panel->appendChild(slider.release(), exceptionState);
-    if (exceptionState.hadException())
-        return false;
+    panel->appendChild(slider.release());
 
     RefPtrWillBeRawPtr<MediaControlToggleClosedCaptionsButtonElement> toggleClosedCaptionsButton = MediaControlToggleClosedCaptionsButtonElement::create(*this);
     m_toggleClosedCaptionsButton = toggleClosedCaptionsButton.get();
-    panel->appendChild(toggleClosedCaptionsButton.release(), exceptionState);
-    if (exceptionState.hadException())
-        return false;
+    panel->appendChild(toggleClosedCaptionsButton.release());
 
     RefPtrWillBeRawPtr<MediaControlCastButtonElement> castButton = MediaControlCastButtonElement::create(*this, false);
     m_castButton = castButton.get();
-    panel->appendChild(castButton.release(), exceptionState);
-    if (exceptionState.hadException())
-        return false;
+    panel->appendChild(castButton.release());
 
     RefPtrWillBeRawPtr<MediaControlFullscreenButtonElement> fullscreenButton = MediaControlFullscreenButtonElement::create(*this);
     m_fullScreenButton = fullscreenButton.get();
-    panel->appendChild(fullscreenButton.release(), exceptionState);
-    if (exceptionState.hadException())
-        return false;
+    panel->appendChild(fullscreenButton.release());
 
     m_panel = panel.get();
-    enclosure->appendChild(panel.release(), exceptionState);
-    if (exceptionState.hadException())
-        return false;
+    enclosure->appendChild(panel.release());
 
     m_enclosure = enclosure.get();
-    appendChild(enclosure.release(), exceptionState);
-    if (exceptionState.hadException())
-        return false;
-
-    return true;
+    appendChild(enclosure.release());
 }
 
 void MediaControls::reset()

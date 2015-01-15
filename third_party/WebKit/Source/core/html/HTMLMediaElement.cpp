@@ -3768,8 +3768,6 @@ bool HTMLMediaElement::createMediaControls()
         return true;
 
     RefPtrWillBeRawPtr<MediaControls> mediaControls = MediaControls::create(*this);
-    if (!mediaControls)
-        return false;
 
     mediaControls->reset();
     if (isFullscreen())
