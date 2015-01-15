@@ -10,7 +10,6 @@
 
 namespace content {
 
-ui::KeyboardCode GetWindowsKeyCodeWithoutLocation(ui::KeyboardCode key_code);
 blink::WebInputEvent::Modifiers GetLocationModifiersFromWindowsKeyCode(
     ui::KeyboardCode key_code);
 

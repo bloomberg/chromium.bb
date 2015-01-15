@@ -48,6 +48,7 @@
 #include "net/base/escape.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/base/page_transition_types.h"
+#include "ui/events/keycodes/keyboard_code_conversion.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
 using base::DictionaryValue;
@@ -187,7 +188,6 @@ class DevToolsEventForwarder {
   bool ForwardEvent(const content::NativeWebKeyboardEvent& event);
 
  private:
-  static int VirtualKeyCodeWithoutLocation(int key_code);
   static bool KeyWhitelistingAllowed(int key_code, int modifiers);
   static int CombineKeyCodeAndModifiers(int key_code, int modifiers);
 
@@ -238,7 +238,8 @@ bool DevToolsEventForwarder::ForwardEvent(
       return false;
   }
 
-  int key_code = VirtualKeyCodeWithoutLocation(event.windowsKeyCode);
+  int key_code = ui::LocatedToNonLocatedKeyboardCode(
+      static_cast<ui::KeyboardCode>(event.windowsKeyCode));
   int key = CombineKeyCodeAndModifiers(key_code, event.modifiers);
   if (whitelisted_keys_.find(key) == whitelisted_keys_.end())
     return false;
@@ -262,24 +263,6 @@ bool DevToolsEventForwarder::KeyWhitelistingAllowed(int key_code,
                                                     int modifiers) {
   return (ui::VKEY_F1 <= key_code && key_code <= ui::VKEY_F12) ||
       modifiers != 0;
-}
-
-// Mapping copied from Blink's KeyboardEvent.cpp.
-int DevToolsEventForwarder::VirtualKeyCodeWithoutLocation(int key_code)
-{
-  switch (key_code) {
-    case ui::VKEY_LCONTROL:
-    case ui::VKEY_RCONTROL:
-        return ui::VKEY_CONTROL;
-    case ui::VKEY_LSHIFT:
-    case ui::VKEY_RSHIFT:
-        return ui::VKEY_SHIFT;
-    case ui::VKEY_LMENU:
-    case ui::VKEY_RMENU:
-        return ui::VKEY_MENU;
-    default:
-        return key_code;
-  }
 }
 
 // DevToolsWindow::ObserverWithAccessor -------------------------------

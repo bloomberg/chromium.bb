@@ -6,22 +6,6 @@
 
 namespace content {
 
-ui::KeyboardCode GetWindowsKeyCodeWithoutLocation(ui::KeyboardCode key_code) {
-  switch (key_code) {
-    case ui::VKEY_LCONTROL:
-    case ui::VKEY_RCONTROL:
-      return ui::VKEY_CONTROL;
-    case ui::VKEY_LSHIFT:
-    case ui::VKEY_RSHIFT:
-    return ui::VKEY_SHIFT;
-    case ui::VKEY_LMENU:
-    case ui::VKEY_RMENU:
-      return ui::VKEY_MENU;
-    default:
-      return key_code;
-  }
-}
-
 blink::WebInputEvent::Modifiers GetLocationModifiersFromWindowsKeyCode(
     ui::KeyboardCode key_code) {
   switch (key_code) {
