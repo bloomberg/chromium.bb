@@ -18,6 +18,7 @@ engine, CSS style resolution, layout, and other technologies.
 
 import os
 
+from metrics import keychain_metric
 from telemetry import benchmark
 from telemetry import page as page_module
 from telemetry.page import page_set
@@ -39,6 +40,9 @@ class SpeedometerMeasurement(page_test.PageTest):
   def __init__(self):
     super(SpeedometerMeasurement, self).__init__(
         action_name_to_run='RunPageInteractions')
+
+  def CustomizeBrowserOptions(self, options):
+    keychain_metric.KeychainMetric.CustomizeBrowserOptions(options)
 
   def ValidateAndMeasurePage(self, page, tab, results):
     tab.WaitForDocumentReadyStateToBeComplete()
@@ -76,6 +80,7 @@ class SpeedometerMeasurement(page_test.PageTest):
               };
               suite_times;
               """ % suite_name), important=False))
+    keychain_metric.KeychainMetric().AddResults(tab, results)
 
 class Speedometer(benchmark.Benchmark):
   test = SpeedometerMeasurement

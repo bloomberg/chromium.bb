@@ -51,6 +51,9 @@ class CRYPTO_EXPORT MockAppleKeychain : public AppleKeychain {
                               const void* passwordData,
                               SecKeychainItemRef* itemRef) const override;
 
+  // Returns the password that OSCrypt uses to generate its encryption key.
+  std::string GetEncryptionPassword() const;
+
 #if !defined(OS_IOS)
   OSStatus ItemCopyAttributesAndData(SecKeychainItemRef itemRef,
                                      SecKeychainAttributeInfo* info,

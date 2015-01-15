@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from metrics import keychain_metric
 from metrics import startup_metric
 from telemetry.page import page_test
 
@@ -29,12 +30,14 @@ class Startup(page_test.PageTest):
     options.AppendExtraBrowserArgs([
         '--enable-stats-collection-bindings'
     ])
+    keychain_metric.KeychainMetric.CustomizeBrowserOptions(options)
 
   def RunNavigateSteps(self, page, tab):
     # Overriden so that no page navigation occurs - startup to the NTP.
     pass
 
   def ValidateAndMeasurePage(self, page, tab, results):
+    keychain_metric.KeychainMetric().AddResults(tab, results)
     startup_metric.StartupMetric().AddResults(tab, results)
 
 

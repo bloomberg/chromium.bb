@@ -12,6 +12,7 @@ Power usage is also measured.
 
 import time
 
+from metrics import keychain_metric
 from metrics import power
 from telemetry.core import util
 from telemetry.page import page_test
@@ -31,6 +32,8 @@ class TabSwitching(page_test.PageTest):
     self._power_metric = None
 
   def CustomizeBrowserOptions(self, options):
+    keychain_metric.KeychainMetric.CustomizeBrowserOptions(options)
+
     options.AppendExtraBrowserArgs([
         '--enable-stats-collection-bindings'
     ])
@@ -99,3 +102,5 @@ class TabSwitching(page_test.PageTest):
         histogram.HistogramValue(None, display_name, 'ms',
                                  raw_value_json=diff_histogram,
                                  important=False))
+
+    keychain_metric.KeychainMetric().AddResults(tab, results)

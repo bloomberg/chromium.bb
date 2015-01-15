@@ -2,8 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import sys
 import unittest
 
+from metrics import keychain_metric
 from telemetry.core import browser_options
 from telemetry.results import page_test_results
 from telemetry.unittest_util import simple_mock
@@ -49,7 +51,15 @@ class FakeTab(object):
   def ClearCache(self, force=False):
     assert force
     self.clear_cache_calls += 1
-  def EvaluateJavaScript(self, _):
+  def EvaluateJavaScript(self, script):
+    # If the page cycler invokes javascript to measure the number of keychain
+    # accesses, return a valid JSON dictionary.
+    keychain_histogram_name = keychain_metric.KeychainMetric.HISTOGRAM_NAME
+
+    # Fake data for keychain metric.
+    if keychain_histogram_name in script:
+      return '{{ "{0}" : 0 }}'.format(keychain_histogram_name)
+
     return 1
   def Navigate(self, url):
     self.navigated_urls.append(url)
@@ -216,14 +226,22 @@ class PageCyclerUnitTest(unittest.TestCase):
         results.DidRunPage(page)
 
         values = results.all_page_specific_values
-        self.assertEqual(4, len(values))
+
+        # On Mac, there is an additional measurement: the number of keychain
+        # accesses.
+        value_count = 4
+        if sys.platform == 'darwin':
+          value_count += 1
+        self.assertEqual(value_count, len(values))
 
         self.assertEqual(values[0].page, page)
         chart_name = 'cold_times' if i == 0 else 'warm_times'
         self.assertEqual(values[0].name, '%s.page_load_time' % chart_name)
         self.assertEqual(values[0].units, 'ms')
 
-        for value, expected in zip(values[1:], ['gpu', 'renderer', 'browser']):
+        expected_values = ['gpu', 'renderer', 'browser']
+        for value, expected in zip(values[1:len(expected_values) + 1],
+            expected_values):
           self.assertEqual(value.page, page)
           self.assertEqual(value.name,
                            'cpu_utilization.cpu_utilization_%s' % expected)

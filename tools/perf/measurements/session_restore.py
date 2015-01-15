@@ -70,11 +70,10 @@ class SessionRestore(startup.Startup):
 
   def ValidateAndMeasurePage(self, page, tab, results):
     tab.WaitForDocumentReadyStateToBeComplete()
+    super(SessionRestore, self).ValidateAndMeasurePage(page, tab, results)
 
     # Record CPU usage from browser start to when the foreground page is loaded.
     self._cpu_metric.Stop(None, None)
     self._cpu_metric.AddResults(tab, results, 'cpu_utilization')
-
-    startup_metric.StartupMetric().AddResults(tab, results)
 
     # TODO(jeremy): Measure time to load - first, last and frontmost tab here.

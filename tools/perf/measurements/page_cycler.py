@@ -19,6 +19,7 @@ import collections
 import os
 
 from metrics import cpu
+from metrics import keychain_metric
 from metrics import memory
 from metrics import power
 from metrics import speedindex
@@ -111,6 +112,8 @@ class PageCycler(page_test.PageTest):
     if self._report_speed_index:
       self._speedindex_metric.CustomizeBrowserOptions(options)
 
+    keychain_metric.KeychainMetric.CustomizeBrowserOptions(options)
+
   def ValidateAndMeasurePage(self, page, tab, results):
     tab.WaitForJavaScriptExpression('__pc_load_time', 60)
 
@@ -147,6 +150,7 @@ class PageCycler(page_test.PageTest):
       self._speedindex_metric.Stop(page, tab)
       self._speedindex_metric.AddResults(
           tab, results, chart_name=chart_name_prefix+'speed_index')
+    keychain_metric.KeychainMetric().AddResults(tab, results)
 
   def IsRunCold(self, url):
     return (self.ShouldRunCold(url) or
