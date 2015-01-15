@@ -40942,6 +40942,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>The success or failure of web fonts CORS-enabled fetching.</summary>
 </histogram>
 
+<histogram name="WebFont.DecodeSpeed" units="KB/s">
+  <owner>kenjibaheux@chromium.org</owner>
+  <owner>ksakamoto@chromium.org</owner>
+  <summary>
+    Uncompressed font image size divided by the duration of time OTS takes to
+    decode the font image, in kilobytes per second.
+  </summary>
+</histogram>
+
 <histogram name="WebFont.DiskCache.EntryAge.Evict" units="hours">
   <owner>kenjibaheux@chromium.org</owner>
   <owner>ksakamoto@chromium.org</owner>
@@ -62706,6 +62715,13 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="WebFont.DiskCache.ReuseCount.Evict"/>
   <affected-histogram name="WebFont.DiskCache.ReuseCount.Hit"/>
   <affected-histogram name="WebFont.DiskCacheHit"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="WebFontFormat" separator=".">
+  <suffix name="SFNT" label="TrueType/OpenType fonts"/>
+  <suffix name="WOFF" label="WOFF 1.0 fonts"/>
+  <suffix name="WOFF2" label="WOFF 2.0 fonts"/>
+  <affected-histogram name="WebFont.DecodeSpeed"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="WebStoreLinkExperiment">
