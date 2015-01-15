@@ -626,7 +626,7 @@ def UmountDir(path, lazy=True, sudo=True, cleanup=True):
         # errno is bubbled up to us and we can detect it specifically without
         # potentially ignoring all other possible failures.
         return e.errno == errno.EBUSY
-    retry_util.GenericRetry(_retry, 30, RmDir, path, sudo=sudo, sleep=60)
+    retry_util.GenericRetry(_retry, 60, RmDir, path, sudo=sudo, sleep=1)
 
 
 def SetEnvironment(env):
@@ -959,8 +959,8 @@ class MountImageContext(object):
       to_be_rmdir.append(dest_number)
     # Because _Unmount did not RmDir the mount points, we do that here.
     for path in to_be_rmdir:
-      retry_util.RetryException(cros_build_lib.RunCommandError, 30,
-                                RmDir, path, sudo=True, sleep=60)
+      retry_util.RetryException(cros_build_lib.RunCommandError, 60,
+                                RmDir, path, sudo=True, sleep=1)
 
   def __enter__(self):
     for selector in self._part_selects:
