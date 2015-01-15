@@ -13,27 +13,30 @@
 
 // TODO(posciak): remove this once V4L2 headers are updated.
 #define V4L2_PIX_FMT_VP9 v4l2_fourcc('V', 'P', '9', '0')
+#define V4L2_PIX_FMT_H264_SLICE v4l2_fourcc('S', '2', '6', '4')
+#define V4L2_PIX_FMT_VP8_FRAME v4l2_fourcc('V', 'P', '8', 'F')
 
 namespace content {
 
-V4L2Device::~V4L2Device() {}
+V4L2Device::~V4L2Device() {
+}
 
 // static
-scoped_ptr<V4L2Device> V4L2Device::Create(Type type) {
+scoped_refptr<V4L2Device> V4L2Device::Create(Type type) {
   DVLOG(3) << __PRETTY_FUNCTION__;
 
-  scoped_ptr<GenericV4L2Device> generic_device(new GenericV4L2Device(type));
+  scoped_refptr<GenericV4L2Device> generic_device(new GenericV4L2Device(type));
   if (generic_device->Initialize())
-    return generic_device.Pass();
+    return generic_device;
 
 #if defined(ARCH_CPU_ARMEL)
-  scoped_ptr<TegraV4L2Device> tegra_device(new TegraV4L2Device(type));
+  scoped_refptr<TegraV4L2Device> tegra_device(new TegraV4L2Device(type));
   if (tegra_device->Initialize())
-    return tegra_device.Pass();
+    return tegra_device;
 #endif
 
   LOG(ERROR) << "Failed to create V4L2Device";
-  return scoped_ptr<V4L2Device>();
+  return scoped_refptr<V4L2Device>();
 }
 
 // static
@@ -75,13 +78,20 @@ uint32 V4L2Device::VideoFrameFormatToV4L2PixFmt(
 
 // static
 uint32 V4L2Device::VideoCodecProfileToV4L2PixFmt(
-    media::VideoCodecProfile profile) {
+    media::VideoCodecProfile profile,
+    bool slice_based) {
   if (profile >= media::H264PROFILE_MIN &&
       profile <= media::H264PROFILE_MAX) {
-    return V4L2_PIX_FMT_H264;
+    if (slice_based)
+      return V4L2_PIX_FMT_H264_SLICE;
+    else
+      return V4L2_PIX_FMT_H264;
   } else if (profile >= media::VP8PROFILE_MIN &&
              profile <= media::VP8PROFILE_MAX) {
-    return V4L2_PIX_FMT_VP8;
+    if (slice_based)
+      return V4L2_PIX_FMT_VP8_FRAME;
+    else
+      return V4L2_PIX_FMT_VP8;
   } else if (profile >= media::VP9PROFILE_MIN &&
              profile <= media::VP9PROFILE_MAX) {
     return V4L2_PIX_FMT_VP9;

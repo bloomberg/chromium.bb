@@ -69,7 +69,7 @@ V4L2VideoEncodeAccelerator::OutputRecord::~OutputRecord() {
 }
 
 V4L2VideoEncodeAccelerator::V4L2VideoEncodeAccelerator(
-    scoped_ptr<V4L2Device> device)
+    const scoped_refptr<V4L2Device>& device)
     : child_message_loop_proxy_(base::MessageLoopProxy::current()),
       output_buffer_byte_size_(0),
       device_input_format_(media::VideoFrame::UNKNOWN),
@@ -77,7 +77,7 @@ V4L2VideoEncodeAccelerator::V4L2VideoEncodeAccelerator(
       output_format_fourcc_(0),
       encoder_state_(kUninitialized),
       stream_header_size_(0),
-      device_(device.Pass()),
+      device_(device),
       input_streamon_(false),
       input_buffer_queued_count_(0),
       input_memory_type_(V4L2_MEMORY_USERPTR),
@@ -138,9 +138,9 @@ bool V4L2VideoEncodeAccelerator::Initialize(
     DVLOG(1) << "Input format not supported by the HW, will convert to "
              << media::VideoFrame::FormatToString(device_input_format_);
 
-    scoped_ptr<V4L2Device> device =
+    scoped_refptr<V4L2Device> device =
         V4L2Device::Create(V4L2Device::kImageProcessor);
-    image_processor_.reset(new V4L2ImageProcessor(device.Pass()));
+    image_processor_.reset(new V4L2ImageProcessor(device));
 
     // Convert from input_format to device_input_format_, keeping the size
     // at visible_size_ and requiring the output buffers to be of at least
@@ -842,7 +842,7 @@ bool V4L2VideoEncodeAccelerator::SetOutputFormat(
   DCHECK(!output_streamon_);
 
   output_format_fourcc_ =
-      V4L2Device::VideoCodecProfileToV4L2PixFmt(output_profile);
+      V4L2Device::VideoCodecProfileToV4L2PixFmt(output_profile, false);
   if (!output_format_fourcc_) {
     LOG(ERROR) << "Initialize(): invalid output_profile=" << output_profile;
     return false;

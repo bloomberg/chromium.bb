@@ -42,7 +42,7 @@ namespace content {
 class CONTENT_EXPORT V4L2VideoEncodeAccelerator
     : public media::VideoEncodeAccelerator {
  public:
-  explicit V4L2VideoEncodeAccelerator(scoped_ptr<V4L2Device> device);
+  explicit V4L2VideoEncodeAccelerator(const scoped_refptr<V4L2Device>& device);
   virtual ~V4L2VideoEncodeAccelerator();
 
   // media::VideoEncodeAccelerator implementation.
@@ -224,7 +224,7 @@ class CONTENT_EXPORT V4L2VideoEncodeAccelerator
   std::list<scoped_refptr<media::VideoFrame> > encoder_input_queue_;
 
   // Encoder device.
-  scoped_ptr<V4L2Device> device_;
+  scoped_refptr<V4L2Device> device_;
 
   // Input queue state.
   bool input_streamon_;

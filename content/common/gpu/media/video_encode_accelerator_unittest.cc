@@ -738,9 +738,9 @@ scoped_ptr<media::VideoEncodeAccelerator> VEAClient::CreateV4L2VEA() {
   scoped_ptr<media::VideoEncodeAccelerator> encoder;
 #if defined(OS_CHROMEOS) && (defined(ARCH_CPU_ARMEL) || \
     (defined(USE_OZONE) && defined(USE_V4L2_CODEC)))
-  scoped_ptr<V4L2Device> device = V4L2Device::Create(V4L2Device::kEncoder);
+  scoped_refptr<V4L2Device> device = V4L2Device::Create(V4L2Device::kEncoder);
   if (device)
-    encoder.reset(new V4L2VideoEncodeAccelerator(device.Pass()));
+    encoder.reset(new V4L2VideoEncodeAccelerator(device));
 #endif
   return encoder.Pass();
 }
