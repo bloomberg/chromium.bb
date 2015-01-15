@@ -37,7 +37,8 @@
 Profile::Profile()
     : restored_last_session_(false),
       sent_destroyed_notification_(false),
-      accessibility_pause_level_(0) {
+      accessibility_pause_level_(0),
+      is_guest_profile_(false) {
 }
 
 Profile::~Profile() {
@@ -210,7 +211,7 @@ bool Profile::IsGuestSession() const {
           chromeos::switches::kGuestSession);
   return is_guest_session;
 #else
-  return GetPath() == ProfileManager::GetGuestProfilePath();
+  return is_guest_profile_;
 #endif
 }
 

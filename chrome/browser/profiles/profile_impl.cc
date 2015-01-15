@@ -430,6 +430,8 @@ ProfileImpl::ProfileImpl(
       &ProfileImpl::EnsureSessionServiceCreated);
 #endif
 
+  set_is_guest_profile(path == ProfileManager::GetGuestProfilePath());
+
   // Determine if prefetch is enabled for this profile.
   // If not profile_manager is present, it means we are in a unittest.
   const base::CommandLine* command_line =

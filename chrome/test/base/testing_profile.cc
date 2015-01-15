@@ -401,6 +401,8 @@ void TestingProfile::Init() {
              content::BrowserThread::UI) ||
          content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
+  set_is_guest_profile(guest_session_);
+
 #if defined(OS_ANDROID)
   // Make sure token service knows its running in tests.
   AndroidProfileOAuth2TokenService::set_is_testing_profile();

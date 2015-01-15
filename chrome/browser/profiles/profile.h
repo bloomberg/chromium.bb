@@ -379,6 +379,11 @@ class Profile : public content::BrowserContext {
   // storage partition.
   double GetDefaultZoomLevelForProfile();
 
+ protected:
+  void set_is_guest_profile(bool is_guest_profile) {
+    is_guest_profile_ = is_guest_profile;
+  }
+
  private:
   bool restored_last_session_;
 
@@ -391,6 +396,8 @@ class Profile : public content::BrowserContext {
   // increment and decrement the level, respectively, rather than set it to
   // true or false, so that calls can be nested.
   int accessibility_pause_level_;
+
+  bool is_guest_profile_;
 
   DISALLOW_COPY_AND_ASSIGN(Profile);
 };

@@ -27,6 +27,7 @@
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate_factory.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -126,6 +127,9 @@ void OffTheRecordProfileImpl::Init() {
 
   BrowserContextDependencyManager::GetInstance()->CreateBrowserContextServices(
       this);
+
+  set_is_guest_profile(
+      profile_->GetPath() == ProfileManager::GetGuestProfilePath());
 
   // Guest profiles may always be OTR. Check IncognitoModePrefs otherwise.
   DCHECK(profile_->IsGuestSession() ||
@@ -503,6 +507,7 @@ class GuestSessionProfile : public OffTheRecordProfileImpl {
  public:
   explicit GuestSessionProfile(Profile* real_profile)
       : OffTheRecordProfileImpl(real_profile) {
+    set_is_guest_profile(true);
   }
 
   virtual ProfileType GetProfileType() const override {
