@@ -28,21 +28,35 @@
 
 namespace blink {
 
-struct DocumentTiming {
+class DocumentTiming {
+public:
     DocumentTiming()
-        : domLoading(0.0)
-        , domInteractive(0.0)
-        , domContentLoadedEventStart(0.0)
-        , domContentLoadedEventEnd(0.0)
-        , domComplete(0.0)
+        : m_domLoading(0.0)
+        , m_domInteractive(0.0)
+        , m_domContentLoadedEventStart(0.0)
+        , m_domContentLoadedEventEnd(0.0)
+        , m_domComplete(0.0)
     {
     }
 
-    double domLoading;
-    double domInteractive;
-    double domContentLoadedEventStart;
-    double domContentLoadedEventEnd;
-    double domComplete;
+    void setDomLoading(double domLoading) { m_domLoading = domLoading; }
+    void setDomInteractive(double domInteractive) { m_domInteractive = domInteractive; }
+    void setDomContentLoadedEventStart(double domContentLoadedEventStart) { m_domContentLoadedEventStart = domContentLoadedEventStart; }
+    void setDomContentLoadedEventEnd(double domContentLoadedEventEnd) { m_domContentLoadedEventEnd = domContentLoadedEventEnd; }
+    void setDomComplete(double domComplete) { m_domComplete = domComplete; }
+
+    double domLoading() const { return m_domLoading; }
+    double domInteractive() const { return m_domInteractive; }
+    double domContentLoadedEventStart() const { return m_domContentLoadedEventStart; }
+    double domContentLoadedEventEnd() const { return m_domContentLoadedEventEnd; }
+    double domComplete() const { return m_domComplete; }
+
+private:
+    double m_domLoading;
+    double m_domInteractive;
+    double m_domContentLoadedEventStart;
+    double m_domContentLoadedEventEnd;
+    double m_domComplete;
 };
 
 }

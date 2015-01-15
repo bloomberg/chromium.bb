@@ -249,7 +249,7 @@ unsigned long long PerformanceTiming::domLoading() const
     if (!timing)
         return fetchStart();
 
-    return monotonicTimeToIntegerMilliseconds(timing->domLoading);
+    return monotonicTimeToIntegerMilliseconds(timing->domLoading());
 }
 
 unsigned long long PerformanceTiming::domInteractive() const
@@ -258,7 +258,7 @@ unsigned long long PerformanceTiming::domInteractive() const
     if (!timing)
         return 0;
 
-    return monotonicTimeToIntegerMilliseconds(timing->domInteractive);
+    return monotonicTimeToIntegerMilliseconds(timing->domInteractive());
 }
 
 unsigned long long PerformanceTiming::domContentLoadedEventStart() const
@@ -267,7 +267,7 @@ unsigned long long PerformanceTiming::domContentLoadedEventStart() const
     if (!timing)
         return 0;
 
-    return monotonicTimeToIntegerMilliseconds(timing->domContentLoadedEventStart);
+    return monotonicTimeToIntegerMilliseconds(timing->domContentLoadedEventStart());
 }
 
 unsigned long long PerformanceTiming::domContentLoadedEventEnd() const
@@ -276,7 +276,7 @@ unsigned long long PerformanceTiming::domContentLoadedEventEnd() const
     if (!timing)
         return 0;
 
-    return monotonicTimeToIntegerMilliseconds(timing->domContentLoadedEventEnd);
+    return monotonicTimeToIntegerMilliseconds(timing->domContentLoadedEventEnd());
 }
 
 unsigned long long PerformanceTiming::domComplete() const
@@ -285,7 +285,7 @@ unsigned long long PerformanceTiming::domComplete() const
     if (!timing)
         return 0;
 
-    return monotonicTimeToIntegerMilliseconds(timing->domComplete);
+    return monotonicTimeToIntegerMilliseconds(timing->domComplete());
 }
 
 unsigned long long PerformanceTiming::loadEventStart() const

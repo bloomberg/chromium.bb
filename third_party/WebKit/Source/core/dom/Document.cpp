@@ -1110,17 +1110,17 @@ void Document::setReadyState(ReadyState readyState)
 
     switch (readyState) {
     case Loading:
-        if (!m_documentTiming.domLoading) {
-            m_documentTiming.domLoading = monotonicallyIncreasingTime();
+        if (!m_documentTiming.domLoading()) {
+            m_documentTiming.setDomLoading(monotonicallyIncreasingTime());
         }
         break;
     case Interactive:
-        if (!m_documentTiming.domInteractive)
-            m_documentTiming.domInteractive = monotonicallyIncreasingTime();
+        if (!m_documentTiming.domInteractive())
+            m_documentTiming.setDomInteractive(monotonicallyIncreasingTime());
         break;
     case Complete:
-        if (!m_documentTiming.domComplete)
-            m_documentTiming.domComplete = monotonicallyIncreasingTime();
+        if (!m_documentTiming.domComplete())
+            m_documentTiming.setDomComplete(monotonicallyIncreasingTime());
         break;
     }
 
@@ -4524,11 +4524,11 @@ void Document::finishedParsing()
 
     // FIXME: DOMContentLoaded is dispatched synchronously, but this should be dispatched in a queued task,
     // See https://crbug.com/425790
-    if (!m_documentTiming.domContentLoadedEventStart)
-        m_documentTiming.domContentLoadedEventStart = monotonicallyIncreasingTime();
+    if (!m_documentTiming.domContentLoadedEventStart())
+        m_documentTiming.setDomContentLoadedEventStart(monotonicallyIncreasingTime());
     dispatchEvent(Event::createBubble(EventTypeNames::DOMContentLoaded));
-    if (!m_documentTiming.domContentLoadedEventEnd)
-        m_documentTiming.domContentLoadedEventEnd = monotonicallyIncreasingTime();
+    if (!m_documentTiming.domContentLoadedEventEnd())
+        m_documentTiming.setDomContentLoadedEventEnd(monotonicallyIncreasingTime());
     setParsingState(FinishedParsing);
 
     // The microtask checkpoint or the loader's finishedParsing() method may invoke script that causes this object to

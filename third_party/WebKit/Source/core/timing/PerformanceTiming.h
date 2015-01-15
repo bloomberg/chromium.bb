@@ -41,7 +41,7 @@ namespace blink {
 
 class DocumentLoadTiming;
 class DocumentLoader;
-struct DocumentTiming;
+class DocumentTiming;
 class LocalFrame;
 class ResourceLoadTiming;
 
