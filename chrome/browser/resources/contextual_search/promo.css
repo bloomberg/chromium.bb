@@ -7,7 +7,8 @@
   font-family: 'Roboto2';
   font-weight: 400;
   src: local('Roboto'), local('Roboto2-Regular'),
-      url(/roboto.woff2) format('woff2'), url(/roboto.woff) format('woff');
+      url(chrome://resources/roboto/roboto.woff2) format('woff2'),
+      url(chrome://resources/roboto/roboto.woff) format('woff');
 }
 
 body {

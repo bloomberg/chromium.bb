@@ -17,6 +17,10 @@ without changes to the corresponding grd file. -->
       <include name="IDR_WEBUI_I18N_TEMPLATE2_JS" file="js/i18n_template2.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_WEBUI_JSTEMPLATE_JS" file="js/jstemplate_compiled.js" flattenhtml="true" type="BINDATA" />
 
+      <!-- Roboto Font -->
+      <include name="IDR_WEBUI_ROBOTO_ROBOTO_WOFF"  file="roboto/roboto.woff" type="BINDATA" />
+      <include name="IDR_WEBUI_ROBOTO_ROBOTO_WOFF2" file="roboto/roboto.woff2" type="BINDATA" /> 
+
       <!-- Component apps common image resources - 1x -->
       <!-- White button -->
       <include name="IDR_WEBUI_IMAGES_APPS_BUTTON"

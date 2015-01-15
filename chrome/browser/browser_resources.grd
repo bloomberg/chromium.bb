@@ -213,10 +213,6 @@
       <include name="IDR_MOST_VISITED_THUMBNAIL_JS" file="resources\local_ntp\most_visited_thumbnail.js" type="BINDATA" />
       <include name="IDR_MOST_VISITED_UTIL_JS" file="resources\local_ntp\most_visited_util.js" type="BINDATA" flattenhtml="true" />
       <include name="IDR_MOST_VISITED_WINDOW_DISPOSITION_UTIL_JS" file="resources\local_ntp\window_disposition_util.js" type="BINDATA" />
-      <if expr="is_android">
-        <include name="IDR_ROBOTO_WOFF" file="resources\roboto\roboto.woff" type="BINDATA" />
-        <include name="IDR_ROBOTO_WOFF2" file="resources\roboto\roboto.woff2" type="BINDATA" />
-      </if>
       <include name="IDR_OMNIBOX_HTML" file="resources\omnibox\omnibox.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_OMNIBOX_CSS" file="resources\omnibox\omnibox.css" type="BINDATA" />
       <include name="IDR_OMNIBOX_JS" file="resources\omnibox\omnibox.js" type="BINDATA" />
