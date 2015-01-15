@@ -483,7 +483,7 @@ def GrepForActions(path, actions):
         break
       actions.add(action_name)
     except InvalidStatementException, e:
-      log.warning(str(e))
+      logging.warning(str(e))
 
   line_number = 0
   for line in open(path):
@@ -491,8 +491,8 @@ def GrepForActions(path, actions):
     if COMPUTED_ACTION_RE.search(line):
       # Warn if this file shouldn't be calling RecordComputedAction.
       if os.path.basename(path) not in KNOWN_COMPUTED_USERS:
-        log.warning('%s has RecordComputedAction statement on line %d' %
-                    (path, line_number))
+        logging.warning('%s has RecordComputedAction statement on line %d' %
+                        (path, line_number))
 
 class WebUIActionsParser(HTMLParser):
   """Parses an HTML file, looking for all tags with a 'metric' attribute.
