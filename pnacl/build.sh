@@ -118,6 +118,7 @@ readonly TOOLCHAIN_BUILD_OUT="${NACL_ROOT}/toolchain_build/out"
 readonly TIMESTAMP_FILENAME="make-timestamp"
 
 # PNaCl toolchain installation directories (absolute paths)
+readonly SDK_INSTALL_ROOT="${TOOLCHAIN_BASE}/pnacl_newlib"
 readonly INSTALL_ROOT="${TOOLCHAIN_BUILD_OUT}/translator_compiler_install"
 readonly INSTALL_BIN="${INSTALL_ROOT}/bin"
 
@@ -805,9 +806,9 @@ sdk-setup() {
   fi
   SDK_IS_SETUP=true
 
-  SDK_INSTALL_ROOT="${INSTALL_ROOT}/le32-nacl"
-  SDK_INSTALL_LIB="${SDK_INSTALL_ROOT}/lib"
-  SDK_INSTALL_INCLUDE="${SDK_INSTALL_ROOT}/include"
+  SDK_INSTALL_LE32="${SDK_INSTALL_ROOT}/le32-nacl"
+  SDK_INSTALL_LIB="${SDK_INSTALL_LE32}/lib"
+  SDK_INSTALL_INCLUDE="${SDK_INSTALL_LE32}/include"
 }
 
 sdk() {
@@ -843,7 +844,7 @@ sdk-headers() {
       "${SCONS_ARGS[@]}" \
       ${extra_flags} \
       platform=${neutral_platform} \
-      pnacl_newlib_dir="${INSTALL_ROOT}" \
+      pnacl_newlib_dir="${SDK_INSTALL_ROOT}" \
       install_headers \
       includedir="$(PosixToSysPath "${SDK_INSTALL_INCLUDE}")"
   spopd
@@ -863,7 +864,7 @@ sdk-libs() {
       "${SCONS_ARGS[@]}" \
       ${extra_flags} \
       platform=${neutral_platform} \
-      pnacl_newlib_dir="${INSTALL_ROOT}" \
+      pnacl_newlib_dir="${SDK_INSTALL_ROOT}" \
       install_lib \
       libdir="$(PosixToSysPath "${SDK_INSTALL_LIB}")"
   spopd
