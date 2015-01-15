@@ -239,15 +239,8 @@ TEST_F(ConsumerManagementServiceStatusTest,
   EXPECT_EQ(ConsumerManagementService::STATUS_ENROLLED, service_.GetStatus());
   EXPECT_EQ("StatusEnrolled", service_.GetStatusString());
 
-  SetStageInLocalState(ConsumerManagementStage::UnenrollmentRequested());
-  EXPECT_EQ(ConsumerManagementService::STATUS_UNENROLLING,
-            service_.GetStatus());
-  EXPECT_EQ("StatusUnenrolling", service_.GetStatusString());
-
-  SetManagementMode(em::PolicyData::LOCAL_OWNER);
-  SetStageInLocalState(ConsumerManagementStage::UnenrollmentSuccess());
-  EXPECT_EQ(ConsumerManagementService::STATUS_UNENROLLED, service_.GetStatus());
-  EXPECT_EQ("StatusUnenrolled", service_.GetStatusString());
+  // TODO(davidyu): Test for STATUS_UNENROLLING when it is implemented.
+  // http://crbug.com/353050.
 }
 
 }  // namespace policy

@@ -5,7 +5,6 @@
 #include "components/policy/core/common/cloud/cloud_policy_service.h"
 
 #include "base/callback.h"
-#include "base/logging.h"
 #include "policy/proto/device_management_backend.pb.h"
 
 namespace em = enterprise_management;
@@ -21,7 +20,6 @@ CloudPolicyService::CloudPolicyService(const std::string& policy_type,
       client_(client),
       store_(store),
       refresh_state_(REFRESH_NONE),
-      unregister_state_(UNREGISTER_NONE),
       initialization_complete_(false) {
   client_->AddPolicyTypeToFetch(policy_type_, settings_entity_id_);
   client_->AddObserver(this);
@@ -50,8 +48,8 @@ std::string CloudPolicyService::ManagedBy() const {
 }
 
 void CloudPolicyService::RefreshPolicy(const RefreshPolicyCallback& callback) {
-  // If the client is not registered or is unregistering, bail out.
-  if (!client_->is_registered() || unregister_state_ != UNREGISTER_NONE) {
+  // If the client is not registered, bail out.
+  if (!client_->is_registered()) {
     callback.Run(false);
     return;
   }
@@ -60,20 +58,6 @@ void CloudPolicyService::RefreshPolicy(const RefreshPolicyCallback& callback) {
   refresh_callbacks_.push_back(callback);
   refresh_state_ = REFRESH_POLICY_FETCH;
   client_->FetchPolicy();
-}
-
-void CloudPolicyService::Unregister(const UnregisterCallback& callback) {
-  // Abort all pending refresh requests.
-  if (refresh_state_ != REFRESH_NONE)
-    RefreshCompleted(false);
-
-  // Abort previous unregister request if any.
-  if (unregister_state_  != UNREGISTER_NONE)
-    UnregisterCompleted(false);
-
-  unregister_callback_ = callback;
-  unregister_state_ = UNREGISTER_PENDING;
-  client_->Unregister();
 }
 
 void CloudPolicyService::OnPolicyFetched(CloudPolicyClient* client) {
@@ -94,15 +78,11 @@ void CloudPolicyService::OnPolicyFetched(CloudPolicyClient* client) {
 }
 
 void CloudPolicyService::OnRegistrationStateChanged(CloudPolicyClient* client) {
-  if (unregister_state_ == UNREGISTER_PENDING)
-    UnregisterCompleted(true);
 }
 
 void CloudPolicyService::OnClientError(CloudPolicyClient* client) {
   if (refresh_state_ == REFRESH_POLICY_FETCH)
     RefreshCompleted(false);
-  if (unregister_state_ == UNREGISTER_PENDING)
-    UnregisterCompleted(false);
 }
 
 void CloudPolicyService::OnStoreLoaded(CloudPolicyStore* store) {
@@ -170,15 +150,6 @@ void CloudPolicyService::RefreshCompleted(bool success) {
        ++callback) {
     callback->Run(success);
   }
-}
-
-void CloudPolicyService::UnregisterCompleted(bool success) {
-  if (!success)
-    LOG(ERROR) << "Unregister request failed.";
-
-  unregister_state_ = UNREGISTER_NONE;
-  unregister_callback_.Run(success);
-  unregister_callback_ = UnregisterCallback();  // Reset.
 }
 
 void CloudPolicyService::AddObserver(Observer* observer) {

@@ -34,8 +34,6 @@ class OwnerKeyUtil;
 
 namespace chromeos {
 
-class FakeOwnerSettingsService;
-
 // The class is a profile-keyed service which holds public/private
 // keypair corresponds to a profile. The keypair is reloaded automatically when
 // profile is created and TPM token is ready. Note that the private part of a
@@ -90,9 +88,8 @@ class OwnerSettingsServiceChromeOS : public ownership::OwnerSettingsService,
   virtual void OnDeviceSettingsServiceShutdown() override;
 
   // Sets the management related settings.
-  virtual void SetManagementSettings(
-      const ManagementSettings& settings,
-      const OnManagementSettingsSetCallback& callback);
+  void SetManagementSettings(const ManagementSettings& settings,
+                             const OnManagementSettingsSetCallback& callback);
 
   // Checks if the user is the device owner, without the user profile having to
   // been initialized. Should be used only if login state is in safe mode.
@@ -119,14 +116,13 @@ class OwnerSettingsServiceChromeOS : public ownership::OwnerSettingsService,
            has_pending_management_settings_;
   }
 
- protected:
+ private:
+  friend class OwnerSettingsServiceChromeOSFactory;
+
   OwnerSettingsServiceChromeOS(
       DeviceSettingsService* device_settings_service,
       Profile* profile,
       const scoped_refptr<ownership::OwnerKeyUtil>& owner_key_util);
-
- private:
-  friend class OwnerSettingsServiceChromeOSFactory;
 
   // OwnerSettingsService protected interface overrides:
 

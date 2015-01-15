@@ -137,22 +137,16 @@ class BrowserPolicyConnectorChromeOS
 
   // DeviceCloudPolicyManagerChromeOS::Observer:
   void OnDeviceCloudPolicyManagerConnected() override;
-  void OnDeviceCloudPolicyManagerDisconnected() override;
 
  private:
   // Set the timezone as soon as the policies are available.
   void SetTimezoneIfPolicyAvailable();
-
-  // Restarts the device cloud policy initializer, because the device's
-  // registration status changed from registered to unregistered.
-  void RestartDeviceCloudPolicyInitializer();
 
   // Components of the device cloud policy implementation.
   scoped_ptr<ServerBackedStateKeysBroker> state_keys_broker_;
   scoped_ptr<EnterpriseInstallAttributes> install_attributes_;
   scoped_ptr<ConsumerManagementService> consumer_management_service_;
   DeviceCloudPolicyManagerChromeOS* device_cloud_policy_manager_;
-  PrefService* local_state_;
   scoped_ptr<DeviceManagementService> consumer_device_management_service_;
   scoped_ptr<DeviceCloudPolicyInitializer> device_cloud_policy_initializer_;
   scoped_ptr<DeviceLocalAccountPolicyService>

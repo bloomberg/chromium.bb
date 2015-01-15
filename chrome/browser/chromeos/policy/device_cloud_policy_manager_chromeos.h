@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -43,11 +42,7 @@ class DeviceCloudPolicyManagerChromeOS : public CloudPolicyManager {
    public:
     // Invoked when the device cloud policy manager connects.
     virtual void OnDeviceCloudPolicyManagerConnected() = 0;
-    // Invoked when the device cloud policy manager disconnects.
-    virtual void OnDeviceCloudPolicyManagerDisconnected() = 0;
   };
-
-  using UnregisterCallback = base::Callback<void(bool)>;
 
   // |task_runner| is the runner for policy refresh tasks.
   DeviceCloudPolicyManagerChromeOS(
@@ -91,13 +86,6 @@ class DeviceCloudPolicyManagerChromeOS : public CloudPolicyManager {
   void StartConnection(scoped_ptr<CloudPolicyClient> client_to_connect,
                        EnterpriseInstallAttributes* install_attributes);
 
-  // Sends the unregister request. |callback| is invoked with a boolean
-  // parameter indicating the result when done.
-  virtual void Unregister(const UnregisterCallback& callback);
-
-  // Disconnects the manager.
-  virtual void Disconnect();
-
   DeviceCloudPolicyStoreChromeOS* device_store() {
     return device_store_.get();
   }
@@ -110,7 +98,6 @@ class DeviceCloudPolicyManagerChromeOS : public CloudPolicyManager {
   void InitializeRequisition();
 
   void NotifyConnected();
-  void NotifyDisconnected();
 
   // Points to the same object as the base CloudPolicyManager::store(), but with
   // actual device policy specific type.

@@ -149,7 +149,6 @@ BrowserPolicyConnectorChromeOS::~BrowserPolicyConnectorChromeOS() {}
 void BrowserPolicyConnectorChromeOS::Init(
     PrefService* local_state,
     scoped_refptr<net::URLRequestContextGetter> request_context) {
-  local_state_ = local_state;
   ChromeBrowserPolicyConnector::Init(local_state, request_context);
 
   const base::CommandLine* command_line =
@@ -172,7 +171,18 @@ void BrowserPolicyConnectorChromeOS::Init(
 
     device_cloud_policy_manager_->Initialize(local_state);
     device_cloud_policy_manager_->AddDeviceCloudPolicyManagerObserver(this);
-    RestartDeviceCloudPolicyInitializer();
+
+    device_cloud_policy_initializer_.reset(
+        new DeviceCloudPolicyInitializer(
+            local_state,
+            device_management_service(),
+            consumer_device_management_service_.get(),
+            GetBackgroundTaskRunner(),
+            install_attributes_.get(),
+            state_keys_broker_.get(),
+            device_cloud_policy_manager_->device_store(),
+            device_cloud_policy_manager_));
+    device_cloud_policy_initializer_->Init();
   }
 
   device_local_account_policy_service_.reset(
@@ -305,19 +315,13 @@ void BrowserPolicyConnectorChromeOS::RegisterPrefs(
 }
 
 void BrowserPolicyConnectorChromeOS::OnDeviceCloudPolicyManagerConnected() {
-  CHECK(device_cloud_policy_initializer_);
-
   // DeviceCloudPolicyInitializer might still be on the call stack, so we
   // should release the initializer after this function returns.
-  device_cloud_policy_initializer_->Shutdown();
-  base::MessageLoop::current()->DeleteSoon(
-      FROM_HERE, device_cloud_policy_initializer_.release());
-}
-
-void BrowserPolicyConnectorChromeOS::OnDeviceCloudPolicyManagerDisconnected() {
-  DCHECK(!device_cloud_policy_initializer_);
-
-  RestartDeviceCloudPolicyInitializer();
+  if (device_cloud_policy_initializer_) {
+    device_cloud_policy_initializer_->Shutdown();
+    base::MessageLoop::current()->DeleteSoon(
+        FROM_HERE, device_cloud_policy_initializer_.release());
+  }
 }
 
 void BrowserPolicyConnectorChromeOS::SetTimezoneIfPolicyAvailable() {
@@ -337,20 +341,6 @@ void BrowserPolicyConnectorChromeOS::SetTimezoneIfPolicyAvailable() {
     chromeos::system::TimezoneSettings::GetInstance()->SetTimezoneFromID(
         base::UTF8ToUTF16(timezone));
   }
-}
-
-void BrowserPolicyConnectorChromeOS::RestartDeviceCloudPolicyInitializer() {
-  device_cloud_policy_initializer_.reset(
-      new DeviceCloudPolicyInitializer(
-          local_state_,
-          device_management_service(),
-          consumer_device_management_service_.get(),
-          GetBackgroundTaskRunner(),
-          install_attributes_.get(),
-          state_keys_broker_.get(),
-          device_cloud_policy_manager_->device_store(),
-          device_cloud_policy_manager_));
-  device_cloud_policy_initializer_->Init();
 }
 
 }  // namespace policy
