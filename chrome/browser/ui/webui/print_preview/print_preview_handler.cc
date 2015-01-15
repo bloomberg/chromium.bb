@@ -1243,6 +1243,12 @@ void PrintPreviewHandler::MergeSessionCompleted(
 }
 
 void PrintPreviewHandler::SelectFile(const base::FilePath& default_filename) {
+  ChromeSelectFilePolicy policy(GetInitiator());
+  if (!policy.CanOpenSelectFileDialog()) {
+    policy.SelectFileDenied();
+    return ClosePreviewDialog();
+  }
+
   ui::SelectFileDialog::FileTypeInfo file_type_info;
   file_type_info.extensions.resize(1);
   file_type_info.extensions[0].push_back(FILE_PATH_LITERAL("pdf"));
@@ -1261,8 +1267,8 @@ void PrintPreviewHandler::SelectFile(const base::FilePath& default_filename) {
         preview_web_contents()->GetBrowserContext())->GetPrefs());
   }
 
-  select_file_dialog_ = ui::SelectFileDialog::Create(
-      this, new ChromeSelectFilePolicy(preview_web_contents())),
+  select_file_dialog_ =
+      ui::SelectFileDialog::Create(this, nullptr /*policy already checked*/);
   select_file_dialog_->SelectFile(
       ui::SelectFileDialog::SELECT_SAVEAS_FILE,
       base::string16(),
