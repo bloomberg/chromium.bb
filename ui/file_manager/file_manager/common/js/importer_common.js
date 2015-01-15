@@ -116,10 +116,10 @@ importer.importEnabled = function() {
 /**
  * A wrapper for FileEntry that provides Promises.
  *
- * @param {!FileEntry} fileEntry
- *
  * @constructor
  * @struct
+ *
+ * @param {!FileEntry} fileEntry
  */
 importer.PromisingFileEntry = function(fileEntry) {
   /** @private {!FileEntry} */
@@ -226,6 +226,17 @@ importer.ChromeSyncFileEntryProvider = function(fileName) {
   this.fileEntryPromise_ = null;
 
   this.monitorSyncEvents_();
+};
+
+/**
+ * Returns a sync FileEntry. Convenience method for class that just want
+ * a file, but don't need to monitor changes.
+ * @param {string} fileName
+ * @return {!Promise.<!FileEntry>}
+ */
+importer.ChromeSyncFileEntryProvider.getFileEntry = function(fileName) {
+  return new importer.ChromeSyncFileEntryProvider(fileName)
+      .getSyncFileEntry();
 };
 
 /**
@@ -375,3 +386,132 @@ importer.ChromeSyncFileEntryProvider.prototype.handleSyncEvent_ =
       }.bind(this));
 };
 
+/**
+ * A basic logging mechanism.
+ *
+ * @interface
+ */
+importer.Logger = function() {};
+
+/**
+ * Writes an error message to the logger followed by a new line.
+ *
+ * @param {string} message
+ */
+importer.Logger.prototype.info;
+
+/**
+ * Writes an error message to the logger followed by a new line.
+ *
+ * @param {string} message
+ */
+importer.Logger.prototype.error;
+
+/**
+ * Returns a function suitable for use as an argument to
+ * Promise#catch.
+ *
+ * @param {string} context
+ */
+importer.Logger.prototype.catcher;
+
+/**
+ * A {@code importer.Logger} that persists data in a {@code FileEntry}.
+ *
+ * @constructor
+ * @implements {importer.Logger}
+ * @struct
+ * @final
+ *
+ * @param {!Promise.<!FileEntry>} fileEntryPromise
+ */
+importer.RuntimeLogger = function(fileEntryPromise) {
+
+  /** @private {!Promise.<!importer.PromisingFileEntry>} */
+  this.fileEntryPromise_ = fileEntryPromise.then(
+      /** @param {!FileEntry} fileEntry */
+      function(fileEntry) {
+        return new importer.PromisingFileEntry(fileEntry);
+      });
+};
+
+/** @override  */
+importer.RuntimeLogger.prototype.info = function(content) {
+  this.write_('INFO', content);
+  console.log(content);
+};
+
+/** @override  */
+importer.RuntimeLogger.prototype.error = function(content) {
+  this.write_('ERROR', content);
+  console.error(content);
+};
+
+/** @override  */
+importer.RuntimeLogger.prototype.catcher = function(context) {
+  return function(error) {
+    this.error('Caught promise error. Context: ' + context +
+        ' Error: ' + error.message);
+  }.bind(this);
+};
+
+/**
+ * Writes a message to the logger followed by a new line.
+ *
+ * @param {string} type
+ * @param {string} message
+ */
+importer.RuntimeLogger.prototype.write_ = function(type, message) {
+  // TODO(smckay): should we make an effort to reuse a file writer?
+  return this.fileEntryPromise_
+      .then(
+          /** @param {!importer.PromisingFileEntry} fileEntry */
+          function(fileEntry) {
+            return fileEntry.createWriter();
+          })
+      .then(this.writeLine_.bind(this, type, message));
+};
+
+/**
+ * Appends a new record to the end of the file.
+ *
+ * @param {string} type
+ * @param {string} line
+ * @param {!FileWriter} writer
+ * @private
+ */
+importer.RuntimeLogger.prototype.writeLine_ = function(type, line, writer) {
+  var blob = new Blob(
+      ['[' + type + ' @ ' + new Date().toString() + '] ' + line + '\n'],
+      {type: 'text/plain; charset=UTF-8'});
+  return new Promise(
+      /**
+       * @param {function()} resolve
+       * @param {function()} reject
+       * @this {importer.RuntimeLogger}
+       */
+      function(resolve, reject) {
+        writer.onwriteend = resolve;
+        writer.onerror = reject;
+
+        writer.seek(writer.length);
+        writer.write(blob);
+      }.bind(this));
+};
+
+/** @type {importer.Logger} */
+importer.logger_ = null;
+
+/**
+ * Creates a new logger instance...all ready to go.
+ *
+ * @return {!importer.Logger}
+ */
+importer.getLogger = function() {
+  if (!importer.logger_) {
+    importer.logger_ = new importer.RuntimeLogger(
+        importer.ChromeSyncFileEntryProvider.getFileEntry(
+            'importer_debug.log'));
+  }
+  return importer.logger_;
+};

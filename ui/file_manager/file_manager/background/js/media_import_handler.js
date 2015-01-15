@@ -209,7 +209,8 @@ importer.MediaImportHandler.ImportTask.prototype.run = function() {
   this.scanResult_.whenFinal()
       .then(this.initialize_.bind(this))
       .then(this.getDestination.bind(this))
-      .then(this.importTo_.bind(this));
+      .then(this.importTo_.bind(this))
+      .catch(importer.getLogger().catcher('import-task-chain'));
 };
 
 /**
@@ -448,5 +449,6 @@ importer.MediaImportHandler.defaultDestination.getImportDestination =
     function() {
   var defaultDestination = importer.MediaImportHandler.defaultDestination;
   return defaultDestination.getDriveRoot_()
-      .then(defaultDestination.getOrCreateImportDestination_);
+      .then(defaultDestination.getOrCreateImportDestination_)
+      .catch(importer.getLogger().catcher('import-destination-provision'));
 };

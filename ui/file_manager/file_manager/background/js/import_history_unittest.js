@@ -318,6 +318,10 @@ function setupChromeApis() {
   chrome.fileManagerPrivate.onFileTransfersUpdated = {
     addListener: function() {}
   };
+  chrome.syncFileSystem = {};
+  chrome.syncFileSystem.onFileStatusChanged = {
+    addListener: function() {}
+  };
 }
 
 /**

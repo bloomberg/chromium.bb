@@ -229,7 +229,8 @@ importer.PersistentImportHistory.prototype.refresh_ = function() {
            */
           function() {
             return this;
-          }.bind(this));
+          }.bind(this))
+      .catch(importer.getLogger().catcher('import-history-refresh'));
 };
 
 /**
@@ -657,7 +658,8 @@ importer.SynchronizedHistoryLoader.prototype.getHistory = function() {
                   this.history_ = history;
                   return history;
                 }.bind(this));
-          }.bind(this));
+          }.bind(this))
+      .catch(importer.getLogger().catcher('history-load-chain'));
 };
 
 /**
@@ -765,7 +767,8 @@ importer.FileEntryRecordStorage.prototype.readAll = function() {
            */
           function(fileContents) {
             return this.parse_(fileContents);
-          }.bind(this));
+          }.bind(this))
+      .catch(importer.getLogger().catcher('record-reading'));
 };
 
 /**
