@@ -315,6 +315,14 @@ void SincResampler::Flush() {
   UpdateRegions(false);
 }
 
+double SincResampler::BufferedFrames() const {
+  if (buffer_primed_) {
+    return request_frames_ - virtual_source_idx_;
+  } else {
+    return 0.0;
+  }
+}
+
 float SincResampler::Convolve_C(const float* input_ptr, const float* k1,
                                 const float* k2,
                                 double kernel_interpolation_factor) {

@@ -76,6 +76,11 @@ class MEDIA_EXPORT SincResampler {
 
   float* get_kernel_for_testing() { return kernel_storage_.get(); }
 
+  // Return number of input frames consumed by a callback but not yet processed.
+  // Since input/output ratio can be fractional, so can this value.
+  // Zero before first call to Resample().
+  double BufferedFrames() const;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(SincResamplerTest, Convolve);
   FRIEND_TEST_ALL_PREFIXES(SincResamplerPerfTest, Convolve);

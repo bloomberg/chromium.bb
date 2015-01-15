@@ -113,4 +113,11 @@ int MultiChannelResampler::ChunkSize() const {
   return resamplers_[0]->ChunkSize();
 }
 
+
+double MultiChannelResampler::BufferedFrames() const {
+  DCHECK(!resamplers_.empty());
+  return resamplers_[0]->BufferedFrames();
+}
+
+
 }  // namespace media
