@@ -14,6 +14,7 @@ import org.chromium.base.ApplicationStatus.ActivityStateListener;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGenerator;
 import org.chromium.chrome.browser.invalidation.InvalidationServiceFactory;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -74,6 +75,7 @@ public class ProfileSyncService {
      * @param context the ApplicationContext is retrieved from the context used as an argument.
      * @return a singleton instance of the SyncSetupManager
      */
+    @SuppressFBWarnings("LI_LAZY_INIT")
     public static ProfileSyncService get(Context context) {
         ThreadUtils.assertOnUiThread();
         if (sSyncSetupManager == null) {

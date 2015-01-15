@@ -9,6 +9,7 @@ import android.util.Log;
 import org.apache.http.conn.ConnectTimeoutException;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
+import org.chromium.base.annotations.SuppressFBWarnings;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -222,6 +223,7 @@ public class ChromiumUrlRequest implements HttpUrlRequest {
      * @param data The content that needs to be uploaded.
      */
     @Override
+    @SuppressFBWarnings("EI_EXPOSE_REP2")
     public void setUploadData(String contentType, byte[] data) {
         synchronized (mLock) {
             validateNotStarted();

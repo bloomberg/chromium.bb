@@ -12,6 +12,7 @@ import android.util.Log;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.content.app.ContentApplication;
@@ -67,6 +68,7 @@ public class NotificationService extends IntentService {
      *
      * @param intent The intent containing the notification's information.
      */
+    @SuppressFBWarnings("DM_EXIT")
     private void dispatchIntentOnUIThread(Intent intent) {
         Context context = getApplicationContext();
         if (!CommandLine.isInitialized()) {

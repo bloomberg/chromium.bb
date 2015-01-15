@@ -6,6 +6,7 @@ package org.chromium.content.browser;
 
 import android.test.suitebuilder.annotation.SmallTest;
 
+import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.Feature;
 
 /**
@@ -21,6 +22,7 @@ import org.chromium.base.test.util.Feature;
  * break backwards-compatibility. See b/4408210.
  */
 public class JavaBridgeCoercionTest extends JavaBridgeTestBase {
+    @SuppressFBWarnings("CHROMIUM_SYNCHRONIZED_METHOD")
     private class TestObject extends Controller {
         private Object mObjectInstance;
         private CustomType mCustomTypeInstance;
@@ -153,6 +155,7 @@ public class JavaBridgeCoercionTest extends JavaBridgeTestBase {
 
     private TestObject mTestObject;
 
+    @SuppressFBWarnings("CHROMIUM_SYNCHRONIZED_METHOD")
     private class TestController extends Controller {
         private boolean mBooleanValue;
 

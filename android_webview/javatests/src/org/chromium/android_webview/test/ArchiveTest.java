@@ -11,6 +11,7 @@ import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
 
@@ -120,6 +121,7 @@ public class ArchiveTest extends AwTestBase {
 
     @SmallTest
     @Feature({"AndroidWebView"})
+    @SuppressFBWarnings("DMI_HARDCODED_ABSOLUTE_FILENAME")
     public void testExplicitBadPath() throws Throwable {
         final String path = new File("/foo/bar/baz.mht").getAbsolutePath();
         deleteFile(path);
@@ -132,6 +134,7 @@ public class ArchiveTest extends AwTestBase {
 
     @SmallTest
     @Feature({"AndroidWebView"})
+    @SuppressFBWarnings("DMI_HARDCODED_ABSOLUTE_FILENAME")
     public void testAutoBadPath() throws Throwable {
         final String path = new File("/foo/bar/").getAbsolutePath();
         deleteFile(path);
