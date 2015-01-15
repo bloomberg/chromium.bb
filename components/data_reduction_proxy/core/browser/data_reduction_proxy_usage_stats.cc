@@ -301,8 +301,8 @@ void DataReductionProxyUsageStats::RecordBypassedBytesHistograms(
     return;
   }
 
-  if (data_reduction_proxy_params_->AreDataReductionProxiesBypassed(request,
-                                                                    NULL)) {
+  if (data_reduction_proxy_params_->AreDataReductionProxiesBypassed(
+      request, data_reduction_proxy_config, NULL)) {
     RecordBypassedBytes(last_bypass_type_,
                         DataReductionProxyUsageStats::NETWORK_ERROR,
                         content_length);

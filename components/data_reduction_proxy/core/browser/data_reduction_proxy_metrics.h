@@ -8,6 +8,7 @@
 #include "base/time/time.h"
 
 namespace net {
+class ProxyConfig;
 class URLRequest;
 }
 
@@ -33,6 +34,7 @@ enum DataReductionProxyRequestType {
 // Returns DataReductionProxyRequestType for |request|.
 DataReductionProxyRequestType GetDataReductionProxyRequestType(
     const net::URLRequest& request,
+    const net::ProxyConfig& data_reduction_proxy_config,
     const DataReductionProxyParams& params);
 
 // Returns |received_content_length| as adjusted original content length if

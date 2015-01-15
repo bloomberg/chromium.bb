@@ -421,12 +421,14 @@ std::string DataReductionProxyParams::GetDefaultDevFallbackOrigin() const {
 }
 
 bool DataReductionProxyParams::AreDataReductionProxiesBypassed(
-    const net::URLRequest& request, base::TimeDelta* min_retry_delay) const {
+    const net::URLRequest& request,
+    const net::ProxyConfig& data_reduction_proxy_config,
+    base::TimeDelta* min_retry_delay) const {
   if (request.context() != NULL &&
       request.context()->proxy_service() != NULL) {
     return AreProxiesBypassed(
         request.context()->proxy_service()->proxy_retry_info(),
-        request.context()->proxy_service()->config().proxy_rules(),
+        data_reduction_proxy_config.proxy_rules(),
         request.url().SchemeIs(url::kHttpsScheme),
         min_retry_delay);
   }

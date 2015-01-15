@@ -155,8 +155,10 @@ class DataReductionProxyParams {
   // reduction proxies in min_retry_delay (if not NULL). If there are no
   // bypassed data reduction proxies for the request scheme, returns false and
   // does not assign min_retry_delay.
-  bool AreDataReductionProxiesBypassed(const net::URLRequest& request,
-                                       base::TimeDelta* min_retry_delay) const;
+  bool AreDataReductionProxiesBypassed(
+      const net::URLRequest& request,
+      const net::ProxyConfig& data_reduction_proxy_config,
+      base::TimeDelta* min_retry_delay) const;
 
   // Checks if all configured data reduction proxies are in the retry map.
   // Returns true if the request is bypassed by all configured data reduction

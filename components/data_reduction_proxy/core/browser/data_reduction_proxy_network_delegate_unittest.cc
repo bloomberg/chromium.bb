@@ -5,6 +5,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_network_delegate.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/prefs/pref_registry_simple.h"
@@ -20,6 +21,7 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
+#include "net/proxy/proxy_config.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "net/url_request/url_request_test_job.h"
@@ -60,7 +62,7 @@ const Client kClient = Client::UNKNOWN;
 }  // namespace
 
 class DataReductionProxyNetworkDelegateTest : public testing::Test {
- protected:
+ public:
   DataReductionProxyNetworkDelegateTest() : context_(true) {
     context_.Init();
 
@@ -71,6 +73,11 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
     context_.set_job_factory(&test_job_factory_);
   }
 
+  const net::ProxyConfig& GetProxyConfig() const {
+    return config_;
+  }
+
+ protected:
   scoped_ptr<net::URLRequest> FetchURLRequest(
       const GURL& url,
       const std::string& raw_response_headers,
@@ -116,6 +123,7 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
   net::TestJobInterceptor* test_job_interceptor_;
   net::URLRequestJobFactoryImpl test_job_factory_;
 
+  net::ProxyConfig config_;
   net::NetworkDelegate* network_delegate_;
 };
 
@@ -198,7 +206,9 @@ TEST_F(DataReductionProxyNetworkDelegateTest, NetHistograms) {
       new DataReductionProxyNetworkDelegate(
           scoped_ptr<net::NetworkDelegate>(
               new TestNetworkDelegate()), params.get(), &auth_handler,
-              DataReductionProxyNetworkDelegate::ProxyConfigGetter()));
+              base::Bind(
+                  &DataReductionProxyNetworkDelegateTest::GetProxyConfig,
+                  base::Unretained(this))));
 
   set_network_delegate(network_delegate.get());
 

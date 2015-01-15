@@ -195,9 +195,10 @@ void DataReductionProxyNetworkDelegate::OnCompletedInternal(
   // or missing, as is the case with chunked encoding.
   int64 received_content_length = request->received_response_content_length();
 
-  if (!request->was_cached() &&         // Don't record cached content
-      received_content_length &&        // Zero-byte responses aren't useful.
-      (is_http || is_https)) {          // Only record for HTTP or HTTPS urls.
+  if (!request->was_cached() &&          // Don't record cached content
+      received_content_length &&         // Zero-byte responses aren't useful.
+      (is_http || is_https) &&           // Only record for HTTP or HTTPS urls.
+      !proxy_config_getter_.is_null()) { // Used by request type and histograms.
     int64 original_content_length =
         request->response_info().headers->GetInt64HeaderValue(
             "x-original-content-length");
@@ -206,6 +207,7 @@ void DataReductionProxyNetworkDelegate::OnCompletedInternal(
             request->response_info().response_time).freshness;
     DataReductionProxyRequestType request_type =
         GetDataReductionProxyRequestType(*request,
+                                         proxy_config_getter_.Run(),
                                          *data_reduction_proxy_params_);
 
     int64 adjusted_original_content_length =
@@ -220,8 +222,7 @@ void DataReductionProxyNetworkDelegate::OnCompletedInternal(
                                   freshness_lifetime);
 
     if (data_reduction_proxy_enabled_ &&
-        data_reduction_proxy_usage_stats_ &&
-        !proxy_config_getter_.is_null()) {
+        data_reduction_proxy_usage_stats_) {
       data_reduction_proxy_usage_stats_->RecordBytesHistograms(
           *request,
           *data_reduction_proxy_enabled_,

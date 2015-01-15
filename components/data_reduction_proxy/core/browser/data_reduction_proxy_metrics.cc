@@ -14,6 +14,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "net/base/host_port_pair.h"
 #include "net/http/http_response_headers.h"
+#include "net/proxy/proxy_config.h"
 #include "net/proxy/proxy_retry_info.h"
 #include "net/proxy/proxy_service.h"
 #include "net/url_request/url_request_context.h"
@@ -293,6 +294,7 @@ class DailyDataSavingUpdate {
 
 DataReductionProxyRequestType GetDataReductionProxyRequestType(
     const net::URLRequest& request,
+    const net::ProxyConfig& data_reduction_proxy_config,
     const DataReductionProxyParams& params) {
   if (request.url().SchemeIs(url::kHttpsScheme))
     return HTTPS;
@@ -301,7 +303,8 @@ DataReductionProxyRequestType GetDataReductionProxyRequestType(
     return UNKNOWN_TYPE;
   }
   base::TimeDelta bypass_delay;
-  if (params.AreDataReductionProxiesBypassed(request, &bypass_delay)) {
+  if (params.AreDataReductionProxiesBypassed(
+          request, data_reduction_proxy_config, &bypass_delay)) {
     if (bypass_delay > base::TimeDelta::FromSeconds(kLongBypassDelayInSeconds))
       return LONG_BYPASS;
     return SHORT_BYPASS;
