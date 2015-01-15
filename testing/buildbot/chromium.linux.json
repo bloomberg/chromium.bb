@@ -127,6 +127,10 @@
     ],
     "scripts": [
       {
+        "name": "checklicenses",
+        "script": "checklicenses.py"
+      },
+      {
         "name": "telemetry_unittests",
         "script": "telemetry_unittests.py"
       },
