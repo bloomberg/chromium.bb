@@ -6,6 +6,7 @@
 
 from __future__ import print_function
 
+import errno
 import os
 import signal
 import sys
@@ -50,7 +51,11 @@ def ExitAsStatus(status):
     time.sleep(0.1)
 
     # Still here?  Maybe the signal was masked.
-    signal.signal(sig_status, signal.SIG_DFL)
+    try:
+      signal.signal(sig_status, signal.SIG_DFL)
+    except RuntimeError as e:
+      if e.args[0] != errno.EINVAL:
+        raise
     os.kill(pid, sig_status)
     time.sleep(0.1)
 
