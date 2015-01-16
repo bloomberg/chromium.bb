@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.infobar;
 
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
+import android.test.FlakyTest;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.Smoke;
 
@@ -72,9 +73,13 @@ public class InfoBarTest extends ChromeShellTestBase {
 
     /**
      * Verify Geolocation creates an InfoBar.
+     *
+     * @Smoke
+     * @MediumTest
+     *
+     * Bug: http://crbug.com/449341
      */
-    @Smoke
-    @MediumTest
+    @FlakyTest
     @Feature({"Browser", "Main"})
     public void testInfoBarForGeolocation() throws InterruptedException {
         loadUrlWithSanitization(TestHttpServerClient.getUrl(GEOLOCATION_PAGE));
@@ -96,8 +101,11 @@ public class InfoBarTest extends ChromeShellTestBase {
     /**
      * Verify Geolocation creates an InfoBar and that it's destroyed when navigating back.
      *
+     * @MediumTest
+     *
+     * Bug: http://crbug.com/449341
      */
-    @MediumTest
+    @FlakyTest
     @Feature({"Browser"})
     public void testInfoBarForGeolocationDisappearsOnBack() throws InterruptedException {
         loadUrlWithSanitization(HELLO_WORLD_URL);
