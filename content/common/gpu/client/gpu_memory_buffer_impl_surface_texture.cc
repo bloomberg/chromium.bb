@@ -75,12 +75,8 @@ void* GpuMemoryBufferImplSurfaceTexture::Map() {
     return NULL;
   }
 
-  size_t stride_in_bytes = 0;
-  if (!StrideInBytes(buffer.stride, format_, &stride_in_bytes))
-    return NULL;
-
   DCHECK_LE(size_.width(), buffer.stride);
-  stride_ = stride_in_bytes;
+  stride_ = buffer.stride * BytesPerPixel(format_);
   mapped_ = true;
   return buffer.bits;
 }

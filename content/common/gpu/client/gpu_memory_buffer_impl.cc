@@ -5,7 +5,6 @@
 #include "content/common/gpu/client/gpu_memory_buffer_impl.h"
 
 #include "base/logging.h"
-#include "base/numerics/safe_math.h"
 #include "content/common/gpu/client/gpu_memory_buffer_impl_shared_memory.h"
 #include "ui/gl/gl_bindings.h"
 
@@ -77,24 +76,16 @@ GpuMemoryBufferImpl* GpuMemoryBufferImpl::FromClientBuffer(
 }
 
 // static
-bool GpuMemoryBufferImpl::StrideInBytes(size_t width,
-                                        Format format,
-                                        size_t* stride_in_bytes) {
-  base::CheckedNumeric<size_t> s = width;
+size_t GpuMemoryBufferImpl::BytesPerPixel(Format format) {
   switch (format) {
     case RGBA_8888:
     case RGBX_8888:
     case BGRA_8888:
-      s *= 4;
-      if (!s.IsValid())
-        return false;
-
-      *stride_in_bytes = s.ValueOrDie();
-      return true;
+      return 4;
   }
 
   NOTREACHED();
-  return false;
+  return 0;
 }
 
 gfx::GpuMemoryBuffer::Format GpuMemoryBufferImpl::GetFormat() const {

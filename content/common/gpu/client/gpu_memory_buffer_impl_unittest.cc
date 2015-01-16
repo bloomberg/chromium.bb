@@ -85,9 +85,9 @@ TEST_P(GpuMemoryBufferImplTest, Map) {
     if (configuration.usage != gfx::GpuMemoryBuffer::MAP)
       continue;
 
-    size_t width_in_bytes = 0;
-    EXPECT_TRUE(GpuMemoryBufferImpl::StrideInBytes(
-        buffer_size.width(), configuration.format, &width_in_bytes));
+    size_t width_in_bytes =
+        GpuMemoryBufferImpl::BytesPerPixel(configuration.format) *
+        buffer_size.width();
     EXPECT_GT(width_in_bytes, 0u);
     scoped_ptr<char[]> data(new char[width_in_bytes]);
     memset(data.get(), 0x2a, width_in_bytes);

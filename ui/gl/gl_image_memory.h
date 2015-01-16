@@ -13,7 +13,6 @@
 #include <EGL/eglext.h>
 #endif
 
-#include "base/numerics/safe_math.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
 namespace gfx {
@@ -22,9 +21,7 @@ class GL_EXPORT GLImageMemory : public GLImage {
  public:
   GLImageMemory(const gfx::Size& size, unsigned internalformat);
 
-  static bool StrideInBytes(size_t width,
-                            gfx::GpuMemoryBuffer::Format format,
-                            size_t* stride_in_bytes);
+  static size_t BytesPerPixel(gfx::GpuMemoryBuffer::Format format);
 
   bool Initialize(const unsigned char* memory,
                   gfx::GpuMemoryBuffer::Format format);

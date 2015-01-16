@@ -17,11 +17,8 @@ bool SizeInBytes(const gfx::Size& size,
                  size_t* size_in_bytes) {
   if (size.IsEmpty())
     return false;
-
-  size_t stride_in_bytes = 0;
-  if (!GLImageMemory::StrideInBytes(size.width(), format, &stride_in_bytes))
-    return false;
-  base::CheckedNumeric<size_t> s = stride_in_bytes;
+  base::CheckedNumeric<size_t> s = GLImageMemory::BytesPerPixel(format);
+  s *= size.width();
   s *= size.height();
   if (!s.IsValid())
     return false;
