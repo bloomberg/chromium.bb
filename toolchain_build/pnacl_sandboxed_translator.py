@@ -24,7 +24,7 @@ def GSDJoin(*args):
 
 def SandboxedTranslators(arches):
   le32_packages = ['newlib_le32', 'libcxx_le32', 'libs_support_le32',
-                   'core_sdk_libs_le32', 'metadata']
+                   'core_sdk_libs_le32', 'metadata', 'compiler_rt_bc_le32']
   private_libs = ['libnacl_sys_private', 'libpthread_private', 'libplatform',
                   'libimc', 'libimc_syscalls', 'libsrpc', 'libgio']
   arch_packages = ['libs_support_translator', 'compiler_rt']

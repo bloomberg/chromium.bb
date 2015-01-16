@@ -145,8 +145,13 @@ EXTRA_ENV = {
   'TRANSLATE_FLAGS' : '-O${#OPT_LEVEL ? ${OPT_LEVEL} : 0}',
 
   'STDLIBS'   : '${DEFAULTLIBS ? '
-                '${LIBSTDCPP} ${LIBPTHREAD} ${LIBNACL} ${LIBC} ${LIBPNACLMM}}',
+                '${LIBSTDCPP} ${LIBPTHREAD} ${LIBNACL} ${LIBC} '
+                '${LIBGCC_BC} ${LIBPNACLMM}}',
   'LIBSTDCPP' : '${IS_CXX ? -l${STDLIB_TRUNC} -lm }',
+  # The few functions in the bitcode version of compiler-rt unfortunately
+  # depend on libm. TODO(jvoung): try rewriting the compiler-rt functions
+  # to be standalone.
+  'LIBGCC_BC' : '-lgcc -lm',
   'LIBC'      : '-lc',
   'LIBNACL'   : '-lnacl',
   'LIBPNACLMM': '-lpnaclmm',

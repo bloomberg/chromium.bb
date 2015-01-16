@@ -465,6 +465,25 @@ def TargetLibs(bias_arch, is_canonical):
   }
   if IsBCArch(bias_arch):
     libs.update({
+      T('compiler_rt_bc'): {
+          'type': TargetLibBuildType(is_canonical),
+          'dependencies': ['compiler_rt_src', 'target_lib_compiler'],
+          'commands': [
+              command.Mkdir(clang_libdir, parents=True),
+              command.Command(MakeCommand() + [
+                  '-f',
+                  command.path.join('%(compiler_rt_src)s', 'lib',
+                                    'Makefile-pnacl-bitcode'),
+                  'libgcc.a', 'CC=' + PnaclTool('clang'),
+                  'AR=' + PnaclTool('ar')] +
+                  ['SRC_DIR=' + command.path.join('%(abs_compiler_rt_src)s',
+                                                  'lib'),
+                   'CFLAGS=' + ' '.join([
+                     '-DPNACL_' + TargetArch(bias_arch).replace('-', '_')])
+                  ]),
+              command.Copy('libgcc.a', os.path.join(clang_libdir, 'libgcc.a')),
+          ],
+      },
       T('libs_support'): {
           'type': TargetLibBuildType(is_canonical),
           'dependencies': [ T('newlib'), 'target_lib_compiler'],

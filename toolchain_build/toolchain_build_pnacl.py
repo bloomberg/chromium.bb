@@ -882,6 +882,7 @@ def GetUploadPackageTargets():
     common_raw_packages.append('libcxx_%s' % legal_bias)
     common_raw_packages.append('libstdcxx_%s' % legal_bias)
     common_raw_packages.append('libs_support_%s' % legal_bias)
+    common_raw_packages.append('compiler_rt_bc_%s' % legal_bias)
 
   # Portable core sdk libs. For now, no biased libs.
   common_complete_packages.append('core_sdk_libs_le32')
