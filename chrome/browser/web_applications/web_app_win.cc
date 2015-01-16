@@ -393,16 +393,23 @@ void OnShortcutInfoLoadedForSetRelaunchDetails(
 // |path| is the full path of the shim binary to be created.
 bool CreateAppShimBinary(const base::FilePath& path) {
   // TODO(mgiuca): Hard-link instead of copying, if on the same file system.
-  base::FilePath chrome_binary_directory;
-  if (!PathService::Get(base::DIR_EXE, &chrome_binary_directory)) {
+  // Get the Chrome version directory (the directory containing the chrome.dll
+  // module). This is the directory where app_shim.exe is located.
+  base::FilePath chrome_version_directory;
+  if (!PathService::Get(base::DIR_MODULE, &chrome_version_directory)) {
     NOTREACHED();
     return false;
   }
 
   base::FilePath generic_shim_path =
-      chrome_binary_directory.Append(kAppShimExe);
+      chrome_version_directory.Append(kAppShimExe);
   if (!base::CopyFile(generic_shim_path, path)) {
-    LOG(ERROR) << "Could not copy app shim exe to " << path.value();
+    if (!base::PathExists(generic_shim_path)) {
+      LOG(ERROR) << "Could not find app shim exe at "
+                 << generic_shim_path.value();
+    } else {
+      LOG(ERROR) << "Could not copy app shim exe to " << path.value();
+    }
     return false;
   }
 
