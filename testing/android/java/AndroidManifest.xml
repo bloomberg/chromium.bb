@@ -12,6 +12,13 @@ found in the LICENSE file.
 
     <uses-sdk android:minSdkVersion="14" android:targetSdkVersion="21" />
 
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS"/>
+    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+
     <application android:label="ChromeNativeTests"
             android:name="org.chromium.base.BaseChromiumApplication">
         <activity android:name=".ChromeNativeTestActivity"
@@ -27,12 +34,5 @@ found in the LICENSE file.
     <instrumentation android:name="org.chromium.native_test.ChromeNativeTestInstrumentationTestRunner"
             android:targetPackage="org.chromium.native_test"
             android:label="Instrumentation entry point for org.chromium.native_test"/>
-
-    <uses-permission android:name="android.permission.CAMERA" />
-    <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS"/>
-    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
-    <uses-permission android:name="android.permission.WAKE_LOCK"/>
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 
 </manifest>
