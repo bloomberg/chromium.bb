@@ -426,13 +426,9 @@ public class ImeAdapter {
                                 KeyEvent.changeAction(keyEvent, KeyEvent.ACTION_UP), 0);
             }
 
-            // FIXME: Use WebTextInputFlags.AutocompleteOff. We need this hack to enable merge into
-            // into Beta to fix http://crbug.com/422685 .
-            final int textInputFlagAutocompleteOff = 1 << 1;
-
             // If we do not have autocomplete=off, then always send compose events rather than a
             // guessed keyCode. This addresses http://crbug.com/422685 .
-            if ((mTextInputFlags & textInputFlagAutocompleteOff) == 0) {
+            if ((mTextInputFlags & WebTextInputFlags.AutocompleteOff) == 0) {
                 keyCode = COMPOSITION_KEY_CODE;
                 modifiers = 0;
             }

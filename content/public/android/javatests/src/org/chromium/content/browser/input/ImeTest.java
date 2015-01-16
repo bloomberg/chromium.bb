@@ -45,6 +45,8 @@ public class ImeTest extends ContentShellTestBase {
             + "<input id=\"input_text\" type=\"text\" /><br/>"
             + "<input id=\"input_radio\" type=\"radio\" style=\"width:50px;height:50px\" />"
             + "<br/><textarea id=\"textarea\" rows=\"4\" cols=\"20\"></textarea>"
+            + "<br/><textarea id=\"textarea2\" rows=\"4\" cols=\"20\" autocomplete=\"off\">"
+            + "</textarea>"
             + "<br/><p><span id=\"plain_text\">This is Plain Text One</span></p>"
             + "</form></body></html>");
     private static final int COMPOSITION_KEY_CODE = 229;
@@ -700,13 +702,14 @@ public class ImeTest extends ContentShellTestBase {
     @SmallTest
     @Feature({"TextInput", "Main"})
     public void testTransitionsWhileComposingText() throws Throwable {
-        DOMUtils.focusNode(mWebContents, "textarea");
+        DOMUtils.focusNode(mWebContents, "textarea");  // Default with autocomplete="on"
         assertWaitForKeyboardStatus(true);
 
         mConnection = (TestAdapterInputConnection) getAdapterInputConnection();
         waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 0, "", 0, 0, -1, -1);
 
         // H
+        // Since autocomplete="on" by default, COMPOSITION_KEY_CODE is emitted as key code
         expectUpdateStateCall(mConnection);
         setComposingText(mConnection, "h", 1);
         assertEquals(COMPOSITION_KEY_CODE, mImeAdapter.mLastSyntheticKeyCode);
@@ -718,6 +721,30 @@ public class ImeTest extends ContentShellTestBase {
         expectUpdateStateCall(mConnection);
         setComposingText(mConnection, "h", 1);
         assertEquals(COMPOSITION_KEY_CODE, mImeAdapter.mLastSyntheticKeyCode);
+    }
+
+    @SmallTest
+    @Feature({"TextInput", "Main"})
+    public void testTransitionsWhileEmittingKeyCode() throws Throwable {
+        DOMUtils.focusNode(mWebContents, "textarea2");  // autocomplete="off"
+        assertWaitForKeyboardStatus(true);
+
+        mConnection = (TestAdapterInputConnection) getAdapterInputConnection();
+        waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 0, "", 0, 0, -1, -1);
+
+        // H
+        // Since autocomplete="off", regular key codes are emitted.
+        expectUpdateStateCall(mConnection);
+        setComposingText(mConnection, "h", 1);
+        assertEquals(KeyEvent.KEYCODE_H, mImeAdapter.mLastSyntheticKeyCode);
+
+        // Simulate switch of input fields.
+        finishComposingText(mConnection);
+
+        // H
+        expectUpdateStateCall(mConnection);
+        setComposingText(mConnection, "h", 1);
+        assertEquals(KeyEvent.KEYCODE_H, mImeAdapter.mLastSyntheticKeyCode);
     }
 
     @SmallTest
