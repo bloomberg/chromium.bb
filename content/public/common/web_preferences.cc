@@ -185,9 +185,8 @@ WebPreferences::WebPreferences()
       v8_script_streaming_mode(V8_SCRIPT_STREAMING_MODE_ALL),
       slimming_paint_enabled(false),
       cookie_enabled(true),
-      pepper_accelerated_video_decode_enabled(false)
+      pepper_accelerated_video_decode_enabled(false),
 #if defined(OS_ANDROID)
-      ,
       text_autosizing_enabled(true),
       font_scale_factor(1.0f),
       device_scale_adjustment(1.0f),
@@ -206,7 +205,14 @@ WebPreferences::WebPreferences()
       viewport_meta_zero_values_quirk(false),
       clobber_user_agent_initial_scale_quirk(false),
       ignore_main_frame_overflow_hidden_quirk(false),
-      report_screen_size_in_physical_pixels_quirk(false)
+      report_screen_size_in_physical_pixels_quirk(false),
+#endif
+#if defined(OS_ANDROID)
+      default_minimum_page_scale_factor(0.25f),
+      default_maximum_page_scale_factor(5.f)
+#else
+      default_minimum_page_scale_factor(1.f),
+      default_maximum_page_scale_factor(4.f)
 #endif
 {
   standard_font_family_map[kCommonScript] =

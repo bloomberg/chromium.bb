@@ -1134,6 +1134,10 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
 #if defined(OS_WIN)
   settings->setShowContextMenuOnMouseUp(true);
 #endif
+
+  web_view->setDefaultPageScaleLimits(
+      prefs.default_minimum_page_scale_factor,
+      prefs.default_maximum_page_scale_factor);
 }
 
 /*static*/

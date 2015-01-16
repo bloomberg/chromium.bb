@@ -212,6 +212,12 @@ struct CONTENT_EXPORT WebPreferences {
   bool report_screen_size_in_physical_pixels_quirk;
 #endif
 
+  // Default (used if the page or UA doesn't override these) values for page
+  // scale limits. These are set directly on the WebView so there's no analogue
+  // in WebSettings.
+  float default_minimum_page_scale_factor;
+  float default_maximum_page_scale_factor;
+
   // We try to keep the default values the same as the default values in
   // chrome, except for the cases where it would require lots of extra work for
   // the embedder to use the same default value.

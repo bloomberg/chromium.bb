@@ -1492,6 +1492,7 @@ void EventSender::SetPageScaleFactor(float scale_factor, int x, int y) {
 
 void EventSender::SetPageScaleFactorLimits(float min_scale, float max_scale) {
   view_->setPageScaleFactorLimits(min_scale, max_scale);
+  view_->setDefaultPageScaleLimits(min_scale, max_scale);
 }
 
 void EventSender::ClearTouchPoints() {
