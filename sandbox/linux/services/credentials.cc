@@ -15,12 +15,13 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
-#include "base/strings/string_number_conversions.h"
+#include "base/process/process.h"
 #include "base/template_util.h"
 #include "base/third_party/valgrind/valgrind.h"
-#include "base/threading/thread.h"
 #include "sandbox/linux/services/syscall_wrappers.h"
 
 namespace {
@@ -96,51 +97,36 @@ bool GetRESIds(uid_t* resuid, gid_t* resgid) {
   return true;
 }
 
-// chroot() and chdir() to /proc/<tid>/fdinfo.
-void ChrootToThreadFdInfo(base::PlatformThreadId tid, bool* result) {
-  DCHECK(result);
-  *result = false;
-
-  static_assert((base::is_same<base::PlatformThreadId, int>::value),
-                "platform thread id should be an int");
-  const std::string current_thread_fdinfo = "/proc/" +
-      base::IntToString(tid) + "/fdinfo/";
-
-  // Make extra sure that /proc/<tid>/fdinfo is unique to the thread.
-  CHECK(0 == unshare(CLONE_FILES));
-  int chroot_ret = chroot(current_thread_fdinfo.c_str());
-  if (chroot_ret) {
-    PLOG(ERROR) << "Could not chroot";
-    return;
-  }
-
-  // CWD is essentially an implicit file descriptor, so be careful to not leave
-  // it behind.
-  PCHECK(0 == chdir("/"));
-
-  *result = true;
-  return;
-}
-
 // chroot() to an empty dir that is "safe". To be safe, it must not contain
 // any subdirectory (chroot-ing there would allow a chroot escape) and it must
 // be impossible to create an empty directory there.
 // We achieve this by doing the following:
-// 1. We create a new thread, which will create a new /proc/<tid>/ directory
-// 2. We chroot to /proc/<tid>/fdinfo/
+// 1. We create a new process sharing file system information.
+// 2. In the child, we chroot to /proc/self/fdinfo/
 // This is already "safe", since fdinfo/ does not contain another directory and
 // one cannot create another directory there.
-// 3. The thread dies
+// 3. The process dies
 // After (3) happens, the directory is not available anymore in /proc.
 bool ChrootToSafeEmptyDir() {
-  base::Thread chrooter("sandbox_chrooter");
-  if (!chrooter.Start()) return false;
-  bool is_chrooted = false;
-  chrooter.message_loop()->PostTask(FROM_HERE,
-      base::Bind(&ChrootToThreadFdInfo, chrooter.thread_id(), &is_chrooted));
-  // Make sure our task has run before committing the return value.
-  chrooter.Stop();
-  return is_chrooted;
+  // We do not use a thread because when we are in a PID namespace, we cannot
+  // easily get a handle to the /proc/tid directory for the thread (since /proc
+  // may not be aware of the PID namespace). With a process, we can just use
+  // /proc/self.
+  pid_t pid = base::ForkWithFlags(SIGCHLD | CLONE_FS, nullptr, nullptr);
+  PCHECK(pid != -1);
+  if (pid == 0) {
+    RAW_CHECK(chroot("/proc/self/fdinfo/") == 0);
+
+    // CWD is essentially an implicit file descriptor, so be careful to not
+    // leave it behind.
+    RAW_CHECK(chdir("/") == 0);
+    _exit(0);
+  }
+
+  int status = -1;
+  PCHECK(HANDLE_EINTR(waitpid(pid, &status, 0)) == pid);
+
+  return status == 0;
 }
 
 // CHECK() that an attempt to move to a new user namespace raised an expected
@@ -243,7 +229,10 @@ bool Credentials::MoveToNewUserNS() {
 }
 
 bool Credentials::DropFileSystemAccess() {
-  return ChrootToSafeEmptyDir();
+  CHECK(ChrootToSafeEmptyDir());
+  CHECK(!base::DirectoryExists(base::FilePath("/proc")));
+  // We never let this function fail.
+  return true;
 }
 
 }  // namespace sandbox.

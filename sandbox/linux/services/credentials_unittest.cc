@@ -11,6 +11,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
@@ -21,13 +22,6 @@
 namespace sandbox {
 
 namespace {
-
-bool DirectoryExists(const char* path) {
-  struct stat dir;
-  errno = 0;
-  int ret = stat(path, &dir);
-  return -1 != ret || ENOENT != errno;
-}
 
 bool WorkingDirectoryIsRoot() {
   char current_dir[PATH_MAX];
@@ -141,7 +135,7 @@ SANDBOX_TEST(Credentials, DISABLE_ON_LSAN(DropFileSystemAccessIsSafe)) {
   // Probably missing kernel support.
   if (!Credentials::MoveToNewUserNS()) return;
   CHECK(Credentials::DropFileSystemAccess());
-  CHECK(!DirectoryExists("/proc"));
+  CHECK(!base::DirectoryExists(base::FilePath("/proc")));
   CHECK(WorkingDirectoryIsRoot());
   // We want the chroot to never have a subdirectory. A subdirectory
   // could allow a chroot escape.
