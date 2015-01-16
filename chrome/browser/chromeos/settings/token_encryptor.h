@@ -38,11 +38,11 @@ class TokenEncryptor {
 class CryptohomeTokenEncryptor : public TokenEncryptor {
  public:
   explicit CryptohomeTokenEncryptor(const std::string& system_salt);
-  virtual ~CryptohomeTokenEncryptor();
+  ~CryptohomeTokenEncryptor() override;
 
   // TokenEncryptor overrides:
-  virtual std::string EncryptWithSystemSalt(const std::string& token) override;
-  virtual std::string DecryptWithSystemSalt(
+  std::string EncryptWithSystemSalt(const std::string& token) override;
+  std::string DecryptWithSystemSalt(
       const std::string& encrypted_token_hex) override;
 
  private:

@@ -40,15 +40,13 @@ class ShutdownPolicyHandlerTest : public testing::Test,
 }
 
   // testing::Test:
-  virtual void SetUp() override {
+void SetUp() override {
     testing::Test::SetUp();
     cros_settings_ = CrosSettings::Get();
     DBusThreadManager::Initialize();
   }
 
-  virtual void TearDown() override {
-    DBusThreadManager::Shutdown();
-  }
+  void TearDown() override { DBusThreadManager::Shutdown(); }
 
   void SetRebootOnShutdown(bool reboot_on_shutdown) {
     const base::FundamentalValue reboot_on_shutdown_value(reboot_on_shutdown);

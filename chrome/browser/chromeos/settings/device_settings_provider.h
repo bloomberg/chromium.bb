@@ -43,29 +43,27 @@ class DeviceSettingsProvider
 
   DeviceSettingsProvider(const NotifyObserversCallback& notify_cb,
                          DeviceSettingsService* device_settings_service);
-  virtual ~DeviceSettingsProvider();
+  ~DeviceSettingsProvider() override;
 
   // Returns true if |path| is handled by this provider.
   static bool IsDeviceSetting(const std::string& name);
 
   // CrosSettingsProvider implementation.
-  virtual const base::Value* Get(const std::string& path) const override;
-  virtual TrustedStatus PrepareTrustedValues(
-      const base::Closure& callback) override;
-  virtual bool HandlesSetting(const std::string& path) const override;
+  const base::Value* Get(const std::string& path) const override;
+  TrustedStatus PrepareTrustedValues(const base::Closure& callback) override;
+  bool HandlesSetting(const std::string& path) const override;
 
  private:
   // CrosSettingsProvider implementation:
-  virtual void DoSet(const std::string& path,
-                     const base::Value& value) override;
+  void DoSet(const std::string& path, const base::Value& value) override;
 
   // DeviceSettingsService::Observer implementation:
-  virtual void OwnershipStatusChanged() override;
-  virtual void DeviceSettingsUpdated() override;
-  virtual void OnDeviceSettingsServiceShutdown() override;
+  void OwnershipStatusChanged() override;
+  void DeviceSettingsUpdated() override;
+  void OnDeviceSettingsServiceShutdown() override;
 
   // ownership::OwnerSettingsService::Observer implementation:
-  virtual void OnTentativeChangesInPolicy(
+  void OnTentativeChangesInPolicy(
       const enterprise_management::PolicyData& policy_data) override;
 
   // Populates in-memory cache from the local_state cache that is used to store

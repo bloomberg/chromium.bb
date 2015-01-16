@@ -23,9 +23,9 @@ class OwnerFlagsStorage : public ::about_flags::PrefServiceFlagsStorage {
  public:
   OwnerFlagsStorage(PrefService* prefs,
                     ownership::OwnerSettingsService* owner_settings_service);
-  virtual ~OwnerFlagsStorage();
+  ~OwnerFlagsStorage() override;
 
-  virtual bool SetFlags(const std::set<std::string>& flags) override;
+  bool SetFlags(const std::set<std::string>& flags) override;
 
  private:
   ownership::OwnerSettingsService* owner_settings_service_;

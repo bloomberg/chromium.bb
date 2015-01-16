@@ -41,7 +41,7 @@ class DeviceOAuth2TokenServiceTest : public testing::Test {
       : scoped_testing_local_state_(TestingBrowserProcess::GetGlobal()),
         request_context_getter_(new net::TestURLRequestContextGetter(
             message_loop_.message_loop_proxy())) {}
-  virtual ~DeviceOAuth2TokenServiceTest() {}
+  ~DeviceOAuth2TokenServiceTest() override {}
 
   // Most tests just want a noop crypto impl with a dummy refresh token value in
   // Local State (if the value is an empty string, it will be ignored).
@@ -74,7 +74,7 @@ class DeviceOAuth2TokenServiceTest : public testing::Test {
                                          &consumer_);
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     fake_cryptohome_client_ = new FakeCryptohomeClient;
     fake_cryptohome_client_->SetServiceIsAvailable(true);
     fake_cryptohome_client_->set_system_salt(
@@ -95,7 +95,7 @@ class DeviceOAuth2TokenServiceTest : public testing::Test {
     CrosSettings::Initialize();
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     CrosSettings::Shutdown();
     TestingBrowserProcess::GetGlobal()->SetBrowserPolicyConnector(NULL);
     content::BrowserThread::GetBlockingPool()->FlushForTesting();

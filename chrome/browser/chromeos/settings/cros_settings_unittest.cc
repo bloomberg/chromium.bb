@@ -35,7 +35,7 @@ class CrosSettingsTest : public testing::Test {
         settings_(DeviceSettingsService::Get()),
         weak_factory_(this) {}
 
-  virtual ~CrosSettingsTest() {}
+  ~CrosSettingsTest() override {}
 
   void TearDown() override {
     ASSERT_TRUE(expected_props_.empty());

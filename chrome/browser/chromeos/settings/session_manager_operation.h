@@ -127,11 +127,11 @@ class LoadSettingsOperation : public SessionManagerOperation {
  public:
   // Creates a new load operation.
   explicit LoadSettingsOperation(const Callback& callback);
-  virtual ~LoadSettingsOperation();
+  ~LoadSettingsOperation() override;
 
  protected:
   // SessionManagerOperation:
-  virtual void Run() override;
+  void Run() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LoadSettingsOperation);
@@ -145,11 +145,11 @@ class StoreSettingsOperation : public SessionManagerOperation {
   StoreSettingsOperation(
       const Callback& callback,
       scoped_ptr<enterprise_management::PolicyFetchResponse> policy);
-  virtual ~StoreSettingsOperation();
+  ~StoreSettingsOperation() override;
 
  protected:
   // SessionManagerOperation:
-  virtual void Run() override;
+  void Run() override;
 
  private:
   // Handles the result of the store operation and triggers the load.

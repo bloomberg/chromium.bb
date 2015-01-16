@@ -95,7 +95,7 @@ class DeviceSettingsService : public SessionManagerClient::Observer {
   // Creates a device settings service instance. This is meant for unit tests,
   // production code uses the singleton returned by Get() above.
   DeviceSettingsService();
-  virtual ~DeviceSettingsService();
+  ~DeviceSettingsService() override;
 
   // To be called on startup once threads are initialized and DBus is ready.
   void SetSessionManager(SessionManagerClient* session_manager_client,
@@ -174,8 +174,8 @@ class DeviceSettingsService : public SessionManagerClient::Observer {
   void RemoveObserver(Observer* observer);
 
   // SessionManagerClient::Observer:
-  virtual void OwnerKeySet(bool success) override;
-  virtual void PropertyChangeComplete(bool success) override;
+  void OwnerKeySet(bool success) override;
+  void PropertyChangeComplete(bool success) override;
 
  private:
   friend class OwnerSettingsServiceChromeOS;

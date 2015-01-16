@@ -23,21 +23,19 @@ class SystemSettingsProvider : public CrosSettingsProvider,
                                public system::TimezoneSettings::Observer {
  public:
   explicit SystemSettingsProvider(const NotifyObserversCallback& notify_cb);
-  virtual ~SystemSettingsProvider();
+  ~SystemSettingsProvider() override;
 
   // CrosSettingsProvider implementation.
-  virtual const base::Value* Get(const std::string& path) const override;
-  virtual TrustedStatus PrepareTrustedValues(
-      const base::Closure& callback) override;
-  virtual bool HandlesSetting(const std::string& path) const override;
+  const base::Value* Get(const std::string& path) const override;
+  TrustedStatus PrepareTrustedValues(const base::Closure& callback) override;
+  bool HandlesSetting(const std::string& path) const override;
 
   // TimezoneSettings::Observer implementation.
-  virtual void TimezoneChanged(const icu::TimeZone& timezone) override;
+  void TimezoneChanged(const icu::TimeZone& timezone) override;
 
  private:
   // CrosSettingsProvider implementation.
-  virtual void DoSet(const std::string& path,
-                     const base::Value& in_value) override;
+  void DoSet(const std::string& path, const base::Value& in_value) override;
 
   scoped_ptr<base::StringValue> timezone_value_;
 
