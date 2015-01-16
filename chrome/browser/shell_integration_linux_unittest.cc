@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <cstdlib>
 #include <map>
+#include <vector>
 
 #include "base/base_paths.h"
 #include "base/command_line.h"
@@ -24,8 +25,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
-
-#define FPL FILE_PATH_LITERAL
 
 using content::BrowserThread;
 using ::testing::ElementsAre;
@@ -69,6 +68,28 @@ class MockEnvironment : public base::Environment {
   DISALLOW_COPY_AND_ASSIGN(MockEnvironment);
 };
 
+// This helps EXPECT_THAT(..., ElementsAre(...)) print out more meaningful
+// failure messages.
+std::vector<std::string> FilePathsToStrings(
+    const std::vector<base::FilePath>& paths) {
+  std::vector<std::string> values;
+  for (const auto& path : paths)
+    values.push_back(path.value());
+  return values;
+}
+
+bool WriteEmptyFile(const base::FilePath& path) {
+  return base::WriteFile(path, "", 0) == 0;
+}
+
+bool WriteString(const base::FilePath& path, const base::StringPiece& str) {
+  int bytes_written = base::WriteFile(path, str.data(), str.size());
+  if (bytes_written < 0)
+    return false;
+
+  return static_cast<size_t>(bytes_written) == str.size();
+}
+
 }  // namespace
 
 TEST(ShellIntegrationTest, GetDataWriteLocation) {
@@ -82,7 +103,7 @@ TEST(ShellIntegrationTest, GetDataWriteLocation) {
     env.Set("XDG_DATA_HOME", "/user/path");
     base::FilePath path;
     ASSERT_TRUE(GetDataWriteLocation(&env, &path));
-    EXPECT_EQ(base::FilePath("/user/path"), path);
+    EXPECT_EQ("/user/path", path.value());
   }
 
   // Test that $XDG_DATA_HOME falls back to $HOME/.local/share.
@@ -91,7 +112,7 @@ TEST(ShellIntegrationTest, GetDataWriteLocation) {
     env.Set("HOME", "/home/user");
     base::FilePath path;
     ASSERT_TRUE(GetDataWriteLocation(&env, &path));
-    EXPECT_EQ(base::FilePath("/home/user/.local/share"), path);
+    EXPECT_EQ("/home/user/.local/share", path.value());
   }
 
   // Test that if neither $XDG_DATA_HOME nor $HOME are specified, it fails.
@@ -113,10 +134,10 @@ TEST(ShellIntegrationTest, GetDataSearchLocations) {
     env.Set("XDG_DATA_HOME", "/user/path");
     env.Set("XDG_DATA_DIRS", "/system/path/1:/system/path/2");
     EXPECT_THAT(
-        GetDataSearchLocations(&env),
-        ElementsAre(base::FilePath("/user/path"),
-                    base::FilePath("/system/path/1"),
-                    base::FilePath("/system/path/2")));
+        FilePathsToStrings(GetDataSearchLocations(&env)),
+        ElementsAre("/user/path",
+                    "/system/path/1",
+                    "/system/path/2"));
   }
 
   // Test that $XDG_DATA_HOME falls back to $HOME/.local/share.
@@ -125,10 +146,10 @@ TEST(ShellIntegrationTest, GetDataSearchLocations) {
     env.Set("HOME", "/home/user");
     env.Set("XDG_DATA_DIRS", "/system/path/1:/system/path/2");
     EXPECT_THAT(
-        GetDataSearchLocations(&env),
-        ElementsAre(base::FilePath("/home/user/.local/share"),
-                    base::FilePath("/system/path/1"),
-                    base::FilePath("/system/path/2")));
+        FilePathsToStrings(GetDataSearchLocations(&env)),
+        ElementsAre("/home/user/.local/share",
+                    "/system/path/1",
+                    "/system/path/2"));
   }
 
   // Test that if neither $XDG_DATA_HOME nor $HOME are specified, it still
@@ -137,9 +158,9 @@ TEST(ShellIntegrationTest, GetDataSearchLocations) {
     MockEnvironment env;
     env.Set("XDG_DATA_DIRS", "/system/path/1:/system/path/2");
     EXPECT_THAT(
-        GetDataSearchLocations(&env),
-        ElementsAre(base::FilePath("/system/path/1"),
-                    base::FilePath("/system/path/2")));
+        FilePathsToStrings(GetDataSearchLocations(&env)),
+        ElementsAre("/system/path/1",
+                    "/system/path/2"));
   }
 
   // Test that $XDG_DATA_DIRS falls back to the two default paths.
@@ -148,10 +169,10 @@ TEST(ShellIntegrationTest, GetDataSearchLocations) {
     env.Set("HOME", "/home/user");
     env.Set("XDG_DATA_HOME", "/user/path");
     EXPECT_THAT(
-        GetDataSearchLocations(&env),
-        ElementsAre(base::FilePath("/user/path"),
-                    base::FilePath("/usr/local/share"),
-                    base::FilePath("/usr/share")));
+        FilePathsToStrings(GetDataSearchLocations(&env)),
+        ElementsAre("/user/path",
+                    "/usr/local/share",
+                    "/usr/share"));
   }
 }
 
@@ -185,9 +206,7 @@ TEST(ShellIntegrationTest, GetExistingShortcutLocations) {
 
     MockEnvironment env;
     ASSERT_TRUE(base::CreateDirectory(desktop_path));
-    ASSERT_FALSE(base::WriteFile(
-        desktop_path.AppendASCII(kTemplateFilename),
-        "", 0));
+    ASSERT_TRUE(WriteEmptyFile(desktop_path.Append(kTemplateFilename)));
     web_app::ShortcutLocations result = GetExistingShortcutLocations(
         &env, kProfilePath, kExtensionId, desktop_path);
     EXPECT_TRUE(result.on_desktop);
@@ -201,14 +220,12 @@ TEST(ShellIntegrationTest, GetExistingShortcutLocations) {
   {
     base::ScopedTempDir temp_dir;
     ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-    base::FilePath apps_path = temp_dir.path().AppendASCII("applications");
+    base::FilePath apps_path = temp_dir.path().Append("applications");
 
     MockEnvironment env;
     env.Set("XDG_DATA_HOME", temp_dir.path().value());
     ASSERT_TRUE(base::CreateDirectory(apps_path));
-    ASSERT_FALSE(base::WriteFile(
-        apps_path.AppendASCII(kTemplateFilename),
-        "", 0));
+    ASSERT_TRUE(WriteEmptyFile(apps_path.Append(kTemplateFilename)));
     web_app::ShortcutLocations result =
         GetExistingShortcutLocations(&env, kProfilePath, kExtensionId);
     EXPECT_FALSE(result.on_desktop);
@@ -222,14 +239,13 @@ TEST(ShellIntegrationTest, GetExistingShortcutLocations) {
   {
     base::ScopedTempDir temp_dir;
     ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-    base::FilePath apps_path = temp_dir.path().AppendASCII("applications");
+    base::FilePath apps_path = temp_dir.path().Append("applications");
 
     MockEnvironment env;
     env.Set("XDG_DATA_HOME", temp_dir.path().value());
     ASSERT_TRUE(base::CreateDirectory(apps_path));
-    ASSERT_TRUE(base::WriteFile(
-        apps_path.AppendASCII(kTemplateFilename),
-        kNoDisplayDesktopFile, strlen(kNoDisplayDesktopFile)));
+    ASSERT_TRUE(WriteString(apps_path.Append(kTemplateFilename),
+                            kNoDisplayDesktopFile));
     web_app::ShortcutLocations result =
         GetExistingShortcutLocations(&env, kProfilePath, kExtensionId);
     // Doesn't count as being in applications menu.
@@ -247,18 +263,14 @@ TEST(ShellIntegrationTest, GetExistingShortcutLocations) {
 
     base::ScopedTempDir temp_dir2;
     ASSERT_TRUE(temp_dir2.CreateUniqueTempDir());
-    base::FilePath apps_path = temp_dir2.path().AppendASCII("applications");
+    base::FilePath apps_path = temp_dir2.path().Append("applications");
 
     MockEnvironment env;
     ASSERT_TRUE(base::CreateDirectory(desktop_path));
-    ASSERT_FALSE(base::WriteFile(
-        desktop_path.AppendASCII(kTemplateFilename),
-        "", 0));
+    ASSERT_TRUE(WriteEmptyFile(desktop_path.Append(kTemplateFilename)));
     env.Set("XDG_DATA_HOME", temp_dir2.path().value());
     ASSERT_TRUE(base::CreateDirectory(apps_path));
-    ASSERT_FALSE(base::WriteFile(
-        apps_path.AppendASCII(kTemplateFilename),
-        "", 0));
+    ASSERT_TRUE(WriteEmptyFile(apps_path.Append(kTemplateFilename)));
     web_app::ShortcutLocations result = GetExistingShortcutLocations(
         &env, kProfilePath, kExtensionId, desktop_path);
     EXPECT_TRUE(result.on_desktop);
@@ -285,15 +297,13 @@ TEST(ShellIntegrationTest, GetExistingShortcutContents) {
     MockEnvironment env;
     env.Set("XDG_DATA_HOME", temp_dir.path().value());
     // Create a file in a non-applications directory. This should be ignored.
-    ASSERT_TRUE(base::WriteFile(
-        temp_dir.path().AppendASCII(kTemplateFilename),
-        kTestData2, strlen(kTestData2)));
+    ASSERT_TRUE(WriteString(temp_dir.path().Append(kTemplateFilename),
+                            kTestData2));
     ASSERT_TRUE(base::CreateDirectory(
-        temp_dir.path().AppendASCII("applications")));
-    ASSERT_TRUE(base::WriteFile(
-        temp_dir.path().AppendASCII("applications")
-            .AppendASCII(kTemplateFilename),
-        kTestData1, strlen(kTestData1)));
+        temp_dir.path().Append("applications")));
+    ASSERT_TRUE(WriteString(
+        temp_dir.path().Append("applications").Append(kTemplateFilename),
+        kTestData1));
     std::string contents;
     ASSERT_TRUE(
         GetExistingShortcutContents(&env, kTemplateFilepath, &contents));
@@ -308,11 +318,11 @@ TEST(ShellIntegrationTest, GetExistingShortcutContents) {
     MockEnvironment env;
     env.Set("HOME", temp_dir.path().value());
     ASSERT_TRUE(base::CreateDirectory(
-        temp_dir.path().AppendASCII(".local/share/applications")));
-    ASSERT_TRUE(base::WriteFile(
-        temp_dir.path().AppendASCII(".local/share/applications")
-            .AppendASCII(kTemplateFilename),
-        kTestData1, strlen(kTestData1)));
+        temp_dir.path().Append(".local/share/applications")));
+    ASSERT_TRUE(WriteString(
+        temp_dir.path().Append(".local/share/applications")
+            .Append(kTemplateFilename),
+        kTestData1));
     std::string contents;
     ASSERT_TRUE(
         GetExistingShortcutContents(&env, kTemplateFilepath, &contents));
@@ -327,11 +337,10 @@ TEST(ShellIntegrationTest, GetExistingShortcutContents) {
     MockEnvironment env;
     env.Set("XDG_DATA_DIRS", temp_dir.path().value());
     ASSERT_TRUE(base::CreateDirectory(
-        temp_dir.path().AppendASCII("applications")));
-    ASSERT_TRUE(base::WriteFile(
-        temp_dir.path().AppendASCII("applications")
-            .AppendASCII(kTemplateFilename),
-        kTestData2, strlen(kTestData2)));
+        temp_dir.path().Append("applications")));
+    ASSERT_TRUE(WriteString(
+        temp_dir.path().Append("applications").Append(kTemplateFilename),
+        kTestData2));
     std::string contents;
     ASSERT_TRUE(
         GetExistingShortcutContents(&env, kTemplateFilepath, &contents));
@@ -349,16 +358,14 @@ TEST(ShellIntegrationTest, GetExistingShortcutContents) {
     env.Set("XDG_DATA_DIRS", temp_dir1.path().value() + ":" +
                              temp_dir2.path().value());
     // Create a file in a non-applications directory. This should be ignored.
-    ASSERT_TRUE(base::WriteFile(
-        temp_dir1.path().AppendASCII(kTemplateFilename),
-        kTestData1, strlen(kTestData1)));
+    ASSERT_TRUE(WriteString(temp_dir1.path().Append(kTemplateFilename),
+                            kTestData1));
     // Only create a findable desktop file in the second path.
     ASSERT_TRUE(base::CreateDirectory(
-        temp_dir2.path().AppendASCII("applications")));
-    ASSERT_TRUE(base::WriteFile(
-        temp_dir2.path().AppendASCII("applications")
-            .AppendASCII(kTemplateFilename),
-        kTestData2, strlen(kTestData2)));
+        temp_dir2.path().Append("applications")));
+    ASSERT_TRUE(WriteString(
+        temp_dir2.path().Append("applications").Append(kTemplateFilename),
+        kTestData2));
     std::string contents;
     ASSERT_TRUE(
         GetExistingShortcutContents(&env, kTemplateFilepath, &contents));
@@ -384,16 +391,10 @@ TEST(ShellIntegrationTest, GetExistingProfileShortcutFilenames) {
 
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  ASSERT_EQ(0,
-            base::WriteFile(
-                temp_dir.path().AppendASCII(kApp1Filename), "", 0));
-  ASSERT_EQ(0,
-            base::WriteFile(
-                temp_dir.path().AppendASCII(kApp2Filename), "", 0));
+  ASSERT_TRUE(WriteEmptyFile(temp_dir.path().Append(kApp1Filename)));
+  ASSERT_TRUE(WriteEmptyFile(temp_dir.path().Append(kApp2Filename)));
   // This file should not be returned in the results.
-  ASSERT_EQ(0,
-            base::WriteFile(
-                temp_dir.path().AppendASCII(kUnrelatedAppFilename), "", 0));
+  ASSERT_TRUE(WriteEmptyFile(temp_dir.path().Append(kUnrelatedAppFilename)));
   std::vector<base::FilePath> paths =
       GetExistingProfileShortcutFilenames(kProfilePath, temp_dir.path());
   // Path order is arbitrary. Sort the output for consistency.
@@ -405,17 +406,17 @@ TEST(ShellIntegrationTest, GetExistingProfileShortcutFilenames) {
 
 TEST(ShellIntegrationTest, GetWebShortcutFilename) {
   const struct {
-    const base::FilePath::CharType* path;
-    const char* url;
+    const char* const path;
+    const char* const url;
   } test_cases[] = {
-    { FPL("http___foo_.desktop"), "http://foo" },
-    { FPL("http___foo_bar_.desktop"), "http://foo/bar/" },
-    { FPL("http___foo_bar_a=b&c=d.desktop"), "http://foo/bar?a=b&c=d" },
+    { "http___foo_.desktop", "http://foo" },
+    { "http___foo_bar_.desktop", "http://foo/bar/" },
+    { "http___foo_bar_a=b&c=d.desktop", "http://foo/bar?a=b&c=d" },
 
     // Now we're starting to be more evil...
-    { FPL("http___foo_.desktop"), "http://foo/bar/baz/../../../../../" },
-    { FPL("http___foo_.desktop"), "http://foo/bar/././../baz/././../" },
-    { FPL("http___.._.desktop"), "http://../../../../" },
+    { "http___foo_.desktop", "http://foo/bar/baz/../../../../../" },
+    { "http___foo_.desktop", "http://foo/bar/././../baz/././../" },
+    { "http___.._.desktop", "http://../../../../" },
   };
   for (size_t i = 0; i < arraysize(test_cases); i++) {
     EXPECT_EQ(std::string(chrome::kBrowserProcessExecutableName) + "-" +
@@ -428,12 +429,12 @@ TEST(ShellIntegrationTest, GetWebShortcutFilename) {
 TEST(ShellIntegrationTest, GetDesktopFileContents) {
   const base::FilePath kChromeExePath("/opt/google/chrome/google-chrome");
   const struct {
-    const char* url;
-    const char* title;
-    const char* icon_name;
-    const char* categories;
+    const char* const url;
+    const char* const title;
+    const char* const icon_name;
+    const char* const categories;
     bool nodisplay;
-    const char* expected_output;
+    const char* const expected_output;
   } test_cases[] = {
     // Real-world case.
     { "http://gmail.com",
@@ -600,9 +601,9 @@ TEST(ShellIntegrationTest, GetDesktopFileContentsAppList) {
 
 TEST(ShellIntegrationTest, GetDirectoryFileContents) {
   const struct {
-    const char* title;
-    const char* icon_name;
-    const char* expected_output;
+    const char* const title;
+    const char* const icon_name;
+    const char* const expected_output;
   } test_cases[] = {
     // Real-world case.
     { "Chrome Apps",
