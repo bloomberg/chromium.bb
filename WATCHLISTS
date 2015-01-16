@@ -998,7 +998,7 @@
                      'creis+watch@chromium.org', 'ajwong+watch@chromium.org'],
     'tab_media_indicators': ['miu+watch@chromium.org'],
     'tcmalloc': ['dmikurube@chromium.org'],
-    'telemetry': ['telemetry+watch@chromium.org'],
+    'telemetry': ['telemetry-reviews@chromium.org'],
     'tests': [],
     'textinput': ['penghuang+watch@chromium.org',
                   'suzhe@chromium.org',
