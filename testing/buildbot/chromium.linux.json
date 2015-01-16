@@ -135,6 +135,10 @@
         "script": "checklicenses.py"
       },
       {
+        "name": "checkperms",
+        "script": "checkperms.py"
+      },
+      {
         "name": "telemetry_unittests",
         "script": "telemetry_unittests.py"
       },
