@@ -136,6 +136,35 @@ void GLES2TraceImplementation::Clear(GLbitfield mask) {
   gl_->Clear(mask);
 }
 
+void GLES2TraceImplementation::ClearBufferfi(GLenum buffer,
+                                             GLint drawbuffers,
+                                             GLfloat depth,
+                                             GLint stencil) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::ClearBufferfi");
+  gl_->ClearBufferfi(buffer, drawbuffers, depth, stencil);
+}
+
+void GLES2TraceImplementation::ClearBufferfv(GLenum buffer,
+                                             GLint drawbuffers,
+                                             const GLfloat* value) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::ClearBufferfv");
+  gl_->ClearBufferfv(buffer, drawbuffers, value);
+}
+
+void GLES2TraceImplementation::ClearBufferiv(GLenum buffer,
+                                             GLint drawbuffers,
+                                             const GLint* value) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::ClearBufferiv");
+  gl_->ClearBufferiv(buffer, drawbuffers, value);
+}
+
+void GLES2TraceImplementation::ClearBufferuiv(GLenum buffer,
+                                              GLint drawbuffers,
+                                              const GLuint* value) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::ClearBufferuiv");
+  gl_->ClearBufferuiv(buffer, drawbuffers, value);
+}
+
 void GLES2TraceImplementation::ClearColor(GLclampf red,
                                           GLclampf green,
                                           GLclampf blue,

@@ -12,6 +12,28 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_2_AUTOGEN_H_
 #define GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_2_AUTOGEN_H_
 
+// TODO(gman): GetVertexAttribPointerv
+
+TEST_P(GLES2DecoderTest2, HintValidArgs) {
+  EXPECT_CALL(*gl_, Hint(GL_GENERATE_MIPMAP_HINT, GL_FASTEST));
+  SpecializedSetup<cmds::Hint, 0>(true);
+  cmds::Hint cmd;
+  cmd.Init(GL_GENERATE_MIPMAP_HINT, GL_FASTEST);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
+TEST_P(GLES2DecoderTest2, HintInvalidArgs0_0) {
+  EXPECT_CALL(*gl_, Hint(_, _)).Times(0);
+  SpecializedSetup<cmds::Hint, 0>(false);
+  cmds::Hint cmd;
+  cmd.Init(GL_PERSPECTIVE_CORRECTION_HINT, GL_FASTEST);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
+}
+// TODO(gman): InvalidateFramebufferImmediate
+// TODO(gman): InvalidateSubFramebufferImmediate
+
 TEST_P(GLES2DecoderTest2, IsBufferValidArgs) {
   SpecializedSetup<cmds::IsBuffer, 0>(true);
   cmds::IsBuffer cmd;
@@ -1326,6 +1348,4 @@ TEST_P(GLES2DecoderTest2, ViewportInvalidArgs3_0) {
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
 }
-// TODO(gman): TexStorage2DEXT
-// TODO(gman): GenQueriesEXTImmediate
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_2_AUTOGEN_H_

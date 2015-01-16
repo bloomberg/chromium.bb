@@ -184,6 +184,9 @@ class GLES2_UTILS_EXPORT GLES2Util {
       int* element_index,
       bool* getting_array);
 
+  static size_t CalcClearBufferivDataCount(int buffer);
+  static size_t CalcClearBufferfvDataCount(int buffer);
+
   #include "../common/gles2_cmd_utils_autogen.h"
 
  private:

@@ -598,6 +598,44 @@ _NAMED_TYPE_INFO = {
       'GL_RENDERBUFFER',
     ],
   },
+  'Bufferiv': {
+    'type': 'GLenum',
+    'valid': [
+      'GL_COLOR',
+      'GL_STENCIL',
+    ],
+    'invalid': [
+      'GL_RENDERBUFFER',
+    ],
+  },
+  'Bufferuiv': {
+    'type': 'GLenum',
+    'valid': [
+      'GL_COLOR',
+    ],
+    'invalid': [
+      'GL_RENDERBUFFER',
+    ],
+  },
+  'Bufferfv': {
+    'type': 'GLenum',
+    'valid': [
+      'GL_COLOR',
+      'GL_DEPTH',
+    ],
+    'invalid': [
+      'GL_RENDERBUFFER',
+    ],
+  },
+  'Bufferfi': {
+    'type': 'GLenum',
+    'valid': [
+      'GL_DEPTH_STENCIL',
+    ],
+    'invalid': [
+      'GL_RENDERBUFFER',
+    ],
+  },
   'BufferUsage': {
     'type': 'GLenum',
     'valid': [
@@ -1377,6 +1415,8 @@ _PEPPER_INTERFACES = [
 #               for this command.
 # needs_size:   If True a data_size field is added to the command.
 # count:        The number of units per element. For PUTn or PUT types.
+# use_count_func: If True the actual data count needs to be computed; the count
+#               argument specifies the maximum count.
 # unit_test:    If False no service side unit test will be generated.
 # client_test:  If False no client side unit test will be generated.
 # expectation:  If False the unit test will have no expected calls.
@@ -1503,6 +1543,26 @@ _FUNCTION_INFO = {
     'decoder_func': 'DoClear',
     'defer_draws': True,
     'trace_level': 1,
+  },
+  'ClearBufferiv': {
+    'type': 'PUT',
+    'use_count_func': True,
+    'count': 4,
+    'unsafe': True,
+  },
+  'ClearBufferuiv': {
+    'type': 'PUT',
+    'count': 4,
+    'unsafe': True,
+  },
+  'ClearBufferfv': {
+    'type': 'PUT',
+    'use_count_func': True,
+    'count': 4,
+    'unsafe': True,
+  },
+  'ClearBufferfi': {
+    'unsafe': True,
   },
   'ClearColor': {
     'type': 'StateSet',
@@ -5624,6 +5684,10 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
       file.Write("    return error::kOutOfBounds;\n")
       file.Write("  }\n")
 
+  def __NeedsToCalcDataCount(self, func):
+    use_count_func = func.GetInfo('use_count_func')
+    return use_count_func != None and use_count_func != False
+
   def WriteGLES2Implementation(self, func, file):
     """Overrriden from TypeHandler."""
     impl_func = func.GetInfo('impl_func')
@@ -5635,11 +5699,16 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
     file.Write("  GPU_CLIENT_SINGLE_THREAD_CHECK();\n")
     func.WriteDestinationInitalizationValidation(file)
     self.WriteClientGLCallLog(func, file)
-    last_arg_name = func.GetLastOriginalArg().name
-    values_str = ' << ", " << '.join(
-        ["%s[%d]" % (last_arg_name, ndx) \
-         for ndx in range(0, self.GetArrayCount(func))])
-    file.Write('  GPU_CLIENT_LOG("values: " << %s);\n' % values_str)
+
+    if self.__NeedsToCalcDataCount(func):
+      file.Write("  size_t count = GLES2Util::Calc%sDataCount(%s);\n" %
+                 (func.name, func.GetOriginalArgs()[0].name))
+      file.Write("  DCHECK_LE(count, %du);\n" % self.GetArrayCount(func))
+    else:
+      file.Write("  size_t count = %d;" % self.GetArrayCount(func))
+    file.Write("  for (size_t ii = 0; ii < count; ++ii)\n")
+    file.Write('    GPU_CLIENT_LOG("value[" << ii << "]: " << %s[ii]);\n' %
+               func.GetLastOriginalArg().name)
     for arg in func.GetOriginalArgs():
       arg.WriteClientSideValidationCode(file, func)
     file.Write("  helper_->%sImmediate(%s);\n" %
@@ -5689,14 +5758,24 @@ TEST_F(GLES2ImplementationTest, %(name)s) {
     """Overrriden from TypeHandler."""
     file.Write("  static uint32_t ComputeDataSize() {\n")
     file.Write("    return static_cast<uint32_t>(\n")
-    file.Write("        sizeof(%s) * %d);  // NOLINT\n" %
+    file.Write("        sizeof(%s) * %d);\n" %
                (self.GetArrayType(func), self.GetArrayCount(func)))
     file.Write("  }\n")
     file.Write("\n")
+    if self.__NeedsToCalcDataCount(func):
+      file.Write("  static uint32_t ComputeEffectiveDataSize(%s %s) {\n" %
+                 (func.GetOriginalArgs()[0].type,
+                  func.GetOriginalArgs()[0].name))
+      file.Write("    return static_cast<uint32_t>(\n")
+      file.Write("        sizeof(%s) * GLES2Util::Calc%sDataCount(%s));\n" %
+                 (self.GetArrayType(func), func.original_name,
+                  func.GetOriginalArgs()[0].name))
+      file.Write("  }\n")
+      file.Write("\n")
     file.Write("  static uint32_t ComputeSize() {\n")
     file.Write("    return static_cast<uint32_t>(\n")
     file.Write(
-        "        sizeof(ValueType) + ComputeDataSize());  // NOLINT\n")
+        "        sizeof(ValueType) + ComputeDataSize());\n")
     file.Write("  }\n")
     file.Write("\n")
 
@@ -5719,7 +5798,17 @@ TEST_F(GLES2ImplementationTest, %(name)s) {
     for arg in args:
       file.Write("    %s = _%s;\n" % (arg.name, arg.name))
     file.Write("    memcpy(ImmediateDataAddress(this),\n")
-    file.Write("           _%s, ComputeDataSize());\n" % last_arg.name)
+    if self.__NeedsToCalcDataCount(func):
+      file.Write("           _%s, ComputeEffectiveDataSize(%s));" %
+                 (last_arg.name, func.GetOriginalArgs()[0].name))
+      file.Write("""
+    DCHECK_GE(ComputeDataSize(), ComputeEffectiveDataSize(%(arg)s));
+    char* pointer = reinterpret_cast<char*>(ImmediateDataAddress(this)) +
+        ComputeEffectiveDataSize(%(arg)s);
+    memset(pointer, 0, ComputeDataSize() - ComputeEffectiveDataSize(%(arg)s));
+""" % { 'arg': func.GetOriginalArgs()[0].name, })
+    else:
+      file.Write("           _%s, ComputeDataSize());\n" % last_arg.name)
     file.Write("  }\n")
     file.Write("\n")
 

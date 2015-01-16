@@ -88,6 +88,25 @@ GLenum GLES2CheckFramebufferStatus(GLenum target) {
 void GLES2Clear(GLbitfield mask) {
   gles2::GetGLContext()->Clear(mask);
 }
+void GLES2ClearBufferfi(GLenum buffer,
+                        GLint drawbuffers,
+                        GLfloat depth,
+                        GLint stencil) {
+  gles2::GetGLContext()->ClearBufferfi(buffer, drawbuffers, depth, stencil);
+}
+void GLES2ClearBufferfv(GLenum buffer,
+                        GLint drawbuffers,
+                        const GLfloat* value) {
+  gles2::GetGLContext()->ClearBufferfv(buffer, drawbuffers, value);
+}
+void GLES2ClearBufferiv(GLenum buffer, GLint drawbuffers, const GLint* value) {
+  gles2::GetGLContext()->ClearBufferiv(buffer, drawbuffers, value);
+}
+void GLES2ClearBufferuiv(GLenum buffer,
+                         GLint drawbuffers,
+                         const GLuint* value) {
+  gles2::GetGLContext()->ClearBufferuiv(buffer, drawbuffers, value);
+}
 void GLES2ClearColor(GLclampf red,
                      GLclampf green,
                      GLclampf blue,
@@ -1275,6 +1294,22 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
      "glClear",
      reinterpret_cast<GLES2FunctionPointer>(glClear),
+    },
+    {
+     "glClearBufferfi",
+     reinterpret_cast<GLES2FunctionPointer>(glClearBufferfi),
+    },
+    {
+     "glClearBufferfv",
+     reinterpret_cast<GLES2FunctionPointer>(glClearBufferfv),
+    },
+    {
+     "glClearBufferiv",
+     reinterpret_cast<GLES2FunctionPointer>(glClearBufferiv),
+    },
+    {
+     "glClearBufferuiv",
+     reinterpret_cast<GLES2FunctionPointer>(glClearBufferuiv),
     },
     {
      "glClearColor",

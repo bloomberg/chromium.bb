@@ -384,6 +384,99 @@ error::Error GLES2DecoderImpl::HandleClear(uint32_t immediate_data_size,
   return error::kNoError;
 }
 
+error::Error GLES2DecoderImpl::HandleClearBufferfi(uint32_t immediate_data_size,
+                                                   const void* cmd_data) {
+  if (!unsafe_es3_apis_enabled())
+    return error::kUnknownCommand;
+  const gles2::cmds::ClearBufferfi& c =
+      *static_cast<const gles2::cmds::ClearBufferfi*>(cmd_data);
+  (void)c;
+  GLenum buffer = static_cast<GLenum>(c.buffer);
+  GLint drawbuffers = static_cast<GLint>(c.drawbuffers);
+  GLfloat depth = static_cast<GLfloat>(c.depth);
+  GLint stencil = static_cast<GLint>(c.stencil);
+  glClearBufferfi(buffer, drawbuffers, depth, stencil);
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleClearBufferfvImmediate(
+    uint32_t immediate_data_size,
+    const void* cmd_data) {
+  if (!unsafe_es3_apis_enabled())
+    return error::kUnknownCommand;
+  const gles2::cmds::ClearBufferfvImmediate& c =
+      *static_cast<const gles2::cmds::ClearBufferfvImmediate*>(cmd_data);
+  (void)c;
+  GLenum buffer = static_cast<GLenum>(c.buffer);
+  GLint drawbuffers = static_cast<GLint>(c.drawbuffers);
+  uint32_t data_size;
+  if (!ComputeDataSize(1, sizeof(GLfloat), 4, &data_size)) {
+    return error::kOutOfBounds;
+  }
+  if (data_size > immediate_data_size) {
+    return error::kOutOfBounds;
+  }
+  const GLfloat* value =
+      GetImmediateDataAs<const GLfloat*>(c, data_size, immediate_data_size);
+  if (value == NULL) {
+    return error::kOutOfBounds;
+  }
+  glClearBufferfv(buffer, drawbuffers, value);
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleClearBufferivImmediate(
+    uint32_t immediate_data_size,
+    const void* cmd_data) {
+  if (!unsafe_es3_apis_enabled())
+    return error::kUnknownCommand;
+  const gles2::cmds::ClearBufferivImmediate& c =
+      *static_cast<const gles2::cmds::ClearBufferivImmediate*>(cmd_data);
+  (void)c;
+  GLenum buffer = static_cast<GLenum>(c.buffer);
+  GLint drawbuffers = static_cast<GLint>(c.drawbuffers);
+  uint32_t data_size;
+  if (!ComputeDataSize(1, sizeof(GLint), 4, &data_size)) {
+    return error::kOutOfBounds;
+  }
+  if (data_size > immediate_data_size) {
+    return error::kOutOfBounds;
+  }
+  const GLint* value =
+      GetImmediateDataAs<const GLint*>(c, data_size, immediate_data_size);
+  if (value == NULL) {
+    return error::kOutOfBounds;
+  }
+  glClearBufferiv(buffer, drawbuffers, value);
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleClearBufferuivImmediate(
+    uint32_t immediate_data_size,
+    const void* cmd_data) {
+  if (!unsafe_es3_apis_enabled())
+    return error::kUnknownCommand;
+  const gles2::cmds::ClearBufferuivImmediate& c =
+      *static_cast<const gles2::cmds::ClearBufferuivImmediate*>(cmd_data);
+  (void)c;
+  GLenum buffer = static_cast<GLenum>(c.buffer);
+  GLint drawbuffers = static_cast<GLint>(c.drawbuffers);
+  uint32_t data_size;
+  if (!ComputeDataSize(1, sizeof(GLuint), 4, &data_size)) {
+    return error::kOutOfBounds;
+  }
+  if (data_size > immediate_data_size) {
+    return error::kOutOfBounds;
+  }
+  const GLuint* value =
+      GetImmediateDataAs<const GLuint*>(c, data_size, immediate_data_size);
+  if (value == NULL) {
+    return error::kOutOfBounds;
+  }
+  glClearBufferuiv(buffer, drawbuffers, value);
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderImpl::HandleClearColor(uint32_t immediate_data_size,
                                                 const void* cmd_data) {
   const gles2::cmds::ClearColor& c =

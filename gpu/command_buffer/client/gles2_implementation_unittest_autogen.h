@@ -196,6 +196,65 @@ TEST_F(GLES2ImplementationTest, Clear) {
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 
+TEST_F(GLES2ImplementationTest, ClearBufferfi) {
+  struct Cmds {
+    cmds::ClearBufferfi cmd;
+  };
+  Cmds expected;
+  expected.cmd.Init(GL_COLOR, 2, 3, 4);
+
+  gl_->ClearBufferfi(GL_COLOR, 2, 3, 4);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
+TEST_F(GLES2ImplementationTest, ClearBufferfv) {
+  GLfloat data[4] = {0};
+  struct Cmds {
+    cmds::ClearBufferfvImmediate cmd;
+    GLfloat data[4];
+  };
+
+  for (int jj = 0; jj < 4; ++jj) {
+    data[jj] = static_cast<GLfloat>(jj);
+  }
+  Cmds expected;
+  expected.cmd.Init(GL_COLOR, 2, &data[0]);
+  gl_->ClearBufferfv(GL_COLOR, 2, &data[0]);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
+TEST_F(GLES2ImplementationTest, ClearBufferiv) {
+  GLint data[4] = {0};
+  struct Cmds {
+    cmds::ClearBufferivImmediate cmd;
+    GLint data[4];
+  };
+
+  for (int jj = 0; jj < 4; ++jj) {
+    data[jj] = static_cast<GLint>(jj);
+  }
+  Cmds expected;
+  expected.cmd.Init(GL_COLOR, 2, &data[0]);
+  gl_->ClearBufferiv(GL_COLOR, 2, &data[0]);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
+TEST_F(GLES2ImplementationTest, ClearBufferuiv) {
+  GLuint data[4] = {0};
+  struct Cmds {
+    cmds::ClearBufferuivImmediate cmd;
+    GLuint data[4];
+  };
+
+  for (int jj = 0; jj < 4; ++jj) {
+    data[jj] = static_cast<GLuint>(jj);
+  }
+  Cmds expected;
+  expected.cmd.Init(GL_COLOR, 2, &data[0]);
+  gl_->ClearBufferuiv(GL_COLOR, 2, &data[0]);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
 TEST_F(GLES2ImplementationTest, ClearColor) {
   struct Cmds {
     cmds::ClearColor cmd;

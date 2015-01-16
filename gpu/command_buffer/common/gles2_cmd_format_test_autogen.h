@@ -275,6 +275,90 @@ TEST_F(GLES2FormatTest, Clear) {
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
+TEST_F(GLES2FormatTest, ClearBufferfi) {
+  cmds::ClearBufferfi& cmd = *GetBufferAs<cmds::ClearBufferfi>();
+  void* next_cmd =
+      cmd.Set(&cmd, static_cast<GLenum>(11), static_cast<GLint>(12),
+              static_cast<GLfloat>(13), static_cast<GLint>(14));
+  EXPECT_EQ(static_cast<uint32_t>(cmds::ClearBufferfi::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLenum>(11), cmd.buffer);
+  EXPECT_EQ(static_cast<GLint>(12), cmd.drawbuffers);
+  EXPECT_EQ(static_cast<GLfloat>(13), cmd.depth);
+  EXPECT_EQ(static_cast<GLint>(14), cmd.stencil);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
+TEST_F(GLES2FormatTest, ClearBufferfvImmediate) {
+  const int kSomeBaseValueToTestWith = 51;
+  static GLfloat data[] = {
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 0),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 1),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 2),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 3),
+  };
+  cmds::ClearBufferfvImmediate& cmd =
+      *GetBufferAs<cmds::ClearBufferfvImmediate>();
+  void* next_cmd =
+      cmd.Set(&cmd, static_cast<GLenum>(11), static_cast<GLint>(12), data);
+  EXPECT_EQ(static_cast<uint32_t>(cmds::ClearBufferfvImmediate::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)),
+            cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLenum>(11), cmd.buffer);
+  EXPECT_EQ(static_cast<GLint>(12), cmd.drawbuffers);
+  CheckBytesWrittenMatchesExpectedSize(
+      next_cmd, sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)));
+  // TODO(gman): Check that data was inserted;
+}
+
+TEST_F(GLES2FormatTest, ClearBufferivImmediate) {
+  const int kSomeBaseValueToTestWith = 51;
+  static GLint data[] = {
+      static_cast<GLint>(kSomeBaseValueToTestWith + 0),
+      static_cast<GLint>(kSomeBaseValueToTestWith + 1),
+      static_cast<GLint>(kSomeBaseValueToTestWith + 2),
+      static_cast<GLint>(kSomeBaseValueToTestWith + 3),
+  };
+  cmds::ClearBufferivImmediate& cmd =
+      *GetBufferAs<cmds::ClearBufferivImmediate>();
+  void* next_cmd =
+      cmd.Set(&cmd, static_cast<GLenum>(11), static_cast<GLint>(12), data);
+  EXPECT_EQ(static_cast<uint32_t>(cmds::ClearBufferivImmediate::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)),
+            cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLenum>(11), cmd.buffer);
+  EXPECT_EQ(static_cast<GLint>(12), cmd.drawbuffers);
+  CheckBytesWrittenMatchesExpectedSize(
+      next_cmd, sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)));
+  // TODO(gman): Check that data was inserted;
+}
+
+TEST_F(GLES2FormatTest, ClearBufferuivImmediate) {
+  const int kSomeBaseValueToTestWith = 51;
+  static GLuint data[] = {
+      static_cast<GLuint>(kSomeBaseValueToTestWith + 0),
+      static_cast<GLuint>(kSomeBaseValueToTestWith + 1),
+      static_cast<GLuint>(kSomeBaseValueToTestWith + 2),
+      static_cast<GLuint>(kSomeBaseValueToTestWith + 3),
+  };
+  cmds::ClearBufferuivImmediate& cmd =
+      *GetBufferAs<cmds::ClearBufferuivImmediate>();
+  void* next_cmd =
+      cmd.Set(&cmd, static_cast<GLenum>(11), static_cast<GLint>(12), data);
+  EXPECT_EQ(static_cast<uint32_t>(cmds::ClearBufferuivImmediate::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)),
+            cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLenum>(11), cmd.buffer);
+  EXPECT_EQ(static_cast<GLint>(12), cmd.drawbuffers);
+  CheckBytesWrittenMatchesExpectedSize(
+      next_cmd, sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)));
+  // TODO(gman): Check that data was inserted;
+}
+
 TEST_F(GLES2FormatTest, ClearColor) {
   cmds::ClearColor& cmd = *GetBufferAs<cmds::ClearColor>();
   void* next_cmd =

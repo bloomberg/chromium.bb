@@ -71,6 +71,23 @@ GLenum CheckFramebufferStatus(GLenum target) override;
 
 void Clear(GLbitfield mask) override;
 
+void ClearBufferfi(GLenum buffer,
+                   GLint drawbuffers,
+                   GLfloat depth,
+                   GLint stencil) override;
+
+void ClearBufferfv(GLenum buffer,
+                   GLint drawbuffers,
+                   const GLfloat* value) override;
+
+void ClearBufferiv(GLenum buffer,
+                   GLint drawbuffers,
+                   const GLint* value) override;
+
+void ClearBufferuiv(GLenum buffer,
+                    GLint drawbuffers,
+                    const GLuint* value) override;
+
 void ClearColor(GLclampf red,
                 GLclampf green,
                 GLclampf blue,

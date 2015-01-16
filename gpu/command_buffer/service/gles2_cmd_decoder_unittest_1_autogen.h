@@ -394,6 +394,72 @@ TEST_P(GLES2DecoderTest1, ClearValidArgs) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
+TEST_P(GLES2DecoderTest1, ClearBufferfiValidArgs) {
+  EXPECT_CALL(*gl_, ClearBufferfi(GL_COLOR, 2, 3, 4));
+  SpecializedSetup<cmds::ClearBufferfi, 0>(true);
+  cmds::ClearBufferfi cmd;
+  cmd.Init(GL_COLOR, 2, 3, 4);
+  decoder_->set_unsafe_es3_apis_enabled(true);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  decoder_->set_unsafe_es3_apis_enabled(false);
+  EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
+}
+
+TEST_P(GLES2DecoderTest1, ClearBufferfvImmediateValidArgs) {
+  cmds::ClearBufferfvImmediate& cmd =
+      *GetImmediateAs<cmds::ClearBufferfvImmediate>();
+  SpecializedSetup<cmds::ClearBufferfvImmediate, 0>(true);
+  GLfloat temp[4] = {
+      0,
+  };
+  cmd.Init(GL_COLOR, 2, &temp[0]);
+  EXPECT_CALL(*gl_,
+              ClearBufferfv(GL_COLOR, 2, reinterpret_cast<GLfloat*>(
+                                             ImmediateDataAddress(&cmd))));
+  decoder_->set_unsafe_es3_apis_enabled(true);
+  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(temp)));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  decoder_->set_unsafe_es3_apis_enabled(false);
+  EXPECT_EQ(error::kUnknownCommand, ExecuteImmediateCmd(cmd, sizeof(temp)));
+}
+
+TEST_P(GLES2DecoderTest1, ClearBufferivImmediateValidArgs) {
+  cmds::ClearBufferivImmediate& cmd =
+      *GetImmediateAs<cmds::ClearBufferivImmediate>();
+  SpecializedSetup<cmds::ClearBufferivImmediate, 0>(true);
+  GLint temp[4] = {
+      0,
+  };
+  cmd.Init(GL_COLOR, 2, &temp[0]);
+  EXPECT_CALL(*gl_, ClearBufferiv(
+                        GL_COLOR, 2,
+                        reinterpret_cast<GLint*>(ImmediateDataAddress(&cmd))));
+  decoder_->set_unsafe_es3_apis_enabled(true);
+  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(temp)));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  decoder_->set_unsafe_es3_apis_enabled(false);
+  EXPECT_EQ(error::kUnknownCommand, ExecuteImmediateCmd(cmd, sizeof(temp)));
+}
+
+TEST_P(GLES2DecoderTest1, ClearBufferuivImmediateValidArgs) {
+  cmds::ClearBufferuivImmediate& cmd =
+      *GetImmediateAs<cmds::ClearBufferuivImmediate>();
+  SpecializedSetup<cmds::ClearBufferuivImmediate, 0>(true);
+  GLuint temp[4] = {
+      0,
+  };
+  cmd.Init(GL_COLOR, 2, &temp[0]);
+  EXPECT_CALL(*gl_, ClearBufferuiv(
+                        GL_COLOR, 2,
+                        reinterpret_cast<GLuint*>(ImmediateDataAddress(&cmd))));
+  decoder_->set_unsafe_es3_apis_enabled(true);
+  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(temp)));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  decoder_->set_unsafe_es3_apis_enabled(false);
+  EXPECT_EQ(error::kUnknownCommand, ExecuteImmediateCmd(cmd, sizeof(temp)));
+}
+
 TEST_P(GLES2DecoderTest1, ClearColorValidArgs) {
   EXPECT_CALL(*gl_, ClearColor(1, 2, 3, 4));
   SpecializedSetup<cmds::ClearColor, 0>(true);
@@ -1930,25 +1996,4 @@ TEST_P(GLES2DecoderTest1, GetVertexAttribivInvalidArgs2_1) {
   EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
   EXPECT_EQ(0u, result->size);
 }
-// TODO(gman): GetVertexAttribPointerv
-
-TEST_P(GLES2DecoderTest1, HintValidArgs) {
-  EXPECT_CALL(*gl_, Hint(GL_GENERATE_MIPMAP_HINT, GL_FASTEST));
-  SpecializedSetup<cmds::Hint, 0>(true);
-  cmds::Hint cmd;
-  cmd.Init(GL_GENERATE_MIPMAP_HINT, GL_FASTEST);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
-}
-
-TEST_P(GLES2DecoderTest1, HintInvalidArgs0_0) {
-  EXPECT_CALL(*gl_, Hint(_, _)).Times(0);
-  SpecializedSetup<cmds::Hint, 0>(false);
-  cmds::Hint cmd;
-  cmd.Init(GL_PERSPECTIVE_CORRECTION_HINT, GL_FASTEST);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
-}
-// TODO(gman): InvalidateFramebufferImmediate
-// TODO(gman): InvalidateSubFramebufferImmediate
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_1_AUTOGEN_H_

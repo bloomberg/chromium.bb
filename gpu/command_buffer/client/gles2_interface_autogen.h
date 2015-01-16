@@ -51,6 +51,19 @@ virtual void BufferSubData(GLenum target,
                            const void* data) = 0;
 virtual GLenum CheckFramebufferStatus(GLenum target) = 0;
 virtual void Clear(GLbitfield mask) = 0;
+virtual void ClearBufferfi(GLenum buffer,
+                           GLint drawbuffers,
+                           GLfloat depth,
+                           GLint stencil) = 0;
+virtual void ClearBufferfv(GLenum buffer,
+                           GLint drawbuffers,
+                           const GLfloat* value) = 0;
+virtual void ClearBufferiv(GLenum buffer,
+                           GLint drawbuffers,
+                           const GLint* value) = 0;
+virtual void ClearBufferuiv(GLenum buffer,
+                            GLint drawbuffers,
+                            const GLuint* value) = 0;
 virtual void ClearColor(GLclampf red,
                         GLclampf green,
                         GLclampf blue,

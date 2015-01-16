@@ -19,6 +19,7 @@
 #include "gpu/command_buffer/common/bitfield_helpers.h"
 #include "gpu/command_buffer/common/cmd_buffer_common.h"
 #include "gpu/command_buffer/common/gles2_cmd_ids.h"
+#include "gpu/command_buffer/common/gles2_cmd_utils.h"
 
 // GL types are forward declared to avoid including the GL headers. The problem
 // is determining which GL headers to include from code that is common to the

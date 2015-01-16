@@ -176,6 +176,49 @@ void Clear(GLbitfield mask) {
   }
 }
 
+void ClearBufferfi(GLenum buffer,
+                   GLint drawbuffers,
+                   GLfloat depth,
+                   GLint stencil) {
+  gles2::cmds::ClearBufferfi* c = GetCmdSpace<gles2::cmds::ClearBufferfi>();
+  if (c) {
+    c->Init(buffer, drawbuffers, depth, stencil);
+  }
+}
+
+void ClearBufferfvImmediate(GLenum buffer,
+                            GLint drawbuffers,
+                            const GLfloat* value) {
+  const uint32_t size = gles2::cmds::ClearBufferfvImmediate::ComputeSize();
+  gles2::cmds::ClearBufferfvImmediate* c =
+      GetImmediateCmdSpaceTotalSize<gles2::cmds::ClearBufferfvImmediate>(size);
+  if (c) {
+    c->Init(buffer, drawbuffers, value);
+  }
+}
+
+void ClearBufferivImmediate(GLenum buffer,
+                            GLint drawbuffers,
+                            const GLint* value) {
+  const uint32_t size = gles2::cmds::ClearBufferivImmediate::ComputeSize();
+  gles2::cmds::ClearBufferivImmediate* c =
+      GetImmediateCmdSpaceTotalSize<gles2::cmds::ClearBufferivImmediate>(size);
+  if (c) {
+    c->Init(buffer, drawbuffers, value);
+  }
+}
+
+void ClearBufferuivImmediate(GLenum buffer,
+                             GLint drawbuffers,
+                             const GLuint* value) {
+  const uint32_t size = gles2::cmds::ClearBufferuivImmediate::ComputeSize();
+  gles2::cmds::ClearBufferuivImmediate* c =
+      GetImmediateCmdSpaceTotalSize<gles2::cmds::ClearBufferuivImmediate>(size);
+  if (c) {
+    c->Init(buffer, drawbuffers, value);
+  }
+}
+
 void ClearColor(GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha) {
   gles2::cmds::ClearColor* c = GetCmdSpace<gles2::cmds::ClearColor>();
   if (c) {

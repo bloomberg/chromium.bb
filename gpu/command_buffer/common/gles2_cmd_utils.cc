@@ -822,6 +822,28 @@ bool GLES2Util::ParseUniformName(
   return true;
 }
 
+size_t GLES2Util::CalcClearBufferivDataCount(int buffer) {
+  switch (buffer) {
+    case GL_COLOR:
+      return 4;
+    case GL_STENCIL:
+      return 1;
+    default:
+      return 0;
+  }
+}
+
+size_t GLES2Util::CalcClearBufferfvDataCount(int buffer) {
+  switch (buffer) {
+    case GL_COLOR:
+      return 4;
+    case GL_DEPTH:
+      return 1;
+    default:
+      return 0;
+  }
+}
+
 namespace {
 
 // WebGraphicsContext3DCommandBufferImpl configuration attributes. Those in

@@ -79,6 +79,23 @@ GLenum GLES2InterfaceStub::CheckFramebufferStatus(GLenum /* target */) {
 }
 void GLES2InterfaceStub::Clear(GLbitfield /* mask */) {
 }
+void GLES2InterfaceStub::ClearBufferfi(GLenum /* buffer */,
+                                       GLint /* drawbuffers */,
+                                       GLfloat /* depth */,
+                                       GLint /* stencil */) {
+}
+void GLES2InterfaceStub::ClearBufferfv(GLenum /* buffer */,
+                                       GLint /* drawbuffers */,
+                                       const GLfloat* /* value */) {
+}
+void GLES2InterfaceStub::ClearBufferiv(GLenum /* buffer */,
+                                       GLint /* drawbuffers */,
+                                       const GLint* /* value */) {
+}
+void GLES2InterfaceStub::ClearBufferuiv(GLenum /* buffer */,
+                                        GLint /* drawbuffers */,
+                                        const GLuint* /* value */) {
+}
 void GLES2InterfaceStub::ClearColor(GLclampf /* red */,
                                     GLclampf /* green */,
                                     GLclampf /* blue */,

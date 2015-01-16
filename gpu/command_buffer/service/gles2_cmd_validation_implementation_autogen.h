@@ -44,6 +44,24 @@ static const GLenum valid_buffer_usage_table[] = {
     GL_DYNAMIC_DRAW,
 };
 
+static const GLenum valid_bufferfi_table[] = {
+    GL_DEPTH_STENCIL,
+};
+
+static const GLenum valid_bufferfv_table[] = {
+    GL_COLOR,
+    GL_DEPTH,
+};
+
+static const GLenum valid_bufferiv_table[] = {
+    GL_COLOR,
+    GL_STENCIL,
+};
+
+static const GLenum valid_bufferuiv_table[] = {
+    GL_COLOR,
+};
+
 static const GLenum valid_capability_table[] = {
     GL_BLEND,
     GL_CULL_FACE,
@@ -573,6 +591,10 @@ Validators::Validators()
                     arraysize(valid_buffer_target_table)),
       buffer_usage(valid_buffer_usage_table,
                    arraysize(valid_buffer_usage_table)),
+      bufferfi(valid_bufferfi_table, arraysize(valid_bufferfi_table)),
+      bufferfv(valid_bufferfv_table, arraysize(valid_bufferfv_table)),
+      bufferiv(valid_bufferiv_table, arraysize(valid_bufferiv_table)),
+      bufferuiv(valid_bufferuiv_table, arraysize(valid_bufferuiv_table)),
       capability(valid_capability_table, arraysize(valid_capability_table)),
       cmp_function(valid_cmp_function_table,
                    arraysize(valid_cmp_function_table)),

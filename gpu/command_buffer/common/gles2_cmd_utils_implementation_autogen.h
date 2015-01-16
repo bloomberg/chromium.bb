@@ -4502,6 +4502,38 @@ std::string GLES2Util::GetStringBufferUsage(uint32_t value) {
                                            arraysize(string_table), value);
 }
 
+std::string GLES2Util::GetStringBufferfi(uint32_t value) {
+  static const EnumToString string_table[] = {
+      {GL_DEPTH_STENCIL, "GL_DEPTH_STENCIL"},
+  };
+  return GLES2Util::GetQualifiedEnumString(string_table,
+                                           arraysize(string_table), value);
+}
+
+std::string GLES2Util::GetStringBufferfv(uint32_t value) {
+  static const EnumToString string_table[] = {
+      {GL_COLOR, "GL_COLOR"}, {GL_DEPTH, "GL_DEPTH"},
+  };
+  return GLES2Util::GetQualifiedEnumString(string_table,
+                                           arraysize(string_table), value);
+}
+
+std::string GLES2Util::GetStringBufferiv(uint32_t value) {
+  static const EnumToString string_table[] = {
+      {GL_COLOR, "GL_COLOR"}, {GL_STENCIL, "GL_STENCIL"},
+  };
+  return GLES2Util::GetQualifiedEnumString(string_table,
+                                           arraysize(string_table), value);
+}
+
+std::string GLES2Util::GetStringBufferuiv(uint32_t value) {
+  static const EnumToString string_table[] = {
+      {GL_COLOR, "GL_COLOR"},
+  };
+  return GLES2Util::GetQualifiedEnumString(string_table,
+                                           arraysize(string_table), value);
+}
+
 std::string GLES2Util::GetStringCapability(uint32_t value) {
   static const EnumToString string_table[] = {
       {GL_BLEND, "GL_BLEND"},
