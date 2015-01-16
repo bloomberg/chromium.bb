@@ -6,12 +6,12 @@ package org.chromium.chrome.browser.infobar;
 
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
-import android.test.FlakyTest;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.Smoke;
 
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
+import org.chromium.chrome.browser.location.LocationSettingsTestUtil;
 import org.chromium.chrome.shell.ChromeShellTestBase;
 import org.chromium.chrome.test.util.InfoBarTestAnimationListener;
 import org.chromium.chrome.test.util.InfoBarUtil;
@@ -29,10 +29,10 @@ public class InfoBarTest extends ChromeShellTestBase {
     private static final String POPUP_PAGE =
             "chrome/test/data/popup_blocker/popup-window-open.html";
     public static final String HELLO_WORLD_URL = UrlUtils.encodeHtmlDataUri(
-            "<html>" +
-            "<head><title>Hello, World!</title></head>" +
-            "<body>Hello, World!</body>" +
-            "</html>");
+            "<html>"
+            + "<head><title>Hello, World!</title></head>"
+            + "<body>Hello, World!</body>"
+            + "</html>");
 
     private InfoBarTestAnimationListener mListener;
 
@@ -41,8 +41,7 @@ public class InfoBarTest extends ChromeShellTestBase {
         super.setUp();
 
         // Register for animation notifications
-        InfoBarContainer container =
-                getActivity().getActiveTab().getInfoBarContainer();
+        InfoBarContainer container = getActivity().getActiveTab().getInfoBarContainer();
         mListener =  new InfoBarTestAnimationListener();
         container.setAnimationListener(mListener);
     }
@@ -73,15 +72,12 @@ public class InfoBarTest extends ChromeShellTestBase {
 
     /**
      * Verify Geolocation creates an InfoBar.
-     *
-     * @Smoke
-     * @MediumTest
-     *
-     * Bug: http://crbug.com/449341
      */
-    @FlakyTest
+    @Smoke
+    @MediumTest
     @Feature({"Browser", "Main"})
     public void testInfoBarForGeolocation() throws InterruptedException {
+        LocationSettingsTestUtil.setSystemLocationSettingEnabled(true);
         loadUrlWithSanitization(TestHttpServerClient.getUrl(GEOLOCATION_PAGE));
         assertTrue("InfoBar not added", mListener.addInfoBarAnimationFinished());
 
@@ -100,14 +96,11 @@ public class InfoBarTest extends ChromeShellTestBase {
 
     /**
      * Verify Geolocation creates an InfoBar and that it's destroyed when navigating back.
-     *
-     * @MediumTest
-     *
-     * Bug: http://crbug.com/449341
      */
-    @FlakyTest
+    @MediumTest
     @Feature({"Browser"})
     public void testInfoBarForGeolocationDisappearsOnBack() throws InterruptedException {
+        LocationSettingsTestUtil.setSystemLocationSettingEnabled(true);
         loadUrlWithSanitization(HELLO_WORLD_URL);
         loadUrlWithSanitization(TestHttpServerClient.getUrl(GEOLOCATION_PAGE));
         assertTrue("InfoBar not added.", mListener.addInfoBarAnimationFinished());

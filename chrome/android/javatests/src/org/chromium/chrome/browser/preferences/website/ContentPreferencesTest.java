@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.preferences.website;
 
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.test.suitebuilder.annotation.SmallTest;
@@ -13,6 +12,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.infobar.InfoBar;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
+import org.chromium.chrome.browser.location.LocationSettingsTestUtil;
 import org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference;
 import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
 import org.chromium.chrome.browser.preferences.LocationSettings;
@@ -33,26 +33,8 @@ import java.util.concurrent.TimeoutException;
  */
 public class ContentPreferencesTest extends ChromeShellTestBase {
 
-    private static class MockLocationSettings extends LocationSettings {
-        public MockLocationSettings(Context context) {
-            super(context);
-        }
-
-        @Override
-        public boolean isSystemLocationSettingEnabled() {
-            return true;
-        }
-    }
-
     private void setAllowLocation(final boolean enabled) {
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                Context targetContext = getInstrumentation().getTargetContext();
-                LocationSettings.setInstanceForTesting(new MockLocationSettings(targetContext));
-            }
-        });
-
+        LocationSettingsTestUtil.setSystemLocationSettingEnabled(true);
         final Preferences preferenceActivity =
                 startContentSettingsCategory(ContentPreferences.LOCATION_KEY);
 
