@@ -33,9 +33,11 @@ class CONTENT_EXPORT GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
   // Type-checking upcast routine. Returns an NULL on failure.
   static GpuMemoryBufferImpl* FromClientBuffer(ClientBuffer buffer);
 
-  // Returns the number of bytes per pixel that must be used by an
-  // implementation when using |format|.
-  static size_t BytesPerPixel(Format format);
+  // Calculates the number of bytes that an implementation must use to store
+  // one row of pixel data.
+  static bool StrideInBytes(size_t width,
+                            Format format,
+                            size_t* stride_in_bytes);
 
   // Overridden from gfx::GpuMemoryBuffer:
   bool IsMapped() const override;

@@ -10,12 +10,12 @@
 namespace cc {
 namespace {
 
-size_t BytesPerPixel(gfx::GpuMemoryBuffer::Format format) {
+size_t StrideInBytes(size_t width, gfx::GpuMemoryBuffer::Format format) {
   switch (format) {
     case gfx::GpuMemoryBuffer::RGBA_8888:
     case gfx::GpuMemoryBuffer::RGBX_8888:
     case gfx::GpuMemoryBuffer::BGRA_8888:
-      return 4;
+      return width * 4;
   }
 
   NOTREACHED();
@@ -35,7 +35,8 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
   // Overridden from gfx::GpuMemoryBuffer:
   void* Map() override {
     DCHECK(!mapped_);
-    if (!shared_memory_->Map(size_.GetArea() * BytesPerPixel(format_)))
+    if (!shared_memory_->Map(StrideInBytes(size_.width(), format_) *
+                             size_.height()))
       return NULL;
     mapped_ = true;
     return shared_memory_->memory();
@@ -48,7 +49,7 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
   bool IsMapped() const override { return mapped_; }
   Format GetFormat() const override { return format_; }
   uint32 GetStride() const override {
-    return size_.width() * BytesPerPixel(format_);
+    return StrideInBytes(size_.width(), format_);
   }
   gfx::GpuMemoryBufferHandle GetHandle() const override {
     gfx::GpuMemoryBufferHandle handle;
@@ -81,7 +82,8 @@ TestGpuMemoryBufferManager::AllocateGpuMemoryBuffer(
     gfx::GpuMemoryBuffer::Format format,
     gfx::GpuMemoryBuffer::Usage usage) {
   scoped_ptr<base::SharedMemory> shared_memory(new base::SharedMemory);
-  if (!shared_memory->CreateAnonymous(size.GetArea() * BytesPerPixel(format)))
+  if (!shared_memory->CreateAnonymous(StrideInBytes(size.width(), format) *
+                                      size.height()))
     return nullptr;
   return make_scoped_ptr<gfx::GpuMemoryBuffer>(
       new GpuMemoryBufferImpl(size, format, shared_memory.Pass()));

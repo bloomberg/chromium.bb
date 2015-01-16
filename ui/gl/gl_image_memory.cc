@@ -100,18 +100,26 @@ GLImageMemory::~GLImageMemory() {
 }
 
 // static
-size_t GLImageMemory::BytesPerPixel(gfx::GpuMemoryBuffer::Format format) {
+bool GLImageMemory::StrideInBytes(size_t width,
+                                  gfx::GpuMemoryBuffer::Format format,
+                                  size_t* stride_in_bytes) {
+  base::CheckedNumeric<size_t> s = width;
   switch (format) {
     case gfx::GpuMemoryBuffer::RGBA_8888:
     case gfx::GpuMemoryBuffer::BGRA_8888:
-      return 4;
+      s *= 4;
+      if (!s.IsValid())
+        return false;
+
+      *stride_in_bytes = s.ValueOrDie();
+      return true;
     case gfx::GpuMemoryBuffer::RGBX_8888:
       NOTREACHED();
-      return 0;
+      return false;
   }
 
   NOTREACHED();
-  return 0;
+  return false;
 }
 
 bool GLImageMemory::Initialize(const unsigned char* memory,

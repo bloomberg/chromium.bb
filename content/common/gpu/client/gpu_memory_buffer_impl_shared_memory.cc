@@ -35,7 +35,17 @@ scoped_ptr<GpuMemoryBufferImpl> GpuMemoryBufferImplSharedMemory::Create(
     const gfx::Size& size,
     Format format) {
   scoped_ptr<base::SharedMemory> shared_memory(new base::SharedMemory());
-  if (!shared_memory->CreateAnonymous(size.GetArea() * BytesPerPixel(format)))
+
+  size_t stride_in_bytes = 0;
+  if (!StrideInBytes(size.width(), format, &stride_in_bytes))
+    return scoped_ptr<GpuMemoryBufferImpl>();
+
+  base::CheckedNumeric<size_t> size_in_bytes = stride_in_bytes;
+  size_in_bytes *= size.height();
+  if (!size_in_bytes.IsValid())
+    return scoped_ptr<GpuMemoryBufferImpl>();
+
+  if (!shared_memory->CreateAnonymous(size_in_bytes.ValueOrDie()))
     return scoped_ptr<GpuMemoryBufferImpl>();
 
   return make_scoped_ptr(new GpuMemoryBufferImplSharedMemory(
@@ -49,9 +59,12 @@ GpuMemoryBufferImplSharedMemory::AllocateForChildProcess(
     const gfx::Size& size,
     Format format,
     base::ProcessHandle child_process) {
-  base::CheckedNumeric<int> buffer_size = size.width();
+  size_t stride_in_bytes = 0;
+  if (!StrideInBytes(size.width(), format, &stride_in_bytes))
+    return gfx::GpuMemoryBufferHandle();
+
+  base::CheckedNumeric<int> buffer_size = stride_in_bytes;
   buffer_size *= size.height();
-  buffer_size *= BytesPerPixel(format);
   if (!buffer_size.IsValid())
     return gfx::GpuMemoryBufferHandle();
 
@@ -101,7 +114,17 @@ bool GpuMemoryBufferImplSharedMemory::IsFormatSupported(Format format) {
 
 void* GpuMemoryBufferImplSharedMemory::Map() {
   DCHECK(!mapped_);
-  if (!shared_memory_->Map(size_.GetArea() * BytesPerPixel(format_)))
+
+  size_t stride_in_bytes = 0;
+  if (!StrideInBytes(size_.width(), format_, &stride_in_bytes))
+    return NULL;
+
+  base::CheckedNumeric<size_t> size_in_bytes = stride_in_bytes;
+  size_in_bytes *= size_.height();
+  if (!size_in_bytes.IsValid())
+    return NULL;
+
+  if (!shared_memory_->Map(size_in_bytes.ValueOrDie()))
     return NULL;
   mapped_ = true;
   return shared_memory_->memory();
@@ -114,7 +137,9 @@ void GpuMemoryBufferImplSharedMemory::Unmap() {
 }
 
 uint32 GpuMemoryBufferImplSharedMemory::GetStride() const {
-  return size_.width() * BytesPerPixel(format_);
+  size_t stride_in_bytes = 0;
+  DCHECK(StrideInBytes(size_.width(), format_, &stride_in_bytes));
+  return stride_in_bytes;
 }
 
 gfx::GpuMemoryBufferHandle GpuMemoryBufferImplSharedMemory::GetHandle() const {
