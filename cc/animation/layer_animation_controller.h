@@ -193,6 +193,8 @@ class CC_EXPORT LayerAnimationController
 
   void NotifyObserversAnimationWaitingForDeletion();
 
+  void NotifyObserversScrollOffsetAnimationRemoved();
+
   bool HasValueObserver();
   bool HasActiveValueObserver();
 

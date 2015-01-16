@@ -61,11 +61,15 @@ struct HasAnimationId {
 };
 
 void LayerAnimationController::RemoveAnimation(int animation_id) {
-  animations_.erase(cc::remove_if(&animations_,
-                                  animations_.begin(),
-                                  animations_.end(),
-                                  HasAnimationId(animation_id)),
-                    animations_.end());
+  auto animations_to_remove =
+      animations_.remove_if(HasAnimationId(animation_id));
+  for (auto it = animations_to_remove; it != animations_.end(); ++it) {
+    if ((*it)->target_property() == Animation::ScrollOffset) {
+      NotifyObserversScrollOffsetAnimationRemoved();
+      break;
+    }
+  }
+  animations_.erase(animations_to_remove, animations_.end());
   UpdateActivation(NormalActivation);
 }
 
@@ -85,12 +89,13 @@ struct HasAnimationIdAndProperty {
 void LayerAnimationController::RemoveAnimation(
     int animation_id,
     Animation::TargetProperty target_property) {
-  animations_.erase(
-      cc::remove_if(&animations_,
-                    animations_.begin(),
-                    animations_.end(),
-                    HasAnimationIdAndProperty(animation_id, target_property)),
-      animations_.end());
+  auto animations_to_remove = animations_.remove_if(
+      HasAnimationIdAndProperty(animation_id, target_property));
+  if (target_property == Animation::ScrollOffset &&
+      animations_to_remove != animations_.end())
+    NotifyObserversScrollOffsetAnimationRemoved();
+
+  animations_.erase(animations_to_remove, animations_.end());
   UpdateActivation(NormalActivation);
 }
 
@@ -1032,6 +1037,11 @@ void LayerAnimationController::NotifyObserversAnimationWaitingForDeletion() {
   FOR_EACH_OBSERVER(LayerAnimationValueObserver,
                     value_observers_,
                     OnAnimationWaitingForDeletion());
+}
+
+void LayerAnimationController::NotifyObserversScrollOffsetAnimationRemoved() {
+  FOR_EACH_OBSERVER(LayerAnimationValueObserver, value_observers_,
+                    OnScrollOffsetAnimationRemoved());
 }
 
 bool LayerAnimationController::HasValueObserver() {

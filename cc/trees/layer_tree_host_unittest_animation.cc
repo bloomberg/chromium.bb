@@ -1013,6 +1013,108 @@ class LayerTreeHostAnimationTestScrollOffsetChangesArePropagated
 SINGLE_AND_MULTI_THREAD_TEST_F(
     LayerTreeHostAnimationTestScrollOffsetChangesArePropagated);
 
+// Verifies that when the main thread removes a scroll animation and sets a new
+// scroll position, the active tree takes on exactly this new scroll position
+// after activation, and the main thread doesn't receive a spurious scroll
+// delta.
+class LayerTreeHostAnimationTestScrollOffsetAnimationRemoval
+    : public LayerTreeHostAnimationTest {
+ public:
+  LayerTreeHostAnimationTestScrollOffsetAnimationRemoval()
+      : final_postion_(50.0, 100.0) {}
+
+  void SetupTree() override {
+    LayerTreeHostAnimationTest::SetupTree();
+
+    scroll_layer_ = FakeContentLayer::Create(&client_);
+    scroll_layer_->SetScrollClipLayerId(layer_tree_host()->root_layer()->id());
+    scroll_layer_->SetBounds(gfx::Size(10000, 10000));
+    scroll_layer_->SetScrollOffset(gfx::ScrollOffset(100.0, 200.0));
+    layer_tree_host()->root_layer()->AddChild(scroll_layer_);
+
+    scoped_ptr<ScrollOffsetAnimationCurve> curve(
+        ScrollOffsetAnimationCurve::Create(gfx::ScrollOffset(6500.f, 7500.f),
+                                           EaseInOutTimingFunction::Create()));
+    scoped_ptr<Animation> animation(
+        Animation::Create(curve.Pass(), 1, 0, Animation::ScrollOffset));
+    animation->set_needs_synchronized_start_time(true);
+    scroll_layer_->AddAnimation(animation.Pass());
+  }
+
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  void DidCommit() override {
+    Animation* animation =
+        scroll_layer_->layer_animation_controller()->GetAnimation(
+            Animation::ScrollOffset);
+    if (animation) {
+      scroll_layer_->layer_animation_controller()->RemoveAnimation(
+          animation->id());
+      scroll_layer_->SetScrollOffset(final_postion_);
+    } else {
+      EXPECT_EQ(final_postion_, scroll_layer_->scroll_offset());
+    }
+  }
+
+  void BeginCommitOnThread(LayerTreeHostImpl* host_impl) override {
+    if (host_impl->settings().impl_side_painting)
+      host_impl->BlockNotifyReadyToActivateForTesting(true);
+  }
+
+  void WillBeginImplFrameOnThread(LayerTreeHostImpl* host_impl,
+                                  const BeginFrameArgs& args) override {
+    if (!host_impl->pending_tree())
+      return;
+
+    if (!host_impl->active_tree()->root_layer()) {
+      host_impl->BlockNotifyReadyToActivateForTesting(false);
+      return;
+    }
+
+    LayerImpl* scroll_layer_impl =
+        host_impl->active_tree()->root_layer()->children()[0];
+    Animation* animation =
+        scroll_layer_impl->layer_animation_controller()->GetAnimation(
+            Animation::ScrollOffset);
+
+    if (!animation || animation->run_state() != Animation::Running) {
+      host_impl->BlockNotifyReadyToActivateForTesting(false);
+      return;
+    }
+
+    // Block activation until the running animation has a chance to produce a
+    // scroll delta.
+    gfx::Vector2dF scroll_delta = scroll_layer_impl->ScrollDelta() -
+                                  scroll_layer_impl->sent_scroll_delta();
+    if (scroll_delta.x() < 1.f || scroll_delta.y() < 1.f)
+      return;
+
+    host_impl->BlockNotifyReadyToActivateForTesting(false);
+  }
+
+  void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) override {
+    LayerImpl* scroll_layer_impl =
+        host_impl->active_tree()->root_layer()->children()[0];
+    if (scroll_layer_impl->layer_animation_controller()->GetAnimation(
+            Animation::ScrollOffset))
+      return;
+
+    EXPECT_EQ(final_postion_, scroll_layer_impl->TotalScrollOffset());
+    EndTest();
+  }
+
+  void AfterTest() override {
+    EXPECT_EQ(final_postion_, scroll_layer_->scroll_offset());
+  }
+
+ private:
+  FakeContentLayerClient client_;
+  scoped_refptr<FakeContentLayer> scroll_layer_;
+  const gfx::ScrollOffset final_postion_;
+};
+
+MULTI_THREAD_TEST_F(LayerTreeHostAnimationTestScrollOffsetAnimationRemoval);
+
 // When animations are simultaneously added to an existing layer and to a new
 // layer, they should start at the same time, even when there's already a
 // running animation on the existing layer.

@@ -853,6 +853,51 @@ TEST(LayerAnimationControllerTest, ScrollOffsetTransitionOnImplOnly) {
   EXPECT_FALSE(event);
 }
 
+TEST(LayerAnimationControllerTest, ScrollOffsetRemovalNotifiesObserver) {
+  FakeLayerAnimationValueObserver dummy;
+  scoped_refptr<LayerAnimationController> controller(
+      LayerAnimationController::Create(0));
+  controller->AddValueObserver(&dummy);
+
+  // First test the 1-argument version of RemoveAnimation.
+  gfx::ScrollOffset target_value(300.f, 200.f);
+  scoped_ptr<ScrollOffsetAnimationCurve> curve(
+      ScrollOffsetAnimationCurve::Create(
+          target_value, EaseInOutTimingFunction::Create().Pass()));
+
+  int animation_id = 1;
+  scoped_ptr<Animation> animation(Animation::Create(
+      curve.Pass(), animation_id, 0, Animation::ScrollOffset));
+  controller->AddAnimation(animation.Pass());
+
+  controller->RemoveAnimation(animation_id);
+  EXPECT_TRUE(dummy.scroll_offset_animation_removed());
+
+  // Now, test the 2-argument version of RemoveAnimation.
+  dummy.reset_scroll_offset_animation_removed();
+  curve = ScrollOffsetAnimationCurve::Create(
+      target_value, EaseInOutTimingFunction::Create().Pass());
+  animation =
+      Animation::Create(curve.Pass(), animation_id, 0, Animation::ScrollOffset);
+  controller->AddAnimation(animation.Pass());
+
+  controller->RemoveAnimation(animation_id, Animation::ScrollOffset);
+  EXPECT_TRUE(dummy.scroll_offset_animation_removed());
+
+  // Check that removing non-scroll-offset animations does not cause the
+  // observer to get notified.
+  dummy.reset_scroll_offset_animation_removed();
+  animation_id = AddAnimatedTransformToController(controller.get(), 1.0, 1, 2);
+  controller->RemoveAnimation(animation_id);
+  EXPECT_FALSE(dummy.scroll_offset_animation_removed());
+
+  dummy.reset_scroll_offset_animation_removed();
+  animation_id =
+      AddAnimatedFilterToController(controller.get(), 1.0, 0.1f, 0.2f);
+  controller->RemoveAnimation(animation_id, Animation::Filter);
+  EXPECT_FALSE(dummy.scroll_offset_animation_removed());
+}
+
 class FakeAnimationDelegate : public AnimationDelegate {
  public:
   FakeAnimationDelegate()

@@ -607,6 +607,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   void OnTransformAnimated(const gfx::Transform& transform) override;
   void OnScrollOffsetAnimated(const gfx::ScrollOffset& scroll_offset) override;
   void OnAnimationWaitingForDeletion() override;
+  void OnScrollOffsetAnimationRemoved() override;
   bool IsActive() const override;
 
   // If this layer has a scroll parent, it removes |this| from its list of
@@ -659,6 +660,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   bool force_render_surface_ : 1;
   bool transform_is_invertible_ : 1;
   bool has_render_surface_ : 1;
+  bool clear_impl_scroll_delta_ : 1;
   Region non_fast_scrollable_region_;
   Region touch_event_handler_region_;
   gfx::PointF position_;

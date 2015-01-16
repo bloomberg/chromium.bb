@@ -108,6 +108,7 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   void OnTransformAnimated(const gfx::Transform& transform) override;
   void OnScrollOffsetAnimated(const gfx::ScrollOffset& scroll_offset) override;
   void OnAnimationWaitingForDeletion() override;
+  void OnScrollOffsetAnimationRemoved() override;
   bool IsActive() const override;
 
   // AnimationDelegate implementation.
@@ -404,6 +405,8 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   void SetSentScrollDelta(const gfx::Vector2dF& sent_scroll_delta);
   gfx::Vector2dF sent_scroll_delta() const { return sent_scroll_delta_; }
 
+  void ClearScrollDeltaAtActivation();
+
   // Returns the delta of the scroll that was outside of the bounds of the
   // initial scroll
   gfx::Vector2dF ScrollBy(const gfx::Vector2dF& scroll);
@@ -646,6 +649,7 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   bool draw_checkerboard_for_missing_tiles_ : 1;
   bool draws_content_ : 1;
   bool hide_layer_and_subtree_ : 1;
+  bool clear_scroll_delta_at_activation_ : 1;
 
   // Cache transform_'s invertibility.
   bool transform_is_invertible_ : 1;
