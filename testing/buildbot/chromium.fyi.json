@@ -387,20 +387,10 @@
       "gpu_unittests",
       "url_unittests",
       "jingle_unittests",
-      {
-        "test": "content_unittests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        }
-      },
+      "content_unittests",
       "device_unittests",
       "media_unittests",
-      {
-        "test": "net_unittests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        }
-      },
+      "net_unittests",
       "ppapi_unittests",
       "printing_unittests",
       "remoting_unittests",
@@ -409,12 +399,7 @@
       "sbox_validation_tests",
       "ipc_tests",
       "sync_unit_tests",
-      {
-        "test": "unit_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        }
-      },
+      "unit_tests",
       "sql_unittests",
       "ui_base_unittests",
       "views_unittests",
