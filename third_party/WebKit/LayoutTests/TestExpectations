@@ -15,8 +15,6 @@ crbug.com/434560 [ Mac Win ] virtual/slimmingpaint/fast/table/td-width-fifty-per
 crbug.com/445100 virtual/slimmingpaint/fast/block/float/marquee-shrink-to-avoid-floats.html [ Pass Failure ]
 crbug.com/445100 fast/block/float/marquee-shrink-to-avoid-floats.html [ Pass Failure ]
 
-Bug(bokan) css3/device-adapt/viewport-initial-width-zero.html [ NeedsRebaseline ]
-
 # Failing since Android viewport limits are hard-coded in HTMLMetaElement-in.cpp
 crbug.com/448148 inspector/device-emulation/device-emulation-restore.html [ Failure ]
 
