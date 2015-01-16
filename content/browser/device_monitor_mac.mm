@@ -360,7 +360,11 @@ void SuspendObserverDelegate::DoOnDeviceChanged(NSArray* devices) {
     snapshot_devices.push_back(DeviceInfo([[device uniqueID] UTF8String],
                                           device_type));
   }
-
+  // Make sure no references are held to |devices| when
+  // ConsolidateDevicesListAndNotify is called since the VideoCaptureManager
+  // and AudioCaptureManagers also enumerates the available devices but on
+  // another thread.
+  auto_release.reset();
   // |avfoundation_monitor_impl_| might have been NULLed asynchronously before
   // arriving at this line.
   if (avfoundation_monitor_impl_) {
