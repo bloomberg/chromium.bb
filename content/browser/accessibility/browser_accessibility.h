@@ -267,6 +267,11 @@ class CONTENT_EXPORT BrowserAccessibility {
   // including this object if it's static text.
   int GetStaticTextLenRecursive() const;
 
+  // Similar to GetParent(), but includes nodes that are the host of a
+  // subtree rather than skipping over them - because they contain important
+  // bounds offsets.
+  BrowserAccessibility* GetParentForBoundsCalculation() const;
+
   std::string name_;
   std::string value_;
 

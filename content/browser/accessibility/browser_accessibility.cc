@@ -184,7 +184,7 @@ gfx::Rect BrowserAccessibility::GetLocalBoundsRect() const {
   // Walk up the parent chain. Every time we encounter a Web Area, offset
   // based on the scroll bars and then offset based on the origin of that
   // nested web area.
-  BrowserAccessibility* parent = GetParent();
+  BrowserAccessibility* parent = GetParentForBoundsCalculation();
   bool need_to_offset_web_area =
       (GetRole() == ui::AX_ROLE_WEB_AREA ||
        GetRole() == ui::AX_ROLE_ROOT_WEB_AREA);
@@ -213,7 +213,7 @@ gfx::Rect BrowserAccessibility::GetLocalBoundsRect() const {
       }
       need_to_offset_web_area = true;
     }
-    parent = parent->GetParent();
+    parent = parent->GetParentForBoundsCalculation();
   }
 
   return bounds;
@@ -721,6 +721,20 @@ int BrowserAccessibility::GetStaticTextLenRecursive() const {
   for (size_t i = 0; i < InternalChildCount(); ++i)
     len += InternalGetChild(i)->GetStaticTextLenRecursive();
   return len;
+}
+
+BrowserAccessibility* BrowserAccessibility::GetParentForBoundsCalculation()
+    const {
+  if (!node_ || !manager_)
+    return NULL;
+  ui::AXNode* parent = node_->parent();
+  if (parent)
+    return manager_->GetFromAXNode(parent);
+
+  if (!manager_->delegate())
+    return NULL;
+
+  return manager_->delegate()->AccessibilityGetParentFrame();
 }
 
 }  // namespace content

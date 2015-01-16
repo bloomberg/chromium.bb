@@ -290,10 +290,24 @@ BrowserAccessibility* BrowserAccessibilityManager::GetActiveDescendantFocus(
 
 BrowserAccessibility* BrowserAccessibilityManager::GetFocus(
     BrowserAccessibility* root) {
-  if (focus_ && (!root || focus_->IsDescendantOf(root->node())))
-    return GetFromAXNode(focus_);
+  if (!focus_)
+    return NULL;
 
-  return NULL;
+  if (root && !focus_->IsDescendantOf(root->node()))
+    return NULL;
+
+  if (!delegate())
+    return NULL;
+
+  BrowserAccessibility* obj = GetFromAXNode(focus_);
+  if (obj->HasBoolAttribute(ui::AX_ATTR_IS_AX_TREE_HOST)) {
+    BrowserAccessibilityManager* child_manager =
+        delegate()->AccessibilityGetChildFrame(obj->GetId());
+    if (child_manager)
+      return child_manager->GetFocus(child_manager->GetRoot());
+  }
+
+  return obj;
 }
 
 void BrowserAccessibilityManager::SetFocus(ui::AXNode* node, bool notify) {
