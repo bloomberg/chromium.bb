@@ -208,6 +208,7 @@ import org.chromium.content_public.browser.WebContents;
     /**
      * Hide transition elements.
      */
+    @Override
     public void hideTransitionElements(String cssSelector) {
         nativeHideTransitionElements(mNativeWebContentsAndroid, cssSelector);
     }
@@ -215,6 +216,7 @@ import org.chromium.content_public.browser.WebContents;
     /**
      * Show transition elements.
      */
+    @Override
     public void showTransitionElements(String cssSelector) {
         nativeShowTransitionElements(mNativeWebContentsAndroid, cssSelector);
     }
