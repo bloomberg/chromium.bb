@@ -8,6 +8,5 @@
 
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:state_pressed="true"
-          android:drawable="@drawable/ntp_toolbar_button_background_selected_pressed_img" /> <!-- pressed -->
-    <item android:drawable="@drawable/ntp_toolbar_button_background_selected_img" /> <!-- default -->
+          android:drawable="@drawable/btn_bg_holo_pressed" /> <!-- pressed -->
 </selector>

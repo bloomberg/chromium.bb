@@ -136,13 +136,11 @@ public class AccessibilityTabModelWrapper extends LinearLayout {
         }
 
         if (incognitoSelected) {
-            mIncognitoButton.setBackgroundResource(
-                    R.drawable.ntp_toolbar_button_background_selected);
-            mStandardButton.setBackgroundResource(R.drawable.ntp_toolbar_button_background);
+            mIncognitoButton.setBackgroundResource(R.drawable.btn_bg_holo_active);
+            mStandardButton.setBackgroundResource(R.drawable.btn_bg_holo);
         } else {
-            mIncognitoButton.setBackgroundResource(R.drawable.ntp_toolbar_button_background);
-            mStandardButton.setBackgroundResource(
-                    R.drawable.ntp_toolbar_button_background_selected);
+            mIncognitoButton.setBackgroundResource(R.drawable.btn_bg_holo);
+            mStandardButton.setBackgroundResource(R.drawable.btn_bg_holo_active);
         }
 
         getAdapter().setTabModel(mTabModelSelector.getModel(incognitoSelected));
