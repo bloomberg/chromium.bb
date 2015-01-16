@@ -148,6 +148,12 @@ component("base") {
     "font_helper_chromeos.cc",
     "font_helper_chromeos.h",
     "hit_test.h",
+    "idle/idle.cc",
+    "idle/idle_chromeos.cc",
+    "idle/idle.h",
+    "idle/idle_linux.cc",
+    "idle/idle_mac.mm",
+    "idle/idle_win.cc",
     "l10n/formatter.cc",
     "l10n/formatter.h",
     "l10n/l10n_font_util.cc",
@@ -487,6 +493,15 @@ component("base") {
       "x/x11_util.h",
       "x/x11_util_internal.h",
     ]
+    if (!is_chromeos) {
+      sources += [
+        "idle/idle_query_x11.cc",
+        "idle/idle_query_x11.h",
+        "idle/screensaver_window_finder_x11.cc",
+        "idle/screensaver_window_finder_x11.h",
+      ]
+      configs += [ "//build/config/linux:xscrnsaver" ]
+    }
     deps += [ "//ui/gfx/x" ]
   }
 
@@ -512,6 +527,10 @@ component("base") {
         "dragdrop/drag_utils.h",
       ]
     }
+  }
+
+  if (is_chromeos) {
+    sources -= [ "idle/idle_linux.cc" ]
   }
 
   if (is_chromeos || (use_aura && is_linux && !use_x11)) {
@@ -669,7 +688,11 @@ component("base") {
   }
 
   if (is_android || is_ios) {
-    sources -= [ "device_form_factor_desktop.cc" ]
+    sources -= [
+      "device_form_factor_desktop.cc",
+      "idle/idle.cc",
+      "idle/idle.h",
+    ]
   }
 }
 

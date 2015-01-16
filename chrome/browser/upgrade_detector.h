@@ -7,7 +7,7 @@
 
 #include "base/timer/timer.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/idle.h"
+#include "ui/base/idle/idle.h"
 #include "ui/gfx/image/image.h"
 
 class PrefRegistrySimple;
@@ -137,7 +137,7 @@ class UpgradeDetector {
 
   // The callback for the IdleCheck. Tells us whether Chrome has received any
   // input events since the specified time.
-  void IdleCallback(IdleState state);
+  void IdleCallback(ui::IdleState state);
 
   // Triggers a global notification of the specified |type|.
   void TriggerNotification(chrome::NotificationType type);

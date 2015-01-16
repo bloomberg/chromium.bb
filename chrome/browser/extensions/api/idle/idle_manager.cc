@@ -31,7 +31,7 @@ class DefaultEventDelegate : public IdleManager::EventDelegate {
   ~DefaultEventDelegate() override;
 
   void OnStateChanged(const std::string& extension_id,
-                      IdleState new_state) override;
+                      ui::IdleState new_state) override;
   void RegisterObserver(EventRouter::Observer* observer) override;
   void UnregisterObserver(EventRouter::Observer* observer) override;
 
@@ -47,7 +47,7 @@ DefaultEventDelegate::~DefaultEventDelegate() {
 }
 
 void DefaultEventDelegate::OnStateChanged(const std::string& extension_id,
-                                          IdleState new_state) {
+                                          ui::IdleState new_state) {
   scoped_ptr<base::ListValue> args(new base::ListValue());
   args->Append(IdleManager::CreateIdleValue(new_state));
   scoped_ptr<Event> event(new Event(idle::OnStateChanged::kEventName,
@@ -72,8 +72,8 @@ class DefaultIdleProvider : public IdleManager::IdleTimeProvider {
   DefaultIdleProvider();
   ~DefaultIdleProvider() override;
 
-  void CalculateIdleState(int idle_threshold, IdleCallback notify) override;
-  void CalculateIdleTime(IdleTimeCallback notify) override;
+  void CalculateIdleState(int idle_threshold, ui::IdleCallback notify) override;
+  void CalculateIdleTime(ui::IdleTimeCallback notify) override;
   bool CheckIdleStateIsLocked() override;
 };
 
@@ -84,34 +84,36 @@ DefaultIdleProvider::~DefaultIdleProvider() {
 }
 
 void DefaultIdleProvider::CalculateIdleState(int idle_threshold,
-                                             IdleCallback notify) {
-  ::CalculateIdleState(idle_threshold, notify);
+                                             ui::IdleCallback notify) {
+  ui::CalculateIdleState(idle_threshold, notify);
 }
 
-void DefaultIdleProvider::CalculateIdleTime(IdleTimeCallback notify) {
-  ::CalculateIdleTime(notify);
+void DefaultIdleProvider::CalculateIdleTime(ui::IdleTimeCallback notify) {
+  ui::CalculateIdleTime(notify);
 }
 
 bool DefaultIdleProvider::CheckIdleStateIsLocked() {
-  return ::CheckIdleStateIsLocked();
+  return ui::CheckIdleStateIsLocked();
 }
 
-IdleState IdleTimeToIdleState(bool locked, int idle_time, int idle_threshold) {
-  IdleState state;
+ui::IdleState IdleTimeToIdleState(bool locked,
+                                  int idle_time,
+                                  int idle_threshold) {
+  ui::IdleState state;
 
   if (locked) {
-    state = IDLE_STATE_LOCKED;
+    state = ui::IDLE_STATE_LOCKED;
   } else if (idle_time >= idle_threshold) {
-    state = IDLE_STATE_IDLE;
+    state = ui::IDLE_STATE_IDLE;
   } else {
-    state = IDLE_STATE_ACTIVE;
+    state = ui::IDLE_STATE_ACTIVE;
   }
   return state;
 }
 
 }  // namespace
 
-IdleMonitor::IdleMonitor(IdleState initial_state)
+IdleMonitor::IdleMonitor(ui::IdleState initial_state)
     : last_state(initial_state),
       listeners(0),
       threshold(kDefaultIdleThreshold) {
@@ -119,7 +121,7 @@ IdleMonitor::IdleMonitor(IdleState initial_state)
 
 IdleManager::IdleManager(content::BrowserContext* context)
     : context_(context),
-      last_state_(IDLE_STATE_ACTIVE),
+      last_state_(ui::IDLE_STATE_ACTIVE),
       idle_time_provider_(new DefaultIdleProvider()),
       event_delegate_(new DefaultEventDelegate(context)),
       extension_registry_observer_(this),
@@ -180,12 +182,12 @@ void IdleManager::SetThreshold(const std::string& extension_id,
 }
 
 // static
-base::StringValue* IdleManager::CreateIdleValue(IdleState idle_state) {
+base::StringValue* IdleManager::CreateIdleValue(ui::IdleState idle_state) {
   const char* description;
 
-  if (idle_state == IDLE_STATE_ACTIVE) {
+  if (idle_state == ui::IDLE_STATE_ACTIVE) {
     description = keys::kStateActive;
-  } else if (idle_state == IDLE_STATE_IDLE) {
+  } else if (idle_state == ui::IDLE_STATE_IDLE) {
     description = keys::kStateIdle;
   } else {
     description = keys::kStateLocked;
@@ -253,7 +255,7 @@ void IdleManager::UpdateIdleStateCallback(int idle_time) {
   for (MonitorMap::iterator it = monitors_.begin();
        it != monitors_.end(); ++it) {
     IdleMonitor& monitor = it->second;
-    IdleState new_state =
+    ui::IdleState new_state =
         IdleTimeToIdleState(locked, idle_time, monitor.threshold);
     // TODO(kalman): Use EventRouter::HasListeners for these sorts of checks.
     if (monitor.listeners > 0 && monitor.last_state != new_state)

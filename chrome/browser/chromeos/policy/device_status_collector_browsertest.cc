@@ -99,7 +99,7 @@ class TestingDeviceStatusCollector : public policy::DeviceStatusCollector {
     SetBaselineTime(Time::Now().LocalMidnight() + TimeDelta::FromHours(1));
   }
 
-  void Simulate(IdleState* states, int len) {
+  void Simulate(ui::IdleState* states, int len) {
     for (int i = 0; i < len; i++)
       IdleStateCallback(states[i]);
   }
@@ -354,10 +354,10 @@ class DeviceStatusCollectorTest : public testing::Test {
 };
 
 TEST_F(DeviceStatusCollectorTest, AllIdle) {
-  IdleState test_states[] = {
-    IDLE_STATE_IDLE,
-    IDLE_STATE_IDLE,
-    IDLE_STATE_IDLE
+  ui::IdleState test_states[] = {
+    ui::IDLE_STATE_IDLE,
+    ui::IDLE_STATE_IDLE,
+    ui::IDLE_STATE_IDLE
   };
   cros_settings_->SetBoolean(chromeos::kReportDeviceActivityTimes, true);
 
@@ -374,17 +374,17 @@ TEST_F(DeviceStatusCollectorTest, AllIdle) {
 
   // Test reporting with multiple consecutive idle samples.
   status_collector_->Simulate(test_states,
-                              sizeof(test_states) / sizeof(IdleState));
+                              sizeof(test_states) / sizeof(ui::IdleState));
   GetStatus();
   EXPECT_EQ(0, status_.active_period_size());
   EXPECT_EQ(0, GetActiveMilliseconds(status_));
 }
 
 TEST_F(DeviceStatusCollectorTest, AllActive) {
-  IdleState test_states[] = {
-    IDLE_STATE_ACTIVE,
-    IDLE_STATE_ACTIVE,
-    IDLE_STATE_ACTIVE
+  ui::IdleState test_states[] = {
+    ui::IDLE_STATE_ACTIVE,
+    ui::IDLE_STATE_ACTIVE,
+    ui::IDLE_STATE_ACTIVE
   };
   cros_settings_->SetBoolean(chromeos::kReportDeviceActivityTimes, true);
 
@@ -397,73 +397,73 @@ TEST_F(DeviceStatusCollectorTest, AllActive) {
 
   // Test multiple consecutive active samples.
   status_collector_->Simulate(test_states,
-                              sizeof(test_states) / sizeof(IdleState));
+                              sizeof(test_states) / sizeof(ui::IdleState));
   GetStatus();
   EXPECT_EQ(1, status_.active_period_size());
   EXPECT_EQ(4 * ActivePeriodMilliseconds(), GetActiveMilliseconds(status_));
 }
 
 TEST_F(DeviceStatusCollectorTest, MixedStates) {
-  IdleState test_states[] = {
-    IDLE_STATE_ACTIVE,
-    IDLE_STATE_IDLE,
-    IDLE_STATE_ACTIVE,
-    IDLE_STATE_ACTIVE,
-    IDLE_STATE_IDLE,
-    IDLE_STATE_IDLE,
-    IDLE_STATE_ACTIVE
+  ui::IdleState test_states[] = {
+    ui::IDLE_STATE_ACTIVE,
+    ui::IDLE_STATE_IDLE,
+    ui::IDLE_STATE_ACTIVE,
+    ui::IDLE_STATE_ACTIVE,
+    ui::IDLE_STATE_IDLE,
+    ui::IDLE_STATE_IDLE,
+    ui::IDLE_STATE_ACTIVE
   };
   cros_settings_->SetBoolean(chromeos::kReportDeviceActivityTimes, true);
   status_collector_->Simulate(test_states,
-                              sizeof(test_states) / sizeof(IdleState));
+                              sizeof(test_states) / sizeof(ui::IdleState));
   GetStatus();
   EXPECT_EQ(4 * ActivePeriodMilliseconds(), GetActiveMilliseconds(status_));
 }
 
 TEST_F(DeviceStatusCollectorTest, StateKeptInPref) {
-  IdleState test_states[] = {
-    IDLE_STATE_ACTIVE,
-    IDLE_STATE_IDLE,
-    IDLE_STATE_ACTIVE,
-    IDLE_STATE_ACTIVE,
-    IDLE_STATE_IDLE,
-    IDLE_STATE_IDLE
+  ui::IdleState test_states[] = {
+    ui::IDLE_STATE_ACTIVE,
+    ui::IDLE_STATE_IDLE,
+    ui::IDLE_STATE_ACTIVE,
+    ui::IDLE_STATE_ACTIVE,
+    ui::IDLE_STATE_IDLE,
+    ui::IDLE_STATE_IDLE
   };
   cros_settings_->SetBoolean(chromeos::kReportDeviceActivityTimes, true);
   status_collector_->Simulate(test_states,
-                              sizeof(test_states) / sizeof(IdleState));
+                              sizeof(test_states) / sizeof(ui::IdleState));
 
   // Process the list a second time after restarting the collector. It should be
   // able to count the active periods found by the original collector, because
   // the results are stored in a pref.
   RestartStatusCollector(base::Bind(&GetEmptyVolumeInfo));
   status_collector_->Simulate(test_states,
-                              sizeof(test_states) / sizeof(IdleState));
+                              sizeof(test_states) / sizeof(ui::IdleState));
 
   GetStatus();
   EXPECT_EQ(6 * ActivePeriodMilliseconds(), GetActiveMilliseconds(status_));
 }
 
 TEST_F(DeviceStatusCollectorTest, Times) {
-  IdleState test_states[] = {
-    IDLE_STATE_ACTIVE,
-    IDLE_STATE_IDLE,
-    IDLE_STATE_ACTIVE,
-    IDLE_STATE_ACTIVE,
-    IDLE_STATE_IDLE,
-    IDLE_STATE_IDLE
+  ui::IdleState test_states[] = {
+    ui::IDLE_STATE_ACTIVE,
+    ui::IDLE_STATE_IDLE,
+    ui::IDLE_STATE_ACTIVE,
+    ui::IDLE_STATE_ACTIVE,
+    ui::IDLE_STATE_IDLE,
+    ui::IDLE_STATE_IDLE
   };
   cros_settings_->SetBoolean(chromeos::kReportDeviceActivityTimes, true);
   status_collector_->Simulate(test_states,
-                              sizeof(test_states) / sizeof(IdleState));
+                              sizeof(test_states) / sizeof(ui::IdleState));
   GetStatus();
   EXPECT_EQ(3 * ActivePeriodMilliseconds(), GetActiveMilliseconds(status_));
 }
 
 TEST_F(DeviceStatusCollectorTest, MaxStoredPeriods) {
-  IdleState test_states[] = {
-    IDLE_STATE_ACTIVE,
-    IDLE_STATE_IDLE
+  ui::IdleState test_states[] = {
+    ui::IDLE_STATE_ACTIVE,
+    ui::IDLE_STATE_IDLE
   };
   const int kMaxDays = 10;
 
@@ -475,7 +475,7 @@ TEST_F(DeviceStatusCollectorTest, MaxStoredPeriods) {
   // Simulate 12 active periods.
   for (int i = 0; i < kMaxDays + 2; i++) {
     status_collector_->Simulate(test_states,
-                                sizeof(test_states) / sizeof(IdleState));
+                                sizeof(test_states) / sizeof(ui::IdleState));
     // Advance the simulated clock by a day.
     baseline += TimeDelta::FromDays(1);
     status_collector_->SetBaselineTime(baseline);
@@ -488,7 +488,7 @@ TEST_F(DeviceStatusCollectorTest, MaxStoredPeriods) {
   // Simulate some future times.
   for (int i = 0; i < kMaxDays + 2; i++) {
     status_collector_->Simulate(test_states,
-                                sizeof(test_states) / sizeof(IdleState));
+                                sizeof(test_states) / sizeof(ui::IdleState));
     // Advance the simulated clock by a day.
     baseline += TimeDelta::FromDays(1);
     status_collector_->SetBaselineTime(baseline);
@@ -508,13 +508,13 @@ TEST_F(DeviceStatusCollectorTest, MaxStoredPeriods) {
 
 TEST_F(DeviceStatusCollectorTest, ActivityTimesEnabledByDefault) {
   // Device activity times should be reported by default.
-  IdleState test_states[] = {
-    IDLE_STATE_ACTIVE,
-    IDLE_STATE_ACTIVE,
-    IDLE_STATE_ACTIVE
+  ui::IdleState test_states[] = {
+    ui::IDLE_STATE_ACTIVE,
+    ui::IDLE_STATE_ACTIVE,
+    ui::IDLE_STATE_ACTIVE
   };
   status_collector_->Simulate(test_states,
-                              sizeof(test_states) / sizeof(IdleState));
+                              sizeof(test_states) / sizeof(ui::IdleState));
   GetStatus();
   EXPECT_EQ(1, status_.active_period_size());
   EXPECT_EQ(3 * ActivePeriodMilliseconds(), GetActiveMilliseconds(status_));
@@ -524,21 +524,21 @@ TEST_F(DeviceStatusCollectorTest, ActivityTimesOff) {
   // Device activity times should not be reported if explicitly disabled.
   cros_settings_->SetBoolean(chromeos::kReportDeviceActivityTimes, false);
 
-  IdleState test_states[] = {
-    IDLE_STATE_ACTIVE,
-    IDLE_STATE_ACTIVE,
-    IDLE_STATE_ACTIVE
+  ui::IdleState test_states[] = {
+    ui::IDLE_STATE_ACTIVE,
+    ui::IDLE_STATE_ACTIVE,
+    ui::IDLE_STATE_ACTIVE
   };
   status_collector_->Simulate(test_states,
-                              sizeof(test_states) / sizeof(IdleState));
+                              sizeof(test_states) / sizeof(ui::IdleState));
   GetStatus();
   EXPECT_EQ(0, status_.active_period_size());
   EXPECT_EQ(0, GetActiveMilliseconds(status_));
 }
 
 TEST_F(DeviceStatusCollectorTest, ActivityCrossingMidnight) {
-  IdleState test_states[] = {
-    IDLE_STATE_ACTIVE
+  ui::IdleState test_states[] = {
+    ui::IDLE_STATE_ACTIVE
   };
   cros_settings_->SetBoolean(chromeos::kReportDeviceActivityTimes, true);
 
@@ -568,9 +568,9 @@ TEST_F(DeviceStatusCollectorTest, ActivityCrossingMidnight) {
 }
 
 TEST_F(DeviceStatusCollectorTest, ActivityTimesKeptUntilSubmittedSuccessfully) {
-  IdleState test_states[] = {
-    IDLE_STATE_ACTIVE,
-    IDLE_STATE_ACTIVE,
+  ui::IdleState test_states[] = {
+    ui::IDLE_STATE_ACTIVE,
+    ui::IDLE_STATE_ACTIVE,
   };
   cros_settings_->SetBoolean(chromeos::kReportDeviceActivityTimes, true);
 

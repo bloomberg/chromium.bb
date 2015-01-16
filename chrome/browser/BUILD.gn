@@ -485,9 +485,6 @@ static_library("browser") {
   if (use_x11) {
     sources +=
         rebase_path(gypi_values.chrome_browser_x11_sources, ".", "//chrome")
-    if (!is_chromeos) {
-      configs += [ "//build/config/linux:xscrnsaver" ]
-    }
   }
   if (is_posix && !is_mac && !is_ios) {
     sources += [

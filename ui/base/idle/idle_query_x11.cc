@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/idle_query_x11.h"
+#include "ui/base/idle/idle_query_x11.h"
 
 #include <X11/extensions/scrnsaver.h>
+
 #include "ui/gfx/x/x11_types.h"
 
-namespace chrome {
+namespace ui {
 
 class IdleData {
  public:
@@ -47,4 +48,4 @@ int IdleQueryX11::IdleTime() {
   }
 }
 
-}  // namespace chrome
+}  // namespace ui

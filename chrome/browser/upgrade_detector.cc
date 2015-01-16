@@ -109,25 +109,25 @@ void UpgradeDetector::TriggerNotification(chrome::NotificationType type) {
       content::NotificationService::NoDetails());
 }
 
-void UpgradeDetector::IdleCallback(IdleState state) {
+void UpgradeDetector::IdleCallback(ui::IdleState state) {
   // Don't proceed while an incognito window is open. The timer will still
   // keep firing, so this function will get a chance to re-evaluate this.
   if (chrome::IsOffTheRecordSessionActive())
     return;
 
   switch (state) {
-    case IDLE_STATE_LOCKED:
+    case ui::IDLE_STATE_LOCKED:
       // Computer is locked, auto-restart.
       idle_check_timer_.Stop();
       chrome::AttemptRestart();
       break;
-    case IDLE_STATE_IDLE:
+    case ui::IDLE_STATE_IDLE:
       // Computer has been idle for long enough, show warning.
       idle_check_timer_.Stop();
       TriggerNotification(chrome::NOTIFICATION_CRITICAL_UPGRADE_INSTALLED);
       break;
-    case IDLE_STATE_ACTIVE:
-    case IDLE_STATE_UNKNOWN:
+    case ui::IDLE_STATE_ACTIVE:
+    case ui::IDLE_STATE_UNKNOWN:
       break;
     default:
       NOTREACHED();  // Need to add any new value above (either providing

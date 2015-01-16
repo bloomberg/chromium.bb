@@ -391,10 +391,6 @@
       'browser/icon_loader_win.cc',
       'browser/icon_manager.cc',
       'browser/icon_manager.h',
-      'browser/idle.h',
-      'browser/idle_chromeos.cc',
-      'browser/idle_mac.mm',
-      'browser/idle_win.cc',
       'browser/image_decoder.cc',
       'browser/image_decoder.h',
       'browser/image_holder.cc',
@@ -773,14 +769,9 @@
       'browser/first_run/upgrade_util_linux.h',
       'browser/fullscreen_aurax11.cc',
       'browser/icon_loader_auralinux.cc',
-      'browser/idle_linux.cc',
-      'browser/idle_query_x11.cc',
-      'browser/idle_query_x11.h',
       'browser/password_manager/native_backend_kwallet_x.cc',
       'browser/password_manager/native_backend_kwallet_x.h',
       'browser/platform_util_linux.cc',
-      'browser/screensaver_window_finder_x11.cc',
-      'browser/screensaver_window_finder_x11.h',
       'browser/shell_integration_linux.cc',
       'browser/shell_integration_linux.h',
       'browser/speech/tts_linux.cc',
@@ -884,7 +875,6 @@
       'browser/first_run/upgrade_util_win.h',
       'browser/font_family_cache.cc',
       'browser/font_family_cache.h',
-      'browser/idle.cc',
       'browser/importer/external_process_importer_client.cc',
       'browser/importer/external_process_importer_client.h',
       'browser/importer/external_process_importer_host.cc',
@@ -3292,13 +3282,6 @@
         }],
         ['use_x11==1', {
           'sources': [ '<@(chrome_browser_x11_sources)' ],
-          'conditions': [
-            ['chromeos==0', {
-              'dependencies': [
-                '../build/linux/system.gyp:xscrnsaver',
-              ],
-            }],
-          ],
         }],
         ['os_posix == 1 and OS != "mac" and OS != "ios"', {
           'sources': [

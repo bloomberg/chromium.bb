@@ -14,10 +14,10 @@
 #include "base/scoped_observer.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/idle.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry_observer.h"
+#include "ui/base/idle/idle.h"
 
 namespace base {
 class StringValue;
@@ -30,12 +30,12 @@ class BrowserContext;
 namespace extensions {
 class ExtensionRegistry;
 
-typedef base::Callback<void(IdleState)> QueryStateCallback;
+typedef base::Callback<void(ui::IdleState)> QueryStateCallback;
 
 struct IdleMonitor {
-  explicit IdleMonitor(IdleState initial_state);
+  explicit IdleMonitor(ui::IdleState initial_state);
 
-  IdleState last_state;
+  ui::IdleState last_state;
   int listeners;
   int threshold;
 };
@@ -49,8 +49,8 @@ class IdleManager : public ExtensionRegistryObserver,
     IdleTimeProvider() {}
     virtual ~IdleTimeProvider() {}
     virtual void CalculateIdleState(int idle_threshold,
-                                    IdleCallback notify) = 0;
-    virtual void CalculateIdleTime(IdleTimeCallback notify) = 0;
+                                    ui::IdleCallback notify) = 0;
+    virtual void CalculateIdleTime(ui::IdleTimeCallback notify) = 0;
     virtual bool CheckIdleStateIsLocked() = 0;
 
    private:
@@ -62,7 +62,7 @@ class IdleManager : public ExtensionRegistryObserver,
     EventDelegate() {}
     virtual ~EventDelegate() {}
     virtual void OnStateChanged(const std::string& extension_id,
-                                IdleState new_state) = 0;
+                                ui::IdleState new_state) = 0;
     virtual void RegisterObserver(EventRouter::Observer* observer) = 0;
     virtual void UnregisterObserver(EventRouter::Observer* observer) = 0;
 
@@ -89,7 +89,7 @@ class IdleManager : public ExtensionRegistryObserver,
 
   void QueryState(int threshold, QueryStateCallback notify);
   void SetThreshold(const std::string& extension_id, int threshold);
-  static base::StringValue* CreateIdleValue(IdleState idle_state);
+  static base::StringValue* CreateIdleValue(ui::IdleState idle_state);
 
   // Override default event class. Callee assumes ownership. Used for testing.
   void SetEventDelegateForTest(scoped_ptr<EventDelegate> event_delegate);
@@ -123,7 +123,7 @@ class IdleManager : public ExtensionRegistryObserver,
 
   content::BrowserContext* const context_;
 
-  IdleState last_state_;
+  ui::IdleState last_state_;
   MonitorMap monitors_;
 
   base::RepeatingTimer<IdleManager> poll_timer_;

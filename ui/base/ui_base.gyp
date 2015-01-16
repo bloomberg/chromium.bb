@@ -191,6 +191,16 @@
         'font_helper_chromeos.cc',
         'font_helper_chromeos.h',
         'hit_test.h',
+        'idle/idle.cc',
+        'idle/idle_chromeos.cc',
+        'idle/idle.h',
+        'idle/idle_linux.cc',
+        'idle/idle_mac.mm',
+        'idle/idle_query_x11.cc',
+        'idle/idle_query_x11.h',
+        'idle/idle_win.cc',
+        'idle/screensaver_window_finder_x11.cc',
+        'idle/screensaver_window_finder_x11.h',
         'ime/candidate_window.cc',
         'ime/candidate_window.h',
         'ime/chromeos/character_composer.cc',
@@ -616,6 +626,11 @@
             '../events/platform/x11/x11_events_platform.gyp:x11_events_platform',
           ],
         }],
+        ['use_x11==1 and chromeos==0', {
+          'dependencies': [
+            '../../build/linux/system.gyp:xscrnsaver',
+          ],
+        }],
         ['toolkit_views==0', {
           'sources!': [
             'dragdrop/drag_drop_types.h',
@@ -634,6 +649,8 @@
             'default_theme_provider.cc',
             'dragdrop/drag_utils.cc',
             'dragdrop/drag_utils.h',
+            'idle/idle.cc',
+            'idle/idle.h',
             'l10n/l10n_font_util.cc',
             'models/button_menu_item_model.cc',
             'models/dialog_model.cc',
@@ -693,6 +710,13 @@
         ['chromeos==1', {
           'dependencies': [
             '../../chromeos/chromeos.gyp:chromeos',
+          ],
+          'sources!': [
+            'idle/idle_linux.cc',
+            'idle/idle_query_x11.cc',
+            'idle/idle_query_x11.h',
+            'idle/screensaver_window_finder_x11.cc',
+            'idle/screensaver_window_finder_x11.h',
           ],
         }],
         ['OS!="win"', {

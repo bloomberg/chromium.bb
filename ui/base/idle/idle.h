@@ -2,10 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_IDLE_H_
-#define CHROME_BROWSER_IDLE_H_
+#ifndef UI_BASE_IDLE_IDLE_H_
+#define UI_BASE_IDLE_IDLE_H_
 
 #include "base/callback.h"
+#include "ui/base/ui_base_export.h"
+
+namespace ui {
 
 enum IdleState {
   IDLE_STATE_ACTIVE = 0,
@@ -17,7 +20,7 @@ enum IdleState {
 
 // For MacOSX, InitIdleMonitor needs to be called first to setup the monitor.
 #if defined(OS_MACOSX)
-void InitIdleMonitor();
+UI_BASE_EXPORT void InitIdleMonitor();
 #endif
 
 typedef base::Callback<void(IdleState)> IdleCallback;
@@ -26,12 +29,14 @@ typedef base::Callback<void(int)> IdleTimeCallback;
 // Calculate the Idle state and notify the callback. |idle_threshold| is the
 // amount of time (in seconds) before considered idle. |notify| is
 // asynchronously called on some platforms.
-void CalculateIdleState(int idle_threshold, IdleCallback notify);
+UI_BASE_EXPORT void CalculateIdleState(int idle_threshold, IdleCallback notify);
 
 // Calculate Idle time in seconds and notify the callback
-void CalculateIdleTime(IdleTimeCallback notify);
+UI_BASE_EXPORT void CalculateIdleTime(IdleTimeCallback notify);
 
 // Checks synchronously if Idle state is IDLE_STATE_LOCKED.
-bool CheckIdleStateIsLocked();
+UI_BASE_EXPORT bool CheckIdleStateIsLocked();
 
-#endif  // CHROME_BROWSER_IDLE_H_
+}  // namespace ui
+
+#endif  // UI_BASE_IDLE_IDLE_H_

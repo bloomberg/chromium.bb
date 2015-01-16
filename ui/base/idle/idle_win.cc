@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/idle.h"
+#include "ui/base/idle/idle.h"
 
 #include <limits.h>
 #include <windows.h>
 
 #include "ui/base/win/lock_state.h"
 
+namespace ui {
 namespace {
 
 DWORD CalculateIdleTimeInternal() {
@@ -52,3 +53,5 @@ void CalculateIdleTime(IdleTimeCallback notify) {
 bool CheckIdleStateIsLocked() {
   return ui::IsWorkstationLocked() || IsScreensaverRunning();
 }
+
+}  // namespace ui

@@ -5,7 +5,7 @@
 #include "chrome/browser/notifications/screen_lock_notification_blocker.h"
 
 #include "base/time/time.h"
-#include "chrome/browser/idle.h"
+#include "ui/base/idle/idle.h"
 
 namespace {
 const int kUserStatePollingIntervalSeconds = 1;
@@ -22,7 +22,7 @@ ScreenLockNotificationBlocker::~ScreenLockNotificationBlocker() {
 
 void ScreenLockNotificationBlocker::CheckState() {
   bool was_locked = is_locked_;
-  is_locked_ = CheckIdleStateIsLocked();
+  is_locked_ = ui::CheckIdleStateIsLocked();
   if (is_locked_ != was_locked)
     NotifyBlockingStateChanged();
 

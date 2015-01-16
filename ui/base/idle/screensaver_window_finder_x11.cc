@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/screensaver_window_finder_x11.h"
+#include "ui/base/idle/screensaver_window_finder_x11.h"
 
 #include "base/basictypes.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/x/x11_error_tracker.h"
+
+namespace ui {
 
 ScreensaverWindowFinder::ScreensaverWindowFinder()
     : exists_(false) {
@@ -43,3 +45,5 @@ bool ScreensaverWindowFinder::IsScreensaverWindow(XID window) const {
 
   return value.find("screensaver") != std::string::npos;
 }
+
+}  // namespace ui

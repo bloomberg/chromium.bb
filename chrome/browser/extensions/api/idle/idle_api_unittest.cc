@@ -34,7 +34,7 @@ class MockEventDelegate : public IdleManager::EventDelegate {
  public:
   MockEventDelegate() {}
   virtual ~MockEventDelegate() {}
-  MOCK_METHOD2(OnStateChanged, void(const std::string&, IdleState));
+  MOCK_METHOD2(OnStateChanged, void(const std::string&, ui::IdleState));
   virtual void RegisterObserver(EventRouter::Observer* observer) {}
   virtual void UnregisterObserver(EventRouter::Observer* observer) {}
 };
@@ -43,8 +43,8 @@ class TestIdleProvider : public IdleManager::IdleTimeProvider {
  public:
   TestIdleProvider();
   ~TestIdleProvider() override;
-  void CalculateIdleState(int idle_threshold, IdleCallback notify) override;
-  void CalculateIdleTime(IdleTimeCallback notify) override;
+  void CalculateIdleState(int idle_threshold, ui::IdleCallback notify) override;
+  void CalculateIdleTime(ui::IdleTimeCallback notify) override;
   bool CheckIdleStateIsLocked() override;
 
   void set_idle_time(int idle_time);
@@ -64,19 +64,19 @@ TestIdleProvider::~TestIdleProvider() {
 }
 
 void TestIdleProvider::CalculateIdleState(int idle_threshold,
-                                          IdleCallback notify) {
+                                          ui::IdleCallback notify) {
   if (locked_) {
-    notify.Run(IDLE_STATE_LOCKED);
+    notify.Run(ui::IDLE_STATE_LOCKED);
   } else {
     if (idle_time_ >= idle_threshold) {
-      notify.Run(IDLE_STATE_IDLE);
+      notify.Run(ui::IDLE_STATE_IDLE);
     } else {
-      notify.Run(IDLE_STATE_ACTIVE);
+      notify.Run(ui::IDLE_STATE_ACTIVE);
     }
   }
 }
 
-void TestIdleProvider::CalculateIdleTime(IdleTimeCallback notify) {
+void TestIdleProvider::CalculateIdleTime(ui::IdleTimeCallback notify) {
   notify.Run(idle_time_);
 }
 
@@ -291,7 +291,7 @@ TEST_F(IdleTest, ActiveToIdle) {
 
   idle_provider_->set_idle_time(60);
 
-  EXPECT_CALL(*event_delegate_, OnStateChanged("test", IDLE_STATE_IDLE));
+  EXPECT_CALL(*event_delegate_, OnStateChanged("test", ui::IDLE_STATE_IDLE));
   idle_manager_->UpdateIdleState();
   testing::Mock::VerifyAndClearExpectations(event_delegate_);
 
@@ -309,7 +309,7 @@ TEST_F(IdleTest, ActiveToLocked) {
   idle_provider_->set_locked(true);
   idle_provider_->set_idle_time(5);
 
-  EXPECT_CALL(*event_delegate_, OnStateChanged("test", IDLE_STATE_LOCKED));
+  EXPECT_CALL(*event_delegate_, OnStateChanged("test", ui::IDLE_STATE_LOCKED));
   idle_manager_->UpdateIdleState();
 }
 
@@ -320,12 +320,12 @@ TEST_F(IdleTest, IdleToActive) {
 
   idle_provider_->set_locked(false);
   idle_provider_->set_idle_time(75);
-  EXPECT_CALL(*event_delegate_, OnStateChanged("test", IDLE_STATE_IDLE));
+  EXPECT_CALL(*event_delegate_, OnStateChanged("test", ui::IDLE_STATE_IDLE));
   idle_manager_->UpdateIdleState();
   testing::Mock::VerifyAndClearExpectations(event_delegate_);
 
   idle_provider_->set_idle_time(0);
-  EXPECT_CALL(*event_delegate_, OnStateChanged("test", IDLE_STATE_ACTIVE));
+  EXPECT_CALL(*event_delegate_, OnStateChanged("test", ui::IDLE_STATE_ACTIVE));
   idle_manager_->UpdateIdleState();
 }
 
@@ -336,12 +336,12 @@ TEST_F(IdleTest, IdleToLocked) {
   idle_provider_->set_locked(false);
   idle_provider_->set_idle_time(75);
 
-  EXPECT_CALL(*event_delegate_, OnStateChanged("test", IDLE_STATE_IDLE));
+  EXPECT_CALL(*event_delegate_, OnStateChanged("test", ui::IDLE_STATE_IDLE));
   idle_manager_->UpdateIdleState();
   testing::Mock::VerifyAndClearExpectations(event_delegate_);
 
   idle_provider_->set_locked(true);
-  EXPECT_CALL(*event_delegate_, OnStateChanged("test", IDLE_STATE_LOCKED));
+  EXPECT_CALL(*event_delegate_, OnStateChanged("test", ui::IDLE_STATE_LOCKED));
   idle_manager_->UpdateIdleState();
 }
 
@@ -352,12 +352,12 @@ TEST_F(IdleTest, LockedToActive) {
   idle_provider_->set_locked(true);
   idle_provider_->set_idle_time(0);
 
-  EXPECT_CALL(*event_delegate_, OnStateChanged("test", IDLE_STATE_LOCKED));
+  EXPECT_CALL(*event_delegate_, OnStateChanged("test", ui::IDLE_STATE_LOCKED));
   idle_manager_->UpdateIdleState();
 
   idle_provider_->set_locked(false);
   idle_provider_->set_idle_time(5);
-  EXPECT_CALL(*event_delegate_, OnStateChanged("test", IDLE_STATE_ACTIVE));
+  EXPECT_CALL(*event_delegate_, OnStateChanged("test", ui::IDLE_STATE_ACTIVE));
   idle_manager_->UpdateIdleState();
 }
 
@@ -367,12 +367,12 @@ TEST_F(IdleTest, LockedToIdle) {
 
   idle_provider_->set_locked(true);
   idle_provider_->set_idle_time(75);
-  EXPECT_CALL(*event_delegate_, OnStateChanged("test", IDLE_STATE_LOCKED));
+  EXPECT_CALL(*event_delegate_, OnStateChanged("test", ui::IDLE_STATE_LOCKED));
   idle_manager_->UpdateIdleState();
   testing::Mock::VerifyAndClearExpectations(event_delegate_);
 
   idle_provider_->set_locked(false);
-  EXPECT_CALL(*event_delegate_, OnStateChanged("test", IDLE_STATE_IDLE));
+  EXPECT_CALL(*event_delegate_, OnStateChanged("test", ui::IDLE_STATE_IDLE));
   idle_manager_->UpdateIdleState();
 }
 
@@ -383,8 +383,8 @@ TEST_F(IdleTest, MultipleExtensions) {
   ScopedListen listen_2(idle_manager_, "2");
 
   idle_provider_->set_locked(true);
-  EXPECT_CALL(*event_delegate_, OnStateChanged("1", IDLE_STATE_LOCKED));
-  EXPECT_CALL(*event_delegate_, OnStateChanged("2", IDLE_STATE_LOCKED));
+  EXPECT_CALL(*event_delegate_, OnStateChanged("1", ui::IDLE_STATE_LOCKED));
+  EXPECT_CALL(*event_delegate_, OnStateChanged("2", ui::IDLE_STATE_LOCKED));
   idle_manager_->UpdateIdleState();
   testing::Mock::VerifyAndClearExpectations(event_delegate_);
 
@@ -392,16 +392,16 @@ TEST_F(IdleTest, MultipleExtensions) {
     ScopedListen listen_2prime(idle_manager_, "2");
     ScopedListen listen_3(idle_manager_, "3");
     idle_provider_->set_locked(false);
-    EXPECT_CALL(*event_delegate_, OnStateChanged("1", IDLE_STATE_ACTIVE));
-    EXPECT_CALL(*event_delegate_, OnStateChanged("2", IDLE_STATE_ACTIVE));
-    EXPECT_CALL(*event_delegate_, OnStateChanged("3", IDLE_STATE_ACTIVE));
+    EXPECT_CALL(*event_delegate_, OnStateChanged("1", ui::IDLE_STATE_ACTIVE));
+    EXPECT_CALL(*event_delegate_, OnStateChanged("2", ui::IDLE_STATE_ACTIVE));
+    EXPECT_CALL(*event_delegate_, OnStateChanged("3", ui::IDLE_STATE_ACTIVE));
     idle_manager_->UpdateIdleState();
     testing::Mock::VerifyAndClearExpectations(event_delegate_);
   }
 
   idle_provider_->set_locked(true);
-  EXPECT_CALL(*event_delegate_, OnStateChanged("1", IDLE_STATE_LOCKED));
-  EXPECT_CALL(*event_delegate_, OnStateChanged("2", IDLE_STATE_LOCKED));
+  EXPECT_CALL(*event_delegate_, OnStateChanged("1", ui::IDLE_STATE_LOCKED));
+  EXPECT_CALL(*event_delegate_, OnStateChanged("2", ui::IDLE_STATE_LOCKED));
   idle_manager_->UpdateIdleState();
 }
 
@@ -422,14 +422,14 @@ TEST_F(IdleTest, SetDetectionInterval) {
 
   idle_provider_->set_idle_time(45);
   EXPECT_CALL(*event_delegate_,
-              OnStateChanged(extension()->id(), IDLE_STATE_IDLE));
+              OnStateChanged(extension()->id(), ui::IDLE_STATE_IDLE));
   idle_manager_->UpdateIdleState();
   // Verify that the expectation has been fulfilled before incrementing the
   // time again.
   testing::Mock::VerifyAndClearExpectations(event_delegate_);
 
   idle_provider_->set_idle_time(60);
-  EXPECT_CALL(*event_delegate_, OnStateChanged("default", IDLE_STATE_IDLE));
+  EXPECT_CALL(*event_delegate_, OnStateChanged("default", ui::IDLE_STATE_IDLE));
   idle_manager_->UpdateIdleState();
 }
 
@@ -448,7 +448,7 @@ TEST_F(IdleTest, SetDetectionIntervalBeforeListener) {
 
   idle_provider_->set_idle_time(45);
   EXPECT_CALL(*event_delegate_,
-              OnStateChanged(extension()->id(), IDLE_STATE_IDLE));
+              OnStateChanged(extension()->id(), ui::IDLE_STATE_IDLE));
   idle_manager_->UpdateIdleState();
 }
 
@@ -467,7 +467,7 @@ TEST_F(IdleTest, SetDetectionIntervalMaximum) {
 
   idle_provider_->set_idle_time(4*60*60);
   EXPECT_CALL(*event_delegate_,
-              OnStateChanged(extension()->id(), IDLE_STATE_IDLE));
+              OnStateChanged(extension()->id(), ui::IDLE_STATE_IDLE));
   idle_manager_->UpdateIdleState();
 }
 
@@ -486,7 +486,7 @@ TEST_F(IdleTest, SetDetectionIntervalMinimum) {
 
   idle_provider_->set_idle_time(15);
   EXPECT_CALL(*event_delegate_,
-              OnStateChanged(extension()->id(), IDLE_STATE_IDLE));
+              OnStateChanged(extension()->id(), ui::IDLE_STATE_IDLE));
   idle_manager_->UpdateIdleState();
 }
 
@@ -506,7 +506,7 @@ TEST_F(IdleTest, UnloadCleanup) {
     ScopedListen listen(idle_manager_, extension()->id());
     idle_provider_->set_idle_time(16);
     EXPECT_CALL(*event_delegate_,
-                OnStateChanged(extension()->id(), IDLE_STATE_IDLE));
+                OnStateChanged(extension()->id(), ui::IDLE_STATE_IDLE));
     idle_manager_->UpdateIdleState();
     testing::Mock::VerifyAndClearExpectations(event_delegate_);
   }
@@ -523,7 +523,7 @@ TEST_F(IdleTest, UnloadCleanup) {
 
     idle_provider_->set_idle_time(61);
     EXPECT_CALL(*event_delegate_,
-                OnStateChanged(extension()->id(), IDLE_STATE_IDLE));
+                OnStateChanged(extension()->id(), ui::IDLE_STATE_IDLE));
     idle_manager_->UpdateIdleState();
   }
 }
@@ -553,7 +553,7 @@ TEST_F(IdleTest, ReAddListener) {
     // Fire idle event.
     ScopedListen listen(idle_manager_, "test");
     idle_provider_->set_idle_time(60);
-    EXPECT_CALL(*event_delegate_, OnStateChanged("test", IDLE_STATE_IDLE));
+    EXPECT_CALL(*event_delegate_, OnStateChanged("test", ui::IDLE_STATE_IDLE));
     idle_manager_->UpdateIdleState();
     testing::Mock::VerifyAndClearExpectations(event_delegate_);
   }

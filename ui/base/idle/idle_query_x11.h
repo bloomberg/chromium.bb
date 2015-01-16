@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_IDLE_QUERY_X11_H_
-#define CHROME_BROWSER_IDLE_QUERY_X11_H_
+#ifndef UI_BASE_IDLE_IDLE_QUERY_X11_H_
+#define UI_BASE_IDLE_IDLE_QUERY_X11_H_
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 
-namespace chrome {
+namespace ui {
 
 class IdleData;
 
@@ -25,6 +25,6 @@ class IdleQueryX11 {
   DISALLOW_COPY_AND_ASSIGN(IdleQueryX11);
 };
 
-}  // namespace chrome
+}  // namespace ui
 
-#endif  // CHROME_BROWSER_IDLE_QUERY_X11_H_
+#endif  // UI_BASE_IDLE_IDLE_QUERY_X11_H_

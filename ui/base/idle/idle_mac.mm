@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/idle.h"
+#include "ui/base/idle/idle.h"
 
 #include <ApplicationServices/ApplicationServices.h>
 #import <Cocoa/Cocoa.h>
@@ -72,7 +72,12 @@
 
 @end
 
+namespace ui {
+namespace {
+
 static MacScreenMonitor* g_screenMonitor = nil;
+
+}  // namespace
 
 void InitIdleMonitor() {
   if (!g_screenMonitor)
@@ -90,3 +95,5 @@ bool CheckIdleStateIsLocked() {
   return [g_screenMonitor isScreensaverRunning] ||
       [g_screenMonitor isScreenLocked];
 }
+
+}  // namespace ui

@@ -36,7 +36,6 @@
 #include "chrome/browser/gpu/gl_string_manager.h"
 #include "chrome/browser/gpu/gpu_mode_manager.h"
 #include "chrome/browser/icon_manager.h"
-#include "chrome/browser/idle.h"
 #include "chrome/browser/intranet_redirect_detector.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -92,6 +91,7 @@
 #include "extensions/common/constants.h"
 #include "net/socket/client_socket_pool_manager.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "ui/base/idle/idle.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/message_center/message_center.h"
 
@@ -195,7 +195,7 @@ BrowserProcessImpl::BrowserProcessImpl(
       chrome::kChromeSearchScheme);
 
 #if defined(OS_MACOSX)
-  InitIdleMonitor();
+  ui::InitIdleMonitor();
 #endif
 
 #if !defined(OS_ANDROID)

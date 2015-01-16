@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/idle.h"
+#include "ui/base/idle/idle.h"
 
 #include "base/bind.h"
 
+namespace ui {
 namespace {
 
 void CalculateIdleStateCallback(int idle_threshold,
@@ -29,3 +30,5 @@ void CalculateIdleState(int idle_threshold, IdleCallback notify) {
                                idle_threshold,
                                notify));
 }
+
+}  // namespace ui

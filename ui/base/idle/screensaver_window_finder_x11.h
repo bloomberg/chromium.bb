@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SCREENSAVER_WINDOW_FINDER_X11_H_
-#define CHROME_BROWSER_SCREENSAVER_WINDOW_FINDER_X11_H_
+#ifndef UI_BASE_IDLE_SCREENSAVER_WINDOW_FINDER_X11_H_
+#define UI_BASE_IDLE_SCREENSAVER_WINDOW_FINDER_X11_H_
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "ui/base/x/x11_util.h"
+
+namespace ui {
 
 class ScreensaverWindowFinder : public ui::EnumerateWindowsDelegate {
  public:
@@ -26,5 +28,6 @@ class ScreensaverWindowFinder : public ui::EnumerateWindowsDelegate {
   DISALLOW_COPY_AND_ASSIGN(ScreensaverWindowFinder);
 };
 
+}  // namespace ui
 
-#endif  // CHROME_BROWSER_SCREENSAVER_WINDOW_FINDER_X11_H_
+#endif  // UI_BASE_IDLE_SCREENSAVER_WINDOW_FINDER_X11_H_

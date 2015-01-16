@@ -42,7 +42,7 @@ bool IdleQueryStateFunction::RunAsync() {
   return true;
 }
 
-void IdleQueryStateFunction::IdleStateCallback(IdleState state) {
+void IdleQueryStateFunction::IdleStateCallback(ui::IdleState state) {
   SetResult(IdleManager::CreateIdleValue(state));
   SendResponse(true);
 }

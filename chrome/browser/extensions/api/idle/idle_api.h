@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_IDLE_IDLE_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_IDLE_IDLE_API_H_
 
-#include "chrome/browser/idle.h"
 #include "extensions/browser/extension_function.h"
+#include "ui/base/idle/idle.h"
 
 namespace extensions {
 
@@ -22,7 +22,7 @@ class IdleQueryStateFunction : public AsyncExtensionFunction {
   bool RunAsync() override;
 
  private:
-  void IdleStateCallback(IdleState state);
+  void IdleStateCallback(ui::IdleState state);
 };
 
 // Implementation of the chrome.idle.setDetectionInterval API.
