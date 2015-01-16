@@ -314,10 +314,10 @@ public abstract class TabModelBase extends TabModelJniBridge {
 
         canUndo &= supportsPendingClosures();
 
+        startTabClosure(tabToClose, animate, uponExit, canUndo);
         if (notify && canUndo) {
             for (TabModelObserver obs : mObservers) obs.tabPendingClosure(tabToClose);
         }
-        startTabClosure(tabToClose, animate, uponExit, canUndo);
         if (!canUndo) finalizeTabClosure(tabToClose);
 
         return true;

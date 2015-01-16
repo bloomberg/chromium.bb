@@ -67,7 +67,8 @@ public interface TabModelObserver {
 
     /**
      * Called when a tab is pending closure, i.e. the user has just closed it, but it can still be
-     * undone.
+     * undone.  At this point, the Tab has been removed from the TabModel and can only be accessed
+     * via {@link TabModel#getComprehensiveModel()}.
      *
      * @param tab The tab that is pending closure.
      */
