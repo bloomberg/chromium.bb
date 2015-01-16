@@ -193,6 +193,11 @@ QuicAlarm* QuicConnectionPeer::GetPingAlarm(QuicConnection* connection) {
 }
 
 // static
+QuicAlarm* QuicConnectionPeer::GetFecAlarm(QuicConnection* connection) {
+  return connection->fec_alarm_.get();
+}
+
+// static
 QuicAlarm* QuicConnectionPeer::GetResumeWritesAlarm(
     QuicConnection* connection) {
   return connection->resume_writes_alarm_.get();

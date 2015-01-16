@@ -451,6 +451,10 @@ class NET_EXPORT_PRIVATE QuicConnection
   // remaining unacked packets.
   void OnRetransmissionTimeout();
 
+  // Called when a data packet is sent. Starts an alarm if the data sent in
+  // |sequence_number| was FEC protected.
+  void MaybeSetFecAlarm(QuicPacketSequenceNumber sequence_number);
+
   // Retransmits all unacked packets with retransmittable frames if
   // |retransmission_type| is ALL_UNACKED_PACKETS, otherwise retransmits only
   // initially encrypted packets. Used when the negotiated protocol version is
@@ -780,6 +784,9 @@ class NET_EXPORT_PRIVATE QuicConnection
   QuicConnectionVisitorInterface* visitor_;
   scoped_ptr<QuicConnectionDebugVisitor> debug_visitor_;
   QuicPacketGenerator packet_generator_;
+
+  // An alarm that fires when an FEC packet should be sent.
+  scoped_ptr<QuicAlarm> fec_alarm_;
 
   // Network idle time before we kill of this connection.
   QuicTime::Delta idle_network_timeout_;

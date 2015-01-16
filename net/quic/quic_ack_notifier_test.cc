@@ -34,7 +34,7 @@ class QuicAckNotifierTest : public ::testing::Test {
 
 // Should trigger callback when we receive acks for all the registered seqnums.
 TEST_F(QuicAckNotifierTest, TriggerCallback) {
-  EXPECT_CALL(*delegate_, OnAckNotification(3, 123, 0, 0, zero_)).Times(1);
+  EXPECT_CALL(*delegate_, OnAckNotification(0, 0, zero_)).Times(1);
   EXPECT_FALSE(notifier_->OnAck(26, zero_));
   EXPECT_FALSE(notifier_->OnAck(99, zero_));
   EXPECT_TRUE(notifier_->OnAck(1234, zero_));
@@ -43,7 +43,7 @@ TEST_F(QuicAckNotifierTest, TriggerCallback) {
 // Should not trigger callback if we never provide all the seqnums.
 TEST_F(QuicAckNotifierTest, DoesNotTrigger) {
   // Should not trigger callback as not all packets have been seen.
-  EXPECT_CALL(*delegate_, OnAckNotification(_, _, _, _, _)).Times(0);
+  EXPECT_CALL(*delegate_, OnAckNotification(_, _, _)).Times(0);
   EXPECT_FALSE(notifier_->OnAck(26, zero_));
   EXPECT_FALSE(notifier_->OnAck(99, zero_));
 }
@@ -55,7 +55,7 @@ TEST_F(QuicAckNotifierTest, UpdateSeqNums) {
   notifier_->UpdateSequenceNumber(99, 3000);
   notifier_->UpdateSequenceNumber(1234, 3001);
 
-  EXPECT_CALL(*delegate_, OnAckNotification(3, 123, 2, 20 + 3, _)).Times(1);
+  EXPECT_CALL(*delegate_, OnAckNotification(2, 20 + 3, _)).Times(1);
   EXPECT_FALSE(notifier_->OnAck(26, zero_));    // original
   EXPECT_FALSE(notifier_->OnAck(3000, zero_));  // updated
   EXPECT_TRUE(notifier_->OnAck(3001, zero_));   // updated
@@ -67,9 +67,7 @@ TEST_F(QuicAckNotifierTest, DeltaTime) {
   const QuicTime::Delta second_delta = QuicTime::Delta::FromSeconds(33);
   const QuicTime::Delta third_delta = QuicTime::Delta::FromSeconds(10);
 
-  EXPECT_CALL(*delegate_,
-              OnAckNotification(3, 123, 0, 0, third_delta))
-      .Times(1);
+  EXPECT_CALL(*delegate_, OnAckNotification(0, 0, third_delta)).Times(1);
   EXPECT_FALSE(notifier_->OnAck(26, first_delta));
   EXPECT_FALSE(notifier_->OnAck(99, second_delta));
   EXPECT_TRUE(notifier_->OnAck(1234, third_delta));

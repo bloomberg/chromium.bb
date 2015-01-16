@@ -1374,9 +1374,7 @@ class TestAckNotifierDelegate : public QuicAckNotifier::DelegateInterface {
  public:
   TestAckNotifierDelegate() {}
 
-  void OnAckNotification(int /*num_original_packets*/,
-                         int /*num_original_bytes*/,
-                         int /*num_retransmitted_packets*/,
+  void OnAckNotification(int /*num_retransmitted_packets*/,
                          int /*num_retransmitted_bytes*/,
                          QuicTime::Delta /*delta_largest_observed*/) override {
     ASSERT_FALSE(has_been_notified_);
@@ -1393,13 +1391,15 @@ class TestAckNotifierDelegate : public QuicAckNotifier::DelegateInterface {
   bool has_been_notified_ = false;
 };
 
-TEST_P(EndToEndTest, AckNotifierWithPacketLoss) {
-  // Verify that even in the presence of packet loss, an AckNotifierDelegate
-  // will get informed that the data it is interested in has been ACKed. This
-  // tests end-to-end ACK notification, and demonstrates that retransmissions do
-  // not break this functionality.
+TEST_P(EndToEndTest, AckNotifierWithPacketLossAndBlockedSocket) {
+  // Verify that even in the presence of packet loss and occasionally blocked
+  // socket,  an AckNotifierDelegate will get informed that the data it is
+  // interested in has been ACKed. This tests end-to-end ACK notification, and
+  // demonstrates that retransmissions do not break this functionality.
   ValueRestore<bool> old_flag(&FLAGS_quic_attach_ack_notifiers_to_packets,
                               true);
+  ValueRestore<bool> old_flag2(&FLAGS_quic_ack_notifier_informed_on_serialized,
+                               true);
 
   SetPacketLossPercentage(5);
   ASSERT_TRUE(Initialize());
@@ -1407,6 +1407,7 @@ TEST_P(EndToEndTest, AckNotifierWithPacketLoss) {
   // Wait for the server SHLO before upping the packet loss.
   client_->client()->WaitForCryptoHandshakeConfirmed();
   SetPacketLossPercentage(30);
+  client_writer_->set_fake_blocked_socket_percentage(10);
 
   // Create a POST request and send the headers only.
   HTTPMessage request(HttpConstants::HTTP_1_1, HttpConstants::POST, "/foo");
@@ -1430,11 +1431,14 @@ TEST_P(EndToEndTest, AckNotifierWithPacketLoss) {
   // Send another request to flush out any pending ACKs on the server.
   client_->SendSynchronousRequest(request_string);
 
+  // Pause the server to avoid races.
+  server_thread_->Pause();
   // Make sure the delegate does get the notification it expects.
   while (!delegate->has_been_notified()) {
     // Waits for up to 50 ms.
     client_->client()->WaitForEvents();
   }
+  server_thread_->Resume();
 }
 
 }  // namespace

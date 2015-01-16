@@ -299,10 +299,6 @@ class MockQuicCryptoServerStream : public QuicCryptoServerStream {
 };
 
 TEST_P(QuicServerSessionTest, BandwidthEstimates) {
-  if (version() <= QUIC_VERSION_21) {
-    return;
-  }
-
   // Test that bandwidth estimate updates are sent to the client, only after the
   // bandwidth estimate has changes sufficiently, and enough time has passed,
   // and we don't have any other data to write.

@@ -475,13 +475,13 @@ TEST_F(ReliableQuicStreamTest, WriteOrBufferDataWithQuicAckNotifier) {
 
   // There were two writes, so OnAckNotification is not propagated
   // until the third Ack arrives.
-  proxy_delegate->OnAckNotification(1, 2, 3, 4, zero_);
-  proxy_delegate->OnAckNotification(10, 20, 30, 40, zero_);
+  proxy_delegate->OnAckNotification(3, 4, zero_);
+  proxy_delegate->OnAckNotification(30, 40, zero_);
 
   // The arguments to delegate->OnAckNotification are the sum of the
   // arguments to proxy_delegate OnAckNotification calls.
-  EXPECT_CALL(*delegate.get(), OnAckNotification(111, 222, 333, 444, zero_));
-  proxy_delegate->OnAckNotification(100, 200, 300, 400, zero_);
+  EXPECT_CALL(*delegate.get(), OnAckNotification(333, 444, zero_));
+  proxy_delegate->OnAckNotification(300, 400, zero_);
 }
 
 // Verify delegate behavior when packets are acked before the
@@ -511,7 +511,7 @@ TEST_F(ReliableQuicStreamTest, WriteOrBufferDataAckNotificationBeforeFlush) {
   EXPECT_TRUE(HasWriteBlockedStreams());
 
   // Handle the ack of the first write.
-  proxy_delegate->OnAckNotification(1, 2, 3, 4, zero_);
+  proxy_delegate->OnAckNotification(3, 4, zero_);
   proxy_delegate = nullptr;
 
   EXPECT_CALL(*session_, WritevData(kHeadersStreamId, _, _, _, _, _)).WillOnce(
@@ -521,8 +521,8 @@ TEST_F(ReliableQuicStreamTest, WriteOrBufferDataAckNotificationBeforeFlush) {
   stream_->OnCanWrite();
 
   // Handle the ack for the second write.
-  EXPECT_CALL(*delegate.get(), OnAckNotification(101, 202, 303, 404, zero_));
-  proxy_delegate->OnAckNotification(100, 200, 300, 400, zero_);
+  EXPECT_CALL(*delegate.get(), OnAckNotification(303, 404, zero_));
+  proxy_delegate->OnAckNotification(300, 400, zero_);
 }
 
 // Verify delegate behavior when WriteOrBufferData does not buffer.
@@ -542,8 +542,8 @@ TEST_F(ReliableQuicStreamTest, WriteAndBufferDataWithAckNotiferNoBuffer) {
   EXPECT_FALSE(HasWriteBlockedStreams());
 
   // Handle the ack.
-  EXPECT_CALL(*delegate.get(), OnAckNotification(1, 2, 3, 4, zero_));
-  proxy_delegate->OnAckNotification(1, 2, 3, 4, zero_);
+  EXPECT_CALL(*delegate.get(), OnAckNotification(3, 4, zero_));
+  proxy_delegate->OnAckNotification(3, 4, zero_);
 }
 
 // Verify delegate behavior when WriteOrBufferData buffers all the data.
@@ -567,8 +567,8 @@ TEST_F(ReliableQuicStreamTest, BufferOnWriteAndBufferDataWithAckNotifer) {
   stream_->OnCanWrite();
 
   // Handle the ack.
-  EXPECT_CALL(*delegate.get(), OnAckNotification(1, 2, 3, 4, zero_));
-  proxy_delegate->OnAckNotification(1, 2, 3, 4, zero_);
+  EXPECT_CALL(*delegate.get(), OnAckNotification(3, 4, zero_));
+  proxy_delegate->OnAckNotification(3, 4, zero_);
 }
 
 // Verify delegate behavior when WriteOrBufferData when the FIN is
@@ -595,9 +595,9 @@ TEST_F(ReliableQuicStreamTest, WriteAndBufferDataWithAckNotiferOnlyFinRemains) {
   stream_->OnCanWrite();
 
   // Handle the acks.
-  proxy_delegate->OnAckNotification(1, 2, 3, 4, zero_);
-  EXPECT_CALL(*delegate.get(), OnAckNotification(11, 22, 33, 44, zero_));
-  proxy_delegate->OnAckNotification(10, 20, 30, 40, zero_);
+  proxy_delegate->OnAckNotification(3, 4, zero_);
+  EXPECT_CALL(*delegate.get(), OnAckNotification(33, 44, zero_));
+  proxy_delegate->OnAckNotification(30, 40, zero_);
 }
 
 // Verify that when we receive a packet which violates flow control (i.e. sends

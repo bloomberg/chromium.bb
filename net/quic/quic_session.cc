@@ -255,13 +255,6 @@ void QuicSession::OnWindowUpdateFrames(
       continue;
     }
 
-    if (connection_->version() < QUIC_VERSION_21 &&
-        (stream_id == kCryptoStreamId || stream_id == kHeadersStreamId)) {
-      DLOG(DFATAL) << "WindowUpdate for stream " << stream_id << " in version "
-                   << QuicVersionToString(connection_->version());
-      return;
-    }
-
     ReliableQuicStream* stream = GetStream(stream_id);
     if (stream) {
       stream->OnWindowUpdateFrame(frames[i]);
@@ -498,10 +491,8 @@ void QuicSession::OnNewStreamFlowControlWindow(QuicStreamOffset new_window) {
   }
 
   // Inform all existing streams about the new window.
-  if (connection_->version() >= QUIC_VERSION_21) {
-    GetCryptoStream()->UpdateSendWindowOffset(new_window);
-    headers_stream_->UpdateSendWindowOffset(new_window);
-  }
+  GetCryptoStream()->UpdateSendWindowOffset(new_window);
+  headers_stream_->UpdateSendWindowOffset(new_window);
   for (DataStreamMap::iterator it = stream_map_.begin();
        it != stream_map_.end(); ++it) {
     it->second->UpdateSendWindowOffset(new_window);

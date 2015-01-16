@@ -79,10 +79,6 @@ void QuicServerSession::OnWriteBlocked() {
 }
 
 void QuicServerSession::OnCongestionWindowChange(QuicTime now) {
-  if (connection()->version() <= QUIC_VERSION_21) {
-    return;
-  }
-
   // Only send updates when the application has no data to write.
   if (HasDataToWrite()) {
     return;

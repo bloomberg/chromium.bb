@@ -16,5 +16,11 @@ QuicPacketCreator* QuicPacketGeneratorPeer::GetPacketCreator(
   return &generator->packet_creator_;
 }
 
+// static
+QuicTime::Delta QuicPacketGeneratorPeer::GetFecTimeout(
+    QuicPacketGenerator* generator) {
+  return generator->fec_timeout_;
+}
+
 }  // namespace test
 }  // namespace net

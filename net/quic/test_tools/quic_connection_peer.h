@@ -104,6 +104,7 @@ class QuicConnectionPeer {
 
   static QuicAlarm* GetAckAlarm(QuicConnection* connection);
   static QuicAlarm* GetPingAlarm(QuicConnection* connection);
+  static QuicAlarm* GetFecAlarm(QuicConnection* connection);
   static QuicAlarm* GetResumeWritesAlarm(QuicConnection* connection);
   static QuicAlarm* GetRetransmissionAlarm(QuicConnection* connection);
   static QuicAlarm* GetSendAlarm(QuicConnection* connection);

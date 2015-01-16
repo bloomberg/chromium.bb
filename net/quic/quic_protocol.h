@@ -310,7 +310,6 @@ enum QuicVersion {
   // Special case to indicate unknown/unsupported QUIC version.
   QUIC_VERSION_UNSUPPORTED = 0,
 
-  QUIC_VERSION_21 = 21,  // Headers/crypto streams are flow controlled.
   QUIC_VERSION_22 = 22,  // Send Server Config Update messages on crypto stream.
   QUIC_VERSION_23 = 23,  // Timestamp in the ack frame.
 };

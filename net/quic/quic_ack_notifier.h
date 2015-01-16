@@ -17,21 +17,18 @@ namespace net {
 // trigger a call to a provided Closure.
 class NET_EXPORT_PRIVATE QuicAckNotifier {
  public:
- class NET_EXPORT_PRIVATE DelegateInterface
-     : public base::RefCounted<DelegateInterface> {
+  class NET_EXPORT_PRIVATE DelegateInterface
+      : public base::RefCounted<DelegateInterface> {
    public:
     DelegateInterface();
     // Args:
-    //  num_original_packets - Number of packets in the original transmission.
-    //  num_original_bytes - Number of packets in the original transmission.
     //  num_retransmitted_packets - Number of packets that had to be
     //                              retransmitted.
     //  num_retransmitted_bytes - Number of bytes that had to be retransmitted.
-    virtual void OnAckNotification(int num_original_packets,
-                                   int num_original_bytes,
-                                   int num_retransmitted_packets,
+    virtual void OnAckNotification(int num_retransmitted_packets,
                                    int num_retransmitted_bytes,
                                    QuicTime::Delta delta_largest_observed) = 0;
+
    protected:
     friend class base::RefCounted<DelegateInterface>;
 
@@ -83,11 +80,6 @@ class NET_EXPORT_PRIVATE QuicAckNotifier {
   // delegate will not be called until this is empty.
   base::hash_map<QuicPacketSequenceNumber, PacketInfo> sequence_numbers_;
 
-  // Transmission and retransmission stats.
-  // Number of packets in the original transmission.
-  int original_packet_count_;
-  // Number of packets in the original transmission.
-  int original_byte_count_;
   // Number of packets that had to be retransmitted.
   int retransmitted_packet_count_;
   // Number of bytes that had to be retransmitted.

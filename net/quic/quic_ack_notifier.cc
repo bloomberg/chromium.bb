@@ -27,8 +27,6 @@ QuicAckNotifier::DelegateInterface::~DelegateInterface() {}
 
 QuicAckNotifier::QuicAckNotifier(DelegateInterface* delegate)
     : delegate_(delegate),
-      original_packet_count_(0),
-      original_byte_count_(0),
       retransmitted_packet_count_(0),
       retransmitted_byte_count_(0) {
   DCHECK(delegate);
@@ -42,8 +40,6 @@ void QuicAckNotifier::AddSequenceNumber(
     int packet_payload_size) {
   sequence_numbers_.insert(make_pair(sequence_number,
                                      PacketInfo(packet_payload_size)));
-  ++original_packet_count_;
-  original_byte_count_ += packet_payload_size;
 
   DVLOG(1) << "AckNotifier waiting for packet: " << sequence_number;
 }
@@ -55,10 +51,9 @@ bool QuicAckNotifier::OnAck(QuicPacketSequenceNumber sequence_number,
   if (IsEmpty()) {
     // We have seen all the sequence numbers we were waiting for, trigger
     // callback notification.
-    delegate_->OnAckNotification(
-        original_packet_count_, original_byte_count_,
-        retransmitted_packet_count_, retransmitted_byte_count_,
-        delta_largest_observed);
+    delegate_->OnAckNotification(retransmitted_packet_count_,
+                                 retransmitted_byte_count_,
+                                 delta_largest_observed);
     return true;
   }
   return false;

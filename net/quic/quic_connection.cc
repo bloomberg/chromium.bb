@@ -27,6 +27,7 @@
 #include "net/quic/quic_config.h"
 #include "net/quic/quic_fec_group.h"
 #include "net/quic/quic_flags.h"
+#include "net/quic/quic_packet_generator.h"
 #include "net/quic/quic_utils.h"
 
 using base::StringPiece;
@@ -161,6 +162,23 @@ class PingAlarm : public QuicAlarm::Delegate {
   DISALLOW_COPY_AND_ASSIGN(PingAlarm);
 };
 
+// This alarm may be scheduled when an FEC protected packet is sent out.
+class FecAlarm : public QuicAlarm::Delegate {
+ public:
+  explicit FecAlarm(QuicPacketGenerator* packet_generator)
+      : packet_generator_(packet_generator) {}
+
+  QuicTime OnAlarm() override {
+    packet_generator_->OnFecTimeout();
+    return QuicTime::Zero();
+  }
+
+ private:
+  QuicPacketGenerator* packet_generator_;
+
+  DISALLOW_COPY_AND_ASSIGN(FecAlarm);
+};
+
 }  // namespace
 
 QuicConnection::QueuedPacket::QueuedPacket(SerializedPacket packet,
@@ -226,6 +244,7 @@ QuicConnection::QuicConnection(QuicConnectionId connection_id,
       timeout_alarm_(helper->CreateAlarm(new TimeoutAlarm(this))),
       ping_alarm_(helper->CreateAlarm(new PingAlarm(this))),
       packet_generator_(connection_id_, &framer_, random_generator_, this),
+      fec_alarm_(helper->CreateAlarm(new FecAlarm(&packet_generator_))),
       idle_network_timeout_(QuicTime::Delta::Infinite()),
       overall_connection_timeout_(QuicTime::Delta::Infinite()),
       time_of_last_received_packet_(clock_->ApproximateNow()),
@@ -323,6 +342,17 @@ void QuicConnection::OnError(QuicFramer* framer) {
     return;
   }
   SendConnectionCloseWithDetails(framer->error(), framer->detailed_error());
+}
+
+void QuicConnection::MaybeSetFecAlarm(
+    QuicPacketSequenceNumber sequence_number) {
+  if (fec_alarm_->IsSet()) {
+    return;
+  }
+  QuicTime::Delta timeout = packet_generator_.GetFecTimeout(sequence_number);
+  if (!timeout.IsInfinite()) {
+    fec_alarm_->Set(clock_->ApproximateNow().Add(timeout));
+  }
 }
 
 void QuicConnection::OnPacket() {
@@ -1499,6 +1529,7 @@ bool QuicConnection::WritePacketInner(QueuedPacket* packet) {
     time_of_last_sent_new_packet_ = packet_send_time;
   }
   SetPingAlarm();
+  MaybeSetFecAlarm(sequence_number);
   DVLOG(1) << ENDPOINT << "time "
            << (FLAGS_quic_record_send_time_before_write ?
                "we began writing " : "we finished writing ")
@@ -1593,6 +1624,14 @@ void QuicConnection::OnSerializedPacket(
   if (serialized_packet.retransmittable_frames) {
     serialized_packet.retransmittable_frames->
         set_encryption_level(encryption_level_);
+
+    if (FLAGS_quic_ack_notifier_informed_on_serialized) {
+      sent_packet_manager_.OnSerializedPacket(serialized_packet);
+    }
+  }
+  if (serialized_packet.packet->is_fec_packet() && fec_alarm_->IsSet()) {
+    // If an FEC packet is serialized with the FEC alarm set, cancel the alarm.
+    fec_alarm_->Cancel();
   }
   SendOrQueuePacket(QueuedPacket(serialized_packet, encryption_level_));
 }
@@ -1892,6 +1931,7 @@ void QuicConnection::CloseConnection(QuicErrorCode error, bool from_peer) {
   // connection is closed.
   ack_alarm_->Cancel();
   ping_alarm_->Cancel();
+  fec_alarm_->Cancel();
   resume_writes_alarm_->Cancel();
   retransmission_alarm_->Cancel();
   send_alarm_->Cancel();
