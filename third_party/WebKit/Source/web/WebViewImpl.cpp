@@ -1654,8 +1654,10 @@ void WebViewImpl::performResize()
     // and thus will not be invalidated in |FrameView::performPreLayoutTasks|.
     // Therefore we should force explicit media queries invalidation here.
     if (page()->inspectorController().deviceEmulationEnabled()) {
-        if (Document* document = localFrameRootTemporary()->frame()->document())
+        if (Document* document = localFrameRootTemporary()->frame()->document()) {
+            document->styleResolverChanged();
             document->mediaQueryAffectingValueChanged();
+        }
     }
 }
 

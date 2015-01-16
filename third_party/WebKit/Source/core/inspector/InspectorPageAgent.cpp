@@ -1359,7 +1359,6 @@ void InspectorPageAgent::updateViewMetrics(bool enabled, int width, int height, 
         document->styleResolverChanged();
         document->mediaQueryAffectingValueChanged();
     }
-    InspectorInstrumentation::mediaQueryResultChanged(document);
 
     if (m_deviceMetricsOverridden) {
         m_page->settings().setTextAutosizingEnabled(mobile);

@@ -819,10 +819,6 @@ void FrameView::performPreLayoutTasks()
     if (!document->styleResolver() || document->styleResolver()->mediaQueryAffectedByViewportChange()) {
         document->styleResolverChanged();
         document->mediaQueryAffectingValueChanged();
-
-        // FIXME: This instrumentation event is not strictly accurate since cached media query results
-        //        do not persist across StyleResolver rebuilds.
-        InspectorInstrumentation::mediaQueryResultChanged(document);
     } else {
         document->evaluateMediaQueryList();
     }
