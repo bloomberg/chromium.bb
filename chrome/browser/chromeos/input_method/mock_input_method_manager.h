@@ -22,44 +22,36 @@ class MockInputMethodManager : public InputMethodManager {
    public:
     explicit State(MockInputMethodManager* manager);
 
-    virtual scoped_refptr<InputMethodManager::State> Clone() const override;
-    virtual void AddInputMethodExtension(
-        const std::string& extension_id,
-        const InputMethodDescriptors& descriptors,
-        InputMethodEngineInterface* instance) override;
-    virtual void RemoveInputMethodExtension(
-        const std::string& extension_id) override;
-    virtual void ChangeInputMethod(const std::string& input_method_id,
-                                   bool show_message) override;
-    virtual bool EnableInputMethod(
+    scoped_refptr<InputMethodManager::State> Clone() const override;
+    void AddInputMethodExtension(const std::string& extension_id,
+                                 const InputMethodDescriptors& descriptors,
+                                 InputMethodEngineInterface* instance) override;
+    void RemoveInputMethodExtension(const std::string& extension_id) override;
+    void ChangeInputMethod(const std::string& input_method_id,
+                           bool show_message) override;
+    bool EnableInputMethod(
         const std::string& new_active_input_method_id) override;
-    virtual void EnableLoginLayouts(
+    void EnableLoginLayouts(
         const std::string& language_code,
         const std::vector<std::string>& initial_layouts) override;
-    virtual void EnableLockScreenLayouts() override;
-    virtual void GetInputMethodExtensions(
-        InputMethodDescriptors* result) override;
-    virtual scoped_ptr<InputMethodDescriptors> GetActiveInputMethods()
-        const override;
-    virtual const std::vector<std::string>& GetActiveInputMethodIds()
-        const override;
-    virtual const InputMethodDescriptor* GetInputMethodFromId(
+    void EnableLockScreenLayouts() override;
+    void GetInputMethodExtensions(InputMethodDescriptors* result) override;
+    scoped_ptr<InputMethodDescriptors> GetActiveInputMethods() const override;
+    const std::vector<std::string>& GetActiveInputMethodIds() const override;
+    const InputMethodDescriptor* GetInputMethodFromId(
         const std::string& input_method_id) const override;
-    virtual size_t GetNumActiveInputMethods() const override;
-    virtual void SetEnabledExtensionImes(
-        std::vector<std::string>* ids) override;
-    virtual void SetInputMethodLoginDefault() override;
-    virtual void SetInputMethodLoginDefaultFromVPD(
-        const std::string& locale,
-        const std::string& layout) override;
-    virtual bool CanCycleInputMethod() override;
-    virtual void SwitchToNextInputMethod() override;
-    virtual void SwitchToPreviousInputMethod() override;
-    virtual bool CanSwitchInputMethod(
-        const ui::Accelerator& accelerator) override;
-    virtual void SwitchInputMethod(const ui::Accelerator& accelerator) override;
-    virtual InputMethodDescriptor GetCurrentInputMethod() const override;
-    virtual bool ReplaceEnabledInputMethods(
+    size_t GetNumActiveInputMethods() const override;
+    void SetEnabledExtensionImes(std::vector<std::string>* ids) override;
+    void SetInputMethodLoginDefault() override;
+    void SetInputMethodLoginDefaultFromVPD(const std::string& locale,
+                                           const std::string& layout) override;
+    bool CanCycleInputMethod() override;
+    void SwitchToNextInputMethod() override;
+    void SwitchToPreviousInputMethod() override;
+    bool CanSwitchInputMethod(const ui::Accelerator& accelerator) override;
+    void SwitchInputMethod(const ui::Accelerator& accelerator) override;
+    InputMethodDescriptor GetCurrentInputMethod() const override;
+    bool ReplaceEnabledInputMethods(
         const std::vector<std::string>& new_active_input_method_ids) override;
 
     // The value GetCurrentInputMethod().id() will return.
@@ -70,39 +62,35 @@ class MockInputMethodManager : public InputMethodManager {
 
    protected:
     friend base::RefCounted<chromeos::input_method::InputMethodManager::State>;
-    virtual ~State();
+    ~State() override;
 
     MockInputMethodManager* const manager_;
   };
 
   MockInputMethodManager();
-  virtual ~MockInputMethodManager();
+  ~MockInputMethodManager() override;
 
   // InputMethodManager override:
-  virtual UISessionState GetUISessionState() override;
-  virtual void AddObserver(InputMethodManager::Observer* observer) override;
-  virtual void AddCandidateWindowObserver(
+  UISessionState GetUISessionState() override;
+  void AddObserver(InputMethodManager::Observer* observer) override;
+  void AddCandidateWindowObserver(
       InputMethodManager::CandidateWindowObserver* observer) override;
-  virtual void RemoveObserver(InputMethodManager::Observer* observer) override;
-  virtual void RemoveCandidateWindowObserver(
+  void RemoveObserver(InputMethodManager::Observer* observer) override;
+  void RemoveCandidateWindowObserver(
       InputMethodManager::CandidateWindowObserver* observer) override;
-  virtual scoped_ptr<InputMethodDescriptors>
-      GetSupportedInputMethods() const override;
-  virtual void ActivateInputMethodMenuItem(const std::string& key) override;
-  virtual bool IsISOLevel5ShiftUsedByCurrentInputMethod() const override;
-  virtual bool IsAltGrUsedByCurrentInputMethod() const override;
-  virtual ImeKeyboard* GetImeKeyboard() override;
-  virtual InputMethodUtil* GetInputMethodUtil() override;
-  virtual ComponentExtensionIMEManager*
-      GetComponentExtensionIMEManager() override;
-  virtual bool IsLoginKeyboard(const std::string& layout) const override;
-  virtual bool MigrateInputMethods(
-       std::vector<std::string>* input_method_ids) override;
-  virtual scoped_refptr<InputMethodManager::State> CreateNewState(
+  scoped_ptr<InputMethodDescriptors> GetSupportedInputMethods() const override;
+  void ActivateInputMethodMenuItem(const std::string& key) override;
+  bool IsISOLevel5ShiftUsedByCurrentInputMethod() const override;
+  bool IsAltGrUsedByCurrentInputMethod() const override;
+  ImeKeyboard* GetImeKeyboard() override;
+  InputMethodUtil* GetInputMethodUtil() override;
+  ComponentExtensionIMEManager* GetComponentExtensionIMEManager() override;
+  bool IsLoginKeyboard(const std::string& layout) const override;
+  bool MigrateInputMethods(std::vector<std::string>* input_method_ids) override;
+  scoped_refptr<InputMethodManager::State> CreateNewState(
       Profile* profile) override;
-  virtual scoped_refptr<InputMethodManager::State> GetActiveIMEState() override;
-  virtual void SetState(
-      scoped_refptr<InputMethodManager::State> state) override;
+  scoped_refptr<InputMethodManager::State> GetActiveIMEState() override;
+  void SetState(scoped_refptr<InputMethodManager::State> state) override;
 
   // Sets an input method ID which will be returned by GetCurrentInputMethod().
   void SetCurrentInputMethodId(const std::string& input_method_id);

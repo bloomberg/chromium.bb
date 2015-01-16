@@ -15,12 +15,11 @@ class Accessibility
     : public InputMethodManager::Observer {
  public:
   explicit Accessibility(InputMethodManager* imm);
-  virtual ~Accessibility();
+  ~Accessibility() override;
 
  private:
   // InputMethodManager::Observer implementation.
-  virtual void InputMethodChanged(InputMethodManager* imm,
-                                  bool show_message) override;
+  void InputMethodChanged(InputMethodManager* imm, bool show_message) override;
   InputMethodManager* imm_;
 
   DISALLOW_COPY_AND_ASSIGN(Accessibility);

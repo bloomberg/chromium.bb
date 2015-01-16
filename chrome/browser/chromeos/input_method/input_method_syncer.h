@@ -33,7 +33,7 @@ class InputMethodSyncer : public PrefServiceSyncableObserver {
   InputMethodSyncer(
       PrefServiceSyncable* prefs,
       scoped_refptr<input_method::InputMethodManager::State> ime_state);
-  virtual ~InputMethodSyncer();
+  ~InputMethodSyncer() override;
 
   // Registers the syncable input method prefs.
   static void RegisterProfilePrefs(

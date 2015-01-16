@@ -41,14 +41,12 @@ class CandidateWindowControllerImpl
       public IMECandidateWindowHandlerInterface {
  public:
   CandidateWindowControllerImpl();
-  virtual ~CandidateWindowControllerImpl();
+  ~CandidateWindowControllerImpl() override;
 
   // CandidateWindowController overrides:
-  virtual void AddObserver(
-      CandidateWindowController::Observer* observer) override;
-  virtual void RemoveObserver(
-      CandidateWindowController::Observer* observer) override;
-  virtual void Hide() override;
+  void AddObserver(CandidateWindowController::Observer* observer) override;
+  void RemoveObserver(CandidateWindowController::Observer* observer) override;
+  void Hide() override;
 
  protected:
   static void ConvertLookupTableToInfolistEntry(
@@ -58,20 +56,20 @@ class CandidateWindowControllerImpl
 
  private:
   // ui::ime::CandidateWindowView::Observer implementation.
-  virtual void OnCandidateCommitted(int index) override;
+  void OnCandidateCommitted(int index) override;
 
   // views::WidgetObserver implementation.
-  virtual void OnWidgetClosing(views::Widget* widget) override;
+  void OnWidgetClosing(views::Widget* widget) override;
 
   // IMECandidateWindowHandlerInterface implementation.
-  virtual void SetCursorBounds(const gfx::Rect& cursor_bounds,
-                               const gfx::Rect& composition_head) override;
-  virtual void UpdateLookupTable(
-      const ui::CandidateWindow& candidate_window,
-      bool visible) override;
-  virtual void UpdatePreeditText(const base::string16& text,
-                                 unsigned int cursor, bool visible) override;
-  virtual void FocusStateChanged(bool is_focused) override;
+  void SetCursorBounds(const gfx::Rect& cursor_bounds,
+                       const gfx::Rect& composition_head) override;
+  void UpdateLookupTable(const ui::CandidateWindow& candidate_window,
+                         bool visible) override;
+  void UpdatePreeditText(const base::string16& text,
+                         unsigned int cursor,
+                         bool visible) override;
+  void FocusStateChanged(bool is_focused) override;
 
   void InitCandidateWindowView();
 

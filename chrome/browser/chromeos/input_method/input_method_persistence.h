@@ -26,14 +26,14 @@ class InputMethodPersistence : public InputMethodManager::Observer {
   // OnSessionStateChange whenever the InputMethodManager::UISessionState
   // changes.
   explicit InputMethodPersistence(InputMethodManager* input_method_manager);
-  virtual ~InputMethodPersistence();
+  ~InputMethodPersistence() override;
 
   // Receives notification of session state changes.
   void OnSessionStateChange(InputMethodManager::UISessionState new_session);
 
   // InputMethodManager::Observer overrides.
-  virtual void InputMethodChanged(InputMethodManager* manager,
-                                  bool show_message) override;
+  void InputMethodChanged(InputMethodManager* manager,
+                          bool show_message) override;
 
  private:
   InputMethodManager* input_method_manager_;

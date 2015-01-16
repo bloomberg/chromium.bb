@@ -177,7 +177,7 @@ class InputMethodEngineInterface : public IMEEngineHandlerInterface {
     virtual void OnReset(const std::string& engine_id) = 0;
   };
 
-  virtual ~InputMethodEngineInterface() {}
+  ~InputMethodEngineInterface() override {}
 
   // Set the current composition and associated properties.
   virtual bool SetComposition(int context_id,

@@ -68,14 +68,14 @@ class TestObserver : public InputMethodManager::Observer,
         input_method_menu_item_changed_count_(0),
         last_show_message_(false) {
   }
-  virtual ~TestObserver() {}
+  ~TestObserver() override {}
 
-  virtual void InputMethodChanged(InputMethodManager* manager,
-                                  bool show_message) override {
+  void InputMethodChanged(InputMethodManager* manager,
+                          bool show_message) override {
     ++input_method_changed_count_;
     last_show_message_ = show_message;
   }
-  virtual void InputMethodMenuItemChanged(
+  void InputMethodMenuItemChanged(
       ui::ime::InputMethodMenuManager* manager) override {
     ++input_method_menu_item_changed_count_;
   }
@@ -96,12 +96,12 @@ class TestCandidateWindowObserver
         candidate_window_closed_count_(0) {
   }
 
-  virtual ~TestCandidateWindowObserver() {}
+  ~TestCandidateWindowObserver() override {}
 
-  virtual void CandidateWindowOpened(InputMethodManager* manager) override {
+  void CandidateWindowOpened(InputMethodManager* manager) override {
     ++candidate_window_opened_count_;
   }
-  virtual void CandidateWindowClosed(InputMethodManager* manager) override {
+  void CandidateWindowClosed(InputMethodManager* manager) override {
     ++candidate_window_closed_count_;
   }
 
@@ -120,9 +120,9 @@ class InputMethodManagerImplTest :  public BrowserWithTestWindowTest {
         candidate_window_controller_(NULL),
         keyboard_(NULL) {
   }
-  virtual ~InputMethodManagerImplTest() {}
+  ~InputMethodManagerImplTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     profile_manager_.reset(new TestingProfileManager(GetBrowserProcess()));
     ASSERT_TRUE(profile_manager_->SetUp());
 
@@ -148,7 +148,7 @@ class InputMethodManagerImplTest :  public BrowserWithTestWindowTest {
     BrowserWithTestWindowTest::SetUp();
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     BrowserWithTestWindowTest::TearDown();
 
     ui::ShutdownInputMethodForTesting();

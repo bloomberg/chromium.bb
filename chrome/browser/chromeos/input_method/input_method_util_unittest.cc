@@ -53,7 +53,7 @@ class InputMethodUtilTest : public testing::Test {
         base::Bind(&InputMethodUtilTest::GetDisplayLanguageName));
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     InputMethodDescriptors input_methods;
 
     std::vector<std::string> layouts;

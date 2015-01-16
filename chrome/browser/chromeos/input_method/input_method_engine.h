@@ -36,59 +36,60 @@ class InputMethodEngine : public InputMethodEngineInterface {
  public:
   InputMethodEngine();
 
-  virtual ~InputMethodEngine();
+  ~InputMethodEngine() override;
 
   void Initialize(scoped_ptr<InputMethodEngineInterface::Observer> observer,
                   const char* extension_id);
 
   // InputMethodEngineInterface overrides.
-  virtual const std::string& GetActiveComponentId() const override;
-  virtual bool SetComposition(int context_id,
-                              const char* text,
-                              int selection_start,
-                              int selection_end,
-                              int cursor,
-                              const std::vector<SegmentInfo>& segments,
-                              std::string* error) override;
-  virtual bool ClearComposition(int context_id, std::string* error) override;
-  virtual bool CommitText(int context_id, const char* text,
-                          std::string* error) override;
-  virtual bool SendKeyEvents(int context_id,
-                             const std::vector<KeyboardEvent>& events) override;
-  virtual const CandidateWindowProperty&
-    GetCandidateWindowProperty() const override;
-  virtual void SetCandidateWindowProperty(
+  const std::string& GetActiveComponentId() const override;
+  bool SetComposition(int context_id,
+                      const char* text,
+                      int selection_start,
+                      int selection_end,
+                      int cursor,
+                      const std::vector<SegmentInfo>& segments,
+                      std::string* error) override;
+  bool ClearComposition(int context_id, std::string* error) override;
+  bool CommitText(int context_id,
+                  const char* text,
+                  std::string* error) override;
+  bool SendKeyEvents(int context_id,
+                     const std::vector<KeyboardEvent>& events) override;
+  const CandidateWindowProperty& GetCandidateWindowProperty() const override;
+  void SetCandidateWindowProperty(
       const CandidateWindowProperty& property) override;
-  virtual bool SetCandidateWindowVisible(bool visible,
-                                         std::string* error) override;
-  virtual bool SetCandidates(int context_id,
-                             const std::vector<Candidate>& candidates,
+  bool SetCandidateWindowVisible(bool visible, std::string* error) override;
+  bool SetCandidates(int context_id,
+                     const std::vector<Candidate>& candidates,
+                     std::string* error) override;
+  bool SetCursorPosition(int context_id,
+                         int candidate_id,
+                         std::string* error) override;
+  bool SetMenuItems(const std::vector<MenuItem>& items) override;
+  bool UpdateMenuItems(const std::vector<MenuItem>& items) override;
+  bool IsActive() const override;
+  bool DeleteSurroundingText(int context_id,
+                             int offset,
+                             size_t number_of_chars,
                              std::string* error) override;
-  virtual bool SetCursorPosition(int context_id, int candidate_id,
-                                 std::string* error) override;
-  virtual bool SetMenuItems(const std::vector<MenuItem>& items) override;
-  virtual bool UpdateMenuItems(const std::vector<MenuItem>& items) override;
-  virtual bool IsActive() const override;
-  virtual bool DeleteSurroundingText(int context_id,
-                                     int offset,
-                                     size_t number_of_chars,
-                                     std::string* error) override;
 
   // IMEEngineHandlerInterface overrides.
-  virtual void FocusIn(
+  void FocusIn(
       const IMEEngineHandlerInterface::InputContext& input_context) override;
-  virtual void FocusOut() override;
-  virtual void Enable(const std::string& component_id) override;
-  virtual void Disable() override;
-  virtual void PropertyActivate(const std::string& property_name) override;
-  virtual void Reset() override;
-  virtual void ProcessKeyEvent(const ui::KeyEvent& key_event,
-                               const KeyEventDoneCallback& callback) override;
-  virtual void CandidateClicked(uint32 index) override;
-  virtual void SetSurroundingText(const std::string& text, uint32 cursor_pos,
-                                  uint32 anchor_pos) override;
-  virtual void HideInputView() override;
-  virtual void SetCompositionBounds(const gfx::Rect& bounds) override;
+  void FocusOut() override;
+  void Enable(const std::string& component_id) override;
+  void Disable() override;
+  void PropertyActivate(const std::string& property_name) override;
+  void Reset() override;
+  void ProcessKeyEvent(const ui::KeyEvent& key_event,
+                       const KeyEventDoneCallback& callback) override;
+  void CandidateClicked(uint32 index) override;
+  void SetSurroundingText(const std::string& text,
+                          uint32 cursor_pos,
+                          uint32 anchor_pos) override;
+  void HideInputView() override;
+  void SetCompositionBounds(const gfx::Rect& bounds) override;
 
   int GetCotextIdForTesting() { return context_id_; }
 

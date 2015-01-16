@@ -66,43 +66,38 @@ void InitInputMethod() {
 class TestObserver : public InputMethodEngineInterface::Observer {
  public:
   TestObserver() : calls_bitmap_(NONE) {}
-  virtual ~TestObserver() {}
+  ~TestObserver() override {}
 
-  virtual void OnActivate(const std::string& engine_id) override {
+  void OnActivate(const std::string& engine_id) override {
     calls_bitmap_ |= ACTIVATE;
   }
-  virtual void OnDeactivated(const std::string& engine_id) override {
+  void OnDeactivated(const std::string& engine_id) override {
     calls_bitmap_ |= DEACTIVATED;
   }
-  virtual void OnFocus(
+  void OnFocus(
       const InputMethodEngineInterface::InputContext& context) override {
     calls_bitmap_ |= ONFOCUS;
   }
-  virtual void OnBlur(int context_id) override {
-    calls_bitmap_ |= ONBLUR;
-  }
-  virtual void OnKeyEvent(
-      const std::string& engine_id,
-      const InputMethodEngineInterface::KeyboardEvent& event,
-      input_method::KeyEventHandle* key_data) override {}
-  virtual void OnInputContextUpdate(
+  void OnBlur(int context_id) override { calls_bitmap_ |= ONBLUR; }
+  void OnKeyEvent(const std::string& engine_id,
+                  const InputMethodEngineInterface::KeyboardEvent& event,
+                  input_method::KeyEventHandle* key_data) override {}
+  void OnInputContextUpdate(
       const InputMethodEngineInterface::InputContext& context) override {}
-  virtual void OnCandidateClicked(
+  void OnCandidateClicked(
       const std::string& engine_id,
       int candidate_id,
       InputMethodEngineInterface::MouseButtonEvent button) override {}
-  virtual void OnMenuItemActivated(
-      const std::string& engine_id,
-      const std::string& menu_id) override {}
-  virtual void OnSurroundingTextChanged(
-      const std::string& engine_id,
-      const std::string& text,
-      int cursor_pos,
-      int anchor_pos) override {}
-  virtual void OnCompositionBoundsChanged(const gfx::Rect& bounds) override {
+  void OnMenuItemActivated(const std::string& engine_id,
+                           const std::string& menu_id) override {}
+  void OnSurroundingTextChanged(const std::string& engine_id,
+                                const std::string& text,
+                                int cursor_pos,
+                                int anchor_pos) override {}
+  void OnCompositionBoundsChanged(const gfx::Rect& bounds) override {
     calls_bitmap_ |= ONCOMPOSITIONBOUNDSCHANGED;
   }
-  virtual void OnReset(const std::string& engine_id) override {}
+  void OnReset(const std::string& engine_id) override {}
 
   unsigned char GetCallsBitmapAndReset() {
     unsigned char ret = calls_bitmap_;
@@ -127,7 +122,7 @@ class InputMethodEngineTest :  public testing::Test {
     IMEBridge::Get()->SetInputContextHandler(
         mock_ime_input_context_handler_.get());
   }
-  virtual ~InputMethodEngineTest() {
+  ~InputMethodEngineTest() override {
     IMEBridge::Get()->SetInputContextHandler(NULL);
     engine_.reset();
     Shutdown();

@@ -24,14 +24,14 @@ class ModeIndicatorObserver : public ModeIndicatorObserverInterface {
   ModeIndicatorObserver()
     : active_widget_(NULL) {}
 
-  virtual ~ModeIndicatorObserver() {
+  ~ModeIndicatorObserver() override {
     if (active_widget_)
       active_widget_->RemoveObserver(this);
   }
 
   // If other active mode indicator widget is shown, close it immedicately
   // without fading animation.  Then store this widget as the active widget.
-  virtual void AddModeIndicatorWidget(views::Widget* widget) override {
+  void AddModeIndicatorWidget(views::Widget* widget) override {
     DCHECK(widget);
     if (active_widget_)
       active_widget_->Close();
@@ -40,7 +40,7 @@ class ModeIndicatorObserver : public ModeIndicatorObserverInterface {
   }
 
   // views::WidgetObserver override:
-  virtual void OnWidgetDestroying(views::Widget* widget) override {
+  void OnWidgetDestroying(views::Widget* widget) override {
     if (widget == active_widget_)
       active_widget_ = NULL;
   }

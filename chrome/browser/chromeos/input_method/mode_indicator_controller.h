@@ -16,7 +16,7 @@ namespace input_method {
 class ModeIndicatorObserverInterface : public views::WidgetObserver {
  public:
   ModeIndicatorObserverInterface() {}
-  virtual ~ModeIndicatorObserverInterface() {}
+  ~ModeIndicatorObserverInterface() override {}
 
   virtual void AddModeIndicatorWidget(views::Widget* widget) = 0;
 };
@@ -29,7 +29,7 @@ class ModeIndicatorController
  public:
   // This class takes the ownership of |mi_widget|.
   explicit ModeIndicatorController(InputMethodManager* imm);
-  virtual ~ModeIndicatorController();
+  ~ModeIndicatorController() override;
 
   // Set cursor bounds, which is the base point to display this indicator.
   // Bacisally this indicator is displayed underneath the cursor.
@@ -46,8 +46,8 @@ class ModeIndicatorController
 
  private:
   // InputMethodManager::Observer implementation.
-  virtual void InputMethodChanged(InputMethodManager* manager,
-                                  bool show_message) override;
+  void InputMethodChanged(InputMethodManager* manager,
+                          bool show_message) override;
 
   // Show the mode inidicator with the current ime's short name if all
   // the conditions are cleared.
