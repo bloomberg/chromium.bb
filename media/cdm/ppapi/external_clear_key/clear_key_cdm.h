@@ -35,13 +35,14 @@ class ClearKeyCdm : public ClearKeyCdmInterface {
   virtual ~ClearKeyCdm();
 
   // ContentDecryptionModule implementation.
-  virtual void CreateSession(uint32 promise_id,
-                             const char* init_data_type,
-                             uint32 init_data_type_size,
-                             const uint8* init_data,
-                             uint32 init_data_size,
-                             cdm::SessionType session_type) override;
+  virtual void CreateSessionAndGenerateRequest(uint32 promise_id,
+                                               cdm::SessionType session_type,
+                                               const char* init_data_type,
+                                               uint32 init_data_type_size,
+                                               const uint8* init_data,
+                                               uint32 init_data_size) override;
   virtual void LoadSession(uint32 promise_id,
+                           cdm::SessionType session_type,
                            const char* web_session_id,
                            uint32_t web_session_id_length) override;
   virtual void UpdateSession(uint32 promise_id,
@@ -55,9 +56,6 @@ class ClearKeyCdm : public ClearKeyCdmInterface {
   virtual void RemoveSession(uint32 promise_id,
                              const char* web_session_id,
                              uint32_t web_session_id_length) override;
-  virtual void GetUsableKeyIds(uint32_t promise_id,
-                               const char* web_session_id,
-                               uint32_t web_session_id_length) override;
   virtual void SetServerCertificate(
       uint32 promise_id,
       const uint8_t* server_certificate_data,
@@ -81,12 +79,15 @@ class ClearKeyCdm : public ClearKeyCdmInterface {
   virtual void OnPlatformChallengeResponse(
       const cdm::PlatformChallengeResponse& response) override;
   virtual void OnQueryOutputProtectionStatus(
-      uint32_t link_mask, uint32_t output_protection_mask) override;
+      cdm::QueryResult result,
+      uint32_t link_mask,
+      uint32_t output_protection_mask) override;
 
  private:
   // Emulates a session stored for |session_id_for_emulated_loadsession_|. This
   // is necessary since aes_decryptor.cc does not support storing sessions.
   void LoadLoadableSession();
+  void OnLoadSessionUpdated();
 
   // ContentDecryptionModule callbacks.
   void OnSessionMessage(const std::string& web_session_id,
@@ -102,7 +103,6 @@ class ClearKeyCdm : public ClearKeyCdmInterface {
   // calling |host_| to resolve or reject the promise.
   void OnSessionCreated(uint32 promise_id, const std::string& web_session_id);
   void OnSessionLoaded(uint32 promise_id, const std::string& web_session_id);
-  void OnSessionUpdated(uint32 promise_id, const std::string& web_session_id);
   void OnPromiseResolved(uint32 promise_id);
   void OnPromiseFailed(uint32 promise_id,
                        MediaKeys::Exception exception_code,
@@ -165,10 +165,24 @@ class ClearKeyCdm : public ClearKeyCdmInterface {
   // |promise_id_for_emulated_loadsession_| is used to keep track of the
   // original LoadSession() promise, as it is not resolved until the
   // UpdateSession() call succeeds.
+  // |has_received_keys_change_event_for_emulated_loadsession_| is used to keep
+  // track of whether a keyschange event has been received for the loadable
+  // session in case it happens before the emulated session is fully created.
+  // |keys_info_for_emulated_loadsession_| is used to keep track of the list
+  // of keys provided as a result of calling UpdateSession() if it happens,
+  // since they can't be forwarded on until the LoadSession() promise is
+  // resolved.
   // TODO(xhwang): Extract testing code from main implementation.
   // See http://crbug.com/341751
+  // TODO(jrummell): Once the order of events is fixed,
+  // |has_received_keys_change_event_for_emulated_loadsession_| should be
+  // removed (the event should have either happened or never happened).
+  // |keys_info_for_emulated_loadsession_| may also go away if the event is
+  // not expected. See http://crbug.com/448225
   std::string session_id_for_emulated_loadsession_;
   uint32_t promise_id_for_emulated_loadsession_;
+  bool has_received_keys_change_event_for_emulated_loadsession_;
+  CdmKeysInfo keys_info_for_emulated_loadsession_;
 
   // Timer delay in milliseconds for the next host_->SetTimer() call.
   int64 timer_delay_ms_;

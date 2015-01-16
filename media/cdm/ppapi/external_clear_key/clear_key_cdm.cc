@@ -13,6 +13,7 @@
 #include "base/bind.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "base/time/time.h"
 #include "media/base/cdm_callback_promise.h"
 #include "media/base/cdm_key_information.h"
@@ -168,6 +169,37 @@ static media::MediaKeys::SessionType ConvertSessionType(
   return media::MediaKeys::TEMPORARY_SESSION;
 }
 
+cdm::KeyStatus ConvertKeyStatus(media::CdmKeyInformation::KeyStatus status) {
+  switch (status) {
+    case media::CdmKeyInformation::KeyStatus::USABLE:
+      return cdm::kUsable;
+    case media::CdmKeyInformation::KeyStatus::INTERNAL_ERROR:
+      return cdm::kInternalError;
+    case media::CdmKeyInformation::KeyStatus::EXPIRED:
+      return cdm::kExpired;
+    case media::CdmKeyInformation::KeyStatus::OUTPUT_NOT_ALLOWED:
+      return cdm::kOutputNotAllowed;
+  }
+  NOTIMPLEMENTED();
+  return cdm::kInternalError;
+}
+
+// Shallow copy all the key information from |keys_info| into |keys_vector|.
+// |keys_vector| is only valid for the lifetime of |keys_info| because it
+// contains pointers into the latter.
+void ConvertCdmKeysInfo(const std::vector<media::CdmKeyInformation*>& keys_info,
+                        std::vector<cdm::KeyInformation>* keys_vector) {
+  keys_vector->reserve(keys_info.size());
+  for (const auto& key_info : keys_info) {
+    cdm::KeyInformation key;
+    key.key_id = vector_as_array(&key_info->key_id);
+    key.key_id_size = key_info->key_id.size();
+    key.status = ConvertKeyStatus(key_info->status);
+    key.system_code = key_info->system_code;
+    keys_vector->push_back(key);
+  }
+}
+
 template<typename Type>
 class ScopedResetter {
  public:
@@ -228,6 +260,7 @@ ClearKeyCdm::ClearKeyCdm(ClearKeyCdmHost* host, const std::string& key_system)
                      base::Unretained(this))),
       host_(host),
       key_system_(key_system),
+      has_received_keys_change_event_for_emulated_loadsession_(false),
       timer_delay_ms_(kInitialTimerDelayMs),
       heartbeat_timer_set_(false) {
 #if defined(CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER)
@@ -241,12 +274,12 @@ ClearKeyCdm::ClearKeyCdm(ClearKeyCdmHost* host, const std::string& key_system)
 
 ClearKeyCdm::~ClearKeyCdm() {}
 
-void ClearKeyCdm::CreateSession(uint32 promise_id,
-                                const char* init_data_type,
-                                uint32 init_data_type_size,
-                                const uint8* init_data,
-                                uint32 init_data_size,
-                                cdm::SessionType session_type) {
+void ClearKeyCdm::CreateSessionAndGenerateRequest(uint32 promise_id,
+                                                  cdm::SessionType session_type,
+                                                  const char* init_data_type,
+                                                  uint32 init_data_type_size,
+                                                  const uint8* init_data,
+                                                  uint32 init_data_size) {
   DVLOG(1) << __FUNCTION__;
 
   scoped_ptr<media::NewSessionCdmPromise> promise(
@@ -270,9 +303,11 @@ void ClearKeyCdm::CreateSession(uint32 promise_id,
 // (containing a |kLoadableSessionKey| for |kLoadableSessionKeyId|) is
 // supported.
 void ClearKeyCdm::LoadSession(uint32 promise_id,
+                              cdm::SessionType session_type,
                               const char* web_session_id,
                               uint32_t web_session_id_length) {
   DVLOG(1) << __FUNCTION__;
+  DCHECK_EQ(session_type, cdm::kPersistentLicense);
 
   if (std::string(kLoadableWebSessionId) !=
       std::string(web_session_id, web_session_id_length)) {
@@ -285,6 +320,9 @@ void ClearKeyCdm::LoadSession(uint32 promise_id,
                            message.length());
     return;
   }
+
+  // Only allowed to successfully load this session once.
+  DCHECK(session_id_for_emulated_loadsession_.empty());
 
   scoped_ptr<media::NewSessionCdmPromise> promise(
       new media::CdmCallbackPromise<std::string>(
@@ -307,13 +345,15 @@ void ClearKeyCdm::UpdateSession(uint32 promise_id,
   DVLOG(1) << __FUNCTION__;
   std::string web_session_str(web_session_id, web_session_id_length);
 
+  // If updating the loadable session, use the actual session id generated.
+  if (web_session_str == std::string(kLoadableWebSessionId))
+    web_session_str = session_id_for_emulated_loadsession_;
+
   scoped_ptr<media::SimpleCdmPromise> promise(new media::CdmCallbackPromise<>(
-      base::Bind(&ClearKeyCdm::OnSessionUpdated,
-                 base::Unretained(this),
-                 promise_id,
-                 web_session_str),
-      base::Bind(
-          &ClearKeyCdm::OnPromiseFailed, base::Unretained(this), promise_id)));
+      base::Bind(&ClearKeyCdm::OnPromiseResolved, base::Unretained(this),
+                 promise_id),
+      base::Bind(&ClearKeyCdm::OnPromiseFailed, base::Unretained(this),
+                 promise_id)));
   decryptor_.UpdateSession(
       web_session_str, response, response_size, promise.Pass());
 
@@ -329,6 +369,10 @@ void ClearKeyCdm::CloseSession(uint32 promise_id,
   DVLOG(1) << __FUNCTION__;
   std::string web_session_str(web_session_id, web_session_id_length);
 
+  // If closing the loadable session, use the actual session id generated.
+  if (web_session_str == std::string(kLoadableWebSessionId))
+    web_session_str = session_id_for_emulated_loadsession_;
+
   scoped_ptr<media::SimpleCdmPromise> promise(new media::CdmCallbackPromise<>(
       base::Bind(
           &ClearKeyCdm::OnPromiseResolved, base::Unretained(this), promise_id),
@@ -341,21 +385,11 @@ void ClearKeyCdm::RemoveSession(uint32 promise_id,
                                 const char* web_session_id,
                                 uint32_t web_session_id_length) {
   DVLOG(1) << __FUNCTION__;
-  // RemoveSession only allowed for persistent sessions.
-  bool is_persistent_session =
-      std::string(kLoadableWebSessionId) ==
-      std::string(web_session_id, web_session_id_length);
-  if (is_persistent_session) {
-    std::string web_session_str(web_session_id, web_session_id_length);
+  std::string web_session_str(web_session_id, web_session_id_length);
 
-    scoped_ptr<media::SimpleCdmPromise> promise(new media::CdmCallbackPromise<>(
-        base::Bind(&ClearKeyCdm::OnPromiseResolved,
-                   base::Unretained(this),
-                   promise_id),
-        base::Bind(&ClearKeyCdm::OnPromiseFailed,
-                   base::Unretained(this),
-                   promise_id)));
-    decryptor_.RemoveSession(web_session_str, promise.Pass());
+  // RemoveSession only allowed for the loadable session.
+  if (web_session_str == std::string(kLoadableWebSessionId)) {
+    web_session_str = session_id_for_emulated_loadsession_;
   } else {
     // TODO(jrummell): This should be a DCHECK once blink does the proper
     // checks.
@@ -365,7 +399,15 @@ void ClearKeyCdm::RemoveSession(uint32 promise_id,
                            0,
                            message.data(),
                            message.length());
+    return;
   }
+
+  scoped_ptr<media::SimpleCdmPromise> promise(new media::CdmCallbackPromise<>(
+      base::Bind(&ClearKeyCdm::OnPromiseResolved, base::Unretained(this),
+                 promise_id),
+      base::Bind(&ClearKeyCdm::OnPromiseFailed, base::Unretained(this),
+                 promise_id)));
+  decryptor_.RemoveSession(web_session_str, promise.Pass());
 }
 
 void ClearKeyCdm::SetServerCertificate(uint32 promise_id,
@@ -373,13 +415,6 @@ void ClearKeyCdm::SetServerCertificate(uint32 promise_id,
                                        uint32_t server_certificate_data_size) {
   // ClearKey doesn't use a server certificate.
   host_->OnResolvePromise(promise_id);
-}
-
-void ClearKeyCdm::GetUsableKeyIds(uint32_t promise_id,
-                                  const char* web_session_id,
-                                  uint32_t web_session_id_length) {
-  // Not used anymore, but required for CDM_6 interface.
-  NOTREACHED() << "GetUsableKeyIds() should not be called";
 }
 
 void ClearKeyCdm::TimerExpired(void* context) {
@@ -401,12 +436,9 @@ void ClearKeyCdm::TimerExpired(void* context) {
   // There is no service at this URL, so applications should ignore it.
   const char url[] = "http://test.externalclearkey.chromium.org";
 
-  host_->OnSessionMessage(last_session_id_.data(),
-                          last_session_id_.length(),
-                          heartbeat_message.data(),
-                          heartbeat_message.length(),
-                          url,
-                          arraysize(url) - 1);
+  host_->OnSessionMessage(last_session_id_.data(), last_session_id_.length(),
+                          cdm::kLicenseRenewal, heartbeat_message.data(),
+                          heartbeat_message.length(), url, arraysize(url) - 1);
 
   ScheduleNextHeartBeat();
 }
@@ -644,7 +676,9 @@ void ClearKeyCdm::OnPlatformChallengeResponse(
 }
 
 void ClearKeyCdm::OnQueryOutputProtectionStatus(
-    uint32_t link_mask, uint32_t output_protection_mask) {
+    cdm::QueryResult result,
+    uint32_t link_mask,
+    uint32_t output_protection_mask) {
   NOTIMPLEMENTED();
 };
 
@@ -653,15 +687,9 @@ void ClearKeyCdm::LoadLoadableSession() {
                                        sizeof(kLoadableSessionKey),
                                        kLoadableSessionKeyId,
                                        sizeof(kLoadableSessionKeyId) - 1);
-  // TODO(xhwang): This triggers OnSessionUpdated(). For prefixed EME support,
-  // this is okay. Check WD EME support.
   scoped_ptr<media::SimpleCdmPromise> promise(new media::CdmCallbackPromise<>(
-      base::Bind(&ClearKeyCdm::OnSessionUpdated,
-                 base::Unretained(this),
-                 promise_id_for_emulated_loadsession_,
-                 session_id_for_emulated_loadsession_),
-      base::Bind(&ClearKeyCdm::OnPromiseFailed,
-                 base::Unretained(this),
+      base::Bind(&ClearKeyCdm::OnLoadSessionUpdated, base::Unretained(this)),
+      base::Bind(&ClearKeyCdm::OnPromiseFailed, base::Unretained(this),
                  promise_id_for_emulated_loadsession_)));
   decryptor_.UpdateSession(session_id_for_emulated_loadsession_,
                            reinterpret_cast<const uint8*>(jwk_set.data()),
@@ -682,9 +710,8 @@ void ClearKeyCdm::OnSessionMessage(const std::string& web_session_id,
   // OnSessionMessage() only called during CreateSession(), so no promise
   // involved (OnSessionCreated() called to resolve the CreateSession()
   // promise).
-  // TODO(jrummell): Pass |message_type| on when this class is updated
-  // to Host_7.
   host_->OnSessionMessage(web_session_id.data(), web_session_id.length(),
+                          cdm::kLicenseRequest,
                           reinterpret_cast<const char*>(message.data()),
                           message.size(), legacy_destination_url.spec().data(),
                           legacy_destination_url.spec().size());
@@ -693,18 +720,35 @@ void ClearKeyCdm::OnSessionMessage(const std::string& web_session_id,
 void ClearKeyCdm::OnSessionKeysChange(const std::string& web_session_id,
                                       bool has_additional_usable_key,
                                       CdmKeysInfo keys_info) {
-  // Ignore the message when we are waiting to update the loadable session.
-  if (web_session_id == session_id_for_emulated_loadsession_)
-    return;
+  DVLOG(1) << "OnSessionKeysChange: " << keys_info.size();
 
-  // TODO(jrummell): Pass |keys_info| on.
-  host_->OnSessionUsableKeysChange(web_session_id.data(),
-                                   web_session_id.length(),
-                                   has_additional_usable_key);
+  std::string session_id = web_session_id;
+  if (web_session_id == session_id_for_emulated_loadsession_) {
+    // Save |keys_info| if the loadable session is still being created. This
+    // event will then be forwarded on in OnLoadSessionUpdated().
+    if (promise_id_for_emulated_loadsession_ != 0) {
+      has_received_keys_change_event_for_emulated_loadsession_ = true;
+      keys_info_for_emulated_loadsession_.swap(keys_info);
+      return;
+    }
+
+    // Loadable session has already been created, so pass this event on,
+    // using the session_id callers expect to see.
+    session_id = std::string(kLoadableWebSessionId);
+  }
+
+  std::vector<cdm::KeyInformation> keys_vector;
+  ConvertCdmKeysInfo(keys_info.get(), &keys_vector);
+  host_->OnSessionKeysChange(session_id.data(), session_id.length(),
+                             has_additional_usable_key,
+                             vector_as_array(&keys_vector), keys_vector.size());
 }
 
 void ClearKeyCdm::OnSessionClosed(const std::string& web_session_id) {
-  host_->OnSessionClosed(web_session_id.data(), web_session_id.length());
+  std::string session_id = web_session_id;
+  if (web_session_id == session_id_for_emulated_loadsession_)
+    session_id = std::string(kLoadableWebSessionId);
+  host_->OnSessionClosed(session_id.data(), session_id.length());
 }
 
 void ClearKeyCdm::OnSessionCreated(uint32 promise_id,
@@ -738,22 +782,34 @@ void ClearKeyCdm::OnSessionLoaded(uint32 promise_id,
   host_->SetTimer(kDelayToLoadSessionMs, &session_id_for_emulated_loadsession_);
 }
 
-void ClearKeyCdm::OnSessionUpdated(uint32 promise_id,
-                                   const std::string& web_session_id) {
-  // UpdateSession() may be called to finish loading sessions, so handle
+void ClearKeyCdm::OnLoadSessionUpdated() {
+  // This method is only called to finish loading sessions, so handle
   // appropriately.
-  if (web_session_id == session_id_for_emulated_loadsession_) {
-    session_id_for_emulated_loadsession_ = std::string();
-    // |promise_id| is the LoadSession() promise, so resolve appropriately.
-    host_->OnResolveNewSessionPromise(
-        promise_id, kLoadableWebSessionId, strlen(kLoadableWebSessionId));
-    // Generate the UsableKeys event now that the session is "loaded".
-    host_->OnSessionUsableKeysChange(
-        kLoadableWebSessionId, strlen(kLoadableWebSessionId), true);
-    return;
-  }
 
-  host_->OnResolvePromise(promise_id);
+  // |promise_id_for_emulated_loadsession_| is the LoadSession() promise,
+  // so resolve appropriately.
+  host_->OnResolveNewSessionPromise(promise_id_for_emulated_loadsession_,
+                                    kLoadableWebSessionId,
+                                    strlen(kLoadableWebSessionId));
+  promise_id_for_emulated_loadsession_ = 0;
+
+  // Generate the KeysChange event now that the session is "loaded" if one
+  // was seen.
+  // TODO(jrummell): Once the order of events is fixed in the spec, either
+  // require the keyschange event to have happened, or remove this code.
+  // http://crbug.com/448225
+  if (has_received_keys_change_event_for_emulated_loadsession_) {
+    std::vector<cdm::KeyInformation> keys_vector;
+    CdmKeysInfo keys_info;
+    keys_info.swap(keys_info_for_emulated_loadsession_);
+    has_received_keys_change_event_for_emulated_loadsession_ = false;
+    DCHECK(!keys_vector.empty());
+    ConvertCdmKeysInfo(keys_info.get(), &keys_vector);
+    host_->OnSessionKeysChange(
+        kLoadableWebSessionId, strlen(kLoadableWebSessionId),
+        !keys_vector.empty(), vector_as_array(&keys_vector),
+        keys_vector.size());
+  }
 }
 
 void ClearKeyCdm::OnPromiseResolved(uint32 promise_id) {
@@ -840,12 +896,9 @@ void ClearKeyCdm::StartFileIOTest() {
 void ClearKeyCdm::OnFileIOTestComplete(bool success) {
   DVLOG(1) << __FUNCTION__ << ": " << success;
   std::string message = GetFileIOTestResultMessage(success);
-  host_->OnSessionMessage(last_session_id_.data(),
-                          last_session_id_.length(),
-                          message.data(),
-                          message.length(),
-                          NULL,
-                          0);
+  host_->OnSessionMessage(last_session_id_.data(), last_session_id_.length(),
+                          cdm::kLicenseRequest, message.data(),
+                          message.length(), NULL, 0);
   file_io_test_runner_.reset();
 }
 
