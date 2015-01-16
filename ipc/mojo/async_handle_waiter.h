@@ -20,6 +20,9 @@ namespace internal {
 //    The client can call |Wait()| again once it is signaled and
 //    the |callback| is invoked.
 //  * To cancel waiting, delete the instance.
+//
+// |AsyncHandleWaiter| must be created, used and deleted only from the IO
+// |thread.
 class IPC_MOJO_EXPORT AsyncHandleWaiter {
  public:
   class Context;

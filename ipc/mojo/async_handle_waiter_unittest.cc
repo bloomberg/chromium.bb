@@ -33,7 +33,7 @@ class AsyncHandleWaiterTest : public testing::Test {
   }
 
   void SetUp() override {
-    message_loop_.reset(new base::MessageLoop());
+    message_loop_.reset(new base::MessageLoopForIO());
     ResetSignaledStates();
     mojo::CreateMessagePipe(nullptr, &pipe_to_write_, &pipe_to_read_);
     target_.reset(new AsyncHandleWaiter(base::Bind(
