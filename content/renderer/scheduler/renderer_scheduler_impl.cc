@@ -224,7 +224,7 @@ void RendererSchedulerImpl::UpdatePolicy() {
 }
 
 void RendererSchedulerImpl::StartIdlePeriod() {
-  TRACE_EVENT_ASYNC_BEGIN0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
+  TRACE_EVENT_ASYNC_BEGIN0("renderer.scheduler",
                            "RendererSchedulerIdlePeriod", this);
   main_thread_checker_.CalledOnValidThread();
   renderer_task_queue_selector_->EnableQueue(
@@ -233,7 +233,7 @@ void RendererSchedulerImpl::StartIdlePeriod() {
 }
 
 void RendererSchedulerImpl::EndIdlePeriod() {
-  TRACE_EVENT_ASYNC_END0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
+  TRACE_EVENT_ASYNC_END0("renderer.scheduler",
                          "RendererSchedulerIdlePeriod", this);
   main_thread_checker_.CalledOnValidThread();
   renderer_task_queue_selector_->DisableQueue(IDLE_TASK_QUEUE);
