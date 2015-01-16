@@ -69,19 +69,18 @@ class LegacyPolicyCacheLoader : public UserPolicyTokenLoader::Delegate,
       const base::FilePath& token_cache_file,
       const base::FilePath& policy_cache_file,
       scoped_refptr<base::SequencedTaskRunner> background_task_runner);
-  virtual ~LegacyPolicyCacheLoader();
+  ~LegacyPolicyCacheLoader() override;
 
   // Starts loading, and reports the result to |callback| when done.
   void Load(const Callback& callback);
 
   // UserPolicyTokenLoader::Delegate:
-  virtual void OnTokenLoaded(const std::string& token,
-                             const std::string& device_id) override;
+  void OnTokenLoaded(const std::string& token,
+                     const std::string& device_id) override;
 
   // UserPolicyDiskCache::Delegate:
-  virtual void OnDiskCacheLoaded(
-      UserPolicyDiskCache::LoadResult result,
-      const em::CachedCloudPolicyResponse& policy) override;
+  void OnDiskCacheLoaded(UserPolicyDiskCache::LoadResult result,
+                         const em::CachedCloudPolicyResponse& policy) override;
 
  private:
   // Checks whether the load operations from the legacy caches completed. If so,

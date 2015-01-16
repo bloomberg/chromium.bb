@@ -25,14 +25,14 @@ class Schema;
 class ExternalDataPolicyHandler : public TypeCheckingPolicyHandler {
  public:
   explicit ExternalDataPolicyHandler(const char* policy_name);
-  virtual ~ExternalDataPolicyHandler();
+  ~ExternalDataPolicyHandler() override;
 
   // TypeCheckingPolicyHandler:
-  virtual bool CheckPolicySettings(const PolicyMap& policies,
-                                   PolicyErrorMap* errors) override;
+  bool CheckPolicySettings(const PolicyMap& policies,
+                           PolicyErrorMap* errors) override;
 
-  virtual void ApplyPolicySettings(const PolicyMap& policies,
-                                   PrefValueMap* prefs) override;
+  void ApplyPolicySettings(const PolicyMap& policies,
+                           PrefValueMap* prefs) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ExternalDataPolicyHandler);
@@ -46,14 +46,14 @@ class NetworkConfigurationPolicyHandler : public TypeCheckingPolicyHandler {
   static NetworkConfigurationPolicyHandler* CreateForUserPolicy();
   static NetworkConfigurationPolicyHandler* CreateForDevicePolicy();
 
-  virtual ~NetworkConfigurationPolicyHandler();
+  ~NetworkConfigurationPolicyHandler() override;
 
   // ConfigurationPolicyHandler methods:
-  virtual bool CheckPolicySettings(const PolicyMap& policies,
-                                   PolicyErrorMap* errors) override;
-  virtual void ApplyPolicySettings(const PolicyMap& policies,
-                                   PrefValueMap* prefs) override;
-  virtual void PrepareForDisplaying(PolicyMap* policies) const override;
+  bool CheckPolicySettings(const PolicyMap& policies,
+                           PolicyErrorMap* errors) override;
+  void ApplyPolicySettings(const PolicyMap& policies,
+                           PrefValueMap* prefs) override;
+  void PrepareForDisplaying(PolicyMap* policies) const override;
 
  private:
   explicit NetworkConfigurationPolicyHandler(
@@ -82,11 +82,11 @@ class PinnedLauncherAppsPolicyHandler
     : public extensions::ExtensionListPolicyHandler {
  public:
   PinnedLauncherAppsPolicyHandler();
-  virtual ~PinnedLauncherAppsPolicyHandler();
+  ~PinnedLauncherAppsPolicyHandler() override;
 
   // ExtensionListPolicyHandler methods:
-  virtual void ApplyPolicySettings(const PolicyMap& policies,
-                                   PrefValueMap* prefs) override;
+  void ApplyPolicySettings(const PolicyMap& policies,
+                           PrefValueMap* prefs) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PinnedLauncherAppsPolicyHandler);
@@ -95,11 +95,11 @@ class PinnedLauncherAppsPolicyHandler
 class ScreenMagnifierPolicyHandler : public IntRangePolicyHandlerBase {
  public:
   ScreenMagnifierPolicyHandler();
-  virtual ~ScreenMagnifierPolicyHandler();
+  ~ScreenMagnifierPolicyHandler() override;
 
   // IntRangePolicyHandlerBase:
-  virtual void ApplyPolicySettings(const PolicyMap& policies,
-                                   PrefValueMap* prefs) override;
+  void ApplyPolicySettings(const PolicyMap& policies,
+                           PrefValueMap* prefs) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ScreenMagnifierPolicyHandler);
@@ -112,11 +112,11 @@ class LoginScreenPowerManagementPolicyHandler
     : public SchemaValidatingPolicyHandler {
  public:
   explicit LoginScreenPowerManagementPolicyHandler(const Schema& chrome_schema);
-  virtual ~LoginScreenPowerManagementPolicyHandler();
+  ~LoginScreenPowerManagementPolicyHandler() override;
 
   // SchemaValidatingPolicyHandler:
-  virtual void ApplyPolicySettings(const PolicyMap& policies,
-                                   PrefValueMap* prefs) override;
+  void ApplyPolicySettings(const PolicyMap& policies,
+                           PrefValueMap* prefs) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LoginScreenPowerManagementPolicyHandler);
@@ -127,11 +127,11 @@ class LoginScreenPowerManagementPolicyHandler
 class DeprecatedIdleActionHandler : public IntRangePolicyHandlerBase {
  public:
   DeprecatedIdleActionHandler();
-  virtual ~DeprecatedIdleActionHandler();
+  ~DeprecatedIdleActionHandler() override;
 
   // ConfigurationPolicyHandler methods:
-  virtual void ApplyPolicySettings(const PolicyMap& policies,
-                                   PrefValueMap* prefs) override;
+  void ApplyPolicySettings(const PolicyMap& policies,
+                           PrefValueMap* prefs) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DeprecatedIdleActionHandler);
@@ -142,11 +142,11 @@ class PowerManagementIdleSettingsPolicyHandler
  public:
   explicit PowerManagementIdleSettingsPolicyHandler(
       const Schema& chrome_schema);
-  virtual ~PowerManagementIdleSettingsPolicyHandler();
+  ~PowerManagementIdleSettingsPolicyHandler() override;
 
   // SchemaValidatingPolicyHandler:
-  virtual void ApplyPolicySettings(const PolicyMap& policies,
-                                   PrefValueMap* prefs) override;
+  void ApplyPolicySettings(const PolicyMap& policies,
+                           PrefValueMap* prefs) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PowerManagementIdleSettingsPolicyHandler);
@@ -155,11 +155,11 @@ class PowerManagementIdleSettingsPolicyHandler
 class ScreenLockDelayPolicyHandler : public SchemaValidatingPolicyHandler {
  public:
   explicit ScreenLockDelayPolicyHandler(const Schema& chrome_schema);
-  virtual ~ScreenLockDelayPolicyHandler();
+  ~ScreenLockDelayPolicyHandler() override;
 
   // SchemaValidatingPolicyHandler:
-  virtual void ApplyPolicySettings(const PolicyMap& policies,
-                                   PrefValueMap* prefs) override;
+  void ApplyPolicySettings(const PolicyMap& policies,
+                           PrefValueMap* prefs) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ScreenLockDelayPolicyHandler);

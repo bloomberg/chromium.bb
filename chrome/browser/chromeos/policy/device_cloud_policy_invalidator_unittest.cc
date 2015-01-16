@@ -73,11 +73,11 @@ KeyedService* BuildProfileInvalidationProvider(
 class DeviceCloudPolicyInvalidatorTest : public testing::Test {
  public:
   DeviceCloudPolicyInvalidatorTest();
-  virtual ~DeviceCloudPolicyInvalidatorTest();
+  ~DeviceCloudPolicyInvalidatorTest() override;
 
   // testing::Test:
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
   // Ownership is not passed. The Profile is owned by the global ProfileManager.
   Profile* LogInAndReturnProfile(const std::string& user_id);

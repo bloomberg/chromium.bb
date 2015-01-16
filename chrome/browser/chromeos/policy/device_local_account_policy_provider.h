@@ -34,7 +34,7 @@ class DeviceLocalAccountPolicyProvider
       const std::string& user_id,
       DeviceLocalAccountPolicyService* service,
       scoped_ptr<PolicyMap> chrome_policy_overrides);
-  virtual ~DeviceLocalAccountPolicyProvider();
+  ~DeviceLocalAccountPolicyProvider() override;
 
   // Factory function to create and initialize a provider for |user_id|. Returns
   // NULL if |user_id| is not a device-local account or user policy isn't
@@ -44,12 +44,12 @@ class DeviceLocalAccountPolicyProvider
       DeviceLocalAccountPolicyService* service);
 
   // ConfigurationPolicyProvider:
-  virtual bool IsInitializationComplete(PolicyDomain domain) const override;
-  virtual void RefreshPolicies() override;
+  bool IsInitializationComplete(PolicyDomain domain) const override;
+  void RefreshPolicies() override;
 
   // DeviceLocalAccountPolicyService::Observer:
-  virtual void OnPolicyUpdated(const std::string& user_id) override;
-  virtual void OnDeviceLocalAccountsChanged() override;
+  void OnPolicyUpdated(const std::string& user_id) override;
+  void OnDeviceLocalAccountsChanged() override;
 
  private:
   // Returns the broker for |user_id_| or NULL if not available.

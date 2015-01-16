@@ -49,7 +49,7 @@ class DeviceCloudPolicyManagerChromeOS : public CloudPolicyManager {
       scoped_ptr<DeviceCloudPolicyStoreChromeOS> store,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner,
       ServerBackedStateKeysBroker* state_keys_broker);
-  virtual ~DeviceCloudPolicyManagerChromeOS();
+  ~DeviceCloudPolicyManagerChromeOS() override;
 
   // Initializes state keys and requisition information.
   void Initialize(PrefService* local_state);
@@ -66,7 +66,7 @@ class DeviceCloudPolicyManagerChromeOS : public CloudPolicyManager {
   bool IsSharkRequisition() const;
 
   // CloudPolicyManager:
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
   // Pref registration helper.
   static void RegisterPrefs(PrefRegistrySimple* registry);

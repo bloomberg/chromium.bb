@@ -123,8 +123,8 @@ class PowerPolicyBrowserTestBase : public DevicePolicyCrosBrowserTest {
   PowerPolicyBrowserTestBase();
 
   // DevicePolicyCrosBrowserTest:
-  virtual void SetUpInProcessBrowserTestFixture() override;
-  virtual void SetUpOnMainThread() override;
+  void SetUpInProcessBrowserTestFixture() override;
+  void SetUpOnMainThread() override;
 
   void InstallUserKey();
   void StoreAndReloadUserPolicy();
@@ -155,9 +155,9 @@ class PowerPolicyLoginScreenBrowserTest : public PowerPolicyBrowserTestBase {
   PowerPolicyLoginScreenBrowserTest();
 
   // PowerPolicyBrowserTestBase:
-  virtual void SetUpCommandLine(base::CommandLine* command_line) override;
-  virtual void SetUpOnMainThread() override;
-  virtual void TearDownOnMainThread() override;
+  void SetUpCommandLine(base::CommandLine* command_line) override;
+  void SetUpOnMainThread() override;
+  void TearDownOnMainThread() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PowerPolicyLoginScreenBrowserTest);
@@ -168,7 +168,7 @@ class PowerPolicyInSessionBrowserTest : public PowerPolicyBrowserTestBase {
   PowerPolicyInSessionBrowserTest();
 
   // PowerPolicyBrowserTestBase:
-  virtual void SetUpOnMainThread() override;
+  void SetUpOnMainThread() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PowerPolicyInSessionBrowserTest);

@@ -33,23 +33,23 @@ class UserCloudPolicyTokenForwarder : public KeyedService,
   UserCloudPolicyTokenForwarder(UserCloudPolicyManagerChromeOS* manager,
                                 ProfileOAuth2TokenService* token_service,
                                 SigninManagerBase* signin_manager);
-  virtual ~UserCloudPolicyTokenForwarder();
+  ~UserCloudPolicyTokenForwarder() override;
 
   // KeyedService:
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
   // OAuth2TokenService::Observer:
-  virtual void OnRefreshTokenAvailable(const std::string& account_id) override;
+  void OnRefreshTokenAvailable(const std::string& account_id) override;
 
   // OAuth2TokenService::Consumer:
-  virtual void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
-                                 const std::string& access_token,
-                                 const base::Time& expiration_time) override;
-  virtual void OnGetTokenFailure(const OAuth2TokenService::Request* request,
-                                 const GoogleServiceAuthError& error) override;
+  void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
+                         const std::string& access_token,
+                         const base::Time& expiration_time) override;
+  void OnGetTokenFailure(const OAuth2TokenService::Request* request,
+                         const GoogleServiceAuthError& error) override;
 
   // CloudPolicyService::Observer:
-  virtual void OnInitializationCompleted(CloudPolicyService* service) override;
+  void OnInitializationCompleted(CloudPolicyService* service) override;
 
  private:
   void Initialize();

@@ -81,7 +81,7 @@ class TestingDeviceCloudPolicyManagerChromeOS
       ServerBackedStateKeysBroker* state_keys_broker)
       : DeviceCloudPolicyManagerChromeOS(
             store.Pass(), task_runner, state_keys_broker) {}
-  virtual ~TestingDeviceCloudPolicyManagerChromeOS() {}
+  ~TestingDeviceCloudPolicyManagerChromeOS() override {}
 
   bool HasStatusProvider() {
     return client() ? client()->HasStatusProviderForTest() : false;
@@ -359,7 +359,7 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
         status_(EnrollmentStatus::ForStatus(EnrollmentStatus::STATUS_SUCCESS)),
         done_(false) {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     DeviceCloudPolicyManagerChromeOSTest::SetUp();
 
     // Set up test data.

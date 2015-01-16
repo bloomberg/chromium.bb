@@ -43,14 +43,13 @@ class DeviceLocalAccountPolicyStore
       chromeos::SessionManagerClient* client,
       chromeos::DeviceSettingsService* device_settings_service,
       scoped_refptr<base::SequencedTaskRunner> background_task_runner);
-  virtual ~DeviceLocalAccountPolicyStore();
+  ~DeviceLocalAccountPolicyStore() override;
 
   const std::string& account_id() const { return account_id_; }
 
   // CloudPolicyStore:
-  virtual void Store(
-      const enterprise_management::PolicyFetchResponse& policy) override;
-  virtual void Load() override;
+  void Store(const enterprise_management::PolicyFetchResponse& policy) override;
+  void Load() override;
 
  private:
   // Called back by |session_manager_client_| after policy retrieval. Checks for

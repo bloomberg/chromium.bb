@@ -34,7 +34,7 @@ class LoginScreenPowerManagementPolicyHandlerTest : public testing::Test {
  protected:
   LoginScreenPowerManagementPolicyHandlerTest();
 
-  virtual void SetUp() override;
+  void SetUp() override;
 
   Schema chrome_schema_;
 

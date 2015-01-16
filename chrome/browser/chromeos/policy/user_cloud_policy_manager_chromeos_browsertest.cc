@@ -56,9 +56,9 @@ class UserCloudPolicyManagerTest : public chromeos::OobeBaseTest {
     set_open_about_blank_on_browser_launch(false);
   }
 
-  virtual ~UserCloudPolicyManagerTest() {}
+  ~UserCloudPolicyManagerTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     SetServerPolicy();
 
@@ -68,13 +68,13 @@ class UserCloudPolicyManagerTest : public chromeos::OobeBaseTest {
     OobeBaseTest::SetUp();
   }
 
-  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitchASCII(policy::switches::kDeviceManagementUrl,
                                     test_server_->GetServiceURL().spec());
     OobeBaseTest::SetUpCommandLine(command_line);
   }
 
-  virtual void SetUpOnMainThread() override {
+  void SetUpOnMainThread() override {
     SetMergeSessionParams(kAccountId);
     SetupGaiaServerWithAccessTokens();
     OobeBaseTest::SetUpOnMainThread();

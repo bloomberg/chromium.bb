@@ -24,7 +24,7 @@ class FakeDeviceCloudPolicyInitializer : public DeviceCloudPolicyInitializer {
   void Init() override;
   void Shutdown() override;
 
-  virtual void StartEnrollment(
+  void StartEnrollment(
       ManagementMode management_mode,
       DeviceManagementService* device_management_service,
       chromeos::OwnerSettingsServiceChromeOS* owner_settings_service,

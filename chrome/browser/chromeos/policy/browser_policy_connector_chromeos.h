@@ -42,9 +42,9 @@ class BrowserPolicyConnectorChromeOS
  public:
   BrowserPolicyConnectorChromeOS();
 
-  virtual ~BrowserPolicyConnectorChromeOS();
+  ~BrowserPolicyConnectorChromeOS() override;
 
-  virtual void Init(
+  void Init(
       PrefService* local_state,
       scoped_refptr<net::URLRequestContextGetter> request_context) override;
 
@@ -54,7 +54,7 @@ class BrowserPolicyConnectorChromeOS
   // connection to these dependencies to be severed earlier.
   void PreShutdown();
 
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
   // Returns true if this device is managed by an enterprise (as opposed to
   // a local owner).

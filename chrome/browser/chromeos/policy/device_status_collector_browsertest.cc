@@ -131,14 +131,14 @@ class TestingDeviceStatusCollector : public policy::DeviceStatusCollector {
   }
 
  protected:
-  virtual void CheckIdleState() override {
+  void CheckIdleState() override {
     // This should never be called in testing, as it results in a dbus call.
     ADD_FAILURE();
   }
 
   // Each time this is called, returns a time that is a fixed increment
   // later than the previous time.
-  virtual Time GetCurrentTime() override {
+  Time GetCurrentTime() override {
     int poll_interval = policy::DeviceStatusCollector::kIdlePollIntervalSeconds;
     return baseline_time_ +
         TimeDelta::FromSeconds(poll_interval * baseline_offset_periods_++);
@@ -251,7 +251,7 @@ class DeviceStatusCollectorTest : public testing::Test {
             chromeos::disks::MOUNT_CONDITION_NONE)));
   }
 
-  virtual ~DeviceStatusCollectorTest() {
+  ~DeviceStatusCollectorTest() override {
     // Finish pending tasks.
     content::BrowserThread::GetBlockingPool()->FlushForTesting();
     message_loop_.RunUntilIdle();
@@ -263,7 +263,7 @@ class DeviceStatusCollectorTest : public testing::Test {
     cros_settings_->AddSettingsProvider(device_settings_provider_);
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     // Disable network interface reporting since it requires additional setup.
     cros_settings_->SetBoolean(chromeos::kReportDeviceNetworkInterfaces, false);
   }
@@ -900,7 +900,7 @@ static const FakeNetworkState kUnconfiguredNetwork = {
 class DeviceStatusCollectorNetworkInterfacesTest
     : public DeviceStatusCollectorTest {
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     chromeos::DBusThreadManager::Initialize();
     chromeos::NetworkHandler::Initialize();
     chromeos::ShillDeviceClient::TestInterface* test_device_client =
@@ -1004,7 +1004,7 @@ class DeviceStatusCollectorNetworkInterfacesTest
     ASSERT_EQ(arraysize(kFakeNetworks), state_list.size());
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     chromeos::NetworkHandler::Shutdown();
     chromeos::DBusThreadManager::Shutdown();
   }

@@ -37,7 +37,7 @@ class PolicyCertVerifier : public net::CertVerifier,
   // certificate from the additional trust anchors (set with SetTrustAnchors) is
   // used.
   explicit PolicyCertVerifier(const base::Closure& anchor_used_callback);
-  virtual ~PolicyCertVerifier();
+  ~PolicyCertVerifier() override;
 
   void InitializeOnIOThread(
       const scoped_refptr<net::CertVerifyProc>& verify_proc);
@@ -47,19 +47,19 @@ class PolicyCertVerifier : public net::CertVerifier,
 
   // CertVerifier:
   // Note: |callback| can be null.
-  virtual int Verify(net::X509Certificate* cert,
-                     const std::string& hostname,
-                     int flags,
-                     net::CRLSet* crl_set,
-                     net::CertVerifyResult* verify_result,
-                     const net::CompletionCallback& callback,
-                     RequestHandle* out_req,
-                     const net::BoundNetLog& net_log) override;
+  int Verify(net::X509Certificate* cert,
+             const std::string& hostname,
+             int flags,
+             net::CRLSet* crl_set,
+             net::CertVerifyResult* verify_result,
+             const net::CompletionCallback& callback,
+             RequestHandle* out_req,
+             const net::BoundNetLog& net_log) override;
 
-  virtual void CancelRequest(RequestHandle req) override;
+  void CancelRequest(RequestHandle req) override;
 
   // CertTrustAnchorProvider:
-  virtual const net::CertificateList& GetAdditionalTrustAnchors() override;
+  const net::CertificateList& GetAdditionalTrustAnchors() override;
 
  private:
   net::CertificateList trust_anchors_;

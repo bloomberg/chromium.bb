@@ -35,13 +35,13 @@ class PolicyMap;
 // Does not handle proxy settings.
 class NetworkConfigurationUpdater : public PolicyService::Observer {
  public:
-  virtual ~NetworkConfigurationUpdater();
+  ~NetworkConfigurationUpdater() override;
 
   // PolicyService::Observer overrides
-  virtual void OnPolicyUpdated(const PolicyNamespace& ns,
-                               const PolicyMap& previous,
-                               const PolicyMap& current) override;
-  virtual void OnPolicyServiceInitialized(PolicyDomain domain) override;
+  void OnPolicyUpdated(const PolicyNamespace& ns,
+                       const PolicyMap& previous,
+                       const PolicyMap& current) override;
+  void OnPolicyServiceInitialized(PolicyDomain domain) override;
 
  protected:
   NetworkConfigurationUpdater(

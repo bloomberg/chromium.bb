@@ -40,12 +40,12 @@ class CloudExternalDataPolicyObserver::PolicyServiceObserver
   PolicyServiceObserver(CloudExternalDataPolicyObserver* parent,
                         const std::string& user_id,
                         PolicyService* policy_service);
-  virtual ~PolicyServiceObserver();
+  ~PolicyServiceObserver() override;
 
   // PolicyService::Observer:
-  virtual void OnPolicyUpdated(const PolicyNamespace& ns,
-                               const PolicyMap& previous,
-                               const PolicyMap& current) override;
+  void OnPolicyUpdated(const PolicyNamespace& ns,
+                       const PolicyMap& previous,
+                       const PolicyMap& current) override;
 
  private:
   CloudExternalDataPolicyObserver* parent_;

@@ -34,12 +34,12 @@ class CloudPolicyInvalidator;
 class DeviceCloudPolicyInvalidator : public content::NotificationObserver {
  public:
   DeviceCloudPolicyInvalidator();
-  virtual ~DeviceCloudPolicyInvalidator();
+  ~DeviceCloudPolicyInvalidator() override;
 
   // content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
  private:
   friend class DeviceCloudPolicyInvalidatorTest;

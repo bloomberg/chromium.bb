@@ -36,12 +36,11 @@ class DeviceCloudPolicyStoreChromeOS
       chromeos::DeviceSettingsService* device_settings_service,
       EnterpriseInstallAttributes* install_attributes,
       scoped_refptr<base::SequencedTaskRunner> background_task_runner);
-  virtual ~DeviceCloudPolicyStoreChromeOS();
+  ~DeviceCloudPolicyStoreChromeOS() override;
 
   // CloudPolicyStore:
-  virtual void Store(
-      const enterprise_management::PolicyFetchResponse& policy) override;
-  virtual void Load() override;
+  void Store(const enterprise_management::PolicyFetchResponse& policy) override;
+  void Load() override;
 
   // Installs initial policy. This is different from Store() in that it skips
   // the signature validation step against already-installed policy. The checks
@@ -52,9 +51,9 @@ class DeviceCloudPolicyStoreChromeOS
       const enterprise_management::PolicyFetchResponse& policy);
 
   // chromeos::DeviceSettingsService::Observer:
-  virtual void OwnershipStatusChanged() override;
-  virtual void DeviceSettingsUpdated() override;
-  virtual void OnDeviceSettingsServiceShutdown() override;
+  void OwnershipStatusChanged() override;
+  void DeviceSettingsUpdated() override;
+  void OnDeviceSettingsServiceShutdown() override;
 
  private:
   // Create a validator for |policy| with basic device policy configuration and

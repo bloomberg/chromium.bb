@@ -75,7 +75,7 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
       const AllowedDeviceModes& allowed_device_modes,
       ManagementMode management_mode,
       const EnrollmentCallback& completion_callback);
-  virtual ~EnrollmentHandlerChromeOS();
+  ~EnrollmentHandlerChromeOS() override;
 
   // Starts the enrollment process and reports the result to
   // |completion_callback_|.
@@ -85,23 +85,23 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
   scoped_ptr<CloudPolicyClient> ReleaseClient();
 
   // CloudPolicyClient::Observer:
-  virtual void OnPolicyFetched(CloudPolicyClient* client) override;
-  virtual void OnRegistrationStateChanged(CloudPolicyClient* client) override;
-  virtual void OnRobotAuthCodesFetched(CloudPolicyClient* client) override;
-  virtual void OnClientError(CloudPolicyClient* client) override;
+  void OnPolicyFetched(CloudPolicyClient* client) override;
+  void OnRegistrationStateChanged(CloudPolicyClient* client) override;
+  void OnRobotAuthCodesFetched(CloudPolicyClient* client) override;
+  void OnClientError(CloudPolicyClient* client) override;
 
   // CloudPolicyStore::Observer:
-  virtual void OnStoreLoaded(CloudPolicyStore* store) override;
-  virtual void OnStoreError(CloudPolicyStore* store) override;
+  void OnStoreLoaded(CloudPolicyStore* store) override;
+  void OnStoreError(CloudPolicyStore* store) override;
 
   // GaiaOAuthClient::Delegate:
-  virtual void OnGetTokensResponse(const std::string& refresh_token,
-                                   const std::string& access_token,
-                                   int expires_in_seconds) override;
-  virtual void OnRefreshTokenResponse(const std::string& access_token,
-                                      int expires_in_seconds) override;
-  virtual void OnOAuthError() override;
-  virtual void OnNetworkError(int response_code) override;
+  void OnGetTokensResponse(const std::string& refresh_token,
+                           const std::string& access_token,
+                           int expires_in_seconds) override;
+  void OnRefreshTokenResponse(const std::string& access_token,
+                              int expires_in_seconds) override;
+  void OnOAuthError() override;
+  void OnNetworkError(int response_code) override;
 
  private:
   // Indicates what step of the process is currently pending. These steps need

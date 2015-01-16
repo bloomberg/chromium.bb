@@ -75,7 +75,7 @@ class AutoEnrollmentClient
       const std::string& server_backed_state_key,
       int power_initial,
       int power_limit);
-  virtual ~AutoEnrollmentClient();
+  ~AutoEnrollmentClient() override;
 
   // Registers preferences in local state.
   static void RegisterPrefs(PrefRegistrySimple* registry);
@@ -102,7 +102,7 @@ class AutoEnrollmentClient
   AutoEnrollmentState state() const { return state_; }
 
   // Implementation of net::NetworkChangeNotifier::NetworkChangeObserver:
-  virtual void OnNetworkChanged(
+  void OnNetworkChanged(
       net::NetworkChangeNotifier::ConnectionType type) override;
 
  private:

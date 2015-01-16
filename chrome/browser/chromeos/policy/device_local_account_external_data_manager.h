@@ -54,10 +54,10 @@ class DeviceLocalAccountExternalDataManager
       scoped_refptr<base::SequencedTaskRunner> backend_task_runner,
       scoped_refptr<base::SequencedTaskRunner> io_task_runner,
       ResourceCache* resource_cache);
-  virtual ~DeviceLocalAccountExternalDataManager();
+  ~DeviceLocalAccountExternalDataManager() override;
 
   // CloudExternalDataManagerBase:
-  virtual void OnPolicyStoreLoaded() override;
+  void OnPolicyStoreLoaded() override;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceLocalAccountExternalDataManager);
 };

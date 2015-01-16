@@ -57,7 +57,7 @@ class DeviceCloudPolicyInitializer : public CloudPolicyStore::Observer {
       DeviceCloudPolicyStoreChromeOS* device_store,
       DeviceCloudPolicyManagerChromeOS* manager);
 
-  virtual ~DeviceCloudPolicyInitializer();
+  ~DeviceCloudPolicyInitializer() override;
 
   virtual void Init();
   virtual void Shutdown();
@@ -90,8 +90,8 @@ class DeviceCloudPolicyInitializer : public CloudPolicyStore::Observer {
   EnrollmentConfig GetPrescribedEnrollmentConfig() const;
 
   // CloudPolicyStore::Observer:
-  virtual void OnStoreLoaded(CloudPolicyStore* store) override;
-  virtual void OnStoreError(CloudPolicyStore* store) override;
+  void OnStoreLoaded(CloudPolicyStore* store) override;
+  void OnStoreError(CloudPolicyStore* store) override;
 
  private:
   // Handles completion signaled by |enrollment_handler_|.

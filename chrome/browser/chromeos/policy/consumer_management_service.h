@@ -85,7 +85,7 @@ class ConsumerManagementService
       chromeos::CryptohomeClient* client,
       chromeos::DeviceSettingsService* device_settings_service);
 
-  virtual ~ConsumerManagementService();
+  ~ConsumerManagementService() override;
 
   // Registers prefs.
   static void RegisterPrefs(PrefRegistrySimple* registry);

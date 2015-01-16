@@ -33,11 +33,11 @@ class DeviceLocalAccountExternalDataService
       DeviceLocalAccountPolicyService* parent,
       scoped_refptr<base::SequencedTaskRunner> backend_task_runner,
       scoped_refptr<base::SequencedTaskRunner> io_task_runner);
-  virtual ~DeviceLocalAccountExternalDataService();
+  ~DeviceLocalAccountExternalDataService() override;
 
   // DeviceLocalAccountPolicyService::Observer:
-  virtual void OnPolicyUpdated(const std::string& user_id) override;
-  virtual void OnDeviceLocalAccountsChanged() override;
+  void OnPolicyUpdated(const std::string& user_id) override;
+  void OnDeviceLocalAccountsChanged() override;
 
   scoped_refptr<DeviceLocalAccountExternalDataManager>
       GetExternalDataManager(const std::string& account_id,

@@ -41,7 +41,7 @@ class PolicyCertService
   PolicyCertService(const std::string& user_id,
                     UserNetworkConfigurationUpdater* net_conf_updater,
                     user_manager::UserManager* user_manager);
-  virtual ~PolicyCertService();
+  ~PolicyCertService() override;
 
   // Creates an associated PolicyCertVerifier. The returned object must only be
   // used on the IO thread and must outlive this object.
@@ -55,11 +55,11 @@ class PolicyCertService
   bool has_policy_certificates() const { return has_trust_anchors_; }
 
   // UserNetworkConfigurationUpdater::WebTrustedCertsObserver:
-  virtual void OnTrustAnchorsChanged(const net::CertificateList& trust_anchors)
-      override;
+  void OnTrustAnchorsChanged(
+      const net::CertificateList& trust_anchors) override;
 
   // KeyedService:
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
   static scoped_ptr<PolicyCertService> CreateForTesting(
       const std::string& user_id,

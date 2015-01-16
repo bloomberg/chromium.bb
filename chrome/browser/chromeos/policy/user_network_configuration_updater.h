@@ -60,7 +60,7 @@ class UserNetworkConfigurationUpdater : public NetworkConfigurationUpdater,
         const net::CertificateList& trust_anchors) = 0;
   };
 
-  virtual ~UserNetworkConfigurationUpdater();
+  ~UserNetworkConfigurationUpdater() override;
 
   // Creates an updater that applies the ONC user policy from |policy_service|
   // for user |user| once the policy service is completely initialized and on
@@ -101,17 +101,16 @@ class UserNetworkConfigurationUpdater : public NetworkConfigurationUpdater,
       const net::CertificateList& onc_trusted_certificates);
 
   // NetworkConfigurationUpdater:
-  virtual void ImportCertificates(
-      const base::ListValue& certificates_onc) override;
-  virtual void ApplyNetworkPolicy(
+  void ImportCertificates(const base::ListValue& certificates_onc) override;
+  void ApplyNetworkPolicy(
       base::ListValue* network_configs_onc,
       base::DictionaryValue* global_network_config) override;
 
   // content::NotificationObserver implementation. Observes the profile to which
   // |this| belongs to for PROFILE_ADDED notification.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // Creates onc::CertImporter with |database| and passes it to
   // |SetCertificateImporter|.

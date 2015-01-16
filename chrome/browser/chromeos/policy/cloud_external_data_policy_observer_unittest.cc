@@ -95,20 +95,20 @@ class CloudExternalDataPolicyObserverTest
   typedef std::pair<std::string, std::string> FetchedCall;
 
   CloudExternalDataPolicyObserverTest();
-  virtual ~CloudExternalDataPolicyObserverTest();
+  ~CloudExternalDataPolicyObserverTest() override;
 
   // chromeos::DeviceSettingsTestBase:
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
   // CloudExternalDataPolicyObserver::Delegate:
-  virtual void OnExternalDataSet(const std::string& policy,
-                                 const std::string& user_id) override;
-  virtual void OnExternalDataCleared(const std::string& policy,
-                                     const std::string& user_id) override;
-  virtual void OnExternalDataFetched(const std::string& policy,
-                                     const std::string& user_id,
-                                     scoped_ptr<std::string> data) override;
+  void OnExternalDataSet(const std::string& policy,
+                         const std::string& user_id) override;
+  void OnExternalDataCleared(const std::string& policy,
+                             const std::string& user_id) override;
+  void OnExternalDataFetched(const std::string& policy,
+                             const std::string& user_id,
+                             scoped_ptr<std::string> data) override;
 
   void CreateObserver();
 

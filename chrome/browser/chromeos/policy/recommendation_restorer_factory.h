@@ -24,15 +24,15 @@ class RecommendationRestorerFactory : public BrowserContextKeyedServiceFactory {
 
  protected:
   // BrowserContextKeyedServiceFactory:
-  virtual KeyedService* BuildServiceInstanceFor(
+  KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const override;
-  virtual bool ServiceIsCreatedWithBrowserContext() const override;
+  bool ServiceIsCreatedWithBrowserContext() const override;
 
  private:
   friend struct DefaultSingletonTraits<RecommendationRestorerFactory>;
 
   RecommendationRestorerFactory();
-  virtual ~RecommendationRestorerFactory();
+  ~RecommendationRestorerFactory() override;
 
   DISALLOW_COPY_AND_ASSIGN(RecommendationRestorerFactory);
 };

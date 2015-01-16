@@ -81,8 +81,8 @@ class DeviceLocalAccountPolicyServiceTestBase
  public:
   DeviceLocalAccountPolicyServiceTestBase();
 
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
   void CreatePolicyService();
 
@@ -493,7 +493,7 @@ class DeviceLocalAccountPolicyExtensionCacheTest
  protected:
   DeviceLocalAccountPolicyExtensionCacheTest();
 
-  virtual void SetUp() override;
+  void SetUp() override;
 
   base::FilePath GetCacheDirectoryForAccountID(const std::string& account_id);
 
@@ -772,8 +772,8 @@ class DeviceLocalAccountPolicyProviderTest
  protected:
   DeviceLocalAccountPolicyProviderTest();
 
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
   SchemaRegistry schema_registry_;
   scoped_ptr<DeviceLocalAccountPolicyProvider> provider_;

@@ -63,7 +63,7 @@ class DeviceLocalAccountPolicyBroker
           external_data_manager,
       const base::Closure& policy_updated_callback,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner);
-  virtual ~DeviceLocalAccountPolicyBroker();
+  ~DeviceLocalAccountPolicyBroker() override;
 
   // Initialize the broker, loading its |store_|.
   void Initialize();
@@ -104,11 +104,11 @@ class DeviceLocalAccountPolicyBroker
   std::string GetDisplayName() const;
 
   // CloudPolicyStore::Observer:
-  virtual void OnStoreLoaded(CloudPolicyStore* store) override;
-  virtual void OnStoreError(CloudPolicyStore* store) override;
+  void OnStoreLoaded(CloudPolicyStore* store) override;
+  void OnStoreError(CloudPolicyStore* store) override;
 
   // ComponentCloudPolicyService::Delegate:
-  virtual void OnComponentCloudPolicyUpdated() override;
+  void OnComponentCloudPolicyUpdated() override;
 
  private:
   void CreateComponentCloudPolicyService(

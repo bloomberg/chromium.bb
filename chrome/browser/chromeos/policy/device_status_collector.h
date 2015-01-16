@@ -64,14 +64,14 @@ class DeviceStatusCollector : public CloudPolicyClient::StatusProvider {
       chromeos::system::StatisticsProvider* provider,
       const LocationUpdateRequester& location_update_requester,
       const VolumeInfoFetcher& volume_info_fetcher);
-  virtual ~DeviceStatusCollector();
+  ~DeviceStatusCollector() override;
 
   // CloudPolicyClient::StatusProvider:
-  virtual bool GetDeviceStatus(
+  bool GetDeviceStatus(
       enterprise_management::DeviceStatusReportRequest* status) override;
-  virtual bool GetSessionStatus(
+  bool GetSessionStatus(
       enterprise_management::SessionStatusReportRequest* status) override;
-  virtual void OnSubmittedSuccessfully() override;
+  void OnSubmittedSuccessfully() override;
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
 

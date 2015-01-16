@@ -27,7 +27,7 @@ class ServerBackedStateKeysBrokerTest : public testing::Test {
     state_keys_.push_back("3");
     fake_session_manager_client_.set_server_backed_state_keys(state_keys_);
   }
-  virtual ~ServerBackedStateKeysBrokerTest() {}
+  ~ServerBackedStateKeysBrokerTest() override {}
 
   void StateKeysUpdated() {
     updated_ = true;

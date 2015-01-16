@@ -46,10 +46,8 @@ class WildcardLoginChecker : public UserInfoFetcher::Delegate {
                             const StatusCallback& callback);
 
   // UserInfoFetcher::Delegate:
-  virtual void OnGetUserInfoSuccess(const base::DictionaryValue* response)
-      override;
-  virtual void OnGetUserInfoFailure(const GoogleServiceAuthError& error)
-      override;
+  void OnGetUserInfoSuccess(const base::DictionaryValue* response) override;
+  void OnGetUserInfoFailure(const GoogleServiceAuthError& error) override;
 
  private:
   // Starts the check after successful token minting.

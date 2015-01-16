@@ -67,14 +67,13 @@ const char kCacheKey[] = "data";
 class FakeURLFetcherFactory : public net::FakeURLFetcherFactory {
  public:
   FakeURLFetcherFactory();
-  virtual ~FakeURLFetcherFactory();
+  ~FakeURLFetcherFactory() override;
 
   // net::FakeURLFetcherFactory:
-  virtual net::URLFetcher* CreateURLFetcher(
-      int id,
-      const GURL& url,
-      net::URLFetcher::RequestType request_type,
-      net::URLFetcherDelegate* delegate) override;
+  net::URLFetcher* CreateURLFetcher(int id,
+                                    const GURL& url,
+                                    net::URLFetcher::RequestType request_type,
+                                    net::URLFetcherDelegate* delegate) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeURLFetcherFactory);
@@ -104,8 +103,8 @@ class CloudExternalDataManagerBaseTest : public testing::Test {
  protected:
   CloudExternalDataManagerBaseTest();
 
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
   void SetUpExternalDataManager();
 

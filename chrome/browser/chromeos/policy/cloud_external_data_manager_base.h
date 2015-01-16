@@ -37,7 +37,7 @@ class CloudExternalDataManagerBase : public CloudExternalDataManager,
       const GetChromePolicyDetailsCallback& get_policy_details,
       scoped_refptr<base::SequencedTaskRunner> backend_task_runner,
       scoped_refptr<base::SequencedTaskRunner> io_task_runner);
-  virtual ~CloudExternalDataManagerBase();
+  ~CloudExternalDataManagerBase() override;
 
   // Allows downloaded external data to be cached in |external_data_store|.
   // Ownership of the store is taken. The store can be destroyed by calling
@@ -47,14 +47,13 @@ class CloudExternalDataManagerBase : public CloudExternalDataManager,
       scoped_ptr<CloudExternalDataStore> external_data_store);
 
   // CloudExternalDataManager:
-  virtual void SetPolicyStore(CloudPolicyStore* policy_store) override;
-  virtual void OnPolicyStoreLoaded() override;
-  virtual void Connect(
+  void SetPolicyStore(CloudPolicyStore* policy_store) override;
+  void OnPolicyStoreLoaded() override;
+  void Connect(
       scoped_refptr<net::URLRequestContextGetter> request_context) override;
-  virtual void Disconnect() override;
-  virtual void Fetch(
-      const std::string& policy,
-      const ExternalDataFetcher::FetchCallback& callback) override;
+  void Disconnect() override;
+  void Fetch(const std::string& policy,
+             const ExternalDataFetcher::FetchCallback& callback) override;
 
   // Allows policies to reference |max_size| bytes of external data even if no
   // |max_size| was specified in policy_templates.json.

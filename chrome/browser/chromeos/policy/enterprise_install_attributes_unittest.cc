@@ -43,7 +43,7 @@ class EnterpriseInstallAttributesTest : public testing::Test {
  protected:
   EnterpriseInstallAttributesTest() {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     ASSERT_TRUE(PathService::OverrideAndCreateIfNeeded(
         chromeos::FILE_INSTALL_ATTRIBUTES, GetTempPath(), true, false));
@@ -52,9 +52,7 @@ class EnterpriseInstallAttributesTest : public testing::Test {
         chromeos::DBusThreadManager::Get()->GetCryptohomeClient()));
   }
 
-  virtual void TearDown() override {
-    chromeos::DBusThreadManager::Shutdown();
-  }
+  void TearDown() override { chromeos::DBusThreadManager::Shutdown(); }
 
   base::FilePath GetTempPath() const {
     base::FilePath temp_path = base::MakeAbsoluteFilePath(temp_dir_.path());

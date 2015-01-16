@@ -33,14 +33,14 @@ class UserNetworkConfigurationUpdaterFactory
   friend struct DefaultSingletonTraits<UserNetworkConfigurationUpdaterFactory>;
 
   UserNetworkConfigurationUpdaterFactory();
-  virtual ~UserNetworkConfigurationUpdaterFactory();
+  ~UserNetworkConfigurationUpdaterFactory() override;
 
   // BrowserContextKeyedServiceFactory:
-  virtual content::BrowserContext* GetBrowserContextToUse(
+  content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const override;
-  virtual bool ServiceIsCreatedWithBrowserContext() const override;
-  virtual bool ServiceIsNULLWhileTesting() const override;
-  virtual KeyedService* BuildServiceInstanceFor(
+  bool ServiceIsCreatedWithBrowserContext() const override;
+  bool ServiceIsNULLWhileTesting() const override;
+  KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const override;
 
   DISALLOW_COPY_AND_ASSIGN(UserNetworkConfigurationUpdaterFactory);

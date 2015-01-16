@@ -39,7 +39,7 @@ class UserCloudExternalDataManager : public CloudExternalDataManagerBase {
       scoped_refptr<base::SequencedTaskRunner> io_task_runner,
       const base::FilePath& cache_path,
       CloudPolicyStore* policy_store);
-  virtual ~UserCloudExternalDataManager();
+  ~UserCloudExternalDataManager() override;
 
  private:
   // Cache used to store downloaded external data. The |resource_cache_| is

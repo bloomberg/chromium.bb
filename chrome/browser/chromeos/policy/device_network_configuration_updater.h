@@ -39,7 +39,7 @@ class PolicyService;
 // listening for notifications from CrosSettings.
 class DeviceNetworkConfigurationUpdater : public NetworkConfigurationUpdater {
  public:
-  virtual ~DeviceNetworkConfigurationUpdater();
+  ~DeviceNetworkConfigurationUpdater() override;
 
   // Creates an updater that applies the ONC device policy from |policy_service|
   // once the policy service is completely initialized and on each policy
@@ -57,12 +57,11 @@ class DeviceNetworkConfigurationUpdater : public NetworkConfigurationUpdater {
       chromeos::NetworkDeviceHandler* network_device_handler,
       chromeos::CrosSettings* cros_settings);
 
-  virtual void Init() override;
-  virtual void ImportCertificates(const base::ListValue& certificates_onc)
-      override;
-  virtual void ApplyNetworkPolicy(base::ListValue* network_configs_onc,
-                                  base::DictionaryValue* global_network_config)
-      override;
+  void Init() override;
+  void ImportCertificates(const base::ListValue& certificates_onc) override;
+  void ApplyNetworkPolicy(
+      base::ListValue* network_configs_onc,
+      base::DictionaryValue* global_network_config) override;
   void OnDataRoamingSettingChanged();
 
   chromeos::NetworkDeviceHandler* network_device_handler_;

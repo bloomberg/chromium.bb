@@ -57,10 +57,10 @@ class FakeUser : public user_manager::User {
     set_display_email(kFakeUserEmail);
     set_username_hash(kFakeUsernameHash);
   }
-  virtual ~FakeUser() {}
+  ~FakeUser() override {}
 
   // User overrides
-  virtual user_manager::UserType GetType() const override {
+  user_manager::UserType GetType() const override {
     return user_manager::USER_TYPE_REGULAR;
   }
 
@@ -73,7 +73,7 @@ class FakeWebTrustedCertsObserver
  public:
   FakeWebTrustedCertsObserver() {}
 
-  virtual void OnTrustAnchorsChanged(
+  void OnTrustAnchorsChanged(
       const net::CertificateList& trust_anchors) override {
     trust_anchors_ = trust_anchors;
   }
@@ -87,7 +87,7 @@ class FakeNetworkDeviceHandler : public chromeos::FakeNetworkDeviceHandler {
  public:
   FakeNetworkDeviceHandler() : allow_roaming_(false) {}
 
-  virtual void SetCellularAllowRoaming(bool allow_roaming) override {
+  void SetCellularAllowRoaming(bool allow_roaming) override {
     allow_roaming_ = allow_roaming;
   }
 
@@ -101,7 +101,7 @@ class FakeCertificateImporter : public chromeos::onc::CertificateImporter {
  public:
   FakeCertificateImporter()
       : expected_onc_source_(::onc::ONC_SOURCE_UNKNOWN), call_count_(0) {}
-  virtual ~FakeCertificateImporter() {}
+  ~FakeCertificateImporter() override {}
 
   void SetTrustedCertificatesResult(
       net::CertificateList onc_trusted_certificates) {
@@ -122,9 +122,9 @@ class FakeCertificateImporter : public chromeos::onc::CertificateImporter {
     return count;
   }
 
-  virtual void ImportCertificates(const base::ListValue& certificates,
-                                  ::onc::ONCSource source,
-                                  const DoneCallback& done_callback) override {
+  void ImportCertificates(const base::ListValue& certificates,
+                          ::onc::ONCSource source,
+                          const DoneCallback& done_callback) override {
     if (expected_onc_source_ != ::onc::ONC_SOURCE_UNKNOWN)
       EXPECT_EQ(expected_onc_source_, source);
     if (expected_onc_certificates_) {

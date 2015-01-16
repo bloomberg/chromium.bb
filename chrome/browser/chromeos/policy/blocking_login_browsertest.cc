@@ -87,7 +87,7 @@ class BlockingLoginTest
  public:
   BlockingLoginTest() : profile_added_(NULL) {}
 
-  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     // Initialize the test server early, so that we can use its base url for
     // the command line flags.
     ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
@@ -109,7 +109,7 @@ class BlockingLoginTest
         embedded_test_server()->GetURL("/device_management").spec());
   }
 
-  virtual void SetUpOnMainThread() override {
+  void SetUpOnMainThread() override {
     fake_gaia_.Initialize();
 
     embedded_test_server()->RegisterRequestHandler(
@@ -122,16 +122,16 @@ class BlockingLoginTest
                    content::NotificationService::AllSources());
   }
 
-  virtual void TearDownOnMainThread() override {
+  void TearDownOnMainThread() override {
     RunUntilIdle();
     EXPECT_TRUE(responses_.empty());
     STLDeleteElements(&responses_);
     EXPECT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
   }
 
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override {
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override {
     ASSERT_EQ(chrome::NOTIFICATION_PROFILE_ADDED, type);
     ASSERT_FALSE(profile_added_);
     profile_added_ = content::Source<Profile>(source).ptr();
