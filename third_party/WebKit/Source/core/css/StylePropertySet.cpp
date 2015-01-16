@@ -95,8 +95,11 @@ ImmutableStylePropertySet::~ImmutableStylePropertySet()
 {
 #if !ENABLE(OILPAN)
     RawPtrWillBeMember<CSSValue>* valueArray = const_cast<RawPtrWillBeMember<CSSValue>*>(this->valueArray());
-    for (unsigned i = 0; i < m_arraySize; ++i)
-        valueArray[i]->deref();
+    for (unsigned i = 0; i < m_arraySize; ++i) {
+        // Checking for nullptr here is a workaround to prevent crashing.  http://crbug.com/449032
+        if (valueArray[i])
+            valueArray[i]->deref();
+    }
 #endif
 }
 
