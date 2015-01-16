@@ -48,6 +48,7 @@
                     assert_true(event instanceof window.MediaKeyMessageEvent);
                     assert_equals(event.target, mediaKeySession);
                     assert_equals(event.type, 'message');
+                    assert_equals(event.messageType, 'license-request');
 
                     var keyId = extractSingleKeyIdFromMessage(event.message);
                     var jwkSet = stringToUint8Array(createJWKSet(createJWK(keyId, rawKey)));

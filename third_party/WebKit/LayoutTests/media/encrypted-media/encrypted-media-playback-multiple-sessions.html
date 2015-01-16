@@ -79,6 +79,7 @@
 
                 function onMessage(event)
                 {
+                    assert_equals(event.messageType, 'license-request');
                     var keyId = extractSingleKeyIdFromMessage(event.message);
                     if (event.target == videoMediaKeySession) {
                         assert_equals(String.fromCharCode.apply(null, keyId), videoKeyId);
