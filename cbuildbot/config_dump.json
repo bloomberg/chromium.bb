@@ -230,6 +230,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "amd64-generic-compile-only-pre-cq",
@@ -288,6 +292,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "amd64-generic-no-vmtest-pre-cq",
@@ -351,6 +359,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "amd64-generic-pre-cq",
@@ -472,6 +484,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "amd64-generic_freon-compile-only-pre-cq",
@@ -519,6 +535,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "amd64-generic_freon-no-vmtest-pre-cq",
@@ -556,6 +576,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "amd64-generic_freon-pre-cq",
@@ -637,6 +661,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "arm-generic-compile-only-pre-cq",
@@ -688,6 +716,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "arm-generic-no-vmtest-pre-cq",
@@ -730,6 +762,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "arm-generic-pre-cq",
@@ -808,6 +844,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "arm-generic_freon-compile-only-pre-cq",
@@ -859,6 +899,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "arm-generic_freon-no-vmtest-pre-cq",
@@ -900,6 +944,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "arm-generic_freon-pre-cq",
@@ -965,6 +1013,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "arm64-generic-compile-only-pre-cq",
@@ -1016,6 +1068,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "arm64-generic-no-vmtest-pre-cq",
@@ -1057,6 +1113,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "arm64-generic-pre-cq",
@@ -1313,6 +1373,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -1566,6 +1630,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -1633,6 +1701,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -2156,6 +2228,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -2211,6 +2287,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -2277,6 +2357,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -2640,6 +2724,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -2695,6 +2783,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -2761,6 +2853,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -3122,6 +3218,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -3281,6 +3381,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -3347,6 +3451,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -4378,6 +4486,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -4891,6 +5003,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -4957,6 +5073,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -5320,6 +5440,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -5376,6 +5500,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -5429,6 +5557,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -5820,6 +5952,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -5911,6 +6047,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -5979,6 +6119,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -6350,6 +6494,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -6509,6 +6657,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -6575,6 +6727,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -6973,6 +7129,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -7028,6 +7188,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -7094,6 +7258,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -7455,6 +7623,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -7614,6 +7786,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -7680,6 +7856,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -8108,6 +8288,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -8162,6 +8346,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -8228,6 +8416,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -8634,6 +8826,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -8884,6 +9080,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -8958,6 +9158,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -9521,6 +9725,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -9579,6 +9787,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -9649,6 +9861,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -10021,6 +10237,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -10117,6 +10337,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -10187,6 +10411,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -10554,6 +10782,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -10650,6 +10882,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -10722,6 +10958,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -11092,6 +11332,10 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "factory": false,
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -11152,6 +11396,10 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "factory": false,
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -11224,6 +11472,10 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "factory": false,
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -11590,6 +11842,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -11620,6 +11876,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation and unit tests only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -11675,6 +11935,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -11742,6 +12006,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -12098,6 +12366,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -12257,6 +12529,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -12323,6 +12599,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -12694,6 +12974,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -12853,6 +13137,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -12919,6 +13207,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -13250,6 +13542,10 @@
                 "description": "Verifies compilation, building an image, and unit tests if supported.",
                 "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
                 "grouped": true,
+                "health_alert_recipients": [
+                    "chromeos-build-alerts@google.com",
+                    "build"
+                ],
                 "important": true,
                 "manifest_version": true,
                 "name": "x86-generic-no-vmtest-pre-cq",
@@ -13272,6 +13568,10 @@
                 "description": "Verifies compilation, building an image, and unit tests if supported.",
                 "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
                 "grouped": true,
+                "health_alert_recipients": [
+                    "chromeos-build-alerts@google.com",
+                    "build"
+                ],
                 "important": true,
                 "manifest_version": true,
                 "name": "amd64-generic-no-vmtest-pre-cq",
@@ -13344,6 +13644,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -13463,6 +13767,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -13530,6 +13838,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -13901,6 +14213,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -13955,6 +14271,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -14021,6 +14341,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -14392,6 +14716,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -14446,6 +14774,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -14512,6 +14844,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -14851,6 +15187,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "gizmo-compile-only-pre-cq",
@@ -14900,6 +15240,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "gizmo-no-vmtest-pre-cq",
@@ -14939,6 +15283,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "gizmo-pre-cq",
@@ -15059,6 +15407,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -15218,6 +15570,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -15284,6 +15640,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -15655,6 +16015,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -15814,6 +16178,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -15880,6 +16248,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -16253,6 +16625,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -16308,6 +16684,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -16374,6 +16754,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -17055,6 +17439,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -17308,6 +17696,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -17374,6 +17766,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -17915,6 +18311,10 @@
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "factory_install_netboot": false,
         "factory_toolkit": false,
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "images": [
             "base"
         ],
@@ -17981,6 +18381,10 @@
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "factory_install_netboot": false,
         "factory_toolkit": false,
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "images": [
             "base"
         ],
@@ -18050,6 +18454,10 @@
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "factory_install_netboot": false,
         "factory_toolkit": false,
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "images": [
             "base"
         ],
@@ -18420,6 +18828,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -18579,6 +18991,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -18645,6 +19061,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -19018,6 +19438,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -19074,6 +19498,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -19126,6 +19554,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -19481,6 +19913,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -19640,6 +20076,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -19707,6 +20147,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -20078,6 +20522,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -20237,6 +20685,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -20308,6 +20760,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -20704,6 +21160,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -20759,6 +21219,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -20825,6 +21289,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -21189,6 +21657,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -21244,6 +21716,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -21310,6 +21786,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -21705,6 +22185,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -21822,6 +22306,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -21892,6 +22380,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -22431,6 +22923,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -22485,6 +22981,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -22551,6 +23051,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -22924,6 +23428,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -22979,6 +23487,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -23045,6 +23557,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -23388,6 +23904,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "mipseb-n32-generic-compile-only-pre-cq",
@@ -23441,6 +23961,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "mipseb-n32-generic-no-vmtest-pre-cq",
@@ -23484,6 +24008,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "mipseb-n32-generic-pre-cq",
@@ -23552,6 +24080,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "mipseb-n64-generic-compile-only-pre-cq",
@@ -23605,6 +24137,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "mipseb-n64-generic-no-vmtest-pre-cq",
@@ -23648,6 +24184,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "mipseb-n64-generic-pre-cq",
@@ -23716,6 +24256,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "mipseb-o32-generic-compile-only-pre-cq",
@@ -23769,6 +24313,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "mipseb-o32-generic-no-vmtest-pre-cq",
@@ -23812,6 +24360,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "mipseb-o32-generic-pre-cq",
@@ -23880,6 +24432,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "mipsel-n32-generic-compile-only-pre-cq",
@@ -23933,6 +24489,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "mipsel-n32-generic-no-vmtest-pre-cq",
@@ -23976,6 +24536,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "mipsel-n32-generic-pre-cq",
@@ -24044,6 +24608,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "mipsel-n64-generic-compile-only-pre-cq",
@@ -24097,6 +24665,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "mipsel-n64-generic-no-vmtest-pre-cq",
@@ -24140,6 +24712,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "mipsel-n64-generic-pre-cq",
@@ -24208,6 +24784,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "mipsel-o32-generic-compile-only-pre-cq",
@@ -24259,6 +24839,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "mipsel-o32-generic-no-vmtest-pre-cq",
@@ -24316,6 +24900,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "mipsel-o32-generic-pre-cq",
@@ -24405,6 +24993,10 @@
                 "description": "Verifies compilation only",
                 "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
                 "grouped": true,
+                "health_alert_recipients": [
+                    "chromeos-build-alerts@google.com",
+                    "build"
+                ],
                 "important": true,
                 "internal": true,
                 "manifest": "official.xml",
@@ -24437,6 +25029,10 @@
                 "description": "Verifies compilation only",
                 "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
                 "grouped": true,
+                "health_alert_recipients": [
+                    "chromeos-build-alerts@google.com",
+                    "build"
+                ],
                 "important": true,
                 "internal": true,
                 "manifest": "official.xml",
@@ -24473,6 +25069,10 @@
                 "description": "Verifies compilation only",
                 "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
                 "grouped": true,
+                "health_alert_recipients": [
+                    "chromeos-build-alerts@google.com",
+                    "build"
+                ],
                 "important": true,
                 "internal": true,
                 "manifest": "official.xml",
@@ -24505,6 +25105,10 @@
                 "description": "Verifies compilation only",
                 "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
                 "grouped": true,
+                "health_alert_recipients": [
+                    "chromeos-build-alerts@google.com",
+                    "build"
+                ],
                 "important": true,
                 "internal": true,
                 "manifest": "official.xml",
@@ -24541,6 +25145,10 @@
                 "description": "Verifies compilation only",
                 "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
                 "grouped": true,
+                "health_alert_recipients": [
+                    "chromeos-build-alerts@google.com",
+                    "build"
+                ],
                 "important": true,
                 "internal": true,
                 "manifest": "official.xml",
@@ -24617,6 +25225,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -24708,6 +25320,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -24775,6 +25391,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -25148,6 +25768,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -25203,6 +25827,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -25269,6 +25897,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -25636,6 +26268,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -25851,6 +26487,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -25922,6 +26562,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -26506,6 +27150,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -26564,6 +27212,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -26634,6 +27286,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -27001,6 +27657,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -27059,6 +27719,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -27129,6 +27793,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -27496,6 +28164,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -27554,6 +28226,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -27624,6 +28300,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -27991,6 +28671,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -28049,6 +28733,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -28119,6 +28807,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -28480,6 +29172,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -28571,6 +29267,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -28638,6 +29338,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -29079,6 +29783,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -29134,6 +29842,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -29200,6 +29912,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -29563,6 +30279,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -29618,6 +30338,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -29685,6 +30409,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -30070,6 +30798,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -30161,6 +30893,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -30230,6 +30966,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -30712,6 +31452,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -30766,6 +31510,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -30832,6 +31580,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -31201,6 +31953,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -31360,6 +32116,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -31426,6 +32186,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -31980,6 +32744,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -32076,6 +32844,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -32146,6 +32918,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -32513,6 +33289,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -32609,6 +33389,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -32683,6 +33467,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -33044,6 +33832,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -33135,6 +33927,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -33205,6 +34001,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -33579,6 +34379,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -33634,6 +34438,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -33701,6 +34509,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -34430,6 +35242,10 @@
                 "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
                 "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
                 "grouped": true,
+                "health_alert_recipients": [
+                    "chromeos-build-alerts@google.com",
+                    "build"
+                ],
                 "important": true,
                 "internal": true,
                 "manifest": "official.xml",
@@ -34462,6 +35278,10 @@
                 "description": "Verifies compilation only",
                 "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
                 "grouped": true,
+                "health_alert_recipients": [
+                    "chromeos-build-alerts@google.com",
+                    "build"
+                ],
                 "important": true,
                 "internal": true,
                 "manifest": "official.xml",
@@ -34493,6 +35313,10 @@
                 "description": "Verifies compilation and unit tests only",
                 "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
                 "grouped": true,
+                "health_alert_recipients": [
+                    "chromeos-build-alerts@google.com",
+                    "build"
+                ],
                 "important": true,
                 "internal": true,
                 "manifest": "official.xml",
@@ -34524,6 +35348,10 @@
                 "description": "Verifies compilation only",
                 "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
                 "grouped": true,
+                "health_alert_recipients": [
+                    "chromeos-build-alerts@google.com",
+                    "build"
+                ],
                 "important": true,
                 "internal": true,
                 "manifest": "official.xml",
@@ -34555,6 +35383,10 @@
                 "description": "Verifies compilation only",
                 "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
                 "grouped": true,
+                "health_alert_recipients": [
+                    "chromeos-build-alerts@google.com",
+                    "build"
+                ],
                 "important": true,
                 "internal": true,
                 "manifest": "official.xml",
@@ -34586,6 +35418,10 @@
                 "description": "Verifies compilation only",
                 "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
                 "grouped": true,
+                "health_alert_recipients": [
+                    "chromeos-build-alerts@google.com",
+                    "build"
+                ],
                 "important": true,
                 "internal": true,
                 "manifest": "official.xml",
@@ -34688,6 +35524,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -34847,6 +35687,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -34913,6 +35757,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -36298,6 +37146,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -36630,6 +37482,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -36699,6 +37555,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -37085,6 +37945,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -37143,6 +38007,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -37198,6 +38066,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -37558,6 +38430,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -37616,6 +38492,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -37687,6 +38567,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -38044,6 +38928,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -38204,6 +39092,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -38271,6 +39163,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -38973,6 +39869,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -39215,6 +40115,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -39281,6 +40185,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -39920,6 +40828,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -40079,6 +40991,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -40145,6 +41061,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -40522,6 +41442,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -40619,6 +41543,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -40691,6 +41619,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -41048,6 +41980,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -41139,6 +42075,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -41208,6 +42148,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -41579,6 +42523,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -41670,6 +42618,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -41740,6 +42692,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -42125,6 +43081,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -42180,6 +43140,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -42247,6 +43211,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -42607,6 +43575,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -42766,6 +43738,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -42832,6 +43808,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -43236,6 +44216,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -43291,6 +44275,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -43357,6 +44345,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -43768,6 +44760,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -43822,6 +44818,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -43888,6 +44888,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -44261,6 +45265,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -44316,6 +45324,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -44382,6 +45394,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -44749,6 +45765,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -44808,6 +45828,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -44864,6 +45888,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -45828,6 +46856,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -45886,6 +46918,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -45956,6 +46992,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -46323,6 +47363,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -46381,6 +47425,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -46451,6 +47499,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -46818,6 +47870,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -46876,6 +47932,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -46946,6 +48006,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -47313,6 +48377,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -47371,6 +48439,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -47441,6 +48513,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -47808,6 +48884,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -47866,6 +48946,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -47936,6 +49020,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -48304,6 +49392,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -48362,6 +49454,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -48433,6 +49529,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -48800,6 +49900,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -48858,6 +49962,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -48928,6 +50036,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -49295,6 +50407,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -49354,6 +50470,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -49425,6 +50545,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -49783,6 +50907,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -49942,6 +51070,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -50008,6 +51140,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -50379,6 +51515,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -50470,6 +51610,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -50540,6 +51684,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -50920,6 +52068,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "x32-generic-compile-only-pre-cq",
@@ -50981,6 +52133,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "x32-generic-no-vmtest-pre-cq",
@@ -51019,6 +52175,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "x32-generic-pre-cq",
@@ -51120,6 +52280,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -51174,6 +52338,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -51244,6 +52412,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -51720,6 +52892,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -51774,6 +52950,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -51840,6 +53020,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -52222,6 +53406,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "x86-generic-compile-only-pre-cq",
@@ -52279,6 +53467,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "x86-generic-no-vmtest-pre-cq",
@@ -52342,6 +53534,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "x86-generic-pre-cq",
@@ -52485,6 +53681,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -52619,6 +53819,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -52712,6 +53916,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -53061,6 +54269,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "x86-pineview-compile-only-pre-cq",
@@ -53108,6 +54320,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "x86-pineview-no-vmtest-pre-cq",
@@ -53145,6 +54361,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "x86-pineview-pre-cq",
@@ -53245,6 +54465,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -53299,6 +54523,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -53369,6 +54597,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -53845,6 +55077,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -53899,6 +55135,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -53965,6 +55205,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -54330,6 +55574,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -54489,6 +55737,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -54555,6 +55807,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -54928,6 +56184,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -54983,6 +56243,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -55049,6 +56313,10 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com",
+            "build"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",

@@ -378,6 +378,22 @@ class ReportStage(generic_stages.BuilderStage,
     return 'The builder named %s has failed %i consecutive times. See %s' % (
         self._run.config['name'], fail_count, self.ConstructDashboardURL())
 
+  def _SendPreCQInfraAlertMessageIfNeeded(self):
+    """Send alerts on Pre-CQ infra failures."""
+    msg = completion_stages.CreateBuildFailureMessage(
+        self._run.config.overlays,
+        self._run.config.name,
+        self._run.ConstructDashboardURL())
+    pre_cq = self._run.config.pre_cq or self._run.options.pre_cq
+    if pre_cq and msg.HasFailureType(failures_lib.InfrastructureFailure):
+      name = self._run.config.name
+      title = 'pre-cq infra failures'
+      body = ['%s failed on %s' % (name, cros_build_lib.GetHostName()),
+              '%s' % msg]
+      extra_fields = {'X-cbuildbot-alert': 'pre-cq-infra-alert'}
+      tree_status.SendHealthAlert(self._run, title, '\n\n'.join(body),
+                                  extra_fields=extra_fields)
+
   def _UploadMetadataForRun(self, final_status):
     """Upload metadata.json for this entire run.
 
@@ -511,6 +527,10 @@ class ReportStage(generic_stages.BuilderStage,
     # run only. These aren't needed for the child builder runs.
     self._UploadMetadataForRun(final_status)
     self._UpdateRunStreak(self._run, final_status)
+
+    # Alert if the Pre-CQ has infra failures.
+    if final_status == constants.FINAL_STATUS_FAILED:
+      self._SendPreCQInfraAlertMessageIfNeeded()
 
     # Iterate through each builder run, whether there is just the main one
     # or multiple child builder runs.

@@ -1885,6 +1885,7 @@ pre_cq = paladin.derive(
   description='Verifies compilation, building an image, and vm/unit tests '
               'if supported.',
   doc='http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ',
+  health_alert_recipients=['chromeos-build-alerts@google.com', 'build'],
 )
 
 # Pre-CQ targets that only check compilation and unit tests.
