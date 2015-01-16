@@ -29,31 +29,16 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/perf/perf_test.h"
 
-// These are relative to the reference file dir defined by
-// webrtc_browsertest_common.h (i.e. chrome/test/data/webrtc/resources).
-static const base::FilePath::CharType kReferenceFile[] =
-#if defined (OS_WIN)
-    FILE_PATH_LITERAL("human-voice-win.wav");
-#elif defined (OS_MACOSX)
-    FILE_PATH_LITERAL("human-voice-mac.wav");
-#else
-    FILE_PATH_LITERAL("human-voice-linux.wav");
-#endif
+namespace {
 
-static const base::FilePath::CharType kAgcTestReferenceFile[] =
+static const base::FilePath::CharType kReferenceFile[] =
     FILE_PATH_LITERAL("speech_44kHz_16bit_stereo.wav");
 
 // The javascript will load the reference file relative to its location,
 // which is in /webrtc on the web server. The files we are looking for are in
 // webrtc/resources in the chrome/test/data folder.
 static const char kReferenceFileRelativeUrl[] =
-#if defined (OS_WIN)
-    "resources/human-voice-win.wav";
-#elif defined (OS_MACOSX)
-    "resources/human-voice-mac.wav";
-#else
-    "resources/human-voice-linux.wav";
-#endif
+    "resources/speech_44kHz_16bit_stereo.wav";
 
 static const char kWebRtcAudioTestHtmlPage[] =
     "/webrtc/webrtc_audio_quality_test.html";
@@ -64,6 +49,8 @@ static const char kWebRtcAudioTestHtmlPage[] =
 // Not implemented on Android, ChromeOS etc.
 #define MAYBE_WebRtcAudioQualityBrowserTest DISABLED_WebRtcAudioQualityBrowserTest
 #endif
+
+}  // namespace
 
 // Test we can set up a WebRTC call and play audio through it.
 //
@@ -186,14 +173,10 @@ class AudioRecorder {
   ~AudioRecorder() {}
 
   // Starts the recording program for the specified duration. Returns true
-  // on success. We record in 44.1 kHz 16-bit format unless |record_cd| is
-  // false, in which case we record in 48 kHz 16-bit format. We record in stereo
-  // unless |mono| is true.
-  // TODO(phoglund): make win and mac also support the record_cd parameter. Or,
-  // even better, make everybody use the CD format rather than DAT.
+  // on success. We record in 16-bit 44.1 kHz Stereo (mostly because that's
+  // what SoundRecorder.exe will give us and we can't change that).
   bool StartRecording(base::TimeDelta recording_time,
-                      const base::FilePath& output_file, bool mono,
-                      bool record_cd) {
+                      const base::FilePath& output_file) {
     EXPECT_FALSE(recording_application_.IsValid())
         << "Tried to record, but is already recording.";
 
@@ -239,24 +222,14 @@ class AudioRecorder {
     command_line.AppendArg("trim");
     command_line.AppendArg("0");
     command_line.AppendArg(base::StringPrintf("%d", duration_sec));
-    command_line.AppendArg("rate");
-    command_line.AppendArg("16k");
-    if (mono) {
-      command_line.AppendArg("remix");
-      command_line.AppendArg("-");
-    }
 #else
-    int num_channels = mono ? 1 : 2;
     command_line.SetProgram(base::FilePath("arecord"));
     command_line.AppendArg("-d");
     command_line.AppendArg(base::StringPrintf("%d", duration_sec));
     command_line.AppendArg("-f");
-    if (record_cd)
-      command_line.AppendArg("cd");
-    else
-      command_line.AppendArg("dat");
+    command_line.AppendArg("cd");
     command_line.AppendArg("-c");
-    command_line.AppendArg(base::StringPrintf("%d", num_channels));
+    command_line.AppendArg("2");
     command_line.AppendArgPath(output_file);
 #endif
 
@@ -573,7 +546,7 @@ void ComputeAndPrintPesqResults(const base::FilePath& reference_file,
   base::FilePath trimmed_reference = CreateTemporaryWaveFile();
   base::FilePath trimmed_recording = CreateTemporaryWaveFile();
 
-  ASSERT_TRUE(RemoveSilence(recording, trimmed_reference));
+  ASSERT_TRUE(RemoveSilence(reference_file, trimmed_reference));
   ASSERT_TRUE(RemoveSilence(recording, trimmed_recording));
 
   std::string raw_mos;
@@ -624,7 +597,7 @@ void MAYBE_WebRtcAudioQualityBrowserTest::SetupAndRecordAudioCall(
       OpenPageWithoutGetUserMedia(kWebRtcAudioTestHtmlPage);
 
   AudioRecorder recorder;
-  ASSERT_TRUE(recorder.StartRecording(recording_time, recording, false, true));
+  ASSERT_TRUE(recorder.StartRecording(recording_time, recording));
 
   NegotiateCall(left_tab, right_tab);
 
@@ -690,7 +663,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcAudioQualityBrowserTest,
   // safety margins on each side.
   AudioRecorder recorder;
   ASSERT_TRUE(recorder.StartRecording(base::TimeDelta::FromSeconds(20),
-                                      recording, true, false));
+                                      recording));
 
   PlayAudioFileThroughWebAudio(left_tab);
 
@@ -788,7 +761,7 @@ void MAYBE_WebRtcAudioQualityBrowserTest::TestAutoGainControl(
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcAudioQualityBrowserTest,
                        MAYBE_MANUAL_TestAutoGainControlOnLowAudio) {
   ASSERT_NO_FATAL_FAILURE(TestAutoGainControl(
-      kAgcTestReferenceFile, kAudioOnlyCallConstraints, "_with_agc"));
+      kReferenceFile, kAudioOnlyCallConstraints, "_with_agc"));
 }
 
 // Only implemented for Linux for now.
@@ -806,5 +779,5 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcAudioQualityBrowserTest,
   const char* kAudioCallWithoutAudioProcessing =
       "{audio: { mandatory: { echoCancellation: false } } }";
   ASSERT_NO_FATAL_FAILURE(TestAutoGainControl(
-      kAgcTestReferenceFile, kAudioCallWithoutAudioProcessing, "_no_agc"));
+      kReferenceFile, kAudioCallWithoutAudioProcessing, "_no_agc"));
 }
