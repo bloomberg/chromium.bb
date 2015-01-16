@@ -66,6 +66,8 @@ class CollectedCookiesViews : public views::DialogDelegateView,
       const ViewHierarchyChangedDetails& details) override;
 
  private:
+  friend class CollectedCookiesViewsTest;
+
   ~CollectedCookiesViews() override;
 
   void Init();
