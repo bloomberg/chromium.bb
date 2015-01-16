@@ -38,14 +38,15 @@ AttachmentServiceProxy AttachmentServiceProxyForTest::Create() {
   scoped_refptr<Core> core_for_test(
       new OwningCore(wrapped.Pass(), weak_ptr_factory.Pass()));
 
-  scoped_refptr<base::SequencedTaskRunner> runner(
-      base::ThreadTaskRunnerHandle::Get());
-  if (!runner.get()) {
-    // Dummy runner for tests that don't care about AttachmentServiceProxy.
+  scoped_refptr<base::SequencedTaskRunner> runner;
+  if (base::ThreadTaskRunnerHandle::IsSet()) {
+    runner = base::ThreadTaskRunnerHandle::Get();
+  } else {
+    // Dummy runner for tests that don't have MessageLoop.
     DVLOG(1) << "Creating dummy MessageLoop for AttachmentServiceProxy.";
     base::MessageLoop loop;
     // This works because |runner| takes a ref to the proxy.
-    runner = loop.message_loop_proxy();
+    runner = base::ThreadTaskRunnerHandle::Get();
   }
   return AttachmentServiceProxyForTest(runner, core_for_test);
 }

@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/location.h"
+#include "base/message_loop/message_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "sync/internal_api/public/attachments/attachment_store_handle.h"
@@ -23,10 +24,18 @@ AttachmentStore::~AttachmentStore() {}
 
 scoped_refptr<AttachmentStore> AttachmentStore::CreateInMemoryStore() {
   // Both frontend and backend of attachment store will live on current thread.
-  scoped_ptr<AttachmentStoreBase> backend(
-      new InMemoryAttachmentStore(base::ThreadTaskRunnerHandle::Get()));
-  return scoped_refptr<AttachmentStore>(new AttachmentStoreHandle(
-      backend.Pass(), base::ThreadTaskRunnerHandle::Get()));
+  scoped_refptr<base::SingleThreadTaskRunner> runner;
+  if (base::ThreadTaskRunnerHandle::IsSet()) {
+    runner = base::ThreadTaskRunnerHandle::Get();
+  } else {
+    // Dummy runner for tests that don't have MessageLoop.
+    base::MessageLoop loop;
+    // This works because |runner| takes a ref to the proxy.
+    runner = base::ThreadTaskRunnerHandle::Get();
+  }
+  scoped_ptr<AttachmentStoreBase> backend(new InMemoryAttachmentStore(runner));
+  return scoped_refptr<AttachmentStore>(
+      new AttachmentStoreHandle(backend.Pass(), runner));
 }
 
 scoped_refptr<AttachmentStore> AttachmentStore::CreateOnDiskStore(
