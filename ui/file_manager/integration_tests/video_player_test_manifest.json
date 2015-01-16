@@ -5,6 +5,12 @@
   "version": "0.1",
   "manifest_version": 2,
   "web_accessible_resources": ["*"],
-  "background": {"scripts": ["video_player/background.js"]},
+  "background": {
+    "scripts": [
+      "test_util.js",
+      "remote_call.js",
+      "video_player/background.js",
+      "video_player/open_video_files.js"
+    ]},
   "incognito" : "split"
 }

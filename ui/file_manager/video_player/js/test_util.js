@@ -3,118 +3,76 @@
 // found in the LICENSE file.
 
 /**
- * Namespace for test related things.
- */
-var test = test || {};
-
-/**
- * Namespace for test utility functions.
+ * Returns if the specified file is being played.
  *
- * Public functions in the test.util.sync and the test.util.async namespaces are
- * published to test cases and can be called by using callRemoteTestUtil. The
- * arguments are serialized as JSON internally. If application ID is passed to
- * callRemoteTestUtil, the content window of the application is added as the
- * first argument. The functions in the test.util.async namespace are passed the
- * callback function as the last argument.
+ * @param {string} filename Name of audio file to be checked. This must be same
+ *     as entry.name() of the audio file.
+ * @return {boolean} True if the video is playing, false otherwise.
  */
-test.util = {};
+test.util.sync.isPlaying = function(filename) {
+  for (var appId in window.background.appWindows) {
+    var contentWindow = window.background.appWindows[appId].contentWindow;
+    if (contentWindow &&
+        contentWindow.document.title === filename) {
+      var element = contentWindow.document.querySelector('video[src]');
+      if (element && !element.paused)
+        return true;
+    }
+  }
+  return false;
+};
 
 /**
- * Namespace for synchronous utility functions.
+ * Loads the mock of the cast extension.
+ *
+ * @param {Window} contentWindow Video player window to be chacked toOB.
  */
-test.util.sync = {};
-
-/**
- * Namespace for asynchronous utility functions.
- */
-test.util.async = {};
-
-/**
- * Extension ID of the testing extension.
- * @type {string}
- * @const
- */
-test.util.TESTING_EXTENSION_ID = 'oobinhbdbiehknkpbpejbbpdbkdjmoco';
+test.util.sync.loadMockCastExtension = function(contentWindow) {
+  var script = contentWindow.document.createElement('script');
+  script.src =
+      'chrome-extension://ljoplibgfehghmibaoaepfagnmbbfiga/' +
+      'cast_extension_mock/load.js';
+  contentWindow.document.body.appendChild(script);
+};
 
 /**
  * Opens the main Files.app's window and waits until it is ready.
  *
- * @param {Window} contentWindow Video player window to be chacked toOB.
- * @return {boolean} True if the video is playing, false otherwise.
+ * @param {Array.<string>} urls URLs to be opened.
+ * @param {number} pos Indes in the |urls| to be played at first
+ * @param {function(string)} callback Completion callback with the new window's
+ *     App ID.
  */
-test.util.sync.isPlaying = function(contentWindow) {
-  var selector = 'video[src]';
-  var element = contentWindow.document.querySelector(selector);
-  if (!element)
-    return false;
-
-  return !element.paused;
+test.util.async.openVideoPlayer = function(urls, pos, callback) {
+  openVideoPlayerWindow({items: urls, position: pos}, false).then(callback);
 };
 
 /**
- * Gets total Javascript error count from each app window.
- * @return {number} Error count.
+ * Gets file entries just under the volume.
+ *
+ * @param {VolumeManagerCommon.VolumeType} volumeType Volume type.
+ * @param {Array.<string>} names File name list.
+ * @param {function(*)} callback Callback function with results returned by the
+ *     script.
  */
-test.util.sync.getErrorCount = function() {
-  var totalCount = window.JSErrorCount;
-  for (var appId in appWindowsForTest) {
-    var contentWindow = appWindowsForTest[appId].contentWindow;
-    if (contentWindow.JSErrorCount)
-      totalCount += contentWindow.JSErrorCount;
-  }
+test.util.async.getFilesUnderVolume = function(volumeType, names, callback) {
+  var displayRootPromise =
+      VolumeManager.getInstance().then(function(volumeManager) {
+    var volumeInfo = volumeManager.getCurrentProfileVolumeInfo(volumeType);
+    return volumeInfo.resolveDisplayRoot();
+  });
 
-  // Errors in the background page.
-  totalCount += window.JSErrorCount;
+  var retrievePromise = displayRootPromise.then(function(displayRoot) {
+    var filesPromise = names.map(function(name) {
+      return new Promise(
+          displayRoot.getFile.bind(displayRoot, name, {}));
+    });
+    return Promise.all(filesPromise).then(function(aa) {
+      return util.entriesToURLs(aa);
+    });
+  });
 
-  return totalCount;
-};
-
-/**
- * Registers message listener, which runs test utility functions.
- */
-test.util.registerRemoteTestUtils = function() {
-  // Register the message listener.
-  var onMessage = chrome.runtime ? chrome.runtime.onMessageExternal :
-      chrome.extension.onMessageExternal;
-  // Return true for asynchronous functions and false for synchronous.
-  onMessage.addListener(function(request, sender, sendResponse) {
-    // Check the sender.
-    if (sender.id != test.util.TESTING_EXTENSION_ID) {
-      console.error('The testing extension must be white-listed.');
-      sendResponse(false);
-      return false;
-    }
-    if (!request.func || request.func[request.func.length - 1] == '_') {
-      request.func = '';
-    }
-    // Prepare arguments.
-    var args = request.args.slice();  // shallow copy
-    if (request.appId) {
-      if (!appWindowsForTest[request.appId]) {
-        console.error('Specified window not found: ' + request.appId);
-        sendResponse(false);
-        return false;
-      }
-      args.unshift(appWindowsForTest[request.appId].contentWindow);
-    }
-    // Call the test utility function and respond the result.
-    if (test.util.async[request.func]) {
-      args[test.util.async[request.func].length - 1] = function() {
-        console.debug('Received the result of ' + request.func);
-        sendResponse.apply(null, arguments);
-      };
-      console.debug('Waiting for the result of ' + request.func);
-      test.util.async[request.func].apply(null, args);
-      return true;
-    } else if (test.util.sync[request.func]) {
-      sendResponse(test.util.sync[request.func].apply(null, args));
-      return false;
-    } else {
-      console.error('Invalid function name.');
-      sendResponse(false);
-      return false;
-    }
-  }.wrap());
+  retrievePromise.then(callback);
 };
 
 // Register the test utils.

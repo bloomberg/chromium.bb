@@ -15,39 +15,43 @@ function openSingleVideo(volumeName, volumeType) {
   var entries = [ENTRIES.world];
   return launch(volumeName, volumeType, entries).then(function(args) {
     var videoPlayer = args[1];
-    chrome.test.assertTrue(videoPlayer.hasAttribute('first-video'));
-    chrome.test.assertTrue(videoPlayer.hasAttribute('last-video'));
-    chrome.test.assertFalse(videoPlayer.hasAttribute('multiple'));
-    chrome.test.assertFalse(videoPlayer.hasAttribute('disabled'));
+
+    chrome.test.assertTrue('first-video' in videoPlayer.attributes);
+    chrome.test.assertTrue('last-video' in videoPlayer.attributes);
+    chrome.test.assertFalse('multiple' in videoPlayer.attributes);
+    chrome.test.assertFalse('disabled' in videoPlayer.attributes);
     return args;
   });
-}
+};
 
 /**
  * The openSingleImage test for Downloads.
  * @return {Promise} Promise to be fulfilled with on success.
  */
-function openSingleVideoOnDownloads() {
-  var test = openSingleVideo('local', VolumeManagerCommon.VolumeType.DOWNLOADS);
-  return test.then(function(args) {
-    var videoPlayer = args[1];
-    chrome.test.assertFalse(videoPlayer.hasAttribute('cast-available'));
-  });
-}
+testcase.openSingleVideoOnDownloads = function() {
+    var test = openSingleVideo('local', 'downloads');
+    return test.then(function(args) {
+      var videoPlayer = args[1];
+      chrome.test.assertFalse('cast-available' in videoPlayer.attributes);
+    });
+};
 
 /**
  * The openSingleImage test for Drive.
  * @return {Promise} Promise to be fulfilled with on success.
  */
-function openSingleVideoOnDrive() {
-  var test = openSingleVideo('drive', VolumeManagerCommon.VolumeType.DRIVE);
-  return test.then(function(args) {
-    var appWindow = args[0];
-    var videoPlayer = args[1];
-    chrome.test.assertFalse(videoPlayer.hasAttribute('cast-available'));
+testcase.openSingleVideoOnDrive = function() {
+    var test = openSingleVideo('drive', 'drive');
+    return test.then(function(args) {
+      var appWindow = args[0];
+      var videoPlayer = args[1];
+      chrome.test.assertFalse('cast-available' in videoPlayer.attributes);
 
-    // Loads cast extension and wait for available cast.
-    loadMockCastExtesntion(appWindow);
-    return waitForElement(appWindow, '#video-player[cast-available]');
-  });
-}
+      return remoteCallVideoPlayer.callRemoteTestUtil(
+          'loadMockCastExtension', appWindow, []).then(function() {
+        // Loads cast extension and wait for available cast.
+        return remoteCallVideoPlayer.waitForElement(
+            appWindow, '#video-player[cast-available]');
+      });
+    });
+};

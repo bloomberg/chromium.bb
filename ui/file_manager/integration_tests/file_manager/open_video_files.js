@@ -14,8 +14,8 @@
 function waitForPlaying(filename) {
   return repeatUntil(function() {
     return videoPlayerApp.callRemoteTestUtil('isPlaying',
-                                             filename,
-                                             []).
+                                             null,
+                                             [filename]).
         then(function(result) {
           if (result)
             return true;

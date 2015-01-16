@@ -30,11 +30,14 @@ test.util.sync = {};
 test.util.async = {};
 
 /**
- * Extension ID of the testing extension.
- * @type {string}
+ * List of extension ID of the testing extension.
+ * @type {Array.<string>}
  * @const
  */
-test.util.TESTING_EXTENSION_ID = 'oobinhbdbiehknkpbpejbbpdbkdjmoco';
+test.util.TESTING_EXTENSION_IDS = [
+  'oobinhbdbiehknkpbpejbbpdbkdjmoco',  // File Manager test
+  'ljoplibgfehghmibaoaepfagnmbbfiga',  // Video Player test
+];
 
 /**
  * Obtains window information.
@@ -373,7 +376,7 @@ test.util.registerRemoteTestUtils = function() {
   chrome.runtime.onMessageExternal.addListener(
       function(request, sender, sendResponse) {
     // Check the sender.
-    if (sender.id != test.util.TESTING_EXTENSION_ID) {
+    if (test.util.TESTING_EXTENSION_IDS.indexOf(sender.id) === -1) {
       console.error('The testing extension must be white-listed.');
       return false;
     }

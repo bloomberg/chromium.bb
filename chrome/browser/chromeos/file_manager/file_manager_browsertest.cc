@@ -1491,29 +1491,14 @@ class VideoPlayerBrowserTestBase : public FileManagerBrowserTestBase {
   }
 
  protected:
-  virtual void SetUp() override {
-    AddScript("common/test_util_common.js");
-    AddScript("video_player/test_util.js");
-    FileManagerBrowserTestBase::SetUp();
-  }
-
   virtual void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(
         chromeos::switches::kEnableVideoPlayerChromecastSupport);
     FileManagerBrowserTestBase::SetUpCommandLine(command_line);
   }
 
-  virtual void OnMessage(const std::string& name,
-                         const base::DictionaryValue& value,
-                         std::string* output) override;
-
   virtual const char* GetTestManifestName() const override {
     return "video_player_test_manifest.json";
-  }
-
-  void AddScript(const std::string& name) {
-    scripts_.AppendString(
-        "chrome-extension://ljoplibgfehghmibaoaepfagnmbbfiga/" + name);
   }
 
   void set_test_case_name(const std::string& name) {
@@ -1521,36 +1506,19 @@ class VideoPlayerBrowserTestBase : public FileManagerBrowserTestBase {
   }
 
  private:
-  base::ListValue scripts_;
   std::string test_case_name_;
 };
-
-template <GuestMode M>
-void VideoPlayerBrowserTestBase<M>::OnMessage(
-    const std::string& name,
-    const base::DictionaryValue& value,
-    std::string* output) {
-  if (name == "getScripts") {
-    std::string jsonString;
-    base::JSONWriter::Write(&scripts_, output);
-    return;
-  }
-
-  FileManagerBrowserTestBase::OnMessage(name, value, output);
-}
 
 typedef VideoPlayerBrowserTestBase<NOT_IN_GUEST_MODE> VideoPlayerBrowserTest;
 typedef VideoPlayerBrowserTestBase<IN_GUEST_MODE>
     VideoPlayerBrowserTestInGuestMode;
 
 IN_PROC_BROWSER_TEST_F(VideoPlayerBrowserTest, OpenSingleVideoOnDownloads) {
-  AddScript("video_player/open_video_files.js");
   set_test_case_name("openSingleVideoOnDownloads");
   StartTest();
 }
 
 IN_PROC_BROWSER_TEST_F(VideoPlayerBrowserTest, OpenSingleVideoOnDrive) {
-  AddScript("video_player/open_video_files.js");
   set_test_case_name("openSingleVideoOnDrive");
   StartTest();
 }

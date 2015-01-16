@@ -12,8 +12,6 @@
  */
 var ICON_IMAGE = 'images/icon/video-player-64.png';
 
-var appWindowsForTest = {};
-
 /**
  * Configuration of the video player panel.
  * @type {Object}
@@ -99,7 +97,7 @@ function openVideoPlayerWindow(playlist, reopen) {
   var items = playlist.items;
   var position = playlist.position;
   var startUrl = (position < items.length) ? items[position] : '';
-  var windowNameForTest = null;
+  var windowId = null;
 
   return new Promise(function(fulfill, reject) {
     util.URLsToEntries(items).then(function(result) {
@@ -114,13 +112,13 @@ function openVideoPlayerWindow(playlist, reopen) {
     if (maybePosition !== -1)
       position = maybePosition;
 
-    windowNameForTest = entries[0].name;
+    windowId = generateWindowId();
 
     // Opens the video player window.
     return new Promise(function(fulfill, reject) {
       var urls = util.entriesToURLs(entries);
       var videoPlayer = new AppWindowWrapper('video_player.html',
-          generateWindowId(),
+          windowId,
           windowCreateOptions);
 
       videoPlayer.launch(
@@ -130,31 +128,16 @@ function openVideoPlayerWindow(playlist, reopen) {
     }.wrap());
   }.wrap()).then(function(videoPlayer) {
     var appWindow = videoPlayer.rawAppWindow;
-    appWindowsForTest[windowNameForTest] = appWindow;
 
     if (chrome.test)
       appWindow.contentWindow.loadMockCastExtensionForTest = true;
 
     videoPlayer.setIcon(ICON_IMAGE);
-    AppWindowWrapper.focusOnDesktop(videoPlayer.rawAppWindow);
+    AppWindowWrapper.focusOnDesktop(appWindow);
+
+    return windowId;
   }.wrap()).catch(function(error) {
     console.error('Launch failed' + error.stack || error);
     return Promise.reject(error);
-  }.wrap());
-}
-
-// If is is run in the browser test, wait for the test resources are installed
-// as a component extension, and then load the test resources.
-if (chrome.test) {
-  /** @type {string} */
-  window.testExtensionId = 'ljoplibgfehghmibaoaepfagnmbbfiga';
-  chrome.runtime.onMessageExternal.addListener(function(message) {
-    if (message.name !== 'testResourceLoaded')
-      return;
-    var script = document.createElement('script');
-    script.src =
-        'chrome-extension://' + window.testExtensionId +
-        '/common/test_loader.js';
-    document.documentElement.appendChild(script);
   }.wrap());
 }

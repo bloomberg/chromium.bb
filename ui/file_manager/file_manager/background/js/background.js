@@ -22,12 +22,6 @@ function FileBrowserBackground() {
   BackgroundBase.call(this);
 
   /**
-   * Map of all currently open file dialogs. The key is an app ID.
-   * @type {!Object.<string, !Window>}
-   */
-  this.dialogs = {};
-
-  /**
    * Synchronous queue for asynchronous calls.
    * @type {!AsyncUtil.Queue}
    */
