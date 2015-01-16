@@ -50,4 +50,11 @@ source_set("renderer_sources") {
                     ".",
                     "//content")
   }
+
+  if (enable_plugins) {
+    sources +=
+        rebase_path(content_renderer_gypi_values.public_renderer_plugin_sources,
+                    ".",
+                    "//content")
+  }
 }

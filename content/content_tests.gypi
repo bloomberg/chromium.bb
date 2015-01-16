@@ -680,7 +680,7 @@
       'renderer/pepper/host_var_tracker_unittest.cc',
       'renderer/pepper/mock_resource.h',
       'renderer/pepper/pepper_broker_unittest.cc',
-      'renderer/pepper/pepper_plugin_instance_throttler_unittest.cc',
+      'renderer/pepper/plugin_instance_throttler_impl_unittest.cc',
       'renderer/pepper/v8_var_converter_unittest.cc',
     ],
     'content_unittests_webrtc_sources': [

@@ -77,6 +77,10 @@
       'public/renderer/video_encode_accelerator.cc',
       'public/renderer/video_encode_accelerator.h',
     ],
+    'public_renderer_plugin_sources': [
+      'public/renderer/plugin_instance_throttler.cc',
+      'public/renderer/plugin_instance_throttler.h',
+    ],
     'private_renderer_sources': [
       'renderer/accessibility/blink_ax_enum_conversion.cc',
       'renderer/accessibility/blink_ax_enum_conversion.h',
@@ -490,8 +494,8 @@
       'renderer/pepper/pepper_platform_video_capture.h',
       'renderer/pepper/pepper_plugin_instance_impl.cc',
       'renderer/pepper/pepper_plugin_instance_impl.h',
-      'renderer/pepper/pepper_plugin_instance_throttler.cc',
-      'renderer/pepper/pepper_plugin_instance_throttler.h',
+      'renderer/pepper/pepper_plugin_instance_metrics.cc',
+      'renderer/pepper/pepper_plugin_instance_metrics.h',
       'renderer/pepper/pepper_plugin_registry.cc',
       'renderer/pepper/pepper_plugin_registry.h',
       'renderer/pepper/pepper_proxy_channel_delegate_impl.cc',
@@ -508,6 +512,8 @@
       'renderer/pepper/pepper_webplugin_impl.h',
       'renderer/pepper/pepper_websocket_host.cc',
       'renderer/pepper/pepper_websocket_host.h',
+      'renderer/pepper/plugin_instance_throttler_impl.cc',
+      'renderer/pepper/plugin_instance_throttler_impl.h',
       'renderer/pepper/plugin_module.cc',
       'renderer/pepper/plugin_module.h',
       'renderer/pepper/plugin_object.cc',
@@ -784,6 +790,7 @@
     }],
     ['enable_plugins==1', {
       'sources': [
+        '<@(public_renderer_plugin_sources)',
         '<@(private_renderer_plugin_sources)',
       ],
       'conditions': [

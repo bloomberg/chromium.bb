@@ -14,7 +14,7 @@
 #include "content/public/common/web_preferences.h"
 #include "content/renderer/pepper/host_globals.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
-#include "content/renderer/pepper/pepper_plugin_instance_throttler.h"
+#include "content/renderer/pepper/plugin_instance_throttler_impl.h"
 #include "content/renderer/pepper/plugin_module.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
@@ -38,10 +38,11 @@ using blink::WebString;
 namespace content {
 
 namespace {
+
 const int32 kCommandBufferSize = 1024 * 1024;
 const int32 kTransferBufferSize = 1024 * 1024;
 
-}  // namespace.
+}  // namespace
 
 PPB_Graphics3D_Impl::PPB_Graphics3D_Impl(PP_Instance instance)
     : PPB_Graphics3D_Shared(instance),
@@ -242,7 +243,7 @@ bool PPB_Graphics3D_Impl::InitRaw(
     return false;
 
   // Force SW rendering for keyframe extraction to avoid pixel reads from VRAM.
-  PepperPluginInstanceThrottler* throttler = plugin_instance->throttler();
+  PluginInstanceThrottlerImpl* throttler = plugin_instance->throttler();
   if (throttler && throttler->needs_representative_keyframe())
     return false;
 

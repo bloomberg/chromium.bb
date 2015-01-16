@@ -6,6 +6,7 @@
 #define CONTENT_PUBLIC_RENDERER_RENDER_FRAME_H_
 
 #include "base/callback_forward.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
 #include "ipc/ipc_listener.h"
@@ -36,6 +37,7 @@ class Isolate;
 
 namespace content {
 class ContextMenuClient;
+class PluginInstanceThrottler;
 class RenderView;
 class ServiceRegistry;
 struct ContextMenuParams;
@@ -48,15 +50,6 @@ struct WebPreferences;
 class CONTENT_EXPORT RenderFrame : public IPC::Listener,
                                    public IPC::Sender {
  public:
-  enum PluginPowerSaverMode {
-    // Plugin content is main content, and therefore never throttled.
-    POWER_SAVER_MODE_ESSENTIAL = 0,
-    // Plugin content is peripheral, but throttling is disabled.
-    POWER_SAVER_MODE_PERIPHERAL_UNTHROTTLED = 1,
-    // Plugin content is peripheral, and throttling is enabled.
-    POWER_SAVER_MODE_PERIPHERAL_THROTTLED = 2
-  };
-
   // Returns the RenderFrame given a WebFrame.
   static RenderFrame* FromWebFrame(blink::WebFrame* web_frame);
 
@@ -94,12 +87,12 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
   virtual blink::WebNode GetContextMenuNode() const = 0;
 
   // Create a new NPAPI/Pepper plugin depending on |info|. Returns NULL if no
-  // plugin was found.
+  // plugin was found. |throttler| may be empty.
   virtual blink::WebPlugin* CreatePlugin(
       blink::WebFrame* frame,
       const WebPluginInfo& info,
       const blink::WebPluginParams& params,
-      PluginPowerSaverMode power_saver_mode) = 0;
+      scoped_ptr<PluginInstanceThrottler> throttler) = 0;
 
   // The client should handle the navigation externally.
   virtual void LoadURLExternally(blink::WebLocalFrame* frame,

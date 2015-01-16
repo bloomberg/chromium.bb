@@ -21,6 +21,7 @@
 #include "cc/layers/texture_layer_client.h"
 #include "content/common/content_export.h"
 #include "content/public/renderer/pepper_plugin_instance.h"
+#include "content/public/renderer/plugin_instance_throttler.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/renderer/mouse_lock_dispatcher.h"
@@ -104,7 +105,7 @@ class FullscreenContainer;
 class MessageChannel;
 class PepperCompositorHost;
 class PepperGraphics2DHost;
-class PepperPluginInstanceThrottler;
+class PluginInstanceThrottlerImpl;
 class PluginModule;
 class PluginObject;
 class PPB_Graphics3D_Impl;
@@ -122,7 +123,8 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
       public NON_EXPORTED_BASE(PepperPluginInstance),
       public ppapi::PPB_Instance_Shared,
       public NON_EXPORTED_BASE(cc::TextureLayerClient),
-      public RenderFrameObserver {
+      public RenderFrameObserver,
+      public NON_EXPORTED_BASE(PluginInstanceThrottler::Observer) {
  public:
   // Create and return a PepperPluginInstanceImpl object which supports the most
   // recent version of PPP_Instance possible by querying the given
@@ -137,7 +139,7 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
 
   blink::WebPluginContainer* container() const { return container_; }
 
-  PepperPluginInstanceThrottler* throttler() const { return throttler_.get(); }
+  PluginInstanceThrottlerImpl* throttler() const { return throttler_.get(); }
 
   // Returns the PP_Instance uniquely identifying this instance. Guaranteed
   // nonzero.
@@ -200,7 +202,7 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   bool Initialize(const std::vector<std::string>& arg_names,
                   const std::vector<std::string>& arg_values,
                   bool full_frame,
-                  RenderFrame::PluginPowerSaverMode power_saver_mode);
+                  scoped_ptr<PluginInstanceThrottlerImpl> throttler);
   bool HandleDocumentLoad(const blink::WebURLResponse& response);
   bool HandleInputEvent(const blink::WebInputEvent& event,
                         blink::WebCursorInfo* cursor_info);
@@ -539,6 +541,9 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   // RenderFrameObserver
   void OnDestruct() override;
 
+  // PluginInstanceThrottler::Observer
+  void OnThrottleStateChange() override;
+
   void AddLatencyInfo(const std::vector<ui::LatencyInfo>& latency_info);
 
  private:
@@ -719,11 +724,14 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   // Used to track Flash-specific metrics.
   bool is_flash_plugin_;
 
+  // Set to true the first time the plugin is clicked. Used to collect metrics.
+  bool has_been_clicked_;
+
   // Used to track if JavaScript has ever been used for this plugin instance.
   bool javascript_used_;
 
   // Responsible for turning on throttling if Power Saver is on.
-  scoped_ptr<PepperPluginInstanceThrottler> throttler_;
+  scoped_ptr<PluginInstanceThrottlerImpl> throttler_;
 
   // Indicates whether this is a full frame instance, which means it represents
   // an entire document rather than an embed tag.

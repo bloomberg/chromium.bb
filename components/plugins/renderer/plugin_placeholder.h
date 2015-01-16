@@ -9,13 +9,14 @@
 #include "components/plugins/renderer/webview_plugin.h"
 #include "content/public/common/webplugininfo.h"
 #include "content/public/renderer/context_menu_client.h"
-#include "content/public/renderer/render_frame.h"
+#include "content/public/renderer/plugin_instance_throttler.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_process_observer.h"
 #include "gin/wrappable.h"
 #include "third_party/WebKit/public/web/WebPluginParams.h"
 
 namespace content {
+class RenderFrame;
 struct WebPluginInfo;
 }
 
@@ -39,8 +40,7 @@ class PluginPlaceholder : public content::RenderFrameObserver,
   }
 
 #if defined(ENABLE_PLUGINS)
-  void set_power_saver_mode(
-      content::RenderFrame::PluginPowerSaverMode power_saver_mode) {
+  void set_power_saver_mode(content::PluginPowerSaverMode power_saver_mode) {
     power_saver_mode_ = power_saver_mode;
   }
 
@@ -133,7 +133,7 @@ class PluginPlaceholder : public content::RenderFrameObserver,
   bool is_blocked_for_power_saver_poster_;
 
   // This is independent of deferred plugin load due to a Power Saver poster.
-  content::RenderFrame::PluginPowerSaverMode power_saver_mode_;
+  content::PluginPowerSaverMode power_saver_mode_;
 
   bool allow_loading_;
 

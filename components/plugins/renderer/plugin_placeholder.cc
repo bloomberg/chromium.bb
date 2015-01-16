@@ -35,6 +35,7 @@ using blink::WebPluginContainer;
 using blink::WebPluginParams;
 using blink::WebScriptSource;
 using blink::WebURLRequest;
+using content::PluginPowerSaverMode;
 using content::RenderThread;
 
 namespace plugins {
@@ -68,7 +69,7 @@ PluginPlaceholder::PluginPlaceholder(content::RenderFrame* render_frame,
       is_blocked_for_background_tab_(false),
       is_blocked_for_prerendering_(false),
       is_blocked_for_power_saver_poster_(false),
-      power_saver_mode_(content::RenderFrame::POWER_SAVER_MODE_ESSENTIAL),
+      power_saver_mode_(PluginPowerSaverMode::POWER_SAVER_MODE_ESSENTIAL),
       allow_loading_(false),
       hidden_(false),
       finished_loading_(false),
@@ -79,7 +80,7 @@ PluginPlaceholder::~PluginPlaceholder() {}
 
 #if defined(ENABLE_PLUGINS)
 void PluginPlaceholder::DisablePowerSaverForInstance() {
-  power_saver_mode_ = content::RenderFrame::POWER_SAVER_MODE_ESSENTIAL;
+  power_saver_mode_ = PluginPowerSaverMode::POWER_SAVER_MODE_ESSENTIAL;
   if (is_blocked_for_power_saver_poster_) {
     is_blocked_for_power_saver_poster_ = false;
     if (!LoadingBlocked())
@@ -250,8 +251,13 @@ void PluginPlaceholder::LoadPlugin() {
   // TODO(mmenke):  In the case of prerendering, feed into
   //                ChromeContentRendererClient::CreatePlugin instead, to
   //                reduce the chance of future regressions.
+  scoped_ptr<content::PluginInstanceThrottler> throttler;
+#if defined(ENABLE_PLUGINS)
+  throttler = content::PluginInstanceThrottler::Get(
+      render_frame(), plugin_params_.url, power_saver_mode_);
+#endif
   WebPlugin* plugin = render_frame()->CreatePlugin(
-      frame_, plugin_info_, plugin_params_, power_saver_mode_);
+      frame_, plugin_info_, plugin_params_, throttler.Pass());
   ReplacePlugin(plugin);
 }
 

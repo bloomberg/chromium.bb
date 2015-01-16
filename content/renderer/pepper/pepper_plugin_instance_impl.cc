@@ -38,10 +38,10 @@
 #include "content/renderer/pepper/pepper_file_ref_renderer_host.h"
 #include "content/renderer/pepper/pepper_graphics_2d_host.h"
 #include "content/renderer/pepper/pepper_in_process_router.h"
-#include "content/renderer/pepper/pepper_plugin_instance_impl.h"
-#include "content/renderer/pepper/pepper_plugin_instance_throttler.h"
+#include "content/renderer/pepper/pepper_plugin_instance_metrics.h"
 #include "content/renderer/pepper/pepper_try_catch.h"
 #include "content/renderer/pepper/pepper_url_loader_host.h"
+#include "content/renderer/pepper/plugin_instance_throttler_impl.h"
 #include "content/renderer/pepper/plugin_module.h"
 #include "content/renderer/pepper/plugin_object.h"
 #include "content/renderer/pepper/ppapi_preferences_builder.h"
@@ -80,7 +80,6 @@
 #include "ppapi/proxy/uma_private_resource.h"
 #include "ppapi/proxy/url_loader_resource.h"
 #include "ppapi/shared_impl/ppapi_permissions.h"
-#include "ppapi/shared_impl/ppapi_preferences.h"
 #include "ppapi/shared_impl/ppb_gamepad_shared.h"
 #include "ppapi/shared_impl/ppb_input_event_shared.h"
 #include "ppapi/shared_impl/ppb_url_util_shared.h"
@@ -127,12 +126,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "ui/events/keycodes/keyboard_codes_posix.h"
-#endif
-
-#if defined(OS_WIN)
-#include "base/metrics/histogram.h"
-#include "base/win/windows_version.h"
-#include "skia/ext/platform_canvas.h"
 #endif
 
 using base::StringPrintf;
@@ -486,6 +479,7 @@ PepperPluginInstanceImpl::PepperPluginInstanceImpl(
       layer_is_hardware_(false),
       plugin_url_(plugin_url),
       is_flash_plugin_(module->name() == kFlashPluginName),
+      has_been_clicked_(false),
       javascript_used_(false),
       full_frame_(false),
       sent_initial_did_change_view_(false),
@@ -622,6 +616,9 @@ PepperPluginInstanceImpl::~PepperPluginInstanceImpl() {
   // This should be last since some of the above "instance deleted" calls will
   // want to look up in the global map to get info off of our object.
   HostGlobals::Get()->InstanceDeleted(pp_instance_);
+
+  if (throttler_)
+    throttler_->RemoveObserver(this);
 }
 
 // NOTE: Any of these methods that calls into the plugin needs to take into
@@ -798,51 +795,27 @@ void PepperPluginInstanceImpl::InstanceCrashed() {
   UnSetAndDeleteLockTargetAdapter();
 }
 
-static void SetGPUHistogram(const ppapi::Preferences& prefs,
-                            const std::vector<std::string>& arg_names,
-                            const std::vector<std::string>& arg_values) {
-// Calculate a histogram to let us determine how likely people are to try to
-// run Stage3D content on machines that have it blacklisted.
-#if defined(OS_WIN)
-  bool needs_gpu = false;
-  bool is_xp = base::win::GetVersion() <= base::win::VERSION_XP;
-
-  for (size_t i = 0; i < arg_names.size(); i++) {
-    if (arg_names[i] == "wmode") {
-      // In theory content other than Flash could have a "wmode" argument,
-      // but that's pretty unlikely.
-      if (arg_values[i] == "direct" || arg_values[i] == "gpu")
-        needs_gpu = true;
-      break;
-    }
-  }
-  // 0 : No 3D content and GPU is blacklisted
-  // 1 : No 3D content and GPU is not blacklisted
-  // 2 : 3D content but GPU is blacklisted
-  // 3 : 3D content and GPU is not blacklisted
-  // 4 : No 3D content and GPU is blacklisted on XP
-  // 5 : No 3D content and GPU is not blacklisted on XP
-  // 6 : 3D content but GPU is blacklisted on XP
-  // 7 : 3D content and GPU is not blacklisted on XP
-  UMA_HISTOGRAM_ENUMERATION(
-      "Flash.UsesGPU", is_xp * 4 + needs_gpu * 2 + prefs.is_webgl_supported, 8);
-#endif
-}
-
 bool PepperPluginInstanceImpl::Initialize(
     const std::vector<std::string>& arg_names,
     const std::vector<std::string>& arg_values,
     bool full_frame,
-    RenderFrame::PluginPowerSaverMode power_saver_mode) {
+    scoped_ptr<PluginInstanceThrottlerImpl> throttler) {
+  DCHECK(!throttler_);
+
   if (!render_frame_)
     return false;
 
-  blink::WebRect bounds = container()->element().boundsInViewportSpace();
+  if (is_flash_plugin_ && RenderThread::Get()) {
+    RenderThread::Get()->RecordAction(
+        base::UserMetricsAction("Flash.PluginInstanceCreated"));
+    blink::WebRect bounds = container()->element().boundsInViewportSpace();
+    RecordFlashSizeMetric(bounds.width, bounds.height);
+  }
 
-  throttler_.reset(new PepperPluginInstanceThrottler(
-      render_frame(), bounds, is_flash_plugin_, plugin_url_, power_saver_mode,
-      base::Bind(&PepperPluginInstanceImpl::SendDidChangeView,
-                 weak_factory_.GetWeakPtr())));
+  if (throttler) {
+    throttler_ = throttler.Pass();
+    throttler_->AddObserver(this);
+  }
 
   message_channel_ = MessageChannel::Create(this, &message_channel_object_);
 
@@ -1099,7 +1072,15 @@ bool PepperPluginInstanceImpl::HandleInputEvent(
     WebCursorInfo* cursor_info) {
   TRACE_EVENT0("ppapi", "PepperPluginInstanceImpl::HandleInputEvent");
 
-  if (throttler_->ConsumeInputEvent(event))
+  if (!has_been_clicked_ && is_flash_plugin_ &&
+      event.type == blink::WebInputEvent::MouseDown &&
+      (event.modifiers & blink::WebInputEvent::LeftButtonDown)) {
+    has_been_clicked_ = true;
+    blink::WebRect bounds = container()->element().boundsInViewportSpace();
+    RecordFlashClickSizeMetric(bounds.width, bounds.height);
+  }
+
+  if (throttler_ && throttler_->ConsumeInputEvent(event))
     return true;
 
   if (!render_frame_)
@@ -1646,7 +1627,7 @@ void PepperPluginInstanceImpl::SendDidChangeView() {
 
   // When plugin content is throttled, fake the page being offscreen. We cannot
   // send empty view data here, as some plugins rely on accurate view data.
-  if (throttler_ && throttler_->is_throttled()) {
+  if (throttler_ && throttler_->IsThrottled()) {
     view_data.is_page_visible = false;
     view_data.clip_rect.point.x = 0;
     view_data.clip_rect.point.y = 0;
@@ -2057,6 +2038,10 @@ bool PepperPluginInstanceImpl::PrepareTextureMailbox(
 }
 
 void PepperPluginInstanceImpl::OnDestruct() { render_frame_ = NULL; }
+
+void PepperPluginInstanceImpl::OnThrottleStateChange() {
+  SendDidChangeView();
+}
 
 void PepperPluginInstanceImpl::AddLatencyInfo(
     const std::vector<ui::LatencyInfo>& latency_info) {

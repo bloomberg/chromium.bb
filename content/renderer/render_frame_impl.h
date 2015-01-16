@@ -290,7 +290,7 @@ class CONTENT_EXPORT RenderFrameImpl
       blink::WebFrame* frame,
       const WebPluginInfo& info,
       const blink::WebPluginParams& params,
-      PluginPowerSaverMode power_saver_mode) override;
+      scoped_ptr<PluginInstanceThrottler> throttler) override;
   void LoadURLExternally(blink::WebLocalFrame* frame,
                          const blink::WebURLRequest& request,
                          blink::WebNavigationPolicy policy) override;

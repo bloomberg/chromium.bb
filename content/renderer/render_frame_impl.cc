@@ -81,6 +81,7 @@
 #include "content/renderer/mojo/service_registry_js_wrapper.h"
 #include "content/renderer/notification_permission_dispatcher.h"
 #include "content/renderer/npapi/plugin_channel_host.h"
+#include "content/renderer/pepper/plugin_instance_throttler_impl.h"
 #include "content/renderer/push_messaging/push_messaging_dispatcher.h"
 #include "content/renderer/render_frame_proxy.h"
 #include "content/renderer/render_process.h"
@@ -1665,7 +1666,7 @@ blink::WebPlugin* RenderFrameImpl::CreatePlugin(
     blink::WebFrame* frame,
     const WebPluginInfo& info,
     const blink::WebPluginParams& params,
-    PluginPowerSaverMode power_saver_mode) {
+    scoped_ptr<content::PluginInstanceThrottler> throttler) {
   DCHECK_EQ(frame_, frame);
 #if defined(ENABLE_PLUGINS)
   bool pepper_plugin_was_registered = false;
@@ -1673,8 +1674,10 @@ blink::WebPlugin* RenderFrameImpl::CreatePlugin(
       this, info, &pepper_plugin_was_registered));
   if (pepper_plugin_was_registered) {
     if (pepper_module.get()) {
-      return new PepperWebPluginImpl(pepper_module.get(), params, this,
-                                     power_saver_mode);
+      return new PepperWebPluginImpl(
+          pepper_module.get(), params, this,
+          make_scoped_ptr(
+              static_cast<PluginInstanceThrottlerImpl*>(throttler.release())));
     }
   }
 #if defined(OS_CHROMEOS)
@@ -1820,7 +1823,7 @@ blink::WebPlugin* RenderFrameImpl::createPlugin(
 
   WebPluginParams params_to_use = params;
   params_to_use.mimeType = WebString::fromUTF8(mime_type);
-  return CreatePlugin(frame, info, params_to_use, POWER_SAVER_MODE_ESSENTIAL);
+  return CreatePlugin(frame, info, params_to_use, nullptr /* throttler */);
 #else
   return NULL;
 #endif  // defined(ENABLE_PLUGINS)

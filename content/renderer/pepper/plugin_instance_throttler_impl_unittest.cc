@@ -9,7 +9,7 @@
 #include "base/message_loop/message_loop.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/renderer/render_frame.h"
-#include "content/renderer/pepper/pepper_plugin_instance_throttler.h"
+#include "content/renderer/pepper/plugin_instance_throttler_impl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
@@ -23,36 +23,37 @@ class GURL;
 
 namespace content {
 
-class PepperPluginInstanceThrottlerTest : public testing::Test {
+class PluginInstanceThrottlerImplTest
+    : public testing::Test,
+      public PluginInstanceThrottler::Observer {
  protected:
-  PepperPluginInstanceThrottlerTest() : change_callback_calls_(0) {}
+  PluginInstanceThrottlerImplTest() : change_callback_calls_(0) {}
+  ~PluginInstanceThrottlerImplTest() override {
+    throttler_->RemoveObserver(this);
+  }
 
   void SetUp() override {
     blink::WebRect rect;
     rect.width = 100;
     rect.height = 100;
-    throttler_.reset(new PepperPluginInstanceThrottler(
-        nullptr, rect, true /* is_flash_plugin */, GURL("http://example.com"),
-        content::RenderFrame::POWER_SAVER_MODE_PERIPHERAL_THROTTLED,
-        base::Bind(&PepperPluginInstanceThrottlerTest::ChangeCallback,
-                   base::Unretained(this))));
+    throttler_.reset(new PluginInstanceThrottlerImpl(
+        nullptr, GURL("http://example.com"), true /* power_saver_enabled */));
+    throttler_->AddObserver(this);
   }
 
-  PepperPluginInstanceThrottler* throttler() {
+  PluginInstanceThrottlerImpl* throttler() {
     DCHECK(throttler_.get());
     return throttler_.get();
   }
 
   void DisablePowerSaverByRetroactiveWhitelist() {
-    throttler()->DisablePowerSaver(
-        PepperPluginInstanceThrottler::UNTHROTTLE_METHOD_BY_WHITELIST);
+    throttler()->MarkPluginEssential(
+        PluginInstanceThrottlerImpl::UNTHROTTLE_METHOD_BY_WHITELIST);
   }
 
   int change_callback_calls() { return change_callback_calls_; }
 
-  void EngageThrottle() {
-    throttler_->SetPluginThrottled(true);
-  }
+  void EngageThrottle() { throttler_->EngageThrottle(); }
 
   void SendEventAndTest(blink::WebInputEvent::Type event_type,
                         bool expect_consumed,
@@ -62,34 +63,35 @@ class PepperPluginInstanceThrottlerTest : public testing::Test {
     event.type = event_type;
     event.modifiers = blink::WebInputEvent::Modifiers::LeftButtonDown;
     EXPECT_EQ(expect_consumed, throttler()->ConsumeInputEvent(event));
-    EXPECT_EQ(expect_throttled, throttler()->is_throttled());
+    EXPECT_EQ(expect_throttled, throttler()->IsThrottled());
     EXPECT_EQ(expect_change_callback_count, change_callback_calls());
   }
 
  private:
-  void ChangeCallback() { ++change_callback_calls_; }
+  // PluginInstanceThrottlerImpl::Observer
+  void OnThrottleStateChange() override { ++change_callback_calls_; }
 
-  scoped_ptr<PepperPluginInstanceThrottler> throttler_;
+  scoped_ptr<PluginInstanceThrottlerImpl> throttler_;
 
   int change_callback_calls_;
 
   base::MessageLoop loop_;
 };
 
-TEST_F(PepperPluginInstanceThrottlerTest, ThrottleAndUnthrottleByClick) {
-  EXPECT_FALSE(throttler()->is_throttled());
+TEST_F(PluginInstanceThrottlerImplTest, ThrottleAndUnthrottleByClick) {
+  EXPECT_FALSE(throttler()->IsThrottled());
   EXPECT_EQ(0, change_callback_calls());
 
   EngageThrottle();
-  EXPECT_TRUE(throttler()->is_throttled());
+  EXPECT_TRUE(throttler()->IsThrottled());
   EXPECT_EQ(1, change_callback_calls());
 
   // MouseUp while throttled should be consumed and disengage throttling.
   SendEventAndTest(blink::WebInputEvent::Type::MouseUp, true, false, 2);
 }
 
-TEST_F(PepperPluginInstanceThrottlerTest, ThrottleByKeyframe) {
-  EXPECT_FALSE(throttler()->is_throttled());
+TEST_F(PluginInstanceThrottlerImplTest, ThrottleByKeyframe) {
+  EXPECT_FALSE(throttler()->IsThrottled());
   EXPECT_EQ(0, change_callback_calls());
 
   SkBitmap boring_bitmap;
@@ -101,7 +103,7 @@ TEST_F(PepperPluginInstanceThrottlerTest, ThrottleByKeyframe) {
 
   // Don't throttle for a boring frame.
   throttler()->OnImageFlush(&boring_bitmap);
-  EXPECT_FALSE(throttler()->is_throttled());
+  EXPECT_FALSE(throttler()->IsThrottled());
   EXPECT_EQ(0, change_callback_calls());
 
   // Don't throttle for non-consecutive interesting frames.
@@ -111,7 +113,7 @@ TEST_F(PepperPluginInstanceThrottlerTest, ThrottleByKeyframe) {
   throttler()->OnImageFlush(&boring_bitmap);
   throttler()->OnImageFlush(&interesting_bitmap);
   throttler()->OnImageFlush(&boring_bitmap);
-  EXPECT_FALSE(throttler()->is_throttled());
+  EXPECT_FALSE(throttler()->IsThrottled());
   EXPECT_EQ(0, change_callback_calls());
 
   // Throttle after consecutive interesting frames.
@@ -119,12 +121,12 @@ TEST_F(PepperPluginInstanceThrottlerTest, ThrottleByKeyframe) {
   throttler()->OnImageFlush(&interesting_bitmap);
   throttler()->OnImageFlush(&interesting_bitmap);
   throttler()->OnImageFlush(&interesting_bitmap);
-  EXPECT_TRUE(throttler()->is_throttled());
+  EXPECT_TRUE(throttler()->IsThrottled());
   EXPECT_EQ(1, change_callback_calls());
 }
 
-TEST_F(PepperPluginInstanceThrottlerTest, IgnoreThrottlingAfterMouseUp) {
-  EXPECT_FALSE(throttler()->is_throttled());
+TEST_F(PluginInstanceThrottlerImplTest, IgnoreThrottlingAfterMouseUp) {
+  EXPECT_FALSE(throttler()->IsThrottled());
   EXPECT_EQ(0, change_callback_calls());
 
   // MouseUp before throttling engaged should not be consumed, but should
@@ -132,40 +134,40 @@ TEST_F(PepperPluginInstanceThrottlerTest, IgnoreThrottlingAfterMouseUp) {
   SendEventAndTest(blink::WebInputEvent::Type::MouseUp, false, false, 0);
 
   EngageThrottle();
-  EXPECT_FALSE(throttler()->is_throttled());
+  EXPECT_FALSE(throttler()->IsThrottled());
   EXPECT_EQ(0, change_callback_calls());
 }
 
-TEST_F(PepperPluginInstanceThrottlerTest, FastWhitelisting) {
-  EXPECT_FALSE(throttler()->is_throttled());
+TEST_F(PluginInstanceThrottlerImplTest, FastWhitelisting) {
+  EXPECT_FALSE(throttler()->IsThrottled());
   EXPECT_EQ(0, change_callback_calls());
 
   DisablePowerSaverByRetroactiveWhitelist();
 
   EngageThrottle();
-  EXPECT_FALSE(throttler()->is_throttled());
-  EXPECT_EQ(1, change_callback_calls());
+  EXPECT_FALSE(throttler()->IsThrottled());
+  EXPECT_EQ(0, change_callback_calls());
 }
 
-TEST_F(PepperPluginInstanceThrottlerTest, SlowWhitelisting) {
-  EXPECT_FALSE(throttler()->is_throttled());
+TEST_F(PluginInstanceThrottlerImplTest, SlowWhitelisting) {
+  EXPECT_FALSE(throttler()->IsThrottled());
   EXPECT_EQ(0, change_callback_calls());
 
   EngageThrottle();
-  EXPECT_TRUE(throttler()->is_throttled());
+  EXPECT_TRUE(throttler()->IsThrottled());
   EXPECT_EQ(1, change_callback_calls());
 
   DisablePowerSaverByRetroactiveWhitelist();
-  EXPECT_FALSE(throttler()->is_throttled());
+  EXPECT_FALSE(throttler()->IsThrottled());
   EXPECT_EQ(2, change_callback_calls());
 }
 
-TEST_F(PepperPluginInstanceThrottlerTest, EventConsumption) {
-  EXPECT_FALSE(throttler()->is_throttled());
+TEST_F(PluginInstanceThrottlerImplTest, EventConsumption) {
+  EXPECT_FALSE(throttler()->IsThrottled());
   EXPECT_EQ(0, change_callback_calls());
 
   EngageThrottle();
-  EXPECT_TRUE(throttler()->is_throttled());
+  EXPECT_TRUE(throttler()->IsThrottled());
   EXPECT_EQ(1, change_callback_calls());
 
   // Consume but don't unthrottle on a variety of other events.
@@ -189,12 +191,12 @@ TEST_F(PepperPluginInstanceThrottlerTest, EventConsumption) {
   SendEventAndTest(blink::WebInputEvent::Type::MouseUp, false, false, 2);
 }
 
-TEST_F(PepperPluginInstanceThrottlerTest, ThrottleOnLeftClickOnly) {
-  EXPECT_FALSE(throttler()->is_throttled());
+TEST_F(PluginInstanceThrottlerImplTest, ThrottleOnLeftClickOnly) {
+  EXPECT_FALSE(throttler()->IsThrottled());
   EXPECT_EQ(0, change_callback_calls());
 
   EngageThrottle();
-  EXPECT_TRUE(throttler()->is_throttled());
+  EXPECT_TRUE(throttler()->IsThrottled());
   EXPECT_EQ(1, change_callback_calls());
 
   blink::WebMouseEvent event;
@@ -202,15 +204,15 @@ TEST_F(PepperPluginInstanceThrottlerTest, ThrottleOnLeftClickOnly) {
 
   event.modifiers = blink::WebInputEvent::Modifiers::RightButtonDown;
   EXPECT_FALSE(throttler()->ConsumeInputEvent(event));
-  EXPECT_TRUE(throttler()->is_throttled());
+  EXPECT_TRUE(throttler()->IsThrottled());
 
   event.modifiers = blink::WebInputEvent::Modifiers::MiddleButtonDown;
   EXPECT_TRUE(throttler()->ConsumeInputEvent(event));
-  EXPECT_TRUE(throttler()->is_throttled());
+  EXPECT_TRUE(throttler()->IsThrottled());
 
   event.modifiers = blink::WebInputEvent::Modifiers::LeftButtonDown;
   EXPECT_TRUE(throttler()->ConsumeInputEvent(event));
-  EXPECT_FALSE(throttler()->is_throttled());
+  EXPECT_FALSE(throttler()->IsThrottled());
 }
 
 }  // namespace content
