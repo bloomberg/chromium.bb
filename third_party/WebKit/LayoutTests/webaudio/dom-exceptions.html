@@ -22,6 +22,11 @@ var mode;
 var panner;
 var script;
 
+function shouldThrowAndBeUnchanged(attr, value) {
+    shouldThrow(attr + " = " + value);
+    shouldNotBe(attr, value);
+}
+
 function runTest() {
     if (window.testRunner) {
         testRunner.dumpAsText();
@@ -74,18 +79,18 @@ function runTest() {
     // Analysers
     node = context.createAnalyser();
     // Invalid fftSize: IndexSizeError
-    shouldThrow("node.fftSize = 42");
-    shouldThrow("node.fftSize = 16");
-    shouldNotThrow("node.fftSize = 4096");
+    shouldThrowAndBeUnchanged("node.fftSize", "42");
+    shouldThrowAndBeUnchanged("node.fftSize", "16");
     shouldNotThrow("node.fftSize = 32768");
-    shouldThrow("node.fftSize = 65536");
+    shouldThrowAndBeUnchanged("node.fftSize", "65536");
 
-    shouldThrow("node.minDecibels = -10");
-    shouldThrow("node.maxDecibels = -150");
-    shouldThrow("node.minDecibels = -30");
-    shouldThrow("node.maxDecibels = -100");
-    shouldThrow("node.smoothingTimeConstant = -0.1");
-    shouldThrow("node.smoothingTimeConstant = 1.5");
+    shouldThrowAndBeUnchanged("node.minDecibels", "-10");
+    shouldThrowAndBeUnchanged("node.maxDecibels", "-150");
+    shouldThrowAndBeUnchanged("node.minDecibels", "-30");
+    shouldThrowAndBeUnchanged("node.maxDecibels", "-100");
+
+    shouldThrowAndBeUnchanged("node.smoothingTimeConstant", "-0.1");
+    shouldThrowAndBeUnchanged("node.smoothingTimeConstant", "1.5");
 
     // AudioBuffers
     node = context.createBuffer(1,1, context.sampleRate);
@@ -106,7 +111,7 @@ function runTest() {
     shouldThrow("node.connect(otherContext.destination)");
 
     // Invalid channel count: NotSupportedError
-    shouldThrow("node.channelCount = 99");
+    shouldThrowAndBeUnchanged("node.channelCount", "99");
     // Invalid mode or interpretation (unspecified error)
     currentMode = node.channelCountMode;
     currentInterpretation = node.channelInterpretation;
@@ -156,6 +161,7 @@ function runTest() {
     else
       testFailed("node.oversample incorrectly changed to invalid value " + node.oversample);
     shouldThrow("node.curve = new Float32Array(1)");
+    shouldBeNull("node.curve");
     shouldNotThrow("node.curve = new Float32Array(2)");
 
     // Start/stop for AudioBufferSourceNodes
@@ -241,10 +247,10 @@ function runTest() {
     // Channel count can only be set to 1 or 2.
     shouldNotThrow("panner.channelCount = 1");
     shouldNotThrow("panner.channelCount = 2");
-    shouldThrow("panner.channelCount = 0");
-    shouldThrow("panner.channelCount = 3");
+    shouldThrowAndBeUnchanged("panner.channelCount", "0");
+    shouldThrowAndBeUnchanged("panner.channelCount", "3");
     // It is illegal to set the mode to 'max'
-    shouldThrow("panner.channelCountMode = 'max'");
+    shouldThrowAndBeUnchanged("panner.channelCountMode", "'max'");
     shouldNotThrow("panner.channelCountMode = 'explicit'");
     shouldNotThrow("panner.channelCountMode = 'clamped-max'");
     shouldNotThrow("panner.channelCountMode = 'junk'");
@@ -256,11 +262,12 @@ function runTest() {
     shouldBeEqualToString("script.channelCountMode", "explicit");
     // Cannot change the channelCount or mode to anything else
     shouldNotThrow("script.channelCount = 3");
-    shouldThrow("script.channelCount = 1");
-    shouldThrow("script.channelCount = 7");
+    shouldThrowAndBeUnchanged("script.channelCount", "1");
+
+    shouldThrowAndBeUnchanged("script.channelCount", "7");
     shouldNotThrow("script.channelCountMode = 'explicit'");
-    shouldThrow("script.channelCountMode = 'max'");
-    shouldThrow("script.channelCountMode = 'clamped-max'");
+    shouldThrowAndBeUnchanged("script.channelCountMode", "'max'");
+    shouldThrowAndBeUnchanged("script.channelCountMode", "'clamped-max'");
     shouldNotThrow("script.channelCountMode = 'junk'");
 
     // noteOn and noteOff don't exist anymore
