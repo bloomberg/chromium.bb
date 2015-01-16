@@ -195,9 +195,9 @@ void testByteByByteSizeAvailable(const char* webpFile, size_t frameOffset, bool 
     ASSERT_TRUE(data.get());
     EXPECT_LT(frameOffset, data->size());
 
-    // Send data to the decoder byte-by-byte, and use the offset to the first encoded image frame
-    // in the data to check isSizeAvailable() changes state only when that offset is reached, and
-    // the associated decoder state also: size, colorProfile, frameCount, repetitionCount ...
+    // Send data to the decoder byte-by-byte and use the provided frame offset in the data to check
+    // isSizeAvailable() changes state only when that offset is reached, and the associated decoder
+    // state also: size, colorProfile, frameCount, repetitionCount ...
 
     for (size_t length = 1; length <= frameOffset; ++length) {
         RefPtr<SharedBuffer> tempData = SharedBuffer::create(data->data(), length);
