@@ -12,7 +12,7 @@ namespace chromeos {
 class UserBoardModel : public BaseScreen {
  public:
   UserBoardModel();
-  virtual ~UserBoardModel();
+  ~UserBoardModel() override;
 
   // Build list of users and send it to the webui.
   virtual void SendUserList() = 0;
@@ -22,12 +22,12 @@ class UserBoardModel : public BaseScreen {
   virtual void AttemptEasyUnlock(const std::string& user_id) = 0;
 
   // BaseScreen implementation:
-  virtual std::string GetName() const override;
+  std::string GetName() const override;
 
   // Temorary unused methods:
-  virtual void PrepareToShow() override{};
-  virtual void Show() override{};
-  virtual void Hide() override{};
+  void PrepareToShow() override{};
+  void Show() override{};
+  void Hide() override{};
 };
 
 }  // namespace chromeos

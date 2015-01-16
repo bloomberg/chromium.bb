@@ -41,14 +41,14 @@ class UserAddingScreenTest : public LoginManagerTest,
                            user_adding_finished_(0) {
   }
 
-  virtual void SetUpInProcessBrowserTestFixture() override {
+  void SetUpInProcessBrowserTestFixture() override {
     LoginManagerTest::SetUpInProcessBrowserTestFixture();
     UserAddingScreen::Get()->AddObserver(this);
   }
 
-  virtual void OnUserAddingFinished() override { ++user_adding_finished_; }
+  void OnUserAddingFinished() override { ++user_adding_finished_; }
 
-  virtual void OnUserAddingStarted() override { ++user_adding_started_; }
+  void OnUserAddingStarted() override { ++user_adding_started_; }
 
   void SetUserCanLock(user_manager::User* user, bool can_lock) {
     user->set_can_lock(can_lock);

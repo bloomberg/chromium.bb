@@ -44,7 +44,7 @@ class SimpleWebViewDialog : public views::ButtonListener,
                             public content::WebContentsDelegate {
  public:
   explicit SimpleWebViewDialog(Profile* profile);
-  virtual ~SimpleWebViewDialog();
+  ~SimpleWebViewDialog() override;
 
   // Starts loading.
   void StartLoad(const GURL& gurl);
@@ -53,51 +53,46 @@ class SimpleWebViewDialog : public views::ButtonListener,
   void Init();
 
   // Overridden from views::View:
-  virtual void Layout() override;
+  void Layout() override;
 
   // Overridden from views::WidgetDelegate:
-  virtual views::View* GetContentsView() override;
-  virtual views::View* GetInitiallyFocusedView() override;
+  views::View* GetContentsView() override;
+  views::View* GetInitiallyFocusedView() override;
 
   // Implements views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) override;
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // Implements content::PageNavigator:
-  virtual content::WebContents* OpenURL(
-      const content::OpenURLParams& params) override;
+  content::WebContents* OpenURL(const content::OpenURLParams& params) override;
 
   // Implements content::WebContentsDelegate:
-  virtual void NavigationStateChanged(
-      content::WebContents* source,
-      content::InvalidateTypes changed_flags) override;
-  virtual void LoadingStateChanged(content::WebContents* source,
-                                   bool to_different_document) override;
+  void NavigationStateChanged(content::WebContents* source,
+                              content::InvalidateTypes changed_flags) override;
+  void LoadingStateChanged(content::WebContents* source,
+                           bool to_different_document) override;
 
   // Implements LocationBarView::Delegate:
-  virtual content::WebContents* GetWebContents() override;
-  virtual ToolbarModel* GetToolbarModel() override;
-  virtual const ToolbarModel* GetToolbarModel() const override;
-  virtual InstantController* GetInstant() override;
-  virtual views::Widget* CreateViewsBubble(
+  content::WebContents* GetWebContents() override;
+  ToolbarModel* GetToolbarModel() override;
+  const ToolbarModel* GetToolbarModel() const override;
+  InstantController* GetInstant() override;
+  views::Widget* CreateViewsBubble(
       views::BubbleDelegateView* bubble_delegate) override;
-  virtual PageActionImageView* CreatePageActionImageView(
+  PageActionImageView* CreatePageActionImageView(
       LocationBarView* owner,
       ExtensionAction* action) override;
-  virtual ContentSettingBubbleModelDelegate*
-  GetContentSettingBubbleModelDelegate() override;
-  virtual void ShowWebsiteSettings(content::WebContents* web_contents,
-                                   const GURL& url,
-                                   const content::SSLStatus& ssl) override;
+  ContentSettingBubbleModelDelegate* GetContentSettingBubbleModelDelegate()
+      override;
+  void ShowWebsiteSettings(content::WebContents* web_contents,
+                           const GURL& url,
+                           const content::SSLStatus& ssl) override;
 
   // Implements ToolbarModelDelegate:
-  virtual content::WebContents* GetActiveWebContents() const override;
-  virtual bool InTabbedBrowser() const override;
+  content::WebContents* GetActiveWebContents() const override;
+  bool InTabbedBrowser() const override;
 
   // Implements CommandUpdaterDelegate:
-  virtual void ExecuteCommandWithDisposition(
-      int id,
-      WindowOpenDisposition) override;
+  void ExecuteCommandWithDisposition(int id, WindowOpenDisposition) override;
 
  private:
   friend class SimpleWebViewDialogTest;

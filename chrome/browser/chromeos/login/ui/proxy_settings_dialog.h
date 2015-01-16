@@ -26,11 +26,11 @@ class ProxySettingsDialog : public LoginWebDialog {
                       const NetworkState& network,
                       LoginWebDialog::Delegate* delegate,
                       gfx::NativeWindow window);
-  virtual ~ProxySettingsDialog();
+  ~ProxySettingsDialog() override;
 
  protected:
   // ui::WebDialogDelegate implementation.
-  virtual void OnDialogClosed(const std::string& json_retval) override;
+  void OnDialogClosed(const std::string& json_retval) override;
 
  private:
   // TODO(altimofeev): consider avoidance static variable by extending current

@@ -22,8 +22,8 @@ namespace {
 class StubDelegate : public CaptivePortalWindowProxyDelegate {
  public:
   StubDelegate() {}
-  virtual ~StubDelegate() {}
-  virtual void OnPortalDetected() override {}
+  ~StubDelegate() override {}
+  void OnPortalDetected() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(StubDelegate);
@@ -37,11 +37,11 @@ class InterstitialPageDelegate : public content::InterstitialPageDelegate {
     page->Show();
   }
 
-  virtual ~InterstitialPageDelegate() {}
+  ~InterstitialPageDelegate() override {}
 
  private:
   // InterstitialPageDelegate implementation:
-  virtual std::string GetHTMLContents() override { return "HTML Contents"; }
+  std::string GetHTMLContents() override { return "HTML Contents"; }
 
   DISALLOW_COPY_AND_ASSIGN(InterstitialPageDelegate);
 };
@@ -51,7 +51,7 @@ class InterstitialPageDelegate : public content::InterstitialPageDelegate {
 class SimpleWebViewDialogTest : public LoginManagerTest {
  public:
   SimpleWebViewDialogTest(): LoginManagerTest(false) {}
-  virtual ~SimpleWebViewDialogTest() {}
+  ~SimpleWebViewDialogTest() override {}
 
   InterstitialPageDelegate* CreateDelegate(CaptivePortalWindowProxy* proxy) {
     SimpleWebViewDialog* dialog = proxy->captive_portal_view_for_testing();

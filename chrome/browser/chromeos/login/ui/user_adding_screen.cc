@@ -28,12 +28,12 @@ namespace {
 
 class UserAddingScreenImpl : public UserAddingScreen {
  public:
-  virtual void Start() override;
-  virtual void Cancel() override;
-  virtual bool IsRunning() override;
+  void Start() override;
+  void Cancel() override;
+  bool IsRunning() override;
 
-  virtual void AddObserver(Observer* observer) override;
-  virtual void RemoveObserver(Observer* observer) override;
+  void AddObserver(Observer* observer) override;
+  void RemoveObserver(Observer* observer) override;
 
   static UserAddingScreenImpl* GetInstance();
  private:
@@ -42,7 +42,7 @@ class UserAddingScreenImpl : public UserAddingScreen {
   void OnDisplayHostCompletion();
 
   UserAddingScreenImpl();
-  virtual ~UserAddingScreenImpl();
+  ~UserAddingScreenImpl() override;
 
   ObserverList<Observer> observers_;
   LoginDisplayHost* display_host_;

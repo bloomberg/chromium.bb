@@ -54,29 +54,26 @@ class WebUILoginView : public views::View,
   static const char kViewClassName[];
 
   WebUILoginView();
-  virtual ~WebUILoginView();
+  ~WebUILoginView() override;
 
   // Initializes the webui login view.
   virtual void Init();
 
   // Overridden from views::View:
-  virtual bool AcceleratorPressed(
-      const ui::Accelerator& accelerator) override;
-  virtual const char* GetClassName() const override;
-  virtual void RequestFocus() override;
+  bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
+  const char* GetClassName() const override;
+  void RequestFocus() override;
 
   // Overridden from ChromeWebModalDialogManagerDelegate:
-  virtual web_modal::WebContentsModalDialogHost*
-      GetWebContentsModalDialogHost() override;
+  web_modal::WebContentsModalDialogHost* GetWebContentsModalDialogHost()
+      override;
 
   // Overridden from web_modal::WebContentsModalDialogHost:
-  virtual gfx::NativeView GetHostView() const override;
-  virtual gfx::Point GetDialogPosition(const gfx::Size& size) override;
-  virtual gfx::Size GetMaximumDialogSize() override;
-  virtual void AddObserver(
-      web_modal::ModalDialogHostObserver* observer) override;
-  virtual void RemoveObserver(
-      web_modal::ModalDialogHostObserver* observer) override;
+  gfx::NativeView GetHostView() const override;
+  gfx::Point GetDialogPosition(const gfx::Size& size) override;
+  gfx::Size GetMaximumDialogSize() override;
+  void AddObserver(web_modal::ModalDialogHostObserver* observer) override;
+  void RemoveObserver(web_modal::ModalDialogHostObserver* observer) override;
 
   // Gets the native window from the view widget.
   gfx::NativeWindow GetNativeWindow() const;
@@ -116,15 +113,15 @@ class WebUILoginView : public views::View,
 
  protected:
   // Overridden from views::View:
-  virtual void Layout() override;
-  virtual void OnLocaleChanged() override;
-  virtual void ChildPreferredSizeChanged(View* child) override;
-  virtual void AboutToRequestFocusFromTabTraversal(bool reverse) override;
+  void Layout() override;
+  void OnLocaleChanged() override;
+  void ChildPreferredSizeChanged(View* child) override;
+  void AboutToRequestFocusFromTabTraversal(bool reverse) override;
 
   // Overridden from content::NotificationObserver.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // WebView for rendering a webpage as a webui login.
   views::WebView* webui_login_;
@@ -134,32 +131,27 @@ class WebUILoginView : public views::View,
   typedef std::map<ui::Accelerator, std::string> AccelMap;
 
   // Overridden from content::WebContentsDelegate.
-  virtual bool HandleContextMenu(
-      const content::ContextMenuParams& params) override;
-  virtual void HandleKeyboardEvent(
+  bool HandleContextMenu(const content::ContextMenuParams& params) override;
+  void HandleKeyboardEvent(
       content::WebContents* source,
       const content::NativeWebKeyboardEvent& event) override;
-  virtual bool IsPopupOrPanel(
-      const content::WebContents* source) const override;
-  virtual bool TakeFocus(content::WebContents* source, bool reverse) override;
-  virtual void RequestMediaAccessPermission(
+  bool IsPopupOrPanel(const content::WebContents* source) const override;
+  bool TakeFocus(content::WebContents* source, bool reverse) override;
+  void RequestMediaAccessPermission(
       content::WebContents* web_contents,
       const content::MediaStreamRequest& request,
       const content::MediaResponseCallback& callback) override;
-  virtual bool CheckMediaAccessPermission(
-      content::WebContents* web_contents,
-      const GURL& security_origin,
-      content::MediaStreamType type) override;
-  virtual bool PreHandleGestureEvent(
-      content::WebContents* source,
-      const blink::WebGestureEvent& event) override;
+  bool CheckMediaAccessPermission(content::WebContents* web_contents,
+                                  const GURL& security_origin,
+                                  content::MediaStreamType type) override;
+  bool PreHandleGestureEvent(content::WebContents* source,
+                             const blink::WebGestureEvent& event) override;
 
   // Overridden from content::WebContentsObserver.
-  virtual void DidFailProvisionalLoad(
-      content::RenderFrameHost* render_frame_host,
-      const GURL& validated_url,
-      int error_code,
-      const base::string16& error_description) override;
+  void DidFailProvisionalLoad(content::RenderFrameHost* render_frame_host,
+                              const GURL& validated_url,
+                              int error_code,
+                              const base::string16& error_description) override;
 
   // Performs series of actions when login prompt is considered
   // to be ready and visible.

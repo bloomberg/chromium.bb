@@ -147,11 +147,11 @@ class AnimationObserver : public ui::ImplicitAnimationObserver {
  public:
   explicit AnimationObserver(const base::Closure& callback)
       : callback_(callback) {}
-  virtual ~AnimationObserver() {}
+  ~AnimationObserver() override {}
 
  private:
   // ui::ImplicitAnimationObserver implementation:
-  virtual void OnImplicitAnimationsCompleted() override {
+  void OnImplicitAnimationsCompleted() override {
     callback_.Run();
     delete this;
   }
@@ -220,24 +220,14 @@ class LoginWidgetDelegate : public views::WidgetDelegate {
  public:
   explicit LoginWidgetDelegate(views::Widget* widget) : widget_(widget) {
   }
-  virtual ~LoginWidgetDelegate() {}
+  ~LoginWidgetDelegate() override {}
 
   // Overridden from WidgetDelegate:
-  virtual void DeleteDelegate() override {
-    delete this;
-  }
-  virtual views::Widget* GetWidget() override {
-    return widget_;
-  }
-  virtual const views::Widget* GetWidget() const override {
-    return widget_;
-  }
-  virtual bool CanActivate() const override {
-    return true;
-  }
-  virtual bool ShouldAdvanceFocusToTopLevelWidget() const override {
-    return true;
-  }
+  void DeleteDelegate() override { delete this; }
+  views::Widget* GetWidget() override { return widget_; }
+  const views::Widget* GetWidget() const override { return widget_; }
+  bool CanActivate() const override { return true; }
+  bool ShouldAdvanceFocusToTopLevelWidget() const override { return true; }
 
  private:
   views::Widget* widget_;

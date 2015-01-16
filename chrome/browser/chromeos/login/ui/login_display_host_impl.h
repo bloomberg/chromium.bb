@@ -67,7 +67,7 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
                              public views::WidgetRemovalsObserver {
  public:
   explicit LoginDisplayHostImpl(const gfx::Rect& background_bounds);
-  virtual ~LoginDisplayHostImpl();
+  ~LoginDisplayHostImpl() override;
 
   // Returns the default LoginDisplayHost instance if it has been created.
   static LoginDisplayHost* default_host() {
@@ -75,27 +75,24 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
   }
 
   // LoginDisplayHost implementation:
-  virtual LoginDisplay* CreateLoginDisplay(
-      LoginDisplay::Delegate* delegate) override;
-  virtual gfx::NativeWindow GetNativeWindow() const override;
-  virtual WebUILoginView* GetWebUILoginView() const override;
-  virtual void BeforeSessionStart() override;
-  virtual void Finalize() override;
-  virtual void OnCompleteLogin() override;
-  virtual void OpenProxySettings() override;
-  virtual void SetStatusAreaVisible(bool visible) override;
-  virtual AutoEnrollmentController* GetAutoEnrollmentController() override;
-  virtual void StartWizard(const std::string& first_screen_name) override;
-  virtual WizardController* GetWizardController() override;
-  virtual AppLaunchController* GetAppLaunchController() override;
-  virtual void StartUserAdding(
-      const base::Closure& completion_callback) override;
-  virtual void StartSignInScreen(const LoginScreenContext& context) override;
-  virtual void OnPreferencesChanged() override;
-  virtual void PrewarmAuthentication() override;
-  virtual void StartAppLaunch(const std::string& app_id,
-                              bool diagnostic_mode) override;
-  virtual void StartDemoAppLaunch() override;
+  LoginDisplay* CreateLoginDisplay(LoginDisplay::Delegate* delegate) override;
+  gfx::NativeWindow GetNativeWindow() const override;
+  WebUILoginView* GetWebUILoginView() const override;
+  void BeforeSessionStart() override;
+  void Finalize() override;
+  void OnCompleteLogin() override;
+  void OpenProxySettings() override;
+  void SetStatusAreaVisible(bool visible) override;
+  AutoEnrollmentController* GetAutoEnrollmentController() override;
+  void StartWizard(const std::string& first_screen_name) override;
+  WizardController* GetWizardController() override;
+  AppLaunchController* GetAppLaunchController() override;
+  void StartUserAdding(const base::Closure& completion_callback) override;
+  void StartSignInScreen(const LoginScreenContext& context) override;
+  void OnPreferencesChanged() override;
+  void PrewarmAuthentication() override;
+  void StartAppLaunch(const std::string& app_id, bool diagnostic_mode) override;
+  void StartDemoAppLaunch() override;
 
   // Creates WizardController instance.
   WizardController* CreateWizardController();
@@ -116,36 +113,35 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
 
  protected:
   // content::NotificationObserver implementation:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // Overridden from content::WebContentsObserver:
-  virtual void RenderProcessGone(base::TerminationStatus status) override;
+  void RenderProcessGone(base::TerminationStatus status) override;
 
   // Overridden from chromeos::SessionManagerClient::Observer:
-  virtual void EmitLoginPromptVisibleCalled() override;
+  void EmitLoginPromptVisibleCalled() override;
 
   // Overridden from chromeos::CrasAudioHandler::AudioObserver:
-  virtual void OnActiveOutputNodeChanged() override;
+  void OnActiveOutputNodeChanged() override;
 
 #if !defined(USE_ATHENA)
   // Overridden from ash::KeyboardStateObserver:
-  virtual void OnVirtualKeyboardStateChanged(bool activated) override;
+  void OnVirtualKeyboardStateChanged(bool activated) override;
 #endif
 
   // Overridden from keyboard::KeyboardControllerObserver:
-  virtual void OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) override;
+  void OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) override;
 
   // Overridden from gfx::DisplayObserver:
-  virtual void OnDisplayAdded(const gfx::Display& new_display) override;
-  virtual void OnDisplayRemoved(const gfx::Display& old_display) override;
-  virtual void OnDisplayMetricsChanged(const gfx::Display& display,
-                                       uint32_t changed_metrics) override;
+  void OnDisplayAdded(const gfx::Display& new_display) override;
+  void OnDisplayRemoved(const gfx::Display& old_display) override;
+  void OnDisplayMetricsChanged(const gfx::Display& display,
+                               uint32_t changed_metrics) override;
 
   // Overriden from views::WidgetRemovalsObserver:
-  virtual void OnWillRemoveView(views::Widget* widget,
-                                views::View* view) override;
+  void OnWillRemoveView(views::Widget* widget, views::View* view) override;
 
  private:
   // Way to restore if renderer have crashed.

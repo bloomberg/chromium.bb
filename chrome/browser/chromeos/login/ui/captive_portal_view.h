@@ -15,25 +15,24 @@ class CaptivePortalWindowProxy;
 class CaptivePortalView : public SimpleWebViewDialog {
  public:
   CaptivePortalView(Profile* profile, CaptivePortalWindowProxy* proxy);
-  virtual ~CaptivePortalView();
+  ~CaptivePortalView() override;
 
   // Starts loading.
   void StartLoad();
 
   // Overridden from views::WidgetDelegate:
-  virtual bool CanResize() const override;
-  virtual ui::ModalType GetModalType() const override;
-  virtual base::string16 GetWindowTitle() const override;
-  virtual bool ShouldShowWindowTitle() const override;
-  virtual views::NonClientFrameView* CreateNonClientFrameView(
+  bool CanResize() const override;
+  ui::ModalType GetModalType() const override;
+  base::string16 GetWindowTitle() const override;
+  bool ShouldShowWindowTitle() const override;
+  views::NonClientFrameView* CreateNonClientFrameView(
       views::Widget* widget) override;
 
   // Overridden from content::WebContentsDelegate:
-  virtual void NavigationStateChanged(
-      content::WebContents* source,
-      content::InvalidateTypes changed_flags) override;
-  virtual void LoadingStateChanged(content::WebContents* source,
-                                   bool to_different_document) override;
+  void NavigationStateChanged(content::WebContents* source,
+                              content::InvalidateTypes changed_flags) override;
+  void LoadingStateChanged(content::WebContents* source,
+                           bool to_different_document) override;
 
  private:
   // Contains CaptivePortalWindowProxy to be notified when redirection state is

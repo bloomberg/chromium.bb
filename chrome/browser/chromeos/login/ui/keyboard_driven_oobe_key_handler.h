@@ -15,11 +15,11 @@ namespace chromeos {
 class KeyboardDrivenOobeKeyHandler : public ui::EventHandler {
  public:
   KeyboardDrivenOobeKeyHandler();
-  virtual ~KeyboardDrivenOobeKeyHandler();
+  ~KeyboardDrivenOobeKeyHandler() override;
 
  private:
   // ui::EventHandler
-  virtual void OnKeyEvent(ui::KeyEvent* event) override;
+  void OnKeyEvent(ui::KeyEvent* event) override;
 
   DISALLOW_COPY_AND_ASSIGN(KeyboardDrivenOobeKeyHandler);
 };

@@ -16,12 +16,12 @@ namespace chromeos {
 class InputEventsBlocker : public ui::EventHandler {
  public:
   InputEventsBlocker();
-  virtual ~InputEventsBlocker();
+  ~InputEventsBlocker() override;
 
-  virtual void OnKeyEvent(ui::KeyEvent* event) override;
-  virtual void OnMouseEvent(ui::MouseEvent* event) override;
-  virtual void OnTouchEvent(ui::TouchEvent* event) override;
-  virtual void OnGestureEvent(ui::GestureEvent* event) override;
+  void OnKeyEvent(ui::KeyEvent* event) override;
+  void OnMouseEvent(ui::MouseEvent* event) override;
+  void OnTouchEvent(ui::TouchEvent* event) override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InputEventsBlocker);
