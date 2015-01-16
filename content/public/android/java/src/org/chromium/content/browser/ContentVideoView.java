@@ -87,6 +87,7 @@ public class ContentVideoView extends FrameLayout
     private View mProgressView;
 
     private final ContentVideoViewClient mClient;
+    private final ContentViewCore mContentViewCore;
 
     private boolean mInitialOrientation;
     private boolean mPossibleAccidentalChange;
@@ -162,11 +163,12 @@ public class ContentVideoView extends FrameLayout
         }
     };
 
-    private ContentVideoView(Context context, long nativeContentVideoView,
-            ContentVideoViewClient client) {
+    private ContentVideoView(Context context, ContentViewCore contentViewCore,
+            long nativeContentVideoView) {
         super(context);
         mNativeContentVideoView = nativeContentVideoView;
-        mClient = client;
+        mContentViewCore = contentViewCore;
+        mClient = mContentViewCore.getContentVideoViewClient();
         mUmaRecorded = false;
         mPossibleAccidentalChange = false;
         initResources(context);
@@ -360,8 +362,11 @@ public class ContentVideoView extends FrameLayout
         ThreadUtils.assertOnUiThread();
         Context context = contentViewCore.getContext();
         ContentVideoViewClient client = contentViewCore.getContentVideoViewClient();
-        ContentVideoView videoView = new ContentVideoView(context, nativeContentVideoView, client);
+        ContentVideoView videoView = new ContentVideoView(
+                context, contentViewCore, nativeContentVideoView);
         client.enterFullscreenVideo(videoView);
+        contentViewCore.updateDoubleTapSupport(false);
+        contentViewCore.updateMultiTouchZoomSupport(false);
         return videoView;
     }
 
@@ -388,6 +393,8 @@ public class ContentVideoView extends FrameLayout
             }
             nativeExitFullscreen(mNativeContentVideoView, relaseMediaPlayer);
             mNativeContentVideoView = 0;
+            mContentViewCore.updateDoubleTapSupport(true);
+            mContentViewCore.updateMultiTouchZoomSupport(true);
         }
     }
 
