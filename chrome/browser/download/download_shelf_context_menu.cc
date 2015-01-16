@@ -389,7 +389,9 @@ ui::SimpleMenuModel* DownloadShelfContextMenu::GetMaliciousMenuModel() {
 int DownloadShelfContextMenu::GetAlwaysOpenStringId() const {
 #if defined(OS_WIN)
   if (CanOpenPdfInSystemViewer())
-    return IDS_DOWNLOAD_MENU_ALWAYS_OPEN_PDF_IN_READER;
+    return IsAdobeReaderDefaultPDFViewer()
+               ? IDS_DOWNLOAD_MENU_ALWAYS_OPEN_PDF_IN_READER
+               : IDS_DOWNLOAD_MENU_PLATFORM_OPEN_ALWAYS;
 #elif defined(OS_MACOSX) || defined(OS_LINUX)
   if (CanOpenPdfInSystemViewer())
     return IDS_DOWNLOAD_MENU_PLATFORM_OPEN_ALWAYS;
