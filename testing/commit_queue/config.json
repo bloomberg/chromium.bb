@@ -14,8 +14,7 @@
                     },
                     "tryserver.chromium.win": {
                         "win8_chromium_gn_rel": ["defaulttests"],
-                        "win8_chromium_ng": ["defaulttests"],
-                        "win_chromium_compile_dbg_ng": ["defaulttests"]
+                        "win8_chromium_ng": ["defaulttests"]
                     }
                 }
             }
@@ -87,10 +86,10 @@
               "ios_rel_device_ninja_ng": ["defaulttests"]
             },
             "tryserver.chromium.win": {
-              "win_chromium_compile_dbg": ["defaulttests"],
+              "win8_chromium_rel": ["defaulttests"],
+              "win_chromium_compile_dbg_ng": ["defaulttests"],
               "win_chromium_rel_ng": ["defaulttests"],
-              "win_chromium_x64_rel_ng": ["defaulttests"],
-              "win8_chromium_rel": ["defaulttests"]
+              "win_chromium_x64_rel_ng": ["defaulttests"]
             },
             "tryserver.chromium.gpu": {
                 "linux_gpu": ["defaulttests"],
