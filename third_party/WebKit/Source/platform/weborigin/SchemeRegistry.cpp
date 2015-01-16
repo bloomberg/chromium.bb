@@ -103,18 +103,6 @@ static HashSet<String>& schemesForbiddenFromDomainRelaxation()
     return schemes;
 }
 
-static URLSchemesSet& canDisplayOnlyIfCanRequestSchemes()
-{
-    DEFINE_STATIC_LOCAL(URLSchemesSet, canDisplayOnlyIfCanRequestSchemes, ());
-
-    if (canDisplayOnlyIfCanRequestSchemes.isEmpty()) {
-        canDisplayOnlyIfCanRequestSchemes.add("blob");
-        canDisplayOnlyIfCanRequestSchemes.add("filesystem");
-    }
-
-    return canDisplayOnlyIfCanRequestSchemes;
-}
-
 static URLSchemesSet& notAllowingJavascriptURLsSchemes()
 {
     DEFINE_STATIC_LOCAL(URLSchemesSet, notAllowingJavascriptURLsSchemes, ());
@@ -124,13 +112,6 @@ static URLSchemesSet& notAllowingJavascriptURLsSchemes()
 void SchemeRegistry::registerURLSchemeAsLocal(const String& scheme)
 {
     localURLSchemes().add(scheme);
-}
-
-void SchemeRegistry::removeURLSchemeRegisteredAsLocal(const String& scheme)
-{
-    if (scheme == "file")
-        return;
-    localURLSchemes().remove(scheme);
 }
 
 const URLSchemesSet& SchemeRegistry::localSchemes()
@@ -150,18 +131,6 @@ static URLSchemesSet& CORSEnabledSchemes()
     }
 
     return CORSEnabledSchemes;
-}
-
-static URLSchemesSet& LegacySchemes()
-{
-    DEFINE_STATIC_LOCAL(URLSchemesSet, LegacySchemes, ());
-
-    if (LegacySchemes.isEmpty()) {
-        LegacySchemes.add("ftp");
-        LegacySchemes.add("gopher");
-    }
-
-    return LegacySchemes;
 }
 
 static URLSchemesMap<SchemeRegistry::PolicyAreas>& ContentSecurityPolicyBypassingSchemes()
@@ -257,14 +226,7 @@ bool SchemeRegistry::isDomainRelaxationForbiddenForURLScheme(const String& schem
 
 bool SchemeRegistry::canDisplayOnlyIfCanRequest(const String& scheme)
 {
-    if (scheme.isEmpty())
-        return false;
-    return canDisplayOnlyIfCanRequestSchemes().contains(scheme);
-}
-
-void SchemeRegistry::registerAsCanDisplayOnlyIfCanRequest(const String& scheme)
-{
-    canDisplayOnlyIfCanRequestSchemes().add(scheme);
+    return equalIgnoringCase("blob", scheme) || equalIgnoringCase("filesystem", scheme);
 }
 
 void SchemeRegistry::registerURLSchemeAsNotAllowingJavascriptURLs(const String& scheme)
@@ -306,16 +268,9 @@ String SchemeRegistry::listOfCORSEnabledURLSchemes()
     return builder.toString();
 }
 
-void SchemeRegistry::registerURLSchemeAsLegacy(const String& scheme)
-{
-    LegacySchemes().add(scheme);
-}
-
 bool SchemeRegistry::shouldTreatURLSchemeAsLegacy(const String& scheme)
 {
-    if (scheme.isEmpty())
-        return false;
-    return LegacySchemes().contains(scheme);
+    return equalIgnoringCase("ftp", scheme) || equalIgnoringCase("gopher", scheme);
 }
 
 void SchemeRegistry::registerURLSchemeAsBypassingContentSecurityPolicy(const String& scheme, PolicyAreas policyAreas)

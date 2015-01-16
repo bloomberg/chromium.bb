@@ -43,9 +43,6 @@ using URLSchemesMap = HashMap<String, T, CaseFoldingHash>;
 class PLATFORM_EXPORT SchemeRegistry {
 public:
     static void registerURLSchemeAsLocal(const String&);
-    static void removeURLSchemeRegisteredAsLocal(const String&);
-    static const URLSchemesSet& localSchemes();
-
     static bool shouldTreatURLSchemeAsLocal(const String&);
 
     static void registerURLSchemeAsRestrictingMixedContent(const String&);
@@ -74,7 +71,6 @@ public:
     // Such schemes should delegate to SecurityOrigin::canRequest for any URL
     // passed to SecurityOrigin::canDisplay.
     static bool canDisplayOnlyIfCanRequest(const String& scheme);
-    static void registerAsCanDisplayOnlyIfCanRequest(const String& scheme);
 
     // Schemes against which javascript: URLs should not be allowed to run (stop
     // bookmarklets from running on sensitive pages).
@@ -89,7 +85,6 @@ public:
     static String listOfCORSEnabledURLSchemes();
 
     // "Legacy" schemes (e.g. 'ftp:', 'gopher:') which we might want to treat differently from "webby" schemes.
-    static void registerURLSchemeAsLegacy(const String& scheme);
     static bool shouldTreatURLSchemeAsLegacy(const String& scheme);
 
     // Allow resources from some schemes to load on a page, regardless of its
@@ -106,6 +101,9 @@ public:
     static void registerURLSchemeAsBypassingContentSecurityPolicy(const String& scheme, PolicyAreas = PolicyAreaAll);
     static void removeURLSchemeRegisteredAsBypassingContentSecurityPolicy(const String& scheme);
     static bool schemeShouldBypassContentSecurityPolicy(const String& scheme, PolicyAreas = PolicyAreaAll);
+
+private:
+    static const URLSchemesSet& localSchemes();
 };
 
 } // namespace blink
