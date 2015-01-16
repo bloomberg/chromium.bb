@@ -326,6 +326,7 @@ def TargetLibs(bias_arch, is_canonical):
     return GSDJoin(component_name, bias_arch)
   target_triple = TripleFromArch(bias_arch)
   newlib_triple = target_triple if not IsBCArch(bias_arch) else 'le32-nacl'
+  newlib_cpp_flags = ' -DPNACL_BITCODE' if IsBCArch(bias_arch) else ''
   clang_libdir = os.path.join(
       '%(output)s', 'lib', 'clang', CLANG_VER, 'lib', target_triple)
   libc_libdir = os.path.join('%(output)s', MultilibLibDir(bias_arch))
@@ -337,7 +338,9 @@ def TargetLibs(bias_arch, is_canonical):
               command.SkipForIncrementalCommand(
                   ['sh', '%(newlib_src)s/configure'] +
                   TargetTools(bias_arch) +
-                  ['CFLAGS_FOR_TARGET=' + TargetLibCflags(bias_arch),
+                  ['CFLAGS_FOR_TARGET=' +
+                      TargetLibCflags(bias_arch) +
+                      newlib_cpp_flags,
                   '--prefix=',
                   '--disable-newlib-supplied-syscalls',
                   '--disable-texinfo',
