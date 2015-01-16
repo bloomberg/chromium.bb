@@ -27,33 +27,6 @@ readonly UP_DOWN_LOAD="buildbot/file_up_down_load.sh"
 readonly PNACL_BUILD="pnacl/build.sh"
 readonly DRIVER_TESTS="pnacl/driver/tests/driver_tests.py"
 
-
-tc-build-translator() {
-  echo @@@BUILD_STEP compile_translator@@@
-  ${PNACL_BUILD} translator-clean-all
-  ${PNACL_BUILD} translator-all
-}
-
-tc-prune-translator-pexes() {
-  echo @@@BUILD_STEP prune_translator_pexe@@@
-  ${PNACL_BUILD} translator-prune
-}
-
-tc-archive-translator() {
-  echo @@@BUILD_STEP archive_translator@@@
-  ${PNACL_BUILD} translator-tarball pnacl-translator.tgz
-  ${UP_DOWN_LOAD} UploadToolchainTarball ${BUILDBOT_GOT_REVISION} \
-      pnacl_translator pnacl-translator.tgz
-
-  echo @@@BUILD_STEP upload_translator_package_info@@@
-  ${NATIVE_PYTHON} build/package_version/package_version.py archive \
-      --archive-package=pnacl_translator \
-      pnacl-translator.tgz@https://storage.googleapis.com/nativeclient-archive2/toolchain/${BUILDBOT_GOT_REVISION}/naclsdk_pnacl_translator.tgz
-
-  ${NATIVE_PYTHON} build/package_version/package_version.py --annotate upload \
-      --upload-package=pnacl_translator --revision=${BUILDBOT_GOT_REVISION}
-}
-
 # called when a scons invocation fails
 handle-error() {
   RETCODE=1

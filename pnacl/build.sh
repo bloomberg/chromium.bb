@@ -231,18 +231,6 @@ fi
 ######################################################################
 ######################################################################
 
-# Convert a path given on the command-line to an absolute path.
-# This takes into account the fact that we changed directories at the
-# beginning of this script. PWD_ON_ENTRY is used to remember the
-# initial working directory.
-ArgumentToAbsolutePath() {
-  local relpath="$1"
-  local savepwd="$(pwd)"
-  cd "${PWD_ON_ENTRY}"
-  GetAbsolutePath "${relpath}"
-  cd "${savepwd}"
-}
-
 #@-------------------------------------------------------------------------
 
 #@ translator-all   -  Build and install all of the translators.
@@ -293,28 +281,6 @@ translator-clean() {
   StepBanner "TRANSLATOR" "Clean ${arch}"
   rm -rf "$(GetTranslatorInstallDir ${arch})"
   rm -rf "$(GetTranslatorBuildDir ${arch})"
-}
-
-#+ tarball <filename>    - Produce tarball file
-tarball() {
-  if [ ! -n "${1:-}" ]; then
-    echo "Error: tarball needs a tarball name." >&2
-    exit 1
-  fi
-  local tarball="$(ArgumentToAbsolutePath "$1")"
-  StepBanner "TARBALL" "Creating tar ball ${tarball}"
-  tar zcf "${tarball}" -C "${INSTALL_ROOT}" .
-  ls -l ${tarball}
-}
-
-translator-tarball() {
-  if [ ! -n "${1:-}" ]; then
-    echo "Error: tarball needs a tarball name." >&2
-    exit 1
-  fi
-  local tarball="$(ArgumentToAbsolutePath "$1")"
-  StepBanner "TARBALL" "Creating translator tar ball ${tarball}"
-  tar zcf "${tarball}" -C "${INSTALL_TRANSLATOR}" .
 }
 
 #########################################################################
