@@ -15,11 +15,11 @@ layer at (8,56) size 784x16 transparent
       text run at (0,0) width 39: "Peach"
     RenderText {#text} at (0,0) size 0x0
 layer at (8,72) size 34x16 transparent
-  RenderBlock (positioned) {DIV} at (8,72) size 33.80x16
+  RenderBlock (positioned) {DIV} at (8,72) size 33.78x16
     RenderText {#text} at (0,0) size 34x16
       text run at (0,0) width 34: "Plum"
     RenderText {#text} at (0,0) size 0x0
 layer at (8,88) size 28x16 transparent
-  RenderBlock (positioned) {DIV} at (0,16) size 28.44x16
+  RenderBlock (positioned) {DIV} at (0,16) size 28.42x16
     RenderText {#text} at (0,0) size 29x16
       text run at (0,0) width 29: "Pear"

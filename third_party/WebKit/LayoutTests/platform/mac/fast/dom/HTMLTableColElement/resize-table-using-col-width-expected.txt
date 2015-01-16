@@ -30,8 +30,8 @@ layer at (0,0) size 800x600
               RenderText {#text} at (2,2) size 73x16
                 text run at (2,2) width 73: "col 3 row 3"
       RenderBlock (anonymous) at (0,48) size 784x18
-        RenderButton {BUTTON} at (0,0) size 371.67x18 [bgcolor=#C0C0C0] [border: none (2px outset #C0C0C0) none (2px outset #C0C0C0)]
-          RenderBlock (anonymous) at (8,2) size 355.67x13
+        RenderButton {BUTTON} at (0,0) size 371.66x18 [bgcolor=#C0C0C0] [border: none (2px outset #C0C0C0) none (2px outset #C0C0C0)]
+          RenderBlock (anonymous) at (8,2) size 355.66x13
             RenderText {#text} at (0,0) size 356x13
               text run at (0,0) width 356: "Click me to test manually. The first column should grow to 500px."
         RenderText {#text} at (0,0) size 0x0

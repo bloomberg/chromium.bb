@@ -78,7 +78,7 @@ layer at (0,0) size 785x650 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         RenderText {#text} at (0,16) size 180x16
           text run at (0,16) width 180: "This second line should not."
       RenderBlock {P} at (0,584) size 769x32
-        RenderBlock (floating) {<pseudo:first-letter>} at (0,0) size 39.33x58 [bgcolor=#EEEEEE] [border: (1px solid #000000)]
+        RenderBlock (floating) {<pseudo:first-letter>} at (0,0) size 39.31x58 [bgcolor=#EEEEEE] [border: (1px solid #000000)]
           RenderTextFragment at (5,5) size 30x48
             text run at (5,5) width 30: "T"
         RenderTextFragment {#text} at (43,0) size 499x16

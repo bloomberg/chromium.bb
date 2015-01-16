@@ -27,6 +27,6 @@ layer at (8,42) size 142x17 transparent
     RenderText {#text} at (28,0) size 142x17
       text run at (28,0) width 142: "span in this paragraph"
 layer at (37,94) size 141x18 transparent
-  RenderBlock {SPAN} at (28.88,0) size 140.86x18
+  RenderBlock {SPAN} at (28.88,0) size 140.84x18
     RenderText {#text} at (0,0) size 141x17
       text run at (0,0) width 141: "span in this paragraph"

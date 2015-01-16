@@ -20,6 +20,6 @@ layer at (0,0) size 800x600
               RenderText {#text} at (2,2) size 32x17
                 text run at (2,2) width 32: "table"
 layer at (8,26) size 20x18
-  RenderBlock (positioned) {DIV} at (8,26) size 20.45x18
+  RenderBlock (positioned) {DIV} at (8,26) size 20.44x18
     RenderText {#text} at (0,0) size 21x17
       text run at (0,0) width 21: "div"

@@ -7,7 +7,7 @@ layer at (0,0) size 785x1283 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         RenderText {#text} at (0,0) size 111x16
           text run at (0,0) width 111: "Legend align test"
       RenderFieldSet {FIELDSET} at (2,32) size 765x52.59 [border: (2px groove #C0C0C0)]
-        RenderBlock {LEGEND} at (14,0) size 103.53x16
+        RenderBlock {LEGEND} at (14,0) size 103.52x16
           RenderText {#text} at (2,0) size 100x16
             text run at (2,0) width 100: "My Legend left"
         RenderBlock (anonymous) at (14,21.59) size 737x19
@@ -43,9 +43,9 @@ layer at (0,0) size 785x1283 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           RenderText {#text} at (0,0) size 0x0
       RenderBlock (anonymous) at (0,300.38) size 769x210.38
         RenderFieldSet {FIELDSET} at (2,0) size 765x52.59 [border: (2px groove #C0C0C0)]
-          RenderBlock {LEGEND} at (14,0) size 103.53x16
-            RenderText {#text} at (2,0) size 100x16
-              text run at (2,0) width 100: "My Legend left"
+          RenderBlock {LEGEND} at (14,0) size 103.52x16
+            RenderText {#text} at (1,0) size 101x16
+              text run at (1,0) width 101: "My Legend left"
           RenderBlock (anonymous) at (14,21.59) size 737x19
             RenderTextControl {INPUT} at (614,0) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
             RenderText {#text} at (0,0) size 0x0
@@ -78,7 +78,7 @@ layer at (0,0) size 785x1283 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         RenderText {#text} at (0,0) size 275x16
           text run at (0,0) width 275: "Legend align test with margin and padding"
       RenderFieldSet {FIELDSET} at (15,568.75) size 739x67 [border: (2px groove #C0C0C0)]
-        RenderBlock {LEGEND} at (17,0) size 103.53x16
+        RenderBlock {LEGEND} at (17,0) size 103.52x16
           RenderText {#text} at (2,0) size 100x16
             text run at (2,0) width 100: "My Legend left"
         RenderBlock (anonymous) at (17,31) size 705x19
@@ -114,9 +114,9 @@ layer at (0,0) size 785x1283 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           RenderText {#text} at (0,0) size 0x0
       RenderBlock (anonymous) at (0,946.75) size 769x313
         RenderFieldSet {FIELDSET} at (15,0) size 739x67 [border: (2px groove #C0C0C0)]
-          RenderBlock {LEGEND} at (17,0) size 103.53x16
-            RenderText {#text} at (2,0) size 100x16
-              text run at (2,0) width 100: "My Legend left"
+          RenderBlock {LEGEND} at (17,0) size 103.52x16
+            RenderText {#text} at (1,0) size 101x16
+              text run at (1,0) width 101: "My Legend left"
           RenderBlock (anonymous) at (17,31) size 705x19
             RenderTextControl {INPUT} at (582,0) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
             RenderText {#text} at (0,0) size 0x0

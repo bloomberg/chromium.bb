@@ -17,7 +17,7 @@ layer at (0,0) size 800x1187 backgroundClip at (0,0) size 800x600 clip at (0,0) 
                 text run at (2,3) width 751: "Autosize Autosize Autosize Autosize Autosize"
                 text run at (2,50) width 751: "Autosize Autosize Autosize Autosize Autosize"
                 text run at (2,97) width 609: "Autosize Autosize Autosize Autosize "
-              RenderBlock {B} at (610.75,119) size 90.22x18 [bgcolor=#FFC0CB]
+              RenderBlock {B} at (610.75,119) size 90.20x18 [bgcolor=#FFC0CB]
                 RenderText {#text} at (0,0) size 91x17
                   text run at (0,0) width 91: "wrapped text"
               RenderText {#text} at (2,144) size 751x139

@@ -14,9 +14,9 @@ layer at (0,0) size 800x128
             RenderText at (8,1) size 63x13
               text run at (8,1) width 63: "This should"
         RenderText {#text} at (0,0) size 0x0
-      RenderTable {TABLE} at (0,82) size 438x22 [bgcolor=#00FF00]
-        RenderTableSection {TBODY} at (0,0) size 438x22
-          RenderTableRow {TR} at (0,2) size 438x18
-            RenderTableCell {TD} at (2,2) size 434x18 [r=0 c=0 rs=1 cs=1]
+      RenderTable {TABLE} at (0,82) size 437x22 [bgcolor=#00FF00]
+        RenderTableSection {TBODY} at (0,0) size 437x22
+          RenderTableRow {TR} at (0,2) size 437x18
+            RenderTableCell {TD} at (2,2) size 433x18 [r=0 c=0 rs=1 cs=1]
               RenderText {#text} at (1,1) size 432x16
                 text run at (1,1) width 432: "This line should have a green background (or it might be unstyled)."

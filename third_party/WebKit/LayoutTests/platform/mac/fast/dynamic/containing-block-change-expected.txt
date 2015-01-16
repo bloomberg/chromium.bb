@@ -22,7 +22,7 @@ layer at (8,56) size 6x6
       RenderTableRow {TR} at (0,2) size 6x2
         RenderTableCell {TD} at (2,2) size 2x2 [r=0 c=0 rs=1 cs=1]
 layer at (11,59) size 43x32
-  RenderBlock (positioned) {DIV} at (3,3) size 42.66x32
+  RenderBlock (positioned) {DIV} at (3,3) size 42.64x32
     RenderText {#text} at (0,0) size 43x32
       text run at (0,0) width 43: "Lorem"
       text run at (0,16) width 40: "ipsum"

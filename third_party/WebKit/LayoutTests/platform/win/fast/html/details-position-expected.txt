@@ -17,7 +17,7 @@ layer at (158,158) size 784x18 backgroundClip at (0,0) size 800x600 clip at (0,0
     RenderText {#text} at (16,0) size 49x17
       text run at (16,0) width 49: "relative"
 layer at (250,150) size 70x18
-  RenderBlock (positioned) {SUMMARY} at (250,150) size 70.28x18
+  RenderBlock (positioned) {SUMMARY} at (250,150) size 70.27x18
     RenderDetailsMarker {DIV} at (0,4) size 10.55x10.55: right
     RenderText {#text} at (16,0) size 55x17
       text run at (16,0) width 55: "absolute"

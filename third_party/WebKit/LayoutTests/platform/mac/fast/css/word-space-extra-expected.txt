@@ -6,11 +6,11 @@ layer at (0,0) size 800x2157 backgroundClip at (0,0) size 800x600 clip at (0,0) 
       RenderBlock {H2} at (0,0) size 784x24
         RenderText {#text} at (0,0) size 139x24
           text run at (0,0) width 139: "word-spacing"
-      RenderBlock (floating) {PRE} at (0,56.91) size 1201.55x149.41
-        RenderBlock {H3} at (0,15.20) size 1201.55x15
+      RenderBlock (floating) {PRE} at (0,56.91) size 1201.53x149.41
+        RenderBlock {H3} at (0,15.20) size 1201.53x15
           RenderText {#text} at (0,0) size 207x15
             text run at (0,0) width 207: "In a floated pre"
-        RenderBlock (anonymous) at (0,45.41) size 1201.55x104
+        RenderBlock (anonymous) at (0,45.41) size 1201.53x104
           RenderText {#text} at (0,0) size 257x26
             text run at (0,0) width 0: " "
             text run at (0,13) width 257: "Word   spacing test "
@@ -449,11 +449,11 @@ layer at (0,0) size 800x2157 backgroundClip at (0,0) size 800x600 clip at (0,0) 
       RenderBlock {H2} at (0,685.06) size 784x24
         RenderText {#text} at (0,0) size 140x24
           text run at (0,0) width 140: "letter-spacing"
-      RenderBlock (floating) {PRE} at (0,741.97) size 1497.75x149.41
-        RenderBlock {H3} at (0,15.20) size 1497.75x15
+      RenderBlock (floating) {PRE} at (0,741.97) size 1497.73x149.41
+        RenderBlock {H3} at (0,15.20) size 1497.73x15
           RenderText {#text} at (0,0) size 227x15
             text run at (0,0) width 227: "In a floated pre"
-        RenderBlock (anonymous) at (0,45.41) size 1497.75x104
+        RenderBlock (anonymous) at (0,45.41) size 1497.73x104
           RenderText {#text} at (0,0) size 282x26
             text run at (0,0) width 0: " "
             text run at (0,13) width 282: "Letter   spacing test "
@@ -893,11 +893,11 @@ layer at (0,0) size 800x2157 backgroundClip at (0,0) size 800x600 clip at (0,0) 
       RenderBlock {H2} at (0,1399.13) size 784x24
         RenderText {#text} at (0,0) size 133x24
           text run at (0,0) width 133: "both-spacing"
-      RenderBlock (floating) {PRE} at (0,1456.03) size 1952.97x149.41
-        RenderBlock {H3} at (0,15.20) size 1952.97x15
+      RenderBlock (floating) {PRE} at (0,1456.03) size 1952.95x149.41
+        RenderBlock {H3} at (0,15.20) size 1952.95x15
           RenderText {#text} at (0,0) size 287x15
             text run at (0,0) width 287: "In a floated pre"
-        RenderBlock (anonymous) at (0,45.41) size 1952.97x104
+        RenderBlock (anonymous) at (0,45.41) size 1952.95x104
           RenderText {#text} at (0,0) size 537x26
             text run at (0,0) width 0: " "
             text run at (0,13) width 537: "Word and letter   spacing test "

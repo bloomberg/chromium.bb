@@ -4,7 +4,7 @@ layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584
       RenderBlock {DIV} at (0,0) size 784x16
-        RenderBlock (floating) {DIV} at (515.19,0) size 268.81x104 [border: (2px solid #FF0000)]
+        RenderBlock (floating) {DIV} at (515.20,0) size 268.80x104 [border: (2px solid #FF0000)]
           RenderText {#text} at (2,2) size 265x16
             text run at (2,2) width 265: "I should become a right-floating element."
         RenderText {#text} at (0,0) size 402x16

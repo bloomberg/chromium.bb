@@ -142,27 +142,27 @@ layer at (12,253) size 38x70 clip at (13,254) size 21x68
       RenderText {#text} at (2,0) size 17x16
         text run at (2,0) width 17: "foo"
 layer at (12,370) size 43x83 clip at (13,371) size 26x81 scrollHeight 80
-  RenderListBox {SELECT} at (4,362.25) size 43.25x82.75 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-    RenderBlock {OPTION} at (1,1) size 26.25x20.19
+  RenderListBox {SELECT} at (4,362.25) size 43.23x82.75 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+    RenderBlock {OPTION} at (1,1) size 26.23x20.19
       RenderText {#text} at (2,0) size 23x17
         text run at (2,0) width 23: "foo"
 layer at (67,351) size 49x102 clip at (68,352) size 32x100
-  RenderListBox {SELECT} at (59.25,343) size 48.81x102 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-    RenderBlock {OPTION} at (1,1) size 31.81x25
+  RenderListBox {SELECT} at (59.23,343) size 48.80x102 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+    RenderBlock {OPTION} at (1,1) size 31.80x25
       RenderText {#text} at (2,0) size 28x22
         text run at (2,0) width 28: "foo"
 layer at (128,332) size 54x121 clip at (129,333) size 37x119
-  RenderListBox {SELECT} at (120.06,323.81) size 54.38x121.19 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-    RenderBlock {OPTION} at (1,1) size 37.38x29.80
+  RenderListBox {SELECT} at (120.03,323.81) size 54.36x121.19 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+    RenderBlock {OPTION} at (1,1) size 37.36x29.80
       RenderText {#text} at (2,0) size 34x27
         text run at (2,0) width 34: "foo"
 layer at (14,504) size 51x104 backgroundClip at (14,504) size 51x96 clip at (15,505) size 34x95 outlineClip at (0,0) size 785x600
-  RenderListBox {SELECT} at (6,496) size 50.81x104 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-    RenderBlock {OPTION} at (1,1) size 33.81x25.50
+  RenderListBox {SELECT} at (6,496) size 50.80x104 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+    RenderBlock {OPTION} at (1,1) size 33.80x25.50
       RenderText {#text} at (3,0) size 28x22
         text run at (3,0) width 28: "foo"
 layer at (83,466) size 64x140 backgroundClip at (83,466) size 64x134 clip at (85,468) size 45x132 outlineClip at (0,0) size 785x600
-  RenderListBox {SELECT} at (74.81,458) size 64.06x140 [bgcolor=#FFFFFF] [border: (2px solid #A9A9A9)]
-    RenderBlock {OPTION} at (2,2) size 45.06x34
+  RenderListBox {SELECT} at (74.80,458) size 64.05x140 [bgcolor=#FFFFFF] [border: (2px solid #A9A9A9)]
+    RenderBlock {OPTION} at (2,2) size 45.05x34
       RenderText {#text} at (4,0) size 38x30
         text run at (4,0) width 38: "foo"

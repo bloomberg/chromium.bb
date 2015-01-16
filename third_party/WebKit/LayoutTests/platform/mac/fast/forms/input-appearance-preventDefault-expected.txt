@@ -15,7 +15,7 @@ layer at (13,53) size 117x13 scrollWidth 129
     RenderText {#text} at (0,0) size 129x13
       text run at (0,0) width 129: "No caret should be here"
 layer at (10,70) size 328x32
-  RenderBlock (positioned) {DIV} at (10,70) size 327.92x32
+  RenderBlock (positioned) {DIV} at (10,70) size 327.91x32
     RenderBR {BR} at (0,0) size 0x16
     RenderText {#text} at (0,16) size 328x16
       text run at (0,16) width 328: "mousedown on target [object HTMLInputElement]"

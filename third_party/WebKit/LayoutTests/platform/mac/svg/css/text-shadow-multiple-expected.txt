@@ -50,7 +50,7 @@ layer at (0,0) size 800x404
               chunk 1 text run 1 at (539.60,66.00) startOffset 0 endOffset 7 width 197.34: "shadows"
         RenderText {#text} at (0,0) size 0x0
 layer at (20,48) size 717x58
-  RenderBlock (positioned) {div} at (20,48) size 716.95x58
+  RenderBlock (positioned) {div} at (20,48) size 716.94x58
     RenderInline {span} at (0,0) size 95x56 [textStrokeWidth=1.00]
       RenderText {#text} at (0,1) size 95x56
         text run at (0,1) width 95: "This"
@@ -68,7 +68,7 @@ layer at (20,48) size 717x58
       text run at (505,1) width 15: " "
       text run at (519,1) width 198: "shadows"
 layer at (20,250) size 717x58
-  RenderBlock (positioned) {div} at (20,250) size 716.95x58
+  RenderBlock (positioned) {div} at (20,250) size 716.94x58
     RenderInline {span} at (0,0) size 95x56 [textStrokeWidth=1.00]
       RenderText {#text} at (0,1) size 95x56
         text run at (0,1) width 95: "This"

@@ -25,6 +25,6 @@ layer at (0,0) size 800x600
             text run at (34,24) width 405: "ll of this text should be green, including the big \"A\" first-letter."
       RenderBlock {P} at (0,128) size 784x0
       RenderBlock {DIV} at (0,128) size 784x16
-        RenderBlock {DIV} at (0,0) size 165.75x16 [color=#FF0000]
+        RenderBlock {DIV} at (0,0) size 165.73x16 [color=#FF0000]
           RenderText {#text} at (0,0) size 166x16
             text run at (0,0) width 166: "This text should be green."

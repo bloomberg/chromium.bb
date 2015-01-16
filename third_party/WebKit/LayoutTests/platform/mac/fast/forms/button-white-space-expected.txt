@@ -17,14 +17,14 @@ layer at (0,0) size 800x600
         RenderTableSection {TBODY} at (0,0) size 185x24
           RenderTableRow {TR} at (0,2) size 185x20
             RenderTableCell {TD} at (2,2) size 181x20 [r=0 c=0 rs=1 cs=1]
-              RenderButton {BUTTON} at (1,1) size 76.48x18 [bgcolor=#C0C0C0] [border: none (2px outset #C0C0C0) none (2px outset #C0C0C0)]
-                RenderBlock (anonymous) at (8,2) size 60.48x13
+              RenderButton {BUTTON} at (1,1) size 76.47x18 [bgcolor=#C0C0C0] [border: none (2px outset #C0C0C0) none (2px outset #C0C0C0)]
+                RenderBlock (anonymous) at (8,2) size 60.47x13
                   RenderText {#text} at (0,0) size 61x13
                     text run at (0,0) width 61: "Search Mail"
               RenderText {#text} at (77,2) size 5x16
                 text run at (77,2) width 5: " "
-              RenderButton {BUTTON} at (81.48,1) size 97.59x18 [bgcolor=#C0C0C0] [border: none (2px outset #C0C0C0) none (2px outset #C0C0C0)]
-                RenderBlock (anonymous) at (8,2) size 81.59x13
+              RenderButton {BUTTON} at (81.47,1) size 97.58x18 [bgcolor=#C0C0C0] [border: none (2px outset #C0C0C0) none (2px outset #C0C0C0)]
+                RenderBlock (anonymous) at (8,2) size 81.58x13
                   RenderText {#text} at (0,0) size 82x13
                     text run at (0,0) width 82: "Search the Web"
               RenderText {#text} at (0,0) size 0x0
@@ -32,13 +32,13 @@ layer at (0,0) size 800x600
         RenderText {#text} at (0,0) size 193x16
           text run at (0,0) width 193: "Buttons should look identical:"
       RenderBlock {DIV} at (0,104) size 784x18
-        RenderButton {BUTTON} at (0,0) size 75.02x18 [bgcolor=#C0C0C0] [border: none (2px outset #C0C0C0) none (2px outset #C0C0C0)]
-          RenderBlock (anonymous) at (8,2) size 59.02x13
+        RenderButton {BUTTON} at (0,0) size 75x18 [bgcolor=#C0C0C0] [border: none (2px outset #C0C0C0) none (2px outset #C0C0C0)]
+          RenderBlock (anonymous) at (8,2) size 59x13
             RenderText {#text} at (0,0) size 60x13
               text run at (0,0) width 60: "test button"
       RenderBlock {DIV} at (0,122) size 784x18
-        RenderButton {BUTTON} at (0,0) size 75.02x18 [bgcolor=#C0C0C0] [border: none (2px outset #C0C0C0) none (2px outset #C0C0C0)]
-          RenderBlock (anonymous) at (8,2) size 59.02x13
+        RenderButton {BUTTON} at (0,0) size 75x18 [bgcolor=#C0C0C0] [border: none (2px outset #C0C0C0) none (2px outset #C0C0C0)]
+          RenderBlock (anonymous) at (8,2) size 59x13
             RenderText {#text} at (0,0) size 60x13
               text run at (0,0) width 24: "test "
               text run at (23,0) width 37: "button"
@@ -46,18 +46,18 @@ layer at (0,0) size 800x600
         RenderText {#text} at (0,0) size 353x16
           text run at (0,0) width 353: "Buttons should look identical (ignore vertical spacing):"
       RenderBlock {DIV} at (0,156) size 784x18
-        RenderButton {BUTTON} at (0,0) size 92.42x18 [bgcolor=#C0C0C0] [border: none (2px outset #C0C0C0) none (2px outset #C0C0C0)]
-          RenderBlock (anonymous) at (8,2) size 76.42x13
+        RenderButton {BUTTON} at (0,0) size 92.41x18 [bgcolor=#C0C0C0] [border: none (2px outset #C0C0C0) none (2px outset #C0C0C0)]
+          RenderBlock (anonymous) at (8,2) size 76.41x13
             RenderText {#text} at (0,0) size 77x13
               text run at (0,0) width 77: "  test  button  "
       RenderBlock {DIV} at (0,174) size 784x18
-        RenderButton {BUTTON} at (0,0) size 92.42x18 [bgcolor=#C0C0C0] [border: none (2px outset #C0C0C0) none (2px outset #C0C0C0)]
-          RenderBlock (anonymous) at (8,2) size 76.42x13
+        RenderButton {BUTTON} at (0,0) size 92.41x18 [bgcolor=#C0C0C0] [border: none (2px outset #C0C0C0) none (2px outset #C0C0C0)]
+          RenderBlock (anonymous) at (8,2) size 76.41x13
             RenderText {#text} at (0,0) size 77x13
               text run at (0,0) width 77: "  test  button  "
       RenderBlock {DIV} at (0,205) size 784x18
         RenderBlock {PRE} at (0,0) size 784x18
-          RenderButton {BUTTON} at (0,0) size 92.42x18 [bgcolor=#C0C0C0] [border: none (2px outset #C0C0C0) none (2px outset #C0C0C0)]
-            RenderBlock (anonymous) at (8,2) size 76.42x13
+          RenderButton {BUTTON} at (0,0) size 92.41x18 [bgcolor=#C0C0C0] [border: none (2px outset #C0C0C0) none (2px outset #C0C0C0)]
+            RenderBlock (anonymous) at (8,2) size 76.41x13
               RenderText {#text} at (0,0) size 77x13
                 text run at (0,0) width 77: "  test  button  "

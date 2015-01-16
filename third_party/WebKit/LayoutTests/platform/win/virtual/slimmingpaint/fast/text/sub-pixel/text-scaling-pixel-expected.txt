@@ -3,16 +3,16 @@ layer at (0,0) size 800x600 scrollHeight 1331
 layer at (0,0) size 800x1331 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x1331
     RenderBody {BODY} at (8,8) size 784x1315
-      RenderBlock {SECTION} at (0,0) size 785.55x1299
-        RenderBlock {H1} at (0,0) size 785.55x27
+      RenderBlock {SECTION} at (0,0) size 785.53x1299
+        RenderBlock {H1} at (0,0) size 785.53x27
           RenderText {#text} at (0,0) size 283x26
             text run at (0,0) width 283: "Font Size Scaling Pixel Test"
-        RenderBlock {P} at (0,31) size 785.55x18
+        RenderBlock {P} at (0,31) size 785.53x18
           RenderText {#text} at (0,0) size 768x17
             text run at (0,0) width 251: "Size of the text should scale smoothly. "
             text run at (250,0) width 518: "Reported width should be within 0.01px of that of the highlighted reference row."
-        RenderBlock {DIV} at (0,53) size 785.55x1246
-          RenderBlock {DIV} at (0,0) size 785.55x14 [border: none (1px solid #000000) none]
+        RenderBlock {DIV} at (0,53) size 785.53x1246
+          RenderBlock {DIV} at (0,0) size 785.53x14 [border: none (1px solid #000000) none]
             RenderBlock {DIV} at (0,0) size 65x13
               RenderText {#text} at (15,0) size 45x13
                 text run at (15,0) width 45: "Font Size"
@@ -28,7 +28,7 @@ layer at (0,0) size 800x1331 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             RenderInline {SPAN} at (0,0) size 37x13
               RenderText {#text} at (260,0) size 37x13
                 text run at (260,0) width 37: "Content"
-          RenderBlock {DIV} at (0,14) size 785.55x13
+          RenderBlock {DIV} at (0,14) size 785.53x13
             RenderBlock {DIV} at (0,0) size 65x13
               RenderText {#text} at (33,0) size 27x13
                 text run at (33,0) width 27: "10.00"
@@ -44,7 +44,7 @@ layer at (0,0) size 800x1331 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             RenderInline {SPAN} at (0,0) size 223x13
               RenderText {#text} at (260,0) size 223x13
                 text run at (260,0) width 223: "Amazingly few discotheques provide jukeboxes."
-          RenderBlock {DIV} at (0,27) size 785.55x13
+          RenderBlock {DIV} at (0,27) size 785.53x13
             RenderBlock {DIV} at (0,0) size 65x13
               RenderText {#text} at (33,0) size 27x13
                 text run at (33,0) width 27: "10.25"
@@ -60,7 +60,7 @@ layer at (0,0) size 800x1331 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             RenderInline {SPAN} at (0,0) size 223x13
               RenderText {#text} at (260,0) size 223x13
                 text run at (260,0) width 223: "Amazingly few discotheques provide jukeboxes."
-          RenderBlock {DIV} at (0,40) size 785.55x14
+          RenderBlock {DIV} at (0,40) size 785.53x14
             RenderBlock {DIV} at (0,1) size 65x13
               RenderText {#text} at (33,0) size 27x13
                 text run at (33,0) width 27: "10.50"
@@ -76,7 +76,7 @@ layer at (0,0) size 800x1331 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             RenderInline {SPAN} at (0,0) size 235x14
               RenderText {#text} at (260,0) size 235x14
                 text run at (260,0) width 235: "Amazingly few discotheques provide jukeboxes."
-          RenderBlock {DIV} at (0,54) size 785.55x14
+          RenderBlock {DIV} at (0,54) size 785.53x14
             RenderBlock {DIV} at (0,1) size 65x13
               RenderText {#text} at (33,0) size 27x13
                 text run at (33,0) width 27: "10.75"
@@ -92,7 +92,7 @@ layer at (0,0) size 800x1331 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             RenderInline {SPAN} at (0,0) size 235x14
               RenderText {#text} at (260,0) size 235x14
                 text run at (260,0) width 235: "Amazingly few discotheques provide jukeboxes."
-          RenderBlock {DIV} at (0,68) size 785.55x14
+          RenderBlock {DIV} at (0,68) size 785.53x14
             RenderBlock {DIV} at (0,1) size 65x13
               RenderText {#text} at (33,0) size 27x13
                 text run at (33,0) width 27: "11.00"
@@ -108,7 +108,7 @@ layer at (0,0) size 800x1331 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             RenderInline {SPAN} at (0,0) size 235x14
               RenderText {#text} at (260,0) size 235x14
                 text run at (260,0) width 235: "Amazingly few discotheques provide jukeboxes."
-          RenderBlock {DIV} at (0,82) size 785.55x14
+          RenderBlock {DIV} at (0,82) size 785.53x14
             RenderBlock {DIV} at (0,1) size 65x13
               RenderText {#text} at (33,0) size 27x13
                 text run at (33,0) width 27: "11.25"
@@ -124,7 +124,7 @@ layer at (0,0) size 800x1331 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             RenderInline {SPAN} at (0,0) size 235x14
               RenderText {#text} at (260,0) size 235x14
                 text run at (260,0) width 235: "Amazingly few discotheques provide jukeboxes."
-          RenderBlock {DIV} at (0,96) size 785.55x15
+          RenderBlock {DIV} at (0,96) size 785.53x15
             RenderBlock {DIV} at (0,2) size 65x13
               RenderText {#text} at (33,0) size 27x13
                 text run at (33,0) width 27: "11.50"
@@ -140,7 +140,7 @@ layer at (0,0) size 800x1331 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             RenderInline {SPAN} at (0,0) size 260x15
               RenderText {#text} at (260,0) size 260x15
                 text run at (260,0) width 260: "Amazingly few discotheques provide jukeboxes."
-          RenderBlock {DIV} at (0,111) size 785.55x15
+          RenderBlock {DIV} at (0,111) size 785.53x15
             RenderBlock {DIV} at (0,2) size 65x13
               RenderText {#text} at (33,0) size 27x13
                 text run at (33,0) width 27: "11.75"
@@ -156,7 +156,7 @@ layer at (0,0) size 800x1331 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             RenderInline {SPAN} at (0,0) size 260x15
               RenderText {#text} at (260,0) size 260x15
                 text run at (260,0) width 260: "Amazingly few discotheques provide jukeboxes."
-          RenderBlock {DIV} at (0,126) size 785.55x15 [bgcolor=#FBFCC5]
+          RenderBlock {DIV} at (0,126) size 785.53x15 [bgcolor=#FBFCC5]
             RenderBlock {DIV} at (0,2) size 65x13
               RenderText {#text} at (33,0) size 27x13
                 text run at (33,0) width 27: "12.00"
@@ -172,7 +172,7 @@ layer at (0,0) size 800x1331 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             RenderInline {SPAN} at (0,0) size 260x15
               RenderText {#text} at (260,0) size 260x15
                 text run at (260,0) width 260: "Amazingly few discotheques provide jukeboxes."
-          RenderBlock {DIV} at (0,141) size 785.55x15
+          RenderBlock {DIV} at (0,141) size 785.53x15
             RenderBlock {DIV} at (0,2) size 65x13
               RenderText {#text} at (33,0) size 27x13
                 text run at (33,0) width 27: "12.25"
@@ -188,7 +188,7 @@ layer at (0,0) size 800x1331 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             RenderInline {SPAN} at (0,0) size 260x15
               RenderText {#text} at (260,0) size 260x15
                 text run at (260,0) width 260: "Amazingly few discotheques provide jukeboxes."
-          RenderBlock {DIV} at (0,156) size 785.55x16
+          RenderBlock {DIV} at (0,156) size 785.53x16
             RenderBlock {DIV} at (0,3) size 65x13
               RenderText {#text} at (33,0) size 27x13
                 text run at (33,0) width 27: "12.50"
@@ -204,7 +204,7 @@ layer at (0,0) size 800x1331 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             RenderInline {SPAN} at (0,0) size 276x16
               RenderText {#text} at (260,0) size 276x16
                 text run at (260,0) width 276: "Amazingly few discotheques provide jukeboxes."
-          RenderBlock {DIV} at (0,172) size 785.55x16
+          RenderBlock {DIV} at (0,172) size 785.53x16
             RenderBlock {DIV} at (0,3) size 65x13
               RenderText {#text} at (33,0) size 27x13
                 text run at (33,0) width 27: "12.75"
@@ -220,7 +220,7 @@ layer at (0,0) size 800x1331 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             RenderInline {SPAN} at (0,0) size 276x16
               RenderText {#text} at (260,0) size 276x16
                 text run at (260,0) width 276: "Amazingly few discotheques provide jukeboxes."
-          RenderBlock {DIV} at (0,188) size 785.55x16
+          RenderBlock {DIV} at (0,188) size 785.53x16
             RenderBlock {DIV} at (0,3) size 65x13
               RenderText {#text} at (33,0) size 27x13
                 text run at (33,0) width 27: "13.00"
@@ -236,7 +236,7 @@ layer at (0,0) size 800x1331 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             RenderInline {SPAN} at (0,0) size 276x16
               RenderText {#text} at (260,0) size 276x16
                 text run at (260,0) width 276: "Amazingly few discotheques provide jukeboxes."
-          RenderBlock {DIV} at (0,204) size 785.55x16
+          RenderBlock {DIV} at (0,204) size 785.53x16
             RenderBlock {DIV} at (0,3) size 65x13
               RenderText {#text} at (33,0) size 27x13
                 text run at (33,0) width 27: "13.25"
@@ -252,7 +252,7 @@ layer at (0,0) size 800x1331 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             RenderInline {SPAN} at (0,0) size 276x16
               RenderText {#text} at (260,0) size 276x16
                 text run at (260,0) width 276: "Amazingly few discotheques provide jukeboxes."
-          RenderBlock {DIV} at (0,220) size 785.55x16
+          RenderBlock {DIV} at (0,220) size 785.53x16
             RenderBlock {DIV} at (0,3) size 65x13
               RenderText {#text} at (33,0) size 27x13
                 text run at (33,0) width 27: "13.50"
@@ -268,7 +268,7 @@ layer at (0,0) size 800x1331 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             RenderInline {SPAN} at (0,0) size 298x16
               RenderText {#text} at (260,0) size 298x16
                 text run at (260,0) width 298: "Amazingly few discotheques provide jukeboxes."
-          RenderBlock {DIV} at (0,236) size 785.55x16
+          RenderBlock {DIV} at (0,236) size 785.53x16
             RenderBlock {DIV} at (0,3) size 65x13
               RenderText {#text} at (33,0) size 27x13
                 text run at (33,0) width 27: "13.75"
@@ -284,7 +284,7 @@ layer at (0,0) size 800x1331 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             RenderInline {SPAN} at (0,0) size 298x16
               RenderText {#text} at (260,0) size 298x16
                 text run at (260,0) width 298: "Amazingly few discotheques provide jukeboxes."
-          RenderBlock {DIV} at (0,252) size 785.55x16
+          RenderBlock {DIV} at (0,252) size 785.53x16
             RenderBlock {DIV} at (0,3) size 65x13
               RenderText {#text} at (33,0) size 27x13
                 text run at (33,0) width 27: "14.00"
@@ -300,7 +300,7 @@ layer at (0,0) size 800x1331 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             RenderInline {SPAN} at (0,0) size 298x16
               RenderText {#text} at (260,0) size 298x16
                 text run at (260,0) width 298: "Amazingly few discotheques provide jukeboxes."
-          RenderBlock {DIV} at (0,268) size 785.55x16
+          RenderBlock {DIV} at (0,268) size 785.53x16
             RenderBlock {DIV} at (0,3) size 65x13
               RenderText {#text} at (33,0) size 27x13
                 text run at (33,0) width 27: "14.25"
@@ -316,7 +316,7 @@ layer at (0,0) size 800x1331 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             RenderInline {SPAN} at (0,0) size 298x16
               RenderText {#text} at (260,0) size 298x16
                 text run at (260,0) width 298: "Amazingly few discotheques provide jukeboxes."
-          RenderBlock {DIV} at (0,284) size 785.55x17
+          RenderBlock {DIV} at (0,284) size 785.53x17
             RenderBlock {DIV} at (0,4) size 65x13
               RenderText {#text} at (33,0) size 27x13
                 text run at (33,0) width 27: "14.50"
@@ -332,7 +332,7 @@ layer at (0,0) size 800x1331 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             RenderInline {SPAN} at (0,0) size 309x17
               RenderText {#text} at (260,0) size 309x17
                 text run at (260,0) width 309: "Amazingly few discotheques provide jukeboxes."
-          RenderBlock {DIV} at (0,301) size 785.55x17
+          RenderBlock {DIV} at (0,301) size 785.53x17
             RenderBlock {DIV} at (0,4) size 65x13
               RenderText {#text} at (33,0) size 27x13
                 text run at (33,0) width 27: "14.75"
@@ -348,7 +348,7 @@ layer at (0,0) size 800x1331 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             RenderInline {SPAN} at (0,0) size 309x17
               RenderText {#text} at (260,0) size 309x17
                 text run at (260,0) width 309: "Amazingly few discotheques provide jukeboxes."
-          RenderBlock {DIV} at (0,318) size 785.55x17
+          RenderBlock {DIV} at (0,318) size 785.53x17
             RenderBlock {DIV} at (0,4) size 65x13
               RenderText {#text} at (33,0) size 27x13
                 text run at (33,0) width 27: "15.00"
@@ -364,7 +364,7 @@ layer at (0,0) size 800x1331 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             RenderInline {SPAN} at (0,0) size 309x17
               RenderText {#text} at (260,0) size 309x17
                 text run at (260,0) width 309: "Amazingly few discotheques provide jukeboxes."
-          RenderBlock {DIV} at (0,335) size 785.55x17
+          RenderBlock {DIV} at (0,335) size 785.53x17
             RenderBlock {DIV} at (0,4) size 65x13
               RenderText {#text} at (33,0) size 27x13
                 text run at (33,0) width 27: "15.25"
@@ -380,7 +380,7 @@ layer at (0,0) size 800x1331 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             RenderInline {SPAN} at (0,0) size 309x17
               RenderText {#text} at (260,0) size 309x17
                 text run at (260,0) width 309: "Amazingly few discotheques provide jukeboxes."
-          RenderBlock {DIV} at (0,352) size 785.55x19
+          RenderBlock {DIV} at (0,352) size 785.53x19
             RenderBlock {DIV} at (0,5) size 65x13
               RenderText {#text} at (33,0) size 27x13
                 text run at (33,0) width 27: "15.50"
@@ -396,7 +396,7 @@ layer at (0,0) size 800x1331 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             RenderInline {SPAN} at (0,0) size 330x18
               RenderText {#text} at (260,0) size 330x18
                 text run at (260,0) width 330: "Amazingly few discotheques provide jukeboxes."
-          RenderBlock {DIV} at (0,371) size 785.55x19
+          RenderBlock {DIV} at (0,371) size 785.53x19
             RenderBlock {DIV} at (0,5) size 65x13
               RenderText {#text} at (33,0) size 27x13
                 text run at (33,0) width 27: "15.75"
@@ -412,7 +412,7 @@ layer at (0,0) size 800x1331 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             RenderInline {SPAN} at (0,0) size 330x18
               RenderText {#text} at (260,0) size 330x18
                 text run at (260,0) width 330: "Amazingly few discotheques provide jukeboxes."
-          RenderBlock {DIV} at (0,390) size 785.55x18
+          RenderBlock {DIV} at (0,390) size 785.53x18
             RenderBlock {DIV} at (0,4) size 65x13
               RenderText {#text} at (33,0) size 27x13
                 text run at (33,0) width 27: "16.00"
@@ -428,7 +428,7 @@ layer at (0,0) size 800x1331 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             RenderInline {SPAN} at (0,0) size 340x17
               RenderText {#text} at (260,0) size 340x17
                 text run at (260,0) width 340: "Amazingly few discotheques provide jukeboxes."
-          RenderBlock {DIV} at (0,408) size 785.55x19
+          RenderBlock {DIV} at (0,408) size 785.53x19
             RenderBlock {DIV} at (0,5) size 65x13
               RenderText {#text} at (33,0) size 27x13
                 text run at (33,0) width 27: "16.25"
@@ -444,7 +444,7 @@ layer at (0,0) size 800x1331 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             RenderInline {SPAN} at (0,0) size 346x18
               RenderText {#text} at (260,0) size 346x18
                 text run at (260,0) width 346: "Amazingly few discotheques provide jukeboxes."
-          RenderBlock {DIV} at (0,427) size 785.55x19
+          RenderBlock {DIV} at (0,427) size 785.53x19
             RenderBlock {DIV} at (0,5) size 65x13
               RenderText {#text} at (33,0) size 27x13
                 text run at (33,0) width 27: "16.50"
@@ -460,7 +460,7 @@ layer at (0,0) size 800x1331 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             RenderInline {SPAN} at (0,0) size 351x18
               RenderText {#text} at (260,0) size 351x18
                 text run at (260,0) width 351: "Amazingly few discotheques provide jukeboxes."
-          RenderBlock {DIV} at (0,446) size 785.55x20
+          RenderBlock {DIV} at (0,446) size 785.53x20
             RenderBlock {DIV} at (0,5) size 65x13
               RenderText {#text} at (33,0) size 27x13
                 text run at (33,0) width 27: "16.75"
@@ -476,7 +476,7 @@ layer at (0,0) size 800x1331 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             RenderInline {SPAN} at (0,0) size 356x19
               RenderText {#text} at (260,0) size 356x19
                 text run at (260,0) width 356: "Amazingly few discotheques provide jukeboxes."
-          RenderBlock {DIV} at (0,466) size 785.55x20
+          RenderBlock {DIV} at (0,466) size 785.53x20
             RenderBlock {DIV} at (0,5) size 65x13
               RenderText {#text} at (33,0) size 27x13
                 text run at (33,0) width 27: "17.00"
@@ -492,7 +492,7 @@ layer at (0,0) size 800x1331 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             RenderInline {SPAN} at (0,0) size 361x19
               RenderText {#text} at (260,0) size 361x19
                 text run at (260,0) width 361: "Amazingly few discotheques provide jukeboxes."
-          RenderBlock {DIV} at (0,486) size 785.55x21
+          RenderBlock {DIV} at (0,486) size 785.53x21
             RenderBlock {DIV} at (0,6) size 65x13
               RenderText {#text} at (33,0) size 27x13
                 text run at (33,0) width 27: "17.25"
@@ -508,7 +508,7 @@ layer at (0,0) size 800x1331 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             RenderInline {SPAN} at (0,0) size 367x20
               RenderText {#text} at (260,0) size 367x20
                 text run at (260,0) width 367: "Amazingly few discotheques provide jukeboxes."
-          RenderBlock {DIV} at (0,507) size 785.55x21
+          RenderBlock {DIV} at (0,507) size 785.53x21
             RenderBlock {DIV} at (0,6) size 65x13
               RenderText {#text} at (33,0) size 27x13
                 text run at (33,0) width 27: "17.50"
@@ -524,7 +524,7 @@ layer at (0,0) size 800x1331 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             RenderInline {SPAN} at (0,0) size 372x20
               RenderText {#text} at (260,0) size 372x20
                 text run at (260,0) width 372: "Amazingly few discotheques provide jukeboxes."
-          RenderBlock {DIV} at (0,528) size 785.55x21
+          RenderBlock {DIV} at (0,528) size 785.53x21
             RenderBlock {DIV} at (0,6) size 65x13
               RenderText {#text} at (33,0) size 27x13
                 text run at (33,0) width 27: "17.75"
@@ -540,7 +540,7 @@ layer at (0,0) size 800x1331 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             RenderInline {SPAN} at (0,0) size 377x20
               RenderText {#text} at (260,0) size 377x20
                 text run at (260,0) width 377: "Amazingly few discotheques provide jukeboxes."
-          RenderBlock {DIV} at (0,549) size 785.55x21
+          RenderBlock {DIV} at (0,549) size 785.53x21
             RenderBlock {DIV} at (0,6) size 65x13
               RenderText {#text} at (33,0) size 27x13
                 text run at (33,0) width 27: "18.00"
@@ -556,7 +556,7 @@ layer at (0,0) size 800x1331 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             RenderInline {SPAN} at (0,0) size 383x20
               RenderText {#text} at (260,0) size 383x20
                 text run at (260,0) width 383: "Amazingly few discotheques provide jukeboxes."
-          RenderBlock {DIV} at (0,570) size 785.55x22
+          RenderBlock {DIV} at (0,570) size 785.53x22
             RenderBlock {DIV} at (0,7) size 65x13
               RenderText {#text} at (33,0) size 27x13
                 text run at (33,0) width 27: "18.25"
@@ -572,7 +572,7 @@ layer at (0,0) size 800x1331 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             RenderInline {SPAN} at (0,0) size 388x21
               RenderText {#text} at (260,0) size 388x21
                 text run at (260,0) width 388: "Amazingly few discotheques provide jukeboxes."
-          RenderBlock {DIV} at (0,592) size 785.55x22
+          RenderBlock {DIV} at (0,592) size 785.53x22
             RenderBlock {DIV} at (0,7) size 65x13
               RenderText {#text} at (33,0) size 27x13
                 text run at (33,0) width 27: "18.50"
@@ -588,7 +588,7 @@ layer at (0,0) size 800x1331 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             RenderInline {SPAN} at (0,0) size 393x21
               RenderText {#text} at (260,0) size 393x21
                 text run at (260,0) width 393: "Amazingly few discotheques provide jukeboxes."
-          RenderBlock {DIV} at (0,614) size 785.55x22
+          RenderBlock {DIV} at (0,614) size 785.53x22
             RenderBlock {DIV} at (0,7) size 65x13
               RenderText {#text} at (33,0) size 27x13
                 text run at (33,0) width 27: "18.75"
@@ -604,7 +604,7 @@ layer at (0,0) size 800x1331 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             RenderInline {SPAN} at (0,0) size 399x21
               RenderText {#text} at (260,0) size 399x21
                 text run at (260,0) width 399: "Amazingly few discotheques provide jukeboxes."
-          RenderBlock {DIV} at (0,636) size 785.55x22
+          RenderBlock {DIV} at (0,636) size 785.53x22
             RenderBlock {DIV} at (0,7) size 65x13
               RenderText {#text} at (33,0) size 27x13
                 text run at (33,0) width 27: "19.00"
@@ -620,7 +620,7 @@ layer at (0,0) size 800x1331 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             RenderInline {SPAN} at (0,0) size 404x21
               RenderText {#text} at (260,0) size 404x21
                 text run at (260,0) width 404: "Amazingly few discotheques provide jukeboxes."
-          RenderBlock {DIV} at (0,658) size 785.55x22
+          RenderBlock {DIV} at (0,658) size 785.53x22
             RenderBlock {DIV} at (0,7) size 65x13
               RenderText {#text} at (33,0) size 27x13
                 text run at (33,0) width 27: "19.25"
@@ -636,7 +636,7 @@ layer at (0,0) size 800x1331 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             RenderInline {SPAN} at (0,0) size 409x21
               RenderText {#text} at (260,0) size 409x21
                 text run at (260,0) width 409: "Amazingly few discotheques provide jukeboxes."
-          RenderBlock {DIV} at (0,680) size 785.55x23
+          RenderBlock {DIV} at (0,680) size 785.53x23
             RenderBlock {DIV} at (0,8) size 65x13
               RenderText {#text} at (33,0) size 27x13
                 text run at (33,0) width 27: "19.50"
@@ -652,7 +652,7 @@ layer at (0,0) size 800x1331 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             RenderInline {SPAN} at (0,0) size 415x22
               RenderText {#text} at (260,0) size 415x22
                 text run at (260,0) width 415: "Amazingly few discotheques provide jukeboxes."
-          RenderBlock {DIV} at (0,703) size 785.55x23
+          RenderBlock {DIV} at (0,703) size 785.53x23
             RenderBlock {DIV} at (0,8) size 65x13
               RenderText {#text} at (33,0) size 27x13
                 text run at (33,0) width 27: "19.75"
@@ -668,7 +668,7 @@ layer at (0,0) size 800x1331 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             RenderInline {SPAN} at (0,0) size 420x22
               RenderText {#text} at (260,0) size 420x22
                 text run at (260,0) width 420: "Amazingly few discotheques provide jukeboxes."
-          RenderBlock {DIV} at (0,726) size 785.55x23
+          RenderBlock {DIV} at (0,726) size 785.53x23
             RenderBlock {DIV} at (0,8) size 65x13
               RenderText {#text} at (33,0) size 27x13
                 text run at (33,0) width 27: "20.00"
@@ -684,7 +684,7 @@ layer at (0,0) size 800x1331 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             RenderInline {SPAN} at (0,0) size 425x22
               RenderText {#text} at (260,0) size 425x22
                 text run at (260,0) width 425: "Amazingly few discotheques provide jukeboxes."
-          RenderBlock {DIV} at (0,749) size 785.55x23
+          RenderBlock {DIV} at (0,749) size 785.53x23
             RenderBlock {DIV} at (0,8) size 65x13
               RenderText {#text} at (33,0) size 27x13
                 text run at (33,0) width 27: "20.25"
@@ -700,7 +700,7 @@ layer at (0,0) size 800x1331 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             RenderInline {SPAN} at (0,0) size 430x22
               RenderText {#text} at (260,0) size 430x22
                 text run at (260,0) width 430: "Amazingly few discotheques provide jukeboxes."
-          RenderBlock {DIV} at (0,772) size 785.55x24
+          RenderBlock {DIV} at (0,772) size 785.53x24
             RenderBlock {DIV} at (0,9) size 65x13
               RenderText {#text} at (33,0) size 27x13
                 text run at (33,0) width 27: "20.50"
@@ -716,7 +716,7 @@ layer at (0,0) size 800x1331 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             RenderInline {SPAN} at (0,0) size 436x23
               RenderText {#text} at (260,0) size 436x23
                 text run at (260,0) width 436: "Amazingly few discotheques provide jukeboxes."
-          RenderBlock {DIV} at (0,796) size 785.55x24
+          RenderBlock {DIV} at (0,796) size 785.53x24
             RenderBlock {DIV} at (0,9) size 65x13
               RenderText {#text} at (33,0) size 27x13
                 text run at (33,0) width 27: "20.75"
@@ -732,7 +732,7 @@ layer at (0,0) size 800x1331 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             RenderInline {SPAN} at (0,0) size 441x23
               RenderText {#text} at (260,0) size 441x23
                 text run at (260,0) width 441: "Amazingly few discotheques provide jukeboxes."
-          RenderBlock {DIV} at (0,820) size 785.55x24
+          RenderBlock {DIV} at (0,820) size 785.53x24
             RenderBlock {DIV} at (0,9) size 65x13
               RenderText {#text} at (33,0) size 27x13
                 text run at (33,0) width 27: "21.00"
@@ -748,7 +748,7 @@ layer at (0,0) size 800x1331 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             RenderInline {SPAN} at (0,0) size 446x23
               RenderText {#text} at (260,0) size 446x23
                 text run at (260,0) width 446: "Amazingly few discotheques provide jukeboxes."
-          RenderBlock {DIV} at (0,844) size 785.55x25
+          RenderBlock {DIV} at (0,844) size 785.53x25
             RenderBlock {DIV} at (0,9) size 65x13
               RenderText {#text} at (33,0) size 27x13
                 text run at (33,0) width 27: "21.25"
@@ -764,7 +764,7 @@ layer at (0,0) size 800x1331 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             RenderInline {SPAN} at (0,0) size 452x24
               RenderText {#text} at (260,0) size 452x24
                 text run at (260,0) width 452: "Amazingly few discotheques provide jukeboxes."
-          RenderBlock {DIV} at (0,869) size 785.55x25
+          RenderBlock {DIV} at (0,869) size 785.53x25
             RenderBlock {DIV} at (0,9) size 65x13
               RenderText {#text} at (33,0) size 27x13
                 text run at (33,0) width 27: "21.50"
@@ -780,7 +780,7 @@ layer at (0,0) size 800x1331 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             RenderInline {SPAN} at (0,0) size 457x24
               RenderText {#text} at (260,0) size 457x24
                 text run at (260,0) width 457: "Amazingly few discotheques provide jukeboxes."
-          RenderBlock {DIV} at (0,894) size 785.55x26
+          RenderBlock {DIV} at (0,894) size 785.53x26
             RenderBlock {DIV} at (0,10) size 65x13
               RenderText {#text} at (33,0) size 27x13
                 text run at (33,0) width 27: "21.75"
@@ -796,7 +796,7 @@ layer at (0,0) size 800x1331 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             RenderInline {SPAN} at (0,0) size 462x25
               RenderText {#text} at (260,0) size 462x25
                 text run at (260,0) width 462: "Amazingly few discotheques provide jukeboxes."
-          RenderBlock {DIV} at (0,920) size 785.55x26
+          RenderBlock {DIV} at (0,920) size 785.53x26
             RenderBlock {DIV} at (0,10) size 65x13
               RenderText {#text} at (33,0) size 27x13
                 text run at (33,0) width 27: "22.00"
@@ -812,7 +812,7 @@ layer at (0,0) size 800x1331 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             RenderInline {SPAN} at (0,0) size 468x25
               RenderText {#text} at (260,0) size 468x25
                 text run at (260,0) width 468: "Amazingly few discotheques provide jukeboxes."
-          RenderBlock {DIV} at (0,946) size 785.55x26
+          RenderBlock {DIV} at (0,946) size 785.53x26
             RenderBlock {DIV} at (0,10) size 65x13
               RenderText {#text} at (33,0) size 27x13
                 text run at (33,0) width 27: "22.25"
@@ -828,7 +828,7 @@ layer at (0,0) size 800x1331 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             RenderInline {SPAN} at (0,0) size 473x25
               RenderText {#text} at (260,0) size 473x25
                 text run at (260,0) width 473: "Amazingly few discotheques provide jukeboxes."
-          RenderBlock {DIV} at (0,972) size 785.55x26
+          RenderBlock {DIV} at (0,972) size 785.53x26
             RenderBlock {DIV} at (0,10) size 65x13
               RenderText {#text} at (33,0) size 27x13
                 text run at (33,0) width 27: "22.50"
@@ -844,7 +844,7 @@ layer at (0,0) size 800x1331 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             RenderInline {SPAN} at (0,0) size 478x25
               RenderText {#text} at (260,0) size 478x25
                 text run at (260,0) width 478: "Amazingly few discotheques provide jukeboxes."
-          RenderBlock {DIV} at (0,998) size 785.55x27
+          RenderBlock {DIV} at (0,998) size 785.53x27
             RenderBlock {DIV} at (0,11) size 65x13
               RenderText {#text} at (33,0) size 27x13
                 text run at (33,0) width 27: "22.75"
@@ -860,7 +860,7 @@ layer at (0,0) size 800x1331 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             RenderInline {SPAN} at (0,0) size 484x26
               RenderText {#text} at (260,0) size 484x26
                 text run at (260,0) width 484: "Amazingly few discotheques provide jukeboxes."
-          RenderBlock {DIV} at (0,1025) size 785.55x27
+          RenderBlock {DIV} at (0,1025) size 785.53x27
             RenderBlock {DIV} at (0,11) size 65x13
               RenderText {#text} at (33,0) size 27x13
                 text run at (33,0) width 27: "23.00"
@@ -876,7 +876,7 @@ layer at (0,0) size 800x1331 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             RenderInline {SPAN} at (0,0) size 489x26
               RenderText {#text} at (260,0) size 489x26
                 text run at (260,0) width 489: "Amazingly few discotheques provide jukeboxes."
-          RenderBlock {DIV} at (0,1052) size 785.55x27
+          RenderBlock {DIV} at (0,1052) size 785.53x27
             RenderBlock {DIV} at (0,11) size 65x13
               RenderText {#text} at (33,0) size 27x13
                 text run at (33,0) width 27: "23.25"
@@ -892,7 +892,7 @@ layer at (0,0) size 800x1331 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             RenderInline {SPAN} at (0,0) size 494x26
               RenderText {#text} at (260,0) size 494x26
                 text run at (260,0) width 494: "Amazingly few discotheques provide jukeboxes."
-          RenderBlock {DIV} at (0,1079) size 785.55x27
+          RenderBlock {DIV} at (0,1079) size 785.53x27
             RenderBlock {DIV} at (0,11) size 65x13
               RenderText {#text} at (33,0) size 27x13
                 text run at (33,0) width 27: "23.50"
@@ -908,7 +908,7 @@ layer at (0,0) size 800x1331 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             RenderInline {SPAN} at (0,0) size 499x26
               RenderText {#text} at (260,0) size 499x26
                 text run at (260,0) width 499: "Amazingly few discotheques provide jukeboxes."
-          RenderBlock {DIV} at (0,1106) size 785.55x28
+          RenderBlock {DIV} at (0,1106) size 785.53x28
             RenderBlock {DIV} at (0,12) size 65x13
               RenderText {#text} at (33,0) size 27x13
                 text run at (33,0) width 27: "23.75"
@@ -924,7 +924,7 @@ layer at (0,0) size 800x1331 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             RenderInline {SPAN} at (0,0) size 505x27
               RenderText {#text} at (260,0) size 505x27
                 text run at (260,0) width 505: "Amazingly few discotheques provide jukeboxes."
-          RenderBlock {DIV} at (0,1134) size 785.55x28
+          RenderBlock {DIV} at (0,1134) size 785.53x28
             RenderBlock {DIV} at (0,12) size 65x13
               RenderText {#text} at (33,0) size 27x13
                 text run at (33,0) width 27: "24.00"
@@ -940,7 +940,7 @@ layer at (0,0) size 800x1331 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             RenderInline {SPAN} at (0,0) size 510x27
               RenderText {#text} at (260,0) size 510x27
                 text run at (260,0) width 510: "Amazingly few discotheques provide jukeboxes."
-          RenderBlock {DIV} at (0,1162) size 785.55x28
+          RenderBlock {DIV} at (0,1162) size 785.53x28
             RenderBlock {DIV} at (0,12) size 65x13
               RenderText {#text} at (33,0) size 27x13
                 text run at (33,0) width 27: "24.25"
@@ -956,7 +956,7 @@ layer at (0,0) size 800x1331 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             RenderInline {SPAN} at (0,0) size 515x27
               RenderText {#text} at (260,0) size 515x27
                 text run at (260,0) width 515: "Amazingly few discotheques provide jukeboxes."
-          RenderBlock {DIV} at (0,1190) size 785.55x28
+          RenderBlock {DIV} at (0,1190) size 785.53x28
             RenderBlock {DIV} at (0,12) size 65x13
               RenderText {#text} at (33,0) size 27x13
                 text run at (33,0) width 27: "24.50"
@@ -972,7 +972,7 @@ layer at (0,0) size 800x1331 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             RenderInline {SPAN} at (0,0) size 521x27
               RenderText {#text} at (260,0) size 521x27
                 text run at (260,0) width 521: "Amazingly few discotheques provide jukeboxes."
-          RenderBlock {DIV} at (0,1218) size 785.55x28
+          RenderBlock {DIV} at (0,1218) size 785.53x28
             RenderBlock {DIV} at (0,12) size 65x13
               RenderText {#text} at (33,0) size 27x13
                 text run at (33,0) width 27: "24.75"
