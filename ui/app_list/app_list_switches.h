@@ -5,6 +5,7 @@
 #ifndef UI_APP_LIST_APP_LIST_SWITCHES_H_
 #define UI_APP_LIST_APP_LIST_SWITCHES_H_
 
+#include "build/build_config.h"
 #include "ui/app_list/app_list_export.h"
 
 namespace app_list {
@@ -19,8 +20,11 @@ APP_LIST_EXPORT extern const char kDisableSyncAppList[];
 APP_LIST_EXPORT extern const char kEnableCenteredAppList[];
 APP_LIST_EXPORT extern const char kEnableExperimentalAppList[];
 APP_LIST_EXPORT extern const char kDisableExperimentalAppList[];
-APP_LIST_EXPORT extern const char kEnableHotwordAlwaysOn[];
 APP_LIST_EXPORT extern const char kEnableSyncAppList[];
+
+#if defined(OS_MACOSX)
+APP_LIST_EXPORT extern const char kEnableMacViewsAppList[];
+#endif
 
 bool APP_LIST_EXPORT IsAppListSyncEnabled();
 
@@ -42,6 +46,10 @@ bool APP_LIST_EXPORT IsCenteredAppListEnabled();
 bool APP_LIST_EXPORT ShouldNotDismissOnBlur();
 
 bool APP_LIST_EXPORT IsDriveAppsInAppListEnabled();
+
+#if defined(OS_MACOSX)
+bool APP_LIST_EXPORT IsMacViewsAppListListEnabled();
+#endif
 
 }  // namespace switches
 }  // namespace app_list

@@ -38,19 +38,24 @@ const char kDisableExperimentalAppList[] = "disable-experimental-app-list";
 // Enables syncing of the app list independent of extensions.
 const char kEnableSyncAppList[] = "enable-sync-app-list";
 
+#if defined(OS_MACOSX)
+// Enables use of the toolkit-views app list on Mac.
+const char kEnableMacViewsAppList[] = "enable-mac-views-app-list";
+#endif
+
 bool IsAppListSyncEnabled() {
-#if defined(TOOLKIT_VIEWS)
+#if defined(OS_MACOSX)
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(kEnableSyncAppList))
+    return true;
+
+  if (!IsMacViewsAppListListEnabled())
+    return false;
+#endif
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(
       kDisableSyncAppList);
-#else
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(kEnableSyncAppList);
-#endif
 }
 
 bool IsFolderUIEnabled() {
-#if !defined(TOOLKIT_VIEWS)
-  return false;  // Folder UI not implemented for Cocoa.
-#endif
   // Folder UI is available only when AppList sync is enabled, and should
   // not be disabled separately.
   return IsAppListSyncEnabled();
@@ -66,11 +71,11 @@ bool IsVoiceSearchEnabled() {
 }
 
 bool IsAppInfoEnabled() {
-#if defined(TOOLKIT_VIEWS)
-  return !base::CommandLine::ForCurrentProcess()->HasSwitch(kDisableAppInfo);
-#else
-  return false;
+#if defined(OS_MACOSX)
+  if (!IsMacViewsAppListListEnabled())
+    return false;
 #endif
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(kDisableAppInfo);
 }
 
 bool IsExperimentalAppListEnabled() {
@@ -108,6 +113,16 @@ bool IsDriveAppsInAppListEnabled() {
   return false;
 #endif
 }
+
+#if defined(OS_MACOSX)
+bool IsMacViewsAppListListEnabled() {
+#if defined(TOOLKIT_VIEWS)
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      kEnableMacViewsAppList);
+#endif
+  return false;
+}
+#endif  // defined(OS_MACOSX)
 
 }  // namespace switches
 }  // namespace app_list

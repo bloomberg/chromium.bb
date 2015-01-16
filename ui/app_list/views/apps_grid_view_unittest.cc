@@ -107,9 +107,11 @@ class AppsGridViewTest : public views::ViewsTestBase {
 
  protected:
   void EnsureFoldersEnabled() {
-    // Folders require AppList sync to be enabled.
+#if defined(OS_MACOSX)
+    // Folders require toolkit-views app list to be enabled.
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnableSyncAppList);
+        switches::kEnableMacViewsAppList);
+#endif
   }
 
   AppListItemView* GetItemViewAt(int index) {
