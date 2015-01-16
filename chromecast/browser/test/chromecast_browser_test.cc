@@ -45,12 +45,6 @@ void ChromecastBrowserTest::RunTestOnMainThreadLoop() {
 
   TearDownOnMainThread();
 
-  for (content::RenderProcessHost::iterator i(
-           content::RenderProcessHost::AllHostsIterator());
-       !i.IsAtEnd(); i.Advance()) {
-    i.GetCurrentValue()->FastShutdownIfPossible();
-  }
-
   web_contents_.reset();
   window_.reset();
 }

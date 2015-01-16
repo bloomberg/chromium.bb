@@ -57,7 +57,7 @@
           ],
           'variables': {
             'filters': [
-              'cast_shell_browser_test --no-sandbox',
+              'cast_shell_browser_test --no-sandbox --disable-gpu',
             ],
           },
         }],
