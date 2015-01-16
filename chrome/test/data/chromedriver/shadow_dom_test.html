@@ -2,6 +2,11 @@
 <body>
 <H1>Page for Shadow DOM chromedriver tests</H1>
 The page has a shadow root that in turn contains two shadow roots. So we can check behaviour with both nested roots and younger/older sibling roots.
+Default to pushing the content off the first screen, to test that scrolling to the elements works.
+<div id="padding"></div>
+<script>
+document.getElementById('padding').style.height = window.innerHeight;
+</script>
 <div id="outerDiv">
   <div id="innerDiv" style="border-style:solid;border-color:yellow">
     stuff
@@ -26,7 +31,7 @@ The page has a shadow root that in turn contains two shadow roots. So we can che
         <H4>Older Child Contents Begin</H4>
         <content></content>
         <input id="olderTextBox" type="text" value="foo"/>
-        <input type="button" onClick="buttonWasClicked()" value="button" id="olderButton"/>
+        <input type="button" onClick="buttonWasClicked()" onMouseOver="buttonWasHoveredOver()" value="button" id="olderButton"/>
     </div>
 </div>
 </template>
@@ -56,6 +61,9 @@ var youngerShadowRoot = parentShadowRoot.querySelector("#parentDiv").createShado
 youngerShadowRoot.appendChild(document.querySelector('#youngerChildTemplate').content.cloneNode(true));
 function buttonWasClicked() {
   document.querySelector("* /deep/ #olderTextBox").value="Button Was Clicked";
+}
+function buttonWasHoveredOver() {
+  document.querySelector("* /deep/ #olderTextBox").value="Button Was Hovered Over";
 }
 </script>
 </body>

@@ -56,8 +56,6 @@ _VERSION_SPECIFIC_FILTER = {}
 _VERSION_SPECIFIC_FILTER['HEAD'] = [
     # https://code.google.com/p/chromedriver/issues/detail?id=992
     'ChromeDownloadDirTest.testDownloadDirectoryOverridesExistingPreferences',
-    # https://code.google.com/p/chromedriver/issues/detail?id=1016
-    'ChromeDriverTest.testShadowDomClick',
 ]
 _VERSION_SPECIFIC_FILTER['37'] = [
     # https://code.google.com/p/chromedriver/issues/detail?id=954
@@ -136,8 +134,6 @@ _ANDROID_NEGATIVE_FILTER['chrome'] = (
         'ChromeDriverTest.testShouldHandleNewWindowLoadingProperly',
         # Android doesn't support multiple sessions on one device.
         'SessionHandlingTest.testGetSessions',
-        # https://code.google.com/p/chromedriver/issues/detail?id=1016
-        'ChromeDriverTest.testShadowDomClick',
     ]
 )
 _ANDROID_NEGATIVE_FILTER['chrome_stable'] = (
@@ -840,8 +836,19 @@ class ChromeDriverTest(ChromeDriverBaseTest):
         '/chromedriver/shadow_dom_test.html'))
     elem = self._driver.FindElement("css", "* /deep/ #olderButton")
     elem.Click()
-    # the butotn's onClicked handler changes the text box's value
+    # the button's onClicked handler changes the text box's value
     self.assertEqual("Button Was Clicked", self._driver.ExecuteScript(
+        'return document.querySelector("* /deep/ #olderTextBox").value;'))
+
+  def testShadowDomHover(self):
+    """Checks that chromedriver can call HoverOver on an element in a
+    shadow DOM."""
+    self._driver.Load(self.GetHttpUrlForFile(
+        '/chromedriver/shadow_dom_test.html'))
+    elem = self._driver.FindElement("css", "* /deep/ #olderButton")
+    elem.HoverOver()
+    # the button's onMouseOver handler changes the text box's value
+    self.assertEqual("Button Was Hovered Over", self._driver.ExecuteScript(
         'return document.querySelector("* /deep/ #olderTextBox").value;'))
 
   def testShadowDomStaleReference(self):
