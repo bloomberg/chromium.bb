@@ -105,12 +105,12 @@ const struct AcceleratorMapping {
 scoped_ptr<ui::PlatformAccelerator> PlatformAcceleratorFromKeyCode(
     ui::KeyboardCode key_code,
     NSUInteger cocoa_modifiers) {
-  unichar character;
-  unichar char_no_modifiers;
-  int result = ui::MacKeyCodeForWindowsKeyCode(
-      key_code, cocoa_modifiers, &character, &char_no_modifiers);
+  unichar shifted_character;
+  int result = ui::MacKeyCodeForWindowsKeyCode(key_code, cocoa_modifiers,
+                                               &shifted_character, nullptr);
   DCHECK(result != -1);
-  NSString* key_equivalent = [NSString stringWithFormat:@"%C", character];
+  NSString* key_equivalent =
+      [NSString stringWithFormat:@"%C", shifted_character];
 
   return scoped_ptr<ui::PlatformAccelerator>(
       new ui::PlatformAcceleratorCocoa(key_equivalent, cocoa_modifiers));
@@ -171,13 +171,10 @@ const ui::Accelerator* AcceleratorsCocoa::GetAcceleratorForHotKey(
     const ui::PlatformAcceleratorCocoa* platform_accelerator =
         static_cast<const ui::PlatformAcceleratorCocoa*>(
             accelerator.platform_accelerator());
-    unichar character;
-    unichar char_no_modifiers;
-    int result =
-        ui::MacKeyCodeForWindowsKeyCode(accelerator.key_code(),
-                                        platform_accelerator->modifier_mask(),
-                                        &character,
-                                        &char_no_modifiers);
+    unichar shifted_character;
+    int result = ui::MacKeyCodeForWindowsKeyCode(
+        accelerator.key_code(), platform_accelerator->modifier_mask(),
+        &shifted_character, nullptr);
     if (result == -1)
       return NULL;
 
@@ -185,7 +182,7 @@ const ui::Accelerator* AcceleratorsCocoa::GetAcceleratorForHotKey(
     NSUInteger mask = platform_accelerator->modifier_mask();
     BOOL maskEqual =
         (mask == modifiers) || ((mask & (~NSShiftKeyMask)) == modifiers);
-    NSString* string = [NSString stringWithFormat:@"%C", character];
+    NSString* string = [NSString stringWithFormat:@"%C", shifted_character];
     if ([string isEqual:key_equivalent] && maskEqual)
       return &*it;
   }

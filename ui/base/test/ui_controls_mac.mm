@@ -86,19 +86,18 @@ NSEvent* SynthesizeKeyEvent(NSWindow* window,
                             ui::KeyboardCode keycode,
                             NSUInteger flags) {
   unichar character;
-  unichar characterIgnoringModifiers;
+  unichar shifted_character;
   int macKeycode = ui::MacKeyCodeForWindowsKeyCode(
-      keycode, flags, &character, &characterIgnoringModifiers);
+      keycode, flags, &shifted_character, &character);
 
   if (macKeycode < 0)
     return nil;
 
   NSString* charactersIgnoringModifiers =
-      [[[NSString alloc] initWithCharacters:&characterIgnoringModifiers
-                                     length:1]
-        autorelease];
-  NSString* characters =
       [[[NSString alloc] initWithCharacters:&character length:1] autorelease];
+  NSString* characters =
+      [[[NSString alloc] initWithCharacters:&shifted_character
+                                     length:1] autorelease];
 
   NSEventType type = (keyDown ? NSKeyDown : NSKeyUp);
 

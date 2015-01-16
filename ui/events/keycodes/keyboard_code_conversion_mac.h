@@ -21,17 +21,20 @@ enum class DomCode;
 // and corresponding unicode character. |flags| is the Cocoa modifiers mask
 // such as NSControlKeyMask, NSShiftKeyMask, etc.
 // When success, the corresponding Mac's virtual key code will be returned.
-// The corresponding unicode character will be stored in |character|, and the
-// corresponding unicode character ignoring the modifiers will be stored in
-// |characterIgnoringModifiers|.
+// |keyboard_character| is the corresponding keyboard character, suitable for
+// use in -[NSEvent characters]. If NSShiftKeyMask appears in |flags|,
+// |us_keyboard_shifted_character| is |keyboard_character| with a shift modifier
+// applied using a US keyboard layout (otherwise unmodified).
+// |us_keyboard_shifted_character| is suitable for -[NSEvent
+// charactersIgnoringModifiers] (which ignores all modifiers except for shift).
 // -1 will be returned if the keycode can't be converted.
 // This function is mainly for simulating keyboard events in unit tests.
 // See |KeyboardCodeFromNSEvent| for reverse conversion.
 EVENTS_BASE_EXPORT int MacKeyCodeForWindowsKeyCode(
     KeyboardCode keycode,
     NSUInteger flags,
-    unichar* character,
-    unichar* characterIgnoringModifiers);
+    unichar* us_keyboard_shifted_character,
+    unichar* keyboard_character);
 
 // This implementation cribbed from:
 //   third_party/WebKit/Source/web/mac/WebInputEventFactory.mm

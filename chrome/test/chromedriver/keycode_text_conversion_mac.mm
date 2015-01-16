@@ -16,15 +16,8 @@
 bool ConvertKeyCodeToText(
     ui::KeyboardCode key_code, int modifiers, std::string* text,
     std::string* error_msg) {
-  int mac_key_code = 0;
-  {
-    unichar character, unmodified_character;
-    mac_key_code = ui::MacKeyCodeForWindowsKeyCode(
-        key_code,
-        0,
-        &character,
-        &unmodified_character);
-  }
+  int mac_key_code =
+      ui::MacKeyCodeForWindowsKeyCode(key_code, 0, nullptr, nullptr);
   *error_msg = std::string();
   if (mac_key_code < 0) {
     *text = std::string();

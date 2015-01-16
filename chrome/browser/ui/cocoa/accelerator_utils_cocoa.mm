@@ -19,14 +19,12 @@ bool IsChromeAccelerator(const ui::Accelerator& accelerator, Profile* profile) {
   // accelerator. We find common ground by converting the passed in Windows key
   // code to a character and use that when comparing against the Accelerator
   // list.
-  unichar character;
-  unichar characterIgnoringModifiers;
-  ui::MacKeyCodeForWindowsKeyCode(accelerator.key_code(),
-                                  0,
-                                  &character,
-                                  &characterIgnoringModifiers);
+  unichar shifted_character;
+  ui::MacKeyCodeForWindowsKeyCode(accelerator.key_code(), 0, &shifted_character,
+                                  nullptr);
   NSString* characters =
-      [[[NSString alloc] initWithCharacters:&character length:1] autorelease];
+      [[[NSString alloc] initWithCharacters:&shifted_character
+                                     length:1] autorelease];
 
   NSUInteger modifiers =
       (accelerator.IsCtrlDown() ? NSControlKeyMask : 0) |
