@@ -1455,6 +1455,7 @@ TEST_PPAPI_OUT_OF_PROCESS(TalkPrivate)
 TEST_PPAPI_OUT_OF_PROCESS(OutputProtectionPrivate)
 #endif
 
+#if !defined(DISABLE_NACL)
 class PackagedAppTest : public ExtensionBrowserTest {
  public:
   explicit PackagedAppTest(const std::string& toolchain)
@@ -1498,10 +1499,8 @@ class NonSfiPackagedAppTest : public PackagedAppTest {
   NonSfiPackagedAppTest() : PackagedAppTest("nonsfi") { }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-#if !defined(DISABLE_NACL)
     PackagedAppTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kEnableNaClNonSfiMode);
-#endif
   }
 };
 
@@ -1511,10 +1510,8 @@ class NonSfiPackagedAppTest : public PackagedAppTest {
 class TransitionalNonSfiPackagedAppTest : public NonSfiPackagedAppTest {
  public:
   void SetUpCommandLine(base::CommandLine* command_line) override {
-#if !defined(DISABLE_NACL)
     NonSfiPackagedAppTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kUseNaClHelperNonSfi);
-#endif
   }
 };
 
@@ -1534,7 +1531,6 @@ IN_PROC_BROWSER_TEST_F(TransitionalNonSfiPackagedAppTest,
   RunTests();
 }
 
-#if !defined(DISABLE_NACL)
 class MojoPPAPITest : public InProcessBrowserTest {
  public:
   MojoPPAPITest() : InProcessBrowserTest() { }
