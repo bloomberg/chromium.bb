@@ -22,8 +22,9 @@ android_webview_asset_dirs := \
     $(call intermediates-dir-for,APPS,webviewchromium-paks)
 
 android_webview_aapt_flags := --auto-add-overlay
-android_webview_aapt_flags += --extra-packages org.chromium.ui
+android_webview_aapt_flags += --extra-packages org.chromium.android_webview
 android_webview_aapt_flags += --extra-packages org.chromium.content
+android_webview_aapt_flags += --extra-packages org.chromium.ui
 android_webview_aapt_flags += -0 pak
 
 android_webview_system_pak_targets := \

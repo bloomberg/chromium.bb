@@ -19,7 +19,8 @@ class ResourceRewriter {
         // to a bug in jarjar it's not possible to rename classes with '$' in their name.
         // See b/15684775.
         com.android.webview.chromium.R.onResourcesLoaded(packageId);
-        org.chromium.ui.R.onResourcesLoaded(packageId);
+        org.chromium.android_webview.R.onResourcesLoaded(packageId);
         org.chromium.content.R.onResourcesLoaded(packageId);
+        org.chromium.ui.R.onResourcesLoaded(packageId);
     }
 }
