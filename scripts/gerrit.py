@@ -174,6 +174,8 @@ def FilteredQuery(opts, query):
     query += ' branch:%s' % opts.branch
   if opts.project is not None:
     query += ' project: %s' % opts.project
+  if opts.topic is not None:
+    query += ' topic: %s' % opts.topic
 
   helper, _ = GetGerrit(opts)
   for cl in helper.Query(query, raw=True, bypass_cache=False):
@@ -421,6 +423,8 @@ Actions:"""
                       help='Limit output to the specific branch')
   parser.add_argument('-p', '--project',
                       help='Limit output to the specific project')
+  parser.add_argument('-t', '--topic',
+                      help='Limit output to the specific topic')
   parser.add_argument('args', nargs='+')
   opts = parser.parse_args(argv)
 
