@@ -81,11 +81,8 @@ class _Generator(object):
                   'const std::string& id) const {'
                   % (self._class_name, self._class_name))
       .Sblock()
-      .Append('std::map<std::string, %s::ID>::const_iterator it'
-                  ' = features_.find(id);' % self._class_name)
-      .Append('if (it == features_.end())')
-      .Append('  return kUnknown;')
-      .Append('return it->second;')
+      .Append('const auto& it = features_.find(id);' % self._class_name)
+      .Append('return (it == features_.end()) ? kUnknown : it->second;')
       .Eblock()
       .Append('}')
       .Append()

@@ -385,17 +385,12 @@ class _Generator(object):
         # maps, so we need to unwrap them.
         needs_unwrap = (
             not self._type_helper.IsCopyable(type_.additional_properties))
-        cpp_type = self._type_helper.GetCppType(type_.additional_properties,
-                                                is_in_container=True)
-        (c.Sblock('for (std::map<std::string, %s>::const_iterator it =' %
-                      cpp_util.PadForGenerics(cpp_type))
-          .Append('       additional_properties.begin();')
-          .Append('   it != additional_properties.end(); ++it) {')
+        (c.Sblock('for (const auto& it : additional_properties) {')
           .Cblock(self._CreateValueFromType(
-              'value->SetWithoutPathExpansion(it->first, %s);',
+              'value->SetWithoutPathExpansion(it.first, %s);',
               type_.additional_properties.name,
               type_.additional_properties,
-              '%sit->second' % ('*' if needs_unwrap else '')))
+              '%sit.second' % ('*' if needs_unwrap else '')))
           .Eblock('}')
         )
 
@@ -491,7 +486,7 @@ class _Generator(object):
       # not support passing a namespace as an argument.
       item_type = self._type_helper.FollowRef(underlying_type.item_type)
       if item_type.property_type == PropertyType.ENUM:
-        vardot = '(%s)%s' % (var, '->' if is_ptr else '.')
+        varname = ('*' if is_ptr else '') + '(%s)' % var
 
         maybe_namespace = ''
         if type_.item_type.property_type == PropertyType.REF:
@@ -501,11 +496,9 @@ class _Generator(object):
         # Scope the std::vector variable declaration inside braces.
         (c.Sblock('{')
           .Append('std::vector<std::string> %s;' % enum_list_var)
-          .Append('for (std::vector<%s>::const_iterator it = %sbegin();'
-              % (self._type_helper.GetCppType(item_type), vardot))
-          .Sblock('    it != %send(); ++it) {' % vardot)
-          .Append('%s.push_back(%sToString(*it));' % (enum_list_var,
-                                                      maybe_namespace))
+          .Append('for (const auto& it : %s) {' % varname)
+          .Append('%s.push_back(%sToString(it));' % (enum_list_var,
+                                                     maybe_namespace))
           .Eblock('}'))
 
         # Because the std::vector above is always created for both required and
@@ -853,11 +846,10 @@ class _Generator(object):
       cpp_type = self._type_helper.GetCppType(item_type, is_in_container=True)
       c.Append('%s.reset(new std::vector<%s>);' %
                    (dst_var, cpp_util.PadForGenerics(cpp_type)))
-    (c.Sblock('for (base::ListValue::const_iterator it = %s->begin(); '
-                   'it != %s->end(); ++it) {' % (src_var, src_var))
+    (c.Sblock('for (const auto& it : *(%s)) {' % src_var)
       .Append('%s tmp;' % self._type_helper.GetCppType(item_type))
       .Concat(self._GenerateStringToEnumConversion(item_type,
-                                                   '(*it)',
+                                                   '(it)',
                                                    'tmp',
                                                    failure_value))
       .Append('%s%spush_back(tmp);' % (dst_var, accessor))

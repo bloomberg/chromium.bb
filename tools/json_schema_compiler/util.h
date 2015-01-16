@@ -141,9 +141,8 @@ void PopulateListFromArray(
     const std::vector<T>& from,
     base::ListValue* out) {
   out->Clear();
-  for (typename std::vector<T>::const_iterator it = from.begin();
-      it != from.end(); ++it) {
-    AddItemToList(*it, out);
+  for (const auto& it : from) {
+    AddItemToList(it, out);
   }
 }
 
