@@ -151,8 +151,7 @@ void FindBadConstructsConsumer::CheckChromeClass(SourceLocation record_location,
 
   CheckRefCountedDtors(record_location, record);
 
-  if (options_.check_weak_ptr_factory_order)
-    CheckWeakPtrFactoryMembers(record_location, record);
+  CheckWeakPtrFactoryMembers(record_location, record);
 }
 
 void FindBadConstructsConsumer::CheckChromeEnum(SourceLocation enum_location,
