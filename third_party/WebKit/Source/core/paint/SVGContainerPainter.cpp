@@ -32,7 +32,6 @@ void SVGContainerPainter::paint(const PaintInfo& paintInfo)
         return;
 
     PaintInfo childPaintInfo(paintInfo);
-    GraphicsContextStateSaver stateSaver(*childPaintInfo.context);
     TransformRecorder transformRecorder(*childPaintInfo.context, m_renderSVGContainer.displayItemClient(), m_renderSVGContainer.localToParentTransform());
     {
         OwnPtr<FloatClipRecorder> clipRecorder;

@@ -12,7 +12,6 @@
 #include "core/rendering/svg/RenderSVGForeignObject.h"
 #include "core/rendering/svg/SVGRenderSupport.h"
 #include "core/rendering/svg/SVGRenderingContext.h"
-#include "platform/graphics/GraphicsContextStateSaver.h"
 
 namespace blink {
 
@@ -22,7 +21,6 @@ void SVGForeignObjectPainter::paint(const PaintInfo& paintInfo)
         return;
 
     PaintInfo childPaintInfo(paintInfo);
-    GraphicsContextStateSaver stateSaver(*childPaintInfo.context);
     TransformRecorder transformRecorder(*childPaintInfo.context, m_renderSVGForeignObject.displayItemClient(), m_renderSVGForeignObject.localTransform());
 
     // When transitioning from SVG to block painters we need to keep the PaintInfo rect up-to-date

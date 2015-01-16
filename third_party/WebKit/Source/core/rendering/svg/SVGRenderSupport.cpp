@@ -363,15 +363,13 @@ void SVGRenderSupport::applyStrokeStyleToContext(GraphicsContext* context, const
     context->setMiterLimit(svgStyle.strokeMiterLimit());
 
     RefPtrWillBeRawPtr<SVGLengthList> dashes = svgStyle.strokeDashArray();
-    if (dashes->isEmpty())
-        return;
-
     DashArray dashArray;
-    SVGLengthList::ConstIterator it = dashes->begin();
-    SVGLengthList::ConstIterator itEnd = dashes->end();
-    for (; it != itEnd; ++it)
-        dashArray.append(it->value(lengthContext));
-
+    if (!dashes->isEmpty()) {
+        SVGLengthList::ConstIterator it = dashes->begin();
+        SVGLengthList::ConstIterator itEnd = dashes->end();
+        for (; it != itEnd; ++it)
+            dashArray.append(it->value(lengthContext));
+    }
     context->setLineDash(dashArray, svgStyle.strokeDashOffset()->value(lengthContext));
 }
 
@@ -392,14 +390,13 @@ void SVGRenderSupport::applyStrokeStyleToStrokeData(StrokeData* strokeData, cons
     strokeData->setMiterLimit(svgStyle.strokeMiterLimit());
 
     RefPtrWillBeRawPtr<SVGLengthList> dashes = svgStyle.strokeDashArray();
-    if (dashes->isEmpty())
-        return;
-
     DashArray dashArray;
-    size_t length = dashes->length();
-    for (size_t i = 0; i < length; ++i)
-        dashArray.append(dashes->at(i)->value(lengthContext));
-
+    if (!dashes->isEmpty()) {
+        SVGLengthList::ConstIterator it = dashes->begin();
+        SVGLengthList::ConstIterator itEnd = dashes->end();
+        for (; it != itEnd; ++it)
+            dashArray.append(it->value(lengthContext));
+    }
     strokeData->setLineDash(dashArray, svgStyle.strokeDashOffset()->value(lengthContext));
 }
 

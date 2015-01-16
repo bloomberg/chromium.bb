@@ -13,7 +13,6 @@
 #include "core/rendering/svg/SVGInlineTextBox.h"
 #include "core/rendering/svg/SVGRenderingContext.h"
 #include "core/rendering/svg/SVGRootInlineBox.h"
-#include "platform/graphics/GraphicsContextStateSaver.h"
 
 namespace blink {
 
@@ -37,7 +36,6 @@ void SVGRootInlineBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoin
         }
     }
 
-    GraphicsContextStateSaver stateSaver(*childPaintInfo.context);
     SVGRenderingContext renderingContext(&m_svgRootInlineBox.renderer(), childPaintInfo);
     if (renderingContext.isRenderingPrepared()) {
         for (InlineBox* child = m_svgRootInlineBox.firstChild(); child; child = child->nextOnLine())

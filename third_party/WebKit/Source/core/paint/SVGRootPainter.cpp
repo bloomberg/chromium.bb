@@ -42,7 +42,6 @@ void SVGRootPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintO
     }
 
     PaintInfo childPaintInfo(paintInfo);
-    GraphicsContextStateSaver stateSaver(*childPaintInfo.context);
 
     // Apply initial viewport clip.
     OwnPtr<ClipRecorder> clipRecorder;

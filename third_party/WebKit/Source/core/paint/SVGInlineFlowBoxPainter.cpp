@@ -10,7 +10,6 @@
 #include "core/rendering/svg/SVGInlineFlowBox.h"
 #include "core/rendering/svg/SVGInlineTextBox.h"
 #include "core/rendering/svg/SVGRenderingContext.h"
-#include "platform/graphics/GraphicsContextStateSaver.h"
 
 namespace blink {
 
@@ -33,7 +32,6 @@ void SVGInlineFlowBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoin
 
     // FIXME: SVGRenderingContext wants a non-const PaintInfo to muck with.
     PaintInfo localPaintInfo(paintInfo);
-    GraphicsContextStateSaver stateSaver(*localPaintInfo.context);
     SVGRenderingContext renderingContext(&m_svgInlineFlowBox.renderer(), localPaintInfo);
     if (renderingContext.isRenderingPrepared()) {
         for (InlineBox* child = m_svgInlineFlowBox.firstChild(); child; child = child->nextOnLine())

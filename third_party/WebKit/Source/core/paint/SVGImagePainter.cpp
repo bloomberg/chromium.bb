@@ -17,7 +17,6 @@
 #include "core/rendering/svg/SVGRenderingContext.h"
 #include "core/svg/SVGImageElement.h"
 #include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/GraphicsContextStateSaver.h"
 #include "third_party/skia/include/core/SkPicture.h"
 
 namespace blink {
@@ -36,7 +35,6 @@ void SVGImagePainter::paint(const PaintInfo& paintInfo)
     TransformRecorder transformRecorder(*paintInfo.context, m_renderSVGImage.displayItemClient(), m_renderSVGImage.localToParentTransform());
     {
         PaintInfo childPaintInfo(paintInfo);
-        GraphicsContextStateSaver stateSaver(*childPaintInfo.context);
         SVGRenderingContext renderingContext(&m_renderSVGImage, childPaintInfo);
         if (renderingContext.isRenderingPrepared()) {
             RenderDrawingRecorder recorder(childPaintInfo.context, m_renderSVGImage, childPaintInfo.phase, boundingBox);

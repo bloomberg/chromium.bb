@@ -49,6 +49,7 @@ SVGRenderingContext::~SVGRenderingContext()
             ASSERT(SVGResourcesCache::cachedResourcesForRenderObject(m_object)->filter() == m_filter);
             m_filter->finishEffect(m_object, m_paintInfo->context);
             m_paintInfo->rect = m_savedPaintRect;
+            m_paintInfo->context->restore();
         }
 
         if (m_masker) {
@@ -130,6 +131,7 @@ void SVGRenderingContext::prepareToRenderSVGContent(RenderObject* object, PaintI
 
         m_filter = resources->filter();
         if (m_filter) {
+            m_paintInfo->context->save();
             m_savedPaintRect = m_paintInfo->rect;
             // Return with false here may mean that we don't need to draw the content
             // (because it was either drawn before or empty) but we still need to apply the filter.

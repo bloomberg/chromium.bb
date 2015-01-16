@@ -9,7 +9,6 @@
 #include "core/paint/TransformRecorder.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/svg/RenderSVGText.h"
-#include "platform/graphics/GraphicsContextStateSaver.h"
 
 namespace blink {
 
