@@ -4,6 +4,8 @@
 
 package org.chromium.net.urlconnection;
 
+import android.util.Pair;
+
 import org.chromium.net.ExtendedResponseInfo;
 import org.chromium.net.ResponseInfo;
 import org.chromium.net.UrlRequest;
@@ -18,6 +20,11 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * An implementation of HttpURLConnection that uses Cronet to send requests and
@@ -29,6 +36,7 @@ public class CronetHttpURLConnection extends HttpURLConnection {
     private final UrlRequestContext mUrlRequestContext;
     private final MessageLoop mMessageLoop;
     private final UrlRequest mRequest;
+    private final List<Pair<String, String>> mRequestHeaders;
 
     private CronetInputStream mInputStream;
     private ResponseInfo mResponseInfo;
@@ -44,6 +52,7 @@ public class CronetHttpURLConnection extends HttpURLConnection {
         mRequest = mUrlRequestContext.createRequest(url.toString(),
                 new CronetUrlRequestListener(), mMessageLoop);
         mInputStream = new CronetInputStream(this);
+        mRequestHeaders = new ArrayList<Pair<String, String>>();
     }
 
     /**
@@ -59,6 +68,9 @@ public class CronetHttpURLConnection extends HttpURLConnection {
             return;
         }
         connected = true;
+        for (Pair<String, String> requestHeader : mRequestHeaders) {
+            mRequest.addHeader(requestHeader.first, requestHeader.second);
+        }
         mRequest.start();
         // Blocks until onResponseStarted or onFailed is called.
         mMessageLoop.loop();
@@ -146,9 +158,7 @@ public class CronetHttpURLConnection extends HttpURLConnection {
      */
     @Override
     public final void addRequestProperty(String key, String value) {
-        // Note that Cronet right now does not allow setting multiple headers
-        // of the same key, see crbug.com/432719 for more details.
-        setRequestProperty(key, value);
+        setRequestPropertyInternal(key, value, false);
     }
 
     /**
@@ -156,11 +166,67 @@ public class CronetHttpURLConnection extends HttpURLConnection {
      */
     @Override
     public final void setRequestProperty(String key, String value) {
+        setRequestPropertyInternal(key, value, true);
+    }
+
+    private final void setRequestPropertyInternal(String key, String value,
+            boolean overwrite) {
         if (connected) {
             throw new IllegalStateException(
-                    "Cannot set request property after connection is made");
+                    "Cannot modify request property after connection is made.");
         }
-        mRequest.addHeader(key, value);
+        int index = findRequestProperty(key);
+        if (index >= 0) {
+            if (overwrite) {
+                mRequestHeaders.remove(index);
+            } else {
+                // Cronet does not support adding multiple headers
+                // of the same key, see crbug.com/432719 for more details.
+                throw new UnsupportedOperationException(
+                        "Cannot add multiple headers of the same key. crbug.com/432719.");
+            }
+        }
+        // Adds the new header at the end of mRequestHeaders.
+        mRequestHeaders.add(Pair.create(key, value));
+    }
+
+    /**
+     * Returns an unmodifiable map of general request properties used by this
+     * connection.
+     */
+    @Override
+    public Map<String, List<String>> getRequestProperties() {
+        if (connected) {
+            throw new IllegalStateException(
+                    "Cannot access request headers after connection is set.");
+        }
+        Map<String, List<String>> map = new TreeMap<String, List<String>>(
+                String.CASE_INSENSITIVE_ORDER);
+        for (Pair<String, String> entry : mRequestHeaders) {
+            if (map.containsKey(entry.first)) {
+                // This should not happen due to setRequestPropertyInternal.
+                throw new IllegalStateException(
+                    "Should not have multiple values.");
+            } else {
+                List<String> values = new ArrayList<String>();
+                values.add(entry.second);
+                map.put(entry.first, Collections.unmodifiableList(values));
+            }
+        }
+        return Collections.unmodifiableMap(map);
+    }
+
+    /**
+     * Returns the value of the request header property specified by {code
+     * key} or null if there is no key with this name.
+     */
+    @Override
+    public String getRequestProperty(String key) {
+        int index = findRequestProperty(key);
+        if (index >= 0) {
+            return mRequestHeaders.get(index).second;
+        }
+        return null;
     }
 
     /**
@@ -181,6 +247,20 @@ public class CronetHttpURLConnection extends HttpURLConnection {
         mResponseByteBuffer = null;
         mMessageLoop.loop();
         return mResponseByteBuffer;
+    }
+
+    /**
+     * Returns the index of request header in {@link #mRequestHeaders} or
+     * -1 if not found.
+     */
+    private int findRequestProperty(String key) {
+        for (int i = 0; i < mRequestHeaders.size(); i++) {
+            Pair<String, String> entry = mRequestHeaders.get(i);
+            if (entry.first.equalsIgnoreCase(key)) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     private class CronetUrlRequestListener implements UrlRequestListener {

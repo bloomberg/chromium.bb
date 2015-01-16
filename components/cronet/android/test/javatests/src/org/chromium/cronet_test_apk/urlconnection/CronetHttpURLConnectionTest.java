@@ -22,6 +22,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -215,13 +216,26 @@ public class CronetHttpURLConnectionTest extends CronetTestBase {
     @CompareDefaultWithCronet
     public void testAddRequestProperty() throws Exception {
         URL url = new URL(UploadTestServer.getEchoAllHeadersURL());
-        HttpURLConnection urlConnection =
-                (HttpURLConnection) url.openConnection();
-        urlConnection.addRequestProperty("foo-header", "foo");
-        urlConnection.addRequestProperty("bar-header", "bar");
-        assertEquals(200, urlConnection.getResponseCode());
-        assertEquals("OK", urlConnection.getResponseMessage());
-        String headers = getResponseAsString(urlConnection);
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.addRequestProperty("foo-header", "foo");
+        connection.addRequestProperty("bar-header", "bar");
+
+        // Before connection is made, check request headers are set.
+        Map<String, List<String>> requestHeadersMap =
+                connection.getRequestProperties();
+        List<String> fooValues = requestHeadersMap.get("foo-header");
+        assertEquals(1, fooValues.size());
+        assertEquals("foo", fooValues.get(0));
+        assertEquals("foo", connection.getRequestProperty("foo-header"));
+        List<String> barValues = requestHeadersMap.get("bar-header");
+        assertEquals(1, barValues.size());
+        assertEquals("bar", barValues.get(0));
+        assertEquals("bar", connection.getRequestProperty("bar-header"));
+
+        // Check the request headers echoed back by the server.
+        assertEquals(200, connection.getResponseCode());
+        assertEquals("OK", connection.getResponseMessage());
+        String headers = getResponseAsString(connection);
         List<String> fooHeaderValues =
                 getRequestHeaderValues(headers, "foo-header");
         List<String> barHeaderValues =
@@ -230,86 +244,182 @@ public class CronetHttpURLConnectionTest extends CronetTestBase {
         assertEquals("foo", fooHeaderValues.get(0));
         assertEquals(1, fooHeaderValues.size());
         assertEquals("bar", barHeaderValues.get(0));
-        urlConnection.disconnect();
+
+        connection.disconnect();
     }
 
     @SmallTest
     @Feature({"Cronet"})
     @OnlyRunCronetHttpURLConnection
-    // TODO(xunjieli): Change the annotation once crbug.com/432719 is fixed.
     public void testAddRequestPropertyWithSameKey() throws Exception {
         URL url = new URL(UploadTestServer.getEchoAllHeadersURL());
         HttpURLConnection urlConnection =
                 (HttpURLConnection) url.openConnection();
         urlConnection.addRequestProperty("header-name", "value1");
-        urlConnection.addRequestProperty("header-name", "value2");
-        assertEquals(200, urlConnection.getResponseCode());
-        assertEquals("OK", urlConnection.getResponseMessage());
-        String headers = getResponseAsString(urlConnection);
+        try {
+            urlConnection.addRequestProperty("header-Name", "value2");
+            fail();
+        } catch (UnsupportedOperationException e) {
+            assertEquals(e.getMessage(),
+                    "Cannot add multiple headers of the same key. "
+                    + "crbug.com/432719.");
+        }
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    @CompareDefaultWithCronet
+    public void testSetRequestPropertyWithSameKey() throws Exception {
+        URL url = new URL(UploadTestServer.getEchoAllHeadersURL());
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        // The test always sets and retrieves one header with the same
+        // capitalization, and the other header with slightly different
+        // capitalization.
+        conn.setRequestProperty("same-capitalization", "yo");
+        conn.setRequestProperty("diFFerent-cApitalization", "foo");
+        Map<String, List<String>> headersMap = conn.getRequestProperties();
+        List<String>  values1 = headersMap.get("same-capitalization");
+        assertEquals(1, values1.size());
+        assertEquals("yo", values1.get(0));
+        assertEquals("yo", conn.getRequestProperty("same-capitalization"));
+
+        List<String> values2 = headersMap.get("different-capitalization");
+        assertEquals(1, values2.size());
+        assertEquals("foo", values2.get(0));
+        assertEquals("foo",
+                conn.getRequestProperty("Different-capitalization"));
+
+        // Check request header is updated.
+        conn.setRequestProperty("same-capitalization", "hi");
+        conn.setRequestProperty("different-Capitalization", "bar");
+        Map<String, List<String>> newHeadersMap = conn.getRequestProperties();
+        List<String> newValues1 = newHeadersMap.get("same-capitalization");
+        assertEquals(1, newValues1.size());
+        assertEquals("hi", newValues1.get(0));
+        assertEquals("hi", conn.getRequestProperty("same-capitalization"));
+
+        List<String> newValues2 = newHeadersMap.get("differENT-capitalization");
+        assertEquals(1, newValues2.size());
+        assertEquals("bar", newValues2.get(0));
+        assertEquals("bar",
+                conn.getRequestProperty("different-capitalization"));
+
+        // Check the request headers echoed back by the server.
+        assertEquals(200, conn.getResponseCode());
+        assertEquals("OK", conn.getResponseMessage());
+        String headers = getResponseAsString(conn);
+        List<String> actualValues1 =
+                getRequestHeaderValues(headers, "same-capitalization");
+        assertEquals(1, actualValues1.size());
+        assertEquals("hi", actualValues1.get(0));
+        List<String> actualValues2 =
+                getRequestHeaderValues(headers, "different-Capitalization");
+        assertEquals(1, actualValues2.size());
+        assertEquals("bar", actualValues2.get(0));
+        conn.disconnect();
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    @CompareDefaultWithCronet
+    public void testAddAndSetRequestPropertyWithSameKey() throws Exception {
+        URL url = new URL(UploadTestServer.getEchoAllHeadersURL());
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.addRequestProperty("header-name", "value1");
+        connection.setRequestProperty("Header-nAme", "value2");
+
+        // Before connection is made, check request headers are set.
+        assertEquals("value2", connection.getRequestProperty("header-namE"));
+        Map<String, List<String>> requestHeadersMap =
+                connection.getRequestProperties();
+        assertEquals(1, requestHeadersMap.get("HeAder-name").size());
+        assertEquals("value2", requestHeadersMap.get("HeAder-name").get(0));
+
+        // Check the request headers echoed back by the server.
+        assertEquals(200, connection.getResponseCode());
+        assertEquals("OK", connection.getResponseMessage());
+        String headers = getResponseAsString(connection);
         List<String> actualValues =
-                getRequestHeaderValues(headers, "header-name");
-        // TODO(xunjieli): Currently Cronet only sends the last header value
-        // if there are multiple entries with the same header key, see
-        // crbug/432719. Fix this test once the bug is fixed.
+                getRequestHeaderValues(headers, "Header-nAme");
         assertEquals(1, actualValues.size());
         assertEquals("value2", actualValues.get(0));
-        urlConnection.disconnect();
+        connection.disconnect();
     }
 
     @SmallTest
     @Feature({"Cronet"})
     @CompareDefaultWithCronet
-    public void testSetRequestProperty() throws Exception {
+    public void testAddSetRequestPropertyAfterConnected() throws Exception {
         URL url = new URL(UploadTestServer.getEchoAllHeadersURL());
-        HttpURLConnection urlConnection =
-                (HttpURLConnection) url.openConnection();
-        urlConnection.setRequestProperty("header-name", "header-value");
-        assertEquals(200, urlConnection.getResponseCode());
-        assertEquals("OK", urlConnection.getResponseMessage());
-        String headers = getResponseAsString(urlConnection);
-        List<String> actualValues =
-                getRequestHeaderValues(headers, "header-name");
-        assertEquals(1, actualValues.size());
-        assertEquals("header-value", actualValues.get(0));
-        urlConnection.disconnect();
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.addRequestProperty("header-name", "value");
+        assertEquals(200, connection.getResponseCode());
+        assertEquals("OK", connection.getResponseMessage());
+        try {
+            connection.setRequestProperty("foo", "bar");
+            fail();
+        } catch (IllegalStateException e) {
+            // Expected.
+        }
+        try {
+            connection.addRequestProperty("foo", "bar");
+            fail();
+        } catch (IllegalStateException e) {
+            // Expected.
+        }
+        connection.disconnect();
     }
 
     @SmallTest
     @Feature({"Cronet"})
     @CompareDefaultWithCronet
-    public void testSetRequestPropertyTwice() throws Exception {
+    public void testGetRequestPropertyAfterConnected() throws Exception {
         URL url = new URL(UploadTestServer.getEchoAllHeadersURL());
-        HttpURLConnection urlConnection =
-                (HttpURLConnection) url.openConnection();
-        urlConnection.setRequestProperty("yummy", "foo");
-        urlConnection.setRequestProperty("yummy", "bar");
-        assertEquals(200, urlConnection.getResponseCode());
-        assertEquals("OK", urlConnection.getResponseMessage());
-        String headers = getResponseAsString(urlConnection);
-        List<String> actualValues =
-                getRequestHeaderValues(headers, "yummy");
-        assertEquals(1, actualValues.size());
-        assertEquals("bar", actualValues.get(0));
-        urlConnection.disconnect();
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.addRequestProperty("header-name", "value");
+        assertEquals(200, connection.getResponseCode());
+        assertEquals("OK", connection.getResponseMessage());
+
+        try {
+            connection.getRequestProperties();
+            fail();
+        } catch (IllegalStateException e) {
+            // Expected.
+        }
+
+        // Default implementation allows querying a particular request property.
+        try {
+            assertEquals("value", connection.getRequestProperty("header-name"));
+        } catch (IllegalStateException e) {
+            fail();
+        }
+        connection.disconnect();
     }
 
     @SmallTest
     @Feature({"Cronet"})
     @CompareDefaultWithCronet
-    public void testAddAndSetRequestProperty() throws Exception {
+    public void testGetRequestPropertiesUnmodifiable() throws Exception {
         URL url = new URL(UploadTestServer.getEchoAllHeadersURL());
-        HttpURLConnection urlConnection =
-                (HttpURLConnection) url.openConnection();
-        urlConnection.addRequestProperty("header-name", "value1");
-        urlConnection.setRequestProperty("header-name", "value2");
-        assertEquals(200, urlConnection.getResponseCode());
-        assertEquals("OK", urlConnection.getResponseMessage());
-        String headers = getResponseAsString(urlConnection);
-        List<String> actualValues =
-                getRequestHeaderValues(headers, "header-name");
-        assertEquals(1, actualValues.size());
-        assertEquals("value2", actualValues.get(0));
-        urlConnection.disconnect();
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.addRequestProperty("header-name", "value");
+        Map<String, List<String>> headers = connection.getRequestProperties();
+        try {
+            headers.put("foo", Arrays.asList("v1", "v2"));
+            fail();
+        } catch (UnsupportedOperationException e) {
+            // Expected.
+        }
+
+        List<String> values = headers.get("header-name");
+        try {
+            values.add("v3");
+            fail();
+        } catch (UnsupportedOperationException e) {
+            // Expected.
+        }
+
+        connection.disconnect();
     }
 
     @SmallTest
