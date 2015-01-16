@@ -17,12 +17,10 @@
     <org.chromium.chrome.browser.preferences.TextMessagePreference
         android:title="@string/autofill_wallet_description" />
 
-    <!-- TODO(estade): Surprisingly, HyperlinkPreference does not actually look like a link.
-         We should either fix HyperlinkPreference or copy the technique used by
-         data_reduction_learn_more. -->
     <org.chromium.chrome.browser.preferences.HyperlinkPreference
         android:title="@string/autofill_wallet_management_link_text"
-        app:url="@string/autofill_manage_wallet_cards_url" />
+        app:url="@string/autofill_manage_wallet_cards_url"
+        app:imitateWebLink="true" />
 
     <org.chromium.chrome.browser.preferences.TextMessagePreference
         android:title="@string/autofill_wallet_cache_explanation" />
