@@ -36,17 +36,28 @@
 // NSObject, this relationship is maintained via the ObjectiveC associated
 // object API, indirectly via an ObjectiveC CRBWeakNSProtocolSentinel class.
 //
-// The implementation assumes that the tracked object will be released on the
-// same thread that the WeakNSObject is created on.
-//
+// Threading restrictions:
+// - Several WeakNSObject pointing to the same underlying object must all be
+//   created and dereferenced on the same thread;
+// - thread safety is enforced by the implementation, except in two cases:
+//   (1) it is allowed to copy a WeakNSObject on a different thread. However,
+//       that copy must return to the original thread before being dereferenced,
+//   (2) it is allowed to destroy a WeakNSObject on any thread;
+// - the implementation assumes that the tracked object will be released on the
+//   same thread that the WeakNSObject is created on.
 namespace base {
 
 // WeakContainer keeps a weak pointer to an object and clears it when it
 // receives nullify() from the object's sentinel.
 class WeakContainer : public base::RefCountedThreadSafe<WeakContainer> {
  public:
-  WeakContainer(id object) : object_(object) {}
-  id object() { return object_; }
+  explicit WeakContainer(id object) : object_(object) {}
+
+  id object() {
+    DCHECK(checker_.CalledOnValidThread());
+    return object_;
+  }
+
   void nullify() {
     DCHECK(checker_.CalledOnValidThread());
     object_ = nil;
@@ -74,53 +85,63 @@ namespace base {
 
 // Base class for all WeakNSObject derivatives.
 template <typename NST>
-class WeakNSProtocol : public base::NonThreadSafe {
+class WeakNSProtocol {
  public:
   explicit WeakNSProtocol(NST object = nil) {
     container_ = [CRBWeakNSProtocolSentinel containerForObject:object];
   }
 
   WeakNSProtocol(const WeakNSProtocol<NST>& that) {
+    // A WeakNSProtocol object can be copied on one thread and used on
+    // another.
+    checker_.DetachFromThread();
     container_ = that.container_;
   }
 
   ~WeakNSProtocol() {
-    // A WeakNSProtocol object can be allocated on one thread and released on
+    // A WeakNSProtocol object can be used on one thread and released on
     // another. This is not the case for the contained object.
-    DetachFromThread();
+    checker_.DetachFromThread();
   }
 
   void reset(NST object = nil) {
-    DCHECK(CalledOnValidThread());
+    DCHECK(checker_.CalledOnValidThread());
     container_ = [CRBWeakNSProtocolSentinel containerForObject:object];
   }
 
   NST get() const {
-    DCHECK(CalledOnValidThread());
+    DCHECK(checker_.CalledOnValidThread());
     if (!container_.get())
       return nil;
     return container_->object();
   }
 
   WeakNSProtocol& operator=(const WeakNSProtocol<NST>& that) {
-    DCHECK(CalledOnValidThread());
+    DCHECK(checker_.CalledOnValidThread());
     container_ = that.container_;
     return *this;
   }
 
   bool operator==(NST that) const {
-    DCHECK(CalledOnValidThread());
+    DCHECK(checker_.CalledOnValidThread());
     return get() == that;
   }
 
-  bool operator!=(NST that) const { return get() != that; }
+  bool operator!=(NST that) const {
+    DCHECK(checker_.CalledOnValidThread());
+    return get() != that;
+  }
 
-  operator NST() const { return get(); }
+  operator NST() const {
+    DCHECK(checker_.CalledOnValidThread());
+    return get();
+  }
 
  private:
   // Refecounted reference to the container tracking the ObjectiveC object this
   // class encapsulates.
   scoped_refptr<base::WeakContainer> container_;
+  base::ThreadChecker checker_;
 };
 
 // Free functions

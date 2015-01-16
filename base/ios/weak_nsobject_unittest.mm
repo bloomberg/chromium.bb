@@ -3,16 +3,19 @@
 // found in the LICENSE file.
 
 #include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/ios/weak_nsobject.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using base::WeakNSObject;
-
+namespace base {
 namespace {
 
 TEST(WeakNSObjectTest, WeakNSObject) {
-  base::scoped_nsobject<NSObject> p1([[NSObject alloc] init]);
+  scoped_nsobject<NSObject> p1([[NSObject alloc] init]);
   WeakNSObject<NSObject> w1(p1);
   EXPECT_TRUE(w1);
   p1.reset();
@@ -20,7 +23,7 @@ TEST(WeakNSObjectTest, WeakNSObject) {
 }
 
 TEST(WeakNSObjectTest, MultipleWeakNSObject) {
-  base::scoped_nsobject<NSObject> p1([[NSObject alloc] init]);
+  scoped_nsobject<NSObject> p1([[NSObject alloc] init]);
   WeakNSObject<NSObject> w1(p1);
   WeakNSObject<NSObject> w2(w1);
   EXPECT_TRUE(w1);
@@ -32,7 +35,7 @@ TEST(WeakNSObjectTest, MultipleWeakNSObject) {
 }
 
 TEST(WeakNSObjectTest, WeakNSObjectDies) {
-  base::scoped_nsobject<NSObject> p1([[NSObject alloc] init]);
+  scoped_nsobject<NSObject> p1([[NSObject alloc] init]);
   {
     WeakNSObject<NSObject> w1(p1);
     EXPECT_TRUE(w1);
@@ -40,7 +43,7 @@ TEST(WeakNSObjectTest, WeakNSObjectDies) {
 }
 
 TEST(WeakNSObjectTest, WeakNSObjectReset) {
-  base::scoped_nsobject<NSObject> p1([[NSObject alloc] init]);
+  scoped_nsobject<NSObject> p1([[NSObject alloc] init]);
   WeakNSObject<NSObject> w1(p1);
   EXPECT_TRUE(w1);
   w1.reset();
@@ -50,8 +53,8 @@ TEST(WeakNSObjectTest, WeakNSObjectReset) {
 }
 
 TEST(WeakNSObjectTest, WeakNSObjectResetWithObject) {
-  base::scoped_nsobject<NSObject> p1([[NSObject alloc] init]);
-  base::scoped_nsobject<NSObject> p2([[NSObject alloc] init]);
+  scoped_nsobject<NSObject> p1([[NSObject alloc] init]);
+  scoped_nsobject<NSObject> p2([[NSObject alloc] init]);
   WeakNSObject<NSObject> w1(p1);
   EXPECT_TRUE(w1);
   w1.reset(p2);
@@ -61,7 +64,7 @@ TEST(WeakNSObjectTest, WeakNSObjectResetWithObject) {
 }
 
 TEST(WeakNSObjectTest, WeakNSObjectEmpty) {
-  base::scoped_nsobject<NSObject> p1([[NSObject alloc] init]);
+  scoped_nsobject<NSObject> p1([[NSObject alloc] init]);
   WeakNSObject<NSObject> w1;
   EXPECT_FALSE(w1);
   w1.reset(p1);
@@ -71,7 +74,7 @@ TEST(WeakNSObjectTest, WeakNSObjectEmpty) {
 }
 
 TEST(WeakNSObjectTest, WeakNSObjectCopy) {
-  base::scoped_nsobject<NSObject> p1([[NSObject alloc] init]);
+  scoped_nsobject<NSObject> p1([[NSObject alloc] init]);
   WeakNSObject<NSObject> w1(p1);
   WeakNSObject<NSObject> w2(w1);
   EXPECT_TRUE(w1);
@@ -82,7 +85,7 @@ TEST(WeakNSObjectTest, WeakNSObjectCopy) {
 }
 
 TEST(WeakNSObjectTest, WeakNSObjectAssignment) {
-  base::scoped_nsobject<NSObject> p1([[NSObject alloc] init]);
+  scoped_nsobject<NSObject> p1([[NSObject alloc] init]);
   WeakNSObject<NSObject> w1(p1);
   WeakNSObject<NSObject> w2;
   EXPECT_FALSE(w2);
@@ -94,4 +97,40 @@ TEST(WeakNSObjectTest, WeakNSObjectAssignment) {
   EXPECT_FALSE(w2);
 }
 
+// Touches |weak_data| by increasing its length by 1. Used to check that the
+// weak object can be dereferenced.
+void TouchWeakData(const WeakNSObject<NSMutableData>& weak_data) {
+  if (!weak_data)
+    return;
+  [weak_data increaseLengthBy:1];
+}
+
+// Makes a copy of |weak_object| on the current thread and posts a task to touch
+// the weak object on its original thread.
+void CopyWeakNSObjectAndPost(const WeakNSObject<NSMutableData>& weak_object,
+                             scoped_refptr<SingleThreadTaskRunner> runner) {
+  WeakNSObject<NSMutableData> weak_copy(weak_object);
+  runner->PostTask(FROM_HERE, Bind(&TouchWeakData, weak_copy));
+}
+
+// Tests that the weak object can be copied on a different thread.
+TEST(WeakNSObjectTest, WeakNSObjectCopyOnOtherThread) {
+  MessageLoop loop;
+  Thread other_thread("WeakNSObjectCopyOnOtherThread");
+  other_thread.Start();
+
+  scoped_nsobject<NSMutableData> data([[NSMutableData alloc] init]);
+  WeakNSObject<NSMutableData> weak(data);
+
+  scoped_refptr<SingleThreadTaskRunner> runner = loop.task_runner();
+  other_thread.task_runner()->PostTask(
+      FROM_HERE, Bind(&CopyWeakNSObjectAndPost, weak, runner));
+  other_thread.Stop();
+  loop.RunUntilIdle();
+
+  // Check that TouchWeakData was called.
+  EXPECT_EQ(1u, [data length]);
+}
+
 }  // namespace
+}  // namespace base
