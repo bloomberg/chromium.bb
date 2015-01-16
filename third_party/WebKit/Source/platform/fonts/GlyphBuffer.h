@@ -142,14 +142,9 @@ public:
         //        and adjust the initial advance accordingly -> should yield correctly positioned
         //        RTL glyphs without any post-shape munging).
         ASSERT_WITH_SECURITY_IMPLICATION(!m_offsets.isEmpty());
-        float x = totalWidth - m_offsets[0];
-        for (unsigned i = 0; i + 1 < m_offsets.size(); ++i) {
-            float advance = m_offsets[i + 1] - m_offsets[i];
-            x -= advance;
-            m_offsets[i] = x;
-        }
-        float lastAdvance = afterOffset - m_offsets.last();
-        m_offsets.last() = x - lastAdvance;
+        for (unsigned i = 0; i + 1 < m_offsets.size(); ++i)
+            m_offsets[i] = totalWidth - m_offsets[i + 1];
+        m_offsets.last() = totalWidth - afterOffset;
 
         m_offsets.reverse();
     }
