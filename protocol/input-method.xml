@@ -230,7 +230,7 @@
       <arg name="id" type="new_id" interface="wl_input_method_context"/>
     </event>
     <event name="deactivate">
-      <description summary="activate event">
+      <description summary="deactivate event">
         The text model corresponding to the context argument was deactivated.
         The input method context should be destroyed after deactivation is
         handled.
