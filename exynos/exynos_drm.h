@@ -47,38 +47,6 @@ struct drm_exynos_gem_create {
 };
 
 /**
- * A structure for getting buffer offset.
- *
- * @handle: a pointer to gem object created.
- * @pad: just padding to be 64-bit aligned.
- * @offset: relatived offset value of the memory region allocated.
- *	- this value should be set by user.
- */
-struct drm_exynos_gem_map_off {
-	unsigned int handle;
-	unsigned int pad;
-	uint64_t offset;
-};
-
-/**
- * A structure for mapping buffer.
- *
- * @handle: a handle to gem object created.
- * @pad: just padding to be 64-bit aligned.
- * @size: memory size to be mapped.
- * @mapped: having user virtual address mmaped.
- *	- this variable would be filled by exynos gem module
- *	of kernel side with user virtual address which is allocated
- *	by do_mmap().
- */
-struct drm_exynos_gem_mmap {
-	unsigned int handle;
-	unsigned int pad;
-	uint64_t size;
-	uint64_t mapped;
-};
-
-/**
  * A structure to gem information.
  *
  * @handle: a handle to gem object created.
@@ -164,8 +132,6 @@ struct drm_exynos_g2d_exec {
 };
 
 #define DRM_EXYNOS_GEM_CREATE		0x00
-#define DRM_EXYNOS_GEM_MAP_OFFSET	0x01
-#define DRM_EXYNOS_GEM_MMAP		0x02
 /* Reserved 0x04 ~ 0x05 for exynos specific gem ioctl */
 #define DRM_EXYNOS_GEM_GET		0x04
 #define DRM_EXYNOS_VIDI_CONNECTION	0x07
@@ -177,12 +143,6 @@ struct drm_exynos_g2d_exec {
 
 #define DRM_IOCTL_EXYNOS_GEM_CREATE		DRM_IOWR(DRM_COMMAND_BASE + \
 		DRM_EXYNOS_GEM_CREATE, struct drm_exynos_gem_create)
-
-#define DRM_IOCTL_EXYNOS_GEM_MAP_OFFSET	DRM_IOWR(DRM_COMMAND_BASE + \
-		DRM_EXYNOS_GEM_MAP_OFFSET, struct drm_exynos_gem_map_off)
-
-#define DRM_IOCTL_EXYNOS_GEM_MMAP	DRM_IOWR(DRM_COMMAND_BASE + \
-		DRM_EXYNOS_GEM_MMAP, struct drm_exynos_gem_mmap)
 
 #define DRM_IOCTL_EXYNOS_GEM_GET	DRM_IOWR(DRM_COMMAND_BASE + \
 		DRM_EXYNOS_GEM_GET,	struct drm_exynos_gem_info)
