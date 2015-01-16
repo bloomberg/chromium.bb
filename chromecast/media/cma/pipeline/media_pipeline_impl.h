@@ -100,8 +100,8 @@ class MediaPipelineImpl : public MediaPipeline {
   // period.
   int statistics_rolling_counter_;
 
-  base::WeakPtrFactory<MediaPipelineImpl> weak_factory_;
   base::WeakPtr<MediaPipelineImpl> weak_this_;
+  base::WeakPtrFactory<MediaPipelineImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaPipelineImpl);
 };

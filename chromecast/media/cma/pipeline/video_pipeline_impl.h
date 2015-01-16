@@ -70,8 +70,8 @@ class VideoPipelineImpl : public VideoPipeline {
 
   ::media::PipelineStatistics previous_stats_;
 
-  base::WeakPtrFactory<VideoPipelineImpl> weak_factory_;
   base::WeakPtr<VideoPipelineImpl> weak_this_;
+  base::WeakPtrFactory<VideoPipelineImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoPipelineImpl);
 };

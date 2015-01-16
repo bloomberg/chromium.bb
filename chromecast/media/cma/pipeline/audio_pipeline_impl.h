@@ -67,8 +67,8 @@ class AudioPipelineImpl : public AudioPipeline {
 
   ::media::PipelineStatistics previous_stats_;
 
-  base::WeakPtrFactory<AudioPipelineImpl> weak_factory_;
   base::WeakPtr<AudioPipelineImpl> weak_this_;
+  base::WeakPtrFactory<AudioPipelineImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioPipelineImpl);
 };

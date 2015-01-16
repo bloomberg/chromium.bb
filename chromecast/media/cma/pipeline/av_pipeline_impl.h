@@ -160,8 +160,8 @@ class AvPipelineImpl {
   BrowserCdmCast* media_keys_;
   int media_keys_callback_id_;
 
-  base::WeakPtrFactory<AvPipelineImpl> weak_factory_;
   base::WeakPtr<AvPipelineImpl> weak_this_;
+  base::WeakPtrFactory<AvPipelineImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AvPipelineImpl);
 };
