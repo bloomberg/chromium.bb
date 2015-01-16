@@ -8,14 +8,12 @@ namespace extensions {
 
 ChromeV8Context::ChromeV8Context(const v8::Handle<v8::Context>& v8_context,
                                  blink::WebFrame* web_frame,
-                                 int world_id,
                                  const Extension* extension,
                                  Feature::Context context_type,
                                  const Extension* effective_extension,
                                  Feature::Context effective_context_type)
     : ScriptContext(v8_context,
                     web_frame,
-                    world_id,
                     extension,
                     context_type,
                     effective_extension,

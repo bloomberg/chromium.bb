@@ -36,7 +36,6 @@ class ScriptContext : public RequestSender::Source {
  public:
   ScriptContext(const v8::Handle<v8::Context>& context,
                 blink::WebFrame* frame,
-                int world_id,
                 const Extension* extension,
                 Feature::Context context_type,
                 const Extension* effective_extension,
@@ -62,8 +61,6 @@ class ScriptContext : public RequestSender::Source {
   }
 
   blink::WebFrame* web_frame() const { return web_frame_; }
-
-  int world_id() const { return world_id_; }
 
   Feature::Context context_type() const { return context_type_; }
 
@@ -164,9 +161,6 @@ class ScriptContext : public RequestSender::Source {
   // The WebFrame associated with this context. This can be NULL because this
   // object can outlive is destroyed asynchronously.
   blink::WebFrame* web_frame_;
-
-  // The world ID for the associated context, for debugging purposes.
-  const int world_id_;
 
   // The extension associated with this context, or NULL if there is none. This
   // might be a hosted app in the case that this context is hosting a web URL.

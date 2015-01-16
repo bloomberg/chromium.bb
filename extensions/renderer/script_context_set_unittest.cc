@@ -31,8 +31,11 @@ TEST(ScriptContextSet, Lifecycle) {
   webview->setMainFrame(frame);
   const Extension* extension = NULL;
   ScriptContext* context =
-      new ScriptContext(context_holder.context(), frame, 0, extension,
-                        Feature::BLESSED_EXTENSION_CONTEXT, extension,
+      new ScriptContext(context_holder.context(),
+                        frame,
+                        extension,
+                        Feature::BLESSED_EXTENSION_CONTEXT,
+                        extension,
                         Feature::BLESSED_EXTENSION_CONTEXT);
 
   context_set.Add(context);
