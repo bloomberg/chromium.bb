@@ -37,6 +37,24 @@ typedef std::vector<std::pair<int, int> > FileHandleMappingVector;
 // Options for launching a subprocess that are passed to LaunchProcess().
 // The default constructor constructs the object with default options.
 struct BASE_EXPORT LaunchOptions {
+#if defined(OS_POSIX)
+  // Delegate to be run in between fork and exec in the subprocess (see
+  // pre_exec_delegate below)
+  class BASE_EXPORT PreExecDelegate {
+   public:
+    PreExecDelegate() {}
+    virtual ~PreExecDelegate() {}
+
+    // Since this is to be run between fork and exec, and fork may have happened
+    // while multiple threads were running, this function needs to be async
+    // safe.
+    virtual void RunAsyncSafe() = 0;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(PreExecDelegate);
+  };
+#endif  // defined(OS_POSIX)
+
   LaunchOptions();
   ~LaunchOptions();
 
@@ -124,6 +142,16 @@ struct BASE_EXPORT LaunchOptions {
   // true, then this bit will not be set in the new child process.
   bool allow_new_privs;
 #endif  // defined(OS_LINUX)
+
+#if defined(OS_POSIX)
+  // If non-null, a delegate to be run immediately prior to executing the new
+  // program in the child process.
+  //
+  // WARNING: If LaunchProcess is called in the presence of multiple threads,
+  // code running in this delegate essentially needs to be async-signal safe
+  // (see man 7 signal for a list of allowed functions).
+  PreExecDelegate* pre_exec_delegate;
+#endif  // defined(OS_POSIX)
 
 #if defined(OS_CHROMEOS)
   // If non-negative, the specified file descriptor will be set as the launched

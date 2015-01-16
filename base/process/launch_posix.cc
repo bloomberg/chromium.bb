@@ -462,6 +462,12 @@ Process LaunchProcess(const std::vector<std::string>& argv,
     }
 #endif
 
+#if defined(OS_POSIX)
+    if (options.pre_exec_delegate != nullptr) {
+      options.pre_exec_delegate->RunAsyncSafe();
+    }
+#endif
+
     for (size_t i = 0; i < argv.size(); i++)
       argv_cstr[i] = const_cast<char*>(argv[i].c_str());
     argv_cstr[argv.size()] = NULL;

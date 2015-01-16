@@ -6,6 +6,8 @@
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/files/scoped_file.h"
+#include "base/posix/eintr_wrapper.h"
 #include "base/process/kill.h"
 #include "base/test/multiprocess_test.h"
 #include "base/test/test_timeouts.h"
@@ -268,7 +270,50 @@ TEST(ForkWithFlagsTest, UpdatesPidCache) {
   ASSERT_TRUE(WIFEXITED(status));
   EXPECT_EQ(kSuccess, WEXITSTATUS(status));
 }
-
 #endif
+
+#if defined(OS_POSIX)
+const char kPipeValue = '\xcc';
+
+class ReadFromPipeDelegate : public LaunchOptions::PreExecDelegate {
+ public:
+  explicit ReadFromPipeDelegate(int fd) : fd_(fd) {}
+  ~ReadFromPipeDelegate() override {}
+  void RunAsyncSafe() override {
+    char c;
+    RAW_CHECK(HANDLE_EINTR(read(fd_, &c, 1)) == 1);
+    RAW_CHECK(IGNORE_EINTR(close(fd_)) == 0);
+    RAW_CHECK(c == kPipeValue);
+  }
+
+ private:
+  int fd_;
+  DISALLOW_COPY_AND_ASSIGN(ReadFromPipeDelegate);
+};
+
+TEST_F(ProcessTest, PreExecHook) {
+  int pipe_fds[2];
+  ASSERT_EQ(0, pipe(pipe_fds));
+
+  ScopedFD read_fd(pipe_fds[0]);
+  ScopedFD write_fd(pipe_fds[1]);
+  base::FileHandleMappingVector fds_to_remap;
+  fds_to_remap.push_back(std::make_pair(read_fd.get(), read_fd.get()));
+
+  ReadFromPipeDelegate read_from_pipe_delegate(read_fd.get());
+  LaunchOptions options;
+  options.fds_to_remap = &fds_to_remap;
+  options.pre_exec_delegate = &read_from_pipe_delegate;
+  Process process(SpawnChildWithOptions("SimpleChildProcess", options));
+  ASSERT_TRUE(process.IsValid());
+
+  read_fd.reset();
+  ASSERT_EQ(1, HANDLE_EINTR(write(write_fd.get(), &kPipeValue, 1)));
+
+  int exit_code = 42;
+  EXPECT_TRUE(process.WaitForExit(&exit_code));
+  EXPECT_EQ(0, exit_code);
+}
+#endif  // defined(OS_POSIX)
 
 }  // namespace base
