@@ -1,2 +1,6 @@
 benwells@chromium.org
 miket@chromium.org
+
+# Extension/Toolbar Actions Files
+per-file extension_action*=finnur@chromium.org
+per-file extension_action*=rdevlin.cronin@chromium.org
