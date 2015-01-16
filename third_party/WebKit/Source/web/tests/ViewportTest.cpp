@@ -109,6 +109,7 @@ static PageScaleConstraints runViewportTest(Page* page, int initialWidth, int in
     PageScaleConstraints constraints = description.resolve(initialViewportSize, Length(980, blink::Fixed));
 
     constraints.fitToContentsWidth(constraints.layoutSize.width(), initialWidth);
+    constraints.resolveAutoInitialScale();
     return constraints;
 }
 

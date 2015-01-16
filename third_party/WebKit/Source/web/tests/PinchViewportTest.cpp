@@ -96,7 +96,7 @@ public:
         if (!overrideSettingsFunc)
             overrideSettingsFunc = &configureSettings;
         m_helper.initialize(true, 0, &m_mockWebViewClient, overrideSettingsFunc);
-        webViewImpl()->setPageScaleFactorLimits(1, 4);
+        webViewImpl()->setDefaultPageScaleLimits(1, 4);
     }
 
     void initializeWithAndroidSettings(void (*overrideSettingsFunc)(WebSettings*) = 0)
@@ -104,6 +104,7 @@ public:
         if (!overrideSettingsFunc)
             overrideSettingsFunc = &configureAndroidSettings;
         m_helper.initialize(true, 0, &m_mockWebViewClient, overrideSettingsFunc);
+        webViewImpl()->setDefaultPageScaleLimits(0.25f, 5);
     }
 
     virtual ~PinchViewportTest()
@@ -774,13 +775,12 @@ TEST_F(PinchViewportTest, TestNavigateToSmallerFrameViewHistoryItemClobberBug)
     FrameView* frameView = webViewImpl()->mainFrameImpl()->frameView();
     frameView->setScrollOffset(IntPoint(0, 1000));
 
-    // The frameView should be 1000x1000 since the viewport meta width=1000 and
-    // the aspect ratio is 1:1.
-    EXPECT_SIZE_EQ(IntSize(1000, 1000), frameView->frameRect().size());
+    // The frameView should be 400x400 since the frame is the viewport at minimum scale.
+    EXPECT_SIZE_EQ(IntSize(400, 400), frameView->frameRect().size());
 
     PinchViewport& pinchViewport = frame()->page()->frameHost().pinchViewport();
     pinchViewport.setScale(2);
-    pinchViewport.setLocation(FloatPoint(950, 950));
+    pinchViewport.setLocation(FloatPoint(350, 350));
 
     RefPtrWillBePersistent<HistoryItem> firstItem = webViewImpl()->mainFrameImpl()->frame()->loader().currentItem();
     EXPECT_POINT_EQ(IntPoint(0, 1000), firstItem->scrollPoint());
@@ -792,7 +792,7 @@ TEST_F(PinchViewportTest, TestNavigateToSmallerFrameViewHistoryItemClobberBug)
     frameView = webViewImpl()->mainFrameImpl()->frameView();
 
     EXPECT_NE(firstItem, webViewImpl()->mainFrameImpl()->frame()->loader().currentItem());
-    EXPECT_LT(frameView->frameRect().size().width(), 1000);
+    EXPECT_LT(frameView->frameRect().size().width(), 400);
     EXPECT_POINT_EQ(IntPoint(0, 1000), firstItem->scrollPoint());
 }
 
@@ -1327,16 +1327,15 @@ TEST_F(PinchViewportTest, ElementBoundsInRootViewSpaceAccountsForViewport)
 }
 
 // Tests that when a new frame is created, it is created with the intended
-// size (i.e. the contentWidth).
+// size (i.e. viewport at minimum scale, 100x200 / 0.5).
 TEST_F(PinchViewportTest, TestMainFrameInitializationSizing)
 {
     initializeWithAndroidSettings();
 
-    webViewImpl()->setPageScaleFactorLimits(0.5, 2.0);
     webViewImpl()->resize(IntSize(100, 200));
 
-    registerMockedHttpURLLoad("content-width-1000.html");
-    navigateTo(m_baseURL + "content-width-1000.html");
+    registerMockedHttpURLLoad("content-width-1000-min-scale.html");
+    navigateTo(m_baseURL + "content-width-1000-min-scale.html");
 
     WebLocalFrameImpl* localFrame = webViewImpl()->mainFrameImpl();
     localFrame->createFrameView();

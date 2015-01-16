@@ -121,7 +121,6 @@ private:
 
     void enableMobileEmulation();
     void disableMobileEmulation();
-    void updatePageScaleFactorLimits();
 
     InspectorController* inspectorController();
     LocalFrame* mainFrame();
@@ -140,9 +139,8 @@ private:
     bool m_originalViewportEnabled;
     bool m_isOverlayScrollbarsEnabled;
 
-    float m_originalMinimumPageScaleFactor;
-    float m_originalMaximumPageScaleFactor;
-    bool m_pageScaleLimitsOverriden;
+    float m_originalDefaultMinimumPageScaleFactor;
+    float m_originalDefaultMaximumPageScaleFactor;
 
     bool m_touchEventEmulationEnabled;
     OwnPtr<IntPoint> m_lastPinchAnchorCss;

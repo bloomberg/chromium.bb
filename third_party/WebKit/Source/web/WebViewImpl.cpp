@@ -3165,6 +3165,21 @@ void WebViewImpl::setUserAgentPageScaleConstraints(PageScaleConstraints newConst
 
 void WebViewImpl::setDefaultPageScaleLimits(float minScale, float maxScale)
 {
+    PageScaleConstraints newDefaults = m_pageScaleConstraintsSet.defaultConstraints();
+    newDefaults.minimumScale = minScale;
+    newDefaults.maximumScale = maxScale;
+
+    if (newDefaults == m_pageScaleConstraintsSet.defaultConstraints())
+        return;
+
+    m_pageScaleConstraintsSet.setDefaultConstraints(newDefaults);
+    m_pageScaleConstraintsSet.computeFinalConstraints();
+    m_pageScaleConstraintsSet.setNeedsReset(true);
+
+    if (!mainFrameImpl() || !mainFrameImpl()->frameView())
+        return;
+
+    mainFrameImpl()->frameView()->setNeedsLayout();
 }
 
 void WebViewImpl::setInitialPageScaleOverride(float initialPageScaleFactorOverride)
@@ -3181,10 +3196,6 @@ void WebViewImpl::setInitialPageScaleOverride(float initialPageScaleFactorOverri
 
 void WebViewImpl::setPageScaleFactorLimits(float minPageScale, float maxPageScale)
 {
-    PageScaleConstraints constraints = m_pageScaleConstraintsSet.userAgentConstraints();
-    constraints.minimumScale = minPageScale;
-    constraints.maximumScale = maxPageScale;
-    setUserAgentPageScaleConstraints(constraints);
 }
 
 void WebViewImpl::setIgnoreViewportTagScaleLimits(bool ignore)
@@ -3202,20 +3213,10 @@ void WebViewImpl::setIgnoreViewportTagScaleLimits(bool ignore)
 
 IntSize WebViewImpl::mainFrameSize()
 {
-    if (!pinchVirtualViewportEnabled() || !localFrameRootTemporary())
+    if (!pinchVirtualViewportEnabled())
         return m_size;
 
-    FrameView* view = localFrameRootTemporary()->frameView();
-
-    if (!view)
-        return m_size;
-
-    int contentAndScrollbarWidth = contentsSize().width();
-
-    if (view && view->verticalScrollbar() && !view->verticalScrollbar()->isOverlayScrollbar())
-        contentAndScrollbarWidth += view->verticalScrollbar()->width();
-
-    return m_pageScaleConstraintsSet.mainFrameSize(contentAndScrollbarWidth);
+    return m_pageScaleConstraintsSet.mainFrameSize();
 }
 
 void WebViewImpl::refreshPageScaleFactorAfterLayout()
@@ -3227,12 +3228,10 @@ void WebViewImpl::refreshPageScaleFactorAfterLayout()
     updatePageDefinedViewportConstraints(mainFrameImpl()->frame()->document()->viewportDescription());
     m_pageScaleConstraintsSet.computeFinalConstraints();
 
-    if (settings()->shrinksViewportContentToFit()) {
-        int verticalScrollbarWidth = 0;
-        if (view->verticalScrollbar() && !view->verticalScrollbar()->isOverlayScrollbar())
-            verticalScrollbarWidth = view->verticalScrollbar()->width();
-        m_pageScaleConstraintsSet.adjustFinalConstraintsToContentsSize(contentsSize(), verticalScrollbarWidth);
-    }
+    int verticalScrollbarWidth = 0;
+    if (view->verticalScrollbar() && !view->verticalScrollbar()->isOverlayScrollbar())
+        verticalScrollbarWidth = view->verticalScrollbar()->width();
+    m_pageScaleConstraintsSet.adjustFinalConstraintsToContentsSize(contentsSize(), verticalScrollbarWidth, settings()->shrinksViewportContentToFit());
 
     float newPageScaleFactor = pageScaleFactor();
     if (m_pageScaleConstraintsSet.needsReset() && m_pageScaleConstraintsSet.finalConstraints().initialScale != -1) {
@@ -3339,6 +3338,16 @@ WebSize WebViewImpl::contentsPreferredMinimumSize()
     int widthScaled = document->renderView()->minPreferredLogicalWidth(); // Already accounts for zoom.
     int heightScaled = static_cast<int>(document->documentElement()->scrollHeight() * zoomLevelToZoomFactor(zoomLevel()));
     return IntSize(widthScaled, heightScaled);
+}
+
+float WebViewImpl::defaultMinimumPageScaleFactor() const
+{
+    return m_pageScaleConstraintsSet.defaultConstraints().minimumScale;
+}
+
+float WebViewImpl::defaultMaximumPageScaleFactor() const
+{
+    return m_pageScaleConstraintsSet.defaultConstraints().maximumScale;
 }
 
 float WebViewImpl::minimumPageScaleFactor() const

@@ -212,9 +212,8 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     , m_emulateMobileEnabled(false)
     , m_originalViewportEnabled(false)
     , m_isOverlayScrollbarsEnabled(false)
-    , m_originalMinimumPageScaleFactor(0)
-    , m_originalMaximumPageScaleFactor(0)
-    , m_pageScaleLimitsOverriden(false)
+    , m_originalDefaultMinimumPageScaleFactor(0)
+    , m_originalDefaultMaximumPageScaleFactor(0)
     , m_touchEventEmulationEnabled(false)
 {
     ASSERT(isMainThread());
@@ -401,7 +400,6 @@ void WebDevToolsAgentImpl::clearDeviceMetricsOverride()
 void WebDevToolsAgentImpl::setTouchEventEmulationEnabled(bool enabled)
 {
     m_touchEventEmulationEnabled = enabled;
-    updatePageScaleFactorLimits();
 }
 
 void WebDevToolsAgentImpl::enableMobileEmulation()
@@ -416,9 +414,11 @@ void WebDevToolsAgentImpl::enableMobileEmulation()
     m_webViewImpl->settings()->setViewportEnabled(true);
     m_webViewImpl->settings()->setViewportMetaEnabled(true);
     m_webViewImpl->settings()->setShrinksViewportContentToFit(true);
-    m_webViewImpl->setIgnoreViewportTagScaleLimits(true);
     m_webViewImpl->setZoomFactorOverride(1);
-    updatePageScaleFactorLimits();
+
+    m_originalDefaultMinimumPageScaleFactor = m_webViewImpl->defaultMinimumPageScaleFactor();
+    m_originalDefaultMaximumPageScaleFactor = m_webViewImpl->defaultMaximumPageScaleFactor();
+    m_webViewImpl->setDefaultPageScaleLimits(0.25f, 5);
 }
 
 void WebDevToolsAgentImpl::disableMobileEmulation()
@@ -430,34 +430,11 @@ void WebDevToolsAgentImpl::disableMobileEmulation()
     m_webViewImpl->settings()->setViewportEnabled(false);
     m_webViewImpl->settings()->setViewportMetaEnabled(false);
     m_webViewImpl->settings()->setShrinksViewportContentToFit(false);
-    m_webViewImpl->setIgnoreViewportTagScaleLimits(false);
     m_webViewImpl->setZoomFactorOverride(0);
     m_emulateMobileEnabled = false;
-    updatePageScaleFactorLimits();
-}
-
-void WebDevToolsAgentImpl::updatePageScaleFactorLimits()
-{
-    if (m_touchEventEmulationEnabled || m_emulateMobileEnabled) {
-        if (!m_pageScaleLimitsOverriden) {
-            m_originalMinimumPageScaleFactor = m_webViewImpl->minimumPageScaleFactor();
-            m_originalMaximumPageScaleFactor = m_webViewImpl->maximumPageScaleFactor();
-            m_pageScaleLimitsOverriden = true;
-        }
-        if (m_emulateMobileEnabled) {
-            m_webViewImpl->setPageScaleFactorLimits(-1, -1);
-            m_webViewImpl->setInitialPageScaleOverride(-1);
-        } else {
-            m_webViewImpl->setPageScaleFactorLimits(1, 4);
-            m_webViewImpl->setInitialPageScaleOverride(1);
-        }
-    } else {
-        if (m_pageScaleLimitsOverriden) {
-            m_pageScaleLimitsOverriden = false;
-            m_webViewImpl->setPageScaleFactorLimits(m_originalMinimumPageScaleFactor, m_originalMaximumPageScaleFactor);
-            m_webViewImpl->setInitialPageScaleOverride(1);
-        }
-    }
+    m_webViewImpl->setDefaultPageScaleLimits(
+        m_originalDefaultMinimumPageScaleFactor,
+        m_originalDefaultMaximumPageScaleFactor);
 }
 
 void WebDevToolsAgentImpl::setTraceEventCallback(const String& categoryFilter, TraceEventCallback callback)

@@ -200,8 +200,6 @@ public:
     virtual void setPageScaleFactor(float) override;
     virtual void setPinchViewportOffset(const WebFloatPoint&) override;
     virtual WebFloatPoint pinchViewportOffset() const override;
-    virtual float minimumPageScaleFactor() const override;
-    virtual float maximumPageScaleFactor() const override;
     virtual void resetScrollAndScaleState() override;
     virtual void setIgnoreViewportTagScaleLimits(bool) override;
     virtual WebSize contentsPreferredMinimumSize() override;
@@ -274,6 +272,11 @@ public:
     virtual void acceptLanguagesChanged() override;
 
     // WebViewImpl
+
+    float defaultMinimumPageScaleFactor() const;
+    float defaultMaximumPageScaleFactor() const;
+    float minimumPageScaleFactor() const;
+    float maximumPageScaleFactor() const;
 
     HitTestResult coreHitTestResultAt(const WebPoint&);
     void suppressInvalidations(bool enable);

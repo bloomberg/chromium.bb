@@ -812,6 +812,7 @@ String Internals::viewportAsText(Document* document, float, int availableWidth, 
     PageScaleConstraints constraints = description.resolve(initialViewportSize, Length());
 
     constraints.fitToContentsWidth(constraints.layoutSize.width(), availableWidth);
+    constraints.resolveAutoInitialScale();
 
     StringBuilder builder;
 

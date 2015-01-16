@@ -100,7 +100,6 @@ void ImeOnFocusTest::runImeOnFocusTest(std::string fileName, int expectedImeRequ
     ImeRequestTrackingWebViewClient client;
     registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL), WebString::fromUTF8(fileName));
     WebViewImpl* webView = m_webViewHelper.initialize(true, 0, &client);
-    m_webViewHelper.webView()->setPageScaleFactorLimits(1, 1);
     webView->resize(WebSize(800, 1200));
     loadFrame(webView->mainFrame(), m_baseURL + fileName);
     m_document = m_webViewHelper.webViewImpl()->mainFrameImpl()->document().unwrap<Document>();

@@ -432,7 +432,9 @@ TEST_F(WebViewTest, HitTestResultForTapWithTapArea)
     std::string url = m_baseURL + "hit_test.html";
     URLTestHelpers::registerMockedURLLoad(toKURL(url), "hit_test.html");
     WebView* webView = m_webViewHelper.initializeAndLoad(url, true, 0);
+    webView->setDefaultPageScaleLimits(0.25f, 5);
     webView->resize(WebSize(100, 100));
+    webView->setPageScaleFactor(1);
     WebPoint hitPoint(55, 55);
 
     // Image is at top left quandrant, so should not hit it.
@@ -866,7 +868,6 @@ TEST_F(WebViewTest, IsSelectionAnchorFirst)
     WebView* webView = m_webViewHelper.initializeAndLoad(m_baseURL + "input_field_populated.html");
     WebFrame* frame = webView->mainFrame();
 
-    webView->setPageScaleFactorLimits(1, 1);
     webView->setInitialFocus(false);
     frame->setEditableSelectionOffsets(4, 10);
     EXPECT_TRUE(webView->isSelectionAnchorFirst());
@@ -1659,7 +1660,6 @@ TEST_F(WebViewTest, SmartClipData)
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("Ahem.ttf"));
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("smartclip.html"));
     WebView* webView = m_webViewHelper.initializeAndLoad(m_baseURL + "smartclip.html");
-    webView->setPageScaleFactorLimits(1, 1);
     webView->resize(WebSize(500, 500));
     webView->layout();
     WebRect cropRect(300, 125, 152, 50);
@@ -1676,7 +1676,6 @@ TEST_F(WebViewTest, SmartClipReturnsEmptyStringsWhenUserSelectIsNone)
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("Ahem.ttf"));
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("smartclip_user_select_none.html"));
     WebView* webView = m_webViewHelper.initializeAndLoad(m_baseURL + "smartclip_user_select_none.html");
-    webView->setPageScaleFactorLimits(1, 1);
     webView->resize(WebSize(500, 500));
     webView->layout();
     WebRect cropRect(0, 0, 100, 100);

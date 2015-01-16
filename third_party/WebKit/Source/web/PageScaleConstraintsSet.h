@@ -44,7 +44,8 @@ class PageScaleConstraintsSet {
 public:
     PageScaleConstraintsSet();
 
-    PageScaleConstraints defaultConstraints() const;
+    void setDefaultConstraints(const PageScaleConstraints&);
+    const PageScaleConstraints& defaultConstraints() const;
 
     // Settings defined in the website's viewport tag, if viewport tag support
     // is enabled.
@@ -61,7 +62,7 @@ public:
     // viewport size and document width.
     const PageScaleConstraints& finalConstraints() const { return m_finalConstraints; }
     void computeFinalConstraints();
-    void adjustFinalConstraintsToContentsSize(IntSize contentsSize, int nonOverlayScrollbarWidth);
+    void adjustFinalConstraintsToContentsSize(IntSize contentsSize, int nonOverlayScrollbarWidth, bool shrinksViewportContentToFit);
 
     void didChangeContentsSize(IntSize contentsSize, float pageScaleFactor);
 
@@ -75,11 +76,12 @@ public:
 
     void didChangeViewSize(const IntSize&);
 
-    IntSize mainFrameSize(int contentWidthIncludingScrollbar) const;
+    IntSize mainFrameSize() const;
 
 private:
     PageScaleConstraints computeConstraintsStack() const;
 
+    PageScaleConstraints m_defaultConstraints;
     PageScaleConstraints m_pageDefinedConstraints;
     PageScaleConstraints m_userAgentConstraints;
     PageScaleConstraints m_finalConstraints;

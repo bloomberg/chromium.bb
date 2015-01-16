@@ -84,6 +84,11 @@ void PageScaleConstraints::fitToContentsWidth(float contentsWidth, int viewWidth
     // width.
     minimumScale = std::max(minimumScale, viewWidthNotIncludingScrollbars / contentsWidth);
 
+    clampAll();
+}
+
+void PageScaleConstraints::resolveAutoInitialScale()
+{
     // If the initial scale wasn't defined, set it to minimum scale now that we
     // know the real value.
     if (initialScale == -1)

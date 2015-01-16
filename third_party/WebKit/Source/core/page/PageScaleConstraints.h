@@ -49,6 +49,7 @@ struct PageScaleConstraints {
     float clampToConstraints(float pageScaleFactor) const;
     void clampAll();
     void fitToContentsWidth(float contentsWidth, int viewWidthNotIncludingScrollbars);
+    void resolveAutoInitialScale();
 
     bool operator==(const PageScaleConstraints& other) const;
 };

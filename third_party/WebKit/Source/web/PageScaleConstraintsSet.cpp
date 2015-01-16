@@ -36,20 +36,24 @@
 
 namespace blink {
 
-static const float defaultMinimumScale = 0.25f;
-static const float defaultMaximumScale = 5.0f;
-
 PageScaleConstraintsSet::PageScaleConstraintsSet()
-    : m_finalConstraints(1, 1, 1)
+    : m_defaultConstraints(-1, 1, 1)
+    , m_finalConstraints(computeConstraintsStack())
     , m_lastContentsWidth(0)
     , m_needsReset(false)
     , m_constraintsDirty(false)
 {
 }
 
-PageScaleConstraints PageScaleConstraintsSet::defaultConstraints() const
+void PageScaleConstraintsSet::setDefaultConstraints(const PageScaleConstraints& defaultConstraints)
 {
-    return PageScaleConstraints(-1, defaultMinimumScale, defaultMaximumScale);
+    m_defaultConstraints = defaultConstraints;
+    m_constraintsDirty = true;
+}
+
+const PageScaleConstraints& PageScaleConstraintsSet::defaultConstraints() const
+{
+    return m_defaultConstraints;
 }
 
 void PageScaleConstraintsSet::updatePageDefinedConstraints(const ViewportDescription& description, Length legacyFallbackWidth)
@@ -80,9 +84,12 @@ void PageScaleConstraintsSet::computeFinalConstraints()
     m_constraintsDirty = false;
 }
 
-void PageScaleConstraintsSet::adjustFinalConstraintsToContentsSize(IntSize contentsSize, int nonOverlayScrollbarWidth)
+void PageScaleConstraintsSet::adjustFinalConstraintsToContentsSize(IntSize contentsSize, int nonOverlayScrollbarWidth, bool shrinksViewportContentToFit)
 {
-    m_finalConstraints.fitToContentsWidth(contentsSize.width(), m_viewSize.width() - nonOverlayScrollbarWidth);
+    if (shrinksViewportContentToFit)
+        m_finalConstraints.fitToContentsWidth(contentsSize.width(), m_viewSize.width() - nonOverlayScrollbarWidth);
+
+    m_finalConstraints.resolveAutoInitialScale();
 }
 
 void PageScaleConstraintsSet::setNeedsReset(bool needsReset)
@@ -142,27 +149,10 @@ void PageScaleConstraintsSet::didChangeViewSize(const IntSize& size)
     m_constraintsDirty = true;
 }
 
-IntSize PageScaleConstraintsSet::mainFrameSize(int contentWidthIncludingScrollbar) const
+IntSize PageScaleConstraintsSet::mainFrameSize() const
 {
-    // If there's no explicit minimum scale factor set, size the frame so that its width == content width
-    // so there's no horizontal scrolling at the minimum scale.
-    if (m_pageDefinedConstraints.minimumScale < finalConstraints().minimumScale
-        && m_userAgentConstraints.minimumScale < finalConstraints().minimumScale
-        && contentWidthIncludingScrollbar
-        && m_viewSize.width()) {
-
-        // Special case where the contents are exactly as wide as the viewport to prevent an off-by-one due
-        // to floating point imprecision in the aspect ratio height calculation.
-        if (contentWidthIncludingScrollbar == m_viewSize.width())
-            return m_viewSize;
-
-        return expandedIntSize(FloatSize(
-            contentWidthIncludingScrollbar,
-            computeHeightByAspectRatio(contentWidthIncludingScrollbar, m_viewSize)));
-    }
-
-    // If there is a minimum scale (or there's no content size yet), the frame size should match the viewport
-    // size at minimum scale, since the viewport must always be contained by the frame.
+    // The frame size should match the viewport size at minimum scale, since the
+    // viewport must always be contained by the frame.
     FloatSize frameSize(m_viewSize);
     frameSize.scale(1 / finalConstraints().minimumScale);
     return expandedIntSize(frameSize);
