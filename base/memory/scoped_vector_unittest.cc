@@ -308,4 +308,17 @@ TEST(ScopedVectorTest, InsertRange) {
     EXPECT_EQ(LC_CONSTRUCTED, it->life_cycle_state());
 }
 
+// Assertions for push_back(scoped_ptr).
+TEST(ScopedVectorTest, PushBackScopedPtr) {
+  int delete_counter = 0;
+  scoped_ptr<DeleteCounter> elem(new DeleteCounter(&delete_counter));
+  EXPECT_EQ(0, delete_counter);
+  {
+    ScopedVector<DeleteCounter> v;
+    v.push_back(elem.Pass());
+    EXPECT_EQ(0, delete_counter);
+  }
+  EXPECT_EQ(1, delete_counter);
+}
+
 }  // namespace
