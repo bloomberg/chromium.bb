@@ -37,21 +37,6 @@ ServiceWorkerProviderContext::~ServiceWorkerProviderContext() {
   }
 }
 
-ServiceWorkerHandleReference* ServiceWorkerProviderContext::installing() {
-  DCHECK(main_thread_loop_proxy_->RunsTasksOnCurrentThread());
-  return installing_.get();
-}
-
-ServiceWorkerHandleReference* ServiceWorkerProviderContext::waiting() {
-  DCHECK(main_thread_loop_proxy_->RunsTasksOnCurrentThread());
-  return waiting_.get();
-}
-
-ServiceWorkerHandleReference* ServiceWorkerProviderContext::active() {
-  DCHECK(main_thread_loop_proxy_->RunsTasksOnCurrentThread());
-  return active_.get();
-}
-
 ServiceWorkerHandleReference* ServiceWorkerProviderContext::controller() {
   DCHECK(main_thread_loop_proxy_->RunsTasksOnCurrentThread());
   return controller_.get();
@@ -66,30 +51,55 @@ ServiceWorkerProviderContext::registration() {
 ServiceWorkerVersionAttributes
 ServiceWorkerProviderContext::GetVersionAttributes() {
   ServiceWorkerVersionAttributes attrs;
-  if (installing())
-    attrs.installing = installing()->info();
-  if (waiting())
-    attrs.waiting = waiting()->info();
-  if (active())
-    attrs.active = active()->info();
+  if (installing_)
+    attrs.installing = installing_->info();
+  if (waiting_)
+    attrs.waiting = waiting_->info();
+  if (active_)
+    attrs.active = active_->info();
   return attrs;
+}
+
+void ServiceWorkerProviderContext::SetVersionAttributes(
+    ChangedVersionAttributesMask mask,
+    const ServiceWorkerVersionAttributes& attrs) {
+  DCHECK(main_thread_loop_proxy_->RunsTasksOnCurrentThread());
+  DCHECK(registration_);
+
+  if (mask.installing_changed()) {
+    installing_ = ServiceWorkerHandleReference::Adopt(
+        attrs.installing, thread_safe_sender_.get());
+  }
+  if (mask.waiting_changed()) {
+    waiting_ = ServiceWorkerHandleReference::Adopt(
+        attrs.waiting, thread_safe_sender_.get());
+  }
+  if (mask.active_changed()) {
+    active_ = ServiceWorkerHandleReference::Adopt(
+        attrs.active, thread_safe_sender_.get());
+  }
 }
 
 void ServiceWorkerProviderContext::OnAssociateRegistration(
     const ServiceWorkerRegistrationObjectInfo& info,
     const ServiceWorkerVersionAttributes& attrs) {
+  DCHECK(main_thread_loop_proxy_->RunsTasksOnCurrentThread());
   DCHECK(!registration_);
   DCHECK_NE(kInvalidServiceWorkerRegistrationId, info.registration_id);
   DCHECK_NE(kInvalidServiceWorkerRegistrationHandleId, info.handle_id);
 
   registration_ = ServiceWorkerRegistrationHandleReference::Adopt(
       info, thread_safe_sender_.get());
-  OnSetInstallingServiceWorker(attrs.installing);
-  OnSetWaitingServiceWorker(attrs.waiting);
-  OnSetActiveServiceWorker(attrs.active);
+  installing_ = ServiceWorkerHandleReference::Adopt(
+      attrs.installing, thread_safe_sender_.get());
+  waiting_ = ServiceWorkerHandleReference::Adopt(
+      attrs.waiting, thread_safe_sender_.get());
+  active_ = ServiceWorkerHandleReference::Adopt(
+      attrs.active, thread_safe_sender_.get());
 }
 
 void ServiceWorkerProviderContext::OnDisassociateRegistration() {
+  DCHECK(main_thread_loop_proxy_->RunsTasksOnCurrentThread());
   controller_.reset();
   active_.reset();
   waiting_.reset();
@@ -100,6 +110,8 @@ void ServiceWorkerProviderContext::OnDisassociateRegistration() {
 void ServiceWorkerProviderContext::OnServiceWorkerStateChanged(
     int handle_id,
     blink::WebServiceWorkerState state) {
+  DCHECK(main_thread_loop_proxy_->RunsTasksOnCurrentThread());
+
   ServiceWorkerHandleReference* which = NULL;
   if (handle_id == controller_handle_id())
     which = controller_.get();
@@ -120,29 +132,9 @@ void ServiceWorkerProviderContext::OnServiceWorkerStateChanged(
   // when we support navigator.serviceWorker in dedicated workers.
 }
 
-void ServiceWorkerProviderContext::OnSetInstallingServiceWorker(
-    const ServiceWorkerObjectInfo& info) {
-  DCHECK(registration_);
-  installing_ =
-      ServiceWorkerHandleReference::Adopt(info, thread_safe_sender_.get());
-}
-
-void ServiceWorkerProviderContext::OnSetWaitingServiceWorker(
-    const ServiceWorkerObjectInfo& info) {
-  DCHECK(registration_);
-  waiting_ =
-      ServiceWorkerHandleReference::Adopt(info, thread_safe_sender_.get());
-}
-
-void ServiceWorkerProviderContext::OnSetActiveServiceWorker(
-    const ServiceWorkerObjectInfo& info) {
-  DCHECK(registration_);
-  active_ =
-      ServiceWorkerHandleReference::Adopt(info, thread_safe_sender_.get());
-}
-
 void ServiceWorkerProviderContext::OnSetControllerServiceWorker(
     const ServiceWorkerObjectInfo& info) {
+  DCHECK(main_thread_loop_proxy_->RunsTasksOnCurrentThread());
   DCHECK(registration_);
 
   // This context is is the primary owner of this handle, keeps the

@@ -205,18 +205,6 @@ class ServiceWorkerDispatcher : public WorkerTaskRunner::Observer {
                        int request_id,
                        int provider_id);
 
-  void SetInstallingServiceWorker(
-      int provider_id,
-      int registration_handle_id,
-      const ServiceWorkerObjectInfo& info);
-  void SetWaitingServiceWorker(
-      int provider_id,
-      int registration_handle_id,
-      const ServiceWorkerObjectInfo& info);
-  void SetActiveServiceWorker(
-      int provider_id,
-      int registration_handle_id,
-      const ServiceWorkerObjectInfo& info);
   void SetReadyRegistration(
       int provider_id,
       int registration_handle_id);

@@ -44,20 +44,16 @@ class ServiceWorkerProviderContext
   void OnDisassociateRegistration();
   void OnServiceWorkerStateChanged(int handle_id,
                                    blink::WebServiceWorkerState state);
-  void OnSetInstallingServiceWorker(const ServiceWorkerObjectInfo& info);
-  void OnSetWaitingServiceWorker(const ServiceWorkerObjectInfo& info);
-  void OnSetActiveServiceWorker(const ServiceWorkerObjectInfo& info);
   void OnSetControllerServiceWorker(const ServiceWorkerObjectInfo& info);
 
   int provider_id() const { return provider_id_; }
 
-  ServiceWorkerHandleReference* installing();
-  ServiceWorkerHandleReference* waiting();
-  ServiceWorkerHandleReference* active();
   ServiceWorkerHandleReference* controller();
   ServiceWorkerRegistrationHandleReference* registration();
 
   ServiceWorkerVersionAttributes GetVersionAttributes();
+  void SetVersionAttributes(ChangedVersionAttributesMask mask,
+                            const ServiceWorkerVersionAttributes& attrs);
 
   // Gets the handle ID of the installing Service Worker, or
   // kInvalidServiceWorkerHandleId if the provider does not have a

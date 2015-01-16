@@ -495,27 +495,47 @@ void ServiceWorkerDispatcher::OnSetVersionAttributes(
     int provider_id,
     int registration_handle_id,
     int changed_mask,
-    const ServiceWorkerVersionAttributes& attributes) {
+    const ServiceWorkerVersionAttributes& attrs) {
   TRACE_EVENT1("ServiceWorker",
                "ServiceWorkerDispatcher::OnSetVersionAttributes",
                "Thread ID", thread_id);
+
   ChangedVersionAttributesMask mask(changed_mask);
-  if (mask.installing_changed()) {
-    SetInstallingServiceWorker(provider_id,
-                               registration_handle_id,
-                               attributes.installing);
+  ProviderContextMap::iterator provider = provider_contexts_.find(provider_id);
+  if (provider != provider_contexts_.end() &&
+      provider->second->registration_handle_id() == registration_handle_id) {
+    if (mask.installing_changed()) {
+      worker_to_provider_.erase(provider->second->installing_handle_id());
+      if (attrs.installing.handle_id != kInvalidServiceWorkerHandleId)
+        worker_to_provider_[attrs.installing.handle_id] = provider->second;
+    }
+    if (mask.waiting_changed()) {
+      worker_to_provider_.erase(provider->second->waiting_handle_id());
+      if (attrs.waiting.handle_id != kInvalidServiceWorkerHandleId)
+        worker_to_provider_[attrs.waiting.handle_id] = provider->second;
+    }
+    if (mask.active_changed()) {
+      worker_to_provider_.erase(provider->second->active_handle_id());
+      if (attrs.active.handle_id != kInvalidServiceWorkerHandleId)
+        worker_to_provider_[attrs.active.handle_id] = provider->second;
+    }
+    provider->second->SetVersionAttributes(mask, attrs);
   }
-  if (mask.waiting_changed()) {
-    SetWaitingServiceWorker(provider_id,
-                            registration_handle_id,
-                            attributes.waiting);
+
+  RegistrationObjectMap::iterator found =
+      registrations_.find(registration_handle_id);
+  if (found != registrations_.end()) {
+    // Populate the version fields (eg. .installing) with new worker objects.
+    if (mask.installing_changed())
+      found->second->SetInstalling(GetServiceWorker(attrs.installing, false));
+    if (mask.waiting_changed())
+      found->second->SetWaiting(GetServiceWorker(attrs.waiting, false));
+    if (mask.active_changed())
+      found->second->SetActive(GetServiceWorker(attrs.active, false));
   }
-  if (mask.active_changed()) {
-    SetActiveServiceWorker(provider_id,
-                           registration_handle_id,
-                           attributes.active);
+
+  if (mask.active_changed())
     SetReadyRegistration(provider_id, registration_handle_id);
-  }
 }
 
 void ServiceWorkerDispatcher::OnUpdateFound(
@@ -526,69 +546,6 @@ void ServiceWorkerDispatcher::OnUpdateFound(
   RegistrationObjectMap::iterator found = registrations_.find(info.handle_id);
   if (found != registrations_.end())
     found->second->OnUpdateFound();
-}
-
-void ServiceWorkerDispatcher::SetInstallingServiceWorker(
-    int provider_id,
-    int registration_handle_id,
-    const ServiceWorkerObjectInfo& info) {
-  ProviderContextMap::iterator provider = provider_contexts_.find(provider_id);
-  if (provider != provider_contexts_.end() &&
-      provider->second->registration_handle_id() == registration_handle_id) {
-    worker_to_provider_.erase(provider->second->installing_handle_id());
-    if (info.handle_id != kInvalidServiceWorkerHandleId)
-      worker_to_provider_[info.handle_id] = provider->second;
-    provider->second->OnSetInstallingServiceWorker(info);
-  }
-
-  RegistrationObjectMap::iterator found =
-      registrations_.find(registration_handle_id);
-  if (found != registrations_.end()) {
-    // Populate the .installing field with the new worker object.
-    found->second->SetInstalling(GetServiceWorker(info, false));
-  }
-}
-
-void ServiceWorkerDispatcher::SetWaitingServiceWorker(
-    int provider_id,
-    int registration_handle_id,
-    const ServiceWorkerObjectInfo& info) {
-  ProviderContextMap::iterator provider = provider_contexts_.find(provider_id);
-  if (provider != provider_contexts_.end() &&
-      provider->second->registration_handle_id() == registration_handle_id) {
-    worker_to_provider_.erase(provider->second->waiting_handle_id());
-    if (info.handle_id != kInvalidServiceWorkerHandleId)
-      worker_to_provider_[info.handle_id] = provider->second;
-    provider->second->OnSetWaitingServiceWorker(info);
-  }
-
-  RegistrationObjectMap::iterator found =
-      registrations_.find(registration_handle_id);
-  if (found != registrations_.end()) {
-    // Populate the .waiting field with the new worker object.
-    found->second->SetWaiting(GetServiceWorker(info, false));
-  }
-}
-
-void ServiceWorkerDispatcher::SetActiveServiceWorker(
-    int provider_id,
-    int registration_handle_id,
-    const ServiceWorkerObjectInfo& info) {
-  ProviderContextMap::iterator provider = provider_contexts_.find(provider_id);
-  if (provider != provider_contexts_.end() &&
-      provider->second->registration_handle_id() == registration_handle_id) {
-    worker_to_provider_.erase(provider->second->active_handle_id());
-    if (info.handle_id != kInvalidServiceWorkerHandleId)
-      worker_to_provider_[info.handle_id] = provider->second;
-    provider->second->OnSetActiveServiceWorker(info);
-  }
-
-  RegistrationObjectMap::iterator found =
-      registrations_.find(registration_handle_id);
-  if (found != registrations_.end()) {
-    // Populate the .active field with the new worker object.
-    found->second->SetActive(GetServiceWorker(info, false));
-  }
 }
 
 void ServiceWorkerDispatcher::SetReadyRegistration(
