@@ -405,7 +405,6 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
        "pushMessaging",
        APIPermissionInfo::kFlagCannotBeOptional},
       {APIPermission::kPointerLock, "pointerLock"},
-      {APIPermission::kPrinterProvider, "printerProvider"},
       {APIPermission::kCastStreaming, "cast.streaming"},
       {APIPermission::kBrowser, "browser"},
       {APIPermission::kInterceptAllKeys,

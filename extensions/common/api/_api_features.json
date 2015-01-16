@@ -193,6 +193,15 @@
     "dependencies": ["permission:power"],
     "contexts": ["blessed_extension"]
   },
+  "printerProvider": {
+    "dependencies": ["permission:printerProvider"],
+    "contexts": ["blessed_extension"]
+  },
+  "printerProviderInternal": {
+    "internal": true,
+    "dependencies": ["permission:printerProvider"],
+    "contexts": ["blessed_extension"]
+  },
   "runtime": {
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app", "platform_app"],

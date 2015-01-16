@@ -46760,6 +46760,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="945" label="USB_SETCONFIGURATION"/>
   <int value="946" label="EASYUNLOCKPRIVATE_GETCONNECTIONINFO"/>
   <int value="947" label="FILEMANAGERPRIVATE_COMPUTECHECKSUM"/>
+  <int value="948" label="PRINTERPROVIDERINTERNAL_REPORTPRINTRESULT"/>
+  <int value="949" label="PRINTERPROVIDERINTERNAL_REPORTPRINTERCAPABILITY"/>
+  <int value="950" label="PRINTERPROVIDERINTERNAL_REPORTPRINTERS"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

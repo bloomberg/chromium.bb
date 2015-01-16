@@ -31,6 +31,8 @@
       'mime_handler_view_guest_internal.json',
       'mojo_private.idl',
       'power.idl',
+      'printer_provider.idl',
+      'printer_provider_internal.idl',
       'runtime.json',
       'serial.idl',
       'socket.idl',

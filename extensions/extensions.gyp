@@ -454,6 +454,8 @@
         'browser/api/power/power_api.h',
         'browser/api/power/power_api_manager.cc',
         'browser/api/power/power_api_manager.h',
+        'browser/api/printer_provider_internal/printer_provider_internal_api.cc',
+        'browser/api/printer_provider_internal/printer_provider_internal_api.h',
         'browser/api/runtime/runtime_api.cc',
         'browser/api/runtime/runtime_api.h',
         'browser/api/runtime/runtime_api_delegate.cc',
