@@ -562,7 +562,8 @@
             'animation/CompositorPendingAnimations.cpp',
             'animation/CompositorPendingAnimations.h',
             'animation/ColorStyleInterpolation.cpp',
-            'animation/ColorStyleInterpolation.h'
+            'animation/ColorStyleInterpolation.h',
+            'animation/ConstantStyleInterpolation.h',
             'animation/DefaultStyleInterpolation.h',
             'animation/DeferredLegacyStyleInterpolation.cpp',
             'animation/DeferredLegacyStyleInterpolation.h',

@@ -33,6 +33,7 @@
 
 #include "core/StylePropertyShorthand.h"
 #include "core/animation/AnimationNode.h"
+#include "platform/animation/AnimationUtilities.h"
 #include "platform/geometry/FloatBox.h"
 #include "platform/transforms/TransformationMatrix.h"
 #include "wtf/text/StringHash.h"
@@ -147,8 +148,7 @@ void KeyframeEffectModelBase::ensureInterpolationEffect(Element* element) const
             if (applyTo == 1)
                 applyTo = std::numeric_limits<double>::infinity();
 
-            m_interpolationEffect->addInterpolation(keyframes[i]->createInterpolation(entry.key, keyframes[i + 1].get(), element),
-                &keyframes[i]->easing(), keyframes[i]->offset(), keyframes[i + 1]->offset(), applyFrom, applyTo);
+            m_interpolationEffect->addInterpolationsFromKeyframes(entry.key, element, *keyframes[i], *keyframes[i + 1], applyFrom, applyTo);
         }
     }
 }

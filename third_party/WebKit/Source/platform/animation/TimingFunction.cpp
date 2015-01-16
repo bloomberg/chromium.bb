@@ -23,6 +23,12 @@ void LinearTimingFunction::range(double* minValue, double* maxValue) const
 {
 }
 
+void LinearTimingFunction::partition(Vector<PartitionRegion>& regions) const
+{
+    regions.append(PartitionRegion(RangeHalf::Lower, 0.0, 0.5));
+    regions.append(PartitionRegion(RangeHalf::Upper, 0.5, 1.0));
+}
+
 String CubicBezierTimingFunction::toString() const
 {
     switch (this->subType()) {

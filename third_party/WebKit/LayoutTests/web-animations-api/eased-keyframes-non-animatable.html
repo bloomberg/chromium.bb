@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="w3c/resources/keyframes-test.js"></script>
+<script>
+test(function() {
+  assertAnimationStyles([
+    {opacity: '0', position: 'absolute', easing: 'steps(4, start)'},
+    {opacity: '0.5', position: 'relative'}
+  ], {
+    0: {opacity: '0.125', position: 'absolute'},
+    0.25: {opacity: '0.25', position: 'relative'},
+    0.5: {opacity: '0.375', position: 'relative'},
+    0.75: {opacity: '0.5', position: 'relative'},
+    1: {opacity: '0.5', position: 'relative'}
+  });
+},
+'element.animate() with eased keyframe on non-animatable property',
+{
+  assert: [
+    'element.animate() should start an animation when keyframes are specified with timing functions',
+    'for their easing property. Non-animatable properties should take on the first value when the',
+    'functions value is less than 0.5, and the second value otherwise.',
+  ],
+  author: 'George Caley',
+});
+</script>

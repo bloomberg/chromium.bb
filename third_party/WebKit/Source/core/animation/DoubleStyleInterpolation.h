@@ -12,7 +12,8 @@ namespace blink {
 
 enum ClampRange {
     NoClamp,
-    ClampOpacity
+    ClampOpacity,
+    ClampNonNegative,
 };
 
 class DoubleStyleInterpolation : public StyleInterpolation {
