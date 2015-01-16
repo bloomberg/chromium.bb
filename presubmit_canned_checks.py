@@ -847,8 +847,7 @@ def CheckBuildbotPendingBuilds(input_api, output_api, url, max_pendings,
   return []
 
 
-def CheckOwners(input_api, output_api, source_file_filter=None,
-                author_counts_as_owner=True):
+def CheckOwners(input_api, output_api, source_file_filter=None):
   if input_api.is_committing:
     if input_api.tbr:
       return [output_api.PresubmitNotifyResult(
@@ -873,7 +872,7 @@ def CheckOwners(input_api, output_api, source_file_filter=None,
 
   owner_email = owner_email or input_api.change.author_email
 
-  if author_counts_as_owner and owner_email:
+  if owner_email:
     reviewers_plus_owner = set([owner_email]).union(reviewers)
     missing_files = owners_db.files_not_covered_by(affected_files,
         reviewers_plus_owner)

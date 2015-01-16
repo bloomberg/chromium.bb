@@ -2603,7 +2603,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
 
   def AssertOwnersWorks(self, tbr=False, issue='1', approvers=None,
       reviewers=None, is_committing=True, rietveld_response=None,
-      uncovered_files=None, expected_output='', author_counts_as_owner=True,
+      uncovered_files=None, expected_output='',
       manually_specified_reviewers=None):
     if approvers is None:
       # The set of people who lgtm'ed a change.
@@ -2654,14 +2654,9 @@ class CannedChecksUnittest(PresubmitTestsBase):
             issue=int(input_api.change.issue), messages=True).AndReturn(
                 rietveld_response)
 
-      if author_counts_as_owner:
-        people.add(change.author_email)
-        fake_db.files_not_covered_by(set(['foo/xyz.cc']),
-            people).AndReturn(uncovered_files)
-      else:
-        people.discard(change.author_email)
-        fake_db.files_not_covered_by(set(['foo/xyz.cc']),
-            people).AndReturn(uncovered_files)
+      people.add(change.author_email)
+      fake_db.files_not_covered_by(set(['foo/xyz.cc']),
+          people).AndReturn(uncovered_files)
       if not is_committing and uncovered_files:
         fake_db.reviewers_for(set(['foo']),
             change.author_email).AndReturn(change.author_email)
@@ -2669,7 +2664,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
     self.mox.ReplayAll()
     output = presubmit.PresubmitOutput()
     results = presubmit_canned_checks.CheckOwners(input_api,
-        presubmit.OutputApi, author_counts_as_owner=author_counts_as_owner)
+        presubmit.OutputApi)
     if results:
       results[0].handle(output)
     self.assertEquals(output.getvalue(), expected_output)
@@ -2796,18 +2791,6 @@ class CannedChecksUnittest(PresubmitTestsBase):
     self.AssertOwnersWorks(approvers=set(['john@example.com']),
                            is_committing=False,
                            expected_output='')
-
-  def testCannedCheckOwners_AuthorCountsAsOwner(self):
-    self.AssertOwnersWorks(approvers=set(['john@example.com',
-                                          'brett@example.com']),
-                           reviewers=set(['john@example.com',
-                                          'ben@example.com']),
-                           uncovered_files=set(['foo/xyz.cc', 'foo/bar.cc']),
-                           expected_output='Missing LGTM from an OWNER '
-                                           'for these files:\n'
-                                           '    foo/bar.cc\n'
-                                           '    foo/xyz.cc\n',
-                           author_counts_as_owner=False)
 
   def testCannedCheckOwners_TBR(self):
     self.AssertOwnersWorks(tbr=True,
