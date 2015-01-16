@@ -3944,7 +3944,7 @@ struct kernel_statfs {
   LSS_INLINE _syscall2(int, pipe2, int *, pipefd, int, flags)
   LSS_INLINE _syscall5(int, ppoll, struct kernel_pollfd *, u,
                        unsigned int, n, const struct kernel_timespec *, t,
-                       const kernel_sigset_t *, sigmask, size_t, s)
+                       const struct kernel_sigset_t *, sigmask, size_t, s)
   LSS_INLINE _syscall4(int, readlinkat, int, d, const char *, p, char *, b,
                        size_t, s)
 #endif
