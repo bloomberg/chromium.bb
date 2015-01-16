@@ -143,12 +143,10 @@ IPCResourceLoaderBridge::IPCResourceLoaderBridge(
            blink::WebReferrerPolicyNoReferrerWhenDowngrade) &&
       request_info.referrer.url.SchemeIsSecure() &&
       !request_info.url.SchemeIsSecure()) {
-    // Debug code for crbug.com/422871
-    base::debug::DumpWithoutCrashing();
-    DLOG(FATAL) << "Trying to send secure referrer for insecure request "
-                << "without an appropriate referrer policy.\n"
-                << "URL = " << request_info.url << "\n"
-                << "Referrer = " << request_info.referrer.url;
+    LOG(FATAL) << "Trying to send secure referrer for insecure request "
+               << "without an appropriate referrer policy.\n"
+               << "URL = " << request_info.url << "\n"
+               << "Referrer = " << request_info.referrer.url;
   }
 
   const RequestExtraData kEmptyData;
