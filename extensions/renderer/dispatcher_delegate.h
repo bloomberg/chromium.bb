@@ -35,6 +35,7 @@ class DispatcherDelegate {
   virtual scoped_ptr<ScriptContext> CreateScriptContext(
       const v8::Handle<v8::Context>& v8_context,
       blink::WebFrame* frame,
+      int world_id,
       const Extension* extension,
       Feature::Context context_type,
       const Extension* effective_extension,

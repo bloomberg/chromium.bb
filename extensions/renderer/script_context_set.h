@@ -18,6 +18,10 @@ namespace base {
 class ListValue;
 }
 
+namespace blink {
+class WebFrame;
+}
+
 namespace content {
 class RenderView;
 }
@@ -46,6 +50,10 @@ class ScriptContextSet {
   // it asynchronously. After this call returns the context object will still
   // be valid, but its frame() pointer will be cleared.
   void Remove(ScriptContext* context);
+
+  // Do not use this method. It has been temporarily added for debugging
+  // purposes (see https://crbug.com/441968).
+  void RemoveForFrame(blink::WebFrame* frame);
 
   // Returns a copy to protect against changes.
   typedef std::set<ScriptContext*> ContextSet;

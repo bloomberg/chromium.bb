@@ -33,6 +33,7 @@ class ChromeV8Context : public ScriptContext {
  public:
   ChromeV8Context(const v8::Handle<v8::Context>& context,
                   blink::WebFrame* frame,
+                  int world_id,
                   const Extension* extension,
                   Feature::Context context_type,
                   const Extension* effective_extension,

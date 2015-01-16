@@ -29,6 +29,7 @@ class ExtensionFrameHelper
  private:
   // RenderFrameObserver implementation.
   void WillReleaseScriptContext(v8::Handle<v8::Context>, int world_id) override;
+  void FrameDetached() override;
   bool OnMessageReceived(const IPC::Message& message) override;
 
   // IPC handlers.
