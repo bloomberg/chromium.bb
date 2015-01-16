@@ -2532,6 +2532,8 @@ void TestRunner::OverridePreference(const std::string key,
     prefs->allow_display_of_insecure_content = value->BooleanValue();
   } else if (key == "WebKitAllowRunningInsecureContent") {
     prefs->allow_running_of_insecure_content = value->BooleanValue();
+  } else if (key == "WebKitDisableReadingFromCanvas") {
+    prefs->disable_reading_from_canvas = value->BooleanValue();
   } else if (key == "WebKitStrictMixedContentChecking") {
     prefs->strict_mixed_content_checking = value->BooleanValue();
   } else if (key == "WebKitStrictPowerfulFeatureRestrictions") {

@@ -49,6 +49,7 @@ void ExportLayoutTestSpecificPreferences(const TestPreferences& from,
       from.java_script_can_open_windows_automatically;
   to->web_security_enabled =
       from.web_security_enabled;
+  to->disable_reading_from_canvas = from.disable_reading_from_canvas;
   to->strict_mixed_content_checking =
       from.strict_mixed_content_checking;
   to->strict_powerful_feature_restrictions =
@@ -77,6 +78,7 @@ void ApplyLayoutTestDefaultPreferences(WebPreferences* prefs) {
   prefs->hyperlink_auditing_enabled = false;
   prefs->allow_displaying_insecure_content = true;
   prefs->allow_running_insecure_content = true;
+  prefs->disable_reading_from_canvas = false;
   prefs->strict_mixed_content_checking = false;
   prefs->strict_powerful_feature_restrictions = false;
   prefs->webgl_errors_to_console_enabled = false;

@@ -204,6 +204,9 @@ const char kDisablePinch[]                  = "disable-pinch";
 // --extra-plugin-dir and --load-plugin switches.
 const char kDisablePluginsDiscovery[]       = "disable-plugins-discovery";
 
+// Taints all <canvas> elements, regardless of origin.
+const char kDisableReadingFromCanvas[]      = "disable-reading-from-canvas";
+
 // Disables remote web font support. SVG font should always work whether this
 // option is specified or not.
 const char kDisableRemoteFonts[]            = "disable-remote-fonts";

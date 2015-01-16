@@ -2284,6 +2284,7 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnablePotentiallyAnnoyingSecurityFeatures)) {
+    web_prefs->disable_reading_from_canvas = true;
     web_prefs->strict_mixed_content_checking = true;
     web_prefs->strict_powerful_feature_restrictions = true;
   }

@@ -130,6 +130,8 @@ struct CONTENT_EXPORT WebPreferences {
   bool text_blobs_enabled;
   bool allow_displaying_insecure_content;
   bool allow_running_insecure_content;
+  // If true, taints all <canvas> elements, regardless of origin.
+  bool disable_reading_from_canvas;
   // Strict mixed content checking disables both displaying and running insecure
   // mixed content, and disables embedder notifications that such content was
   // requested (thereby preventing user override).

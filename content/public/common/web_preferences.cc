@@ -132,6 +132,7 @@ WebPreferences::WebPreferences()
       text_blobs_enabled(false),
       allow_displaying_insecure_content(true),
       allow_running_insecure_content(false),
+      disable_reading_from_canvas(false),
       strict_mixed_content_checking(false),
       strict_powerful_feature_restrictions(false),
       password_echo_enabled(false),
