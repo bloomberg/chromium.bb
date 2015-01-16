@@ -179,6 +179,10 @@ class ServiceWorkerPerfTest(benchmark.Benchmark):
   test = _ServiceWorkerMeasurement
   page_set = page_sets.ServiceWorkerPageSet
 
+  @classmethod
+  def Name(cls):
+    return 'service_worker.service_worker'
+
 
 # Disabled due to redness on the tree. crbug.com/442752
 @benchmark.Disabled('reference', 'xp')
@@ -193,3 +197,7 @@ class ServiceWorkerMicroBenchmarkPerfTest(benchmark.Benchmark):
   """
   test = _ServiceWorkerMicroBenchmarkMeasurement
   page_set = page_sets.ServiceWorkerMicroBenchmarkPageSet
+  @classmethod
+  def Name(cls):
+    return 'service_worker.service_worker_micro_benchmark'
+

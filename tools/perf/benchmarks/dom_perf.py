@@ -80,6 +80,10 @@ class DomPerf(benchmark.Benchmark):
   means better performance: Bigger is better!"""
   test = _DomPerfMeasurement
 
+  @classmethod
+  def Name(cls):
+    return 'dom_perf'
+
   def CreatePageSet(self, options):
     dom_perf_dir = os.path.join(util.GetChromiumSrcDir(), 'data', 'dom_perf')
     run_params = [

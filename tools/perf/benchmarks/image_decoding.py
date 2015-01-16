@@ -12,3 +12,7 @@ class ImageDecodingToughImageCases(benchmark.Benchmark):
   test = image_decoding.ImageDecoding
   # TODO: Rename this page set to tough_image_cases.py
   page_set = page_sets.ImageDecodingMeasurementPageSet
+  @classmethod
+  def Name(cls):
+    return 'image_decoding.image_decoding_measurement'
+

@@ -137,6 +137,10 @@ class Octane(benchmark.Benchmark):
   """
   test = _OctaneMeasurement
 
+  @classmethod
+  def Name(cls):
+    return 'octane'
+
   def CreatePageSet(self, options):
     ps = page_set.PageSet(
       archive_data_file='../page_sets/data/octane.json',

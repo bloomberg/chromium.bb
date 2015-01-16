@@ -107,6 +107,10 @@ class Spaceport(benchmark.Benchmark):
   """
   test = _SpaceportMeasurement
 
+  @classmethod
+  def Name(cls):
+    return 'spaceport'
+
   def CreatePageSet(self, options):
     spaceport_dir = os.path.join(util.GetChromiumSrcDir(), 'chrome', 'test',
         'data', 'third_party', 'spaceport')

@@ -11,6 +11,10 @@ class _PageCycler(benchmark.Benchmark):
   options = {'pageset_repeat': 6}
 
   @classmethod
+  def Name(cls):
+    return 'page_cycler'
+
+  @classmethod
   def AddBenchmarkCommandLineArgs(cls, parser):
     parser.add_option('--v8-object-stats',
         action='store_true',
@@ -39,6 +43,10 @@ class PageCyclerDhtml(_PageCycler):
   """Benchmarks for various DHTML operations like simple animations."""
   page_set = page_sets.DhtmlPageSet
 
+  @classmethod
+  def Name(cls):
+    return 'page_cycler.dhtml'
+
 
 class PageCyclerIntlArFaHe(_PageCycler):
   """Page load time for a variety of pages in Arabic, Farsi and Hebrew.
@@ -46,6 +54,10 @@ class PageCyclerIntlArFaHe(_PageCycler):
   Runs against pages recorded in April, 2013.
   """
   page_set = page_sets.IntlArFaHePageSet
+
+  @classmethod
+  def Name(cls):
+    return 'page_cycler.intl_ar_fa_he'
 
 
 @benchmark.Disabled('win')  # crbug.com/388337
@@ -56,6 +68,10 @@ class PageCyclerIntlEsFrPtBr(_PageCycler):
   """
   page_set = page_sets.IntlEsFrPtBrPageSet
 
+  @classmethod
+  def Name(cls):
+    return 'page_cycler.intl_es_fr_pt-BR'
+
 
 class PageCyclerIntlHiRu(_PageCycler):
   """Page load time benchmark for a variety of pages in Hindi and Russian.
@@ -63,6 +79,10 @@ class PageCyclerIntlHiRu(_PageCycler):
   Runs against pages recorded in April, 2013.
   """
   page_set = page_sets.IntlHiRuPageSet
+
+  @classmethod
+  def Name(cls):
+    return 'page_cycler.intl_hi_ru'
 
 
 @benchmark.Disabled('android', 'win')  # crbug.com/379564, crbug.com/330909
@@ -73,6 +93,10 @@ class PageCyclerIntlJaZh(_PageCycler):
   """
   page_set = page_sets.IntlJaZhPageSet
 
+  @classmethod
+  def Name(cls):
+    return 'page_cycler.intl_ja_zh'
+
 
 @benchmark.Disabled('xp')  # crbug.com/434366
 class PageCyclerIntlKoThVi(_PageCycler):
@@ -82,10 +106,18 @@ class PageCyclerIntlKoThVi(_PageCycler):
   """
   page_set = page_sets.IntlKoThViPageSet
 
+  @classmethod
+  def Name(cls):
+    return 'page_cycler.intl_ko_th_vi'
+
 
 class PageCyclerMorejs(_PageCycler):
   """Page load for a variety of pages that were JavaScript heavy in 2009."""
   page_set = page_sets.MorejsPageSet
+
+  @classmethod
+  def Name(cls):
+    return 'page_cycler.morejs'
 
 
 # This is an old page set, we intend to remove it after more modern benchmarks
@@ -94,6 +126,10 @@ class PageCyclerMorejs(_PageCycler):
 class PageCyclerMoz(_PageCycler):
   """Page load for mozilla's original page set. Recorded in December 2000."""
   page_set = page_sets.MozPageSet
+
+  @classmethod
+  def Name(cls):
+    return 'page_cycler.moz'
 
 
 @benchmark.Disabled('linux', 'win', 'mac')  # crbug.com/353260
@@ -113,6 +149,10 @@ class PageCyclerNetsimTop10(_PageCycler):
       'pageset_repeat': 6,
   }
 
+  @classmethod
+  def Name(cls):
+    return 'page_cycler.netsim.top_10'
+
   def CreatePageTest(self, options):
     return page_cycler.PageCycler(
         page_repeat = options.page_repeat,
@@ -131,11 +171,19 @@ class PageCyclerTop10Mobile(_PageCycler):
   """
   page_set = page_sets.Top10MobilePageSet
 
+  @classmethod
+  def Name(cls):
+    return 'page_cycler.top_10_mobile'
+
 
 @benchmark.Disabled
 class PageCyclerKeyMobileSites(_PageCycler):
   """Page load time benchmark for key mobile sites."""
   page_set = page_sets.KeyMobileSitesSmoothPageSet
+
+  @classmethod
+  def Name(cls):
+    return 'page_cycler.key_mobile_sites_smooth'
 
 
 @benchmark.Disabled('android')  # crbug.com/357326
@@ -145,6 +193,10 @@ class PageCyclerToughLayoutCases(_PageCycler):
   Recorded in July 2013.
   """
   page_set = page_sets.ToughLayoutCasesPageSet
+
+  @classmethod
+  def Name(cls):
+    return 'page_cycler.tough_layout_cases'
 
 
 # crbug.com/273986: This test is really flakey on xp.
@@ -157,7 +209,15 @@ class PageCyclerTypical25(_PageCycler):
   """
   page_set = page_sets.Typical25PageSet
 
+  @classmethod
+  def Name(cls):
+    return 'page_cycler.typical_25'
+
 
 @benchmark.Disabled # crbug.com/443730
 class PageCyclerBigJs(_PageCycler):
   page_set = page_sets.BigJsPageSet
+  @classmethod
+  def Name(cls):
+    return 'page_cycler.big_js'
+

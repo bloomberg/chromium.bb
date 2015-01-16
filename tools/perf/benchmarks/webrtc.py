@@ -11,3 +11,7 @@ class WebRTC(benchmark.Benchmark):
   """Obtains WebRTC metrics for a real-time video tests."""
   test = webrtc.WebRTC
   page_set = page_sets.WebrtcCasesPageSet
+  @classmethod
+  def Name(cls):
+    return 'webrtc.webrtc_cases'
+

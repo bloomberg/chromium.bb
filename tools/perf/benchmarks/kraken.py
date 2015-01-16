@@ -119,6 +119,10 @@ class Kraken(benchmark.Benchmark):
   """
   test = _KrakenMeasurement
 
+  @classmethod
+  def Name(cls):
+    return 'kraken'
+
   def CreatePageSet(self, options):
     ps = page_set.PageSet(
       archive_data_file='../page_sets/data/kraken.json',

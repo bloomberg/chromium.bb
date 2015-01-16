@@ -50,6 +50,10 @@ class MapsBenchmark(benchmark.Benchmark):
   """Basic Google Maps benchmarks."""
   test = _MapsMeasurement
 
+  @classmethod
+  def Name(cls):
+    return 'maps'
+
   def CreatePageSet(self, options):
     page_set_path = os.path.join(
         util.GetChromiumSrcDir(), 'tools', 'perf', 'page_sets')
@@ -62,6 +66,10 @@ class MapsBenchmark(benchmark.Benchmark):
 class MapsNoVsync(MapsBenchmark):
   """Runs the Google Maps benchmark with Vsync disabled"""
   tag = 'novsync'
+
+  @classmethod
+  def Name(cls):
+    return 'maps.novsync'
 
   def CustomizeBrowserOptions(self, options):
     options.AppendExtraBrowserArgs('--disable-gpu-vsync')

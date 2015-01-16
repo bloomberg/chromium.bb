@@ -96,6 +96,10 @@ class IndexedDb(benchmark.Benchmark):
   """Chromium's IndexedDB Performance tests."""
   test = _IndexedDbMeasurement
 
+  @classmethod
+  def Name(cls):
+    return 'indexeddb_perf'
+
   def CreatePageSet(self, options):
     indexeddb_dir = os.path.join(util.GetChromiumSrcDir(), 'chrome', 'test',
                                  'data', 'indexeddb')

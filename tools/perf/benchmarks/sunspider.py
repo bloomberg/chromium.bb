@@ -132,6 +132,10 @@ class Sunspider(benchmark.Benchmark):
   """
   test = _SunspiderMeasurement
 
+  @classmethod
+  def Name(cls):
+    return 'sunspider'
+
   def CreatePageSet(self, options):
     ps = page_set.PageSet(
         archive_data_file='../page_sets/data/sunspider.json',

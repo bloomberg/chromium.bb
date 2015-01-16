@@ -85,6 +85,10 @@ class SpeedometerMeasurement(page_test.PageTest):
 class Speedometer(benchmark.Benchmark):
   test = SpeedometerMeasurement
 
+  @classmethod
+  def Name(cls):
+    return 'speedometer'
+
   def CreatePageSet(self, options):
     ps = page_set.PageSet(
         file_path=os.path.abspath(__file__),

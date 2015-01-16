@@ -15,3 +15,7 @@ class SchedulerToughSchedulingCases(benchmark.Benchmark):
       17yhE5Po9By0sCdM1yZT3LiUECaUr_94rQt9j-4tOQIM/view"""
   test = smoothness.Smoothness
   page_set = page_sets.ToughSchedulingCasesPageSet
+  @classmethod
+  def Name(cls):
+    return 'scheduler.tough_scheduling_cases'
+

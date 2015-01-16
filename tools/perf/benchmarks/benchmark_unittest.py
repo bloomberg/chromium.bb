@@ -47,6 +47,26 @@ class TestNoBenchmarkNamesDuplication(unittest.TestCase):
                         'Multiple benchmarks with the same name %s are '
                         'found: %s' % (n, str(names_to_benchmarks[n])))
 
+# Test all perf benchmarks explicitly define the Name() method and the name
+# values are the same as the default one.
+# TODO(nednguyen): remove this test after all perf benchmarks define Name() and
+# checked in.
+class TestPerfBenchmarkNames(unittest.TestCase):
+  def runTest(self):
+    all_benchmarks = _GetAllPerfBenchmarks()
+
+    def BenchmarkName(cls):  # Copy from Benchmark.Name()'s implementation
+      name = cls.__module__.split('.')[-1]
+      if hasattr(cls, 'tag'):
+        name += '.' + cls.tag
+      if hasattr(cls, 'page_set'):
+        name += '.' + cls.page_set.Name()
+      return name
+
+    for b in all_benchmarks:
+      self.assertNotEquals(b.Name, benchmark_module.Benchmark.Name)
+      self.assertEquals(b.Name(), BenchmarkName(b))
+
 
 def _AddBenchmarkOptionsTests(suite):
   # Using |index_by_class_name=True| allows returning multiple benchmarks
@@ -62,6 +82,7 @@ def _AddBenchmarkOptionsTests(suite):
             _BenchmarkOptionsTestGenerator(benchmark))
     suite.addTest(BenchmarkOptionsTest(benchmark.Name()))
   suite.addTest(TestNoBenchmarkNamesDuplication())
+  suite.addTest(TestPerfBenchmarkNames())
 
 
 def load_tests(_, _2, _3):

@@ -30,6 +30,10 @@ class _RasterizeAndRecordMicro(benchmark.Benchmark):
                       action='store_true',
                       help='Whether to report additional detailed results.')
 
+  @classmethod
+  def Name(cls):
+    return 'rasterize_and_record_micro'
+
   def CreatePageTest(self, options):
     return rasterize_and_record_micro.RasterizeAndRecordMicro(
         options.start_wait_time, options.rasterize_repeat,
@@ -44,6 +48,10 @@ class RasterizeAndRecordMicroTop25(_RasterizeAndRecordMicro):
   http://www.chromium.org/developers/design-documents/rendering-benchmarks"""
   page_set = page_sets.Top25SmoothPageSet
 
+  @classmethod
+  def Name(cls):
+    return 'rasterize_and_record_micro.top_25_smooth'
+
 
 @benchmark.Disabled('mac', 'win')
 class RasterizeAndRecordMicroKeyMobileSites(_RasterizeAndRecordMicro):
@@ -51,6 +59,10 @@ class RasterizeAndRecordMicroKeyMobileSites(_RasterizeAndRecordMicro):
 
   http://www.chromium.org/developers/design-documents/rendering-benchmarks"""
   page_set = page_sets.KeyMobileSitesSmoothPageSet
+
+  @classmethod
+  def Name(cls):
+    return 'rasterize_and_record_micro.key_mobile_sites_smooth'
 
 
 @benchmark.Disabled('mac', 'win')
@@ -60,6 +72,10 @@ class RasterizeAndRecordMicroKeySilkCases(_RasterizeAndRecordMicro):
   http://www.chromium.org/developers/design-documents/rendering-benchmarks"""
   page_set = page_sets.KeySilkCasesPageSet
 
+  @classmethod
+  def Name(cls):
+    return 'rasterize_and_record_micro.key_silk_cases'
+
 
 @benchmark.Enabled('android')
 class RasterizeAndRecordMicroPolymer(_RasterizeAndRecordMicro):
@@ -67,3 +83,7 @@ class RasterizeAndRecordMicroPolymer(_RasterizeAndRecordMicro):
 
   http://www.chromium.org/developers/design-documents/rendering-benchmarks"""
   page_set = page_sets.PolymerPageSet
+  @classmethod
+  def Name(cls):
+    return 'rasterize_and_record_micro.polymer'
+

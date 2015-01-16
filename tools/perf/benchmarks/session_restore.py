@@ -15,6 +15,10 @@ from telemetry.page import profile_generator
 class _SessionRestoreTest(benchmark.Benchmark):
 
   @classmethod
+  def Name(cls):
+    return 'session_restore'
+
+  @classmethod
   def ProcessCommandLineArgs(cls, parser, args):
     super(_SessionRestoreTest, cls).ProcessCommandLineArgs(parser, args)
     profile_type = 'small_profile'
@@ -45,6 +49,10 @@ class SessionRestoreColdTypical25(_SessionRestoreTest):
   page_set = page_sets.Typical25PageSet
   options = {'pageset_repeat': 5}
 
+  @classmethod
+  def Name(cls):
+    return 'session_restore.cold.typical_25'
+
 
 # crbug.com/325479, crbug.com/381990
 @benchmark.Disabled('android', 'linux', 'reference')
@@ -52,3 +60,7 @@ class SessionRestoreWarmTypical25(_SessionRestoreTest):
   tag = 'warm'
   page_set = page_sets.Typical25PageSet
   options = {'pageset_repeat': 20}
+  @classmethod
+  def Name(cls):
+    return 'session_restore.warm.typical_25'
+

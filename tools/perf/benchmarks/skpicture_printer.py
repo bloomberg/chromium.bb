@@ -36,6 +36,10 @@ class SkpicturePrinter(benchmark.Benchmark):
     if not args.skp_outdir:
       parser.error('Please specify --skp-outdir')
 
+  @classmethod
+  def Name(cls):
+    return 'skpicture_printer'
+
   def CreatePageTest(self, options):
     return skpicture_printer.SkpicturePrinter(options.skp_outdir)
 

@@ -14,6 +14,10 @@ class TaskExecutionTimeKeyMobileSites(benchmark.Benchmark):
   test = task_execution_time.TaskExecutionTime
   page_set = page_sets.KeyMobileSitesSmoothPageSet
 
+  @classmethod
+  def Name(cls):
+    return 'task_execution_time.key_mobile_sites_smooth'
+
 
 @benchmark.Enabled('android')
 class TaskExecutionTimeToughSchedulingCases(benchmark.Benchmark):
@@ -21,3 +25,7 @@ class TaskExecutionTimeToughSchedulingCases(benchmark.Benchmark):
   http://www.chromium.org/developers/design-documents/rendering-benchmarks"""
   test = task_execution_time.TaskExecutionTime
   page_set = page_sets.ToughSchedulingCasesPageSet
+  @classmethod
+  def Name(cls):
+    return 'task_execution_time.tough_scheduling_cases'
+

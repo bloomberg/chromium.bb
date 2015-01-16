@@ -54,6 +54,10 @@ class RobohornetPro(benchmark.Benchmark):
   """
   test = _RobohornetProMeasurement
 
+  @classmethod
+  def Name(cls):
+    return 'robohornet_pro'
+
   def CreatePageSet(self, options):
     ps = page_set.PageSet(
         archive_data_file='../page_sets/data/robohornet_pro.json',

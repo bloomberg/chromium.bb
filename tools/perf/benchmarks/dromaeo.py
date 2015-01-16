@@ -98,6 +98,10 @@ class _DromaeoBenchmark(benchmark.Benchmark):
   """A base class for Dromaeo benchmarks."""
   test = _DromaeoMeasurement
 
+  @classmethod
+  def Name(cls):
+    return 'dromaeo'
+
   def CreatePageSet(self, options):
     """Makes a PageSet for Dromaeo benchmarks."""
     # Subclasses are expected to define class members called query_param and
@@ -122,6 +126,10 @@ class DromaeoDomCoreAttr(_DromaeoBenchmark):
   tag = 'domcoreattr'
   query_param = 'dom-attr'
 
+  @classmethod
+  def Name(cls):
+    return 'dromaeo.domcoreattr'
+
 
 class DromaeoDomCoreModify(_DromaeoBenchmark):
   """Dromaeo DOMCore modify JavaScript benchmark.
@@ -130,6 +138,10 @@ class DromaeoDomCoreModify(_DromaeoBenchmark):
   """
   tag = 'domcoremodify'
   query_param = 'dom-modify'
+
+  @classmethod
+  def Name(cls):
+    return 'dromaeo.domcoremodify'
 
 
 class DromaeoDomCoreQuery(_DromaeoBenchmark):
@@ -140,6 +152,10 @@ class DromaeoDomCoreQuery(_DromaeoBenchmark):
   tag = 'domcorequery'
   query_param = 'dom-query'
 
+  @classmethod
+  def Name(cls):
+    return 'dromaeo.domcorequery'
+
 
 class DromaeoDomCoreTraverse(_DromaeoBenchmark):
   """Dromaeo DOMCore traverse JavaScript benchmark.
@@ -148,6 +164,10 @@ class DromaeoDomCoreTraverse(_DromaeoBenchmark):
   """
   tag = 'domcoretraverse'
   query_param = 'dom-traverse'
+
+  @classmethod
+  def Name(cls):
+    return 'dromaeo.domcoretraverse'
 
 
 class DromaeoJslibAttrJquery(_DromaeoBenchmark):
@@ -159,6 +179,10 @@ class DromaeoJslibAttrJquery(_DromaeoBenchmark):
   tag = 'jslibattrjquery'
   query_param = 'jslib-attr-jquery'
 
+  @classmethod
+  def Name(cls):
+    return 'dromaeo.jslibattrjquery'
+
 
 class DromaeoJslibAttrPrototype(_DromaeoBenchmark):
   """Dromaeo JSLib attr prototype JavaScript benchmark.
@@ -168,6 +192,10 @@ class DromaeoJslibAttrPrototype(_DromaeoBenchmark):
   """
   tag = 'jslibattrprototype'
   query_param = 'jslib-attr-prototype'
+
+  @classmethod
+  def Name(cls):
+    return 'dromaeo.jslibattrprototype'
 
 
 class DromaeoJslibEventJquery(_DromaeoBenchmark):
@@ -179,6 +207,10 @@ class DromaeoJslibEventJquery(_DromaeoBenchmark):
   tag = 'jslibeventjquery'
   query_param = 'jslib-event-jquery'
 
+  @classmethod
+  def Name(cls):
+    return 'dromaeo.jslibeventjquery'
+
 
 class DromaeoJslibEventPrototype(_DromaeoBenchmark):
   """Dromaeo JSLib event prototype JavaScript benchmark.
@@ -188,6 +220,10 @@ class DromaeoJslibEventPrototype(_DromaeoBenchmark):
   """
   tag = 'jslibeventprototype'
   query_param = 'jslib-event-prototype'
+
+  @classmethod
+  def Name(cls):
+    return 'dromaeo.jslibeventprototype'
 
 
 @benchmark.Disabled('xp')  # crbug.com/389731
@@ -200,6 +236,10 @@ class DromaeoJslibModifyJquery(_DromaeoBenchmark):
   tag = 'jslibmodifyjquery'
   query_param = 'jslib-modify-jquery'
 
+  @classmethod
+  def Name(cls):
+    return 'dromaeo.jslibmodifyjquery'
+
 
 class DromaeoJslibModifyPrototype(_DromaeoBenchmark):
   """Dromaeo JSLib modify prototype JavaScript benchmark.
@@ -209,6 +249,10 @@ class DromaeoJslibModifyPrototype(_DromaeoBenchmark):
   """
   tag = 'jslibmodifyprototype'
   query_param = 'jslib-modify-prototype'
+
+  @classmethod
+  def Name(cls):
+    return 'dromaeo.jslibmodifyprototype'
 
 
 class DromaeoJslibStyleJquery(_DromaeoBenchmark):
@@ -220,6 +264,10 @@ class DromaeoJslibStyleJquery(_DromaeoBenchmark):
   tag = 'jslibstylejquery'
   query_param = 'jslib-style-jquery'
 
+  @classmethod
+  def Name(cls):
+    return 'dromaeo.jslibstylejquery'
+
 
 class DromaeoJslibStylePrototype(_DromaeoBenchmark):
   """Dromaeo JSLib style prototype JavaScript benchmark.
@@ -229,6 +277,10 @@ class DromaeoJslibStylePrototype(_DromaeoBenchmark):
   """
   tag = 'jslibstyleprototype'
   query_param = 'jslib-style-prototype'
+
+  @classmethod
+  def Name(cls):
+    return 'dromaeo.jslibstyleprototype'
 
 
 class DromaeoJslibTraverseJquery(_DromaeoBenchmark):
@@ -241,6 +293,10 @@ class DromaeoJslibTraverseJquery(_DromaeoBenchmark):
   tag = 'jslibtraversejquery'
   query_param = 'jslib-traverse-jquery'
 
+  @classmethod
+  def Name(cls):
+    return 'dromaeo.jslibtraversejquery'
+
 
 class DromaeoJslibTraversePrototype(_DromaeoBenchmark):
   """Dromaeo JSLib traverse prototype JavaScript benchmark.
@@ -250,6 +306,10 @@ class DromaeoJslibTraversePrototype(_DromaeoBenchmark):
   tag = 'jslibtraverseprototype'
   query_param = 'jslib-traverse-prototype'
 
+  @classmethod
+  def Name(cls):
+    return 'dromaeo.jslibtraverseprototype'
+
 
 class DromaeoCSSQueryJquery(_DromaeoBenchmark):
   """Dromaeo CSS Query jquery JavaScript benchmark.
@@ -258,4 +318,8 @@ class DromaeoCSSQueryJquery(_DromaeoBenchmark):
   """
   tag = 'cssqueryjquery'
   query_param = 'cssquery-jquery'
+
+  @classmethod
+  def Name(cls):
+    return 'dromaeo.cssqueryjquery'
 

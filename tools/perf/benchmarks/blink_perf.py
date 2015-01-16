@@ -119,6 +119,10 @@ class BlinkPerfAnimation(benchmark.Benchmark):
   tag = 'animation'
   test = _BlinkPerfMeasurement
 
+  @classmethod
+  def Name(cls):
+    return 'blink_perf.animation'
+
   def CreatePageSet(self, options):
     path = os.path.join(BLINK_PERF_BASE_DIR, 'Animation')
     return CreatePageSetFromPath(path, SKIPPED_FILE)
@@ -127,6 +131,10 @@ class BlinkPerfAnimation(benchmark.Benchmark):
 class BlinkPerfBindings(benchmark.Benchmark):
   tag = 'bindings'
   test = _BlinkPerfMeasurement
+
+  @classmethod
+  def Name(cls):
+    return 'blink_perf.bindings'
 
   def CreatePageSet(self, options):
     path = os.path.join(BLINK_PERF_BASE_DIR, 'Bindings')
@@ -138,6 +146,10 @@ class BlinkPerfBlinkGC(benchmark.Benchmark):
   tag = 'blink_gc'
   test = _BlinkPerfMeasurement
 
+  @classmethod
+  def Name(cls):
+    return 'blink_perf.blink_gc'
+
   def CreatePageSet(self, options):
     path = os.path.join(BLINK_PERF_BASE_DIR, 'BlinkGC')
     return CreatePageSetFromPath(path, SKIPPED_FILE)
@@ -146,6 +158,10 @@ class BlinkPerfBlinkGC(benchmark.Benchmark):
 class BlinkPerfCSS(benchmark.Benchmark):
   tag = 'css'
   test = _BlinkPerfMeasurement
+
+  @classmethod
+  def Name(cls):
+    return 'blink_perf.css'
 
   def CreatePageSet(self, options):
     path = os.path.join(BLINK_PERF_BASE_DIR, 'CSS')
@@ -156,6 +172,10 @@ class BlinkPerfCanvas(benchmark.Benchmark):
   tag = 'canvas'
   test = _BlinkPerfMeasurement
 
+  @classmethod
+  def Name(cls):
+    return 'blink_perf.canvas'
+
   def CreatePageSet(self, options):
     path = os.path.join(BLINK_PERF_BASE_DIR, 'Canvas')
     return CreatePageSetFromPath(path, SKIPPED_FILE)
@@ -164,6 +184,10 @@ class BlinkPerfCanvas(benchmark.Benchmark):
 class BlinkPerfDOM(benchmark.Benchmark):
   tag = 'dom'
   test = _BlinkPerfMeasurement
+
+  @classmethod
+  def Name(cls):
+    return 'blink_perf.dom'
 
   def CreatePageSet(self, options):
     path = os.path.join(BLINK_PERF_BASE_DIR, 'DOM')
@@ -174,6 +198,10 @@ class BlinkPerfEvents(benchmark.Benchmark):
   tag = 'events'
   test = _BlinkPerfMeasurement
 
+  @classmethod
+  def Name(cls):
+    return 'blink_perf.events'
+
   def CreatePageSet(self, options):
     path = os.path.join(BLINK_PERF_BASE_DIR, 'Events')
     return CreatePageSetFromPath(path, SKIPPED_FILE)
@@ -182,6 +210,10 @@ class BlinkPerfEvents(benchmark.Benchmark):
 class BlinkPerfLayout(benchmark.Benchmark):
   tag = 'layout'
   test = _BlinkPerfMeasurement
+
+  @classmethod
+  def Name(cls):
+    return 'blink_perf.layout'
 
   def CreatePageSet(self, options):
     path = os.path.join(BLINK_PERF_BASE_DIR, 'Layout')
@@ -193,10 +225,18 @@ class BlinkPerfLayoutFullLayout(BlinkPerfLayout):
   tag = 'layout_full_frame'
   test = _BlinkPerfFullFrameMeasurement
 
+  @classmethod
+  def Name(cls):
+    return 'blink_perf.layout_full_frame'
+
 
 class BlinkPerfMutation(benchmark.Benchmark):
   tag = 'mutation'
   test = _BlinkPerfMeasurement
+
+  @classmethod
+  def Name(cls):
+    return 'blink_perf.mutation'
 
   def CreatePageSet(self, options):
     path = os.path.join(BLINK_PERF_BASE_DIR, 'Mutation')
@@ -207,6 +247,10 @@ class BlinkPerfParser(benchmark.Benchmark):
   tag = 'parser'
   test = _BlinkPerfMeasurement
 
+  @classmethod
+  def Name(cls):
+    return 'blink_perf.parser'
+
   def CreatePageSet(self, options):
     path = os.path.join(BLINK_PERF_BASE_DIR, 'Parser')
     return CreatePageSetFromPath(path, SKIPPED_FILE)
@@ -215,6 +259,10 @@ class BlinkPerfParser(benchmark.Benchmark):
 class BlinkPerfSVG(benchmark.Benchmark):
   tag = 'svg'
   test = _BlinkPerfMeasurement
+
+  @classmethod
+  def Name(cls):
+    return 'blink_perf.svg'
 
   def CreatePageSet(self, options):
     path = os.path.join(BLINK_PERF_BASE_DIR, 'SVG')
@@ -226,10 +274,18 @@ class BlinkPerfSVGFullLayout(BlinkPerfSVG):
   tag = 'svg_full_frame'
   test = _BlinkPerfFullFrameMeasurement
 
+  @classmethod
+  def Name(cls):
+    return 'blink_perf.svg_full_frame'
+
 
 class BlinkPerfShadowDOM(benchmark.Benchmark):
   tag = 'shadow_dom'
   test = _BlinkPerfMeasurement
+
+  @classmethod
+  def Name(cls):
+    return 'blink_perf.shadow_dom'
 
   def CreatePageSet(self, options):
     path = os.path.join(BLINK_PERF_BASE_DIR, 'ShadowDOM')
@@ -241,6 +297,10 @@ class BlinkPerfShadowDOM(benchmark.Benchmark):
 class BlinkPerfXMLHttpRequest(benchmark.Benchmark):
   tag = 'xml_http_request'
   test = _BlinkPerfMeasurement
+
+  @classmethod
+  def Name(cls):
+    return 'blink_perf.xml_http_request'
 
   def CreatePageSet(self, options):
     path = os.path.join(BLINK_PERF_BASE_DIR, 'XMLHttpRequest')

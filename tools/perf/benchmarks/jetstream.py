@@ -81,6 +81,10 @@ class _JetstreamMeasurement(page_test.PageTest):
 class Jetstream(benchmark.Benchmark):
   test = _JetstreamMeasurement
 
+  @classmethod
+  def Name(cls):
+    return 'jetstream'
+
   def CreatePageSet(self, options):
     ps = page_set.PageSet(
         archive_data_file='../page_sets/data/jetstream.json',

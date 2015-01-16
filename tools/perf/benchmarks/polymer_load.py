@@ -13,6 +13,10 @@ class PolymerLoadPica(benchmark.Benchmark):
   test = polymer_load.PolymerLoadMeasurement
   page_set = page_sets.PicaPageSet
 
+  @classmethod
+  def Name(cls):
+    return 'polymer_load.pica'
+
 
 # There is something weird about this test (or a test that precedes it)
 # that causes it to fail in telemetry_perf_unittests when it is not run
@@ -24,3 +28,7 @@ class PolymerLoadTopeka(benchmark.Benchmark):
   """Measures time to polymer-ready for Topeka (Quiz App)."""
   test = polymer_load.PolymerLoadMeasurement
   page_set = page_sets.TopekaPageSet
+  @classmethod
+  def Name(cls):
+    return 'polymer_load.topeka'
+

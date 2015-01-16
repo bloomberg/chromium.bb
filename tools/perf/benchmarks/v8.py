@@ -15,4 +15,8 @@ class V8GarbageCollectionCases(benchmark.Benchmark):
     # available in the 'benchmark' category.
     return timeline_based_measurement.Options(overhead_level='v8-overhead')
 
+  @classmethod
+  def Name(cls):
+    return 'v8.garbage_collection_cases'
+
   page_set = page_sets.GarbageCollectionCasesPageSet

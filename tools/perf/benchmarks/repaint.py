@@ -22,6 +22,10 @@ class _Repaint(benchmark.Benchmark):
                       default=None,
                       help='Height of invalidations for fixed_size mode.')
 
+  @classmethod
+  def Name(cls):
+    return 'repaint'
+
   def CreatePageTest(self, options):
     return repaint_measurement.Repaint(options.mode, options.width,
                                        options.height)
@@ -32,6 +36,10 @@ class RepaintKeyMobileSites(_Repaint):
 
   http://www.chromium.org/developers/design-documents/rendering-benchmarks"""
   page_set = page_sets.KeyMobileSitesRepaintPageSet
+
+  @classmethod
+  def Name(cls):
+    return 'repaint.key_mobile_sites_repaint'
 
 
 @benchmark.Enabled('android')
@@ -44,3 +52,7 @@ class RepaintGpuRasterizationKeyMobileSites(_Repaint):
   page_set = page_sets.KeyMobileSitesRepaintPageSet
   def CustomizeBrowserOptions(self, options):
     silk_flags.CustomizeBrowserOptionsForGpuRasterization(options)
+  @classmethod
+  def Name(cls):
+    return 'repaint.gpu_rasterization.key_mobile_sites_repaint'
+
