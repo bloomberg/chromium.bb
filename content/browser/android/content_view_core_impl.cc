@@ -596,8 +596,9 @@ void ContentViewCoreImpl::OnSelectionEvent(ui::SelectionEventType event,
   ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
   if (j_obj.is_null())
     return;
-  Java_ContentViewCore_onSelectionEvent(
-      env, j_obj.obj(), event, position.x(), position.y());
+  Java_ContentViewCore_onSelectionEvent(env, j_obj.obj(), event,
+                                        position.x() * dpi_scale(),
+                                        position.y() * dpi_scale());
 }
 
 scoped_ptr<ui::TouchHandleDrawable>
@@ -624,9 +625,9 @@ void ContentViewCoreImpl::ShowPastePopup(int x_dip, int y_dip) {
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null())
     return;
-  Java_ContentViewCore_showPastePopupWithFeedback(env, obj.obj(),
-                                                  static_cast<jint>(x_dip),
-                                                  static_cast<jint>(y_dip));
+  Java_ContentViewCore_showPastePopupWithFeedback(
+      env, obj.obj(), static_cast<jint>(x_dip * dpi_scale()),
+      static_cast<jint>(y_dip * dpi_scale()));
 }
 
 void ContentViewCoreImpl::GetScaledContentBitmap(
@@ -1317,6 +1318,16 @@ void ContentViewCoreImpl::RequestTextSurroundingSelection(
     focused_frame->Send(new FrameMsg_TextSurroundingSelectionRequest(
         focused_frame->GetRoutingID(), max_length));
   }
+}
+
+void ContentViewCoreImpl::OnShowUnhandledTapUIIfNeeded(int x_dip, int y_dip) {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (obj.is_null())
+    return;
+  Java_ContentViewCore_onShowUnhandledTapUIIfNeeded(
+      env, obj.obj(), static_cast<jint>(x_dip * dpi_scale()),
+      static_cast<jint>(y_dip * dpi_scale()));
 }
 
 void ContentViewCoreImpl::OnSmartClipDataExtracted(

@@ -279,6 +279,8 @@ class ContentViewCoreImpl : public ContentViewCore,
   void SelectBetweenCoordinates(const gfx::PointF& base,
                                 const gfx::PointF& extent);
 
+  void OnShowUnhandledTapUIIfNeeded(int x_dip, int y_dip);
+
  private:
   class ContentViewUserData;
 

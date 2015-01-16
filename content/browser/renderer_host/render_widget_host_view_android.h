@@ -256,6 +256,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void DismissTextHandles();
   void SetTextHandlesTemporarilyHidden(bool hidden);
   void OnShowingPastePopup(const gfx::PointF& point);
+  void OnShowUnhandledTapUIIfNeeded(int x_dip, int y_dip);
 
   void SynchronousFrameMetadata(
       const cc::CompositorFrameMetadata& frame_metadata);

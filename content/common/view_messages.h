@@ -1624,6 +1624,12 @@ IPC_MESSAGE_ROUTED3(ViewHostMsg_SmartClipDataExtracted,
                     base::string16 /* html */,
                     gfx::Rect /* rect */)
 
+// Notifies that an unhandled tap has occurred at the specified x,y position
+// and that the UI may need to be triggered.
+IPC_MESSAGE_ROUTED2(ViewHostMsg_ShowUnhandledTapUIIfNeeded,
+                    int /* x */,
+                    int /* y */)
+
 #elif defined(OS_MACOSX)
 // Request that the browser load a font into shared memory for us.
 IPC_SYNC_MESSAGE_CONTROL1_3(ViewHostMsg_LoadFont,

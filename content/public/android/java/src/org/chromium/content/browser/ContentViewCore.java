@@ -519,6 +519,9 @@ public class ContentViewCore
     // A flag to determine if we enable hover feature or not.
     private Boolean mEnableTouchHover;
 
+    // The client that implements Contextual Search functionality, or null if none exists.
+    private ContextualSearchClient mContextualSearchClient;
+
     /**
      * Constructs a new ContentViewCore. Embedders must call initialize() after constructing
      * a ContentViewCore and before using it.
@@ -1236,6 +1239,14 @@ public class ContentViewCore
         for (mGestureStateListenersIterator.rewind();
                 mGestureStateListenersIterator.hasNext();) {
             mGestureStateListenersIterator.next().onSingleTap(consumed, x, y);
+        }
+    }
+
+    @SuppressWarnings("unused")
+    @CalledByNative
+    private void onShowUnhandledTapUIIfNeeded(int x, int y) {
+        if (mContextualSearchClient != null) {
+            mContextualSearchClient.showUnhandledTapUIIfNeeded(x, y);
         }
     }
 
@@ -2108,7 +2119,7 @@ public class ContentViewCore
     }
 
     @CalledByNative
-    private void onSelectionEvent(int eventType, float posXDip, float posYDip) {
+    private void onSelectionEvent(int eventType, int x, int y) {
         switch (eventType) {
             case SelectionEventType.SELECTION_SHOWN:
                 mHasSelection = true;
@@ -2138,7 +2149,7 @@ public class ContentViewCore
             case SelectionEventType.INSERTION_MOVED:
                 if (mPastePopupMenu == null) break;
                 if (!isScrollInProgress() && mPastePopupMenu.isShowing()) {
-                    showPastePopup((int) posXDip, (int) posYDip);
+                    showPastePopup(x, y);
                 } else {
                     hidePastePopup();
                 }
@@ -2148,7 +2159,7 @@ public class ContentViewCore
                 if (mWasPastePopupShowingOnInsertionDragStart)
                     hidePastePopup();
                 else
-                    showPastePopup((int) posXDip, (int) posYDip);
+                    showPastePopup(x, y);
                 break;
 
             case SelectionEventType.INSERTION_CLEARED:
@@ -2166,8 +2177,12 @@ public class ContentViewCore
                 assert false : "Invalid selection event type.";
         }
 
-        final float scale = mRenderCoordinates.getDeviceScaleFactor();
-        getContentViewClient().onSelectionEvent(eventType, posXDip * scale, posYDip * scale);
+        // TODO(donnd): remove this line once downstream changes from using the ContentViewClient to
+        // using the CoontextualSearchClient.  See crbug.com/403001.
+        getContentViewClient().onSelectionEvent(eventType, x, y);
+        if (mContextualSearchClient != null) {
+            mContextualSearchClient.onSelectionEvent(eventType, x, y);
+        }
     }
 
     private void dismissTextHandles() {
@@ -2402,25 +2417,28 @@ public class ContentViewCore
     @CalledByNative
     private void onSelectionChanged(String text) {
         mLastSelectedText = text;
+        // TODO(donnd): remove this line once downstream changes from using the ContentViewClient to
+        // using the CoontextualSearchClient.  See crbug.com/403001.
         getContentViewClient().onSelectionChanged(text);
+        if (mContextualSearchClient != null) {
+            mContextualSearchClient.onSelectionChanged(text);
+        }
     }
 
     @SuppressWarnings("unused")
     @CalledByNative
-    private void showPastePopupWithFeedback(int xDip, int yDip) {
+    private void showPastePopupWithFeedback(int x, int y) {
         // TODO(jdduke): Remove this when there is a better signal that long press caused
         // showing of the paste popup. See http://crbug.com/150151.
-        if (showPastePopup(xDip, yDip)) {
+        if (showPastePopup(x, y)) {
             mContainerView.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
         }
     }
 
-    private boolean showPastePopup(int xDip, int yDip) {
+    private boolean showPastePopup(int x, int y) {
         if (!mHasInsertion || !canPaste()) return false;
         final float contentOffsetYPix = mRenderCoordinates.getContentOffsetYPix();
-        getPastePopup().showAt(
-                (int) mRenderCoordinates.fromDipToPix(xDip),
-                (int) (mRenderCoordinates.fromDipToPix(yDip) + contentOffsetYPix));
+        getPastePopup().showAt(x, (int) (y + contentOffsetYPix));
         return true;
     }
 
@@ -3037,6 +3055,14 @@ public class ContentViewCore
     @CalledByNative
     private boolean isFullscreenRequiredForOrientationLock() {
         return mFullscreenRequiredForOrientationLock;
+    }
+
+    /**
+     * Sets the client to use for Contextual Search functionality.
+     * @param contextualSearchClient The client to notify for Contextual Search operations.
+     */
+    public void setContextualSearchClient(ContextualSearchClient contextualSearchClient) {
+        mContextualSearchClient = contextualSearchClient;
     }
 
     private native WebContents nativeGetWebContentsAndroid(long nativeContentViewCoreImpl);

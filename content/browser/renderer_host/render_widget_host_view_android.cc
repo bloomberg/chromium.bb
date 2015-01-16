@@ -386,6 +386,8 @@ bool RenderWidgetHostViewAndroid::OnMessageReceived(
                         OnTextInputStateChanged)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SmartClipDataExtracted,
                         OnSmartClipDataExtracted)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_ShowUnhandledTapUIIfNeeded,
+                        OnShowUnhandledTapUIIfNeeded)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -646,6 +648,18 @@ void RenderWidgetHostViewAndroid::OnTextSurroundingSelectionResponse(
     return;
   text_surrounding_selection_callback_.Run(content, start_offset, end_offset);
   text_surrounding_selection_callback_.Reset();
+}
+
+void RenderWidgetHostViewAndroid::OnShowUnhandledTapUIIfNeeded(int x_dip,
+                                                               int y_dip) {
+  if (!content_view_core_)
+    return;
+  // Validate the coordinates are within the viewport.
+  gfx::Size viewport_size = content_view_core_->GetViewportSizeDip();
+  if (x_dip < 0 || x_dip > viewport_size.width() ||
+      y_dip < 0 || y_dip > viewport_size.height())
+    return;
+  content_view_core_->OnShowUnhandledTapUIIfNeeded(x_dip, y_dip);
 }
 
 void RenderWidgetHostViewAndroid::ReleaseLocksOnSurface() {

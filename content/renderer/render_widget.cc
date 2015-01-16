@@ -55,11 +55,13 @@
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/platform/WebCursorInfo.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
+#include "third_party/WebKit/public/platform/WebPoint.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/platform/WebScreenInfo.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebDeviceEmulationParams.h"
+#include "third_party/WebKit/public/web/WebNode.h"
 #include "third_party/WebKit/public/web/WebPagePopup.h"
 #include "third_party/WebKit/public/web/WebPopupMenu.h"
 #include "third_party/WebKit/public/web/WebPopupMenuInfo.h"
@@ -97,7 +99,9 @@ using blink::WebKeyboardEvent;
 using blink::WebMouseEvent;
 using blink::WebMouseWheelEvent;
 using blink::WebNavigationPolicy;
+using blink::WebNode;
 using blink::WebPagePopup;
+using blink::WebPoint;
 using blink::WebPopupMenu;
 using blink::WebPopupMenuInfo;
 using blink::WebPopupType;
@@ -2126,6 +2130,21 @@ void RenderWidget::resetInputMethod() {
 
   UpdateCompositionInfo(true);
 }
+
+#if defined(OS_ANDROID)
+void RenderWidget::showUnhandledTapUIIfNeeded(
+    const WebPoint& tapped_position,
+    const WebNode& tapped_node,
+    bool page_changed) {
+  DCHECK(handling_input_event_);
+  bool should_trigger = !page_changed && tapped_node.isTextNode() &&
+                        !tapped_node.isContentEditable();
+  if (should_trigger) {
+    Send(new ViewHostMsg_ShowUnhandledTapUIIfNeeded(routing_id_,
+        tapped_position.x, tapped_position.y));
+  }
+}
+#endif
 
 void RenderWidget::didHandleGestureEvent(
     const WebGestureEvent& event,

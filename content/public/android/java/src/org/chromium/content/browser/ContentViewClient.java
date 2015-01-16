@@ -122,31 +122,21 @@ public class ContentViewClient {
 
     /**
      * Notification that the selection has changed.
-     * TODO(donnd): Remove this and instead expose a ContextualSearchClient, crbug.com/403001.
+     * TODO(donnd): Remove this ASAP, once downstream no longer calls this. crbug.com/403001.
      * @param selection The newly established selection.
      */
-    public void onSelectionChanged(String selection) {
-    }
+    @Deprecated
+    public void onSelectionChanged(String selection) {}
 
     /**
      * Notification that a selection or insertion-related event has occurred.
-     * TODO(pedrosimonetti): remove this method once downstream code has been updated to use
-     * the other signature.
-     * @param eventType The selection event type, see {@link SelectionEventType}.
-     */
-    public void onSelectionEvent(int eventType) {
-    }
-
-    /**
-     * Notification that a selection or insertion-related event has occurred.
-     * TODO(donnd): Remove this and instead expose a ContextualSearchClient, crbug.com/403001.
+     * TODO(donnd): Remove this ASAP, once downstream no longer calls this. crbug.com/403001.
      * @param eventType The selection event type, see {@link SelectionEventType}.
      * @param posXPix The x coordinate of the selection start handle.
      * @param posYPix The y coordinate of the selection start handle.
      */
-    public void onSelectionEvent(int eventType, float posXPix, float posYPix) {
-        onSelectionEvent(eventType);
-    }
+    @Deprecated
+    public void onSelectionEvent(int eventType, float posXPix, float posYPix) {}
 
     /**
      * Called when a new content intent is requested to be started.

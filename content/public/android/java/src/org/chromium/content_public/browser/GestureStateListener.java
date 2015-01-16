@@ -67,4 +67,10 @@ public class GestureStateListener {
      * indicating whether or not the gesture was consumed.
      */
     public void onSingleTap(boolean consumed, int x, int y) {}
+
+    /*
+     * Called after a single-tap gesture event was processed by the renderer,
+     * but was not handled.
+     */
+    public void onShowUnhandledTapUIIfNeeded(int x, int y) {}
 }

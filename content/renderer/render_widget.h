@@ -57,6 +57,8 @@ struct WebDeviceEmulationParams;
 class WebGestureEvent;
 class WebKeyboardEvent;
 class WebMouseEvent;
+class WebNode;
+struct WebPoint;
 class WebTouchEvent;
 }
 
@@ -170,6 +172,15 @@ class CONTENT_EXPORT RenderWidget
   virtual void didHandleGestureEvent(const blink::WebGestureEvent& event,
                                      bool event_cancelled);
   virtual void showImeIfNeeded();
+
+#if defined(OS_ANDROID)
+  // Notifies that a tap was not consumed, so showing a UI for the unhandled
+  // tap may be needed.
+  virtual void showUnhandledTapUIIfNeeded(
+      const blink::WebPoint& tapped_position,
+      const blink::WebNode& tapped_node,
+      bool page_changed) override;
+#endif
 
   // Begins the compositor's scheduler to start producing frames.
   void StartCompositor();
