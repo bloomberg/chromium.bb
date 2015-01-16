@@ -11,6 +11,7 @@
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
@@ -595,8 +596,19 @@ BrowserActionOpenPopupFunction::BrowserActionOpenPopupFunction()
 
 bool BrowserActionOpenPopupFunction::RunAsync() {
   // We only allow the popup in the active window.
+  Profile* profile = GetProfile();
   Browser* browser = chrome::FindLastActiveWithProfile(
-                         GetProfile(), chrome::GetActiveDesktop());
+                         profile, chrome::GetActiveDesktop());
+  // It's possible that the last active browser actually corresponds to the
+  // associated incognito profile, and this won't be returned by
+  // FindLastActiveWithProfile. If the browser we found isn't active and the
+  // extension can operate incognito, then check the last active incognito, too.
+  if ((!browser || !browser->window()->IsActive()) &&
+      util::IsIncognitoEnabled(extension()->id(), profile) &&
+      profile->HasOffTheRecordProfile()) {
+    browser = chrome::FindLastActiveWithProfile(
+        profile->GetOffTheRecordProfile(), chrome::GetActiveDesktop());
+  }
 
   // If there's no active browser, or the Toolbar isn't visible, abort.
   // Otherwise, try to open a popup in the active browser.
@@ -611,9 +623,13 @@ bool BrowserActionOpenPopupFunction::RunAsync() {
     return false;
   }
 
+  // Even if this is for an incognito window, we want to use the normal profile.
+  // If the extension is spanning, then extension hosts are created with the
+  // original profile, and if it's split, then we know the api call came from
+  // the right profile.
   registrar_.Add(this,
                  NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
-                 content::Source<Profile>(GetProfile()));
+                 content::Source<Profile>(profile));
 
   // Set a timeout for waiting for the notification that the popup is loaded.
   // Waiting is required so that the popup view can be retrieved by the custom

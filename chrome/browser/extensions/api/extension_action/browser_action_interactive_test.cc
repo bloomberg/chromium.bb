@@ -148,6 +148,28 @@ IN_PROC_BROWSER_TEST_F(BrowserActionInteractiveTest, TestOpenPopupIncognito) {
       chrome::GetActiveDesktop())->GetLastActive()).HasPopup());
 }
 
+// Tests that an extension can open a popup in the last active incognito window
+// even from a background page with a non-incognito profile.
+// (crbug.com/448853)
+IN_PROC_BROWSER_TEST_F(BrowserActionInteractiveTest,
+                       TestOpenPopupIncognitoFromBackground) {
+  if (!ShouldRunPopupTest())
+    return;
+
+  const Extension* extension =
+      LoadExtensionIncognito(test_data_dir_.AppendASCII("browser_action").
+          AppendASCII("open_popup_background"));
+  ASSERT_TRUE(extension);
+  ExtensionTestMessageListener listener(false);
+  listener.set_extension_id(extension->id());
+
+  Browser* incognito_browser =
+      ui_test_utils::OpenURLOffTheRecord(profile(), GURL("chrome://newtab/"));
+  listener.WaitUntilSatisfied();
+  EXPECT_EQ(std::string("opened"), listener.message());
+  EXPECT_TRUE(BrowserActionTestUtil(incognito_browser).HasPopup());
+}
+
 #if defined(OS_LINUX)
 #define MAYBE_TestOpenPopupDoesNotCloseOtherPopups DISABLED_TestOpenPopupDoesNotCloseOtherPopups
 #else
