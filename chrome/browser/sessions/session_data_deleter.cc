@@ -148,7 +148,7 @@ void DeleteSessionOnlyData(Profile* profile) {
 
   // TODO: Remove Athena special casing once the AthenaSessionRestore is in
   // place.
-#if defined(OS_ANDROID) || defined(USE_ATHENA)
+#if defined(OS_ANDROID)
   SessionStartupPref::Type startup_pref_type =
       SessionStartupPref::GetDefaultStartupType();
 #else

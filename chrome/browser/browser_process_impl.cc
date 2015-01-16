@@ -203,10 +203,8 @@ BrowserProcessImpl::BrowserProcessImpl(
 #endif
 
 #if defined(ENABLE_EXTENSIONS)
-#if !defined(USE_ATHENA)
   // Athena sets its own instance during Athena's init process.
   extensions::AppWindowClient::Set(ChromeAppWindowClient::GetInstance());
-#endif
 
   extension_event_router_forwarder_ = new extensions::EventRouterForwarder;
   ExtensionRendererState::GetInstance()->Init();

@@ -194,10 +194,7 @@
 #include "chrome/browser/ui/views/chrome_browser_main_extra_parts_views.h"
 #endif
 
-#if defined(USE_ATHENA)
-#include "athena/content/public/web_contents_view_delegate_creator.h"
-#include "chrome/browser/ui/views/athena/chrome_browser_main_extra_parts_athena.h"
-#elif defined(USE_ASH)
+#if defined(USE_ASH)
 #include "chrome/browser/ui/views/ash/chrome_browser_main_extra_parts_ash.h"
 #endif
 
@@ -722,9 +719,7 @@ content::BrowserMainParts* ChromeContentBrowserClient::CreateBrowserMainParts(
 
 // TODO(oshima): Athena on chrome currently requires USE_ASH to build.
 // We should reduce the dependency as much as possible.
-#if defined(USE_ATHENA)
-  main_parts->AddParts(CreateChromeBrowserMainExtraPartsAthena());
-#elif defined(USE_ASH)
+#if defined(USE_ASH)
   main_parts->AddParts(new ChromeBrowserMainExtraPartsAsh());
 #endif
 
@@ -832,11 +827,7 @@ void ChromeContentBrowserClient::GetStoragePartitionConfigForSite(
 content::WebContentsViewDelegate*
     ChromeContentBrowserClient::GetWebContentsViewDelegate(
         content::WebContents* web_contents) {
-#if defined(USE_ATHENA)
-  return athena::CreateWebContentsViewDelegate(web_contents);
-#else
   return chrome::CreateWebContentsViewDelegate(web_contents);
-#endif
 }
 
 void ChromeContentBrowserClient::RenderProcessWillLaunch(

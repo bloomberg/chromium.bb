@@ -1261,8 +1261,6 @@
       'browser/ui/athena/extensions/extension_install_ui_factory_athena.cc',
       'browser/ui/views/athena/athena_util.cc',
       'browser/ui/views/athena/athena_util.h',
-      'browser/ui/views/athena/chrome_browser_main_extra_parts_athena.cc',
-      'browser/ui/views/athena/chrome_browser_main_extra_parts_athena.h',
     ],
     # Used when not using mobile and not using Athena.
     'chrome_browser_ui_non_athena_non_mobile_sources': [

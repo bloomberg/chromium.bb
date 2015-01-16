@@ -41,8 +41,7 @@ ppapi::host::ReplyMessageContext GetPermissionOnUIThread(
   if (!render_frame_host)
     return reply;  // RFH destroyed while task was pending.
 
-  // crbug.com/381398, crbug.com/413906 for !USE_ATHENA
-#if defined(USE_ASH) && !defined(USE_ATHENA)
+#if defined(USE_ASH)
   base::string16 title;
   base::string16 message;
 
@@ -81,7 +80,7 @@ ppapi::host::ReplyMessageContext GetPermissionOnUIThread(
   return reply;
 }
 
-#if defined(USE_ASH) && defined(OS_CHROMEOS) && !defined(USE_ATHENA)
+#if defined(OS_CHROMEOS)
 void OnTerminateRemotingEventOnUIThread(const base::Closure& stop_callback) {
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE, stop_callback);
@@ -101,7 +100,7 @@ ppapi::host::ReplyMessageContext StartRemotingOnUIThread(
     return reply;  // RFH destroyed while task was pending.
   }
 
-#if defined(USE_ASH) && defined(OS_CHROMEOS) && !defined(USE_ATHENA)
+#if defined(OS_CHROMEOS)
   base::Closure stop_callback_ui_thread =
       base::Bind(&OnTerminateRemotingEventOnUIThread, stop_callback);
 
@@ -117,7 +116,7 @@ ppapi::host::ReplyMessageContext StartRemotingOnUIThread(
 
 void StopRemotingOnUIThread() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-#if defined(USE_ASH) && defined(OS_CHROMEOS) && !defined(USE_ATHENA)
+#if defined(OS_CHROMEOS)
   if (ash::Shell::GetInstance()) {
     ash::Shell::GetInstance()->system_tray_notifier()->NotifyScreenShareStop();
   }
