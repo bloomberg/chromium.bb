@@ -300,6 +300,13 @@ void NotifyTimezoneChangeOnThisThread() {
   v8::Date::DateTimeConfigurationChangeNotification(isolate);
 }
 
+void LowMemoryNotificationOnThisThread() {
+  v8::Isolate* isolate = v8::Isolate::GetCurrent();
+  if (!isolate)
+    return;
+  isolate->LowMemoryNotification();
+}
+
 class RenderFrameSetupImpl : public mojo::InterfaceImpl<RenderFrameSetup> {
  public:
   RenderFrameSetupImpl()
@@ -1688,6 +1695,8 @@ void RenderThreadImpl::OnMemoryPressure(
   // receive a memory pressure notification, we might be about to be killed.
   if (blink_platform_impl_ && blink::mainThreadIsolate()) {
     blink::mainThreadIsolate()->LowMemoryNotification();
+    RenderThread::Get()->PostTaskToAllWebWorkers(
+        base::Bind(&LowMemoryNotificationOnThisThread));
   }
 
   if (memory_pressure_level ==
