@@ -57,26 +57,15 @@ enum TextRunFlag {
 typedef unsigned TextRunFlags;
 
 // Direction resolved from string value.
-TextRun constructTextRun(RenderObject* context, const Font&, const String&, RenderStyle*,
-    TextRun::ExpansionBehavior = TextRun::AllowTrailingExpansion | TextRun::ForbidLeadingExpansion, TextRunFlags = DefaultTextRunFlags);
-TextRun constructTextRun(RenderObject* context, const Font&, const RenderText*, unsigned offset, unsigned length, RenderStyle*,
-    TextRun::ExpansionBehavior = TextRun::AllowTrailingExpansion | TextRun::ForbidLeadingExpansion);
+TextRun constructTextRun(RenderObject* context, const Font&, const String&, RenderStyle*, TextRunFlags = DefaultTextRunFlags);
+TextRun constructTextRun(RenderObject* context, const Font&, const RenderText*, unsigned offset, unsigned length, RenderStyle*);
 
 // Explicit direction.
-TextRun constructTextRun(RenderObject* context, const Font&, const String&, RenderStyle*, TextDirection,
-    TextRun::ExpansionBehavior = TextRun::AllowTrailingExpansion | TextRun::ForbidLeadingExpansion, TextRunFlags = DefaultTextRunFlags);
-
-TextRun constructTextRun(RenderObject* context, const Font&, const RenderText*, RenderStyle*, TextDirection,
-    TextRun::ExpansionBehavior = TextRun::AllowTrailingExpansion | TextRun::ForbidLeadingExpansion);
-
-TextRun constructTextRun(RenderObject* context, const Font&, const RenderText*, unsigned offset, unsigned length, RenderStyle*, TextDirection,
-    TextRun::ExpansionBehavior = TextRun::AllowTrailingExpansion | TextRun::ForbidLeadingExpansion);
-
-TextRun constructTextRun(RenderObject* context, const Font&, const LChar* characters, int length, RenderStyle*, TextDirection,
-    TextRun::ExpansionBehavior = TextRun::AllowTrailingExpansion | TextRun::ForbidLeadingExpansion);
-
-TextRun constructTextRun(RenderObject* context, const Font&, const UChar* characters, int length, RenderStyle*, TextDirection,
-    TextRun::ExpansionBehavior = TextRun::AllowTrailingExpansion | TextRun::ForbidLeadingExpansion);
+TextRun constructTextRun(RenderObject*, const Font&, const String&, RenderStyle*, TextDirection, TextRunFlags = DefaultTextRunFlags);
+TextRun constructTextRun(RenderObject*, const Font&, const RenderText*, RenderStyle*, TextDirection);
+TextRun constructTextRun(RenderObject*, const Font&, const RenderText*, unsigned offset, unsigned length, RenderStyle*, TextDirection);
+TextRun constructTextRun(RenderObject*, const Font&, const LChar*, int length, RenderStyle*, TextDirection);
+TextRun constructTextRun(RenderObject*, const Font&, const UChar*, int length, RenderStyle*, TextDirection);
 
 } // namespace blink
 

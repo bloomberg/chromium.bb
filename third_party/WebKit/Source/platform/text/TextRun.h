@@ -191,6 +191,7 @@ public:
     void setText(const String&);
     void setCharactersLength(unsigned charactersLength) { m_charactersLength = charactersLength; }
 
+    void setExpansionBehavior(ExpansionBehavior behavior) { m_expansionBehavior = behavior; }
     float horizontalGlyphStretch() const { return m_horizontalGlyphStretch; }
     void setHorizontalGlyphStretch(float scale) { m_horizontalGlyphStretch = scale; }
 
