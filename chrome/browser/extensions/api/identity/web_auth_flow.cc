@@ -158,9 +158,9 @@ void WebAuthFlow::Observe(int type,
         content::Details<RenderViewHost>(details).ptr());
     WebContents* web_contents = WebContents::FromRenderViewHost(render_view);
     GuestViewBase* guest = GuestViewBase::FromWebContents(web_contents);
-    WebContents* embedder = guest ? guest->embedder_web_contents() : NULL;
+    WebContents* owner = guest ? guest->owner_web_contents() : NULL;
     if (web_contents &&
-        (embedder == WebContentsObserver::web_contents())) {
+        (owner == WebContentsObserver::web_contents())) {
       // Switch from watching the app window to the guest inside it.
       embedded_window_created_ = true;
       WebContentsObserver::Observe(web_contents);
