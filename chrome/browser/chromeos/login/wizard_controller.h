@@ -72,7 +72,7 @@ class WizardController : public BaseScreenDelegate,
   };
 
   WizardController(LoginDisplayHost* host, OobeDisplay* oobe_display);
-  virtual ~WizardController();
+  ~WizardController() override;
 
   // Returns the default wizard controller if it has been created.
   static WizardController* default_controller() {
@@ -130,7 +130,7 @@ class WizardController : public BaseScreenDelegate,
   bool login_screen_started() const { return login_screen_started_; }
 
   // ScreenManager implementation.
-  virtual BaseScreen* CreateScreen(const std::string& screen_name) override;
+  BaseScreen* CreateScreen(const std::string& screen_name) override;
 
   static const char kNetworkScreenName[];
   static const char kLoginScreenName[];
@@ -232,30 +232,30 @@ class WizardController : public BaseScreenDelegate,
   void PerformOOBECompletedActions();
 
   // Overridden from BaseScreenDelegate:
-  virtual void OnExit(BaseScreen& screen,
-                      ExitCodes exit_code,
-                      const ::login::ScreenContext* context) override;
-  virtual void ShowCurrentScreen() override;
-  virtual ErrorScreen* GetErrorScreen() override;
-  virtual void ShowErrorScreen() override;
-  virtual void HideErrorScreen(BaseScreen* parent_screen) override;
+  void OnExit(BaseScreen& screen,
+              ExitCodes exit_code,
+              const ::login::ScreenContext* context) override;
+  void ShowCurrentScreen() override;
+  ErrorScreen* GetErrorScreen() override;
+  void ShowErrorScreen() override;
+  void HideErrorScreen(BaseScreen* parent_screen) override;
 
   // Overridden from EulaScreen::Delegate:
-  virtual void SetUsageStatisticsReporting(bool val) override;
-  virtual bool GetUsageStatisticsReporting() const override;
+  void SetUsageStatisticsReporting(bool val) override;
+  bool GetUsageStatisticsReporting() const override;
 
   // Override from ControllerPairingScreen::Delegate:
-  virtual void SetHostConfiguration() override;
+  void SetHostConfiguration() override;
 
   // Override from HostPairingScreen::Delegate:
-  virtual void ConfigureHost(bool accepted_eula,
-                             const std::string& lang,
-                             const std::string& timezone,
-                             bool send_reports,
-                             const std::string& keyboard_layout) override;
+  void ConfigureHost(bool accepted_eula,
+                     const std::string& lang,
+                     const std::string& timezone,
+                     bool send_reports,
+                     const std::string& keyboard_layout) override;
 
   // Override from NetworkScreen::Delegate:
-  virtual void OnEnableDebuggingScreenRequested() override;
+  void OnEnableDebuggingScreenRequested() override;
 
   // Notification of a change in the state of an accessibility setting.
   void OnAccessibilityStatusChanged(

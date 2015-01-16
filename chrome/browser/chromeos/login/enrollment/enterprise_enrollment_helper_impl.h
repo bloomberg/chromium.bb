@@ -34,13 +34,13 @@ class EnterpriseEnrollmentHelperImpl : public EnterpriseEnrollmentHelper,
       EnrollmentStatusConsumer* status_consumer,
       const policy::EnrollmentConfig& enrollment_config,
       const std::string& enrolling_user_domain);
-  virtual ~EnterpriseEnrollmentHelperImpl();
+  ~EnterpriseEnrollmentHelperImpl() override;
 
   // Overridden from EnterpriseEnrollmentHelper:
-  virtual void EnrollUsingProfile(Profile* profile,
-                                  bool fetch_additional_token) override;
-  virtual void EnrollUsingToken(const std::string& token) override;
-  virtual void ClearAuth(const base::Closure& callback) override;
+  void EnrollUsingProfile(Profile* profile,
+                          bool fetch_additional_token) override;
+  void EnrollUsingToken(const std::string& token) override;
+  void ClearAuth(const base::Closure& callback) override;
 
  private:
   void DoEnrollUsingToken(const std::string& token);
@@ -61,7 +61,7 @@ class EnterpriseEnrollmentHelperImpl : public EnterpriseEnrollmentHelper,
   void UMA(policy::MetricEnrollment sample);
 
   // Overridden from BrowsingDataRemover::Observer:
-  virtual void OnBrowsingDataRemoverDone() override;
+  void OnBrowsingDataRemoverDone() override;
 
   const policy::EnrollmentConfig enrollment_config_;
   const std::string enrolling_user_domain_;

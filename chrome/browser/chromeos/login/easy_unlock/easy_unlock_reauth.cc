@@ -32,7 +32,7 @@ class ReauthHandler : public content::NotificationObserver,
   explicit ReauthHandler(EasyUnlockReauth::UserContextCallback callback)
       : callback_(callback) {}
 
-  virtual ~ReauthHandler() {}
+  ~ReauthHandler() override {}
 
   bool Start() {
     ScreenLocker* screen_locker = ScreenLocker::default_screen_locker();
@@ -60,9 +60,9 @@ class ReauthHandler : public content::NotificationObserver,
   }
 
   // content::NotificationObserver
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override {
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override {
     CHECK(type == chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED);
     bool is_screen_locked = *content::Details<bool>(details).ptr();
     DCHECK(is_screen_locked);
@@ -88,15 +88,14 @@ class ReauthHandler : public content::NotificationObserver,
   }
 
   // chromeos::AuthStatusConsumer:
-  virtual void OnAuthSuccess(
-      const chromeos::UserContext& user_context) override {
+  void OnAuthSuccess(const chromeos::UserContext& user_context) override {
     callback_.Run(user_context);
     // Schedule deletion.
     base::MessageLoopForUI::current()->PostTask(FROM_HERE,
                                                 base::Bind(&EndReauthAttempt));
   }
 
-  virtual void OnAuthFailure(const chromeos::AuthFailure& error) override {}
+  void OnAuthFailure(const chromeos::AuthFailure& error) override {}
 
  private:
   content::NotificationRegistrar notification_registrar_;

@@ -24,18 +24,18 @@ class AuthPrewarmer : public NetworkStateHandlerObserver,
                       public content::NotificationObserver {
  public:
   AuthPrewarmer();
-  virtual ~AuthPrewarmer();
+  ~AuthPrewarmer() override;
 
   void PrewarmAuthentication(const base::Closure& completion_callback);
 
  private:
   // chromeos::NetworkStateHandlerObserver overrides.
-  virtual void DefaultNetworkChanged(const NetworkState* network) override;
+  void DefaultNetworkChanged(const NetworkState* network) override;
 
   // content::NotificationObserver overrides.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   bool IsNetworkConnected() const;
   net::URLRequestContextGetter* GetRequestContext() const;

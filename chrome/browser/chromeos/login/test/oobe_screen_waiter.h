@@ -19,7 +19,7 @@ namespace chromeos {
 class OobeScreenWaiter : public OobeUI::Observer {
  public:
   explicit OobeScreenWaiter(OobeDisplay::Screen expected_screen);
-  virtual ~OobeScreenWaiter();
+  ~OobeScreenWaiter() override;
 
   // Run message loop to wait for the expected_screen.
   void Wait();
@@ -30,9 +30,8 @@ class OobeScreenWaiter : public OobeUI::Observer {
   void WaitNoAssertCurrentScreen();
 
   // OobeUI::Observer implementation:
-  virtual void OnCurrentScreenChanged(
-        OobeDisplay::Screen current_screen,
-        OobeDisplay::Screen new_screen) override;
+  void OnCurrentScreenChanged(OobeDisplay::Screen current_screen,
+                              OobeDisplay::Screen new_screen) override;
 
  private:
   OobeUI* GetOobeUI();

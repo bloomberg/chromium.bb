@@ -20,11 +20,11 @@ class StubLoginSessionManagerDelegate
  public:
   StubLoginSessionManagerDelegate(Profile* profile,
                                   const std::string& login_user_id);
-  virtual ~StubLoginSessionManagerDelegate();
+  ~StubLoginSessionManagerDelegate() override;
 
  private:
   // session_manager::SessionManagerDelegate implementation:
-  virtual void Start() override;
+  void Start() override;
 
   DISALLOW_COPY_AND_ASSIGN(StubLoginSessionManagerDelegate);
 };

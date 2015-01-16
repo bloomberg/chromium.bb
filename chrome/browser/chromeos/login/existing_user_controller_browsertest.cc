@@ -127,7 +127,7 @@ class ExistingUserControllerTest : public policy::DevicePolicyCrosBrowserTest {
     return ExistingUserController::current_controller();
   }
 
-  virtual void SetUpInProcessBrowserTestFixture() override {
+  void SetUpInProcessBrowserTestFixture() override {
     SetUpSessionManager();
 
     DevicePolicyCrosBrowserTest::SetUpInProcessBrowserTestFixture();
@@ -158,7 +158,7 @@ class ExistingUserControllerTest : public policy::DevicePolicyCrosBrowserTest {
         .Times(1);
   }
 
-  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kLoginManager);
   }
 
@@ -195,7 +195,7 @@ class ExistingUserControllerTest : public policy::DevicePolicyCrosBrowserTest {
         .WillRepeatedly(ReturnNull());
   }
 
-  virtual void SetUpOnMainThread() override {
+  void SetUpOnMainThread() override {
     testing_profile_.reset(new TestingProfile());
     SetUpUserManager();
     existing_user_controller_.reset(
@@ -209,7 +209,7 @@ class ExistingUserControllerTest : public policy::DevicePolicyCrosBrowserTest {
                    false);
   }
 
-  virtual void TearDownOnMainThread() override {
+  void TearDownOnMainThread() override {
     // ExistingUserController must be deleted before the thread is cleaned up:
     // If there is an outstanding login attempt when ExistingUserController is
     // deleted, its LoginPerformer instance will be deleted, which in turn
@@ -380,7 +380,7 @@ class ExistingUserControllerPublicSessionTest
             policy::DeviceLocalAccount::TYPE_PUBLIC_SESSION)) {
   }
 
-  virtual void SetUpOnMainThread() override {
+  void SetUpOnMainThread() override {
     ExistingUserControllerTest::SetUpOnMainThread();
 
     // Wait for the public session user to be created.
@@ -415,7 +415,7 @@ class ExistingUserControllerPublicSessionTest
     }
   }
 
-  virtual void SetUpSessionManager() override {
+  void SetUpSessionManager() override {
     InstallOwnerKey();
 
     // Setup the device policy.
@@ -441,7 +441,7 @@ class ExistingUserControllerPublicSessionTest
         device_local_account_policy.GetBlob());
   }
 
-  virtual void SetUpLoginDisplay() override {
+  void SetUpLoginDisplay() override {
     EXPECT_CALL(*mock_login_display_host_.get(), CreateLoginDisplay(_))
         .Times(1)
         .WillOnce(Return(mock_login_display_));
@@ -454,8 +454,7 @@ class ExistingUserControllerPublicSessionTest
       .Times(AnyNumber());
   }
 
-  virtual void SetUpUserManager() override {
-  }
+  void SetUpUserManager() override {}
 
   void ExpectSuccessfulLogin(const UserContext& user_context) {
     EXPECT_CALL(*mock_login_display_, SetUIEnabled(false))

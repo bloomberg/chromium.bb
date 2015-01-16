@@ -20,11 +20,11 @@ class RestoreAfterCrashSessionManagerDelegate
  public:
   RestoreAfterCrashSessionManagerDelegate(Profile* profile,
                                           const std::string& login_user_id);
-  virtual ~RestoreAfterCrashSessionManagerDelegate();
+  ~RestoreAfterCrashSessionManagerDelegate() override;
 
  protected:
   // session_manager::SessionManagerDelegate implementation:
-  virtual void Start() override;
+  void Start() override;
 
   Profile* profile() { return profile_; }
   const std::string& login_user_id() const { return login_user_id_; }

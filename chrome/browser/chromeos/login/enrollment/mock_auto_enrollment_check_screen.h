@@ -15,7 +15,7 @@ class MockAutoEnrollmentCheckScreen : public AutoEnrollmentCheckScreen {
  public:
   MockAutoEnrollmentCheckScreen(BaseScreenDelegate* base_screen_delegate,
                                 AutoEnrollmentCheckScreenActor* actor);
-  virtual ~MockAutoEnrollmentCheckScreen();
+  ~MockAutoEnrollmentCheckScreen() override;
 };
 
 class MockAutoEnrollmentCheckScreenActor

@@ -16,22 +16,20 @@
 class EasyUnlockUserLoginFlow : public chromeos::ExtendedUserFlow {
  public:
   explicit EasyUnlockUserLoginFlow(const std::string& user_id);
-  virtual ~EasyUnlockUserLoginFlow();
+  ~EasyUnlockUserLoginFlow() override;
 
  private:
   // chromeos::ExtendedUserFlow implementation.
-  virtual bool CanLockScreen() override;
-  virtual bool ShouldLaunchBrowser() override;
-  virtual bool ShouldSkipPostLoginScreens() override;
-  virtual bool HandleLoginFailure(
-      const chromeos::AuthFailure& failure) override;
-  virtual void HandleLoginSuccess(
-      const chromeos::UserContext& context) override;
-  virtual bool HandlePasswordChangeDetected() override;
-  virtual void HandleOAuthTokenStatusChange(
+  bool CanLockScreen() override;
+  bool ShouldLaunchBrowser() override;
+  bool ShouldSkipPostLoginScreens() override;
+  bool HandleLoginFailure(const chromeos::AuthFailure& failure) override;
+  void HandleLoginSuccess(const chromeos::UserContext& context) override;
+  bool HandlePasswordChangeDetected() override;
+  void HandleOAuthTokenStatusChange(
       user_manager::User::OAuthTokenStatus status) override;
-  virtual void LaunchExtraSteps(Profile* profile) override;
-  virtual bool SupportsEarlyRestartToApplyFlags() override;
+  void LaunchExtraSteps(Profile* profile) override;
+  bool SupportsEarlyRestartToApplyFlags() override;
 
   DISALLOW_COPY_AND_ASSIGN(EasyUnlockUserLoginFlow);
 };

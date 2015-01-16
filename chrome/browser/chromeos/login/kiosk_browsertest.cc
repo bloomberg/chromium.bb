@@ -264,7 +264,7 @@ class KioskFakeDiskMountManager : public file_manager::FakeDiskMountManager {
  public:
   KioskFakeDiskMountManager() {}
 
-  virtual ~KioskFakeDiskMountManager() {}
+  ~KioskFakeDiskMountManager() override {}
 
   void set_usb_mount_path(const std::string& usb_mount_path) {
     usb_mount_path_ = usb_mount_path;
@@ -297,10 +297,10 @@ class KioskTest : public OobeBaseTest {
     set_exit_when_last_browser_closes(false);
   }
 
-  virtual ~KioskTest() {}
+  ~KioskTest() override {}
 
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     test_app_id_ = kTestKioskApp;
     set_test_app_version("1.0.0");
     set_test_crx_file(test_app_id() + ".crx");
@@ -313,19 +313,19 @@ class KioskTest : public OobeBaseTest {
     OobeBaseTest::SetUp();
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     ProfileHelper::SetAlwaysReturnPrimaryUserForTesting(false);
     OobeBaseTest::TearDown();
   }
 
-  virtual void SetUpOnMainThread() override {
+  void SetUpOnMainThread() override {
     OobeBaseTest::SetUpOnMainThread();
     // Needed to avoid showing Gaia screen instead of owner signin for
     // consumer network down test cases.
     StartupUtils::MarkDeviceRegistered(base::Closure());
   }
 
-  virtual void TearDownOnMainThread() override {
+  void TearDownOnMainThread() override {
     AppLaunchController::SetNetworkTimeoutCallbackForTesting(NULL);
     AppLaunchSigninScreen::SetUserManagerForTesting(NULL);
 
@@ -336,7 +336,7 @@ class KioskTest : public OobeBaseTest {
     KioskAppManager::Get()->CleanUp();
   }
 
-  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     OobeBaseTest::SetUpCommandLine(command_line);
     fake_cws_->Init(embedded_test_server());
   }
@@ -1074,25 +1074,23 @@ IN_PROC_BROWSER_TEST_F(KioskTest, NoAutoLaunchWhenUntrusted) {
 class KioskUpdateTest : public KioskTest {
  public:
   KioskUpdateTest() {}
-  virtual ~KioskUpdateTest() {}
+  ~KioskUpdateTest() override {}
 
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     fake_disk_mount_manager_ = new KioskFakeDiskMountManager();
     disks::DiskMountManager::InitializeForTesting(fake_disk_mount_manager_);
 
     KioskTest::SetUp();
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     disks::DiskMountManager::Shutdown();
 
     KioskTest::TearDown();
   }
 
-  virtual void SetUpOnMainThread() override {
-    KioskTest::SetUpOnMainThread();
-  }
+  void SetUpOnMainThread() override { KioskTest::SetUpOnMainThread(); }
 
   void PreCacheApp(const std::string& app_id,
                    const std::string& version,
@@ -1176,7 +1174,7 @@ class KioskUpdateTest : public KioskTest {
       manager_->AddObserver(this);
     }
 
-    virtual ~KioskAppExternalUpdateWaiter() { manager_->RemoveObserver(this); }
+    ~KioskAppExternalUpdateWaiter() override { manager_->RemoveObserver(this); }
 
     void Wait() {
       if (quit_)
@@ -1191,13 +1189,13 @@ class KioskUpdateTest : public KioskTest {
 
    private:
     // KioskAppManagerObserver overrides:
-    virtual void OnKioskAppCacheUpdated(const std::string& app_id) override {
+    void OnKioskAppCacheUpdated(const std::string& app_id) override {
       if (app_id_ != app_id)
         return;
       app_update_notified_ = true;
     }
 
-    virtual void OnKioskAppExternalUpdateComplete(bool success) override {
+    void OnKioskAppExternalUpdateComplete(bool success) override {
       quit_ = true;
       update_success_ = success;
       if (runner_.get())
@@ -1228,7 +1226,7 @@ class KioskUpdateTest : public KioskTest {
       manager_->AddObserver(this);
     }
 
-    virtual ~AppDataLoadWaiter() { manager_->RemoveObserver(this); }
+    ~AppDataLoadWaiter() override { manager_->RemoveObserver(this); }
 
     void Wait() {
       if (quit_)
@@ -1241,8 +1239,7 @@ class KioskUpdateTest : public KioskTest {
 
    private:
     // KioskAppManagerObserver overrides:
-    virtual void OnKioskExtensionLoadedInCache(
-        const std::string& app_id) override {
+    void OnKioskExtensionLoadedInCache(const std::string& app_id) override {
       std::string cached_version;
       base::FilePath file_path;
       if (!manager_->GetCachedCrx(app_id_, &file_path, &cached_version))
@@ -1255,8 +1252,7 @@ class KioskUpdateTest : public KioskTest {
         runner_->Quit();
     }
 
-    virtual void OnKioskExtensionDownloadFailed(
-        const std::string& app_id) override {
+    void OnKioskExtensionDownloadFailed(const std::string& app_id) override {
       loaded_ = false;
       quit_ = true;
       if (runner_.get())
@@ -1592,14 +1588,14 @@ class KioskEnterpriseTest : public KioskTest {
     set_use_consumer_kiosk_mode(false);
   }
 
-  virtual void SetUpInProcessBrowserTestFixture() override {
+  void SetUpInProcessBrowserTestFixture() override {
     device_policy_test_helper_.MarkAsEnterpriseOwned();
     device_policy_test_helper_.InstallOwnerKey();
 
     KioskTest::SetUpInProcessBrowserTestFixture();
   }
 
-  virtual void SetUpOnMainThread() override {
+  void SetUpOnMainThread() override {
     KioskTest::SetUpOnMainThread();
 
     // Configure OAuth authentication.
@@ -1773,18 +1769,18 @@ class KioskHiddenWebUITest : public KioskTest,
   KioskHiddenWebUITest() : wallpaper_loaded_(false) {}
 
   // KioskTest overrides:
-  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     KioskTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kDisableBootAnimation);
   }
 
-  virtual void SetUpOnMainThread() override {
+  void SetUpOnMainThread() override {
     KioskTest::SetUpOnMainThread();
     ash::Shell::GetInstance()->desktop_background_controller()
         ->AddObserver(this);
   }
 
-  virtual void TearDownOnMainThread() override {
+  void TearDownOnMainThread() override {
     ash::Shell::GetInstance()->desktop_background_controller()
         ->RemoveObserver(this);
     KioskTest::TearDownOnMainThread();
@@ -1800,7 +1796,7 @@ class KioskHiddenWebUITest : public KioskTest,
   bool wallpaper_loaded() const { return wallpaper_loaded_; }
 
   // ash::DesktopBackgroundControllerObserver overrides:
-  virtual void OnWallpaperDataChanged() override {
+  void OnWallpaperDataChanged() override {
     wallpaper_loaded_ = true;
     if (runner_.get())
       runner_->Quit();

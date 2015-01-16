@@ -22,7 +22,7 @@ namespace chromeos {
 class DemoAppLauncher : public KioskProfileLoader::Delegate {
  public:
   DemoAppLauncher();
-  virtual ~DemoAppLauncher();
+  ~DemoAppLauncher() override;
 
   void StartDemoAppLaunch();
 
@@ -36,8 +36,8 @@ class DemoAppLauncher : public KioskProfileLoader::Delegate {
   friend class DemoAppLauncherTest;
 
   // KioskProfileLoader::Delegate overrides:
-  virtual void OnProfileLoaded(Profile* profile) override;
-  virtual void OnProfileLoadFailed(KioskAppLaunchError::Error error) override;
+  void OnProfileLoaded(Profile* profile) override;
+  void OnProfileLoadFailed(KioskAppLaunchError::Error error) override;
 
   scoped_ptr<KioskProfileLoader> kiosk_profile_loader_;
 

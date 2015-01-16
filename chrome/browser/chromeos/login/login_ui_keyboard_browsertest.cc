@@ -86,9 +86,9 @@ class FocusPODWaiter {
 class LoginUIKeyboardTest : public chromeos::LoginManagerTest {
  public:
   LoginUIKeyboardTest() : LoginManagerTest(false) {}
-  virtual ~LoginUIKeyboardTest() {}
+  ~LoginUIKeyboardTest() override {}
 
-  virtual void SetUpOnMainThread() override {
+  void SetUpOnMainThread() override {
     user_input_methods.push_back("xkb:fr::fra");
     user_input_methods.push_back("xkb:de::ger");
 
@@ -176,16 +176,16 @@ IN_PROC_BROWSER_TEST_F(LoginUIKeyboardTest, CheckPODScreenWithUsers) {
 class LoginUIKeyboardTestWithUsersAndOwner : public chromeos::LoginManagerTest {
  public:
   LoginUIKeyboardTestWithUsersAndOwner() : LoginManagerTest(false) {}
-  virtual ~LoginUIKeyboardTestWithUsersAndOwner() {}
+  ~LoginUIKeyboardTestWithUsersAndOwner() override {}
 
-  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     LoginManagerTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kStubCrosSettings);
 
     LoginManagerTest::SetUpCommandLine(command_line);
   }
 
-  virtual void SetUpOnMainThread() override {
+  void SetUpOnMainThread() override {
     user_input_methods.push_back("xkb:fr::fra");
     user_input_methods.push_back("xkb:de::ger");
     user_input_methods.push_back("xkb:pl::pol");

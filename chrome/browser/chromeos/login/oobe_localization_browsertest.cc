@@ -52,10 +52,10 @@ class LanguageListWaiter : public NetworkScreen::Observer {
     CheckLanguageList();
   }
 
-  virtual ~LanguageListWaiter() { network_screen_->RemoveObserver(this); }
+  ~LanguageListWaiter() override { network_screen_->RemoveObserver(this); }
 
   // NetworkScreen::Observer implementation:
-  virtual void OnLanguageListReloaded() override { CheckLanguageList(); }
+  void OnLanguageListReloaded() override { CheckLanguageList(); }
 
  private:
   void CheckLanguageList() {

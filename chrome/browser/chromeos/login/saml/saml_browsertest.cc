@@ -257,9 +257,9 @@ scoped_ptr<HttpResponse> FakeSamlIdp::BuildHTMLResponse(
 class SamlTest : public InProcessBrowserTest {
  public:
   SamlTest() : gaia_frame_parent_("signin-frame"), saml_load_injected_(false) {}
-  virtual ~SamlTest() {}
+  ~SamlTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
     // Start the GAIA https wrapper here so that the GAIA URLs can be pointed at
@@ -281,11 +281,11 @@ class SamlTest : public InProcessBrowserTest {
     InProcessBrowserTest::SetUp();
   }
 
-  virtual void SetUpInProcessBrowserTestFixture() override {
+  void SetUpInProcessBrowserTestFixture() override {
     host_resolver()->AddRule("*", "127.0.0.1");
   }
 
-  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kLoginManager);
     command_line->AppendSwitch(switches::kForceLoginManagerInTests);
     command_line->AppendSwitch(::switches::kDisableBackgroundNetworking);
@@ -309,7 +309,7 @@ class SamlTest : public InProcessBrowserTest {
     fake_gaia_.Initialize();
   }
 
-  virtual void SetUpOnMainThread() override {
+  void SetUpOnMainThread() override {
     fake_gaia_.SetFakeMergeSessionParams(kFirstSAMLUserEmail,
                                          kTestAuthSIDCookie1,
                                          kTestAuthLSIDCookie1);
@@ -327,7 +327,7 @@ class SamlTest : public InProcessBrowserTest {
         content::NotificationService::AllSources()));
   }
 
-  virtual void TearDownOnMainThread() override {
+  void TearDownOnMainThread() override {
     // If the login display is still showing, exit gracefully.
     if (LoginDisplayHostImpl::default_host()) {
       base::MessageLoop::current()->PostTask(FROM_HERE,
@@ -856,11 +856,11 @@ IN_PROC_BROWSER_TEST_F(SAMLEnrollmentTest, WithCredentialsPassingAPI) {
 class SAMLPolicyTest : public SamlTest {
  public:
   SAMLPolicyTest();
-  virtual ~SAMLPolicyTest();
+  ~SAMLPolicyTest() override;
 
   // SamlTest:
-  virtual void SetUpInProcessBrowserTestFixture() override;
-  virtual void SetUpOnMainThread() override;
+  void SetUpInProcessBrowserTestFixture() override;
+  void SetUpOnMainThread() override;
 
   void SetSAMLOfflineSigninTimeLimitPolicy(int limit);
   void EnableTransferSAMLCookiesPolicy();

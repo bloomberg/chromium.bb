@@ -32,7 +32,7 @@ class AutoEnrollmentCheckScreen
  public:
   AutoEnrollmentCheckScreen(BaseScreenDelegate* base_screen_delegate,
                             AutoEnrollmentCheckScreenActor* actor);
-  virtual ~AutoEnrollmentCheckScreen();
+  ~AutoEnrollmentCheckScreen() override;
 
   static AutoEnrollmentCheckScreen* Get(ScreenManager* manager);
 
@@ -45,16 +45,16 @@ class AutoEnrollmentCheckScreen
   }
 
   // BaseScreen implementation:
-  virtual void PrepareToShow() override;
-  virtual void Show() override;
-  virtual void Hide() override;
-  virtual std::string GetName() const override;
+  void PrepareToShow() override;
+  void Show() override;
+  void Hide() override;
+  std::string GetName() const override;
 
   // AutoEnrollmentCheckScreenActor::Delegate implementation:
-  virtual void OnActorDestroyed(AutoEnrollmentCheckScreenActor* actor) override;
+  void OnActorDestroyed(AutoEnrollmentCheckScreenActor* actor) override;
 
   // NetworkPortalDetector::Observer implementation:
-  virtual void OnPortalDetectionCompleted(
+  void OnPortalDetectionCompleted(
       const NetworkState* network,
       const NetworkPortalDetector::CaptivePortalState& state) override;
 

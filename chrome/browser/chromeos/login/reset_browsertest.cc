@@ -36,14 +36,14 @@ class ResetTest : public LoginManagerTest {
       session_manager_client_(NULL),
       power_manager_client_(NULL) {
   }
-  virtual ~ResetTest() {}
+  ~ResetTest() override {}
 
-  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     LoginManagerTest::SetUpCommandLine(command_line);
   }
 
   // LoginManagerTest overrides:
-  virtual void SetUpInProcessBrowserTestFixture() override {
+  void SetUpInProcessBrowserTestFixture() override {
     scoped_ptr<DBusThreadManagerSetter> dbus_setter =
         chromeos::DBusThreadManager::GetSetterForTesting();
     session_manager_client_ = new FakeSessionManagerClient;
@@ -106,9 +106,9 @@ class ResetTest : public LoginManagerTest {
 
 class ResetFirstAfterBootTest : public ResetTest {
  public:
-  virtual ~ResetFirstAfterBootTest() {}
+  ~ResetFirstAfterBootTest() override {}
 
-  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     LoginManagerTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kFirstExecAfterBoot);
   }

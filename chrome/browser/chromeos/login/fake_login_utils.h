@@ -20,15 +20,14 @@ namespace chromeos {
 class FakeLoginUtils : public LoginUtils {
  public:
   FakeLoginUtils();
-  virtual ~FakeLoginUtils();
-  virtual void DoBrowserLaunch(Profile* profile,
-                               LoginDisplayHost* login_host) override;
-  virtual void PrepareProfile(const UserContext& user_context,
-                              bool has_cookies,
-                              bool has_active_session,
-                              LoginUtils::Delegate* delegate) override;
-  virtual void DelegateDeleted(LoginUtils::Delegate* delegate) override;
-  virtual scoped_refptr<Authenticator> CreateAuthenticator(
+  ~FakeLoginUtils() override;
+  void DoBrowserLaunch(Profile* profile, LoginDisplayHost* login_host) override;
+  void PrepareProfile(const UserContext& user_context,
+                      bool has_cookies,
+                      bool has_active_session,
+                      LoginUtils::Delegate* delegate) override;
+  void DelegateDeleted(LoginUtils::Delegate* delegate) override;
+  scoped_refptr<Authenticator> CreateAuthenticator(
       AuthStatusConsumer* consumer) override;
 
   void SetExpectedCredentials(const UserContext& user_context);

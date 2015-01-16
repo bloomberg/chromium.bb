@@ -24,12 +24,12 @@ class AppWindowWaiter : public extensions::AppWindowRegistry::Observer {
  public:
   AppWindowWaiter(extensions::AppWindowRegistry* registry,
                   const std::string& app_id);
-  virtual ~AppWindowWaiter();
+  ~AppWindowWaiter() override;
 
   extensions::AppWindow* Wait();
 
   // AppWindowRegistry::Observer:
-  virtual void OnAppWindowAdded(extensions::AppWindow* app_window) override;
+  void OnAppWindowAdded(extensions::AppWindow* app_window) override;
 
  private:
   extensions::AppWindowRegistry* registry_;

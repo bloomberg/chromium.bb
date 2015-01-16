@@ -27,7 +27,7 @@ class ShortLivedUserContext : public apps::AppLifetimeMonitor::Observer {
   ShortLivedUserContext(const UserContext& user_context,
                         apps::AppLifetimeMonitor* app_lifetime_monitor,
                         base::TaskRunner* task_runner);
-  virtual ~ShortLivedUserContext();
+  ~ShortLivedUserContext() override;
 
   // The UserContext returned here can be NULL if its time-to-live has expired.
   UserContext* user_context() { return user_context_.get(); }
@@ -36,8 +36,7 @@ class ShortLivedUserContext : public apps::AppLifetimeMonitor::Observer {
   void Reset();
 
   // apps::AppLifetimeMonitor::Observer:
-  virtual void OnAppDeactivated(Profile* profile,
-                                const std::string& app_id) override;
+  void OnAppDeactivated(Profile* profile, const std::string& app_id) override;
 
   scoped_ptr<UserContext> user_context_;
 

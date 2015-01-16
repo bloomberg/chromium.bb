@@ -151,9 +151,9 @@ class CryptohomeAuthenticatorTest : public testing::Test {
                              FakeCryptohomeClient::GetStubSystemSalt()));
   }
 
-  virtual ~CryptohomeAuthenticatorTest() {}
+  ~CryptohomeAuthenticatorTest() override {}
 
-  virtual void SetUp() {
+  void SetUp() override {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kLoginManager);
 
@@ -174,7 +174,7 @@ class CryptohomeAuthenticatorTest : public testing::Test {
   }
 
   // Tears down the test fixture.
-  virtual void TearDown() {
+  void TearDown() override {
     SystemSaltGetter::Shutdown();
     DBusThreadManager::Shutdown();
 

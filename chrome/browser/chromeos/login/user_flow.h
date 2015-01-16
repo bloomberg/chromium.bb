@@ -50,31 +50,31 @@ class UserFlow {
 // UserFlow implementation for regular login flow.
 class DefaultUserFlow : public UserFlow {
  public:
-  virtual ~DefaultUserFlow();
+  ~DefaultUserFlow() override;
 
-  virtual void AppendAdditionalCommandLineSwitches() override;
-  virtual bool CanLockScreen() override;
-  virtual bool ShouldShowSettings() override;
-  virtual bool ShouldLaunchBrowser() override;
-  virtual bool ShouldSkipPostLoginScreens() override;
-  virtual bool SupportsEarlyRestartToApplyFlags() override;
-  virtual bool HandleLoginFailure(const AuthFailure& failure) override;
-  virtual void HandleLoginSuccess(const UserContext& context) override;
-  virtual bool HandlePasswordChangeDetected() override;
-  virtual void HandleOAuthTokenStatusChange(
+  void AppendAdditionalCommandLineSwitches() override;
+  bool CanLockScreen() override;
+  bool ShouldShowSettings() override;
+  bool ShouldLaunchBrowser() override;
+  bool ShouldSkipPostLoginScreens() override;
+  bool SupportsEarlyRestartToApplyFlags() override;
+  bool HandleLoginFailure(const AuthFailure& failure) override;
+  void HandleLoginSuccess(const UserContext& context) override;
+  bool HandlePasswordChangeDetected() override;
+  void HandleOAuthTokenStatusChange(
       user_manager::User::OAuthTokenStatus status) override;
-  virtual void LaunchExtraSteps(Profile* profile) override;
+  void LaunchExtraSteps(Profile* profile) override;
 };
 
 // UserFlow stub for non-regular flows.
 class ExtendedUserFlow : public UserFlow {
  public:
   explicit ExtendedUserFlow(const std::string& user_id);
-  virtual ~ExtendedUserFlow();
+  ~ExtendedUserFlow() override;
 
-  virtual void AppendAdditionalCommandLineSwitches() override;
-  virtual bool ShouldShowSettings() override;
-  virtual void HandleOAuthTokenStatusChange(
+  void AppendAdditionalCommandLineSwitches() override;
+  bool ShouldShowSettings() override;
+  void HandleOAuthTokenStatusChange(
       user_manager::User::OAuthTokenStatus status) override;
 
  protected:

@@ -18,7 +18,7 @@ class MockEnrollmentScreen : public EnrollmentScreen {
  public:
   MockEnrollmentScreen(BaseScreenDelegate* base_screen_delegate,
                        EnrollmentScreenActor* actor);
-  virtual ~MockEnrollmentScreen();
+  ~MockEnrollmentScreen() override;
 };
 
 class MockEnrollmentScreenActor

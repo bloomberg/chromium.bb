@@ -61,7 +61,7 @@ const char kChannelIDCert2[] = "cert 2";
 class ProfileAuthDataTest : public testing::Test {
  public:
   // testing::Test:
-  virtual void SetUp() override;
+  void SetUp() override;
 
   void PopulateUserBrowserContext();
 

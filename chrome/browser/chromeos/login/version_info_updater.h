@@ -35,7 +35,7 @@ class VersionInfoUpdater : public policy::CloudPolicyStore::Observer {
   };
 
   explicit VersionInfoUpdater(Delegate* delegate);
-  virtual ~VersionInfoUpdater();
+  ~VersionInfoUpdater() override;
 
   // Sets delegate.
   void set_delegate(Delegate* delegate) { delegate_ = delegate; }
@@ -46,8 +46,8 @@ class VersionInfoUpdater : public policy::CloudPolicyStore::Observer {
 
  private:
   // policy::CloudPolicyStore::Observer interface:
-  virtual void OnStoreLoaded(policy::CloudPolicyStore* store) override;
-  virtual void OnStoreError(policy::CloudPolicyStore* store) override;
+  void OnStoreLoaded(policy::CloudPolicyStore* store) override;
+  void OnStoreError(policy::CloudPolicyStore* store) override;
 
   // Update the version label.
   void UpdateVersionLabel();

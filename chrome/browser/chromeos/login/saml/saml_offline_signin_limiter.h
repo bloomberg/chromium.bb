@@ -39,7 +39,7 @@ class SAMLOfflineSigninLimiter : public KeyedService {
   void SignedIn(UserContext::AuthFlow auth_flow);
 
   // KeyedService:
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
  private:
   friend class SAMLOfflineSigninLimiterFactory;
@@ -48,7 +48,7 @@ class SAMLOfflineSigninLimiter : public KeyedService {
   // |profile| and |clock| must remain valid until Shutdown() is called. If
   // |clock| is NULL, the |default_clock_| will be used.
   SAMLOfflineSigninLimiter(Profile* profile, base::Clock* clock);
-  virtual ~SAMLOfflineSigninLimiter();
+  ~SAMLOfflineSigninLimiter() override;
 
   // Recalculates the amount of time remaining until online login should be
   // forced and sets the |offline_signin_limit_timer_| accordingly. If the limit

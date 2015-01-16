@@ -16,12 +16,12 @@ class ChromeCryptohomeAuthenticator : public CryptohomeAuthenticator {
   explicit ChromeCryptohomeAuthenticator(AuthStatusConsumer* consumer);
 
  protected:
-  virtual ~ChromeCryptohomeAuthenticator();
+  ~ChromeCryptohomeAuthenticator() override;
 
-  virtual bool IsKnownUser(const UserContext& context) override;
-  virtual bool IsSafeMode() override;
-  virtual void CheckSafeModeOwnership(const UserContext& context,
-                                      const IsOwnerCallback& callback) override;
+  bool IsKnownUser(const UserContext& context) override;
+  bool IsSafeMode() override;
+  void CheckSafeModeOwnership(const UserContext& context,
+                              const IsOwnerCallback& callback) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeCryptohomeAuthenticator);

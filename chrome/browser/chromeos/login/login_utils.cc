@@ -26,24 +26,20 @@ class LoginUtilsImpl : public LoginUtils,
       : delegate_(NULL) {
   }
 
-  virtual ~LoginUtilsImpl() {
-  }
+  ~LoginUtilsImpl() override {}
 
   // LoginUtils implementation:
-  virtual void DoBrowserLaunch(Profile* profile,
-                               LoginDisplayHost* login_host) override;
-  virtual void PrepareProfile(
-      const UserContext& user_context,
-      bool has_auth_cookies,
-      bool has_active_session,
-      LoginUtils::Delegate* delegate) override;
-  virtual void DelegateDeleted(LoginUtils::Delegate* delegate) override;
-  virtual scoped_refptr<Authenticator> CreateAuthenticator(
+  void DoBrowserLaunch(Profile* profile, LoginDisplayHost* login_host) override;
+  void PrepareProfile(const UserContext& user_context,
+                      bool has_auth_cookies,
+                      bool has_active_session,
+                      LoginUtils::Delegate* delegate) override;
+  void DelegateDeleted(LoginUtils::Delegate* delegate) override;
+  scoped_refptr<Authenticator> CreateAuthenticator(
       AuthStatusConsumer* consumer) override;
 
   // UserSessionManager::Delegate implementation:
-  virtual void OnProfilePrepared(Profile* profile,
-                                 bool browser_launched) override;
+  void OnProfilePrepared(Profile* profile, bool browser_launched) override;
 
  private:
   // Has to be scoped_refptr, see comment for CreateAuthenticator(...).

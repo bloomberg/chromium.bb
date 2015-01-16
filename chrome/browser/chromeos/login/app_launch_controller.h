@@ -43,7 +43,7 @@ class AppLaunchController
                       LoginDisplayHost* host,
                       OobeDisplay* oobe_display);
 
-  virtual ~AppLaunchController();
+  ~AppLaunchController() override;
 
   void StartAppLaunch();
 
@@ -81,33 +81,33 @@ class AppLaunchController
   void MaybeShowNetworkConfigureUI();
 
   // KioskProfileLoader::Delegate overrides:
-  virtual void OnProfileLoaded(Profile* profile) override;
-  virtual void OnProfileLoadFailed(KioskAppLaunchError::Error error) override;
+  void OnProfileLoaded(Profile* profile) override;
+  void OnProfileLoadFailed(KioskAppLaunchError::Error error) override;
 
   // AppLaunchSplashScreenActor::Delegate overrides:
-  virtual void OnConfigureNetwork() override;
-  virtual void OnCancelAppLaunch() override;
-  virtual void OnNetworkConfigRequested(bool requested) override;
-  virtual void OnNetworkStateChanged(bool online) override;
+  void OnConfigureNetwork() override;
+  void OnCancelAppLaunch() override;
+  void OnNetworkConfigRequested(bool requested) override;
+  void OnNetworkStateChanged(bool online) override;
 
   // StartupAppLauncher::Delegate overrides:
-  virtual void InitializeNetwork() override;
-  virtual bool IsNetworkReady() override;
-  virtual void OnLoadingOAuthFile() override;
-  virtual void OnInitializingTokenService() override;
-  virtual void OnInstallingApp() override;
-  virtual void OnReadyToLaunch() override;
-  virtual void OnLaunchSucceeded() override;
-  virtual void OnLaunchFailed(KioskAppLaunchError::Error error) override;
-  virtual bool IsShowingNetworkConfigScreen() override;
+  void InitializeNetwork() override;
+  bool IsNetworkReady() override;
+  void OnLoadingOAuthFile() override;
+  void OnInitializingTokenService() override;
+  void OnInstallingApp() override;
+  void OnReadyToLaunch() override;
+  void OnLaunchSucceeded() override;
+  void OnLaunchFailed(KioskAppLaunchError::Error error) override;
+  bool IsShowingNetworkConfigScreen() override;
 
   // AppLaunchSigninScreen::Delegate overrides:
-  virtual void OnOwnerSigninSuccess() override;
+  void OnOwnerSigninSuccess() override;
 
   // content::NotificationObserver overrides:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   Profile* profile_;
   const std::string app_id_;

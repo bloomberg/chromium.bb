@@ -27,7 +27,7 @@ class WizardInProcessBrowserTest : public InProcessBrowserTest {
   explicit WizardInProcessBrowserTest(const char* screen_name);
 
   // Overridden from InProcessBrowserTest:
-  virtual void SetUp() override;
+  void SetUp() override;
 
  protected:
   // Can be overriden by derived test fixtures to set up environment after
@@ -35,9 +35,9 @@ class WizardInProcessBrowserTest : public InProcessBrowserTest {
   virtual void SetUpWizard() {}
 
   // Overriden from InProcessBrowserTest:
-  virtual void SetUpOnMainThread() override;
-  virtual void SetUpCommandLine(base::CommandLine* command_line) override;
-  virtual void TearDownOnMainThread() override;
+  void SetUpOnMainThread() override;
+  void SetUpCommandLine(base::CommandLine* command_line) override;
+  void TearDownOnMainThread() override;
 
  private:
   std::string screen_name_;

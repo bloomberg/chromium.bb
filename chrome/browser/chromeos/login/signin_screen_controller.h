@@ -25,7 +25,7 @@ class SignInScreenController : public user_manager::RemoveUserDelegate,
  public:
   SignInScreenController(OobeDisplay* oobe_display,
                          LoginDisplay::Delegate* login_display_delegate);
-  virtual ~SignInScreenController();
+  ~SignInScreenController() override;
 
   // Returns the default wizard controller if it has been created.
   static SignInScreenController* Get() { return instance_; }
@@ -50,13 +50,13 @@ class SignInScreenController : public user_manager::RemoveUserDelegate,
   void RemoveUser(const std::string& user_id);
 
   // user_manager::RemoveUserDelegate implementation:
-  virtual void OnBeforeUserRemoved(const std::string& username) override;
-  virtual void OnUserRemoved(const std::string& username) override;
+  void OnBeforeUserRemoved(const std::string& username) override;
+  void OnUserRemoved(const std::string& username) override;
 
   // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
  private:
   static SignInScreenController* instance_;

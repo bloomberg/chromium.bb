@@ -32,35 +32,33 @@ namespace chromeos {
 class ChromeLoginPerformer : public LoginPerformer {
  public:
   explicit ChromeLoginPerformer(Delegate* delegate);
-  virtual ~ChromeLoginPerformer();
+  ~ChromeLoginPerformer() override;
 
  protected:
-  virtual bool RunTrustedCheck(const base::Closure& callback) override;
+  bool RunTrustedCheck(const base::Closure& callback) override;
   void DidRunTrustedCheck(const base::Closure& callback);
-  virtual bool IsUserWhitelisted(const std::string& user_id,
-                                 bool* wildcard_match) override;
+  bool IsUserWhitelisted(const std::string& user_id,
+                         bool* wildcard_match) override;
 
-  virtual void RunOnlineWhitelistCheck(
-      const std::string& user_id,
-      bool wildcard_match,
-      const base::Closure& success_callback,
-      const base::Closure& failure_callback) override;
-  virtual bool AreSupervisedUsersAllowed() override;
+  void RunOnlineWhitelistCheck(const std::string& user_id,
+                               bool wildcard_match,
+                               const base::Closure& success_callback,
+                               const base::Closure& failure_callback) override;
+  bool AreSupervisedUsersAllowed() override;
 
-  virtual bool UseExtendedAuthenticatorForSupervisedUser(
+  bool UseExtendedAuthenticatorForSupervisedUser(
       const UserContext& user_context) override;
 
-  virtual UserContext TransformSupervisedKey(
-      const UserContext& context) override;
+  UserContext TransformSupervisedKey(const UserContext& context) override;
 
-  virtual void SetupSupervisedUserFlow(const std::string& user_id) override;
+  void SetupSupervisedUserFlow(const std::string& user_id) override;
 
-  virtual void SetupEasyUnlockUserFlow(const std::string& user_id) override;
+  void SetupEasyUnlockUserFlow(const std::string& user_id) override;
 
-  virtual scoped_refptr<Authenticator> CreateAuthenticator() override;
-  virtual bool CheckPolicyForUser(const std::string& user_id) override;
-  virtual content::BrowserContext* GetSigninContext() override;
-  virtual net::URLRequestContextGetter* GetSigninRequestContext() override;
+  scoped_refptr<Authenticator> CreateAuthenticator() override;
+  bool CheckPolicyForUser(const std::string& user_id) override;
+  content::BrowserContext* GetSigninContext() override;
+  net::URLRequestContextGetter* GetSigninRequestContext() override;
 
  private:
   void OnlineWildcardLoginCheckCompleted(

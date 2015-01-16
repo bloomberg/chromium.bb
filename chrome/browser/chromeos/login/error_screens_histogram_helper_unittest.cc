@@ -13,7 +13,7 @@ namespace chromeos {
 
 class ErrorScreensHistogramHelperTest : public testing::Test {
  public:
-  virtual void SetUp() override {
+  void SetUp() override {
     helper_.reset(new ErrorScreensHistogramHelper("TestScreen"));
     second_helper_.reset(new ErrorScreensHistogramHelper("TestScreen2"));
   }

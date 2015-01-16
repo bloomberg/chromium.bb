@@ -38,7 +38,7 @@ class LoginUITest : public chromeos::LoginManagerTest {
     screenshot_testing_->IgnoreArea(areas::kSecondUserpod);
     AddMixin(screenshot_testing_);
   }
-  virtual ~LoginUITest() {}
+  ~LoginUITest() override {}
 
  protected:
   ScreenshotTestingMixin* screenshot_testing_;

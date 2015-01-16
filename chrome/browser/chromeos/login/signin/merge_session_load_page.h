@@ -47,21 +47,20 @@ class MergeSessionLoadPage
   void Show();
 
  protected:
-  virtual ~MergeSessionLoadPage();
+  ~MergeSessionLoadPage() override;
 
  private:
   friend class TestMergeSessionLoadPage;
 
   // InterstitialPageDelegate implementation.
-  virtual std::string GetHTMLContents() override;
-  virtual void CommandReceived(const std::string& command) override;
-  virtual void OverrideRendererPrefs(
-      content::RendererPreferences* prefs) override;
-  virtual void OnProceed() override;
-  virtual void OnDontProceed() override;
+  std::string GetHTMLContents() override;
+  void CommandReceived(const std::string& command) override;
+  void OverrideRendererPrefs(content::RendererPreferences* prefs) override;
+  void OnProceed() override;
+  void OnDontProceed() override;
 
   // OAuth2LoginManager::Observer overrides.
-  virtual void OnSessionRestoreStateChanged(
+  void OnSessionRestoreStateChanged(
       Profile* user_profile,
       OAuth2LoginManager::SessionRestoreState state) override;
 

@@ -22,13 +22,13 @@ namespace chromeos {
 class ScreenshotTestingMixin : public MixinBasedBrowserTest::Mixin {
  public:
   ScreenshotTestingMixin();
-  virtual ~ScreenshotTestingMixin();
+  ~ScreenshotTestingMixin() override;
 
   // Override from BrowsertestBase::Mixin.
-  virtual void SetUpInProcessBrowserTestFixture() override;
+  void SetUpInProcessBrowserTestFixture() override;
 
   // Override from BrowsertestBase::Mixin.
-  virtual void SetUpCommandLine(base::CommandLine* command_line) override;
+  void SetUpCommandLine(base::CommandLine* command_line) override;
 
   // Runs screenshot testing if it is turned on by command line switches.
   void RunScreenshotTesting(const std::string& test_name);

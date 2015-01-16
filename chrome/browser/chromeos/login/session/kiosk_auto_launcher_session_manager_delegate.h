@@ -15,11 +15,11 @@ class KioskAutoLauncherSessionManagerDelegate
     : public session_manager::SessionManagerDelegate {
  public:
   KioskAutoLauncherSessionManagerDelegate();
-  virtual ~KioskAutoLauncherSessionManagerDelegate();
+  ~KioskAutoLauncherSessionManagerDelegate() override;
 
  private:
   // session_manager::SessionManagerDelegate implementation:
-  virtual void Start() override;
+  void Start() override;
 
   DISALLOW_COPY_AND_ASSIGN(KioskAutoLauncherSessionManagerDelegate);
 };

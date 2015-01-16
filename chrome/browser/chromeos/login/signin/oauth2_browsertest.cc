@@ -105,7 +105,7 @@ class OAuth2LoginManagerStateWaiter : public OAuth2LoginManager::Observer {
 
  private:
   // OAuth2LoginManager::Observer overrides.
-  virtual void OnSessionRestoreStateChanged(
+  void OnSessionRestoreStateChanged(
       Profile* user_profile,
       OAuth2LoginManager::SessionRestoreState state) override {
     if (!waiting_for_state_)
@@ -134,7 +134,7 @@ class OAuth2Test : public OobeBaseTest {
  protected:
   OAuth2Test() {}
 
-  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     OobeBaseTest::SetUpCommandLine(command_line);
 
     // Disable sync sinc we don't really need this for these tests and it also
@@ -229,7 +229,7 @@ class OAuth2Test : public OobeBaseTest {
 
  protected:
   // OobeBaseTest overrides.
-  virtual Profile* profile() override {
+  Profile* profile() override {
     if (user_manager::UserManager::Get()->GetActiveUser())
       return ProfileManager::GetPrimaryUserProfile();
 
@@ -587,8 +587,8 @@ class DelayedFakeGaia : public FakeGaia {
 
  private:
   // FakeGaia overrides.
-  virtual void HandleMergeSession(const HttpRequest& request,
-                                  BasicHttpResponse* http_response) override {
+  void HandleMergeSession(const HttpRequest& request,
+                          BasicHttpResponse* http_response) override {
     start_event_.Signal();
     content::BrowserThread::PostTask(
         content::BrowserThread::UI, FROM_HERE,
@@ -616,7 +616,7 @@ class MergeSessionTest : public OAuth2Test {
     fake_gaia_.reset(delayed_fake_gaia_);
   }
 
-  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     OAuth2Test::SetUpCommandLine(command_line);
 
     // Get fake URL for fake google.com.
@@ -634,7 +634,7 @@ class MergeSessionTest : public OAuth2Test {
     non_google_page_url_ = non_google_url.Resolve(kRandomPagePath);
 }
 
-  virtual void SetUp() override {
+void SetUp() override {
     embedded_test_server()->RegisterRequestHandler(
         base::Bind(&FakeGoogle::HandleRequest,
                    base::Unretained(&fake_google_)));

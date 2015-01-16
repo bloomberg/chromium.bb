@@ -15,11 +15,11 @@ class LoginOobeSessionManagerDelegate
     : public session_manager::SessionManagerDelegate {
  public:
   LoginOobeSessionManagerDelegate();
-  virtual ~LoginOobeSessionManagerDelegate();
+  ~LoginOobeSessionManagerDelegate() override;
 
  private:
   // session_manager::SessionManagerDelegate implementation:
-  virtual void Start() override;
+  void Start() override;
 
   DISALLOW_COPY_AND_ASSIGN(LoginOobeSessionManagerDelegate);
 };

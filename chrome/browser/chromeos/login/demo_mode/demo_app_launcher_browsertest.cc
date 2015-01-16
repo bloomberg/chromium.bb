@@ -64,9 +64,9 @@ class DemoAppLauncherTest : public ExtensionBrowserTest {
     set_exit_when_last_browser_closes(false);
   }
 
-  virtual ~DemoAppLauncherTest() {}
+  ~DemoAppLauncherTest() override {}
 
-  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kLoginManager);
     command_line->AppendSwitch(switches::kForceLoginManagerInTests);
     command_line->AppendSwitchASCII(switches::kLoginProfile, "user");
@@ -76,7 +76,7 @@ class DemoAppLauncherTest : public ExtensionBrowserTest {
     command_line->AppendSwitchASCII(switches::kDerelictDetectionTimeout, "0");
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     chromeos::DemoAppLauncher::SetDemoAppPathForTesting(GetTestDemoAppPath());
     ExtensionBrowserTest::SetUp();
   }

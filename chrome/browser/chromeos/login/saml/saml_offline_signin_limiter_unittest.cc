@@ -33,11 +33,11 @@ const char kTestUser[] = "user@example.com";
 class SAMLOfflineSigninLimiterTest : public testing::Test {
  protected:
   SAMLOfflineSigninLimiterTest();
-  virtual ~SAMLOfflineSigninLimiterTest();
+  ~SAMLOfflineSigninLimiterTest() override;
 
   // testing::Test:
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
   void DestroyLimiter();
   void CreateLimiter();

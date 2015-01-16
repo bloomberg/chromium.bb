@@ -46,7 +46,7 @@ class EnrollmentScreen
 
   EnrollmentScreen(BaseScreenDelegate* base_screen_delegate,
                    EnrollmentScreenActor* actor);
-  virtual ~EnrollmentScreen();
+  ~EnrollmentScreen() override;
 
   static EnrollmentScreen* Get(ScreenManager* manager);
 
@@ -61,32 +61,31 @@ class EnrollmentScreen
       pairing_chromeos::HostPairingController* remora_controller);
 
   // BaseScreen implementation:
-  virtual void PrepareToShow() override;
-  virtual void Show() override;
-  virtual void Hide() override;
-  virtual std::string GetName() const override;
+  void PrepareToShow() override;
+  void Show() override;
+  void Hide() override;
+  std::string GetName() const override;
 
   // pairing_chromeos::HostPairingController::Observer:
-  virtual void PairingStageChanged(Stage new_stage) override;
-  virtual void ConfigureHost(bool accepted_eula,
-                             const std::string& lang,
-                             const std::string& timezone,
-                             bool send_reports,
-                             const std::string& keyboard_layout) override;
-  virtual void EnrollHost(const std::string& auth_token) override;
+  void PairingStageChanged(Stage new_stage) override;
+  void ConfigureHost(bool accepted_eula,
+                     const std::string& lang,
+                     const std::string& timezone,
+                     bool send_reports,
+                     const std::string& keyboard_layout) override;
+  void EnrollHost(const std::string& auth_token) override;
 
   // EnrollmentScreenActor::Controller implementation:
-  virtual void OnLoginDone(const std::string& user) override;
-  virtual void OnRetry() override;
-  virtual void OnCancel() override;
-  virtual void OnConfirmationClosed() override;
+  void OnLoginDone(const std::string& user) override;
+  void OnRetry() override;
+  void OnCancel() override;
+  void OnConfirmationClosed() override;
 
   // EnterpriseEnrollmentHelper::EnrollmentStatusConsumer implementation:
-  virtual void OnAuthError(const GoogleServiceAuthError& error) override;
-  virtual void OnEnrollmentError(policy::EnrollmentStatus status) override;
-  virtual void OnOtherError(
-      EnterpriseEnrollmentHelper::OtherError error) override;
-  virtual void OnDeviceEnrolled(const std::string& additional_token) override;
+  void OnAuthError(const GoogleServiceAuthError& error) override;
+  void OnEnrollmentError(policy::EnrollmentStatus status) override;
+  void OnOtherError(EnterpriseEnrollmentHelper::OtherError error) override;
+  void OnDeviceEnrolled(const std::string& additional_token) override;
 
   // Used for testing.
   EnrollmentScreenActor* GetActor() {

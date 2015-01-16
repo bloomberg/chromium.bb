@@ -51,7 +51,7 @@ class ExistingUserControllerAutoLoginTest : public ::testing::Test {
         scoped_user_manager_(mock_user_manager_) {
   }
 
-  virtual void SetUp() {
+  void SetUp() override {
     mock_login_display_host_.reset(new MockLoginDisplayHost);
     mock_login_display_ = new MockLoginDisplay();
     mock_login_utils_ = new MockLoginUtils();

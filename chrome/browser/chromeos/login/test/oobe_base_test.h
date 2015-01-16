@@ -30,15 +30,15 @@ class NetworkPortalDetectorTestImpl;
 class OobeBaseTest : public ExtensionApiTest {
  public:
   OobeBaseTest();
-  virtual ~OobeBaseTest();
+  ~OobeBaseTest() override;
 
  protected:
   // InProcessBrowserTest overrides.
-  virtual void SetUp() override;
-  virtual void SetUpInProcessBrowserTestFixture() override;
-  virtual void SetUpOnMainThread() override;
-  virtual void TearDownOnMainThread() override;
-  virtual void SetUpCommandLine(base::CommandLine* command_line) override;
+  void SetUp() override;
+  void SetUpInProcessBrowserTestFixture() override;
+  void SetUpOnMainThread() override;
+  void TearDownOnMainThread() override;
+  void SetUpCommandLine(base::CommandLine* command_line) override;
 
   // Network status control functions.
   void SimulateNetworkOffline();

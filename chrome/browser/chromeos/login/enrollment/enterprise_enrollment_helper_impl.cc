@@ -28,12 +28,12 @@ namespace {
 class TokenRevoker : public GaiaAuthConsumer {
  public:
   TokenRevoker();
-  virtual ~TokenRevoker();
+  ~TokenRevoker() override;
 
   void Start(const std::string& token);
 
   // GaiaAuthConsumer:
-  virtual void OnOAuth2RevokeTokenCompleted() override;
+  void OnOAuth2RevokeTokenCompleted() override;
 
  private:
   GaiaAuthFetcher gaia_fetcher_;
