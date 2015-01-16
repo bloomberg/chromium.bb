@@ -79,3 +79,7 @@ TranslateManagerRenderViewHostTest.*
 SafeBrowsingModuleVerifierWinTest.VerifyModuleExportModified
 SafeBrowsingModuleVerifierWinTest.VerifyModuleModified
 SafeBrowsingModuleVerifierWinTest.VerifyModuleUnmodified
+
+# http://crbug.com/448189
+AXTreeSourceAshTest.Accessors
+ChromeScreenshotGrabberTest.TakeScreenshot
