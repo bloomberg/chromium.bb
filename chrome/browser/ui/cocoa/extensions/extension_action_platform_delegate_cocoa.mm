@@ -12,7 +12,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
-#import "chrome/browser/ui/cocoa/extensions/extension_action_context_menu_controller.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_popup_controller.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_action_view_delegate_cocoa.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
@@ -68,14 +67,6 @@ void ExtensionActionPlatformDelegateCocoa::RegisterCommand() {
 }
 
 void ExtensionActionPlatformDelegateCocoa::OnDelegateSet() {
-  if (controller_->extension()->ShowConfigureContextMenus()) {
-    menuController_.reset([[ExtensionActionContextMenuController alloc]
-        initWithExtension:controller_->extension()
-                  browser:controller_->browser()
-          extensionAction:controller_->extension_action()]);
-    GetDelegateCocoa()->SetContextMenuController(menuController_.get());
-  }
-
   registrar_.Add(
       this,
       extensions::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
@@ -119,11 +110,13 @@ bool ExtensionActionPlatformDelegateCocoa::ShowPopupWithUrl(
   if ([wrenchMenuController isMenuOpen])
     [wrenchMenuController cancel];
 
+  BOOL devMode =
+      show_action == ExtensionActionViewController::SHOW_POPUP_AND_INSPECT;
   [ExtensionPopupController showURL:popup_url
                           inBrowser:controller_->browser()
                          anchoredAt:arrowPoint
                       arrowLocation:info_bubble::kTopRight
-                            devMode:NO];
+                            devMode:devMode];
   return true;
 }
 

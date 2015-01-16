@@ -13,6 +13,7 @@
 
 class Browser;
 @class BrowserActionsController;
+@class MenuController;
 class ToolbarActionViewController;
 class ToolbarActionViewDelegateBridge;
 
@@ -31,6 +32,8 @@ extern NSString* const kBrowserActionButtonDragEndNotification;
 
   // The bridge between the view controller and this object.
   scoped_ptr<ToolbarActionViewDelegateBridge> viewControllerDelegate_;
+
+  base::scoped_nsobject<MenuController> contextMenuController_;
 
   // The controller for the browser actions bar that owns this button. Weak.
   BrowserActionsController* browserActionsController_;

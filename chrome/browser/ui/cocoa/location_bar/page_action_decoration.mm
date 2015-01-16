@@ -8,11 +8,11 @@
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#import "chrome/browser/ui/cocoa/extensions/extension_action_context_menu_controller.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #include "chrome/browser/ui/extensions/extension_action_view_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_registry.h"
+#import "ui/base/cocoa/menu_controller.h"
 #include "ui/gfx/image/image.h"
 
 using content::WebContents;
@@ -33,7 +33,6 @@ PageActionDecoration::PageActionDecoration(
     Browser* browser,
     ExtensionAction* page_action)
     : owner_(NULL),
-      contextMenuController_(nil),
       preview_enabled_(false) {
   const Extension* extension = extensions::ExtensionRegistry::Get(
       browser->profile())->enabled_extensions().GetByID(
@@ -130,15 +129,13 @@ NSPoint PageActionDecoration::GetBubblePointInFrame(NSRect frame) {
 }
 
 NSMenu* PageActionDecoration::GetMenu() {
-  // |contextMenuController| can be nil if we don't show menus for this
-  // extension.
-  if (contextMenuController_) {
-    base::scoped_nsobject<NSMenu> contextMenu(
-        [[NSMenu alloc] initWithTitle:@""]);
-    [contextMenuController_ populateMenu:contextMenu];
-    return contextMenu.autorelease();
-  }
-  return nil;
+  ui::MenuModel* contextMenu = viewController_->GetContextMenu();
+  if (!contextMenu)
+    return nil;
+  contextMenuController_.reset(
+      [[MenuController alloc] initWithModel:contextMenu
+                     useWithPopUpButtonCell:NO]);
+  return [contextMenuController_ menu];
 }
 
 void PageActionDecoration::SetToolTip(const base::string16& tooltip) {
@@ -172,9 +169,4 @@ NSPoint PageActionDecoration::GetPopupPoint() {
       owner_->GetPageActionFrame(viewController_->extension_action()));
   anchor = [field convertPoint:anchor toView:nil];
   return anchor;
-}
-
-void PageActionDecoration::SetContextMenuController(
-    ExtensionActionContextMenuController* menuController) {
-  contextMenuController_ = menuController;
 }

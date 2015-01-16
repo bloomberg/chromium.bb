@@ -17,6 +17,10 @@ class Canvas;
 class Rect;
 }
 
+namespace ui {
+class MenuModel;
+}
+
 class ToolbarActionViewDelegate;
 
 // The basic controller class for an action that is shown on the toolbar -
@@ -66,6 +70,9 @@ class ToolbarActionViewController {
 
   // Returns the native view for the popup, if one is active.
   virtual gfx::NativeView GetPopupNativeView() = 0;
+
+  // Returns the context menu model, or null if no context menu should be shown.
+  virtual ui::MenuModel* GetContextMenu() = 0;
 
   // Returns true if a menu is currently running for the action.
   virtual bool IsMenuRunning() const = 0;

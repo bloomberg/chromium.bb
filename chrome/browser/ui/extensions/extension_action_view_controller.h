@@ -53,6 +53,7 @@ class ExtensionActionViewController
   bool HasPopup(content::WebContents* web_contents) const override;
   void HidePopup() override;
   gfx::NativeView GetPopupNativeView() override;
+  ui::MenuModel* GetContextMenu() override;
   bool IsMenuRunning() const override;
   bool CanDrag() const override;
   bool ExecuteAction(bool by_user) override;
@@ -113,6 +114,9 @@ class ExtensionActionViewController
   // The browser action this view represents. The ExtensionAction is not owned
   // by this class.
   ExtensionAction* extension_action_;
+
+  // The context menu model for the extension.
+  scoped_refptr<ExtensionContextMenuModel> context_menu_model_;
 
   // Our view delegate.
   ToolbarActionViewDelegate* view_delegate_;

@@ -141,6 +141,16 @@ gfx::NativeView ExtensionActionViewController::GetPopupNativeView() {
   return platform_delegate_->GetPopupNativeView();
 }
 
+ui::MenuModel* ExtensionActionViewController::GetContextMenu() {
+  if (!ExtensionIsValid() || !extension()->ShowConfigureContextMenus())
+    return nullptr;
+
+  // Reconstruct the menu every time because the menu's contents are dynamic.
+  context_menu_model_ = make_scoped_refptr(new ExtensionContextMenuModel(
+      extension(), browser_, this));
+  return context_menu_model_.get();
+}
+
 bool ExtensionActionViewController::IsMenuRunning() const {
   return platform_delegate_->IsMenuRunning();
 }

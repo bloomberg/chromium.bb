@@ -10,9 +10,11 @@
 #import <Cocoa/Cocoa.h>
 
 #import "base/mac/scoped_nsobject.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 
-@class ExtensionActionContextMenuController;
+class ExtensionContextMenuModel;
+@class MenuController;
 class InfobarBridge;
 @class MenuButton;
 
@@ -24,9 +26,11 @@ class InfobarBridge;
   // menu.
   base::scoped_nsobject<MenuButton> dropdownButton_;
 
+  // The model for the context menu.
+  scoped_refptr<ExtensionContextMenuModel> contextMenuModel_;
+
   // Controller for the context menu when the left button is clicked.
-  base::scoped_nsobject<
-      ExtensionActionContextMenuController> contextMenuController_;
+  base::scoped_nsobject<MenuController> contextMenuController_;
 
   // Helper class to bridge C++ and ObjC functionality together for the infobar.
   scoped_ptr<InfobarBridge> bridge_;

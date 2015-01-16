@@ -10,11 +10,11 @@
 #import "chrome/browser/ui/cocoa/location_bar/image_decoration.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_action_view_delegate_cocoa.h"
 
-class ExtensionAction;
-@class ExtensionActionContextMenuController;
-class ExtensionActionViewController;
 class Browser;
+class ExtensionAction;
+class ExtensionActionViewController;
 class LocationBarViewMac;
+@class MenuController;
 
 namespace content {
 class WebContents;
@@ -71,8 +71,6 @@ class PageActionDecoration : public ImageDecoration,
   content::WebContents* GetCurrentWebContents() const override;
   void UpdateState() override;
   NSPoint GetPopupPoint() override;
-  void SetContextMenuController(
-      ExtensionActionContextMenuController* menuController) override;
 
   // The location bar view that owns us.
   LocationBarViewMac* owner_;
@@ -83,8 +81,8 @@ class PageActionDecoration : public ImageDecoration,
   // The string to show for a tooltip.
   base::scoped_nsobject<NSString> tooltip_;
 
-  // The context menu controller for the Page Action. Weak.
-  ExtensionActionContextMenuController* contextMenuController_;
+  // The context menu controller for the Page Action.
+  base::scoped_nsobject<MenuController> contextMenuController_;
 
   // This is used for post-install visual feedback. The page_action
   // icon is briefly shown even if it hasn't been enabled by its

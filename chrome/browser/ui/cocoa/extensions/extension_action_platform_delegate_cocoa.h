@@ -10,7 +10,6 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
-@class ExtensionActionContextMenuController;
 @class ExtensionPopupController;
 class ToolbarActionViewDelegateCocoa;
 
@@ -50,9 +49,6 @@ class ExtensionActionPlatformDelegateCocoa
 
   // The main controller for this extension action.
   ExtensionActionViewController* controller_;
-
-  // The context menu controller for the extension action, if any.
-  base::scoped_nsobject<ExtensionActionContextMenuController> menuController_;
 
   content::NotificationRegistrar registrar_;
 

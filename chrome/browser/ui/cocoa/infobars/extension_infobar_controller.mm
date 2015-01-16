@@ -4,16 +4,14 @@
 
 #import "chrome/browser/ui/cocoa/infobars/extension_infobar_controller.h"
 
-#include <cmath>
-
 #include "chrome/browser/extensions/extension_infobar_delegate.h"
+#include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/extensions/extension_view.h"
 #include "chrome/browser/extensions/extension_view_host.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"
 #import "chrome/browser/ui/cocoa/animatable_view.h"
-#import "chrome/browser/ui/cocoa/extensions/extension_action_context_menu_controller.h"
 #include "chrome/browser/ui/cocoa/infobars/infobar_cocoa.h"
 #import "chrome/browser/ui/cocoa/menu_button.h"
 #include "content/public/browser/web_contents.h"
@@ -27,6 +25,7 @@
 #include "skia/ext/skia_utils_mac.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
+#import "ui/base/cocoa/menu_controller.h"
 #include "ui/gfx/image/image.h"
 
 const CGFloat kBottomBorderHeightPx = 1.0;
@@ -247,14 +246,15 @@ class InfobarBridge {
         [self delegate]->AsExtensionInfoBarDelegate()->extension_view_host();
     Browser* browser = chrome::FindBrowserWithWebContents(
         [self delegate]->AsExtensionInfoBarDelegate()->GetWebContents());
-    contextMenuController_.reset([[ExtensionActionContextMenuController alloc]
-        initWithExtension:extensionViewHost->extension()
-                  browser:browser
-          extensionAction:NULL]);
+    contextMenuModel_ = make_scoped_refptr(new ExtensionContextMenuModel(
+        extensionViewHost->extension(), browser));
+    contextMenuController_.reset(
+        [[MenuController alloc] initWithModel:contextMenuModel_.get()
+                       useWithPopUpButtonCell:NO]);
   }
 
   [menu removeAllItems];
-  [contextMenuController_ populateMenu:menu];
+  [contextMenuController_ menuNeedsUpdate:menu];
 }
 
 @end

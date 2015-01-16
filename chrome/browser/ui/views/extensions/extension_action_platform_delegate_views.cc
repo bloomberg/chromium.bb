@@ -224,7 +224,9 @@ void ExtensionActionPlatformDelegateViews::ShowContextMenuForView(
 
 void ExtensionActionPlatformDelegateViews::DoShowContextMenu(
     ui::MenuSourceType source_type) {
-  if (!controller_->extension()->ShowConfigureContextMenus())
+  ui::MenuModel* context_menu_model = controller_->GetContextMenu();
+  // It's possible the extension doesn't have a context menu.
+  if (!context_menu_model)
     return;
 
   DCHECK(!context_menu_owner);
@@ -232,11 +234,6 @@ void ExtensionActionPlatformDelegateViews::DoShowContextMenu(
 
   // We shouldn't have both a popup and a context menu showing.
   GetDelegateViews()->HideActivePopup();
-
-  // Reconstructs the menu every time because the menu's contents are dynamic.
-  scoped_refptr<ExtensionContextMenuModel> context_menu_model(
-      new ExtensionContextMenuModel(
-          controller_->extension(), controller_->browser(), controller_));
 
   gfx::Point screen_loc;
   views::View::ConvertPointToScreen(GetDelegateViews()->GetAsView(),
@@ -249,8 +246,7 @@ void ExtensionActionPlatformDelegateViews::DoShowContextMenu(
 
   views::Widget* parent = GetDelegateViews()->GetParentForContextMenu();
 
-  menu_runner_.reset(
-      new views::MenuRunner(context_menu_model.get(), run_types));
+  menu_runner_.reset(new views::MenuRunner(context_menu_model, run_types));
 
   if (menu_runner_->RunMenuAt(
           parent,

@@ -58,6 +58,7 @@ class MockComponentAction : public ToolbarActionViewController {
   }
   void HidePopup() override {}
   gfx::NativeView GetPopupNativeView() override { return nullptr; }
+  ui::MenuModel* GetContextMenu() override { return nullptr; }
   bool CanDrag() const override { return false; }
   bool IsMenuRunning() const override { return false; }
   bool ExecuteAction(bool by_user) override {

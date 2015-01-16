@@ -415,8 +415,6 @@
       'browser/ui/cocoa/extensions/device_permissions_dialog_controller.mm',
       'browser/ui/cocoa/extensions/device_permissions_view_controller.h',
       'browser/ui/cocoa/extensions/device_permissions_view_controller.mm',
-      'browser/ui/cocoa/extensions/extension_action_context_menu_controller.h',
-      'browser/ui/cocoa/extensions/extension_action_context_menu_controller.mm',
       'browser/ui/cocoa/extensions/extension_action_platform_delegate_cocoa.h',
       'browser/ui/cocoa/extensions/extension_action_platform_delegate_cocoa.mm',
       'browser/ui/cocoa/extensions/extension_install_dialog_controller.h',

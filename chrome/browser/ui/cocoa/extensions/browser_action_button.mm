@@ -9,17 +9,19 @@
 
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
+#include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/extensions/browser_actions_controller.h"
-#import "chrome/browser/ui/cocoa/extensions/extension_action_context_menu_controller.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_action_view_delegate_cocoa.h"
+#include "chrome/browser/ui/extensions/extension_action_view_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "grit/theme_resources.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMNSAnimation+Duration.h"
+#import "ui/base/cocoa/menu_controller.h"
 #include "ui/gfx/canvas_skia_paint.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image.h"
@@ -43,18 +45,12 @@ class ToolbarActionViewDelegateBridge : public ToolbarActionViewDelegateCocoa {
                                   ToolbarActionViewController* viewController);
   ~ToolbarActionViewDelegateBridge() override;
 
-  ExtensionActionContextMenuController* menuController() {
-    return menuController_;
-  }
-
  private:
   // ToolbarActionViewDelegateCocoa:
   ToolbarActionViewController* GetPreferredPopupViewController() override;
   content::WebContents* GetCurrentWebContents() const override;
   void UpdateState() override;
   NSPoint GetPopupPoint() override;
-  void SetContextMenuController(
-      ExtensionActionContextMenuController* menuController) override;
 
   // The owning button. Weak.
   BrowserActionButton* owner_;
@@ -65,9 +61,6 @@ class ToolbarActionViewDelegateBridge : public ToolbarActionViewDelegateCocoa {
   // The ToolbarActionViewController for which this is the delegate. Weak.
   ToolbarActionViewController* viewController_;
 
-  // The context menu controller. Weak.
-  ExtensionActionContextMenuController* menuController_;
-
   DISALLOW_COPY_AND_ASSIGN(ToolbarActionViewDelegateBridge);
 };
 
@@ -77,8 +70,7 @@ ToolbarActionViewDelegateBridge::ToolbarActionViewDelegateBridge(
     ToolbarActionViewController* viewController)
     : owner_(owner),
       controller_(controller),
-      viewController_(viewController),
-      menuController_(nil) {
+      viewController_(viewController) {
   viewController_->SetDelegate(this);
 }
 
@@ -102,11 +94,6 @@ void ToolbarActionViewDelegateBridge::UpdateState() {
 
 NSPoint ToolbarActionViewDelegateBridge::GetPopupPoint() {
   return [controller_ popupPointForId:[owner_ viewController]->GetId()];
-}
-
-void ToolbarActionViewDelegateBridge::SetContextMenuController(
-    ExtensionActionContextMenuController* menuController) {
-  menuController_ = menuController;
 }
 
 @interface BrowserActionCell (Internals)
@@ -161,11 +148,6 @@ void ToolbarActionViewDelegateBridge::SetContextMenuController(
     [self setTitle:@""];
     [self setButtonType:NSMomentaryChangeButton];
     [self setShowsBorderOnlyWhileMouseInside:YES];
-
-    base::scoped_nsobject<NSMenu> contextMenu(
-        [[NSMenu alloc] initWithTitle:@""]);
-    [contextMenu setDelegate:self];
-    [self setMenu:contextMenu];
 
     moveAnimation_.reset([[NSViewAnimation alloc] init]);
     [moveAnimation_ gtm_setDuration:kAnimationDuration
@@ -370,12 +352,14 @@ void ToolbarActionViewDelegateBridge::SetContextMenuController(
   return image;
 }
 
-- (void)menuNeedsUpdate:(NSMenu*)menu {
-  [menu removeAllItems];
-  // |menuController()| can be nil if we don't show context menus for the given
-  // action.
-  if (viewControllerDelegate_->menuController())
-    [viewControllerDelegate_->menuController() populateMenu:menu];
+- (NSMenu*)menu {
+  ui::MenuModel* contextMenu = viewController_->GetContextMenu();
+  if (!contextMenu)
+    return nil;
+  contextMenuController_.reset(
+      [[MenuController alloc] initWithModel:contextMenu
+                     useWithPopUpButtonCell:NO]);
+  return [contextMenuController_ menu];
 }
 
 @end
