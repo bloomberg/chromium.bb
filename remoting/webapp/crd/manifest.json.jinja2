@@ -83,7 +83,7 @@
     "contextMenus",
     "overrideEscFullscreen"
 {% endif %}
-{% if webapp_type == 'v2_pnacl' %}
+{% if webapp_type != 'v1' %}
     ,{
       "socket": [
         "tcp-connect",
