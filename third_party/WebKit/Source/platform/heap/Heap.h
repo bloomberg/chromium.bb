@@ -361,7 +361,7 @@ inline bool isPageHeaderAddress(Address address)
 // is done.
 class BaseHeapPage {
 public:
-    BaseHeapPage(PageMemory*, ThreadState*);
+    BaseHeapPage(PageMemory*, ThreadHeap*);
     virtual ~BaseHeapPage() { }
 
     // virtual methods are slow. So performance-sensitive methods
@@ -370,7 +370,7 @@ public:
     virtual size_t objectPayloadSizeForTesting() = 0;
     virtual bool isEmpty() = 0;
     virtual void removeFromHeap(ThreadHeap*) = 0;
-    virtual void sweep(ThreadHeap*) = 0;
+    virtual void sweep() = 0;
     virtual void markUnmarkedObjectsDead() = 0;
     // Check if the given address points to an object in this
     // heap page. If so, find the start of that object and mark it
@@ -396,14 +396,14 @@ public:
 
     Address address() { return reinterpret_cast<Address>(this); }
     PageMemory* storage() const { return m_storage; }
-    ThreadState* threadState() const { return m_threadState; }
-    bool orphaned() { return !m_threadState; }
+    ThreadHeap* heap() const { return m_heap; }
+    bool orphaned() { return !m_heap; }
     bool terminating() { return m_terminating; }
     void setTerminating() { m_terminating = true; }
 
 private:
     PageMemory* m_storage;
-    ThreadState* m_threadState;
+    ThreadHeap* m_heap;
     // Whether the page is part of a terminating thread or not.
     bool m_terminating;
 };
@@ -438,7 +438,7 @@ public:
     virtual size_t objectPayloadSizeForTesting() override;
     virtual bool isEmpty() override;
     virtual void removeFromHeap(ThreadHeap*) override;
-    virtual void sweep(ThreadHeap*) override;
+    virtual void sweep() override;
     virtual void markUnmarkedObjectsDead() override;
     virtual void checkAndMarkPointer(Visitor*, Address) override;
     virtual void markOrphaned() override
@@ -503,8 +503,8 @@ private:
 // object.
 class LargeObject final : public BaseHeapPage {
 public:
-    LargeObject(PageMemory* storage, ThreadState* state, size_t payloadSize)
-        : BaseHeapPage(storage, state)
+    LargeObject(PageMemory* storage, ThreadHeap* heap, size_t payloadSize)
+        : BaseHeapPage(storage, heap)
         , m_payloadSize(payloadSize)
     {
     }
@@ -517,7 +517,7 @@ public:
     virtual size_t objectPayloadSizeForTesting() override;
     virtual bool isEmpty() override;
     virtual void removeFromHeap(ThreadHeap*) override;
-    virtual void sweep(ThreadHeap*) override;
+    virtual void sweep() override;
     virtual void markUnmarkedObjectsDead() override;
     virtual void checkAndMarkPointer(Visitor*, Address) override;
     virtual void markOrphaned() override
@@ -1537,9 +1537,9 @@ public:
     }
 
 private:
-    static void backingFree(void*, int heapIndex);
-    static bool backingExpand(void*, size_t, int heapIndex);
-    static void backingShrink(void*, size_t quantizedCurrentSize, size_t quantizedShrunkSize, int heapIndex);
+    static void backingFree(void*);
+    static bool backingExpand(void*, size_t);
+    static void backingShrink(void*, size_t quantizedCurrentSize, size_t quantizedShrunkSize);
     PLATFORM_EXPORT static void shrinkVectorBackingInternal(void*, size_t quantizedCurrentSize, size_t quantizedShrunkSize);
     PLATFORM_EXPORT static void shrinkInlineVectorBackingInternal(void*, size_t quantizedCurrentSize, size_t quantizedShrunkSize);
 
