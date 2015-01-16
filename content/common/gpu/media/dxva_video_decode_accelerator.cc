@@ -633,7 +633,7 @@ void DXVAVideoDecodeAccelerator::AssignPictureBuffers(
     DCHECK(inserted);
   }
   ProcessPendingSamples();
-  if (state == kFlushing) {
+  if (pending_flush_) {
     decoder_thread_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&DXVAVideoDecodeAccelerator::FlushInternal,
@@ -672,7 +672,7 @@ void DXVAVideoDecodeAccelerator::ReusePictureBuffer(
 
   it->second->ReusePictureBuffer();
   ProcessPendingSamples();
-  if (state == kFlushing) {
+  if (pending_flush_) {
     decoder_thread_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&DXVAVideoDecodeAccelerator::FlushInternal,
@@ -1313,16 +1313,12 @@ void DXVAVideoDecodeAccelerator::FlushInternal() {
     }
   }
 
-  // The DoDecode function sets the state to kStopped when the decoder returns
-  // MF_E_TRANSFORM_NEED_MORE_INPUT.
-  // The MFT decoder can buffer upto 30 frames worth of input before returning
-  // an output frame. This loop here attempts to retrieve as many output frames
-  // as possible from the buffered set.
-  while (GetState() != kStopped) {
-    DoDecode();
-    if (OutputSamplesPresent())
-      return;
-  }
+  // Attempt to retrieve an output frame from the decoder. If we have one,
+  // return and proceed when the output frame is processed. If we don't have a
+  // frame then we are done.
+  DoDecode();
+  if (OutputSamplesPresent())
+    return;
 
   SetState(kFlushing);
 
@@ -1576,7 +1572,7 @@ void DXVAVideoDecodeAccelerator::CopySurfaceComplete(
       pending_output_samples_.pop_front();
   }
 
-  if (GetState() == kFlushing) {
+  if (pending_flush_) {
     decoder_thread_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&DXVAVideoDecodeAccelerator::FlushInternal,
