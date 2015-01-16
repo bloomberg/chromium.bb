@@ -1343,7 +1343,7 @@ class ValidationPool(object):
     tree throttled validation pool logic.
     """
     # TODO(sosa): Remove Google Storage Fail Streak Counter.
-    _, db = self._run.GetCIDBHandle()
+    build_id, db = self._run.GetCIDBHandle()
     if not db:
       return 0
 
@@ -1353,10 +1353,11 @@ class ValidationPool(object):
     # Iterate through the ordered list of statuses until you get one that is
     # passed.
     for status_dict in statuses:
-      if status_dict['status'] != constants.BUILDER_STATUS_PASSED:
-        number_of_failures = number_of_failures + 1
-      else:
-        break
+      if status_dict['id'] != build_id:
+        if status_dict['status'] != constants.BUILDER_STATUS_PASSED:
+          number_of_failures += 1
+        else:
+          break
 
     return number_of_failures
 

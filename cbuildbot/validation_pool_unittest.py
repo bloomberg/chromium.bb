@@ -1148,13 +1148,19 @@ class TestCoreLogic(MoxBase):
 
   def testGetFailStreak(self):
     """Tests that we're correctly able to calculate a fail streak."""
+    # Leave first build as inflight.
     builder_name = 'master-paladin'
+    slave_pool = self.MakePool(builder_name=builder_name, fake_db=self.fake_db)
+    self.fake_db.buildTable[0]['status'] = constants.BUILDER_STATUS_INFLIGHT
+    self.fake_db.buildTable[0]['build_config'] = builder_name
+    self.assertEqual(slave_pool._GetFailStreak(), 0)
+
+    # Create a passing build.
     for i in range(2):
       self.fake_db.InsertBuild(
-          builder_name, None, i, builder_name, 'abcdelicious')
+          builder_name, None, i, builder_name, 'abcdelicious',
+          status=constants.BUILDER_STATUS_PASSED)
 
-    # Just one success.
-    slave_pool = self.MakePool(fake_db=self.fake_db)
     self.assertEqual(slave_pool._GetFailStreak(), 0)
 
     # Add a fail streak.
@@ -1165,7 +1171,7 @@ class TestCoreLogic(MoxBase):
 
     self.assertEqual(slave_pool._GetFailStreak(), 3)
 
-    # Add another success and failure
+    # Add another success and failure.
     self.fake_db.InsertBuild(
         builder_name, None, 6, builder_name, 'abcdelicious',
         status=constants.BUILDER_STATUS_PASSED)

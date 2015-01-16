@@ -50,7 +50,9 @@ class FakeCIDBConnection(object):
       timediff = datetime.timedelta(seconds=timeout_seconds)
       deadline = datetime.datetime.now() + timediff
 
-    row = {'builder_name': builder_name,
+    build_id = len(self.buildTable)
+    row = {'id': build_id,
+           'builder_name': builder_name,
            'buildbot_generation': constants.BUILDBOT_GENERATION,
            'waterfall': waterfall,
            'build_number': build_number,
@@ -60,7 +62,6 @@ class FakeCIDBConnection(object):
            'master_build_id' : master_build_id,
            'deadline': deadline,
            'status': status}
-    build_id = len(self.buildTable)
     self.buildTable.append(row)
     return build_id
 
