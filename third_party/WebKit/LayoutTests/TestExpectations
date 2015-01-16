@@ -93,6 +93,9 @@ crbug.com/436881 fast/preloader/understands-base-tag.html [ Pass Failure ]
 
 crbug.com/86340 fast/filesystem/workers/file-writer-write-overlapped.html [ Failure Pass ]
 
+crbug.com/447907 [ XP ] svg/custom/focus-ring.svg [ NeedsRebaseline ]
+crbug.com/447907 [ XP ] svg/custom/transformed-outlines.svg [ NeedsRebaseline ]
+
 crbug.com/240374 compositing/overlap-blending/reflection-opacity-huge.html [ ImageOnlyFailure ]
 crbug.com/240374 compositing/overlap-blending/children-opacity-huge.html [ ImageOnlyFailure ]
 crbug.com/240374 compositing/overlap-blending/children-opacity-no-overlap.html [ ImageOnlyFailure ]
