@@ -107,11 +107,10 @@
       'msvs_disabled_warnings': [4127, 4355, 4510, 4512, 4610, 4706, 4068, 4267],
       'conditions': [
         ['OS=="android"', {
-          'link_settings': {
-            'libraries': [
-              '-llog',
-            ]
-          }
+          'link_settings': { 'libraries': [ '-llog' ] },
+        }],
+        ['OS=="linux"', {
+          'link_settings': { 'libraries': [ '-ldl' ] },
         }],
         ['OS=="win"', {
           'sources/': [
