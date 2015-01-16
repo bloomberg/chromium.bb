@@ -91,6 +91,7 @@ class RenderWidget;
 class RenderWidgetFullscreenPepper;
 class ScreenOrientationDispatcher;
 class UserMediaClientImpl;
+enum class SandboxFlags;
 struct CommitNavigationParams;
 struct CommonNavigationParams;
 struct CustomContextMenuContext;
@@ -122,7 +123,8 @@ class CONTENT_EXPORT RenderFrameImpl
   // through Blink and Create.
   static void CreateFrame(int routing_id,
                           int parent_routing_id,
-                          int proxy_routing_id);
+                          int proxy_routing_id,
+                          const FrameReplicationState& replicated_state);
 
   // Returns the RenderFrameImpl for the given routing ID.
   static RenderFrameImpl* FromRoutingID(int routing_id);
@@ -136,6 +138,12 @@ class CONTENT_EXPORT RenderFrameImpl
                                                              int32);
   static void InstallCreateHook(
       CreateRenderFrameImplFunction create_render_frame_impl);
+
+  static content::SandboxFlags WebToContentSandboxFlags(
+      blink::WebSandboxFlags flags);
+
+  static blink::WebSandboxFlags ContentToWebSandboxFlags(
+      content::SandboxFlags flags);
 
   virtual ~RenderFrameImpl();
 
@@ -341,8 +349,14 @@ class CONTENT_EXPORT RenderFrameImpl
   virtual blink::WebServiceWorkerProvider* createServiceWorkerProvider(
       blink::WebLocalFrame* frame);
   virtual void didAccessInitialDocument(blink::WebLocalFrame* frame);
+  // TODO(alexmos): Remove once Blink is updated to use the version that takes
+  // sandboxFlags.
   virtual blink::WebFrame* createChildFrame(blink::WebLocalFrame* parent,
                                             const blink::WebString& name);
+  virtual blink::WebFrame* createChildFrame(
+      blink::WebLocalFrame* parent,
+      const blink::WebString& name,
+      blink::WebSandboxFlags sandboxFlags);
   virtual void didDisownOpener(blink::WebLocalFrame* frame);
   virtual void frameDetached(blink::WebFrame* frame);
   virtual void frameFocused();

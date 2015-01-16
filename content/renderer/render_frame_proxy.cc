@@ -157,6 +157,8 @@ void RenderFrameProxy::SetReplicatedState(const FrameReplicationState& state) {
   DCHECK(web_frame_);
   web_frame_->setReplicatedOrigin(blink::WebSecurityOrigin::createFromString(
       blink::WebString::fromUTF8(state.origin.string())));
+  web_frame_->setReplicatedSandboxFlags(
+      RenderFrameImpl::ContentToWebSandboxFlags(state.sandbox_flags));
 }
 
 bool RenderFrameProxy::OnMessageReceived(const IPC::Message& msg) {

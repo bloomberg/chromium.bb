@@ -23,6 +23,8 @@ class MessageReplyDeserializer;
 
 namespace content {
 
+enum class SandboxFlags;
+
 // This class is a very simple mock of RenderThread. It simulates an IPC channel
 // which supports only three messages:
 // ViewHostMsg_CreateWidget : sync message sent by the Widget.
@@ -133,6 +135,7 @@ class MockRenderThread : public RenderThread {
   // The Frame expects to be returned a valid route_id different from its own.
   void OnCreateChildFrame(int new_frame_routing_id,
                           const std::string& frame_name,
+                          SandboxFlags sandbox_flags,
                           int* new_render_frame_id);
 
 #if defined(OS_WIN)

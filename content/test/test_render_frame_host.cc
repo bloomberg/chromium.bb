@@ -60,7 +60,8 @@ TestRenderViewHost* TestRenderFrameHost::GetRenderViewHost() {
 
 TestRenderFrameHost* TestRenderFrameHost::AppendChild(
     const std::string& frame_name) {
-  OnCreateChildFrame(GetProcess()->GetNextRoutingID(), frame_name);
+  OnCreateChildFrame(GetProcess()->GetNextRoutingID(), frame_name,
+                     SandboxFlags::NONE);
   return static_cast<TestRenderFrameHost*>(
       child_creation_observer_.last_created_frame());
 }

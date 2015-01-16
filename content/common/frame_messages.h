@@ -44,6 +44,7 @@ IPC_ENUM_TRAITS_MAX_VALUE(FrameMsg_UILoadMetricsReportType::Value,
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebContextMenuData::MediaType,
                           blink::WebContextMenuData::MediaTypeLast)
 IPC_ENUM_TRAITS_MAX_VALUE(ui::MenuSourceType, ui::MENU_SOURCE_TYPE_LAST)
+IPC_ENUM_TRAITS(content::SandboxFlags)  // Bitmask.
 
 IPC_STRUCT_TRAITS_BEGIN(content::ColorSuggestion)
   IPC_STRUCT_TRAITS_MEMBER(color)
@@ -226,6 +227,7 @@ IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::FrameReplicationState)
   IPC_STRUCT_TRAITS_MEMBER(origin)
+  IPC_STRUCT_TRAITS_MEMBER(sandbox_flags)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_BEGIN(FrameMsg_Navigate_Params)
@@ -384,11 +386,14 @@ IPC_MESSAGE_ROUTED0(FrameMsg_DisownOpener)
 // The new frame should be created as a child of the object identified by
 // |parent_routing_id| or as top level if that is MSG_ROUTING_NONE.
 // If a valid |proxy_routing_id| is provided, the new frame will be configured
-// to replace the proxy on commit.
-IPC_MESSAGE_CONTROL3(FrameMsg_NewFrame,
+// to replace the proxy on commit.  When the new frame has a parent,
+// |replication_state| holds properties replicated from the process rendering
+// the parent frame, such as the new frame's sandbox flags.
+IPC_MESSAGE_CONTROL4(FrameMsg_NewFrame,
                      int /* routing_id */,
                      int /* parent_routing_id */,
-                     int /* proxy_routing_id */)
+                     int /* proxy_routing_id */,
+                     content::FrameReplicationState /* replication_state */)
 
 // Instructs the renderer to create a new RenderFrameProxy object with
 // |routing_id|. The new proxy should be created as a child of the object
@@ -560,9 +565,10 @@ IPC_MESSAGE_ROUTED4(FrameHostMsg_AddMessageToConsole,
 //
 // Each of these messages will have a corresponding FrameHostMsg_Detach message
 // sent when the frame is detached from the DOM.
-IPC_SYNC_MESSAGE_CONTROL2_1(FrameHostMsg_CreateChildFrame,
+IPC_SYNC_MESSAGE_CONTROL3_1(FrameHostMsg_CreateChildFrame,
                             int32 /* parent_routing_id */,
                             std::string /* frame_name */,
+                            content::SandboxFlags /* sandbox flags */,
                             int32 /* new_routing_id */)
 
 // Sent by the renderer to the parent RenderFrameHost when a child frame is

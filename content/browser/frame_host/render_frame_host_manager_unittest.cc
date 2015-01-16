@@ -545,7 +545,8 @@ TEST_F(RenderFrameHostManagerTest, DropCreateChildFrameWhileSwappedOut) {
   {
     RenderFrameHostCreatedObserver observer(contents());
     initial_rfh->OnCreateChildFrame(
-        initial_rfh->GetProcess()->GetNextRoutingID(), std::string());
+        initial_rfh->GetProcess()->GetNextRoutingID(), std::string(),
+        SandboxFlags::NONE);
     EXPECT_TRUE(observer.created());
   }
 
@@ -567,7 +568,8 @@ TEST_F(RenderFrameHostManagerTest, DropCreateChildFrameWhileSwappedOut) {
     // to create child frames.
     RenderFrameHostCreatedObserver observer(contents());
     initial_rfh->OnCreateChildFrame(
-        initial_rfh->GetProcess()->GetNextRoutingID(), std::string());
+        initial_rfh->GetProcess()->GetNextRoutingID(), std::string(),
+        SandboxFlags::NONE);
     EXPECT_FALSE(observer.created());
   }
 }
@@ -1782,7 +1784,7 @@ TEST_F(RenderFrameHostManagerTest, DetachPendingChild) {
   contents()->NavigateAndCommit(kUrl1);
   contents()->GetMainFrame()->OnCreateChildFrame(
       contents()->GetMainFrame()->GetProcess()->GetNextRoutingID(),
-      std::string("frame_name"));
+      std::string("frame_name"), SandboxFlags::NONE);
   RenderFrameHostManager* manager =
       contents()->GetFrameTree()->root()->child_at(0)->render_manager();
 

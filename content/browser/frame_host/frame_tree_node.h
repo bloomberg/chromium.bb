@@ -93,6 +93,10 @@ class CONTENT_EXPORT FrameTreeNode {
     replication_state_.origin = origin;
   }
 
+  void set_sandbox_flags(SandboxFlags sandbox_flags) {
+    replication_state_.sandbox_flags = sandbox_flags;
+  }
+
   const FrameReplicationState& current_replication_state() const {
     return replication_state_;
   }

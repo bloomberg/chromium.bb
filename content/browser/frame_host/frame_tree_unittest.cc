@@ -208,9 +208,9 @@ TEST_F(FrameTreeTest, ObserverWalksTreeDuringFrameCreation) {
   EXPECT_EQ("", activity.GetLog());
 
   // Simulate attaching a series of frames to build the frame tree.
-  main_test_rfh()->OnCreateChildFrame(14, std::string());
+  main_test_rfh()->OnCreateChildFrame(14, std::string(), SandboxFlags::NONE);
   EXPECT_EQ("RenderFrameCreated(14) -> 1: [14: []]", activity.GetLog());
-  main_test_rfh()->OnCreateChildFrame(18, std::string());
+  main_test_rfh()->OnCreateChildFrame(18, std::string(), SandboxFlags::NONE);
   EXPECT_EQ("RenderFrameCreated(18) -> 1: [14: [], 18: []]", activity.GetLog());
   frame_tree->RemoveFrame(root->child_at(0));
   EXPECT_EQ("RenderFrameDeleted(14) -> 1: [18: []]", activity.GetLog());
@@ -223,9 +223,9 @@ TEST_F(FrameTreeTest, ObserverWalksTreeDuringFrameCreation) {
 TEST_F(FrameTreeTest, ObserverWalksTreeAfterCrash) {
   TreeWalkingWebContentsLogger activity(contents());
 
-  main_test_rfh()->OnCreateChildFrame(22, std::string());
+  main_test_rfh()->OnCreateChildFrame(22, std::string(), SandboxFlags::NONE);
   EXPECT_EQ("RenderFrameCreated(22) -> 1: [22: []]", activity.GetLog());
-  main_test_rfh()->OnCreateChildFrame(23, std::string());
+  main_test_rfh()->OnCreateChildFrame(23, std::string(), SandboxFlags::NONE);
   EXPECT_EQ("RenderFrameCreated(23) -> 1: [22: [], 23: []]", activity.GetLog());
 
   // Crash the renderer

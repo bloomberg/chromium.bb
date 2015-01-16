@@ -10,8 +10,31 @@
 
 namespace content {
 
-// This structure holds information that needs to be replicated from a
-// RenderFrame to any of its associated RenderFrameProxies.
+// Sandboxing flags for iframes.  These flags are set via an iframe's "sandbox"
+// attribute in the renderer process and forwarded to the browser process,
+// which replicates them to other processes as needed.  For a list of sandbox
+// flags, see
+// http://www.whatwg.org/specs/web-apps/current-work/#attr-iframe-sandbox
+// Must be kept in sync with blink::WebSandboxFlags. Enforced in
+// render_frame_impl.cc.
+enum class SandboxFlags : int {
+  NONE = 0,
+  NAVIGATION = 1,
+  PLUGINS = 1 << 1,
+  ORIGIN = 1 << 2,
+  FORMS = 1 << 3,
+  SCRIPTS = 1 << 4,
+  TOP_NAVIGATION = 1 << 5,
+  POPUPS = 1 << 6,
+  AUTOMATIC_FEATURES = 1 << 7,
+  POINTER_LOCK = 1 << 8,
+  DOCUMENT_DOMAIN = 1 << 9,
+  ORIENTATION_LOCK = 1 << 10,
+  ALL = -1
+};
+
+// This structure holds information that needs to be replicated between a
+// RenderFrame and any of its associated RenderFrameProxies.
 struct CONTENT_EXPORT FrameReplicationState {
   FrameReplicationState();
   ~FrameReplicationState();
@@ -19,6 +42,9 @@ struct CONTENT_EXPORT FrameReplicationState {
   // Current serialized security origin of the frame. Unique origins are
   // represented as the string "null" per RFC 6454.
   url::Origin origin;
+
+  // Current sandbox flags of the frame.
+  SandboxFlags sandbox_flags;
 
   // TODO(alexmos): Eventually, this structure can also hold other state that
   // needs to be replicated, such as frame sizing info.

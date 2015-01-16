@@ -1483,10 +1483,13 @@ bool RenderThreadImpl::OnControlMessageReceived(const IPC::Message& msg) {
   return handled;
 }
 
-void RenderThreadImpl::OnCreateNewFrame(int routing_id,
-                                        int parent_routing_id,
-                                        int proxy_routing_id) {
-  RenderFrameImpl::CreateFrame(routing_id, parent_routing_id, proxy_routing_id);
+void RenderThreadImpl::OnCreateNewFrame(
+    int routing_id,
+    int parent_routing_id,
+    int proxy_routing_id,
+    const FrameReplicationState& replicated_state) {
+  RenderFrameImpl::CreateFrame(routing_id, parent_routing_id, proxy_routing_id,
+                               replicated_state);
 }
 
 void RenderThreadImpl::OnCreateNewFrameProxy(

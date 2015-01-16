@@ -6,7 +6,8 @@
 
 namespace content {
 
-FrameReplicationState::FrameReplicationState() : origin() {
+FrameReplicationState::FrameReplicationState()
+    : origin(), sandbox_flags(SandboxFlags::NONE) {
 }
 
 FrameReplicationState::~FrameReplicationState() {

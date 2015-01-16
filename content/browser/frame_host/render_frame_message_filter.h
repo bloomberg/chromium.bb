@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_FRAME_HOST_RENDER_FRAME_MESSAGE_FILTER_H_
 #define CONTENT_BROWSER_FRAME_HOST_RENDER_FRAME_MESSAGE_FILTER_H_
 
+#include "content/common/frame_replication_state.h"
 #include "content/public/browser/browser_message_filter.h"
 
 namespace content {
@@ -28,6 +29,7 @@ class RenderFrameMessageFilter : public BrowserMessageFilter {
 
   void OnCreateChildFrame(int parent_routing_id,
                           const std::string& frame_name,
+                          SandboxFlags sandbox_flags,
                           int* new_render_frame_id);
 
   const int render_process_id_;

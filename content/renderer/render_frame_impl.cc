@@ -489,8 +489,41 @@ media::Context3D GetSharedMainThreadContext3D() {
 RenderFrameImpl::CreateRenderFrameImplFunction g_create_render_frame_impl =
     nullptr;
 
-}  // namespace
+#define STATIC_ASSERT_MATCHING_ENUMS(content_name, blink_name)        \
+  static_assert(                                                      \
+      static_cast<int>(content_name) == static_cast<int>(blink_name), \
+      "enum values must match")
 
+// Check that blink::WebSandboxFlags is kept in sync with
+// content::SandboxFlags.
+STATIC_ASSERT_MATCHING_ENUMS(SandboxFlags::NONE,
+                             blink::WebSandboxFlags::None);
+STATIC_ASSERT_MATCHING_ENUMS(SandboxFlags::NAVIGATION,
+                             blink::WebSandboxFlags::Navigation);
+STATIC_ASSERT_MATCHING_ENUMS(SandboxFlags::PLUGINS,
+                             blink::WebSandboxFlags::Plugins);
+STATIC_ASSERT_MATCHING_ENUMS(SandboxFlags::ORIGIN,
+                             blink::WebSandboxFlags::Origin);
+STATIC_ASSERT_MATCHING_ENUMS(SandboxFlags::FORMS,
+                             blink::WebSandboxFlags::Forms);
+STATIC_ASSERT_MATCHING_ENUMS(SandboxFlags::SCRIPTS,
+                             blink::WebSandboxFlags::Scripts);
+STATIC_ASSERT_MATCHING_ENUMS(SandboxFlags::TOP_NAVIGATION,
+                             blink::WebSandboxFlags::TopNavigation);
+STATIC_ASSERT_MATCHING_ENUMS(SandboxFlags::POPUPS,
+                             blink::WebSandboxFlags::Popups);
+STATIC_ASSERT_MATCHING_ENUMS(SandboxFlags::AUTOMATIC_FEATURES,
+                             blink::WebSandboxFlags::AutomaticFeatures);
+STATIC_ASSERT_MATCHING_ENUMS(SandboxFlags::POINTER_LOCK,
+                             blink::WebSandboxFlags::PointerLock);
+STATIC_ASSERT_MATCHING_ENUMS(SandboxFlags::DOCUMENT_DOMAIN,
+                             blink::WebSandboxFlags::DocumentDomain);
+STATIC_ASSERT_MATCHING_ENUMS(SandboxFlags::ORIENTATION_LOCK,
+                             blink::WebSandboxFlags::OrientationLock);
+STATIC_ASSERT_MATCHING_ENUMS(SandboxFlags::ALL,
+                             blink::WebSandboxFlags::All);
+
+}  // namespace
 
 // static
 RenderFrameImpl* RenderFrameImpl::Create(RenderViewImpl* render_view,
@@ -513,9 +546,11 @@ RenderFrameImpl* RenderFrameImpl::FromRoutingID(int32 routing_id) {
 }
 
 // static
-void RenderFrameImpl::CreateFrame(int routing_id,
-                                  int parent_routing_id,
-                                  int proxy_routing_id) {
+void RenderFrameImpl::CreateFrame(
+    int routing_id,
+    int parent_routing_id,
+    int proxy_routing_id,
+    const FrameReplicationState& replicated_state) {
   // TODO(nasko): For now, this message is only sent for subframes, as the
   // top level frame is created when the RenderView is created through the
   // ViewMsg_New IPC.
@@ -534,7 +569,9 @@ void RenderFrameImpl::CreateFrame(int routing_id,
     // Create the RenderFrame and WebLocalFrame, linking the two.
     render_frame =
         RenderFrameImpl::Create(parent_proxy->render_view(), routing_id);
-    web_frame = parent_web_frame->createLocalChild("", render_frame);
+    web_frame = parent_web_frame->createLocalChild("",
+        ContentToWebSandboxFlags(replicated_state.sandbox_flags),
+        render_frame);
   } else {
     RenderFrameProxy* proxy =
         RenderFrameProxy::FromRoutingID(proxy_routing_id);
@@ -566,6 +603,18 @@ void RenderFrameImpl::InstallCreateHook(
     CreateRenderFrameImplFunction create_render_frame_impl) {
   CHECK(!g_create_render_frame_impl);
   g_create_render_frame_impl = create_render_frame_impl;
+}
+
+// static
+content::SandboxFlags RenderFrameImpl::WebToContentSandboxFlags(
+    blink::WebSandboxFlags flags) {
+  return static_cast<content::SandboxFlags>(flags);
+}
+
+// static
+blink::WebSandboxFlags RenderFrameImpl::ContentToWebSandboxFlags(
+    content::SandboxFlags flags) {
+  return static_cast<blink::WebSandboxFlags>(flags);
 }
 
 // RenderFrameImpl ----------------------------------------------------------
@@ -1937,15 +1986,26 @@ void RenderFrameImpl::didAccessInitialDocument(blink::WebLocalFrame* frame) {
     Send(new FrameHostMsg_DidAccessInitialDocument(routing_id_));
 }
 
+// TODO(alexmos): Remove once Blink is updated to use the version that takes
+// sandbox flags.
 blink::WebFrame* RenderFrameImpl::createChildFrame(
     blink::WebLocalFrame* parent,
     const blink::WebString& name) {
+  return createChildFrame(parent, name, blink::WebSandboxFlags::None);
+}
+
+blink::WebFrame* RenderFrameImpl::createChildFrame(
+    blink::WebLocalFrame* parent,
+    const blink::WebString& name,
+    blink::WebSandboxFlags sandbox_flags) {
   // Synchronously notify the browser of a child frame creation to get the
   // routing_id for the RenderFrame.
   int child_routing_id = MSG_ROUTING_NONE;
-  CHECK(Send(new FrameHostMsg_CreateChildFrame(routing_id_,
-                                               base::UTF16ToUTF8(name),
-                                               &child_routing_id)));
+  CHECK(Send(new FrameHostMsg_CreateChildFrame(
+      routing_id_,
+      base::UTF16ToUTF8(name),
+      WebToContentSandboxFlags(sandbox_flags),
+      &child_routing_id)));
 
   // Allocation of routing id failed, so we can't create a child frame. This can
   // happen if this RenderFrameImpl's IPCs are being filtered when in swapped

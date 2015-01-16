@@ -509,7 +509,8 @@ bool RenderFrameHostImpl::CreateRenderFrame(int parent_routing_id,
 
   DCHECK(GetProcess()->HasConnection());
 
-  Send(new FrameMsg_NewFrame(routing_id_, parent_routing_id, proxy_routing_id));
+  Send(new FrameMsg_NewFrame(routing_id_, parent_routing_id, proxy_routing_id,
+                             frame_tree_node()->current_replication_state()));
 
   // The renderer now has a RenderFrame for this RenderFrameHost.  Note that
   // this path is only used for out-of-process iframes.  Main frame RenderFrames
@@ -559,7 +560,8 @@ void RenderFrameHostImpl::OnAddMessageToConsole(
 }
 
 void RenderFrameHostImpl::OnCreateChildFrame(int new_routing_id,
-                                             const std::string& frame_name) {
+                                             const std::string& frame_name,
+                                             SandboxFlags sandbox_flags) {
   // It is possible that while a new RenderFrameHost was committed, the
   // RenderFrame corresponding to this host sent an IPC message to create a
   // frame and it is delivered after this host is swapped out.
@@ -575,6 +577,8 @@ void RenderFrameHostImpl::OnCreateChildFrame(int new_routing_id,
   // We know that the RenderFrame has been created in this case, immediately
   // after the CreateChildFrame IPC was sent.
   new_frame->set_render_frame_created(true);
+
+  new_frame->frame_tree_node()->set_sandbox_flags(sandbox_flags);
 
   if (delegate_)
     delegate_->RenderFrameCreated(new_frame);

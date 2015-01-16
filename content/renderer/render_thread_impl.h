@@ -428,7 +428,8 @@ class CONTENT_EXPORT RenderThreadImpl
 
   void OnCreateNewFrame(int routing_id,
                         int parent_routing_id,
-                        int proxy_routing_id);
+                        int proxy_routing_id,
+                        const FrameReplicationState& replicated_state);
   void OnCreateNewFrameProxy(int routing_id,
                              int parent_routing_id,
                              int render_view_routing_id,
