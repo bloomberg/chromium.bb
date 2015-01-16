@@ -89,7 +89,12 @@ public:
     virtual void onSuccess(typename S::WebType* result) override
     {
         if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped()) {
-            S::dispose(result);
+            if (result)
+                S::dispose(result);
+            return;
+        }
+        if (!result) {
+            m_resolver->resolve(v8::Null(m_resolver->scriptState()->isolate()));
             return;
         }
         m_resolver->resolve(S::take(m_resolver.get(), result));
