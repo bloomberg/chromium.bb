@@ -554,6 +554,19 @@ static CSSValueID determineTextDirection(DocumentFragment* vttRoot)
     return isLeftToRightDirection(textDirection) ? CSSValueLtr : CSSValueRtl;
 }
 
+static inline VTTCue::CueAlignment resolveCueAlignment(VTTCue::CueAlignment specifiedCueAlignment, CSSValueID direction)
+{
+    ASSERT(direction == CSSValueLtr || direction == CSSValueRtl);
+    switch (specifiedCueAlignment) {
+    case VTTCue::Start:
+        return direction == CSSValueLtr ? VTTCue::Left : VTTCue::Right;
+    case VTTCue::End:
+        return direction == CSSValueLtr ? VTTCue::Right : VTTCue::Left;
+    default:
+        return specifiedCueAlignment;
+    }
+}
+
 void VTTCue::calculateDisplayParameters()
 {
     createVTTNodeTree();
@@ -604,36 +617,17 @@ void VTTCue::calculateDisplayParameters()
     // 10.8 Determine the value of x-position or y-position for cue as per the
     // appropriate rules from the following list:
     if (m_writingDirection == Horizontal) {
-        switch (m_cueAlignment) {
-        case Start:
-            if (m_displayDirection == CSSValueLtr)
-                m_displayPosition.first = m_textPosition;
-            else
-                m_displayPosition.first = 100 - m_textPosition - m_displaySize;
-            break;
-        case End:
-            if (m_displayDirection == CSSValueRtl)
-                m_displayPosition.first = 100 - m_textPosition;
-            else
-                m_displayPosition.first = m_textPosition - m_displaySize;
-            break;
+        int visualTextPosition = m_displayDirection == CSSValueLtr ? m_textPosition : 100 - m_textPosition;
+
+        switch (resolveCueAlignment(m_cueAlignment, m_displayDirection)) {
         case Left:
-            if (m_displayDirection == CSSValueLtr)
-                m_displayPosition.first = m_textPosition;
-            else
-                m_displayPosition.first = 100 - m_textPosition;
+            m_displayPosition.first = visualTextPosition;
             break;
         case Right:
-            if (m_displayDirection == CSSValueLtr)
-                m_displayPosition.first = m_textPosition - m_displaySize;
-            else
-                m_displayPosition.first = 100 - m_textPosition - m_displaySize;
+            m_displayPosition.first = visualTextPosition - m_displaySize;
             break;
         case Middle:
-            if (m_displayDirection == CSSValueLtr)
-                m_displayPosition.first = m_textPosition - m_displaySize / 2;
-            else
-                m_displayPosition.first = 100 - m_textPosition - m_displaySize / 2;
+            m_displayPosition.first = visualTextPosition - m_displaySize / 2;
             break;
         default:
             ASSERT_NOT_REACHED();
