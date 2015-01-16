@@ -179,15 +179,14 @@ inline FloatPoint getPointOnEllipse(float radiusX, float radiusY, float theta)
 void canonicalizeAngle(float* startAngle, float* endAngle)
 {
     // Make 0 <= startAngle < 2*PI
-    float newStartAngle = *startAngle;
+    float newStartAngle = fmodf(*startAngle, twoPiFloat);
     if (newStartAngle < 0)
-        newStartAngle = twoPiFloat + fmodf(newStartAngle, -twoPiFloat);
-    else
-        newStartAngle = fmodf(newStartAngle, twoPiFloat);
+        newStartAngle += twoPiFloat;
 
     float delta = newStartAngle - *startAngle;
     *startAngle = newStartAngle;
     *endAngle = *endAngle + delta;
+
     ASSERT(newStartAngle >= 0 && newStartAngle < twoPiFloat);
 }
 
