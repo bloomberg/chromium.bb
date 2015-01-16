@@ -23,7 +23,7 @@ namespace chromeos {
 // DebugDaemonClient is used to communicate with the debug daemon.
 class CHROMEOS_EXPORT DebugDaemonClient : public DBusClient {
  public:
-  virtual ~DebugDaemonClient();
+  ~DebugDaemonClient() override;
 
   // Called once GetDebugLogs() is complete. Takes one parameter:
   // - succeeded: was the logs stored successfully.

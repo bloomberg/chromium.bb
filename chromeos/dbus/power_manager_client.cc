@@ -59,7 +59,7 @@ class PowerManagerClientImpl : public PowerManagerClient {
         last_is_projecting_(false),
         weak_ptr_factory_(this) {}
 
-  virtual ~PowerManagerClientImpl() {
+  ~PowerManagerClientImpl() override {
     // Here we should unregister suspend notifications from powerd,
     // however:
     // - The lifetime of the PowerManagerClientImpl can extend past that of
@@ -70,27 +70,27 @@ class PowerManagerClientImpl : public PowerManagerClient {
 
   // PowerManagerClient overrides:
 
-  virtual void AddObserver(Observer* observer) override {
+  void AddObserver(Observer* observer) override {
     CHECK(observer);  // http://crbug.com/119976
     observers_.AddObserver(observer);
   }
 
-  virtual void RemoveObserver(Observer* observer) override {
+  void RemoveObserver(Observer* observer) override {
     observers_.RemoveObserver(observer);
   }
 
-  virtual bool HasObserver(const Observer* observer) const override {
+  bool HasObserver(const Observer* observer) const override {
     return observers_.HasObserver(observer);
   }
 
-  virtual void SetRenderProcessManagerDelegate(
+  void SetRenderProcessManagerDelegate(
       base::WeakPtr<RenderProcessManagerDelegate> delegate) override {
     DCHECK(!render_process_manager_delegate_)
         << "There can be only one! ...RenderProcessManagerDelegate";
     render_process_manager_delegate_ = delegate;
   }
 
-  virtual void DecreaseScreenBrightness(bool allow_off) override {
+  void DecreaseScreenBrightness(bool allow_off) override {
     dbus::MethodCall method_call(
         power_manager::kPowerManagerInterface,
         power_manager::kDecreaseScreenBrightnessMethod);
@@ -102,23 +102,22 @@ class PowerManagerClientImpl : public PowerManagerClient {
         dbus::ObjectProxy::EmptyResponseCallback());
   }
 
-  virtual void IncreaseScreenBrightness() override {
+  void IncreaseScreenBrightness() override {
     SimpleMethodCallToPowerManager(
         power_manager::kIncreaseScreenBrightnessMethod);
   }
 
-  virtual void DecreaseKeyboardBrightness() override {
+  void DecreaseKeyboardBrightness() override {
     SimpleMethodCallToPowerManager(
         power_manager::kDecreaseKeyboardBrightnessMethod);
   }
 
-  virtual void IncreaseKeyboardBrightness() override {
+  void IncreaseKeyboardBrightness() override {
     SimpleMethodCallToPowerManager(
         power_manager::kIncreaseKeyboardBrightnessMethod);
   }
 
-  virtual void SetScreenBrightnessPercent(double percent,
-                                          bool gradual) override {
+  void SetScreenBrightnessPercent(double percent, bool gradual) override {
     dbus::MethodCall method_call(
         power_manager::kPowerManagerInterface,
         power_manager::kSetScreenBrightnessPercentMethod);
@@ -134,7 +133,7 @@ class PowerManagerClientImpl : public PowerManagerClient {
         dbus::ObjectProxy::EmptyResponseCallback());
   }
 
-  virtual void GetScreenBrightnessPercent(
+  void GetScreenBrightnessPercent(
       const GetScreenBrightnessPercentCallback& callback) override {
     dbus::MethodCall method_call(
         power_manager::kPowerManagerInterface,
@@ -146,7 +145,7 @@ class PowerManagerClientImpl : public PowerManagerClient {
                    weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
-  virtual void RequestStatusUpdate() override {
+  void RequestStatusUpdate() override {
     POWER_LOG(USER) << "RequestStatusUpdate";
     dbus::MethodCall method_call(
         power_manager::kPowerManagerInterface,
@@ -158,23 +157,22 @@ class PowerManagerClientImpl : public PowerManagerClient {
                    weak_ptr_factory_.GetWeakPtr()));
   }
 
-  virtual void RequestSuspend() override {
+  void RequestSuspend() override {
     POWER_LOG(USER) << "RequestSuspend";
     SimpleMethodCallToPowerManager(power_manager::kRequestSuspendMethod);
   }
 
-  virtual void RequestRestart() override {
+  void RequestRestart() override {
     POWER_LOG(USER) << "RequestRestart";
     SimpleMethodCallToPowerManager(power_manager::kRequestRestartMethod);
   }
 
-  virtual void RequestShutdown() override {
+  void RequestShutdown() override {
     POWER_LOG(USER) << "RequestShutdown";
     SimpleMethodCallToPowerManager(power_manager::kRequestShutdownMethod);
   }
 
-  virtual void NotifyUserActivity(
-      power_manager::UserActivityType type) override {
+  void NotifyUserActivity(power_manager::UserActivityType type) override {
     dbus::MethodCall method_call(
         power_manager::kPowerManagerInterface,
         power_manager::kHandleUserActivityMethod);
@@ -187,7 +185,7 @@ class PowerManagerClientImpl : public PowerManagerClient {
         dbus::ObjectProxy::EmptyResponseCallback());
   }
 
-  virtual void NotifyVideoActivity(bool is_fullscreen) override {
+  void NotifyVideoActivity(bool is_fullscreen) override {
     dbus::MethodCall method_call(
         power_manager::kPowerManagerInterface,
         power_manager::kHandleVideoActivityMethod);
@@ -200,8 +198,7 @@ class PowerManagerClientImpl : public PowerManagerClient {
         dbus::ObjectProxy::EmptyResponseCallback());
   }
 
-  virtual void SetPolicy(
-      const power_manager::PowerManagementPolicy& policy) override {
+  void SetPolicy(const power_manager::PowerManagementPolicy& policy) override {
     POWER_LOG(USER) << "SetPolicy";
     dbus::MethodCall method_call(
         power_manager::kPowerManagerInterface,
@@ -217,7 +214,7 @@ class PowerManagerClientImpl : public PowerManagerClient {
         dbus::ObjectProxy::EmptyResponseCallback());
   }
 
-  virtual void SetIsProjecting(bool is_projecting) override {
+  void SetIsProjecting(bool is_projecting) override {
     POWER_LOG(USER) << "SetIsProjecting";
     dbus::MethodCall method_call(
         power_manager::kPowerManagerInterface,
@@ -231,7 +228,7 @@ class PowerManagerClientImpl : public PowerManagerClient {
     last_is_projecting_ = is_projecting;
   }
 
-  virtual base::Closure GetSuspendReadinessCallback() override {
+  base::Closure GetSuspendReadinessCallback() override {
     DCHECK(OnOriginThread());
     DCHECK(suspend_is_pending_);
     num_pending_suspend_readiness_callbacks_++;
@@ -240,12 +237,12 @@ class PowerManagerClientImpl : public PowerManagerClient {
                       suspending_from_dark_resume_);
   }
 
-  virtual int GetNumPendingSuspendReadinessCallbacks() override {
+  int GetNumPendingSuspendReadinessCallbacks() override {
     return num_pending_suspend_readiness_callbacks_;
   }
 
  protected:
-  virtual void Init(dbus::Bus* bus) override {
+  void Init(dbus::Bus* bus) override {
     power_manager_proxy_ = bus->GetObjectProxy(
         power_manager::kPowerManagerServiceName,
         dbus::ObjectPath(power_manager::kPowerManagerServicePath));
@@ -786,14 +783,14 @@ class PowerManagerClientStubImpl : public PowerManagerClient {
         num_pending_suspend_readiness_callbacks_(0),
         weak_ptr_factory_(this) {}
 
-  virtual ~PowerManagerClientStubImpl() {}
+  ~PowerManagerClientStubImpl() override {}
 
   int num_pending_suspend_readiness_callbacks() const {
     return num_pending_suspend_readiness_callbacks_;
   }
 
   // PowerManagerClient overrides:
-  virtual void Init(dbus::Bus* bus) override {
+  void Init(dbus::Bus* bus) override {
     ParseCommandLineSwitch();
     if (power_cycle_delay_ != base::TimeDelta()) {
       update_timer_.Start(FROM_HERE,
@@ -803,76 +800,72 @@ class PowerManagerClientStubImpl : public PowerManagerClient {
     }
   }
 
-  virtual void AddObserver(Observer* observer) override {
+  void AddObserver(Observer* observer) override {
     observers_.AddObserver(observer);
   }
 
-  virtual void RemoveObserver(Observer* observer) override {
+  void RemoveObserver(Observer* observer) override {
     observers_.RemoveObserver(observer);
   }
 
-  virtual bool HasObserver(const Observer* observer) const override {
+  bool HasObserver(const Observer* observer) const override {
     return observers_.HasObserver(observer);
   }
 
-  virtual void SetRenderProcessManagerDelegate(
-      base::WeakPtr<RenderProcessManagerDelegate> delegate) override {
-  }
+  void SetRenderProcessManagerDelegate(
+      base::WeakPtr<RenderProcessManagerDelegate> delegate) override {}
 
-  virtual void DecreaseScreenBrightness(bool allow_off) override {
+  void DecreaseScreenBrightness(bool allow_off) override {
     POWER_LOG(USER) << "Requested to descrease screen brightness";
     SetBrightness(brightness_ - 5.0, true);
   }
 
-  virtual void IncreaseScreenBrightness() override {
+  void IncreaseScreenBrightness() override {
     POWER_LOG(USER) << "Requested to increase screen brightness";
     SetBrightness(brightness_ + 5.0, true);
   }
 
-  virtual void SetScreenBrightnessPercent(double percent,
-                                          bool gradual) override {
+  void SetScreenBrightnessPercent(double percent, bool gradual) override {
     POWER_LOG(USER) << "Requested to set screen brightness to " << percent
                     << "% " << (gradual ? "gradually" : "instantaneously");
     SetBrightness(percent, false);
   }
 
-  virtual void GetScreenBrightnessPercent(
+  void GetScreenBrightnessPercent(
       const GetScreenBrightnessPercentCallback& callback) override {
     POWER_LOG(USER) << "Requested to get screen brightness";
     callback.Run(brightness_);
   }
 
-  virtual void DecreaseKeyboardBrightness() override {
+  void DecreaseKeyboardBrightness() override {
     POWER_LOG(USER) << "Requested to descrease keyboard brightness";
   }
 
-  virtual void IncreaseKeyboardBrightness() override {
+  void IncreaseKeyboardBrightness() override {
     POWER_LOG(USER) << "Requested to increase keyboard brightness";
   }
 
-  virtual void RequestStatusUpdate() override {
+  void RequestStatusUpdate() override {
     POWER_LOG(USER) << "Requested status update";
     base::MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(&PowerManagerClientStubImpl::UpdateStatus,
                               weak_ptr_factory_.GetWeakPtr()));
   }
 
-  virtual void RequestSuspend() override {}
-  virtual void RequestRestart() override {}
-  virtual void RequestShutdown() override {}
+  void RequestSuspend() override {}
+  void RequestRestart() override {}
+  void RequestShutdown() override {}
 
-  virtual void NotifyUserActivity(
-      power_manager::UserActivityType type) override {}
-  virtual void NotifyVideoActivity(bool is_fullscreen) override {}
-  virtual void SetPolicy(
-      const power_manager::PowerManagementPolicy& policy) override {}
-  virtual void SetIsProjecting(bool is_projecting) override {}
-  virtual base::Closure GetSuspendReadinessCallback() override {
+  void NotifyUserActivity(power_manager::UserActivityType type) override {}
+  void NotifyVideoActivity(bool is_fullscreen) override {}
+  void SetPolicy(const power_manager::PowerManagementPolicy& policy) override {}
+  void SetIsProjecting(bool is_projecting) override {}
+  base::Closure GetSuspendReadinessCallback() override {
     num_pending_suspend_readiness_callbacks_++;
     return base::Bind(&PowerManagerClientStubImpl::HandleSuspendReadiness,
                       weak_ptr_factory_.GetWeakPtr());
   }
-  virtual int GetNumPendingSuspendReadinessCallbacks() override {
+  int GetNumPendingSuspendReadinessCallbacks() override {
     return num_pending_suspend_readiness_callbacks_;
   }
 

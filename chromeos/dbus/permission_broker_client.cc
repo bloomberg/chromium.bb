@@ -23,9 +23,9 @@ class PermissionBrokerClientImpl : public PermissionBrokerClient {
  public:
   PermissionBrokerClientImpl() : proxy_(NULL), weak_ptr_factory_(this) {}
 
-  virtual void RequestPathAccess(const std::string& path,
-                                 const int interface_id,
-                                 const ResultCallback& callback) override {
+  void RequestPathAccess(const std::string& path,
+                         const int interface_id,
+                         const ResultCallback& callback) override {
     dbus::MethodCall method_call(kPermissionBrokerInterface,
                                  kRequestPathAccess);
     dbus::MessageWriter writer(&method_call);
@@ -38,7 +38,7 @@ class PermissionBrokerClientImpl : public PermissionBrokerClient {
   }
 
  protected:
-  virtual void Init(dbus::Bus* bus) override {
+  void Init(dbus::Bus* bus) override {
     proxy_ =
         bus->GetObjectProxy(kPermissionBrokerServiceName,
                             dbus::ObjectPath(kPermissionBrokerServicePath));

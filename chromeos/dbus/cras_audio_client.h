@@ -43,7 +43,7 @@ class CHROMEOS_EXPORT CrasAudioClient : public DBusClient {
     virtual ~Observer();
   };
 
-  virtual ~CrasAudioClient();
+  ~CrasAudioClient() override;
 
   // Adds and removes the observer.
   virtual void AddObserver(Observer* observer) = 0;

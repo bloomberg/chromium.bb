@@ -15,17 +15,17 @@ namespace chromeos {
 class CHROMEOS_EXPORT FakeImageBurnerClient : public ImageBurnerClient {
  public:
   FakeImageBurnerClient();
-  virtual ~FakeImageBurnerClient();
+  ~FakeImageBurnerClient() override;
 
   // ImageBurnerClient overrides
-  virtual void Init(dbus::Bus* bus) override;
-  virtual void BurnImage(const std::string& from_path,
-                         const std::string& to_path,
-                         const ErrorCallback& error_callback) override;
-  virtual void SetEventHandlers(
+  void Init(dbus::Bus* bus) override;
+  void BurnImage(const std::string& from_path,
+                 const std::string& to_path,
+                 const ErrorCallback& error_callback) override;
+  void SetEventHandlers(
       const BurnFinishedHandler& burn_finished_handler,
       const BurnProgressUpdateHandler& burn_progress_update_handler) override;
-  virtual void ResetEventHandlers() override;
+  void ResetEventHandlers() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeImageBurnerClient);

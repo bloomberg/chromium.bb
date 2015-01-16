@@ -82,14 +82,14 @@ class BluetoothGattCharacteristicServiceProviderImpl
                    weak_ptr_factory_.GetWeakPtr()));
   }
 
-  virtual ~BluetoothGattCharacteristicServiceProviderImpl() {
+  ~BluetoothGattCharacteristicServiceProviderImpl() override {
     VLOG(1) << "Cleaning up Bluetooth GATT characteristic: "
             << object_path_.value();
     bus_->UnregisterExportedObject(object_path_);
   }
 
   // BluetoothGattCharacteristicServiceProvider override.
-  virtual void SendValueChanged(const std::vector<uint8>& value) override {
+  void SendValueChanged(const std::vector<uint8>& value) override {
     VLOG(2) << "Emitting a PropertiesChanged signal for characteristic value.";
     dbus::Signal signal(
         dbus::kDBusPropertiesInterface,

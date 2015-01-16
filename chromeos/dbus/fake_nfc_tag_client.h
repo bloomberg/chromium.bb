@@ -24,32 +24,30 @@ class CHROMEOS_EXPORT FakeNfcTagClient : public NfcTagClient {
 
   struct Properties : public NfcTagClient::Properties {
     explicit Properties(const PropertyChangedCallback& callback);
-    virtual ~Properties();
+    ~Properties() override;
 
     // dbus::PropertySet overrides.
-    virtual void Get(dbus::PropertyBase* property,
-                     dbus::PropertySet::GetCallback callback) override;
-    virtual void GetAll() override;
-    virtual void Set(dbus::PropertyBase* property,
-                     dbus::PropertySet::SetCallback callback) override;
+    void Get(dbus::PropertyBase* property,
+             dbus::PropertySet::GetCallback callback) override;
+    void GetAll() override;
+    void Set(dbus::PropertyBase* property,
+             dbus::PropertySet::SetCallback callback) override;
   };
 
   FakeNfcTagClient();
-  virtual ~FakeNfcTagClient();
+  ~FakeNfcTagClient() override;
 
   // NfcTagClient overrides.
-  virtual void Init(dbus::Bus* bus) override;
-  virtual void AddObserver(Observer* observer) override;
-  virtual void RemoveObserver(Observer* observer) override;
-  virtual std::vector<dbus::ObjectPath> GetTagsForAdapter(
+  void Init(dbus::Bus* bus) override;
+  void AddObserver(Observer* observer) override;
+  void RemoveObserver(Observer* observer) override;
+  std::vector<dbus::ObjectPath> GetTagsForAdapter(
       const dbus::ObjectPath& adapter_path) override;
-  virtual Properties* GetProperties(
-      const dbus::ObjectPath& object_path) override;
-  virtual void Write(
-      const dbus::ObjectPath& object_path,
-      const base::DictionaryValue& attributes,
-      const base::Closure& callback,
-      const nfc_client_helpers::ErrorCallback& error_callback) override;
+  Properties* GetProperties(const dbus::ObjectPath& object_path) override;
+  void Write(const dbus::ObjectPath& object_path,
+             const base::DictionaryValue& attributes,
+             const base::Closure& callback,
+             const nfc_client_helpers::ErrorCallback& error_callback) override;
 
   // Simulates the appearance of a tag. The fake tag will show up after
   // exactly |visibility_delay| milliseconds. |visibility_delay| must have a

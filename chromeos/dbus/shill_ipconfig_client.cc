@@ -27,36 +27,34 @@ class ShillIPConfigClientImpl : public ShillIPConfigClient {
 
   ////////////////////////////////////
   // ShillIPConfigClient overrides.
-  virtual void AddPropertyChangedObserver(
+  void AddPropertyChangedObserver(
       const dbus::ObjectPath& ipconfig_path,
       ShillPropertyChangedObserver* observer) override {
     GetHelper(ipconfig_path)->AddPropertyChangedObserver(observer);
   }
 
-  virtual void RemovePropertyChangedObserver(
+  void RemovePropertyChangedObserver(
       const dbus::ObjectPath& ipconfig_path,
       ShillPropertyChangedObserver* observer) override {
     GetHelper(ipconfig_path)->RemovePropertyChangedObserver(observer);
   }
-  virtual void Refresh(const dbus::ObjectPath& ipconfig_path,
-                       const VoidDBusMethodCallback& callback) override;
-  virtual void GetProperties(const dbus::ObjectPath& ipconfig_path,
-                             const DictionaryValueCallback& callback) override;
-  virtual void SetProperty(const dbus::ObjectPath& ipconfig_path,
-                           const std::string& name,
-                           const base::Value& value,
-                           const VoidDBusMethodCallback& callback) override;
-  virtual void ClearProperty(const dbus::ObjectPath& ipconfig_path,
-                             const std::string& name,
-                             const VoidDBusMethodCallback& callback) override;
-  virtual void Remove(const dbus::ObjectPath& ipconfig_path,
-                      const VoidDBusMethodCallback& callback) override;
-  virtual ShillIPConfigClient::TestInterface* GetTestInterface() override;
+  void Refresh(const dbus::ObjectPath& ipconfig_path,
+               const VoidDBusMethodCallback& callback) override;
+  void GetProperties(const dbus::ObjectPath& ipconfig_path,
+                     const DictionaryValueCallback& callback) override;
+  void SetProperty(const dbus::ObjectPath& ipconfig_path,
+                   const std::string& name,
+                   const base::Value& value,
+                   const VoidDBusMethodCallback& callback) override;
+  void ClearProperty(const dbus::ObjectPath& ipconfig_path,
+                     const std::string& name,
+                     const VoidDBusMethodCallback& callback) override;
+  void Remove(const dbus::ObjectPath& ipconfig_path,
+              const VoidDBusMethodCallback& callback) override;
+  ShillIPConfigClient::TestInterface* GetTestInterface() override;
 
  protected:
-  virtual void Init(dbus::Bus* bus) override {
-    bus_ = bus;
-  }
+  void Init(dbus::Bus* bus) override { bus_ = bus; }
 
  private:
   typedef std::map<std::string, ShillClientHelper*> HelperMap;

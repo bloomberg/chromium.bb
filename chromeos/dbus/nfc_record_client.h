@@ -71,7 +71,7 @@ class CHROMEOS_EXPORT NfcRecordClient : public DBusClient {
 
     Properties(dbus::ObjectProxy* object_proxy,
                const PropertyChangedCallback& callback);
-    virtual ~Properties();
+    ~Properties() override;
   };
 
   // Interface for observing changes from a remote NFC NDEF record.
@@ -103,7 +103,7 @@ class CHROMEOS_EXPORT NfcRecordClient : public DBusClient {
         const dbus::ObjectPath& object_path) {}
   };
 
-  virtual ~NfcRecordClient();
+  ~NfcRecordClient() override;
 
   // Adds and removes observers for events on all remote NFC records. Check the
   // |object_path| parameter of observer methods to determine which record is

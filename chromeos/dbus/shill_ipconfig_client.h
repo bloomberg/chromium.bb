@@ -48,7 +48,7 @@ class CHROMEOS_EXPORT ShillIPConfigClient : public DBusClient {
     virtual ~TestInterface() {}
   };
 
-  virtual ~ShillIPConfigClient();
+  ~ShillIPConfigClient() override;
 
   // Factory function, creates a new instance which is owned by the caller.
   // For normal usage, access the singleton via DBusThreadManager::Get().

@@ -55,7 +55,7 @@ class CHROMEOS_EXPORT NfcAdapterClient : public DBusClient {
 
     Properties(dbus::ObjectProxy* object_proxy,
                const PropertyChangedCallback& callback);
-    virtual ~Properties();
+    ~Properties() override;
   };
 
   // Interface for observing changes from a local NFC adapter.
@@ -77,7 +77,7 @@ class CHROMEOS_EXPORT NfcAdapterClient : public DBusClient {
                                         const std::string& property_name) {}
   };
 
-  virtual ~NfcAdapterClient();
+  ~NfcAdapterClient() override;
 
   // Adds and removes observers for events on all local bluetooth adapters.
   // Check the |object_path| parameter of the observer methods to determine

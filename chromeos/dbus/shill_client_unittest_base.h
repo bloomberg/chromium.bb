@@ -100,10 +100,10 @@ class ShillClientUnittestBase : public testing::Test {
 
   explicit ShillClientUnittestBase(const std::string& interface_name,
                                       const dbus::ObjectPath& object_path);
-  virtual ~ShillClientUnittestBase();
+  ~ShillClientUnittestBase() override;
 
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
  protected:
   // A callback to intercept and check the method call arguments.

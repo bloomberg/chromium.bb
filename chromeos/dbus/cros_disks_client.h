@@ -255,7 +255,7 @@ class CHROMEOS_EXPORT CrosDisksClient : public DBusClient {
                               const std::string& device_path)>
       MountEventHandler;
 
-  virtual ~CrosDisksClient();
+  ~CrosDisksClient() override;
 
   // Calls Mount method.  |callback| is called after the method call succeeds,
   // otherwise, |error_callback| is called.

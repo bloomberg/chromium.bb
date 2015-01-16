@@ -26,7 +26,7 @@ class CHROMEOS_EXPORT NfcManagerClient : public DBusClient {
 
     Properties(dbus::ObjectProxy* object_proxy,
                const PropertyChangedCallback& callback);
-    virtual ~Properties();
+    ~Properties() override;
   };
 
   // Interface for observing changes to the NFC manager. Use this interface
@@ -51,7 +51,7 @@ class CHROMEOS_EXPORT NfcManagerClient : public DBusClient {
     virtual void ManagerPropertyChanged(const std::string& property_name) {}
   };
 
-  virtual ~NfcManagerClient();
+  ~NfcManagerClient() override;
 
   // Adds and removes observers for events on the NFC manager.
   virtual void AddObserver(Observer* observer) = 0;

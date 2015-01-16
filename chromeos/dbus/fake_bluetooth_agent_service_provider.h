@@ -25,7 +25,7 @@ class CHROMEOS_EXPORT FakeBluetoothAgentServiceProvider
  public:
   FakeBluetoothAgentServiceProvider(const dbus::ObjectPath& object_path,
                                     Delegate *delegate);
-  virtual ~FakeBluetoothAgentServiceProvider();
+  ~FakeBluetoothAgentServiceProvider() override;
 
   // Each of these calls the equivalent BluetoothAgentServiceProvider::Delegate
   // method on the object passed on construction.

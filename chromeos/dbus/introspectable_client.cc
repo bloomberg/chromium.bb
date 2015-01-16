@@ -34,13 +34,12 @@ class IntrospectableClientImpl : public IntrospectableClient {
  public:
   IntrospectableClientImpl() : bus_(NULL), weak_ptr_factory_(this) {}
 
-  virtual ~IntrospectableClientImpl() {
-  }
+  ~IntrospectableClientImpl() override {}
 
   // IntrospectableClient override.
-  virtual void Introspect(const std::string& service_name,
-                          const dbus::ObjectPath& object_path,
-                          const IntrospectCallback& callback) override {
+  void Introspect(const std::string& service_name,
+                  const dbus::ObjectPath& object_path,
+                  const IntrospectCallback& callback) override {
     dbus::MethodCall method_call(kIntrospectableInterface, kIntrospect);
 
     dbus::ObjectProxy* object_proxy = bus_->GetObjectProxy(service_name,
@@ -55,7 +54,7 @@ class IntrospectableClientImpl : public IntrospectableClient {
   }
 
  protected:
-  virtual void Init(dbus::Bus* bus) override { bus_ = bus; }
+  void Init(dbus::Bus* bus) override { bus_ = bus; }
 
  private:
   // Called by dbus:: when a response for Introspect() is recieved.

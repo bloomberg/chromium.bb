@@ -98,8 +98,7 @@ class CrosDBusServiceStubImpl : public CrosDBusService {
   CrosDBusServiceStubImpl() {
   }
 
-  virtual ~CrosDBusServiceStubImpl() {
-  }
+  ~CrosDBusServiceStubImpl() override {}
 };
 
 // static

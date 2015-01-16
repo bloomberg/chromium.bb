@@ -58,7 +58,7 @@ class ShillServiceClientImpl : public ShillServiceClient {
         weak_ptr_factory_(this) {
   }
 
-  virtual ~ShillServiceClientImpl() {
+  ~ShillServiceClientImpl() override {
     for (HelperMap::iterator iter = helpers_.begin();
          iter != helpers_.end(); ++iter) {
       ShillClientHelper* helper = iter->second;
@@ -69,20 +69,20 @@ class ShillServiceClientImpl : public ShillServiceClient {
     }
   }
 
-  virtual void AddPropertyChangedObserver(
+  void AddPropertyChangedObserver(
       const dbus::ObjectPath& service_path,
       ShillPropertyChangedObserver* observer) override {
     GetHelper(service_path)->AddPropertyChangedObserver(observer);
   }
 
-  virtual void RemovePropertyChangedObserver(
+  void RemovePropertyChangedObserver(
       const dbus::ObjectPath& service_path,
       ShillPropertyChangedObserver* observer) override {
     GetHelper(service_path)->RemovePropertyChangedObserver(observer);
   }
 
-  virtual void GetProperties(const dbus::ObjectPath& service_path,
-                             const DictionaryValueCallback& callback) override {
+  void GetProperties(const dbus::ObjectPath& service_path,
+                     const DictionaryValueCallback& callback) override {
     dbus::MethodCall method_call(shill::kFlimflamServiceInterface,
                                  shill::kGetPropertiesFunction);
     GetHelper(service_path)->CallDictionaryValueMethodWithErrorCallback(
@@ -92,11 +92,11 @@ class ShillServiceClientImpl : public ShillServiceClient {
                    service_path, callback));
   }
 
-  virtual void SetProperty(const dbus::ObjectPath& service_path,
-                           const std::string& name,
-                           const base::Value& value,
-                           const base::Closure& callback,
-                           const ErrorCallback& error_callback) override {
+  void SetProperty(const dbus::ObjectPath& service_path,
+                   const std::string& name,
+                   const base::Value& value,
+                   const base::Closure& callback,
+                   const ErrorCallback& error_callback) override {
     dbus::MethodCall method_call(shill::kFlimflamServiceInterface,
                                  shill::kSetPropertyFunction);
     dbus::MessageWriter writer(&method_call);
@@ -107,10 +107,10 @@ class ShillServiceClientImpl : public ShillServiceClient {
                                                              error_callback);
   }
 
-  virtual void SetProperties(const dbus::ObjectPath& service_path,
-                             const base::DictionaryValue& properties,
-                             const base::Closure& callback,
-                             const ErrorCallback& error_callback) override {
+  void SetProperties(const dbus::ObjectPath& service_path,
+                     const base::DictionaryValue& properties,
+                     const base::Closure& callback,
+                     const ErrorCallback& error_callback) override {
     dbus::MethodCall method_call(shill::kFlimflamServiceInterface,
                                  shill::kSetPropertiesFunction);
     dbus::MessageWriter writer(&method_call);
@@ -120,10 +120,10 @@ class ShillServiceClientImpl : public ShillServiceClient {
                                                              error_callback);
   }
 
-  virtual void ClearProperty(const dbus::ObjectPath& service_path,
-                             const std::string& name,
-                             const base::Closure& callback,
-                             const ErrorCallback& error_callback) override {
+  void ClearProperty(const dbus::ObjectPath& service_path,
+                     const std::string& name,
+                     const base::Closure& callback,
+                     const ErrorCallback& error_callback) override {
     dbus::MethodCall method_call(shill::kFlimflamServiceInterface,
                                  shill::kClearPropertyFunction);
     dbus::MessageWriter writer(&method_call);
@@ -133,11 +133,10 @@ class ShillServiceClientImpl : public ShillServiceClient {
                                                              error_callback);
   }
 
-
-  virtual void ClearProperties(const dbus::ObjectPath& service_path,
-                               const std::vector<std::string>& names,
-                               const ListValueCallback& callback,
-                               const ErrorCallback& error_callback) override {
+  void ClearProperties(const dbus::ObjectPath& service_path,
+                       const std::vector<std::string>& names,
+                       const ListValueCallback& callback,
+                       const ErrorCallback& error_callback) override {
     dbus::MethodCall method_call(shill::kFlimflamServiceInterface,
                                  shill::kClearPropertiesFunction);
     dbus::MessageWriter writer(&method_call);
@@ -148,18 +147,18 @@ class ShillServiceClientImpl : public ShillServiceClient {
         error_callback);
   }
 
-  virtual void Connect(const dbus::ObjectPath& service_path,
-                       const base::Closure& callback,
-                       const ErrorCallback& error_callback) override {
+  void Connect(const dbus::ObjectPath& service_path,
+               const base::Closure& callback,
+               const ErrorCallback& error_callback) override {
     dbus::MethodCall method_call(shill::kFlimflamServiceInterface,
                                  shill::kConnectFunction);
     GetHelper(service_path)->CallVoidMethodWithErrorCallback(
         &method_call, callback, error_callback);
   }
 
-  virtual void Disconnect(const dbus::ObjectPath& service_path,
-                          const base::Closure& callback,
-                          const ErrorCallback& error_callback) override {
+  void Disconnect(const dbus::ObjectPath& service_path,
+                  const base::Closure& callback,
+                  const ErrorCallback& error_callback) override {
     dbus::MethodCall method_call(shill::kFlimflamServiceInterface,
                                  shill::kDisconnectFunction);
     GetHelper(service_path)->CallVoidMethodWithErrorCallback(&method_call,
@@ -167,9 +166,9 @@ class ShillServiceClientImpl : public ShillServiceClient {
                                                              error_callback);
   }
 
-  virtual void Remove(const dbus::ObjectPath& service_path,
-                      const base::Closure& callback,
-                      const ErrorCallback& error_callback) override {
+  void Remove(const dbus::ObjectPath& service_path,
+              const base::Closure& callback,
+              const ErrorCallback& error_callback) override {
     dbus::MethodCall method_call(shill::kFlimflamServiceInterface,
                                  shill::kRemoveServiceFunction);
     GetHelper(service_path)->CallVoidMethodWithErrorCallback(&method_call,
@@ -177,11 +176,10 @@ class ShillServiceClientImpl : public ShillServiceClient {
                                                              error_callback);
   }
 
-  virtual void ActivateCellularModem(
-      const dbus::ObjectPath& service_path,
-      const std::string& carrier,
-      const base::Closure& callback,
-      const ErrorCallback& error_callback) override {
+  void ActivateCellularModem(const dbus::ObjectPath& service_path,
+                             const std::string& carrier,
+                             const base::Closure& callback,
+                             const ErrorCallback& error_callback) override {
     dbus::MethodCall method_call(shill::kFlimflamServiceInterface,
                                  shill::kActivateCellularModemFunction);
     dbus::MessageWriter writer(&method_call);
@@ -191,7 +189,7 @@ class ShillServiceClientImpl : public ShillServiceClient {
                                                              error_callback);
   }
 
-  virtual void CompleteCellularActivation(
+  void CompleteCellularActivation(
       const dbus::ObjectPath& service_path,
       const base::Closure& callback,
       const ErrorCallback& error_callback) override {
@@ -203,7 +201,7 @@ class ShillServiceClientImpl : public ShillServiceClient {
                                                              error_callback);
   }
 
-  virtual void GetLoadableProfileEntries(
+  void GetLoadableProfileEntries(
       const dbus::ObjectPath& service_path,
       const DictionaryValueCallback& callback) override {
     dbus::MethodCall method_call(shill::kFlimflamServiceInterface,
@@ -215,14 +213,12 @@ class ShillServiceClientImpl : public ShillServiceClient {
                    service_path, callback));
   }
 
-  virtual ShillServiceClient::TestInterface* GetTestInterface() override {
+  ShillServiceClient::TestInterface* GetTestInterface() override {
     return NULL;
   }
 
  protected:
-  virtual void Init(dbus::Bus* bus) override {
-    bus_ = bus;
-  }
+  void Init(dbus::Bus* bus) override { bus_ = bus; }
 
  private:
   typedef std::map<std::string, ShillClientHelper*> HelperMap;

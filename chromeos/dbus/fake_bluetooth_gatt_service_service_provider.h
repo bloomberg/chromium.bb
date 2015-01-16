@@ -24,7 +24,7 @@ class CHROMEOS_EXPORT FakeBluetoothGattServiceServiceProvider
       const dbus::ObjectPath& object_path,
       const std::string& uuid,
       const std::vector<dbus::ObjectPath>& includes);
-  virtual ~FakeBluetoothGattServiceServiceProvider();
+  ~FakeBluetoothGattServiceServiceProvider() override;
 
   const dbus::ObjectPath& object_path() const { return object_path_; }
   const std::string& uuid() const { return uuid_; }

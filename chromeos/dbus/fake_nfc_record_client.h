@@ -27,29 +27,28 @@ class CHROMEOS_EXPORT FakeNfcRecordClient : public NfcRecordClient {
   // Properties structure that provides fake behavior for D-Bus calls.
   struct Properties : public NfcRecordClient::Properties {
     explicit Properties(const PropertyChangedCallback& callback);
-    virtual ~Properties();
+    ~Properties() override;
 
     // dbus::PropertySet overrides.
-    virtual void Get(dbus::PropertyBase* property,
-                     dbus::PropertySet::GetCallback callback) override;
-    virtual void GetAll() override;
-    virtual void Set(dbus::PropertyBase* property,
-                     dbus::PropertySet::SetCallback callback) override;
+    void Get(dbus::PropertyBase* property,
+             dbus::PropertySet::GetCallback callback) override;
+    void GetAll() override;
+    void Set(dbus::PropertyBase* property,
+             dbus::PropertySet::SetCallback callback) override;
   };
 
   FakeNfcRecordClient();
-  virtual ~FakeNfcRecordClient();
+  ~FakeNfcRecordClient() override;
 
   // NfcTagClient overrides.
-  virtual void Init(dbus::Bus* bus) override;
-  virtual void AddObserver(Observer* observer) override;
-  virtual void RemoveObserver(Observer* observer) override;
-  virtual std::vector<dbus::ObjectPath> GetRecordsForDevice(
+  void Init(dbus::Bus* bus) override;
+  void AddObserver(Observer* observer) override;
+  void RemoveObserver(Observer* observer) override;
+  std::vector<dbus::ObjectPath> GetRecordsForDevice(
       const dbus::ObjectPath& device_path) override;
-  virtual std::vector<dbus::ObjectPath> GetRecordsForTag(
+  std::vector<dbus::ObjectPath> GetRecordsForTag(
       const dbus::ObjectPath& tag_path) override;
-  virtual Properties* GetProperties(
-      const dbus::ObjectPath& object_path) override;
+  Properties* GetProperties(const dbus::ObjectPath& object_path) override;
 
   // Adds or removes the fake record objects and notifies the observers.
   void SetDeviceRecordsVisible(bool visible);

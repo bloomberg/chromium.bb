@@ -21,45 +21,44 @@ class CHROMEOS_EXPORT FakeShillProfileClient :
       public ShillProfileClient::TestInterface {
  public:
   FakeShillProfileClient();
-  virtual ~FakeShillProfileClient();
+  ~FakeShillProfileClient() override;
 
   // ShillProfileClient overrides
-  virtual void Init(dbus::Bus* bus) override;
-  virtual void AddPropertyChangedObserver(
+  void Init(dbus::Bus* bus) override;
+  void AddPropertyChangedObserver(
       const dbus::ObjectPath& profile_path,
       ShillPropertyChangedObserver* observer) override;
-  virtual void RemovePropertyChangedObserver(
+  void RemovePropertyChangedObserver(
       const dbus::ObjectPath& profile_path,
       ShillPropertyChangedObserver* observer) override;
-  virtual void GetProperties(
-      const dbus::ObjectPath& profile_path,
-      const DictionaryValueCallbackWithoutStatus& callback,
-      const ErrorCallback& error_callback) override;
-  virtual void GetEntry(const dbus::ObjectPath& profile_path,
-                        const std::string& entry_path,
-                        const DictionaryValueCallbackWithoutStatus& callback,
-                        const ErrorCallback& error_callback) override;
-  virtual void DeleteEntry(const dbus::ObjectPath& profile_path,
-                           const std::string& entry_path,
-                           const base::Closure& callback,
-                           const ErrorCallback& error_callback) override;
-  virtual ShillProfileClient::TestInterface* GetTestInterface() override;
+  void GetProperties(const dbus::ObjectPath& profile_path,
+                     const DictionaryValueCallbackWithoutStatus& callback,
+                     const ErrorCallback& error_callback) override;
+  void GetEntry(const dbus::ObjectPath& profile_path,
+                const std::string& entry_path,
+                const DictionaryValueCallbackWithoutStatus& callback,
+                const ErrorCallback& error_callback) override;
+  void DeleteEntry(const dbus::ObjectPath& profile_path,
+                   const std::string& entry_path,
+                   const base::Closure& callback,
+                   const ErrorCallback& error_callback) override;
+  ShillProfileClient::TestInterface* GetTestInterface() override;
 
   // ShillProfileClient::TestInterface overrides.
-  virtual void AddProfile(const std::string& profile_path,
-                          const std::string& userhash) override;
-  virtual void AddEntry(const std::string& profile_path,
-                        const std::string& entry_path,
-                        const base::DictionaryValue& properties) override;
-  virtual bool AddService(const std::string& profile_path,
-                          const std::string& service_path) override;
-  virtual bool UpdateService(const std::string& profile_path,
-                             const std::string& service_path) override;
-  virtual void GetProfilePaths(std::vector<std::string>* profiles) override;
-  virtual bool GetService(const std::string& service_path,
-                          std::string* profile_path,
-                          base::DictionaryValue* properties) override;
-  virtual void ClearProfiles() override;
+  void AddProfile(const std::string& profile_path,
+                  const std::string& userhash) override;
+  void AddEntry(const std::string& profile_path,
+                const std::string& entry_path,
+                const base::DictionaryValue& properties) override;
+  bool AddService(const std::string& profile_path,
+                  const std::string& service_path) override;
+  bool UpdateService(const std::string& profile_path,
+                     const std::string& service_path) override;
+  void GetProfilePaths(std::vector<std::string>* profiles) override;
+  bool GetService(const std::string& service_path,
+                  std::string* profile_path,
+                  base::DictionaryValue* properties) override;
+  void ClearProfiles() override;
 
  private:
   struct ProfileProperties;

@@ -31,7 +31,7 @@ class CHROMEOS_EXPORT ModemMessagingClient : public DBusClient {
   typedef base::Callback<void(const std::vector<dbus::ObjectPath>& paths)>
       ListCallback;
 
-  virtual ~ModemMessagingClient();
+  ~ModemMessagingClient() override;
 
   // Factory function, creates a new instance and returns ownership.
   // For normal usage, access the singleton via DBusThreadManager::Get().

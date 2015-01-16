@@ -26,7 +26,7 @@ namespace chromeos {
 // OpenSSL (http://crbug.com/338888).
 class CHROMEOS_EXPORT EasyUnlockClient : public DBusClient {
  public:
-  virtual ~EasyUnlockClient();
+  ~EasyUnlockClient() override;
 
   typedef base::Callback<void(const std::string& data)> DataCallback;
 

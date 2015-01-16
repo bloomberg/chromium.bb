@@ -30,15 +30,14 @@ class BluetoothProfileManagerClientImpl
  public:
   BluetoothProfileManagerClientImpl() : weak_ptr_factory_(this) {}
 
-  virtual ~BluetoothProfileManagerClientImpl() {
-  }
+  ~BluetoothProfileManagerClientImpl() override {}
 
   // BluetoothProfileManagerClient override.
-  virtual void RegisterProfile(const dbus::ObjectPath& profile_path,
-                               const std::string& uuid,
-                               const Options& options,
-                               const base::Closure& callback,
-                               const ErrorCallback& error_callback) override {
+  void RegisterProfile(const dbus::ObjectPath& profile_path,
+                       const std::string& uuid,
+                       const Options& options,
+                       const base::Closure& callback,
+                       const ErrorCallback& error_callback) override {
     dbus::MethodCall method_call(
     bluetooth_profile_manager::kBluetoothProfileManagerInterface,
     bluetooth_profile_manager::kRegisterProfile);
@@ -169,9 +168,9 @@ class BluetoothProfileManagerClientImpl
   }
 
   // BluetoothProfileManagerClient override.
-  virtual void UnregisterProfile(const dbus::ObjectPath& profile_path,
-                                 const base::Closure& callback,
-                                 const ErrorCallback& error_callback) override {
+  void UnregisterProfile(const dbus::ObjectPath& profile_path,
+                         const base::Closure& callback,
+                         const ErrorCallback& error_callback) override {
     dbus::MethodCall method_call(
       bluetooth_profile_manager::kBluetoothProfileManagerInterface,
       bluetooth_profile_manager::kUnregisterProfile);
@@ -189,7 +188,7 @@ class BluetoothProfileManagerClientImpl
   }
 
  protected:
-  virtual void Init(dbus::Bus* bus) override {
+  void Init(dbus::Bus* bus) override {
     DCHECK(bus);
     object_proxy_ = bus->GetObjectProxy(
         bluetooth_profile_manager::kBluetoothProfileManagerServiceName,

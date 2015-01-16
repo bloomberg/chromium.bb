@@ -19,9 +19,9 @@ class CHROMEOS_EXPORT FakeLorgnetteManagerClient
   FakeLorgnetteManagerClient();
   ~FakeLorgnetteManagerClient() override;
 
-  virtual void Init(dbus::Bus* bus) override;
+  void Init(dbus::Bus* bus) override;
 
-  virtual void ListScanners(const ListScannersCallback& callback) override;
+  void ListScanners(const ListScannersCallback& callback) override;
   void ScanImageToFile(
       std::string device_name,
       const ScanProperties& properties,

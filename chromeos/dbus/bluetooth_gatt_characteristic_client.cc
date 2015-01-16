@@ -47,35 +47,34 @@ class BluetoothGattCharacteristicClientImpl
         weak_ptr_factory_(this) {
   }
 
-  virtual ~BluetoothGattCharacteristicClientImpl() {
+  ~BluetoothGattCharacteristicClientImpl() override {
     object_manager_->UnregisterInterface(
         bluetooth_gatt_characteristic::kBluetoothGattCharacteristicInterface);
   }
 
   // BluetoothGattCharacteristicClient override.
-  virtual void AddObserver(
+  void AddObserver(
       BluetoothGattCharacteristicClient::Observer* observer) override {
     DCHECK(observer);
     observers_.AddObserver(observer);
   }
 
   // BluetoothGattCharacteristicClient override.
-  virtual void RemoveObserver(
+  void RemoveObserver(
       BluetoothGattCharacteristicClient::Observer* observer) override {
     DCHECK(observer);
     observers_.RemoveObserver(observer);
   }
 
   // BluetoothGattCharacteristicClient override.
-  virtual std::vector<dbus::ObjectPath> GetCharacteristics() override {
+  std::vector<dbus::ObjectPath> GetCharacteristics() override {
     DCHECK(object_manager_);
     return object_manager_->GetObjectsWithInterface(
         bluetooth_gatt_characteristic::kBluetoothGattCharacteristicInterface);
   }
 
   // BluetoothGattCharacteristicClient override.
-  virtual Properties* GetProperties(
-      const dbus::ObjectPath& object_path) override {
+  Properties* GetProperties(const dbus::ObjectPath& object_path) override {
     DCHECK(object_manager_);
     return static_cast<Properties*>(
         object_manager_->GetProperties(
@@ -85,9 +84,9 @@ class BluetoothGattCharacteristicClientImpl
   }
 
   // BluetoothGattCharacteristicClient override.
-  virtual void ReadValue(const dbus::ObjectPath& object_path,
-                         const ValueCallback& callback,
-                         const ErrorCallback& error_callback) override {
+  void ReadValue(const dbus::ObjectPath& object_path,
+                 const ValueCallback& callback,
+                 const ErrorCallback& error_callback) override {
     dbus::ObjectProxy* object_proxy =
         object_manager_->GetObjectProxy(object_path);
     if (!object_proxy) {
@@ -111,10 +110,10 @@ class BluetoothGattCharacteristicClientImpl
   }
 
   // BluetoothGattCharacteristicClient override.
-  virtual void WriteValue(const dbus::ObjectPath& object_path,
-                          const std::vector<uint8>& value,
-                          const base::Closure& callback,
-                          const ErrorCallback& error_callback) override {
+  void WriteValue(const dbus::ObjectPath& object_path,
+                  const std::vector<uint8>& value,
+                  const base::Closure& callback,
+                  const ErrorCallback& error_callback) override {
     dbus::ObjectProxy* object_proxy =
         object_manager_->GetObjectProxy(object_path);
     if (!object_proxy) {
@@ -140,9 +139,9 @@ class BluetoothGattCharacteristicClientImpl
   }
 
   // BluetoothGattCharacteristicClient override.
-  virtual void StartNotify(const dbus::ObjectPath& object_path,
-                           const base::Closure& callback,
-                           const ErrorCallback& error_callback) override {
+  void StartNotify(const dbus::ObjectPath& object_path,
+                   const base::Closure& callback,
+                   const ErrorCallback& error_callback) override {
     dbus::ObjectProxy* object_proxy =
         object_manager_->GetObjectProxy(object_path);
     if (!object_proxy) {
@@ -166,9 +165,9 @@ class BluetoothGattCharacteristicClientImpl
   }
 
   // BluetoothGattCharacteristicClient override.
-  virtual void StopNotify(const dbus::ObjectPath& object_path,
-                          const base::Closure& callback,
-                          const ErrorCallback& error_callback) override {
+  void StopNotify(const dbus::ObjectPath& object_path,
+                  const base::Closure& callback,
+                  const ErrorCallback& error_callback) override {
     dbus::ObjectProxy* object_proxy =
         object_manager_->GetObjectProxy(object_path);
     if (!object_proxy) {
@@ -192,8 +191,8 @@ class BluetoothGattCharacteristicClientImpl
   }
 
   // dbus::ObjectManager::Interface override.
-  virtual dbus::PropertySet* CreateProperties(
-      dbus::ObjectProxy *object_proxy,
+  dbus::PropertySet* CreateProperties(
+      dbus::ObjectProxy* object_proxy,
       const dbus::ObjectPath& object_path,
       const std::string& interface_name) override {
     Properties* properties = new Properties(
@@ -206,8 +205,8 @@ class BluetoothGattCharacteristicClientImpl
   }
 
   // dbus::ObjectManager::Interface override.
-  virtual void ObjectAdded(const dbus::ObjectPath& object_path,
-                           const std::string& interface_name) override {
+  void ObjectAdded(const dbus::ObjectPath& object_path,
+                   const std::string& interface_name) override {
     VLOG(2) << "Remote GATT characteristic added: " << object_path.value();
     FOR_EACH_OBSERVER(BluetoothGattCharacteristicClient::Observer, observers_,
                       GattCharacteristicAdded(object_path));
@@ -229,8 +228,8 @@ class BluetoothGattCharacteristicClientImpl
   }
 
   // dbus::ObjectManager::Interface override.
-  virtual void ObjectRemoved(const dbus::ObjectPath& object_path,
-                             const std::string& interface_name) override {
+  void ObjectRemoved(const dbus::ObjectPath& object_path,
+                     const std::string& interface_name) override {
     VLOG(2) << "Remote GATT characteristic removed: " << object_path.value();
     FOR_EACH_OBSERVER(BluetoothGattCharacteristicClient::Observer, observers_,
                       GattCharacteristicRemoved(object_path));
@@ -238,7 +237,7 @@ class BluetoothGattCharacteristicClientImpl
 
  protected:
   // chromeos::DBusClient override.
-  virtual void Init(dbus::Bus* bus) override {
+  void Init(dbus::Bus* bus) override {
     object_manager_ = bus->GetObjectManager(
         bluetooth_object_manager::kBluetoothObjectManagerServiceName,
         dbus::ObjectPath(

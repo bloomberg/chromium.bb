@@ -75,7 +75,7 @@ class CHROMEOS_EXPORT BluetoothAdapterClient : public DBusClient {
     Properties(dbus::ObjectProxy* object_proxy,
                const std::string& interface_name,
                const PropertyChangedCallback& callback);
-    virtual ~Properties();
+    ~Properties() override;
   };
 
   // Interface for observing changes from a local bluetooth adapter.
@@ -97,7 +97,7 @@ class CHROMEOS_EXPORT BluetoothAdapterClient : public DBusClient {
                                         const std::string& property_name) {}
   };
 
-  virtual ~BluetoothAdapterClient();
+  ~BluetoothAdapterClient() override;
 
   // Adds and removes observers for events on all local bluetooth
   // adapters. Check the |object_path| parameter of observer methods to

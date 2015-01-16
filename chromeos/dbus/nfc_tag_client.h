@@ -46,7 +46,7 @@ class CHROMEOS_EXPORT NfcTagClient : public DBusClient {
 
     Properties(dbus::ObjectProxy* object_proxy,
                const PropertyChangedCallback& callback);
-    virtual ~Properties();
+    ~Properties() override;
   };
 
   // Interface for observing changes from a remote NFC tag.
@@ -77,7 +77,7 @@ class CHROMEOS_EXPORT NfcTagClient : public DBusClient {
     virtual void TagPropertiesReceived(const dbus::ObjectPath& object_path) {}
   };
 
-  virtual ~NfcTagClient();
+  ~NfcTagClient() override;
 
   // Adds and removes observers for events on all remote NFC tags. Check the
   // |object_path| parameter of observer methods to determine which tag is

@@ -34,7 +34,7 @@ class CHROMEOS_EXPORT GsmSMSClient : public DBusClient {
   typedef base::Callback<void(const base::DictionaryValue& sms)> GetCallback;
   typedef base::Callback<void(const base::ListValue& result)> ListCallback;
 
-  virtual ~GsmSMSClient();
+  ~GsmSMSClient() override;
 
   // Factory function, creates a new instance and returns ownership.
   // For normal usage, access the singleton via DBusThreadManager::Get().

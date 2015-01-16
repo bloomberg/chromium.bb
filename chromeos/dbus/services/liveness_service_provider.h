@@ -38,11 +38,10 @@ class CHROMEOS_EXPORT LivenessServiceProvider
     : public CrosDBusService::ServiceProviderInterface {
  public:
   LivenessServiceProvider();
-  virtual ~LivenessServiceProvider();
+  ~LivenessServiceProvider() override;
 
   // CrosDBusService::ServiceProviderInterface overrides:
-  virtual void Start(
-      scoped_refptr<dbus::ExportedObject> exported_object) override;
+  void Start(scoped_refptr<dbus::ExportedObject> exported_object) override;
 
  private:
   // Called from ExportedObject when CheckLiveness() is exported as a D-Bus

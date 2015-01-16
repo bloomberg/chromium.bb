@@ -84,11 +84,10 @@ class ProxyResolverInterface;
 class CHROMEOS_EXPORT ProxyResolutionServiceProvider
     : public CrosDBusService::ServiceProviderInterface {
  public:
-  virtual ~ProxyResolutionServiceProvider();
+  ~ProxyResolutionServiceProvider() override;
 
   // CrosDBusService::ServiceProviderInterface override.
-  virtual void Start(
-      scoped_refptr<dbus::ExportedObject> exported_object) override;
+  void Start(scoped_refptr<dbus::ExportedObject> exported_object) override;
 
   // Creates the instance.
   static ProxyResolutionServiceProvider* Create(

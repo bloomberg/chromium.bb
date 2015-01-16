@@ -109,7 +109,7 @@ class BluetoothAgentServiceProviderImpl
                    weak_ptr_factory_.GetWeakPtr()));
   }
 
-  virtual ~BluetoothAgentServiceProviderImpl() {
+  ~BluetoothAgentServiceProviderImpl() override {
     VLOG(1) << "Cleaning up Bluetooth Agent: " << object_path_.value();
 
     // Unregister the object path so we can reuse with a new agent.

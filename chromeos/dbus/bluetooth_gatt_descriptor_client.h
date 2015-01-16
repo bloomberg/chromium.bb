@@ -32,7 +32,7 @@ class CHROMEOS_EXPORT BluetoothGattDescriptorClient : public DBusClient {
     Properties(dbus::ObjectProxy* object_proxy,
                const std::string& interface_name,
                const PropertyChangedCallback& callback);
-    virtual ~Properties();
+    ~Properties() override;
   };
 
   // Interface for observing changes from a remote GATT characteristic
@@ -61,7 +61,7 @@ class CHROMEOS_EXPORT BluetoothGattDescriptorClient : public DBusClient {
                               const std::string& error_message)> ErrorCallback;
   typedef base::Callback<void(const std::vector<uint8>& value)> ValueCallback;
 
-  virtual ~BluetoothGattDescriptorClient();
+  ~BluetoothGattDescriptorClient() override;
 
   // Adds and removes observers for events on all remote GATT descriptors. Check
   // the |object_path| parameter of observer methods to determine which GATT

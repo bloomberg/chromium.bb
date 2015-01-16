@@ -187,7 +187,7 @@ class CHROMEOS_EXPORT PowerManagerClient : public DBusClient {
   // Creates the instance.
   static PowerManagerClient* Create(DBusClientImplementationType type);
 
-  virtual ~PowerManagerClient();
+  ~PowerManagerClient() override;
 
  protected:
   // Create() should be used instead.

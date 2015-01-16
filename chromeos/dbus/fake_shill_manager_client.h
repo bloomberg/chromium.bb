@@ -26,89 +26,81 @@ class CHROMEOS_EXPORT FakeShillManagerClient
       public ShillManagerClient::TestInterface {
  public:
   FakeShillManagerClient();
-  virtual ~FakeShillManagerClient();
+  ~FakeShillManagerClient() override;
 
   // ShillManagerClient overrides
-  virtual void Init(dbus::Bus* bus) override;
-  virtual void AddPropertyChangedObserver(
+  void Init(dbus::Bus* bus) override;
+  void AddPropertyChangedObserver(
       ShillPropertyChangedObserver* observer) override;
-  virtual void RemovePropertyChangedObserver(
+  void RemovePropertyChangedObserver(
       ShillPropertyChangedObserver* observer) override;
-  virtual void GetProperties(const DictionaryValueCallback& callback) override;
-  virtual void GetNetworksForGeolocation(
+  void GetProperties(const DictionaryValueCallback& callback) override;
+  void GetNetworksForGeolocation(
       const DictionaryValueCallback& callback) override;
-  virtual void SetProperty(const std::string& name,
-                           const base::Value& value,
-                           const base::Closure& callback,
-                           const ErrorCallback& error_callback) override;
-  virtual void RequestScan(const std::string& type,
-                           const base::Closure& callback,
-                           const ErrorCallback& error_callback) override;
-  virtual void EnableTechnology(
-      const std::string& type,
-      const base::Closure& callback,
-      const ErrorCallback& error_callback) override;
-  virtual void DisableTechnology(
-      const std::string& type,
-      const base::Closure& callback,
-      const ErrorCallback& error_callback) override;
-  virtual void ConfigureService(
-      const base::DictionaryValue& properties,
-      const ObjectPathCallback& callback,
-      const ErrorCallback& error_callback) override;
-  virtual void ConfigureServiceForProfile(
-      const dbus::ObjectPath& profile_path,
-      const base::DictionaryValue& properties,
-      const ObjectPathCallback& callback,
-      const ErrorCallback& error_callback) override;
-  virtual void GetService(
-      const base::DictionaryValue& properties,
-      const ObjectPathCallback& callback,
-      const ErrorCallback& error_callback) override;
-  virtual void VerifyDestination(const VerificationProperties& properties,
-                                 const BooleanCallback& callback,
-                                 const ErrorCallback& error_callback) override;
-  virtual void VerifyAndEncryptCredentials(
+  void SetProperty(const std::string& name,
+                   const base::Value& value,
+                   const base::Closure& callback,
+                   const ErrorCallback& error_callback) override;
+  void RequestScan(const std::string& type,
+                   const base::Closure& callback,
+                   const ErrorCallback& error_callback) override;
+  void EnableTechnology(const std::string& type,
+                        const base::Closure& callback,
+                        const ErrorCallback& error_callback) override;
+  void DisableTechnology(const std::string& type,
+                         const base::Closure& callback,
+                         const ErrorCallback& error_callback) override;
+  void ConfigureService(const base::DictionaryValue& properties,
+                        const ObjectPathCallback& callback,
+                        const ErrorCallback& error_callback) override;
+  void ConfigureServiceForProfile(const dbus::ObjectPath& profile_path,
+                                  const base::DictionaryValue& properties,
+                                  const ObjectPathCallback& callback,
+                                  const ErrorCallback& error_callback) override;
+  void GetService(const base::DictionaryValue& properties,
+                  const ObjectPathCallback& callback,
+                  const ErrorCallback& error_callback) override;
+  void VerifyDestination(const VerificationProperties& properties,
+                         const BooleanCallback& callback,
+                         const ErrorCallback& error_callback) override;
+  void VerifyAndEncryptCredentials(
       const VerificationProperties& properties,
       const std::string& service_path,
       const StringCallback& callback,
       const ErrorCallback& error_callback) override;
-  virtual void VerifyAndEncryptData(
-      const VerificationProperties& properties,
-      const std::string& data,
-      const StringCallback& callback,
-      const ErrorCallback& error_callback) override;
-  virtual void ConnectToBestServices(
-      const base::Closure& callback,
-      const ErrorCallback& error_callback) override;
+  void VerifyAndEncryptData(const VerificationProperties& properties,
+                            const std::string& data,
+                            const StringCallback& callback,
+                            const ErrorCallback& error_callback) override;
+  void ConnectToBestServices(const base::Closure& callback,
+                             const ErrorCallback& error_callback) override;
 
-  virtual ShillManagerClient::TestInterface* GetTestInterface() override;
+  ShillManagerClient::TestInterface* GetTestInterface() override;
 
   // ShillManagerClient::TestInterface overrides.
-  virtual void AddDevice(const std::string& device_path) override;
-  virtual void RemoveDevice(const std::string& device_path) override;
-  virtual void ClearDevices() override;
-  virtual void AddTechnology(const std::string& type, bool enabled) override;
-  virtual void RemoveTechnology(const std::string& type) override;
-  virtual void SetTechnologyInitializing(const std::string& type,
-                                         bool initializing) override;
-  virtual void AddGeoNetwork(const std::string& technology,
-                             const base::DictionaryValue& network) override;
-  virtual void AddProfile(const std::string& profile_path) override;
-  virtual void ClearProperties() override;
-  virtual void SetManagerProperty(const std::string& key,
-                                  const base::Value& value) override;
-  virtual void AddManagerService(const std::string& service_path,
-                                 bool notify_observers) override;
-  virtual void RemoveManagerService(const std::string& service_path) override;
-  virtual void ClearManagerServices() override;
-  virtual void ServiceStateChanged(const std::string& service_path,
-                                   const std::string& state) override;
-  virtual void SortManagerServices(bool notify) override;
-  virtual void SetupDefaultEnvironment() override;
-  virtual int GetInteractiveDelay() const override;
-  virtual void SetBestServiceToConnect(
-      const std::string& service_path) override;
+  void AddDevice(const std::string& device_path) override;
+  void RemoveDevice(const std::string& device_path) override;
+  void ClearDevices() override;
+  void AddTechnology(const std::string& type, bool enabled) override;
+  void RemoveTechnology(const std::string& type) override;
+  void SetTechnologyInitializing(const std::string& type,
+                                 bool initializing) override;
+  void AddGeoNetwork(const std::string& technology,
+                     const base::DictionaryValue& network) override;
+  void AddProfile(const std::string& profile_path) override;
+  void ClearProperties() override;
+  void SetManagerProperty(const std::string& key,
+                          const base::Value& value) override;
+  void AddManagerService(const std::string& service_path,
+                         bool notify_observers) override;
+  void RemoveManagerService(const std::string& service_path) override;
+  void ClearManagerServices() override;
+  void ServiceStateChanged(const std::string& service_path,
+                           const std::string& state) override;
+  void SortManagerServices(bool notify) override;
+  void SetupDefaultEnvironment() override;
+  int GetInteractiveDelay() const override;
+  void SetBestServiceToConnect(const std::string& service_path) override;
 
   // Constants used for testing.
   static const char kFakeEthernetNetworkGuid[];

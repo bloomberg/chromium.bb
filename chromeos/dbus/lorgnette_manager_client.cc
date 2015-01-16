@@ -30,7 +30,7 @@ class LorgnetteManagerClientImpl : public LorgnetteManagerClient {
   LorgnetteManagerClientImpl() :
       lorgnette_daemon_proxy_(NULL), weak_ptr_factory_(this) {}
 
-  virtual ~LorgnetteManagerClientImpl() {}
+  ~LorgnetteManagerClientImpl() override {}
 
   void ListScanners(const ListScannersCallback& callback) override {
     dbus::MethodCall method_call(lorgnette::kManagerServiceInterface,

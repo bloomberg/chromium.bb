@@ -69,7 +69,7 @@ class CHROMEOS_EXPORT UpdateEngineClient : public DBusClient {
     virtual void UpdateStatusChanged(const Status& status) {}
   };
 
-  virtual ~UpdateEngineClient();
+  ~UpdateEngineClient() override;
 
   // Adds and removes the observer.
   virtual void AddObserver(Observer* observer) = 0;

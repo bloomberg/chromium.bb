@@ -13,15 +13,15 @@ namespace chromeos {
 class CHROMEOS_EXPORT FakeSystemClockClient : public SystemClockClient {
  public:
   FakeSystemClockClient();
-  virtual ~FakeSystemClockClient();
+  ~FakeSystemClockClient() override;
 
   // SystemClockClient overrides
-  virtual void Init(dbus::Bus* bus) override;
-  virtual void AddObserver(Observer* observer) override;
-  virtual void RemoveObserver(Observer* observer) override;
-  virtual bool HasObserver(const Observer* observer) const override;
-  virtual void SetTime(int64 time_in_seconds) override;
-  virtual bool CanSetTime() override;
+  void Init(dbus::Bus* bus) override;
+  void AddObserver(Observer* observer) override;
+  void RemoveObserver(Observer* observer) override;
+  bool HasObserver(const Observer* observer) const override;
+  void SetTime(int64 time_in_seconds) override;
+  bool CanSetTime() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeSystemClockClient);

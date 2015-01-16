@@ -194,7 +194,7 @@ class CHROMEOS_EXPORT SessionManagerClient : public DBusClient {
   // Creates the instance.
   static SessionManagerClient* Create(DBusClientImplementationType type);
 
-  virtual ~SessionManagerClient();
+  ~SessionManagerClient() override;
 
  protected:
   // Create() should be used instead.

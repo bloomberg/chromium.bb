@@ -69,7 +69,7 @@ class CHROMEOS_EXPORT BluetoothProfileManagerClient : public DBusClient {
     scoped_ptr<uint16> features;
   };
 
-  virtual ~BluetoothProfileManagerClient();
+  ~BluetoothProfileManagerClient() override;
 
   // The ErrorCallback is used by adapter methods to indicate failure.
   // It receives two arguments: the name of the error in |error_name| and

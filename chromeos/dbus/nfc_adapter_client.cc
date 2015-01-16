@@ -48,36 +48,33 @@ class NfcAdapterClientImpl
     DCHECK(manager_client);
   }
 
-  virtual ~NfcAdapterClientImpl() {
-    manager_client_->RemoveObserver(this);
-  }
+  ~NfcAdapterClientImpl() override { manager_client_->RemoveObserver(this); }
 
   // NfcAdapterClient override.
-  virtual void AddObserver(NfcAdapterClient::Observer* observer) override {
+  void AddObserver(NfcAdapterClient::Observer* observer) override {
     DCHECK(observer);
     observers_.AddObserver(observer);
   }
 
   // NfcAdapterClient override.
-  virtual void RemoveObserver(NfcAdapterClient::Observer* observer) override {
+  void RemoveObserver(NfcAdapterClient::Observer* observer) override {
     DCHECK(observer);
     observers_.RemoveObserver(observer);
   }
 
   // NfcAdapterClient override.
-  virtual std::vector<dbus::ObjectPath> GetAdapters() override {
+  std::vector<dbus::ObjectPath> GetAdapters() override {
     return object_map_->GetObjectPaths();
   }
 
   // NfcAdapterClient override.
-  virtual Properties* GetProperties(const dbus::ObjectPath& object_path)
-      override {
+  Properties* GetProperties(const dbus::ObjectPath& object_path) override {
     return static_cast<Properties*>(
         object_map_->GetObjectProperties(object_path));
   }
 
   // NfcAdapterClient override.
-  virtual void StartPollLoop(
+  void StartPollLoop(
       const dbus::ObjectPath& object_path,
       const std::string& mode,
       const base::Closure& callback,
@@ -104,7 +101,7 @@ class NfcAdapterClientImpl
   }
 
   // NfcAdapterClient override.
-  virtual void StopPollLoop(
+  void StopPollLoop(
       const dbus::ObjectPath& object_path,
       const base::Closure& callback,
       const nfc_client_helpers::ErrorCallback& error_callback) override {
@@ -129,7 +126,7 @@ class NfcAdapterClientImpl
 
  protected:
   // DBusClient override.
-  virtual void Init(dbus::Bus* bus) override {
+  void Init(dbus::Bus* bus) override {
     VLOG(1) << "Creating NfcAdapterClientImpl";
     DCHECK(bus);
     bus_ = bus;
@@ -141,8 +138,7 @@ class NfcAdapterClientImpl
 
  private:
   // NfcManagerClient::Observer override.
-  virtual void ManagerPropertyChanged(
-      const std::string& property_name) override {
+  void ManagerPropertyChanged(const std::string& property_name) override {
     // Update the adapter proxies.
     DCHECK(manager_client_);
     NfcManagerClient::Properties* manager_properties =
@@ -160,8 +156,7 @@ class NfcAdapterClientImpl
   }
 
   // nfc_client_helpers::DBusObjectMap::Delegate override.
-  virtual NfcPropertySet* CreateProperties(
-      dbus::ObjectProxy* object_proxy) override {
+  NfcPropertySet* CreateProperties(dbus::ObjectProxy* object_proxy) override {
     return new Properties(
         object_proxy,
         base::Bind(&NfcAdapterClientImpl::OnPropertyChanged,
@@ -170,13 +165,13 @@ class NfcAdapterClientImpl
   }
 
   // nfc_client_helpers::DBusObjectMap::Delegate override.
-  virtual void ObjectAdded(const dbus::ObjectPath& object_path) override {
+  void ObjectAdded(const dbus::ObjectPath& object_path) override {
     FOR_EACH_OBSERVER(NfcAdapterClient::Observer, observers_,
                       AdapterAdded(object_path));
   }
 
   // nfc_client_helpers::DBusObjectMap::Delegate override.
-  virtual void ObjectRemoved(const dbus::ObjectPath& object_path) override {
+  void ObjectRemoved(const dbus::ObjectPath& object_path) override {
     FOR_EACH_OBSERVER(NfcAdapterClient::Observer, observers_,
                       AdapterRemoved(object_path));
   }

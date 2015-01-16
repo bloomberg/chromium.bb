@@ -43,35 +43,33 @@ class BluetoothGattDescriptorClientImpl
         weak_ptr_factory_(this) {
   }
 
-  virtual ~BluetoothGattDescriptorClientImpl() {
+  ~BluetoothGattDescriptorClientImpl() override {
     object_manager_->UnregisterInterface(
         bluetooth_gatt_descriptor::kBluetoothGattDescriptorInterface);
   }
 
   // BluetoothGattDescriptorClientImpl override.
-  virtual void AddObserver(
-      BluetoothGattDescriptorClient::Observer* observer) override {
+  void AddObserver(BluetoothGattDescriptorClient::Observer* observer) override {
     DCHECK(observer);
     observers_.AddObserver(observer);
   }
 
   // BluetoothGattDescriptorClientImpl override.
-  virtual void RemoveObserver(
+  void RemoveObserver(
       BluetoothGattDescriptorClient::Observer* observer) override {
     DCHECK(observer);
     observers_.RemoveObserver(observer);
   }
 
   // BluetoothGattDescriptorClientImpl override.
-  virtual std::vector<dbus::ObjectPath> GetDescriptors() override {
+  std::vector<dbus::ObjectPath> GetDescriptors() override {
     DCHECK(object_manager_);
     return object_manager_->GetObjectsWithInterface(
         bluetooth_gatt_descriptor::kBluetoothGattDescriptorInterface);
   }
 
   // BluetoothGattDescriptorClientImpl override.
-  virtual Properties* GetProperties(
-      const dbus::ObjectPath& object_path) override {
+  Properties* GetProperties(const dbus::ObjectPath& object_path) override {
     DCHECK(object_manager_);
     return static_cast<Properties*>(
         object_manager_->GetProperties(
@@ -80,9 +78,9 @@ class BluetoothGattDescriptorClientImpl
   }
 
   // BluetoothGattDescriptorClientImpl override.
-  virtual void ReadValue(const dbus::ObjectPath& object_path,
-                         const ValueCallback& callback,
-                         const ErrorCallback& error_callback) override {
+  void ReadValue(const dbus::ObjectPath& object_path,
+                 const ValueCallback& callback,
+                 const ErrorCallback& error_callback) override {
     dbus::ObjectProxy* object_proxy =
         object_manager_->GetObjectProxy(object_path);
     if (!object_proxy) {
@@ -106,10 +104,10 @@ class BluetoothGattDescriptorClientImpl
   }
 
   // BluetoothGattDescriptorClientImpl override.
-  virtual void WriteValue(const dbus::ObjectPath& object_path,
-                          const std::vector<uint8>& value,
-                          const base::Closure& callback,
-                          const ErrorCallback& error_callback) override {
+  void WriteValue(const dbus::ObjectPath& object_path,
+                  const std::vector<uint8>& value,
+                  const base::Closure& callback,
+                  const ErrorCallback& error_callback) override {
     dbus::ObjectProxy* object_proxy =
         object_manager_->GetObjectProxy(object_path);
     if (!object_proxy) {
@@ -135,8 +133,8 @@ class BluetoothGattDescriptorClientImpl
   }
 
   // dbus::ObjectManager::Interface override.
-  virtual dbus::PropertySet* CreateProperties(
-      dbus::ObjectProxy *object_proxy,
+  dbus::PropertySet* CreateProperties(
+      dbus::ObjectProxy* object_proxy,
       const dbus::ObjectPath& object_path,
       const std::string& interface_name) override {
     Properties* properties = new Properties(
@@ -149,16 +147,16 @@ class BluetoothGattDescriptorClientImpl
   }
 
   // dbus::ObjectManager::Interface override.
-  virtual void ObjectAdded(const dbus::ObjectPath& object_path,
-                           const std::string& interface_name) override {
+  void ObjectAdded(const dbus::ObjectPath& object_path,
+                   const std::string& interface_name) override {
     VLOG(2) << "Remote GATT descriptor added: " << object_path.value();
     FOR_EACH_OBSERVER(BluetoothGattDescriptorClient::Observer, observers_,
                       GattDescriptorAdded(object_path));
   }
 
   // dbus::ObjectManager::Interface override.
-  virtual void ObjectRemoved(const dbus::ObjectPath& object_path,
-                             const std::string& interface_name) override {
+  void ObjectRemoved(const dbus::ObjectPath& object_path,
+                     const std::string& interface_name) override {
     VLOG(2) << "Remote GATT descriptor removed: " << object_path.value();
     FOR_EACH_OBSERVER(BluetoothGattDescriptorClient::Observer, observers_,
                       GattDescriptorRemoved(object_path));
@@ -166,7 +164,7 @@ class BluetoothGattDescriptorClientImpl
 
  protected:
   // chromeos::DBusClient override.
-  virtual void Init(dbus::Bus* bus) override {
+  void Init(dbus::Bus* bus) override {
     object_manager_ = bus->GetObjectManager(
         bluetooth_object_manager::kBluetoothObjectManagerServiceName,
         dbus::ObjectPath(

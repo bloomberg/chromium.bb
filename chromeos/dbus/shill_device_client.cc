@@ -28,7 +28,7 @@ class ShillDeviceClientImpl : public ShillDeviceClient {
       : bus_(NULL) {
   }
 
-  virtual ~ShillDeviceClientImpl() {
+  ~ShillDeviceClientImpl() override {
     for (HelperMap::iterator iter = helpers_.begin();
          iter != helpers_.end(); ++iter) {
       // This *should* never happen, yet we're getting crash reports that
@@ -43,37 +43,37 @@ class ShillDeviceClientImpl : public ShillDeviceClient {
 
   ///////////////////////////////////////
   // ShillDeviceClient overrides.
-  virtual void AddPropertyChangedObserver(
+  void AddPropertyChangedObserver(
       const dbus::ObjectPath& device_path,
       ShillPropertyChangedObserver* observer) override {
     GetHelper(device_path)->AddPropertyChangedObserver(observer);
   }
 
-  virtual void RemovePropertyChangedObserver(
+  void RemovePropertyChangedObserver(
       const dbus::ObjectPath& device_path,
       ShillPropertyChangedObserver* observer) override {
     GetHelper(device_path)->RemovePropertyChangedObserver(observer);
   }
 
-  virtual void GetProperties(const dbus::ObjectPath& device_path,
-                             const DictionaryValueCallback& callback) override {
+  void GetProperties(const dbus::ObjectPath& device_path,
+                     const DictionaryValueCallback& callback) override {
     dbus::MethodCall method_call(shill::kFlimflamDeviceInterface,
                                  shill::kGetPropertiesFunction);
     GetHelper(device_path)->CallDictionaryValueMethod(&method_call, callback);
   }
 
-  virtual void ProposeScan(const dbus::ObjectPath& device_path,
-                           const VoidDBusMethodCallback& callback) override {
+  void ProposeScan(const dbus::ObjectPath& device_path,
+                   const VoidDBusMethodCallback& callback) override {
     dbus::MethodCall method_call(shill::kFlimflamDeviceInterface,
                                  shill::kProposeScanFunction);
     GetHelper(device_path)->CallVoidMethod(&method_call, callback);
   }
 
-  virtual void SetProperty(const dbus::ObjectPath& device_path,
-                           const std::string& name,
-                           const base::Value& value,
-                           const base::Closure& callback,
-                           const ErrorCallback& error_callback) override {
+  void SetProperty(const dbus::ObjectPath& device_path,
+                   const std::string& name,
+                   const base::Value& value,
+                   const base::Closure& callback,
+                   const ErrorCallback& error_callback) override {
     dbus::MethodCall method_call(shill::kFlimflamDeviceInterface,
                                  shill::kSetPropertyFunction);
     dbus::MessageWriter writer(&method_call);
@@ -84,9 +84,9 @@ class ShillDeviceClientImpl : public ShillDeviceClient {
                                                             error_callback);
   }
 
-  virtual void ClearProperty(const dbus::ObjectPath& device_path,
-                             const std::string& name,
-                             const VoidDBusMethodCallback& callback) override {
+  void ClearProperty(const dbus::ObjectPath& device_path,
+                     const std::string& name,
+                     const VoidDBusMethodCallback& callback) override {
     dbus::MethodCall method_call(shill::kFlimflamDeviceInterface,
                                  shill::kClearPropertyFunction);
     dbus::MessageWriter writer(&method_call);
@@ -94,10 +94,9 @@ class ShillDeviceClientImpl : public ShillDeviceClient {
     GetHelper(device_path)->CallVoidMethod(&method_call, callback);
   }
 
-  virtual void AddIPConfig(
-      const dbus::ObjectPath& device_path,
-      const std::string& method,
-      const ObjectPathDBusMethodCallback& callback) override {
+  void AddIPConfig(const dbus::ObjectPath& device_path,
+                   const std::string& method,
+                   const ObjectPathDBusMethodCallback& callback) override {
     dbus::MethodCall method_call(shill::kFlimflamDeviceInterface,
                                  shill::kAddIPConfigFunction);
     dbus::MessageWriter writer(&method_call);
@@ -105,11 +104,11 @@ class ShillDeviceClientImpl : public ShillDeviceClient {
     GetHelper(device_path)->CallObjectPathMethod(&method_call, callback);
   }
 
-  virtual void RequirePin(const dbus::ObjectPath& device_path,
-                          const std::string& pin,
-                          bool require,
-                          const base::Closure& callback,
-                          const ErrorCallback& error_callback) override {
+  void RequirePin(const dbus::ObjectPath& device_path,
+                  const std::string& pin,
+                  bool require,
+                  const base::Closure& callback,
+                  const ErrorCallback& error_callback) override {
     dbus::MethodCall method_call(shill::kFlimflamDeviceInterface,
                                  shill::kRequirePinFunction);
     dbus::MessageWriter writer(&method_call);
@@ -119,10 +118,10 @@ class ShillDeviceClientImpl : public ShillDeviceClient {
         &method_call, callback, error_callback);
   }
 
-  virtual void EnterPin(const dbus::ObjectPath& device_path,
-                        const std::string& pin,
-                        const base::Closure& callback,
-                        const ErrorCallback& error_callback) override {
+  void EnterPin(const dbus::ObjectPath& device_path,
+                const std::string& pin,
+                const base::Closure& callback,
+                const ErrorCallback& error_callback) override {
     dbus::MethodCall method_call(shill::kFlimflamDeviceInterface,
                                  shill::kEnterPinFunction);
     dbus::MessageWriter writer(&method_call);
@@ -131,11 +130,11 @@ class ShillDeviceClientImpl : public ShillDeviceClient {
         &method_call, callback, error_callback);
   }
 
-  virtual void UnblockPin(const dbus::ObjectPath& device_path,
-                          const std::string& puk,
-                          const std::string& pin,
-                          const base::Closure& callback,
-                          const ErrorCallback& error_callback) override {
+  void UnblockPin(const dbus::ObjectPath& device_path,
+                  const std::string& puk,
+                  const std::string& pin,
+                  const base::Closure& callback,
+                  const ErrorCallback& error_callback) override {
     dbus::MethodCall method_call(shill::kFlimflamDeviceInterface,
                                  shill::kUnblockPinFunction);
     dbus::MessageWriter writer(&method_call);
@@ -145,11 +144,11 @@ class ShillDeviceClientImpl : public ShillDeviceClient {
         &method_call, callback, error_callback);
   }
 
-  virtual void ChangePin(const dbus::ObjectPath& device_path,
-                         const std::string& old_pin,
-                         const std::string& new_pin,
-                         const base::Closure& callback,
-                         const ErrorCallback& error_callback) override {
+  void ChangePin(const dbus::ObjectPath& device_path,
+                 const std::string& old_pin,
+                 const std::string& new_pin,
+                 const base::Closure& callback,
+                 const ErrorCallback& error_callback) override {
     dbus::MethodCall method_call(shill::kFlimflamDeviceInterface,
                                  shill::kChangePinFunction);
     dbus::MessageWriter writer(&method_call);
@@ -159,10 +158,10 @@ class ShillDeviceClientImpl : public ShillDeviceClient {
         &method_call, callback, error_callback);
   }
 
-  virtual void Register(const dbus::ObjectPath& device_path,
-                        const std::string& network_id,
-                        const base::Closure& callback,
-                        const ErrorCallback& error_callback) override {
+  void Register(const dbus::ObjectPath& device_path,
+                const std::string& network_id,
+                const base::Closure& callback,
+                const ErrorCallback& error_callback) override {
     dbus::MethodCall method_call(shill::kFlimflamDeviceInterface,
                                  shill::kRegisterFunction);
     dbus::MessageWriter writer(&method_call);
@@ -171,10 +170,10 @@ class ShillDeviceClientImpl : public ShillDeviceClient {
         &method_call, callback, error_callback);
   }
 
-  virtual void SetCarrier(const dbus::ObjectPath& device_path,
-                          const std::string& carrier,
-                          const base::Closure& callback,
-                          const ErrorCallback& error_callback) override {
+  void SetCarrier(const dbus::ObjectPath& device_path,
+                  const std::string& carrier,
+                  const base::Closure& callback,
+                  const ErrorCallback& error_callback) override {
     dbus::MethodCall method_call(shill::kFlimflamDeviceInterface,
                                  shill::kSetCarrierFunction);
     dbus::MessageWriter writer(&method_call);
@@ -183,21 +182,20 @@ class ShillDeviceClientImpl : public ShillDeviceClient {
         &method_call, callback, error_callback);
   }
 
-  virtual void Reset(const dbus::ObjectPath& device_path,
-                     const base::Closure& callback,
-                     const ErrorCallback& error_callback) override {
+  void Reset(const dbus::ObjectPath& device_path,
+             const base::Closure& callback,
+             const ErrorCallback& error_callback) override {
     dbus::MethodCall method_call(shill::kFlimflamDeviceInterface,
                                  shill::kResetFunction);
     GetHelper(device_path)->CallVoidMethodWithErrorCallback(
         &method_call, callback, error_callback);
   }
 
-  virtual void PerformTDLSOperation(
-      const dbus::ObjectPath& device_path,
-      const std::string& operation,
-      const std::string& peer,
-      const StringCallback& callback,
-      const ErrorCallback& error_callback) override {
+  void PerformTDLSOperation(const dbus::ObjectPath& device_path,
+                            const std::string& operation,
+                            const std::string& peer,
+                            const StringCallback& callback,
+                            const ErrorCallback& error_callback) override {
     dbus::MethodCall method_call(shill::kFlimflamDeviceInterface,
                                  shill::kPerformTDLSOperationFunction);
     dbus::MessageWriter writer(&method_call);
@@ -255,14 +253,10 @@ class ShillDeviceClientImpl : public ShillDeviceClient {
                                                             error_callback);
   }
 
-  virtual TestInterface* GetTestInterface() override {
-    return NULL;
-  }
+  TestInterface* GetTestInterface() override { return NULL; }
 
  protected:
-  virtual void Init(dbus::Bus* bus) override {
-    bus_ = bus;
-  }
+  void Init(dbus::Bus* bus) override { bus_ = bus; }
 
  private:
   typedef std::map<std::string, ShillClientHelper*> HelperMap;

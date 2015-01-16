@@ -56,7 +56,7 @@ class ProxyResolverImpl : public ProxyResolverInterface {
         weak_ptr_factory_(this) {
   }
 
-  virtual ~ProxyResolverImpl() {
+  ~ProxyResolverImpl() override {
     DCHECK(OnOriginThread());
 
     for (std::set<Request*>::iterator iter = all_requests_.begin();
@@ -68,7 +68,7 @@ class ProxyResolverImpl : public ProxyResolverInterface {
   }
 
   // ProxyResolverInterface override.
-  virtual void ResolveProxy(
+  void ResolveProxy(
       const std::string& source_url,
       const std::string& signal_interface,
       const std::string& signal_name,

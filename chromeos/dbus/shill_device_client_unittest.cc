@@ -56,7 +56,7 @@ class ShillDeviceClientTest : public ShillClientUnittestBase {
                                    dbus::ObjectPath(kExampleDevicePath)) {
   }
 
-  virtual void SetUp() {
+  void SetUp() override {
     ShillClientUnittestBase::SetUp();
     // Create a client with the mock bus.
     client_.reset(ShillDeviceClient::Create());
@@ -65,9 +65,7 @@ class ShillDeviceClientTest : public ShillClientUnittestBase {
     message_loop_.RunUntilIdle();
   }
 
-  virtual void TearDown() {
-    ShillClientUnittestBase::TearDown();
-  }
+  void TearDown() override { ShillClientUnittestBase::TearDown(); }
 
  protected:
   scoped_ptr<ShillDeviceClient> client_;

@@ -41,11 +41,10 @@ class CHROMEOS_EXPORT DisplayPowerServiceProvider
   };
 
   explicit DisplayPowerServiceProvider(scoped_ptr<Delegate> delegate);
-  virtual ~DisplayPowerServiceProvider();
+  ~DisplayPowerServiceProvider() override;
 
   // CrosDBusService::ServiceProviderInterface overrides:
-  virtual void Start(
-      scoped_refptr<dbus::ExportedObject> exported_object) override;
+  void Start(scoped_refptr<dbus::ExportedObject> exported_object) override;
 
  private:
   // Called from ExportedObject when a handler is exported as a D-Bus

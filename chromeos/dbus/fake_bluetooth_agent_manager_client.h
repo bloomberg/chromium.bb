@@ -24,21 +24,20 @@ class CHROMEOS_EXPORT FakeBluetoothAgentManagerClient
     : public BluetoothAgentManagerClient {
  public:
   FakeBluetoothAgentManagerClient();
-  virtual ~FakeBluetoothAgentManagerClient();
+  ~FakeBluetoothAgentManagerClient() override;
 
   // BluetoothAgentManagerClient overrides
-  virtual void Init(dbus::Bus* bus) override;
-  virtual void RegisterAgent(const dbus::ObjectPath& agent_path,
-                             const std::string& capability,
-                             const base::Closure& callback,
-                             const ErrorCallback& error_callback) override;
-  virtual void UnregisterAgent(const dbus::ObjectPath& agent_path,
-                               const base::Closure& callback,
-                               const ErrorCallback& error_callback) override;
-  virtual void RequestDefaultAgent(const dbus::ObjectPath& agent_path,
-                                   const base::Closure& callback,
-                                   const ErrorCallback& error_callback)
-      override;
+  void Init(dbus::Bus* bus) override;
+  void RegisterAgent(const dbus::ObjectPath& agent_path,
+                     const std::string& capability,
+                     const base::Closure& callback,
+                     const ErrorCallback& error_callback) override;
+  void UnregisterAgent(const dbus::ObjectPath& agent_path,
+                       const base::Closure& callback,
+                       const ErrorCallback& error_callback) override;
+  void RequestDefaultAgent(const dbus::ObjectPath& agent_path,
+                           const base::Closure& callback,
+                           const ErrorCallback& error_callback) override;
 
   // Register, unregister and retrieve pointers to agent service providers.
   void RegisterAgentServiceProvider(

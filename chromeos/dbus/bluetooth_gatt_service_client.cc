@@ -38,35 +38,32 @@ class BluetoothGattServiceClientImpl : public BluetoothGattServiceClient,
         weak_ptr_factory_(this) {
   }
 
-  virtual ~BluetoothGattServiceClientImpl() {
+  ~BluetoothGattServiceClientImpl() override {
     object_manager_->UnregisterInterface(
         bluetooth_gatt_service::kBluetoothGattServiceInterface);
   }
 
   // BluetoothGattServiceClientImpl override.
-  virtual void AddObserver(
-      BluetoothGattServiceClient::Observer* observer) override {
+  void AddObserver(BluetoothGattServiceClient::Observer* observer) override {
     DCHECK(observer);
     observers_.AddObserver(observer);
   }
 
   // BluetoothGattServiceClientImpl override.
-  virtual void RemoveObserver(
-      BluetoothGattServiceClient::Observer* observer) override {
+  void RemoveObserver(BluetoothGattServiceClient::Observer* observer) override {
     DCHECK(observer);
     observers_.RemoveObserver(observer);
   }
 
   // BluetoothGattServiceClientImpl override.
-  virtual std::vector<dbus::ObjectPath> GetServices() override {
+  std::vector<dbus::ObjectPath> GetServices() override {
     DCHECK(object_manager_);
     return object_manager_->GetObjectsWithInterface(
         bluetooth_gatt_service::kBluetoothGattServiceInterface);
   }
 
   // BluetoothGattServiceClientImpl override.
-  virtual Properties* GetProperties(
-      const dbus::ObjectPath& object_path) override {
+  Properties* GetProperties(const dbus::ObjectPath& object_path) override {
     DCHECK(object_manager_);
     return static_cast<Properties*>(
         object_manager_->GetProperties(
@@ -75,8 +72,8 @@ class BluetoothGattServiceClientImpl : public BluetoothGattServiceClient,
   }
 
   // dbus::ObjectManager::Interface override.
-  virtual dbus::PropertySet* CreateProperties(
-      dbus::ObjectProxy *object_proxy,
+  dbus::PropertySet* CreateProperties(
+      dbus::ObjectProxy* object_proxy,
       const dbus::ObjectPath& object_path,
       const std::string& interface_name) override {
     Properties* properties = new Properties(
@@ -89,16 +86,16 @@ class BluetoothGattServiceClientImpl : public BluetoothGattServiceClient,
   }
 
   // dbus::ObjectManager::Interface override.
-  virtual void ObjectAdded(const dbus::ObjectPath& object_path,
-                           const std::string& interface_name) override {
+  void ObjectAdded(const dbus::ObjectPath& object_path,
+                   const std::string& interface_name) override {
     VLOG(2) << "Remote GATT service added: " << object_path.value();
     FOR_EACH_OBSERVER(BluetoothGattServiceClient::Observer, observers_,
                       GattServiceAdded(object_path));
   }
 
   // dbus::ObjectManager::Interface override.
-  virtual void ObjectRemoved(const dbus::ObjectPath& object_path,
-                             const std::string& interface_name) override {
+  void ObjectRemoved(const dbus::ObjectPath& object_path,
+                     const std::string& interface_name) override {
     VLOG(2) << "Remote GATT service removed: " << object_path.value();
     FOR_EACH_OBSERVER(BluetoothGattServiceClient::Observer, observers_,
                       GattServiceRemoved(object_path));
@@ -106,7 +103,7 @@ class BluetoothGattServiceClientImpl : public BluetoothGattServiceClient,
 
  protected:
   // chromeos::DBusClient override.
-  virtual void Init(dbus::Bus* bus) override {
+  void Init(dbus::Bus* bus) override {
     object_manager_ = bus->GetObjectManager(
         bluetooth_object_manager::kBluetoothObjectManagerServiceName,
         dbus::ObjectPath(

@@ -87,7 +87,7 @@ class CHROMEOS_EXPORT ShillProfileClient : public DBusClient {
     virtual ~TestInterface() {}
   };
 
-  virtual ~ShillProfileClient();
+  ~ShillProfileClient() override;
 
   // Factory function, creates a new instance which is owned by the caller.
   // For normal usage, access the singleton via DBusThreadManager::Get().

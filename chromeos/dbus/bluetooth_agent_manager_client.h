@@ -20,7 +20,7 @@ namespace chromeos {
 // object of the Bluetooth daemon.
 class CHROMEOS_EXPORT BluetoothAgentManagerClient : public DBusClient {
  public:
-  virtual ~BluetoothAgentManagerClient();
+  ~BluetoothAgentManagerClient() override;
 
   // The ErrorCallback is used by agent manager methods to indicate failure.
   // It receives two arguments: the name of the error in |error_name| and

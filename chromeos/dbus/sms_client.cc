@@ -32,12 +32,12 @@ class SMSClientImpl : public SMSClient {
  public:
   SMSClientImpl() : bus_(NULL), weak_ptr_factory_(this) {}
 
-  virtual ~SMSClientImpl() {}
+  ~SMSClientImpl() override {}
 
   // Calls GetAll method.  |callback| is called after the method call succeeds.
-  virtual void GetAll(const std::string& service_name,
-                      const dbus::ObjectPath& object_path,
-                      const GetAllCallback& callback) override {
+  void GetAll(const std::string& service_name,
+              const dbus::ObjectPath& object_path,
+              const GetAllCallback& callback) override {
     dbus::ObjectProxy *proxy = bus_->GetObjectProxy(service_name, object_path);
     dbus::MethodCall method_call(dbus::kDBusPropertiesInterface,
                                  dbus::kDBusPropertiesGetAll);
@@ -50,9 +50,7 @@ class SMSClientImpl : public SMSClient {
   }
 
  protected:
-  virtual void Init(dbus::Bus* bus) override {
-    bus_ = bus;
-  }
+  void Init(dbus::Bus* bus) override { bus_ = bus; }
 
  private:
   // Handles responses of GetAll method calls.

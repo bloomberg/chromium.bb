@@ -19,7 +19,7 @@ namespace chromeos {
 // initializes the DBusThreadManager instance.
 class CHROMEOS_EXPORT ImageBurnerClient : public DBusClient {
  public:
-  virtual ~ImageBurnerClient();
+  ~ImageBurnerClient() override;
 
   // A callback to be called when DBus method call fails.
   typedef base::Callback<void()> ErrorCallback;

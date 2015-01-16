@@ -35,7 +35,7 @@ class CrosDBusServiceTest : public testing::Test {
   }
 
   // Creates an instance of CrosDBusService with mocks injected.
-  virtual void SetUp() {
+  void SetUp() override {
     // Create a mock bus.
     dbus::Bus::Options options;
     options.bus_type = dbus::Bus::SYSTEM;
@@ -70,7 +70,7 @@ class CrosDBusServiceTest : public testing::Test {
         mock_bus_.get(), service_providers.Pass());
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     // Shutdown the cros service.
     CrosDBusService::Shutdown();
 

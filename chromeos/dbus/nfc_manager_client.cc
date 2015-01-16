@@ -33,29 +33,26 @@ class NfcManagerClientImpl : public NfcManagerClient {
         weak_ptr_factory_(this) {
   }
 
-  virtual ~NfcManagerClientImpl() {
-  }
+  ~NfcManagerClientImpl() override {}
 
   // NfcManagerClient override.
-  virtual void AddObserver(Observer* observer) override {
+  void AddObserver(Observer* observer) override {
     DCHECK(observer);
     observers_.AddObserver(observer);
   }
 
   // NfcManagerClient override.
-  virtual void RemoveObserver(Observer* observer) override {
+  void RemoveObserver(Observer* observer) override {
     DCHECK(observer);
     observers_.RemoveObserver(observer);
   }
 
   // NfcManagerClient override.
-  virtual Properties* GetProperties() override {
-    return properties_.get();
-  }
+  Properties* GetProperties() override { return properties_.get(); }
 
  protected:
   // DBusClient override.
-  virtual void Init(dbus::Bus* bus) override {
+  void Init(dbus::Bus* bus) override {
     VLOG(1) << "Creating NfcManagerClientImpl";
 
     // Create the object proxy.

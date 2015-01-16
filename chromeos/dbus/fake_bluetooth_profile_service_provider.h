@@ -23,7 +23,7 @@ class CHROMEOS_EXPORT FakeBluetoothProfileServiceProvider
  public:
   FakeBluetoothProfileServiceProvider(const dbus::ObjectPath& object_path,
                                       Delegate *delegate);
-  virtual ~FakeBluetoothProfileServiceProvider();
+  ~FakeBluetoothProfileServiceProvider() override;
 
   // Each of these calls the equivalent
   // BluetoothProfileServiceProvider::Delegate method on the object passed on

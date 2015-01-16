@@ -28,33 +28,32 @@ class CHROMEOS_EXPORT FakeBluetoothAdapterClient
     ~Properties() override;
 
     // dbus::PropertySet override
-    virtual void Get(dbus::PropertyBase* property,
-                     dbus::PropertySet::GetCallback callback) override;
-    virtual void GetAll() override;
-    virtual void Set(dbus::PropertyBase* property,
-                     dbus::PropertySet::SetCallback callback) override;
+    void Get(dbus::PropertyBase* property,
+             dbus::PropertySet::GetCallback callback) override;
+    void GetAll() override;
+    void Set(dbus::PropertyBase* property,
+             dbus::PropertySet::SetCallback callback) override;
   };
 
   FakeBluetoothAdapterClient();
-  virtual ~FakeBluetoothAdapterClient();
+  ~FakeBluetoothAdapterClient() override;
 
   // BluetoothAdapterClient overrides
-  virtual void Init(dbus::Bus* bus) override;
-  virtual void AddObserver(Observer* observer) override;
-  virtual void RemoveObserver(Observer* observer) override;
-  virtual std::vector<dbus::ObjectPath> GetAdapters() override;
-  virtual Properties* GetProperties(const dbus::ObjectPath& object_path)
-      override;
-  virtual void StartDiscovery(const dbus::ObjectPath& object_path,
-                              const base::Closure& callback,
-                              const ErrorCallback& error_callback) override;
-  virtual void StopDiscovery(const dbus::ObjectPath& object_path,
-                             const base::Closure& callback,
-                             const ErrorCallback& error_callback) override;
-  virtual void RemoveDevice(const dbus::ObjectPath& object_path,
-                            const dbus::ObjectPath& device_path,
-                            const base::Closure& callback,
-                            const ErrorCallback& error_callback) override;
+  void Init(dbus::Bus* bus) override;
+  void AddObserver(Observer* observer) override;
+  void RemoveObserver(Observer* observer) override;
+  std::vector<dbus::ObjectPath> GetAdapters() override;
+  Properties* GetProperties(const dbus::ObjectPath& object_path) override;
+  void StartDiscovery(const dbus::ObjectPath& object_path,
+                      const base::Closure& callback,
+                      const ErrorCallback& error_callback) override;
+  void StopDiscovery(const dbus::ObjectPath& object_path,
+                     const base::Closure& callback,
+                     const ErrorCallback& error_callback) override;
+  void RemoveDevice(const dbus::ObjectPath& object_path,
+                    const dbus::ObjectPath& device_path,
+                    const base::Closure& callback,
+                    const ErrorCallback& error_callback) override;
 
   // Sets the current simulation timeout interval.
   void SetSimulationIntervalMs(int interval_ms);

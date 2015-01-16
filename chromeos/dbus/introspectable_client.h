@@ -19,7 +19,7 @@ namespace chromeos {
 // from a remote object.
 class CHROMEOS_EXPORT IntrospectableClient : public DBusClient {
  public:
-  virtual ~IntrospectableClient();
+  ~IntrospectableClient() override;
 
   // The IntrospectCallback is used for the Introspect() method. It receives
   // four arguments, the first two are the |service_name| and |object_path|

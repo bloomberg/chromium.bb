@@ -16,12 +16,12 @@ namespace chromeos {
 class FakeIntrospectableClient: public IntrospectableClient {
  public:
   FakeIntrospectableClient();
-  virtual ~FakeIntrospectableClient();
+  ~FakeIntrospectableClient() override;
 
-  virtual void Init(dbus::Bus* bus) override;
-  virtual void Introspect(const std::string& service_name,
-                          const dbus::ObjectPath& object_path,
-                          const IntrospectCallback& callback) override;
+  void Init(dbus::Bus* bus) override;
+  void Introspect(const std::string& service_name,
+                  const dbus::ObjectPath& object_path,
+                  const IntrospectCallback& callback) override;
 };
 
 }  // namespace chromeos

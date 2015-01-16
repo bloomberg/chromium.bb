@@ -26,21 +26,19 @@ class NfcPropertySet : public dbus::PropertySet {
 
   // Destructor; we don't hold on to any references or memory that needs
   // explicit clean-up, but clang thinks we might.
-  virtual ~NfcPropertySet();
+  ~NfcPropertySet() override;
 
   // Caches |callback| so that it will be invoked after a call to GetAll()
   // has successfully received all existing properties from the remote object.
   void SetAllPropertiesReceivedCallback(const base::Closure& callback);
 
   // dbus::PropertySet overrides
-  virtual void ConnectSignals() override;
-  virtual void Get(dbus::PropertyBase* property,
-                   GetCallback callback) override;
-  virtual void GetAll() override;
-  virtual void OnGetAll(dbus::Response* response) override;
-  virtual void Set(dbus::PropertyBase* property,
-                   SetCallback callback) override;
-  virtual void ChangedReceived(dbus::Signal* signal) override;
+  void ConnectSignals() override;
+  void Get(dbus::PropertyBase* property, GetCallback callback) override;
+  void GetAll() override;
+  void OnGetAll(dbus::Response* response) override;
+  void Set(dbus::PropertyBase* property, SetCallback callback) override;
+  void ChangedReceived(dbus::Signal* signal) override;
 
  protected:
   const base::Closure& on_get_all_callback() { return on_get_all_callback_; }

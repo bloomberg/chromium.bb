@@ -28,7 +28,7 @@ class CHROMEOS_EXPORT SystemClockClient : public DBusClient {
     virtual ~Observer() {}
   };
 
-  virtual ~SystemClockClient();
+  ~SystemClockClient() override;
 
   // Adds the given observer.
   virtual void AddObserver(Observer* observer) = 0;

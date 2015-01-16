@@ -28,33 +28,33 @@ class ShillManagerClientImpl : public ShillManagerClient {
 
   ////////////////////////////////////
   // ShillManagerClient overrides.
-  virtual void AddPropertyChangedObserver(
+  void AddPropertyChangedObserver(
       ShillPropertyChangedObserver* observer) override {
     helper_->AddPropertyChangedObserver(observer);
   }
 
-  virtual void RemovePropertyChangedObserver(
+  void RemovePropertyChangedObserver(
       ShillPropertyChangedObserver* observer) override {
     helper_->RemovePropertyChangedObserver(observer);
   }
 
-  virtual void GetProperties(const DictionaryValueCallback& callback) override {
+  void GetProperties(const DictionaryValueCallback& callback) override {
     dbus::MethodCall method_call(shill::kFlimflamManagerInterface,
                                  shill::kGetPropertiesFunction);
     helper_->CallDictionaryValueMethod(&method_call, callback);
   }
 
-  virtual void GetNetworksForGeolocation(
+  void GetNetworksForGeolocation(
       const DictionaryValueCallback& callback) override {
     dbus::MethodCall method_call(shill::kFlimflamManagerInterface,
                                  shill::kGetNetworksForGeolocation);
     helper_->CallDictionaryValueMethod(&method_call, callback);
   }
 
-  virtual void SetProperty(const std::string& name,
-                           const base::Value& value,
-                           const base::Closure& callback,
-                           const ErrorCallback& error_callback) override {
+  void SetProperty(const std::string& name,
+                   const base::Value& value,
+                   const base::Closure& callback,
+                   const ErrorCallback& error_callback) override {
     dbus::MethodCall method_call(shill::kFlimflamManagerInterface,
                                  shill::kSetPropertyFunction);
     dbus::MessageWriter writer(&method_call);
@@ -65,9 +65,9 @@ class ShillManagerClientImpl : public ShillManagerClient {
                                             error_callback);
   }
 
-  virtual void RequestScan(const std::string& type,
-                           const base::Closure& callback,
-                           const ErrorCallback& error_callback) override {
+  void RequestScan(const std::string& type,
+                   const base::Closure& callback,
+                   const ErrorCallback& error_callback) override {
     dbus::MethodCall method_call(shill::kFlimflamManagerInterface,
                                  shill::kRequestScanFunction);
     dbus::MessageWriter writer(&method_call);
@@ -77,10 +77,9 @@ class ShillManagerClientImpl : public ShillManagerClient {
                                             error_callback);
   }
 
-  virtual void EnableTechnology(
-      const std::string& type,
-      const base::Closure& callback,
-      const ErrorCallback& error_callback) override {
+  void EnableTechnology(const std::string& type,
+                        const base::Closure& callback,
+                        const ErrorCallback& error_callback) override {
     dbus::MethodCall method_call(shill::kFlimflamManagerInterface,
                                  shill::kEnableTechnologyFunction);
     dbus::MessageWriter writer(&method_call);
@@ -90,10 +89,9 @@ class ShillManagerClientImpl : public ShillManagerClient {
                                             error_callback);
   }
 
-  virtual void DisableTechnology(
-      const std::string& type,
-      const base::Closure& callback,
-      const ErrorCallback& error_callback) override {
+  void DisableTechnology(const std::string& type,
+                         const base::Closure& callback,
+                         const ErrorCallback& error_callback) override {
     dbus::MethodCall method_call(shill::kFlimflamManagerInterface,
                                  shill::kDisableTechnologyFunction);
     dbus::MessageWriter writer(&method_call);
@@ -103,10 +101,9 @@ class ShillManagerClientImpl : public ShillManagerClient {
                                             error_callback);
   }
 
-  virtual void ConfigureService(
-      const base::DictionaryValue& properties,
-      const ObjectPathCallback& callback,
-      const ErrorCallback& error_callback) override {
+  void ConfigureService(const base::DictionaryValue& properties,
+                        const ObjectPathCallback& callback,
+                        const ErrorCallback& error_callback) override {
     dbus::MethodCall method_call(shill::kFlimflamManagerInterface,
                                  shill::kConfigureServiceFunction);
     dbus::MessageWriter writer(&method_call);
@@ -116,7 +113,7 @@ class ShillManagerClientImpl : public ShillManagerClient {
                                                   error_callback);
   }
 
-  virtual void ConfigureServiceForProfile(
+  void ConfigureServiceForProfile(
       const dbus::ObjectPath& profile_path,
       const base::DictionaryValue& properties,
       const ObjectPathCallback& callback,
@@ -131,10 +128,9 @@ class ShillManagerClientImpl : public ShillManagerClient {
                                                   error_callback);
   }
 
-  virtual void GetService(
-      const base::DictionaryValue& properties,
-      const ObjectPathCallback& callback,
-      const ErrorCallback& error_callback) override {
+  void GetService(const base::DictionaryValue& properties,
+                  const ObjectPathCallback& callback,
+                  const ErrorCallback& error_callback) override {
     dbus::MethodCall method_call(shill::kFlimflamManagerInterface,
                                  shill::kGetServiceFunction);
     dbus::MessageWriter writer(&method_call);
@@ -144,9 +140,9 @@ class ShillManagerClientImpl : public ShillManagerClient {
                                                   error_callback);
   }
 
-  virtual void VerifyDestination(const VerificationProperties& properties,
-                                 const BooleanCallback& callback,
-                                 const ErrorCallback& error_callback) override {
+  void VerifyDestination(const VerificationProperties& properties,
+                         const BooleanCallback& callback,
+                         const ErrorCallback& error_callback) override {
     dbus::MethodCall method_call(shill::kFlimflamManagerInterface,
                                  shill::kVerifyDestinationFunction);
     dbus::MessageWriter writer(&method_call);
@@ -161,7 +157,7 @@ class ShillManagerClientImpl : public ShillManagerClient {
         &method_call, callback, error_callback);
   }
 
-  virtual void VerifyAndEncryptCredentials(
+  void VerifyAndEncryptCredentials(
       const VerificationProperties& properties,
       const std::string& service_path,
       const StringCallback& callback,
@@ -181,11 +177,10 @@ class ShillManagerClientImpl : public ShillManagerClient {
         &method_call, callback, error_callback);
   }
 
-  virtual void VerifyAndEncryptData(
-      const VerificationProperties& properties,
-      const std::string& data,
-      const StringCallback& callback,
-      const ErrorCallback& error_callback) override {
+  void VerifyAndEncryptData(const VerificationProperties& properties,
+                            const std::string& data,
+                            const StringCallback& callback,
+                            const ErrorCallback& error_callback) override {
     dbus::MethodCall method_call(shill::kFlimflamManagerInterface,
                                  shill::kVerifyAndEncryptDataFunction);
     dbus::MessageWriter writer(&method_call);
@@ -201,9 +196,8 @@ class ShillManagerClientImpl : public ShillManagerClient {
         &method_call, callback, error_callback);
   }
 
-  virtual void ConnectToBestServices(
-      const base::Closure& callback,
-      const ErrorCallback& error_callback) override {
+  void ConnectToBestServices(const base::Closure& callback,
+                             const ErrorCallback& error_callback) override {
     dbus::MethodCall method_call(shill::kFlimflamManagerInterface,
                                  shill::kConnectToBestServicesFunction);
     helper_->CallVoidMethodWithErrorCallback(&method_call,
@@ -211,12 +205,10 @@ class ShillManagerClientImpl : public ShillManagerClient {
                                             error_callback);
   }
 
-  virtual TestInterface* GetTestInterface() override {
-    return NULL;
-  }
+  TestInterface* GetTestInterface() override { return NULL; }
 
  protected:
-  virtual void Init(dbus::Bus* bus) override {
+  void Init(dbus::Bus* bus) override {
     proxy_ = bus->GetObjectProxy(shill::kFlimflamServiceName,
                                  dbus::ObjectPath(shill::kFlimflamServicePath));
     helper_.reset(new ShillClientHelper(proxy_));

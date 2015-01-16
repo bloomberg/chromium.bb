@@ -30,7 +30,7 @@ class ShillIPConfigClientTest : public ShillClientUnittestBase {
           dbus::ObjectPath(kExampleIPConfigPath)) {
   }
 
-  virtual void SetUp() {
+  void SetUp() override {
     ShillClientUnittestBase::SetUp();
     // Create a client with the mock bus.
     client_.reset(ShillIPConfigClient::Create());
@@ -39,9 +39,7 @@ class ShillIPConfigClientTest : public ShillClientUnittestBase {
     message_loop_.RunUntilIdle();
   }
 
-  virtual void TearDown() {
-    ShillClientUnittestBase::TearDown();
-  }
+  void TearDown() override { ShillClientUnittestBase::TearDown(); }
 
  protected:
   scoped_ptr<ShillIPConfigClient> client_;

@@ -24,7 +24,7 @@ class CHROMEOS_EXPORT BluetoothGattManagerClient : public DBusClient {
     // later as we know more about how this will be used.
   };
 
-  virtual ~BluetoothGattManagerClient();
+  ~BluetoothGattManagerClient() override;
 
   // The ErrorCallback is used by GATT manager methods to indicate failure. It
   // receives two arguments: the name of the error in |error_name| and an

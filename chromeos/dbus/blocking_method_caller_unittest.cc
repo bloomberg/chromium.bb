@@ -25,16 +25,16 @@ namespace {
 
 class FakeTaskRunner : public base::TaskRunner {
  public:
-  virtual bool PostDelayedTask(const tracked_objects::Location& from_here,
-                               const base::Closure& task,
-                               base::TimeDelta delay) override {
+  bool PostDelayedTask(const tracked_objects::Location& from_here,
+                       const base::Closure& task,
+                       base::TimeDelta delay) override {
     task.Run();
     return true;
   }
-  virtual bool RunsTasksOnCurrentThread() const override { return true; }
+  bool RunsTasksOnCurrentThread() const override { return true; }
 
  protected:
-  virtual ~FakeTaskRunner() {}
+  ~FakeTaskRunner() override {}
 };
 
 }  // namespace
@@ -44,7 +44,7 @@ class BlockingMethodCallerTest : public testing::Test {
   BlockingMethodCallerTest() : task_runner_(new FakeTaskRunner) {
   }
 
-  virtual void SetUp() {
+  void SetUp() override {
     // Create a mock bus.
     dbus::Bus::Options options;
     options.bus_type = dbus::Bus::SYSTEM;
@@ -78,9 +78,7 @@ class BlockingMethodCallerTest : public testing::Test {
     EXPECT_CALL(*mock_bus_.get(), ShutdownAndBlock()).WillOnce(Return());
   }
 
-  virtual void TearDown() {
-    mock_bus_->ShutdownAndBlock();
-  }
+  void TearDown() override { mock_bus_->ShutdownAndBlock(); }
 
  protected:
   scoped_refptr<FakeTaskRunner> task_runner_;

@@ -26,10 +26,10 @@ class CHROMEOS_EXPORT FakeBluetoothGattDescriptorServiceProvider
       const std::string& uuid,
       const std::vector<std::string>& permissions,
       const dbus::ObjectPath& characteristic_path);
-  virtual ~FakeBluetoothGattDescriptorServiceProvider();
+  ~FakeBluetoothGattDescriptorServiceProvider() override;
 
   // BluetoothGattDescriptorServiceProvider override.
-  virtual void SendValueChanged(const std::vector<uint8>& value) override;
+  void SendValueChanged(const std::vector<uint8>& value) override;
 
   // Methods to simulate value get/set requests issued from a remote device. The
   // methods do nothing, if the associated service was not registered with the

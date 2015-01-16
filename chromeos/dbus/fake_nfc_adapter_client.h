@@ -26,32 +26,31 @@ class CHROMEOS_EXPORT FakeNfcAdapterClient : public NfcAdapterClient {
   // Properties structure that provides fake behavior for D-Bus calls.
   struct Properties : public NfcAdapterClient::Properties {
     explicit Properties(const PropertyChangedCallback& callback);
-    virtual ~Properties();
+    ~Properties() override;
 
     // dbus::PropertySet overrides.
-    virtual void Get(dbus::PropertyBase* property,
-                     dbus::PropertySet::GetCallback callback) override;
-    virtual void GetAll() override;
-    virtual void Set(dbus::PropertyBase* property,
-                     dbus::PropertySet::SetCallback callback) override;
+    void Get(dbus::PropertyBase* property,
+             dbus::PropertySet::GetCallback callback) override;
+    void GetAll() override;
+    void Set(dbus::PropertyBase* property,
+             dbus::PropertySet::SetCallback callback) override;
   };
 
   FakeNfcAdapterClient();
-  virtual ~FakeNfcAdapterClient();
+  ~FakeNfcAdapterClient() override;
 
   // NfcAdapterClient overrides.
-  virtual void Init(dbus::Bus* bus) override;
-  virtual void AddObserver(Observer* observer) override;
-  virtual void RemoveObserver(Observer* observer) override;
-  virtual std::vector<dbus::ObjectPath> GetAdapters() override;
-  virtual Properties* GetProperties(
-      const dbus::ObjectPath& object_path) override;
-  virtual void StartPollLoop(
+  void Init(dbus::Bus* bus) override;
+  void AddObserver(Observer* observer) override;
+  void RemoveObserver(Observer* observer) override;
+  std::vector<dbus::ObjectPath> GetAdapters() override;
+  Properties* GetProperties(const dbus::ObjectPath& object_path) override;
+  void StartPollLoop(
       const dbus::ObjectPath& object_path,
       const std::string& mode,
       const base::Closure& callback,
       const nfc_client_helpers::ErrorCallback& error_callback) override;
-  virtual void StopPollLoop(
+  void StopPollLoop(
       const dbus::ObjectPath& object_path,
       const base::Closure& callback,
       const nfc_client_helpers::ErrorCallback& error_callback) override;

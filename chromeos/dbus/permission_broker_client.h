@@ -28,7 +28,7 @@ class CHROMEOS_EXPORT PermissionBrokerClient : public DBusClient {
   // the operation that it was submitted alongside.
   typedef base::Callback<void(bool)> ResultCallback;
 
-  virtual ~PermissionBrokerClient();
+  ~PermissionBrokerClient() override;
 
   static PermissionBrokerClient* Create();
 

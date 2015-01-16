@@ -127,7 +127,7 @@ class CHROMEOS_EXPORT ShillManagerClient : public DBusClient {
     std::string device_bssid;
   };
 
-  virtual ~ShillManagerClient();
+  ~ShillManagerClient() override;
 
   // Factory function, creates a new instance which is owned by the caller.
   // For normal usage, access the singleton via DBusThreadManager::Get().

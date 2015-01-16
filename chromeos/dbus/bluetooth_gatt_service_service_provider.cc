@@ -71,7 +71,7 @@ class BluetoothGattServiceServiceProviderImpl
                    weak_ptr_factory_.GetWeakPtr()));
   }
 
-  virtual ~BluetoothGattServiceServiceProviderImpl() {
+  ~BluetoothGattServiceServiceProviderImpl() override {
     VLOG(1) << "Cleaning up Bluetooth GATT service: " << object_path_.value();
     bus_->UnregisterExportedObject(object_path_);
   }

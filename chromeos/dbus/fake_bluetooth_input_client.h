@@ -22,25 +22,24 @@ class CHROMEOS_EXPORT FakeBluetoothInputClient
  public:
   struct Properties : public BluetoothInputClient::Properties {
     explicit Properties(const PropertyChangedCallback & callback);
-    virtual ~Properties();
+    ~Properties() override;
 
     // dbus::PropertySet override
-    virtual void Get(dbus::PropertyBase* property,
-                     dbus::PropertySet::GetCallback callback) override;
-    virtual void GetAll() override;
-    virtual void Set(dbus::PropertyBase* property,
-                     dbus::PropertySet::SetCallback callback) override;
+    void Get(dbus::PropertyBase* property,
+             dbus::PropertySet::GetCallback callback) override;
+    void GetAll() override;
+    void Set(dbus::PropertyBase* property,
+             dbus::PropertySet::SetCallback callback) override;
   };
 
   FakeBluetoothInputClient();
-  virtual ~FakeBluetoothInputClient();
+  ~FakeBluetoothInputClient() override;
 
   // BluetoothInputClient overrides
-  virtual void Init(dbus::Bus* bus) override;
-  virtual void AddObserver(Observer* observer) override;
-  virtual void RemoveObserver(Observer* observer) override;
-  virtual Properties* GetProperties(const dbus::ObjectPath& object_path)
-      override;
+  void Init(dbus::Bus* bus) override;
+  void AddObserver(Observer* observer) override;
+  void RemoveObserver(Observer* observer) override;
+  Properties* GetProperties(const dbus::ObjectPath& object_path) override;
 
   // Simulate device addition/removal
   void AddInputDevice(const dbus::ObjectPath& object_path);

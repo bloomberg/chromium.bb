@@ -53,33 +53,31 @@ class BluetoothAdapterClientImpl
   BluetoothAdapterClientImpl()
       : object_manager_(NULL), weak_ptr_factory_(this) {}
 
-  virtual ~BluetoothAdapterClientImpl() {
+  ~BluetoothAdapterClientImpl() override {
     object_manager_->UnregisterInterface(
         bluetooth_adapter::kBluetoothAdapterInterface);
   }
 
   // BluetoothAdapterClient override.
-  virtual void AddObserver(BluetoothAdapterClient::Observer* observer)
-      override {
+  void AddObserver(BluetoothAdapterClient::Observer* observer) override {
     DCHECK(observer);
     observers_.AddObserver(observer);
   }
 
   // BluetoothAdapterClient override.
-  virtual void RemoveObserver(BluetoothAdapterClient::Observer* observer)
-      override {
+  void RemoveObserver(BluetoothAdapterClient::Observer* observer) override {
     DCHECK(observer);
     observers_.RemoveObserver(observer);
   }
 
   // Returns the list of adapter object paths known to the system.
-  virtual std::vector<dbus::ObjectPath> GetAdapters() override {
+  std::vector<dbus::ObjectPath> GetAdapters() override {
     return object_manager_->GetObjectsWithInterface(
         bluetooth_adapter::kBluetoothAdapterInterface);
   }
 
   // dbus::ObjectManager::Interface override.
-  virtual dbus::PropertySet* CreateProperties(
+  dbus::PropertySet* CreateProperties(
       dbus::ObjectProxy* object_proxy,
       const dbus::ObjectPath& object_path,
       const std::string& interface_name) override {
@@ -93,8 +91,7 @@ class BluetoothAdapterClientImpl
   }
 
   // BluetoothAdapterClient override.
-  virtual Properties* GetProperties(const dbus::ObjectPath& object_path)
-      override {
+  Properties* GetProperties(const dbus::ObjectPath& object_path) override {
     return static_cast<Properties*>(
         object_manager_->GetProperties(
             object_path,
@@ -102,9 +99,9 @@ class BluetoothAdapterClientImpl
   }
 
   // BluetoothAdapterClient override.
-  virtual void StartDiscovery(const dbus::ObjectPath& object_path,
-                              const base::Closure& callback,
-                              const ErrorCallback& error_callback) override {
+  void StartDiscovery(const dbus::ObjectPath& object_path,
+                      const base::Closure& callback,
+                      const ErrorCallback& error_callback) override {
     dbus::MethodCall method_call(
         bluetooth_adapter::kBluetoothAdapterInterface,
         bluetooth_adapter::kStartDiscovery);
@@ -126,9 +123,9 @@ class BluetoothAdapterClientImpl
   }
 
   // BluetoothAdapterClient override.
-  virtual void StopDiscovery(const dbus::ObjectPath& object_path,
-                             const base::Closure& callback,
-                             const ErrorCallback& error_callback) override {
+  void StopDiscovery(const dbus::ObjectPath& object_path,
+                     const base::Closure& callback,
+                     const ErrorCallback& error_callback) override {
     dbus::MethodCall method_call(
         bluetooth_adapter::kBluetoothAdapterInterface,
         bluetooth_adapter::kStopDiscovery);
@@ -150,10 +147,10 @@ class BluetoothAdapterClientImpl
   }
 
   // BluetoothAdapterClient override.
-  virtual void RemoveDevice(const dbus::ObjectPath& object_path,
-                            const dbus::ObjectPath& device_path,
-                            const base::Closure& callback,
-                            const ErrorCallback& error_callback) override {
+  void RemoveDevice(const dbus::ObjectPath& object_path,
+                    const dbus::ObjectPath& device_path,
+                    const base::Closure& callback,
+                    const ErrorCallback& error_callback) override {
     dbus::MethodCall method_call(
         bluetooth_adapter::kBluetoothAdapterInterface,
         bluetooth_adapter::kRemoveDevice);
@@ -178,7 +175,7 @@ class BluetoothAdapterClientImpl
   }
 
  protected:
-  virtual void Init(dbus::Bus* bus) override {
+  void Init(dbus::Bus* bus) override {
     object_manager_ = bus->GetObjectManager(
         bluetooth_object_manager::kBluetoothObjectManagerServiceName,
         dbus::ObjectPath(
@@ -190,16 +187,16 @@ class BluetoothAdapterClientImpl
  private:
   // Called by dbus::ObjectManager when an object with the adapter interface
   // is created. Informs observers.
-  virtual void ObjectAdded(const dbus::ObjectPath& object_path,
-                           const std::string& interface_name) override {
+  void ObjectAdded(const dbus::ObjectPath& object_path,
+                   const std::string& interface_name) override {
     FOR_EACH_OBSERVER(BluetoothAdapterClient::Observer, observers_,
                       AdapterAdded(object_path));
   }
 
   // Called by dbus::ObjectManager when an object with the adapter interface
   // is removed. Informs observers.
-  virtual void ObjectRemoved(const dbus::ObjectPath& object_path,
-                             const std::string& interface_name) override {
+  void ObjectRemoved(const dbus::ObjectPath& object_path,
+                     const std::string& interface_name) override {
     FOR_EACH_OBSERVER(BluetoothAdapterClient::Observer, observers_,
                       AdapterRemoved(object_path));
   }

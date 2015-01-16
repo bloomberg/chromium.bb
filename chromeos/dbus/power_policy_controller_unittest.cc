@@ -16,15 +16,15 @@ class PowerPolicyControllerTest : public testing::Test {
   PowerPolicyControllerTest()
       : fake_power_client_(new FakePowerManagerClient) {}
 
-  virtual ~PowerPolicyControllerTest() {}
+  ~PowerPolicyControllerTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     PowerPolicyController::Initialize(fake_power_client_.get());
     ASSERT_TRUE(PowerPolicyController::IsInitialized());
     policy_controller_ = PowerPolicyController::Get();
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     if (PowerPolicyController::IsInitialized())
       PowerPolicyController::Shutdown();
   }
