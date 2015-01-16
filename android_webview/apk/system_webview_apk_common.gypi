@@ -25,7 +25,6 @@
     'additional_input_paths': [
       '<(asset_location)/webviewchromium.pak',
       '<(asset_location)/en-US.pak',
-      '<(asset_location)/webview_licenses.notice',
     ],
     'conditions': [
       ['icu_use_data_file_flag==1', {
@@ -61,26 +60,6 @@
           ],
         }],
       ],
-    },
-  ],
-  'actions': [
-    {
-      'action_name': 'generate_webview_license_notice',
-      'inputs': [
-        '<!@(python <(DEPTH)/android_webview/tools/webview_licenses.py notice_deps)',
-        '<(DEPTH)/android_webview/tools/licenses_notice.tmpl',
-        '<(DEPTH)/android_webview/tools/webview_licenses.py',
-      ],
-      'outputs': [
-        '<(asset_location)/webview_licenses.notice',
-      ],
-      'action': [
-        'python',
-        '<(DEPTH)/android_webview/tools/webview_licenses.py',
-        'notice',
-        '<(asset_location)/webview_licenses.notice',
-      ],
-      'message': 'Generating WebView license notice',
     },
   ],
   'includes': [ '../../build/java_apk.gypi' ],

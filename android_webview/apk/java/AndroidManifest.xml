@@ -19,18 +19,5 @@
     <application android:label="Android System WebView"
         android:icon="@drawable/icon_webview"
         android:multiArch="true">
-        <activity android:name="com.android.webview.chromium.LicenseActivity"
-                  android:label="@string/license_activity_title"
-                  >
-            <intent-filter>
-                <action android:name="android.settings.WEBVIEW_LICENSE" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-            <meta-data android:name="com.android.settings.PRIMARY_PROFILE_CONTROLLED"
-                       android:value="true" />
-        </activity>
-        <provider android:name="com.android.webview.chromium.LicenseContentProvider"
-                  android:exported="true"
-                  android:authorities="com.android.webview.chromium.LicenseContentProvider" />
     </application>
 </manifest>
