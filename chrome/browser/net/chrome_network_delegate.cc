@@ -130,26 +130,21 @@ void RecordPrecacheStatsOnUIThread(const GURL& url,
 }
 #endif  // defined(OS_ANDROID)
 
-void ReportInvalidReferrerSend(const GURL& target_url,
-                               const GURL& referrer_url,
-                               const base::debug::StackTrace& callstack) {
-  // Record information to help debug http://crbug.com/422871
-  base::debug::StackTrace trace = callstack;
-  base::debug::Alias(&trace);
-  enum { INVALID_URL, FILE_URL, DATA_URL, HTTP_URL, OTHER } reason = OTHER;
-  if (!target_url.is_valid())
-    reason = INVALID_URL;
-  else if (target_url.SchemeIsFile())
-    reason = FILE_URL;
-  else if (target_url.SchemeIs(url::kDataScheme))
-    reason = DATA_URL;
-  else if (target_url.SchemeIs(url::kHttpScheme))
-    reason = HTTP_URL;
-  base::debug::Alias(&reason);
+void ReportInvalidReferrerSendOnUI() {
   base::RecordAction(
       base::UserMetricsAction("Net.URLRequest_StartJob_InvalidReferrer"));
+}
+
+void ReportInvalidReferrerSend(const GURL& target_url,
+                               const GURL& referrer_url) {
+  // Record information to help debug http://crbug.com/422871
+  if (!target_url.SchemeIsHTTPOrHTTPS())
+    return;
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::Bind(&ReportInvalidReferrerSendOnUI));
   base::debug::DumpWithoutCrashing();
-  NOTREACHED();
+  NOTREACHED() << "Sending request to " << target_url
+               << " with invalid referrer " << referrer_url;
 }
 
 // Record network errors that HTTP requests complete with, including OK and
@@ -627,9 +622,6 @@ bool ChromeNetworkDelegate::OnCancelURLRequestWithPolicyViolatingReferrerHeader(
     const net::URLRequest& request,
     const GURL& target_url,
     const GURL& referrer_url) const {
-  base::debug::StackTrace callstack;
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(&ReportInvalidReferrerSend, target_url,
-                                     referrer_url, callstack));
+  ReportInvalidReferrerSend(target_url, referrer_url);
   return true;
 }
