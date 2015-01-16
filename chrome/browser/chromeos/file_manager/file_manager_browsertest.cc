@@ -226,7 +226,7 @@ class TestVolume {
 class LocalTestVolume : public TestVolume {
  public:
   explicit LocalTestVolume(const std::string& name) : TestVolume(name) {}
-  virtual ~LocalTestVolume() {}
+  ~LocalTestVolume() override {}
 
   // Adds this volume to the file system as a local volume. Returns true on
   // success.
@@ -282,9 +282,9 @@ class LocalTestVolume : public TestVolume {
 class DownloadsTestVolume : public LocalTestVolume {
  public:
   DownloadsTestVolume() : LocalTestVolume("Downloads") {}
-  virtual ~DownloadsTestVolume() {}
+  ~DownloadsTestVolume() override {}
 
-  virtual bool Mount(Profile* profile) override {
+  bool Mount(Profile* profile) override {
     return CreateRootDirectory(profile) &&
            VolumeManager::Get(profile)
                ->RegisterDownloadsDirectoryForTesting(root_path());
@@ -300,7 +300,7 @@ class FakeTestVolume : public LocalTestVolume {
       : LocalTestVolume(name),
         volume_type_(volume_type),
         device_type_(device_type) {}
-  virtual ~FakeTestVolume() {}
+  ~FakeTestVolume() override {}
 
   // Simple test entries used for testing, e.g., read-only volumes.
   bool PrepareTestEntries(Profile* profile) {
@@ -316,7 +316,7 @@ class FakeTestVolume : public LocalTestVolume {
     return true;
   }
 
-  virtual bool Mount(Profile* profile) override {
+  bool Mount(Profile* profile) override {
     if (!CreateRootDirectory(profile))
       return false;
     storage::ExternalMountPoints* const mount_points =
@@ -348,7 +348,7 @@ class FakeTestVolume : public LocalTestVolume {
 class DriveTestVolume : public TestVolume {
  public:
   DriveTestVolume() : TestVolume("drive"), integration_service_(NULL) {}
-  virtual ~DriveTestVolume() {}
+  ~DriveTestVolume() override {}
 
   void CreateEntry(const TestEntryInfo& entry) {
     const base::FilePath path =
@@ -510,9 +510,9 @@ class FileManagerTestListener : public content::NotificationObserver {
     return entry;
   }
 
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override {
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override {
     Message entry;
     entry.type = type;
     entry.message = type != extensions::NOTIFICATION_EXTENSION_TEST_PASSED
@@ -534,12 +534,12 @@ class FileManagerTestListener : public content::NotificationObserver {
 // The base test class.
 class FileManagerBrowserTestBase : public ExtensionApiTest {
  protected:
-  virtual void SetUpInProcessBrowserTestFixture() override;
+  void SetUpInProcessBrowserTestFixture() override;
 
-  virtual void SetUpOnMainThread() override;
+  void SetUpOnMainThread() override;
 
   // Adds an incognito and guest-mode flags for tests in the guest mode.
-  virtual void SetUpCommandLine(base::CommandLine* command_line) override;
+  void SetUpCommandLine(base::CommandLine* command_line) override;
 
   // Loads our testing extension and sends it a string identifying the current
   // test.
@@ -796,10 +796,10 @@ typedef std::tr1::tuple<GuestMode, const char*> TestParameter;
 class FileManagerBrowserTest :
       public FileManagerBrowserTestBase,
       public ::testing::WithParamInterface<TestParameter> {
-  virtual GuestMode GetGuestModeParam() const override {
+  GuestMode GetGuestModeParam() const override {
     return std::tr1::get<0>(GetParam());
   }
-  virtual const char* GetTestCaseNameParam() const override {
+  const char* GetTestCaseNameParam() const override {
     return std::tr1::get<1>(GetParam());
   }
 };
@@ -1169,7 +1169,7 @@ static const TestAccountInfo kTestAccounts[] = {
 class MultiProfileFileManagerBrowserTest : public FileManagerBrowserTestBase {
  protected:
   // Enables multi-profiles.
-  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     FileManagerBrowserTestBase::SetUpCommandLine(command_line);
     // Logs in to a dummy profile (For making MultiProfileWindowManager happy;
     // browser test creates a default window and the manager tries to assign a
@@ -1181,7 +1181,7 @@ class MultiProfileFileManagerBrowserTest : public FileManagerBrowserTestBase {
   }
 
   // Logs in to the primary profile of this test.
-  virtual void SetUpOnMainThread() override {
+  void SetUpOnMainThread() override {
     const TestAccountInfo& info = kTestAccounts[PRIMARY_ACCOUNT_INDEX];
 
     AddUser(info, true);
@@ -1197,7 +1197,7 @@ class MultiProfileFileManagerBrowserTest : public FileManagerBrowserTestBase {
   }
 
   // Returns primary profile (if it is already created.)
-  virtual Profile* profile() override {
+  Profile* profile() override {
     Profile* const profile = chromeos::ProfileHelper::GetProfileByUserIdHash(
         kTestAccounts[PRIMARY_ACCOUNT_INDEX].hash);
     return profile ? profile : FileManagerBrowserTestBase::profile();
@@ -1220,11 +1220,9 @@ class MultiProfileFileManagerBrowserTest : public FileManagerBrowserTestBase {
   }
 
  private:
-  virtual GuestMode GetGuestModeParam() const override {
-    return NOT_IN_GUEST_MODE;
-  }
+  GuestMode GetGuestModeParam() const override { return NOT_IN_GUEST_MODE; }
 
-  virtual const char* GetTestCaseNameParam() const override {
+  const char* GetTestCaseNameParam() const override {
     return test_case_name_.c_str();
   }
 

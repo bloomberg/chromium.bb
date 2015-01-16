@@ -28,13 +28,13 @@ class VolumeManagerFactory : public BrowserContextKeyedServiceFactory {
 
  protected:
   // BrowserContextKeyedBaseFactory overrides:
-  virtual content::BrowserContext* GetBrowserContextToUse(
+  content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const override;
-  virtual bool ServiceIsCreatedWithBrowserContext() const override;
-  virtual bool ServiceIsNULLWhileTesting() const override;
+  bool ServiceIsCreatedWithBrowserContext() const override;
+  bool ServiceIsNULLWhileTesting() const override;
 
   // BrowserContextKeyedServiceFactory overrides:
-  virtual KeyedService* BuildServiceInstanceFor(
+  KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const override;
 
  private:
@@ -42,7 +42,7 @@ class VolumeManagerFactory : public BrowserContextKeyedServiceFactory {
   friend struct DefaultSingletonTraits<VolumeManagerFactory>;
 
   VolumeManagerFactory();
-  virtual ~VolumeManagerFactory();
+  ~VolumeManagerFactory() override;
 
   DISALLOW_COPY_AND_ASSIGN(VolumeManagerFactory);
 };

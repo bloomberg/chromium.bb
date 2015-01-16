@@ -39,7 +39,7 @@ class FakeDiskMountManager : public chromeos::disks::DiskMountManager {
   };
 
   FakeDiskMountManager();
-  virtual ~FakeDiskMountManager();
+  ~FakeDiskMountManager() override;
 
   const std::vector<MountRequest>& mount_requests() const {
     return mount_requests_;
@@ -49,29 +49,28 @@ class FakeDiskMountManager : public chromeos::disks::DiskMountManager {
   }
 
   // DiskMountManager overrides.
-  virtual void AddObserver(Observer* observer) override;
-  virtual void RemoveObserver(Observer* observer) override;
-  virtual const DiskMap& disks() const override;
-  virtual const Disk* FindDiskBySourcePath(
+  void AddObserver(Observer* observer) override;
+  void RemoveObserver(Observer* observer) override;
+  const DiskMap& disks() const override;
+  const Disk* FindDiskBySourcePath(
       const std::string& source_path) const override;
-  virtual const MountPointMap& mount_points() const override;
-  virtual void EnsureMountInfoRefreshed(
+  const MountPointMap& mount_points() const override;
+  void EnsureMountInfoRefreshed(
       const EnsureMountInfoRefreshedCallback& callback) override;
-  virtual void MountPath(const std::string& source_path,
-                         const std::string& source_format,
-                         const std::string& mount_label,
-                         chromeos::MountType type) override;
-  virtual void UnmountPath(const std::string& mount_path,
-                           chromeos::UnmountOptions options,
-                           const UnmountPathCallback& callback) override;
-  virtual void FormatMountedDevice(const std::string& mount_path) override;
-  virtual void UnmountDeviceRecursively(
+  void MountPath(const std::string& source_path,
+                 const std::string& source_format,
+                 const std::string& mount_label,
+                 chromeos::MountType type) override;
+  void UnmountPath(const std::string& mount_path,
+                   chromeos::UnmountOptions options,
+                   const UnmountPathCallback& callback) override;
+  void FormatMountedDevice(const std::string& mount_path) override;
+  void UnmountDeviceRecursively(
       const std::string& device_path,
       const UnmountDeviceRecursivelyCallbackType& callback) override;
 
-  virtual bool AddDiskForTest(Disk* disk) override;
-  virtual bool AddMountPointForTest(
-      const MountPointInfo& mount_point) override;
+  bool AddDiskForTest(Disk* disk) override;
+  bool AddMountPointForTest(const MountPointInfo& mount_point) override;
   void InvokeDiskEventForTest(DiskEvent event, const Disk* disk);
 
  private:

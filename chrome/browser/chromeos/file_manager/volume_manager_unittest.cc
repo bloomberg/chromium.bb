@@ -55,13 +55,13 @@ class LoggingObserver : public VolumeManagerObserver {
   };
 
   LoggingObserver() {}
-  virtual ~LoggingObserver() {}
+  ~LoggingObserver() override {}
 
   const std::vector<Event>& events() const { return events_; }
 
   // VolumeManagerObserver overrides.
-  virtual void OnDiskAdded(const chromeos::disks::DiskMountManager::Disk& disk,
-                           bool mounting) override {
+  void OnDiskAdded(const chromeos::disks::DiskMountManager::Disk& disk,
+                   bool mounting) override {
     Event event;
     event.type = Event::DISK_ADDED;
     event.device_path = disk.device_path();  // Keep only device_path.
@@ -69,7 +69,7 @@ class LoggingObserver : public VolumeManagerObserver {
     events_.push_back(event);
   }
 
-  virtual void OnDiskRemoved(
+  void OnDiskRemoved(
       const chromeos::disks::DiskMountManager::Disk& disk) override {
     Event event;
     event.type = Event::DISK_REMOVED;
@@ -77,22 +77,22 @@ class LoggingObserver : public VolumeManagerObserver {
     events_.push_back(event);
   }
 
-  virtual void OnDeviceAdded(const std::string& device_path) override {
+  void OnDeviceAdded(const std::string& device_path) override {
     Event event;
     event.type = Event::DEVICE_ADDED;
     event.device_path = device_path;
     events_.push_back(event);
   }
 
-  virtual void OnDeviceRemoved(const std::string& device_path) override {
+  void OnDeviceRemoved(const std::string& device_path) override {
     Event event;
     event.type = Event::DEVICE_REMOVED;
     event.device_path = device_path;
     events_.push_back(event);
   }
 
-  virtual void OnVolumeMounted(chromeos::MountError error_code,
-                               const VolumeInfo& volume_info) override {
+  void OnVolumeMounted(chromeos::MountError error_code,
+                       const VolumeInfo& volume_info) override {
     Event event;
     event.type = Event::VOLUME_MOUNTED;
     event.device_path = volume_info.source_path.AsUTF8Unsafe();
@@ -100,8 +100,8 @@ class LoggingObserver : public VolumeManagerObserver {
     events_.push_back(event);
   }
 
-  virtual void OnVolumeUnmounted(chromeos::MountError error_code,
-                                 const VolumeInfo& volume_info) override {
+  void OnVolumeUnmounted(chromeos::MountError error_code,
+                         const VolumeInfo& volume_info) override {
     Event event;
     event.type = Event::VOLUME_UNMOUNTED;
     event.device_path = volume_info.source_path.AsUTF8Unsafe();
@@ -109,8 +109,7 @@ class LoggingObserver : public VolumeManagerObserver {
     events_.push_back(event);
   }
 
-  virtual void OnFormatStarted(
-      const std::string& device_path, bool success) override {
+  void OnFormatStarted(const std::string& device_path, bool success) override {
     Event event;
     event.type = Event::FORMAT_STARTED;
     event.device_path = device_path;
@@ -118,8 +117,8 @@ class LoggingObserver : public VolumeManagerObserver {
     events_.push_back(event);
   }
 
-  virtual void OnFormatCompleted(
-      const std::string& device_path, bool success) override {
+  void OnFormatCompleted(const std::string& device_path,
+                         bool success) override {
     Event event;
     event.type = Event::FORMAT_COMPLETED;
     event.device_path = device_path;
@@ -170,7 +169,7 @@ class VolumeManagerTest : public testing::Test {
     scoped_ptr<VolumeManager> volume_manager_;
   };
 
-  virtual void SetUp() override {
+  void SetUp() override {
     power_manager_client_.reset(new chromeos::FakePowerManagerClient);
     disk_mount_manager_.reset(new FakeDiskMountManager);
     main_profile_.reset(new ProfileEnvironment(power_manager_client_.get(),

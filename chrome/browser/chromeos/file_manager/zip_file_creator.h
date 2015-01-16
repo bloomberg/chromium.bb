@@ -38,7 +38,7 @@ class ZipFileCreator : public content::UtilityProcessHostClient {
  private:
   friend class ProcessHostClient;
 
-  virtual ~ZipFileCreator();
+  ~ZipFileCreator() override;
 
   // Called after the file handle is opened on blocking pool.
   void OnOpenFileHandle(base::File file);
@@ -47,8 +47,8 @@ class ZipFileCreator : public content::UtilityProcessHostClient {
   void StartProcessOnIOThread(base::File dest_file);
 
   // UtilityProcessHostClient
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
-  virtual void OnProcessCrashed(int exit_code) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
+  void OnProcessCrashed(int exit_code) override;
 
   // IPC message handlers.
   void OnCreateZipFileSucceeded();
