@@ -63,6 +63,9 @@
         <item name="android:paddingEnd">8dp</item>
     </style>
     <style name="PreferenceLayout" parent="PreferenceLayoutBase" />
+    <style name="DeprecationWarningPreferenceTheme" parent="PreferencesTheme">
+        <item name="android:textSize">14sp</item>
+    </style>
 
     <style name="ThemeWithActionBar" parent="Theme.AppCompat.Light.DarkActionBar">
         <item name="android:windowBackground">@android:color/white</item>

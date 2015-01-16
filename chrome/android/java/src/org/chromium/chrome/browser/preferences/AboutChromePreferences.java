@@ -7,9 +7,11 @@ package org.chromium.chrome.browser.preferences;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
+import android.view.ContextThemeWrapper;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge.ProfilePathCallback;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 
 import java.util.Calendar;
 
@@ -32,6 +34,16 @@ public class AboutChromePreferences extends PreferenceFragment implements
         super.onCreate(savedInstanceState);
         getActivity().setTitle(R.string.prefs_about_chrome);
         addPreferencesFromResource(R.xml.about_chrome_preferences);
+
+        if (!FeatureUtilities.isApplicationUpdateSupported()) {
+            ChromeBasePreference deprecationWarning = new ChromeBasePreference(
+                    new ContextThemeWrapper(getActivity(),
+                            R.style.DeprecationWarningPreferenceTheme));
+            deprecationWarning.setOrder(-1);
+            deprecationWarning.setTitle(R.string.deprecation_warning);
+            deprecationWarning.setIcon(R.drawable.deprecation_warning);
+            getPreferenceScreen().addPreference(deprecationWarning);
+        }
 
         PrefServiceBridge prefServiceBridge = PrefServiceBridge.getInstance();
         PrefServiceBridge.AboutVersionStrings versionStrings =

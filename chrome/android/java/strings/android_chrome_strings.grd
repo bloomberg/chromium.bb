@@ -462,6 +462,9 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_PROFILE_PATH_TITLE" desc="Title for the path where Chrome stores profile data">
         Profile path
       </message>
+      <message name="IDS_DEPRECATION_WARNING" desc="Warning about Chrome updates no longer being supported">
+        Chrome updates are no longer supported for this version of Android.
+      </message>
 
       <!-- Legal information preferences -->
       <message name="IDS_LEGAL_INFORMATION_TITLE" desc="Title for legal information [CHAR-LIMIT=32]">
