@@ -82,7 +82,7 @@ class ScreenLockObserver : public SessionManagerClient::StubDelegate,
     DBusThreadManager::Get()->GetSessionManagerClient()->SetStubDelegate(this);
   }
 
-  virtual ~ScreenLockObserver() {
+  ~ScreenLockObserver() override {
     if (DBusThreadManager::IsInitialized()) {
       DBusThreadManager::Get()->GetSessionManagerClient()->SetStubDelegate(
           NULL);
@@ -92,14 +92,12 @@ class ScreenLockObserver : public SessionManagerClient::StubDelegate,
   bool session_started() const { return session_started_; }
 
   // SessionManagerClient::StubDelegate overrides:
-  virtual void LockScreenForStub() override {
-    ScreenLocker::HandleLockScreenRequest();
-  }
+  void LockScreenForStub() override { ScreenLocker::HandleLockScreenRequest(); }
 
   // NotificationObserver overrides:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override {
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override {
     if (type == chrome::NOTIFICATION_SESSION_STARTED)
       session_started_ = true;
     else
@@ -107,7 +105,7 @@ class ScreenLockObserver : public SessionManagerClient::StubDelegate,
   }
 
   // UserAddingScreen::Observer overrides:
-  virtual void OnUserAddingFinished() override {
+  void OnUserAddingFinished() override {
     UserAddingScreen::Get()->RemoveObserver(this);
     ScreenLocker::HandleLockScreenRequest();
   }

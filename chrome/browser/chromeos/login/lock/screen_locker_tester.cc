@@ -35,17 +35,16 @@ namespace {
 class LoginAttemptObserver : public chromeos::AuthStatusConsumer {
  public:
   LoginAttemptObserver();
-  virtual ~LoginAttemptObserver();
+  ~LoginAttemptObserver() override;
 
   void WaitForAttempt();
 
   // Overridden from AuthStatusConsumer:
-  virtual void OnAuthFailure(const chromeos::AuthFailure& error) override {
+  void OnAuthFailure(const chromeos::AuthFailure& error) override {
     LoginAttempted();
   }
 
-  virtual void OnAuthSuccess(
-      const chromeos::UserContext& credentials) override {
+  void OnAuthSuccess(const chromeos::UserContext& credentials) override {
     LoginAttempted();
   }
 
@@ -94,12 +93,12 @@ namespace test {
 class WebUIScreenLockerTester : public ScreenLockerTester {
  public:
   // ScreenLockerTester overrides:
-  virtual void SetPassword(const std::string& password) override;
-  virtual std::string GetPassword() override;
-  virtual void EnterPassword(const std::string& password) override;
-  virtual void EmulateWindowManagerReady() override;
-  virtual views::Widget* GetWidget() const override;
-  virtual views::Widget* GetChildWidget() const override;
+  void SetPassword(const std::string& password) override;
+  std::string GetPassword() override;
+  void EnterPassword(const std::string& password) override;
+  void EmulateWindowManagerReady() override;
+  views::Widget* GetWidget() const override;
+  views::Widget* GetChildWidget() const override;
 
  private:
   friend class chromeos::ScreenLocker;

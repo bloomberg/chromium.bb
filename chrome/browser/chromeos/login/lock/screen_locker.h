@@ -61,8 +61,8 @@ class ScreenLocker : public AuthStatusConsumer {
   void Init();
 
   // AuthStatusConsumer:
-  virtual void OnAuthFailure(const chromeos::AuthFailure& error) override;
-  virtual void OnAuthSuccess(const UserContext& user_context) override;
+  void OnAuthFailure(const chromeos::AuthFailure& error) override;
+  void OnAuthSuccess(const UserContext& user_context) override;
 
   // Does actual unlocking once authentication is successful and all blocking
   // animations are done.
@@ -130,7 +130,7 @@ class ScreenLocker : public AuthStatusConsumer {
     UserContext user_context;
   };
 
-  virtual ~ScreenLocker();
+  ~ScreenLocker() override;
 
   // Sets the authenticator.
   void SetAuthenticator(Authenticator* authenticator);

@@ -61,67 +61,64 @@ class WebUIScreenLocker : public WebUILoginView,
   explicit WebUIScreenLocker(ScreenLocker* screen_locker);
 
   // ScreenLockerDelegate implementation.
-  virtual void LockScreen() override;
-  virtual void ScreenLockReady() override;
-  virtual void OnAuthenticate() override;
-  virtual void SetInputEnabled(bool enabled) override;
-  virtual void ShowErrorMessage(
-      int error_msg_id,
-      HelpAppLauncher::HelpTopic help_topic_id) override;
-  virtual void ClearErrors() override;
-  virtual void AnimateAuthenticationSuccess() override;
-  virtual gfx::NativeWindow GetNativeWindow() const override;
-  virtual content::WebUI* GetAssociatedWebUI() override;
-  virtual void OnLockWebUIReady() override;
-  virtual void OnLockBackgroundDisplayed() override;
+  void LockScreen() override;
+  void ScreenLockReady() override;
+  void OnAuthenticate() override;
+  void SetInputEnabled(bool enabled) override;
+  void ShowErrorMessage(int error_msg_id,
+                        HelpAppLauncher::HelpTopic help_topic_id) override;
+  void ClearErrors() override;
+  void AnimateAuthenticationSuccess() override;
+  gfx::NativeWindow GetNativeWindow() const override;
+  content::WebUI* GetAssociatedWebUI() override;
+  void OnLockWebUIReady() override;
+  void OnLockBackgroundDisplayed() override;
 
   // LoginDisplay::Delegate: implementation
-  virtual void CancelPasswordChangedFlow() override;
-  virtual void CreateAccount() override;
-  virtual void CompleteLogin(const UserContext& user_context) override;
-  virtual base::string16 GetConnectedNetworkName() override;
-  virtual bool IsSigninInProgress() const override;
-  virtual void Login(const UserContext& user_context,
-                     const SigninSpecifics& specifics) override;
-  virtual void MigrateUserData(const std::string& old_password) override;
-  virtual void OnSigninScreenReady() override;
-  virtual void OnStartEnterpriseEnrollment() override;
-  virtual void OnStartEnableDebuggingScreen() override;
-  virtual void OnStartKioskEnableScreen() override;
-  virtual void OnStartKioskAutolaunchScreen() override;
-  virtual void ShowWrongHWIDScreen() override;
-  virtual void ResetPublicSessionAutoLoginTimer() override;
-  virtual void ResyncUserData() override;
-  virtual void SetDisplayEmail(const std::string& email) override;
-  virtual void Signout() override;
+  void CancelPasswordChangedFlow() override;
+  void CreateAccount() override;
+  void CompleteLogin(const UserContext& user_context) override;
+  base::string16 GetConnectedNetworkName() override;
+  bool IsSigninInProgress() const override;
+  void Login(const UserContext& user_context,
+             const SigninSpecifics& specifics) override;
+  void MigrateUserData(const std::string& old_password) override;
+  void OnSigninScreenReady() override;
+  void OnStartEnterpriseEnrollment() override;
+  void OnStartEnableDebuggingScreen() override;
+  void OnStartKioskEnableScreen() override;
+  void OnStartKioskAutolaunchScreen() override;
+  void ShowWrongHWIDScreen() override;
+  void ResetPublicSessionAutoLoginTimer() override;
+  void ResyncUserData() override;
+  void SetDisplayEmail(const std::string& email) override;
+  void Signout() override;
 
   // LockWindow::Observer implementation.
-  virtual void OnLockWindowReady() override;
+  void OnLockWindowReady() override;
 
 #if !defined(USE_ATHENA)
   // LockStateObserver override.
-  virtual void OnLockStateEvent(
-      ash::LockStateObserver::EventType event) override;
+  void OnLockStateEvent(ash::LockStateObserver::EventType event) override;
 #endif
 
   // WidgetObserver override.
-  virtual void OnWidgetDestroying(views::Widget* widget) override;
+  void OnWidgetDestroying(views::Widget* widget) override;
 
   // PowerManagerClient::Observer overrides:
-  virtual void SuspendDone(const base::TimeDelta& sleep_duration) override;
-  virtual void LidEventReceived(bool open,
-                                const base::TimeTicks& time) override;
+  void SuspendDone(const base::TimeDelta& sleep_duration) override;
+  void LidEventReceived(bool open, const base::TimeTicks& time) override;
 
   // Overridden from content::WebContentsObserver:
-  virtual void RenderProcessGone(base::TerminationStatus status) override;
+  void RenderProcessGone(base::TerminationStatus status) override;
 
 #if !defined(USE_ATHENA)
   // Overridden from ash::KeyboardStateObserver:
-  virtual void OnVirtualKeyboardStateChanged(bool activated) override;
+  void OnVirtualKeyboardStateChanged(bool activated) override;
 #endif
 
   // Overridden from keyboard::KeyboardControllerObserver:
-  virtual void OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) override;
+  void OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) override;
 
   // Returns instance of the OOBE WebUI.
   OobeUI* GetOobeUI();
@@ -129,7 +126,7 @@ class WebUIScreenLocker : public WebUILoginView,
  private:
   friend class test::WebUIScreenLockerTester;
 
-  virtual ~WebUIScreenLocker();
+  ~WebUIScreenLocker() override;
 
   // Ensures that user pod is focused.
   void FocusUserPod();
