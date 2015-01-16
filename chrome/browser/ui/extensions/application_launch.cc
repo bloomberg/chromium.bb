@@ -37,7 +37,6 @@ using extensions::ExtensionRegistry;
 
 namespace {
 
-#if !defined(USE_ATHENA)
 // Shows the app list for |desktop_type| and returns the app list's window.
 gfx::NativeWindow ShowAppListAndGetNativeWindow(
       chrome::HostDesktopType desktop_type) {
@@ -45,7 +44,6 @@ gfx::NativeWindow ShowAppListAndGetNativeWindow(
   app_list_service->Show();
   return app_list_service->GetAppListWindow();
 }
-#endif
 
 // Attempts to launch an app, prompting the user to enable it if necessary. If
 // a prompt is required it will be shown inside the window returned by
@@ -207,10 +205,8 @@ void OpenApplicationWithReenablePrompt(const AppLaunchParams& params) {
   base::Callback<gfx::NativeWindow(void)> dialog_parent_window_getter;
   // TODO(pkotwicz): Figure out which window should be used as the parent for
   // the "enable application" dialog in Athena.
-#if !defined(USE_ATHENA)
   dialog_parent_window_getter =
       base::Bind(&ShowAppListAndGetNativeWindow, params.desktop_type);
-#endif
     (new EnableViaDialogFlow(
         service, profile, extension->id(), dialog_parent_window_getter,
         base::Bind(base::IgnoreResult(OpenEnabledApplication), params)))->Run();

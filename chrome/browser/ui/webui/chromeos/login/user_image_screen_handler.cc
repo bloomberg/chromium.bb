@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/user_image_screen_handler.h"
 
+#include "ash/audio/sounds.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
@@ -23,10 +24,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "url/gurl.h"
-
-#if !defined(USE_ATHENA)
-#include "ash/audio/sounds.h"
-#endif
 
 namespace {
 
@@ -189,15 +186,11 @@ void UserImageScreenHandler::HandlePhotoTaken(const std::string& image_url) {
 }
 
 void UserImageScreenHandler::HandleTakePhoto() {
-#if !defined(USE_ATHENA)
   ash::PlaySystemSoundIfSpokenFeedback(SOUND_CAMERA_SNAP);
-#endif
 }
 
 void UserImageScreenHandler::HandleDiscardPhoto() {
-#if !defined(USE_ATHENA)
   ash::PlaySystemSoundIfSpokenFeedback(SOUND_OBJECT_DELETE);
-#endif
 }
 
 void UserImageScreenHandler::HandleSelectImage(const std::string& image_url,

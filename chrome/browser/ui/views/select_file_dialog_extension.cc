@@ -38,10 +38,6 @@
 #include "ui/shell_dialogs/selected_file_info.h"
 #include "ui/views/widget/widget.h"
 
-#if defined(USE_ATHENA)
-#include "chrome/browser/ui/views/athena/athena_util.h"
-#endif  // USE_ATHENA
-
 using extensions::AppWindow;
 using content::BrowserThread;
 
@@ -96,14 +92,6 @@ scoped_refptr<SelectFileDialogExtension> PendingDialog::Find(
   return it->second;
 }
 
-#if defined(USE_ATHENA)
-void FindRuntimeContext(gfx::NativeWindow owner_window,
-                        ui::BaseWindow** base_window,
-                        content::WebContents** web_contents) {
-  *base_window = NULL;
-  *web_contents = GetWebContentsForWindow(owner_window);
-}
-#else   // USE_ATHENA
 // Given |owner_window| finds corresponding |base_window|, it's associated
 // |web_contents| and |profile|.
 void FindRuntimeContext(gfx::NativeWindow owner_window,
@@ -153,7 +141,6 @@ void FindRuntimeContext(gfx::NativeWindow owner_window,
 
   CHECK(web_contents);
 }
-#endif  // USE_ATHENA
 
 }  // namespace
 

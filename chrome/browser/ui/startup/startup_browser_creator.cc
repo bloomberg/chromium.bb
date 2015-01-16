@@ -552,11 +552,6 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
 
 #if defined(OS_CHROMEOS)
 
-#if defined(USE_ATHENA)
-  // Athena will never launch browser.
-  silent_launch = true;
-#endif
-
   // The browser will be launched after the user logs in.
   if (command_line.HasSwitch(chromeos::switches::kLoginManager))
     silent_launch = true;

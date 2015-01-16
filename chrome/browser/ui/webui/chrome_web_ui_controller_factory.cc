@@ -112,7 +112,9 @@
 #include "chrome/browser/ui/webui/chromeos/cryptohome_ui.h"
 #include "chrome/browser/ui/webui/chromeos/device_log_ui.h"
 #include "chrome/browser/ui/webui/chromeos/drive_internals_ui.h"
+#include "chrome/browser/ui/webui/chromeos/first_run/first_run_ui.h"
 #include "chrome/browser/ui/webui/chromeos/imageburner/imageburner_ui.h"
+#include "chrome/browser/ui/webui/chromeos/keyboard_overlay_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/chromeos/mobile_setup_ui.h"
 #include "chrome/browser/ui/webui/chromeos/network_ui.h"
@@ -125,11 +127,6 @@
 #include "chrome/browser/ui/webui/chromeos/sim_unlock_ui.h"
 #include "chrome/browser/ui/webui/chromeos/slow_trace_ui.h"
 #include "chrome/browser/ui/webui/chromeos/slow_ui.h"
-#endif
-
-#if defined(OS_CHROMEOS) && !defined(USE_ATHENA)
-#include "chrome/browser/ui/webui/chromeos/first_run/first_run_ui.h"
-#include "chrome/browser/ui/webui/chromeos/keyboard_overlay_ui.h"
 #endif
 
 #if defined(USE_AURA)
@@ -417,12 +414,10 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<chromeos::DriveInternalsUI>;
   if (url.host() == chrome::kChromeUIImageBurnerHost)
     return &NewWebUI<ImageBurnUI>;
-#if !defined(USE_ATHENA)
   if (url.host() == chrome::kChromeUIFirstRunHost)
     return &NewWebUI<chromeos::FirstRunUI>;
   if (url.host() == chrome::kChromeUIKeyboardOverlayHost)
     return &NewWebUI<KeyboardOverlayUI>;
-#endif
   if (url.host() == chrome::kChromeUIMobileSetupHost)
     return &NewWebUI<MobileSetupUI>;
   if (url.host() == chrome::kChromeUINfcDebugHost)

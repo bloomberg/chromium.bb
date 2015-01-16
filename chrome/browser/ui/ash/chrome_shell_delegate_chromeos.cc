@@ -15,6 +15,8 @@
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
+#include "chrome/browser/chromeos/accessibility/magnification_manager.h"
+#include "chrome/browser/chromeos/background/ash_user_wallpaper_delegate.h"
 #include "chrome/browser/chromeos/display/display_configuration_observer.h"
 #include "chrome/browser/chromeos/display/display_preferences.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -39,11 +41,6 @@
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if !defined(USE_ATHENA)
-#include "chrome/browser/chromeos/accessibility/magnification_manager.h"
-#include "chrome/browser/chromeos/background/ash_user_wallpaper_delegate.h"
-#endif
-
 namespace {
 
 void InitAfterSessionStart() {
@@ -64,7 +61,6 @@ void InitAfterSessionStart() {
   ash::SpokenFeedbackToggler::SetEnabled(chrome::IsRunningInForcedAppMode());
 }
 
-#if !defined(USE_ATHENA)
 class AccessibilityDelegateImpl : public ash::AccessibilityDelegate {
  public:
   AccessibilityDelegateImpl() {}
@@ -218,7 +214,6 @@ class AccessibilityDelegateImpl : public ash::AccessibilityDelegate {
  private:
   DISALLOW_COPY_AND_ASSIGN(AccessibilityDelegateImpl);
 };
-#endif
 
 }  // anonymous namespace
 
@@ -244,11 +239,7 @@ ash::SessionStateDelegate* ChromeShellDelegate::CreateSessionStateDelegate() {
 }
 
 ash::AccessibilityDelegate* ChromeShellDelegate::CreateAccessibilityDelegate() {
-#if defined(USE_ATHENA)
-  return nullptr;
-#else
   return new AccessibilityDelegateImpl;
-#endif
 }
 
 ash::NewWindowDelegate* ChromeShellDelegate::CreateNewWindowDelegate() {
@@ -264,11 +255,7 @@ ash::SystemTrayDelegate* ChromeShellDelegate::CreateSystemTrayDelegate() {
 }
 
 ash::UserWallpaperDelegate* ChromeShellDelegate::CreateUserWallpaperDelegate() {
-#if defined(USE_ATHENA)
-  return NULL;
-#else
   return chromeos::CreateUserWallpaperDelegate();
-#endif
 }
 
 void ChromeShellDelegate::Observe(int type,

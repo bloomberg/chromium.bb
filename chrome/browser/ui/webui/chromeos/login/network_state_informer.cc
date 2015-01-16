@@ -145,11 +145,9 @@ void NetworkStateInformer::Observe(
     NOTREACHED() << "Unknown notification: " << type;
 }
 
-#if !defined(USE_ATHENA)
 void NetworkStateInformer::OnPortalDetected() {
   UpdateStateAndNotify();
 }
-#endif
 
 // static
 const char* NetworkStateInformer::StatusString(State state) {

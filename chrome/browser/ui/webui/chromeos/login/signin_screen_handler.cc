@@ -36,6 +36,7 @@
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_display.h"
 #include "chrome/browser/chromeos/login/users/multi_profile_user_controller.h"
+#include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/consumer_management_service.h"
@@ -73,10 +74,6 @@
 #include "ui/base/ime/chromeos/input_method_descriptor.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/webui/web_ui_util.h"
-
-#if !defined(USE_ATHENA)
-#include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
-#endif
 
 namespace {
 
@@ -276,10 +273,8 @@ SigninScreenHandler::SigninScreenHandler(
   if (keyboard)
     keyboard->AddObserver(this);
 
-#if !defined(USE_ATHENA)
   max_mode_delegate_.reset(new TouchViewControllerDelegate());
   max_mode_delegate_->AddObserver(this);
-#endif
 
   policy::ConsumerManagementService* consumer_management =
       g_browser_process->platform_part()->browser_policy_connector_chromeos()->
@@ -1033,13 +1028,8 @@ void SigninScreenHandler::HandleOfflineLogin(const base::ListValue* args) {
 }
 
 void SigninScreenHandler::HandleShutdownSystem() {
-#if defined(USE_ATHENA)
-  chromeos::DBusThreadManager::Get()->
-      GetPowerManagerClient()->RequestShutdown();
-#else
   ash::Shell::GetInstance()->lock_state_controller()->RequestShutdown(
       ash::LockStateController::POWER_OFF);
-#endif
 }
 
 void SigninScreenHandler::HandleLoadWallpaper(const std::string& email) {
@@ -1239,10 +1229,7 @@ void SigninScreenHandler::HandleUpdateOfflineLogin(bool offline_login_active) {
 
 void SigninScreenHandler::HandleFocusPod(const std::string& user_id) {
   SetUserInputMethod(user_id, ime_state_.get());
-#if !defined(USE_ATHENA)
-  // TODO(dpolukhin):  crbug.com/408734.
   WallpaperManager::Get()->SetUserWallpaperDelayed(user_id);
-#endif
   ScreenlockBridge::Get()->SetFocusedUser(user_id);
   if (!test_focus_pod_callback_.is_null())
     test_focus_pod_callback_.Run();
@@ -1290,15 +1277,10 @@ void SigninScreenHandler::HandleCancelConsumerManagementEnrollment() {
 }
 
 void SigninScreenHandler::HandleGetTouchViewState() {
-#if defined(USE_ATHENA)
-  // Login UI should treat athena builds as if it's TouchView mode.
-  CallJS("login.AccountPickerScreen.setTouchViewState", true);
-#else
   if (max_mode_delegate_) {
     CallJS("login.AccountPickerScreen.setTouchViewState",
            max_mode_delegate_->IsMaximizeModeEnabled());
   }
-#endif
 }
 
 void SigninScreenHandler::HandleSwitchToEmbeddedSignin() {

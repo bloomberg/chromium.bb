@@ -6,6 +6,8 @@
 
 #include <string>
 
+#include "ash/session/session_state_delegate.h"
+#include "ash/shell.h"
 #include "base/bind.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "base/strings/string_number_conversions.h"
@@ -30,11 +32,6 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_ui.h"
 #include "ui/base/l10n/l10n_util.h"
-
-#if !defined(USE_ATHENA)
-#include "ash/session/session_state_delegate.h"
-#include "ash/shell.h"
-#endif
 
 namespace chromeos {
 namespace options {
@@ -284,11 +281,6 @@ void CoreChromeOSOptionsHandler::StopObservingPref(const std::string& path) {
 base::Value* CoreChromeOSOptionsHandler::CreateValueForPref(
     const std::string& pref_name,
     const std::string& controlling_pref_name) {
-  // Athena doesn't have ash::Shell and its session_state_delegate, so the
-  // following code will cause crash.
-  // TODO(mukai|antrim): re-enable this after having session_state_delegate.
-  // http://crbug.com/370175
-#if !defined(USE_ATHENA)
   // The screen lock setting is shared if multiple users are logged in and at
   // least one has chosen to require passwords.
   if (pref_name == prefs::kEnableAutoScreenLock &&
@@ -316,7 +308,6 @@ base::Value* CoreChromeOSOptionsHandler::CreateValueForPref(
       }
     }
   }
-#endif
 
   return CoreOptionsHandler::CreateValueForPref(pref_name,
                                                 controlling_pref_name);

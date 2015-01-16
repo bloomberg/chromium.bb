@@ -110,6 +110,7 @@
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/chromeos/chromeos_utils.h"
+#include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/chromeos/net/wake_on_wifi_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -126,10 +127,6 @@
 #include "ui/chromeos/accessibility_types.h"
 #include "ui/gfx/image/image_skia.h"
 #endif  // defined(OS_CHROMEOS)
-
-#if defined(OS_CHROMEOS) && !defined(USE_ATHENA)
-#include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
-#endif
 
 #if defined(OS_WIN)
 #include "chrome/browser/extensions/settings_api_helpers.h"
@@ -1001,11 +998,9 @@ void BrowserOptionsHandler::InitializePage() {
                                       std::string()))
              .Get(policy::key::kUserAvatarImage));
 
-#if !defined(USE_ATHENA)
   OnWallpaperManagedChanged(
       chromeos::WallpaperManager::Get()->IsPolicyControlled(
           user_manager::UserManager::Get()->GetActiveUser()->email()));
-#endif
 
   policy::ConsumerManagementService* consumer_management =
       g_browser_process->platform_part()->browser_policy_connector_chromeos()->
@@ -1404,11 +1399,6 @@ void BrowserOptionsHandler::OnAccountPictureManagedChanged(bool managed) {
 }
 
 void BrowserOptionsHandler::OnWallpaperManagedChanged(bool managed) {
-#if defined(USE_ATHENA)
-  // In Athena, we don't allow customizing wallpaper right now.
-  // TODO(mukai|bshe): remove this.  http://crbug.com/408734
-  managed = true;
-#endif
   web_ui()->CallJavascriptFunction("BrowserOptions.setWallpaperManaged",
                                    base::FundamentalValue(managed));
 }
@@ -1818,11 +1808,7 @@ void BrowserOptionsHandler::HandleRefreshExtensionControlIndicators(
 #if defined(OS_CHROMEOS)
 void BrowserOptionsHandler::HandleOpenWallpaperManager(
     const base::ListValue* args) {
-#if !defined(USE_ATHENA)
   ash::Shell::GetInstance()->user_wallpaper_delegate()->OpenSetWallpaperPage();
-#else
-  NOTIMPLEMENTED();
-#endif
 }
 
 void BrowserOptionsHandler::VirtualKeyboardChangeCallback(
