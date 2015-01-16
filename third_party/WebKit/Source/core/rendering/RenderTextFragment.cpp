@@ -106,10 +106,17 @@ void RenderTextFragment::setText(PassRefPtr<StringImpl> text, bool force)
             return;
 
         // Tell the first letter container node, and the first-letter node
-        // that their style may have changed.
-        // e.g. fast/css/first-letter-detach.html
-        toFirstLetterPseudoElement(previous->node())->setNeedsUpdate();
+        // that their text content changed.
+        toFirstLetterPseudoElement(previous->node())->updateTextFragments();
     }
+}
+
+void RenderTextFragment::setTextFragment(PassRefPtr<StringImpl> text, unsigned start, unsigned length)
+{
+    RenderText::setText(text, false);
+
+    m_start = start;
+    m_end = length;
 }
 
 void RenderTextFragment::transformText()

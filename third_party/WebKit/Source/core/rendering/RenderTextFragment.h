@@ -47,6 +47,7 @@ public:
 
     unsigned start() const { return m_start; }
     unsigned end() const { return m_end; }
+
     virtual unsigned textStartOffset() const override { return start(); }
 
     void setContentString(StringImpl*);
@@ -60,6 +61,7 @@ public:
     virtual PassRefPtr<StringImpl> originalText() const override;
 
     virtual void setText(PassRefPtr<StringImpl>, bool force = false) override;
+    void setTextFragment(PassRefPtr<StringImpl>, unsigned start, unsigned length);
 
     virtual void transformText() override;
 

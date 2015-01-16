@@ -163,8 +163,6 @@ RenderObject* FirstLetterPseudoElement::firstLetterTextRenderer(const Element& e
 FirstLetterPseudoElement::FirstLetterPseudoElement(Element* parent)
     : PseudoElement(parent, FIRST_LETTER)
     , m_remainingTextRenderer(nullptr)
-    , m_needsUpdate(false)
-    , m_isInDetach(false)
 {
 }
 
@@ -178,18 +176,35 @@ void FirstLetterPseudoElement::trace(Visitor* visitor)
     PseudoElement::trace(visitor);
 }
 
-void FirstLetterPseudoElement::setNeedsUpdate()
+void FirstLetterPseudoElement::updateTextFragments()
 {
-    m_needsUpdate = true;
-    bool neededRecalc = needsStyleRecalc();
-    setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::PseudoClass));
+    String oldText =  m_remainingTextRenderer->completeText();
+    ASSERT(oldText.impl());
 
-    // If style recalc is currently executing, and we have already been recalc'd
-    // we need to tell our parent to do the recalc again because we need to
-    // re-initialize the first letter state. This can happen for things like
-    // RenderQuote where quotes processed later can effect things already styled.
-    if (document().inStyleRecalc() && !m_isInDetach && !neededRecalc && parentNode() && parentNode()->isElementNode())
-        toElement(parentNode())->recalcStyle(UpdatePseudoElements);
+    unsigned length = FirstLetterPseudoElement::firstLetterLength(oldText);
+    m_remainingTextRenderer->setTextFragment(oldText.impl()->substring(length, oldText.length()), length, oldText.length() - length);
+
+    for (auto child = renderer()->slowFirstChild(); child; child = child->nextSibling()) {
+        if (!child->isText() || !toRenderText(child)->isTextFragment())
+            continue;
+        RenderTextFragment* childFragment = toRenderTextFragment(child);
+        if (childFragment->firstLetterPseudoElement() != this)
+            continue;
+
+        childFragment->setTextFragment(oldText.impl()->substring(0, length), 0, length);
+        break;
+    }
+}
+
+void FirstLetterPseudoElement::setRemainingTextRenderer(RenderTextFragment* fragment)
+{
+    // The text fragment we get our content from is being destroyed. We need
+    // to tell our parent element to recalcStyle so we can get cleaned up
+    // as well.
+    if (!fragment)
+        setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::PseudoClass));
+
+    m_remainingTextRenderer = fragment;
 }
 
 void FirstLetterPseudoElement::attach(const AttachContext& context)
@@ -200,12 +215,10 @@ void FirstLetterPseudoElement::attach(const AttachContext& context)
 
 void FirstLetterPseudoElement::detach(const AttachContext& context)
 {
-    TemporaryChange<bool> isInDetach(m_isInDetach, true);
-
     if (m_remainingTextRenderer) {
         if (m_remainingTextRenderer->node() && document().isActive()) {
             Text* textNode = toText(m_remainingTextRenderer->node());
-            m_remainingTextRenderer->setText(textNode->dataImpl(), true);
+            m_remainingTextRenderer->setTextFragment(textNode->dataImpl(), 0, textNode->dataImpl()->length());
         }
         m_remainingTextRenderer->setFirstLetterPseudoElement(nullptr);
     }

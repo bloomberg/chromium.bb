@@ -2652,8 +2652,7 @@ void Element::updatePseudoElement(PseudoId pseudoId, StyleRecalcChange change)
 bool Element::updateFirstLetter(Element* element)
 {
     RenderObject* remainingTextRenderer = FirstLetterPseudoElement::firstLetterTextRenderer(*element);
-    if (!remainingTextRenderer || remainingTextRenderer != toFirstLetterPseudoElement(element)->remainingTextRenderer()
-        || toFirstLetterPseudoElement(element)->needsUpdate()) {
+    if (!remainingTextRenderer || remainingTextRenderer != toFirstLetterPseudoElement(element)->remainingTextRenderer()) {
         // We have to clear out the old first letter here because when it is
         // disposed it will set the original text back on the remaining text
         // renderer. If we dispose after creating the new one we will get

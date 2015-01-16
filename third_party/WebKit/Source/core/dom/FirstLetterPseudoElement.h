@@ -48,11 +48,10 @@ public:
     static RenderObject* firstLetterTextRenderer(const Element&);
     static unsigned firstLetterLength(const String&);
 
-    void setRemainingTextRenderer(RenderTextFragment* fragment) { m_remainingTextRenderer = fragment; }
+    void setRemainingTextRenderer(RenderTextFragment*);
     RenderTextFragment* remainingTextRenderer() const { return m_remainingTextRenderer; }
 
-    void setNeedsUpdate();
-    bool needsUpdate() const { return m_needsUpdate; }
+    void updateTextFragments();
 
     virtual void attach(const AttachContext& = AttachContext()) override;
     virtual void detach(const AttachContext& = AttachContext()) override;
@@ -66,8 +65,6 @@ private:
     RenderStyle* styleForFirstLetter(RenderObject*);
 
     RawPtrWillBeMember<RenderTextFragment> m_remainingTextRenderer;
-    bool m_needsUpdate;
-    bool m_isInDetach;
 };
 
 DEFINE_ELEMENT_TYPE_CASTS(FirstLetterPseudoElement, isFirstLetterPseudoElement());
