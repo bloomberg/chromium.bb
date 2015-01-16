@@ -29,9 +29,6 @@ TEST(RenderWidgetHostLatencyTrackerTest, Basic) {
     EXPECT_TRUE(
         scroll_latency.FindLatency(ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
                                    tracker.latency_component_id(), nullptr));
-    EXPECT_TRUE(scroll_latency.FindLatency(
-        ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_RWH_COMPONENT,
-        tracker.latency_component_id(), nullptr));
     EXPECT_EQ(1U, scroll_latency.input_coordinates_size);
   }
 
@@ -156,6 +153,59 @@ TEST(RenderWidgetHostLatencyTrackerTest, InputCoordinatesPopulated) {
     tracker.OnInputEvent(event, &latency_info);
     EXPECT_EQ(0u, latency_info.input_coordinates_size);
   }
+}
+
+TEST(RenderWidgetHostLatencyTrackerTest, ScrollLatency) {
+  RenderWidgetHostLatencyTracker tracker;
+  tracker.Initialize(kTestRoutingId, kTestProcessId);
+
+  auto scroll_begin = SyntheticWebGestureEventBuilder::BuildScrollBegin(5, -5);
+  ui::LatencyInfo scroll_latency;
+  scroll_latency.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 0,
+                                  0);
+  tracker.OnInputEvent(scroll_begin, &scroll_latency);
+  EXPECT_TRUE(
+      scroll_latency.FindLatency(ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
+                                 tracker.latency_component_id(), nullptr));
+  EXPECT_EQ(2U, scroll_latency.latency_components.size());
+
+  // The first GestureScrollUpdate should be provided with
+  // INPUT_EVENT_LATENCY_FIRST_SCROLL_UPDATE_ORIGINAL_COMPONENT.
+  auto first_scroll_update = SyntheticWebGestureEventBuilder::BuildScrollUpdate(
+      5.f, -5.f, 0, blink::WebGestureDeviceTouchscreen);
+  scroll_latency = ui::LatencyInfo();
+  scroll_latency.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 0,
+                                  0);
+  tracker.OnInputEvent(first_scroll_update, &scroll_latency);
+  EXPECT_TRUE(
+      scroll_latency.FindLatency(ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
+                                 tracker.latency_component_id(), nullptr));
+  EXPECT_TRUE(scroll_latency.FindLatency(
+      ui::INPUT_EVENT_LATENCY_FIRST_SCROLL_UPDATE_ORIGINAL_COMPONENT,
+      tracker.latency_component_id(), nullptr));
+  EXPECT_FALSE(scroll_latency.FindLatency(
+      ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT,
+      tracker.latency_component_id(), nullptr));
+  EXPECT_EQ(3U, scroll_latency.latency_components.size());
+
+  // Subseqeunt GestureScrollUpdates should be provided with
+  // INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT.
+  auto scroll_update = SyntheticWebGestureEventBuilder::BuildScrollUpdate(
+      -5.f, 5.f, 0, blink::WebGestureDeviceTouchscreen);
+  scroll_latency = ui::LatencyInfo();
+  scroll_latency.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 0,
+                                  0);
+  tracker.OnInputEvent(scroll_update, &scroll_latency);
+  EXPECT_TRUE(
+      scroll_latency.FindLatency(ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
+                                 tracker.latency_component_id(), nullptr));
+  EXPECT_FALSE(scroll_latency.FindLatency(
+      ui::INPUT_EVENT_LATENCY_FIRST_SCROLL_UPDATE_ORIGINAL_COMPONENT,
+      tracker.latency_component_id(), nullptr));
+  EXPECT_TRUE(scroll_latency.FindLatency(
+      ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT,
+      tracker.latency_component_id(), nullptr));
+  EXPECT_EQ(3U, scroll_latency.latency_components.size());
 }
 
 }  // namespace content

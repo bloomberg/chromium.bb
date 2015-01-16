@@ -135,6 +135,44 @@ void ComputeInputLatencyHistograms(WebInputEvent::Type type,
   }
 }
 
+void ComputeScrollLatencyHistograms(
+    const LatencyInfo::LatencyComponent& swap_component,
+    int64 latency_component_id,
+    const ui::LatencyInfo& latency) {
+  DCHECK(!swap_component.event_time.is_null());
+  LatencyInfo::LatencyComponent first_original_component, original_component;
+  if (latency.FindLatency(
+          ui::INPUT_EVENT_LATENCY_FIRST_SCROLL_UPDATE_ORIGINAL_COMPONENT,
+          latency_component_id, &first_original_component)) {
+    // This UMA metric tracks the time between the final frame swap for the
+    // first scroll event in a sequence and the original timestamp of that
+    // scroll event's underlying touch event.
+    for (size_t i = 0; i < first_original_component.event_count; i++) {
+      UMA_HISTOGRAM_CUSTOM_COUNTS(
+          "Event.Latency.TouchToFirstScrollUpdateSwap",
+          (swap_component.event_time - first_original_component.event_time)
+              .InMicroseconds(),
+          1, 1000000, 100);
+    }
+    original_component = first_original_component;
+  } else if (!latency.FindLatency(
+                 ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT,
+                 latency_component_id, &original_component)) {
+    return;
+  }
+
+  // This UMA metric tracks the time from when the original touch event is
+  // created (averaged if there are multiple) to when the scroll gesture
+  // results in final frame swap.
+  for (size_t i = 0; i < original_component.event_count; i++) {
+    UMA_HISTOGRAM_CUSTOM_COUNTS(
+        "Event.Latency.TouchToScrollUpdateSwap",
+        (swap_component.event_time - original_component.event_time)
+            .InMicroseconds(),
+        1, 1000000, 100);
+  }
+}
+
 // LatencyComponents generated in the renderer must have component IDs
 // provided to them by the browser process. This function adds the correct
 // component ID where necessary.
@@ -169,6 +207,7 @@ RenderWidgetHostLatencyTracker::RenderWidgetHostLatencyTracker()
     : last_event_id_(0),
       latency_component_id_(0),
       device_scale_factor_(1),
+      has_seent_first_gesture_scroll_update_(false),
       browser_composite_latency_history_(kBrowserCompositeLatencyHistorySize) {
 }
 
@@ -197,11 +236,9 @@ void RenderWidgetHostLatencyTracker::OnInputEvent(
   latency->TraceEventType(WebInputEventTraits::GetName(event.type));
   UpdateLatencyCoordinates(event, device_scale_factor_, latency);
 
-  if (event.type == blink::WebInputEvent::GestureScrollUpdate) {
-    latency->AddLatencyNumber(
-        ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_RWH_COMPONENT,
-        latency_component_id_, ++last_event_id_);
-
+  if (event.type == blink::WebInputEvent::GestureScrollBegin) {
+    has_seent_first_gesture_scroll_update_ = false;
+  } else if (event.type == blink::WebInputEvent::GestureScrollUpdate) {
     // Make a copy of the INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT with a
     // different name INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT.
     // So we can track the latency specifically for scroll update events.
@@ -209,10 +246,14 @@ void RenderWidgetHostLatencyTracker::OnInputEvent(
     if (latency->FindLatency(ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 0,
                              &original_component)) {
       latency->AddLatencyNumberWithTimestamp(
-          ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT,
+          has_seent_first_gesture_scroll_update_
+              ? ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT
+              : ui::INPUT_EVENT_LATENCY_FIRST_SCROLL_UPDATE_ORIGINAL_COMPONENT,
           latency_component_id_, original_component.sequence_number,
           original_component.event_time, original_component.event_count);
     }
+
+    has_seent_first_gesture_scroll_update_ = true;
   }
 }
 
@@ -295,23 +336,8 @@ void RenderWidgetHostLatencyTracker::OnFrameSwapped(
     return;
   }
 
-  LatencyInfo::LatencyComponent original_component;
-  if (latency.FindLatency(
-          ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT,
-          latency_component_id_, &original_component)) {
-    // This UMA metric tracks the time from when the original touch event is
-    // created (averaged if there are multiple) to when the scroll gesture
-    // results in final frame swap.
-    for (size_t i = 0; i < original_component.event_count; i++) {
-      UMA_HISTOGRAM_CUSTOM_COUNTS(
-          "Event.Latency.TouchToScrollUpdateSwap",
-          (swap_component.event_time - original_component.event_time)
-              .InMicroseconds(),
-          1,
-          1000000,
-          100);
-    }
-  }
+  ComputeScrollLatencyHistograms(swap_component, latency_component_id_,
+                                 latency);
 
   ui::LatencyInfo::LatencyComponent gpu_swap_component;
   if (!latency.FindLatency(ui::INPUT_EVENT_GPU_SWAP_BUFFER_COMPONENT, 0,

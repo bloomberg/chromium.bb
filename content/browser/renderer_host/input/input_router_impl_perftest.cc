@@ -261,10 +261,8 @@ class InputRouterImplPerfTest : public testing::Test {
     ui::LatencyInfo latency;
     latency.AddLatencyNumber(
         ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT, 1, 0);
-    latency.AddLatencyNumber(
-        ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_RWH_COMPONENT,
-        1,
-        NextLatencyID());
+    latency.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, 1,
+                             NextLatencyID());
     return latency;
   }
 

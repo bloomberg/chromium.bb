@@ -25,15 +25,11 @@ enum LatencyComponentType {
   // Timestamp when a scroll update for the main thread is begun.
   INPUT_EVENT_LATENCY_BEGIN_SCROLL_UPDATE_MAIN_COMPONENT,
   // ---------------------------NORMAL COMPONENT-------------------------------
-  // Timestamp when the scroll update gesture event is sent from RWH to
-  // renderer. In Aura, touch event's LatencyInfo is carried over to the gesture
-  // event. So gesture event's INPUT_EVENT_LATENCY_RWH_COMPONENT is the
-  // timestamp when its original touch events is sent from RWH to renderer.
-  // In non-aura platform, INPUT_EVENT_LATENCY_SCROLL_UPDATE_RWH_COMPONENT
-  // is the same as INPUT_EVENT_LATENCY_RWH_COMPONENT.
-  INPUT_EVENT_LATENCY_SCROLL_UPDATE_RWH_COMPONENT,
   // The original timestamp of the touch event which converts to scroll update.
   INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT,
+  // The original timestamp of the touch event which converts to the *first*
+  // scroll update in a scroll gesture sequence.
+  INPUT_EVENT_LATENCY_FIRST_SCROLL_UPDATE_ORIGINAL_COMPONENT,
   // Original timestamp for input event (e.g. timestamp from kernel).
   INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT,
   // Timestamp when the UI event is created.

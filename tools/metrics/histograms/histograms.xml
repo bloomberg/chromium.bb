@@ -7238,11 +7238,23 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Event.Latency.TouchToFirstScrollUpdateSwap"
+    units="microseconds">
+  <owner>rbyers@chromium.org</owner>
+  <summary>
+    Time between initial creation of a touch event and the frame swap caused by
+    by the generated ScrollUpdate gesture event if that ScrollUpdate is the
+    first such in a given scroll gesture event sequence. If no swap was induced
+    by the event, no recording is made.
+  </summary>
+</histogram>
+
 <histogram name="Event.Latency.TouchToScrollUpdateSwap" units="microseconds">
   <owner>rbyers@chromium.org</owner>
   <summary>
-    Time between initial creation of touch event and the resulting frame from
-    ScrollUpdate is swapped.
+    Time between initial creation of a touch event and the frame swap caused by
+    by the generated ScrollUpdate gesture event. If no swap was induced by the
+    event, no recording is made.
   </summary>
 </histogram>
 
