@@ -149,6 +149,8 @@ class Builder(CommandRunner):
     if len(build_type) > 2 and build_type[2] == 'pnacl':
       self.is_pnacl_toolchain = True
 
+    self.is_nacl_clang = len(build_type) > 2 and build_type[2] == 'clang'
+
     if arch.endswith('-nonsfi'):
       arch = arch[:-len('-nonsfi')]
 
@@ -179,6 +181,8 @@ class Builder(CommandRunner):
 
     if self.is_pnacl_toolchain:
       self.tool_prefix = 'pnacl-'
+      tool_subdir = 'pnacl_newlib'
+    elif self.is_nacl_clang:
       tool_subdir = 'pnacl_newlib'
     else:
       tool_subdir = 'nacl_%s_%s' % (mainarch, toolname)
@@ -254,14 +258,14 @@ class Builder(CommandRunner):
 
   def GetCCompiler(self):
     """Helper which returns C compiler path."""
-    if self.is_pnacl_toolchain:
+    if self.is_pnacl_toolchain or self.is_nacl_clang:
       return self.GetBinName('clang')
     else:
       return self.GetBinName('gcc')
 
   def GetCXXCompiler(self):
     """Helper which returns C++ compiler path."""
-    if self.is_pnacl_toolchain:
+    if self.is_pnacl_toolchain or self.is_nacl_clang:
       return self.GetBinName('clang++')
     else:
       return self.GetBinName('g++')
