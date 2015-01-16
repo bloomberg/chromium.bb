@@ -36,7 +36,6 @@
 #include "core/page/ContextMenuClient.h"
 #include "core/page/DragClient.h"
 #include "core/page/EditorClient.h"
-#include "core/page/FocusType.h"
 #include "core/page/Page.h"
 #include "core/page/SpellCheckerClient.h"
 #include "core/page/StorageClient.h"
@@ -45,6 +44,7 @@
 #include "platform/heap/Handle.h"
 #include "platform/network/ResourceError.h"
 #include "platform/text/TextCheckerClient.h"
+#include "public/platform/WebFocusType.h"
 #include "public/platform/WebScreenInfo.h"
 #include "wtf/Forward.h"
 #include <v8.h>
@@ -78,8 +78,8 @@ public:
 
     virtual void focus() override { }
 
-    virtual bool canTakeFocus(FocusType) override { return false; }
-    virtual void takeFocus(FocusType) override { }
+    virtual bool canTakeFocus(WebFocusType) override { return false; }
+    virtual void takeFocus(WebFocusType) override { }
 
     virtual void focusedNodeChanged(Node*) override { }
     virtual void focusedFrameChanged(LocalFrame*) override { }

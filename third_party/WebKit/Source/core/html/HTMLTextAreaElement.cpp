@@ -261,7 +261,7 @@ void HTMLTextAreaElement::defaultEventHandler(Event* event)
     HTMLTextFormControlElement::defaultEventHandler(event);
 }
 
-void HTMLTextAreaElement::handleFocusEvent(Element*, FocusType)
+void HTMLTextAreaElement::handleFocusEvent(Element*, WebFocusType)
 {
     if (LocalFrame* frame = document().frame())
         frame->spellChecker().didBeginEditing(this);

@@ -137,7 +137,7 @@ protected:
     virtual bool shouldShowFocusRingOnMouseFocus() const;
     virtual bool shouldHaveFocusAppearance() const override final;
     virtual void dispatchBlurEvent(Element* newFocusedElement) override;
-    virtual void dispatchFocusEvent(Element* oldFocusedElement, FocusType) override;
+    virtual void dispatchFocusEvent(Element* oldFocusedElement, WebFocusType) override;
     virtual void willCallDefaultEventHandler(const Event&) override final;
 
     virtual void didRecalcStyle(StyleRecalcChange) override final;

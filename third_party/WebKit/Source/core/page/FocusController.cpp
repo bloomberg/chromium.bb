@@ -175,11 +175,11 @@ static inline void dispatchEventsOnWindowAndFocusedNode(Document* document, bool
     if (focused && document->focusedElement()) {
         RefPtrWillBeRawPtr<Element> focusedElement(document->focusedElement());
         focusedElement->setFocus(true);
-        focusedElement->dispatchFocusEvent(0, FocusTypePage);
+        focusedElement->dispatchFocusEvent(0, WebFocusTypePage);
         if (focusedElement == document->focusedElement()) {
-            document->focusedElement()->dispatchFocusInEvent(EventTypeNames::focusin, nullptr, FocusTypePage);
+            document->focusedElement()->dispatchFocusInEvent(EventTypeNames::focusin, nullptr, WebFocusTypePage);
             if (focusedElement == document->focusedElement())
-                document->focusedElement()->dispatchFocusInEvent(EventTypeNames::DOMFocusIn, nullptr, FocusTypePage);
+                document->focusedElement()->dispatchFocusInEvent(EventTypeNames::DOMFocusIn, nullptr, WebFocusTypePage);
         }
     }
 }
@@ -298,11 +298,11 @@ void FocusController::focusDocumentView(PassRefPtrWillBeRawPtr<Frame> frame)
         RefPtrWillBeRawPtr<Document> document = newFocusedFrame->document();
         Element* focusedElement = document ? document->focusedElement() : nullptr;
         if (focusedElement) {
-            focusedElement->dispatchFocusEvent(0, FocusTypePage);
+            focusedElement->dispatchFocusEvent(0, WebFocusTypePage);
             if (focusedElement == document->focusedElement()) {
-                document->focusedElement()->dispatchFocusInEvent(EventTypeNames::focusin, nullptr, FocusTypePage);
+                document->focusedElement()->dispatchFocusInEvent(EventTypeNames::focusin, nullptr, WebFocusTypePage);
                 if (focusedElement == document->focusedElement())
-                    document->focusedElement()->dispatchFocusInEvent(EventTypeNames::DOMFocusIn, nullptr, FocusTypePage);
+                    document->focusedElement()->dispatchFocusInEvent(EventTypeNames::DOMFocusIn, nullptr, WebFocusTypePage);
             }
         }
     }
@@ -346,7 +346,7 @@ void FocusController::setFocused(bool focused)
     }
 }
 
-Node* FocusController::findFocusableNodeDecendingDownIntoFrameDocument(FocusType type, Node* node)
+Node* FocusController::findFocusableNodeDecendingDownIntoFrameDocument(WebFocusType type, Node* node)
 {
     // The node we found might be a HTMLFrameOwnerElement, so descend down the tree until we find either:
     // 1) a focusable node, or
@@ -365,7 +365,7 @@ Node* FocusController::findFocusableNodeDecendingDownIntoFrameDocument(FocusType
     return node;
 }
 
-bool FocusController::setInitialFocus(FocusType type)
+bool FocusController::setInitialFocus(WebFocusType type)
 {
     bool didAdvanceFocus = advanceFocus(type, true);
 
@@ -381,16 +381,16 @@ bool FocusController::setInitialFocus(FocusType type)
     return didAdvanceFocus;
 }
 
-bool FocusController::advanceFocus(FocusType type, bool initialFocus)
+bool FocusController::advanceFocus(WebFocusType type, bool initialFocus)
 {
     switch (type) {
-    case FocusTypeForward:
-    case FocusTypeBackward:
+    case WebFocusTypeForward:
+    case WebFocusTypeBackward:
         return advanceFocusInDocumentOrder(type, initialFocus);
-    case FocusTypeLeft:
-    case FocusTypeRight:
-    case FocusTypeUp:
-    case FocusTypeDown:
+    case WebFocusTypeLeft:
+    case WebFocusTypeRight:
+    case WebFocusTypeUp:
+    case WebFocusTypeDown:
         return advanceFocusDirectionally(type);
     default:
         ASSERT_NOT_REACHED();
@@ -399,7 +399,7 @@ bool FocusController::advanceFocus(FocusType type, bool initialFocus)
     return false;
 }
 
-bool FocusController::advanceFocusInDocumentOrder(FocusType type, bool initialFocus)
+bool FocusController::advanceFocusInDocumentOrder(WebFocusType type, bool initialFocus)
 {
     // FIXME: Focus advancement won't work with externally rendered frames until after
     // inter-frame focus control is moved out of Blink.
@@ -484,11 +484,11 @@ bool FocusController::advanceFocusInDocumentOrder(FocusType type, bool initialFo
     return true;
 }
 
-Node* FocusController::findFocusableNodeAcrossFocusScope(FocusType type, const FocusNavigationScope& scope, Node* currentNode)
+Node* FocusController::findFocusableNodeAcrossFocusScope(WebFocusType type, const FocusNavigationScope& scope, Node* currentNode)
 {
     ASSERT(!currentNode || !isNonFocusableShadowHost(*currentNode));
     Node* found;
-    if (currentNode && type == FocusTypeForward && isKeyboardFocusableShadowHost(*currentNode)) {
+    if (currentNode && type == WebFocusTypeForward && isKeyboardFocusableShadowHost(*currentNode)) {
         Node* foundInInnerFocusScope = findFocusableNodeRecursively(type, FocusNavigationScope::ownedByShadowHost(*currentNode), nullptr);
         found = foundInInnerFocusScope ? foundInInnerFocusScope : findFocusableNodeRecursively(type, scope, currentNode);
     } else {
@@ -502,7 +502,7 @@ Node* FocusController::findFocusableNodeAcrossFocusScope(FocusType type, const F
         if (!owner)
             break;
         currentScope = FocusNavigationScope::focusNavigationScopeOf(*owner);
-        if (type == FocusTypeBackward && isKeyboardFocusableShadowHost(*owner)) {
+        if (type == WebFocusTypeBackward && isKeyboardFocusableShadowHost(*owner)) {
             found = owner;
             break;
         }
@@ -512,20 +512,20 @@ Node* FocusController::findFocusableNodeAcrossFocusScope(FocusType type, const F
     return found;
 }
 
-Node* FocusController::findFocusableNodeRecursively(FocusType type, const FocusNavigationScope& scope, Node* start)
+Node* FocusController::findFocusableNodeRecursively(WebFocusType type, const FocusNavigationScope& scope, Node* start)
 {
     // Starting node is exclusive.
     Node* foundOrNull = findFocusableNode(type, scope, start);
     if (!foundOrNull)
         return nullptr;
     Node& found = *foundOrNull;
-    if (type == FocusTypeForward) {
+    if (type == WebFocusTypeForward) {
         if (!isNonFocusableFocusScopeOwner(found))
             return &found;
         Node* foundInInnerFocusScope = findFocusableNodeRecursively(type, FocusNavigationScope::ownedByNonFocusableFocusScopeOwner(found), nullptr);
         return foundInInnerFocusScope ? foundInInnerFocusScope : findFocusableNodeRecursively(type, scope, &found);
     }
-    ASSERT(type == FocusTypeBackward);
+    ASSERT(type == WebFocusTypeBackward);
     if (isKeyboardFocusableShadowHost(found)) {
         Node* foundInInnerFocusScope = findFocusableNodeRecursively(type, FocusNavigationScope::ownedByShadowHost(found), nullptr);
         return foundInInnerFocusScope ? foundInInnerFocusScope : &found;
@@ -537,15 +537,15 @@ Node* FocusController::findFocusableNodeRecursively(FocusType type, const FocusN
     return &found;
 }
 
-Node* FocusController::findFocusableNode(FocusType type, const FocusNavigationScope& scope, Node* node)
+Node* FocusController::findFocusableNode(WebFocusType type, const FocusNavigationScope& scope, Node* node)
 {
-    return type == FocusTypeForward ? nextFocusableNode(scope, node) : previousFocusableNode(scope, node);
+    return type == WebFocusTypeForward ? nextFocusableNode(scope, node) : previousFocusableNode(scope, node);
 }
 
-Node* FocusController::findNodeWithExactTabIndex(Node* start, int tabIndex, FocusType type)
+Node* FocusController::findNodeWithExactTabIndex(Node* start, int tabIndex, WebFocusType type)
 {
     // Search is inclusive of start
-    for (Node* node = start; node; node = type == FocusTypeForward ? NodeTraversal::next(*node) : NodeTraversal::previous(*node)) {
+    for (Node* node = start; node; node = type == WebFocusTypeForward ? NodeTraversal::next(*node) : NodeTraversal::previous(*node)) {
         if (shouldVisit(*node) && adjustedTabIndex(*node) == tabIndex)
             return node;
     }
@@ -595,7 +595,7 @@ Node* FocusController::nextFocusableNode(const FocusNavigationScope& scope, Node
             }
         } else {
             // First try to find a node with the same tabindex as start that comes after start in the scope.
-            if (Node* winner = findNodeWithExactTabIndex(NodeTraversal::next(*start), tabIndex, FocusTypeForward))
+            if (Node* winner = findNodeWithExactTabIndex(NodeTraversal::next(*start), tabIndex, WebFocusTypeForward))
                 return winner;
         }
         if (!tabIndex) {
@@ -612,7 +612,7 @@ Node* FocusController::nextFocusableNode(const FocusNavigationScope& scope, Node
 
     // There are no nodes with a tabindex greater than start's tabindex,
     // so find the first node with a tabindex of 0.
-    return findNodeWithExactTabIndex(scope.rootNode(), 0, FocusTypeForward);
+    return findNodeWithExactTabIndex(scope.rootNode(), 0, WebFocusTypeForward);
 }
 
 Node* FocusController::previousFocusableNode(const FocusNavigationScope& scope, Node* start)
@@ -641,7 +641,7 @@ Node* FocusController::previousFocusableNode(const FocusNavigationScope& scope, 
                 return node;
         }
     } else {
-        if (Node* winner = findNodeWithExactTabIndex(startingNode, startingTabIndex, FocusTypeBackward))
+        if (Node* winner = findNodeWithExactTabIndex(startingNode, startingTabIndex, WebFocusTypeBackward))
             return winner;
     }
 
@@ -687,7 +687,7 @@ static void clearSelectionIfNeeded(LocalFrame* oldFocusedFrame, LocalFrame* newF
     selection.clear();
 }
 
-bool FocusController::setFocusedElement(Element* element, PassRefPtrWillBeRawPtr<Frame> newFocusedFrame, FocusType type)
+bool FocusController::setFocusedElement(Element* element, PassRefPtrWillBeRawPtr<Frame> newFocusedFrame, WebFocusType type)
 {
     RefPtrWillBeRawPtr<LocalFrame> oldFocusedFrame = toLocalFrame(focusedFrame());
     RefPtrWillBeRawPtr<Document> oldDocument = oldFocusedFrame ? oldFocusedFrame->document() : nullptr;
@@ -752,7 +752,7 @@ void FocusController::setActive(bool active)
     }
 }
 
-static void updateFocusCandidateIfNeeded(FocusType type, const FocusCandidate& current, FocusCandidate& candidate, FocusCandidate& closest)
+static void updateFocusCandidateIfNeeded(WebFocusType type, const FocusCandidate& current, FocusCandidate& candidate, FocusCandidate& closest)
 {
     ASSERT(candidate.visibleNode->isElementNode());
     ASSERT(candidate.visibleNode->renderer());
@@ -804,7 +804,7 @@ static void updateFocusCandidateIfNeeded(FocusType type, const FocusCandidate& c
         closest = candidate;
 }
 
-void FocusController::findFocusCandidateInContainer(Node& container, const LayoutRect& startingRect, FocusType type, FocusCandidate& closest)
+void FocusController::findFocusCandidateInContainer(Node& container, const LayoutRect& startingRect, WebFocusType type, FocusCandidate& closest)
 {
     Element* focusedElement = (focusedFrame() && toLocalFrame(focusedFrame())->document()) ? toLocalFrame(focusedFrame())->document()->focusedElement() : nullptr;
 
@@ -832,7 +832,7 @@ void FocusController::findFocusCandidateInContainer(Node& container, const Layou
     }
 }
 
-bool FocusController::advanceFocusDirectionallyInContainer(Node* container, const LayoutRect& startingRect, FocusType type)
+bool FocusController::advanceFocusDirectionallyInContainer(Node* container, const LayoutRect& startingRect, WebFocusType type)
 {
     if (!container)
         return false;
@@ -902,7 +902,7 @@ bool FocusController::advanceFocusDirectionallyInContainer(Node* container, cons
     return true;
 }
 
-bool FocusController::advanceFocusDirectionally(FocusType type)
+bool FocusController::advanceFocusDirectionally(WebFocusType type)
 {
     // FIXME: Directional focus changes don't yet work with RemoteFrames.
     if (!focusedOrMainFrame()->isLocalFrame())

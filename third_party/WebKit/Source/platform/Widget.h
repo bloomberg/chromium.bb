@@ -32,6 +32,7 @@
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/heap/Handle.h"
+#include "public/platform/WebFocusType.h"
 #include "wtf/Forward.h"
 #include "wtf/RefCounted.h"
 
@@ -71,7 +72,7 @@ public:
     void invalidate() { invalidateRect(boundsRect()); }
     virtual void invalidateRect(const IntRect&) = 0;
 
-    virtual void setFocus(bool) { }
+    virtual void setFocus(bool, WebFocusType) { }
 
     virtual void show() { }
     virtual void hide() { }

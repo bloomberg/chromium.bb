@@ -89,10 +89,10 @@ bool HTMLAnchorElement::shouldHaveFocusAppearance() const
     return !m_wasFocusedByMouse || HTMLElement::supportsFocus();
 }
 
-void HTMLAnchorElement::dispatchFocusEvent(Element* oldFocusedElement, FocusType type)
+void HTMLAnchorElement::dispatchFocusEvent(Element* oldFocusedElement, WebFocusType type)
 {
-    if (type != FocusTypePage)
-        m_wasFocusedByMouse = type == FocusTypeMouse;
+    if (type != WebFocusTypePage)
+        m_wasFocusedByMouse = type == WebFocusTypeMouse;
     HTMLElement::dispatchFocusEvent(oldFocusedElement, type);
 }
 

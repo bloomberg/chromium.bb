@@ -2148,7 +2148,7 @@ bool Element::hasAttributeNS(const AtomicString& namespaceURI, const AtomicStrin
     return elementData()->attributes().find(qName);
 }
 
-void Element::focus(bool restorePreviousSelection, FocusType type)
+void Element::focus(bool restorePreviousSelection, WebFocusType type)
 {
     if (!inDocument())
         return;
@@ -2267,7 +2267,7 @@ bool Element::isMouseFocusable() const
     return isFocusable();
 }
 
-void Element::dispatchFocusEvent(Element* oldFocusedElement, FocusType type)
+void Element::dispatchFocusEvent(Element* oldFocusedElement, WebFocusType type)
 {
     RefPtrWillBeRawPtr<FocusEvent> event = FocusEvent::create(EventTypeNames::focus, false, false, document().domWindow(), 0, oldFocusedElement);
     EventDispatcher::dispatchEvent(*this, FocusEventDispatchMediator::create(event.release()));
@@ -2279,7 +2279,7 @@ void Element::dispatchBlurEvent(Element* newFocusedElement)
     EventDispatcher::dispatchEvent(*this, BlurEventDispatchMediator::create(event.release()));
 }
 
-void Element::dispatchFocusInEvent(const AtomicString& eventType, Element* oldFocusedElement, FocusType)
+void Element::dispatchFocusInEvent(const AtomicString& eventType, Element* oldFocusedElement, WebFocusType)
 {
     ASSERT(!EventDispatchForbiddenScope::isEventDispatchForbidden());
     ASSERT(eventType == EventTypeNames::focusin || eventType == EventTypeNames::DOMFocusIn);

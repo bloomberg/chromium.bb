@@ -104,12 +104,12 @@ void Chrome::focus() const
     m_client->focus();
 }
 
-bool Chrome::canTakeFocus(FocusType type) const
+bool Chrome::canTakeFocus(WebFocusType type) const
 {
     return m_client->canTakeFocus(type);
 }
 
-void Chrome::takeFocus(FocusType type) const
+void Chrome::takeFocus(WebFocusType type) const
 {
     m_client->takeFocus(type);
 }

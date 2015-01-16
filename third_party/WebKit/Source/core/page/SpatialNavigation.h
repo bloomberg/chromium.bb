@@ -22,8 +22,8 @@
 #define SpatialNavigation_h
 
 #include "core/dom/Node.h"
-#include "core/page/FocusType.h"
 #include "platform/geometry/LayoutRect.h"
+#include "public/platform/WebFocusType.h"
 
 #include <limits>
 
@@ -108,8 +108,8 @@ public:
     {
     }
 
-    FocusCandidate(Node*, FocusType);
-    explicit FocusCandidate(HTMLAreaElement*, FocusType);
+    FocusCandidate(Node*, WebFocusType);
+    explicit FocusCandidate(HTMLAreaElement*, WebFocusType);
     bool isNull() const { return !visibleNode; }
     bool inScrollableContainer() const { return visibleNode && enclosingScrollableBox; }
     bool isFrameOwnerElement() const { return visibleNode && visibleNode->isFrameOwnerElement(); }
@@ -128,19 +128,19 @@ public:
     bool isOffscreenAfterScrolling;
 };
 
-bool hasOffscreenRect(Node*, FocusType = FocusTypeNone);
-bool scrollInDirection(LocalFrame*, FocusType);
-bool scrollInDirection(Node* container, FocusType);
-bool canScrollInDirection(const Node* container, FocusType);
-bool canScrollInDirection(const LocalFrame*, FocusType);
-bool canBeScrolledIntoView(FocusType, const FocusCandidate&);
+bool hasOffscreenRect(Node*, WebFocusType = WebFocusTypeNone);
+bool scrollInDirection(LocalFrame*, WebFocusType);
+bool scrollInDirection(Node* container, WebFocusType);
+bool canScrollInDirection(const Node* container, WebFocusType);
+bool canScrollInDirection(const LocalFrame*, WebFocusType);
+bool canBeScrolledIntoView(WebFocusType, const FocusCandidate&);
 bool areElementsOnSameLine(const FocusCandidate& firstCandidate, const FocusCandidate& secondCandidate);
-void distanceDataForNode(FocusType, const FocusCandidate& current, FocusCandidate&);
-Node* scrollableEnclosingBoxOrParentFrameForNodeInDirection(FocusType, Node*);
+void distanceDataForNode(WebFocusType, const FocusCandidate& current, FocusCandidate&);
+Node* scrollableEnclosingBoxOrParentFrameForNodeInDirection(WebFocusType, Node*);
 LayoutRect nodeRectInAbsoluteCoordinates(Node*, bool ignoreBorder = false);
 LayoutRect frameRectInAbsoluteCoordinates(LocalFrame*);
-LayoutRect virtualRectForDirection(FocusType, const LayoutRect& startingRect, LayoutUnit width = 0);
-LayoutRect virtualRectForAreaElementAndDirection(HTMLAreaElement&, FocusType);
+LayoutRect virtualRectForDirection(WebFocusType, const LayoutRect& startingRect, LayoutUnit width = 0);
+LayoutRect virtualRectForAreaElementAndDirection(HTMLAreaElement&, WebFocusType);
 HTMLFrameOwnerElement* frameOwnerElement(FocusCandidate&);
 
 } // namespace blink

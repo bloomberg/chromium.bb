@@ -149,10 +149,10 @@ void WebPluginContainerImpl::invalidateRect(const IntRect& rect)
     renderer->invalidatePaintRectangle(dirtyRect);
 }
 
-void WebPluginContainerImpl::setFocus(bool focused)
+void WebPluginContainerImpl::setFocus(bool focused, WebFocusType focusType)
 {
-    Widget::setFocus(focused);
-    m_webPlugin->updateFocus(focused);
+    Widget::setFocus(focused, focusType);
+    m_webPlugin->updateFocus(focused, focusType);
 }
 
 void WebPluginContainerImpl::show()

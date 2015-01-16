@@ -101,7 +101,7 @@ private:
     virtual void destroyShadowSubtree() override final;
     virtual void disabledAttributeChanged() override final;
     virtual void forwardEvent(Event*) override final;
-    virtual void handleFocusInEvent(Element* oldFocusedElement, FocusType) override final;
+    virtual void handleFocusInEvent(Element* oldFocusedElement, WebFocusType) override final;
     virtual void handleKeydownEvent(KeyboardEvent*) override final;
     virtual bool hasBadInput() const override;
     virtual bool hasCustomFocusLogic() const override final;

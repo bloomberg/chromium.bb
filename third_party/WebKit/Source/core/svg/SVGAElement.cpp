@@ -174,10 +174,10 @@ bool SVGAElement::shouldHaveFocusAppearance() const
     return !m_wasFocusedByMouse || SVGGraphicsElement::supportsFocus();
 }
 
-void SVGAElement::dispatchFocusEvent(Element* oldFocusedElement, FocusType type)
+void SVGAElement::dispatchFocusEvent(Element* oldFocusedElement, WebFocusType type)
 {
-    if (type != FocusTypePage)
-        m_wasFocusedByMouse = type == FocusTypeMouse;
+    if (type != WebFocusTypePage)
+        m_wasFocusedByMouse = type == WebFocusTypeMouse;
     SVGGraphicsElement::dispatchFocusEvent(oldFocusedElement, type);
 }
 

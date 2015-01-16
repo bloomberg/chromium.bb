@@ -3424,7 +3424,7 @@ void Document::setAnnotatedRegions(const Vector<AnnotatedRegionValue>& regions)
     setAnnotatedRegionsDirty(false);
 }
 
-bool Document::setFocusedElement(PassRefPtrWillBeRawPtr<Element> prpNewFocusedElement, FocusType type)
+bool Document::setFocusedElement(PassRefPtrWillBeRawPtr<Element> prpNewFocusedElement, WebFocusType type)
 {
     m_clearFocusedElementTimer.stop();
 
@@ -3479,9 +3479,9 @@ bool Document::setFocusedElement(PassRefPtrWillBeRawPtr<Element> prpNewFocusedEl
         if (view()) {
             Widget* oldWidget = widgetForElement(*oldFocusedElement);
             if (oldWidget)
-                oldWidget->setFocus(false);
+                oldWidget->setFocus(false, type);
             else
-                view()->setFocus(false);
+                view()->setFocus(false, type);
         }
     }
 
@@ -3543,9 +3543,9 @@ bool Document::setFocusedElement(PassRefPtrWillBeRawPtr<Element> prpNewFocusedEl
                 focusWidget = widgetForElement(*m_focusedElement);
             }
             if (focusWidget)
-                focusWidget->setFocus(true);
+                focusWidget->setFocus(true, type);
             else
-                view()->setFocus(true);
+                view()->setFocus(true, type);
         }
     }
 

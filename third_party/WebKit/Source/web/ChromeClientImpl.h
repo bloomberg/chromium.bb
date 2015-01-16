@@ -74,8 +74,8 @@ public:
     virtual FloatRect windowRect() override;
     virtual FloatRect pageRect() override;
     virtual void focus() override;
-    virtual bool canTakeFocus(FocusType) override;
-    virtual void takeFocus(FocusType) override;
+    virtual bool canTakeFocus(WebFocusType) override;
+    virtual void takeFocus(WebFocusType) override;
     virtual void focusedNodeChanged(Node*) override;
     virtual void focusedFrameChanged(LocalFrame*) override;
     virtual Page* createWindow(

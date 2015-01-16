@@ -28,13 +28,13 @@
 #include "core/loader/NavigationPolicy.h"
 #include "core/frame/ConsoleTypes.h"
 #include "core/html/forms/PopupMenuClient.h"
-#include "core/page/FocusType.h"
 #include "core/rendering/style/RenderStyleConstants.h"
 #include "platform/Cursor.h"
 #include "platform/HostWindow.h"
 #include "platform/PopupMenu.h"
 #include "platform/heap/Handle.h"
 #include "platform/scroll/ScrollTypes.h"
+#include "public/platform/WebFocusType.h"
 #include "wtf/Forward.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
@@ -81,8 +81,8 @@ public:
 
     virtual void focus() = 0;
 
-    virtual bool canTakeFocus(FocusType) = 0;
-    virtual void takeFocus(FocusType) = 0;
+    virtual bool canTakeFocus(WebFocusType) = 0;
+    virtual void takeFocus(WebFocusType) = 0;
 
     virtual void focusedNodeChanged(Node*) = 0;
 

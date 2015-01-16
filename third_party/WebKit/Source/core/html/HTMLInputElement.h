@@ -331,9 +331,9 @@ private:
     virtual void updatePlaceholderText() override final;
     virtual bool isEmptyValue() const override final { return innerEditorValue().isEmpty(); }
     virtual bool isEmptySuggestedValue() const override final { return suggestedValue().isEmpty(); }
-    virtual void handleFocusEvent(Element* oldFocusedElement, FocusType) override final;
+    virtual void handleFocusEvent(Element* oldFocusedElement, WebFocusType) override final;
     virtual void handleBlurEvent() override final;
-    virtual void dispatchFocusInEvent(const AtomicString& eventType, Element* oldFocusedElement, FocusType) override final;
+    virtual void dispatchFocusInEvent(const AtomicString& eventType, Element* oldFocusedElement, WebFocusType) override final;
 
     virtual bool isOptionalFormControl() const override final { return !isRequiredFormControl(); }
     virtual bool isRequiredFormControl() const override final;

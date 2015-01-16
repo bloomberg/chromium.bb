@@ -1022,7 +1022,7 @@ int HTMLSelectElement::listToOptionIndex(int listIndex) const
     return optionIndex;
 }
 
-void HTMLSelectElement::dispatchFocusEvent(Element* oldFocusedElement, FocusType type)
+void HTMLSelectElement::dispatchFocusEvent(Element* oldFocusedElement, WebFocusType type)
 {
     // Save the selection so it can be compared to the new selection when
     // dispatching change events during blur event dispatch.

@@ -384,13 +384,13 @@ void HTMLInputElement::endEditing()
     frame->host()->chrome().client().didEndEditingOnTextField(*this);
 }
 
-void HTMLInputElement::handleFocusEvent(Element* oldFocusedElement, FocusType type)
+void HTMLInputElement::handleFocusEvent(Element* oldFocusedElement, WebFocusType type)
 {
     m_inputTypeView->handleFocusEvent(oldFocusedElement, type);
     m_inputType->enableSecureTextInput();
 }
 
-void HTMLInputElement::dispatchFocusInEvent(const AtomicString& eventType, Element* oldFocusedElement, FocusType type)
+void HTMLInputElement::dispatchFocusInEvent(const AtomicString& eventType, Element* oldFocusedElement, WebFocusType type)
 {
     if (eventType == EventTypeNames::DOMFocusIn)
         m_inputTypeView->handleFocusInEvent(oldFocusedElement, type);

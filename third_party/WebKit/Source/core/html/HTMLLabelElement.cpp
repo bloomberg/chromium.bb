@@ -182,7 +182,7 @@ void HTMLLabelElement::defaultEventHandler(Event* evt)
             // In case of double click or triple click, selection will be there,
             // so do not focus the control element.
             if (!isLabelTextSelected)
-                element->focus(true, FocusTypeMouse);
+                element->focus(true, WebFocusTypeMouse);
         }
 
         // Click the corresponding control.
@@ -204,7 +204,7 @@ bool HTMLLabelElement::willRespondToMouseClickEvents()
     return HTMLElement::willRespondToMouseClickEvents();
 }
 
-void HTMLLabelElement::focus(bool, FocusType type)
+void HTMLLabelElement::focus(bool, WebFocusType type)
 {
     // to match other browsers, always restore previous selection
     if (HTMLElement* element = control())

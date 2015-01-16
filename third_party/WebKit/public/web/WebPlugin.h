@@ -33,6 +33,7 @@
 #define WebPlugin_h
 
 #include "../platform/WebCanvas.h"
+#include "../platform/WebFocusType.h"
 #include "../platform/WebString.h"
 #include "../platform/WebURL.h"
 #include "WebDragOperation.h"
@@ -93,7 +94,15 @@ public:
         const WebRect& frameRect, const WebRect& clipRect,
         const WebVector<WebRect>& cutOutsRects, bool isVisible) = 0;
 
-    virtual void updateFocus(bool) = 0;
+    // FIXME: Remove this once the Blink embedder has been updated to use
+    // the new version of updateFocus.
+    virtual void updateFocus(bool focused) { }
+
+    virtual void updateFocus(bool focused, WebFocusType)
+    {
+        updateFocus(focused);
+    }
+
     virtual void updateVisibility(bool) = 0;
 
     virtual bool acceptsInputEvents() = 0;

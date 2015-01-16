@@ -136,7 +136,7 @@ private:
 
     virtual bool shouldShowFocusRingOnMouseFocus() const override;
 
-    virtual void dispatchFocusEvent(Element* oldFocusedElement, FocusType) override;
+    virtual void dispatchFocusEvent(Element* oldFocusedElement, WebFocusType) override;
     virtual void dispatchBlurEvent(Element* newFocusedElemnet) override;
 
     virtual bool canStartSelection() const override { return false; }

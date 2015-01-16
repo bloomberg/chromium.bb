@@ -68,7 +68,7 @@ private:
     // Overridden to either click() or focus() the corresponding control.
     virtual void defaultEventHandler(Event*) override;
 
-    virtual void focus(bool restorePreviousSelection, FocusType) override;
+    virtual void focus(bool restorePreviousSelection, WebFocusType) override;
 
     // FormAssociatedElement methods
     virtual bool isFormControlElement() const override { return false; }

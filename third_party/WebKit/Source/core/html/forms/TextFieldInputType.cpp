@@ -248,7 +248,7 @@ void TextFieldInputType::forwardEvent(Event* event)
     }
 }
 
-void TextFieldInputType::handleFocusEvent(Element* oldFocusedNode, FocusType focusType)
+void TextFieldInputType::handleFocusEvent(Element* oldFocusedNode, WebFocusType focusType)
 {
     InputType::handleFocusEvent(oldFocusedNode, focusType);
     element().beginEditing();

@@ -94,7 +94,7 @@ private:
     virtual bool isRequiredFormControl() const override { return isRequired(); }
 
     virtual void defaultEventHandler(Event*) override;
-    virtual void handleFocusEvent(Element* oldFocusedNode, FocusType) override;
+    virtual void handleFocusEvent(Element* oldFocusedNode, WebFocusType) override;
 
     virtual void subtreeHasChanged() override;
 

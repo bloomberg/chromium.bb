@@ -94,7 +94,7 @@ protected:
 
 private:
     virtual bool shouldHaveFocusAppearance() const override final;
-    virtual void dispatchFocusEvent(Element* oldFocusedElement, FocusType) override;
+    virtual void dispatchFocusEvent(Element* oldFocusedElement, WebFocusType) override;
     virtual bool isMouseFocusable() const override;
     virtual bool isKeyboardFocusable() const override;
     virtual void defaultEventHandler(Event*) override final;

@@ -54,7 +54,7 @@ HTMLFormControlElement* HTMLLegendElement::associatedControl()
     return Traversal<HTMLFormControlElement>::next(*fieldset, fieldset);
 }
 
-void HTMLLegendElement::focus(bool, FocusType type)
+void HTMLLegendElement::focus(bool, WebFocusType type)
 {
     if (isFocusable())
         Element::focus(true, type);
