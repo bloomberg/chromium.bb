@@ -46,6 +46,7 @@
             'remoting_protocol',
             'remoting_resources',
             '../base/base.gyp:base_i18n',
+            '../components/components.gyp:policy',
             '../crypto/crypto.gyp:crypto',
             '../google_apis/google_apis.gyp:google_apis',
             '../ipc/ipc.gyp:ipc',
@@ -445,6 +446,7 @@
           'variables': { 'enable_wexit_time_destructors': 1, },
           'dependencies': [
             '../base/base.gyp:base_i18n',
+            '../components/components.gyp:policy',
             '../net/net.gyp:net',
             'remoting_base',
             'remoting_host',

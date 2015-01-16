@@ -123,7 +123,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 284
+#   For your editing convenience: highest ID currently used: 289
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -585,7 +585,7 @@
           'name': 'RemoteAccessHostFirewallTraversal',
           'type': 'main',
           'schema': { 'type': 'boolean' },
-          'supported_on': ['chrome.*:14-'],
+          'supported_on': ['chrome.*:14-', 'chrome_os:41-'],
           'features': {
             'dynamic_refresh': True,
             'per_profile': False,
@@ -605,7 +605,7 @@
           'name': 'RemoteAccessHostDomain',
           'type': 'string',
           'schema': { 'type': 'string' },
-          'supported_on': ['chrome.*:22-'],
+          'supported_on': ['chrome.*:22-', 'chrome_os:41-'],
           'features': {
             'dynamic_refresh': True,
             'per_profile': False,
@@ -623,7 +623,7 @@
           'name': 'RemoteAccessHostRequireTwoFactor',
           'type': 'main',
           'schema': { 'type': 'boolean' },
-          'supported_on': ['chrome.*:22-'],
+          'supported_on': ['chrome.*:22-', 'chrome_os:41-'],
           'features': {
             'dynamic_refresh': True,
             'per_profile': False,
@@ -641,7 +641,7 @@
           'name': 'RemoteAccessHostTalkGadgetPrefix',
           'type': 'string',
           'schema': { 'type': 'string' },
-          'supported_on': ['chrome.*:22-'],
+          'supported_on': ['chrome.*:22-', 'chrome_os:41-'],
           'features': {
             'dynamic_refresh': True,
             'per_profile': False,
@@ -663,7 +663,7 @@
           'name': 'RemoteAccessHostRequireCurtain',
           'type': 'main',
           'schema': { 'type': 'boolean' },
-          'supported_on': ['chrome.*:23-'],
+          'supported_on': ['chrome.*:23-', 'chrome_os:41-'],
           'features': {
             'dynamic_refresh': True,
             'per_profile': False,
@@ -681,14 +681,14 @@
           'name': 'RemoteAccessHostAllowClientPairing',
           'type': 'main',
           'schema': { 'type': 'boolean' },
-          'supported_on': ['chrome.*:30-'],
+          'supported_on': ['chrome.*:30-', 'chrome_os:41-'],
           'features': {
             'dynamic_refresh': True,
             'per_profile': False,
           },
           'example_value': False,
           'id': 234,
-          'caption': '''Enable or disable PIN-less authentication''',
+          'caption': '''Enable or disable PIN-less authentication for remote access hosts''',
           'desc': '''If this setting is enabled or not configured, then users can opt to pair clients and hosts at connection time, eliminating the need to enter a PIN every time.
 
           If this setting is disabled, then this feature will not be available.''',
@@ -697,14 +697,14 @@
           'name': 'RemoteAccessHostAllowGnubbyAuth',
           'type': 'main',
           'schema': { 'type': 'boolean' },
-          'supported_on': ['chrome.*:35-'],
+          'supported_on': ['chrome.*:35-', 'chrome_os:41-'],
           'features': {
             'dynamic_refresh': True,
             'per_profile': False,
           },
           'example_value': True,
           'id': 257,
-          'caption': '''Allow gnubby authentication''',
+          'caption': '''Allow gnubby authentication for remote access hosts''',
           'desc': '''If this setting is enabled, then gnubby authentication requests will be proxied across a remote host connection.
 
           If this setting is disabled or not configured, gnubby authentication requests will not be proxied.''',
@@ -713,7 +713,7 @@
           'name': 'RemoteAccessHostAllowRelayedConnection',
           'type': 'main',
           'schema': { 'type': 'boolean' },
-          'supported_on': ['chrome.*:36-'],
+          'supported_on': ['chrome.*:36-', 'chrome_os:41-'],
           'features': {
             'dynamic_refresh': True,
             'per_profile': False,
@@ -733,7 +733,7 @@
           'name': 'RemoteAccessHostUdpPortRange',
           'type': 'string',
           'schema': { 'type': 'string' },
-          'supported_on': ['chrome.*:36-'],
+          'supported_on': ['chrome.*:36-', 'chrome_os:41-'],
           'features': {
             'dynamic_refresh': True,
             'per_profile': False,
@@ -744,6 +744,94 @@
           'desc': '''Restricts the UDP port range used by the remote access host in this machine.
 
           If this policy is left not set, or if it is set to an empty string, the remote access host will be allowed to use any available port, unless the policy <ph name="REMOTEACCESSHOSTFIREWALLTRAVERSAL_POLICY_NAME">RemoteAccessHostFirewallTraversal</ph> is disabled, in which case the remote access host will use UDP ports in the 12400-12409 range.''',
+        },
+        {
+          'name': 'RemoteAccessHostMatchUsername',
+          'type': 'main',
+          'schema': { 'type': 'boolean' },
+          'supported_on': ['chrome.linux:25-', 'chrome.mac:25-', 'chrome_os:42-'],
+          'features': {
+            'dynamic_refresh': True,
+            'per_profile': False,
+          },
+          'example_value': False,
+          'id': 285,
+          'caption': '''Requires that the name of the local user and the remote access host owner match''',
+          'desc': '''Requires that the name of the local user and the remote access host owner match.
+
+          If this setting is enabled, then the remote access host compares the name of the local user (that the host is associated with) and the name of the Google account registered as the host owner (i.e. "johndoe" if the host is owned by "johndoe@example.com" Google account).  The remote access host will not start if the name of the host owner is different from the name of the local user that the host is associated with.  RemoteAccessHostMatchUsername policy should be used together with RemoteAccessHostDomain to also enforce that the Google account of the host owner is associated with a specific domain (i.e. "example.com").
+
+          If this setting is disabled or not set, then the remote access host can be associated with any local user.''',
+        },
+        {
+          'name': 'RemoteAccessHostTokenUrl',
+          'type': 'string',
+          'schema': { 'type': 'string' },
+          'supported_on': ['chrome.*:28-','chrome_os:42-'],
+          'features': {
+            'dynamic_refresh': True,
+            'per_profile': False,
+          },
+          'example_value': 'https://example.com/issue',
+          'id': 286,
+          'caption': '''URL where remote access clients should obtain their authentication token''',
+          'desc': '''URL where remote access clients should obtain their authentication token.
+
+          If this policy is set, the remote access host will require authenticating clients to obtain an authentication token from this URL in order to connect. Must be used in conjunction with RemoteAccessHostTokenValidationUrl.
+
+          This feature is currently disabled server-side.''',
+        },
+        {
+          'name': 'RemoteAccessHostTokenValidationUrl',
+          'type': 'string',
+          'schema': { 'type': 'string' },
+          'supported_on': ['chrome.*:28-','chrome_os:42-'],
+          'features': {
+            'dynamic_refresh': True,
+            'per_profile': False,
+          },
+          'example_value': 'https://example.com/validate',
+          'id': 287,
+          'caption': '''URL for validating remote access client authentication token''',
+          'desc': '''URL for validating remote access client authentication token.
+
+          If this policy is set, the remote access host will use this URL to validate authentication tokens from remote access clients, in order to accept connections. Must be used in conjunction with RemoteAccessHostTokenUrl.
+
+          This feature is currently disabled server-side.''',
+        },
+        {
+          'name': 'RemoteAccessHostTokenValidationCertificateIssuer',
+          'type': 'string',
+          'schema': { 'type': 'string' },
+          'supported_on': ['chrome.*:28-','chrome_os:42-'],
+          'features': {
+            'dynamic_refresh': True,
+            'per_profile': False,
+          },
+          'example_value': 'Example Certificate Authority',
+          'id': 288,
+          'caption': '''Client certificate for connecting to RemoteAccessHostTokenValidationUrl''',
+          'desc': '''Client certificate for connecting to RemoteAccessHostTokenValidationUrl.
+
+          If this policy is set, the host will use a client certificate with the given issuer CN to authenticate to RemoteAccessHostTokenValidationUrl. Set it to "*" to use any available client certificate.
+
+          This feature is currently disabled server-side.''',
+        },
+        {
+          'name': 'RemoteAccessHostDebugOverridePolicies',
+          'type': 'string',
+          'schema': { 'type': 'string' },
+          'supported_on': ['chrome.*:25-','chrome_os:42-'],
+          'features': {
+            'dynamic_refresh': True,
+            'per_profile': False,
+          },
+          'example_value': '{ "RemoteAccessHostMatchUsername": true }',
+          'id': 289,
+          'caption': '''Policy overrides for Debug builds of the remote access host''',
+          'desc': '''Overrides policies on Debug builds of the remote access host.
+
+          The value is parsed as a JSON dictionary of policy name to policy value mappings.''',
         },
       ],
     },

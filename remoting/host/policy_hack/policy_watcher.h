@@ -66,46 +66,6 @@ class PolicyWatcher {
       policy::PolicyService* policy_service,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
-  // The name of the NAT traversal policy.
-  static const char kNatPolicyName[];
-
-  // The name of the policy for requiring 2-factor authentication.
-  static const char kHostRequireTwoFactorPolicyName[];
-
-  // The name of the host domain policy.
-  static const char kHostDomainPolicyName[];
-
-  // The name of the username policy. This policy is ignored on Windows.
-  // This policy is currently considered 'internal only' and so is not
-  // documented in policy_templates.json.
-  static const char kHostMatchUsernamePolicyName[];
-
-  // The name of the policy that controls the host talkgadget prefix.
-  static const char kHostTalkGadgetPrefixPolicyName[];
-
-  // The name of the policy for requiring curtain-mode.
-  static const char kHostRequireCurtainPolicyName[];
-
-  // The names of the policies for token authentication URLs.
-  static const char kHostTokenUrlPolicyName[];
-  static const char kHostTokenValidationUrlPolicyName[];
-  static const char kHostTokenValidationCertIssuerPolicyName[];
-
-  // The name of the policy for disabling PIN-less authentication.
-  static const char kHostAllowClientPairing[];
-
-  // The name of the policy for disabling gnubbyd forwarding.
-  static const char kHostAllowGnubbyAuthPolicyName[];
-
-  // The name of the policy for allowing use of relay servers.
-  static const char kRelayPolicyName[];
-
-  // The name of the policy that restricts the range of host UDP ports.
-  static const char kUdpPortRangePolicyName[];
-
-  // The name of the policy for overriding policies, for use in testing.
-  static const char kHostDebugOverridePoliciesName[];
-
  protected:
   virtual void StartWatchingInternal() = 0;
   virtual void StopWatchingInternal() = 0;

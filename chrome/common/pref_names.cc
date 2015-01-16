@@ -1667,48 +1667,6 @@ const char kDefaultVideoCaptureDevice[] = "media.default_video_capture_Device";
 // The salt used for creating random MediaSource IDs.
 const char kMediaDeviceIdSalt[] = "media.device_id_salt";
 
-// Boolean that indicates whether to allow firewall traversal while trying to
-// establish the initial connection from the client or host.
-const char kRemoteAccessHostFirewallTraversal[] =
-    "remote_access.host_firewall_traversal";
-
-// Boolean controlling whether 2-factor auth should be required when connecting
-// to a host (instead of a PIN).
-const char kRemoteAccessHostRequireTwoFactor[] =
-    "remote_access.host_require_two_factor";
-
-// String containing the domain name that hosts must belong to. If blank, then
-// hosts can belong to any domain.
-const char kRemoteAccessHostDomain[] = "remote_access.host_domain";
-
-// String containing the domain name of the Chromoting Directory.
-// Used by Chromoting host and client.
-const char kRemoteAccessHostTalkGadgetPrefix[] =
-    "remote_access.host_talkgadget_prefix";
-
-// Boolean controlling whether curtaining is required when connecting to a host.
-const char kRemoteAccessHostRequireCurtain[] =
-    "remote_access.host_require_curtain";
-
-// Boolean controlling whether curtaining is required when connecting to a host.
-const char kRemoteAccessHostAllowClientPairing[] =
-    "remote_access.host_allow_client_pairing";
-
-// Whether Chrome Remote Desktop can proxy gnubby authentication traffic.
-const char kRemoteAccessHostAllowGnubbyAuth[] =
-    "remote_access.host_allow_gnubby_auth";
-
-// Boolean that indicates whether the Chromoting host should allow connections
-// using relay servers.
-const char kRemoteAccessHostAllowRelayedConnection[] =
-    "remote_access.host_allow_relayed_connection";
-
-// String containing the UDP port range that the Chromoting host should used
-// when connecting to clients. The port range should be in the form:
-// <min_port>-<max_port>. E.g. 12400-12409.
-const char kRemoteAccessHostUdpPortRange[] =
-    "remote_access.host_udp_port_range";
-
 // The last used printer and its settings.
 const char kPrintPreviewStickySettings[] =
     "printing.print_preview_sticky_settings";

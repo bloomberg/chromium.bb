@@ -595,16 +595,6 @@ extern const char kDefaultAudioCaptureDevice[];
 extern const char kDefaultVideoCaptureDevice[];
 extern const char kMediaDeviceIdSalt[];
 
-extern const char kRemoteAccessHostFirewallTraversal[];
-extern const char kRemoteAccessHostRequireTwoFactor[];
-extern const char kRemoteAccessHostDomain[];
-extern const char kRemoteAccessHostTalkGadgetPrefix[];
-extern const char kRemoteAccessHostRequireCurtain[];
-extern const char kRemoteAccessHostAllowClientPairing[];
-extern const char kRemoteAccessHostAllowGnubbyAuth[];
-extern const char kRemoteAccessHostAllowRelayedConnection[];
-extern const char kRemoteAccessHostUdpPortRange[];
-
 extern const char kPrintPreviewStickySettings[];
 extern const char kCloudPrintRoot[];
 extern const char kCloudPrintDialogWidth[];

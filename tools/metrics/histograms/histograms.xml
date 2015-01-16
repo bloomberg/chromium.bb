@@ -45461,7 +45461,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="231" label="Parameters for suggest URL which uses POST"/>
   <int value="232" label="Parameters for instant URL which uses POST"/>
   <int value="233" label="Parameters for image URL which uses POST"/>
-  <int value="234" label="Enable or disable PIN-less authentication"/>
+  <int value="234"
+      label="Enable or disable PIN-less authentication for remote access
+             hosts"/>
   <int value="235"
       label="Whether online OCSP/CRL checks are required for local trust
              anchors"/>
@@ -45495,7 +45497,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="255" label="Enable on-screen keyboard"/>
   <int value="256"
       label="Set default state of the on-screen keyboard on the login screen"/>
-  <int value="257" label="Allow gnubby authentication"/>
+  <int value="257" label="Allow gnubby authentication for remote access hosts"/>
   <int value="258"
       label="Power management settings when the user becomes idle"/>
   <int value="259" label="Screen lock delays"/>
@@ -45528,6 +45530,19 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="282" label="Force Google SafeSearch"/>
   <int value="283" label="Force YouTube Safety Mode"/>
   <int value="284" label="Allow device shutdown"/>
+  <int value="285"
+      label="Requires that the name of the local user and the remote access
+             host owner match"/>
+  <int value="286"
+      label="URL where remote access clients should obtain their
+             authentication token"/>
+  <int value="287"
+      label="URL for validating remote access client authentication token"/>
+  <int value="288"
+      label="Client certificate for connecting to
+             RemoteAccessHostTokenValidationUrl"/>
+  <int value="289"
+      label="Policy overrides for Debug builds of the remote access host"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations" type="int">

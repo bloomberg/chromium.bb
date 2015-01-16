@@ -8,6 +8,7 @@
 #include "base/strings/string_util.h"
 #include "base/threading/platform_thread.h"
 #include "net/socket/client_socket_factory.h"
+#include "policy/policy_constants.h"
 #include "remoting/base/auto_thread.h"
 #include "remoting/base/logging.h"
 #include "remoting/base/rsa_key_pair.h"
@@ -365,13 +366,12 @@ void It2MeHost::OnPolicyUpdate(scoped_ptr<base::DictionaryValue> policies) {
   }
 
   bool nat_policy;
-  if (policies->GetBoolean(policy_hack::PolicyWatcher::kNatPolicyName,
+  if (policies->GetBoolean(policy::key::kRemoteAccessHostFirewallTraversal,
                            &nat_policy)) {
     UpdateNatPolicy(nat_policy);
   }
   std::string host_domain;
-  if (policies->GetString(policy_hack::PolicyWatcher::kHostDomainPolicyName,
-                          &host_domain)) {
+  if (policies->GetString(policy::key::kRemoteAccessHostDomain, &host_domain)) {
     UpdateHostDomainPolicy(host_domain);
   }
 

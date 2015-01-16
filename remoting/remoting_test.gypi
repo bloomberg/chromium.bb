@@ -75,6 +75,7 @@
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
         '../base/base.gyp:test_support_base',
+        '../components/components.gyp:policy',
         '../ipc/ipc.gyp:ipc',
         '../net/net.gyp:net_test_support',
         '../ppapi/ppapi.gyp:ppapi_cpp',

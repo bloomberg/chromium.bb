@@ -29,6 +29,7 @@
 #include "net/socket/client_socket_factory.h"
 #include "net/socket/ssl_server_socket.h"
 #include "net/url_request/url_fetcher.h"
+#include "policy/policy_constants.h"
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/base/breakpad.h"
 #include "remoting/base/constants.h"
@@ -1017,8 +1018,8 @@ bool HostProcess::OnHostDomainPolicyUpdate(base::DictionaryValue* policies) {
   // Returns true if the host has to be restarted after this policy update.
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
 
-  if (!policies->GetString(policy_hack::PolicyWatcher::kHostDomainPolicyName,
-                          &host_domain_)) {
+  if (!policies->GetString(policy::key::kRemoteAccessHostDomain,
+                           &host_domain_)) {
     return false;
   }
 
@@ -1073,9 +1074,8 @@ bool HostProcess::OnUsernamePolicyUpdate(base::DictionaryValue* policies) {
   // Returns false: never restart the host after this policy update.
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
 
-  if (!policies->GetBoolean(
-      policy_hack::PolicyWatcher::kHostMatchUsernamePolicyName,
-      &host_username_match_required_)) {
+  if (!policies->GetBoolean(policy::key::kRemoteAccessHostMatchUsername,
+                            &host_username_match_required_)) {
     return false;
   }
 
@@ -1087,8 +1087,8 @@ bool HostProcess::OnNatPolicyUpdate(base::DictionaryValue* policies) {
   // Returns true if the host has to be restarted after this policy update.
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
 
-  if (!policies->GetBoolean(policy_hack::PolicyWatcher::kNatPolicyName,
-                           &allow_nat_traversal_)) {
+  if (!policies->GetBoolean(policy::key::kRemoteAccessHostFirewallTraversal,
+                            &allow_nat_traversal_)) {
     return false;
   }
 
@@ -1104,8 +1104,9 @@ bool HostProcess::OnRelayPolicyUpdate(base::DictionaryValue* policies) {
   // Returns true if the host has to be restarted after this policy update.
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
 
-  if (!policies->GetBoolean(policy_hack::PolicyWatcher::kRelayPolicyName,
-                           &allow_relay_)) {
+  if (!policies->GetBoolean(
+          policy::key::kRemoteAccessHostAllowRelayedConnection,
+          &allow_relay_)) {
     return false;
   }
 
@@ -1122,7 +1123,7 @@ bool HostProcess::OnUdpPortPolicyUpdate(base::DictionaryValue* policies) {
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
 
   std::string udp_port_range;
-  if (!policies->GetString(policy_hack::PolicyWatcher::kUdpPortRangePolicyName,
+  if (!policies->GetString(policy::key::kRemoteAccessHostUdpPortRange,
                            &udp_port_range)) {
     return false;
   }
@@ -1155,9 +1156,8 @@ bool HostProcess::OnCurtainPolicyUpdate(base::DictionaryValue* policies) {
   // Returns true if the host has to be restarted after this policy update.
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
 
-  if (!policies->GetBoolean(
-          policy_hack::PolicyWatcher::kHostRequireCurtainPolicyName,
-          &curtain_required_)) {
+  if (!policies->GetBoolean(policy::key::kRemoteAccessHostRequireCurtain,
+                            &curtain_required_)) {
     return false;
   }
 
@@ -1197,9 +1197,8 @@ bool HostProcess::OnHostTalkGadgetPrefixPolicyUpdate(
   // Returns true if the host has to be restarted after this policy update.
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
 
-  if (!policies->GetString(
-          policy_hack::PolicyWatcher::kHostTalkGadgetPrefixPolicyName,
-          &talkgadget_prefix_)) {
+  if (!policies->GetString(policy::key::kRemoteAccessHostTalkGadgetPrefix,
+                           &talkgadget_prefix_)) {
     return false;
   }
 
@@ -1213,22 +1212,20 @@ bool HostProcess::OnHostTokenUrlPolicyUpdate(base::DictionaryValue* policies) {
 
   bool token_policy_changed = false;
   std::string token_url_string;
-  if (policies->GetString(
-          policy_hack::PolicyWatcher::kHostTokenUrlPolicyName,
-          &token_url_string)) {
+  if (policies->GetString(policy::key::kRemoteAccessHostTokenUrl,
+                          &token_url_string)) {
     token_policy_changed = true;
     third_party_auth_config_.token_url = GURL(token_url_string);
   }
   std::string token_validation_url_string;
-  if (policies->GetString(
-          policy_hack::PolicyWatcher::kHostTokenValidationUrlPolicyName,
-          &token_validation_url_string)) {
+  if (policies->GetString(policy::key::kRemoteAccessHostTokenValidationUrl,
+                          &token_validation_url_string)) {
     token_policy_changed = true;
     third_party_auth_config_.token_validation_url =
         GURL(token_validation_url_string);
   }
   if (policies->GetString(
-          policy_hack::PolicyWatcher::kHostTokenValidationCertIssuerPolicyName,
+          policy::key::kRemoteAccessHostTokenValidationCertificateIssuer,
           &third_party_auth_config_.token_validation_cert_issuer)) {
     token_policy_changed = true;
   }
@@ -1248,9 +1245,8 @@ bool HostProcess::OnHostTokenUrlPolicyUpdate(base::DictionaryValue* policies) {
 bool HostProcess::OnPairingPolicyUpdate(base::DictionaryValue* policies) {
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
 
-  if (!policies->GetBoolean(
-          policy_hack::PolicyWatcher::kHostAllowClientPairing,
-          &allow_pairing_)) {
+  if (!policies->GetBoolean(policy::key::kRemoteAccessHostAllowClientPairing,
+                            &allow_pairing_)) {
     return false;
   }
 
@@ -1265,9 +1261,8 @@ bool HostProcess::OnPairingPolicyUpdate(base::DictionaryValue* policies) {
 bool HostProcess::OnGnubbyAuthPolicyUpdate(base::DictionaryValue* policies) {
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
 
-  if (!policies->GetBoolean(
-          policy_hack::PolicyWatcher::kHostAllowGnubbyAuthPolicyName,
-          &enable_gnubby_auth_)) {
+  if (!policies->GetBoolean(policy::key::kRemoteAccessHostAllowGnubbyAuth,
+                            &enable_gnubby_auth_)) {
     return false;
   }
 

@@ -22,6 +22,7 @@ static_library("host") {
 
   deps = [
     "//base:i18n",
+    "//components/policy:policy",
     "//crypto",
     "//google_apis",
     "//ipc",
