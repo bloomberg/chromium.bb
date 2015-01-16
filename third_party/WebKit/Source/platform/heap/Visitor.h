@@ -633,10 +633,6 @@ public:
 
     inline bool isGlobalMarkingVisitor() const { return m_isGlobalMarkingVisitor; }
 
-#if ENABLE(ASSERT)
-    virtual void setAllowMarkingForHashTableWeakProcessing(bool) { }
-#endif
-
 protected:
     explicit Visitor(VisitorType type)
         : m_isGlobalMarkingVisitor(type == GlobalMarkingVisitorType)

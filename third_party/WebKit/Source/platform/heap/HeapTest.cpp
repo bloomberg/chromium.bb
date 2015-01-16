@@ -141,7 +141,10 @@ public:
         visitor->traceInCollection(second, strongify);
         if (!visitor->isAlive(second))
             return true;
-        visitor->trace(first);
+        // FIXME: traceInCollection is also called from WeakProcessing to check if the entry is dead.
+        // The below if avoids calling trace in that case by only calling trace when |first| is not yet marked.
+        if (!visitor->isAlive(first))
+            visitor->trace(first);
         return false;
     }
 };

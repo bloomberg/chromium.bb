@@ -1261,14 +1261,7 @@ template<typename Key, typename Value, typename Extractor, typename HashFunction
                         // if the element is dead without calling trace,
                         // which is semantically not correct to be called in
                         // weak processing stage.
-#if ENABLE(ASSERT)
-                        visitor->setAllowMarkingForHashTableWeakProcessing(true);
-#endif
-                        bool elementIsDead = TraceInCollectionTrait<WeakHandlingInCollections, WeakPointersActWeak, ValueType, Traits>::trace(visitor, *element);
-#if ENABLE(ASSERT)
-                        visitor->setAllowMarkingForHashTableWeakProcessing(false);
-#endif
-                        if (elementIsDead) {
+                        if (TraceInCollectionTrait<WeakHandlingInCollections, WeakPointersActWeak, ValueType, Traits>::trace(visitor, *element)) {
                             table->registerModification();
                             HashTableType::deleteBucket(*element); // Also calls the destructor.
                             table->m_deletedCount++;

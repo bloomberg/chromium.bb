@@ -1852,9 +1852,6 @@ public:
 
     MarkingVisitor()
         : Visitor(Mode == GlobalMarking ? Visitor::GlobalMarkingVisitorType : Visitor::GenericVisitorType)
-#if ENABLE(ASSERT)
-        , m_allowMarkingForHashTableWeakProcessing(false)
-#endif
     {
     }
 
@@ -2031,15 +2028,8 @@ protected:
 #if ENABLE(ASSERT)
     virtual void checkMarkingAllowed() override
     {
-        ASSERT(ThreadState::current()->isInGC() || m_allowMarkingForHashTableWeakProcessing);
+        ASSERT(ThreadState::current()->isInGC());
     }
-
-    virtual void setAllowMarkingForHashTableWeakProcessing(bool allow) override
-    {
-        m_allowMarkingForHashTableWeakProcessing = allow;
-    }
-
-    bool m_allowMarkingForHashTableWeakProcessing;
 #endif
 };
 

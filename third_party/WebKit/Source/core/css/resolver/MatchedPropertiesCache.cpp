@@ -56,7 +56,10 @@ bool CachedMatchedPropertiesHashTraits::traceInCollection(Visitor* visitor, Memb
     }
     // At this point none of the entries in the matchedProperties vector
     // had a dead "properties" field so trace CachedMatchedProperties strongly.
-    visitor->trace(cachedProperties);
+    // FIXME: traceInCollection is also called from WeakProcessing to check if the entry is dead.
+    // Avoid calling trace in that case by only calling trace when cachedProperties is not yet marked.
+    if (!visitor->isAlive(cachedProperties))
+        visitor->trace(cachedProperties);
     return false;
 }
 #endif
