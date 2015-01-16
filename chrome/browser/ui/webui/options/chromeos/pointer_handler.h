@@ -20,16 +20,15 @@ class PointerHandler
       public chromeos::system::PointerDeviceObserver::Observer {
  public:
   PointerHandler();
-  virtual ~PointerHandler();
+  ~PointerHandler() override;
 
   // OptionsPageUIHandler implementation.
-  virtual void GetLocalizedValues(
-      base::DictionaryValue* localized_strings) override;
+  void GetLocalizedValues(base::DictionaryValue* localized_strings) override;
 
  private:
   // PointerDeviceObserver implementation.
-  virtual void TouchpadExists(bool exists) override;
-  virtual void MouseExists(bool exists) override;
+  void TouchpadExists(bool exists) override;
+  void MouseExists(bool exists) override;
 
   // Set the title dynamically based on whether a touchpad and/or mouse is
   // detected.

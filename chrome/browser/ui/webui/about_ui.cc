@@ -184,10 +184,10 @@ class ChromeOSOnlineTermsHandler : public net::URLFetcherDelegate {
  private:
   // Prevents allocation on the stack. ChromeOSOnlineTermsHandler should be
   // created by 'operator new'. |this| takes care of destruction.
-  virtual ~ChromeOSOnlineTermsHandler() {}
+  ~ChromeOSOnlineTermsHandler() override {}
 
   // net::URLFetcherDelegate:
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) override {
+  void OnURLFetchComplete(const net::URLFetcher* source) override {
     if (source != eula_fetcher_.get()) {
       NOTREACHED() << "Callback from foreign URL fetcher";
       return;

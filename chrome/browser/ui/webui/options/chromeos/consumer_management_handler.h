@@ -22,12 +22,11 @@ class ConsumerManagementHandler : public ::options::OptionsPageUIHandler {
  public:
   explicit ConsumerManagementHandler(
       policy::ConsumerManagementService* management_service);
-  virtual ~ConsumerManagementHandler();
+  ~ConsumerManagementHandler() override;
 
   // OptionsPageUIHandler implementation.
-  virtual void GetLocalizedValues(
-      base::DictionaryValue* localized_strings) override;
-  virtual void RegisterMessages() override;
+  void GetLocalizedValues(base::DictionaryValue* localized_strings) override;
+  void RegisterMessages() override;
 
  private:
   // Handles the button click events from the browser options page.

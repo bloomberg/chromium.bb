@@ -15,14 +15,13 @@ namespace options {
 class AccountsOptionsHandler : public ::options::OptionsPageUIHandler {
  public:
   AccountsOptionsHandler();
-  virtual ~AccountsOptionsHandler();
+  ~AccountsOptionsHandler() override;
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() override;
+  void RegisterMessages() override;
 
   // OptionsPageUIHandler implementation.
-  virtual void GetLocalizedValues(
-      base::DictionaryValue* localized_strings) override;
+  void GetLocalizedValues(base::DictionaryValue* localized_strings) override;
 
  private:
   // Javascript callbacks to update whitelist/unwhitelist user.

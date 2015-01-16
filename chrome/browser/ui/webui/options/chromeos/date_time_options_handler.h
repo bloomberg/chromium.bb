@@ -17,18 +17,17 @@ class DateTimeOptionsHandler : public ::options::OptionsPageUIHandler,
                                public SystemClockClient::Observer {
  public:
   DateTimeOptionsHandler();
-  virtual ~DateTimeOptionsHandler();
+  ~DateTimeOptionsHandler() override;
 
   // OptionsPageUIHandler:
-  virtual void GetLocalizedValues(
-      base::DictionaryValue* localized_strings) override;
-  virtual void InitializeHandler() override;
-  virtual void InitializePage() override;
-  virtual void RegisterMessages() override;
+  void GetLocalizedValues(base::DictionaryValue* localized_strings) override;
+  void InitializeHandler() override;
+  void InitializePage() override;
+  void RegisterMessages() override;
 
  private:
   // SystemClockClient::Observer:
-  virtual void SystemClockCanSetTimeChanged(bool can_set_time) override;
+  void SystemClockCanSetTimeChanged(bool can_set_time) override;
 
   // Callback for the "showSetTime" message to show the set time dialog. No
   // arguments are expected.

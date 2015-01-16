@@ -35,17 +35,16 @@ class ChangePictureOptionsHandler : public ::options::OptionsPageUIHandler,
                                     public CameraPresenceNotifier::Observer {
  public:
   ChangePictureOptionsHandler();
-  virtual ~ChangePictureOptionsHandler();
+  ~ChangePictureOptionsHandler() override;
 
   // OptionsPageUIHandler implementation.
-  virtual void GetLocalizedValues(
-      base::DictionaryValue* localized_strings) override;
+  void GetLocalizedValues(base::DictionaryValue* localized_strings) override;
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() override;
+  void RegisterMessages() override;
 
   // CameraPresenceNotifier::Observer implementation:
-  virtual void OnCameraPresenceCheckDone(bool is_camera_present) override;
+  void OnCameraPresenceCheckDone(bool is_camera_present) override;
 
  private:
   // Sends list of available default images to the page.
@@ -99,14 +98,14 @@ class ChangePictureOptionsHandler : public ::options::OptionsPageUIHandler,
   void HandleSelectImage(const base::ListValue* args);
 
   // SelectFileDialog::Delegate implementation.
-  virtual void FileSelected(
-      const base::FilePath& path,
-      int index, void* params) override;
+  void FileSelected(const base::FilePath& path,
+                    int index,
+                    void* params) override;
 
   // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // Sets user image to photo taken from camera.
   void SetImageFromCamera(const gfx::ImageSkia& photo);
@@ -115,9 +114,9 @@ class ChangePictureOptionsHandler : public ::options::OptionsPageUIHandler,
   gfx::NativeWindow GetBrowserWindow() const;
 
   // Overriden from ImageDecoder::Delegate:
-  virtual void OnImageDecoded(const ImageDecoder* decoder,
-                              const SkBitmap& decoded_image) override;
-  virtual void OnDecodeImageFailed(const ImageDecoder* decoder) override;
+  void OnImageDecoded(const ImageDecoder* decoder,
+                      const SkBitmap& decoded_image) override;
+  void OnDecodeImageFailed(const ImageDecoder* decoder) override;
 
   // Returns user related to current WebUI. If this user doesn't exist,
   // returns active user.

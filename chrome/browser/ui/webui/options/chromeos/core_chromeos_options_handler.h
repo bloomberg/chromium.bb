@@ -23,33 +23,32 @@ class CoreChromeOSOptionsHandler : public ::options::CoreOptionsHandler,
                                    public content::NotificationObserver {
  public:
   CoreChromeOSOptionsHandler();
-  virtual ~CoreChromeOSOptionsHandler();
+  ~CoreChromeOSOptionsHandler() override;
 
   // ::CoreOptionsHandler overrides
-  virtual void RegisterMessages() override;
-  virtual base::Value* FetchPref(const std::string& pref_name) override;
-  virtual void InitializeHandler() override;
-  virtual void ObservePref(const std::string& pref_name) override;
-  virtual void SetPref(const std::string& pref_name,
-                       const base::Value* value,
-                       const std::string& metric) override;
-  virtual void StopObservingPref(const std::string& path) override;
-  virtual base::Value* CreateValueForPref(
+  void RegisterMessages() override;
+  base::Value* FetchPref(const std::string& pref_name) override;
+  void InitializeHandler() override;
+  void ObservePref(const std::string& pref_name) override;
+  void SetPref(const std::string& pref_name,
+               const base::Value* value,
+               const std::string& metric) override;
+  void StopObservingPref(const std::string& path) override;
+  base::Value* CreateValueForPref(
       const std::string& pref_name,
       const std::string& controlling_pref_name) override;
 
   // OptionsPageUIHandler implementation.
-  virtual void GetLocalizedValues(
-      base::DictionaryValue* localized_strings) override;
+  void GetLocalizedValues(base::DictionaryValue* localized_strings) override;
 
   // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
  private:
-  virtual void OnPreferenceChanged(PrefService* service,
-                                   const std::string& pref_name) override;
+  void OnPreferenceChanged(PrefService* service,
+                           const std::string& pref_name) override;
 
   // Called from Javascript to select the network to show proxy settings
   // for. Triggers pref notifications about the updated proxy settings.

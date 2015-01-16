@@ -15,12 +15,11 @@ namespace options {
 class ProxyHandler : public ::options::OptionsPageUIHandler {
  public:
   explicit ProxyHandler();
-  virtual ~ProxyHandler();
+  ~ProxyHandler() override;
 
   // OptionsPageUIHandler implementation.
-  virtual void GetLocalizedValues(
-      base::DictionaryValue* localized_strings) override;
-  virtual void InitializePage() override;
+  void GetLocalizedValues(base::DictionaryValue* localized_strings) override;
+  void InitializePage() override;
 
  private:
 

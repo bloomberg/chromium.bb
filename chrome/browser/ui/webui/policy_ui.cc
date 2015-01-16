@@ -298,10 +298,10 @@ class DevicePolicyStatusProvider : public CloudPolicyCoreStatusProvider {
  public:
   explicit DevicePolicyStatusProvider(
       policy::BrowserPolicyConnectorChromeOS* connector);
-  virtual ~DevicePolicyStatusProvider();
+  ~DevicePolicyStatusProvider() override;
 
   // CloudPolicyCoreStatusProvider implementation.
-  virtual void GetStatus(base::DictionaryValue* dict) override;
+  void GetStatus(base::DictionaryValue* dict) override;
 
  private:
   std::string domain_;
@@ -322,14 +322,14 @@ class DeviceLocalAccountPolicyStatusProvider
   DeviceLocalAccountPolicyStatusProvider(
       const std::string& user_id,
       policy::DeviceLocalAccountPolicyService* service);
-  virtual ~DeviceLocalAccountPolicyStatusProvider();
+  ~DeviceLocalAccountPolicyStatusProvider() override;
 
   // CloudPolicyStatusProvider implementation.
-  virtual void GetStatus(base::DictionaryValue* dict) override;
+  void GetStatus(base::DictionaryValue* dict) override;
 
   // policy::DeviceLocalAccountPolicyService::Observer implementation.
-  virtual void OnPolicyUpdated(const std::string& user_id) override;
-  virtual void OnDeviceLocalAccountsChanged() override;
+  void OnPolicyUpdated(const std::string& user_id) override;
+  void OnDeviceLocalAccountsChanged() override;
 
  private:
   const std::string user_id_;

@@ -124,8 +124,8 @@ class BrowserOptionsHandler
 
 #if defined(OS_CHROMEOS)
   // PointerDeviceObserver::Observer implementation.
-  virtual void TouchpadExists(bool exists) override;
-  virtual void MouseExists(bool exists) override;
+  void TouchpadExists(bool exists) override;
+  void MouseExists(bool exists) override;
 
   // Will be called when the policy::key::kUserAvatarImage policy changes.
   void OnUserImagePolicyChanged(const base::Value* previous_policy,
@@ -139,7 +139,7 @@ class BrowserOptionsHandler
   void OnPowerwashDialogShow(const base::ListValue* args);
 
   // ConsumerManagementService::Observer:
-  virtual void OnConsumerManagementStatusChanged() override;
+  void OnConsumerManagementStatusChanged() override;
 #endif
 
   void UpdateSyncState();
