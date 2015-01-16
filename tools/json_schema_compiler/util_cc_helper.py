@@ -12,30 +12,6 @@ class UtilCCHelper(object):
   def __init__(self, type_manager):
     self._type_manager = type_manager
 
-  def PopulateArrayFromDictionary(self, array_prop, src, name, dst):
-    """Generates code to get an array from a src.name into dst.
-
-    src: DictionaryValue*
-    dst: std::vector or scoped_ptr<std::vector>
-    """
-    prop = array_prop.item_type
-    sub = {
-        'namespace': _API_UTIL_NAMESPACE,
-        'name': name,
-        'src': src,
-        'dst': dst,
-    }
-
-    sub['type'] = self._type_manager.GetCppType(prop),
-    if array_prop.optional:
-      val = ('%(namespace)s::PopulateOptionalArrayFromDictionary'
-          '(*%(src)s, "%(name)s", &%(dst)s)')
-    else:
-      val = ('%(namespace)s::PopulateArrayFromDictionary'
-          '(*%(src)s, "%(name)s", &%(dst)s)')
-
-    return val % sub
-
   def PopulateArrayFromList(self, src, dst, optional):
     """Generates code to get an array from src into dst.
 

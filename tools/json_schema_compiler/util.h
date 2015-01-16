@@ -60,20 +60,6 @@ bool PopulateArrayFromList(
   return true;
 }
 
-// Populates |out| with |from|.|name|. Returns false if there is no list at
-// the specified key or if the list has anything other than |T|.
-template <class T>
-bool PopulateArrayFromDictionary(
-    const base::DictionaryValue& from,
-    const std::string& name,
-    std::vector<T>* out) {
-  const base::ListValue* list = NULL;
-  if (!from.GetListWithoutPathExpansion(name, &list))
-    return false;
-
-  return PopulateArrayFromList(*list, out);
-}
-
 // Creates a new vector containing |list| at |out|. Returns
 // true on success or if there is nothing at the specified key. Returns false
 // if anything other than a list of |T| is at the specified key.
@@ -92,29 +78,6 @@ bool PopulateOptionalArrayFromList(
   }
 
   return true;
-}
-
-// Creates a new vector containing |from|.|name| at |out|. Returns
-// true on success or if there is nothing at the specified key. Returns false
-// if anything other than a list of |T| is at the specified key.
-template <class T>
-bool PopulateOptionalArrayFromDictionary(
-    const base::DictionaryValue& from,
-    const std::string& name,
-    scoped_ptr<std::vector<T> >* out) {
-  const base::ListValue* list = NULL;
-  {
-    const base::Value* maybe_list = NULL;
-    // Since |name| is optional, its absence is acceptable. However, anything
-    // other than a ListValue is not.
-    if (!from.GetWithoutPathExpansion(name, &maybe_list))
-      return true;
-    if (!maybe_list->IsType(base::Value::TYPE_LIST))
-      return false;
-    list = static_cast<const base::ListValue*>(maybe_list);
-  }
-
-  return PopulateOptionalArrayFromList(*list, out);
 }
 
 // Appends a Value newly created from |from| to |out|. These used by template
