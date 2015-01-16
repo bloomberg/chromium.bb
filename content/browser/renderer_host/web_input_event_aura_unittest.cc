@@ -7,6 +7,9 @@
 #include "base/basictypes.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event.h"
+#include "ui/events/keycodes/dom3/dom_code.h"
+#include "ui/events/keycodes/dom3/dom_key.h"
+#include "ui/events/keycodes/dom4/keycode_converter.h"
 
 #if defined(USE_X11)
 #include <X11/keysym.h>
@@ -42,23 +45,15 @@ TEST(WebInputEventAuraTest, TestMakeWebKeyboardEvent) {
 }
 
 // Checks that MakeWebKeyboardEvent returns a correct windowsKeyCode.
-#if defined(THREAD_SANITIZER)
-// This test fails under ThreadSanitizer on Linux, see
-// https://crbug.com/449103.
-#define MAYBE_TestMakeWebKeyboardEventWindowsKeyCode \
-    DISABLED_TestMakeWebKeyboardEventWindowsKeyCode
-#else
-#define MAYBE_TestMakeWebKeyboardEventWindowsKeyCode \
-    TestMakeWebKeyboardEventWindowsKeyCode
-#endif
-TEST(WebInputEventAuraTest, MAYBE_TestMakeWebKeyboardEventWindowsKeyCode) {
+TEST(WebInputEventAuraTest, TestMakeWebKeyboardEventWindowsKeyCode) {
 #if defined(USE_X11)
   ui::ScopedXI2Event xev;
   {
     // Press left Ctrl.
     xev.InitKeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_CONTROL, 0);
     XEvent* xevent = xev;
-    xevent->xkey.keycode = XKeysymToKeycode(gfx::GetXDisplay(), XK_Control_L);
+    xevent->xkey.keycode = ui::KeycodeConverter::DomCodeToNativeKeycode(
+        ui::DomCode::CONTROL_LEFT);
     ui::KeyEvent event(xev);
     blink::WebKeyboardEvent webkit_event = MakeWebKeyboardEvent(event);
     // ui::VKEY_LCONTROL, instead of ui::VKEY_CONTROL, should be filled.
@@ -68,7 +63,8 @@ TEST(WebInputEventAuraTest, MAYBE_TestMakeWebKeyboardEventWindowsKeyCode) {
     // Press right Ctrl.
     xev.InitKeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_CONTROL, 0);
     XEvent* xevent = xev;
-    xevent->xkey.keycode = XKeysymToKeycode(gfx::GetXDisplay(), XK_Control_R);
+    xevent->xkey.keycode = ui::KeycodeConverter::DomCodeToNativeKeycode(
+        ui::DomCode::CONTROL_RIGHT);
     ui::KeyEvent event(xev);
     blink::WebKeyboardEvent webkit_event = MakeWebKeyboardEvent(event);
     // ui::VKEY_RCONTROL, instead of ui::VKEY_CONTROL, should be filled.
@@ -80,6 +76,24 @@ TEST(WebInputEventAuraTest, MAYBE_TestMakeWebKeyboardEventWindowsKeyCode) {
   // to return VKEY_[LR]XXX instead of VKEY_XXX.
   // https://bugs.webkit.org/show_bug.cgi?id=86694
 #endif
+  {
+    // Press left Ctrl.
+    ui::KeyEvent event(ui::ET_KEY_PRESSED, ui::VKEY_CONTROL,
+                       ui::DomCode::CONTROL_LEFT, ui::EF_CONTROL_DOWN,
+                       ui::DomKey::CONTROL, 0);
+    blink::WebKeyboardEvent webkit_event = MakeWebKeyboardEvent(event);
+    // ui::VKEY_LCONTROL, instead of ui::VKEY_CONTROL, should be filled.
+    EXPECT_EQ(ui::VKEY_LCONTROL, webkit_event.windowsKeyCode);
+  }
+  {
+    // Press right Ctrl.
+    ui::KeyEvent event(ui::ET_KEY_PRESSED, ui::VKEY_CONTROL,
+                       ui::DomCode::CONTROL_RIGHT, ui::EF_CONTROL_DOWN,
+                       ui::DomKey::CONTROL, 0);
+    blink::WebKeyboardEvent webkit_event = MakeWebKeyboardEvent(event);
+    // ui::VKEY_RCONTROL, instead of ui::VKEY_CONTROL, should be filled.
+    EXPECT_EQ(ui::VKEY_RCONTROL, webkit_event.windowsKeyCode);
+  }
 }
 
 // Checks that MakeWebKeyboardEvent fills a correct keypard modifier.
