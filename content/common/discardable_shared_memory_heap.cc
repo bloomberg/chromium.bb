@@ -55,6 +55,8 @@ scoped_ptr<DiscardableSharedMemoryHeap::Span> DiscardableSharedMemoryHeap::Grow(
       new Span(shared_memory,
                reinterpret_cast<size_t>(shared_memory->memory()) / block_size_,
                size / block_size_));
+  DCHECK(spans_.find(span->start_) == spans_.end());
+  DCHECK(spans_.find(span->start_ + span->length_ - 1) == spans_.end());
   RegisterSpan(span.get());
   return span.Pass();
 }
@@ -65,8 +67,10 @@ void DiscardableSharedMemoryHeap::MergeIntoFreeList(scoped_ptr<Span> span) {
   if (prev_it != spans_.end() && IsInFreeList(prev_it->second)) {
     scoped_ptr<Span> prev = RemoveFromFreeList(prev_it->second);
     DCHECK_EQ(prev->start_ + prev->length_, span->start_);
+    spans_.erase(span->start_);
     span->start_ -= prev->length_;
     span->length_ += prev->length_;
+    DeleteSpan(prev.Pass());
     spans_[span->start_] = span.get();
   }
 
@@ -75,7 +79,10 @@ void DiscardableSharedMemoryHeap::MergeIntoFreeList(scoped_ptr<Span> span) {
   if (next_it != spans_.end() && IsInFreeList(next_it->second)) {
     scoped_ptr<Span> next = RemoveFromFreeList(next_it->second);
     DCHECK_EQ(next->start_, span->start_ + span->length_);
+    if (span->length_ > 1)
+      spans_.erase(span->start_ + span->length_ - 1);
     span->length_ += next->length_;
+    DeleteSpan(next.Pass());
     spans_[span->start_ + span->length_ - 1] = span.get();
   }
 
@@ -89,6 +96,8 @@ DiscardableSharedMemoryHeap::Split(Span* span, size_t blocks) {
 
   scoped_ptr<Span> leftover(new Span(
       span->shared_memory_, span->start_ + blocks, span->length_ - blocks));
+  DCHECK_IMPLIES(leftover->length_ > 1,
+                 spans_.find(leftover->start_) == spans_.end());
   RegisterSpan(leftover.get());
   spans_[span->start_ + blocks - 1] = span;
   span->length_ = blocks;
@@ -146,6 +155,7 @@ DiscardableSharedMemoryHeap::Carve(Span* span, size_t blocks) {
   if (extra) {
     scoped_ptr<Span> leftover(
         new Span(serving->shared_memory_, serving->start_ + blocks, extra));
+    DCHECK_IMPLIES(extra > 1, spans_.find(leftover->start_) == spans_.end());
     RegisterSpan(leftover.get());
 
     // No need to coalesce as the previous span of |leftover| was just split
