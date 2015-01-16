@@ -401,8 +401,6 @@
       'widget/desktop_aura/desktop_capture_client.cc',
       'widget/desktop_aura/desktop_capture_client.h',
       'widget/desktop_aura/desktop_cursor_loader_updater.h',
-      'widget/desktop_aura/desktop_cursor_loader_updater_auralinux.cc',
-      'widget/desktop_aura/desktop_cursor_loader_updater_auralinux.h',
       'widget/desktop_aura/desktop_dispatcher_client.cc',
       'widget/desktop_aura/desktop_dispatcher_client.h',
       'widget/desktop_aura/desktop_drop_target_win.cc',
@@ -419,6 +417,10 @@
       'widget/desktop_aura/desktop_screen.h',
       'widget/desktop_aura/desktop_screen_position_client.cc',
       'widget/desktop_aura/desktop_screen_position_client.h',
+    ],
+    'views_desktop_aura_linux_sources': [
+      'widget/desktop_aura/desktop_cursor_loader_updater_auralinux.cc',
+      'widget/desktop_aura/desktop_cursor_loader_updater_auralinux.h',
     ],
     'views_desktop_aura_x11_sources': [
       'widget/desktop_aura/desktop_drag_drop_client_aurax11.cc',
@@ -570,11 +572,13 @@
       'touchui/touch_selection_controller_impl_unittest.cc',
     ],
     'views_unittests_desktop_aura_sources': [
-      'widget/desktop_aura/desktop_drag_drop_client_aurax11_unittest.cc',
       'widget/desktop_aura/desktop_focus_rules_unittest.cc',
       'widget/desktop_aura/desktop_native_widget_aura_unittest.cc',
-      'widget/desktop_aura/desktop_screen_x11_unittest.cc',
       'widget/desktop_aura/desktop_screen_position_client_unittest.cc',
+    ],
+    'views_unittests_desktop_aurax11_sources': [
+      'widget/desktop_aura/desktop_drag_drop_client_aurax11_unittest.cc',
+      'widget/desktop_aura/desktop_screen_x11_unittest.cc',
       'widget/desktop_aura/desktop_window_tree_host_x11_unittest.cc',
     ],
   },
@@ -689,6 +693,9 @@
         ['use_aura and chromeos == 0', {
           'sources': [ '<@(views_desktop_aura_sources)' ],
           'conditions': [
+            ['OS == "linux"', {
+              'sources': [ '<@(views_desktop_aura_linux_sources)' ],
+            }],
             ['use_x11 == 1', {
               'sources': [ '<@(views_desktop_aura_x11_sources)' ],
             }],
@@ -840,6 +847,9 @@
           'conditions': [
             ['chromeos == 0', {
               'sources': [ '<@(views_unittests_desktop_aura_sources)' ],
+            }],
+            ['chromeos == 0 and use_x11==1', {
+              'sources': [ '<@(views_unittests_desktop_aurax11_sources)' ],
             }],
           ]
         }],

@@ -103,6 +103,9 @@ component("views") {
       } else if (use_ozone) {
         sources += gypi_values.views_desktop_aura_ozone_sources
       }
+      if (is_linux) {
+        sources += gypi_values.views_desktop_aura_linux_sources
+      }
     }
   }
 
@@ -225,6 +228,9 @@ test("views_unittests") {
     deps += [ "//ui/aura:test_support" ]
     if (!is_chromeos) {
       sources += gypi_values.views_unittests_desktop_aura_sources
+      if (use_x11) {
+        sources += gypi_values.views_unittests_desktop_aurax11_sources
+      }
     }
   }
   if (use_x11) {
