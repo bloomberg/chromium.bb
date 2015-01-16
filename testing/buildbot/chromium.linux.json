@@ -127,6 +127,10 @@
     ],
     "scripts": [
       {
+        "name": "checkdeps",
+        "script": "checkdeps.py"
+      },
+      {
         "name": "checklicenses",
         "script": "checklicenses.py"
       },
