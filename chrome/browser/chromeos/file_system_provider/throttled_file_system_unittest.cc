@@ -42,9 +42,9 @@ void LogOpen(OpenLog* log, int handle, base::File::Error result) {
 class FileSystemProviderThrottledFileSystemTest : public testing::Test {
  protected:
   FileSystemProviderThrottledFileSystemTest() {}
-  virtual ~FileSystemProviderThrottledFileSystemTest() {}
+  ~FileSystemProviderThrottledFileSystemTest() override {}
 
-  virtual void SetUp() override {}
+  void SetUp() override {}
 
   // Initializes the throttled file system with |limit| number of opened files
   // at once. If 0, then no limit.

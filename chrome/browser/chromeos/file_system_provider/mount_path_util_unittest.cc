@@ -67,9 +67,9 @@ KeyedService* CreateService(content::BrowserContext* context) {
 class FileSystemProviderMountPathUtilTest : public testing::Test {
  protected:
   FileSystemProviderMountPathUtilTest() {}
-  virtual ~FileSystemProviderMountPathUtilTest() {}
+  ~FileSystemProviderMountPathUtilTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     profile_manager_.reset(
         new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
     ASSERT_TRUE(profile_manager_->SetUp());
@@ -83,7 +83,7 @@ class FileSystemProviderMountPathUtilTest : public testing::Test {
         base::Bind(&FakeProvidedFileSystem::Create));
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     // Setting the testing factory to NULL will destroy the created service
     // associated with the testing profile.
     ServiceFactory::GetInstance()->SetTestingFactory(profile_, NULL);

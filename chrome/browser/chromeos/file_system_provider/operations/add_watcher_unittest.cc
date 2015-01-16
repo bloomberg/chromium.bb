@@ -35,9 +35,9 @@ const base::FilePath::CharType kEntryPath[] =
 class FileSystemProviderOperationsAddWatcherTest : public testing::Test {
  protected:
   FileSystemProviderOperationsAddWatcherTest() {}
-  virtual ~FileSystemProviderOperationsAddWatcherTest() {}
+  ~FileSystemProviderOperationsAddWatcherTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     file_system_info_ = ProvidedFileSystemInfo(
         kExtensionId,
         MountOptions(kFileSystemId, "" /* display_name */),

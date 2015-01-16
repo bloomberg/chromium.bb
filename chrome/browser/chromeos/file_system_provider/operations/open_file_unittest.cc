@@ -69,9 +69,9 @@ class CallbackLogger {
 class FileSystemProviderOperationsOpenFileTest : public testing::Test {
  protected:
   FileSystemProviderOperationsOpenFileTest() {}
-  virtual ~FileSystemProviderOperationsOpenFileTest() {}
+  ~FileSystemProviderOperationsOpenFileTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     file_system_info_ = ProvidedFileSystemInfo(
         kExtensionId,
         MountOptions(kFileSystemId, "" /* display_name */),

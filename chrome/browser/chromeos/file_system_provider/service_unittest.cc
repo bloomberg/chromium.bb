@@ -66,13 +66,12 @@ class LoggingObserver : public Observer {
   virtual ~LoggingObserver() {}
 
   // file_system_provider::Observer overrides.
-  virtual void OnProvidedFileSystemMount(
-      const ProvidedFileSystemInfo& file_system_info,
-      base::File::Error error) override {
+  void OnProvidedFileSystemMount(const ProvidedFileSystemInfo& file_system_info,
+                                 base::File::Error error) override {
     mounts.push_back(Event(file_system_info, error));
   }
 
-  virtual void OnProvidedFileSystemUnmount(
+  void OnProvidedFileSystemUnmount(
       const ProvidedFileSystemInfo& file_system_info,
       base::File::Error error) override {
     unmounts.push_back(Event(file_system_info, error));
@@ -87,18 +86,17 @@ class LoggingObserver : public Observer {
 class FakeRegistry : public RegistryInterface {
  public:
   FakeRegistry() {}
-  virtual ~FakeRegistry() {}
+  ~FakeRegistry() override {}
 
   // RegistryInterface overrides.
-  virtual void RememberFileSystem(
-      const ProvidedFileSystemInfo& file_system_info,
-      const Watchers& watchers) override {
+  void RememberFileSystem(const ProvidedFileSystemInfo& file_system_info,
+                          const Watchers& watchers) override {
     file_system_info_.reset(new ProvidedFileSystemInfo(file_system_info));
     watchers_.reset(new Watchers(watchers));
   }
 
-  virtual void ForgetFileSystem(const std::string& extension_id,
-                                const std::string& file_system_id) override {
+  void ForgetFileSystem(const std::string& extension_id,
+                        const std::string& file_system_id) override {
     if (!file_system_info_.get() || !watchers_.get())
       return;
     if (file_system_info_->extension_id() == extension_id &&
@@ -108,7 +106,7 @@ class FakeRegistry : public RegistryInterface {
     }
   }
 
-  virtual scoped_ptr<RestoredFileSystems> RestoreFileSystems(
+  scoped_ptr<RestoredFileSystems> RestoreFileSystems(
       const std::string& extension_id) override {
     scoped_ptr<RestoredFileSystems> result(new RestoredFileSystems);
 
@@ -130,8 +128,8 @@ class FakeRegistry : public RegistryInterface {
     return result;
   }
 
-  virtual void UpdateWatcherTag(const ProvidedFileSystemInfo& file_system_info,
-                                const Watcher& watcher) override {
+  void UpdateWatcherTag(const ProvidedFileSystemInfo& file_system_info,
+                        const Watcher& watcher) override {
     ASSERT_TRUE(watchers_.get());
     const Watchers::iterator it =
         watchers_->find(WatcherKey(watcher.entry_path, watcher.recursive));
@@ -174,9 +172,9 @@ class FileSystemProviderServiceTest : public testing::Test {
  protected:
   FileSystemProviderServiceTest() : profile_(NULL) {}
 
-  virtual ~FileSystemProviderServiceTest() {}
+  ~FileSystemProviderServiceTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     profile_manager_.reset(
         new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
     ASSERT_TRUE(profile_manager_->SetUp());

@@ -94,9 +94,9 @@ class CallbackLogger {
 class FileSystemProviderOperationsGetMetadataTest : public testing::Test {
  protected:
   FileSystemProviderOperationsGetMetadataTest() {}
-  virtual ~FileSystemProviderOperationsGetMetadataTest() {}
+  ~FileSystemProviderOperationsGetMetadataTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     file_system_info_ = ProvidedFileSystemInfo(
         kExtensionId,
         MountOptions(kFileSystemId, "" /* display_name */),

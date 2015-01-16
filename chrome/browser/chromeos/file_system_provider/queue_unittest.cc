@@ -38,7 +38,7 @@ AbortCallback OnRunNonAbortable(int* run_counter, int* abort_counter) {
 class FileSystemProviderQueueTest : public testing::Test {
  protected:
   FileSystemProviderQueueTest() {}
-  virtual ~FileSystemProviderQueueTest() {}
+  ~FileSystemProviderQueueTest() override {}
 
   content::TestBrowserThreadBundle thread_bundle_;
 };

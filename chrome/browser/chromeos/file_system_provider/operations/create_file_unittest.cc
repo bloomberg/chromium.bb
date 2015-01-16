@@ -35,9 +35,9 @@ const base::FilePath::CharType kFilePath[] =
 class FileSystemProviderOperationsCreateFileTest : public testing::Test {
  protected:
   FileSystemProviderOperationsCreateFileTest() {}
-  virtual ~FileSystemProviderOperationsCreateFileTest() {}
+  ~FileSystemProviderOperationsCreateFileTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     MountOptions mount_options(kFileSystemId, "" /* display_name */);
     mount_options.writable = true;
     file_system_info_ =

@@ -34,14 +34,13 @@ class FileStreamReader : public storage::FileStreamReader {
                    int64 initial_offset,
                    const base::Time& expected_modification_time);
 
-  virtual ~FileStreamReader();
+  ~FileStreamReader() override;
 
   // storage::FileStreamReader overrides.
-  virtual int Read(net::IOBuffer* buf,
-                   int buf_len,
-                   const net::CompletionCallback& callback) override;
-  virtual int64 GetLength(
-      const net::Int64CompletionCallback& callback) override;
+  int Read(net::IOBuffer* buf,
+           int buf_len,
+           const net::CompletionCallback& callback) override;
+  int64 GetLength(const net::Int64CompletionCallback& callback) override;
 
  private:
   // Helper class for executing operations on the provided file system. All

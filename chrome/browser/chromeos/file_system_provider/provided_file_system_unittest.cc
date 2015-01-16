@@ -52,13 +52,12 @@ class FakeEventRouter : public extensions::EventRouter {
       : EventRouter(profile, NULL),
         file_system_(file_system),
         reply_result_(base::File::FILE_OK) {}
-  virtual ~FakeEventRouter() {}
+  ~FakeEventRouter() override {}
 
   // Handles an event which would normally be routed to an extension. Instead
   // replies with a hard coded response.
-  virtual void DispatchEventToExtension(
-      const std::string& extension_id,
-      scoped_ptr<extensions::Event> event) override {
+  void DispatchEventToExtension(const std::string& extension_id,
+                                scoped_ptr<extensions::Event> event) override {
     ASSERT_TRUE(file_system_);
     std::string file_system_id;
     const base::DictionaryValue* dictionary_value = NULL;
@@ -127,27 +126,24 @@ class Observer : public ProvidedFileSystemObserver {
   Observer() : list_changed_counter_(0), tag_updated_counter_(0) {}
 
   // ProvidedFileSystemInterfaceObserver overrides.
-  virtual void OnWatcherChanged(
-      const ProvidedFileSystemInfo& file_system_info,
-      const Watcher& watcher,
-      storage::WatcherManager::ChangeType change_type,
-      const ProvidedFileSystemObserver::Changes& changes,
-      const base::Closure& callback) override {
+  void OnWatcherChanged(const ProvidedFileSystemInfo& file_system_info,
+                        const Watcher& watcher,
+                        storage::WatcherManager::ChangeType change_type,
+                        const ProvidedFileSystemObserver::Changes& changes,
+                        const base::Closure& callback) override {
     EXPECT_EQ(kFileSystemId, file_system_info.file_system_id());
     change_events_.push_back(new ChangeEvent(change_type, changes));
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
   }
 
-  virtual void OnWatcherTagUpdated(
-      const ProvidedFileSystemInfo& file_system_info,
-      const Watcher& watcher) override {
+  void OnWatcherTagUpdated(const ProvidedFileSystemInfo& file_system_info,
+                           const Watcher& watcher) override {
     EXPECT_EQ(kFileSystemId, file_system_info.file_system_id());
     ++tag_updated_counter_;
   }
 
-  virtual void OnWatcherListChanged(
-      const ProvidedFileSystemInfo& file_system_info,
-      const Watchers& watchers) override {
+  void OnWatcherListChanged(const ProvidedFileSystemInfo& file_system_info,
+                            const Watchers& watchers) override {
     EXPECT_EQ(kFileSystemId, file_system_info.file_system_id());
     ++list_changed_counter_;
   }
@@ -170,13 +166,13 @@ class Observer : public ProvidedFileSystemObserver {
 class StubNotificationManager : public NotificationManagerInterface {
  public:
   StubNotificationManager() {}
-  virtual ~StubNotificationManager() {}
+  ~StubNotificationManager() override {}
 
   // NotificationManagerInterface overrides.
-  virtual void ShowUnresponsiveNotification(
+  void ShowUnresponsiveNotification(
       int id,
       const NotificationCallback& callback) override {}
-  virtual void HideUnresponsiveNotification(int id) override {}
+  void HideUnresponsiveNotification(int id) override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(StubNotificationManager);
@@ -201,9 +197,9 @@ void LogNotification(NotificationLog* notification_log,
 class FileSystemProviderProvidedFileSystemTest : public testing::Test {
  protected:
   FileSystemProviderProvidedFileSystemTest() {}
-  virtual ~FileSystemProviderProvidedFileSystemTest() {}
+  ~FileSystemProviderProvidedFileSystemTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     profile_.reset(new TestingProfile);
     const base::FilePath mount_path =
         util::GetMountPath(profile_.get(), kExtensionId, kFileSystemId);

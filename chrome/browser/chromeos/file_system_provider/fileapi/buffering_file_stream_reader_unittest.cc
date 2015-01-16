@@ -40,12 +40,12 @@ class FakeFileStreamReader : public storage::FileStreamReader {
  public:
   FakeFileStreamReader(std::vector<int>* log, net::Error return_error)
       : log_(log), return_error_(return_error) {}
-  virtual ~FakeFileStreamReader() {}
+  ~FakeFileStreamReader() override {}
 
   // storage::FileStreamReader overrides.
-  virtual int Read(net::IOBuffer* buf,
-                   int buf_len,
-                   const net::CompletionCallback& callback) override {
+  int Read(net::IOBuffer* buf,
+           int buf_len,
+           const net::CompletionCallback& callback) override {
     DCHECK(log_);
     log_->push_back(buf_len);
 
@@ -63,8 +63,7 @@ class FakeFileStreamReader : public storage::FileStreamReader {
     return net::ERR_IO_PENDING;
   }
 
-  virtual int64 GetLength(
-      const net::Int64CompletionCallback& callback) override {
+  int64 GetLength(const net::Int64CompletionCallback& callback) override {
     DCHECK_EQ(net::OK, return_error_);
     base::MessageLoopProxy::current()->PostTask(
         FROM_HERE, base::Bind(callback, kFileSize));
@@ -82,7 +81,7 @@ class FakeFileStreamReader : public storage::FileStreamReader {
 class FileSystemProviderBufferingFileStreamReaderTest : public testing::Test {
  protected:
   FileSystemProviderBufferingFileStreamReaderTest() {}
-  virtual ~FileSystemProviderBufferingFileStreamReaderTest() {}
+  ~FileSystemProviderBufferingFileStreamReaderTest() override {}
 
   content::TestBrowserThreadBundle thread_bundle_;
 };

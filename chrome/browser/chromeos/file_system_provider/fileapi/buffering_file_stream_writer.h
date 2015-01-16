@@ -32,14 +32,14 @@ class BufferingFileStreamWriter : public storage::FileStreamWriter {
       scoped_ptr<storage::FileStreamWriter> file_stream_writer,
       int intermediate_buffer_length);
 
-  virtual ~BufferingFileStreamWriter();
+  ~BufferingFileStreamWriter() override;
 
   // storage::FileStreamWriter overrides.
-  virtual int Write(net::IOBuffer* buf,
-                    int buf_len,
-                    const net::CompletionCallback& callback) override;
-  virtual int Cancel(const net::CompletionCallback& callback) override;
-  virtual int Flush(const net::CompletionCallback& callback) override;
+  int Write(net::IOBuffer* buf,
+            int buf_len,
+            const net::CompletionCallback& callback) override;
+  int Cancel(const net::CompletionCallback& callback) override;
+  int Flush(const net::CompletionCallback& callback) override;
 
  private:
   // Copies |buffer_length| bytes of data from the |buffer| starting at

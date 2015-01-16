@@ -34,9 +34,9 @@ const int kOperationRequestId = 3;
 class FileSystemProviderOperationsAbortTest : public testing::Test {
  protected:
   FileSystemProviderOperationsAbortTest() {}
-  virtual ~FileSystemProviderOperationsAbortTest() {}
+  ~FileSystemProviderOperationsAbortTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     file_system_info_ = ProvidedFileSystemInfo(
         kExtensionId,
         MountOptions(kFileSystemId, "" /* display_name */),

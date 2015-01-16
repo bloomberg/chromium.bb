@@ -76,7 +76,7 @@ class ProvidedFileSystem : public ProvidedFileSystemInterface {
  public:
   ProvidedFileSystem(Profile* profile,
                      const ProvidedFileSystemInfo& file_system_info);
-  virtual ~ProvidedFileSystem();
+  ~ProvidedFileSystem() override;
 
   // Sets a custom event router. Used in unit tests to mock out the real
   // extension.
@@ -89,57 +89,55 @@ class ProvidedFileSystem : public ProvidedFileSystemInterface {
       scoped_ptr<NotificationManagerInterface> notification_manager);
 
   // ProvidedFileSystemInterface overrides.
-  virtual AbortCallback RequestUnmount(
+  AbortCallback RequestUnmount(
       const storage::AsyncFileUtil::StatusCallback& callback) override;
-  virtual AbortCallback GetMetadata(
-      const base::FilePath& entry_path,
-      MetadataFieldMask fields,
-      const GetMetadataCallback& callback) override;
-  virtual AbortCallback ReadDirectory(
+  AbortCallback GetMetadata(const base::FilePath& entry_path,
+                            MetadataFieldMask fields,
+                            const GetMetadataCallback& callback) override;
+  AbortCallback ReadDirectory(
       const base::FilePath& directory_path,
       const storage::AsyncFileUtil::ReadDirectoryCallback& callback) override;
-  virtual AbortCallback OpenFile(const base::FilePath& file_path,
-                                 OpenFileMode mode,
-                                 const OpenFileCallback& callback) override;
-  virtual AbortCallback CloseFile(
+  AbortCallback OpenFile(const base::FilePath& file_path,
+                         OpenFileMode mode,
+                         const OpenFileCallback& callback) override;
+  AbortCallback CloseFile(
       int file_handle,
       const storage::AsyncFileUtil::StatusCallback& callback) override;
-  virtual AbortCallback ReadFile(
-      int file_handle,
-      net::IOBuffer* buffer,
-      int64 offset,
-      int length,
-      const ReadChunkReceivedCallback& callback) override;
-  virtual AbortCallback CreateDirectory(
+  AbortCallback ReadFile(int file_handle,
+                         net::IOBuffer* buffer,
+                         int64 offset,
+                         int length,
+                         const ReadChunkReceivedCallback& callback) override;
+  AbortCallback CreateDirectory(
       const base::FilePath& directory_path,
       bool recursive,
       const storage::AsyncFileUtil::StatusCallback& callback) override;
-  virtual AbortCallback DeleteEntry(
+  AbortCallback DeleteEntry(
       const base::FilePath& entry_path,
       bool recursive,
       const storage::AsyncFileUtil::StatusCallback& callback) override;
-  virtual AbortCallback CreateFile(
+  AbortCallback CreateFile(
       const base::FilePath& file_path,
       const storage::AsyncFileUtil::StatusCallback& callback) override;
-  virtual AbortCallback CopyEntry(
+  AbortCallback CopyEntry(
       const base::FilePath& source_path,
       const base::FilePath& target_path,
       const storage::AsyncFileUtil::StatusCallback& callback) override;
-  virtual AbortCallback MoveEntry(
+  AbortCallback MoveEntry(
       const base::FilePath& source_path,
       const base::FilePath& target_path,
       const storage::AsyncFileUtil::StatusCallback& callback) override;
-  virtual AbortCallback Truncate(
+  AbortCallback Truncate(
       const base::FilePath& file_path,
       int64 length,
       const storage::AsyncFileUtil::StatusCallback& callback) override;
-  virtual AbortCallback WriteFile(
+  AbortCallback WriteFile(
       int file_handle,
       net::IOBuffer* buffer,
       int64 offset,
       int length,
       const storage::AsyncFileUtil::StatusCallback& callback) override;
-  virtual AbortCallback AddWatcher(
+  AbortCallback AddWatcher(
       const GURL& origin,
       const base::FilePath& entry_path,
       bool recursive,
@@ -147,24 +145,23 @@ class ProvidedFileSystem : public ProvidedFileSystemInterface {
       const storage::AsyncFileUtil::StatusCallback& callback,
       const storage::WatcherManager::NotificationCallback&
           notification_callback) override;
-  virtual void RemoveWatcher(
+  void RemoveWatcher(
       const GURL& origin,
       const base::FilePath& entry_path,
       bool recursive,
       const storage::AsyncFileUtil::StatusCallback& callback) override;
-  virtual const ProvidedFileSystemInfo& GetFileSystemInfo() const override;
-  virtual RequestManager* GetRequestManager() override;
-  virtual Watchers* GetWatchers() override;
-  virtual void AddObserver(ProvidedFileSystemObserver* observer) override;
-  virtual void RemoveObserver(ProvidedFileSystemObserver* observer) override;
-  virtual void Notify(
-      const base::FilePath& entry_path,
-      bool recursive,
-      storage::WatcherManager::ChangeType change_type,
-      scoped_ptr<ProvidedFileSystemObserver::Changes> changes,
-      const std::string& tag,
-      const storage::AsyncFileUtil::StatusCallback& callback) override;
-  virtual base::WeakPtr<ProvidedFileSystemInterface> GetWeakPtr() override;
+  const ProvidedFileSystemInfo& GetFileSystemInfo() const override;
+  RequestManager* GetRequestManager() override;
+  Watchers* GetWatchers() override;
+  void AddObserver(ProvidedFileSystemObserver* observer) override;
+  void RemoveObserver(ProvidedFileSystemObserver* observer) override;
+  void Notify(const base::FilePath& entry_path,
+              bool recursive,
+              storage::WatcherManager::ChangeType change_type,
+              scoped_ptr<ProvidedFileSystemObserver::Changes> changes,
+              const std::string& tag,
+              const storage::AsyncFileUtil::StatusCallback& callback) override;
+  base::WeakPtr<ProvidedFileSystemInterface> GetWeakPtr() override;
 
  private:
   // Aborts an operation executed with a request id equal to

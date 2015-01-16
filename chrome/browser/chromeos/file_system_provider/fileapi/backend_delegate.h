@@ -27,26 +27,25 @@ namespace file_system_provider {
 class BackendDelegate : public chromeos::FileSystemBackendDelegate {
  public:
   BackendDelegate();
-  virtual ~BackendDelegate();
+  ~BackendDelegate() override;
 
   // FileSystemBackend::Delegate overrides.
-  virtual storage::AsyncFileUtil* GetAsyncFileUtil(
+  storage::AsyncFileUtil* GetAsyncFileUtil(
       storage::FileSystemType type) override;
-  virtual scoped_ptr<storage::FileStreamReader> CreateFileStreamReader(
+  scoped_ptr<storage::FileStreamReader> CreateFileStreamReader(
       const storage::FileSystemURL& url,
       int64 offset,
       int64 max_bytes_to_read,
       const base::Time& expected_modification_time,
       storage::FileSystemContext* context) override;
-  virtual scoped_ptr<storage::FileStreamWriter> CreateFileStreamWriter(
+  scoped_ptr<storage::FileStreamWriter> CreateFileStreamWriter(
       const storage::FileSystemURL& url,
       int64 offset,
       storage::FileSystemContext* context) override;
-  virtual storage::WatcherManager* GetWatcherManager(
+  storage::WatcherManager* GetWatcherManager(
       storage::FileSystemType type) override;
-  virtual void GetRedirectURLForContents(
-      const storage::FileSystemURL& url,
-      const storage::URLCallback& callback) override;
+  void GetRedirectURLForContents(const storage::FileSystemURL& url,
+                                 const storage::URLCallback& callback) override;
 
  private:
   scoped_ptr<storage::AsyncFileUtil> async_file_util_;

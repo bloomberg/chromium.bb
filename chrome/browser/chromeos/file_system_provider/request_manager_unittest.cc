@@ -30,18 +30,16 @@ namespace {
 class FakeNotificationManager : public NotificationManagerInterface {
  public:
   FakeNotificationManager() {}
-  virtual ~FakeNotificationManager() {}
+  ~FakeNotificationManager() override {}
 
   // NotificationManagerInterface overrides:
-  virtual void ShowUnresponsiveNotification(
+  void ShowUnresponsiveNotification(
       int id,
       const NotificationCallback& callback) override {
     callbacks_[id] = callback;
   }
 
-  virtual void HideUnresponsiveNotification(int id) override {
-    callbacks_.erase(id);
-  }
+  void HideUnresponsiveNotification(int id) override { callbacks_.erase(id); }
 
   // Aborts all of the virtually shown notifications.
   void Abort() { OnNotificationResult(ABORT); }
@@ -169,7 +167,7 @@ class FakeHandler : public RequestManager::HandlerInterface {
       : logger_(logger), execute_reply_(execute_reply) {}
 
   // RequestManager::Handler overrides.
-  virtual bool Execute(int request_id) override {
+  bool Execute(int request_id) override {
     if (logger_.get())
       logger_->OnExecute(request_id);
 
@@ -177,22 +175,22 @@ class FakeHandler : public RequestManager::HandlerInterface {
   }
 
   // RequestManager::Handler overrides.
-  virtual void OnSuccess(int request_id,
-                         scoped_ptr<RequestValue> result,
-                         bool has_more) override {
+  void OnSuccess(int request_id,
+                 scoped_ptr<RequestValue> result,
+                 bool has_more) override {
     if (logger_.get())
       logger_->OnSuccess(request_id, result.Pass(), has_more);
   }
 
   // RequestManager::Handler overrides.
-  virtual void OnError(int request_id,
-                       scoped_ptr<RequestValue> result,
-                       base::File::Error error) override {
+  void OnError(int request_id,
+               scoped_ptr<RequestValue> result,
+               base::File::Error error) override {
     if (logger_.get())
       logger_->OnError(request_id, result.Pass(), error);
   }
 
-  virtual ~FakeHandler() {}
+  ~FakeHandler() override {}
 
  private:
   base::WeakPtr<EventLogger> logger_;
@@ -217,7 +215,7 @@ class RequestObserver : public RequestManager::Observer {
    public:
     CreatedEvent(int request_id, RequestType type)
         : Event(request_id), type_(type) {}
-    virtual ~CreatedEvent() {}
+    ~CreatedEvent() override {}
 
     RequestType type() const { return type_; }
 
@@ -229,7 +227,7 @@ class RequestObserver : public RequestManager::Observer {
    public:
     FulfilledEvent(int request_id, bool has_more)
         : Event(request_id), has_more_(has_more) {}
-    virtual ~FulfilledEvent() {}
+    ~FulfilledEvent() override {}
 
     bool has_more() const { return has_more_; }
 
@@ -241,7 +239,7 @@ class RequestObserver : public RequestManager::Observer {
    public:
     RejectedEvent(int request_id, base::File::Error error)
         : Event(request_id), error_(error) {}
-    virtual ~RejectedEvent() {}
+    ~RejectedEvent() override {}
 
     base::File::Error error() const { return error_; }
 
@@ -250,39 +248,39 @@ class RequestObserver : public RequestManager::Observer {
   };
 
   RequestObserver() {}
-  virtual ~RequestObserver() {}
+  ~RequestObserver() override {}
 
   // RequestManager::Observer overrides.
-  virtual void OnRequestCreated(int request_id, RequestType type) override {
+  void OnRequestCreated(int request_id, RequestType type) override {
     created_.push_back(CreatedEvent(request_id, type));
   }
 
   // RequestManager::Observer overrides.
-  virtual void OnRequestDestroyed(int request_id) override {
+  void OnRequestDestroyed(int request_id) override {
     destroyed_.push_back(Event(request_id));
   }
 
   // RequestManager::Observer overrides.
-  virtual void OnRequestExecuted(int request_id) override {
+  void OnRequestExecuted(int request_id) override {
     executed_.push_back(Event(request_id));
   }
 
   // RequestManager::Observer overrides.
-  virtual void OnRequestFulfilled(int request_id,
-                                  const RequestValue& result,
-                                  bool has_more) override {
+  void OnRequestFulfilled(int request_id,
+                          const RequestValue& result,
+                          bool has_more) override {
     fulfilled_.push_back(FulfilledEvent(request_id, has_more));
   }
 
   // RequestManager::Observer overrides.
-  virtual void OnRequestRejected(int request_id,
-                                 const RequestValue& result,
-                                 base::File::Error error) override {
+  void OnRequestRejected(int request_id,
+                         const RequestValue& result,
+                         base::File::Error error) override {
     rejected_.push_back(RejectedEvent(request_id, error));
   }
 
   // RequestManager::Observer overrides.
-  virtual void OnRequestTimeouted(int request_id) override {
+  void OnRequestTimeouted(int request_id) override {
     timeouted_.push_back(Event(request_id));
   }
 
@@ -309,9 +307,9 @@ class RequestObserver : public RequestManager::Observer {
 class FileSystemProviderRequestManagerTest : public testing::Test {
  protected:
   FileSystemProviderRequestManagerTest() {}
-  virtual ~FileSystemProviderRequestManagerTest() {}
+  ~FileSystemProviderRequestManagerTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     notification_manager_.reset(new FakeNotificationManager);
     request_manager_.reset(new RequestManager(notification_manager_.get()));
   }

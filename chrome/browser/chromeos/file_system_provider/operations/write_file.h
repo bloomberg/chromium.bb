@@ -39,16 +39,16 @@ class WriteFile : public Operation {
             int64 offset,
             int length,
             const storage::AsyncFileUtil::StatusCallback& callback);
-  virtual ~WriteFile();
+  ~WriteFile() override;
 
   // Operation overrides.
-  virtual bool Execute(int request_id) override;
-  virtual void OnSuccess(int request_id,
-                         scoped_ptr<RequestValue> result,
-                         bool has_more) override;
-  virtual void OnError(int request_id,
-                       scoped_ptr<RequestValue> result,
-                       base::File::Error error) override;
+  bool Execute(int request_id) override;
+  void OnSuccess(int request_id,
+                 scoped_ptr<RequestValue> result,
+                 bool has_more) override;
+  void OnError(int request_id,
+               scoped_ptr<RequestValue> result,
+               base::File::Error error) override;
 
  private:
   int file_handle_;

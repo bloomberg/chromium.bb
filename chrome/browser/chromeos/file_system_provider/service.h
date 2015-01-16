@@ -67,7 +67,7 @@ class Service : public KeyedService,
   enum UnmountReason { UNMOUNT_REASON_USER, UNMOUNT_REASON_SHUTDOWN };
 
   Service(Profile* profile, extensions::ExtensionRegistry* extension_registry);
-  virtual ~Service();
+  ~Service() override;
 
   // Sets a custom ProvidedFileSystemInterface factory. Used by unit tests,
   // where an event router is not available.
@@ -122,27 +122,23 @@ class Service : public KeyedService,
   static Service* Get(content::BrowserContext* context);
 
   // extensions::ExtensionRegistryObserver overrides.
-  virtual void OnExtensionUnloaded(
+  void OnExtensionUnloaded(
       content::BrowserContext* browser_context,
       const extensions::Extension* extension,
       extensions::UnloadedExtensionInfo::Reason reason) override;
-  virtual void OnExtensionLoaded(
-      content::BrowserContext* browser_context,
-      const extensions::Extension* extension) override;
+  void OnExtensionLoaded(content::BrowserContext* browser_context,
+                         const extensions::Extension* extension) override;
 
   // ProvidedFileSystemInterface::Observer overrides.
-  virtual void OnWatcherChanged(
-      const ProvidedFileSystemInfo& file_system_info,
-      const Watcher& watcher,
-      storage::WatcherManager::ChangeType change_type,
-      const ProvidedFileSystemObserver::Changes& changes,
-      const base::Closure& callback) override;
-  virtual void OnWatcherTagUpdated(
-      const ProvidedFileSystemInfo& file_system_info,
-      const Watcher& watcher) override;
-  virtual void OnWatcherListChanged(
-      const ProvidedFileSystemInfo& file_system_info,
-      const Watchers& watchers) override;
+  void OnWatcherChanged(const ProvidedFileSystemInfo& file_system_info,
+                        const Watcher& watcher,
+                        storage::WatcherManager::ChangeType change_type,
+                        const ProvidedFileSystemObserver::Changes& changes,
+                        const base::Closure& callback) override;
+  void OnWatcherTagUpdated(const ProvidedFileSystemInfo& file_system_info,
+                           const Watcher& watcher) override;
+  void OnWatcherListChanged(const ProvidedFileSystemInfo& file_system_info,
+                            const Watchers& watchers) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(FileSystemProviderServiceTest, RememberFileSystem);

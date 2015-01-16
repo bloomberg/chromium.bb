@@ -32,16 +32,14 @@ class ProviderNotificationDelegate
       NotificationManager* notification_manager)
       : notification_manager_(notification_manager) {}
 
-  virtual void ButtonClick(int button_index) override {
+  void ButtonClick(int button_index) override {
     notification_manager_->OnButtonClick(button_index);
   }
 
-  virtual void Close(bool by_user) override {
-    notification_manager_->OnClose();
-  }
+  void Close(bool by_user) override { notification_manager_->OnClose(); }
 
  private:
-  virtual ~ProviderNotificationDelegate() {}
+  ~ProviderNotificationDelegate() override {}
   NotificationManager* notification_manager_;  // Not owned.
 
   DISALLOW_COPY_AND_ASSIGN(ProviderNotificationDelegate);

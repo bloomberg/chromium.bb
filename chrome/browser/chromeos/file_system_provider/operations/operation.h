@@ -34,16 +34,16 @@ class Operation : public RequestManager::HandlerInterface {
 
   Operation(extensions::EventRouter* event_router,
             const ProvidedFileSystemInfo& file_system_info);
-  virtual ~Operation();
+  ~Operation() override;
 
   // RequestManager::HandlerInterface overrides.
-  virtual bool Execute(int request_id) override = 0;
-  virtual void OnSuccess(int request_id,
-                         scoped_ptr<RequestValue> result,
-                         bool has_more) override = 0;
-  virtual void OnError(int request_id,
-                       scoped_ptr<RequestValue> result,
-                       base::File::Error error) override = 0;
+  bool Execute(int request_id) override = 0;
+  void OnSuccess(int request_id,
+                 scoped_ptr<RequestValue> result,
+                 bool has_more) override = 0;
+  void OnError(int request_id,
+               scoped_ptr<RequestValue> result,
+               base::File::Error error) override = 0;
 
   // Sets custom dispatchign event implementation for tests.
   void SetDispatchEventImplForTesting(

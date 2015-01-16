@@ -33,9 +33,9 @@ const int kOpenRequestId = 3;
 class FileSystemProviderOperationsCloseFileTest : public testing::Test {
  protected:
   FileSystemProviderOperationsCloseFileTest() {}
-  virtual ~FileSystemProviderOperationsCloseFileTest() {}
+  ~FileSystemProviderOperationsCloseFileTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     file_system_info_ = ProvidedFileSystemInfo(
         kExtensionId,
         MountOptions(kFileSystemId, "" /* display_name */),

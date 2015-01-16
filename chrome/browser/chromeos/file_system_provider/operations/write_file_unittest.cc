@@ -37,9 +37,9 @@ const int kOffset = 10;
 class FileSystemProviderOperationsWriteFileTest : public testing::Test {
  protected:
   FileSystemProviderOperationsWriteFileTest() {}
-  virtual ~FileSystemProviderOperationsWriteFileTest() {}
+  ~FileSystemProviderOperationsWriteFileTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     MountOptions mount_options(kFileSystemId, "" /* display_name */);
     mount_options.writable = true;
     file_system_info_ =

@@ -41,18 +41,17 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 class Registry : public RegistryInterface {
  public:
   explicit Registry(Profile* profile);
-  virtual ~Registry();
+  ~Registry() override;
 
   // RegistryInterface overrides.
-  virtual void RememberFileSystem(
-      const ProvidedFileSystemInfo& file_system_info,
-      const Watchers& watchers) override;
-  virtual void ForgetFileSystem(const std::string& extension_id,
-                                const std::string& file_system_id) override;
-  virtual scoped_ptr<RestoredFileSystems> RestoreFileSystems(
+  void RememberFileSystem(const ProvidedFileSystemInfo& file_system_info,
+                          const Watchers& watchers) override;
+  void ForgetFileSystem(const std::string& extension_id,
+                        const std::string& file_system_id) override;
+  scoped_ptr<RestoredFileSystems> RestoreFileSystems(
       const std::string& extension_id) override;
-  virtual void UpdateWatcherTag(const ProvidedFileSystemInfo& file_system_info,
-                                const Watcher& watcher) override;
+  void UpdateWatcherTag(const ProvidedFileSystemInfo& file_system_info,
+                        const Watcher& watcher) override;
 
  private:
   Profile* profile_;  // Not owned.

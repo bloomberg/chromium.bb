@@ -18,17 +18,16 @@ namespace file_system_provider {
 class WatcherManager : public storage::WatcherManager {
  public:
   WatcherManager();
-  virtual ~WatcherManager();
+  ~WatcherManager() override;
 
   // storage::WatcherManager overrides.
-  virtual void AddWatcher(
-      const storage::FileSystemURL& url,
-      bool recursive,
-      const StatusCallback& callback,
-      const NotificationCallback& notification_callback) override;
-  virtual void RemoveWatcher(const storage::FileSystemURL& url,
-                             bool recursive,
-                             const StatusCallback& callback) override;
+  void AddWatcher(const storage::FileSystemURL& url,
+                  bool recursive,
+                  const StatusCallback& callback,
+                  const NotificationCallback& notification_callback) override;
+  void RemoveWatcher(const storage::FileSystemURL& url,
+                     bool recursive,
+                     const StatusCallback& callback) override;
 };
 
 }  // namespace file_system_provider

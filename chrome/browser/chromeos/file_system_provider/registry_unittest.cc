@@ -95,9 +95,9 @@ class FileSystemProviderRegistryTest : public testing::Test {
  protected:
   FileSystemProviderRegistryTest() : profile_(NULL) {}
 
-  virtual ~FileSystemProviderRegistryTest() {}
+  ~FileSystemProviderRegistryTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     profile_manager_.reset(
         new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
     ASSERT_TRUE(profile_manager_->SetUp());

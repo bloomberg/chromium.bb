@@ -35,9 +35,9 @@ const base::FilePath::CharType kEntryPath[] =
 class FileSystemProviderOperationsDeleteEntryTest : public testing::Test {
  protected:
   FileSystemProviderOperationsDeleteEntryTest() {}
-  virtual ~FileSystemProviderOperationsDeleteEntryTest() {}
+  ~FileSystemProviderOperationsDeleteEntryTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     MountOptions mount_options(kFileSystemId, "" /* display_name */);
     mount_options.writable = true;
     file_system_info_ =

@@ -48,12 +48,12 @@ class FakeFileStreamWriter : public storage::FileStreamWriter {
         flush_log_(flush_log),
         cancel_counter_(cancel_counter),
         write_error_(write_error) {}
-  virtual ~FakeFileStreamWriter() {}
+  ~FakeFileStreamWriter() override {}
 
   // storage::FileStreamWriter overrides.
-  virtual int Write(net::IOBuffer* buf,
-                    int buf_len,
-                    const net::CompletionCallback& callback) override {
+  int Write(net::IOBuffer* buf,
+            int buf_len,
+            const net::CompletionCallback& callback) override {
     DCHECK(write_log_);
     write_log_->push_back(std::string(buf->data(), buf_len));
     pending_bytes_ += buf_len;
@@ -63,7 +63,7 @@ class FakeFileStreamWriter : public storage::FileStreamWriter {
     return net::ERR_IO_PENDING;
   }
 
-  virtual int Cancel(const net::CompletionCallback& callback) override {
+  int Cancel(const net::CompletionCallback& callback) override {
     DCHECK(cancel_counter_);
     DCHECK_EQ(net::OK, write_error_);
     ++(*cancel_counter_);
@@ -72,7 +72,7 @@ class FakeFileStreamWriter : public storage::FileStreamWriter {
     return net::ERR_IO_PENDING;
   }
 
-  virtual int Flush(const net::CompletionCallback& callback) override {
+  int Flush(const net::CompletionCallback& callback) override {
     DCHECK(flush_log_);
     flush_log_->push_back(pending_bytes_);
     pending_bytes_ = 0;
@@ -96,7 +96,7 @@ class FileSystemProviderBufferingFileStreamWriterTest : public testing::Test {
  protected:
   FileSystemProviderBufferingFileStreamWriterTest() {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     short_text_buffer_ =
         make_scoped_refptr(new net::StringIOBuffer(kShortTextToWrite));
     long_text_buffer_ =
@@ -104,7 +104,7 @@ class FileSystemProviderBufferingFileStreamWriterTest : public testing::Test {
     ASSERT_LT(short_text_buffer_->size(), long_text_buffer_->size());
   }
 
-  virtual ~FileSystemProviderBufferingFileStreamWriterTest() {}
+  ~FileSystemProviderBufferingFileStreamWriterTest() override {}
 
   content::TestBrowserThreadBundle thread_bundle_;
   scoped_refptr<net::StringIOBuffer> short_text_buffer_;
