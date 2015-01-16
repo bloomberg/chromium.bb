@@ -202,8 +202,22 @@ Utils.installTitleEventHandler = function(element, event) {
   }, false);
 };
 
-Utils.isHeartBeatMessage = function(msg) {
-  return Utils.hasPrefix(Utils.convertToUint8Array(msg), HEART_BEAT_HEADER);
+Utils.isRenewalMessage = function(message) {
+  if (message.messageType != 'license-renewal')
+    return false;
+
+  if (!Utils.isRenewalMessagePrefixed(message.message)) {
+    Utils.failTest('license-renewal message doesn\'t contain expected header',
+                   KEY_ERROR);
+  }
+  return true;
+};
+
+// For the prefixed API renewal messages are determined by looking at the
+// message and finding a known string.
+Utils.isRenewalMessagePrefixed = function(msg) {
+  return Utils.hasPrefix(Utils.convertToUint8Array(msg),
+                         RENEWAL_MESSAGE_HEADER);
 };
 
 Utils.resetTitleChange = function() {

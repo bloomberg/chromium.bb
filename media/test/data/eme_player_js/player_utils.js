@@ -44,9 +44,15 @@ PlayerUtils.registerEMEEventListeners = function(player) {
     function addMediaKeySessionListeners(mediaKeySession) {
       mediaKeySession.addEventListener('message', function(message) {
         player.video.receivedKeyMessage = true;
-        if (Utils.isHeartBeatMessage(message.message)) {
-          Utils.timeLog('MediaKeySession onMessage - heart beat', message);
-          player.video.receivedHeartbeat = true;
+        if (Utils.isRenewalMessage(message)) {
+          Utils.timeLog('MediaKeySession onMessage - renewal', message);
+          player.video.receivedRenewalMessage = true;
+        } else {
+          if (message.messageType != 'license-request') {
+            Utils.failTest('Unexpected message type "' + message.messageType +
+                               '" received.',
+                           KEY_ERROR);
+          }
         }
         player.onMessage(message);
       });
@@ -123,9 +129,9 @@ PlayerUtils.registerPrefixedEMEEventListeners = function(player) {
   player.video.addEventListener('webkitkeymessage', function(message) {
     Utils.timeLog('onWebkitKeyMessage', message);
     message.target.receivedKeyMessage = true;
-    if (Utils.isHeartBeatMessage(message.message)) {
-      Utils.timeLog('onWebkitKeyMessage - heart beat', message);
-      message.target.receivedHeartbeat = true;
+    if (Utils.isRenewalMessagePrefixed(message.message)) {
+      Utils.timeLog('onWebkitKeyMessage - renewal', message);
+      message.target.receivedRenewalMessage = true;
     }
   });
 

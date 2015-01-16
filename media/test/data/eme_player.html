@@ -69,15 +69,15 @@
         return;
       // For loadSession() tests, addKey() will not be called after
       // loadSession() (the key is loaded internally). Do not check keyadded
-      // and heartbeat for these tests.
+      // and renewal message for these tests.
       if (!testConfig.sessionToLoad) {
         // keyadded may be fired around the start of playback; check for it
         // after a delay to avoid timing issues.
         if (testConfig.usePrefixedEME && !video.receivedKeyAdded)
           Utils.failTest('Key added event not received.');
         if (testConfig.keySystem == EXTERNAL_CLEARKEY &&
-            !video.receivedHeartbeat)
-          Utils.failTest('Heartbeat keymessage event not received.');
+            !video.receivedRenewalMessage)
+          Utils.failTest('license-renewal message not received.');
       }
       video.removeEventListener('ended', Utils.failTest);
       Utils.installTitleEventHandler(video, 'ended');
