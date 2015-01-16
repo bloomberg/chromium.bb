@@ -20,10 +20,10 @@
 #include "base/template_util.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
+#include "chrome/chrome_watcher/chrome_watcher_main_api.h"
 #include "components/browser_watcher/endsession_watcher_window_win.h"
 #include "components/browser_watcher/exit_code_watcher_win.h"
 #include "components/browser_watcher/exit_funnel_win.h"
-#include "components/browser_watcher/watcher_main_api_win.h"
 
 namespace {
 
@@ -203,6 +203,6 @@ extern "C" int WatcherMain(const base::char16* registry_path,
   return 0;
 }
 
-static_assert(base::is_same<decltype(&WatcherMain),
-                            browser_watcher::WatcherMainFunction>::value,
-              "WatcherMain() has wrong type");
+static_assert(
+    base::is_same<decltype(&WatcherMain), ChromeWatcherMainFunction>::value,
+    "WatcherMain() has wrong type");

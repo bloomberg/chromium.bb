@@ -24,6 +24,7 @@
 #include "chrome/app/chrome_watcher_command_line_win.h"
 #include "chrome/app/client_util.h"
 #include "chrome/app/image_pre_reader_win.h"
+#include "chrome/chrome_watcher/chrome_watcher_main_api.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_result_codes.h"
 #include "chrome/common/chrome_switches.h"
@@ -33,7 +34,6 @@
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/util_constants.h"
 #include "components/browser_watcher/watcher_client_win.h"
-#include "components/browser_watcher/watcher_main_api_win.h"
 #include "components/crash/app/breakpad_win.h"
 #include "components/crash/app/crash_reporter_client.h"
 #include "components/metrics/client_info.h"
@@ -126,7 +126,7 @@ HMODULE MainDllLoader::Load(base::string16* version, base::FilePath* module) {
   } else if (process_type_ == "service" || process_type_.empty()) {
     dll_name = installer::kChromeDll;
   } else if (process_type_ == "watcher") {
-    dll_name = browser_watcher::kWatcherDll;
+    dll_name = kChromeWatcherDll;
   } else {
 #if defined(CHROME_MULTIPLE_DLL)
     dll_name = installer::kChromeChildDll;
@@ -189,10 +189,9 @@ int MainDllLoader::Launch(HINSTANCE instance) {
     if (!watcher_dll)
       return chrome::RESULT_CODE_MISSING_DATA;
 
-    browser_watcher::WatcherMainFunction watcher_main =
-        reinterpret_cast<browser_watcher::WatcherMainFunction>(
-            ::GetProcAddress(watcher_dll,
-                             browser_watcher::kWatcherDLLEntrypoint));
+    ChromeWatcherMainFunction watcher_main =
+        reinterpret_cast<ChromeWatcherMainFunction>(
+            ::GetProcAddress(watcher_dll, kChromeWatcherDLLEntrypoint));
     return watcher_main(chrome::kBrowserExitCodesRegistryPath,
                         parent_process.Take());
   }

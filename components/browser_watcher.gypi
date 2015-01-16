@@ -30,13 +30,10 @@
             'sources': [
               'browser_watcher/watcher_client_win.cc',
               'browser_watcher/watcher_client_win.h',
-              'browser_watcher/watcher_main_api_win.cc',
-              'browser_watcher/watcher_main_api_win.h',
               'browser_watcher/watcher_metrics_provider_win.cc',
               'browser_watcher/watcher_metrics_provider_win.h',
             ],
             'dependencies': [
-              'browser_watcher',
               '../base/base.gyp:base',
             ],
           },

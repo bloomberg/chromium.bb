@@ -103,6 +103,7 @@
         ['OS == "win"', {
           'dependencies': [
             'chrome_watcher',
+            'chrome_watcher_client',
             '../components/components.gyp:browser_watcher_client',
           ],
         }],

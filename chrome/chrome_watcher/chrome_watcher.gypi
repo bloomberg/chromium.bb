@@ -36,6 +36,18 @@
       ],
     },
     {
+      # Users of the watcher link this target.
+      'target_name': 'chrome_watcher_client',
+      'type': 'static_library',
+      'sources': [
+        'chrome_watcher_main_api.cc',
+        'chrome_watcher_main_api.h',
+      ],
+      'dependencies': [
+        '../base/base.gyp:base',
+      ],
+    },
+    {
       'target_name': 'chrome_watcher',
       'type': 'loadable_module',
       'include_dirs': [
@@ -48,6 +60,7 @@
       ],
       'dependencies': [
         'chrome_watcher_resources',
+        '../base/base.gyp:base',
         '../components/components.gyp:browser_watcher',
       ],
       'msvs_settings': {
