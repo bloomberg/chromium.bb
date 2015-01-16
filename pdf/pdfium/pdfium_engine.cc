@@ -1863,7 +1863,10 @@ bool PDFiumEngine::OnMouseMove(const pp::MouseInputEvent& event) {
     selection_.push_back(PDFiumRange(pages_[page_index], 0, char_index));
   } else {
     // Selecting into the previous page.
-    selection_[last].SetCharCount(-selection_[last].char_index());
+    // The selection's char_index is 0-based, so the character count is one
+    // more than the index. The character count needs to be negative to
+    // indicate a backwards selection.
+    selection_[last].SetCharCount(-(selection_[last].char_index() + 1));
 
     // First make sure that there are no gaps in selection, i.e. if mousedown on
     // page three but we only get mousemove over page one, we want page two.
