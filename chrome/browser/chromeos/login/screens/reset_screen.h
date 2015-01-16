@@ -19,17 +19,17 @@ class ResetScreen : public BaseScreen, public ResetScreenActor::Delegate {
  public:
   ResetScreen(BaseScreenDelegate* base_screen_delegate,
               ResetScreenActor* actor);
-  virtual ~ResetScreen();
+  ~ResetScreen() override;
 
   // BaseScreen implementation:
-  virtual void PrepareToShow() override;
-  virtual void Show() override;
-  virtual void Hide() override;
-  virtual std::string GetName() const override;
+  void PrepareToShow() override;
+  void Show() override;
+  void Hide() override;
+  std::string GetName() const override;
 
   // ResetScreenActor::Delegate implementation:
-  virtual void OnExit() override;
-  virtual void OnActorDestroyed(ResetScreenActor* actor) override;
+  void OnExit() override;
+  void OnActorDestroyed(ResetScreenActor* actor) override;
 
  private:
   ResetScreenActor* actor_;

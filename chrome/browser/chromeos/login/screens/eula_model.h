@@ -21,10 +21,10 @@ class EulaModel : public BaseScreen {
   static const char kContextKeyUsageStatsEnabled[];
 
   explicit EulaModel(BaseScreenDelegate* base_screen_delegate);
-  virtual ~EulaModel();
+  ~EulaModel() override;
 
   // BaseScreen implementation:
-  virtual std::string GetName() const override;
+  std::string GetName() const override;
 
   // Returns URL of the OEM EULA page that should be displayed using current
   // locale and manifest. Returns empty URL otherwise.

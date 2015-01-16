@@ -27,8 +27,7 @@ namespace chromeos {
 
 class DummyButtonListener : public views::ButtonListener {
  public:
-  virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) override {}
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override {}
 };
 
 namespace login {
@@ -49,7 +48,7 @@ class NetworkScreenTest : public WizardInProcessBrowserTest {
   }
 
  protected:
-  virtual void SetUpInProcessBrowserTestFixture() override {
+  void SetUpInProcessBrowserTestFixture() override {
     WizardInProcessBrowserTest::SetUpInProcessBrowserTestFixture();
 
     fake_session_manager_client_ = new FakeSessionManagerClient;
@@ -57,7 +56,7 @@ class NetworkScreenTest : public WizardInProcessBrowserTest {
         scoped_ptr<SessionManagerClient>(fake_session_manager_client_));
   }
 
-  virtual void SetUpOnMainThread() override {
+  void SetUpOnMainThread() override {
     WizardInProcessBrowserTest::SetUpOnMainThread();
     mock_base_screen_delegate_.reset(new MockBaseScreenDelegate());
     ASSERT_TRUE(WizardController::default_controller() != NULL);
@@ -74,7 +73,7 @@ class NetworkScreenTest : public WizardInProcessBrowserTest {
     network_screen_->SetNetworkStateHelperForTest(mock_network_state_helper_);
   }
 
-  virtual void TearDownInProcessBrowserTestFixture() override {
+  void TearDownInProcessBrowserTestFixture() override {
     InProcessBrowserTest::TearDownInProcessBrowserTestFixture();
   }
 

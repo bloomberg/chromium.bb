@@ -32,22 +32,21 @@ class EulaScreen : public EulaModel, public TpmPasswordFetcherDelegate {
   EulaScreen(BaseScreenDelegate* base_screen_delegate,
              Delegate* delegate,
              EulaView* view);
-  virtual ~EulaScreen();
+  ~EulaScreen() override;
 
   // EulaModel implementation:
-  virtual void PrepareToShow() override;
-  virtual void Show() override;
-  virtual void Hide() override;
-  virtual GURL GetOemEulaUrl() const override;
-  virtual void InitiatePasswordFetch() override;
-  virtual bool IsUsageStatsEnabled() const override;
-  virtual void OnViewDestroyed(EulaView* view) override;
-  virtual void OnUserAction(const std::string& action_id) override;
-  virtual void OnContextKeyUpdated(
-      const ::login::ScreenContext::KeyType& key) override;
+  void PrepareToShow() override;
+  void Show() override;
+  void Hide() override;
+  GURL GetOemEulaUrl() const override;
+  void InitiatePasswordFetch() override;
+  bool IsUsageStatsEnabled() const override;
+  void OnViewDestroyed(EulaView* view) override;
+  void OnUserAction(const std::string& action_id) override;
+  void OnContextKeyUpdated(const ::login::ScreenContext::KeyType& key) override;
 
   // TpmPasswordFetcherDelegate implementation:
-  virtual void OnPasswordFetched(const std::string& tpm_password) override;
+  void OnPasswordFetched(const std::string& tpm_password) override;
 
  private:
   // URL of the OEM EULA page (on disk).

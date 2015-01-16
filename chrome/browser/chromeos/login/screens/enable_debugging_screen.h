@@ -20,17 +20,17 @@ class EnableDebuggingScreen : public BaseScreen,
  public:
   EnableDebuggingScreen(BaseScreenDelegate* delegate,
                         EnableDebuggingScreenActor* actor);
-  virtual ~EnableDebuggingScreen();
+  ~EnableDebuggingScreen() override;
 
   // BaseScreen implementation:
-  virtual void PrepareToShow() override;
-  virtual void Show() override;
-  virtual void Hide() override;
-  virtual std::string GetName() const override;
+  void PrepareToShow() override;
+  void Show() override;
+  void Hide() override;
+  std::string GetName() const override;
 
   // EnableDebuggingScreenActor::Delegate implementation:
-  virtual void OnExit(bool success) override;
-  virtual void OnActorDestroyed(EnableDebuggingScreenActor* actor) override;
+  void OnExit(bool success) override;
+  void OnActorDestroyed(EnableDebuggingScreenActor* actor) override;
 
  private:
   EnableDebuggingScreenActor* actor_;

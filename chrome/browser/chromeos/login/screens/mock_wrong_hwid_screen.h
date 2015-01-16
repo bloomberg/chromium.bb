@@ -17,7 +17,7 @@ class MockWrongHWIDScreen : public WrongHWIDScreen {
  public:
   MockWrongHWIDScreen(BaseScreenDelegate* base_screen_delegate,
                       WrongHWIDScreenActor* actor);
-  virtual ~MockWrongHWIDScreen();
+  ~MockWrongHWIDScreen() override;
 };
 
 class MockWrongHWIDScreenActor : public WrongHWIDScreenActor {

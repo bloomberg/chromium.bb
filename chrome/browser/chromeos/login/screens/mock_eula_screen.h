@@ -17,7 +17,7 @@ class MockEulaScreen : public EulaScreen {
   MockEulaScreen(BaseScreenDelegate* base_screen_delegate,
                  Delegate* delegate,
                  EulaView* view);
-  virtual ~MockEulaScreen();
+  ~MockEulaScreen() override;
 };
 
 class MockEulaView : public EulaView {

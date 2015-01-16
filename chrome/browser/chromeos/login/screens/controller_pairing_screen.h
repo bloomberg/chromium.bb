@@ -32,7 +32,7 @@ class ControllerPairingScreen
       Delegate* delegate,
       ControllerPairingScreenActor* actor,
       pairing_chromeos::ControllerPairingController* shark_controller);
-  virtual ~ControllerPairingScreen();
+  ~ControllerPairingScreen() override;
 
  private:
   typedef pairing_chromeos::ControllerPairingController::Stage Stage;
@@ -41,20 +41,19 @@ class ControllerPairingScreen
   bool ExpectStageIs(Stage stage) const;
 
   // Overridden from BaseScreen:
-  virtual void PrepareToShow() override;
-  virtual void Show() override;
-  virtual void Hide() override;
-  virtual std::string GetName() const override;
+  void PrepareToShow() override;
+  void Show() override;
+  void Hide() override;
+  std::string GetName() const override;
 
   // Overridden from pairing_chromeos::ControllerPairingController::Observer:
-  virtual void PairingStageChanged(Stage new_stage) override;
-  virtual void DiscoveredDevicesListChanged() override;
+  void PairingStageChanged(Stage new_stage) override;
+  void DiscoveredDevicesListChanged() override;
 
   // Overridden from ControllerPairingView::Delegate:
-  virtual void OnActorDestroyed(ControllerPairingScreenActor* actor) override;
-  virtual void OnScreenContextChanged(
-      const base::DictionaryValue& diff) override;
-  virtual void OnUserActed(const std::string& action) override;
+  void OnActorDestroyed(ControllerPairingScreenActor* actor) override;
+  void OnScreenContextChanged(const base::DictionaryValue& diff) override;
+  void OnUserActed(const std::string& action) override;
 
   Delegate* delegate_;
 

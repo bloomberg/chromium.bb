@@ -15,7 +15,7 @@ class MockErrorScreen : public ErrorScreen {
  public:
   MockErrorScreen(BaseScreenDelegate* base_screen_delegate,
                   ErrorScreenActor* actor);
-  virtual ~MockErrorScreen();
+  ~MockErrorScreen() override;
 };
 
 class MockErrorScreenActor : public ErrorScreenActor {

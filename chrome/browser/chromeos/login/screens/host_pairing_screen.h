@@ -32,7 +32,7 @@ class HostPairingScreen
                     Delegate* delegate,
                     HostPairingScreenActor* actor,
                     pairing_chromeos::HostPairingController* remora_controller);
-  virtual ~HostPairingScreen();
+  ~HostPairingScreen() override;
 
  private:
   typedef pairing_chromeos::HostPairingController::Stage Stage;
@@ -40,22 +40,22 @@ class HostPairingScreen
   void CommitContextChanges();
 
   // Overridden from BaseScreen:
-  virtual void PrepareToShow() override;
-  virtual void Show() override;
-  virtual void Hide() override;
-  virtual std::string GetName() const override;
+  void PrepareToShow() override;
+  void Show() override;
+  void Hide() override;
+  std::string GetName() const override;
 
   // pairing_chromeos::HostPairingController::Observer:
-  virtual void PairingStageChanged(Stage new_stage) override;
-  virtual void ConfigureHost(bool accepted_eula,
-                             const std::string& lang,
-                             const std::string& timezone,
-                             bool send_reports,
-                             const std::string& keyboard_layout) override;
-  virtual void EnrollHost(const std::string& auth_token) override;
+  void PairingStageChanged(Stage new_stage) override;
+  void ConfigureHost(bool accepted_eula,
+                     const std::string& lang,
+                     const std::string& timezone,
+                     bool send_reports,
+                     const std::string& keyboard_layout) override;
+  void EnrollHost(const std::string& auth_token) override;
 
   // Overridden from ControllerPairingView::Delegate:
-  virtual void OnActorDestroyed(HostPairingScreenActor* actor) override;
+  void OnActorDestroyed(HostPairingScreenActor* actor) override;
 
   Delegate* delegate_;
 

@@ -21,17 +21,17 @@ class KioskEnableScreen : public BaseScreen,
  public:
   KioskEnableScreen(BaseScreenDelegate* base_screen_delegate,
                     KioskEnableScreenActor* actor);
-  virtual ~KioskEnableScreen();
+  ~KioskEnableScreen() override;
 
   // BaseScreen implementation:
-  virtual void PrepareToShow() override {}
-  virtual void Show() override;
-  virtual void Hide() override {}
-  virtual std::string GetName() const override;
+  void PrepareToShow() override {}
+  void Show() override;
+  void Hide() override {}
+  std::string GetName() const override;
 
   // KioskEnableScreenActor::Delegate implementation:
-  virtual void OnExit() override;
-  virtual void OnActorDestroyed(KioskEnableScreenActor* actor) override;
+  void OnExit() override;
+  void OnActorDestroyed(KioskEnableScreenActor* actor) override;
 
  private:
   KioskEnableScreenActor* actor_;

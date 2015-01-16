@@ -21,17 +21,17 @@ class WrongHWIDScreen : public BaseScreen,
  public:
   WrongHWIDScreen(BaseScreenDelegate* base_screen_delegate,
                   WrongHWIDScreenActor* actor);
-  virtual ~WrongHWIDScreen();
+  ~WrongHWIDScreen() override;
 
   // BaseScreen implementation:
-  virtual void PrepareToShow() override;
-  virtual void Show() override;
-  virtual void Hide() override;
-  virtual std::string GetName() const override;
+  void PrepareToShow() override;
+  void Show() override;
+  void Hide() override;
+  std::string GetName() const override;
 
   // WrongHWIDScreenActor::Delegate implementation:
-  virtual void OnExit() override;
-  virtual void OnActorDestroyed(WrongHWIDScreenActor* actor) override;
+  void OnExit() override;
+  void OnActorDestroyed(WrongHWIDScreenActor* actor) override;
 
  private:
   WrongHWIDScreenActor* actor_;

@@ -16,7 +16,7 @@ class MockEnableDebuggingScreen : public EnableDebuggingScreen {
  public:
   MockEnableDebuggingScreen(BaseScreenDelegate* base_screen_delegate,
                             EnableDebuggingScreenActor* actor);
-  virtual ~MockEnableDebuggingScreen();
+  ~MockEnableDebuggingScreen() override;
 };
 
 class MockEnableDebuggingScreenActor

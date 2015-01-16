@@ -38,20 +38,20 @@ class UpdateScreen : public UpdateEngineClient::Observer,
   UpdateScreen(BaseScreenDelegate* base_screen_delegate,
                UpdateScreenActor* actor,
                pairing_chromeos::HostPairingController* remora_controller);
-  virtual ~UpdateScreen();
+  ~UpdateScreen() override;
 
   static UpdateScreen* Get(ScreenManager* manager);
 
   // Overridden from BaseScreen.
-  virtual void PrepareToShow() override;
-  virtual void Show() override;
-  virtual void Hide() override;
-  virtual std::string GetName() const override;
+  void PrepareToShow() override;
+  void Show() override;
+  void Hide() override;
+  std::string GetName() const override;
 
   // UpdateScreenActor::Delegate implementation:
-  virtual void CancelUpdate() override;
-  virtual void OnActorDestroyed(UpdateScreenActor* actor) override;
-  virtual void OnConnectToNetworkRequested() override;
+  void CancelUpdate() override;
+  void OnActorDestroyed(UpdateScreenActor* actor) override;
+  void OnConnectToNetworkRequested() override;
 
   // Starts network check. Made virtual to simplify mocking.
   virtual void StartNetworkCheck();
@@ -75,11 +75,10 @@ class UpdateScreen : public UpdateEngineClient::Observer,
   virtual void ExitUpdate(ExitReason reason);
 
   // UpdateEngineClient::Observer implementation:
-  virtual void UpdateStatusChanged(
-      const UpdateEngineClient::Status& status) override;
+  void UpdateStatusChanged(const UpdateEngineClient::Status& status) override;
 
   // NetworkPortalDetector::Observer implementation:
-  virtual void OnPortalDetectionCompleted(
+  void OnPortalDetectionCompleted(
       const NetworkState* network,
       const NetworkPortalDetector::CaptivePortalState& state) override;
 

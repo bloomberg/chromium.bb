@@ -26,10 +26,10 @@ class NetworkModel : public BaseScreen {
   static const char kContextKeyContinueButtonEnabled[];
 
   explicit NetworkModel(BaseScreenDelegate* base_screen_delegate);
-  virtual ~NetworkModel();
+  ~NetworkModel() override;
 
   // BaseScreen implementation:
-  virtual std::string GetName() const override;
+  std::string GetName() const override;
 
   // This method is called, when view is being destroyed. Note, if model
   // is destroyed earlier then it has to call Unbind().

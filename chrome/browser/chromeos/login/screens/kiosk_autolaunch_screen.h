@@ -21,17 +21,17 @@ class KioskAutolaunchScreen : public BaseScreen,
  public:
   KioskAutolaunchScreen(BaseScreenDelegate* base_screen_delegate,
                         KioskAutolaunchScreenActor* actor);
-  virtual ~KioskAutolaunchScreen();
+  ~KioskAutolaunchScreen() override;
 
   // BaseScreen implementation:
-  virtual void PrepareToShow() override {}
-  virtual void Show() override;
-  virtual void Hide() override {}
-  virtual std::string GetName() const override;
+  void PrepareToShow() override {}
+  void Show() override;
+  void Hide() override {}
+  std::string GetName() const override;
 
   // KioskAutolaunchScreenActor::Delegate implementation:
-  virtual void OnExit(bool confirmed) override;
-  virtual void OnActorDestroyed(KioskAutolaunchScreenActor* actor) override;
+  void OnExit(bool confirmed) override;
+  void OnActorDestroyed(KioskAutolaunchScreenActor* actor) override;
 
  private:
   KioskAutolaunchScreenActor* actor_;

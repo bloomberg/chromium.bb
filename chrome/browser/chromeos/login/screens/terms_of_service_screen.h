@@ -31,18 +31,18 @@ class TermsOfServiceScreen : public BaseScreen,
  public:
   TermsOfServiceScreen(BaseScreenDelegate* base_screen_delegate,
                        TermsOfServiceScreenActor* actor);
-  virtual ~TermsOfServiceScreen();
+  ~TermsOfServiceScreen() override;
 
   // BaseScreen:
-  virtual void PrepareToShow() override;
-  virtual void Show() override;
-  virtual void Hide() override;
-  virtual std::string GetName() const override;
+  void PrepareToShow() override;
+  void Show() override;
+  void Hide() override;
+  std::string GetName() const override;
 
   // TermsOfServiceScreenActor::Delegate:
-  virtual void OnDecline() override;
-  virtual void OnAccept() override;
-  virtual void OnActorDestroyed(TermsOfServiceScreenActor* actor) override;
+  void OnDecline() override;
+  void OnAccept() override;
+  void OnActorDestroyed(TermsOfServiceScreenActor* actor) override;
 
  private:
   // Start downloading the Terms of Service.
@@ -52,7 +52,7 @@ class TermsOfServiceScreen : public BaseScreen,
   void OnDownloadTimeout();
 
   // net::URLFetcherDelegate:
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   TermsOfServiceScreenActor* actor_;
 

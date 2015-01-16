@@ -56,31 +56,29 @@ class NetworkScreen : public NetworkModel,
   NetworkScreen(BaseScreenDelegate* base_screen_delegate,
                 Delegate* delegate,
                 NetworkView* view);
-  virtual ~NetworkScreen();
+  ~NetworkScreen() override;
 
   static NetworkScreen* Get(ScreenManager* manager);
 
   // NetworkModel implementation:
-  virtual void PrepareToShow() override;
-  virtual void Show() override;
-  virtual void Hide() override;
-  virtual void Initialize(::login::ScreenContext* context) override;
-  virtual void OnViewDestroyed(NetworkView* view) override;
-  virtual void OnUserAction(const std::string& action_id) override;
-  virtual void OnContextKeyUpdated(
-      const ::login::ScreenContext::KeyType& key) override;
-  virtual std::string GetLanguageListLocale() const override;
-  virtual const base::ListValue* GetLanguageList() const override;
-  virtual void UpdateLanguageList() override;
+  void PrepareToShow() override;
+  void Show() override;
+  void Hide() override;
+  void Initialize(::login::ScreenContext* context) override;
+  void OnViewDestroyed(NetworkView* view) override;
+  void OnUserAction(const std::string& action_id) override;
+  void OnContextKeyUpdated(const ::login::ScreenContext::KeyType& key) override;
+  std::string GetLanguageListLocale() const override;
+  const base::ListValue* GetLanguageList() const override;
+  void UpdateLanguageList() override;
 
   // NetworkStateHandlerObserver implementation:
-  virtual void NetworkConnectionStateChanged(
-      const NetworkState* network) override;
-  virtual void DefaultNetworkChanged(const NetworkState* network) override;
+  void NetworkConnectionStateChanged(const NetworkState* network) override;
+  void DefaultNetworkChanged(const NetworkState* network) override;
 
   // InputMethodManager::Observer implementation:
-  virtual void InputMethodChanged(input_method::InputMethodManager* manager,
-                                  bool show_message) override;
+  void InputMethodChanged(input_method::InputMethodManager* manager,
+                          bool show_message) override;
 
   void SetApplicationLocale(const std::string& locale);
   std::string GetApplicationLocale();

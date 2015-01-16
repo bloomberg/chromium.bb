@@ -49,29 +49,28 @@ class ErrorScreen : public BaseScreen,
 
   ErrorScreen(BaseScreenDelegate* base_screen_delegate,
               ErrorScreenActor* actor);
-  virtual ~ErrorScreen();
+  ~ErrorScreen() override;
 
   // BaseScreen implementation.
-  virtual void PrepareToShow() override;
-  virtual void Show() override;
-  virtual void Hide() override;
-  virtual std::string GetName() const override;
+  void PrepareToShow() override;
+  void Show() override;
+  void Hide() override;
+  std::string GetName() const override;
 
   // ErrorScreenActorDelegate implementation:
-  virtual void OnErrorShow() override;
-  virtual void OnErrorHide() override;
-  virtual void OnLaunchOobeGuestSession() override;
-  virtual void OnActorDestroyed() override;
+  void OnErrorShow() override;
+  void OnErrorHide() override;
+  void OnLaunchOobeGuestSession() override;
+  void OnActorDestroyed() override;
 
   // LoginPerformer::Delegate implementation:
-  virtual void OnAuthFailure(const AuthFailure& error) override;
-  virtual void OnAuthSuccess(const UserContext& user_context) override;
-  virtual void OnOffTheRecordAuthSuccess() override;
-  virtual void OnPasswordChangeDetected() override;
-  virtual void WhiteListCheckFailed(const std::string& email) override;
-  virtual void PolicyLoadFailed() override;
-  virtual void OnOnlineChecked(const std::string& username,
-                               bool success) override;
+  void OnAuthFailure(const AuthFailure& error) override;
+  void OnAuthSuccess(const UserContext& user_context) override;
+  void OnOffTheRecordAuthSuccess() override;
+  void OnPasswordChangeDetected() override;
+  void WhiteListCheckFailed(const std::string& email) override;
+  void PolicyLoadFailed() override;
+  void OnOnlineChecked(const std::string& username, bool success) override;
 
   // Initializes captive portal dialog and shows that if needed.
   void FixCaptivePortal();

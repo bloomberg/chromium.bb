@@ -21,17 +21,17 @@ class HIDDetectionScreen : public BaseScreen,
  public:
   HIDDetectionScreen(BaseScreenDelegate* base_screen_delegate,
                      HIDDetectionScreenActor* actor);
-  virtual ~HIDDetectionScreen();
+  ~HIDDetectionScreen() override;
 
   // BaseScreen implementation:
-  virtual void PrepareToShow() override;
-  virtual void Show() override;
-  virtual void Hide() override;
-  virtual std::string GetName() const override;
+  void PrepareToShow() override;
+  void Show() override;
+  void Hide() override;
+  std::string GetName() const override;
 
   // HIDDetectionScreenActor::Delegate implementation:
-  virtual void OnExit() override;
-  virtual void OnActorDestroyed(HIDDetectionScreenActor* actor) override;
+  void OnExit() override;
+  void OnActorDestroyed(HIDDetectionScreenActor* actor) override;
 
  private:
   HIDDetectionScreenActor* actor_;

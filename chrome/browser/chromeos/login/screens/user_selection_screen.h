@@ -31,7 +31,7 @@ class UserSelectionScreen : public ui::UserActivityObserver,
                             public UserBoardModel {
  public:
   explicit UserSelectionScreen(const std::string& display_type);
-  virtual ~UserSelectionScreen();
+  ~UserSelectionScreen() override;
 
   void SetLoginDisplayDelegate(LoginDisplay::Delegate* login_display_delegate);
   void SetHandler(LoginDisplayWebUIHandler* handler);
@@ -54,32 +54,32 @@ class UserSelectionScreen : public ui::UserActivityObserver,
   void HandleGetUsers();
 
   // ui::UserActivityDetector implementation:
-  virtual void OnUserActivity(const ui::Event* event) override;
+  void OnUserActivity(const ui::Event* event) override;
 
   void InitEasyUnlock();
 
   // ScreenlockBridge::LockHandler implementation:
-  virtual void ShowBannerMessage(const base::string16& message) override;
-  virtual void ShowUserPodCustomIcon(
+  void ShowBannerMessage(const base::string16& message) override;
+  void ShowUserPodCustomIcon(
       const std::string& user_email,
       const ScreenlockBridge::UserPodCustomIconOptions& icon) override;
-  virtual void HideUserPodCustomIcon(const std::string& user_email) override;
+  void HideUserPodCustomIcon(const std::string& user_email) override;
 
-  virtual void EnableInput() override;
-  virtual void SetAuthType(const std::string& user_email,
-                           AuthType auth_type,
-                           const base::string16& auth_value) override;
-  virtual AuthType GetAuthType(const std::string& user_email) const override;
+  void EnableInput() override;
+  void SetAuthType(const std::string& user_email,
+                   AuthType auth_type,
+                   const base::string16& auth_value) override;
+  AuthType GetAuthType(const std::string& user_email) const override;
 
-  virtual void Unlock(const std::string& user_email) override;
-  virtual void AttemptEasySignin(const std::string& user_email,
-                                 const std::string& secret,
-                                 const std::string& key_label) override;
+  void Unlock(const std::string& user_email) override;
+  void AttemptEasySignin(const std::string& user_email,
+                         const std::string& secret,
+                         const std::string& key_label) override;
 
   // UserBoardModel implementation.
-  virtual void SendUserList() override;
-  virtual void HardLockPod(const std::string& user_id) override;
-  virtual void AttemptEasyUnlock(const std::string& user_id) override;
+  void SendUserList() override;
+  void HardLockPod(const std::string& user_id) override;
+  void AttemptEasyUnlock(const std::string& user_id) override;
 
   // Fills |user_dict| with information about |user|.
   static void FillUserDictionary(

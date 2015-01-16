@@ -45,7 +45,7 @@ class UpdateScreenTest : public WizardInProcessBrowserTest {
   }
 
  protected:
-  virtual void SetUpInProcessBrowserTestFixture() override {
+  void SetUpInProcessBrowserTestFixture() override {
     fake_update_engine_client_ = new FakeUpdateEngineClient;
     chromeos::DBusThreadManager::GetSetterForTesting()->SetUpdateEngineClient(
         scoped_ptr<UpdateEngineClient>(fake_update_engine_client_));
@@ -65,7 +65,7 @@ class UpdateScreenTest : public WizardInProcessBrowserTest {
     SetDetectionResults(kStubWifiGuid, online_state);
   }
 
-  virtual void SetUpOnMainThread() override {
+  void SetUpOnMainThread() override {
     WizardInProcessBrowserTest::SetUpOnMainThread();
 
     mock_base_screen_delegate_.reset(new MockBaseScreenDelegate());
@@ -86,13 +86,13 @@ class UpdateScreenTest : public WizardInProcessBrowserTest {
     update_screen_->base_screen_delegate_ = mock_base_screen_delegate_.get();
   }
 
-  virtual void TearDownOnMainThread() override {
+  void TearDownOnMainThread() override {
     mock_error_screen_.reset();
     mock_error_screen_actor_.reset();
     WizardInProcessBrowserTest::TearDownOnMainThread();
   }
 
-  virtual void TearDownInProcessBrowserTestFixture() override {
+  void TearDownInProcessBrowserTestFixture() override {
     NetworkPortalDetector::Shutdown();
     WizardInProcessBrowserTest::TearDownInProcessBrowserTestFixture();
   }
