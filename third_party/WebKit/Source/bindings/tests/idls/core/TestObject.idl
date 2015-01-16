@@ -160,6 +160,7 @@ interface TestObject {
     attribute (double or DOMString)? doubleOrStringOrNullAttribute;
     attribute (double? or DOMString) doubleOrNullStringAttribute;
     attribute (DOMString or sequence<DOMString>) stringOrStringSequenceAttribute;
+    attribute (TestEnum or double) testEnumOrDoubleAttribute;
 
     // Extended attributes
     [LogActivity, LogAllWorlds] attribute long activityLoggingAccessForAllWorldsLongAttribute;

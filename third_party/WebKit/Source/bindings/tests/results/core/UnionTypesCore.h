@@ -368,6 +368,52 @@ struct NativeValueTraits<StringOrStringSequence> {
     static StringOrStringSequence nativeValue(const v8::Local<v8::Value>&, v8::Isolate*, ExceptionState&);
 };
 
+class TestEnumOrDouble final {
+    ALLOW_ONLY_INLINE_ALLOCATION();
+public:
+    TestEnumOrDouble();
+    bool isNull() const { return m_type == SpecificTypeNone; }
+
+    bool isTestEnum() const { return m_type == SpecificTypeTestEnum; }
+    String getAsTestEnum() const;
+    void setTestEnum(String);
+
+    bool isDouble() const { return m_type == SpecificTypeDouble; }
+    double getAsDouble() const;
+    void setDouble(double);
+
+private:
+    enum SpecificTypes {
+        SpecificTypeNone,
+        SpecificTypeTestEnum,
+        SpecificTypeDouble,
+    };
+    SpecificTypes m_type;
+
+    String m_testEnum;
+    double m_double;
+
+    friend v8::Local<v8::Value> toV8(const TestEnumOrDouble&, v8::Local<v8::Object>, v8::Isolate*);
+};
+
+class V8TestEnumOrDouble final {
+public:
+    static void toImpl(v8::Isolate*, v8::Local<v8::Value>, TestEnumOrDouble&, ExceptionState&);
+};
+
+v8::Local<v8::Value> toV8(const TestEnumOrDouble&, v8::Local<v8::Object>, v8::Isolate*);
+
+template <class CallbackInfo>
+inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestEnumOrDouble& impl)
+{
+    v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
+}
+
+template <>
+struct NativeValueTraits<TestEnumOrDouble> {
+    static TestEnumOrDouble nativeValue(const v8::Local<v8::Value>&, v8::Isolate*, ExceptionState&);
+};
+
 class TestInterface2OrUint8Array final {
     ALLOW_ONLY_INLINE_ALLOCATION();
 public:

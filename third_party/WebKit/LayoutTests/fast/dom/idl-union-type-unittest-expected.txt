@@ -23,6 +23,13 @@ PASS unionTypesTest.doubleOrStringArg([]) is "string is passed: "
 PASS typeof unionTypesTest.doubleOrStringArg(new Date) is "string"
 PASS unionTypesTest.doubleOrStringArg() threw exception TypeError: Failed to execute 'doubleOrStringArg' on 'UnionTypesTest': 1 argument required, but only 0 present..
 
+PASS unionTypesTest.doubleOrInternalEnumArg(3.14) is "double is passed: 3.14"
+PASS unionTypesTest.doubleOrInternalEnumArg("foo") is "InternalEnum is passed: foo"
+PASS unionTypesTest.doubleOrInternalEnumArg("invalid") threw exception TypeError: Failed to execute 'doubleOrInternalEnumArg' on 'UnionTypesTest': 'invalid' is not a valid enum value..
+PASS unionTypesTest.doubleOrInternalEnumArg(null) threw exception TypeError: Failed to execute 'doubleOrInternalEnumArg' on 'UnionTypesTest': 'null' is not a valid enum value..
+PASS unionTypesTest.doubleOrInternalEnumArg({}) threw exception TypeError: Failed to execute 'doubleOrInternalEnumArg' on 'UnionTypesTest': '[object Object]' is not a valid enum value..
+PASS unionTypesTest.doubleOrInternalEnumArg([]) threw exception TypeError: Failed to execute 'doubleOrInternalEnumArg' on 'UnionTypesTest': '' is not a valid enum value..
+
 PASS unionTypesTest.doubleOrStringArrayArg([]) is ""
 PASS unionTypesTest.doubleOrStringArrayArg([3.14, "foo"]) is "double: 3.14, string: foo"
 PASS unionTypesTest.doubleOrStringArrayArg([1, "foo", "bar", 2]) is "double: 1, string: foo, string: bar, double: 2"

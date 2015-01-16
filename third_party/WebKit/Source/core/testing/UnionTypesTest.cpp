@@ -58,6 +58,16 @@ String UnionTypesTest::doubleOrStringArg(DoubleOrString& doubleOrString)
     return String();
 }
 
+String UnionTypesTest::doubleOrInternalEnumArg(DoubleOrInternalEnum& doubleOrInternalEnum)
+{
+    if (doubleOrInternalEnum.isDouble())
+        return "double is passed: " + String::numberToStringECMAScript(doubleOrInternalEnum.getAsDouble());
+    if (doubleOrInternalEnum.isInternalEnum())
+        return "InternalEnum is passed: " + doubleOrInternalEnum.getAsInternalEnum();
+    ASSERT_NOT_REACHED();
+    return String();
+}
+
 String UnionTypesTest::doubleOrStringArrayArg(Vector<DoubleOrString>& array)
 {
     if (!array.size())

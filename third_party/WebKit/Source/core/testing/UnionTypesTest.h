@@ -23,6 +23,7 @@ public:
     void setDoubleOrStringOrStringArrayAttribute(const DoubleOrStringOrStringArray&);
 
     String doubleOrStringArg(DoubleOrString&);
+    String doubleOrInternalEnumArg(DoubleOrInternalEnum&);
     String doubleOrStringArrayArg(Vector<DoubleOrString>&);
     String doubleOrStringSequenceArg(Vector<DoubleOrString>&);
 

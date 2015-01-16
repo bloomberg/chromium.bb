@@ -118,13 +118,13 @@ def container_context(union_type, interfaces_info):
         'boolean_type': boolean_type,
         'cpp_class': union_type.cpp_type,
         'dictionary_type': dictionary_type,
-        'type_string': str(union_type),
         'includes_nullable_type': union_type.includes_nullable_type,
         'interface_types': interface_types,
         'members': members,
         'needs_trace': any(member['is_traceable'] for member in members),
         'numeric_type': numeric_type,
         'string_type': string_type,
+        'type_string': str(union_type),
     }
 
 
@@ -143,6 +143,7 @@ def member_context(member, interfaces_info):
         'cpp_value_to_v8_value': member.cpp_value_to_v8_value(
             cpp_value='impl.getAs%s()' % member.name, isolate='isolate',
             creation_context='creationContext'),
+        'enum_validation_expression': member.enum_validation_expression,
         'is_traceable': member.is_traceable,
         'rvalue_cpp_type': member.cpp_type_args(used_as_rvalue_type=True),
         'specific_type_enum': 'SpecificType' + member.name,

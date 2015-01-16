@@ -43,6 +43,18 @@ if (window.internals) {
     shouldThrow('unionTypesTest.doubleOrStringArg()');
     debug('');
 
+    shouldBeEqualToString('unionTypesTest.doubleOrInternalEnumArg(3.14)', 'double is passed: 3.14');
+    // "foo" is a valid InternalEnum value.
+    shouldBeEqualToString('unionTypesTest.doubleOrInternalEnumArg("foo")', 'InternalEnum is passed: foo');
+    shouldThrow('unionTypesTest.doubleOrInternalEnumArg("invalid")');
+    // Implicit string conversion will occur for non-double or non-string values
+    // and they result in invalid InternalEnum values, so exceptions should be
+    // thrown.
+    shouldThrow('unionTypesTest.doubleOrInternalEnumArg(null)');
+    shouldThrow('unionTypesTest.doubleOrInternalEnumArg({})');
+    shouldThrow('unionTypesTest.doubleOrInternalEnumArg([])');
+    debug('');
+
     shouldBeEqualToString('unionTypesTest.doubleOrStringArrayArg([])', '');
     shouldBeEqualToString('unionTypesTest.doubleOrStringArrayArg([3.14, "foo"])', 'double: 3.14, string: foo');
     shouldBeEqualToString('unionTypesTest.doubleOrStringArrayArg([1, "foo", "bar", 2])', 'double: 1, string: foo, string: bar, double: 2');

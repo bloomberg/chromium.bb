@@ -36,6 +36,13 @@ namespace blink {
 void {{container.cpp_class}}::set{{member.type_name}}({{member.rvalue_cpp_type}} value)
 {
     ASSERT(isNull());
+    {% if member.enum_validation_expression %}
+    String string = value;
+    if (!({{member.enum_validation_expression}})) {
+        ASSERT_NOT_REACHED();
+        return;
+    }
+    {% endif %}
     m_{{member.cpp_name}} = value;
     m_type = {{member.specific_type_enum}};
 }
@@ -124,6 +131,13 @@ void V8{{container.cpp_class}}::toImpl(v8::Isolate* isolate, v8::Local<v8::Value
     {# 16. String #}
     {
         {{container.string_type.v8_value_to_local_cpp_value}};
+        {% if container.string_type.enum_validation_expression %}
+        String string = cppValue;
+        if (!({{container.string_type.enum_validation_expression}})) {
+            exceptionState.throwTypeError("'" + string + "' is not a valid enum value.");
+            return;
+        }
+        {% endif %}
         impl.set{{container.string_type.type_name}}(cppValue);
         return;
     }

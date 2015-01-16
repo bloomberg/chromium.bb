@@ -605,6 +605,88 @@ StringOrStringSequence NativeValueTraits<StringOrStringSequence>::nativeValue(co
     return impl;
 }
 
+TestEnumOrDouble::TestEnumOrDouble()
+    : m_type(SpecificTypeNone)
+{
+}
+
+String TestEnumOrDouble::getAsTestEnum() const
+{
+    ASSERT(isTestEnum());
+    return m_testEnum;
+}
+
+void TestEnumOrDouble::setTestEnum(String value)
+{
+    ASSERT(isNull());
+    String string = value;
+    if (!(string == "" || string == "EnumValue1" || string == "EnumValue2" || string == "EnumValue3")) {
+        ASSERT_NOT_REACHED();
+        return;
+    }
+    m_testEnum = value;
+    m_type = SpecificTypeTestEnum;
+}
+
+double TestEnumOrDouble::getAsDouble() const
+{
+    ASSERT(isDouble());
+    return m_double;
+}
+
+void TestEnumOrDouble::setDouble(double value)
+{
+    ASSERT(isNull());
+    m_double = value;
+    m_type = SpecificTypeDouble;
+}
+
+void V8TestEnumOrDouble::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, TestEnumOrDouble& impl, ExceptionState& exceptionState)
+{
+    if (v8Value.IsEmpty())
+        return;
+
+    if (v8Value->IsNumber()) {
+        TONATIVE_VOID_EXCEPTIONSTATE(double, cppValue, toDouble(v8Value, exceptionState), exceptionState);
+        impl.setDouble(cppValue);
+        return;
+    }
+
+    {
+        TOSTRING_VOID_EXCEPTIONSTATE(V8StringResource<>, cppValue, v8Value, exceptionState);
+        String string = cppValue;
+        if (!(string == "" || string == "EnumValue1" || string == "EnumValue2" || string == "EnumValue3")) {
+            exceptionState.throwTypeError("'" + string + "' is not a valid enum value.");
+            return;
+        }
+        impl.setTestEnum(cppValue);
+        return;
+    }
+
+}
+
+v8::Local<v8::Value> toV8(const TestEnumOrDouble& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
+{
+    switch (impl.m_type) {
+    case TestEnumOrDouble::SpecificTypeNone:
+        return v8::Null(isolate);
+    case TestEnumOrDouble::SpecificTypeTestEnum:
+        return v8String(isolate, impl.getAsTestEnum());
+    case TestEnumOrDouble::SpecificTypeDouble:
+        return v8::Number::New(isolate, impl.getAsDouble());
+    default:
+        ASSERT_NOT_REACHED();
+    }
+    return v8::Local<v8::Value>();
+}
+
+TestEnumOrDouble NativeValueTraits<TestEnumOrDouble>::nativeValue(const v8::Local<v8::Value>& value, v8::Isolate* isolate, ExceptionState& exceptionState)
+{
+    TestEnumOrDouble impl;
+    V8TestEnumOrDouble::toImpl(isolate, value, impl, exceptionState);
+    return impl;
+}
+
 TestInterface2OrUint8Array::TestInterface2OrUint8Array()
     : m_type(SpecificTypeNone)
 {
