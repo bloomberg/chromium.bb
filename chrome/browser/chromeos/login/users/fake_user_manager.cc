@@ -16,16 +16,16 @@ namespace {
 
 class FakeTaskRunner : public base::TaskRunner {
  public:
-  virtual bool PostDelayedTask(const tracked_objects::Location& from_here,
-                               const base::Closure& task,
-                               base::TimeDelta delay) override {
+  bool PostDelayedTask(const tracked_objects::Location& from_here,
+                       const base::Closure& task,
+                       base::TimeDelta delay) override {
     task.Run();
     return true;
   }
-  virtual bool RunsTasksOnCurrentThread() const override { return true; }
+  bool RunsTasksOnCurrentThread() const override { return true; }
 
  protected:
-  virtual ~FakeTaskRunner() {}
+  ~FakeTaskRunner() override {}
 };
 
 }  // namespace

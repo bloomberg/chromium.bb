@@ -45,7 +45,7 @@ class UserImageSyncObserver: public PrefServiceSyncableObserver,
 
  public:
   explicit UserImageSyncObserver(const user_manager::User* user);
-  virtual ~UserImageSyncObserver();
+  ~UserImageSyncObserver() override;
 
   // Register syncable preference for profile.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
@@ -60,12 +60,12 @@ class UserImageSyncObserver: public PrefServiceSyncableObserver,
 
  private:
   // PrefServiceSyncableObserver implementation.
-  virtual void OnIsSyncingChanged() override;
+  void OnIsSyncingChanged() override;
 
   // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // Called after user profile was loaded.
   void OnProfileGained(Profile* profile);

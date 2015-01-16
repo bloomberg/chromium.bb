@@ -33,14 +33,13 @@ class TestWallpaperObserverPendingListEmpty
     wallpaper_manager_->AddObserver(this);
   }
 
-  virtual ~TestWallpaperObserverPendingListEmpty() {
+  ~TestWallpaperObserverPendingListEmpty() override {
     wallpaper_manager_->RemoveObserver(this);
   }
 
-  virtual void OnWallpaperAnimationFinished(
-      const std::string& user_id) override {}
+  void OnWallpaperAnimationFinished(const std::string& user_id) override {}
 
-  virtual void OnPendingListEmptyForTesting() override {
+  void OnPendingListEmptyForTesting() override {
     empty_ = true;
     base::MessageLoop::current()->Quit();
   }

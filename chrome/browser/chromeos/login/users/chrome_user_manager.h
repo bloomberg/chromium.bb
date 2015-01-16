@@ -25,7 +25,7 @@ class ChromeUserManager : public user_manager::UserManagerBase {
  public:
   ChromeUserManager(scoped_refptr<base::TaskRunner> task_runner,
                     scoped_refptr<base::TaskRunner> blocking_task_runner);
-  virtual ~ChromeUserManager();
+  ~ChromeUserManager() override;
 
   // Returns current ChromeUserManager or NULL if instance hasn't been
   // yet initialized.

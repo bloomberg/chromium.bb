@@ -40,8 +40,7 @@ class UnittestProfileManager : public ::ProfileManagerWithoutInit {
       : ::ProfileManagerWithoutInit(user_data_dir) {}
 
  protected:
-  virtual Profile* CreateProfileHelper(
-      const base::FilePath& file_path) override {
+  Profile* CreateProfileHelper(const base::FilePath& file_path) override {
     if (!base::PathExists(file_path)) {
       if (!base::CreateDirectory(file_path))
         return NULL;
@@ -53,7 +52,7 @@ class UnittestProfileManager : public ::ProfileManagerWithoutInit {
 
 class UserManagerTest : public testing::Test {
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     base::CommandLine& command_line = *base::CommandLine::ForCurrentProcess();
     command_line.AppendSwitch(::switches::kTestType);
     command_line.AppendSwitch(
@@ -85,7 +84,7 @@ class UserManagerTest : public testing::Test {
     ResetUserManager();
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     // Unregister the in-memory local settings instance.
     local_state_.reset();
 
