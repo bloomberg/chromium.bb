@@ -106,6 +106,11 @@ const KeywordInfo kFirefoxKeywords[] = {
      "http://www.webster.com/cgi-bin/dictionary?va={searchTerms}"},
     // Search keywords.
     {L"\x4E2D\x6587", L"\x4E2D\x6587", "http://www.google.com/"},
+    {L"keyword", L"keyword", "http://example.{searchTerms}.com/"},
+    // in_process_importer_bridge.cc:CreateTemplateURL() will return NULL for
+    // the following bookmark. Consequently, it won't be imported as a search
+    // engine.
+    {L"", L"", "http://%x.example.{searchTerms}.com/"},
 };
 
 const AutofillFormDataInfo kFirefoxAutofillEntries[] = {
@@ -143,7 +148,11 @@ class FirefoxObserver : public ProfileWriter,
     EXPECT_EQ(arraysize(kFirefoxBookmarks), bookmark_count_);
     EXPECT_EQ(1U, history_count_);
     EXPECT_EQ(arraysize(kFirefoxPasswords), password_count_);
-    EXPECT_EQ(arraysize(kFirefoxKeywords), keyword_count_);
+    // The following test case from |kFirefoxKeywords| won't be imported:
+    //   "http://%x.example.{searchTerms}.com/"}.
+    // Hence, value of |keyword_count_| should be lower than size of
+    // |kFirefoxKeywords| by 1.
+    EXPECT_EQ(arraysize(kFirefoxKeywords) - 1, keyword_count_);
   }
 
   bool BookmarkModelIsLoaded() const override {

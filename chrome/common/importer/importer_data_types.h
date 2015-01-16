@@ -47,9 +47,11 @@ struct SourceProfile {
   std::string locale;
 };
 
-// Contains information needed for importing bookmarks/search engine urls, etc.
-struct URLKeywordInfo {
-  GURL url;
+// Contains information needed for importing search engine urls.
+struct SearchEngineInfo {
+  // |url| is a string instead of a GURL since it may not actually be a valid
+  // GURL directly (e.g. for "http://%s.com").
+  base::string16 url;
   base::string16 keyword;
   base::string16 display_name;
 };

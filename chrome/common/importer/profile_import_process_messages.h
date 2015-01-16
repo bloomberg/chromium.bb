@@ -87,7 +87,7 @@ IPC_MESSAGE_CONTROL1(ProfileImportProcessHostMsg_NotifyPasswordFormReady,
                      autofill::PasswordForm)
 
 IPC_MESSAGE_CONTROL2(ProfileImportProcessHostMsg_NotifyKeywordsReady,
-                     std::vector<importer::URLKeywordInfo>, // url_keywords
+                     std::vector<importer::SearchEngineInfo>, // search_engines
                      bool  /* unique on host and path */)
 
 IPC_MESSAGE_CONTROL1(ProfileImportProcessHostMsg_NotifyFirefoxSearchEngData,

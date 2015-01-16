@@ -37,7 +37,7 @@ namespace importer {
 struct ImporterIE7PasswordInfo;
 #endif
 struct ImporterAutofillFormDataEntry;
-struct URLKeywordInfo;
+struct SearchEngineInfo;
 }
 
 // This class is the client for the out of process profile importing.  It
@@ -80,7 +80,7 @@ class ExternalProcessImporterClient : public content::UtilityProcessHostClient {
       const std::vector<ImportedFaviconUsage>& favicons_group);
   void OnPasswordFormImportReady(const autofill::PasswordForm& form);
   void OnKeywordsImportReady(
-      const std::vector<importer::URLKeywordInfo>& url_keywords,
+      const std::vector<importer::SearchEngineInfo>& search_engines,
       bool unique_on_host_and_path);
   void OnFirefoxSearchEngineDataReceived(
       const std::vector<std::string> search_engine_data);

@@ -90,6 +90,7 @@ void BookmarksFileImporter::StartImport(
   bridge->NotifyItemStarted(importer::FAVORITES);
 
   std::vector<ImportedBookmarkEntry> bookmarks;
+  std::vector<importer::SearchEngineInfo> search_engines;
   std::vector<ImportedFaviconUsage> favicons;
 
   bookmark_html_reader::ImportBookmarksFile(
@@ -97,6 +98,7 @@ void BookmarksFileImporter::StartImport(
       base::Bind(internal::CanImportURL),
       source_profile.source_path,
       &bookmarks,
+      &search_engines,
       &favicons);
 
   if (!bookmarks.empty() && !cancelled()) {
@@ -104,6 +106,8 @@ void BookmarksFileImporter::StartImport(
         bridge->GetLocalizedString(IDS_BOOKMARK_GROUP);
     bridge->AddBookmarks(bookmarks, first_folder_name);
   }
+  if (!search_engines.empty())
+    bridge->SetKeywords(search_engines, false);
   if (!favicons.empty())
     bridge->SetFavicons(favicons);
 

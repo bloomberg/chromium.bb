@@ -29,7 +29,7 @@ namespace importer {
 struct ImporterIE7PasswordInfo;
 #endif
 struct ImporterURlRow;
-struct URLKeywordInfo;
+struct SearchEngineInfo;
 }
 
 class ImporterBridge : public base::RefCountedThreadSafe<ImporterBridge> {
@@ -54,7 +54,7 @@ class ImporterBridge : public base::RefCountedThreadSafe<ImporterBridge> {
                                importer::VisitSource visit_source) = 0;
 
   virtual void SetKeywords(
-      const std::vector<importer::URLKeywordInfo>& url_keywords,
+      const std::vector<importer::SearchEngineInfo>& search_engines,
       bool unique_on_host_and_path) = 0;
 
   // The search_engine_data vector contains XML data retrieved from the Firefox

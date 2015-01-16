@@ -18,6 +18,7 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/common/importer/imported_bookmark_entry.h"
 #include "chrome/common/importer/imported_favicon_usage.h"
+#include "chrome/common/importer/importer_data_types.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/utility/importer/bookmark_html_reader.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -242,11 +243,13 @@ TEST_F(BookmarkHTMLWriterTest, Test) {
 
   // Read the bookmarks back in.
   std::vector<ImportedBookmarkEntry> parsed_bookmarks;
+  std::vector<importer::SearchEngineInfo> parsed_search_engines;
   std::vector<ImportedFaviconUsage> favicons;
   bookmark_html_reader::ImportBookmarksFile(base::Callback<bool(void)>(),
                                             base::Callback<bool(const GURL&)>(),
                                             path_,
                                             &parsed_bookmarks,
+                                            &parsed_search_engines,
                                             &favicons);
 
   // Check loaded favicon (url1 is represented by 4 separate bookmarks).
@@ -260,6 +263,10 @@ TEST_F(BookmarkHTMLWriterTest, Test) {
       ASSERT_TRUE(favicons[i].png_data == icon_data);
     }
   }
+
+  // Since we did not populate the BookmarkModel with any entry which can be
+  // imported as search engine, verify that we got back no search engines.
+  ASSERT_EQ(0U, parsed_search_engines.size());
 
   // Verify we got back what we wrote.
   ASSERT_EQ(9U, parsed_bookmarks.size());

@@ -126,10 +126,10 @@ void ExternalProcessImporterBridge::SetHistoryItems(
 }
 
 void ExternalProcessImporterBridge::SetKeywords(
-    const std::vector<importer::URLKeywordInfo>& url_keywords,
+    const std::vector<importer::SearchEngineInfo>& search_engines,
     bool unique_on_host_and_path) {
   Send(new ProfileImportProcessHostMsg_NotifyKeywordsReady(
-      url_keywords, unique_on_host_and_path));
+      search_engines, unique_on_host_and_path));
 }
 
 void ExternalProcessImporterBridge::SetFirefoxSearchEnginesXMLData(

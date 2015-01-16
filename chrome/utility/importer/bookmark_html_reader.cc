@@ -10,10 +10,13 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/common/importer/imported_bookmark_entry.h"
 #include "chrome/common/importer/imported_favicon_usage.h"
 #include "chrome/utility/importer/favicon_reencode.h"
+#include "components/search_engines/search_terms_data.h"
+#include "components/search_engines/template_url.h"
 #include "net/base/data_url.h"
 #include "net/base/escape.h"
 #include "url/gurl.h"
@@ -91,6 +94,7 @@ void ImportBookmarksFile(
       const base::Callback<bool(const GURL&)>& valid_url_callback,
       const base::FilePath& file_path,
       std::vector<ImportedBookmarkEntry>* bookmarks,
+      std::vector<importer::SearchEngineInfo>* search_engines,
       std::vector<ImportedFaviconUsage>* favicons) {
   std::string content;
   base::ReadFileToString(file_path, &content);
@@ -149,6 +153,20 @@ void ImportBookmarksFile(
                                         &url, &favicon, &shortcut,
                                         &add_date, &post_data) ||
         internal::ParseMinimumBookmarkFromLine(line, charset, &title, &url);
+
+    // If bookmark contains a valid replaceable url and a keyword then import
+    // it as search engine.
+    std::string search_engine_url;
+    if (is_bookmark && post_data.empty() &&
+        CanImportURLAsSearchEngine(url, &search_engine_url) &&
+            !shortcut.empty()) {
+      importer::SearchEngineInfo search_engine_info;
+      search_engine_info.url.assign(base::UTF8ToUTF16(search_engine_url));
+      search_engine_info.keyword = shortcut;
+      search_engine_info.display_name = title;
+      search_engines->push_back(search_engine_info);
+      continue;
+    }
 
     if (is_bookmark)
       last_folder_is_empty = false;
@@ -236,6 +254,26 @@ void ImportBookmarksFile(
         toolbar_folder_index = 0;
     }
   }
+}
+
+bool CanImportURLAsSearchEngine(const GURL& url,
+                                std::string* search_engine_url) {
+  std::string url_spec = url.possibly_invalid_spec();
+
+  if (url_spec.empty())
+    return false;
+
+  url_spec = net::UnescapeURLComponent(url_spec,
+                                       net::UnescapeRule::URL_SPECIAL_CHARS);
+
+  // Replace replacement terms ("%s") in |url_spec| with {searchTerms}.
+  url_spec =
+      TemplateURLRef::DisplayURLToURLRef(base::UTF8ToUTF16(url_spec));
+
+  TemplateURLData data;
+  data.SetURL(url_spec);
+  *search_engine_url = url_spec;
+  return TemplateURL(data).SupportsReplacement(SearchTermsData());
 }
 
 namespace internal {

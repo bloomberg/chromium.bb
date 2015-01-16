@@ -101,6 +101,7 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../components/components_strings.gyp:components_strings',
+        '../components/components.gyp:search_engines',
         '../components/components.gyp:url_fixer',
         '../content/content.gyp:content_common',
         '../content/content.gyp:content_utility',

@@ -26,7 +26,7 @@ namespace importer {
 struct ImporterIE7PasswordInfo;
 #endif
 struct ImporterURLRow;
-struct URLKeywordInfo;
+struct SearchEngineInfo;
 }
 
 namespace IPC {
@@ -62,8 +62,9 @@ class ExternalProcessImporterBridge : public ImporterBridge {
   void SetHistoryItems(const std::vector<ImporterURLRow>& rows,
                        importer::VisitSource visit_source) override;
 
-  void SetKeywords(const std::vector<importer::URLKeywordInfo>& url_keywords,
-                   bool unique_on_host_and_path) override;
+  void SetKeywords(
+      const std::vector<importer::SearchEngineInfo>& search_engines,
+      bool unique_on_host_and_path) override;
 
   void SetFirefoxSearchEnginesXMLData(
       const std::vector<std::string>& seach_engine_data) override;

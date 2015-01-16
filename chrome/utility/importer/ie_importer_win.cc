@@ -724,15 +724,15 @@ void IEImporter::ImportSearchEngines() {
     }
   }
   // ProfileWriter::AddKeywords() requires a vector and we have a map.
-  std::vector<importer::URLKeywordInfo> url_keywords;
+  std::vector<importer::SearchEngineInfo> search_engines;
   for (SearchEnginesMap::iterator i = search_engines_map.begin();
        i != search_engines_map.end(); ++i) {
-    importer::URLKeywordInfo url_keyword_info;
-    url_keyword_info.url = GURL(i->first);
-    url_keyword_info.display_name = i->second;
-    url_keywords.push_back(url_keyword_info);
+    importer::SearchEngineInfo search_engine_info;
+    search_engine_info.url = base::UTF8ToUTF16(i->first);
+    search_engine_info.display_name = i->second;
+    search_engines.push_back(search_engine_info);
   }
-  bridge_->SetKeywords(url_keywords, true);
+  bridge_->SetKeywords(search_engines, true);
 }
 
 void IEImporter::ImportHomepage() {

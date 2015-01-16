@@ -91,25 +91,20 @@ class FirefoxURLParameterFilter : public TemplateURLParser::ParameterFilter {
   DISALLOW_COPY_AND_ASSIGN(FirefoxURLParameterFilter);
 };
 
-// Creates a TemplateURL with the |keyword| and |url|. |title| may be empty.
+// Attempts to create a TemplateURL from the provided data. |title| is optional.
+// If TemplateURL creation fails, returns NULL.
 // This function transfers ownership of the created TemplateURL to the caller.
-TemplateURL* CreateTemplateURL(const base::string16& title,
+TemplateURL* CreateTemplateURL(const base::string16& url,
                                const base::string16& keyword,
-                               const GURL& url) {
-  // Skip if the url is invalid.
-  if (!url.is_valid())
+                               const base::string16& title) {
+  if (url.empty() || keyword.empty())
     return NULL;
-
   TemplateURLData data;
-  if (keyword.empty())
-    data.SetKeyword(TemplateURL::GenerateKeyword(url));
-  else
-    data.SetKeyword(keyword);
+  data.SetKeyword(keyword);
   // We set short name by using the title if it exists.
   // Otherwise, we use the shortcut.
   data.short_name = title.empty() ? keyword : title;
-  data.SetURL(
-      TemplateURLRef::DisplayURLToURLRef(base::UTF8ToUTF16(url.spec())));
+  data.SetURL(TemplateURLRef::DisplayURLToURLRef(url));
   return new TemplateURL(data);
 }
 
@@ -221,14 +216,16 @@ void InProcessImporterBridge::SetHistoryItems(
 }
 
 void InProcessImporterBridge::SetKeywords(
-    const std::vector<importer::URLKeywordInfo>& url_keywords,
+    const std::vector<importer::SearchEngineInfo>& search_engines,
     bool unique_on_host_and_path) {
   ScopedVector<TemplateURL> owned_template_urls;
-  for (size_t i = 0; i < url_keywords.size(); ++i) {
-    owned_template_urls.push_back(
-        CreateTemplateURL(url_keywords[i].display_name,
-                          url_keywords[i].keyword,
-                          url_keywords[i].url));
+  for (const auto& search_engine : search_engines) {
+    TemplateURL* owned_template_url =
+        CreateTemplateURL(search_engine.url,
+                          search_engine.keyword,
+                          search_engine.display_name);
+    if (owned_template_url)
+      owned_template_urls.push_back(owned_template_url);
   }
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
       base::Bind(&ProfileWriter::AddKeywords, writer_,

@@ -10,6 +10,7 @@
 
 #include "base/callback_forward.h"
 #include "base/strings/string16.h"
+#include "chrome/common/importer/importer_data_types.h"
 
 class GURL;
 struct ImportedBookmarkEntry;
@@ -37,6 +38,9 @@ namespace bookmark_html_reader {
 // |bookmarks| is a pointer to a vector, which is filled with the imported
 // bookmarks. It may not be NULL.
 //
+// |search_engines| is a pointer to a vector, which is filled with the imported
+// search engines.
+//
 // |favicons| is a pointer to a vector, which is filled with the favicons of
 // imported bookmarks. It may be NULL, in which case favicons are not imported.
 void ImportBookmarksFile(
@@ -44,7 +48,14 @@ void ImportBookmarksFile(
     const base::Callback<bool(const GURL&)>& valid_url_callback,
     const base::FilePath& file_path,
     std::vector<ImportedBookmarkEntry>* bookmarks,
+    std::vector<importer::SearchEngineInfo>* search_engines,
     std::vector<ImportedFaviconUsage>* favicons);
+
+// Returns true if |url| should be imported as a search engine, i.e. because it
+// has replacement terms. Chrome treats such bookmarks as search engines rather
+// than true bookmarks.
+bool CanImportURLAsSearchEngine(const GURL& url,
+                                std::string* search_engine_url);
 
 namespace internal {
 
