@@ -624,10 +624,24 @@ private:
 
 static void inline appendRunObjectIfNecessary(RenderObject* obj, unsigned start, unsigned end, InlineBidiResolver& resolver, AppendRunBehavior behavior, IsolateTracker& tracker)
 {
-    if (behavior == AppendingFakeRun)
-        tracker.addFakeRunIfNecessary(obj, start, end, resolver);
-    else
-        resolver.runs().addRun(createRun(start, end, obj, resolver));
+    // Trailing space code creates empty BidiRun objects, start == end, so
+    // that case needs to be handled specifically.
+    bool addEmptyRun = (end == start);
+
+    // Append BidiRun objects, at most 64K chars at a time, until all
+    // text between |start| and |end| is represented.
+    while (end > start || addEmptyRun) {
+        addEmptyRun = false;
+        const int limit = USHRT_MAX; // InlineTextBox stores text length as unsigned short.
+        unsigned limitedEnd = end;
+        if (end - start > limit)
+            limitedEnd = start + limit;
+        if (behavior == AppendingFakeRun)
+            tracker.addFakeRunIfNecessary(obj, start, limitedEnd, resolver);
+        else
+            resolver.runs().addRun(createRun(start, limitedEnd, obj, resolver));
+        start = limitedEnd;
+    }
 }
 
 static void adjustMidpointsAndAppendRunsForObjectIfNeeded(RenderObject* obj, unsigned start, unsigned end, InlineBidiResolver& resolver, AppendRunBehavior behavior, IsolateTracker& tracker)
