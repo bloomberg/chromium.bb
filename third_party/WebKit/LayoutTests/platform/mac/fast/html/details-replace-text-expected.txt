@@ -9,19 +9,19 @@ layer at (0,0) size 800x600
           RenderText {#text} at (16,0) size 64x16
             text run at (16,0) width 64: "Summary"
         RenderBlock {DIV} at (0,16) size 784x16
-          RenderBlock {SPAN} at (0,2) size 62.42x13
+          RenderBlock {SPAN} at (0,2) size 62.41x13
             RenderText {#text} at (0,0) size 63x13
               text run at (0,0) width 63: "Details1"
           RenderText {#text} at (62,0) size 5x16
             text run at (62,0) width 5: " "
           RenderText {#text} at (0,0) size 0x0
-          RenderBlock {SPAN} at (66.42,2) size 62.42x13
+          RenderBlock {SPAN} at (66.41,2) size 62.41x13
             RenderText {#text} at (0,0) size 63x13
               text run at (0,0) width 63: "Details2"
           RenderText {#text} at (0,0) size 0x0
       RenderBlock (anonymous) at (0,32) size 784x18
-        RenderButton {INPUT} at (0,0) size 40.06x18 [bgcolor=#C0C0C0]
-          RenderBlock (anonymous) at (8,2) size 24.06x13
+        RenderButton {INPUT} at (0,0) size 40.05x18 [bgcolor=#C0C0C0]
+          RenderBlock (anonymous) at (8,2) size 24.05x13
             RenderText {#text} at (0,0) size 25x13
               text run at (0,0) width 25: "click"
         RenderText {#text} at (0,0) size 0x0

@@ -4,8 +4,8 @@ layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584
       RenderBlock {FORM} at (0,0) size 784x18
-        RenderButton {INPUT} at (0,0) size 41.58x18 [bgcolor=#C0C0C0]
-          RenderBlock (anonymous) at (8,2) size 25.58x13
+        RenderButton {INPUT} at (0,0) size 41.56x18 [bgcolor=#C0C0C0]
+          RenderBlock (anonymous) at (8,2) size 25.56x13
             RenderText {#text} at (0,0) size 26x13
               text run at (0,0) width 26: "form"
         RenderText {#text} at (0,0) size 0x0

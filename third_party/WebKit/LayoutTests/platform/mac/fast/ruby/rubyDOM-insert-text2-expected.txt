@@ -17,17 +17,17 @@ layer at (0,0) size 800x600
         RenderText {#text} at (0,9) size 159x16
           text run at (0,9) width 159: "<ruby> is defined in the "
         RenderRuby (inline) {RUBY} at (0,0) size 112x16
-          RenderRubyRun (anonymous) at (154.02,9) size 107.47x16
-            RenderRubyText {RT} at (0,-9) size 107.47x9
+          RenderRubyRun (anonymous) at (154.02,9) size 107.45x16
+            RenderRubyText {RT} at (0,-9) size 107.45x9
               RenderText {#text} at (0,0) size 108x9
                 text run at (0,0) width 108: "Hyper-text Markup Language"
-            RenderRubyBase (anonymous) at (0,0) size 107.47x16
+            RenderRubyBase (anonymous) at (0,0) size 107.45x16
               RenderInline {SPAN} at (0,0) size 22x16
                 RenderText {#text} at (31,0) size 22x16
                   text run at (31,0) width 22: "HT"
               RenderText {#text} at (52,0) size 25x16
                 text run at (52,0) width 25: "ML"
-          RenderRubyRun (anonymous) at (261.48,9) size 8x16
+          RenderRubyRun (anonymous) at (261.47,9) size 8x16
             RenderRubyBase (anonymous) at (0,0) size 8x16
               RenderText {#text} at (0,0) size 8x16
                 text run at (0,0) width 8: "5"
@@ -37,15 +37,15 @@ layer at (0,0) size 800x600
         RenderText {#text} at (0,9) size 159x16
           text run at (0,9) width 159: "<ruby> is defined in the "
         RenderRuby (inline) {RUBY} at (0,0) size 112x16
-          RenderRubyRun (anonymous) at (154.02,9) size 107.47x16
-            RenderRubyText {RT} at (0,-9) size 107.47x9
+          RenderRubyRun (anonymous) at (154.02,9) size 107.45x16
+            RenderRubyText {RT} at (0,-9) size 107.45x9
               RenderText {#text} at (0,0) size 108x9
                 text run at (0,0) width 108: "Hyper-text Markup Language"
-            RenderRubyBase (anonymous) at (0,0) size 107.47x16
+            RenderRubyBase (anonymous) at (0,0) size 107.45x16
               RenderText {#text} at (31,0) size 46x16
                 text run at (31,0) width 46: "HTML"
               RenderInline {SPAN} at (0,0) size 1x16
-          RenderRubyRun (anonymous) at (261.48,9) size 8x16
+          RenderRubyRun (anonymous) at (261.47,9) size 8x16
             RenderRubyBase (anonymous) at (0,0) size 8x16
               RenderText {#text} at (0,0) size 8x16
                 text run at (0,0) width 8: "5"

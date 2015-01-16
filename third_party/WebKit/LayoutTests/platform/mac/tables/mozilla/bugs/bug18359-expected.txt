@@ -18,8 +18,8 @@ layer at (0,0) size 800x600
               RenderTableCell {TD} at (111,2) size 350x21 [r=0 c=1 rs=1 cs=1]
                 RenderTextControl {INPUT} at (1,1) size 348x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
               RenderTableCell {TD} at (463,2) size 84x20 [r=0 c=2 rs=1 cs=1]
-                RenderButton {INPUT} at (1,1) size 54.98x18 [bgcolor=#C0C0C0]
-                  RenderBlock (anonymous) at (8,2) size 38.98x13
+                RenderButton {INPUT} at (1,1) size 54.97x18 [bgcolor=#C0C0C0]
+                  RenderBlock (anonymous) at (8,2) size 38.97x13
                     RenderText {#text} at (0,0) size 39x13
                       text run at (0,0) width 39: "Trigger"
             RenderTableRow {TR} at (0,25) size 549x20
@@ -34,8 +34,8 @@ layer at (0,0) size 800x600
                       text run at (8,2) width 73: "a_abortinstall"
                 RenderText {#text} at (0,0) size 0x0
               RenderTableCell {TD} at (463,25) size 84x20 [r=1 c=2 rs=1 cs=1]
-                RenderButton {INPUT} at (1,1) size 81.92x18 [bgcolor=#C0C0C0]
-                  RenderBlock (anonymous) at (8,2) size 65.92x13
+                RenderButton {INPUT} at (1,1) size 81.91x18 [bgcolor=#C0C0C0]
+                  RenderBlock (anonymous) at (8,2) size 65.91x13
                     RenderText {#text} at (0,0) size 66x13
                       text run at (0,0) width 66: "Trigger case"
 layer at (123,68) size 342x13

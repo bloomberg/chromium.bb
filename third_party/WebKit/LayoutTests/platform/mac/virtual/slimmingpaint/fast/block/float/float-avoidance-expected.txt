@@ -57,8 +57,8 @@ layer at (0,0) size 785x2180 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               RenderText at (8,2) size 22x13
                 text run at (8,2) width 22: "One"
           RenderText {#text} at (0,0) size 0x0
-        RenderButton {INPUT} at (110,26) size 27.27x18 [bgcolor=#C0C0C0]
-          RenderBlock (anonymous) at (8,2) size 11.27x13
+        RenderButton {INPUT} at (110,26) size 27.25x18 [bgcolor=#C0C0C0]
+          RenderBlock (anonymous) at (8,2) size 11.25x13
             RenderText {#text} at (0,0) size 12x13
               text run at (0,0) width 12: "Hi"
         RenderBlock (anonymous) at (10,44) size 200x16

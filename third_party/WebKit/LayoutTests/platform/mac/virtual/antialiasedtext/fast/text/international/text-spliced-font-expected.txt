@@ -10,7 +10,7 @@ layer at (0,0) size 800x546
           RenderText {#text} at (113,6) size 165x16
             text run at (113,6) width 165: "string\x{300C}\x{3042}\x{3001}\x{5909}\x{3063}\x{FF01}\x{300D}\x{3002}"
       RenderBlock (anonymous) at (0,40) size 784x208
-        RenderBlock {SPAN} at (0,0) size 24x164.45
+        RenderBlock {SPAN} at (0,0) size 24x164.44
           RenderText {#text} at (4,0) size 16x165
             text run at (4,0) width 165: "string\x{300C}\x{3042}\x{3001}\x{5909}\x{3063}\x{FF01}\x{300D}\x{3002}"
         RenderBR {BR} at (24,152) size 0x16
@@ -30,7 +30,7 @@ layer at (0,0) size 800x546
           RenderText {#text} at (126,6) size 166x16
             text run at (126,6) width 166: "string\x{300C}\x{3042}\x{3001}\x{5909}\x{3063}\x{FF01}\x{300D}\x{3002}"
       RenderBlock (anonymous) at (0,314) size 784x208
-        RenderBlock {SPAN} at (0,0) size 24x164.45
+        RenderBlock {SPAN} at (0,0) size 24x164.44
           RenderText {#text} at (4,0) size 16x165
             text run at (4,0) width 165: "string\x{300C}\x{3042}\x{3001}\x{5909}\x{3063}\x{FF01}\x{300D}\x{3002}"
         RenderBR {BR} at (24,152) size 0x16

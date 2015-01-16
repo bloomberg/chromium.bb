@@ -16,23 +16,23 @@ layer at (0,0) size 800x600
         RenderText {#text} at (0,9) size 159x16
           text run at (0,9) width 159: "<ruby> is defined in the "
         RenderRuby (inline) {RUBY} at (0,0) size 110x16
-          RenderRubyRun (anonymous) at (154.02,9) size 38.98x16
-            RenderRubyText {RT} at (0,-9) size 38.98x9
+          RenderRubyRun (anonymous) at (154.02,9) size 38.97x16
+            RenderRubyText {RT} at (0,-9) size 38.97x9
               RenderText {#text} at (0,0) size 40x9
                 text run at (0,0) width 40: "Hyper-text"
-            RenderRubyBase (anonymous) at (0,0) size 38.98x16
+            RenderRubyBase (anonymous) at (0,0) size 38.97x16
               RenderInline {SPAN} at (0,0) size 23x16
                 RenderText {#text} at (8,0) size 23x16
                   text run at (8,0) width 23: "HT"
-          RenderRubyRun (anonymous) at (193,9) size 66.23x16
-            RenderRubyText {RT} at (0,-9) size 66.23x9
+          RenderRubyRun (anonymous) at (192.98,9) size 66.22x16
+            RenderRubyText {RT} at (0,-9) size 66.22x9
               RenderText {#text} at (0,0) size 67x9
                 text run at (0,0) width 67: "Markup Language"
-            RenderRubyBase (anonymous) at (0,0) size 66.23x16
+            RenderRubyBase (anonymous) at (0,0) size 66.22x16
               RenderInline {SPAN} at (0,0) size 25x16
                 RenderText {#text} at (21,0) size 25x16
                   text run at (21,0) width 25: "ML"
-          RenderRubyRun (anonymous) at (259.23,9) size 8x16
+          RenderRubyRun (anonymous) at (259.20,9) size 8x16
             RenderRubyBase (anonymous) at (0,0) size 8x16
               RenderText {#text} at (0,0) size 8x16
                 text run at (0,0) width 8: "5"
@@ -42,23 +42,23 @@ layer at (0,0) size 800x600
         RenderText {#text} at (0,9) size 159x16
           text run at (0,9) width 159: "<ruby> is defined in the "
         RenderRuby (inline) {RUBY} at (0,0) size 110x16
-          RenderRubyRun (anonymous) at (154.02,9) size 38.98x16
-            RenderRubyText {RT} at (0,-9) size 38.98x9
+          RenderRubyRun (anonymous) at (154.02,9) size 38.97x16
+            RenderRubyText {RT} at (0,-9) size 38.97x9
               RenderText {#text} at (0,0) size 40x9
                 text run at (0,0) width 40: "Hyper-text"
-            RenderRubyBase (anonymous) at (0,0) size 38.98x16
+            RenderRubyBase (anonymous) at (0,0) size 38.97x16
               RenderInline {SPAN} at (0,0) size 23x16
                 RenderText {#text} at (8,0) size 23x16
                   text run at (8,0) width 23: "HT"
-          RenderRubyRun (anonymous) at (193,9) size 66.23x16
-            RenderRubyText {RT} at (0,-9) size 66.23x9
+          RenderRubyRun (anonymous) at (192.98,9) size 66.22x16
+            RenderRubyText {RT} at (0,-9) size 66.22x9
               RenderText {#text} at (0,0) size 67x9
                 text run at (0,0) width 67: "Markup Language"
-            RenderRubyBase (anonymous) at (0,0) size 66.23x16
+            RenderRubyBase (anonymous) at (0,0) size 66.22x16
               RenderInline {SPAN} at (0,0) size 25x16
                 RenderText {#text} at (21,0) size 25x16
                   text run at (21,0) width 25: "ML"
-          RenderRubyRun (anonymous) at (259.23,9) size 8x16
+          RenderRubyRun (anonymous) at (259.20,9) size 8x16
             RenderRubyBase (anonymous) at (0,0) size 8x16
               RenderText {#text} at (0,0) size 8x16
                 text run at (0,0) width 8: "5"

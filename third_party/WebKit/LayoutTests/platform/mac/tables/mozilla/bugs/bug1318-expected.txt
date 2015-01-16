@@ -42,8 +42,8 @@ layer at (0,0) size 800x600
               RenderInline {FONT} at (0,0) size 1x15
                 RenderText {#text} at (0,0) size 0x0
             RenderTableCell {TD} at (634,114) size 150x20 [r=3 c=2 rs=1 cs=2]
-              RenderButton {INPUT} at (55.64,1) size 38.70x18 [bgcolor=#C0C0C0]
-                RenderBlock (anonymous) at (8,2) size 22.70x13
+              RenderButton {INPUT} at (55.66,1) size 38.69x18 [bgcolor=#C0C0C0]
+                RenderBlock (anonymous) at (8,2) size 22.69x13
                   RenderText {#text} at (0,0) size 23x13
                     text run at (0,0) width 23: "vote"
               RenderText {#text} at (0,0) size 0x0

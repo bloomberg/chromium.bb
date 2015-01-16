@@ -4,13 +4,13 @@ layer at (0,0) size 800x76
   RenderBlock {HTML} at (0,0) size 800x76
     RenderBody {BODY} at (8,8) size 784x60
       RenderBlock {FORM} at (0,0) size 784x36
-        RenderButton {INPUT} at (0,0) size 158.39x18 [bgcolor=#C0C0C0]
-          RenderBlock (anonymous) at (8,2) size 142.39x13
+        RenderButton {INPUT} at (0,0) size 158.38x18 [bgcolor=#C0C0C0]
+          RenderBlock (anonymous) at (8,2) size 142.38x13
             RenderText {#text} at (0,0) size 143x13
               text run at (0,0) width 143: "(1) Fill cell with long string"
         RenderBR {BR} at (158,1) size 1x16
-        RenderButton {INPUT} at (0,18) size 162.56x18 [bgcolor=#C0C0C0]
-          RenderBlock (anonymous) at (8,2) size 146.56x13
+        RenderButton {INPUT} at (0,18) size 162.55x18 [bgcolor=#C0C0C0]
+          RenderBlock (anonymous) at (8,2) size 146.55x13
             RenderText {#text} at (0,0) size 147x13
               text run at (0,0) width 147: "(2) Fill cell with short string"
         RenderBR {BR} at (162,19) size 1x16

@@ -5,8 +5,8 @@ layer at (0,0) size 800x74
     RenderBody {BODY} at (8,8) size 784x50
       RenderBlock {FORM} at (0,0) size 784x18
         RenderFileUploadControl {INPUT} at (0,0) size 237x18 "2 files"
-          RenderButton {INPUT} at (0,0) size 83.17x18 [bgcolor=#C0C0C0]
-            RenderBlock (anonymous) at (8,2) size 67.17x13
+          RenderButton {INPUT} at (0,0) size 83.16x18 [bgcolor=#C0C0C0]
+            RenderBlock (anonymous) at (8,2) size 67.16x13
               RenderText {#text} at (0,0) size 68x13
                 text run at (0,0) width 68: "Choose Files"
         RenderText {#text} at (0,0) size 0x0
