@@ -25,14 +25,6 @@
 
 // http://www.w3.org/TR/IndexedDB/#idl-def-IDBIndex
 
-// FIXME: de-duplicate this when crbug.com/390758 is fixed.
-enum IDBCursorDirection {
-    "next",
-    "nextunique",
-    "prev",
-    "prevunique"
-};
-
 [
     GarbageCollected
 ] interface IDBIndex {

@@ -65,6 +65,10 @@ class ComponentInfoProvider(object):
         return {}
 
     @property
+    def enumerations(self):
+        return {}
+
+    @property
     def union_types(self):
         return set()
 
@@ -82,6 +86,10 @@ class ComponentInfoProviderCore(ComponentInfoProvider):
     @property
     def component_info(self):
         return self._component_info
+
+    @property
+    def enumerations(self):
+        return self._component_info['enumerations']
 
     @property
     def union_types(self):
@@ -103,6 +111,12 @@ class ComponentInfoProviderModules(ComponentInfoProvider):
     @property
     def component_info(self):
         return self._component_info_modules
+
+    @property
+    def enumerations(self):
+        enums = self._component_info_core['enumerations'].copy()
+        enums.update(self._component_info_modules['enumerations'])
+        return enums
 
     @property
     def union_types(self):

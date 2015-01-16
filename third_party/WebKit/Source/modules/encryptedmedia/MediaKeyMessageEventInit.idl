@@ -4,12 +4,6 @@
 
 // https://w3c.github.io/encrypted-media/#mediakeymessageevent
 
-enum MediaKeyMessageType {
-    "license-request",
-    "license-renewal",
-    "license-release"
-};
-
 dictionary MediaKeyMessageEventInit : EventInit {
     MediaKeyMessageType messageType = "license-request";
     ArrayBuffer message;

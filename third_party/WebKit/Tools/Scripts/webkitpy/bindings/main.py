@@ -288,7 +288,7 @@ def bindings_tests(output_directory, verbose):
                     os.makedirs(partial_interface_output_dir)
                 idl_partial_interface_compiler = IdlCompilerV8(
                     partial_interface_output_dir,
-                    info_provider=component_info_providers[component],
+                    info_provider=component_info_providers['modules'],
                     only_if_changed=True,
                     target_component='modules')
             else:

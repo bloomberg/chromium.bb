@@ -42,5 +42,6 @@
 
     void partial2VoidMethod(DOMString value);
     void partial2VoidMethod(Node node);
+    void partialVoidTestEnumModulesArgMethod(TestEnumModules arg);
     static void partial2StaticVoidMethod(DOMString value);
 };

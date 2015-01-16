@@ -31,6 +31,8 @@
 // Test for interface extended attributes and special operations.
 // Also used as a target by TestObject
 
+enum TestEnumModules { "EnumModulesValue1", "EnumModulesValue2" };
+
 [
     ActiveDOMObject,
     Conditional=CONDITION,

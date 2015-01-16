@@ -125,7 +125,7 @@ void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
     } else {
         TOSTRING_VOID(V8StringResource<>, enumMember, enumMemberValue);
         String string = enumMember;
-        if (!(string == "foo" || string == "bar" || string == "baz")) {
+        if (!(string == "" || string == "EnumValue1" || string == "EnumValue2" || string == "EnumValue3")) {
             exceptionState.throwTypeError("member enumMember ('" + string + "') is not a valid enum value.");
             return;
         }

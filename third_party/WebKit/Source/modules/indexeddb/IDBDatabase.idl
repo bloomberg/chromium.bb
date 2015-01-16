@@ -26,13 +26,6 @@
 
 // https://dvcs.w3.org/hg/IndexedDB/raw-file/default/Overview.html#idl-def-IDBDatabase
 
-// FIXME: de-duplicate this when crbug.com/390758 is fixed.
-enum IDBTransactionMode {
-    "readonly",
-    "readwrite",
-    "versionchange"
-};
-
 [
     ActiveDOMObject,
     GarbageCollected,

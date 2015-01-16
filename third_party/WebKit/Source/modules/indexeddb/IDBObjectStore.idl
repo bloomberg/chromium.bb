@@ -25,14 +25,6 @@
 
 // https://dvcs.w3.org/hg/IndexedDB/raw-file/default/Overview.html#idl-def-IDBObjectStore
 
-// FIXME: de-duplicate this when crbug.com/390758 is fixed.
-enum IDBCursorDirection {
-    "next",
-    "nextunique",
-    "prev",
-    "prevunique"
-};
-
 [
     GarbageCollected,
 ] interface IDBObjectStore {

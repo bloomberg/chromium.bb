@@ -200,6 +200,32 @@ static void partial2VoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& 
     exceptionState.throwIfNeeded();
 }
 
+static void partialVoidTestEnumModulesArgMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    if (UNLIKELY(info.Length() < 1)) {
+        V8ThrowException::throwException(createMinimumArityTypeErrorForMethod(info.GetIsolate(), "partialVoidTestEnumModulesArgMethod", "TestInterface", 1, info.Length()), info.GetIsolate());
+        return;
+    }
+    TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
+    V8StringResource<> arg;
+    {
+        TOSTRING_VOID_INTERNAL(arg, info[0]);
+        String string = arg;
+        if (!(string == "EnumModulesValue1" || string == "EnumModulesValue2")) {
+            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("partialVoidTestEnumModulesArgMethod", "TestInterface", "parameter 1 ('" + string + "') is not a valid enum value."));
+            return;
+        }
+    }
+    TestPartialInterfaceImplementation3::partialVoidTestEnumModulesArgMethod(*impl, arg);
+}
+
+static void partialVoidTestEnumModulesArgMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    TestInterfaceImplementationPartialV8Internal::partialVoidTestEnumModulesArgMethodMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
 static void partial2StaticVoidMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     V8StringResource<> value;
@@ -256,6 +282,13 @@ void V8TestInterfacePartial::installV8TestInterfaceTemplate(v8::Local<v8::Functi
 void V8TestInterfacePartial::installConditionallyEnabledMethods(v8::Local<v8::Object> prototypeObject, v8::Isolate* isolate)
 {
     V8TestInterface::installConditionallyEnabledMethods(prototypeObject, isolate);
+    v8::Local<v8::Signature> defaultSignature = v8::Signature::New(isolate, domTemplate(isolate));
+    ExecutionContext* context = toExecutionContext(prototypeObject->CreationContext());
+    ASSERT(context);
+
+    if (context && context->isDocument() && ContextFeatures::partialContextName3Enabled(toDocument(context))) {
+        prototypeObject->Set(v8AtomicString(isolate, "partialVoidTestEnumModulesArgMethod"), v8::FunctionTemplate::New(isolate, TestInterfaceImplementationPartialV8Internal::partialVoidTestEnumModulesArgMethodMethodCallback, v8Undefined(), defaultSignature, 1)->GetFunction());
+    }
 }
 
 bool V8TestInterface::PrivateScript::shortMethodWithShortArgumentImplementedInPrivateScriptMethod(LocalFrame* frame, TestInterface* holderImpl, int value, int* result)

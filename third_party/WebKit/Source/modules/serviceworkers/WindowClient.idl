@@ -10,9 +10,6 @@ enum ContextFrameType {
     "none"
 };
 
-// http://www.w3.org/TR/page-visibility/#VisibilityState
-enum VisibilityState { "hidden", "visible", "prerender", "unloaded" };
-
 // https://slightlyoff.github.io/ServiceWorker/spec/service_worker/#window-client-interface
 [
     Exposed=ServiceWorker,

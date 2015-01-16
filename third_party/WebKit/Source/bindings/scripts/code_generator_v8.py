@@ -103,10 +103,12 @@ def render_template(include_paths, header_template, cpp_template,
     return header_text, cpp_text
 
 
-def set_global_type_info(interfaces_info):
+def set_global_type_info(info_provider):
+    interfaces_info = info_provider.interfaces_info
     idl_types.set_ancestors(interfaces_info['ancestors'])
     IdlType.set_callback_interfaces(interfaces_info['callback_interfaces'])
     IdlType.set_dictionaries(interfaces_info['dictionaries'])
+    IdlType.set_enums(info_provider.enumerations)
     IdlType.set_implemented_as_interfaces(interfaces_info['implemented_as_interfaces'])
     IdlType.set_garbage_collected_types(interfaces_info['garbage_collected_interfaces'])
     IdlType.set_will_be_garbage_collected_types(interfaces_info['will_be_garbage_collected_interfaces'])
@@ -120,14 +122,12 @@ class CodeGeneratorBase(object):
         self.info_provider = info_provider
         self.jinja_env = initialize_jinja_env(cache_dir)
         self.output_dir = output_dir
-        set_global_type_info(info_provider.interfaces_info)
+        set_global_type_info(info_provider)
 
     def generate_code(self, definitions, definition_name):
         """Returns .h/.cpp code as ((path, content)...)."""
         # Set local type info
         IdlType.set_callback_functions(definitions.callback_functions.keys())
-        IdlType.set_enums((enum.name, enum.values)
-                          for enum in definitions.enumerations.values())
         # Resolve typedefs
         definitions.resolve_typedefs(self.info_provider.component_info['typedefs'])
         return self.generate_code_internal(definitions, definition_name)
@@ -273,7 +273,7 @@ class CodeGeneratorUnionType(object):
         self.jinja_env = initialize_jinja_env(cache_dir)
         self.output_dir = output_dir
         self.target_component = target_component
-        set_global_type_info(info_provider.interfaces_info)
+        set_global_type_info(info_provider)
 
     def generate_code(self):
         union_types = self.info_provider.union_types

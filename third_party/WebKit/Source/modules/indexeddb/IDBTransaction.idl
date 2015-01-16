@@ -24,7 +24,6 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// FIXME: de-duplicate this when crbug.com/390758 is fixed.
 enum IDBTransactionMode {
     "readonly",
     "readwrite",

@@ -55,11 +55,13 @@
     attribute float floatAttribute;
     attribute unrestricted double unrestrictedDoubleAttribute;
     attribute unrestricted float unrestrictedFloatAttribute;
+    attribute TestEnum testEnumAttribute;
     static attribute DOMString staticStringAttribute;
 
     void voidMethodTestInterfaceEmptyArg(TestInterfaceEmpty testInterfaceEmptyArg);
     void voidMethodDoubleArgFloatArg(double doubleArg, float floatArg);
     void voidMethodUnrestrictedDoubleArgUnrestrictedFloatArg(unrestricted double unrestrictedDoubleArg, unrestricted float unrestrictedFloatArg);
+    void voidMethodTestEnumArg(TestEnum testEnumArg);
     [PerWorldBindings] void voidMethod();
 
     // Anonymous indexed property operations
