@@ -99,6 +99,22 @@ def _ReapChildren(pid):
   return pid_status
 
 
+def _SafeTcSetPgrp(fd, pgrp):
+  """Set |pgrp| as the controller of the tty |fd|."""
+  try:
+    curr_pgrp = os.tcgetpgrp(fd)
+  except OSError as e:
+    # This can come up when the fd is not connected to a terminal.
+    if e.errno == errno.ENOTTY:
+      return
+    raise
+
+  # We can change the owner only if currently own it.  Otherwise we'll get
+  # stopped by the kernel with SIGTTOU and that'll hit the whole group.
+  if curr_pgrp == os.getpgrp():
+    os.tcsetpgrp(fd, pgrp)
+
+
 def CreatePidNs():
   """Start a new pid namespace
 
@@ -135,6 +151,9 @@ def CreatePidNs():
     # We'll pass that back up below.
     signal.signal(signal.SIGINT, signal.SIG_IGN)
 
+    # Forward the control of the terminal to the child so it can manage input.
+    _SafeTcSetPgrp(sys.stdin.fileno(), pid)
+
     # Reap the children as the parent of the new namespace.
     process_util.ExitAsStatus(_ReapChildren(pid))
   else:
@@ -159,9 +178,21 @@ def CreatePidNs():
       # We'll pass that back up below.
       signal.signal(signal.SIGINT, signal.SIG_IGN)
 
+      # Now that we're in a new pid namespace, start a new process group so that
+      # children have something valid to use.  Otherwise getpgrp/etc... will get
+      # back 0 which tends to confuse -- you can't setpgrp(0) for example.
+      os.setpgrp()
+
+      # Forward the control of the terminal to the child so it can manage input.
+      _SafeTcSetPgrp(sys.stdin.fileno(), pid)
+
       # Watch all of the children.  We need to act as the master inside the
       # namespace and reap old processes.
       process_util.ExitAsStatus(_ReapChildren(pid))
+
+  # Create a process group for the grandchild so it can manage things
+  # independent of the init process.
+  os.setpgrp()
 
   # The grandchild will return and take over the rest of the sdk steps.
   return first_pid
