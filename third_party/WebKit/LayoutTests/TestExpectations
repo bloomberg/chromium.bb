@@ -148,7 +148,9 @@ crbug.com/338794 crbug.com/192172 compositing/rtl/rtl-iframe-fixed-overflow.html
 
 crbug.com/239811 crbug.com/229113 http/tests/history/redirect-js-location-assign-0-seconds.html [ Failure Pass ]
 
-crbug.com/449242 fast/css/word-spacing-characters-complex-text.html [ Pass ImageOnlyFailure ]
+crbug.com/449242 [ Win Linux ] fast/css/word-spacing-characters-complex-text.html [ Pass ImageOnlyFailure ]
+crbug.com/449242 [ Mac Release ] fast/css/word-spacing-characters-complex-text.html [ Pass ImageOnlyFailure ]
+crbug.com/449242 [ Mac Debug ] fast/css/word-spacing-characters-complex-text.html [ Pass ImageOnlyFailure Crash ]
 crbug.com/449242 virtual/slimmingpaint/fast/css/word-spacing-characters-complex-text.html [ Pass ImageOnlyFailure Crash ]
 
 crbug.com/438589 fast/repaint/obscured-background-no-repaint.html [ Failure Pass ]
