@@ -277,6 +277,7 @@ if (build_ffmpegsumo) {
       ]
       libs = [
         "m",
+        "rt",  # for clock_gettime on precise
         "z",
       ]
 # TODO(ajwong): How to handle openbsd? Especially w/o the is_posix?
