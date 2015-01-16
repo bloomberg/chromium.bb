@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef GraphicsContextRecorder_h
-#define GraphicsContextRecorder_h
+#ifndef PictureSnapshot_h
+#define PictureSnapshot_h
 
 #include "platform/JSONValues.h"
 #include "platform/PlatformExport.h"
@@ -42,8 +42,8 @@ namespace blink {
 
 class FloatRect;
 
-class PLATFORM_EXPORT GraphicsContextSnapshot : public RefCounted<GraphicsContextSnapshot> {
-WTF_MAKE_NONCOPYABLE(GraphicsContextSnapshot);
+class PLATFORM_EXPORT PictureSnapshot : public RefCounted<PictureSnapshot> {
+WTF_MAKE_NONCOPYABLE(PictureSnapshot);
 public:
     typedef Vector<Vector<double> > Timings;
 
@@ -52,35 +52,20 @@ public:
         Vector<char> data;
     };
 
-    static PassRefPtr<GraphicsContextSnapshot> load(const Vector<RefPtr<TilePictureStream> >&);
+    static PassRefPtr<PictureSnapshot> load(const Vector<RefPtr<TilePictureStream> >&);
+
+    PictureSnapshot(PassRefPtr<SkPicture>);
 
     PassOwnPtr<Vector<char> > replay(unsigned fromStep = 0, unsigned toStep = 0, double scale = 1.0) const;
     PassOwnPtr<Timings> profile(unsigned minIterations, double minDuration, const FloatRect* clipRect) const;
     PassRefPtr<JSONArray> snapshotCommandLog() const;
 
 private:
-    friend class GraphicsContextRecorder;
-    GraphicsContextSnapshot(PassRefPtr<SkPicture>);
-
     PassOwnPtr<SkBitmap> createBitmap() const;
 
     RefPtr<SkPicture> m_picture;
 };
 
-class PLATFORM_EXPORT GraphicsContextRecorder {
-WTF_MAKE_NONCOPYABLE(GraphicsContextRecorder);
-public:
-    GraphicsContextRecorder() { }
-    GraphicsContext* record(const IntSize&, bool isCertainlyOpaque);
-    PassRefPtr<GraphicsContextSnapshot> stop();
-
-private:
-    RefPtr<SkPicture> m_picture;
-    OwnPtr<GraphicsContext> m_context;
-    OwnPtr<SkPictureRecorder> m_recorder;
-    bool m_isCertainlyOpaque;
-};
-
 } // namespace blink
 
-#endif // GraphicsContextRecorder_h
+#endif // PictureSnapshot_h

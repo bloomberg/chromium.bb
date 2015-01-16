@@ -42,7 +42,7 @@
 
 namespace blink {
 
-class GraphicsContextSnapshot;
+class PictureSnapshot;
 class Page;
 class RenderLayerCompositor;
 
@@ -92,7 +92,7 @@ private:
 
     RenderLayerCompositor* renderLayerCompositor();
     GraphicsLayer* layerById(ErrorString*, const String& layerId);
-    const GraphicsContextSnapshot* snapshotById(ErrorString*, const String& snapshotId);
+    const PictureSnapshot* snapshotById(ErrorString*, const String& snapshotId);
 
     typedef HashMap<int, int> LayerIdToNodeIdMap;
     void buildLayerIdToNodeIdMap(RenderLayer*, LayerIdToNodeIdMap&);
@@ -103,7 +103,7 @@ private:
     RawPtrWillBeMember<Page> m_page;
     Vector<int, 2> m_pageOverlayLayerIds;
 
-    typedef HashMap<String, RefPtr<GraphicsContextSnapshot> > SnapshotById;
+    typedef HashMap<String, RefPtr<PictureSnapshot> > SnapshotById;
     SnapshotById m_snapshotById;
 };
 

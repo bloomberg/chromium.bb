@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "platform/graphics/GraphicsContextRecorder.h"
+#include "platform/graphics/PictureSnapshot.h"
 
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/ImageSource.h"
@@ -48,29 +48,7 @@
 
 namespace blink {
 
-GraphicsContext* GraphicsContextRecorder::record(const IntSize& size, bool isCertainlyOpaque)
-{
-    ASSERT(!m_picture);
-    ASSERT(!m_recorder);
-    ASSERT(!m_context);
-    m_isCertainlyOpaque = isCertainlyOpaque;
-    m_recorder = adoptPtr(new SkPictureRecorder);
-    SkCanvas* canvas = m_recorder->beginRecording(size.width(), size.height(), 0, 0);
-    m_context = adoptPtr(new GraphicsContext(canvas, nullptr));
-    m_context->setRegionTrackingMode(isCertainlyOpaque ? GraphicsContext::RegionTrackingOpaque : GraphicsContext::RegionTrackingDisabled);
-    m_context->setCertainlyOpaque(isCertainlyOpaque);
-    return m_context.get();
-}
-
-PassRefPtr<GraphicsContextSnapshot> GraphicsContextRecorder::stop()
-{
-    m_context.clear();
-    m_picture = adoptRef(m_recorder->endRecording());
-    m_recorder.clear();
-    return adoptRef(new GraphicsContextSnapshot(m_picture.release()));
-}
-
-GraphicsContextSnapshot::GraphicsContextSnapshot(PassRefPtr<SkPicture> picture)
+PictureSnapshot::PictureSnapshot(PassRefPtr<SkPicture> picture)
     : m_picture(picture)
 {
 }
@@ -89,7 +67,7 @@ static bool decodeBitmap(const void* data, size_t length, SkBitmap* result)
     return true;
 }
 
-PassRefPtr<GraphicsContextSnapshot> GraphicsContextSnapshot::load(const Vector<RefPtr<TilePictureStream> >& tiles)
+PassRefPtr<PictureSnapshot> PictureSnapshot::load(const Vector<RefPtr<TilePictureStream> >& tiles)
 {
     ASSERT(!tiles.isEmpty());
     Vector<RefPtr<SkPicture> > pictures;
@@ -106,7 +84,7 @@ PassRefPtr<GraphicsContextSnapshot> GraphicsContextSnapshot::load(const Vector<R
         pictures.append(picture);
     }
     if (tiles.size() == 1)
-        return adoptRef(new GraphicsContextSnapshot(pictures[0]));
+        return adoptRef(new PictureSnapshot(pictures[0]));
     SkPictureRecorder recorder;
     SkCanvas* canvas = recorder.beginRecording(unionRect.width(), unionRect.height(), 0, 0);
     for (size_t i = 0; i < pictures.size(); ++i) {
@@ -115,10 +93,10 @@ PassRefPtr<GraphicsContextSnapshot> GraphicsContextSnapshot::load(const Vector<R
         pictures[i]->playback(canvas, 0);
         canvas->restore();
     }
-    return adoptRef(new GraphicsContextSnapshot(adoptRef(recorder.endRecordingAsPicture())));
+    return adoptRef(new PictureSnapshot(adoptRef(recorder.endRecordingAsPicture())));
 }
 
-PassOwnPtr<Vector<char> > GraphicsContextSnapshot::replay(unsigned fromStep, unsigned toStep, double scale) const
+PassOwnPtr<Vector<char> > PictureSnapshot::replay(unsigned fromStep, unsigned toStep, double scale) const
 {
     const SkIRect bounds = m_picture->cullRect().roundOut();
     SkBitmap bitmap;
@@ -138,9 +116,9 @@ PassOwnPtr<Vector<char> > GraphicsContextSnapshot::replay(unsigned fromStep, uns
     return base64Data.release();
 }
 
-PassOwnPtr<GraphicsContextSnapshot::Timings> GraphicsContextSnapshot::profile(unsigned minRepeatCount, double minDuration, const FloatRect* clipRect) const
+PassOwnPtr<PictureSnapshot::Timings> PictureSnapshot::profile(unsigned minRepeatCount, double minDuration, const FloatRect* clipRect) const
 {
-    OwnPtr<GraphicsContextSnapshot::Timings> timings = adoptPtr(new GraphicsContextSnapshot::Timings());
+    OwnPtr<PictureSnapshot::Timings> timings = adoptPtr(new PictureSnapshot::Timings());
     timings->reserveCapacity(minRepeatCount);
     const SkIRect bounds = m_picture->cullRect().roundOut();
     SkBitmap bitmap;
@@ -163,7 +141,7 @@ PassOwnPtr<GraphicsContextSnapshot::Timings> GraphicsContextSnapshot::profile(un
     return timings.release();
 }
 
-PassRefPtr<JSONArray> GraphicsContextSnapshot::snapshotCommandLog() const
+PassRefPtr<JSONArray> PictureSnapshot::snapshotCommandLog() const
 {
     const SkIRect bounds = m_picture->cullRect().roundOut();
     LoggingCanvas canvas(bounds.width(), bounds.height());
