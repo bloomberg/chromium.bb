@@ -33,7 +33,7 @@ class ASH_EXPORT ResolutionNotificationController
       public DisplayController::Observer {
  public:
   ResolutionNotificationController();
-  virtual ~ResolutionNotificationController();
+  ~ResolutionNotificationController() override;
 
   // Prepare a resolution change notification for |display_id| from
   // |old_resolution| to |new_resolution|, which offers a button to revert the
@@ -86,13 +86,13 @@ class ASH_EXPORT ResolutionNotificationController
   void OnTimerTick();
 
   // gfx::DisplayObserver overrides:
-  virtual void OnDisplayAdded(const gfx::Display& new_display) override;
-  virtual void OnDisplayRemoved(const gfx::Display& old_display) override;
-  virtual void OnDisplayMetricsChanged(const gfx::Display& display,
-                                       uint32_t metrics) override;
+  void OnDisplayAdded(const gfx::Display& new_display) override;
+  void OnDisplayRemoved(const gfx::Display& old_display) override;
+  void OnDisplayMetricsChanged(const gfx::Display& display,
+                               uint32_t metrics) override;
 
   // DisplayController::Observer overrides:
-  virtual void OnDisplayConfigurationChanged() override;
+  void OnDisplayConfigurationChanged() override;
 
   static void SuppressTimerForTest();
 

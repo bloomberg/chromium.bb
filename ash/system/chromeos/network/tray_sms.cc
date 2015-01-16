@@ -63,7 +63,7 @@ class TraySms::SmsDefaultView : public TrayItemMore {
     Update();
   }
 
-  virtual ~SmsDefaultView() {}
+  ~SmsDefaultView() override {}
 
   void Update() {
     int message_count = static_cast<TraySms*>(owner())->messages().GetSize();
@@ -110,12 +110,10 @@ class TraySms::SmsMessageView : public views::View,
       LayoutNotificationView();
   }
 
-  virtual ~SmsMessageView() {
-  }
+  ~SmsMessageView() override {}
 
   // Overridden from ButtonListener.
-  virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) override {
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override {
     owner_->RemoveMessage(index_);
     owner_->Update(false);
   }
@@ -185,8 +183,7 @@ class TraySms::SmsDetailedView : public TrayDetailsView,
     Update();
   }
 
-  virtual ~SmsDetailedView() {
-  }
+  ~SmsDetailedView() override {}
 
   void Init() {
     CreateScrollableList();
@@ -200,7 +197,7 @@ class TraySms::SmsDetailedView : public TrayDetailsView,
   }
 
   // Overridden from views::View.
-  virtual gfx::Size GetPreferredSize() const override {
+  gfx::Size GetPreferredSize() const override {
     gfx::Size preferred_size = TrayDetailsView::GetPreferredSize();
     if (preferred_size.height() < kMessageListMinHeight)
       preferred_size.set_height(kMessageListMinHeight);
@@ -232,7 +229,7 @@ class TraySms::SmsDetailedView : public TrayDetailsView,
   }
 
   // Overridden from ViewClickListener.
-  virtual void OnViewClicked(views::View* sender) override {
+  void OnViewClicked(views::View* sender) override {
     if (sender == footer()->content())
       TransitionToDefaultView();
   }
@@ -263,13 +260,9 @@ class TraySms::SmsNotificationView : public TrayNotificationView {
   }
 
   // Overridden from TrayNotificationView:
-  virtual void OnClose() override {
-    tray_sms()->RemoveMessage(message_index_);
-  }
+  void OnClose() override { tray_sms()->RemoveMessage(message_index_); }
 
-  virtual void OnClickAction() override {
-    owner()->PopupDetailedView(0, true);
-  }
+  void OnClickAction() override { owner()->PopupDetailedView(0, true); }
 
  private:
   TraySms* tray_sms() {

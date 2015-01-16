@@ -51,7 +51,7 @@ class ASH_EXPORT TrayPower : public SystemTrayItem,
 
   TrayPower(SystemTray* system_tray,
             message_center::MessageCenter* message_center);
-  virtual ~TrayPower();
+  ~TrayPower() override;
 
  private:
   friend class TrayPowerTest;
@@ -68,19 +68,17 @@ class ASH_EXPORT TrayPower : public SystemTrayItem,
   };
 
   // Overridden from SystemTrayItem.
-  virtual views::View* CreateTrayView(user::LoginStatus status) override;
-  virtual views::View* CreateDefaultView(user::LoginStatus status) override;
-  virtual views::View* CreateNotificationView(
-      user::LoginStatus status) override;
-  virtual void DestroyTrayView() override;
-  virtual void DestroyDefaultView() override;
-  virtual void DestroyNotificationView() override;
-  virtual void UpdateAfterLoginStatusChange(user::LoginStatus status) override;
-  virtual void UpdateAfterShelfAlignmentChange(
-      ShelfAlignment alignment) override;
+  views::View* CreateTrayView(user::LoginStatus status) override;
+  views::View* CreateDefaultView(user::LoginStatus status) override;
+  views::View* CreateNotificationView(user::LoginStatus status) override;
+  void DestroyTrayView() override;
+  void DestroyDefaultView() override;
+  void DestroyNotificationView() override;
+  void UpdateAfterLoginStatusChange(user::LoginStatus status) override;
+  void UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) override;
 
   // Overridden from PowerStatus::Observer.
-  virtual void OnPowerStatusChanged() override;
+  void OnPowerStatusChanged() override;
 
   // Show a notification that a low-power USB charger has been connected.
   // Returns true if a notification was shown or explicitly hidden.

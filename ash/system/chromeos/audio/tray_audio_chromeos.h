@@ -17,16 +17,16 @@ class AudioDetailedView;
 class ASH_EXPORT TrayAudioChromeOs : public TrayAudio {
  public:
   explicit TrayAudioChromeOs(SystemTray* system_tray);
-  virtual ~TrayAudioChromeOs();
+  ~TrayAudioChromeOs() override;
 
  protected:
   // Overridden from TrayAudio
-  virtual void Update() override;
+  void Update() override;
 
  private:
   // Overridden from SystemTrayItem.
-  virtual views::View* CreateDetailedView(user::LoginStatus status) override;
-  virtual void DestroyDetailedView() override;
+  views::View* CreateDetailedView(user::LoginStatus status) override;
+  void DestroyDetailedView() override;
 
   tray::AudioDetailedView* audio_detail_view_;
 

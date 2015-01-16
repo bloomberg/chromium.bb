@@ -16,7 +16,7 @@ namespace ash {
 class LogoutConfirmationControllerTest : public testing::Test {
  protected:
   LogoutConfirmationControllerTest();
-  virtual ~LogoutConfirmationControllerTest();
+  ~LogoutConfirmationControllerTest() override;
 
   void LogOut();
 

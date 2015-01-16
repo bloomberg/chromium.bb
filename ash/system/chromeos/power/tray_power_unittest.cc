@@ -18,17 +18,16 @@ namespace {
 class MockMessageCenter : public message_center::FakeMessageCenter {
  public:
   MockMessageCenter() : add_count_(0), remove_count_(0) {}
-  virtual ~MockMessageCenter() {}
+  ~MockMessageCenter() override {}
 
   int add_count() const { return add_count_; }
   int remove_count() const { return remove_count_; }
 
   // message_center::FakeMessageCenter overrides:
-  virtual void AddNotification(scoped_ptr<Notification> notification) override {
+  void AddNotification(scoped_ptr<Notification> notification) override {
     add_count_++;
   }
-  virtual void RemoveNotification(const std::string& id, bool by_user)
-      override {
+  void RemoveNotification(const std::string& id, bool by_user) override {
     remove_count_++;
   }
 
@@ -46,19 +45,19 @@ namespace ash {
 class TrayPowerTest : public test::AshTestBase {
  public:
   TrayPowerTest() {}
-  virtual ~TrayPowerTest() {}
+  ~TrayPowerTest() override {}
 
   MockMessageCenter* message_center() { return message_center_.get(); }
   TrayPower* tray_power() { return tray_power_.get(); }
 
   // test::AshTestBase::SetUp() overrides:
-  virtual void SetUp() override {
+  void SetUp() override {
     test::AshTestBase::SetUp();
     message_center_.reset(new MockMessageCenter());
     tray_power_.reset(new TrayPower(NULL, message_center_.get()));
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     tray_power_.reset();
     message_center_.reset();
     test::AshTestBase::TearDown();

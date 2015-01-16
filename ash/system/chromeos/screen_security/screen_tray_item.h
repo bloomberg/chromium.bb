@@ -27,7 +27,7 @@ namespace tray {
 class ScreenTrayView : public TrayItemView {
  public:
   ScreenTrayView(ScreenTrayItem* screen_tray_item, int icon_id);
-  virtual ~ScreenTrayView();
+  ~ScreenTrayView() override;
 
   void Update();
 
@@ -44,14 +44,13 @@ class ScreenStatusView : public views::View,
                    int icon_id,
                    const base::string16& label_text,
                    const base::string16& stop_button_text);
-  virtual ~ScreenStatusView();
+  ~ScreenStatusView() override;
 
   // Overridden from views::View.
-  virtual void Layout() override;
+  void Layout() override;
 
   // Overridden from views::ButtonListener.
-  virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) override;
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   void CreateItems();
   void Update();
@@ -73,10 +72,10 @@ class ScreenNotificationDelegate : public message_center::NotificationDelegate {
   explicit ScreenNotificationDelegate(ScreenTrayItem* screen_tray);
 
   // message_center::NotificationDelegate overrides:
-  virtual void ButtonClick(int button_index) override;
+  void ButtonClick(int button_index) override;
 
  protected:
-  virtual ~ScreenNotificationDelegate();
+  ~ScreenNotificationDelegate() override;
 
  private:
   ScreenTrayItem* screen_tray_;
@@ -93,7 +92,7 @@ class ScreenNotificationDelegate : public message_center::NotificationDelegate {
 class ASH_EXPORT ScreenTrayItem : public SystemTrayItem {
  public:
   explicit ScreenTrayItem(SystemTray* system_tray);
-  virtual ~ScreenTrayItem();
+  ~ScreenTrayItem() override;
 
   tray::ScreenTrayView* tray_view() { return tray_view_; }
   void set_tray_view(tray::ScreenTrayView* tray_view) {
@@ -119,12 +118,11 @@ class ASH_EXPORT ScreenTrayItem : public SystemTrayItem {
   virtual std::string GetNotificationId() = 0;
 
   // Overridden from SystemTrayItem.
-  virtual views::View* CreateTrayView(user::LoginStatus status) override = 0;
-  virtual views::View* CreateDefaultView(user::LoginStatus status) override = 0;
-  virtual void DestroyTrayView() override;
-  virtual void DestroyDefaultView() override;
-  virtual void UpdateAfterShelfAlignmentChange(
-      ShelfAlignment alignment) override;
+  views::View* CreateTrayView(user::LoginStatus status) override = 0;
+  views::View* CreateDefaultView(user::LoginStatus status) override = 0;
+  void DestroyTrayView() override;
+  void DestroyDefaultView() override;
+  void UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) override;
 
  private:
   tray::ScreenTrayView* tray_view_;

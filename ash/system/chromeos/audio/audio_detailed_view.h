@@ -26,7 +26,7 @@ class AudioDetailedView : public TrayDetailsView,
  public:
   AudioDetailedView(SystemTrayItem* owner, user::LoginStatus login);
 
-  virtual ~AudioDetailedView();
+  ~AudioDetailedView() override;
 
   void Update();
 
@@ -44,7 +44,7 @@ class AudioDetailedView : public TrayDetailsView,
   void UpdateAudioDevices();
 
   // Overridden from ViewClickListener.
-  virtual void OnViewClicked(views::View* sender) override;
+  void OnViewClicked(views::View* sender) override;
 
   user::LoginStatus login_;
 

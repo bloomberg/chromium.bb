@@ -26,18 +26,17 @@ class LogoutConfirmationDialog : public views::DialogDelegateView {
  public:
   LogoutConfirmationDialog(LogoutConfirmationController* controller,
                            base::TimeTicks logout_time);
-  virtual ~LogoutConfirmationDialog();
+  ~LogoutConfirmationDialog() override;
 
   void Update(base::TimeTicks logout_time);
 
   // views::DialogDelegateView:
-  virtual bool Accept() override;
-  virtual ui::ModalType GetModalType() const override;
-  virtual base::string16 GetWindowTitle() const override;
-  virtual base::string16 GetDialogButtonLabel(ui::DialogButton button) const
-      override;
-  virtual void OnClosed() override;
-  virtual void DeleteDelegate() override;
+  bool Accept() override;
+  ui::ModalType GetModalType() const override;
+  base::string16 GetWindowTitle() const override;
+  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
+  void OnClosed() override;
+  void DeleteDelegate() override;
 
  private:
   void UpdateLabel();

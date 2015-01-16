@@ -43,17 +43,13 @@ class PanedWidgetDelegate : public views::WidgetDelegate {
   }
 
   // views::WidgetDelegate.
-  virtual void GetAccessiblePanes(std::vector<views::View*>* panes) override {
+  void GetAccessiblePanes(std::vector<views::View*>* panes) override {
     std::copy(accessible_panes_.begin(),
               accessible_panes_.end(),
               std::back_inserter(*panes));
   }
-  virtual views::Widget* GetWidget() override {
-    return widget_;
-  };
-  virtual const views::Widget* GetWidget() const override {
-    return widget_;
-  }
+  views::Widget* GetWidget() override { return widget_; };
+  const views::Widget* GetWidget() const override { return widget_; }
 
  private:
   views::Widget* widget_;
@@ -66,7 +62,7 @@ class FocusCyclerTest : public AshTestBase {
  public:
   FocusCyclerTest() {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     AshTestBase::SetUp();
 
     focus_cycler_.reset(new FocusCycler());
@@ -74,7 +70,7 @@ class FocusCyclerTest : public AshTestBase {
     ASSERT_TRUE(Shelf::ForPrimaryDisplay());
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     if (tray_) {
       GetStatusAreaWidgetDelegate(tray_->GetWidget())->
           SetFocusCyclerForTesting(NULL);

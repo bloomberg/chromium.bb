@@ -16,9 +16,9 @@ namespace ash {
 class LastWindowClosedLogoutReminder : public LastWindowClosedObserver {
  public:
   LastWindowClosedLogoutReminder();
-  virtual ~LastWindowClosedLogoutReminder();
+  ~LastWindowClosedLogoutReminder() override;
 
-  virtual void OnLastWindowClosed() override;
+  void OnLastWindowClosed() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LastWindowClosedLogoutReminder);

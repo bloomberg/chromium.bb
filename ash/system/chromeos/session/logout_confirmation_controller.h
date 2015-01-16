@@ -31,7 +31,7 @@ class ASH_EXPORT LogoutConfirmationController : public ShellObserver {
  public:
   // The |logout_closure| must be safe to call as long as |this| is alive.
   explicit LogoutConfirmationController(const base::Closure& logout_closure);
-  virtual ~LogoutConfirmationController();
+  ~LogoutConfirmationController() override;
 
   base::TickClock* clock() const { return clock_.get(); }
 
@@ -43,7 +43,7 @@ class ASH_EXPORT LogoutConfirmationController : public ShellObserver {
   void SetClockForTesting(scoped_ptr<base::TickClock> clock);
 
   // ShellObserver:
-  virtual void OnLockStateChanged(bool locked) override;
+  void OnLockStateChanged(bool locked) override;
 
   // Called by the |dialog_| when the user confirms logout.
   void OnLogoutConfirmed();

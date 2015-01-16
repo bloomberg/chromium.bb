@@ -15,9 +15,9 @@ namespace ash {
 class TouchscreenUtilTest : public testing::Test {
  public:
   TouchscreenUtilTest() {}
-  virtual ~TouchscreenUtilTest() {}
+  ~TouchscreenUtilTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     // Internal display will always match to internal touchscreen. If internal
     // touchscreen can't be detected, it is then associated to a touch screen
     // with matching size.
@@ -56,9 +56,7 @@ class TouchscreenUtilTest : public testing::Test {
     }
   }
 
-  virtual void TearDown() override {
-    displays_.clear();
-  }
+  void TearDown() override { displays_.clear(); }
 
  protected:
   std::vector<DisplayInfo> displays_;

@@ -20,7 +20,7 @@ namespace ash {
 class TraySupervisedUserTest : public test::AshTestBase {
  public:
   TraySupervisedUserTest() {}
-  virtual ~TraySupervisedUserTest() {}
+  ~TraySupervisedUserTest() override {}
 
  protected:
   message_center::Notification* GetPopup();
@@ -43,10 +43,10 @@ message_center::Notification* TraySupervisedUserTest::GetPopup() {
 class TraySupervisedUserInitialTest : public TraySupervisedUserTest {
  public:
   TraySupervisedUserInitialTest() {}
-  virtual ~TraySupervisedUserInitialTest() {}
+  ~TraySupervisedUserInitialTest() override {}
 
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TraySupervisedUserInitialTest);

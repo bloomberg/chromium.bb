@@ -18,7 +18,7 @@ class ViewClickListener;
 class LabelTrayView : public views::View {
  public:
   LabelTrayView(ViewClickListener* click_listener, int icon_resource_id);
-  virtual ~LabelTrayView();
+  ~LabelTrayView() override;
   void SetMessage(const base::string16& message);
  private:
   views::View* CreateChildView(const base::string16& message) const;

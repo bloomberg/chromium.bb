@@ -1576,14 +1576,10 @@ class FontTestHelper : public test::AshTestBase {
     SetUp();
   }
 
-  virtual ~FontTestHelper() {
-    TearDown();
-  }
+  ~FontTestHelper() override { TearDown(); }
 
   // test::AshTestBase:
-  virtual void TestBody() override {
-    NOTREACHED();
-  }
+  void TestBody() override { NOTREACHED(); }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FontTestHelper);

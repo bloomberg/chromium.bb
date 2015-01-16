@@ -22,21 +22,21 @@ class TrayEnterprise : public SystemTrayItem,
                        public EnterpriseDomainObserver {
  public:
   explicit TrayEnterprise(SystemTray* system_tray);
-  virtual ~TrayEnterprise();
+  ~TrayEnterprise() override;
 
   // If message is not empty updates content of default view, otherwise hides
   // tray items.
   void UpdateEnterpriseMessage();
 
   // Overridden from SystemTrayItem.
-  virtual views::View* CreateDefaultView(user::LoginStatus status) override;
-  virtual void DestroyDefaultView() override;
+  views::View* CreateDefaultView(user::LoginStatus status) override;
+  void DestroyDefaultView() override;
 
   // Overridden from EnterpriseDomainObserver.
-  virtual void OnEnterpriseDomainChanged() override;
+  void OnEnterpriseDomainChanged() override;
 
   // Overridden from ViewClickListener.
-  virtual void OnViewClicked(views::View* sender) override;
+  void OnViewClicked(views::View* sender) override;
 
  private:
   LabelTrayView* tray_view_;

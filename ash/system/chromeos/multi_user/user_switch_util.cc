@@ -32,22 +32,21 @@ const int kTopInset = 10;
 class DesktopCastingWarningView : public views::DialogDelegateView {
  public:
   DesktopCastingWarningView(base::Callback<void()> on_accept);
-  virtual ~DesktopCastingWarningView();
+  ~DesktopCastingWarningView() override;
 
   static void ShowDialog(const base::Callback<void()> on_accept);
 
   // views::DialogDelegate overrides.
-  virtual bool Accept() override;
-  virtual base::string16 GetDialogButtonLabel(
-        ui::DialogButton button) const override;
-  virtual bool IsDialogButtonEnabled(ui::DialogButton button) const override;
-  virtual int GetDefaultDialogButton() const override;
+  bool Accept() override;
+  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
+  bool IsDialogButtonEnabled(ui::DialogButton button) const override;
+  int GetDefaultDialogButton() const override;
 
   // views::WidgetDelegate overrides.
-  virtual ui::ModalType GetModalType() const override;
+  ui::ModalType GetModalType() const override;
 
   // views::View overrides.
-  virtual gfx::Size GetPreferredSize() const override;
+  gfx::Size GetPreferredSize() const override;
 
  private:
   void InitDialog();

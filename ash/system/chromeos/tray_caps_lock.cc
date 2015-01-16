@@ -61,7 +61,7 @@ class CapsLockDefaultView : public ActionableView {
     AddChildView(shortcut_label_);
   }
 
-  virtual ~CapsLockDefaultView() {}
+  ~CapsLockDefaultView() override {}
 
   // Updates the label text and the shortcut text.
   void Update(bool caps_lock_enabled) {
@@ -90,7 +90,7 @@ class CapsLockDefaultView : public ActionableView {
 
  private:
   // Overridden from views::View:
-  virtual void Layout() override {
+  void Layout() override {
     views::View::Layout();
 
     // Align the shortcut text with the right end
@@ -103,13 +103,13 @@ class CapsLockDefaultView : public ActionableView {
                                    text_size.height()));
   }
 
-  virtual void GetAccessibleState(ui::AXViewState* state) override {
+  void GetAccessibleState(ui::AXViewState* state) override {
     state->role = ui::AX_ROLE_BUTTON;
     state->name = text_label_->text();
   }
 
   // Overridden from ActionableView:
-  virtual bool PerformAction(const ui::Event& event) override {
+  bool PerformAction(const ui::Event& event) override {
     chromeos::input_method::ImeKeyboard* keyboard =
         chromeos::input_method::InputMethodManager::Get()->GetImeKeyboard();
     if (keyboard) {

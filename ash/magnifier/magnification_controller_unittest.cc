@@ -39,14 +39,14 @@ class TextInputView : public views::WidgetDelegateView {
     SetLayoutManager(new views::FillLayout);
   }
 
-  virtual ~TextInputView() {}
+  ~TextInputView() override {}
 
-  virtual gfx::Size GetPreferredSize() const override {
+  gfx::Size GetPreferredSize() const override {
     return gfx::Size(kTextInputWindowWidth, kTextInputWindowHeight);
   }
 
   // Overridden from views::WidgetDelegate:
-  virtual views::View* GetContentsView() override { return this; }
+  views::View* GetContentsView() override { return this; }
 
   void FocusOnTextInput() { GetFocusManager()->SetFocusedView(text_field_); }
 
@@ -61,9 +61,9 @@ class TextInputView : public views::WidgetDelegateView {
 class MagnificationControllerTest: public test::AshTestBase {
  public:
   MagnificationControllerTest() : text_input_view_(NULL) {}
-  virtual ~MagnificationControllerTest() {}
+  ~MagnificationControllerTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     AshTestBase::SetUp();
     UpdateDisplay(base::StringPrintf("%dx%d", kRootWidth, kRootHeight));
 
@@ -78,9 +78,7 @@ class MagnificationControllerTest: public test::AshTestBase {
 #endif
   }
 
-  virtual void TearDown() override {
-    AshTestBase::TearDown();
-  }
+  void TearDown() override { AshTestBase::TearDown(); }
 
  protected:
   aura::Window* GetRootWindow() const {

@@ -19,15 +19,15 @@ namespace ash {
 class PowerStatusViewTest : public test::AshTestBase {
  public:
   PowerStatusViewTest() {}
-  virtual ~PowerStatusViewTest() {}
+  ~PowerStatusViewTest() override {}
 
   // Overridden from testing::Test:
-  virtual void SetUp() override {
+  void SetUp() override {
     test::AshTestBase::SetUp();
     view_.reset(new PowerStatusView(GetViewType(), false));
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     view_.reset();
     test::AshTestBase::TearDown();
   }
@@ -50,10 +50,10 @@ class PowerStatusViewTest : public test::AshTestBase {
 class PowerStatusDefaultViewTest : public PowerStatusViewTest {
  public:
   PowerStatusDefaultViewTest() {}
-  virtual ~PowerStatusDefaultViewTest() {}
+  ~PowerStatusDefaultViewTest() override {}
 
  protected:
-  virtual PowerStatusView::ViewType GetViewType() override {
+  PowerStatusView::ViewType GetViewType() override {
     return PowerStatusView::VIEW_DEFAULT;
   }
 
@@ -76,10 +76,10 @@ class PowerStatusDefaultViewTest : public PowerStatusViewTest {
 class PowerStatusNotificationViewTest : public PowerStatusViewTest {
  public:
   PowerStatusNotificationViewTest() {}
-  virtual ~PowerStatusNotificationViewTest() {}
+  ~PowerStatusNotificationViewTest() override {}
 
  protected:
-  virtual PowerStatusView::ViewType GetViewType() override {
+  PowerStatusView::ViewType GetViewType() override {
     return PowerStatusView::VIEW_NOTIFICATION;
   }
 

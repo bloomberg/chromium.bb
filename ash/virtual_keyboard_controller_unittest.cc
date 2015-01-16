@@ -27,7 +27,7 @@ namespace test {
 class VirtualKeyboardControllerTest : public AshTestBase {
  public:
   VirtualKeyboardControllerTest() {}
-  virtual ~VirtualKeyboardControllerTest() {}
+  ~VirtualKeyboardControllerTest() override {}
 
   void UpdateTouchscreenDevices(
       std::vector<ui::TouchscreenDevice> touchscreen_devices) {

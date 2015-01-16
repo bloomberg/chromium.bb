@@ -66,7 +66,7 @@ class ASH_EXPORT TouchObserverHUD : public ui::EventHandler,
 
 #if defined(OS_CHROMEOS)
   // Overriden from ui::DisplayConfigurator::Observer.
-  virtual void OnDisplayModeChanged(
+  void OnDisplayModeChanged(
       const ui::DisplayConfigurator::DisplayStateList& outputs) override;
 #endif  // defined(OS_CHROMEOS)
 

@@ -68,7 +68,7 @@ class ASH_EXPORT PowerButtonController : ui::EventHandler
 
 #if defined(OS_CHROMEOS)
   // Overriden from ui::DisplayConfigurator::Observer:
-  virtual void OnDisplayModeChanged(
+  void OnDisplayModeChanged(
       const ui::DisplayConfigurator::DisplayStateList& outputs) override;
 #endif
 

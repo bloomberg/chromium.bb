@@ -17,13 +17,13 @@ class VideoActivityNotifier : public VideoDetectorObserver,
                               public ShellObserver {
  public:
   explicit VideoActivityNotifier(VideoDetector* detector);
-  virtual ~VideoActivityNotifier();
+  ~VideoActivityNotifier() override;
 
   // VideoDetectorObserver implementation.
-  virtual void OnVideoDetected(bool is_fullscreen) override;
+  void OnVideoDetected(bool is_fullscreen) override;
 
   // ShellObserver implementation.
-  virtual void OnLockStateChanged(bool locked) override;
+  void OnLockStateChanged(bool locked) override;
 
  private:
   VideoDetector* detector_;  // not owned

@@ -24,9 +24,9 @@ class TrySwitchingUserTest : public ash::test::AshTestBase {
         stop_capture_callback_hit_count_(0),
         stop_share_callback_hit_count_(0),
         switch_callback_hit_count_(0) {}
-  virtual ~TrySwitchingUserTest() {}
+  ~TrySwitchingUserTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     test::AshTestBase::SetUp();
     TrayItemView::DisableAnimationsForTest();
     SystemTray* system_tray =  Shell::GetInstance()->GetPrimarySystemTray();

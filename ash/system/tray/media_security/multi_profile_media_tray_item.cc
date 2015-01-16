@@ -35,13 +35,13 @@ class MultiProfileMediaTrayView : public TrayItemView,
     set_id(VIEW_ID_MEDIA_TRAY_VIEW);
   }
 
-  virtual ~MultiProfileMediaTrayView() {
+  ~MultiProfileMediaTrayView() override {
     Shell::GetInstance()->system_tray_notifier()->RemoveMediaCaptureObserver(
         this);
   }
 
   // MediaCaptureObserver:
-  virtual void OnMediaCaptureChanged() override {
+  void OnMediaCaptureChanged() override {
     MediaDelegate* media_delegate = Shell::GetInstance()->media_delegate();
     SessionStateDelegate* session_state_delegate =
         Shell::GetInstance()->session_state_delegate();

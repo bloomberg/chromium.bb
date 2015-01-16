@@ -155,7 +155,7 @@ class DisplayView : public ActionableView {
     Update();
   }
 
-  virtual ~DisplayView() {}
+  ~DisplayView() override {}
 
   void Update() {
     base::string16 message = GetTrayDisplayMessage(NULL);

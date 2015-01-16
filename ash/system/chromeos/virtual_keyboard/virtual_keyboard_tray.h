@@ -23,22 +23,20 @@ class VirtualKeyboardTray : public TrayBackgroundView,
                             public AccessibilityObserver {
  public:
   explicit VirtualKeyboardTray(StatusAreaWidget* status_area_widget);
-  virtual ~VirtualKeyboardTray();
+  ~VirtualKeyboardTray() override;
 
   // TrayBackgroundView:
-  virtual void SetShelfAlignment(ShelfAlignment alignment) override;
-  virtual base::string16 GetAccessibleNameForTray() override;
-  virtual void HideBubbleWithView(
-      const views::TrayBubbleView* bubble_view) override;
-  virtual bool ClickedOutsideBubble() override;
-  virtual bool PerformAction(const ui::Event& event) override;
+  void SetShelfAlignment(ShelfAlignment alignment) override;
+  base::string16 GetAccessibleNameForTray() override;
+  void HideBubbleWithView(const views::TrayBubbleView* bubble_view) override;
+  bool ClickedOutsideBubble() override;
+  bool PerformAction(const ui::Event& event) override;
 
   // views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) override;
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // AccessibilityObserver:
-  virtual void OnAccessibilityModeChanged(
+  void OnAccessibilityModeChanged(
       ui::AccessibilityNotificationVisibility notify) override;
 
  private:

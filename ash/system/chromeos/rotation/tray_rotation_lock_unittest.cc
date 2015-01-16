@@ -28,7 +28,7 @@ namespace ash {
 class TrayRotationLockTest : public test::AshTestBase {
  public:
   TrayRotationLockTest() {}
-  virtual ~TrayRotationLockTest() {}
+  ~TrayRotationLockTest() override {}
 
   TrayRotationLock* tray() {
     return tray_.get();

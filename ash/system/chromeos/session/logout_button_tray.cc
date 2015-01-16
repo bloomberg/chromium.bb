@@ -56,7 +56,7 @@ const int kLogoutButtonPushedImages[] = {
 class LogoutButton : public views::LabelButton {
  public:
   LogoutButton(views::ButtonListener* listener);
-  virtual ~LogoutButton();
+  ~LogoutButton() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LogoutButton);

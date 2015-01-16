@@ -46,14 +46,14 @@ class ScreenTrayItemTest : public ash::test::AshTestBase {
  public:
   ScreenTrayItemTest()
       : tray_item_(NULL), stop_callback_hit_count_(0) {}
-  virtual ~ScreenTrayItemTest() {}
+  ~ScreenTrayItemTest() override {}
 
   ScreenTrayItem* tray_item() { return tray_item_; }
   void set_tray_item(ScreenTrayItem* tray_item) { tray_item_ = tray_item; }
 
   int stop_callback_hit_count() const { return stop_callback_hit_count_; }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     test::AshTestBase::SetUp();
     TrayItemView::DisableAnimationsForTest();
   }
@@ -81,9 +81,9 @@ class ScreenTrayItemTest : public ash::test::AshTestBase {
 class ScreenCaptureTest : public ScreenTrayItemTest {
  public:
   ScreenCaptureTest() {}
-  virtual ~ScreenCaptureTest() {}
+  ~ScreenCaptureTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ScreenTrayItemTest::SetUp();
     // This tray item is owned by its parent system tray view and will
     // be deleted automatically when its parent is destroyed in AshTestBase.
@@ -98,9 +98,9 @@ class ScreenCaptureTest : public ScreenTrayItemTest {
 class ScreenShareTest : public ScreenTrayItemTest {
  public:
   ScreenShareTest() {}
-  virtual ~ScreenShareTest() {}
+  ~ScreenShareTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ScreenTrayItemTest::SetUp();
     // This tray item is owned by its parent system tray view and will
     // be deleted automatically when its parent is destroyed in AshTestBase.

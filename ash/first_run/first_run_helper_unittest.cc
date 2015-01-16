@@ -21,12 +21,10 @@ namespace {
 class TestModalDialogDelegate : public views::DialogDelegateView {
  public:
   TestModalDialogDelegate() {}
-  virtual ~TestModalDialogDelegate() {}
+  ~TestModalDialogDelegate() override {}
 
   // Overridden from views::WidgetDelegate:
-  virtual ui::ModalType GetModalType() const override {
-    return ui::MODAL_TYPE_SYSTEM;
-  }
+  ui::ModalType GetModalType() const override { return ui::MODAL_TYPE_SYSTEM; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestModalDialogDelegate);
@@ -41,11 +39,11 @@ class CountingEventHandler : public ui::EventHandler {
     *mouse_events_registered = 0;
   }
 
-  virtual ~CountingEventHandler() {}
+  ~CountingEventHandler() override {}
 
  private:
   // ui::EventHandler overrides.
-  virtual void OnMouseEvent(ui::MouseEvent* event) override {
+  void OnMouseEvent(ui::MouseEvent* event) override {
     ++*mouse_events_registered_;
   }
 
@@ -61,9 +59,9 @@ class FirstRunHelperTest : public AshTestBase,
  public:
   FirstRunHelperTest() : cancelled_times_(0) {}
 
-  virtual ~FirstRunHelperTest() {}
+  ~FirstRunHelperTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     AshTestBase::SetUp();
     CheckContainersAreVisible();
     helper_.reset(ash::Shell::GetInstance()->CreateFirstRunHelper());
@@ -71,7 +69,7 @@ class FirstRunHelperTest : public AshTestBase,
     helper_->GetOverlayWidget()->Show();
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     EXPECT_TRUE(helper_.get());
     helper_.reset();
     CheckContainersAreVisible();
@@ -106,9 +104,7 @@ class FirstRunHelperTest : public AshTestBase,
 
  private:
   // FirstRunHelper::Observer overrides.
-  virtual void OnCancelled() override {
-    ++cancelled_times_;
-  }
+  void OnCancelled() override { ++cancelled_times_; }
 
   scoped_ptr<FirstRunHelper> helper_;
   int cancelled_times_;

@@ -74,13 +74,13 @@ class MediaIndicator : public views::View, public MediaCaptureObserver {
     set_id(VIEW_ID_USER_VIEW_MEDIA_INDICATOR);
   }
 
-  virtual ~MediaIndicator() {
+  ~MediaIndicator() override {
     Shell::GetInstance()->system_tray_notifier()->RemoveMediaCaptureObserver(
         this);
   }
 
   // MediaCaptureObserver:
-  virtual void OnMediaCaptureChanged() override {
+  void OnMediaCaptureChanged() override {
     Shell* shell = Shell::GetInstance();
     content::BrowserContext* context =
         shell->session_state_delegate()->GetBrowserContextByIndex(index_);

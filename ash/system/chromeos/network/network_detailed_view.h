@@ -35,7 +35,7 @@ class NetworkDetailedView : public TrayDetailsView {
   virtual void Update() = 0;
 
  protected:
-  virtual ~NetworkDetailedView() {}
+  ~NetworkDetailedView() override {}
 };
 
 }  // namespace tray

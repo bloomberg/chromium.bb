@@ -55,7 +55,7 @@ class BluetoothPairingNotificationDelegate
                                        const std::string& address);
 
  protected:
-  virtual ~BluetoothPairingNotificationDelegate();
+  ~BluetoothPairingNotificationDelegate() override;
 
   // message_center::NotificationDelegate overrides.
   void Close(bool by_user) override;

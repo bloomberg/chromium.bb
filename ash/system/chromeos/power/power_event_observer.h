@@ -21,16 +21,16 @@ class ASH_EXPORT PowerEventObserver
  public:
   // This class registers/unregisters itself as an observer in ctor/dtor.
   PowerEventObserver();
-  virtual ~PowerEventObserver();
+  ~PowerEventObserver() override;
 
   // chromeos::PowerManagerClient::Observer overrides:
-  virtual void BrightnessChanged(int level, bool user_initiated) override;
-  virtual void SuspendImminent() override;
-  virtual void SuspendDone(const base::TimeDelta& sleep_duration) override;
+  void BrightnessChanged(int level, bool user_initiated) override;
+  void SuspendImminent() override;
+  void SuspendDone(const base::TimeDelta& sleep_duration) override;
 
   // chromeos::SessionManagerClient::Observer overrides.
-  virtual void ScreenIsLocked() override;
-  virtual void ScreenIsUnlocked() override;
+  void ScreenIsLocked() override;
+  void ScreenIsUnlocked() override;
 
   // Is the screen currently locked?
   bool screen_locked_;

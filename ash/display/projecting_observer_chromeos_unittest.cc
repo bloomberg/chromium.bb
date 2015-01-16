@@ -40,7 +40,7 @@ class ProjectingObserverTest : public testing::Test {
  public:
   ProjectingObserverTest() : observer_(&fake_power_client_) {}
 
-  virtual ~ProjectingObserverTest() {}
+  ~ProjectingObserverTest() override {}
 
  protected:
   chromeos::FakePowerManagerClient fake_power_client_;

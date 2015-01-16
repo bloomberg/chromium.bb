@@ -15,14 +15,14 @@ class SystemClockObserver
       public chromeos::system::TimezoneSettings::Observer {
  public:
   SystemClockObserver();
-  virtual ~SystemClockObserver();
+  ~SystemClockObserver() override;
 
   // chromeos::SystemClockClient::Observer
-  virtual void SystemClockUpdated() override;
-  virtual void SystemClockCanSetTimeChanged(bool can_set_time) override;
+  void SystemClockUpdated() override;
+  void SystemClockCanSetTimeChanged(bool can_set_time) override;
 
   // chromeos::system::TimezoneSettings::Observer
-  virtual void TimezoneChanged(const icu::TimeZone& timezone) override;
+  void TimezoneChanged(const icu::TimeZone& timezone) override;
 
   bool can_set_time() { return can_set_time_; }
 

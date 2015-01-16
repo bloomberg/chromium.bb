@@ -47,11 +47,10 @@ class PowerTrayView : public views::ImageView {
     UpdateImage();
   }
 
-  virtual ~PowerTrayView() {
-  }
+  ~PowerTrayView() override {}
 
   // Overriden from views::View.
-  virtual void GetAccessibleState(ui::AXViewState* state) override {
+  void GetAccessibleState(ui::AXViewState* state) override {
     state->name = accessible_name_;
     state->role = ui::AX_ROLE_BUTTON;
   }

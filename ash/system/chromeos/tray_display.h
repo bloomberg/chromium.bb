@@ -25,10 +25,10 @@ class ASH_EXPORT TrayDisplay : public SystemTrayItem,
                                public DisplayController::Observer {
  public:
   explicit TrayDisplay(SystemTray* system_tray);
-  virtual ~TrayDisplay();
+  ~TrayDisplay() override;
 
   // Overridden from DisplayControllerObserver:
-  virtual void OnDisplayConfigurationChanged() override;
+  void OnDisplayConfigurationChanged() override;
 
  private:
   friend class TrayDisplayTest;
@@ -57,8 +57,8 @@ class ASH_EXPORT TrayDisplay : public SystemTrayItem,
                                   const base::string16& additional_message);
 
   // Overridden from SystemTrayItem.
-  virtual views::View* CreateDefaultView(user::LoginStatus status) override;
-  virtual void DestroyDefaultView() override;
+  views::View* CreateDefaultView(user::LoginStatus status) override;
+  void DestroyDefaultView() override;
 
   // Test accessors.
   base::string16 GetDefaultViewMessage() const;

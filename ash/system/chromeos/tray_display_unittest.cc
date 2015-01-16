@@ -74,9 +74,9 @@ base::string16 GetMirroredDisplayName() {
 class TrayDisplayTest : public ash::test::AshTestBase {
  public:
   TrayDisplayTest();
-  virtual ~TrayDisplayTest();
+  ~TrayDisplayTest() override;
 
-  virtual void SetUp() override;
+  void SetUp() override;
 
  protected:
   SystemTray* tray() { return tray_; }

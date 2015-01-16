@@ -20,7 +20,7 @@ namespace ash {
 class TrayIMETest : public test::AshTestBase {
  public:
   TrayIMETest() {}
-  virtual ~TrayIMETest() {}
+  ~TrayIMETest() override {}
 
   TrayIME* tray() { return tray_.get(); }
 
@@ -48,8 +48,8 @@ class TrayIMETest : public test::AshTestBase {
   views::View* GetScrollChildView(int index);
 
   // test::AshTestBase:
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
  private:
   scoped_ptr<TrayIME> tray_;

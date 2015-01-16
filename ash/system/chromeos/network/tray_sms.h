@@ -17,19 +17,18 @@ class TraySms : public SystemTrayItem,
                 public chromeos::NetworkSmsHandler::Observer {
  public:
   explicit TraySms(SystemTray* system_tray);
-  virtual ~TraySms();
+  ~TraySms() override;
 
   // Overridden from SystemTrayItem.
-  virtual views::View* CreateDefaultView(user::LoginStatus status) override;
-  virtual views::View* CreateDetailedView(user::LoginStatus status) override;
-  virtual views::View* CreateNotificationView(
-      user::LoginStatus status) override;
-  virtual void DestroyDefaultView() override;
-  virtual void DestroyDetailedView() override;
-  virtual void DestroyNotificationView() override;
+  views::View* CreateDefaultView(user::LoginStatus status) override;
+  views::View* CreateDetailedView(user::LoginStatus status) override;
+  views::View* CreateNotificationView(user::LoginStatus status) override;
+  void DestroyDefaultView() override;
+  void DestroyDetailedView() override;
+  void DestroyNotificationView() override;
 
   // Overridden from chromeos::NetworkSmsHandler::Observer.
-  virtual void MessageReceived(const base::DictionaryValue& message) override;
+  void MessageReceived(const base::DictionaryValue& message) override;
 
  protected:
   class SmsDefaultView;

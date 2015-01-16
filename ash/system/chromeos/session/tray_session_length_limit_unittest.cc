@@ -20,9 +20,9 @@ namespace test {
 class TraySessionLengthLimitTest : public AshTestBase {
  public:
   TraySessionLengthLimitTest() {}
-  virtual ~TraySessionLengthLimitTest() {}
+  ~TraySessionLengthLimitTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     AshTestBase::SetUp();
     SystemTray* system_tray =
         Shell::GetPrimaryRootWindowController()->GetSystemTray();
@@ -30,9 +30,7 @@ class TraySessionLengthLimitTest : public AshTestBase {
     system_tray->AddTrayItem(tray_session_length_limit_);
   }
 
-  virtual void TearDown() override {
-    AshTestBase::TearDown();
-  }
+  void TearDown() override { AshTestBase::TearDown(); }
 
  protected:
   void UpdateSessionLengthLimitInMin(int mins) {

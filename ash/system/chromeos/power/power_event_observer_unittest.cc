@@ -15,15 +15,15 @@ namespace ash {
 class PowerEventObserverTest : public test::AshTestBase {
  public:
   PowerEventObserverTest() {}
-  virtual ~PowerEventObserverTest() {}
+  ~PowerEventObserverTest() override {}
 
   // test::AshTestBase::SetUp() overrides:
-  virtual void SetUp() override {
+  void SetUp() override {
     test::AshTestBase::SetUp();
     observer_.reset(new PowerEventObserver());
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     observer_.reset();
     test::AshTestBase::TearDown();
   }

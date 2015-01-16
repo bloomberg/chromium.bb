@@ -21,18 +21,18 @@ class TrayCapsLock : public TrayImageItem,
                      public chromeos::input_method::ImeKeyboard::Observer {
  public:
   explicit TrayCapsLock(SystemTray* system_tray);
-  virtual ~TrayCapsLock();
+  ~TrayCapsLock() override;
 
  private:
   // Overriden from chromeos::input_method::ImeKeyboard::Observer:
-  virtual void OnCapsLockChanged(bool enabled) override;
+  void OnCapsLockChanged(bool enabled) override;
 
   // Overridden from TrayImageItem.
-  virtual bool GetInitialVisibility() override;
-  virtual views::View* CreateDefaultView(user::LoginStatus status) override;
-  virtual views::View* CreateDetailedView(user::LoginStatus status) override;
-  virtual void DestroyDefaultView() override;
-  virtual void DestroyDetailedView() override;
+  bool GetInitialVisibility() override;
+  views::View* CreateDefaultView(user::LoginStatus status) override;
+  views::View* CreateDetailedView(user::LoginStatus status) override;
+  void DestroyDefaultView() override;
+  void DestroyDetailedView() override;
 
   CapsLockDefaultView* default_;
   views::View* detailed_;

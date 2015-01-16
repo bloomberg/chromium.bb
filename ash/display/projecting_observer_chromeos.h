@@ -19,13 +19,13 @@ class ASH_EXPORT ProjectingObserver : public ui::DisplayConfigurator::Observer {
   // |power_manager_client| must outlive this object.
   explicit ProjectingObserver(
       chromeos::PowerManagerClient* power_manager_client);
-  virtual ~ProjectingObserver();
+  ~ProjectingObserver() override;
 
   // Called when a casting session is started or stopped.
   void OnCastingSessionStartedOrStopped(bool started);
 
   // DisplayConfigurator::Observer implementation:
-  virtual void OnDisplayModeChanged(
+  void OnDisplayModeChanged(
       const ui::DisplayConfigurator::DisplayStateList& outputs) override;
 
  private:

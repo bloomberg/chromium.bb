@@ -21,15 +21,15 @@ class ASH_EXPORT TouchTransformerController
     : public DisplayController::Observer {
  public:
   TouchTransformerController();
-  virtual ~TouchTransformerController();
+  ~TouchTransformerController() override;
 
   // Updates the TouchTransformer for touch device and pushes the new
   // TouchTransformer into device manager.
   void UpdateTouchTransformer() const;
 
   // DisplayController::Observer:
-  virtual void OnDisplaysInitialized() override;
-  virtual void OnDisplayConfigurationChanged() override;
+  void OnDisplaysInitialized() override;
+  void OnDisplayConfigurationChanged() override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(TouchTransformerControllerTest,
