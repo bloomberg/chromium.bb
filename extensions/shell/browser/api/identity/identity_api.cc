@@ -7,6 +7,8 @@
 #include <set>
 #include <string>
 
+#include "base/guid.h"
+#include "content/public/browser/browser_context.h"
 #include "extensions/common/manifest_handlers/oauth2_manifest_handler.h"
 #include "extensions/shell/browser/shell_oauth2_token_service.h"
 #include "extensions/shell/common/api/identity.h"
@@ -20,13 +22,41 @@ const char kIdentityApiId[] = "identity_api";
 const char kErrorNoUserAccount[] = "No user account.";
 const char kErrorNoRefreshToken[] = "No refresh token.";
 const char kErrorNoScopesInManifest[] = "No scopes in manifest.";
+const char kErrorUserPermissionRequired[] =
+    "User permission required but not available in app_shell";
 }  // namespace
+
+IdentityAPI::IdentityAPI(content::BrowserContext* context)
+    : device_id_(base::GenerateGUID()) {
+}
+
+IdentityAPI::~IdentityAPI() {
+}
+
+// static
+IdentityAPI* IdentityAPI::Get(content::BrowserContext* context) {
+  return BrowserContextKeyedAPIFactory<IdentityAPI>::Get(context);
+}
+
+// static
+BrowserContextKeyedAPIFactory<IdentityAPI>* IdentityAPI::GetFactoryInstance() {
+  static base::LazyInstance<BrowserContextKeyedAPIFactory<IdentityAPI>>
+      factory = LAZY_INSTANCE_INITIALIZER;
+  return factory.Pointer();
+}
+
+///////////////////////////////////////////////////////////////////////////////
 
 IdentityGetAuthTokenFunction::IdentityGetAuthTokenFunction()
     : OAuth2TokenService::Consumer(kIdentityApiId) {
 }
 
 IdentityGetAuthTokenFunction::~IdentityGetAuthTokenFunction() {
+}
+
+void IdentityGetAuthTokenFunction::SetMintTokenFlowForTesting(
+    OAuth2MintTokenFlow* flow) {
+  mint_token_flow_.reset(flow);
 }
 
 ExtensionFunction::ResponseAction IdentityGetAuthTokenFunction::Run() {
@@ -44,16 +74,18 @@ ExtensionFunction::ResponseAction IdentityGetAuthTokenFunction::Run() {
 
   // Verify that we have scopes.
   const OAuth2Info& oauth2_info = OAuth2Info::GetOAuth2Info(extension());
-  std::set<std::string> scopes(oauth2_info.scopes.begin(),
-                               oauth2_info.scopes.end());
-  if (scopes.empty())
+  if (oauth2_info.scopes.empty())
     return RespondNow(Error(kErrorNoScopesInManifest));
 
-  AddRef();  // Balanced in OnGetTokenSuccess() and OnGetTokenFailure().
+  // Balanced in OnGetTokenFailure() and in the OAuth2MintTokenFlow callbacks.
+  AddRef();
 
-  // Start an asynchronous token fetch.
+  // First, fetch a logged-in-user access token for the Chrome project client ID
+  // and client secret. This token is used later to get a second access token
+  // that will be returned to the app.
+  std::set<std::string> no_scopes;
   access_token_request_ =
-      service->StartRequest(service->account_id(), scopes, this);
+      service->StartRequest(service->account_id(), no_scopes, this);
   return RespondLater();
 }
 
@@ -61,12 +93,46 @@ void IdentityGetAuthTokenFunction::OnGetTokenSuccess(
     const OAuth2TokenService::Request* request,
     const std::string& access_token,
     const base::Time& expiration_time) {
-  Respond(OneArgument(new base::StringValue(access_token)));
-  Release();  // Balanced in Run().
+  // Tests may override the mint token flow.
+  if (!mint_token_flow_) {
+    const OAuth2Info& oauth2_info = OAuth2Info::GetOAuth2Info(extension());
+    DCHECK(!oauth2_info.scopes.empty());
+
+    mint_token_flow_.reset(new OAuth2MintTokenFlow(
+        this,
+        OAuth2MintTokenFlow::Parameters(
+            extension()->id(),
+            oauth2_info.client_id,
+            oauth2_info.scopes,
+            IdentityAPI::Get(browser_context())->device_id(),
+            OAuth2MintTokenFlow::MODE_MINT_TOKEN_FORCE)));
+  }
+
+  // Use the logging-in-user access token to mint an access token for this app.
+  mint_token_flow_->Start(browser_context()->GetRequestContext(), access_token);
 }
 
 void IdentityGetAuthTokenFunction::OnGetTokenFailure(
     const OAuth2TokenService::Request* request,
+    const GoogleServiceAuthError& error) {
+  Respond(Error(error.ToString()));
+  Release();  // Balanced in Run().
+}
+
+void IdentityGetAuthTokenFunction::OnMintTokenSuccess(
+    const std::string& access_token,
+    int time_to_live) {
+  Respond(OneArgument(new base::StringValue(access_token)));
+  Release();  // Balanced in Run().
+}
+
+void IdentityGetAuthTokenFunction::OnIssueAdviceSuccess(
+    const IssueAdviceInfo& issue_advice) {
+  Respond(Error(kErrorUserPermissionRequired));
+  Release();  // Balanced in Run().
+}
+
+void IdentityGetAuthTokenFunction::OnMintTokenFailure(
     const GoogleServiceAuthError& error) {
   Respond(Error(error.ToString()));
   Release();  // Balanced in Run().
