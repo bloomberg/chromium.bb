@@ -301,8 +301,8 @@ BaseScreen* WizardController::CreateScreen(const std::string& screen_name) {
     result->SetRebootCheckDelay(kWaitForRebootTimeSec);
     return result;
   } else if (screen_name == kUserImageScreenName) {
-    return new chromeos::UserImageScreen(
-        this, oobe_display_->GetUserImageScreenActor());
+    return new chromeos::UserImageScreen(this,
+                                         oobe_display_->GetUserImageView());
   } else if (screen_name == kEulaScreenName) {
     return new chromeos::EulaScreen(this, this, oobe_display_->GetEulaView());
   } else if (screen_name == kEnrollmentScreenName) {

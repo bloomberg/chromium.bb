@@ -373,10 +373,14 @@ cr.define('login', function() {
         screen.contextChanged_.apply(screen, arguments);
       }
 
-      api.register = function() {
+      api.register = function(opt_lazy_init) {
         var screen = $(id);
         screen.__proto__ = new Constructor();
-        screen.initialize();
+
+        if (opt_lazy_init !== undefined && opt_lazy_init)
+          screen.deferredInitialization = function() { screen.initialize(); }
+        else
+          screen.initialize();
         Oobe.getInstance().registerScreen(screen);
       };
 
@@ -388,4 +392,3 @@ cr.define('login', function() {
     }
   };
 });
-

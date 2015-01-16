@@ -9,7 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/camera_presence_notifier.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
-#include "chrome/browser/chromeos/login/screens/user_image_screen_actor.h"
+#include "chrome/browser/chromeos/login/screens/user_image_model.h"
 #include "chrome/browser/chromeos/login/users/avatar/user_image_sync_observer.h"
 #include "chrome/browser/image_decoder.h"
 #include "components/user_manager/user.h"
@@ -19,7 +19,7 @@
 namespace base {
 class Timer;
 class Value;
-};
+}
 
 namespace policy {
 class PolicyChangeRegistrar;
@@ -27,18 +27,18 @@ class PolicyChangeRegistrar;
 
 namespace chromeos {
 
-class UserImageManager;
 class ScreenManager;
+class UserImageManager;
+class UserImageView;
 
-class UserImageScreen : public BaseScreen,
-                        public UserImageScreenActor::Delegate,
+class UserImageScreen : public UserImageModel,
                         public ImageDecoder::Delegate,
                         public content::NotificationObserver,
                         public UserImageSyncObserver::Observer,
                         public CameraPresenceNotifier::Observer {
  public:
   UserImageScreen(BaseScreenDelegate* base_screen_delegate,
-                  UserImageScreenActor* actor);
+                  UserImageView* view);
   virtual ~UserImageScreen();
 
   static UserImageScreen* Get(ScreenManager* manager);
@@ -47,7 +47,6 @@ class UserImageScreen : public BaseScreen,
   virtual void PrepareToShow() override;
   virtual void Show() override;
   virtual void Hide() override;
-  virtual std::string GetName() const override;
 
   // UserImageScreenActor::Delegate implementation:
   virtual void OnScreenReady() override;
@@ -56,11 +55,7 @@ class UserImageScreen : public BaseScreen,
                                const std::string& image_type,
                                bool is_user_selection) override;
   virtual void OnImageAccepted() override;
-  virtual void OnActorDestroyed(UserImageScreenActor* actor) override;
-
-  virtual bool profile_picture_absent() override;
-  virtual int selected_image() override;
-  virtual std::string profile_picture_data_url() override;
+  virtual void OnViewDestroyed(UserImageView* view) override;
 
   // content::NotificationObserver implementation:
   virtual void Observe(int type,
@@ -111,7 +106,7 @@ class UserImageScreen : public BaseScreen,
 
   scoped_ptr<policy::PolicyChangeRegistrar> policy_registrar_;
 
-  UserImageScreenActor* actor_;
+  UserImageView* view_;
 
   // Last ImageDecoder instance used to decode an image blob received by
   // HandlePhotoTaken.
@@ -127,12 +122,6 @@ class UserImageScreen : public BaseScreen,
 
   // Index of the selected user image.
   int selected_image_;
-
-  // Encoded profile picture.
-  std::string profile_picture_data_url_;
-
-  // True if user has no custom profile picture.
-  bool profile_picture_absent_;
 
   // Timer used for waiting for user image sync.
   scoped_ptr<base::Timer> sync_timer_;

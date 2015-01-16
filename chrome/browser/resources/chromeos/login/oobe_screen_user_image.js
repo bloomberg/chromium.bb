@@ -6,64 +6,19 @@
  * @fileoverview Oobe user image screen implementation.
  */
 
-cr.define('login', function() {
+login.createScreen('UserImageScreen', 'user-image', function() {
+  var CONTEXT_KEY_IS_CAMERA_PRESENT = 'isCameraPresent';
+  var CONTEXT_KEY_SELECTED_IMAGE_URL = 'selectedImageURL';
+  var CONTEXT_KEY_PROFILE_PICTURE_DATA_URL = 'profilePictureDataURL';
+
   var UserImagesGrid = options.UserImagesGrid;
   var ButtonImages = UserImagesGrid.ButtonImages;
 
-  /**
-   * Array of button URLs used on this page.
-   * @type {Array.<string>}
-   * @const
-   */
-  var ButtonImageUrls = [
-    ButtonImages.TAKE_PHOTO
-  ];
-
-  /**
-   * Whether the web camera item should be preselected, if available.
-   * @type {boolean}
-   * @const
-   */
-  var PRESELECT_CAMERA = false;
-
-  /**
-   * Creates a new OOBE screen div.
-   * @constructor
-   * @extends {HTMLDivElement}
-   */
-  var UserImageScreen = cr.ui.define(login.Screen);
-
-  /**
-   * Registers with Oobe.
-   * @param {boolean} lazyInit If true, screen is decorated on first show.
-   */
-  UserImageScreen.register = function(lazyInit) {
-    var screen = $('user-image');
-    if (lazyInit) {
-      screen.__proto__ = UserImageScreen.prototype;
-      screen.deferredDecorate = function() {
-        UserImageScreen.decorate(screen);
-      };
-    } else {
-      UserImageScreen.decorate(screen);
-    }
-    Oobe.getInstance().registerScreen(screen);
-  };
-
-  UserImageScreen.prototype = {
-    __proto__: login.Screen.prototype,
-
-    /**
-     * Currently selected user image index (take photo button is with zero
-     * index).
-     * @type {number}
-     */
-    selectedUserImage_: -1,
-
-    /**
-     * URL for profile picture.
-     */
-    profileImageUrl_: null,
+  return {
+    EXTERNAL_API: [
+      'setDefaultImages',
+      'hideCurtain'
+    ],
 
     /** @override */
     decorate: function(element) {
@@ -128,6 +83,22 @@ cr.define('login', function() {
           'webkitTransitionEnd', function(e) {
             previewElement.classList.remove('animation');
           });
+
+      var self = this;
+      this.context.addObserver(CONTEXT_KEY_IS_CAMERA_PRESENT,
+                               function(present) {
+        $('user-image-grid').cameraPresent = present;
+      });
+      this.context.addObserver(CONTEXT_KEY_SELECTED_IMAGE_URL,
+                               this.setSelectedImage_);
+      this.context.addObserver(CONTEXT_KEY_PROFILE_PICTURE_DATA_URL,
+                               function(url) {
+        self.profileImageLoading = false;
+        if (url) {
+          self.profileImage_ =
+              $('user-image-grid').updateItem(self.profileImage_, url);
+        }
+      });
 
       this.updateLocalizedContent();
 
@@ -333,47 +304,11 @@ cr.define('login', function() {
     },
 
     /**
-     * Updates user profile image.
-     * @param {?string} imageUrl Image encoded as data URL. If null, user has
-     *     the default profile image, which we don't want to show.
-     * @private
-     */
-    setProfileImage_: function(imageUrl) {
-      this.profileImageLoading = false;
-      this.profileImageUrl_ = imageUrl;
-      if (imageUrl !== null) {
-        this.profileImage_ =
-            $('user-image-grid').updateItem(this.profileImage_, imageUrl);
-      }
-    },
-
-    /**
-     * @param {boolean} present Whether camera is detected.
-     */
-    setCameraPresent_: function(present) {
-      $('user-image-grid').cameraPresent = present;
-    },
-
-    /**
-     * Controls the profile image as one of image options.
-     * @param {enabled} Whether profile image option should be displayed.
-     * @private
-     */
-    setProfilePictureEnabled_: function(enabled) {
-      var imageGrid = $('user-image-grid');
-      if (enabled) {
-      } else {
-        imageGrid.removeItem(this.profileImage_);
-      }
-    },
-
-    /**
      * Appends default images to the image grid. Should only be called once.
      * @param {Array.<{url: string, author: string, website: string}>} images
      *   An array of default images data, including URL, author and website.
-     * @private
      */
-    setDefaultImages_: function(imagesData) {
+    setDefaultImages: function(imagesData) {
       var imageGrid = $('user-image-grid');
       for (var i = 0, data; data = imagesData[i]; i++) {
         var item = imageGrid.addItem(data.url, data.title);
@@ -381,6 +316,8 @@ cr.define('login', function() {
         item.author = data.author || '';
         item.website = data.website || '';
       }
+      this.setSelectedImage_(
+          this.context.get(CONTEXT_KEY_SELECTED_IMAGE_URL, ''));
       chrome.send('screenReady');
     },
 
@@ -390,6 +327,8 @@ cr.define('login', function() {
      * @private
      */
     setSelectedImage_: function(url) {
+      if (!url)
+        return;
       var imageGrid = $('user-image-grid');
       imageGrid.selectedItemUrl = url;
       imageGrid.focus();
@@ -397,9 +336,8 @@ cr.define('login', function() {
 
     /**
      * Hides curtain with spinner.
-     * @private
      */
-    hideCurtain_: function() {
+    hideCurtain: function() {
       this.classList.remove('loading');
       Oobe.getInstance().updateScreenSize(this);
     },
@@ -440,21 +378,6 @@ cr.define('login', function() {
                   [imageGrid.selectedItemUrl,
                    imageGrid.selectionType,
                    !imageGrid.inProgramSelection]);
-    },
-  };
-
-  // Forward public APIs to private implementations.
-  cr.makePublic(UserImageScreen, [
-    'setDefaultImages',
-    'setCameraPresent',
-    'setProfilePictureEnabled',
-    'setProfileImage',
-    'setSelectedImage',
-    'hideCurtain'
-  ], 'user-image');
-
-  return {
-    UserImageScreen: UserImageScreen
+    }
   };
 });
-

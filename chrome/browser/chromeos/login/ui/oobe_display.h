@@ -31,7 +31,7 @@ class ResetScreenActor;
 class SupervisedUserCreationScreenHandler;
 class TermsOfServiceScreenActor;
 class UpdateScreenActor;
-class UserImageScreenActor;
+class UserImageView;
 class UserBoardView;
 class WrongHWIDScreenActor;
 
@@ -83,7 +83,7 @@ class OobeDisplay {
   virtual KioskAutolaunchScreenActor* GetKioskAutolaunchScreenActor() = 0;
   virtual KioskEnableScreenActor* GetKioskEnableScreenActor() = 0;
   virtual TermsOfServiceScreenActor* GetTermsOfServiceScreenActor() = 0;
-  virtual UserImageScreenActor* GetUserImageScreenActor() = 0;
+  virtual UserImageView* GetUserImageView() = 0;
   virtual ErrorScreenActor* GetErrorScreenActor() = 0;
   virtual WrongHWIDScreenActor* GetWrongHWIDScreenActor() = 0;
   virtual AutoEnrollmentCheckScreenActor*

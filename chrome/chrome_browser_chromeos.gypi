@@ -539,6 +539,8 @@
         'browser/chromeos/login/screens/update_screen.cc',
         'browser/chromeos/login/screens/update_screen.h',
         'browser/chromeos/login/screens/update_screen_actor.h',
+        'browser/chromeos/login/screens/user_image_model.cc',
+        'browser/chromeos/login/screens/user_image_model.h',
         'browser/chromeos/login/screens/user_image_screen.cc',
         'browser/chromeos/login/screens/user_image_screen.h',
         'browser/chromeos/login/screens/user_image_screen_actor.h',

@@ -219,7 +219,7 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
       error_screen_handler_(nullptr),
       signin_screen_handler_(nullptr),
       terms_of_service_screen_actor_(nullptr),
-      user_image_screen_actor_(nullptr),
+      user_image_view_(nullptr),
       kiosk_app_menu_handler_(nullptr),
       current_screen_(SCREEN_UNKNOWN),
       previous_screen_(SCREEN_UNKNOWN),
@@ -317,7 +317,7 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
 
   UserImageScreenHandler* user_image_screen_handler =
       new UserImageScreenHandler();
-  user_image_screen_actor_ = user_image_screen_handler;
+  user_image_view_ = user_image_screen_handler;
   AddScreenHandler(user_image_screen_handler);
 
   policy::ConsumerManagementService* consumer_management =
@@ -463,8 +463,8 @@ DeviceDisabledScreenActor* OobeUI::GetDeviceDisabledScreenActor() {
   return device_disabled_screen_actor_;
 }
 
-UserImageScreenActor* OobeUI::GetUserImageScreenActor() {
-  return user_image_screen_actor_;
+UserImageView* OobeUI::GetUserImageView() {
+  return user_image_view_;
 }
 
 ErrorScreenActor* OobeUI::GetErrorScreenActor() {

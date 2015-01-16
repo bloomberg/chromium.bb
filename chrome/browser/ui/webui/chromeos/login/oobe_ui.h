@@ -108,7 +108,7 @@ class OobeUI : public OobeDisplay,
   virtual KioskEnableScreenActor* GetKioskEnableScreenActor() override;
   virtual TermsOfServiceScreenActor*
       GetTermsOfServiceScreenActor() override;
-  virtual UserImageScreenActor* GetUserImageScreenActor() override;
+  virtual UserImageView* GetUserImageView() override;
   virtual ErrorScreenActor* GetErrorScreenActor() override;
   virtual WrongHWIDScreenActor* GetWrongHWIDScreenActor() override;
   virtual AutoEnrollmentCheckScreenActor*
@@ -223,7 +223,7 @@ class OobeUI : public OobeDisplay,
   SigninScreenHandler* signin_screen_handler_;
 
   TermsOfServiceScreenActor* terms_of_service_screen_actor_;
-  UserImageScreenActor* user_image_screen_actor_;
+  UserImageView* user_image_view_;
 
   std::vector<BaseScreenHandler*> handlers_;  // Non-owning pointers.
 

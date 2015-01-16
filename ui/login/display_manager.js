@@ -612,9 +612,9 @@ cr.define('cr.ui.login', function() {
      */
     preloadScreen: function(screen) {
       var screenEl = $(screen.id);
-      if (screenEl.deferredDecorate !== undefined) {
-        screenEl.deferredDecorate();
-        delete screenEl.deferredDecorate;
+      if (screenEl.deferredInitialization !== undefined) {
+        screenEl.deferredInitialization();
+        delete screenEl.deferredInitialization;
       }
     },
 
