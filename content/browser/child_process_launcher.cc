@@ -165,7 +165,8 @@ ChildProcessLauncher::Context::Context()
       starting_(true),
       // TODO(earthdok): Re-enable on CrOS http://crbug.com/360622
 #if (defined(ADDRESS_SANITIZER) || defined(LEAK_SANITIZER) || \
-     defined(THREAD_SANITIZER)) && !defined(OS_CHROMEOS)
+     defined(MEMORY_SANITIZER) || defined(THREAD_SANITIZER) || \
+     defined(UNDEFINED_SANITIZER)) && !defined(OS_CHROMEOS)
       terminate_child_on_shutdown_(false) {
 #else
       terminate_child_on_shutdown_(true) {
