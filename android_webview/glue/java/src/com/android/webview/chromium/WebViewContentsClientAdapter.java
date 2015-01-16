@@ -557,14 +557,10 @@ public class WebViewContentsClientAdapter extends AwContentsClient {
             // onPageStarted is invoked, so in the case we get the Picture before that and
             // no further updates after onPageStarted, we'll fail the test by timing
             // out waiting for a Picture.
-            // To ensure backwards compatibility, we need to defer sending Picture updates
-            // until onPageFinished has been invoked. This work is being done
-            // upstream, and we can revert this hack when it lands.
             if (mPictureListener != null) {
                 ThreadUtils.postOnUiThreadDelayed(new Runnable() {
                     @Override
                     public void run() {
-                        UnimplementedWebViewApi.invoke();
                         if (mPictureListener != null) {
                             if (TRACE) Log.d(TAG, "onPageFinished-fake");
                             mPictureListener.onNewPicture(mWebView, new Picture());

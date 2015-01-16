@@ -1702,7 +1702,6 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
             });
             return ret;
         }
-        UnimplementedWebViewApi.invoke();
         return false;
     }
 
@@ -1718,7 +1717,6 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
             });
             return ret;
         }
-        UnimplementedWebViewApi.invoke();
         return false;
     }
 
@@ -2122,7 +2120,6 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
     private class InternalAccessAdapter implements AwContents.InternalAccessDelegate {
         @Override
         public boolean drawChild(Canvas arg0, View arg1, long arg2) {
-            UnimplementedWebViewApi.invoke();
             return false;
         }
 
@@ -2134,7 +2131,6 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
 
         @Override
         public boolean super_dispatchKeyEventPreIme(KeyEvent arg0) {
-            UnimplementedWebViewApi.invoke();
             return false;
         }
 
@@ -2167,8 +2163,6 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
 
         @Override
         public boolean super_awakenScrollBars(int arg0, boolean arg1) {
-            // TODO: need method on WebView.PrivateAccess?
-            UnimplementedWebViewApi.invoke();
             return false;
         }
 
