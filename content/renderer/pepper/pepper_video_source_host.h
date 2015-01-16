@@ -71,8 +71,6 @@ class CONTENT_EXPORT PepperVideoSourceHost : public ppapi::host::ResourceHost {
 
   void Close();
 
-  RendererPpapiHost* renderer_ppapi_host_;
-
   ppapi::host::ReplyMessageContext reply_context_;
 
   scoped_ptr<VideoSourceHandler> source_handler_;

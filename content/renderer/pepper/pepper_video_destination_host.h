@@ -38,8 +38,6 @@ class CONTENT_EXPORT PepperVideoDestinationHost
                             PP_TimeTicks timestamp);
   int32_t OnHostMsgClose(ppapi::host::HostMessageContext* context);
 
-  RendererPpapiHost* renderer_ppapi_host_;
-
   scoped_ptr<FrameWriterInterface> frame_writer_;
 
   base::WeakPtrFactory<PepperVideoDestinationHost> weak_factory_;

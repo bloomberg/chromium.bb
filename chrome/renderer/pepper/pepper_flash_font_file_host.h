@@ -42,9 +42,6 @@ class PepperFlashFontFileHost : public ppapi::host::ResourceHost {
   int32_t OnGetFontTable(ppapi::host::HostMessageContext* context,
                          uint32_t table);
 
-  // Non-owning pointer.
-  content::RendererPpapiHost* renderer_ppapi_host_;
-
 #if defined(OS_LINUX) || defined(OS_OPENBSD)
   base::ScopedFD fd_;
 #endif

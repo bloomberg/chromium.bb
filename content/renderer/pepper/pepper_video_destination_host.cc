@@ -24,7 +24,6 @@ PepperVideoDestinationHost::PepperVideoDestinationHost(RendererPpapiHost* host,
                                                        PP_Instance instance,
                                                        PP_Resource resource)
     : ResourceHost(host->GetPpapiHost(), instance, resource),
-      renderer_ppapi_host_(host),
       weak_factory_(this) {}
 
 PepperVideoDestinationHost::~PepperVideoDestinationHost() {}
