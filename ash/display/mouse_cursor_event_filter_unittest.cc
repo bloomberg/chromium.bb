@@ -55,8 +55,6 @@ class MouseCursorEventFilterTest : public test::AshTestBase {
   }
 
  private:
-  MouseCursorEventFilter* event_filter_;
-
   DISALLOW_COPY_AND_ASSIGN(MouseCursorEventFilterTest);
 };
 

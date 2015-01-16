@@ -18,7 +18,6 @@
 #include "ash/test/shell_test_api.h"
 #include "ash/test/test_shelf_delegate.h"
 #include "ash/wm/drag_window_resizer.h"
-#include "ash/wm/panels/panel_layout_manager.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_event.h"
 #include "base/win/windows_version.h"
@@ -175,7 +174,6 @@ class PanelWindowResizerTest : public test::AshTestBase {
 
  private:
   scoped_ptr<WindowResizer> resizer_;
-  PanelLayoutManager* panel_layout_manager_;
   ShelfModel* model_;
   test::TestShelfDelegate* shelf_delegate_;
 

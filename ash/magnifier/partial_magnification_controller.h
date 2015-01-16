@@ -71,10 +71,6 @@ class PartialMagnificationController
   // Overridden from WidgetObserver:
   void OnWidgetDestroying(views::Widget* widget) override;
 
-  // True if the magnified window is in motion of zooming or un-zooming effect.
-  // Otherwise, false.
-  bool is_on_zooming_;
-
   bool is_enabled_;
 
   // Current scale, origin (left-top) position of the magnification window.

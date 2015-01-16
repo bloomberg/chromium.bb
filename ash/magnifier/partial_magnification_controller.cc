@@ -38,8 +38,7 @@ const char kPartialMagniferWindowName[] = "PartialMagnifierWindow";
 namespace ash {
 
 PartialMagnificationController::PartialMagnificationController()
-    : is_on_zooming_(false),
-      is_enabled_(false),
+    : is_enabled_(false),
       scale_(kNonPartialMagnifiedScale),
       zoom_widget_(NULL) {
   Shell::GetInstance()->AddPreTargetHandler(this);

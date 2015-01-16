@@ -71,8 +71,7 @@ void LocaleNotificationDelegate::ButtonClick(int button_index) {
 
 }  // namespace
 
-LocaleNotificationController::LocaleNotificationController()
-    : delegate_(NULL) {
+LocaleNotificationController::LocaleNotificationController() {
   Shell::GetInstance()->system_tray_notifier()->AddLocaleObserver(this);
 }
 

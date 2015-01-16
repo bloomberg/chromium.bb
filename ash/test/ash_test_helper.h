@@ -79,8 +79,10 @@ class AshTestHelper {
 
   scoped_ptr<views::ViewsDelegate> views_delegate_;
 
+#if defined(OS_CHROMEOS)
   // Check if DBus Thread Manager was initialized here.
   bool dbus_thread_manager_initialized_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(AshTestHelper);
 };

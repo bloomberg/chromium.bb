@@ -69,12 +69,8 @@ class ASH_EXPORT PopupMessage {
   MessageBubble* view_;
   views::Widget* widget_;
 
-  // Variables of the construction time.
-  views::View* anchor_;
   base::string16 caption_;
   base::string16 message_;
-  IconType message_type_;
-  views::BubbleBorder::Arrow arrow_orientation_;
 
   DISALLOW_COPY_AND_ASSIGN(PopupMessage);
 };

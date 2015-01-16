@@ -50,10 +50,8 @@ using chromeos::CrasAudioHandler;
 namespace ash {
 namespace tray {
 
-AudioDetailedView::AudioDetailedView(SystemTrayItem* owner,
-                                     user::LoginStatus login)
-    : TrayDetailsView(owner),
-      login_(login) {
+AudioDetailedView::AudioDetailedView(SystemTrayItem* owner)
+    : TrayDetailsView(owner) {
   CreateItems();
   Update();
 }

@@ -39,8 +39,7 @@ views::View* TrayAudioChromeOs::CreateDetailedView(user::LoginStatus status) {
   } else {
     Shell::GetInstance()->metrics()->RecordUserMetricsAction(
         ash::UMA_STATUS_AREA_DETAILED_AUDIO_VIEW);
-    audio_detail_view_ =
-        new tray::AudioDetailedView(this, status);
+    audio_detail_view_ = new tray::AudioDetailedView(this);
     return audio_detail_view_;
   }
 }

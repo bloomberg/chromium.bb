@@ -42,7 +42,6 @@ class ASH_EXPORT SpecialPopupRow : public views::View {
 
   views::View* content_;
   views::View* button_container_;
-  views::Label* text_label_;
 
   DISALLOW_COPY_AND_ASSIGN(SpecialPopupRow);
 };

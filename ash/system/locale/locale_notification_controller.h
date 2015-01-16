@@ -26,7 +26,6 @@ class LocaleNotificationController : public LocaleObserver {
                        const std::string& from_locale,
                        const std::string& to_locale) override;
 
-  LocaleObserver::Delegate* delegate_;
   std::string cur_locale_;
   std::string from_locale_;
   std::string to_locale_;

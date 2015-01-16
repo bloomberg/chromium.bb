@@ -46,9 +46,11 @@ namespace test {
 AshTestHelper::AshTestHelper(base::MessageLoopForUI* message_loop)
     : message_loop_(message_loop),
       test_shell_delegate_(NULL),
-      test_screenshot_delegate_(NULL),
-      dbus_thread_manager_initialized_(false) {
+      test_screenshot_delegate_(NULL) {
   CHECK(message_loop_);
+#if defined(OS_CHROMEOS)
+  dbus_thread_manager_initialized_ = false;
+#endif
 #if defined(USE_X11)
   aura::test::SetUseOverrideRedirectWindowByDefault(true);
 #endif

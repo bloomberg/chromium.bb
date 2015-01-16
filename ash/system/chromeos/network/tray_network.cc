@@ -47,7 +47,7 @@ class NetworkTrayView : public TrayItemView,
                         public ui::network_icon::AnimationObserver {
  public:
   explicit NetworkTrayView(TrayNetwork* network_tray)
-      : TrayItemView(network_tray), network_tray_(network_tray) {
+      : TrayItemView(network_tray) {
     SetLayoutManager(
         new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0));
 
@@ -128,7 +128,6 @@ class NetworkTrayView : public TrayItemView,
     SchedulePaint();
   }
 
-  TrayNetwork* network_tray_;
   views::ImageView* image_view_;
   base::string16 connection_status_string_;
 
@@ -139,7 +138,7 @@ class NetworkDefaultView : public TrayItemMore,
                            public ui::network_icon::AnimationObserver {
  public:
   NetworkDefaultView(TrayNetwork* network_tray, bool show_more)
-      : TrayItemMore(network_tray, show_more), network_tray_(network_tray) {
+      : TrayItemMore(network_tray, show_more) {
     Update();
   }
 
@@ -167,8 +166,6 @@ class NetworkDefaultView : public TrayItemMore,
   void NetworkIconChanged() override { Update(); }
 
  private:
-  TrayNetwork* network_tray_;
-
   DISALLOW_COPY_AND_ASSIGN(NetworkDefaultView);
 };
 
