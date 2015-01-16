@@ -403,13 +403,7 @@
       "sql_unittests",
       "ui_base_unittests",
       "views_unittests",
-      {
-        "test": "browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 10
-        }
-      },
+      "browser_tests",
       {
         "test": "content_browsertests",
         "swarming": {
