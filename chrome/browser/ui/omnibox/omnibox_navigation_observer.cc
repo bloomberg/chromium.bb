@@ -94,7 +94,11 @@ void OmniboxNavigationObserver::Observe(
     fetcher_->SetRequestContext(
         controller->GetBrowserContext()->GetRequestContext());
   }
-  WebContentsObserver::Observe(controller->GetWebContents());
+  content::WebContents* web_contents = controller->GetWebContents();
+  // TODO(vitalybuka): Remove after fixing crbug.com/363105.
+  CHECK(web_contents);
+  CHECK(InfoBarService::FromWebContents(web_contents));
+  WebContentsObserver::Observe(web_contents);
   // DidStartNavigationToPendingEntry() will be called for this load as well.
 }
 
@@ -142,6 +146,10 @@ void OmniboxNavigationObserver::OnURLFetchComplete(
 
 void OmniboxNavigationObserver::OnAllLoadingFinished() {
   if (fetch_state_ == FETCH_SUCCEEDED) {
+    // TODO(vitalybuka): Remove after fixing crbug.com/363105.
+    CHECK(registrar_.IsEmpty());  // Must be empty after Observe().
+    CHECK(web_contents());
+    CHECK(InfoBarService::FromWebContents(web_contents()));
     AlternateNavInfoBarDelegate::Create(
         web_contents(), text_, alternate_nav_match_, match_.destination_url);
   }
