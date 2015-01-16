@@ -33,25 +33,21 @@ namespace chromeos {
 class PeripheralBatteryObserverTest : public InProcessBrowserTest {
  public:
   PeripheralBatteryObserverTest() {}
-  virtual ~PeripheralBatteryObserverTest() {}
+  ~PeripheralBatteryObserverTest() override {}
 
-  virtual void SetUp() override {
-    chromeos::DBusThreadManager::Initialize();
-  }
+  void SetUp() override { chromeos::DBusThreadManager::Initialize(); }
 
-  virtual void SetUpInProcessBrowserTestFixture() override {
+  void SetUpInProcessBrowserTestFixture() override {
     InProcessBrowserTest::SetUpInProcessBrowserTestFixture();
   }
 
-  virtual void SetUpOnMainThread() override {
+  void SetUpOnMainThread() override {
     observer_.reset(new PeripheralBatteryObserver());
   }
 
-  virtual void TearDownOnMainThread() override {
-    observer_.reset();
-  }
+  void TearDownOnMainThread() override { observer_.reset(); }
 
-  virtual void TearDownInProcessBrowserTestFixture() override {
+  void TearDownInProcessBrowserTestFixture() override {
     InProcessBrowserTest::TearDownInProcessBrowserTestFixture();
   }
 

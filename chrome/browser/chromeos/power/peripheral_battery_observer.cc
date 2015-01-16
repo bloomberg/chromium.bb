@@ -74,10 +74,10 @@ class PeripheralBatteryNotificationDelegate : public NotificationDelegate {
       : id_(id) {}
 
   // Overridden from NotificationDelegate:
-  virtual std::string id() const override { return id_; }
+  std::string id() const override { return id_; }
 
  private:
-  virtual ~PeripheralBatteryNotificationDelegate() {}
+  ~PeripheralBatteryNotificationDelegate() override {}
 
   const std::string id_;
 

@@ -27,7 +27,7 @@ class PowerPolicyController;
 class PowerPrefs : public content::NotificationObserver {
  public:
   explicit PowerPrefs(PowerPolicyController* power_policy_controller);
-  virtual ~PowerPrefs();
+  ~PowerPrefs() override;
 
   // Register power prefs with default values applicable to a user profile.
   static void RegisterUserProfilePrefs(
@@ -38,9 +38,9 @@ class PowerPrefs : public content::NotificationObserver {
       user_prefs::PrefRegistrySyncable* registry);
 
   // content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   void UpdatePowerPolicyFromPrefs();
 

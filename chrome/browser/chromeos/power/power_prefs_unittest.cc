@@ -48,8 +48,8 @@ class PowerPrefsTest : public testing::Test {
   PowerPrefsTest();
 
   // testing::Test:
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
   const Profile* GetProfile() const;
 

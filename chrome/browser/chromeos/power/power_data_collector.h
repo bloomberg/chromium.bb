@@ -82,9 +82,8 @@ class CHROMEOS_EXPORT PowerDataCollector : public PowerManagerClient::Observer {
   static PowerDataCollector* Get();
 
   // PowerManagerClient::Observer implementation:
-  virtual void PowerChanged(
-      const power_manager::PowerSupplyProperties& prop) override;
-  virtual void SuspendDone(const base::TimeDelta& sleep_duration) override;
+  void PowerChanged(const power_manager::PowerSupplyProperties& prop) override;
+  void SuspendDone(const base::TimeDelta& sleep_duration) override;
 
   // Only those power data samples which fall within the last
   // |kSampleTimeLimitSec| are stored in memory.
@@ -93,7 +92,7 @@ class CHROMEOS_EXPORT PowerDataCollector : public PowerManagerClient::Observer {
  private:
   explicit PowerDataCollector(const bool start_cpu_data_collector);
 
-  virtual ~PowerDataCollector();
+  ~PowerDataCollector() override;
 
   std::deque<PowerSupplySample> power_supply_data_;
   std::deque<SystemResumedSample> system_resumed_data_;

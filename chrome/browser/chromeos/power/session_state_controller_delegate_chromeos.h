@@ -15,13 +15,13 @@ class SessionStateControllerDelegateChromeos
     : public ash::LockStateControllerDelegate {
  public:
   SessionStateControllerDelegateChromeos() {}
-  virtual ~SessionStateControllerDelegateChromeos() {}
+  ~SessionStateControllerDelegateChromeos() override {}
 
  private:
   // SessionStateControllerDelegate implementation.
-  virtual void RequestLockScreen() override;
-  virtual void RequestRestart() override;
-  virtual void RequestShutdown() override;
+  void RequestLockScreen() override;
+  void RequestRestart() override;
+  void RequestShutdown() override;
 
   DISALLOW_COPY_AND_ASSIGN(SessionStateControllerDelegateChromeos);
 };

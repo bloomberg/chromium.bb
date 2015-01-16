@@ -29,22 +29,22 @@ class PeripheralBatteryObserver : public PowerManagerClient::Observer,
  public:
   // This class registers/unregisters itself as an observer in ctor/dtor.
   PeripheralBatteryObserver();
-  virtual ~PeripheralBatteryObserver();
+  ~PeripheralBatteryObserver() override;
 
   void set_testing_clock(base::SimpleTestTickClock* clock) {
     testing_clock_ = clock;
   }
 
   // PowerManagerClient::Observer implementation.
-  virtual void PeripheralBatteryStatusReceived(const std::string& path,
-                                               const std::string& name,
-                                               int level) override;
+  void PeripheralBatteryStatusReceived(const std::string& path,
+                                       const std::string& name,
+                                       int level) override;
 
   // device::BluetoothAdapter::Observer implementation.
-  virtual void DeviceChanged(device::BluetoothAdapter* adapter,
-                             device::BluetoothDevice* device) override;
-  virtual void DeviceRemoved(device::BluetoothAdapter* adapter,
-                             device::BluetoothDevice* device) override;
+  void DeviceChanged(device::BluetoothAdapter* adapter,
+                     device::BluetoothDevice* device) override;
+  void DeviceRemoved(device::BluetoothAdapter* adapter,
+                     device::BluetoothDevice* device) override;
 
  private:
   friend class PeripheralBatteryObserverTest;

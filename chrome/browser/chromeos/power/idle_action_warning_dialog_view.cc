@@ -33,9 +33,9 @@ const int kCountdownUpdateIntervalMs = 1000;  // 1 second.
 class FixedWidthLabel : public views::Label {
  public:
   explicit FixedWidthLabel(int width);
-  virtual ~FixedWidthLabel();
+  ~FixedWidthLabel() override;
 
-  virtual gfx::Size GetPreferredSize() const override;
+  gfx::Size GetPreferredSize() const override;
 
  private:
   int width_;

@@ -12,15 +12,15 @@ namespace chromeos {
 class PowerDataCollectorTest : public testing::Test {
  public:
   PowerDataCollectorTest() : power_data_collector_(NULL) {}
-  virtual ~PowerDataCollectorTest() {}
+  ~PowerDataCollectorTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     DBusThreadManager::Initialize();
     PowerDataCollector::InitializeForTesting();
     power_data_collector_ = PowerDataCollector::Get();
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     PowerDataCollector::Shutdown();
     DBusThreadManager::Shutdown();
     power_data_collector_ = NULL;

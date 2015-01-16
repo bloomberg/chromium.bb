@@ -16,10 +16,10 @@ namespace chromeos {
 class CHROMEOS_EXPORT LightBar : public PowerManagerClient::Observer {
  public:
   LightBar();
-  virtual ~LightBar();
+  ~LightBar() override;
 
   // PowerManagerClient::Observer implementation.
-  virtual void DarkSuspendImminent() override;
+  void DarkSuspendImminent() override;
 
  private:
   // Path to control the light bar.
