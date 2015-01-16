@@ -28,6 +28,8 @@
 
 #include "core/dom/Range.h"
 #include "core/editing/FindOptions.h"
+#include "core/editing/iterators/BitStack.h"
+#include "core/editing/iterators/TextIteratorFlags.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Vector.h"
 
@@ -37,40 +39,10 @@ class InlineTextBox;
 class RenderText;
 class RenderTextFragment;
 
-enum TextIteratorBehavior {
-    TextIteratorDefaultBehavior = 0,
-    TextIteratorEmitsCharactersBetweenAllVisiblePositions = 1 << 0,
-    TextIteratorEntersTextControls = 1 << 1,
-    TextIteratorIgnoresStyleVisibility = 1 << 2,
-    TextIteratorEmitsOriginalText = 1 << 3,
-    TextIteratorStopsOnFormControls = 1 << 4,
-    TextIteratorEmitsImageAltText = 1 << 5,
-    TextIteratorEntersAuthorShadowRoots = 1 << 6,
-    TextIteratorEmitsObjectReplacementCharacter = 1 << 7,
-    TextIteratorDoesNotBreakAtReplacedElement = 1 << 8
-};
-typedef unsigned TextIteratorBehaviorFlags;
-
 String plainText(const Range*, TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
 String plainText(const Position& start, const Position& end, TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
 PassRefPtrWillBeRawPtr<Range> findPlainText(const Range*, const String&, FindOptions);
 void findPlainText(const Position& inputStart, const Position& inputEnd, const String&, FindOptions, Position& resultStart, Position& resultEnd);
-
-class BitStack {
-public:
-    BitStack();
-    ~BitStack();
-
-    void push(bool);
-    void pop();
-
-    bool top() const;
-    unsigned size() const;
-
-private:
-    unsigned m_size;
-    Vector<unsigned, 1> m_words;
-};
 
 // Iterates through the DOM range, returning all the text, and 0-length boundaries
 // at points where replaced elements break up the text flow.  The text comes back in
@@ -131,6 +103,13 @@ public:
     static int rangeLength(const Position& start, const Position& end, bool forSelectionPreservation = false);
     static PassRefPtrWillBeRawPtr<Range> subrange(Range* entireRange, int characterOffset, int characterCount);
     static void subrange(Position& start, Position& end, int characterOffset, int characterCount);
+
+    static bool shouldEmitTabBeforeNode(Node*);
+    static bool shouldEmitNewlineBeforeNode(Node&);
+    static bool shouldEmitNewlineAfterNode(Node&);
+    static bool shouldEmitNewlineForNode(Node*, bool emitsOriginalText);
+
+    static bool supportsAltText(Node*);
 
 private:
     enum IterationProgress {
@@ -235,177 +214,6 @@ private:
     bool m_breaksAtReplacedElement;
 };
 
-// Iterates through the DOM range, returning all the text, and 0-length boundaries
-// at points where replaced elements break up the text flow. The text comes back in
-// chunks so as to optimize for performance of the iteration.
-class SimplifiedBackwardsTextIterator {
-    STACK_ALLOCATED();
-public:
-    explicit SimplifiedBackwardsTextIterator(const Range*, TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
-    SimplifiedBackwardsTextIterator(const Position& start, const Position& end, TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
+} // namespace blink
 
-    bool atEnd() const { return !m_positionNode || m_shouldStop; }
-    void advance();
-
-    int length() const { return m_textLength; }
-
-    Node* node() const { return m_node; }
-
-    template<typename BufferType>
-    void prependTextTo(BufferType& output)
-    {
-        if (!m_textLength)
-            return;
-        if (m_singleCharacterBuffer)
-            output.prepend(&m_singleCharacterBuffer, 1);
-        else
-            m_textContainer.prependTo(output, m_textOffset, m_textLength);
-    }
-
-    Node* startContainer() const;
-    int endOffset() const;
-    Position startPosition() const;
-    Position endPosition() const;
-
-private:
-    void init(Node* startNode, Node* endNode, int startOffset, int endOffset);
-    void exitNode();
-    bool handleTextNode();
-    RenderText* handleFirstLetter(int& startOffset, int& offsetInNode);
-    bool handleReplacedElement();
-    bool handleNonTextNode();
-    void emitCharacter(UChar, Node*, int startOffset, int endOffset);
-    bool advanceRespectingRange(Node*);
-
-    // Current position, not necessarily of the text being returned, but position
-    // as we walk through the DOM tree.
-    RawPtrWillBeMember<Node> m_node;
-    int m_offset;
-    bool m_handledNode;
-    bool m_handledChildren;
-    BitStack m_fullyClippedStack;
-
-    // End of the range.
-    RawPtrWillBeMember<Node> m_startNode;
-    int m_startOffset;
-    // Start of the range.
-    RawPtrWillBeMember<Node> m_endNode;
-    int m_endOffset;
-
-    // The current text and its position, in the form to be returned from the iterator.
-    RawPtrWillBeMember<Node> m_positionNode;
-    int m_positionStartOffset;
-    int m_positionEndOffset;
-
-    String m_textContainer; // We're interested in the range [m_textOffset, m_textOffset + m_textLength) of m_textContainer.
-    int m_textOffset;
-    int m_textLength;
-
-    // Used to do the whitespace logic.
-    RawPtrWillBeMember<Text> m_lastTextNode;
-    UChar m_lastCharacter;
-
-    // Used for whitespace characters that aren't in the DOM, so we can point at them.
-    UChar m_singleCharacterBuffer;
-
-    // Whether m_node has advanced beyond the iteration range (i.e. m_startNode).
-    bool m_havePassedStartNode;
-
-    // Should handle first-letter renderer in the next call to handleTextNode.
-    bool m_shouldHandleFirstLetter;
-
-    // Used when the iteration should stop if form controls are reached.
-    bool m_stopsOnFormControls;
-
-    // Used when m_stopsOnFormControls is set to determine if the iterator should keep advancing.
-    bool m_shouldStop;
-
-    // Used in pasting inside password field.
-    bool m_emitsOriginalText;
-};
-
-// Builds on the text iterator, adding a character position so we can walk one
-// character at a time, or faster, as needed. Useful for searching.
-class CharacterIterator {
-    STACK_ALLOCATED();
-public:
-    explicit CharacterIterator(const Range*, TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
-    CharacterIterator(const Position& start, const Position& end, TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
-
-    void advance(int numCharacters);
-
-    bool atBreak() const { return m_atBreak; }
-    bool atEnd() const { return m_textIterator.atEnd(); }
-
-    int length() const { return m_textIterator.length() - m_runOffset; }
-    UChar characterAt(unsigned index) const { return m_textIterator.characterAt(m_runOffset + index); }
-
-    template<typename BufferType>
-    void appendTextTo(BufferType& output) { m_textIterator.appendTextTo(output, m_runOffset); }
-
-    int characterOffset() const { return m_offset; }
-    PassRefPtrWillBeRawPtr<Range> createRange() const;
-
-    Document* ownerDocument() const;
-    Node* startContainer() const;
-    Node* endContainer() const;
-    int startOffset() const;
-    int endOffset() const;
-    Position startPosition() const;
-    Position endPosition() const;
-
-private:
-    void initialize();
-
-    int m_offset;
-    int m_runOffset;
-    bool m_atBreak;
-
-    TextIterator m_textIterator;
-};
-
-class BackwardsCharacterIterator {
-    STACK_ALLOCATED();
-public:
-    explicit BackwardsCharacterIterator(const Range*, TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
-    BackwardsCharacterIterator(const Position&, const Position&, TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
-
-    void advance(int);
-
-    bool atEnd() const { return m_textIterator.atEnd(); }
-
-    Position endPosition() const;
-
-private:
-    int m_offset;
-    int m_runOffset;
-    bool m_atBreak;
-
-    SimplifiedBackwardsTextIterator m_textIterator;
-};
-
-// Very similar to the TextIterator, except that the chunks of text returned are "well behaved",
-// meaning they never end split up a word.  This is useful for spellcheck or (perhaps one day) searching.
-class WordAwareIterator {
-    STACK_ALLOCATED();
-public:
-    explicit WordAwareIterator(const Position& start, const Position& end);
-    ~WordAwareIterator();
-
-    bool atEnd() const { return !m_didLookAhead && m_textIterator.atEnd(); }
-    void advance();
-
-    String substring(unsigned position, unsigned length) const;
-    UChar characterAt(unsigned index) const;
-    int length() const;
-
-private:
-    Vector<UChar> m_buffer;
-    // Did we have to look ahead in the textIterator to confirm the current chunk?
-    bool m_didLookAhead;
-    TextIterator m_textIterator;
-};
-
-}
-
-#endif
+#endif // TextIterator_h

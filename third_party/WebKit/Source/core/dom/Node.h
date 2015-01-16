@@ -230,6 +230,8 @@ public:
     String textContent(bool convertBRsToNewlines = false) const;
     void setTextContent(const String&);
 
+    bool supportsAltText();
+
     // Other methods (not part of DOM)
 
     bool isElementNode() const { return getFlag(IsElementFlag); }

@@ -41,7 +41,7 @@
 #include "core/dom/Range.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/PlainTextRange.h"
-#include "core/editing/TextIterator.h"
+#include "core/editing/iterators/TextIterator.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLElement.h"

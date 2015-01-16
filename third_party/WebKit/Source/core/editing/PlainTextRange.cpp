@@ -30,8 +30,8 @@
 #include "core/dom/ContainerNode.h"
 #include "core/dom/Document.h"
 #include "core/dom/Range.h"
-#include "core/editing/TextIterator.h"
 #include "core/editing/VisiblePosition.h"
+#include "core/editing/iterators/TextIterator.h"
 
 namespace blink {
 

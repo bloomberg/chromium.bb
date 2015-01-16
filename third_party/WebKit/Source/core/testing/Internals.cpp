@@ -71,7 +71,7 @@
 #include "core/editing/SpellCheckRequester.h"
 #include "core/editing/SpellChecker.h"
 #include "core/editing/SurroundingText.h"
-#include "core/editing/TextIterator.h"
+#include "core/editing/iterators/TextIterator.h"
 #include "core/editing/markup.h"
 #include "core/fetch/MemoryCache.h"
 #include "core/fetch/ResourceFetcher.h"

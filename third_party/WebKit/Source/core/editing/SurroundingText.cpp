@@ -35,7 +35,8 @@
 #include "core/dom/Element.h"
 #include "core/dom/Position.h"
 #include "core/dom/Range.h"
-#include "core/editing/TextIterator.h"
+#include "core/editing/iterators/BackwardsCharacterIterator.h"
+#include "core/editing/iterators/CharacterIterator.h"
 
 namespace blink {
 

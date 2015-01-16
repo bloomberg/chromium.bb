@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/rendering/AbstractInlineTextBox.h"
 
-#include "core/editing/TextIterator.h"
+#include "core/editing/iterators/TextIterator.h"
 #include "platform/text/TextBreakIterator.h"
 
 namespace blink {

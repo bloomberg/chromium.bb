@@ -32,7 +32,7 @@
 #include "core/dom/Range.h"
 #include "core/dom/RenderedDocumentMarker.h"
 #include "core/dom/Text.h"
-#include "core/editing/TextIterator.h"
+#include "core/editing/iterators/TextIterator.h"
 #include "core/rendering/RenderObject.h"
 
 #ifndef NDEBUG
