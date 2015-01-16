@@ -31,12 +31,12 @@ class TestUtils(cros_test_lib.TempDirTestCase):
   def testCreateTmpRaiseException(self):
     """Test that we raise an exception when we do not have enough space."""
     self.assertRaises(utils.UnableToCreateTmpDir, utils.CreateTmpDir,
-                      minimum_size=2**50)
+                      minimum_size=2 ** 50)
 
   def testCreateTempFileWithContents(self):
     """Verify that we create a temp file with the right message in it."""
 
-    message = "Test Message With Rocks In"
+    message = 'Test Message With Rocks In'
 
     # Create the temp file.
     with utils.CreateTempFileWithContents(message) as temp_file:

@@ -5,9 +5,6 @@
 
 """Test paygen_payload_lib library."""
 
-# pylint: disable=bad-continuation
-# pylint: disable=bad-whitespace
-
 from __future__ import print_function
 
 import mock
@@ -359,8 +356,7 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
            '--version', '1620.0.0',
            '--key', 'mp-v3',
            '--build_channel', 'dev-channel',
-           '--build_version', '1620.0.0',
-           ]
+           '--build_version', '1620.0.0']
     gen._RunGeneratorCmd(cmd).AndReturn('log contents')
     gen._StoreDeltaLog('log contents')
 
@@ -393,8 +389,7 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
            '--src_version', '1620.0.0',
            '--src_key', 'mp-v3',
            '--src_build_channel', 'dev-channel',
-           '--src_build_version', '1620.0.0',
-           ]
+           '--src_build_version', '1620.0.0']
     gen._RunGeneratorCmd(cmd).AndReturn('log contents')
     gen._StoreDeltaLog('log contents')
 
@@ -421,8 +416,7 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
            '--version', '1620.0.0',
            '--key', 'test',
            '--build_channel', 'dev-channel',
-           '--build_version', '1620.0.0',
-           ]
+           '--build_version', '1620.0.0']
     gen._RunGeneratorCmd(cmd).AndReturn('log contents')
     gen._StoreDeltaLog('log contents')
 
@@ -456,8 +450,7 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
            '--src_version', '1620.0.0',
            '--src_key', 'test',
            '--src_build_channel', 'dev-channel',
-           '--src_build_version', '1620.0.0',
-           ]
+           '--src_build_version', '1620.0.0']
     gen._RunGeneratorCmd(cmd).AndReturn('log contents')
     gen._StoreDeltaLog('log contents')
 
@@ -506,7 +499,7 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
   def testSignHashes(self):
     """Test _SignHashes via mox."""
     hashes = ('foo', 'bar')
-    signatures = (('0'*256,), ('1'*256,))
+    signatures = (('0' * 256,), ('1' * 256,))
 
     gen = self._GetStdGenerator(work_dir='/work')
 
@@ -527,7 +520,7 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
   def testInsertPayloadSignatures(self):
     """Test inserting payload signatures."""
     gen = self._GetStdGenerator(payload=self.delta_payload)
-    payload_signatures = ('0'*256,)
+    payload_signatures = ('0' * 256,)
 
     # Stub out the required functions.
     self.mox.StubOutWithMock(paygen_payload_lib._PaygenPayload,
@@ -547,7 +540,7 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
   def testStoreMetadataSignatures(self):
     """Test how we store metadata signatures."""
     gen = self._GetStdGenerator(payload=self.delta_payload)
-    metadata_signatures = ('1'*256,)
+    metadata_signatures = ('1' * 256,)
     encoded_metadata_signature = (
         'MTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMT'
         'ExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTEx'
@@ -608,7 +601,7 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
     gen._GenPayloadHash().AndReturn(payload_hash)
     gen._GenMetadataHash().AndReturn(metadata_hash)
     gen._SignHashes([payload_hash, metadata_hash]).AndReturn(
-        (payload_sigs,metadata_sigs))
+        (payload_sigs, metadata_sigs))
     gen._InsertPayloadSignatures(payload_sigs)
     gen._StoreMetadataSignatures(metadata_sigs)
 
@@ -618,7 +611,6 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
 
     self.assertEqual(payload_sigs, result_payload_sigs)
     self.assertEqual(metadata_sigs, result_metadata_sigs)
-
 
   def testCreateSignedDelta(self):
     """Test the overall payload generation process via mox."""

@@ -27,8 +27,6 @@ Note that lock files will be left behind forever if not explicitly cleaned up by
 the creating server.
 """
 
-# pylint: disable=bad-whitespace
-
 from __future__ import print_function
 
 import fixup_path
@@ -79,6 +77,7 @@ class Lock(object):
     It assumes that local server time is in sync with Google Storage server
     time.
   """
+
   def __init__(self, gs_path, lock_timeout_mins=120, dry_run=False,
                ctx=None):
     """Initializer for the lock.
@@ -115,7 +114,7 @@ class Lock(object):
       return False, 0
 
     modified = stat_results.creation_time
-    expired =  datetime.datetime.utcnow() > modified + self._timeout
+    expired = datetime.datetime.utcnow() > modified + self._timeout
 
     return expired, stat_results.generation
 

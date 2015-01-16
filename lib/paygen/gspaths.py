@@ -18,9 +18,6 @@ This includes definitions for various build flags:
     gs://chromeos-releases/blah-channel/board-name/1.2.3/payloads/LOCK_flag
 """
 
-# pylint: disable=bad-continuation
-# pylint: disable=bad-whitespace
-
 from __future__ import print_function
 
 import hashlib
@@ -291,10 +288,12 @@ class ChromeosReleases(object):
 
     template = 'chromeos_%(version)s_%(board)s_recovery_%(channel)s_%(key)s.bin'
 
-    return template % { 'channel': channel,
-                        'board': board,
-                        'version': version,
-                        'key': key }
+    return template % {
+        'channel': channel,
+        'board': board,
+        'version': version,
+        'key': key,
+    }
 
   @staticmethod
   def UnsignedImageArchiveName(board, version, milestone, image_type):
@@ -314,10 +313,12 @@ class ChromeosReleases(object):
     template = (
         'ChromeOS-%(image_type)s-%(milestone)s-%(version)s-%(board)s.tar.xz')
 
-    return template % { 'board': board,
-                        'version': version,
-                        'milestone': milestone,
-                        'image_type': image_type }
+    return template % {
+        'board': board,
+        'version': version,
+        'milestone': milestone,
+        'image_type': image_type,
+    }
 
   @staticmethod
   def ImageUri(channel, board, version, key,
@@ -380,8 +381,8 @@ class ChromeosReleases(object):
 
     # The named values in this regex must match the arguments to gspaths.Image.
     exp = (r'^gs://(?P<bucket>.*)/(?P<channel>.*)/(?P<board>.*)/'
-            '(?P<version>.*)/chromeos_(?P<image_version>[^_]+)_'
-            '(?P=board)_recovery_(?P<image_channel>[^_]+)_(?P<key>[^_]+).bin$')
+           r'(?P<version>.*)/chromeos_(?P<image_version>[^_]+)_'
+           r'(?P=board)_recovery_(?P<image_channel>[^_]+)_(?P<key>[^_]+).bin$')
 
     m = re.match(exp, image_uri)
 
@@ -402,9 +403,9 @@ class ChromeosReleases(object):
 
     # The named values in this regex must match the arguments to gspaths.Image.
     exp = (r'gs://(?P<bucket>[^/]+)/(?P<channel>[^/]+)/'
-           '(?P<board>[^/]+)/(?P<version>[^/]+)/'
-           'ChromeOS-(?P<image_type>%s)-(?P<milestone>R[0-9]+)-'
-           '(?P=version)-(?P=board).tar.xz' %
+           r'(?P<board>[^/]+)/(?P<version>[^/]+)/'
+           r'ChromeOS-(?P<image_type>%s)-(?P<milestone>R[0-9]+)-'
+           r'(?P=version)-(?P=board).tar.xz' %
            '|'.join(cls.UNSIGNED_IMAGE_TYPES))
 
     m = re.match(exp, image_uri)
@@ -456,7 +457,6 @@ class ChromeosReleases(object):
     """
     if random_str is None:
       random.seed()
-      # pylint: disable=E1101
       random_str = hashlib.md5(str(random.getrandbits(128))).hexdigest()
 
     if key is None:
@@ -469,25 +469,27 @@ class ChromeosReleases(object):
       template = ('chromeos_%(src_version)s-%(version)s_%(board)s_%(channel)s_'
                   'delta_%(key)s.bin-%(random_str)s%(signed_ext)s')
 
-      return template % { 'channel': channel,
-                          'board': board,
-                          'version': version,
-                          'key': key,
-                          'random_str': random_str,
-                          'src_version': src_version,
-                          'signed_ext': signed_ext,
-                        }
+      return template % {
+          'channel': channel,
+          'board': board,
+          'version': version,
+          'key': key,
+          'random_str': random_str,
+          'src_version': src_version,
+          'signed_ext': signed_ext,
+      }
     else:
       template = ('chromeos_%(version)s_%(board)s_%(channel)s_'
                   'full_%(key)s.bin-%(random_str)s%(signed_ext)s')
 
-      return template % { 'channel': channel,
-                          'board': board,
-                          'version': version,
-                          'key': key,
-                          'random_str': random_str,
-                          'signed_ext': signed_ext,
-                        }
+      return template % {
+          'channel': channel,
+          'board': board,
+          'version': version,
+          'key': key,
+          'random_str': random_str,
+          'signed_ext': signed_ext,
+      }
 
   @staticmethod
   def PayloadUri(channel, board, version, random_str, key=None,

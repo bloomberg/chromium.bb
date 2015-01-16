@@ -34,7 +34,7 @@ class LockNotAcquired(Exception):
     self.owner_pid = owner_pid
 
   def __str__(self):
-    return "Lock (%s) held by pid %s" % (self.lock_file_path, self.owner_pid)
+    return 'Lock (%s) held by pid %s' % (self.lock_file_path, self.owner_pid)
 
 
 class Lock(object):
@@ -103,7 +103,7 @@ class Lock(object):
 
       # We have the lock, write our pid into it for informational purposes.
       self._fd.truncate(0)
-      self._fd.write(str(os.getpid())+'\n')
+      self._fd.write(str(os.getpid()) + '\n')
       self._fd.flush()
 
     except IOError as e:

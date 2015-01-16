@@ -9,8 +9,6 @@ Generally used by import statements of the form:
   from crostools.scripts import foo
 """
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 import os.path
@@ -20,7 +18,7 @@ import sys
 # Find the correct root path to insert into sys.path for importing
 # modules in this source.
 CROSTOOLS_ROOT = os.path.realpath(
-  os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..'))
+    os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..'))
 
 CROSTOOLS_PATH_ROOT = os.path.dirname(CROSTOOLS_ROOT)
 

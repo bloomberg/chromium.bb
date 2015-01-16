@@ -170,7 +170,7 @@ class FLockTest(cros_test_lib.TempDirTestCase):
   def testAcquireBeforeWith(self):
     """Sometimes you want to Acquire a lock and then return it into 'with'."""
 
-    name = "WithLock"
+    name = 'WithLock'
     lock = flock.Lock(name, lock_dir=self.tempdir)
     lock.Acquire()
 

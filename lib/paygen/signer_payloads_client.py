@@ -4,8 +4,6 @@
 
 """This library manages the interfaces to the signer for update payloads."""
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 import logging
@@ -31,6 +29,7 @@ DELAY_CHECKING_FOR_SIGNER_RESULTS_SECONDS = 10
 
 # Signer priority value, slightly higher than the common value 50.
 SIGNER_PRIORITY = 45
+
 
 class SignerPayloadsClientGoogleStorage(object):
   """This class implements the Google Storage signer interface for payloads."""
@@ -168,7 +167,7 @@ class SignerPayloadsClientGoogleStorage(object):
     result = []
     for hash_name in hash_names:
       # Based on the pattern defined in _CreateInstructions.
-      expanded_name = "%s.%s.signed.bin" % (hash_name, keyset)
+      expanded_name = '%s.%s.signed.bin' % (hash_name, keyset)
       result.append(os.path.join(self.signing_base_dir, expanded_name))
     return result
 
@@ -242,19 +241,19 @@ versionrev = %(version)s
 """
 
     # foo-channel -> foo
-    channel = self.channel.replace("-channel", "")
+    channel = self.channel.replace('-channel', '')
 
     archive_name = os.path.basename(self.archive_uri)
     input_files = ' '.join(hash_names)
 
     return pattern % {
-                       'channel': channel,
-                       'board': self.board,
-                       'version': self.version,
-                       'archive_name': archive_name,
-                       'input_files': input_files,
-                       'keyset': keyset,
-                     }
+        'channel': channel,
+        'board': self.board,
+        'version': self.version,
+        'archive_name': archive_name,
+        'input_files': input_files,
+        'keyset': keyset,
+    }
 
   def _SignerRequestUri(self, instructions_uri):
     """Find the URI of the empty file to create to ask the signer to sign."""
@@ -263,7 +262,7 @@ versionrev = %(version)s
     m = re.match(exp, instructions_uri)
     relative_uri = m.group('postbucket')
 
-    return "gs://%s/tobesigned/%d,%s" % (
+    return 'gs://%s/tobesigned/%d,%s' % (
         self.bucket,
         SIGNER_PRIORITY,
         relative_uri.replace('/', ','))

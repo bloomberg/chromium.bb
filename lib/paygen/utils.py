@@ -24,7 +24,7 @@ TMPS = ('/usr/local/google/tmp', '/tmp')
 TMP = next(d for d in TMPS if os.path.exists(d))
 
 ONE_GIG = 2 ** 30      # One gig in bytes
-TWO_GIGS = ONE_GIG * 2 # Two gigs in bytes
+TWO_GIGS = ONE_GIG * 2  # Two gigs in bytes
 
 
 class CommandFailedException(Exception):

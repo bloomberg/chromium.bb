@@ -5,8 +5,6 @@
 
 """Test gslock library."""
 
-# pylint: disable=bad-whitespace
-
 from __future__ import print_function
 
 import multiprocessing
@@ -22,8 +20,9 @@ from chromite.lib import gs
 
 from chromite.lib.paygen import gslock
 
+
 # We access a lot of protected members during testing.
-# pylint: disable=W0212
+# pylint: disable=protected-access
 
 
 def _InProcessAcquire(lock_uri):
@@ -118,7 +117,7 @@ class GSLockTest(cros_test_lib.MockTestCase):
     self.ctx = gs.GSContext()
 
     # Use the unique id to make sure the tests can be run multiple places.
-    unique_id = "%s.%d" % (socket.gethostname(), os.getpid())
+    unique_id = '%s.%d' % (socket.gethostname(), os.getpid())
 
     self.lock_uri = 'gs://chromeos-releases-test/test-%s-gslock' % unique_id
     self.data_uri = 'gs://chromeos-releases-test/test-%s-data' % unique_id
@@ -203,8 +202,8 @@ class GSLockTest(cros_test_lib.MockTestCase):
     """Test getting a lock when an old timed out one is present."""
 
     # Both locks are always timed out.
-    lock1 = gslock.Lock(self.lock_uri, lock_timeout_mins = -1)
-    lock2 = gslock.Lock(self.lock_uri, lock_timeout_mins = -1)
+    lock1 = gslock.Lock(self.lock_uri, lock_timeout_mins=-1)
+    lock2 = gslock.Lock(self.lock_uri, lock_timeout_mins=-1)
 
     lock1.Acquire()
     lock2.Acquire()
@@ -235,7 +234,7 @@ class GSLockTest(cros_test_lib.MockTestCase):
     self.ctx.Remove(self.lock_uri)
 
     # Ensure that only one of them got the lock (and got it twice).
-    self.assertEqual(results.count(0), count-1)
+    self.assertEqual(results.count(0), count - 1)
     self.assertEqual(results.count(2), 1)
 
   @cros_test_lib.NetworkTest()

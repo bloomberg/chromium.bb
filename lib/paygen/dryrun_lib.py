@@ -4,8 +4,6 @@
 
 """Library for dry_run utilities."""
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 import logging
@@ -17,9 +15,10 @@ class DryRunMgr(object):
   We'll automatically disable things when in dry_run mode.
   """
 
-  __slots__ = ('dry_run',   # Boolean.  See __init__ docstring.
-               'quiet',     # Boolean.  See __init__ docstring.
-               )
+  __slots__ = (
+      'dry_run',   # Boolean.  See __init__ docstring.
+      'quiet',     # Boolean.  See __init__ docstring.
+  )
 
   def __init__(self, dry_run, quiet=False):
     """Create a DryRunMgr object.

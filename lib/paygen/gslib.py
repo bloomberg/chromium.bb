@@ -4,8 +4,6 @@
 
 """Common Google Storage interface library."""
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 import base64
@@ -49,8 +47,7 @@ def FindGsUtil():
   """
   # TODO(dgarrett): This is a hack. Merge chromite and crostools to fix.
 
-  # pylint: disable=W0603
-  global GSUTIL
+  global GSUTIL  # pylint: disable=global-statement
   if GSUTIL is None:
     GSUTIL = gs.GSContext.GetDefaultGSUtilBin()
 
@@ -63,6 +60,7 @@ class GsutilError(Exception):
 
 class GsutilMissingError(GsutilError):
   """Returned when the gsutil utility is missing from PATH."""
+
   def __init__(self, msg='The gsutil utility must be installed.'):
     GsutilError.__init__(self, msg)
 
@@ -232,9 +230,10 @@ def RunGsutilCommand(args,
     args.insert(0, '-d')
     assert redirect_stderr
   cmd = [gsutil] + args
-  run_opts = {'redirect_stdout': redirect_stdout,
-              'redirect_stderr': redirect_stderr,
-              }
+  run_opts = {
+      'redirect_stdout': redirect_stdout,
+      'redirect_stderr': redirect_stderr,
+  }
   run_opts.update(kwargs)
 
   # Always use RunCommand with return_result on, which will be the default
@@ -475,10 +474,9 @@ def Move(src_path, dest_path, **kwargs):
   args = ['mv', src_path, dest_path]
   RunGsutilCommand(args, failed_exception=MoveFail, **kwargs)
 
-# pylint: disable=C9011
 
 @RetryGSLib
-def Remove(*paths, **kwargs):
+def Remove(*paths, **kwargs):  # pylint: disable=docstring-misnamed-args
   """Run gsutil rm on path supporting GS globs.
 
   Args:

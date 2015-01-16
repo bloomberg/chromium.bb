@@ -70,6 +70,7 @@ PAYGEN_LOG_TIMESTAMP_FORMAT = '%Y%m%d-%H%M%S-UTC'
 # Used to lookup all FSIs for all boards.
 FSI_URI = 'gs://chromeos-build-release-console/fsis.json'
 
+
 class Error(Exception):
   """Exception base class for this module."""
 
@@ -114,6 +115,7 @@ class BuildNotReady(EarlyExit):
 class BoardNotConfigured(EarlyExit):
   """The board does not exist in the crostools release config."""
   RESULT = 26
+
 
 class BuildCorrupt(Error):
   """Exception raised if a build has unexpected images."""
@@ -291,6 +293,7 @@ class _PaygenBuild(object):
       src_version: The build version the payload needs to be applied to; None
         for a delta payload, as it already encodes the source version.
     """
+
     def __init__(self, payload, src_version=None):
       self.payload = payload
       self.src_version = src_version

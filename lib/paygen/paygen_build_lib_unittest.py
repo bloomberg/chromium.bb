@@ -5,8 +5,6 @@
 
 """Tests for paygen_build_lib."""
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 import itertools
@@ -43,7 +41,7 @@ from site_utils.autoupdate.lib import test_control
 
 
 # We access a lot of protected members during testing.
-# pylint: disable=W0212
+# pylint: disable=protected-access
 
 
 class PaygenBuildLibTest(cros_test_lib.MoxTempDirTestCase):
@@ -174,7 +172,7 @@ class PaygenBuildLibTest(cros_test_lib.MoxTempDirTestCase):
 
     # Test with basic mp and mp npo images.
     paygen._ValidateExpectedBuildImages(self.foo_build, (self.basic_image,
-                                                         self.npo_image,))
+                                                         self.npo_image))
     # Test with basic mp and premp images.
     paygen._ValidateExpectedBuildImages(self.foo_build, (self.basic_image,
                                                          self.premp_image))
@@ -208,7 +206,7 @@ class PaygenBuildLibTest(cros_test_lib.MoxTempDirTestCase):
     # More than one of the same type of image should trigger BuildCorrupt
     with self.assertRaises(paygen_build_lib.BuildCorrupt):
       paygen._ValidateExpectedBuildImages(self.foo_build, (self.basic_image,
-                                                           self.basic_image,))
+                                                           self.basic_image))
 
     # Unexpected images should trigger BuildCorrupt
     with self.assertRaises(paygen_build_lib.BuildCorrupt):
@@ -626,8 +624,7 @@ fsi_images: 2913.331.0,2465.105.0
                                 uri=output_uri),
                 gspaths.Payload(tgt_image=self.test_image,
                                 src_image=fsi2_test_image,
-                                uri=output_uri),
-               ]
+                                uri=output_uri)]
     expected = zip(expected, itertools.repeat(False))
 
     self.assertItemsEqual(sorted(results), sorted(expected))
@@ -731,8 +728,7 @@ fsi_images: 2913.331.0,2465.105.0
                                 uri=output_uri),
                 gspaths.Payload(tgt_image=self.test_image,
                                 src_image=fsi2_test_image,
-                                uri=output_uri),
-               ]
+                                uri=output_uri)]
     expected = zip(expected, itertools.repeat(False))
 
     self.assertItemsEqual(sorted(results), sorted(expected))
@@ -830,8 +826,7 @@ fsi_images: 2913.331.0,2465.105.0
                 # Test FSI deltas.
                 gspaths.Payload(tgt_image=self.test_image,
                                 src_image=fsi1_test_image,
-                                uri=output_uri),
-               ]
+                                uri=output_uri)]
     expected = zip(expected, itertools.repeat(False))
 
     self.assertItemsEqual(sorted(results), sorted(expected))
@@ -874,7 +869,7 @@ fsi_images: 2913.331.0,2465.105.0
     expected_payload_args = [
         (basic_payload, mox.IsA(str), True, test_dry_run),
         (premp_payload, mox.IsA(str), True, test_dry_run)
-        ]
+    ]
 
     if run_parallel:
       parallel.RunTasksInProcessPool(paygen_build_lib._GenerateSinglePayload,
@@ -957,8 +952,6 @@ fsi_images: 2913.331.0,2465.105.0
     paygen = self._CreatePayloadsSetup()
     lock_uri = paygen._GetFlagURI(gspaths.ChromeosReleases.LOCK)
 
-    # Pylint is confused because of helper stubbing things out.
-    # pylint: disable=E1101
     gslock.Lock(lock_uri, dry_run=False).AndRaise(gslock.LockNotAcquired())
 
     # Run the test verification.
@@ -1024,8 +1017,6 @@ fsi_images: 2913.331.0,2465.105.0
     lock.__enter__().AndReturn(lock)
     gslib.Exists(skip_uri).AndReturn(False)
     gslib.Exists(finished_uri).AndReturn(False)
-    # This method is being mocked out.
-    # pylint: disable=E1101
     paygen._DiscoverRequiredPayloads(
         ).AndRaise(paygen_build_lib.BuildNotReady())
     lock.__exit__(
@@ -1381,7 +1372,7 @@ DOC = "Faux doc"
         pool='bvt', priority=constants.HWTEST_BUILD_PRIORITY,
         suite='paygen_au_foo', timeout_mins=timeout_mins,
         retry=True, wait_for_results=True, debug=False).AndRaise(
-          failures_lib.TestWarning('** Suite passed with a warning code **'))
+            failures_lib.TestWarning('** Suite passed with a warning code **'))
 
     self.mox.ReplayAll()
 

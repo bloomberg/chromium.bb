@@ -5,9 +5,6 @@
 
 """Test gspaths library."""
 
-# pylint: disable=bad-continuation
-# pylint: disable=bad-whitespace
-
 from __future__ import print_function
 
 import fixup_path
@@ -21,16 +18,18 @@ class GsPathsDataTest(cros_test_lib.TestCase):
   """Tests for structs defined in GsPaths."""
 
   def testBuild(self):
-    default_input = { 'channel': 'foo-channel',
-                      'board': 'board-name',
-                      'version': '1.2.3',
-                    }
-    default_expected = { 'bucket': None,
-                         'channel': 'foo-channel',
-                         'board': 'board-name',
-                         'version': '1.2.3',
-                         'uri' : None
-                       }
+    default_input = {
+        'channel': 'foo-channel',
+        'board': 'board-name',
+        'version': '1.2.3',
+    }
+    default_expected = {
+        'bucket': None,
+        'channel': 'foo-channel',
+        'board': 'board-name',
+        'version': '1.2.3',
+        'uri': None,
+    }
     expected_str = ("Build definition (board='board-name',"
                     " version='1.2.3', channel='foo-channel')")
 
@@ -74,7 +73,7 @@ class GsPathsChromeosReleasesTest(cros_test_lib.TestCase):
       (_GS_BUILD_PATH_TEMPLATE, _UNSIGNED_IMAGE_ARCHIVE_NAME_TEMPLATE))
   _GS_PAYLOADS_PATH_TEMPLATE = '/'.join((_GS_BUILD_PATH_TEMPLATE, 'payloads'))
   _GS_PAYLOADS_SIGNING_PATH_TEMPLATE = '/'.join((_GS_BUILD_PATH_TEMPLATE,
-                                                'payloads', 'signing'))
+                                                 'payloads', 'signing'))
   _GS_FULL_PAYLOAD_PATH_TEMPLATE = '/'.join(
       (_GS_PAYLOADS_PATH_TEMPLATE, _FULL_PAYLOAD_NAME_TEMPLATE))
   _GS_DELTA_PAYLOAD_PATH_TEMPLATE = '/'.join(
@@ -201,15 +200,15 @@ class GsPathsChromeosReleasesTest(cros_test_lib.TestCase):
   def testBuildPayloadsSigningUri(self):
     self.assertEquals(
         gspaths.ChromeosReleases.BuildPayloadsSigningUri(self.channel,
-                                                  self.board,
-                                                  self.version,
-                                                  bucket=self.bucket),
+                                                         self.board,
+                                                         self.version,
+                                                         bucket=self.bucket),
         self._PopulateGsPath(self._GS_PAYLOADS_SIGNING_PATH_TEMPLATE))
 
     self.assertEquals(
         gspaths.ChromeosReleases.BuildPayloadsSigningUri(self.channel,
-                                                  self.board,
-                                                  self.version),
+                                                         self.board,
+                                                         self.version),
         self._PopulateGsPath(self._GS_PAYLOADS_SIGNING_PATH_TEMPLATE,
                              bucket=self._CHROMEOS_RELEASES_BUCKET))
 
@@ -503,67 +502,68 @@ class GsPathsChromeosReleasesTest(cros_test_lib.TestCase):
                                   image_version=image_version)
 
     max_delta_uri = self._Populate(self._GS_DELTA_PAYLOAD_PATH_TEMPLATE,
-                                  image_channel='image-channel',
-                                  image_version=image_version)
+                                   image_channel='image-channel',
+                                   image_version=image_version)
 
     self.assertDictEqual(
         gspaths.ChromeosReleases.ParsePayloadUri(full_uri),
         {
-          'tgt_image': gspaths.Image(board=self.board,
-                                     channel=self.channel,
-                                     version=self.version,
-                                     key=self.key),
-          'src_image': None,
-          'uri': full_uri,
+            'tgt_image': gspaths.Image(board=self.board,
+                                       channel=self.channel,
+                                       version=self.version,
+                                       key=self.key),
+            'src_image': None,
+            'uri': full_uri,
         })
 
     self.assertDictEqual(
         gspaths.ChromeosReleases.ParsePayloadUri(delta_uri),
         {
-          'src_image': gspaths.Image(board=self.board,
-                                     channel=self.channel,
-                                     version=self.src_version),
-          'tgt_image': gspaths.Image(board=self.board,
-                                     channel=self.channel,
-                                     version=self.version,
-                                     key=self.key),
-          'uri': delta_uri,
+            'src_image': gspaths.Image(board=self.board,
+                                       channel=self.channel,
+                                       version=self.src_version),
+            'tgt_image': gspaths.Image(board=self.board,
+                                       channel=self.channel,
+                                       version=self.version,
+                                       key=self.key),
+            'uri': delta_uri,
         })
 
     self.assertDictEqual(
         gspaths.ChromeosReleases.ParsePayloadUri(max_full_uri),
         {
-          'tgt_image': gspaths.Image(bucket=self.bucket,
-                                     board=self.board,
-                                     channel=self.channel,
-                                     version=self.version,
-                                     key=self.key,
-                                     image_version=image_version,
-                                     image_channel='image-channel'),
-          'src_image': None,
-          'uri': max_full_uri,
+            'tgt_image': gspaths.Image(bucket=self.bucket,
+                                       board=self.board,
+                                       channel=self.channel,
+                                       version=self.version,
+                                       key=self.key,
+                                       image_version=image_version,
+                                       image_channel='image-channel'),
+            'src_image': None,
+            'uri': max_full_uri,
         })
 
     self.assertDictEqual(
         gspaths.ChromeosReleases.ParsePayloadUri(max_delta_uri),
         {
-          'src_image': gspaths.Image(bucket=self.bucket,
-                                     board=self.board,
-                                     channel=self.channel,
-                                     version=self.src_version),
-          'tgt_image': gspaths.Image(bucket=self.bucket,
-                                     board=self.board,
-                                     channel=self.channel,
-                                     version=self.version,
-                                     key=self.key,
-                                     image_version=image_version,
-                                     image_channel='image-channel'),
-          'uri': max_delta_uri,
+            'src_image': gspaths.Image(bucket=self.bucket,
+                                       board=self.board,
+                                       channel=self.channel,
+                                       version=self.src_version),
+            'tgt_image': gspaths.Image(bucket=self.bucket,
+                                       board=self.board,
+                                       channel=self.channel,
+                                       version=self.version,
+                                       key=self.key,
+                                       image_version=image_version,
+                                       image_channel='image-channel'),
+            'uri': max_delta_uri,
         })
 
 
 class GsPathsTest(cros_test_lib.TestCase):
   """Test general gspaths utilities."""
+
   def testVersionKey(self):
     """Test VersionKey, especially for new-style versus old-style."""
 
@@ -576,7 +576,7 @@ class GsPathsTest(cros_test_lib.TestCase):
 
     expected_values = ['0.1.2.3', '0.14.45.32',
                        '1.2.3.3', '1.2.3.4', '1.2.4.4', '1.2.4.5', '1.3.3.4',
-                       '1.1.4', '1.2.2', '1.2.3', '2.0.0',]
+                       '1.1.4', '1.2.2', '1.2.3', '2.0.0']
 
     self.assertEquals(sorted_values, expected_values)
     self.assertEquals(reverse_sorted_values, expected_values)

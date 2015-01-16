@@ -4,8 +4,6 @@
 
 """Hold the functions that do the real work generating payloads."""
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 import base64
@@ -31,6 +29,7 @@ from chromite.lib.paygen import utils
 
 
 DESCRIPTION_FILE_VERSION = 1
+
 
 class Error(Exception):
   """Base class for payload generation errors."""
@@ -304,8 +303,7 @@ class _PaygenPayload(object):
            '--image', self.tgt_image_file,
            '--channel', tgt_image.channel,
            '--board', tgt_image.board,
-           '--version', tgt_image.version,
-          ]
+           '--version', tgt_image.version]
     cmd += self._BuildArg('--key', tgt_image, 'key', default='test')
     cmd += self._BuildArg('--build_channel', tgt_image, 'image_channel',
                           default=tgt_image.channel)
@@ -317,8 +315,7 @@ class _PaygenPayload(object):
       cmd += ['--src_image', self.src_image_file,
               '--src_channel', src_image.channel,
               '--src_board', src_image.board,
-              '--src_version', src_image.version,
-             ]
+              '--src_version', src_image.version]
       cmd += self._BuildArg('--src_key', src_image, 'key', default='test')
       cmd += self._BuildArg('--src_build_channel', src_image, 'image_channel',
                             default=src_image.channel)
@@ -519,12 +516,12 @@ class _PaygenPayload(object):
     # Bundle it up in a map matching the Json format.
     # Increment DESCRIPTION_FILE_VERSION, if changing this map.
     payload_map = {
-      'version': DESCRIPTION_FILE_VERSION,
-      'sha1_hex': sha1_hex,
-      'sha256_hex': sha256_hex,
-      'md5_hex': md5_hex,
-      'metadata_size': self._MetadataSize(),
-      'metadata_signature': metadata_signature,
+        'version': DESCRIPTION_FILE_VERSION,
+        'sha1_hex': sha1_hex,
+        'sha256_hex': sha256_hex,
+        'md5_hex': md5_hex,
+        'metadata_size': self._MetadataSize(),
+        'metadata_signature': metadata_signature,
     }
 
     # Convert to Json.
@@ -595,7 +592,6 @@ class _PaygenPayload(object):
 
     # Store hash and signatures json.
     self._StorePayloadJson(metadata_signatures)
-
 
   def _CheckPayloadIntegrity(self, payload, is_delta, metadata_sig_file_name):
     """Checks the integrity of a generated payload.

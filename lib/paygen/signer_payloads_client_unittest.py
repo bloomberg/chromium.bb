@@ -5,8 +5,6 @@
 
 """Test signer_payloads_client library."""
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 import os
@@ -29,7 +27,9 @@ from chromite.lib.paygen import utils
 # Until then, this has to be after the chromite imports.
 import mock
 
-# pylint: disable=W0212
+
+# pylint: disable=protected-access
+
 
 class SignerPayloadsClientGoogleStorageTest(gs_unittest.AbstractGSContextTest):
   """Test suite for the class SignerPayloadsClientGoogleStorage."""
@@ -97,19 +97,19 @@ class SignerPayloadsClientGoogleStorageTest(gs_unittest.AbstractGSContextTest):
                    'payloads/signing/foo-unique')
 
     expected_removals = (
-      # Signing Request
-      'gs://foo-bucket/tobesigned/45,foo-channel,foo-board,foo-version,'
-      'payloads,signing,foo-unique,'
-      'foo-keys.payload.signer.instructions',
+        # Signing Request
+        'gs://foo-bucket/tobesigned/45,foo-channel,foo-board,foo-version,'
+        'payloads,signing,foo-unique,'
+        'foo-keys.payload.signer.instructions',
 
-      # Signing Instructions
-      signing_dir + '/foo-keys.payload.signer.instructions',
+        # Signing Instructions
+        signing_dir + '/foo-keys.payload.signer.instructions',
 
-      # Signed Results`
-      signing_dir + '/1.payload.hash.foo-keys.signed.bin',
-      signing_dir + '/1.payload.hash.foo-keys.signed.bin.md5',
-      signing_dir + '/2.payload.hash.foo-keys.signed.bin',
-      signing_dir + '/2.payload.hash.foo-keys.signed.bin.md5',
+        # Signed Results`
+        signing_dir + '/1.payload.hash.foo-keys.signed.bin',
+        signing_dir + '/1.payload.hash.foo-keys.signed.bin.md5',
+        signing_dir + '/2.payload.hash.foo-keys.signed.bin',
+        signing_dir + '/2.payload.hash.foo-keys.signed.bin.md5',
     )
 
     client = self.createStandardClient()
@@ -129,7 +129,6 @@ class SignerPayloadsClientGoogleStorageTest(gs_unittest.AbstractGSContextTest):
     for uri in expected_removals:
       self.gs_mock.assertCommandContains(['rm', uri])
 
-
   def testCleanSignerFiles(self):
     """Test that GS cleanup works as expected."""
 
@@ -137,39 +136,39 @@ class SignerPayloadsClientGoogleStorageTest(gs_unittest.AbstractGSContextTest):
     keysets = ('foo-keys-1', 'foo-keys-2')
 
     lock_uri1 = ('gs://foo-bucket/tobesigned/45,foo-channel,foo-board,'
-                'foo-version,payloads,signing,foo-unique,'
-                'foo-keys-1.payload.signer.instructions.lock')
+                 'foo-version,payloads,signing,foo-unique,'
+                 'foo-keys-1.payload.signer.instructions.lock')
 
     lock_uri2 = ('gs://foo-bucket/tobesigned/45,foo-channel,foo-board,'
-                'foo-version,payloads,signing,foo-unique,'
-                'foo-keys-2.payload.signer.instructions.lock')
+                 'foo-version,payloads,signing,foo-unique,'
+                 'foo-keys-2.payload.signer.instructions.lock')
 
     signing_dir = ('gs://foo-bucket/foo-channel/foo-board/foo-version/'
                    'payloads/signing/foo-unique')
 
     expected_removals = (
-      # Signing Request
-      'gs://foo-bucket/tobesigned/45,foo-channel,foo-board,foo-version,'
-      'payloads,signing,foo-unique,'
-      'foo-keys-1.payload.signer.instructions',
+        # Signing Request
+        'gs://foo-bucket/tobesigned/45,foo-channel,foo-board,foo-version,'
+        'payloads,signing,foo-unique,'
+        'foo-keys-1.payload.signer.instructions',
 
-      'gs://foo-bucket/tobesigned/45,foo-channel,foo-board,foo-version,'
-      'payloads,signing,foo-unique,'
-      'foo-keys-2.payload.signer.instructions',
+        'gs://foo-bucket/tobesigned/45,foo-channel,foo-board,foo-version,'
+        'payloads,signing,foo-unique,'
+        'foo-keys-2.payload.signer.instructions',
 
-      # Signing Instructions
-      signing_dir + '/foo-keys-1.payload.signer.instructions',
-      signing_dir + '/foo-keys-2.payload.signer.instructions',
+        # Signing Instructions
+        signing_dir + '/foo-keys-1.payload.signer.instructions',
+        signing_dir + '/foo-keys-2.payload.signer.instructions',
 
-      # Signed Results
-      signing_dir + '/1.payload.hash.foo-keys-1.signed.bin',
-      signing_dir + '/1.payload.hash.foo-keys-1.signed.bin.md5',
-      signing_dir + '/2.payload.hash.foo-keys-1.signed.bin',
-      signing_dir + '/2.payload.hash.foo-keys-1.signed.bin.md5',
-      signing_dir + '/1.payload.hash.foo-keys-2.signed.bin',
-      signing_dir + '/1.payload.hash.foo-keys-2.signed.bin.md5',
-      signing_dir + '/2.payload.hash.foo-keys-2.signed.bin',
-      signing_dir + '/2.payload.hash.foo-keys-2.signed.bin.md5',
+        # Signed Results
+        signing_dir + '/1.payload.hash.foo-keys-1.signed.bin',
+        signing_dir + '/1.payload.hash.foo-keys-1.signed.bin.md5',
+        signing_dir + '/2.payload.hash.foo-keys-1.signed.bin',
+        signing_dir + '/2.payload.hash.foo-keys-1.signed.bin.md5',
+        signing_dir + '/1.payload.hash.foo-keys-2.signed.bin',
+        signing_dir + '/1.payload.hash.foo-keys-2.signed.bin.md5',
+        signing_dir + '/2.payload.hash.foo-keys-2.signed.bin',
+        signing_dir + '/2.payload.hash.foo-keys-2.signed.bin.md5',
     )
 
     client = self.createStandardClient()
@@ -226,7 +225,7 @@ class SignerPayloadsClientGoogleStorageTest(gs_unittest.AbstractGSContextTest):
         self.build_uri + '/1.payload.hash.keyset_foo.signed.bin',
         self.build_uri + '/2.payload.hash.keyset_foo.signed.bin',
         self.build_uri + '/3.payload.hash.keyset_foo.signed.bin',
-        ]
+    ]
 
     self.assertEquals(signature_uris, expected_signature_uris)
 
@@ -298,7 +297,7 @@ archive = payload.hash.tar.bz2
 # correct versionrev "R24-1.2.3"
 version = foo-version
 versionrev = foo-version
-""" % " ".join(['1.payload.hash',
+""" % ' '.join(['1.payload.hash',
                 '2.payload.hash',
                 '3.payload.hash'])
 
@@ -332,7 +331,6 @@ versionrev = foo-version
     # Make sure it really looked for every URL listed.
     self.assertEqual(exists.call_args_list,
                      [mock.call(u) for u in uris])
-
 
   def testWaitForSignaturesNever(self):
     """Test that we can correctly timeout waiting for a list of URIs."""
@@ -371,7 +369,7 @@ class SignerPayloadsClientIntegrationTest(cros_test_lib.TestCase):
     """Integration test that talks to the real signer with test hashes."""
     ctx = gs.GSContext()
 
-    unique_id = "%s.%d" % (socket.gethostname(), os.getpid())
+    unique_id = '%s.%d' % (socket.gethostname(), os.getpid())
     clean_uri = ('gs://chromeos-releases/test-channel/%s/'
                  'crostools-client/**') % unique_id
 
@@ -387,32 +385,32 @@ class SignerPayloadsClientIntegrationTest(cros_test_lib.TestCase):
       keysets = ['update_signer']
 
       expected_sigs_hex = (
-        ('ba4c7a86b786c609bf6e4c5fb9c47525608678caa532bea8acc457aa6dd32b43'
-         '5f094b331182f2e167682916990c40ff7b6b0128de3fa45ad0fd98041ec36d6f'
-         '63b867bcf219804200616590a41a727c2685b48340efb4b480f1ef448fc7bc3f'
-         'b1c4b53209e950ecc721b07a52a41d9c025fd25602340c93d5295211308caa29'
-         'a03ed18516cf61411c508097d5b47620d643ed357b05213b2b9fa3a3f938d6c4'
-         'f52b85c3f9774edc376902458344d1c1cd72bc932f033c076c76fee2400716fe'
-         '652306871ba923021ce245e0c778ad9e0e50e87a169b2aea338c4dc8b5c0c716'
-         'aabfb6133482e8438b084a09503db27ca546e910f8938f7805a8a76a3b0d0241',),
+          ('ba4c7a86b786c609bf6e4c5fb9c47525608678caa532bea8acc457aa6dd32b43'
+           '5f094b331182f2e167682916990c40ff7b6b0128de3fa45ad0fd98041ec36d6f'
+           '63b867bcf219804200616590a41a727c2685b48340efb4b480f1ef448fc7bc3f'
+           'b1c4b53209e950ecc721b07a52a41d9c025fd25602340c93d5295211308caa29'
+           'a03ed18516cf61411c508097d5b47620d643ed357b05213b2b9fa3a3f938d6c4'
+           'f52b85c3f9774edc376902458344d1c1cd72bc932f033c076c76fee2400716fe'
+           '652306871ba923021ce245e0c778ad9e0e50e87a169b2aea338c4dc8b5c0c716'
+           'aabfb6133482e8438b084a09503db27ca546e910f8938f7805a8a76a3b0d0241',),
 
-        ('2d909ca5b33a7fb6f2323ca0bf9de2e4f2266c73da4b6948a517dffa96783e08'
-         'ca36411d380f6e8a20011f599d8d73576b2a141a57c0873d089726e24f62c7e0'
-         '346ba5fbde68414b0f874b627fb1557a6e9658c8fac96c54f458161ea770982b'
-         'fa9fe514120635e5ccb32e8219b9069cb0bf8063fba48d60d649c5af203cccef'
-         'ca5dbc2191f81f0215edbdee4ec8c1553e69b83036aca3e840227d317ff6cf8b'
-         '968c973f698db1ce59f6871303dcdbe839400c5df4d2e6e505d68890010a4459'
-         '6ca9fee77f4db6ea3448d98018437c319fc8c5f4603ef94b04e3a4eafa206b73'
-         '91a2640d43128310285bc0f1c7e5060d37c433d663b1c6f01110b9a43f2a74f4',),
+          ('2d909ca5b33a7fb6f2323ca0bf9de2e4f2266c73da4b6948a517dffa96783e08'
+           'ca36411d380f6e8a20011f599d8d73576b2a141a57c0873d089726e24f62c7e0'
+           '346ba5fbde68414b0f874b627fb1557a6e9658c8fac96c54f458161ea770982b'
+           'fa9fe514120635e5ccb32e8219b9069cb0bf8063fba48d60d649c5af203cccef'
+           'ca5dbc2191f81f0215edbdee4ec8c1553e69b83036aca3e840227d317ff6cf8b'
+           '968c973f698db1ce59f6871303dcdbe839400c5df4d2e6e505d68890010a4459'
+           '6ca9fee77f4db6ea3448d98018437c319fc8c5f4603ef94b04e3a4eafa206b73'
+           '91a2640d43128310285bc0f1c7e5060d37c433d663b1c6f01110b9a43f2a74f4',),
 
-        ('23791c99ab937f1ae5d4988afc9ceca39c290ac90e3da9f243f9a0b1c86c3c32'
-         'ab7241d43dfc233da412bab989cf02f15a01fe9ea4b2dc7dc9182117547836d6'
-         '9310af3aa005ee3a6deb9602bc676dcc103bf3f7831d64ab844b4785c5c8b4b1'
-         '4467e6b5ab6bf34c12f7534e0d5140151c8f28e8276e703dd6332c2bab9e7f4a'
-         '495215998ff56e476b81bd6b8d765e1f87da50c22cd52c9afa8c43a6528ab898'
-         '6d7a273d9136d5aff5c4d95985d16eeec7380539ef963e0784a0de42b42890df'
-         'c83702179f69f5c6eca4630807fbc4ab6241017e0942b15feada0b240e9729bf'
-         '33bf456bd419da63302477e147963550a45c6cf60925ff48ad7b309fa158dcb2',))
+          ('23791c99ab937f1ae5d4988afc9ceca39c290ac90e3da9f243f9a0b1c86c3c32'
+           'ab7241d43dfc233da412bab989cf02f15a01fe9ea4b2dc7dc9182117547836d6'
+           '9310af3aa005ee3a6deb9602bc676dcc103bf3f7831d64ab844b4785c5c8b4b1'
+           '4467e6b5ab6bf34c12f7534e0d5140151c8f28e8276e703dd6332c2bab9e7f4a'
+           '495215998ff56e476b81bd6b8d765e1f87da50c22cd52c9afa8c43a6528ab898'
+           '6d7a273d9136d5aff5c4d95985d16eeec7380539ef963e0784a0de42b42890df'
+           'c83702179f69f5c6eca4630807fbc4ab6241017e0942b15feada0b240e9729bf'
+           '33bf456bd419da63302477e147963550a45c6cf60925ff48ad7b309fa158dcb2',))
 
       expected_sigs = [[sig[0].decode('hex')] for sig in expected_sigs_hex]
 
