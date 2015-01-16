@@ -894,11 +894,14 @@ void RenderViewContextMenu::AppendEditableItems() {
   if (use_spellcheck_and_search)
     AppendSpellingSuggestionsSubMenu();
 
-  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_UNDO,
-                                  IDS_CONTENT_CONTEXT_UNDO);
-  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_REDO,
-                                  IDS_CONTENT_CONTEXT_REDO);
-  menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
+  if (!IsDevToolsURL(params_.page_url)) {
+    menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_UNDO,
+                                    IDS_CONTENT_CONTEXT_UNDO);
+    menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_REDO,
+                                    IDS_CONTENT_CONTEXT_REDO);
+    menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
+  }
+
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_CUT,
                                   IDS_CONTENT_CONTEXT_CUT);
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_COPY,
