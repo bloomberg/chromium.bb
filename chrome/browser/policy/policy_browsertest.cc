@@ -499,13 +499,11 @@ class TestAudioObserver : public chromeos::CrasAudioHandler::AudioObserver {
     return output_mute_changed_count_;
   }
 
-  virtual ~TestAudioObserver() {}
+  ~TestAudioObserver() override {}
 
  protected:
   // chromeos::CrasAudioHandler::AudioObserver overrides.
-  virtual void OnOutputMuteChanged() override {
-    ++output_mute_changed_count_;
-  }
+  void OnOutputMuteChanged() override { ++output_mute_changed_count_; }
 
  private:
   int output_mute_changed_count_;
@@ -658,7 +656,7 @@ class PolicyTest : public InProcessBrowserTest {
 #if defined(OS_CHROMEOS)
   class QuitMessageLoopAfterScreenshot : public ui::ScreenshotGrabberObserver {
    public:
-    virtual void OnScreenshotCompleted(
+    void OnScreenshotCompleted(
         ScreenshotGrabberObserver::Result screenshot_result,
         const base::FilePath& screenshot_path) override {
       BrowserThread::PostTaskAndReply(BrowserThread::IO,
@@ -667,7 +665,7 @@ class PolicyTest : public InProcessBrowserTest {
                                       base::MessageLoop::QuitClosure());
     }
 
-    virtual ~QuitMessageLoopAfterScreenshot() {}
+    ~QuitMessageLoopAfterScreenshot() override {}
   };
 
   void TestScreenshotFile(bool enabled) {
@@ -3068,7 +3066,7 @@ class RestoreOnStartupPolicyTest
   virtual ~RestoreOnStartupPolicyTest() {}
 
 #if defined(OS_CHROMEOS)
-  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     // TODO(nkostylev): Investigate if we can remove this switch.
     command_line->AppendSwitch(switches::kCreateBrowserOnStartupForTests);
     PolicyTest::SetUpCommandLine(command_line);

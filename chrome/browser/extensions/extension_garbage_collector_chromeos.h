@@ -15,7 +15,7 @@ namespace extensions {
 class ExtensionGarbageCollectorChromeOS : public ExtensionGarbageCollector {
  public:
   explicit ExtensionGarbageCollectorChromeOS(content::BrowserContext* context);
-  virtual ~ExtensionGarbageCollectorChromeOS();
+  ~ExtensionGarbageCollectorChromeOS() override;
 
   static ExtensionGarbageCollectorChromeOS* Get(
       content::BrowserContext* context);
@@ -30,7 +30,7 @@ class ExtensionGarbageCollectorChromeOS : public ExtensionGarbageCollector {
 
  private:
   // Overriddes for ExtensionGarbageCollector:
-  virtual void GarbageCollectExtensions() override;
+  void GarbageCollectExtensions() override;
 
   // Return true if there is no extension installation for all active profiles.
   bool CanGarbageCollectSharedExtensions();

@@ -30,7 +30,7 @@ class NSSCertDatabaseChromeOSManager : public base::SupportsUserData::Data {
       DidGetPrivateSlot(private_slot.Pass());
   }
 
-  virtual ~NSSCertDatabaseChromeOSManager() {
+  ~NSSCertDatabaseChromeOSManager() override {
     DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   }
 

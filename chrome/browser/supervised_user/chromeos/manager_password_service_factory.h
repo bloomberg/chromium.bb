@@ -26,12 +26,12 @@ class ManagerPasswordServiceFactory
   friend struct DefaultSingletonTraits<ManagerPasswordServiceFactory>;
 
   ManagerPasswordServiceFactory();
-  virtual ~ManagerPasswordServiceFactory();
+  ~ManagerPasswordServiceFactory() override;
 
   // BrowserContextKeyedServiceFactory:
-  virtual KeyedService* BuildServiceInstanceFor(
+  KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const override;
-  virtual content::BrowserContext* GetBrowserContextToUse(
+  content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const override;
 };
 

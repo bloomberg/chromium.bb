@@ -22,7 +22,7 @@ namespace invalidation {
 class ProfileInvalidationProviderFactoryTestBase : public InProcessBrowserTest {
  protected:
   ProfileInvalidationProviderFactoryTestBase();
-  virtual ~ProfileInvalidationProviderFactoryTestBase();
+  ~ProfileInvalidationProviderFactoryTestBase() override;
 
   bool CanConstructProfileInvalidationProvider(Profile* profile);
 
@@ -50,9 +50,9 @@ class ProfileInvalidationProviderFactoryLoginScreenBrowserTest
     : public ProfileInvalidationProviderFactoryTestBase {
  protected:
   ProfileInvalidationProviderFactoryLoginScreenBrowserTest();
-  virtual ~ProfileInvalidationProviderFactoryLoginScreenBrowserTest();
+  ~ProfileInvalidationProviderFactoryLoginScreenBrowserTest() override;
 
-  virtual void SetUpCommandLine(base::CommandLine* command_line) override;
+  void SetUpCommandLine(base::CommandLine* command_line) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(
@@ -86,9 +86,9 @@ class ProfileInvalidationProviderFactoryGuestBrowserTest
     : public ProfileInvalidationProviderFactoryTestBase {
  protected:
   ProfileInvalidationProviderFactoryGuestBrowserTest();
-  virtual ~ProfileInvalidationProviderFactoryGuestBrowserTest();
+  ~ProfileInvalidationProviderFactoryGuestBrowserTest() override;
 
-  virtual void SetUpCommandLine(base::CommandLine* command_line) override;
+  void SetUpCommandLine(base::CommandLine* command_line) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ProfileInvalidationProviderFactoryGuestBrowserTest);

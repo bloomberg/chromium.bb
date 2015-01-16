@@ -23,7 +23,7 @@ class EasyUnlockServiceSignin : public EasyUnlockService,
                                 public chromeos::LoginState::Observer {
  public:
   explicit EasyUnlockServiceSignin(Profile* profile);
-  virtual ~EasyUnlockServiceSignin();
+  ~EasyUnlockServiceSignin() override;
 
  private:
   // The load state of a user's cryptohome key data.
@@ -56,34 +56,33 @@ class EasyUnlockServiceSignin : public EasyUnlockService,
   };
 
   // EasyUnlockService implementation:
-  virtual EasyUnlockService::Type GetType() const override;
-  virtual std::string GetUserEmail() const override;
-  virtual void LaunchSetup() override;
-  virtual const base::DictionaryValue* GetPermitAccess() const override;
-  virtual void SetPermitAccess(const base::DictionaryValue& permit) override;
-  virtual void ClearPermitAccess() override;
-  virtual const base::ListValue* GetRemoteDevices() const override;
-  virtual void SetRemoteDevices(const base::ListValue& devices) override;
-  virtual void RunTurnOffFlow() override;
-  virtual void ResetTurnOffFlow() override;
-  virtual TurnOffFlowStatus GetTurnOffFlowStatus() const override;
-  virtual std::string GetChallenge() const override;
-  virtual std::string GetWrappedSecret() const override;
-  virtual void RecordEasySignInOutcome(const std::string& user_id,
-                                       bool success) const override;
-  virtual void RecordPasswordLoginEvent(
-      const std::string& user_id) const override;
-  virtual void InitializeInternal() override;
-  virtual void ShutdownInternal() override;
-  virtual bool IsAllowedInternal() override;
+  EasyUnlockService::Type GetType() const override;
+  std::string GetUserEmail() const override;
+  void LaunchSetup() override;
+  const base::DictionaryValue* GetPermitAccess() const override;
+  void SetPermitAccess(const base::DictionaryValue& permit) override;
+  void ClearPermitAccess() override;
+  const base::ListValue* GetRemoteDevices() const override;
+  void SetRemoteDevices(const base::ListValue& devices) override;
+  void RunTurnOffFlow() override;
+  void ResetTurnOffFlow() override;
+  TurnOffFlowStatus GetTurnOffFlowStatus() const override;
+  std::string GetChallenge() const override;
+  std::string GetWrappedSecret() const override;
+  void RecordEasySignInOutcome(const std::string& user_id,
+                               bool success) const override;
+  void RecordPasswordLoginEvent(const std::string& user_id) const override;
+  void InitializeInternal() override;
+  void ShutdownInternal() override;
+  bool IsAllowedInternal() override;
 
   // ScreenlockBridge::Observer implementation:
-  virtual void OnScreenDidLock() override;
-  virtual void OnScreenDidUnlock() override;
-  virtual void OnFocusedUserChanged(const std::string& user_id) override;
+  void OnScreenDidLock() override;
+  void OnScreenDidUnlock() override;
+  void OnFocusedUserChanged(const std::string& user_id) override;
 
   // chromeos::LoginState::Observer implementation:
-  virtual void LoggedInStateChanged() override;
+  void LoggedInStateChanged() override;
 
   // Loads the device data associated with the user's Easy unlock keys from
   // crypthome.

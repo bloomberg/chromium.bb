@@ -23,7 +23,7 @@ class DisplayInfoProviderChromeosTest : public ash::test::AshTestBase {
  public:
   DisplayInfoProviderChromeosTest() {}
 
-  virtual ~DisplayInfoProviderChromeosTest() {}
+  ~DisplayInfoProviderChromeosTest() override {}
 
  protected:
   void CallSetDisplayUnitInfo(

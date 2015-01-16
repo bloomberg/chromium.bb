@@ -38,16 +38,15 @@ class ExtensionAssetsManagerChromeOS : public ExtensionAssetsManager {
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
   // Override from ExtensionAssetsManager.
-  virtual void InstallExtension(const Extension* extension,
-                                const base::FilePath& unpacked_extension_root,
-                                const base::FilePath& local_install_dir,
-                                Profile* profile,
-                                InstallExtensionCallback callback) override;
-  virtual void UninstallExtension(
-      const std::string& id,
-      Profile* profile,
-      const base::FilePath& local_install_dir,
-      const base::FilePath& extension_root) override;
+  void InstallExtension(const Extension* extension,
+                        const base::FilePath& unpacked_extension_root,
+                        const base::FilePath& local_install_dir,
+                        Profile* profile,
+                        InstallExtensionCallback callback) override;
+  void UninstallExtension(const std::string& id,
+                          Profile* profile,
+                          const base::FilePath& local_install_dir,
+                          const base::FilePath& extension_root) override;
 
   // Return shared install dir.
   static base::FilePath GetSharedInstallDir();
@@ -68,7 +67,7 @@ class ExtensionAssetsManagerChromeOS : public ExtensionAssetsManager {
   friend struct DefaultSingletonTraits<ExtensionAssetsManagerChromeOS>;
 
   ExtensionAssetsManagerChromeOS();
-  virtual ~ExtensionAssetsManagerChromeOS();
+  ~ExtensionAssetsManagerChromeOS() override;
 
   // Should be called on UI thread to get associated file task runner for
   // the profile.

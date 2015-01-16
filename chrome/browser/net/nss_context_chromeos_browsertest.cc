@@ -120,7 +120,7 @@ class NSSContextChromeOSBrowserTest : public chromeos::LoginManagerTest {
  public:
   NSSContextChromeOSBrowserTest()
       : LoginManagerTest(true /* should_launch_browser */) {}
-  virtual ~NSSContextChromeOSBrowserTest() {}
+  ~NSSContextChromeOSBrowserTest() override {}
 };
 
 IN_PROC_BROWSER_TEST_F(NSSContextChromeOSBrowserTest, PRE_TwoUsers) {

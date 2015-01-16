@@ -18,15 +18,13 @@ namespace extensions {
 class SyslogParser : public LogParser {
  public:
   SyslogParser();
-  virtual ~SyslogParser();
+  ~SyslogParser() override;
 
  protected:
   // Parses one line log text into a LogEntry object.
-  virtual Error ParseEntry(
-      const std::string& input,
-      std::vector<linked_ptr<api::log_private::LogEntry> >* output,
-      FilterHandler* filter_handler) const
-      override;
+  Error ParseEntry(const std::string& input,
+                   std::vector<linked_ptr<api::log_private::LogEntry>>* output,
+                   FilterHandler* filter_handler) const override;
 
  private:
   // Parses time token and get time in milliseconds.

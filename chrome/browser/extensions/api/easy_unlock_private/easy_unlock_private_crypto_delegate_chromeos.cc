@@ -46,13 +46,13 @@ class EasyUnlockPrivateCryptoDelegateChromeOS
             chromeos::DBusThreadManager::Get()->GetEasyUnlockClient()) {
   }
 
-  virtual ~EasyUnlockPrivateCryptoDelegateChromeOS() {}
+  ~EasyUnlockPrivateCryptoDelegateChromeOS() override {}
 
-  virtual void GenerateEcP256KeyPair(const KeyPairCallback& callback) override {
+  void GenerateEcP256KeyPair(const KeyPairCallback& callback) override {
     dbus_client_->GenerateEcP256KeyPair(callback);
   }
 
-  virtual void PerformECDHKeyAgreement(
+  void PerformECDHKeyAgreement(
       const easy_unlock_private::PerformECDHKeyAgreement::Params& params,
       const DataCallback& callback) override {
     dbus_client_->PerformECDHKeyAgreement(
@@ -61,7 +61,7 @@ class EasyUnlockPrivateCryptoDelegateChromeOS
         callback);
   }
 
-  virtual void CreateSecureMessage(
+  void CreateSecureMessage(
       const easy_unlock_private::CreateSecureMessage::Params& params,
       const DataCallback& callback) override {
     chromeos::EasyUnlockClient::CreateSecureMessageOptions options;
@@ -82,7 +82,7 @@ class EasyUnlockPrivateCryptoDelegateChromeOS
     dbus_client_->CreateSecureMessage(params.payload, options, callback);
   }
 
-  virtual void UnwrapSecureMessage(
+  void UnwrapSecureMessage(
       const easy_unlock_private::UnwrapSecureMessage::Params& params,
       const DataCallback& callback) override {
     chromeos::EasyUnlockClient::UnwrapSecureMessageOptions options;

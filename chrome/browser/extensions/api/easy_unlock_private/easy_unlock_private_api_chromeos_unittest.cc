@@ -51,17 +51,17 @@ void CopyData(std::string* data_target, const std::string& data_source) {
 class EasyUnlockPrivateApiTest : public extensions::ExtensionApiUnittest {
  public:
   EasyUnlockPrivateApiTest() {}
-  virtual ~EasyUnlockPrivateApiTest() {}
+  ~EasyUnlockPrivateApiTest() override {}
 
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     chromeos::DBusThreadManager::Initialize();
     client_ = chromeos::DBusThreadManager::Get()->GetEasyUnlockClient();
 
     extensions::ExtensionApiUnittest::SetUp();
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     extensions::ExtensionApiUnittest::TearDown();
 
     chromeos::DBusThreadManager::Shutdown();

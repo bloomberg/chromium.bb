@@ -19,9 +19,9 @@ namespace chromeos {
 class SupervisedUserPasswordService : public KeyedService {
  public:
   SupervisedUserPasswordService();
-  virtual ~SupervisedUserPasswordService();
+  ~SupervisedUserPasswordService() override;
 
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
   void Init(const std::string& user_id,
             SupervisedUserSharedSettingsService* service);

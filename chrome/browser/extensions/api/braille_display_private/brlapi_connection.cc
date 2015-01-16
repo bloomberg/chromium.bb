@@ -33,26 +33,21 @@ class BrlapiConnectionImpl : public BrlapiConnection,
   explicit BrlapiConnectionImpl(LibBrlapiLoader* loader) :
       libbrlapi_loader_(loader) {}
 
-  virtual ~BrlapiConnectionImpl() {
-    Disconnect();
-  }
+  ~BrlapiConnectionImpl() override { Disconnect(); }
 
-  virtual ConnectResult Connect(const OnDataReadyCallback& on_data_ready)
-      override;
-  virtual void Disconnect() override;
-  virtual bool Connected() override { return handle_; }
-  virtual brlapi_error_t* BrlapiError() override;
-  virtual std::string BrlapiStrError() override;
-  virtual bool GetDisplaySize(size_t* size) override;
-  virtual bool WriteDots(const unsigned char* cells) override;
-  virtual int ReadKey(brlapi_keyCode_t* keyCode) override;
+  ConnectResult Connect(const OnDataReadyCallback& on_data_ready) override;
+  void Disconnect() override;
+  bool Connected() override { return handle_; }
+  brlapi_error_t* BrlapiError() override;
+  std::string BrlapiStrError() override;
+  bool GetDisplaySize(size_t* size) override;
+  bool WriteDots(const unsigned char* cells) override;
+  int ReadKey(brlapi_keyCode_t* keyCode) override;
 
   // MessageLoopForIO::Watcher
-  virtual void OnFileCanReadWithoutBlocking(int fd) override {
-    on_data_ready_.Run();
-  }
+  void OnFileCanReadWithoutBlocking(int fd) override { on_data_ready_.Run(); }
 
-  virtual void OnFileCanWriteWithoutBlocking(int fd) override {}
+  void OnFileCanWriteWithoutBlocking(int fd) override {}
 
  private:
   bool CheckConnected();

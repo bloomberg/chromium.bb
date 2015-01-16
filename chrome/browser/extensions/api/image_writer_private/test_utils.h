@@ -60,9 +60,9 @@ class MockOperationManager : public OperationManager {
 class FakeDiskMountManager : public chromeos::disks::MockDiskMountManager {
  public:
   FakeDiskMountManager();
-  virtual ~FakeDiskMountManager();
+  ~FakeDiskMountManager() override;
 
-  virtual void UnmountDeviceRecursively(
+  void UnmountDeviceRecursively(
       const std::string& device_path,
       const UnmountDeviceRecursivelyCallbackType& callback) override;
 

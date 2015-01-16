@@ -105,9 +105,7 @@ class WindowedIncognitoObserver : public chrome::BrowserListObserver {
     BrowserList::AddObserver(this);
   }
 
-  virtual ~WindowedIncognitoObserver() {
-    BrowserList::RemoveObserver(this);
-  }
+  ~WindowedIncognitoObserver() override { BrowserList::RemoveObserver(this); }
 
   // This method can be checked to see whether any incognito window has been
   // opened since the time this object was created.
@@ -117,7 +115,7 @@ class WindowedIncognitoObserver : public chrome::BrowserListObserver {
 
  private:
   // chrome::BrowserListObserver implementation.
-  virtual void OnBrowserAdded(Browser* browser) override {
+  void OnBrowserAdded(Browser* browser) override {
     if (browser->profile()->IsOffTheRecord())
       incognito_launched_ = true;
   }

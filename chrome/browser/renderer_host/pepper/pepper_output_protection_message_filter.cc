@@ -86,12 +86,12 @@ class PepperOutputProtectionMessageFilter::Delegate
     : public aura::WindowObserver {
  public:
   Delegate(int render_process_id, int render_frame_id);
-  virtual ~Delegate();
+  ~Delegate() override;
 
   // aura::WindowObserver overrides.
-  virtual void OnWindowHierarchyChanged(
+  void OnWindowHierarchyChanged(
       const aura::WindowObserver::HierarchyChangeParams& params) override;
-  virtual void OnWindowDestroying(aura::Window* window) override;
+  void OnWindowDestroying(aura::Window* window) override;
 
   int32_t OnQueryStatus(uint32_t* link_mask, uint32_t* protection_mask);
   int32_t OnEnableProtection(uint32_t desired_method_mask);

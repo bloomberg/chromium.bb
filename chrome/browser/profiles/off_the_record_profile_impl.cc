@@ -510,11 +510,9 @@ class GuestSessionProfile : public OffTheRecordProfileImpl {
     set_is_guest_profile(true);
   }
 
-  virtual ProfileType GetProfileType() const override {
-    return GUEST_PROFILE;
-  }
+  ProfileType GetProfileType() const override { return GUEST_PROFILE; }
 
-  virtual void InitChromeOSPreferences() override {
+  void InitChromeOSPreferences() override {
     chromeos_preferences_.reset(new chromeos::Preferences());
     chromeos_preferences_->Init(
         this, user_manager::UserManager::Get()->GetActiveUser());

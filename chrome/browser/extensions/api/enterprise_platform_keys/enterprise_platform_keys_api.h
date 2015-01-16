@@ -23,8 +23,8 @@ namespace extensions {
 class EnterprisePlatformKeysInternalGenerateKeyFunction
     : public ChromeUIThreadExtensionFunction {
  private:
-  virtual ~EnterprisePlatformKeysInternalGenerateKeyFunction();
-  virtual ResponseAction Run() override;
+  ~EnterprisePlatformKeysInternalGenerateKeyFunction() override;
+  ResponseAction Run() override;
 
   // Called when the key was generated. If an error occurred, |public_key_der|
   // will be empty and instead |error_message| be set.
@@ -38,8 +38,8 @@ class EnterprisePlatformKeysInternalGenerateKeyFunction
 class EnterprisePlatformKeysInternalSignFunction
     : public ChromeUIThreadExtensionFunction {
  private:
-  virtual ~EnterprisePlatformKeysInternalSignFunction();
-  virtual ResponseAction Run() override;
+  ~EnterprisePlatformKeysInternalSignFunction() override;
+  ResponseAction Run() override;
 
   // Called when the signature was generated. If an error occurred,
   // |signature| will be empty and instead |error_message| be set.
@@ -52,8 +52,8 @@ class EnterprisePlatformKeysInternalSignFunction
 class EnterprisePlatformKeysGetCertificatesFunction
     : public ChromeUIThreadExtensionFunction {
  private:
-  virtual ~EnterprisePlatformKeysGetCertificatesFunction();
-  virtual ResponseAction Run() override;
+  ~EnterprisePlatformKeysGetCertificatesFunction() override;
+  ResponseAction Run() override;
 
   // Called when the list of certificates was determined. If an error occurred,
   // |certs| will be NULL and instead |error_message| be set.
@@ -67,8 +67,8 @@ class EnterprisePlatformKeysGetCertificatesFunction
 class EnterprisePlatformKeysImportCertificateFunction
     : public ChromeUIThreadExtensionFunction {
  private:
-  virtual ~EnterprisePlatformKeysImportCertificateFunction();
-  virtual ResponseAction Run() override;
+  ~EnterprisePlatformKeysImportCertificateFunction() override;
+  ResponseAction Run() override;
 
   // Called when the certificate was imported. Only if an error occurred,
   // |error_message| will be set.
@@ -81,8 +81,8 @@ class EnterprisePlatformKeysImportCertificateFunction
 class EnterprisePlatformKeysRemoveCertificateFunction
     : public ChromeUIThreadExtensionFunction {
  private:
-  virtual ~EnterprisePlatformKeysRemoveCertificateFunction();
-  virtual ResponseAction Run() override;
+  ~EnterprisePlatformKeysRemoveCertificateFunction() override;
+  ResponseAction Run() override;
 
   // Called when the certificate was removed. Only if an error occurred,
   // |error_message| will be set.
@@ -95,8 +95,8 @@ class EnterprisePlatformKeysRemoveCertificateFunction
 class EnterprisePlatformKeysInternalGetTokensFunction
     : public ChromeUIThreadExtensionFunction {
  private:
-  virtual ~EnterprisePlatformKeysInternalGetTokensFunction();
-  virtual ResponseAction Run() override;
+  ~EnterprisePlatformKeysInternalGetTokensFunction() override;
+  ResponseAction Run() override;
 
   // Called when the list of tokens was determined. If an error occurred,
   // |token_ids| will be NULL and instead |error_message| be set.

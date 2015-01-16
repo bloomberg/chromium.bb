@@ -215,7 +215,7 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, DISABLED_DeleteAllProfiles) {
 
 class ProfileManagerCrOSBrowserTest : public ProfileManagerBrowserTest {
  protected:
-  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     // Use a user hash other than the default chrome::kTestUserProfileDir
     // so that the prefix case is tested.
     command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile,

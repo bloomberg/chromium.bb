@@ -19,18 +19,18 @@ class ImageWriterFakeImageBurnerClient
     : public chromeos::FakeImageBurnerClient {
  public:
   ImageWriterFakeImageBurnerClient() {}
-  virtual ~ImageWriterFakeImageBurnerClient() {}
+  ~ImageWriterFakeImageBurnerClient() override {}
 
-  virtual void SetEventHandlers(
+  void SetEventHandlers(
       const BurnFinishedHandler& burn_finished_handler,
       const BurnProgressUpdateHandler& burn_progress_update_handler) override {
     burn_finished_handler_ = burn_finished_handler;
     burn_progress_update_handler_ = burn_progress_update_handler;
   }
 
-  virtual void BurnImage(const std::string& from_path,
-                         const std::string& to_path,
-                         const ErrorCallback& error_callback) override {
+  void BurnImage(const std::string& from_path,
+                 const std::string& to_path,
+                 const ErrorCallback& error_callback) override {
     base::MessageLoop::current()->PostTask(FROM_HERE,
         base::Bind(burn_progress_update_handler_, to_path, 0, 100));
     base::MessageLoop::current()->PostTask(FROM_HERE,

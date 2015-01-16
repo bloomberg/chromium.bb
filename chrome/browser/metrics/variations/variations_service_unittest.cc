@@ -196,7 +196,7 @@ class VariationsServiceTestChromeOS : public VariationsServiceTest {
  protected:
   VariationsServiceTestChromeOS() {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     cros_settings_ = chromeos::CrosSettings::Get();
     DCHECK(cros_settings_ != NULL);
     // Remove the real DeviceSettingsProvider and replace it with a stub that
@@ -209,7 +209,7 @@ class VariationsServiceTestChromeOS : public VariationsServiceTest {
     cros_settings_->AddSettingsProvider(&stub_settings_provider_);
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     // Restore the real DeviceSettingsProvider.
     EXPECT_TRUE(
         cros_settings_->RemoveSettingsProvider(&stub_settings_provider_));

@@ -17,10 +17,10 @@ class TerminalPrivateFunction : public ChromeAsyncExtensionFunction {
   TerminalPrivateFunction();
 
  protected:
-  virtual ~TerminalPrivateFunction();
+  ~TerminalPrivateFunction() override;
 
   // ExtensionFunction:
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 
   // Override with actual extension function implementation.
   virtual bool RunTerminalFunction() = 0;
@@ -36,10 +36,10 @@ class TerminalPrivateOpenTerminalProcessFunction
   TerminalPrivateOpenTerminalProcessFunction();
 
  protected:
-  virtual ~TerminalPrivateOpenTerminalProcessFunction();
+  ~TerminalPrivateOpenTerminalProcessFunction() override;
 
   // TerminalPrivateFunction:
-  virtual bool RunTerminalFunction() override;
+  bool RunTerminalFunction() override;
 
  private:
   void OpenOnFileThread();
@@ -55,10 +55,10 @@ class TerminalPrivateSendInputFunction : public TerminalPrivateFunction {
                              TERMINALPRIVATE_SENDINPUT)
 
  protected:
-  virtual ~TerminalPrivateSendInputFunction();
+  ~TerminalPrivateSendInputFunction() override;
 
   // TerminalPrivateFunction:
-  virtual bool RunTerminalFunction() override;
+  bool RunTerminalFunction() override;
 
  private:
   void SendInputOnFileThread(pid_t pid, const std::string& input);
@@ -73,9 +73,9 @@ class TerminalPrivateCloseTerminalProcessFunction
                              TERMINALPRIVATE_CLOSETERMINALPROCESS)
 
  protected:
-  virtual ~TerminalPrivateCloseTerminalProcessFunction();
+  ~TerminalPrivateCloseTerminalProcessFunction() override;
 
-  virtual bool RunTerminalFunction() override;
+  bool RunTerminalFunction() override;
 
  private:
   void CloseOnFileThread(pid_t pid);
@@ -89,9 +89,9 @@ class TerminalPrivateOnTerminalResizeFunction : public TerminalPrivateFunction {
                              TERMINALPRIVATE_ONTERMINALRESIZE)
 
  protected:
-  virtual ~TerminalPrivateOnTerminalResizeFunction();
+  ~TerminalPrivateOnTerminalResizeFunction() override;
 
-  virtual bool RunTerminalFunction() override;
+  bool RunTerminalFunction() override;
 
  private:
   void OnResizeOnFileThread(pid_t pid, int width, int height);

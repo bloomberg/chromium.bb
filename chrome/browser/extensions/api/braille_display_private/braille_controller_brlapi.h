@@ -23,10 +23,10 @@ namespace braille_display_private {
 class BrailleControllerImpl : public BrailleController {
  public:
   static BrailleControllerImpl* GetInstance();
-  virtual scoped_ptr<DisplayState> GetDisplayState() override;
-  virtual void WriteDots(const std::string& cells) override;
-  virtual void AddObserver(BrailleObserver* observer) override;
-  virtual void RemoveObserver(BrailleObserver* observer) override;
+  scoped_ptr<DisplayState> GetDisplayState() override;
+  void WriteDots(const std::string& cells) override;
+  void AddObserver(BrailleObserver* observer) override;
+  void RemoveObserver(BrailleObserver* observer) override;
 
  private:
   // For the unit tests.
@@ -34,7 +34,7 @@ class BrailleControllerImpl : public BrailleController {
   friend class MockBrlapiConnection;
 
   BrailleControllerImpl();
-  virtual ~BrailleControllerImpl();
+  ~BrailleControllerImpl() override;
   void TryLoadLibBrlApi();
 
   typedef base::Callback<scoped_ptr<BrlapiConnection>()>

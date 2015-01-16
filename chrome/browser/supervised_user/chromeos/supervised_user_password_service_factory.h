@@ -26,12 +26,12 @@ class SupervisedUserPasswordServiceFactory
   friend struct DefaultSingletonTraits<SupervisedUserPasswordServiceFactory>;
 
   SupervisedUserPasswordServiceFactory();
-  virtual ~SupervisedUserPasswordServiceFactory();
+  ~SupervisedUserPasswordServiceFactory() override;
 
   // BrowserContextKeyedServiceFactory:
-  virtual KeyedService* BuildServiceInstanceFor(
+  KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const override;
-  virtual content::BrowserContext* GetBrowserContextToUse(
+  content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const override;
 };
 

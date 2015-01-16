@@ -28,12 +28,12 @@ class TestDebugDaemonClient : public chromeos::FakeDebugDaemonClient {
   explicit TestDebugDaemonClient(const base::FilePath& test_file)
       : test_file_(test_file) {}
 
-  virtual ~TestDebugDaemonClient() {}
+  ~TestDebugDaemonClient() override {}
 
-  virtual void DumpDebugLogs(bool is_compressed,
-                             base::File file,
-                             scoped_refptr<base::TaskRunner> task_runner,
-                             const GetDebugLogsCallback& callback) override {
+  void DumpDebugLogs(bool is_compressed,
+                     base::File file,
+                     scoped_refptr<base::TaskRunner> task_runner,
+                     const GetDebugLogsCallback& callback) override {
     base::File* file_param = new base::File(file.Pass());
     task_runner->PostTaskAndReply(
         FROM_HERE,
@@ -65,9 +65,9 @@ class LogPrivateApiTest : public ExtensionApiTest {
  public:
   LogPrivateApiTest() {}
 
-  virtual ~LogPrivateApiTest() {}
+  ~LogPrivateApiTest() override {}
 
-  virtual void SetUpInProcessBrowserTestFixture() override {
+  void SetUpInProcessBrowserTestFixture() override {
     base::FilePath tar_file_path =
         test_data_dir_.Append("log_private/dump_logs/system_logs.tar");
     chromeos::DBusThreadManager::GetSetterForTesting()->SetDebugDaemonClient(

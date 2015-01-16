@@ -28,7 +28,7 @@ class PerfProvider : public base::NonThreadSafe,
                      public chromeos::PowerManagerClient::Observer {
  public:
   PerfProvider();
-  virtual ~PerfProvider();
+  ~PerfProvider() override;
 
   // Stores collected perf data protobufs in |sampled_profiles|. Clears all the
   // stored profile data. Returns true if it wrote to |sampled_profiles|.
@@ -43,7 +43,7 @@ class PerfProvider : public base::NonThreadSafe,
 
     // Called when either the login state or the logged in user type changes.
     // Activates |perf_provider_| to start collecting.
-    virtual void LoggedInStateChanged() override;
+    void LoggedInStateChanged() override;
 
    private:
     // Points to a PerfProvider instance that can be turned on or off based on
@@ -54,7 +54,7 @@ class PerfProvider : public base::NonThreadSafe,
   // Called when a suspend finishes. This is either a successful suspend
   // followed by a resume, or a suspend that was canceled. Inherited from
   // PowerManagerClient::Observer.
-  virtual void SuspendDone(const base::TimeDelta& sleep_duration) override;
+  void SuspendDone(const base::TimeDelta& sleep_duration) override;
 
   // Turns on perf collection. Resets the timer that's used to schedule
   // collections.

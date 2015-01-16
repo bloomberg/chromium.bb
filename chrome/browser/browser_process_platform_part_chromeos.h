@@ -43,7 +43,7 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase,
                                    public base::NonThreadSafe {
  public:
   BrowserProcessPlatformPart();
-  virtual ~BrowserProcessPlatformPart();
+  ~BrowserProcessPlatformPart() override;
 
   void InitializeAutomaticRebootManager();
   void ShutdownAutomaticRebootManager();
@@ -87,10 +87,10 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase,
   }
 
   // Overridden from BrowserProcessPlatformPartBase:
-  virtual void StartTearDown() override;
+  void StartTearDown() override;
 
-  virtual scoped_ptr<policy::BrowserPolicyConnector>
-      CreateBrowserPolicyConnector() override;
+  scoped_ptr<policy::BrowserPolicyConnector> CreateBrowserPolicyConnector()
+      override;
 
  private:
   void CreateProfileHelper();

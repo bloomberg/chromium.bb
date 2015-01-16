@@ -27,11 +27,11 @@ class OfflineResourceThrottle
  public:
   OfflineResourceThrottle(net::URLRequest* request,
                           content::AppCacheService* appcache_service);
-  virtual ~OfflineResourceThrottle();
+  ~OfflineResourceThrottle() override;
 
   // content::ResourceThrottle implementation:
-  virtual void WillStartRequest(bool* defer) override;
-  virtual const char* GetNameForLogging() const override;
+  void WillStartRequest(bool* defer) override;
+  const char* GetNameForLogging() const override;
 
  private:
   void OnBlockingPageComplete(bool proceed);

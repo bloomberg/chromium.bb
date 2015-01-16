@@ -37,7 +37,7 @@ class ExternalProviderImplChromeOSTest : public ExtensionServiceTestBase {
         scoped_user_manager_(fake_user_manager_) {
   }
 
-  virtual ~ExternalProviderImplChromeOSTest() {}
+  ~ExternalProviderImplChromeOSTest() override {}
 
   void InitServiceWithExternalProviders() {
     InitializeEmptyExtensionService();
@@ -55,7 +55,7 @@ class ExternalProviderImplChromeOSTest : public ExtensionServiceTestBase {
   }
 
   // ExtensionServiceTestBase overrides:
-  virtual void SetUp() override {
+  void SetUp() override {
     ExtensionServiceTestBase::SetUp();
 
     TestingBrowserProcess::GetGlobal()->SetLocalState(&local_state_);
@@ -66,7 +66,7 @@ class ExternalProviderImplChromeOSTest : public ExtensionServiceTestBase {
         chrome::DIR_EXTERNAL_EXTENSIONS, data_dir().Append("external")));
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     chromeos::KioskAppManager::Shutdown();
     TestingBrowserProcess::GetGlobal()->SetLocalState(NULL);
   }

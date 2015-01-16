@@ -30,21 +30,21 @@ namespace extensions {
 class LocalExtensionCacheTest : public testing::Test {
  public:
   LocalExtensionCacheTest() {}
-  virtual ~LocalExtensionCacheTest() {}
+  ~LocalExtensionCacheTest() override {}
 
   scoped_refptr<base::SequencedTaskRunner> background_task_runner() {
     return background_task_runner_;
   }
 
   // testing::Test overrides:
-  virtual void SetUp() override {
+  void SetUp() override {
     pool_owner_.reset(
         new base::SequencedWorkerPoolOwner(3, "Background Pool"));
     background_task_runner_ = pool_owner_->pool()->GetSequencedTaskRunner(
         pool_owner_->pool()->GetNamedSequenceToken("background"));
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     pool_owner_->pool()->Shutdown();
     base::RunLoop().RunUntilIdle();
   }

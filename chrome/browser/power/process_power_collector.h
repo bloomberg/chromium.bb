@@ -84,8 +84,12 @@ class ProcessPowerCollector
   // On Chrome OS, can only be initialized after the DBusThreadManager has been
   // initialized.
   ProcessPowerCollector();
+#if defined(OS_CHROMEOS)
   // On Chrome OS, can only be destroyed before DBusThreadManager is.
+  ~ProcessPowerCollector() override;
+#else
   virtual ~ProcessPowerCollector();
+#endif
 
   void set_cpu_usage_callback_for_testing(const CpuUsageCallback& callback) {
     cpu_usage_callback_ = callback;
@@ -95,8 +99,7 @@ class ProcessPowerCollector
 
 #if defined(OS_CHROMEOS)
   // PowerManagerClient::Observer implementation:
-  virtual void PowerChanged(
-      const power_manager::PowerSupplyProperties& prop) override;
+  void PowerChanged(const power_manager::PowerSupplyProperties& prop) override;
 #endif
 
   // Begin periodically updating the power consumption numbers by profile.

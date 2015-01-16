@@ -70,10 +70,9 @@ class OffTheRecordProfileImpl : public Profile {
   ExitType GetLastSessionExitType() override;
 
 #if defined(OS_CHROMEOS)
-  virtual void ChangeAppLocale(const std::string& locale,
-                               AppLocaleChangedVia) override;
-  virtual void OnLogin() override;
-  virtual void InitChromeOSPreferences() override;
+  void ChangeAppLocale(const std::string& locale, AppLocaleChangedVia) override;
+  void OnLogin() override;
+  void InitChromeOSPreferences() override;
 #endif  // defined(OS_CHROMEOS)
 
   PrefProxyConfigTracker* GetProxyConfigTracker() override;

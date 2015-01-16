@@ -1162,19 +1162,19 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
 class PlatformAppIncognitoBrowserTest : public PlatformAppBrowserTest,
                                         public AppWindowRegistry::Observer {
  public:
-  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     // Tell chromeos to launch in Guest mode, aka incognito.
     command_line->AppendSwitch(switches::kIncognito);
     PlatformAppBrowserTest::SetUpCommandLine(command_line);
   }
-  virtual void SetUp() override {
+  void SetUp() override {
     // Make sure the file manager actually gets loaded.
     ComponentLoader::EnableBackgroundExtensionsForTesting();
     PlatformAppBrowserTest::SetUp();
   }
 
   // AppWindowRegistry::Observer implementation.
-  virtual void OnAppWindowAdded(AppWindow* app_window) override {
+  void OnAppWindowAdded(AppWindow* app_window) override {
     opener_app_ids_.insert(app_window->extension_id());
   }
 
@@ -1219,10 +1219,10 @@ class RestartDeviceTest : public PlatformAppBrowserTest {
   RestartDeviceTest()
       : power_manager_client_(NULL),
         mock_user_manager_(NULL) {}
-  virtual ~RestartDeviceTest() {}
+  ~RestartDeviceTest() override {}
 
   // PlatformAppBrowserTest overrides
-  virtual void SetUpInProcessBrowserTestFixture() override {
+  void SetUpInProcessBrowserTestFixture() override {
     PlatformAppBrowserTest::SetUpInProcessBrowserTestFixture();
 
     power_manager_client_ = new chromeos::FakePowerManagerClient;
@@ -1230,7 +1230,7 @@ class RestartDeviceTest : public PlatformAppBrowserTest {
         scoped_ptr<chromeos::PowerManagerClient>(power_manager_client_));
   }
 
-  virtual void SetUpOnMainThread() override {
+  void SetUpOnMainThread() override {
     PlatformAppBrowserTest::SetUpOnMainThread();
 
     mock_user_manager_ = new chromeos::MockUserManager;
@@ -1243,12 +1243,12 @@ class RestartDeviceTest : public PlatformAppBrowserTest {
         .WillRepeatedly(testing::Return(true));
   }
 
-  virtual void TearDownOnMainThread() override {
+  void TearDownOnMainThread() override {
     user_manager_enabler_.reset();
     PlatformAppBrowserTest::TearDownOnMainThread();
   }
 
-  virtual void TearDownInProcessBrowserTestFixture() override {
+  void TearDownInProcessBrowserTestFixture() override {
     PlatformAppBrowserTest::TearDownInProcessBrowserTestFixture();
   }
 

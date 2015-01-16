@@ -33,17 +33,16 @@ class ManagerPasswordService
       public chromeos::ExtendedAuthenticator::NewAuthStatusConsumer {
  public:
   ManagerPasswordService();
-  virtual ~ManagerPasswordService();
+  ~ManagerPasswordService() override;
 
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
   void Init(const std::string& user_id,
             SupervisedUserSyncService* user_service,
             SupervisedUserSharedSettingsService* service);
 
   // chromeos::ExtendedAuthenticator::AuthStatusConsumer overrides:
-  virtual void OnAuthenticationFailure(ExtendedAuthenticator::AuthState state)
-      override;
+  void OnAuthenticationFailure(ExtendedAuthenticator::AuthState state) override;
 
  private:
   void OnSharedSettingsChange(const std::string& su_id, const std::string& key);

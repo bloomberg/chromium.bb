@@ -24,7 +24,7 @@ class PrefService;
 class ChromeOSMetricsProvider : public metrics::MetricsProvider {
  public:
   ChromeOSMetricsProvider();
-  virtual ~ChromeOSMetricsProvider();
+  ~ChromeOSMetricsProvider() override;
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
@@ -36,12 +36,12 @@ class ChromeOSMetricsProvider : public metrics::MetricsProvider {
   void InitTaskGetHardwareClass(const base::Closure& callback);
 
   // metrics::MetricsProvider:
-  virtual void OnDidCreateMetricsLog() override;
-  virtual void ProvideSystemProfileMetrics(
+  void OnDidCreateMetricsLog() override;
+  void ProvideSystemProfileMetrics(
       metrics::SystemProfileProto* system_profile_proto) override;
-  virtual void ProvideStabilityMetrics(
+  void ProvideStabilityMetrics(
       metrics::SystemProfileProto* system_profile_proto) override;
-  virtual void ProvideGeneralMetrics(
+  void ProvideGeneralMetrics(
       metrics::ChromeUserMetricsExtension* uma_proto) override;
 
  private:

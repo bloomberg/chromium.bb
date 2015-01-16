@@ -356,7 +356,7 @@ class EPKPChallengeUserKeyTest : public EPKPChallengeKeyTestBase {
     func_->set_extension(extension_.get());
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     EPKPChallengeKeyTestBase::SetUp();
 
     // Set the user preferences.

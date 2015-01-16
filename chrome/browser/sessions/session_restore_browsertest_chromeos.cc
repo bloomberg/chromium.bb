@@ -28,10 +28,10 @@ const char* test_app_popup_name2 = "TestApp2";
 
 class SessionRestoreTestChromeOS : public InProcessBrowserTest {
  public:
-  virtual ~SessionRestoreTestChromeOS() {}
+  ~SessionRestoreTestChromeOS() override {}
 
  protected:
-  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     InProcessBrowserTest::SetUpCommandLine(command_line);
   }
 

@@ -18,20 +18,18 @@ class GlobalShortcutListenerChromeOS : public GlobalShortcutListener,
                                        ui::AcceleratorTarget {
  public:
   GlobalShortcutListenerChromeOS();
-  virtual ~GlobalShortcutListenerChromeOS();
+  ~GlobalShortcutListenerChromeOS() override;
 
  private:
   // GlobalShortcutListener implementation.
-  virtual void StartListening() override;
-  virtual void StopListening() override;
-  virtual bool RegisterAcceleratorImpl(
-      const ui::Accelerator& accelerator) override;
-  virtual void UnregisterAcceleratorImpl(
-      const ui::Accelerator& accelerator) override;
+  void StartListening() override;
+  void StopListening() override;
+  bool RegisterAcceleratorImpl(const ui::Accelerator& accelerator) override;
+  void UnregisterAcceleratorImpl(const ui::Accelerator& accelerator) override;
 
   // ui::AcceleratorTarget implementation.
-  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
-  virtual bool CanHandleAccelerators() const override;
+  bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
+  bool CanHandleAccelerators() const override;
 
   // Whether this object is listening for global shortcuts.
   bool is_listening_;

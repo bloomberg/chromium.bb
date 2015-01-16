@@ -104,9 +104,9 @@ class ImeObserver : public InputMethodEngineInterface::Observer {
   explicit ImeObserver(const std::string& extension_id)
       : extension_id_(extension_id) {}
 
-  virtual ~ImeObserver() {}
+  ~ImeObserver() override {}
 
-  virtual void OnActivate(const std::string& component_id) override {
+  void OnActivate(const std::string& component_id) override {
     if (extension_id_.empty() ||
         !HasListener(input_ime::OnActivate::kEventName))
       return;
@@ -119,7 +119,7 @@ class ImeObserver : public InputMethodEngineInterface::Observer {
         extension_id_, input_ime::OnActivate::kEventName, args.Pass());
   }
 
-  virtual void OnDeactivated(const std::string& component_id) override {
+  void OnDeactivated(const std::string& component_id) override {
     if (extension_id_.empty() ||
         !HasListener(input_ime::OnDeactivated::kEventName))
       return;
@@ -131,7 +131,7 @@ class ImeObserver : public InputMethodEngineInterface::Observer {
         extension_id_, input_ime::OnDeactivated::kEventName, args.Pass());
   }
 
-  virtual void OnFocus(
+  void OnFocus(
       const InputMethodEngineInterface::InputContext& context) override {
     if (extension_id_.empty() || !HasListener(input_ime::OnFocus::kEventName))
       return;
@@ -149,7 +149,7 @@ class ImeObserver : public InputMethodEngineInterface::Observer {
         extension_id_, input_ime::OnFocus::kEventName, args.Pass());
   }
 
-  virtual void OnBlur(int context_id) override {
+  void OnBlur(int context_id) override {
     if (extension_id_.empty() || !HasListener(input_ime::OnBlur::kEventName))
       return;
 
@@ -159,7 +159,7 @@ class ImeObserver : public InputMethodEngineInterface::Observer {
         extension_id_, input_ime::OnBlur::kEventName, args.Pass());
   }
 
-  virtual void OnInputContextUpdate(
+  void OnInputContextUpdate(
       const InputMethodEngineInterface::InputContext& context) override {
     if (extension_id_.empty() ||
         !HasListener(input_ime::OnInputContextUpdate::kEventName))
@@ -177,10 +177,9 @@ class ImeObserver : public InputMethodEngineInterface::Observer {
                              args.Pass());
   }
 
-  virtual void OnKeyEvent(
-      const std::string& component_id,
-      const InputMethodEngineInterface::KeyboardEvent& event,
-      chromeos::input_method::KeyEventHandle* key_data) override {
+  void OnKeyEvent(const std::string& component_id,
+                  const InputMethodEngineInterface::KeyboardEvent& event,
+                  chromeos::input_method::KeyEventHandle* key_data) override {
     if (extension_id_.empty())
       return;
 
@@ -218,7 +217,7 @@ class ImeObserver : public InputMethodEngineInterface::Observer {
         extension_id_, input_ime::OnKeyEvent::kEventName, args.Pass());
   }
 
-  virtual void OnCandidateClicked(
+  void OnCandidateClicked(
       const std::string& component_id,
       int candidate_id,
       InputMethodEngineInterface::MouseButtonEvent button) override {
@@ -251,8 +250,8 @@ class ImeObserver : public InputMethodEngineInterface::Observer {
         extension_id_, input_ime::OnCandidateClicked::kEventName, args.Pass());
   }
 
-  virtual void OnMenuItemActivated(const std::string& component_id,
-                                   const std::string& menu_id) override {
+  void OnMenuItemActivated(const std::string& component_id,
+                           const std::string& menu_id) override {
     if (extension_id_.empty() ||
         !HasListener(input_ime::OnMenuItemActivated::kEventName))
       return;
@@ -264,10 +263,10 @@ class ImeObserver : public InputMethodEngineInterface::Observer {
         extension_id_, input_ime::OnMenuItemActivated::kEventName, args.Pass());
   }
 
-  virtual void OnSurroundingTextChanged(const std::string& component_id,
-                                        const std::string& text,
-                                        int cursor_pos,
-                                        int anchor_pos) override {
+  void OnSurroundingTextChanged(const std::string& component_id,
+                                const std::string& text,
+                                int cursor_pos,
+                                int anchor_pos) override {
     if (extension_id_.empty() ||
         !HasListener(input_ime::OnSurroundingTextChanged::kEventName))
       return;
@@ -284,7 +283,7 @@ class ImeObserver : public InputMethodEngineInterface::Observer {
                              args.Pass());
   }
 
-  virtual void OnCompositionBoundsChanged(const gfx::Rect& bounds) override {
+  void OnCompositionBoundsChanged(const gfx::Rect& bounds) override {
     if (extension_id_.empty() ||
         !HasListener(kOnCompositionBoundsChangedEventName))
       return;
@@ -303,7 +302,7 @@ class ImeObserver : public InputMethodEngineInterface::Observer {
                              args.Pass());
   }
 
-  virtual void OnReset(const std::string& component_id) override {
+  void OnReset(const std::string& component_id) override {
     if (extension_id_.empty() || !HasListener(input_ime::OnReset::kEventName))
       return;
 

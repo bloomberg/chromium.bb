@@ -62,7 +62,7 @@ class EPKPChallengeKeyBase : public ChromeAsyncExtensionFunction {
       cryptohome::AsyncMethodCaller* async_caller,
       chromeos::attestation::AttestationFlow* attestation_flow,
       policy::EnterpriseInstallAttributes* install_attributes);
-  virtual ~EPKPChallengeKeyBase();
+  ~EPKPChallengeKeyBase() override;
 
   // Returns a trusted value from CroSettings indicating if the device
   // attestation is enabled.
@@ -158,12 +158,12 @@ class EPKPChallengeMachineKey : public EPKPChallengeKeyBase {
       policy::EnterpriseInstallAttributes* install_attributes);
 
  protected:
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 
  private:
   static const char kKeyName[];
 
-  virtual ~EPKPChallengeMachineKey();
+  ~EPKPChallengeMachineKey() override;
 
   void GetDeviceAttestationEnabledCallback(const std::string& challenge,
                                            bool enabled);
@@ -195,12 +195,12 @@ class EPKPChallengeUserKey : public EPKPChallengeKeyBase {
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
  protected:
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 
  private:
   static const char kKeyName[];
 
-  virtual ~EPKPChallengeUserKey();
+  ~EPKPChallengeUserKey() override;
 
   void GetDeviceAttestationEnabledCallback(const std::string& challenge,
                                            bool register_key,
