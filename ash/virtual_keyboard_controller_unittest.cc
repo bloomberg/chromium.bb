@@ -11,6 +11,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard.h"
+#include "ash_switches.h"
 #include "base/command_line.h"
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/events/devices/device_hotplug_event_observer.h"
@@ -235,6 +236,38 @@ TEST_F(VirtualKeyboardControllerAutoTest, HandleMultipleKeyboardsPresent) {
       3, ui::InputDeviceType::INPUT_DEVICE_EXTERNAL, "keyboard"));
   UpdateKeyboardDevices(keyboards);
   ASSERT_FALSE(keyboard::IsKeyboardEnabled());
+}
+
+class VirtualKeyboardControllerAlwaysEnabledTest
+    : public VirtualKeyboardControllerAutoTest {
+ public:
+  VirtualKeyboardControllerAlwaysEnabledTest()
+      : VirtualKeyboardControllerAutoTest() {}
+  ~VirtualKeyboardControllerAlwaysEnabledTest() override {}
+
+  void SetUp() override {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        keyboard::switches::kEnableVirtualKeyboard);
+    VirtualKeyboardControllerAutoTest::SetUp();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(VirtualKeyboardControllerAlwaysEnabledTest);
+};
+
+// Tests that the controller cannot suppress the keyboard if the virtual
+// keyboard always enabled flag is active.
+TEST_F(VirtualKeyboardControllerAlwaysEnabledTest, DoesNotSuppressKeyboard) {
+  std::vector<ui::TouchscreenDevice> screens;
+  screens.push_back(
+      ui::TouchscreenDevice(1, ui::InputDeviceType::INPUT_DEVICE_INTERNAL,
+                            "Touchscreen", gfx::Size(1024, 768), 0));
+  UpdateTouchscreenDevices(screens);
+  std::vector<ui::KeyboardDevice> keyboards;
+  keyboards.push_back(ui::KeyboardDevice(
+      1, ui::InputDeviceType::INPUT_DEVICE_EXTERNAL, "keyboard"));
+  UpdateKeyboardDevices(keyboards);
+  ASSERT_TRUE(keyboard::IsKeyboardEnabled());
 }
 
 }  // namespace test

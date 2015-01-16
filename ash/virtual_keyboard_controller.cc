@@ -8,6 +8,7 @@
 
 #include "ash/shell.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
+#include "ash_switches.h"
 #include "base/command_line.h"
 #include "base/strings/string_util.h"
 #include "ui/events/devices/device_data_manager.h"
@@ -23,6 +24,10 @@ namespace {
 
 // Checks whether smart deployment is enabled.
 bool IsSmartVirtualKeyboardEnabled() {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          keyboard::switches::kEnableVirtualKeyboard)) {
+    return false;
+  }
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       keyboard::switches::kEnableAutoVirtualKeyboard);
 }
