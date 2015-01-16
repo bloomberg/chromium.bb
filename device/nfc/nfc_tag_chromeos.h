@@ -23,22 +23,21 @@ class NfcTagChromeOS : public device::NfcTag,
                        public NfcTagClient::Observer {
  public:
   // device::NfcTag overrides.
-  virtual void AddObserver(device::NfcTag::Observer* observer) override;
-  virtual void RemoveObserver(device::NfcTag::Observer* observer) override;
-  virtual std::string GetIdentifier() const override;
-  virtual TagType GetType() const override;
-  virtual bool IsReadOnly() const override;
-  virtual device::NfcTag::Protocol GetSupportedProtocol() const override;
-  virtual device::NfcTagTechnology::TechnologyTypeMask
-      GetSupportedTechnologies() const override;
-  virtual bool IsReady() const override;
-  virtual device::NfcNdefTagTechnology* GetNdefTagTechnology() override;
+  void AddObserver(device::NfcTag::Observer* observer) override;
+  void RemoveObserver(device::NfcTag::Observer* observer) override;
+  std::string GetIdentifier() const override;
+  TagType GetType() const override;
+  bool IsReadOnly() const override;
+  device::NfcTag::Protocol GetSupportedProtocol() const override;
+  device::NfcTagTechnology::TechnologyTypeMask GetSupportedTechnologies()
+      const override;
+  bool IsReady() const override;
+  device::NfcNdefTagTechnology* GetNdefTagTechnology() override;
 
   // NfcTagClient::Observer overrides.
-  virtual void TagPropertyChanged(const dbus::ObjectPath& object_path,
-                                  const std::string& property_name) override;
-  virtual void TagPropertiesReceived(
-      const dbus::ObjectPath& object_path) override;
+  void TagPropertyChanged(const dbus::ObjectPath& object_path,
+                          const std::string& property_name) override;
+  void TagPropertiesReceived(const dbus::ObjectPath& object_path) override;
 
   // Object path representing the remote tag object.
   const dbus::ObjectPath& object_path() const { return object_path_; }
@@ -47,7 +46,7 @@ class NfcTagChromeOS : public device::NfcTag,
   friend class NfcAdapterChromeOS;
 
   explicit NfcTagChromeOS(const dbus::ObjectPath& object_path);
-  virtual ~NfcTagChromeOS();
+  ~NfcTagChromeOS() override;
 
   // Object path of the tag that we are currently tracking.
   dbus::ObjectPath object_path_;

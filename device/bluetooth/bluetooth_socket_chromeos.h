@@ -70,16 +70,16 @@ class CHROMEOS_EXPORT BluetoothSocketChromeOS
       const ErrorCompletionCallback& error_callback);
 
   // BluetoothSocket:
-  virtual void Close() override;
-  virtual void Disconnect(const base::Closure& callback) override;
-  virtual void Accept(const AcceptCompletionCallback& success_callback,
-                      const ErrorCompletionCallback& error_callback) override;
+  void Close() override;
+  void Disconnect(const base::Closure& callback) override;
+  void Accept(const AcceptCompletionCallback& success_callback,
+              const ErrorCompletionCallback& error_callback) override;
 
   // Returns the object path of the socket.
   const dbus::ObjectPath& object_path() const { return object_path_; }
 
  protected:
-  virtual ~BluetoothSocketChromeOS();
+  ~BluetoothSocketChromeOS() override;
 
  private:
   BluetoothSocketChromeOS(
@@ -102,8 +102,8 @@ class CHROMEOS_EXPORT BluetoothSocketChromeOS
                              const std::string& error_message);
 
   // BluetoothAdapter::Observer:
-  virtual void AdapterPresentChanged(device::BluetoothAdapter* adapter,
-                                     bool present) override;
+  void AdapterPresentChanged(device::BluetoothAdapter* adapter,
+                             bool present) override;
 
   // Called by dbus:: on completion of the RegisterProfile() method call
   // triggered as a result of the adapter becoming present again.
@@ -112,16 +112,15 @@ class CHROMEOS_EXPORT BluetoothSocketChromeOS
                                       const std::string& error_message);
 
   // BluetoothProfileServiceProvider::Delegate:
-  virtual void Released() override;
-  virtual void NewConnection(
+  void Released() override;
+  void NewConnection(
       const dbus::ObjectPath& device_path,
       scoped_ptr<dbus::FileDescriptor> fd,
       const BluetoothProfileServiceProvider::Delegate::Options& options,
       const ConfirmationCallback& callback) override;
-  virtual void RequestDisconnection(
-      const dbus::ObjectPath& device_path,
-      const ConfirmationCallback& callback) override;
-  virtual void Cancel() override;
+  void RequestDisconnection(const dbus::ObjectPath& device_path,
+                            const ConfirmationCallback& callback) override;
+  void Cancel() override;
 
   // Method run to accept a single incoming connection.
   void AcceptConnectionRequest();

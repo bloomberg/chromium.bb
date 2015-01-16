@@ -48,34 +48,30 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterChromeOS
 
   // BluetoothAdapter:
   void DeleteOnCorrectThread() const override;
-  virtual void AddObserver(
-      device::BluetoothAdapter::Observer* observer) override;
-  virtual void RemoveObserver(
-      device::BluetoothAdapter::Observer* observer) override;
-  virtual std::string GetAddress() const override;
-  virtual std::string GetName() const override;
-  virtual void SetName(const std::string& name,
+  void AddObserver(device::BluetoothAdapter::Observer* observer) override;
+  void RemoveObserver(device::BluetoothAdapter::Observer* observer) override;
+  std::string GetAddress() const override;
+  std::string GetName() const override;
+  void SetName(const std::string& name,
+               const base::Closure& callback,
+               const ErrorCallback& error_callback) override;
+  bool IsInitialized() const override;
+  bool IsPresent() const override;
+  bool IsPowered() const override;
+  void SetPowered(bool powered,
+                  const base::Closure& callback,
+                  const ErrorCallback& error_callback) override;
+  bool IsDiscoverable() const override;
+  void SetDiscoverable(bool discoverable,
                        const base::Closure& callback,
                        const ErrorCallback& error_callback) override;
-  virtual bool IsInitialized() const override;
-  virtual bool IsPresent() const override;
-  virtual bool IsPowered() const override;
-  virtual void SetPowered(
-      bool powered,
-      const base::Closure& callback,
-      const ErrorCallback& error_callback) override;
-  virtual bool IsDiscoverable() const override;
-  virtual void SetDiscoverable(
-      bool discoverable,
-      const base::Closure& callback,
-      const ErrorCallback& error_callback) override;
-  virtual bool IsDiscovering() const override;
-  virtual void CreateRfcommService(
+  bool IsDiscovering() const override;
+  void CreateRfcommService(
       const device::BluetoothUUID& uuid,
       const ServiceOptions& options,
       const CreateServiceCallback& callback,
       const CreateServiceErrorCallback& error_callback) override;
-  virtual void CreateL2capService(
+  void CreateL2capService(
       const device::BluetoothUUID& uuid,
       const ServiceOptions& options,
       const CreateServiceCallback& callback,
@@ -120,7 +116,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterChromeOS
 
  protected:
   // BluetoothAdapter:
-  virtual void RemovePairingDelegateInternal(
+  void RemovePairingDelegateInternal(
       device::BluetoothDevice::PairingDelegate* pairing_delegate) override;
 
  private:
@@ -134,46 +130,44 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterChromeOS
   typedef std::queue<DiscoveryCallbackPair> DiscoveryCallbackQueue;
 
   BluetoothAdapterChromeOS();
-  virtual ~BluetoothAdapterChromeOS();
+  ~BluetoothAdapterChromeOS() override;
 
   // BluetoothAdapterClient::Observer override.
-  virtual void AdapterAdded(const dbus::ObjectPath& object_path) override;
-  virtual void AdapterRemoved(const dbus::ObjectPath& object_path) override;
-  virtual void AdapterPropertyChanged(
-      const dbus::ObjectPath& object_path,
-      const std::string& property_name) override;
+  void AdapterAdded(const dbus::ObjectPath& object_path) override;
+  void AdapterRemoved(const dbus::ObjectPath& object_path) override;
+  void AdapterPropertyChanged(const dbus::ObjectPath& object_path,
+                              const std::string& property_name) override;
 
   // BluetoothDeviceClient::Observer override.
-  virtual void DeviceAdded(const dbus::ObjectPath& object_path) override;
-  virtual void DeviceRemoved(const dbus::ObjectPath& object_path) override;
-  virtual void DevicePropertyChanged(const dbus::ObjectPath& object_path,
-                                     const std::string& property_name) override;
+  void DeviceAdded(const dbus::ObjectPath& object_path) override;
+  void DeviceRemoved(const dbus::ObjectPath& object_path) override;
+  void DevicePropertyChanged(const dbus::ObjectPath& object_path,
+                             const std::string& property_name) override;
 
   // BluetoothInputClient::Observer override.
-  virtual void InputPropertyChanged(const dbus::ObjectPath& object_path,
-                                    const std::string& property_name) override;
+  void InputPropertyChanged(const dbus::ObjectPath& object_path,
+                            const std::string& property_name) override;
 
   // BluetoothAgentServiceProvider::Delegate override.
-  virtual void Released() override;
-  virtual void RequestPinCode(const dbus::ObjectPath& device_path,
-                              const PinCodeCallback& callback) override;
-  virtual void DisplayPinCode(const dbus::ObjectPath& device_path,
-                              const std::string& pincode) override;
-  virtual void RequestPasskey(const dbus::ObjectPath& device_path,
-                              const PasskeyCallback& callback) override;
-  virtual void DisplayPasskey(const dbus::ObjectPath& device_path,
-                              uint32 passkey, uint16 entered) override;
-  virtual void RequestConfirmation(const dbus::ObjectPath& device_path,
-                                   uint32 passkey,
-                                   const ConfirmationCallback& callback)
-      override;
-  virtual void RequestAuthorization(const dbus::ObjectPath& device_path,
-                                    const ConfirmationCallback& callback)
-      override;
-  virtual void AuthorizeService(const dbus::ObjectPath& device_path,
-                                const std::string& uuid,
-                                const ConfirmationCallback& callback) override;
-  virtual void Cancel() override;
+  void Released() override;
+  void RequestPinCode(const dbus::ObjectPath& device_path,
+                      const PinCodeCallback& callback) override;
+  void DisplayPinCode(const dbus::ObjectPath& device_path,
+                      const std::string& pincode) override;
+  void RequestPasskey(const dbus::ObjectPath& device_path,
+                      const PasskeyCallback& callback) override;
+  void DisplayPasskey(const dbus::ObjectPath& device_path,
+                      uint32 passkey,
+                      uint16 entered) override;
+  void RequestConfirmation(const dbus::ObjectPath& device_path,
+                           uint32 passkey,
+                           const ConfirmationCallback& callback) override;
+  void RequestAuthorization(const dbus::ObjectPath& device_path,
+                            const ConfirmationCallback& callback) override;
+  void AuthorizeService(const dbus::ObjectPath& device_path,
+                        const std::string& uuid,
+                        const ConfirmationCallback& callback) override;
+  void Cancel() override;
 
   // Called by dbus:: on completion of the D-Bus method call to register the
   // pairing agent.
@@ -222,12 +216,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterChromeOS
                                  bool success);
 
   // BluetoothAdapter:
-  virtual void AddDiscoverySession(
-      const base::Closure& callback,
-      const ErrorCallback& error_callback) override;
-  virtual void RemoveDiscoverySession(
-      const base::Closure& callback,
-      const ErrorCallback& error_callback) override;
+  void AddDiscoverySession(const base::Closure& callback,
+                           const ErrorCallback& error_callback) override;
+  void RemoveDiscoverySession(const base::Closure& callback,
+                              const ErrorCallback& error_callback) override;
 
   // Called by dbus:: on completion of the D-Bus method call to start discovery.
   void OnStartDiscovery(const base::Closure& callback);

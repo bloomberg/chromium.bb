@@ -32,7 +32,7 @@ class UsbDeviceImpl : public UsbDevice {
  public:
 // UsbDevice implementation:
 #if defined(OS_CHROMEOS)
-  virtual void RequestUsbAccess(
+  void RequestUsbAccess(
       int interface_id,
       const base::Callback<void(bool success)>& callback) override;
 #endif  // OS_CHROMEOS

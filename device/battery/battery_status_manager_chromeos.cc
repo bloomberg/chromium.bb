@@ -44,7 +44,7 @@ class PowerManagerObserver
  private:
   friend class base::RefCountedThreadSafe<PowerManagerObserver>;
 
-  virtual ~PowerManagerObserver() {}
+  ~PowerManagerObserver() override {}
 
   bool IsBatteryPresent(
       const power_manager::PowerSupplyProperties& proto) const {
@@ -76,7 +76,7 @@ class PowerManagerObserver
   }
 
   // chromeos::PowerManagerClient::Observer:
-  virtual void PowerChanged(
+  void PowerChanged(
       const power_manager::PowerSupplyProperties& proto) override {
     BatteryStatus status;
 
@@ -126,18 +126,16 @@ class BatteryStatusManagerChromeOS
       const BatteryStatusService::BatteryUpdateCallback& callback)
       : observer_(new PowerManagerObserver(callback)) {}
 
-  virtual ~BatteryStatusManagerChromeOS() { observer_->Stop(); }
+  ~BatteryStatusManagerChromeOS() override { observer_->Stop(); }
 
  private:
   // BatteryStatusManager:
-  virtual bool StartListeningBatteryChange() override {
+  bool StartListeningBatteryChange() override {
     observer_->Start();
     return true;
   }
 
-  virtual void StopListeningBatteryChange() override {
-    observer_->Stop();
-  }
+  void StopListeningBatteryChange() override { observer_->Stop(); }
 
   scoped_refptr<PowerManagerObserver> observer_;
 

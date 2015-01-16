@@ -74,14 +74,12 @@ class TestObserver : public BluetoothAdapter::Observer {
     adapter_->AddObserver(this);
   }
 
-  virtual ~TestObserver() {
-    adapter_->RemoveObserver(this);
-  }
+  ~TestObserver() override { adapter_->RemoveObserver(this); }
 
   // BluetoothAdapter::Observer overrides.
-  virtual void GattServiceAdded(BluetoothAdapter* adapter,
-                                BluetoothDevice* device,
-                                BluetoothGattService* service) override {
+  void GattServiceAdded(BluetoothAdapter* adapter,
+                        BluetoothDevice* device,
+                        BluetoothGattService* service) override {
     ASSERT_EQ(adapter_.get(), adapter);
     ASSERT_EQ(service->GetDevice(), device);
 
@@ -97,9 +95,9 @@ class TestObserver : public BluetoothAdapter::Observer {
     QuitMessageLoop();
   }
 
-  virtual void GattServiceRemoved(BluetoothAdapter* adapter,
-                                  BluetoothDevice* device,
-                                  BluetoothGattService* service) override {
+  void GattServiceRemoved(BluetoothAdapter* adapter,
+                          BluetoothDevice* device,
+                          BluetoothGattService* service) override {
     ASSERT_EQ(adapter_.get(), adapter);
     ASSERT_EQ(service->GetDevice(), device);
 
@@ -116,24 +114,23 @@ class TestObserver : public BluetoothAdapter::Observer {
     QuitMessageLoop();
   }
 
-  virtual void GattDiscoveryCompleteForService(
-      BluetoothAdapter* adapter,
-      BluetoothGattService* service) override {
+  void GattDiscoveryCompleteForService(BluetoothAdapter* adapter,
+                                       BluetoothGattService* service) override {
     ASSERT_EQ(adapter_.get(), adapter);
     ++gatt_discovery_complete_count_;
 
     QuitMessageLoop();
   }
 
-  virtual void GattServiceChanged(BluetoothAdapter* adapter,
-                                  BluetoothGattService* service) override {
+  void GattServiceChanged(BluetoothAdapter* adapter,
+                          BluetoothGattService* service) override {
     ASSERT_EQ(adapter_.get(), adapter);
     ++gatt_service_changed_count_;
 
     QuitMessageLoop();
   }
 
-  virtual void GattCharacteristicAdded(
+  void GattCharacteristicAdded(
       BluetoothAdapter* adapter,
       BluetoothGattCharacteristic* characteristic) override {
     ASSERT_EQ(adapter_.get(), adapter);
@@ -150,7 +147,7 @@ class TestObserver : public BluetoothAdapter::Observer {
     QuitMessageLoop();
   }
 
-  virtual void GattCharacteristicRemoved(
+  void GattCharacteristicRemoved(
       BluetoothAdapter* adapter,
       BluetoothGattCharacteristic* characteristic) override {
     ASSERT_EQ(adapter_.get(), adapter);
@@ -167,7 +164,7 @@ class TestObserver : public BluetoothAdapter::Observer {
     QuitMessageLoop();
   }
 
-  virtual void GattCharacteristicValueChanged(
+  void GattCharacteristicValueChanged(
       BluetoothAdapter* adapter,
       BluetoothGattCharacteristic* characteristic,
       const std::vector<uint8>& value) override {
@@ -186,9 +183,8 @@ class TestObserver : public BluetoothAdapter::Observer {
     QuitMessageLoop();
   }
 
-  virtual void GattDescriptorAdded(
-      BluetoothAdapter* adapter,
-      BluetoothGattDescriptor* descriptor) override {
+  void GattDescriptorAdded(BluetoothAdapter* adapter,
+                           BluetoothGattDescriptor* descriptor) override {
     ASSERT_EQ(adapter_.get(), adapter);
 
     ++gatt_descriptor_added_count_;
@@ -203,9 +199,8 @@ class TestObserver : public BluetoothAdapter::Observer {
     QuitMessageLoop();
   }
 
-  virtual void GattDescriptorRemoved(
-      BluetoothAdapter* adapter,
-      BluetoothGattDescriptor* descriptor) override {
+  void GattDescriptorRemoved(BluetoothAdapter* adapter,
+                             BluetoothGattDescriptor* descriptor) override {
     ASSERT_EQ(adapter_.get(), adapter);
 
     ++gatt_descriptor_removed_count_;
@@ -220,10 +215,9 @@ class TestObserver : public BluetoothAdapter::Observer {
     QuitMessageLoop();
   }
 
-  virtual void GattDescriptorValueChanged(
-      BluetoothAdapter* adapter,
-      BluetoothGattDescriptor* descriptor,
-      const std::vector<uint8>& value) override {
+  void GattDescriptorValueChanged(BluetoothAdapter* adapter,
+                                  BluetoothGattDescriptor* descriptor,
+                                  const std::vector<uint8>& value) override {
     ASSERT_EQ(adapter_.get(), adapter);
 
     ++gatt_descriptor_value_changed_count_;
@@ -280,7 +274,7 @@ class BluetoothGattChromeOSTest : public testing::Test {
         error_callback_count_(0) {
   }
 
-  virtual void SetUp() {
+  void SetUp() override {
     scoped_ptr<DBusThreadManagerSetter> dbus_setter =
         chromeos::DBusThreadManager::GetSetterForTesting();
     fake_bluetooth_device_client_ = new FakeBluetoothDeviceClient;
@@ -319,7 +313,7 @@ class BluetoothGattChromeOSTest : public testing::Test {
     ASSERT_TRUE(adapter_->IsPowered());
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     adapter_ = NULL;
     update_sessions_.clear();
     gatt_conn_.reset();

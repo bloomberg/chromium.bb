@@ -50,43 +50,39 @@ class TestObserver : public BluetoothAdapter::Observer {
     adapter_->AddObserver(this);
   }
 
-  virtual ~TestObserver() {
-    adapter_->RemoveObserver(this);
-  }
+  ~TestObserver() override { adapter_->RemoveObserver(this); }
 
-  virtual void AdapterPresentChanged(BluetoothAdapter* adapter,
-                                     bool present) override {
+  void AdapterPresentChanged(BluetoothAdapter* adapter, bool present) override {
     EXPECT_EQ(adapter_.get(), adapter);
 
     ++present_changed_count_;
     last_present_ = present;
   }
 
-  virtual void AdapterPoweredChanged(BluetoothAdapter* adapter,
-                                     bool powered) override {
+  void AdapterPoweredChanged(BluetoothAdapter* adapter, bool powered) override {
     EXPECT_EQ(adapter_.get(), adapter);
 
     ++powered_changed_count_;
     last_powered_ = powered;
   }
 
-  virtual void AdapterDiscoverableChanged(BluetoothAdapter* adapter,
-                                          bool discoverable) override {
+  void AdapterDiscoverableChanged(BluetoothAdapter* adapter,
+                                  bool discoverable) override {
     EXPECT_EQ(adapter_.get(), adapter);
 
     ++discoverable_changed_count_;
   }
 
-  virtual void AdapterDiscoveringChanged(BluetoothAdapter* adapter,
-                                         bool discovering) override {
+  void AdapterDiscoveringChanged(BluetoothAdapter* adapter,
+                                 bool discovering) override {
     EXPECT_EQ(adapter_.get(), adapter);
 
     ++discovering_changed_count_;
     last_discovering_ = discovering;
   }
 
-  virtual void DeviceAdded(BluetoothAdapter* adapter,
-                           BluetoothDevice* device) override {
+  void DeviceAdded(BluetoothAdapter* adapter,
+                   BluetoothDevice* device) override {
     EXPECT_EQ(adapter_.get(), adapter);
 
     ++device_added_count_;
@@ -96,8 +92,8 @@ class TestObserver : public BluetoothAdapter::Observer {
     QuitMessageLoop();
   }
 
-  virtual void DeviceChanged(BluetoothAdapter* adapter,
-                             BluetoothDevice* device) override {
+  void DeviceChanged(BluetoothAdapter* adapter,
+                     BluetoothDevice* device) override {
     EXPECT_EQ(adapter_.get(), adapter);
 
     ++device_changed_count_;
@@ -107,8 +103,8 @@ class TestObserver : public BluetoothAdapter::Observer {
     QuitMessageLoop();
   }
 
-  virtual void DeviceRemoved(BluetoothAdapter* adapter,
-                             BluetoothDevice* device) override {
+  void DeviceRemoved(BluetoothAdapter* adapter,
+                     BluetoothDevice* device) override {
     EXPECT_EQ(adapter_.get(), adapter);
 
     ++device_removed_count_;
@@ -165,52 +161,50 @@ class TestPairingDelegate : public BluetoothDevice::PairingDelegate {
         authorize_pairing_count_(0),
         last_passkey_(9999999U),
         last_entered_(999U) {}
-  virtual ~TestPairingDelegate() {}
+  ~TestPairingDelegate() override {}
 
-  virtual void RequestPinCode(BluetoothDevice* device) override {
+  void RequestPinCode(BluetoothDevice* device) override {
     ++call_count_;
     ++request_pincode_count_;
     QuitMessageLoop();
   }
 
-  virtual void RequestPasskey(BluetoothDevice* device) override {
+  void RequestPasskey(BluetoothDevice* device) override {
     ++call_count_;
     ++request_passkey_count_;
     QuitMessageLoop();
   }
 
-  virtual void DisplayPinCode(BluetoothDevice* device,
-                              const std::string& pincode) override {
+  void DisplayPinCode(BluetoothDevice* device,
+                      const std::string& pincode) override {
     ++call_count_;
     ++display_pincode_count_;
     last_pincode_ = pincode;
     QuitMessageLoop();
   }
 
-  virtual void DisplayPasskey(BluetoothDevice* device,
-                              uint32 passkey) override {
+  void DisplayPasskey(BluetoothDevice* device, uint32 passkey) override {
     ++call_count_;
     ++display_passkey_count_;
     last_passkey_ = passkey;
     QuitMessageLoop();
   }
 
-  virtual void KeysEntered(BluetoothDevice* device, uint32 entered) override {
+  void KeysEntered(BluetoothDevice* device, uint32 entered) override {
     ++call_count_;
     ++keys_entered_count_;
     last_entered_ = entered;
     QuitMessageLoop();
   }
 
-  virtual void ConfirmPasskey(BluetoothDevice* device,
-                              uint32 passkey) override {
+  void ConfirmPasskey(BluetoothDevice* device, uint32 passkey) override {
     ++call_count_;
     ++confirm_passkey_count_;
     last_passkey_ = passkey;
     QuitMessageLoop();
   }
 
-  virtual void AuthorizePairing(BluetoothDevice* device) override {
+  void AuthorizePairing(BluetoothDevice* device) override {
     ++call_count_;
     ++authorize_pairing_count_;
     QuitMessageLoop();
@@ -240,7 +234,7 @@ class TestPairingDelegate : public BluetoothDevice::PairingDelegate {
 
 class BluetoothChromeOSTest : public testing::Test {
  public:
-  virtual void SetUp() {
+  void SetUp() override {
     scoped_ptr<DBusThreadManagerSetter> dbus_setter =
         chromeos::DBusThreadManager::GetSetterForTesting();
     // We need to initialize DBusThreadManager early to prevent
@@ -269,7 +263,7 @@ class BluetoothChromeOSTest : public testing::Test {
     last_client_error_ = "";
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     for (ScopedVector<BluetoothDiscoverySession>::iterator iter =
             discovery_sessions_.begin();
          iter != discovery_sessions_.end();

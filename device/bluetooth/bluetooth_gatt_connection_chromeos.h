@@ -31,19 +31,19 @@ class BluetoothGattConnectionChromeOS
       scoped_refptr<device::BluetoothAdapter> adapter,
       const std::string& device_address,
       const dbus::ObjectPath& object_path);
-  virtual ~BluetoothGattConnectionChromeOS();
+  ~BluetoothGattConnectionChromeOS() override;
 
   // BluetoothGattConnection overrides.
-  virtual std::string GetDeviceAddress() const override;
-  virtual bool IsConnected() override;
-  virtual void Disconnect(const base::Closure& callback) override;
+  std::string GetDeviceAddress() const override;
+  bool IsConnected() override;
+  void Disconnect(const base::Closure& callback) override;
 
  private:
 
   // chromeos::BluetoothDeviceClient::Observer overrides.
-  virtual void DeviceRemoved(const dbus::ObjectPath& object_path) override;
-  virtual void DevicePropertyChanged(const dbus::ObjectPath& object_path,
-                                     const std::string& property_name) override;
+  void DeviceRemoved(const dbus::ObjectPath& object_path) override;
+  void DevicePropertyChanged(const dbus::ObjectPath& object_path,
+                             const std::string& property_name) override;
 
   // True, if the connection is currently active.
   bool connected_;
