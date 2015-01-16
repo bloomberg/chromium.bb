@@ -8,9 +8,9 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "cc/output/managed_memory_policy.h"
+#include "gpu/blink/webgraphicscontext3d_in_process_command_buffer_impl.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "webkit/common/gpu/grcontext_for_webgraphicscontext3d.h"
 

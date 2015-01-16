@@ -15,7 +15,7 @@ class Thread;
 
 namespace webkit {
 namespace gpu {
-class ContextProviderInProcess;
+class ContextProviderWebContext;
 }
 }
 
@@ -52,7 +52,7 @@ class InProcessContextFactory : public ContextFactory {
 
  private:
   scoped_ptr<base::Thread> compositor_thread_;
-  scoped_refptr<webkit::gpu::ContextProviderInProcess>
+  scoped_refptr<webkit::gpu::ContextProviderWebContext>
       shared_main_thread_contexts_;
   cc::TestSharedBitmapManager shared_bitmap_manager_;
   cc::TestGpuMemoryBufferManager gpu_memory_buffer_manager_;
