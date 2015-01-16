@@ -53,7 +53,8 @@ namespace chromeos {
 // when it doesn't, |error_callback| will be called with information about the
 // error, including a symbolic name for the error and often some error message
 // that is suitable for logging. None of the error message text is meant for
-// user consumption.
+// user consumption.  Both |callback| and |error_callback| are permitted to be
+// null callbacks.
 class CHROMEOS_EXPORT NetworkConfigurationHandler
     : public base::SupportsWeakPtr<NetworkConfigurationHandler> {
  public:
