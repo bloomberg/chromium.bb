@@ -10,6 +10,7 @@ import ctypes
 import ctypes.util
 import errno
 import os
+import signal
 # Note: We avoid cros_build_lib here as that's a "large" module and we want
 # to keep this "light" and standalone.  The subprocess usage in here is also
 # simple by design -- if it gets more complicated, we should look at using
@@ -92,7 +93,7 @@ def _ReapChildren(pid):
     except OSError as e:
       if e.errno == errno.ECHILD:
         break
-      else:
+      elif e.errno != errno.EINTR:
         raise
 
   return pid_status
@@ -130,6 +131,10 @@ def CreatePidNs():
   if pid:
     proctitle.settitle('pid ns', 'external init')
 
+    # Mask SIGINT with the assumption that the child will catch & process it.
+    # We'll pass that back up below.
+    signal.signal(signal.SIGINT, signal.SIG_IGN)
+
     # Reap the children as the parent of the new namespace.
     process_util.ExitAsStatus(_ReapChildren(pid))
   else:
@@ -149,6 +154,10 @@ def CreatePidNs():
     pid = os.fork()
     if pid:
       proctitle.settitle('pid ns', 'init')
+
+      # Mask SIGINT with the assumption that the child will catch & process it.
+      # We'll pass that back up below.
+      signal.signal(signal.SIGINT, signal.SIG_IGN)
 
       # Watch all of the children.  We need to act as the master inside the
       # namespace and reap old processes.
