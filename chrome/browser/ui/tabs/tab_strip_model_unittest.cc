@@ -968,6 +968,17 @@ TEST_F(TabStripModelTest, TestInsertionIndexDeterminationNestedOpener) {
   // child11 has only one adjacent descendant (111)
   EXPECT_EQ(2, tabstrip.GetIndexOfLastWebContentsOpenedBy(child11, 1));
 
+  // Closing a tab should cause its children to inherit the tab's opener.
+  EXPECT_EQ(true, tabstrip.CloseWebContentsAt(
+      1,
+      TabStripModel::CLOSE_USER_GESTURE |
+      TabStripModel::CLOSE_CREATE_HISTORICAL_TAB));
+  EXPECT_EQ("1 111 12 2", GetTabStripStateString(tabstrip));
+  EXPECT_EQ(1, GetID(tabstrip.GetActiveWebContents()));
+  // opener1 is now the opener of 111, so has two adjacent descendants (111, 12)
+  EXPECT_EQ(opener1, tabstrip.GetOpenerOfWebContentsAt(1));
+  EXPECT_EQ(2, tabstrip.GetIndexOfLastWebContentsOpenedBy(opener1, 0));
+
   tabstrip.CloseAllTabs();
   EXPECT_TRUE(tabstrip.empty());
 }

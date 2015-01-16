@@ -548,8 +548,9 @@ class TabStripModel {
                             const content::WebContents* opener,
                             bool use_group);
 
-  // Sets the group/opener of any tabs that reference |tab| to NULL.
-  void ForgetOpenersAndGroupsReferencing(const content::WebContents* tab);
+  // Sets the group/opener of any tabs that reference the tab at |index| to that
+  // tab's group/opener respectively.
+  void FixOpenersAndGroupsReferencing(int index);
 
   // Our delegate.
   TabStripModelDelegate* delegate_;
