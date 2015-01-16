@@ -315,9 +315,6 @@ char kTSanDefaultSuppressions[] =
 // https://crbug.com/448203
 "race:blink::RemoteFrame::detach\n"
 
-// https://crbug.com/448688
-"race:FLAGS_quic_attach_ack_notifiers_to_packets\n"
-
 // End of suppressions.
 ;  // Please keep this semicolon.
 
