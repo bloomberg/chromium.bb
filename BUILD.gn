@@ -275,7 +275,10 @@ if (build_ffmpegsumo) {
         "-Wl,-Bsymbolic",
         "-L", rebase_path(target_gen_dir, root_build_dir),
       ]
-      libs = [ "z" ]
+      libs = [
+        "m",
+        "z",
+      ]
 # TODO(ajwong): How to handle openbsd? Especially w/o the is_posix?
 #      if (is_openbsd) {
 #       # OpenBSD's gcc (4.2.1) does not support this flag
@@ -446,6 +449,10 @@ if (is_win) {
     ]
 
     public_configs = [ ":ffmpeg_posix_dependent_config" ]
-    deps = [ ":ffmpeg_generate_stubs", ":ffmpegsumo" ]
+    deps = [
+      ":ffmpeg_generate_stubs",
+      ":ffmpegsumo",
+      "//base",  # ffmpeg_stubs use base's logging functionality
+    ]
   }
 }
