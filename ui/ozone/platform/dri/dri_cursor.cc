@@ -58,7 +58,12 @@ void DriCursor::HideCursor() {
 
 void DriCursor::MoveCursorTo(gfx::AcceleratedWidget widget,
                              const gfx::PointF& location) {
-  if (widget != cursor_window_ && cursor_window_ != gfx::kNullAcceleratedWidget)
+  // When moving between windows hide the cursor on the current window then show
+  // it on the new window.
+  bool changing_window =
+      widget != cursor_window_ && cursor_window_ != gfx::kNullAcceleratedWidget;
+
+  if (changing_window)
     HideCursor();
 
   DriWindow* window = window_manager_->GetWindow(widget);
@@ -72,8 +77,12 @@ void DriCursor::MoveCursorTo(gfx::AcceleratedWidget widget,
   // Right and bottom edges are exclusive.
   cursor_location_.SetToMin(gfx::PointF(size.width() - 1, size.height() - 1));
 
-  if (cursor_.get())
-    sender_->MoveHardwareCursor(cursor_window_, bitmap_location());
+  if (cursor_.get()) {
+    if (changing_window)
+      ShowCursor();
+    else
+      sender_->MoveHardwareCursor(cursor_window_, bitmap_location());
+  }
 }
 
 void DriCursor::MoveCursorTo(const gfx::PointF& location) {
