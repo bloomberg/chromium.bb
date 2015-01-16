@@ -57,7 +57,6 @@ EventDispatcher::EventDispatcher(Node& node, PassRefPtrWillBeRawPtr<Event> event
 #endif
 {
     ASSERT(m_event.get());
-    ASSERT(!m_event->type().isNull()); // JavaScript code can create an event with an empty name, but not null.
     m_view = node.document().view();
     m_event->initEventPath(*m_node);
 }
