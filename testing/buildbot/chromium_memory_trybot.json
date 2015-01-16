@@ -63,7 +63,8 @@
     {
       "test": "net_unittests",
       "swarming": {
-        "can_use_on_swarming_builders": true
+        "can_use_on_swarming_builders": true,
+        "shards": 2
       }
     },
     "ppapi_unittests",
