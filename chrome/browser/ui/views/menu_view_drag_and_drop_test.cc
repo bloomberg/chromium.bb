@@ -15,15 +15,6 @@
 
 namespace {
 
-// Borrowed from chrome/browser/ui/views/bookmarks/bookmark_bar_view_test.cc,
-// since these are also disabled on Linux for drag and drop.
-// TODO(erg): Fix DND tests on linux_aura. crbug.com/163931
-#if defined(OS_LINUX) && defined(USE_AURA)
-#define MAYBE(x) DISABLED_##x
-#else
-#define MAYBE(x) x
-#endif
-
 const char kTestNestedDragData[] = "test_nested_drag_data";
 const char kTestTopLevelDragData[] = "test_top_level_drag_data";
 
@@ -348,9 +339,11 @@ void MenuViewDragAndDropTestTestInMenuDrag::Step4() {
 // Test that an in-menu (i.e., entirely implemented in the menu code) closes the
 // menu automatically once the drag is complete, and does not ask the delegate
 // to stay open.
-#if !defined(OS_WIN)  // flaky http://crbug.com/401226
-VIEW_TEST(MenuViewDragAndDropTestTestInMenuDrag, MAYBE(TestInMenuDrag))
-#endif
+// Disabled on all platforms for being flaky. Tracked in:
+// TODO(erg): Fix DND tests on linux_aura. http://crbug.com/163931.
+// Windows: http://crbug.com/401226.
+// TODO(tapted): De-flake and run on Mac. http://crbug.com/449058.
+VIEW_TEST(MenuViewDragAndDropTestTestInMenuDrag, DISABLED_TestInMenuDrag)
 
 class MenuViewDragAndDropTestNestedDrag : public MenuViewDragAndDropTest {
  public:
@@ -448,10 +441,12 @@ void MenuViewDragAndDropTestNestedDrag::Step4() {
 // Test that a nested drag (i.e. one via a child view, and not entirely
 // implemented in menu code) will consult the delegate before closing the view
 // after the drag.
-#if !defined(OS_WIN)  // http://crbug.com/401226
+// Disabled on all platforms for being flaky. Tracked in:
+// TODO(erg): Fix DND tests on linux_aura. http://crbug.com/163931.
+// Windows: http://crbug.com/401226.
+// TODO(tapted): De-flake and run on Mac. http://crbug.com/449058.
 VIEW_TEST(MenuViewDragAndDropTestNestedDrag,
-          MAYBE(MenuViewDragAndDropNestedDrag))
-#endif
+          DISABLED_MenuViewDragAndDropNestedDrag)
 
 class MenuViewDragAndDropForDropStayOpen : public MenuViewDragAndDropTest {
  public:
