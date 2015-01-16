@@ -186,13 +186,11 @@ PassRefPtr<SkTypeface> FontCache::createTypeface(const FontDescription& fontDesc
 {
 #if !OS(WIN) && !OS(ANDROID)
     if (creationParams.creationType() == CreateFontByFciIdAndTtcIndex) {
-        // TODO(dro): crbug.com/381620 Use creationParams.ttcIndex() after
-        // https://code.google.com/p/skia/issues/detail?id=1186 gets fixed.
         SkTypeface* typeface = nullptr;
         if (Platform::current()->sandboxSupport())
-            typeface = SkTypeface::CreateFromStream(streamForFontconfigInterfaceId(creationParams.fontconfigInterfaceId()));
+            typeface = SkTypeface::CreateFromStream(streamForFontconfigInterfaceId(creationParams.fontconfigInterfaceId()), creationParams.ttcIndex());
         else
-            typeface = SkTypeface::CreateFromFile(creationParams.filename().data());
+            typeface = SkTypeface::CreateFromFile(creationParams.filename().data(), creationParams.ttcIndex());
 
         if (typeface)
             return adoptRef(typeface);
