@@ -4,6 +4,7 @@
 
 #include "extensions/test/test_extensions_client.h"
 
+#include "base/stl_util.h"
 #include "extensions/common/api/generated_schemas.h"
 #include "extensions/common/common_manifest_handlers.h"
 #include "extensions/common/extension_urls.h"
@@ -36,6 +37,16 @@ TestExtensionsClient::TestExtensionsClient() {
 }
 
 TestExtensionsClient::~TestExtensionsClient() {
+}
+
+void TestExtensionsClient::AddBrowserImagePathsFilter(
+    BrowserImagePathsFilter* filter) {
+  browser_image_filters_.insert(filter);
+}
+
+void TestExtensionsClient::RemoveBrowserImagePathsFilter(
+    BrowserImagePathsFilter* filter) {
+  browser_image_filters_.erase(filter);
 }
 
 void TestExtensionsClient::Initialize() {
@@ -165,6 +176,15 @@ std::string TestExtensionsClient::GetWebstoreUpdateURL() const {
 
 bool TestExtensionsClient::IsBlacklistUpdateURL(const GURL& url) const {
   return true;
+}
+
+std::set<base::FilePath> TestExtensionsClient::GetBrowserImagePaths(
+    const Extension* extension) {
+  std::set<base::FilePath> result =
+      ExtensionsClient::GetBrowserImagePaths(extension);
+  for (auto filter : browser_image_filters_)
+    filter->Filter(extension, &result);
+  return result;
 }
 
 }  // namespace extensions

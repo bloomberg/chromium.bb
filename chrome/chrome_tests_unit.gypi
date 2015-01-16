@@ -926,7 +926,6 @@
       'renderer/extensions/extension_localization_peer_unittest.cc',
       'renderer/extensions/renderer_permissions_policy_delegate_unittest.cc',
       'renderer/media/cast_ipc_dispatcher_unittest.cc',
-      'utility/extensions/unpacker_unittest.cc',
       'utility/image_writer/image_writer_unittest.cc',
       'utility/media_galleries/image_metadata_extractor_unittest.cc',
     ],

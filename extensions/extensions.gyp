@@ -1304,6 +1304,7 @@
         'renderer/script_context_unittest.cc',
         'renderer/utils_unittest.cc',
         'test/extensions_unittests_main.cc',
+        'utility/unpacker_unittest.cc',
       ],
       # Disable c4267 warnings until we fix size_t to int truncations.
       'msvs_disabled_warnings': [ 4267, ],

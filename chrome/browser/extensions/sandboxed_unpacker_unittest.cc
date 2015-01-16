@@ -16,6 +16,7 @@
 #include "content/public/test/test_utils.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_paths.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -75,10 +76,8 @@ class SandboxedUnpackerTest : public testing::Test {
 
   void SetupUnpacker(const std::string& crx_name) {
     base::FilePath original_path;
-    ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &original_path));
-    original_path = original_path.AppendASCII("extensions")
-        .AppendASCII("unpacker")
-        .AppendASCII(crx_name);
+    ASSERT_TRUE(PathService::Get(extensions::DIR_TEST_DATA, &original_path));
+    original_path = original_path.AppendASCII("unpacker").AppendASCII(crx_name);
     ASSERT_TRUE(base::PathExists(original_path)) << original_path.value();
 
     sandboxed_unpacker_ = new SandboxedUnpacker(

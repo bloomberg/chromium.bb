@@ -1,6 +1,9 @@
 {
   "name": "Bad ZIP",
+  "manifest_version": 2,
   "version": "1.0",
   "description": "Good package to be mangled by bad_zip.sh for unit testing.",
-  "theme": {"images" : {"logo" : "product_logo_128.png"}}
+  "icons": {
+    "128" : "product_logo_128.png"
+  }
 }

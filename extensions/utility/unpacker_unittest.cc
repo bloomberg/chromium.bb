@@ -8,10 +8,11 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/common/chrome_paths.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_paths.h"
 #include "extensions/common/manifest_constants.h"
+#include "extensions/test/test_extensions_client.h"
 #include "extensions/utility/unpacker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -26,17 +27,14 @@ namespace keys = manifest_keys;
 class UnpackerTest : public testing::Test {
  public:
   ~UnpackerTest() override {
-    LOG(WARNING) << "Deleting temp dir: "
-                 << temp_dir_.path().LossyDisplayName();
-    LOG(WARNING) << temp_dir_.Delete();
+    VLOG(1) << "Deleting temp dir: " << temp_dir_.path().LossyDisplayName();
+    VLOG(1) << temp_dir_.Delete();
   }
 
   void SetupUnpacker(const std::string& crx_name) {
     base::FilePath original_path;
-    ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &original_path));
-    original_path = original_path.AppendASCII("extensions")
-                        .AppendASCII("unpacker")
-                        .AppendASCII(crx_name);
+    ASSERT_TRUE(PathService::Get(DIR_TEST_DATA, &original_path));
+    original_path = original_path.AppendASCII("unpacker").AppendASCII(crx_name);
     ASSERT_TRUE(base::PathExists(original_path)) << original_path.value();
 
     // Try bots won't let us write into DIR_TEST_DATA, so we have to create
@@ -151,9 +149,42 @@ TEST_F(UnpackerTest, UnzipError) {
   EXPECT_EQ(ASCIIToUTF16(kExpected), unpacker_->error_message());
 }
 
+namespace {
+
+// Inserts an illegal path into the browser images returned by
+// TestExtensionsClient for any extension.
+class IllegalImagePathInserter
+    : public TestExtensionsClient::BrowserImagePathsFilter {
+ public:
+  IllegalImagePathInserter(TestExtensionsClient* client) : client_(client) {
+    client_->AddBrowserImagePathsFilter(this);
+  }
+
+  virtual ~IllegalImagePathInserter() {
+    client_->RemoveBrowserImagePathsFilter(this);
+  }
+
+  void Filter(const Extension* extension,
+              std::set<base::FilePath>* paths) override {
+    base::FilePath illegal_path =
+        base::FilePath(base::FilePath::kParentDirectory)
+            .AppendASCII(kTempExtensionName)
+            .AppendASCII("product_logo_128.png");
+    paths->insert(illegal_path);
+  }
+
+ private:
+  TestExtensionsClient* client_;
+};
+
+}  // namespace
+
 TEST_F(UnpackerTest, BadPathError) {
   const char kExpected[] = "Illegal path (absolute or relative with '..'): ";
-  SetupUnpacker("bad_path.crx");
+  SetupUnpacker("good_package.crx");
+  IllegalImagePathInserter inserter(
+      static_cast<TestExtensionsClient*>(ExtensionsClient::Get()));
+
   EXPECT_FALSE(unpacker_->Run());
   EXPECT_TRUE(
       StartsWith(unpacker_->error_message(), ASCIIToUTF16(kExpected), false))

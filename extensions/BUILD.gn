@@ -255,6 +255,7 @@ if (false) {
       "renderer/script_context_unittest.cc",
       "renderer/utils_unittest.cc",
       "test/extensions_unittests_main.cc",
+      "utility/unpacker_unittest.cc",
     ]
 
     deps = [

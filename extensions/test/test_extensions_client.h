@@ -12,8 +12,19 @@ namespace extensions {
 
 class TestExtensionsClient : public ExtensionsClient {
  public:
+  // An interface that lets tests change the set of image paths before they are
+  // returned by TestExtensionClient::GetBrowserImagePaths.
+  class BrowserImagePathsFilter {
+   public:
+    virtual void Filter(const Extension* extension,
+                        std::set<base::FilePath>* paths) = 0;
+  };
+
   TestExtensionsClient();
   ~TestExtensionsClient() override;
+
+  void AddBrowserImagePathsFilter(BrowserImagePathsFilter* filter);
+  void RemoveBrowserImagePathsFilter(BrowserImagePathsFilter* filter);
 
  private:
   void Initialize() override;
@@ -44,12 +55,16 @@ class TestExtensionsClient : public ExtensionsClient {
   std::string GetWebstoreBaseURL() const override;
   std::string GetWebstoreUpdateURL() const override;
   bool IsBlacklistUpdateURL(const GURL& url) const override;
+  std::set<base::FilePath> GetBrowserImagePaths(
+      const Extension* extension) override;
 
   // A whitelist of extensions that can script anywhere. Do not add to this
   // list (except in tests) without consulting the Extensions team first.
   // Note: Component extensions have this right implicitly and do not need to be
   // added to this list.
   ScriptingWhitelist scripting_whitelist_;
+
+  std::set<BrowserImagePathsFilter*> browser_image_filters_;
 
   DISALLOW_COPY_AND_ASSIGN(TestExtensionsClient);
 };
