@@ -89,6 +89,13 @@ FixItHint FixItRemovalForVirtual(const SourceManager& manager,
   return FixItHint::CreateRemoval(range);
 }
 
+bool IsPodOrTemplateType(const CXXRecordDecl& record) {
+  return record.isPOD() ||
+         record.getDescribedClassTemplate() ||
+         record.getTemplateSpecializationKind() ||
+         record.isDependentType();
+}
+
 }  // namespace
 
 FindBadConstructsConsumer::FindBadConstructsConsumer(CompilerInstance& instance,
@@ -136,18 +143,34 @@ bool FindBadConstructsConsumer::VisitDecl(clang::Decl* decl) {
 
 void FindBadConstructsConsumer::CheckChromeClass(SourceLocation record_location,
                                                  CXXRecordDecl* record) {
+  // By default, the clang checker doesn't check some types (templates, etc).
+  // That was only a mistake; once Chromium code passes these checks, we should
+  // remove the "check-templates" option and remove this code.
+  // See crbug.com/441916
+  if (!options_.check_templates && IsPodOrTemplateType(*record))
+    return;
+
   bool implementation_file = InImplementationFile(record_location);
 
   if (!implementation_file) {
     // Only check for "heavy" constructors/destructors in header files;
     // within implementation files, there is no performance cost.
-    CheckCtorDtorWeight(record_location, record);
+
+    // If this is a POD or a class template or a type dependent on a
+    // templated class, assume there's no ctor/dtor/virtual method
+    // optimization that we should do.
+    if (!IsPodOrTemplateType(*record))
+      CheckCtorDtorWeight(record_location, record);
   }
 
   bool warn_on_inline_bodies = !implementation_file;
-
   // Check that all virtual methods are annotated with override or final.
-  CheckVirtualMethods(record_location, record, warn_on_inline_bodies);
+  // Note this could also apply to templates, but for some reason Clang
+  // does not always see the "override", so we get false positives.
+  // See http://llvm.org/bugs/show_bug.cgi?id=18440 and
+  //     http://llvm.org/bugs/show_bug.cgi?id=21942
+  if (!IsPodOrTemplateType(*record))
+    CheckVirtualMethods(record_location, record, warn_on_inline_bodies);
 
   CheckRefCountedDtors(record_location, record);
 

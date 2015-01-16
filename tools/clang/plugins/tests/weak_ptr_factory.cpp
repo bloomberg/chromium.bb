@@ -35,6 +35,17 @@ class TwoFactories {
   base::WeakPtrFactory<TwoFactories> factory2_;
 };
 
+template <class T>
+class ClassTemplate {
+ public:
+  ClassTemplate() : factory_(this) {}
+ private:
+  bool bool_member_;
+  base::WeakPtrFactory<ClassTemplate> factory_;
+};
+// Make sure the template gets instantiated:
+ClassTemplate<int> g_instance;
+
 }  // namespace should_succeed
 
 namespace should_fail {
@@ -56,6 +67,17 @@ class TwoFactoriesOneBad {
   int int_member_;
   base::WeakPtrFactory<TwoFactoriesOneBad> factory2_;
 };
+
+template <class T>
+class ClassTemplate {
+ public:
+  ClassTemplate() : factory_(this) {}
+ private:
+  base::WeakPtrFactory<ClassTemplate> factory_;
+  bool bool_member_;
+};
+// Make sure the template gets instantiated:
+ClassTemplate<int> g_instance;
 
 }  // namespace should_fail
 

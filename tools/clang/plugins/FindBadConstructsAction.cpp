@@ -57,6 +57,8 @@ bool FindBadConstructsAction::ParseArgs(const CompilerInstance& instance,
       options_.strict_virtual_specifiers = true;
     } else if (args[i] == "with-ast-visitor") {
       options_.with_ast_visitor = true;
+    } else if (args[i] == "check-templates") {
+      options_.check_templates = true;
     } else {
       parsed = false;
       llvm::errs() << "Unknown clang plugin argument: " << args[i] << "\n";
