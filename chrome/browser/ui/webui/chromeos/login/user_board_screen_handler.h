@@ -19,15 +19,15 @@ class SigninScreenHandler;
 class UserBoardScreenHandler : public BaseScreenHandler, public UserBoardView {
  public:
   UserBoardScreenHandler();
-  virtual ~UserBoardScreenHandler();
+  ~UserBoardScreenHandler() override;
 
  private:
   // BaseScreenHandler implementation:
-  virtual void DeclareLocalizedValues(LocalizedValuesBuilder* builder) override;
+  void DeclareLocalizedValues(LocalizedValuesBuilder* builder) override;
 
   // WebUIMessageHandler implementation:
-  virtual void RegisterMessages() override;
-  virtual void Initialize() override;
+  void RegisterMessages() override;
+  void Initialize() override;
 
   // Handlers
   void HandleGetUsers();
@@ -35,25 +35,22 @@ class UserBoardScreenHandler : public BaseScreenHandler, public UserBoardView {
   void HandleAttemptUnlock(const std::string& user_id);
 
   // UserBoardView implementation:
-  virtual void SetPublicSessionDisplayName(
-      const std::string& user_id,
-      const std::string& display_name) override;
-  virtual void SetPublicSessionLocales(
-      const std::string& user_id,
-      scoped_ptr<base::ListValue> locales,
-      const std::string& default_locale,
-      bool multiple_recommended_locales) override;
-  virtual void ShowBannerMessage(const base::string16& message) override;
-  virtual void ShowUserPodCustomIcon(
-      const std::string& user_id,
-      const base::DictionaryValue& icon) override;
-  virtual void HideUserPodCustomIcon(const std::string& user_id) override;
-  virtual void SetAuthType(const std::string& user_id,
-                           ScreenlockBridge::LockHandler::AuthType auth_type,
-                           const base::string16& initial_value) override;
+  void SetPublicSessionDisplayName(const std::string& user_id,
+                                   const std::string& display_name) override;
+  void SetPublicSessionLocales(const std::string& user_id,
+                               scoped_ptr<base::ListValue> locales,
+                               const std::string& default_locale,
+                               bool multiple_recommended_locales) override;
+  void ShowBannerMessage(const base::string16& message) override;
+  void ShowUserPodCustomIcon(const std::string& user_id,
+                             const base::DictionaryValue& icon) override;
+  void HideUserPodCustomIcon(const std::string& user_id) override;
+  void SetAuthType(const std::string& user_id,
+                   ScreenlockBridge::LockHandler::AuthType auth_type,
+                   const base::string16& initial_value) override;
 
-  virtual void Bind(UserBoardModel& model) override;
-  virtual void Unbind() override;
+  void Bind(UserBoardModel& model) override;
+  void Unbind() override;
 
   UserBoardModel* model_;
 

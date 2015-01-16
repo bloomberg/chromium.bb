@@ -22,25 +22,25 @@ class TermsOfServiceScreenHandler : public BaseScreenHandler,
                                     public TermsOfServiceScreenActor {
  public:
   explicit TermsOfServiceScreenHandler(CoreOobeActor* core_oobe_actor);
-  virtual ~TermsOfServiceScreenHandler();
+  ~TermsOfServiceScreenHandler() override;
 
   // content::WebUIMessageHandler:
-  virtual void RegisterMessages() override;
+  void RegisterMessages() override;
 
   // BaseScreenHandler:
-  virtual void DeclareLocalizedValues(LocalizedValuesBuilder* builder) override;
+  void DeclareLocalizedValues(LocalizedValuesBuilder* builder) override;
 
   // TermsOfServiceScreenActor:
-  virtual void SetDelegate(Delegate* screen) override;
-  virtual void Show() override;
-  virtual void Hide() override;
-  virtual void SetDomain(const std::string& domain) override;
-  virtual void OnLoadError() override;
-  virtual void OnLoadSuccess(const std::string& terms_of_service) override;
+  void SetDelegate(Delegate* screen) override;
+  void Show() override;
+  void Hide() override;
+  void SetDomain(const std::string& domain) override;
+  void OnLoadError() override;
+  void OnLoadSuccess(const std::string& terms_of_service) override;
 
  private:
   // BaseScreenHandler:
-  virtual void Initialize() override;
+  void Initialize() override;
 
   // Callback invoked after the UI locale has been changed.
   void OnLanguageChangedCallback(

@@ -40,48 +40,45 @@ class HIDDetectionScreenHandler
   typedef device::InputServiceLinux::InputDeviceInfo InputDeviceInfo;
 
   explicit HIDDetectionScreenHandler(CoreOobeActor* core_oobe_actor);
-  virtual ~HIDDetectionScreenHandler();
+  ~HIDDetectionScreenHandler() override;
 
   // HIDDetectionScreenActor implementation:
-  virtual void Show() override;
-  virtual void Hide() override;
-  virtual void SetDelegate(Delegate* delegate) override;
-  virtual void CheckIsScreenRequired(
+  void Show() override;
+  void Hide() override;
+  void SetDelegate(Delegate* delegate) override;
+  void CheckIsScreenRequired(
       const base::Callback<void(bool)>& on_check_done) override;
 
   // BaseScreenHandler implementation:
-  virtual void DeclareLocalizedValues(LocalizedValuesBuilder* builder) override;
-  virtual void Initialize() override;
+  void DeclareLocalizedValues(LocalizedValuesBuilder* builder) override;
+  void Initialize() override;
 
   // WebUIMessageHandler implementation:
-  virtual void RegisterMessages() override;
+  void RegisterMessages() override;
 
   // device::BluetoothDevice::PairingDelegate implementation:
-  virtual void RequestPinCode(device::BluetoothDevice* device) override;
-  virtual void RequestPasskey(device::BluetoothDevice* device) override;
-  virtual void DisplayPinCode(device::BluetoothDevice* device,
-                              const std::string& pincode) override;
-  virtual void DisplayPasskey(
-      device::BluetoothDevice* device, uint32 passkey) override;
-  virtual void KeysEntered(device::BluetoothDevice* device,
-                           uint32 entered) override;
-  virtual void ConfirmPasskey(
-      device::BluetoothDevice* device, uint32 passkey) override;
-  virtual void AuthorizePairing(device::BluetoothDevice* device) override;
+  void RequestPinCode(device::BluetoothDevice* device) override;
+  void RequestPasskey(device::BluetoothDevice* device) override;
+  void DisplayPinCode(device::BluetoothDevice* device,
+                      const std::string& pincode) override;
+  void DisplayPasskey(device::BluetoothDevice* device, uint32 passkey) override;
+  void KeysEntered(device::BluetoothDevice* device, uint32 entered) override;
+  void ConfirmPasskey(device::BluetoothDevice* device, uint32 passkey) override;
+  void AuthorizePairing(device::BluetoothDevice* device) override;
 
   // device::BluetoothAdapter::Observer implementation.
-  virtual void AdapterPresentChanged(device::BluetoothAdapter* adapter,
-                                     bool present) override;
-  virtual void DeviceAdded(device::BluetoothAdapter* adapter,
-                           device::BluetoothDevice* device) override;
-  virtual void DeviceChanged(device::BluetoothAdapter* adapter,
-                             device::BluetoothDevice* device) override;
-  virtual void DeviceRemoved(device::BluetoothAdapter* adapter,
-                             device::BluetoothDevice* device) override;
+  void AdapterPresentChanged(device::BluetoothAdapter* adapter,
+                             bool present) override;
+  void DeviceAdded(device::BluetoothAdapter* adapter,
+                   device::BluetoothDevice* device) override;
+  void DeviceChanged(device::BluetoothAdapter* adapter,
+                     device::BluetoothDevice* device) override;
+  void DeviceRemoved(device::BluetoothAdapter* adapter,
+                     device::BluetoothDevice* device) override;
 
   // InputServiceProxy::Observer implementation.
-  virtual void OnInputDeviceAdded(const InputDeviceInfo& info) override;
-  virtual void OnInputDeviceRemoved(const std::string& id) override;
+  void OnInputDeviceAdded(const InputDeviceInfo& info) override;
+  void OnInputDeviceRemoved(const std::string& id) override;
 
   // Registers the preference for derelict state.
   static void RegisterPrefs(PrefRegistrySimple* registry);

@@ -22,22 +22,22 @@ namespace chromeos {
 class UserImageScreenHandler : public UserImageView, public BaseScreenHandler {
  public:
   UserImageScreenHandler();
-  virtual ~UserImageScreenHandler();
+  ~UserImageScreenHandler() override;
 
   // BaseScreenHandler implementation:
-  virtual void Initialize() override;
-  virtual void DeclareLocalizedValues(LocalizedValuesBuilder* builder) override;
+  void Initialize() override;
+  void DeclareLocalizedValues(LocalizedValuesBuilder* builder) override;
 
   // WebUIMessageHandler implementation:
-  virtual void RegisterMessages() override;
+  void RegisterMessages() override;
 
   // UserImageView implementation:
-  virtual void Bind(UserImageModel& model) override;
-  virtual void Unbind() override;
-  virtual void Show() override;
-  virtual void Hide() override;
-  virtual void PrepareToShow() override;
-  virtual void HideCurtain() override;
+  void Bind(UserImageModel& model) override;
+  void Unbind() override;
+  void Show() override;
+  void Hide() override;
+  void PrepareToShow() override;
+  void HideCurtain() override;
 
  private:
 

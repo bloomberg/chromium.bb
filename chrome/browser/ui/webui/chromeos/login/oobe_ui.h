@@ -94,38 +94,33 @@ class OobeUI : public OobeDisplay,
   static const char kScreenDeviceDisabled[];
 
   OobeUI(content::WebUI* web_ui, const GURL& url);
-  virtual ~OobeUI();
+  ~OobeUI() override;
 
   // OobeDisplay implementation:
-  virtual CoreOobeActor* GetCoreOobeActor() override;
-  virtual UpdateScreenActor* GetUpdateScreenActor() override;
-  virtual NetworkView* GetNetworkView() override;
-  virtual EulaView* GetEulaView() override;
-  virtual EnableDebuggingScreenActor* GetEnableDebuggingScreenActor() override;
-  virtual EnrollmentScreenActor* GetEnrollmentScreenActor() override;
-  virtual ResetScreenActor* GetResetScreenActor() override;
-  virtual KioskAutolaunchScreenActor* GetKioskAutolaunchScreenActor() override;
-  virtual KioskEnableScreenActor* GetKioskEnableScreenActor() override;
-  virtual TermsOfServiceScreenActor*
-      GetTermsOfServiceScreenActor() override;
-  virtual UserImageView* GetUserImageView() override;
-  virtual ErrorScreenActor* GetErrorScreenActor() override;
-  virtual WrongHWIDScreenActor* GetWrongHWIDScreenActor() override;
-  virtual AutoEnrollmentCheckScreenActor*
-      GetAutoEnrollmentCheckScreenActor() override;
-  virtual SupervisedUserCreationScreenHandler*
-      GetSupervisedUserCreationScreenActor() override;
-  virtual AppLaunchSplashScreenActor*
-      GetAppLaunchSplashScreenActor() override;
-  virtual bool IsJSReady(const base::Closure& display_is_ready_callback)
+  CoreOobeActor* GetCoreOobeActor() override;
+  UpdateScreenActor* GetUpdateScreenActor() override;
+  NetworkView* GetNetworkView() override;
+  EulaView* GetEulaView() override;
+  EnableDebuggingScreenActor* GetEnableDebuggingScreenActor() override;
+  EnrollmentScreenActor* GetEnrollmentScreenActor() override;
+  ResetScreenActor* GetResetScreenActor() override;
+  KioskAutolaunchScreenActor* GetKioskAutolaunchScreenActor() override;
+  KioskEnableScreenActor* GetKioskEnableScreenActor() override;
+  TermsOfServiceScreenActor* GetTermsOfServiceScreenActor() override;
+  UserImageView* GetUserImageView() override;
+  ErrorScreenActor* GetErrorScreenActor() override;
+  WrongHWIDScreenActor* GetWrongHWIDScreenActor() override;
+  AutoEnrollmentCheckScreenActor* GetAutoEnrollmentCheckScreenActor() override;
+  SupervisedUserCreationScreenHandler* GetSupervisedUserCreationScreenActor()
       override;
-  virtual HIDDetectionScreenActor* GetHIDDetectionScreenActor() override;
-  virtual ControllerPairingScreenActor* GetControllerPairingScreenActor()
-      override;
-  virtual HostPairingScreenActor* GetHostPairingScreenActor() override;
+  AppLaunchSplashScreenActor* GetAppLaunchSplashScreenActor() override;
+  bool IsJSReady(const base::Closure& display_is_ready_callback) override;
+  HIDDetectionScreenActor* GetHIDDetectionScreenActor() override;
+  ControllerPairingScreenActor* GetControllerPairingScreenActor() override;
+  HostPairingScreenActor* GetHostPairingScreenActor() override;
   DeviceDisabledScreenActor* GetDeviceDisabledScreenActor() override;
-  virtual GaiaScreenHandler* GetGaiaScreenActor() override;
-  virtual UserBoardView* GetUserBoardScreenActor() override;
+  GaiaScreenHandler* GetGaiaScreenActor() override;
+  UserBoardView* GetUserBoardScreenActor() override;
 
   // Collects localized strings from the owned handlers.
   void GetLocalizedStrings(base::DictionaryValue* localized_strings);
@@ -171,7 +166,7 @@ class OobeUI : public OobeDisplay,
   void AddScreenHandler(BaseScreenHandler* handler);
 
   // CoreOobeHandler::Delegate implementation:
-  virtual void OnCurrentScreenChanged(const std::string& screen) override;
+  void OnCurrentScreenChanged(const std::string& screen) override;
 
   // Type of UI.
   std::string display_type_;

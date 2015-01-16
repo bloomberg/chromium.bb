@@ -24,24 +24,23 @@ class ResetScreenHandler : public ResetScreenActor,
                            public UpdateEngineClient::Observer {
  public:
   ResetScreenHandler();
-  virtual ~ResetScreenHandler();
+  ~ResetScreenHandler() override;
 
   // ResetScreenActor implementation:
-  virtual void PrepareToShow() override;
-  virtual void Show() override;
-  virtual void Hide() override;
-  virtual void SetDelegate(Delegate* delegate) override;
+  void PrepareToShow() override;
+  void Show() override;
+  void Hide() override;
+  void SetDelegate(Delegate* delegate) override;
 
   // BaseScreenHandler implementation:
-  virtual void DeclareLocalizedValues(LocalizedValuesBuilder* builder) override;
-  virtual void Initialize() override;
+  void DeclareLocalizedValues(LocalizedValuesBuilder* builder) override;
+  void Initialize() override;
 
   // WebUIMessageHandler implementation:
-  virtual void RegisterMessages() override;
+  void RegisterMessages() override;
 
   // UpdateEngineClient::Observer implementation:
-  virtual void UpdateStatusChanged(
-      const UpdateEngineClient::Status& status) override;
+  void UpdateStatusChanged(const UpdateEngineClient::Status& status) override;
 
   void OnRollbackCheck(bool can_rollback);
 

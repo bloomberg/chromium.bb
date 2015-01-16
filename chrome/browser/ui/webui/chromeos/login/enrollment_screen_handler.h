@@ -34,33 +34,33 @@ class EnrollmentScreenHandler
   EnrollmentScreenHandler(
       const scoped_refptr<NetworkStateInformer>& network_state_informer,
       ErrorScreenActor* error_screen_actor);
-  virtual ~EnrollmentScreenHandler();
+  ~EnrollmentScreenHandler() override;
 
   // Implements WebUIMessageHandler:
-  virtual void RegisterMessages() override;
+  void RegisterMessages() override;
 
   // Implements EnrollmentScreenActor:
-  virtual void SetParameters(Controller* controller,
-                             const policy::EnrollmentConfig& config) override;
-  virtual void PrepareToShow() override;
-  virtual void Show() override;
-  virtual void Hide() override;
-  virtual void ShowSigninScreen() override;
-  virtual void ShowEnrollmentSpinnerScreen() override;
-  virtual void ShowAuthError(const GoogleServiceAuthError& error) override;
-  virtual void ShowEnrollmentStatus(policy::EnrollmentStatus status) override;
-  virtual void ShowOtherError(
+  void SetParameters(Controller* controller,
+                     const policy::EnrollmentConfig& config) override;
+  void PrepareToShow() override;
+  void Show() override;
+  void Hide() override;
+  void ShowSigninScreen() override;
+  void ShowEnrollmentSpinnerScreen() override;
+  void ShowAuthError(const GoogleServiceAuthError& error) override;
+  void ShowEnrollmentStatus(policy::EnrollmentStatus status) override;
+  void ShowOtherError(
       EnterpriseEnrollmentHelper::OtherError error_code) override;
 
   // Implements BaseScreenHandler:
-  virtual void Initialize() override;
-  virtual void DeclareLocalizedValues(LocalizedValuesBuilder* builder) override;
+  void Initialize() override;
+  void DeclareLocalizedValues(LocalizedValuesBuilder* builder) override;
 
   // Implements NetworkStateInformer::NetworkStateInformerObserver
-  virtual void UpdateState(ErrorScreenActor::ErrorReason reason) override;
+  void UpdateState(ErrorScreenActor::ErrorReason reason) override;
 
   // Implements WebUILoginView::FrameObserver
-  virtual void OnFrameError(const std::string& frame_unique_name) override;
+  void OnFrameError(const std::string& frame_unique_name) override;
 
  private:
   // Handlers for WebUI messages.

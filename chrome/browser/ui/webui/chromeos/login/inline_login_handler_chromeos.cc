@@ -33,10 +33,10 @@ class InlineLoginHandlerChromeOS::InlineLoginUIOAuth2Delegate
                                        const std::string& account_id)
       : web_ui_(web_ui), account_id_(account_id) {}
 
-  virtual ~InlineLoginUIOAuth2Delegate() {}
+  ~InlineLoginUIOAuth2Delegate() override {}
 
   // OAuth2TokenFetcher::Delegate overrides:
-  virtual void OnOAuth2TokensAvailable(
+  void OnOAuth2TokensAvailable(
       const GaiaAuthConsumer::ClientOAuthResult& oauth2_tokens) override {
     // Closes sign-in dialog before update token service. Token service update
     // might trigger a permission dialog and if this dialog does not close,
@@ -50,7 +50,7 @@ class InlineLoginHandlerChromeOS::InlineLoginUIOAuth2Delegate
     token_service->UpdateCredentials(account_id_, oauth2_tokens.refresh_token);
   }
 
-  virtual void OnOAuth2TokensFetchFailed() override {
+  void OnOAuth2TokensFetchFailed() override {
     LOG(ERROR) << "Failed to fetch oauth2 token with inline login.";
     web_ui_->CallJavascriptFunction("inline.login.handleOAuth2TokenFailure");
   }

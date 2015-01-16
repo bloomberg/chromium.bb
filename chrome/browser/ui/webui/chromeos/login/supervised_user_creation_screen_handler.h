@@ -65,7 +65,7 @@ class SupervisedUserCreationScreenHandler : public BaseScreenHandler {
   };
 
   SupervisedUserCreationScreenHandler();
-  virtual ~SupervisedUserCreationScreenHandler();
+  ~SupervisedUserCreationScreenHandler() override;
 
   virtual void PrepareToShow();
   virtual void Show();
@@ -94,11 +94,11 @@ class SupervisedUserCreationScreenHandler : public BaseScreenHandler {
   void ShowExistingSupervisedUsers(const base::ListValue* users);
 
   // BaseScreenHandler implementation:
-  virtual void DeclareLocalizedValues(LocalizedValuesBuilder* builder) override;
-  virtual void Initialize() override;
+  void DeclareLocalizedValues(LocalizedValuesBuilder* builder) override;
+  void Initialize() override;
 
   // WebUIMessageHandler implementation:
-  virtual void RegisterMessages() override;
+  void RegisterMessages() override;
 
  private:
   // WebUI message handlers.

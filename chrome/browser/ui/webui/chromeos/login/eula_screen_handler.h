@@ -28,21 +28,21 @@ class EulaScreenHandler : public EulaView,
                           public TpmPasswordFetcherDelegate {
  public:
   explicit EulaScreenHandler(CoreOobeActor* core_oobe_actor);
-  virtual ~EulaScreenHandler();
+  ~EulaScreenHandler() override;
 
   // EulaView implementation:
-  virtual void PrepareToShow() override;
-  virtual void Show() override;
-  virtual void Hide() override;
-  virtual void Bind(EulaModel& model) override;
-  virtual void Unbind() override;
-  virtual void OnPasswordFetched(const std::string& tpm_password) override;
+  void PrepareToShow() override;
+  void Show() override;
+  void Hide() override;
+  void Bind(EulaModel& model) override;
+  void Unbind() override;
+  void OnPasswordFetched(const std::string& tpm_password) override;
 
   // BaseScreenHandler implementation:
-  virtual void DeclareLocalizedValues(LocalizedValuesBuilder* builder) override;
-  virtual void DeclareJSCallbacks() override;
-  virtual void GetAdditionalParameters(base::DictionaryValue* dict) override;
-  virtual void Initialize() override;
+  void DeclareLocalizedValues(LocalizedValuesBuilder* builder) override;
+  void DeclareJSCallbacks() override;
+  void GetAdditionalParameters(base::DictionaryValue* dict) override;
+  void Initialize() override;
 
  private:
   // JS messages handlers.

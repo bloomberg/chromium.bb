@@ -19,22 +19,22 @@ class KioskAutolaunchScreenHandler : public KioskAutolaunchScreenActor,
                                      public BaseScreenHandler {
  public:
   KioskAutolaunchScreenHandler();
-  virtual ~KioskAutolaunchScreenHandler();
+  ~KioskAutolaunchScreenHandler() override;
 
   // KioskAutolaunchScreenActor implementation:
-  virtual void Show() override;
-  virtual void SetDelegate(Delegate* delegate) override;
+  void Show() override;
+  void SetDelegate(Delegate* delegate) override;
 
   // KioskAppManagerObserver overrides:
-  virtual void OnKioskAppsSettingsChanged() override;
-  virtual void OnKioskAppDataChanged(const std::string& app_id) override;
+  void OnKioskAppsSettingsChanged() override;
+  void OnKioskAppDataChanged(const std::string& app_id) override;
 
   // BaseScreenHandler implementation:
-  virtual void DeclareLocalizedValues(LocalizedValuesBuilder* builder) override;
-  virtual void Initialize() override;
+  void DeclareLocalizedValues(LocalizedValuesBuilder* builder) override;
+  void Initialize() override;
 
   // WebUIMessageHandler implementation:
-  virtual void RegisterMessages() override;
+  void RegisterMessages() override;
 
  private:
   // Updates auto-start UI assets on JS side.

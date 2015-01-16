@@ -27,26 +27,26 @@ class InputEventsBlocker;
 class NetworkScreenHandler : public NetworkView, public BaseScreenHandler {
  public:
   explicit NetworkScreenHandler(CoreOobeActor* core_oobe_actor);
-  virtual ~NetworkScreenHandler();
+  ~NetworkScreenHandler() override;
 
  private:
   // NetworkView implementation:
-  virtual void PrepareToShow() override;
-  virtual void Show() override;
-  virtual void Hide() override;
-  virtual void Bind(NetworkModel& model) override;
-  virtual void Unbind() override;
-  virtual void ShowError(const base::string16& message) override;
-  virtual void ClearErrors() override;
-  virtual void StopDemoModeDetection() override;
-  virtual void ShowConnectingStatus(bool connecting,
-                                    const base::string16& network_id) override;
-  virtual void ReloadLocalizedContent() override;
+  void PrepareToShow() override;
+  void Show() override;
+  void Hide() override;
+  void Bind(NetworkModel& model) override;
+  void Unbind() override;
+  void ShowError(const base::string16& message) override;
+  void ClearErrors() override;
+  void StopDemoModeDetection() override;
+  void ShowConnectingStatus(bool connecting,
+                            const base::string16& network_id) override;
+  void ReloadLocalizedContent() override;
 
   // BaseScreenHandler implementation:
-  virtual void DeclareLocalizedValues(LocalizedValuesBuilder* builder) override;
-  virtual void GetAdditionalParameters(base::DictionaryValue* dict) override;
-  virtual void Initialize() override;
+  void DeclareLocalizedValues(LocalizedValuesBuilder* builder) override;
+  void GetAdditionalParameters(base::DictionaryValue* dict) override;
+  void Initialize() override;
 
  private:
   // Returns available timezones. Caller gets the ownership.

@@ -35,12 +35,11 @@ class AuthenticatedUserEmailRetriever : public GaiaAuthConsumer {
   AuthenticatedUserEmailRetriever(
       const AuthenticatedUserEmailCallback& callback,
       scoped_refptr<net::URLRequestContextGetter> url_request_context_getter);
-  virtual ~AuthenticatedUserEmailRetriever();
+  ~AuthenticatedUserEmailRetriever() override;
 
   // GaiaAuthConsumer:
-  virtual void OnListAccountsSuccess(const std::string& data) override;
-  virtual void OnListAccountsFailure(const GoogleServiceAuthError& error)
-      override;
+  void OnListAccountsSuccess(const std::string& data) override;
+  void OnListAccountsFailure(const GoogleServiceAuthError& error) override;
 
  private:
   const AuthenticatedUserEmailCallback callback_;

@@ -72,11 +72,11 @@ void VerifyLanguageCode(const base::ListValue& list,
 class L10nUtilTest : public testing::Test {
  public:
   L10nUtilTest();
-  virtual ~L10nUtilTest();
+  ~L10nUtilTest() override;
 
   // testing::Test:
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
   void SetInputMethods1();
   void SetInputMethods2();

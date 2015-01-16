@@ -39,10 +39,9 @@ class SigninPrepareUserListTest
         user_manager_enabler_(fake_user_manager_) {
   }
 
-  virtual ~SigninPrepareUserListTest() {
-  }
+  ~SigninPrepareUserListTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     profile_manager_.reset(
         new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
     ASSERT_TRUE(profile_manager_->SetUp());
@@ -59,14 +58,13 @@ class SigninPrepareUserListTest
     fake_user_manager_->set_owner_email(kOwner);
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     controller_.reset();
     profile_manager_.reset();
   }
 
   // MultiProfileUserControllerDelegate overrides:
-  virtual void OnUserNotAllowed(const std::string& user_email) override {
-  }
+  void OnUserNotAllowed(const std::string& user_email) override {}
 
   FakeUserManager* fake_user_manager_;
   ScopedUserManagerEnabler user_manager_enabler_;

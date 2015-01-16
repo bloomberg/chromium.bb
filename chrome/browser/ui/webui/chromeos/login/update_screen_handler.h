@@ -19,31 +19,31 @@ class UpdateScreenHandler : public UpdateScreenActor,
                             public NetworkDropdownHandler::Observer {
  public:
   UpdateScreenHandler();
-  virtual ~UpdateScreenHandler();
+  ~UpdateScreenHandler() override;
 
   // BaseScreenHandler implementation:
-  virtual void DeclareLocalizedValues(LocalizedValuesBuilder* builder) override;
-  virtual void Initialize() override;
+  void DeclareLocalizedValues(LocalizedValuesBuilder* builder) override;
+  void Initialize() override;
 
   // UpdateScreenActor implementation:
-  virtual void SetDelegate(UpdateScreenActor::Delegate* screen) override;
-  virtual void Show() override;
-  virtual void Hide() override;
-  virtual void PrepareToShow() override;
-  virtual void ShowManualRebootInfo() override;
-  virtual void SetProgress(int progress) override;
-  virtual void ShowEstimatedTimeLeft(bool visible) override;
-  virtual void SetEstimatedTimeLeft(const base::TimeDelta& time) override;
-  virtual void ShowProgressMessage(bool visible) override;
-  virtual void SetProgressMessage(ProgressMessage message) override;
-  virtual void ShowCurtain(bool visible) override;
+  void SetDelegate(UpdateScreenActor::Delegate* screen) override;
+  void Show() override;
+  void Hide() override;
+  void PrepareToShow() override;
+  void ShowManualRebootInfo() override;
+  void SetProgress(int progress) override;
+  void ShowEstimatedTimeLeft(bool visible) override;
+  void SetEstimatedTimeLeft(const base::TimeDelta& time) override;
+  void ShowProgressMessage(bool visible) override;
+  void SetProgressMessage(ProgressMessage message) override;
+  void ShowCurtain(bool visible) override;
 
   // WebUIMessageHandler implementation:
-  virtual void RegisterMessages() override;
+  void RegisterMessages() override;
 
  private:
   // NetworkDropdownHandler::Observer implementation:
-  virtual void OnConnectToNetworkRequested() override;
+  void OnConnectToNetworkRequested() override;
 
 #if !defined(OFFICIAL_BUILD)
   // Called when user presses Escape to cancel update.

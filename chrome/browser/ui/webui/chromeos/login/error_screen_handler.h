@@ -28,25 +28,25 @@ class ErrorScreenHandler : public BaseScreenHandler,
  public:
   ErrorScreenHandler(
       const scoped_refptr<NetworkStateInformer>& network_state_informer);
-  virtual ~ErrorScreenHandler();
+  ~ErrorScreenHandler() override;
 
   // ErrorScreenActor implementation:
-  virtual void SetDelegate(ErrorScreenActorDelegate* delegate) override;
-  virtual void Show(OobeDisplay::Screen parent_screen,
-                    base::DictionaryValue* params) override;
-  virtual void Show(OobeDisplay::Screen parent_screen,
-                    base::DictionaryValue* params,
-                    const base::Closure& on_hide) override;
-  virtual void Hide() override;
-  virtual void FixCaptivePortal() override;
-  virtual void ShowCaptivePortal() override;
-  virtual void HideCaptivePortal() override;
-  virtual void SetUIState(ErrorScreen::UIState ui_state) override;
-  virtual void SetErrorState(ErrorScreen::ErrorState error_state,
-                             const std::string& network) override;
-  virtual void AllowGuestSignin(bool allowed) override;
-  virtual void AllowOfflineLogin(bool allowed) override;
-  virtual void ShowConnectingIndicator(bool show) override;
+  void SetDelegate(ErrorScreenActorDelegate* delegate) override;
+  void Show(OobeDisplay::Screen parent_screen,
+            base::DictionaryValue* params) override;
+  void Show(OobeDisplay::Screen parent_screen,
+            base::DictionaryValue* params,
+            const base::Closure& on_hide) override;
+  void Hide() override;
+  void FixCaptivePortal() override;
+  void ShowCaptivePortal() override;
+  void HideCaptivePortal() override;
+  void SetUIState(ErrorScreen::UIState ui_state) override;
+  void SetErrorState(ErrorScreen::ErrorState error_state,
+                     const std::string& network) override;
+  void AllowGuestSignin(bool allowed) override;
+  void AllowOfflineLogin(bool allowed) override;
+  void ShowConnectingIndicator(bool show) override;
 
  private:
   // Sends notification that error message is shown.
@@ -67,11 +67,11 @@ class ErrorScreenHandler : public BaseScreenHandler,
   void HandleLaunchOobeGuestSession();
 
   // WebUIMessageHandler implementation:
-  virtual void RegisterMessages() override;
+  void RegisterMessages() override;
 
   // BaseScreenHandler implementation:
-  virtual void DeclareLocalizedValues(LocalizedValuesBuilder* builder) override;
-  virtual void Initialize() override;
+  void DeclareLocalizedValues(LocalizedValuesBuilder* builder) override;
+  void Initialize() override;
 
   // Non-owning ptr.
   ErrorScreenActorDelegate* delegate_;

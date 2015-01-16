@@ -69,7 +69,7 @@ class GaiaScreenHandler : public BaseScreenHandler {
       CoreOobeActor* core_oobe_actor,
       const scoped_refptr<NetworkStateInformer>& network_state_informer,
       policy::ConsumerManagementService* consumer_management);
-  virtual ~GaiaScreenHandler();
+  ~GaiaScreenHandler() override;
 
   void LoadGaia(const GaiaContext& context);
   void UpdateGaia(const GaiaContext& context);
@@ -97,12 +97,12 @@ class GaiaScreenHandler : public BaseScreenHandler {
   friend class SigninScreenHandler;
 
   // BaseScreenHandler implementation:
-  virtual void DeclareLocalizedValues(LocalizedValuesBuilder* builder) override;
-  virtual void GetAdditionalParameters(base::DictionaryValue* dict) override;
-  virtual void Initialize() override;
+  void DeclareLocalizedValues(LocalizedValuesBuilder* builder) override;
+  void GetAdditionalParameters(base::DictionaryValue* dict) override;
+  void Initialize() override;
 
   // WebUIMessageHandler implementation:
-  virtual void RegisterMessages() override;
+  void RegisterMessages() override;
 
   // WebUI message handlers.
   void HandleFrameLoadingCompleted(int status);

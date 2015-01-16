@@ -21,18 +21,18 @@ class AutoEnrollmentCheckScreenHandler : public AutoEnrollmentCheckScreenActor,
                                          public BaseScreenHandler {
  public:
   AutoEnrollmentCheckScreenHandler();
-  virtual ~AutoEnrollmentCheckScreenHandler();
+  ~AutoEnrollmentCheckScreenHandler() override;
 
   // AutoEnrollmentCheckScreenActor implementation:
-  virtual void Show() override;
-  virtual void SetDelegate(Delegate* delegate) override;
+  void Show() override;
+  void SetDelegate(Delegate* delegate) override;
 
   // BaseScreenHandler implementation:
-  virtual void DeclareLocalizedValues(LocalizedValuesBuilder* builder) override;
-  virtual void Initialize() override;
+  void DeclareLocalizedValues(LocalizedValuesBuilder* builder) override;
+  void Initialize() override;
 
   // WebUIMessageHandler implementation:
-  virtual void RegisterMessages() override;
+  void RegisterMessages() override;
 
  private:
   Delegate* delegate_;

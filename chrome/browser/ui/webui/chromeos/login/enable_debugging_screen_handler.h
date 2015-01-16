@@ -21,20 +21,20 @@ class EnableDebuggingScreenHandler : public EnableDebuggingScreenActor,
                                      public BaseScreenHandler {
  public:
   EnableDebuggingScreenHandler();
-  virtual ~EnableDebuggingScreenHandler();
+  ~EnableDebuggingScreenHandler() override;
 
   // EnableDebuggingScreenActor implementation:
-  virtual void PrepareToShow() override;
-  virtual void Show() override;
-  virtual void Hide() override;
-  virtual void SetDelegate(Delegate* delegate) override;
+  void PrepareToShow() override;
+  void Show() override;
+  void Hide() override;
+  void SetDelegate(Delegate* delegate) override;
 
   // BaseScreenHandler implementation:
-  virtual void DeclareLocalizedValues(LocalizedValuesBuilder* builder) override;
-  virtual void Initialize() override;
+  void DeclareLocalizedValues(LocalizedValuesBuilder* builder) override;
+  void Initialize() override;
 
   // WebUIMessageHandler implementation:
-  virtual void RegisterMessages() override;
+  void RegisterMessages() override;
 
   // Registers Local State preferences.
   static void RegisterPrefs(PrefRegistrySimple* registry);

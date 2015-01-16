@@ -16,23 +16,23 @@ class HostPairingScreenHandler : public HostPairingScreenActor,
                                  public BaseScreenHandler {
  public:
   HostPairingScreenHandler();
-  virtual ~HostPairingScreenHandler();
+  ~HostPairingScreenHandler() override;
 
  private:
   void HandleContextReady();
 
   // Overridden from BaseScreenHandler:
-  virtual void Initialize() override;
-  virtual void DeclareLocalizedValues(LocalizedValuesBuilder* builder) override;
+  void Initialize() override;
+  void DeclareLocalizedValues(LocalizedValuesBuilder* builder) override;
 
   // Overridden from content::WebUIMessageHandler:
-  virtual void RegisterMessages() override;
+  void RegisterMessages() override;
 
   // Overridden from HostPairingScreenActor:
-  virtual void Show() override;
-  virtual void Hide() override;
-  virtual void SetDelegate(Delegate* delegate) override;
-  virtual void OnContextChanged(const base::DictionaryValue& diff) override;
+  void Show() override;
+  void Hide() override;
+  void SetDelegate(Delegate* delegate) override;
+  void OnContextChanged(const base::DictionaryValue& diff) override;
 
   HostPairingScreenActor::Delegate* delegate_;
   bool show_on_init_;

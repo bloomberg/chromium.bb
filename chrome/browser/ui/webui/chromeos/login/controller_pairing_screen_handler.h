@@ -15,25 +15,25 @@ class ControllerPairingScreenHandler : public ControllerPairingScreenActor,
                                        public BaseScreenHandler {
  public:
   ControllerPairingScreenHandler();
-  virtual ~ControllerPairingScreenHandler();
+  ~ControllerPairingScreenHandler() override;
 
  private:
   void HandleUserActed(const std::string& action);
   void HandleContextChanged(const base::DictionaryValue* diff);
 
   // Overridden from BaseScreenHandler:
-  virtual void Initialize() override;
-  virtual void DeclareLocalizedValues(LocalizedValuesBuilder* builder) override;
+  void Initialize() override;
+  void DeclareLocalizedValues(LocalizedValuesBuilder* builder) override;
 
   // Overridden from content::WebUIMessageHandler:
-  virtual void RegisterMessages() override;
+  void RegisterMessages() override;
 
   // Overridden from ControllerPairingScreenActor:
-  virtual void Show() override;
-  virtual void Hide() override;
-  virtual void SetDelegate(Delegate* delegate) override;
-  virtual void OnContextChanged(const base::DictionaryValue& diff) override;
-  virtual content::BrowserContext* GetBrowserContext() override;
+  void Show() override;
+  void Hide() override;
+  void SetDelegate(Delegate* delegate) override;
+  void OnContextChanged(const base::DictionaryValue& diff) override;
+  content::BrowserContext* GetBrowserContext() override;
 
   ControllerPairingScreenActor::Delegate* delegate_;
   bool show_on_init_;

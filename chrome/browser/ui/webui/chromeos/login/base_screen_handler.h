@@ -88,17 +88,17 @@ class BaseScreenHandler : public content::WebUIMessageHandler,
   // C-tor used when JS screen prefix is needed.
   explicit BaseScreenHandler(const std::string& js_screen_path);
 
-  virtual ~BaseScreenHandler();
+  ~BaseScreenHandler() override;
 
   // Gets localized strings to be used on the page.
   void GetLocalizedStrings(
       base::DictionaryValue* localized_strings);
 
   // WebUIMessageHandler implementation:
-  virtual void RegisterMessages() override;
+  void RegisterMessages() override;
 
   // ModelViewChannel implementation:
-  virtual void CommitContextChanges(const base::DictionaryValue& diff) override;
+  void CommitContextChanges(const base::DictionaryValue& diff) override;
 
   // This method is called when page is ready. It propagates to inherited class
   // via virtual Initialize() method (see below).
