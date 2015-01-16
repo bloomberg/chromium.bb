@@ -275,6 +275,10 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #   define SK_IGNORE_GPU_DITHER
 #endif
 
+#ifndef SK_SUPPORT_LEGACY_HQ_SCALING
+#   define SK_SUPPORT_LEGACY_HQ_SCALING
+#endif
+
 #ifndef SK_SUPPORT_LEGACY_MIPLEVELCHOICE
 #   define SK_SUPPORT_LEGACY_MIPLEVELCHOICE
 #endif
