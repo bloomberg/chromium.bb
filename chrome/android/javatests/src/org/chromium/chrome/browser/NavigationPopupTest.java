@@ -155,6 +155,11 @@ public class NavigationPopupTest extends ChromeShellTestBase {
         }
 
         @Override
+        public NavigationEntry getEntryAtIndex(int index) {
+            return null;
+        }
+
+        @Override
         public NavigationEntry getPendingEntry() {
             return null;
         }

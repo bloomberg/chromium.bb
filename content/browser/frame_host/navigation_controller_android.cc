@@ -306,6 +306,18 @@ void NavigationControllerAndroid::SetUseDesktopUserAgent(
 }
 
 base::android::ScopedJavaLocalRef<jobject>
+NavigationControllerAndroid::GetEntryAtIndex(JNIEnv* env,
+                                             jobject obj,
+                                             int index) {
+  if (index < 0 || index >= navigation_controller_->GetEntryCount())
+    return base::android::ScopedJavaLocalRef<jobject>();
+
+  content::NavigationEntry* entry =
+      navigation_controller_->GetEntryAtIndex(index);
+  return CreateJavaNavigationEntry(env, entry, index);
+}
+
+base::android::ScopedJavaLocalRef<jobject>
 NavigationControllerAndroid::GetPendingEntry(JNIEnv* env, jobject obj) {
   content::NavigationEntry* entry = navigation_controller_->GetPendingEntry();
 

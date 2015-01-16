@@ -142,6 +142,13 @@ public interface NavigationController {
     public void setUseDesktopUserAgent(boolean override, boolean reloadOnChange);
 
     /**
+     * Return the NavigationEntry at the given index.
+     * @param index Index to retrieve the NavigationEntry for.
+     * @return Entry containing info about the navigation, null if the index is out of bounds.
+     */
+    public NavigationEntry getEntryAtIndex(int index);
+
+    /**
      * @return The pending {@link NavigationEntry} for this controller or {@code null} if none
      *         exists.
      */
