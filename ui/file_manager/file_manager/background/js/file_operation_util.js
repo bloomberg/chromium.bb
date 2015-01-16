@@ -580,7 +580,7 @@ fileOperationUtil.Task.prototype.requestCancel = function() {
   if (this.cancelCallback_) {
     var callback = this.cancelCallback_;
     this.cancelCallback_ = null;
-    callack();
+    callback();
   }
 };
 
