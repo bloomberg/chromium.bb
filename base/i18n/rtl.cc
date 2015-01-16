@@ -74,8 +74,8 @@ std::string GetConfiguredLocale() {
 }
 
 // Convert the ICU canonicalized locale to a string.
-std::string GetCanonicalLocale(const char* locale) {
-  return GetLocaleString(icu::Locale::createCanonical(locale));
+std::string GetCanonicalLocale(const std::string& locale) {
+  return GetLocaleString(icu::Locale::createCanonical(locale.c_str()));
 }
 
 // Convert Chrome locale name to ICU locale name

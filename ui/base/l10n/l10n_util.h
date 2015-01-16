@@ -20,10 +20,6 @@
 
 namespace l10n_util {
 
-// The same as base::i18n::GetCanonicalLocale(const char*), but takes
-// std::string as an argument.
-UI_BASE_EXPORT std::string GetCanonicalLocale(const std::string& locale);
-
 // Takes normalized locale as |locale|. Returns language part (before '-').
 UI_BASE_EXPORT std::string GetLanguage(const std::string& locale);
 

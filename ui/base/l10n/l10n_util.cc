@@ -310,10 +310,6 @@ base::LazyInstance<std::vector<std::string>, AvailableLocalesTraits>
 
 namespace l10n_util {
 
-std::string GetCanonicalLocale(const std::string& locale) {
-  return base::i18n::GetCanonicalLocale(locale.c_str());
-}
-
 std::string GetLanguage(const std::string& locale) {
   const std::string::size_type hyphen_pos = locale.find('-');
   return std::string(locale, 0, hyphen_pos);
@@ -434,14 +430,15 @@ std::string GetApplicationLocaleInternal(const std::string& pref_locale) {
 
   // First, try the preference value.
   if (!pref_locale.empty())
-    candidates.push_back(GetCanonicalLocale(pref_locale));
+    candidates.push_back(base::i18n::GetCanonicalLocale(pref_locale));
 
   // Next, try the overridden locale.
   const std::vector<std::string>& languages = l10n_util::GetLocaleOverrides();
   if (!languages.empty()) {
     candidates.reserve(candidates.size() + languages.size());
     std::transform(languages.begin(), languages.end(),
-                   std::back_inserter(candidates), &GetCanonicalLocale);
+                   std::back_inserter(candidates),
+                   &base::i18n::GetCanonicalLocale);
   } else {
     // If no override was set, defer to ICU
     candidates.push_back(base::i18n::GetConfiguredLocale());

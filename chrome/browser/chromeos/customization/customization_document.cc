@@ -10,6 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/i18n/rtl.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
@@ -42,7 +43,6 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_fetcher.h"
-#include "ui/base/l10n/l10n_util.h"
 
 #if !defined(USE_ATHENA)
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
@@ -334,9 +334,8 @@ void StartupCustomizationDocument::Init(
   base::SplitString(initial_locale_, ',', &configured_locales_);
 
   // Convert ICU locale to chrome ("en_US" to "en-US", etc.).
-  std::for_each(configured_locales_.begin(),
-                configured_locales_.end(),
-                l10n_util::GetCanonicalLocale);
+  std::for_each(configured_locales_.begin(), configured_locales_.end(),
+                base::i18n::GetCanonicalLocale);
 
   // Let's always have configured_locales_.front() a valid entry.
   if (configured_locales_.size() == 0)
