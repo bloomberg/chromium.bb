@@ -52,12 +52,7 @@
           "can_use_on_swarming_builders": true
         }
       },
-      {
-        "test": "gpu_unittests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        }
-      },
+      "gpu_unittests",
       "google_apis_unittests",
       {
         "test": "interactive_ui_tests",
@@ -186,12 +181,7 @@
           "can_use_on_swarming_builders": true
         }
       },
-      {
-        "test": "gpu_unittests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        }
-      },
+      "gpu_unittests",
       "google_apis_unittests",
       {
         "test": "interactive_ui_tests",
@@ -320,12 +310,7 @@
           "can_use_on_swarming_builders": true
         }
       },
-      {
-        "test": "gpu_unittests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        }
-      },
+      "gpu_unittests",
       "google_apis_unittests",
       {
         "test": "interactive_ui_tests",
@@ -454,12 +439,7 @@
           "can_use_on_swarming_builders": true
         }
       },
-      {
-        "test": "gpu_unittests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        }
-      },
+      "gpu_unittests",
       "google_apis_unittests",
       {
         "test": "interactive_ui_tests",
