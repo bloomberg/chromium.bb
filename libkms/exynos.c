@@ -25,6 +25,7 @@
 #include <sys/ioctl.h>
 #include "xf86drm.h"
 
+#include "libdrm.h"
 #include "exynos_drm.h"
 
 struct exynos_bo
@@ -124,7 +125,7 @@ static int
 exynos_bo_map(struct kms_bo *_bo, void **out)
 {
 	struct exynos_bo *bo = (struct exynos_bo *)_bo;
-	struct drm_exynos_gem_map_off arg;
+	struct drm_mode_map_dumb arg;
 	void *map = NULL;
 	int ret;
 
@@ -137,11 +138,11 @@ exynos_bo_map(struct kms_bo *_bo, void **out)
 	memset(&arg, 0, sizeof(arg));
 	arg.handle = bo->base.handle;
 
-	ret = drmCommandWriteRead(bo->base.kms->fd, DRM_EXYNOS_GEM_MAP_OFFSET, &arg, sizeof(arg));
+	ret = drmIoctl(bo->base.kms->fd, DRM_IOCTL_MODE_MAP_DUMB, &arg);
 	if (ret)
 		return ret;
 
-	map = mmap(0, bo->base.size, PROT_READ | PROT_WRITE, MAP_SHARED, bo->base.kms->fd, arg.offset);
+	map = drm_mmap(0, bo->base.size, PROT_READ | PROT_WRITE, MAP_SHARED, bo->base.kms->fd, arg.offset);
 	if (map == MAP_FAILED)
 		return -errno;
 

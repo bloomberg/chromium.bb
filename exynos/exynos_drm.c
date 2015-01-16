@@ -283,20 +283,25 @@ drm_public void *exynos_bo_map(struct exynos_bo *bo)
 {
 	if (!bo->vaddr) {
 		struct exynos_device *dev = bo->dev;
-		struct drm_exynos_gem_mmap req = {
-			.handle = bo->handle,
-			.size	= bo->size,
-		};
+		struct drm_mode_map_dumb arg;
+		void *map = NULL;
 		int ret;
 
-		ret = drmIoctl(dev->fd, DRM_IOCTL_EXYNOS_GEM_MMAP, &req);
+		memset(&arg, 0, sizeof(arg));
+		arg.handle = bo->handle;
+
+		ret = drmIoctl(dev->fd, DRM_IOCTL_MODE_MAP_DUMB, &arg);
 		if (ret) {
-			fprintf(stderr, "failed to mmap[%s].\n",
+			fprintf(stderr, "failed to map dumb buffer[%s].\n",
 				strerror(errno));
 			return NULL;
 		}
 
-		bo->vaddr = (void *)(uintptr_t)req.mapped;
+		map = drm_mmap(0, bo->size, PROT_READ | PROT_WRITE, MAP_SHARED,
+				dev->fd, arg.offset);
+
+		if (map != MAP_FAILED)
+			bo->vaddr = map;
 	}
 
 	return bo->vaddr;
