@@ -8,6 +8,7 @@
 
 #include "cc/blink/web_blend_mode.h"
 #include "cc/resources/clip_display_item.h"
+#include "cc/resources/clip_path_display_item.h"
 #include "cc/resources/drawing_display_item.h"
 #include "cc/resources/filter_display_item.h"
 #include "cc/resources/float_clip_display_item.h"
@@ -51,6 +52,17 @@ void WebDisplayItemListImpl::appendClipItem(
 
 void WebDisplayItemListImpl::appendEndClipItem() {
   display_item_list_->AppendItem(cc::EndClipDisplayItem::Create());
+}
+
+void WebDisplayItemListImpl::appendClipPathItem(const SkPath& clip_path,
+                                                SkRegion::Op clip_op,
+                                                bool antialias) {
+  display_item_list_->AppendItem(
+      cc::ClipPathDisplayItem::Create(clip_path, clip_op, antialias));
+}
+
+void WebDisplayItemListImpl::appendEndClipPathItem() {
+  display_item_list_->AppendItem(cc::EndClipPathDisplayItem::Create());
 }
 
 void WebDisplayItemListImpl::appendFloatClipItem(
