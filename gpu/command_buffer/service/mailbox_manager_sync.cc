@@ -31,11 +31,6 @@ bool SkipTextureWorkarounds(const Texture* texture) {
   if (texture->target() != GL_TEXTURE_2D || needs_mips || !texture->IsDefined())
     return true;
 
-  // Skip compositor resources/tile textures.
-  // TODO: Remove this, see crbug.com/399226.
-  if (texture->pool() == GL_TEXTURE_POOL_MANAGED_CHROMIUM)
-    return true;
-
   return false;
 }
 

@@ -4,12 +4,14 @@
 
 #include "gpu/command_buffer/service/async_pixel_transfer_manager.h"
 
+#include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/sys_info.h"
 #include "gpu/command_buffer/service/async_pixel_transfer_manager_egl.h"
 #include "gpu/command_buffer/service/async_pixel_transfer_manager_idle.h"
 #include "gpu/command_buffer/service/async_pixel_transfer_manager_stub.h"
 #include "gpu/command_buffer/service/async_pixel_transfer_manager_sync.h"
+#include "gpu/command_buffer/service/gpu_switches.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
 
@@ -75,6 +77,13 @@ bool AllowTransferThreadForGpu() {
 AsyncPixelTransferManager* AsyncPixelTransferManager::Create(
     gfx::GLContext* context) {
   DCHECK(context->IsCurrent(NULL));
+  // Threaded mailbox uses EGLImage which conflicts with EGL uploader.
+  // The spec only allows one EGL image per sibling group, but currently the
+  // image handle cannot be shared between the threaded mailbox code and
+  // AsyncPixelTransferManagerEGL.
+  bool uses_threaded_mailboxes =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableThreadedTextureMailboxes);
   switch (gfx::GetGLImplementation()) {
     case gfx::kGLImplementationEGLGLES2:
       DCHECK(context);
@@ -84,6 +93,7 @@ AsyncPixelTransferManager* AsyncPixelTransferManager::Create(
           context->HasExtension("EGL_KHR_image_base") &&
           context->HasExtension("EGL_KHR_gl_texture_2D_image") &&
           context->HasExtension("GL_OES_EGL_image") &&
+          !uses_threaded_mailboxes &&
           AllowTransferThreadForGpu()) {
         TRACE_EVENT0("gpu", "AsyncPixelTransferManager_CreateWithThread");
         return new AsyncPixelTransferManagerEGL;
