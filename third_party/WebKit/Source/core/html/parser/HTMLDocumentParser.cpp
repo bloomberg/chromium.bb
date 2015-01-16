@@ -509,6 +509,13 @@ void HTMLDocumentParser::pumpPendingSpeculations()
     ASSERT(!isScheduledForResume());
     ASSERT(!inPumpSession());
 
+    // FIXME: Here should never be reached when there is a blocking script,
+    // but it happens in unknown scenarios. See https://crbug.com/440901
+    if (isWaitingForScripts()) {
+        m_parserScheduler->scheduleForResume();
+        return;
+    }
+
     // Do not allow pumping speculations in nested event loops.
     if (m_pumpSpeculationsSessionNestingLevel) {
         m_parserScheduler->scheduleForResume();
