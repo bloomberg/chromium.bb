@@ -25,7 +25,15 @@ ServiceWorkerRegistrationHandle::ServiceWorkerRegistrationHandle(
       ref_count_(1),
       registration_(registration) {
   DCHECK(registration_.get());
-  SetVersionAttributes(registration->installing_version(),
+  ChangedVersionAttributesMask changed_mask;
+  if (registration->installing_version())
+    changed_mask.add(ChangedVersionAttributesMask::INSTALLING_VERSION);
+  if (registration->waiting_version())
+    changed_mask.add(ChangedVersionAttributesMask::WAITING_VERSION);
+  if (registration->active_version())
+    changed_mask.add(ChangedVersionAttributesMask::ACTIVE_VERSION);
+  SetVersionAttributes(changed_mask,
+                       registration->installing_version(),
                        registration->waiting_version(),
                        registration->active_version());
   registration_->AddListener(this);
@@ -60,7 +68,8 @@ void ServiceWorkerRegistrationHandle::OnVersionAttributesChanged(
     ChangedVersionAttributesMask changed_mask,
     const ServiceWorkerRegistrationInfo& info) {
   DCHECK_EQ(registration->id(), registration_->id());
-  SetVersionAttributes(registration->installing_version(),
+  SetVersionAttributes(changed_mask,
+                       registration->installing_version(),
                        registration->waiting_version(),
                        registration->active_version());
 }
@@ -68,63 +77,49 @@ void ServiceWorkerRegistrationHandle::OnVersionAttributesChanged(
 void ServiceWorkerRegistrationHandle::OnRegistrationFailed(
     ServiceWorkerRegistration* registration) {
   DCHECK_EQ(registration->id(), registration_->id());
-  ClearVersionAttributes();
+  ChangedVersionAttributesMask changed_mask(
+      ChangedVersionAttributesMask::INSTALLING_VERSION |
+      ChangedVersionAttributesMask::WAITING_VERSION |
+      ChangedVersionAttributesMask::ACTIVE_VERSION);
+  SetVersionAttributes(changed_mask, nullptr, nullptr, nullptr);
 }
 
 void ServiceWorkerRegistrationHandle::OnUpdateFound(
     ServiceWorkerRegistration* registration) {
   if (!dispatcher_host_)
-    return;  // Could be NULL in some tests.
+    return;  // Could be nullptr in some tests.
   dispatcher_host_->Send(new ServiceWorkerMsg_UpdateFound(
       kDocumentMainThreadId, GetObjectInfo()));
 }
 
 void ServiceWorkerRegistrationHandle::SetVersionAttributes(
+    ChangedVersionAttributesMask changed_mask,
     ServiceWorkerVersion* installing_version,
     ServiceWorkerVersion* waiting_version,
     ServiceWorkerVersion* active_version) {
-  ChangedVersionAttributesMask mask;
-
-  if (installing_version != installing_version_.get()) {
-    installing_version_ = installing_version;
-    mask.add(ChangedVersionAttributesMask::INSTALLING_VERSION);
-  }
-  if (waiting_version != waiting_version_.get()) {
-    waiting_version_ = waiting_version;
-    mask.add(ChangedVersionAttributesMask::WAITING_VERSION);
-  }
-  if (active_version != active_version_.get()) {
-    active_version_ = active_version;
-    mask.add(ChangedVersionAttributesMask::ACTIVE_VERSION);
-  }
-
   if (!dispatcher_host_)
-    return;  // Could be NULL in some tests.
-  if (!mask.changed())
+    return;  // Could be nullptr in some tests.
+  if (!changed_mask.changed())
     return;
 
   ServiceWorkerVersionAttributes attributes;
-  if (mask.installing_changed()) {
+  if (changed_mask.installing_changed()) {
     attributes.installing =
         dispatcher_host_->CreateAndRegisterServiceWorkerHandle(
             installing_version);
   }
-  if (mask.waiting_changed()) {
+  if (changed_mask.waiting_changed()) {
     attributes.waiting =
         dispatcher_host_->CreateAndRegisterServiceWorkerHandle(waiting_version);
   }
-  if (mask.active_changed()) {
+  if (changed_mask.active_changed()) {
     attributes.active =
         dispatcher_host_->CreateAndRegisterServiceWorkerHandle(active_version);
   }
 
   dispatcher_host_->Send(new ServiceWorkerMsg_SetVersionAttributes(
       kDocumentMainThreadId, provider_id_, handle_id_,
-      mask.changed(), attributes));
-}
-
-void ServiceWorkerRegistrationHandle::ClearVersionAttributes() {
-  SetVersionAttributes(NULL, NULL, NULL);
+      changed_mask.changed(), attributes));
 }
 
 }  // namespace content

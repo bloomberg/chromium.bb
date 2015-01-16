@@ -54,14 +54,12 @@ class ServiceWorkerRegistrationHandle
   void OnUpdateFound(ServiceWorkerRegistration* registration) override;
 
   // Sets the corresponding version field to the given version or if the given
-  // version is NULL, clears the field.
+  // version is nullptr, clears the field.
   void SetVersionAttributes(
+      ChangedVersionAttributesMask changed_mask,
       ServiceWorkerVersion* installing_version,
       ServiceWorkerVersion* waiting_version,
       ServiceWorkerVersion* active_version);
-
-  // Clears all version fields.
-  void ClearVersionAttributes();
 
   base::WeakPtr<ServiceWorkerContextCore> context_;
   ServiceWorkerDispatcherHost* dispatcher_host_;
@@ -70,9 +68,6 @@ class ServiceWorkerRegistrationHandle
   int ref_count_;  // Created with 1.
 
   scoped_refptr<ServiceWorkerRegistration> registration_;
-  scoped_refptr<ServiceWorkerVersion> installing_version_;
-  scoped_refptr<ServiceWorkerVersion> waiting_version_;
-  scoped_refptr<ServiceWorkerVersion> active_version_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerRegistrationHandle);
 };
