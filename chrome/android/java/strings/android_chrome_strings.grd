@@ -466,6 +466,69 @@ To obtain new licenses, connect to the internet and play your downloaded content
         Chrome updates are no longer supported for this version of Android.
       </message>
 
+      <!-- Account management UI strings. -->
+      <message name="IDS_ACCOUNT_MANAGEMENT_ADD_ACCOUNT_TITLE" desc="Button text for opening the add account dialog to add a new account to a user's profile. [CHAR-LIMIT=20]">
+        Add account for <ph name="ADD_ACCOUNT_USER_NAME">%1$s<ex>Pablo Picasso</ex></ph>
+      </message>
+      <message name="IDS_ACCOUNT_MANAGEMENT_TITLE" desc="Header title for the account management screen. [CHAR-LIMIT=32]">
+        Accounts
+      </message>
+      <message name="IDS_ACCOUNT_MANAGEMENT_GO_INCOGNITO_TEXT" desc="Summary text for going incognito.">
+        Go incognito to browse privately or sign in temporarily
+      </message>
+      <message name="IDS_ACCOUNT_MANAGEMENT_NOT_YOU_TEXT" desc="Title text for the section with the incognito button.">
+        Not <ph name="NOT_YOU_USER_NAME">%1$s<ex>Pablo Picasso</ex></ph>?
+      </message>
+
+      <!-- Child accounts -->
+      <message name="IDS_KIDS_ACCOUNT" desc="Identifies an account as a child account.">
+        This is a kid's account
+      </message>
+      <message name="IDS_ACCOUNT_MANAGEMENT_PARENTAL_SETTINGS" desc="Title of parental settings section of account page for child account.">
+        Parental Settings
+      </message>
+      <message name="IDS_ACCOUNT_MANAGEMENT_NO_PARENTAL_DATA" desc="String saying that we are waiting for family information.">
+        Waiting for details of parents.
+      </message>
+      <message name="IDS_ACCOUNT_MANAGEMENT_ONE_PARENT_NAME" desc="String for name of single parent for child account.">
+        This account is managed by <ph name="PARENT_NAME">%1$s<ex>parent1@gmail.com</ex></ph>.
+      </message>
+      <message name="IDS_ACCOUNT_MANAGEMENT_TWO_PARENT_NAMES" desc="String for names of two parents for child account.">
+        This account is managed by <ph name="PARENT_NAME_1">%1$s<ex>parent1@gmail.com</ex></ph> and <ph name="PARENT_NAME_2">%2$s<ex>parent2@gmail.com</ex></ph>.
+      </message>
+      <message name="IDS_ACCOUNT_MANAGEMENT_CHILD_CONTENT_TITLE" desc="Title of the Content setting, which controls which websites a child is allowed to visit.">
+        Content
+      </message>
+      <message name="IDS_ACCOUNT_MANAGEMENT_CHILD_CONTENT_APPROVED" desc="Setting that permits child accounts to visit only sites approved by their parents.">
+        Only approved sites
+      </message>
+      <message name="IDS_ACCOUNT_MANAGEMENT_CHILD_CONTENT_ALL" desc="Setting that permits child accounts to visit any websites.">
+        Uncontrolled
+      </message>
+      <message name="IDS_ACCOUNT_MANAGEMENT_CHILD_SAFE_SEARCH_TITLE" desc="Title of Google SafeSearch, which blocks inappropriate or explicit search results.">
+        SafeSearch
+      </message>
+
+      <!-- Sync strings in account management dialog -->
+      <message name="IDS_SYNC_ANDROID_MASTER_SYNC_DISABLED" desc="Message to show when Android master sync flag is disabled">
+        Android system sync disabled. Please re-enable and try again.
+      </message>
+      <message name="IDS_SYNC_IS_ENABLED" desc="Message to show when Chrome sync is enabled">
+        Sync is on
+      </message>
+      <message name="IDS_SYNC_IS_DISABLED" desc="Message to show when Chrome sync is disabled">
+        Sync is off
+      </message>
+      <message name="IDS_SYNC_NEED_PASSPHRASE" desc="Error message when a passphrase is needed for decrypting sync data.">
+        Passphrase required
+      </message>
+      <message name="IDS_SYNC_NEED_PASSWORD" desc="Error message when a password is needed for decrypting sync data.">
+        Password required
+      </message>
+      <message name="IDS_SYNC_SETUP_PROGRESS" desc="Message indicating that sync setup is in progress">
+        Setup in progress…
+      </message>
+
       <!-- Legal information preferences -->
       <message name="IDS_LEGAL_INFORMATION_TITLE" desc="Title for legal information [CHAR-LIMIT=32]">
         Legal information
@@ -527,6 +590,12 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_ADD_ACCOUNT_CONTINUE" desc="Continue button for add Google account dialog [CHAR-LIMIT=20]">
         Continue
       </message>
+      <message name="IDS_SIGN_IN_ACCOUNTS_MESSAGE" desc="Description of the signed-in section shown below the header">
+        You’re signed in to the following Google Accounts. Add or remove accounts in Android settings.
+      </message>
+      <message name="IDS_SIGN_IN_ACCOUNTS_MESSAGE_CHILD" desc="Description of the signed-in section shown below the header for child accounts">
+        You’re signed in to the following Google Account.
+      </message>
       <message name="IDS_SIGNOUT_TITLE" desc="Title for sign out of Chrome dialog [CHAR-LIMIT=40]">
         Sign out of Chrome
       </message>
@@ -546,15 +615,6 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <!-- Sync strings -->
       <message name="IDS_SIGN_IN_SYNC" desc="Sync preference title in signed-in prefs and prefix for notification related to sync [CHAR-LIMIT=32]">
         Sync
-      </message>
-      <message name="IDS_SYNC_ANDROID_MASTER_SYNC_DISABLED" desc="Message to show when Android master sync flag is disabled">
-        Android system sync disabled. Please re-enable and try again.
-      </message>
-      <message name="IDS_SYNC_NEED_PASSPHRASE" desc="Error message when a passphrase is needed for decrypting sync data.">
-        Passphrase required
-      </message>
-      <message name="IDS_SYNC_NEED_PASSWORD" desc="Error message when a password is needed for decrypting sync data.">
-        Password required
       </message>
 
       <!-- Sync error strings -->

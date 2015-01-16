@@ -1,23 +1,26 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 package org.chromium.chrome.browser.signin;
 
+import android.accounts.Account;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.provider.Settings;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.ThreadUtils;
+import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileAccountManagementMetrics;
 
 /**
- * Stub entry points and implementation interface for the account management screen.
+ * Stub entry points and implementation interface for the account management fragment delegate.
  */
 public class AccountManagementScreenHelper {
-    private static AccountManagementScreenManager sManager;
+    private static AccountManagementFragmentDelegate sDelegate;
 
     /*
      * TODO(guohui): add all Gaia service types.
@@ -30,38 +33,64 @@ public class AccountManagementScreenHelper {
     private static final String EXTRA_VALUE_GOOGLE_ACCOUNTS = "com.google";
 
     /**
-     * The screen manager interface.
+     * An account management screen delegate interface.
      */
-    public interface AccountManagementScreenManager {
+    public interface AccountManagementFragmentDelegate {
         /**
-         * Opens the account management UI screen.
-         * @param applicationContext The application context.
-         * @param profile The user profile.
-         * @param gaiaServiceType A signin::GAIAServiceType value that triggered the dialog.
+         * Opens an incognito tab.
+         * @param activity Fragment activity
          */
-        void openAccountManagementScreen(
-                Context applicationContext, Profile profile, int gaiaServiceType);
+        void openIncognitoTab(Activity activity);
+
+        /**
+         * Opens a sign out dialog.
+         * @param activity Fragment activity.
+         */
+        void openSignOutDialog(Activity activity);
+
+        /**
+         * Opens the sync customization preferences fragment.
+         * @param activity A preferences activity
+         * @param account An account to customize
+         */
+        void openSyncCustomizationFragment(Preferences activity, Account account);
+
+        /**
+         * @return Whether sign out is allowed
+         * @param activity Fragment activity
+         */
+        boolean getSignOutAllowedPreferenceValue(Activity activity);
     }
 
     /**
-     * Sets the screen manager.
-     * @param manager An implementation of AccountManagementScreenManager interface.
+     * Sets the account management fragment delegate.
+     * @param delegate An implementation of AccountManagementFragmentDelegate interface
      */
-    public static void setManager(AccountManagementScreenManager manager) {
+    public static void setDelegate(AccountManagementFragmentDelegate delegate) {
         ThreadUtils.assertOnUiThread();
-        sManager = manager;
+        sDelegate = delegate;
+    }
+
+    /**
+     * @return An instance of the account management fragment delegate, or null.
+     */
+    public static AccountManagementFragmentDelegate getDelegate() {
+        return sDelegate;
     }
 
     @CalledByNative
     private static void openAccountManagementScreen(
             Context applicationContext, Profile profile, int gaiaServiceType) {
         ThreadUtils.assertOnUiThread();
-        if (sManager == null) return;
 
-        if (gaiaServiceType == GAIA_SERVICE_TYPE_SIGNUP)
+        if (gaiaServiceType == GAIA_SERVICE_TYPE_SIGNUP) {
             openAndroidAccountCreationScreen(applicationContext);
-        else
-            sManager.openAccountManagementScreen(applicationContext, profile, gaiaServiceType);
+            return;
+        }
+
+        if (sDelegate == null) return;
+        AccountManagementFragment.openAccountManagementScreen(
+                applicationContext, profile, gaiaServiceType);
     }
 
     /**

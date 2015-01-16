@@ -124,4 +124,14 @@
     <dimen name="compositor_tab_title_favicon_size">16dp</dimen>
     <!-- Slop value for allowing slight misses on the compositor button. -->
     <dimen name="compositor_button_slop">10dp</dimen>
+
+    <!-- User Picture Dimensions -->
+    <dimen name="user_picture_size">40dp</dimen>
+    <dimen name="badged_user_picture_height">40dp</dimen>
+    <!-- The design spec is that the center of the badge should be 4dp from the right edge of the
+    user picture. This is equivalent to a badged_user_picture_width of 46dp assuming a badge_radius
+    of 10dp. -->
+    <dimen name="badged_user_picture_width">46dp</dimen>
+    <dimen name="badge_radius">10dp</dimen>
+    <dimen name="badge_border_size">1.3dp</dimen>
 </resources>
