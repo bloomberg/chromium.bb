@@ -15,6 +15,7 @@ import fixup_path
 fixup_path.FixupPath()
 
 from chromite.lib import cros_test_lib
+from chromite.lib import osutils
 
 from chromite.lib.paygen import filelib
 from chromite.lib.paygen import gslib
@@ -59,11 +60,17 @@ class TestFileManipulation(cros_test_lib.TempDirTestCase):
 
   GS_DIR = 'gs://chromeos-releases-public/unittest'
 
+  def setUp(self):
+    # Use a subdir specifically for the cache so we can use the tempdir for
+    # other things (including tempfiles by gsutil/etc...).
+    self.filesdir = os.path.join(self.tempdir, 'unittest-cache')
+    osutils.SafeMakedirs(self.filesdir)
+
   def _SetUpDirs(self):
-    self.file1_local = os.path.join(self.tempdir, self.FILE1)
-    self.file2_local = os.path.join(self.tempdir, self.FILE2)
-    self.subdir_local = os.path.join(self.tempdir, self.SUBDIR)
-    self.subfile_local = os.path.join(self.tempdir, self.SUBFILE)
+    self.file1_local = os.path.join(self.filesdir, self.FILE1)
+    self.file2_local = os.path.join(self.filesdir, self.FILE2)
+    self.subdir_local = os.path.join(self.filesdir, self.SUBDIR)
+    self.subfile_local = os.path.join(self.filesdir, self.SUBFILE)
 
     self.file1_gs = os.path.join(self.GS_DIR, self.FILE1)
     self.file2_gs = os.path.join(self.GS_DIR, self.FILE2)
@@ -90,7 +97,7 @@ class TestFileManipulation(cros_test_lib.TempDirTestCase):
   def testIntegration(self):
     self._SetUpDirs()
 
-    self.assertTrue(urilib.Exists(self.tempdir, as_dir=True))
+    self.assertTrue(urilib.Exists(self.filesdir, as_dir=True))
     self.assertTrue(urilib.Exists(self.file1_local))
     self.assertTrue(urilib.Exists(self.file2_local))
     self.assertTrue(urilib.Exists(self.subfile_local))
@@ -107,13 +114,13 @@ class TestFileManipulation(cros_test_lib.TempDirTestCase):
 
     # Test ListFiles, local version.
     self.assertEquals(set(shallow_local_files),
-                      set(urilib.ListFiles(self.tempdir)))
+                      set(urilib.ListFiles(self.filesdir)))
     self.assertEquals(set(deep_local_files),
-                      set(urilib.ListFiles(self.tempdir, recurse=True)))
+                      set(urilib.ListFiles(self.filesdir, recurse=True)))
 
     # Test CopyFiles, from local to GS.
     self.assertEquals(set(deep_gs_files),
-                      set(urilib.CopyFiles(self.tempdir, self.GS_DIR)))
+                      set(urilib.CopyFiles(self.filesdir, self.GS_DIR)))
 
     # Test ListFiles, GS version.
     self.assertEquals(set(shallow_gs_files),
@@ -126,12 +133,12 @@ class TestFileManipulation(cros_test_lib.TempDirTestCase):
     self.assertFalse(urilib.Cmp(self.file2_local, self.file1_gs))
 
     # Test RemoveDirContents, local version.
-    urilib.RemoveDirContents(self.tempdir)
-    self.assertFalse(urilib.ListFiles(self.tempdir))
+    urilib.RemoveDirContents(self.filesdir)
+    self.assertFalse(urilib.ListFiles(self.filesdir))
 
     # Test CopyFiles, from GS to local.
     self.assertEquals(set(deep_local_files),
-                      set(urilib.CopyFiles(self.GS_DIR, self.tempdir)))
+                      set(urilib.CopyFiles(self.GS_DIR, self.filesdir)))
 
     # Test RemoveDirContents, GS version.
     urilib.RemoveDirContents(self.GS_DIR)
