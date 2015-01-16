@@ -76,19 +76,15 @@ void TraceOutputter::TraceDevice(const std::string& category,
 }
 
 void TraceOutputter::TraceServiceBegin(const std::string& category,
-                                       const std::string& name,
-                                       void* id) {
-  TRACE_EVENT_COPY_ASYNC_BEGIN1(TRACE_DISABLED_BY_DEFAULT("gpu.service"),
-                                  name.c_str(), this,
-                                  "gl_category", category.c_str());
+                                       const std::string& name) {
+  TRACE_EVENT_COPY_BEGIN1(TRACE_DISABLED_BY_DEFAULT("gpu.service"),
+                          name.c_str(), "gl_category", category.c_str());
 }
 
 void TraceOutputter::TraceServiceEnd(const std::string& category,
-                                     const std::string& name,
-                                     void* id) {
-  TRACE_EVENT_COPY_ASYNC_END1(TRACE_DISABLED_BY_DEFAULT("gpu.service"),
-                                name.c_str(), this,
-                                "gl_category", category.c_str());
+                                     const std::string& name) {
+  TRACE_EVENT_COPY_END1(TRACE_DISABLED_BY_DEFAULT("gpu.service"),
+                        name.c_str(), "gl_category", category.c_str());
 }
 
 GPUTrace::GPUTrace(scoped_refptr<Outputter> outputter,
@@ -132,7 +128,7 @@ GPUTrace::~GPUTrace() {
 
 void GPUTrace::Start(bool trace_service) {
   if (trace_service) {
-    outputter_->TraceServiceBegin(category_, name_, this);
+    outputter_->TraceServiceBegin(category_, name_);
   }
 
   switch (tracer_type_) {
@@ -174,7 +170,7 @@ void GPUTrace::End(bool tracing_service) {
   }
 
   if (tracing_service) {
-    outputter_->TraceServiceEnd(category_, name_, this);
+    outputter_->TraceServiceEnd(category_, name_);
   }
 }
 

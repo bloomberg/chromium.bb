@@ -134,12 +134,10 @@ class Outputter : public base::RefCounted<Outputter> {
                            int64 end_time) = 0;
 
   virtual void TraceServiceBegin(const std::string& category,
-                                 const std::string& name,
-                                 void* id) = 0;
+                                 const std::string& name) = 0;
 
   virtual void TraceServiceEnd(const std::string& category,
-                               const std::string& name,
-                               void* id) = 0;
+                               const std::string& name) = 0;
 
  protected:
   virtual ~Outputter() {}
@@ -155,12 +153,10 @@ class TraceOutputter : public Outputter {
                    int64 end_time) override;
 
   void TraceServiceBegin(const std::string& category,
-                         const std::string& name,
-                         void* id) override;
+                         const std::string& name) override;
 
   void TraceServiceEnd(const std::string& category,
-                       const std::string& name,
-                       void* id) override;
+                       const std::string& name) override;
 
  protected:
   friend class base::RefCounted<Outputter>;

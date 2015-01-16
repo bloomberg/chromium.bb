@@ -50,13 +50,11 @@ class MockOutputter : public Outputter {
                void(const std::string& category, const std::string& name,
                     int64 start_time, int64 end_time));
 
-  MOCK_METHOD3(TraceServiceBegin,
-               void(const std::string& category, const std::string& name,
-                    void* id));
+  MOCK_METHOD2(TraceServiceBegin,
+               void(const std::string& category, const std::string& name));
 
-  MOCK_METHOD3(TraceServiceEnd,
-               void(const std::string& category, const std::string& name,
-                    void* id));
+  MOCK_METHOD2(TraceServiceEnd,
+               void(const std::string& category, const std::string& name));
 
  protected:
   ~MockOutputter() {}
@@ -287,7 +285,7 @@ class BaseGpuTest : public GpuServiceTest {
                                  const std::string& category,
                                  const std::string& name) {
     EXPECT_CALL(*outputter,
-                TraceServiceBegin(category, name, NotNull()));
+                TraceServiceBegin(category, name));
   }
 
   void ExpectOutputterEndMocks(MockOutputter* outputter,
@@ -296,7 +294,7 @@ class BaseGpuTest : public GpuServiceTest {
                                int64 expect_end_time,
                                bool trace_device) {
     EXPECT_CALL(*outputter,
-                TraceServiceEnd(category, name, NotNull()));
+                TraceServiceEnd(category, name));
 
     if (trace_device) {
       EXPECT_CALL(*outputter,
