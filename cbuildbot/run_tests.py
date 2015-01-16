@@ -360,8 +360,7 @@ def _ReExecuteIfNeeded(argv, network):
     os.execvp(cmd[0], cmd)
   else:
     cgroups.Cgroup.InitSystem()
-    # Using a pid ns would be good, but CTRL+C does not play well yet.
-    namespaces.SimpleUnshare(net=not network, pid=False)
+    namespaces.SimpleUnshare(net=not network, pid=True)
     # We got our namespaces, so switch back to the user to run the tests.
     gid = int(os.environ.pop('SUDO_GID'))
     uid = int(os.environ.pop('SUDO_UID'))
