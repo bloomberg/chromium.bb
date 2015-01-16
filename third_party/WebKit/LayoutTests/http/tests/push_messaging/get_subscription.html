@@ -40,7 +40,7 @@ async_test(function(test) {
             return swRegistration.pushManager.getSubscription();
         })
         .then(function(pushSubscription) {
-            assert_equals(previousPushSubscription.endPoint, pushSubscription.endPoint,
+            assert_equals(previousPushSubscription.endpoint, pushSubscription.endpoint,
                           "Both subscription objects should have the same endpoint.");
             assert_equals(previousPushSubscription.subscriptionId, pushSubscription.subscriptionId,
                           "Both subscription objects should have the same id.");
