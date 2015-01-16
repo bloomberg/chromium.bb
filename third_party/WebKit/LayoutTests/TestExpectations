@@ -140,6 +140,11 @@ crbug.com/338794 crbug.com/192172 compositing/rtl/rtl-iframe-fixed-overflow.html
 
 crbug.com/239811 crbug.com/229113 http/tests/history/redirect-js-location-assign-0-seconds.html [ Failure Pass ]
 
+Bug(eae) [ XP ] virtual/slimmingpaint/fast/text/international/hindi-whitespace.html [ NeedsRebaseline ]
+Bug(eae) [ XP ] virtual/slimmingpaint/fast/text/international/bidi-linebreak-001.html [ NeedsRebaseline ]
+Bug(eae) [ XP ] virtual/slimmingpaint/fast/text/international/bidi-linebreak-002.html [ NeedsRebaseline ]
+Bug(eae) [ XP ] virtual/slimmingpaint/fast/text/international/bidi-linebreak-003.html [ NeedsRebaseline ]
+
 crbug.com/449242 fast/css/word-spacing-characters-complex-text.html [ Pass ImageOnlyFailure ]
 crbug.com/449242 virtual/slimmingpaint/fast/css/word-spacing-characters-complex-text.html [ Pass ImageOnlyFailure Crash ]
 
