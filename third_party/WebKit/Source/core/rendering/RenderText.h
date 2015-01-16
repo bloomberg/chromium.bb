@@ -24,6 +24,7 @@
 #define RenderText_h
 
 #include "core/dom/Text.h"
+#include "core/rendering/FloatToLayoutUnit.h"
 #include "core/rendering/RenderObject.h"
 #include "platform/LengthFunctions.h"
 #include "platform/text/TextPath.h"
@@ -90,12 +91,12 @@ public:
     float minLogicalWidth() const;
     float maxLogicalWidth() const;
 
-    void trimmedPrefWidths(float leadWidth,
-        float& firstLineMinWidth, bool& hasBreakableStart,
-        float& lastLineMinWidth, bool& hasBreakableEnd,
+    void trimmedPrefWidths(FloatWillBeLayoutUnit leadWidth,
+        FloatWillBeLayoutUnit& firstLineMinWidth, bool& hasBreakableStart,
+        FloatWillBeLayoutUnit& lastLineMinWidth, bool& hasBreakableEnd,
         bool& hasBreakableChar, bool& hasBreak,
-        float& firstLineMaxWidth, float& lastLineMaxWidth,
-        float& minWidth, float& maxWidth, bool& stripFrontSpaces,
+        FloatWillBeLayoutUnit& firstLineMaxWidth, FloatWillBeLayoutUnit& lastLineMaxWidth,
+        FloatWillBeLayoutUnit& minWidth, FloatWillBeLayoutUnit& maxWidth, bool& stripFrontSpaces,
         TextDirection);
 
     virtual IntRect linesBoundingBox() const;

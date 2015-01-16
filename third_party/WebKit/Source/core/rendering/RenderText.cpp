@@ -770,12 +770,12 @@ ALWAYS_INLINE float RenderText::widthFromCache(const Font& f, int start, int len
     return f.width(run, fallbackFonts, glyphOverflow);
 }
 
-void RenderText::trimmedPrefWidths(float leadWidth,
-    float& firstLineMinWidth, bool& hasBreakableStart,
-    float& lastLineMinWidth, bool& hasBreakableEnd,
+void RenderText::trimmedPrefWidths(FloatWillBeLayoutUnit leadWidth,
+    FloatWillBeLayoutUnit& firstLineMinWidth, bool& hasBreakableStart,
+    FloatWillBeLayoutUnit& lastLineMinWidth, bool& hasBreakableEnd,
     bool& hasBreakableChar, bool& hasBreak,
-    float& firstLineMaxWidth, float& lastLineMaxWidth,
-    float& minWidth, float& maxWidth, bool& stripFrontSpaces,
+    FloatWillBeLayoutUnit& firstLineMaxWidth, FloatWillBeLayoutUnit& lastLineMaxWidth,
+    FloatWillBeLayoutUnit& minWidth, FloatWillBeLayoutUnit& maxWidth, bool& stripFrontSpaces,
     TextDirection direction)
 {
     bool collapseWhiteSpace = style()->collapseWhiteSpace();
@@ -791,12 +791,12 @@ void RenderText::trimmedPrefWidths(float leadWidth,
     int len = textLength();
 
     if (!len || (stripFrontSpaces && text().impl()->containsOnlyWhitespace())) {
-        firstLineMinWidth = 0;
-        lastLineMinWidth = 0;
-        firstLineMaxWidth = 0;
-        lastLineMaxWidth = 0;
-        minWidth = 0;
-        maxWidth = 0;
+        firstLineMinWidth = FloatWillBeLayoutUnit();
+        lastLineMinWidth = FloatWillBeLayoutUnit();
+        firstLineMaxWidth = FloatWillBeLayoutUnit();
+        lastLineMaxWidth = FloatWillBeLayoutUnit();
+        minWidth = FloatWillBeLayoutUnit();
+        maxWidth = FloatWillBeLayoutUnit();
         hasBreak = false;
         return;
     }
@@ -845,20 +845,20 @@ void RenderText::trimmedPrefWidths(float leadWidth,
                 lastLineMaxWidth = widthFromCache(f, i, linelen, leadWidth + lastLineMaxWidth, direction, 0, 0);
                 if (firstLine) {
                     firstLine = false;
-                    leadWidth = 0;
+                    leadWidth = FloatWillBeLayoutUnit();
                     firstLineMaxWidth = lastLineMaxWidth;
                 }
                 i += linelen;
             } else if (firstLine) {
-                firstLineMaxWidth = 0;
+                firstLineMaxWidth = FloatWillBeLayoutUnit();
                 firstLine = false;
-                leadWidth = 0;
+                leadWidth = FloatWillBeLayoutUnit();
             }
 
             if (i == len - 1) {
                 // A <pre> run that ends with a newline, as in, e.g.,
                 // <pre>Some text\n\n<span>More text</pre>
-                lastLineMaxWidth = 0;
+                lastLineMaxWidth = FloatWillBeLayoutUnit();
             }
         }
     }
