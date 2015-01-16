@@ -471,10 +471,13 @@ def HostTools(host, options):
     else:
       return file
   # Binutils still has some warnings when building with clang
-  warning_flags = ['-Wno-extended-offsetof', '-Wno-absolute-value',
-                   '-Wno-unused-function', '-Wno-unused-const-variable',
-                   '-Wno-unneeded-internal-declaration',
-                   '-Wno-unused-private-field', '-Wno-format-security']
+  if not options.gcc:
+    warning_flags = ['-Wno-extended-offsetof', '-Wno-absolute-value',
+                    '-Wno-unused-function', '-Wno-unused-const-variable',
+                    '-Wno-unneeded-internal-declaration',
+                    '-Wno-unused-private-field', '-Wno-format-security']
+  else:
+    warning_flags = ['-Wno-unused-function', '-Wno-unused-value']
   tools = {
       # The binutils_pnacl package is used both for bitcode linking (gold) and
       # for its conventional use with arm-nacl-clang.
@@ -1024,7 +1027,7 @@ if __name__ == '__main__':
       packages.update(pnacl_targetlibs.UnsandboxedIRT(
           'x86-32-%s' % pynacl.platform.GetOS(), unsandboxed_irt_canonical))
 
-    if pynacl.platform.IsLinux64() and args.build_sbtc:
+    if args.build_sbtc:
       packages.update(pnacl_sandboxed_translator.SandboxedTranslators(
         SANDBOXED_TRANSLATOR_ARCHES))
 

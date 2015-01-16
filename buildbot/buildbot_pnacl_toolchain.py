@@ -62,8 +62,11 @@ toolchain_install_dir = os.path.join(
 def ToolchainBuildCmd(sync=False, extra_flags=[]):
   sync_flag = ['--sync'] if sync else []
   executable_args = [os.path.join('toolchain_build','toolchain_build_pnacl.py'),
-                     '--verbose', '--clobber', '--build-sbtc',
+                     '--verbose', '--clobber',
                      '--packages-file', TEMP_PACKAGES_FILE]
+
+  if pynacl.platform.IsLinux64():
+    executable_args.append('--build-sbtc')
 
   if args.buildbot:
     executable_args.append('--buildbot')
