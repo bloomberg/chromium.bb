@@ -91,9 +91,9 @@ class RsaHashedAlgorithm : public AlgorithmImplementation {
                                 blink::WebCryptoKey* key) const override;
 
  private:
-  CK_FLAGS generate_flags_;
-  blink::WebCryptoKeyUsageMask all_public_key_usages_;
-  blink::WebCryptoKeyUsageMask all_private_key_usages_;
+  const CK_FLAGS generate_flags_;
+  const blink::WebCryptoKeyUsageMask all_public_key_usages_;
+  const blink::WebCryptoKeyUsageMask all_private_key_usages_;
 };
 
 }  // namespace webcrypto
