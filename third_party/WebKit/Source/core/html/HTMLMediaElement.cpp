@@ -3689,9 +3689,7 @@ void HTMLMediaElement::updateTextTrackDisplay()
 {
     WTF_LOG(Media, "HTMLMediaElement::updateTextTrackDisplay(%p)", this);
 
-    if (!createMediaControls())
-        return;
-
+    ensureMediaControls();
     mediaControls()->updateTextTrackDisplay();
 }
 
@@ -3762,10 +3760,10 @@ bool HTMLMediaElement::hasMediaControls() const
     return false;
 }
 
-bool HTMLMediaElement::createMediaControls()
+void HTMLMediaElement::ensureMediaControls()
 {
     if (hasMediaControls())
-        return true;
+        return;
 
     RefPtrWillBeRawPtr<MediaControls> mediaControls = MediaControls::create(*this);
 
@@ -3777,8 +3775,6 @@ bool HTMLMediaElement::createMediaControls()
 
     if (!shouldShowControls() || !inDocument())
         mediaControls->hide();
-
-    return true;
 }
 
 void HTMLMediaElement::configureMediaControls()
@@ -3789,9 +3785,7 @@ void HTMLMediaElement::configureMediaControls()
         return;
     }
 
-    if (!createMediaControls())
-        return;
-
+    ensureMediaControls();
     mediaControls()->reset();
     if (shouldShowControls())
         mediaControls()->show();
@@ -3825,9 +3819,8 @@ void HTMLMediaElement::configureTextTrackDisplay(VisibilityChangeAssumption assu
 
     if (!m_haveVisibleTextTrack && !hasMediaControls())
         return;
-    if (!createMediaControls())
-        return;
 
+    ensureMediaControls();
     mediaControls()->changedClosedCaptionsVisibility();
 
     updateActiveTextTrackCues(currentTime());
