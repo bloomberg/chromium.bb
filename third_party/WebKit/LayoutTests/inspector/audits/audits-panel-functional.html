@@ -51,13 +51,22 @@ JSON = {};
 <script>
 var test = function()
 {
-    InspectorTest.reloadPage();
+    InspectorTest.reloadPage(onPageReloaded);
     var pendingStyleSheetsCount = 4;
-    InspectorTest.addSniffer(WebInspector.CSSStyleModel.prototype, "_styleSheetAdded", onStyleSheetLoaded, true);
+    InspectorTest.addSniffer(WebInspector.CSSStyleModel.prototype, "_styleSheetAdded", maybeStylesheetsLoaded, true);
 
-    function onStyleSheetLoaded()
+    var pageReloaded = false;
+    function onPageReloaded()
     {
-        if (--pendingStyleSheetsCount)
+        pageReloaded = true;
+        maybeStylesheetsLoaded();
+    }
+
+    function maybeStylesheetsLoaded()
+    {
+        if (!pageReloaded)
+            return;
+        if (WebInspector.cssModel.styleSheetHeaders().length !== pendingStyleSheetsCount)
             return;
         WebInspector.AuditRuleResult.resourceDomain = function() {
             return "[domain]";
