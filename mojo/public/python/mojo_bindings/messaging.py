@@ -9,10 +9,10 @@ import struct
 import sys
 import weakref
 
-import mojo.bindings.serialization as serialization
+import mojo_bindings.serialization as serialization
 
 # pylint: disable=E0611,F0401
-import mojo.system as system
+import mojo_system as system
 
 
 # The flag values for a message header.

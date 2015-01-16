@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/services/view_manager/public/cpp/lib/view_manager_client_impl.h"
+#include "view_manager/public/cpp/lib/view_manager_client_impl.h"
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
@@ -12,10 +12,10 @@
 #include "mojo/public/cpp/application/service_provider_impl.h"
 #include "mojo/public/interfaces/application/service_provider.mojom.h"
 #include "mojo/public/interfaces/application/shell.mojom.h"
-#include "mojo/services/view_manager/public/cpp/lib/view_private.h"
-#include "mojo/services/view_manager/public/cpp/util.h"
-#include "mojo/services/view_manager/public/cpp/view_manager_delegate.h"
-#include "mojo/services/view_manager/public/cpp/view_observer.h"
+#include "view_manager/public/cpp/lib/view_private.h"
+#include "view_manager/public/cpp/util.h"
+#include "view_manager/public/cpp/view_manager_delegate.h"
+#include "view_manager/public/cpp/view_observer.h"
 
 namespace mojo {
 
@@ -36,6 +36,7 @@ View* AddViewToViewManager(ViewManagerClientImpl* client,
   private_view.set_id(view_data->view_id);
   private_view.set_visible(view_data->visible);
   private_view.set_drawn(view_data->drawn);
+  private_view.set_viewport_metrics(view_data->viewport_metrics.Pass());
   private_view.set_properties(
       view_data->properties.To<std::map<std::string, std::vector<uint8_t>>>());
   client->AddView(view);
@@ -274,12 +275,11 @@ void ViewManagerClientImpl::OnEmbed(
   ServiceProviderImpl* exported_services = nullptr;
   scoped_ptr<ServiceProvider> remote;
 
-  if (parent_services.is_pending()) {
-    // BindToRequest() binds the lifetime of |exported_services| to the pipe.
-    exported_services = new ServiceProviderImpl;
-    BindToRequest(exported_services, &parent_services);
-    remote.reset(exported_services->CreateRemoteServiceProvider());
-  }
+  // BindToRequest() binds the lifetime of |exported_services| to the pipe.
+  exported_services = new ServiceProviderImpl;
+  BindToRequest(exported_services, &parent_services);
+  remote.reset(exported_services->CreateRemoteServiceProvider());
+
   window_manager_.Bind(window_manager_pipe.Pass());
   window_manager_.set_client(this);
   // base::Unretained() is safe here as |window_manager_| is bound to our

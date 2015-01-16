@@ -10,7 +10,7 @@ class Timeout implements Comparable<Timeout> {
 
   Timeout(this.port, this.deadline);
 
-  int compareTo(Timeout other)  => other.daedline - deadline;
+  int compareTo(Timeout other)  => other.deadline - deadline;
 }
 
 class TimerQueue {

@@ -42,7 +42,7 @@ class Function(object):
 
   def Finalize(self):
     self.result_param = Param(self, len(self.params), 'result')
-    self.result_param.Out(self.return_type)
+    self.result_param.Out(self.return_type).AlwaysWritten()
 
 class Param(object):
   def __init__(self, parent, uid, name, param_type=None):
@@ -56,7 +56,9 @@ class Param(object):
     self.is_output = False
     self.is_array = False
     self.is_struct = False
+    self.is_extensible = False
     self.is_optional = False
+    self.is_always_written = False
 
   def GetSizeParam(self):
     assert self.size
@@ -76,11 +78,16 @@ class Param(object):
     self.is_array = True
     return self
 
-  def InStruct(self, ty):
+  # An "extensible" struct is one where we don't know the exact size - rather
+  # the first 4 bytes of the struct declare the length of the struct.  This
+  # allows forwards and backwards compatibility with additive changes to the
+  # structure definition.
+  def InExtensibleStruct(self, ty):
     self.base_type = ty
     self.param_type = 'const struct ' + ty + '*'
     self.is_input = True
     self.is_struct = True
+    self.is_extensible = True
     return self
 
   def InOut(self, ty):
@@ -104,9 +111,24 @@ class Param(object):
     self.is_output = True
     return self
 
+  # The size of the struct is fixed by the API, it cannot be extended.
+  def OutFixedStruct(self, ty):
+    self.base_type = ty
+    self.param_type = 'struct ' + ty + '*'
+    self.is_output = True
+    self.is_struct = True
+    self.is_extensible = False
+    return self
+
+  # Declares that it is valid to pass a null pointer.
   def Optional(self):
     assert not self.IsPassedByValue()
     self.is_optional = True
+    return self
+
+  def AlwaysWritten(self):
+    assert self.is_output, self
+    self.is_always_written = True
     return self
 
   def IsScalar(self):

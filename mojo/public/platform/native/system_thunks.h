@@ -40,21 +40,14 @@ struct MojoSystemThunks {
   MojoResult (*Close)(MojoHandle handle);
   MojoResult (*Wait)(MojoHandle handle,
                      MojoHandleSignals signals,
-                     MojoDeadline deadline);
+                     MojoDeadline deadline,
+                     struct MojoHandleSignalsState* signals_state);
   MojoResult (*WaitMany)(const MojoHandle* handles,
                          const MojoHandleSignals* signals,
                          uint32_t num_handles,
-                         MojoDeadline deadline);
-  MojoResult (*NewWait)(MojoHandle handle,
-                        MojoHandleSignals signals,
-                        MojoDeadline deadline,
-                        struct MojoHandleSignalsState* signals_state);
-  MojoResult (*NewWaitMany)(const MojoHandle* handles,
-                            const MojoHandleSignals* signals,
-                            uint32_t num_handles,
-                            MojoDeadline deadline,
-                            uint32_t* result_index,
-                            struct MojoHandleSignalsState* signals_states);
+                         MojoDeadline deadline,
+                         uint32_t* result_index,
+                         struct MojoHandleSignalsState* signals_states);
   MojoResult (*CreateMessagePipe)(
       const struct MojoCreateMessagePipeOptions* options,
       MojoHandle* message_pipe_handle0,
@@ -121,8 +114,6 @@ inline MojoSystemThunks MojoMakeSystemThunks() {
                                     MojoClose,
                                     MojoWait,
                                     MojoWaitMany,
-                                    MojoNewWait,
-                                    MojoNewWaitMany,
                                     MojoCreateMessagePipe,
                                     MojoWriteMessage,
                                     MojoReadMessage,

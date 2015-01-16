@@ -13,3 +13,5 @@ import 'dart:typed_data';
 part 'src/client.dart';
 part 'src/codec.dart';
 part 'src/interface.dart';
+part 'src/message.dart';
+part 'src/struct.dart';

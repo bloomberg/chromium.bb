@@ -9,8 +9,8 @@
 
 #include "base/basictypes.h"
 
-#include "mojo/services/input_events/public/interfaces/input_events.mojom.h"
-#include "mojo/services/view_manager/public/cpp/view.h"
+#include "input_events/public/interfaces/input_events.mojom.h"
+#include "view_manager/public/cpp/view.h"
 
 namespace mojo {
 

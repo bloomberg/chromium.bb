@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/services/network/public/cpp/web_socket_read_queue.h"
+#include "network/public/cpp/web_socket_read_queue.h"
 
 #include "base/bind.h"
 

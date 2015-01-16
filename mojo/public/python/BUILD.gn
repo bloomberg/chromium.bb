@@ -6,16 +6,14 @@ import("//third_party/cython/rules.gni")
 
 group("python") {
   deps = [
-    ":base",
     ":bindings",
-    ":system",
-    ":system_impl",
+    ":mojo_system",
+    ":mojo_system_impl",
   ]
 }
 
 # GYP version: mojo.gyp:mojo_python_system
-python_binary_module("system") {
-  python_base_module = "mojo"
+python_binary_module("mojo_system") {
   configs = [ "../build/config:mojo_sdk" ]
   deps = [
     ":system_embedded",
@@ -24,15 +22,14 @@ python_binary_module("system") {
 
 python_binary_source_set("system_embedded") {
   cython_sources = [
-    "mojo/c_async_waiter.pxd",
-    "mojo/c_core.pxd",
-    "mojo/c_export.pxd",
-    "mojo/c_thunks.pxd",
-    "mojo/system.pyx",
+    "c_async_waiter.pxd",
+    "c_core.pxd",
+    "c_export.pxd",
+    "c_thunks.pxd",
+    "mojo_system.pyx",
   ]
   configs = [ "../build/config:mojo_sdk" ]
   deps = [
-    ":base",
     "../c/system",
     "../cpp/bindings:callback",
     "../cpp/system",
@@ -41,13 +38,12 @@ python_binary_source_set("system_embedded") {
   ]
 }
 
-python_binary_module("system_impl") {
-  python_base_module = "mojo"
+python_binary_module("mojo_system_impl") {
   cython_sources = [
-    "mojo/c_environment.pxd",
-    "mojo/c_export.pxd",
-    "mojo/c_thunks.pxd",
-    "mojo/system_impl.pyx",
+    "c_environment.pxd",
+    "c_export.pxd",
+    "c_thunks.pxd",
+    "mojo_system_impl.pyx",
   ]
   sources = [
     "src/python_system_helper.cc",
@@ -55,7 +51,6 @@ python_binary_module("system_impl") {
   ]
   configs = [ "../build/config:mojo_sdk" ]
   deps = [
-    ":base",
     ":python_common",
     "../c/environment",
     "../c/system",
@@ -82,30 +77,20 @@ python_binary_source_set("python_common") {
   ]
 }
 
-copy("base") {
-  sources = [
-    "mojo/__init__.py",
-  ]
-  outputs = [
-    "$root_out_dir/python/mojo/{{source_file_part}}",
-  ]
-}
-
 # GYP version: mojo.gyp:mojo_python_bindings
 copy("bindings") {
   sources = [
-    "mojo/bindings/__init__.py",
-    "mojo/bindings/descriptor.py",
-    "mojo/bindings/messaging.py",
-    "mojo/bindings/promise.py",
-    "mojo/bindings/reflection.py",
-    "mojo/bindings/serialization.py",
+    "mojo_bindings/__init__.py",
+    "mojo_bindings/descriptor.py",
+    "mojo_bindings/messaging.py",
+    "mojo_bindings/promise.py",
+    "mojo_bindings/reflection.py",
+    "mojo_bindings/serialization.py",
   ]
   outputs = [
-    "$root_out_dir/python/mojo/bindings/{{source_file_part}}",
+    "$root_out_dir/python/mojo_bindings/{{source_file_part}}",
   ]
   deps = [
-    ":base",
-    ":system",
+    ":mojo_system",
   ]
 }

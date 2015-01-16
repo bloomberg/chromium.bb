@@ -51,7 +51,8 @@ bool Connector::WaitForIncomingMessage() {
 
   MojoResult rv = Wait(message_pipe_.get(),
                        MOJO_HANDLE_SIGNAL_READABLE,
-                       MOJO_DEADLINE_INDEFINITE);
+                       MOJO_DEADLINE_INDEFINITE,
+                       nullptr);
   if (rv != MOJO_RESULT_OK) {
     NotifyError();
     return false;

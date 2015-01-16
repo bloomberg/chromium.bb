@@ -130,7 +130,8 @@ TEST_F(StashServiceTest, StashAndRetrieveHandles) {
   consumer = mojo::ScopedDataPipeConsumerHandle::From(
       stashed_objects[0]->stashed_handles[1].Pass());
   result = mojo::Wait(
-      consumer.get(), MOJO_HANDLE_SIGNAL_READABLE, MOJO_DEADLINE_INDEFINITE);
+      consumer.get(), MOJO_HANDLE_SIGNAL_READABLE, MOJO_DEADLINE_INDEFINITE,
+      nullptr);
   ASSERT_EQ(MOJO_RESULT_OK, result);
   char data = '\0';
   result = mojo::ReadDataRaw(
@@ -167,7 +168,7 @@ TEST_F(StashServiceTest, ServiceWithDeletedBackend) {
   MojoResult result =
       mojo::Wait(message_pipe.handle1.get(),
                  MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_READABLE,
-                 MOJO_DEADLINE_INDEFINITE);
+                 MOJO_DEADLINE_INDEFINITE, nullptr);
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION, result);
 }
 

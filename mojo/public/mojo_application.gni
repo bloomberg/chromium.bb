@@ -211,7 +211,7 @@ if (is_android) {
       args = [
         "--input=$rebase_input",
         "--output=$rebase_output",
-        "--line=#!mojo:android_handler",
+        "--line=#!mojo mojo:android_handler",
       ]
     }
   }

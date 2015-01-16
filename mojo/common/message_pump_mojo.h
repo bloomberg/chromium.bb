@@ -91,9 +91,11 @@ class MOJO_COMMON_EXPORT MessagePumpMojo : public base::MessagePump {
   // handle has become ready, |false| otherwise.
   bool DoInternalWork(const RunState& run_state, bool block);
 
-  // Removes the first invalid handle. This is called if MojoWaitMany finds an
+  // Removes the given invalid handle. This is called if MojoWaitMany finds an
   // invalid handle.
-  void RemoveFirstInvalidHandle(const WaitState& wait_state);
+  void RemoveInvalidHandle(const WaitState& wait_state,
+                           MojoResult result,
+                           uint32_t result_index);
 
   void SignalControlPipe(const RunState& run_state);
 

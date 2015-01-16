@@ -157,18 +157,18 @@ class ParamImpl(object):
 
   # Declare whatever variables are needed to handle this particular parameter.
   def DeclareVars(self, code):
-    raise NotImplementedError()
+    raise NotImplementedError(type(self))
 
   # Convert the untrusted representation of the parameter into a trusted
   # representation, such as a scalar value or a trusted pointer into the
   # untrusted address space.
   def ConvertParam(self):
-    raise NotImplementedError()
+    raise NotImplementedError(type(self))
 
   # For this particular parameter, what expression should be passed when
   # invoking the trusted Mojo API function?
   def CallParam(self):
-    raise NotImplementedError()
+    raise NotImplementedError(type(self))
 
   # After invoking the trusted Mojo API function, transfer data back into
   # untrusted memory.  Overriden for Out and InOut parameters.
@@ -201,14 +201,34 @@ class ScalarOutputImpl(ParamImpl):
 
   def ConvertParam(self):
     p = self.param
-    return 'ConvertScalarOutput(nap, params[%d], &%s_ptr)' % (p.uid + 1, p.name)
+    return ('ConvertScalarOutput(nap, params[%d], %s, &%s_ptr)' %
+            (p.uid + 1, CBool(p.is_optional), p.name))
 
   def CallParam(self):
-    return '&%s_value' % self.param.name
+    name = self.param.name
+    expr = '&%s_value' % name
+    if self.param.is_optional:
+      expr = '%s_ptr ? %s : NULL' % (name, expr)
+    return expr
 
   def CopyOut(self, code):
     name = self.param.name
-    code << '*%s_ptr = %s_value;' % (name, name)
+    if self.param.is_struct:
+      # C++ errors when you try to copy a volatile struct pointer.
+      # (There are no default copy constructors for this case.)
+      # memcpy instead.
+      copy_stmt = ('memcpy_volatile_out(%s_ptr, &%s_value, sizeof(%s));' %
+                   (name, name, self.param.base_type))
+    else:
+      copy_stmt = '*%s_ptr = %s_value;' % (name, name)
+
+    if self.param.is_optional:
+      code << 'if (%s_ptr != NULL) {' % (name)
+      with code.Indent():
+        code << copy_stmt
+      code << '}'
+    else:
+      code << copy_stmt
 
 
 class ScalarInOutImpl(ParamImpl):
@@ -261,18 +281,17 @@ class ArrayImpl(ParamImpl):
     return True
 
 
-class StructInputImpl(ParamImpl):
+class ExtensibleStructInputImpl(ParamImpl):
   def DeclareVars(self, code):
     code << '%s %s;' % (self.param.param_type, self.param.name)
 
   def ConvertParam(self):
     p = self.param
-    return ('ConvertStruct(nap, params[%d], %s, &%s)' %
+    return ('ConvertExtensibleStructInput(nap, params[%d], %s, &%s)' %
             (p.uid + 1, CBool(p.is_optional), p.name))
 
   def CallParam(self):
     return self.param.name
-
 
 def ImplForParam(p):
   if p.IsScalar():
@@ -280,15 +299,24 @@ def ImplForParam(p):
       if p.is_input:
         return ScalarInOutImpl(p)
       else:
-        return ScalarOutputImpl(p)
+        if p.is_always_written:
+          return ScalarOutputImpl(p)
+        else:
+          # Mojo defines that some of its outputs will not be set in specific
+          # cases.  To avoid the complexity of determining if the output was set
+          # by Mojo, copy the output's current value (possibly junk) and copy it
+          # back to untrusted memory afterwards.
+          return ScalarInOutImpl(p)
     else:
       return ScalarInputImpl(p)
   elif p.is_array:
     return ArrayImpl(p)
   elif p.is_struct:
-    return StructInputImpl(p)
-  else:
-    assert False, p
+    if p.is_input and not p.is_output and p.is_extensible:
+      return ExtensibleStructInputImpl(p)
+    if not p.is_input and p.is_output and not p.is_extensible:
+      return ScalarOutputImpl(p)
+  assert False, p.name
 
 
 def CBool(value):

@@ -2,12 +2,17 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("cpp") {
+import("../../../mojo_sdk_root.gni")
+import("$mojo_sdk_root/mojo/public/mojo_sdk.gni")
+
+mojo_sdk_source_set("cpp") {
+  restrict_external_deps = false
+  public_configs = [ "../../../public/build/config:mojo_services" ]
   sources = [
     "geometry_util.h",
   ]
 
   deps = [
-    "//mojo/services/geometry/public/interfaces",
+    "../interfaces",
   ]
 }

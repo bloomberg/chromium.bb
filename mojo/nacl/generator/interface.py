@@ -10,13 +10,15 @@ def MakeInterface():
   mojo = interface_dsl.Interface()
 
   f = mojo.Func('MojoCreateSharedBuffer', 'MojoResult')
-  f.Param('options').InStruct('MojoCreateSharedBufferOptions').Optional()
+  p = f.Param('options')
+  p.InExtensibleStruct('MojoCreateSharedBufferOptions').Optional()
   f.Param('num_bytes').In('uint64_t')
   f.Param('shared_buffer_handle').Out('MojoHandle')
 
   f = mojo.Func('MojoDuplicateBufferHandle', 'MojoResult')
   f.Param('buffer_handle').In('MojoHandle')
-  f.Param('options').InStruct('MojoDuplicateBufferHandleOptions').Optional()
+  p = f.Param('options')
+  p.InExtensibleStruct('MojoDuplicateBufferHandleOptions').Optional()
   f.Param('new_buffer_handle').Out('MojoHandle')
 
   f = mojo.Func('MojoMapBuffer', 'MojoResult')
@@ -30,7 +32,8 @@ def MakeInterface():
   f.Param('buffer').In('void*')
 
   f = mojo.Func('MojoCreateDataPipe', 'MojoResult')
-  f.Param('options').InStruct('MojoCreateDataPipeOptions').Optional()
+  p = f.Param('options')
+  p.InExtensibleStruct('MojoCreateDataPipeOptions').Optional()
   f.Param('data_pipe_producer_handle').Out('MojoHandle')
   f.Param('data_pipe_consumer_handle').Out('MojoHandle')
 
@@ -75,15 +78,20 @@ def MakeInterface():
   f.Param('handle').In('MojoHandle')
   f.Param('signals').In('MojoHandleSignals')
   f.Param('deadline').In('MojoDeadline')
+  f.Param('signals_state').OutFixedStruct('MojoHandleSignalsState').Optional()
 
   f = mojo.Func('MojoWaitMany', 'MojoResult')
   f.Param('handles').InArray('MojoHandle', 'num_handles')
   f.Param('signals').InArray('MojoHandleSignals', 'num_handles')
   f.Param('num_handles').In('uint32_t')
   f.Param('deadline').In('MojoDeadline')
+  f.Param('result_index').Out('uint32_t').Optional()
+  p = f.Param('signals_states')
+  p.OutArray('MojoHandleSignalsState', 'num_handles').Optional()
 
   f = mojo.Func('MojoCreateMessagePipe', 'MojoResult')
-  f.Param('options').InStruct('MojoCreateMessagePipeOptions').Optional()
+  p = f.Param('options')
+  p.InExtensibleStruct('MojoCreateMessagePipeOptions').Optional()
   f.Param('message_pipe_handle0').Out('MojoHandle')
   f.Param('message_pipe_handle1').Out('MojoHandle')
 

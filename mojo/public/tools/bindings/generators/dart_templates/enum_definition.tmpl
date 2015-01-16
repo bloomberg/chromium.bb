@@ -6,7 +6,7 @@
 {%-   elif loop.first %}
 {{prefix}}final int {{enum.name}}_{{field.name}} = 0;
 {%-   else %}
-{{prefix}}final int {{enum.name}}_{{field.name}} = {{enum.fields[loop.index0 - 1].name}} + 1;
+{{prefix}}final int {{enum.name}}_{{field.name}} = {{enum.name}}_{{enum.fields[loop.index0 - 1].name}} + 1;
 {%-   endif %}
 {%- endfor %}
 {%- endmacro %}

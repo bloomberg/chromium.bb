@@ -5,27 +5,12 @@
 #ifndef MOJO_EDK_SYSTEM_TEST_UTILS_H_
 #define MOJO_EDK_SYSTEM_TEST_UTILS_H_
 
-#include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
-#include "base/task_runner.h"
-#include "base/threading/thread.h"
 #include "base/time/time.h"
-
-namespace tracked_objects {
-class Location;
-}
 
 namespace mojo {
 namespace system {
 namespace test {
-
-// Posts the given task (to the given task runner) and waits for it to complete.
-// (Note: Doesn't spin the current thread's message loop, so if you're careless
-// this could easily deadlock.)
-void PostTaskAndWait(scoped_refptr<base::TaskRunner> task_runner,
-                     const tracked_objects::Location& from_here,
-                     const base::Closure& task);
 
 // A timeout smaller than |TestTimeouts::tiny_timeout()|. Warning: This may lead
 // to flakiness, but this is unavoidable if, e.g., you're trying to ensure that

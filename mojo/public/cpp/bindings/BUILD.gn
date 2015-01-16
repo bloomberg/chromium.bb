@@ -50,6 +50,7 @@ mojo_sdk_source_set("bindings") {
     "lib/router.h",
     "lib/string_serialization.cc",
     "lib/string_serialization.h",
+    "lib/union_accessor.h",
     "lib/validate_params.h",
     "lib/validation_errors.cc",
     "lib/validation_errors.h",

@@ -38,7 +38,8 @@ bool ReadTextMessage(const MessagePipeHandle& handle, std::string* text) {
         assert(false);  // Looping endlessly!?
         return false;
       }
-      rv = Wait(handle, MOJO_HANDLE_SIGNAL_READABLE, MOJO_DEADLINE_INDEFINITE);
+      rv = Wait(handle, MOJO_HANDLE_SIGNAL_READABLE, MOJO_DEADLINE_INDEFINITE,
+                nullptr);
       if (rv != MOJO_RESULT_OK)
         return false;
       did_wait = true;

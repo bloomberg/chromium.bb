@@ -9,7 +9,20 @@ group("android") {
   deps = [
     ":system_java",
     ":mojo_javatests",
+    ":mojo_test_apk",
   ]
+}
+
+generate_jni("jni_headers") {
+  sources = [
+    "javatests/src/org/chromium/mojo/MojoTestCase.java",
+    "javatests/src/org/chromium/mojo/bindings/ValidationTestUtil.java",
+  ]
+  deps = [
+    ":system_java_jni_headers",
+  ]
+
+  jni_package = "mojo"
 }
 
 generate_jni("system_java_jni_headers") {
@@ -28,8 +41,10 @@ source_set("libsystem_java") {
 
   deps = [
     ":system_java_jni_headers",
+    "//base",
     "//mojo/edk/system",
     "//mojo/environment:chromium",
+    "//mojo/public/cpp/environment",
   ]
 }
 
@@ -82,4 +97,45 @@ android_library("mojo_javatests") {
     "//mojo/public/java:bindings",
     "//mojo/public/java:system",
   ]
+}
+
+shared_library("mojo_java_unittests") {
+  testonly = true
+
+  sources = [
+    "javatests/mojo_test_case.cc",
+    "javatests/mojo_test_case.h",
+    "javatests/init_library.cc",
+    "javatests/validation_test_util.cc",
+    "javatests/validation_test_util.h",
+  ]
+
+  deps = [
+    ":jni_headers",
+    ":libsystem_java",
+    ":system_java_jni_headers",
+    "//base",
+    "//base/test/:test_support",
+    "//mojo/common",
+    "//mojo/edk/system",
+    "//mojo/public/cpp/bindings/tests:mojo_public_bindings_test_utils",
+    "//mojo/public/cpp/test_support:test_utils",
+    "//mojo/public/cpp/environment",
+  ]
+  defines = [ "UNIT_TEST" ]
+}
+
+android_apk("mojo_test_apk") {
+  testonly = true
+  deps = [
+    ":mojo_javatests",
+    ":mojo_java_unittests",
+    ":system_java",
+    "//base:base_java",
+    "//mojo/public/java:bindings",
+    "//mojo/public/interfaces/bindings/tests:test_interfaces",
+  ]
+  native_libs = [ "libmojo_java_unittests.so" ]
+  apk_name = "MojoTest"
+  android_manifest = "javatests/AndroidManifest.xml"
 }

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/services/view_manager/public/cpp/view_manager_client_factory.h"
+#include "view_manager/public/cpp/view_manager_client_factory.h"
 
 #include "mojo/public/interfaces/application/shell.mojom.h"
-#include "mojo/services/view_manager/public/cpp/lib/view_manager_client_impl.h"
+#include "view_manager/public/cpp/lib/view_manager_client_impl.h"
 
 namespace mojo {
 

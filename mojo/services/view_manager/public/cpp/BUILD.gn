@@ -2,7 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("cpp") {
+import("../../../mojo_sdk_root.gni")
+import("$mojo_sdk_root/mojo/public/mojo_sdk.gni")
+
+mojo_sdk_source_set("cpp") {
+  restrict_external_deps = false
+  public_configs = [ "../../../public/build/config:mojo_services" ]
   sources = [
     "lib/view.cc",
     "lib/view_manager_client_factory.cc",
@@ -26,17 +31,21 @@ source_set("cpp") {
   public_deps = [
     ":common",
   ]
+
   deps = [
+    "../interfaces",
+    "../../../geometry/public/interfaces",
+    "../../../input_events/public/interfaces",
+    "../../../surfaces/public/interfaces:surface_id",
+    "../../../window_manager/public/interfaces",
     "//base",
-    "//mojo/public/c/gles2:headers",
-    "//mojo/public/cpp/application",
-    "//mojo/public/cpp/bindings:bindings",
-    "//mojo/public/interfaces/application",
-    "//mojo/services/geometry/public/interfaces",
-    "//mojo/services/input_events/public/interfaces",
-    "//mojo/services/surfaces/public/interfaces:surface_id",
-    "//mojo/services/view_manager/public/interfaces",
-    "//mojo/services/window_manager/public/interfaces",
+  ]
+
+  mojo_sdk_deps = [
+    "mojo/public/c/gles2:headers",
+    "mojo/public/cpp/application",
+    "mojo/public/cpp/bindings:bindings",
+    "mojo/public/interfaces/application",
   ]
 }
 

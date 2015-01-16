@@ -195,6 +195,7 @@
       'dependencies': [
         'mojo_geometry_bindings',
         'mojo_input_events_bindings',
+        'mojo_native_viewport_bindings',
         'mojo_public.gyp:mojo_application_bindings',
         'mojo_public.gyp:mojo_cpp_bindings',
         'mojo_surface_id_bindings',
@@ -202,6 +203,7 @@
       'export_dependent_settings': [
         'mojo_geometry_bindings',
         'mojo_input_events_bindings',
+        'mojo_native_viewport_bindings',
         'mojo_public.gyp:mojo_application_bindings',
         'mojo_public.gyp:mojo_cpp_bindings',
         'mojo_surface_id_bindings',

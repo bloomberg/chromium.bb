@@ -69,7 +69,8 @@ class MojoResult {
       case kDataLoss: return DATA_LOSS;
       case kBusy: return BUSY;
       case kShouldWait: return SHOULD_WAIT;
-      default: return null;
+      default:
+        throw 'Invalid Mojo result';
     }
   }
 
@@ -119,24 +120,88 @@ class MojoResult {
 
 
 class MojoHandleSignals {
-  static const int NONE = 0;
-  static const int READABLE = 1 << 0;
-  static const int WRITABLE = 1 << 1;
-  static const int PEER_CLOSED = 1 << 2;
-  static const int READWRITE = READABLE | WRITABLE;
+  static const int kNone = 0;
+  static const int kReadable = 1 << 0;
+  static const int kWritable = 1 << 1;
+  static const int kPeerClosed = 1 << 2;
+  static const int kReadWrite = kReadable | kWritable;
+  static const int kAll = kReadable | kWritable | kPeerClosed;
 
-  static bool isNone(int mask) => mask == NONE;
-  static bool isReadable(int mask) => (mask & READABLE) == READABLE;
-  static bool isWritable(int mask) => (mask & WRITABLE) == WRITABLE;
-  static bool isReadWrite(int mask) => (mask & READWRITE) == READWRITE;
-  static int toggleWrite(int mask) =>
-    isWritable(mask) ? (mask & ~WRITABLE) : (mask | WRITABLE);
+  // TODO(zra): Does PEER_CLOSED | anything else make sense?
+  static const NONE = const MojoHandleSignals._(kNone);
+  static const READABLE = const MojoHandleSignals._(kReadable);
+  static const WRITABLE = const MojoHandleSignals._(kWritable);
+  static const PEER_CLOSED = const MojoHandleSignals._(kPeerClosed);
+  static const READWRITE = const MojoHandleSignals._(kReadWrite);
+  static const ALL = const MojoHandleSignals._(kAll);
+
+  final int value;
+
+  const MojoHandleSignals._(this.value);
+
+  factory MojoHandleSignals(int value) {
+    switch (value) {
+      case kNone: return NONE;
+      case kReadable: return READABLE;
+      case kWritable: return WRITABLE;
+      case kPeerClosed: return PEER_CLOSED;
+      case kReadWrite: return READWRITE;
+      case kAll: return ALL;
+      default:
+        throw 'Invalid handle signal';
+    }
+  }
+
+  bool get isNone => (this == NONE);
+  bool get isReadable => (value & kReadable) == kReadable;
+  bool get isWritable => (value & kWritable) == kWritable;
+  bool get isPeerClosed => (value & kPeerClosed) == kPeerClosed;
+  bool get isReadWrite => (value & kReadWrite) == kReadWrite;
+  bool get isAll => (this == ALL);
+
+  MojoHandleSignals operator +(MojoHandleSignals other) {
+    return new MojoHandleSignals(value | other.value);
+  }
+
+  MojoHandleSignals operator -(MojoHandleSignals other) {
+    return new MojoHandleSignals(value & ~other.value);
+  }
+
+  String toString() {
+    switch (value) {
+      case kNone: return "NONE";
+      case kReadable: return "READABLE";
+      case kWritable: return "WRITABLE";
+      case kPeerClosed: return "PEER_CLOSED";
+      case kReadWrite: return "READWRITE";
+      case kAll: return "ALL";
+      default: return "<invalid signal>";
+    }
+  }
 }
 
 
 class MojoHandleSignalsState {
-  const MojoHandleSignalsState(this.satisfied_signals,
-                               this.satisfiable_signals);
+  MojoHandleSignalsState(this.satisfied_signals,
+                         this.satisfiable_signals);
   final int satisfied_signals;
   final int satisfiable_signals;
+}
+
+
+class MojoWaitResult {
+  MojoWaitResult(this.result, this.state);
+  final MojoResult result;
+  MojoHandleSignalsState state;
+}
+
+
+class MojoWaitManyResult {
+  MojoWaitManyResult(this.result, this.index, this.states);
+  final MojoResult result;
+  final int index;
+  List<MojoHandleSignalsState> states;
+  
+  bool get isIndexValid => (this.index != null);
+  bool get areSignalStatesValid => (this.states != null);
 }

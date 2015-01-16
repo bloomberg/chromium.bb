@@ -85,7 +85,6 @@ source_set("lib") {
     "//mojo/public/cpp/utility",
     "//mojo/public/interfaces/application",
     "//mojo/services/network/public/cpp",
-    "//mojo/services/view_manager/public/cpp",
     "//mojo/services/accessibility/public/interfaces",
     "//mojo/services/clipboard/public/interfaces",
     "//mojo/services/content_handler/public/interfaces",
@@ -102,6 +101,7 @@ source_set("lib") {
 
   public_deps = [
     "//mojo/public/cpp/bindings",
+    "//mojo/services/view_manager/public/cpp",
     "//third_party/WebKit/public:blink",
     ":generate_blink_resource_map",
   ]

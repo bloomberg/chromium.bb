@@ -41,7 +41,7 @@ public class ValidationTestUtilTest extends MojoTestCase {
             // Test empty input.
             String input = "";
             ByteBuffer expected = ByteBuffer.allocateDirect(0);
-            expected.order(ByteOrder.nativeOrder());
+            expected.order(ByteOrder.LITTLE_ENDIAN);
 
             checkInputParser(input, true, expected, 0);
         }
@@ -54,8 +54,8 @@ public class ValidationTestUtilTest extends MojoTestCase {
             checkInputParser(input, true, expected, 0);
         }
         {
-            String input = "[u1]0x10// hello world !! \n\r  \t [u2]65535 \n" +
-                    "[u4]65536 [u8]0xFFFFFFFFFFFFFFFF 0 0Xff";
+            String input = "[u1]0x10// hello world !! \n\r  \t [u2]65535 \n"
+                    + "[u4]65536 [u8]0xFFFFFFFFFFFFFFFF 0 0Xff";
             ByteBuffer expected = ByteBuffer.allocateDirect(17);
             expected.order(ByteOrder.nativeOrder());
             expected.put((byte) 0x10);

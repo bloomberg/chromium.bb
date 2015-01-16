@@ -59,8 +59,8 @@ int MultiprocessTestHelper::WaitForChildShutdown() {
   CHECK(test_child_.IsValid());
 
   int rv = -1;
-  CHECK(test_child_.WaitForExitWithTimeout(TestTimeouts::action_timeout(),
-                                           &rv));
+  CHECK(
+      test_child_.WaitForExitWithTimeout(TestTimeouts::action_timeout(), &rv));
   test_child_.Close();
   return rv;
 }

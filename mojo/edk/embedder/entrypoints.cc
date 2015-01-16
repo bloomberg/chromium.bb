@@ -23,25 +23,6 @@ MojoResult MojoClose(MojoHandle handle) {
 }
 
 MojoResult MojoWait(MojoHandle handle,
-                    MojoHandleSignals signals,
-                    MojoDeadline deadline) {
-  return g_core->Wait(handle, signals, deadline,
-                      mojo::system::NullUserPointer());
-}
-
-MojoResult MojoWaitMany(const MojoHandle* handles,
-                        const MojoHandleSignals* signals,
-                        uint32_t num_handles,
-                        MojoDeadline deadline) {
-  uint32_t result_index = static_cast<uint32_t>(-1);
-  MojoResult result = g_core->WaitMany(
-      MakeUserPointer(handles), MakeUserPointer(signals), num_handles, deadline,
-      MakeUserPointer(&result_index), mojo::system::NullUserPointer());
-  return (result == MOJO_RESULT_OK) ? static_cast<MojoResult>(result_index)
-                                    : result;
-}
-
-MojoResult MojoNewWait(MojoHandle handle,
                        MojoHandleSignals signals,
                        MojoDeadline deadline,
                        MojoHandleSignalsState* signals_state) {
@@ -49,12 +30,12 @@ MojoResult MojoNewWait(MojoHandle handle,
                       MakeUserPointer(signals_state));
 }
 
-MojoResult MojoNewWaitMany(const MojoHandle* handles,
-                           const MojoHandleSignals* signals,
-                           uint32_t num_handles,
-                           MojoDeadline deadline,
-                           uint32_t* result_index,
-                           MojoHandleSignalsState* signals_states) {
+MojoResult MojoWaitMany(const MojoHandle* handles,
+                        const MojoHandleSignals* signals,
+                        uint32_t num_handles,
+                        MojoDeadline deadline,
+                        uint32_t* result_index,
+                        MojoHandleSignalsState* signals_states) {
   return g_core->WaitMany(MakeUserPointer(handles), MakeUserPointer(signals),
                           num_handles, deadline, MakeUserPointer(result_index),
                           MakeUserPointer(signals_states));

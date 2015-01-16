@@ -186,45 +186,11 @@ typedef ScopedHandleBase<Handle> ScopedHandle;
 static_assert(sizeof(ScopedHandle) == sizeof(Handle),
               "Bad size for C++ ScopedHandle");
 
-// TODO(jimbe): Remove this function
-inline MojoResult Wait(Handle handle,
-                       MojoHandleSignals signals,
-                       MojoDeadline deadline) {
-  return MojoWait(handle.value(), signals, deadline);
-}
-
 inline MojoResult Wait(Handle handle,
                        MojoHandleSignals signals,
                        MojoDeadline deadline,
                        MojoHandleSignalsState* signals_state) {
-  return MojoNewWait(handle.value(), signals, deadline, signals_state);
-}
-
-// TODO(jimbe): Remove this function
-// |HandleVectorType| and |FlagsVectorType| should be similar enough to
-// |std::vector<Handle>| and |std::vector<MojoHandleSignals>|, respectively:
-//  - They should have a (const) |size()| method that returns an unsigned type.
-//  - They must provide contiguous storage, with access via (const) reference to
-//    that storage provided by a (const) |operator[]()| (by reference).
-template <class HandleVectorType, class FlagsVectorType>
-inline MojoResult WaitMany(const HandleVectorType& handles,
-                           const FlagsVectorType& signals,
-                           MojoDeadline deadline) {
-  if (signals.size() != handles.size())
-    return MOJO_RESULT_INVALID_ARGUMENT;
-  if (handles.size() > std::numeric_limits<uint32_t>::max())
-    return MOJO_RESULT_OUT_OF_RANGE;
-
-  if (handles.size() == 0)
-    return MojoWaitMany(nullptr, nullptr, 0, deadline);
-
-  const Handle& first_handle = handles[0];
-  const MojoHandleSignals& first_signals = signals[0];
-  return MojoWaitMany(
-      reinterpret_cast<const MojoHandle*>(&first_handle),
-      reinterpret_cast<const MojoHandleSignals*>(&first_signals),
-      static_cast<uint32_t>(handles.size()),
-      deadline);
+  return MojoWait(handle.value(), signals, deadline, signals_state);
 }
 
 const uint32_t kInvalidWaitManyIndexValue = static_cast<uint32_t>(-1);
@@ -275,7 +241,7 @@ inline WaitManyResult WaitMany(const HandleVectorType& handles,
 
   if (handles.size() == 0) {
     return WaitManyResult(
-        MojoNewWaitMany(nullptr, nullptr, 0, deadline, nullptr, nullptr));
+        MojoWaitMany(nullptr, nullptr, 0, deadline, nullptr, nullptr));
   }
 
   uint32_t result_index = kInvalidWaitManyIndexValue;
@@ -284,9 +250,9 @@ inline WaitManyResult WaitMany(const HandleVectorType& handles,
   MojoHandleSignalsState* first_state =
       signals_states ? &(*signals_states)[0] : nullptr;
   MojoResult result =
-      MojoNewWaitMany(reinterpret_cast<const MojoHandle*>(&first_handle),
-                      &first_signals, static_cast<uint32_t>(handles.size()),
-                      deadline, &result_index, first_state);
+      MojoWaitMany(reinterpret_cast<const MojoHandle*>(&first_handle),
+                   &first_signals, static_cast<uint32_t>(handles.size()),
+                   deadline, &result_index, first_state);
   return WaitManyResult(result, result_index);
 }
 
@@ -305,13 +271,13 @@ inline WaitManyResult WaitMany(const HandleVectorType& handles,
 
   if (handles.size() == 0) {
     return WaitManyResult(
-        MojoNewWaitMany(nullptr, nullptr, 0, deadline, nullptr, nullptr));
+        MojoWaitMany(nullptr, nullptr, 0, deadline, nullptr, nullptr));
   }
 
   uint32_t result_index = kInvalidWaitManyIndexValue;
   const Handle& first_handle = handles[0];
   const MojoHandleSignals& first_signals = signals[0];
-  MojoResult result = MojoNewWaitMany(
+  MojoResult result = MojoWaitMany(
       reinterpret_cast<const MojoHandle*>(&first_handle), &first_signals,
       static_cast<uint32_t>(handles.size()), deadline, &result_index, nullptr);
   return WaitManyResult(result, result_index);

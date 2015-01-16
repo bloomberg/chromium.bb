@@ -366,7 +366,7 @@ class Generator(generator.Generator):
         unique_name = simple_name + str(counter)
 
       used_names.add(unique_name)
-      each_import["unique_name"] = unique_name
+      each_import["unique_name"] = unique_name + "$"
       counter += 1
     return self.module.imports
 

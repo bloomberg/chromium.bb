@@ -4,11 +4,12 @@
 
 module mojo;
 
+import "../../../geometry/public/interfaces/geometry.mojom";
+import "../../../input_events/public/interfaces/input_events.mojom";
+import "../../../native_viewport/public/interfaces/native_viewport.mojom";
+import "../../../surfaces/public/interfaces/surface_id.mojom";
 import "mojo/public/interfaces/application/service_provider.mojom";
-import "mojo/services/geometry/public/interfaces/geometry.mojom";
-import "mojo/services/input_events/public/interfaces/input_events.mojom";
-import "mojo/services/surfaces/public/interfaces/surface_id.mojom";
-import "mojo/services/view_manager/public/interfaces/view_manager_constants.mojom";
+import "view_manager_constants.mojom";
 
 struct ViewData {
   uint32 parent_id;
@@ -21,6 +22,7 @@ struct ViewData {
   // True if this view is drawn on screen. A view is drawn if attached to the
   // root and all ancestors (including this view) are visible.
   bool drawn;
+  ViewportMetrics viewport_metrics;
 };
 
 enum ErrorCode {
@@ -130,7 +132,7 @@ interface ViewManagerService {
   // any services it provided are not broken and continue to be valid.
   Embed(string url,
         uint32 view_id,
-        ServiceProvider&? service_provider) => (bool success);
+        ServiceProvider& service_provider) => (bool success);
 };
 
 // Changes to views are not sent to the connection that originated the
@@ -144,7 +146,7 @@ interface ViewManagerClient {
   OnEmbed(uint16 connection_id,
           string embedder_url,
           ViewData root,
-          ServiceProvider&? parent_service_provider,
+          ServiceProvider& parent_service_provider,
           handle<message_pipe> window_manager_pipe);
 
   // Invoked when the application embedded at |view| is disconnected.

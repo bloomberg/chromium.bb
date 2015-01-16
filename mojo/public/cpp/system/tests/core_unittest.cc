@@ -108,7 +108,7 @@ TEST(CoreCppTest, Basic) {
     EXPECT_EQ(kInvalidHandleValue, h.get().value());
 
     EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-              Wait(h.get(), ~MOJO_HANDLE_SIGNAL_NONE, 1000000));
+              Wait(h.get(), ~MOJO_HANDLE_SIGNAL_NONE, 1000000, nullptr));
 
     std::vector<Handle> wh;
     wh.push_back(h.get());

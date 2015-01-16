@@ -5,7 +5,7 @@
 module mojo;
 
 import "mojo/public/interfaces/application/shell.mojom";
-import "mojo/services/network/public/interfaces/url_loader.mojom";
+import "../../../network/public/interfaces/url_loader.mojom";
 
 interface ContentHandler {
   StartApplication(Shell shell, URLResponse response);

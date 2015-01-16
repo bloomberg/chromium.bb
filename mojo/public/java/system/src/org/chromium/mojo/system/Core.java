@@ -208,10 +208,10 @@ public interface Core {
         private int mHandleIndex;
 
         /**
-         * The signaling state of handles. This array will not be set if |mojoResult| is
+         * The signaling state of handles. Will not be set if |mojoResult| is
          * |MOJO_RESULT_INVALID_ARGUMENT| or |MOJO_RESULT_RESOURCE_EXHAUSTED|
          */
-        private HandleSignalsState[] mSignalStates;
+        private List<HandleSignalsState> mSignalStates;
 
         /**
          * Returns the mojoResult.
@@ -244,14 +244,14 @@ public interface Core {
         /**
          * Returns the signalStates.
          */
-        public HandleSignalsState[] getSignalStates() {
+        public List<HandleSignalsState> getSignalStates() {
             return mSignalStates;
         }
 
         /**
          * @param signalStates the signalStates to set
          */
-        public void setSignalStates(HandleSignalsState[] signalStates) {
+        public void setSignalStates(List<HandleSignalsState> signalStates) {
             mSignalStates = signalStates;
         }
     }

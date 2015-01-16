@@ -18,7 +18,7 @@ struct CommandBufferState {
 
 interface CommandBufferSyncClient {
   DidInitialize(bool success, GpuCapabilities capabilities);
-  DidMakeProgress(CommandBufferState? state);
+  DidMakeProgress(CommandBufferState state);
 };
 
 interface CommandBufferSyncPointClient {
@@ -27,14 +27,14 @@ interface CommandBufferSyncPointClient {
 
 [Client=CommandBufferClient]
 interface CommandBuffer {
-  Initialize(CommandBufferSyncClient? sync_client,
-             CommandBufferSyncPointClient? sync_point_client,
-             handle<shared_buffer>? shared_state);
+  Initialize(CommandBufferSyncClient sync_client,
+             CommandBufferSyncPointClient sync_point_client,
+             handle<shared_buffer> shared_state);
   SetGetBuffer(int32 buffer);
   Flush(int32 put_offset);
   MakeProgress(int32 last_get_offset);
   RegisterTransferBuffer(
-      int32 id, handle<shared_buffer>? transfer_buffer, uint32 size);
+      int32 id, handle<shared_buffer> transfer_buffer, uint32 size);
   DestroyTransferBuffer(int32 id);
 
   // InsertSyncPoint returns the sync point returned via DidInsertSyncPoint.

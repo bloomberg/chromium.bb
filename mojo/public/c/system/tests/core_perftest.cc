@@ -82,8 +82,8 @@ class MessagePipeReaderThread : public mojo::Thread {
       }
 
       if (result == MOJO_RESULT_SHOULD_WAIT) {
-        result = MojoWait(
-            handle_, MOJO_HANDLE_SIGNAL_READABLE, MOJO_DEADLINE_INDEFINITE);
+        result = MojoWait(handle_, MOJO_HANDLE_SIGNAL_READABLE,
+                          MOJO_DEADLINE_INDEFINITE, nullptr);
         if (result == MOJO_RESULT_OK) {
           // Go to the top of the loop to read again.
           continue;

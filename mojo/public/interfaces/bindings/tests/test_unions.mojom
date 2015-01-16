@@ -1,0 +1,25 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module mojo.test;
+
+union PodUnion {
+  int8   f_int8;
+  int8   f_int8_other;
+  uint8  f_uint8;
+  int16  f_int16;
+  uint16 f_uint16;
+  int32  f_int32;
+  uint32 f_uint32;
+  int64  f_int64;
+  uint64 f_uint64;
+  float  f_float;
+  double f_double;
+  bool   f_bool;
+  string f_string;
+};
+
+struct SomeStruct {
+  string f_string;
+};

@@ -1040,7 +1040,7 @@ TEST_F(RemoteMessagePipeTest, MAYBE_PlatformHandlePassing) {
 
   base::FilePath unused;
   base::ScopedFILE fp(
-      CreateAndOpenTemporaryFileInDir(temp_dir.path(), &unused));
+      base::CreateAndOpenTemporaryFileInDir(temp_dir.path(), &unused));
   EXPECT_EQ(sizeof(kHello), fwrite(kHello, 1, sizeof(kHello), fp.get()));
   // We'll try to pass this dispatcher, which will cause a |PlatformHandle| to
   // be passed.

@@ -1,0 +1,67 @@
+size_t GetSerializedSize_(const {{union.name}}Ptr& input) {
+  if (!input)
+    return 0;
+
+  size_t size = sizeof(internal::{{union.name}}_Data);
+  switch (input->which()) {
+{%  for field in union.fields %}
+{%    if field.kind|is_string_kind %}
+    case {{union.name}}::Tag::{{field.name|upper}}:
+      size += GetSerializedSize_(input->get_{{field.name}}());
+      break;
+{%-   endif %}
+{%- endfor %}
+    default:
+      break;
+  }
+  return size;
+}
+
+
+void Serialize_({{union.name}}Ptr input, mojo::internal::Buffer* buf,
+                internal::{{union.name}}_Data** output) {
+  if (input) {
+    mojo::internal::UnionAccessor<{{union.name}}> input_acc(input.get());
+    internal::{{union.name}}_Data* result =
+        internal::{{union.name}}_Data::New(buf);
+    // TODO(azani): Handle unknown and objects.
+    result->tag = input->which();
+    switch (input->which()) {
+{%  for field in union.fields %}
+      case {{union.name}}::Tag::{{field.name|upper}}:
+{%    if field.kind|is_string_kind %}
+        Serialize_(input_acc.data()->{{field.name}}, buf, &result->data.{{field.name}}.ptr);
+{%    else %}
+        result->data.{{field.name}} = input_acc.data()->{{field.name}};
+{%-   endif %}
+        break;
+{%- endfor %}
+    }
+    *output = result;
+  } else {
+    *output = nullptr;
+  }
+}
+
+void Deserialize_(internal::{{union.name}}_Data* input,
+                  {{union.name}}Ptr* output) {
+  if (input) {
+    {{union.name}}Ptr result({{union.name}}::New());
+    mojo::internal::UnionAccessor<{{union.name}}> result_acc(result.get());
+    switch (input->tag) {
+{%  for field in union.fields %}
+      case {{union.name}}::Tag::{{field.name|upper}}:
+{%    if field.kind|is_string_kind %}
+        result_acc.SwitchActive({{union.name}}::Tag::{{field.name|upper}});
+        Deserialize_(input->data.{{field.name}}.ptr, &result_acc.data()->{{field.name}});
+{%    else %}
+        result->set_{{field.name}}(input->data.{{field.name}});
+{%-   endif %}
+        break;
+{%- endfor %}
+    }
+    *output = result.Pass();
+  } else {
+    output->reset();
+  }
+}

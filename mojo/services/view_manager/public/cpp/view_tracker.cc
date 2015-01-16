@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/services/view_manager/public/cpp/view_tracker.h"
+#include "view_manager/public/cpp/view_tracker.h"
 
 namespace mojo {
 

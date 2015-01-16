@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 
-#include "mojo/services/view_manager/public/cpp/view.h"
+#include "view_manager/public/cpp/view.h"
 
 namespace mojo {
 
@@ -37,6 +37,10 @@ class ViewPrivate {
 
   void set_properties(const std::map<std::string, std::vector<uint8_t>>& data) {
     view_->properties_ = data;
+  }
+
+  void set_viewport_metrics(ViewportMetricsPtr viewport_metrics) {
+    view_->viewport_metrics_ = viewport_metrics.Pass();
   }
 
   void LocalDestroy() {

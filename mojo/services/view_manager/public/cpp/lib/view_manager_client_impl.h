@@ -10,11 +10,11 @@
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "mojo/services/view_manager/public/cpp/types.h"
-#include "mojo/services/view_manager/public/cpp/view.h"
-#include "mojo/services/view_manager/public/cpp/view_manager.h"
-#include "mojo/services/view_manager/public/interfaces/view_manager.mojom.h"
-#include "mojo/services/window_manager/public/interfaces/window_manager.mojom.h"
+#include "view_manager/public/cpp/types.h"
+#include "view_manager/public/cpp/view.h"
+#include "view_manager/public/cpp/view_manager.h"
+#include "view_manager/public/interfaces/view_manager.mojom.h"
+#include "window_manager/public/interfaces/window_manager.mojom.h"
 
 namespace mojo {
 class Shell;

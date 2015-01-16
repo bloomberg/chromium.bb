@@ -59,7 +59,7 @@ public class ValidationTestUtil {
         ByteBuffer copiedData = null;
         if (data != null) {
             copiedData = ByteBuffer.allocateDirect(data.limit());
-            copiedData.order(ByteOrder.nativeOrder());
+            copiedData.order(ByteOrder.LITTLE_ENDIAN);
             copiedData.put(data);
             copiedData.flip();
         }

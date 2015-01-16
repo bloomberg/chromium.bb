@@ -31,7 +31,8 @@ bool BlockingCopyHelper(ScopedDataPipeConsumerHandle source,
     } else if (result == MOJO_RESULT_SHOULD_WAIT) {
       result = Wait(source.get(),
                     MOJO_HANDLE_SIGNAL_READABLE,
-                    MOJO_DEADLINE_INDEFINITE);
+                    MOJO_DEADLINE_INDEFINITE,
+                    nullptr);
       if (result != MOJO_RESULT_OK) {
         // If the producer handle was closed, then treat as EOF.
         return result == MOJO_RESULT_FAILED_PRECONDITION;

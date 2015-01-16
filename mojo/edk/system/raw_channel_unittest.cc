@@ -5,10 +5,15 @@
 #include "mojo/edk/system/raw_channel.h"
 
 #include <stdint.h>
+#include <stdio.h>
 
 #include <vector>
 
 #include "base/bind.h"
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
+#include "base/files/scoped_file.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -21,12 +26,13 @@
 #include "base/threading/platform_thread.h"  // For |Sleep()|.
 #include "base/threading/simple_thread.h"
 #include "base/time/time.h"
-#include "build/build_config.h"
+#include "build/build_config.h"  // TODO(vtl): Remove this.
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/embedder/platform_handle.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/edk/system/message_in_transit.h"
 #include "mojo/edk/system/test_utils.h"
+#include "mojo/edk/system/transport_data.h"
 #include "mojo/edk/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -676,6 +682,122 @@ TEST_F(RawChannelTest, ShutdownOnErrorWrite) {
 
   // Wait for the delegate, which will shut the |RawChannel| down.
   delegate.Wait();
+}
+
+// RawChannelTest.ReadWritePlatformHandles -------------------------------------
+
+class ReadPlatformHandlesCheckerRawChannelDelegate
+    : public RawChannel::Delegate {
+ public:
+  ReadPlatformHandlesCheckerRawChannelDelegate() : done_event_(false, false) {}
+  ~ReadPlatformHandlesCheckerRawChannelDelegate() override {}
+
+  // |RawChannel::Delegate| implementation (called on the I/O thread):
+  void OnReadMessage(
+      const MessageInTransit::View& message_view,
+      embedder::ScopedPlatformHandleVectorPtr platform_handles) override {
+    const char kHello[] = "hello";
+
+    EXPECT_EQ(sizeof(kHello), message_view.num_bytes());
+    EXPECT_STREQ(kHello, static_cast<const char*>(message_view.bytes()));
+
+    ASSERT_TRUE(platform_handles);
+    ASSERT_EQ(2u, platform_handles->size());
+    embedder::ScopedPlatformHandle h1(platform_handles->at(0));
+    EXPECT_TRUE(h1.is_valid());
+    embedder::ScopedPlatformHandle h2(platform_handles->at(1));
+    EXPECT_TRUE(h2.is_valid());
+    platform_handles->clear();
+
+    {
+      char buffer[100] = {};
+
+      base::ScopedFILE fp(mojo::test::FILEFromPlatformHandle(h1.Pass(), "rb"));
+      EXPECT_TRUE(fp);
+      rewind(fp.get());
+      EXPECT_EQ(1u, fread(buffer, 1, sizeof(buffer), fp.get()));
+      EXPECT_EQ('1', buffer[0]);
+    }
+
+    {
+      char buffer[100] = {};
+      base::ScopedFILE fp(mojo::test::FILEFromPlatformHandle(h2.Pass(), "rb"));
+      EXPECT_TRUE(fp);
+      rewind(fp.get());
+      EXPECT_EQ(1u, fread(buffer, 1, sizeof(buffer), fp.get()));
+      EXPECT_EQ('2', buffer[0]);
+    }
+
+    done_event_.Signal();
+  }
+  void OnError(Error error) override {
+    // We'll get a read (shutdown) error when the connection is closed.
+    CHECK_EQ(error, ERROR_READ_SHUTDOWN);
+  }
+
+  void Wait() { done_event_.Wait(); }
+
+ private:
+  base::WaitableEvent done_event_;
+
+  DISALLOW_COPY_AND_ASSIGN(ReadPlatformHandlesCheckerRawChannelDelegate);
+};
+
+#if defined(OS_POSIX)
+#define MAYBE_ReadWritePlatformHandles ReadWritePlatformHandles
+#else
+// Not yet implemented (on Windows).
+#define MAYBE_ReadWritePlatformHandles DISABLED_ReadWritePlatformHandles
+#endif
+TEST_F(RawChannelTest, MAYBE_ReadWritePlatformHandles) {
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+  WriteOnlyRawChannelDelegate write_delegate;
+  scoped_ptr<RawChannel> rc_write(RawChannel::Create(handles[0].Pass()));
+  io_thread()->PostTaskAndWait(FROM_HERE,
+                               base::Bind(&InitOnIOThread, rc_write.get(),
+                                          base::Unretained(&write_delegate)));
+
+  ReadPlatformHandlesCheckerRawChannelDelegate read_delegate;
+  scoped_ptr<RawChannel> rc_read(RawChannel::Create(handles[1].Pass()));
+  io_thread()->PostTaskAndWait(FROM_HERE,
+                               base::Bind(&InitOnIOThread, rc_read.get(),
+                                          base::Unretained(&read_delegate)));
+
+  base::FilePath unused;
+  base::ScopedFILE fp1(
+      base::CreateAndOpenTemporaryFileInDir(temp_dir.path(), &unused));
+  EXPECT_EQ(1u, fwrite("1", 1, 1, fp1.get()));
+  base::ScopedFILE fp2(
+      base::CreateAndOpenTemporaryFileInDir(temp_dir.path(), &unused));
+  EXPECT_EQ(1u, fwrite("2", 1, 1, fp2.get()));
+
+  {
+    const char kHello[] = "hello";
+    embedder::ScopedPlatformHandleVectorPtr platform_handles(
+        new embedder::PlatformHandleVector());
+    platform_handles->push_back(
+        mojo::test::PlatformHandleFromFILE(fp1.Pass()).release());
+    platform_handles->push_back(
+        mojo::test::PlatformHandleFromFILE(fp2.Pass()).release());
+
+    scoped_ptr<MessageInTransit> message(new MessageInTransit(
+        MessageInTransit::kTypeEndpoint, MessageInTransit::kSubtypeEndpointData,
+        sizeof(kHello), kHello));
+    message->SetTransportData(
+        make_scoped_ptr(new TransportData(platform_handles.Pass())));
+    EXPECT_TRUE(rc_write->WriteMessage(message.Pass()));
+  }
+
+  read_delegate.Wait();
+
+  io_thread()->PostTaskAndWait(
+      FROM_HERE,
+      base::Bind(&RawChannel::Shutdown, base::Unretained(rc_read.get())));
+  io_thread()->PostTaskAndWait(
+      FROM_HERE,
+      base::Bind(&RawChannel::Shutdown, base::Unretained(rc_write.get())));
 }
 
 }  // namespace

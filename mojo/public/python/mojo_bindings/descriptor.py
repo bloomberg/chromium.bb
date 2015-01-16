@@ -10,11 +10,11 @@ import array
 import itertools
 import struct
 
-import mojo.bindings.reflection as reflection
-import mojo.bindings.serialization as serialization
+import mojo_bindings.reflection as reflection
+import mojo_bindings.serialization as serialization
 
 # pylint: disable=E0611,F0401
-import mojo.system
+import mojo_system
 
 
 class Type(object):
@@ -240,7 +240,7 @@ class BaseHandleType(SerializableType):
       if not self.nullable:
         raise serialization.DeserializationException(
             'Trying to deserialize null for non nullable type.')
-      return self.FromHandle(mojo.system.Handle())
+      return self.FromHandle(mojo_system.Handle())
     return self.FromHandle(context.ClaimHandle(value))
 
   def FromHandle(self, handle):
@@ -255,8 +255,8 @@ class HandleType(BaseHandleType):
 
   def Convert(self, value):
     if value is None:
-      return mojo.system.Handle()
-    if not isinstance(value, mojo.system.Handle):
+      return mojo_system.Handle()
+    if not isinstance(value, mojo_system.Handle):
       raise TypeError('%r is not a handle' % value)
     return value
 
@@ -272,7 +272,7 @@ class InterfaceRequestType(BaseHandleType):
 
   def Convert(self, value):
     if value is None:
-      return reflection.InterfaceRequest(mojo.system.Handle())
+      return reflection.InterfaceRequest(mojo_system.Handle())
     if not isinstance(value, reflection.InterfaceRequest):
       raise TypeError('%r is not an interface request' % value)
     return value
@@ -310,10 +310,10 @@ class InterfaceType(BaseHandleType):
 
   def ToHandle(self, value):
     if not value:
-      return mojo.system.Handle()
+      return mojo_system.Handle()
     if isinstance(value, reflection.InterfaceProxy):
       return value.manager.PassMessagePipe()
-    pipe = mojo.system.MessagePipe()
+    pipe = mojo_system.MessagePipe()
     self.interface.manager.Bind(value, pipe.handle0)
     return pipe.handle1
 

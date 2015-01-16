@@ -2,768 +2,557 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// TODO(zra): Rewrite MojoDecoder and MojoEncoder using Dart idioms, and make
-// corresponding changes to the bindings generation script.
-
 part of bindings;
 
-const int kAlignment = 8;
-const int kArrayHeaderSize = 8;
-const int kStructHeaderSize = 8;
-const int kMessageHeaderSize = 16;
-const int kMessageWithRequestIDHeaderSize = 24;
-const int kMapStructPayloadSize = 16;
-const int kStructHeaderNumBytesOffset = 0;
-const int kStructHeaderNumFieldsOffset = 4;
-const int kEncodedInvalidHandleValue = 0xffffffff;
-const String kErrorUnsigned = "Passing negative value to unsigned encoder";
-
-
 int align(int size) => size + (kAlignment - (size % kAlignment)) % kAlignment;
-bool isAligned(offset) => (offset >= 0) && ((offset % kAlignment) == 0);
 
+const int kAlignment = 8;
+const int kSerializedHandleSize = 4;
+const int kPointerSize = 8;
+const DataHeader kMapStructHeader = const DataHeader(24, 2);
+const int kUnspecifiedArrayLength = -1;
+const int kNothingNullable = 0;
+const int kArrayNullable = (1 << 0);
+const int kElementNullable = (1 << 1);
 
-Uint8List utf8OfString(String s) =>
-  (new Uint8List.fromList((const Utf8Encoder()).convert(s)));
+bool isArrayNullable(int nullability) => (nullability & kArrayNullable) > 0;
+bool isElementNullable(int nullability) => (nullability & kElementNullable) > 0;
 
-
-String stringOfUtf8(Uint8List bytes) =>
-    (const Utf8Decoder()).convert(bytes.toList());
-
-
-// Given an argument that is either a Type or an instance:
-// Invoke the static method "decode" of the Type, or the instance method
-// "decode" of the instance, on the MojoDecoder.
-Object _callDecode(Object typeOrInstance, MojoDecoder decoder) {
-  if (typeOrInstance is Type) {
-    return reflectClass(typeOrInstance).invoke(#decode, [decoder]).reflectee;
-  } else {
-    return typeOrInstance.decode(decoder);
-  }
-}
-
-
-// Given an argument that is either a Type or an instance:
-// Invoke the static method "encode" of the Type, or the instance method
-// "encode" of the instance, on the MojoEncoder and value to be encoded.
-void _callEncode(Object typeOrInstance, MojoEncoder encoder, Object val) {
-  if (typeOrInstance is Type) {
-    reflectClass(typeOrInstance).invoke(#encode, [encoder, val]);
-  } else {
-    typeOrInstance.encode(encoder, val);
-  }
-}
-
-
-// Given an argument that is either a Type or an instance:
-// Invoke the static getter "encodedSize" of the Type, or the instance getter
-// "encodedSize" of the instance, and return the result.
-int getEncodedSize(Object typeOrInstance) {
-  if (typeOrInstance is Type) {
-    return reflectClass(typeOrInstance).getField(#encodedSize).reflectee;
-  } else {
-    return typeOrInstance.encodedSize;
-  }
-}
-
-
-class MojoDecoder {
+class _EncoderBuffer {
   ByteData buffer;
-  List<core.RawMojoHandle> handles;
-  int base;
-  int next;
-
-  MojoDecoder(this.buffer, this.handles, this.base) {
-    next = base;
-  }
-
-  void skip(int offset) {
-    next += offset;
-  }
-
-  int readInt8() {
-    int result = buffer.getInt8(next);
-    next += 1;
-    return result;
-  }
-
-  int readUint8() {
-    int result = buffer.getUint8(next);
-    next += 1;
-    return result;
-  }
-
-  int readInt16() {
-    int result = buffer.getInt16(next, Endianness.LITTLE_ENDIAN);
-    next += 2;
-    return result;
-  }
-
-  int readUint16() {
-    int result = buffer.getUint16(next, Endianness.LITTLE_ENDIAN);
-    next += 2;
-    return result;
-  }
-
-  int readInt32() {
-    int result = buffer.getInt32(next, Endianness.LITTLE_ENDIAN);
-    next += 4;
-    return result;
-  }
-
-  int readUint32() {
-    int result = buffer.getUint32(next, Endianness.LITTLE_ENDIAN);
-    next += 4;
-    return result;
-  }
-
-  int readInt64() {
-    int result = buffer.getInt64(next, Endianness.LITTLE_ENDIAN);
-    next += 8;
-    return result;
-  }
-
-  int readUint64() {
-    int result = buffer.getUint64(next, Endianness.LITTLE_ENDIAN);
-    next += 8;
-    return result;
-  }
-
-  double readFloat() {
-    double result = buffer.getFloat32(next,Endianness.LITTLE_ENDIAN);
-    next += 4;
-    return result;
-  }
-
-  double readDouble() {
-    double result = buffer.getFloat64(next, Endianness.LITTLE_ENDIAN);
-    next += 8;
-    return result;
-  }
-
-  int decodePointer() {
-    int offsetPointer = next;
-    int offset = readUint64();
-    if (offset == 0) {
-      return 0;
-    }
-    return offsetPointer + offset;
-  }
-
-  MojoDecoder decodeAndCreateDecoder(int offset) {
-    return new MojoDecoder(buffer, handles, offset);
-  }
-
-  core.RawMojoHandle decodeHandle() {
-    int handleIndex = readUint32();
-    return (handleIndex == kEncodedInvalidHandleValue) ?
-           new core.RawMojoHandle(core.RawMojoHandle.INVALID) :
-           handles[handleIndex];
-  }
-
-  String decodeString() {
-    int numBytes = readUint32();
-    int numElements = readUint32();
-    int base = next;
-    next += numElements;
-    return stringOfUtf8(buffer.buffer.asUint8List(base, numElements));
-  }
-
-  List decodeArray(Object type) {
-    int numBytes = readUint32();
-    int numElements = readUint32();
-    if (type == PackedBool) {
-      int b;
-      List<bool> result = new List<bool>(numElements);
-      for (int i = 0; i < numElements; i++) {
-        if ((i % 8) == 0) {
-          b = readUint8();
-        }
-        result[i] = ((b & (1 << (i % 8)) != 0) ? true : false);
-      }
-      return result;
-    } else {
-      List result = new List(numElements);
-      for (int i = 0; i < numElements; i++) {
-        result[i] = _callDecode(type, this);
-      }
-      return result;
-    }
-  }
-
-  Object decodeStruct(Object t) {
-    return _callDecode(t, this);
-  }
-
-  Object decodeStructPointer(Object t) {
-    int pointer = decodePointer();
-    if (pointer == 0) {
-      return null;
-    }
-    return _callDecode(t, decodeAndCreateDecoder(pointer));
-  }
-
-  List decodeArrayPointer(Object type) {
-    int pointer = decodePointer();
-    if (pointer == 0) {
-      return null;
-    }
-    return decodeAndCreateDecoder(pointer).decodeArray(type);
-  }
-
-  String decodeStringPointer() {
-    int pointer = decodePointer();
-    if (pointer == 0) {
-      return null;
-    }
-    return decodeAndCreateDecoder(pointer).decodeString();
-  }
-
-  Map decodeMap(Object keyType, Object valType) {
-    skip(4);  // number of bytes.
-    skip(4);  // number of fields.
-    List keys = decodeArrayPointer(keyType);
-    List values = decodeArrayPointer(valType);
-    return new Map.fromIterables(keys, values);
-  }
-
-  Map decodeMapPointer(Object keyType, Object valType) {
-    int pointer = this.decodePointer();
-    if (pointer == 0) {
-      return null;
-    }
-    MojoDecoder decoder = decodeAndCreateDecoder(pointer);
-    return decoder.decodeMap(keyType, valType);
-  }
-}
-
-
-class MojoEncoder {
-  ByteData buffer;
-  List<core.RawMojoHandle> handles;
-  int base;
-  int next;
+  List<core.MojoHandle> handles;
   int extent;
 
-  MojoEncoder(this.buffer, this.handles, this.base, this.extent) {
-    next = base;
+  static const int kInitialBufferSize = 1024;
+
+  _EncoderBuffer([int size = -1]) :
+      buffer = new ByteData(size > 0 ? size : kInitialBufferSize),
+      handles = [],
+      extent = 0;
+
+  void _grow(int newSize) {
+    Uint8List newBuffer = new Uint8List(newSize);
+    newBuffer.setRange(0, buffer.lengthInBytes, buffer.buffer.asUint8List());
+    buffer = newBuffer.buffer.asByteData();
   }
 
-  void skip(int offset) {
-    next += offset;
-  }
-
-  void writeInt8(int val) {
-    buffer.setInt8(next, val);
-    next += 1;
-  }
-
-  void writeUint8(int val) {
-    if (val < 0) {
-      throw new ArgumentError("$kErrorUnsigned: $val");
-    }
-    buffer.setUint8(next, val);
-    next += 1;
-  }
-
-  void writeInt16(int val) {
-    buffer.setInt16(next, val, Endianness.LITTLE_ENDIAN);
-    next += 2;
-  }
-
-  void writeUint16(int val) {
-    if (val < 0) {
-      throw new ArgumentError("$kErrorUnsigned: $val");
-    }
-    buffer.setUint16(next, val, Endianness.LITTLE_ENDIAN);
-    next += 2;
-  }
-
-  void writeInt32(int val) {
-    buffer.setInt32(next, val, Endianness.LITTLE_ENDIAN);
-    next += 4;
-  }
-
-  void writeUint32(int val) {
-    if (val < 0) {
-      throw new ArgumentError("$kErrorUnsigned: $val");
-    }
-    buffer.setUint32(next, val, Endianness.LITTLE_ENDIAN);
-    next += 4;
-  }
-
-  void writeInt64(int val) {
-    buffer.setInt64(next, val, Endianness.LITTLE_ENDIAN);
-    next += 8;
-  }
-
-  void writeUint64(int val) {
-    if (val < 0) {
-      throw new ArgumentError("$kErrorUnsigned: $val");
-    }
-    buffer.setUint64(next, val, Endianness.LITTLE_ENDIAN);
-    next += 8;
-  }
-
-  void writeFloat(double val) {
-    buffer.setFloat32(next, val, Endianness.LITTLE_ENDIAN);
-    next += 4;
-  }
-
-  void writeDouble(double val) {
-    buffer.setFloat64(next, val, Endianness.LITTLE_ENDIAN);
-    next += 8;
-  }
-
-  void encodePointer(int pointer) {
-    if (pointer == null) {
-      writeUint64(0);
-      return;
-    }
-    int offset = pointer - next;
-    writeUint64(offset);
-  }
-
-  void grow(int new_size) {
-    Uint8List new_buffer = new Uint8List(new_size);
-    new_buffer.setRange(0, buffer.lengthInBytes, buffer.buffer.asUint8List());
-    buffer = new_buffer.buffer.asByteData();
-  }
-
-  int alloc(int size_request) {
-    int pointer = extent;
-    extent += size_request;
+  void claimMemory(int claimSize) {
+    extent += claimSize;
     if (extent > buffer.lengthInBytes) {
-      int new_size = buffer.lengthInBytes + size_request;
-      new_size += new_size ~/ 2;
-      grow(new_size);
+      int newSize = buffer.lengthInBytes + claimSize;
+      newSize += newSize ~/ 2;
+      _grow(newSize);
     }
-    return pointer;
   }
 
-  MojoEncoder createAndEncodeEncoder(int size) {
-    int pointer = alloc(align(size));
-    encodePointer(pointer);
-    return new MojoEncoder(buffer, handles, pointer, extent);
+  ByteData get trimmed => new ByteData.view(buffer.buffer, 0, extent);
+}
+
+class Encoder {
+  _EncoderBuffer _buffer;
+  int _base;
+
+  Encoder([int size = -1]) : _buffer = new _EncoderBuffer(size), _base = 0;
+
+  Encoder._fromBuffer(_EncoderBuffer buffer) :
+      _buffer = buffer,
+      _base = buffer.extent; 
+
+  Encoder getEncoderAtOffset(DataHeader dataHeader) {
+    var result = new Encoder._fromBuffer(_buffer);
+    result.encodeDataHeader(dataHeader);
+    return result;
   }
 
-  void encodeHandle(core.RawMojoHandle handle) {
-    if (handle.isValid) {
-      handles.add(handle);
-      writeUint32(handles.length - 1);
+  Message get message => new Message(_buffer.trimmed, _buffer.handles);
+
+  void encodeDataHeader(DataHeader dataHeader) {
+    _buffer.claimMemory(align(dataHeader.size));
+    encodeUint32(dataHeader.size, DataHeader.kSizeOffset);
+    encodeUint32(dataHeader.numFields, DataHeader.kNumFieldsOffset);
+  }
+
+  static const String kErrorUnsigned =
+      'Passing negative value to unsigned encoder';
+
+  void encodeBool(bool value, int offset, int bit) {
+    if (value) {
+      int encodedValue = _buffer.buffer.getUint8(_base + offset);
+      encodedValue |= (1 << bit);
+      _buffer.buffer.setUint8(_base + offset, encodedValue);
+    }
+  }
+
+  void encodeInt8(int value, int offset) =>
+      _buffer.buffer.setInt8(_base + offset, value);
+
+  void encodeUint8(int value, int offset) {
+    if (value < 0) {
+      throw '$kErrorUnsigned: $val';
+    }
+    _buffer.buffer.setUint8(_base + offset, value);
+  }
+
+  void encodeInt16(int value, int offset) =>
+      _buffer.buffer.setInt16(_base + offset, value, Endianness.LITTLE_ENDIAN);
+
+  void encodeUint16(int value, int offset) {
+    if (value < 0) {
+      throw '$kErrorUnsigned: $val';
+    }
+    _buffer.buffer.setUint16(_base + offset, value, Endianness.LITTLE_ENDIAN);
+  }
+
+  void encodeInt32(int value, int offset) =>
+      _buffer.buffer.setInt32(_base + offset, value, Endianness.LITTLE_ENDIAN);
+
+  void encodeUint32(int value, int offset) {
+    if (value < 0) {
+      throw '$kErrorUnsigned: $val';
+    }
+    _buffer.buffer.setUint32(_base + offset, value, Endianness.LITTLE_ENDIAN);
+  }
+
+  void encodeInt64(int value, int offset) =>
+      _buffer.buffer.setInt64(_base + offset, value, Endianness.LITTLE_ENDIAN);
+
+  void encodeUint64(int value, int offset) {
+    if (value < 0) {
+      throw '$kErrorUnsigned: $val';
+    }
+    _buffer.buffer.setUint64(_base + offset, value, Endianness.LITTLE_ENDIAN);
+  }
+
+  void encodeFloat(double value, int offset) =>
+    _buffer.buffer.setFloat32(_base + offset, value, Endianness.LITTLE_ENDIAN);
+
+  void encodeDouble(double value, int offset) =>
+    _buffer.buffer.setFloat64(_base + offset, value, Endianness.LITTLE_ENDIAN);
+
+  void encodeHandle(core.MojoHandle value, int offset, bool nullable) {
+    if ((value == null) || !value.isValid) {
+      encodeInvalideHandle(offset, nullable);
     } else {
-      writeUint32(kEncodedInvalidHandleValue);
+      encodeUint32(_buffer.handles.length, offset);
+      _buffer.handles.add(value);
     }
   }
 
-  void encodeString(String val) {
-    Uint8List utf8string = utf8OfString(val);
-    int numElements = utf8string.lengthInBytes;
-    int numBytes = kArrayHeaderSize + numElements;
-    writeUint32(numBytes);
-    writeUint32(numElements);
-    buffer.buffer.asUint8List().setRange(next, next + numElements, utf8string);
-    next += numElements;
+  void encodeNullPointer(int offset, bool nullable) {
+    if (!nullable) {
+      throw 'Trying to encode a null pointer for a non-nullable type';
+    }
+    _buffer.buffer.setUint64(_base + offset, 0, Endianness.LITTLE_ENDIAN);
   }
 
-  void encodeArray(Object t, List val, [int numElements, int encodedSize]) {
-    if (numElements == null) {
-      numElements = val.length;
+  void encodeInvalideHandle(int offset, bool nullable) {
+    if (!nullable) {
+      throw 'Trying to encode a null pointer for a non-nullable type';
     }
-    if (encodedSize == null) {
-      encodedSize = kArrayHeaderSize + (getEncodedSize(t) * numElements);
+    _buffer.buffer.setInt32(_base + offset, -1, Endianness.LITTLE_ENDIAN);
+  }
+
+  void encodePointerToNextUnclaimed(int offset) =>
+      encodeUint64(_buffer.extent - (_base + offset), offset);
+
+  void encodeStruct(Struct value, int offset, bool nullable) {
+    if (value == null) {
+      encodeNullPointer(offset, nullable);
+      return;
     }
+    encodePointerToNextUnclaimed(offset);
+    value.encode(this);
+  }
 
-    writeUint32(encodedSize);
-    writeUint32(numElements);
+  Encoder encodePointerArray(int length, int offset, int expectedLength) =>
+      encoderForArray(kPointerSize, length, offset, expectedLength);
 
-    if (t == PackedBool) {
-      int b = 0;
-      for (int i = 0; i < numElements; i++) {
-        if (val[i]) {
-          b |= (1 << (i % 8));
-        }
-        if (((i % 8) == 7) || (i == (numElements - 1))) {
-          Uint8.encode(this, b);
+  Encoder encoderForArray(
+      int elementSize, int length, int offset, int expectedLength) {
+    if ((expectedLength != kUnspecifiedArrayLength) &&
+        (expectedLength != length)) {
+      throw 'Trying to encode a fixed array of incorrect length';
+    }
+    return encoderForArrayByTotalSize(length * elementSize, length, offset);
+  }
+
+  Encoder encoderForArrayByTotalSize(int size, int length, int offset) {
+    encodePointerToNextUnclaimed(offset);
+    return getEncoderAtOffset(
+        new DataHeader(DataHeader.kHeaderSize + size, length));
+  }
+
+  void encodeBoolArray(
+      List<bool> value, int offset, int nullability, int expectedLength) {
+    if (value == null) {
+      encodeNullPointer(offset, isArrayNullable(nullability));
+      return;
+    }
+    if ((expectedLength != kUnspecifiedArrayLength) &&
+        (expectedLength != value.length)) {
+      throw 'Trying to encode a fixed array of incorrect size.';
+    }
+    var bytes = new Uint8List((value.length + 7) ~/ kAlignment);
+    for (int i = 0; i < bytes.length; ++i) {
+      for (int j = 0; j < kAlignment; ++j) {
+        int boolIndex = kAlignment * i + j;
+        if ((boolIndex < value.length) && value[boolIndex]) {
+          bytes[i] |= (1 << j);
         }
       }
-    } else {
-      for (int i = 0; i < numElements; i++) {
-        _callEncode(t, this, val[i]);
+    }
+    var encoder = encoderForArrayByTotalSize(
+        bytes.length, value.length, offset);
+    encoder.appendUint8Array(bytes);
+  }
+
+  void encodeArray(Function arrayAppend,
+                   int elementBytes,
+                   List<int> value,
+                   int offset,
+                   int nullability,
+                   int expectedLength) {
+    if (value == null) {
+      encodeNullPointer(offset, isArrayNullable(nullability));
+      return;
+    }
+    var encoder = encoderForArray(
+        elementBytes, value.length, offset, expectedLength);
+    arrayAppend(encoder, value);
+  }
+
+  void encodeInt8Array(
+      List<int> value, int offset, int nullability, int expectedLength) =>
+      encodeArray((e, v) => e.appendInt8Array(v),
+                  1, value, offset, nullability, expectedLength);
+
+  void encodeUint8Array(
+      List<int> value, int offset, int nullability, int expectedLength) =>
+      encodeArray((e, v) => e.appendUint8Array(v),
+                  1, value, offset, nullability, expectedLength);
+
+  void encodeInt16Array(
+      List<int> value, int offset, int nullability, int expectedLength) =>
+      encodeArray((e, v) => e.appendInt16Array(v),
+                  2, value, offset, nullability, expectedLength);
+
+  void encodeUint16Array(
+      List<int> value, int offset, int nullability, int expectedLength) =>
+      encodeArray((e, v) => e.appendUint16Array(v),
+                  2, value, offset, nullability, expectedLength);
+
+  void encodeInt32Array(
+      List<int> value, int offset, int nullability, int expectedLength) =>
+      encodeArray((e, v) => e.appendInt32Array(v),
+                  4, value, offset, nullability, expectedLength);
+
+  void encodeUint32Array(
+      List<int> value, int offset, int nullability, int expectedLength) =>
+      encodeArray((e, v) => e.appendUint32Array(v),
+                  4, value, offset, nullability, expectedLength);
+
+  void encodeInt64Array(
+      List<int> value, int offset, int nullability, int expectedLength) =>
+      encodeArray((e, v) => e.appendInt64Array(v),
+                  8, value, offset, nullability, expectedLength);
+
+  void encodeUint64Array(
+      List<int> value, int offset, int nullability, int expectedLength) =>
+      encodeArray((e, v) => e.appendUint64Array(v),
+                  8, value, offset, nullability, expectedLength);
+
+  void encodeFloatArray(
+      List<int> value, int offset, int nullability, int expectedLength) =>
+      encodeArray((e, v) => e.appendFloatArray(v),
+                  4, value, offset, nullability, expectedLength);
+
+  void encodeDoubleArray(
+      List<int> value, int offset, int nullability, int expectedLength) =>
+      encodeArray((e, v) => e.appendDoubleArray(v),
+                  8, value, offset, nullability, expectedLength);
+
+  void encodeHandleArray(List<core.MojoHandle> value,
+                         int offset,
+                         int nullability,
+                         int expectedLength) {
+    if (value == null) {
+      encodeNullPointer(offset, isArrayNullable(nullability));
+      return;
+    }
+    var encoder = encoderForArray(
+        kSerializedHandleSize, value.length, offset, expectedLength);
+    for (int i = 0; i < value.length; ++i) {
+      int handleOffset = DataHeader.kHeaderSize + kSerializedHandleSize * i;
+      encoder.encodeHandle(
+          value[i], handleOffset, isElementNullable(nullability));
+    }
+  }
+
+  static Uint8List _utf8OfString(String s) =>
+      (new Uint8List.fromList((const Utf8Encoder()).convert(s)));
+
+  void encodeString(String value, int offset, bool nullable) {
+    if (value == null) {
+      encodeNullPointer(offset, nullable);
+      return;
+    }
+    int nullability = nullable ? kArrayNullable : kNothingNullable;
+    encodeUint8Array(_utf8OfString(value),
+                     offset,
+                     nullability,
+                     kUnspecifiedArrayLength);
+  }
+
+  void appendBytes(Uint8List value) {
+    _buffer.buffer.buffer.asUint8List().setRange(
+        _base + DataHeader.kHeaderSize,
+        _base + DataHeader.kHeaderSize + value.lengthInBytes,
+        value);
+  }
+
+  void appendInt8Array(List<int> value) =>
+      appendBytes(new Uint8List.view(new Int8List.fromList(value)));
+
+  void appendUint8Array(List<int> value) =>
+      appendBytes(new Uint8List.fromList(value));
+
+  void appendInt16Array(List<int> value) =>
+      appendBytes(new Uint8List.view(new Int16List.fromList(value)));
+
+  void appendUint16Array(List<int> value) =>
+      appendBytes(new Uint8List.view(new Uint16List.fromList(value)));
+
+  void appendInt32Array(List<int> value) =>
+      appendBytes(new Uint8List.view(new Int32List.fromList(value)));
+
+  void appendUint32Array(List<int> value) =>
+      appendBytes(new Uint8List.view(new Uint32List.fromList(value)));
+
+  void appendInt64Array(List<int> value) =>
+      appendBytes(new Uint8List.view(new Int64List.fromList(value)));
+
+  void appendUint64Array(List<int> value) =>
+      appendBytes(new Uint8List.view(new Uint64List.fromList(value)));
+
+  void appendFloatArray(List<int> value) =>
+      appendBytes(new Uint8List.view(new Float32List.fromList(value)));
+
+  void appendDoubleArray(List<int> value) =>
+      appendBytes(new Uint8List.view(new Float64List.fromList(value)));
+
+  Encoder encoderForMap(int offset) {
+    encodePointerToNextUnclaimed(offset);
+    return getEncoderAtOffset(kMapStructHeader);
+  }
+}
+
+class Decoder {
+  Message _message;
+  int _base = 0;
+
+  Decoder(this._message, [this._base = 0]);
+
+  Decoder getDecoderAtPosition(int offset) => new Decoder(_message, offset);
+
+  factory Decoder.atOffset(Decoder d, int offset) =>
+      new Decoder(d._message, offset);
+
+  ByteData get _buffer => _message.buffer;
+  List<core.MojoHandle> get _handles => _message.handles;
+
+  int decodeInt8(int offset) => _buffer.getInt8(_base + offset);
+  int decodeUint8(int offset) => _buffer.getUint8(_base + offset);
+  int decodeInt16(int offset) =>
+      _buffer.getInt16(_base + offset, Endianness.LITTLE_ENDIAN);
+  int decodeUint16(int offset) =>
+      _buffer.getUint16(_base + offset, Endianness.LITTLE_ENDIAN);
+  int decodeInt32(int offset) =>
+      _buffer.getInt32(_base + offset, Endianness.LITTLE_ENDIAN);
+  int decodeUint32(int offset) =>
+      _buffer.getUint32(_base + offset, Endianness.LITTLE_ENDIAN);
+  int decodeInt64(int offset) =>
+      _buffer.getInt64(_base + offset, Endianness.LITTLE_ENDIAN);
+  int decodeUint64(int offset) =>
+      _buffer.getUint64(_base + offset,Endianness.LITTLE_ENDIAN);
+  double decodeFloat(int offset) =>
+      _buffer.getFloat32(_base + offset, Endianness.LITTLE_ENDIAN);
+  double decodeDouble(int offset) =>
+      _buffer.getFloat64(_base + offset, Endianness.LITTLE_ENDIAN);
+
+  bool decodeBool(int offset, int bit) =>
+      (decodeUint8(offset) & (1 << bit)) != 0;
+
+  core.MojoHandle decodeHandle(int offset, bool nullable) {
+    int index = decodeInt32(offset);
+    if (index == -1) {
+      if (!nullable) {
+        throw 'Trying to decode an invalid handle from a non-nullable type.';
       }
+      return new core.MojoHandle(core.MojoHandle.INVALID);
     }
+    return _handles[index];
   }
 
-  void encodeStruct(Object t, Object val) {
-    _callEncode(t, this, val);
-  }
-
-  void encodeStructPointer(Object t, Object val) {
-    if (val == null) {
-      encodePointer(val);
-      return;
-    }
-    MojoEncoder encoder = createAndEncodeEncoder(getEncodedSize(t));
-    _callEncode(t, encoder, val);
-    extent = encoder.extent;
-    buffer = encoder.buffer;
-  }
-
-  void encodeArrayPointer(Object t, List val) {
-    if (val == null) {
-      encodePointer(val);
-      return;
-    }
-    int numElements = val.length;
-    int encodedSize = kArrayHeaderSize + ((t == PackedBool) ?
-        (numElements / 8).ceil() : (getEncodedSize(t) * numElements));
-    MojoEncoder encoder = createAndEncodeEncoder(encodedSize);
-    encoder.encodeArray(t, val, numElements, encodedSize);
-    extent = encoder.extent;
-    buffer = encoder.buffer;
-  }
-
-  void encodeStringPointer(String val) {
-    if (val == null) {
-      encodePointer(val);
-      return;
-    }
-    int encodedSize = kArrayHeaderSize + utf8OfString(val).lengthInBytes;
-    MojoEncoder encoder = createAndEncodeEncoder(encodedSize);
-    encoder.encodeString(val);
-    extent = encoder.extent;
-    buffer = encoder.buffer;
-  }
-
-  void encodeMap(Object keyType, Object valType, Map val) {
-    List keys = val.keys;
-    List vals = val.values;
-    writeUint32(kStructHeaderSize + kMapStructPayloadSize);
-    writeUint32(2);
-    encodeArrayPointer(keyType, keys);
-    encodeArrayPointer(valType, vals);
-  }
-
-  void encodeMapPointer(Object keyTYpe, Object valType, Map val) {
-    if (val == null) {
-      encodePointer(val);
-      return;
-    }
-    int encodedSize = kStructHeaderSize + kMapStructPayloadSize;
-    MojoEncoder encoder = createAndEncodeEncoder(encodedSize);
-    encoder.encodeMap(keyType, valType, val);
-    extent = encoder.extent;
-    buffer = encoder.buffer;
-  }
-}
-
-
-const int kMessageNameOffset = kStructHeaderSize;
-const int kMessageFlagsOffset = kMessageNameOffset + 4;
-const int kMessageRequestIDOffset = kMessageFlagsOffset + 4;
-const int kMessageExpectsResponse = 1 << 0;
-const int kMessageIsResponse = 1 << 1;
-
-class Message {
-  ByteData buffer;
-  List<core.RawMojoHandle> handles;
-
-  Message(this.buffer, this.handles);
-
-  int getHeaderNumBytes() => buffer.getUint32(kStructHeaderNumBytesOffset);
-  int getHeaderNumFields() => buffer.getUint32(kStructHeaderNumFieldsOffset);
-  int getName() => buffer.getUint32(kMessageNameOffset);
-  int getFlags() => buffer.getUint32(kMessageFlagsOffset);
-  bool isResponse() => (getFlags() & kMessageIsResponse) != 0;
-  bool expectsResponse() => (getFlags() & kMessageExpectsResponse) != 0;
-
-  void setRequestID(int id) {
-    buffer.setUint64(kMessageRequestIDOffset, id);
-  }
-}
-
-
-class MessageBuilder {
-  MojoEncoder encoder;
-  List<core.RawMojoHandle> handles;
-
-  MessageBuilder._();
-
-  MessageBuilder(int name, int payloadSize) {
-    int numBytes = kMessageHeaderSize + payloadSize;
-    var buffer = new ByteData(numBytes);
-    handles = <core.RawMojoHandle>[];
-
-    encoder = new MojoEncoder(buffer, handles, 0, kMessageHeaderSize);
-    encoder.writeUint32(kMessageHeaderSize);
-    encoder.writeUint32(2);  // num_fields;
-    encoder.writeUint32(name);
-    encoder.writeUint32(0);  // flags.
-  }
-
-  MojoEncoder createEncoder(int size) {
-    encoder = new MojoEncoder(encoder.buffer,
-                              handles,
-                              encoder.next,
-                              encoder.next + size);
-    return encoder;
-  }
-
-  void encodeStruct(Object t, Object val) {
-    encoder = createEncoder(getEncodedSize(t));
-    _callEncode(t, encoder, val);
-  }
-
-  ByteData _trimBuffer() {
-    return new ByteData.view(encoder.buffer.buffer, 0, encoder.extent);
-  }
-
-  Message finish() {
-    Message message = new Message(_trimBuffer(), handles);
-    encoder = null;
-    handles = null;
-    return message;
-  }
-}
-
-
-class MessageWithRequestIDBuilder extends MessageBuilder {
-  MessageWithRequestIDBuilder(
-      int name, int payloadSize, int requestID, [int flags = 0])
-      : super._() {
-    int numBytes = kMessageWithRequestIDHeaderSize + payloadSize;
-    var buffer = new ByteData(numBytes);
-    handles = <core.RawMojoHandle>[];
-
-    encoder = new MojoEncoder(
-        buffer, handles, 0, kMessageWithRequestIDHeaderSize);
-    encoder.writeUint32(kMessageWithRequestIDHeaderSize);
-    encoder.writeUint32(3);  // num_fields.
-    encoder.writeUint32(name);
-    encoder.writeUint32(flags);
-    encoder.writeUint64(requestID);
-  }
-}
-
-
-class MessageReader {
-  MojoDecoder decoder;
-  int payloadSize;
-  int name;
-  int flags;
-  int requestID;
-
-  MessageReader(Message message) {
-    decoder = new MojoDecoder(message.buffer, message.handles, 0);
-
-    int messageHeaderSize = decoder.readUint32();
-    payloadSize = message.buffer.lengthInBytes - messageHeaderSize;
-
-    int num_fields = decoder.readUint32();
-    name = decoder.readUint32();
-    flags = decoder.readUint32();
-
-    if (num_fields >= 3) {
-      requestID = decoder.readUint64();
-    }
-    decoder.skip(messageHeaderSize - decoder.next);
-  }
-
-  Object decodeStruct(Object t) => _callDecode(t, decoder);
-}
-
-
-class PackedBool {}
-
-
-class Int8 {
-  static const int encodedSize = 1;
-  static int decode(MojoDecoder decoder) => decoder.readInt8();
-  static void encode(MojoEncoder encoder, int val) {
-    encoder.writeInt8(val);
-  }
-}
-
-
-class Uint8 {
-  static const int encodedSize = 1;
-  static int decode(MojoDecoder decoder) => decoder.readUint8();
-  static void encode(MojoEncoder encoder, int val) {
-    encoder.writeUint8(val);
-  }
-}
-
-
-class Int16 {
-  static const int encodedSize = 2;
-  static int decode(MojoDecoder decoder) => decoder.readInt16();
-  static void encode(MojoEncoder encoder, int val) {
-    encoder.writeInt16(val);
-  }
-}
-
-
-class Uint16 {
-  static const int encodedSize = 2;
-  static int decode(MojoDecoder decoder) => decoder.readUint16();
-  static void encode(MojoEncoder encoder, int val) {
-    encoder.writeUint16(val);
-  }
-}
-
-
-class Int32 {
-  static const int encodedSize = 4;
-  static int decode(MojoDecoder decoder) => decoder.readInt32();
-  static void encode(MojoEncoder encoder, int val) {
-    encoder.writeInt32(val);
-  }
-}
-
-
-class Uint32 {
-  static const int encodedSize = 4;
-  static int decode(MojoDecoder decoder) => decoder.readUint32();
-  static void encode(MojoEncoder encoder, int val) {
-    encoder.writeUint32(val);
-  }
-}
-
-
-class Int64 {
-  static const int encodedSize = 8;
-  static int decode(MojoDecoder decoder) => decoder.readInt64();
-  static void encode(MojoEncoder encoder, int val) {
-    encoder.writeInt64(val);
-  }
-}
-
-
-class Uint64 {
-  static const int encodedSize = 8;
-  static int decode(MojoDecoder decoder) => decoder.readUint64();
-  static void encode(MojoEncoder encoder, int val) {
-    encoder.writeUint64(val);
-  }
-}
-
-
-class MojoString {
-  static const int encodedSize = 8;
-  static String decode(MojoDecoder decoder) => decoder.decodeStringPointer();
-  static void encode(MojoEncoder encoder, String val) {
-    encoder.encodeStringPointer(val);
-  }
-}
-
-
-class NullableMojoString {
-  static const int encodedSize = MojoString.encodedSize;
-  static var decode = MojoString.decode;
-  static var encode = MojoString.encode;
-}
-
-
-class Float {
-  static const int encodedSize = 4;
-  static double decode(MojoDecoder decoder) => decoder.readFloat();
-  static void encode(MojoEncoder encoder, double val) {
-    encoder.writeFloat(val);
-  }
-}
-
-
-class Double {
-  static const int encodedSize = 8;
-  static double decode(MojoDecoder decoder) => decoder.readDouble();
-  static void encode(MojoEncoder encoder, double val) {
-    encoder.writeDouble(val);
-  }
-}
-
-
-class PointerTo {
-  Object val;
-
-  PointerTo(this.val);
-
-  int encodedSize = 8;
-  Object decode(MojoDecoder decoder) {
-    int pointer = decoder.decodePointer();
-    if (pointer == 0) {
+  Decoder decodePointer(int offset, bool nullable) {
+    int basePosition = _base + offset;
+    int pointerOffset = decodeUint64(offset);
+    if (pointerOffset == 0) {
+      if (!nullable) {
+        throw 'Trying to decode a null pointer for a non-nullable type';
+      }
       return null;
     }
-    return _callDecode(val, decoder.decodeAndCreateDecoder(pointer));
+    int newPosition = (basePosition + pointerOffset);
+    return new Decoder.atOffset(this, newPosition);
   }
-  void encode(MojoEncoder encoder, Object val) {
-    if (val == null) {
-      encoder.encodePointer(val);
-      return;
+
+  DataHeader decodeDataHeader() {
+    int size = decodeUint32(DataHeader.kSizeOffset);
+    int numFields = decodeUint32(DataHeader.kNumFieldsOffset);
+    return new DataHeader(size, numFields);
+  }
+
+  // Decode arrays.
+  DataHeader decodeDataHeaderForBoolArray(int expectedLength) {
+    var header = decodeDataHeader();
+    if (header.size < DataHeader.kHeaderSize + (header.numFields + 7) ~/ 8) {
+      throw 'Array header is incorrect';
     }
-    MojoEncoder obj_encoder =
-        encoder.createAndEncodeEncoder(getEncodedSize(this.val));
-    _callEncode(this.val, obj_encoder, val);
+    if ((expectedLength != kUnspecifiedArrayLength) &&
+        (header.numFields != expectedLength)) {
+      throw 'Incorrect array length';
+    }
+    return header;
   }
-}
 
-
-class NullablePointerTo extends PointerTo {
-  NullablePointerTo(Object val) : super(val);
-}
-
-
-class ArrayOf {
-  Object val;
-  int length;
-
-  ArrayOf(this.val, [this.length = 0]);
-
-  int dimensions() => [length].addAll((val is ArrayOf) ? val.dimensions() : []);
-
-  int encodedSize = 8;
-  List decode(MojoDecoder decoder) => decoder.decodeArrayPointer(val);
-  void encode(MojoEncoder encoder, List val) {
-    encoder.encodeArrayPointer(this.val, val);
+  List<bool> decodeBoolArray(int offset, int nullability, int expectedLength) {
+    Decoder d = decodePointer(offset, isArrayNullable(nullability));
+    if (d == null) {
+      return null;
+    }
+    var header = d.decodeDataHeaderForBoolArray(expectedLength);
+    var bytes = new Uint8List.view(
+        d._buffer.buffer,
+        d._buffer.offsetInBytes + d._base + DataHeader.kHeaderSize,
+        (header.numFields + 7) ~/ kAlignment);
+    var result = new List<bool>(header.numFields);
+    for (int i = 0; i < bytes.lengthInBytes; ++i) {
+      for (int j = 0; j < kAlignment; ++j) {
+        int boolIndex = i * kAlignment + j;
+        if (boolIndex < result.length) {
+          result[boolIndex] = (bytes[i] & (1 << j)) != 0;
+        }
+      }
+    }
+    return result;
   }
-}
 
-
-class NullableArrayOf extends ArrayOf {
-  NullableArrayOf(Object val, [int length = 0]) : super(val, length);
-}
-
-
-class Handle {
-  static const int encodedSize = 4;
-  static core.RawMojoHandle decode(MojoDecoder decoder) =>
-      decoder.decodeHandle();
-  static void encode(MojoEncoder encoder, core.RawMojoHandle val) {
-    encoder.encodeHandle(val);
+  DataHeader decodeDataHeaderForArray(int elementSize, int expectedLength) {
+    var header = decodeDataHeader();
+    if (header.size < DataHeader.kHeaderSize + header.numFields * elementSize) {
+      throw 'Array header is incorrect: $header, elementSize = $elementSize';
+    }
+    if ((expectedLength != kUnspecifiedArrayLength) &&
+        (header.numFields != expectedLength)) {
+      throw 'Incorrect array length.';
+    }
+    return header;
   }
-}
 
+  DataHeader decodeDataHeaderForPointerArray(int expectedLength) =>
+      decodeDataHeaderForArray(kPointerSize, expectedLength);
 
-class NullableHandle {
-  static const int encodedSize = Handle.encodedSize;
-  static const decode = Handle.decode;
-  static const encode = Handle.encode;
-}
-
-
-class MapOf {
-  Object key;
-  Object val;
-
-  MapOf(this.key, this.val);
-
-  int encodedSize = 8;
-  Map decode(MojoDecoder decoder) => decoder.decodeMapPointer(key, val);
-  void encode(MojoEncoder encoder, Map map) {
-    encoder.encodeMapPointer(key, val, map);
+  List<int> decodeArray(Function arrayViewer,
+                        int elementSize,
+                        int offset,
+                        int nullability,
+                        int expectedLength) {
+    Decoder d = decodePointer(offset, isArrayNullable(nullability));
+    if (d == null) {
+      return null;
+    }
+    var header = d.decodeDataHeaderForArray(elementSize, expectedLength);
+    return arrayViewer(
+        d._buffer.buffer,
+        d._buffer.offsetInBytes + d._base + DataHeader.kHeaderSize,
+        header.numFields);
   }
-}
 
+  List<int> decodeInt8Array(
+      int offset, int nullability, int expectedLength) =>
+      decodeArray((b, s, l) => new Int8List.view(b, s, l),
+                  1, offset, nullability, expectedLength);
 
-class NullableMapOf extends MapOf {
-  NullableMapOf(Object key, Object val) : super(key, val);
+  List<int> decodeUint8Array(
+      int offset, int nullability, int expectedLength) =>
+      decodeArray((b, s, l) => new Uint8List.view(b, s, l),
+                  1, offset, nullability, expectedLength);
+
+  List<int> decodeInt16Array(
+      int offset, int nullability, int expectedLength) =>
+      decodeArray((b, s, l) => new Int16List.view(b, s, l),
+                  2, offset, nullability, expectedLength);
+
+  List<int> decodeUint16Array(
+      int offset, int nullability, int expectedLength) =>
+      decodeArray((b, s, l) => new Uint16List.view(b, s, l),
+                  2, offset, nullability, expectedLength);
+
+  List<int> decodeInt32Array(
+      int offset, int nullability, int expectedLength) =>
+      decodeArray((b, s, l) => new Int32List.view(b, s, l),
+                  4, offset, nullability, expectedLength);
+
+  List<int> decodeUint32Array(
+      int offset, int nullability, int expectedLength) =>
+      decodeArray((b, s, l) => new Uint32List.view(b, s, l),
+                  4, offset, nullability, expectedLength);
+
+  List<int> decodeInt64Array(
+      int offset, int nullability, int expectedLength) =>
+      decodeArray((b, s, l) => new Int64List.view(b, s, l),
+                  8, offset, nullability, expectedLength);
+
+  List<int> decodeUint64Array(
+      int offset, int nullability, int expectedLength) =>
+      decodeArray((b, s, l) => new Uint64List.view(b, s, l),
+                  8, offset, nullability, expectedLength);
+
+  List<double> decodeFloatArray(
+      int offset, int nullability, int expectedLength) =>
+      decodeArray((b, s, l) => new Float32List.view(b, s, l),
+                  4, offset, nullability, expectedLength);
+
+  List<double> decodeDoubleArray(
+      int offset, int nullability, int expectedLength) =>
+      decodeArray((b, s, l) => new Float64List.view(b, s, l),
+                  8, offset, nullability, expectedLength);
+
+  List<core.MojoHandle> decodeHandleArray(
+      int offset, int nullability, int expectedLength) {
+    Decoder d = decodePointer(offset, isArrayNullable(nullability));
+    if (d == null) {
+      return null;
+    }
+    var header = d.decodeDataHeaderForArray(4, expectedLength);
+    var result = new core.MojoHandle(header.numFields);
+    for (int i = 0; i < result.length; ++i) {
+      result[i] = d.decodeHandle(
+          DataHeader.kHeaderSize + kSerializedHandleSize * i,
+          isElementNullable(nullability));
+    }
+    return result;
+  }
+
+  static String _stringOfUtf8(Uint8List bytes) =>
+      (const Utf8Decoder()).convert(bytes.toList());
+
+  String decodeString(int offset, bool nullable) {
+    int nullability = nullable ? kArrayNullable : 0;
+    var bytes = decodeUint8Array(offset, nullability, kUnspecifiedArrayLength);
+    if (bytes == null) {
+      return null;
+    }
+    return _stringOfUtf8(bytes);
+  }
 }

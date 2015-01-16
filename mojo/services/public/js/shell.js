@@ -9,17 +9,12 @@ define("mojo/services/public/js/shell", [
   "mojo/public/interfaces/application/shell.mojom",
   "mojo/public/interfaces/application/service_provider.mojom",
   "mojo/services/public/js/service_provider",
-], function(bindings,
-            core,
-            connection,
-            shellMojom,
-            serviceProviderMojom,
-            serviceProvider) {
+], function(bindings, core, connection, shellMojom, spMojom, sp) {
 
   const ProxyBindings = bindings.ProxyBindings;
   const StubBindings = bindings.StubBindings;
-  const ServiceProvider = serviceProvider.ServiceProvider;
-  const ServiceProviderInterface = serviceProviderMojom.ServiceProvider;
+  const ServiceProvider = sp.ServiceProvider;
+  const ServiceProviderInterface = spMojom.ServiceProvider;
   const ShellInterface = shellMojom.Shell;
 
   class Shell {

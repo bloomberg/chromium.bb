@@ -1,7 +1,8 @@
 include_rules = [
-  "+mojo/services/geometry/public/cpp",
-  "+mojo/services/geometry/public/interfaces",
-  "+mojo/services/input_events/public/interfaces",
-  "+mojo/services/surfaces/public/interfaces",
-  "+ui/gfx/geometry"
+  "!base",
+  "+geometry/public",
+  "+input_events/public",
+  "+surfaces/public",
+  "+view_manager/public",
+  "+window_manager/public",
 ]

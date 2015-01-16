@@ -4,34 +4,12 @@
 
 #include "mojo/edk/system/test_utils.h"
 
-#include "base/bind.h"
-#include "base/callback.h"
-#include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
 #include "build/build_config.h"
 
 namespace mojo {
 namespace system {
 namespace test {
-
-namespace {
-
-void PostTaskAndWaitHelper(base::WaitableEvent* event,
-                           const base::Closure& task) {
-  task.Run();
-  event->Signal();
-}
-
-}  // namespace
-
-void PostTaskAndWait(scoped_refptr<base::TaskRunner> task_runner,
-                     const tracked_objects::Location& from_here,
-                     const base::Closure& task) {
-  base::WaitableEvent event(false, false);
-  task_runner->PostTask(from_here,
-                        base::Bind(&PostTaskAndWaitHelper, &event, task));
-  event.Wait();
-}
 
 base::TimeDelta EpsilonTimeout() {
 // Originally, our epsilon timeout was 10 ms, which was mostly fine but flaky on

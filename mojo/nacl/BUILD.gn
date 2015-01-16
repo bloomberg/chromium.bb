@@ -1,0 +1,103 @@
+# All toolchains use the same generated code.
+gen_dir = "$root_build_dir/gen/mojo/nacl"
+
+# Only allow the generator to be run by one toolchain.
+if (current_toolchain == default_toolchain) {
+  # Generate the code to plumb the Mojo public API into the NaCl sandbox.
+  action("mojo_nacl_codegen") {
+    script = "generator/generate_nacl_bindings.py"
+    args = [
+      "-d",
+      rebase_path(gen_dir, root_build_dir),
+    ]
+    inputs = [
+      script,
+      "generator/interface.py",
+      "generator/interface_dsl.py",
+      "generator/mojo_syscall.cc.tmpl",
+      "generator/libmojo.cc.tmpl",
+    ]
+    outputs = [
+      "$gen_dir/mojo_syscall.cc",
+      "$gen_dir/libmojo.cc",
+    ]
+  }
+}
+
+# Trusted code
+if (!is_nacl) {
+  # A library for launching a NaCl sandbox connected to a Mojo embedder.
+  static_library("monacl_sel") {
+    sources = [
+      "mojo_syscall_internal.h",
+      "$gen_dir/mojo_syscall.cc",
+      "monacl_sel_main.cc",
+    ]
+    deps = [
+      # This target makes sure we have all the pre-processor defines needed to
+      # use NaCl's headers.
+      "//native_client/build/config/nacl:nacl_base",
+      "//native_client/src/trusted/desc:nrd_xfer",
+      "//native_client/src/trusted/service_runtime:sel_main_chrome",
+      ":mojo_nacl_codegen($default_toolchain)",
+    ]
+  }
+
+  # A simple shell for running untrusted binaries that talk to the Mojo
+  # embedder. (No services.)
+  executable("monacl_shell") {
+    testonly = true
+    sources = [
+      "monacl_shell.cc",
+    ]
+    deps = [
+      "//base:base",
+      "//mojo/edk/system:system",
+      ":monacl_sel",
+    ]
+  }
+}
+
+# Untrusted code
+if (is_nacl) {
+  # Thunk mapping the Mojo public API onto NaCl syscalls.
+  static_library("mojo") {
+    sources = [
+      "$gen_dir/libmojo.cc",
+    ]
+    deps = [
+      ":mojo_nacl_codegen($default_toolchain)",
+    ]
+  }
+
+  # Unit test for the Mojo public API.
+  executable("monacl_test") {
+    testonly = true
+    sources = [
+      "//mojo/public/cpp/system/tests/core_unittest.cc",
+      "//mojo/public/cpp/system/tests/macros_unittest.cc",
+    ]
+    deps = [
+      "//native_client/src/untrusted/nacl:imc_syscalls",
+      "//mojo/public/c/system/tests:tests",
+      "//mojo/public/cpp/system:system",
+      "//testing/gtest:gtest",
+      "//testing/gtest:gtest_main",
+      ":mojo",
+    ]
+  }
+}
+
+group("mojo_nacl") {
+  deps = [
+    "//native_client/src/untrusted/irt:irt_core(//native_client/build/toolchain/nacl:irt_${cpu_arch})",
+  ]
+}
+
+group("mojo_nacl_tests") {
+  testonly = true
+  deps = [
+    ":monacl_shell",
+    ":monacl_test(//native_client/build/toolchain/nacl:clang_newlib_${cpu_arch})",
+  ]
+}

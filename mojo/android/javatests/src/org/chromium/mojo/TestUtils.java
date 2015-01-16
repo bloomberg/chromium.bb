@@ -23,7 +23,7 @@ public final class TestUtils {
         RANDOM.setSeed(size);
         RANDOM.nextBytes(bytes);
         ByteBuffer data = ByteBuffer.allocateDirect(size);
-        data.order(ByteOrder.nativeOrder());
+        data.order(ByteOrder.LITTLE_ENDIAN);
         data.put(bytes);
         data.flip();
         return data;

@@ -9,9 +9,9 @@ import logging
 import sys
 
 # pylint: disable=F0401
-import mojo.bindings.messaging as messaging
-import mojo.bindings.promise as promise
-import mojo.bindings.serialization as serialization
+import mojo_bindings.messaging as messaging
+import mojo_bindings.promise as promise
+import mojo_bindings.serialization as serialization
 
 
 class MojoEnumType(type):

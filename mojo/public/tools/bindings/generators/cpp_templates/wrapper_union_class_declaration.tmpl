@@ -1,0 +1,50 @@
+class {{union.name}} {
+ public:
+  typedef internal::{{union.name}}_Data Data_;
+  typedef Data_::{{union.name}}_Tag Tag;
+
+  static {{union.name}}Ptr New();
+
+  template <typename U>
+  static {{union.name}}Ptr From(const U& u) {
+    return mojo::TypeConverter<{{union.name}}Ptr, U>::Convert(u);
+  }
+
+  template <typename U>
+  U To() const {
+    return mojo::TypeConverter<U, {{union.name}}>::Convert(*this);
+  }
+
+  {{union.name}}();
+  ~{{union.name}}();
+
+{%  if union|is_cloneable_kind %}
+  {{union.name}}Ptr Clone() const;
+{%- endif %}
+  bool Equals(const {{union.name}}& other) const;
+
+  Tag which() const {
+    return tag_;
+  }
+
+{%  for field in union.fields %}
+  bool is_{{field.name}}() const;
+  {{field.kind|cpp_result_type}} get_{{field.name}}() const;
+  void set_{{field.name}}({{field.kind|cpp_const_wrapper_type}} {{field.name}});
+{%- endfor %}
+
+ private:
+  friend class mojo::internal::UnionAccessor<{{union.name}}>;
+  union Union_ {
+    Union_() {}
+    ~Union_() {}
+{%  for field in union.fields %}
+    {{field.kind|cpp_wrapper_type}} {{field.name}};
+{%- endfor %}
+  };
+  void SwitchActive(Tag new_active);
+  void SetActive(Tag new_active);
+  void DestroyActive();
+  Tag tag_;
+  Union_ data_;
+};

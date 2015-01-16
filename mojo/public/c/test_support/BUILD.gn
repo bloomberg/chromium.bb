@@ -8,6 +8,8 @@ shared_library("test_support") {
 
   defines = [ "MOJO_TEST_SUPPORT_IMPLEMENTATION" ]
 
+  public_configs = [ "../../build/config:mojo_sdk" ]
+
   sources = [
     "test_support.h",
     "test_support_export.h",

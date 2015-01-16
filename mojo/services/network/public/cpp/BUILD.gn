@@ -2,7 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("cpp") {
+import("../../../mojo_sdk_root.gni")
+import("$mojo_sdk_root/mojo/public/mojo_sdk.gni")
+
+mojo_sdk_source_set("cpp") {
+  restrict_external_deps = false
+  public_configs = [ "../../../public/build/config:mojo_services" ]
   sources = [
     "udp_socket_wrapper.cc",
     "udp_socket_wrapper.h",
@@ -13,12 +18,15 @@ source_set("cpp") {
   ]
 
   deps = [
+    "../interfaces",
     "//base",
     "//mojo/application",
     "//mojo/common",
     "//mojo/environment:chromium",
-    "//mojo/public/c/system",
-    "//mojo/public/cpp/system",
-    "//mojo/services/network/public/interfaces",
+  ]
+
+  mojo_sdk_deps = [
+    "mojo/public/c/system",
+    "mojo/public/cpp/system",
   ]
 }

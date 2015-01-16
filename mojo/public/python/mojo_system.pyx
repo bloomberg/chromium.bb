@@ -22,7 +22,7 @@ from libc.stdint cimport int32_t, int64_t, uint32_t, uint64_t, uintptr_t
 import ctypes
 import threading
 
-import mojo.system_impl
+import mojo_system_impl
 
 def SetSystemThunks(system_thunks_as_object):
   """Bind the basic Mojo Core functions.
@@ -769,7 +769,7 @@ class RunLoop(object):
   """RunLoop to use when using asynchronous operations on handles."""
 
   def __init__(self):
-    self.__run_loop = mojo.system_impl.RunLoop()
+    self.__run_loop = mojo_system_impl.RunLoop()
     _RUN_LOOPS.loop = id(self)
 
   def __del__(self):
@@ -801,4 +801,4 @@ class RunLoop(object):
     return None
 
 
-_ASYNC_WAITER = mojo.system_impl.AsyncWaiter()
+_ASYNC_WAITER = mojo_system_impl.AsyncWaiter()

@@ -28,7 +28,7 @@ class MojoSharedBuffer {
   static const int DUPLICATE_FLAG_NONE = 0;
   static const int MAP_FLAG_NONE = 0;
 
-  RawMojoHandle handle;
+  MojoHandle handle;
   MojoResult status;
   ByteData mapping;
 
@@ -51,7 +51,7 @@ class MojoSharedBuffer {
 
     MojoSharedBuffer buf = new MojoSharedBuffer._();
     buf.status = r;
-    buf.handle = new RawMojoHandle(result[1]);
+    buf.handle = new MojoHandle(result[1]);
     buf.mapping = null;
     return buf;
   }
@@ -69,7 +69,7 @@ class MojoSharedBuffer {
 
     MojoSharedBuffer dupe = new MojoSharedBuffer._();
     dupe.status = r;
-    dupe.handle = new RawMojoHandle(result[1]);
+    dupe.handle = new MojoHandle(result[1]);
     dupe.mapping = null;  // The buffer is not mapped in the duplicate.
     return dupe;
   }

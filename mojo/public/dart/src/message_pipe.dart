@@ -35,14 +35,14 @@ class MojoMessagePipeEndpoint {
   static const int READ_FLAG_NONE = 0;
   static const int READ_FLAG_MAY_DISCARD = 0;
 
-  RawMojoHandle handle;
+  MojoHandle handle;
   MojoResult status;
 
   MojoMessagePipeEndpoint(this.handle);
 
   MojoResult write(ByteData data,
                    [int numBytes = -1,
-                    List<RawMojoHandle> handles = null,
+                    List<MojoHandle> handles = null,
                     int flags = 0]) {
     if (handle == null) {
       status = MojoResult.INVALID_ARGUMENT;
@@ -71,7 +71,7 @@ class MojoMessagePipeEndpoint {
 
   MojoMessagePipeReadResult read(ByteData data,
                                  [int numBytes = -1,
-                                  List<RawMojoHandle> handles = null,
+                                  List<MojoHandle> handles = null,
                                   int flags = 0]) {
     if (handle == null) {
       status = MojoResult.INVALID_ARGUMENT;
@@ -113,7 +113,7 @@ class MojoMessagePipeEndpoint {
     // Copy out the handles that were read.
     if (handles != null) {
       for (var i = 0; i < readResult.handlesRead; i++) {
-        handles[i].h = mojoHandles[i];
+        handles[i] = new MojoHandle(mojoHandles[i]);
       }
     }
 
@@ -143,8 +143,8 @@ class MojoMessagePipe {
     }
     assert((result is List) && (result.length == 3));
 
-    RawMojoHandle end1 = new RawMojoHandle(result[1]);
-    RawMojoHandle end2 = new RawMojoHandle(result[2]);
+    MojoHandle end1 = new MojoHandle(result[1]);
+    MojoHandle end2 = new MojoHandle(result[2]);
     MojoMessagePipe pipe = new MojoMessagePipe._();
     pipe.endpoints = new List(2);
     pipe.endpoints[0] = new MojoMessagePipeEndpoint(end1);

@@ -24,6 +24,7 @@ import org.chromium.mojo.system.UntypedHandle;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -103,7 +104,7 @@ public class CoreImpl implements Core, AsyncWaiter {
                         new HandleSignals(buffer.getInt(8 * (handles.size() + i))),
                         new HandleSignals(buffer.getInt(8 * (handles.size() + i) + 4)));
             }
-            result.setSignalStates(states);
+            result.setSignalStates(Arrays.asList(states));
         }
         return result;
     }

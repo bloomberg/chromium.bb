@@ -1,60 +1,69 @@
 {%- for method in interface.methods %}
-const int k{{interface.name}}_{{method.name}}_name = {{method.ordinal}};
+const int k{{interface|name}}_{{method|name}}_name = {{method.ordinal}};
 {%- endfor %}
 
-abstract class {{interface.name}}Calls {
-  void enqueueMessage(Type t, int name, Object msg);
-  Future enqueueMessageWithRequestID(Type t, int name, int id, Object msg);
+abstract class {{interface|name}}Calls {
+  void enqueueMessage(bindings.Struct message, int name);
+  Future enqueueMessageWithRequestId(bindings.Struct message, int name, int id);
   bool get isOpen;
 
 {%- for method in interface.methods %}
 {%- if method.response_parameters == None %}
-  void call{{method.name}}(
+  void call{{method|name|upper_camel_case}}(
 {%- for parameter in method.parameters -%}
-    {{parameter.kind|dart_decl_type}} {{parameter.name}}{% if not loop.last %}, {% endif %}
+    {{parameter.kind|dart_type}} {{parameter|name}}{% if not loop.last %}, {% endif %}
 {%- endfor -%}
+{%- set request_struct = method|struct_from_method %}
   ) {
     assert(isOpen);
-    var params = new {{interface.name}}_{{method.name}}_Params();
+    var params = new {{request_struct|name}}();
 {%- for parameter in method.parameters %}
-    params.{{parameter.name}} = {{parameter.name}};
+    params.{{parameter|name}} = {{parameter|name}};
 {%- endfor %}
-    enqueueMessage({{interface.name}}_{{method.name}}_Params,
-                   k{{interface.name}}_{{method.name}}_name,
-                   params);
+    enqueueMessage(params, k{{interface|name}}_{{method|name}}_name);
   }
 {% else %}
-  Future<{{interface.name}}_{{method.name}}_ResponseParams> call{{method.name}}(
+{%- set response_struct = method|response_struct_from_method %}
+  Future<{{response_struct|name}}> call{{method|name|upper_camel_case}}(
 {%- for parameter in method.parameters -%}
-    {{parameter.kind|dart_decl_type}} {{parameter.name}}{% if not loop.last %}, {% endif %}
+    {{parameter.kind|dart_type}} {{parameter|name}},
 {%- endfor -%}
+{%- set request_struct = method|struct_from_method %}
+    [int requestId = -1]
   ) {
     assert(isOpen);
-    var params = new {{interface.name}}_{{method.name}}_Params();
+    var params = new {{request_struct|name}}();
 {%- for parameter in method.parameters %}
-    params.{{parameter.name}} = {{parameter.name}};
+    params.{{parameter|name}} = {{parameter|name}};
 {%- endfor %}
-    return enqueueMessageWithRequestID(
-        {{interface.name}}_{{method.name}}_Params,
-        k{{interface.name}}_{{method.name}}_name,
-        0,
-        bindings.kMessageExpectsResponse,
-        params);
+    return enqueueMessageWithRequestId(
+        params,
+        k{{interface|name}}_{{method|name}}_name,
+        requestId,
+        bindings.MessageHeader.kMessageExpectsResponse);
   }
 {%- endif %}
 {%- endfor %}
 }
 
-class {{interface.name}}Client extends bindings.Client with {{interface.name}}Calls {
-  {{interface.name}}Client(core.MojoMessagePipeEndpoint endpoint) : super(endpoint);
+class {{interface|name}}Client extends bindings.Client with {{interface|name}}Calls {
+  {{interface|name}}Client(core.MojoMessagePipeEndpoint endpoint) : super(endpoint);
 
-  void handleResponse(bindings.MessageReader reader) {
-    switch (reader.name) {
+  {{interface|name}}Client.fromHandle(int handle) : super.fromHandle(handle);
+
+  void handleResponse(bindings.ServiceMessage message) {
+    switch (message.header.type) {
 {%- for method in interface.methods %}
 {%- if method.response_parameters != None %}
-      case k{{interface.name}}_{{method.name}}_name:
-        var r = reader.decodeStruct({{interface.name}}_{{method.name}}_ResponseParams);
-        Completer c = completerQueue.removeAt(0);
+{%- set response_struct = method|response_struct_from_method %}
+      case k{{interface|name}}_{{method|name}}_name:
+        var r = {{response_struct|name}}.deserialize(
+            message.payload);
+        if (!message.header.hasRequestId) {
+          throw 'Expected a message with a valid request Id.';
+        }
+        Completer c = completerMap[message.header.requestId];
+        completerMap[message.header.requestId] = null;
         c.complete(r);
         break;
 {%- endif %}
@@ -67,47 +76,60 @@ class {{interface.name}}Client extends bindings.Client with {{interface.name}}Ca
 }
 
 
-abstract class {{interface.name}}Interface extends bindings.Interface
+abstract class {{interface|name}}Interface extends bindings.Interface
 {% if interface.client != None -%}
-with {{imported_from[interface.client]}}{{interface.client}}Calls
+with {{imported_from[interface.client]}}{{interface.client|upper_camel_case}}Calls
 {% endif -%} {
-  {{interface.name}}Interface(core.MojoMessagePipeEndpoint endpoint) : super(endpoint);
+  {{interface|name}}Interface(core.MojoMessagePipeEndpoint endpoint) : super(endpoint);
+
+  {{interface|name}}Interface.fromHandle(int handle) : super.fromHandle(handle);
+
+  static const String name = '{{namespace|replace(".","::")}}::{{interface|name}}';
 
 {% for method in interface.methods %}
 {%- if method.response_parameters == None %}
-  void {{method.name|stylize_method}}(
+  void {{method|name}}(
   {%- for parameter in method.parameters -%}
-    {{parameter.kind|dart_decl_type}} {{parameter.name}}{% if not loop.last %}, {% endif %}
+    {{parameter.kind|dart_type}} {{parameter|name}}{% if not loop.last %}, {% endif %}
   {%- endfor -%}
   );
 {%- else %}
-  {{interface.name}}_{{method.name}}_ResponseParams {{method.name|stylize_method}}(
+{%- set response_struct = method|response_struct_from_method %}
+  Future<{{response_struct|name}}> {{method|name}}(
   {%- for parameter in method.parameters -%}
-    {{parameter.kind|dart_decl_type}} {{parameter.name}}{% if not loop.last %}, {% endif %}
+    {{parameter.kind|dart_type}} {{parameter|name}}{% if not loop.last %}, {% endif %}
   {%- endfor -%}
   );
 {%- endif %}
 {%- endfor %}
 
-  bindings.Message handleMessage(bindings.MessageReader reader) {
-    switch (reader.name) {
+  Future<bindings.Message> handleMessage(bindings.ServiceMessage message) {
+    switch (message.header.type) {
 {%- for method in interface.methods %}
-      case k{{interface.name}}_{{method.name}}_name:
-        var params = reader.decodeStruct({{interface.name}}_{{method.name}}_Params);
+{%- set request_struct = method|struct_from_method %}
+      case k{{interface|name}}_{{method|name}}_name:
+        var params = {{request_struct|name}}.deserialize(
+            message.payload);
 {%- if method.response_parameters == None %}
-        {{method.name|stylize_method}}(params);
-{%- else %}
-        var response = {{method.name|stylize_method}}(
+        {{method|name}}(
           {%- for parameter in method.parameters -%}
-              params.{{parameter.name}}{% if not loop.last %}, {% endif %}
+              params.{{parameter|name}}{% if not loop.last %}, {% endif %}
           {%- endfor -%}
         );
-        return buildResponseWithID(
-            {{interface.name}}_{{method.name}}_ResponseParams,
-            k{{interface.name}}_{{method.name}}_name,
-            reader.requestID,
-            bindings.kMessageIsResponse,
-            response);
+{%- else %}
+        return {{method|name}}(
+          {%- for parameter in method.parameters -%}
+              params.{{parameter|name}}{% if not loop.last %}, {% endif %}
+          {%- endfor -%}
+        ).then((response) {
+          if (response != null) {
+            return buildResponseWithId(
+                response,
+                k{{interface|name}}_{{method|name}}_name,
+                message.header.requestId,
+                bindings.MessageHeader.kMessageIsResponse);
+          }
+        });
 {%- endif %}
         break;
 {%- endfor %}
@@ -125,7 +147,7 @@ with {{imported_from[interface.client]}}{{interface.client}}Calls
 
 {#--- Interface Constants #}
 {% for constant in interface.constants %}
-final {{constant.name}} = {{constant.value|expression_to_text}};
+final {{constant|name}} = {{constant.value|expression_to_text}};
 {%-   endfor %}
 
 

@@ -42,7 +42,8 @@ def AddImportNames(module, unparsed_names):
     module.imports[i].name = names[i]
 
 def RewritePathNames(path):
-  return path.replace("mojo/public/js", "mojo/public/sky")
+  return path.replace("mojo/public/js", "mojo/public/sky") \
+             .replace("mojo/services/public/js", "mojo/services/public/sky")
 
 def Parse(amd_module):
   module = Module()

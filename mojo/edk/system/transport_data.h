@@ -91,15 +91,12 @@ class MOJO_SYSTEM_IMPL_EXPORT TransportData {
 
   TransportData(scoped_ptr<DispatcherVector> dispatchers, Channel* channel);
 
-#if defined(OS_POSIX)
-  // This is a hacky POSIX-only constructor to directly attach only platform
-  // handles to a message, used by |RawChannelPosix| to split messages with too
-  // many platform handles into multiple messages. |Header| will be present, but
-  // be zero. (No other information will be attached, and
-  // |RawChannel::GetSerializedPlatformHandleSize()| should return zero.)
+  // This is used for users of |MessageInTransit|/|TransportData|/|RawChannel|
+  // that want to simply transport data and platform handles, and not
+  // |Dispatcher|s. (|Header| will be present, and zero except for
+  // |num_platform_handles|, and |platform_handle_table_offset| if necessary.)
   explicit TransportData(
       embedder::ScopedPlatformHandleVectorPtr platform_handles);
-#endif
 
   ~TransportData();
 
@@ -180,7 +177,7 @@ class MOJO_SYSTEM_IMPL_EXPORT TransportData {
   // Any platform-specific handles attached to this message (for inter-process
   // transport). The vector (if any) owns the handles that it contains (and is
   // responsible for closing them).
-  // TODO(vtl): With C++11, change it to a vector of |ScopedPlatformHandles|.
+  // TODO(vtl): With C++11, change it to a vector of |ScopedPlatformHandle|s.
   embedder::ScopedPlatformHandleVectorPtr platform_handles_;
 
   DISALLOW_COPY_AND_ASSIGN(TransportData);

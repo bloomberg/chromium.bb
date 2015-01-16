@@ -2,7 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//mojo/public/tools/bindings/mojom.gni")
+import("../../../mojo_sdk_root.gni")
+import("$mojo_sdk_root/mojo/public/tools/bindings/mojom.gni")
 
 mojom("interfaces") {
   sources = [
@@ -11,10 +12,12 @@ mojom("interfaces") {
     "view_manager_constants.mojom",
   ]
 
+  mojo_sdk_deps = [ "mojo/public/interfaces/application" ]
+
   deps = [
-    "//mojo/public/interfaces/application",
-    "//mojo/services/geometry/public/interfaces",
-    "//mojo/services/input_events/public/interfaces",
-    "//mojo/services/surfaces/public/interfaces:surface_id",
+    "../../../geometry/public/interfaces",
+    "../../../input_events/public/interfaces",
+    "../../../native_viewport/public/interfaces",
+    "../../../surfaces/public/interfaces:surface_id",
   ]
 }

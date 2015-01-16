@@ -7,7 +7,6 @@ package org.chromium.mojo.bindings;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.util.Log;
 
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.mojo.HandleMock;
 import org.chromium.mojo.MojoTestCase;
@@ -99,8 +98,8 @@ public class ValidationTest extends MojoTestCase {
             throws FileNotFoundException {
         List<TestData> testData = getTestData(prefix);
         for (TestData test : testData) {
-            assertNull("Unable to read: " + test.dataFile.getName() +
-                    ": " + test.inputData.getErrorMessage(),
+            assertNull("Unable to read: " + test.dataFile.getName()
+                    + ": " + test.inputData.getErrorMessage(),
                     test.inputData.getErrorMessage());
             List<Handle> handles = new ArrayList<Handle>();
             for (int i = 0; i < test.inputData.getHandlesCount(); ++i) {
@@ -109,13 +108,13 @@ public class ValidationTest extends MojoTestCase {
             Message message = new Message(test.inputData.getData(), handles);
             boolean passed = messageReceiver.accept(message);
             if (passed && !test.expectedResult.equals("PASS")) {
-                fail("Input: " + test.dataFile.getName() +
-                        ": The message should have been refused. Expected error: " +
-                        test.expectedResult);
+                fail("Input: " + test.dataFile.getName()
+                        + ": The message should have been refused. Expected error: "
+                        + test.expectedResult);
             }
             if (!passed && test.expectedResult.equals("PASS")) {
-                fail("Input: " + test.dataFile.getName() +
-                        ": The message should have been accepted.");
+                fail("Input: " + test.dataFile.getName()
+                        + ": The message should have been accepted.");
             }
         }
     }
@@ -177,9 +176,8 @@ public class ValidationTest extends MojoTestCase {
 
     /**
      * Testing the conformance suite.
-     * Disabled: http://crbug.com/426564
      */
-    @DisabledTest
+    @SmallTest
     public void testConformance() throws FileNotFoundException {
         runTest("conformance_", ConformanceTestInterface.MANAGER.buildStub(null,
                 ConformanceTestInterface.MANAGER.buildProxy(null, new SinkMessageReceiver())));
@@ -194,7 +192,7 @@ public class ValidationTest extends MojoTestCase {
                 new RoutingMessageReceiver(IntegrationTestInterface1.MANAGER.buildStub(null,
                         IntegrationTestInterface1.MANAGER.buildProxy(null,
                                 new SinkMessageReceiver())),
-                        IntegrationTestInterface2TestHelper.
-                                newIntegrationTestInterface2MethodCallback()));
+                        IntegrationTestInterface2TestHelper
+                                .newIntegrationTestInterface2MethodCallback()));
     }
 }

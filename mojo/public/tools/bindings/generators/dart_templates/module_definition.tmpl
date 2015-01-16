@@ -10,8 +10,9 @@ final {{constant.name}} = {{constant.value|expression_to_text}};
 {%-  endfor %}
 
 {#--- Struct definitions #}
+{%- from "struct_definition.tmpl" import struct_def %}
 {%  for struct in structs %}
-{%-   include "struct_definition.tmpl" %}
+{{ struct_def(struct) }}
 {%- endfor -%}
 
 {#--- Interface definitions #}

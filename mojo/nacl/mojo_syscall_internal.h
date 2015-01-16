@@ -32,6 +32,27 @@ static inline uintptr_t NaClUserToSysAddrArray(
   return NaClUserToSysAddrRange(nap, uaddr, range);
 }
 
+// We don't use plain-old memcpy because reads and writes to the untrusted
+// address space from trusted code must be volatile.  Non-volatile memory
+// operations are dangerous because a compiler would be free to materialize a
+// second load from the same memory address or materialize a load from a memory
+// address that was stored, and assume the materialized load would return the
+// same value as the previous load or store.  Data races could cause the
+// materialized load to return a different value, however, which could lead to
+// time of check vs. time of use problems, or worse.  For this binding code in
+// particular, where memcpy is being called with a constant size, it is entirely
+// conceivable the function will be inlined, unrolled, and optimized.
+static inline void memcpy_volatile_out(
+    void volatile* dst,
+    const void* src,
+    size_t n) {
+  char volatile* c_dst = static_cast<char volatile*>(dst);
+  const char* c_src = static_cast<const char*>(src);
+  for (size_t i = 0; i < n; i++) {
+    c_dst[i] = c_src[i];
+  }
+}
+
 template <typename T> bool ConvertScalarInput(
     struct NaClApp* nap,
     uint32_t user_ptr,
@@ -49,11 +70,15 @@ template <typename T> bool ConvertScalarInput(
 template <typename T> bool ConvertScalarOutput(
     struct NaClApp* nap,
     uint32_t user_ptr,
+    bool optional,
     T volatile** sys_ptr) {
   if (user_ptr) {
     uintptr_t temp = NaClUserToSysAddrRange(nap, user_ptr, sizeof(T));
     if (temp != kNaClBadAddress) {
       *sys_ptr = reinterpret_cast<T volatile*>(temp);
+      return true;
+    } else if (optional) {
+      *sys_ptr = 0;
       return true;
     }
   }
@@ -127,7 +152,7 @@ template <typename T> bool ConvertBytes(
 
 // TODO(ncbray): size validation and complete copy.
 // TODO(ncbray): ensure non-null / missized structs are covered by a test case.
-template <typename T> bool ConvertStruct(
+template <typename T> bool ConvertExtensibleStructInput(
     struct NaClApp* nap,
     uint32_t user_ptr,
     bool optional,

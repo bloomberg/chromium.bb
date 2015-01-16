@@ -138,17 +138,19 @@ TEST_F(PlatformChannelPairPosixTest, SendReceiveFDs) {
   ScopedPlatformHandle client_handle = channel_pair.PassClientHandle().Pass();
 
   for (size_t i = 1; i < kPlatformChannelMaxNumHandles; i++) {
-    // Make |i| files, with the j-th file consisting of j copies of the digit i.
-    PlatformHandleVector platform_handles;
+    // Make |i| files, with the j-th file consisting of j copies of the digit
+    // |c|.
+    const char c = '0' + (i % 10);
+    ScopedPlatformHandleVectorPtr platform_handles(new PlatformHandleVector);
     for (size_t j = 1; j <= i; j++) {
       base::FilePath unused;
       base::ScopedFILE fp(
           base::CreateAndOpenTemporaryFileInDir(temp_dir.path(), &unused));
       ASSERT_TRUE(fp);
-      ASSERT_EQ(j, fwrite(std::string(j, '0' + i).data(), 1, j, fp.get()));
-      platform_handles.push_back(
+      ASSERT_EQ(j, fwrite(std::string(j, c).data(), 1, j, fp.get()));
+      platform_handles->push_back(
           test::PlatformHandleFromFILE(fp.Pass()).release());
-      ASSERT_TRUE(platform_handles.back().is_valid());
+      ASSERT_TRUE(platform_handles->back().is_valid());
     }
 
     // Send the FDs (+ "hello").
@@ -156,12 +158,12 @@ TEST_F(PlatformChannelPairPosixTest, SendReceiveFDs) {
     // We assume that the |sendmsg()| actually sends all the data.
     EXPECT_EQ(static_cast<ssize_t>(sizeof(kHello)),
               PlatformChannelSendmsgWithHandles(server_handle.get(), &iov, 1,
-                                                &platform_handles[0],
-                                                platform_handles.size()));
+                                                &platform_handles->at(0),
+                                                platform_handles->size()));
 
     WaitReadable(client_handle.get());
 
-    char buf[100] = {};
+    char buf[10000] = {};
     std::deque<PlatformHandle> received_handles;
     // We assume that the |recvmsg()| actually reads all the data.
     EXPECT_EQ(static_cast<ssize_t>(sizeof(kHello)),
@@ -176,10 +178,10 @@ TEST_F(PlatformChannelPairPosixTest, SendReceiveFDs) {
       received_handles.pop_front();
       ASSERT_TRUE(fp);
       rewind(fp.get());
-      char read_buf[100];
+      char read_buf[kPlatformChannelMaxNumHandles];
       size_t bytes_read = fread(read_buf, 1, sizeof(read_buf), fp.get());
       EXPECT_EQ(j + 1, bytes_read);
-      EXPECT_EQ(std::string(j + 1, '0' + i), std::string(read_buf, bytes_read));
+      EXPECT_EQ(std::string(j + 1, c), std::string(read_buf, bytes_read));
     }
   }
 }
@@ -203,18 +205,18 @@ TEST_F(PlatformChannelPairPosixTest, AppendReceivedFDs) {
     ASSERT_TRUE(fp);
     ASSERT_EQ(file_contents.size(),
               fwrite(file_contents.data(), 1, file_contents.size(), fp.get()));
-    PlatformHandleVector platform_handles;
-    platform_handles.push_back(
+    ScopedPlatformHandleVectorPtr platform_handles(new PlatformHandleVector);
+    platform_handles->push_back(
         test::PlatformHandleFromFILE(fp.Pass()).release());
-    ASSERT_TRUE(platform_handles.back().is_valid());
+    ASSERT_TRUE(platform_handles->back().is_valid());
 
     // Send the FD (+ "hello").
     struct iovec iov = {const_cast<char*>(kHello), sizeof(kHello)};
     // We assume that the |sendmsg()| actually sends all the data.
     EXPECT_EQ(static_cast<ssize_t>(sizeof(kHello)),
               PlatformChannelSendmsgWithHandles(server_handle.get(), &iov, 1,
-                                                &platform_handles[0],
-                                                platform_handles.size()));
+                                                &platform_handles->at(0),
+                                                platform_handles->size()));
   }
 
   WaitReadable(client_handle.get());

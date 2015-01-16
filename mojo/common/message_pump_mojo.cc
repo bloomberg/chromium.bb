@@ -173,25 +173,29 @@ void MessagePumpMojo::DoRunLoop(RunState* run_state, Delegate* delegate) {
 bool MessagePumpMojo::DoInternalWork(const RunState& run_state, bool block) {
   const MojoDeadline deadline = block ? GetDeadlineForWait(run_state) : 0;
   const WaitState wait_state = GetWaitState(run_state);
-  const MojoResult result =
-      WaitMany(wait_state.handles, wait_state.wait_signals, deadline);
+
+  const WaitManyResult wait_many_result =
+      WaitMany(wait_state.handles, wait_state.wait_signals, deadline, nullptr);
+  const MojoResult result = wait_many_result.result;
   bool did_work = true;
-  if (result == 0) {
-    // Control pipe was written to.
-    ReadMessageRaw(run_state.read_handle.get(), NULL, NULL, NULL, NULL,
-                   MOJO_READ_MESSAGE_FLAG_MAY_DISCARD);
-  } else if (result > 0) {
-    const size_t index = static_cast<size_t>(result);
-    DCHECK(handlers_.find(wait_state.handles[index]) != handlers_.end());
-    WillSignalHandler();
-    handlers_[wait_state.handles[index]].handler->OnHandleReady(
-        wait_state.handles[index]);
-    DidSignalHandler();
+  if (result == MOJO_RESULT_OK) {
+    if (wait_many_result.index == 0) {
+      // Control pipe was written to.
+      ReadMessageRaw(run_state.read_handle.get(), NULL, NULL, NULL, NULL,
+                     MOJO_READ_MESSAGE_FLAG_MAY_DISCARD);
+    } else {
+      DCHECK(handlers_.find(wait_state.handles[wait_many_result.index]) !=
+             handlers_.end());
+      WillSignalHandler();
+      handlers_[wait_state.handles[wait_many_result.index]]
+          .handler->OnHandleReady(wait_state.handles[wait_many_result.index]);
+      DidSignalHandler();
+    }
   } else {
     switch (result) {
       case MOJO_RESULT_CANCELLED:
       case MOJO_RESULT_FAILED_PRECONDITION:
-        RemoveFirstInvalidHandle(wait_state);
+        RemoveInvalidHandle(wait_state, result, wait_many_result.index);
         break;
       case MOJO_RESULT_DEADLINE_EXCEEDED:
         did_work = false;
@@ -224,32 +228,23 @@ bool MessagePumpMojo::DoInternalWork(const RunState& run_state, bool block) {
   return did_work;
 }
 
-void MessagePumpMojo::RemoveFirstInvalidHandle(const WaitState& wait_state) {
+void MessagePumpMojo::RemoveInvalidHandle(const WaitState& wait_state,
+                                          MojoResult result,
+                                          uint32_t index) {
   // TODO(sky): deal with control pipe going bad.
-  for (size_t i = 0; i < wait_state.handles.size(); ++i) {
-    const MojoResult result =
-        Wait(wait_state.handles[i], wait_state.wait_signals[i], 0);
-    if (result == MOJO_RESULT_INVALID_ARGUMENT) {
-      // We should never have an invalid argument. If we do it indicates
-      // RemoveHandler() was not invoked and is likely to cause problems else
-      // where in the stack if we ignore it.
-      CHECK(false);
-    } else if (result == MOJO_RESULT_FAILED_PRECONDITION ||
-               result == MOJO_RESULT_CANCELLED) {
-      CHECK_NE(i, 0u);  // Indicates the control pipe went bad.
+  CHECK(result == MOJO_RESULT_FAILED_PRECONDITION ||
+        result == MOJO_RESULT_CANCELLED);
+  CHECK_NE(index, 0u);  // Indicates the control pipe went bad.
 
-      // Remove the handle first, this way if OnHandleError() tries to remove
-      // the handle our iterator isn't invalidated.
-      CHECK(handlers_.find(wait_state.handles[i]) != handlers_.end());
-      MessagePumpMojoHandler* handler =
-          handlers_[wait_state.handles[i]].handler;
-      handlers_.erase(wait_state.handles[i]);
-      WillSignalHandler();
-      handler->OnHandleError(wait_state.handles[i], result);
-      DidSignalHandler();
-      return;
-    }
-  }
+  // Remove the handle first, this way if OnHandleError() tries to remove the
+  // handle our iterator isn't invalidated.
+  CHECK(handlers_.find(wait_state.handles[index]) != handlers_.end());
+  MessagePumpMojoHandler* handler =
+      handlers_[wait_state.handles[index]].handler;
+  handlers_.erase(wait_state.handles[index]);
+  WillSignalHandler();
+  handler->OnHandleError(wait_state.handles[index], result);
+  DidSignalHandler();
 }
 
 void MessagePumpMojo::SignalControlPipe(const RunState& run_state) {

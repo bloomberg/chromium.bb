@@ -191,15 +191,17 @@ TransportData::TransportData(scoped_ptr<DispatcherVector> dispatchers,
   // |dispatchers_| will be destroyed as it goes out of scope.
 }
 
-#if defined(OS_POSIX)
 TransportData::TransportData(
     embedder::ScopedPlatformHandleVectorPtr platform_handles)
     : buffer_size_(sizeof(Header)), platform_handles_(platform_handles.Pass()) {
   buffer_.reset(static_cast<char*>(
       base::AlignedAlloc(buffer_size_, MessageInTransit::kMessageAlignment)));
   memset(buffer_.get(), 0, buffer_size_);
+
+  Header* header = reinterpret_cast<Header*>(buffer_.get());
+  header->num_platform_handles =
+      static_cast<uint32_t>(platform_handles_->size());
 }
-#endif  // defined(OS_POSIX)
 
 TransportData::~TransportData() {
 }
@@ -221,15 +223,6 @@ const char* TransportData::ValidateBuffer(
   const Header* header = static_cast<const Header*>(buffer);
   const size_t num_handles = header->num_handles;
 
-#if !defined(OS_POSIX)
-  // On POSIX, we send control messages with platform handles (but no handles)
-  // attached (see the comments for
-  // |TransportData(embedder::ScopedPlatformHandleVectorPtr)|. (This check isn't
-  // important security-wise anyway.)
-  if (num_handles == 0)
-    return "Message has no handles attached, but secondary buffer present";
-#endif
-
   // Sanity-check |num_handles| (before multiplying it against anything).
   if (num_handles > GetConfiguration().max_message_num_handles)
     return "Message handle payload too large";
@@ -244,9 +237,9 @@ const char* TransportData::ValidateBuffer(
              "present";
     }
   } else {
-    // |num_handles| has already been validated, so the multiplication is okay.
     if (header->num_platform_handles >
-        num_handles * kMaxSerializedDispatcherPlatformHandles)
+        GetConfiguration().max_message_num_handles *
+            kMaxSerializedDispatcherPlatformHandles)
       return "Message has too many platform handles attached";
 
     static const char kInvalidPlatformHandleTableOffset[] =

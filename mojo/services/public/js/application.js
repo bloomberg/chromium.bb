@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 define("mojo/services/public/js/application", [
-  "services/js/app_bridge",
   "mojo/services/public/js/service_provider",
   "mojo/services/public/js/shell",
-], function(appBridge, serviceProvider, shell) {
+  "mojo/public/js/threading",
+], function(serviceProvider, shell, threading) {
 
   const ServiceProvider = serviceProvider.ServiceProvider;
   const Shell = shell.Shell;
@@ -39,7 +39,7 @@ define("mojo/services/public/js/application", [
         sp.close();
       });
       this.shell.close();
-      appBridge.quit();
+      threading.quit();
     }
   }
 

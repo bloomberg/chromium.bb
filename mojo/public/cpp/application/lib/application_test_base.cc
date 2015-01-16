@@ -19,8 +19,6 @@ MessagePipeHandle g_shell_handle;
 // Share the application command-line arguments with multiple application tests.
 Array<String> g_args;
 
-}  // namespace
-
 ScopedMessagePipeHandle PassShellHandle() {
   MOJO_CHECK(g_shell_handle.is_valid());
   ScopedMessagePipeHandle scoped_handle(g_shell_handle);
@@ -34,16 +32,58 @@ void SetShellHandle(ScopedMessagePipeHandle handle) {
   g_shell_handle = handle.release();
 }
 
-const Array<String>& Args() {
-  return g_args;
-}
-
 void InitializeArgs(int argc, std::vector<const char*> argv) {
   MOJO_CHECK(g_args.is_null());
   for (const char* arg : argv) {
     if (arg)
       g_args.push_back(arg);
   }
+}
+
+}  // namespace
+
+const Array<String>& Args() {
+  return g_args;
+}
+
+MojoResult RunAllTests(MojoHandle shell_handle) {
+  {
+    // This loop is used for init, and then destroyed before running tests.
+    Environment::InstantiateDefaultRunLoop();
+
+    // Construct an ApplicationImpl just for the GTEST commandline arguments.
+    // GTEST command line arguments are supported amid application arguments:
+    // $ mojo_shell mojo:example_apptests
+    //   --args-for='mojo:example_apptests arg1 --gtest_filter=foo arg2'
+    mojo::ApplicationDelegate dummy_application_delegate;
+    mojo::ApplicationImpl app(&dummy_application_delegate, shell_handle);
+    MOJO_CHECK(app.WaitForInitialize());
+
+    // InitGoogleTest expects (argc + 1) elements, including a terminating null.
+    // It also removes GTEST arguments from |argv| and updates the |argc| count.
+    const std::vector<std::string>& args = app.args();
+    MOJO_CHECK(args.size() <
+               static_cast<size_t>(std::numeric_limits<int>::max()));
+    int argc = static_cast<int>(args.size());
+    std::vector<const char*> argv(argc + 1);
+    for (int i = 0; i < argc; ++i)
+      argv[i] = args[i].c_str();
+    argv[argc] = nullptr;
+
+    testing::InitGoogleTest(&argc, const_cast<char**>(&(argv[0])));
+    SetShellHandle(app.UnbindShell());
+    InitializeArgs(argc, argv);
+
+    Environment::DestroyDefaultRunLoop();
+  }
+
+  int result = RUN_ALL_TESTS();
+
+  shell_handle = mojo::test::PassShellHandle().release().value();
+  MojoResult close_result = MojoClose(shell_handle);
+  MOJO_CHECK(close_result == MOJO_RESULT_OK);
+
+  return (result == 0) ? MOJO_RESULT_OK : MOJO_RESULT_UNKNOWN;
 }
 
 ApplicationTestBase::ApplicationTestBase() : application_impl_(nullptr) {

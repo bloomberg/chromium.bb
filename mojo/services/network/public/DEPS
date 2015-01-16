@@ -1,0 +1,11 @@
+include_rules = [
+  "-build",
+  "-mojo",
+  "-net",
+  "-services",
+  "-testing",
+  "!base",
+  "!mojo/common",
+  "+mojo/public",
+  "+mojo/services/network/public",
+]

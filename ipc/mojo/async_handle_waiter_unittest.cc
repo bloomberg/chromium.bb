@@ -73,7 +73,8 @@ class AsyncHandleWaiterTest : public testing::Test {
   void WaitAndAssertNotSignaled() {
     run_loop_->RunUntilIdle();
     EXPECT_EQ(MOJO_RESULT_OK, MojoWait(pipe_to_read_.get().value(),
-                                       MOJO_HANDLE_SIGNAL_READABLE, 0));
+                                       MOJO_HANDLE_SIGNAL_READABLE, 0,
+                                       nullptr));
     EXPECT_EQ(MOJO_RESULT_UNKNOWN, signaled_result_);
   }
 

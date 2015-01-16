@@ -23,7 +23,6 @@
       '<(DEPTH)/mojo/public/tools/bindings/generators/cpp_templates/struct_declaration.tmpl',
       '<(DEPTH)/mojo/public/tools/bindings/generators/cpp_templates/struct_definition.tmpl',
       '<(DEPTH)/mojo/public/tools/bindings/generators/cpp_templates/struct_macros.tmpl',
-      '<(DEPTH)/mojo/public/tools/bindings/generators/cpp_templates/struct_serialization_declaration.tmpl',
       '<(DEPTH)/mojo/public/tools/bindings/generators/cpp_templates/struct_serialization_definition.tmpl',
       '<(DEPTH)/mojo/public/tools/bindings/generators/cpp_templates/wrapper_class_declaration.tmpl',
       '<(DEPTH)/mojo/public/tools/bindings/generators/cpp_templates/wrapper_class_definition.tmpl',

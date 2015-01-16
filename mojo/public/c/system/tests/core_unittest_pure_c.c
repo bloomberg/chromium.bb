@@ -55,7 +55,8 @@ const char* MinimalCTest(void) {
 
   EXPECT_EQ(
       MOJO_RESULT_INVALID_ARGUMENT,
-      MojoWait(handle0, ~MOJO_HANDLE_SIGNAL_NONE, MOJO_DEADLINE_INDEFINITE));
+      MojoWait(handle0, ~MOJO_HANDLE_SIGNAL_NONE, MOJO_DEADLINE_INDEFINITE,
+               NULL));
 
   handle1 = MOJO_HANDLE_INVALID;
   EXPECT_EQ(MOJO_RESULT_OK, MojoCreateMessagePipe(NULL, &handle0, &handle1));
@@ -64,7 +65,7 @@ const char* MinimalCTest(void) {
   uint32_t result_index = 123;
   struct MojoHandleSignalsState states[1];
   EXPECT_EQ(MOJO_RESULT_DEADLINE_EXCEEDED,
-            MojoNewWaitMany(&handle0, &signals, 1, 1, &result_index, states));
+            MojoWaitMany(&handle0, &signals, 1, 1, &result_index, states));
 
   // "Deadline exceeded" doesn't apply to a single handle, so this should leave
   // |result_index| untouched.
@@ -85,8 +86,8 @@ const char* MinimalCTest(void) {
   struct MojoHandleSignalsState state;
   EXPECT_EQ(
       MOJO_RESULT_OK,
-      MojoNewWait(handle1, MOJO_HANDLE_SIGNAL_READABLE,
-                  MOJO_DEADLINE_INDEFINITE, &state));
+      MojoWait(handle1, MOJO_HANDLE_SIGNAL_READABLE,
+               MOJO_DEADLINE_INDEFINITE, &state));
 
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
             state.satisfied_signals);

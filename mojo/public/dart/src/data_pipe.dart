@@ -34,7 +34,7 @@ class MojoDataPipeProducer {
   static const int FLAG_NONE = 0;
   static const int FLAG_ALL_OR_NONE = 1 << 0;
 
-  RawMojoHandle handle;
+  MojoHandle handle;
   MojoResult status;
   final int element_bytes;
 
@@ -96,14 +96,14 @@ class MojoDataPipeConsumer {
   static const int FLAG_ALL_OR_NONE = 1 << 0;
   static const int FLAG_MAY_DISCARD = 1 << 1;
   static const int FLAG_QUERY = 1 << 2;
+  static const int FLAG_PEEK = 1 << 3;
 
-  RawMojoHandle handle;
+  MojoHandle handle;
   MojoResult status;
   final int element_bytes;
 
-  MojoDataPipeConsumer(this.handle,
-                       this.status,
-                       this.element_bytes);
+  MojoDataPipeConsumer(
+      this.handle, [this.status = MojoResult.OK, this.element_bytes = 1]);
 
   int read(ByteData data, [int num_bytes = -1, int flags = 0]) {
     if (handle == null) {
@@ -123,7 +123,7 @@ class MojoDataPipeConsumer {
     return result[1];
   }
 
-  ByteData beginRead(int buffer_bytes, [int flags = 0]) {
+  ByteData beginRead([int buffer_bytes = 0, int flags = 0]) {
     if (handle == null) {
       status = MojoResult.INVALID_ARGUMENT;
       return null;
@@ -150,6 +150,8 @@ class MojoDataPipeConsumer {
     status = new MojoResult(result);
     return status;
   }
+
+  int query() => read(null, 0, FLAG_QUERY);
 }
 
 
@@ -178,8 +180,8 @@ class MojoDataPipe {
       return null;
     }
     assert((result is List) && (result.length == 3));
-    RawMojoHandle producer_handle = new RawMojoHandle(result[1]);
-    RawMojoHandle consumer_handle = new RawMojoHandle(result[2]);
+    MojoHandle producer_handle = new MojoHandle(result[1]);
+    MojoHandle consumer_handle = new MojoHandle(result[2]);
     MojoDataPipe pipe = new MojoDataPipe._internal();
     pipe.producer = new MojoDataPipeProducer(
         producer_handle, new MojoResult(result[0]), element_bytes);

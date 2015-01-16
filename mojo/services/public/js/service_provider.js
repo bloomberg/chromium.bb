@@ -6,11 +6,11 @@ define("mojo/services/public/js/service_provider", [
   "mojo/public/js/bindings",
   "mojo/public/interfaces/application/service_provider.mojom",
   "mojo/public/js/connection",
-], function(bindings, serviceProviderMojom, connection) {
+], function(bindings, spMojom, connection) {
 
   const ProxyBindings = bindings.ProxyBindings;
   const StubBindings = bindings.StubBindings;
-  const ServiceProviderInterface = serviceProviderMojom.ServiceProvider;
+  const ServiceProviderInterface = spMojom.ServiceProvider;
 
   function checkServiceProvider(sp) {
     if (!sp.providers_)

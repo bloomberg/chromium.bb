@@ -12,7 +12,7 @@
 //
 // To define a new ViewProperty:
 //
-//  #include "mojo/services/view_manager/public/cpp/view_property.h"
+//  #include "view_manager/public/cpp/view_property.h"
 //
 //  DECLARE_EXPORTED_VIEW_PROPERTY_TYPE(FOO_EXPORT, MyType);
 //  namespace foo {

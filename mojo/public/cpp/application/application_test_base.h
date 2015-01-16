@@ -17,13 +17,12 @@ class ApplicationImpl;
 
 namespace test {
 
-// Access the shell handle shared by multiple test application instances.
-ScopedMessagePipeHandle PassShellHandle();
-void SetShellHandle(ScopedMessagePipeHandle handle);
-
 // Access the command line arguments passed to the application test.
 const Array<String>& Args();
-void InitializeArgs(int argc, std::vector<const char*> argv);
+
+// Run all application tests. This must be called after the environment is
+// initialized, to support construction of a default run loop.
+MojoResult RunAllTests(MojoHandle shell_handle);
 
 // A GTEST base class for application testing executed in mojo_shell.
 class ApplicationTestBase : public testing::Test {

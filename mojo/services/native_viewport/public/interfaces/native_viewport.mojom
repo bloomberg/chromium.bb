@@ -9,6 +9,11 @@ import "mojo/services/gpu/public/interfaces/command_buffer.mojom";
 import "mojo/services/input_events/public/interfaces/input_events.mojom";
 import "mojo/services/surfaces/public/interfaces/surface_id.mojom";
 
+struct ViewportMetrics {
+  Size size;
+  float device_pixel_ratio = 1.0;
+};
+
 [Client=NativeViewportClient]
 interface NativeViewport {
   // TODO(sky): having a create function is awkward. Should there be a factory
@@ -27,8 +32,8 @@ interface NativeViewportEventDispatcher {
 };
 
 interface NativeViewportClient {
-  // OnSizeChanged() is sent at least once after the callback from Create() is
-  // called.
-  OnSizeChanged(Size size);
+  // OnMetricsAvailable() is sent at least once after the callback from Create()
+  // is called.
+  OnMetricsChanged(ViewportMetrics metrics);
   OnDestroyed();
 };

@@ -56,16 +56,16 @@ cdef extern from "mojo/public/c/system/core.h" nogil:
   # functions.h
   MojoTimeTicks MojoGetTimeTicksNow()
   MojoResult MojoClose(MojoHandle handle)
-  MojoResult MojoWait "MojoNewWait"(MojoHandle handle,
-                                    MojoHandleSignals signals,
-                                    MojoDeadline deadline,
-                                    MojoHandleSignalsState* signals_state)
-  MojoResult MojoWaitMany "MojoNewWaitMany"(const MojoHandle* handles,
-                                            const MojoHandleSignals* signals,
-                                            uint32_t num_handles,
-                                            MojoDeadline deadline,
-                                            uint32_t* result_index,
-                                            MojoHandleSignalsState* signals_states)
+  MojoResult MojoWait "MojoWait"(MojoHandle handle,
+                                 MojoHandleSignals signals,
+                                 MojoDeadline deadline,
+                                 MojoHandleSignalsState* signals_state)
+  MojoResult MojoWaitMany "MojoWaitMany"(const MojoHandle* handles,
+                                         const MojoHandleSignals* signals,
+                                         uint32_t num_handles,
+                                         MojoDeadline deadline,
+                                         uint32_t* result_index,
+                                         MojoHandleSignalsState* signals_states)
 
   # message_pipe.h
   ctypedef uint32_t MojoCreateMessagePipeOptionsFlags

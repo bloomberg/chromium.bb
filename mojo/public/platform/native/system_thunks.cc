@@ -24,36 +24,21 @@ MojoResult MojoClose(MojoHandle handle) {
 
 MojoResult MojoWait(MojoHandle handle,
                     MojoHandleSignals signals,
-                    MojoDeadline deadline) {
+                    MojoDeadline deadline,
+                    struct MojoHandleSignalsState* signals_state) {
   assert(g_thunks.Wait);
-  return g_thunks.Wait(handle, signals, deadline);
+  return g_thunks.Wait(handle, signals, deadline, signals_state);
 }
 
 MojoResult MojoWaitMany(const MojoHandle* handles,
                         const MojoHandleSignals* signals,
                         uint32_t num_handles,
-                        MojoDeadline deadline) {
+                        MojoDeadline deadline,
+                        uint32_t* result_index,
+                        struct MojoHandleSignalsState* signals_states) {
   assert(g_thunks.WaitMany);
-  return g_thunks.WaitMany(handles, signals, num_handles, deadline);
-}
-
-MojoResult MojoNewWait(MojoHandle handle,
-                       MojoHandleSignals signals,
-                       MojoDeadline deadline,
-                       struct MojoHandleSignalsState* signals_state) {
-  assert(g_thunks.NewWait);
-  return g_thunks.NewWait(handle, signals, deadline, signals_state);
-}
-
-MojoResult MojoNewWaitMany(const MojoHandle* handles,
-                           const MojoHandleSignals* signals,
-                           uint32_t num_handles,
-                           MojoDeadline deadline,
-                           uint32_t* result_index,
-                           struct MojoHandleSignalsState* signals_states) {
-  assert(g_thunks.NewWaitMany);
-  return g_thunks.NewWaitMany(handles, signals, num_handles, deadline,
-                              result_index, signals_states);
+  return g_thunks.WaitMany(handles, signals, num_handles, deadline,
+                           result_index, signals_states);
 }
 
 MojoResult MojoCreateMessagePipe(const MojoCreateMessagePipeOptions* options,
