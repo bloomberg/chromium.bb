@@ -38,6 +38,7 @@ const char kDriveV2InternalAppsUrl[] = "/drive/v2internal/apps";
 const char kDriveV2AppsDeleteUrlFormat[] = "/drive/v2internal/apps/%s";
 const char kDriveV2FilesAuthorizeUrlFormat[] =
     "/drive/v2internal/files/%s/authorize?appId=%s";
+const char kDriveV2InternalFileUrlPrefix[] = "/drive/v2internal/files/";
 
 GURL AddResumableUploadParam(const GURL& url) {
   return net::AppendOrReplaceQueryParameter(url, "uploadType", "resumable");
@@ -79,8 +80,25 @@ GURL DriveApiUrlGenerator::GetAppsDeleteUrl(const std::string& app_id) const {
       kDriveV2AppsDeleteUrlFormat, net::EscapePath(app_id).c_str()));
 }
 
-GURL DriveApiUrlGenerator::GetFilesGetUrl(const std::string& file_id) const {
-  return base_url_.Resolve(kDriveV2FileUrlPrefix + net::EscapePath(file_id));
+GURL DriveApiUrlGenerator::GetFilesGetUrl(const std::string& file_id,
+                                          bool use_internal_endpoint,
+                                          const GURL& embed_origin) const {
+  GURL url = base_url_.Resolve(use_internal_endpoint ?
+      kDriveV2InternalFileUrlPrefix + net::EscapePath(file_id) :
+      kDriveV2FileUrlPrefix + net::EscapePath(file_id));
+  if (!embed_origin.is_empty()) {
+    // Construct a valid serialized embed origin from an url, according to
+    // WD-html5-20110525. Such string has to be built manually, since
+    // GURL::spec() always adds the trailing slash. Moreover, ports are
+    // currently not supported.
+    DCHECK(!embed_origin.has_port());
+    DCHECK(!embed_origin.has_path() || embed_origin.path() == "/");
+    const std::string serialized_embed_origin =
+        embed_origin.scheme() + "://" + embed_origin.host();
+    url = net::AppendOrReplaceQueryParameter(
+        url, "embedOrigin", serialized_embed_origin);
+  }
+  return url;
 }
 
 GURL DriveApiUrlGenerator::GetFilesAuthorizeUrl(

@@ -38,7 +38,9 @@ class DriveApiUrlGenerator {
   GURL GetAppsDeleteUrl(const std::string& app_id) const;
 
   // Returns a URL to fetch a file metadata.
-  GURL GetFilesGetUrl(const std::string& file_id) const;
+  GURL GetFilesGetUrl(const std::string& file_id,
+                      bool use_internal_endpoint,
+                      const GURL& embed_origin) const;
 
   // Returns a URL to authorize an app to access a file.
   GURL GetFilesAuthorizeUrl(const std::string& file_id,

@@ -70,16 +70,20 @@ GURL DriveApiPartialFieldRequest::GetURL() const {
 FilesGetRequest::FilesGetRequest(
     RequestSender* sender,
     const DriveApiUrlGenerator& url_generator,
+    bool use_internal_endpoint,
     const FileResourceCallback& callback)
     : DriveApiDataRequest<FileResource>(sender, callback),
-      url_generator_(url_generator) {
+      url_generator_(url_generator),
+      use_internal_endpoint_(use_internal_endpoint) {
   DCHECK(!callback.is_null());
 }
 
 FilesGetRequest::~FilesGetRequest() {}
 
 GURL FilesGetRequest::GetURLInternal() const {
-  return url_generator_.GetFilesGetUrl(file_id_);
+  return url_generator_.GetFilesGetUrl(file_id_,
+                                       use_internal_endpoint_,
+                                       embed_origin_);
 }
 
 //============================ FilesAuthorizeRequest ===========================

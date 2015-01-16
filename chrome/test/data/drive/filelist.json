@@ -70,6 +70,7 @@
    "selfLink": "https://www.googleapis.com/drive/v2/files/1Pc8jzfU1ErbN_eucMMqdqzY3eBm0v8sxXm_1CtLxABC",
    "alternateLink": "https://docs.google.com/a/chromium.org/document/d/1Pc8jzfU1ErbN_eucMMqdqzY3eBm0v8sxXm_1CtLxABC/edit",
    "embedLink": "https://docs.google.com/a/chromium.org/document/d/1Pc8jzfU1ErbN_eucMMqdqzY3eBm0v8sxXm_1CtLxABC/preview",
+   "shareLink": "https://drive.google.com/share?id=1Pc8jzfU1ErbN_eucMMqdqzY3eBm0v8sxXm_1CtLxABC&embedOrigin=chrome-extension://test&hl=ja",
    "thumbnailLink": "https://docs.google.com/feeds/vt?gd=true&id=1Pc8jzfU1ErbN_eucMMqdqzY3eBm0v8sxXm_1CtLxABC&v=3&s=AMedNnoAAAAAUBJyB0g8HbxZaLRnlztxefZPS24LiXYZ&sz=s220",
    "title": "Test Google Document",
    "mimeType": "application/vnd.google-apps.document",

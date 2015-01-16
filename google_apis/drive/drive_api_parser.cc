@@ -156,6 +156,8 @@ const char kLabelTrashed[] = "trashed";
 const char kImageMediaMetadataWidth[] = "width";
 const char kImageMediaMetadataHeight[] = "height";
 const char kImageMediaMetadataRotation[] = "rotation";
+// URL to the share dialog UI, which is provided only in v2internal.
+const char kShareLink[] = "shareLink";
 
 const char kDriveFolderMimeType[] = "application/vnd.google-apps.folder";
 
@@ -461,6 +463,9 @@ void FileResource::RegisterJSONConverter(
                                         &base::StringToInt64);
   converter->RegisterCustomField<GURL>(kAlternateLink,
                                        &FileResource::alternate_link_,
+                                       GetGURLFromString);
+  converter->RegisterCustomField<GURL>(kShareLink,
+                                       &FileResource::share_link_,
                                        GetGURLFromString);
   converter->RegisterCustomValueField<std::vector<ParentReference> >(
       kParents,

@@ -139,6 +139,7 @@ class FilesGetRequest : public DriveApiDataRequest<FileResource> {
  public:
   FilesGetRequest(RequestSender* sender,
                   const DriveApiUrlGenerator& url_generator,
+                  bool use_internal_endpoint,
                   const FileResourceCallback& callback);
   ~FilesGetRequest() override;
 
@@ -146,13 +147,21 @@ class FilesGetRequest : public DriveApiDataRequest<FileResource> {
   const std::string& file_id() const { return file_id_; }
   void set_file_id(const std::string& file_id) { file_id_ = file_id; }
 
+  // Optional parameter.
+  const GURL& embed_origin() const { return embed_origin_; }
+  void set_embed_origin(const GURL& embed_origin) {
+    embed_origin_ = embed_origin;
+  }
+
  protected:
   // Overridden from DriveApiDataRequest.
   GURL GetURLInternal() const override;
 
  private:
   const DriveApiUrlGenerator url_generator_;
+  const bool use_internal_endpoint_;
   std::string file_id_;
+  GURL embed_origin_;
 
   DISALLOW_COPY_AND_ASSIGN(FilesGetRequest);
 };
@@ -611,7 +620,7 @@ class AppsListRequest : public DriveApiDataRequest<AppList> {
 
  private:
   const DriveApiUrlGenerator url_generator_;
-  bool use_internal_endpoint_;
+  const bool use_internal_endpoint_;
 
   DISALLOW_COPY_AND_ASSIGN(AppsListRequest);
 };
