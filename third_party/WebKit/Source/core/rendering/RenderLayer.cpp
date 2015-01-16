@@ -1565,7 +1565,8 @@ void RenderLayer::collectFragments(LayerFragments& fragments, const RenderLayer*
     // Make the dirty rect relative to the fragmentation context (multicol container, etc.).
     RenderFlowThread* enclosingFlowThread = toRenderFlowThread(enclosingPaginationLayer()->renderer());
     LayoutPoint offsetOfPaginationLayerFromRoot; // Visual offset from the root layer to the nearest fragmentation context.
-    if (rootLayer->enclosingPaginationLayer() == enclosingPaginationLayer()) {
+    bool rootLayerIsInsidePaginationLayer = rootLayer->enclosingPaginationLayer() == enclosingPaginationLayer();
+    if (rootLayerIsInsidePaginationLayer) {
         // The root layer is in the same fragmentation context as this layer, so we need to look
         // inside it and subtract the offset between the fragmentation context and the root layer.
         offsetOfPaginationLayerFromRoot = -rootLayer->visualOffsetFromAncestor(enclosingPaginationLayer());
@@ -1584,11 +1585,14 @@ void RenderLayer::collectFragments(LayerFragments& fragments, const RenderLayer*
 
     // Get the parent clip rects of the pagination layer, since we need to intersect with that when painting column contents.
     ClipRect ancestorClipRect = dirtyRect;
-    if (enclosingPaginationLayer()->parent()) {
-        ClipRectsContext clipRectsContext(rootLayer, clipRectsCacheSlot, inOverlayScrollbarSizeRelevancy);
+    if (const RenderLayer* paginationParentLayer = enclosingPaginationLayer()->parent()) {
+        const RenderLayer* ancestorLayer = rootLayerIsInsidePaginationLayer ? paginationParentLayer : rootLayer;
+        ClipRectsContext clipRectsContext(ancestorLayer, clipRectsCacheSlot, inOverlayScrollbarSizeRelevancy);
         if (respectOverflowClip == IgnoreOverflowClip)
             clipRectsContext.setIgnoreOverflowClip();
         ancestorClipRect = enclosingPaginationLayer()->clipper().backgroundClipRect(clipRectsContext);
+        if (rootLayerIsInsidePaginationLayer)
+            ancestorClipRect.moveBy(-rootLayer->visualOffsetFromAncestor(ancestorLayer));
         ancestorClipRect.intersect(dirtyRect);
     }
 
