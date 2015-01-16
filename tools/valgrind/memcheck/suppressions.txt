@@ -3298,12 +3298,12 @@
    fun:_ZNK5blink6MemberINS_38PlatformSpeechSynthesisUtteranceClientEEcvPS1_Ev
    fun:_ZNK5blink32PlatformSpeechSynthesisUtterance6clientEv
    fun:_ZN5blink15SpeechSynthesis17didFinishSpeakingEPNS_32PlatformSpeechSynthesisUtteranceE
+   ...
    fun:_ZN5blink29PlatformSpeechSynthesizerMock16speakingFinishedEPNS_5TimerIS0_EE
    fun:_ZN5blink5TimerINS_29PlatformSpeechSynthesizerMockEE5firedEv
    fun:_ZN5blink12ThreadTimers24sharedTimerFiredInternalEv
    fun:_ZN5blink12ThreadTimers16sharedTimerFiredEv
-   fun:_ZN5blink9Scheduler15tickSharedTimerEv
-   fun:_ZN5blink9Scheduler18sharedTimerAdapterEv
+   ...
    fun:_ZN7content17BlinkPlatformImpl9DoTimeoutEv
 }
 {
@@ -3573,7 +3573,7 @@
    fun:_ZN4mojo6system17UserPointerReaderIKjEC2ENS0_11UserPointerIS2_EEm
    fun:_ZN4mojo6system4Core8WaitManyENS0_11UserPointerIKjEES4_jmNS2_IjEENS2_I22MojoHandleSignalsStateEE
    fun:MojoWaitMany
-   fun:_ZN4mojo8WaitManyISt6vectorINS_6HandleESaIS2_EES1_IjSaIjEEEEiRKT_RKT0_m
+   fun:_ZN4mojo8WaitManyI*
    fun:_ZN4mojo6common15MessagePumpMojo14DoInternalWorkERKNS1_8RunStateEb
    fun:_ZN4mojo6common15MessagePumpMojo9DoRunLoopEPNS1_8RunStateEPN4base11MessagePump8DelegateE
    fun:_ZN4mojo6common15MessagePumpMojo3RunEPN4base11MessagePump8DelegateE
@@ -3594,4 +3594,10 @@
    fun:_ZN4mojo6common15MessagePumpMojoC1Ev
    fun:_ZN4mojo6common15MessagePumpMojo6CreateEv
 }
-
+{
+   bug_449551
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN8app_list4test17SearchHistoryTest5SetUpEv
+}
