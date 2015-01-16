@@ -19,7 +19,7 @@ namespace {
 // TODO(benchan): Move these constants to system_api.
 namespace peerd {
 const char kPeerdServiceName[] = "org.chromium.peerd";
-const char kPeerdServicePath[] = "/org/chromium/peerd";
+const char kPeerdManagerPath[] = "/org/chromium/peerd/Manager";
 const char kManagerInterface[] = "org.chromium.peerd.Manager";
 const char kStartMonitoringMethod[] = "StartMonitoring";
 const char kStopMonitoringMethod[] = "StopMonitoring";
@@ -189,7 +189,7 @@ void PeerDaemonManagerClientImpl::OnVoidDBusMethod(
 void PeerDaemonManagerClientImpl::Init(dbus::Bus* bus) {
   peer_daemon_proxy_ =
       bus->GetObjectProxy(peerd::kPeerdServiceName,
-                          dbus::ObjectPath(peerd::kPeerdServicePath));
+                          dbus::ObjectPath(peerd::kPeerdManagerPath));
 }
 
 }  // namespace

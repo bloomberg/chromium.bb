@@ -311,6 +311,7 @@ void DBusThreadManager::InitializeClients() {
   GetLorgnetteManagerClient()->Init(GetSystemBus());
   GetModemMessagingClient()->Init(GetSystemBus());
   GetPermissionBrokerClient()->Init(GetSystemBus());
+  GetPeerDaemonManagerClient()->Init(GetSystemBus());
   GetPowerManagerClient()->Init(GetSystemBus());
   GetPrivetDaemonClient()->Init(GetSystemBus());
   GetSessionManagerClient()->Init(GetSystemBus());
