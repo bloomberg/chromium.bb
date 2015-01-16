@@ -102,10 +102,8 @@ cvox.ChromeVoxUserCommands.handleTabAction_ = function() {
     return false;
   }
 
-  // If the user is already focused on a link or control,
-  // nothing more needs to be done.
-  var isLinkControl = cvox.ChromeVoxUserCommands.isFocusedOnLinkControl_();
-  if (isLinkControl) {
+  // If the user is already focused on anything, nothing more needs to be done.
+  if (document.activeElement != document.body) {
     return true;
   }
 
@@ -160,20 +158,6 @@ cvox.ChromeVoxUserCommands.handleTabAction_ = function() {
   bestGuess.parentNode.insertBefore(dummySpan, bestGuess);
   dummySpan.focus();
   return true;
-};
-
-
-/**
- * @return {boolean} True if we are focused on a link or any other control.
- * @private
- */
-cvox.ChromeVoxUserCommands.isFocusedOnLinkControl_ = function() {
-  var tagName = 'A';
-  if ((document.activeElement.tagName == tagName) ||
-      cvox.DomUtil.isControl(document.activeElement)) {
-    return true;
-  }
-  return false;
 };
 
 
