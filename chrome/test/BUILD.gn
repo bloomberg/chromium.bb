@@ -765,6 +765,12 @@ if (!is_android) {
                              ".",
                              "//chrome")
       deps += [ "//ui/views" ]
+      if (!is_mac) {
+        sources +=
+            rebase_path(gypi_values.chrome_browser_tests_views_non_mac_sources,
+                        ".",
+                        "//chrome")
+      }
     }
     if (is_chromeos) {
       sources += rebase_path(gypi_values.chrome_browser_tests_chromeos_sources,
@@ -891,19 +897,6 @@ if (!is_android) {
         # TODO(groby): This test depends on hunspell and we cannot run it on
         # Mac, which does not use hunspell by default.
         "../browser/spellchecker/spellcheck_service_browsertest.cc",
-
-        # TODO(tapted): Enable toolkit-views browser_tests on Mac when their
-        # respective implementations are linked in. http://crbug.com/404979.
-        "../browser/ui/views/autofill/autofill_dialog_view_tester_views.cc",
-        "../browser/ui/views/autofill/autofill_popup_base_view_browsertest.cc",
-        "../browser/ui/views/extensions/extension_install_dialog_view_browsertest.cc",
-        "../browser/ui/views/frame/browser_view_browsertest.cc",
-        "../browser/ui/views/location_bar/zoom_bubble_view_browsertest.cc",
-        "../browser/ui/views/profiles/avatar_menu_button_browsertest.cc",
-        "../browser/ui/views/profiles/new_avatar_menu_button_browsertest.cc",
-        "../browser/ui/views/profiles/profile_chooser_view_browsertest.cc",
-        "../browser/ui/views/toolbar/browser_actions_container_browsertest.cc",
-        "../browser/ui/views/translate/translate_bubble_view_browsertest.cc",
 
         # TODO(rouslan): This test depends on the custom dictionary UI,
         # which is disabled on Mac.

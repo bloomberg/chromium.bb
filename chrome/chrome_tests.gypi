@@ -59,7 +59,6 @@
       'browser/apps/app_shim/test/app_shim_host_manager_test_api_mac.h',
       'browser/apps/app_url_redirector_browsertest.cc',
       'browser/apps/app_window_browsertest.cc',
-      'browser/apps/custom_launcher_page_browsertest_views.cc',
       'browser/apps/ephemeral_app_browsertest.cc',
       'browser/apps/ephemeral_app_browsertest.h',
       'browser/apps/ephemeral_app_launcher_browsertest.cc',
@@ -570,7 +569,24 @@
       # is safe to run there. See http://crbug.com/78722 for details.
       '../base/files/file_path_watcher_browsertest.cc',
     ],
+    # Cross-platform views browser tests ready for toolkit-views on Mac.
     'chrome_browser_tests_views_sources': [
+      'browser/ui/views/extensions/extension_uninstall_dialog_view_browsertest.cc',
+      'browser/ui/views/frame/browser_non_client_frame_view_ash_browsertest.cc',
+      'browser/ui/views/frame/browser_window_property_manager_browsertest_win.cc',
+      'browser/ui/views/select_file_dialog_extension_browsertest.cc',
+    ],
+    # Cross-platform (except Mac) views browser tests. Assumes app list is
+    # enabled (as for chrome_browser_ui_views_non_mac_sources).
+    'chrome_browser_tests_views_non_mac_sources': [
+      # TODO(tapted): These assume the AppListService is views-based. Enable
+      # with toolkit-views app launcher on Mac. http://crbug.com/365977.
+      'browser/apps/custom_launcher_page_browsertest_views.cc',
+      'browser/ui/app_list/app_list_service_views_browsertest.cc',
+
+      # TODO(tapted): Move these to chrome_browser_tests_views_sources when the
+      # the corresponding files are moved in chrome_browser_ui.gypi (i.e. out of
+      # chrome_browser_ui_views_non_mac_sources). http://crbug.com/404979.
       'browser/ui/views/autofill/autofill_dialog_view_tester_views.cc',
       'browser/ui/views/autofill/autofill_dialog_view_tester_views.h',
       'browser/ui/views/autofill/autofill_popup_base_view_browsertest.cc',
@@ -579,14 +595,10 @@
       'browser/ui/views/collected_cookies_views_browsertest.cc',
       'browser/ui/views/extensions/bookmark_override_browsertest.cc',
       'browser/ui/views/extensions/extension_install_dialog_view_browsertest.cc',
-      'browser/ui/views/extensions/extension_uninstall_dialog_view_browsertest.cc',
-      'browser/ui/views/frame/browser_non_client_frame_view_ash_browsertest.cc',
       'browser/ui/views/frame/browser_view_browsertest.cc',
-      'browser/ui/views/frame/browser_window_property_manager_browsertest_win.cc',
       'browser/ui/views/location_bar/zoom_bubble_view_browsertest.cc',
       'browser/ui/views/profiles/avatar_menu_button_browsertest.cc',
       'browser/ui/views/profiles/profile_chooser_view_browsertest.cc',
-      'browser/ui/views/select_file_dialog_extension_browsertest.cc',
       'browser/ui/views/toolbar/browser_actions_container_browsertest.cc',
       'browser/ui/views/toolbar/component_toolbar_actions_browsertest.cc',
       'browser/ui/views/toolbar/toolbar_view_browsertest.cc',
@@ -788,7 +800,6 @@
       'browser/apps/drive/drive_app_provider_browsertest.cc',
       'browser/ui/app_list/app_list_controller_browsertest.cc',
       'browser/ui/app_list/app_list_service_impl_browsertest.cc',
-      'browser/ui/app_list/app_list_service_views_browsertest.cc',
       'browser/ui/app_list/search/people/people_provider_browsertest.cc',
       'browser/ui/app_list/search/webstore/webstore_provider_browsertest.cc',
       'browser/ui/app_list/speech_recognizer_browsertest.cc',
@@ -2233,18 +2244,6 @@
             # Mac, which does not use hunspell by default.
             'browser/spellchecker/spellcheck_service_browsertest.cc',
 
-            # TODO(tapted): Enable toolkit-views browser_tests on Mac when their
-            # respective implementations are linked in. http://crbug.com/404979.
-            'browser/ui/views/autofill/autofill_dialog_view_tester_views.cc',
-            'browser/ui/views/autofill/autofill_popup_base_view_browsertest.cc',
-            'browser/ui/views/extensions/extension_install_dialog_view_browsertest.cc',
-            'browser/ui/views/frame/browser_view_browsertest.cc',
-            'browser/ui/views/location_bar/zoom_bubble_view_browsertest.cc',
-            'browser/ui/views/profiles/avatar_menu_button_browsertest.cc',
-            'browser/ui/views/profiles/profile_chooser_view_browsertest.cc',
-            'browser/ui/views/toolbar/browser_actions_container_browsertest.cc',
-            'browser/ui/views/translate/translate_bubble_view_browsertest.cc',
-
             # TODO(rouslan): This test depends on the custom dictionary UI,
             # which is disabled on Mac.
             'browser/ui/webui/options/edit_dictionary_browsertest.js',
@@ -2306,6 +2305,9 @@
           'dependencies': [
             '../ui/views/views.gyp:views',
           ],
+        }],
+        ['toolkit_views==1 and OS!="mac"', {
+          'sources': [ '<@(chrome_browser_tests_views_non_mac_sources)' ],
         }],
         ['OS!="android" and OS!="ios"', {
           'sources': [
