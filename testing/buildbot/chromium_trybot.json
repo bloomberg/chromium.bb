@@ -135,12 +135,7 @@
       "platforms": ["linux", "win"]
     },
     "media_perftests",
-    {
-      "test": "media_unittests",
-      "swarming": {
-        "can_use_on_swarming_builders": true
-      }
-    },
+    "media_unittests",
     {
       "test": "message_center_unittests",
       "swarming": {
