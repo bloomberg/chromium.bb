@@ -75,7 +75,8 @@ void PageZoom::Zoom(content::WebContents* web_contents,
                     content::PageZoom zoom) {
   ui_zoom::ZoomController* zoom_controller =
       ui_zoom::ZoomController::FromWebContents(web_contents);
-  DCHECK(zoom_controller);
+  if (!zoom_controller)
+    return;
 
   double current_zoom_level = zoom_controller->GetZoomLevel();
   double default_zoom_level = zoom_controller->GetDefaultZoomLevel();
