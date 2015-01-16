@@ -700,7 +700,9 @@ bool RemoteDesktopBrowserTest::LoadScript(
   std::string script;
   base::FilePath src_dir;
   _ASSERT_TRUE(PathService::Get(base::DIR_EXE, &src_dir));
-  base::FilePath script_path = src_dir.Append(path);
+  base::FilePath script_path =
+      src_dir.Append(FILE_PATH_LITERAL("remoting/browser_test_resources/"));
+  script_path = script_path.Append(path);
 
   if (!base::ReadFileToString(script_path, &script)) {
     LOG(ERROR) << "Failed to load script " << script_path.value();

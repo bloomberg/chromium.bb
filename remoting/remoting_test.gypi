@@ -298,33 +298,12 @@
       },
       'copies': [
         {
-          'destination': '<(PRODUCT_DIR)',
+          'destination': '<(PRODUCT_DIR)/remoting/browser_test_resources',
             'files': [
               '<@(remoting_webapp_js_browser_test_files)',
             ],
         },
       ], #end of copies
-      'actions': [
-        {
-          # Store the browser test resources into a zip file so there is a
-          # consistent filename to reference for build archiving (i.e. in
-          # FILES.cfg).
-          'action_name': 'zip browser test resources',
-          'inputs': [
-            '<(zip_script)',
-            '<@(remoting_webapp_js_browser_test_files)'
-          ],
-          'outputs': [
-            '<(PRODUCT_DIR)/remoting-browser-tests.zip',
-          ],
-          'action': [
-            'python',
-            '<(zip_script)',
-            '--input-dir', 'webapp/browser_test',
-            '--output', '<@(_outputs)',
-           ],
-        },
-      ], # end of actions
     },  # end of target 'remoting_browser_test_resources'
     {
       'target_name': 'remoting_webapp_unittest',
