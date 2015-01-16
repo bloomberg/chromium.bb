@@ -21,6 +21,10 @@ Identifying unlabeled network bugs on the tracker:
 * If non-network causes also seem possible, attach those labels as well.
 
 Investigating Cr-Internals-Network bugs:
+* It's recommended that while on triage duty, you subscribe to the
+    Cr-Internals-Network label.  To do this, go to
+    https://code.google.com/p/chromium/issues/ and click on "Subscriptions".
+    Enter Cr-Internals-Network and click submit.
 * Look through uncomfirmed and untriaged Cr-Internals-Network bugs, prioritizing
     those updated within the last week:
     https://code.google.com/p/chromium/issues/list?can=2&q=Cr%3DInternals-Network+-status%3AAssigned+-status%3AStarted+-status%3AAvailable+&sort=-modified
@@ -59,6 +63,9 @@ Investigating Cr-Internals-Network bugs:
       Can just grab the link from about:net-internals, as needed.
 * Try to figure out what's going on, and which more specific network label is
     most appropriate.
+* If it's a regression, browse through the git history of relevant files to try
+    and figure out when it regressed.  CC authors / primary reviewers of any
+    strongly suspect CLs.
 * If you are having trouble with an issue, particularly for help understanding
     net-internals logs, email the public net-dev@chromium.org list for help
     debugging.  If it's a crasher, or for some other reason discussion needs to
@@ -85,7 +92,8 @@ Look for new crashers:
 
 Investigating crashers:
 * Only investigate crashers that are still occurring, as identified by above
-    section.
+    section.  If a search on go/crash indicates a crasher is no longer
+    occurring, mark it as WontFix.
 * Particularly for Windows, look for weird dlls associated with the crashes.
     If there are some, it may be caused by malware.  You can often figure out if
     a dll is malware by a search, though it's harder to figure out if a dll is
@@ -103,14 +111,16 @@ Investigating crashers:
 
 Dealing with old bugs:
 * For all network issues (Even those with owners, or a more specific labels):
-  * If the issue has had the Needs-Feedback label for over two weeks, verify it
+  * If the issue has had the Needs-Feedback label for over a month, verify it
       is waiting on feedback from the user.  If not, remove the label.
       Otherwise, go ahead and mark the issue WontFix due to lack of response and
       suggest the user file a new bug if the issue is still present.
-      Needs-feedback issues:  https://code.google.com/p/chromium/issues/list?can=2&q=Cr=Internals-Network%20Needs=Feedback&sort=modified
-  * If a bug is over 2 months old, and the underlying problem was never really
-    understood, ask reporters if the issue is still present, and attach the
-    Needs-Feedback label.
+      Old Needs-Feedback issues:  https://code.google.com/p/chromium/issues/list?can=2&q=Cr%3AInternals-Network%20Needs=Feedback+modified-before%3Atoday-30&sort=-modified
+  * If a bug is over 2 months old, and the underlying problem was never
+    reproduced or really understood:
+    * If it's over a year old, go ahead and mark the issue as Archived.
+    * Otherwise, ask reporters if the issue is still present, and attach the
+        Needs-Feedback label.
 * Old unconfirmed or untriaged Cr-Internals-Network issues can be investigated
     just like newer ones.  Crashers should generally be given higher priority,
     since we can verify if they still occur, and then newer issues, as they're
