@@ -36,11 +36,40 @@
 
 const char kIsChildAccountServiceFlagName[] = "uca";
 
-const int kStatusFlagUpdateIntervalSeconds = 24 * 60 * 60;
-const int kStatusFlagUpdateIntervalOnFailureSeconds = 30;
+// Normally, re-check the child account flag once per day.
+const int kStatusFlagUpdateIntervalSeconds = 60 * 60 * 24;
+
+// In case of an error while getting the flag, retry with exponential backoff.
+const net::BackoffEntry::Policy kFlagFetchBackoffPolicy = {
+  // Number of initial errors (in sequence) to ignore before applying
+  // exponential back-off rules.
+  0,
+
+  // Initial delay for exponential backoff in ms.
+  2000,
+
+  // Factor by which the waiting time will be multiplied.
+  2,
+
+  // Fuzzing percentage. ex: 10% will spread requests randomly
+  // between 90%-100% of the calculated time.
+  0.2, // 20%
+
+  // Maximum amount of time we are willing to delay our request in ms.
+  1000 * 60 * 60 * 4, // 4 hours.
+
+  // Time to keep an entry from being discarded even when it
+  // has no significant state, -1 to never discard.
+  -1,
+
+  // Don't use initial delay unless the last request was an error.
+  false,
+};
 
 ChildAccountService::ChildAccountService(Profile* profile)
-    : profile_(profile), active_(false), weak_ptr_factory_(this) {}
+    : profile_(profile), active_(false),
+      flag_fetch_backoff_(&kFlagFetchBackoffPolicy),
+      weak_ptr_factory_(this) {}
 
 ChildAccountService::~ChildAccountService() {}
 
@@ -238,14 +267,15 @@ void ChildAccountService::OnFlagsFetched(
 
   account_id_.clear();
 
-  // In case of an error, retry after a short while.
+  // In case of an error, retry with exponential backoff.
   if (result != AccountServiceFlagFetcher::SUCCESS) {
     DLOG(WARNING) << "AccountServiceFlagFetcher returned error code " << result;
-    // TODO(treib): Implement exponential backoff.
-    ScheduleNextStatusFlagUpdate(base::TimeDelta::FromSeconds(
-        kStatusFlagUpdateIntervalOnFailureSeconds));
+    flag_fetch_backoff_.InformOfRequest(false);
+    ScheduleNextStatusFlagUpdate(flag_fetch_backoff_.GetTimeUntilRelease());
     return;
   }
+
+  flag_fetch_backoff_.InformOfRequest(true);
 
   bool is_child_account =
       std::find(flags.begin(), flags.end(),
