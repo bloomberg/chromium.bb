@@ -1684,24 +1684,21 @@ void RenderBox::positionLineBox(InlineBox* box)
 {
     if (isOutOfFlowPositioned()) {
         // Cache the x position only if we were an INLINE type originally.
-        bool wasInline = style()->isOriginalDisplayInlineType();
-        if (wasInline) {
+        bool originallyInline = style()->isOriginalDisplayInlineType();
+        if (originallyInline) {
             // The value is cached in the xPos of the box.  We only need this value if
             // our object was inline originally, since otherwise it would have ended up underneath
             // the inlines.
             RootInlineBox& root = box->root();
             root.block().setStaticInlinePositionForChild(*this, LayoutUnit::fromFloatRound(box->logicalLeft()));
-            if (style()->hasStaticInlinePosition(box->isHorizontal()))
-                setChildNeedsLayout(MarkOnlyThis); // Just go ahead and mark the positioned object as needing layout, so it will update its position properly.
         } else {
             // Our object was a block originally, so we make our normal flow position be
             // just below the line box (as though all the inlines that came before us got
             // wrapped in an anonymous block, which is what would have happened had we been
             // in flow).  This value was cached in the y() of the box.
             layer()->setStaticBlockPosition(box->logicalTop());
-            if (style()->hasStaticBlockPosition(box->isHorizontal()))
-                setChildNeedsLayout(MarkOnlyThis); // Just go ahead and mark the positioned object as needing layout, so it will update its position properly.
         }
+        markStaticPositionedBoxForLayout(box->isHorizontal(), originallyInline);
 
         if (container()->isRenderInline())
             moveWithEdgeOfInlineContainerIfNecessary(box->isHorizontal());
@@ -1713,6 +1710,15 @@ void RenderBox::positionLineBox(InlineBox* box)
         setLocation(roundedLayoutPoint(box->topLeft()));
         setInlineBoxWrapper(box);
     }
+}
+
+void RenderBox::markStaticPositionedBoxForLayout(bool isHorizontal, bool isInline)
+{
+    ASSERT(isOutOfFlowPositioned());
+    if (normalChildNeedsLayout())
+        return;
+    if (isInline ? style()->hasStaticInlinePosition(isHorizontal) : style()->hasStaticBlockPosition(isHorizontal))
+        setChildNeedsLayout(MarkOnlyThis);
 }
 
 void RenderBox::moveWithEdgeOfInlineContainerIfNecessary(bool isHorizontal)

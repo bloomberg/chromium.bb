@@ -58,7 +58,9 @@
                 output.innerHTML = "Success"
             }
         }
-        
+       
+        // crbug.com/445889: this ensures the layout only sees the movement created by removing the child.
+        document.body.offsetTop;
         var outer = document.getElementById("outer2");
         document.getElementById("wrap").removeChild(outer);
         measure();

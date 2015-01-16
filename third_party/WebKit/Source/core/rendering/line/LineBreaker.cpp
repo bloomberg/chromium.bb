@@ -33,8 +33,11 @@ void LineBreaker::skipLeadingWhitespace(InlineBidiResolver& resolver, LineInfo& 
     while (!resolver.position().atEnd() && !requiresLineBox(resolver.position(), lineInfo, LeadingWhitespace)) {
         RenderObject* object = resolver.position().object();
         if (object->isOutOfFlowPositioned()) {
-            setStaticPositions(m_block, toRenderBox(object));
-            if (object->style()->isOriginalDisplayInlineType()) {
+            RenderBox* box = toRenderBox(object);
+            setStaticPositions(m_block, box);
+            bool originallyInline = box->style()->isOriginalDisplayInlineType();
+            box->markStaticPositionedBoxForLayout(box->style()->isHorizontalWritingMode(), originallyInline);
+            if (originallyInline) {
                 resolver.runs().addRun(createRun(0, 1, object, resolver));
                 lineInfo.incrementRunsFromLeadingWhitespace();
             }
