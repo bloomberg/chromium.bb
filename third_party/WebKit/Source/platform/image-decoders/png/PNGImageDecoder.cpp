@@ -485,22 +485,11 @@ void PNGImageDecoder::rowAvailable(unsigned char* rowBuffer, unsigned rowIndex, 
     int width = size().width();
 
     png_bytep pixel = row;
-    if (hasAlpha) {
-        if (buffer.premultiplyAlpha()) {
-            for (int x = 0; x < width; ++x, pixel += 4) {
-                buffer.setRGBAPremultiply(address++, pixel[0], pixel[1], pixel[2], pixel[3]);
-                alphaMask &= pixel[3];
-            }
-        } else {
-            for (int x = 0; x < width; ++x, pixel += 4) {
-                buffer.setRGBARaw(address++, pixel[0], pixel[1], pixel[2], pixel[3]);
-                alphaMask &= pixel[3];
-            }
-        }
-    } else {
-        for (int x = 0; x < width; ++x, pixel += 3) {
-            buffer.setRGBARaw(address++, pixel[0], pixel[1], pixel[2], 255);
-        }
+    const int bytesPerPixel = hasAlpha ? 4 : 3;
+    for (int x = 0; x < width; ++x, pixel += bytesPerPixel) {
+        unsigned alpha = hasAlpha ? pixel[3] : 255;
+        buffer.setRGBA(address++, pixel[0], pixel[1], pixel[2], alpha);
+        alphaMask &= alpha;
     }
 
     if (alphaMask != 255 && !buffer.hasAlpha())
