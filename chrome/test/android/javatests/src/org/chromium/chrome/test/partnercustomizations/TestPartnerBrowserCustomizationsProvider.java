@@ -6,7 +6,9 @@ package org.chromium.chrome.test.partnercustomizations;
 
 import android.content.ContentProvider;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.UriMatcher;
+import android.content.pm.ProviderInfo;
 import android.database.Cursor;
 import android.database.MatrixCursor;
 import android.net.Uri;
@@ -31,15 +33,8 @@ public class TestPartnerBrowserCustomizationsProvider extends ContentProvider {
     protected static final int URI_MATCH_HOMEPAGE = 1001;
     protected static final int URI_MATCH_DISABLE_INCOGNITO_MODE = 1002;
     protected static final int URI_MATCH_DISABLE_BOOKMARKS_EDITING = 1003;
-    protected static final UriMatcher sUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
-    static {
-        sUriMatcher.addURI(TestPartnerBrowserCustomizationsProvider.class.getName(),
-                "homepage", URI_MATCH_HOMEPAGE);
-        sUriMatcher.addURI(TestPartnerBrowserCustomizationsProvider.class.getName(),
-                "disableincognitomode", URI_MATCH_DISABLE_INCOGNITO_MODE);
-        sUriMatcher.addURI(TestPartnerBrowserCustomizationsProvider.class.getName(),
-                "disablebookmarksediting", URI_MATCH_DISABLE_BOOKMARKS_EDITING);
-    }
+
+    private UriMatcher mUriMatcher;
 
     private int mDisableIncognitoModeFlag = 1;
     private int mDisableBookmarksEditingFlag = 1;
@@ -47,6 +42,21 @@ public class TestPartnerBrowserCustomizationsProvider extends ContentProvider {
     @Override
     public boolean onCreate() {
         return true;
+    }
+
+    @Override
+    public void attachInfo(Context context, ProviderInfo info) {
+        super.attachInfo(context, info);
+
+        // Match whatever authority is listed for this content provider in AndroidManifest.xml.
+        // This allows the content provider to be included in multiple APKs using different
+        // authorities and still work properly.
+        String authority = info.authority;
+        mUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
+        mUriMatcher.addURI(authority, "homepage", URI_MATCH_HOMEPAGE);
+        mUriMatcher.addURI(authority, "disableincognitomode", URI_MATCH_DISABLE_INCOGNITO_MODE);
+        mUriMatcher.addURI(authority, "disablebookmarksediting",
+                URI_MATCH_DISABLE_BOOKMARKS_EDITING);
     }
 
     private void setIncognitoModeDisabled(Bundle bundle) {
@@ -63,7 +73,7 @@ public class TestPartnerBrowserCustomizationsProvider extends ContentProvider {
     public String getType(Uri uri) {
         Log.d(mTag, "getType called: " + uri);
 
-        switch (sUriMatcher.match(uri)) {
+        switch (mUriMatcher.match(uri)) {
             case URI_MATCH_HOMEPAGE:
                 return "vnd.android.cursor.item/partnerhomepage";
             case URI_MATCH_DISABLE_INCOGNITO_MODE:
@@ -80,7 +90,7 @@ public class TestPartnerBrowserCustomizationsProvider extends ContentProvider {
             String sortOrder) {
         Log.d(mTag, "query called: " + uri);
 
-        switch (sUriMatcher.match(uri)) {
+        switch (mUriMatcher.match(uri)) {
             case URI_MATCH_HOMEPAGE:
             {
                 MatrixCursor cursor = new MatrixCursor(new String[] {"homepage"}, 1);

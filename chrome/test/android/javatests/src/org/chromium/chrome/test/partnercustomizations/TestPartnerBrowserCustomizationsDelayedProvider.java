@@ -21,15 +21,6 @@ public class TestPartnerBrowserCustomizationsDelayedProvider extends
 
     private static String sUriPathToDelay;
 
-    static {
-        sUriMatcher.addURI(TestPartnerBrowserCustomizationsDelayedProvider.class.getName(),
-                "homepage", URI_MATCH_HOMEPAGE);
-        sUriMatcher.addURI(TestPartnerBrowserCustomizationsDelayedProvider.class.getName(),
-                "disableincognitomode", URI_MATCH_DISABLE_INCOGNITO_MODE);
-        sUriMatcher.addURI(TestPartnerBrowserCustomizationsDelayedProvider.class.getName(),
-                "disablebookmarksediting", URI_MATCH_DISABLE_BOOKMARKS_EDITING);
-    }
-
     public TestPartnerBrowserCustomizationsDelayedProvider() {
         super();
         mTag = TestPartnerBrowserCustomizationsDelayedProvider.class.getSimpleName();
