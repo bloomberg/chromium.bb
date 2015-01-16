@@ -24,17 +24,17 @@ class KioskModeIdleAppNameNotification : public ui::UserActivityObserver,
   static void Shutdown();
 
   KioskModeIdleAppNameNotification();
-  virtual ~KioskModeIdleAppNameNotification();
+  ~KioskModeIdleAppNameNotification() override;
 
  private:
   // Initialize idle app message when KioskModeHelper is initialized.
   void Setup();
 
   // ui::UserActivityObserver overrides:
-  virtual void OnUserActivity(const ui::Event* event) override;
+  void OnUserActivity(const ui::Event* event) override;
 
   // PowerManagerClient::Observer overrides:
-  virtual void SuspendDone(const base::TimeDelta& sleep_duration) override;
+  void SuspendDone(const base::TimeDelta& sleep_duration) override;
 
   // Begins listening for user activity and calls ResetTimer().
   void Start();

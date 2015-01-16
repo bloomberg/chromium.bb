@@ -115,7 +115,7 @@ class KioskAppData::IconLoader : public ImageDecoder::Delegate {
  private:
   friend class base::RefCountedThreadSafe<IconLoader>;
 
-  virtual ~IconLoader() {}
+  ~IconLoader() override {}
 
   // Loads the icon from locally stored |icon_path_| on the blocking pool
   void LoadOnBlockingPool() {
@@ -162,14 +162,14 @@ class KioskAppData::IconLoader : public ImageDecoder::Delegate {
   }
 
   // ImageDecoder::Delegate overrides:
-  virtual void OnImageDecoded(const ImageDecoder* decoder,
-                              const SkBitmap& decoded_image) override {
+  void OnImageDecoded(const ImageDecoder* decoder,
+                      const SkBitmap& decoded_image) override {
     icon_ = gfx::ImageSkia::CreateFrom1xBitmap(decoded_image);
     icon_.MakeThreadSafe();
     ReportResultOnBlockingPool(SUCCESS);
   }
 
-  virtual void OnDecodeImageFailed(const ImageDecoder* decoder) override {
+  void OnDecodeImageFailed(const ImageDecoder* decoder) override {
     ReportResultOnBlockingPool(FAILED_TO_DECODE);
   }
 
@@ -212,7 +212,7 @@ class KioskAppData::WebstoreDataParser
  private:
   friend class base::RefCounted<WebstoreDataParser>;
 
-  virtual ~WebstoreDataParser() {}
+  ~WebstoreDataParser() override {}
 
   void ReportFailure() {
     if (client_)
@@ -222,10 +222,9 @@ class KioskAppData::WebstoreDataParser
   }
 
   // WebstoreInstallHelper::Delegate overrides:
-  virtual void OnWebstoreParseSuccess(
-      const std::string& id,
-      const SkBitmap& icon,
-      base::DictionaryValue* parsed_manifest) override {
+  void OnWebstoreParseSuccess(const std::string& id,
+                              const SkBitmap& icon,
+                              base::DictionaryValue* parsed_manifest) override {
     // Takes ownership of |parsed_manifest|.
     extensions::Manifest manifest(
         extensions::Manifest::INVALID_LOCATION,
@@ -240,10 +239,9 @@ class KioskAppData::WebstoreDataParser
       client_->OnWebstoreParseSuccess(icon);
     delete this;
   }
-  virtual void OnWebstoreParseFailure(
-      const std::string& id,
-      InstallHelperResultCode result_code,
-      const std::string& error_message) override {
+  void OnWebstoreParseFailure(const std::string& id,
+                              InstallHelperResultCode result_code,
+                              const std::string& error_message) override {
     ReportFailure();
   }
 

@@ -35,7 +35,7 @@ class KioskExternalUpdater : public disks::DiskMountManager::Observer,
       const base::FilePath& crx_cache_dir,
       const base::FilePath& crx_unpack_dir);
 
-  virtual ~KioskExternalUpdater();
+  ~KioskExternalUpdater() override;
 
  private:
   enum ExternalUpdateStatus {
@@ -53,26 +53,24 @@ class KioskExternalUpdater : public disks::DiskMountManager::Observer,
   };
 
   // disks::DiskMountManager::Observer overrides.
-  virtual void OnDiskEvent(disks::DiskMountManager::DiskEvent event,
-                           const disks::DiskMountManager::Disk* disk) override;
-  virtual void OnDeviceEvent(disks::DiskMountManager::DeviceEvent event,
-                             const std::string& device_path) override;
-  virtual void OnMountEvent(
+  void OnDiskEvent(disks::DiskMountManager::DiskEvent event,
+                   const disks::DiskMountManager::Disk* disk) override;
+  void OnDeviceEvent(disks::DiskMountManager::DeviceEvent event,
+                     const std::string& device_path) override;
+  void OnMountEvent(
       disks::DiskMountManager::MountEvent event,
       MountError error_code,
       const disks::DiskMountManager::MountPointInfo& mount_info) override;
-  virtual void OnFormatEvent(disks::DiskMountManager::FormatEvent event,
-                             FormatError error_code,
-                             const std::string& device_path) override;
+  void OnFormatEvent(disks::DiskMountManager::FormatEvent event,
+                     FormatError error_code,
+                     const std::string& device_path) override;
 
   // KioskExternalUpdateValidatorDelegate overrides:
-  virtual void OnExtenalUpdateUnpackSuccess(
-      const std::string& app_id,
-      const std::string& version,
-      const std::string& min_browser_version,
-      const base::FilePath& temp_dir) override;
-  virtual void OnExternalUpdateUnpackFailure(
-      const std::string& app_id) override;
+  void OnExtenalUpdateUnpackSuccess(const std::string& app_id,
+                                    const std::string& version,
+                                    const std::string& min_browser_version,
+                                    const base::FilePath& temp_dir) override;
+  void OnExternalUpdateUnpackFailure(const std::string& app_id) override;
 
   // Processes the parsed external update manifest, check |parsing_error| for
   // any manifest parsing error.

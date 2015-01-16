@@ -38,7 +38,7 @@ class KioskAppUpdateService : public KeyedService,
   KioskAppUpdateService(
       Profile* profile,
       system::AutomaticRebootManager* automatic_reboot_manager);
-  virtual ~KioskAppUpdateService();
+  ~KioskAppUpdateService() override;
 
   void Init(const std::string& app_id);
 
@@ -51,19 +51,18 @@ class KioskAppUpdateService : public KeyedService,
   void ForceAppUpdateRestart();
 
   // KeyedService overrides:
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
   // extensions::UpdateObserver overrides:
-  virtual void OnAppUpdateAvailable(
-      const extensions::Extension* extension) override;
-  virtual void OnChromeUpdateAvailable() override {}
+  void OnAppUpdateAvailable(const extensions::Extension* extension) override;
+  void OnChromeUpdateAvailable() override {}
 
   // system::AutomaticRebootManagerObserver overrides:
-  virtual void OnRebootRequested(Reason reason) override;
-  virtual void WillDestroyAutomaticRebootManager() override;
+  void OnRebootRequested(Reason reason) override;
+  void WillDestroyAutomaticRebootManager() override;
 
   // KioskAppManagerObserver overrides:
-  virtual void OnKioskAppCacheUpdated(const std::string& app_id) override;
+  void OnKioskAppCacheUpdated(const std::string& app_id) override;
 
   Profile* profile_;
   std::string app_id_;
@@ -91,10 +90,10 @@ class KioskAppUpdateServiceFactory : public BrowserContextKeyedServiceFactory {
   friend struct DefaultSingletonTraits<KioskAppUpdateServiceFactory>;
 
   KioskAppUpdateServiceFactory();
-  virtual ~KioskAppUpdateServiceFactory();
+  ~KioskAppUpdateServiceFactory() override;
 
   // BrowserContextKeyedServiceFactory overrides:
-  virtual KeyedService* BuildServiceInstanceFor(
+  KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const override;
 };
 

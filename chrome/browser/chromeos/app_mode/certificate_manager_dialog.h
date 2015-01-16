@@ -18,7 +18,7 @@ class CertificateManagerDialog : public LoginWebDialog {
   CertificateManagerDialog(Profile* profile,
                            LoginWebDialog::Delegate* delegate,
                            gfx::NativeWindow window);
-  virtual ~CertificateManagerDialog();
+  ~CertificateManagerDialog() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CertificateManagerDialog);

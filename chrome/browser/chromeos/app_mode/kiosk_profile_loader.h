@@ -37,7 +37,7 @@ class KioskProfileLoader : public LoginPerformer::Delegate,
                      bool use_guest_mount,
                      Delegate* delegate);
 
-  virtual ~KioskProfileLoader();
+  ~KioskProfileLoader() override;
 
   // Starts profile load. Calls delegate on success or failure.
   void Start();
@@ -48,17 +48,15 @@ class KioskProfileLoader : public LoginPerformer::Delegate,
   void LoginAsKioskAccount();
   void ReportLaunchResult(KioskAppLaunchError::Error error);
 
-  // LoginPerformer::Delegate overrides
-  virtual void OnAuthSuccess(const UserContext& user_context) override;
-  virtual void OnAuthFailure(const AuthFailure& error) override;
-  virtual void WhiteListCheckFailed(const std::string& email) override;
-  virtual void PolicyLoadFailed() override;
-  virtual void OnOnlineChecked(
-      const std::string& email, bool success) override;
+  // LoginPerformer::Delegate overrides:
+  void OnAuthSuccess(const UserContext& user_context) override;
+  void OnAuthFailure(const AuthFailure& error) override;
+  void WhiteListCheckFailed(const std::string& email) override;
+  void PolicyLoadFailed() override;
+  void OnOnlineChecked(const std::string& email, bool success) override;
 
   // LoginUtils::Delegate implementation:
-  virtual void OnProfilePrepared(Profile* profile,
-                                 bool browser_launched) override;
+  void OnProfilePrepared(Profile* profile, bool browser_launched) override;
 
   std::string user_id_;
   bool use_guest_mount_;

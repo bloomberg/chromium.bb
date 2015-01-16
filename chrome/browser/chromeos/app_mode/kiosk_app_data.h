@@ -54,7 +54,7 @@ class KioskAppData : public base::SupportsWeakPtr<KioskAppData>,
                const std::string& app_id,
                const std::string& user_id,
                const GURL& update_url);
-  virtual ~KioskAppData();
+  ~KioskAppData() override;
 
   // Loads app data from cache. If there is no cached data, fetches it
   // from web store.
@@ -113,11 +113,10 @@ class KioskAppData : public base::SupportsWeakPtr<KioskAppData>,
   void StartFetch();
 
   // extensions::WebstoreDataFetcherDelegate overrides:
-  virtual void OnWebstoreRequestFailure() override;
-  virtual void OnWebstoreResponseParseSuccess(
+  void OnWebstoreRequestFailure() override;
+  void OnWebstoreResponseParseSuccess(
       scoped_ptr<base::DictionaryValue> webstore_data) override;
-  virtual void OnWebstoreResponseParseFailure(
-      const std::string& error) override;
+  void OnWebstoreResponseParseFailure(const std::string& error) override;
 
   // Helper function for testing for the existence of |key| in
   // |response|. Passes |key|'s content via |value| and returns

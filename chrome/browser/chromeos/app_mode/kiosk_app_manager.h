@@ -217,7 +217,7 @@ class KioskAppManager : public KioskAppDataDelegate,
   };
 
   KioskAppManager();
-  virtual ~KioskAppManager();
+  ~KioskAppManager() override;
 
   // Stop all data loading and remove its dependency on CrosSettings.
   void CleanUp();
@@ -230,15 +230,14 @@ class KioskAppManager : public KioskAppDataDelegate,
   void UpdateAppData();
 
   // KioskAppDataDelegate overrides:
-  virtual void GetKioskAppIconCacheDir(base::FilePath* cache_dir) override;
-  virtual void OnKioskAppDataChanged(const std::string& app_id) override;
-  virtual void OnKioskAppDataLoadFailure(const std::string& app_id) override;
+  void GetKioskAppIconCacheDir(base::FilePath* cache_dir) override;
+  void OnKioskAppDataChanged(const std::string& app_id) override;
+  void OnKioskAppDataLoadFailure(const std::string& app_id) override;
 
   // ExternalCache::Delegate:
-  virtual void OnExtensionListsUpdated(
-      const base::DictionaryValue* prefs) override;
-  virtual void OnExtensionLoadedInCache(const std::string& id) override;
-  virtual void OnExtensionDownloadFailed(
+  void OnExtensionListsUpdated(const base::DictionaryValue* prefs) override;
+  void OnExtensionLoadedInCache(const std::string& id) override;
+  void OnExtensionDownloadFailed(
       const std::string& id,
       extensions::ExtensionDownloaderDelegate::Error error) override;
 

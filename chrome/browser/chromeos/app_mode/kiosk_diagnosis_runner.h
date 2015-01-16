@@ -28,7 +28,7 @@ class KioskDiagnosisRunner : public KeyedService {
   class Factory;
 
   explicit KioskDiagnosisRunner(Profile* profile);
-  virtual ~KioskDiagnosisRunner();
+  ~KioskDiagnosisRunner() override;
 
   void Start(const std::string& app_id);
 
