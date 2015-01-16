@@ -112,7 +112,7 @@ void MimeHandlerViewContainer::DidFinishLoading() {
 
 void MimeHandlerViewContainer::DidReceiveData(const char* data,
                                               int data_length) {
-  html_string_ += std::string(data, data_length);
+  view_id_ += std::string(data, data_length);
 }
 
 bool MimeHandlerViewContainer::OnMessageReceived(const IPC::Message& message) {
@@ -142,7 +142,7 @@ void MimeHandlerViewContainer::didReceiveData(blink::WebURLLoader* /* unused */,
                                               const char* data,
                                               int data_length,
                                               int /* unused */) {
-  html_string_ += std::string(data, data_length);
+  view_id_ += std::string(data, data_length);
 }
 
 void MimeHandlerViewContainer::didFinishLoading(
@@ -226,17 +226,12 @@ void MimeHandlerViewContainer::OnMimeHandlerViewGuestOnLoadCompleted(
 }
 
 void MimeHandlerViewContainer::CreateMimeHandlerViewGuest() {
-  // The loader has completed loading |html_string_| so we can dispose it.
+  // The loader has completed loading |view_id_| so we can dispose it.
   loader_.reset();
-
-  // Parse the stream URL to ensure it's valid.
-  GURL stream_url(html_string_);
-  DCHECK(!stream_url.spec().empty());
 
   DCHECK_NE(element_instance_id(), guestview::kInstanceIDNone);
   render_frame()->Send(new ExtensionHostMsg_CreateMimeHandlerViewGuest(
-      render_frame()->GetRoutingID(), stream_url.spec(), original_url_.spec(),
-      mime_type_, element_instance_id()));
+      render_frame()->GetRoutingID(), view_id_, element_instance_id()));
 }
 
 }  // namespace extensions

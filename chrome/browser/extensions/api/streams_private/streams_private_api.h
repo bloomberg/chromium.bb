@@ -42,7 +42,9 @@ class StreamsPrivateAPI : public BrowserContextKeyedAPI,
                               scoped_ptr<content::StreamInfo> stream,
                               const std::string& view_id,
                               int64 expected_content_size,
-                              bool embedded);
+                              bool embedded,
+                              int render_process_id,
+                              int render_frame_id);
 
   void AbortStream(const std::string& extension_id,
                    const GURL& stream_url,
@@ -71,6 +73,11 @@ class StreamsPrivateAPI : public BrowserContextKeyedAPI,
 
   content::BrowserContext* const browser_context_;
   StreamMap streams_;
+
+  // The streams whose lifetimes are managed by MimeHandlerViewGuest.
+  std::map<std::string,
+           std::map<GURL, std::pair<content::WebContents*, std::string>>>
+      mime_handler_streams_;
 
   // Listen to extension unloaded notifications.
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>

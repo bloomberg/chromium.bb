@@ -676,6 +676,8 @@
         'browser/guest_view/guest_view_manager.cc',
         'browser/guest_view/guest_view_manager.h',
         'browser/guest_view/guest_view.h',
+        'browser/guest_view/mime_handler_view/mime_handler_stream_manager.cc',
+        'browser/guest_view/mime_handler_view/mime_handler_stream_manager.h',
         'browser/guest_view/mime_handler_view/mime_handler_view_constants.cc',
         'browser/guest_view/mime_handler_view/mime_handler_view_constants.h',
         'browser/guest_view/mime_handler_view/mime_handler_view_guest_delegate.cc',

@@ -5,17 +5,44 @@
 #ifndef EXTENSIONS_BROWSER_GUEST_VIEW_MIME_HANDLER_VIEW_MIME_HANDLER_VIEW_GUEST_H_
 #define EXTENSIONS_BROWSER_GUEST_VIEW_MIME_HANDLER_VIEW_MIME_HANDLER_VIEW_GUEST_H_
 
+#include "base/memory/weak_ptr.h"
 #include "extensions/browser/extension_function_dispatcher.h"
 #include "extensions/browser/guest_view/guest_view.h"
 
 namespace content {
 class WebContents;
 struct ContextMenuParams;
+struct StreamInfo;
 }  // namespace content
 
 namespace extensions {
-
 class MimeHandlerViewGuestDelegate;
+
+// A container for a StreamHandle and any other information necessary for a
+// MimeHandler to handle a resource stream.
+class StreamContainer {
+ public:
+  StreamContainer(scoped_ptr<content::StreamInfo> stream,
+                  const GURL& handler_url,
+                  const std::string& extension_id);
+  ~StreamContainer();
+
+  // Aborts the stream.
+  void Abort();
+
+  base::WeakPtr<StreamContainer> GetWeakPtr();
+
+  const content::StreamInfo* stream_info() const { return stream_.get(); }
+  GURL handler_url() const { return handler_url_; }
+  std::string extension_id() const { return extension_id_; }
+
+ private:
+  const scoped_ptr<content::StreamInfo> stream_;
+  const GURL handler_url_;
+  const std::string extension_id_;
+
+  base::WeakPtrFactory<StreamContainer> weak_factory_;
+};
 
 class MimeHandlerViewGuest : public GuestView<MimeHandlerViewGuest>,
                              public ExtensionFunctionDispatcher::Delegate {
@@ -64,6 +91,9 @@ class MimeHandlerViewGuest : public GuestView<MimeHandlerViewGuest>,
   void DocumentOnLoadCompletedInMainFrame() override;
   bool OnMessageReceived(const IPC::Message& message) override;
 
+  std::string view_id() const { return view_id_; }
+  base::WeakPtr<StreamContainer> GetStream() const;
+
  private:
   MimeHandlerViewGuest(content::BrowserContext* browser_context,
                        content::WebContents* owner_web_contents,
@@ -74,7 +104,8 @@ class MimeHandlerViewGuest : public GuestView<MimeHandlerViewGuest>,
 
   scoped_ptr<MimeHandlerViewGuestDelegate> delegate_;
   scoped_ptr<ExtensionFunctionDispatcher> extension_function_dispatcher_;
-  GURL content_url_;
+  scoped_ptr<StreamContainer> stream_;
+  std::string view_id_;
 
   DISALLOW_COPY_AND_ASSIGN(MimeHandlerViewGuest);
 };

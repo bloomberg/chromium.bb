@@ -177,9 +177,7 @@ void ExtensionMessageFilter::OnExtensionAttachGuest(
 
 void ExtensionMessageFilter::OnExtensionCreateMimeHandlerViewGuest(
     int render_frame_id,
-    const std::string& src,
-    const std::string& content_url,
-    const std::string& mime_type,
+    const std::string& view_id,
     int element_instance_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   GuestViewManager* manager =
@@ -194,17 +192,11 @@ void ExtensionMessageFilter::OnExtensionCreateMimeHandlerViewGuest(
   if (!embedder_web_contents)
     return;
 
-  GuestViewManager::WebContentsCreatedCallback callback =
-      base::Bind(&ExtensionMessageFilter::MimeHandlerViewGuestCreatedCallback,
-                 this,
-                 element_instance_id,
-                 render_process_id_,
-                 render_frame_id,
-                 src);
+  GuestViewManager::WebContentsCreatedCallback callback = base::Bind(
+      &ExtensionMessageFilter::MimeHandlerViewGuestCreatedCallback, this,
+      element_instance_id, render_process_id_, render_frame_id);
   base::DictionaryValue create_params;
-  create_params.SetString(mime_handler_view::kMimeType, mime_type);
-  create_params.SetString(mime_handler_view::kSrc, src);
-  create_params.SetString(mime_handler_view::kContentUrl, content_url);
+  create_params.SetString(mime_handler_view::kViewId, view_id);
   manager->CreateGuest(MimeHandlerViewGuest::Type,
                        embedder_web_contents,
                        create_params,
@@ -295,7 +287,6 @@ void ExtensionMessageFilter::MimeHandlerViewGuestCreatedCallback(
     int element_instance_id,
     int embedder_render_process_id,
     int embedder_render_frame_id,
-    const std::string& src,
     content::WebContents* web_contents) {
   GuestViewManager* manager =
       GuestViewManager::FromBrowserContext(browser_context_);
@@ -314,7 +305,6 @@ void ExtensionMessageFilter::MimeHandlerViewGuestCreatedCallback(
     return;
 
   base::DictionaryValue attach_params;
-  attach_params.SetString(mime_handler_view::kSrc, src);
   manager->AttachGuest(embedder_render_process_id,
                        rfh->GetRenderViewHost()->GetRoutingID(),
                        element_instance_id,

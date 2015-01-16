@@ -7,9 +7,12 @@
 #include "base/strings/stringprintf.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/stream_handle.h"
+#include "content/public/browser/stream_info.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/guest_view/mime_handler_view/mime_handler_stream_manager.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_constants.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest_delegate.h"
 #include "extensions/browser/process_manager.h"
@@ -22,6 +25,26 @@
 using content::WebContents;
 
 namespace extensions {
+
+StreamContainer::StreamContainer(scoped_ptr<content::StreamInfo> stream,
+                                 const GURL& handler_url,
+                                 const std::string& extension_id)
+    : stream_(stream.Pass()),
+      handler_url_(handler_url),
+      extension_id_(extension_id),
+      weak_factory_(this) {
+}
+
+StreamContainer::~StreamContainer() {
+}
+
+void StreamContainer::Abort() {
+  stream_->handle.reset();
+}
+
+base::WeakPtr<StreamContainer> StreamContainer::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
+}
 
 // static
 const char MimeHandlerViewGuest::Type[] = "mimehandler";
@@ -69,36 +92,26 @@ int MimeHandlerViewGuest::GetTaskPrefix() const {
 void MimeHandlerViewGuest::CreateWebContents(
     const base::DictionaryValue& create_params,
     const WebContentsCreatedCallback& callback) {
-  std::string orig_mime_type;
-  create_params.GetString(mime_handler_view::kMimeType, &orig_mime_type);
-  DCHECK(!orig_mime_type.empty());
-
-  std::string extension_src;
-  create_params.GetString(mime_handler_view::kSrc, &extension_src);
-  DCHECK(!extension_src.empty());
-  std::string content_url_str;
-  create_params.GetString(mime_handler_view::kContentUrl, &content_url_str);
-  content_url_ = GURL(content_url_str);
-  if (!content_url_.is_valid()) {
-    content_url_ = GURL();
+  create_params.GetString(mime_handler_view::kViewId, &view_id_);
+  if (view_id_.empty()) {
     callback.Run(nullptr);
     return;
   }
-
-  GURL mime_handler_extension_url(extension_src);
-  if (!mime_handler_extension_url.is_valid()) {
-    callback.Run(NULL);
+  stream_ =
+      MimeHandlerStreamManager::Get(browser_context())->ReleaseStream(view_id_);
+  if (!stream_) {
+    callback.Run(nullptr);
     return;
   }
-
   const Extension* mime_handler_extension =
       // TODO(lazyboy): Do we need handle the case where the extension is
       // terminated (ExtensionRegistry::TERMINATED)?
-      ExtensionRegistry::Get(browser_context())->enabled_extensions().GetByID(
-          mime_handler_extension_url.host());
+      ExtensionRegistry::Get(browser_context())
+          ->enabled_extensions()
+          .GetByID(stream_->extension_id());
   if (!mime_handler_extension) {
     LOG(ERROR) << "Extension for mime_type not found, mime_type = "
-               << orig_mime_type;
+               << stream_->stream_info()->mime_type;
     callback.Run(NULL);
     return;
   }
@@ -116,14 +129,9 @@ void MimeHandlerViewGuest::CreateWebContents(
 }
 
 void MimeHandlerViewGuest::DidAttachToEmbedder() {
-  std::string src;
-  bool success = attach_params()->GetString(mime_handler_view::kSrc, &src);
-  DCHECK(success && !src.empty());
   web_contents()->GetController().LoadURL(
-      GURL(src),
-      content::Referrer(),
-      ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
-      std::string());
+      stream_->handler_url(), content::Referrer(),
+      ui::PAGE_TRANSITION_AUTO_TOPLEVEL, std::string());
 }
 
 void MimeHandlerViewGuest::DidInitialize(
@@ -201,7 +209,8 @@ bool MimeHandlerViewGuest::SaveFrame(const GURL& url,
   if (!attached())
     return false;
 
-  embedder_web_contents()->SaveFrame(content_url_, referrer);
+  embedder_web_contents()->SaveFrame(stream_->stream_info()->original_url,
+                                     referrer);
   return true;
 }
 
@@ -218,6 +227,12 @@ bool MimeHandlerViewGuest::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
+}
+
+base::WeakPtr<StreamContainer> MimeHandlerViewGuest::GetStream() const {
+  if (!stream_)
+    return base::WeakPtr<StreamContainer>();
+  return stream_->GetWeakPtr();
 }
 
 void MimeHandlerViewGuest::OnRequest(

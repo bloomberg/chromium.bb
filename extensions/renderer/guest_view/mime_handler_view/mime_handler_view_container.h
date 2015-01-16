@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EXTENSIONS_RENDERER_GUEST_VIEW_MIME_HANDLER_VIEW_CONTAINER_H_
-#define EXTENSIONS_RENDERER_GUEST_VIEW_MIME_HANDLER_VIEW_CONTAINER_H_
+#ifndef EXTENSIONS_RENDERER_GUEST_VIEW_MIME_HANDLER_VIEW_MIME_HANDLER_VIEW_CONTAINER_H_
+#define EXTENSIONS_RENDERER_GUEST_VIEW_MIME_HANDLER_VIEW_MIME_HANDLER_VIEW_CONTAINER_H_
 
 #include "base/memory/linked_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -73,7 +73,7 @@ class MimeHandlerViewContainer : public GuestViewContainer,
   const std::string mime_type_;
 
   // The URL of the extension to navigate to.
-  std::string html_string_;
+  std::string view_id_;
 
   // Whether the plugin is embedded or not.
   bool is_embedded_;
@@ -107,4 +107,4 @@ class MimeHandlerViewContainer : public GuestViewContainer,
 
 }  // namespace extensions
 
-#endif  // EXTENSIONS_RENDERER_GUEST_VIEW_MIME_HANDLER_VIEW_CONTAINER_H_
+#endif  // EXTENSIONS_RENDERER_GUEST_VIEW_MIME_HANDLER_VIEW_MIME_HANDLER_VIEW_CONTAINER_H_

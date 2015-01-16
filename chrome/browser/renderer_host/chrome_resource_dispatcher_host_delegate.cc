@@ -172,14 +172,14 @@ void UpdatePrerenderNetworkBytesCallback(int render_process_id,
 void SendExecuteMimeTypeHandlerEvent(scoped_ptr<content::StreamInfo> stream,
                                      int64 expected_content_size,
                                      int render_process_id,
-                                     int render_view_id,
+                                     int render_frame_id,
                                      const std::string& extension_id,
                                      const std::string& view_id,
                                      bool embedded) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   content::WebContents* web_contents =
-      tab_util::GetWebContentsByID(render_process_id, render_view_id);
+      tab_util::GetWebContentsByFrameID(render_process_id, render_frame_id);
   if (!web_contents)
     return;
 
@@ -198,9 +198,9 @@ void SendExecuteMimeTypeHandlerEvent(scoped_ptr<content::StreamInfo> stream,
   StreamsPrivateAPI* streams_private = StreamsPrivateAPI::Get(profile);
   if (!streams_private)
     return;
-  streams_private->ExecuteMimeTypeHandler(extension_id, web_contents,
-                                          stream.Pass(), view_id,
-                                          expected_content_size, embedded);
+  streams_private->ExecuteMimeTypeHandler(
+      extension_id, web_contents, stream.Pass(), view_id, expected_content_size,
+      embedded, render_process_id, render_frame_id);
 }
 #endif  // !defined(ENABLE_EXTENSIONS)
 
@@ -610,8 +610,7 @@ bool ChromeResourceDispatcherHostDelegate::ShouldInterceptResourceAsStream(
       target_info.extension_id = extension_id;
       if (!handler->handler_url().empty()) {
         target_info.view_id = base::GenerateGUID();
-        *payload = origin->spec() + handler->handler_url() +
-            "?id=" + target_info.view_id;
+        *payload = target_info.view_id;
       }
       stream_target_info_[request] = target_info;
       return true;
@@ -634,7 +633,7 @@ void ChromeResourceDispatcherHostDelegate::OnStreamCreated(
       content::BrowserThread::UI, FROM_HERE,
       base::Bind(&SendExecuteMimeTypeHandlerEvent, base::Passed(&stream),
                  request->GetExpectedContentSize(), info->GetChildID(),
-                 info->GetRouteID(), ix->second.extension_id,
+                 info->GetRenderFrameID(), ix->second.extension_id,
                  ix->second.view_id, embedded));
   stream_target_info_.erase(request);
 #endif

@@ -65,9 +65,7 @@ class ExtensionMessageFilter : public content::BrowserMessageFilter {
                               int guest_instance_id,
                               const base::DictionaryValue& attach_params);
   void OnExtensionCreateMimeHandlerViewGuest(int render_frame_id,
-                                             const std::string& url,
-                                             const std::string& content_url,
-                                             const std::string& mime_type,
+                                             const std::string& view_id,
                                              int element_instance_id);
   void OnExtensionRemoveLazyListener(const std::string& extension_id,
                                      const std::string& event_name);
@@ -95,7 +93,6 @@ class ExtensionMessageFilter : public content::BrowserMessageFilter {
   void MimeHandlerViewGuestCreatedCallback(int element_instance_id,
                                            int embedder_render_process_id,
                                            int embedder_render_frame_id,
-                                           const std::string& src,
                                            content::WebContents* web_contents);
 
   const int render_process_id_;
