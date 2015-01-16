@@ -27,6 +27,7 @@ from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import namespaces
 from chromite.lib import osutils
+from chromite.lib import proctitle
 from chromite.lib import timeout_util
 
 
@@ -221,6 +222,7 @@ def RunTests(tests, jobs=1, chroot_available=True, network=False, dryrun=False):
           failed = True
       pid = os.fork()
       if pid == 0:
+        proctitle.settitle(test)
         ret = 1
         try:
           if dryrun:

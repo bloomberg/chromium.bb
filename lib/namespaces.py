@@ -19,6 +19,7 @@ import sys
 
 from chromite.lib import osutils
 from chromite.lib import process_util
+from chromite.lib import proctitle
 
 
 CLONE_FS = 0x00000200
@@ -127,6 +128,8 @@ def CreatePidNs():
   # It is only allowed to fork once too.
   pid = os.fork()
   if pid:
+    proctitle.settitle('pid ns', 'external init')
+
     # Reap the children as the parent of the new namespace.
     process_util.ExitAsStatus(_ReapChildren(pid))
   else:
@@ -145,6 +148,8 @@ def CreatePidNs():
 
     pid = os.fork()
     if pid:
+      proctitle.settitle('pid ns', 'init')
+
       # Watch all of the children.  We need to act as the master inside the
       # namespace and reap old processes.
       process_util.ExitAsStatus(_ReapChildren(pid))
