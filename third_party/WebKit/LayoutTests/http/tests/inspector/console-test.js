@@ -8,10 +8,10 @@ InspectorTest.evaluateInConsole = function(code, callback)
 
     var consoleView = WebInspector.ConsolePanel._view();
     consoleView.visible = true;
-    consoleView._prompt.setText(code);
+    consoleView._prompt.text = code;
     var event = document.createEvent("KeyboardEvent");
     event.initKeyboardEvent("keydown", true, true, null, "Enter", "");
-    consoleView._prompt.proxyElementForTests().dispatchEvent(event);
+    consoleView._prompt.proxyElement.dispatchEvent(event);
     InspectorTest.addConsoleViewSniffer(function(commandResult) {
         callback(commandResult.toMessageElement().deepTextContent());
     });
