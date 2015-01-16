@@ -500,7 +500,6 @@ bool SearchSuggestionParser::ParseSuggestResults(
             int answer_type = 0;
             if (answer && base::StringToInt(answer_type_str, &answer_type)) {
               answer_parsed_successfully = true;
-              match_type = AutocompleteMatchType::SEARCH_SUGGEST_ANSWER;
 
               answer->set_type(answer_type);
               answer->AddImageURLsTo(&results->answers_image_urls);
