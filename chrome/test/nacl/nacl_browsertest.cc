@@ -101,9 +101,6 @@ NACL_BROWSER_TEST_F(NaClBrowserTest, ProgressEvents, {
 // crbug/338444
 #if defined(OS_WIN)
 #define MAYBE_Bad DISABLED_Bad
-#elif defined(OS_LINUX)
-// See http://crbug.com/448596
-#define MAYBE_Bad DISABLED_Bad
 #else
 #define MAYBE_Bad Bad
 #endif
