@@ -6,6 +6,9 @@
 
 from third_party import asan_symbolize
 
+import argparse
+import base64
+import json
 import os
 import sys
 
@@ -90,14 +93,96 @@ def chrome_dsym_hints(binary):
   return [result]
 
 
+# We want our output to match base::EscapeJSONString(), which produces
+# doubly-escaped strings. The first escaping pass is handled by this class. The
+# second pass happens when JSON data is dumped to file.
+class StringEncoder(json.JSONEncoder):
+  def __init__(self):
+    json.JSONEncoder.__init__(self)
+
+  def encode(self, s):
+    assert(isinstance(s, basestring))
+    encoded = json.JSONEncoder.encode(self, s)
+    assert(len(encoded) >= 2)
+    assert(encoded[0] == '"')
+    assert(encoded[-1] == '"')
+    encoded = encoded[1:-1]
+    # Special case from base::EscapeJSONString().
+    encoded = encoded.replace('<', '\u003C')
+    return encoded
+
+
+class JSONTestRunSymbolizer(object):
+  def __init__(self, symbolization_loop):
+    self.string_encoder = StringEncoder()
+    self.symbolization_loop = symbolization_loop
+
+  def symbolize_snippet(self, snippet):
+    symbolized_lines = []
+    for line in snippet.split('\n'):
+      symbolized_lines += self.symbolization_loop.process_line(line)
+    return '\n'.join(symbolized_lines)
+
+  def symbolize(self, test_run):
+    original_snippet = base64.b64decode(test_run['output_snippet_base64'])
+    symbolized_snippet = self.symbolize_snippet(original_snippet)
+    if symbolized_snippet == original_snippet:
+      # No sanitizer reports in snippet.
+      return
+
+    test_run['original_output_snippet'] = test_run['output_snippet']
+    test_run['original_output_snippet_base64'] = \
+        test_run['output_snippet_base64']
+
+    escaped_snippet = StringEncoder().encode(symbolized_snippet)
+    test_run['output_snippet'] = escaped_snippet
+    test_run['output_snippet_base64'] = \
+        base64.b64encode(symbolized_snippet)
+    test_run['snippet_processed_by'] = 'asan_symbolize.py'
+    # Originally, "lossless" refers to "no Unicode data lost while encoding the
+    # string". However, since we're applying another kind of transformation
+    # (symbolization), it doesn't seem right to consider the snippet lossless.
+    test_run['losless_snippet'] = False
+
+
+def symbolize_snippets_in_json(filename, symbolization_loop):
+  with open(filename, 'r') as f:
+    json_data = json.load(f)
+
+  test_run_symbolizer = JSONTestRunSymbolizer(symbolization_loop)
+  for iteration_data in json_data['per_iteration_data']:
+    for test_name, test_runs in iteration_data.iteritems():
+      for test_run in test_runs:
+        test_run_symbolizer.symbolize(test_run)
+
+  with open(filename, 'w') as f:
+    json.dump(json_data, f, indent=3, sort_keys=True)
+
+
 def main():
+  parser = argparse.ArgumentParser(description='Symbolize sanitizer reports.')
+  parser.add_argument('--test-summary-json-file',
+      help='Path to a JSON file produced by the test launcher. The script will '
+           'ignore stdandard input and instead symbolize the output stnippets '
+           'inside the JSON file. The result will be written back to the JSON '
+           'file.')
+  parser.add_argument('strip_path_prefix', nargs='*',
+      help='When printing source file names, the longest prefix ending in one '
+           'of these substrings will be stripped. E.g.: "Release/../../".')
+  args = parser.parse_args()
+
   disable_buffering()
   set_symbolizer_path()
   asan_symbolize.demangle = True
-  asan_symbolize.fix_filename_patterns = sys.argv[1:]
-  asan_symbolize.logfile = sys.stdin
+  asan_symbolize.fix_filename_patterns = args.strip_path_prefix
   loop = asan_symbolize.SymbolizationLoop(dsym_hint_producer=chrome_dsym_hints)
-  loop.process_logfile()
+
+  if args.test_summary_json_file:
+    symbolize_snippets_in_json(args.test_summary_json_file, loop)
+  else:
+    # Process stdin.
+    asan_symbolize.logfile = sys.stdin
+    loop.process_logfile()
 
 if __name__ == '__main__':
   main()
