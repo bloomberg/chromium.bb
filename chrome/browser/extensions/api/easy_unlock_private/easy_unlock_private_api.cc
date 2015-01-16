@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/memory/linked_ptr.h"
 #include "base/strings/utf_string_conversions.h"
@@ -19,6 +20,7 @@
 #include "chrome/common/extensions/api/easy_unlock_private.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/proximity_auth/bluetooth_util.h"
+#include "components/proximity_auth/switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -726,6 +728,13 @@ EasyUnlockPrivateGetConnectionInfoFunction::
 
 bool EasyUnlockPrivateGetConnectionInfoFunction::DoWork(
     scoped_refptr<device::BluetoothAdapter> adapter) {
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+        proximity_auth::switches::kEnableProximityDetection)) {
+    SetError("Turn on 'enable-easy-unlock-proximity-detection' flag.");
+    SendResponse(false);
+    return true;
+  }
+
   scoped_ptr<easy_unlock_private::GetConnectionInfo::Params> params =
       easy_unlock_private::GetConnectionInfo::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
