@@ -38,7 +38,7 @@ class SupervisedUserCreationScreen
  public:
   SupervisedUserCreationScreen(BaseScreenDelegate* base_screen_delegate,
                                SupervisedUserCreationScreenHandler* actor);
-  virtual ~SupervisedUserCreationScreen();
+  ~SupervisedUserCreationScreen() override;
 
   static SupervisedUserCreationScreen* Get(ScreenManager* manager);
 
@@ -66,63 +66,60 @@ class SupervisedUserCreationScreen
   void ShowInitialScreen();
 
   // CameraPresenceNotifier::Observer implementation:
-  virtual void OnCameraPresenceCheckDone(bool is_camera_present) override;
+  void OnCameraPresenceCheckDone(bool is_camera_present) override;
 
   // SupervisedUserSyncServiceObserver implementation
-  virtual void OnSupervisedUserAcknowledged(
+  void OnSupervisedUserAcknowledged(
       const std::string& supervised_user_id) override {}
-  virtual void OnSupervisedUsersSyncingStopped() override {}
-  virtual void OnSupervisedUsersChanged() override;
+  void OnSupervisedUsersSyncingStopped() override {}
+  void OnSupervisedUsersChanged() override;
 
   // BaseScreen implementation:
-  virtual void PrepareToShow() override;
-  virtual void Show() override;
-  virtual void Hide() override;
-  virtual std::string GetName() const override;
+  void PrepareToShow() override;
+  void Show() override;
+  void Hide() override;
+  std::string GetName() const override;
 
   // SupervisedUserCreationScreenHandler::Delegate implementation:
-  virtual void OnActorDestroyed(SupervisedUserCreationScreenHandler* actor)
-      override;
-  virtual void CreateSupervisedUser(
+  void OnActorDestroyed(SupervisedUserCreationScreenHandler* actor) override;
+  void CreateSupervisedUser(
       const base::string16& display_name,
       const std::string& supervised_user_password) override;
-  virtual void ImportSupervisedUser(const std::string& user_id) override;
-  virtual void ImportSupervisedUserWithPassword(
-      const std::string& user_id,
-      const std::string& password) override;
-  virtual void AuthenticateManager(
-      const std::string& manager_id,
-      const std::string& manager_password) override;
-  virtual void AbortFlow() override;
-  virtual void FinishFlow() override;
-  virtual bool FindUserByDisplayName(const base::string16& display_name,
-                                     std::string *out_id) const override;
-  virtual void OnPageSelected(const std::string& page) override;
+  void ImportSupervisedUser(const std::string& user_id) override;
+  void ImportSupervisedUserWithPassword(const std::string& user_id,
+                                        const std::string& password) override;
+  void AuthenticateManager(const std::string& manager_id,
+                           const std::string& manager_password) override;
+  void AbortFlow() override;
+  void FinishFlow() override;
+  bool FindUserByDisplayName(const base::string16& display_name,
+                             std::string* out_id) const override;
+  void OnPageSelected(const std::string& page) override;
 
   // SupervisedUserController::StatusConsumer overrides.
-  virtual void OnCreationError(SupervisedUserCreationController::ErrorCode code)
-      override;
-  virtual void OnCreationTimeout() override;
-  virtual void OnCreationSuccess() override;
-  virtual void OnLongCreationWarning() override;
+  void OnCreationError(
+      SupervisedUserCreationController::ErrorCode code) override;
+  void OnCreationTimeout() override;
+  void OnCreationSuccess() override;
+  void OnLongCreationWarning() override;
 
   // NetworkPortalDetector::Observer implementation:
-  virtual void OnPortalDetectionCompleted(
-          const NetworkState* network,
-          const NetworkPortalDetector::CaptivePortalState& state) override;
+  void OnPortalDetectionCompleted(
+      const NetworkState* network,
+      const NetworkPortalDetector::CaptivePortalState& state) override;
 
   // TODO(antrim) : this is an explicit code duplications with UserImageScreen.
   // It should be removed by issue 251179.
 
   // SupervisedUserCreationScreenHandler::Delegate (image) implementation:
-  virtual void OnPhotoTaken(const std::string& raw_data) override;
-  virtual void OnImageSelected(const std::string& image_url,
-                               const std::string& image_type) override;
-  virtual void OnImageAccepted() override;
+  void OnPhotoTaken(const std::string& raw_data) override;
+  void OnImageSelected(const std::string& image_url,
+                       const std::string& image_type) override;
+  void OnImageAccepted() override;
   // ImageDecoder::Delegate overrides:
-  virtual void OnImageDecoded(const ImageDecoder* decoder,
-                              const SkBitmap& decoded_image) override;
-  virtual void OnDecodeImageFailed(const ImageDecoder* decoder) override;
+  void OnImageDecoded(const ImageDecoder* decoder,
+                      const SkBitmap& decoded_image) override;
+  void OnDecodeImageFailed(const ImageDecoder* decoder) override;
 
  private:
   void ApplyPicture();

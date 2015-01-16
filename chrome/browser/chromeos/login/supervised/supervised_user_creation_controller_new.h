@@ -42,7 +42,7 @@ class SupervisedUserCreationControllerNew
   // be deleted before SupervisedUserCreationControllerNew.
   SupervisedUserCreationControllerNew(StatusConsumer* consumer,
                                       const std::string& manager_id);
-  virtual ~SupervisedUserCreationControllerNew();
+  ~SupervisedUserCreationControllerNew() override;
 
   // Returns the current supervised user controller if it has been created.
   static SupervisedUserCreationControllerNew* current_controller() {
@@ -52,40 +52,40 @@ class SupervisedUserCreationControllerNew
   // Set up controller for creating new supervised user with |display_name|,
   // |password| and avatar indexed by |avatar_index|. StartCreation() have to
   // be called to actually start creating user.
-  virtual void StartCreation(const base::string16& display_name,
-                             const std::string& password,
-                             int avatar_index) override;
+  void StartCreation(const base::string16& display_name,
+                     const std::string& password,
+                     int avatar_index) override;
 
   // Starts import of the supervised users created prior to M35. They lack
   // information about password.
   // Configures and initiates importing existing supervised user to this device.
   // Existing user is identified by |sync_id|, has |display_name|, |password|,
   // |avatar_index|. The master key for cryptohome is a |master_key|.
-  virtual void StartImport(const base::string16& display_name,
-                           const std::string& password,
-                           int avatar_index,
-                           const std::string& sync_id,
-                           const std::string& master_key) override;
+  void StartImport(const base::string16& display_name,
+                   const std::string& password,
+                   int avatar_index,
+                   const std::string& sync_id,
+                   const std::string& master_key) override;
 
   // Configures and initiates importing existing supervised user to this device.
   // Existing user is identified by |sync_id|, has |display_name|,
   // |avatar_index|. The master key for cryptohome is a |master_key|. The user
   // has password specified in |password_data| and
   // |encryption_key|/|signature_key| for cryptohome.
-  virtual void StartImport(const base::string16& display_name,
-                           int avatar_index,
-                           const std::string& sync_id,
-                           const std::string& master_key,
-                           const base::DictionaryValue* password_data,
-                           const std::string& encryption_key,
-                           const std::string& signature_key) override;
+  void StartImport(const base::string16& display_name,
+                   int avatar_index,
+                   const std::string& sync_id,
+                   const std::string& master_key,
+                   const base::DictionaryValue* password_data,
+                   const std::string& encryption_key,
+                   const std::string& signature_key) override;
 
-  virtual void SetManagerProfile(Profile* manager_profile) override;
-  virtual Profile* GetManagerProfile() override;
+  void SetManagerProfile(Profile* manager_profile) override;
+  Profile* GetManagerProfile() override;
 
-  virtual void CancelCreation() override;
-  virtual void FinishCreation() override;
-  virtual std::string GetSupervisedUserId() override;
+  void CancelCreation() override;
+  void FinishCreation() override;
+  std::string GetSupervisedUserId() override;
 
  private:
   enum Stage {
@@ -146,8 +146,7 @@ class SupervisedUserCreationControllerNew
   };
 
   // SupervisedUserAuthenticator::StatusConsumer overrides.
-  virtual void OnAuthenticationFailure(ExtendedAuthenticator::AuthState error)
-      override;
+  void OnAuthenticationFailure(ExtendedAuthenticator::AuthState error) override;
 
   // Authenticator success callbacks.
   void OnMountSuccess(const std::string& mount_hash);

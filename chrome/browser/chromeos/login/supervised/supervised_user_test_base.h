@@ -67,14 +67,14 @@ class SupervisedUsersSharedSettingsSyncTestAdapter {
 class SupervisedUserTestBase : public chromeos::LoginManagerTest {
  public:
   SupervisedUserTestBase();
-  virtual ~SupervisedUserTestBase();
+  ~SupervisedUserTestBase() override;
 
-  virtual void SetUpInProcessBrowserTestFixture() override;
+  void SetUpInProcessBrowserTestFixture() override;
 
  protected:
-  virtual void TearDown() override;
+  void TearDown() override;
 
-  virtual void TearDownInProcessBrowserTestFixture() override;
+  void TearDownInProcessBrowserTestFixture() override;
 
   void JSEval(const std::string& script);
   void JSEvalOrExitBrowser(const std::string& script);

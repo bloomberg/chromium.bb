@@ -59,7 +59,7 @@ class SupervisedUserOwnerCreationTest : public SupervisedUserTestBase {
  public:
   SupervisedUserOwnerCreationTest() : SupervisedUserTestBase() {}
 
-  virtual void SetUpInProcessBrowserTestFixture() override {
+  void SetUpInProcessBrowserTestFixture() override {
     SupervisedUserTestBase::SetUpInProcessBrowserTestFixture();
     cros_settings_provider_.reset(new StubCrosSettingsProvider());
     cros_settings_provider_->Set(kDeviceOwner, base::StringValue(kTestManager));
@@ -76,7 +76,7 @@ class SupervisedUserTransactionCleanupTest2
   SupervisedUserTransactionCleanupTest2()
       : SupervisedUserTransactionCleanupTest() {}
 
-  virtual void SetUpInProcessBrowserTestFixture() override {
+  void SetUpInProcessBrowserTestFixture() override {
     SupervisedUserTransactionCleanupTest::SetUpInProcessBrowserTestFixture();
     EXPECT_CALL(*mock_async_method_caller_, AsyncRemove(_, _)).Times(1);
   }

@@ -21,22 +21,21 @@ class SupervisedUserLoginFlow
       public ExtendedAuthenticator::NewAuthStatusConsumer {
  public:
   explicit SupervisedUserLoginFlow(const std::string& user_id);
-  virtual ~SupervisedUserLoginFlow();
+  ~SupervisedUserLoginFlow() override;
 
   // ExtendedUserFlow overrides.
-  virtual void AppendAdditionalCommandLineSwitches() override;
-  virtual bool CanLockScreen() override;
-  virtual bool ShouldLaunchBrowser() override;
-  virtual bool ShouldSkipPostLoginScreens() override;
-  virtual bool SupportsEarlyRestartToApplyFlags() override;
-  virtual bool HandleLoginFailure(const AuthFailure& failure) override;
-  virtual void HandleLoginSuccess(const UserContext& context) override;
-  virtual bool HandlePasswordChangeDetected() override;
-  virtual void LaunchExtraSteps(Profile* profile) override;
+  void AppendAdditionalCommandLineSwitches() override;
+  bool CanLockScreen() override;
+  bool ShouldLaunchBrowser() override;
+  bool ShouldSkipPostLoginScreens() override;
+  bool SupportsEarlyRestartToApplyFlags() override;
+  bool HandleLoginFailure(const AuthFailure& failure) override;
+  void HandleLoginSuccess(const UserContext& context) override;
+  bool HandlePasswordChangeDetected() override;
+  void LaunchExtraSteps(Profile* profile) override;
 
   // ExtendedAuthenticator::NewAuthStatusConsumer overrides.
-  virtual void OnAuthenticationFailure(ExtendedAuthenticator::AuthState state)
-      override;
+  void OnAuthenticationFailure(ExtendedAuthenticator::AuthState state) override;
 
  private:
   void Launch();
