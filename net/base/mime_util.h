@@ -140,12 +140,6 @@ NET_EXPORT void GetExtensionsForMimeType(
 // variations.
 NET_EXPORT void RemoveProprietaryMediaTypesAndCodecsForTests();
 
-// Returns the IANA media type contained in |mime_type|, or an empty
-// string if |mime_type| does not specifify a known media type.
-// Supported media types are defined at:
-// http://www.iana.org/assignments/media-types/index.html
-NET_EXPORT const std::string GetIANAMediaType(const std::string& mime_type);
-
 // A list of supported certificate-related mime types.
 //
 // A Java counterpart will be generated for this enum.

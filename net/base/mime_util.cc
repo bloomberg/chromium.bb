@@ -25,27 +25,6 @@
 
 using std::string;
 
-namespace {
-
-struct MediaType {
-  const char name[12];
-  const char matcher[13];
-};
-
-static const MediaType kIanaMediaTypes[] = {
-  { "application", "application/" },
-  { "audio", "audio/" },
-  { "example", "example/" },
-  { "image", "image/" },
-  { "message", "message/" },
-  { "model", "model/" },
-  { "multipart", "multipart/" },
-  { "text", "text/" },
-  { "video", "video/" },
-};
-
-}  // namespace
-
 namespace net {
 
 // Singleton utility class for mime types.
@@ -1362,15 +1341,6 @@ void GetExtensionsForMimeType(
 
 void RemoveProprietaryMediaTypesAndCodecsForTests() {
   g_mime_util.Get().RemoveProprietaryMediaTypesAndCodecsForTests();
-}
-
-const std::string GetIANAMediaType(const std::string& mime_type) {
-  for (size_t i = 0; i < arraysize(kIanaMediaTypes); ++i) {
-    if (StartsWithASCII(mime_type, kIanaMediaTypes[i].matcher, true)) {
-      return kIanaMediaTypes[i].name;
-    }
-  }
-  return std::string();
 }
 
 CertificateMimeType GetCertificateMimeTypeForMimeType(
