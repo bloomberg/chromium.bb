@@ -634,6 +634,7 @@ void ThreadState::snapshot()
     SNAPSHOT_HEAP(General3);
     SNAPSHOT_HEAP(General4);
     SNAPSHOT_HEAP(VectorBacking);
+    SNAPSHOT_HEAP(InlineVectorBacking);
     SNAPSHOT_HEAP(HashTableBacking);
     FOR_EACH_TYPED_HEAP(SNAPSHOT_HEAP);
     json->endArray();
