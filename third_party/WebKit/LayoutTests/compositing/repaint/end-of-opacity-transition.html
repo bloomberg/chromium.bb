@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<script src="../../fast/repaint/resources/text-based-repaint.js"></script>
+<script>
+window.testIsAsync = true;
+function repaintTest() {
+  // Do nothing. Just wait for the end of the transition.
+}
+onload = function() {
+  // Start the transition before runRepaintTest because we only care
+  // about the invalidation on the end of the transition.
+  var animated = document.getElementById('animated');
+  animated.addEventListener('transitionend', function() {
+    finishRepaintTest();
+  });
+  animated.style.opacity = 1;
+
+  runRepaintTest();
+};
+</script>
+<style>
+#background, #foreground {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 200px;
+  height: 200px;
+}
+#background {
+  background-color: red;
+}
+#animated {
+  -webkit-transition: opacity 0.5s;
+  opacity: 0;
+}
+#foreground {
+  background-color: green;
+}
+body {
+  margin: 0;
+}
+#description {
+  position: absolute;
+  top: 300px;
+}
+</style>
+<div id="background"></div>
+<div id="animated"><div id="foreground"></div></div>
+<div id="description">
+Tests paint invalidation on end of opacity transition.<br>
+Passes if there is a green square and no red.<br>
+</div>
+

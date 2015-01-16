@@ -1282,6 +1282,16 @@ void RenderLayer::removeOnlyThisLayer()
     if (!m_parent)
         return;
 
+    {
+        DisableCompositingQueryAsserts disabler; // We need the current compositing status.
+        if (isPaintInvalidationContainer()) {
+            // Our children will be reparented and contained by a new paint invalidation container,
+            // so need paint invalidation. CompositingUpdate can't see this layer (which has been
+            // removed) so won't do this for us.
+            setShouldDoFullPaintInvalidationIncludingNonCompositingDescendants();
+        }
+    }
+
     m_clipper.clearClipRectsIncludingDescendants();
 
     RenderLayer* nextSib = nextSibling();
