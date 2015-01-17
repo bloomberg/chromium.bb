@@ -19,7 +19,6 @@
 #include "cc/base/cc_export.h"
 #include "cc/base/region.h"
 #include "skia/ext/refptr.h"
-#include "third_party/skia/include/core/SkBBHFactory.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -52,12 +51,11 @@ class CC_EXPORT Picture
     RECORDING_MODE_COUNT,  // Must be the last entry.
   };
 
-  static scoped_refptr<Picture> Create(
-      const gfx::Rect& layer_rect,
-      ContentLayerClient* client,
-      const SkTileGridFactory::TileGridInfo& tile_grid_info,
-      bool gather_pixels_refs,
-      RecordingMode recording_mode);
+  static scoped_refptr<Picture> Create(const gfx::Rect& layer_rect,
+                                       ContentLayerClient* client,
+                                       const gfx::Size& tile_grid_size,
+                                       bool gather_pixels_refs,
+                                       RecordingMode recording_mode);
   static scoped_refptr<Picture> CreateFromValue(const base::Value* value);
   static scoped_refptr<Picture> CreateFromSkpValue(const base::Value* value);
 
@@ -142,11 +140,11 @@ class CC_EXPORT Picture
   // Record a paint operation. To be able to safely use this SkPicture for
   // playback on a different thread this can only be called once.
   void Record(ContentLayerClient* client,
-              const SkTileGridFactory::TileGridInfo& tile_grid_info,
+              const gfx::Size& tile_grid_size,
               RecordingMode recording_mode);
 
   // Gather pixel refs from recording.
-  void GatherPixelRefs(const SkTileGridFactory::TileGridInfo& tile_grid_info);
+  void GatherPixelRefs(const gfx::Size& tile_grid_info);
 
   gfx::Rect layer_rect_;
   skia::RefPtr<SkPicture> picture_;

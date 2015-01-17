@@ -25,7 +25,6 @@ const int kOpCountThatIsOkToAnalyze = 10;
 // Dimensions of the tiles in this picture pile as well as the dimensions of
 // the base picture in each tile.
 const int kBasePictureSize = 512;
-const int kTileGridBorderPixels = 1;
 
 // Invalidation frequency settings. kInvalidationFrequencyThreshold is a value
 // between 0 and 1 meaning invalidation frequency between 0% and 100% that
@@ -167,9 +166,6 @@ PicturePile::PicturePile()
       pixel_record_distance_(kPixelDistanceToRecord),
       is_suitable_for_gpu_rasterization_(true) {
   tiling_.SetMaxTextureSize(gfx::Size(kBasePictureSize, kBasePictureSize));
-  tile_grid_info_.fTileInterval.setEmpty();
-  tile_grid_info_.fMargin.setEmpty();
-  tile_grid_info_.fOffset.setZero();
 }
 
 PicturePile::~PicturePile() {
@@ -548,7 +544,7 @@ void PicturePile::CreatePictures(ContentLayerClient* painter,
     bool gather_pixel_refs = TileTaskWorkerPool::GetNumWorkerThreads() > 1;
 
     for (int i = 0; i < repeat_count; i++) {
-      picture = Picture::Create(padded_record_rect, painter, tile_grid_info_,
+      picture = Picture::Create(padded_record_rect, painter, tile_grid_size_,
                                 gather_pixel_refs, recording_mode);
       // Note the '&&' with previous is-suitable state.
       // This means that once a picture-pile becomes unsuitable for gpu
@@ -628,31 +624,19 @@ bool PicturePile::IsSuitableForGpuRasterization() const {
   return is_suitable_for_gpu_rasterization_;
 }
 
-// static
-void PicturePile::ComputeTileGridInfo(const gfx::Size& tile_grid_size,
-                                      SkTileGridFactory::TileGridInfo* info) {
-  DCHECK(info);
-  info->fTileInterval.set(tile_grid_size.width() - 2 * kTileGridBorderPixels,
-                          tile_grid_size.height() - 2 * kTileGridBorderPixels);
-  DCHECK_GT(info->fTileInterval.width(), 0);
-  DCHECK_GT(info->fTileInterval.height(), 0);
-  info->fMargin.set(kTileGridBorderPixels, kTileGridBorderPixels);
-  // Offset the tile grid coordinate space to take into account the fact
-  // that the top-most and left-most tiles do not have top and left borders
-  // respectively.
-  info->fOffset.set(-kTileGridBorderPixels, -kTileGridBorderPixels);
-}
-
 void PicturePile::SetTileGridSize(const gfx::Size& tile_grid_size) {
-  ComputeTileGridInfo(tile_grid_size, &tile_grid_info_);
+  DCHECK_GT(tile_grid_size.width(), 0);
+  DCHECK_GT(tile_grid_size.height(), 0);
+
+  tile_grid_size_ = tile_grid_size;
 }
 
 void PicturePile::SetUnsuitableForGpuRasterizationForTesting() {
   is_suitable_for_gpu_rasterization_ = false;
 }
 
-SkTileGridFactory::TileGridInfo PicturePile::GetTileGridInfoForTesting() const {
-  return tile_grid_info_;
+gfx::Size PicturePile::GetTileGridSizeForTesting() const {
+  return tile_grid_size_;
 }
 
 bool PicturePile::CanRasterSlowTileCheck(const gfx::Rect& layer_rect) const {

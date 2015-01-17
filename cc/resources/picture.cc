@@ -19,7 +19,6 @@
 #include "cc/debug/traced_value.h"
 #include "cc/layers/content_layer_client.h"
 #include "skia/ext/pixel_ref_utils.h"
-#include "third_party/skia/include/core/SkBBHFactory.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkDrawPictureCallback.h"
 #include "third_party/skia/include/core/SkPaint.h"
@@ -54,17 +53,16 @@ bool DecodeBitmap(const void* buffer, size_t size, SkBitmap* bm) {
 
 }  // namespace
 
-scoped_refptr<Picture> Picture::Create(
-    const gfx::Rect& layer_rect,
-    ContentLayerClient* client,
-    const SkTileGridFactory::TileGridInfo& tile_grid_info,
-    bool gather_pixel_refs,
-    RecordingMode recording_mode) {
+scoped_refptr<Picture> Picture::Create(const gfx::Rect& layer_rect,
+                                       ContentLayerClient* client,
+                                       const gfx::Size& tile_grid_size,
+                                       bool gather_pixel_refs,
+                                       RecordingMode recording_mode) {
   scoped_refptr<Picture> picture = make_scoped_refptr(new Picture(layer_rect));
 
-  picture->Record(client, tile_grid_info, recording_mode);
+  picture->Record(client, tile_grid_size, recording_mode);
   if (gather_pixel_refs)
-    picture->GatherPixelRefs(tile_grid_info);
+    picture->GatherPixelRefs(tile_grid_size);
 
   return picture;
 }
@@ -170,7 +168,7 @@ bool Picture::HasText() const {
 }
 
 void Picture::Record(ContentLayerClient* painter,
-                     const SkTileGridFactory::TileGridInfo& tile_grid_info,
+                     const gfx::Size& tile_grid_size,
                      RecordingMode recording_mode) {
   TRACE_EVENT2("cc",
                "Picture::Record",
@@ -180,7 +178,7 @@ void Picture::Record(ContentLayerClient* painter,
                recording_mode);
 
   DCHECK(!picture_);
-  DCHECK(!tile_grid_info.fTileInterval.isEmpty());
+  DCHECK(!tile_grid_size.IsEmpty());
 
   // TODO(mtklein): If SkRTree sticks, clean up tile_grid_info.  skbug.com/3085
   SkRTreeFactory factory;
@@ -232,8 +230,7 @@ void Picture::Record(ContentLayerClient* painter,
   EmitTraceSnapshot();
 }
 
-void Picture::GatherPixelRefs(
-    const SkTileGridFactory::TileGridInfo& tile_grid_info) {
+void Picture::GatherPixelRefs(const gfx::Size& tile_grid_size) {
   TRACE_EVENT2("cc", "Picture::GatherPixelRefs",
                "width", layer_rect_.width(),
                "height", layer_rect_.height());
@@ -242,11 +239,7 @@ void Picture::GatherPixelRefs(
   DCHECK(pixel_refs_.empty());
   if (!WillPlayBackBitmaps())
     return;
-  cell_size_ = gfx::Size(
-      tile_grid_info.fTileInterval.width() +
-          2 * tile_grid_info.fMargin.width(),
-      tile_grid_info.fTileInterval.height() +
-          2 * tile_grid_info.fMargin.height());
+  cell_size_ = tile_grid_size;
   DCHECK_GT(cell_size_.width(), 0);
   DCHECK_GT(cell_size_.height(), 0);
 

@@ -10,7 +10,6 @@
 #include "cc/test/fake_content_layer_client.h"
 #include "cc/test/skia_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/skia/include/core/SkBBHFactory.h"
 #include "third_party/skia/include/core/SkGraphics.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/skia_util.h"
@@ -23,10 +22,7 @@ TEST(PictureTest, AsBase64String) {
 
   gfx::Rect layer_rect(100, 100);
 
-  SkTileGridFactory::TileGridInfo tile_grid_info;
-  tile_grid_info.fTileInterval = SkISize::Make(100, 100);
-  tile_grid_info.fMargin.setEmpty();
-  tile_grid_info.fOffset.setZero();
+  gfx::Size tile_grid_size(100, 100);
 
   FakeContentLayerClient content_layer_client;
 
@@ -47,10 +43,7 @@ TEST(PictureTest, AsBase64String) {
   content_layer_client.add_draw_rect(layer_rect, red_paint);
 
   scoped_refptr<Picture> one_rect_picture =
-      Picture::Create(layer_rect,
-                      &content_layer_client,
-                      tile_grid_info,
-                      false,
+      Picture::Create(layer_rect, &content_layer_client, tile_grid_size, false,
                       Picture::RECORD_NORMALLY);
   scoped_ptr<base::Value> serialized_one_rect(one_rect_picture->AsValue());
 
@@ -72,10 +65,7 @@ TEST(PictureTest, AsBase64String) {
   content_layer_client.add_draw_rect(gfx::Rect(25, 25, 50, 50), green_paint);
 
   scoped_refptr<Picture> two_rect_picture =
-      Picture::Create(layer_rect,
-                      &content_layer_client,
-                      tile_grid_info,
-                      false,
+      Picture::Create(layer_rect, &content_layer_client, tile_grid_size, false,
                       Picture::RECORD_NORMALLY);
 
   scoped_ptr<base::Value> serialized_two_rect(two_rect_picture->AsValue());
@@ -98,10 +88,7 @@ TEST(PictureTest, AsBase64String) {
 TEST(PictureTest, PixelRefIterator) {
   gfx::Rect layer_rect(2048, 2048);
 
-  SkTileGridFactory::TileGridInfo tile_grid_info;
-  tile_grid_info.fTileInterval = SkISize::Make(512, 512);
-  tile_grid_info.fMargin.setEmpty();
-  tile_grid_info.fOffset.setZero();
+  gfx::Size tile_grid_size(512, 512);
 
   FakeContentLayerClient content_layer_client;
 
@@ -129,11 +116,9 @@ TEST(PictureTest, PixelRefIterator) {
     }
   }
 
-  scoped_refptr<Picture> picture = Picture::Create(layer_rect,
-                                                   &content_layer_client,
-                                                   tile_grid_info,
-                                                   true,
-                                                   Picture::RECORD_NORMALLY);
+  scoped_refptr<Picture> picture =
+      Picture::Create(layer_rect, &content_layer_client, tile_grid_size, true,
+                      Picture::RECORD_NORMALLY);
 
   // Default iterator does not have any pixel refs
   {
@@ -198,10 +183,7 @@ TEST(PictureTest, PixelRefIterator) {
 TEST(PictureTest, PixelRefIteratorNonZeroLayer) {
   gfx::Rect layer_rect(1024, 0, 2048, 2048);
 
-  SkTileGridFactory::TileGridInfo tile_grid_info;
-  tile_grid_info.fTileInterval = SkISize::Make(512, 512);
-  tile_grid_info.fMargin.setEmpty();
-  tile_grid_info.fOffset.setZero();
+  gfx::Size tile_grid_size(512, 512);
 
   FakeContentLayerClient content_layer_client;
 
@@ -229,11 +211,9 @@ TEST(PictureTest, PixelRefIteratorNonZeroLayer) {
     }
   }
 
-  scoped_refptr<Picture> picture = Picture::Create(layer_rect,
-                                                   &content_layer_client,
-                                                   tile_grid_info,
-                                                   true,
-                                                   Picture::RECORD_NORMALLY);
+  scoped_refptr<Picture> picture =
+      Picture::Create(layer_rect, &content_layer_client, tile_grid_size, true,
+                      Picture::RECORD_NORMALLY);
 
   // Default iterator does not have any pixel refs
   {
@@ -321,10 +301,7 @@ TEST(PictureTest, PixelRefIteratorNonZeroLayer) {
 TEST(PictureTest, PixelRefIteratorOnePixelQuery) {
   gfx::Rect layer_rect(2048, 2048);
 
-  SkTileGridFactory::TileGridInfo tile_grid_info;
-  tile_grid_info.fTileInterval = SkISize::Make(512, 512);
-  tile_grid_info.fMargin.setEmpty();
-  tile_grid_info.fOffset.setZero();
+  gfx::Size tile_grid_size(512, 512);
 
   FakeContentLayerClient content_layer_client;
 
@@ -352,11 +329,9 @@ TEST(PictureTest, PixelRefIteratorOnePixelQuery) {
     }
   }
 
-  scoped_refptr<Picture> picture = Picture::Create(layer_rect,
-                                                   &content_layer_client,
-                                                   tile_grid_info,
-                                                   true,
-                                                   Picture::RECORD_NORMALLY);
+  scoped_refptr<Picture> picture =
+      Picture::Create(layer_rect, &content_layer_client, tile_grid_size, true,
+                      Picture::RECORD_NORMALLY);
 
   for (int y = 0; y < 4; ++y) {
     for (int x = 0; x < 4; ++x) {
@@ -378,10 +353,7 @@ TEST(PictureTest, CreateFromSkpValue) {
 
   gfx::Rect layer_rect(100, 200);
 
-  SkTileGridFactory::TileGridInfo tile_grid_info;
-  tile_grid_info.fTileInterval = SkISize::Make(100, 200);
-  tile_grid_info.fMargin.setEmpty();
-  tile_grid_info.fOffset.setZero();
+  gfx::Size tile_grid_size(100, 200);
 
   FakeContentLayerClient content_layer_client;
 
@@ -401,10 +373,7 @@ TEST(PictureTest, CreateFromSkpValue) {
   // Single full-size rect picture.
   content_layer_client.add_draw_rect(layer_rect, red_paint);
   scoped_refptr<Picture> one_rect_picture =
-      Picture::Create(layer_rect,
-                      &content_layer_client,
-                      tile_grid_info,
-                      false,
+      Picture::Create(layer_rect, &content_layer_client, tile_grid_size, false,
                       Picture::RECORD_NORMALLY);
   scoped_ptr<base::Value> serialized_one_rect(
       one_rect_picture->AsValue());
@@ -430,39 +399,28 @@ TEST(PictureTest, RecordingModes) {
 
   gfx::Rect layer_rect(100, 200);
 
-  SkTileGridFactory::TileGridInfo tile_grid_info;
-  tile_grid_info.fTileInterval = SkISize::Make(100, 200);
-  tile_grid_info.fMargin.setEmpty();
-  tile_grid_info.fOffset.setZero();
+  gfx::Size tile_grid_size(100, 200);
 
   FakeContentLayerClient content_layer_client;
   EXPECT_EQ(NULL, content_layer_client.last_canvas());
 
-  scoped_refptr<Picture> picture = Picture::Create(layer_rect,
-                                                   &content_layer_client,
-                                                   tile_grid_info,
-                                                   false,
-                                                   Picture::RECORD_NORMALLY);
+  scoped_refptr<Picture> picture =
+      Picture::Create(layer_rect, &content_layer_client, tile_grid_size, false,
+                      Picture::RECORD_NORMALLY);
   EXPECT_TRUE(content_layer_client.last_canvas() != NULL);
   EXPECT_EQ(ContentLayerClient::GRAPHICS_CONTEXT_ENABLED,
             content_layer_client.last_context_status());
   EXPECT_TRUE(picture.get());
 
-  picture = Picture::Create(layer_rect,
-                            &content_layer_client,
-                            tile_grid_info,
-                            false,
-                            Picture::RECORD_WITH_SK_NULL_CANVAS);
+  picture = Picture::Create(layer_rect, &content_layer_client, tile_grid_size,
+                            false, Picture::RECORD_WITH_SK_NULL_CANVAS);
   EXPECT_TRUE(content_layer_client.last_canvas() != NULL);
   EXPECT_EQ(ContentLayerClient::GRAPHICS_CONTEXT_ENABLED,
             content_layer_client.last_context_status());
   EXPECT_TRUE(picture.get());
 
-  picture = Picture::Create(layer_rect,
-                            &content_layer_client,
-                            tile_grid_info,
-                            false,
-                            Picture::RECORD_WITH_PAINTING_DISABLED);
+  picture = Picture::Create(layer_rect, &content_layer_client, tile_grid_size,
+                            false, Picture::RECORD_WITH_PAINTING_DISABLED);
   EXPECT_TRUE(content_layer_client.last_canvas() != NULL);
   EXPECT_EQ(ContentLayerClient::GRAPHICS_CONTEXT_DISABLED,
             content_layer_client.last_context_status());

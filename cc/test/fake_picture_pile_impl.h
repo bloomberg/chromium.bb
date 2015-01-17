@@ -102,7 +102,7 @@ class FakePicturePileImpl : public PicturePileImpl {
   FakeContentLayerClient client_;
   SkPaint default_paint_;
   base::WaitableEvent* playback_allowed_event_;
-  SkTileGridFactory::TileGridInfo tile_grid_info_;
+  gfx::Size tile_grid_size_;
 };
 
 }  // namespace cc

@@ -7,7 +7,6 @@
 
 #include "cc/base/cc_export.h"
 #include "cc/resources/picture.h"
-#include "third_party/skia/include/core/SkBBHFactory.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -47,7 +46,7 @@ class CC_EXPORT RecordingSource {
 
   // TODO(hendrikw): Figure out how to remove this.
   virtual void SetUnsuitableForGpuRasterizationForTesting() = 0;
-  virtual SkTileGridFactory::TileGridInfo GetTileGridInfoForTesting() const = 0;
+  virtual gfx::Size GetTileGridSizeForTesting() const = 0;
 };
 
 }  // namespace cc

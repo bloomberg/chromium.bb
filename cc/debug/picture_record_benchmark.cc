@@ -13,7 +13,6 @@
 #include "cc/resources/picture.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_host_common.h"
-#include "third_party/skia/include/core/SkBBHFactory.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace cc {
@@ -22,7 +21,6 @@ namespace {
 
 const int kPositionIncrement = 100;
 const int kTileGridSize = 512;
-const int kTileGridBorder = 1;
 
 }  // namespace
 
@@ -93,11 +91,7 @@ void PictureRecordBenchmark::RunOnLayer(PictureLayer* layer) {
   ContentLayerClient* painter = layer->client();
   gfx::Size content_bounds = layer->content_bounds();
 
-  SkTileGridFactory::TileGridInfo tile_grid_info;
-  tile_grid_info.fTileInterval.set(kTileGridSize - 2 * kTileGridBorder,
-                                   kTileGridSize - 2 * kTileGridBorder);
-  tile_grid_info.fMargin.set(kTileGridBorder, kTileGridBorder);
-  tile_grid_info.fOffset.set(-kTileGridBorder, -kTileGridBorder);
+  gfx::Size tile_grid_size(kTileGridSize, kTileGridSize);
 
   for (size_t i = 0; i < dimensions_.size(); ++i) {
     std::pair<int, int> dimensions = dimensions_[i];
@@ -113,7 +107,7 @@ void PictureRecordBenchmark::RunOnLayer(PictureLayer* layer) {
         base::TimeTicks start = base::TimeTicks::HighResNow();
 
         scoped_refptr<Picture> picture = Picture::Create(
-            rect, painter, tile_grid_info, false, Picture::RECORD_NORMALLY);
+            rect, painter, tile_grid_size, false, Picture::RECORD_NORMALLY);
 
         base::TimeTicks end = base::TimeTicks::HighResNow();
         base::TimeDelta duration = end - start;

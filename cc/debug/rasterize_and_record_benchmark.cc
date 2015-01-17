@@ -108,9 +108,6 @@ void RasterizeAndRecordBenchmark::RunOnLayer(PictureLayer* layer) {
   DCHECK(host_);
   gfx::Size tile_grid_size = host_->settings().default_tile_size;
 
-  SkTileGridFactory::TileGridInfo tile_grid_info;
-  PicturePile::ComputeTileGridInfo(tile_grid_size, &tile_grid_info);
-
   gfx::Rect visible_content_rect = gfx::ScaleToEnclosingRect(
       layer->visible_content_rect(), 1.f / layer->contents_scale_x());
   if (visible_content_rect.IsEmpty())
@@ -136,7 +133,7 @@ void RasterizeAndRecordBenchmark::RunOnLayer(PictureLayer* layer) {
                      kTimeCheckInterval);
       scoped_refptr<Picture> picture;
       do {
-        picture = Picture::Create(visible_content_rect, painter, tile_grid_info,
+        picture = Picture::Create(visible_content_rect, painter, tile_grid_size,
                                   false, mode);
         timer.NextLap();
       } while (!timer.HasTimeLimitExpired());

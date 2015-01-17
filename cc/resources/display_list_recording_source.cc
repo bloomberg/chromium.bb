@@ -130,9 +130,8 @@ scoped_refptr<RasterSource> DisplayListRecordingSource::CreateRasterSource()
       DisplayListRasterSource::CreateFromDisplayListRecordingSource(this));
 }
 
-SkTileGridFactory::TileGridInfo
-DisplayListRecordingSource::GetTileGridInfoForTesting() const {
-  return SkTileGridFactory::TileGridInfo();
+gfx::Size DisplayListRecordingSource::GetTileGridSizeForTesting() const {
+  return gfx::Size();
 }
 
 void DisplayListRecordingSource::DetermineIfSolidColor() {

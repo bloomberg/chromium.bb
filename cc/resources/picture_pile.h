@@ -39,10 +39,7 @@ class CC_EXPORT PicturePile : public RecordingSource {
   bool IsSuitableForGpuRasterization() const override;
   void SetTileGridSize(const gfx::Size& tile_grid_size) override;
   void SetUnsuitableForGpuRasterizationForTesting() override;
-  SkTileGridFactory::TileGridInfo GetTileGridInfoForTesting() const override;
-
-  static void ComputeTileGridInfo(const gfx::Size& tile_grid_size,
-                                  SkTileGridFactory::TileGridInfo* info);
+  gfx::Size GetTileGridSizeForTesting() const override;
 
  protected:
   class CC_EXPORT PictureInfo {
@@ -94,7 +91,7 @@ class CC_EXPORT PicturePile : public RecordingSource {
   // recorded.
   gfx::Rect recorded_viewport_;
   float min_contents_scale_;
-  SkTileGridFactory::TileGridInfo tile_grid_info_;
+  gfx::Size tile_grid_size_;
   int slow_down_raster_scale_factor_for_debug_;
   bool can_use_lcd_text_;
   // A hint about whether there are any recordings. This may be a false

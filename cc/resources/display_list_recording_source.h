@@ -34,7 +34,7 @@ class CC_EXPORT DisplayListRecordingSource : public RecordingSource {
   bool IsSuitableForGpuRasterization() const override;
   void SetTileGridSize(const gfx::Size& tile_grid_size) override;
   void SetUnsuitableForGpuRasterizationForTesting() override;
-  SkTileGridFactory::TileGridInfo GetTileGridInfoForTesting() const override;
+  gfx::Size GetTileGridSizeForTesting() const override;
 
  protected:
   void Clear();

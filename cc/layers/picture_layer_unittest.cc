@@ -106,10 +106,10 @@ TEST(PictureLayerTest, UseTileGridSize) {
   host->SetRootLayer(layer);
 
   // Tile-grid is set according to its setting.
-  SkTileGridFactory::TileGridInfo info =
-      layer->GetRecordingSourceForTesting()->GetTileGridInfoForTesting();
-  EXPECT_EQ(info.fTileInterval.width(), 123 - 2 * info.fMargin.width());
-  EXPECT_EQ(info.fTileInterval.height(), 123 - 2 * info.fMargin.height());
+  gfx::Size size =
+      layer->GetRecordingSourceForTesting()->GetTileGridSizeForTesting();
+  EXPECT_EQ(size.width(), 123);
+  EXPECT_EQ(size.height(), 123);
 }
 
 }  // namespace

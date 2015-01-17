@@ -24,7 +24,7 @@ FakePicturePileImpl::FakePicturePileImpl(
     base::WaitableEvent* playback_allowed_event)
     : PicturePileImpl(other),
       playback_allowed_event_(playback_allowed_event),
-      tile_grid_info_(other->GetTileGridInfoForTesting()) {
+      tile_grid_size_(other->GetTileGridSizeForTesting()) {
 }
 
 FakePicturePileImpl::~FakePicturePileImpl() {}
@@ -118,7 +118,7 @@ void FakePicturePileImpl::AddRecordingAt(int x, int y) {
   bounds.Inset(-buffer_pixels(), -buffer_pixels());
 
   scoped_refptr<Picture> picture(Picture::Create(
-      bounds, &client_, tile_grid_info_, true, Picture::RECORD_NORMALLY));
+      bounds, &client_, tile_grid_size_, true, Picture::RECORD_NORMALLY));
   picture_map_[std::pair<int, int>(x, y)].SetPicture(picture);
   EXPECT_TRUE(HasRecordingAt(x, y));
 
