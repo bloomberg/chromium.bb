@@ -95,6 +95,13 @@
         'core/wm_state.h',
         'wm_export.h',
       ],
+      'conditions': [
+        ['use_x11==1', {
+          'dependencies': [
+            '../../build/linux/system.gyp:x11',
+          ],
+        }],
+      ],
     },
     {
       # GN version: //ui/wm:test_support

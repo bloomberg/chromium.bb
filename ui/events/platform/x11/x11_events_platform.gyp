@@ -14,6 +14,7 @@
       'EVENTS_IMPLEMENTATION',
     ],
     'dependencies': [
+      '../../../../base/base.gyp:base',
       '../../../../build/linux/system.gyp:x11',
       '../../../gfx/x/gfx_x11.gyp:gfx_x11',
       '../../devices/events_devices.gyp:events_devices',

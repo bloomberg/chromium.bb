@@ -679,6 +679,7 @@
             '../../build/linux/system.gyp:xrandr',
             '../events/devices/events_devices.gyp:events_devices',
             '../events/platform/x11/x11_events_platform.gyp:x11_events_platform',
+            '../gfx/x/gfx_x11.gyp:gfx_x11',
           ],
         }],
         ['use_aura==1', {
@@ -698,6 +699,9 @@
             }],
             ['use_x11 == 1', {
               'sources': [ '<@(views_desktop_aura_x11_sources)' ],
+              'dependencies': [
+                '../../build/linux/system.gyp:xext',
+              ],
             }],
             ['OS == "win"', {
               'sources': [ '<@(views_desktop_aura_win_sources)' ],
