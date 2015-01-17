@@ -61,6 +61,7 @@
       <include name="IDR_I18N_CUSTOM_BINDINGS_JS" file="i18n_custom_bindings.js" type="BINDATA" />
       <include name="IDR_MOJO_PRIVATE_CUSTOM_BINDINGS_JS" file="mojo_private_custom_bindings.js" type="BINDATA" />
       <include name="IDR_PERMISSIONS_CUSTOM_BINDINGS_JS" file="permissions_custom_bindings.js" type="BINDATA" />
+      <include name="IDR_PRINTER_PROVIDER_CUSTOM_BINDINGS_JS" file="printer_provider_custom_bindings.js" type="BINDATA" />
       <include name="IDR_RUNTIME_CUSTOM_BINDINGS_JS" file="runtime_custom_bindings.js" type="BINDATA" />
       <include name="IDR_WEB_REQUEST_CUSTOM_BINDINGS_JS" file="web_request_custom_bindings.js" type="BINDATA" />
       <include name="IDR_WEB_REQUEST_INTERNAL_CUSTOM_BINDINGS_JS" file="web_request_internal_custom_bindings.js" type="BINDATA" />

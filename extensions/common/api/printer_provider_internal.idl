@@ -13,24 +13,28 @@
 // the argument list before the event actually reaches the event listeners). The
 // requestId is forwarded to the chrome.printerProviderInternal API functions.
 namespace printerProviderInternal {
+  // Same as in printerProvider.PrintError enum API.
+  enum PrintError { OK, FAILED, INVALID_TICKET, INVALID_DATA };
+
   interface Functions {
     // Runs callback to printerProvider.onGetPrintersRequested event.
     // |requestId|: Parameter identifying the event instance for which the
     //     callback is run.
     // |printers|: List of printers reported by the extension.
-    void reportPrinters(long requestId, printerProvider.PrinterInfo[] printers);
+    void reportPrinters(long requestId,
+                        optional printerProvider.PrinterInfo[] printers);
 
     // Runs callback to printerProvider.onGetCapabilityRequested event.
     // |requestId|: Parameter identifying the event instance for which the
     //     callback is run.
     // |error|: The printer capability returned by the extension.
-    void reportPrinterCapability(long request_id, object capability);
+    void reportPrinterCapability(long request_id, optional object capability);
 
     // Runs callback to printerProvider.onPrintRequested event.
     // |requestId|: Parameter identifying the event instance for which the
     //     callback is run.
     // |error|: The requested print job result.
-    void reportPrintResult(long request_id, printerProvider.PrintError error);
+    void reportPrintResult(long request_id, optional PrintError error);
   };
 };
 
