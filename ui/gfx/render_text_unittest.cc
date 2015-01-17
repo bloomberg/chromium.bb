@@ -2252,6 +2252,22 @@ TEST_F(RenderTextTest, HarfBuzz_BreakRunsByUnicodeBlocks) {
   EXPECT_EQ(Range(3, 5), render_text.runs_[2]->range);
 }
 
+TEST_F(RenderTextTest, HarfBuzz_BreakRunsByEmoji) {
+  RenderTextHarfBuzz render_text;
+
+  // \xF0\x9F\x98\x81 (U+1F601) is smile icon emoji. \xE2\x9C\xA8 (U+2728) is
+  // a sparkle icon. Both can be drawn with color emoji fonts, so runs should be
+  // separated. See crbug.com/448909
+  render_text.SetText(UTF8ToUTF16("x\xF0\x9F\x98\x81y\xE2\x9C\xA8"));
+  render_text.EnsureLayout();
+  ASSERT_EQ(4U, render_text.runs_.size());
+  EXPECT_EQ(Range(0, 1), render_text.runs_[0]->range);
+  // The length is 2 since U+1F601 is represented as a surrogate pair in UTF16.
+  EXPECT_EQ(Range(1, 3), render_text.runs_[1]->range);
+  EXPECT_EQ(Range(3, 4), render_text.runs_[2]->range);
+  EXPECT_EQ(Range(4, 5), render_text.runs_[3]->range);
+}
+
 // Disabled on Mac because RenderTextMac doesn't implement GetGlyphBounds.
 #if !defined(OS_MACOSX)
 TEST_F(RenderTextTest, GlyphBounds) {

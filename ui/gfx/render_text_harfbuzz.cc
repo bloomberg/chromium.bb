@@ -305,9 +305,13 @@ hb_font_t* CreateHarfBuzzFont(SkTypeface* skia_face,
 }
 
 // Returns true if characters of |block_code| may trigger font fallback.
+// Dingbats and emoticons can be rendered through the color emoji font file,
+// therefore it needs to be trigerred as fallbacks. See crbug.com/448909
 bool IsUnusualBlockCode(UBlockCode block_code) {
   return block_code == UBLOCK_GEOMETRIC_SHAPES ||
-         block_code == UBLOCK_MISCELLANEOUS_SYMBOLS;
+         block_code == UBLOCK_MISCELLANEOUS_SYMBOLS ||
+         block_code == UBLOCK_DINGBATS ||
+         block_code == UBLOCK_EMOTICONS;
 }
 
 bool IsBracket(UChar32 character) {

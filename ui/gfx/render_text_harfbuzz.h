@@ -115,6 +115,7 @@ class GFX_EXPORT RenderTextHarfBuzz : public RenderText {
   friend class RenderTextTest;
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, HarfBuzz_RunDirection);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, HarfBuzz_BreakRunsByUnicodeBlocks);
+  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, HarfBuzz_BreakRunsByEmoji);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, HarfBuzz_SubglyphGraphemeCases);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, HarfBuzz_SubglyphGraphemePartition);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, HarfBuzz_NonExistentFont);
