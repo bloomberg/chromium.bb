@@ -1737,8 +1737,8 @@ function testResizeWebviewWithDisplayNoneResizesContent() {
         webview.style.width = '400px';
         window.setTimeout(function() {
           webview.style.display = 'block';
-        }, 0);
-      }, 0);
+        }, 10);
+      }, 10);
       return;
     }
     if (data[0] == 'resize') {
