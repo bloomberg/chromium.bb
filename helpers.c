@@ -10,6 +10,7 @@
 #include <xf86drm.h>
 
 #include "gbm_priv.h"
+#include "helpers.h"
 
 int gbm_bpp_from_format(uint32_t format)
 {
