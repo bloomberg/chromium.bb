@@ -851,6 +851,7 @@ def rmtree(root):
     True on normal execution, False if berserk techniques (like killing
     processes) had to be used.
   """
+  root = unicode(root)
   make_tree_deleteable(root)
   logging.info('rmtree(%s)', root)
   if sys.platform != 'win32':

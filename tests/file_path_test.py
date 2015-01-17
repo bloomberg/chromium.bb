@@ -158,6 +158,16 @@ class FilePathTest(auto_stub.TestCase):
     # must be reset to be read-only after deleting one of the hard link
     # directory entry.
 
+  def test_rmtree_unicode(self):
+    subdir = os.path.join(self.tempdir, 'hi')
+    os.mkdir(subdir)
+    filepath = os.path.join(
+        subdir, u'\u0627\u0644\u0635\u064A\u0646\u064A\u0629')
+    with open(filepath, 'wb') as f:
+      f.write('hi')
+    # In particular, it fails when the input argument is a str.
+    file_path.rmtree(str(subdir))
+
   if sys.platform == 'darwin':
     def test_native_case_symlink_wrong_case(self):
       base_dir = file_path.get_native_path_case(BASE_DIR)
