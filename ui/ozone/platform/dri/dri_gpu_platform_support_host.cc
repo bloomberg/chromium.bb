@@ -98,18 +98,4 @@ bool DriGpuPlatformSupportHost::Send(IPC::Message* message) {
   return false;
 }
 
-void DriGpuPlatformSupportHost::SetHardwareCursor(
-    gfx::AcceleratedWidget widget,
-    const std::vector<SkBitmap>& bitmaps,
-    const gfx::Point& location,
-    int frame_delay_ms) {
-  Send(new OzoneGpuMsg_CursorSet(widget, bitmaps, location, frame_delay_ms));
-}
-
-void DriGpuPlatformSupportHost::MoveHardwareCursor(
-    gfx::AcceleratedWidget widget,
-    const gfx::Point& location) {
-  Send(new OzoneGpuMsg_CursorMove(widget, location));
-}
-
 }  // namespace ui

@@ -4,10 +4,12 @@
 
 #include "ui/ozone/platform/dri/dri_cursor.h"
 
+#include "base/thread_task_runner_handle.h"
 #include "ui/base/cursor/ozone/bitmap_cursor_factory_ozone.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/point_f.h"
+#include "ui/ozone/common/gpu/ozone_gpu_messages.h"
 #include "ui/ozone/platform/dri/dri_gpu_platform_support_host.h"
 #include "ui/ozone/platform/dri/dri_window.h"
 #include "ui/ozone/platform/dri/dri_window_manager.h"
@@ -19,120 +21,256 @@
 namespace ui {
 
 DriCursor::DriCursor(DriWindowManager* window_manager,
-                     DriGpuPlatformSupportHost* sender)
+                     DriGpuPlatformSupportHost* gpu_platform_support_host)
     : window_manager_(window_manager),
-      sender_(sender),
-      cursor_window_(gfx::kNullAcceleratedWidget) {
+      gpu_platform_support_host_(gpu_platform_support_host) {
 }
 
 DriCursor::~DriCursor() {
+  gpu_platform_support_host_->UnregisterHandler(this);
 }
 
-void DriCursor::SetCursor(gfx::AcceleratedWidget widget,
+void DriCursor::Init() {
+  gpu_platform_support_host_->RegisterHandler(this);
+}
+
+void DriCursor::SetCursor(gfx::AcceleratedWidget window,
                           PlatformCursor platform_cursor) {
-  DCHECK_NE(widget, gfx::kNullAcceleratedWidget);
-  scoped_refptr<BitmapCursorOzone> cursor =
+  DCHECK(ui_task_runner_->BelongsToCurrentThread());
+  DCHECK_NE(window, gfx::kNullAcceleratedWidget);
+
+  scoped_refptr<BitmapCursorOzone> bitmap =
       BitmapCursorFactoryOzone::GetBitmapCursor(platform_cursor);
-  if (cursor_ == cursor || cursor_window_ != widget)
+
+  base::AutoLock lock(state_.lock);
+  if (state_.window != window || state_.bitmap == bitmap)
     return;
 
-  cursor_ = cursor;
+  state_.bitmap = bitmap;
 
-  ShowCursor();
+  SendCursorShowLocked();
 }
 
-void DriCursor::ShowCursor() {
-  DCHECK_NE(cursor_window_, gfx::kNullAcceleratedWidget);
-  if (cursor_.get())
-    sender_->SetHardwareCursor(cursor_window_, cursor_->bitmaps(),
-                               bitmap_location(), cursor_->frame_delay_ms());
-  else
-    HideCursor();
-}
+void DriCursor::OnWindowAdded(gfx::AcceleratedWidget window,
+                              const gfx::Rect& bounds) {
+#if DCHECK_IS_ON()
+  if (!ui_task_runner_)
+    ui_task_runner_ = base::ThreadTaskRunnerHandle::Get();
+#endif
+  DCHECK(ui_task_runner_->BelongsToCurrentThread());
+  base::AutoLock lock(state_.lock);
 
-void DriCursor::HideCursor() {
-  DCHECK_NE(cursor_window_, gfx::kNullAcceleratedWidget);
-  sender_->SetHardwareCursor(cursor_window_, std::vector<SkBitmap>(),
-                             gfx::Point(), 0);
-}
-
-void DriCursor::MoveCursorTo(gfx::AcceleratedWidget widget,
-                             const gfx::PointF& location) {
-  // When moving between windows hide the cursor on the current window then show
-  // it on the new window.
-  bool changing_window =
-      widget != cursor_window_ && cursor_window_ != gfx::kNullAcceleratedWidget;
-
-  if (changing_window)
-    HideCursor();
-
-  DriWindow* window = window_manager_->GetWindow(widget);
-
-  cursor_window_ = widget;
-  cursor_location_ = location;
-  cursor_display_bounds_ = window->GetBounds();
-
-  const gfx::Size& size = cursor_display_bounds_.size();
-  cursor_location_.SetToMax(gfx::PointF(0, 0));
-  // Right and bottom edges are exclusive.
-  cursor_location_.SetToMin(gfx::PointF(size.width() - 1, size.height() - 1));
-
-  if (cursor_.get()) {
-    if (changing_window)
-      ShowCursor();
-    else
-      sender_->MoveHardwareCursor(cursor_window_, bitmap_location());
+  if (state_.window == gfx::kNullAcceleratedWidget) {
+    // First window added & cursor is not placed. Place it.
+    state_.window = window;
+    state_.bounds = bounds;
+    SetCursorLocationLocked(bounds.CenterPoint() - bounds.OffsetFromOrigin());
   }
 }
 
-void DriCursor::MoveCursorTo(const gfx::PointF& location) {
-  DriWindow* window =
-      window_manager_->GetWindowAt(gfx::ToFlooredPoint(location));
-  if (!window)
-    return;
+void DriCursor::OnWindowRemoved(gfx::AcceleratedWidget window) {
+  DCHECK(ui_task_runner_->BelongsToCurrentThread());
+  base::AutoLock lock(state_.lock);
 
-  MoveCursorTo(window->GetAcceleratedWidget(),
-               location - window->GetBounds().OffsetFromOrigin());
+  if (state_.window == window) {
+    // Try to find a new location for the cursor.
+    gfx::PointF screen_location =
+        state_.location + state_.bounds.OffsetFromOrigin();
+    DriWindow* dest_window = window_manager_->GetPrimaryWindow();
+
+    if (dest_window) {
+      state_.window = dest_window->GetAcceleratedWidget();
+      state_.bounds = dest_window->GetBounds();
+      SetCursorLocationLocked(state_.bounds.CenterPoint() -
+                              state_.bounds.OffsetFromOrigin());
+      SendCursorShowLocked();
+    } else {
+      state_.window = gfx::kNullAcceleratedWidget;
+      state_.bounds = gfx::Rect();
+      state_.location = gfx::Point();
+    }
+  }
+}
+
+void DriCursor::PrepareForBoundsChange(gfx::AcceleratedWidget window) {
+  DCHECK(ui_task_runner_->BelongsToCurrentThread());
+  base::AutoLock lock(state_.lock);
+
+  // Bounds changes can reparent the window to a different display, so
+  // we hide prior to the change so that we avoid leaving a cursor
+  // behind on the old display.
+  // TODO(spang): The GPU-side code should handle this.
+  if (state_.window == window)
+    SendCursorHideLocked();
+}
+
+void DriCursor::CommitBoundsChange(gfx::AcceleratedWidget window,
+                                   const gfx::Rect& bounds) {
+  DCHECK(ui_task_runner_->BelongsToCurrentThread());
+  base::AutoLock lock(state_.lock);
+  if (state_.window == window) {
+    state_.bounds = bounds;
+    SetCursorLocationLocked(state_.location);
+    SendCursorShowLocked();
+  }
+}
+
+void DriCursor::MoveCursorTo(gfx::AcceleratedWidget window,
+                             const gfx::PointF& location) {
+  DCHECK(ui_task_runner_->BelongsToCurrentThread());
+  base::AutoLock lock(state_.lock);
+  gfx::AcceleratedWidget old_window = state_.window;
+
+  if (window != old_window) {
+    // When moving between displays, hide the cursor on the old display
+    // prior to showing it on the new display.
+    if (old_window != gfx::kNullAcceleratedWidget)
+      SendCursorHideLocked();
+
+    DriWindow* dri_window = window_manager_->GetWindow(window);
+    state_.bounds = dri_window->GetBounds();
+    state_.window = window;
+  }
+
+  SetCursorLocationLocked(location);
+
+  if (window != old_window)
+    SendCursorShowLocked();
+  else
+    SendCursorMoveLocked();
+}
+
+void DriCursor::MoveCursorTo(const gfx::PointF& screen_location) {
+  base::AutoLock lock(state_.lock);
+
+  // TODO(spang): Moving between windows doesn't work here, but
+  // is not needed for current uses.
+
+  SetCursorLocationLocked(screen_location - state_.bounds.OffsetFromOrigin());
 }
 
 void DriCursor::MoveCursor(const gfx::Vector2dF& delta) {
-  if (cursor_window_ == gfx::kNullAcceleratedWidget)
+  base::AutoLock lock(state_.lock);
+  if (state_.window == gfx::kNullAcceleratedWidget)
     return;
 
+  gfx::Point location;
 #if defined(OS_CHROMEOS)
   gfx::Vector2dF transformed_delta = delta;
   ui::CursorController::GetInstance()->ApplyCursorConfigForWindow(
-      cursor_window_, &transformed_delta);
-  MoveCursorTo(cursor_window_, cursor_location_ + transformed_delta);
+      state_.window, &transformed_delta);
+  SetCursorLocationLocked(state_.location + transformed_delta);
 #else
-  MoveCursorTo(cursor_window_, cursor_location_ + delta);
+  SetCursorLocationLocked(state_.location + delta);
 #endif
-}
 
-gfx::Rect DriCursor::GetCursorDisplayBounds() {
-  return cursor_display_bounds_;
-}
-
-gfx::AcceleratedWidget DriCursor::GetCursorWindow() {
-  return cursor_window_;
-}
-
-void DriCursor::Reset() {
-  cursor_window_ = gfx::kNullAcceleratedWidget;
-  cursor_ = nullptr;
+  SendCursorMoveLocked();
 }
 
 bool DriCursor::IsCursorVisible() {
-  return cursor_.get();
+  base::AutoLock lock(state_.lock);
+  return state_.bitmap;
 }
 
 gfx::PointF DriCursor::GetLocation() {
-  return cursor_location_ + cursor_display_bounds_.OffsetFromOrigin();
+  base::AutoLock lock(state_.lock);
+  return state_.location + state_.bounds.OffsetFromOrigin();
 }
 
-gfx::Point DriCursor::bitmap_location() {
-  return gfx::ToFlooredPoint(cursor_location_) -
-         cursor_->hotspot().OffsetFromOrigin();
+gfx::Rect DriCursor::GetCursorDisplayBounds() {
+  base::AutoLock lock(state_.lock);
+  return state_.bounds;
+}
+
+void DriCursor::OnChannelEstablished(
+    int host_id,
+    scoped_refptr<base::SingleThreadTaskRunner> send_runner,
+    const base::Callback<void(IPC::Message*)>& send_callback) {
+#if DCHECK_IS_ON()
+  if (!ui_task_runner_)
+    ui_task_runner_ = base::ThreadTaskRunnerHandle::Get();
+#endif
+  DCHECK(ui_task_runner_->BelongsToCurrentThread());
+  base::AutoLock lock(state_.lock);
+  state_.send_runner = send_runner;
+  state_.send_callback = send_callback;
+  // Initial set for this GPU process will happen after the window
+  // initializes, in CommitBoundsChange.
+}
+
+void DriCursor::OnChannelDestroyed(int host_id) {
+  DCHECK(ui_task_runner_->BelongsToCurrentThread());
+  base::AutoLock lock(state_.lock);
+  state_.send_runner = NULL;
+  state_.send_callback.Reset();
+}
+
+bool DriCursor::OnMessageReceived(const IPC::Message& message) {
+  return false;
+}
+
+void DriCursor::SetCursorLocationLocked(const gfx::PointF& location) {
+  state_.lock.AssertAcquired();
+
+  const gfx::Size& size = state_.bounds.size();
+  gfx::PointF clamped_location = location;
+  clamped_location.SetToMax(gfx::PointF(0, 0));
+  // Right and bottom edges are exclusive.
+  clamped_location.SetToMin(gfx::PointF(size.width() - 1, size.height() - 1));
+
+  state_.location = clamped_location;
+}
+
+gfx::Point DriCursor::GetBitmapLocationLocked() {
+  return gfx::ToFlooredPoint(state_.location) -
+         state_.bitmap->hotspot().OffsetFromOrigin();
+}
+
+bool DriCursor::IsConnectedLocked() {
+  return !state_.send_callback.is_null();
+}
+
+void DriCursor::SendCursorShowLocked() {
+  DCHECK(ui_task_runner_->BelongsToCurrentThread());
+  if (!state_.bitmap) {
+    SendCursorHideLocked();
+    return;
+  }
+  SendLocked(new OzoneGpuMsg_CursorSet(state_.window, state_.bitmap->bitmaps(),
+                                       GetBitmapLocationLocked(),
+                                       state_.bitmap->frame_delay_ms()));
+}
+
+void DriCursor::SendCursorHideLocked() {
+  DCHECK(ui_task_runner_->BelongsToCurrentThread());
+  SendLocked(new OzoneGpuMsg_CursorSet(state_.window, std::vector<SkBitmap>(),
+                                       gfx::Point(), 0));
+}
+
+void DriCursor::SendCursorMoveLocked() {
+  if (!state_.bitmap)
+    return;
+  SendLocked(
+      new OzoneGpuMsg_CursorMove(state_.window, GetBitmapLocationLocked()));
+}
+
+void DriCursor::SendLocked(IPC::Message* message) {
+  state_.lock.AssertAcquired();
+
+  if (IsConnectedLocked() &&
+      state_.send_runner->PostTask(FROM_HERE,
+                                   base::Bind(state_.send_callback, message)))
+    return;
+
+  // Drop disconnected updates. DriWindow will call CommitBoundsChange()
+  // when we connect to initialize the cursor location.
+  delete message;
+}
+
+DriCursor::CursorState::CursorState() : window(gfx::kNullAcceleratedWidget) {
+}
+
+DriCursor::CursorState::~CursorState() {
 }
 
 }  // namespace ui

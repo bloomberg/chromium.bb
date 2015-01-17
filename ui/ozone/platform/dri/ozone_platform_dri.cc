@@ -77,8 +77,8 @@ class OzonePlatformDri : public OzonePlatform {
       const gfx::Rect& bounds) override {
     scoped_ptr<DriWindow> platform_window(
         new DriWindow(delegate, bounds, gpu_platform_support_host_.get(),
-                      event_factory_ozone_.get(), window_manager_.get(),
-                      display_manager_.get()));
+                      event_factory_ozone_.get(), cursor_.get(),
+                      window_manager_.get(), display_manager_.get()));
     platform_window->Initialize();
     return platform_window.Pass();
   }
@@ -99,9 +99,11 @@ class OzonePlatformDri : public OzonePlatform {
         new DriGpuPlatformSupport(dri_.get(), &window_delegate_manager_,
                                   screen_manager_.get(), ndd.Pass()));
     gpu_platform_support_host_.reset(new DriGpuPlatformSupportHost());
+    window_manager_.reset(new DriWindowManager());
     cursor_factory_ozone_.reset(new BitmapCursorFactoryOzone);
-    window_manager_.reset(
-        new DriWindowManager(gpu_platform_support_host_.get()));
+    cursor_.reset(
+        new DriCursor(window_manager_.get(), gpu_platform_support_host_.get()));
+    cursor_->Init();
 #if defined(USE_XKBCOMMON)
     KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(make_scoped_ptr(
         new XkbKeyboardLayoutEngine(xkb_evdev_code_converter_)));
@@ -110,7 +112,7 @@ class OzonePlatformDri : public OzonePlatform {
         make_scoped_ptr(new StubKeyboardLayoutEngine()));
 #endif
     event_factory_ozone_.reset(new EventFactoryEvdev(
-        window_manager_->cursor(), device_manager_.get(),
+        cursor_.get(), device_manager_.get(),
         KeyboardLayoutEngineManager::GetKeyboardLayoutEngine()));
 
     if (!ui_thread_gpu_.Initialize())
@@ -129,6 +131,7 @@ class OzonePlatformDri : public OzonePlatform {
   scoped_ptr<BitmapCursorFactoryOzone> cursor_factory_ozone_;
   scoped_ptr<EventFactoryEvdev> event_factory_ozone_;
 
+  scoped_ptr<DriCursor> cursor_;
   scoped_ptr<DriWindowManager> window_manager_;
   scoped_ptr<DisplayManager> display_manager_;
 

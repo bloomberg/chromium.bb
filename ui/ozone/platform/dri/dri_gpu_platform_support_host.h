@@ -49,14 +49,6 @@ class DriGpuPlatformSupportHost : public GpuPlatformSupportHost,
   // IPC::Sender:
   bool Send(IPC::Message* message) override;
 
-  // Cursor-related methods.
-  void SetHardwareCursor(gfx::AcceleratedWidget widget,
-                         const std::vector<SkBitmap>& bitmaps,
-                         const gfx::Point& location,
-                         int frame_delay_ms);
-  void MoveHardwareCursor(gfx::AcceleratedWidget widget,
-                          const gfx::Point& location);
-
  private:
   int host_id_;
 

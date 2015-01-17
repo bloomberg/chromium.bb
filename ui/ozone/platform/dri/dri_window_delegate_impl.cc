@@ -50,6 +50,7 @@ DriWindowDelegateImpl::DriWindowDelegateImpl(
       drm_(drm),
       window_manager_(window_manager),
       screen_manager_(screen_manager),
+      controller_(NULL),
       cursor_frontbuffer_(0),
       cursor_frame_(0),
       cursor_frame_delay_ms_(0) {

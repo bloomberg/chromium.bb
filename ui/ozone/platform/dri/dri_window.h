@@ -16,6 +16,7 @@
 namespace ui {
 
 class DisplayManager;
+class DriCursor;
 class DriWindowDelegate;
 class DriWindowManager;
 class EventFactoryEvdev;
@@ -29,6 +30,7 @@ class DriWindow : public PlatformWindow,
             const gfx::Rect& bounds,
             DriGpuPlatformSupportHost* sender,
             EventFactoryEvdev* event_factory,
+            DriCursor* cursor,
             DriWindowManager* window_manager,
             DisplayManager* display_manager);
   ~DriWindow() override;
@@ -61,9 +63,12 @@ class DriWindow : public PlatformWindow,
   void OnChannelDestroyed() override;
 
  private:
+  void SendBoundsChange();
+
   PlatformWindowDelegate* delegate_;   // Not owned.
   DriGpuPlatformSupportHost* sender_;  // Not owned.
   EventFactoryEvdev* event_factory_;   // Not owned.
+  DriCursor* cursor_;                  // Not owned.
   DriWindowManager* window_manager_;   // Not owned.
   DisplayManager* display_manager_;    // Not owned.
 

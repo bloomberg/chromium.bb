@@ -5,24 +5,12 @@
 #include "ui/ozone/platform/dri/dri_window_manager.h"
 
 #include "base/logging.h"
-#include "ui/ozone/platform/dri/dri_cursor.h"
 #include "ui/ozone/platform/dri/dri_window.h"
 
 namespace ui {
 
-namespace {
-
-gfx::Point GetDefaultCursorLocation(DriWindow* window) {
-  return gfx::Point(window->GetBounds().width() / 2,
-                    window->GetBounds().height() / 2);
-}
-
-}  // namespace
-
-DriWindowManager::DriWindowManager(DriGpuPlatformSupportHost* sender)
-    : last_allocated_widget_(0),
-      cursor_(new DriCursor(this, sender)),
-      event_grabber_(gfx::kNullAcceleratedWidget) {
+DriWindowManager::DriWindowManager()
+    : last_allocated_widget_(0), event_grabber_(gfx::kNullAcceleratedWidget) {
 }
 
 DriWindowManager::~DriWindowManager() {
@@ -39,9 +27,6 @@ void DriWindowManager::AddWindow(gfx::AcceleratedWidget widget,
   std::pair<WidgetToWindowMap::iterator, bool> result = window_map_.insert(
       std::pair<gfx::AcceleratedWidget, DriWindow*>(widget, window));
   DCHECK(result.second) << "Window for " << widget << " already added.";
-
-  if (cursor_->GetCursorWindow() == gfx::kNullAcceleratedWidget)
-    ResetCursorLocation();
 }
 
 void DriWindowManager::RemoveWindow(gfx::AcceleratedWidget widget) {
@@ -51,8 +36,6 @@ void DriWindowManager::RemoveWindow(gfx::AcceleratedWidget widget) {
   else
     NOTREACHED() << "Attempting to remove non-existing window " << widget;
 
-  if (cursor_->GetCursorWindow() == widget)
-    ResetCursorLocation();
   if (event_grabber_ == widget)
     event_grabber_ = gfx::kNullAcceleratedWidget;
 }
@@ -74,18 +57,9 @@ DriWindow* DriWindowManager::GetWindowAt(const gfx::Point& location) {
   return NULL;
 }
 
-void DriWindowManager::ResetCursorLocation() {
-  if (window_map_.empty()) {
-    // When there is no more window left, reset the cursor to avoid
-    // sending incorrect messages to the gpu process.
-    cursor_->Reset();
-    return;
-  }
-
-  WidgetToWindowMap::iterator it = window_map_.begin();
-  DriWindow* cursor_window = it->second;
-  gfx::Point location = GetDefaultCursorLocation(cursor_window);
-  cursor_window->MoveCursorTo(location);
+DriWindow* DriWindowManager::GetPrimaryWindow() {
+  auto it = window_map_.begin();
+  return it != window_map_.end() ? it->second : nullptr;
 }
 
 void DriWindowManager::GrabEvents(gfx::AcceleratedWidget widget) {

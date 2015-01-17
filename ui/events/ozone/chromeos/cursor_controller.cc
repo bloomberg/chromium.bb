@@ -47,6 +47,7 @@ CursorController* CursorController::GetInstance() {
 void CursorController::SetCursorConfigForWindow(gfx::AcceleratedWidget widget,
                                                 gfx::Display::Rotation rotation,
                                                 float scale) {
+  base::AutoLock lock(window_to_cursor_configuration_map_lock_);
   PerWindowCursorConfiguration config = {rotation, scale};
   window_to_cursor_configuration_map_[widget] = config;
 }
@@ -58,6 +59,7 @@ void CursorController::ClearCursorConfigForWindow(
 
 void CursorController::ApplyCursorConfigForWindow(gfx::AcceleratedWidget widget,
                                                   gfx::Vector2dF* delta) const {
+  base::AutoLock lock(window_to_cursor_configuration_map_lock_);
   auto it = window_to_cursor_configuration_map_.find(widget);
   if (it != window_to_cursor_configuration_map_.end())
     TransformCursorMove(it->second.rotation, it->second.scale, delta);

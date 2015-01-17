@@ -24,11 +24,13 @@ DriWindow::DriWindow(PlatformWindowDelegate* delegate,
                      const gfx::Rect& bounds,
                      DriGpuPlatformSupportHost* sender,
                      EventFactoryEvdev* event_factory,
+                     DriCursor* cursor,
                      DriWindowManager* window_manager,
                      DisplayManager* display_manager)
     : delegate_(delegate),
       sender_(sender),
       event_factory_(event_factory),
+      cursor_(cursor),
       window_manager_(window_manager),
       display_manager_(display_manager),
       bounds_(bounds),
@@ -39,6 +41,7 @@ DriWindow::DriWindow(PlatformWindowDelegate* delegate,
 DriWindow::~DriWindow() {
   PlatformEventSource::GetInstance()->RemovePlatformEventDispatcher(this);
   window_manager_->RemoveWindow(widget_);
+  cursor_->OnWindowRemoved(widget_);
 
   sender_->RemoveChannelObserver(this);
   sender_->Send(new OzoneGpuMsg_DestroyWindowDelegate(widget_));
@@ -46,8 +49,9 @@ DriWindow::~DriWindow() {
 
 void DriWindow::Initialize() {
   sender_->AddChannelObserver(this);
-  delegate_->OnAcceleratedWidgetAvailable(widget_);
   PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(this);
+  cursor_->OnWindowAdded(widget_, bounds_);
+  delegate_->OnAcceleratedWidgetAvailable(widget_);
 }
 
 gfx::AcceleratedWidget DriWindow::GetAcceleratedWidget() {
@@ -63,14 +67,7 @@ void DriWindow::Close() {}
 void DriWindow::SetBounds(const gfx::Rect& bounds) {
   bounds_ = bounds;
   delegate_->OnBoundsChanged(bounds);
-
-  if (window_manager_->cursor()->GetCursorWindow() == widget_)
-    window_manager_->cursor()->HideCursor();
-
-  sender_->Send(new OzoneGpuMsg_WindowBoundsChanged(widget_, bounds));
-
-  if (window_manager_->cursor()->GetCursorWindow() == widget_)
-    window_manager_->cursor()->ShowCursor();
+  SendBoundsChange();
 }
 
 gfx::Rect DriWindow::GetBounds() {
@@ -94,8 +91,7 @@ void DriWindow::Minimize() {}
 void DriWindow::Restore() {}
 
 void DriWindow::SetCursor(PlatformCursor cursor) {
-  DriCursor* dri_cursor = window_manager_->cursor();
-  dri_cursor->SetCursor(widget_, cursor);
+  cursor_->SetCursor(widget_, cursor);
 }
 
 void DriWindow::MoveCursorTo(const gfx::Point& location) {
@@ -140,14 +136,16 @@ uint32_t DriWindow::DispatchEvent(const PlatformEvent& native_event) {
 
 void DriWindow::OnChannelEstablished() {
   sender_->Send(new OzoneGpuMsg_CreateWindowDelegate(widget_));
-  sender_->Send(new OzoneGpuMsg_WindowBoundsChanged(widget_, bounds_));
-
-  DriCursor* dri_cursor = window_manager_->cursor();
-  if (dri_cursor->GetCursorWindow() == widget_)
-    dri_cursor->ShowCursor();
+  SendBoundsChange();
 }
 
 void DriWindow::OnChannelDestroyed() {
+}
+
+void DriWindow::SendBoundsChange() {
+  cursor_->PrepareForBoundsChange(widget_);
+  sender_->Send(new OzoneGpuMsg_WindowBoundsChanged(widget_, bounds_));
+  cursor_->CommitBoundsChange(widget_, bounds_);
 }
 
 }  // namespace ui

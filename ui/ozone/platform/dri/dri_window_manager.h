@@ -16,7 +16,6 @@ class Point;
 
 namespace ui {
 
-class DriCursor;
 class DriGpuPlatformSupportHost;
 class DriWindow;
 
@@ -24,7 +23,7 @@ class DriWindow;
 // windows.
 class DriWindowManager {
  public:
-  explicit DriWindowManager(DriGpuPlatformSupportHost* sender);
+  DriWindowManager();
   ~DriWindowManager();
 
   gfx::AcceleratedWidget NextAcceleratedWidget();
@@ -44,7 +43,8 @@ class DriWindowManager {
   // Returns the window containing the specified screen location, or NULL.
   DriWindow* GetWindowAt(const gfx::Point& location);
 
-  DriCursor* cursor() const { return cursor_.get(); }
+  // Returns a window. Probably the first one created.
+  DriWindow* GetPrimaryWindow();
 
   // Tries to set a given widget as the recipient for events. It will
   // fail if there is already another widget as recipient.
@@ -57,15 +57,10 @@ class DriWindowManager {
   gfx::AcceleratedWidget event_grabber() const { return event_grabber_; }
 
  private:
-  // Reset the cursor location based on the list of active windows.
-  void ResetCursorLocation();
-
   typedef std::map<gfx::AcceleratedWidget, DriWindow*> WidgetToWindowMap;
 
   gfx::AcceleratedWidget last_allocated_widget_;
   WidgetToWindowMap window_map_;
-
-  scoped_ptr<DriCursor> cursor_;
 
   gfx::AcceleratedWidget event_grabber_;
 

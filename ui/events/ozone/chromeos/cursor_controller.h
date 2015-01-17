@@ -9,6 +9,7 @@
 
 #include "base/event_types.h"
 #include "base/memory/singleton.h"
+#include "base/synchronization/lock.h"
 #include "ui/events/ozone/events_ozone_export.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/geometry/vector2d_f.h"
@@ -71,6 +72,7 @@ class EVENTS_OZONE_EXPORT CursorController {
       WindowToCursorConfigurationMap;
 
   WindowToCursorConfigurationMap window_to_cursor_configuration_map_;
+  mutable base::Lock window_to_cursor_configuration_map_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(CursorController);
 };
