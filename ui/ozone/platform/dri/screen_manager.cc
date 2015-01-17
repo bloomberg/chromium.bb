@@ -224,17 +224,16 @@ void ScreenManager::ForceInitializationOfPrimaryDisplay() {
 
   ScopedDrmPropertyPtr dpms(
       dri_->GetProperty(displays[0]->connector(), "DPMS"));
-  if (dpms)
-    dri_->SetProperty(displays[0]->connector()->connector_id,
-                      dpms->prop_id,
-                      DRM_MODE_DPMS_ON);
 
   AddDisplayController(dri_, displays[0]->crtc()->crtc_id,
                        displays[0]->connector()->connector_id);
-  ConfigureDisplayController(displays[0]->crtc()->crtc_id,
-                             displays[0]->connector()->connector_id,
-                             gfx::Point(),
-                             displays[0]->connector()->modes[0]);
+  if (ConfigureDisplayController(
+          displays[0]->crtc()->crtc_id, displays[0]->connector()->connector_id,
+          gfx::Point(), displays[0]->connector()->modes[0])) {
+    if (dpms)
+      dri_->SetProperty(displays[0]->connector()->connector_id, dpms->prop_id,
+                        DRM_MODE_DPMS_ON);
+  }
 }
 
 bool ScreenManager::ModesetDisplayController(
