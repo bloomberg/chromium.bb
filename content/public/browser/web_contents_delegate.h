@@ -372,9 +372,16 @@ class CONTENT_EXPORT WebContentsDelegate {
   // WebContents will be responsible for showing the fullscreen widget.
   virtual bool EmbedsFullscreenWidget() const;
 
-  // Called when the renderer puts a tab into or out of fullscreen mode.
-  virtual void ToggleFullscreenModeForTab(WebContents* web_contents,
-                                          bool enter_fullscreen) {}
+  // Called when the renderer puts a tab into fullscreen mode.
+  // |origin| is the origin of the initiating frame inside the |web_contents|.
+  // |origin| can be empty in which case the |web_contents| last committed
+  // URL's origin should be used.
+  virtual void EnterFullscreenModeForTab(WebContents* web_contents,
+                                         const GURL& origin) {}
+
+  // Called when the renderer puts a tab out of fullscreen mode.
+  virtual void ExitFullscreenModeForTab(WebContents*) {}
+
   virtual bool IsFullscreenForTabOrPending(
       const WebContents* web_contents) const;
 

@@ -153,9 +153,6 @@ class CONTENT_EXPORT RenderViewHost : virtual public RenderWidgetHost {
   virtual void ExecutePluginActionAtLocation(
       const gfx::Point& location, const blink::WebPluginAction& action) = 0;
 
-  // Asks the renderer to exit fullscreen
-  virtual void ExitFullscreen() = 0;
-
   // Notifies the Listener that one or more files have been chosen by the user
   // from a file chooser dialog for the form. |permissions| is the file
   // selection mode in which the chooser dialog was created.

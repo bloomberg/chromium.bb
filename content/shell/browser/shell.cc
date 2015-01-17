@@ -307,6 +307,15 @@ void Shell::LoadingStateChanged(WebContents* source,
   PlatformSetIsLoading(source->IsLoading());
 }
 
+void Shell::EnterFullscreenModeForTab(WebContents* web_contents,
+                                      const GURL& origin) {
+  ToggleFullscreenModeForTab(web_contents, true);
+}
+
+void Shell::ExitFullscreenModeForTab(WebContents* web_contents) {
+  ToggleFullscreenModeForTab(web_contents, false);
+}
+
 void Shell::ToggleFullscreenModeForTab(WebContents* web_contents,
                                        bool enter_fullscreen) {
 #if defined(OS_ANDROID)

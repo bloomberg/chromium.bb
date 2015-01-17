@@ -932,6 +932,15 @@ void AppWindow::NavigationStateChanged(content::WebContents* source,
     native_app_window_->UpdateWindowIcon();
 }
 
+void AppWindow::EnterFullscreenModeForTab(content::WebContents* source,
+                                          const GURL& origin) {
+  ToggleFullscreenModeForTab(source, true);
+}
+
+void AppWindow::ExitFullscreenModeForTab(content::WebContents* source) {
+  ToggleFullscreenModeForTab(source, false);
+}
+
 void AppWindow::ToggleFullscreenModeForTab(content::WebContents* source,
                                            bool enter_fullscreen) {
   const Extension* extension = GetExtension();

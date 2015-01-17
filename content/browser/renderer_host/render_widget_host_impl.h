@@ -478,6 +478,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // or create it if it doesn't already exist.
   BrowserAccessibilityManager* GetOrCreateRootBrowserAccessibilityManager();
 
+  void RejectMouseLockOrUnlockIfNecessary();
+
 #if defined(OS_WIN)
   gfx::NativeViewAccessible GetParentNativeViewAccessible();
 #endif
@@ -527,7 +529,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   virtual void RequestToLockMouse(bool user_gesture,
                                   bool last_unlocked_by_target);
 
-  void RejectMouseLockOrUnlockIfNecessary();
   bool IsMouseLocked() const;
 
   // RenderViewHost overrides this method to report when in fullscreen mode.

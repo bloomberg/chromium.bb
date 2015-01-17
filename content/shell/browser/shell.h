@@ -126,8 +126,9 @@ class Shell : public WebContentsDelegate,
   virtual void LoadProgressChanged(WebContents* source,
                                    double progress) override;
 #endif
-  void ToggleFullscreenModeForTab(WebContents* web_contents,
-                                  bool enter_fullscreen) override;
+  void EnterFullscreenModeForTab(WebContents* web_contents,
+                                 const GURL& origin) override;
+  void ExitFullscreenModeForTab(WebContents* web_contents) override;
   bool IsFullscreenForTabOrPending(
       const WebContents* web_contents) const override;
   void RequestToLockMouse(WebContents* web_contents,
@@ -210,6 +211,8 @@ class Shell : public WebContentsDelegate,
 
   gfx::NativeView GetContentView();
 
+  void ToggleFullscreenModeForTab(WebContents* web_contents,
+                                  bool enter_fullscreen);
   // WebContentsObserver
   void TitleWasSet(NavigationEntry* entry, bool explicit_set) override;
 

@@ -103,8 +103,10 @@ class WebContentsDelegateAndroid : public content::WebContentsDelegate {
   virtual bool TakeFocus(content::WebContents* source, bool reverse) override;
   virtual void ShowRepostFormWarningDialog(
       content::WebContents* source) override;
-  virtual void ToggleFullscreenModeForTab(content::WebContents* web_contents,
-                                          bool enter_fullscreen) override;
+  virtual void EnterFullscreenModeForTab(content::WebContents* web_contents,
+                                         const GURL& origin) override;
+  virtual void ExitFullscreenModeForTab(
+      content::WebContents* web_contents) override;
   virtual bool IsFullscreenForTabOrPending(
       const content::WebContents* web_contents) const override;
   virtual void ShowValidationMessage(content::WebContents* web_contents,

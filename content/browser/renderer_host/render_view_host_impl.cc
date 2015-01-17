@@ -885,7 +885,6 @@ bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_RequestMove, OnRequestMove)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DocumentAvailableInMainFrame,
                         OnDocumentAvailableInMainFrame)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_ToggleFullscreen, OnToggleFullscreen)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidContentsPreferredSizeChange,
                         OnDidContentsPreferredSizeChange)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RouteCloseEvent,
@@ -1114,14 +1113,6 @@ void RenderViewHostImpl::OnDocumentAvailableInMainFrame(
                                        host_zoom_map->GetDefaultZoomLevel());
 }
 
-void RenderViewHostImpl::OnToggleFullscreen(bool enter_fullscreen) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  delegate_->ToggleFullscreenMode(enter_fullscreen);
-  // We need to notify the contents that its fullscreen state has changed. This
-  // is done as part of the resize message.
-  WasResized();
-}
-
 void RenderViewHostImpl::OnDidContentsPreferredSizeChange(
     const gfx::Size& new_size) {
   delegate_->UpdatePreferredSize(new_size);
@@ -1336,12 +1327,6 @@ void RenderViewHostImpl::OnTextSurroundingSelectionResponse(
   if (!view_)
     return;
   view_->OnTextSurroundingSelectionResponse(content, start_offset, end_offset);
-}
-
-void RenderViewHostImpl::ExitFullscreen() {
-  RejectMouseLockOrUnlockIfNecessary();
-  // Notify delegate_ and renderer of fullscreen state change.
-  OnToggleFullscreen(false);
 }
 
 WebPreferences RenderViewHostImpl::GetWebkitPreferences() {

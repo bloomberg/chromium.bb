@@ -508,6 +508,8 @@ class CONTENT_EXPORT RenderFrameImpl
         const blink::WebAXObject& end_object,
         int end_offset);
   virtual void didChangeManifest(blink::WebLocalFrame*);
+  virtual bool enterFullscreen();
+  virtual bool exitFullscreen();
 
   // WebMediaPlayerDelegate implementation:
   void DidPlay(blink::WebMediaPlayer* player) override;

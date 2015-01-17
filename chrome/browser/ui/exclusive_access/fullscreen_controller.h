@@ -91,11 +91,19 @@ class FullscreenController : public content::NotificationObserver {
   // previously in user-initiated fullscreen).
   bool IsFullscreenCausedByTab() const;
 
-  // Enter or leave tab-initiated fullscreen mode. FullscreenController will
-  // decide whether to also fullscreen the browser window. See
-  // 'FullscreenWithinTab Note'.
-  void ToggleFullscreenModeForTab(content::WebContents* web_contents,
-                                  bool enter_fullscreen);
+  // Enter tab-initiated fullscreen mode. FullscreenController will decide
+  // whether to also fullscreen the browser window. See 'FullscreenWithinTab
+  // Note'.
+  // |web_contents| represents the tab that requests to be fullscreen.
+  // |origin| represents the origin of the requesting frame inside the
+  // WebContents. If empty, then the |web_contents|'s latest committed URL
+  // origin will be used.
+  void EnterFullscreenModeForTab(content::WebContents* web_contents,
+                                 const GURL& origin);
+
+  // Leave a tab-initiated fullscreen mode.
+  // |web_contents| represents the tab that requests to no longer be fullscreen.
+  void ExitFullscreenModeForTab(content::WebContents* web_contents);
 
   // Platform Fullscreen ///////////////////////////////////////////////////////
 
@@ -186,14 +194,14 @@ class FullscreenController : public content::NotificationObserver {
   void ToggleFullscreenModeInternal(FullscreenInternalOption option);
   void EnterFullscreenModeInternal(FullscreenInternalOption option);
   void ExitFullscreenModeInternal();
-  void SetFullscreenedTab(content::WebContents* tab);
+  void SetFullscreenedTab(content::WebContents* tab, const GURL& origin);
   void SetMouseLockTab(content::WebContents* tab);
 
   // Make the current tab exit fullscreen mode or mouse lock if it is in it.
   void ExitTabFullscreenOrMouseLockIfNecessary();
   void UpdateFullscreenExitBubbleContent();
 
-  ContentSetting GetFullscreenSetting(const GURL& url) const;
+  ContentSetting GetFullscreenSetting() const;
   ContentSetting GetMouseLockSetting(const GURL& url) const;
 
   bool IsPrivilegedFullscreenForTab() const;
@@ -208,6 +216,10 @@ class FullscreenController : public content::NotificationObserver {
       const;
   void UnlockMouse();
 
+  // Helper methods that should be used in a TAB context.
+  GURL GetRequestingOrigin() const;
+  GURL GetEmbeddingOrigin() const;
+
   Browser* const browser_;
   BrowserWindow* const window_;
   Profile* const profile_;
@@ -216,6 +228,11 @@ class FullscreenController : public content::NotificationObserver {
   // webkitRequestFullScreen), this is its WebContents.
   // Assign using SetFullscreenedTab().
   content::WebContents* fullscreened_tab_;
+
+  // If a tab is fullscreen, the |fullscreen_origin_| should be used as the
+  // origin with regards to fullscreen. The |fullscreened_tab_| url should be
+  // used as the embedder url.
+  GURL fullscreened_origin_;
 
   // The URL of the extension which trigerred "browser fullscreen" mode.
   GURL extension_caused_fullscreen_;

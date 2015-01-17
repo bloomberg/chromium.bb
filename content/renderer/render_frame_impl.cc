@@ -3524,11 +3524,20 @@ void RenderFrameImpl::handleAccessibilityFindInPageResult(
   }
 }
 
-void RenderFrameImpl::didChangeManifest(blink::WebLocalFrame* frame)
-{
+void RenderFrameImpl::didChangeManifest(blink::WebLocalFrame* frame) {
   DCHECK(!frame_ || frame_ == frame);
 
   FOR_EACH_OBSERVER(RenderFrameObserver, observers_, DidChangeManifest());
+}
+
+bool RenderFrameImpl::enterFullscreen() {
+  Send(new FrameHostMsg_ToggleFullscreen(routing_id_, true));
+  return true;
+}
+
+bool RenderFrameImpl::exitFullscreen() {
+  Send(new FrameHostMsg_ToggleFullscreen(routing_id_, false));
+  return true;
 }
 
 void RenderFrameImpl::DidPlay(blink::WebMediaPlayer* player) {

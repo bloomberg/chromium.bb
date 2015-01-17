@@ -155,6 +155,13 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // Gets the GeolocationServiceContext associated with this delegate.
   virtual GeolocationServiceContext* GetGeolocationServiceContext();
 
+  // Notification that the frame wants to go into fullscreen mode.
+  // |origin| represents the origin of the frame that requests fullscreen.
+  virtual void EnterFullscreenMode(const GURL& origin) {}
+
+  // Notification that the frame wants to go out of fullscreen mode.
+  virtual void ExitFullscreenMode() {}
+
 #if defined(OS_WIN)
   // Returns the frame's parent's NativeViewAccessible.
   virtual gfx::NativeViewAccessible GetParentNativeViewAccessible();

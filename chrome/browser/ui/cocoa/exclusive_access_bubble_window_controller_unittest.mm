@@ -93,7 +93,7 @@ TEST_F(ExclusiveAccessBubbleWindowControllerTest,
     content::WindowedNotificationObserver fullscreen_observer(
         chrome::NOTIFICATION_FULLSCREEN_CHANGED,
         content::NotificationService::AllSources());
-    browser()->ToggleFullscreenModeForTab(fullscreen_tab, true);
+    browser()->EnterFullscreenModeForTab(fullscreen_tab, GURL());
     fullscreen_observer.Wait();
     ASSERT_TRUE(browser()->window()->IsFullscreen());
   }

@@ -1318,7 +1318,7 @@ void WebContentsImpl::RenderWidgetDeleted(
   if (render_widget_host &&
       render_widget_host->GetRoutingID() == fullscreen_widget_routing_id_) {
     if (delegate_ && delegate_->EmbedsFullscreenWidget())
-      delegate_->ToggleFullscreenModeForTab(this, false);
+      delegate_->ExitFullscreenModeForTab(this);
     FOR_EACH_OBSERVER(WebContentsObserver,
                       observers_,
                       DidDestroyFullscreenWidget(
@@ -1446,16 +1446,29 @@ void WebContentsImpl::HandleGestureEnd() {
     delegate_->HandleGestureEnd();
 }
 
-void WebContentsImpl::ToggleFullscreenMode(bool enter_fullscreen) {
-  // This method is being called to enter or leave renderer-initiated fullscreen
-  // mode.  Either way, make sure any existing fullscreen widget is shut down
-  // first.
+void WebContentsImpl::EnterFullscreenMode(const GURL& origin) {
+  // This method is being called to enter renderer-initiated fullscreen mode.
+  // Make sure any existing fullscreen widget is shut down first.
   RenderWidgetHostView* const widget_view = GetFullscreenRenderWidgetHostView();
   if (widget_view)
     RenderWidgetHostImpl::From(widget_view->GetRenderWidgetHost())->Shutdown();
 
   if (delegate_)
-    delegate_->ToggleFullscreenModeForTab(this, enter_fullscreen);
+    delegate_->EnterFullscreenModeForTab(this, origin);
+
+  FOR_EACH_OBSERVER(WebContentsObserver, observers_,
+                    DidToggleFullscreenModeForTab(IsFullscreenForCurrentTab()));
+}
+
+void WebContentsImpl::ExitFullscreenMode() {
+  // This method is being called to leave renderer-initiated fullscreen mode.
+  // Make sure any existing fullscreen widget is shut down first.
+  RenderWidgetHostView* const widget_view = GetFullscreenRenderWidgetHostView();
+  if (widget_view)
+    RenderWidgetHostImpl::From(widget_view->GetRenderWidgetHost())->Shutdown();
+
+  if (delegate_)
+    delegate_->ExitFullscreenModeForTab(this);
 
   FOR_EACH_OBSERVER(WebContentsObserver,
                     observers_,
@@ -1719,7 +1732,7 @@ void WebContentsImpl::ShowCreatedWidget(int route_id,
     fullscreen_widget_routing_id_ = route_id;
     if (delegate_ && delegate_->EmbedsFullscreenWidget()) {
       widget_host_view->InitAsChild(GetRenderWidgetHostView()->GetNativeView());
-      delegate_->ToggleFullscreenModeForTab(this, true);
+      delegate_->EnterFullscreenModeForTab(this, GURL());
     } else {
       widget_host_view->InitAsFullscreen(view);
     }
@@ -2472,6 +2485,12 @@ void WebContentsImpl::GetManifest(const GetManifestCallback& callback) {
   manifest_manager_host_->GetManifest(GetMainFrame(), callback);
 }
 
+void WebContentsImpl::ExitFullscreen() {
+  // Clean up related state and initiate the fullscreen exit.
+  GetRenderViewHostImpl()->RejectMouseLockOrUnlockIfNecessary();
+  ExitFullscreenMode();
+}
+
 bool WebContentsImpl::FocusLocationBarByDefault() {
   NavigationEntry* entry = controller_.GetVisibleEntry();
   if (entry && entry->GetURL() == GURL(url::kAboutBlankURL))
@@ -2602,7 +2621,7 @@ void WebContentsImpl::DidNavigateMainFramePreCommit(
     return;
   }
   if (IsFullscreenForCurrentTab())
-    GetRenderViewHost()->ExitFullscreen();
+    ExitFullscreen();
   DCHECK(!IsFullscreenForCurrentTab());
 }
 
@@ -3632,7 +3651,7 @@ void WebContentsImpl::RenderViewTerminated(RenderViewHost* rvh,
   // Ensure fullscreen mode is exited in the |delegate_| since a crashed
   // renderer may not have made a clean exit.
   if (IsFullscreenForCurrentTab())
-    ToggleFullscreenMode(false);
+    ExitFullscreenMode();
 
   // Cancel any visible dialogs so they are not left dangling over the sad tab.
   if (dialog_manager_)

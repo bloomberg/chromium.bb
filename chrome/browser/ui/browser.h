@@ -611,8 +611,9 @@ class Browser : public TabStripModelObserver,
                           int request_id,
                           const base::FilePath& path) override;
   bool EmbedsFullscreenWidget() const override;
-  void ToggleFullscreenModeForTab(content::WebContents* web_contents,
-                                  bool enter_fullscreen) override;
+  void EnterFullscreenModeForTab(content::WebContents* web_contents,
+                                 const GURL& origin) override;
+  void ExitFullscreenModeForTab(content::WebContents* web_contents) override;
   bool IsFullscreenForTabOrPending(
       const content::WebContents* web_contents) const override;
   void RegisterProtocolHandler(content::WebContents* web_contents,

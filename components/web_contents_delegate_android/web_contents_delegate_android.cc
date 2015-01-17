@@ -374,15 +374,25 @@ void WebContentsDelegateAndroid::ShowRepostFormWarningDialog(
   Java_WebContentsDelegateAndroid_showRepostFormWarningDialog(env, obj.obj());
 }
 
-void WebContentsDelegateAndroid::ToggleFullscreenModeForTab(
+void WebContentsDelegateAndroid::EnterFullscreenModeForTab(
     WebContents* web_contents,
-    bool enter_fullscreen) {
+    const GURL& origin) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
   if (obj.is_null())
     return;
-  Java_WebContentsDelegateAndroid_toggleFullscreenModeForTab(
-      env, obj.obj(), enter_fullscreen);
+  Java_WebContentsDelegateAndroid_toggleFullscreenModeForTab(env, obj.obj(),
+                                                             true);
+}
+
+void WebContentsDelegateAndroid::ExitFullscreenModeForTab(
+    WebContents* web_contents) {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
+  if (obj.is_null())
+    return;
+  Java_WebContentsDelegateAndroid_toggleFullscreenModeForTab(env, obj.obj(),
+                                                             false);
 }
 
 bool WebContentsDelegateAndroid::IsFullscreenForTabOrPending(

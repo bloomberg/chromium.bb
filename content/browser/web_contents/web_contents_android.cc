@@ -323,10 +323,7 @@ jboolean WebContentsAndroid::IsRenderWidgetHostViewReady(
 }
 
 void WebContentsAndroid::ExitFullscreen(JNIEnv* env, jobject obj) {
-  RenderViewHost* host = web_contents_->GetRenderViewHost();
-  if (!host)
-    return;
-  host->ExitFullscreen();
+  web_contents_->ExitFullscreen();
 }
 
 void WebContentsAndroid::UpdateTopControlsState(

@@ -384,8 +384,13 @@ bool FullscreenControllerStateTest::InvokeEvent(Event event) {
     case TAB_FULLSCREEN_FALSE: {
       content::WebContents* const active_tab =
           GetBrowser()->tab_strip_model()->GetActiveWebContents();
-      GetFullscreenController()->
-          ToggleFullscreenModeForTab(active_tab, event == TAB_FULLSCREEN_TRUE);
+      if (event == TAB_FULLSCREEN_TRUE) {
+        GetFullscreenController()->EnterFullscreenModeForTab(active_tab,
+                                                             GURL());
+      } else {
+        GetFullscreenController()->ExitFullscreenModeForTab(active_tab);
+      }
+
       // Activating/Deactivating tab fullscreen on a captured tab should not
       // evoke a state change in the browser window.
       if (active_tab->GetCapturerCount() > 0)

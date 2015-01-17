@@ -302,9 +302,13 @@ class FakeFullscreenDelegate : public WebContentsDelegate {
   FakeFullscreenDelegate() : fullscreened_contents_(NULL) {}
   ~FakeFullscreenDelegate() override {}
 
-  void ToggleFullscreenModeForTab(WebContents* web_contents,
-                                  bool enter_fullscreen) override {
-    fullscreened_contents_ = enter_fullscreen ? web_contents : NULL;
+  void EnterFullscreenModeForTab(WebContents* web_contents,
+                                 const GURL& origin) override {
+    fullscreened_contents_ = web_contents;
+  }
+
+  void ExitFullscreenModeForTab(WebContents* web_contents) override {
+    fullscreened_contents_ = NULL;
   }
 
   bool IsFullscreenForTabOrPending(
@@ -1302,8 +1306,8 @@ TEST_F(WebContentsImplTest, NavigationExitsFullscreen) {
   EXPECT_FALSE(orig_rvh->IsFullscreen());
   EXPECT_FALSE(contents()->IsFullscreenForCurrentTab());
   EXPECT_FALSE(fake_delegate.IsFullscreenForTabOrPending(contents()));
-  orig_rvh->OnMessageReceived(
-      ViewHostMsg_ToggleFullscreen(orig_rvh->GetRoutingID(), true));
+  orig_rfh->OnMessageReceived(
+      FrameHostMsg_ToggleFullscreen(orig_rfh->GetRoutingID(), true));
   EXPECT_TRUE(orig_rvh->IsFullscreen());
   EXPECT_TRUE(contents()->IsFullscreenForCurrentTab());
   EXPECT_TRUE(fake_delegate.IsFullscreenForTabOrPending(contents()));
@@ -1354,8 +1358,8 @@ TEST_F(WebContentsImplTest, HistoryNavigationExitsFullscreen) {
 
   for (int i = 0; i < 2; ++i) {
     // Toggle fullscreen mode on (as if initiated via IPC from renderer).
-    orig_rvh->OnMessageReceived(
-        ViewHostMsg_ToggleFullscreen(orig_rvh->GetRoutingID(), true));
+    orig_rfh->OnMessageReceived(
+        FrameHostMsg_ToggleFullscreen(orig_rfh->GetRoutingID(), true));
     EXPECT_TRUE(orig_rvh->IsFullscreen());
     EXPECT_TRUE(contents()->IsFullscreenForCurrentTab());
     EXPECT_TRUE(fake_delegate.IsFullscreenForTabOrPending(contents()));
@@ -1412,8 +1416,8 @@ TEST_F(WebContentsImplTest, CrashExitsFullscreen) {
   EXPECT_FALSE(test_rvh()->IsFullscreen());
   EXPECT_FALSE(contents()->IsFullscreenForCurrentTab());
   EXPECT_FALSE(fake_delegate.IsFullscreenForTabOrPending(contents()));
-  test_rvh()->OnMessageReceived(
-      ViewHostMsg_ToggleFullscreen(test_rvh()->GetRoutingID(), true));
+  contents()->GetMainFrame()->OnMessageReceived(FrameHostMsg_ToggleFullscreen(
+      contents()->GetMainFrame()->GetRoutingID(), true));
   EXPECT_TRUE(test_rvh()->IsFullscreen());
   EXPECT_TRUE(contents()->IsFullscreenForCurrentTab());
   EXPECT_TRUE(fake_delegate.IsFullscreenForTabOrPending(contents()));

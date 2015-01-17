@@ -192,8 +192,7 @@ class CONTENT_EXPORT RenderViewHostDelegate {
       RenderViewHost* render_view_host,
       const FileChooserParams& params) {}
 
-  // Notification that the page wants to go into or out of fullscreen mode.
-  virtual void ToggleFullscreenMode(bool enter_fullscreen) {}
+  // Returns whether the associated tab is in fullscreen mode.
   virtual bool IsFullscreenForCurrentTab() const;
 
   // The contents' preferred size changed.

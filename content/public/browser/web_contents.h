@@ -596,6 +596,9 @@ class WebContents : public PageNavigator,
   // Requests the Manifest of the main frame's document.
   virtual void GetManifest(const GetManifestCallback&) = 0;
 
+  // Requests the renderer to exit fullscreen.
+  virtual void ExitFullscreen() = 0;
+
 #if defined(OS_ANDROID)
   CONTENT_EXPORT static WebContents* FromJavaWebContents(
       jobject jweb_contents_android);

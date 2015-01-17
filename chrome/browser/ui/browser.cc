@@ -1663,10 +1663,13 @@ bool Browser::EmbedsFullscreenWidget() const {
   return true;
 }
 
-void Browser::ToggleFullscreenModeForTab(WebContents* web_contents,
-                                         bool enter_fullscreen) {
-  fullscreen_controller_->ToggleFullscreenModeForTab(web_contents,
-                                                     enter_fullscreen);
+void Browser::EnterFullscreenModeForTab(WebContents* web_contents,
+                                        const GURL& origin) {
+  fullscreen_controller_->EnterFullscreenModeForTab(web_contents, origin);
+}
+
+void Browser::ExitFullscreenModeForTab(WebContents* web_contents) {
+  fullscreen_controller_->ExitFullscreenModeForTab(web_contents);
 }
 
 bool Browser::IsFullscreenForTabOrPending(

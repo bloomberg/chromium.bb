@@ -335,6 +335,7 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
                         OnAccessibilityLocationChanges)
     IPC_MESSAGE_HANDLER(AccessibilityHostMsg_FindInPageResult,
                         OnAccessibilityFindInPageResult)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_ToggleFullscreen, OnToggleFullscreen)
 #if defined(OS_MACOSX) || defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(FrameHostMsg_ShowPopup, OnShowPopup)
     IPC_MESSAGE_HANDLER(FrameHostMsg_HidePopup, OnHidePopup)
@@ -1134,6 +1135,17 @@ void RenderFrameHostImpl::OnAccessibilityFindInPageResult(
           params.start_offset, params.end_id, params.end_offset);
     }
   }
+}
+
+void RenderFrameHostImpl::OnToggleFullscreen(bool enter_fullscreen) {
+  if (enter_fullscreen)
+    delegate_->EnterFullscreenMode(GetLastCommittedURL().GetOrigin());
+  else
+    delegate_->ExitFullscreenMode();
+
+  // The previous call might change the fullscreen state. We need to make sure
+  // the renderer is aware of that, which is done via the resize message.
+  render_view_host_->WasResized();
 }
 
 #if defined(OS_MACOSX) || defined(OS_ANDROID)

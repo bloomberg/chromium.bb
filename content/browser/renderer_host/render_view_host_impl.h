@@ -153,7 +153,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   void ExecutePluginActionAtLocation(
       const gfx::Point& location,
       const blink::WebPluginAction& action) override;
-  void ExitFullscreen() override;
   void FilesSelectedInChooser(
       const std::vector<content::FileChooserFileInfo>& files,
       FileChooserParams::Mode permissions) override;
@@ -349,7 +348,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   void OnClose();
   void OnRequestMove(const gfx::Rect& pos);
   void OnDocumentAvailableInMainFrame(bool uses_temporary_zoom_level);
-  void OnToggleFullscreen(bool enter_fullscreen);
   void OnDidContentsPreferredSizeChange(const gfx::Size& new_size);
   void OnPasteFromSelectionClipboard();
   void OnRouteCloseEvent();

@@ -334,8 +334,6 @@ class CONTENT_EXPORT RenderViewImpl
   virtual void didBlur();
   virtual void show(blink::WebNavigationPolicy policy);
   virtual void runModal();
-  virtual bool enterFullScreen();
-  virtual void exitFullScreen();
   virtual bool requestPointerLock();
   virtual void requestPointerUnlock();
   virtual bool isPointerLocked();

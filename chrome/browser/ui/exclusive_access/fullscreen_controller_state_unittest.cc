@@ -640,7 +640,7 @@ TEST_F(FullscreenControllerStateUnitTest,
 
   // Now, the first tab (backgrounded) exits fullscreen.  This should not affect
   // the second tab's fullscreen, nor the state of the browser window.
-  GetFullscreenController()->ToggleFullscreenModeForTab(first_tab, false);
+  GetFullscreenController()->ExitFullscreenModeForTab(first_tab);
   EXPECT_TRUE(browser()->window()->IsFullscreen());
   EXPECT_FALSE(wc_delegate->IsFullscreenForTabOrPending(first_tab));
   EXPECT_TRUE(wc_delegate->IsFullscreenForTabOrPending(second_tab));

@@ -208,6 +208,16 @@ void AwWebContentsDelegate::RequestMediaAccessPermission(
           new MediaAccessPermissionRequest(request, callback)));
 }
 
+void AwWebContentsDelegate::EnterFullscreenModeForTab(
+    content::WebContents* web_contents, const GURL& origin) {
+  ToggleFullscreenModeForTab(web_contents, true);
+}
+
+void AwWebContentsDelegate::ExitFullscreenModeForTab(
+    content::WebContents* web_contents) {
+  ToggleFullscreenModeForTab(web_contents, false);
+}
+
 void AwWebContentsDelegate::ToggleFullscreenModeForTab(
     content::WebContents* web_contents, bool enter_fullscreen) {
   JNIEnv* env = AttachCurrentThread();

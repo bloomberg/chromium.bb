@@ -376,8 +376,9 @@ class AppWindow : public content::NotificationObserver,
                     const gfx::Rect& pos) override;
   void NavigationStateChanged(content::WebContents* source,
                               content::InvalidateTypes changed_flags) override;
-  void ToggleFullscreenModeForTab(content::WebContents* source,
-                                  bool enter_fullscreen) override;
+  void EnterFullscreenModeForTab(content::WebContents* source,
+                                 const GURL& origin) override;
+  void ExitFullscreenModeForTab(content::WebContents* source) override;
   bool IsFullscreenForTabOrPending(
       const content::WebContents* source) const override;
   void RequestMediaAccessPermission(
@@ -421,6 +422,9 @@ class AppWindow : public content::NotificationObserver,
   void SetWebContentsBlocked(content::WebContents* web_contents,
                              bool blocked) override;
   bool IsWebContentsVisible(content::WebContents* web_contents) override;
+
+  void ToggleFullscreenModeForTab(content::WebContents* source,
+                                  bool enter_fullscreen);
 
   // Saves the window geometry/position/screen bounds.
   void SaveWindowPosition();

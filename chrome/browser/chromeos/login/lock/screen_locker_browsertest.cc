@@ -220,8 +220,8 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestFullscreenExit) {
     Waiter waiter(browser());
     content::WebContents* web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
-    browser()->fullscreen_controller()->ToggleFullscreenModeForTab(
-        web_contents, true);
+    browser()->fullscreen_controller()->EnterFullscreenModeForTab(
+        web_contents, GURL());
     waiter.Wait(false /* not locked */, true /* fullscreen */);
     EXPECT_TRUE(browser_window->IsFullscreen());
     EXPECT_TRUE(window_state->hide_shelf_when_fullscreen());

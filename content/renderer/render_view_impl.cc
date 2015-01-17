@@ -2028,15 +2028,6 @@ void RenderViewImpl::runModal() {
       routing_id_, opener_id_));
 }
 
-bool RenderViewImpl::enterFullScreen() {
-  Send(new ViewHostMsg_ToggleFullscreen(routing_id_, true));
-  return true;
-}
-
-void RenderViewImpl::exitFullScreen() {
-  Send(new ViewHostMsg_ToggleFullscreen(routing_id_, false));
-}
-
 bool RenderViewImpl::requestPointerLock() {
   return mouse_lock_dispatcher_->LockMouse(webwidget_mouse_lock_target_.get());
 }

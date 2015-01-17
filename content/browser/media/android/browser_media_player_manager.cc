@@ -137,7 +137,7 @@ BrowserMediaPlayerManager::~BrowserMediaPlayerManager() {
 
 void BrowserMediaPlayerManager::ExitFullscreen(bool release_media_player) {
   if (WebContentsDelegate* delegate = web_contents_->GetDelegate())
-    delegate->ToggleFullscreenModeForTab(web_contents_, false);
+    delegate->ExitFullscreenModeForTab(web_contents_);
   if (RenderWidgetHostViewAndroid* view_android =
       static_cast<RenderWidgetHostViewAndroid*>(
           web_contents_->GetRenderWidgetHostView())) {

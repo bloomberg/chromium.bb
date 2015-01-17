@@ -156,7 +156,10 @@ void FullscreenControllerInteractiveTest::ToggleTabFullscreen_Internal(
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   do {
     FullscreenNotificationObserver fullscreen_observer;
-    browser()->ToggleFullscreenModeForTab(tab, enter_fullscreen);
+    if (enter_fullscreen)
+      browser()->EnterFullscreenModeForTab(tab, GURL());
+    else
+      browser()->ExitFullscreenModeForTab(tab);
     fullscreen_observer.Wait();
     // Repeat ToggleFullscreenModeForTab until the correct state is entered.
     // This addresses flakiness on test bots running many fullscreen
@@ -367,7 +370,7 @@ IN_PROC_BROWSER_TEST_F(
     FullscreenNotificationObserver fullscreen_observer;
     EXPECT_FALSE(browser()->window()->IsFullscreen());
     EXPECT_FALSE(browser()->window()->IsFullscreenWithToolbar());
-    browser()->ToggleFullscreenModeForTab(tab, true);
+    browser()->EnterFullscreenModeForTab(tab, GURL());
     fullscreen_observer.Wait();
     EXPECT_TRUE(browser()->window()->IsFullscreen());
     EXPECT_FALSE(browser()->window()->IsFullscreenWithToolbar());
