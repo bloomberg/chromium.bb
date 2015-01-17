@@ -24,7 +24,8 @@ namespace ui {
 
 namespace {
 
-typedef base::Callback<void(const std::string&, const char*)>
+typedef base::Callback<void(const std::string&,
+                            scoped_ptr<char, base::FreeDeleter>)>
     LoadKeymapCallback;
 
 DomKey CharacterToDomKey(base::char16 character) {
@@ -644,10 +645,10 @@ void LoadKeymap(const std::string& layout_name,
   keymap.reset(xkb_keymap_new_from_names(context.get(), &names,
                                          XKB_KEYMAP_COMPILE_NO_FLAGS));
   if (keymap) {
-    char* keymap_str =
-        xkb_keymap_get_as_string(keymap.get(), XKB_KEYMAP_FORMAT_TEXT_V1);
+    scoped_ptr<char, base::FreeDeleter> keymap_str(
+        xkb_keymap_get_as_string(keymap.get(), XKB_KEYMAP_FORMAT_TEXT_V1));
     reply_runner->PostTask(FROM_HERE, base::Bind(reply_callback, layout_name,
-                                                 base::Owned(keymap_str)));
+                                                 base::Passed(&keymap_str)));
   } else {
     LOG(ERROR) << "Keymap file failed to load: " << layout_name;
   }
@@ -714,12 +715,13 @@ bool XkbKeyboardLayoutEngine::SetCurrentLayoutByName(
   return true;
 }
 
-void XkbKeyboardLayoutEngine::OnKeymapLoaded(const std::string& layout_name,
-                                             const char* keymap_str) {
+void XkbKeyboardLayoutEngine::OnKeymapLoaded(
+    const std::string& layout_name,
+    scoped_ptr<char, base::FreeDeleter> keymap_str) {
   if (keymap_str) {
-    xkb_keymap* keymap = xkb_map_new_from_string(xkb_context_.get(), keymap_str,
-                                                 XKB_KEYMAP_FORMAT_TEXT_V1,
-                                                 XKB_KEYMAP_COMPILE_NO_FLAGS);
+    xkb_keymap* keymap = xkb_map_new_from_string(
+        xkb_context_.get(), keymap_str.get(), XKB_KEYMAP_FORMAT_TEXT_V1,
+        XKB_KEYMAP_COMPILE_NO_FLAGS);
     XkbKeymapEntry entry = {layout_name, keymap};
     xkb_keymaps_.push_back(entry);
     if (layout_name == current_layout_name_)

@@ -99,7 +99,8 @@ class EVENTS_OZONE_LAYOUT_EXPORT XkbKeyboardLayoutEngine
                                int ui_flags) const;
 
   // Callback when keymap file is loaded complete.
-  void OnKeymapLoaded(const std::string& layout_name, const char* keymap_str);
+  void OnKeymapLoaded(const std::string& layout_name,
+                      scoped_ptr<char, base::FreeDeleter> keymap_str);
 
   // libxkbcommon uses explicit reference counting for its structures,
   // so we need to trigger its cleanup.
