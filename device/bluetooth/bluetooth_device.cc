@@ -8,14 +8,15 @@
 
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/values.h"
 #include "device/bluetooth/bluetooth_gatt_service.h"
 #include "grit/device_bluetooth_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace device {
 
-BluetoothDevice::BluetoothDevice() {
-}
+BluetoothDevice::BluetoothDevice()
+    : services_data_(new base::DictionaryValue()) {}
 
 BluetoothDevice::~BluetoothDevice() {
   STLDeleteValues(&gatt_services_);
@@ -248,6 +249,35 @@ std::string BluetoothDevice::CanonicalizeAddress(const std::string& address) {
   }
 
   return canonicalized;
+}
+
+std::string BluetoothDevice::GetIdentifier() const { return GetAddress(); }
+
+base::BinaryValue* BluetoothDevice::GetServiceData(
+    BluetoothUUID serviceUUID) const {
+  base::BinaryValue* value;
+  if (!services_data_->GetBinary(serviceUUID.value(), &value))
+    return NULL;
+  return value;
+}
+
+BluetoothDevice::UUIDList BluetoothDevice::GetServiceDataUUIDs() const {
+  std::vector<device::BluetoothUUID> uuids;
+  base::DictionaryValue::Iterator iter(*services_data_);
+  while (!iter.IsAtEnd()) {
+    BluetoothUUID uuid(iter.key());
+    uuids.push_back(uuid);
+    iter.Advance();
+  }
+  return uuids;
+}
+
+void BluetoothDevice::ClearServiceData() { services_data_->Clear(); }
+
+void BluetoothDevice::SetServiceData(BluetoothUUID serviceUUID,
+                                     const char* buffer, size_t size) {
+  services_data_->Set(serviceUUID.value(),
+                      base::BinaryValue::CreateWithCopiedBuffer(buffer, size));
 }
 
 }  // namespace device
