@@ -215,7 +215,7 @@ def run_tha_test(isolated_hash, storage, cache, leak_temp_dir, extra_args):
 
       # Upload out_dir and generate a .isolated file out of this directory.
       # It is only done if files were written in the directory.
-      if os.listdir(out_dir):
+      if os.path.isdir(out_dir) and os.listdir(out_dir):
         with tools.Profiler('ArchiveOutput'):
           results = isolateserver.archive_files_to_storage(
               storage, [out_dir], None)
