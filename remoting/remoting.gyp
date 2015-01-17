@@ -7,7 +7,7 @@
     'chromium_code': 1,
 
     # Set this to run the jscompile checks after building the webapp.
-    'run_jscompile%': 0,
+    'run_jscompile%': 1,
 
     # Set this to enable cast mode on the android client.
     'enable_cast%': 0,
@@ -48,6 +48,11 @@
             '<!(python -c "import uuid; print uuid.uuid5(uuid.UUID(\'655bd819-c08c-4b04-80c2-f160739ff6ef\'), \'<(version_full)\')")',
         'rdp_desktop_session_clsid':
             '<!(python -c "import uuid; print uuid.uuid5(uuid.UUID(\'6a7699f0-ee43-43e7-aa30-a6738f9bd470\'), \'<(version_full)\')")',
+
+        # Java is not available on Windows bots, so we need to disable
+        # JScompile checks.
+        'run_jscompile': 0,
+
       }],
     ],
     'remoting_locales': [
