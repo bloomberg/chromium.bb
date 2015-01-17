@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,7 @@
 #include "ash/shell.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/extension_util.h"
+#include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -246,7 +247,15 @@ int BrowserNonClientFrameViewAsh::NonClientHitTest(const gfx::Point& point) {
   // See if the point is actually within either of the avatar menu buttons.
   if (hit_test == HTCAPTION && avatar_button() &&
       ConvertedHitTest(this, avatar_button(), point)) {
+#if defined(OS_CHROMEOS)
+    // In ChromeOS, a browser window which has an avatar badging on the top
+    // left corner means it's a teleported browser window. We should treat the
+    // avatar as part of the browser non client frame (e.g., clicking on it
+    // allows the user to drag the browser window around.)
+    return HTCAPTION;
+#else
     return HTCLIENT;
+#endif
   }
 
   if (hit_test == HTCAPTION && new_avatar_button() &&
