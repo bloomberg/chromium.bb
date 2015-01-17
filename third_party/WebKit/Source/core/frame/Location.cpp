@@ -246,11 +246,10 @@ void Location::reload(LocalDOMWindow* callingWindow)
 void Location::setLocation(const String& url, LocalDOMWindow* callingWindow, LocalDOMWindow* enteredWindow, SetLocation locationPolicy)
 {
     ASSERT(m_frame);
-    Frame* frame = (locationPolicy == SetLocation::ReplaceThisFrame) ? m_frame.get() : m_frame->findFrameForNavigation(nullAtom, *callingWindow->frame());
-    if (!frame || !frame->host())
+    if (!m_frame || !m_frame->host())
         return;
 
-    if (!callingWindow->frame() || !callingWindow->frame()->canNavigate(*frame))
+    if (!callingWindow->frame() || !callingWindow->frame()->canNavigate(*m_frame))
         return;
 
     Document* enteredDocument = enteredWindow->document();
@@ -261,7 +260,7 @@ void Location::setLocation(const String& url, LocalDOMWindow* callingWindow, Loc
     if (completedURL.isNull())
         return;
 
-    if (frame->domWindow()->isInsecureScriptAccess(*callingWindow, completedURL))
+    if (m_frame->domWindow()->isInsecureScriptAccess(*callingWindow, completedURL))
         return;
 
     V8DOMActivityLogger* activityLogger = V8DOMActivityLogger::currentActivityLoggerIfIsolatedWorld();
@@ -273,7 +272,7 @@ void Location::setLocation(const String& url, LocalDOMWindow* callingWindow, Loc
         argv.append(completedURL);
         activityLogger->logEvent("blinkSetAttribute", argv.size(), argv.data());
     }
-    frame->navigate(*callingWindow->document(), completedURL, locationPolicy == SetLocation::ReplaceThisFrame);
+    m_frame->navigate(*callingWindow->document(), completedURL, locationPolicy == SetLocation::ReplaceThisFrame);
 }
 
 } // namespace blink
