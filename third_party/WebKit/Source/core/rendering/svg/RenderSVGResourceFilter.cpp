@@ -178,7 +178,7 @@ static void drawDeferredFilter(GraphicsContext* context, FilterData* filterData,
     context->restore();
 }
 
-bool RenderSVGResourceFilter::prepareEffect(RenderObject* object, GraphicsContext*& context)
+bool RenderSVGResourceFilter::prepareEffect(RenderObject* object, GraphicsContext* context)
 {
     ASSERT(object);
     ASSERT(context);
@@ -223,7 +223,7 @@ bool RenderSVGResourceFilter::prepareEffect(RenderObject* object, GraphicsContex
     return true;
 }
 
-void RenderSVGResourceFilter::finishEffect(RenderObject* object, GraphicsContext*& context)
+void RenderSVGResourceFilter::finishEffect(RenderObject* object, GraphicsContext* context)
 {
     ASSERT(object);
     ASSERT(context);
