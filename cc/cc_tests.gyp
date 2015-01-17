@@ -23,6 +23,7 @@
       'base/tiling_data_unittest.cc',
       'base/unique_notifier_unittest.cc',
       'base/util_unittest.cc',
+      'debug/frame_timing_tracker_unittest.cc',
       'debug/micro_benchmark_controller_unittest.cc',
       'debug/rendering_stats_unittest.cc',
       'input/top_controls_manager_unittest.cc',
