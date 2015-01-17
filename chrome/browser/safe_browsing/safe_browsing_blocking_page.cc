@@ -22,7 +22,6 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/safe_browsing/malware_details.h"
@@ -44,20 +43,12 @@
 #include "net/base/escape.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if defined(ENABLE_EXTENSIONS)
-#include "chrome/browser/extensions/api/experience_sampling_private/experience_sampling.h"
-#endif
-
 using base::UserMetricsAction;
 using content::BrowserThread;
 using content::InterstitialPage;
 using content::OpenURLParams;
 using content::Referrer;
 using content::WebContents;
-
-#if defined(ENABLE_EXTENSIONS)
-using extensions::ExperienceSamplingEvent;
-#endif
 
 namespace {
 
@@ -102,12 +93,10 @@ const char kBoxChecked[] = "boxchecked";
 const char kDisplayCheckBox[] = "displaycheckbox";
 
 // Constants for the Experience Sampling instrumentation.
-#if defined(ENABLE_EXTENSIONS)
 const char kEventNameMalware[] = "safebrowsing_interstitial_";
 const char kEventNameHarmful[] = "harmful_interstitial_";
 const char kEventNamePhishing[] = "phishing_interstitial_";
 const char kEventNameOther[] = "safebrowsing_other_interstitial_";
-#endif
 
 base::LazyInstance<SafeBrowsingBlockingPage::UnsafeResourceMap>
     g_unsafe_resource_map = LAZY_INSTANCE_INITIALIZER;
@@ -158,8 +147,7 @@ SafeBrowsingBlockingPage::SafeBrowsingBlockingPage(
       report_loop_(NULL),
       is_main_frame_load_blocked_(IsMainPageLoadBlocked(unsafe_resources)),
       unsafe_resources_(unsafe_resources),
-      proceeded_(false),
-      num_visits_(-1) {
+      proceeded_(false) {
   bool malware = false;
   bool harmful = false;
   bool phishing = false;
@@ -180,26 +168,22 @@ SafeBrowsingBlockingPage::SafeBrowsingBlockingPage(
   }
   DCHECK(phishing || malware || harmful);
   if (malware)
-    interstitial_type_ = TYPE_MALWARE;
+    interstitial_reason_ = SB_REASON_MALWARE;
   else if (harmful)
-    interstitial_type_ = TYPE_HARMFUL;
+    interstitial_reason_ = SB_REASON_HARMFUL;
   else
-    interstitial_type_ = TYPE_PHISHING;
+    interstitial_reason_ = SB_REASON_PHISHING;
 
-  RecordUserDecision(SHOW);
-  RecordUserInteraction(TOTAL_VISITS);
-  if (IsPrefEnabled(prefs::kSafeBrowsingProceedAnywayDisabled))
-    RecordUserDecision(PROCEEDING_DISABLED);
-
-  HistoryService* history_service = HistoryServiceFactory::GetForProfile(
-      Profile::FromBrowserContext(web_contents->GetBrowserContext()),
-      ServiceAccessType::EXPLICIT_ACCESS);
-  if (history_service) {
-    history_service->GetVisibleVisitCountToHost(
-        request_url(),
-        base::Bind(&SafeBrowsingBlockingPage::OnGotHistoryCount,
-                   base::Unretained(this)),
-        &request_tracker_);
+  // This must be done after calculating |interstitial_reason_| above.
+  uma_helper_.reset(new SecurityInterstitialUmaHelper(
+      web_contents, request_url(),
+      GetHistogramPrefix(), GetSamplingEventName()));
+  uma_helper_->RecordUserDecision(SecurityInterstitialUmaHelper::SHOW);
+  uma_helper_->RecordUserInteraction(
+      SecurityInterstitialUmaHelper::TOTAL_VISITS);
+  if (IsPrefEnabled(prefs::kSafeBrowsingProceedAnywayDisabled)) {
+    uma_helper_->RecordUserDecision(
+        SecurityInterstitialUmaHelper::PROCEEDING_DISABLED);
   }
 
   if (!is_main_frame_load_blocked_) {
@@ -220,31 +204,6 @@ SafeBrowsingBlockingPage::SafeBrowsingBlockingPage(
     malware_details_ = MalwareDetails::NewMalwareDetails(
         ui_manager_, web_contents, unsafe_resources[0]);
   }
-
-#if defined(ENABLE_EXTENSIONS)
-  // ExperienceSampling: Set up new sampling event for this interstitial.
-  // This needs to handle all types of warnings this interstitial can show.
-  std::string event_name;
-  switch (interstitial_type_) {
-    case TYPE_MALWARE:
-      event_name = kEventNameMalware;
-      break;
-    case TYPE_HARMFUL:
-      event_name = kEventNameHarmful;
-      break;
-    case TYPE_PHISHING:
-      event_name = kEventNamePhishing;
-      break;
-    default:
-      event_name = kEventNameOther;
-      break;
-  }
-  sampling_event_.reset(new ExperienceSamplingEvent(
-      event_name,
-      request_url(),
-      web_contents->GetLastCommittedURL(),
-      web_contents->GetBrowserContext()));
-#endif
 }
 
 bool SafeBrowsingBlockingPage::CanShowMalwareDetailsOption() {
@@ -273,9 +232,11 @@ void SafeBrowsingBlockingPage::CommandReceived(const std::string& cmd) {
 
   if (command == kLearnMoreCommand) {
     // User pressed "Learn more".
-    RecordUserInteraction(SHOW_LEARN_MORE);
-    GURL learn_more_url(interstitial_type_ == TYPE_PHISHING ?
-                        kLearnMorePhishingUrlV2 : kLearnMoreMalwareUrlV2);
+    uma_helper_->RecordUserInteraction(
+        SecurityInterstitialUmaHelper::SHOW_LEARN_MORE);
+    GURL learn_more_url(
+        interstitial_reason_ == SB_REASON_PHISHING ?
+        kLearnMorePhishingUrlV2 : kLearnMoreMalwareUrlV2);
     learn_more_url = google_util::AppendGoogleLocaleParam(
         learn_more_url, g_browser_process->GetApplicationLocale());
     OpenURLParams params(learn_more_url,
@@ -289,7 +250,8 @@ void SafeBrowsingBlockingPage::CommandReceived(const std::string& cmd) {
 
   if (command == kShowPrivacyCommand) {
     // User pressed "Safe Browsing privacy policy".
-    RecordUserInteraction(SHOW_PRIVACY_POLICY);
+    uma_helper_->RecordUserInteraction(
+        SecurityInterstitialUmaHelper::SHOW_PRIVACY_POLICY);
     GURL privacy_url(
         l10n_util::GetStringUTF8(IDS_SAFE_BROWSING_PRIVACY_POLICY_URL));
     privacy_url = google_util::AppendGoogleLocaleParam(
@@ -308,7 +270,7 @@ void SafeBrowsingBlockingPage::CommandReceived(const std::string& cmd) {
     if (IsPrefEnabled(prefs::kSafeBrowsingProceedAnywayDisabled)) {
       proceed_blocked = true;
     } else {
-      RecordUserDecision(PROCEED);
+      uma_helper_->RecordUserDecision(SecurityInterstitialUmaHelper::PROCEED);
       interstitial_page()->Proceed();
       // |this| has been deleted after Proceed() returns.
       return;
@@ -364,7 +326,8 @@ void SafeBrowsingBlockingPage::CommandReceived(const std::string& cmd) {
   std::string bad_url_spec = unsafe_resources_[element_index].url.spec();
   if (command == kShowDiagnosticCommand) {
     // We're going to take the user to Google's SafeBrowsing diagnostic page.
-    RecordUserInteraction(SHOW_DIAGNOSTIC);
+    uma_helper_->RecordUserInteraction(
+        SecurityInterstitialUmaHelper::SHOW_DIAGNOSTIC);
     std::string diagnostic =
         base::StringPrintf(kSbDiagnosticUrl,
             net::EscapeQueryParamValue(bad_url_spec, true).c_str());
@@ -385,7 +348,8 @@ void SafeBrowsingBlockingPage::CommandReceived(const std::string& cmd) {
   }
 
   if (command == kExpandedSeeMoreCommand) {
-    RecordUserInteraction(SHOW_ADVANCED);
+    uma_helper_->RecordUserInteraction(
+        SecurityInterstitialUmaHelper::SHOW_ADVANCED);
     return;
   }
 
@@ -449,8 +413,10 @@ void SafeBrowsingBlockingPage::OnDontProceed() {
   if (proceeded_)
     return;
 
-  if (!IsPrefEnabled(prefs::kSafeBrowsingProceedAnywayDisabled))
-    RecordUserDecision(DONT_PROCEED);
+  if (!IsPrefEnabled(prefs::kSafeBrowsingProceedAnywayDisabled)) {
+    uma_helper_->RecordUserDecision(
+        SecurityInterstitialUmaHelper::DONT_PROCEED);
+  }
 
   // Send the malware details, if we opted to.
   FinishMalwareDetails(0);  // No delay
@@ -482,107 +448,10 @@ void SafeBrowsingBlockingPage::OnDontProceed() {
   }
 }
 
-void SafeBrowsingBlockingPage::OnGotHistoryCount(bool success,
-                                                 int num_visits,
-                                                 base::Time first_visit) {
-  if (success)
-    num_visits_ = num_visits;
-}
-
-void SafeBrowsingBlockingPage::RecordUserDecision(Decision decision) {
-  switch (interstitial_type_) {
-    case TYPE_MALWARE:
-      UMA_HISTOGRAM_ENUMERATION("interstitial.malware.decision",
-                                decision,
-                                MAX_DECISION);
-      break;
-    case TYPE_HARMFUL:
-      UMA_HISTOGRAM_ENUMERATION("interstitial.harmful.decision",
-                                decision,
-                                MAX_DECISION);
-      break;
-    case TYPE_PHISHING:
-      UMA_HISTOGRAM_ENUMERATION("interstitial.phishing.decision",
-                                decision,
-                                MAX_DECISION);
-      break;
-  }
-
-#if defined(ENABLE_EXTENSIONS)
-  if (sampling_event_.get()) {
-    switch (decision) {
-      case PROCEED:
-        sampling_event_->CreateUserDecisionEvent(
-            ExperienceSamplingEvent::kProceed);
-        break;
-      case DONT_PROCEED:
-        sampling_event_->CreateUserDecisionEvent(
-            ExperienceSamplingEvent::kDeny);
-        break;
-      case SHOW:
-      case PROCEEDING_DISABLED:
-      case MAX_DECISION:
-        break;
-    }
-  }
-#endif
-
-  // Record additional information about malware sites that users have
-  // visited before.
-  if (num_visits_ < 1 || interstitial_type_ != TYPE_MALWARE)
-    return;
-  if (decision == PROCEED || decision == DONT_PROCEED) {
-    UMA_HISTOGRAM_ENUMERATION("interstitial.malware.decision.repeat_visit",
-                              SHOW,
-                              MAX_DECISION);
-    UMA_HISTOGRAM_ENUMERATION("interstitial.malware.decision.repeat_visit",
-                              decision,
-                              MAX_DECISION);
-  }
-}
-
-void SafeBrowsingBlockingPage::RecordUserInteraction(Interaction interaction) {
-  switch (interstitial_type_) {
-    case TYPE_MALWARE:
-      UMA_HISTOGRAM_ENUMERATION("interstitial.malware.interaction",
-                                interaction,
-                                MAX_INTERACTION);
-      break;
-    case TYPE_HARMFUL:
-      UMA_HISTOGRAM_ENUMERATION("interstitial.harmful.interaction",
-                                interaction,
-                                MAX_INTERACTION);
-      break;
-    case TYPE_PHISHING:
-      UMA_HISTOGRAM_ENUMERATION("interstitial.phishing.interaction",
-                                interaction,
-                                MAX_INTERACTION);
-      break;
-  }
-
-#if defined(ENABLE_EXTENSIONS)
-  if (!sampling_event_.get())
-    return;
-  switch (interaction) {
-    case SHOW_LEARN_MORE:
-      sampling_event_->set_has_viewed_learn_more(true);
-      break;
-    case SHOW_ADVANCED:
-      sampling_event_->set_has_viewed_details(true);
-      break;
-    case SHOW_PRIVACY_POLICY:
-    case SHOW_DIAGNOSTIC:
-    case TOTAL_VISITS:
-    case MAX_INTERACTION:
-      break;
-  }
-#endif
-}
-
 void SafeBrowsingBlockingPage::FinishMalwareDetails(int64 delay_ms) {
   if (malware_details_.get() == NULL)
     return;  // Not all interstitials have malware details (eg phishing).
-  DCHECK(interstitial_type_ == TYPE_MALWARE);
+  DCHECK_EQ(interstitial_reason_, SB_REASON_MALWARE);
 
   const bool enabled =
       IsPrefEnabled(prefs::kSafeBrowsingExtendedReportingEnabled);
@@ -679,6 +548,32 @@ bool SafeBrowsingBlockingPage::IsMainPageLoadBlocked(
   return unsafe_resources.size() == 1 && !unsafe_resources[0].is_subresource;
 }
 
+std::string SafeBrowsingBlockingPage::GetHistogramPrefix() const {
+  switch (interstitial_reason_) {
+    case SB_REASON_MALWARE:
+      return "malware";
+    case SB_REASON_HARMFUL:
+      return "harmful";
+    case SB_REASON_PHISHING:
+      return "phishing";
+  }
+  NOTREACHED();
+  return std::string();
+}
+
+std::string SafeBrowsingBlockingPage::GetSamplingEventName() const {
+  switch (interstitial_reason_) {
+    case SB_REASON_MALWARE:
+      return kEventNameMalware;
+    case SB_REASON_HARMFUL:
+      return kEventNameHarmful;
+    case SB_REASON_PHISHING:
+      return kEventNamePhishing;
+    default:
+      return kEventNameOther;
+  }
+}
+
 void SafeBrowsingBlockingPage::PopulateInterstitialStrings(
     base::DictionaryValue* load_time_data) {
   CHECK(load_time_data);
@@ -700,14 +595,14 @@ void SafeBrowsingBlockingPage::PopulateInterstitialStrings(
       "overridable",
       !IsPrefEnabled(prefs::kSafeBrowsingProceedAnywayDisabled));
 
-  switch (interstitial_type_) {
-    case TYPE_MALWARE:
+  switch (interstitial_reason_) {
+    case SB_REASON_MALWARE:
       PopulateMalwareLoadTimeData(load_time_data);
       break;
-    case TYPE_HARMFUL:
+    case SB_REASON_HARMFUL:
       PopulateHarmfulLoadTimeData(load_time_data);
       break;
-    case TYPE_PHISHING:
+    case SB_REASON_PHISHING:
       PopulatePhishingLoadTimeData(load_time_data);
       break;
   }

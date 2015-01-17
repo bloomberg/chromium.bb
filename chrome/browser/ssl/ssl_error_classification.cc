@@ -176,6 +176,8 @@ void SSLErrorClassification::RecordUMAStatistics(
     bool overridable) const {
   SSLErrorInfo::ErrorType type =
       SSLErrorInfo::NetErrorToErrorType(cert_error_);
+  UMA_HISTOGRAM_ENUMERATION(
+      "interstitial.ssl_error_type", type, SSLErrorInfo::END_OF_ENUM);
   switch (type) {
     case SSLErrorInfo::CERT_DATE_INVALID: {
       if (IsUserClockInThePast(base::Time::NowFromSystemTime())) {

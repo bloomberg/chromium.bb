@@ -12,8 +12,8 @@
 #include "base/strings/string16.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
-#include "chrome/browser/history/history_service.h"
 #include "chrome/browser/interstitials/security_interstitial_page.h"
+#include "chrome/browser/interstitials/security_interstitial_uma_helper.h"
 #include "net/ssl/ssl_info.h"
 #include "url/gurl.h"
 
@@ -75,13 +75,6 @@ class SSLBlockingPage : public SecurityInterstitialPage {
   // SecurityInterstitialPage method:
   const void* GetTypeForTesting() const override;
 
-  // A method that sets strings in the specified dictionary from the passed
-  // vector so that they can be used to resource the ssl_roadblock.html/
-  // ssl_error.html files.
-  // Note: there can be up to 5 strings in |extra_info|.
-  static void SetExtraInfo(base::DictionaryValue* strings,
-                           const std::vector<base::string16>& extra_info);
-
   // Returns true if |options_mask| refers to an overridable SSL error.
   static bool IsOptionsOverridable(int options_mask);
 
@@ -102,8 +95,8 @@ class SSLBlockingPage : public SecurityInterstitialPage {
   void NotifyDenyCertificate();
   void NotifyAllowCertificate();
 
-  // Used to query the HistoryService to see if the URL is in history. For UMA.
-  void OnGotHistoryCount(bool success, int num_visits, base::Time first_visit);
+  std::string GetHistogramPrefix() const;
+  std::string GetSamplingEventName() const;
 
   base::Callback<void(bool)> callback_;
 
@@ -120,23 +113,17 @@ class SSLBlockingPage : public SecurityInterstitialPage {
   bool danger_overridable_;
   // Has the site requested strict enforcement of certificate errors?
   const bool strict_enforcement_;
-  // Is the hostname for an internal network?
-  bool internal_;
-  // How many times is this same URL in history?
-  int num_visits_;
-  // Used for getting num_visits_.
-  base::CancelableTaskTracker request_tracker_;
   // Did the user previously allow a bad certificate but the decision has now
   // expired?
   const bool expired_but_previously_allowed_;
   scoped_ptr<SSLErrorClassification> ssl_error_classification_;
+  scoped_ptr<SecurityInterstitialUmaHelper> uma_helper_;
 
-#if defined(ENABLE_EXTENSIONS)
-  // For Chrome Experience Sampling Platform: this maintains event state.
-  scoped_ptr<extensions::ExperienceSamplingEvent> sampling_event_;
-#endif
-
-  content::NotificationRegistrar registrar_;
+  // Which type of Safe Browsing interstitial this is.
+  enum SSLInterstitialReason {
+    SSL_REASON_SSL,
+    SSL_REASON_BAD_CLOCK
+  } interstitial_reason_;
 
   DISALLOW_COPY_AND_ASSIGN(SSLBlockingPage);
 };

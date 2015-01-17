@@ -11371,62 +11371,31 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
-<histogram name="interstitial.harmful.decision" enum="SB3InterstitialDecision">
+<histogram name="interstitial.decision" enum="SecurityInterstitialDecision">
+  <owner>felt@chromium.org</owner>
+  <summary>User decision when presented with a security interstitial.</summary>
+</histogram>
+
+<histogram name="interstitial.decision.repeat_visit"
+    enum="SecurityInterstitialDecision">
   <owner>felt@chromium.org</owner>
   <summary>
-    User decision when presented with a Safe Browsing harmful program
-    interstitial.
+    User decision when presented with a security interstitial, on a site that
+    the user had previously visited.
   </summary>
 </histogram>
 
-<histogram name="interstitial.harmful.interaction"
-    enum="SB3InterstitialInteraction">
+<histogram name="interstitial.interaction"
+    enum="SecurityInterstitialInteraction">
   <owner>felt@chromium.org</owner>
-  <summary>
-    User interactions with a Safe Browsing harmful program interstitial.
-  </summary>
-</histogram>
-
-<histogram name="interstitial.malware.decision" enum="SB3InterstitialDecision">
-  <owner>felt@chromium.org</owner>
-  <summary>
-    User decision when presented with a Safe Browsing malware interstitial.
-  </summary>
-</histogram>
-
-<histogram name="interstitial.malware.decision.repeat_visit"
-    enum="SB3InterstitialDecision">
-  <owner>felt@chromium.org</owner>
-  <summary>
-    User decision when presented with a Safe Browsing malware interstitial for a
-    website that the user has visited before.
-  </summary>
-</histogram>
-
-<histogram name="interstitial.malware.interaction"
-    enum="SB3InterstitialInteraction">
-  <owner>felt@chromium.org</owner>
-  <summary>
-    User interactions with a Safe Browsing malware interstitial.
-  </summary>
-</histogram>
-
-<histogram name="interstitial.phishing.decision" enum="SB3InterstitialDecision">
-  <owner>felt@chromium.org</owner>
-  <summary>
-    User decision when presented with a Safe Browsing phishing interstitial.
-  </summary>
-</histogram>
-
-<histogram name="interstitial.phishing.interaction"
-    enum="SB3InterstitialInteraction">
-  <owner>felt@chromium.org</owner>
-  <summary>
-    User interactions with a Safe Browsing phishing interstitial.
-  </summary>
+  <summary>User interactions with a security interstitial.</summary>
 </histogram>
 
 <histogram name="interstitial.ssl" enum="SSLResponseTypesV2">
+  <obsolete>
+    Replaced by interstitial.ssl_overridable.* and
+    interstitial.ssl_nonoverridable.* in Jan 2015 (M42).
+  </obsolete>
   <owner>felt@chromium.org</owner>
   <summary>
     User action when the user is shown a SSL interstitial. SHOW_ALL and MORE
@@ -55706,21 +55675,6 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="7" label="BACKUP_NETWORK_SUCCESS"/>
 </enum>
 
-<enum name="SB3InterstitialDecision" type="int">
-  <int value="0" label="SHOW"/>
-  <int value="1" label="PROCEED"/>
-  <int value="2" label="DONT_PROCEED"/>
-  <int value="3" label="PROCEEDING_DISABLED"/>
-</enum>
-
-<enum name="SB3InterstitialInteraction" type="int">
-  <int value="0" label="TOTAL_VISITS"/>
-  <int value="1" label="SHOW_ADVANCED"/>
-  <int value="2" label="SHOW_PRIVACY"/>
-  <int value="3" label="SHOW_DIAGNOSTIC"/>
-  <int value="4" label="SHOW_LEARN_MORE"/>
-</enum>
-
 <enum name="SBClientDetectionPreClassificationCheckFail" type="int">
   <int value="0" label="PROXY_FETCH"/>
   <int value="1" label="PRIVATE_IP"/>
@@ -56027,6 +55981,23 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="31" label="ZOZNAM"/>
   <int value="32" label="YAHOOQC"/>
   <int value="33" label="NONE"/>
+</enum>
+
+<enum name="SecurityInterstitialDecision" type="int">
+  <int value="0" label="SHOW"/>
+  <int value="1" label="PROCEED"/>
+  <int value="2" label="DONT_PROCEED"/>
+  <int value="3" label="PROCEEDING_DISABLED"/>
+</enum>
+
+<enum name="SecurityInterstitialInteraction" type="int">
+  <int value="0" label="TOTAL_VISITS"/>
+  <int value="1" label="SHOW_ADVANCED"/>
+  <int value="2" label="SHOW_PRIVACY"/>
+  <int value="3" label="SHOW_DIAGNOSTIC"/>
+  <int value="4" label="SHOW_LEARN_MORE"/>
+  <int value="5" label="RELOAD"/>
+  <int value="6" label="OPEN_TIME_SETTINGS"/>
 </enum>
 
 <enum name="ServiceProcessEventType" type="int">
@@ -62412,6 +62383,19 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="SB2.MalwareInterstitialTimePrivacyPolicy"/>
   <affected-histogram name="SB2.MalwareInterstitialTimeProceed"/>
   <affected-histogram name="SB2.MalwareInterstitialTimeTakeMeBack"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="SecurityInterstitialType" separator="."
+    ordering="prefix">
+  <suffix name="bad_clock"/>
+  <suffix name="harmful"/>
+  <suffix name="malware"/>
+  <suffix name="phishing"/>
+  <suffix name="ssl_nonoverridable"/>
+  <suffix name="ssl_overridable"/>
+  <affected-histogram name="interstitial.decision"/>
+  <affected-histogram name="interstitial.decision.repeat_visit"/>
+  <affected-histogram name="interstitial.interaction"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="ServiceWorkerCache.Cache" separator=".">

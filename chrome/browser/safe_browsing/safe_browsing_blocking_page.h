@@ -34,9 +34,8 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/task/cancelable_task_tracker.h"
-#include "base/time/time.h"
-#include "chrome/browser/history/history_service.h"
 #include "chrome/browser/interstitials/security_interstitial_page.h"
+#include "chrome/browser/interstitials/security_interstitial_uma_helper.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "url/gurl.h"
 
@@ -46,12 +45,6 @@ class SafeBrowsingBlockingPageFactory;
 namespace base {
 class MessageLoop;
 }
-
-#if defined(ENABLE_EXTENSIONS)
-namespace extensions {
-class ExperienceSamplingEvent;
-}
-#endif
 
 class SafeBrowsingBlockingPage : public SecurityInterstitialPage {
  public:
@@ -122,31 +115,6 @@ class SafeBrowsingBlockingPage : public SecurityInterstitialPage {
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingBlockingPageTest,
       MalwareReportsToggling);
 
-  // These enums are used for histograms.  Don't reorder, delete, or insert
-  // elements.  New elements should be added before MAX_ACTION only.
-  enum Decision {
-    SHOW,
-    PROCEED,
-    DONT_PROCEED,
-    PROCEEDING_DISABLED,
-    MAX_DECISION
-  };
-  enum Interaction {
-    TOTAL_VISITS,
-    SHOW_ADVANCED,
-    SHOW_PRIVACY_POLICY,
-    SHOW_DIAGNOSTIC,
-    SHOW_LEARN_MORE,
-    MAX_INTERACTION
-  };
-
-  // Record a user decision or interaction to the appropriate UMA histogram.
-  void RecordUserDecision(Decision decision);
-  void RecordUserInteraction(Interaction interaction);
-
-  // Used to query the HistoryService to see if the URL is in history. For UMA.
-  void OnGotHistoryCount(bool success, int num_visits, base::Time first_visit);
-
   // Checks if we should even show the malware details option. For example, we
   // don't show it in incognito mode.
   bool CanShowMalwareDetailsOption();
@@ -203,21 +171,17 @@ class SafeBrowsingBlockingPage : public SecurityInterstitialPage {
 
   bool proceeded_;
 
-  // Which type of interstitial this is.
-  enum {
-    TYPE_MALWARE,
-    TYPE_HARMFUL,
-    TYPE_PHISHING,
-  } interstitial_type_;
+  // Which type of Safe Browsing interstitial this is.
+  enum SBInterstitialReason {
+    SB_REASON_MALWARE,
+    SB_REASON_HARMFUL,
+    SB_REASON_PHISHING,
+  } interstitial_reason_;
 
   // The factory used to instantiate SafeBrowsingBlockingPage objects.
   // Usefull for tests, so they can provide their own implementation of
   // SafeBrowsingBlockingPage.
   static SafeBrowsingBlockingPageFactory* factory_;
-
-  // How many times is this same URL in history? Used for histogramming.
-  int num_visits_;
-  base::CancelableTaskTracker request_tracker_;
 
  private:
   // Fills the passed dictionary with the values to be passed to the template
@@ -227,9 +191,10 @@ class SafeBrowsingBlockingPage : public SecurityInterstitialPage {
   void PopulateHarmfulLoadTimeData(base::DictionaryValue* load_time_data);
   void PopulatePhishingLoadTimeData(base::DictionaryValue* load_time_data);
 
-#if defined(ENABLE_EXTENSIONS)
-  scoped_ptr<extensions::ExperienceSamplingEvent> sampling_event_;
-#endif
+  std::string GetHistogramPrefix() const;
+  std::string GetSamplingEventName() const;
+
+  scoped_ptr<SecurityInterstitialUmaHelper> uma_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingBlockingPage);
 };
