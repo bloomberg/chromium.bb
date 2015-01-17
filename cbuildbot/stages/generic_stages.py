@@ -13,7 +13,6 @@ import os
 import re
 import sys
 import time
-import traceback
 
 # We import mox so that we can identify mox exceptions and pass them through
 # in our exception handling code.
@@ -343,7 +342,7 @@ class BuilderStage(object):
     if issubclass(exc_type, failures_lib.StepFailure):
       return str(exc_value)
     else:
-      return ''.join(traceback.format_exception(*exc_info))
+      return cros_build_lib.FormatDetailedTraceback(exc_info=exc_info)
 
   @classmethod
   def _HandleExceptionAsWarning(cls, exc_info, retrying=False):

@@ -15,9 +15,11 @@ import errno
 import functools
 import getpass
 import hashlib
+import inspect
 import logging
 import operator
 import os
+import pprint
 import re
 import signal
 import socket
@@ -25,6 +27,7 @@ import subprocess
 import sys
 import tempfile
 import time
+import traceback
 import types
 
 from chromite.cbuildbot import constants
@@ -1143,17 +1146,17 @@ class MasterPidContextManager(object):
     self._invoking_pid = os.getpid()
     return self._enter()
 
-  def __exit__(self, exc_type, exc, traceback):
+  def __exit__(self, exc_type, exc, exc_tb):
     curpid = os.getpid()
     if curpid == self.ALTERNATE_MASTER_PID:
       self._invoking_pid = curpid
     if curpid == self._invoking_pid:
-      return self._exit(exc_type, exc, traceback)
+      return self._exit(exc_type, exc, exc_tb)
 
   def _enter(self):
     raise NotImplementedError(self, '_enter')
 
-  def _exit(self, exc_type, exc, traceback):
+  def _exit(self, exc_type, exc, exc_tb):
     raise NotImplementedError(self, '_exit')
 
 
@@ -1237,29 +1240,29 @@ class ContextManagerStack(object):
     # the __enter__ method of this stack is called.
     return self
 
-  def __exit__(self, exc_type, exc, traceback):
+  def __exit__(self, exc_type, exc, exc_tb):
     # Exit each context manager in stack in reverse order, tracking the results
     # to know whether or not to suppress the exception raised (or to switch that
     # exception to a new one triggered by an individual handler's __exit__).
     for handler in reversed(self._stack):
       # pylint: disable=bare-except
       try:
-        if handler.__exit__(exc_type, exc, traceback):
-          exc_type = exc = traceback = None
+        if handler.__exit__(exc_type, exc, exc_tb):
+          exc_type = exc = exc_tb = None
       except:
-        exc_type, exc, traceback = sys.exc_info()
+        exc_type, exc, exc_tb = sys.exc_info()
 
     self._stack = []
 
     # Return True if any exception was handled.
-    if all(x is None for x in (exc_type, exc, traceback)):
+    if all(x is None for x in (exc_type, exc, exc_tb)):
       return True
 
     # Raise any exception that is left over from exiting all context managers.
     # Normally a single context manager would return False to allow caller to
     # re-raise the exception itself, but here the exception might have been
     # raised during the exiting of one of the individual context managers.
-    raise exc_type, exc, traceback
+    raise exc_type, exc, exc_tb
 
 
 class ApiMismatchError(Exception):
@@ -1994,3 +1997,88 @@ def MachineDetails():
       'TIMESTAMP=%s' % UserDateTimeFormat(),
       'RANDOM_JUNK=%s' % GetRandomString(),
   )) + '\n'
+
+
+def FormatDetailedTraceback(exc_info=None):
+  """Generate a traceback including details like local variables.
+
+  Args:
+    exc_info: The exception tuple to format; defaults to sys.exc_info().
+      See the help on that function for details on the type.
+
+  Returns:
+    A string of the formatted |exc_info| details.
+  """
+  if exc_info is None:
+    exc_info = sys.exc_info()
+
+  ret = []
+  try:
+    # pylint: disable=unpacking-non-sequence
+    exc_type, exc_value, exc_tb = exc_info
+
+    if exc_type:
+      ret += [
+          'Traceback (most recent call last):\n',
+          'Note: Call args reflect *current* state, not *entry* state\n',
+      ]
+
+    while exc_tb:
+      frame = exc_tb.tb_frame
+
+      ret += traceback.format_tb(exc_tb, 1)
+      args = inspect.getargvalues(frame)
+      _, _, fname, _ = traceback.extract_tb(exc_tb, 1)[0]
+      ret += [
+          '    Call: %s%s\n' % (fname, inspect.formatargvalues(*args)),
+          '    Locals:\n',
+      ]
+      keys = sorted(frame.f_locals.keys(), key=str.lower)
+      keylen = max(len(x) for x in keys)
+      typelen = max(len(str(type(x))) for x in frame.f_locals.values())
+      for key in keys:
+        val = frame.f_locals[key]
+        ret += ['      %-*s: %-*s %s\n' %
+                (keylen, key, typelen, type(val), pprint.saferepr(val))]
+      exc_tb = exc_tb.tb_next
+
+    if exc_type:
+      ret += traceback.format_exception_only(exc_type, exc_value)
+  finally:
+    # Help python with its circular references.
+    del exc_tb
+
+  return ''.join(ret)
+
+
+def PrintDetailedTraceback(exc_info=None, file=None):
+  """Print a traceback including details like local variables.
+
+  Args:
+    exc_info: The exception tuple to format; defaults to sys.exc_info().
+      See the help on that function for details on the type.
+   file: The file object to write the details to; defaults to sys.stderr.
+  """
+  # We use |file| to match the existing traceback API.
+  # pylint: disable=redefined-builtin
+  if exc_info is None:
+    exc_info = sys.exc_info()
+  if file is None:
+    file = sys.stderr
+
+  # Try to print out extended details on the current exception.
+  # If that fails, still fallback to the normal exception path.
+  curr_exc_info = exc_info
+  try:
+    output = FormatDetailedTraceback()
+    if output:
+      print(output, file=file)
+  except Exception:
+    print('Could not decode extended exception details:', file=file)
+    traceback.print_exc(file=file)
+    print(file=file)
+    traceback.print_exception(*curr_exc_info, file=sys.stdout)
+  finally:
+    # Help python with its circular references.
+    del exc_info
+    del curr_exc_info

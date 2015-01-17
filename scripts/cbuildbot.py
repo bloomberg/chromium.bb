@@ -22,7 +22,6 @@ import os
 import pickle
 import sys
 import tempfile
-import traceback
 
 from chromite.cbuildbot import afdo
 from chromite.cbuildbot import cbuildbot_config
@@ -413,7 +412,7 @@ class Builder(object):
         if isinstance(ex, failures_lib.CompoundFailure):
           print(str(ex))
 
-        traceback.print_exc(file=sys.stdout)
+        cros_build_lib.PrintDetailedTraceback(file=sys.stdout)
         raise
 
       if not (print_report and isinstance(ex, failures_lib.StepFailure)):

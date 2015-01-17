@@ -15,8 +15,8 @@ import logging
 import smtplib
 import socket
 import sys
-import traceback
 
+from chromite.lib import cros_build_lib
 from chromite.lib import retry_util
 
 
@@ -126,7 +126,7 @@ def SendEmailLog(subject, recipients, smtp_server=None, message='',
 
   if inc_trace:
     if sys.exc_info() != (None, None, None):
-      trace = traceback.format_exc()
+      trace = cros_build_lib.FormatDetailedTraceback()
       message += '\n\n' + trace
 
   attachment = None

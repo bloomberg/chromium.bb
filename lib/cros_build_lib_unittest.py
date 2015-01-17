@@ -18,6 +18,7 @@ import os
 import signal
 import socket
 import StringIO
+import sys
 import time
 import __builtin__
 
@@ -803,7 +804,7 @@ class TestListFiles(cros_test_lib.TempDirTestCase):
       self.assertEqual(err.errno, errno.ENOENT)
 
 
-class HelperMethodSimpleTests(cros_test_lib.TestCase):
+class HelperMethodSimpleTests(cros_test_lib.OutputTestCase):
   """Tests for various helper methods without using mocks."""
 
   def _TestChromeosVersion(self, test_str, expected=None):
@@ -894,6 +895,83 @@ class HelperMethodSimpleTests(cros_test_lib.TestCase):
     self.assertEqual('/', cros_build_lib.GetCommonPathPrefix(['/a/b', '/c/d']))
     self.assertEqual(
         '/', cros_build_lib.GetCommonPathPrefix(['/a/b', '/aa/b']))
+
+  def testFormatDetailedTraceback(self):
+    """Verify various aspects of the traceback"""
+    # When there is no active exception, should output nothing.
+    data = cros_build_lib.FormatDetailedTraceback()
+    self.assertEqual(data, '')
+
+    # Generate a local exception and test it.
+    try:
+      varint = 12345
+      varstr = 'vaaars'
+      raise Exception('fooood')
+    except Exception:
+      lines = cros_build_lib.FormatDetailedTraceback().splitlines()
+      # Check basic start/finish lines.
+      self.assertIn('Traceback ', lines[0])
+      self.assertIn('Exception: fooood', lines[-1])
+
+      # Verify some local vars get correctly decoded.
+      for line in lines:
+        if 'varint' in line:
+          self.assertIn('int', line)
+          self.assertIn(str(varint), line)
+          break
+      else:
+        raise AssertionError('could not find local "varint" in output:\n\n%s' %
+                             ''.join(lines))
+
+      for line in lines:
+        if 'varstr' in line:
+          self.assertIn('str', line)
+          self.assertIn(varstr, line)
+          break
+      else:
+        raise AssertionError('could not find local "varstr" in output:\n\n%s' %
+                             ''.join(lines))
+
+  def _testPrintDetailedTraceback(self, check_stdout):
+    """Helper method for testing PrintDetailedTraceback."""
+    try:
+      varint = 12345
+      varstr = 'vaaars'
+      raise Exception('fooood')
+    except Exception:
+      with self.OutputCapturer() as output:
+        if check_stdout is None:
+          stream = None
+        elif check_stdout:
+          stream = sys.stdout
+        else:
+          stream = sys.stderr
+        cros_build_lib.PrintDetailedTraceback(file=stream)
+
+        # The non-selected stream shouldn't have anything.
+        data = output.GetStderr() if check_stdout else output.GetStdout()
+        self.assertEqual(data, '')
+
+        kwargs = {
+            'check_stdout': check_stdout,
+            'check_stderr': not check_stdout,
+        }
+        self.AssertOutputContainsLine(r'Traceback ', **kwargs)
+        self.AssertOutputContainsLine(r'Exception: fooood', **kwargs)
+        self.AssertOutputContainsLine(r'varint.*int.*%s' % varint, **kwargs)
+        self.AssertOutputContainsLine(r'varstr.*str.*%s' % varstr, **kwargs)
+
+  def testPrintDetailedTracebackStderrDefault(self):
+    """Verify default (stderr) handling"""
+    self._testPrintDetailedTraceback(None)
+
+  def testPrintDetailedTracebackStderr(self):
+    """Verify stderr handling"""
+    self._testPrintDetailedTraceback(False)
+
+  def testPrintDetailedTracebackStdout(self):
+    """Verify stdout handling"""
+    self._testPrintDetailedTraceback(True)
 
 
 class TestInput(cros_test_lib.MockOutputTestCase):
