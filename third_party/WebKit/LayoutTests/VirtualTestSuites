@@ -26,12 +26,12 @@
   {
     "prefix": "threaded",
     "base": "compositing/visibility",
-    "args": ["--enable-threaded-compositing"]
+    "args": ["--enable-threaded-compositing", "--enable-impl-side-painting"]
   },
   {
     "prefix": "threaded",
     "base": "compositing/webgl",
-    "args": ["--enable-threaded-compositing"]
+    "args": ["--enable-threaded-compositing", "--enable-impl-side-painting"]
   },
   {
     "prefix": "deferred",
@@ -75,17 +75,17 @@
   {
     "prefix": "stable",
     "base": "animations-unprefixed",
-    "args": ["--stable-release-mode"]
+    "args": ["--stable-release-mode", "--enable-impl-side-painting"]
   },
   {
     "prefix": "stable",
     "base": "media/stable",
-    "args": ["--stable-release-mode"]
+    "args": ["--stable-release-mode", "--enable-impl-side-painting"]
   },
   {
     "prefix": "android",
     "base": "fullscreen",
-    "args": ["--enable-threaded-compositing",
+    "args": ["--enable-threaded-compositing", "--enable-impl-side-painting",
              "--enable-fixed-position-compositing", "--enable-prefer-compositing-to-lcd-text",
              "--enable-composited-scrolling-for-frames", "--enable-gesture-tap-highlight", "--enable-pinch",
              "--enable-overlay-fullscreen-video", "--enable-overlay-scrollbars", "--enable-overscroll-notifications",
@@ -95,17 +95,18 @@
   {
     "prefix": "stable",
     "base": "fast/css3-text/css3-text-decoration/stable",
-    "args": ["--stable-release-mode"]
+    "args": ["--stable-release-mode", "--enable-impl-side-painting"]
   },
   {
     "prefix": "stable",
     "base": "web-animations-api",
-    "args": ["--stable-release-mode"]
+    "args": ["--stable-release-mode", "--enable-impl-side-painting"]
   },
   {
     "prefix": "linux-subpixel",
     "base": "platform/linux/fast/text/subpixel",
-    "args": ["--enable-webkit-text-subpixel-positioning"]
+    "args": ["--enable-webkit-text-subpixel-positioning",
+             "--enable-impl-side-painting"]
   },
   {
     "prefix": "antialiasedtext",
@@ -117,12 +118,12 @@
   {
     "prefix": "threaded",
     "base": "printing",
-    "args": ["--enable-threaded-compositing"]
+    "args": ["--enable-threaded-compositing", "--enable-impl-side-painting"]
   },
   {
     "prefix": "regionbasedmulticol",
     "base": "compositing/columns",
-    "args": ["--enable-region-based-columns"]
+    "args": ["--enable-region-based-columns", "--enable-impl-side-painting"]
   },
   {
     "prefix": "regionbasedmulticol",
@@ -207,6 +208,6 @@
   {
     "prefix": "rootlayerscrolls",
     "base": "fast/scrolling",
-    "args": ["--root-layer-scrolls"]
+    "args": ["--root-layer-scrolls", "--enable-impl-side-painting"]
   }
 ]
