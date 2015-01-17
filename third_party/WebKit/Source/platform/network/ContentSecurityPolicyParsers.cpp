@@ -6,6 +6,7 @@
 #include "platform/network/ContentSecurityPolicyParsers.h"
 
 #include "wtf/ASCIICType.h"
+#include "wtf/text/StringUTF8Adaptor.h"
 
 namespace blink {
 
@@ -64,6 +65,11 @@ bool isNotColonOrSlash(UChar c)
 bool isMediaTypeCharacter(UChar c)
 {
     return !isASCIISpace(c) && c != '/';
+}
+
+WTF::StringUTF8Adaptor normalizeSource(const String& source)
+{
+    return WTF::StringUTF8Adaptor(source, WTF::StringUTF8Adaptor::Normalize, WTF::EntitiesForUnencodables);
 }
 
 } // namespace

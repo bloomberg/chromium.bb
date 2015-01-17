@@ -181,7 +181,7 @@ void StyleElement::createSheet(Element* e, const String& text)
     bool passesContentSecurityPolicyChecks = shouldBypassMainWorldCSP(e)
         || csp->allowStyleWithHash(text)
         || csp->allowStyleWithNonce(e->fastGetAttribute(HTMLNames::nonceAttr))
-        || csp->allowInlineStyle(e->document().url(), m_startPosition.m_line);
+        || csp->allowInlineStyle(e->document().url(), m_startPosition.m_line, text);
 
     // If type is empty or CSS, this is a CSS style sheet.
     const AtomicString& type = this->type();
