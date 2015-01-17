@@ -7,6 +7,7 @@
 #include <shobjidl.h>
 
 #include "base/logging.h"
+#include "base/profiler/scoped_tracker.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/win/msg_util.h"
 
@@ -1004,6 +1005,10 @@ class CoreWindowEmulation
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT message,
                          WPARAM wparam, LPARAM lparam) {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION("440919 MetroDriver WndProc"));
+
   PAINTSTRUCT ps;
   HDC hdc;
   switch (message) {

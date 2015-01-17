@@ -162,6 +162,11 @@ void MessagePumpForUI::ScheduleDelayedWork(const TimeTicks& delayed_work_time) {
 // static
 LRESULT CALLBACK MessagePumpForUI::WndProcThunk(
     HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam) {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "440919 MessagePumpForUI::WndProcThunk"));
+
   switch (message) {
     case kMsgHaveWork:
       reinterpret_cast<MessagePumpForUI*>(wparam)->HandleWorkMessage();

@@ -5,6 +5,7 @@
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 
 #include "base/logging.h"
+#include "base/profiler/scoped_tracker.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_target_base.h"
@@ -83,6 +84,10 @@ void NotifyPluginProcessHostHelper(HWND window, HWND parent, int tries) {
 // parent which is typically the RVH window which turns on user gesture.
 LRESULT CALLBACK PluginWrapperWindowProc(HWND window, unsigned int message,
                                          WPARAM wparam, LPARAM lparam) {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION("440919 PluginWrapperWindowProc"));
+
   if (message == WM_PARENTNOTIFY) {
     switch (LOWORD(wparam)) {
       case WM_LBUTTONDOWN:

@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/profiler/scoped_tracker.h"
 #include "content/common/content_export.h"
 
 namespace content {
@@ -31,6 +32,11 @@ class CONTENT_EXPORT SystemMessageWindowWin {
                                        UINT message,
                                        WPARAM wparam,
                                        LPARAM lparam) {
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
+    tracked_objects::ScopedTracker tracking_profile(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "440919 SystemMessageWindowWin::WndProcThunk"));
+
     SystemMessageWindowWin* msg_wnd = reinterpret_cast<SystemMessageWindowWin*>(
         GetWindowLongPtr(hwnd, GWLP_USERDATA));
     if (msg_wnd)

@@ -5,6 +5,7 @@
 #include "components/browser_watcher/endsession_watcher_window_win.h"
 
 #include "base/logging.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/win/wrapped_window_proc.h"
 
 namespace browser_watcher {
@@ -52,6 +53,11 @@ LRESULT CALLBACK EndSessionWatcherWindow::WndProcThunk(HWND hwnd,
                                                        UINT message,
                                                        WPARAM wparam,
                                                        LPARAM lparam) {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "440919 EndSessionWatcherWindow::WndProcThunk"));
+
   EndSessionWatcherWindow* msg_wnd =
       reinterpret_cast<EndSessionWatcherWindow*>(
           ::GetWindowLongPtr(hwnd, GWLP_USERDATA));

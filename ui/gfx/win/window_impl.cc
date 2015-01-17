@@ -291,6 +291,10 @@ LRESULT CALLBACK WindowImpl::WndProc(HWND hwnd,
                                      UINT message,
                                      WPARAM w_param,
                                      LPARAM l_param) {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION("440919 WindowImpl::WndProc"));
+
   if (message == WM_NCCREATE) {
     CREATESTRUCT* cs = reinterpret_cast<CREATESTRUCT*>(l_param);
     WindowImpl* window = reinterpret_cast<WindowImpl*>(cs->lpCreateParams);
