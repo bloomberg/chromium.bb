@@ -747,11 +747,11 @@ Address ThreadHeap::lazySweepPages(size_t allocationSize, size_t gcInfoIndex)
             page->sweep();
             page->unlink(&m_firstUnsweptPage);
             page->link(&m_firstPage);
+            page->markAsSwept();
 
             result = allocateFromFreeList(allocationSize, gcInfoIndex);
-            if (result) {
+            if (result)
                 break;
-            }
         }
     }
 
@@ -804,6 +804,7 @@ bool ThreadHeap::lazySweepLargeObjects(size_t allocationSize)
             largeObject->sweep();
             largeObject->unlink(&m_firstUnsweptLargeObject);
             largeObject->link(&m_firstLargeObject);
+            largeObject->markAsSwept();
         }
     }
 
@@ -832,6 +833,7 @@ void ThreadHeap::completeSweep()
             page->sweep();
             page->unlink(&m_firstUnsweptPage);
             page->link(&m_firstPage);
+            page->markAsSwept();
         }
     }
 
@@ -847,6 +849,7 @@ void ThreadHeap::completeSweep()
             largeObject->sweep();
             largeObject->unlink(&m_firstUnsweptLargeObject);
             largeObject->link(&m_firstLargeObject);
+            largeObject->markAsSwept();
         }
     }
 
@@ -1234,6 +1237,7 @@ BaseHeapPage::BaseHeapPage(PageMemory* storage, ThreadHeap* heap)
     : m_storage(storage)
     , m_heap(heap)
     , m_terminating(false)
+    , m_swept(true)
 {
     ASSERT(isPageHeaderAddress(reinterpret_cast<Address>(this)));
 }
@@ -1443,14 +1447,17 @@ bool ThreadHeap::isConsistentForSweeping()
 
 void ThreadHeap::makeConsistentForSweeping()
 {
-    markUnmarkedObjectsDead();
+    preparePagesForSweeping();
     setAllocationPoint(nullptr, 0);
     clearFreeLists();
 }
 
-void ThreadHeap::markUnmarkedObjectsDead()
+void ThreadHeap::preparePagesForSweeping()
 {
     ASSERT(isConsistentForSweeping());
+    for (HeapPage* page = m_firstPage; page; page = page->next())
+        page->markAsUnswept();
+
     // If a new GC is requested before this thread got around to sweep,
     // ie. due to the thread doing a long running operation, we clear
     // the mark bits and mark any of the dead objects as dead. The latter
@@ -1461,6 +1468,7 @@ void ThreadHeap::markUnmarkedObjectsDead()
     HeapPage* previousPage = nullptr;
     for (HeapPage* page = m_firstUnsweptPage; page; previousPage = page, page = page->next()) {
         page->markUnmarkedObjectsDead();
+        ASSERT(!page->hasBeenSwept());
     }
     if (previousPage) {
         ASSERT(m_firstUnsweptPage);
@@ -1470,9 +1478,13 @@ void ThreadHeap::markUnmarkedObjectsDead()
     }
     ASSERT(!m_firstUnsweptPage);
 
+    for (LargeObject* largeObject = m_firstLargeObject; largeObject; largeObject = largeObject->next())
+        largeObject->markAsUnswept();
+
     LargeObject* previousLargeObject = nullptr;
     for (LargeObject* largeObject = m_firstUnsweptLargeObject; largeObject; previousLargeObject = largeObject, largeObject = largeObject->next()) {
         largeObject->markUnmarkedObjectsDead();
+        ASSERT(!largeObject->hasBeenSwept());
     }
     if (previousLargeObject) {
         ASSERT(m_firstUnsweptLargeObject);
@@ -1518,6 +1530,7 @@ size_t HeapPage::objectPayloadSizeForTesting()
 {
     size_t objectPayloadSize = 0;
     Address headerAddress = payload();
+    markAsSwept();
     ASSERT(headerAddress != payloadEnd());
     do {
         HeapObjectHeader* header = reinterpret_cast<HeapObjectHeader*>(headerAddress);
@@ -1752,6 +1765,7 @@ void HeapPage::snapshot(TracedValue* json, ThreadState::SnapshotInfo* info)
 
 size_t LargeObject::objectPayloadSizeForTesting()
 {
+    markAsSwept();
     return payloadSize();
 }
 

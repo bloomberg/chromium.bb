@@ -113,6 +113,24 @@ private:
     friend class TimerHeapReference;
 };
 
+template<typename T, bool = IsGarbageCollectedType<T>::value>
+class TimerIsObjectAliveTrait {
+public:
+    static bool isAlive(T*) { return true; }
+};
+
+template<typename T>
+class TimerIsObjectAliveTrait<T, true> {
+public:
+    static bool isAlive(T* objectPointer)
+    {
+        // Oilpan: if a timer fires while Oilpan heaps are being lazily
+        // swept, it is not safe to proceed if the object is about to
+        // be swept (and this timer will be stopped while doing so.)
+        return Heap::isFinalizedObjectAlive(objectPointer);
+    }
+};
+
 template <typename TimerFiredClass>
 class Timer final : public TimerBase {
 public:
@@ -122,7 +140,12 @@ public:
         : m_object(o), m_function(f) { }
 
 private:
-    virtual void fired() override { (m_object->*m_function)(this); }
+    virtual void fired() override
+    {
+        if (!TimerIsObjectAliveTrait<TimerFiredClass>::isAlive(m_object))
+            return;
+        (m_object->*m_function)(this);
+    }
 
     // FIXME: oilpan: TimerBase should be moved to the heap and m_object should be traced.
     // This raw pointer is safe as long as Timer<X> is held by the X itself (That's the case

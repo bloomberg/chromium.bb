@@ -401,11 +401,33 @@ public:
     bool terminating() { return m_terminating; }
     void setTerminating() { m_terminating = true; }
 
+    // Returns true if this page has been swept by the ongoing lazy sweep.
+    bool hasBeenSwept() const { return m_swept; }
+
+    void markAsSwept()
+    {
+        ASSERT(!m_swept);
+        m_swept = true;
+    }
+
+    void markAsUnswept()
+    {
+        ASSERT(m_swept);
+        m_swept = false;
+    }
+
 private:
     PageMemory* m_storage;
     ThreadHeap* m_heap;
     // Whether the page is part of a terminating thread or not.
     bool m_terminating;
+
+    // Track the sweeping state of a page. Set to true once
+    // the lazy sweep completes has processed it.
+    //
+    // Set to false at the start of a sweep, true  upon completion
+    // of lazy sweeping.
+    bool m_swept;
 };
 
 class HeapPage final : public BaseHeapPage {
@@ -783,7 +805,7 @@ private:
 #endif
 
     bool coalesce();
-    void markUnmarkedObjectsDead();
+    void preparePagesForSweeping();
 
     Address m_currentAllocationPoint;
     size_t m_remainingAllocationSize;
@@ -806,6 +828,18 @@ private:
     size_t m_promptlyFreedSize;
 };
 
+// Mask an address down to the enclosing oilpan heap base page.  All oilpan heap
+// pages are aligned at blinkPageBase plus an OS page size.
+// FIXME: Remove PLATFORM_EXPORT once we get a proper public interface to our
+// typed heaps.  This is only exported to enable tests in HeapTest.cpp.
+PLATFORM_EXPORT inline BaseHeapPage* pageFromObject(const void* object)
+{
+    Address address = reinterpret_cast<Address>(const_cast<void*>(object));
+    BaseHeapPage* page = reinterpret_cast<BaseHeapPage*>(blinkPageAddress(address) + WTF::kSystemPageSize);
+    ASSERT(page->contains(address));
+    return page;
+}
+
 class PLATFORM_EXPORT Heap {
 public:
     static void init();
@@ -817,6 +851,32 @@ public:
     static BaseHeapPage* findPageFromAddress(void* pointer) { return findPageFromAddress(reinterpret_cast<Address>(pointer)); }
     static bool containedInHeapOrOrphanedPage(void*);
 #endif
+
+    // Is the finalizable GC object still alive? If no GC is in progress,
+    // it must be true. If a lazy sweep is in progress, it will be true if
+    // the object hasn't been swept yet and it is marked, or it has
+    // been swept and it is still alive.
+    //
+    // isFinalizedObjectAlive() must not be used with already-finalized object
+    // references.
+    //
+    template<typename T>
+    static bool isFinalizedObjectAlive(const T* objectPointer)
+    {
+        static_assert(IsGarbageCollectedType<T>::value, "only objects deriving from GarbageCollected can be used.");
+#if ENABLE(OILPAN)
+        BaseHeapPage* page = pageFromObject(objectPointer);
+        if (page->hasBeenSwept())
+            return true;
+        ASSERT(page->heap()->threadState()->isSweepingInProgress());
+
+        return ObjectAliveTrait<T>::isHeapObjectAlive(s_markingVisitor, const_cast<T*>(objectPointer));
+#else
+        // FIXME: remove when lazy sweeping is always on
+        // (cf. ThreadState::postGCProcessing()).
+        return true;
+#endif
+    }
 
     // Push a trace callback on the marking stack.
     static void pushTraceCallback(void* containerObject, TraceCallback);
@@ -1189,18 +1249,6 @@ private:
 #define STACK_ALLOCATED() DISALLOW_ALLOCATION()
 #define GC_PLUGIN_IGNORE(bug)
 #endif
-
-// Mask an address down to the enclosing oilpan heap base page.  All oilpan heap
-// pages are aligned at blinkPageBase plus an OS page size.
-// FIXME: Remove PLATFORM_EXPORT once we get a proper public interface to our
-// typed heaps.  This is only exported to enable tests in HeapTest.cpp.
-PLATFORM_EXPORT inline BaseHeapPage* pageFromObject(const void* object)
-{
-    Address address = reinterpret_cast<Address>(const_cast<void*>(object));
-    BaseHeapPage* page = reinterpret_cast<BaseHeapPage*>(blinkPageAddress(address) + WTF::kSystemPageSize);
-    ASSERT(page->contains(address));
-    return page;
-}
 
 NO_SANITIZE_ADDRESS inline
 size_t HeapObjectHeader::size() const
