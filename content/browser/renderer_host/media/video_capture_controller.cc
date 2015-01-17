@@ -179,6 +179,8 @@ class VideoCaptureController::VideoCaptureDeviceClient
 
   // The pool of shared-memory buffers used for capturing.
   const scoped_refptr<VideoCaptureBufferPool> buffer_pool_;
+
+  media::VideoPixelFormat last_captured_pixel_format_;
 };
 
 VideoCaptureController::VideoCaptureController(int max_buffers)
@@ -191,7 +193,10 @@ VideoCaptureController::VideoCaptureController(int max_buffers)
 VideoCaptureController::VideoCaptureDeviceClient::VideoCaptureDeviceClient(
     const base::WeakPtr<VideoCaptureController>& controller,
     const scoped_refptr<VideoCaptureBufferPool>& buffer_pool)
-    : controller_(controller), buffer_pool_(buffer_pool) {}
+    : controller_(controller),
+      buffer_pool_(buffer_pool),
+      last_captured_pixel_format_(media::PIXEL_FORMAT_UNKNOWN) {
+}
 
 VideoCaptureController::VideoCaptureDeviceClient::~VideoCaptureDeviceClient() {}
 
@@ -347,6 +352,12 @@ void VideoCaptureController::VideoCaptureDeviceClient::OnIncomingCapturedData(
     int rotation,
     base::TimeTicks timestamp) {
   TRACE_EVENT0("video", "VideoCaptureController::OnIncomingCapturedData");
+
+  if (last_captured_pixel_format_ != frame_format.pixel_format) {
+    OnLog("Pixel format: " + media::VideoCaptureFormat::PixelFormatToString(
+                                 frame_format.pixel_format));
+    last_captured_pixel_format_ = frame_format.pixel_format;
+  }
 
   if (!frame_format.IsValid())
     return;
