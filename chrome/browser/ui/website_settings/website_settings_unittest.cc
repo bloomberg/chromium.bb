@@ -184,7 +184,7 @@ TEST_F(WebsiteSettingsTest, OnPermissionsChanged) {
   // OnSitePermissionChanged() is called.
 // TODO(markusheintz): This is a temporary hack to fix issue: http://crbug.com/144203.
 #if defined(OS_MACOSX)
-  EXPECT_CALL(*mock_ui(), SetPermissionInfo(_)).Times(6);
+  EXPECT_CALL(*mock_ui(), SetPermissionInfo(_)).Times(7);
 #else
   EXPECT_CALL(*mock_ui(), SetPermissionInfo(_)).Times(1);
 #endif
@@ -201,7 +201,9 @@ TEST_F(WebsiteSettingsTest, OnPermissionsChanged) {
   website_settings()->OnSitePermissionChanged(
       CONTENT_SETTINGS_TYPE_NOTIFICATIONS, CONTENT_SETTING_ALLOW);
   website_settings()->OnSitePermissionChanged(
-        CONTENT_SETTINGS_TYPE_MEDIASTREAM, CONTENT_SETTING_ALLOW);
+      CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, CONTENT_SETTING_ALLOW);
+  website_settings()->OnSitePermissionChanged(
+      CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, CONTENT_SETTING_ALLOW);
 
   // Verify that the site permissions were changed correctly.
   setting = content_settings->GetContentSetting(

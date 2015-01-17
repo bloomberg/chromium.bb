@@ -260,11 +260,11 @@ void ContentSettingMediaImageModel::UpdateFromWebContents(
   int id = IDS_CAMERA_BLOCKED;
   if (state & (TabSpecificContentSettings::MICROPHONE_BLOCKED |
                TabSpecificContentSettings::CAMERA_BLOCKED)) {
-    set_icon(IDR_BLOCKED_MEDIA);
+    set_icon(IDR_BLOCKED_CAMERA);
     if (is_mic)
       id = is_cam ? IDS_MICROPHONE_CAMERA_BLOCKED : IDS_MICROPHONE_BLOCKED;
   } else {
-    set_icon(IDR_ASK_MEDIA);
+    set_icon(IDR_ALLOWED_CAMERA);
     id = IDS_CAMERA_ACCESSED;
     if (is_mic)
       id = is_cam ? IDS_MICROPHONE_CAMERA_ALLOWED : IDS_MICROPHONE_ACCESSED;

@@ -99,7 +99,7 @@ const ContentSettingsType kTestPermissionTypes[] = {
   CONTENT_SETTINGS_TYPE_GEOLOCATION,
   CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
   CONTENT_SETTINGS_TYPE_MOUSELOCK,
-  CONTENT_SETTINGS_TYPE_MEDIASTREAM,
+  CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC
 };
 
 const ContentSetting kTestSettings[] = {
@@ -111,7 +111,7 @@ const ContentSetting kTestSettings[] = {
   CONTENT_SETTING_ALLOW,
   CONTENT_SETTING_BLOCK,
   CONTENT_SETTING_ALLOW,
-  CONTENT_SETTING_BLOCK,
+  CONTENT_SETTING_BLOCK
 };
 
 const ContentSetting kTestDefaultSettings[] = {
@@ -129,7 +129,7 @@ const content_settings::SettingSource kTestSettingSources[] = {
   content_settings::SETTING_SOURCE_POLICY,
   content_settings::SETTING_SOURCE_POLICY,
   content_settings::SETTING_SOURCE_EXTENSION,
-  content_settings::SETTING_SOURCE_EXTENSION,
+  content_settings::SETTING_SOURCE_EXTENSION
 };
 
 class WebsiteSettingsBubbleControllerTest : public CocoaTest {

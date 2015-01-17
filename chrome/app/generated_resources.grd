@@ -386,6 +386,12 @@ are declared in build/common.gypi.
       <message name="IDS_WEBSITE_SETTINGS_TYPE_MEDIASTREAM" desc="The label used for media stream permission controls in the Website Settings popup.">
         Media
       </message>
+      <message name="IDS_WEBSITE_SETTINGS_TYPE_MIC" desc="The label used for the microphone permission controls in the Website Settings popup.">
+        Microphone
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_TYPE_CAMERA" desc="The label used for the camera permission controls in the Website Settings popup.">
+        Camera
+      </message>
       <message name="IDS_WEBSITE_SETTINGS_TYPE_MIDI_SYSEX" desc="The label used for MIDI system exclusive message permission controls in the Website Settings popup.">
         MIDI full control
       </message>

@@ -129,6 +129,10 @@ base::string16 WebsiteSettingsUI::PermissionTypeToUIString(
       return l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_TYPE_MOUSELOCK);
     case CONTENT_SETTINGS_TYPE_MEDIASTREAM:
       return l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_TYPE_MEDIASTREAM);
+    case CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
+      return l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_TYPE_MIC);
+    case CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
+      return l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_TYPE_CAMERA);
     case CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS:
       return l10n_util::GetStringUTF16(IDS_AUTOMATIC_DOWNLOADS_TAB_LABEL);
     case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
@@ -162,8 +166,15 @@ base::string16 WebsiteSettingsUI::PermissionActionToUIString(
     ContentSetting default_setting,
     content_settings::SettingSource source) {
   ContentSetting effective_setting = setting;
-  if (effective_setting == CONTENT_SETTING_DEFAULT)
+  if (effective_setting == CONTENT_SETTING_DEFAULT) {
     effective_setting = default_setting;
+
+    // For Plugins, ASK is obsolete. Show as BLOCK to reflect actual behavior.
+    if (type == CONTENT_SETTINGS_TYPE_PLUGINS &&
+        default_setting == CONTENT_SETTING_ASK) {
+      effective_setting = CONTENT_SETTING_BLOCK;
+    }
+  }
 
   const int* button_text_ids = NULL;
   switch (source) {
@@ -226,8 +237,11 @@ int WebsiteSettingsUI::GetPermissionIconID(ContentSettingsType type,
       resource_id =
           use_blocked ? IDR_BLOCKED_MOUSE_CURSOR : IDR_ALLOWED_MOUSE_CURSOR;
       break;
-    case CONTENT_SETTINGS_TYPE_MEDIASTREAM:
-      resource_id = use_blocked ? IDR_BLOCKED_MEDIA : IDR_ASK_MEDIA;
+    case CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
+      resource_id = use_blocked ? IDR_BLOCKED_MIC : IDR_ALLOWED_MIC;
+      break;
+    case CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
+      resource_id = use_blocked ? IDR_BLOCKED_CAMERA : IDR_ALLOWED_CAMERA;
       break;
     case CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS:
       resource_id = use_blocked ? IDR_BLOCKED_DOWNLOADS

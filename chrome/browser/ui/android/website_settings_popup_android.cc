@@ -96,7 +96,8 @@ void WebsiteSettingsPopupAndroid::SetPermissionInfo(
   // particular order, but only if their value is different from the default.
   std::vector<ContentSettingsType> permissions_to_display;
   permissions_to_display.push_back(CONTENT_SETTINGS_TYPE_GEOLOCATION);
-  permissions_to_display.push_back(CONTENT_SETTINGS_TYPE_MEDIASTREAM);
+  permissions_to_display.push_back(CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA);
+  permissions_to_display.push_back(CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC);
   permissions_to_display.push_back(CONTENT_SETTINGS_TYPE_PUSH_MESSAGING);
   permissions_to_display.push_back(CONTENT_SETTINGS_TYPE_IMAGES);
   permissions_to_display.push_back(CONTENT_SETTINGS_TYPE_JAVASCRIPT);

@@ -70,19 +70,20 @@ enum SSLCertificateDecisionsDidRevoke {
 
 // The list of content settings types to display on the Website Settings UI.
 ContentSettingsType kPermissionType[] = {
-  CONTENT_SETTINGS_TYPE_IMAGES,
-  CONTENT_SETTINGS_TYPE_JAVASCRIPT,
-  CONTENT_SETTINGS_TYPE_PLUGINS,
-  CONTENT_SETTINGS_TYPE_POPUPS,
-  CONTENT_SETTINGS_TYPE_GEOLOCATION,
-  CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-  CONTENT_SETTINGS_TYPE_FULLSCREEN,
-  CONTENT_SETTINGS_TYPE_MOUSELOCK,
-  CONTENT_SETTINGS_TYPE_MEDIASTREAM,
-  CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS,
-  CONTENT_SETTINGS_TYPE_MIDI_SYSEX,
+    CONTENT_SETTINGS_TYPE_IMAGES,
+    CONTENT_SETTINGS_TYPE_JAVASCRIPT,
+    CONTENT_SETTINGS_TYPE_PLUGINS,
+    CONTENT_SETTINGS_TYPE_POPUPS,
+    CONTENT_SETTINGS_TYPE_GEOLOCATION,
+    CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+    CONTENT_SETTINGS_TYPE_FULLSCREEN,
+    CONTENT_SETTINGS_TYPE_MOUSELOCK,
+    CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
+    CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
+    CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS,
+    CONTENT_SETTINGS_TYPE_MIDI_SYSEX,
 #if defined(OS_ANDROID)
-  CONTENT_SETTINGS_TYPE_PUSH_MESSAGING,
+    CONTENT_SETTINGS_TYPE_PUSH_MESSAGING,
 #endif
 };
 
@@ -280,54 +281,28 @@ void WebsiteSettings::OnSitePermissionChanged(ContentSettingsType type,
       primary_pattern = ContentSettingsPattern::FromURL(site_url_);
       secondary_pattern = ContentSettingsPattern::Wildcard();
       break;
-    case CONTENT_SETTINGS_TYPE_MEDIASTREAM: {
-      // We need to use the same same patterns as other places like infobar code
-      // to override the existing rule instead of creating the new one.
+    case CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
+    case CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
       primary_pattern = ContentSettingsPattern::FromURLNoWildcard(site_url_);
       secondary_pattern = ContentSettingsPattern::Wildcard();
-      // Set permission for both microphone and camera.
-      content_settings_->SetContentSetting(
-          primary_pattern,
-          secondary_pattern,
-          CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
-          std::string(),
-          setting);
-
-      content_settings_->SetContentSetting(
-          primary_pattern,
-          secondary_pattern,
-          CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
-          std::string(),
-          setting);
       break;
-    }
     default:
       NOTREACHED() << "ContentSettingsType " << type << "is not supported.";
       break;
   }
 
-  if (type != CONTENT_SETTINGS_TYPE_MEDIASTREAM) {
     // Permission settings are specified via rules. There exists always at least
     // one rule for the default setting. Get the rule that currently defines
     // the permission for the given permission |type|. Then test whether the
     // existing rule is more specific than the rule we are about to create. If
     // the existing rule is more specific, than change the existing rule instead
     // of creating a new rule that would be hidden behind the existing rule.
-    // This is not a concern for CONTENT_SETTINGS_TYPE_MEDIASTREAM since users
-    // can not create media settings exceptions by hand.
     content_settings::SettingInfo info;
     scoped_ptr<base::Value> v =
         content_settings_->GetWebsiteSettingWithoutOverride(
             site_url_, site_url_, type, std::string(), &info);
     content_settings_->SetNarrowestWebsiteSetting(
         primary_pattern, secondary_pattern, type, std::string(), setting, info);
-  } else {
-    base::Value* value = NULL;
-    if (setting != CONTENT_SETTING_DEFAULT)
-      value = new base::FundamentalValue(setting);
-    content_settings_->SetWebsiteSetting(
-        primary_pattern, secondary_pattern, type, std::string(), value);
-  }
 
   show_info_bar_ = true;
 
@@ -696,49 +671,21 @@ void WebsiteSettings::PresentSitePermissions() {
     }
 
     content_settings::SettingInfo info;
-    if (permission_info.type == CONTENT_SETTINGS_TYPE_MEDIASTREAM) {
-      scoped_ptr<base::Value> mic_value =
-          content_settings_->GetWebsiteSettingWithoutOverride(
-              site_url_,
-              site_url_,
-              CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
-              std::string(),
-              &info);
-      ContentSetting mic_setting =
-          content_settings::ValueToContentSetting(mic_value.get());
-
-      scoped_ptr<base::Value> camera_value =
-          content_settings_->GetWebsiteSettingWithoutOverride(
-              site_url_,
-              site_url_,
-              CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
-              std::string(),
-              &info);
-      ContentSetting camera_setting =
-          content_settings::ValueToContentSetting(camera_value.get());
-
-      if (mic_setting != camera_setting || mic_setting == CONTENT_SETTING_ASK)
-        permission_info.setting = CONTENT_SETTING_DEFAULT;
-      else
-        permission_info.setting = mic_setting;
+    scoped_ptr<base::Value> value =
+        content_settings_->GetWebsiteSettingWithoutOverride(
+            site_url_, site_url_, permission_info.type, std::string(), &info);
+    DCHECK(value.get());
+    if (value->GetType() == base::Value::TYPE_INTEGER) {
+      permission_info.setting =
+          content_settings::ValueToContentSetting(value.get());
     } else {
-      scoped_ptr<base::Value> value =
-          content_settings_->GetWebsiteSettingWithoutOverride(
-              site_url_, site_url_, permission_info.type, std::string(), &info);
-      DCHECK(value.get());
-      if (value->GetType() == base::Value::TYPE_INTEGER) {
-        permission_info.setting =
-            content_settings::ValueToContentSetting(value.get());
-      } else {
-        NOTREACHED();
-      }
+      NOTREACHED();
     }
 
     permission_info.source = info.source;
 
     if (info.primary_pattern == ContentSettingsPattern::Wildcard() &&
-        info.secondary_pattern == ContentSettingsPattern::Wildcard() &&
-        permission_info.type != CONTENT_SETTINGS_TYPE_MEDIASTREAM) {
+        info.secondary_pattern == ContentSettingsPattern::Wildcard()) {
       permission_info.default_setting = permission_info.setting;
       permission_info.setting = CONTENT_SETTING_DEFAULT;
     } else {

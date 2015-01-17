@@ -26,11 +26,13 @@
            BECAUSE YOUR RESOURCES ARE FUNCTIONALLY RELATED OR FALL UNDER THE
            SAME CONDITIONALS. -->
       <structure type="chrome_scaled_image" name="IDR_ACCESSED_COOKIES" file="common/accessed_cookies.png" />
+      <structure type="chrome_scaled_image" name="IDR_ALLOWED_CAMERA" file="common/allowed_camera.png" />
       <structure type="chrome_scaled_image" name="IDR_ALLOWED_DOWNLOADS" file="common/allowed_downloads.png" />
       <structure type="chrome_scaled_image" name="IDR_ALLOWED_FULLSCREEN" file="common/allowed_fullscreen.png" />
       <structure type="chrome_scaled_image" name="IDR_ALLOWED_IMAGES" file="common/allowed_images.png" />
       <structure type="chrome_scaled_image" name="IDR_ALLOWED_JAVASCRIPT" file="common/allowed_script.png" />
       <structure type="chrome_scaled_image" name="IDR_ALLOWED_LOCATION" file="common/allowed_location.png" />
+      <structure type="chrome_scaled_image" name="IDR_ALLOWED_MIC" file="common/allowed_mic.png" />
       <structure type="chrome_scaled_image" name="IDR_ALLOWED_MIDI_SYSEX" file="common/allowed_midi.png" />
       <structure type="chrome_scaled_image" name="IDR_ALLOWED_MOUSE_CURSOR" file="common/allowed_mouse_cursor.png" />
       <structure type="chrome_scaled_image" name="IDR_ALLOWED_NOTIFICATION" file="common/allowed_notifications.png" />
@@ -51,7 +53,6 @@
         <structure type="chrome_scaled_image" name="IDR_APP_LIST_TAB_OVERLAY" file="common/app_list_v1_overlay.png" />
         <structure type="chrome_scaled_image" name="IDR_APP_LIST_MIC_HOTWORD_OFF" file="common/app_list_mic_hotword_off.png" />
       </if>
-      <structure type="chrome_scaled_image" name="IDR_ASK_MEDIA" file="ask_media.png" />
       <if expr="toolkit_views and not is_macosx">
         <structure type="chrome_scaled_image" name="IDR_APP_WINDOW_CLOSE" file="common/app_window_close.png" />
         <structure type="chrome_scaled_image" name="IDR_APP_WINDOW_CLOSE_H" file="common/app_window_close_hover.png" />
@@ -102,15 +103,16 @@
         <structure type="chrome_scaled_image" name="IDR_BACK_H" file="common/browser_back_hover.png" />
         <structure type="chrome_scaled_image" name="IDR_BACK_P" file="common/browser_back_pressed.png" />
       </if>
+      <structure type="chrome_scaled_image" name="IDR_BLOCKED_CAMERA" file="common/blocked_camera.png" />
       <structure type="chrome_scaled_image" name="IDR_BLOCKED_COOKIES" file="common/blocked_cookies.png" />
       <structure type="chrome_scaled_image" name="IDR_BLOCKED_DOWNLOADS" file="common/blocked_downloads.png" />
       <structure type="chrome_scaled_image" name="IDR_BLOCKED_IMAGES" file="common/blocked_images.png" />
       <structure type="chrome_scaled_image" name="IDR_BLOCKED_JAVASCRIPT" file="common/blocked_script.png" />
       <structure type="chrome_scaled_image" name="IDR_BLOCKED_LOCATION" file="common/blocked_location.png" />
-      <structure type="chrome_scaled_image" name="IDR_BLOCKED_MEDIA" file="common/blocked_mediastream.png" />
+      <structure type="chrome_scaled_image" name="IDR_BLOCKED_MIC" file="common/blocked_mic.png" />
       <structure type="chrome_scaled_image" name="IDR_BLOCKED_MIDI_SYSEX" file="common/blocked_midi.png" />
-      <structure type="chrome_scaled_image" name="IDR_BLOCKED_MOUSE_CURSOR" file="common/blocked_mouse_cursor.png" />
       <structure type="chrome_scaled_image" name="IDR_BLOCKED_MIXED_CONTENT" file="common/blocked_mixed_content.png" />
+      <structure type="chrome_scaled_image" name="IDR_BLOCKED_MOUSE_CURSOR" file="common/blocked_mouse_cursor.png" />
       <structure type="chrome_scaled_image" name="IDR_BLOCKED_NOTIFICATION" file="common/blocked_notifications.png" />
       <structure type="chrome_scaled_image" name="IDR_BLOCKED_PLUGINS" file="common/blocked_plugins.png" />
       <structure type="chrome_scaled_image" name="IDR_BLOCKED_POPUPS" file="common/blocked_popups.png" />

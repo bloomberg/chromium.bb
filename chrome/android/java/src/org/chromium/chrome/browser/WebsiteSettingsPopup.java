@@ -318,8 +318,10 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
                 return R.drawable.permission_javascript;
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_GEOLOCATION:
                 return R.drawable.permission_location;
-            case ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM:
+            case ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
                 return R.drawable.permission_media;
+            case ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
+                return R.drawable.permission_mic;
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_PUSH_MESSAGING:
                 return R.drawable.permission_push_notification;
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_POPUPS:
