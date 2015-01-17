@@ -74,7 +74,8 @@ class TestRunner(instr_test_runner.TestRunner):
         force_stop=True)
     cmd = ['uiautomator', 'runtest',
            self.test_pkg.UIAUTOMATOR_PATH + self.test_pkg.GetPackageName(),
-           '-e', 'class', test]
+           '-e', 'class', test,
+           '-e', 'test_package', self._package]
     return self.device.RunShellCommand(cmd, timeout=timeout, retries=0)
 
   #override
