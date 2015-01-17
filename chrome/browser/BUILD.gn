@@ -650,8 +650,8 @@ static_library("browser") {
       #"../chrome_elf/chrome_elf.gyp:chrome_elf_constants",  TODO(GYP)
       #"../chrome_elf/chrome_elf.gyp:dll_hash",  TODO(GYP)
       #"../google_update/google_update.gyp:google_update",  TODO(GYP)
-      #"../ui/metro_viewer/metro_viewer.gyp:metro_viewer_messages",  TODO(GYP)
-      #"../win8/win8.gyp:metro_viewer",  TODO(GYP)
+      "//ui/metro_viewer",
+      "//win8:metro_viewer",
     ]
   } else {
     # Non-Windows.

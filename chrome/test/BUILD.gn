@@ -162,8 +162,8 @@ source_set("test_support") {
     ]
     if (use_aura) {
       deps += [
-        #'../win8/win8.gyp:test_registrar_constants',  TODO(GYP)
-        #'../win8/win8.gyp:test_support_win8',  TODO(GYP)
+        "//win8:test_registrar_constants",
+        "//win8:test_support_win8",
       ]
     }
   }

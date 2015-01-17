@@ -62,7 +62,7 @@ component("shell_dialogs") {
   }
 
   if (is_win) {
-    #deps += [ '../../win8/win8.gyp:metro_viewer' ]  TODO(GYP)
+    deps += [ "//win8:metro_viewer" ]
   }
 }
 

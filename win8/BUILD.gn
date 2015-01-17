@@ -1,0 +1,71 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("metro_viewer_constants") {
+  sources = [
+    "viewer/metro_viewer_constants.cc",
+    "viewer/metro_viewer_constants.h",
+  ]
+}
+
+component("metro_viewer") {
+  deps = [
+    "//base",
+    "//ipc",
+    "//ui/aura",
+    "//ui/metro_viewer",
+    ":metro_viewer_constants",
+  ]
+  sources = [
+    "viewer/metro_viewer_process_host.cc",
+    "viewer/metro_viewer_process_host.h",
+  ]
+  defines = [ "METRO_VIEWER_IMPLEMENTATION" ]
+}
+
+source_set("test_support_win8") {
+  deps = [
+    "//base",
+    ":test_registrar_constants",
+  ]
+  sources = [
+    "test/metro_registration_helper.cc",
+    "test/metro_registration_helper.h",
+    "test/open_with_dialog_async.cc",
+    "test/open_with_dialog_async.h",
+    "test/open_with_dialog_controller.cc",
+    "test/open_with_dialog_controller.h",
+    "test/ui_automation_client.cc",
+    "test/ui_automation_client.h",
+  ]
+
+  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+  cflags = [ "/wd4267" ]
+}
+
+source_set("test_registrar_constants") {
+  sources = [
+    "test/test_registrar_constants.cc",
+    "test/test_registrar_constants.h",
+  ]
+}
+
+executable("test_registrar") {
+  deps = [
+    "//base",
+
+    # Chrome is the default viewer process currently used by the tests.
+    # TODO(robertshield): Investigate building a standalone metro viewer
+    # process.
+    "//chrome",
+    ":test_registrar_constants",
+  ]
+  sources = [
+    "test/test_registrar.cc",
+    "test/test_registrar.rc",
+    "test/test_registrar.rgs",
+    "test/test_registrar_resource.h",
+  ]
+  configs += [ "//build/config/win:windowed" ]
+}

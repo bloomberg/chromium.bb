@@ -184,10 +184,10 @@ static_library("test_support") {
     ]
     deps += [
       "//ipc",
-      #'../ui/metro_viewer/metro_viewer.gyp:metro_viewer_messages',  TODO(GYP)
-      #'../win8/win8.gyp:metro_viewer',  TODO(GYP)
-      #'../win8/win8.gyp:test_support_win8',  TODO(GYP)
-      #'../win8/win8_tests.gyp:test_registrar',  TODO(GYP)
+      "//ui/metro_viewer",
+      "//win8:metro_viewer",
+      "//win8:test_support_win8",
+      "//win8:test_registrar",
     ]
   }
 }
