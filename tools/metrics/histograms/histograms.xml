@@ -41483,6 +41483,30 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="WebRTC.BWE.RampUpTimeTo1000kbpsInMs" units="ms">
+  <owner>holmer@chromium.org</owner>
+  <summary>
+    The time it takes the estimated bandwidth to reach 1000 kbps from the first
+    RTCP packet received. Used to measure the bandwidth ramp-up time.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.BWE.RampUpTimeTo2000kbpsInMs" units="ms">
+  <owner>holmer@chromium.org</owner>
+  <summary>
+    The time it takes the estimated bandwidth to reach 2000 kbps from the first
+    RTCP packet received. Used to measure the bandwidth ramp-up time.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.BWE.RampUpTimeTo500kbpsInMs" units="ms">
+  <owner>holmer@chromium.org</owner>
+  <summary>
+    The time it takes the estimated bandwidth to reach 500 kbps from the first
+    RTCP packet received. Used to measure the bandwidth ramp-up time.
+  </summary>
+</histogram>
+
 <histogram name="WebRTC.DataChannelCounters" enum="DataChannelCounters">
   <owner>perkj@chromium.org</owner>
   <summary>
