@@ -63,7 +63,9 @@ BrowserCdmManager::BrowserCdmManager(
     const scoped_refptr<base::TaskRunner>& task_runner)
     : BrowserMessageFilter(CdmMsgStart),
       render_process_id_(render_process_id),
-      task_runner_(task_runner) {
+      task_runner_(task_runner),
+      weak_ptr_factory_(this) {
+  DVLOG(1) << __FUNCTION__ << ": " << render_process_id_;
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (!task_runner_.get()) {
@@ -77,6 +79,7 @@ BrowserCdmManager::BrowserCdmManager(
 }
 
 BrowserCdmManager::~BrowserCdmManager() {
+  DVLOG(1) << __FUNCTION__ << ": " << render_process_id_;
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(g_browser_cdm_manager_map.Get().count(render_process_id_));
   DCHECK_EQ(this, g_browser_cdm_manager_map.Get()[render_process_id_]);
@@ -86,6 +89,7 @@ BrowserCdmManager::~BrowserCdmManager() {
 
 // Makes sure BrowserCdmManager is always deleted on the Browser UI thread.
 void BrowserCdmManager::OnDestruct() const {
+  DVLOG(1) << __FUNCTION__ << ": " << render_process_id_;
   if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     delete this;
   } else {
@@ -300,8 +304,10 @@ void BrowserCdmManager::SendSessionError(int render_frame_id,
         render_frame_id, cdm_id, session_id, MediaKeys::kUnknownError, 0);
 }
 
-#define BROWSER_CDM_MANAGER_CB(func) \
-  base::Bind(&BrowserCdmManager::func, this, render_frame_id, cdm_id)
+// Use a weak pointer here instead of |this| to avoid circular references.
+#define BROWSER_CDM_MANAGER_CB(func)                                   \
+  base::Bind(&BrowserCdmManager::func, weak_ptr_factory_.GetWeakPtr(), \
+             render_frame_id, cdm_id)
 
 void BrowserCdmManager::AddCdm(int render_frame_id,
                                int cdm_id,

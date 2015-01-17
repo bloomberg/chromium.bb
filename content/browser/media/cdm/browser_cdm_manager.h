@@ -13,6 +13,7 @@
 #include "base/callback.h"
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
 #include "content/common/media/cdm_messages_enums.h"
 #include "content/public/browser/browser_message_filter.h"
@@ -152,6 +153,8 @@ class CONTENT_EXPORT BrowserCdmManager : public BrowserMessageFilter {
 
   // Map of callbacks to cancel the permission request.
   std::map<uint64, base::Closure> cdm_cancel_permission_map_;
+
+  base::WeakPtrFactory<BrowserCdmManager> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserCdmManager);
 };
