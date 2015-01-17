@@ -942,7 +942,7 @@ template<typename T> struct ConvertableToTraceFormatTraits<T*> {
     }
 };
 
-template<typename T> struct ConvertableToTraceFormatTraits<PassRefPtr<T> > {
+template<typename T> struct ConvertableToTraceFormatTraits<PassRefPtr<T>> {
     static const bool isConvertable = WTF::IsSubclass<T, TraceEvent::ConvertableToTraceFormat>::value;
     static void assignIfConvertable(ConvertableToTraceFormat*& left, const PassRefPtr<T>& right)
     {

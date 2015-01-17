@@ -91,7 +91,7 @@ private:
 
     typedef HashMap<FontPlatformData, pair<RefPtr<SimpleFontData>, unsigned>, FontDataCacheKeyHash, FontDataCacheKeyTraits> Cache;
     Cache m_cache;
-    ListHashSet<RefPtr<SimpleFontData> > m_inactiveFontData;
+    ListHashSet<RefPtr<SimpleFontData>> m_inactiveFontData;
 };
 
 } // namespace blink

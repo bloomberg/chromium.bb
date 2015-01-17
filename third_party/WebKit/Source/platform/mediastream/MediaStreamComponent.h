@@ -107,7 +107,7 @@ private:
     OwnPtr<ExtraData> m_extraData;
 };
 
-typedef Vector<RefPtr<MediaStreamComponent> > MediaStreamComponentVector;
+typedef Vector<RefPtr<MediaStreamComponent>> MediaStreamComponentVector;
 
 } // namespace blink
 

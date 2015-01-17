@@ -748,7 +748,7 @@ struct CastToCheckedIntImpl
 };
 
 template<typename T>
-struct CastToCheckedIntImpl<T, CheckedInt<T> >
+struct CastToCheckedIntImpl<T, CheckedInt<T>>
 {
     typedef const CheckedInt<T>& ReturnType;
     static const CheckedInt<T>& run(const CheckedInt<T>& u) { return u; }

@@ -490,7 +490,7 @@ private:
     // Paint states stack. Enables local drawing state change with save()/restore() calls.
     // This state controls the appearance of drawn content.
     // We do not delete from this stack to avoid memory churn.
-    Vector<OwnPtr<GraphicsContextState> > m_paintStateStack;
+    Vector<OwnPtr<GraphicsContextState>> m_paintStateStack;
     // Current index on the stack. May not be the last thing on the stack.
     unsigned m_paintStateIndex;
     // Raw pointer to the current state.
@@ -498,7 +498,7 @@ private:
 
     AnnotationModeFlags m_annotationMode;
 
-    Vector<OwnPtr<RecordingState> > m_recordingStateStack;
+    Vector<OwnPtr<RecordingState>> m_recordingStateStack;
 
 #if ENABLE(ASSERT)
     unsigned m_annotationCount;

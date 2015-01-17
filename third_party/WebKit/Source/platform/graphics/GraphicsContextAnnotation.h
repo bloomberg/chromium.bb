@@ -48,7 +48,7 @@ enum AnnotationMode {
 };
 
 typedef unsigned AnnotationModeFlags;
-typedef Vector<std::pair<const char*, String> > AnnotationList;
+typedef Vector<std::pair<const char*, String>> AnnotationList;
 
 } // namespace blink
 

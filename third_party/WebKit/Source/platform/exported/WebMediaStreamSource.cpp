@@ -222,8 +222,8 @@ bool WebMediaStreamSource::removeAudioConsumer(WebAudioDestinationConsumer* cons
     ASSERT(isMainThread());
     ASSERT(!m_private.isNull() && consumer);
 
-    const HeapHashSet<Member<AudioDestinationConsumer> >& consumers = m_private->audioConsumers();
-    for (HeapHashSet<Member<AudioDestinationConsumer> >::const_iterator it = consumers.begin(); it != consumers.end(); ++it) {
+    const HeapHashSet<Member<AudioDestinationConsumer>>& consumers = m_private->audioConsumers();
+    for (HeapHashSet<Member<AudioDestinationConsumer>>::const_iterator it = consumers.begin(); it != consumers.end(); ++it) {
         ConsumerWrapper* wrapper = static_cast<ConsumerWrapper*>(it->get());
         if (wrapper->consumer() == consumer) {
             m_private->removeAudioConsumer(wrapper);

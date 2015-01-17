@@ -192,7 +192,7 @@ protected:
     RefPtr<Allocator> m_allocator;
     Chunk* m_current;
     size_t m_currentChunkSize;
-    Vector<OwnPtr<Chunk> > m_chunks;
+    Vector<OwnPtr<Chunk>> m_chunks;
 };
 
 } // namespace blink

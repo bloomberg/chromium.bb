@@ -31,7 +31,7 @@
 namespace blink {
 
 template <class T>
-class PODFreeListArena : public RefCounted<PODFreeListArena<T> > {
+class PODFreeListArena : public RefCounted<PODFreeListArena<T>> {
 public:
     static PassRefPtr<PODFreeListArena> create()
     {

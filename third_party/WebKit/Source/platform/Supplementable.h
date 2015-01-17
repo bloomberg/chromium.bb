@@ -99,12 +99,12 @@ struct SupplementableTraits;
 
 template<typename T>
 struct SupplementableTraits<T, true> {
-    typedef RawPtr<SupplementBase<T, true> > SupplementArgumentType;
+    typedef RawPtr<SupplementBase<T, true>> SupplementArgumentType;
 };
 
 template<typename T>
 struct SupplementableTraits<T, false> {
-    typedef PassOwnPtr<SupplementBase<T, false> > SupplementArgumentType;
+    typedef PassOwnPtr<SupplementBase<T, false>> SupplementArgumentType;
 };
 
 template<bool>
@@ -161,14 +161,14 @@ public:
     }
 
 protected:
-    typedef HeapHashMap<const char*, Member<SupplementBase<T, true> >, PtrHash<const char*> > SupplementMap;
+    typedef HeapHashMap<const char*, Member<SupplementBase<T, true>>, PtrHash<const char*>> SupplementMap;
     SupplementMap m_supplements;
 };
 
 template<typename T>
 class SupplementableTracing<T, false> {
 protected:
-    typedef HashMap<const char*, OwnPtr<SupplementBase<T, false> >, PtrHash<const char*> > SupplementMap;
+    typedef HashMap<const char*, OwnPtr<SupplementBase<T, false>>, PtrHash<const char*>> SupplementMap;
     SupplementMap m_supplements;
 };
 
@@ -224,12 +224,12 @@ template<typename T>
 class Supplementable : public SupplementableBase<T, false> { };
 
 template<typename T>
-struct ThreadingTrait<SupplementBase<T, true> > {
+struct ThreadingTrait<SupplementBase<T, true>> {
     static const ThreadAffinity Affinity = ThreadingTrait<T>::Affinity;
 };
 
 template<typename T>
-struct ThreadingTrait<SupplementableBase<T, true> > {
+struct ThreadingTrait<SupplementableBase<T, true>> {
     static const ThreadAffinity Affinity = ThreadingTrait<T>::Affinity;
 };
 

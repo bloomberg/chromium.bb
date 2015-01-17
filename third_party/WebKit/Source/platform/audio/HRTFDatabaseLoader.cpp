@@ -39,7 +39,7 @@
 
 namespace blink {
 
-typedef HeapHashMap<double, WeakMember<HRTFDatabaseLoader> > LoaderMap;
+typedef HeapHashMap<double, WeakMember<HRTFDatabaseLoader>> LoaderMap;
 
 static LoaderMap& loaderMap()
 {

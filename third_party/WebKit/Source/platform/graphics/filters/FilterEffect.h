@@ -43,7 +43,7 @@ class TextStream;
 
 class SkiaImageFilterBuilder;
 
-typedef WillBeHeapVector<RefPtrWillBeMember<FilterEffect> > FilterEffectVector;
+typedef WillBeHeapVector<RefPtrWillBeMember<FilterEffect>> FilterEffectVector;
 
 enum FilterEffectType {
     FilterEffectTypeUnknown,

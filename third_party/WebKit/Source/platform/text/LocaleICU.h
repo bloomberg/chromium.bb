@@ -79,7 +79,7 @@ private:
 
     void initializeCalendar();
 
-    PassOwnPtr<Vector<String> > createLabelVector(const UDateFormat*, UDateFormatSymbolType, int32_t startIndex, int32_t size);
+    PassOwnPtr<Vector<String>> createLabelVector(const UDateFormat*, UDateFormatSymbolType, int32_t startIndex, int32_t size);
     void initializeDateTimeFormat();
 
     CString m_locale;
@@ -88,9 +88,9 @@ private:
     bool m_didCreateDecimalFormat;
     bool m_didCreateShortDateFormat;
 
-    OwnPtr<Vector<String> > m_weekDayShortLabels;
+    OwnPtr<Vector<String>> m_weekDayShortLabels;
     unsigned m_firstDayOfWeek;
-    OwnPtr<Vector<String> > m_monthLabels;
+    OwnPtr<Vector<String>> m_monthLabels;
     String m_dateFormat;
     String m_monthFormat;
     String m_shortMonthFormat;

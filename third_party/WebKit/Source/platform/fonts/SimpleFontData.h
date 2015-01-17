@@ -161,7 +161,7 @@ private:
 
     FontPlatformData m_platformData;
 
-    mutable OwnPtr<GlyphMetricsMap<FloatRect> > m_glyphToBoundsMap;
+    mutable OwnPtr<GlyphMetricsMap<FloatRect>> m_glyphToBoundsMap;
     mutable GlyphMetricsMap<float> m_glyphToWidthMap;
 
     bool m_treatAsFixedPitch;
@@ -200,7 +200,7 @@ private:
     mutable OwnPtr<DerivedFontData> m_derivedFontData;
 
     RefPtr<CustomFontData> m_customFontData;
-    mutable OwnPtr<HashMap<String, bool> > m_combiningCharacterSequenceSupport;
+    mutable OwnPtr<HashMap<String, bool>> m_combiningCharacterSequenceSupport;
 };
 
 ALWAYS_INLINE FloatRect SimpleFontData::boundsForGlyph(Glyph glyph) const

@@ -748,7 +748,7 @@ static inline String trimToNextSeparator(const String& str)
     return str.substring(0, str.find(isCacheHeaderSeparator));
 }
 
-static void parseCacheHeader(const String& header, Vector<pair<String, String> >& result)
+static void parseCacheHeader(const String& header, Vector<pair<String, String>>& result)
 {
     const String safeHeader = header.removeCharacters(isControlCharacter);
     unsigned max = safeHeader.length();
@@ -816,7 +816,7 @@ CacheControlHeader parseCacheControlDirectives(const AtomicString& cacheControlV
     DEFINE_STATIC_LOCAL(const AtomicString, maxAgeDirective, ("max-age", AtomicString::ConstructFromLiteral));
 
     if (!cacheControlValue.isEmpty()) {
-        Vector<pair<String, String> > directives;
+        Vector<pair<String, String>> directives;
         parseCacheHeader(cacheControlValue, directives);
 
         size_t directivesSize = directives.size();

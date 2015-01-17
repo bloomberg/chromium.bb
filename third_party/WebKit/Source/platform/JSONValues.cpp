@@ -438,7 +438,7 @@ PassRefPtr<JSONArray> JSONArrayBase::asArray()
 void JSONArrayBase::writeJSON(StringBuilder* output) const
 {
     output->append('[');
-    for (Vector<RefPtr<JSONValue> >::const_iterator it = m_data.begin(); it != m_data.end(); ++it) {
+    for (Vector<RefPtr<JSONValue>>::const_iterator it = m_data.begin(); it != m_data.end(); ++it) {
         if (it != m_data.begin())
             output->append(',');
         (*it)->writeJSON(output);
@@ -450,7 +450,7 @@ void JSONArrayBase::prettyWriteJSONInternal(StringBuilder* output, int depth) co
 {
     output->append('[');
     bool lastIsArrayOrObject = false;
-    for (Vector<RefPtr<JSONValue> >::const_iterator it = m_data.begin(); it != m_data.end(); ++it) {
+    for (Vector<RefPtr<JSONValue>>::const_iterator it = m_data.begin(); it != m_data.end(); ++it) {
         bool isArrayOrObject = (*it)->type() == JSONValue::TypeObject || (*it)->type() == JSONValue::TypeArray;
         if (it == m_data.begin()) {
             if (isArrayOrObject) {

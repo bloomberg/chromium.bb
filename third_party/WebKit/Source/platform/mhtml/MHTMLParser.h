@@ -67,8 +67,8 @@ private:
     void addResourceToArchive(ArchiveResource*, MHTMLArchive*);
 
     SharedBufferChunkReader m_lineReader;
-    WillBeHeapVector<RefPtrWillBeMember<ArchiveResource> > m_resources;
-    WillBeHeapVector<RefPtrWillBeMember<MHTMLArchive> > m_frames;
+    WillBeHeapVector<RefPtrWillBeMember<ArchiveResource>> m_resources;
+    WillBeHeapVector<RefPtrWillBeMember<MHTMLArchive>> m_frames;
 };
 
 }

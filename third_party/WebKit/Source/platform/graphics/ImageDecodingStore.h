@@ -172,18 +172,18 @@ private:
 
     // Helper method to remove a cache entry. Ownership is transferred to
     // deletionList. Use of Vector<> is handy when removing multiple entries.
-    template<class T, class U, class V> void removeFromCacheInternal(const T* cacheEntry, U* cacheMap, V* identifierMap, Vector<OwnPtr<CacheEntry> >* deletionList);
+    template<class T, class U, class V> void removeFromCacheInternal(const T* cacheEntry, U* cacheMap, V* identifierMap, Vector<OwnPtr<CacheEntry>>* deletionList);
 
     // Helper method to remove a cache entry. Uses the templated version base on
     // the type of cache entry.
-    void removeFromCacheInternal(const CacheEntry*, Vector<OwnPtr<CacheEntry> >* deletionList);
+    void removeFromCacheInternal(const CacheEntry*, Vector<OwnPtr<CacheEntry>>* deletionList);
 
     // Helper method to remove all cache entries associated with a ImageFraneGenerator.
     // Ownership of cache entries is transferred to deletionList.
-    template<class U, class V> void removeCacheIndexedByGeneratorInternal(U* cacheMap, V* identifierMap, const ImageFrameGenerator*, Vector<OwnPtr<CacheEntry> >* deletionList);
+    template<class U, class V> void removeCacheIndexedByGeneratorInternal(U* cacheMap, V* identifierMap, const ImageFrameGenerator*, Vector<OwnPtr<CacheEntry>>* deletionList);
 
     // Helper method to remove cache entry pointers from the LRU list.
-    void removeFromCacheListInternal(const Vector<OwnPtr<CacheEntry> >& deletionList);
+    void removeFromCacheListInternal(const Vector<OwnPtr<CacheEntry>>& deletionList);
 
     // A doubly linked list that maintains usage history of cache entries.
     // This is used for eviction of old entries.
@@ -192,7 +192,7 @@ private:
     DoublyLinkedList<CacheEntry> m_orderedCacheList;
 
     // A lookup table for all decoder cache objects. Owns all decoder cache objects.
-    typedef HashMap<DecoderCacheKey, OwnPtr<DecoderCacheEntry> > DecoderCacheMap;
+    typedef HashMap<DecoderCacheKey, OwnPtr<DecoderCacheEntry>> DecoderCacheMap;
     DecoderCacheMap m_decoderCacheMap;
 
     // A lookup table to map ImageFrameGenerator to all associated

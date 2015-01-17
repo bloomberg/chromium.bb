@@ -60,8 +60,8 @@ public:
 private:
     ArchiveResourceCollection();
 
-    WillBeHeapHashMap<String, RefPtrWillBeMember<ArchiveResource> > m_subresources;
-    WillBeHeapHashMap<String, RefPtrWillBeMember<MHTMLArchive> > m_subframes;
+    WillBeHeapHashMap<String, RefPtrWillBeMember<ArchiveResource>> m_subresources;
+    WillBeHeapHashMap<String, RefPtrWillBeMember<MHTMLArchive>> m_subframes;
 };
 
 }

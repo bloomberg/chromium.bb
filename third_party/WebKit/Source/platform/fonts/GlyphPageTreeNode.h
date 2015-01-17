@@ -134,7 +134,7 @@ private:
     static GlyphPageTreeNode* pageZeroRoot;
 
     RefPtr<GlyphPage> m_page;
-    typedef HashMap<const FontData*, OwnPtr<GlyphPageTreeNode> > GlyphPageTreeNodeMap;
+    typedef HashMap<const FontData*, OwnPtr<GlyphPageTreeNode>> GlyphPageTreeNodeMap;
     GlyphPageTreeNodeMap m_children;
     OwnPtr<SystemFallbackGlyphPageTreeNode> m_systemFallbackChild;
 };

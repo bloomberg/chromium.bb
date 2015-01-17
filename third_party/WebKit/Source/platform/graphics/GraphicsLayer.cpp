@@ -63,7 +63,7 @@
 
 namespace blink {
 
-typedef HashMap<const GraphicsLayer*, Vector<FloatRect> > RepaintMap;
+typedef HashMap<const GraphicsLayer*, Vector<FloatRect>> RepaintMap;
 static RepaintMap& repaintRectMap()
 {
     DEFINE_STATIC_LOCAL(RepaintMap, map, ());

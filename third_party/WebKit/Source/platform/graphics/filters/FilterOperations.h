@@ -59,7 +59,7 @@ public:
         m_operations.clear();
     }
 
-    typedef WillBeHeapVector<RefPtrWillBeMember<FilterOperation> > FilterOperationVector;
+    typedef WillBeHeapVector<RefPtrWillBeMember<FilterOperation>> FilterOperationVector;
 
     FilterOperationVector& operations() { return m_operations; }
     const FilterOperationVector& operations() const { return m_operations; }

@@ -89,7 +89,7 @@ struct SecurityOriginHash {
 
 namespace WTF {
 
-template<> struct DefaultHash<RefPtr<blink::SecurityOrigin> > {
+template<> struct DefaultHash<RefPtr<blink::SecurityOrigin>> {
     typedef blink::SecurityOriginHash Hash;
 };
 

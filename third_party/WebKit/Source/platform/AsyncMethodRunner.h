@@ -120,9 +120,9 @@ public:
     }
 
 private:
-    void fired(Timer<AsyncMethodRunner<TargetClass> >*) { (m_object->*m_method)(); }
+    void fired(Timer<AsyncMethodRunner<TargetClass>>*) { (m_object->*m_method)(); }
 
-    Timer<AsyncMethodRunner<TargetClass> > m_timer;
+    Timer<AsyncMethodRunner<TargetClass>> m_timer;
 
     // FIXME: oilpan: AsyncMethodRunner should be moved to the heap and m_object should be traced.
     // This raw pointer is safe as long as AsyncMethodRunner<X> is held by the X itself

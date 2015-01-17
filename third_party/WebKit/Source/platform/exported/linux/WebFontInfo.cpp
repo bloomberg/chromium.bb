@@ -255,7 +255,7 @@ private:
     // FIXME: This shouldn't need to be AtomicString, but
     // currently HashTraits<const char*> isn't smart enough
     // to hash the string (only does pointer compares).
-    typedef HashMap<AtomicString, OwnPtr<CachedFontSet> > LocaleToCachedFont;
+    typedef HashMap<AtomicString, OwnPtr<CachedFontSet>> LocaleToCachedFont;
     LocaleToCachedFont m_setsByLocale;
 };
 

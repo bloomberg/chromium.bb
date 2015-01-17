@@ -37,7 +37,7 @@
 namespace blink {
 
 template <typename T>
-class HeapLinkedStack : public GarbageCollected<HeapLinkedStack<T> > {
+class HeapLinkedStack : public GarbageCollected<HeapLinkedStack<T>> {
 public:
     HeapLinkedStack() : m_size(0) { }
 
@@ -111,7 +111,7 @@ inline size_t HeapLinkedStack<T>::size()
 }
 
 template<typename T>
-class TraceEagerlyTrait<HeapLinkedStack<T> > {
+class TraceEagerlyTrait<HeapLinkedStack<T>> {
 public:
     static const bool value = TraceEagerlyTrait<T>::value;
 };

@@ -124,8 +124,8 @@ bool FontDataCache::purgeLeastRecentlyUsed(int count)
     isPurging = true;
 
     Vector<RefPtr<SimpleFontData>, 20> fontDataToDelete;
-    ListHashSet<RefPtr<SimpleFontData> >::iterator end = m_inactiveFontData.end();
-    ListHashSet<RefPtr<SimpleFontData> >::iterator it = m_inactiveFontData.begin();
+    ListHashSet<RefPtr<SimpleFontData>>::iterator end = m_inactiveFontData.end();
+    ListHashSet<RefPtr<SimpleFontData>>::iterator it = m_inactiveFontData.begin();
     for (int i = 0; i < count && it != end; ++it, ++i) {
         RefPtr<SimpleFontData>& fontData = *it.get();
         m_cache.remove(fontData->platformData());

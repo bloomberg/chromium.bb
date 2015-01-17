@@ -312,7 +312,7 @@ private:
     void applyL1Rule(BidiRunList<Run>&);
 
     Vector<BidiEmbedding, 8> m_currentExplicitEmbeddingSequence;
-    HashMap<Run *, MidpointState<Iterator> > m_midpointStateForIsolatedRun;
+    HashMap<Run *, MidpointState<Iterator>> m_midpointStateForIsolatedRun;
 };
 
 #if ENABLE(ASSERT)

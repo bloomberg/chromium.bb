@@ -301,7 +301,7 @@ private:
     OwnPtr<WebExternalTextureLayer> m_layer;
 
     // All of the mailboxes that this DrawingBuffer has ever created.
-    Vector<RefPtr<MailboxInfo> > m_textureMailboxes;
+    Vector<RefPtr<MailboxInfo>> m_textureMailboxes;
     // Mailboxes that were released by the compositor can be used again by this DrawingBuffer.
     Deque<WebExternalTextureMailbox> m_recycledMailboxQueue;
 

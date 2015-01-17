@@ -105,7 +105,7 @@ void ImageDecodingStore::insertDecoder(const ImageFrameGenerator* generator, Pas
 
 void ImageDecodingStore::removeDecoder(const ImageFrameGenerator* generator, const ImageDecoder* decoder)
 {
-    Vector<OwnPtr<CacheEntry> > cacheEntriesToDelete;
+    Vector<OwnPtr<CacheEntry>> cacheEntriesToDelete;
     {
         MutexLocker lock(m_mutex);
         DecoderCacheMap::iterator iter = m_decoderCacheMap.find(DecoderCacheEntry::makeCacheKey(generator, decoder));
@@ -127,7 +127,7 @@ void ImageDecodingStore::removeDecoder(const ImageFrameGenerator* generator, con
 
 void ImageDecodingStore::removeCacheIndexedByGenerator(const ImageFrameGenerator* generator)
 {
-    Vector<OwnPtr<CacheEntry> > cacheEntriesToDelete;
+    Vector<OwnPtr<CacheEntry>> cacheEntriesToDelete;
     {
         MutexLocker lock(m_mutex);
 
@@ -188,7 +188,7 @@ void ImageDecodingStore::prune()
 {
     TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("blink.image_decoding"), "ImageDecodingStore::prune");
 
-    Vector<OwnPtr<CacheEntry> > cacheEntriesToDelete;
+    Vector<OwnPtr<CacheEntry>> cacheEntriesToDelete;
     {
         MutexLocker lock(m_mutex);
 
@@ -233,7 +233,7 @@ void ImageDecodingStore::insertCacheInternal(PassOwnPtr<T> cacheEntry, U* cacheM
 }
 
 template<class T, class U, class V>
-void ImageDecodingStore::removeFromCacheInternal(const T* cacheEntry, U* cacheMap, V* identifierMap, Vector<OwnPtr<CacheEntry> >* deletionList)
+void ImageDecodingStore::removeFromCacheInternal(const T* cacheEntry, U* cacheMap, V* identifierMap, Vector<OwnPtr<CacheEntry>>* deletionList)
 {
     const size_t cacheEntryBytes = cacheEntry->memoryUsageInBytes();
     ASSERT(m_heapMemoryUsageInBytes >= cacheEntryBytes);
@@ -253,7 +253,7 @@ void ImageDecodingStore::removeFromCacheInternal(const T* cacheEntry, U* cacheMa
     TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink.image_decoding"), "ImageDecodingStoreNumOfDecoders", m_decoderCacheMap.size());
 }
 
-void ImageDecodingStore::removeFromCacheInternal(const CacheEntry* cacheEntry, Vector<OwnPtr<CacheEntry> >* deletionList)
+void ImageDecodingStore::removeFromCacheInternal(const CacheEntry* cacheEntry, Vector<OwnPtr<CacheEntry>>* deletionList)
 {
     if (cacheEntry->type() == CacheEntry::TypeDecoder) {
         removeFromCacheInternal(static_cast<const DecoderCacheEntry*>(cacheEntry), &m_decoderCacheMap, &m_decoderCacheKeyMap, deletionList);
@@ -263,7 +263,7 @@ void ImageDecodingStore::removeFromCacheInternal(const CacheEntry* cacheEntry, V
 }
 
 template<class U, class V>
-void ImageDecodingStore::removeCacheIndexedByGeneratorInternal(U* cacheMap, V* identifierMap, const ImageFrameGenerator* generator, Vector<OwnPtr<CacheEntry> >* deletionList)
+void ImageDecodingStore::removeCacheIndexedByGeneratorInternal(U* cacheMap, V* identifierMap, const ImageFrameGenerator* generator, Vector<OwnPtr<CacheEntry>>* deletionList)
 {
     typename V::iterator iter = identifierMap->find(generator);
     if (iter == identifierMap->end())
@@ -282,7 +282,7 @@ void ImageDecodingStore::removeCacheIndexedByGeneratorInternal(U* cacheMap, V* i
     }
 }
 
-void ImageDecodingStore::removeFromCacheListInternal(const Vector<OwnPtr<CacheEntry> >& deletionList)
+void ImageDecodingStore::removeFromCacheListInternal(const Vector<OwnPtr<CacheEntry>>& deletionList)
 {
     for (size_t i = 0; i < deletionList.size(); ++i)
         m_orderedCacheList.remove(deletionList[i].get());

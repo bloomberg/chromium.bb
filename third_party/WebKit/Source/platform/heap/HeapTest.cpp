@@ -105,7 +105,7 @@ struct ThreadMarkerHash {
     static const bool safeToCompareToEmptyOrDeleted = false;
 };
 
-typedef std::pair<Member<IntWrapper>, WeakMember<IntWrapper> > StrongWeakPair;
+typedef std::pair<Member<IntWrapper>, WeakMember<IntWrapper>> StrongWeakPair;
 
 struct PairWithWeakHandling : public StrongWeakPair {
     ALLOW_ONLY_INLINE_ALLOCATION();
@@ -170,7 +170,7 @@ template<> struct HashTraits<blink::ThreadMarker> : GenericHashTraits<blink::Thr
 // the pair while they are in the hash table, as that would change their hash
 // code and thus their preferred placement in the table.
 template<> struct DefaultHash<blink::PairWithWeakHandling> {
-    typedef PairHash<blink::Member<blink::IntWrapper>, blink::WeakMember<blink::IntWrapper> > Hash;
+    typedef PairHash<blink::Member<blink::IntWrapper>, blink::WeakMember<blink::IntWrapper>> Hash;
 };
 
 // Custom traits for the pair. These are weakness handling traits, which means
@@ -517,8 +517,8 @@ private:
         while (!done()) {
             ThreadState::current()->safePoint(ThreadState::NoHeapPointersOnStack);
             {
-                Persistent<HeapHashMap<ThreadMarker, WeakMember<IntWrapper> > > weakMap = new HeapHashMap<ThreadMarker, WeakMember<IntWrapper> >;
-                PersistentHeapHashMap<ThreadMarker, WeakMember<IntWrapper> > weakMap2;
+                Persistent<HeapHashMap<ThreadMarker, WeakMember<IntWrapper>> > weakMap = new HeapHashMap<ThreadMarker, WeakMember<IntWrapper>>;
+                PersistentHeapHashMap<ThreadMarker, WeakMember<IntWrapper>> weakMap2;
 
                 for (int i = 0; i < numberOfAllocations; i++) {
                     weakMap->add(static_cast<unsigned>(i), IntWrapper::create(0));
@@ -1154,7 +1154,7 @@ private:
 
 bool ObservableWithPreFinalizer::s_disposeWasCalled = false;
 
-template <typename T> class FinalizationObserver : public GarbageCollected<FinalizationObserver<T> > {
+template <typename T> class FinalizationObserver : public GarbageCollected<FinalizationObserver<T>> {
 public:
     static FinalizationObserver* create(T* data) { return new FinalizationObserver(data); }
     bool didCallWillFinalize() const { return m_didCallWillFinalize; }
@@ -1187,7 +1187,7 @@ private:
 
 class FinalizationObserverWithHashMap {
 public:
-    typedef HeapHashMap<WeakMember<Observable>, OwnPtr<FinalizationObserverWithHashMap> > ObserverMap;
+    typedef HeapHashMap<WeakMember<Observable>, OwnPtr<FinalizationObserverWithHashMap>> ObserverMap;
 
     explicit FinalizationObserverWithHashMap(Observable& target) : m_target(target) { }
     ~FinalizationObserverWithHashMap()
@@ -1967,9 +1967,9 @@ TEST(HeapTest, HashMapOfMembers)
         typedef HeapHashMap<
             Member<IntWrapper>,
             Member<IntWrapper>,
-            DefaultHash<Member<IntWrapper> >::Hash,
-            HashTraits<Member<IntWrapper> >,
-            HashTraits<Member<IntWrapper> > > HeapObjectIdentityMap;
+            DefaultHash<Member<IntWrapper>>::Hash,
+            HashTraits<Member<IntWrapper>>,
+            HashTraits<Member<IntWrapper>> > HeapObjectIdentityMap;
 
         Persistent<HeapObjectIdentityMap> map = new HeapObjectIdentityMap();
 
@@ -2118,19 +2118,19 @@ TEST(HeapTest, LargeHeapObjects)
 }
 
 typedef std::pair<Member<IntWrapper>, int> PairWrappedUnwrapped;
-typedef std::pair<int, Member<IntWrapper> > PairUnwrappedWrapped;
-typedef std::pair<WeakMember<IntWrapper>, Member<IntWrapper> > PairWeakStrong;
-typedef std::pair<Member<IntWrapper>, WeakMember<IntWrapper> > PairStrongWeak;
+typedef std::pair<int, Member<IntWrapper>> PairUnwrappedWrapped;
+typedef std::pair<WeakMember<IntWrapper>, Member<IntWrapper>> PairWeakStrong;
+typedef std::pair<Member<IntWrapper>, WeakMember<IntWrapper>> PairStrongWeak;
 typedef std::pair<WeakMember<IntWrapper>, int> PairWeakUnwrapped;
-typedef std::pair<int, WeakMember<IntWrapper> > PairUnwrappedWeak;
+typedef std::pair<int, WeakMember<IntWrapper>> PairUnwrappedWeak;
 
 class Container : public GarbageCollected<Container> {
 public:
     static Container* create() { return new Container(); }
-    HeapHashMap<Member<IntWrapper>, Member<IntWrapper> > map;
-    HeapHashSet<Member<IntWrapper> > set;
-    HeapHashSet<Member<IntWrapper> > set2;
-    HeapHashCountedSet<Member<IntWrapper> > set3;
+    HeapHashMap<Member<IntWrapper>, Member<IntWrapper>> map;
+    HeapHashSet<Member<IntWrapper>> set;
+    HeapHashSet<Member<IntWrapper>> set2;
+    HeapHashCountedSet<Member<IntWrapper>> set3;
     HeapVector<Member<IntWrapper>, 2> vector;
     HeapVector<PairWrappedUnwrapped, 2> vectorWU;
     HeapVector<PairUnwrappedWrapped, 2> vectorUW;
@@ -2214,7 +2214,7 @@ public:
 TEST(HeapTest, HeapVectorFilledWithValue)
 {
     IntWrapper* val = IntWrapper::create(1);
-    HeapVector<Member<IntWrapper> > vector(10, val);
+    HeapVector<Member<IntWrapper>> vector(10, val);
     EXPECT_EQ(10u, vector.size());
     for (size_t i = 0; i < vector.size(); i++)
         EXPECT_EQ(val, vector[i]);
@@ -2348,12 +2348,12 @@ TEST(HeapTest, HeapCollectionTypes)
 {
     IntWrapper::s_destructorCalls = 0;
 
-    typedef HeapHashMap<Member<IntWrapper>, Member<IntWrapper> > MemberMember;
+    typedef HeapHashMap<Member<IntWrapper>, Member<IntWrapper>> MemberMember;
     typedef HeapHashMap<Member<IntWrapper>, int> MemberPrimitive;
-    typedef HeapHashMap<int, Member<IntWrapper> > PrimitiveMember;
+    typedef HeapHashMap<int, Member<IntWrapper>> PrimitiveMember;
 
-    typedef HeapHashSet<Member<IntWrapper> > MemberSet;
-    typedef HeapHashCountedSet<Member<IntWrapper> > MemberCountedSet;
+    typedef HeapHashSet<Member<IntWrapper>> MemberSet;
+    typedef HeapHashCountedSet<Member<IntWrapper>> MemberCountedSet;
 
     typedef HeapVector<Member<IntWrapper>, 2> MemberVector;
     typedef HeapDeque<Member<IntWrapper>, 0> MemberDeque;
@@ -2671,13 +2671,13 @@ TEST(HeapTest, HeapWeakCollectionSimple)
     clearOutOldGarbage();
     IntWrapper::s_destructorCalls = 0;
 
-    PersistentHeapVector<Member<IntWrapper> > keepNumbersAlive;
+    PersistentHeapVector<Member<IntWrapper>> keepNumbersAlive;
 
-    typedef HeapHashMap<WeakMember<IntWrapper>, Member<IntWrapper> > WeakStrong;
-    typedef HeapHashMap<Member<IntWrapper>, WeakMember<IntWrapper> > StrongWeak;
-    typedef HeapHashMap<WeakMember<IntWrapper>, WeakMember<IntWrapper> > WeakWeak;
-    typedef HeapHashSet<WeakMember<IntWrapper> > WeakSet;
-    typedef HeapHashCountedSet<WeakMember<IntWrapper> > WeakCountedSet;
+    typedef HeapHashMap<WeakMember<IntWrapper>, Member<IntWrapper>> WeakStrong;
+    typedef HeapHashMap<Member<IntWrapper>, WeakMember<IntWrapper>> StrongWeak;
+    typedef HeapHashMap<WeakMember<IntWrapper>, WeakMember<IntWrapper>> WeakWeak;
+    typedef HeapHashSet<WeakMember<IntWrapper>> WeakSet;
+    typedef HeapHashCountedSet<WeakMember<IntWrapper>> WeakCountedSet;
 
     Persistent<WeakStrong> weakStrong = new WeakStrong();
     Persistent<StrongWeak> strongWeak = new StrongWeak();
@@ -2732,7 +2732,7 @@ void orderedSetHelper(bool strong)
     clearOutOldGarbage();
     IntWrapper::s_destructorCalls = 0;
 
-    PersistentHeapVector<Member<IntWrapper> > keepNumbersAlive;
+    PersistentHeapVector<Member<IntWrapper>> keepNumbersAlive;
 
     Persistent<Set> set1 = new Set();
     Persistent<Set> set2 = new Set();
@@ -2839,9 +2839,9 @@ void orderedSetHelper(bool strong)
 
 TEST(HeapTest, HeapWeakLinkedHashSet)
 {
-    orderedSetHelper<HeapLinkedHashSet<Member<IntWrapper> > >(true);
-    orderedSetHelper<HeapLinkedHashSet<WeakMember<IntWrapper> > >(false);
-    orderedSetHelper<HeapListHashSet<Member<IntWrapper> > >(true);
+    orderedSetHelper<HeapLinkedHashSet<Member<IntWrapper>> >(true);
+    orderedSetHelper<HeapLinkedHashSet<WeakMember<IntWrapper>> >(false);
+    orderedSetHelper<HeapListHashSet<Member<IntWrapper>> >(true);
 }
 
 class ThingWithDestructor {
@@ -2891,13 +2891,13 @@ static void heapMapDestructorHelper(bool clearMaps)
     clearOutOldGarbage();
     ThingWithDestructor::s_liveThingsWithDestructor = 0;
 
-    typedef HeapHashMap<WeakMember<IntWrapper>, Member<RefCountedAndGarbageCollected> > RefMap;
+    typedef HeapHashMap<WeakMember<IntWrapper>, Member<RefCountedAndGarbageCollected>> RefMap;
 
     typedef HeapHashMap<
         WeakMember<IntWrapper>,
         ThingWithDestructor,
-        DefaultHash<WeakMember<IntWrapper> >::Hash,
-        HashTraits<WeakMember<IntWrapper> >,
+        DefaultHash<WeakMember<IntWrapper>>::Hash,
+        HashTraits<WeakMember<IntWrapper>>,
         ThingWithDestructorTraits> Map;
 
     Persistent<Map> map(new Map());
@@ -3059,7 +3059,7 @@ void weakPairsHelper()
 {
     IntWrapper::s_destructorCalls = 0;
 
-    PersistentHeapVector<Member<IntWrapper> > keepNumbersAlive;
+    PersistentHeapVector<Member<IntWrapper>> keepNumbersAlive;
 
     Persistent<WSSet> weakStrong = new WSSet();
     Persistent<SWSet> strongWeak = new SWSet();
@@ -3114,11 +3114,11 @@ TEST(HeapTest, HeapWeakCollectionTypes)
 {
     IntWrapper::s_destructorCalls = 0;
 
-    typedef HeapHashMap<WeakMember<IntWrapper>, Member<IntWrapper> > WeakStrong;
-    typedef HeapHashMap<Member<IntWrapper>, WeakMember<IntWrapper> > StrongWeak;
-    typedef HeapHashMap<WeakMember<IntWrapper>, WeakMember<IntWrapper> > WeakWeak;
-    typedef HeapHashSet<WeakMember<IntWrapper> > WeakSet;
-    typedef HeapLinkedHashSet<WeakMember<IntWrapper> > WeakOrderedSet;
+    typedef HeapHashMap<WeakMember<IntWrapper>, Member<IntWrapper>> WeakStrong;
+    typedef HeapHashMap<Member<IntWrapper>, WeakMember<IntWrapper>> StrongWeak;
+    typedef HeapHashMap<WeakMember<IntWrapper>, WeakMember<IntWrapper>> WeakWeak;
+    typedef HeapHashSet<WeakMember<IntWrapper>> WeakSet;
+    typedef HeapLinkedHashSet<WeakMember<IntWrapper>> WeakOrderedSet;
 
     clearOutOldGarbage();
 
@@ -3150,7 +3150,7 @@ TEST(HeapTest, HeapWeakCollectionTypes)
             Persistent<WeakSet> weakSet = new WeakSet();
             Persistent<WeakOrderedSet> weakOrderedSet = new WeakOrderedSet();
 
-            PersistentHeapVector<Member<IntWrapper> > keepNumbersAlive;
+            PersistentHeapVector<Member<IntWrapper>> keepNumbersAlive;
             for (int i = 0; i < 128; i += 2) {
                 IntWrapper* wrapped = IntWrapper::create(i);
                 IntWrapper* wrapped2 = IntWrapper::create(i + 1);
@@ -3436,7 +3436,7 @@ TEST(HeapTest, WeakMembers)
 
 TEST(HeapTest, FinalizationObserver)
 {
-    Persistent<FinalizationObserver<Observable> > o;
+    Persistent<FinalizationObserver<Observable>> o;
     {
         Observable* foo = Observable::create(Bar::create());
         // |o| observes |foo|.
@@ -3590,14 +3590,14 @@ TEST(HeapTest, PersistentHeapCollectionTypes)
 {
     IntWrapper::s_destructorCalls = 0;
 
-    typedef HeapVector<Member<IntWrapper> > Vec;
-    typedef PersistentHeapVector<Member<IntWrapper> > PVec;
-    typedef PersistentHeapHashSet<Member<IntWrapper> > PSet;
-    typedef PersistentHeapListHashSet<Member<IntWrapper> > PListSet;
-    typedef PersistentHeapLinkedHashSet<Member<IntWrapper> > PLinkedSet;
-    typedef PersistentHeapHashMap<Member<IntWrapper>, Member<IntWrapper> > PMap;
-    typedef PersistentHeapHashMap<WeakMember<IntWrapper>, Member<IntWrapper> > WeakPMap;
-    typedef PersistentHeapDeque<Member<IntWrapper> > PDeque;
+    typedef HeapVector<Member<IntWrapper>> Vec;
+    typedef PersistentHeapVector<Member<IntWrapper>> PVec;
+    typedef PersistentHeapHashSet<Member<IntWrapper>> PSet;
+    typedef PersistentHeapListHashSet<Member<IntWrapper>> PListSet;
+    typedef PersistentHeapLinkedHashSet<Member<IntWrapper>> PLinkedSet;
+    typedef PersistentHeapHashMap<Member<IntWrapper>, Member<IntWrapper>> PMap;
+    typedef PersistentHeapHashMap<WeakMember<IntWrapper>, Member<IntWrapper>> WeakPMap;
+    typedef PersistentHeapDeque<Member<IntWrapper>> PDeque;
 
     clearOutOldGarbage();
     {
@@ -3684,8 +3684,8 @@ TEST(HeapTest, CollectionNesting)
     clearOutOldGarbage();
     int* key = &IntWrapper::s_destructorCalls;
     IntWrapper::s_destructorCalls = 0;
-    typedef HeapVector<Member<IntWrapper> > IntVector;
-    typedef HeapDeque<Member<IntWrapper> > IntDeque;
+    typedef HeapVector<Member<IntWrapper>> IntVector;
+    typedef HeapDeque<Member<IntWrapper>> IntDeque;
     HeapHashMap<void*, IntVector>* map = new HeapHashMap<void*, IntVector>();
     HeapHashMap<void*, IntDeque>* map2 = new HeapHashMap<void*, IntDeque>();
     static_assert(WTF::NeedsTracing<IntVector>::value, "Failed to recognize HeapVector as NeedsTracing");
@@ -3706,8 +3706,8 @@ TEST(HeapTest, CollectionNesting)
     it2->value.append(IntWrapper::create(42));
     EXPECT_EQ(1u, map2->get(key).size());
 
-    Persistent<HeapHashMap<void*, IntVector> > keepAlive(map);
-    Persistent<HeapHashMap<void*, IntDeque> > keepAlive2(map2);
+    Persistent<HeapHashMap<void*, IntVector>> keepAlive(map);
+    Persistent<HeapHashMap<void*, IntDeque>> keepAlive2(map2);
 
     for (int i = 0; i < 100; i++) {
         map->add(key + 1 + i, IntVector());
@@ -3739,7 +3739,7 @@ TEST(HeapTest, GarbageCollectedMixin)
     Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
     EXPECT_EQ(2, UseMixin::s_traceCount);
 
-    PersistentHeapHashSet<WeakMember<Mixin> > weakMap;
+    PersistentHeapHashSet<WeakMember<Mixin>> weakMap;
     weakMap.add(UseMixin::create());
     Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
     EXPECT_EQ(0u, weakMap.size());
@@ -3750,7 +3750,7 @@ TEST(HeapTest, CollectionNesting2)
     clearOutOldGarbage();
     void* key = &IntWrapper::s_destructorCalls;
     IntWrapper::s_destructorCalls = 0;
-    typedef HeapHashSet<Member<IntWrapper> > IntSet;
+    typedef HeapHashSet<Member<IntWrapper>> IntSet;
     HeapHashMap<void*, IntSet>* map = new HeapHashMap<void*, IntSet>();
 
     map->add(key, IntSet());
@@ -3761,7 +3761,7 @@ TEST(HeapTest, CollectionNesting2)
     it->value.add(IntWrapper::create(42));
     EXPECT_EQ(1u, map->get(key).size());
 
-    Persistent<HeapHashMap<void*, IntSet> > keepAlive(map);
+    Persistent<HeapHashMap<void*, IntSet>> keepAlive(map);
     Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
     EXPECT_EQ(1u, map->get(key).size());
     EXPECT_EQ(0, IntWrapper::s_destructorCalls);
@@ -3771,8 +3771,8 @@ TEST(HeapTest, CollectionNesting3)
 {
     clearOutOldGarbage();
     IntWrapper::s_destructorCalls = 0;
-    typedef HeapVector<Member<IntWrapper> > IntVector;
-    typedef HeapDeque<Member<IntWrapper> > IntDeque;
+    typedef HeapVector<Member<IntWrapper>> IntVector;
+    typedef HeapDeque<Member<IntWrapper>> IntDeque;
     HeapVector<IntVector>* vector = new HeapVector<IntVector>();
     HeapDeque<IntDeque>* deque = new HeapDeque<IntDeque>();
 
@@ -3789,8 +3789,8 @@ TEST(HeapTest, CollectionNesting3)
     EXPECT_EQ(1u, it->size());
     EXPECT_EQ(1u, it2->size());
 
-    Persistent<HeapVector<IntVector> > keepAlive(vector);
-    Persistent<HeapDeque<IntDeque> > keepAlive2(deque);
+    Persistent<HeapVector<IntVector>> keepAlive(vector);
+    Persistent<HeapDeque<IntDeque>> keepAlive2(deque);
     Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
     EXPECT_EQ(1u, it->size());
     EXPECT_EQ(1u, it2->size());
@@ -3890,9 +3890,9 @@ void rawPtrInHashHelper()
 
 TEST(HeapTest, RawPtrInHash)
 {
-    rawPtrInHashHelper<HashSet<RawPtr<int> > >();
-    rawPtrInHashHelper<ListHashSet<RawPtr<int> > >();
-    rawPtrInHashHelper<LinkedHashSet<RawPtr<int> > >();
+    rawPtrInHashHelper<HashSet<RawPtr<int>> >();
+    rawPtrInHashHelper<ListHashSet<RawPtr<int>> >();
+    rawPtrInHashHelper<LinkedHashSet<RawPtr<int>> >();
 }
 
 TEST(HeapTest, HeapTerminatedArray)
@@ -3934,7 +3934,7 @@ TEST(HeapTest, HeapTerminatedArray)
         EXPECT_EQ(i, static_cast<size_t>(arr->at(i).payload()->value()));
 
     {
-        Persistent<HeapTerminatedArray<TerminatedArrayItem> > persistentArr = arr;
+        Persistent<HeapTerminatedArray<TerminatedArrayItem>> persistentArr = arr;
         arr = 0;
         Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
         arr = persistentArr.get();
@@ -3969,7 +3969,7 @@ TEST(HeapTest, HeapLinkedStack)
         stack->pop();
     }
 
-    Persistent<HeapLinkedStack<TerminatedArrayItem> > pStack = stack;
+    Persistent<HeapLinkedStack<TerminatedArrayItem>> pStack = stack;
 
     Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
     EXPECT_EQ(stackSize, static_cast<size_t>(IntWrapper::s_destructorCalls));
@@ -4075,26 +4075,26 @@ void destructorsCalledOnClear(bool addLots)
 
 TEST(HeapTest, DestructorsCalled)
 {
-    HeapHashMap<SimpleClassWithDestructor*, OwnPtr<SimpleClassWithDestructor> > map;
+    HeapHashMap<SimpleClassWithDestructor*, OwnPtr<SimpleClassWithDestructor>> map;
     SimpleClassWithDestructor* hasDestructor = new SimpleClassWithDestructor();
     map.add(hasDestructor, adoptPtr(hasDestructor));
     SimpleClassWithDestructor::s_wasDestructed = false;
     map.clear();
     EXPECT_TRUE(SimpleClassWithDestructor::s_wasDestructed);
 
-    destructorsCalledOnClear<HeapHashSet<RefPtr<RefCountedWithDestructor> > >(false);
-    destructorsCalledOnClear<HeapListHashSet<RefPtr<RefCountedWithDestructor> > >(false);
-    destructorsCalledOnClear<HeapLinkedHashSet<RefPtr<RefCountedWithDestructor> > >(false);
-    destructorsCalledOnClear<HeapHashSet<RefPtr<RefCountedWithDestructor> > >(true);
-    destructorsCalledOnClear<HeapListHashSet<RefPtr<RefCountedWithDestructor> > >(true);
-    destructorsCalledOnClear<HeapLinkedHashSet<RefPtr<RefCountedWithDestructor> > >(true);
+    destructorsCalledOnClear<HeapHashSet<RefPtr<RefCountedWithDestructor>> >(false);
+    destructorsCalledOnClear<HeapListHashSet<RefPtr<RefCountedWithDestructor>> >(false);
+    destructorsCalledOnClear<HeapLinkedHashSet<RefPtr<RefCountedWithDestructor>> >(false);
+    destructorsCalledOnClear<HeapHashSet<RefPtr<RefCountedWithDestructor>> >(true);
+    destructorsCalledOnClear<HeapListHashSet<RefPtr<RefCountedWithDestructor>> >(true);
+    destructorsCalledOnClear<HeapLinkedHashSet<RefPtr<RefCountedWithDestructor>> >(true);
 
-    destructorsCalledOnGC<HeapHashSet<RefPtr<RefCountedWithDestructor> > >(false);
-    destructorsCalledOnGC<HeapListHashSet<RefPtr<RefCountedWithDestructor> > >(false);
-    destructorsCalledOnGC<HeapLinkedHashSet<RefPtr<RefCountedWithDestructor> > >(false);
-    destructorsCalledOnGC<HeapHashSet<RefPtr<RefCountedWithDestructor> > >(true);
-    destructorsCalledOnGC<HeapListHashSet<RefPtr<RefCountedWithDestructor> > >(true);
-    destructorsCalledOnGC<HeapLinkedHashSet<RefPtr<RefCountedWithDestructor> > >(true);
+    destructorsCalledOnGC<HeapHashSet<RefPtr<RefCountedWithDestructor>> >(false);
+    destructorsCalledOnGC<HeapListHashSet<RefPtr<RefCountedWithDestructor>> >(false);
+    destructorsCalledOnGC<HeapLinkedHashSet<RefPtr<RefCountedWithDestructor>> >(false);
+    destructorsCalledOnGC<HeapHashSet<RefPtr<RefCountedWithDestructor>> >(true);
+    destructorsCalledOnGC<HeapListHashSet<RefPtr<RefCountedWithDestructor>> >(true);
+    destructorsCalledOnGC<HeapLinkedHashSet<RefPtr<RefCountedWithDestructor>> >(true);
 }
 
 class MixinA : public GarbageCollectedMixin {
@@ -4285,13 +4285,13 @@ void setWithCustomWeaknessHandling()
 
 TEST(HeapTest, SetWithCustomWeaknessHandling)
 {
-    setWithCustomWeaknessHandling<HeapHashSet<PairWithWeakHandling> >();
-    setWithCustomWeaknessHandling<HeapLinkedHashSet<PairWithWeakHandling> >();
+    setWithCustomWeaknessHandling<HeapHashSet<PairWithWeakHandling>>();
+    setWithCustomWeaknessHandling<HeapLinkedHashSet<PairWithWeakHandling>>();
 }
 
 TEST(HeapTest, MapWithCustomWeaknessHandling)
 {
-    typedef HeapHashMap<PairWithWeakHandling, RefPtr<OffHeapInt> > Map;
+    typedef HeapHashMap<PairWithWeakHandling, RefPtr<OffHeapInt>> Map;
     typedef Map::iterator Iterator;
     clearOutOldGarbage();
     OffHeapInt::s_destructorCalls = 0;
@@ -4428,7 +4428,7 @@ TEST(HeapTest, MapWithCustomWeaknessHandling2)
     EXPECT_EQ(livingInt, i1->value.second);
 }
 
-static void addElementsToWeakMap(HeapHashMap<int, WeakMember<IntWrapper> >* map)
+static void addElementsToWeakMap(HeapHashMap<int, WeakMember<IntWrapper>>* map)
 {
     // Key cannot be zero in hashmap.
     for (int i = 1; i < 11; i++)
@@ -4439,9 +4439,9 @@ static void addElementsToWeakMap(HeapHashMap<int, WeakMember<IntWrapper> >* map)
 // If it doesn't assert a concurrent modification to the map, then it's passing.
 TEST(HeapTest, RegressNullIsStrongified)
 {
-    Persistent<HeapHashMap<int, WeakMember<IntWrapper> > > map = new HeapHashMap<int, WeakMember<IntWrapper> >();
+    Persistent<HeapHashMap<int, WeakMember<IntWrapper>> > map = new HeapHashMap<int, WeakMember<IntWrapper>>();
     addElementsToWeakMap(map);
-    HeapHashMap<int, WeakMember<IntWrapper> >::AddResult result = map->add(800, nullptr);
+    HeapHashMap<int, WeakMember<IntWrapper>>::AddResult result = map->add(800, nullptr);
     Heap::collectGarbage(ThreadState::HeapPointersOnStack);
     result.storedValue->value = IntWrapper::create(42);
 }
@@ -4468,7 +4468,7 @@ TEST(HeapTest, Bind)
     EXPECT_EQ(1, UseMixin::s_traceCount);
 }
 
-typedef HeapHashSet<WeakMember<IntWrapper> > WeakSet;
+typedef HeapHashSet<WeakMember<IntWrapper>> WeakSet;
 
 // These special traits will remove a set from a map when the set is empty.
 struct EmptyClearingHashSetTraits : HashTraits<WeakSet> {
@@ -4542,7 +4542,7 @@ TEST(HeapTest, RemoveEmptySets)
 
 TEST(HeapTest, EphemeronsInEphemerons)
 {
-    typedef HeapHashMap<WeakMember<IntWrapper>, Member<IntWrapper> > InnerMap;
+    typedef HeapHashMap<WeakMember<IntWrapper>, Member<IntWrapper>> InnerMap;
     typedef HeapHashMap<WeakMember<IntWrapper>, InnerMap> OuterMap;
 
     for (int keepOuterAlive = 0; keepOuterAlive <= 1; keepOuterAlive++) {
@@ -4574,7 +4574,7 @@ TEST(HeapTest, EphemeronsInEphemerons)
             Persistent<IntWrapper> deep = IntWrapper::create(42);
             Persistent<IntWrapper> home = IntWrapper::create(103);
             Persistent<IntWrapper> composite = IntWrapper::create(91);
-            Persistent<HeapVector<Member<IntWrapper> > > keepAlive = new HeapVector<Member<IntWrapper> >();
+            Persistent<HeapVector<Member<IntWrapper>> > keepAlive = new HeapVector<Member<IntWrapper>>();
             for (int i = 0; i < 10000; i++) {
                 IntWrapper* value = IntWrapper::create(i);
                 keepAlive->append(value);
@@ -4604,7 +4604,7 @@ public:
         visitor->trace(m_map);
     }
 
-    typedef HeapHashMap<WeakMember<IntWrapper>, Member<EphemeronWrapper> > Map;
+    typedef HeapHashMap<WeakMember<IntWrapper>, Member<EphemeronWrapper>> Map;
     Map& map() { return m_map; }
 
 private:
@@ -4657,8 +4657,8 @@ TEST(HeapTest, EphemeronsPointToEphemerons)
 TEST(HeapTest, Ephemeron)
 {
     typedef HeapHashMap<WeakMember<IntWrapper>, PairWithWeakHandling>  WeakPairMap;
-    typedef HeapHashMap<PairWithWeakHandling, WeakMember<IntWrapper> >  PairWeakMap;
-    typedef HeapHashSet<WeakMember<IntWrapper> > Set;
+    typedef HeapHashMap<PairWithWeakHandling, WeakMember<IntWrapper>>  PairWeakMap;
+    typedef HeapHashSet<WeakMember<IntWrapper>> Set;
 
     Persistent<WeakPairMap> weakPairMap = new WeakPairMap();
     Persistent<WeakPairMap> weakPairMap2 = new WeakPairMap();
@@ -4755,7 +4755,7 @@ private:
 
 TEST(HeapTest, IndirectStrongToWeak)
 {
-    typedef HeapHashMap<WeakMember<IntWrapper>, Member<Link1> > Map;
+    typedef HeapHashMap<WeakMember<IntWrapper>, Member<Link1>> Map;
     Persistent<Map> map = new Map();
     Persistent<IntWrapper> deadObject = IntWrapper::create(100); // Named for "Drowning by Numbers" (1988).
     Persistent<IntWrapper> lifeObject = IntWrapper::create(42);
@@ -4961,7 +4961,7 @@ public:
 
 private:
 
-    static HeapHashSet<WeakMember<IntWrapper> >* allocateCollection()
+    static HeapHashSet<WeakMember<IntWrapper>>* allocateCollection()
     {
         // Create a weak collection that is kept alive by a persistent
         // and keep the contents alive with a persistents as
@@ -4972,7 +4972,7 @@ private:
         Persistent<IntWrapper> wrapper4 = IntWrapper::create(32);
         Persistent<IntWrapper> wrapper5 = IntWrapper::create(32);
         Persistent<IntWrapper> wrapper6 = IntWrapper::create(32);
-        Persistent<HeapHashSet<WeakMember<IntWrapper> > > weakCollection = new HeapHashSet<WeakMember<IntWrapper> >;
+        Persistent<HeapHashSet<WeakMember<IntWrapper>> > weakCollection = new HeapHashSet<WeakMember<IntWrapper>>;
         weakCollection->add(wrapper1);
         weakCollection->add(wrapper2);
         weakCollection->add(wrapper3);
@@ -5004,10 +5004,10 @@ private:
         ThreadState::attach();
 
         {
-            Persistent<HeapHashSet<WeakMember<IntWrapper> > > collection = allocateCollection();
+            Persistent<HeapHashSet<WeakMember<IntWrapper>> > collection = allocateCollection();
             {
                 // Prevent weak processing with an iterator and GC.
-                HeapHashSet<WeakMember<IntWrapper> >::iterator it = collection->begin();
+                HeapHashSet<WeakMember<IntWrapper>>::iterator it = collection->begin();
                 Heap::collectGarbage(ThreadState::HeapPointersOnStack);
 
                 // The backing should be strongified because of the iterator.
@@ -5185,7 +5185,7 @@ TEST(HeapTest, RecursiveMutex)
 }
 
 template<typename T>
-class TraceIfNeededTester : public GarbageCollectedFinalized<TraceIfNeededTester<T> > {
+class TraceIfNeededTester : public GarbageCollectedFinalized<TraceIfNeededTester<T>> {
 public:
     static TraceIfNeededTester<T>* create() { return new TraceIfNeededTester<T>(); }
     static TraceIfNeededTester<T>* create(const T& obj) { return new TraceIfNeededTester<T>(obj); }
@@ -5212,7 +5212,7 @@ TEST(HeapTest, TraceIfNeeded)
     CountingVisitor visitor;
 
     {
-        TraceIfNeededTester<RefPtr<OffHeapInt> >* m_offHeap = TraceIfNeededTester<RefPtr<OffHeapInt> >::create(OffHeapInt::create(42));
+        TraceIfNeededTester<RefPtr<OffHeapInt>>* m_offHeap = TraceIfNeededTester<RefPtr<OffHeapInt>>::create(OffHeapInt::create(42));
         visitor.reset();
         m_offHeap->trace(&visitor);
         EXPECT_EQ(0u, visitor.count());
@@ -5226,14 +5226,14 @@ TEST(HeapTest, TraceIfNeeded)
     }
 
     {
-        TraceIfNeededTester<Member<SimpleObject> >* m_obj = TraceIfNeededTester<Member<SimpleObject> >::create(Member<SimpleObject>(SimpleObject::create()));
+        TraceIfNeededTester<Member<SimpleObject>>* m_obj = TraceIfNeededTester<Member<SimpleObject>>::create(Member<SimpleObject>(SimpleObject::create()));
         visitor.reset();
         m_obj->trace(&visitor);
         EXPECT_EQ(1u, visitor.count());
     }
 
     {
-        TraceIfNeededTester<HeapVector<Member<SimpleObject> > >* m_vec = TraceIfNeededTester<HeapVector<Member<SimpleObject> > >::create();
+        TraceIfNeededTester<HeapVector<Member<SimpleObject>> >* m_vec = TraceIfNeededTester<HeapVector<Member<SimpleObject>> >::create();
         m_vec->obj().append(SimpleObject::create());
         visitor.reset();
         m_vec->trace(&visitor);

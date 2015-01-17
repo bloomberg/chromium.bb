@@ -141,9 +141,9 @@ private:
     IconDirectoryEntries m_dirEntries;
 
     // The image decoders for the various frames.
-    typedef Vector<OwnPtr<BMPImageReader> > BMPReaders;
+    typedef Vector<OwnPtr<BMPImageReader>> BMPReaders;
     BMPReaders m_bmpReaders;
-    typedef Vector<OwnPtr<PNGImageDecoder> > PNGDecoders;
+    typedef Vector<OwnPtr<PNGImageDecoder>> PNGDecoders;
     PNGDecoders m_pngDecoders;
 
     // Valid only while a BMPImageReader is decoding, this holds the size

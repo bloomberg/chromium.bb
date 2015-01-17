@@ -70,7 +70,7 @@ public:
     virtual double latencyTime() const override;
 
 protected:
-    Vector<OwnPtr<AudioDSPKernel> > m_kernels;
+    Vector<OwnPtr<AudioDSPKernel>> m_kernels;
     mutable Mutex m_processLock;
     bool m_hasJustReset;
 };

@@ -101,7 +101,7 @@ static WebBlobRegistry* blobRegistry()
     return Platform::current()->blobRegistry();
 }
 
-typedef HashMap<String, RefPtr<SecurityOrigin> > BlobURLOriginMap;
+typedef HashMap<String, RefPtr<SecurityOrigin>> BlobURLOriginMap;
 static ThreadSpecific<BlobURLOriginMap>& originMap()
 {
     // We want to create the BlobOriginCache exactly once because it is shared by all the threads.

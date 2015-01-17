@@ -174,7 +174,7 @@ private:
     static IDWriteFactory* s_directWriteFactory;
     static float s_deviceScaleFactor;
     static bool s_useSubpixelPositioning;
-    static HashMap<String, RefPtr<SkTypeface> >* s_sideloadedFonts;
+    static HashMap<String, RefPtr<SkTypeface>>* s_sideloadedFonts;
     // The system font metrics cache.
     static AtomicString* s_menuFontFamilyName;
     static int32_t s_menuFontHeight;

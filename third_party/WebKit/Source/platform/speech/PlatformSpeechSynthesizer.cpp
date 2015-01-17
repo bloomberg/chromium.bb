@@ -78,7 +78,7 @@ void PlatformSpeechSynthesizer::cancel()
         m_webSpeechSynthesizer->cancel();
 }
 
-void PlatformSpeechSynthesizer::setVoiceList(HeapVector<Member<PlatformSpeechSynthesisVoice> >& voices)
+void PlatformSpeechSynthesizer::setVoiceList(HeapVector<Member<PlatformSpeechSynthesisVoice>>& voices)
 {
     m_voiceList = voices;
 }

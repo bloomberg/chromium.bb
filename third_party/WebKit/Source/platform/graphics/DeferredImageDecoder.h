@@ -96,7 +96,7 @@ private:
     int m_repetitionCount;
     bool m_hasColorProfile;
 
-    Vector<OwnPtr<ImageFrame> > m_lazyDecodedFrames;
+    Vector<OwnPtr<ImageFrame>> m_lazyDecodedFrames;
     RefPtr<ImageFrameGenerator> m_frameGenerator;
 
     static bool s_enabled;

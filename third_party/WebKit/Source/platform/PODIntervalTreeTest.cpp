@@ -67,7 +67,7 @@ TEST(PODIntervalTreeTest, TestInsertionAndQuery)
     PODIntervalTree<float> tree;
     tree.add(PODInterval<float>(2, 4));
     ASSERT_TRUE(tree.checkInvariants());
-    Vector<PODInterval<float> > result = tree.allOverlaps(PODInterval<float>(1, 3));
+    Vector<PODInterval<float>> result = tree.allOverlaps(PODInterval<float>(1, 3));
     EXPECT_EQ(1U, result.size());
     EXPECT_EQ(2, result[0].low());
     EXPECT_EQ(4, result[0].high());
@@ -80,7 +80,7 @@ TEST(PODIntervalTreeTest, TestQueryAgainstZeroSizeInterval)
     tree.add(PODInterval<float>(3.5, 5));
     tree.add(PODInterval<float>(2, 4));
     ASSERT_TRUE(tree.checkInvariants());
-    Vector<PODInterval<float> > result = tree.allOverlaps(PODInterval<float>(3, 3));
+    Vector<PODInterval<float>> result = tree.allOverlaps(PODInterval<float>(3, 3));
     EXPECT_EQ(1U, result.size());
     EXPECT_EQ(2, result[0].low());
     EXPECT_EQ(4, result[0].high());
@@ -157,7 +157,7 @@ TEST(PODIntervalTreeTest, TestQueryingOfComplexUserData)
     data1.b = 6;
     tree.add(tree.createInterval(2, 4, data1));
     ASSERT_TRUE(tree.checkInvariants());
-    Vector<PODInterval<float, UserData1> > overlaps = tree.allOverlaps(tree.createInterval(3, 5, data1));
+    Vector<PODInterval<float, UserData1>> overlaps = tree.allOverlaps(tree.createInterval(3, 5, data1));
     EXPECT_EQ(1U, overlaps.size());
     EXPECT_EQ(5, overlaps[0].data().a);
     EXPECT_EQ(6, overlaps[0].data().b);
@@ -222,15 +222,15 @@ void InsertionAndDeletionTest(int32_t seed, int treeSize)
     int maximumValue = treeSize;
     // Build the tree
     PODIntervalTree<int> tree;
-    Vector<PODInterval<int> > addedElements;
-    Vector<PODInterval<int> > removedElements;
+    Vector<PODInterval<int>> addedElements;
+    Vector<PODInterval<int>> removedElements;
     for (int i = 0; i < treeSize; i++) {
         int left = nextRandom(maximumValue);
         int length = nextRandom(maximumValue);
         PODInterval<int> interval(left, left + length);
         tree.add(interval);
 #ifdef DEBUG_INSERTION_AND_DELETION_TEST
-        WTF_LOG_ERROR("*** Adding element %s", ValueToString<PODInterval<int> >::string(interval).ascii().data());
+        WTF_LOG_ERROR("*** Adding element %s", ValueToString<PODInterval<int>>::string(interval).ascii().data());
 #endif
         addedElements.append(interval);
     }
@@ -239,7 +239,7 @@ void InsertionAndDeletionTest(int32_t seed, int treeSize)
     for (int i = 0; i < treeSize / 2; i++) {
         int index = nextRandom(addedElements.size());
 #ifdef DEBUG_INSERTION_AND_DELETION_TEST
-        WTF_LOG_ERROR("*** Removing element %s", ValueToString<PODInterval<int> >::string(addedElements[index]).ascii().data());
+        WTF_LOG_ERROR("*** Removing element %s", ValueToString<PODInterval<int>>::string(addedElements[index]).ascii().data());
 #endif
         ASSERT_TRUE(tree.contains(addedElements[index])) << "Test failed for seed " << seed;
         tree.remove(addedElements[index]);
@@ -259,7 +259,7 @@ void InsertionAndDeletionTest(int32_t seed, int treeSize)
         if (add) {
             int index = nextRandom(removedElements.size());
 #ifdef DEBUG_INSERTION_AND_DELETION_TEST
-            WTF_LOG_ERROR("*** Adding element %s", ValueToString<PODInterval<int> >::string(removedElements[index]).ascii().data());
+            WTF_LOG_ERROR("*** Adding element %s", ValueToString<PODInterval<int>>::string(removedElements[index]).ascii().data());
 #endif
             tree.add(removedElements[index]);
             addedElements.append(removedElements[index]);
@@ -267,7 +267,7 @@ void InsertionAndDeletionTest(int32_t seed, int treeSize)
         } else {
             int index = nextRandom(addedElements.size());
 #ifdef DEBUG_INSERTION_AND_DELETION_TEST
-            WTF_LOG_ERROR("*** Removing element %s", ValueToString<PODInterval<int> >::string(addedElements[index]).ascii().data());
+            WTF_LOG_ERROR("*** Removing element %s", ValueToString<PODInterval<int>>::string(addedElements[index]).ascii().data());
 #endif
             ASSERT_TRUE(tree.contains(addedElements[index])) << "Test failed for seed " << seed;
             ASSERT_TRUE(tree.remove(addedElements[index])) << "Test failed for seed " << seed;

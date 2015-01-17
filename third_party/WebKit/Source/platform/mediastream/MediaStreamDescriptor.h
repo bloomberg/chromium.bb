@@ -92,14 +92,14 @@ private:
 
     MediaStreamDescriptorClient* m_client;
     String m_id;
-    Vector<RefPtr<MediaStreamComponent> > m_audioComponents;
-    Vector<RefPtr<MediaStreamComponent> > m_videoComponents;
+    Vector<RefPtr<MediaStreamComponent>> m_audioComponents;
+    Vector<RefPtr<MediaStreamComponent>> m_videoComponents;
     bool m_ended;
 
     OwnPtr<ExtraData> m_extraData;
 };
 
-typedef Vector<RefPtr<MediaStreamDescriptor> > MediaStreamDescriptorVector;
+typedef Vector<RefPtr<MediaStreamDescriptor>> MediaStreamDescriptorVector;
 
 } // namespace blink
 

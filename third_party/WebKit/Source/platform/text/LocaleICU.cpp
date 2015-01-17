@@ -165,33 +165,33 @@ static String getDateFormatPattern(const UDateFormat* dateFormat)
     return String::adopt(buffer);
 }
 
-PassOwnPtr<Vector<String> > LocaleICU::createLabelVector(const UDateFormat* dateFormat, UDateFormatSymbolType type, int32_t startIndex, int32_t size)
+PassOwnPtr<Vector<String>> LocaleICU::createLabelVector(const UDateFormat* dateFormat, UDateFormatSymbolType type, int32_t startIndex, int32_t size)
 {
     if (!dateFormat)
-        return PassOwnPtr<Vector<String> >();
+        return PassOwnPtr<Vector<String>>();
     if (udat_countSymbols(dateFormat, type) != startIndex + size)
-        return PassOwnPtr<Vector<String> >();
+        return PassOwnPtr<Vector<String>>();
 
-    OwnPtr<Vector<String> > labels = adoptPtr(new Vector<String>());
+    OwnPtr<Vector<String>> labels = adoptPtr(new Vector<String>());
     labels->reserveCapacity(size);
     for (int32_t i = 0; i < size; ++i) {
         UErrorCode status = U_ZERO_ERROR;
         int32_t length = udat_getSymbols(dateFormat, type, startIndex + i, 0, 0, &status);
         if (status != U_BUFFER_OVERFLOW_ERROR)
-            return PassOwnPtr<Vector<String> >();
+            return PassOwnPtr<Vector<String>>();
         StringBuffer<UChar> buffer(length);
         status = U_ZERO_ERROR;
         udat_getSymbols(dateFormat, type, startIndex + i, buffer.characters(), length, &status);
         if (U_FAILURE(status))
-            return PassOwnPtr<Vector<String> >();
+            return PassOwnPtr<Vector<String>>();
         labels->append(String::adopt(buffer));
     }
     return labels.release();
 }
 
-static PassOwnPtr<Vector<String> > createFallbackWeekDayShortLabels()
+static PassOwnPtr<Vector<String>> createFallbackWeekDayShortLabels()
 {
-    OwnPtr<Vector<String> > labels = adoptPtr(new Vector<String>());
+    OwnPtr<Vector<String>> labels = adoptPtr(new Vector<String>());
     labels->reserveCapacity(7);
     labels->append("Sun");
     labels->append("Mon");
@@ -220,9 +220,9 @@ void LocaleICU::initializeCalendar()
         m_weekDayShortLabels = createFallbackWeekDayShortLabels();
 }
 
-static PassOwnPtr<Vector<String> > createFallbackMonthLabels()
+static PassOwnPtr<Vector<String>> createFallbackMonthLabels()
 {
-    OwnPtr<Vector<String> > labels = adoptPtr(new Vector<String>());
+    OwnPtr<Vector<String>> labels = adoptPtr(new Vector<String>());
     labels->reserveCapacity(WTF_ARRAY_LENGTH(WTF::monthFullName));
     for (unsigned i = 0; i < WTF_ARRAY_LENGTH(WTF::monthFullName); ++i)
         labels->append(WTF::monthFullName[i]);
@@ -260,9 +260,9 @@ bool LocaleICU::isRTL()
     return uloc_getCharacterOrientation(m_locale.data(), &status) == ULOC_LAYOUT_RTL;
 }
 
-static PassOwnPtr<Vector<String> > createFallbackAMPMLabels()
+static PassOwnPtr<Vector<String>> createFallbackAMPMLabels()
 {
-    OwnPtr<Vector<String> > labels = adoptPtr(new Vector<String>());
+    OwnPtr<Vector<String>> labels = adoptPtr(new Vector<String>());
     labels->reserveCapacity(2);
     labels->append("AM");
     labels->append("PM");
@@ -291,7 +291,7 @@ void LocaleICU::initializeDateTimeFormat()
     m_dateTimeFormatWithoutSeconds = getDateFormatPattern(dateTimeFormatWithoutSeconds);
     udat_close(dateTimeFormatWithoutSeconds);
 
-    OwnPtr<Vector<String> > timeAMPMLabels = createLabelVector(m_mediumTimeFormat, UDAT_AM_PMS, UCAL_AM, 2);
+    OwnPtr<Vector<String>> timeAMPMLabels = createLabelVector(m_mediumTimeFormat, UDAT_AM_PMS, UCAL_AM, 2);
     if (!timeAMPMLabels)
         timeAMPMLabels = createFallbackAMPMLabels();
     m_timeAMPMLabels = *timeAMPMLabels;
@@ -378,7 +378,7 @@ const Vector<String>& LocaleICU::shortMonthLabels()
     if (!m_shortMonthLabels.isEmpty())
         return m_shortMonthLabels;
     if (initializeShortDateFormat()) {
-        if (OwnPtr<Vector<String> > labels = createLabelVector(m_shortDateFormat, UDAT_SHORT_MONTHS, UCAL_JANUARY, 12)) {
+        if (OwnPtr<Vector<String>> labels = createLabelVector(m_shortDateFormat, UDAT_SHORT_MONTHS, UCAL_JANUARY, 12)) {
             m_shortMonthLabels = *labels;
             return m_shortMonthLabels;
         }
@@ -394,7 +394,7 @@ const Vector<String>& LocaleICU::standAloneMonthLabels()
     if (!m_standAloneMonthLabels.isEmpty())
         return m_standAloneMonthLabels;
     if (initializeShortDateFormat()) {
-        if (OwnPtr<Vector<String> > labels = createLabelVector(m_shortDateFormat, UDAT_STANDALONE_MONTHS, UCAL_JANUARY, 12)) {
+        if (OwnPtr<Vector<String>> labels = createLabelVector(m_shortDateFormat, UDAT_STANDALONE_MONTHS, UCAL_JANUARY, 12)) {
             m_standAloneMonthLabels = *labels;
             return m_standAloneMonthLabels;
         }
@@ -408,7 +408,7 @@ const Vector<String>& LocaleICU::shortStandAloneMonthLabels()
     if (!m_shortStandAloneMonthLabels.isEmpty())
         return m_shortStandAloneMonthLabels;
     if (initializeShortDateFormat()) {
-        if (OwnPtr<Vector<String> > labels = createLabelVector(m_shortDateFormat, UDAT_STANDALONE_SHORT_MONTHS, UCAL_JANUARY, 12)) {
+        if (OwnPtr<Vector<String>> labels = createLabelVector(m_shortDateFormat, UDAT_STANDALONE_SHORT_MONTHS, UCAL_JANUARY, 12)) {
             m_shortStandAloneMonthLabels = *labels;
             return m_shortStandAloneMonthLabels;
         }

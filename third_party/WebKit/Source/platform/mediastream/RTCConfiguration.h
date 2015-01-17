@@ -94,7 +94,7 @@ public:
 private:
     RTCConfiguration() : m_iceTransports(RTCIceTransportsAll), m_bundlePolicy(RTCBundlePolicyBalanced) { }
 
-    HeapVector<Member<RTCIceServer> > m_servers;
+    HeapVector<Member<RTCIceServer>> m_servers;
     RTCIceTransports m_iceTransports;
     RTCBundlePolicy m_bundlePolicy;
 };

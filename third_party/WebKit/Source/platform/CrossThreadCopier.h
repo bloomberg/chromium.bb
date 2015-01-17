@@ -94,7 +94,7 @@ namespace blink {
         }
     };
 
-    template<typename T> struct CrossThreadCopierBase<false, false, false, PassOwnPtr<T> > {
+    template<typename T> struct CrossThreadCopierBase<false, false, false, PassOwnPtr<T>> {
         typedef PassOwnPtr<T> Type;
         static Type copy(Type ownPtr)
         {
@@ -144,7 +144,7 @@ namespace blink {
         }
     };
 
-    template<typename T> struct CrossThreadCopierBase<false, false, true, RawPtr<T> > {
+    template<typename T> struct CrossThreadCopierBase<false, false, true, RawPtr<T>> {
         typedef RawPtr<T> Type;
         static Type copy(const Type& ptr)
         {
@@ -152,7 +152,7 @@ namespace blink {
         }
     };
 
-    template<typename T> struct CrossThreadCopierBase<false, false, true, Member<T> > {
+    template<typename T> struct CrossThreadCopierBase<false, false, true, Member<T>> {
         typedef RawPtr<T> Type;
         static Type copy(const Member<T>& ptr)
         {
@@ -160,7 +160,7 @@ namespace blink {
         }
     };
 
-    template<typename T> struct CrossThreadCopierBase<false, false, true, WeakMember<T> > {
+    template<typename T> struct CrossThreadCopierBase<false, false, true, WeakMember<T>> {
         typedef RawPtr<T> Type;
         static Type copy(const WeakMember<T>& ptr)
         {
@@ -194,7 +194,7 @@ namespace blink {
         T* m_value;
     };
 
-    template<typename T> struct CrossThreadCopierBase<false, false, false, AllowCrossThreadAccessWrapper<T> > {
+    template<typename T> struct CrossThreadCopierBase<false, false, false, AllowCrossThreadAccessWrapper<T>> {
         typedef T* Type;
         static Type copy(const AllowCrossThreadAccessWrapper<T>& wrapper) { return wrapper.value(); }
     };
@@ -220,7 +220,7 @@ namespace blink {
         T* m_value;
     };
 
-    template<typename T> struct CrossThreadCopierBase<false, false, false, AllowAccessLaterWrapper<T> > {
+    template<typename T> struct CrossThreadCopierBase<false, false, false, AllowAccessLaterWrapper<T>> {
         typedef T* Type;
         static Type copy(const AllowAccessLaterWrapper<T>& wrapper) { return wrapper.value(); }
     };

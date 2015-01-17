@@ -356,7 +356,7 @@ private:
     GIFColorMap m_globalColorMap;
     int m_loopCount; // Netscape specific extension block to control the number of animation loops a GIF renders.
 
-    Vector<OwnPtr<GIFFrameContext> > m_frames;
+    Vector<OwnPtr<GIFFrameContext>> m_frames;
 
     RefPtr<blink::SharedBuffer> m_data;
     bool m_parseCompleted;

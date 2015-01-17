@@ -62,7 +62,7 @@ public:
 private:
     Mutex m_mutex;
 
-    Vector<RefPtr<SharedBuffer> > m_newBufferQueue;
+    Vector<RefPtr<SharedBuffer>> m_newBufferQueue;
     RefPtr<SharedBuffer> m_readBuffer;
     bool m_allDataReceived;
     size_t m_readPosition;

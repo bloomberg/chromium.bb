@@ -15,7 +15,7 @@ namespace blink {
 
 class GraphicsContext;
 
-typedef Vector<OwnPtr<DisplayItem> > PaintList;
+typedef Vector<OwnPtr<DisplayItem>> PaintList;
 
 class PLATFORM_EXPORT DisplayItemList {
     WTF_MAKE_NONCOPYABLE(DisplayItemList);

@@ -431,13 +431,13 @@ public:
     template<typename T, size_t inlineCapacity>
     void trace(const Vector<T, inlineCapacity>& vector)
     {
-        OffHeapCollectionTraceTrait<Vector<T, inlineCapacity, WTF::DefaultAllocator> >::trace(Derived::fromHelper(this), vector);
+        OffHeapCollectionTraceTrait<Vector<T, inlineCapacity, WTF::DefaultAllocator>>::trace(Derived::fromHelper(this), vector);
     }
 
     template<typename T, size_t N>
     void trace(const Deque<T, N>& deque)
     {
-        OffHeapCollectionTraceTrait<Deque<T, N> >::trace(Derived::fromHelper(this), deque);
+        OffHeapCollectionTraceTrait<Deque<T, N>>::trace(Derived::fromHelper(this), deque);
     }
 
 #if !ENABLE(OILPAN)
@@ -670,7 +670,7 @@ private:
 // can have vectors of general objects (not just pointers to objects) that can
 // be traced.
 template<typename T, size_t N>
-struct OffHeapCollectionTraceTrait<WTF::Vector<T, N, WTF::DefaultAllocator> > {
+struct OffHeapCollectionTraceTrait<WTF::Vector<T, N, WTF::DefaultAllocator>> {
     typedef WTF::Vector<T, N, WTF::DefaultAllocator> Vector;
 
     template<typename VisitorDispatcher>
@@ -684,7 +684,7 @@ struct OffHeapCollectionTraceTrait<WTF::Vector<T, N, WTF::DefaultAllocator> > {
 };
 
 template<typename T, size_t N>
-struct OffHeapCollectionTraceTrait<WTF::Deque<T, N> > {
+struct OffHeapCollectionTraceTrait<WTF::Deque<T, N>> {
     typedef WTF::Deque<T, N> Deque;
 
     template<typename VisitorDispatcher>
@@ -697,7 +697,7 @@ struct OffHeapCollectionTraceTrait<WTF::Deque<T, N> > {
     }
 };
 
-template<typename T, typename Traits = WTF::VectorTraits<T> >
+template<typename T, typename Traits = WTF::VectorTraits<T>>
 class HeapVectorBacking;
 
 template<typename Table>

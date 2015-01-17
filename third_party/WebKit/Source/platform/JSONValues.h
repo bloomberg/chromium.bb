@@ -161,7 +161,7 @@ private:
 
 class PLATFORM_EXPORT JSONObjectBase : public JSONValue {
 private:
-    typedef HashMap<String, RefPtr<JSONValue> > Dictionary;
+    typedef HashMap<String, RefPtr<JSONValue>> Dictionary;
 
 public:
     typedef Dictionary::iterator iterator;
@@ -253,8 +253,8 @@ public:
 
 class PLATFORM_EXPORT JSONArrayBase : public JSONValue {
 public:
-    typedef Vector<RefPtr<JSONValue> >::iterator iterator;
-    typedef Vector<RefPtr<JSONValue> >::const_iterator const_iterator;
+    typedef Vector<RefPtr<JSONValue>>::iterator iterator;
+    typedef Vector<RefPtr<JSONValue>>::const_iterator const_iterator;
 
     virtual PassRefPtr<JSONArray> asArray() override;
 
@@ -288,7 +288,7 @@ protected:
     JSONArrayBase();
 
 private:
-    Vector<RefPtr<JSONValue> > m_data;
+    Vector<RefPtr<JSONValue>> m_data;
 };
 
 class PLATFORM_EXPORT JSONArray : public JSONArrayBase {

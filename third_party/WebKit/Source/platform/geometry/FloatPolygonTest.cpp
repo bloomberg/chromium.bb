@@ -40,7 +40,7 @@ public:
     FloatPolygonTestValue(const float* coordinates, unsigned coordinatesLength, WindRule fillRule)
     {
         ASSERT(!(coordinatesLength % 2));
-        OwnPtr<Vector<FloatPoint> > vertices = adoptPtr(new Vector<FloatPoint>(coordinatesLength / 2));
+        OwnPtr<Vector<FloatPoint>> vertices = adoptPtr(new Vector<FloatPoint>(coordinatesLength / 2));
         for (unsigned i = 0; i < coordinatesLength; i += 2)
             (*vertices)[i / 2] = FloatPoint(coordinates[i], coordinates[i + 1]);
         m_polygon = adoptPtr(new FloatPolygon(vertices.release(), fillRule));

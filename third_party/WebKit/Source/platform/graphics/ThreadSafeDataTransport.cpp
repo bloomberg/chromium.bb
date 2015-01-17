@@ -45,7 +45,7 @@ ThreadSafeDataTransport::~ThreadSafeDataTransport()
 void ThreadSafeDataTransport::setData(SharedBuffer* buffer, bool allDataReceived)
 {
     ASSERT(buffer->size() >= m_readPosition);
-    Vector<RefPtr<SharedBuffer> > newBufferQueue;
+    Vector<RefPtr<SharedBuffer>> newBufferQueue;
 
     const char* segment = 0;
     while (size_t length = buffer->getSomeData(segment, m_readPosition)) {
@@ -63,7 +63,7 @@ void ThreadSafeDataTransport::data(SharedBuffer** buffer, bool* allDataReceived)
 {
     ASSERT(buffer);
     ASSERT(allDataReceived);
-    Vector<RefPtr<SharedBuffer> > newBufferQueue;
+    Vector<RefPtr<SharedBuffer>> newBufferQueue;
     {
         MutexLocker lock(m_mutex);
         m_newBufferQueue.swap(newBufferQueue);

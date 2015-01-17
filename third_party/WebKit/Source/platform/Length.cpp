@@ -159,7 +159,7 @@ public:
 
 private:
     int m_index;
-    HashMap<int, RefPtr<CalculationValue> > m_map;
+    HashMap<int, RefPtr<CalculationValue>> m_map;
 };
 
 static CalculationValueHandleMap& calcHandles()

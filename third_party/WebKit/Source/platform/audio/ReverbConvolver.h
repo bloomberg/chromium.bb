@@ -63,8 +63,8 @@ public:
 private:
     void processInBackground();
 
-    Vector<OwnPtr<ReverbConvolverStage> > m_stages;
-    Vector<OwnPtr<ReverbConvolverStage> > m_backgroundStages;
+    Vector<OwnPtr<ReverbConvolverStage>> m_stages;
+    Vector<OwnPtr<ReverbConvolverStage>> m_backgroundStages;
     size_t m_impulseResponseLength;
 
     ReverbAccumulationBuffer m_accumulationBuffer;

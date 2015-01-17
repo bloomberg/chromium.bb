@@ -39,7 +39,7 @@
 
 namespace blink {
 
-typedef HashMap<ScrollbarThemeClient*, RetainPtr<ScrollbarPainter> > ScrollbarPainterMap;
+typedef HashMap<ScrollbarThemeClient*, RetainPtr<ScrollbarPainter>> ScrollbarPainterMap;
 
 static ScrollbarPainterMap* scrollbarPainterMap()
 {
