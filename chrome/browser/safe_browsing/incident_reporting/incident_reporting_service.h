@@ -163,8 +163,7 @@ class IncidentReportingService : public content::NotificationObserver {
 
   // Adds |incident_data| to the service. The incident_time_msec field is
   // populated with the current time if the caller has not already done so.
-  void AddIncident(Profile* profile,
-                   scoped_ptr<ClientIncidentReport_IncidentData> incident_data);
+  void AddIncident(Profile* profile, scoped_ptr<Incident> incident);
 
   // Begins processing a report. If processing is already underway, ensures that
   // collection tasks have completed or are running.

@@ -16,6 +16,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/safe_browsing/binary_feature_extractor.h"
+#include "chrome/browser/safe_browsing/incident_reporting/binary_integrity_incident.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 
@@ -69,17 +70,16 @@ void VerifyBinaryIntegrity(const AddIncidentCallback& callback) {
 
     // Only create a report if the signature is untrusted.
     if (!signature_info->trusted()) {
-      scoped_ptr<ClientIncidentReport_IncidentData> incident_data(
-          new ClientIncidentReport_IncidentData());
-      ClientIncidentReport_IncidentData_BinaryIntegrityIncident*
-          binary_integrity = incident_data->mutable_binary_integrity();
+      scoped_ptr<ClientIncidentReport_IncidentData_BinaryIntegrityIncident>
+          incident(
+              new ClientIncidentReport_IncidentData_BinaryIntegrityIncident());
 
-      binary_integrity->set_file_basename(
-          binary_path.BaseName().AsUTF8Unsafe());
-      binary_integrity->set_allocated_signature(signature_info.release());
+      incident->set_file_basename(binary_path.BaseName().AsUTF8Unsafe());
+      incident->set_allocated_signature(signature_info.release());
 
       // Send the report.
-      callback.Run(incident_data.Pass());
+      callback.Run(make_scoped_ptr(
+          new BinaryIntegrityIncident(incident.Pass())));
     }
   }
 }

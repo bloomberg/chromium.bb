@@ -14,7 +14,7 @@
 #include "chrome/browser/install_verification/win/module_info.h"
 #include "chrome/browser/install_verification/win/module_verification_common.h"
 #include "chrome/browser/safe_browsing/binary_feature_extractor.h"
-#include "chrome/browser/safe_browsing/incident_reporting/add_incident_callback.h"
+#include "chrome/browser/safe_browsing/incident_reporting/blacklist_load_incident.h"
 #include "chrome/browser/safe_browsing/path_sanitizer.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
@@ -51,10 +51,9 @@ void VerifyBlacklistLoadState(const AddIncidentCallback& callback) {
     const bool blacklist_intialized = blacklist::IsBlacklistInitialized();
 
     for (const auto& module_name : module_names) {
-      scoped_ptr<ClientIncidentReport_IncidentData> incident_data(
-          new ClientIncidentReport_IncidentData());
-      ClientIncidentReport_IncidentData_BlacklistLoadIncident* blacklist_load =
-          incident_data->mutable_blacklist_load();
+      scoped_ptr<ClientIncidentReport_IncidentData_BlacklistLoadIncident>
+          blacklist_load(
+              new ClientIncidentReport_IncidentData_BlacklistLoadIncident());
 
       const base::FilePath module_path(module_name);
 
@@ -96,7 +95,8 @@ void VerifyBlacklistLoadState(const AddIncidentCallback& callback) {
           module_path, blacklist_load->mutable_image_headers());
 
       // Send the report.
-      callback.Run(incident_data.Pass());
+      callback.Run(
+          make_scoped_ptr(new BlacklistLoadIncident(blacklist_load.Pass())));
     }
   }
 }

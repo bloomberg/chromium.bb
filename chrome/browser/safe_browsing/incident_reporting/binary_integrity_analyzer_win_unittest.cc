@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/test/scoped_path_override.h"
+#include "chrome/browser/safe_browsing/incident_reporting/incident.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -44,15 +45,14 @@ class BinaryIntegrityAnalyzerWinTest : public ::testing::Test {
  public:
   BinaryIntegrityAnalyzerWinTest();
 
-  void OnAddIncident(
-      scoped_ptr<ClientIncidentReport_IncidentData> incident_data);
+  void OnAddIncident(scoped_ptr<Incident> incident);
 
  protected:
   bool callback_called_;
   base::FilePath test_data_dir_;
   base::ScopedTempDir temp_dir_;
   scoped_ptr<base::ScopedPathOverride> exe_dir_override_;
-  scoped_ptr<ClientIncidentReport_IncidentData> incident_data_;
+  scoped_ptr<Incident> incident_;
 };
 
 BinaryIntegrityAnalyzerWinTest::BinaryIntegrityAnalyzerWinTest()
@@ -72,11 +72,11 @@ BinaryIntegrityAnalyzerWinTest::BinaryIntegrityAnalyzerWinTest()
 // Mock the AddIncidentCallback so we can test that VerifyBinaryIntegrity
 // adds an incident callback when a signature verification fails.
 void BinaryIntegrityAnalyzerWinTest::OnAddIncident(
-    scoped_ptr<ClientIncidentReport_IncidentData> incident_data) {
+    scoped_ptr<Incident> incident) {
   callback_called_ = true;
 
   // Take ownership of the incident so that the text fixture can inspect it.
-  incident_data_ = incident_data.Pass();
+  incident_ = incident.Pass();
 }
 
 TEST_F(BinaryIntegrityAnalyzerWinTest, GetCriticalBinariesPath) {
@@ -124,11 +124,13 @@ TEST_F(BinaryIntegrityAnalyzerWinTest, VerifyBinaryIntegrity) {
   ASSERT_TRUE(callback_called_);
 
   // Verify that the incident report contains the expected data.
-  ASSERT_TRUE(incident_data_->has_binary_integrity());
-  ASSERT_TRUE(incident_data_->binary_integrity().has_file_basename());
+  scoped_ptr<ClientIncidentReport_IncidentData> incident_data(
+      incident_->TakePayload());
+  ASSERT_TRUE(incident_data->has_binary_integrity());
+  ASSERT_TRUE(incident_data->binary_integrity().has_file_basename());
   ASSERT_EQ("chrome_elf.dll",
-            incident_data_->binary_integrity().file_basename());
-  ASSERT_TRUE(incident_data_->binary_integrity().has_signature());
+            incident_data->binary_integrity().file_basename());
+  ASSERT_TRUE(incident_data->binary_integrity().has_signature());
 }
 
 }  // namespace safe_browsing

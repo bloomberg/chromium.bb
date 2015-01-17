@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_vector.h"
 #include "base/values.h"
+#include "chrome/browser/safe_browsing/incident_reporting/incident.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -19,8 +20,7 @@
 // instance was provided with the expected data.
 class PreferenceValidationDelegateTest : public testing::Test {
  protected:
-  typedef ScopedVector<safe_browsing::ClientIncidentReport_IncidentData>
-      IncidentVector;
+  typedef ScopedVector<safe_browsing::Incident> IncidentVector;
 
   PreferenceValidationDelegateTest()
       : kPrefPath_("atomic.pref"),
@@ -35,9 +35,8 @@ class PreferenceValidationDelegateTest : public testing::Test {
                    base::Unretained(this))));
   }
 
-  void AddIncident(
-      scoped_ptr<safe_browsing::ClientIncidentReport_IncidentData> data) {
-    incidents_.push_back(data.release());
+  void AddIncident(scoped_ptr<safe_browsing::Incident> incident) {
+    incidents_.push_back(incident.release());
   }
 
   static void ExpectValueStatesEquate(
@@ -86,8 +85,8 @@ TEST_F(PreferenceValidationDelegateTest, NullValue) {
                                           NULL,
                                           PrefHashStoreTransaction::CLEARED,
                                           TrackedPreferenceHelper::DONT_RESET);
-  safe_browsing::ClientIncidentReport_IncidentData* incident =
-      incidents_.back();
+  scoped_ptr<safe_browsing::ClientIncidentReport_IncidentData> incident(
+      incidents_.back()->TakePayload());
   EXPECT_FALSE(incident->tracked_preference().has_atomic_value());
   EXPECT_EQ(
       safe_browsing::
@@ -150,8 +149,8 @@ TEST_P(PreferenceValidationDelegateValues, Value) {
                                           PrefHashStoreTransaction::CLEARED,
                                           TrackedPreferenceHelper::DONT_RESET);
   ASSERT_EQ(1U, incidents_.size());
-  safe_browsing::ClientIncidentReport_IncidentData* incident =
-      incidents_.back();
+  scoped_ptr<safe_browsing::ClientIncidentReport_IncidentData> incident(
+      incidents_.back()->TakePayload());
   EXPECT_EQ(std::string(expected_value_),
             incident->tracked_preference().atomic_value());
 }
@@ -237,8 +236,8 @@ TEST_P(PreferenceValidationDelegateWithIncident, Atomic) {
   instance_->OnAtomicPreferenceValidation(
       kPrefPath_, null_value_.get(), value_state_, reset_action_);
   ASSERT_EQ(1U, incidents_.size());
-  safe_browsing::ClientIncidentReport_IncidentData* incident =
-      incidents_.back();
+  scoped_ptr<safe_browsing::ClientIncidentReport_IncidentData> incident(
+      incidents_.back()->TakePayload());
   EXPECT_TRUE(incident->has_tracked_preference());
   const safe_browsing::
       ClientIncidentReport_IncidentData_TrackedPreferenceIncident& tp_incident =
@@ -255,8 +254,8 @@ TEST_P(PreferenceValidationDelegateWithIncident, Split) {
   instance_->OnSplitPreferenceValidation(
       kPrefPath_, &dict_value_, invalid_keys_, value_state_, reset_action_);
   ASSERT_EQ(1U, incidents_.size());
-  safe_browsing::ClientIncidentReport_IncidentData* incident =
-      incidents_.back();
+  scoped_ptr<safe_browsing::ClientIncidentReport_IncidentData> incident(
+      incidents_.back()->TakePayload());
   EXPECT_TRUE(incident->has_tracked_preference());
   const safe_browsing::
       ClientIncidentReport_IncidentData_TrackedPreferenceIncident& tp_incident =

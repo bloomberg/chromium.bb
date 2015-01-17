@@ -11,6 +11,7 @@
 #include "base/json/json_writer.h"
 #include "chrome/browser/prefs/tracked/pref_hash_store_transaction.h"
 #include "chrome/browser/prefs/tracked/tracked_preference_helper.h"
+#include "chrome/browser/safe_browsing/incident_reporting/tracked_preference_incident.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 
 namespace safe_browsing {
@@ -54,9 +55,8 @@ void PreferenceValidationDelegate::OnAtomicPreferenceValidation(
     TrackedPreferenceHelper::ResetAction /* reset_action */) {
   TPIncident_ValueState proto_value_state = MapValueState(value_state);
   if (proto_value_state != TPIncident::UNKNOWN) {
-    scoped_ptr<ClientIncidentReport_IncidentData> incident_data(
-        new ClientIncidentReport_IncidentData());
-    TPIncident* incident = incident_data->mutable_tracked_preference();
+    scoped_ptr<TPIncident> incident(
+        new ClientIncidentReport_IncidentData_TrackedPreferenceIncident());
     incident->set_path(pref_path);
     if (!value ||
         (!value->GetAsString(incident->mutable_atomic_value()) &&
@@ -64,7 +64,8 @@ void PreferenceValidationDelegate::OnAtomicPreferenceValidation(
       incident->clear_atomic_value();
     }
     incident->set_value_state(proto_value_state);
-    add_incident_.Run(incident_data.Pass());
+    add_incident_.Run(
+        make_scoped_ptr(new TrackedPreferenceIncident(incident.Pass())));
   }
 }
 
@@ -76,9 +77,9 @@ void PreferenceValidationDelegate::OnSplitPreferenceValidation(
     TrackedPreferenceHelper::ResetAction /* reset_action */) {
   TPIncident_ValueState proto_value_state = MapValueState(value_state);
   if (proto_value_state != TPIncident::UNKNOWN) {
-    scoped_ptr<ClientIncidentReport_IncidentData> incident_data(
-        new ClientIncidentReport_IncidentData());
-    TPIncident* incident = incident_data->mutable_tracked_preference();
+    scoped_ptr<ClientIncidentReport_IncidentData_TrackedPreferenceIncident>
+        incident(
+            new ClientIncidentReport_IncidentData_TrackedPreferenceIncident());
     incident->set_path(pref_path);
     for (std::vector<std::string>::const_iterator scan(invalid_keys.begin());
          scan != invalid_keys.end();
@@ -86,7 +87,8 @@ void PreferenceValidationDelegate::OnSplitPreferenceValidation(
       incident->add_split_key(*scan);
     }
     incident->set_value_state(proto_value_state);
-    add_incident_.Run(incident_data.Pass());
+    add_incident_.Run(
+        make_scoped_ptr(new TrackedPreferenceIncident(incident.Pass())));
   }
 }
 

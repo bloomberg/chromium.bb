@@ -24,15 +24,11 @@
 #include "chrome/browser/prefs/tracked/tracked_preference_validation_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/database_manager.h"
-#include "chrome/browser/safe_browsing/incident_reporting/binary_integrity_incident_handlers.h"
-#include "chrome/browser/safe_browsing/incident_reporting/blacklist_load_incident_handlers.h"
 #include "chrome/browser/safe_browsing/incident_reporting/environment_data_collection.h"
+#include "chrome/browser/safe_browsing/incident_reporting/incident.h"
 #include "chrome/browser/safe_browsing/incident_reporting/incident_report_uploader_impl.h"
-#include "chrome/browser/safe_browsing/incident_reporting/omnibox_incident_handlers.h"
 #include "chrome/browser/safe_browsing/incident_reporting/omnibox_watcher.h"
 #include "chrome/browser/safe_browsing/incident_reporting/preference_validation_delegate.h"
-#include "chrome/browser/safe_browsing/incident_reporting/tracked_preference_incident_handlers.h"
-#include "chrome/browser/safe_browsing/incident_reporting/variations_seed_signature_incident_handlers.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
@@ -43,20 +39,6 @@
 namespace safe_browsing {
 
 namespace {
-
-// The type of an incident. Used for user metrics and for pruning of
-// previously-reported incidents.
-enum IncidentType {
-  // Start with 1 rather than zero; otherwise there won't be enough buckets for
-  // the histogram.
-  TRACKED_PREFERENCE = 1,
-  BINARY_INTEGRITY = 2,
-  BLACKLIST_LOAD = 3,
-  OMNIBOX_INTERACTION = 4,
-  VARIATIONS_SEED_SIGNATURE = 5,
-  // Values for new incident types go here.
-  NUM_INCIDENT_TYPES = 6
-};
 
 // The action taken for an incident; used for user metrics (see
 // LogIncidentDataType).
@@ -73,7 +55,7 @@ enum IncidentDisposition {
 // of previously-reported incidents.
 struct PersistentIncidentState {
   // The type of the incident.
-  IncidentType type;
+  std::string type;
 
   // The key for a specific instance of an incident.
   std::string key;
@@ -88,49 +70,9 @@ const int64 kDefaultUploadDelayMs = 1000 * 60;  // one minute
 // The amount of time between running delayed analysis callbacks.
 const int64 kDefaultCallbackIntervalMs = 1000 * 20;
 
-// Returns the number of incidents contained in |incident|. The result is
-// expected to be 1. Used in DCHECKs.
-size_t CountIncidents(const ClientIncidentReport_IncidentData& incident) {
-  size_t result = 0;
-  if (incident.has_tracked_preference())
-    ++result;
-  if (incident.has_binary_integrity())
-    ++result;
-  if (incident.has_blacklist_load())
-    ++result;
-  if (incident.has_omnibox_interaction())
-    ++result;
-  if (incident.has_variations_seed_signature())
-    ++result;
-  // Add detection for new incident types here.
-  return result;
-}
-
-// Returns the type of incident contained in |incident_data|.
-IncidentType GetIncidentType(
-    const ClientIncidentReport_IncidentData& incident_data) {
-  if (incident_data.has_tracked_preference())
-    return TRACKED_PREFERENCE;
-  if (incident_data.has_binary_integrity())
-    return BINARY_INTEGRITY;
-  if (incident_data.has_blacklist_load())
-    return BLACKLIST_LOAD;
-  if (incident_data.has_omnibox_interaction())
-    return OMNIBOX_INTERACTION;
-  if (incident_data.has_variations_seed_signature())
-    return VARIATIONS_SEED_SIGNATURE;
-
-  // Add detection for new incident types here.
-  static_assert(VARIATIONS_SEED_SIGNATURE + 1 == NUM_INCIDENT_TYPES,
-                "support for new types must be added");
-  NOTREACHED();
-  return NUM_INCIDENT_TYPES;
-}
-
 // Logs the type of incident in |incident_data| to a user metrics histogram.
-void LogIncidentDataType(
-    IncidentDisposition disposition,
-    const ClientIncidentReport_IncidentData& incident_data) {
+void LogIncidentDataType(IncidentDisposition disposition,
+                         const Incident& incident) {
   static const char* const kHistogramNames[] = {
       "SBIRS.ReceivedIncident",
       "SBIRS.DroppedIncident",
@@ -142,45 +84,22 @@ void LogIncidentDataType(
                 "Keep kHistogramNames in sync with enum IncidentDisposition.");
   DCHECK_GE(disposition, 0);
   DCHECK_LT(disposition, NUM_DISPOSITIONS);
-  IncidentType type = GetIncidentType(incident_data);
   base::LinearHistogram::FactoryGet(
       kHistogramNames[disposition],
       1,  // minimum
-      NUM_INCIDENT_TYPES,  // maximum
-      NUM_INCIDENT_TYPES + 1,  // bucket_count
-      base::HistogramBase::kUmaTargetedHistogramFlag)->Add(type);
+      static_cast<int32_t>(IncidentType::NUM_TYPES),  // maximum
+      static_cast<size_t>(IncidentType::NUM_TYPES) + 1,  // bucket_count
+      base::HistogramBase::kUmaTargetedHistogramFlag)->Add(
+          static_cast<int32_t>(incident.GetType()));
 }
 
 // Computes the persistent state for an incident.
-PersistentIncidentState ComputeIncidentState(
-    const ClientIncidentReport_IncidentData& incident) {
-  PersistentIncidentState state = {GetIncidentType(incident)};
-  switch (state.type) {
-    case TRACKED_PREFERENCE:
-      state.key = GetTrackedPreferenceIncidentKey(incident);
-      state.digest = GetTrackedPreferenceIncidentDigest(incident);
-      break;
-    case BINARY_INTEGRITY:
-      state.key = GetBinaryIntegrityIncidentKey(incident);
-      state.digest = GetBinaryIntegrityIncidentDigest(incident);
-      break;
-    case BLACKLIST_LOAD:
-      state.key = GetBlacklistLoadIncidentKey(incident);
-      state.digest = GetBlacklistLoadIncidentDigest(incident);
-      break;
-    case OMNIBOX_INTERACTION:
-      state.key = GetOmniboxIncidentKey(incident);
-      state.digest = GetOmniboxIncidentDigest(incident);
-      break;
-    case VARIATIONS_SEED_SIGNATURE:
-      state.key = GetVariationsSeedSignatureIncidentKey(incident);
-      state.digest = GetVariationsSeedSignatureIncidentDigest(incident);
-      break;
-    // Add handling for new incident types here.
-    case NUM_INCIDENT_TYPES:
-      NOTREACHED();
-      break;
-  }
+PersistentIncidentState ComputeIncidentState(const Incident& incident) {
+  PersistentIncidentState state = {
+    base::IntToString(static_cast<int32_t>(incident.GetType())),
+    incident.GetKey(),
+    incident.ComputeDigest(),
+  };
   return state;
 }
 
@@ -191,8 +110,8 @@ bool IncidentHasBeenReported(const base::DictionaryValue* incidents_sent,
   const base::DictionaryValue* type_dict = NULL;
   std::string digest_string;
   return (incidents_sent &&
-          incidents_sent->GetDictionaryWithoutPathExpansion(
-              base::IntToString(state.type), &type_dict) &&
+          incidents_sent->GetDictionaryWithoutPathExpansion(state.type,
+                                                            &type_dict) &&
           type_dict->GetStringWithoutPathExpansion(state.key, &digest_string) &&
           digest_string == base::UintToString(state.digest));
 }
@@ -204,11 +123,10 @@ void MarkIncidentsAsReported(const std::vector<PersistentIncidentState>& states,
   for (size_t i = 0; i < states.size(); ++i) {
     const PersistentIncidentState& data = states[i];
     base::DictionaryValue* type_dict = NULL;
-    const std::string type_string(base::IntToString(data.type));
-    if (!incidents_sent->GetDictionaryWithoutPathExpansion(type_string,
+    if (!incidents_sent->GetDictionaryWithoutPathExpansion(data.type,
                                                            &type_dict)) {
       type_dict = new base::DictionaryValue();
-      incidents_sent->SetWithoutPathExpansion(type_string, type_dict);
+      incidents_sent->SetWithoutPathExpansion(data.type, type_dict);
     }
     type_dict->SetStringWithoutPathExpansion(data.key,
                                              base::UintToString(data.digest));
@@ -220,7 +138,7 @@ void MarkIncidentsAsReported(const std::vector<PersistentIncidentState>& states,
 void AddIncidentOnOriginThread(
     const AddIncidentCallback& callback,
     scoped_refptr<base::SingleThreadTaskRunner> thread_runner,
-    scoped_ptr<ClientIncidentReport_IncidentData> incident) {
+    scoped_ptr<Incident> incident) {
   if (thread_runner->BelongsToCurrentThread())
     callback.Run(incident.Pass());
   else
@@ -236,7 +154,7 @@ struct IncidentReportingService::ProfileContext {
 
   // The incidents collected for this profile pending creation and/or upload.
   // Will contain null values for pruned incidents.
-  ScopedVector<ClientIncidentReport_IncidentData> incidents;
+  ScopedVector<Incident> incidents;
 
   // Watches for suspicious omnibox interactions on this profile.
   scoped_ptr<OmniboxWatcher> omnibox_watcher;
@@ -273,7 +191,7 @@ IncidentReportingService::ProfileContext::ProfileContext() : added() {
 }
 
 IncidentReportingService::ProfileContext::~ProfileContext() {
-  for (ClientIncidentReport_IncidentData* incident : incidents) {
+  for (Incident* incident : incidents) {
     if (incident)
       LogIncidentDataType(DISCARDED, *incident);
   }
@@ -332,6 +250,7 @@ IncidentReportingService::IncidentReportingService(
 }
 
 IncidentReportingService::~IncidentReportingService() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   CancelIncidentCollection();
 
   // Cancel all internal asynchronous tasks.
@@ -479,7 +398,7 @@ void IncidentReportingService::OnProfileAdded(Profile* profile) {
   // Drop all incidents associated with this profile that were received prior to
   // its addition if the profile is not participating in safe browsing.
   if (!context->incidents.empty() && !safe_browsing_enabled) {
-    for (ClientIncidentReport_IncidentData* incident : context->incidents)
+    for (Incident* incident : context->incidents)
       LogIncidentDataType(DROPPED, *incident);
     context->incidents.clear();
   }
@@ -568,11 +487,9 @@ Profile* IncidentReportingService::FindEligibleProfile() const {
   return candidate;
 }
 
-void IncidentReportingService::AddIncident(
-    Profile* profile,
-    scoped_ptr<ClientIncidentReport_IncidentData> incident_data) {
+void IncidentReportingService::AddIncident(Profile* profile,
+                                           scoped_ptr<Incident> incident) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK_EQ(1U, CountIncidents(*incident_data));
 
   ProfileContext* context = GetProfileContext(profile);
   // It is forbidden to call this function with a destroyed profile.
@@ -581,23 +498,19 @@ void IncidentReportingService::AddIncident(
   // profile (which is NULL) has been added to the profile manager.
   DCHECK(profile || !context->added);
 
-  LogIncidentDataType(RECEIVED, *incident_data);
+  LogIncidentDataType(RECEIVED, *incident);
 
   // Drop the incident immediately if the profile has already been added to the
   // manager and is not participating in safe browsing. Preference evaluation is
   // deferred until OnProfileAdded() otherwise.
   if (context->added &&
       !profile->GetPrefs()->GetBoolean(prefs::kSafeBrowsingEnabled)) {
-    LogIncidentDataType(DROPPED, *incident_data);
+    LogIncidentDataType(DROPPED, *incident);
     return;
   }
 
-  // Provide time to the new incident if the caller didn't do so.
-  if (!incident_data->has_incident_time_msec())
-    incident_data->set_incident_time_msec(base::Time::Now().ToJavaTime());
-
   // Take ownership of the incident.
-  context->incidents.push_back(incident_data.release());
+  context->incidents.push_back(incident.release());
 
   // Remember when the first incident for this report arrived.
   if (first_incident_time_.is_null())
@@ -860,7 +773,7 @@ void IncidentReportingService::UploadIfCollectionComplete() {
     if (context->incidents.empty())
       continue;
     if (!prefs->GetBoolean(prefs::kSafeBrowsingEnabled)) {
-      for (ClientIncidentReport_IncidentData* incident : context->incidents)
+      for (Incident* incident : context->incidents)
         LogIncidentDataType(DROPPED, *incident);
       context->incidents.clear();
       continue;
@@ -869,20 +782,23 @@ void IncidentReportingService::UploadIfCollectionComplete() {
     const base::DictionaryValue* incidents_sent =
         prefs->GetDictionary(prefs::kSafeBrowsingIncidentsSent);
     // Prep persistent data and prune any incidents already sent.
-    for (ClientIncidentReport_IncidentData* incident : context->incidents) {
+    for (Incident* incident : context->incidents) {
       const PersistentIncidentState state = ComputeIncidentState(*incident);
       if (IncidentHasBeenReported(incidents_sent, state)) {
         LogIncidentDataType(PRUNED, *incident);
         ++prune_count;
-        delete incident;
       } else {
         LogIncidentDataType(ACCEPTED, *incident);
-        // Ownership of the incident is passed to the report.
-        report->mutable_incident()->AddAllocated(incident);
+        // Ownership of the payload is passed to the report.
+        ClientIncidentReport_IncidentData* data =
+            incident->TakePayload().release();
+        DCHECK(data->has_incident_time_msec());
+        report->mutable_incident()->AddAllocated(data);
+        data = nullptr;
         states.push_back(state);
       }
     }
-    context->incidents.weak_clear();
+    context->incidents.clear();
     profiles_to_state[scan->first].swap(states);
   }
 

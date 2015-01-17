@@ -10,6 +10,7 @@
 #include "base/location.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/variations/variations_service.h"
+#include "chrome/browser/safe_browsing/incident_reporting/variations_seed_signature_incident.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "content/public/browser/browser_thread.h"
@@ -27,13 +28,13 @@ void VerifyVariationsSeedSignatureOnUIThread(
   std::string invalid_signature =
       variations_service->GetInvalidVariationsSeedSignature();
   if (!invalid_signature.empty()) {
-    scoped_ptr<ClientIncidentReport_IncidentData> incident_data(
-        new ClientIncidentReport_IncidentData());
-    ClientIncidentReport_IncidentData_VariationsSeedSignatureIncident*
-        variations_seed_signature =
-            incident_data->mutable_variations_seed_signature();
+    scoped_ptr<
+        ClientIncidentReport_IncidentData_VariationsSeedSignatureIncident>
+        variations_seed_signature(
+            new ClientIncidentReport_IncidentData_VariationsSeedSignatureIncident());
     variations_seed_signature->set_variations_seed_signature(invalid_signature);
-    callback.Run(incident_data.Pass());
+    callback.Run(make_scoped_ptr(
+        new VariationsSeedSignatureIncident(variations_seed_signature.Pass())));
   }
 }
 

@@ -8,6 +8,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/omnibox/omnibox_log.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/safe_browsing/incident_reporting/omnibox_interaction_incident.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "components/omnibox/autocomplete_result.h"
 #include "content/public/browser/notification_details.h"
@@ -42,12 +43,13 @@ void OmniboxWatcher::Observe(int type,
       (log->elapsed_time_since_user_first_modified_omnibox <
        base::TimeDelta::FromSeconds(1)) &&
       !AutocompleteMatch::IsSearchType(selected_suggestion.type)) {
-    scoped_ptr<ClientIncidentReport_IncidentData> incident_data(
-        new ClientIncidentReport_IncidentData());
+    scoped_ptr<ClientIncidentReport_IncidentData_OmniboxInteractionIncident>
+        omnibox_interaction(
+            new ClientIncidentReport_IncidentData_OmniboxInteractionIncident());
     const GURL& origin = selected_suggestion.destination_url.GetOrigin();
-    incident_data->mutable_omnibox_interaction()->set_origin(
-        origin.possibly_invalid_spec());
-    incident_callback_.Run(incident_data.Pass());
+    omnibox_interaction->set_origin(origin.possibly_invalid_spec());
+    incident_callback_.Run(make_scoped_ptr(
+        new OmniboxInteractionIncident(omnibox_interaction.Pass())));
   }
 }
 

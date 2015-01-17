@@ -17,6 +17,7 @@
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/safe_browsing/incident_reporting/incident_report_uploader.h"
 #include "chrome/browser/safe_browsing/incident_reporting/last_download_finder.h"
+#include "chrome/browser/safe_browsing/incident_reporting/tracked_preference_incident.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -146,7 +147,6 @@ class IncidentReportingServiceTest : public testing::Test {
     ON_DELAYED_ANALYSIS_ADD_INCIDENT,  // Add an incident to the service.
   };
 
-  static const int64 kIncidentTimeMsec;
   static const char kFakeOsName[];
   static const char kFakeDownloadToken[];
   static const char kTestTrackedPrefPath[];
@@ -224,20 +224,22 @@ class IncidentReportingServiceTest : public testing::Test {
   }
 
   // Returns an incident suitable for testing.
-  scoped_ptr<safe_browsing::ClientIncidentReport_IncidentData>
-  MakeTestIncident() {
-    scoped_ptr<safe_browsing::ClientIncidentReport_IncidentData> incident(
-        new safe_browsing::ClientIncidentReport_IncidentData());
-    incident->set_incident_time_msec(kIncidentTimeMsec);
-    safe_browsing::ClientIncidentReport_IncidentData_TrackedPreferenceIncident*
-        tp_incident = incident->mutable_tracked_preference();
-    tp_incident->set_path(kTestTrackedPrefPath);
-    return incident.Pass();
+  scoped_ptr<safe_browsing::Incident> MakeTestIncident(const char* value) {
+    scoped_ptr<safe_browsing::
+                   ClientIncidentReport_IncidentData_TrackedPreferenceIncident>
+        incident(
+            new safe_browsing::
+                ClientIncidentReport_IncidentData_TrackedPreferenceIncident());
+    incident->set_path(kTestTrackedPrefPath);
+    if (value)
+      incident->set_atomic_value(value);
+    return make_scoped_ptr(
+        new safe_browsing::TrackedPreferenceIncident(incident.Pass()));
   }
 
   // Adds a test incident to the service.
   void AddTestIncident(Profile* profile) {
-    instance_->GetAddIncidentCallback(profile).Run(MakeTestIncident().Pass());
+    instance_->GetAddIncidentCallback(profile).Run(MakeTestIncident(nullptr));
   }
 
   // Registers the callback to be run for delayed analysis.
@@ -255,8 +257,7 @@ class IncidentReportingServiceTest : public testing::Test {
     ASSERT_EQ(incident_count, uploaded_report_->incident_size());
     for (int i = 0; i < incident_count; ++i) {
       ASSERT_TRUE(uploaded_report_->incident(i).has_incident_time_msec());
-      ASSERT_EQ(kIncidentTimeMsec,
-                uploaded_report_->incident(i).incident_time_msec());
+      ASSERT_NE(0LL, uploaded_report_->incident(i).incident_time_msec());
       ASSERT_TRUE(uploaded_report_->incident(i).has_tracked_preference());
       ASSERT_TRUE(
           uploaded_report_->incident(i).tracked_preference().has_path());
@@ -442,13 +443,10 @@ class IncidentReportingServiceTest : public testing::Test {
       on_start_upload_callback_.Run();
       on_start_upload_callback_ = base::Closure();
     }
-    return scoped_ptr<safe_browsing::IncidentReportUploader>(
-               new FakeUploader(
-                   base::Bind(
-                       &IncidentReportingServiceTest::OnUploaderDestroyed,
-                       base::Unretained(this)),
-                   callback,
-                   upload_result_)).Pass();
+    return make_scoped_ptr(new FakeUploader(
+        base::Bind(&IncidentReportingServiceTest::OnUploaderDestroyed,
+                   base::Unretained(this)),
+        callback, upload_result_));
   }
 
   void OnDownloadFinderDestroyed() { download_finder_destroyed_ = true; }
@@ -457,7 +455,7 @@ class IncidentReportingServiceTest : public testing::Test {
   void OnDelayedAnalysis(const safe_browsing::AddIncidentCallback& callback) {
     delayed_analysis_ran_ = true;
     if (on_delayed_analysis_action_ == ON_DELAYED_ANALYSIS_ADD_INCIDENT)
-      callback.Run(MakeTestIncident().Pass());
+      callback.Run(MakeTestIncident(nullptr));
   }
 
   // A mapping of profile name to its corresponding properties.
@@ -470,7 +468,6 @@ base::LazyInstance<base::ThreadLocalPointer<
     IncidentReportingServiceTest::TestIncidentReportingService::test_instance_ =
         LAZY_INSTANCE_INITIALIZER;
 
-const int64 IncidentReportingServiceTest::kIncidentTimeMsec = 47LL;
 const char IncidentReportingServiceTest::kFakeOsName[] = "fakedows";
 const char IncidentReportingServiceTest::kFakeDownloadToken[] = "fakedlt";
 const char IncidentReportingServiceTest::kTestTrackedPrefPath[] = "some_pref";
@@ -633,10 +630,7 @@ TEST_F(IncidentReportingServiceTest, TwoIncidentsTwoUploads) {
   ExpectTestIncidentUploaded(1);
 
   // Add a variation on the incident to the service.
-  scoped_ptr<safe_browsing::ClientIncidentReport_IncidentData> incident(
-      MakeTestIncident());
-  incident->mutable_tracked_preference()->set_atomic_value("leeches");
-  instance_->GetAddIncidentCallback(profile).Run(incident.Pass());
+  instance_->GetAddIncidentCallback(profile).Run(MakeTestIncident("leeches"));
 
   // Let all tasks run.
   task_runner_->RunUntilIdle();
@@ -756,7 +750,7 @@ TEST_F(IncidentReportingServiceTest, ProcessWideTwoUploads) {
   // Add the test incident.
   safe_browsing::AddIncidentCallback add_incident(
       instance_->GetAddIncidentCallback(NULL));
-  add_incident.Run(MakeTestIncident().Pass());
+  add_incident.Run(MakeTestIncident(nullptr));
 
   // Let all tasks run.
   task_runner_->RunUntilIdle();
@@ -765,10 +759,7 @@ TEST_F(IncidentReportingServiceTest, ProcessWideTwoUploads) {
   ExpectTestIncidentUploaded(1);
 
   // Add a variation on the incident to the service.
-  scoped_ptr<safe_browsing::ClientIncidentReport_IncidentData> incident(
-      MakeTestIncident());
-  incident->mutable_tracked_preference()->set_atomic_value("leeches");
-  add_incident.Run(incident.Pass());
+  add_incident.Run(MakeTestIncident("leeches"));
 
   // Let all tasks run.
   task_runner_->RunUntilIdle();

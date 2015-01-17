@@ -1,0 +1,71 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_BROWSER_SAFE_BROWSING_INCIDENT_REPORTING_INCIDENT_H_
+#define CHROME_BROWSER_SAFE_BROWSING_INCIDENT_REPORTING_INCIDENT_H_
+
+#include <stdint.h>
+#include <string>
+
+#include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
+
+namespace safe_browsing {
+
+class ClientIncidentReport_IncidentData;
+
+// An incident's type. Values from this enum are used for histograms (hence the
+// making underlying type the same as histogram samples.). Do not re-use
+// existing values.
+enum class IncidentType : int32_t {
+  // Start with 1 rather than zero; otherwise there won't be enough buckets for
+  // the histogram.
+  TRACKED_PREFERENCE = 1,
+  BINARY_INTEGRITY = 2,
+  BLACKLIST_LOAD = 3,
+  OMNIBOX_INTERACTION = 4,
+  VARIATIONS_SEED_SIGNATURE = 5,
+  // Values for new incident types go here.
+  NUM_TYPES = 6
+};
+
+// An abstract incident. Subclasses provide type-specific functionality to
+// enable logging and pruning by the incident reporting service.
+class Incident {
+ public:
+  virtual ~Incident();
+
+  // Returns the type of the incident.
+  virtual IncidentType GetType() const = 0;
+
+  // Returns a key that identifies a particular instance among the type's
+  // possibilities.
+  virtual std::string GetKey() const = 0;
+
+  // Returns a computed fingerprint of the payload. Incidents of the same
+  // incident must result in the same digest.
+  virtual uint32_t ComputeDigest() const = 0;
+
+  // Returns the incident's payload.
+  virtual scoped_ptr<ClientIncidentReport_IncidentData> TakePayload();
+
+ protected:
+  // Constructs the payload with an empty protobuf, setting its incident time to
+  // the current time.
+  Incident();
+
+  // Accessors for the payload. These must not be called after the payload has
+  // been taken.
+  ClientIncidentReport_IncidentData* payload();
+  const ClientIncidentReport_IncidentData* payload() const;
+
+ private:
+  scoped_ptr<ClientIncidentReport_IncidentData> payload_;
+
+  DISALLOW_COPY_AND_ASSIGN(Incident);
+};
+
+}  // namespace safe_browsing
+
+#endif  // CHROME_BROWSER_SAFE_BROWSING_INCIDENT_REPORTING_INCIDENT_H_

@@ -10,12 +10,11 @@
 
 namespace safe_browsing {
 
-class ClientIncidentReport_IncidentData;
+class Incident;
 
 // A callback used by external components to add an incident to the incident
 // reporting service.
-typedef base::Callback<void(scoped_ptr<ClientIncidentReport_IncidentData>)>
-    AddIncidentCallback;
+typedef base::Callback<void(scoped_ptr<Incident>)> AddIncidentCallback;
 
 }  // namespace safe_browsing
 
