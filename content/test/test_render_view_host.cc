@@ -48,6 +48,7 @@ void InitNavigateParams(FrameHostMsg_DidCommitProvisionalLoad_Params* params,
 TestRenderWidgetHostView::TestRenderWidgetHostView(RenderWidgetHost* rwh)
     : rwh_(RenderWidgetHostImpl::From(rwh)),
       is_showing_(false),
+      is_occluded_(false),
       did_swap_compositor_frame_(false) {
   rwh_->SetView(this);
 }
@@ -89,6 +90,7 @@ bool TestRenderWidgetHostView::IsSurfaceAvailableForCopy() const {
 
 void TestRenderWidgetHostView::Show() {
   is_showing_ = true;
+  is_occluded_ = false;
 }
 
 void TestRenderWidgetHostView::Hide() {
@@ -97,6 +99,14 @@ void TestRenderWidgetHostView::Hide() {
 
 bool TestRenderWidgetHostView::IsShowing() {
   return is_showing_;
+}
+
+void TestRenderWidgetHostView::WasUnOccluded() {
+  is_occluded_ = false;
+}
+
+void TestRenderWidgetHostView::WasOccluded() {
+  is_occluded_ = true;
 }
 
 void TestRenderWidgetHostView::RenderProcessGone(base::TerminationStatus status,

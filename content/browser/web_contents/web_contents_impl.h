@@ -182,6 +182,12 @@ class CONTENT_EXPORT WebContentsImpl
 
   bool should_normally_be_visible() { return should_normally_be_visible_; }
 
+  // Indicate if the window has been occluded, and pass this to the views, only
+  // if there is no active capture going on (otherwise it is dropped on the
+  // floor).
+  void WasOccluded();
+  void WasUnOccluded();
+
   // Broadcasts the mode change to all frames.
   void SetAccessibilityMode(AccessibilityMode mode);
 

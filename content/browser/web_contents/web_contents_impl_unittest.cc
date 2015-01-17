@@ -2419,6 +2419,66 @@ TEST_F(WebContentsImplTest, CapturerOverridesPreferredSize) {
   EXPECT_EQ(original_preferred_size, contents()->GetPreferredSize());
 }
 
+TEST_F(WebContentsImplTest, CapturerPreventsHiding) {
+  const gfx::Size original_preferred_size(1024, 768);
+  contents()->UpdatePreferredSize(original_preferred_size);
+
+  TestRenderWidgetHostView* view = static_cast<TestRenderWidgetHostView*>(
+      contents()->GetMainFrame()->GetRenderViewHost()->GetView());
+
+  // With no capturers, setting and un-setting occlusion should change the
+  // view's occlusion state.
+  EXPECT_FALSE(view->is_showing());
+  contents()->WasShown();
+  EXPECT_TRUE(view->is_showing());
+  contents()->WasHidden();
+  EXPECT_FALSE(view->is_showing());
+  contents()->WasShown();
+  EXPECT_TRUE(view->is_showing());
+
+  // Add a capturer and try to hide the contents. The view will remain visible.
+  contents()->IncrementCapturerCount(gfx::Size());
+  contents()->WasHidden();
+  EXPECT_TRUE(view->is_showing());
+
+  // Remove the capturer, and the WasHidden should take effect.
+  contents()->DecrementCapturerCount();
+  EXPECT_FALSE(view->is_showing());
+}
+
+TEST_F(WebContentsImplTest, CapturerPreventsOcclusion) {
+  const gfx::Size original_preferred_size(1024, 768);
+  contents()->UpdatePreferredSize(original_preferred_size);
+
+  TestRenderWidgetHostView* view = static_cast<TestRenderWidgetHostView*>(
+      contents()->GetMainFrame()->GetRenderViewHost()->GetView());
+
+  // With no capturers, setting and un-setting occlusion should change the
+  // view's occlusion state.
+  EXPECT_FALSE(view->is_occluded());
+  contents()->WasOccluded();
+  EXPECT_TRUE(view->is_occluded());
+  contents()->WasUnOccluded();
+  EXPECT_FALSE(view->is_occluded());
+  contents()->WasOccluded();
+  EXPECT_TRUE(view->is_occluded());
+
+  // Add a capturer. This should cause the view to be un-occluded.
+  contents()->IncrementCapturerCount(gfx::Size());
+  EXPECT_FALSE(view->is_occluded());
+
+  // Try to occlude the view. This will fail to propagate because of the
+  // active capturer.
+  contents()->WasOccluded();
+  EXPECT_FALSE(view->is_occluded());
+
+  // Remove the capturer and try again.
+  contents()->DecrementCapturerCount();
+  EXPECT_FALSE(view->is_occluded());
+  contents()->WasOccluded();
+  EXPECT_TRUE(view->is_occluded());
+}
+
 // Tests that GetLastActiveTime starts with a real, non-zero time and updates
 // on activity.
 TEST_F(WebContentsImplTest, GetLastActiveTime) {

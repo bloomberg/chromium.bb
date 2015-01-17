@@ -69,6 +69,8 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
   void Show() override;
   void Hide() override;
   bool IsShowing() override;
+  void WasUnOccluded() override;
+  void WasOccluded() override;
   gfx::Rect GetViewBounds() const override;
 #if defined(OS_MACOSX)
   void SetActive(bool active) override;
@@ -137,6 +139,7 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
 #endif
 
   bool is_showing() const { return is_showing_; }
+  bool is_occluded() const { return is_occluded_; }
   bool did_swap_compositor_frame() const { return did_swap_compositor_frame_; }
 
  protected:
@@ -144,6 +147,7 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
 
  private:
   bool is_showing_;
+  bool is_occluded_;
   bool did_swap_compositor_frame_;
   ui::DummyTextInputClient text_input_client_;
 };

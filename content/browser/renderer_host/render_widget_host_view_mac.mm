@@ -597,8 +597,6 @@ void RenderWidgetHostViewMac::EnsureBrowserCompositorView() {
   // Create the view, to transition from Destroyed -> Suspended.
   if (browser_compositor_state_ == BrowserCompositorDestroyed) {
     browser_compositor_ = BrowserCompositorMac::Create();
-    browser_compositor_->compositor()->SetRootLayer(
-        root_layer_.get());
     browser_compositor_->accelerated_widget_mac()->SetNSView(this);
     browser_compositor_state_ = BrowserCompositorSuspended;
   }
@@ -607,6 +605,8 @@ void RenderWidgetHostViewMac::EnsureBrowserCompositorView() {
   if (browser_compositor_state_ == BrowserCompositorSuspended) {
     delegated_frame_host_->AddedToWindow();
     delegated_frame_host_->WasShown(ui::LatencyInfo());
+    browser_compositor_->compositor()->SetRootLayer(
+        root_layer_.get());
     browser_compositor_state_ = BrowserCompositorActive;
   }
 }
@@ -617,6 +617,9 @@ void RenderWidgetHostViewMac::SuspendBrowserCompositorView() {
 
   // Hide the DelegatedFrameHost to transition from Active -> Suspended.
   if (browser_compositor_state_ == BrowserCompositorActive) {
+    // Disconnect the root layer, which will prevent the compositor from
+    // producing more frames.
+    browser_compositor_->compositor()->SetRootLayer(nullptr);
     // Marking the DelegatedFrameHost as removed from the window hierarchy is
     // necessary to remove all connections to its old ui::Compositor.
     delegated_frame_host_->WasHidden();
@@ -636,7 +639,6 @@ void RenderWidgetHostViewMac::DestroyBrowserCompositorView() {
   if (browser_compositor_state_ == BrowserCompositorSuspended) {
     browser_compositor_->accelerated_widget_mac()->ResetNSView();
     browser_compositor_->compositor()->SetScaleAndSize(1.0, gfx::Size(0, 0));
-    browser_compositor_->compositor()->SetRootLayer(NULL);
     BrowserCompositorMac::Recycle(browser_compositor_.Pass());
     browser_compositor_state_ = BrowserCompositorDestroyed;
   }
@@ -823,16 +825,10 @@ RenderWidgetHost* RenderWidgetHostViewMac::GetRenderWidgetHost() const {
 
 void RenderWidgetHostViewMac::Show() {
   [cocoa_view_ setHidden:NO];
-
   if (!render_widget_host_->is_hidden())
     return;
 
-  ui::LatencyInfo renderer_latency_info;
-  renderer_latency_info.AddLatencyNumber(
-      ui::TAB_SHOW_COMPONENT,
-      render_widget_host_->GetLatencyComponentId(),
-      0);
-  render_widget_host_->WasShown(renderer_latency_info);
+  WasUnOccluded();
 
   // If there is not a frame being currently drawn, kick one, so that the below
   // pause will have a frame to wait on.
@@ -842,16 +838,28 @@ void RenderWidgetHostViewMac::Show() {
 
 void RenderWidgetHostViewMac::Hide() {
   [cocoa_view_ setHidden:YES];
+  WasOccluded();
+  DestroySuspendedBrowserCompositorViewIfNeeded();
+}
 
+void RenderWidgetHostViewMac::WasUnOccluded() {
+  if (!render_widget_host_->is_hidden())
+    return;
+
+  ui::LatencyInfo renderer_latency_info;
+  renderer_latency_info.AddLatencyNumber(
+      ui::TAB_SHOW_COMPONENT,
+      render_widget_host_->GetLatencyComponentId(),
+      0);
+  render_widget_host_->WasShown(renderer_latency_info);
+}
+
+void RenderWidgetHostViewMac::WasOccluded() {
   if (render_widget_host_->is_hidden())
     return;
 
-  // If we have a renderer, then inform it that we are being hidden so it can
-  // reduce its resource utilization.
   render_widget_host_->WasHidden();
-
   SuspendBrowserCompositorView();
-  DestroySuspendedBrowserCompositorViewIfNeeded();
 }
 
 void RenderWidgetHostViewMac::SetSize(const gfx::Size& size) {

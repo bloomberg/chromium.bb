@@ -245,6 +245,8 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void Show() override;
   void Hide() override;
   bool IsShowing() override;
+  void WasUnOccluded() override;
+  void WasOccluded() override;
   gfx::Rect GetViewBounds() const override;
   void SetShowingContextMenu(bool showing) override;
   void SetActive(bool active) override;

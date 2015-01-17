@@ -606,12 +606,6 @@ void WebContentsViewMac::CloseTab() {
   // Occlusion notification APIs are new in Mavericks.
   bool supportsOcclusionAPIs = base::mac::IsOSMavericksOrLater();
 
-  // Use of occlusion APIs is causing bugs:
-  // http://crbug.com/430968: focus set incorrectly.
-  // http://crbug.com/431272: flashes of incorrect content.
-  // http://crbug.com/310374: white flashes (comment 22).
-  supportsOcclusionAPIs = false;
-
   if (supportsOcclusionAPIs) {
     if (oldWindow) {
       [notificationCenter
@@ -635,11 +629,9 @@ void WebContentsViewMac::CloseTab() {
   WebContentsImpl* webContents = [self webContents];
   if (window && webContents) {
     if ([window occlusionState] & NSWindowOcclusionStateVisible) {
-      if (!webContents->should_normally_be_visible())
-        webContents->WasShown();
+      webContents->WasUnOccluded();
     } else {
-      if (webContents->should_normally_be_visible())
-        webContents->WasHidden();
+      webContents->WasOccluded();
     }
   }
 }

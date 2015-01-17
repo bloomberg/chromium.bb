@@ -68,6 +68,8 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   void SetBackgroundColorToDefault() final;
   bool GetBackgroundOpaque() override;
   ui::TextInputClient* GetTextInputClient() override;
+  void WasUnOccluded() override {}
+  void WasOccluded() override {}
   bool IsShowingContextMenu() const override;
   void SetShowingContextMenu(bool showing_menu) override;
   base::string16 GetSelectedText() const override;
