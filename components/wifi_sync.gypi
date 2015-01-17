@@ -16,6 +16,9 @@
       'sources': [
         'wifi_sync/network_state_helper_chromeos.cc',
         'wifi_sync/network_state_helper_chromeos.h',
+        'wifi_sync/wifi_config_delegate.h',
+        'wifi_sync/wifi_config_delegate_chromeos.cc',
+        'wifi_sync/wifi_config_delegate_chromeos.h',
         'wifi_sync/wifi_credential.cc',
         'wifi_sync/wifi_credential.h',
         'wifi_sync/wifi_credential_syncable_service.cc',
