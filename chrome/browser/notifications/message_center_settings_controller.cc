@@ -100,17 +100,19 @@ class NotifierComparator {
   explicit NotifierComparator(icu::Collator* collator) : collator_(collator) {}
 
   bool operator() (Notifier* n1, Notifier* n2) {
-    return base::i18n::CompareString16WithCollator(
-        collator_, n1->name, n2->name) == UCOL_LESS;
+    if (n1->notifier_id.type != n2->notifier_id.type)
+      return n1->notifier_id.type < n2->notifier_id.type;
+
+    if (collator_) {
+      return base::i18n::CompareString16WithCollator(collator_, n1->name,
+                                                     n2->name) == UCOL_LESS;
+    }
+    return n1->name < n2->name;
   }
 
  private:
   icu::Collator* collator_;
 };
-
-bool SimpleCompareNotifiers(Notifier* n1, Notifier* n2) {
-  return n1->name < n2->name;
-}
 
 }  // namespace
 
@@ -206,12 +208,6 @@ void MessageCenterSettingsController::GetNotifierList(
   DesktopNotificationService* notification_service =
       DesktopNotificationServiceFactory::GetForProfile(profile);
 
-  UErrorCode error = U_ZERO_ERROR;
-  scoped_ptr<icu::Collator> collator(icu::Collator::createInstance(error));
-  scoped_ptr<NotifierComparator> comparator;
-  if (!U_FAILURE(error))
-    comparator.reset(new NotifierComparator(collator.get()));
-
   const extensions::ExtensionSet& extension_set =
       extensions::ExtensionRegistry::Get(profile)->enabled_extensions();
   // The extension icon size has to be 32x32 at least to load bigger icons if
@@ -237,8 +233,6 @@ void MessageCenterSettingsController::GetNotifierList(
         notification_service->IsNotifierEnabled(notifier_id)));
     app_icon_loader_->FetchImage(extension->id());
   }
-
-  int app_count = notifiers->size();
 
   ContentSettingsForOneType settings;
   DesktopNotificationProfileUtil::GetNotificationsSettings(profile, &settings);
@@ -291,12 +285,12 @@ void MessageCenterSettingsController::GetNotifierList(
   notifiers->push_back(screenshot_notifier);
 #endif
 
-  if (comparator) {
-    std::sort(notifiers->begin() + app_count, notifiers->end(), *comparator);
-  } else {
-    std::sort(notifiers->begin() + app_count, notifiers->end(),
-              SimpleCompareNotifiers);
-  }
+  UErrorCode error = U_ZERO_ERROR;
+  scoped_ptr<icu::Collator> collator(icu::Collator::createInstance(error));
+  scoped_ptr<NotifierComparator> comparator(
+      new NotifierComparator(U_SUCCESS(error) ? collator.get() : NULL));
+
+  std::sort(notifiers->begin(), notifiers->end(), *comparator);
 }
 
 void MessageCenterSettingsController::SetNotifierEnabled(
