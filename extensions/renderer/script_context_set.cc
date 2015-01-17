@@ -4,6 +4,8 @@
 
 #include "extensions/renderer/script_context_set.h"
 
+#include "base/debug/alias.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/message_loop/message_loop.h"
 #include "content/public/renderer/render_view.h"
 #include "extensions/common/extension.h"
@@ -39,6 +41,34 @@ void ScriptContextSet::Remove(ScriptContext* context) {
   if (contexts_.erase(context)) {
     context->Invalidate();
     base::MessageLoop::current()->DeleteSoon(FROM_HERE, context);
+  }
+}
+
+void ScriptContextSet::RemoveForFrame(blink::WebFrame* frame) {
+  // It is a major problem if there are any remaining contexts associated with a
+  // WebFrame is about to be detached. It is too late to fire the extension
+  // onunload event, and the ScriptContext will try to use a WebFrame after it
+  // may have been freed.
+  static const int kMaxWorldIdsToSave = 10;
+  int saved_world_ids_count = 0;
+  int saved_world_ids[kMaxWorldIdsToSave] = {};
+  for (ContextSet::iterator iter = contexts_.begin();
+       iter != contexts_.end();) {
+    ScriptContext* context = *iter++;
+    if (context->web_frame() == frame) {
+      if (saved_world_ids_count < kMaxWorldIdsToSave)
+        saved_world_ids[saved_world_ids_count++] = context->world_id();
+      Remove(context);
+    }
+  }
+  if (saved_world_ids_count > 0) {
+    base::debug::Alias(&saved_world_ids_count);
+    base::debug::Alias(saved_world_ids);
+#if !defined(OS_LINUX)
+    // DumpWithoutCrashing() crashes in Linux in renderers with breakpad +
+    // sandboxing. https://crbug.com/349600
+    base::debug::DumpWithoutCrashing();
+#endif
   }
 }
 

@@ -18,6 +18,7 @@ class ChromeExtensionsDispatcherDelegate
   scoped_ptr<extensions::ScriptContext> CreateScriptContext(
       const v8::Handle<v8::Context>& v8_context,
       blink::WebFrame* frame,
+      int world_id,
       const extensions::Extension* extension,
       extensions::Feature::Context context_type,
       const extensions::Extension* effective_extension,

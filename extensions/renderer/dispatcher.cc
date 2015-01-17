@@ -281,11 +281,8 @@ void Dispatcher::DidCreateScriptContext(
       frame->document().securityOrigin());
 
   ScriptContext* context =
-      delegate_->CreateScriptContext(v8_context,
-                                     frame,
-                                     extension,
-                                     context_type,
-                                     effective_extension,
+      delegate_->CreateScriptContext(v8_context, frame, world_id, extension,
+                                     context_type, effective_extension,
                                      effective_context_type).release();
   script_context_set_.Add(context);
 
@@ -367,6 +364,10 @@ void Dispatcher::WillReleaseScriptContext(
 
   script_context_set_.Remove(context);
   VLOG(1) << "Num tracked contexts: " << script_context_set_.size();
+}
+
+void Dispatcher::FrameDetached(blink::WebFrame* frame) {
+  script_context_set_.RemoveForFrame(frame);
 }
 
 void Dispatcher::DidCreateDocumentElement(blink::WebFrame* frame) {
