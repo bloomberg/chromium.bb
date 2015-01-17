@@ -9753,6 +9753,9 @@ void GLES2DecoderImpl::DoSwapBuffers() {
     TRACE_EVENT_SYNTHETIC_DELAY("gpu.PresentingFrame");
   }
 
+  ScopedGPUTrace scoped_gpu_trace(gpu_tracer_.get(), kTraceDecoder,
+                                  "gpu_toplevel", "SwapBuffer");
+
   bool is_tracing;
   TRACE_EVENT_CATEGORY_GROUP_ENABLED(TRACE_DISABLED_BY_DEFAULT("gpu.debug"),
                                      &is_tracing);

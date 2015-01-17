@@ -209,6 +209,24 @@ class GPU_EXPORT GPUTrace
   DISALLOW_COPY_AND_ASSIGN(GPUTrace);
 };
 
+class ScopedGPUTrace {
+  public:
+    ScopedGPUTrace(GPUTracer* gpu_tracer, GpuTracerSource source,
+                   const std::string& category, const std::string& name)
+        : gpu_tracer_(gpu_tracer),
+          source_(source) {
+      gpu_tracer_->Begin(category, name, source_);
+    }
+
+    ~ScopedGPUTrace() {
+      gpu_tracer_->End(source_);
+    }
+
+   private:
+    GPUTracer* gpu_tracer_;
+    GpuTracerSource source_;
+};
+
 }  // namespace gles2
 }  // namespace gpu
 
