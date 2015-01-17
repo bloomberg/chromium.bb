@@ -167,6 +167,7 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
       ready_state_(WebMediaPlayer::ReadyStateHaveNothing),
       texture_id_(0),
       stream_id_(0),
+      is_player_initialized_(false),
       is_playing_(false),
       needs_establish_peer_(true),
       has_size_info_(false),
@@ -209,12 +210,9 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
   TryCreateStreamTextureProxyIfNeeded();
   interpolator_.SetUpperBound(base::TimeDelta());
 
-  // Set the initial CDM, if specified.
   if (initial_cdm) {
     cdm_context_ =
         media::ToWebContentDecryptionModuleImpl(initial_cdm)->GetCdmContext();
-    if (cdm_context_->GetCdmId() != media::CdmContext::kInvalidCdmId)
-      player_manager_->SetCdm(player_id_, cdm_context_->GetCdmId());
   }
 }
 
@@ -223,10 +221,10 @@ WebMediaPlayerAndroid::~WebMediaPlayerAndroid() {
   SetVideoFrameProviderClient(NULL);
   client_->setWebLayer(NULL);
 
-  if (player_manager_) {
+  if (is_player_initialized_)
     player_manager_->DestroyPlayer(player_id_);
-    player_manager_->UnregisterMediaPlayer(player_id_);
-  }
+
+  player_manager_->UnregisterMediaPlayer(player_id_);
 
   if (stream_id_) {
     GLES2Interface* gl = stream_texture_factory_->ContextGL();
@@ -290,17 +288,13 @@ void WebMediaPlayerAndroid::load(LoadType load_type,
         demuxer, demuxer_client_id, media_task_runner_, media_log_));
 
     if (player_type_ == MEDIA_PLAYER_TYPE_MEDIA_SOURCE) {
-      media::SetDecryptorReadyCB set_decryptor_ready_cb =
-          media::BindToCurrentLoop(
-              base::Bind(&WebMediaPlayerAndroid::SetDecryptorReadyCB,
-                         weak_factory_.GetWeakPtr()));
-
       media_source_delegate_->InitializeMediaSource(
           base::Bind(&WebMediaPlayerAndroid::OnMediaSourceOpened,
                      weak_factory_.GetWeakPtr()),
           base::Bind(&WebMediaPlayerAndroid::OnEncryptedMediaInitData,
                      weak_factory_.GetWeakPtr()),
-          set_decryptor_ready_cb,
+          base::Bind(&WebMediaPlayerAndroid::SetDecryptorReadyCB,
+                     weak_factory_.GetWeakPtr()),
           base::Bind(&WebMediaPlayerAndroid::UpdateNetworkState,
                      weak_factory_.GetWeakPtr()),
           base::Bind(&WebMediaPlayerAndroid::OnDurationChanged,
@@ -1064,8 +1058,13 @@ void WebMediaPlayerAndroid::InitializePlayer(
   player_manager_->Initialize(
       player_type_, player_id_, url, first_party_for_cookies, demuxer_client_id,
       frame_->document().url(), allow_stored_credentials);
+  is_player_initialized_ = true;
+
   if (is_fullscreen_)
     player_manager_->EnterFullscreen(player_id_);
+
+  if (cdm_context_)
+    SetCdmInternal(base::Bind(&media::IgnoreCdmAttached));
 }
 
 void WebMediaPlayerAndroid::Pause(bool is_media_related_action) {
@@ -1534,16 +1533,8 @@ WebMediaPlayerAndroid::GenerateKeyRequestInternal(
     // Set the CDM onto the media player.
     cdm_context_ = proxy_decryptor_->GetCdmContext();
 
-    if (!decryptor_ready_cb_.is_null()) {
-      base::ResetAndReturn(&decryptor_ready_cb_)
-          .Run(cdm_context_->GetDecryptor(),
-               base::Bind(&media::IgnoreCdmAttached));
-    }
-
-    // Only browser CDMs have CDM ID. Render side CDMs (e.g. ClearKey CDM) do
-    // not have a CDM ID and there is no need to call player_manager_->SetCdm().
-    if (cdm_context_->GetCdmId() != media::CdmContext::kInvalidCdmId)
-      player_manager_->SetCdm(player_id_, cdm_context_->GetCdmId());
+    if (is_player_initialized_)
+      SetCdmInternal(base::Bind(&media::IgnoreCdmAttached));
 
     current_key_system_ = key_system;
   } else if (key_system != current_key_system_) {
@@ -1660,20 +1651,15 @@ void WebMediaPlayerAndroid::setContentDecryptionModule(
 
   cdm_context_ = media::ToWebContentDecryptionModuleImpl(cdm)->GetCdmContext();
 
-  if (!decryptor_ready_cb_.is_null()) {
-    base::ResetAndReturn(&decryptor_ready_cb_)
-        .Run(cdm_context_->GetDecryptor(),
-             media::BindToCurrentLoop(base::Bind(
-                 &WebMediaPlayerAndroid::ContentDecryptionModuleAttached,
-                 weak_factory_.GetWeakPtr(), result)));
+  if (is_player_initialized_) {
+    SetCdmInternal(media::BindToCurrentLoop(
+        base::Bind(&WebMediaPlayerAndroid::ContentDecryptionModuleAttached,
+                   weak_factory_.GetWeakPtr(), result)));
   } else {
     // No pipeline/decoder connected, so resolve the promise. When something
     // is connected, setting the CDM will happen in SetDecryptorReadyCB().
     ContentDecryptionModuleAttached(result, true);
   }
-
-  if (cdm_context_->GetCdmId() != media::CdmContext::kInvalidCdmId)
-    player_manager_->SetCdm(player_id_, cdm_context_->GetCdmId());
 }
 
 void WebMediaPlayerAndroid::ContentDecryptionModuleAttached(
@@ -1762,9 +1748,48 @@ void WebMediaPlayerAndroid::OnEncryptedMediaInitData(
                      init_data.size());
 }
 
+void WebMediaPlayerAndroid::SetCdmInternal(
+    const media::CdmAttachedCB& cdm_attached_cb) {
+  DCHECK(cdm_context_ && is_player_initialized_);
+  DCHECK(cdm_context_->GetDecryptor() ||
+         cdm_context_->GetCdmId() != media::CdmContext::kInvalidCdmId)
+      << "CDM should support either a Decryptor or a CDM ID.";
+
+  media::Decryptor* decryptor = cdm_context_->GetDecryptor();
+
+  // Note:
+  // - If |decryptor| is non-null, only handles |decryptor_ready_cb_| and
+  //   ignores the CDM ID.
+  // - If |decryptor| is null (in which case the CDM ID should be valid),
+  //   returns any pending |decryptor_ready_cb_| with null, so that
+  //   MediaSourceDelegate will fall back to use a browser side (IPC-based) CDM,
+  //   then calls SetCdm() through the |player_manager_|.
+
+  if (decryptor) {
+    if (!decryptor_ready_cb_.is_null()) {
+      base::ResetAndReturn(&decryptor_ready_cb_)
+          .Run(decryptor, cdm_attached_cb);
+    } else {
+      cdm_attached_cb.Run(true);
+    }
+    return;
+  }
+
+  // |decryptor| is null.
+  if (!decryptor_ready_cb_.is_null()) {
+    base::ResetAndReturn(&decryptor_ready_cb_)
+        .Run(nullptr, base::Bind(&media::IgnoreCdmAttached));
+  }
+
+  DCHECK(cdm_context_->GetCdmId() != media::CdmContext::kInvalidCdmId);
+  player_manager_->SetCdm(player_id_, cdm_context_->GetCdmId());
+  cdm_attached_cb.Run(true);
+}
+
 void WebMediaPlayerAndroid::SetDecryptorReadyCB(
     const media::DecryptorReadyCB& decryptor_ready_cb) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
+  DCHECK(is_player_initialized_);
 
   // Cancels the previous decryptor request.
   if (decryptor_ready_cb.is_null()) {

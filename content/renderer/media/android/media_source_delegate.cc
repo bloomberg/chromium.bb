@@ -157,7 +157,7 @@ void MediaSourceDelegate::InitializeMediaSource(
   DCHECK(!media_source_opened_cb.is_null());
   media_source_opened_cb_ = media_source_opened_cb;
   encrypted_media_init_data_cb_ = encrypted_media_init_data_cb;
-  set_decryptor_ready_cb_ = set_decryptor_ready_cb;
+  set_decryptor_ready_cb_ = media::BindToCurrentLoop(set_decryptor_ready_cb);
   update_network_state_cb_ = media::BindToCurrentLoop(update_network_state_cb);
   duration_change_cb_ = duration_change_cb;
   access_unit_size_ = kAccessUnitSizeForMediaSource;
