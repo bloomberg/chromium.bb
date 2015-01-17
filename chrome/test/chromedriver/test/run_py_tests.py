@@ -568,6 +568,10 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     self.assertEquals(1, len(self._driver.FindElements('tag name', 'br')))
 
   def testMoveToElementAndClick(self):
+    # This page gets rendered differently depending on which platform the test
+    # is running on, and what window size is being used. So we need to do some
+    # sanity checks to make sure that the <a> element is split across two lines
+    # of text.
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/multiline.html'))
 
     # Check that link element spans two lines and that the first ClientRect is
@@ -576,7 +580,7 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     client_rects = self._driver.ExecuteScript(
         'return arguments[0].getClientRects();', link)
     self.assertEquals(2, len(client_rects))
-    self.assertTrue(client_rects[0]['bottom'] < client_rects[1]['top'])
+    self.assertTrue(client_rects[0]['bottom'] <= client_rects[1]['top'])
 
     # Check that the center of the link's bounding ClientRect is outside the
     # element.
