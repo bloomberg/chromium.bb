@@ -38,6 +38,16 @@ Process Process::Current() {
 }
 
 // static
+Process Process::OpenWithExtraPriviles(ProcessId pid) {
+  if (pid == GetCurrentProcId())
+    return Current();
+
+  // On POSIX process handles are the same as PIDs, and there are no privileges
+  // to set.
+  return Process(pid);
+}
+
+// static
 Process Process::DeprecatedGetProcessFromHandle(ProcessHandle handle) {
   DCHECK_NE(handle, GetCurrentProcessHandle());
   return Process(handle);

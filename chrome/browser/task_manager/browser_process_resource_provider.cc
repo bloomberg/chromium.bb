@@ -38,9 +38,6 @@ BrowserProcessResource::BrowserProcessResource()
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "437890 BrowserProcessResource::BrowserProcessResource1"));
 
-  int pid = base::GetCurrentProcId();
-  bool success = base::OpenPrivilegedProcessHandle(pid, &process_);
-  DCHECK(success);
 #if defined(OS_WIN)
   if (!default_icon_) {
     // TODO(vadimt): Remove ScopedTracker below once crbug.com/437890 is fixed.
@@ -80,7 +77,6 @@ BrowserProcessResource::BrowserProcessResource()
 }
 
 BrowserProcessResource::~BrowserProcessResource() {
-  base::CloseProcessHandle(process_);
 }
 
 // Resource methods:
@@ -104,7 +100,7 @@ size_t BrowserProcessResource::SqliteMemoryUsedBytes() const {
 }
 
 base::ProcessHandle BrowserProcessResource::GetProcess() const {
-  return base::GetCurrentProcessHandle();  // process_;
+  return base::GetCurrentProcessHandle();
 }
 
 int BrowserProcessResource::GetUniqueChildProcessId() const {

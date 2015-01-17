@@ -232,11 +232,11 @@ TEST_F(FileAPIMessageFilterTest, BuildStreamWithSharedMemory) {
 
   EXPECT_EQ(NULL, stream_registry->GetStream(kUrl).get());
 
-  // For win, we need to set valid PID to the filter.
+  // For win, we need to set valid process to the filter.
   // OnAppendSharedMemoryToStream passes the peer process's handle to
   // SharedMemory's constructor. If it's incorrect, DuplicateHandle won't work
   // correctly.
-  filter_->set_peer_pid_for_testing(base::GetCurrentProcId());
+  filter_->set_peer_process_for_testing(base::Process::Current());
 
   StreamHostMsg_StartBuilding start_message(kUrl, kFakeContentType);
   EXPECT_TRUE(filter_->OnMessageReceived(start_message));

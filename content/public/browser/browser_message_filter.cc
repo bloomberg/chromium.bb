@@ -43,7 +43,7 @@ class BrowserMessageFilter::Internal : public IPC::MessageFilter {
   }
 
   void OnChannelConnected(int32 peer_pid) override {
-    filter_->peer_pid_ = peer_pid;
+    filter_->peer_process_ = base::Process::OpenWithExtraPriviles(peer_pid);
     filter_->OnChannelConnected(peer_pid);
   }
 
@@ -100,10 +100,6 @@ class BrowserMessageFilter::Internal : public IPC::MessageFilter {
 BrowserMessageFilter::BrowserMessageFilter(uint32 message_class_to_filter)
     : internal_(nullptr),
       sender_(nullptr),
-#if defined(OS_WIN)
-      peer_handle_(base::kNullProcessHandle),
-#endif
-      peer_pid_(base::kNullProcessId),
       message_classes_to_filter_(1, message_class_to_filter) {}
 
 BrowserMessageFilter::BrowserMessageFilter(
@@ -111,10 +107,6 @@ BrowserMessageFilter::BrowserMessageFilter(
     size_t num_message_classes_to_filter)
     : internal_(nullptr),
       sender_(nullptr),
-#if defined(OS_WIN)
-      peer_handle_(base::kNullProcessHandle),
-#endif
-      peer_pid_(base::kNullProcessId),
       message_classes_to_filter_(
           message_classes_to_filter,
           message_classes_to_filter + num_message_classes_to_filter) {
@@ -122,19 +114,8 @@ BrowserMessageFilter::BrowserMessageFilter(
 }
 
 base::ProcessHandle BrowserMessageFilter::PeerHandle() {
-#if defined(OS_WIN)
-  base::AutoLock lock(peer_handle_lock_);
-  if (peer_handle_ == base::kNullProcessHandle)
-    base::OpenPrivilegedProcessHandle(peer_pid_, &peer_handle_);
-
-  return peer_handle_;
-#else
-  base::ProcessHandle result = base::kNullProcessHandle;
-  base::OpenPrivilegedProcessHandle(peer_pid_, &result);
-  return result;
-#endif
+  return peer_process_.Handle();
 }
-
 
 void BrowserMessageFilter::OnDestruct() const {
   delete this;
@@ -208,10 +189,6 @@ void BrowserMessageFilter::BadMessageReceived() {
 }
 
 BrowserMessageFilter::~BrowserMessageFilter() {
-#if defined(OS_WIN)
-  if (peer_handle_ != base::kNullProcessHandle)
-    base::CloseProcessHandle(peer_handle_);
-#endif
 }
 
 IPC::MessageFilter* BrowserMessageFilter::GetFilter() {

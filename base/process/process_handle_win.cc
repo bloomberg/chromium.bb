@@ -36,21 +36,6 @@ bool OpenProcessHandle(ProcessId pid, ProcessHandle* handle) {
   return true;
 }
 
-bool OpenPrivilegedProcessHandle(ProcessId pid, ProcessHandle* handle) {
-  ProcessHandle result = OpenProcess(PROCESS_DUP_HANDLE |
-                                     PROCESS_TERMINATE |
-                                     PROCESS_QUERY_INFORMATION |
-                                     PROCESS_VM_READ |
-                                     SYNCHRONIZE,
-                                     FALSE, pid);
-
-  if (result == NULL)
-    return false;
-
-  *handle = result;
-  return true;
-}
-
 bool OpenProcessHandleWithAccess(ProcessId pid,
                                  uint32 access_flags,
                                  ProcessHandle* handle) {

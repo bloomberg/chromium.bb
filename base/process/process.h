@@ -49,6 +49,11 @@ class BASE_EXPORT Process {
   // Returns an object for the current process.
   static Process Current();
 
+  // Returns a Process for the given |pid|. On Windows the handle is opened
+  // with more access rights and must only be used by trusted code (can read the
+  // address space and duplicate handles).
+  static Process OpenWithExtraPriviles(ProcessId pid);
+
   // Creates an object from a |handle| owned by someone else.
   // Don't use this for new code. It is only intended to ease the migration to
   // a strict ownership model.

@@ -30,12 +30,10 @@ void SendReply(IPC::Channel* channel, int32 pid, bool result) {
 
 }  // namespace
 
-NaClBrokerListener::NaClBrokerListener()
-    : browser_handle_(base::kNullProcessHandle) {
+NaClBrokerListener::NaClBrokerListener() {
 }
 
 NaClBrokerListener::~NaClBrokerListener() {
-  base::CloseProcessHandle(browser_handle_);
 }
 
 void NaClBrokerListener::Listen() {
@@ -63,8 +61,8 @@ void NaClBrokerListener::PreSpawnTarget(sandbox::TargetPolicy* policy,
 }
 
 void NaClBrokerListener::OnChannelConnected(int32 peer_pid) {
-  bool res = base::OpenPrivilegedProcessHandle(peer_pid, &browser_handle_);
-  CHECK(res);
+  browser_process_ = base::Process::OpenWithExtraPriviles(peer_pid);
+  CHECK(browser_process_.IsValid());
 }
 
 bool NaClBrokerListener::OnMessageReceived(const IPC::Message& msg) {
@@ -116,7 +114,7 @@ void NaClBrokerListener::OnLaunchLoaderThroughBroker(
       //    PROCESS_DUP_HANDLE access rights.
       DuplicateHandle(
           ::GetCurrentProcess(), loader_process.Handle(),
-          browser_handle_, &loader_handle_in_browser,
+          browser_process_.Handle(), &loader_handle_in_browser,
           PROCESS_DUP_HANDLE | PROCESS_QUERY_INFORMATION | PROCESS_TERMINATE,
           FALSE, 0);
     }

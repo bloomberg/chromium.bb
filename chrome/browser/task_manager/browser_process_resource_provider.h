@@ -51,7 +51,6 @@ class BrowserProcessResource : public Resource {
   size_t GetV8MemoryUsed() const override;
 
  private:
-  base::ProcessHandle process_;
   mutable base::string16 title_;
 
   static gfx::ImageSkia* default_icon_;

@@ -44,15 +44,6 @@ BASE_EXPORT ProcessHandle GetCurrentProcessHandle();
 // CloseProcessHandle when you are done with it. Returns true on success.
 BASE_EXPORT bool OpenProcessHandle(ProcessId pid, ProcessHandle* handle);
 
-// Converts a PID to a process handle. On Windows the handle is opened
-// with more access rights and must only be used by trusted code.
-// You have to close returned handle using CloseProcessHandle. Returns true
-// on success.
-// TODO(sanjeevr): Replace all calls to OpenPrivilegedProcessHandle with the
-// more specific OpenProcessHandleWithAccess method and delete this.
-BASE_EXPORT bool OpenPrivilegedProcessHandle(ProcessId pid,
-                                             ProcessHandle* handle);
-
 // Converts a PID to a process handle using the desired access flags. Use a
 // combination of the kProcessAccess* flags defined above for |access_flags|.
 BASE_EXPORT bool OpenProcessHandleWithAccess(ProcessId pid,

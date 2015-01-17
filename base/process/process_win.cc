@@ -9,6 +9,13 @@
 #include "base/process/kill.h"
 #include "base/win/windows_version.h"
 
+namespace {
+
+DWORD kBasicProcessAccess =
+  PROCESS_TERMINATE | PROCESS_QUERY_INFORMATION | SYNCHRONIZE;
+
+} // namespace
+
 namespace base {
 
 Process::Process(ProcessHandle handle)
@@ -37,6 +44,13 @@ Process Process::Current() {
   Process process;
   process.is_current_process_ = true;
   return process.Pass();
+}
+
+// static
+Process Process::OpenWithExtraPriviles(ProcessId pid) {
+  DWORD access = kBasicProcessAccess | PROCESS_DUP_HANDLE | PROCESS_VM_READ;
+  ProcessHandle handle = ::OpenProcess(access, FALSE, pid);
+  return Process(handle);
 }
 
 // static

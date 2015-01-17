@@ -275,16 +275,9 @@ bool ChildProcessHostImpl::OnMessageReceived(const IPC::Message& msg) {
 
 void ChildProcessHostImpl::OnChannelConnected(int32 peer_pid) {
   if (!peer_process_.IsValid()) {
-    base::ProcessHandle peer_handle_;
-    if (base::OpenPrivilegedProcessHandle(peer_pid, &peer_handle_)) {
-      // TODO(rvargas) crbug.com/417532: don't go through a ProcessHandle.
-      if (peer_handle_ == base::GetCurrentProcessHandle())
-        peer_process_ = base::Process::Current();
-      else
-        peer_process_ = base::Process(peer_handle_);
-    } else {
-      peer_process_ = delegate_->GetProcess().Duplicate();
-    }
+    peer_process_ = base::Process::OpenWithExtraPriviles(peer_pid);
+    if (!peer_process_.IsValid())
+       peer_process_ = delegate_->GetProcess().Duplicate();
     DCHECK(peer_process_.IsValid());
   }
   opening_channel_ = false;

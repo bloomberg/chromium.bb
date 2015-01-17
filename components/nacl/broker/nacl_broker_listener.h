@@ -41,7 +41,7 @@ class NaClBrokerListener : public content::SandboxedProcessLauncherDelegate,
                                      const std::string& startup_info);
   void OnStopBroker();
 
-  base::ProcessHandle browser_handle_;
+  base::Process browser_process_;
   scoped_ptr<IPC::Channel> channel_;
 
   DISALLOW_COPY_AND_ASSIGN(NaClBrokerListener);

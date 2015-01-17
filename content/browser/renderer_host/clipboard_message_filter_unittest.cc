@@ -22,7 +22,7 @@ class ClipboardMessageFilterTest : public ::testing::Test {
   ClipboardMessageFilterTest()
       : filter_(new ClipboardMessageFilter),
         clipboard_(ui::TestClipboard::CreateForCurrentThread()) {
-    filter_->set_peer_pid_for_testing(base::GetCurrentProcId());
+    filter_->set_peer_process_for_testing(base::Process::Current());
   }
 
   ~ClipboardMessageFilterTest() override {

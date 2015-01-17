@@ -217,7 +217,7 @@ class TestFilter : public ResourceMessageFilter {
         canceled_(false),
         received_after_canceled_(0) {
     ChildProcessSecurityPolicyImpl::GetInstance()->Add(child_id());
-    set_peer_pid_for_testing(base::GetCurrentProcId());
+    set_peer_process_for_testing(base::Process::Current());
   }
 
   void set_canceled(bool canceled) { canceled_ = canceled; }
