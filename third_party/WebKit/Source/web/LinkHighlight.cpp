@@ -40,6 +40,7 @@
 #include "core/rendering/compositing/CompositedLayerMapping.h"
 #include "core/rendering/style/ShadowData.h"
 #include "platform/graphics/Color.h"
+#include "platform/graphics/paint/DisplayItemList.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCompositorAnimationCurve.h"
 #include "public/platform/WebCompositorSupport.h"
@@ -240,12 +241,28 @@ void LinkHighlight::paintContents(WebCanvas* canvas, const WebRect& webClipRect,
     if (!m_node || !m_node->renderer())
         return;
 
-    GraphicsContext gc(canvas, nullptr,
-        contextStatus == WebContentLayerClient::GraphicsContextEnabled ? GraphicsContext::NothingDisabled : GraphicsContext::FullyDisabled);
+    GraphicsContext::DisabledMode disabledMode = GraphicsContext::NothingDisabled;
+    if (contextStatus != WebContentLayerClient::GraphicsContextEnabled)
+        disabledMode = GraphicsContext::FullyDisabled;
+
+    OwnPtr<GraphicsContext> graphicsContext;
+    OwnPtr<DisplayItemList> displayItemList;
+    if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
+        displayItemList = DisplayItemList::create();
+        graphicsContext = adoptPtr(new GraphicsContext(nullptr, displayItemList.get(), disabledMode));
+    } else {
+        graphicsContext = adoptPtr(new GraphicsContext(canvas, nullptr, disabledMode));
+    }
+
     IntRect clipRect(IntPoint(webClipRect.x, webClipRect.y), IntSize(webClipRect.width, webClipRect.height));
-    gc.clip(clipRect);
-    gc.setFillColor(m_node->renderer()->style()->tapHighlightColor());
-    gc.fillPath(m_path);
+    graphicsContext->clip(clipRect);
+    graphicsContext->setFillColor(m_node->renderer()->style()->tapHighlightColor());
+    graphicsContext->fillPath(m_path);
+
+    if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
+        GraphicsContext canvasGraphicsContext(canvas, nullptr, disabledMode);
+        displayItemList->replay(&canvasGraphicsContext);
+    }
 }
 
 void LinkHighlight::startHighlightAnimationIfNeeded()
