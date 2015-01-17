@@ -118,6 +118,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/main_function_params.h"
+#include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "media/audio/sounds/sounds_manager.h"
 #include "net/base/network_change_notifier.h"
 #include "net/socket/ssl_server_socket.h"
@@ -228,24 +229,18 @@ class DBusServices {
   ~DBusServices() {
     ui::NetworkConnect::Shutdown();
     network_connect_delegate_.reset();
-
     CertLibrary::Shutdown();
     NetworkHandler::Shutdown();
-
     cryptohome::AsyncMethodCaller::Shutdown();
     disks::DiskMountManager::Shutdown();
-
     SystemSaltGetter::Shutdown();
     LoginState::Shutdown();
     CertLoader::Shutdown();
     TPMTokenLoader::Shutdown();
-
     CrosDBusService::Shutdown();
-
-    // Shutdown the PowerDataCollector before shutting down DBusThreadManager.
     PowerDataCollector::Shutdown();
-
     PowerPolicyController::Shutdown();
+    device::BluetoothAdapterFactory::Shutdown();
 
     // NOTE: This must only be called if Initialize() was called.
     DBusThreadManager::Shutdown();

@@ -192,6 +192,14 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
   // Returns a weak pointer to an existing adapter for testing purposes only.
   base::WeakPtr<BluetoothAdapter> GetWeakPtrForTesting();
 
+#if defined(OS_CHROMEOS)
+  // Shutdown the adapter: tear down and clean up all objects owned by
+  // BluetoothAdapter. After this call, the BluetoothAdapter will behave as if
+  // no Bluetooth controller exists in the local system. |IsPresent| will return
+  // false.
+  void Shutdown();
+#endif
+
   // Adds and removes observers for events on this bluetooth adapter. If
   // monitoring multiple adapters, check the |adapter| parameter of observer
   // methods to determine which adapter is issuing the event.

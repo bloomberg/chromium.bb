@@ -14,6 +14,11 @@ MockBluetoothAdapter::MockBluetoothAdapter() {
 
 MockBluetoothAdapter::~MockBluetoothAdapter() {}
 
+#if defined(OS_CHROMEOS)
+void MockBluetoothAdapter::Shutdown() {
+}
+#endif
+
 void MockBluetoothAdapter::DeleteOnCorrectThread() const {
   delete this;
 };
