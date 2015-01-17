@@ -97,29 +97,6 @@ metrics::SystemProfileProto::Channel AsProtobufChannel(
   return metrics::SystemProfileProto::CHANNEL_UNKNOWN;
 }
 
-// Handles asynchronous fetching of memory details.
-// Will run the provided task after finished.
-class MetricsMemoryDetails : public MemoryDetails {
- public:
-  MetricsMemoryDetails(
-      const base::Closure& callback,
-      MemoryGrowthTracker* memory_growth_tracker)
-      : callback_(callback) {
-    SetMemoryGrowthTracker(memory_growth_tracker);
-  }
-
-  void OnDetailsAvailable() override {
-    base::MessageLoop::current()->PostTask(FROM_HERE, callback_);
-  }
-
- private:
-  ~MetricsMemoryDetails() override {}
-
-  base::Closure callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(MetricsMemoryDetails);
-};
-
 }  // namespace
 
 ChromeMetricsServiceClient::ChromeMetricsServiceClient(
@@ -247,7 +224,7 @@ void ChromeMetricsServiceClient::CollectFinalMetrics(
 
   scoped_refptr<MetricsMemoryDetails> details(
       new MetricsMemoryDetails(callback, &memory_growth_tracker_));
-  details->StartFetch(MemoryDetails::UPDATE_USER_METRICS);
+  details->StartFetch();
 
   // Collect WebCore cache information to put into a histogram.
   for (content::RenderProcessHost::iterator i(

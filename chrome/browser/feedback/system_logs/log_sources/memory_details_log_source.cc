@@ -45,8 +45,7 @@ void MemoryDetailsLogSource::Fetch(const SysLogsSourceCallback& callback) {
 
   scoped_refptr<SystemLogsMemoryHandler>
       handler(new SystemLogsMemoryHandler(callback));
-  // TODO(jamescook): Maybe we don't need to update histograms here?
-  handler->StartFetch(MemoryDetails::UPDATE_USER_METRICS);
+  handler->StartFetch();
 }
 
 }  // namespace system_logs

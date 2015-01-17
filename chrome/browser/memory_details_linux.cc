@@ -68,9 +68,7 @@ static const struct {
   { "", MAX_BROWSERS },
 };
 
-MemoryDetails::MemoryDetails()
-    : user_metrics_mode_(UPDATE_USER_METRICS),
-      memory_growth_tracker_(NULL) {
+MemoryDetails::MemoryDetails() {
 }
 
 ProcessData* MemoryDetails::ChromeBrowser() {

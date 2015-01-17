@@ -37,9 +37,7 @@ enum {
   MAX_BROWSERS
 } BrowserProcess;
 
-MemoryDetails::MemoryDetails()
-    : user_metrics_mode_(UPDATE_USER_METRICS),
-      memory_growth_tracker_(NULL) {
+MemoryDetails::MemoryDetails() {
   base::FilePath browser_process_path;
   PathService::Get(base::FILE_EXE, &browser_process_path);
   const base::string16 browser_process_name =

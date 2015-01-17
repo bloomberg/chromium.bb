@@ -1644,6 +1644,8 @@
       'browser/metrics/google_update_metrics_provider_win.h',
       'browser/metrics/jumplist_metrics_win.cc',
       'browser/metrics/jumplist_metrics_win.h',
+      'browser/metrics/metrics_memory_details.cc',
+      'browser/metrics/metrics_memory_details.h',
       'browser/metrics/metrics_reporting_state.cc',
       'browser/metrics/metrics_reporting_state.h',
       'browser/metrics/metrics_services_manager.cc',

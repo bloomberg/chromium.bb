@@ -48,10 +48,7 @@ enum BrowserType {
   MAX_BROWSERS
 } BrowserProcess;
 
-
-MemoryDetails::MemoryDetails()
-    : user_metrics_mode_(UPDATE_USER_METRICS),
-      memory_growth_tracker_(NULL) {
+MemoryDetails::MemoryDetails() {
   const base::FilePath browser_process_path =
       base::GetProcessExecutablePath(base::GetCurrentProcessHandle());
   const std::string browser_process_name =

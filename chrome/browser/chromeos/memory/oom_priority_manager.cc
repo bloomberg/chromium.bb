@@ -292,7 +292,7 @@ void OomPriorityManager::LogMemoryAndDiscardTab() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // Deletes itself upon completion.
   OomMemoryDetails* details = new OomMemoryDetails();
-  details->StartFetch(MemoryDetails::SKIP_USER_METRICS);
+  details->StartFetch();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

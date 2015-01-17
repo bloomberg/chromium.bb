@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/memory_details.h"
+#include "chrome/browser/metrics/metrics_memory_details.h"
 
+#include "base/bind_helpers.h"
 #include "base/message_loop/message_loop.h"
 #include "base/test/histogram_tester.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -11,12 +12,13 @@
 
 namespace {
 
-class TestMemoryDetails : public MemoryDetails {
+class TestMemoryDetails : public MetricsMemoryDetails {
  public:
-  TestMemoryDetails() {}
+  TestMemoryDetails()
+      : MetricsMemoryDetails(base::Bind(&base::DoNothing), nullptr) {}
 
   void StartFetchAndWait() {
-    StartFetch(UPDATE_USER_METRICS);
+    StartFetch();
     content::RunMessageLoop();
   }
 
@@ -24,6 +26,7 @@ class TestMemoryDetails : public MemoryDetails {
   ~TestMemoryDetails() override {}
 
   void OnDetailsAvailable() override {
+    MetricsMemoryDetails::OnDetailsAvailable();
     // Exit the loop initiated by StartFetchAndWait().
     base::MessageLoop::current()->Quit();
   }
@@ -33,16 +36,16 @@ class TestMemoryDetails : public MemoryDetails {
 
 }  // namespace
 
-class MemoryDetailsBrowserTest : public InProcessBrowserTest {
+class MetricsMemoryDetailsBrowserTest : public InProcessBrowserTest {
  public:
-  MemoryDetailsBrowserTest() {}
-  ~MemoryDetailsBrowserTest() override {}
+  MetricsMemoryDetailsBrowserTest() {}
+  ~MetricsMemoryDetailsBrowserTest() override {}
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(MemoryDetailsBrowserTest);
+  DISALLOW_COPY_AND_ASSIGN(MetricsMemoryDetailsBrowserTest);
 };
 
-IN_PROC_BROWSER_TEST_F(MemoryDetailsBrowserTest, TestMemoryDetails) {
+IN_PROC_BROWSER_TEST_F(MetricsMemoryDetailsBrowserTest, TestMemoryDetails) {
   base::HistogramTester histogram_tester;
 
   scoped_refptr<TestMemoryDetails> details(new TestMemoryDetails);

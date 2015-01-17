@@ -96,9 +96,7 @@ void GetAllChildren(const std::vector<ProcessEntry>& processes,
 
 }  // namespace
 
-MemoryDetails::MemoryDetails()
-    : user_metrics_mode_(UPDATE_USER_METRICS),
-      memory_growth_tracker_(NULL) {
+MemoryDetails::MemoryDetails() {
 }
 
 ProcessData* MemoryDetails::ChromeBrowser() {

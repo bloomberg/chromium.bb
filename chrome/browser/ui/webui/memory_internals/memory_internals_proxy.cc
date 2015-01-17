@@ -202,7 +202,7 @@ void MemoryInternalsProxy::StartFetch(const base::ListValue* list) {
   information_->Clear();
   scoped_refptr<ProcessDetails> process(new ProcessDetails(
       base::Bind(&MemoryInternalsProxy::OnProcessAvailable, this)));
-  process->StartFetch(MemoryDetails::SKIP_USER_METRICS);
+  process->StartFetch();
 }
 
 MemoryInternalsProxy::~MemoryInternalsProxy() {}
