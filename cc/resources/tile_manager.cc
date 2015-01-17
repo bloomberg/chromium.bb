@@ -135,10 +135,8 @@ class RasterTaskImpl : public RasterTask {
 class ImageDecodeTaskImpl : public ImageDecodeTask {
  public:
   ImageDecodeTaskImpl(SkPixelRef* pixel_ref,
-                      int layer_id,
                       const base::Callback<void(bool was_canceled)>& reply)
       : pixel_ref_(skia::SharePtr(pixel_ref)),
-        layer_id_(layer_id),
         reply_(reply) {}
 
   // Overridden from Task:
@@ -162,7 +160,6 @@ class ImageDecodeTaskImpl : public ImageDecodeTask {
 
  private:
   skia::RefPtr<SkPixelRef> pixel_ref_;
-  int layer_id_;
   const base::Callback<void(bool was_canceled)> reply_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageDecodeTaskImpl);
@@ -750,7 +747,6 @@ scoped_refptr<ImageDecodeTask> TileManager::CreateImageDecodeTask(
     SkPixelRef* pixel_ref) {
   return make_scoped_refptr(new ImageDecodeTaskImpl(
       pixel_ref,
-      tile->layer_id(),
       base::Bind(&TileManager::OnImageDecodeTaskCompleted,
                  base::Unretained(this),
                  tile->layer_id(),

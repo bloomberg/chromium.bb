@@ -68,12 +68,6 @@ class CC_EXPORT PaintedScrollbarLayerImpl : public ScrollbarLayerImplBase {
   int track_start_;
   int track_length_;
 
-  // Difference between the clip layer's height and the visible viewport
-  // height (which may differ in the presence of top-controls hiding).
-  float vertical_adjust_;
-
-  int scroll_layer_id_;
-
   DISALLOW_COPY_AND_ASSIGN(PaintedScrollbarLayerImpl);
 };
 

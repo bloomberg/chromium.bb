@@ -47,8 +47,6 @@ class CC_EXPORT GpuTileTaskWorkerPool : public TileTaskWorkerPool,
   const NamespaceToken namespace_token_;
   TileTaskRunnerClient* client_;
 
-  bool run_tasks_on_origin_thread_pending_;
-
   TaskSetCollection tasks_pending_;
 
   scoped_refptr<TileTask> task_set_finished_tasks_[kNumberOfTaskSets];

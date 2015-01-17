@@ -35,9 +35,8 @@ PaintedScrollbarLayerImpl::PaintedScrollbarLayerImpl(
       thumb_thickness_(0),
       thumb_length_(0),
       track_start_(0),
-      track_length_(0),
-      vertical_adjust_(0.f),
-      scroll_layer_id_(Layer::INVALID_ID) {}
+      track_length_(0) {
+}
 
 PaintedScrollbarLayerImpl::~PaintedScrollbarLayerImpl() {}
 

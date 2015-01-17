@@ -71,7 +71,6 @@ class CC_EXPORT ResourceUpdateController {
 
   ResourceUpdateControllerClient* client_;
   scoped_ptr<ResourceUpdateQueue> queue_;
-  bool contents_textures_purged_;
   ResourceProvider* resource_provider_;
   base::TimeTicks time_limit_;
   size_t texture_updates_per_tick_;

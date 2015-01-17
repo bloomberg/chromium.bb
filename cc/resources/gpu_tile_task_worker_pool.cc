@@ -51,7 +51,6 @@ GpuTileTaskWorkerPool::GpuTileTaskWorkerPool(
     : task_runner_(task_runner),
       task_graph_runner_(task_graph_runner),
       namespace_token_(task_graph_runner_->GetNamespaceToken()),
-      run_tasks_on_origin_thread_pending_(false),
       task_set_finished_weak_ptr_factory_(this),
       weak_ptr_factory_(this) {
 }
