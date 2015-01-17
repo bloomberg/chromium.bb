@@ -682,15 +682,6 @@
             'KEYWORD2=GLAPIENTRY',
           ],
         }],
-        ['OS=="linux"', {
-          'link_settings': {
-            'libraries': [
-              '-ldl',
-              '-lm',
-              '-lstdc++',
-            ],
-          },
-        }],
       ],
       'include_dirs': [
         'src/src/mapi',

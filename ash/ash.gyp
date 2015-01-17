@@ -897,7 +897,6 @@
         '../ui/events/events.gyp:events',
         '../ui/events/events.gyp:events_base',
         '../ui/events/events.gyp:gesture_detection',
-        '../ui/events/platform/events_platform.gyp:events_platform',
         '../ui/gfx/gfx.gyp:gfx',
         '../ui/gfx/gfx.gyp:gfx_geometry',
         '../ui/keyboard/keyboard.gyp:keyboard',
@@ -930,9 +929,7 @@
         }],
         ['use_x11==1', {
           'dependencies': [
-            '../build/linux/system.gyp:x11',
             '../build/linux/system.gyp:xfixes',
-            '../ui/gfx/x/gfx_x11.gyp:gfx_x11',
            ],
         }],
         ['use_ozone==1', {

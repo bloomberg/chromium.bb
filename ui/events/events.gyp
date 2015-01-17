@@ -143,7 +143,6 @@
         ['use_x11==1', {
           'dependencies': [
             'devices/events_devices.gyp:events_devices',
-            '../gfx/x/gfx_x11.gyp:gfx_x11',
             '../../build/linux/system.gyp:x11',
           ],
         }],
