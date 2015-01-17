@@ -18,9 +18,22 @@ void BeginClipPathDisplayItem::replay(GraphicsContext* context)
     context->clipPath(m_clipPath, m_windRule);
 }
 
+void BeginClipPathDisplayItem::appendToWebDisplayItemList(WebDisplayItemList* list) const
+{
+    // FIXME: Store an SkPath instead of a blink::Path to avoid this conversion on every update
+    SkPath& path = const_cast<SkPath&>(m_clipPath.skPath());
+    path.setFillType(WebCoreWindRuleToSkFillType(m_windRule));
+    list->appendClipPathItem(path, SkRegion::kIntersect_Op, true);
+}
+
 void EndClipPathDisplayItem::replay(GraphicsContext* context)
 {
     context->restore();
+}
+
+void EndClipPathDisplayItem::appendToWebDisplayItemList(WebDisplayItemList* list) const
+{
+    list->appendEndClipPathItem();
 }
 
 #ifndef NDEBUG

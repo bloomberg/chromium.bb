@@ -17,6 +17,7 @@ public:
     static PassOwnPtr<BeginClipPathDisplayItem> create(DisplayItemClient client, const Path& clipPath, WindRule windRule) { return adoptPtr(new BeginClipPathDisplayItem(client, clipPath, windRule)); }
 
     virtual void replay(GraphicsContext*) override;
+    virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
 
 protected:
     BeginClipPathDisplayItem(DisplayItemClient client, const Path& clipPath, WindRule windRule)
@@ -36,6 +37,7 @@ public:
     static PassOwnPtr<EndClipPathDisplayItem> create(DisplayItemClient client) { return adoptPtr(new EndClipPathDisplayItem(client)); }
 
     virtual void replay(GraphicsContext*) override;
+    virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
 
 protected:
     EndClipPathDisplayItem(DisplayItemClient client) : DisplayItem(client, EndClipPath) { }

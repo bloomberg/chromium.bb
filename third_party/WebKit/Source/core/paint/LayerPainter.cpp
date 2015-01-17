@@ -20,6 +20,7 @@
 #include "core/rendering/RenderView.h"
 #include "core/rendering/svg/RenderSVGResourceClipper.h"
 #include "platform/graphics/GraphicsLayer.h"
+#include "platform/graphics/paint/ClipPathRecorder.h"
 #include "platform/graphics/paint/CompositingDisplayItem.h"
 #include "platform/graphics/paint/DisplayItemList.h"
 #include "platform/graphics/paint/TransformDisplayItem.h"
@@ -125,8 +126,8 @@ public:
                     rootRelativeBounds = renderLayer.physicalBoundingBoxIncludingReflectionAndStackingChildren(paintingInfo.rootLayer, offsetFromRoot);
                     rootRelativeBoundsComputed = true;
                 }
-
-                context->clipPath(clipPath->path(rootRelativeBounds), clipPath->windRule());
+                m_clipPathRecorder = adoptPtr(new ClipPathRecorder(*context, renderLayer.renderer()->displayItemClient(),
+                    clipPath->path(rootRelativeBounds), clipPath->windRule()));
             }
         } else if (style->clipPath()->type() == ClipPathOperation::REFERENCE) {
             ReferenceClipPathOperation* referenceClipPathOperation = toReferenceClipPathOperation(style->clipPath());
@@ -160,6 +161,7 @@ public:
 private:
     RenderSVGResourceClipper* m_resourceClipper;
     GraphicsContextStateSaver m_clipStateSaver;
+    OwnPtr<ClipPathRecorder> m_clipPathRecorder;
     RenderSVGResourceClipper::ClipperState m_clipperState;
     const RenderLayer& m_renderLayer;
     GraphicsContext* m_context;

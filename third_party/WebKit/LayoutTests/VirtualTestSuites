@@ -209,5 +209,10 @@
     "prefix": "rootlayerscrolls",
     "base": "fast/scrolling",
     "args": ["--root-layer-scrolls", "--enable-impl-side-painting"]
+  },
+  {
+    "prefix": "slimmingpaint",
+    "base": "fast/canvas",
+    "args": ["--enable-slimming-paint", "--enable-impl-side-painting"]
   }
 ]

@@ -977,6 +977,7 @@ crbug.com/361729 fast/multicol/pagination-h-horizontal-bt.html [ Pass Failure ]
 crbug.com/361729 fast/multicol/pagination-h-horizontal-tb.html [ Pass Failure ]
 
 crbug.com/437112 virtual/gpu/fast/canvas/canvas-scale-drawImage-shadow.html [ Pass Failure ]
+crbug.com/437112 virtual/slimmingpaint/fast/canvas/canvas-scale-drawImage-shadow.html [ Pass Failure ]
 
 # Old multicol tests that currently have no baseline in the virtual test suite
 # for the new multicol implementation.
@@ -1542,6 +1543,7 @@ crbug.com/364225 virtual/gpu/fast/canvas/canvas-composite-text-alpha.html [ Pass
 crbug.com/440452 virtual/display_list_2d_canvas/fast/canvas/canvas-partial-invalidation-zoomed.html [ Pass Slow Timeout ]
 crbug.com/446740 [ Debug ] virtual/display_list_2d_canvas/fast/canvas/canvas-measure-text-rtl.html [ Pass Timeout Crash ]
 crbug.com/446740 [ Release ] virtual/display_list_2d_canvas/fast/canvas/canvas-measure-text-rtl.html [ Pass Timeout ]
+crbug.com/446740 virtual/slimmingpaint/fast/canvas/canvas-measure-text-rtl.html [ Pass Timeout ]
 
 crbug.com/439840 [ Win Linux Debug ] svg/custom/relative-sized-image.xhtml [ Pass ImageOnlyFailure ]
 

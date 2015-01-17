@@ -12,6 +12,7 @@
 #include "WebVector.h"
 
 #include "third_party/skia/include/core/SkRRect.h"
+#include "third_party/skia/include/core/SkRegion.h"
 
 class SkImageFilter;
 class SkMatrix44;
@@ -32,6 +33,8 @@ public:
 
     virtual void appendClipItem(const WebRect&, const WebVector<SkRRect>&) = 0;
     virtual void appendEndClipItem() = 0;
+    virtual void appendClipPathItem(const SkPath&, SkRegion::Op, bool antialias) = 0;
+    virtual void appendEndClipPathItem() = 0;
     virtual void appendFloatClipItem(const WebFloatRect&) = 0;
     virtual void appendEndFloatClipItem() = 0;
     virtual void appendTransformItem(const SkMatrix44&) = 0;
