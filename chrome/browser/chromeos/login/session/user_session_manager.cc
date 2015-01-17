@@ -91,10 +91,6 @@
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "url/gurl.h"
 
-#if defined(USE_ATHENA)
-#include "athena/main/public/athena_launcher.h"
-#endif
-
 namespace chromeos {
 
 namespace {
@@ -1429,9 +1425,6 @@ void UserSessionManager::DoBrowserLaunchInternal(Profile* profile,
   VLOG(1) << "Launching browser...";
   TRACE_EVENT0("login", "LaunchBrowser");
 
-#if defined(USE_ATHENA)
-  athena::StartAthenaSessionWithContext(profile);
-#else
   StartupBrowserCreator browser_creator;
   int return_code;
   chrome::startup::IsFirstRun first_run =
@@ -1444,7 +1437,6 @@ void UserSessionManager::DoBrowserLaunchInternal(Profile* profile,
 
   // Triggers app launcher start page service to load start page web contents.
   app_list::StartPageService::Get(profile);
-#endif
 
   // Mark login host for deletion after browser starts.  This
   // guarantees that the message loop will be referenced by the

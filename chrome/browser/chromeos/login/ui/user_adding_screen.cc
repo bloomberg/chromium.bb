@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
 
+#include "ash/shell.h"
+#include "ash/system/tray/system_tray.h"
 #include "base/bind.h"
 #include "base/memory/singleton.h"
 #include "base/observer_list.h"
@@ -11,16 +13,11 @@
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen_input_methods_controller.h"
+#include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
-
-#if !defined(USE_ATHENA)
-#include "ash/shell.h"
-#include "ash/system/tray/system_tray.h"
-#include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
-#endif
 
 namespace chromeos {
 
@@ -66,19 +63,15 @@ void UserAddingScreenImpl::Start() {
 void UserAddingScreenImpl::Cancel() {
   CHECK(IsRunning());
 
-#if !defined(USE_ATHENA)
   // Make sure that system tray is enabled after this flow.
   ash::Shell::GetInstance()->GetPrimarySystemTray()->SetEnabled(true);
-#endif
   display_host_->Finalize();
 
-#if !defined(USE_ATHENA)
   // Reset wallpaper if cancel adding user from multiple user sign in page.
   if (user_manager::UserManager::Get()->IsUserLoggedIn()) {
     WallpaperManager::Get()->SetUserWallpaperDelayed(
         user_manager::UserManager::Get()->GetActiveUser()->email());
   }
-#endif
 }
 
 bool UserAddingScreenImpl::IsRunning() {

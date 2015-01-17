@@ -9,6 +9,7 @@
 #undef RootWindow
 #include <map>
 
+#include "ash/shell.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
@@ -33,14 +34,6 @@
 #include "ui/events/keycodes/dom4/keycode_converter.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_util.h"
-
-#if defined(USE_ATHENA)
-#include "athena/screen/public/screen_manager.h"
-#endif
-
-#if defined(USE_ASH)
-#include "ash/shell.h"
-#endif
 
 namespace chromeos {
 
@@ -293,18 +286,8 @@ bool InputMethodEngine::SendKeyEvents(
     return false;
   }
 
-  // TODO(shuchen): remove the ash/athena dependencies by leveraging
-  // aura::EnvObserver.
-  aura::Window* root_window = NULL;
-#if defined(USE_ATHENA)
-  root_window = athena::ScreenManager::Get()->GetContext()->GetRootWindow();
-#elif defined(USE_ASH)
-  root_window = ash::Shell::GetPrimaryRootWindow();
-#endif
-
-  if (!root_window)
-    return false;
-  ui::EventProcessor* dispatcher = root_window->GetHost()->event_processor();
+  ui::EventProcessor* dispatcher =
+      ash::Shell::GetPrimaryRootWindow()->GetHost()->event_processor();
 
   for (size_t i = 0; i < events.size(); ++i) {
     const KeyboardEvent& event = events[i];
@@ -525,19 +508,10 @@ void InputMethodEngine::SetCompositionBounds(const gfx::Rect& bounds) {
 }
 
 void InputMethodEngine::EnableInputView() {
-#if defined(USE_ATHENA)
-  // Athena does not currently support an extension-based VK. Blocking the
-  // override forces Athena to use to the system fallback VK, without
-  // interfering with the rest of the IME system.
-  // TODO(shuchen|kevers): Remove override suppression once supported.
-  // See crbug/407579, crbug/414940 and crbug/418078.
-  NOTIMPLEMENTED();
-#else
   keyboard::SetOverrideContentUrl(input_method::InputMethodManager::Get()
                                       ->GetActiveIMEState()
                                       ->GetCurrentInputMethod()
                                       .input_view_url());
-#endif
   keyboard::KeyboardController* keyboard_controller =
       keyboard::KeyboardController::GetInstance();
   if (keyboard_controller)

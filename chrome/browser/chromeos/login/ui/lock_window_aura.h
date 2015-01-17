@@ -33,10 +33,6 @@ class LockWindowAura : public views::Widget,
   // Initialize the Aura lock window.
   void Init();
 
-#if defined(USE_ATHENA)
-  scoped_ptr<aura::Window> lock_screen_container_;
-#endif
-
   DISALLOW_COPY_AND_ASSIGN(LockWindowAura);
 };
 

@@ -26,6 +26,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/customization/customization_wallpaper_downloader.h"
 #include "chrome/browser/chromeos/extensions/default_app_order.h"
+#include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/net/delay_network_call.h"
 #include "chrome/browser/extensions/external_loader.h"
@@ -43,10 +44,6 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_fetcher.h"
-
-#if !defined(USE_ATHENA)
-#include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
-#endif
 
 using content::BrowserThread;
 
@@ -940,12 +937,10 @@ void ServicesCustomizationDocument::OnOEMWallpaperDownloaded(
     VLOG(1) << "Setting default wallpaper to '"
             << GetCustomizedWallpaperDownloadedFileName().value() << "' ('"
             << wallpaper_url.spec() << "')";
-#if !defined(USE_ATHENA)
     WallpaperManager::Get()->SetCustomizedDefaultWallpaper(
         wallpaper_url,
         GetCustomizedWallpaperDownloadedFileName(),
         GetCustomizedWallpaperCacheDir());
-#endif
   }
   wallpaper_downloader_.reset();
   applying->Finished(success);

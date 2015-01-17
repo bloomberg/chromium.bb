@@ -37,10 +37,7 @@ namespace chromeos {
 class KioskAppData;
 class KioskAppExternalLoader;
 class KioskAppManagerObserver;
-
-#if !defined(USE_ATHENA)
 class KioskExternalUpdater;
-#endif
 
 // KioskAppManager manages cached app data.
 class KioskAppManager : public KioskAppDataDelegate,
@@ -277,9 +274,7 @@ class KioskAppManager : public KioskAppDataDelegate,
 
   scoped_ptr<ExternalCache> external_cache_;
 
-#if !defined(USE_ATHENA)
   scoped_ptr<KioskExternalUpdater> usb_stick_updater_;
-#endif
 
   // The extension external loader for installing kiosk app.
   bool external_loader_created_;

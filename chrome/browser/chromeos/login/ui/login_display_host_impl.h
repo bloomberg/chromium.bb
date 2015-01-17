@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "ash/shell_delegate.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -29,10 +30,6 @@
 #include "ui/keyboard/keyboard_controller_observer.h"
 #include "ui/views/widget/widget_removals_observer.h"
 
-#if !defined(USE_ATHENA)
-#include "ash/shell_delegate.h"
-#endif
-
 class PrefService;
 
 namespace content {
@@ -44,13 +41,10 @@ namespace chromeos {
 
 class DemoAppLauncher;
 class FocusRingController;
+class KeyboardDrivenOobeKeyHandler;
 class OobeUI;
 class WebUILoginDisplay;
 class WebUILoginView;
-
-#if !defined(USE_ATHENA)
-class KeyboardDrivenOobeKeyHandler;
-#endif
 
 // An implementation class for OOBE/login WebUI screen host.
 // It encapsulates controllers, background integration and flow.
@@ -59,9 +53,7 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
                              public content::WebContentsObserver,
                              public chromeos::SessionManagerClient::Observer,
                              public chromeos::CrasAudioHandler::AudioObserver,
-#if !defined(USE_ATHENA)
                              public ash::VirtualKeyboardStateObserver,
-#endif
                              public keyboard::KeyboardControllerObserver,
                              public gfx::DisplayObserver,
                              public views::WidgetRemovalsObserver {
@@ -126,10 +118,8 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
   // Overridden from chromeos::CrasAudioHandler::AudioObserver:
   void OnActiveOutputNodeChanged() override;
 
-#if !defined(USE_ATHENA)
   // Overridden from ash::KeyboardStateObserver:
   void OnVirtualKeyboardStateChanged(bool activated) override;
-#endif
 
   // Overridden from keyboard::KeyboardControllerObserver:
   void OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) override;
@@ -289,10 +279,8 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
   // driven oobe.
   scoped_ptr<FocusRingController> focus_ring_controller_;
 
-#if !defined(USE_ATHENA)
   // Handles special keys for keyboard driven oobe.
   scoped_ptr<KeyboardDrivenOobeKeyHandler> keyboard_driven_oobe_key_handler_;
-#endif
 
   FinalizeAnimationType finalize_animation_type_;
 
@@ -314,10 +302,6 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
 
   // The bounds of the virtual keyboard.
   gfx::Rect keyboard_bounds_;
-
-#if defined(USE_ATHENA)
-  scoped_ptr<aura::Window> login_screen_container_;
-#endif
 
   base::WeakPtrFactory<LoginDisplayHostImpl> pointer_factory_;
   base::WeakPtrFactory<LoginDisplayHostImpl> animation_weak_ptr_factory_;

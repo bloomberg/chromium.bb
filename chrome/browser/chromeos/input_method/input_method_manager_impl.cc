@@ -813,19 +813,10 @@ void InputMethodManagerImpl::SetState(
   DCHECK(state.get());
   InputMethodManagerImpl::StateImpl* new_impl_state =
       static_cast<InputMethodManagerImpl::StateImpl*>(state.get());
-#if defined(USE_ATHENA)
-  const bool profile_changed = (state_.get()
-      ? state_->profile != new_impl_state->profile
-      : true);
-#endif
 
   state_ = new_impl_state;
 
   if (state_.get() && state_->active_input_method_ids.size()) {
-#if defined(USE_ATHENA)
-    if (profile_changed)
-      LoadNecessaryComponentExtensions(state_.get());
-#endif
     // Initialize candidate window controller and widgets such as
     // candidate window, infolist and mode indicator.  Note, mode
     // indicator is used by only keyboard layout input methods.

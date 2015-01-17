@@ -313,8 +313,6 @@ WallpaperPrivateSetWallpaperIfExistsFunction::
     ~WallpaperPrivateSetWallpaperIfExistsFunction() {}
 
 bool WallpaperPrivateSetWallpaperIfExistsFunction::RunAsync() {
-#if !defined(USE_ATHENA)
-  // TODO(bshe): Support wallpaper manager in Athena, crbug.com/408734.
   params = set_wallpaper_if_exists::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
 
@@ -349,7 +347,6 @@ bool WallpaperPrivateSetWallpaperIfExistsFunction::RunAsync() {
           &WallpaperPrivateSetWallpaperIfExistsFunction::
               ReadFileAndInitiateStartDecode,
           this, wallpaper_path, fallback_path));
-#endif
   return true;
 }
 

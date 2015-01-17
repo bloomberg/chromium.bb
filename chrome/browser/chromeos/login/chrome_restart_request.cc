@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "ash/ash_switches.h"
 #include "base/command_line.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -44,10 +45,6 @@
 #include "ui/ozone/public/ozone_switches.h"
 #include "ui/wm/core/wm_core_switches.h"
 #include "url/gurl.h"
-
-#if !defined(USE_ATHENA)
-#include "ash/ash_switches.h"
-#endif
 
 using content::BrowserThread;
 
@@ -170,7 +167,6 @@ std::string DeriveCommandLine(const GURL& start_url,
 #endif
     app_list::switches::kDisableSyncAppList,
     app_list::switches::kEnableSyncAppList,
-#if !defined(USE_ATHENA)
     ash::switches::kAshHostWindowBounds,
     ash::switches::kAshTouchHud,
     ash::switches::kAuraLegacyPowerButton,
@@ -178,7 +174,6 @@ std::string DeriveCommandLine(const GURL& start_url,
     chromeos::switches::kDefaultWallpaperSmall,
     chromeos::switches::kGuestWallpaperLarge,
     chromeos::switches::kGuestWallpaperSmall,
-#endif
     // Please keep these in alphabetical order. Non-UI Compositor switches
     // here should also be added to
     // content/browser/renderer_host/render_process_host_impl.cc.

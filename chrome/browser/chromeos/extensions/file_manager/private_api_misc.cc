@@ -367,11 +367,6 @@ void FileManagerPrivateRequestWebStoreAccessTokenFunction::OnAccessTokenFetched(
 }
 
 bool FileManagerPrivateGetProfilesFunction::RunSync() {
-#if defined(USE_ATHENA)
-  // TODO(oshima): Figure out what to do.
-  return false;
-#endif
-
   const std::vector<linked_ptr<api::file_manager_private::ProfileInfo> >&
       profiles = GetLoggedInProfileInfoList();
 

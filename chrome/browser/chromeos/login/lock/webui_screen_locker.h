@@ -48,14 +48,10 @@ class WebUIScreenLocker : public WebUILoginView,
                           public LoginDisplay::Delegate,
                           public ScreenLockerDelegate,
                           public LockWindow::Observer,
-#if !defined(USE_ATHENA)
                           public ash::LockStateObserver,
-#endif
                           public views::WidgetObserver,
                           public PowerManagerClient::Observer,
-#if !defined(USE_ATHENA)
                           public ash::VirtualKeyboardStateObserver,
-#endif
                           public keyboard::KeyboardControllerObserver {
  public:
   explicit WebUIScreenLocker(ScreenLocker* screen_locker);
@@ -97,10 +93,8 @@ class WebUIScreenLocker : public WebUILoginView,
   // LockWindow::Observer implementation.
   void OnLockWindowReady() override;
 
-#if !defined(USE_ATHENA)
   // LockStateObserver override.
   void OnLockStateEvent(ash::LockStateObserver::EventType event) override;
-#endif
 
   // WidgetObserver override.
   void OnWidgetDestroying(views::Widget* widget) override;
@@ -112,10 +106,8 @@ class WebUIScreenLocker : public WebUILoginView,
   // Overridden from content::WebContentsObserver:
   void RenderProcessGone(base::TerminationStatus status) override;
 
-#if !defined(USE_ATHENA)
   // Overridden from ash::KeyboardStateObserver:
   void OnVirtualKeyboardStateChanged(bool activated) override;
-#endif
 
   // Overridden from keyboard::KeyboardControllerObserver:
   void OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) override;

@@ -144,14 +144,11 @@ ScreenLocker::ScreenLocker(const user_manager::UserList& users)
   manager->Initialize(SOUND_UNLOCK,
                       bundle.GetRawDataResource(IDR_SOUND_UNLOCK_WAV));
 
-#if !defined(USE_ATHENA)
-  // crbug.com/408733
   ash::Shell::GetInstance()->
       lock_state_controller()->SetLockScreenDisplayedCallback(
           base::Bind(base::IgnoreResult(&ash::PlaySystemSoundIfSpokenFeedback),
                      static_cast<media::SoundsManager::SoundKey>(
                          chromeos::SOUND_LOCK)));
-#endif
 }
 
 void ScreenLocker::Init() {
@@ -360,10 +357,7 @@ void ScreenLocker::HandleLockScreenRequest() {
   if (g_screen_lock_observer->session_started() &&
       user_manager::UserManager::Get()->CanCurrentUserLock()) {
     ScreenLocker::Show();
-#if !defined(USE_ATHENA)
-    // TOOD(dpolukhin): crbug.com/413926.
     ash::Shell::GetInstance()->lock_state_controller()->OnStartingLock();
-#endif
   } else {
     // If the current user's session cannot be locked or the user has not
     // completed all sign-in steps yet, log out instead. The latter is done to
@@ -387,7 +381,6 @@ void ScreenLocker::Show() {
     return;
   }
 
-#if !defined(USE_ATHENA)
   // If the active window is fullscreen, exit fullscreen to avoid the web page
   // or app mimicking the lock screen. Do not exit fullscreen if the shelf is
   // visible while in fullscreen because the shelf makes it harder for a web
@@ -399,7 +392,6 @@ void ScreenLocker::Show() {
     const ash::wm::WMEvent event(ash::wm::WM_EVENT_TOGGLE_FULLSCREEN);
     active_window_state->OnWMEvent(&event);
   }
-#endif
 
   if (!screen_locker_) {
     ScreenLocker* locker =
@@ -426,12 +418,8 @@ void ScreenLocker::Hide() {
   DCHECK(screen_locker_);
   base::Callback<void(void)> callback =
       base::Bind(&ScreenLocker::ScheduleDeletion);
-#if !defined(USE_ATHENA)
   ash::Shell::GetInstance()->lock_state_controller()->
     OnLockScreenHide(callback);
-#else
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, callback);
-#endif
 }
 
 void ScreenLocker::ScheduleDeletion() {
@@ -440,9 +428,7 @@ void ScreenLocker::ScheduleDeletion() {
     return;
   VLOG(1) << "Deleting ScreenLocker " << screen_locker_;
 
-#if !defined(USE_ATHENA)
   ash::PlaySystemSoundIfSpokenFeedback(SOUND_UNLOCK);
-#endif
 
   delete screen_locker_;
   screen_locker_ = NULL;
@@ -459,12 +445,9 @@ ScreenLocker::~ScreenLocker() {
     authenticator_->SetConsumer(NULL);
   ClearErrors();
 
-#if !defined(USE_ATHENA)
-  // TOOD(dpolukhin): we need to to something similar for Athena.
   VLOG(1) << "Moving desktop background to unlocked container";
   ash::Shell::GetInstance()->
       desktop_background_controller()->MoveDesktopToUnlockedContainer();
-#endif
 
   screen_locker_ = NULL;
   bool state = false;
@@ -495,10 +478,8 @@ void ScreenLocker::ScreenLockReady() {
   UMA_HISTOGRAM_TIMES("ScreenLocker.ScreenLockTime", delta);
 
   VLOG(1) << "Moving desktop background to locked container";
-#if !defined(USE_ATHENA)
   ash::Shell::GetInstance()->
       desktop_background_controller()->MoveDesktopToLockedContainer();
-#endif
 
   bool state = true;
   VLOG(1) << "Emitting SCREEN_LOCK_STATE_CHANGED with state=" << state;

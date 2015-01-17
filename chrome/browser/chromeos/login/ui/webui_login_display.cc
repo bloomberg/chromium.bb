@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
+#include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/grit/chromium_strings.h"
@@ -23,10 +24,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/user_activity/user_activity_detector.h"
 #include "ui/views/widget/widget.h"
-
-#if !defined(USE_ATHENA)
-#include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
-#endif
 
 namespace chromeos {
 
@@ -238,16 +235,12 @@ void WebUILoginDisplay::MigrateUserData(const std::string& old_password) {
 }
 
 void WebUILoginDisplay::LoadWallpaper(const std::string& username) {
-#if !defined(USE_ATHENA)
   WallpaperManager::Get()->SetUserWallpaperDelayed(username);
-#endif
 }
 
 void WebUILoginDisplay::LoadSigninWallpaper() {
-#if !defined(USE_ATHENA)
   WallpaperManager::Get()->SetDefaultWallpaperDelayed(
       chromeos::login::kSignInUser);
-#endif
 }
 
 void WebUILoginDisplay::OnSigninScreenReady() {

@@ -131,18 +131,6 @@ source_set("chromeos") {
             rebase_path(gypi_values.browser_chromeos_extension_sources,
                         ".",
                         "//chrome")
-  if (use_athena) {
-    defines += [ "USE_ATHENA=1" ]
-  } else {
-    sources +=
-        rebase_path(gypi_values.browser_chromeos_non_athena_sources,
-                    ".",
-                    "//chrome") +
-        rebase_path(gypi_values.browser_chromeos_extension_non_athena_sources,
-                    ".",
-                    "//chrome")
-  }
-
   if (use_x11) {
     configs += [ "//build/config/linux:x11" ]
     deps += [ "//ui/events/devices" ]

@@ -50,6 +50,7 @@
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
+#include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/memory/oom_priority_manager.h"
 #include "chrome/browser/chromeos/net/network_portal_detector_impl.h"
@@ -115,6 +116,7 @@
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
+#include "components/wallpaper/wallpaper_manager_base.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/main_function_params.h"
@@ -134,11 +136,6 @@
 #include "chrome/browser/chromeos/device_uma.h"
 #include "chrome/browser/chromeos/events/system_key_event_listener.h"
 #include "chrome/browser/chromeos/events/xinput_hierarchy_changed_event_listener.h"
-#endif
-
-#if !defined(USE_ATHENA)
-#include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
-#include "components/wallpaper/wallpaper_manager_base.h"
 #endif
 
 namespace chromeos {
@@ -176,13 +173,9 @@ class DBusServices {
     ScopedVector<CrosDBusService::ServiceProviderInterface> service_providers;
     service_providers.push_back(ProxyResolutionServiceProvider::Create(
         make_scoped_ptr(new ChromeProxyResolverDelegate())));
-#if !defined(USE_ATHENA)
-    // crbug.com/413897
     service_providers.push_back(new DisplayPowerServiceProvider(
         make_scoped_ptr(new ChromeDisplayPowerServiceProviderDelegate)));
-    // crbug.com/401285
     service_providers.push_back(new PrinterServiceProvider);
-#endif
     service_providers.push_back(new LivenessServiceProvider);
     service_providers.push_back(new ScreenLockServiceProvider);
     service_providers.push_back(new ConsoleServiceProvider(
@@ -422,9 +415,6 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
   // Initialize magnification manager before ash tray is created. And this must
   // be placed after UserManager::SessionStarted();
   AccessibilityManager::Initialize();
-#if !defined(USE_ATHENA)
-  // TODO(oshima): MagnificationManager/WallpaperManager depends on ash.
-  // crbug.com/408733, crbug.com/408734.
   MagnificationManager::Initialize();
 
   wallpaper::WallpaperManagerBase::SetPathIds(
@@ -435,7 +425,6 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
   // Add observers for WallpaperManager. This depends on PowerManagerClient,
   // TimezoneSettings and CrosSettings.
   WallpaperManager::Get()->AddObservers();
-#endif
 
   base::PostTaskAndReplyWithResult(
       content::BrowserThread::GetBlockingPool(),
@@ -652,22 +641,17 @@ void ChromeBrowserMainPartsChromeos::PreBrowserStart() {
 void ChromeBrowserMainPartsChromeos::PostBrowserStart() {
   // These are dependent on the ash::Shell singleton already having been
   // initialized.
-#if !defined(USE_ATHENA)
   // TODO(oshima): Remove ash dependency in PowerButtonObserver.
   // crbug.com/408832.
   power_button_observer_.reset(new PowerButtonObserver);
-#endif
   data_promo_notification_.reset(new DataPromoNotification());
 
-#if !defined(USE_ATHENA)
-  // TODO(oshima): Support accessibility on athena. crbug.com/408733.
   keyboard_event_rewriters_.reset(new EventRewriterController());
   keyboard_event_rewriters_->AddEventRewriter(
       scoped_ptr<ui::EventRewriter>(new KeyboardDrivenEventRewriter()));
   keyboard_event_rewriters_->AddEventRewriter(scoped_ptr<ui::EventRewriter>(
       new EventRewriter(ash::Shell::GetInstance()->sticky_keys_controller())));
   keyboard_event_rewriters_->Init();
-#endif
 
   ChromeBrowserMainPartsLinux::PostBrowserStart();
 }
@@ -729,9 +713,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   power_button_observer_.reset();
   idle_action_warning_observer_.reset();
 
-#if !defined(USE_ATHENA)
   MagnificationManager::Shutdown();
-#endif
 
   AccessibilityManager::Shutdown();
 
@@ -744,9 +726,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   // that the UserManager has no URLRequest pending (see
   // http://crbug.com/276659).
   g_browser_process->platform_part()->user_manager()->Shutdown();
-#if !defined(USE_ATHENA)
   WallpaperManager::Get()->Shutdown();
-#endif
 
   // Let the DeviceDisablingManager unregister itself as an observer of the
   // CrosSettings singleton before it is destroyed.
