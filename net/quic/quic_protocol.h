@@ -312,6 +312,7 @@ enum QuicVersion {
 
   QUIC_VERSION_22 = 22,  // Send Server Config Update messages on crypto stream.
   QUIC_VERSION_23 = 23,  // Timestamp in the ack frame.
+  QUIC_VERSION_24 = 24,  // SPDY/4 header compression.
 };
 
 // This vector contains QUIC versions which we currently support.
@@ -321,7 +322,8 @@ enum QuicVersion {
 //
 // IMPORTANT: if you are adding to this list, follow the instructions at
 // http://sites/quic/adding-and-removing-versions
-static const QuicVersion kSupportedQuicVersions[] = {QUIC_VERSION_23,
+static const QuicVersion kSupportedQuicVersions[] = {QUIC_VERSION_24,
+                                                     QUIC_VERSION_23,
                                                      QUIC_VERSION_22};
 
 typedef std::vector<QuicVersion> QuicVersionVector;

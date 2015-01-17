@@ -316,6 +316,10 @@ TEST_P(QuicSessionTest, StreamIdTooLarge) {
 
 TEST_P(QuicSessionTest, DecompressionError) {
   QuicHeadersStream* stream = QuicSessionPeer::GetHeadersStream(&session_);
+  if (version() > QUIC_VERSION_23) {
+    // This test does not apply to HPACK compression.
+    return;
+  }
   const unsigned char data[] = {
     0x80, 0x03, 0x00, 0x01,  // SPDY/3 SYN_STREAM frame
     0x00, 0x00, 0x00, 0x25,  // flags/length

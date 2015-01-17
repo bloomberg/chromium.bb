@@ -117,6 +117,15 @@ vector<TestParams> GetTestParams() {
   // TODO(rtenneti): Add kTBBR after BBR code is checked in.
   // QuicTag congestion_control_tags[] = {kRENO, kTBBR, kQBIC};
   QuicTag congestion_control_tags[] = {kRENO, kQBIC};
+  QuicVersionVector spdy3_versions;
+  QuicVersionVector spdy4_versions;
+  for (QuicVersion version : all_supported_versions) {
+    if (version > QUIC_VERSION_23) {
+      spdy4_versions.push_back(version);
+    } else {
+      spdy3_versions.push_back(version);
+    }
+  }
   for (size_t congestion_control_index = 0;
        congestion_control_index < arraysize(congestion_control_tags);
        congestion_control_index++) {
@@ -124,27 +133,29 @@ vector<TestParams> GetTestParams() {
         congestion_control_tags[congestion_control_index];
     for (int use_fec = 0; use_fec < 2; ++use_fec) {
       for (int use_pacing = 0; use_pacing < 2; ++use_pacing) {
-        // Add an entry for server and client supporting all versions.
-        params.push_back(TestParams(all_supported_versions,
-                                    all_supported_versions,
-                                    all_supported_versions[0],
-                                    use_pacing != 0,
-                                    use_fec != 0,
-                                    congestion_control_tag));
+        for (int spdy_version = 3; spdy_version <= 4; ++spdy_version) {
+          const QuicVersionVector* client_versions =
+              spdy_version == 3 ? &spdy3_versions : &spdy4_versions;
+          // Add an entry for server and client supporting all versions.
+          params.push_back(TestParams(*client_versions, all_supported_versions,
+                                      (*client_versions)[0], use_pacing != 0,
+                                      use_fec != 0, congestion_control_tag));
 
-        // Test client supporting all versions and server supporting 1 version.
-        // Simulate an old server and exercise version downgrade in the client.
-        // Protocol negotiation should occur. Skip the i = 0 case because it is
-        // essentially the same as the default case.
-        for (size_t i = 1; i < all_supported_versions.size(); ++i) {
-          QuicVersionVector server_supported_versions;
-          server_supported_versions.push_back(all_supported_versions[i]);
-          params.push_back(TestParams(all_supported_versions,
-                                      server_supported_versions,
-                                      server_supported_versions[0],
-                                      use_pacing != 0,
-                                      use_fec != 0,
-                                      congestion_control_tag));
+          // Test client supporting all versions and server supporting 1
+          // version.
+          // Simulate an old server and exercise version downgrade in the
+          // client.
+          // Protocol negotiation should occur. Skip the i = 0 case because it
+          // is
+          // essentially the same as the default case.
+          for (QuicVersion version : *client_versions) {
+            QuicVersionVector server_supported_versions;
+            server_supported_versions.push_back(version);
+            params.push_back(
+                TestParams(*client_versions, server_supported_versions,
+                           server_supported_versions[0], use_pacing != 0,
+                           use_fec != 0, congestion_control_tag));
+          }
         }
       }
     }

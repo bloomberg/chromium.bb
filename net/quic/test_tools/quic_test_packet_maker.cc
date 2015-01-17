@@ -22,8 +22,8 @@ QuicTestPacketMaker::QuicTestPacketMaker(QuicVersion version,
     : version_(version),
       connection_id_(connection_id),
       clock_(clock),
-      spdy_request_framer_(SPDY3),
-      spdy_response_framer_(SPDY3) {
+      spdy_request_framer_(version > QUIC_VERSION_23 ? SPDY4 : SPDY3),
+      spdy_response_framer_(version > QUIC_VERSION_23 ? SPDY4 : SPDY3) {
 }
 
 QuicTestPacketMaker::~QuicTestPacketMaker() {
@@ -181,12 +181,20 @@ scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakeRequestHeadersPacket(
     bool fin,
     const SpdyHeaderBlock& headers) {
   InitializeHeader(sequence_number, should_include_version);
-  SpdySynStreamIR syn_stream(stream_id);
-  syn_stream.set_name_value_block(headers);
-  syn_stream.set_fin(fin);
-  syn_stream.set_priority(0);
-  scoped_ptr<SpdySerializedFrame> spdy_frame(
-      spdy_request_framer_.SerializeSynStream(syn_stream));
+  scoped_ptr<SpdySerializedFrame> spdy_frame;
+  if (spdy_request_framer_.protocol_version() == SPDY3) {
+    SpdySynStreamIR syn_stream(stream_id);
+    syn_stream.set_name_value_block(headers);
+    syn_stream.set_fin(fin);
+    syn_stream.set_priority(0);
+    spdy_frame.reset(spdy_request_framer_.SerializeSynStream(syn_stream));
+  } else {
+    SpdyHeadersIR headers_frame(stream_id);
+    headers_frame.set_name_value_block(headers);
+    headers_frame.set_fin(fin);
+    headers_frame.set_has_priority(true);
+    spdy_frame.reset(spdy_request_framer_.SerializeFrame(headers_frame));
+  }
   QuicStreamFrame frame(kHeadersStreamId, false, 0,
                         MakeIOVector(base::StringPiece(spdy_frame->data(),
                                                        spdy_frame->size())));
@@ -200,11 +208,18 @@ scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakeResponseHeadersPacket(
     bool fin,
     const SpdyHeaderBlock& headers) {
   InitializeHeader(sequence_number, should_include_version);
-  SpdySynReplyIR syn_reply(stream_id);
-  syn_reply.set_name_value_block(headers);
-  syn_reply.set_fin(fin);
-  scoped_ptr<SpdySerializedFrame> spdy_frame(
-      spdy_response_framer_.SerializeSynReply(syn_reply));
+  scoped_ptr<SpdySerializedFrame> spdy_frame;
+  if (spdy_request_framer_.protocol_version() == SPDY3) {
+    SpdySynReplyIR syn_reply(stream_id);
+    syn_reply.set_name_value_block(headers);
+    syn_reply.set_fin(fin);
+    spdy_frame.reset(spdy_response_framer_.SerializeSynReply(syn_reply));
+  } else {
+    SpdyHeadersIR headers_frame(stream_id);
+    headers_frame.set_name_value_block(headers);
+    headers_frame.set_fin(fin);
+    spdy_frame.reset(spdy_request_framer_.SerializeFrame(headers_frame));
+  }
   QuicStreamFrame frame(kHeadersStreamId, false, 0,
                         MakeIOVector(base::StringPiece(spdy_frame->data(),
                                                        spdy_frame->size())));
