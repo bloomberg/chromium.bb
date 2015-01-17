@@ -80,20 +80,13 @@ def TestCleanUp(user_profile_dir):
     shutil.rmtree(user_profile_dir)
 
 
-def InitialiseTestMachineForLinux(cfg_file, me2me_manifest_file,
-                                  it2me_manifest_file, user_profile_dir):
+def InitialiseTestMachineForLinux(cfg_file):
   """Sets up a Linux machine for connect-to-host browser-tests.
 
-  Copy over me2me host-config and manifest files to expected locations.
+  Copy over me2me host-config to expected locations.
   By default, the Linux me2me host expects the host-config file to be under
   $HOME/.config/chrome-remote-desktop
   Its name is expected to have a hash that is specific to a machine.
-
-  When a user launches the remoting web-app, the native-message host process is
-  started. For this to work, the manifest file for me2me host and it2me host is
-  expected to be in a specific folder under the user-profile dir.
-
-  This function performs both the above tasks.
 
   TODO(anandc):
   Once we have Linux machines in the swarming lab already installed with the
@@ -103,9 +96,6 @@ def InitialiseTestMachineForLinux(cfg_file, me2me_manifest_file,
 
   Args:
     cfg_file: location of test account's host-config file.
-    me2me_manifest_file: location of me2me host manifest file.
-    it2me_manifest_file: location of it2me host manifest file.
-    user_profile_dir: user-profile-dir to be used by the connect-to-host tests.
   """
 
   # First get home directory on current machine.
@@ -123,8 +113,27 @@ def InitialiseTestMachineForLinux(cfg_file, me2me_manifest_file,
       config_file_src,
       os.path.join(default_config_file_location, default_config_file_name))
 
-  # Next, create a user-profile dir, and place the me2me manifest.json file in
-  # the expected location for native-messating-host to work properly.
+  # Finally, start chromoting host.
+  RunCommandInSubProcess(CHROMOTING_HOST_PATH + ' --start')
+
+
+def SetupUserProfileDir(me2me_manifest_file, it2me_manifest_file,
+                        user_profile_dir):
+  """Sets up the Google Chrome user profile directory
+
+  Delete the previous user profile directory if exists and create a new one.
+  This invalidates any state changes by the previous test so each test can start
+  with the same environment.
+
+  When a user launches the remoting web-app, the native messaging host process
+  is started. For this to work, this function places the me2me and it2me native
+  messaging host manifest files in a specific folder under the user-profile dir.
+
+  Args:
+    me2me_manifest_file: location of me2me native messaging host manifest file.
+    it2me_manifest_file: location of it2me native messaging host manifest file.
+    user_profile_dir: Chrome user-profile-directory.
+  """
   native_messaging_folder = os.path.join(user_profile_dir, NATIVE_MESSAGING_DIR)
 
   if os.path.exists(user_profile_dir):
@@ -137,9 +146,6 @@ def InitialiseTestMachineForLinux(cfg_file, me2me_manifest_file,
     manifest_file_dest = (
         os.path.join(native_messaging_folder, os.path.basename(manifest_file)))
     shutil.copyfile(manifest_file_src, manifest_file_dest)
-
-  # Finally, start chromoting host.
-  RunCommandInSubProcess(CHROMOTING_HOST_PATH + ' --start')
 
 
 def main():
@@ -160,11 +166,14 @@ def main():
 
   args = parser.parse_args()
 
-  InitialiseTestMachineForLinux(args.cfg_file, args.me2me_manifest_file,
-                                args.it2me_manifest_file, args.user_profile_dir)
+  InitialiseTestMachineForLinux(args.cfg_file)
 
   with open(args.commands_file) as f:
     for line in f:
+      # Reset the user profile directory to start each test with a clean slate.
+      SetupUserProfileDir(args.me2me_manifest_file, args.it2me_manifest_file,
+                          args.user_profile_dir)
+
       # Replace the PROD_DIR value in the command-line with
       # the passed in value.
       line = line.replace(PROD_DIR_ID, args.prod_dir)

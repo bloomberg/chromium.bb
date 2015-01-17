@@ -290,7 +290,14 @@ class RemoteDesktopBrowserTest : public extensions::PlatformAppBrowserTest {
   // the active WebContents.
   bool HtmlElementExists(const std::string& name) {
     return ExecuteScriptAndExtractBool(
-        "document.getElementById(\"" + name + "\") != null");
+        "(function() {"
+          "if (document.getElementById('" + name + "')) {"
+            "return true;"
+          "}"
+          "console.log('body.innerHTML:=' + document.body.innerHTML);"
+          "console.log('window.location:= ' + window.location);"
+          "return false;"
+        "})()");
   }
 
   // Helper to check whether a html element with the given name is visible in
