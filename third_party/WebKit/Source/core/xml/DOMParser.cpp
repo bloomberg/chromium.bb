@@ -25,20 +25,9 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<Document> DOMParser::parseFromString(const String& str, const String& contentType, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<Document> DOMParser::parseFromString(const String& str, const String& type)
 {
-    // HTML5 is very explicit about which types we're allowed to support here:
-    // http://domparsing.spec.whatwg.org/#the-domparser-interface
-    if (contentType != "text/html"
-        && contentType != "text/xml"
-        && contentType != "application/xml"
-        && contentType != "application/xhtml+xml"
-        && contentType != "image/svg+xml") {
-        exceptionState.throwTypeError("Unsupported mime-type specified.");
-        return nullptr;
-    }
-
-    RefPtrWillBeRawPtr<Document> doc = DOMImplementation::createDocument(contentType, 0, KURL(), false);
+    RefPtrWillBeRawPtr<Document> doc = DOMImplementation::createDocument(type, 0, KURL(), false);
     doc->setContent(str);
     return doc.release();
 }

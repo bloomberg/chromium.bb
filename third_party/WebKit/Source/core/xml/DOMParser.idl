@@ -17,10 +17,19 @@
  * Boston, MA 02110-1301, USA.
  */
 
+// https://dvcs.w3.org/hg/innerhtml/raw-file/tip/index.html#the-domparser-interface
+
+enum SupportedType {
+    "text/html",
+    "text/xml",
+    "application/xml",
+    "application/xhtml+xml",
+    "image/svg+xml"
+};
+
 [
     WillBeGarbageCollected,
     Constructor
 ] interface DOMParser {
-    [RaisesException] Document parseFromString([Default=Undefined] optional DOMString str,
-                             [Default=Undefined] optional DOMString contentType);
+    Document parseFromString(DOMString str, SupportedType type);
 };
