@@ -8,14 +8,18 @@
 #include <cmath>
 
 #include "base/logging.h"
+#include "base/memory/weak_ptr.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
+#import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/extensions/browser_actions_controller.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_action_view_delegate_cocoa.h"
+#import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
+#import "chrome/browser/ui/cocoa/wrench_menu/wrench_menu_controller.h"
 #include "chrome/browser/ui/extensions/extension_action_view_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "grit/theme_resources.h"
@@ -45,12 +49,18 @@ class ToolbarActionViewDelegateBridge : public ToolbarActionViewDelegateCocoa {
                                   ToolbarActionViewController* viewController);
   ~ToolbarActionViewDelegateBridge() override;
 
+  // Shows the context menu for the owning action.
+  void ShowContextMenu();
+
  private:
   // ToolbarActionViewDelegateCocoa:
   ToolbarActionViewController* GetPreferredPopupViewController() override;
   content::WebContents* GetCurrentWebContents() const override;
   void UpdateState() override;
   NSPoint GetPopupPoint() override;
+
+  // A helper method to implement showing the context menu.
+  void DoShowContextMenu();
 
   // The owning button. Weak.
   BrowserActionButton* owner_;
@@ -61,6 +71,8 @@ class ToolbarActionViewDelegateBridge : public ToolbarActionViewDelegateCocoa {
   // The ToolbarActionViewController for which this is the delegate. Weak.
   ToolbarActionViewController* viewController_;
 
+  base::WeakPtrFactory<ToolbarActionViewDelegateBridge> weakFactory_;
+
   DISALLOW_COPY_AND_ASSIGN(ToolbarActionViewDelegateBridge);
 };
 
@@ -70,7 +82,8 @@ ToolbarActionViewDelegateBridge::ToolbarActionViewDelegateBridge(
     ToolbarActionViewController* viewController)
     : owner_(owner),
       controller_(controller),
-      viewController_(viewController) {
+      viewController_(viewController),
+      weakFactory_(this) {
   viewController_->SetDelegate(this);
 }
 
@@ -78,9 +91,32 @@ ToolbarActionViewDelegateBridge::~ToolbarActionViewDelegateBridge() {
   viewController_->SetDelegate(nullptr);
 }
 
+void ToolbarActionViewDelegateBridge::ShowContextMenu() {
+  // We should only be showing the context menu in this way if we're doing so
+  // for an overflowed action.
+  DCHECK(![owner_ superview]);
+
+  WrenchMenuController* wrenchMenuController =
+      [[[BrowserWindowController browserWindowControllerForWindow:
+          [controller_ browser]->window()->GetNativeWindow()]
+              toolbarController] wrenchMenuController];
+  // If the wrench menu is open, we have to first close it. Part of this happens
+  // asynchronously, so we have to use a posted task to open the next menu.
+  if ([wrenchMenuController isMenuOpen]) {
+    [wrenchMenuController cancel];
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&ToolbarActionViewDelegateBridge::DoShowContextMenu,
+                   weakFactory_.GetWeakPtr()));
+  } else {
+    DoShowContextMenu();
+  }
+}
+
 ToolbarActionViewController*
 ToolbarActionViewDelegateBridge::GetPreferredPopupViewController() {
-  return viewController_;
+  return [[controller_ mainButtonForId:viewController_->GetId()]
+      viewController];
 }
 
 content::WebContents* ToolbarActionViewDelegateBridge::GetCurrentWebContents()
@@ -94,6 +130,27 @@ void ToolbarActionViewDelegateBridge::UpdateState() {
 
 NSPoint ToolbarActionViewDelegateBridge::GetPopupPoint() {
   return [controller_ popupPointForId:[owner_ viewController]->GetId()];
+}
+
+void ToolbarActionViewDelegateBridge::DoShowContextMenu() {
+  NSButton* wrenchButton =
+      [[[BrowserWindowController browserWindowControllerForWindow:
+          [controller_ browser]->window()->GetNativeWindow()]
+              toolbarController] wrenchButton];
+  // The point the menu shows matches that of the normal wrench menu - that is,
+  // the right-left most corner of the menu is left-aligned with the wrench
+  // button, and the menu is displayed "a little bit" lower. It would be nice to
+  // be able to avoid the magic '5' here, but since it's built into Cocoa, it's
+  // not too hopeful.
+  NSPoint menuPoint = NSMakePoint(0, NSHeight([wrenchButton bounds]) + 5);
+
+  // We set the wrench to be highlighted so it remains "pressed" when the menu
+  // is running.
+  [[wrenchButton cell] setHighlighted:YES];
+  [[owner_ menu] popUpMenuPositioningItem:nil
+                               atLocation:menuPoint
+                                   inView:wrenchButton];
+  [[wrenchButton cell] setHighlighted:NO];
 }
 
 @interface BrowserActionCell (Internals)
@@ -162,6 +219,20 @@ NSPoint ToolbarActionViewDelegateBridge::GetPopupPoint() {
 
 - (BOOL)acceptsFirstResponder {
   return YES;
+}
+
+- (void)rightMouseDown:(NSEvent*)theEvent {
+  // Cocoa doesn't allow menus-running-in-menus, so in order to show the
+  // context menu for an overflowed action, we close the wrench menu and show
+  // the context menu over the wrench (similar to what we do for popups).
+  // Let the main bar's button handle showing the context menu, since the wrench
+  // menu will close..
+  if ([browserActionsController_ isOverflow]) {
+    [browserActionsController_ mainButtonForId:viewController_->GetId()]->
+        viewControllerDelegate_->ShowContextMenu();
+  } else {
+    [super rightMouseDown:theEvent];
+  }
 }
 
 - (void)mouseDown:(NSEvent*)theEvent {
@@ -353,6 +424,9 @@ NSPoint ToolbarActionViewDelegateBridge::GetPopupPoint() {
 }
 
 - (NSMenu*)menu {
+  if (testContextMenu_)
+    return testContextMenu_;
+
   ui::MenuModel* contextMenu = viewController_->GetContextMenu();
   if (!contextMenu)
     return nil;
@@ -360,6 +434,13 @@ NSPoint ToolbarActionViewDelegateBridge::GetPopupPoint() {
       [[MenuController alloc] initWithModel:contextMenu
                      useWithPopUpButtonCell:NO]);
   return [contextMenuController_ menu];
+}
+
+#pragma mark -
+#pragma mark Testing Methods
+
+- (void)setTestContextMenu:(NSMenu*)testContextMenu {
+  testContextMenu_ = testContextMenu;
 }
 
 @end

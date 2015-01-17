@@ -169,7 +169,7 @@ class NotificationBridge;
 - (BrowserActionsController*)browserActionsController;
 
 // Returns the wrench button.
-- (NSView*)wrenchButton;
+- (NSButton*)wrenchButton;
 
 // Returns the wrench menu controller.
 - (WrenchMenuController*)wrenchMenuController;

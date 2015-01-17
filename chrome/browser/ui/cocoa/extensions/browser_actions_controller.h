@@ -101,6 +101,10 @@ extern NSString* const kBrowserActionVisibilityChangedNotification;
 // Returns the currently-active web contents.
 - (content::WebContents*)currentWebContents;
 
+// Returns the BrowserActionButton in the main browser actions container (as
+// opposed to the overflow) for the action of the given id.
+- (BrowserActionButton*)mainButtonForId:(const std::string&)id;
+
 @end  // @interface BrowserActionsController
 
 @interface BrowserActionsController(TestingAPI)

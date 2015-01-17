@@ -87,6 +87,9 @@ class ZoomLevelObserver;
 // updating the recent tabs submenu.
 - (void)updateRecentTabsSubmenu;
 
+// Retuns the weak reference to the BrowserActionsController.
+- (BrowserActionsController*)browserActionsController;
+
 @end
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -321,6 +321,10 @@ class ZoomLevelObserver {
   }
 }
 
+- (BrowserActionsController*)browserActionsController {
+  return browserActionsController_.get();
+}
+
 - (void)createModel {
   recentTabsMenuModelDelegate_.reset();
   wrenchMenuModel_.reset(
