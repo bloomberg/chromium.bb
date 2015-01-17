@@ -421,7 +421,7 @@ KeyboardCode NonPrintableDomKeyToKeyboardCode(DomKey dom_key) {
     // Browser Keys
     // http://www.w3.org/TR/DOM-Level-3-Events-key/#keys-browser
     case DomKey::BROWSER_BACK:
-      return VKEY_BACK;
+      return VKEY_BROWSER_BACK;
     case DomKey::BROWSER_FAVORITES:
       return VKEY_BROWSER_FAVORITES;
     case DomKey::BROWSER_FORWARD:
