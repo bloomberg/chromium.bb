@@ -375,6 +375,25 @@ void AlsaPcmOutputStream::BufferPacket(bool* source_exhausted) {
       packet_size = packet_size / bytes_per_frame_ * bytes_per_output_frame_;
     }
 
+    // Reorder channels for 5.0, 5.1, and 7.1 to match ALSA's channel order,
+    // which has front center at channel index 4 and LFE at channel index 5.
+    // See http://ffmpeg.org/pipermail/ffmpeg-cvslog/2011-June/038454.html.
+    switch (channel_layout_) {
+      case media::CHANNEL_LAYOUT_5_0:
+      case media::CHANNEL_LAYOUT_5_0_BACK:
+        output_bus->SwapChannels(2, 3);
+        output_bus->SwapChannels(3, 4);
+        break;
+      case media::CHANNEL_LAYOUT_5_1:
+      case media::CHANNEL_LAYOUT_5_1_BACK:
+      case media::CHANNEL_LAYOUT_7_1:
+        output_bus->SwapChannels(2, 4);
+        output_bus->SwapChannels(3, 5);
+        break;
+      default:
+        break;
+    }
+
     // Note: If this ever changes to output raw float the data must be clipped
     // and sanitized since it may come from an untrusted source such as NaCl.
     output_bus->Scale(volume_);
