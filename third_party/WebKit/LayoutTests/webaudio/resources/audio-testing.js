@@ -190,3 +190,69 @@ function shouldThrowTypeError(func, text) {
         testFailed(text + " should throw TypeError.");
     }
 }
+
+// |Audit| is a task runner for web audio test. It makes asynchronous web audio
+// testing simple and manageable.
+//
+// EXAMPLE:
+//
+//   var audit = Audit.createTaskRunner();
+//   // Define test routine. Make sure to call done() when reached at the end.
+//   audit.defineTask('foo', function (done) {
+//     var context = new AudioContext();
+//     // do things
+//     context.oncomplete = function () {
+//       // verification here
+//       done();
+//     };
+//   });
+//
+//   audit.defineTask('bar', function (done) {
+//     // your code here
+//     done();
+//   });
+//
+//   // Queue tasks by readable task names.
+//   audit.runTasks('foo', 'bar');
+ var Audit = (function () {
+
+    'use strict';
+
+    function Tasks() {
+        this.tasks = {};
+        this.queue = [];
+        this.currentTask = 0;
+    }
+
+    Tasks.prototype.defineTask = function (taskName, taskFunc) {
+        this.tasks[taskName] = taskFunc;
+    };
+
+    Tasks.prototype.runTasks = function () {
+        for (var i = 0; i < arguments.length; i++) {
+          this.queue[i] = arguments[i];
+        }
+
+        // done() callback from tasks. Increase the task index and call the
+        // next task.
+        var done = function () {
+            // debug('[Audit] Task: ' + this.queue[this.currentTask] + ' completed.');
+            if (this.currentTask === this.queue.length - 1) {
+                // debug('[Audit] All task finished.');
+            } else {
+                this.tasks[this.queue[++this.currentTask]](done);
+            }
+            return;
+        }.bind(this);
+
+        // Start task 0.
+        this.tasks[this.queue[this.currentTask]](done);
+    };
+
+    return {
+        createTaskRunner: function () {
+            return new Tasks();
+        }
+    };
+
+})();

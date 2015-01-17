@@ -15,21 +15,22 @@
     description('Test panning model of StereoPannerNode.');
     window.jsTestIsAsync = true;
 
-    var testForMonoInput = StereoPannerTest.createTest({
-      numberOfInputChannel: 1,
-      description: 'Test for mono input'
-    });
-    testForMonoInput.run();
+    var audit = Audit.createTaskRunner();
 
-    var testForStereoInput = StereoPannerTest.createTest({
-      numberOfInputChannel: 2,
-      description: 'Test for stereo input'
+    audit.defineTask('mono-test', function (done) {
+      StereoPannerTest.create({ numberOfInputChannels: 1 }).run(done);
     });
-    testForStereoInput.run({
-      onComplete: function () {
-        finishJSTest();
-      }
+
+    audit.defineTask('stereo-test', function (done) {
+      StereoPannerTest.create({ numberOfInputChannels: 2 }).run(done);
     });
+
+    audit.defineTask('finish-test', function (done) {
+      done();
+      finishJSTest();
+    });
+
+    audit.runTasks('mono-test', 'stereo-test', 'finish-test');
 
     successfullyParsed = true;
   </script>

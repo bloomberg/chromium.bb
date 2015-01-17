@@ -54,8 +54,15 @@ var StereoPannerTest = (function () {
     this.success = true;
 
     this.context = null;
-    this.description = (options.description || 'Test for mono input');
     this.numberOfInputChannels = (options.numberOfInputChannels || 1);
+    switch (this.numberOfInputChannels) {
+      case 1:
+        this.description = 'Test for mono input';
+        break;
+      case 2:
+        this.description = 'Test for stereo input';
+        break;
+    }
 
     // Onset time position of each impulse.
     this.onsets = [];
@@ -222,10 +229,7 @@ var StereoPannerTest = (function () {
   };
 
 
-  Test.prototype.run = function (options) {
-
-    if (options)
-      this.onComplete = (options.onComplete || null);
+  Test.prototype.run = function (done) {
 
     this.init();
     this.prepare();
@@ -235,8 +239,7 @@ var StereoPannerTest = (function () {
       this.verify();
       this.showResult();
       this.finish();
-      if (this.onComplete)
-        this.onComplete();
+      done();
     }.bind(this);
     this.context.startRendering();
 
@@ -244,7 +247,7 @@ var StereoPannerTest = (function () {
 
 
   return {
-    createTest: function (options) {
+    create: function (options) {
       return new Test(options);
     }
   };
