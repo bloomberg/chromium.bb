@@ -623,7 +623,9 @@
             '../../build/linux/system.gyp:xext',
             '../../build/linux/system.gyp:xfixes',
             '../../build/linux/system.gyp:xrender',  # For XRender* function calls in x11_util.cc.
+            '../events/devices/events_devices.gyp:events_devices',
             '../events/platform/x11/x11_events_platform.gyp:x11_events_platform',
+            '../gfx/x/gfx_x11.gyp:gfx_x11',
           ],
         }],
         ['use_x11==1 and chromeos==0', {
