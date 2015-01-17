@@ -48,6 +48,7 @@ class MEDIA_EXPORT CoreMediaGlue {
   } CMVideoDimensions;
   enum {
     kCMPixelFormat_422YpCbCr8_yuvs = 'yuvs',
+    kCMPixelFormat_420YpCbCr8BiPlanarVideoRange = '420v',
   };
   enum {
     kCMVideoCodecType_JPEG_OpenDML = 'dmb1',

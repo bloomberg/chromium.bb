@@ -11,6 +11,27 @@
 #include "media/video/capture/mac/video_capture_device_mac.h"
 #include "ui/gfx/geometry/size.h"
 
+// Prefer MJPEG if frame width or height is larger than this.
+static const int kMjpegWidthThreshold = 640;
+static const int kMjpegHeightThreshold = 480;
+
+// This function translates Mac Core Video pixel formats to Chromium pixel
+// formats. Chromium pixel formats are sorted in order of preference.
+media::VideoPixelFormat FourCCToChromiumPixelFormat(FourCharCode code) {
+  switch (code) {
+    case kCVPixelFormatType_422YpCbCr8:
+      return media::PIXEL_FORMAT_UYVY;
+    case CoreMediaGlue::kCMPixelFormat_422YpCbCr8_yuvs:
+      return media::PIXEL_FORMAT_YUY2;
+    case CoreMediaGlue::kCMVideoCodecType_JPEG_OpenDML:
+      return media::PIXEL_FORMAT_MJPEG;
+    case CoreMediaGlue::kCMPixelFormat_420YpCbCr8BiPlanarVideoRange:
+      return media::PIXEL_FORMAT_NV12;
+    default:
+      return media::PIXEL_FORMAT_UNKNOWN;
+  }
+}
+
 @implementation VideoCaptureDeviceAVFoundation
 
 #pragma mark Class methods
@@ -55,20 +76,9 @@
   for (CrAVCaptureDeviceFormat* format in device.formats) {
     // MediaSubType is a CMPixelFormatType but can be used as CVPixelFormatType
     // as well according to CMFormatDescription.h
-    media::VideoPixelFormat pixelFormat = media::PIXEL_FORMAT_UNKNOWN;
-    switch (CoreMediaGlue::CMFormatDescriptionGetMediaSubType(
-                [format formatDescription])) {
-      case kCVPixelFormatType_422YpCbCr8:  // Typical.
-        pixelFormat = media::PIXEL_FORMAT_UYVY;
-        break;
-      case CoreMediaGlue::kCMPixelFormat_422YpCbCr8_yuvs:
-        pixelFormat = media::PIXEL_FORMAT_YUY2;
-        break;
-      case CoreMediaGlue::kCMVideoCodecType_JPEG_OpenDML:
-        pixelFormat = media::PIXEL_FORMAT_MJPEG;
-      default:
-        break;
-    }
+    const media::VideoPixelFormat pixelFormat = FourCCToChromiumPixelFormat(
+        CoreMediaGlue::CMFormatDescriptionGetMediaSubType(
+            [format formatDescription]));
 
     CoreMediaGlue::CMVideoDimensions dimensions =
         CoreMediaGlue::CMVideoFormatDescriptionGetDimensions(
@@ -183,6 +193,25 @@
   frameHeight_ = height;
   frameRate_ = frameRate;
 
+  FourCharCode best_fourcc = kCVPixelFormatType_422YpCbCr8;
+  const bool prefer_mjpeg =
+      width > kMjpegWidthThreshold || height > kMjpegHeightThreshold;
+  for (CrAVCaptureDeviceFormat* format in captureDevice_.formats) {
+    const FourCharCode fourcc =
+        CoreMediaGlue::CMFormatDescriptionGetMediaSubType(
+            [format formatDescription]);
+    if (prefer_mjpeg &&
+        fourcc == CoreMediaGlue::kCMVideoCodecType_JPEG_OpenDML) {
+      best_fourcc = fourcc;
+      break;
+    }
+    // Compare according to Chromium preference.
+    if (FourCCToChromiumPixelFormat(fourcc) <
+        FourCCToChromiumPixelFormat(best_fourcc)) {
+      best_fourcc = fourcc;
+    }
+  }
+
   // The capture output has to be configured, despite Mac documentation
   // detailing that setting the sessionPreset would be enough. The reason for
   // this mismatch is probably because most of the AVFoundation docs are written
@@ -192,7 +221,7 @@
   NSDictionary* videoSettingsDictionary = @{
     (id)kCVPixelBufferWidthKey : @(width),
     (id)kCVPixelBufferHeightKey : @(height),
-    (id)kCVPixelBufferPixelFormatTypeKey : @(kCVPixelFormatType_422YpCbCr8),
+    (id)kCVPixelBufferPixelFormatTypeKey : @(best_fourcc),
     AVFoundationGlue::AVVideoScalingModeKey() :
         AVFoundationGlue::AVVideoScalingModeResizeAspectFill()
   };
@@ -253,33 +282,54 @@
   // Chrome is on foreground or background. Sample the actual thread here.
   callback_thread_checker_.DetachFromThread();
   callback_thread_checker_.CalledOnValidThread();
-  CVImageBufferRef videoFrame =
-      CoreMediaGlue::CMSampleBufferGetImageBuffer(sampleBuffer);
-  // Lock the frame and calculate frame size.
-  const int kLockFlags = kCVPixelBufferLock_ReadOnly;
-  if (CVPixelBufferLockBaseAddress(videoFrame, kLockFlags) ==
-          kCVReturnSuccess) {
-    void* baseAddress = CVPixelBufferGetBaseAddress(videoFrame);
-    size_t bytesPerRow = CVPixelBufferGetBytesPerRow(videoFrame);
-    size_t frameWidth = CVPixelBufferGetWidth(videoFrame);
-    size_t frameHeight = CVPixelBufferGetHeight(videoFrame);
-    size_t frameSize = bytesPerRow * frameHeight;
-    UInt8* addressToPass = reinterpret_cast<UInt8*>(baseAddress);
 
-    media::VideoCaptureFormat captureFormat(
-        gfx::Size(frameWidth, frameHeight),
-        frameRate_,
-        media::PIXEL_FORMAT_UYVY);
-    {
-      base::AutoLock lock(lock_);
-      if (frameReceiver_) {
-        frameReceiver_->ReceiveFrame(
-            addressToPass, frameSize, captureFormat, 0, 0);
-      }
+  const CoreMediaGlue::CMFormatDescriptionRef formatDescription =
+      CoreMediaGlue::CMSampleBufferGetFormatDescription(sampleBuffer);
+  const FourCharCode fourcc =
+      CoreMediaGlue::CMFormatDescriptionGetMediaSubType(formatDescription);
+  const CoreMediaGlue::CMVideoDimensions dimensions =
+      CoreMediaGlue::CMVideoFormatDescriptionGetDimensions(formatDescription);
+  const media::VideoCaptureFormat captureFormat(
+      gfx::Size(dimensions.width, dimensions.height),
+      frameRate_,
+      FourCCToChromiumPixelFormat(fourcc));
+
+  char* baseAddress = 0;
+  size_t frameSize = 0;
+  CVImageBufferRef videoFrame = nil;
+  if (fourcc == CoreMediaGlue::kCMVideoCodecType_JPEG_OpenDML) {
+    // If MJPEG, use block buffer instead of pixel buffer.
+    CoreMediaGlue::CMBlockBufferRef blockBuffer =
+        CoreMediaGlue::CMSampleBufferGetDataBuffer(sampleBuffer);
+    if (CoreMediaGlue::CMBlockBufferGetDataLength(blockBuffer) > 0) {
+      size_t length;
+      CoreMediaGlue::CMBlockBufferGetDataPointer(blockBuffer, 0, &length,
+                                                 &frameSize,
+                                                 &baseAddress);
     }
-
-    CVPixelBufferUnlockBaseAddress(videoFrame, kLockFlags);
+  } else {
+    videoFrame = CoreMediaGlue::CMSampleBufferGetImageBuffer(sampleBuffer);
+    // Lock the frame and calculate frame size.
+    if (CVPixelBufferLockBaseAddress(videoFrame, kCVPixelBufferLock_ReadOnly) ==
+        kCVReturnSuccess) {
+      baseAddress = static_cast<char*>(CVPixelBufferGetBaseAddress(videoFrame));
+      frameSize = CVPixelBufferGetHeight(videoFrame) *
+                  CVPixelBufferGetBytesPerRow(videoFrame);
+    } else {
+      videoFrame = nil;
+    }
   }
+
+  {
+    base::AutoLock lock(lock_);
+    if (frameReceiver_ && baseAddress) {
+      frameReceiver_->ReceiveFrame(reinterpret_cast<uint8_t*>(baseAddress),
+                                   frameSize, captureFormat, 0, 0);
+    }
+  }
+
+  if (videoFrame)
+    CVPixelBufferUnlockBaseAddress(videoFrame, kCVPixelBufferLock_ReadOnly);
 }
 
 - (void)onVideoError:(NSNotification*)errorNotification {
