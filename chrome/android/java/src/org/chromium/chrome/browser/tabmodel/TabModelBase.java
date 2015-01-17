@@ -348,9 +348,8 @@ public abstract class TabModelBase extends TabModelJniBridge {
      *                will not actually be closed until {@link #commitTabClosure(int)} or
      *                {@link #commitAllTabClosures()} is called, but they will be effectively
      *                removed from this list.
-     * @return a list containing the ids of tabs that have been closed
      */
-    public ArrayList<Integer> closeAllTabs(boolean animate, boolean uponExit, boolean canUndo) {
+    public void closeAllTabs(boolean animate, boolean uponExit, boolean canUndo) {
         ArrayList<Integer> closedTabs = new ArrayList<Integer>();
         while (getCount() > 0) {
             Tab tab = getTabAt(0);
@@ -361,8 +360,6 @@ public abstract class TabModelBase extends TabModelJniBridge {
         if (!uponExit && canUndo && supportsPendingClosures()) {
             for (TabModelObserver obs : mObservers) obs.allTabsPendingClosure(closedTabs);
         }
-
-        return closedTabs;
     }
 
     @Override
