@@ -4,8 +4,67 @@
 
 {
   'includes': [
-    'app_remoting_webapp_build.gypi',
+    '<(DEPTH)/remoting/app_remoting_webapp_build.gypi',
   ],
+
+  'target_defaults': {
+    'variables': {
+      'ar_internal': 0,
+    },
+
+    'conditions': [
+      ['run_jscompile != 0', {
+        'actions': [
+          {
+            'action_name': 'Verify >(ar_app_name) main.html',
+            'variables': {
+              'success_stamp': '<(PRODUCT_DIR)/>(_target_name)_main_jscompile.stamp',
+            },
+            'inputs': [
+              '<@(ar_main_js_files)',
+              '<@(remoting_webapp_js_proto_files)',
+              # Include zip as input so that this action is run after the build.
+              '<(zip_path)',
+            ],
+            'outputs': [
+              '<(success_stamp)',
+            ],
+            'action': [
+              'python', '../third_party/closure_compiler/checker.py',
+              '--strict',
+              '--no-single-file',
+              '--success-stamp', '<(success_stamp)',
+              '<@(ar_main_js_files)',
+              '<@(remoting_webapp_js_proto_files)',
+            ],
+          },
+          {
+            'action_name': 'Verify >(ar_app_name) background.js',
+            'variables': {
+              'success_stamp': '<(PRODUCT_DIR)/>(_target_name)_background_jscompile.stamp',
+            },
+            'inputs': [
+              '<@(ar_background_js_files)',
+              '<@(remoting_webapp_js_proto_files)',
+              # Include zip as input so that this action is run after the build.
+              '<(zip_path)',
+            ],
+            'outputs': [
+              '<(success_stamp)',
+            ],
+            'action': [
+              'python', '../third_party/closure_compiler/checker.py',
+              '--strict',
+              '--no-single-file',
+              '--success-stamp', '<(success_stamp)',
+              '<@(ar_background_js_files)',
+              '<@(remoting_webapp_js_proto_files)',
+            ],
+          },
+        ],  # actions
+      }],
+    ],  # conditions
+  },
 
   'targets': [
     {

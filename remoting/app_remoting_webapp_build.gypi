@@ -17,9 +17,6 @@
     # being built.  The allowed values are dev, test, staging, and prod.
     'ar_service_environment%': 'dev',
 
-    # Identify internal vs. public build targets.
-    'ar_internal%': 0,
-
     'remoting_localize_path': 'tools/build/remoting_localize.py',
 
     # TODO(wez): Split into shared-stub and app-specific resources.
@@ -46,7 +43,7 @@
     # Variables for main.html.
     # These template files are used to construct the webapp html files.
     'ar_main_template':
-      'webapp/app_remoting/html/template_lg.html',
+      '<(DEPTH)/remoting/webapp/app_remoting/html/template_lg.html',
     'ar_main_template_files': [
       'webapp/base/html/client_plugin.html',
       'webapp/base/html/dialog_auth.html',
@@ -107,7 +104,7 @@
     'dependencies': [
       # TODO(wez): Create proper resources for shared-stub and app-specific
       # stubs.
-      '../remoting/remoting.gyp:remoting_resources',
+      '<(DEPTH)/remoting/remoting.gyp:remoting_resources',
     ],
 
     'locale_files': [
@@ -153,7 +150,7 @@
           # the vendor ('vvv') and the app name ('xxx_xxx').
           'ar_app_vendor': '>!(python -c "import sys; print sys.argv[1].split(\'_\')[1]" >(_target_name))',
           'ar_app_name': '>!(python -c "import sys; print \'_\'.join(sys.argv[1].split(\'_\')[2:])" >(_target_name))',
-          'ar_app_path': 'webapp/app_remoting/apps/internal/>(ar_app_vendor)/>(ar_app_name)',
+          'ar_app_path': 'webapp/app_remoting/internal/apps/>(ar_app_vendor)/>(ar_app_name)',
         }],
       ],  # conditions
 
@@ -163,21 +160,21 @@
       {
         'action_name': 'Build ">(ar_app_name)" application stub',
         'inputs': [
-          'webapp/build-webapp.py',
+          '<(DEPTH)/remoting/webapp/build-webapp.py',
           '<(chrome_version_path)',
           '<(remoting_version_path)',
           '<@(ar_webapp_files)',
           '<@(remoting_webapp_locale_files)',
           '<@(ar_generated_html_files)',
           '<(ar_app_manifest_app)',
-          '<(ar_app_manifest_common)',
+          '<(DEPTH)/remoting/<(ar_app_manifest_common)',
        ],
         'outputs': [
           '<(output_dir)',
           '<(zip_path)',
         ],
         'action': [
-          'python', 'webapp/build-webapp.py',
+          'python', '<(DEPTH)/remoting/webapp/build-webapp.py',
           '<(buildtype)',
           '<(version_full)',
           '<(output_dir)',
@@ -189,7 +186,7 @@
           '--locales',
           '<@(remoting_webapp_locale_files)',
           '--jinja_paths',
-          'webapp/app_remoting',
+          '<(DEPTH)/remoting/webapp/app_remoting',
           '<@(remoting_app_id)',
           '--app_name',
           '<(remoting_app_name)',
@@ -202,7 +199,7 @@
       {
         'action_name': 'Build ">(ar_app_name)" main.html',
         'inputs': [
-          'webapp/build-html.py',
+          '<(DEPTH)/remoting/webapp/build-html.py',
           '<(ar_main_template)',
           '<@(ar_main_template_files)',
         ],
@@ -210,10 +207,12 @@
           '<(SHARED_INTERMEDIATE_DIR)/>(_target_name)/main.html',
         ],
         'action': [
-          'python', 'webapp/build-html.py',
+          'python', '<(DEPTH)/remoting/webapp/build-html.py',
           '<(SHARED_INTERMEDIATE_DIR)/>(_target_name)/main.html',
           '<(ar_main_template)',
-          '--template',
+          '--template-dir',
+          '<(DEPTH)/remoting',
+          '--templates',
           '<@(ar_main_template_files)',
           '--js',
           '<@(ar_main_js_files)',
@@ -222,16 +221,18 @@
       {
         'action_name': 'Build ">(ar_app_name)" wcs_sandbox.html',
         'inputs': [
-          'webapp/build-html.py',
+          '<(DEPTH)/remoting/webapp/build-html.py',
           '<(remoting_webapp_template_wcs_sandbox)',
         ],
         'outputs': [
           '<(SHARED_INTERMEDIATE_DIR)/>(_target_name)/wcs_sandbox.html',
         ],
         'action': [
-          'python', 'webapp/build-html.py',
+          'python', '<(DEPTH)/remoting/webapp/build-html.py',
           '<(SHARED_INTERMEDIATE_DIR)/>(_target_name)/wcs_sandbox.html',
           '<(remoting_webapp_template_wcs_sandbox)',
+          '--template-dir',
+          '<(DEPTH)/remoting',
           '--js',
           '<@(remoting_webapp_wcs_sandbox_html_js_files)',
         ],
@@ -249,56 +250,6 @@
         'variables': {
           'remoting_app_id': ['--appid', '>(_app_id)'],
         },
-      }],
-      ['run_jscompile != 0', {
-        'actions': [
-          {
-            'action_name': 'Verify >(ar_app_name) main.html',
-            'variables': {
-              'success_stamp': '<(PRODUCT_DIR)/>(_target_name)_main_jscompile.stamp',
-            },
-            'inputs': [
-              '<@(ar_main_js_files)',
-              '<@(remoting_webapp_js_proto_files)',
-              # Include zip as input so that this action is run after the build.
-              '<(zip_path)',
-            ],
-            'outputs': [
-              '<(success_stamp)',
-            ],
-            'action': [
-              'python', '../third_party/closure_compiler/checker.py',
-              '--strict',
-              '--no-single-file',
-              '--success-stamp', '<(success_stamp)',
-              '<@(ar_main_js_files)',
-              '<@(remoting_webapp_js_proto_files)',
-            ],
-          },
-          {
-            'action_name': 'Verify >(ar_app_name) background.js',
-            'variables': {
-              'success_stamp': '<(PRODUCT_DIR)/>(_target_name)_background_jscompile.stamp',
-            },
-            'inputs': [
-              '<@(ar_background_js_files)',
-              '<@(remoting_webapp_js_proto_files)',
-              # Include zip as input so that this action is run after the build.
-              '<(zip_path)',
-            ],
-            'outputs': [
-              '<(success_stamp)',
-            ],
-            'action': [
-              'python', '../third_party/closure_compiler/checker.py',
-              '--strict',
-              '--no-single-file',
-              '--success-stamp', '<(success_stamp)',
-              '<@(ar_background_js_files)',
-              '<@(remoting_webapp_js_proto_files)',
-            ],
-          },
-        ],  # actions
       }],
     ],  # conditions
   },  # target_defaults

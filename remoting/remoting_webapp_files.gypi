@@ -309,13 +309,13 @@
 
     # These template files are used to construct the webapp html files.
     'remoting_webapp_template_main':
-      'webapp/crd/html/template_main.html',
+      '<(DEPTH)/remoting/webapp/crd/html/template_main.html',
 
     'remoting_webapp_template_wcs_sandbox':
-      'webapp/base/html/template_wcs_sandbox.html',
+      '<(DEPTH)/remoting/webapp/base/html/template_wcs_sandbox.html',
 
     'remoting_webapp_template_background':
-      'webapp/crd/html/template_background.html',
+      '<(DEPTH)/remoting/webapp/crd/html/template_background.html',
 
     'remoting_webapp_template_files': [
       'webapp/base/html/client_plugin.html',

@@ -69,8 +69,7 @@ class GenerateWebappHtml:
     return False
 
   def processTemplate(self, output, template_file, indent):
-    with open(os.path.join(self.template_rel_dir, template_file), 'r') as \
-        input_template:
+    with open(template_file, 'r') as input_template:
       first_line = True
       skip_header_comment = False
 
@@ -93,10 +92,11 @@ class GenerateWebappHtml:
         if m:
           prefix = m.group(1)
           template_name = m.group(2)
-          if not self.validateTemplate(template_name):
+          template_path = os.path.join(self.template_rel_dir, template_name)
+          if not self.validateTemplate(template_path):
             error('Found template not in list of expected templates: %s' %
                   template_name)
-          self.processTemplate(output, template_name, indent + len(prefix))
+          self.processTemplate(output, template_path, indent + len(prefix))
           continue
 
         m = re.match(r'^\s*<meta-include type="javascript"\s*/>\s*$', line)
@@ -130,7 +130,7 @@ def parseArgs():
     default=[],
     help='Javascript to include and instrument for code coverage')
   parser.add_argument(
-    '--dir-for-templates',
+    '--template-dir',
     default = ".",
     help='Directory template references in html are relative to')
   parser.add_argument('output_file')
@@ -146,13 +146,13 @@ def main():
 
   # Create the output directory if it does not exist.
   out_directory = os.path.dirname(out_file)
-  if not os.path.exists(out_directory):
+  if out_directory is not '' and not os.path.exists(out_directory):
     os.makedirs(out_directory)
 
   # Generate the main HTML file from the templates.
   with open(out_file, 'w') as output:
     gen = GenerateWebappHtml(args.templates, js_files, args.instrument_js,
-                             args.dir_for_templates)
+                             args.template_dir)
     gen.processTemplate(output, args.input_template, 0)
 
     # Verify that all the expected templates were found.
