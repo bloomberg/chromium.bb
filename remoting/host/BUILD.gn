@@ -23,6 +23,7 @@ static_library("host") {
   deps = [
     "//base:i18n",
     "//components/policy:policy",
+    "//components/policy:policy_component_common",
     "//crypto",
     "//google_apis",
     "//ipc",
@@ -53,7 +54,6 @@ static_library("host") {
   if (is_chromeos) {
     deps += [
       "//cc",
-      "//components/policy:policy_component_common",
       "//content",
       "//ppapi:ppapi_host",
       "//skia",
@@ -84,7 +84,6 @@ static_library("host") {
       "continue_window_linux.cc",
       "disconnect_window_linux.cc",
       "local_input_monitor_x11.cc",
-      "policy_hack/policy_watcher_linux.cc",
       "remoting_me2me_host.cc",
     ]
   }

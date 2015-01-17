@@ -12,7 +12,6 @@
 #include "base/location.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
-#include "base/time/time.h"
 #include "base/values.h"
 #include "policy/policy_constants.h"
 #include "remoting/host/dns_blackhole_checker.h"
@@ -25,10 +24,6 @@ namespace remoting {
 namespace policy_hack {
 
 namespace {
-
-// The time interval for rechecking policy. This is our fallback in case the
-// delegate never reports a change to the ReloadObserver.
-const int kFallbackReloadDelayMinutes = 15;
 
 // Copies all policy values from one dictionary to another, using values from
 // |default| if they are not set in |from|, or values from |bad_type_values| if
@@ -75,7 +70,7 @@ scoped_ptr<base::DictionaryValue> CopyGoodValuesAndAddDefaults(
 }  // namespace
 
 PolicyWatcher::PolicyWatcher(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner)
     : task_runner_(task_runner),
       transient_policy_error_retry_counter_(0),
       old_policies_(new base::DictionaryValue()),
@@ -154,20 +149,6 @@ void PolicyWatcher::StopWatchingOnPolicyWatcherThread() {
   weak_factory_.InvalidateWeakPtrs();
   policy_updated_callback_.Reset();
   policy_error_callback_.Reset();
-}
-
-void PolicyWatcher::ScheduleFallbackReloadTask() {
-  DCHECK(OnPolicyWatcherThread());
-  ScheduleReloadTask(
-      base::TimeDelta::FromMinutes(kFallbackReloadDelayMinutes));
-}
-
-void PolicyWatcher::ScheduleReloadTask(const base::TimeDelta& delay) {
-  DCHECK(OnPolicyWatcherThread());
-  task_runner_->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&PolicyWatcher::Reload, weak_factory_.GetWeakPtr()),
-      delay);
 }
 
 const base::DictionaryValue& PolicyWatcher::Defaults() const {

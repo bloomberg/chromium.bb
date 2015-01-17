@@ -88,6 +88,7 @@ PolicyServiceImpl::PolicyServiceImpl(const Providers& providers)
 }
 
 PolicyServiceImpl::~PolicyServiceImpl() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   for (Iterator it = providers_.begin(); it != providers_.end(); ++it)
     (*it)->RemoveObserver(this);
   STLDeleteValues(&observers_);
@@ -95,6 +96,7 @@ PolicyServiceImpl::~PolicyServiceImpl() {
 
 void PolicyServiceImpl::AddObserver(PolicyDomain domain,
                                     PolicyService::Observer* observer) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   Observers*& list = observers_[domain];
   if (!list)
     list = new Observers();
@@ -103,6 +105,7 @@ void PolicyServiceImpl::AddObserver(PolicyDomain domain,
 
 void PolicyServiceImpl::RemoveObserver(PolicyDomain domain,
                                        PolicyService::Observer* observer) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   ObserverMap::iterator it = observers_.find(domain);
   if (it == observers_.end()) {
     NOTREACHED();
@@ -117,15 +120,19 @@ void PolicyServiceImpl::RemoveObserver(PolicyDomain domain,
 
 const PolicyMap& PolicyServiceImpl::GetPolicies(
     const PolicyNamespace& ns) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
   return policy_bundle_.Get(ns);
 }
 
 bool PolicyServiceImpl::IsInitializationComplete(PolicyDomain domain) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(domain >= 0 && domain < POLICY_DOMAIN_SIZE);
   return initialization_complete_[domain];
 }
 
 void PolicyServiceImpl::RefreshPolicies(const base::Closure& callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   if (!callback.is_null())
     refresh_callbacks_.push_back(callback);
 
@@ -170,6 +177,7 @@ void PolicyServiceImpl::NotifyNamespaceUpdated(
     const PolicyNamespace& ns,
     const PolicyMap& previous,
     const PolicyMap& current) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   ObserverMap::iterator iterator = observers_.find(ns.domain);
   if (iterator != observers_.end()) {
     FOR_EACH_OBSERVER(PolicyService::Observer,
@@ -231,6 +239,8 @@ void PolicyServiceImpl::MergeAndTriggerUpdates() {
 }
 
 void PolicyServiceImpl::CheckInitializationComplete() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   // Check if all the providers just became initialized for each domain; if so,
   // notify that domain's observers.
   for (int domain = 0; domain < POLICY_DOMAIN_SIZE; ++domain) {

@@ -14,6 +14,7 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/threading/thread_checker.h"
 #include "components/policy/core/common/configuration_policy_provider.h"
 #include "components/policy/core/common/policy_bundle.h"
 #include "components/policy/core/common/policy_service.h"
@@ -89,6 +90,9 @@ class POLICY_EXPORT PolicyServiceImpl
   // List of callbacks to invoke once all providers refresh after a
   // RefreshPolicies() call.
   std::vector<base::Closure> refresh_callbacks_;
+
+  // Used to verify thread-safe usage.
+  base::ThreadChecker thread_checker_;
 
   // Used to create tasks to delay new policy updates while we may be already
   // processing previous policy updates.

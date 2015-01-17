@@ -472,18 +472,6 @@ bool PathProvider(int key, base::FilePath* result) {
     }
 #endif
 #if defined(OS_MACOSX) && !defined(OS_IOS)
-    case chrome::DIR_MANAGED_PREFS: {
-      if (!GetLocalLibraryDirectory(&cur))
-        return false;
-      cur = cur.Append(FILE_PATH_LITERAL("Managed Preferences"));
-      char* login = getlogin();
-      if (!login)
-        return false;
-      cur = cur.AppendASCII(login);
-      if (!base::PathExists(cur))  // We don't want to create this.
-        return false;
-      break;
-    }
     case chrome::DIR_USER_LIBRARY: {
       if (!GetUserLibraryDirectory(&cur))
         return false;

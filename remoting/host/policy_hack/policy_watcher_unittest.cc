@@ -20,8 +20,7 @@ namespace policy_hack {
 
 class PolicyWatcherTest : public testing::Test {
  public:
-  PolicyWatcherTest() {
-  }
+  PolicyWatcherTest() : message_loop_(base::MessageLoop::TYPE_IO) {}
 
   void SetUp() override {
     message_loop_proxy_ = base::MessageLoopProxy::current();
@@ -461,6 +460,78 @@ TEST_F(PolicyWatcherTest, PolicyUpdateResetsTransientErrorsCounter) {
   }
   StopWatching();
 }
+
+// Unit tests cannot instantiate PolicyWatcher on ChromeOS
+// (as this requires running inside a browser process).
+#ifndef OS_CHROMEOS
+
+namespace {
+
+void OnPolicyUpdatedDumpPolicy(scoped_ptr<base::DictionaryValue> policies) {
+  VLOG(1) << "OnPolicyUpdated callback received the following policies:";
+
+  for (base::DictionaryValue::Iterator iter(*policies); !iter.IsAtEnd();
+       iter.Advance()) {
+    switch (iter.value().GetType()) {
+      case base::Value::Type::TYPE_STRING: {
+        std::string value;
+        CHECK(iter.value().GetAsString(&value));
+        VLOG(1) << iter.key() << " = "
+                << "string: " << '"' << value << '"';
+        break;
+      }
+      case base::Value::Type::TYPE_BOOLEAN: {
+        bool value;
+        CHECK(iter.value().GetAsBoolean(&value));
+        VLOG(1) << iter.key() << " = "
+                << "boolean: " << (value ? "True" : "False");
+        break;
+      }
+      default: {
+        VLOG(1) << iter.key() << " = "
+                << "unrecognized type";
+        break;
+      }
+    }
+  }
+}
+
+}  // anonymous namespace
+
+// To dump policy contents, run unit tests with the following flags:
+// out/Debug/remoting_unittests --gtest_filter=*TestRealChromotingPolicy* -v=1
+TEST_F(PolicyWatcherTest, TestRealChromotingPolicy) {
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+      base::MessageLoop::current()->task_runner();
+  scoped_ptr<PolicyWatcher> policy_watcher(
+      PolicyWatcher::Create(nullptr, task_runner));
+
+  {
+    base::RunLoop run_loop;
+    policy_watcher->StartWatching(base::Bind(OnPolicyUpdatedDumpPolicy),
+                                  base::Bind(base::DoNothing));
+    run_loop.RunUntilIdle();
+  }
+
+  {
+    base::RunLoop run_loop;
+    PolicyWatcher* raw_policy_watcher = policy_watcher.release();
+    raw_policy_watcher->StopWatching(
+        base::Bind(base::IgnoreResult(
+                       &base::SequencedTaskRunner::DeleteSoon<PolicyWatcher>),
+                   task_runner, FROM_HERE, raw_policy_watcher));
+    run_loop.RunUntilIdle();
+  }
+
+  // Today, the only verification offered by this test is:
+  // - Manual verification of policy values dumped by OnPolicyUpdatedDumpPolicy
+  // - Automated verification that nothing crashed
+}
+
+#endif
+
+// TODO(lukasza): We should consider adding a test against a
+// MockConfigurationPolicyProvider.
 
 }  // namespace policy_hack
 }  // namespace remoting

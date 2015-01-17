@@ -48,15 +48,6 @@ namespace {
 
 #if defined(OS_MACOSX)
 base::FilePath GetManagedPolicyPath() {
-  // This constructs the path to the plist file in which Mac OS X stores the
-  // managed preference for the application. This is undocumented and therefore
-  // fragile, but if it doesn't work out, AsyncPolicyLoader has a task that
-  // polls periodically in order to reload managed preferences later even if we
-  // missed the change.
-  base::FilePath path;
-  if (!PathService::Get(chrome::DIR_MANAGED_PREFS, &path))
-    return base::FilePath();
-
   CFBundleRef bundle(CFBundleGetMainBundle());
   if (!bundle)
     return base::FilePath();
@@ -65,7 +56,7 @@ base::FilePath GetManagedPolicyPath() {
   if (!bundle_id)
     return base::FilePath();
 
-  return path.Append(base::SysCFStringRefToUTF8(bundle_id) + ".plist");
+  return policy::PolicyLoaderMac::GetManagedPolicyPath(bundle_id);
 }
 #endif  // defined(OS_MACOSX)
 

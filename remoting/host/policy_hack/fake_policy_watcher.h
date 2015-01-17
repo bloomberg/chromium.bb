@@ -23,7 +23,6 @@ class FakePolicyWatcher : public PolicyWatcher {
  protected:
   void StartWatchingInternal() override;
   void StopWatchingInternal() override;
-  void Reload() override;
 };
 
 }  // namespace policy_hack

@@ -33,12 +33,27 @@ class POLICY_EXPORT PolicyLoaderMac : public AsyncPolicyLoader {
   PolicyLoaderMac(scoped_refptr<base::SequencedTaskRunner> task_runner,
                   const base::FilePath& managed_policy_path,
                   MacPreferences* preferences);
+
+  // |application_id| will be passed into Mac's Preference Utilities API
+  // instead of the default value of kCFPreferencesCurrentApplication.
+  PolicyLoaderMac(scoped_refptr<base::SequencedTaskRunner> task_runner,
+                  const base::FilePath& managed_policy_path,
+                  MacPreferences* preferences,
+                  CFStringRef application_id);
+
   ~PolicyLoaderMac() override;
 
   // AsyncPolicyLoader implementation.
   void InitOnBackgroundThread() override;
   scoped_ptr<PolicyBundle> Load() override;
   base::Time LastModificationTime() override;
+
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  // Gets the path to the preferences (.plist) file associated with the given
+  // |bundle_id|.  The file at the returned path might not exist (yet).
+  // Returns an empty path upon failure.
+  static base::FilePath GetManagedPolicyPath(CFStringRef bundle_id);
+#endif
 
  private:
   // Callback for the FilePathWatcher.
@@ -65,6 +80,9 @@ class POLICY_EXPORT PolicyLoaderMac : public AsyncPolicyLoader {
 
   // Watches for events on the |managed_policy_path_|.
   base::FilePathWatcher watcher_;
+
+  // Application ID to pass into Mac's Preference Utilities API.
+  CFStringRef application_id_;
 
   DISALLOW_COPY_AND_ASSIGN(PolicyLoaderMac);
 };

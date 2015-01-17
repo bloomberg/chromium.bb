@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_cftyperef.h"
@@ -32,9 +33,23 @@ PolicyLoaderMac::PolicyLoaderMac(
     MacPreferences* preferences)
     : AsyncPolicyLoader(task_runner),
       preferences_(preferences),
-      managed_policy_path_(managed_policy_path) {}
+      managed_policy_path_(managed_policy_path),
+      application_id_(kCFPreferencesCurrentApplication) {
+}
 
-PolicyLoaderMac::~PolicyLoaderMac() {}
+PolicyLoaderMac::PolicyLoaderMac(
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
+    const base::FilePath& managed_policy_path,
+    MacPreferences* preferences,
+    CFStringRef application_id)
+    : AsyncPolicyLoader(task_runner),
+      preferences_(preferences),
+      managed_policy_path_(managed_policy_path),
+      application_id_(application_id) {
+}
+
+PolicyLoaderMac::~PolicyLoaderMac() {
+}
 
 void PolicyLoaderMac::InitOnBackgroundThread() {
   if (!managed_policy_path_.empty()) {
@@ -45,7 +60,7 @@ void PolicyLoaderMac::InitOnBackgroundThread() {
 }
 
 scoped_ptr<PolicyBundle> PolicyLoaderMac::Load() {
-  preferences_->AppSynchronize(kCFPreferencesCurrentApplication);
+  preferences_->AppSynchronize(application_id_);
   scoped_ptr<PolicyBundle> bundle(new PolicyBundle());
 
   // Load Chrome's policy.
@@ -56,24 +71,23 @@ scoped_ptr<PolicyBundle> PolicyLoaderMac::Load() {
   bool policy_present = false;
   const Schema* schema =
       schema_map()->GetSchema(PolicyNamespace(POLICY_DOMAIN_CHROME, ""));
-  for (Schema::Iterator it = schema->GetPropertiesIterator();
-       !it.IsAtEnd(); it.Advance()) {
+  for (Schema::Iterator it = schema->GetPropertiesIterator(); !it.IsAtEnd();
+       it.Advance()) {
     base::ScopedCFTypeRef<CFStringRef> name(
         base::SysUTF8ToCFStringRef(it.key()));
     base::ScopedCFTypeRef<CFPropertyListRef> value(
-        preferences_->CopyAppValue(name, kCFPreferencesCurrentApplication));
+        preferences_->CopyAppValue(name, application_id_));
     if (!value.get())
       continue;
     policy_present = true;
-    bool forced =
-        preferences_->AppValueIsForced(name, kCFPreferencesCurrentApplication);
-    PolicyLevel level = forced ? POLICY_LEVEL_MANDATORY :
-                                 POLICY_LEVEL_RECOMMENDED;
+    bool forced = preferences_->AppValueIsForced(name, application_id_);
+    PolicyLevel level =
+        forced ? POLICY_LEVEL_MANDATORY : POLICY_LEVEL_RECOMMENDED;
     // TODO(joaodasilva): figure the policy scope.
     scoped_ptr<base::Value> policy = PropertyToValue(value);
     if (policy) {
-      chrome_policy.Set(
-          it.key(), level, POLICY_SCOPE_USER, policy.release(), NULL);
+      chrome_policy.Set(it.key(), level, POLICY_SCOPE_USER, policy.release(),
+                        NULL);
     } else {
       status.Add(POLICY_LOAD_STATUS_PARSE_ERROR);
     }
@@ -98,10 +112,31 @@ base::Time PolicyLoaderMac::LastModificationTime() {
   return file_info.last_modified;
 }
 
-void PolicyLoaderMac::LoadPolicyForDomain(
-    PolicyDomain domain,
-    const std::string& domain_name,
-    PolicyBundle* bundle) {
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+
+base::FilePath PolicyLoaderMac::GetManagedPolicyPath(CFStringRef bundle_id) {
+  // This constructs the path to the plist file in which Mac OS X stores the
+  // managed preference for the application. This is undocumented and therefore
+  // fragile, but if it doesn't work out, AsyncPolicyLoader has a task that
+  // polls periodically in order to reload managed preferences later even if we
+  // missed the change.
+
+  base::FilePath path;
+  if (!base::mac::GetLocalDirectory(NSLibraryDirectory, &path))
+    return base::FilePath();
+  path = path.Append(FILE_PATH_LITERAL("Managed Preferences"));
+  char* login = getlogin();
+  if (!login)
+    return base::FilePath();
+  path = path.AppendASCII(login);
+  return path.Append(base::SysCFStringRefToUTF8(bundle_id) + ".plist");
+}
+
+#endif
+
+void PolicyLoaderMac::LoadPolicyForDomain(PolicyDomain domain,
+                                          const std::string& domain_name,
+                                          PolicyBundle* bundle) {
   std::string id_prefix(base::mac::BaseBundleID());
   id_prefix.append(".").append(domain_name).append(".");
 
@@ -132,22 +167,21 @@ void PolicyLoaderMac::LoadPolicyForComponent(
       base::SysUTF8ToCFStringRef(bundle_id_string));
   preferences_->AppSynchronize(bundle_id);
 
-  for (Schema::Iterator it = schema.GetPropertiesIterator();
-       !it.IsAtEnd(); it.Advance()) {
+  for (Schema::Iterator it = schema.GetPropertiesIterator(); !it.IsAtEnd();
+       it.Advance()) {
     base::ScopedCFTypeRef<CFStringRef> pref_name(
         base::SysUTF8ToCFStringRef(it.key()));
     base::ScopedCFTypeRef<CFPropertyListRef> value(
         preferences_->CopyAppValue(pref_name, bundle_id));
     if (!value.get())
       continue;
-    bool forced =
-        preferences_->AppValueIsForced(pref_name, bundle_id);
-    PolicyLevel level = forced ? POLICY_LEVEL_MANDATORY :
-                                 POLICY_LEVEL_RECOMMENDED;
+    bool forced = preferences_->AppValueIsForced(pref_name, bundle_id);
+    PolicyLevel level =
+        forced ? POLICY_LEVEL_MANDATORY : POLICY_LEVEL_RECOMMENDED;
     scoped_ptr<base::Value> policy_value = PropertyToValue(value);
     if (policy_value) {
-      policy->Set(it.key(), level, POLICY_SCOPE_USER,
-                  policy_value.release(), NULL);
+      policy->Set(it.key(), level, POLICY_SCOPE_USER, policy_value.release(),
+                  NULL);
     }
   }
 }

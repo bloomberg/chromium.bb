@@ -31,8 +31,5 @@ void FakePolicyWatcher::StartWatchingInternal() {
 void FakePolicyWatcher::StopWatchingInternal() {
 }
 
-void FakePolicyWatcher::Reload() {
-}
-
 }  // namespace policy_hack
 }  // namespace remoting

@@ -47,6 +47,7 @@
             'remoting_resources',
             '../base/base.gyp:base_i18n',
             '../components/components.gyp:policy',
+            '../components/components.gyp:policy_component_common',
             '../crypto/crypto.gyp:crypto',
             '../google_apis/google_apis.gyp:google_apis',
             '../ipc/ipc.gyp:ipc',
@@ -89,7 +90,6 @@
             ['chromeos==1', {
               'dependencies' : [
                 '../cc/cc.gyp:cc',
-                '../components/components.gyp:policy_component_common',
                 '../content/content.gyp:content',
                 '../ppapi/ppapi_internal.gyp:ppapi_host',
                 '../skia/skia.gyp:skia',
@@ -109,7 +109,6 @@
                 'host/linux/x_server_clipboard.cc',
                 'host/linux/x_server_clipboard.h',
                 'host/local_input_monitor_x11.cc',
-                'host/policy_hack/policy_watcher_linux.cc',
                 'host/remoting_me2me_host.cc',
               ],
               'conditions': [
