@@ -565,7 +565,8 @@ bool AutofillPopupControllerImpl::HasSuggestions() {
          id == POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY ||
          id == POPUP_ITEM_ID_PASSWORD_ENTRY ||
          id == POPUP_ITEM_ID_DATALIST_ENTRY ||
-         id == POPUP_ITEM_ID_MAC_ACCESS_CONTACTS;
+         id == POPUP_ITEM_ID_MAC_ACCESS_CONTACTS ||
+         id == POPUP_ITEM_ID_SCAN_CREDIT_CARD;
 }
 
 void AutofillPopupControllerImpl::SetValues(

@@ -299,8 +299,15 @@ bool AutofillManager::ShouldShowScanCreditCard(const FormData& form,
     return false;
 
   AutofillField* autofill_field = GetAutofillField(form, field);
-  return autofill_field &&
-         autofill_field->Type().GetStorableType() == CREDIT_CARD_NUMBER;
+  if (!autofill_field ||
+      autofill_field->Type().GetStorableType() != CREDIT_CARD_NUMBER) {
+    return false;
+  }
+
+  static const int kShowScanCreditCardMaxValueLength = 6;
+  return field.value.size() <= kShowScanCreditCardMaxValueLength &&
+         base::ContainsOnlyChars(CreditCard::StripSeparators(field.value),
+                                 base::ASCIIToUTF16("0123456789"));
 }
 
 bool AutofillManager::OnFormSubmitted(const FormData& form,
