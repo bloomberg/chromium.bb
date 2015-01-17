@@ -120,11 +120,12 @@ weston_output_update_zoom_transform(struct weston_output *output)
 	float ratio, level;
 
 	level = output->zoom.spring_z.current;
-	ratio = 1 / level;
 
 	if (!output->zoom.active || level > output->zoom.max_level ||
 	    level == 0.0f)
 		return;
+
+	ratio = 1 / level;
 
 	if (wl_list_empty(&output->zoom.animation_xy.link))
 		zoom_area_center_from_pointer(output, &x, &y);
