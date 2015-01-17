@@ -193,13 +193,7 @@ void CollectedCookiesMac::OnConstrainedWindowClosed(
 }
 
 - (void)windowWillClose:(NSNotification*)notif {
-  // If the user closes our parent tab while we're still open, this method will
-  // (eventually) be called in response to a WebContentsDestroyed() call from
-  // the WebContentsImpl to its observers.  But since the InfoBarService is also
-  // torn down in response to WebContentsDestroyed(), it may already be null.
-  // Since the tab is going away anyway, we can just omit showing an infobar,
-  // which prevents any attempt to access a null InfoBarService.
-  if (contentSettingsChanged_ && !webContents_->IsBeingDestroyed()) {
+  if (contentSettingsChanged_) {
     CollectedCookiesInfoBarDelegate::Create(
         InfoBarService::FromWebContents(webContents_));
   }
