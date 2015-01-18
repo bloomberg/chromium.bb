@@ -28,7 +28,7 @@ void* operator new(size_t size) {
   return generic_cpp_alloc(size, false);
 }
 
-void operator delete(void* p) {
+void operator delete(void* p) throw() {
   free(p);
 }
 
@@ -36,7 +36,7 @@ void* operator new[](size_t size) {
   return generic_cpp_alloc(size, false);
 }
 
-void operator delete[](void* p) {
+void operator delete[](void* p) throw() {
   free(p);
 }
 
@@ -44,7 +44,7 @@ void* operator new(size_t size, const std::nothrow_t& nt) {
   return generic_cpp_alloc(size, true);
 }
 
-void operator delete(void* p, const std::nothrow_t& nt) {
+void operator delete(void* p, const std::nothrow_t& nt) throw() {
   free(p);
 }
 
@@ -52,7 +52,7 @@ void* operator new[](size_t size, const std::nothrow_t& nt) {
   return generic_cpp_alloc(size, true);
 }
 
-void operator delete[](void* p, const std::nothrow_t& nt) {
+void operator delete[](void* p, const std::nothrow_t& nt) throw() {
   free(p);
 }
 
@@ -81,10 +81,6 @@ void* calloc(size_t n, size_t elem_size) {
     memset(result, 0, size);
   }
   return result;
-}
-
-void cfree(void* p) {
-  free(p);
 }
 
 #ifdef WIN32
