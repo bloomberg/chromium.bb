@@ -7,10 +7,6 @@
 
 #import <Cocoa/Cocoa.h>
 
-// GTM also maintains a list of empty protocols, but only the ones the library
-// requires. Augment that below.
-#import "third_party/google_toolbox_for_mac/src/GTMDefines.h"
-
 // New Mac OS X SDKs introduce new protocols used for delegates.  These
 // protocol defintions aren't not present in earlier releases of the Mac OS X
 // SDK.  In order to support building against the new SDK, which requires
