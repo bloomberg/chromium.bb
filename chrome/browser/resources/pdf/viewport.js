@@ -16,6 +16,7 @@ function getIntersectionHeight(rect1, rect2) {
 
 /**
  * Create a new viewport.
+ * @constructor
  * @param {Window} window the window
  * @param {Object} sizer is the element which represents the size of the
  *     document in the viewport
@@ -334,10 +335,11 @@ Viewport.prototype = {
     // First compute the zoom without scrollbars.
     var zoomWidth = this.window_.innerWidth / pageDimensions.width;
     var zoom;
+    var zoomHeight;
     if (widthOnly) {
       zoom = zoomWidth;
     } else {
-      var zoomHeight = this.window_.innerHeight / pageDimensions.height;
+      zoomHeight = this.window_.innerHeight / pageDimensions.height;
       zoom = Math.min(zoomWidth, zoomHeight);
     }
     // Check if there needs to be any scrollbars.
@@ -378,7 +380,7 @@ Viewport.prototype = {
     if (widthOnly) {
       zoom = zoomWidth;
     } else {
-      var zoomHeight = windowWithScrollbars.height / pageDimensions.height;
+      zoomHeight = windowWithScrollbars.height / pageDimensions.height;
       zoom = Math.min(zoomWidth, zoomHeight);
     }
     return zoom;
@@ -463,7 +465,7 @@ Viewport.prototype = {
    */
   goToPage: function(page) {
     this.mightZoom_(function() {
-      if (this.pageDimensions_.length == 0)
+      if (this.pageDimensions_.length === 0)
         return;
       if (page < 0)
         page = 0;

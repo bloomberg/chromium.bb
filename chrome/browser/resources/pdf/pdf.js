@@ -39,6 +39,7 @@ PDFViewer.MIN_TOOLBAR_OFFSET = 15;
 /**
  * Creates a new PDFViewer. There should only be one of these objects per
  * document.
+ * @constructor
  * @param {Object} streamDetails The stream object which points to the data
  *     contained in the PDF.
  */
@@ -229,7 +230,7 @@ PDFViewer.prototype = {
       case 65:  // a key.
         if (e.ctrlKey || e.metaKey) {
           this.plugin_.postMessage({
-            type: 'selectAll',
+            type: 'selectAll'
           });
         }
         return;
@@ -243,14 +244,14 @@ PDFViewer.prototype = {
       case 219:  // left bracket.
         if (e.ctrlKey) {
           this.plugin_.postMessage({
-            type: 'rotateCounterclockwise',
+            type: 'rotateCounterclockwise'
           });
         }
         return;
       case 221:  // right bracket.
         if (e.ctrlKey) {
           this.plugin_.postMessage({
-            type: 'rotateClockwise',
+            type: 'rotateClockwise'
           });
         }
         return;
@@ -263,7 +264,7 @@ PDFViewer.prototype = {
    */
   print_: function() {
     this.plugin_.postMessage({
-      type: 'print',
+      type: 'print'
     });
   },
 
@@ -273,7 +274,7 @@ PDFViewer.prototype = {
    */
   save_: function() {
     this.plugin_.postMessage({
-      type: 'save',
+      type: 'save'
     });
   },
 
@@ -391,9 +392,9 @@ PDFViewer.prototype = {
         break;
       case 'setScrollPosition':
         var position = this.viewport_.position;
-        if (message.data.x != undefined)
+        if (message.data.x !== undefined)
           position.x = message.data.x;
-        if (message.data.y != undefined)
+        if (message.data.y !== undefined)
           position.y = message.data.y;
         this.viewport_.position = position;
         break;
@@ -451,7 +452,7 @@ PDFViewer.prototype = {
    */
   setZoomComplete_: function(lastZoom) {
     var zoom = this.viewport_.zoom;
-    if (zoom != lastZoom) {
+    if (zoom !== lastZoom) {
       chrome.tabs.setZoom(this.streamDetails_.tabId, zoom,
                           this.setZoomComplete_.bind(this, zoom));
     } else {
@@ -512,7 +513,7 @@ PDFViewer.prototype = {
       pageY: visiblePageDimensions.y,
       pageWidth: visiblePageDimensions.width,
       viewportWidth: size.width,
-      viewportHeight: size.height,
+      viewportHeight: size.height
     });
   },
 
