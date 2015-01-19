@@ -375,15 +375,15 @@ Element* TreeScope::adjustedFocusedElement() const
     if (!element)
         return 0;
 
-    EventPath eventPath(*element);
-    for (size_t i = 0; i < eventPath.size(); ++i) {
-        if (eventPath[i].node() == rootNode()) {
-            // eventPath.at(i).target() is one of the followings:
+    OwnPtrWillBeRawPtr<EventPath> eventPath = adoptPtrWillBeNoop(new EventPath(*element));
+    for (size_t i = 0; i < eventPath->size(); ++i) {
+        if (eventPath->at(i).node() == rootNode()) {
+            // eventPath->at(i).target() is one of the followings:
             // - InsertionPoint
             // - shadow host
             // - Document::focusedElement()
             // So, it's safe to do toElement().
-            return toElement(eventPath[i].target()->toNode());
+            return toElement(eventPath->at(i).target()->toNode());
         }
     }
     return 0;

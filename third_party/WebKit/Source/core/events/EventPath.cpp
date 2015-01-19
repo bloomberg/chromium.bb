@@ -193,11 +193,16 @@ void EventPath::calculateAdjustedTargets()
 
 void EventPath::buildRelatedNodeMap(const Node& relatedNode, RelatedTargetMap& relatedTargetMap)
 {
-    EventPath relatedTargetEventPath(const_cast<Node&>(relatedNode));
-    for (size_t i = 0; i < relatedTargetEventPath.m_treeScopeEventContexts.size(); ++i) {
-        TreeScopeEventContext* treeScopeEventContext = relatedTargetEventPath.m_treeScopeEventContexts[i].get();
+    OwnPtrWillBeRawPtr<EventPath> relatedTargetEventPath = adoptPtrWillBeNoop(new EventPath(const_cast<Node&>(relatedNode)));
+    for (size_t i = 0; i < relatedTargetEventPath->m_treeScopeEventContexts.size(); ++i) {
+        TreeScopeEventContext* treeScopeEventContext = relatedTargetEventPath->m_treeScopeEventContexts[i].get();
         relatedTargetMap.add(&treeScopeEventContext->treeScope(), treeScopeEventContext->target());
     }
+#if ENABLE(OILPAN)
+    // Oilpan: It is important to explicitly clear the vectors to reuse
+    // the memory in subsequent event dispatchings.
+    relatedTargetEventPath->clear();
+#endif
 }
 
 EventTarget* EventPath::findRelatedNode(TreeScope& scope, RelatedTargetMap& relatedTargetMap)
