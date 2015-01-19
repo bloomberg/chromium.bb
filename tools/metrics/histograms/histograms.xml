@@ -41842,11 +41842,27 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="WebRTC.Video.ReceivedFecPacketsInPercent" units="%">
+  <owner>asapersson@chromium.org</owner>
+  <summary>
+    Percentage of received FEC packets for a received video stream. Recorded
+    when a stream is removed.
+  </summary>
+</histogram>
+
 <histogram name="WebRTC.Video.ReceivedPacketsLostInPercent" units="%">
   <owner>asapersson@chromium.org</owner>
   <summary>
     Percentage of received packets lost for a received video stream. Recorded
     when a stream is removed.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Video.RecoveredMediaPacketsInPercentOfFec" units="%">
+  <owner>asapersson@chromium.org</owner>
+  <summary>
+    Percentage of recovered media packets from FEC packets for a received video
+    stream. Recorded when a stream is removed.
   </summary>
 </histogram>
 
