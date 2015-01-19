@@ -57,6 +57,9 @@ ExtensionsGuestViewContainer::AttachRequest::~AttachRequest() {
 }
 
 void ExtensionsGuestViewContainer::AttachRequest::PerformRequest() {
+  if (!container()->render_frame())
+    return;
+
   // Step 1, send the attach params to extensions/.
   container()->render_frame()->Send(
       new ExtensionHostMsg_AttachGuest(container()->render_view_routing_id(),
@@ -115,6 +118,9 @@ ExtensionsGuestViewContainer::DetachRequest::~DetachRequest() {
 }
 
 void ExtensionsGuestViewContainer::DetachRequest::PerformRequest() {
+  if (!container()->render_frame())
+    return;
+
   container()->render_frame()->DetachGuest(container()->element_instance_id());
 }
 
