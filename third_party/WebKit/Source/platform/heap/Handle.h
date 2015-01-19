@@ -625,12 +625,14 @@ struct TraceIfEnabled;
 
 template<typename T>
 struct TraceIfEnabled<T, false>  {
-    static void trace(Visitor*, T*) { }
+    template<typename VisitorDispatcher>
+    static void trace(VisitorDispatcher, T*) { }
 };
 
 template<typename T>
 struct TraceIfEnabled<T, true> {
-    static void trace(Visitor* visitor, T* t)
+    template<typename VisitorDispatcher>
+    static void trace(VisitorDispatcher visitor, T* t)
     {
         visitor->trace(*t);
     }
@@ -655,7 +657,8 @@ class TraceTrait<std::pair<T, U>> {
 public:
     static const bool firstNeedsTracing = WTF::NeedsTracing<T>::value || WTF::IsWeak<T>::value;
     static const bool secondNeedsTracing = WTF::NeedsTracing<U>::value || WTF::IsWeak<U>::value;
-    static void trace(Visitor* visitor, std::pair<T, U>* pair)
+    template<typename VisitorDispatcher>
+    static void trace(VisitorDispatcher visitor, std::pair<T, U>* pair)
     {
         TraceIfEnabled<T, firstNeedsTracing>::trace(visitor, &pair->first);
         TraceIfEnabled<U, secondNeedsTracing>::trace(visitor, &pair->second);

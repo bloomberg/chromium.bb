@@ -324,7 +324,8 @@ struct OffHeapCollectionTraceTrait;
 
 template<typename T>
 struct ObjectAliveTrait {
-    static bool isHeapObjectAlive(Visitor*, T*);
+    template<typename VisitorDispatcher>
+    static bool isHeapObjectAlive(VisitorDispatcher, T*);
 };
 
 // VisitorHelper contains common implementation of Visitor helper methods.
@@ -782,7 +783,8 @@ template<typename T, bool = NeedsAdjustAndMark<T>::value> class DefaultObjectAli
 template<typename T>
 class DefaultObjectAliveTrait<T, false> {
 public:
-    static bool isHeapObjectAlive(Visitor* visitor, T* obj)
+    template<typename VisitorDispatcher>
+    static bool isHeapObjectAlive(VisitorDispatcher visitor, T* obj)
     {
         return visitor->isMarked(obj);
     }
@@ -791,13 +793,16 @@ public:
 template<typename T>
 class DefaultObjectAliveTrait<T, true> {
 public:
-    static bool isHeapObjectAlive(Visitor* visitor, T* obj)
+    template<typename VisitorDispatcher>
+    static bool isHeapObjectAlive(VisitorDispatcher visitor, T* obj)
     {
         return obj->isHeapObjectAlive(visitor);
     }
 };
 
-template<typename T> bool ObjectAliveTrait<T>::isHeapObjectAlive(Visitor* visitor, T* obj)
+template<typename T>
+template<typename VisitorDispatcher>
+bool ObjectAliveTrait<T>::isHeapObjectAlive(VisitorDispatcher visitor, T* obj)
 {
     return DefaultObjectAliveTrait<T>::isHeapObjectAlive(visitor, obj);
 }
