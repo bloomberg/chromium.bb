@@ -457,39 +457,6 @@ TreeScope* TreeScope::commonAncestorTreeScope(TreeScope& other)
     return const_cast<TreeScope*>(static_cast<const TreeScope&>(*this).commonAncestorTreeScope(other));
 }
 
-static void listTreeScopes(Node* node, Vector<TreeScope*, 5>& treeScopes)
-{
-    while (true) {
-        treeScopes.append(&node->treeScope());
-        Element* ancestor = node->shadowHost();
-        if (!ancestor)
-            break;
-        node = ancestor;
-    }
-}
-
-TreeScope* commonTreeScope(Node* nodeA, Node* nodeB)
-{
-    if (!nodeA || !nodeB)
-        return 0;
-
-    if (nodeA->treeScope() == nodeB->treeScope())
-        return &nodeA->treeScope();
-
-    Vector<TreeScope*, 5> treeScopesA;
-    listTreeScopes(nodeA, treeScopesA);
-
-    Vector<TreeScope*, 5> treeScopesB;
-    listTreeScopes(nodeB, treeScopesB);
-
-    size_t indexA = treeScopesA.size();
-    size_t indexB = treeScopesB.size();
-
-    for (; indexA > 0 && indexB > 0 && treeScopesA[indexA - 1] == treeScopesB[indexB - 1]; --indexA, --indexB) { }
-
-    return treeScopesA[indexA] == treeScopesB[indexB] ? treeScopesA[indexA] : 0;
-}
-
 #if ENABLE(SECURITY_ASSERT) && !ENABLE(OILPAN)
 bool TreeScope::deletionHasBegun()
 {

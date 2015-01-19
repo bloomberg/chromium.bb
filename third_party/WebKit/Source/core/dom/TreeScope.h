@@ -207,7 +207,6 @@ inline bool TreeScope::containsMultipleElementsWithId(const AtomicString& id) co
 DEFINE_COMPARISON_OPERATORS_WITH_REFERENCES(TreeScope)
 
 HitTestResult hitTestInDocument(const Document*, int x, int y);
-TreeScope* commonTreeScope(Node*, Node*);
 
 } // namespace blink
 
