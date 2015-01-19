@@ -626,6 +626,7 @@ const PrintableSimpleEntry kSimpleMap[] = {
     {0x0259, VKEY_OEM_3},      // schwa
 };
 
+#if defined(OS_CHROMEOS)
 void LoadKeymap(const std::string& layout_name,
                 scoped_refptr<base::SingleThreadTaskRunner> reply_runner,
                 const LoadKeymapCallback& reply_callback) {
@@ -653,6 +654,7 @@ void LoadKeymap(const std::string& layout_name,
     LOG(ERROR) << "Keymap file failed to load: " << layout_name;
   }
 }
+#endif
 
 }  // anonymous namespace
 
