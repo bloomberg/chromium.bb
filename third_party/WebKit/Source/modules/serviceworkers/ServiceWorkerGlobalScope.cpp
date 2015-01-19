@@ -47,6 +47,7 @@
 #include "modules/serviceworkers/InspectorServiceWorkerCacheAgent.h"
 #include "modules/serviceworkers/ServiceWorkerClients.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScopeClient.h"
+#include "modules/serviceworkers/ServiceWorkerRegistration.h"
 #include "modules/serviceworkers/ServiceWorkerThread.h"
 #include "modules/serviceworkers/WaitUntilObserver.h"
 #include "platform/network/ResourceRequest.h"
@@ -119,6 +120,11 @@ ServiceWorkerClients* ServiceWorkerGlobalScope::clients()
     return m_clients;
 }
 
+ServiceWorkerRegistration* ServiceWorkerGlobalScope::registration()
+{
+    return m_registration;
+}
+
 void ServiceWorkerGlobalScope::close(ExceptionState& exceptionState)
 {
     exceptionState.throwDOMException(InvalidAccessError, "Not supported.");
@@ -136,6 +142,15 @@ ScriptPromise ServiceWorkerGlobalScope::skipWaiting(ScriptState* scriptState)
 
     ServiceWorkerGlobalScopeClient::from(executionContext)->skipWaiting(new SkipWaitingCallback(resolver));
     return promise;
+}
+
+void ServiceWorkerGlobalScope::setRegistration(WebServiceWorkerRegistration* registration)
+{
+    if (!executionContext()) {
+        ServiceWorkerRegistration::dispose(registration);
+        return;
+    }
+    m_registration = ServiceWorkerRegistration::from(executionContext(), registration);
 }
 
 bool ServiceWorkerGlobalScope::addEventListener(const AtomicString& eventType, PassRefPtr<EventListener> listener, bool useCapture)
@@ -180,6 +195,7 @@ void ServiceWorkerGlobalScope::dispatchExtendableEvent(PassRefPtrWillBeRawPtr<Ev
 void ServiceWorkerGlobalScope::trace(Visitor* visitor)
 {
     visitor->trace(m_clients);
+    visitor->trace(m_registration);
     visitor->trace(m_caches);
     WorkerGlobalScope::trace(visitor);
 }

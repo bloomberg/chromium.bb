@@ -68,6 +68,7 @@ public:
     virtual ~ServiceWorkerGlobalScopeProxy();
 
     // WebServiceWorkerContextProxy overrides:
+    virtual void setRegistration(WebServiceWorkerRegistration*) override;
     virtual void dispatchActivateEvent(int) override;
     virtual void dispatchCrossOriginConnectEvent(int, const WebCrossOriginServiceWorkerClient&) override;
     virtual void dispatchCrossOriginMessageEvent(const WebCrossOriginServiceWorkerClient&, const WebString& message, const WebMessagePortChannelArray&) override;

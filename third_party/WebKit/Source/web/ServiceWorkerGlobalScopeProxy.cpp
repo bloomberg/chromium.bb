@@ -76,6 +76,12 @@ ServiceWorkerGlobalScopeProxy::~ServiceWorkerGlobalScopeProxy()
 {
 }
 
+void ServiceWorkerGlobalScopeProxy::setRegistration(WebServiceWorkerRegistration* registration)
+{
+    ASSERT(m_workerGlobalScope);
+    m_workerGlobalScope->setRegistration(registration);
+}
+
 void ServiceWorkerGlobalScopeProxy::dispatchActivateEvent(int eventID)
 {
     ASSERT(m_workerGlobalScope);

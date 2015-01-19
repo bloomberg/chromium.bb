@@ -10,6 +10,7 @@ test(function() {
                      {
                        clients: 'object',
                        close: 'function',
+                       registration: 'object',
                        skipWaiting: 'function',
 
                        onactivate: EVENT_HANDLER,

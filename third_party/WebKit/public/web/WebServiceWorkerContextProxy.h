@@ -39,6 +39,7 @@ namespace blink {
 struct WebCircularGeofencingRegion;
 struct WebCrossOriginServiceWorkerClient;
 struct WebNotificationData;
+class WebServiceWorkerRegistration;
 class WebServiceWorkerRequest;
 class WebString;
 
@@ -48,6 +49,7 @@ class WebServiceWorkerContextProxy {
 public:
     virtual ~WebServiceWorkerContextProxy() { }
 
+    virtual void setRegistration(WebServiceWorkerRegistration*) = 0;
     virtual void dispatchActivateEvent(int eventID) = 0;
     // FIXME: This needs to pass the active service worker info.
     virtual void dispatchInstallEvent(int installEventID) = 0;

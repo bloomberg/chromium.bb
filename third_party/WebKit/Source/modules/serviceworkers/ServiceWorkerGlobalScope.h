@@ -45,8 +45,10 @@ class Request;
 class ScriptPromise;
 class ScriptState;
 class ServiceWorkerClients;
+class ServiceWorkerRegistration;
 class ServiceWorkerThread;
 class WaitUntilObserver;
+class WebServiceWorkerRegistration;
 class WorkerThreadStartupData;
 
 typedef RequestOrUSVString RequestInfo;
@@ -64,6 +66,7 @@ public:
 
     // ServiceWorkerGlobalScope.idl
     ServiceWorkerClients* clients();
+    ServiceWorkerRegistration* registration();
 
     CacheStorage* caches(ExecutionContext*);
 
@@ -72,6 +75,8 @@ public:
     void close(ExceptionState&);
 
     ScriptPromise skipWaiting(ScriptState*);
+
+    void setRegistration(WebServiceWorkerRegistration*);
 
     // EventTarget
     virtual bool addEventListener(const AtomicString& eventType, PassRefPtr<EventListener>, bool useCapture = false) override;
@@ -96,6 +101,7 @@ private:
     virtual void logExceptionToConsole(const String& errorMessage, int scriptId, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtrWillBeRawPtr<ScriptCallStack>) override;
 
     PersistentWillBeMember<ServiceWorkerClients> m_clients;
+    PersistentWillBeMember<ServiceWorkerRegistration> m_registration;
     PersistentWillBeMember<CacheStorage> m_caches;
     bool m_didEvaluateScript;
     bool m_hadErrorInTopLevelEventHandler;

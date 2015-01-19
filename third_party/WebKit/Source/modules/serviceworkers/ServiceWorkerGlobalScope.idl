@@ -38,6 +38,7 @@ typedef (Request or USVString) RequestInfo;
 ] interface ServiceWorkerGlobalScope : WorkerGlobalScope {
 
   readonly attribute Clients clients;
+  readonly attribute ServiceWorkerRegistration registration;
   [CallWith=ExecutionContext, Unforgeable, RuntimeEnabled=ServiceWorkerCache] readonly attribute CacheStorage caches;
 
   [CallWith=ScriptState, RaisesException] Promise<Response> fetch(RequestInfo input, optional Dictionary init);
