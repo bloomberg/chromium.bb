@@ -689,7 +689,7 @@ void Dispatcher::RegisterNativeHandlers(ModuleSystem* module_system,
           new SendRequestNatives(request_sender, context)));
   module_system->RegisterNativeHandler(
       "setIcon",
-      scoped_ptr<NativeHandler>(new SetIconNatives(request_sender, context)));
+      scoped_ptr<NativeHandler>(new SetIconNatives(context)));
   module_system->RegisterNativeHandler(
       "activityLogger",
       scoped_ptr<NativeHandler>(new APIActivityLogger(context)));

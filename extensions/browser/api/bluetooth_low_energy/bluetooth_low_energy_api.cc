@@ -119,8 +119,7 @@ BluetoothLowEnergyAPI* BluetoothLowEnergyAPI::Get(BrowserContext* context) {
 }
 
 BluetoothLowEnergyAPI::BluetoothLowEnergyAPI(BrowserContext* context)
-    : event_router_(new BluetoothLowEnergyEventRouter(context)),
-      browser_context_(context) {
+    : event_router_(new BluetoothLowEnergyEventRouter(context)) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 

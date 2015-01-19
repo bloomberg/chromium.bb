@@ -38,8 +38,6 @@ class TestServiceRegistrationManager : public ServiceRegistrationManager {
   std::map<std::string, linked_ptr<internal::ServiceFactoryBase>>
       test_factories_;
 
-  ServiceRegistrationManager* service_registration_manager_;
-
   DISALLOW_COPY_AND_ASSIGN(TestServiceRegistrationManager);
 };
 

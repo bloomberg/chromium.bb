@@ -26,9 +26,8 @@ const char kNoMemory[] = "Chrome was unable to initialize icon.";
 
 namespace extensions {
 
-SetIconNatives::SetIconNatives(RequestSender* request_sender,
-                               ScriptContext* context)
-    : ObjectBackedNativeHandler(context), request_sender_(request_sender) {
+SetIconNatives::SetIconNatives(ScriptContext* context)
+    : ObjectBackedNativeHandler(context) {
   RouteFunction(
       "SetIconCommon",
       base::Bind(&SetIconNatives::SetIconCommon, base::Unretained(this)));

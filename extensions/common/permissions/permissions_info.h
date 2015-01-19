@@ -70,7 +70,6 @@ class PermissionsInfo {
   IDMap id_map_;
   NameMap name_map_;
 
-  size_t hosted_app_permission_count_;
   size_t permission_count_;
 
   DISALLOW_COPY_AND_ASSIGN(PermissionsInfo);

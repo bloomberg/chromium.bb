@@ -68,8 +68,7 @@ bool PermissionsInfo::HasChildPermissions(const std::string& name) const {
 }
 
 PermissionsInfo::PermissionsInfo()
-    : hosted_app_permission_count_(0),
-      permission_count_(0) {
+    : permission_count_(0) {
 }
 
 PermissionsInfo::~PermissionsInfo() {

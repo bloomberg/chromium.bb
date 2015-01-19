@@ -44,8 +44,6 @@ class BluetoothLowEnergyAPI : public BrowserContextKeyedAPI {
 
   scoped_ptr<BluetoothLowEnergyEventRouter> event_router_;
 
-  content::BrowserContext* browser_context_;
-
   DISALLOW_COPY_AND_ASSIGN(BluetoothLowEnergyAPI);
 };
 
