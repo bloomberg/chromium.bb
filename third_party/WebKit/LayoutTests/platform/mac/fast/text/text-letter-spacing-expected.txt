@@ -1,6 +1,6 @@
-layer at (0,0) size 9600208x1616
+layer at (0,0) size 800x600 scrollWidth 9600208 scrollHeight 1616
   RenderView at (0,0) size 800x600
-layer at (0,0) size 800x1616
+layer at (0,0) size 800x1616 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x1616
     RenderBody {BODY} at (8,16) size 784x1584
       RenderBlock {P} at (0,0) size 784x80 [bgcolor=#FFFFFF]
@@ -145,20 +145,20 @@ layer at (0,0) size 800x1616
         RenderText {#text} at (0,0) size 457x16
           text run at (0,0) width 457: "The next line tests a large negative line spacing, and it should be blank."
       RenderBlock {P} at (0,1568) size 784x16 [bgcolor=#EEEEEE]
-layer at (8,672) size 81x16 transparent
+layer at (8,672) size 81x16 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600 transparent
   RenderInline {SPAN} at (0,0) size 81x16 [bgcolor=#CCCCFF]
     RenderText {#text} at (160,0) size 81x16
       text run at (160,0) width 81: "Hello, world"
-layer at (8,736) size 177x16 transparent
+layer at (8,736) size 177x16 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600 transparent
   RenderInline {SPAN} at (0,0) size 177x16 [bgcolor=#CCCCFF]
     RenderText {#text} at (160,0) size 177x16
       text run at (160,0) width 177: "Hello, world"
-layer at (8,800) size 19400x32 transparent
+layer at (8,800) size 19400x32 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600 transparent
   RenderInline {SPAN} at (0,0) size 19400x32 [bgcolor=#CCCCFF]
     RenderText {#text} at (160,0) size 19400x32
       text run at (160,0) width 19240: "Hello,"
       text run at (0,16) width 16038: "world"
-layer at (8,880) size 9600200x32 transparent
+layer at (8,880) size 9600200x32 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600 transparent
   RenderInline {SPAN} at (0,0) size 9600200x32 [bgcolor=#CCCCFF]
     RenderText {#text} at (160,0) size 9600200x32
       text run at (160,0) width 9600040: "Hello,"
@@ -175,7 +175,7 @@ layer at (8,1088) size 0x16 transparent
   RenderInline {SPAN} at (0,0) size 0x16 [bgcolor=#CCCCFF]
     RenderText {#text} at (160,0) size 0x16
       text run at (160,0) width 0: "Hello, world"
-layer at (8,1456) size 177x16 transparent
+layer at (8,1456) size 177x16 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600 transparent
   RenderInline {SPAN} at (0,0) size 177x16 [bgcolor=#CCCCFF]
     RenderText {#text} at (160,0) size 177x16
       text run at (160,0) width 177 RTL override: "Hello, world"
