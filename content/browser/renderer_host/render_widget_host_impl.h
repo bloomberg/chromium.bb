@@ -39,6 +39,7 @@
 #include "ipc/ipc_listener.h"
 #include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
+#include "ui/events/gesture_detection/gesture_provider_config_helper.h"
 #include "ui/events/latency_info.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -270,7 +271,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
       const ui::LatencyInfo& ui_latency);
 
   // Enables/disables touch emulation using mouse event. See TouchEmulator.
-  void SetTouchEventEmulationEnabled(bool enabled);
+  void SetTouchEventEmulationEnabled(
+      bool enabled, ui::GestureProviderConfigType config_type);
 
   // TouchEmulatorClient implementation.
   void ForwardGestureEvent(

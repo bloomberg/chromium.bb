@@ -50,6 +50,21 @@ static int kFrameRetryDelayMs = 100;
 static int kCaptureRetryLimit = 2;
 static int kMaxScreencastFramesInFlight = 2;
 
+ui::GestureProviderConfigType TouchEmulationConfigurationToType(
+    const std::string& protocol_value) {
+  ui::GestureProviderConfigType result =
+      ui::GestureProviderConfigType::CURRENT_PLATFORM;
+  if (protocol_value ==
+      set_touch_emulation_enabled::kConfigurationMobile) {
+    result = ui::GestureProviderConfigType::GENERIC_MOBILE;
+  }
+  if (protocol_value ==
+      set_touch_emulation_enabled::kConfigurationDesktop) {
+    result = ui::GestureProviderConfigType::GENERIC_DESKTOP;
+  }
+  return result;
+}
+
 void QueryUsageAndQuotaCompletedOnIOThread(
     const UsageAndQuotaQuery::Callback& callback,
     scoped_refptr<QueryUsageAndQuotaResponse> response) {
@@ -313,12 +328,6 @@ Response PageHandler::ClearGeolocationOverride() {
   return Response::OK();
 }
 
-Response PageHandler::SetTouchEmulationEnabled(bool enabled) {
-  touch_emulation_enabled_ = enabled;
-  UpdateTouchEventEmulationState();
-  return Response::FallThrough();
-}
-
 Response PageHandler::SetTouchEmulationEnabled(
     bool enabled, const std::string* configuration) {
   touch_emulation_enabled_ = enabled;
@@ -466,8 +475,9 @@ void PageHandler::UpdateTouchEventEmulationState() {
   if (!host_)
     return;
   bool enabled = touch_emulation_enabled_ || screencast_enabled_;
-  // TODO(dgozman): pass |touch_emulation_configuration_| once supported.
-  host_->SetTouchEventEmulationEnabled(enabled);
+  ui::GestureProviderConfigType config_type =
+      TouchEmulationConfigurationToType(touch_emulation_configuration_);
+  host_->SetTouchEventEmulationEnabled(enabled, config_type);
   WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
       WebContents::FromRenderViewHost(host_));
   if (web_contents)

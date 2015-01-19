@@ -1587,11 +1587,12 @@ void RenderWidgetHostImpl::OnSetCursor(const WebCursor& cursor) {
   SetCursor(cursor);
 }
 
-void RenderWidgetHostImpl::SetTouchEventEmulationEnabled(bool enabled) {
+void RenderWidgetHostImpl::SetTouchEventEmulationEnabled(
+    bool enabled, ui::GestureProviderConfigType config_type) {
   if (enabled) {
     if (!touch_emulator_)
       touch_emulator_.reset(new TouchEmulator(this));
-    touch_emulator_->Enable();
+    touch_emulator_->Enable(config_type);
   } else {
     if (touch_emulator_)
       touch_emulator_->Disable();

@@ -27,11 +27,10 @@ namespace content {
 
 namespace {
 
-ui::GestureProvider::Config GetGestureProviderConfig() {
-  // TODO(dgozman): Use different configs to emulate mobile/desktop as
-  // requested by renderer, crbug/425586.
-  ui::GestureProvider::Config config = ui::GetGestureProviderConfig(
-      ui::GestureProviderConfigType::GENERIC_MOBILE);
+ui::GestureProvider::Config GetEmulatorGestureProviderConfig(
+    ui::GestureProviderConfigType config_type) {
+  ui::GestureProvider::Config config =
+      ui::GetGestureProviderConfig(config_type);
   config.gesture_begin_end_types_enabled = false;
   config.gesture_detector_config.swipe_enabled = false;
   config.gesture_detector_config.two_finger_tap_enabled = false;
@@ -46,6 +45,8 @@ const double kMouseMoveDropIntervalSeconds = 5.f / 1000;
 
 TouchEmulator::TouchEmulator(TouchEmulatorClient* client)
     : client_(client),
+      gesture_provider_config_type_(
+          ui::GestureProviderConfigType::CURRENT_PLATFORM),
       emulated_stream_active_sequence_count_(0),
       native_stream_active_sequence_count_(0) {
   DCHECK(client_);
@@ -84,17 +85,16 @@ void TouchEmulator::ResetState() {
   pinch_gesture_active_ = false;
 }
 
-void TouchEmulator::Enable() {
-  if (!enabled()) {
+void TouchEmulator::Enable(ui::GestureProviderConfigType config_type) {
+  if (!gesture_provider_ || gesture_provider_config_type_ != config_type) {
+    gesture_provider_config_type_ = config_type;
     gesture_provider_.reset(new ui::FilteredGestureProvider(
-        GetGestureProviderConfig(), this));
+        GetEmulatorGestureProviderConfig(config_type), this));
     // TODO(dgozman): Use synthetic secondary touch to support multi-touch.
     gesture_provider_->SetMultiTouchZoomSupportEnabled(false);
     // TODO(dgozman): Enable double tap if requested by the renderer.
     // TODO(dgozman): Don't break double-tap-based pinch with shift handling.
     gesture_provider_->SetDoubleTapSupportForPlatformEnabled(false);
-
-    ResetState();
   }
   UpdateCursor();
 }
@@ -103,9 +103,10 @@ void TouchEmulator::Disable() {
   if (!enabled())
     return;
 
-  UpdateCursor();
   CancelTouch();
   gesture_provider_.reset();
+  UpdateCursor();
+  ResetState();
 }
 
 gfx::SizeF TouchEmulator::InitCursorFromResource(

@@ -61,7 +61,6 @@ class PageHandler {
 
   Response ClearGeolocationOverride();
 
-  Response SetTouchEmulationEnabled(bool enabled);
   Response SetTouchEmulationEnabled(bool enabled,
                                     const std::string* configuration);
 
