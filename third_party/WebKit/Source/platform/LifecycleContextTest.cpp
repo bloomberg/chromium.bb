@@ -88,12 +88,13 @@ public:
 TEST(LifecycleContextTest, shouldObserveContextDestroyed)
 {
     OwnPtrWillBeRawPtr<DummyContext> context = adoptPtrWillBeNoop(new DummyContext());
-    TestingObserver* observer = new TestingObserver(context.get());
+    Persistent<TestingObserver> observer = new TestingObserver(context.get());
 
     EXPECT_EQ(observer->lifecycleContext(), context.get());
     EXPECT_FALSE(observer->m_contextDestroyedCalled);
     context->notifyContextDestroyed();
-    context.clear();
+    context = nullptr;
+    Heap::collectAllGarbage();
     EXPECT_EQ(observer->lifecycleContext(), static_cast<DummyContext*>(0));
     EXPECT_TRUE(observer->m_contextDestroyedCalled);
 }
@@ -101,10 +102,11 @@ TEST(LifecycleContextTest, shouldObserveContextDestroyed)
 TEST(LifecycleContextTest, shouldNotObserveContextDestroyedIfUnobserve)
 {
     OwnPtrWillBeRawPtr<DummyContext> context = adoptPtrWillBeNoop(new DummyContext());
-    TestingObserver* observer = new TestingObserver(context.get());
+    Persistent<TestingObserver> observer = new TestingObserver(context.get());
     observer->unobserve();
     context->notifyContextDestroyed();
-    context.clear();
+    context = nullptr;
+    Heap::collectAllGarbage();
     EXPECT_EQ(observer->lifecycleContext(), static_cast<DummyContext*>(0));
     EXPECT_FALSE(observer->m_contextDestroyedCalled);
 }
