@@ -37,6 +37,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/events/AnimationPlayerEvent.h"
 #include "core/frame/UseCounter.h"
+#include "core/inspector/InspectorTraceEvents.h"
 #include "platform/TraceEvent.h"
 #include "wtf/MathExtras.h"
 
@@ -800,23 +801,18 @@ AnimationPlayer::PlayStateUpdateScope::~PlayStateUpdateScope()
 {
     AnimationPlayState oldPlayState = m_initialPlayState;
     AnimationPlayState newPlayState = m_player->calculatePlayState();
+
+    m_player->m_playState = newPlayState;
     if (oldPlayState != newPlayState) {
         bool wasActive = oldPlayState == Pending || oldPlayState == Running;
         bool isActive = newPlayState == Pending || newPlayState == Running;
-        if (!wasActive && isActive) {
-            if (m_player->m_content) {
-                TRACE_EVENT_ASYNC_BEGIN1("blink", "Animation", &m_player, "Name", TRACE_STR_COPY(m_player->m_content->name().utf8().data()));
-            } else {
-                TRACE_EVENT_ASYNC_BEGIN0("blink", "Animation", &m_player);
-            }
-        } else if (wasActive && !isActive) {
-            if (oldPlayState != Idle && oldPlayState != Finished) {
-                TRACE_EVENT_ASYNC_END0("blink", "Animation", &m_player);
-            }
-        }
-        if (isActive) {
-            TRACE_EVENT_ASYNC_STEP_INTO0("blink", "Animation", &m_player, playStateString(newPlayState));
-        }
+
+        if (!wasActive && isActive)
+            TRACE_EVENT_NESTABLE_ASYNC_BEGIN1("blink.animations," TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "Animation", m_player, "data", InspectorAnimationEvent::data(*m_player));
+        else if (wasActive && !isActive)
+            TRACE_EVENT_NESTABLE_ASYNC_END1("blink.animations," TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "Animation", m_player, "endData", InspectorAnimationStateEvent::data(*m_player));
+        else
+            TRACE_EVENT_NESTABLE_ASYNC_INSTANT1("blink.animations," TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "Animation", m_player, "data", InspectorAnimationStateEvent::data(*m_player));
     }
 
     // Ordering is important, the ready promise should resolve/reject before
@@ -852,8 +848,6 @@ AnimationPlayer::PlayStateUpdateScope::~PlayStateUpdateScope()
     if (oldPlayState != newPlayState && (oldPlayState == Idle || newPlayState == Idle)) {
         m_player->setOutdated();
     }
-
-    m_player->m_playState = newPlayState;
 
 #if ENABLE(ASSERT)
     // Verify that current time is up to date.

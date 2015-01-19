@@ -397,10 +397,6 @@ InspectorTest.FakeFileReader.prototype = {
 
 function generateFrames(count, callback)
 {
-    if (!window.testRunner) {
-        callback();
-        return;
-    }
     makeFrame();
     function makeFrame()
     {
@@ -409,6 +405,9 @@ function generateFrames(count, callback)
             callback();
             return;
         }
-        testRunner.displayAsyncThen(requestAnimationFrame.bind(window, makeFrame));
+        if (window.testRunner)
+            testRunner.displayAsyncThen(requestAnimationFrame.bind(window, makeFrame));
+        else
+            window.requestAnimationFrame(makeFrame);
     }
 }

@@ -84,7 +84,7 @@ public:
     void setCurrentTimeInternal(double newCurrentTime, TimingUpdateReason = TimingUpdateOnDemand);
     bool paused() const { return m_paused && !m_isPausedForTesting; }
     static const char* playStateString(AnimationPlayState);
-    String playState() { return playStateString(playStateInternal()); }
+    String playState() const { return playStateString(playStateInternal()); }
     AnimationPlayState playStateInternal() const;
 
     void pause();

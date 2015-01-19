@@ -1,0 +1,35 @@
+Tests snapshot command log for trace-based Timeline paint event
+
+{
+    duration : "number"
+    event : "Animation"
+    id : "string"
+    name : ""
+    phase : "b"
+    target : "div#webAnimation"
+}
+{
+    duration : "number"
+    event : "Animation"
+    id : "string"
+    name : "width"
+    phase : "b"
+    target : "div#transition"
+}
+{
+    duration : "number"
+    event : "Animation"
+    id : "string"
+    name : "rotate"
+    phase : "b"
+    target : "div#cssAnimation"
+}
+{
+    duration : "number"
+    event : "Animation"
+    id : "string"
+    name : ""
+    phase : "b"
+    target : "div#webAnimation"
+}
+

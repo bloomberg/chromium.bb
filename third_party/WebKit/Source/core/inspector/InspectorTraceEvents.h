@@ -13,7 +13,7 @@
 #include "wtf/Functional.h"
 
 namespace blink {
-
+class AnimationPlayer;
 class CSSStyleSheetResource;
 class DescendantInvalidationSet;
 class Document;
@@ -290,6 +290,16 @@ public:
 class InspectorBeginFrameEvent {
 public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(int frameId);
+};
+
+class InspectorAnimationEvent {
+public:
+    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const AnimationPlayer&);
+};
+
+class InspectorAnimationStateEvent {
+public:
+    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const AnimationPlayer&);
 };
 
 } // namespace blink

@@ -8,6 +8,8 @@
 #include "bindings/core/v8/ScriptCallStackFactory.h"
 #include "bindings/core/v8/ScriptGCEvent.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
+#include "core/animation/Animation.h"
+#include "core/animation/AnimationPlayer.h"
 #include "core/css/invalidation/DescendantInvalidationSet.h"
 #include "core/dom/StyleChangeReason.h"
 #include "core/events/Event.h"
@@ -697,6 +699,28 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorBeginFrameEvent::data(
 {
     RefPtr<TracedValue> value = TracedValue::create();
     value->setInteger("frameId", frameId);
+    return value.release();
+}
+
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorAnimationEvent::data(const AnimationPlayer& player)
+{
+    RefPtr<TracedValue> value = TracedValue::create();
+    value->setString("id", String::number(player.sequenceNumber()));
+    value->setString("state", player.playState());
+    if (const AnimationNode* source = player.source()) {
+        value->setString("name", source->name());
+        if (source->isAnimation()) {
+            if (Element* target = toAnimation(source)->target())
+                setNodeInfo(value.get(), target, "nodeId", "nodeName");
+        }
+    }
+    return value.release();
+}
+
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorAnimationStateEvent::data(const AnimationPlayer& player)
+{
+    RefPtr<TracedValue> value = TracedValue::create();
+    value->setString("state", player.playState());
     return value.release();
 }
 

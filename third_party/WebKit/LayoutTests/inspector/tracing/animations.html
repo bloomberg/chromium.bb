@@ -1,0 +1,128 @@
+<html>
+<head>
+<style>
+.black-square {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    background-color: black;
+}
+.rotate {
+    -webkit-animation-name: rotate;
+    -webkit-animation-iteration-count: infinite;
+    -webkit-animation-duration: 500ms;
+}
+#transition {
+    -webkit-transition: width 100ms;
+}
+
+@-webkit-keyframes rotate {
+    0% { transform: rotate(0deg); }
+    50% { transform: rotate(180deg); }
+    100% { transform: rotate(360deg); }
+}
+
+</style>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/timeline-test.js"></script>
+<script src="../tracing-test.js"></script>
+<script>
+function doActions(callback)
+{
+    var webAnimationDiv = document.getElementById("webAnimation");
+    var player = webAnimationDiv.animate([{"transform": "translateX(0)"}, {"transform": "translateX(200px)"}], { duration: 500, iterations: Infinity });
+    var cssAnimationDiv = document.getElementById("cssAnimation");
+    cssAnimationDiv.classList.add("rotate");
+    var transitionDiv = document.getElementById("transition");
+    transitionDiv.style.width = "200px";
+    generateFrames(5, pauseAnimation);
+
+    function pauseAnimation()
+    {
+        player.pause();
+        generateFrames(5, continueAnimation);
+    }
+
+    function continueAnimation()
+    {
+        player.play();
+        generateFrames(5, wrapUp);
+    }
+
+    function wrapUp()
+    {
+        player.cancel();
+        cssAnimationDiv.classList.remove("rotate");
+        waitForAllAnimations();
+    }
+
+    function waitForAllAnimations()
+    {
+        if (!document.timeline.getAnimationPlayers().length) {
+            callback();
+            return;
+        }
+        window.requestAnimationFrame(waitForAllAnimations);
+    }
+}
+
+function test()
+{
+    InspectorTest.invokeWithTracing("doActions", InspectorTest.safeWrap(onTracingComplete));
+
+    var animationEvents = [];
+    function onTracingComplete()
+    {
+        var events = InspectorTest.timelineModel().mainThreadAsyncEvents();
+        var seenNodes = {};
+        for (var i = 0; i < events.length; ++i) {
+            var startEvent = events[i][0];
+            if (startEvent.name !== WebInspector.TimelineModel.RecordType.Animation)
+                continue;
+            animationEvents.push(events[i]);
+            var nodeId = startEvent.backendNodeId;
+            if (nodeId)
+                seenNodes[nodeId] = true;
+        }
+        var requestedNodes = Object.keys(seenNodes).map(function(value) { return Number(value); });
+        var domModel = WebInspector.targetManager.mainTarget().domModel;
+        WebInspector.targetManager.mainTarget().domModel.pushNodesByBackendIdsToFrontend(requestedNodes, InspectorTest.safeWrap(onNodesResolved.bind(this, requestedNodes)));
+    }
+
+    function onNodesResolved(requestedNodes, resolvedNodes)
+    {
+        InspectorTest.assertEquals(requestedNodes.length, resolvedNodes.length);
+        var nodeMap = {};
+        var domModel = WebInspector.targetManager.mainTarget().domModel;
+        for (var i = 0; i < requestedNodes.length; ++i) {
+            if (resolvedNodes[i])
+                nodeMap[requestedNodes[i]] = domModel.nodeForId(resolvedNodes[i]);
+        }
+        for (var i = 0; i < animationEvents.length; ++i) {
+            var event = animationEvents[i][0];
+            InspectorTest.addObject({
+                 event: event.name,
+                 duration: typeof event.endTime,
+                 name: event.args["data"].name,
+                 id: typeof event.args["data"].id,
+                 phase: event.phase,
+                 target: (nodeMap[event.backendNodeId] ? WebInspector.DOMPresentationUtils.simpleSelector(nodeMap[event.backendNodeId]) : "n/a")
+            });
+        }
+        InspectorTest.completeTest();
+    }
+}
+</script>
+</head>
+
+<body onload="runTestAfterDisplay()">
+<p>
+Tests snapshot command log for trace-based Timeline paint event
+</p>
+
+<div id="webAnimation" class="black-square"></div>
+<div id="cssAnimation" class="black-square"></div>
+<div id="transition" class="black-square"></div>
+
+</body>
+</html>
