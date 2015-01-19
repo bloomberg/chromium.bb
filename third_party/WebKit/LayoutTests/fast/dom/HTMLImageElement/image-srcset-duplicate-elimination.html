@@ -4,19 +4,17 @@
 <script>
 function runTest() {
     var t = async_test("duplicate density candidate elimination");
-    setTimeout(t.step_func(function() {
+    var img = document.body.appendChild(new Image());
+    img.onload = t.step_func(function() {
         var dynamicImageSrc = document.getElementById("dynimg").currentSrc;
         var isBlue = (dynamicImageSrc.indexOf("blue_rect.jpg") != -1);
         var is4x = (dynamicImageSrc.indexOf("image-set-4x.png") != -1);
         assert_false(isBlue);
         assert_true(is4x);
         t.done();
-    }), 0);
+    });
+    img.id = "dynimg";
+    img.srcset = "resources/image-set-4x.png 1x, resources/blue_rect.jpg 1x";
 };
-
-function imageInCache() {
-     document.getElementsByTagName("div")[0].innerHTML="<img id='dynimg' srcset='resources/image-set-4x.png 1x, resources/blue_rect.jpg 1x' onload='runTest()' >";
- }
 </script>
-<div></div>
-<img src="resources/blue_rect.jpg" onload="imageInCache()">
+<img src="resources/blue_rect.jpg" onload="runTest()">
