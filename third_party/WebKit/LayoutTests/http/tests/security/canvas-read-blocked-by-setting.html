@@ -26,7 +26,7 @@ test(function () {
         "SecurityError",
         function() {
             var data_url = canvas.toDataURL();
-            assert_unreached('getImageData should throw');
+            assert_unreached('toDataURL should throw');
         });
 }, 'toDataURL');
 
@@ -46,7 +46,7 @@ test(function () {
         function() {
             context.drawImage(image, 0, 0, 100, 100);
             var data_url = canvas.toDataURL();
-            assert_unreached('getImageData should throw');
+            assert_unreached('toDataURL should throw');
         });
 }, 'toDataURL');
 </script>
