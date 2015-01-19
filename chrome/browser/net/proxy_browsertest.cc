@@ -105,7 +105,8 @@ class ProxyBrowserTest : public InProcessBrowserTest {
 #define MAYBE_BasicAuthWSConnect BasicAuthWSConnect
 #endif
 // Test that the browser can establish a WebSocket connection via a proxy
-// that requires basic authentication.
+// that requires basic authentication. This test also checks the headers
+// arrive at WebSocket server.
 IN_PROC_BROWSER_TEST_F(ProxyBrowserTest, MAYBE_BasicAuthWSConnect) {
   // Launch WebSocket server.
   net::SpawnedTestServer ws_server(net::SpawnedTestServer::TYPE_WS,
@@ -131,9 +132,9 @@ IN_PROC_BROWSER_TEST_F(ProxyBrowserTest, MAYBE_BasicAuthWSConnect) {
   std::string scheme("http");
   GURL::Replacements replacements;
   replacements.SetSchemeStr(scheme);
-  ui_test_utils::NavigateToURL(
-      browser(),
-      ws_server.GetURL("connect_check.html").ReplaceComponents(replacements));
+  ui_test_utils::NavigateToURL(browser(),
+                               ws_server.GetURL("proxied_request_check.html")
+                                   .ReplaceComponents(replacements));
 
   const base::string16 result = watcher.WaitAndGetTitle();
   EXPECT_TRUE(EqualsASCII(result, "PASS"));

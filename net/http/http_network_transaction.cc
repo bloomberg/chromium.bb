@@ -570,6 +570,11 @@ bool HttpNetworkTransaction::is_https_request() const {
   return request_->url.SchemeIs("https");
 }
 
+bool HttpNetworkTransaction::UsingHttpProxyWithoutTunnel() const {
+  return (proxy_info_.is_http() || proxy_info_.is_https()) &&
+         !(request_->url.SchemeIs("https") || request_->url.SchemeIsWSOrWSS());
+}
+
 void HttpNetworkTransaction::DoCallback(int rv) {
   DCHECK_NE(rv, ERR_IO_PENDING);
   DCHECK(!callback_.is_null());
@@ -834,12 +839,13 @@ int HttpNetworkTransaction::DoGenerateServerAuthTokenComplete(int rv) {
   return rv;
 }
 
-void HttpNetworkTransaction::BuildRequestHeaders(bool using_proxy) {
+void HttpNetworkTransaction::BuildRequestHeaders(
+    bool using_http_proxy_without_tunnel) {
   request_headers_.SetHeader(HttpRequestHeaders::kHost,
                              GetHostAndOptionalPort(request_->url));
 
   // For compat with HTTP/1.0 servers and proxies:
-  if (using_proxy) {
+  if (using_http_proxy_without_tunnel) {
     request_headers_.SetHeader(HttpRequestHeaders::kProxyConnection,
                                "keep-alive");
   } else {
@@ -882,7 +888,8 @@ void HttpNetworkTransaction::BuildRequestHeaders(bool using_proxy) {
 
   request_headers_.MergeFrom(request_->extra_headers);
 
-  if (using_proxy && !before_proxy_headers_sent_callback_.is_null())
+  if (using_http_proxy_without_tunnel &&
+      !before_proxy_headers_sent_callback_.is_null())
     before_proxy_headers_sent_callback_.Run(proxy_info_, &request_headers_);
 
   response_.did_use_http_auth =
@@ -911,9 +918,8 @@ int HttpNetworkTransaction::DoBuildRequest() {
   // This is constructed lazily (instead of within our Start method), so that
   // we have proxy info available.
   if (request_headers_.IsEmpty()) {
-    bool using_proxy = (proxy_info_.is_http() || proxy_info_.is_https()) &&
-                        !is_https_request();
-    BuildRequestHeaders(using_proxy);
+    bool using_http_proxy_without_tunnel = UsingHttpProxyWithoutTunnel();
+    BuildRequestHeaders(using_http_proxy_without_tunnel);
   }
 
   return OK;
@@ -1417,8 +1423,7 @@ void HttpNetworkTransaction::ResetConnectionAndRequestForResend() {
 }
 
 bool HttpNetworkTransaction::ShouldApplyProxyAuth() const {
-  return !is_https_request() &&
-      (proxy_info_.is_https() || proxy_info_.is_http());
+  return UsingHttpProxyWithoutTunnel();
 }
 
 bool HttpNetworkTransaction::ShouldApplyServerAuth() const {

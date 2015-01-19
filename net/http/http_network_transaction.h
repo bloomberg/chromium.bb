@@ -144,6 +144,10 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
 
   bool is_https_request() const;
 
+  // Returns true if the request is using an HTTP(S) proxy without being
+  // tunneled via the CONNECT method.
+  bool UsingHttpProxyWithoutTunnel() const;
+
   void DoCallback(int result);
   void OnIOComplete(int result);
 
@@ -176,7 +180,7 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
   int DoDrainBodyForAuthRestart();
   int DoDrainBodyForAuthRestartComplete(int result);
 
-  void BuildRequestHeaders(bool using_proxy);
+  void BuildRequestHeaders(bool using_http_proxy_without_tunnel);
 
   // Writes a log message to help debugging in the field when we block a proxy
   // response to a CONNECT request.

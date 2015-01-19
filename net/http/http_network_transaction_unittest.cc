@@ -14,6 +14,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/json/json_writer.h"
+#include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
@@ -27,6 +28,7 @@
 #include "net/base/elements_upload_data_stream.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/load_timing_info_test_util.h"
+#include "net/base/net_errors.h"
 #include "net/base/net_log.h"
 #include "net/base/net_log_unittest.h"
 #include "net/base/request_priority.h"
@@ -41,12 +43,15 @@
 #include "net/http/http_auth_handler_digest.h"
 #include "net/http/http_auth_handler_mock.h"
 #include "net/http/http_auth_handler_ntlm.h"
+#include "net/http/http_basic_state.h"
 #include "net/http/http_basic_stream.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_network_session_peer.h"
+#include "net/http/http_request_headers.h"
 #include "net/http/http_server_properties_impl.h"
 #include "net/http/http_stream.h"
 #include "net/http/http_stream_factory.h"
+#include "net/http/http_stream_parser.h"
 #include "net/http/http_transaction_test_util.h"
 #include "net/proxy/proxy_config_service_fixed.h"
 #include "net/proxy/proxy_info.h"
@@ -208,6 +213,14 @@ void TestLoadTimingNotReusedWithPac(const net::LoadTimingInfo& load_timing_info,
   EXPECT_TRUE(load_timing_info.request_start_time.is_null());
   EXPECT_TRUE(load_timing_info.request_start.is_null());
   EXPECT_TRUE(load_timing_info.receive_headers_end.is_null());
+}
+
+void AddWebSocketHeaders(net::HttpRequestHeaders* headers) {
+  headers->SetHeader("Connection", "Upgrade");
+  headers->SetHeader("Upgrade", "websocket");
+  headers->SetHeader("Origin", "http://www.google.com");
+  headers->SetHeader("Sec-WebSocket-Version", "13");
+  headers->SetHeader("Sec-WebSocket-Key", "dGhlIHNhbXBsZSBub25jZQ==");
 }
 
 }  // namespace
@@ -12470,6 +12483,118 @@ class FakeStreamFactory : public HttpStreamFactory {
   DISALLOW_COPY_AND_ASSIGN(FakeStreamFactory);
 };
 
+// TODO(ricea): Maybe unify this with the one in
+// url_request_http_job_unittest.cc ?
+class FakeWebSocketBasicHandshakeStream : public WebSocketHandshakeStreamBase {
+ public:
+  FakeWebSocketBasicHandshakeStream(scoped_ptr<ClientSocketHandle> connection,
+                                    bool using_proxy)
+      : state_(connection.release(), using_proxy) {}
+
+  // Fake implementation of HttpStreamBase methods.
+  // This ends up being quite "real" because this object has to really send data
+  // on the mock socket. It might be easier to use the real implementation, but
+  // the fact that the WebSocket code is not compiled on iOS makes that
+  // difficult.
+  int InitializeStream(const HttpRequestInfo* request_info,
+                       RequestPriority priority,
+                       const BoundNetLog& net_log,
+                       const CompletionCallback& callback) override {
+    state_.Initialize(request_info, priority, net_log, callback);
+    return OK;
+  }
+
+  int SendRequest(const HttpRequestHeaders& request_headers,
+                  HttpResponseInfo* response,
+                  const CompletionCallback& callback) override {
+    return parser()->SendRequest(state_.GenerateRequestLine(), request_headers,
+                                 response, callback);
+  }
+
+  int ReadResponseHeaders(const CompletionCallback& callback) override {
+    return parser()->ReadResponseHeaders(callback);
+  }
+
+  int ReadResponseBody(IOBuffer* buf,
+                       int buf_len,
+                       const CompletionCallback& callback) override {
+    NOTREACHED();
+    return ERR_IO_PENDING;
+  }
+
+  void Close(bool not_reusable) override {
+    if (parser())
+      parser()->Close(true);
+  }
+
+  bool IsResponseBodyComplete() const override {
+    NOTREACHED();
+    return false;
+  }
+
+  bool CanFindEndOfResponse() const override {
+    return parser()->CanFindEndOfResponse();
+  }
+
+  bool IsConnectionReused() const override {
+    NOTREACHED();
+    return false;
+  }
+  void SetConnectionReused() override { NOTREACHED(); }
+
+  bool IsConnectionReusable() const override {
+    NOTREACHED();
+    return false;
+  }
+
+  int64 GetTotalReceivedBytes() const override {
+    NOTREACHED();
+    return 0;
+  }
+
+  bool GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const override {
+    NOTREACHED();
+    return false;
+  }
+
+  void GetSSLInfo(SSLInfo* ssl_info) override { NOTREACHED(); }
+
+  void GetSSLCertRequestInfo(SSLCertRequestInfo* cert_request_info) override {
+    NOTREACHED();
+  }
+
+  bool IsSpdyHttpStream() const override {
+    NOTREACHED();
+    return false;
+  }
+
+  void Drain(HttpNetworkSession* session) override { NOTREACHED(); }
+
+  void SetPriority(RequestPriority priority) override { NOTREACHED(); }
+
+  UploadProgress GetUploadProgress() const override {
+    NOTREACHED();
+    return UploadProgress();
+  }
+
+  HttpStream* RenewStreamForAuth() override {
+    NOTREACHED();
+    return nullptr;
+  }
+
+  // Fake implementation of WebSocketHandshakeStreamBase method(s)
+  scoped_ptr<WebSocketStream> Upgrade() override {
+    NOTREACHED();
+    return scoped_ptr<WebSocketStream>();
+  }
+
+ private:
+  HttpStreamParser* parser() const { return state_.parser(); }
+  HttpBasicState state_;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeWebSocketBasicHandshakeStream);
+};
+
 // TODO(yhirano): Split this class out into a net/websockets file, if it is
 // worth doing.
 class FakeWebSocketStreamCreateHelper :
@@ -12478,8 +12603,8 @@ class FakeWebSocketStreamCreateHelper :
   WebSocketHandshakeStreamBase* CreateBasicStream(
       scoped_ptr<ClientSocketHandle> connection,
       bool using_proxy) override {
-    NOTREACHED();
-    return NULL;
+    return new FakeWebSocketBasicHandshakeStream(connection.Pass(),
+                                                 using_proxy);
   }
 
   WebSocketHandshakeStreamBase* CreateSpdyStream(
@@ -13251,6 +13376,190 @@ TEST_P(HttpNetworkTransactionTest, PostIgnoresPartial400HeadersAfterReset) {
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
   EXPECT_TRUE(response == NULL);
+}
+
+// Verify that proxy headers are not sent to the destination server when
+// establishing a tunnel for a secure WebSocket connection.
+TEST_P(HttpNetworkTransactionTest, ProxyHeadersNotSentOverWssTunnel) {
+  HttpRequestInfo request;
+  request.method = "GET";
+  request.url = GURL("wss://www.google.com/");
+  AddWebSocketHeaders(&request.extra_headers);
+
+  // Configure against proxy server "myproxy:70".
+  session_deps_.proxy_service.reset(
+      ProxyService::CreateFixedFromPacResult("PROXY myproxy:70"));
+
+  scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+
+  // Since a proxy is configured, try to establish a tunnel.
+  MockWrite data_writes[] = {
+      MockWrite(
+          "CONNECT www.google.com:443 HTTP/1.1\r\n"
+          "Host: www.google.com\r\n"
+          "Proxy-Connection: keep-alive\r\n\r\n"),
+
+      // After calling trans->RestartWithAuth(), this is the request we should
+      // be issuing -- the final header line contains the credentials.
+      MockWrite(
+          "CONNECT www.google.com:443 HTTP/1.1\r\n"
+          "Host: www.google.com\r\n"
+          "Proxy-Connection: keep-alive\r\n"
+          "Proxy-Authorization: Basic Zm9vOmJhcg==\r\n\r\n"),
+
+      MockWrite(
+          "GET / HTTP/1.1\r\n"
+          "Host: www.google.com\r\n"
+          "Connection: Upgrade\r\n"
+          "Upgrade: websocket\r\n"
+          "Origin: http://www.google.com\r\n"
+          "Sec-WebSocket-Version: 13\r\n"
+          "Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\n\r\n"),
+  };
+
+  // The proxy responds to the connect with a 407, using a persistent
+  // connection.
+  MockRead data_reads[] = {
+      // No credentials.
+      MockRead("HTTP/1.1 407 Proxy Authentication Required\r\n"),
+      MockRead("Proxy-Authenticate: Basic realm=\"MyRealm1\"\r\n"),
+      MockRead("Proxy-Connection: close\r\n\r\n"),
+
+      MockRead("HTTP/1.1 200 Connection Established\r\n\r\n"),
+
+      MockRead("HTTP/1.1 101 Switching Protocols\r\n"),
+      MockRead("Upgrade: websocket\r\n"),
+      MockRead("Connection: Upgrade\r\n"),
+      MockRead("Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=\r\n\r\n"),
+  };
+
+  StaticSocketDataProvider data(data_reads, arraysize(data_reads), data_writes,
+                                arraysize(data_writes));
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+  SSLSocketDataProvider ssl(ASYNC, OK);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
+
+  scoped_ptr<HttpTransaction> trans(
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
+  FakeWebSocketStreamCreateHelper websocket_stream_create_helper;
+  trans->SetWebSocketHandshakeStreamCreateHelper(
+      &websocket_stream_create_helper);
+
+  {
+    TestCompletionCallback callback;
+
+    int rv = trans->Start(&request, callback.callback(), BoundNetLog());
+    EXPECT_EQ(ERR_IO_PENDING, rv);
+
+    rv = callback.WaitForResult();
+    EXPECT_EQ(OK, rv);
+  }
+
+  const HttpResponseInfo* response = trans->GetResponseInfo();
+  ASSERT_TRUE(response);
+  ASSERT_TRUE(response->headers.get());
+  EXPECT_EQ(407, response->headers->response_code());
+
+  {
+    TestCompletionCallback callback;
+
+    int rv = trans->RestartWithAuth(AuthCredentials(kFoo, kBar),
+                                    callback.callback());
+    EXPECT_EQ(ERR_IO_PENDING, rv);
+
+    rv = callback.WaitForResult();
+    EXPECT_EQ(OK, rv);
+  }
+
+  response = trans->GetResponseInfo();
+  ASSERT_TRUE(response);
+  ASSERT_TRUE(response->headers.get());
+
+  EXPECT_EQ(101, response->headers->response_code());
+
+  trans.reset();
+  session->CloseAllConnections();
+}
+
+// Verify that proxy headers are not sent to the destination server when
+// establishing a tunnel for an insecure WebSocket connection.
+// This requires the authentication info to be injected into the auth cache
+// due to crbug.com/395064
+// TODO(ricea): Change to use a 407 response once issue 395064 is fixed.
+TEST_P(HttpNetworkTransactionTest, ProxyHeadersNotSentOverWsTunnel) {
+  HttpRequestInfo request;
+  request.method = "GET";
+  request.url = GURL("ws://www.google.com/");
+  AddWebSocketHeaders(&request.extra_headers);
+
+  // Configure against proxy server "myproxy:70".
+  session_deps_.proxy_service.reset(
+      ProxyService::CreateFixedFromPacResult("PROXY myproxy:70"));
+
+  scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+
+  MockWrite data_writes[] = {
+      // Try to establish a tunnel for the WebSocket connection, with
+      // credentials. Because WebSockets have a separate set of socket pools,
+      // they cannot and will not use the same TCP/IP connection as the
+      // preflight HTTP request.
+      MockWrite(
+          "CONNECT www.google.com:80 HTTP/1.1\r\n"
+          "Host: www.google.com\r\n"
+          "Proxy-Connection: keep-alive\r\n"
+          "Proxy-Authorization: Basic Zm9vOmJhcg==\r\n\r\n"),
+
+      MockWrite(
+          "GET / HTTP/1.1\r\n"
+          "Host: www.google.com\r\n"
+          "Connection: Upgrade\r\n"
+          "Upgrade: websocket\r\n"
+          "Origin: http://www.google.com\r\n"
+          "Sec-WebSocket-Version: 13\r\n"
+          "Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\n\r\n"),
+  };
+
+  MockRead data_reads[] = {
+      // HTTP CONNECT with credentials.
+      MockRead("HTTP/1.1 200 Connection Established\r\n\r\n"),
+
+      // WebSocket connection established inside tunnel.
+      MockRead("HTTP/1.1 101 Switching Protocols\r\n"),
+      MockRead("Upgrade: websocket\r\n"),
+      MockRead("Connection: Upgrade\r\n"),
+      MockRead("Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=\r\n\r\n"),
+  };
+
+  StaticSocketDataProvider data(data_reads, arraysize(data_reads), data_writes,
+                                arraysize(data_writes));
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+
+  session->http_auth_cache()->Add(
+      GURL("http://myproxy:70/"), "MyRealm1", HttpAuth::AUTH_SCHEME_BASIC,
+      "Basic realm=MyRealm1", AuthCredentials(kFoo, kBar), "/");
+
+  scoped_ptr<HttpTransaction> trans(
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
+  FakeWebSocketStreamCreateHelper websocket_stream_create_helper;
+  trans->SetWebSocketHandshakeStreamCreateHelper(
+      &websocket_stream_create_helper);
+
+  TestCompletionCallback callback;
+
+  int rv = trans->Start(&request, callback.callback(), BoundNetLog());
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+
+  rv = callback.WaitForResult();
+  EXPECT_EQ(OK, rv);
+
+  const HttpResponseInfo* response = trans->GetResponseInfo();
+  ASSERT_TRUE(response);
+  ASSERT_TRUE(response->headers.get());
+
+  EXPECT_EQ(101, response->headers->response_code());
+
+  trans.reset();
+  session->CloseAllConnections();
 }
 
 }  // namespace net
