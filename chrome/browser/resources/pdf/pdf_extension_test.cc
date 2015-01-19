@@ -94,5 +94,5 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, BasicPlugin) {
 }
 
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, Viewport) {
-  RunTestsInFile("viewport_test.js", "test.pdf");
+  RunTestsInFile("viewport_test.js", false);
 }
