@@ -18,15 +18,12 @@ class UtilCCHelper(object):
     src: ListValue*
     dst: std::vector or scoped_ptr<std::vector>
     """
-    if optional:
-      val = '%(namespace)s::PopulateOptionalArrayFromList(*%(src)s, &%(dst)s)'
-    else:
-      val = '%(namespace)s::PopulateArrayFromList(*%(src)s, &%(dst)s)'
-    return val % {
-      'namespace': _API_UTIL_NAMESPACE,
-      'src': src,
-      'dst': dst
-    }
+    populate_list_fn = ('PopulateOptionalArrayFromList' if optional
+                            else 'PopulateArrayFromList')
+    return ('%s::%s(*%s, &%s)') % (_API_UTIL_NAMESPACE,
+                                   populate_list_fn,
+                                   src,
+                                   dst)
 
   def CreateValueFromArray(self, src, optional):
     """Generates code to create a scoped_pt<Value> from the array at src.

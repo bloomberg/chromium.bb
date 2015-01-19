@@ -9,36 +9,31 @@
 namespace json_schema_compiler {
 namespace util {
 
-bool GetItemFromList(const base::ListValue& from, int index, int* out) {
-  return from.GetInteger(index, out);
+bool PopulateItem(const base::Value& from, int* out) {
+  return from.GetAsInteger(out);
 }
 
-bool GetItemFromList(const base::ListValue& from, int index, bool* out) {
-  return from.GetBoolean(index, out);
+bool PopulateItem(const base::Value& from, bool* out) {
+  return from.GetAsBoolean(out);
 }
 
-bool GetItemFromList(const base::ListValue& from, int index, double* out) {
-  return from.GetDouble(index, out);
+bool PopulateItem(const base::Value& from, double* out) {
+  return from.GetAsDouble(out);
 }
 
-bool GetItemFromList(const base::ListValue& from, int index, std::string* out) {
-  return from.GetString(index, out);
+bool PopulateItem(const base::Value& from, std::string* out) {
+  return from.GetAsString(out);
 }
 
-bool GetItemFromList(const base::ListValue& from,
-                     int index,
-                     linked_ptr<base::Value>* out) {
-  const base::Value* value = NULL;
-  if (!from.Get(index, &value))
-    return false;
-  *out = make_linked_ptr(value->DeepCopy());
+bool PopulateItem(const base::Value& from, linked_ptr<base::Value>* out) {
+  *out = make_linked_ptr(from.DeepCopy());
   return true;
 }
 
-bool GetItemFromList(const base::ListValue& from, int index,
-    linked_ptr<base::DictionaryValue>* out) {
+bool PopulateItem(const base::Value& from,
+                  linked_ptr<base::DictionaryValue>* out) {
   const base::DictionaryValue* dict = NULL;
-  if (!from.GetDictionary(index, &dict))
+  if (!from.GetAsDictionary(&dict))
     return false;
   *out = make_linked_ptr(dict->DeepCopy());
   return true;
@@ -60,8 +55,7 @@ void AddItemToList(const std::string& from, base::ListValue* out) {
   out->Append(new base::StringValue(from));
 }
 
-void AddItemToList(const linked_ptr<base::Value>& from,
-                   base::ListValue* out) {
+void AddItemToList(const linked_ptr<base::Value>& from, base::ListValue* out) {
   out->Append(from->DeepCopy());
 }
 
@@ -71,7 +65,7 @@ void AddItemToList(const linked_ptr<base::DictionaryValue>& from,
 }
 
 std::string ValueTypeToString(base::Value::Type type) {
-  switch(type) {
+  switch (type) {
     case base::Value::TYPE_NULL:
       return "null";
     case base::Value::TYPE_BOOLEAN:

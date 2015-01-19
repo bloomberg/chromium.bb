@@ -763,10 +763,10 @@ class _Generator(object):
                      failure_value,
                      is_ptr=is_ptr))
       else:
-        (c.Sblock('if (!%s) {' % self._util_cc_helper.PopulateArrayFromList(
-              'list',
-              dst_var,
-              is_ptr)))
+        c.Sblock('if (!%s) {' % self._util_cc_helper.PopulateArrayFromList(
+            'list',
+            dst_var,
+            is_ptr))
         c.Concat(self._GenerateError(
             '"unable to populate array \'%%(parent_key)s\'"'))
         if is_ptr and self._generate_error_messages:
