@@ -140,13 +140,14 @@ public:
     unsigned columnCount() const { return m_columnCount; }
     LayoutUnit columnHeightAvailable() const { return m_columnHeightAvailable; }
     void setColumnHeightAvailable(LayoutUnit available) { m_columnHeightAvailable = available; }
-    virtual bool heightIsAuto() const { return !columnHeightAvailable() || multiColumnBlockFlow()->style()->columnFill() == ColumnFillBalance; }
     bool progressionIsInline() const { return m_progressionIsInline; }
 
     virtual LayoutSize columnOffset(const LayoutPoint&) const override final;
 
     // Do we need to set a new width and lay out?
     virtual bool needsNewWidth() const;
+
+    virtual RenderMultiColumnSet* columnSetAtBlockOffset(LayoutUnit) const override final;
 
     void layoutColumns(bool relayoutChildren, SubtreeLayoutScope&);
 
@@ -169,15 +170,20 @@ private:
     virtual const char* renderName() const override;
     virtual void addRegionToThread(RenderMultiColumnSet*) override;
     virtual void willBeRemovedFromTree() override;
+    virtual LayoutUnit skipColumnSpanner(RenderBox*, LayoutUnit logicalTopInFlowThread) override;
     virtual void flowThreadDescendantWasInserted(RenderObject*) override;
     virtual void flowThreadDescendantWillBeRemoved(RenderObject*) override;
     virtual void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const override;
     virtual void updateLogicalWidth() override;
     virtual void setPageBreak(LayoutUnit offset, LayoutUnit spaceShortage) override;
     virtual void updateMinimumPageHeight(LayoutUnit offset, LayoutUnit minHeight) override;
-    virtual RenderMultiColumnSet* columnSetAtBlockOffset(LayoutUnit) const override;
     virtual bool addForcedRegionBreak(LayoutUnit, RenderObject* breakChild, bool isBefore, LayoutUnit* offsetBreakAdjustment = 0) override;
     virtual bool isPageLogicalHeightKnown() const override;
+
+    // The last set we worked on. It's not to be used as the "current set". The concept of a
+    // "current set" is difficult, since layout may jump back and forth in the tree, due to wrong
+    // top location estimates (due to e.g. margin collapsing), and possibly for other reasons.
+    RenderMultiColumnSet* m_lastSetWorkedOn;
 
     unsigned m_columnCount; // The used value of column-count
     LayoutUnit m_columnHeightAvailable; // Total height available to columns, or 0 if auto.

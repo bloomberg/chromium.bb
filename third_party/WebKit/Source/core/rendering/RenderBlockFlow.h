@@ -48,6 +48,7 @@ class LineBreaker;
 class LineInfo;
 class LineWidth;
 class RenderMultiColumnFlowThread;
+class RenderMultiColumnSpannerPlaceholder;
 class RenderRubyRun;
 template <class Run> class BidiRunList;
 
@@ -201,6 +202,8 @@ public:
 
     LayoutUnit paginationStrut() const { return m_rareData ? m_rareData->m_paginationStrut : LayoutUnit(); }
     void setPaginationStrut(LayoutUnit);
+
+    void positionSpannerDescendant(RenderMultiColumnSpannerPlaceholder& child);
 
     virtual bool avoidsFloats() const override;
 

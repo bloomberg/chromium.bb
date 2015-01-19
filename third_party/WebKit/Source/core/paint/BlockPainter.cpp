@@ -100,7 +100,7 @@ void BlockPainter::paintChildren(const PaintInfo& paintInfo, const LayoutPoint& 
 void BlockPainter::paintChild(RenderBox* child, const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     LayoutPoint childPoint = m_renderBlock.flipForWritingModeForChild(child, paintOffset);
-    if (!child->hasSelfPaintingLayer() && !child->isFloating())
+    if (!child->hasSelfPaintingLayer() && !child->isFloating() && !child->isColumnSpanAll())
         child->paint(paintInfo, childPoint);
 }
 

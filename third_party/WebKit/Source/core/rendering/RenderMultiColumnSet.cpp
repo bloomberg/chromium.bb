@@ -67,6 +67,42 @@ RenderMultiColumnSet* RenderMultiColumnSet::previousSiblingMultiColumnSet() cons
     return 0;
 }
 
+void RenderMultiColumnSet::setLogicalTopInFlowThread(LayoutUnit logicalTop)
+{
+    LayoutRect rect = flowThreadPortionRect();
+    if (isHorizontalWritingMode())
+        rect.setY(logicalTop);
+    else
+        rect.setX(logicalTop);
+    setFlowThreadPortionRect(rect);
+}
+
+void RenderMultiColumnSet::setLogicalBottomInFlowThread(LayoutUnit logicalBottom)
+{
+    LayoutRect rect = flowThreadPortionRect();
+    if (isHorizontalWritingMode())
+        rect.shiftMaxYEdgeTo(logicalBottom);
+    else
+        rect.shiftMaxXEdgeTo(logicalBottom);
+    setFlowThreadPortionRect(rect);
+}
+
+bool RenderMultiColumnSet::heightIsAuto() const
+{
+    RenderMultiColumnFlowThread* flowThread = multiColumnFlowThread();
+    if (!flowThread->isRenderPagedFlowThread()) {
+        if (multiColumnBlockFlow()->style()->columnFill() == ColumnFillBalance)
+            return true;
+        if (RenderBox* next = nextSiblingBox()) {
+            if (next->isRenderMultiColumnSpannerPlaceholder()) {
+                // If we're followed by a spanner, we need to balance.
+                return true;
+            }
+        }
+    }
+    return !flowThread->columnHeightAvailable();
+}
+
 LayoutSize RenderMultiColumnSet::flowThreadTranslationAtOffset(LayoutUnit blockOffset) const
 {
     unsigned columnIndex = columnIndexAtOffset(blockOffset);
@@ -190,7 +226,7 @@ LayoutUnit RenderMultiColumnSet::calculateColumnHeight(BalancedHeightCalculation
 
 void RenderMultiColumnSet::addContentRun(LayoutUnit endOffsetFromFirstPage)
 {
-    if (!multiColumnFlowThread()->heightIsAuto())
+    if (!heightIsAuto())
         return;
     if (!m_contentRuns.isEmpty() && endOffsetFromFirstPage <= m_contentRuns.last().breakOffset())
         return;
@@ -202,27 +238,27 @@ void RenderMultiColumnSet::addContentRun(LayoutUnit endOffsetFromFirstPage)
 
 bool RenderMultiColumnSet::recalculateColumnHeight(BalancedHeightCalculation calculationMode)
 {
-    if (previousSiblingMultiColumnSet()) {
-        // FIXME: column spanner layout is not yet implemented. Until it's in place, we only operate
-        // on the first set during layout. We need to ignore the others here, or assertions will
-        // fail.
-        return false;
-    }
-    ASSERT(multiColumnFlowThread()->heightIsAuto());
-
     LayoutUnit oldColumnHeight = m_columnHeight;
-    if (calculationMode == GuessFromFlowThreadPortion) {
-        // Post-process the content runs and find out where the implicit breaks will occur.
-        distributeImplicitBreaks();
-    }
-    LayoutUnit newColumnHeight = calculateColumnHeight(calculationMode);
-    setAndConstrainColumnHeight(newColumnHeight);
 
-    // After having calculated an initial column height, the multicol container typically needs at
-    // least one more layout pass with a new column height, but if a height was specified, we only
-    // need to do this if we think that we need less space than specified. Conversely, if we
-    // determined that the columns need to be as tall as the specified height of the container, we
-    // have already laid it out correctly, and there's no need for another pass.
+    m_maxColumnHeight = calculateMaxColumnHeight();
+
+    if (heightIsAuto()) {
+        if (calculationMode == GuessFromFlowThreadPortion) {
+            // Post-process the content runs and find out where the implicit breaks will occur.
+            distributeImplicitBreaks();
+        }
+        LayoutUnit newColumnHeight = calculateColumnHeight(calculationMode);
+        setAndConstrainColumnHeight(newColumnHeight);
+        // After having calculated an initial column height, the multicol container typically needs at
+        // least one more layout pass with a new column height, but if a height was specified, we only
+        // need to do this if we think that we need less space than specified. Conversely, if we
+        // determined that the columns need to be as tall as the specified height of the container, we
+        // have already laid it out correctly, and there's no need for another pass.
+    } else {
+        // The position of the column set may have changed, in which case height available for
+        // columns may have changed as well.
+        setAndConstrainColumnHeight(m_columnHeight);
+    }
 
     // We can get rid of the content runs now, if we haven't already done so. They are only needed
     // to calculate the initial balanced column height. In fact, we have to get rid of them before
@@ -257,7 +293,7 @@ void RenderMultiColumnSet::resetColumnHeight()
 
     LayoutUnit oldColumnHeight = pageLogicalHeight();
 
-    if (multiColumnFlowThread()->heightIsAuto())
+    if (heightIsAuto())
         m_columnHeight = 0;
     else
         setAndConstrainColumnHeight(heightAdjustedForSetOffset(multiColumnFlowThread()->columnHeightAvailable()));

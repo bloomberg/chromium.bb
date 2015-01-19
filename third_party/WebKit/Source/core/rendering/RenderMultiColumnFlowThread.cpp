@@ -32,7 +32,8 @@
 namespace blink {
 
 RenderMultiColumnFlowThread::RenderMultiColumnFlowThread()
-    : m_columnCount(1)
+    : m_lastSetWorkedOn(0)
+    , m_columnCount(1)
     , m_columnHeightAvailable(0)
     , m_inBalancingPass(false)
     , m_needsColumnHeightsRecalculation(false)
@@ -150,11 +151,35 @@ bool RenderMultiColumnFlowThread::needsNewWidth() const
     return newWidth != logicalWidth();
 }
 
+RenderMultiColumnSet* RenderMultiColumnFlowThread::columnSetAtBlockOffset(LayoutUnit offset) const
+{
+    if (m_lastSetWorkedOn) {
+        // Layout in progress. We are calculating the set heights as we speak, so the column set range
+        // information is not up-to-date.
+        return m_lastSetWorkedOn;
+    }
+
+    ASSERT(!m_regionsInvalidated);
+    if (m_multiColumnSetList.isEmpty())
+        return 0;
+    if (offset <= 0)
+        return m_multiColumnSetList.first();
+
+    MultiColumnSetSearchAdapter adapter(offset);
+    m_multiColumnSetIntervalTree.allOverlapsWithAdapter<MultiColumnSetSearchAdapter>(adapter);
+
+    // If no set was found, the offset is in the flow thread overflow.
+    if (!adapter.result() && !m_multiColumnSetList.isEmpty())
+        return m_multiColumnSetList.last();
+    return adapter.result();
+}
+
 void RenderMultiColumnFlowThread::layoutColumns(bool relayoutChildren, SubtreeLayoutScope& layoutScope)
 {
     if (relayoutChildren)
         layoutScope.setChildNeedsLayout(this);
 
+    m_needsColumnHeightsRecalculation = false;
     if (!needsLayout()) {
         // Just before the multicol container (our parent RenderBlockFlow) finishes laying out, it
         // will call recalculateColumnHeights() on us unconditionally, but we only want that method
@@ -162,13 +187,13 @@ void RenderMultiColumnFlowThread::layoutColumns(bool relayoutChildren, SubtreeLa
         // machinery would kick in needlessly, and trigger additional layout passes. Furthermore, we
         // actually depend on a proper flowthread layout pass in order to do balancing, since it's
         // flowthread layout that sets up content runs.
-        m_needsColumnHeightsRecalculation = false;
         return;
     }
 
-    for (RenderBox* columnBox = firstMultiColumnBox(); columnBox; columnBox = columnBox->nextSiblingBox()) {
+    for (RenderBox* columnBox = firstMultiColumnBox(); columnBox; columnBox = columnBox->nextSiblingMultiColumnBox()) {
         if (!columnBox->isRenderMultiColumnSet()) {
             ASSERT(columnBox->isRenderMultiColumnSpannerPlaceholder()); // no other type is expected.
+            m_needsColumnHeightsRecalculation = true;
             continue;
         }
         RenderMultiColumnSet* columnSet = toRenderMultiColumnSet(columnBox);
@@ -177,10 +202,11 @@ void RenderMultiColumnFlowThread::layoutColumns(bool relayoutChildren, SubtreeLa
             // typically have changed.
             columnSet->resetColumnHeight();
         }
+        if (!m_needsColumnHeightsRecalculation)
+            m_needsColumnHeightsRecalculation = columnSet->heightIsAuto();
     }
 
     invalidateRegions();
-    m_needsColumnHeightsRecalculation = heightIsAuto();
     layout();
 }
 
@@ -333,6 +359,34 @@ void RenderMultiColumnFlowThread::willBeRemovedFromTree()
     RenderFlowThread::willBeRemovedFromTree();
 }
 
+LayoutUnit RenderMultiColumnFlowThread::skipColumnSpanner(RenderBox* renderer, LayoutUnit logicalTopInFlowThread)
+{
+    ASSERT(renderer->isColumnSpanAll());
+    RenderMultiColumnSpannerPlaceholder* placeholder = renderer->spannerPlaceholder();
+    LayoutUnit adjustment;
+    RenderBox* previousColumnBox = placeholder->previousSiblingMultiColumnBox();
+    if (previousColumnBox && previousColumnBox->isRenderMultiColumnSet()) {
+        // Pad flow thread offset to a column boundary, so that any column content that's supposed
+        // to come after the spanner doesn't bleed into the column row preceding the spanner.
+        RenderMultiColumnSet* previousSet = toRenderMultiColumnSet(previousColumnBox);
+        if (previousSet->pageLogicalHeight()) {
+            LayoutUnit columnLogicalTopInFlowThread = previousSet->pageLogicalTopForOffset(logicalTopInFlowThread);
+            if (columnLogicalTopInFlowThread != logicalTopInFlowThread) {
+                adjustment = columnLogicalTopInFlowThread + previousSet->pageLogicalHeight() - logicalTopInFlowThread;
+                logicalTopInFlowThread += adjustment;
+            }
+        }
+        previousSet->endFlow(logicalTopInFlowThread);
+    }
+    RenderBox* nextColumnBox = placeholder->nextSiblingMultiColumnBox();
+    if (nextColumnBox && nextColumnBox->isRenderMultiColumnSet()) {
+        RenderMultiColumnSet* nextSet = toRenderMultiColumnSet(nextColumnBox);
+        m_lastSetWorkedOn = nextSet;
+        nextSet->beginFlow(logicalTopInFlowThread);
+    }
+    return adjustment;
+}
+
 void RenderMultiColumnFlowThread::flowThreadDescendantWasInserted(RenderObject* descendant)
 {
     ASSERT(!m_isBeingEvacuated);
@@ -396,11 +450,19 @@ void RenderMultiColumnFlowThread::updateLogicalWidth()
 
 void RenderMultiColumnFlowThread::layout()
 {
+    ASSERT(!m_lastSetWorkedOn);
+    m_lastSetWorkedOn = firstMultiColumnSet();
+    if (m_lastSetWorkedOn)
+        m_lastSetWorkedOn->beginFlow(LayoutUnit());
     RenderFlowThread::layout();
     if (RenderMultiColumnSet* lastSet = lastMultiColumnSet()) {
-        if (!lastSet->nextSiblingMultiColumnBox())
+        ASSERT(lastSet == m_lastSetWorkedOn);
+        if (!lastSet->nextSiblingMultiColumnBox()) {
+            lastSet->endFlow(logicalHeight());
             lastSet->expandToEncompassFlowThreadContentsIfNeeded();
+        }
     }
+    m_lastSetWorkedOn = 0;
 }
 
 void RenderMultiColumnFlowThread::setPageBreak(LayoutUnit offset, LayoutUnit spaceShortage)
@@ -420,12 +482,6 @@ void RenderMultiColumnFlowThread::updateMinimumPageHeight(LayoutUnit offset, Lay
 {
     if (RenderMultiColumnSet* multicolSet = columnSetAtBlockOffset(offset))
         multicolSet->updateMinimumColumnHeight(minHeight);
-}
-
-RenderMultiColumnSet* RenderMultiColumnFlowThread::columnSetAtBlockOffset(LayoutUnit /*offset*/) const
-{
-    // For now there's only one column set, so this is easy:
-    return firstMultiColumnSet();
 }
 
 bool RenderMultiColumnFlowThread::addForcedRegionBreak(LayoutUnit offset, RenderObject* /*breakChild*/, bool /*isBefore*/, LayoutUnit* offsetBreakAdjustment)

@@ -813,7 +813,7 @@ bool RenderLayer::updateLayerPosition()
         localPoint.moveBy(box->topLeftLocation());
     }
 
-    if (!renderer()->isOutOfFlowPositioned() && renderer()->parent()) {
+    if (!renderer()->isOutOfFlowPositioned() && !renderer()->isColumnSpanAll() && renderer()->parent()) {
         // We must adjust our position by walking up the render tree looking for the
         // nearest enclosing object with a layer.
         RenderObject* curr = renderer()->parent();
@@ -1442,8 +1442,14 @@ static inline const RenderLayer* accumulateOffsetTowardsAncestor(const RenderLay
             location += (thisCoords - ancestorCoords);
             return ancestorLayer;
         }
-    } else
+    } else if (renderer->isColumnSpanAll()) {
+        RenderBlock* multicolContainer = renderer->containingBlock();
+        ASSERT(toRenderBlockFlow(multicolContainer)->multiColumnFlowThread());
+        parentLayer = multicolContainer->layer();
+        ASSERT(parentLayer);
+    } else {
         parentLayer = layer->parent();
+    }
 
     if (!parentLayer)
         return 0;

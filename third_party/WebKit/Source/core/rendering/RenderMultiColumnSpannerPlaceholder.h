@@ -29,7 +29,10 @@ protected:
     virtual void willBeRemovedFromTree() override;
     virtual bool needsPreferredWidthsRecalculation() const override;
     virtual void layout() override;
+    virtual void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const override;
     virtual void invalidateTreeIfNeeded(const PaintInvalidationState&) override;
+    virtual void paint(const PaintInfo&, const LayoutPoint& paintOffset) override;
+    virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) override;
     virtual const char* renderName() const override;
 
 private:

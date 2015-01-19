@@ -257,6 +257,63 @@ TEST_F(MultiColumnRenderingTest, SubtreeWithSpannerBeforeSpanner)
     EXPECT_EQ(flowThread->containingColumnSpannerPlaceholder(document().getElementById("outer")->renderer()), nullptr);
 }
 
+TEST_F(MultiColumnRenderingTest, columnSetAtBlockOffset)
+{
+    setMulticolHTML("<div id='mc' style='line-height:100px;'>text<br>text<br>text<br>text<br>text<div id='spanner1'>spanner</div>text<br>text<div id='spanner2'>text<br>text</div>text</div>");
+    RenderMultiColumnFlowThread* flowThread = findFlowThread("mc");
+    EXPECT_EQ(columnSetSignature(flowThread), "cscsc");
+    RenderMultiColumnSet* firstRow = flowThread->firstMultiColumnSet();
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(-10000)), firstRow); // negative overflow
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit()), firstRow);
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(499)), firstRow); // bottom of last line in first row.
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(599)), firstRow); // empty content in last column in first row
+    RenderMultiColumnSet* secondRow = firstRow->nextSiblingMultiColumnSet();
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(600)), secondRow);
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(799)), secondRow);
+    RenderMultiColumnSet* thirdRow = secondRow->nextSiblingMultiColumnSet();
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(800)), thirdRow);
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(899)), thirdRow); // bottom of last row
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(10000)), thirdRow); // overflow
+}
+
+TEST_F(MultiColumnRenderingTest, columnSetAtBlockOffsetVerticalRl)
+{
+    setMulticolHTML("<div id='mc' style='line-height:100px; -webkit-writing-mode:vertical-rl;'>text<br>text<br>text<br>text<br>text<div id='spanner1'>spanner</div>text<br>text<div id='spanner2'>text<br>text</div>text</div>");
+    RenderMultiColumnFlowThread* flowThread = findFlowThread("mc");
+    EXPECT_EQ(columnSetSignature(flowThread), "cscsc");
+    RenderMultiColumnSet* firstRow = flowThread->firstMultiColumnSet();
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(-10000)), firstRow); // negative overflow
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit()), firstRow);
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(499)), firstRow); // bottom of last line in first row.
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(599)), firstRow); // empty content in last column in first row
+    RenderMultiColumnSet* secondRow = firstRow->nextSiblingMultiColumnSet();
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(600)), secondRow);
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(799)), secondRow);
+    RenderMultiColumnSet* thirdRow = secondRow->nextSiblingMultiColumnSet();
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(800)), thirdRow);
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(899)), thirdRow); // bottom of last row
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(10000)), thirdRow); // overflow
+}
+
+TEST_F(MultiColumnRenderingTest, columnSetAtBlockOffsetVerticalLr)
+{
+    setMulticolHTML("<div id='mc' style='line-height:100px; -webkit-writing-mode:vertical-lr;'>text<br>text<br>text<br>text<br>text<div id='spanner1'>spanner</div>text<br>text<div id='spanner2'>text<br>text</div>text</div>");
+    RenderMultiColumnFlowThread* flowThread = findFlowThread("mc");
+    EXPECT_EQ(columnSetSignature(flowThread), "cscsc");
+    RenderMultiColumnSet* firstRow = flowThread->firstMultiColumnSet();
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(-10000)), firstRow); // negative overflow
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit()), firstRow);
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(499)), firstRow); // bottom of last line in first row.
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(599)), firstRow); // empty content in last column in first row
+    RenderMultiColumnSet* secondRow = firstRow->nextSiblingMultiColumnSet();
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(600)), secondRow);
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(799)), secondRow);
+    RenderMultiColumnSet* thirdRow = secondRow->nextSiblingMultiColumnSet();
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(800)), thirdRow);
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(899)), thirdRow); // bottom of last row
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(10000)), thirdRow); // overflow
+}
+
 } // anonymous namespace
 
 } // namespace blink

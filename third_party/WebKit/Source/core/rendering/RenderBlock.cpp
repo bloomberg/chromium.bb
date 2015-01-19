@@ -1501,7 +1501,7 @@ void RenderBlock::computeOverflow(LayoutUnit oldClientAfterEdge, bool)
 void RenderBlock::addOverflowFromBlockChildren()
 {
     for (RenderBox* child = firstChildBox(); child; child = child->nextSiblingBox()) {
-        if (!child->isFloatingOrOutOfFlowPositioned())
+        if (!child->isFloatingOrOutOfFlowPositioned() && !child->isColumnSpanAll())
             addOverflowFromChild(child);
     }
 }
@@ -1537,7 +1537,7 @@ bool RenderBlock::createsNewFormattingContext() const
 {
     return isInlineBlockOrInlineTable() || isFloatingOrOutOfFlowPositioned() || hasOverflowClip() || isFlexItemIncludingDeprecated()
         || style()->specifiesColumns() || isRenderFlowThread() || isTableCell() || isTableCaption() || isFieldset() || isWritingModeRoot()
-        || isDocumentElement() || style()->columnSpan() || isGridItem();
+        || isDocumentElement() || (document().regionBasedColumnsEnabled() ? isColumnSpanAll() : style()->columnSpan()) || isGridItem();
 }
 
 void RenderBlock::updateBlockChildDirtyBitsBeforeLayout(bool relayoutChildren, RenderBox& child)
@@ -2369,7 +2369,7 @@ bool RenderBlock::hitTestContents(const HitTestRequest& request, HitTestResult& 
             childHitTest = HitTestChildBlockBackground;
         for (RenderBox* child = lastChildBox(); child; child = child->previousSiblingBox()) {
             LayoutPoint childPoint = flipForWritingModeForChild(child, accumulatedOffset);
-            if (!child->hasSelfPaintingLayer() && !child->isFloating() && child->nodeAtPoint(request, result, locationInContainer, childPoint, childHitTest))
+            if (!child->hasSelfPaintingLayer() && !child->isFloating() && !child->isColumnSpanAll() && child->nodeAtPoint(request, result, locationInContainer, childPoint, childHitTest))
                 return true;
         }
     }

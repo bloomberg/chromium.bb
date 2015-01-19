@@ -219,7 +219,7 @@ LayoutRect RenderFlowThread::fragmentsBoundingBox(const LayoutRect& layerBoundin
     return result;
 }
 
-void RenderFlowThread::RegionSearchAdapter::collectIfNeeded(const MultiColumnSetInterval& interval)
+void RenderFlowThread::MultiColumnSetSearchAdapter::collectIfNeeded(const MultiColumnSetInterval& interval)
 {
     if (m_result)
         return;

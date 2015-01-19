@@ -71,13 +71,16 @@ public:
     RenderMultiColumnSet* nextSiblingMultiColumnSet() const;
     RenderMultiColumnSet* previousSiblingMultiColumnSet() const;
 
+    void setLogicalTopInFlowThread(LayoutUnit);
     LayoutUnit logicalTopInFlowThread() const { return isHorizontalWritingMode() ? flowThreadPortionRect().y() : flowThreadPortionRect().x(); }
-    LayoutUnit logicalBottomInFlowThread() const { return isHorizontalWritingMode() ? flowThreadPortionRect().maxY() : flowThreadPortionRect().maxX(); }
-
     LayoutUnit logicalHeightInFlowThread() const { return isHorizontalWritingMode() ? flowThreadPortionRect().height() : flowThreadPortionRect().width(); }
+    void setLogicalBottomInFlowThread(LayoutUnit);
+    LayoutUnit logicalBottomInFlowThread() const { return isHorizontalWritingMode() ? flowThreadPortionRect().maxY() : flowThreadPortionRect().maxX(); }
 
     // The used CSS value of column-count, i.e. how many columns there are room for without overflowing.
     unsigned usedColumnCount() const { return multiColumnFlowThread()->columnCount(); }
+
+    bool heightIsAuto() const;
 
     // Find the column that contains the given block offset, and return the translation needed to
     // get from flow thread coordinates to visual coordinates.
@@ -94,7 +97,9 @@ public:
     // height.
     void addContentRun(LayoutUnit endOffsetFromFirstPage);
 
-    // (Re-)calculate the column height if it's auto.
+    // (Re-)calculate the column height if it's auto. This is first and foremost needed by sets that
+    // are to balance the column height, but even when it isn't to be balanced, this is necessary if
+    // the multicol container's height is constrained.
     virtual bool recalculateColumnHeight(BalancedHeightCalculation);
 
     // Record space shortage (the amount of space that would have been enough to prevent some
@@ -105,6 +110,15 @@ public:
 
     // Reset previously calculated column height. Will mark for layout if needed.
     void resetColumnHeight();
+
+    // Layout of flow thread content that's to be rendered inside this column set begins. This
+    // happens at the beginning of flow thread layout, and when advancing from a previous column set
+    // or spanner to this one.
+    void beginFlow(LayoutUnit offsetInFlowThread);
+    // Layout of flow thread content that was to be rendered inside this column set has
+    // finished. This happens at end of flow thread layout, and when advancing to the next column
+    // set or spanner.
+    void endFlow(LayoutUnit offsetInFlowThread);
 
     // Expand this set's flow thread portion rectangle to contain all trailing flow thread
     // overflow. Only to be called on the last set.
@@ -200,6 +214,22 @@ private:
     };
     Vector<ContentRun, 1> m_contentRuns;
 };
+
+inline void RenderMultiColumnSet::beginFlow(LayoutUnit offsetInFlowThread)
+{
+    // At this point layout is exactly at the beginning of this set. Store block offset from flow
+    // thread start.
+    setLogicalTopInFlowThread(offsetInFlowThread);
+}
+
+inline void RenderMultiColumnSet::endFlow(LayoutUnit offsetInFlowThread)
+{
+    // At this point layout is exactly at the end of this set. Store block offset from flow thread
+    // start. This set is now considered "flowed", although we may have to revisit it later (with
+    // beginFlow()), e.g. if a subtree in the flow thread has to be laid out over again because the
+    // initial margin collapsing estimates were wrong.
+    setLogicalBottomInFlowThread(offsetInFlowThread);
+}
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderMultiColumnSet, isRenderMultiColumnSet());
 

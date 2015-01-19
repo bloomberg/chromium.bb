@@ -20,7 +20,6 @@ public:
     RenderBlockFlow* pagedBlockFlow() const { return toRenderBlockFlow(parent()); }
 
     virtual bool isRenderPagedFlowThread() const override { return true; }
-    virtual bool heightIsAuto() const override { return !columnHeightAvailable(); }
     virtual const char* renderName() const override;
     virtual bool needsNewWidth() const override;
     virtual void updateLogicalWidth() override;

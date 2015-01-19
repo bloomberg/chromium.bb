@@ -48,15 +48,20 @@ void RenderMultiColumnSpannerPlaceholder::layout()
 {
     ASSERT(needsLayout());
 
-    // FIXME: actual spanner positioning isn't implemented yet. Just set it to 0,0 for consistency
-    // (in case the spanner used to be something else that was laid out properly).
-    m_rendererInFlowThread->setLogicalTop(LayoutUnit());
-    m_rendererInFlowThread->setLogicalLeft(LayoutUnit());
-
     // Lay out the actual column-span:all element.
     m_rendererInFlowThread->layoutIfNeeded();
 
+    // The spanner has now been laid out, so its height is known. Time to update the placeholder's
+    // height as well, so that we take up the correct amount of space in the multicol container.
+    updateLogicalHeight();
+
     clearNeedsLayout();
+}
+
+void RenderMultiColumnSpannerPlaceholder::computeLogicalHeight(LayoutUnit, LayoutUnit logicalTop, LogicalExtentComputedValues& computedValues) const
+{
+    computedValues.m_extent = m_rendererInFlowThread->logicalHeight();
+    computedValues.m_position = logicalTop;
 }
 
 void RenderMultiColumnSpannerPlaceholder::invalidateTreeIfNeeded(const PaintInvalidationState& paintInvalidationState)
@@ -64,6 +69,17 @@ void RenderMultiColumnSpannerPlaceholder::invalidateTreeIfNeeded(const PaintInva
     PaintInvalidationState newPaintInvalidationState(paintInvalidationState, *this, paintInvalidationState.paintInvalidationContainer());
     m_rendererInFlowThread->invalidateTreeIfNeeded(newPaintInvalidationState);
     RenderBox::invalidateTreeIfNeeded(paintInvalidationState);
+}
+
+void RenderMultiColumnSpannerPlaceholder::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+{
+    if (!m_rendererInFlowThread->hasSelfPaintingLayer())
+        m_rendererInFlowThread->paint(paintInfo, paintOffset);
+}
+
+bool RenderMultiColumnSpannerPlaceholder::nodeAtPoint(const HitTestRequest& request, HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction action)
+{
+    return !m_rendererInFlowThread->hasSelfPaintingLayer() && m_rendererInFlowThread->nodeAtPoint(request, result, locationInContainer, accumulatedOffset, action);
 }
 
 const char* RenderMultiColumnSpannerPlaceholder::renderName() const

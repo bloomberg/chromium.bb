@@ -64,6 +64,13 @@ public:
     // can easily avoid drawing the children directly.
     virtual LayerType layerTypeRequired() const override final { return NormalLayer; }
 
+    // Skip past a column spanner during flow thread layout. Spanners are not laid out inside the
+    // flow thread, since the flow thread is not in a spanner's containing block chain (since the
+    // containing block is the multicol container). If the spanner follows right after a column set
+    // (as opposed to following another spanner), we may have to stretch the flow thread to ensure
+    // completely filled columns in the preceding column set. Return this adjustment, if any.
+    virtual LayoutUnit skipColumnSpanner(RenderBox*, LayoutUnit logicalTopInFlowThread) { return LayoutUnit(); }
+
     virtual void flowThreadDescendantWasInserted(RenderObject*) { }
     virtual void flowThreadDescendantWillBeRemoved(RenderObject*) { }
 
@@ -110,21 +117,21 @@ public:
     // Used to estimate the maximum height of the flow thread.
     static LayoutUnit maxLogicalHeight() { return LayoutUnit::max() / 2; }
 
+    virtual RenderMultiColumnSet* columnSetAtBlockOffset(LayoutUnit) const = 0;
+
 protected:
     virtual const char* renderName() const = 0;
 
     void updateRegionsFlowThreadPortionRect();
-
-    virtual RenderMultiColumnSet* columnSetAtBlockOffset(LayoutUnit) const = 0;
 
     RenderMultiColumnSetList m_multiColumnSetList;
 
     typedef PODInterval<LayoutUnit, RenderMultiColumnSet*> MultiColumnSetInterval;
     typedef PODIntervalTree<LayoutUnit, RenderMultiColumnSet*> MultiColumnSetIntervalTree;
 
-    class RegionSearchAdapter {
+    class MultiColumnSetSearchAdapter {
     public:
-        RegionSearchAdapter(LayoutUnit offset)
+        MultiColumnSetSearchAdapter(LayoutUnit offset)
             : m_offset(offset)
             , m_result(0)
         {
@@ -134,11 +141,11 @@ protected:
         const LayoutUnit& highValue() const { return m_offset; }
         void collectIfNeeded(const MultiColumnSetInterval&);
 
-        RenderRegion* result() const { return m_result; }
+        RenderMultiColumnSet* result() const { return m_result; }
 
     private:
         LayoutUnit m_offset;
-        RenderRegion* m_result;
+        RenderMultiColumnSet* m_result;
     };
 
     MultiColumnSetIntervalTree m_multiColumnSetIntervalTree;
