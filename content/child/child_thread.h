@@ -27,6 +27,7 @@ class TraceMemoryController;
 }  // namespace base
 
 namespace IPC {
+class MessageFilter;
 class SyncChannel;
 class SyncMessageFilter;
 }  // namespace IPC
@@ -61,16 +62,19 @@ class CONTENT_EXPORT ChildThread : public IPC::Listener, public IPC::Sender {
   struct CONTENT_EXPORT Options {
     Options();
     explicit Options(bool mojo);
-    Options(std::string name, bool mojo)
-        : channel_name(name), use_mojo_channel(mojo) {}
+    Options(std::string name, bool mojo);
+    ~Options();
 
     std::string channel_name;
     bool use_mojo_channel;
+    bool in_browser_process;
+    std::vector<IPC::MessageFilter*> startup_filters;
   };
 
   // Creates the thread.
   ChildThread();
-  // Used for single-process mode and for in process gpu mode.
+  // Allow to be used for single-process mode and for in process gpu mode via
+  // options.
   explicit ChildThread(const Options& options);
   // ChildProcess::main_thread() is reset after Shutdown(), and before the
   // destructor, so any subsystem that relies on ChildProcess::main_thread()
@@ -207,7 +211,10 @@ class CONTENT_EXPORT ChildThread : public IPC::Listener, public IPC::Sender {
   };
 
   void Init(const Options& options);
-  scoped_ptr<IPC::SyncChannel> CreateChannel(bool use_mojo_channel);
+
+  // We create the channel first without connecting it so we can add filters
+  // prior to any messages being received, then connect it afterwards.
+  void ConnectChannel(bool use_mojo_channel);
 
   // IPC message handlers.
   void OnShutdown();

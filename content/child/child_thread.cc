@@ -202,13 +202,23 @@ void QuitMainThreadMessageLoop() {
 ChildThread::Options::Options()
     : channel_name(base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kProcessChannelID)),
-      use_mojo_channel(false) {}
+      use_mojo_channel(false),
+      in_browser_process(false) {
+}
 
 ChildThread::Options::Options(bool mojo)
     : channel_name(base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kProcessChannelID)),
-      use_mojo_channel(mojo) {}
+      use_mojo_channel(mojo),
+      in_browser_process(true) {
+}
 
+ChildThread::Options::Options(std::string name, bool mojo)
+    : channel_name(name), use_mojo_channel(mojo), in_browser_process(true) {
+}
+
+ChildThread::Options::~Options() {
+}
 
 ChildThread::ChildThreadMessageRouter::ChildThreadMessageRouter(
     IPC::Sender* sender)
@@ -227,30 +237,22 @@ ChildThread::ChildThread()
 
 ChildThread::ChildThread(const Options& options)
     : router_(this),
-      in_browser_process_(true),
+      in_browser_process_(options.in_browser_process),
       channel_connected_factory_(this) {
   Init(options);
 }
 
-scoped_ptr<IPC::SyncChannel> ChildThread::CreateChannel(bool use_mojo_channel) {
+void ChildThread::ConnectChannel(bool use_mojo_channel) {
+  bool create_pipe_now = true;
   if (use_mojo_channel) {
     VLOG(1) << "Mojo is enabled on child";
-    return IPC::SyncChannel::Create(
-        IPC::ChannelMojo::CreateClientFactory(channel_name_),
-        this,
-        ChildProcess::current()->io_message_loop_proxy(),
-        true,
-        ChildProcess::current()->GetShutDownEvent());
+    channel_->Init(IPC::ChannelMojo::CreateClientFactory(channel_name_),
+                   create_pipe_now);
+    return;
   }
 
   VLOG(1) << "Mojo is disabled on child";
-  return IPC::SyncChannel::Create(
-      channel_name_,
-      IPC::Channel::MODE_CLIENT,
-      this,
-      ChildProcess::current()->io_message_loop_proxy(),
-      true,
-      ChildProcess::current()->GetShutDownEvent());
+  channel_->Init(channel_name_, IPC::Channel::MODE_CLIENT, create_pipe_now);
 }
 
 void ChildThread::Init(const Options& options) {
@@ -265,7 +267,9 @@ void ChildThread::Init(const Options& options) {
   // the logger, and the logger does not like being created on the IO thread.
   IPC::Logging::GetInstance();
 #endif
-  channel_ = CreateChannel(options.use_mojo_channel);
+  channel_ = IPC::SyncChannel::Create(
+      this, ChildProcess::current()->io_message_loop_proxy(),
+      ChildProcess::current()->GetShutDownEvent());
 #ifdef IPC_MESSAGE_LOG_ENABLED
   if (!in_browser_process_)
     IPC::Logging::GetInstance()->SetIPCSender(this);
@@ -339,6 +343,13 @@ void ChildThread::Init(const Options& options) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kProcessType))
     channel_->AddFilter(new SuicideOnChannelErrorFilter());
 #endif
+
+  // Add filters passed here via options.
+  for (auto startup_filter : options.startup_filters) {
+    channel_->AddFilter(startup_filter);
+  }
+
+  ConnectChannel(options.use_mojo_channel);
 
   int connection_timeout = kConnectionTimeoutS;
   std::string connection_override =
