@@ -102,10 +102,6 @@ private:
     int m_textOffset;
     int m_textLength;
 
-    // Used to do the whitespace logic.
-    RawPtrWillBeMember<Text> m_lastTextNode;
-    UChar m_lastCharacter;
-
     // Used for whitespace characters that aren't in the DOM, so we can point at them.
     UChar m_singleCharacterBuffer;
 

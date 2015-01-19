@@ -72,8 +72,6 @@ SimplifiedBackwardsTextIterator::SimplifiedBackwardsTextIterator(const Range* r,
     , m_positionEndOffset(0)
     , m_textOffset(0)
     , m_textLength(0)
-    , m_lastTextNode(nullptr)
-    , m_lastCharacter(0)
     , m_singleCharacterBuffer(0)
     , m_havePassedStartNode(false)
     , m_shouldHandleFirstLetter(false)
@@ -110,8 +108,6 @@ SimplifiedBackwardsTextIterator::SimplifiedBackwardsTextIterator(const Position&
     , m_positionEndOffset(0)
     , m_textOffset(0)
     , m_textLength(0)
-    , m_lastTextNode(nullptr)
-    , m_lastCharacter(0)
     , m_singleCharacterBuffer(0)
     , m_havePassedStartNode(false)
     , m_shouldHandleFirstLetter(false)
@@ -165,9 +161,6 @@ void SimplifiedBackwardsTextIterator::init(Node* startNode, Node* endNode, int s
     // Need this just because of the assert.
     m_positionNode = endNode;
 #endif
-
-    m_lastTextNode = nullptr;
-    m_lastCharacter = '\n';
 
     m_havePassedStartNode = false;
 
@@ -258,8 +251,6 @@ void SimplifiedBackwardsTextIterator::advance()
 
 bool SimplifiedBackwardsTextIterator::handleTextNode()
 {
-    m_lastTextNode = toText(m_node);
-
     int startOffset;
     int offsetInNode;
     RenderText* renderer = handleFirstLetter(startOffset, offsetInNode);
@@ -284,8 +275,6 @@ bool SimplifiedBackwardsTextIterator::handleTextNode()
     m_textContainer = text;
     m_singleCharacterBuffer = 0;
     RELEASE_ASSERT(static_cast<unsigned>(m_textOffset + m_textLength) <= text.length());
-
-    m_lastCharacter = text[m_positionEndOffset - 1];
 
     return !m_shouldHandleFirstLetter;
 }
@@ -372,7 +361,6 @@ void SimplifiedBackwardsTextIterator::emitCharacter(UChar c, Node* node, int sta
     m_positionEndOffset = endOffset;
     m_textOffset = 0;
     m_textLength = 1;
-    m_lastCharacter = c;
 }
 
 bool SimplifiedBackwardsTextIterator::advanceRespectingRange(Node* next)
