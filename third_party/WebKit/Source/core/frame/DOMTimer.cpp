@@ -30,7 +30,6 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
-#include "platform/Logging.h"
 #include "platform/TraceEvent.h"
 #include "wtf/CurrentTime.h"
 
@@ -72,13 +71,11 @@ int DOMTimer::install(ExecutionContext* context, PassOwnPtr<ScheduledAction> act
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "TimerInstall", "data", InspectorTimerInstallEvent::data(context, timeoutID, timeout, singleShot));
     // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
     InspectorInstrumentation::didInstallTimer(context, timeoutID, timeout, singleShot);
-    WTF_LOG(Timers, "DOMTimer::install: timeoutID = %d, timeout = %d, singleShot = %d", timeoutID, timeout, singleShot ? 1 : 0);
     return timeoutID;
 }
 
 void DOMTimer::removeByID(ExecutionContext* context, int timeoutID)
 {
-    WTF_LOG(Timers, "DOMTimer::removeByID: timeoutID = %d", timeoutID);
     context->timers()->removeTimeoutByID(timeoutID);
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "TimerRemove", "data", InspectorTimerRemoveEvent::data(context, timeoutID));
     // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
@@ -136,8 +133,6 @@ void DOMTimer::fired()
                 augmentRepeatInterval(minimumInterval - repeatInterval());
         }
 
-        WTF_LOG(Timers, "DOMTimer::fired: m_timeoutID = %d, repeatInterval = %f, m_action = %p", m_timeoutID, repeatInterval(), m_action.get());
-
         // No access to member variables after this point, it can delete the timer.
         m_action->execute(context);
 
@@ -145,8 +140,6 @@ void DOMTimer::fired()
 
         return;
     }
-
-    WTF_LOG(Timers, "DOMTimer::fired: m_timeoutID = %d, one-shot, m_action = %p", m_timeoutID, m_action.get());
 
     RefPtrWillBeRawPtr<DOMTimer> protect(this);
 
