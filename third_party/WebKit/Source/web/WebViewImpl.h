@@ -195,7 +195,6 @@ public:
     virtual float pageScaleFactor() const override;
     virtual void setDefaultPageScaleLimits(float minScale, float maxScale) override;
     virtual void setInitialPageScaleOverride(float) override;
-    virtual void setPageScaleFactorLimits(float minPageScale, float maxPageScale) override;
     virtual void setMainFrameScrollOffset(const WebPoint&) override;
     virtual void setPageScaleFactor(float) override;
     virtual void setPinchViewportOffset(const WebFloatPoint&) override;

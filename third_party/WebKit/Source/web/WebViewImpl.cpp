@@ -3196,10 +3196,6 @@ void WebViewImpl::setInitialPageScaleOverride(float initialPageScaleFactorOverri
     setUserAgentPageScaleConstraints(constraints);
 }
 
-void WebViewImpl::setPageScaleFactorLimits(float minPageScale, float maxPageScale)
-{
-}
-
 void WebViewImpl::setIgnoreViewportTagScaleLimits(bool ignore)
 {
     PageScaleConstraints constraints = m_pageScaleConstraintsSet.userAgentConstraints();

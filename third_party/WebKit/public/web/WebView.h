@@ -258,11 +258,6 @@ public:
         float minScale,
         float maxScale) = 0;
 
-    // PageScaleFactor will be force-clamped between minPageScale and maxPageScale
-    // (and these values will persist until setPageScaleFactorLimits is called
-    // again).
-    virtual void setPageScaleFactorLimits(float minPageScale, float maxPageScale) = 0;
-
     // Sets the initial page scale to the given factor. This scale setting overrides
     // page scale set in the page's viewport meta tag.
     virtual void setInitialPageScaleOverride(float) = 0;

@@ -48,9 +48,6 @@ crbug.com/428980 fast/events/drag-and-drop-autoscroll-mainframe.html [ Timeout ]
 crbug.com/428980 virtual/slimmingpaint/fast/events/drag-and-drop-autoscroll-mainframe.html [ Timeout ]
 crbug.com/428980 compositing/layer-creation/fixed-position-out-of-view-scaled-scroll.html [ Failure ]
 
-# Temporarily needed to land multi-side patch. Will be removed when Chrome side lands.
-Bug(bokan) inspector/device-emulation/device-emulation-small.html [ Failure ]
-
 crbug.com/437743 virtual/slimmingpaint/fast/block/float/overhanging-tall-block.html [ Skip ]
 
 crbug.com/446356 [ Linux Debug ] fast/svg/whitespace-length-invalid.html [ Failure Timeout ]
