@@ -22,6 +22,7 @@
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InspectorStyleSheet.h"
 #include "platform/Decimal.h"
+#include "platform/animation/TimingFunction.h"
 
 namespace AnimationAgentState {
 static const char animationAgentEnabled[] = "animationAgentEnabled";
@@ -81,7 +82,8 @@ PassRefPtr<TypeBuilder::Animation::AnimationNode> InspectorAnimationAgent::build
         .setDirection(computedTiming.direction())
         .setFill(computedTiming.fill())
         .setName(animationNode->name())
-        .setBackendNodeId(InspectorNodeIds::idForNode(toAnimation(animationNode)->target()));
+        .setBackendNodeId(InspectorNodeIds::idForNode(toAnimation(animationNode)->target()))
+        .setEasing(animationNode->specifiedTiming().timingFunction->toString());
     return animationObject.release();
 }
 
@@ -107,12 +109,13 @@ PassRefPtr<TypeBuilder::Animation::AnimationPlayer> InspectorAnimationAgent::bui
     return playerObject.release();
 }
 
-static PassRefPtr<TypeBuilder::Animation::KeyframeStyle> buildObjectForStyleRuleKeyframe(StyleRuleKeyframe* keyframe)
+static PassRefPtr<TypeBuilder::Animation::KeyframeStyle> buildObjectForStyleRuleKeyframe(StyleRuleKeyframe* keyframe, TimingFunction& easing)
 {
     RefPtrWillBeRawPtr<InspectorStyle> inspectorStyle = InspectorStyle::create(InspectorCSSId(), keyframe->mutableProperties().ensureCSSStyleDeclaration(), 0);
     RefPtr<TypeBuilder::Animation::KeyframeStyle> keyframeObject = TypeBuilder::Animation::KeyframeStyle::create()
         .setOffset(keyframe->keyText())
-        .setStyle(inspectorStyle->buildObjectForStyle());
+        .setStyle(inspectorStyle->buildObjectForStyle())
+        .setEasing(easing.toString());
     return keyframeObject.release();
 }
 
@@ -125,16 +128,25 @@ static PassRefPtr<TypeBuilder::Animation::KeyframeStyle> buildObjectForStringKey
 
     RefPtr<TypeBuilder::Animation::KeyframeStyle> keyframeObject = TypeBuilder::Animation::KeyframeStyle::create()
         .setOffset(offset)
-        .setStyle(inspectorStyle->buildObjectForStyle());
+        .setStyle(inspectorStyle->buildObjectForStyle())
+        .setEasing(keyframe->easing().toString());
     return keyframeObject.release();
 }
 
-static PassRefPtr<TypeBuilder::Animation::KeyframesRule> buildObjectForStyleRuleKeyframes(const StyleRuleKeyframes* keyframesRule)
+static PassRefPtr<TypeBuilder::Animation::KeyframesRule> buildObjectForStyleRuleKeyframes(const AnimationPlayer& player, const StyleRuleKeyframes* keyframesRule)
 {
     RefPtr<TypeBuilder::Array<TypeBuilder::Animation::KeyframeStyle> > keyframes = TypeBuilder::Array<TypeBuilder::Animation::KeyframeStyle>::create();
     const WillBeHeapVector<RefPtrWillBeMember<StyleRuleKeyframe> >& styleKeyframes = keyframesRule->keyframes();
-    for (const auto& styleKeyframe : styleKeyframes)
-        keyframes->addItem(buildObjectForStyleRuleKeyframe(styleKeyframe.get()));
+    for (const auto& styleKeyframe : styleKeyframes) {
+        WillBeHeapVector<RefPtrWillBeMember<Keyframe> > normalizedKeyframes = KeyframeEffectModelBase::normalizedKeyframesForInspector(toKeyframeEffectModelBase(toAnimation(player.source())->effect())->getFrames());
+        TimingFunction* easing = nullptr;
+        for (const auto& keyframe : normalizedKeyframes) {
+            if (styleKeyframe->keys().contains(keyframe->offset()))
+                easing = &keyframe->easing();
+        }
+        ASSERT(easing);
+        keyframes->addItem(buildObjectForStyleRuleKeyframe(styleKeyframe.get(), *easing));
+    }
 
     RefPtr<TypeBuilder::Animation::KeyframesRule> keyframesObject = TypeBuilder::Animation::KeyframesRule::create()
         .setKeyframes(keyframes);
@@ -173,7 +185,7 @@ static PassRefPtr<TypeBuilder::Animation::KeyframesRule> buildObjectForKeyframes
     if (!animationName.isNull()) {
         // CSS Animations
         const StyleRuleKeyframes* keyframes = styleResolver.findKeyframesRule(element, animationName);
-        keyframeRule = buildObjectForStyleRuleKeyframes(keyframes);
+        keyframeRule = buildObjectForStyleRuleKeyframes(player, keyframes);
     } else {
         // Web Animations
         keyframeRule = buildObjectForAnimationKeyframes(toAnimation(player.source()));

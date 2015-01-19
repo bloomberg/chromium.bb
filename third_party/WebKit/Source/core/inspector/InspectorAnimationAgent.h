@@ -17,6 +17,7 @@ class AnimationNode;
 class AnimationPlayer;
 class Element;
 class InspectorDOMAgent;
+class TimingFunction;
 
 class InspectorAnimationAgent final : public InspectorBaseAgent<InspectorAnimationAgent>, public InspectorBackendDispatcher::AnimationCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorAnimationAgent);

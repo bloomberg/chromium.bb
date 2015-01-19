@@ -35,7 +35,7 @@ function test()
             var rows = element.querySelectorAll(".timeline-details-view-row");
             for (var i = 0; i < rows.length; ++i) {
                 if (rows[i].firstChild.textContent.indexOf(row) !== -1) {
-                    rows[i].lastChild.firstChild.click();
+                    rows[i].lastChild.firstChild.shadowRoot.lastChild.click();
                     return;
                 }
             }

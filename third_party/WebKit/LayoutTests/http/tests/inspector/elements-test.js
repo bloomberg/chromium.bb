@@ -247,8 +247,12 @@ InspectorTest.dumpSelectedElementStyles = function(excludeComputed, excludeMatch
                 continue;
             if (section.element && section.element.classList.contains("user-rule") && !WebInspector.settings.showUserAgentStyles.get())
                 continue;
-            if (section.element.previousSibling && section.element.previousSibling.className === "sidebar-separator")
-                InspectorTest.addResult("======== " + section.element.previousSibling.textContent + " ========");
+            if (section.element.previousSibling && section.element.previousSibling.className === "sidebar-separator") {
+                var nodeDescription = "";
+                if (section.element.previousSibling.firstElementChild)
+                    nodeDescription = section.element.previousSibling.firstElementChild.shadowRoot.lastChild.textContent;
+                InspectorTest.addResult("======== " + section.element.previousSibling.textContent + nodeDescription + " ========");
+            }
             printStyleSection(section, omitLonghands, includeSelectorGroupMarks);
         }
         InspectorTest.addResult("");
@@ -366,7 +370,8 @@ InspectorTest.expandAndDumpSelectedElementEventListeners = function(callback)
 InspectorTest.dumpObjectPropertySection = function(section, formatters)
 {
     var expandedSubstring = section.expanded ? "[expanded]" : "[collapsed]";
-    InspectorTest.addResult(expandedSubstring + " " + section.titleElement.textContent + " " + section.subtitleAsTextForTest);
+    var titleElement = section.titleElement.firstElementChild ? section.titleElement.firstElementChild.shadowRoot.lastChild.textContent : section.titleElement.textContent;
+    InspectorTest.addResult(expandedSubstring + " " + titleElement + " " + section.subtitleAsTextForTest);
     if (!section.propertiesForTest)
         return;
 
