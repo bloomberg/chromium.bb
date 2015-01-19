@@ -294,9 +294,6 @@
     {
       'target_name': 'remoting_browser_test_resources',
       'type': 'none',
-      'variables': {
-        'zip_script': '../build/android/gyp/zip.py',
-      },
       'copies': [
         {
           'destination': '<(PRODUCT_DIR)/remoting/browser_test_resources',
