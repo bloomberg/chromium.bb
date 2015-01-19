@@ -319,7 +319,6 @@ void PushMessagingServiceImpl::RegisterFromDocument(
   const PermissionRequestID id(
       renderer_id, web_contents->GetRoutingID(), bridge_id, GURL());
 
-  GURL embedding_origin = web_contents->GetLastCommittedURL().GetOrigin();
   gcm::PushMessagingPermissionContext* permission_context =
       gcm::PushMessagingPermissionContextFactory::GetForProfile(profile_);
 
@@ -336,7 +335,7 @@ void PushMessagingServiceImpl::RegisterFromDocument(
   // re-introduce the ability of |user_gesture| when bubbles require this.
   // https://crbug.com/423770.
   permission_context->RequestPermission(
-      web_contents, id, embedding_origin, true /* user_gesture */,
+      web_contents, id, requesting_origin, true /* user_gesture */,
       base::Bind(&PushMessagingServiceImpl::DidRequestPermission,
                  weak_factory_.GetWeakPtr(), application_id, sender_id,
                  callback));
