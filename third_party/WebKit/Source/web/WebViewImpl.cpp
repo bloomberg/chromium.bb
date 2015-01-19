@@ -3080,7 +3080,7 @@ void WebViewImpl::setPageScaleFactor(float scaleFactor)
 
 void WebViewImpl::setMainFrameScrollOffset(const WebPoint& origin)
 {
-    updateMainFrameScrollPosition(origin, false);
+    updateMainFrameScrollPosition(DoublePoint(origin.x, origin.y), false);
 }
 
 void WebViewImpl::setPageScaleFactor(float scaleFactor, const WebPoint& origin)
@@ -4290,7 +4290,7 @@ void WebViewImpl::setIsAcceleratedCompositingActive(bool active)
         page()->deprecatedLocalMainFrame()->view()->setClipsRepaints(!m_isAcceleratedCompositingActive);
 }
 
-void WebViewImpl::updateMainFrameScrollPosition(const IntPoint& scrollPosition, bool programmaticScroll)
+void WebViewImpl::updateMainFrameScrollPosition(const DoublePoint& scrollPosition, bool programmaticScroll)
 {
     if (!page()->mainFrame()->isLocalFrame())
         return;
@@ -4300,7 +4300,7 @@ void WebViewImpl::updateMainFrameScrollPosition(const IntPoint& scrollPosition, 
     if (!frameView)
         return;
 
-    if (frameView->scrollPosition() == scrollPosition)
+    if (frameView->scrollPositionDouble() == scrollPosition)
         return;
 
     bool oldProgrammaticScroll = frameView->inProgrammaticScroll();
@@ -4309,7 +4309,7 @@ void WebViewImpl::updateMainFrameScrollPosition(const IntPoint& scrollPosition, 
     frameView->setInProgrammaticScroll(oldProgrammaticScroll);
 }
 
-void WebViewImpl::updateRootLayerScrollPosition(const IntPoint& scrollPosition)
+void WebViewImpl::updateRootLayerScrollPosition(const DoublePoint& scrollPosition)
 {
     if (!page()->mainFrame()->isLocalFrame())
         return;
@@ -4320,7 +4320,7 @@ void WebViewImpl::updateRootLayerScrollPosition(const IntPoint& scrollPosition)
         return;
 
     ScrollableArea* scrollableArea = frameView->renderView()->layer()->scrollableArea();
-    if (scrollableArea->scrollPosition() == scrollPosition)
+    if (scrollableArea->scrollPositionDouble() == scrollPosition)
         return;
     scrollableArea->notifyScrollPositionChanged(scrollPosition);
 }
@@ -4358,8 +4358,9 @@ void WebViewImpl::applyViewportDeltas(
     else
         outerViewport = frameView;
 
-    IntPoint outerViewportOffset = outerViewport->scrollPosition();
-    outerViewportOffset.move(outerViewportDelta.width, outerViewportDelta.height);
+    DoublePoint outerViewportOffset = outerViewport->scrollPositionDouble() +
+        IntSize(outerViewportDelta.width, outerViewportDelta.height);
+
     if (rootLayerScrolls)
         updateRootLayerScrollPosition(outerViewportOffset);
     else

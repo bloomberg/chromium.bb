@@ -180,10 +180,10 @@ void ScrollableArea::programmaticallyScrollSmoothlyToOffset(const FloatPoint& of
     programmaticScrollAnimator()->animateToOffset(offset);
 }
 
-void ScrollableArea::notifyScrollPositionChanged(const IntPoint& position)
+void ScrollableArea::notifyScrollPositionChanged(const DoublePoint& position)
 {
-    scrollPositionChanged(DoublePoint(position));
-    scrollAnimator()->setCurrentPosition(scrollPosition());
+    scrollPositionChanged(position);
+    scrollAnimator()->setCurrentPosition(toFloatPoint(scrollPositionDouble()));
 }
 
 void ScrollableArea::scrollPositionChanged(const DoublePoint& position)

@@ -407,6 +407,21 @@ TEST_F(PinchViewportTest, TestVisibleRect)
     EXPECT_FLOAT_RECT_EQ(expectedRect, pinchViewport.visibleRect());
 }
 
+TEST_F(PinchViewportTest, TestFractionalScrollOffsetIsNotOverwritten)
+{
+    initializeWithAndroidSettings();
+    webViewImpl()->resize(IntSize(200, 250));
+
+    registerMockedHttpURLLoad("200-by-800-viewport.html");
+    navigateTo(m_baseURL + "200-by-800-viewport.html");
+
+    FrameView& frameView = *webViewImpl()->mainFrameImpl()->frameView();
+    frameView.scrollTo(DoublePoint(0, 10.5));
+    webViewImpl()->applyViewportDeltas(WebSize(), WebSize(10, 20), WebFloatSize(), 1, 0);
+
+    EXPECT_EQ(30.5, frameView.scrollPositionDouble().y());
+}
+
 // Test that the viewport's scroll offset is always appropriately bounded such that the
 // pinch viewport always stays within the bounds of the main frame.
 TEST_F(PinchViewportTest, TestOffsetClamping)

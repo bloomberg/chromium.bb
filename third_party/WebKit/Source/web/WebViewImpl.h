@@ -531,8 +531,8 @@ private:
     float clampPageScaleFactorToLimits(float) const;
     IntSize contentsSize() const;
 
-    void updateMainFrameScrollPosition(const IntPoint& scrollPosition, bool programmaticScroll);
-    void updateRootLayerScrollPosition(const IntPoint& scrollPosition);
+    void updateMainFrameScrollPosition(const DoublePoint& scrollPosition, bool programmaticScroll);
+    void updateRootLayerScrollPosition(const DoublePoint& scrollPosition);
 
     void performResize();
 

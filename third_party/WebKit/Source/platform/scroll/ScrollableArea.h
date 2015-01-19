@@ -72,7 +72,7 @@ public:
 
     // Should be called when the scroll position changes externally, for example if the scroll layer position
     // is updated on the scrolling thread and we need to notify the main thread.
-    void notifyScrollPositionChanged(const IntPoint&);
+    void notifyScrollPositionChanged(const DoublePoint&);
 
     static bool scrollBehaviorFromString(const String&, ScrollBehavior&);
 
