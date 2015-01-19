@@ -407,6 +407,9 @@ PDFViewer.prototype = {
       case 'cancelStreamUrl':
         chrome.streamsPrivate.abort(this.streamDetails_.streamUrl);
         break;
+      case 'bookmarks':
+        this.bookmarks_ = message.data.bookmarks;
+        break;
     }
   },
 

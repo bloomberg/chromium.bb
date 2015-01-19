@@ -73,6 +73,9 @@ const char kJSPageHeight[] = "height";
 // Document load progress arguments (Plugin -> Page)
 const char kJSLoadProgressType[] = "loadProgress";
 const char kJSProgressPercentage[] = "progress";
+// Bookmarks
+const char kJSBookmarksType[] = "bookmarks";
+const char kJSBookmarks[] = "bookmarks";
 // Get password arguments (Plugin -> Page)
 const char kJSGetPasswordType[] = "getPassword";
 // Get password complete arguments (Page -> Plugin)
@@ -1110,6 +1113,11 @@ void OutOfProcessInstance::DocumentLoadComplete(int page_count) {
   message.Set(pp::Var(kType), pp::Var(kJSLoadProgressType));
   message.Set(pp::Var(kJSProgressPercentage), pp::Var(100)) ;
   PostMessage(message);
+
+  pp::VarDictionary bookmarksMessage;
+  bookmarksMessage.Set(pp::Var(kType), pp::Var(kJSBookmarksType));
+  bookmarksMessage.Set(pp::Var(kJSBookmarks), engine_->GetBookmarks());
+  PostMessage(bookmarksMessage);
 
   if (!full_)
     return;

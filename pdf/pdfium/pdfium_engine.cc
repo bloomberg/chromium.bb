@@ -31,6 +31,7 @@
 #include "ppapi/cpp/trusted/browser_font_trusted.h"
 #include "ppapi/cpp/url_response_info.h"
 #include "ppapi/cpp/var.h"
+#include "ppapi/cpp/var_dictionary.h"
 #include "third_party/pdfium/fpdfsdk/include/fpdf_ext.h"
 #include "third_party/pdfium/fpdfsdk/include/fpdf_flatten.h"
 #include "third_party/pdfium/fpdfsdk/include/fpdf_searchex.h"
@@ -512,6 +513,44 @@ void FormatStringForOS(base::string16* text) {
 #else
   NOTIMPLEMENTED();
 #endif
+}
+
+// Returns a VarDictionary (representing a bookmark), which in turn contains
+// child VarDictionaries (representing the child bookmarks).
+// If NULL is passed in as the bookmark then we traverse from the "root".
+// Note that the "root" bookmark contains no useful information.
+pp::VarDictionary TraverseBookmarks(FPDF_DOCUMENT doc, FPDF_BOOKMARK bookmark) {
+  pp::VarDictionary dict;
+  base::string16 title;
+  unsigned long buffer_size = FPDFBookmark_GetTitle(bookmark, NULL, 0);
+  size_t title_length = buffer_size / sizeof(base::string16::value_type);
+
+  if (title_length > 0) {
+    PDFiumAPIStringBufferAdapter<base::string16> api_string_adapter(
+        &title, title_length, true);
+    void* data = api_string_adapter.GetData();
+    FPDFBookmark_GetTitle(bookmark, data, buffer_size);
+    api_string_adapter.Close(title_length);
+  }
+  dict.Set(pp::Var("title"), pp::Var(base::UTF16ToUTF8(title)));
+
+  FPDF_DEST dest = FPDFBookmark_GetDest(doc, bookmark);
+  // Some bookmarks don't have a page to select.
+  if (dest) {
+    int page_index = FPDFDest_GetPageIndex(doc, dest);
+    dict.Set(pp::Var("page"), pp::Var(page_index));
+  }
+
+  pp::VarArray children;
+  int child_index = 0;
+  for (FPDF_BOOKMARK child_bookmark = FPDFBookmark_GetFirstChild(doc, bookmark);
+      child_bookmark != NULL;
+      child_bookmark = FPDFBookmark_GetNextSibling(doc, child_bookmark)) {
+    children.Set(child_index, TraverseBookmarks(doc, child_bookmark));
+    child_index++;
+  }
+  dict.Set(pp::Var("children"), children);
+  return dict;
 }
 
 }  // namespace
@@ -2318,6 +2357,13 @@ void PDFiumEngine::SelectAll() {
 
 int PDFiumEngine::GetNumberOfPages() {
   return pages_.size();
+}
+
+
+pp::VarArray PDFiumEngine::GetBookmarks() {
+  pp::VarDictionary dict = TraverseBookmarks(doc_, NULL);
+  // The root bookmark contains no useful information.
+  return pp::VarArray(dict.Get(pp::Var("children")));
 }
 
 int PDFiumEngine::GetNamedDestinationPage(const std::string& destination) {
