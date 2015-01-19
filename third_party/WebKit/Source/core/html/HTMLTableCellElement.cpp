@@ -31,6 +31,7 @@
 #include "core/dom/Attribute.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/html/HTMLTableElement.h"
+#include "core/html/parser/HTMLParserIdioms.h"
 #include "core/rendering/RenderTableCell.h"
 
 using std::max;
@@ -57,13 +58,19 @@ DEFINE_ELEMENT_FACTORY_WITH_TAGNAME(HTMLTableCellElement)
 int HTMLTableCellElement::colSpan() const
 {
     const AtomicString& colSpanValue = fastGetAttribute(colspanAttr);
-    return max(1, min(colSpanValue.toInt(), maxColRowSpan));
+    int value = 0;
+    if (colSpanValue.isEmpty() || !parseHTMLInteger(colSpanValue, value))
+        return 1;
+    return max(1, min(value, maxColRowSpan));
 }
 
 int HTMLTableCellElement::rowSpan() const
 {
     const AtomicString& rowSpanValue = fastGetAttribute(rowspanAttr);
-    return max(1, min(rowSpanValue.toInt(), maxColRowSpan));
+    int value = 0;
+    if (rowSpanValue.isEmpty() || !parseHTMLInteger(rowSpanValue, value))
+        return 1;
+    return max(1, min(value, maxColRowSpan));
 }
 
 int HTMLTableCellElement::cellIndex() const
