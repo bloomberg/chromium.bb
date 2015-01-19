@@ -170,8 +170,7 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
             return VisibilityStyleInterpolation::create(*fromCSSValue, *toCSSValue, property);
 
         break;
-    case CSSPropertyFill:
-    case CSSPropertyStroke:
+
     case CSSPropertyBackgroundColor:
     case CSSPropertyBorderBottomColor:
     case CSSPropertyBorderLeftColor:
@@ -185,12 +184,18 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
     case CSSPropertyTextDecorationColor:
     case CSSPropertyWebkitColumnRuleColor:
     case CSSPropertyWebkitTextStrokeColor:
-        if (ColorStyleInterpolation::canCreateFrom(*fromCSSValue) && ColorStyleInterpolation::canCreateFrom(*toCSSValue))
-            return ColorStyleInterpolation::create(*fromCSSValue, *toCSSValue, property);
+        {
+            RefPtrWillBeRawPtr<Interpolation> interpolation = ColorStyleInterpolation::maybeCreateFromColor(*fromCSSValue, *toCSSValue, property);
+            if (interpolation)
+                return interpolation.release();
 
-        // FIXME: Handle color keyword cases e.g. black.
-        fallBackToLegacy = true;
-        break;
+            // Current color should use LegacyStyleInterpolation
+            if (ColorStyleInterpolation::shouldUseLegacyStyleInterpolation(*fromCSSValue, *toCSSValue))
+                fallBackToLegacy = true;
+
+            break;
+        }
+
     case CSSPropertyBorderImageSource:
     case CSSPropertyListStyleImage:
     case CSSPropertyWebkitMaskBoxImageSource:

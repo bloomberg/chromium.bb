@@ -17,6 +17,11 @@ public:
     {
         return adoptRefWillBeNoop(new ColorStyleInterpolation(colorToInterpolableValue(start), colorToInterpolableValue(end), id));
     }
+
+    static PassRefPtrWillBeRawPtr<ColorStyleInterpolation> maybeCreateFromColor(const CSSValue& start, const CSSValue& end, CSSPropertyID);
+
+    static bool shouldUseLegacyStyleInterpolation(const CSSValue& start, const CSSValue& end);
+
     static bool canCreateFrom(const CSSValue&);
 
     virtual void apply(StyleResolverState&) const override;

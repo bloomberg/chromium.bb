@@ -63,6 +63,12 @@ TEST_F(AnimationColorStyleInterpolationTest, ZeroAlpha)
     testPrimitiveValue(value, Color::transparent);
 }
 
+TEST_F(AnimationColorStyleInterpolationTest, ValueIDColor)
+{
+    RefPtrWillBeRawPtr<CSSValue> value = roundTrip(CSSPrimitiveValue::createIdentifier(CSSValueID::CSSValueBlue));
+    testPrimitiveValue(value, makeRGB(0, 0, 255));
+}
+
 TEST_F(AnimationColorStyleInterpolationTest, Interpolation)
 {
     RefPtrWillBeRawPtr<Interpolation> interpolation = Interpolation::create(

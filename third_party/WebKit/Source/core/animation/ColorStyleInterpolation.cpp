@@ -5,8 +5,12 @@
 #include "config.h"
 #include "core/animation/ColorStyleInterpolation.h"
 
+#include "core/CSSValueKeywords.h"
 #include "core/css/CSSPrimitiveValue.h"
+#include "core/css/parser/CSSPropertyParser.h"
 #include "core/css/resolver/StyleBuilder.h"
+#include "core/rendering/RenderTheme.h"
+#include "platform/graphics/Color.h"
 #include "wtf/MathExtras.h"
 
 #include <algorithm>
@@ -15,14 +19,26 @@ namespace blink {
 
 bool ColorStyleInterpolation::canCreateFrom(const CSSValue& value)
 {
-    return value.isPrimitiveValue() && toCSSPrimitiveValue(value).isRGBColor();
+    return value.isPrimitiveValue() && (toCSSPrimitiveValue(value).isValueID() || toCSSPrimitiveValue(value).isRGBColor());
 }
 
 PassOwnPtrWillBeRawPtr<InterpolableValue> ColorStyleInterpolation::colorToInterpolableValue(const CSSValue& value)
 {
     ASSERT(value.isPrimitiveValue());
     const CSSPrimitiveValue& primitive = toCSSPrimitiveValue(value);
-    const RGBA32 color = primitive.getRGBA32Value();
+    RGBA32 color;
+    if (primitive.isValueID()) {
+        if (CSSPropertyParser::isSystemColor(primitive.getValueID())) {
+            color = RenderTheme::theme().systemColor(primitive.getValueID()).rgb();
+        } else {
+            Color colorFromID;
+            colorFromID.setNamedColor(getValueName(primitive.getValueID()));
+            color = colorFromID.rgb();
+        }
+    } else {
+        color = primitive.getRGBA32Value();
+    }
+
     int alpha = alphaChannel(color);
 
     OwnPtrWillBeRawPtr<InterpolableList> list = InterpolableList::create(4);
@@ -62,4 +78,21 @@ void ColorStyleInterpolation::trace(Visitor* visitor)
 {
     StyleInterpolation::trace(visitor);
 }
+
+PassRefPtrWillBeRawPtr<ColorStyleInterpolation> ColorStyleInterpolation::maybeCreateFromColor(const CSSValue& start, const CSSValue& end, CSSPropertyID id)
+{
+    if (canCreateFrom(start) && !toCSSPrimitiveValue(start).colorIsDerivedFromElement() && canCreateFrom(end) && !toCSSPrimitiveValue(end).colorIsDerivedFromElement())
+        return adoptRefWillBeNoop(new ColorStyleInterpolation(colorToInterpolableValue(start), colorToInterpolableValue(end), id));
+    return nullptr;
+}
+
+bool ColorStyleInterpolation::shouldUseLegacyStyleInterpolation(const CSSValue& start, const CSSValue& end)
+{
+    if (ColorStyleInterpolation::canCreateFrom(start) && ColorStyleInterpolation::canCreateFrom(end)) {
+        if (toCSSPrimitiveValue(start).colorIsDerivedFromElement() || toCSSPrimitiveValue(end).colorIsDerivedFromElement())
+            return true;
+    }
+    return false;
+}
+
 }
