@@ -25,11 +25,13 @@ namespace {
 const char kHostTransportPrefix[] = "host:transport:";
 const char kLocalAbstractPrefix[] = "localabstract:";
 
-const char kOpenedUnixSocketsCommand[] = "shell:cat /proc/net/unix";
-const char kDeviceModelCommand[] = "shell:getprop ro.product.model";
-const char kDumpsysCommand[] = "shell:dumpsys window policy";
-const char kListProcessesCommand[] = "shell:ps";
-const char kListUsersCommand[] = "shell:dumpsys user";
+const char kShellPrefix[] = "shell:";
+const char kOpenedUnixSocketsCommand[] = "cat /proc/net/unix";
+const char kDeviceModelCommand[] = "getprop ro.product.model";
+const char kDumpsysCommand[] = "dumpsys window policy";
+const char kListProcessesCommand[] = "ps";
+const char kListUsersCommand[] = "dumpsys user";
+const char kEchoCommandPrefix[] = "echo ";
 
 const char kSerialOnline[] = "01498B321301A00A";
 const char kSerialOffline[] = "01498B2B0D01300E";
@@ -544,16 +546,30 @@ void MockAndroidConnection::ProcessCommand(const std::string& command) {
     socket_name_ = command.substr(strlen(kLocalAbstractPrefix));
     delegate_->SendSuccess(std::string());
   } else {
-    if (command == kDeviceModelCommand) {
-      delegate_->SendSuccess(kDeviceModel);
-    } else if (command == kOpenedUnixSocketsCommand) {
-      delegate_->SendSuccess(kSampleOpenedUnixSockets);
-    } else if (command == kDumpsysCommand) {
-      delegate_->SendSuccess(kSampleDumpsys);
-    } else if (command == kListProcessesCommand) {
-      delegate_->SendSuccess(kSampleListProcesses);
-    } else if (command == kListUsersCommand) {
-      delegate_->SendSuccess(kSampleListUsers);
+    if (command.find(kShellPrefix) == 0) {
+      std::vector<std::string> lines;
+      Tokenize(command.substr(strlen(kShellPrefix)), "\n", &lines);
+      std::string result;
+      for (const auto& line : lines) {
+        if (line == kDeviceModelCommand) {
+          result += kDeviceModel;
+          result += "\r\n";
+        } else if (line == kOpenedUnixSocketsCommand) {
+          result += kSampleOpenedUnixSockets;
+        } else if (line == kDumpsysCommand) {
+          result += kSampleDumpsys;
+        } else if (line == kListProcessesCommand) {
+          result += kSampleListProcesses;
+        } else if (line == kListUsersCommand) {
+          result += kSampleListUsers;
+        } else if (line.find(kEchoCommandPrefix) == 0) {
+          result += line.substr(strlen(kEchoCommandPrefix));
+          result += "\r\n";
+        } else {
+          NOTREACHED() << "Unknown shell command - " << command;
+        }
+      }
+      delegate_->SendSuccess(result);
     } else {
       NOTREACHED() << "Unknown command - " << command;
     }

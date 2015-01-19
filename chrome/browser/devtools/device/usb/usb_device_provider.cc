@@ -5,7 +5,6 @@
 #include "chrome/browser/devtools/device/usb/usb_device_provider.h"
 
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/devtools/device/adb/adb_device_info_query.h"
 #include "chrome/browser/devtools/device/usb/android_rsa.h"
 #include "chrome/browser/devtools/device/usb/android_usb_device.h"
 #include "crypto/rsa_private_key.h"
@@ -103,7 +102,8 @@ void UsbDeviceProvider::QueryDeviceInfo(const std::string& serial,
     callback.Run(offline_info);
     return;
   }
-  AdbDeviceInfoQuery::Start(base::Bind(&RunCommand, it->second), callback);
+  AndroidDeviceManager::QueryDeviceInfo(base::Bind(&RunCommand, it->second),
+                                        callback);
 }
 
 void UsbDeviceProvider::OpenSocket(const std::string& serial,

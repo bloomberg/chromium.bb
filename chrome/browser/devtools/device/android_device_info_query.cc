@@ -2,20 +2,31 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/devtools/device/adb/adb_device_info_query.h"
-
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "chrome/browser/devtools/device/android_device_manager.h"
 
 namespace {
 
+#define SEPARATOR "====!@#$%^&*(output separator)*&^%$#@!===="
 
-const char kDeviceModelCommand[] = "shell:getprop ro.product.model";
-const char kOpenedUnixSocketsCommand[] = "shell:cat /proc/net/unix";
-const char kListProcessesCommand[] = "shell:ps";
-const char kWindowPolicyCommand[] = "shell:dumpsys window policy";
-const char kListUsersCommand[] = "shell:dumpsys user";
+const char kAllCommands[] = "shell:"
+    "getprop ro.product.model\n"
+    "echo " SEPARATOR "\n"
+    "dumpsys window policy\n"
+    "echo " SEPARATOR "\n"
+    "ps\n"
+    "echo " SEPARATOR "\n"
+    "cat /proc/net/unix\n"
+    "echo " SEPARATOR "\n"
+    "dumpsys user\n";
+
+const char kSeparator[] = SEPARATOR "\r\n";
+
+#undef SEPARATOR
+
 const char kScreenSizePrefix[] = "mStable=";
 const char kUserInfoPrefix[] = "UserInfo{";
 
@@ -187,7 +198,6 @@ StringMap MapIdsToUsers(const std::string& response) {
   //   UserInfo{10:User with : (colon):10} serialNo=10
   //     Created: +3d4h35m1s139ms ago
   //     Last logged in: +17m26s287ms ago
-
   StringMap id_to_username;
   std::vector<std::string> lines;
   Tokenize(response, "\r", &lines);
@@ -224,11 +234,8 @@ std::string GetUserName(const std::string& unix_user,
   return std::string();
 }
 
-}  // namespace
-
-// static
 AndroidDeviceManager::BrowserInfo::Type
-AdbDeviceInfoQuery::GetBrowserType(const std::string& socket) {
+GetBrowserType(const std::string& socket) {
   if (socket.find(kChromeDefaultSocket) == 0)
     return AndroidDeviceManager::BrowserInfo::kTypeChrome;
 
@@ -238,107 +245,28 @@ AdbDeviceInfoQuery::GetBrowserType(const std::string& socket) {
   return AndroidDeviceManager::BrowserInfo::kTypeOther;
 }
 
-// static
-std::string AdbDeviceInfoQuery::GetDisplayName(const std::string& socket,
-                                               const std::string& package) {
-  if (package.empty()) {
-    // Derive a fallback display name from the socket name.
-    std::string name = socket.substr(0, socket.find(kDevToolsSocketSuffix));
-    name[0] = base::ToUpperASCII(name[0]);
-    return name;
+void ReceivedResponse(const AndroidDeviceManager::DeviceInfoCallback& callback,
+                      int result,
+                      const std::string& response) {
+  AndroidDeviceManager::DeviceInfo device_info;
+  if (result < 0) {
+    callback.Run(device_info);
+    return;
   }
-
-  const BrowserDescriptor* descriptor = FindBrowserDescriptor(package);
-  if (descriptor)
-    return descriptor->display_name;
-
-  if (GetBrowserType(socket) ==
-      AndroidDeviceManager::BrowserInfo::kTypeWebView)
-    return base::StringPrintf(kWebViewNameTemplate, package.c_str());
-
-  return package;
-}
-
-// static
-void AdbDeviceInfoQuery::Start(const RunCommandCallback& command_callback,
-                               const DeviceInfoCallback& callback) {
-  new AdbDeviceInfoQuery(command_callback, callback);
-}
-
-AdbDeviceInfoQuery::AdbDeviceInfoQuery(
-    const RunCommandCallback& command_callback,
-    const DeviceInfoCallback& callback)
-    : callback_(callback) {
-  AddRef();
-  command_callback.Run(
-      kDeviceModelCommand,
-      base::Bind(&AdbDeviceInfoQuery::ReceivedModel, this));
-  command_callback.Run(
-      kWindowPolicyCommand,
-      base::Bind(&AdbDeviceInfoQuery::ReceivedWindowPolicy, this));
-  command_callback.Run(
-      kListProcessesCommand,
-      base::Bind(&AdbDeviceInfoQuery::ReceivedProcesses, this));
-  command_callback.Run(
-      kOpenedUnixSocketsCommand,
-      base::Bind(&AdbDeviceInfoQuery::ReceivedSockets, this));
-  command_callback.Run(
-      kListUsersCommand,
-      base::Bind(&AdbDeviceInfoQuery::ReceivedUsers, this));
-  Release();
-}
-
-AdbDeviceInfoQuery::~AdbDeviceInfoQuery() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  ParseBrowserInfo();
-  callback_.Run(device_info_);
-}
-
-void AdbDeviceInfoQuery::ReceivedModel(int result,
-                                       const std::string& response) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  if (result >= 0) {
-    TrimWhitespaceASCII(response, base::TRIM_ALL, &device_info_.model);
-    device_info_.connected = true;
+  std::vector<std::string> outputs;
+  base::SplitStringUsingSubstr(response, kSeparator, &outputs);
+  if (outputs.size() != 5) {
+    callback.Run(device_info);
+    return;
   }
-}
-
-void AdbDeviceInfoQuery::ReceivedWindowPolicy(int result,
-                                              const std::string& response) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  if (result >= 0)
-    device_info_.screen_size = ParseWindowPolicyResponse(response);
-}
-
-void AdbDeviceInfoQuery::ReceivedProcesses(int result,
-                                           const std::string& response) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  if (result >= 0)
-    processes_response_ = response;
-}
-
-void AdbDeviceInfoQuery::ReceivedSockets(int result,
-                                         const std::string& response) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  if (result >= 0)
-    sockets_response_ = response;
-}
-
-void AdbDeviceInfoQuery::ReceivedUsers(int result,
-                                       const std::string& response) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  if (result >= 0)
-    users_response_ = response;
-}
-
-void AdbDeviceInfoQuery::ParseBrowserInfo() {
+  device_info.connected = true;
+  device_info.model = outputs[0];
+  device_info.screen_size = ParseWindowPolicyResponse(outputs[1]);
   StringMap pid_to_package;
   StringMap pid_to_user;
-  MapProcessesToPackages(processes_response_,
-                         &pid_to_package,
-                         &pid_to_user);
-  StringMap socket_to_pid = MapSocketsToProcesses(sockets_response_);
-  StringMap id_to_username = MapIdsToUsers(users_response_);
+  MapProcessesToPackages(outputs[2], &pid_to_package, &pid_to_user);
+  StringMap socket_to_pid = MapSocketsToProcesses(outputs[3]);
+  StringMap id_to_username = MapIdsToUsers(outputs[4]);
   std::set<std::string> used_pids;
   for (const auto& pair : socket_to_pid)
     used_pids.insert(pair.second);
@@ -364,12 +292,46 @@ void AdbDeviceInfoQuery::ParseBrowserInfo() {
     AndroidDeviceManager::BrowserInfo browser_info;
     browser_info.socket_name = socket;
     browser_info.type = GetBrowserType(socket);
-    browser_info.display_name = GetDisplayName(socket, package);
+    browser_info.display_name =
+        AndroidDeviceManager::GetBrowserName(socket, package);
 
     StringMap::iterator uit = pid_to_user.find(pid);
     if (uit != pid_to_user.end())
       browser_info.user = GetUserName(uit->second, id_to_username);
 
-    device_info_.browser_info.push_back(browser_info);
+    device_info.browser_info.push_back(browser_info);
   }
+  callback.Run(device_info);
+}
+
+}  // namespace
+
+// static
+std::string AndroidDeviceManager::GetBrowserName(const std::string& socket,
+                                                 const std::string& package) {
+  if (package.empty()) {
+    // Derive a fallback display name from the socket name.
+    std::string name = socket.substr(0, socket.find(kDevToolsSocketSuffix));
+    name[0] = base::ToUpperASCII(name[0]);
+    return name;
+  }
+
+  const BrowserDescriptor* descriptor = FindBrowserDescriptor(package);
+  if (descriptor)
+    return descriptor->display_name;
+
+  if (GetBrowserType(socket) ==
+      AndroidDeviceManager::BrowserInfo::kTypeWebView)
+    return base::StringPrintf(kWebViewNameTemplate, package.c_str());
+
+  return package;
+}
+
+// static
+void AndroidDeviceManager::QueryDeviceInfo(
+    const RunCommandCallback& command_callback,
+    const DeviceInfoCallback& callback) {
+  command_callback.Run(
+      kAllCommands,
+      base::Bind(&ReceivedResponse, callback));
 }

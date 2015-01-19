@@ -7,7 +7,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/devtools/device/adb/adb_client_socket.h"
-#include "chrome/browser/devtools/device/adb/adb_device_info_query.h"
 
 namespace {
 
@@ -53,7 +52,8 @@ void AdbDeviceProvider::QueryDevices(const SerialsCallback& callback) {
 
 void AdbDeviceProvider::QueryDeviceInfo(const std::string& serial,
                                         const DeviceInfoCallback& callback) {
-  AdbDeviceInfoQuery::Start(base::Bind(&RunCommand, serial), callback);
+  AndroidDeviceManager::QueryDeviceInfo(base::Bind(&RunCommand, serial),
+                                        callback);
 }
 
 void AdbDeviceProvider::OpenSocket(const std::string& serial,

@@ -22,7 +22,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread.h"
 #include "base/values.h"
-#include "chrome/browser/devtools/device/adb/adb_device_info_query.h"
 #include "chrome/browser/devtools/device/adb/adb_device_provider.h"
 #include "chrome/browser/devtools/device/port_forwarding_controller.h"
 #include "chrome/browser/devtools/device/self_device_provider.h"
@@ -167,7 +166,7 @@ void DevToolsAndroidBridge::DiscoveryRequest::ReceivedVersion(
     std::string package;
     if (dict->GetString("Android-Package", &package)) {
       browser->display_name_ =
-          AdbDeviceInfoQuery::GetDisplayName(browser->socket(), package);
+          AndroidDeviceManager::GetBrowserName(browser->socket(), package);
     }
   }
 }
