@@ -184,7 +184,7 @@ void RenderViewTest::SetUp() {
   // is already initialized.
   if (!ui::ResourceBundle::HasSharedInstance())
     ui::ResourceBundle::InitSharedInstanceWithLocale(
-        "en-US", NULL, ui::ResourceBundle::LOAD_COMMON_RESOURCES);
+        "en-US", NULL, ui::ResourceBundle::DO_NOT_LOAD_COMMON_RESOURCES);
 
   compositor_deps_.reset(new FakeCompositorDependencies);
   mock_process_.reset(new MockRenderProcess);
