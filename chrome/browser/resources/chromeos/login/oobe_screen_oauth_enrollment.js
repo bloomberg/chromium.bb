@@ -33,6 +33,11 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
      */
     attemptToken_: null,
 
+    /**
+     * The help topic to show when the user clicks the learn more link.
+     */
+    learnMoreHelpTopicID_: null,
+
     /** @override */
     decorate: function() {
       window.addEventListener('message',
@@ -40,10 +45,7 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
       $('oauth-enroll-error-retry').addEventListener('click',
                                                      this.doRetry_.bind(this));
       $('oauth-enroll-learn-more-link').addEventListener(
-          'click',
-          function() {
-            chrome.send('launchHelpApp', [HELP_TOPIC_ENROLLMENT]);
-          });
+          'click', this.launchLearnMoreHelp_.bind(this));
 
       this.updateLocalizedContent();
     },
@@ -142,6 +144,7 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
       this.managementDomain_ = data.management_domain;
       $('oauth-enroll-signin-frame').contentWindow.location.href =
           this.signInUrl_;
+      this.learnMoreHelpTopicID_ = data.learn_more_help_topic_id;
       this.updateLocalizedContent();
       this.showStep(STEP_SIGNIN);
     },
@@ -256,6 +259,15 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
         this.showError(
             loadTimeData.getString('fatalEnrollmentError'),
             false);
+      }
+    },
+
+    /**
+     * Opens the learn more help topic.
+     */
+    launchLearnMoreHelp_: function() {
+      if (this.learnMoreHelpTopicID_) {
+        chrome.send('launchHelpApp', [this.learnMoreHelpTopicID_]);
       }
     }
   };

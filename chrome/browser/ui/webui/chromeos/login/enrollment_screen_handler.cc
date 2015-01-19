@@ -45,6 +45,10 @@ const char kEnrollmentModeUIForced[] = "forced";
 const char kEnrollmentModeUIManual[] = "manual";
 const char kEnrollmentModeUIRecovery[] = "recovery";
 
+// Enrollment help topic IDs.
+const int kEnrollmentHelpTopicRegular = 6142332;
+const int kEnrollmentHelpTopicServerTriggered = 4631259;
+
 // Converts |mode| to a mode identifier for the UI.
 std::string EnrollmentModeToUIMode(policy::EnrollmentConfig::Mode mode) {
   switch (mode) {
@@ -533,6 +537,13 @@ void EnrollmentScreenHandler::DoShow() {
   screen_data.SetString("enrollment_mode",
                         EnrollmentModeToUIMode(config_.mode));
   screen_data.SetString("management_domain", config_.management_domain);
+  const bool is_server_triggered_enrollment =
+      config_.mode == policy::EnrollmentConfig::MODE_SERVER_ADVERTISED ||
+      config_.mode == policy::EnrollmentConfig::MODE_SERVER_FORCED;
+  screen_data.SetInteger("learn_more_help_topic_id",
+                         is_server_triggered_enrollment
+                             ? kEnrollmentHelpTopicServerTriggered
+                             : kEnrollmentHelpTopicRegular);
 
   ShowScreen(OobeUI::kScreenOobeEnrollment, &screen_data);
   if (first_show_) {
