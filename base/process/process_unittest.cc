@@ -272,7 +272,7 @@ TEST(ForkWithFlagsTest, UpdatesPidCache) {
 }
 #endif
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) && !defined(OS_ANDROID)
 const char kPipeValue = '\xcc';
 
 class ReadFromPipeDelegate : public LaunchOptions::PreExecDelegate {
@@ -314,6 +314,6 @@ TEST_F(ProcessTest, PreExecHook) {
   EXPECT_TRUE(process.WaitForExit(&exit_code));
   EXPECT_EQ(0, exit_code);
 }
-#endif  // defined(OS_POSIX)
+#endif  // defined(OS_POSIX) && !defined(OS_ANDROID)
 
 }  // namespace base
