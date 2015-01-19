@@ -6,17 +6,20 @@ package org.chromium.android_webview.test;
 
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.os.Build;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.MinAndroidSdkLevel;
 
 import java.util.concurrent.Callable;
 
 /**
  * AwContents rendering / pixel tests.
  */
+@MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT)
 public class AwContentsRenderTest extends AwTestBase {
 
     private TestAwContentsClient mContentsClient;
@@ -82,8 +85,8 @@ public class AwContentsRenderTest extends AwTestBase {
         pollForBackgroundColor(Color.YELLOW);
 
         loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
-                "data:text/html,<html><head><style>body {background-color:#227788}</style></head>" +
-                "<body></body></html>");
+                "data:text/html,<html><head><style>body {background-color:#227788}</style></head>"
+                + "<body></body></html>");
         pollForBackgroundColor(Color.rgb(0x22, 0x77, 0x88));
 
         // Changing the base background should not override CSS background.

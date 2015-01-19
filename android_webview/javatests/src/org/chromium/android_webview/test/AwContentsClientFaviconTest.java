@@ -6,12 +6,14 @@ package org.chromium.android_webview.test;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.Build;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.test.util.CommonResources;
+import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.net.test.util.TestWebServer;
 
@@ -23,6 +25,7 @@ import java.util.concurrent.Callable;
 /**
  * Tests for the Favicon and TouchIcon related APIs.
  */
+@MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT)
 public class AwContentsClientFaviconTest extends AwTestBase {
 
     private static final String FAVICON1_URL = "/favicon1.png";
@@ -38,9 +41,9 @@ public class AwContentsClientFaviconTest extends AwTestBase {
     private static final String TOUCHICON_REL_URL_72 = "/" + TOUCHICON_REL_LINK_72;
     private static final String TOUCHICON_REL_PAGE_HTML =
             CommonResources.makeHtmlPageFrom(
-                    "<link rel=\"apple-touch-icon\" href=\"" + TOUCHICON_REL_URL + "\" />" +
-                    "<link rel=\"apple-touch-icon\" sizes=\"72x72\" href=\"" + TOUCHICON_REL_URL_72
-                    + "\" />",
+                    "<link rel=\"apple-touch-icon\" href=\"" + TOUCHICON_REL_URL + "\" />"
+                    + "<link rel=\"apple-touch-icon\" sizes=\"72x72\" href=\""
+                    + TOUCHICON_REL_URL_72 + "\" />",
                     "Body");
 
     // Maximum number of milliseconds within which a request to web server is made.

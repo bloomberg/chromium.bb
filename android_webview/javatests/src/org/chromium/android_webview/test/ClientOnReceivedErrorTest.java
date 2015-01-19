@@ -4,12 +4,14 @@
 
 package org.chromium.android_webview.test;
 
+import android.os.Build;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.webkit.WebSettings;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.ErrorCodeConversionHelper;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 
 import java.util.concurrent.TimeUnit;
@@ -17,6 +19,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Tests for the ContentViewClient.onReceivedError() method.
  */
+@MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT)
 public class ClientOnReceivedErrorTest extends AwTestBase {
 
     private TestAwContentsClient mContentsClient;

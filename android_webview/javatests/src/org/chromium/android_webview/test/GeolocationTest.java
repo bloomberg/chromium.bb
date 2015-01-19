@@ -4,11 +4,13 @@
 
 package org.chromium.android_webview.test;
 
+import android.os.Build;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.webkit.GeolocationPermissions;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.content.browser.LocationProviderFactory;
 import org.chromium.content.browser.test.util.MockLocationProvider;
 
@@ -19,34 +21,35 @@ import java.util.concurrent.Callable;
  * basic functionality, and tests to ensure the AwContents.onPause
  * and onResume APIs affect Geolocation as expected.
  */
+@MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT)
 public class GeolocationTest extends AwTestBase {
     private TestAwContentsClient mContentsClient;
     private AwContents mAwContents;
     private MockLocationProvider mMockLocationProvider;
 
     private static final String RAW_HTML =
-            "<!DOCTYPE html>\n" +
-            "<html>\n" +
-            "  <head>\n" +
-            "    <title>Geolocation</title>\n" +
-            "    <script>\n" +
-            "      var positionCount = 0;\n" +
-            "      function gotPos(position) {\n" +
-            "        positionCount++;\n" +
-            "      }\n" +
-            "      function initiate_getCurrentPosition() {\n" +
-            "        navigator.geolocation.getCurrentPosition(\n" +
-            "            gotPos, function() { }, { });\n" +
-            "      }\n" +
-            "      function initiate_watchPosition() {\n" +
-            "        navigator.geolocation.watchPosition(\n" +
-            "            gotPos, function() { }, { });\n" +
-            "      }\n" +
-            "    </script>\n" +
-            "  </head>\n" +
-            "  <body>\n" +
-            "  </body>\n" +
-            "</html>";
+            "<!DOCTYPE html>\n"
+            + "<html>\n"
+            + "  <head>\n"
+            + "    <title>Geolocation</title>\n"
+            + "    <script>\n"
+            + "      var positionCount = 0;\n"
+            + "      function gotPos(position) {\n"
+            + "        positionCount++;\n"
+            + "      }\n"
+            + "      function initiate_getCurrentPosition() {\n"
+            + "        navigator.geolocation.getCurrentPosition(\n"
+            + "            gotPos, function() { }, { });\n"
+            + "      }\n"
+            + "      function initiate_watchPosition() {\n"
+            + "        navigator.geolocation.watchPosition(\n"
+            + "            gotPos, function() { }, { });\n"
+            + "      }\n"
+            + "    </script>\n"
+            + "  </head>\n"
+            + "  <body>\n"
+            + "  </body>\n"
+            + "</html>";
 
     @Override
     public void setUp() throws Exception {

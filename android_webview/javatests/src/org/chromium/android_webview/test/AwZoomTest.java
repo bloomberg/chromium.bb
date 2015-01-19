@@ -6,6 +6,7 @@ package org.chromium.android_webview.test;
 
 import android.app.Activity;
 import android.content.pm.ActivityInfo;
+import android.os.Build;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.view.View;
 import android.view.ViewConfiguration;
@@ -14,6 +15,7 @@ import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwSettings;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.MinAndroidSdkLevel;
 
 import java.util.Locale;
 import java.util.concurrent.Callable;
@@ -21,6 +23,7 @@ import java.util.concurrent.Callable;
 /**
  * A test suite for zooming-related methods and settings.
  */
+@MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT)
 public class AwZoomTest extends AwTestBase {
     private TestAwContentsClient mContentsClient;
     private AwContents mAwContents;
@@ -37,22 +40,22 @@ public class AwZoomTest extends AwTestBase {
 
     private String getZoomableHtml(float scale) {
         final int divWidthPercent = (int) (100.0f / scale);
-        return String.format(Locale.US, "<html><head><meta name=\"viewport\" content=\"" +
-                "width=device-width, minimum-scale=%f, maximum-scale=%f, initial-scale=%f" +
-                "\"/></head><body style='margin:0'>" +
-                "<div style='width:%d%%;height:100px;border:1px solid black'>Zoomable</div>" +
-                "</body></html>",
+        return String.format(Locale.US, "<html><head><meta name=\"viewport\" content=\""
+                + "width=device-width, minimum-scale=%f, maximum-scale=%f, initial-scale=%f"
+                + "\"/></head><body style='margin:0'>"
+                + "<div style='width:%d%%;height:100px;border:1px solid black'>Zoomable</div>"
+                + "</body></html>",
                 scale, MAXIMUM_SCALE, scale, divWidthPercent);
     }
 
     private String getNonZoomableHtml() {
         // This page can't be zoomed because its viewport fully occupies
         // view area and is explicitly made non user-scalable.
-        return "<html><head>" +
-                "<meta name=\"viewport\" " +
-                "content=\"width=device-width,height=device-height," +
-                "initial-scale=1,maximum-scale=1,user-scalable=no\">" +
-                "</head><body>Non-zoomable</body></html>";
+        return "<html><head>"
+                + "<meta name=\"viewport\" "
+                + "content=\"width=device-width,height=device-height,"
+                + "initial-scale=1,maximum-scale=1,user-scalable=no\">"
+                + "</head><body>Non-zoomable</body></html>";
     }
 
     private boolean isMultiTouchZoomSupportedOnUiThread() throws Throwable {
@@ -149,8 +152,8 @@ public class AwZoomTest extends AwTestBase {
         poll(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
-                return !canZoomInOnUiThread(mAwContents) &&
-                        !canZoomOutOnUiThread(mAwContents);
+                return !canZoomInOnUiThread(mAwContents)
+                        && !canZoomOutOnUiThread(mAwContents);
             }
         });
     }

@@ -4,12 +4,14 @@
 
 package org.chromium.android_webview.test;
 
+import android.os.Build;
 import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwContentsClient;
 import org.chromium.android_webview.AwSettings;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.ui.gfx.DeviceDisplayInfo;
 
@@ -19,6 +21,7 @@ import java.util.concurrent.Callable;
 /**
  * Tests for legacy quirks (compatibility with WebView Classic).
  */
+@MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT)
 public class AwLegacyQuirksTest extends AwTestBase {
 
     @MediumTest

@@ -7,6 +7,7 @@ package org.chromium.android_webview.test;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.os.Build;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.util.Pair;
 
@@ -17,6 +18,7 @@ import org.chromium.android_webview.test.util.AwTestTouchUtils;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.android_webview.test.util.JSUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.TestFileUtil;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnReceivedErrorHelper;
@@ -36,6 +38,7 @@ import java.util.concurrent.CountDownLatch;
 /**
  * Tests for the WebViewClient.shouldInterceptRequest() method.
  */
+@MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT)
 public class AwContentsClientShouldInterceptRequestTest extends AwTestBase {
 
     private static class TestAwContentsClient
@@ -273,12 +276,12 @@ public class AwContentsClientShouldInterceptRequestTest extends AwTestBase {
                 CommonResources.ABOUT_HTML);
         final String mainPageUrl = addPageToTestServer(mWebServer, "/main",
                 CommonResources.makeHtmlPageFrom("",
-                "<script>" +
-                "  var xhr = new XMLHttpRequest();" +
-                "  xhr.open('GET', '" + syncGetUrl + "', false);" +
-                "  xhr.setRequestHeader('" + headerName + "', '" + headerValue + "'); " +
-                "  xhr.send(null);" +
-                "</script>"));
+                "<script>"
+                + "  var xhr = new XMLHttpRequest();"
+                + "  xhr.open('GET', '" + syncGetUrl + "', false);"
+                + "  xhr.setRequestHeader('" + headerName + "', '" + headerValue + "'); "
+                + "  xhr.send(null);"
+                + "</script>"));
         enableJavaScriptOnUiThread(mAwContents);
 
         int callCount = mShouldInterceptRequestHelper.getCallCount();
@@ -487,14 +490,14 @@ public class AwContentsClientShouldInterceptRequestTest extends AwTestBase {
     public void testHttpStatusCodeAndText() throws Throwable {
         final String syncGetUrl = mWebServer.getResponseUrl("/intercept_me");
         final String syncGetJs =
-                "(function() {" +
-                "  var xhr = new XMLHttpRequest();" +
-                "  xhr.open('GET', '" + syncGetUrl + "', false);" +
-                "  xhr.send(null);" +
-                "  console.info('xhr.status = ' + xhr.status);" +
-                "  console.info('xhr.statusText = ' + xhr.statusText);" +
-                "  return '[' + xhr.status + '][' + xhr.statusText + ']';" +
-                "})();";
+                "(function() {"
+                + "  var xhr = new XMLHttpRequest();"
+                + "  xhr.open('GET', '" + syncGetUrl + "', false);"
+                + "  xhr.send(null);"
+                + "  console.info('xhr.status = ' + xhr.status);"
+                + "  console.info('xhr.statusText = ' + xhr.statusText);"
+                + "  return '[' + xhr.status + '][' + xhr.statusText + ']';"
+                + "})();";
         enableJavaScriptOnUiThread(mAwContents);
 
         final String aboutPageUrl = addAboutPageToTestServer(mWebServer);
@@ -520,13 +523,13 @@ public class AwContentsClientShouldInterceptRequestTest extends AwTestBase {
     private String getHeaderValue(AwContents awContents, TestAwContentsClient contentsClient,
             String url, String headerName) throws Exception {
         final String syncGetJs =
-                "(function() {" +
-                "  var xhr = new XMLHttpRequest();" +
-                "  xhr.open('GET', '" + url + "', false);" +
-                "  xhr.send(null);" +
-                "  console.info(xhr.getAllResponseHeaders());" +
-                "  return xhr.getResponseHeader('" + headerName + "');" +
-                "})();";
+                "(function() {"
+                + "  var xhr = new XMLHttpRequest();"
+                + "  xhr.open('GET', '" + url + "', false);"
+                + "  xhr.send(null);"
+                + "  console.info(xhr.getAllResponseHeaders());"
+                + "  return xhr.getResponseHeader('" + headerName + "');"
+                + "})();";
         String header = executeJavaScriptAndWaitForResult(awContents, contentsClient, syncGetJs);
 
         if (header.equals("null"))

@@ -8,6 +8,7 @@
 
 package org.chromium.android_webview.test;
 
+import android.os.Build;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.SmallTest;
 
@@ -15,19 +16,24 @@ import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.JsPromptResultReceiver;
 import org.chromium.android_webview.JsResultReceiver;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.content.browser.test.util.CallbackHelper;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
+/**
+ * Tests for callbacks implementing JS alerts and prompts.
+ */
+@MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT)
 public class WebViewModalDialogOverrideTest extends AwTestBase {
     private static final String EMPTY_PAGE =
-            "<!doctype html>" +
-            "<title>Modal Dialog Test</title><p>Testcase.</p>";
+            "<!doctype html>"
+            + "<title>Modal Dialog Test</title><p>Testcase.</p>";
     private static final String BEFORE_UNLOAD_URL =
-            "<!doctype html>" +
-            "<head><script>window.onbeforeunload=function() {" +
-            "return 'Are you sure?';" +
-            "};</script></head></body>";
+            "<!doctype html>"
+            + "<head><script>window.onbeforeunload=function() {"
+            + "return 'Are you sure?';"
+            + "};</script></head></body>";
 
     /*
      * Verify that when the AwContentsClient calls handleJsAlert.

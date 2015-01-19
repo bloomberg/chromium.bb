@@ -5,13 +5,19 @@
 package org.chromium.android_webview.test;
 
 import android.graphics.Rect;
+import android.os.Build;
 import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.widget.OverScroller;
 
 import org.chromium.android_webview.AwScrollOffsetManager;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.MinAndroidSdkLevel;
 
+/**
+ * Integration tests for ScrollOffsetManager.
+ */
+@MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT)
 public class AwScrollOffsetManagerTest extends InstrumentationTestCase {
     private static class TestScrollOffsetManagerDelegate implements AwScrollOffsetManager.Delegate {
         private int mOverScrollDeltaX;

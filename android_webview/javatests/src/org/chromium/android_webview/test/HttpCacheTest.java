@@ -4,6 +4,7 @@
 
 package org.chromium.android_webview.test;
 
+import android.os.Build;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.android_webview.AwBrowserProcess;
@@ -11,6 +12,7 @@ import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwContentsStatics;
 import org.chromium.base.PathUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.net.test.util.TestWebServer;
 
 import java.io.File;
@@ -18,6 +20,7 @@ import java.io.File;
 /**
  * Test suite for the HTTP cache.
  */
+@MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT)
 public class HttpCacheTest extends AwTestBase {
 
     @Override

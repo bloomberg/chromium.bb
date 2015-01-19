@@ -5,6 +5,7 @@
 package org.chromium.android_webview.test;
 
 import android.graphics.Picture;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.test.suitebuilder.annotation.SmallTest;
@@ -14,6 +15,7 @@ import org.chromium.android_webview.test.TestAwContentsClient.OnDownloadStartHel
 import org.chromium.android_webview.test.TestAwContentsClient.OnReceivedLoginRequestHelper;
 import org.chromium.android_webview.test.TestAwContentsClient.PictureListenerHelper;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnPageStartedHelper;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnReceivedErrorHelper;
@@ -23,6 +25,7 @@ import java.util.concurrent.Callable;
 /**
  * Test suite for AwContentsClientCallbackHelper.
  */
+@MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT)
 public class AwContentsClientCallbackHelperTest extends AwTestBase {
     /**
      * Callback helper for OnLoadedResource.

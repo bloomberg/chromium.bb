@@ -4,6 +4,7 @@
 
 package org.chromium.android_webview.test;
 
+import android.os.Build;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.util.Pair;
 
@@ -14,6 +15,7 @@ import org.chromium.android_webview.AwSettings;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.android_webview.test.util.JSUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.HistoryUtils;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -29,6 +31,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Test suite for loadUrl().
  */
+@MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT)
 public class LoadUrlTest extends AwTestBase {
     @SmallTest
     @Feature({"AndroidWebView"})
@@ -50,8 +53,8 @@ public class LoadUrlTest extends AwTestBase {
     @Feature({"AndroidWebView"})
     public void testDataUrlBase64() throws Throwable {
         final String expectedTitle = "dataUrlTestBase64";
-        final String data = "PGh0bWw+PGhlYWQ+PHRpdGxlPmRhdGFVcmxUZXN0QmFzZTY0PC90aXRsZT48" +
-                "L2hlYWQ+PC9odG1sPg==";
+        final String data = "PGh0bWw+PGhlYWQ+PHRpdGxlPmRhdGFVcmxUZXN0QmFzZTY0PC90aXRsZT48"
+                + "L2hlYWQ+PC9odG1sPg==";
 
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =

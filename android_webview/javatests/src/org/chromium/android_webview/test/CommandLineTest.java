@@ -4,15 +4,18 @@
 
 package org.chromium.android_webview.test;
 
+import android.os.Build;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.android_webview.AwBrowserProcess;
 import org.chromium.base.CommandLine;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.MinAndroidSdkLevel;
 
 /**
  * Test suite for setting by the command line.
  */
+@MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT)
 public class CommandLineTest extends AwTestBase {
     @Override
     protected boolean needsBrowserProcessStarted() {

@@ -4,6 +4,7 @@
 
 package org.chromium.android_webview.test;
 
+import android.os.Build;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.util.Pair;
 
@@ -11,6 +12,7 @@ import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.android_webview.test.util.JSUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnPageStartedHelper;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnReceivedErrorHelper;
@@ -25,6 +27,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Tests for the WebViewClient.shouldOverrideUrlLoading() method.
  */
+@MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT)
 public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
     private static final String ABOUT_BLANK_URL = "about:blank";
     private static final String DATA_URL = "data:text/html,<div/>";

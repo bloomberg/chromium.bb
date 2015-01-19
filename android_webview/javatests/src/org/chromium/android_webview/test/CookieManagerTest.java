@@ -4,6 +4,7 @@
 
 package org.chromium.android_webview.test;
 
+import android.os.Build;
 import android.test.MoreAsserts;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.util.Pair;
@@ -17,6 +18,7 @@ import org.chromium.android_webview.AwSettings;
 import org.chromium.android_webview.test.util.CookieUtils;
 import org.chromium.android_webview.test.util.JSUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.net.test.util.TestWebServer;
 
 import java.util.ArrayList;
@@ -30,6 +32,7 @@ import java.util.concurrent.Callable;
 /**
  * Tests for the CookieManager.
  */
+@MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT)
 public class CookieManagerTest extends AwTestBase {
 
     private AwCookieManager mCookieManager;

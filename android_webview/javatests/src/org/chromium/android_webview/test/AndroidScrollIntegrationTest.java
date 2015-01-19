@@ -5,6 +5,7 @@
 package org.chromium.android_webview.test;
 
 import android.content.Context;
+import android.os.Build;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.view.View;
 import android.widget.OverScroller;
@@ -15,6 +16,7 @@ import org.chromium.android_webview.test.util.AwTestTouchUtils;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.android_webview.test.util.JavascriptEventObserver;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.ui.gfx.DeviceDisplayInfo;
@@ -27,6 +29,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * Integration tests for synchronous scrolling.
  */
+@MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT)
 public class AndroidScrollIntegrationTest extends AwTestBase {
     private static class OverScrollByCallbackHelper extends CallbackHelper {
         int mDeltaX;

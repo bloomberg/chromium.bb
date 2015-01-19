@@ -5,6 +5,7 @@
 package org.chromium.android_webview.test;
 
 import android.graphics.Bitmap;
+import android.os.Build;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.android_webview.AwContents;
@@ -12,6 +13,7 @@ import org.chromium.android_webview.AwSettings;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.content.browser.test.util.HistoryUtils;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.content_public.browser.WebContents;
@@ -25,6 +27,7 @@ import java.util.concurrent.Callable;
  * Tests for the {@link android.webkit.WebView#loadDataWithBaseURL(String, String, String, String,
  * String)} method.
  */
+@MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT)
 public class LoadDataWithBaseUrlTest extends AwTestBase {
 
     private TestAwContentsClient mContentsClient;
@@ -54,34 +57,34 @@ public class LoadDataWithBaseUrlTest extends AwTestBase {
     private static final String SCRIPT_JS = "script_was_loaded = true;";
 
     private String getScriptFileTestPageHtml(final String scriptUrl) {
-        return "<html>" +
-                "  <head>" +
-                "    <title>" + SCRIPT_NOT_LOADED + "</title>" +
-                "    <script src='" + scriptUrl + "'></script>" +
-                "  </head>" +
-                "  <body onload=\"if(script_was_loaded) document.title='" + SCRIPT_LOADED + "'\">" +
-                "  </body>" +
-                "</html>";
+        return "<html>"
+                + "  <head>"
+                + "    <title>" + SCRIPT_NOT_LOADED + "</title>"
+                + "    <script src='" + scriptUrl + "'></script>"
+                + "  </head>"
+                + "  <body onload=\"if(script_was_loaded) document.title='" + SCRIPT_LOADED + "'\">"
+                + "  </body>"
+                + "</html>";
     }
 
     private String getCrossOriginAccessTestPageHtml(final String iframeUrl) {
-        return "<html>" +
-                "  <head>" +
-                "    <script>" +
-                "      function onload() {" +
-                "        try {" +
-                "          document.title = " +
-                "            document.getElementById('frame').contentWindow.location.href;" +
-                "        } catch (e) {" +
-                "          document.title = 'Exception';" +
-                "        }" +
-                "      }" +
-                "    </script>" +
-                "  </head>" +
-                "  <body onload='onload()'>" +
-                "    <iframe id='frame' src='" + iframeUrl + "'></iframe>" +
-                "  </body>" +
-                "</html>";
+        return "<html>"
+                + "  <head>"
+                + "    <script>"
+                + "      function onload() {"
+                + "        try {"
+                + "          document.title = "
+                + "            document.getElementById('frame').contentWindow.location.href;"
+                + "        } catch (e) {"
+                + "          document.title = 'Exception';"
+                + "        }"
+                + "      }"
+                + "    </script>"
+                + "  </head>"
+                + "  <body onload='onload()'>"
+                + "    <iframe id='frame' src='" + iframeUrl + "'></iframe>"
+                + "  </body>"
+                + "</html>";
     }
 
 
@@ -164,8 +167,8 @@ public class LoadDataWithBaseUrlTest extends AwTestBase {
     @Feature({"AndroidWebView"})
     public void testNullBaseUrl() throws Throwable {
         getAwSettingsOnUiThread(mAwContents).setJavaScriptEnabled(true);
-        final String pageHtml = "<html><body onload='document.title=document.location.href'>" +
-                "</body></html>";
+        final String pageHtml = "<html><body onload='document.title=document.location.href'>"
+                + "</body></html>";
         loadDataWithBaseUrlSync(pageHtml, "text/html", false, null, null);
         assertEquals("about:blank", getTitleOnUiThread(mAwContents));
     }
@@ -236,15 +239,15 @@ public class LoadDataWithBaseUrlTest extends AwTestBase {
                     CommonResources.ABOUT_HTML, CommonResources.getTextHtmlHeaders(true));
 
             final String page1Title = "Page1";
-            final String page1Html = "<html><head><title>" + page1Title + "</title>" +
-                    "<body>" + page1Title + "</body></html>";
+            final String page1Html = "<html><head><title>" + page1Title + "</title>"
+                    + "<body>" + page1Title + "</body></html>";
 
             loadDataWithBaseUrlSync(page1Html, "text/html", false, null, historyUrl);
             assertEquals(page1Title, getTitleOnUiThread(mAwContents));
 
             final String page2Title = "Page2";
-            final String page2Html = "<html><head><title>" + page2Title + "</title>" +
-                    "<body>" + page2Title + "</body></html>";
+            final String page2Html = "<html><head><title>" + page2Title + "</title>"
+                    + "<body>" + page2Title + "</body></html>";
 
             final TestCallbackHelperContainer.OnPageFinishedHelper onPageFinishedHelper =
                     mContentsClient.getOnPageFinishedHelper();
@@ -266,11 +269,11 @@ public class LoadDataWithBaseUrlTest extends AwTestBase {
     private boolean canAccessFileFromData(String baseUrl, String fileUrl) throws Throwable {
         final String imageLoaded = "LOADED";
         final String imageNotLoaded = "NOT_LOADED";
-        String data = "<html><body>" +
-                "<img src=\"" + fileUrl + "\" " +
-                "onload=\"document.title=\'" + imageLoaded + "\';\" " +
-                "onerror=\"document.title=\'" + imageNotLoaded + "\';\" />" +
-                "</body></html>";
+        String data = "<html><body>"
+                + "<img src=\"" + fileUrl + "\" "
+                + "onload=\"document.title=\'" + imageLoaded + "\';\" "
+                + "onerror=\"document.title=\'" + imageNotLoaded + "\';\" />"
+                + "</body></html>";
 
         loadDataWithBaseUrlSync(data, "text/html", false, baseUrl, null);
 
