@@ -71,6 +71,7 @@ const AlgorithmNameMapping algorithmNameMappings[] = {
     {"ECDH", 4, WebCryptoAlgorithmIdEcdh},
     {"SHA-1", 5, WebCryptoAlgorithmIdSha1},
     {"ECDSA", 5, WebCryptoAlgorithmIdEcdsa},
+    {"PBKDF2", 6, WebCryptoAlgorithmIdPbkdf2},
     {"AES-KW", 6, WebCryptoAlgorithmIdAesKw},
     {"SHA-512", 7, WebCryptoAlgorithmIdSha512},
     {"SHA-384", 7, WebCryptoAlgorithmIdSha384},
@@ -761,6 +762,32 @@ bool parseEcdhKeyDeriveParams(const Dictionary& raw, OwnPtr<WebCryptoAlgorithmPa
 
 // Defined by the WebCrypto spec as:
 //
+//     dictionary Pbkdf2Params : Algorithm {
+//       required BufferSource salt;
+//       [EnforceRange] required unsigned long iterations;
+//       required HashAlgorithmIdentifier hash;
+//     };
+bool parsePbkdf2Params(const Dictionary& raw, OwnPtr<WebCryptoAlgorithmParams>& params, const ErrorContext& context, AlgorithmError* error)
+{
+    BufferSource saltBufferSource;
+    if (!getBufferSource(raw, "salt", saltBufferSource, context, error))
+        return false;
+
+    DOMArrayPiece salt(saltBufferSource);
+
+    uint32_t iterations;
+    if (!getUint32(raw, "iterations", iterations, context, error))
+        return false;
+
+    WebCryptoAlgorithm hash;
+    if (!parseHash(raw, hash, context, error))
+        return false;
+    params = adoptPtr(new WebCryptoPbkdf2Params(hash, salt.bytes(), salt.byteLength(), iterations));
+    return true;
+}
+
+// Defined by the WebCrypto spec as:
+//
 //    dictionary AesDerivedKeyParams : Algorithm {
 //      [EnforceRange] required unsigned short length;
 //    };
@@ -858,6 +885,9 @@ bool parseAlgorithmParams(const Dictionary& raw, WebCryptoAlgorithmParamsType ty
     case WebCryptoAlgorithmParamsTypeHkdfParams:
         context.add("HkdfParams");
         return parseHkdfParams(raw, params, context, error);
+    case WebCryptoAlgorithmParamsTypePbkdf2Params:
+        context.add("Pbkdf2Params");
+        return parsePbkdf2Params(raw, params, context, error);
     }
     ASSERT_NOT_REACHED();
     return false;

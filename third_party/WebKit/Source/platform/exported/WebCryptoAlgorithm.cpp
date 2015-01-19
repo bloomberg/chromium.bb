@@ -253,6 +253,20 @@ const WebCryptoAlgorithmInfo algorithmIdToInfo[] = {
             WebCryptoAlgorithmInfo::Undefined, // WrapKey
             WebCryptoAlgorithmInfo::Undefined // UnwrapKey
         }
+    }, { // Index 15
+        "PBKDF2", {
+            WebCryptoAlgorithmInfo::Undefined, // Encrypt
+            WebCryptoAlgorithmInfo::Undefined, // Decrypt
+            WebCryptoAlgorithmInfo::Undefined, // Sign
+            WebCryptoAlgorithmInfo::Undefined, // Verify
+            WebCryptoAlgorithmInfo::Undefined, // Digest
+            WebCryptoAlgorithmInfo::Undefined, // GenerateKey
+            WebCryptoAlgorithmParamsTypeNone, // ImportKey
+            WebCryptoAlgorithmParamsTypeNone, // GetKeyLength
+            WebCryptoAlgorithmParamsTypePbkdf2Params, // DeriveBits
+            WebCryptoAlgorithmInfo::Undefined, // WrapKey
+            WebCryptoAlgorithmInfo::Undefined // UnwrapKey
+        }
     },
 };
 
@@ -274,7 +288,8 @@ static_assert(WebCryptoAlgorithmIdRsaPss == 11, "RSA-PSS id must match");
 static_assert(WebCryptoAlgorithmIdEcdsa == 12, "ECDSA id must match");
 static_assert(WebCryptoAlgorithmIdEcdh == 13, "ECDH id must match");
 static_assert(WebCryptoAlgorithmIdHkdf == 14, "HKDF id must match");
-static_assert(WebCryptoAlgorithmIdLast == 14, "last id must match");
+static_assert(WebCryptoAlgorithmIdPbkdf2 == 15, "Pbkdf2 id must match");
+static_assert(WebCryptoAlgorithmIdLast == 15, "last id must match");
 static_assert(10 == WebCryptoOperationLast, "the parameter mapping needs to be updated");
 
 } // namespace
@@ -308,7 +323,8 @@ WebCryptoAlgorithm WebCryptoAlgorithm::adoptParamsAndCreate(WebCryptoAlgorithmId
 
 const WebCryptoAlgorithmInfo* WebCryptoAlgorithm::lookupAlgorithmInfo(WebCryptoAlgorithmId id)
 {
-    if (id < 0 || id >= WTF_ARRAY_LENGTH(algorithmIdToInfo))
+    const unsigned idInt = id;
+    if (idInt >= WTF_ARRAY_LENGTH(algorithmIdToInfo))
         return 0;
     return &algorithmIdToInfo[id];
 }
@@ -460,6 +476,14 @@ const WebCryptoHkdfParams* WebCryptoAlgorithm::hkdfParams() const
     return 0;
 }
 
+const WebCryptoPbkdf2Params* WebCryptoAlgorithm::pbkdf2Params() const
+{
+    ASSERT(!isNull());
+    if (paramsType() == WebCryptoAlgorithmParamsTypePbkdf2Params)
+        return static_cast<WebCryptoPbkdf2Params*>(m_private->params.get());
+    return 0;
+}
+
 bool WebCryptoAlgorithm::isHash(WebCryptoAlgorithmId id)
 {
     switch (id) {
@@ -479,6 +503,7 @@ bool WebCryptoAlgorithm::isHash(WebCryptoAlgorithmId id)
     case WebCryptoAlgorithmIdEcdsa:
     case WebCryptoAlgorithmIdEcdh:
     case WebCryptoAlgorithmIdHkdf:
+    case WebCryptoAlgorithmIdPbkdf2:
         break;
     }
     return false;
@@ -488,6 +513,7 @@ bool WebCryptoAlgorithm::isKdf(WebCryptoAlgorithmId id)
 {
     switch (id) {
     case WebCryptoAlgorithmIdHkdf:
+    case WebCryptoAlgorithmIdPbkdf2:
         return true;
     case WebCryptoAlgorithmIdSha1:
     case WebCryptoAlgorithmIdSha256:

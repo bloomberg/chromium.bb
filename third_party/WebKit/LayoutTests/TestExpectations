@@ -634,6 +634,15 @@ crbug.com/409767 crypto/subtle/worker-subtle-crypto-concurrent.html [ Crash Pass
 crbug.com/438403 crypto/subtle/aes-cbc-decrypt-failure.html [ Crash Pass ]
 crbug.com/438403 crypto/subtle/aes-cbc-encrypt-decrypt.html [ Crash Pass ]
 
+#These tests are temporary failures until the chromium-side of PBKDF2 lands
+crbug.com/399099 crypto/subtle/clone-pbkdf2Key.html [ Failure ]
+crbug.com/399099 crypto/subtle/pbkdf2-deriveBits.html [ Failure ]
+crbug.com/399099 crypto/subtle/pbkdf2-deriveBits-empty-password-failure.html [ Failure ]
+crbug.com/399099 crypto/subtle/pbkdf2-deriveBits-failures.html [ Failure ]
+crbug.com/399099 crypto/subtle/pbkdf2-deriveBits-rfc6070-test-vectors.html [ Failure ]
+crbug.com/399099 crypto/subtle/pbkdf2-deriveKey-aes.html [ Failure ]
+crbug.com/399099 crypto/subtle/pbkdf2-deriveKey-failures.html [ Failure ]
+
 crbug.com/443566 http/tests/misc/image-error.html [ Failure Pass ]
 
 crbug.com/449264 svg/transforms/animated-path-inside-transformed-html.xhtml [ NeedsManualRebaseline ]

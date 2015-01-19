@@ -31,6 +31,7 @@ enum CryptoKeyAlgorithmTag {
     EcdsaTag = 14,
     EcdhTag = 15,
     HkdfTag = 16,
+    Pbkdf2Tag = 17,
     // Maximum allowed value is 2^32-1
 };
 
@@ -227,6 +228,8 @@ void SerializedScriptValueWriterForModules::doWriteAlgorithmId(WebCryptoAlgorith
         return doWriteUint32(EcdhTag);
     case WebCryptoAlgorithmIdHkdf:
         return doWriteUint32(HkdfTag);
+    case WebCryptoAlgorithmIdPbkdf2:
+        return doWriteUint32(Pbkdf2Tag);
     }
     ASSERT_NOT_REACHED();
 }
@@ -535,6 +538,9 @@ bool SerializedScriptValueReaderForModules::doReadAlgorithmId(WebCryptoAlgorithm
         return true;
     case HkdfTag:
         id = WebCryptoAlgorithmIdHkdf;
+        return true;
+    case Pbkdf2Tag:
+        id = WebCryptoAlgorithmIdPbkdf2;
         return true;
     }
 
