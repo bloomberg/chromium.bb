@@ -39,6 +39,8 @@
       'Heap.h',
       'InlinedGlobalMarkingVisitor.h',
       'MarkingVisitorImpl.h',
+      'StackFrameDepth.cpp',
+      'StackFrameDepth.h',
       'ThreadState.cpp',
       'ThreadState.h',
       'Visitor.cpp',

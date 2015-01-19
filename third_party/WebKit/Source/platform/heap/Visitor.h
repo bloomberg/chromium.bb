@@ -32,6 +32,7 @@
 #define Visitor_h
 
 #include "platform/PlatformExport.h"
+#include "platform/heap/StackFrameDepth.h"
 #include "platform/heap/ThreadState.h"
 #include "wtf/Assertions.h"
 #include "wtf/Atomics.h"
@@ -627,18 +628,25 @@ public:
     }
 #endif
 
-    inline bool canTraceEagerly() const { return m_traceDepth < kMaxEagerTraceDepth; }
-    inline void incrementTraceDepth() { m_traceDepth++; }
-    inline void decrementTraceDepth() { ASSERT(m_traceDepth > 0); m_traceDepth--; }
+    inline static bool canTraceEagerly()
+    {
+        ASSERT(m_stackFrameDepth);
+        return m_stackFrameDepth->isSafeToRecurse();
+    }
+
+    inline static void configureEagerTraceLimit()
+    {
+        if (!m_stackFrameDepth)
+            m_stackFrameDepth = new StackFrameDepth;
+        m_stackFrameDepth->configureLimit();
+    }
 
     inline bool isGlobalMarkingVisitor() const { return m_isGlobalMarkingVisitor; }
 
 protected:
     explicit Visitor(VisitorType type)
         : m_isGlobalMarkingVisitor(type == GlobalMarkingVisitorType)
-    {
-        m_traceDepth = 0;
-    }
+    { }
 
     virtual void registerWeakCellWithCallback(void**, WeakPointerCallback) = 0;
 #if ENABLE(GC_PROFILE_MARKING)
@@ -657,12 +665,8 @@ protected:
 
 private:
     static Visitor* fromHelper(VisitorHelper<Visitor>* helper) { return static_cast<Visitor*>(helper); }
+    static StackFrameDepth* m_stackFrameDepth;
 
-    // The maximum depth of eager, unrolled trace() calls that is
-    // considered safe and allowed.
-    const int kMaxEagerTraceDepth = 100;
-
-    static int m_traceDepth;
     bool m_isGlobalMarkingVisitor;
 };
 
@@ -726,12 +730,13 @@ public:
             // Assert against deep stacks so as to flush them out,
             // but test and appropriately handle them should they occur
             // in release builds.
-            ASSERT(visitor->canTraceEagerly());
+            // FIXME: visitor->isMarked(t) exception is to allow empty trace()
+            // calls from HashTable weak processing. Remove the condition once
+            // it is refactored.
+            ASSERT(visitor->canTraceEagerly() || visitor->isMarked(t));
             if (LIKELY(visitor->canTraceEagerly())) {
                 if (visitor->ensureMarked(t)) {
-                    visitor->incrementTraceDepth();
                     TraceTrait<T>::trace(visitor, const_cast<T*>(t));
-                    visitor->decrementTraceDepth();
                 }
                 return;
             }

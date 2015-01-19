@@ -242,6 +242,7 @@ public:
         : Visitor(Visitor::GenericVisitorType)
         , m_count(0)
     {
+        configureEagerTraceLimit();
     }
 
     virtual void mark(const void* object, TraceCallback) override
@@ -5475,7 +5476,7 @@ TEST(HeapTest, TraceDeepEagerly)
 {
 #if !ENABLE(ASSERT)
     DeepEagerly* obj = nullptr;
-    for (int i = 0; i < 2000; i++)
+    for (int i = 0; i < 10000; i++)
         obj = new DeepEagerly(obj);
 
     Persistent<DeepEagerly> persistent(obj);
