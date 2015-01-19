@@ -20,13 +20,16 @@ class CC_EXPORT ResourcePool {
  public:
   static scoped_ptr<ResourcePool> Create(ResourceProvider* resource_provider,
                                          GLenum target,
-                                         ResourceFormat format) {
-    return make_scoped_ptr(new ResourcePool(resource_provider, target, format));
+                                         ResourceFormat default_format) {
+    return make_scoped_ptr(new ResourcePool(resource_provider,
+                                            target,
+                                            default_format));
   }
 
   virtual ~ResourcePool();
 
-  scoped_ptr<ScopedResource> AcquireResource(const gfx::Size& size);
+  scoped_ptr<ScopedResource> AcquireResource(const gfx::Size& size,
+                                             ResourceFormat format);
   void ReleaseResource(scoped_ptr<ScopedResource>);
 
   void SetResourceUsageLimits(size_t max_memory_usage_bytes,
@@ -49,12 +52,12 @@ class CC_EXPORT ResourcePool {
   }
   size_t busy_resource_count() const { return busy_resources_.size(); }
 
-  ResourceFormat resource_format() const { return format_; }
+  ResourceFormat default_format() const { return default_format_; }
 
  protected:
   ResourcePool(ResourceProvider* resource_provider,
                GLenum target,
-               ResourceFormat format);
+               ResourceFormat default_format);
 
   bool ResourceUsageTooHigh();
 
@@ -63,7 +66,9 @@ class CC_EXPORT ResourcePool {
 
   ResourceProvider* resource_provider_;
   const GLenum target_;
-  const ResourceFormat format_;
+  // TODO(peterp): Remove the format state and let the clients keep track of
+  // this instead.
+  const ResourceFormat default_format_;
   size_t max_memory_usage_bytes_;
   size_t max_unused_memory_usage_bytes_;
   size_t max_resource_count_;

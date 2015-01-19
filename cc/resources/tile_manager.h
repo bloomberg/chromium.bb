@@ -138,7 +138,8 @@ class CC_EXPORT TileManager : public TileTaskRunnerClient,
     for (size_t i = 0; i < tiles.size(); ++i) {
       TileDrawInfo& draw_info = tiles[i]->draw_info();
       draw_info.resource_ =
-          resource_pool_->AcquireResource(tiles[i]->desired_texture_size());
+          resource_pool_->AcquireResource(tiles[i]->desired_texture_size(),
+                                          resource_pool_->default_format());
     }
   }
 

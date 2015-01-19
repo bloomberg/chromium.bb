@@ -30,7 +30,9 @@ class RasterBufferImpl : public RasterBuffer {
         resource_provider_(resource_provider),
         resource_pool_(resource_pool),
         resource_(resource),
-        raster_resource_(resource_pool->AcquireResource(resource->size())),
+        raster_resource_(
+            resource_pool->AcquireResource(resource->size(),
+                                           resource_pool->default_format())),
         lock_(new ResourceProvider::ScopedWriteLockGpuMemoryBuffer(
             resource_provider_,
             raster_resource_->id())),
@@ -249,7 +251,7 @@ void OneCopyTileTaskWorkerPool::CheckForCompletedTasks() {
 
 scoped_ptr<RasterBuffer> OneCopyTileTaskWorkerPool::AcquireBufferForRaster(
     const Resource* resource) {
-  DCHECK_EQ(resource->format(), resource_pool_->resource_format());
+  DCHECK_EQ(resource->format(), resource_pool_->default_format());
   return make_scoped_ptr<RasterBuffer>(
       new RasterBufferImpl(this, resource_provider_, resource_pool_, resource));
 }

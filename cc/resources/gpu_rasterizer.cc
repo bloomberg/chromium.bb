@@ -68,7 +68,8 @@ void GpuRasterizer::RasterizeTiles(
     // TODO(hendrikw): Don't create resources for solid color tiles.
     // See crbug.com/445919
     scoped_ptr<ScopedResource> resource =
-        resource_pool->AcquireResource(tile->desired_texture_size());
+        resource_pool->AcquireResource(tile->desired_texture_size(),
+                                       resource_pool->default_format());
     const ScopedResource* const_resource = resource.get();
 
     RasterSource::SolidColorAnalysis analysis;

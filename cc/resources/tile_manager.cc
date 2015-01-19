@@ -622,7 +622,7 @@ void TileManager::AssignGpuMemoryToTiles(
     MemoryUsage memory_required_by_tile_to_be_scheduled;
     if (!tile->raster_task_.get()) {
       memory_required_by_tile_to_be_scheduled = MemoryUsage::FromConfig(
-          tile->desired_texture_size(), resource_pool_->resource_format());
+          tile->desired_texture_size(), resource_pool_->default_format());
     }
 
     bool tile_is_needed_now = priority.priority_bin == TilePriority::NOW;
@@ -755,7 +755,8 @@ scoped_refptr<ImageDecodeTask> TileManager::CreateImageDecodeTask(
 
 scoped_refptr<RasterTask> TileManager::CreateRasterTask(Tile* tile) {
   scoped_ptr<ScopedResource> resource =
-      resource_pool_->AcquireResource(tile->desired_texture_size());
+      resource_pool_->AcquireResource(tile->desired_texture_size(),
+                                      resource_pool_->default_format());
   const ScopedResource* const_resource = resource.get();
 
   // Create and queue all image decode tasks that this tile depends on.
