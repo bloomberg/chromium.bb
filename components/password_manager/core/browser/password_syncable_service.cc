@@ -84,6 +84,19 @@ void AppendPasswordFromSpecifics(
   entries->back()->date_synced = sync_time;
 }
 
+bool IsEmptyPasswordForm(const autofill::PasswordForm& form) {
+  return (form.username_value.empty() &&
+          form.password_value.empty() &&
+          !form.blacklisted_by_user);
+}
+
+bool IsEmptyPasswordSpecificsData(
+    const sync_pb::PasswordSpecificsData& specifics) {
+  return (specifics.username_value().empty() &&
+          specifics.password_value().empty() &&
+          !specifics.blacklisted());
+}
+
 }  // namespace
 
 struct PasswordSyncableService::SyncEntries {
@@ -167,24 +180,30 @@ syncer::SyncMergeResult PasswordSyncableService::MergeDataAndStartSyncing(
                         &updated_db_entries);
   }
 
-  WriteToPasswordStore(sync_entries);
+  for (PasswordEntryMap::iterator it = new_local_entries.begin();
+       it != new_local_entries.end(); ++it) {
+    if (IsEmptyPasswordForm(*it->second)) {
+      // http://crbug.com/404012. Remove the empty password from the local db.
+      // This code can be removed once all users have their password store
+      // cleaned up. This should happen in M43 and can be verified using crash
+      // reports.
+      sync_entries.deleted_entries.push_back(
+          new autofill::PasswordForm(*it->second));
+    } else {
+      updated_db_entries.push_back(
+          syncer::SyncChange(FROM_HERE,
+                             syncer::SyncChange::ACTION_ADD,
+                             SyncDataFromPassword(*it->second)));
+    }
+  }
 
+  WriteToPasswordStore(sync_entries);
   merge_result.set_num_items_after_association(
       merge_result.num_items_before_association() +
       sync_entries.new_entries.size());
-
   merge_result.set_num_items_added(sync_entries.new_entries.size());
-
   merge_result.set_num_items_modified(sync_entries.updated_entries.size());
-
-  for (PasswordEntryMap::iterator it = new_local_entries.begin();
-       it != new_local_entries.end(); ++it) {
-    updated_db_entries.push_back(
-        syncer::SyncChange(FROM_HERE,
-                           syncer::SyncChange::ACTION_ADD,
-                           SyncDataFromPassword(*it->second)));
-  }
-
+  merge_result.set_num_items_deleted(sync_entries.deleted_entries.size());
   merge_result.set_error(
       sync_processor_->ProcessSyncChanges(FROM_HERE, updated_db_entries));
   return merge_result;
@@ -332,10 +351,21 @@ void PasswordSyncableService::CreateOrUpdateEntry(
       unmatched_data_from_password_db->find(tag);
   base::Time time_now = base::Time::Now();
   if (existing_local_entry_iter == unmatched_data_from_password_db->end()) {
-    // The sync data is not in the password store, so we need to create it in
-    // the password store. Add the entry to the new_entries list.
-    AppendPasswordFromSpecifics(password_specifics, time_now,
-                                &sync_entries->new_entries);
+    if (IsEmptyPasswordSpecificsData(password_specifics)) {
+      // http://crbug.com/404012. Remove the empty password from the Sync
+      // server. This code can be removed once all users have their password
+      // store cleaned up. This should happen in M43 and can be verified using
+      // crash reports.
+      updated_db_entries->push_back(
+          syncer::SyncChange(FROM_HERE,
+                             syncer::SyncChange::ACTION_DELETE,
+                             data));
+    } else {
+      // The sync data is not in the password store, so we need to create it in
+      // the password store. Add the entry to the new_entries list.
+      AppendPasswordFromSpecifics(password_specifics, time_now,
+                                  &sync_entries->new_entries);
+    }
   } else {
     // The entry is in password store. If the entries are not identical, then
     // the entries need to be merged.
@@ -353,6 +383,17 @@ void PasswordSyncableService::CreateOrUpdateEntry(
         AppendPasswordFromSpecifics(password_specifics, time_now,
                                     &sync_entries->updated_entries);
       }
+    } else if (IsEmptyPasswordForm(password_form)) {
+      // http://crbug.com/404012. Remove empty passwords from both the Sync
+      // server and the local db. This code can be removed once all users have
+      // their password store cleaned up. This should happen in M43 and can be
+      // verified using crash reports.
+      updated_db_entries->push_back(
+          syncer::SyncChange(FROM_HERE,
+                             syncer::SyncChange::ACTION_DELETE,
+                             SyncDataFromPassword(password_form)));
+      AppendPasswordFromSpecifics(password_specifics, time_now,
+                                  &sync_entries->deleted_entries);
     }
     // Remove the entry from the entry map to indicate a match has been found.
     // Entries that remain in the map at the end of associating all sync entries
