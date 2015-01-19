@@ -758,4 +758,3 @@ def Start(http_port):
     httpd.serve_forever()
   except KeyboardInterrupt:
     pass  # Don't print useless stack traces when the user hits CTRL-C.
-  background_tasks.TerminateAll()

@@ -51,13 +51,6 @@ def Get(task_id):
   return _tasks.get(task_id)
 
 
-def TerminateAll():
-  for task in _tasks.itervalues():
-    if task.is_alive():
-      task.terminate()
-  _tasks.clear()
-
-
 def TracerMain_(log, storage_path, backend_name, device_id, pid, interval,
     count, trace_native_heap):
   """Entry point for the background periodic tracer task."""
@@ -140,6 +133,7 @@ class BackgroundTask(threading.Thread):
         target=entry_point,
         args=((self._log_queue,) + args),  # Just propagate all args.
         kwargs=kwargs)
+    self.daemon = True
 
   def run(self):
     try:
