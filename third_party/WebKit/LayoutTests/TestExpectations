@@ -988,7 +988,6 @@ crbug.com/437112 virtual/slimmingpaint/fast/canvas/canvas-scale-drawImage-shadow
 # for the new multicol implementation.
 crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/border-padding-pagination.html [ Skip ]
 crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/column-rules-stacking.html [ Skip ]
-crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/fixed-column-percent-logical-height-orthogonal-writing-mode.html [ Skip ]
 crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/flipped-blocks-hit-test.html [ Skip ]
 crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/hit-test-above-or-below.html [ Skip ]
 crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/hit-test-end-of-column-with-line-height.html [ Skip ]
@@ -1039,7 +1038,6 @@ crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/vertical-rl/nested-co
 # duplicate all expectations that virtual/regionbasedmulticol/fast/multicol has:
 crbug.com/386567 virtual/slimmingpaint/fast/multicol/border-padding-pagination.html [ Skip ]
 crbug.com/386567 virtual/slimmingpaint/fast/multicol/column-rules-stacking.html [ Skip ]
-crbug.com/386567 virtual/slimmingpaint/fast/multicol/fixed-column-percent-logical-height-orthogonal-writing-mode.html [ Skip ]
 crbug.com/386567 virtual/slimmingpaint/fast/multicol/flipped-blocks-hit-test.html [ Skip ]
 crbug.com/386567 virtual/slimmingpaint/fast/multicol/hit-test-above-or-below.html [ Skip ]
 crbug.com/386567 virtual/slimmingpaint/fast/multicol/hit-test-end-of-column-with-line-height.html [ Skip ]

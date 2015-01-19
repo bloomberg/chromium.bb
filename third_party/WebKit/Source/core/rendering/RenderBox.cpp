@@ -2389,6 +2389,11 @@ LayoutUnit RenderBox::computeContentAndScrollbarLogicalHeightUsing(const Length&
 
 bool RenderBox::skipContainingBlockForPercentHeightCalculation(const RenderBox* containingBlock) const
 {
+    // If the writing mode of the containing block is orthogonal to ours, it means that we shouldn't
+    // skip anything, since we're going to resolve the percentage height against a containing block *width*.
+    if (isHorizontalWritingMode() != containingBlock->isHorizontalWritingMode())
+        return false;
+
     // Flow threads for multicol or paged overflow should be skipped. They are invisible to the DOM,
     // and percent heights of children should be resolved against the multicol or paged container.
     if (containingBlock->isRenderFlowThread())
@@ -2398,7 +2403,8 @@ bool RenderBox::skipContainingBlockForPercentHeightCalculation(const RenderBox* 
     // For standards mode, we treat the percentage as auto if it has an auto-height containing block.
     if (!document().inQuirksMode() && !containingBlock->isAnonymousBlock())
         return false;
-    return !containingBlock->isTableCell() && !containingBlock->isOutOfFlowPositioned() && containingBlock->style()->logicalHeight().isAuto() && isHorizontalWritingMode() == containingBlock->isHorizontalWritingMode();
+
+    return !containingBlock->isTableCell() && !containingBlock->isOutOfFlowPositioned() && containingBlock->style()->logicalHeight().isAuto();
 }
 
 LayoutUnit RenderBox::computePercentageLogicalHeight(const Length& height) const
