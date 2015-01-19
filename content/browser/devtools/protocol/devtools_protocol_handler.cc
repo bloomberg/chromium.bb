@@ -32,10 +32,8 @@ scoped_ptr<base::DictionaryValue> TakeDictionary(base::DictionaryValue* dict,
 
 }  // namespace
 
-DevToolsProtocolHandler::DevToolsProtocolHandler(bool handle_generic_errors,
-                                                 const Notifier& notifier)
+DevToolsProtocolHandler::DevToolsProtocolHandler(const Notifier& notifier)
     : client_(notifier),
-      handle_generic_errors_(handle_generic_errors),
       dispatcher_(notifier) {
 }
 
@@ -44,51 +42,64 @@ DevToolsProtocolHandler::~DevToolsProtocolHandler() {
 
 scoped_ptr<base::DictionaryValue>
 DevToolsProtocolHandler::ParseCommand(const std::string& message) {
-  std::string parse_error;
-  scoped_ptr<base::Value> value(
-      base::JSONReader::ReadAndReturnError(message, 0, nullptr, &parse_error));
+  scoped_ptr<base::Value> value(base::JSONReader::Read(message));
+  if (!value || !value->IsType(base::Value::TYPE_DICTIONARY)) {
+    client_.SendError(DevToolsProtocolClient::kNoId,
+                      Response(kStatusParseError,
+                               "Message must be in JSON format"));
+    return nullptr;
+  }
 
-  if (!value) {
-    if (handle_generic_errors_) {
-      client_.SendError(DevToolsProtocolClient::kNoId,
-                        Response(kStatusParseError, parse_error));
-    }
+  scoped_ptr<base::DictionaryValue> command =
+      make_scoped_ptr(static_cast<base::DictionaryValue*>(value.release()));
+  int id = DevToolsProtocolClient::kNoId;
+  bool ok = command->GetInteger(kIdParam, &id) && id >= 0;
+  if (!ok) {
+    client_.SendError(id, Response(kStatusInvalidRequest,
+                                   "The type of 'id' property must be number"));
     return nullptr;
   }
-  if (!value->IsType(base::Value::TYPE_DICTIONARY)) {
-    if (handle_generic_errors_) {
-      client_.SendError(DevToolsProtocolClient::kNoId,
-                        Response(kStatusInvalidRequest, "Not a dictionary"));
-    }
+
+  std::string method;
+  ok = command->GetString(kMethodParam, &method);
+  if (!ok) {
+    client_.SendError(id,
+        Response(kStatusInvalidRequest,
+                 "The type of 'method' property must be string"));
     return nullptr;
   }
-  return make_scoped_ptr(static_cast<base::DictionaryValue*>(value.release()));
+
+  return command;
 }
 
-bool DevToolsProtocolHandler::HandleCommand(
+void DevToolsProtocolHandler::HandleCommand(
     scoped_ptr<base::DictionaryValue> command) {
   int id = DevToolsProtocolClient::kNoId;
   std::string method;
-  bool ok = command->GetInteger(kIdParam, &id) && id >= 0;
-  ok = ok && command->GetString(kMethodParam, &method);
-  if (!ok) {
-    if (handle_generic_errors_) {
-      client_.SendError(id, Response(kStatusInvalidRequest, "Invalid request"));
-      return true;
-    }
-    return false;
-  }
+  command->GetInteger(kIdParam, &id);
+  command->GetString(kMethodParam, &method);
   DevToolsProtocolDispatcher::CommandHandler command_handler(
       dispatcher_.FindCommandHandler(method));
   if (command_handler.is_null()) {
-    if (handle_generic_errors_) {
-      client_.SendError(id, Response(kStatusNoSuchMethod, "No such method"));
-      return true;
-    }
-    return false;
-
+    client_.SendError(id, Response(kStatusNoSuchMethod, "No such method"));
+    return;
   }
-  return command_handler.Run(id, TakeDictionary(command.get(), kParamsParam));
+  bool result =
+      command_handler.Run(id, TakeDictionary(command.get(), kParamsParam));
+  DCHECK(result);
+}
+
+bool DevToolsProtocolHandler::HandleOptionalCommand(
+    scoped_ptr<base::DictionaryValue> command) {
+  int id = DevToolsProtocolClient::kNoId;
+  std::string method;
+  command->GetInteger(kIdParam, &id);
+  command->GetString(kMethodParam, &method);
+  DevToolsProtocolDispatcher::CommandHandler command_handler(
+      dispatcher_.FindCommandHandler(method));
+  if (!command_handler.is_null())
+    return command_handler.Run(id, TakeDictionary(command.get(), kParamsParam));
+  return false;
 }
 
 }  // namespace content

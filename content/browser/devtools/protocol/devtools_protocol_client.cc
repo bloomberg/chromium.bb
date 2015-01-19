@@ -80,7 +80,9 @@ bool DevToolsProtocolClient::SendError(DevToolsCommandId command_id,
     return false;
   }
   base::DictionaryValue dict;
-  if (command_id != kNoId)
+  if (command_id == kNoId)
+    dict.Set(kIdParam, base::Value::CreateNullValue());
+  else
     dict.SetInteger(kIdParam, command_id);
 
   base::DictionaryValue* error_object = new base::DictionaryValue();

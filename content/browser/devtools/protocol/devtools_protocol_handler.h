@@ -14,18 +14,17 @@ class DevToolsProtocolHandler {
   using Response = DevToolsProtocolClient::Response;
   using Notifier = base::Callback<void(const std::string& message)>;
 
-  DevToolsProtocolHandler(bool handle_generic_errors,
-                          const Notifier& notifier);
+  explicit DevToolsProtocolHandler(const Notifier& notifier);
   virtual ~DevToolsProtocolHandler();
 
   scoped_ptr<base::DictionaryValue> ParseCommand(const std::string& message);
-  bool HandleCommand(scoped_ptr<base::DictionaryValue> command);
+  void HandleCommand(scoped_ptr<base::DictionaryValue> command);
+  bool HandleOptionalCommand(scoped_ptr<base::DictionaryValue> command);
 
   DevToolsProtocolDispatcher* dispatcher() { return &dispatcher_; }
 
  private:
   DevToolsProtocolClient client_;
-  bool handle_generic_errors_;
   DevToolsProtocolDispatcher dispatcher_;
 };
 

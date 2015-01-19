@@ -126,7 +126,6 @@ RenderViewDevToolsAgentHost::RenderViewDevToolsAgentHost(RenderViewHost* rvh)
       tracing_handler_(new devtools::tracing::TracingHandler(
           devtools::tracing::TracingHandler::Renderer)),
       protocol_handler_(new DevToolsProtocolHandler(
-          false /* handle_generic_errors */,
           base::Bind(&RenderViewDevToolsAgentHost::DispatchOnInspectorFrontend,
                      base::Unretained(this)))),
       reattaching_(false) {
@@ -155,25 +154,26 @@ WebContents* RenderViewDevToolsAgentHost::GetWebContents() {
 
 void RenderViewDevToolsAgentHost::DispatchProtocolMessage(
     const std::string& message) {
-
   scoped_ptr<base::DictionaryValue> command =
       protocol_handler_->ParseCommand(message);
-  if (command) {
-    DevToolsManagerDelegate* delegate =
-        DevToolsManager::GetInstance()->delegate();
-    if (delegate) {
-      scoped_ptr<base::DictionaryValue> response(
-          delegate->HandleCommand(this, command.get()));
-      if (response) {
-        std::string json_response;
-        base::JSONWriter::Write(response.get(), &json_response);
-        DispatchOnInspectorFrontend(json_response);
-        return;
-      }
-    }
-    if (protocol_handler_->HandleCommand(command.Pass()))
+  if (!command)
+    return;
+
+  DevToolsManagerDelegate* delegate =
+      DevToolsManager::GetInstance()->delegate();
+  if (delegate) {
+    scoped_ptr<base::DictionaryValue> response(
+        delegate->HandleCommand(this, command.get()));
+    if (response) {
+      std::string json_response;
+      base::JSONWriter::Write(response.get(), &json_response);
+      DispatchOnInspectorFrontend(json_response);
       return;
+    }
   }
+
+  if (protocol_handler_->HandleOptionalCommand(command.Pass()))
+    return;
 
   IPCDevToolsAgentHost::DispatchProtocolMessage(message);
 }

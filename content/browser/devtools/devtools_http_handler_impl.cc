@@ -422,7 +422,6 @@ class BrowserTarget {
         tracing_handler_(new devtools::tracing::TracingHandler(
             devtools::tracing::TracingHandler::Browser)),
         protocol_handler_(new DevToolsProtocolHandler(
-            true /* handle_generic_errors */,
             base::Bind(&BrowserTarget::Respond, base::Unretained(this)))) {
     DevToolsProtocolDispatcher* dispatcher = protocol_handler_->dispatcher();
     dispatcher->SetSystemInfoHandler(system_info_handler_.get());
@@ -435,10 +434,8 @@ class BrowserTarget {
     std::string error_response;
     scoped_ptr<base::DictionaryValue> command =
         protocol_handler_->ParseCommand(message);
-    if (command) {
-      bool result = protocol_handler_->HandleCommand(command.Pass());
-      DCHECK(result);
-    }
+    if (command)
+      protocol_handler_->HandleCommand(command.Pass());
   }
 
   void Respond(const std::string& message) {
