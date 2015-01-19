@@ -60,9 +60,8 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
 
   // This must be called on the creation thread before any other methods are
   // called, and before references to this object are given to any other
-  // threads. |raw_channel| should be uninitialized. Returns true on success. On
-  // failure, no other methods should be called (including |Shutdown()|).
-  bool Init(scoped_ptr<RawChannel> raw_channel);
+  // threads. |raw_channel| should be uninitialized.
+  void Init(scoped_ptr<RawChannel> raw_channel);
 
   // Sets the channel manager associated with this channel. This should be set
   // at most once and only called before |WillShutdownSoon()| (and

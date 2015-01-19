@@ -84,7 +84,7 @@ namespace mojo {
 // like the C++11 |unique_ptr|.
 template <class HandleType>
 class ScopedHandleBase {
-  MOJO_MOVE_ONLY_TYPE_FOR_CPP_03(ScopedHandleBase, RValue)
+  MOJO_MOVE_ONLY_TYPE(ScopedHandleBase)
 
  public:
   ScopedHandleBase() {}
@@ -96,11 +96,11 @@ class ScopedHandleBase {
       : handle_(other.release()) {}
 
   // Move-only constructor and operator=.
-  ScopedHandleBase(RValue other) : handle_(other.object->release()) {}
-  ScopedHandleBase& operator=(RValue other) {
-    if (other.object != this) {
+  ScopedHandleBase(ScopedHandleBase&& other) : handle_(other.release()) {}
+  ScopedHandleBase& operator=(ScopedHandleBase&& other) {
+    if (&other != this) {
       CloseIfNecessary();
-      handle_ = other.object->release();
+      handle_ = other.release();
     }
     return *this;
   }

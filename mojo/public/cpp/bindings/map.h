@@ -13,7 +13,8 @@ namespace mojo {
 
 template <typename Key, typename Value>
 class Map {
-  MOJO_MOVE_ONLY_TYPE_FOR_CPP_03(Map, RValue)
+  MOJO_MOVE_ONLY_TYPE(Map)
+
  public:
   // Map keys can not be move only classes.
   static_assert(!internal::IsMoveOnlyType<Key>::value,
@@ -45,9 +46,9 @@ class Map {
 
   ~Map() { Traits::Finalize(&map_); }
 
-  Map(RValue other) : is_null_(true) { Take(other.object); }
-  Map& operator=(RValue other) {
-    Take(other.object);
+  Map(Map&& other) : is_null_(true) { Take(&other); }
+  Map& operator=(Map&& other) {
+    Take(&other);
     return *this;
   }
 

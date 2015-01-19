@@ -4,7 +4,7 @@
 
 module mojo;
 
-import "mojo/services/gpu/public/interfaces/gpu_capabilities.mojom";
+import "gpu/public/interfaces/gpu_capabilities.mojom";
 
 struct CommandBufferState {
   int32 num_entries;

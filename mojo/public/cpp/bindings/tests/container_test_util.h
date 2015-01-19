@@ -28,12 +28,12 @@ class CopyableType {
 };
 
 class MoveOnlyType {
-  MOJO_MOVE_ONLY_TYPE_FOR_CPP_03(MoveOnlyType, RValue)
+  MOJO_MOVE_ONLY_TYPE(MoveOnlyType)
  public:
   typedef MoveOnlyType Data_;
   MoveOnlyType();
-  MoveOnlyType(RValue other);
-  MoveOnlyType& operator=(RValue other);
+  MoveOnlyType(MoveOnlyType&& other);
+  MoveOnlyType& operator=(MoveOnlyType&& other);
   ~MoveOnlyType();
 
   bool moved() const { return moved_; }

@@ -96,7 +96,7 @@ bool CanNavigateLocally(blink::WebFrame* frame,
 }  // namespace
 
 HTMLDocument::HTMLDocument(
-    mojo::ServiceProviderPtr provider,
+    mojo::InterfaceRequest<mojo::ServiceProvider> services,
     URLResponsePtr response,
     mojo::Shell* shell,
     scoped_refptr<base::MessageLoopProxy> compositor_thread,
@@ -111,7 +111,7 @@ HTMLDocument::HTMLDocument(
       web_encrypted_media_client_(nullptr) {
   exported_services_.AddService(this);
   exported_services_.AddService(&view_manager_client_factory_);
-  WeakBindToPipe(&exported_services_, provider.PassMessagePipe());
+  WeakBindToPipe(&exported_services_, services.PassMessagePipe());
   Load(response_.Pass());
 }
 
@@ -177,14 +177,14 @@ blink::WebStorageNamespace* HTMLDocument::createSessionStorageNamespace() {
 void HTMLDocument::initializeLayerTreeView() {
   ServiceProviderPtr surfaces_service_provider;
   shell_->ConnectToApplication("mojo:surfaces_service",
-                               GetProxy(&surfaces_service_provider));
+                               GetProxy(&surfaces_service_provider), nullptr);
   mojo::SurfacesServicePtr surfaces_service;
   ConnectToService(surfaces_service_provider.get(), &surfaces_service);
 
   ServiceProviderPtr gpu_service_provider;
   // TODO(jamesr): Should be mojo:gpu_service
   shell_->ConnectToApplication("mojo:native_viewport_service",
-                               GetProxy(&gpu_service_provider));
+                               GetProxy(&gpu_service_provider), nullptr);
   mojo::GpuPtr gpu_service;
   ConnectToService(gpu_service_provider.get(), &gpu_service);
   web_layer_tree_view_impl_.reset(new WebLayerTreeViewImpl(

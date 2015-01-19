@@ -10,10 +10,12 @@ mojom("interfaces") {
     "native_viewport.mojom",
   ]
 
+  import_dirs = [ get_path_info("../../../", "abspath") ]
+
   public_deps = [
-    "//mojo/services/geometry/public/interfaces",
-    "//mojo/services/gpu/public/interfaces",
-    "//mojo/services/input_events/public/interfaces",
-    "//mojo/services/surfaces/public/interfaces:surface_id",
+    "../../../geometry/public/interfaces",
+    "../../../gpu/public/interfaces",
+    "../../../input_events/public/interfaces",
+    "../../../surfaces/public/interfaces:surface_id",
   ]
 }

@@ -125,7 +125,7 @@ define("mojo/public/js/codec", [
   };
 
   Decoder.prototype.decodeHandle = function() {
-    return this.handles[this.readUint32()];
+    return this.handles[this.readUint32()] || null;
   };
 
   Decoder.prototype.decodeString = function() {

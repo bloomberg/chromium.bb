@@ -3,9 +3,8 @@ const int k{{interface|name}}_{{method|name}}_name = {{method.ordinal}};
 {%- endfor %}
 
 abstract class {{interface|name}}Calls {
-  void enqueueMessage(bindings.Struct message, int name);
-  Future enqueueMessageWithRequestId(bindings.Struct message, int name, int id);
-  bool get isOpen;
+  void sendMessage(bindings.Struct message, int name);
+  Future sendMessageWithRequestId(bindings.Struct message, int name, int id);
 
 {%- for method in interface.methods %}
 {%- if method.response_parameters == None %}
@@ -15,12 +14,11 @@ abstract class {{interface|name}}Calls {
 {%- endfor -%}
 {%- set request_struct = method|struct_from_method %}
   ) {
-    assert(isOpen);
     var params = new {{request_struct|name}}();
 {%- for parameter in method.parameters %}
     params.{{parameter|name}} = {{parameter|name}};
 {%- endfor %}
-    enqueueMessage(params, k{{interface|name}}_{{method|name}}_name);
+    sendMessage(params, k{{interface|name}}_{{method|name}}_name);
   }
 {% else %}
 {%- set response_struct = method|response_struct_from_method %}
@@ -31,12 +29,11 @@ abstract class {{interface|name}}Calls {
 {%- set request_struct = method|struct_from_method %}
     [int requestId = -1]
   ) {
-    assert(isOpen);
     var params = new {{request_struct|name}}();
 {%- for parameter in method.parameters %}
     params.{{parameter|name}} = {{parameter|name}};
 {%- endfor %}
-    return enqueueMessageWithRequestId(
+    return sendMessageWithRequestId(
         params,
         k{{interface|name}}_{{method|name}}_name,
         requestId,
@@ -49,7 +46,14 @@ abstract class {{interface|name}}Calls {
 class {{interface|name}}Client extends bindings.Client with {{interface|name}}Calls {
   {{interface|name}}Client(core.MojoMessagePipeEndpoint endpoint) : super(endpoint);
 
-  {{interface|name}}Client.fromHandle(int handle) : super.fromHandle(handle);
+  {{interface|name}}Client.fromHandle(core.MojoHandle handle) :
+      super.fromHandle(handle);
+
+  {{interface|name}}Client.unbound() : super.unbound();
+
+  static {{interface|name}}Client newFromEndpoint(
+      core.MojoMessagePipeEndpoint endpoint) =>
+      new {{interface|name}}Client(endpoint);
 
   void handleResponse(bindings.ServiceMessage message) {
     switch (message.header.type) {
@@ -76,13 +80,22 @@ class {{interface|name}}Client extends bindings.Client with {{interface|name}}Ca
 }
 
 
-abstract class {{interface|name}}Interface extends bindings.Interface
+class {{interface|name}}Interface extends bindings.Interface
 {% if interface.client != None -%}
 with {{imported_from[interface.client]}}{{interface.client|upper_camel_case}}Calls
 {% endif -%} {
+  {{interface|name}}Interface _delegate = null;
+
   {{interface|name}}Interface(core.MojoMessagePipeEndpoint endpoint) : super(endpoint);
 
-  {{interface|name}}Interface.fromHandle(int handle) : super.fromHandle(handle);
+  {{interface|name}}Interface.fromHandle(core.MojoHandle handle) :
+      super.fromHandle(handle);
+
+  {{interface|name}}Interface.unbound() : super.unbound();
+
+  static {{interface|name}}Interface newFromEndpoint(
+      core.MojoMessagePipeEndpoint endpoint) =>
+      new {{interface|name}}Interface(endpoint);
 
   static const String name = '{{namespace|replace(".","::")}}::{{interface|name}}';
 
@@ -92,14 +105,26 @@ with {{imported_from[interface.client]}}{{interface.client|upper_camel_case}}Cal
   {%- for parameter in method.parameters -%}
     {{parameter.kind|dart_type}} {{parameter|name}}{% if not loop.last %}, {% endif %}
   {%- endfor -%}
-  );
+  ) {
+    assert(_delegate != null);
+    _delegate.{{method|name}}(
+      {%- for parameter in method.parameters -%}
+        {{parameter|name}}{% if not loop.last %}, {% endif %}
+      {%- endfor %});
+  }
 {%- else %}
 {%- set response_struct = method|response_struct_from_method %}
   Future<{{response_struct|name}}> {{method|name}}(
   {%- for parameter in method.parameters -%}
     {{parameter.kind|dart_type}} {{parameter|name}}{% if not loop.last %}, {% endif %}
   {%- endfor -%}
-  );
+  ) {
+    assert(_delegate != null);
+    return _delegate.{{method|name}}(
+      {%- for parameter in method.parameters -%}
+        {{parameter|name}}{% if not loop.last %}, {% endif %}
+      {%- endfor %});
+  }
 {%- endif %}
 {%- endfor %}
 
@@ -138,6 +163,12 @@ with {{imported_from[interface.client]}}{{interface.client|upper_camel_case}}Cal
         break;
     }
     return null;
+  }
+
+  {{interface|name}}Interface get delegate => _delegate;
+      set delegate({{interface|name}}Interface d) {
+    assert(_delegate == null);
+    _delegate = d;
   }
 }
 

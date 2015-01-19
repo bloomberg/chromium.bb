@@ -52,13 +52,13 @@ class HTMLDocument : public blink::WebViewClient,
  public:
   // Load a new HTMLDocument with |response|.
   //
-  // |service_provider_request| should be used to implement a
-  // ServiceProvider which exposes services to the connecting application.
+  // |services| should be used to implement a ServiceProvider which exposes
+  // services to the connecting application.
   // Commonly, the connecting application is the ViewManager and it will
   // request ViewManagerClient.
   //
   // |shell| is the Shell connection for this mojo::Application.
-  HTMLDocument(mojo::ServiceProviderPtr provider,
+  HTMLDocument(mojo::InterfaceRequest<mojo::ServiceProvider> services,
                mojo::URLResponsePtr response,
                mojo::Shell* shell,
                scoped_refptr<base::MessageLoopProxy> compositor_thread,

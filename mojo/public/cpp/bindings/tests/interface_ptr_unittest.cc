@@ -327,12 +327,8 @@ TEST_F(InterfacePtrTest, ReentrantWaitForIncomingMethodCall) {
   sample::ServicePtr proxy;
   ReentrantServiceImpl* impl = BindToProxy(new ReentrantServiceImpl(), &proxy);
 
-  proxy->Frobinate(sample::FooPtr(),
-                   sample::Service::BAZ_OPTIONS_REGULAR,
-                   sample::PortPtr());
-  proxy->Frobinate(sample::FooPtr(),
-                   sample::Service::BAZ_OPTIONS_REGULAR,
-                   sample::PortPtr());
+  proxy->Frobinate(nullptr, sample::Service::BAZ_OPTIONS_REGULAR, nullptr);
+  proxy->Frobinate(nullptr, sample::Service::BAZ_OPTIONS_REGULAR, nullptr);
 
   PumpMessages();
 

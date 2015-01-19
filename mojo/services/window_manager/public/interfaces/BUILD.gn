@@ -11,10 +11,12 @@ mojom("interfaces") {
     "window_manager_internal.mojom",
   ]
 
+  import_dirs = [ get_path_info("../../../", "abspath") ]
+
   mojo_sdk_deps = [ "mojo/public/interfaces/application" ]
 
   deps = [
-    "//mojo/services/geometry/public/interfaces",
-    "//mojo/services/input_events/public/interfaces",
+    "../../../geometry/public/interfaces",
+    "../../../input_events/public/interfaces",
   ]
 }

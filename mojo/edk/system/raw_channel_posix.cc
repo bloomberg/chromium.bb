@@ -54,7 +54,7 @@ class RawChannelPosix : public RawChannel,
   IOResult WriteNoLock(size_t* platform_handles_written,
                        size_t* bytes_written) override;
   IOResult ScheduleWriteNoLock() override;
-  bool OnInit() override;
+  void OnInit() override;
   void OnShutdownNoLock(scoped_ptr<ReadBuffer> read_buffer,
                         scoped_ptr<WriteBuffer> write_buffer) override;
 
@@ -310,7 +310,7 @@ RawChannel::IOResult RawChannelPosix::ScheduleWriteNoLock() {
   return IO_FAILED_UNKNOWN;
 }
 
-bool RawChannelPosix::OnInit() {
+void RawChannelPosix::OnInit() {
   DCHECK_EQ(base::MessageLoop::current(), message_loop_for_io());
 
   DCHECK(!read_watcher_);
@@ -318,18 +318,12 @@ bool RawChannelPosix::OnInit() {
   DCHECK(!write_watcher_);
   write_watcher_.reset(new base::MessageLoopForIO::FileDescriptorWatcher());
 
-  if (!message_loop_for_io()->WatchFileDescriptor(
-          fd_.get().fd, true, base::MessageLoopForIO::WATCH_READ,
-          read_watcher_.get(), this)) {
-    // TODO(vtl): I'm not sure |WatchFileDescriptor()| actually fails cleanly
-    // (in the sense of returning the message loop's state to what it was before
-    // it was called).
-    read_watcher_.reset();
-    write_watcher_.reset();
-    return false;
-  }
-
-  return true;
+  // I don't know how this can fail (unless |fd_| is bad, in which case it's a
+  // bug in our code). I also don't know if |WatchFileDescriptor()| actually
+  // fails cleanly.
+  CHECK(message_loop_for_io()->WatchFileDescriptor(
+      fd_.get().fd, true, base::MessageLoopForIO::WATCH_READ,
+      read_watcher_.get(), this));
 }
 
 void RawChannelPosix::OnShutdownNoLock(

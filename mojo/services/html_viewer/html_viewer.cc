@@ -34,6 +34,8 @@
 using mojo::ApplicationConnection;
 using mojo::Array;
 using mojo::ContentHandler;
+using mojo::InterfaceRequest;
+using mojo::ServiceProvider;
 using mojo::ServiceProviderPtr;
 using mojo::ShellPtr;
 using mojo::String;
@@ -68,16 +70,17 @@ class HTMLViewerApplication : public mojo::Application {
     shell_.set_client(this);
     ServiceProviderPtr service_provider;
     shell_->ConnectToApplication("mojo:network_service",
-                                 GetProxy(&service_provider));
+                                 GetProxy(&service_provider), nullptr);
     ConnectToService(service_provider.get(), &network_service_);
   }
 
   void Initialize(Array<String> args) override {}
 
   void AcceptConnection(const String& requestor_url,
-                        ServiceProviderPtr provider) override {
+                        InterfaceRequest<ServiceProvider> services,
+                        ServiceProviderPtr exposed_services) override {
     if (initial_response_) {
-      OnResponseReceived(URLLoaderPtr(), provider.Pass(),
+      OnResponseReceived(URLLoaderPtr(), services.Pass(),
                          initial_response_.Pass());
     } else {
       URLLoaderPtr loader;
@@ -94,15 +97,15 @@ class HTMLViewerApplication : public mojo::Application {
           request.Pass(),
           base::Bind(&HTMLViewerApplication::OnResponseReceived,
                      base::Unretained(this), base::Passed(&loader),
-                     base::Passed(&provider)));
+                     base::Passed(&services)));
     }
   }
 
  private:
   void OnResponseReceived(URLLoaderPtr loader,
-                          ServiceProviderPtr provider,
+                          InterfaceRequest<ServiceProvider> services,
                           URLResponsePtr response) {
-    new HTMLDocument(provider.Pass(), response.Pass(), shell_.get(),
+    new HTMLDocument(services.Pass(), response.Pass(), shell_.get(),
                      compositor_thread_, web_media_player_factory_);
   }
 

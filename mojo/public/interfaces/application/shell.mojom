@@ -11,7 +11,11 @@ import "mojo/public/interfaces/application/service_provider.mojom";
 // it's Shell interface to connect to other Applications.
 [Client=Application]
 interface Shell {
-  // Loads url. mojo:{service} will result in the user of the value of the
+  // Loads |application_url|. mojo:{service} will result in the user of the value of the
   // --origin flag to the shell being used.
-  ConnectToApplication(string? application_url, ServiceProvider&? provider);
+  // |services| can be used to look up services provided by the application at |application_url|.
+  // |exposed_services| can be used to expose services to the application at |application_url|.
+  ConnectToApplication(string application_url,
+                       ServiceProvider&? services,
+                       ServiceProvider? exposed_services);
 };

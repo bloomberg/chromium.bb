@@ -15,17 +15,15 @@ namespace mojo {
 namespace internal {
 
 class FilterChain {
-  MOJO_MOVE_ONLY_TYPE_FOR_CPP_03(FilterChain, RValue)
+  MOJO_MOVE_ONLY_TYPE(FilterChain)
 
  public:
   // Doesn't take ownership of |sink|. Therefore |sink| has to stay alive while
   // this object is alive.
   explicit FilterChain(MessageReceiver* sink = nullptr);
 
-  // Move-only constructor and operator=.
-  FilterChain(RValue other);
-  FilterChain& operator=(RValue other);
-
+  FilterChain(FilterChain&& other);
+  FilterChain& operator=(FilterChain&& other);
   ~FilterChain();
 
   template <typename FilterType>

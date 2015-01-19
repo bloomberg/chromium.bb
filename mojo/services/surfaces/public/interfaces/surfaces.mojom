@@ -4,11 +4,11 @@
 
 module mojo;
 
-import "mojo/services/geometry/public/interfaces/geometry.mojom";
-import "mojo/services/gpu/public/interfaces/command_buffer.mojom";
-import "mojo/services/gpu/public/interfaces/viewport_parameter_listener.mojom";
-import "mojo/services/surfaces/public/interfaces/quads.mojom";
-import "mojo/services/surfaces/public/interfaces/surface_id.mojom";
+import "geometry/public/interfaces/geometry.mojom";
+import "gpu/public/interfaces/command_buffer.mojom";
+import "gpu/public/interfaces/viewport_parameter_listener.mojom";
+import "surfaces/public/interfaces/quads.mojom";
+import "surfaces/public/interfaces/surface_id.mojom";
 
 enum ResourceFormat {
   RGBA_8888,
@@ -61,19 +61,17 @@ interface SurfaceClient {
 
 [Client=SurfaceClient]
 interface Surface {
-  // The id's local field is allocated by the caller and must be unique. The
-  // id_namespace field on the id may be 0 or this connection's namespace.
-  CreateSurface(SurfaceId id);
+  CreateSurface(uint32 id_local);
 
   // The client can only submit frames to surfaces created with this
   // connection.  After the submitted frame is drawn for the first time, the
   // surface will respond to the SubmitFrame message. Clients should use this
   // acknowledgement to ratelimit frame submissions.
-  SubmitFrame(SurfaceId id, Frame frame) => ();
-  DestroySurface(SurfaceId id);
+  SubmitFrame(uint32 id_local, Frame frame) => ();
+  DestroySurface(uint32 id_local);
 
   CreateGLES2BoundSurface(CommandBuffer gles2_client,
-                          SurfaceId id,
+                          uint32 id_local,
                           Size size,
                           ViewportParameterListener& listener);
 };

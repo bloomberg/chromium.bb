@@ -4,8 +4,8 @@
 
 module mojo;
 
-import "mojo/services/geometry/public/interfaces/geometry.mojom";
-import "mojo/services/input_events/public/interfaces/input_events.mojom";
+import "geometry/public/interfaces/geometry.mojom";
+import "input_events/public/interfaces/input_events.mojom";
 
 // WindowManagerInternal is an interface provided by the WindowManager
 // exclusively to the ViewManager.

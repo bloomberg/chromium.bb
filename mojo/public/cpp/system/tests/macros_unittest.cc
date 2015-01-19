@@ -76,7 +76,7 @@ TEST(MacrosCppTest, ArraySize) {
 // Note: MSVS is very strict (and arguably buggy) about warnings for classes
 // defined in a local scope, so define these globally.
 class MoveOnlyInt {
-  MOJO_MOVE_ONLY_TYPE_FOR_CPP_03(MoveOnlyInt, RValue)
+  MOJO_MOVE_ONLY_TYPE(MoveOnlyInt)
 
  public:
   MoveOnlyInt() : is_set_(false), value_() {}
@@ -84,12 +84,12 @@ class MoveOnlyInt {
   ~MoveOnlyInt() {}
 
   // Move-only constructor and operator=.
-  MoveOnlyInt(RValue other) { *this = other; }
-  MoveOnlyInt& operator=(RValue other) {
-    if (other.object != this) {
-      is_set_ = other.object->is_set_;
-      value_ = other.object->value_;
-      other.object->is_set_ = false;
+  MoveOnlyInt(MoveOnlyInt&& other) { *this = other.Pass(); }
+  MoveOnlyInt& operator=(MoveOnlyInt&& other) {
+    if (&other != this) {
+      is_set_ = other.is_set_;
+      value_ = other.value_;
+      other.is_set_ = false;
     }
     return *this;
   }

@@ -10,23 +10,24 @@ import sys
 import tempfile
 import zipfile
 
-current_path = os.path.dirname(os.path.realpath(__file__))
-sys.path.insert(0, os.path.join(current_path, "..", "..", "..", "tools"))
-# pylint: disable=F0401
-import find_depot_tools
-
 if not sys.platform.startswith("linux"):
   print "Not supported for your platform"
   sys.exit(0)
 
-prebuilt_file_path = os.path.join(current_path, "prebuilt")
-stamp_path = os.path.join(prebuilt_file_path, "VERSION")
 
-depot_tools_path = find_depot_tools.add_depot_tools_to_path()
-gsutil_exe = os.path.join(depot_tools_path, "third_party", "gsutil", "gsutil")
+def download(tools_directory):
+  current_path = os.path.dirname(os.path.realpath(__file__))
+  find_depot_tools_path = os.path.join(current_path, tools_directory)
+  sys.path.insert(0, find_depot_tools_path)
+  # pylint: disable=F0401
+  import find_depot_tools
 
+  prebuilt_file_path = os.path.join(current_path, "prebuilt")
+  stamp_path = os.path.join(prebuilt_file_path, "VERSION")
 
-def download():
+  depot_tools_path = find_depot_tools.add_depot_tools_to_path()
+  gsutil_exe = os.path.join(depot_tools_path, "third_party", "gsutil", "gsutil")
+
   version_path = os.path.join(current_path, "../VERSION")
   with open(version_path) as version_file:
     version = version_file.read().strip()
@@ -83,8 +84,18 @@ def download():
 def main():
   parser = argparse.ArgumentParser(description="Download mojo_shell binary "
                                    "from google storage")
-  parser.parse_args()
-  return download()
+  parser.add_argument("--tools-directory",
+                      dest="tools_directory",
+                      metavar="<tools-directory>",
+                      type=str,
+                      help="Path to the directory containing"
+                           " find_depot_tools.py, specified as a relative path"
+                           " from the location of this file.")
+  args = parser.parse_args()
+  if not args.tools_directory:
+    print "Must specify --tools_directory; please see help message."
+    sys.exit(1)
+  return download(args.tools_directory)
 
 if __name__ == "__main__":
   sys.exit(main())

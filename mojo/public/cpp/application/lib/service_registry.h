@@ -25,7 +25,8 @@ class ServiceRegistry : public ServiceProvider, public ApplicationConnection {
   ServiceRegistry();
   ServiceRegistry(ApplicationImpl* application_impl,
                   const std::string& url,
-                  ServiceProviderPtr service_provider);
+                  ServiceProviderPtr remote_services,
+                  InterfaceRequest<ServiceProvider> local_services);
   ~ServiceRegistry() override;
 
   // ApplicationConnection overrides.
@@ -51,6 +52,7 @@ class ServiceRegistry : public ServiceProvider, public ApplicationConnection {
   typedef std::map<std::string, ServiceConnectorBase*>
       NameToServiceConnectorMap;
   NameToServiceConnectorMap name_to_service_connector_;
+  Binding<ServiceProvider> local_binding_;
   ServiceProviderPtr remote_service_provider_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(ServiceRegistry);

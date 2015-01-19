@@ -171,7 +171,7 @@ RawChannel::~RawChannel() {
   DCHECK(!weak_ptr_factory_.HasWeakPtrs());
 }
 
-bool RawChannel::Init(Delegate* delegate) {
+void RawChannel::Init(Delegate* delegate) {
   DCHECK(delegate);
 
   DCHECK(!delegate_);
@@ -188,13 +188,7 @@ bool RawChannel::Init(Delegate* delegate) {
   DCHECK(!write_buffer_);
   write_buffer_.reset(new WriteBuffer(GetSerializedPlatformHandleSize()));
 
-  if (!OnInit()) {
-    delegate_ = nullptr;
-    message_loop_for_io_ = nullptr;
-    read_buffer_.reset();
-    write_buffer_.reset();
-    return false;
-  }
+  OnInit();
 
   IOResult io_result = ScheduleRead();
   if (io_result != IO_PENDING) {
@@ -204,10 +198,8 @@ bool RawChannel::Init(Delegate* delegate) {
         FROM_HERE, base::Bind(&RawChannel::OnReadCompleted,
                               weak_ptr_factory_.GetWeakPtr(), io_result, 0));
   }
-
-  // ScheduleRead() failure is treated as a read failure (by notifying the
-  // delegate), not as an init failure.
-  return true;
+  // Note: |ScheduleRead()| failure is treated as a read failure (by notifying
+  // the delegate), not an initialization failure.
 }
 
 void RawChannel::Shutdown() {

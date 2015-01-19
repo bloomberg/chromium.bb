@@ -36,7 +36,7 @@ Channel::Channel(embedder::PlatformSupport* platform_support)
       channel_manager_(nullptr) {
 }
 
-bool Channel::Init(scoped_ptr<RawChannel> raw_channel) {
+void Channel::Init(scoped_ptr<RawChannel> raw_channel) {
   DCHECK(creation_thread_checker_.CalledOnValidThread());
   DCHECK(raw_channel);
 
@@ -44,14 +44,8 @@ bool Channel::Init(scoped_ptr<RawChannel> raw_channel) {
   // becomes thread-safe.
   DCHECK(!is_running_);
   raw_channel_ = raw_channel.Pass();
-
-  if (!raw_channel_->Init(this)) {
-    raw_channel_.reset();
-    return false;
-  }
-
+  raw_channel_->Init(this);
   is_running_ = true;
-  return true;
 }
 
 void Channel::SetChannelManager(ChannelManager* channel_manager) {

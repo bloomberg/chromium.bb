@@ -12,5 +12,13 @@ interface Application {
   // Initialize is guaranteed to be called before any AcceptConnection calls.
   Initialize(array<string>? args);
 
-  AcceptConnection(string? requestor_url, ServiceProvider? provider);
+  // Called in response to a call to mojo.Shell.ConnectToApplication().
+  // The |services| and |exposed_services| parameters are the same as those on
+  // mojo.Shell.ConnectToApplication().
+  // |services| will be used to look up services provided by this application.
+  // |exposed_services| can be used to look up services exposed by the
+  // application at |requestor_url|.
+  AcceptConnection(string requestor_url,
+                   ServiceProvider&? services,
+                   ServiceProvider? exposed_services);
 };

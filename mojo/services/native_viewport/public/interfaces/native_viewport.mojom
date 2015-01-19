@@ -4,10 +4,10 @@
 
 module mojo;
 
-import "mojo/services/geometry/public/interfaces/geometry.mojom";
-import "mojo/services/gpu/public/interfaces/command_buffer.mojom";
-import "mojo/services/input_events/public/interfaces/input_events.mojom";
-import "mojo/services/surfaces/public/interfaces/surface_id.mojom";
+import "geometry/public/interfaces/geometry.mojom";
+import "gpu/public/interfaces/command_buffer.mojom";
+import "input_events/public/interfaces/input_events.mojom";
+import "surfaces/public/interfaces/surface_id.mojom";
 
 struct ViewportMetrics {
   Size size;

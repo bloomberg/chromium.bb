@@ -10,5 +10,5 @@ module mojo;
 interface ServiceProvider {
   // Connect the given message pipe handle to the named service. If the named
   // service does not exist, then the handle will be closed.
-  ConnectToService(string? interface_name, handle<message_pipe>? pipe);
+  ConnectToService(string interface_name, handle<message_pipe> pipe);
 };

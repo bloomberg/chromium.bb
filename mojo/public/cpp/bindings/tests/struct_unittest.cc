@@ -43,10 +43,20 @@ TEST_F(StructTest, Rect) {
   EXPECT_TRUE(!rect);
   EXPECT_FALSE(rect);
 
+  rect = nullptr;
+  EXPECT_TRUE(rect.is_null());
+  EXPECT_TRUE(!rect);
+  EXPECT_FALSE(rect);
+
   rect = MakeRect();
   EXPECT_FALSE(rect.is_null());
   EXPECT_FALSE(!rect);
   EXPECT_TRUE(rect);
+
+  RectPtr null_rect = nullptr;
+  EXPECT_TRUE(null_rect.is_null());
+  EXPECT_TRUE(!null_rect);
+  EXPECT_FALSE(null_rect);
 
   CheckRect(*rect);
 }
@@ -94,6 +104,20 @@ TEST_F(StructTest, Serialization_Basic) {
   Deserialize_(data, &rect2);
 
   CheckRect(*rect2);
+}
+
+// Construction of a struct with struct pointers from null.
+TEST_F(StructTest, Construction_StructPointers) {
+  RectPairPtr pair;
+  EXPECT_TRUE(pair.is_null());
+
+  pair = RectPair::New();
+  EXPECT_FALSE(pair.is_null());
+  EXPECT_TRUE(pair->first.is_null());
+  EXPECT_TRUE(pair->first.is_null());
+
+  pair = nullptr;
+  EXPECT_TRUE(pair.is_null());
 }
 
 // Serialization test of a struct with struct pointers.

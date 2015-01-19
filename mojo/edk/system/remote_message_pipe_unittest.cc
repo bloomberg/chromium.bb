@@ -127,8 +127,8 @@ class RemoteMessagePipeTest : public testing::Test {
     CHECK(!channels_[channel_index]);
 
     channels_[channel_index] = new Channel(&platform_support_);
-    CHECK(channels_[channel_index]->Init(
-        RawChannel::Create(platform_handles_[channel_index].Pass())));
+    channels_[channel_index]->Init(
+        RawChannel::Create(platform_handles_[channel_index].Pass()));
   }
 
   void BootstrapChannelEndpointsOnIOThread(scoped_refptr<ChannelEndpoint> ep0,

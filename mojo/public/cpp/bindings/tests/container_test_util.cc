@@ -32,14 +32,14 @@ MoveOnlyType::MoveOnlyType() : moved_(false), ptr_(this) {
   num_instances_++;
 }
 
-MoveOnlyType::MoveOnlyType(RValue other)
-    : moved_(true), ptr_(other.object->ptr()) {
+MoveOnlyType::MoveOnlyType(MoveOnlyType&& other)
+    : moved_(true), ptr_(other.ptr()) {
   num_instances_++;
 }
 
-MoveOnlyType& MoveOnlyType::operator=(RValue other) {
+MoveOnlyType& MoveOnlyType::operator=(MoveOnlyType&& other) {
   moved_ = true;
-  ptr_ = other.object->ptr();
+  ptr_ = other.ptr();
   return *this;
 }
 

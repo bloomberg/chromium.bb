@@ -20,7 +20,7 @@ namespace mojo {
 
 template <typename T>
 class Array {
-  MOJO_MOVE_ONLY_TYPE_FOR_CPP_03(Array, RValue)
+  MOJO_MOVE_ONLY_TYPE(Array)
  public:
   typedef internal::ArrayTraits<T, internal::IsMoveOnlyType<T>::value> Traits;
   typedef typename Traits::ConstRefType ConstRefType;
@@ -37,9 +37,9 @@ class Array {
   }
   ~Array() { Traits::Finalize(&vec_); }
 
-  Array(RValue other) : is_null_(true) { Take(other.object); }
-  Array& operator=(RValue other) {
-    Take(other.object);
+  Array(Array&& other) : is_null_(true) { Take(&other); }
+  Array& operator=(Array&& other) {
+    Take(&other);
     return *this;
   }
 

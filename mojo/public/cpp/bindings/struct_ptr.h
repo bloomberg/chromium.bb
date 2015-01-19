@@ -27,16 +27,23 @@ class StructHelper {
 
 template <typename Struct>
 class StructPtr {
-  MOJO_MOVE_ONLY_TYPE_FOR_CPP_03(StructPtr, RValue);
+  MOJO_MOVE_ONLY_TYPE(StructPtr)
 
  public:
 
   StructPtr() : ptr_(nullptr) {}
+  StructPtr(decltype(nullptr)) : ptr_(nullptr) {}
+
   ~StructPtr() { delete ptr_; }
 
-  StructPtr(RValue other) : ptr_(nullptr) { Take(other.object); }
-  StructPtr& operator=(RValue other) {
-    Take(other.object);
+  StructPtr& operator=(decltype(nullptr)) {
+    reset();
+    return *this;
+  }
+
+  StructPtr(StructPtr&& other) : ptr_(nullptr) { Take(&other); }
+  StructPtr& operator=(StructPtr&& other) {
+    Take(&other);
     return *this;
   }
 
@@ -101,16 +108,23 @@ class StructPtr {
 // Designed to be used when Struct is small and copyable.
 template <typename Struct>
 class InlinedStructPtr {
-  MOJO_MOVE_ONLY_TYPE_FOR_CPP_03(InlinedStructPtr, RValue);
+  MOJO_MOVE_ONLY_TYPE(InlinedStructPtr);
 
  public:
 
   InlinedStructPtr() : is_null_(true) {}
+  InlinedStructPtr(decltype(nullptr)) : is_null_(true) {}
+
   ~InlinedStructPtr() {}
 
-  InlinedStructPtr(RValue other) : is_null_(true) { Take(other.object); }
-  InlinedStructPtr& operator=(RValue other) {
-    Take(other.object);
+  InlinedStructPtr& operator=(decltype(nullptr)) {
+    reset();
+    return *this;
+  }
+
+  InlinedStructPtr(InlinedStructPtr&& other) : is_null_(true) { Take(&other); }
+  InlinedStructPtr& operator=(InlinedStructPtr&& other) {
+    Take(&other);
     return *this;
   }
 

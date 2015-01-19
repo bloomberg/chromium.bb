@@ -168,7 +168,7 @@ class RawChannelWin : public RawChannel {
   IOResult WriteNoLock(size_t* platform_handles_written,
                        size_t* bytes_written) override;
   IOResult ScheduleWriteNoLock() override;
-  bool OnInit() override;
+  void OnInit() override;
   void OnShutdownNoLock(scoped_ptr<ReadBuffer> read_buffer,
                         scoped_ptr<WriteBuffer> write_buffer) override;
 
@@ -521,20 +521,19 @@ RawChannel::IOResult RawChannelWin::ScheduleWriteNoLock() {
   return io_result;
 }
 
-bool RawChannelWin::OnInit() {
+void RawChannelWin::OnInit() {
   DCHECK_EQ(base::MessageLoop::current(), message_loop_for_io());
 
   DCHECK(handle_.is_valid());
-  if (skip_completion_port_on_success_ &&
-      !g_vista_or_higher_functions.Get().SetFileCompletionNotificationModes(
-          handle_.get().handle, FILE_SKIP_COMPLETION_PORT_ON_SUCCESS)) {
-    return false;
+  if (skip_completion_port_on_success_) {
+    // I don't know how this can fail (unless |handle_| is bad, in which case
+    // it's a bug in our code).
+    CHECK(g_vista_or_higher_functions.Get().SetFileCompletionNotificationModes(
+        handle_.get().handle, FILE_SKIP_COMPLETION_PORT_ON_SUCCESS));
   }
 
   DCHECK(!io_handler_);
   io_handler_ = new RawChannelIOHandler(this, handle_.Pass());
-
-  return true;
 }
 
 void RawChannelWin::OnShutdownNoLock(scoped_ptr<ReadBuffer> read_buffer,

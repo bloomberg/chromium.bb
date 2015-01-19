@@ -15,6 +15,7 @@ define("mojo/services/public/js/application", [
     constructor(shellHandle, url) {
       this.url = url;
       this.serviceProviders = [];
+      this.exposedServiceProviders = [];
       this.shellHandle_ = shellHandle;
       this.shell = new Shell(shellHandle, {
         initialize: this.initialize.bind(this),
@@ -25,13 +26,18 @@ define("mojo/services/public/js/application", [
     initialize(args) {
     }
 
-    doAcceptConnection(url, serviceProviderProxy) {
-      var serviceProvider =  new ServiceProvider(serviceProviderProxy);
+    doAcceptConnection(url, serviceProviderProxy, exposedServiceProviderProxy) {
+      var serviceProvider = new ServiceProvider(serviceProviderProxy);
       this.serviceProviders.push(serviceProvider);
-      this.acceptConnection(url, serviceProvider);
+
+      var exposedServiceProvider =
+          new ServiceProvider(exposedServiceProviderProxy);
+      this.exposedServiceProviders.push(exposedServiceProvider);
+
+      this.acceptConnection(url, serviceProvider, exposedServiceProvider);
     }
 
-    acceptConnection(url, serviceProvider) {
+    acceptConnection(url, serviceProvider, exposedServiceProvider) {
     }
 
     quit() {

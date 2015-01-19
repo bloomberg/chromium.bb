@@ -26,13 +26,22 @@ namespace mojo {
 //
 //   class FooImpl : public Foo {
 //    public:
-//     explicit FooImpl(ScopedMessagePipeHandle handle)
-//         : binding_(this, handle.Pass()) {}
+//     explicit FooImpl(InterfaceRequest<Foo> request)
+//         : binding_(this, request.Pass()) {}
 //
 //     // Foo implementation here.
 //
 //    private:
 //     Binding<Foo> binding_;
+//   };
+//
+//   class MyFooFactory : public InterfaceFactory<Foo> {
+//    public:
+//     void Create(..., InterfaceRequest<Foo> request) override {
+//       auto f = new FooImpl(request.Pass());
+//       // Do something to manage the lifetime of |f|. Use StrongBinding<> to
+//       // delete FooImpl on connection errors.
+//     }
 //   };
 template <typename Interface>
 class Binding : public ErrorHandler {

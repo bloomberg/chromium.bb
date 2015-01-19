@@ -10,6 +10,8 @@ mojom("interfaces") {
     "accessibility.mojom",
   ]
 
+  import_dirs = [ get_path_info("../../../", "abspath") ]
+
   deps = [
     "../../../geometry/public/interfaces",
   ]

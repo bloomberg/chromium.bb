@@ -138,6 +138,42 @@ class Encoder {
     }
   }
 
+  void encodeMessagePipeHandle(
+      core.MojoMessagePipeEndpoint value, int offset, bool nullable) =>
+      encodeHandle(value != null ? value.handle : null, offset, nullable);
+
+  void encodeConsumerHandle(
+      core.MojoDataPipeConsumer value, int offset, bool nullable) =>
+      encodeHandle(value != null ? value.handle : null, offset, nullable);
+
+  void encodeProducerHandle(
+      core.MojoDataPipeProducer value, int offset, bool nullable) =>
+      encodeHandle(value != null ? value.handle : null, offset, nullable);
+
+  void encodeSharedBufferHandle(
+      core.MojoSharedBuffer value, int offset, bool nullable) =>
+      encodeHandle(value != null ? value.handle : null, offset, nullable);
+
+  void encodeInterface(Interface interface, int offset, bool nullable) {
+    if (interface == null) {
+      encodeInvalideHandle(offset, nullable);
+      return;
+    }
+    var pipe = new core.MojoMessagePipe();
+    interface.bind(pipe.endpoints[0]);
+    encodeMessagePipeHandle(pipe.endpoints[1], offset, nullable);
+  }
+
+  void encodeInterfaceRequest(Client client, int offset, bool nullable) {
+    if (client == null) {
+      encodeInvalideHandle(offset, nullable);
+      return;
+    }
+    var pipe = new core.MojoMessagePipe();
+    client.bind(pipe.endpoints[0]);
+    encodeMessagePipeHandle(pipe.endpoints[1], offset, nullable);
+  }
+
   void encodeNullPointer(int offset, bool nullable) {
     if (!nullable) {
       throw 'Trying to encode a null pointer for a non-nullable type';
@@ -271,10 +307,11 @@ class Encoder {
       encodeArray((e, v) => e.appendDoubleArray(v),
                   8, value, offset, nullability, expectedLength);
 
-  void encodeHandleArray(List<core.MojoHandle> value,
-                         int offset,
-                         int nullability,
-                         int expectedLength) {
+  void _handleArrayEncodeHelper(Function elementEncoder,
+                                List value,
+                                int offset,
+                                int nullability,
+                                int expectedLength) {
     if (value == null) {
       encodeNullPointer(offset, isArrayNullable(nullability));
       return;
@@ -283,10 +320,73 @@ class Encoder {
         kSerializedHandleSize, value.length, offset, expectedLength);
     for (int i = 0; i < value.length; ++i) {
       int handleOffset = DataHeader.kHeaderSize + kSerializedHandleSize * i;
-      encoder.encodeHandle(
-          value[i], handleOffset, isElementNullable(nullability));
+      elementEncoder(
+          encoder, value[i], handleOffset, isElementNullable(nullability));
     }
   }
+
+  void encodeHandleArray(
+      List<core.MojoHandle> value,
+      int offset,
+      int nullability,
+      int expectedLength) =>
+      _handleArrayEncodeHelper(
+          (e, v, o, n) => e.encodeHandle(v, o, n),
+          value, offset, nullability, expectedLength);
+
+  void encodeMessagePipeHandleArray(
+      List<core.MojoMessagePipeEndpoint> value,
+      int offset,
+      int nullability,
+      int expectedLength) =>
+      _handleArrayEncodeHelper(
+          (e, v, o, n) => e.encodeMessagePipeHandle(v, o, n),
+          value, offset, nullability, expectedLength);
+
+  void encodeConsumerHandleArray(
+      List<core.MojoDataPipeConsumer> value,
+      int offset,
+      int nullability,
+      int expectedLength) =>
+      _handleArrayEncodeHelper(
+          (e, v, o, n) => e.encodeConsumerHandle(v, o, n),
+          value, offset, nullability, expectedLength);
+
+  void encodeProducerHandleArray(
+      List<core.MojoDataPipeProducer> value,
+      int offset,
+      int nullability,
+      int expectedLength) =>
+      _handleArrayEncodeHelper(
+          (e, v, o, n) => e.encodeProducerHandle(v, o, n),
+          value, offset, nullability, expectedLength);
+
+  void encodeSharedBufferHandleArray(
+      List<core.MojoSharedBuffer> value,
+      int offset,
+      int nullability,
+      int expectedLength) =>
+      _handleArrayEncodeHelper(
+          (e, v, o, n) => e.encodeSharedBufferHandle(v, o, n),
+          value, offset, nullability, expectedLength);
+
+  void encodeInterfaceRequestArray(
+      List<Client> value,
+      int offset,
+      int nullability,
+      int expectedLength) =>
+      _handleArrayEncodeHelper(
+          (e, v, o, n) => e.encodeInterfaceRequest(v, o, n),
+          value, offset, nullability, expectedLength);
+
+  void encodeInterfaceArray(
+      List<Interface> value,
+      int offset,
+      int nullability,
+      int expectedLength) =>
+      _handleArrayEncodeHelper(
+          (e, v, o, n) => e.encodeInterface(v, o, n),
+          value, offset, nullability, expectedLength);
 
   static Uint8List _utf8OfString(String s) =>
       (new Uint8List.fromList((const Utf8Encoder()).convert(s)));
@@ -346,6 +446,7 @@ class Encoder {
   }
 }
 
+
 class Decoder {
   Message _message;
   int _base = 0;
@@ -391,6 +492,31 @@ class Decoder {
       return new core.MojoHandle(core.MojoHandle.INVALID);
     }
     return _handles[index];
+  }
+
+  core.MojoMessagePipeEndpoint decodeMessagePipeHandle(
+      int offset, bool nullable) =>
+      new core.MojoMessagePipeEndpoint(decodeHandle(offset, nullable));
+
+  core.MojoDataPipeConsumer decodeConsumerHandle(int offset, bool nullable) =>
+      new core.MojoDataPipeConsumer(decodeHandle(offset, nullable));
+
+  core.MojoDataPipeProducer decodeProducerHandle(int offset, bool nullable) =>
+      new core.MojoDataPipeProducer(decodeHandle(offset, nullable));
+
+  core.MojoSharedBuffer decodeSharedBufferHandle(int offset, bool nullable) =>
+      new core.MojoSharedBuffer(decodeHandle(offset, nullable));
+
+  Client decodeServiceInterface(
+      int offset, bool nullable, Function clientFactory) {
+    var endpoint = decodeMessagePipeHandle(offset, nullable);
+    return endpoint.handle.isValid ? clientFactory(endpoint) : null;
+  }
+
+  Interface decodeInterfaceRequest(
+      int offset, bool nullable, Function interfaceFactory) {
+    var endpoint = decodeMessagePipeHandle(offset, nullable);
+    return endpoint.handle.isValid ? interfaceFactory(endpoint) : null;
   }
 
   Decoder decodePointer(int offset, bool nullable) {
@@ -528,21 +654,68 @@ class Decoder {
       decodeArray((b, s, l) => new Float64List.view(b, s, l),
                   8, offset, nullability, expectedLength);
 
-  List<core.MojoHandle> decodeHandleArray(
-      int offset, int nullability, int expectedLength) {
+  List _handleArrayDecodeHelper(Function elementDecoder,
+                                int offset,
+                                int nullability,
+                                int expectedLength) {
     Decoder d = decodePointer(offset, isArrayNullable(nullability));
     if (d == null) {
       return null;
     }
     var header = d.decodeDataHeaderForArray(4, expectedLength);
-    var result = new core.MojoHandle(header.numFields);
+    var result = new List(header.numFields);
     for (int i = 0; i < result.length; ++i) {
-      result[i] = d.decodeHandle(
+      result[i] = elementDecoder(
+          d,
           DataHeader.kHeaderSize + kSerializedHandleSize * i,
           isElementNullable(nullability));
     }
     return result;
+
   }
+
+  List<core.MojoHandle> decodeHandleArray(
+      int offset, int nullability, int expectedLength) =>
+      _handleArrayDecodeHelper((d, o, n) => d.decodeHandle(o, n),
+                               offset, nullability, expectedLength);
+
+  List<core.MojoDataPipeConsumer> decodeConsumerHandleArray(
+      int offset, int nullability, int expectedLength) =>
+      _handleArrayDecodeHelper((d, o, n) => d.decodeConsumerHandle(o, n),
+                               offset, nullability, expectedLength);
+
+  List<core.MojoDataPipeProducer> decodeProducerHandleArray(
+      int offset, int nullability, int expectedLength) =>
+      _handleArrayDecodeHelper((d, o, n) => d.decodeProducerHandle(o, n),
+                               offset, nullability, expectedLength);
+
+  List<core.MojoMessagePipeEndpoint> decodeMessagePipeHandleArray(
+      int offset, int nullability, int expectedLength) =>
+      _handleArrayDecodeHelper((d, o, n) => d.decodeMessagePipeHandle(o, n),
+                               offset, nullability, expectedLength);
+
+  List<core.MojoSharedBuffer> decodeSharedBufferHandleArray(
+      int offset, int nullability, int expectedLength) =>
+      _handleArrayDecodeHelper((d, o, n) => d.decodeSharedBufferHandle(o, n),
+                               offset, nullability, expectedLength);
+
+  List<Interface> decodeInterfaceRequestArray(
+      int offset,
+      int nullability,
+      int expectedLength,
+      Function interfaceFactory) =>
+      _handleArrayDecodeHelper(
+          (d, o, n) => d.decodeInterfaceRequest(o, n, interfaceFactory),
+          offset, nullability, expectedLength);
+
+  List<Client> decodeServiceInterfaceArray(
+      int offset,
+      int nullability,
+      int expectedLength,
+      Function clientFactory) =>
+      _handleArrayDecodeHelper(
+          (d, o, n) => d.decodeServiceInterface(o, n, clientFactory),
+          offset, nullability, expectedLength);
 
   static String _stringOfUtf8(Uint8List bytes) =>
       (const Utf8Decoder()).convert(bytes.toList());

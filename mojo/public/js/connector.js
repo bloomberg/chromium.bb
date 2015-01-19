@@ -19,7 +19,8 @@ define("mojo/public/js/connector", [
     this.readWaitCookie_ = null;
     this.errorHandler_ = null;
 
-    this.waitToReadMore_();
+    if (handle)
+      this.waitToReadMore_();
   }
 
   Connector.prototype.close = function() {

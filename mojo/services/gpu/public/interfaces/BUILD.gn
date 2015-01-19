@@ -13,7 +13,9 @@ mojom("interfaces") {
     "viewport_parameter_listener.mojom",
   ]
 
+  import_dirs = [ get_path_info("../../../", "abspath") ]
+
   deps = [
-    "//mojo/services/geometry/public/interfaces",
+    "../../../geometry/public/interfaces",
   ]
 }

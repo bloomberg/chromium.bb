@@ -35,6 +35,9 @@ import("../../mojo_sdk.gni")
 #       Mojo public SDK. These deps will be added as ordinary public deps
 #       rebased to the current directory.
 #
+#   import_dirs (optional)
+#       List of import directories that will get added when processing sources.
+#
 #   testonly (optional)
 #
 #   visibility (optional)
@@ -168,6 +171,15 @@ template("mojom") {
       "-o",
       rebase_path(root_gen_dir),
     ]
+
+    if (defined(invoker.import_dirs)) {
+      foreach(import_dir, invoker.import_dirs) {
+        args += [
+          "-I",
+          rebase_path(import_dir, root_build_dir),
+        ]
+      }
+    }
   }
 
   source_set(target_name) {

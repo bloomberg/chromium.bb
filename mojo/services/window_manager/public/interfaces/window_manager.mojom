@@ -4,8 +4,8 @@
 
 module mojo;
 
+import "input_events/public/interfaces/input_events.mojom";
 import "mojo/public/interfaces/application/service_provider.mojom";
-import "mojo/services/input_events/public/interfaces/input_events.mojom";
 
 [Client=WindowManagerClient]
 interface WindowManager {

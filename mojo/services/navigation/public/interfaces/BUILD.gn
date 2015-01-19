@@ -10,7 +10,9 @@ mojom("interfaces") {
     "navigation.mojom",
   ]
 
+  import_dirs = [ get_path_info("../../../", "abspath") ]
+
   deps = [
-    "//mojo/services/network/public/interfaces",
+    "../../../network/public/interfaces",
   ]
 }

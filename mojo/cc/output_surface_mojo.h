@@ -8,7 +8,6 @@
 #include "base/macros.h"
 #include "cc/output/output_surface.h"
 #include "cc/surfaces/surface_id.h"
-#include "cc/surfaces/surface_id_allocator.h"
 #include "mojo/services/surfaces/public/interfaces/surfaces.mojom.h"
 
 namespace mojo {
@@ -41,8 +40,8 @@ class OutputSurfaceMojo : public cc::OutputSurface, public SurfaceClient {
 
   OutputSurfaceMojoClient* output_surface_mojo_client_;
   SurfacePtr surface_;
-  cc::SurfaceIdAllocator id_allocator_;
-  cc::SurfaceId surface_id_;
+  uint32_t id_namespace_;
+  uint32_t local_id_;
   gfx::Size surface_size_;
 
   DISALLOW_COPY_AND_ASSIGN(OutputSurfaceMojo);

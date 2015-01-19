@@ -87,9 +87,8 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
   // This must be called (on an I/O thread) before this object is used. Does
   // *not* take ownership of |delegate|. Both the I/O thread and |delegate| must
   // remain alive until |Shutdown()| is called (unless this fails); |delegate|
-  // will no longer be used after |Shutdown()|. Returns true on success. On
-  // failure, |Shutdown()| should *not* be called.
-  bool Init(Delegate* delegate);
+  // will no longer be used after |Shutdown()|.
+  void Init(Delegate* delegate);
 
   // This must be called (on the I/O thread) before this object is destroyed.
   void Shutdown();
@@ -279,7 +278,7 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
   virtual IOResult ScheduleWriteNoLock() = 0;
 
   // Must be called on the I/O thread WITHOUT |write_lock_| held.
-  virtual bool OnInit() = 0;
+  virtual void OnInit() = 0;
   // On shutdown, passes the ownership of the buffers to subclasses, which may
   // want to preserve them if there are pending read/write. Must be called on
   // the I/O thread under |write_lock_|.

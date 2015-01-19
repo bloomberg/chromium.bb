@@ -11,16 +11,19 @@
 namespace mojo {
 namespace internal {
 
-ServiceRegistry::ServiceRegistry(ApplicationImpl* application_impl,
-                                 const std::string& url,
-                                 ServiceProviderPtr service_provider)
+ServiceRegistry::ServiceRegistry(
+    ApplicationImpl* application_impl,
+    const std::string& url,
+    ServiceProviderPtr remote_services,
+    InterfaceRequest<ServiceProvider> local_services)
     : application_impl_(application_impl),
       url_(url),
-      remote_service_provider_(service_provider.Pass()) {
-  remote_service_provider_.set_client(this);
+      local_binding_(this, local_services.Pass()),
+      remote_service_provider_(remote_services.Pass()) {
 }
 
-ServiceRegistry::ServiceRegistry() : application_impl_(nullptr) {
+ServiceRegistry::ServiceRegistry()
+    : application_impl_(nullptr), local_binding_(this) {
 }
 
 ServiceRegistry::~ServiceRegistry() {

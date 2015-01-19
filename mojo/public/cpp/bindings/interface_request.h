@@ -12,13 +12,13 @@ namespace mojo {
 // Used in methods that return instances of remote objects.
 template <typename Interface>
 class InterfaceRequest {
-  MOJO_MOVE_ONLY_TYPE_FOR_CPP_03(InterfaceRequest, RValue)
+  MOJO_MOVE_ONLY_TYPE(InterfaceRequest)
  public:
   InterfaceRequest() {}
 
-  InterfaceRequest(RValue other) { handle_ = other.object->handle_.Pass(); }
-  InterfaceRequest& operator=(RValue other) {
-    handle_ = other.object->handle_.Pass();
+  InterfaceRequest(InterfaceRequest&& other) { handle_ = other.handle_.Pass(); }
+  InterfaceRequest& operator=(InterfaceRequest&& other) {
+    handle_ = other.handle_.Pass();
     return *this;
   }
 

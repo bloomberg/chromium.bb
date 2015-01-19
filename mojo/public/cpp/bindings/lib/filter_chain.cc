@@ -14,14 +14,14 @@ namespace internal {
 FilterChain::FilterChain(MessageReceiver* sink) : sink_(sink) {
 }
 
-FilterChain::FilterChain(RValue other) : sink_(other.object->sink_) {
-  other.object->sink_ = nullptr;
-  filters_.swap(other.object->filters_);
+FilterChain::FilterChain(FilterChain&& other) : sink_(other.sink_) {
+  other.sink_ = nullptr;
+  filters_.swap(other.filters_);
 }
 
-FilterChain& FilterChain::operator=(RValue other) {
-  std::swap(sink_, other.object->sink_);
-  filters_.swap(other.object->filters_);
+FilterChain& FilterChain::operator=(FilterChain&& other) {
+  std::swap(sink_, other.sink_);
+  filters_.swap(other.filters_);
   return *this;
 }
 

@@ -98,7 +98,8 @@ class ApplicationImpl : public InterfaceImpl<Application> {
 
   // Application implementation.
   void AcceptConnection(const String& requestor_url,
-                        ServiceProviderPtr provider) override;
+                        InterfaceRequest<ServiceProvider> services,
+                        ServiceProviderPtr exposed_services) override;
 
   typedef std::vector<internal::ServiceRegistry*> ServiceRegistryList;
 

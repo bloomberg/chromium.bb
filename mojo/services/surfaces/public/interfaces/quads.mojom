@@ -4,8 +4,8 @@
 
 module mojo;
 
-import "mojo/services/geometry/public/interfaces/geometry.mojom";
-import "mojo/services/surfaces/public/interfaces/surface_id.mojom";
+import "geometry/public/interfaces/geometry.mojom";
+import "surfaces/public/interfaces/surface_id.mojom";
 
 struct Color {
   uint32 rgba;

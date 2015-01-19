@@ -4,8 +4,8 @@
 
 module mojo;
 
-import "mojo/services/network/public/interfaces/net_address.mojom";
-import "mojo/services/network/public/interfaces/network_error.mojom";
+import "network/public/interfaces/net_address.mojom";
+import "network/public/interfaces/network_error.mojom";
 
 // UDPSocket and UDPSocketClient represent a UDP socket and its client. The
 // typical flow of using the interfaces is:

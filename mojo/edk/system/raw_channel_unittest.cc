@@ -59,7 +59,7 @@ bool CheckMessageData(const void* bytes, uint32_t num_bytes) {
 }
 
 void InitOnIOThread(RawChannel* raw_channel, RawChannel::Delegate* delegate) {
-  CHECK(raw_channel->Init(delegate));
+  raw_channel->Init(delegate);
 }
 
 bool WriteTestMessageToHandle(const embedder::PlatformHandle& handle,

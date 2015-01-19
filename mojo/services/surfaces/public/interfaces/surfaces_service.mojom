@@ -4,10 +4,12 @@
 
 module mojo;
 
-import "mojo/services/surfaces/public/interfaces/surfaces.mojom";
+import "surfaces/public/interfaces/surfaces.mojom";
 
 // Use this interface to request connections to the surfaces service. Each
 // connection is associated with an id namespace
 interface SurfacesService {
+  // DEPRECATED: Just connect to mojo.Surface directly and receive the id
+  // namespace via SetIdNamespace.
   CreateSurfaceConnection() => (Surface surface, uint32 id_namespace);
 };

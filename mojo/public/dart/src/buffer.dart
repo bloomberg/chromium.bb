@@ -5,16 +5,16 @@
 part of core;
 
 class _MojoSharedBufferNatives {
-  static List Create(int num_bytes, int flags)
+  static List Create(int numBytes, int flags)
       native "MojoSharedBuffer_Create";
 
-  static List Duplicate(int buffer_handle, int flags)
+  static List Duplicate(int bufferHandle, int flags)
       native "MojoSharedBuffer_Duplicate";
 
   static List Map(MojoSharedBuffer buffer,
-                  int buffer_handle,
+                  int bufferHandle,
                   int offset,
-                  int num_bytes,
+                  int numBytes,
                   int flags)
       native "MojoSharedBuffer_Map";
 
@@ -32,14 +32,11 @@ class MojoSharedBuffer {
   MojoResult status;
   ByteData mapping;
 
-  MojoSharedBuffer._() {
-    handle = null;
-    status = MojoResult.OK;
-    mapping = null;
-  }
+  MojoSharedBuffer(
+      this.handle, [this.status = MojoResult.OK, this.mapping = null]);
 
-  factory MojoSharedBuffer(int num_bytes, [int flags = 0]) {
-    List result = _MojoSharedBufferNatives.Create(num_bytes, flags);
+  factory MojoSharedBuffer.create(int numBytes, [int flags = 0]) {
+    List result = _MojoSharedBufferNatives.Create(numBytes, flags);
     if (result == null) {
       return null;
     }
@@ -49,10 +46,8 @@ class MojoSharedBuffer {
       return null;
     }
 
-    MojoSharedBuffer buf = new MojoSharedBuffer._();
-    buf.status = r;
-    buf.handle = new MojoHandle(result[1]);
-    buf.mapping = null;
+    MojoSharedBuffer buf =
+        new MojoSharedBuffer(new MojoHandle(result[1]), r, null);
     return buf;
   }
 
@@ -67,10 +62,8 @@ class MojoSharedBuffer {
       return null;
     }
 
-    MojoSharedBuffer dupe = new MojoSharedBuffer._();
-    dupe.status = r;
-    dupe.handle = new MojoHandle(result[1]);
-    dupe.mapping = null;  // The buffer is not mapped in the duplicate.
+    MojoSharedBuffer dupe =
+        new MojoSharedBuffer(new MojoHandle(result[1]), r, null);
     return dupe;
   }
 
@@ -85,13 +78,13 @@ class MojoSharedBuffer {
     return status;
   }
 
-  MojoResult map(int offset, int num_bytes, [int flags = 0]) {
+  MojoResult map(int offset, int numBytes, [int flags = 0]) {
     if (handle == null) {
       status = MojoResult.INVALID_ARGUMENT;
       return status;
     }
     List result = _MojoSharedBufferNatives.Map(
-        this, handle.h, offset, num_bytes, flags);
+        this, handle.h, offset, numBytes, flags);
     if (result == null) {
       status = MojoResult.INVALID_ARGUMENT;
       return status;

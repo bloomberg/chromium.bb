@@ -61,11 +61,13 @@ ApplicationImpl::~ApplicationImpl() {
 ApplicationConnection* ApplicationImpl::ConnectToApplication(
     const String& application_url) {
   MOJO_CHECK(initialized_);
-  ServiceProviderPtr out_service_provider;
-  shell_->ConnectToApplication(application_url,
-                               GetProxy(&out_service_provider));
+  ServiceProviderPtr local_services;
+  InterfaceRequest<ServiceProvider> local_request = GetProxy(&local_services);
+  ServiceProviderPtr remote_services;
+  shell_->ConnectToApplication(application_url, GetProxy(&remote_services),
+                               local_services.Pass());
   internal::ServiceRegistry* registry = new internal::ServiceRegistry(
-      this, application_url, out_service_provider.Pass());
+      this, application_url, remote_services.Pass(), local_request.Pass());
   if (!delegate_->ConfigureOutgoingConnection(registry)) {
     delete registry;
     return nullptr;
@@ -99,10 +101,12 @@ void ApplicationImpl::BindShell(ScopedMessagePipeHandle shell_handle) {
   shell_.set_error_handler(shell_watch_);
 }
 
-void ApplicationImpl::AcceptConnection(const String& requestor_url,
-                                       ServiceProviderPtr service_provider) {
+void ApplicationImpl::AcceptConnection(
+    const String& requestor_url,
+    InterfaceRequest<ServiceProvider> services,
+    ServiceProviderPtr exposed_services) {
   internal::ServiceRegistry* registry = new internal::ServiceRegistry(
-      this, requestor_url, service_provider.Pass());
+      this, requestor_url, exposed_services.Pass(), services.Pass());
   if (!delegate_->ConfigureIncomingConnection(registry)) {
     delete registry;
     return;

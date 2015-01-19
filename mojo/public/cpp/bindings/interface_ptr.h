@@ -18,16 +18,22 @@ class ErrorHandler;
 // InterfacePtr represents a proxy to a remote instance of an interface.
 template <typename Interface>
 class InterfacePtr {
-  MOJO_MOVE_ONLY_TYPE_FOR_CPP_03(InterfacePtr, RValue)
+  MOJO_MOVE_ONLY_TYPE(InterfacePtr)
  public:
   InterfacePtr() {}
+  InterfacePtr(decltype(nullptr)) {}
 
-  InterfacePtr(RValue other) {
-    internal_state_.Swap(&other.object->internal_state_);
+  InterfacePtr(InterfacePtr&& other) {
+    internal_state_.Swap(&other.internal_state_);
   }
-  InterfacePtr& operator=(RValue other) {
+  InterfacePtr& operator=(InterfacePtr&& other) {
     reset();
-    internal_state_.Swap(&other.object->internal_state_);
+    internal_state_.Swap(&other.internal_state_);
+    return *this;
+  }
+
+  InterfacePtr& operator=(decltype(nullptr)) {
+    reset();
     return *this;
   }
 

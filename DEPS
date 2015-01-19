@@ -737,7 +737,10 @@ hooks = [
   {
     'name': 'download_mojo_shell',
     'pattern': '',
-    'action': [ 'python', 'src/mojo/public/tools/download_shell_binary.py' ],
+    'action': [ 'python',
+                'src/mojo/public/tools/download_shell_binary.py',
+                '--tools-directory=../../../tools',
+              ],
   },
   {
     # A change to a .gyp, .gypi, or to GYP itself should run the generator.

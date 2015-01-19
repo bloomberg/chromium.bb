@@ -30,6 +30,9 @@
       # GN version: //mojo/services/clipboard/public/interfaces
       'target_name': 'mojo_clipboard_bindings',
       'type': 'static_library',
+      'variables': {
+        'mojom_import_args': [ '-I<(DEPTH)', '-Iservices' ],
+      },
       'sources': [
         'services/clipboard/public/interfaces/clipboard.mojom',
       ],
@@ -45,6 +48,9 @@
       # GN version: //mojo/services/input_events/public/interfaces
       'target_name': 'mojo_input_events_bindings',
       'type': 'static_library',
+      'variables': {
+        'mojom_import_args': [ '-I<(DEPTH)', '-Iservices' ],
+      },
       'sources': [
         'services/input_events/public/interfaces/input_event_constants.mojom',
         'services/input_events/public/interfaces/input_events.mojom',
@@ -64,6 +70,9 @@
       # GN version: //mojo/services/geometry/public/interfaces
       'target_name': 'mojo_geometry_bindings',
       'type': 'static_library',
+      'variables': {
+        'mojom_import_args': [ '-I<(DEPTH)', '-Iservices' ],
+      },
       'sources': [
         'services/geometry/public/interfaces/geometry.mojom',
       ],
@@ -79,6 +88,9 @@
       # GN version: //mojo/services/gpu/public/interfaces
       'target_name': 'mojo_gpu_bindings',
       'type': 'static_library',
+      'variables': {
+        'mojom_import_args': [ '-I<(DEPTH)', '-Iservices' ],
+      },
       'sources': [
         'services/gpu/public/interfaces/command_buffer.mojom',
         'services/gpu/public/interfaces/gpu.mojom',
@@ -99,6 +111,9 @@
       # GN version: //mojo/services/native_viewport/public/interfaces
       'target_name': 'mojo_native_viewport_bindings',
       'type': 'static_library',
+      'variables': {
+        'mojom_import_args': [ '-I<(DEPTH)', '-Iservices' ],
+      },
       'sources': [
         'services/native_viewport/public/interfaces/native_viewport.mojom',
       ],
@@ -122,6 +137,9 @@
       # GN version: //mojo/services/navigation/public/interfaces
       'target_name': 'mojo_navigation_bindings',
       'type': 'static_library',
+      'variables': {
+        'mojom_import_args': [ '-I<(DEPTH)', '-Iservices' ],
+      },
       'sources': [
         'services/navigation/public/interfaces/navigation.mojom',
       ],
@@ -138,6 +156,9 @@
       # GN version: //mojo/services/content_handler/public/interfaces
       'target_name': 'mojo_content_handler_bindings',
       'type': 'static_library',
+      'variables': {
+        'mojom_import_args': [ '-I<(DEPTH)', '-Iservices' ],
+      },
       'sources': [
         'services/content_handler/public/interfaces/content_handler.mojom',
       ],
@@ -155,7 +176,10 @@
       # GN version: //mojo/services/network/public/interfaces
       'target_name': 'mojo_network_bindings',
       'type': 'static_library',
-      'sources': [
+       'variables' : {
+         'mojom_import_args': [ '-I<(DEPTH)', '-Iservices' ],
+       },
+       'sources': [
         'services/network/public/interfaces/cookie_store.mojom',
         'services/network/public/interfaces/net_address.mojom',
         'services/network/public/interfaces/network_error.mojom',
@@ -187,6 +211,9 @@
       # GN version: //mojo/services/view_manager/public/interfaces/
       'target_name': 'mojo_view_manager_bindings',
       'type': 'static_library',
+      'variables': {
+        'mojom_import_args': [ '-I<(DEPTH)', '-Iservices' ],
+      },
       'sources': [
         'services/view_manager/public/interfaces/view_manager.mojom',
         'services/view_manager/public/interfaces/view_manager_constants.mojom',
@@ -213,6 +240,9 @@
       # GN version: //mojo/services/surfaces/public/interfaces
       'target_name': 'mojo_surfaces_bindings',
       'type': 'static_library',
+      'variables': {
+        'mojom_import_args': [ '-I<(DEPTH)', '-Iservices' ],
+      },
       'sources': [
         'services/surfaces/public/interfaces/surfaces.mojom',
         'services/surfaces/public/interfaces/surfaces_service.mojom',
@@ -235,6 +265,9 @@
       # GN version: //mojo/services/surfaces/public/interfaces:surface_id
       'target_name': 'mojo_surface_id_bindings',
       'type': 'static_library',
+      'variables': {
+        'mojom_import_args': [ '-I<(DEPTH)', '-Iservices' ],
+      },
       'sources': [
         'services/surfaces/public/interfaces/surface_id.mojom',
       ],
@@ -250,6 +283,9 @@
       # GN version: //mojo/services/window_manager/public/interfaces
       'target_name': 'mojo_window_manager_bindings',
       'type': 'static_library',
+      'variables': {
+        'mojom_import_args': [ '-I<(DEPTH)', '-Iservices' ],
+      },
       'sources': [
         'services/window_manager/public/interfaces/window_manager.mojom',
       ],

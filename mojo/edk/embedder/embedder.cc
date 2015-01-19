@@ -36,14 +36,7 @@ system::ChannelId MakeChannel(
   DCHECK(internal::g_core);
   scoped_refptr<system::Channel> channel =
       new system::Channel(internal::g_core->platform_support());
-  if (!channel->Init(system::RawChannel::Create(platform_handle.Pass()))) {
-    // This is very unusual (e.g., maybe |platform_handle| was invalid or we
-    // reached some system resource limit).
-    LOG(ERROR) << "Channel::Init() failed";
-    // Return null, since |Shutdown()| shouldn't be called in this case.
-    return 0;
-  }
-
+  channel->Init(system::RawChannel::Create(platform_handle.Pass()));
   channel->SetBootstrapEndpoint(channel_endpoint);
 
   DCHECK(internal::g_channel_manager);
@@ -150,11 +143,7 @@ ScopedMessagePipeHandle CreateChannel(
 // TODO(vtl): Write tests for this.
 void DestroyChannel(ChannelInfo* channel_info) {
   DCHECK(channel_info);
-  if (!channel_info->channel_id) {
-    // Presumably, |Init()| on the channel failed.
-    return;
-  }
-
+  DCHECK(channel_info->channel_id);
   DCHECK(internal::g_channel_manager);
   // This will destroy the channel synchronously if called from the channel
   // thread.

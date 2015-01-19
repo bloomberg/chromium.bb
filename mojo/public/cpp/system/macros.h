@@ -29,21 +29,17 @@ char(&ArraySizeHelper(const T(&array)[N]))[N];
 }  // namespace mojo
 #define MOJO_ARRAYSIZE(array) (sizeof(::mojo::ArraySizeHelper(array)))
 
-// Used to make a type move-only in C++03. See Chromium's base/move.h for more
-// details.
-#define MOJO_MOVE_ONLY_TYPE_FOR_CPP_03(type, rvalue_type)  \
- private:                                                  \
-  struct rvalue_type {                                     \
-    explicit rvalue_type(type* object) : object(object) {} \
-    type* object;                                          \
-  };                                                       \
-  type(type&);                                             \
-  void operator=(type&);                                   \
-                                                           \
- public:                                                   \
-  operator rvalue_type() { return rvalue_type(this); }     \
-  type Pass() { return type(rvalue_type(this)); }          \
-  typedef void MoveOnlyTypeForCPP03;                       \
-                                                           \
+// Used to make a type move-only. See Chromium's base/move.h for more
+// details. The MoveOnlyTypeForCPP03 typedef is for Chromium's base/callback to
+// tell that this type is move-only.
+#define MOJO_MOVE_ONLY_TYPE(type)                                              \
+ private:                                                                      \
+  type(type&);                                                                 \
+  void operator=(type&);                                                       \
+                                                                               \
+ public:                                                                       \
+  type&& Pass() MOJO_WARN_UNUSED_RESULT { return static_cast<type&&>(*this); } \
+  typedef void MoveOnlyTypeForCPP03;                                           \
+                                                                               \
  private:
 #endif  // MOJO_PUBLIC_CPP_SYSTEM_MACROS_H_
