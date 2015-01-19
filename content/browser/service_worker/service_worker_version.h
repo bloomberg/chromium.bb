@@ -370,6 +370,9 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   void DoomInternal();
 
+  template <typename IDMAP>
+  void RemoveCallbackAndStopIfDoomed(IDMAP* callbacks, int request_id);
+
   const int64 version_id_;
   int64 registration_id_;
   GURL script_url_;

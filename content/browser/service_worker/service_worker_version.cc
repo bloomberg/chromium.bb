@@ -640,6 +640,8 @@ void ServiceWorkerVersion::AddStreamingURLRequestJob(
 void ServiceWorkerVersion::RemoveStreamingURLRequestJob(
     const ServiceWorkerURLRequestJob* request_job) {
   streaming_url_request_jobs_.erase(request_job);
+  if (is_doomed_)
+    StopWorkerIfIdle();
 }
 
 void ServiceWorkerVersion::AddListener(Listener* listener) {
@@ -873,7 +875,7 @@ void ServiceWorkerVersion::OnGetClientInfoSuccess(
     return;
   }
   callback->Run(SERVICE_WORKER_OK, info);
-  get_client_info_callbacks_.Remove(request_id);
+  RemoveCallbackAndStopIfDoomed(&get_client_info_callbacks_, request_id);
 }
 
 void ServiceWorkerVersion::OnGetClientInfoError(int request_id) {
@@ -884,7 +886,7 @@ void ServiceWorkerVersion::OnGetClientInfoError(int request_id) {
     return;
   }
   callback->Run(SERVICE_WORKER_ERROR_FAILED, ServiceWorkerClientInfo());
-  get_client_info_callbacks_.Remove(request_id);
+  RemoveCallbackAndStopIfDoomed(&get_client_info_callbacks_, request_id);
 }
 
 void ServiceWorkerVersion::OnActivateEventFinished(
@@ -908,7 +910,7 @@ void ServiceWorkerVersion::OnActivateEventFinished(
 
   scoped_refptr<ServiceWorkerVersion> protect(this);
   callback->Run(rv);
-  activate_callbacks_.Remove(request_id);
+  RemoveCallbackAndStopIfDoomed(&activate_callbacks_, request_id);
 }
 
 void ServiceWorkerVersion::OnInstallEventFinished(
@@ -931,7 +933,7 @@ void ServiceWorkerVersion::OnInstallEventFinished(
 
   scoped_refptr<ServiceWorkerVersion> protect(this);
   callback->Run(status);
-  install_callbacks_.Remove(request_id);
+  RemoveCallbackAndStopIfDoomed(&install_callbacks_, request_id);
 }
 
 void ServiceWorkerVersion::OnFetchEventFinished(
@@ -949,7 +951,7 @@ void ServiceWorkerVersion::OnFetchEventFinished(
 
   scoped_refptr<ServiceWorkerVersion> protect(this);
   callback->Run(SERVICE_WORKER_OK, result, response);
-  fetch_callbacks_.Remove(request_id);
+  RemoveCallbackAndStopIfDoomed(&fetch_callbacks_, request_id);
 }
 
 void ServiceWorkerVersion::OnSyncEventFinished(
@@ -965,7 +967,7 @@ void ServiceWorkerVersion::OnSyncEventFinished(
 
   scoped_refptr<ServiceWorkerVersion> protect(this);
   callback->Run(SERVICE_WORKER_OK);
-  sync_callbacks_.Remove(request_id);
+  RemoveCallbackAndStopIfDoomed(&sync_callbacks_, request_id);
 }
 
 void ServiceWorkerVersion::OnNotificationClickEventFinished(
@@ -981,7 +983,7 @@ void ServiceWorkerVersion::OnNotificationClickEventFinished(
 
   scoped_refptr<ServiceWorkerVersion> protect(this);
   callback->Run(SERVICE_WORKER_OK);
-  notification_click_callbacks_.Remove(request_id);
+  RemoveCallbackAndStopIfDoomed(&notification_click_callbacks_, request_id);
 }
 
 void ServiceWorkerVersion::OnPushEventFinished(
@@ -1001,7 +1003,7 @@ void ServiceWorkerVersion::OnPushEventFinished(
 
   scoped_refptr<ServiceWorkerVersion> protect(this);
   callback->Run(status);
-  push_callbacks_.Remove(request_id);
+  RemoveCallbackAndStopIfDoomed(&push_callbacks_, request_id);
 }
 
 void ServiceWorkerVersion::OnGeofencingEventFinished(int request_id) {
@@ -1017,7 +1019,7 @@ void ServiceWorkerVersion::OnGeofencingEventFinished(int request_id) {
 
   scoped_refptr<ServiceWorkerVersion> protect(this);
   callback->Run(SERVICE_WORKER_OK);
-  geofencing_callbacks_.Remove(request_id);
+  RemoveCallbackAndStopIfDoomed(&geofencing_callbacks_, request_id);
 }
 
 void ServiceWorkerVersion::OnCrossOriginConnectEventFinished(
@@ -1035,7 +1037,7 @@ void ServiceWorkerVersion::OnCrossOriginConnectEventFinished(
 
   scoped_refptr<ServiceWorkerVersion> protect(this);
   callback->Run(SERVICE_WORKER_OK, accept_connection);
-  cross_origin_connect_callbacks_.Remove(request_id);
+  RemoveCallbackAndStopIfDoomed(&cross_origin_connect_callbacks_, request_id);
 }
 
 void ServiceWorkerVersion::OnPostMessageToDocument(
@@ -1162,6 +1164,18 @@ void ServiceWorkerVersion::DoomInternal() {
   std::vector<ServiceWorkerDatabase::ResourceRecord> resources;
   script_cache_map_.GetResources(&resources);
   context_->storage()->PurgeResources(resources);
+}
+
+template <typename IDMAP>
+void ServiceWorkerVersion::RemoveCallbackAndStopIfDoomed(
+    IDMAP* callbacks,
+    int request_id) {
+  callbacks->Remove(request_id);
+  if (is_doomed_) {
+    // The stop should be already scheduled, but try to stop immediately, in
+    // order to release worker resources soon.
+    StopWorkerIfIdle();
+  }
 }
 
 }  // namespace content
