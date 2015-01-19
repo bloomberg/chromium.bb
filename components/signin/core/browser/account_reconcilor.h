@@ -111,6 +111,8 @@ class AccountReconcilor : public KeyedService,
   void UnregisterWithSigninManager();
   void RegisterWithTokenService();
   void UnregisterWithTokenService();
+  void RegisterWithMergeSessionHelper();
+  void UnregisterWithMergeSessionHelper();
 
   bool IsProfileConnected();
 
@@ -168,6 +170,7 @@ class AccountReconcilor : public KeyedService,
   MergeSessionHelper merge_session_helper_;
   scoped_ptr<GaiaAuthFetcher> gaia_fetcher_;
   bool registered_with_token_service_;
+  bool registered_with_merge_session_helper_;
 
   // True while the reconcilor is busy checking or managing the accounts in
   // this profile.

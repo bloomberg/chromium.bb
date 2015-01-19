@@ -62,8 +62,9 @@ AccountReconcilor::AccountReconcilor(ProfileOAuth2TokenService* token_service,
       merge_session_helper_(token_service_,
                             GaiaConstants::kReconcilorSource,
                             client->GetURLRequestContext(),
-                            this),
+                            NULL),
       registered_with_token_service_(false),
+      registered_with_merge_session_helper_(false),
       is_reconcile_started_(false),
       first_execution_(true),
       are_gaia_accounts_set_(false),
@@ -75,6 +76,7 @@ AccountReconcilor::~AccountReconcilor() {
   VLOG(1) << "AccountReconcilor::~AccountReconcilor";
   // Make sure shutdown was called first.
   DCHECK(!registered_with_token_service_);
+  DCHECK(!registered_with_merge_session_helper_);
 }
 
 void AccountReconcilor::Initialize(bool start_reconcile_if_tokens_available) {
@@ -84,6 +86,7 @@ void AccountReconcilor::Initialize(bool start_reconcile_if_tokens_available) {
   // If this user is not signed in, the reconcilor should do nothing but
   // wait for signin.
   if (IsProfileConnected()) {
+    RegisterWithMergeSessionHelper();
     RegisterForCookieChanges();
     RegisterWithTokenService();
 
@@ -98,9 +101,9 @@ void AccountReconcilor::Initialize(bool start_reconcile_if_tokens_available) {
 void AccountReconcilor::Shutdown() {
   VLOG(1) << "AccountReconcilor::Shutdown";
   merge_session_helper_.CancelAll();
-  merge_session_helper_.RemoveObserver(this);
   gaia_fetcher_.reset();
   get_gaia_accounts_callbacks_.clear();
+  UnregisterWithMergeSessionHelper();
   UnregisterWithSigninManager();
   UnregisterWithTokenService();
   UnregisterForCookieChanges();
@@ -151,11 +154,32 @@ void AccountReconcilor::RegisterWithTokenService() {
 }
 
 void AccountReconcilor::UnregisterWithTokenService() {
+  VLOG(1) << "AccountReconcilor::UnregisterWithTokenService";
   if (!registered_with_token_service_)
     return;
 
   token_service_->RemoveObserver(this);
   registered_with_token_service_ = false;
+}
+
+void AccountReconcilor::RegisterWithMergeSessionHelper() {
+  VLOG(1) << "AccountReconcilor::RegisterWithMergeSessionHelper";
+  // During re-auth, the reconcilor will get a callback about successful signin
+  // even when the profile is already connected.  Avoid re-registering
+  // with the helper since this will DCHECK.
+  if (registered_with_merge_session_helper_)
+    return;
+
+  merge_session_helper_.AddObserver(this);
+  registered_with_merge_session_helper_ = true;
+}
+void AccountReconcilor::UnregisterWithMergeSessionHelper() {
+  VLOG(1) << "AccountReconcilor::UnregisterWithMergeSessionHelper";
+  if (!registered_with_merge_session_helper_)
+    return;
+
+  merge_session_helper_.RemoveObserver(this);
+  registered_with_merge_session_helper_ = false;
 }
 
 bool AccountReconcilor::IsProfileConnected() {
@@ -191,6 +215,7 @@ void AccountReconcilor::GoogleSigninSucceeded(const std::string& account_id,
                                               const std::string& username,
                                               const std::string& password) {
   VLOG(1) << "AccountReconcilor::GoogleSigninSucceeded: signed in";
+  RegisterWithMergeSessionHelper();
   RegisterForCookieChanges();
   RegisterWithTokenService();
 }
@@ -201,6 +226,7 @@ void AccountReconcilor::GoogleSignedOut(const std::string& account_id,
   gaia_fetcher_.reset();
   get_gaia_accounts_callbacks_.clear();
   AbortReconcile();
+  UnregisterWithMergeSessionHelper();
   UnregisterWithTokenService();
   UnregisterForCookieChanges();
   PerformLogoutAllAccountsAction();
