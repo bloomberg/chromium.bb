@@ -210,6 +210,12 @@ void RenderLayerCompositor::updateIfNeededRecursive()
 
     DocumentAnimations::startPendingAnimations(m_renderView.document());
 
+    m_renderView.frameView()->updateCompositorScrollAnimations();
+    if (const FrameView::ScrollableAreaSet* animatingScrollableAreas = m_renderView.frameView()->animatingScrollableAreas()) {
+        for (ScrollableArea* scrollableArea : *animatingScrollableAreas)
+            scrollableArea->updateCompositorScrollAnimations();
+    }
+
 #if ENABLE(ASSERT)
     ASSERT(lifecycle().state() == DocumentLifecycle::CompositingClean);
     assertNoUnresolvedDirtyBits();

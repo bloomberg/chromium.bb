@@ -47,6 +47,14 @@ SmoothScrollInterruptionTest.prototype.startNextTestCase = function() {
     var scrollStartPoint = this.scrollStartPoint;
 
     scrollElement.scrollTop = scrollStartPoint;
+    window.requestAnimationFrame(this.performSmoothScroll.bind(this));
+}
+
+SmoothScrollInterruptionTest.prototype.performSmoothScroll = function() {
+    var testCase = this.testCases[this.currentTestCase];
+    var scrollElement = this.scrollElement;
+    var scrollStartPoint = this.scrollStartPoint;
+
     this.jsScroll(this.scrollEndPoint);
     this.asyncTest.step(function() {
         assert_equals(scrollElement.scrollTop, scrollStartPoint);
@@ -86,7 +94,7 @@ SmoothScrollInterruptionTest.prototype.testCaseComplete = function() {
 }
 
 SmoothScrollInterruptionTest.prototype.run = function() {
-    setup({explicit_done: true});
+    setup({explicit_done: true, explicit_timeout: true});
     this.startNextTestCase();
 }
 

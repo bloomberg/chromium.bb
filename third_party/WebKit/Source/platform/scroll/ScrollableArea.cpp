@@ -159,9 +159,10 @@ bool ScrollableArea::scroll(ScrollDirection direction, ScrollGranularity granula
     return scrollAnimator()->scroll(orientation, granularity, step, delta);
 }
 
-void ScrollableArea::scrollToOffsetWithoutAnimation(const FloatPoint& offset)
+void ScrollableArea::scrollToOffsetWithoutAnimation(const FloatPoint& offset, bool cancelProgrammaticAnimations)
 {
-    cancelProgrammaticScrollAnimation();
+    if (cancelProgrammaticAnimations)
+        cancelProgrammaticScrollAnimation();
     scrollAnimator()->scrollToOffsetWithoutAnimation(offset);
 }
 
@@ -430,19 +431,31 @@ bool ScrollableArea::scheduleAnimation()
 
 void ScrollableArea::serviceScrollAnimations(double monotonicTime)
 {
-    bool hasRunningAnimation = false;
+    bool requiresAnimationService = false;
     if (ScrollAnimator* scrollAnimator = existingScrollAnimator()) {
         scrollAnimator->serviceScrollAnimations();
         if (scrollAnimator->hasRunningAnimation())
-            hasRunningAnimation = true;
+            requiresAnimationService = true;
     }
     if (ProgrammaticScrollAnimator* programmaticScrollAnimator = existingProgrammaticScrollAnimator()) {
         programmaticScrollAnimator->tickAnimation(monotonicTime);
-        if (programmaticScrollAnimator->hasRunningAnimation())
-            hasRunningAnimation = true;
+        if (programmaticScrollAnimator->hasAnimationThatRequiresService())
+            requiresAnimationService = true;
     }
-    if (!hasRunningAnimation)
+    if (!requiresAnimationService)
         deregisterForAnimation();
+}
+
+void ScrollableArea::updateCompositorScrollAnimations()
+{
+    if (ProgrammaticScrollAnimator* programmaticScrollAnimator = existingProgrammaticScrollAnimator())
+        programmaticScrollAnimator->updateCompositorAnimations();
+}
+
+void ScrollableArea::notifyCompositorAnimationFinished(int groupId)
+{
+    if (ProgrammaticScrollAnimator* programmaticScrollAnimator = existingProgrammaticScrollAnimator())
+        programmaticScrollAnimator->notifyCompositorAnimationFinished(groupId);
 }
 
 void ScrollableArea::cancelProgrammaticScrollAnimation()

@@ -36,8 +36,13 @@ ScrollBehaviorTest.prototype.scrollListener = function(testCase) {
     // Wait for an intermediate frame, then instant-scroll to the end state.
     if ((this.scrollElement.scrollLeft != testCase.startX || this.scrollElement.scrollTop != testCase.startY) &&
         (this.scrollElement.scrollLeft != testCase.endX || this.scrollElement.scrollTop != testCase.endY)) {
+        // Instant scroll, and then wait for the next scroll event. This allows
+        // the instant scroll to propagate to the compositor (when using
+        // composited scrolling) so that the next smooth scroll starts at this
+        // position (the compositor always starts smooth scrolls at the current
+        // scroll position on the compositor thread).
         this.scrollElement.scrollTo({left: testCase.endX, top: testCase.endY, behavior: "instant"});
-        this.testCaseComplete();
+        testCase.waitForEnd = true;
     }
 };
 
@@ -95,7 +100,7 @@ ScrollBehaviorTest.prototype.testCaseComplete = function() {
 }
 
 ScrollBehaviorTest.prototype.run = function() {
-    setup({explicit_done: true});
+    setup({explicit_done: true, explicit_timeout: true});
     this.startNextTestCase();
 }
 
