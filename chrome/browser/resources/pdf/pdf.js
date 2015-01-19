@@ -48,6 +48,9 @@ function PDFViewer(streamDetails) {
   this.loaded_ = false;
   this.parentWindow_ = null;
 
+  this.isPrintPreview_ =
+      this.streamDetails_.originalUrl.indexOf('chrome://print') == 0;
+
   // The sizer element is placed behind the plugin element to cause scrollbars
   // to be displayed in the window. It is sized according to the document size
   // of the pdf and zoom level.
@@ -385,6 +388,8 @@ PDFViewer.prototype = {
         this.updateProgress_(message.data.progress);
         break;
       case 'navigate':
+        if (this.isPrintPreview_)
+          break;
         if (message.data.newTab)
           chrome.tabs.create({ url: message.data.url });
         else
@@ -401,7 +406,8 @@ PDFViewer.prototype = {
       case 'setTranslatedStrings':
         this.passwordScreen_.text = message.data.getPasswordString;
         this.progressBar_.text = message.data.loadingString;
-        this.progressBar_.style.visibility = 'visible';
+        if (!this.isPrintPreview_)
+          this.progressBar_.style.visibility = 'visible';
         this.errorScreen_.text = message.data.loadFailedString;
         break;
       case 'cancelStreamUrl':
@@ -537,6 +543,9 @@ PDFViewer.prototype = {
         this.plugin_.postMessage(message.data);
         break;
       case 'resetPrintPreviewMode':
+        if (!this.isPrintPreview_)
+          break;
+
         if (!this.inPrintPreviewMode_) {
           this.inPrintPreviewMode_ = true;
           this.viewport_.fitToPage();
