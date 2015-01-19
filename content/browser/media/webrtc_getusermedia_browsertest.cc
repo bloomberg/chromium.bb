@@ -240,7 +240,7 @@ class WebRtcGetUserMediaBrowserTest: public WebRtcContentBrowserTest {
 // see that the success callback is called. If the error callback is called or
 // none of the callbacks are called the tests will simply time out and fail.
 
-// Test fails under MSan, http://crbug.com/448230
+// Test fails under MSan, http://crbug.com/445745
 #if defined(MEMORY_SANITIZER)
 #define MAYBE_GetVideoStreamAndStop DISABLED_GetVideoStreamAndStop
 #else
@@ -257,7 +257,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
       base::StringPrintf("%s({video: true});", kGetUserMediaAndStop));
 }
 
-// Test fails under MSan, http://crbug.com/448230
+// Test fails under MSan, http://crbug.com/445745
 #if defined(MEMORY_SANITIZER)
 #define MAYBE_RenderSameTrackMediastreamAndStop \
   DISABLED_RenderSameTrackMediastreamAndStop
@@ -467,8 +467,16 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
                                                   expected_result);
 }
 
+// Test fails under MSan, http://crbug.com/445745
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_TwoGetUserMediaWithFirstHdSecondVga \
+  DISABLED_TwoGetUserMediaWithFirstHdSecondVga
+#else
+#define MAYBE_TwoGetUserMediaWithFirstHdSecondVga \
+  TwoGetUserMediaWithFirstHdSecondVga
+#endif
 IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
-                       TwoGetUserMediaWithFirstHdSecondVga) {
+                       MAYBE_TwoGetUserMediaWithFirstHdSecondVga) {
   std::string constraints1 =
       "{video: {mandatory: {maxWidth:1280 , minWidth:1280 , maxHeight: 720,\
       minHeight: 720}}}";
@@ -500,7 +508,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
                                                   expected_result);
 }
 
-// Test fails under MSan, http://crbug.com/448230
+// Test fails under MSan, http://crbug.com/445745
 #if defined(MEMORY_SANITIZER)
 #define MAYBE_TwoGetUserMediaAndVerifyFrameRate \
   DISABLED_TwoGetUserMediaAndVerifyFrameRate
@@ -590,7 +598,7 @@ IN_PROC_BROWSER_TEST_F(
       "VideoCaptureController");
 }
 
-// Test fails under MSan, http://crbug.com/448230
+// Test fails under MSan, http://crbug.com/445745
 #if defined(MEMORY_SANITIZER)
 #define MAYBE_TestGetUserMediaAspectRatio4To3 \
   DISABLED_TestGetUserMediaAspectRatio4To3
@@ -612,7 +620,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
             ExecuteJavascriptAndReturnResult(constraints_4_3));
 }
 
-// Test fails under MSan, http://crbug.com/448230
+// Test fails under MSan, http://crbug.com/445745
 #if defined(MEMORY_SANITIZER)
 #define MAYBE_TestGetUserMediaAspectRatio16To9 \
   DISABLED_TestGetUserMediaAspectRatio16To9
@@ -634,7 +642,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
             ExecuteJavascriptAndReturnResult(constraints_16_9));
 }
 
-// Test fails under MSan, http://crbug.com/448230
+// Test fails under MSan, http://crbug.com/445745
 #if defined(MEMORY_SANITIZER)
 #define MAYBE_TestGetUserMediaAspectRatio1To1 \
   DISABLED_TestGetUserMediaAspectRatio1To1
@@ -680,7 +688,7 @@ class WebRtcConstraintsBrowserTest
   UserMediaSizes user_media_;
 };
 
-// Test fails under MSan, http://crbug.com/448230
+// Test fails under MSan, http://crbug.com/445745
 #if defined(MEMORY_SANITIZER)
 #define MAYBE_GetUserMediaConstraints DISABLED_GetUserMediaConstraints
 #else

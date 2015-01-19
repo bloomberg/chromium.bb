@@ -98,6 +98,12 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, Viewport) {
   RunTestsInFile("viewport_test.js", "test.pdf");
 }
 
-IN_PROC_BROWSER_TEST_F(PDFExtensionTest, Bookmark) {
+// Test fails under MSan, http://crbug.com/449995
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_Bookmark DISABLED_Bookmark
+#else
+#define MAYBE_Bookmark Bookmark
+#endif
+IN_PROC_BROWSER_TEST_F(PDFExtensionTest, MAYBE_Bookmark) {
   RunTestsInFile("bookmarks_test.js", "test-bookmarks.pdf");
 }
