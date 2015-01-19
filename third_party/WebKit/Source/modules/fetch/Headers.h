@@ -19,7 +19,7 @@ class ExceptionState;
 class Iterator;
 
 // http://fetch.spec.whatwg.org/#headers-class
-class Headers final : public GarbageCollectedFinalized<Headers>, public ScriptWrappable, public PairIterable<String, String> {
+class Headers final : public GarbageCollected<Headers>, public ScriptWrappable, public PairIterable<String, String> {
     DEFINE_WRAPPERTYPEINFO();
 public:
     enum Guard { ImmutableGuard, RequestGuard, RequestNoCORSGuard, ResponseGuard, NoneGuard };

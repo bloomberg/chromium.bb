@@ -14,8 +14,6 @@ namespace blink {
 template <typename KeyType, typename ValueType>
 class Iterable {
 public:
-    virtual ~Iterable() { }
-
     Iterator* keys(ScriptState* scriptState, ExceptionState& exceptionState)
     {
         IterationSource* source = this->startIteration(scriptState, exceptionState);
