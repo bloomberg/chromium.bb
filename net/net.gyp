@@ -876,6 +876,7 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../base/base.gyp:test_support_base',
+        '../crypto/crypto.gyp:crypto',
         '../net/tools/tld_cleanup/tld_cleanup.gyp:tld_cleanup_util',
         '../testing/gtest.gyp:gtest',
         '../testing/gmock.gyp:gmock',
