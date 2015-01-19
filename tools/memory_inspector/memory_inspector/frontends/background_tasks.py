@@ -17,6 +17,7 @@ are tuples with the following format: (completion_ratio%, 'message string').
 """
 
 import datetime
+import itertools
 import Queue
 import threading
 import time
@@ -25,6 +26,7 @@ from memory_inspector.core import backends
 from memory_inspector.data import file_storage
 
 
+_task_id_generator = itertools.count(1)
 _tasks = {}  #id (int) -> |BackgroundTask| instance.
 
 
@@ -40,8 +42,9 @@ def StartTracer(process, storage_path, interval, count, trace_native_heap):
       count=count,
       trace_native_heap=trace_native_heap)
   task.start()
-  _tasks[task.ident] = task
-  return task.ident
+  task_id = _task_id_generator.next()
+  _tasks[task_id] = task
+  return task_id
 
 
 def Get(task_id):
