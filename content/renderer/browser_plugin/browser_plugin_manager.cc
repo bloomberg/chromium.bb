@@ -58,7 +58,7 @@ void BrowserPluginManager::UpdateDeviceScaleFactor() {
 void BrowserPluginManager::UpdateFocusState() {
   IDMap<BrowserPlugin>::iterator iter(&instances_);
   while (!iter.IsAtEnd()) {
-    iter.GetCurrentValue()->UpdateGuestFocusState();
+    iter.GetCurrentValue()->UpdateGuestFocusState(blink::WebFocusTypeNone);
     iter.Advance();
   }
 }

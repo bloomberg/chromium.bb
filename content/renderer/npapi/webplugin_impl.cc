@@ -379,7 +379,7 @@ void WebPluginImpl::updateGeometry(
   first_geometry_update_ = false;
 }
 
-void WebPluginImpl::updateFocus(bool focused) {
+void WebPluginImpl::updateFocus(bool focused, blink::WebFocusType focus_type) {
   if (accepts_input_events_)
     delegate_->SetFocus(focused);
 }

@@ -290,14 +290,15 @@ void BrowserPlugin::UpdateDeviceScaleFactor() {
       params));
 }
 
-void BrowserPlugin::UpdateGuestFocusState() {
+void BrowserPlugin::UpdateGuestFocusState(blink::WebFocusType focus_type) {
   if (!attached())
     return;
   bool should_be_focused = ShouldGuestBeFocused();
   BrowserPluginManager::Get()->Send(new BrowserPluginHostMsg_SetFocus(
       render_view_routing_id_,
       browser_plugin_instance_id_,
-      should_be_focused));
+      should_be_focused,
+      focus_type));
 }
 
 bool BrowserPlugin::ShouldGuestBeFocused() const {
@@ -483,9 +484,9 @@ void BrowserPlugin::PopulateResizeGuestParameters(
   }
 }
 
-void BrowserPlugin::updateFocus(bool focused) {
+void BrowserPlugin::updateFocus(bool focused, blink::WebFocusType focus_type) {
   plugin_focused_ = focused;
-  UpdateGuestFocusState();
+  UpdateGuestFocusState(focus_type);
 }
 
 void BrowserPlugin::updateVisibility(bool visible) {

@@ -86,7 +86,7 @@ class WebViewPlugin : public blink::WebPlugin,
       const blink::WebVector<blink::WebRect>& cut_out_rects,
       bool is_visible);
 
-  virtual void updateFocus(bool);
+  virtual void updateFocus(bool foucsed, blink::WebFocusType focus_type);
   virtual void updateVisibility(bool) {}
 
   virtual bool acceptsInputEvents();

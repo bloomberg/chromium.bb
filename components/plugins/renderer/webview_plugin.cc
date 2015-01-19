@@ -90,7 +90,7 @@ void WebViewPlugin::ReplayReceivedData(WebPlugin* plugin) {
   }
   // We need to transfer the |focused_| to new plugin after it loaded.
   if (focused_) {
-    plugin->updateFocus(true);
+    plugin->updateFocus(true, blink::WebFocusTypeNone);
   }
   if (finished_loading_) {
     plugin->didFinishLoading();
@@ -157,7 +157,7 @@ void WebViewPlugin::updateGeometry(const WebRect& frame_rect,
   }
 }
 
-void WebViewPlugin::updateFocus(bool focused) {
+void WebViewPlugin::updateFocus(bool focused, blink::WebFocusType focus_type) {
   focused_ = focused;
 }
 

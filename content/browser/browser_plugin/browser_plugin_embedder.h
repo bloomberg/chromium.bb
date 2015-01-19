@@ -83,15 +83,15 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver {
 
   void ClearGuestDragStateIfApplicable();
 
-  bool DidSendScreenRectsCallback(WebContents* guest_web_contents);
+  static bool DidSendScreenRectsCallback(WebContents* guest_web_contents);
 
-  bool UnlockMouseIfNecessaryCallback(bool* mouse_unlocked, WebContents* guest);
+  static bool UnlockMouseIfNecessaryCallback(bool* mouse_unlocked,
+                                             WebContents* guest);
 
-  bool FindInGuest(int request_id,
-                   const base::string16& search_text,
-                   const blink::WebFindOptions& options,
-                   WebContents* guest);
-
+  static bool FindInGuest(int request_id,
+                          const base::string16& search_text,
+                          const blink::WebFindOptions& options,
+                          WebContents* guest);
   // Message handlers.
   void OnAttach(int instance_id,
                 const BrowserPluginHostMsg_Attach_Params& params);

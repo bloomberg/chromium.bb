@@ -18,6 +18,7 @@
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
+#include "third_party/WebKit/public/platform/WebFocusType.h"
 #include "third_party/WebKit/public/web/WebCompositionUnderline.h"
 #include "third_party/WebKit/public/web/WebDragOperation.h"
 #include "third_party/WebKit/public/web/WebDragStatus.h"
@@ -35,6 +36,7 @@
 
 
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebDragStatus, blink::WebDragStatusLast)
+IPC_ENUM_TRAITS_MAX_VALUE(blink::WebFocusType, blink::WebFocusTypeLast)
 
 IPC_STRUCT_BEGIN(BrowserPluginHostMsg_ResizeGuest_Params)
   // The new size of guest view.
@@ -111,9 +113,10 @@ IPC_MESSAGE_ROUTED1(BrowserPluginHostMsg_Detach,
                     int /* browser_plugin_instance_id */)
 
 // Tells the guest to focus or defocus itself.
-IPC_MESSAGE_ROUTED2(BrowserPluginHostMsg_SetFocus,
+IPC_MESSAGE_ROUTED3(BrowserPluginHostMsg_SetFocus,
                     int /* browser_plugin_instance_id */,
-                    bool /* enable */)
+                    bool /* enable */,
+                    blink::WebFocusType /* focus_type */)
 
 // Sends an input event to the guest.
 IPC_MESSAGE_ROUTED3(BrowserPluginHostMsg_HandleInputEvent,

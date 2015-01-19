@@ -30,6 +30,7 @@
 #include "content/public/browser/browser_plugin_guest_delegate.h"
 #include "content/public/browser/readback_types.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "third_party/WebKit/public/platform/WebFocusType.h"
 #include "third_party/WebKit/public/web/WebCompositionUnderline.h"
 #include "third_party/WebKit/public/web/WebDragOperation.h"
 #include "third_party/WebKit/public/web/WebDragStatus.h"
@@ -49,10 +50,6 @@ struct FrameMsg_CompositorFrameSwapped_Params;
 #if defined(OS_MACOSX)
 struct FrameHostMsg_ShowPopup_Params;
 #endif
-
-namespace blink {
-class WebInputEvent;
-}  // namespace blink
 
 namespace cc {
 class CompositorFrame;
@@ -114,7 +111,9 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestSizer,
   base::WeakPtr<BrowserPluginGuest> AsWeakPtr();
 
   // Sets the focus state of the current RenderWidgetHostView.
-  void SetFocus(RenderWidgetHost* rwh, bool focused);
+  void SetFocus(RenderWidgetHost* rwh,
+                bool focused,
+                blink::WebFocusType focus_type);
 
   // Sets the tooltip text.
   void SetTooltipText(const base::string16& tooltip_text);
@@ -268,7 +267,9 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestSizer,
   void OnResizeGuest(
       int browser_plugin_instance_id,
       const BrowserPluginHostMsg_ResizeGuest_Params& params);
-  void OnSetFocus(int instance_id, bool focused);
+  void OnSetFocus(int instance_id,
+                  bool focused,
+                  blink::WebFocusType focus_type);
   // Sets the name of the guest so that other guests in the same partition can
   // access it.
   void OnSetName(int instance_id, const std::string& name);

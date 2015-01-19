@@ -52,7 +52,7 @@ class PepperWebPluginImpl : public blink::WebPlugin {
       const blink::WebRect& clip_rect,
       const blink::WebVector<blink::WebRect>& cut_outs_rects,
       bool is_visible);
-  virtual void updateFocus(bool focused);
+  virtual void updateFocus(bool focused, blink::WebFocusType focus_type);
   virtual void updateVisibility(bool visible);
   virtual bool acceptsInputEvents();
   virtual bool handleInputEvent(const blink::WebInputEvent& event,

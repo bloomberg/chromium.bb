@@ -116,7 +116,7 @@ void RenderWidgetHostViewGuest::Focus() {
   // InterstitialPages are not WebContents, and so BrowserPluginGuest does not
   // have direct access to the interstitial page's RenderWidgetHost.
   if (guest_)
-    guest_->SetFocus(host_, true);
+    guest_->SetFocus(host_, true, blink::WebFocusTypeNone);
 }
 
 bool RenderWidgetHostViewGuest::HasFocus() const {

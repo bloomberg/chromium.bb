@@ -178,7 +178,8 @@ void PepperWebPluginImpl::updateGeometry(
   }
 }
 
-void PepperWebPluginImpl::updateFocus(bool focused) {
+void PepperWebPluginImpl::updateFocus(bool focused,
+                                      blink::WebFocusType focus_type) {
   instance_->SetWebKitFocus(focused);
 }
 

@@ -47,7 +47,7 @@ class CONTENT_EXPORT BrowserPlugin :
   bool guest_crashed() const { return guest_crashed_; }
 
   // Informs the guest of an updated focus state.
-  void UpdateGuestFocusState();
+  void UpdateGuestFocusState(blink::WebFocusType focus_type);
 
   // Indicates whether the guest should be focused.
   bool ShouldGuestBeFocused() const;
@@ -92,7 +92,8 @@ class CONTENT_EXPORT BrowserPlugin :
       const blink::WebRect& clip_rect,
       const blink::WebVector<blink::WebRect>& cut_outs_rects,
       bool is_visible) override;
-  virtual void updateFocus(bool focused) override;
+  virtual void updateFocus(bool focused,
+                           blink::WebFocusType focus_type) override;
   virtual void updateVisibility(bool visible) override;
   virtual bool acceptsInputEvents() override;
   virtual bool handleInputEvent(

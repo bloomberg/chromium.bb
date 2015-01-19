@@ -82,6 +82,7 @@ void BrowserPluginEmbedder::ClearGuestDragStateIfApplicable() {
   }
 }
 
+// static
 bool BrowserPluginEmbedder::DidSendScreenRectsCallback(
    WebContents* guest_web_contents) {
   static_cast<RenderViewHostImpl*>(
@@ -93,8 +94,7 @@ bool BrowserPluginEmbedder::DidSendScreenRectsCallback(
 void BrowserPluginEmbedder::DidSendScreenRects() {
   GetBrowserPluginGuestManager()->ForEachGuest(
           GetWebContents(), base::Bind(
-              &BrowserPluginEmbedder::DidSendScreenRectsCallback,
-              base::Unretained(this)));
+              &BrowserPluginEmbedder::DidSendScreenRectsCallback));
 }
 
 bool BrowserPluginEmbedder::OnMessageReceived(const IPC::Message& message) {
@@ -157,7 +157,6 @@ bool BrowserPluginEmbedder::HandleKeyboardEvent(
   GetBrowserPluginGuestManager()->ForEachGuest(
       GetWebContents(),
       base::Bind(&BrowserPluginEmbedder::UnlockMouseIfNecessaryCallback,
-                 base::Unretained(this),
                  &event_consumed));
 
   return event_consumed;
@@ -169,12 +168,12 @@ bool BrowserPluginEmbedder::Find(int request_id,
   return GetBrowserPluginGuestManager()->ForEachGuest(
       GetWebContents(),
       base::Bind(&BrowserPluginEmbedder::FindInGuest,
-                 base::Unretained(this),
                  request_id,
                  search_text,
                  options));
 }
 
+// static
 bool BrowserPluginEmbedder::UnlockMouseIfNecessaryCallback(bool* mouse_unlocked,
                                                            WebContents* guest) {
   *mouse_unlocked |= static_cast<WebContentsImpl*>(guest)
@@ -186,6 +185,7 @@ bool BrowserPluginEmbedder::UnlockMouseIfNecessaryCallback(bool* mouse_unlocked,
   return false;
 }
 
+// static
 bool BrowserPluginEmbedder::FindInGuest(int request_id,
                                         const base::string16& search_text,
                                         const blink::WebFindOptions& options,
