@@ -194,11 +194,6 @@ bool BrowserAccessibilityAndroid::IsFocused() const {
 }
 
 bool BrowserAccessibilityAndroid::IsHeading() const {
-  BrowserAccessibilityAndroid* parent =
-      static_cast<BrowserAccessibilityAndroid*>(GetParent());
-  if (parent && parent->IsHeading())
-    return true;
-
   return (GetRole() == ui::AX_ROLE_COLUMN_HEADER ||
           GetRole() == ui::AX_ROLE_HEADING ||
           GetRole() == ui::AX_ROLE_ROW_HEADER);
