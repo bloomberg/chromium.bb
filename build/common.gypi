@@ -3535,7 +3535,7 @@
       },
     }],
     # TODO(thakis): Enable this everywhere. http://crbug.com/371125
-    ['OS=="linux" and chromeos==0 and component=="shared_library" and use_ozone!=1 and buildtype!="Official"', {
+    ['OS=="linux" and chromeos==0 and asan==0 and tsan==0 and component=="shared_library" and use_ozone!=1 and buildtype!="Official"', {
       'target_defaults': {
         'ldflags': [
           '-Wl,-z,defs',
