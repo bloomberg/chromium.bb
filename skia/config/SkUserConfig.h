@@ -279,10 +279,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #   define SK_SUPPORT_LEGACY_HQ_SCALING
 #endif
 
-#ifndef SK_SUPPORT_LEGACY_MIPLEVELCHOICE
-#   define SK_SUPPORT_LEGACY_MIPLEVELCHOICE
-#endif
-
 #ifndef SK_SUPPORT_LEGACY_ADDOVAL
 #   define SK_SUPPORT_LEGACY_ADDOVAL
 #endif
