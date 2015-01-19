@@ -233,7 +233,12 @@ Native Client. Moreover, there are several ongoing projects to support
 additional language runtimes (e.g. `naclports supports Lua, Python and Ruby`_)
 as well as to compile more languages to LLVM's intermediate representation
 (e.g. support Halide_, Haskell with GHC_ or support Fortran with flang_), or
-transpile languages to C/C++ (source-to-source compilation).
+transpile languages to C/C++ (source-to-source compilation). Even JavaScript is
+supported by compiling V8_ to target PNaCl.
+
+The PNaCl toolchain is built on LLVM and can therefore generate code from
+languages such as Rust_, Go_, or Objective-C, but there may still be a few rough
+edges.
 
 If you're interested in getting other languages working, please contact the
 Native Client team by way of the native-client-discuss_ mailing list.
@@ -570,6 +575,9 @@ Here are ways to resolve some common problems that can prevent loading:
 .. _Halide: http://halide-lang.org/
 .. _GHC: http://www.haskell.org/ghc/docs/latest/html/users_guide/code-generators.html
 .. _flang: https://flang-gsoc.blogspot.ie/2013/09/end-of-gsoc-report.html
+.. _V8: https://code.google.com/p/v8/
+.. _Rust: http://www.rust-lang.org/
+.. _Go: https://golang.org
 .. _native-client-discuss: https://groups.google.com/group/native-client-discuss
 .. _deprecated in Chrome: http://blog.chromium.org/2013/09/saying-goodbye-to-our-old-friend-npapi.html
 .. _OpenGL ES 2.0: https://www.khronos.org/opengles/

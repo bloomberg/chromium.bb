@@ -19,7 +19,7 @@ you with a zip file containing a starting point.
 
 Download the codelab::
 
-  curl http://nacltools.storage.googleapis.com/cds2014/cds2014_cpp.zip -O
+  curl https://nacltools.storage.googleapis.com/cds2014/cds2014_cpp.zip -O
 
 Unzip it::
 
@@ -137,7 +137,7 @@ and run a NaCl application that uses PPAPI.
 2D graphics is fun, but now you're ready to check out the wealth of
 other
 `PPAPI interfaces available
-<http://src.chromium.org/viewvc/chrome/trunk/src/ppapi/cpp/>`_.
+<https://src.chromium.org/viewvc/chrome/trunk/src/ppapi/cpp/>`_.
 
 While our in-browser environment is rapidly evolving
 to become a complete development solution,
@@ -145,9 +145,11 @@ for the broadest range of development options, check out the
 `NaCl SDK
 <https://developer.chrome.com/native-client/cpp-api>`_.
 
-For questions, concerns, or help contact us at
-`native-client-discuss@googlegroups.com
-<https://groups.google.com/forum/#!forum/native-client-discuss>`_.
+Send us comments and feedback on the `native-client-discuss
+<https://groups.google.com/forum/#!forum/native-client-discuss>`_ mailing list,
+or ask questions using Stack Overflow's `google-nativeclient
+<https://stackoverflow.com/questions/tagged/google-nativeclient>`_ tag.
+
 
 I hope this codelab has lit a fire in you to go out there,
 and bring an awesome C/C++ application to NaCl or PNaCl today!

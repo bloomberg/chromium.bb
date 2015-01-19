@@ -243,7 +243,11 @@ Native Client. Moreover, there are several ongoing projects to support
 additional language runtimes (e.g. <a class="reference external" href="https://code.google.com/p/naclports/source/browse#svn%2Ftrunk%2Fsrc%2Fexamples%2Ftools">naclports supports Lua, Python and Ruby</a>)
 as well as to compile more languages to LLVM&#8217;s intermediate representation
 (e.g. support <a class="reference external" href="http://halide-lang.org/">Halide</a>, Haskell with <a class="reference external" href="http://www.haskell.org/ghc/docs/latest/html/users_guide/code-generators.html">GHC</a> or support Fortran with <a class="reference external" href="https://flang-gsoc.blogspot.ie/2013/09/end-of-gsoc-report.html">flang</a>), or
-transpile languages to C/C++ (source-to-source compilation).</p>
+transpile languages to C/C++ (source-to-source compilation). Even JavaScript is
+supported by compiling <a class="reference external" href="https://code.google.com/p/v8/">V8</a> to target PNaCl.</p>
+<p>The PNaCl toolchain is built on LLVM and can therefore generate code from
+languages such as <a class="reference external" href="http://www.rust-lang.org/">Rust</a>, <a class="reference external" href="https://golang.org">Go</a>, or Objective-C, but there may still be a few rough
+edges.</p>
 <p>If you&#8217;re interested in getting other languages working, please contact the
 Native Client team by way of the <a class="reference external" href="https://groups.google.com/group/native-client-discuss">native-client-discuss</a> mailing list.</p>
 <h3 id="do-you-only-support-chrome-what-about-other-browsers">Do you only support Chrome? What about other browsers?</h3>

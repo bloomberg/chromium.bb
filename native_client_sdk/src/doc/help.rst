@@ -14,11 +14,9 @@ Documentation
 
 * :doc:`Release Notes <sdk/release-notes>`.
 * :doc:`FAQ <faq>`.
-* `Talks, Demos, and Publications
-  <https://devsite.googleplex.com/native-client/community/talks>`_ (see
-  especially Colt McAnlis' talk on porting C++ games to Native Client).
 
-.. TODO: Fix the talk link once ReST-ified.
+.. TODO: Fix the following talk link once ReST-ified.
+.. * :doc:`Talks, Demos, and Publications <community/talks>` (see especially Colt McAnlis' talk on porting C++ games to Native Client).
 
 Forums
 ======
@@ -30,7 +28,8 @@ Forums
 * For in-depth technical discussions: `native-client-discuss mailing
   list <https://groups.google.com/group/native-client-discuss>`_ is a good
   group for detailed technical discussions about bugs and other Native Client
-  issues.  * For announcements, follow the `native-client-announce mailing list
+  issues.
+* For announcements, follow the `native-client-announce mailing list
   <http://groups.google.com/group/native-client-announce>`_.
 * For 140 character goodness follow `@nativeclient
   <https://twitter.com/nativeclient>`_ on Twitter.

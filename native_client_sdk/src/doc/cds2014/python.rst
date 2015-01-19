@@ -109,9 +109,10 @@ for the broadest range of development options, check out the
 `NaCl SDK
 <https://developer.chrome.com/native-client/sdk/download>`_.
 
-For questions, concerns, or help contact us at
-`native-client-discuss@googlegroups.com
-<https://groups.google.com/forum/#!forum/native-client-discuss>`_.
+Send us comments and feedback on the `native-client-discuss
+<https://groups.google.com/forum/#!forum/native-client-discuss>`_ mailing list,
+or ask questions using Stack Overflow's `google-nativeclient
+<https://stackoverflow.com/questions/tagged/google-nativeclient>`_ tag.
 
 Bring your interpreted app to PNaCl today!
 

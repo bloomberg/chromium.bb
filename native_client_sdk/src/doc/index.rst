@@ -27,7 +27,7 @@ Portable Native Client lets developers run native compiled code on the web.
 
   This site uses several examples of Native Client. For the best experience,
   consider downloading the `latest version of Chrome 
-  <http://www.google.com/chrome/>`_. When you come back, be sure to `check out
+  <https://www.google.com/chrome/>`_. When you come back, be sure to `check out
   our demos <https://gonativeclient.appspot.com/demo>`_.
 
 .. raw:: html
@@ -115,8 +115,10 @@ So, you like to read now and try later. Start with our :doc:`Technical Overview
 
   <div class="big-intro" style="clear: both;">
 
-Send us questions, comments, and feedback: `native-client-discuss 
-<https://groups.google.com/forum/#!forum/native-client-discuss>`_.
+Send us comments and feedback on the `native-client-discuss
+<https://groups.google.com/forum/#!forum/native-client-discuss>`_ mailing list,
+or ask questions using Stack Overflow's `google-nativeclient
+<https://stackoverflow.com/questions/tagged/google-nativeclient>`_ tag.
 
 .. raw:: html
 
