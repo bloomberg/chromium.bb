@@ -732,9 +732,6 @@
             '-fvisibility=default',
           ],
         }],
-        ['use_x11 == 1', {
-          'dependencies': [ '../build/linux/system.gyp:x11' ],
-        }],
         ['OS=="win"', {
           'defines': [
             # This seems like a hack, but this is what Safari Win does.

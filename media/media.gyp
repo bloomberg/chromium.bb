@@ -759,7 +759,6 @@
                 '../build/linux/system.gyp:xext',
                 '../build/linux/system.gyp:xfixes',
                 '../build/linux/system.gyp:xtst',
-                '../ui/gfx/x/gfx_x11.gyp:gfx_x11',
               ],
             }, {  # else: use_x11==0
               'sources!': [

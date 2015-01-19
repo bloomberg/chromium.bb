@@ -75,7 +75,6 @@
         '../build/linux/system.gyp:x11',
         '../build/linux/system.gyp:xext',
         '../third_party/libXNVCtrl/libXNVCtrl.gyp:libXNVCtrl',
-        '../ui/gfx/x/gfx_x11.gyp:gfx_x11',
       ],
     }],
   ],
