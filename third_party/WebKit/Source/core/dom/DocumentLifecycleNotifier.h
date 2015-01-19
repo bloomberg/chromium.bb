@@ -26,13 +26,12 @@
 #ifndef DocumentLifecycleNotifier_h
 #define DocumentLifecycleNotifier_h
 
+#include "core/dom/Document.h"
 #include "core/dom/DocumentLifecycleObserver.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/TemporaryChange.h"
 
 namespace blink {
-
-class Document;
 
 class DocumentLifecycleNotifier : public LifecycleNotifier<Document> {
 public:

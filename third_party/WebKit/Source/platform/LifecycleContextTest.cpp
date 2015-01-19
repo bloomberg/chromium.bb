@@ -36,7 +36,7 @@ using namespace blink;
 
 namespace blink {
 
-class DummyContext : public LifecycleContext<DummyContext> {
+class DummyContext final : public NoBaseWillBeGarbageCollectedFinalized<DummyContext>, public LifecycleContext<DummyContext> {
 public:
     PassOwnPtr<LifecycleNotifier<DummyContext>> createLifecycleNotifier()
     {
@@ -87,7 +87,7 @@ public:
 
 TEST(LifecycleContextTest, shouldObserveContextDestroyed)
 {
-    OwnPtr<DummyContext> context = adoptPtr(new DummyContext());
+    OwnPtrWillBeRawPtr<DummyContext> context = adoptPtrWillBeNoop(new DummyContext());
     TestingObserver* observer = new TestingObserver(context.get());
 
     EXPECT_EQ(observer->lifecycleContext(), context.get());
@@ -100,7 +100,7 @@ TEST(LifecycleContextTest, shouldObserveContextDestroyed)
 
 TEST(LifecycleContextTest, shouldNotObserveContextDestroyedIfUnobserve)
 {
-    OwnPtr<DummyContext> context = adoptPtr(new DummyContext());
+    OwnPtrWillBeRawPtr<DummyContext> context = adoptPtrWillBeNoop(new DummyContext());
     TestingObserver* observer = new TestingObserver(context.get());
     observer->unobserve();
     context->notifyContextDestroyed();

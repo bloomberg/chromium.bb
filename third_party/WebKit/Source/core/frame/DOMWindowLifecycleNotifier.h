@@ -27,14 +27,13 @@
 #define DOMWindowLifecycleNotifier_h
 
 #include "core/frame/DOMWindowLifecycleObserver.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "platform/LifecycleNotifier.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/TemporaryChange.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
-
-class LocalDOMWindow;
 
 class DOMWindowLifecycleNotifier final : public LifecycleNotifier<LocalDOMWindow> {
 public:

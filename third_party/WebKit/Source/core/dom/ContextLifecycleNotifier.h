@@ -28,6 +28,7 @@
 #define ContextLifecycleNotifier_h
 
 #include "core/dom/ActiveDOMObject.h"
+#include "core/dom/ExecutionContext.h"
 #include "platform/LifecycleNotifier.h"
 #include "wtf/HashSet.h"
 #include "wtf/PassOwnPtr.h"
@@ -35,7 +36,6 @@
 namespace blink {
 
 class ActiveDOMObject;
-class ExecutionContext;
 
 class ContextLifecycleNotifier : public LifecycleNotifier<ExecutionContext> {
 public:

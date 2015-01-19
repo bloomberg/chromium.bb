@@ -26,11 +26,10 @@
 #ifndef DocumentLifecycleObserver_h
 #define DocumentLifecycleObserver_h
 
+#include "core/dom/Document.h"
 #include "platform/LifecycleContext.h"
 
 namespace blink {
-
-class Document;
 
 template<> void observerContext(Document*, LifecycleObserver<Document>*);
 template<> void unobserverContext(Document*, LifecycleObserver<Document>*);

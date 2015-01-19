@@ -94,11 +94,13 @@ inline LifecycleNotifier<T>::~LifecycleNotifier()
     // FIXME: Enable the following ASSERT. Also see a FIXME in Document::detach().
     // ASSERT(!m_observers.size() || m_didCallContextDestroyed);
 
+#if !ENABLE(OILPAN)
     TemporaryChange<IterationType> scope(this->m_iterating, IteratingOverAll);
     for (Observer* observer : m_observers) {
         ASSERT(observer->lifecycleContext() == m_context);
         observer->clearLifecycleContext();
     }
+#endif
 }
 
 template<typename T>

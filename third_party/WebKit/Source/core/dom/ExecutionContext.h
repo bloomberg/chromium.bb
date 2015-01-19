@@ -28,7 +28,6 @@
 #ifndef ExecutionContext_h
 #define ExecutionContext_h
 
-#include "core/dom/ActiveDOMObject.h"
 #include "core/dom/SecurityContext.h"
 #include "core/fetch/CrossOriginAccessControl.h"
 #include "core/frame/ConsoleTypes.h"
@@ -43,6 +42,7 @@
 
 namespace blink {
 
+class ActiveDOMObject;
 class ContextLifecycleNotifier;
 class DOMTimerCoordinator;
 class ErrorEvent;

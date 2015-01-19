@@ -27,12 +27,11 @@
 #ifndef DOMWindowLifecycleObserver_h
 #define DOMWindowLifecycleObserver_h
 
+#include "core/frame/LocalDOMWindow.h"
 #include "platform/LifecycleObserver.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
-
-class LocalDOMWindow;
 
 template<> void observerContext(LocalDOMWindow*, LifecycleObserver<LocalDOMWindow>*);
 template<> void unobserverContext(LocalDOMWindow*, LifecycleObserver<LocalDOMWindow>*);

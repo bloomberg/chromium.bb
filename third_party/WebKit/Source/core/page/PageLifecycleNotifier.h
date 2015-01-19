@@ -26,6 +26,7 @@
 #ifndef PageLifecycleNotifier_h
 #define PageLifecycleNotifier_h
 
+#include "core/page/Page.h"
 #include "core/page/PageLifecycleObserver.h"
 #include "platform/LifecycleNotifier.h"
 #include "wtf/PassOwnPtr.h"
@@ -33,7 +34,6 @@
 
 namespace blink {
 
-class Page;
 class LocalFrame;
 
 class PageLifecycleNotifier final : public LifecycleNotifier<Page> {

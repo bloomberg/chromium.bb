@@ -27,12 +27,12 @@
 #ifndef PageLifecycleObserver_h
 #define PageLifecycleObserver_h
 
+#include "core/page/Page.h"
 #include "platform/LifecycleObserver.h"
 
 namespace blink {
 
 class LocalFrame;
-class Page;
 
 template<> void observerContext(Page*, LifecycleObserver<Page>*);
 template<> void unobserverContext(Page*, LifecycleObserver<Page>*);
