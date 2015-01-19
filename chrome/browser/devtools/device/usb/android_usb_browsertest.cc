@@ -629,6 +629,7 @@ class MockListListener : public DevToolsAndroidBridge::DeviceListListener {
           ASSERT_EQ(kDeviceSerial, device->serial());
           adb_bridge_->RemoveDeviceListListener(this);
           callback_.Run();
+          break;
         }
       }
     }
