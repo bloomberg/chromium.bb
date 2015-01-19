@@ -1061,7 +1061,7 @@ const AsyncCallChain* InspectorDebuggerAgent::currentAsyncCallChain() const
     return m_currentAsyncCallChain.get();
 }
 
-PassRefPtrWillBeRawPtr<AsyncCallChain> InspectorDebuggerAgent::createAsyncCallChain(const String& description)
+PassRefPtrWillBeRawPtr<AsyncCallChain> InspectorDebuggerAgent::traceAsyncOperationStarting(const String& description)
 {
     ScriptValue callFrames = scriptDebugServer().currentCallFramesForAsyncStack();
     if (callFrames.isEmpty()) {
@@ -1084,7 +1084,7 @@ void InspectorDebuggerAgent::didCreateAsyncCallChain(AsyncCallChain* chain)
         m_asyncOperationsForStepInto.add(chain);
 }
 
-void InspectorDebuggerAgent::clearCurrentAsyncCallChain()
+void InspectorDebuggerAgent::traceAsyncCallbackCompleted()
 {
     if (!m_nestedAsyncCallCount)
         return;
@@ -1104,7 +1104,7 @@ void InspectorDebuggerAgent::clearCurrentAsyncCallChain()
     }
 }
 
-void InspectorDebuggerAgent::setCurrentAsyncCallChain(v8::Isolate* isolate, PassRefPtrWillBeRawPtr<AsyncCallChain> chain)
+void InspectorDebuggerAgent::traceAsyncCallbackStarting(v8::Isolate* isolate, PassRefPtrWillBeRawPtr<AsyncCallChain> chain)
 {
     int recursionLevel = V8RecursionScope::recursionLevel(isolate);
     if (chain && (!recursionLevel || (recursionLevel == 1 && Microtask::performingCheckpoint(isolate)))) {
@@ -1126,7 +1126,7 @@ void InspectorDebuggerAgent::setCurrentAsyncCallChain(v8::Isolate* isolate, Pass
     }
 }
 
-void InspectorDebuggerAgent::didCompleteAsyncOperation(AsyncCallChain* chain)
+void InspectorDebuggerAgent::traceAsyncOperationCompleted(AsyncCallChain* chain)
 {
     if (!m_performingAsyncStepIn)
         return;

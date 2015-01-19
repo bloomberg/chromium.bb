@@ -47,7 +47,7 @@ public:
     {
         ASSERT(m_debuggerAgent);
         for (auto it : m_asyncCallChains)
-            m_debuggerAgent->didCompleteAsyncOperation(it.value.get());
+            m_debuggerAgent->traceAsyncOperationCompleted(it.value.get());
         m_asyncCallChains.clear();
     }
 
@@ -71,7 +71,7 @@ public:
         ASSERT(m_debuggerAgent);
         RefPtrWillBeRawPtr<AsyncCallChain> chain = m_asyncCallChains.take(key);
         if (chain)
-            m_debuggerAgent->didCompleteAsyncOperation(chain.get());
+            m_debuggerAgent->traceAsyncOperationCompleted(chain.get());
     }
 
     void trace(Visitor* visitor)

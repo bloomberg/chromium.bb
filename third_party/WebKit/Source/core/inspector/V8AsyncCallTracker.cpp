@@ -105,7 +105,7 @@ void V8AsyncCallTracker::didReceiveV8AsyncTaskEvent(ScriptState* state, const St
     else if (eventType == v8AsyncTaskEventWillHandle)
         willHandleV8AsyncTask(state, eventName, id);
     else if (eventType == v8AsyncTaskEventDidHandle)
-        m_debuggerAgent->clearCurrentAsyncCallChain();
+        m_debuggerAgent->traceAsyncCallbackCompleted();
     else
         ASSERT_NOT_REACHED();
 }
@@ -114,7 +114,7 @@ void V8AsyncCallTracker::didEnqueueV8AsyncTask(ScriptState* state, const String&
 {
     ASSERT(state);
     ASSERT(m_debuggerAgent->trackingAsyncCalls());
-    RefPtrWillBeRawPtr<AsyncCallChain> callChain = m_debuggerAgent->createAsyncCallChain(eventName);
+    RefPtrWillBeRawPtr<AsyncCallChain> callChain = m_debuggerAgent->traceAsyncOperationStarting(eventName);
     if (!callChain)
         return;
     V8ContextAsyncCallChains* contextCallChains = m_contextAsyncCallChainMap.get(state);
@@ -129,10 +129,10 @@ void V8AsyncCallTracker::willHandleV8AsyncTask(ScriptState* state, const String&
     ASSERT(m_debuggerAgent->trackingAsyncCalls());
     if (V8ContextAsyncCallChains* contextCallChains = m_contextAsyncCallChainMap.get(state)) {
         String taskId = makeV8AsyncTaskUniqueId(eventName, id);
-        m_debuggerAgent->setCurrentAsyncCallChain(state->isolate(), contextCallChains->m_v8AsyncCallChains.get(taskId));
+        m_debuggerAgent->traceAsyncCallbackStarting(state->isolate(), contextCallChains->m_v8AsyncCallChains.get(taskId));
         contextCallChains->m_v8AsyncCallChains.remove(taskId);
     } else {
-        m_debuggerAgent->setCurrentAsyncCallChain(state->isolate(), nullptr);
+        m_debuggerAgent->traceAsyncCallbackStarting(state->isolate(), nullptr);
     }
 }
 

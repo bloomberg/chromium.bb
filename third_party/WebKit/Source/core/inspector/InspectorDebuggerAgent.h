@@ -172,11 +172,11 @@ public:
 
     // Async call stacks implementation
     PassRefPtrWillBeRawPtr<ScriptAsyncCallStack> currentAsyncStackTraceForConsole();
-    PassRefPtrWillBeRawPtr<AsyncCallChain> createAsyncCallChain(const String& description);
-    void setCurrentAsyncCallChain(v8::Isolate*, PassRefPtrWillBeRawPtr<AsyncCallChain>);
+    PassRefPtrWillBeRawPtr<AsyncCallChain> traceAsyncOperationStarting(const String& description);
+    void traceAsyncCallbackStarting(v8::Isolate*, PassRefPtrWillBeRawPtr<AsyncCallChain>);
     const AsyncCallChain* currentAsyncCallChain() const;
-    void clearCurrentAsyncCallChain();
-    void didCompleteAsyncOperation(AsyncCallChain*);
+    void traceAsyncCallbackCompleted();
+    void traceAsyncOperationCompleted(AsyncCallChain*);
     bool trackingAsyncCalls() const { return m_maxAsyncCallStackDepth; }
 
     class AsyncCallTrackingListener : public WillBeGarbageCollectedMixin {
