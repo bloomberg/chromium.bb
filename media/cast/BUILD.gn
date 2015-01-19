@@ -200,7 +200,7 @@ source_set("receiver") {
   }
 }
 
-source_set("test_support") {
+static_library("test_support") {
   testonly = true
   sources = [
     # TODO(hclam): FFmpeg.

@@ -169,14 +169,4 @@ void MojoCdm::OnSessionExpirationUpdate(const mojo::String& session_id,
       session_id, base::Time::FromInternalValue(new_expiry_time_usec));
 }
 
-template <typename... T>
-void MojoCdm::OnPromiseResult(scoped_ptr<CdmPromiseTemplate<T...>> promise,
-                              mojo::CdmPromiseResultPtr result,
-                              typename MojoTypeTrait<T>::MojoType... args) {
-  if (result->success)
-    promise->resolve(args.template To<T>()...);  // See ISO C++03 14.2/4.
-  else
-    RejectPromise(promise.Pass(), result.Pass());
-}
-
 }  // namespace media

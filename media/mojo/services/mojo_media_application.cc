@@ -4,6 +4,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/strings/utf_string_conversions.h"
 #include "media/mojo/services/mojo_renderer_service.h"
 #include "mojo/application/application_runner_chromium.h"
 #include "mojo/public/c/system/main.h"

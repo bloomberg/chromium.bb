@@ -74,10 +74,18 @@ class MojoCdm : public MediaKeys, public mojo::ContentDecryptionModuleClient {
                                  int64_t new_expiry_time_usec) final;
 
   // Callbacks to handle CDM promises.
+  // We have to inline this method, since MS VS 2013 compiler fails to compile
+  // it when this method is not inlined. It fails with error C2244
+  // "unable to match function definition to an existing declaration".
   template <typename... T>
   void OnPromiseResult(scoped_ptr<CdmPromiseTemplate<T...>> promise,
                        mojo::CdmPromiseResultPtr result,
-                       typename MojoTypeTrait<T>::MojoType... args);
+                       typename MojoTypeTrait<T>::MojoType... args) {
+    if (result->success)
+      promise->resolve(args.template To<T>()...);  // See ISO C++03 14.2/4.
+    else
+      RejectPromise(promise.Pass(), result.Pass());
+  }
 
   mojo::ContentDecryptionModulePtr remote_cdm_;
 
