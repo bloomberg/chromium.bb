@@ -145,6 +145,7 @@
               # Because clearkeycdm has type 'loadable_module' (see comments),
               # we must explicitly specify this dependency.
               'libraries': [
+               '-lrt',
                 # Built by clearkeycdm.
                 '<(PRODUCT_DIR)/libclearkeycdm.so',
               ],
