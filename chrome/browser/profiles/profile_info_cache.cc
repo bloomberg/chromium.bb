@@ -1024,8 +1024,12 @@ const gfx::Image* ProfileInfoCache::GetHighResAvatarOfProfileAtIndex(
   int avatar_index = GetAvatarIconIndexOfProfileAtIndex(index);
   std::string key = profiles::GetDefaultAvatarIconFileNameAtIndex(avatar_index);
 
-  if (!strcmp(key.c_str(), profiles::GetNoHighResAvatarFileName()))
-      return NULL;
+  // If this is the placeholder avatar, it is already included in the
+  // resources, so it doesn't need to be downloaded.
+  if (!strcmp(key.c_str(), profiles::GetNoHighResAvatarFileName())) {
+    return &ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+        profiles::GetPlaceholderAvatarIconResourceID());
+  }
 
   base::FilePath image_path =
       profiles::GetPathOfHighResAvatarAtIndex(avatar_index);

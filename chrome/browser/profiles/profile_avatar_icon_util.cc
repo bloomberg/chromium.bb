@@ -305,7 +305,7 @@ int GetPlaceholderAvatarIndex() {
 }
 
 int GetPlaceholderAvatarIconResourceID() {
-  return IDR_PROFILE_AVATAR_26;
+  return IDR_PROFILE_AVATAR_PLACEHOLDER_LARGE;
 }
 
 const IconResourceInfo* GetDefaultAvatarIconResourceInfo(size_t index) {
