@@ -67,6 +67,10 @@ var TEST_TARGETS = [
    [fetchRejected]],
   [OTHER_BASE_URL + 'Auth&mode=cors&credentials=same-origin',
    [fetchRejected]],
+
+  [OTHER_BASE_URL + 'Auth&mode=cors&credentials=omit&ACAOrigin=*',
+   [fetchResolved, hasBody], [checkJsonpError]],
+
   [OTHER_BASE_URL + 'Auth&mode=cors&credentials=include&ACAOrigin=*',
    [fetchRejected]],
   [OTHER_BASE_URL + 'Auth&mode=cors&credentials=include&ACAOrigin=http://127.0.0.1:8000',
@@ -75,6 +79,9 @@ var TEST_TARGETS = [
    [fetchRejected]],
   [OTHER_BASE_URL + 'Auth&mode=cors&credentials=include&ACAOrigin=http://127.0.0.1:8000&ACACredentials=true',
    [fetchResolved, hasBody], [authCheck2]],
+
+  [OTHER_BASE_URL + 'Auth&mode=cors&credentials=same-origin&ACAOrigin=*',
+   [fetchResolved, hasBody], [checkJsonpError]],
 ];
 
 var test = async_test('Verify access control of fetch() in a Service Worker');
