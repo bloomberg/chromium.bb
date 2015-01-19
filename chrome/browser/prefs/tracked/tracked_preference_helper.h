@@ -27,7 +27,8 @@ class TrackedPreferenceHelper {
   TrackedPreferenceHelper(const std::string& pref_path,
                           size_t reporting_id,
                           size_t reporting_ids_count,
-                          PrefHashFilter::EnforcementLevel enforcement_level);
+                          PrefHashFilter::EnforcementLevel enforcement_level,
+                          PrefHashFilter::ValueType value_type);
 
   // Returns a ResetAction stating whether a reset is desired (DO_RESET) or not
   // (DONT_RESET) based on observing |value_state|. Can also return WANTED_RESET
@@ -35,6 +36,9 @@ class TrackedPreferenceHelper {
   // doesn't allow it.
   ResetAction GetAction(
       PrefHashStoreTransaction::ValueState value_state) const;
+
+  // Returns true if the preference value may contain personal information.
+  bool IsPersonal() const;
 
   // Reports |value_state| via UMA under |reporting_id_|.
   void ReportValidationResult(
@@ -55,6 +59,8 @@ class TrackedPreferenceHelper {
 
   // Deny setting changes and hash seeding/migration.
   const bool enforce_;
+
+  const bool personal_;
 
   DISALLOW_COPY_AND_ASSIGN(TrackedPreferenceHelper);
 };

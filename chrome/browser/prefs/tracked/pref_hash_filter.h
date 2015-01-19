@@ -51,11 +51,18 @@ class PrefHashFilter : public InterceptablePrefFilter {
     TRACKING_STRATEGY_SPLIT,
   };
 
+  enum ValueType {
+    VALUE_IMPERSONAL,
+    // The preference value may contain personal information.
+    VALUE_PERSONAL,
+  };
+
   struct TrackedPreferenceMetadata {
     size_t reporting_id;
     const char* name;
     EnforcementLevel enforcement_level;
     PrefTrackingStrategy strategy;
+    ValueType value_type;
   };
 
   // Constructs a PrefHashFilter tracking the specified |tracked_preferences|

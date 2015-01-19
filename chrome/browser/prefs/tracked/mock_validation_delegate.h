@@ -12,7 +12,6 @@
 #include "base/macros.h"
 #include "chrome/browser/prefs/tracked/pref_hash_filter.h"
 #include "chrome/browser/prefs/tracked/pref_hash_store_transaction.h"
-#include "chrome/browser/prefs/tracked/tracked_preference_helper.h"
 #include "chrome/browser/prefs/tracked/tracked_preference_validation_delegate.h"
 
 // A mock tracked preference validation delegate for use by tests.
@@ -21,16 +20,16 @@ class MockValidationDelegate : public TrackedPreferenceValidationDelegate {
   struct ValidationEvent {
     ValidationEvent(const std::string& path,
                     PrefHashStoreTransaction::ValueState state,
-                    TrackedPreferenceHelper::ResetAction action,
+                    bool is_personal,
                     PrefHashFilter::PrefTrackingStrategy tracking_strategy)
         : pref_path(path),
           value_state(state),
-          reset_action(action),
+          is_personal(is_personal),
           strategy(tracking_strategy) {}
 
     std::string pref_path;
     PrefHashStoreTransaction::ValueState value_state;
-    TrackedPreferenceHelper::ResetAction reset_action;
+    bool is_personal;
     PrefHashFilter::PrefTrackingStrategy strategy;
   };
 
@@ -52,19 +51,19 @@ class MockValidationDelegate : public TrackedPreferenceValidationDelegate {
       const std::string& pref_path,
       const base::Value* value,
       PrefHashStoreTransaction::ValueState value_state,
-      TrackedPreferenceHelper::ResetAction reset_action) override;
+      bool is_personal) override;
   void OnSplitPreferenceValidation(
       const std::string& pref_path,
       const base::DictionaryValue* dict_value,
       const std::vector<std::string>& invalid_keys,
       PrefHashStoreTransaction::ValueState value_state,
-      TrackedPreferenceHelper::ResetAction reset_action) override;
+      bool is_personal) override;
 
  private:
   // Adds a new validation event.
   void RecordValidation(const std::string& pref_path,
                         PrefHashStoreTransaction::ValueState value_state,
-                        TrackedPreferenceHelper::ResetAction reset_action,
+                        bool is_personal,
                         PrefHashFilter::PrefTrackingStrategy strategy);
 
   std::vector<ValidationEvent> validations_;

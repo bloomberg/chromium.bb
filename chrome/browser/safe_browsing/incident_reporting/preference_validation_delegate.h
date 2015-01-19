@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_SAFE_BROWSING_INCIDENT_REPORTING_PREFERENCE_VALIDATION_DELEGATE_H_
 #define CHROME_BROWSER_SAFE_BROWSING_INCIDENT_REPORTING_PREFERENCE_VALIDATION_DELEGATE_H_
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "chrome/browser/prefs/tracked/tracked_preference_validation_delegate.h"
@@ -27,13 +28,13 @@ class PreferenceValidationDelegate
       const std::string& pref_path,
       const base::Value* value,
       PrefHashStoreTransaction::ValueState value_state,
-      TrackedPreferenceHelper::ResetAction reset_action) override;
+      bool is_personal) override;
   void OnSplitPreferenceValidation(
       const std::string& pref_path,
       const base::DictionaryValue* dict_value,
       const std::vector<std::string>& invalid_keys,
       PrefHashStoreTransaction::ValueState value_state,
-      TrackedPreferenceHelper::ResetAction reset_action) override;
+      bool is_personal) override;
 
   AddIncidentCallback add_incident_;
 

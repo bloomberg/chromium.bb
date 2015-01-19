@@ -12,7 +12,9 @@ namespace safe_browsing {
 
 TrackedPreferenceIncident::TrackedPreferenceIncident(
     scoped_ptr<ClientIncidentReport_IncidentData_TrackedPreferenceIncident>
-        tracked_preference_incident) {
+        tracked_preference_incident,
+    bool is_personal)
+    : is_personal_(is_personal) {
   DCHECK(tracked_preference_incident);
   DCHECK(tracked_preference_incident->has_path());
   payload()->set_allocated_tracked_preference(
@@ -38,10 +40,20 @@ uint32_t TrackedPreferenceIncident::ComputeDigest() const {
   return HashMessage(payload()->tracked_preference());
 }
 
+// Filter out personal preferences.
 scoped_ptr<ClientIncidentReport_IncidentData>
 TrackedPreferenceIncident::TakePayload() {
-  // TODO(grt): filter
-  return Incident::TakePayload();
+  scoped_ptr<ClientIncidentReport_IncidentData> payload(
+      Incident::TakePayload());
+
+  if (is_personal_) {
+    ClientIncidentReport_IncidentData_TrackedPreferenceIncident* incident =
+        payload->mutable_tracked_preference();
+    incident->clear_atomic_value();
+    incident->clear_split_key();
+  }
+
+  return payload.Pass();
 }
 
 }  // namespace safe_browsing

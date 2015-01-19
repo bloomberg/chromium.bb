@@ -27,6 +27,7 @@ class TrackedSplitPreference : public TrackedPreference {
                          size_t reporting_id,
                          size_t reporting_ids_count,
                          PrefHashFilter::EnforcementLevel enforcement_level,
+                         PrefHashFilter::ValueType value_type,
                          TrackedPreferenceValidationDelegate* delegate);
 
   // TrackedPreference implementation.

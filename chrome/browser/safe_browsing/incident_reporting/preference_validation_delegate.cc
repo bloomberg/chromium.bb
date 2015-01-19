@@ -52,7 +52,7 @@ void PreferenceValidationDelegate::OnAtomicPreferenceValidation(
     const std::string& pref_path,
     const base::Value* value,
     PrefHashStoreTransaction::ValueState value_state,
-    TrackedPreferenceHelper::ResetAction /* reset_action */) {
+    bool is_personal) {
   TPIncident_ValueState proto_value_state = MapValueState(value_state);
   if (proto_value_state != TPIncident::UNKNOWN) {
     scoped_ptr<TPIncident> incident(
@@ -64,8 +64,8 @@ void PreferenceValidationDelegate::OnAtomicPreferenceValidation(
       incident->clear_atomic_value();
     }
     incident->set_value_state(proto_value_state);
-    add_incident_.Run(
-        make_scoped_ptr(new TrackedPreferenceIncident(incident.Pass())));
+    add_incident_.Run(make_scoped_ptr(
+        new TrackedPreferenceIncident(incident.Pass(), is_personal)));
   }
 }
 
@@ -74,7 +74,7 @@ void PreferenceValidationDelegate::OnSplitPreferenceValidation(
     const base::DictionaryValue* /* dict_value */,
     const std::vector<std::string>& invalid_keys,
     PrefHashStoreTransaction::ValueState value_state,
-    TrackedPreferenceHelper::ResetAction /* reset_action */) {
+    bool is_personal) {
   TPIncident_ValueState proto_value_state = MapValueState(value_state);
   if (proto_value_state != TPIncident::UNKNOWN) {
     scoped_ptr<ClientIncidentReport_IncidentData_TrackedPreferenceIncident>
@@ -87,8 +87,8 @@ void PreferenceValidationDelegate::OnSplitPreferenceValidation(
       incident->add_split_key(*scan);
     }
     incident->set_value_state(proto_value_state);
-    add_incident_.Run(
-        make_scoped_ptr(new TrackedPreferenceIncident(incident.Pass())));
+    add_incident_.Run(make_scoped_ptr(
+        new TrackedPreferenceIncident(incident.Pass(), is_personal)));
   }
 }
 

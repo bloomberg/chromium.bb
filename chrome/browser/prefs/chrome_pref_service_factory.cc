@@ -84,76 +84,90 @@ const PrefHashFilter::TrackedPreferenceMetadata kTrackedPrefs[] = {
   {
     0, prefs::kShowHomeButton,
     PrefHashFilter::ENFORCE_ON_LOAD,
-    PrefHashFilter::TRACKING_STRATEGY_ATOMIC
+    PrefHashFilter::TRACKING_STRATEGY_ATOMIC,
+    PrefHashFilter::VALUE_IMPERSONAL
   },
   {
     1, prefs::kHomePageIsNewTabPage,
     PrefHashFilter::ENFORCE_ON_LOAD,
-    PrefHashFilter::TRACKING_STRATEGY_ATOMIC
+    PrefHashFilter::TRACKING_STRATEGY_ATOMIC,
+    PrefHashFilter::VALUE_IMPERSONAL
   },
   {
     2, prefs::kHomePage,
     PrefHashFilter::ENFORCE_ON_LOAD,
-    PrefHashFilter::TRACKING_STRATEGY_ATOMIC
+    PrefHashFilter::TRACKING_STRATEGY_ATOMIC,
+    PrefHashFilter::VALUE_IMPERSONAL
   },
   {
     3, prefs::kRestoreOnStartup,
     PrefHashFilter::ENFORCE_ON_LOAD,
-    PrefHashFilter::TRACKING_STRATEGY_ATOMIC
+    PrefHashFilter::TRACKING_STRATEGY_ATOMIC,
+    PrefHashFilter::VALUE_IMPERSONAL
   },
   {
     4, prefs::kURLsToRestoreOnStartup,
     PrefHashFilter::ENFORCE_ON_LOAD,
-    PrefHashFilter::TRACKING_STRATEGY_ATOMIC
+    PrefHashFilter::TRACKING_STRATEGY_ATOMIC,
+    PrefHashFilter::VALUE_IMPERSONAL
   },
 #if defined(ENABLE_EXTENSIONS)
   {
     5, extensions::pref_names::kExtensions,
     PrefHashFilter::NO_ENFORCEMENT,
-    PrefHashFilter::TRACKING_STRATEGY_SPLIT
+    PrefHashFilter::TRACKING_STRATEGY_SPLIT,
+    PrefHashFilter::VALUE_IMPERSONAL
   },
 #endif
   {
     6, prefs::kGoogleServicesLastUsername,
     PrefHashFilter::ENFORCE_ON_LOAD,
-    PrefHashFilter::TRACKING_STRATEGY_ATOMIC
+    PrefHashFilter::TRACKING_STRATEGY_ATOMIC,
+    PrefHashFilter::VALUE_PERSONAL
   },
   {
     7, prefs::kSearchProviderOverrides,
     PrefHashFilter::ENFORCE_ON_LOAD,
-    PrefHashFilter::TRACKING_STRATEGY_ATOMIC
+    PrefHashFilter::TRACKING_STRATEGY_ATOMIC,
+    PrefHashFilter::VALUE_IMPERSONAL
   },
   {
     8, prefs::kDefaultSearchProviderSearchURL,
     PrefHashFilter::ENFORCE_ON_LOAD,
-    PrefHashFilter::TRACKING_STRATEGY_ATOMIC
+    PrefHashFilter::TRACKING_STRATEGY_ATOMIC,
+    PrefHashFilter::VALUE_IMPERSONAL
   },
   {
     9, prefs::kDefaultSearchProviderKeyword,
     PrefHashFilter::ENFORCE_ON_LOAD,
-    PrefHashFilter::TRACKING_STRATEGY_ATOMIC
+    PrefHashFilter::TRACKING_STRATEGY_ATOMIC,
+    PrefHashFilter::VALUE_IMPERSONAL
   },
   {
     10, prefs::kDefaultSearchProviderName,
     PrefHashFilter::ENFORCE_ON_LOAD,
-    PrefHashFilter::TRACKING_STRATEGY_ATOMIC
+    PrefHashFilter::TRACKING_STRATEGY_ATOMIC,
+    PrefHashFilter::VALUE_IMPERSONAL
   },
 #if !defined(OS_ANDROID)
   {
     11, prefs::kPinnedTabs,
     PrefHashFilter::ENFORCE_ON_LOAD,
-    PrefHashFilter::TRACKING_STRATEGY_ATOMIC
+    PrefHashFilter::TRACKING_STRATEGY_ATOMIC,
+    PrefHashFilter::VALUE_IMPERSONAL
   },
   {
     13, prefs::kProfileResetPromptMementoInProfilePrefs,
     PrefHashFilter::ENFORCE_ON_LOAD,
-    PrefHashFilter::TRACKING_STRATEGY_ATOMIC
+    PrefHashFilter::TRACKING_STRATEGY_ATOMIC,
+    PrefHashFilter::VALUE_IMPERSONAL
   },
 #endif
   {
     14, DefaultSearchManager::kDefaultSearchProviderDataPrefName,
     PrefHashFilter::NO_ENFORCEMENT,
-    PrefHashFilter::TRACKING_STRATEGY_ATOMIC
+    PrefHashFilter::TRACKING_STRATEGY_ATOMIC,
+    PrefHashFilter::VALUE_IMPERSONAL
   },
   {
     // Protecting kPreferenceResetTime does two things:
@@ -168,34 +182,40 @@ const PrefHashFilter::TrackedPreferenceMetadata kTrackedPrefs[] = {
     //     preference here.
     15, prefs::kPreferenceResetTime,
     PrefHashFilter::ENFORCE_ON_LOAD,
-    PrefHashFilter::TRACKING_STRATEGY_ATOMIC
+    PrefHashFilter::TRACKING_STRATEGY_ATOMIC,
+    PrefHashFilter::VALUE_IMPERSONAL
   },
   {
     17, sync_driver::prefs::kSyncRemainingRollbackTries,
     PrefHashFilter::ENFORCE_ON_LOAD,
-    PrefHashFilter::TRACKING_STRATEGY_ATOMIC
+    PrefHashFilter::TRACKING_STRATEGY_ATOMIC,
+    PrefHashFilter::VALUE_IMPERSONAL
   },
   {
     18, prefs::kSafeBrowsingIncidentsSent,
     PrefHashFilter::ENFORCE_ON_LOAD,
-    PrefHashFilter::TRACKING_STRATEGY_ATOMIC
+    PrefHashFilter::TRACKING_STRATEGY_ATOMIC,
+    PrefHashFilter::VALUE_IMPERSONAL
   },
 #if defined(OS_WIN)
   {
     19, prefs::kSwReporterPromptVersion,
     PrefHashFilter::ENFORCE_ON_LOAD,
-    PrefHashFilter::TRACKING_STRATEGY_ATOMIC
+    PrefHashFilter::TRACKING_STRATEGY_ATOMIC,
+    PrefHashFilter::VALUE_IMPERSONAL
   },
   {
     20, prefs::kSwReporterPromptReason,
     PrefHashFilter::ENFORCE_ON_LOAD,
-    PrefHashFilter::TRACKING_STRATEGY_ATOMIC
+    PrefHashFilter::TRACKING_STRATEGY_ATOMIC,
+    PrefHashFilter::VALUE_IMPERSONAL
   },
 #endif
   {
     21, prefs::kGoogleServicesUsername,
     PrefHashFilter::ENFORCE_ON_LOAD,
-    PrefHashFilter::TRACKING_STRATEGY_ATOMIC
+    PrefHashFilter::TRACKING_STRATEGY_ATOMIC,
+    PrefHashFilter::VALUE_PERSONAL
   },
   // See note at top, new items added here also need to be added to
   // histograms.xml's TrackedPreference enum.

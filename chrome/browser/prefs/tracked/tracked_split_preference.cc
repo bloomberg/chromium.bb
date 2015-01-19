@@ -16,9 +16,11 @@ TrackedSplitPreference::TrackedSplitPreference(
     size_t reporting_id,
     size_t reporting_ids_count,
     PrefHashFilter::EnforcementLevel enforcement_level,
+    PrefHashFilter::ValueType value_type,
     TrackedPreferenceValidationDelegate* delegate)
     : pref_path_(pref_path),
-      helper_(pref_path, reporting_id, reporting_ids_count, enforcement_level),
+      helper_(pref_path, reporting_id, reporting_ids_count, enforcement_level,
+              value_type),
       delegate_(delegate) {
 }
 
@@ -56,8 +58,8 @@ bool TrackedSplitPreference::EnforceAndReport(
   TrackedPreferenceHelper::ResetAction reset_action =
       helper_.GetAction(value_state);
   if (delegate_) {
-    delegate_->OnSplitPreferenceValidation(
-        pref_path_, dict_value, invalid_keys, value_state, reset_action);
+    delegate_->OnSplitPreferenceValidation(pref_path_, dict_value, invalid_keys,
+                                           value_state, helper_.IsPersonal());
   }
   helper_.ReportAction(reset_action);
 

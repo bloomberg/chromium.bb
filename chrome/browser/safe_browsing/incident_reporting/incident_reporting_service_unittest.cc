@@ -234,7 +234,8 @@ class IncidentReportingServiceTest : public testing::Test {
     if (value)
       incident->set_atomic_value(value);
     return make_scoped_ptr(
-        new safe_browsing::TrackedPreferenceIncident(incident.Pass()));
+        new safe_browsing::TrackedPreferenceIncident(incident.Pass(),
+                                                     false /* is_personal */));
   }
 
   // Adds a test incident to the service.

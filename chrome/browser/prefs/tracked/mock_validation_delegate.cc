@@ -33,10 +33,10 @@ void MockValidationDelegate::OnAtomicPreferenceValidation(
     const std::string& pref_path,
     const base::Value* value,
     PrefHashStoreTransaction::ValueState value_state,
-    TrackedPreferenceHelper::ResetAction reset_action) {
+    bool is_personal) {
   RecordValidation(pref_path,
                    value_state,
-                   reset_action,
+                   is_personal,
                    PrefHashFilter::TRACKING_STRATEGY_ATOMIC);
 }
 
@@ -45,18 +45,18 @@ void MockValidationDelegate::OnSplitPreferenceValidation(
     const base::DictionaryValue* dict_value,
     const std::vector<std::string>& invalid_keys,
     PrefHashStoreTransaction::ValueState value_state,
-    TrackedPreferenceHelper::ResetAction reset_action) {
+    bool is_personal) {
   RecordValidation(pref_path,
                    value_state,
-                   reset_action,
+                   is_personal,
                    PrefHashFilter::TRACKING_STRATEGY_SPLIT);
 }
 
 void MockValidationDelegate::RecordValidation(
     const std::string& pref_path,
     PrefHashStoreTransaction::ValueState value_state,
-    TrackedPreferenceHelper::ResetAction reset_action,
+    bool is_personal,
     PrefHashFilter::PrefTrackingStrategy strategy) {
   validations_.push_back(
-      ValidationEvent(pref_path, value_state, reset_action, strategy));
+      ValidationEvent(pref_path, value_state, is_personal, strategy));
 }

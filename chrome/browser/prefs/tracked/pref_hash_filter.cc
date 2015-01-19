@@ -66,6 +66,7 @@ PrefHashFilter::PrefHashFilter(
                                         metadata.reporting_id,
                                         reporting_ids_count,
                                         metadata.enforcement_level,
+                                        metadata.value_type,
                                         delegate));
         break;
       case TRACKING_STRATEGY_SPLIT:
@@ -74,6 +75,7 @@ PrefHashFilter::PrefHashFilter(
                                        metadata.reporting_id,
                                        reporting_ids_count,
                                        metadata.enforcement_level,
+                                       metadata.value_type,
                                        delegate));
         break;
     }

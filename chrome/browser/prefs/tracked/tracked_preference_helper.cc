@@ -11,10 +11,13 @@ TrackedPreferenceHelper::TrackedPreferenceHelper(
     const std::string& pref_path,
     size_t reporting_id,
     size_t reporting_ids_count,
-    PrefHashFilter::EnforcementLevel enforcement_level)
+    PrefHashFilter::EnforcementLevel enforcement_level,
+    PrefHashFilter::ValueType value_type)
     : pref_path_(pref_path),
-      reporting_id_(reporting_id), reporting_ids_count_(reporting_ids_count),
-      enforce_(enforcement_level == PrefHashFilter::ENFORCE_ON_LOAD) {
+      reporting_id_(reporting_id),
+      reporting_ids_count_(reporting_ids_count),
+      enforce_(enforcement_level == PrefHashFilter::ENFORCE_ON_LOAD),
+      personal_(value_type == PrefHashFilter::VALUE_PERSONAL) {
 }
 
 TrackedPreferenceHelper::ResetAction TrackedPreferenceHelper::GetAction(
@@ -40,6 +43,10 @@ TrackedPreferenceHelper::ResetAction TrackedPreferenceHelper::GetAction(
   NOTREACHED() << "Unexpected PrefHashStoreTransaction::ValueState: "
                << value_state;
   return DONT_RESET;
+}
+
+bool TrackedPreferenceHelper::IsPersonal() const {
+  return personal_;
 }
 
 void TrackedPreferenceHelper::ReportValidationResult(

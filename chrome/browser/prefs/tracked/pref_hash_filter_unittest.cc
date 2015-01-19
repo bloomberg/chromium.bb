@@ -42,31 +42,38 @@ const char kSplitPref[] = "split_pref";
 const PrefHashFilter::TrackedPreferenceMetadata kTestTrackedPrefs[] = {
   {
     0, kAtomicPref, PrefHashFilter::ENFORCE_ON_LOAD,
-    PrefHashFilter::TRACKING_STRATEGY_ATOMIC
+    PrefHashFilter::TRACKING_STRATEGY_ATOMIC,
+    PrefHashFilter::VALUE_PERSONAL
   },
   {
     1, kReportOnlyPref, PrefHashFilter::NO_ENFORCEMENT,
-    PrefHashFilter::TRACKING_STRATEGY_ATOMIC
+    PrefHashFilter::TRACKING_STRATEGY_ATOMIC,
+    PrefHashFilter::VALUE_IMPERSONAL
   },
   {
     2, kSplitPref, PrefHashFilter::ENFORCE_ON_LOAD,
-    PrefHashFilter::TRACKING_STRATEGY_SPLIT
+    PrefHashFilter::TRACKING_STRATEGY_SPLIT,
+    PrefHashFilter::VALUE_IMPERSONAL
   },
   {
     3, kReportOnlySplitPref, PrefHashFilter::NO_ENFORCEMENT,
-    PrefHashFilter::TRACKING_STRATEGY_SPLIT
+    PrefHashFilter::TRACKING_STRATEGY_SPLIT,
+    PrefHashFilter::VALUE_IMPERSONAL
   },
   {
     4, kAtomicPref2, PrefHashFilter::ENFORCE_ON_LOAD,
-    PrefHashFilter::TRACKING_STRATEGY_ATOMIC
+    PrefHashFilter::TRACKING_STRATEGY_ATOMIC,
+    PrefHashFilter::VALUE_IMPERSONAL
   },
   {
     5, kAtomicPref3, PrefHashFilter::ENFORCE_ON_LOAD,
-    PrefHashFilter::TRACKING_STRATEGY_ATOMIC
+    PrefHashFilter::TRACKING_STRATEGY_ATOMIC,
+    PrefHashFilter::VALUE_IMPERSONAL
   },
   {
     6, kAtomicPref4, PrefHashFilter::ENFORCE_ON_LOAD,
-    PrefHashFilter::TRACKING_STRATEGY_ATOMIC
+    PrefHashFilter::TRACKING_STRATEGY_ATOMIC,
+    PrefHashFilter::VALUE_IMPERSONAL
   },
 };
 
@@ -663,14 +670,12 @@ TEST_P(PrefHashFilterTest, UnknownNullValue) {
       mock_validation_delegate_.GetEventForPath(kSplitPref);
   ASSERT_EQ(PrefHashFilter::TRACKING_STRATEGY_SPLIT,
             validated_split_pref->strategy);
-  EXPECT_EQ(TrackedPreferenceHelper::DONT_RESET,
-            validated_split_pref->reset_action);
+  ASSERT_FALSE(validated_split_pref->is_personal);
   const MockValidationDelegate::ValidationEvent* validated_atomic_pref =
       mock_validation_delegate_.GetEventForPath(kAtomicPref);
   ASSERT_EQ(PrefHashFilter::TRACKING_STRATEGY_ATOMIC,
             validated_atomic_pref->strategy);
-  EXPECT_EQ(TrackedPreferenceHelper::DONT_RESET,
-            validated_atomic_pref->reset_action);
+  ASSERT_TRUE(validated_atomic_pref->is_personal);
 }
 
 TEST_P(PrefHashFilterTest, InitialValueUnknown) {

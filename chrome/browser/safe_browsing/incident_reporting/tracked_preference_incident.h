@@ -16,9 +16,10 @@ class ClientIncidentReport_IncidentData_TrackedPreferenceIncident;
 // cleared.
 class TrackedPreferenceIncident : public Incident {
  public:
-  explicit TrackedPreferenceIncident(
+  TrackedPreferenceIncident(
       scoped_ptr<ClientIncidentReport_IncidentData_TrackedPreferenceIncident>
-          tracked_preference);
+          tracked_preference,
+      bool is_personal);
   ~TrackedPreferenceIncident() override;
 
   // Incident methods:
@@ -28,6 +29,8 @@ class TrackedPreferenceIncident : public Incident {
   scoped_ptr<ClientIncidentReport_IncidentData> TakePayload() override;
 
  private:
+  bool is_personal_;
+
   DISALLOW_COPY_AND_ASSIGN(TrackedPreferenceIncident);
 };
 
