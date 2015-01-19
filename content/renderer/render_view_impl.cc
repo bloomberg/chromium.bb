@@ -809,8 +809,6 @@ void RenderViewImpl::Initialize(const ViewMsg_New_Params& params,
   if (command_line.HasSwitch(switches::kStatsCollectionController))
     enabled_bindings_ |= BINDINGS_POLICY_STATS_COLLECTION;
 
-  ProcessViewLayoutFlags(command_line);
-
   GetContentClient()->renderer()->RenderViewCreated(this);
 
   // If we have an opener_id but we weren't created by a renderer, then
@@ -2295,25 +2293,6 @@ NavigationState* RenderViewImpl::CreateNavigationStateFromPending() {
     navigation_state = NavigationState::CreateContentInitiated();
   }
   return navigation_state;
-}
-
-void RenderViewImpl::ProcessViewLayoutFlags(
-    const base::CommandLine& command_line) {
-  bool enable_viewport =
-      command_line.HasSwitch(switches::kEnableViewport) ||
-      command_line.HasSwitch(switches::kEnableViewportMeta);
-
-  // If viewport tag is enabled, then the WebKit side will take care
-  // of setting the fixed layout size and page scale limits.
-  if (enable_viewport)
-    return;
-
-  // When navigating to a new page, reset the page scale factor to be 1.0.
-  webview()->setInitialPageScaleOverride(1.f);
-
-  float maxPageScaleFactor =
-      command_line.HasSwitch(switches::kEnablePinch) ? 4.f : 1.f ;
-  webview()->setPageScaleFactorLimits(1, maxPageScaleFactor);
 }
 
 void RenderViewImpl::didClearWindowObject(WebLocalFrame* frame) {
