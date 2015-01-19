@@ -612,6 +612,8 @@ public:
         SandboxViaIFrame = 672,
         SandboxViaCSP = 673,
         BlockedSniffingImageToScript = 674,
+        Fetch = 675,
+        FetchBodyStream = 676,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

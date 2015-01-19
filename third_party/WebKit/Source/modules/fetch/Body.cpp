@@ -14,6 +14,7 @@
 #include "core/fileapi/Blob.h"
 #include "core/fileapi/FileReaderLoader.h"
 #include "core/fileapi/FileReaderLoaderClient.h"
+#include "core/frame/UseCounter.h"
 #include "core/streams/UnderlyingSource.h"
 #include "modules/fetch/BodyStreamBuffer.h"
 
@@ -237,6 +238,7 @@ ScriptPromise Body::text(ScriptState* scriptState)
 
 ReadableStream* Body::body()
 {
+    UseCounter::count(executionContext(), UseCounter::FetchBodyStream);
     if (!m_streamAccessed) {
         m_streamAccessed = true;
         if (m_stream->isPulling()) {

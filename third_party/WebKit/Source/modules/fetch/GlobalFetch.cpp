@@ -7,6 +7,7 @@
 
 #include "core/dom/ActiveDOMObject.h"
 #include "core/frame/LocalDOMWindow.h"
+#include "core/frame/UseCounter.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "modules/fetch/FetchManager.h"
 #include "modules/fetch/Request.h"
@@ -100,11 +101,14 @@ private:
 
 ScriptPromise GlobalFetch::fetch(ScriptState* scriptState, DOMWindow& window, const RequestInfo& input, const Dictionary& init, ExceptionState& exceptionState)
 {
+    UseCounter::count(window.executionContext(), UseCounter::Fetch);
     return GlobalFetchImpl<LocalDOMWindow>::from(toLocalDOMWindow(window), window.executionContext()).fetch(scriptState, input, init, exceptionState);
 }
 
 ScriptPromise GlobalFetch::fetch(ScriptState* scriptState, WorkerGlobalScope& worker, const RequestInfo& input, const Dictionary& init, ExceptionState& exceptionState)
 {
+    // Note that UseCounter doesn't work with SharedWorker or ServiceWorker.
+    UseCounter::count(worker.executionContext(), UseCounter::Fetch);
     return GlobalFetchImpl<WorkerGlobalScope>::from(worker, worker.executionContext()).fetch(scriptState, input, init, exceptionState);
 }
 
