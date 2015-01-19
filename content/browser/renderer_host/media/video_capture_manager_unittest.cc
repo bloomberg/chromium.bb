@@ -176,6 +176,33 @@ TEST_F(VideoCaptureManagerTest, CreateAndClose) {
   vcm_->Unregister();
 }
 
+TEST_F(VideoCaptureManagerTest, CreateAndCloseMultipleTimes) {
+  StreamDeviceInfoArray devices;
+
+  InSequence s;
+  EXPECT_CALL(*listener_, DevicesEnumerated(MEDIA_DEVICE_VIDEO_CAPTURE, _))
+      .WillOnce(SaveArg<1>(&devices));
+
+  vcm_->EnumerateDevices(MEDIA_DEVICE_VIDEO_CAPTURE);
+
+  // Wait to get device callback.
+  message_loop_->RunUntilIdle();
+
+  for (int i = 1 ; i < 3 ; ++i) {
+    EXPECT_CALL(*listener_, Opened(MEDIA_DEVICE_VIDEO_CAPTURE, i));
+    EXPECT_CALL(*listener_, Closed(MEDIA_DEVICE_VIDEO_CAPTURE, i));
+    int video_session_id = vcm_->Open(devices.front());
+    VideoCaptureControllerID client_id = StartClient(video_session_id, true);
+
+    StopClient(client_id);
+    vcm_->Close(video_session_id);
+  }
+
+  // Wait to check callbacks before removing the listener.
+  message_loop_->RunUntilIdle();
+  vcm_->Unregister();
+}
+
 // Try to open, start, and abort a device.
 TEST_F(VideoCaptureManagerTest, CreateAndAbort) {
   StreamDeviceInfoArray devices;
