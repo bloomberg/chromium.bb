@@ -554,10 +554,11 @@ void InputMethodChromeOS::HidePreeditText() {
 void InputMethodChromeOS::DeleteSurroundingText(int32 offset, uint32 length) {
   if (!composition_.text.empty())
     return;  // do nothing if there is ongoing composition.
-  if (offset < 0 && static_cast<uint32>(-1 * offset) != length)
-    return;  // only preceding text can be deletable.
-  if (GetTextInputClient())
-    GetTextInputClient()->ExtendSelectionAndDelete(length, 0U);
+
+  if (GetTextInputClient()) {
+    uint32 before = offset >= 0 ? 0U : static_cast<uint32>(-1 * offset);
+    GetTextInputClient()->ExtendSelectionAndDelete(before, length - before);
+  }
 }
 
 bool InputMethodChromeOS::ExecuteCharacterComposer(const ui::KeyEvent& event) {
