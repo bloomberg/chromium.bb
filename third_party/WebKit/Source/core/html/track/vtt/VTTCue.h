@@ -109,7 +109,7 @@ public:
 
     int calculateComputedLinePosition();
 
-    std::pair<double, double> getCSSPosition() const;
+    FloatPoint getCSSPosition() const;
 
     CSSValueID getCSSAlignment() const;
     int getCSSSize() const;
@@ -155,7 +155,7 @@ private:
     void createVTTNodeTree();
     void copyVTTNodeToDOMTree(ContainerNode* vttNode, ContainerNode* root);
 
-    std::pair<double, double> getPositionCoordinates() const;
+    FloatPoint getPositionCoordinates() const;
 
     void calculateDisplayParameters();
 
@@ -185,7 +185,7 @@ private:
 
     CSSValueID m_displayDirection;
     int m_displaySize;
-    std::pair<float, float> m_displayPosition;
+    FloatPoint m_displayPosition;
 
     bool m_snapToLines : 1;
     bool m_displayTreeShouldChange : 1;
