@@ -40,6 +40,15 @@ class FileSystemProviderGetAllFunction : public ChromeSyncExtensionFunction {
   bool RunSync() override;
 };
 
+class FileSystemProviderGetFunction : public ChromeSyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("fileSystemProvider.get", FILESYSTEMPROVIDER_GET)
+
+ protected:
+  ~FileSystemProviderGetFunction() override {}
+  virtual bool RunSync() override;
+};
+
 class FileSystemProviderNotifyFunction : public ChromeAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileSystemProvider.notify",

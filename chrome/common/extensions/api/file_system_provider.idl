@@ -397,6 +397,9 @@ namespace fileSystemProvider {
   // Callback to receive the result of getAll() function.
   callback GetAllCallback = void(FileSystemInfo[] fileSystems);
 
+  // Callback to receive the result of get() function.
+  callback GetCallback = void(FileSystemInfo fileSystem);
+
   // Callback to be called by the providing extension in case of a success.
   [nocompile] callback ProviderSuccessCallback = void();
 
@@ -449,6 +452,10 @@ namespace fileSystemProvider {
 
     // Returns all file systems mounted by the extension.
     static void getAll(GetAllCallback callback);
+
+    // Returns information about a file system with the passed <code>
+    // fileSystemId</code>.
+    static void get(DOMString fileSystemId, GetCallback callback);
 
     // Notifies about changes in the watched directory at <code>
     // observedPath</code> in <code>recursive</code mode. If the file system is

@@ -28,6 +28,16 @@ chrome.test.runTests([
                 chrome.test.assertTrue(fileSystems[0].writable);
                 chrome.test.assertEq(2, fileSystems[0].openedFilesLimit);
               }));
+          chrome.fileSystemProvider.get(
+              test_util.FILE_SYSTEM_ID,
+              chrome.test.callbackPass(function(fileSystem) {
+                chrome.test.assertEq(
+                    test_util.FILE_SYSTEM_ID, fileSystem.fileSystemId);
+                chrome.test.assertEq(
+                    test_util.FILE_SYSTEM_NAME, fileSystem.displayName);
+                chrome.test.assertTrue(fileSystem.writable);
+                chrome.test.assertEq(2, fileSystem.openedFilesLimit);
+              }));
         }));
   },
 
@@ -41,6 +51,9 @@ chrome.test.runTests([
               function(fileSystems) {
                 chrome.test.assertEq(0, fileSystems.length);
               }));
+          chrome.fileSystemProvider.get(
+              test_util.FILE_SYSTEM_ID,
+              chrome.test.callbackFail('NOT_FOUND'));
         }));
   },
 
@@ -54,6 +67,9 @@ chrome.test.runTests([
               function(fileSystems) {
                 chrome.test.assertEq(0, fileSystems.length);
               }));
+          chrome.fileSystemProvider.get(
+              test_util.FILE_SYSTEM_ID,
+              chrome.test.callbackFail('NOT_FOUND'));
         }));
   }
 ]);
