@@ -148,6 +148,8 @@ struct CSSParserValue {
         Function  = 0x100001,
         ValueList = 0x100002,
         Q_EMS     = 0x100003,
+        Dimension = 0x100004,
+        HexColor = 0x100005,
     };
     int unit;
 

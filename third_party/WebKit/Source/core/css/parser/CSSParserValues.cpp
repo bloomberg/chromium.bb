@@ -144,7 +144,7 @@ CSSParserValueList::CSSParserValueList(CSSParserTokenRange range)
             value.id = CSSValueInvalid;
             value.isInt = false;
             if (token.type() == HashToken)
-                value.unit = CSSPrimitiveValue::CSS_PARSER_HEXCOLOR;
+                value.unit = CSSParserValue::HexColor;
             else if (token.type() == StringToken)
                 value.unit = CSSPrimitiveValue::CSS_STRING;
             else if (token.type() == UnicodeRangeToken)

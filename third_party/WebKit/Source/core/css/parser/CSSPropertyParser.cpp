@@ -320,7 +320,7 @@ bool CSSPropertyParser::validUnit(CSSParserValue* value, Units unitflags, CSSPar
         break;
     case CSSPrimitiveValue::CSS_HZ:
     case CSSPrimitiveValue::CSS_KHZ:
-    case CSSPrimitiveValue::CSS_DIMENSION:
+    case CSSParserValue::Dimension:
     default:
         break;
     }
@@ -5394,9 +5394,9 @@ bool CSSPropertyParser::parseColorFromValue(CSSParserValue* value, RGBA32& c, bo
         // FIXME: This should be strict parsing for SVG as well.
         if (!fastParseColor(c, str, !acceptQuirkyColors))
             return false;
-    } else if (value->unit == CSSPrimitiveValue::CSS_PARSER_HEXCOLOR
+    } else if (value->unit == CSSParserValue::HexColor
         || value->unit == CSSPrimitiveValue::CSS_IDENT
-        || (acceptQuirkyColors && value->unit == CSSPrimitiveValue::CSS_DIMENSION)) {
+        || (acceptQuirkyColors && value->unit == CSSParserValue::Dimension)) {
         if (!fastParseColor(c, value->string, !acceptQuirkyColors && value->unit == CSSPrimitiveValue::CSS_IDENT))
             return false;
     } else if (value->unit == CSSParserValue::Function &&
@@ -7146,7 +7146,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseImageSet(CSSParserValue
         imageSet->append(image);
 
         arg = functionArgs->next();
-        if (!arg || arg->unit != CSSPrimitiveValue::CSS_DIMENSION)
+        if (!arg || arg->unit != CSSParserValue::Dimension)
             return nullptr;
 
         double imageScaleFactor = 0;

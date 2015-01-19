@@ -89,7 +89,6 @@ public:
         CSS_S = 15,
         CSS_HZ = 16,
         CSS_KHZ = 17,
-        CSS_DIMENSION = 18,
         CSS_STRING = 19,
         CSS_URI = 20,
         CSS_IDENT = 21,
@@ -108,9 +107,6 @@ public:
         CSS_FR = 33,
         CSS_PAIR = 100, // We envision this being exposed as a means of getting computed style values for pairs (border-spacing/radius, background-position, etc.)
         CSS_UNICODE_RANGE = 102,
-
-        // FIXME: This is only used in CSSParserValue, so it's probably better as part of the enum there
-        CSS_PARSER_HEXCOLOR = 105,
 
         // These are from CSS3 Values and Units, but that isn't a finished standard yet
         CSS_TURN = 107,
