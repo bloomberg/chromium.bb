@@ -1961,13 +1961,13 @@ cr.define('login', function() {
     /** @override */
     activate: function(e) {
       if (!this.user.needsSignin) {
-        Oobe.launchUser(this.user.emailAddress, this.user.displayName);
+        Oobe.launchUser(this.user.profilePath);
       } else if (!this.passwordElement.value) {
         return false;
       } else {
         chrome.send('authenticatedLaunchUser',
-                    [this.user.emailAddress,
-                     this.user.displayName,
+                    [this.user.profilePath,
+                     this.user.emailAddress,
                      this.passwordElement.value]);
       }
       this.passwordElement.value = '';

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -75,12 +76,14 @@ IN_PROC_BROWSER_TEST_F(UserManagerUIBrowserTest, PageRedirectsToAboutChrome) {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
 
-  base::string16 profile_name =
-      profiles::GetAvatarNameForProfile(browser()->profile()->GetPath());
+  // If this is a Windows style path, escape all the slashes.
+  std::string profile_path;
+  base::ReplaceChars(browser()->profile()->GetPath().MaybeAsASCII(),
+      "\\", "\\\\", &profile_path);
 
   std::string launch_js =
-      base::StringPrintf("Oobe.launchUser('', '%s')",
-                         base::UTF16ToUTF8(profile_name).c_str());
+      base::StringPrintf("Oobe.launchUser('%s')", profile_path.c_str());
+
   bool result = content::ExecuteScript(web_contents, launch_js);
   EXPECT_TRUE(result);
   base::RunLoop().RunUntilIdle();

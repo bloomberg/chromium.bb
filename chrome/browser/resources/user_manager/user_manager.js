@@ -58,11 +58,10 @@ cr.define('cr.ui', function() {
 
   /**
    * Open a new browser for the given profile.
-   * @param {string} email The user's email, if signed in.
-   * @param {string} displayName The user's display name.
+   * @param {string} profilePath The profile's path.
    */
-  Oobe.launchUser = function(email, displayName) {
-    chrome.send('launchUser', [email, displayName]);
+  Oobe.launchUser = function(profilePath) {
+    chrome.send('launchUser', [profilePath]);
   };
 
   /**

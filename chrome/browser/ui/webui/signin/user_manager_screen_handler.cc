@@ -110,26 +110,21 @@ std::string GetAvatarImageAtIndex(
   return webui::GetBitmapDataUrl(resized_image.AsBitmap());
 }
 
-size_t GetIndexOfProfileWithEmailAndName(const ProfileInfoCache& info_cache,
-                                         const base::string16& email,
-                                         const base::string16& name) {
+size_t GetIndexOfProfileWithEmail(const ProfileInfoCache& info_cache,
+                                  const std::string& email) {
+  const base::string16& profile_email = base::UTF8ToUTF16(email);
   for (size_t i = 0; i < info_cache.GetNumberOfProfiles(); ++i) {
-    if (info_cache.GetUserNameOfProfileAtIndex(i) == email &&
-        (name.empty() ||
-         profiles::GetAvatarNameForProfile(
-             info_cache.GetPathOfProfileAtIndex(i)) == name)) {
+    if (info_cache.GetUserNameOfProfileAtIndex(i) == profile_email)
       return i;
-    }
   }
   return std::string::npos;
 }
 
 extensions::ScreenlockPrivateEventRouter* GetScreenlockRouter(
     const std::string& email) {
-  ProfileInfoCache& info_cache =
+  const ProfileInfoCache& info_cache =
       g_browser_process->profile_manager()->GetProfileInfoCache();
-  const size_t profile_index = GetIndexOfProfileWithEmailAndName(
-      info_cache, base::UTF8ToUTF16(email), base::string16());
+  const size_t profile_index = GetIndexOfProfileWithEmail(info_cache, email);
   Profile* profile = g_browser_process->profile_manager()
       ->GetProfileByPath(info_cache.GetPathOfProfileAtIndex(profile_index));
   return extensions::ScreenlockPrivateEventRouter::GetFactoryInstance()->Get(
@@ -274,10 +269,10 @@ ScreenlockBridge::LockHandler::AuthType UserManagerScreenHandler::GetAuthType(
 }
 
 void UserManagerScreenHandler::Unlock(const std::string& user_email) {
-  ProfileInfoCache& info_cache =
+  const ProfileInfoCache& info_cache =
       g_browser_process->profile_manager()->GetProfileInfoCache();
-  const size_t profile_index = GetIndexOfProfileWithEmailAndName(
-      info_cache, base::UTF8ToUTF16(user_email), base::string16());
+  const size_t profile_index =
+      GetIndexOfProfileWithEmail(info_cache, user_email);
   DCHECK_LT(profile_index, info_cache.GetNumberOfProfiles());
 
   authenticating_profile_index_ = profile_index;
@@ -320,23 +315,27 @@ void UserManagerScreenHandler::HandleAddUser(const base::ListValue* args) {
 
 void UserManagerScreenHandler::HandleAuthenticatedLaunchUser(
     const base::ListValue* args) {
-  base::string16 email_address;
-  if (!args->GetString(0, &email_address))
+  const base::Value* profile_path_value;
+  if (!args->Get(0, &profile_path_value))
     return;
 
-  base::string16 display_name;
-  if (!args->GetString(1, &display_name))
+  base::FilePath profile_path;
+  if (!base::GetValueAsFilePath(*profile_path_value, &profile_path))
+    return;
+
+  base::string16 email_address;
+  if (!args->GetString(1, &email_address))
     return;
 
   std::string password;
   if (!args->GetString(2, &password))
     return;
 
-  ProfileInfoCache& info_cache =
+  const ProfileInfoCache& info_cache =
       g_browser_process->profile_manager()->GetProfileInfoCache();
-  size_t profile_index = GetIndexOfProfileWithEmailAndName(
-      info_cache, email_address, display_name);
-  if (profile_index >= info_cache.GetNumberOfProfiles()) {
+  size_t profile_index = info_cache.GetIndexOfProfileWithPath(profile_path);
+
+  if (profile_index == std::string::npos) {
     NOTREACHED();
     return;
   }
@@ -350,10 +349,9 @@ void UserManagerScreenHandler::HandleAuthenticatedLaunchUser(
         this,
         GaiaConstants::kChromeSource,
         web_ui()->GetWebContents()->GetBrowserContext()->GetRequestContext()));
-    std::string email_string;
-    args->GetString(0, &email_string);
+
     client_login_->StartClientLogin(
-        email_string,
+        base::UTF16ToUTF8(email_address),
         password,
         GaiaConstants::kSyncService,
         std::string(),
@@ -401,21 +399,19 @@ void UserManagerScreenHandler::HandleLaunchGuest(const base::ListValue* args) {
 }
 
 void UserManagerScreenHandler::HandleLaunchUser(const base::ListValue* args) {
-  base::string16 email_address;
-  base::string16 display_name;
-
-  if (!args->GetString(0, &email_address) ||
-      !args->GetString(1, &display_name)) {
-    NOTREACHED();
+  const base::Value* profile_path_value = NULL;
+  if (!args->Get(0, &profile_path_value))
     return;
-  }
 
-  ProfileInfoCache& info_cache =
+  base::FilePath profile_path;
+  if (!base::GetValueAsFilePath(*profile_path_value, &profile_path))
+    return;
+
+  const ProfileInfoCache& info_cache =
       g_browser_process->profile_manager()->GetProfileInfoCache();
-  size_t profile_index = GetIndexOfProfileWithEmailAndName(
-      info_cache, email_address, display_name);
+  size_t profile_index = info_cache.GetIndexOfProfileWithPath(profile_path);
 
-  if (profile_index >= info_cache.GetNumberOfProfiles()) {
+  if (profile_index == std::string::npos) {
     NOTREACHED();
     return;
   }
@@ -429,9 +425,8 @@ void UserManagerScreenHandler::HandleLaunchUser(const base::ListValue* args) {
     return;
   ProfileMetrics::LogProfileAuthResult(ProfileMetrics::AUTH_UNNECESSARY);
 
-  base::FilePath path = info_cache.GetPathOfProfileAtIndex(profile_index);
   profiles::SwitchToProfile(
-      path,
+      profile_path,
       desktop_type_,
       false,  /* reuse any existing windows */
       base::Bind(&UserManagerScreenHandler::OnSwitchToProfileComplete,
@@ -652,7 +647,8 @@ void UserManagerScreenHandler::SendUserList() {
     profile_value->SetString(
         kKeyDisplayName,
         profiles::GetAvatarNameForProfile(profile_path));
-    profile_value->SetString(kKeyProfilePath, profile_path.MaybeAsASCII());
+    profile_value->Set(
+        kKeyProfilePath, base::CreateFilePathValue(profile_path));
     profile_value->SetBoolean(kKeyPublicAccount, false);
     profile_value->SetBoolean(
         kKeySupervisedUser, info_cache.ProfileIsSupervisedAtIndex(i));
@@ -680,7 +676,7 @@ void UserManagerScreenHandler::ReportAuthenticationResult(
   password_attempt_.clear();
 
   if (success) {
-    ProfileInfoCache& info_cache =
+    const ProfileInfoCache& info_cache =
         g_browser_process->profile_manager()->GetProfileInfoCache();
     base::FilePath path = info_cache.GetPathOfProfileAtIndex(
         authenticating_profile_index_);
