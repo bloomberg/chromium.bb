@@ -229,4 +229,25 @@ async_test(function(t) {
         })
       .catch(unreached_rejection(t));
   }, 'Register same-scope new script url effect on controller');
+
+async_test(function(t) {
+  var scope = 'resources/scope/register-50-times';
+
+  service_worker_unregister(t, scope)
+    .then(function() {
+        var promises = [];
+        for (var i = 0; i < 25; ++i) {
+          promises.push(navigator.serviceWorker.register(script1,
+                                                         { scope: scope }));
+          promises.push(navigator.serviceWorker.register(script2,
+                                                         { scope: scope }));
+        }
+        return Promise.all(promises);
+      })
+    .then(function(registrations) {
+        return registrations[0].unregister();
+      })
+    .then(function() { t.done(); })
+    .catch(unreached_rejection(t));
+}, 'Repetitive registrations with the same scope should not trigger OOM');
 </script>
