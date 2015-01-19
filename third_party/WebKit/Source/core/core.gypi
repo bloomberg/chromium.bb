@@ -908,6 +908,8 @@
             'css/parser/CSSPropertyParser.h',
             'css/parser/CSSSelectorParser.cpp',
             'css/parser/CSSSelectorParser.h',
+            'css/parser/CSSSupportsParser.cpp',
+            'css/parser/CSSSupportsParser.h',
             'css/parser/CSSTokenizer.cpp',
             'css/parser/CSSTokenizerInputStream.cpp',
             'css/parser/MediaQueryBlockWatcher.cpp',

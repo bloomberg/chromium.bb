@@ -23,6 +23,7 @@ class StyleRuleImport;
 class StyleRuleKeyframe;
 class StyleRuleKeyframes;
 class StyleRuleMedia;
+class StyleRuleSupports;
 class StyleRuleViewport;
 class StyleSheetContents;
 class ImmutableStylePropertySet;
@@ -55,6 +56,8 @@ public:
 
     static PassOwnPtr<Vector<double>> parseKeyframeKeyList(const String&);
 
+    bool supportsDeclaration(CSSParserTokenRange&);
+
 private:
     enum RuleListType {
         TopLevelRuleList,
@@ -71,6 +74,7 @@ private:
     PassRefPtrWillBeRawPtr<StyleRuleImport> consumeImportRule(CSSParserTokenRange prelude);
     void consumeNamespaceRule(CSSParserTokenRange prelude); // This modifies m_styleSheet directly!
     PassRefPtrWillBeRawPtr<StyleRuleMedia> consumeMediaRule(CSSParserTokenRange prelude, CSSParserTokenRange block);
+    PassRefPtrWillBeRawPtr<StyleRuleSupports> consumeSupportsRule(CSSParserTokenRange prelude, CSSParserTokenRange block);
     PassRefPtrWillBeRawPtr<StyleRuleViewport> consumeViewportRule(CSSParserTokenRange prelude, CSSParserTokenRange block);
     PassRefPtrWillBeRawPtr<StyleRuleFontFace> consumeFontFaceRule(CSSParserTokenRange prelude, CSSParserTokenRange block);
     PassRefPtrWillBeRawPtr<StyleRuleKeyframes> consumeKeyframesRule(bool webkitPrefixed, CSSParserTokenRange prelude, CSSParserTokenRange block);

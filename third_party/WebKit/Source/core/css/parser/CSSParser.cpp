@@ -12,6 +12,7 @@
 #include "core/css/parser/CSSParserFastPaths.h"
 #include "core/css/parser/CSSParserImpl.h"
 #include "core/css/parser/CSSSelectorParser.h"
+#include "core/css/parser/CSSSupportsParser.h"
 #include "core/css/parser/CSSTokenizer.h"
 #include "core/rendering/RenderTheme.h"
 
@@ -120,6 +121,12 @@ PassRefPtrWillBeRawPtr<StyleRuleKeyframe> CSSParser::parseKeyframeRule(const CSS
 
 bool CSSParser::parseSupportsCondition(const String& condition)
 {
+    if (RuntimeEnabledFeatures::newCSSParserEnabled()) {
+        Vector<CSSParserToken> tokens;
+        CSSTokenizer::tokenize(condition, tokens);
+        CSSParserImpl parser(strictCSSParserContext(), "");
+        return CSSSupportsParser::supportsCondition(tokens, parser) == CSSSupportsParser::Supported;
+    }
     return BisonCSSParser(CSSParserContext(HTMLStandardMode, 0)).parseSupportsCondition(condition);
 }
 
