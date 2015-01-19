@@ -12,6 +12,10 @@ class BrowserFrame;
 class BrowserView;
 class ChromeNativeAppWindowViewsWin;
 
+namespace views {
+class DesktopWindowTreeHost;
+}
+
 namespace wm {
 class VisibilityController;
 }
@@ -30,10 +34,15 @@ class AppWindowDesktopNativeWidgetAuraWin
   // Overridden from views::DesktopNativeWidgetAura:
   virtual void InitNativeWidget(
       const views::Widget::InitParams& params) override;
+  void Maximize() override;
+  void Minimize() override;
 
  private:
   // Ownership managed by the views system.
   ChromeNativeAppWindowViewsWin* app_window_;
+
+  // Owned by superclass DesktopNativeWidgetAura.
+  views::DesktopWindowTreeHost* tree_host_;
 
   DISALLOW_COPY_AND_ASSIGN(AppWindowDesktopNativeWidgetAuraWin);
 };

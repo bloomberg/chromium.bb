@@ -299,14 +299,16 @@ void AppWindow::Init(const GURL& url,
     // Panels are not activated by default.
     Show(window_type_is_panel() || !new_params.focused ? SHOW_INACTIVE
                                                        : SHOW_ACTIVE);
-  }
 
-  if (new_params.state == ui::SHOW_STATE_FULLSCREEN)
-    Fullscreen();
-  else if (new_params.state == ui::SHOW_STATE_MAXIMIZED)
-    Maximize();
-  else if (new_params.state == ui::SHOW_STATE_MINIMIZED)
-    Minimize();
+    // These states may cause the window to show, so they are ignored if the
+    // window is initially hidden.
+    if (new_params.state == ui::SHOW_STATE_FULLSCREEN)
+      Fullscreen();
+    else if (new_params.state == ui::SHOW_STATE_MAXIMIZED)
+      Maximize();
+    else if (new_params.state == ui::SHOW_STATE_MINIMIZED)
+      Minimize();
+  }
 
   OnNativeWindowChanged();
 
