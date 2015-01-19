@@ -766,7 +766,7 @@ TEST_F(PinchViewportTest, TestRestoredFromLegacyHistoryItem)
 TEST_F(PinchViewportTest, TestNavigateToSmallerFrameViewHistoryItemClobberBug)
 {
     initializeWithAndroidSettings();
-    webViewImpl()->resize(IntSize(100, 100));
+    webViewImpl()->resize(IntSize(400, 400));
     webViewImpl()->layout();
 
     registerMockedHttpURLLoad("content-width-1000.html");
@@ -775,8 +775,7 @@ TEST_F(PinchViewportTest, TestNavigateToSmallerFrameViewHistoryItemClobberBug)
     FrameView* frameView = webViewImpl()->mainFrameImpl()->frameView();
     frameView->setScrollOffset(IntPoint(0, 1000));
 
-    // The frameView should be 400x400 since the frame is the viewport at minimum scale.
-    EXPECT_SIZE_EQ(IntSize(400, 400), frameView->frameRect().size());
+    EXPECT_SIZE_EQ(IntSize(1000, 1000), frameView->frameRect().size());
 
     PinchViewport& pinchViewport = frame()->page()->frameHost().pinchViewport();
     pinchViewport.setScale(2);
@@ -792,7 +791,7 @@ TEST_F(PinchViewportTest, TestNavigateToSmallerFrameViewHistoryItemClobberBug)
     frameView = webViewImpl()->mainFrameImpl()->frameView();
 
     EXPECT_NE(firstItem, webViewImpl()->mainFrameImpl()->frame()->loader().currentItem());
-    EXPECT_LT(frameView->frameRect().size().width(), 400);
+    EXPECT_LT(frameView->frameRect().size().width(), 1000);
     EXPECT_POINT_EQ(IntPoint(0, 1000), firstItem->scrollPoint());
 }
 
@@ -1051,12 +1050,15 @@ TEST_F(PinchViewportTest, TestScrollingDocumentRegionIntoView)
 TEST_F(PinchViewportTest, TestResizeDoesntChangeScrollOffset)
 {
     initializeWithAndroidSettings();
-    webViewImpl()->resize(IntSize(100, 150));
+    webViewImpl()->resize(IntSize(980, 650));
 
     navigateTo("about:blank");
 
     PinchViewport& pinchViewport = frame()->page()->frameHost().pinchViewport();
     FrameView& frameView = *webViewImpl()->mainFrameImpl()->frameView();
+
+    // Outer viewport isn't scrollable
+    EXPECT_SIZE_EQ(IntSize(980, 650), frameView.visibleContentRect().size());
 
     pinchViewport.setScale(2);
     pinchViewport.move(FloatPoint(0, 40));
@@ -1067,7 +1069,7 @@ TEST_F(PinchViewportTest, TestResizeDoesntChangeScrollOffset)
     EXPECT_EQ(20, frameView.scrollPosition().y());
 
     webViewImpl()->setTopControlsLayoutHeight(20);
-    webViewImpl()->resize(WebSize(100, 130));
+    webViewImpl()->resize(WebSize(980, 630));
 
     EXPECT_EQ(0, frameView.scrollPosition().y());
     EXPECT_EQ(60, pinchViewport.location().y());
@@ -1085,7 +1087,7 @@ static IntPoint expectedMaxFrameViewScrollOffset(PinchViewport& pinchViewport, F
 TEST_F(PinchViewportTest, TestTopControlsAdjustment)
 {
     initializeWithAndroidSettings();
-    webViewImpl()->resize(IntSize(100, 150));
+    webViewImpl()->resize(IntSize(500, 450));
 
     registerMockedHttpURLLoad("content-width-1000.html");
     navigateTo(m_baseURL + "content-width-1000.html");
@@ -1094,18 +1096,18 @@ TEST_F(PinchViewportTest, TestTopControlsAdjustment)
     FrameView& frameView = *webViewImpl()->mainFrameImpl()->frameView();
 
     pinchViewport.setScale(1);
-    EXPECT_SIZE_EQ(IntSize(100, 150), pinchViewport.visibleRect().size());
-    EXPECT_SIZE_EQ(IntSize(1000, 1500), frameView.frameRect().size());
+    EXPECT_SIZE_EQ(IntSize(500, 450), pinchViewport.visibleRect().size());
+    EXPECT_SIZE_EQ(IntSize(1000, 900), frameView.frameRect().size());
 
     // Simulate bringing down the top controls by 20px.
     webViewImpl()->applyViewportDeltas(WebSize(), WebSize(), WebFloatSize(), 1, 20);
-    EXPECT_SIZE_EQ(IntSize(100, 130), pinchViewport.visibleRect().size());
+    EXPECT_SIZE_EQ(IntSize(500, 430), pinchViewport.visibleRect().size());
 
     // Test that the scroll bounds are adjusted appropriately: the pinch viewport
-    // should be shrunk by 20px to 130px. The outer viewport was shrunk to maintain the
-    // aspect ratio so it's height is 1300px.
+    // should be shrunk by 20px to 430px. The outer viewport was shrunk to maintain the
+    // aspect ratio so it's height is 860px.
     pinchViewport.move(FloatPoint(10000, 10000));
-    EXPECT_POINT_EQ(FloatPoint(900, 1300 - 130), pinchViewport.location());
+    EXPECT_POINT_EQ(FloatPoint(500, 860 - 430), pinchViewport.location());
 
     // The outer viewport (FrameView) should be affected as well.
     frameView.scrollBy(IntSize(10000, 10000));
@@ -1115,11 +1117,11 @@ TEST_F(PinchViewportTest, TestTopControlsAdjustment)
 
     // Simulate bringing up the top controls by 10.5px.
     webViewImpl()->applyViewportDeltas(WebSize(), WebSize(), WebFloatSize(), 1, -10.5f);
-    EXPECT_SIZE_EQ(FloatSize(100, 140.5f), pinchViewport.visibleRect().size());
+    EXPECT_SIZE_EQ(FloatSize(500, 440.5f), pinchViewport.visibleRect().size());
 
     // maximumScrollPosition floors the final values.
     pinchViewport.move(FloatPoint(10000, 10000));
-    EXPECT_POINT_EQ(FloatPoint(900, floor(1405 - 140.5f)), pinchViewport.location());
+    EXPECT_POINT_EQ(FloatPoint(500, floor(881 - 440.5f)), pinchViewport.location());
 
     // The outer viewport (FrameView) should be affected as well.
     frameView.scrollBy(IntSize(10000, 10000));
@@ -1131,7 +1133,7 @@ TEST_F(PinchViewportTest, TestTopControlsAdjustment)
 TEST_F(PinchViewportTest, TestTopControlsAdjustmentWithScale)
 {
     initializeWithAndroidSettings();
-    webViewImpl()->resize(IntSize(100, 150));
+    webViewImpl()->resize(IntSize(500, 450));
 
     registerMockedHttpURLLoad("content-width-1000.html");
     navigateTo(m_baseURL + "content-width-1000.html");
@@ -1140,18 +1142,18 @@ TEST_F(PinchViewportTest, TestTopControlsAdjustmentWithScale)
     FrameView& frameView = *webViewImpl()->mainFrameImpl()->frameView();
 
     pinchViewport.setScale(2);
-    EXPECT_SIZE_EQ(IntSize(50, 75), pinchViewport.visibleRect().size());
-    EXPECT_SIZE_EQ(IntSize(1000, 1500), frameView.frameRect().size());
+    EXPECT_SIZE_EQ(IntSize(250, 225), pinchViewport.visibleRect().size());
+    EXPECT_SIZE_EQ(IntSize(1000, 900), frameView.frameRect().size());
 
     // Simulate bringing down the top controls by 20px. Since we're zoomed in,
     // the top controls take up half as much space (in document-space) than
     // they do at an unzoomed level.
     webViewImpl()->applyViewportDeltas(WebSize(), WebSize(), WebFloatSize(), 1, 20);
-    EXPECT_SIZE_EQ(IntSize(50, 65), pinchViewport.visibleRect().size());
+    EXPECT_SIZE_EQ(IntSize(250, 215), pinchViewport.visibleRect().size());
 
     // Test that the scroll bounds are adjusted appropriately.
     pinchViewport.move(FloatPoint(10000, 10000));
-    EXPECT_POINT_EQ(FloatPoint(950, 1300 - 65), pinchViewport.location());
+    EXPECT_POINT_EQ(FloatPoint(750, 860 - 215), pinchViewport.location());
 
     // The outer viewport (FrameView) should be affected as well.
     frameView.scrollBy(IntSize(10000, 10000));
@@ -1166,21 +1168,21 @@ TEST_F(PinchViewportTest, TestTopControlsAdjustmentWithScale)
     frameView.scrollBy(IntSize(10000, 10000));
     EXPECT_POINT_EQ(expected, frameView.scrollPosition());
 
-    EXPECT_POINT_EQ(FloatPoint(900, 1300 - 130), pinchViewport.location());
+    EXPECT_POINT_EQ(FloatPoint(500, 860 - 430), pinchViewport.location());
     pinchViewport.move(FloatPoint(10000, 10000));
-    EXPECT_POINT_EQ(FloatPoint(900, 1300 - 130), pinchViewport.location());
+    EXPECT_POINT_EQ(FloatPoint(500, 860 - 430), pinchViewport.location());
 
     // Scale out, use a scale that causes fractional rects.
     webViewImpl()->applyViewportDeltas(WebSize(), WebSize(), WebFloatSize(), 0.8f, -20);
-    EXPECT_SIZE_EQ(FloatSize(125, 187.5), pinchViewport.visibleRect().size());
+    EXPECT_SIZE_EQ(FloatSize(625, 562.5), pinchViewport.visibleRect().size());
 
-    // Bring out the top controls by 11px.
+    // Bring out the top controls by 11
     webViewImpl()->applyViewportDeltas(WebSize(), WebSize(), WebFloatSize(), 1, 11);
-    EXPECT_SIZE_EQ(FloatSize(125, 173.75), pinchViewport.visibleRect().size());
+    EXPECT_SIZE_EQ(FloatSize(625, 548.75), pinchViewport.visibleRect().size());
 
     // Ensure max scroll offsets are updated properly.
     pinchViewport.move(FloatPoint(10000, 10000));
-    EXPECT_POINT_EQ(FloatPoint(875, floor(1390 - 173.75)), pinchViewport.location());
+    EXPECT_POINT_EQ(FloatPoint(375, floor(877 - 548.75)), pinchViewport.location());
 
     frameView.scrollBy(IntSize(10000, 10000));
     EXPECT_POINT_EQ(
@@ -1192,7 +1194,7 @@ TEST_F(PinchViewportTest, TestTopControlsAdjustmentWithScale)
 TEST_F(PinchViewportTest, TestTopControlsAdjustmentAndResize)
 {
     initializeWithAndroidSettings();
-    webViewImpl()->resize(IntSize(100, 150));
+    webViewImpl()->resize(IntSize(500, 450));
 
     registerMockedHttpURLLoad("content-width-1000.html");
     navigateTo(m_baseURL + "content-width-1000.html");
@@ -1201,29 +1203,29 @@ TEST_F(PinchViewportTest, TestTopControlsAdjustmentAndResize)
     FrameView& frameView = *webViewImpl()->mainFrameImpl()->frameView();
 
     pinchViewport.setScale(2);
-    EXPECT_SIZE_EQ(IntSize(50, 75), pinchViewport.visibleRect().size());
-    EXPECT_SIZE_EQ(IntSize(1000, 1500), frameView.frameRect().size());
+    EXPECT_SIZE_EQ(IntSize(250, 225), pinchViewport.visibleRect().size());
+    EXPECT_SIZE_EQ(IntSize(1000, 900), frameView.frameRect().size());
 
     webViewImpl()->applyViewportDeltas(WebSize(), WebSize(), WebFloatSize(), 1, 20);
-    EXPECT_SIZE_EQ(IntSize(100, 150), pinchViewport.size());
-    EXPECT_SIZE_EQ(IntSize(50, 65), pinchViewport.visibleRect().size());
+    EXPECT_SIZE_EQ(IntSize(500, 450), pinchViewport.size());
+    EXPECT_SIZE_EQ(IntSize(250, 215), pinchViewport.visibleRect().size());
 
     // Scroll all the way to the bottom.
     pinchViewport.move(FloatPoint(10000, 10000));
     frameView.scrollBy(IntSize(10000, 10000));
     IntPoint frameViewExpected = expectedMaxFrameViewScrollOffset(pinchViewport, frameView);
-    FloatPoint pinchViewportExpected = FloatPoint(950, 1300 - 65);
+    FloatPoint pinchViewportExpected = FloatPoint(750, 860 - 215);
     EXPECT_POINT_EQ(pinchViewportExpected, pinchViewport.location());
     EXPECT_POINT_EQ(frameViewExpected, frameView.scrollPosition());
 
     // Resize the widget to match the top controls adjustment. Ensure that scroll
     // offsets don't get clamped in the the process.
     webViewImpl()->setTopControlsLayoutHeight(20);
-    webViewImpl()->resize(WebSize(100, 130));
+    webViewImpl()->resize(WebSize(500, 430));
 
-    EXPECT_SIZE_EQ(IntSize(100, 130), pinchViewport.size());
-    EXPECT_SIZE_EQ(IntSize(50, 65), pinchViewport.visibleRect().size());
-    EXPECT_SIZE_EQ(IntSize(1000, 1300), frameView.frameRect().size());
+    EXPECT_SIZE_EQ(IntSize(500, 430), pinchViewport.size());
+    EXPECT_SIZE_EQ(IntSize(250, 215), pinchViewport.visibleRect().size());
+    EXPECT_SIZE_EQ(IntSize(1000, 860), frameView.frameRect().size());
 
     EXPECT_POINT_EQ(frameViewExpected, frameView.scrollPosition());
     EXPECT_POINT_EQ(pinchViewportExpected, pinchViewport.location());
