@@ -1,0 +1,7 @@
+android.webkit.WebView focusable focused scrollable
+    android.view.View
+        android.view.MenuItem clickable name='File'
+        android.view.MenuItem clickable name='Edit'
+    android.view.View name='File'
+        android.view.MenuItem clickable name='New'
+        android.view.MenuItem clickable name='Open'

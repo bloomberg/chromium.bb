@@ -36,6 +36,7 @@ const char* BOOL_ATTRIBUTES[] = {
   "heading",
   "hierarchical",
   "invisible",
+  "link",
   "multiline",
   "password",
   "range",
@@ -91,6 +92,7 @@ void AccessibilityTreeFormatter::AddProperties(
   dict->SetBoolean("heading", android_node->IsHeading());
   dict->SetBoolean("hierarchical", android_node->IsHierarchical());
   dict->SetBoolean("invisible", !android_node->IsVisibleToUser());
+  dict->SetBoolean("link", android_node->IsLink());
   dict->SetBoolean("multiline", android_node->IsMultiLine());
   dict->SetBoolean("range", android_node->IsRangeType());
   dict->SetBoolean("password", android_node->IsPassword());

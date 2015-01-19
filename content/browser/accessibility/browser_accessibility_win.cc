@@ -3705,7 +3705,6 @@ void BrowserAccessibilityWin::InitRoleAndState() {
     case ui::AX_ROLE_NOTE:
       ia_role_ = ROLE_SYSTEM_GROUPING;
       ia2_role_ = IA2_ROLE_NOTE;
-      ia_state_ |= STATE_SYSTEM_READONLY;
       break;
     case ui::AX_ROLE_OUTLINE:
       ia_role_ = ROLE_SYSTEM_OUTLINE;
