@@ -181,13 +181,13 @@ bool MockPeerConnectionImpl::GetStats(
     return false;
 
   DCHECK_EQ(kStatsOutputLevelStandard, level);
-  webrtc::StatsReport report1("1234"), report2("nontrack");
-  report1.type = webrtc::StatsReport::kStatsReportTypeSsrc;
-  report1.timestamp = 42;
-  report1.values.push_back(
-      webrtc::StatsReport::Value(
-          webrtc::StatsReport::kStatsValueNameFingerprint,
-          "trackvalue"));
+  webrtc::StatsReport report1(webrtc::StatsReport::NewTypedId(
+      webrtc::StatsReport::kStatsReportTypeSsrc, "1234").Pass());
+  webrtc::StatsReport report2(webrtc::StatsReport::NewTypedId(
+      webrtc::StatsReport::kStatsReportTypeSession, "nontrack").Pass());
+  report1.set_timestamp(42);
+  report1.AddValue(webrtc::StatsReport::kStatsValueNameFingerprint,
+                   "trackvalue");
 
   webrtc::StatsReports reports;
   reports.push_back(&report1);
@@ -195,12 +195,9 @@ bool MockPeerConnectionImpl::GetStats(
   // If selector is given, we pass back one report.
   // If selector is not given, we pass back two.
   if (!track) {
-    report2.type = webrtc::StatsReport::kStatsReportTypeSession;
-    report2.timestamp = 44;
-    report2.values.push_back(
-        webrtc::StatsReport::Value(
-            webrtc::StatsReport::kStatsValueNameFingerprintAlgorithm,
-            "somevalue"));
+    report2.set_timestamp(44);
+    report2.AddValue(webrtc::StatsReport::kStatsValueNameFingerprintAlgorithm,
+                     "somevalue");
     reports.push_back(&report2);
   }
 

@@ -206,18 +206,18 @@ static string GetIceGatheringStateString(
 // If you change it here, you must change webrtc_internals.js as well.
 static base::DictionaryValue* GetDictValueStats(
     const webrtc::StatsReport& report) {
-  if (report.values.empty())
+  if (report.values().empty())
     return NULL;
 
   base::DictionaryValue* dict = new base::DictionaryValue();
-  dict->SetDouble("timestamp", report.timestamp);
+  dict->SetDouble("timestamp", report.timestamp());
 
   base::ListValue* values = new base::ListValue();
   dict->Set("values", values);
 
-  for (const auto& v : report.values) {
-    values->AppendString(v.display_name());
-    values->AppendString(v.value);
+  for (const auto& v : report.values()) {
+    values->AppendString(v->display_name());
+    values->AppendString(v->value);
   }
 
   return dict;
@@ -237,8 +237,8 @@ static base::DictionaryValue* GetDictValue(const webrtc::StatsReport& report) {
   // The format must be consistent with what webrtc_internals.js expects.
   // If you change it here, you must change webrtc_internals.js as well.
   result->Set("stats", stats.release());
-  result->SetString("id", report.id);
-  result->SetString("type", report.type);
+  result->SetString("id", report.id().ToString());
+  result->SetString("type", report.TypeToString());
 
   return result.release();
 }
