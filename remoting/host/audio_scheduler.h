@@ -75,8 +75,6 @@ class AudioScheduler : public base::RefCountedThreadSafe<AudioScheduler> {
 
   protocol::AudioStub* audio_stub_;
 
-  bool network_stopped_;
-
   bool enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioScheduler);

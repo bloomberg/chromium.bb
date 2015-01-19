@@ -162,8 +162,10 @@ class Me2MeNativeMessagingHost
 
   bool needs_elevation_;
 
+#if defined(OS_WIN)
   // Handle of the parent window.
   intptr_t parent_window_handle_;
+#endif  // defined(OS_WIN)
 
   base::Closure quit_closure_;
 

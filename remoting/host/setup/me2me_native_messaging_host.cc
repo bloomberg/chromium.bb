@@ -78,7 +78,9 @@ Me2MeNativeMessagingHost::Me2MeNativeMessagingHost(
     scoped_refptr<protocol::PairingRegistry> pairing_registry,
     scoped_ptr<OAuthClient> oauth_client)
     : needs_elevation_(needs_elevation),
+#if defined(OS_WIN)
       parent_window_handle_(parent_window_handle),
+#endif
       channel_(channel.Pass()),
       daemon_controller_(daemon_controller),
       pairing_registry_(pairing_registry),

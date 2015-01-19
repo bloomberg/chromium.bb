@@ -26,7 +26,6 @@ AudioScheduler::AudioScheduler(
       audio_capturer_(audio_capturer.Pass()),
       audio_encoder_(audio_encoder.Pass()),
       audio_stub_(audio_stub),
-      network_stopped_(false),
       enabled_(true) {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
   DCHECK(audio_capturer_);

@@ -94,7 +94,6 @@ class HostStarter : public gaia::GaiaOAuthClient::Delegate,
   std::string xmpp_login_;
   scoped_refptr<remoting::RsaKeyPair> key_pair_;
   std::string host_id_;
-  bool use_service_account_;
 
   // True if the host was not started and unregistration was requested. If this
   // is set and a network/OAuth error occurs during unregistration, this will
