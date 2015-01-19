@@ -102,7 +102,6 @@ public:
         , focusableNode(nullptr)
         , enclosingScrollableBox(nullptr)
         , distance(maxDistance())
-        , alignment(None)
         , isOffscreen(true)
         , isOffscreenAfterScrolling(true)
     {
@@ -122,7 +121,6 @@ public:
     RawPtrWillBeMember<Node> focusableNode;
     RawPtrWillBeMember<Node> enclosingScrollableBox;
     double distance;
-    RectsAlignment alignment;
     LayoutRect rect;
     bool isOffscreen;
     bool isOffscreenAfterScrolling;

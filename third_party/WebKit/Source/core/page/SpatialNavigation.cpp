@@ -45,11 +45,6 @@ namespace blink {
 
 using namespace HTMLNames;
 
-static RectsAlignment alignmentForRects(WebFocusType, const LayoutRect&, const LayoutRect&, const LayoutSize& viewSize);
-static bool areRectsFullyAligned(WebFocusType, const LayoutRect&, const LayoutRect&);
-static bool areRectsPartiallyAligned(WebFocusType, const LayoutRect&, const LayoutRect&);
-static bool areRectsMoreThanFullScreenApart(WebFocusType, const LayoutRect& curRect, const LayoutRect& targetRect, const LayoutSize& viewSize);
-static bool isRectInDirection(WebFocusType, const LayoutRect&, const LayoutRect&);
 static void deflateIfOverlapped(LayoutRect&, LayoutRect&);
 static LayoutRect rectToAbsoluteCoordinates(LocalFrame* initialFrame, const LayoutRect&);
 static bool isScrollableNode(const Node*);
@@ -59,7 +54,6 @@ FocusCandidate::FocusCandidate(Node* node, WebFocusType type)
     , focusableNode(nullptr)
     , enclosingScrollableBox(nullptr)
     , distance(maxDistance())
-    , alignment(None)
     , isOffscreen(true)
     , isOffscreenAfterScrolling(true)
 {
@@ -92,153 +86,18 @@ bool isSpatialNavigationEnabled(const LocalFrame* frame)
     return (frame && frame->settings() && frame->settings()->spatialNavigationEnabled());
 }
 
-static RectsAlignment alignmentForRects(WebFocusType type, const LayoutRect& curRect, const LayoutRect& targetRect, const LayoutSize& viewSize)
+static bool rectsIntersectOnOrthogonalAxis(WebFocusType type, const LayoutRect& a, const LayoutRect& b)
 {
-    // If we found a node in full alignment, but it is too far away, ignore it.
-    if (areRectsMoreThanFullScreenApart(type, curRect, targetRect, viewSize))
-        return None;
-
-    if (areRectsFullyAligned(type, curRect, targetRect))
-        return Full;
-
-    if (areRectsPartiallyAligned(type, curRect, targetRect))
-        return Partial;
-
-    return None;
-}
-
-static inline bool isHorizontalMove(WebFocusType type)
-{
-    return type == WebFocusTypeLeft || type == WebFocusTypeRight;
-}
-
-static inline LayoutUnit start(WebFocusType type, const LayoutRect& rect)
-{
-    return isHorizontalMove(type) ? rect.y() : rect.x();
-}
-
-static inline LayoutUnit middle(WebFocusType type, const LayoutRect& rect)
-{
-    LayoutPoint center(rect.center());
-    return isHorizontalMove(type) ? center.y(): center.x();
-}
-
-static inline LayoutUnit end(WebFocusType type, const LayoutRect& rect)
-{
-    return isHorizontalMove(type) ? rect.maxY() : rect.maxX();
-}
-
-// This method checks if rects |a| and |b| are fully aligned either vertically or
-// horizontally. In general, rects whose central point falls between the top or
-// bottom of each other are considered fully aligned.
-// Rects that match this criteria are preferable target nodes in move focus changing
-// operations.
-// * a = Current focused node's rect.
-// * b = Focus candidate node's rect.
-static bool areRectsFullyAligned(WebFocusType type, const LayoutRect& a, const LayoutRect& b)
-{
-    LayoutUnit aStart, bStart, aEnd, bEnd;
-
     switch (type) {
     case WebFocusTypeLeft:
-        aStart = a.x();
-        bEnd = b.x();
-        break;
     case WebFocusTypeRight:
-        aStart = b.x();
-        bEnd = a.x();
-        break;
+        return a.maxY() > b.y() && a.y() < b.maxY();
     case WebFocusTypeUp:
-        aStart = a.y();
-        bEnd = b.y();
-        break;
     case WebFocusTypeDown:
-        aStart = b.y();
-        bEnd = a.y();
-        break;
+        return a.maxX() > b.x() && a.x() < b.maxX();
     default:
         ASSERT_NOT_REACHED();
         return false;
-    }
-
-    if (aStart < bEnd)
-        return false;
-
-    aStart = start(type, a);
-    bStart = start(type, b);
-
-    LayoutUnit aMiddle = middle(type, a);
-    LayoutUnit bMiddle = middle(type, b);
-
-    aEnd = end(type, a);
-    bEnd = end(type, b);
-
-    // Picture of the totally aligned logic:
-    //
-    //     Horizontal    Vertical        Horizontal     Vertical
-    //  ****************************  *****************************
-    //  *  _          *   _ _ _ _  *  *         _   *      _ _    *
-    //  * |_|     _   *  |_|_|_|_| *  *  _     |_|  *     |_|_|   *
-    //  * |_|....|_|  *      .     *  * |_|....|_|  *       .     *
-    //  * |_|    |_| (1)     .     *  * |_|    |_| (2)      .     *
-    //  * |_|         *     _._    *  *        |_|  *    _ _._ _  *
-    //  *             *    |_|_|   *  *             *   |_|_|_|_| *
-    //  *             *            *  *             *             *
-    //  ****************************  *****************************
-
-    return (bMiddle >= aStart && bMiddle <= aEnd) // (1)
-        || (aMiddle >= bStart && aMiddle <= bEnd); // (2)
-}
-
-// This method checks if rects |a| and |b| are partially aligned either vertically or
-// horizontally. In general, rects whose either of edges falls between the top or
-// bottom of each other are considered partially-aligned.
-// This is a separate set of conditions from "fully-aligned" and do not include cases
-// that satisfy the former.
-// * a = Current focused node's rect.
-// * b = Focus candidate node's rect.
-static bool areRectsPartiallyAligned(WebFocusType type, const LayoutRect& a, const LayoutRect& b)
-{
-    LayoutUnit aStart  = start(type, a);
-    LayoutUnit bStart  = start(type, b);
-    LayoutUnit aEnd = end(type, a);
-    LayoutUnit bEnd = end(type, b);
-
-    // Picture of the partially aligned logic:
-    //
-    //    Horizontal       Vertical
-    // ********************************
-    // *  _            *   _ _ _      *
-    // * |_|           *  |_|_|_|     *
-    // * |_|.... _     *      . .     *
-    // * |_|    |_|    *      . .     *
-    // * |_|....|_|    *      ._._ _  *
-    // *        |_|    *      |_|_|_| *
-    // *        |_|    *              *
-    // *               *              *
-    // ********************************
-    //
-    // ... and variants of the above cases.
-    return (bStart >= aStart && bStart <= aEnd)
-        || (bEnd >= aStart && bEnd <= aEnd);
-}
-
-static bool areRectsMoreThanFullScreenApart(WebFocusType type, const LayoutRect& curRect, const LayoutRect& targetRect, const LayoutSize& viewSize)
-{
-    ASSERT(isRectInDirection(type, curRect, targetRect));
-
-    switch (type) {
-    case WebFocusTypeLeft:
-        return curRect.x() - targetRect.maxX() > viewSize.width();
-    case WebFocusTypeRight:
-        return targetRect.x() - curRect.maxX() > viewSize.width();
-    case WebFocusTypeUp:
-        return curRect.y() - targetRect.maxY() > viewSize.height();
-    case WebFocusTypeDown:
-        return targetRect.y() - curRect.maxY() > viewSize.height();
-    default:
-        ASSERT_NOT_REACHED();
-        return true;
     }
 }
 
@@ -644,7 +503,6 @@ void distanceDataForNode(WebFocusType type, const FocusCandidate& current, Focus
     if (areElementsOnSameLine(current, candidate)) {
         if ((type == WebFocusTypeUp && current.rect.y() > candidate.rect.y()) || (type == WebFocusTypeDown && candidate.rect.y() > current.rect.y())) {
             candidate.distance = 0;
-            candidate.alignment = Full;
             return;
         }
     }
@@ -660,22 +518,37 @@ void distanceDataForNode(WebFocusType type, const FocusCandidate& current, Focus
     LayoutPoint entryPoint;
     entryAndExitPointsForDirection(type, currentRect, nodeRect, exitPoint, entryPoint);
 
-    LayoutUnit xAxis = exitPoint.x() - entryPoint.x();
-    LayoutUnit yAxis = exitPoint.y() - entryPoint.y();
+    LayoutUnit xAxis = (exitPoint.x() - entryPoint.x()).abs();
+    LayoutUnit yAxis = (exitPoint.y() - entryPoint.y()).abs();
 
     LayoutUnit navigationAxisDistance;
-    LayoutUnit orthogonalAxisDistance;
+    LayoutUnit weightedOrthogonalAxisDistance;
+
+    // Bias and weights are put to the orthogonal axis distance calculation
+    // so aligned candidates would have advantage over partially-aligned ones
+    // and then over not-aligned candidates. The bias is given to not-aligned
+    // candidates with respect to size of the current rect. The weight for
+    // left/right direction is given a higher value to allow navigation on
+    // common horizonally-aligned elements. The hardcoded values are based on
+    // tests and experiments.
+    const int orthogonalWeightForLeftRight = 30;
+    const int orthogonalWeightForUpDown = 2;
+    int orthogonalBias = 0;
 
     switch (type) {
     case WebFocusTypeLeft:
     case WebFocusTypeRight:
-        navigationAxisDistance = xAxis.abs();
-        orthogonalAxisDistance = yAxis.abs();
+        navigationAxisDistance = xAxis;
+        if (!rectsIntersectOnOrthogonalAxis(type, currentRect, nodeRect))
+            orthogonalBias = currentRect.height() / 2;
+        weightedOrthogonalAxisDistance = (yAxis + orthogonalBias) * orthogonalWeightForLeftRight;
         break;
     case WebFocusTypeUp:
     case WebFocusTypeDown:
-        navigationAxisDistance = yAxis.abs();
-        orthogonalAxisDistance = xAxis.abs();
+        navigationAxisDistance = yAxis;
+        if (!rectsIntersectOnOrthogonalAxis(type, currentRect, nodeRect))
+            orthogonalBias = currentRect.width() / 2;
+        weightedOrthogonalAxisDistance = (xAxis + orthogonalBias) * orthogonalWeightForUpDown;
         break;
     default:
         ASSERT_NOT_REACHED();
@@ -687,10 +560,7 @@ void distanceDataForNode(WebFocusType type, const FocusCandidate& current, Focus
     double overlap = (intersectionRect.width() * intersectionRect.height()).toDouble();
 
     // Distance calculation is based on http://www.w3.org/TR/WICD/#focus-handling
-    candidate.distance = sqrt(euclidianDistancePow2) + navigationAxisDistance+ orthogonalAxisDistance * 2 - sqrt(overlap);
-
-    LayoutSize viewSize = LayoutSize(candidate.visibleNode->document().page()->deprecatedLocalMainFrame()->view()->visibleContentRect().size());
-    candidate.alignment = alignmentForRects(type, currentRect, nodeRect, viewSize);
+    candidate.distance = sqrt(euclidianDistancePow2) + navigationAxisDistance + weightedOrthogonalAxisDistance - sqrt(overlap);
 }
 
 bool canBeScrolledIntoView(WebFocusType type, const FocusCandidate& candidate)

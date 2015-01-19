@@ -769,7 +769,7 @@ static void updateFocusCandidateIfNeeded(WebFocusType type, const FocusCandidate
     if (candidate.distance == maxDistance())
         return;
 
-    if (candidate.isOffscreenAfterScrolling && candidate.alignment < Full)
+    if (candidate.isOffscreenAfterScrolling)
         return;
 
     if (closest.isNull()) {
@@ -794,13 +794,7 @@ static void updateFocusCandidateIfNeeded(WebFocusType type, const FocusCandidate
             return;
     }
 
-    if (candidate.alignment == closest.alignment) {
-        if (candidate.distance < closest.distance)
-            closest = candidate;
-        return;
-    }
-
-    if (candidate.alignment > closest.alignment)
+    if (candidate.distance < closest.distance)
         closest = candidate;
 }
 
