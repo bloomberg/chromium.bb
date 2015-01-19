@@ -10,7 +10,7 @@ enum ReadableStreamState {
 };
 
 [
-    RuntimeEnabled=Stream,
+    RuntimeEnabled=ExperimentalStream,
     GarbageCollected,
     Exposed=(Window,Worker),
     ActiveDOMObject,

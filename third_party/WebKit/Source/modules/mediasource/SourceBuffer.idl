@@ -64,7 +64,7 @@ enum AppendMode {
     [RaisesException] void appendBuffer(ArrayBuffer data);
     [RaisesException] void appendBuffer(ArrayBufferView data);
 
-    [RaisesException, RuntimeEnabled=Stream] void appendStream(Stream stream, optional unsigned long long maxSize);
+    [RaisesException, RuntimeEnabled=ExperimentalStream] void appendStream(Stream stream, optional unsigned long long maxSize);
 
     // Abort the current segment append sequence.
     [RaisesException] void abort();

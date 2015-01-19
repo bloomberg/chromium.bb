@@ -539,12 +539,12 @@ void XMLHttpRequest::setResponseType(const String& responseType, ExceptionState&
     } else if (responseType == "arraybuffer") {
         m_responseTypeCode = ResponseTypeArrayBuffer;
     } else if (responseType == "legacystream") {
-        if (RuntimeEnabledFeatures::streamEnabled())
+        if (RuntimeEnabledFeatures::experimentalStreamEnabled())
             m_responseTypeCode = ResponseTypeLegacyStream;
         else
             return;
     } else if (responseType == "stream") {
-        if (RuntimeEnabledFeatures::streamEnabled())
+        if (RuntimeEnabledFeatures::experimentalStreamEnabled())
             m_responseTypeCode = ResponseTypeStream;
         else
             return;

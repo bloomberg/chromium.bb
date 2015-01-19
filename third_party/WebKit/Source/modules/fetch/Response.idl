@@ -29,7 +29,7 @@ typedef (Blob or ArrayBuffer or ArrayBufferView or USVString) BodyInit;
 
     // FIXME: Move this attribute into Body when the extended-attribute
     // is removed.
-    [RuntimeEnabled=Stream] readonly attribute ReadableStream body;
+    [RuntimeEnabled=ExperimentalStream] readonly attribute ReadableStream body;
 };
 
 Response implements Body;

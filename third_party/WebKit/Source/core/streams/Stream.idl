@@ -37,7 +37,7 @@
 // FIXME: Make the Blob a subclass of the Stream.
 
 [
-    RuntimeEnabled=Stream,
+    RuntimeEnabled=ExperimentalStream,
     ActiveDOMObject,
     WillBeGarbageCollected
 ] interface Stream {

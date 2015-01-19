@@ -123,7 +123,10 @@ ServiceWorkerOnFetch status=stable
 SessionStorage status=stable
 SharedWorker status=stable
 SlimmingPaint
-Stream status=experimental
+// Do not turn this flag into stable, because many interfaces that should not
+// be shipped would be enabled. Instead, remove the flag from the shipping
+// interface.
+ExperimentalStream status=experimental
 SubresourceIntegrity status=experimental
 TextBlob
 ThreadedParserDataReceiver status=experimental
