@@ -129,6 +129,8 @@ cr.define('cr.login', function() {
     window.addEventListener(
         'message', this.onMessageFromWebview_.bind(this), false);
     window.addEventListener(
+        'focus', this.onFocus_.bind(this), false);
+    window.addEventListener(
         'popstate', this.onPopState_.bind(this), false);
 
     this.loaded_ = false;
@@ -210,6 +212,15 @@ cr.define('cr.login', function() {
       history.pushState({url: url}, '');
     else
       history.replaceState({url: url});
+  };
+
+  /**
+   * Invoked when the sign-in page takes focus.
+   * @param {object} e The focus event being triggered.
+   * @private
+   */
+  Authenticator.prototype.onFocus_ = function(e) {
+    this.webview_.focus();
   };
 
   /**
