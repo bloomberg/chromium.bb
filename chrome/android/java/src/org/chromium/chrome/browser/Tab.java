@@ -1085,14 +1085,6 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     }
 
     /**
-     * Called on the foreground tab when the Activity is stopped.
-     */
-    // TODO(changwan): remove this
-    public void onActivityStop() {
-        hide();
-    }
-
-    /**
      * Prepares the tab to be shown. This method is supposed to be called before the tab is
      * displayed. It restores the ContentView if it is not available after the cold start and
      * reloads the tab if its renderer has crashed.
