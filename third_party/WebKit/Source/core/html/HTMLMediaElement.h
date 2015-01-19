@@ -175,8 +175,6 @@ public:
     void selectedVideoTrackChanged(blink::WebMediaPlayer::TrackId*);
 
     PassRefPtrWillBeRawPtr<TextTrack> addTextTrack(const AtomicString& kind, const AtomicString& label, const AtomicString& language, ExceptionState&);
-    PassRefPtrWillBeRawPtr<TextTrack> addTextTrack(const AtomicString& kind, const AtomicString& label, ExceptionState& exceptionState) { return addTextTrack(kind, label, emptyAtom, exceptionState); }
-    PassRefPtrWillBeRawPtr<TextTrack> addTextTrack(const AtomicString& kind, ExceptionState& exceptionState) { return addTextTrack(kind, emptyAtom, emptyAtom, exceptionState); }
 
     TextTrackList* textTracks();
     CueList currentlyActiveCues() const { return m_currentlyActiveCues; }

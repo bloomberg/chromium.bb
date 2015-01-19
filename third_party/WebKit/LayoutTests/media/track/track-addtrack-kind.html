@@ -21,7 +21,7 @@
 
                 consoleWrite("<em>++ Test invalid 'kind'.</em>");
                 testExpected("video.textTracks.length", 0);
-                testDOMException("video.addTextTrack('kaptions')", "DOMException.SYNTAX_ERR");
+                testException("video.addTextTrack('kaptions')", '"TypeError: Failed to execute \'addTextTrack\' on \'HTMLMediaElement\': parameter 1 (\'kaptions\') is not a valid enum value."');
                 testExpected("video.textTracks.length", 0);
                 consoleWrite("");
 

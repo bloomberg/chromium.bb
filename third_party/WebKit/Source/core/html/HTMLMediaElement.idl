@@ -85,7 +85,7 @@
     [RuntimeEnabled=AudioVideoTracks] readonly attribute AudioTrackList audioTracks;
     [RuntimeEnabled=AudioVideoTracks] readonly attribute VideoTrackList videoTracks;
     readonly attribute TextTrackList textTracks;
-    [RaisesException] TextTrack addTextTrack(DOMString kind, optional DOMString label, optional DOMString language);
+    [RaisesException] TextTrack addTextTrack(TextTrackKind kind, optional DOMString label = "", optional DOMString language = "");
 
     // WebKit extensions
 

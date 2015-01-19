@@ -2746,35 +2746,38 @@ void HTMLMediaElement::forgetResourceSpecificTracks()
 
 PassRefPtrWillBeRawPtr<TextTrack> HTMLMediaElement::addTextTrack(const AtomicString& kind, const AtomicString& label, const AtomicString& language, ExceptionState& exceptionState)
 {
-    // 4.8.10.12.4 Text track API
-    // The addTextTrack(kind, label, language) method of media elements, when invoked, must run the following steps:
+    // https://html.spec.whatwg.org/multipage/embedded-content.html#dom-media-addtexttrack
 
-    // 1. If kind is not one of the following strings, then throw a SyntaxError exception and abort these steps
-    if (!TextTrack::isValidKindKeyword(kind)) {
-        exceptionState.throwDOMException(SyntaxError, "The 'kind' provided ('" + kind + "') is invalid.");
-        return nullptr;
-    }
+    // The addTextTrack(kind, label, language) method of media elements, when
+    // invoked, must run the following steps:
 
-    // 2. If the label argument was omitted, let label be the empty string.
-    // 3. If the language argument was omitted, let language be the empty string.
-    // 4. Create a new TextTrack object.
-
-    // 5. Create a new text track corresponding to the new object, and set its text track kind to kind, its text
-    // track label to label, its text track language to language...
+    // 1. Create a new TextTrack object.
+    // 2. Create a new text track corresponding to the new object, and set its
+    //    text track kind to kind, its text track label to label, its text
+    //    track language to language, ..., and its text track list of cues to
+    //    an empty list.
     RefPtrWillBeRawPtr<TextTrack> textTrack = TextTrack::create(kind, label, language);
-
-    // Note, due to side effects when changing track parameters, we have to
-    // first append the track to the text track list.
-
-    // 6. Add the new text track to the media element's list of text tracks.
-    addTextTrack(textTrack.get());
-
-    // ... its text track readiness state to the text track loaded state ...
+    //    ..., its text track readiness state to the text track loaded state, ...
     textTrack->setReadinessState(TextTrack::Loaded);
 
-    // ... its text track mode to the text track hidden mode, and its text track list of cues to an empty list ...
+    // 3. Add the new text track to the media element's list of text tracks.
+    // 4. Queue a task to fire a trusted event with the name addtrack, that
+    //    does not bubble and is not cancelable, and that uses the TrackEvent
+    //    interface, with the track attribute initialised to the new text
+    //    track's TextTrack object, at the media element's textTracks
+    //    attribute's TextTrackList object.
+    addTextTrack(textTrack.get());
+
+    // Note: Due to side effects when changing track parameters, we have to
+    // first append the track to the text track list.
+    // FIXME: Since setMode() will cause a 'change' event to be queued on the
+    // same task source as the 'addtrack' event (see above), the order is
+    // wrong. (The 'change' event shouldn't be fired at all in this case...)
+
+    // ..., its text track mode to the text track hidden mode, ...
     textTrack->setMode(TextTrack::hiddenKeyword());
 
+    // 5. Return the new TextTrack object.
     return textTrack.release();
 }
 
