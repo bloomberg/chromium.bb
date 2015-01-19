@@ -63,7 +63,7 @@ def binary_search (search_addr, start, end):
 f = open (orderfile)
 lines = f.readlines()
 profiled_list = []
-prefixes = ['.text.', '.text.startup.', '.text.hot.', '.text.unlikely.']
+prefixes = ['.text.startup.', '.text.hot.', '.text.unlikely.', '.text.']
 for line in lines:
   for prefix in prefixes:
     line = line.replace(prefix, '')
@@ -94,17 +94,22 @@ for line in nmlines:
 sys.stderr.write ("profiled list size: " + str(len(profiled_list)) + "\n")
 addresses = []
 symbols_found = 0
+missing_symbols = 0
 for function in profiled_list:
    try:
      addrs = functionAddressMap[function]
      symbols_found = symbols_found + 1
    except Exception:
      addrs = []
-     # sys.stderr.write ("WARNING: could not find symbol " + function + "\n")
+     missing_symbols += 1
+     if missing_symbols < 100:
+       sys.stderr.write ("WARNING: could not find symbol " + function + "\n")
    for addr in addrs:
      if not (addr in addresses):
        addresses.append(addr)
 sys.stderr.write ("symbols found: " + str(symbols_found) + "\n")
+if missing_symbols > 0:
+  sys.stderr.write ("WARNING: %d missing symbols." % missing_symbols)
 
 sys.stderr.write ("number of addresses: " + str(len(addresses)) + "\n")
 total_size = 0
