@@ -1,0 +1,45 @@
+# Copyright 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("browser_watcher") {
+  # This is a separate lib to minimize the dependencies for its
+  # hosting binary "chrome_watcher.dll".
+  sources = [
+    "endsession_watcher_window_win.cc",
+    "endsession_watcher_window_win.h",
+    "exit_code_watcher_win.cc",
+    "exit_code_watcher_win.h",
+    "exit_funnel_win.cc",
+    "exit_funnel_win.h",
+  ]
+  deps = [
+    "//base",
+  ]
+}
+
+source_set("browser_watcher_client") {
+  sources = [
+    "watcher_client_win.cc",
+    "watcher_client_win.h",
+    "watcher_metrics_provider_win.cc",
+    "watcher_metrics_provider_win.h",
+  ]
+  deps = [
+    "//base",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "endsession_watcher_window_win_unittest.cc",
+    "exit_code_watcher_win_unittest.cc",
+    "exit_funnel_win_unittest.cc",
+    "watcher_client_win_unittest.cc",
+    "watcher_metrics_provider_win_unittest.cc",
+  ]
+  deps = [
+    "//testing/gtest",
+  ]
+}
