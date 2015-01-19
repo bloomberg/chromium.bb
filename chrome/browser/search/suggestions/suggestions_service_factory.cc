@@ -28,6 +28,9 @@ namespace suggestions {
 
 // static
 SuggestionsService* SuggestionsServiceFactory::GetForProfile(Profile* profile) {
+  if (!SuggestionsService::IsEnabled())
+    return NULL;
+
   return static_cast<SuggestionsService*>(
       GetInstance()->GetServiceForBrowserContext(profile, true));
 }

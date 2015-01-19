@@ -199,8 +199,7 @@ class SuggestionsServiceTest : public testing::Test {
         io_message_loop_.message_loop_proxy());
   }
 
-  // Enables the control group in the "ChromeSuggestions.Group1" field trial.
-  void EnableFieldTrialControlGroup() {
+  void EnableFieldTrial(bool control_group) {
     // Clear the existing |field_trial_list_| to avoid firing a DCHECK.
     field_trial_list_.reset(NULL);
     field_trial_list_.reset(
@@ -208,8 +207,12 @@ class SuggestionsServiceTest : public testing::Test {
 
     variations::testing::ClearAllVariationParams();
     std::map<std::string, std::string> params;
-    params[kSuggestionsFieldTrialControlParam] =
+    params[kSuggestionsFieldTrialStateParam] =
         kSuggestionsFieldTrialStateEnabled;
+    if (control_group) {
+      params[kSuggestionsFieldTrialControlParam] =
+          kSuggestionsFieldTrialStateEnabled;
+    }
     variations::AssociateVariationParams(kSuggestionsFieldTrialName, "Group1",
                                          params);
     field_trial_ = base::FieldTrialList::CreateFieldTrial(
@@ -347,21 +350,25 @@ class SuggestionsServiceTest : public testing::Test {
 };
 
 TEST_F(SuggestionsServiceTest, IsControlGroup) {
+  EnableFieldTrial(false);
   EXPECT_FALSE(SuggestionsService::IsControlGroup());
 
-  EnableFieldTrialControlGroup();
+  EnableFieldTrial(true);
   EXPECT_TRUE(SuggestionsService::IsControlGroup());
 }
 
 TEST_F(SuggestionsServiceTest, FetchSuggestionsData) {
+  EnableFieldTrial(false);
   FetchSuggestionsDataHelper(INITIALIZED_ENABLED_HISTORY);
 }
 
 TEST_F(SuggestionsServiceTest, FetchSuggestionsDataSyncNotInitializedEnabled) {
+  EnableFieldTrial(false);
   FetchSuggestionsDataHelper(NOT_INITIALIZED_ENABLED);
 }
 
 TEST_F(SuggestionsServiceTest, FetchSuggestionsDataSyncDisabled) {
+  EnableFieldTrial(false);
   scoped_ptr<SuggestionsService> suggestions_service(
       CreateSuggestionsServiceWithMocks());
   EXPECT_TRUE(suggestions_service != NULL);
@@ -380,6 +387,7 @@ TEST_F(SuggestionsServiceTest, FetchSuggestionsDataSyncDisabled) {
 }
 
 TEST_F(SuggestionsServiceTest, IssueRequestIfNoneOngoingError) {
+  EnableFieldTrial(false);
   scoped_ptr<SuggestionsService> suggestions_service(
       CreateSuggestionsServiceWithMocks());
   EXPECT_TRUE(suggestions_service != NULL);
@@ -399,6 +407,7 @@ TEST_F(SuggestionsServiceTest, IssueRequestIfNoneOngoingError) {
 }
 
 TEST_F(SuggestionsServiceTest, IssueRequestIfNoneOngoingResponseNotOK) {
+  EnableFieldTrial(false);
   scoped_ptr<SuggestionsService> suggestions_service(
       CreateSuggestionsServiceWithMocks());
   EXPECT_TRUE(suggestions_service != NULL);
@@ -427,6 +436,7 @@ TEST_F(SuggestionsServiceTest, IssueRequestIfNoneOngoingResponseNotOK) {
 }
 
 TEST_F(SuggestionsServiceTest, BlacklistURL) {
+  EnableFieldTrial(false);
   scoped_ptr<SuggestionsService> suggestions_service(
       CreateSuggestionsServiceWithMocks());
   EXPECT_TRUE(suggestions_service != NULL);
@@ -470,6 +480,7 @@ TEST_F(SuggestionsServiceTest, BlacklistURL) {
 }
 
 TEST_F(SuggestionsServiceTest, BlacklistURLFails) {
+  EnableFieldTrial(false);
   scoped_ptr<SuggestionsService> suggestions_service(
       CreateSuggestionsServiceWithMocks());
   EXPECT_TRUE(suggestions_service != NULL);
@@ -485,6 +496,7 @@ TEST_F(SuggestionsServiceTest, BlacklistURLFails) {
 
 // Initial blacklist request fails, triggering a second which succeeds.
 TEST_F(SuggestionsServiceTest, BlacklistURLRequestFails) {
+  EnableFieldTrial(false);
   scoped_ptr<SuggestionsService> suggestions_service(
       CreateSuggestionsServiceWithMocks());
   EXPECT_TRUE(suggestions_service != NULL);
@@ -541,6 +553,7 @@ TEST_F(SuggestionsServiceTest, BlacklistURLRequestFails) {
 }
 
 TEST_F(SuggestionsServiceTest, UndoBlacklistURL) {
+  EnableFieldTrial(false);
   scoped_ptr<SuggestionsService> suggestions_service(
       CreateSuggestionsServiceWithMocks());
   EXPECT_TRUE(suggestions_service != NULL);
@@ -577,14 +590,17 @@ TEST_F(SuggestionsServiceTest, UndoBlacklistURL) {
 
 
 TEST_F(SuggestionsServiceTest, UndoBlacklistURLFailsIfNotInBlacklist) {
+  EnableFieldTrial(false);
   UndoBlacklistURLFailsHelper(true);
 }
 
 TEST_F(SuggestionsServiceTest, UndoBlacklistURLFailsIfAlreadyCandidate) {
+  EnableFieldTrial(false);
   UndoBlacklistURLFailsHelper(false);
 }
 
 TEST_F(SuggestionsServiceTest, GetBlacklistedUrl) {
+  EnableFieldTrial(false);
   scoped_ptr<GURL> request_url;
   scoped_ptr<net::FakeURLFetcher> fetcher;
   GURL retrieved_url;
@@ -610,6 +626,7 @@ TEST_F(SuggestionsServiceTest, GetBlacklistedUrl) {
 }
 
 TEST_F(SuggestionsServiceTest, UpdateBlacklistDelay) {
+  EnableFieldTrial(false);
   scoped_ptr<SuggestionsService> suggestions_service(
       CreateSuggestionsServiceWithMocks());
   base::TimeDelta initial_delay = suggestions_service->blacklist_delay();
@@ -628,6 +645,7 @@ TEST_F(SuggestionsServiceTest, UpdateBlacklistDelay) {
 }
 
 TEST_F(SuggestionsServiceTest, CheckDefaultTimeStamps) {
+  EnableFieldTrial(false);
   scoped_ptr<SuggestionsService> suggestions_service(
       CreateSuggestionsServiceWithMocks());
   SuggestionsProfile suggestions =

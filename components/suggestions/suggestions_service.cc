@@ -91,6 +91,7 @@ const int kSchedulingMaxDelaySec = 5 * 60;
 const char kSuggestionsFieldTrialName[] = "ChromeSuggestions";
 const char kSuggestionsFieldTrialControlParam[] = "control";
 const char kSuggestionsFieldTrialStateEnabled[] = "enabled";
+const char kSuggestionsFieldTrialStateParam[] = "state";
 
 // TODO(mathp): Put this in TemplateURL.
 const char kSuggestionsURL[] = "https://www.google.com/chromesuggestions?t=2";
@@ -118,9 +119,15 @@ SuggestionsService::SuggestionsService(
 SuggestionsService::~SuggestionsService() {}
 
 // static
+bool SuggestionsService::IsEnabled() {
+  return GetExperimentParam(kSuggestionsFieldTrialStateParam) ==
+      kSuggestionsFieldTrialStateEnabled;
+}
+
+// static
 bool SuggestionsService::IsControlGroup() {
   return GetExperimentParam(kSuggestionsFieldTrialControlParam) ==
-         kSuggestionsFieldTrialStateEnabled;
+      kSuggestionsFieldTrialStateEnabled;
 }
 
 void SuggestionsService::FetchSuggestionsData(

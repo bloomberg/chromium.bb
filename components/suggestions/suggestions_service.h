@@ -40,6 +40,7 @@ class SuggestionsStore;
 extern const char kSuggestionsFieldTrialName[];
 extern const char kSuggestionsFieldTrialControlParam[];
 extern const char kSuggestionsFieldTrialStateEnabled[];
+extern const char kSuggestionsFieldTrialStateParam[];
 
 extern const char kSuggestionsURL[];
 extern const char kSuggestionsBlacklistURLPrefix[];
@@ -59,6 +60,9 @@ class SuggestionsService : public KeyedService, public net::URLFetcherDelegate {
       scoped_ptr<ImageManager> thumbnail_manager,
       scoped_ptr<BlacklistStore> blacklist_store);
   ~SuggestionsService() override;
+
+  // Whether this service is enabled.
+  static bool IsEnabled();
 
   // Whether the user is part of a control group.
   static bool IsControlGroup();
