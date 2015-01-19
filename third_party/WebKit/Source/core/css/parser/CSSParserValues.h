@@ -148,8 +148,11 @@ struct CSSParserValue {
         Function  = 0x100001,
         ValueList = 0x100002,
         Q_EMS     = 0x100003,
-        Dimension = 0x100004,
-        HexColor = 0x100005,
+        HexColor = 0x100004,
+        // Represents a dimension as an unparsed string, only used by the Bison parser
+        Dimension = 0x100005,
+        // Represents a dimension by a list of two values, a CSS_NUMBER and an CSS_IDENT
+        DimensionList = 0x100006,
     };
     int unit;
 

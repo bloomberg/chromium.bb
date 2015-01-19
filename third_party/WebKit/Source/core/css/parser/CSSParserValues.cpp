@@ -125,11 +125,33 @@ CSSParserValueList::CSSParserValueList(CSSParserTokenRange range)
             break;
         }
         case DimensionToken:
-            if (!token.unitType() && token.value() == "__qem") {
-                value.setFromNumber(token.numericValue(), CSSParserValue::Q_EMS);
-                value.isInt = (token.numericValueType() == IntegerValueType);
+            if (!token.unitType()) {
+                if (token.value() == "__qem") {
+                    value.setFromNumber(token.numericValue(), CSSParserValue::Q_EMS);
+                    value.isInt = (token.numericValueType() == IntegerValueType);
+                    break;
+                }
+
+                // Unknown dimensions are handled as a list of two values
+                value.unit = CSSParserValue::DimensionList;
+                CSSParserValueList* list = new CSSParserValueList;
+                value.valueList = list;
+
+                CSSParserValue number;
+                number.setFromNumber(token.numericValue());
+                number.isInt = (token.numericValueType() == IntegerValueType);
+                list->addValue(number);
+
+                CSSParserString unitString;
+                unitString.init(token.value());
+                CSSParserValue unit;
+                unit.string = unitString;
+                unit.unit = CSSPrimitiveValue::CSS_IDENT;
+                list->addValue(unit);
+
                 break;
             }
+            // fallthrough
         case NumberToken:
         case PercentageToken:
             value.setFromNumber(token.numericValue(), token.unitType());

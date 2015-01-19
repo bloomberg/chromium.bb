@@ -5394,6 +5394,19 @@ bool CSSPropertyParser::parseColorFromValue(CSSParserValue* value, RGBA32& c, bo
         // FIXME: This should be strict parsing for SVG as well.
         if (!fastParseColor(c, str, !acceptQuirkyColors))
             return false;
+    } else if (acceptQuirkyColors && value->unit == CSSParserValue::DimensionList) {
+        CSSParserValue* numberToken = value->valueList->valueAt(0);
+        CSSParserValue* unitToken = value->valueList->valueAt(1);
+        ASSERT(numberToken->unit == CSSPrimitiveValue::CSS_NUMBER);
+        ASSERT(unitToken->unit == CSSPrimitiveValue::CSS_IDENT);
+        if (!numberToken->isInt || numberToken->fValue < 0)
+            return false;
+        String color = String::number(numberToken->fValue) + String(unitToken->string);
+        if (color.length() > 6)
+            return false;
+        while (color.length() < 6)
+            color = "0" + color;
+        return fastParseColor(c, color, false);
     } else if (value->unit == CSSParserValue::HexColor
         || value->unit == CSSPrimitiveValue::CSS_IDENT
         || (acceptQuirkyColors && value->unit == CSSParserValue::Dimension)) {
@@ -7146,20 +7159,28 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseImageSet(CSSParserValue
         imageSet->append(image);
 
         arg = functionArgs->next();
-        if (!arg || arg->unit != CSSParserValue::Dimension)
+        if (!arg)
             return nullptr;
 
         double imageScaleFactor = 0;
-        const String& string = arg->string;
-        unsigned length = string.length();
-        if (!length)
-            return nullptr;
-        if (string.is8Bit()) {
-            const LChar* start = string.characters8();
-            parseDouble(start, start + length, 'x', imageScaleFactor);
-        } else {
-            const UChar* start = string.characters16();
-            parseDouble(start, start + length, 'x', imageScaleFactor);
+        if (arg->unit == CSSParserValue::Dimension) {
+            const String& string = arg->string;
+            unsigned length = string.length();
+            if (!length)
+                return nullptr;
+            if (string.is8Bit()) {
+                const LChar* start = string.characters8();
+                parseDouble(start, start + length, 'x', imageScaleFactor);
+            } else {
+                const UChar* start = string.characters16();
+                parseDouble(start, start + length, 'x', imageScaleFactor);
+            }
+        } else if (arg->unit == CSSParserValue::DimensionList) {
+            ASSERT(arg->valueList->valueAt(0)->unit == CSSPrimitiveValue::CSS_NUMBER);
+            ASSERT(arg->valueList->valueAt(1)->unit == CSSPrimitiveValue::CSS_IDENT);
+            if (String(arg->valueList->valueAt(1)->string) != "x")
+                return nullptr;
+            imageScaleFactor = arg->valueList->valueAt(0)->fValue;
         }
         if (imageScaleFactor <= 0)
             return nullptr;
