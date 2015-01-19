@@ -81,5 +81,5 @@ SafeBrowsingModuleVerifierWinTest.VerifyModuleModified
 SafeBrowsingModuleVerifierWinTest.VerifyModuleUnmodified
 
 # http://crbug.com/448189
-AXTreeSourceAshTest.Accessors
+AXTreeSourceAshTest.*
 ChromeScreenshotGrabberTest.TakeScreenshot

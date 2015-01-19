@@ -2768,7 +2768,7 @@
    bug_369843
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN7content27ServiceWorkerContextWrapper12InitInternalERKN4base8FilePathEPNS1_19SequencedTaskRunnerEPN5quota17QuotaManagerProxyE
+   fun:_ZN7content27ServiceWorkerContextWrapper12InitInternalE*
 }
 {
   bug_371844
@@ -2834,12 +2834,6 @@
    fun:_ZN7content24NavigationControllerImpl17LoadURLWithParamsERKNS_20NavigationController13LoadURLParamsE
    fun:_ZN7content5Shell15LoadURLForFrameERK4GURLRKSs
    fun:_ZN7content5Shell7LoadURLERK4GURL
-}
-{
-   bug_372832
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN7content27ServiceWorkerContextWrapper12InitInternalERKN4base8FilePathEPNS1_19SequencedTaskRunnerEPNS1_16MessageLoopProxyEPN5quota17QuotaManagerProxyE
 }
 {
    bug_379943
