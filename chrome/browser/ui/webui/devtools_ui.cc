@@ -60,47 +60,6 @@ const char kRemoteOpenPrefix[] = "remote/open";
 const char kLocalSerial[] = "local";
 #endif  // defined(DEBUG_DEVTOOLS)
 
-// FetchRequest ---------------------------------------------------------------
-
-class FetchRequest : public net::URLFetcherDelegate {
- public:
-  FetchRequest(net::URLRequestContextGetter* request_context,
-               const GURL& url,
-               const content::URLDataSource::GotDataCallback& callback);
-
- private:
-  ~FetchRequest() override {}
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
-  scoped_ptr<net::URLFetcher> fetcher_;
-  content::URLDataSource::GotDataCallback callback_;
-};
-
-FetchRequest::FetchRequest(
-    net::URLRequestContextGetter* request_context,
-    const GURL& url,
-    const content::URLDataSource::GotDataCallback& callback)
-    : callback_(callback) {
-  if (!url.is_valid()) {
-    OnURLFetchComplete(NULL);
-    return;
-  }
-
-  fetcher_.reset(net::URLFetcher::Create(url, net::URLFetcher::GET, this));
-  fetcher_->SetRequestContext(request_context);
-  fetcher_->Start();
-}
-
-void FetchRequest::OnURLFetchComplete(const net::URLFetcher* source) {
-  std::string response;
-  if (source)
-    source->GetResponseAsString(&response);
-  else
-    response = kHttpNotFound;
-
-  callback_.Run(base::RefCountedString::TakeString(&response));
-  delete this;
-}
-
 // DevToolsDataSource ---------------------------------------------------------
 
 std::string GetMimeTypeForPath(const std::string& path) {
@@ -126,18 +85,20 @@ std::string GetMimeTypeForPath(const std::string& path) {
 // 1. /bundled/: bundled DevTools frontend is served.
 // 2. /remote/: remote DevTools frontend is served from App Engine.
 // 3. /remote/open/: query is URL which is opened on remote device.
-class DevToolsDataSource : public content::URLDataSource {
+class DevToolsDataSource : public content::URLDataSource,
+                           public net::URLFetcherDelegate {
  public:
+  using GotDataCallback = content::URLDataSource::GotDataCallback;
+
   explicit DevToolsDataSource(net::URLRequestContextGetter* request_context);
 
   // content::URLDataSource implementation.
   std::string GetSource() const override;
 
-  void StartDataRequest(
-      const std::string& path,
-      int render_process_id,
-      int render_frame_id,
-      const content::URLDataSource::GotDataCallback& callback) override;
+  void StartDataRequest(const std::string& path,
+                        int render_process_id,
+                        int render_frame_id,
+                        const GotDataCallback& callback) override;
 
  private:
   // content::URLDataSource overrides.
@@ -146,22 +107,27 @@ class DevToolsDataSource : public content::URLDataSource {
   bool ShouldDenyXFrameOptions() const override;
   bool ShouldServeMimeTypeAsContentTypeHeader() const override;
 
+  // net::URLFetcherDelegate overrides.
+  void OnURLFetchComplete(const net::URLFetcher* source) override;
+
   // Serves bundled DevTools frontend from ResourceBundle.
-  void StartBundledDataRequest(
-      const std::string& path,
-      int render_process_id,
-      int render_frame_id,
-      const content::URLDataSource::GotDataCallback& callback);
+  void StartBundledDataRequest(const std::string& path,
+                               int render_process_id,
+                               int render_frame_id,
+                               const GotDataCallback& callback);
 
   // Serves remote DevTools frontend from hard-coded App Engine domain.
-  void StartRemoteDataRequest(
-      const std::string& path,
-      int render_process_id,
-      int render_frame_id,
-      const content::URLDataSource::GotDataCallback& callback);
+  void StartRemoteDataRequest(const std::string& path,
+                              int render_process_id,
+                              int render_frame_id,
+                              const GotDataCallback& callback);
 
-  ~DevToolsDataSource() override {}
+  ~DevToolsDataSource() override;
+
   scoped_refptr<net::URLRequestContextGetter> request_context_;
+
+  using PendingRequestsMap = std::map<const net::URLFetcher*, GotDataCallback>;
+  PendingRequestsMap pending_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsDataSource);
 };
@@ -169,6 +135,14 @@ class DevToolsDataSource : public content::URLDataSource {
 DevToolsDataSource::DevToolsDataSource(
     net::URLRequestContextGetter* request_context)
     : request_context_(request_context) {
+}
+
+DevToolsDataSource::~DevToolsDataSource() {
+  for (const auto& pair : pending_) {
+    delete pair.first;
+    pair.second.Run(
+        new base::RefCountedStaticMemory(kHttpNotFound, strlen(kHttpNotFound)));
+  }
 }
 
 std::string DevToolsDataSource::GetSource() const {
@@ -256,7 +230,27 @@ void DevToolsDataSource::StartRemoteDataRequest(
     const content::URLDataSource::GotDataCallback& callback) {
   GURL url = GURL(kRemoteFrontendBase + path);
   CHECK_EQ(url.host(), kRemoteFrontendDomain);
-  new FetchRequest(request_context_.get(), url, callback);
+  if (!url.is_valid()) {
+    callback.Run(
+        new base::RefCountedStaticMemory(kHttpNotFound, strlen(kHttpNotFound)));
+    return;
+  }
+  net::URLFetcher* fetcher =
+      net::URLFetcher::Create(url, net::URLFetcher::GET, this);
+  pending_[fetcher] = callback;
+  fetcher->SetRequestContext(request_context_.get());
+  fetcher->Start();
+}
+
+void DevToolsDataSource::OnURLFetchComplete(const net::URLFetcher* source) {
+  DCHECK(source);
+  PendingRequestsMap::iterator it = pending_.find(source);
+  DCHECK(it != pending_.end());
+  delete source;
+  std::string response;
+  source->GetResponseAsString(&response);
+  it->second.Run(base::RefCountedString::TakeString(&response));
+  pending_.erase(it);
 }
 
 // OpenRemotePageRequest ------------------------------------------------------
