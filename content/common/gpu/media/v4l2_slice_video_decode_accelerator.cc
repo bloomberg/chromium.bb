@@ -391,7 +391,6 @@ V4L2SliceVideoDecodeAccelerator::V4L2SliceVideoDecodeAccelerator(
       output_buffer_queued_count_(0),
       video_profile_(media::VIDEO_CODEC_PROFILE_UNKNOWN),
       output_format_fourcc_(0),
-      output_dpb_size_(0),
       state_(kUninitialized),
       decoder_flushing_(false),
       decoder_resetting_(false),
@@ -673,18 +672,18 @@ bool V4L2SliceVideoDecodeAccelerator::CreateOutputBuffers() {
   DCHECK(surfaces_at_display_.empty());
   DCHECK(surfaces_at_device_.empty());
 
-  frame_buffer_size_ = decoder_->GetPicSize();
-  output_dpb_size_ = decoder_->GetRequiredNumOfPictures();
+  visible_size_ = decoder_->GetPicSize();
+  size_t num_pictures = decoder_->GetRequiredNumOfPictures();
 
-  DCHECK_GT(output_dpb_size_, 0u);
-  DCHECK(!frame_buffer_size_.IsEmpty());
+  DCHECK_GT(num_pictures, 0u);
+  DCHECK(!visible_size_.IsEmpty());
 
   struct v4l2_format format;
   memset(&format, 0, sizeof(format));
   format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
   format.fmt.pix_mp.pixelformat = output_format_fourcc_;
-  format.fmt.pix_mp.width = frame_buffer_size_.width();
-  format.fmt.pix_mp.height = frame_buffer_size_.height();
+  format.fmt.pix_mp.width = visible_size_.width();
+  format.fmt.pix_mp.height = visible_size_.height();
   format.fmt.pix_mp.num_planes = input_planes_count_;
 
   if (device_->Ioctl(VIDIOC_S_FMT, &format) != 0) {
@@ -693,14 +692,24 @@ bool V4L2SliceVideoDecodeAccelerator::CreateOutputBuffers() {
     return false;
   }
 
+  coded_size_.SetSize(base::checked_cast<int>(format.fmt.pix_mp.width),
+                      base::checked_cast<int>(format.fmt.pix_mp.height));
+  DCHECK_EQ(coded_size_.width() % 16, 0);
+  DCHECK_EQ(coded_size_.height() % 16, 0);
+
+  if (!gfx::Rect(coded_size_).Contains(gfx::Rect(visible_size_))) {
+    LOG(ERROR) << "Got invalid adjusted coded size: " << coded_size_.ToString();
+    return false;
+  }
+
   struct v4l2_requestbuffers reqbufs;
   memset(&reqbufs, 0, sizeof(reqbufs));
-  reqbufs.count = output_dpb_size_;
+  reqbufs.count = num_pictures;
   reqbufs.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
   reqbufs.memory = V4L2_MEMORY_MMAP;
   IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_REQBUFS, &reqbufs);
 
-  if (reqbufs.count < output_dpb_size_) {
+  if (reqbufs.count < num_pictures) {
     PLOG(ERROR) << "Could not allocate enough output buffers";
     return false;
   }
@@ -708,12 +717,13 @@ bool V4L2SliceVideoDecodeAccelerator::CreateOutputBuffers() {
   output_buffer_map_.resize(reqbufs.count);
 
   DVLOGF(3) << "buffer_count=" << output_buffer_map_.size()
-            << ", size=" << frame_buffer_size_.ToString();
+            << ", visible size=" << visible_size_.ToString()
+            << ", coded size=" << coded_size_.ToString();
 
   child_message_loop_proxy_->PostTask(
       FROM_HERE,
       base::Bind(&VideoDecodeAccelerator::Client::ProvidePictureBuffers,
-                 client_, output_buffer_map_.size(), frame_buffer_size_,
+                 client_, output_buffer_map_.size(), coded_size_,
                  device_->GetTextureTarget()));
 
   // Wait for the client to call AssignPictureBuffers() on the Child thread.
@@ -1383,7 +1393,7 @@ void V4L2SliceVideoDecodeAccelerator::AssignPictureBuffers(
   // thread is waiting on pictures_assigned_.
   DCHECK(free_output_buffers_.empty());
   for (size_t i = 0; i < output_buffer_map_.size(); ++i) {
-    DCHECK(buffers[i].size() == frame_buffer_size_);
+    DCHECK(buffers[i].size() == coded_size_);
 
     OutputRecord& output_record = output_buffer_map_[i];
     DCHECK(!output_record.at_device);
@@ -1396,7 +1406,7 @@ void V4L2SliceVideoDecodeAccelerator::AssignPictureBuffers(
     EGLImageKHR egl_image = device_->CreateEGLImage(egl_display_,
                                                     egl_context_,
                                                     buffers[i].texture_id(),
-                                                    frame_buffer_size_,
+                                                    coded_size_,
                                                     i,
                                                     output_format_fourcc_,
                                                     output_planes_count_);
@@ -2338,7 +2348,7 @@ void V4L2SliceVideoDecodeAccelerator::OutputSurface(
   output_record.at_client = true;
 
   media::Picture picture(output_record.picture_id, dec_surface->bitstream_id(),
-                         gfx::Rect(frame_buffer_size_));
+                         gfx::Rect(visible_size_));
   DVLOGF(3) << dec_surface->ToString()
             << ", bitstream_id: " << picture.bitstream_buffer_id()
             << ", picture_id: " << picture.picture_buffer_id();

@@ -317,8 +317,8 @@ class CONTENT_EXPORT V4L2SliceVideoDecodeAccelerator
 
   media::VideoCodecProfile video_profile_;
   uint32_t output_format_fourcc_;
-  gfx::Size frame_buffer_size_;
-  size_t output_dpb_size_;
+  gfx::Size visible_size_;
+  gfx::Size coded_size_;
 
   struct BitstreamBufferRef;
   // Input queue of stream buffers coming from the client.
