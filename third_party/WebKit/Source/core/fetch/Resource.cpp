@@ -421,7 +421,12 @@ void Resource::setCachedMetadata(unsigned dataTypeID, const char* data, size_t s
 
     m_cachedMetadata = CachedMetadata::create(dataTypeID, data, size);
 
-    if (cacheType == SendToPlatform) {
+    // We don't support sending the metadata to the platform when the response
+    // was fetched via a ServiceWorker to prevent an attacker's Service Worker
+    // from poisoning the metadata cache.
+    // FIXME: Support sending the metadata even if the response was fetched via
+    // a ServiceWorker. https://crbug.com/448706
+    if (cacheType == SendToPlatform && !m_response.wasFetchedViaServiceWorker()) {
         const Vector<char>& serializedData = m_cachedMetadata->serialize();
         blink::Platform::current()->cacheMetadata(m_response.url(), m_response.responseTime(), serializedData.data(), serializedData.size());
     }
