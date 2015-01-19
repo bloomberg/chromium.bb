@@ -203,13 +203,13 @@ void Event::initEventPath(Node& node)
     m_eventPath = adoptPtrWillBeNoop(new EventPath(node, this));
 }
 
-WillBeHeapVector<RefPtrWillBeRawPtr<EventTarget>> Event::path() const
+WillBeHeapVector<RefPtrWillBeMember<EventTarget>> Event::path() const
 {
     if (!m_currentTarget) {
         ASSERT(m_eventPhase == Event::NONE);
         if (!m_eventPath) {
             // Before dispatching the event
-            return WillBeHeapVector<RefPtrWillBeRawPtr<EventTarget>>();
+            return WillBeHeapVector<RefPtrWillBeMember<EventTarget>>();
         }
         ASSERT(!m_eventPath->isEmpty());
         // After dispatching the event
@@ -230,9 +230,9 @@ WillBeHeapVector<RefPtrWillBeRawPtr<EventTarget>> Event::path() const
     // Returns [window] for events that are directly dispatched to the window object;
     // e.g., window.load, pageshow, etc.
     if (LocalDOMWindow* window = m_currentTarget->toDOMWindow())
-        return WillBeHeapVector<RefPtrWillBeRawPtr<EventTarget>>(1, window);
+        return WillBeHeapVector<RefPtrWillBeMember<EventTarget>>(1, window);
 
-    return WillBeHeapVector<RefPtrWillBeRawPtr<EventTarget>>();
+    return WillBeHeapVector<RefPtrWillBeMember<EventTarget>>();
 }
 
 EventTarget* Event::currentTarget() const

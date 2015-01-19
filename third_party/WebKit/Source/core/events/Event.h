@@ -179,7 +179,7 @@ public:
     EventPath& eventPath() { ASSERT(m_eventPath); return *m_eventPath; }
     void initEventPath(Node&);
 
-    WillBeHeapVector<RefPtrWillBeRawPtr<EventTarget>> path() const;
+    WillBeHeapVector<RefPtrWillBeMember<EventTarget>> path() const;
 
     bool isBeingDispatched() const { return eventPhase(); }
 

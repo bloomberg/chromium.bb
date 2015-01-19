@@ -34,12 +34,12 @@
 
 namespace blink {
 
-WillBeHeapVector<RefPtrWillBeRawPtr<EventTarget>>& TreeScopeEventContext::ensureEventPath(EventPath& path)
+WillBeHeapVector<RefPtrWillBeMember<EventTarget>>& TreeScopeEventContext::ensureEventPath(EventPath& path)
 {
     if (m_eventPath)
         return *m_eventPath;
 
-    m_eventPath = adoptPtrWillBeNoop(new WillBeHeapVector<RefPtrWillBeRawPtr<EventTarget>>());
+    m_eventPath = adoptPtrWillBeNoop(new WillBeHeapVector<RefPtrWillBeMember<EventTarget>>());
     LocalDOMWindow* window = path.windowEventContext().window();
     m_eventPath->reserveCapacity(path.size() + window ? 1 : 0);
     for (size_t i = 0; i < path.size(); ++i) {

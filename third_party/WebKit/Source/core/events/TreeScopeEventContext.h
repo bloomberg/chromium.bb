@@ -62,7 +62,7 @@ public:
     TouchEventContext* touchEventContext() const { return m_touchEventContext.get(); }
     TouchEventContext* ensureTouchEventContext();
 
-    WillBeHeapVector<RefPtrWillBeRawPtr<EventTarget>>& ensureEventPath(EventPath&);
+    WillBeHeapVector<RefPtrWillBeMember<EventTarget>>& ensureEventPath(EventPath&);
 
     bool isInclusiveAncestorOf(const TreeScopeEventContext&);
     void addChild(TreeScopeEventContext& child) { m_children.append(&child); }
@@ -82,7 +82,7 @@ private:
     RefPtrWillBeMember<Node> m_rootNode; // Prevents TreeScope from being freed. TreeScope itself isn't RefCounted.
     RefPtrWillBeMember<EventTarget> m_target;
     RefPtrWillBeMember<EventTarget> m_relatedTarget;
-    OwnPtrWillBeMember<WillBeHeapVector<RefPtr<EventTarget>>> m_eventPath;
+    OwnPtrWillBeMember<WillBeHeapVector<RefPtrWillBeMember<EventTarget>>> m_eventPath;
     RefPtrWillBeMember<TouchEventContext> m_touchEventContext;
 
     WillBeHeapVector<RawPtrWillBeMember<TreeScopeEventContext>> m_children;
