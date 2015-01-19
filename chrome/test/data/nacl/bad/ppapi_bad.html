@@ -126,7 +126,7 @@ function declareTests(tester) {
       'bad_ppp_initialize',
       'ppapi_bad_ppp_initialize.nmf',
       mime_type,
-      'NaCl module load failed: could not initialize module.');
+      'NaCl module load failed: Nexe crashed during startup');
 
   // 'bad_ppp_initialize_crash' loads a manifest, then loads a nexe that crashes
   // before initializing PPAPI module
@@ -135,7 +135,7 @@ function declareTests(tester) {
       'bad_ppp_initialize_crash',
       'ppapi_bad_ppp_initialize_crash.nmf',
       mime_type,
-      'NaCl module load failed: could not initialize module.');
+      'NaCl module load failed: Nexe crashed during startup');
 
   // 'bad_no_ppp_instance' loads a manifest, then loads a nexe that fails to
   // get the required PPP_Instance interface

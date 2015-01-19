@@ -309,22 +309,8 @@ void Plugin::NexeFileDidOpen(int32_t pp_error) {
       nexe_file_info_,
       uses_nonsfi_mode_,
       PP_NATIVE_NACL_PROCESS_TYPE,
-      callback_factory_.NewCallback(&Plugin::NexeFileDidOpenContinuation));
-}
-
-void Plugin::NexeFileDidOpenContinuation(int32_t pp_error) {
-  UNREFERENCED_PARAMETER(pp_error);
-  NaClLog(4, "Entered NexeFileDidOpenContinuation\n");
-  if (LoadNaClModuleContinuationIntern()) {
-    NaClLog(4, "NexeFileDidOpenContinuation: success;"
-            " setting histograms\n");
-    int64_t nexe_size = nacl_interface_->GetNexeSize(pp_instance());
-    nacl_interface_->ReportLoadSuccess(
-        pp_instance(), nexe_size, nexe_size);
-  } else {
-    NaClLog(4, "NexeFileDidOpenContinuation: failed.");
-  }
-  NaClLog(4, "Leaving NexeFileDidOpenContinuation\n");
+      // No-op callback.
+      pp::CompletionCallback());
 }
 
 void Plugin::BitcodeDidTranslate(int32_t pp_error) {
@@ -349,6 +335,12 @@ void Plugin::BitcodeDidTranslate(int32_t pp_error) {
       callback_factory_.NewCallback(&Plugin::BitcodeDidTranslateContinuation));
 }
 
+// This is the only code path that responds to the
+// "init_done"/StartupInitializationComplete() SRPC call, which now has an
+// effect for PNaCl only.
+// TODO(mseaborn): Switch to doing this ReportLoadSuccess() call via the
+// Chrome-IPC-based StartupInitializationComplete() handler in
+// ppb_nacl_private_impl.cc, to match the non-PNaCl cases.
 void Plugin::BitcodeDidTranslateContinuation(int32_t pp_error) {
   NaClLog(4, "Entered BitcodeDidTranslateContinuation\n");
   UNREFERENCED_PARAMETER(pp_error);
