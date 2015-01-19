@@ -338,6 +338,8 @@ void FetchManager::Loader::performHTTPFetch(bool corsFlag, bool corsPreflightFla
         break;
     }
     m_loader = ThreadableLoader::create(*m_executionContext, this, request, threadableLoaderOptions, resourceLoaderOptions);
+    if (!m_loader)
+        performNetworkError("Can't create ThreadableLoader");
 }
 
 void FetchManager::Loader::failed(const String& message)
