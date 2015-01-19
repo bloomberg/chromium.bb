@@ -123,7 +123,7 @@ private:
     virtual void attach(const AttachContext& = AttachContext()) override;
     virtual RenderObject* createRenderer(RenderStyle*) override;
 
-    virtual bool canStartSelection() const override;
+    virtual bool canStartSelection() const override { return false; }
 
     virtual bool isURLAttribute(const Attribute&) const override;
     virtual bool hasLegalLinkAttribute(const QualifiedName&) const override;

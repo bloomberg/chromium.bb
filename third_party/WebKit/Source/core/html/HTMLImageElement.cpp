@@ -346,14 +346,6 @@ RenderObject* HTMLImageElement::createRenderer(RenderStyle* style)
     return image;
 }
 
-bool HTMLImageElement::canStartSelection() const
-{
-    if (shadow())
-        return HTMLElement::canStartSelection();
-
-    return false;
-}
-
 void HTMLImageElement::attach(const AttachContext& context)
 {
     HTMLElement::attach(context);
