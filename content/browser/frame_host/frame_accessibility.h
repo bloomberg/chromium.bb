@@ -48,6 +48,13 @@ class CONTENT_EXPORT FrameAccessibility {
   RenderFrameHostImpl* GetChild(RenderFrameHostImpl* parent_frame_host,
                                 int accessibility_node_id);
 
+  // Given a parent RenderFrameHostImpl and an accessibility node id, look up
+  // all child frames or guest frames that were previously associated with this
+  // frame, and populate |child_frame_hosts| with all of them that resolve
+  // to a valid RenderFrameHostImpl.
+  void GetAllChildFrames(RenderFrameHostImpl* parent_frame_host,
+                         std::vector<RenderFrameHostImpl*>* child_frame_hosts);
+
   // Given a RenderFrameHostImpl, check the mapping table to see if it's
   // the child of a node in some other frame. If so, return true and
   // set the parent frame and accessibility node id in the parent frame,
@@ -60,12 +67,32 @@ class CONTENT_EXPORT FrameAccessibility {
   FrameAccessibility();
   virtual ~FrameAccessibility();
 
+  RenderFrameHostImpl* GetRFHIFromFrameTreeNodeId(
+      RenderFrameHostImpl* parent_frame_host,
+      int64 child_frame_tree_node_id);
+
+  // This structure stores the parent-child relationship between an
+  // accessibility node in a parent frame and its child frame, where the
+  // child frame may be an iframe or the main frame of a guest browser
+  // plugin. It allows the accessibility code to walk both down and up
+  // the "composed" accessibility tree.
   struct ChildFrameMapping {
     ChildFrameMapping();
 
+    // The parent frame host. Required.
     RenderFrameHostImpl* parent_frame_host;
+
+    // The id of the accessibility node that's the host of the child frame,
+    // for example the accessibility node for the <iframe> element or the
+    // <embed> element.
     int accessibility_node_id;
+
+    // If the child frame is an iframe, this is the iframe's FrameTreeNode id,
+    // otherwise 0.
     int64 child_frame_tree_node_id;
+
+    // If the child frame is a browser plugin, this is its instance id,
+    // otherwise 0.
     int browser_plugin_instance_id;
   };
 

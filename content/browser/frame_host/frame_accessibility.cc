@@ -18,7 +18,7 @@ FrameAccessibility* FrameAccessibility::GetInstance() {
 }
 
 FrameAccessibility::ChildFrameMapping::ChildFrameMapping()
-    : parent_frame_host(NULL),
+    : parent_frame_host(nullptr),
       accessibility_node_id(0),
       child_frame_tree_node_id(0),
       browser_plugin_instance_id(0) {}
@@ -105,19 +105,8 @@ RenderFrameHostImpl* FrameAccessibility::GetChild(
     }
 
     if (iter->child_frame_tree_node_id) {
-      FrameTreeNode* child_node =
-          FrameTree::GloballyFindByID(iter->child_frame_tree_node_id);
-      if (!child_node)
-        return NULL;
-
-      // We should have gotten a node in the same frame tree.
-      if (child_node->frame_tree() !=
-              parent_frame_host->frame_tree_node()->frame_tree()) {
-        NOTREACHED();
-        return NULL;
-      }
-
-      return child_node->current_frame_host();
+      return GetRFHIFromFrameTreeNodeId(
+          parent_frame_host, iter->child_frame_tree_node_id);
     }
 
     if (iter->browser_plugin_instance_id) {
@@ -129,7 +118,35 @@ RenderFrameHostImpl* FrameAccessibility::GetChild(
     }
   }
 
-  return NULL;
+  return nullptr;
+}
+
+void FrameAccessibility::GetAllChildFrames(
+    RenderFrameHostImpl* parent_frame_host,
+    std::vector<RenderFrameHostImpl*>* child_frame_hosts) {
+  CHECK(child_frame_hosts);
+
+  for (std::vector<ChildFrameMapping>::iterator iter = mappings_.begin();
+       iter != mappings_.end();
+       ++iter) {
+    if (iter->parent_frame_host != parent_frame_host)
+      continue;
+
+    if (iter->child_frame_tree_node_id) {
+      RenderFrameHostImpl* child_frame_host = GetRFHIFromFrameTreeNodeId(
+          parent_frame_host, iter->child_frame_tree_node_id);
+      if (child_frame_host)
+        child_frame_hosts->push_back(child_frame_host);
+    }
+
+    if (iter->browser_plugin_instance_id) {
+      RenderFrameHost* guest =
+          parent_frame_host->delegate()->GetGuestByInstanceID(
+              iter->browser_plugin_instance_id);
+      if (guest)
+        child_frame_hosts->push_back(static_cast<RenderFrameHostImpl*>(guest));
+    }
+  }
 }
 
 bool FrameAccessibility::GetParent(
@@ -144,9 +161,9 @@ bool FrameAccessibility::GetParent(
           FrameTree::GloballyFindByID(iter->child_frame_tree_node_id);
       if (child_node &&
           child_node->current_frame_host() == child_frame_host) {
-        // We should have gotten a node in the same frame tree.
-        if (child_node->frame_tree() !=
-                iter->parent_frame_host->frame_tree_node()->frame_tree()) {
+        // We should have gotten a *direct* child of the parent frame.
+        if (child_node->parent() !=
+            iter->parent_frame_host->frame_tree_node()) {
           NOTREACHED();
           return false;
         }
@@ -174,6 +191,23 @@ bool FrameAccessibility::GetParent(
   }
 
   return false;
+}
+
+RenderFrameHostImpl* FrameAccessibility::GetRFHIFromFrameTreeNodeId(
+    RenderFrameHostImpl* parent_frame_host,
+    int64 child_frame_tree_node_id) {
+  FrameTreeNode* child_node =
+      FrameTree::GloballyFindByID(child_frame_tree_node_id);
+  if (!child_node)
+    return nullptr;
+
+  // We should have gotten a *direct* child of the parent frame.
+  if (child_node->parent() != parent_frame_host->frame_tree_node()) {
+    NOTREACHED();
+    return nullptr;
+  }
+
+  return child_node->current_frame_host();
 }
 
 }  // namespace content

@@ -95,6 +95,8 @@ class TestBrowserAccessibilityDelegate
     return NULL;
   }
   BrowserAccessibility* AccessibilityGetParentFrame() override { return NULL; }
+  void AccessibilityGetAllChildFrames(
+      std::vector<BrowserAccessibilityManager*>* child_frames) override {}
 
   bool got_fatal_error() const { return got_fatal_error_; }
   void reset_got_fatal_error() { got_fatal_error_ = false; }

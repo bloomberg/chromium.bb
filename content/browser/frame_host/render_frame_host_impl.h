@@ -162,6 +162,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   gfx::NativeViewAccessible AccessibilityGetNativeViewAccessible() override;
   BrowserAccessibilityManager* AccessibilityGetChildFrame(
       int accessibility_node_id) override;
+  void AccessibilityGetAllChildFrames(
+      std::vector<BrowserAccessibilityManager*>* child_frames) override;
   BrowserAccessibility* AccessibilityGetParentFrame() override;
 
   // Creates a RenderFrame in the renderer process.  Only called for
@@ -495,6 +497,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // guest WebContents.
   void UpdateGuestFrameAccessibility(
       const std::map<int32, int>& node_to_browser_plugin_instance_id_map);
+
+  // Asserts that the given RenderFrameHostImpl is part of the same browser
+  // context (and crashes if not), then returns whether the given frame is
+  // part of the same site instance.
+  bool IsSameSiteInstance(RenderFrameHostImpl* other_render_frame_host);
 
   // Informs the content client that geolocation permissions were used.
   void DidUseGeolocationPermission();

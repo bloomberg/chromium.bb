@@ -75,16 +75,16 @@ IAccessible* BrowserAccessibilityManagerWin::GetParentIAccessible() {
 
 void BrowserAccessibilityManagerWin::MaybeCallNotifyWinEvent(DWORD event,
                                                              LONG child_id) {
-  if (!delegate_)
+  BrowserAccessibilityDelegate* delegate = GetDelegateFromRootManager();
+  if (!delegate)
     return;
 
-  HWND hwnd = delegate_->AccessibilityGetAcceleratedWidget();
+  HWND hwnd = delegate->AccessibilityGetAcceleratedWidget();
   if (!hwnd)
     return;
 
   ::NotifyWinEvent(event, hwnd, OBJID_CLIENT, child_id);
 }
-
 
 void BrowserAccessibilityManagerWin::OnNodeCreated(ui::AXNode* node) {
   BrowserAccessibilityManager::OnNodeCreated(node);
@@ -129,7 +129,8 @@ void BrowserAccessibilityManagerWin::OnWindowFocused() {
 void BrowserAccessibilityManagerWin::NotifyAccessibilityEvent(
     ui::AXEvent event_type,
     BrowserAccessibility* node) {
-  if (!delegate_ || !delegate_->AccessibilityGetAcceleratedWidget())
+  BrowserAccessibilityDelegate* root_delegate = GetDelegateFromRootManager();
+  if (!root_delegate || !root_delegate->AccessibilityGetAcceleratedWidget())
     return;
 
   // Inline text boxes are an internal implementation detail, we don't
@@ -143,7 +144,7 @@ void BrowserAccessibilityManagerWin::NotifyAccessibilityEvent(
   if ((event_type == ui::AX_EVENT_FOCUS ||
        event_type == ui::AX_EVENT_BLUR ||
        event_type == ui::AX_EVENT_LOAD_COMPLETE) &&
-      (!delegate_ || !delegate_->AccessibilityViewHasFocus())) {
+      !root_delegate->AccessibilityViewHasFocus()) {
     return;
   }
 
@@ -285,6 +286,22 @@ BrowserAccessibilityWin* BrowserAccessibilityManagerWin::GetFromUniqueIdWin(
     if (result)
       return result->ToBrowserAccessibilityWin();
   }
+
+  // Also search all child frames, such as out-of-process iframes or
+  // guest browser plugins.
+  if (delegate()) {
+    std::vector<BrowserAccessibilityManager*> child_frames;
+    delegate()->AccessibilityGetAllChildFrames(&child_frames);
+    for (size_t i = 0; i < child_frames.size(); ++i) {
+      BrowserAccessibilityManagerWin* child_manager =
+          child_frames[i]->ToBrowserAccessibilityManagerWin();
+      BrowserAccessibilityWin* result =
+          child_manager->GetFromUniqueIdWin(unique_id_win);
+      if (result)
+        return result;
+    }
+  }
+
   return NULL;
 }
 

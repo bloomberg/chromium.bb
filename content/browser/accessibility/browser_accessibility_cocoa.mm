@@ -537,13 +537,8 @@ NSDictionary* attributeToMethodNameMap = nil;
 
   // Get the delegate for the topmost BrowserAccessibilityManager, because
   // that's the only one that can convert points to their origin in the screen.
-  BrowserAccessibilityManager* manager = browserAccessibility_->manager();
-  BrowserAccessibility* root = manager->GetRoot();
-  while (root->GetParent())
-    root = root->GetParent()->manager()->GetRoot();
-  manager = root->manager();
-  BrowserAccessibilityDelegate* delegate = manager->delegate();
-
+  BrowserAccessibilityDelegate* delegate =
+      browserAccessibility_->manager()->GetDelegateFromRootManager();
   if (delegate) {
     gfx::Rect bounds(origin.x, origin.y, size.width, size.height);
     gfx::Point point = delegate->AccessibilityOriginInScreen(bounds);
@@ -1572,4 +1567,3 @@ NSDictionary* attributeToMethodNameMap = nil;
 }
 
 @end
-

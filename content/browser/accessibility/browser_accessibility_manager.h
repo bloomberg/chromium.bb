@@ -75,6 +75,8 @@ class CONTENT_EXPORT BrowserAccessibilityDelegate {
   virtual gfx::NativeViewAccessible AccessibilityGetNativeViewAccessible() = 0;
   virtual BrowserAccessibilityManager* AccessibilityGetChildFrame(
       int accessibility_node_id) = 0;
+  virtual void AccessibilityGetAllChildFrames(
+      std::vector<BrowserAccessibilityManager*>* child_frames) = 0;
   virtual BrowserAccessibility* AccessibilityGetParentFrame() = 0;
 };
 
@@ -243,6 +245,11 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
   void set_delegate(BrowserAccessibilityDelegate* delegate) {
     delegate_ = delegate;
   }
+
+  // If this BrowserAccessibilityManager is a child frame or guest frame,
+  // return the BrowserAccessibilityDelegate from the highest ancestor frame
+  // in the frame tree.
+  BrowserAccessibilityDelegate* GetDelegateFromRootManager();
 
   // Get a snapshot of the current tree as an AXTreeUpdate.
   ui::AXTreeUpdate SnapshotAXTreeForTesting();
