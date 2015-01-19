@@ -140,8 +140,7 @@ function PDFViewer(streamDetails) {
   }
 
   // Parse open pdf parameters.
-  var paramsParser = new OpenPDFParamsParser(this.streamDetails_.originalUrl);
-  this.urlParams_ = paramsParser.urlParams;
+  this.paramsParser_ = new OpenPDFParamsParser();
 }
 
 PDFViewer.prototype = {
@@ -288,17 +287,20 @@ PDFViewer.prototype = {
    * important as later actions can override the effects of previous actions.
    */
   handleURLParams_: function() {
-    if (this.urlParams_.page)
-      this.viewport_.goToPage(this.urlParams_.page);
-    if (this.urlParams_.position) {
+    var urlParams =
+        this.paramsParser_.getViewportFromUrlParams(
+            this.streamDetails_.originalUrl);
+    if (urlParams.page)
+      this.viewport_.goToPage(urlParams.page);
+    if (urlParams.position) {
       // Make sure we don't cancel effect of page parameter.
       this.viewport_.position = {
-        x: this.viewport_.position.x + this.urlParams_.position.x,
-        y: this.viewport_.position.y + this.urlParams_.position.y
+        x: this.viewport_.position.x + urlParams.position.x,
+        y: this.viewport_.position.y + urlParams.position.y
       };
     }
-    if (this.urlParams_.zoom)
-      this.viewport_.setZoom(this.urlParams_.zoom);
+    if (urlParams.zoom)
+      this.viewport_.setZoom(urlParams.zoom);
   },
 
   /**
@@ -341,6 +343,64 @@ PDFViewer.prototype = {
       type: 'getPasswordComplete',
       password: event.detail.password
     });
+  },
+
+  /**
+   * @private
+   * Helper function to navigate to given URL. This might involve navigating
+   * within the PDF page or opening a new url (in the same tab or a new tab).
+   * @param {string} url The URL to navigate to.
+   * @param {boolean} newTab Whether to perform the navigation in a new tab or
+   * in the current tab.
+   */
+  navigate_: function(url, newTab) {
+    if (url.length == 0)
+      return;
+    var originalUrl = this.streamDetails_.originalUrl;
+    // If |urlFragment| starts with '#', then it's for the same URL with a
+    // different URL fragment.
+    if (url.charAt(0) == '#') {
+      // if '#' is already present in |originalUrl| then remove old fragment
+      // and add new url fragment.
+      var hashIndex = originalUrl.search('#');
+      if (hashIndex != -1)
+        url = originalUrl.substring(0, hashIndex) + url;
+      else
+        url = originalUrl + url;
+    }
+
+    var inputURL = url;
+    // If there's no scheme, add http.
+    if (inputURL.indexOf('://') == -1 && inputURL.indexOf('mailto:') == -1)
+      inputURL = 'http://' + inputURL;
+
+    // Make sure inputURL starts with a valid scheme.
+    if (inputURL.indexOf('http://') != 0 &&
+        inputURL.indexOf('https://') != 0 &&
+        inputURL.indexOf('ftp://') != 0 &&
+        inputURL.indexOf('file://') != 0 &&
+        inputURL.indexOf('mailto:') != 0) {
+      return;
+    }
+    // Make sure inputURL is not only a scheme.
+    if (inputURL == 'http://' ||
+        inputURL == 'https://' ||
+        inputURL == 'ftp://' ||
+        inputURL == 'file://' ||
+        inputURL == 'mailto:') {
+      return;
+    }
+
+    if (newTab) {
+      chrome.tabs.create({ url: inputURL });
+    } else {
+      var pageNumber =
+          this.paramsParser_.getViewportFromUrlParams(inputURL).page;
+      if (pageNumber != undefined)
+        this.viewport_.goToPage(pageNumber);
+      else
+        window.location.href = inputURL;
+    }
   },
 
   /**
@@ -390,10 +450,10 @@ PDFViewer.prototype = {
       case 'navigate':
         if (this.isPrintPreview_)
           break;
-        if (message.data.newTab)
-          chrome.tabs.create({ url: message.data.url });
-        else
-          window.location.href = message.data.url;
+        this.navigate_(message.data.url, message.data.newTab);
+        break;
+      case 'setNamedDestinations':
+        this.paramsParser_.namedDestinations = message.data.namedDestinations;
         break;
       case 'setScrollPosition':
         var position = this.viewport_.position;

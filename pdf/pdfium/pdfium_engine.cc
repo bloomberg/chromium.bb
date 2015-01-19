@@ -2382,6 +2382,32 @@ int PDFiumEngine::GetNamedDestinationPage(const std::string& destination) {
   return dest ? FPDFDest_GetPageIndex(doc_, dest) : -1;
 }
 
+pp::VarDictionary PDFiumEngine::GetNamedDestinations() {
+  pp::VarDictionary named_destinations;
+  for (unsigned long i = 0; i < FPDF_CountNamedDests(doc_); i++) {
+    base::string16 name;
+    unsigned long buffer_bytes;
+    FPDF_GetNamedDest(doc_, i, NULL, buffer_bytes);
+    size_t name_length = buffer_bytes / sizeof(base::string16::value_type);
+    if (name_length > 0) {
+      PDFiumAPIStringBufferAdapter<base::string16> api_string_adapter(
+          &name, name_length, true);
+      FPDF_DEST dest = FPDF_GetNamedDest(doc_, i, api_string_adapter.GetData(),
+                                         buffer_bytes);
+      api_string_adapter.Close(name_length);
+      if (dest) {
+        std::string named_dest = base::UTF16ToUTF8(name);
+        int page_number = GetNamedDestinationPage(named_dest);
+        if (page_number >= 0) {
+          named_destinations.Set(pp::Var(named_dest.c_str()),
+                                 pp::Var(page_number));
+        }
+      }
+    }
+  }
+  return named_destinations;
+}
+
 int PDFiumEngine::GetFirstVisiblePage() {
   CalculateVisiblePages();
   return first_visible_page_;

@@ -136,6 +136,10 @@ const char kJSGetSelectedTextType[] = "getSelectedText";
 const char kJSGetSelectedTextReplyType[] = "getSelectedTextReply";
 const char kJSSelectedText[] = "selectedText";
 
+// List of named destinations (Plugin -> Page)
+const char kJSSetNamedDestinationsType[] = "setNamedDestinations";
+const char kJSNamedDestinations[] = "namedDestinations";
+
 const int kFindResultCooldownMs = 100;
 
 const double kMinZoom = 0.01;
@@ -849,42 +853,9 @@ void OutOfProcessInstance::ScrollToPage(int page) {
 
 void OutOfProcessInstance::NavigateTo(const std::string& url,
                                       bool open_in_new_tab) {
-  std::string url_copy(url);
-
-  // Empty |url_copy| is ok, and will effectively be a reload.
-  // Skip the code below so an empty URL does not turn into "http://", which
-  // will cause GURL to fail a DCHECK.
-  if (!url_copy.empty()) {
-    // If |url_copy| starts with '#', then it's for the same URL with a
-    // different URL fragment.
-    if (url_copy[0] == '#') {
-      url_copy = url_ + url_copy;
-    }
-    // If there's no scheme, add http.
-    if (url_copy.find("://") == std::string::npos &&
-        url_copy.find("mailto:") == std::string::npos) {
-      url_copy = std::string("http://") + url_copy;
-    }
-    // Make sure |url_copy| starts with a valid scheme.
-    if (url_copy.find("http://") != 0 &&
-        url_copy.find("https://") != 0 &&
-        url_copy.find("ftp://") != 0 &&
-        url_copy.find("file://") != 0 &&
-        url_copy.find("mailto:") != 0) {
-      return;
-    }
-    // Make sure |url_copy| is not only a scheme.
-    if (url_copy == "http://" ||
-        url_copy == "https://" ||
-        url_copy == "ftp://" ||
-        url_copy == "file://" ||
-        url_copy == "mailto:") {
-      return;
-    }
-  }
   pp::VarDictionary message;
   message.Set(kType, kJSNavigateType);
-  message.Set(kJSNavigateUrl, url_copy);
+  message.Set(kJSNavigateUrl, url);
   message.Set(kJSNavigateNewTab, open_in_new_tab);
   PostMessage(message);
 }
@@ -1109,10 +1080,18 @@ void OutOfProcessInstance::DocumentLoadComplete(int page_count) {
     OnGeometryChanged(0, 0);
   }
 
-  pp::VarDictionary message;
-  message.Set(pp::Var(kType), pp::Var(kJSLoadProgressType));
-  message.Set(pp::Var(kJSProgressPercentage), pp::Var(100)) ;
-  PostMessage(message);
+  pp::VarDictionary named_destinations_message;
+  pp::VarDictionary named_destinations = engine_->GetNamedDestinations();
+  named_destinations_message.Set(pp::Var(kType),
+                                 pp::Var(kJSSetNamedDestinationsType));
+  named_destinations_message.Set(pp::Var(kJSNamedDestinations),
+                                 pp::Var(named_destinations));
+  PostMessage(named_destinations_message);
+
+  pp::VarDictionary progress_message;
+  progress_message.Set(pp::Var(kType), pp::Var(kJSLoadProgressType));
+  progress_message.Set(pp::Var(kJSProgressPercentage), pp::Var(100));
+  PostMessage(progress_message);
 
   pp::VarDictionary bookmarksMessage;
   bookmarksMessage.Set(pp::Var(kType), pp::Var(kJSBookmarksType));

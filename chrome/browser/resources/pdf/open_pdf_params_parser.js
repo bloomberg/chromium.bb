@@ -10,9 +10,8 @@
  * @param {string} url to be parsed.
  */
 function OpenPDFParamsParser(url) {
-  this.url_ = url;
-  this.urlParams = {};
-  this.parseOpenPDFParams_();
+  // A dictionary of all the named destinations in the PDF.
+  this.namedDestinations = {};
 }
 
 OpenPDFParamsParser.prototype = {
@@ -22,8 +21,9 @@ OpenPDFParamsParser.prototype = {
    * parameter is passed while opening PDF then PDF should be opened
    * at the specified zoom level.
    * @param {number} zoom value.
+   * @param {Object} viewportPosition to store zoom and position value.
    */
-  parseZoomParam_: function(paramValue) {
+  parseZoomParam_: function(paramValue, viewportPosition) {
     var paramValueSplit = paramValue.split(',');
     if ((paramValueSplit.length != 1) && (paramValueSplit.length != 3))
       return;
@@ -35,31 +35,42 @@ OpenPDFParamsParser.prototype = {
 
     // Handle #zoom=scale.
     if (paramValueSplit.length == 1) {
-      this.urlParams['zoom'] = zoomFactor;
+      viewportPosition['zoom'] = zoomFactor;
       return;
     }
 
     // Handle #zoom=scale,left,top.
     var position = {x: parseFloat(paramValueSplit[1]),
                     y: parseFloat(paramValueSplit[2])};
-    this.urlParams['position'] = position;
-    this.urlParams['zoom'] = zoomFactor;
+    viewportPosition['position'] = position;
+    viewportPosition['zoom'] = zoomFactor;
   },
 
   /**
    * @private
-   * Parse open PDF parameters. These parameters are mentioned in the url
+   * Parse PDF url parameters. These parameters are mentioned in the url
    * and specify actions to be performed when opening pdf files.
    * See http://www.adobe.com/content/dam/Adobe/en/devnet/acrobat/
    * pdfs/pdf_open_parameters.pdf for details.
+   * @param {string} url that needs to be parsed.
+   * @return {Object} A dictionary containing the viewport which should be
+   * displayed based on the URL.
    */
-  parseOpenPDFParams_: function() {
-    var originalUrl = this.url_;
-    var paramIndex = originalUrl.search('#');
+  getViewportFromUrlParams: function(url) {
+    var viewportPosition = {};
+    var paramIndex = url.search('#');
     if (paramIndex == -1)
-      return;
+      return viewportPosition;
 
-    var paramTokens = originalUrl.substring(paramIndex + 1).split('&');
+    var paramTokens = url.substring(paramIndex + 1).split('&');
+    if ((paramTokens.length == 1) && (paramTokens[0].search('=') == -1)) {
+      // Handle the case of http://foo.com/bar#NAMEDDEST. This is not
+      // explicitlymentioned except by example in the Adobe
+      // "PDF Open Parameters" document.
+      viewportPosition['page'] = this.namedDestinations[paramTokens[0]];
+      return viewportPosition;
+    }
+
     var paramsDictionary = {};
     for (var i = 0; i < paramTokens.length; ++i) {
       var keyValueSplit = paramTokens[i].split('=');
@@ -68,14 +79,22 @@ OpenPDFParamsParser.prototype = {
       paramsDictionary[keyValueSplit[0]] = keyValueSplit[1];
     }
 
+    if ('nameddest' in paramsDictionary) {
+      var page = this.namedDestinations[paramsDictionary['nameddest']];
+      if (page != undefined)
+        viewportPosition['page'] = page;
+    }
+
     if ('page' in paramsDictionary) {
       // |pageNumber| is 1-based, but goToPage() take a zero-based page number.
       var pageNumber = parseInt(paramsDictionary['page']);
-      if (!isNaN(pageNumber))
-        this.urlParams['page'] = pageNumber - 1;
+      if (!isNaN(pageNumber) && pageNumber > 0)
+        viewportPosition['page'] = pageNumber - 1;
     }
 
     if ('zoom' in paramsDictionary)
-      this.parseZoomParam_(paramsDictionary['zoom']);
+      this.parseZoomParam_(paramsDictionary['zoom'], viewportPosition);
+
+    return viewportPosition;
   }
 };
