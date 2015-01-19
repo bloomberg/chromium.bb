@@ -1,3 +1,5 @@
+CONSOLE WARNING: 'webkitOfflineAudioContext' is deprecated. Please use 'OfflineAudioContext' instead.
+CONSOLE WARNING: 'webkitAudioContext' is deprecated. Please use 'AudioContext' instead.
 CONSOLE WARNING: 'window.webkitStorageInfo' is deprecated. Please use 'navigator.webkitTemporaryStorage' or 'navigator.webkitPersistentStorage' instead.
 CONSOLE WARNING: 'webkitIDBTransaction' is deprecated. Please use 'IDBTransaction' instead.
 CONSOLE WARNING: 'webkitIDBRequest' is deprecated. Please use 'IDBRequest' instead.
@@ -273,6 +275,8 @@ interface CompositionEvent
     method constructor
     method initCompositionEvent
 interface ConvolverNode
+    method constructor
+interface CryptoKey
     method constructor
 interface CustomEvent
     method constructor
@@ -1060,6 +1064,10 @@ interface MediaList
     method constructor
     method deleteMedium
     method item
+interface MediaQueryList
+    method addListener
+    method constructor
+    method removeListener
 interface MediaQueryListEvent
     method constructor
 interface MediaSource
@@ -2613,8 +2621,6 @@ interface WebKitCSSMatrix
     method skewY
     method toString
     method translate
-interface WebKitGamepad
-    method constructor
 interface WebKitMutationObserver
     method constructor
     method disconnect

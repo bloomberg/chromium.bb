@@ -49,6 +49,8 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method constructor
 [Worker] interface CloseEvent
 [Worker]     method constructor
+[Worker] interface CryptoKey
+[Worker]     method constructor
 [Worker] interface DOMException
 [Worker]     attribute ABORT_ERR
 [Worker]     attribute DATA_CLONE_ERR
@@ -238,10 +240,13 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method append
 [Worker]     method constructor
 [Worker]     method delete
+[Worker]     method entries
 [Worker]     method get
 [Worker]     method getAll
 [Worker]     method has
+[Worker]     method keys
 [Worker]     method set
+[Worker]     method values
 [Worker] interface IDBCursor
 [Worker]     method advance
 [Worker]     method constructor

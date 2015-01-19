@@ -53,6 +53,8 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method valueOf
 [Worker] interface CloseEvent
 [Worker]     method constructor
+[Worker] interface CryptoKey
+[Worker]     method constructor
 [Worker] interface DOMException
 [Worker]     attribute ABORT_ERR
 [Worker]     attribute DATA_CLONE_ERR
