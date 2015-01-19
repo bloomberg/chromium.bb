@@ -174,10 +174,7 @@ template<typename U> class ThreadingTrait<const U> : public ThreadingTrait<U> { 
 #define TypedHeapEnumName(Type) Type##Heap,
 
 enum TypedHeaps {
-    General1Heap = 0,
-    General2Heap,
-    General3Heap,
-    General4Heap,
+    GeneralHeap = 0,
     VectorBackingHeap,
     InlineVectorBackingHeap,
     HashTableBackingHeap,

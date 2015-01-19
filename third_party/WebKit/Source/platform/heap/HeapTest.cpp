@@ -1642,7 +1642,7 @@ TEST(HeapTest, BasicFunctionality)
 
         CheckWithSlack(baseLevel + total, Heap::objectPayloadSizeForTesting(), slack);
         if (testPagesAllocated)
-            EXPECT_EQ(Heap::allocatedSpace(), 2 * blinkPageSize);
+            EXPECT_EQ(Heap::allocatedSpace(), blinkPageSize);
 
         EXPECT_EQ(alloc32->get(0), 40);
         EXPECT_EQ(alloc32->get(31), 40);

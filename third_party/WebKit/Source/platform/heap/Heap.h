@@ -1367,25 +1367,9 @@ Address ThreadHeap::allocate(size_t size, size_t gcInfoIndex)
     return allocateObject(allocationSizeFromSize(size), gcInfoIndex);
 }
 
-// We use four heaps for general type objects depending on their object sizes.
-// Objects whose size is 1 - 3 words go to the first general type heap.
-// Objects whose size is 4 - 7 words go to the second general type heap.
-// Objects whose size is 8 - 15 words go to the third general type heap.
-// Objects whose size is more than 15 words go to the fourth general type heap.
 template<typename T>
 struct HeapIndexTrait {
-    static int index(size_t size)
-    {
-        static const int wordSize = sizeof(void*);
-        if (size < 8 * wordSize) {
-            if (size < 4 * wordSize)
-                return General1Heap;
-            return General2Heap;
-        }
-        if (size < 16 * wordSize)
-            return General3Heap;
-        return General4Heap;
-    };
+    static int index() { return GeneralHeap; };
 };
 
 // FIXME: The forward declaration is layering violation.
@@ -1393,7 +1377,7 @@ struct HeapIndexTrait {
     class Type;                                      \
     template<>                                       \
     struct HeapIndexTrait<class Type> {              \
-    static int index(size_t) { return Type##Heap; }; \
+    static int index() { return Type##Heap; }; \
     };
 FOR_EACH_TYPED_HEAP(DEFINE_TYPED_HEAP_TRAIT)
 #undef DEFINE_TYPED_HEAP_TRAIT
@@ -1409,7 +1393,7 @@ Address Heap::allocateOnHeapIndex(size_t size, int heapIndex, size_t gcInfoIndex
 template<typename T>
 Address Heap::allocate(size_t size)
 {
-    return allocateOnHeapIndex<T>(size, HeapIndexTrait<T>::index(size), GCInfoTrait<T>::index());
+    return allocateOnHeapIndex<T>(size, HeapIndexTrait<T>::index(), GCInfoTrait<T>::index());
 }
 
 template<typename T>
@@ -1420,7 +1404,7 @@ Address Heap::reallocate(void* previous, size_t size)
         // malloc(0).  In both cases we do nothing and return nullptr.
         return nullptr;
     }
-    Address address = Heap::allocateOnHeapIndex<T>(size, HeapIndexTrait<T>::index(size), GCInfoTrait<T>::index());
+    Address address = Heap::allocateOnHeapIndex<T>(size, HeapIndexTrait<T>::index(), GCInfoTrait<T>::index());
     if (!previous) {
         // This is equivalent to malloc(size).
         return address;
