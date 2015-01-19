@@ -160,6 +160,7 @@ crbug.com/234069 [ Mac Release ] fast/events/touch/gesture/long-press-drag-drop-
 
 crbug.com/330083 imported/web-platform-tests/shadow-dom/elements-and-dom-objects/extensions-to-element-interface/methods/elements-001.html [ Failure ]
 crbug.com/330083 imported/web-platform-tests/shadow-dom/elements-and-dom-objects/extensions-to-element-interface/methods/non-element-nodes-001.html [ Failure ]
+crbug.com/442632 imported/web-platform-tests/shadow-dom/elements-and-dom-objects/extensions-to-event-interface/event-path-001.html [ Failure ]
 crbug.com/330083 imported/web-platform-tests/shadow-dom/elements-and-dom-objects/shadowroot-object/shadowroot-methods/test-004.html [ Failure ]
 crbug.com/330083 imported/web-platform-tests/shadow-dom/events/event-dispatch/test-001.html [ Failure ]
 crbug.com/330083 imported/web-platform-tests/shadow-dom/events/event-dispatch/test-003.html [ Failure ]

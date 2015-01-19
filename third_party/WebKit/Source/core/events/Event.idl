@@ -70,5 +70,5 @@
     [MeasureAs=EventSrcElement] readonly attribute EventTarget srcElement;
     [CallWith=ExecutionContext, ImplementedAs=legacyReturnValue, MeasureAs=EventReturnValue] attribute boolean returnValue;
     [MeasureAs=EventCancelBubble] attribute boolean cancelBubble;
-    [MeasureAs=EventPath] readonly attribute NodeList path;
+    [MeasureAs=EventPath] readonly attribute EventTarget[] path;
 };

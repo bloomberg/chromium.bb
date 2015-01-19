@@ -34,22 +34,24 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<StaticNodeList> TreeScopeEventContext::ensureEventPath(EventPath& path)
+WillBeHeapVector<RefPtrWillBeRawPtr<EventTarget>>& TreeScopeEventContext::ensureEventPath(EventPath& path)
 {
     if (m_eventPath)
-        return m_eventPath;
+        return *m_eventPath;
 
-    WillBeHeapVector<RefPtrWillBeMember<Node>> nodes;
-    nodes.reserveInitialCapacity(path.size());
+    m_eventPath = adoptPtrWillBeNoop(new WillBeHeapVector<RefPtrWillBeRawPtr<EventTarget>>());
+    LocalDOMWindow* window = path.windowEventContext().window();
+    m_eventPath->reserveCapacity(path.size() + window ? 1 : 0);
     for (size_t i = 0; i < path.size(); ++i) {
         Node& rootNode = path[i].treeScopeEventContext().rootNode();
         if (rootNode.isShadowRoot() && toShadowRoot(rootNode).type() == ShadowRoot::AuthorShadowRoot)
-            nodes.append(path[i].node());
+            m_eventPath->append(path[i].node());
         else if (path[i].treeScopeEventContext().isInclusiveAncestorOf(*this))
-            nodes.append(path[i].node());
+            m_eventPath->append(path[i].node());
     }
-    m_eventPath = StaticNodeList::adopt(nodes);
-    return m_eventPath;
+    if (window)
+        m_eventPath->append(window);
+    return *m_eventPath;
 }
 
 TouchEventContext* TreeScopeEventContext::ensureTouchEventContext()

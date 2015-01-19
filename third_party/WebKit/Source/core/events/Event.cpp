@@ -203,28 +203,36 @@ void Event::initEventPath(Node& node)
     m_eventPath = adoptPtrWillBeNoop(new EventPath(node, this));
 }
 
-PassRefPtrWillBeRawPtr<StaticNodeList> Event::path() const
+WillBeHeapVector<RefPtrWillBeRawPtr<EventTarget>> Event::path() const
 {
     if (!m_currentTarget) {
         ASSERT(m_eventPhase == Event::NONE);
         if (!m_eventPath) {
             // Before dispatching the event
-            return StaticNodeList::createEmpty();
+            return WillBeHeapVector<RefPtrWillBeRawPtr<EventTarget>>();
         }
         ASSERT(!m_eventPath->isEmpty());
         // After dispatching the event
         return m_eventPath->last().treeScopeEventContext().ensureEventPath(*m_eventPath);
     }
-    if (!m_currentTarget->toNode())
-        return StaticNodeList::createEmpty();
-    Node* node = m_currentTarget->toNode();
-    size_t eventPathSize = m_eventPath->size();
-    for (size_t i = 0; i < eventPathSize; ++i) {
-        if (node == (*m_eventPath)[i].node()) {
-            return (*m_eventPath)[i].treeScopeEventContext().ensureEventPath(*m_eventPath);
+
+    if (Node* node = m_currentTarget->toNode()) {
+        ASSERT(m_eventPath);
+        size_t eventPathSize = m_eventPath->size();
+        for (size_t i = 0; i < eventPathSize; ++i) {
+            if (node == (*m_eventPath)[i].node()) {
+                return (*m_eventPath)[i].treeScopeEventContext().ensureEventPath(*m_eventPath);
+            }
         }
+        ASSERT_NOT_REACHED();
     }
-    return StaticNodeList::createEmpty();
+
+    // Returns [window] for events that are directly dispatched to the window object;
+    // e.g., window.load, pageshow, etc.
+    if (LocalDOMWindow* window = m_currentTarget->toDOMWindow())
+        return WillBeHeapVector<RefPtrWillBeRawPtr<EventTarget>>(1, window);
+
+    return WillBeHeapVector<RefPtrWillBeRawPtr<EventTarget>>();
 }
 
 EventTarget* Event::currentTarget() const

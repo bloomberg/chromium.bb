@@ -1,30 +1,30 @@
 
 event.path on node #C
-#C, #B, #X, #E, #D, #I, #H, #G, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], length: 13
+#C, #B, #X, #E, #D, #I, #H, #G, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], [object Window], length: 14
 
 event.path on node #B
-#C, #B, #X, #E, #D, #I, #H, #G, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], length: 13
+#C, #B, #X, #E, #D, #I, #H, #G, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], [object Window], length: 14
 
 event.path on node #X
-#C, #B, #X, #E, #D, #I, #H, #G, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], length: 13
+#C, #B, #X, #E, #D, #I, #H, #G, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], [object Window], length: 14
 
 event.path on node #E
-#C, #B, #X, #E, #D, #I, #H, #G, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], length: 13
+#C, #B, #X, #E, #D, #I, #H, #G, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], [object Window], length: 14
 
 event.path on node #D
-#C, #B, #X, #E, #D, #I, #H, #G, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], length: 13
+#C, #B, #X, #E, #D, #I, #H, #G, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], [object Window], length: 14
 
 event.path on node #I
-#C, #B, #X, #E, #D, #I, #H, #G, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], length: 13
+#C, #B, #X, #E, #D, #I, #H, #G, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], [object Window], length: 14
 
 event.path on node #H
-#C, #B, #X, #E, #D, #I, #H, #G, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], length: 13
+#C, #B, #X, #E, #D, #I, #H, #G, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], [object Window], length: 14
 
 event.path on node #G
-#C, #B, #X, #E, #D, #I, #H, #G, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], length: 13
+#C, #B, #X, #E, #D, #I, #H, #G, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], [object Window], length: 14
 
 event.path on node #A
-#C, #B, #X, #E, #D, #I, #H, #G, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], length: 13
+#C, #B, #X, #E, #D, #I, #H, #G, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], [object Window], length: 14
 PASS successfullyParsed is true
 
 TEST COMPLETE
