@@ -38,6 +38,7 @@ void SaveRegistrationCallback(
     bool* called,
     scoped_refptr<ServiceWorkerRegistration>* registration_out,
     ServiceWorkerStatusCode status,
+    const std::string& status_message,
     ServiceWorkerRegistration* registration) {
   EXPECT_EQ(expected_status, status);
   *called = true;
@@ -944,7 +945,7 @@ class UpdateJobTestHelper
       version->script_cache_map()->NotifyStartedCaching(script, resource_id);
       WriteStringResponse(storage(), resource_id, kMockScriptBody);
       version->script_cache_map()->NotifyFinishedCaching(
-          script, kMockScriptSize, net::URLRequestStatus());
+          script, kMockScriptSize, net::URLRequestStatus(), std::string());
     } else {
       // Spoof caching the script for the new version.
       int64 resource_id = storage()->NewResourceId();
@@ -954,7 +955,7 @@ class UpdateJobTestHelper
       else
         WriteStringResponse(storage(), resource_id, "mock_different_script");
       version->script_cache_map()->NotifyFinishedCaching(
-          script, kMockScriptSize, net::URLRequestStatus());
+          script, kMockScriptSize, net::URLRequestStatus(), std::string());
     }
     EmbeddedWorkerTestHelper::OnStartWorker(
         embedded_worker_id, version_id, scope, script, pause_after_download);

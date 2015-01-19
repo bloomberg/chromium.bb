@@ -61,6 +61,7 @@ class CONTENT_EXPORT ServiceWorkerContextCore
  public:
   typedef base::Callback<void(ServiceWorkerStatusCode status)> StatusCallback;
   typedef base::Callback<void(ServiceWorkerStatusCode status,
+                              const std::string& status_message,
                               int64 registration_id)> RegistrationCallback;
   typedef base::Callback<
       void(ServiceWorkerStatusCode status)> UnregistrationCallback;
@@ -213,6 +214,7 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   void RegistrationComplete(const GURL& pattern,
                             const RegistrationCallback& callback,
                             ServiceWorkerStatusCode status,
+                            const std::string& status_message,
                             ServiceWorkerRegistration* registration);
 
   void UnregistrationComplete(const GURL& pattern,

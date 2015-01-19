@@ -142,6 +142,7 @@ void ServiceWorkerContextWrapper::set_storage_partition(
 static void FinishRegistrationOnIO(
     const ServiceWorkerContext::ResultCallback& continuation,
     ServiceWorkerStatusCode status,
+    const std::string& status_message,
     int64 registration_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BrowserThread::PostTask(

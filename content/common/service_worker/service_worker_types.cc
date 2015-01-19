@@ -12,6 +12,8 @@ const char kServiceWorkerUnregisterErrorPrefix[] =
     "Failed to unregister a ServiceWorkerRegistration: ";
 const char kServiceWorkerGetRegistrationErrorPrefix[] =
     "Failed to get a ServiceWorkerRegistration: ";
+const char kFetchScriptError[] =
+    "An unknown error occurred when fetching the script.";
 
 ServiceWorkerFetchRequest::ServiceWorkerFetchRequest()
     : mode(FETCH_REQUEST_MODE_NO_CORS),

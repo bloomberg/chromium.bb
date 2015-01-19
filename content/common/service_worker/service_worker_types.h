@@ -36,6 +36,7 @@ static const int kInvalidServiceWorkerRequestId = -1;
 extern const char kServiceWorkerRegisterErrorPrefix[];
 extern const char kServiceWorkerUnregisterErrorPrefix[];
 extern const char kServiceWorkerGetRegistrationErrorPrefix[];
+extern const char kFetchScriptError[];
 
 // Constants for invalid identifiers.
 static const int kInvalidServiceWorkerHandleId = -1;

@@ -38,6 +38,7 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase,
                                  public ServiceWorkerRegistration::Listener {
  public:
   typedef base::Callback<void(ServiceWorkerStatusCode status,
+                              const std::string& status_message,
                               ServiceWorkerRegistration* registration)>
       RegistrationCallback;
 
@@ -131,8 +132,12 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase,
   void ActivateAndContinue();
   void OnActivateFinished(ServiceWorkerStatusCode status);
   void Complete(ServiceWorkerStatusCode status);
-  void CompleteInternal(ServiceWorkerStatusCode status);
+  void Complete(ServiceWorkerStatusCode status,
+                const std::string& status_message);
+  void CompleteInternal(ServiceWorkerStatusCode status,
+                        const std::string& status_message);
   void ResolvePromise(ServiceWorkerStatusCode status,
+                      const std::string& status_message,
                       ServiceWorkerRegistration* registration);
 
   // EmbeddedWorkerInstance::Listener override of OnPausedAfterDownload.
@@ -162,6 +167,7 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase,
   bool doom_installing_worker_;
   bool is_promise_resolved_;
   ServiceWorkerStatusCode promise_resolved_status_;
+  std::string promise_resolved_status_message_;
   scoped_refptr<ServiceWorkerRegistration> promise_resolved_registration_;
   base::WeakPtrFactory<ServiceWorkerRegisterJob> weak_factory_;
 

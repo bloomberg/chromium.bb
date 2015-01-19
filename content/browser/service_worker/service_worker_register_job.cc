@@ -12,6 +12,7 @@
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_storage.h"
 #include "content/browser/service_worker/service_worker_utils.h"
+#include "content/common/service_worker/service_worker_types.h"
 #include "net/base/net_errors.h"
 
 namespace content {
@@ -71,8 +72,9 @@ void ServiceWorkerRegisterJob::AddCallback(
       provider_host->AddScopedProcessReferenceToPattern(pattern_);
     return;
   }
-  RunSoon(base::Bind(
-      callback, promise_resolved_status_, promise_resolved_registration_));
+  RunSoon(base::Bind(callback, promise_resolved_status_,
+                     promise_resolved_status_message_,
+                     promise_resolved_registration_));
 }
 
 void ServiceWorkerRegisterJob::Start() {
@@ -98,7 +100,7 @@ void ServiceWorkerRegisterJob::Start() {
 
 void ServiceWorkerRegisterJob::Abort() {
   SetPhase(ABORT);
-  CompleteInternal(SERVICE_WORKER_ERROR_ABORT);
+  CompleteInternal(SERVICE_WORKER_ERROR_ABORT, std::string());
   // Don't have to call FinishJob() because the caller takes care of removing
   // the jobs from the queue.
 }
@@ -119,7 +121,7 @@ RegistrationJobType ServiceWorkerRegisterJob::GetType() const {
 void ServiceWorkerRegisterJob::DoomInstallingWorker() {
   doom_installing_worker_ = true;
   if (phase_ == INSTALL)
-    Complete(SERVICE_WORKER_ERROR_INSTALL_WORKER_FAILED);
+    Complete(SERVICE_WORKER_ERROR_INSTALL_WORKER_FAILED, std::string());
 }
 
 ServiceWorkerRegisterJob::Internal::Internal() {}
@@ -273,7 +275,6 @@ void ServiceWorkerRegisterJob::RegisterAndContinue(
     ServiceWorkerStatusCode status) {
   SetPhase(REGISTER);
   if (status != SERVICE_WORKER_OK) {
-    // Abort this registration job.
     Complete(status);
     return;
   }
@@ -309,7 +310,7 @@ void ServiceWorkerRegisterJob::ContinueWithRegistrationForSameScriptUrl(
   // either case.
   DCHECK(!existing_registration->installing_version());
   if (existing_registration->active_version()) {
-    ResolvePromise(status, existing_registration.get());
+    ResolvePromise(status, std::string(), existing_registration.get());
     Complete(SERVICE_WORKER_OK);
     return;
   }
@@ -352,6 +353,7 @@ void ServiceWorkerRegisterJob::OnStartWorkerFinished(
   // be updated to a more specific one.
   const net::URLRequestStatus& main_script_status =
       new_version()->script_cache_map()->main_script_status();
+  std::string message;
   if (main_script_status.status() != net::URLRequestStatus::SUCCESS) {
     switch (main_script_status.error()) {
       case net::ERR_INSECURE_RESPONSE:
@@ -364,8 +366,11 @@ void ServiceWorkerRegisterJob::OnStartWorkerFinished(
       default:
         status = SERVICE_WORKER_ERROR_NETWORK;
     }
+    message = new_version()->script_cache_map()->main_script_status_message();
+    if (message.empty())
+      message = kFetchScriptError;
   }
-  Complete(status);
+  Complete(status, message);
 }
 
 // This function corresponds to the spec's [[Install]] algorithm.
@@ -381,7 +386,7 @@ void ServiceWorkerRegisterJob::InstallAndContinue() {
   new_version()->SetStatus(ServiceWorkerVersion::INSTALLING);
 
   // "Resolve registrationPromise with registration."
-  ResolvePromise(SERVICE_WORKER_OK, registration());
+  ResolvePromise(SERVICE_WORKER_OK, std::string(), registration());
 
   // "Fire a simple event named updatefound..."
   registration()->NotifyUpdateFound();
@@ -450,12 +455,18 @@ void ServiceWorkerRegisterJob::OnStoreRegistrationComplete(
 }
 
 void ServiceWorkerRegisterJob::Complete(ServiceWorkerStatusCode status) {
-  CompleteInternal(status);
+  Complete(status, std::string());
+}
+
+void ServiceWorkerRegisterJob::Complete(ServiceWorkerStatusCode status,
+                                        const std::string& status_message) {
+  CompleteInternal(status, status_message);
   context_->job_coordinator()->FinishJob(pattern_, this);
 }
 
 void ServiceWorkerRegisterJob::CompleteInternal(
-    ServiceWorkerStatusCode status) {
+    ServiceWorkerStatusCode status,
+    const std::string& status_message) {
   SetPhase(COMPLETE);
   if (status != SERVICE_WORKER_OK) {
     if (registration()) {
@@ -473,7 +484,7 @@ void ServiceWorkerRegisterJob::CompleteInternal(
       }
     }
     if (!is_promise_resolved_)
-      ResolvePromise(status, NULL);
+      ResolvePromise(status, status_message, NULL);
   }
   DCHECK(callbacks_.empty());
   if (registration()) {
@@ -486,16 +497,18 @@ void ServiceWorkerRegisterJob::CompleteInternal(
 
 void ServiceWorkerRegisterJob::ResolvePromise(
     ServiceWorkerStatusCode status,
+    const std::string& status_message,
     ServiceWorkerRegistration* registration) {
   DCHECK(!is_promise_resolved_);
 
   is_promise_resolved_ = true;
   promise_resolved_status_ = status;
+  promise_resolved_status_message_ = status_message,
   promise_resolved_registration_ = registration;
   for (std::vector<RegistrationCallback>::iterator it = callbacks_.begin();
        it != callbacks_.end();
        ++it) {
-    it->Run(status, registration);
+    it->Run(status, status_message, registration);
   }
   callbacks_.clear();
 }
@@ -547,7 +560,7 @@ void ServiceWorkerRegisterJob::OnCompareScriptResourcesComplete(
       context_->storage()->UpdateLastUpdateCheckTime(registration());
     }
 
-    ResolvePromise(SERVICE_WORKER_OK, registration());
+    ResolvePromise(SERVICE_WORKER_OK, std::string(), registration());
     Complete(SERVICE_WORKER_ERROR_EXISTS);
     return;
   }

@@ -143,6 +143,7 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
                             int provider_id,
                             int request_id,
                             ServiceWorkerStatusCode status,
+                            const std::string& status_message,
                             int64 registration_id);
 
   void UnregistrationComplete(int thread_id,
@@ -158,7 +159,8 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
 
   void SendRegistrationError(int thread_id,
                              int request_id,
-                             ServiceWorkerStatusCode status);
+                             ServiceWorkerStatusCode status,
+                             const std::string& status_message);
 
   void SendUnregistrationError(int thread_id,
                                int request_id,

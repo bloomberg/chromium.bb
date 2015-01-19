@@ -93,7 +93,8 @@ class CONTENT_EXPORT ServiceWorkerWriteToCacheJob
   void OnResponseStarted(net::URLRequest* request) override;
   void OnReadCompleted(net::URLRequest* request, int bytes_read) override;
 
-  void AsyncNotifyDoneHelper(const net::URLRequestStatus& status);
+  void AsyncNotifyDoneHelper(const net::URLRequestStatus& status,
+                             const std::string& status_message);
 
   ResourceType resource_type_;  // Differentiate main script and imports
   scoped_refptr<net::IOBuffer> io_buffer_;

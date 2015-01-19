@@ -28,6 +28,7 @@ namespace {
 void SaveResponseCallback(bool* called,
                           int64* store_registration_id,
                           ServiceWorkerStatusCode status,
+                          const std::string& status_message,
                           int64 registration_id) {
   EXPECT_EQ(SERVICE_WORKER_OK, status) << ServiceWorkerStatusToString(status);
   *called = true;

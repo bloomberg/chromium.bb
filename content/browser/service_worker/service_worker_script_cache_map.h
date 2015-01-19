@@ -35,7 +35,8 @@ class CONTENT_EXPORT ServiceWorkerScriptCacheMap {
   void NotifyStartedCaching(const GURL& url, int64 resource_id);
   void NotifyFinishedCaching(const GURL& url,
                              int64 size_bytes,
-                             const net::URLRequestStatus& status);
+                             const net::URLRequestStatus& status,
+                             const std::string& status_message);
 
   // Used to retrieve the results of the initial run of a new version.
   void GetResources(
@@ -49,6 +50,10 @@ class CONTENT_EXPORT ServiceWorkerScriptCacheMap {
 
   const net::URLRequestStatus& main_script_status() const {
     return main_script_status_;
+  }
+
+  const std::string& main_script_status_message() const {
+    return main_script_status_message_;
   }
 
  private:
@@ -65,6 +70,7 @@ class CONTENT_EXPORT ServiceWorkerScriptCacheMap {
   base::WeakPtr<ServiceWorkerContextCore> context_;
   ResourceMap resource_map_;
   net::URLRequestStatus main_script_status_;
+  std::string main_script_status_message_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerScriptCacheMap);
 };

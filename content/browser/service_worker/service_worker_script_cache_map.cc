@@ -51,7 +51,8 @@ void ServiceWorkerScriptCacheMap::NotifyStartedCaching(
 void ServiceWorkerScriptCacheMap::NotifyFinishedCaching(
     const GURL& url,
     int64 size_bytes,
-    const net::URLRequestStatus& status) {
+    const net::URLRequestStatus& status,
+    const std::string& status_message) {
   DCHECK_NE(kInvalidServiceWorkerResponseId, LookupResourceId(url));
   DCHECK(owner_->status() == ServiceWorkerVersion::NEW ||
          owner_->status() == ServiceWorkerVersion::INSTALLING);
@@ -60,8 +61,10 @@ void ServiceWorkerScriptCacheMap::NotifyFinishedCaching(
   if (!status.is_success()) {
     context_->storage()->DoomUncommittedResponse(LookupResourceId(url));
     resource_map_.erase(url);
-    if (owner_->script_url() == url)
+    if (owner_->script_url() == url) {
       main_script_status_ = status;
+      main_script_status_message_ = status_message;
+    }
   } else {
     resource_map_[url].size_bytes = size_bytes;
   }

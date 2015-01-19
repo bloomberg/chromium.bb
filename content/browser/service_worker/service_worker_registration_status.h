@@ -14,6 +14,7 @@ namespace content {
 // This should only be called for errors, where status != OK.
 void GetServiceWorkerRegistrationStatusResponse(
     ServiceWorkerStatusCode status,
+    const std::string& status_message,
     blink::WebServiceWorkerError::ErrorType* error_type,
     base::string16* message);
 

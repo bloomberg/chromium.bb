@@ -593,12 +593,13 @@ void ServiceWorkerDispatcherHost::RegistrationComplete(
     int provider_id,
     int request_id,
     ServiceWorkerStatusCode status,
+    const std::string& status_message,
     int64 registration_id) {
   if (!GetContext())
     return;
 
   if (status != SERVICE_WORKER_OK) {
-    SendRegistrationError(thread_id, request_id, status);
+    SendRegistrationError(thread_id, request_id, status, status_message);
     return;
   }
 
@@ -853,11 +854,12 @@ void ServiceWorkerDispatcherHost::GetRegistrationComplete(
 void ServiceWorkerDispatcherHost::SendRegistrationError(
     int thread_id,
     int request_id,
-    ServiceWorkerStatusCode status) {
+    ServiceWorkerStatusCode status,
+    const std::string& status_message) {
   base::string16 error_message;
   blink::WebServiceWorkerError::ErrorType error_type;
-  GetServiceWorkerRegistrationStatusResponse(
-      status, &error_type, &error_message);
+  GetServiceWorkerRegistrationStatusResponse(status, status_message,
+                                             &error_type, &error_message);
   Send(new ServiceWorkerMsg_ServiceWorkerRegistrationError(
       thread_id, request_id, error_type,
       base::ASCIIToUTF16(kServiceWorkerRegisterErrorPrefix) + error_message));
@@ -869,8 +871,8 @@ void ServiceWorkerDispatcherHost::SendUnregistrationError(
     ServiceWorkerStatusCode status) {
   base::string16 error_message;
   blink::WebServiceWorkerError::ErrorType error_type;
-  GetServiceWorkerRegistrationStatusResponse(
-      status, &error_type, &error_message);
+  GetServiceWorkerRegistrationStatusResponse(status, std::string(), &error_type,
+                                             &error_message);
   Send(new ServiceWorkerMsg_ServiceWorkerUnregistrationError(
       thread_id, request_id, error_type,
       base::ASCIIToUTF16(kServiceWorkerUnregisterErrorPrefix) + error_message));
@@ -882,8 +884,8 @@ void ServiceWorkerDispatcherHost::SendGetRegistrationError(
     ServiceWorkerStatusCode status) {
   base::string16 error_message;
   blink::WebServiceWorkerError::ErrorType error_type;
-  GetServiceWorkerRegistrationStatusResponse(
-      status, &error_type, &error_message);
+  GetServiceWorkerRegistrationStatusResponse(status, std::string(), &error_type,
+                                             &error_message);
   Send(new ServiceWorkerMsg_ServiceWorkerGetRegistrationError(
       thread_id, request_id, error_type,
       base::ASCIIToUTF16(kServiceWorkerGetRegistrationErrorPrefix) +

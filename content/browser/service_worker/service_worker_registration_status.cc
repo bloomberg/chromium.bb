@@ -13,10 +13,14 @@ using blink::WebServiceWorkerError;
 
 void GetServiceWorkerRegistrationStatusResponse(
     ServiceWorkerStatusCode status,
+    const std::string& status_message,
     blink::WebServiceWorkerError::ErrorType* error_type,
     base::string16* message) {
   *error_type = WebServiceWorkerError::ErrorTypeUnknown;
-  *message = base::ASCIIToUTF16(ServiceWorkerStatusToString(status));
+  if (!status_message.empty())
+    *message = base::UTF8ToUTF16(status_message);
+  else
+    *message = base::ASCIIToUTF16(ServiceWorkerStatusToString(status));
   switch (status) {
     case SERVICE_WORKER_OK:
       NOTREACHED() << "Calling this when status == OK is not allowed";
