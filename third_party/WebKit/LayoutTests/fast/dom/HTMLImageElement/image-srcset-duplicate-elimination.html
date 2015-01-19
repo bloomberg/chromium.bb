@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<script>
+function runTest() {
+    var t = async_test("duplicate density candidate elimination");
+    setTimeout(t.step_func(function() {
+        var dynamicImageSrc = document.getElementById("dynimg").currentSrc;
+        var isBlue = (dynamicImageSrc.indexOf("blue_rect.jpg") != -1);
+        var is4x = (dynamicImageSrc.indexOf("image-set-4x.png") != -1);
+        assert_false(isBlue);
+        assert_true(is4x);
+        t.done();
+    }), 0);
+};
+
+function imageInCache() {
+     document.getElementsByTagName("div")[0].innerHTML="<img id='dynimg' srcset='resources/image-set-4x.png 1x, resources/blue_rect.jpg 1x' onload='runTest()' >";
+ }
+</script>
+<div></div>
+<img src="resources/blue_rect.jpg" onload="imageInCache()">

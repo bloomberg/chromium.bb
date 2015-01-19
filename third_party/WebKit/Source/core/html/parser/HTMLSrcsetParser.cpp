@@ -322,7 +322,7 @@ static void parseImageCandidatesFromSrcsetAttribute(const String& attribute, Vec
         parseImageCandidatesFromSrcsetAttribute<UChar>(attribute, attribute.characters16(), attribute.length(), imageCandidates, document);
 }
 
-static unsigned selectionLogic(Vector<ImageCandidate>& imageCandidates, float deviceScaleFactor, bool ignoreSrc)
+static unsigned selectionLogic(Vector<ImageCandidate*>& imageCandidates, float deviceScaleFactor)
 {
     unsigned i = 0;
 
@@ -331,22 +331,12 @@ static unsigned selectionLogic(Vector<ImageCandidate>& imageCandidates, float de
         float nextDensity;
         float currentDensity;
         float geometricMean;
-        if (ignoreSrc) {
-            if (imageCandidates[i].srcOrigin())
-                continue;
-            if (imageCandidates[next].srcOrigin()) {
-                ++next;
-                if (next >= imageCandidates.size())
-                    break;
-                ASSERT(!imageCandidates[next].srcOrigin());
-            }
-        }
 
-        nextDensity = imageCandidates[next].density();
+        nextDensity = imageCandidates[next]->density();
         if (nextDensity < deviceScaleFactor)
             continue;
 
-        currentDensity = imageCandidates[i].density();
+        currentDensity = imageCandidates[i]->density();
         geometricMean = sqrt(currentDensity * nextDensity);
         if (deviceScaleFactor >= geometricMean)
             return next;
@@ -355,14 +345,12 @@ static unsigned selectionLogic(Vector<ImageCandidate>& imageCandidates, float de
     return i;
 }
 
-static unsigned avoidDownloadIfHigherDensityResourceIsInCache(Vector<ImageCandidate>& imageCandidates, unsigned winner, Document* document, bool ignoreSrc)
+static unsigned avoidDownloadIfHigherDensityResourceIsInCache(Vector<ImageCandidate*>& imageCandidates, unsigned winner, Document* document)
 {
     if (!document)
         return winner;
     for (unsigned i = imageCandidates.size() - 1; i > winner; --i) {
-        if (ignoreSrc && imageCandidates[i].srcOrigin())
-            continue;
-        KURL url = document->completeURL(stripLeadingAndTrailingHTMLSpaces(imageCandidates[i].url()));
+        KURL url = document->completeURL(stripLeadingAndTrailingHTMLSpaces(imageCandidates[i]->url()));
         if (memoryCache()->resourceForURL(url, document->fetcher()->getCacheIdentifier()))
             return i;
     }
@@ -388,17 +376,24 @@ static ImageCandidate pickBestImageCandidate(float deviceScaleFactor, float sour
 
     std::stable_sort(imageCandidates.begin(), imageCandidates.end(), compareByDensity);
 
-    unsigned winner = selectionLogic(imageCandidates, deviceScaleFactor, ignoreSrc);
-    ASSERT(winner < imageCandidates.size());
-    winner = avoidDownloadIfHigherDensityResourceIsInCache(imageCandidates, winner, document, ignoreSrc);
+    Vector<ImageCandidate*> deDupedImageCandidates;
+    float prevDensity = -1.0;
+    for (ImageCandidate& image : imageCandidates) {
+        if (image.density() != prevDensity && (!ignoreSrc || !image.srcOrigin()))
+            deDupedImageCandidates.append(&image);
+        prevDensity = image.density();
+    }
+    unsigned winner = selectionLogic(deDupedImageCandidates, deviceScaleFactor);
+    ASSERT(winner < deDupedImageCandidates.size());
+    winner = avoidDownloadIfHigherDensityResourceIsInCache(deDupedImageCandidates, winner, document);
 
-    float winningDensity = imageCandidates[winner].density();
+    float winningDensity = deDupedImageCandidates[winner]->density();
     // 16. If an entry b in candidates has the same associated ... pixel density as an earlier entry a in candidates,
     // then remove entry b
-    while ((winner > 0) && (imageCandidates[winner - 1].density() == winningDensity))
+    while ((winner > 0) && (deDupedImageCandidates[winner - 1]->density() == winningDensity))
         --winner;
 
-    return imageCandidates[winner];
+    return *deDupedImageCandidates[winner];
 }
 
 ImageCandidate bestFitSourceForSrcsetAttribute(float deviceScaleFactor, float sourceSize, const String& srcsetAttribute, Document* document)
