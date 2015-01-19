@@ -10790,6 +10790,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="InputMethod.VirtualKeyboard.TapCount">
+  <owner>stevet@chromium.org</owner>
+  <summary>
+    The number of times the virtual keyboard was tapped while the virtual
+    keyboard was alive. Recorded when the virtual keyboard is closed.
+  </summary>
+</histogram>
+
 <histogram name="Installer.AttemptsCount.Total" units="count">
   <owner>zeuthen@chromium.org</owner>
   <summary>
