@@ -12,6 +12,7 @@ import android.os.Process;
 import android.provider.Settings;
 import android.util.Log;
 import android.webkit.WebSettings;
+import android.webkit.WebSettings.LayoutAlgorithm;
 import android.webkit.WebSettings.PluginState;
 
 import org.chromium.base.CalledByNative;
@@ -28,15 +29,6 @@ import org.chromium.base.VisibleForTesting;
  */
 @JNINamespace("android_webview")
 public class AwSettings {
-    // This enum corresponds to WebSettings.LayoutAlgorithm. We use our own to be
-    // able to extend it.
-    public enum LayoutAlgorithm {
-        NORMAL,
-        SINGLE_COLUMN,
-        NARROW_COLUMNS,
-        TEXT_AUTOSIZING,
-    }
-
     // These constants must be kept in sync with the Android framework, defined in WebSettimgs.
     @VisibleForTesting
     public static final int MIXED_CONTENT_ALWAYS_ALLOW = 0;

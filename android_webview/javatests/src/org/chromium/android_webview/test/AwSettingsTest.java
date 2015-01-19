@@ -15,6 +15,7 @@ import android.view.WindowManager;
 import android.webkit.JavascriptInterface;
 import android.webkit.ValueCallback;
 import android.webkit.WebSettings;
+import android.webkit.WebSettings.LayoutAlgorithm;
 
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
@@ -23,7 +24,6 @@ import org.apache.http.HttpRequest;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwContentsClient.ShouldInterceptRequestParams;
 import org.chromium.android_webview.AwSettings;
-import org.chromium.android_webview.AwSettings.LayoutAlgorithm;
 import org.chromium.android_webview.AwWebResourceResponse;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.android_webview.test.util.ImagePageGenerator;
