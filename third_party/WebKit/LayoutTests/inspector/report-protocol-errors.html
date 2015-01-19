@@ -24,13 +24,13 @@ function test()
         '{"id": 13, "method" : "Page.test" }',
         '{"id" : 14, "method" : "Page.test" }',
         '{ "id" : 15, "method" : "Page.test" }',
-        '{  "id"\n :\r 16,\t "method"\f :\v "Page.test" }',
+        '{  "id"\n :\r 16,\t "method" : "Page.test" }',
     ];
+
     var numberOfReports = 0;
 
-    InspectorBackend._connection.reportProtocolError = function(message)
+    InspectorBackendClass.reportProtocolError = function(error, message)
     {
-
         if (numberOfReports < messages.length) {
             InspectorTest.addObject(message);
             InspectorTest.addResult("-------------------------------------------------------");

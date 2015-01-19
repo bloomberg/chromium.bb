@@ -11,7 +11,7 @@ Tests that InspectorBackendDispatcher is catching incorrect messages.
 {
     error : {
         code : -32600
-        message : "'id' property was not found"
+        message : "The type of 'id' property must be number"
     }
     id : null
 }

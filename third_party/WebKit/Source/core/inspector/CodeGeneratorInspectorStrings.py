@@ -316,12 +316,7 @@ $messageHandlers
     }
 
     RefPtr<JSONValue> callIdValue = messageObject->get("id");
-    if (!callIdValue) {
-        reportProtocolError(0, InvalidRequest, "'id' property was not found");
-        return;
-    }
-
-    if (!callIdValue->asNumber(&callId)) {
+    if (!callIdValue || !callIdValue->asNumber(&callId)) {
         reportProtocolError(0, InvalidRequest, "The type of 'id' property must be number");
         return;
     }
