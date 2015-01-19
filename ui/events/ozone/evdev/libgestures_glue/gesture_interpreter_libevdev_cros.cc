@@ -322,17 +322,26 @@ void GestureInterpreterLibevdevCros::OnGestureScroll(
   if (!cursor_)
     return;  // No cursor!
 
-  // TODO(spang): Support SetNaturalScroll
   // TODO(spang): Use scroll->start_time
-  Dispatch(make_scoped_ptr(new ScrollEvent(ET_SCROLL,
-                                           cursor_->GetLocation(),
-                                           StimeToTimedelta(gesture->end_time),
-                                           modifiers_->GetModifierFlags(),
-                                           scroll->dx,
-                                           scroll->dy,
-                                           scroll->ordinal_dx,
-                                           scroll->ordinal_dy,
-                                           kGestureScrollFingerCount)));
+  if (is_mouse_) {
+    Dispatch(make_scoped_ptr(new MouseWheelEvent(
+        gfx::Vector2d(scroll->dx, scroll->dy),
+        cursor_->GetLocation(),
+        cursor_->GetLocation(),
+        modifiers_->GetModifierFlags(),
+        0)));
+  } else {
+    Dispatch(make_scoped_ptr(new ScrollEvent(
+        ET_SCROLL,
+        cursor_->GetLocation(),
+        StimeToTimedelta(gesture->end_time),
+        modifiers_->GetModifierFlags(),
+        scroll->dx,
+        scroll->dy,
+        scroll->ordinal_dx,
+        scroll->ordinal_dy,
+        kGestureScrollFingerCount)));
+  }
 }
 
 void GestureInterpreterLibevdevCros::OnGestureButtonsChange(
