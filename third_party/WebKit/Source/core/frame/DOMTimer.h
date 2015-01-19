@@ -48,8 +48,6 @@ public:
 
     virtual ~DOMTimer();
 
-    int timeoutID() const;
-
     // ActiveDOMObject
     virtual void stop() override;
 

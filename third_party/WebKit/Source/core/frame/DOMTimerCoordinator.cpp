@@ -26,7 +26,7 @@ int DOMTimerCoordinator::installNewTimeout(ExecutionContext* context, PassOwnPtr
 
     timer->suspendIfNeeded();
 
-    return timer->timeoutID();
+    return timeoutID;
 }
 
 void DOMTimerCoordinator::removeTimeoutByID(int timeoutID)

@@ -115,11 +115,6 @@ void DOMTimer::dispose()
     stop();
 }
 
-int DOMTimer::timeoutID() const
-{
-    return m_timeoutID;
-}
-
 void DOMTimer::fired()
 {
     ExecutionContext* context = executionContext();
