@@ -38,12 +38,11 @@ class PDFExtensionTest : public ExtensionApiTest {
     ExtensionApiTest::TearDownOnMainThread();
   }
 
-  void RunTestsInFile(std::string filename,
-                      std::string pdf_filename) {
+  void RunTestsInFile(std::string filename, bool requiresPlugin) {
     base::FilePath pdf_plugin_src;
     PathService::Get(base::DIR_SOURCE_ROOT, &pdf_plugin_src);
     pdf_plugin_src = pdf_plugin_src.AppendASCII("pdf");
-    if (!base::DirectoryExists(pdf_plugin_src)) {
+    if (requiresPlugin && !base::DirectoryExists(pdf_plugin_src)) {
       LOG(WARNING) << "Not running " << filename <<
           " because it requires the PDF plugin which is not available.";
       return;
@@ -62,7 +61,7 @@ class PDFExtensionTest : public ExtensionApiTest {
 
     extensions::ResultCatcher catcher;
 
-    GURL url(embedded_test_server()->GetURL("/pdf/" + pdf_filename));
+    GURL url(embedded_test_server()->GetURL("/pdf/test.pdf"));
     GURL extension_url(
         "chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/index.html?" +
         url.spec());
@@ -87,23 +86,13 @@ class PDFExtensionTest : public ExtensionApiTest {
 };
 
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, Basic) {
-  RunTestsInFile("basic_test.js", "test.pdf");
+  RunTestsInFile("basic_test.js", false);
 }
 
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, BasicPlugin) {
-  RunTestsInFile("basic_plugin_test.js", "test.pdf");
+  RunTestsInFile("basic_plugin_test.js", true);
 }
 
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, Viewport) {
   RunTestsInFile("viewport_test.js", "test.pdf");
-}
-
-// Test fails under MSan, http://crbug.com/449995
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_Bookmark DISABLED_Bookmark
-#else
-#define MAYBE_Bookmark Bookmark
-#endif
-IN_PROC_BROWSER_TEST_F(PDFExtensionTest, MAYBE_Bookmark) {
-  RunTestsInFile("bookmarks_test.js", "test-bookmarks.pdf");
 }
