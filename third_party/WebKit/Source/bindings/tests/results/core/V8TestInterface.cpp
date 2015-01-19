@@ -1540,6 +1540,10 @@ static void partialVoidMethodPartialCallbackTypeArgMethod(const v8::FunctionCall
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
     ScriptValue partialCallbackTypeArg;
     {
+        if (!info[0]->IsFunction()) {
+            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("partialVoidMethodPartialCallbackTypeArg", "TestInterface", "The callback provided as parameter 1 is not a function."));
+            return;
+        }
         partialCallbackTypeArg = ScriptValue(ScriptState::current(info.GetIsolate()), info[0]);
     }
     TestPartialInterface::partialVoidMethodPartialCallbackTypeArg(*impl, partialCallbackTypeArg);

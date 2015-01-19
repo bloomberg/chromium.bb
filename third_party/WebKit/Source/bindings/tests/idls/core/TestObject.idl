@@ -312,6 +312,8 @@ interface TestObject {
     VoidCallbackFunction voidCallbackFunctionMethod();
     AnyCallbackFunctionOptionalAnyArg anyCallbackFunctionOptionalAnyArgMethod();
     void voidMethodVoidCallbackFunctionArg(VoidCallbackFunction voidCallbackFunctionArg);
+    void voidMethodOptionalVoidCallbackFunctionArg(optional VoidCallbackFunction voidCallbackFunctionArg);
+    void voidMethodNullableVoidCallbackFunctionArg(VoidCallbackFunction? voidCallbackFunctionArg);
     void voidMethodAnyCallbackFunctionOptionalAnyArg(AnyCallbackFunctionOptionalAnyArg anyCallbackFunctionOptionalAnyArgArg);
     // Custom type conversions
     any anyMethod();

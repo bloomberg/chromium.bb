@@ -224,6 +224,7 @@ def argument_context(interface, method, argument, index):
         'idl_type': idl_type.base_type,
         'idl_type_object': idl_type,
         'index': index,
+        'is_callback_function': idl_type.is_callback_function,
         'is_callback_interface': idl_type.is_callback_interface,
         # FIXME: Remove generic 'Dictionary' special-casing
         'is_dictionary': idl_type.is_dictionary or idl_type.base_type == 'Dictionary',

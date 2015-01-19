@@ -142,6 +142,14 @@ if (info.Length() <= {{argument.index}} || !{% if argument.is_nullable %}(info[{
 {{argument.name}} = {% if argument.is_nullable %}info[{{argument.index}}]->IsNull() ? nullptr : {% endif %}V8{{argument.idl_type}}::create(v8::Local<v8::Function>::Cast(info[{{argument.index}}]), ScriptState::current(info.GetIsolate()));
 {% endif %}{# argument.is_optional #}
 {% endif %}{# argument.idl_type == 'EventListener' #}
+{% elif argument.is_callback_function %}
+if (!info[{{argument.index}}]->IsFunction(){% if argument.is_nullable %} && !info[{{argument.index}}]->IsNull(){% endif %}) {
+    {{throw_type_error(method,
+          '"The callback provided as parameter %s is not a function."' %
+              (argument.index + 1)) | indent(8)}}
+    return;
+}
+{{argument.v8_value_to_local_cpp_value}};
 {% elif argument.is_variadic_wrapper_type %}
 for (int i = {{argument.index}}; i < info.Length(); ++i) {
     if (!V8{{argument.idl_type}}::hasInstance(info[i], info.GetIsolate())) {
