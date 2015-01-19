@@ -57,9 +57,9 @@ if (is_ios) {
   ]
 } else {
   content_app_deps += [
-    "//mojo/edk/system",
     "//mojo/environment:chromium",
-    "//mojo/public/interfaces/application",
+    "//third_party/mojo/src/mojo/edk/system",
+    "//third_party/mojo/src/mojo/public/interfaces/application",
   ]
 }
 

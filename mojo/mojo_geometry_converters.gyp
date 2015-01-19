@@ -4,7 +4,7 @@
 
 {
   'includes': [
-    'mojo_variables.gypi',
+    '../third_party/mojo/mojo_variables.gypi',
   ],
   'targets': [
     {

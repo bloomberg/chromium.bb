@@ -41,9 +41,9 @@
         '<(DEPTH)/extensions/shell/browser/api/api_registration.gyp:shell_api_registration',
         '<(DEPTH)/extensions/shell/common/api/api.gyp:shell_api',
         '<(DEPTH)/mojo/mojo_base.gyp:mojo_environment_chromium',
-        '<(DEPTH)/mojo/mojo_edk.gyp:mojo_system_impl',
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/third_party/WebKit/public/blink.gyp:blink',
+        '<(DEPTH)/third_party/mojo/mojo_edk.gyp:mojo_system_impl',
         '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
       ],
       'export_dependent_settings': [

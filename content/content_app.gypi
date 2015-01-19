@@ -11,7 +11,7 @@
     '../base/base.gyp:base_i18n',
     '../crypto/crypto.gyp:crypto',
     '../mojo/mojo_base.gyp:mojo_environment_chromium',
-    '../mojo/mojo_edk.gyp:mojo_system_impl',
+    '../third_party/mojo/mojo_edk.gyp:mojo_system_impl',
     '../ui/base/ui_base.gyp:ui_base',
     '../ui/gfx/gfx.gyp:gfx',
     '../ui/gfx/gfx.gyp:gfx_geometry',

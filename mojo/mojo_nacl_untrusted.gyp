@@ -9,9 +9,9 @@
         'monacl_codegen_dir': '<(SHARED_INTERMEDIATE_DIR)/<!(python <(DEPTH)/build/inverse_depth.py <(DEPTH))/monacl',
       },
       'includes': [
-        'mojo_variables.gypi',
         '../build/common_untrusted.gypi',
         '../components/nacl/nacl_defines.gypi',
+        '../third_party/mojo/mojo_variables.gypi',
       ],
       'targets': [
         {
@@ -31,7 +31,7 @@
           ],
           'dependencies': [
             'mojo_nacl.gyp:monacl_codegen',
-            'mojo_public.gyp:mojo_system_placeholder',
+            '../third_party/mojo/mojo_public.gyp:mojo_system_placeholder',
           ],
         },
         {

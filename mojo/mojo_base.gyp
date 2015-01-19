@@ -7,7 +7,7 @@
 # Mojo land like mojo_shell should be in mojo.gyp.
 {
   'includes': [
-    'mojo_variables.gypi',
+    '../third_party/mojo/mojo_variables.gypi',
   ],
   'targets': [
     {
@@ -25,8 +25,8 @@
       'conditions': [
         ['OS == "android"', {
           'dependencies': [
-            'mojo_public.gyp:mojo_bindings_java',
-            'mojo_public.gyp:mojo_public_java',
+            '../third_party/mojo/mojo_public.gyp:mojo_bindings_java',
+            '../third_party/mojo/mojo_public.gyp:mojo_public_java',
           ],
         }],
       ]
@@ -76,12 +76,12 @@
         '../testing/gtest.gyp:gtest',
         '../url/url.gyp:url_lib',
         'mojo_common_lib',
-        'mojo_edk.gyp:mojo_system_impl',
-        'mojo_edk.gyp:mojo_common_test_support',
-        'mojo_edk.gyp:mojo_run_all_unittests',
+        '../third_party/mojo/mojo_edk.gyp:mojo_system_impl',
+        '../third_party/mojo/mojo_edk.gyp:mojo_common_test_support',
+        '../third_party/mojo/mojo_edk.gyp:mojo_run_all_unittests',
         'mojo_environment_chromium',
-        'mojo_public.gyp:mojo_cpp_bindings',
-        'mojo_public.gyp:mojo_public_test_utils',
+        '../third_party/mojo/mojo_public.gyp:mojo_cpp_bindings',
+        '../third_party/mojo/mojo_public.gyp:mojo_public_test_utils',
       ],
       'sources': [
         'common/common_type_converters_unittest.cc',
@@ -99,12 +99,18 @@
       'sources': [
         'environment/environment.cc',
         # TODO(vtl): This is kind of ugly. (See TODO in logging.h.)
-        "public/cpp/environment/logging.h",
-        "public/cpp/environment/lib/logging.cc",
+        "../third_party/mojo/src/mojo/public/cpp/environment/logging.h",
+        "../third_party/mojo/src/mojo/public/cpp/environment/lib/logging.cc",
       ],
       'include_dirs': [
         '..',
+        '../third_party/mojo/src',
       ],
+      'direct_dependent_settings': {
+        'include_dirs': [
+          '../third_party/mojo/src',
+        ],
+      },
       'export_dependent_settings': [
         'mojo_environment_chromium_impl',
       ],
@@ -132,7 +138,13 @@
       ],
       'include_dirs': [
         '..',
+        '../third_party/mojo/src',
       ],
+      'direct_dependent_settings': {
+        'include_dirs': [
+          '../third_party/mojo/src',
+        ],
+      },
     },
     {
      # GN version: //mojo/application
@@ -145,10 +157,10 @@
       'dependencies': [
         'mojo_common_lib',
         'mojo_environment_chromium',
-        'mojo_public.gyp:mojo_application_base',
+        '../third_party/mojo/mojo_public.gyp:mojo_application_base',
        ],
       'export_dependent_settings': [
-        'mojo_public.gyp:mojo_application_base',
+        '../third_party/mojo/mojo_public.gyp:mojo_application_base',
        ],
     },
   ],
@@ -178,7 +190,7 @@
             '../base/base.gyp:base',
             '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
             'mojo_common_lib',
-            'mojo_edk.gyp:mojo_system_impl',
+            '../third_party/mojo/mojo_edk.gyp:mojo_system_impl',
             'mojo_environment_chromium',
             'mojo_jni_headers',
           ],
@@ -202,7 +214,7 @@
           'dependencies': [
             '../base/base.gyp:base_java',
             'libmojo_system_java',
-            'mojo_public.gyp:mojo_public_java',
+            '../third_party/mojo/mojo_public.gyp:mojo_public_java',
           ],
           'variables': {
             'java_in_dir': '<(DEPTH)/mojo/android/system',

@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//mojo/public/tools/bindings/mojom.gni")
+import("//third_party/mojo/src/mojo/public/tools/bindings/mojom.gni")
 
 mojom("client_channel") {
   sources = [
@@ -32,8 +32,8 @@ component("mojo") {
     "//base/third_party/dynamic_annotations",
     "//ipc",
     "//mojo/environment:chromium",
-    "//mojo/public/cpp/bindings",
-    "//mojo/edk/system",
+    "//third_party/mojo/src/mojo/public/cpp/bindings",
+    "//third_party/mojo/src/mojo/edk/system",
     ":client_channel",
   ]
 }
@@ -53,8 +53,8 @@ test("ipc_mojo_unittests") {
     "//ipc",
     "//ipc:test_support",
     "//ipc/mojo",
-    "//mojo/edk/system",
     "//mojo/environment:chromium",
+    "//third_party/mojo/src/mojo/edk/system",
     "//url",
   ]
 }
@@ -72,8 +72,8 @@ test("ipc_mojo_perftests") {
     "//ipc",
     "//ipc:test_support",
     "//ipc/mojo",
-    "//mojo/edk/system",
     "//mojo/environment:chromium",
+    "//third_party/mojo/src/mojo/edk/system",
     "//url",
   ]
 }

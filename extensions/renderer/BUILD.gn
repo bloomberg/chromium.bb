@@ -168,9 +168,9 @@ source_set("renderer") {
     "//content:resources",
     "//extensions:extensions_resources",
     "//gin",
-    "//mojo/edk/js",
     "//skia",
     "//third_party/WebKit/public:blink",
+    "//third_party/mojo/src/mojo/edk/js",
   ]
 
   if (is_win) {

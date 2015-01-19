@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//mojo/public/mojo_application.gni")
+import("//third_party/mojo/src/mojo/public/mojo_application.gni")
 
 # Target naming conventions:
 # - converters: C++/Mojo type converters.
@@ -24,9 +24,9 @@ source_set("converters") {
     "//mojo/common",
     "//mojo/converters/geometry",
     "//mojo/environment:chromium",
-    "//mojo/public/c/system:for_component",
     "//mojo/services/geometry/public/interfaces",
     "//skia",
+    "//third_party/mojo/src/mojo/public/c/system:for_component",
   ]
 }
 
@@ -36,11 +36,11 @@ source_set("cdm_proxy") {
     "//base",
     "//media",
     "//media/mojo/interfaces",
-    "//mojo/public/interfaces/application",
     "//mojo/common",
     "//mojo/environment:chromium",
-    "//mojo/public/c/system:for_component",
-    "//mojo/public/cpp/application",
+    "//third_party/mojo/src/mojo/public/interfaces/application",
+    "//third_party/mojo/src/mojo/public/c/system:for_component",
+    "//third_party/mojo/src/mojo/public/cpp/application",
   ]
 
   sources = [
@@ -56,10 +56,10 @@ source_set("cdm_service") {
     "//base",
     "//media",
     "//media/mojo/interfaces",
-    "//mojo/public/interfaces/application",
     "//mojo/common",
     "//mojo/environment:chromium",
-    "//mojo/public/c/system:for_component",
+    "//third_party/mojo/src/mojo/public/interfaces/application",
+    "//third_party/mojo/src/mojo/public/c/system:for_component",
   ]
 
   sources = [
@@ -89,9 +89,9 @@ source_set("renderer_proxy") {
     "//media/mojo/interfaces",
     "//mojo/common",
     "//mojo/environment:chromium",
-    "//mojo/public/c/system:for_component",
-    "//mojo/public/cpp/application",
-    "//mojo/public/interfaces/application",
+    "//third_party/mojo/src/mojo/public/c/system:for_component",
+    "//third_party/mojo/src/mojo/public/cpp/application",
+    "//third_party/mojo/src/mojo/public/interfaces/application",
   ]
 }
 
@@ -143,10 +143,10 @@ test("media_mojo_unittests") {
     "//base/test:test_support",
     "//media",
     "//media/mojo/interfaces",
-    "//mojo/edk/system",
-    "//mojo/edk/test:run_all_unittests",
     "//mojo/environment:chromium",
     "//testing/gtest",
+    "//third_party/mojo/src/mojo/edk/system",
+    "//third_party/mojo/src/mojo/edk/test:run_all_unittests",
   ]
 }
 
@@ -159,7 +159,7 @@ if (!is_component_build) {
     deps = [
       ":renderer_service",
       "//mojo/application",
-      "//mojo/public/c/system:for_shared_library",
+      "//third_party/mojo/src/mojo/public/c/system:for_shared_library",
     ]
   }
 

@@ -15,7 +15,7 @@
       # generated cpp files must be listed explicitly in extensions_common
       'type': 'none',
       'includes': [
-        '../mojo/mojom_bindings_generator.gypi',
+        '../third_party/mojo/mojom_bindings_generator.gypi',
       ],
       'sources': [
         'common/mojo/keep_alive.mojom',
@@ -867,8 +867,8 @@
         'extensions_resources.gyp:extensions_resources',
         '../content/content.gyp:content_resources',
         '../gin/gin.gyp:gin',
-        '../mojo/mojo_public.gyp:mojo_js_bindings',
         '../third_party/WebKit/public/blink.gyp:blink',
+        '../third_party/mojo/mojo_public.gyp:mojo_js_bindings',
       ],
       'include_dirs': [
         '..',
@@ -1181,12 +1181,12 @@
         '../device/serial/serial.gyp:device_serial',
         '../device/serial/serial.gyp:device_serial_test_util',
         '../mojo/mojo_base.gyp:mojo_environment_chromium',
-        '../mojo/mojo_edk.gyp:mojo_js_lib',
-        '../mojo/mojo_edk.gyp:mojo_system_impl',
-        '../mojo/mojo_public.gyp:mojo_cpp_bindings',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
         '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
+        '../third_party/mojo/mojo_edk.gyp:mojo_js_lib',
+        '../third_party/mojo/mojo_edk.gyp:mojo_system_impl',
+        '../third_party/mojo/mojo_public.gyp:mojo_cpp_bindings',
         'common/api/api.gyp:cast_channel_proto',
         'extensions_common',
         'extensions_renderer',

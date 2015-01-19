@@ -42,9 +42,9 @@ source_set("libsystem_java") {
   deps = [
     ":system_java_jni_headers",
     "//base",
-    "//mojo/edk/system",
     "//mojo/environment:chromium",
-    "//mojo/public/cpp/environment",
+    "//third_party/mojo/src/mojo/edk/system",
+    "//third_party/mojo/src/mojo/public/cpp/environment",
   ]
 }
 
@@ -61,7 +61,7 @@ android_library("system_java") {
 
   deps = [
     "//base:base_java",
-    "//mojo/public/java:system",
+    "//third_party/mojo/src/mojo/public/java:system",
   ]
 }
 
@@ -93,9 +93,9 @@ android_library("mojo_javatests") {
     ":system_java",
     "//base:base_java",
     "//base:base_java_test_support",
-    "//mojo/public/interfaces/bindings/tests:test_interfaces_java",
-    "//mojo/public/java:bindings",
-    "//mojo/public/java:system",
+    "//third_party/mojo/src/mojo/public/interfaces/bindings/tests:test_interfaces_java",
+    "//third_party/mojo/src/mojo/public/java:bindings",
+    "//third_party/mojo/src/mojo/public/java:system",
   ]
 }
 
@@ -117,10 +117,10 @@ shared_library("mojo_java_unittests") {
     "//base",
     "//base/test/:test_support",
     "//mojo/common",
-    "//mojo/edk/system",
-    "//mojo/public/cpp/bindings/tests:mojo_public_bindings_test_utils",
-    "//mojo/public/cpp/test_support:test_utils",
-    "//mojo/public/cpp/environment",
+    "//third_party/mojo/src/mojo/edk/system",
+    "//third_party/mojo/src/mojo/public/cpp/bindings/tests:mojo_public_bindings_test_utils",
+    "//third_party/mojo/src/mojo/public/cpp/test_support:test_utils",
+    "//third_party/mojo/src/mojo/public/cpp/environment",
   ]
   defines = [ "UNIT_TEST" ]
 }
@@ -132,8 +132,8 @@ android_apk("mojo_test_apk") {
     ":mojo_java_unittests",
     ":system_java",
     "//base:base_java",
-    "//mojo/public/java:bindings",
-    "//mojo/public/interfaces/bindings/tests:test_interfaces",
+    "//third_party/mojo/src/mojo/public/java:bindings",
+    "//third_party/mojo/src/mojo/public/interfaces/bindings/tests:test_interfaces",
   ]
   native_libs = [ "libmojo_java_unittests.so" ]
   apk_name = "MojoTest"

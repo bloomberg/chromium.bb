@@ -5,7 +5,7 @@
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//content/common/common.gni")
-import("//mojo/public/tools/bindings/mojom.gni")
+import("//third_party/mojo/src/mojo/public/tools/bindings/mojom.gni")
 
 if (is_chromeos && cpu_arch != "arm") {
   action("libva_generate_stubs") {
@@ -138,12 +138,12 @@ source_set("common") {
       "//gpu/skia_bindings",
       "//media",
       "//media:shared_memory_support",
-      "//mojo/edk/system",
       "//mojo/environment:chromium",
-      "//mojo/public/interfaces/application",
       "//sandbox",
       "//storage/common",
       "//third_party/WebKit/public:blink",
+      "//third_party/mojo/src/mojo/edk/system",
+      "//third_party/mojo/src/mojo/public/interfaces/application",
       "//ui/gl",
       "//webkit/common/gpu",
     ]
@@ -413,6 +413,6 @@ mojom("mojo_bindings") {
 
   deps = [
     "//content/public/common:mojo_bindings",
-    "//mojo/public/interfaces/application:application",
+    "//third_party/mojo/src/mojo/public/interfaces/application:application",
   ]
 }

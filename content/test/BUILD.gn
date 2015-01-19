@@ -6,7 +6,7 @@ import("//build/config/crypto.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//build/module_args/v8.gni")
-import("//mojo/public/tools/bindings/mojom.gni")
+import("//third_party/mojo/src/mojo/public/tools/bindings/mojom.gni")
 
 content_tests_gypi_values =
     exec_script("//build/gypi_to_gn.py",
@@ -268,17 +268,17 @@ if (!is_mac) {
       "//media/audio:test_support",
       "//media/base:test_support",
       "//media:shared_memory_support",
-      "//mojo/edk/system",
-      "//mojo/edk/test:test_support",
       "//mojo/environment:chromium",
-      "//mojo/public/cpp/bindings",
-      "//mojo/public/js",
       "//net:test_support",
       "//ppapi:ppapi_host",
       "//ppapi:ppapi_ipc",
       "//ppapi:ppapi_proxy",
       "//ppapi:ppapi_shared",
 
+      "//third_party/mojo/src/mojo/edk/system",
+      "//third_party/mojo/src/mojo/edk/test:test_support",
+      "//third_party/mojo/src/mojo/public/cpp/bindings",
+      "//third_party/mojo/src/mojo/public/js",
       #"//ppapi:ppapi_tests",  TODO(GYP)
       #"//ppapi:ppapi_unittest_shared",  TODO(GYP)
       "//testing/gmock",
@@ -434,15 +434,15 @@ if (!is_mac) {  # TODO(GYP) enable on Mac once it links.
       "//crypto",
       "//device/battery",
       "//device/battery:mojo_bindings",
-      "//mojo/edk/test:test_support",
       "//mojo/environment:chromium",
-      "//mojo/public/cpp/bindings",
       "//net:test_support",
       "//skia",
       "//sql",
       "//sql:test_support",
       "//testing/gmock",
       "//testing/gtest",
+      "//third_party/mojo/src/mojo/edk/test:test_support",
+      "//third_party/mojo/src/mojo/public/cpp/bindings",
       "//third_party/re2",
       "//ui/accessibility",
       "//ui/base",

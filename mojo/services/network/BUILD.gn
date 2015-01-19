@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//mojo/public/mojo_application.gni")
+import("//third_party/mojo/src/mojo/public/mojo_application.gni")
 
 mojo_native_application("network") {
   output_name = "network_service"
@@ -11,9 +11,9 @@ mojo_native_application("network") {
     ":lib",
     "//base",
     "//mojo/application",
-    "//mojo/public/c/system:for_shared_library",
-    "//mojo/public/cpp/bindings:bindings",
     "//mojo/services/network/public/interfaces",
+    "//third_party/mojo/src/mojo/public/c/system:for_shared_library",
+    "//third_party/mojo/src/mojo/public/cpp/bindings:bindings",
   ]
 
   sources = [

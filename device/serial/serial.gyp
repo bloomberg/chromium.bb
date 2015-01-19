@@ -15,7 +15,7 @@
       # generated cpp files must be listed explicitly in device_serial
       'type': 'none',
       'includes': [
-        '../../mojo/mojom_bindings_generator.gypi',
+        '../../third_party/mojo/mojom_bindings_generator.gypi',
       ],
       'sources': [
         'data_stream.mojom',
@@ -42,12 +42,12 @@
       ],
       'dependencies': [
         'device_serial_mojo',
-        '../../mojo/mojo_public.gyp:mojo_cpp_bindings',
         '../../net/net.gyp:net',
+        '../../third_party/mojo/mojo_public.gyp:mojo_cpp_bindings',
       ],
       'export_dependent_settings': [
         'device_serial_mojo',
-        '../../mojo/mojo_public.gyp:mojo_cpp_bindings',
+        '../../third_party/mojo/mojo_public.gyp:mojo_cpp_bindings',
       ],
       'sources': [
         '<(SHARED_INTERMEDIATE_DIR)/device/serial/data_stream.mojom.cc',

@@ -78,11 +78,11 @@
             '../base/base.gyp:base',
             '../base/base.gyp:base_static',
             '../ipc/ipc.gyp:ipc',
-            '../mojo/mojo_edk.gyp:mojo_system_impl',
             '../mojo/mojo_nacl.gyp:monacl_syscall',
             '../ppapi/ppapi_internal.gyp:ppapi_shared',
             '../ppapi/ppapi_internal.gyp:ppapi_ipc',
             '../native_client/src/trusted/service_runtime/service_runtime.gyp:sel_main_chrome',
+            '../third_party/mojo/mojo_edk.gyp:mojo_system_impl',
           ],
           'conditions': [
             ['disable_nacl_untrusted==0', {
@@ -352,11 +352,11 @@
               },
               'dependencies': [
                 'nacl_common_win64',
-                '../mojo/mojo_edk.gyp:mojo_system_impl_win64',
                 '../mojo/mojo_nacl.gyp:monacl_syscall_win64',
                 '../native_client/src/trusted/service_runtime/service_runtime.gyp:sel_main_chrome64',
                 '../ppapi/ppapi_internal.gyp:ppapi_shared_win64',
                 '../ppapi/ppapi_internal.gyp:ppapi_ipc_win64',
+                '../third_party/mojo/mojo_edk.gyp:mojo_system_impl_win64',
               ],
               'export_dependent_settings': [
                 '../ppapi/ppapi_internal.gyp:ppapi_ipc_win64',

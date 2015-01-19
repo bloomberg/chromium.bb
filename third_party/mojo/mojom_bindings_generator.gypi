@@ -15,7 +15,8 @@
             '<!(python <(DEPTH)/build/inverse_depth.py <(DEPTH))',
         'java_out_dir': '<(PRODUCT_DIR)/java_mojo/<(_target_name)/src',
         'mojom_import_args%': [
-         '-I<(DEPTH)'
+         '-I<(DEPTH)',
+         '-I<(DEPTH)/third_party/mojo/src'
         ],
       },
       'inputs': [
@@ -43,12 +44,16 @@
   ],
   'include_dirs': [
     '<(DEPTH)',
+    '<(DEPTH)/third_party/mojo/src',
     '<(SHARED_INTERMEDIATE_DIR)',
+    '<(SHARED_INTERMEDIATE_DIR)/third_party/mojo/src',
   ],
   'direct_dependent_settings': {
     'include_dirs': [
       '<(DEPTH)',
+      '<(DEPTH)/third_party/mojo/src',
       '<(SHARED_INTERMEDIATE_DIR)',
+      '<(SHARED_INTERMEDIATE_DIR)/third_party/mojo/src',
     ],
     'variables': {
       'generated_src_dirs': [

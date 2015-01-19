@@ -3,4 +3,4 @@
 # found in the LICENSE file.
 
 # This variable should point to the parent directory of the Mojo SDK.
-mojo_sdk_root = "//"
+mojo_sdk_root = "//third_party/mojo/src"

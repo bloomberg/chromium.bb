@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//mojo/public/mojo.gni")
-import("//mojo/public/mojo_application.gni")
+import("//third_party/mojo/src/mojo/public/mojo.gni")
+import("//third_party/mojo/src/mojo/public/mojo_application.gni")
 
 action("generate_blink_resource_map") {
   script = "//mojo/services/html_viewer/generate_blink_resource_map.py"
@@ -81,9 +81,6 @@ source_set("lib") {
     "//mojo/cc",
     "//mojo/common",
     "//mojo/converters/surfaces",
-    "//mojo/public/c/system:for_shared_library",
-    "//mojo/public/cpp/utility",
-    "//mojo/public/interfaces/application",
     "//mojo/services/network/public/cpp",
     "//mojo/services/accessibility/public/interfaces",
     "//mojo/services/clipboard/public/interfaces",
@@ -95,14 +92,17 @@ source_set("lib") {
     "//mojo/services/surfaces/public/interfaces",
     "//net",
     "//skia",
+    "//third_party/mojo/src/mojo/public/c/system:for_shared_library",
+    "//third_party/mojo/src/mojo/public/cpp/utility",
+    "//third_party/mojo/src/mojo/public/interfaces/application",
     "//ui/native_theme",
     "//url",
   ]
 
   public_deps = [
-    "//mojo/public/cpp/bindings",
     "//mojo/services/view_manager/public/cpp",
     "//third_party/WebKit/public:blink",
+    "//third_party/mojo/src/mojo/public/cpp/bindings",
     ":generate_blink_resource_map",
   ]
 }

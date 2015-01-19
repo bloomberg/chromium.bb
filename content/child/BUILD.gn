@@ -17,7 +17,7 @@ source_set("child") {
                         "//content")
 
   public_deps = [
-    "//mojo/edk/system",
+    "//third_party/mojo/src/mojo/edk/system",
   ]
 
   deps = [
@@ -25,9 +25,9 @@ source_set("child") {
     "//components/tracing",
     "//mojo/common",
     "//mojo/environment:chromium",
-    "//mojo/public/interfaces/application",
     "//skia",
     "//third_party/icu",
+    "//third_party/mojo/src/mojo/public/interfaces/application",
     "//ui/base",
     "//ui/gfx",
     "//ui/gfx/geometry",

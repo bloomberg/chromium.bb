@@ -17,14 +17,14 @@
       'defines': [
         'IPC_MOJO_IMPLEMENTATION',
       ],
-      'includes': [ '../../mojo/mojom_bindings_generator.gypi' ],
+      'includes': [ '../../third_party/mojo/mojom_bindings_generator.gypi' ],
       'dependencies': [
         '../ipc.gyp:ipc',
         '../../base/base.gyp:base',
         '../../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../../mojo/mojo_base.gyp:mojo_environment_chromium',
-        '../../mojo/mojo_edk.gyp:mojo_system_impl',
-        '../../mojo/mojo_public.gyp:mojo_cpp_bindings',
+        '../../third_party/mojo/mojo_edk.gyp:mojo_system_impl',
+        '../../third_party/mojo/mojo_public.gyp:mojo_cpp_bindings',
       ],
       'sources': [
         'client_channel.mojom',
@@ -57,9 +57,9 @@
         '../../base/base.gyp:base_i18n',
         '../../base/base.gyp:test_support_base',
         '../../mojo/mojo_base.gyp:mojo_environment_chromium',
-        '../../mojo/mojo_edk.gyp:mojo_system_impl',
-        '../../mojo/mojo_public.gyp:mojo_cpp_bindings',
         '../../testing/gtest.gyp:gtest',
+        '../../third_party/mojo/mojo_edk.gyp:mojo_system_impl',
+        '../../third_party/mojo/mojo_public.gyp:mojo_cpp_bindings',
         'ipc_mojo',
       ],
       'include_dirs': [
@@ -85,9 +85,9 @@
         '../../base/base.gyp:test_support_base',
         '../../base/base.gyp:test_support_perf',
         '../../mojo/mojo_base.gyp:mojo_environment_chromium',
-        '../../mojo/mojo_edk.gyp:mojo_system_impl',
-        '../../mojo/mojo_public.gyp:mojo_cpp_bindings',
         '../../testing/gtest.gyp:gtest',
+        '../../third_party/mojo/mojo_edk.gyp:mojo_system_impl',
+        '../../third_party/mojo/mojo_public.gyp:mojo_cpp_bindings',
         'ipc_mojo',
       ],
       'include_dirs': [

@@ -13,8 +13,8 @@ component("geometry") {
     "//skia",
     "//ui/gfx/geometry",
     "//mojo/environment:chromium",
-    "//mojo/public/c/system:for_component",
     "//mojo/services/geometry/public/interfaces",
+    "//third_party/mojo/src/mojo/public/c/system:for_component",
   ]
 
   defines = [ "MOJO_GEOMETRY_IMPLEMENTATION" ]

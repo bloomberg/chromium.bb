@@ -52,7 +52,7 @@ if (!is_nacl) {
     ]
     deps = [
       "//base:base",
-      "//mojo/edk/system:system",
+      "//third_party/mojo/src/mojo/edk/system:system",
       ":monacl_sel",
     ]
   }
@@ -74,15 +74,15 @@ if (is_nacl) {
   executable("monacl_test") {
     testonly = true
     sources = [
-      "//mojo/public/cpp/system/tests/core_unittest.cc",
-      "//mojo/public/cpp/system/tests/macros_unittest.cc",
+      "//third_party/mojo/src/mojo/public/cpp/system/tests/core_unittest.cc",
+      "//third_party/mojo/src/mojo/public/cpp/system/tests/macros_unittest.cc",
     ]
     deps = [
       "//native_client/src/untrusted/nacl:imc_syscalls",
-      "//mojo/public/c/system/tests:tests",
-      "//mojo/public/cpp/system:system",
       "//testing/gtest:gtest",
       "//testing/gtest:gtest_main",
+      "//third_party/mojo/src/mojo/public/c/system/tests:tests",
+      "//third_party/mojo/src/mojo/public/cpp/system:system",
       ":mojo",
     ]
   }

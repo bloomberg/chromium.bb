@@ -10,7 +10,7 @@
     'mojom_base_output_dir':
         '<!(python <(DEPTH)/build/inverse_depth.py <(DEPTH))',
     'mojom_generated_outputs': [
-      '<!@(python <(DEPTH)/mojo/public/tools/bindings/mojom_list_outputs.py --basedir <(mojom_base_output_dir) <@(mojom_files))',
+      '<!@(python <(DEPTH)/third_party/mojo/src/mojo/public/tools/bindings/mojom_list_outputs.py --basedir <(mojom_base_output_dir) <@(mojom_files))',
     ],
   },
   # Given mojom files as inputs, generate sources.  These sources will be
@@ -23,7 +23,8 @@
       'variables': {
         'java_out_dir': '<(PRODUCT_DIR)/java_mojo/<(_target_name)/src',
         'mojom_import_args%': [
-         '-I<(DEPTH)'
+         '-I<(DEPTH)',
+         '-I<(DEPTH)/third_party/mojo/src'
         ],
       },
       'inputs': [
@@ -58,7 +59,9 @@
     # Include paths needed to compile the generated sources into a library.
     'include_dirs': [
       '<(DEPTH)',
+      '<(DEPTH)/third_party/mojo/src',
       '<(SHARED_INTERMEDIATE_DIR)',
+      '<(SHARED_INTERMEDIATE_DIR)/third_party/mojo/src',
     ],
     # Make sure the generated header files are available for any static library
     # that depends on a static library that depends on this generator.
@@ -68,7 +71,9 @@
       # transitive dependancies when using the library.
       'include_dirs': [
         '<(DEPTH)',
+        '<(DEPTH)/third_party/mojo/src',
         '<(SHARED_INTERMEDIATE_DIR)',
+        '<(SHARED_INTERMEDIATE_DIR)/third_party/mojo/src',
       ],
       'variables': {
         'generated_src_dirs': [

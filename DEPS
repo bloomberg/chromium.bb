@@ -738,8 +738,8 @@ hooks = [
     'name': 'download_mojo_shell',
     'pattern': '',
     'action': [ 'python',
-                'src/mojo/public/tools/download_shell_binary.py',
-                '--tools-directory=../../../tools',
+                'src/third_party/mojo/src/mojo/public/tools/download_shell_binary.py',
+                '--tools-directory=../../../../../../tools',
               ],
   },
   {

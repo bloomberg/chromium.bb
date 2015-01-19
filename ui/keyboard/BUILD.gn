@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//mojo/public/tools/bindings/mojom.gni")
+import("//third_party/mojo/src/mojo/public/tools/bindings/mojom.gni")
 import("//third_party/google_input_tools/closure.gni")
 import("//third_party/google_input_tools/inputview.gni")
 import("//tools/grit/grit_rule.gni")
@@ -40,11 +40,11 @@ component("keyboard") {
     "//base/third_party/dynamic_annotations",
     "//content/public/browser",
     "//content/public/common",
-    "//mojo/edk/js",
-    "//mojo/edk/system",
     "//mojo/environment:chromium",
-    "//mojo/public/cpp/bindings",
-    "//mojo/public/cpp/system",
+    "//third_party/mojo/src/mojo/edk/js",
+    "//third_party/mojo/src/mojo/edk/system",
+    "//third_party/mojo/src/mojo/public/cpp/bindings",
+    "//third_party/mojo/src/mojo/public/cpp/system",
     "//url",
     "//ui/aura",
     "//ui/base",

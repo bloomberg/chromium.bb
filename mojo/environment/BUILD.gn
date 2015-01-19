@@ -10,8 +10,8 @@ source_set("chromium") {
     "environment.cc",
 
     # TODO(vtl): This is kind of ugly. (See TODO in logging.h.)
-    "../public/cpp/environment/logging.h",
-    "../public/cpp/environment/lib/logging.cc",
+    "//third_party/mojo/src/mojo/public/cpp/environment/logging.h",
+    "//third_party/mojo/src/mojo/public/cpp/environment/lib/logging.cc",
   ]
 
   public_deps = [
@@ -34,6 +34,8 @@ component("chromium_impl") {
   ]
 
   defines = [ "MOJO_ENVIRONMENT_IMPL_IMPLEMENTATION" ]
+
+  public_configs = [ "//third_party/mojo/src/mojo/public/build/config:mojo_sdk" ]
 
   deps = [
     "//base",

@@ -50,7 +50,7 @@
             '<(monacl_codegen_dir)/mojo_syscall.cc',
           ],
           'dependencies': [
-            'mojo_public.gyp:mojo_system_placeholder',
+            '../third_party/mojo/mojo_public.gyp:mojo_system_placeholder',
           ],
         },
         {
@@ -76,7 +76,7 @@
           'type': 'executable',
           'dependencies': [
             '../base/base.gyp:base',
-            'mojo_edk.gyp:mojo_system_impl',
+            '../third_party/mojo/mojo_edk.gyp:mojo_system_impl',
             'monacl_sel',
           ],
           'sources': [
@@ -100,7 +100,7 @@
                 '<(monacl_codegen_dir)/mojo_syscall.cc',
               ],
               'dependencies': [
-                'mojo_public.gyp:mojo_system_placeholder',
+                '../third_party/mojo/mojo_public.gyp:mojo_system_placeholder',
               ],
               'configurations': {
                 'Common_Base': {
