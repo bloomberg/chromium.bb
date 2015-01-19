@@ -86,7 +86,7 @@ void RenderSVGResourceMasker::finishEffect(RenderObject* object, GraphicsContext
         ? ColorFilterSRGBToLinearRGB : ColorFilterNone;
 
     // Mask layer start.
-    context->beginLayer(1, CompositeDestinationIn, &paintInvalidationRect, maskLayerFilter);
+    context->beginLayer(1, SkXfermode::kDstIn_Mode, &paintInvalidationRect, maskLayerFilter);
     {
         // Draw the mask with color conversion (when needed).
         GraphicsContextStateSaver maskContentSaver(*context);

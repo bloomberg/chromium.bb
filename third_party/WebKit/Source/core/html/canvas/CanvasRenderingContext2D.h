@@ -258,8 +258,7 @@ private:
         float m_shadowBlur;
         RGBA32 m_shadowColor;
         float m_globalAlpha;
-        CompositeOperator m_globalComposite;
-        WebBlendMode m_globalBlend;
+        SkXfermode::Mode m_globalComposite;
         AffineTransform m_transform;
         bool m_invertibleCTM;
         Vector<float> m_lineDash;

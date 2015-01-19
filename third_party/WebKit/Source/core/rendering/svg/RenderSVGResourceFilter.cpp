@@ -173,7 +173,7 @@ static void drawDeferredFilter(GraphicsContext* context, FilterData* filterData,
             imageFilter = builder.buildTransform(shearAndRotate, imageFilter.get());
         }
     }
-    context->beginLayer(1, CompositeSourceOver, &boundaries, ColorFilterNone, imageFilter.get());
+    context->beginLayer(1, SkXfermode::kSrcOver_Mode, &boundaries, ColorFilterNone, imageFilter.get());
     context->endLayer();
     context->restore();
 }

@@ -49,6 +49,8 @@ namespace blink {
 class GraphicsContext;
 
 SkXfermode::Mode PLATFORM_EXPORT WebCoreCompositeToSkiaComposite(CompositeOperator, WebBlendMode = WebBlendModeNormal);
+CompositeOperator PLATFORM_EXPORT compositeOperatorFromSkia(SkXfermode::Mode);
+WebBlendMode PLATFORM_EXPORT blendModeFromSkia(SkXfermode::Mode);
 
 inline SkPaint::FilterLevel WebCoreInterpolationQualityToSkFilterLevel(InterpolationQuality quality)
 {

@@ -79,6 +79,7 @@ static const SkXfermode::Mode gMapBlendOpsToXfermodeModes[] = {
 
 SkXfermode::Mode WebCoreCompositeToSkiaComposite(CompositeOperator op, WebBlendMode blendMode)
 {
+    ASSERT(op == CompositeSourceOver || blendMode == WebBlendModeNormal);
     if (blendMode != WebBlendModeNormal) {
         if (static_cast<uint8_t>(blendMode) >= SK_ARRAY_COUNT(gMapBlendOpsToXfermodeModes)) {
             SkDEBUGF(("GraphicsContext::setPlatformCompositeOperation unknown WebBlendMode %d\n", blendMode));
@@ -94,6 +95,80 @@ SkXfermode::Mode WebCoreCompositeToSkiaComposite(CompositeOperator op, WebBlendM
     }
     SkASSERT(table[static_cast<uint8_t>(op)].mCompositOp == op);
     return table[static_cast<uint8_t>(op)].m_xfermodeMode;
+}
+
+CompositeOperator compositeOperatorFromSkia(SkXfermode::Mode xferMode)
+{
+    switch (xferMode) {
+    case SkXfermode::kClear_Mode:
+        return CompositeClear;
+    case SkXfermode::kSrc_Mode:
+        return CompositeCopy;
+    case SkXfermode::kSrcOver_Mode:
+        return CompositeSourceOver;
+    case SkXfermode::kSrcIn_Mode:
+        return CompositeSourceIn;
+    case SkXfermode::kSrcOut_Mode:
+        return CompositeSourceOut;
+    case SkXfermode::kSrcATop_Mode:
+        return CompositeSourceAtop;
+    case SkXfermode::kDstOver_Mode:
+        return CompositeDestinationOver;
+    case SkXfermode::kDstIn_Mode:
+        return CompositeDestinationIn;
+    case SkXfermode::kDstOut_Mode:
+        return CompositeDestinationOut;
+    case SkXfermode::kDstATop_Mode:
+        return CompositeDestinationAtop;
+    case SkXfermode::kXor_Mode:
+        return CompositeXOR;
+    case SkXfermode::kPlus_Mode:
+        return CompositePlusLighter;
+    default:
+        break;
+    }
+    return CompositeSourceOver;
+}
+
+WebBlendMode blendModeFromSkia(SkXfermode::Mode xferMode)
+{
+    switch (xferMode) {
+    case SkXfermode::kSrcOver_Mode:
+        return WebBlendModeNormal;
+    case SkXfermode::kMultiply_Mode:
+        return WebBlendModeMultiply;
+    case SkXfermode::kScreen_Mode:
+        return WebBlendModeScreen;
+    case SkXfermode::kOverlay_Mode:
+        return WebBlendModeOverlay;
+    case SkXfermode::kDarken_Mode:
+        return WebBlendModeDarken;
+    case SkXfermode::kLighten_Mode:
+        return WebBlendModeLighten;
+    case SkXfermode::kColorDodge_Mode:
+        return WebBlendModeColorDodge;
+    case SkXfermode::kColorBurn_Mode:
+        return WebBlendModeColorBurn;
+    case SkXfermode::kHardLight_Mode:
+        return WebBlendModeHardLight;
+    case SkXfermode::kSoftLight_Mode:
+        return WebBlendModeSoftLight;
+    case SkXfermode::kDifference_Mode:
+        return WebBlendModeDifference;
+    case SkXfermode::kExclusion_Mode:
+        return WebBlendModeExclusion;
+    case SkXfermode::kHue_Mode:
+        return WebBlendModeHue;
+    case SkXfermode::kSaturation_Mode:
+        return WebBlendModeSaturation;
+    case SkXfermode::kColor_Mode:
+        return WebBlendModeColor;
+    case SkXfermode::kLuminosity_Mode:
+        return WebBlendModeLuminosity;
+    default:
+        break;
+    }
+    return WebBlendModeNormal;
 }
 
 bool SkPathContainsPoint(const SkPath& originalPath, const FloatPoint& point, SkPath::FillType ft)

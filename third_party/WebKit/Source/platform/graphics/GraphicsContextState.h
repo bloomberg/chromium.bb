@@ -127,9 +127,8 @@ public:
     void setColorFilter(PassRefPtr<SkColorFilter>);
 
     // Compositing control, for the CSS and Canvas compositing spec.
-    void setCompositeOperation(CompositeOperator, WebBlendMode);
-    CompositeOperator compositeOperator() const { return m_compositeOperator; }
-    WebBlendMode blendMode() const { return m_blendMode; }
+    void setCompositeOperation(SkXfermode::Mode);
+    SkXfermode::Mode compositeOperation() const { return m_compositeOperation; }
 
     // Image interpolation control.
     InterpolationQuality interpolationQuality() const { return m_interpolationQuality; }
@@ -177,8 +176,7 @@ private:
     int m_alpha;
     RefPtr<SkColorFilter> m_colorFilter;
 
-    CompositeOperator m_compositeOperator;
-    WebBlendMode m_blendMode;
+    SkXfermode::Mode m_compositeOperation;
 
     InterpolationQuality m_interpolationQuality;
 

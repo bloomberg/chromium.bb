@@ -7,6 +7,7 @@
 
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/GraphicsContext.h"
+#include "platform/graphics/skia/SkiaUtils.h"
 #include "public/platform/WebDisplayItemList.h"
 
 namespace blink {
@@ -14,7 +15,7 @@ namespace blink {
 void BeginCompositingDisplayItem::replay(GraphicsContext* context)
 {
     context->setCompositeOperation(m_preCompositeOp, m_preBlendMode);
-    context->beginLayer(m_opacity, m_preCompositeOp);
+    context->beginLayer(m_opacity, WebCoreCompositeToSkiaComposite(m_preCompositeOp, m_preBlendMode));
     context->setCompositeOperation(m_postCompositeOp, WebBlendModeNormal);
 }
 

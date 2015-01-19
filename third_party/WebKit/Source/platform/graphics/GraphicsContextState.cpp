@@ -15,8 +15,7 @@ GraphicsContextState::GraphicsContextState()
     , m_fillRule(RULE_NONZERO)
     , m_textDrawingMode(TextModeFill)
     , m_alpha(256)
-    , m_compositeOperator(CompositeSourceOver)
-    , m_blendMode(WebBlendModeNormal)
+    , m_compositeOperation(SkXfermode::kSrcOver_Mode)
     , m_interpolationQuality(InterpolationDefault)
     , m_saveCount(0)
     , m_shouldAntialias(true)
@@ -51,8 +50,7 @@ GraphicsContextState::GraphicsContextState(const GraphicsContextState& other)
     , m_textDrawingMode(other.m_textDrawingMode)
     , m_alpha(other.m_alpha)
     , m_colorFilter(other.m_colorFilter)
-    , m_compositeOperator(other.m_compositeOperator)
-    , m_blendMode(other.m_blendMode)
+    , m_compositeOperation(other.m_compositeOperation)
     , m_interpolationQuality(other.m_interpolationQuality)
     , m_saveCount(0)
     , m_shouldAntialias(other.m_shouldAntialias)
@@ -240,11 +238,9 @@ void GraphicsContextState::setColorFilter(PassRefPtr<SkColorFilter> colorFilter)
     m_fillPaint.setColorFilter(m_colorFilter.get());
 }
 
-void GraphicsContextState::setCompositeOperation(CompositeOperator compositeOperation, WebBlendMode blendMode)
+void GraphicsContextState::setCompositeOperation(SkXfermode::Mode xferMode)
 {
-    m_compositeOperator = compositeOperation;
-    m_blendMode = blendMode;
-    SkXfermode::Mode xferMode = WebCoreCompositeToSkiaComposite(compositeOperation, blendMode);
+    m_compositeOperation = xferMode;
     m_strokePaint.setXfermodeMode(xferMode);
     m_fillPaint.setXfermodeMode(xferMode);
 }

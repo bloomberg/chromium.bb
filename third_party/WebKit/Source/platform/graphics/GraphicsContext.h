@@ -178,9 +178,11 @@ public:
     void setImageInterpolationQuality(InterpolationQuality quality) { mutableState()->setInterpolationQuality(quality); }
     InterpolationQuality imageInterpolationQuality() const { return immutableState()->interpolationQuality(); }
 
+    void setCompositeOperation(SkXfermode::Mode);
+    // TODO(dshwang): remove these method. crbug.com/425656
     void setCompositeOperation(CompositeOperator, WebBlendMode = WebBlendModeNormal);
-    CompositeOperator compositeOperation() const { return immutableState()->compositeOperator(); }
-    WebBlendMode blendModeOperation() const { return immutableState()->blendMode(); }
+    CompositeOperator compositeOperation() const;
+    WebBlendMode blendModeOperation() const;
 
     // Specify the device scale factor which may change the way document markers
     // and fonts are rendered.
@@ -321,9 +323,9 @@ public:
 
     // beginLayer()/endLayer() behaves like save()/restore() for only CTM and clip states.
     void beginTransparencyLayer(float opacity, const FloatRect* = 0);
-    // Apply CompositeOperator when the layer is composited on the backdrop (i.e. endLayer()).
-    // Don't change the current CompositeOperator state.
-    void beginLayer(float opacity, CompositeOperator, const FloatRect* = 0, ColorFilter = ColorFilterNone, ImageFilter* = 0);
+    // Apply SkXfermode::Mode when the layer is composited on the backdrop (i.e. endLayer()).
+    // Don't change the current SkXfermode::Mode states.
+    void beginLayer(float opacity, SkXfermode::Mode, const FloatRect* = 0, ColorFilter = ColorFilterNone, ImageFilter* = 0);
     void endLayer();
 
     // Instead of being dispatched to the active canvas, draw commands following beginRecording()

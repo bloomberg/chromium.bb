@@ -16,7 +16,7 @@ void BeginFilterDisplayItem::replay(GraphicsContext* context)
     FloatRect boundaries = mapImageFilterRect(m_imageFilter.get(), m_bounds);
     context->translate(m_bounds.x().toFloat(), m_bounds.y().toFloat());
     boundaries.move(-m_bounds.x().toFloat(), -m_bounds.y().toFloat());
-    context->beginLayer(1, CompositeSourceOver, &boundaries, ColorFilterNone, m_imageFilter.get());
+    context->beginLayer(1, SkXfermode::kSrcOver_Mode, &boundaries, ColorFilterNone, m_imageFilter.get());
     context->translate(-m_bounds.x().toFloat(), -m_bounds.y().toFloat());
 }
 

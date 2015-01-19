@@ -200,7 +200,7 @@ bool RenderSVGResourceClipper::applyClippingToContext(RenderObject* target, cons
     }
 
     // Masked content layer start.
-    context->beginLayer(1, CompositeSourceIn, &paintInvalidationRect);
+    context->beginLayer(1, SkXfermode::kSrcIn_Mode, &paintInvalidationRect);
 
     return true;
 }

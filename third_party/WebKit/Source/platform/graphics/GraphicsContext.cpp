@@ -438,11 +438,27 @@ bool GraphicsContext::couldUseLCDRenderedText() const
     return m_isCertainlyOpaque && m_shouldSmoothFonts;
 }
 
-void GraphicsContext::setCompositeOperation(CompositeOperator compositeOperation, WebBlendMode blendMode)
+void GraphicsContext::setCompositeOperation(SkXfermode::Mode xferMode)
 {
     if (contextDisabled())
         return;
-    mutableState()->setCompositeOperation(compositeOperation, blendMode);
+    mutableState()->setCompositeOperation(xferMode);
+}
+
+void GraphicsContext::setCompositeOperation(CompositeOperator compositeOperation, WebBlendMode blendMode)
+{
+    SkXfermode::Mode xferMode = WebCoreCompositeToSkiaComposite(compositeOperation, blendMode);
+    setCompositeOperation(xferMode);
+}
+
+CompositeOperator GraphicsContext::compositeOperation() const
+{
+    return compositeOperatorFromSkia(immutableState()->compositeOperation());
+}
+
+WebBlendMode GraphicsContext::blendModeOperation() const
+{
+    return blendModeFromSkia(immutableState()->compositeOperation());
 }
 
 SkColorFilter* GraphicsContext::colorFilter() const
@@ -494,17 +510,17 @@ void GraphicsContext::concat(const SkMatrix& matrix)
 
 void GraphicsContext::beginTransparencyLayer(float opacity, const FloatRect* bounds)
 {
-    beginLayer(opacity, immutableState()->compositeOperator(), bounds);
+    beginLayer(opacity, immutableState()->compositeOperation(), bounds);
 }
 
-void GraphicsContext::beginLayer(float opacity, CompositeOperator op, const FloatRect* bounds, ColorFilter colorFilter, ImageFilter* imageFilter)
+void GraphicsContext::beginLayer(float opacity, SkXfermode::Mode xfermode, const FloatRect* bounds, ColorFilter colorFilter, ImageFilter* imageFilter)
 {
     if (contextDisabled())
         return;
 
     SkPaint layerPaint;
     layerPaint.setAlpha(static_cast<unsigned char>(opacity * 255));
-    layerPaint.setXfermodeMode(WebCoreCompositeToSkiaComposite(op, m_paintState->blendMode()));
+    layerPaint.setXfermodeMode(xfermode);
     layerPaint.setColorFilter(WebCoreColorFilterToSkiaColorFilter(colorFilter).get());
     layerPaint.setImageFilter(imageFilter);
 

@@ -275,8 +275,7 @@ CanvasRenderingContext2D::State::State()
     , m_shadowBlur(0)
     , m_shadowColor(Color::transparent)
     , m_globalAlpha(1)
-    , m_globalComposite(CompositeSourceOver)
-    , m_globalBlend(WebBlendModeNormal)
+    , m_globalComposite(SkXfermode::kSrcOver_Mode)
     , m_invertibleCTM(true)
     , m_lineDashOffset(0)
     , m_imageSmoothingEnabled(true)
@@ -305,7 +304,6 @@ CanvasRenderingContext2D::State::State(const State& other, ClipListCopyMode mode
     , m_shadowColor(other.m_shadowColor)
     , m_globalAlpha(other.m_globalAlpha)
     , m_globalComposite(other.m_globalComposite)
-    , m_globalBlend(other.m_globalBlend)
     , m_transform(other.m_transform)
     , m_invertibleCTM(other.m_invertibleCTM)
     , m_lineDashOffset(other.m_lineDashOffset)
@@ -349,7 +347,6 @@ CanvasRenderingContext2D::State& CanvasRenderingContext2D::State::operator=(cons
     m_shadowColor = other.m_shadowColor;
     m_globalAlpha = other.m_globalAlpha;
     m_globalComposite = other.m_globalComposite;
-    m_globalBlend = other.m_globalBlend;
     m_transform = other.m_transform;
     m_invertibleCTM = other.m_invertibleCTM;
     m_imageSmoothingEnabled = other.m_imageSmoothingEnabled;
@@ -757,7 +754,7 @@ void CanvasRenderingContext2D::setGlobalAlpha(float alpha)
 
 String CanvasRenderingContext2D::globalCompositeOperation() const
 {
-    return compositeOperatorName(state().m_globalComposite, state().m_globalBlend);
+    return compositeOperatorName(compositeOperatorFromSkia(state().m_globalComposite), blendModeFromSkia(state().m_globalComposite));
 }
 
 void CanvasRenderingContext2D::setGlobalCompositeOperation(const String& operation)
@@ -766,15 +763,15 @@ void CanvasRenderingContext2D::setGlobalCompositeOperation(const String& operati
     WebBlendMode blendMode = WebBlendModeNormal;
     if (!parseCompositeAndBlendOperator(operation, op, blendMode))
         return;
-    if ((state().m_globalComposite == op) && (state().m_globalBlend == blendMode))
+    SkXfermode::Mode xfermode = WebCoreCompositeToSkiaComposite(op, blendMode);
+    if (state().m_globalComposite == xfermode)
         return;
     GraphicsContext* c = drawingContext();
     realizeSaves(c);
-    modifiableState().m_globalComposite = op;
-    modifiableState().m_globalBlend = blendMode;
+    modifiableState().m_globalComposite = xfermode;
     if (!c)
         return;
-    c->setCompositeOperation(op, blendMode);
+    c->setCompositeOperation(xfermode);
 }
 
 void CanvasRenderingContext2D::setCurrentTransform(PassRefPtrWillBeRawPtr<SVGMatrixTearOff> passMatrixTearOff)
@@ -960,12 +957,12 @@ static bool validateRectForCanvas(float& x, float& y, float& width, float& heigh
     return true;
 }
 
-static bool isFullCanvasCompositeMode(CompositeOperator op)
+static bool isFullCanvasCompositeMode(SkXfermode::Mode op)
 {
     // See 4.8.11.1.3 Compositing
     // CompositeSourceAtop and CompositeDestinationOut are not listed here as the platforms already
     // implement the specification's behavior.
-    return op == CompositeSourceIn || op == CompositeSourceOut || op == CompositeDestinationIn || op == CompositeDestinationAtop;
+    return op == SkXfermode::kSrcIn_Mode || op == SkXfermode::kSrcOut_Mode || op == SkXfermode::kDstIn_Mode || op == SkXfermode::kDstATop_Mode;
 }
 
 static WindRule parseWinding(const String& windingRuleString)
@@ -1008,7 +1005,7 @@ void CanvasRenderingContext2D::fillInternal(const Path& path, const String& wind
     if (isFullCanvasCompositeMode(state().m_globalComposite)) {
         fullCanvasCompositedDraw(bind(&GraphicsContext::fillPath, c, path));
         didDraw(clipBounds);
-    } else if (state().m_globalComposite == CompositeCopy) {
+    } else if (state().m_globalComposite == SkXfermode::kSrc_Mode) {
         clearCanvas();
         c->clearShadow();
         c->fillPath(path);
@@ -1060,7 +1057,7 @@ void CanvasRenderingContext2D::strokeInternal(const Path& path)
     if (isFullCanvasCompositeMode(state().m_globalComposite)) {
         fullCanvasCompositedDraw(bind(&GraphicsContext::strokePath, c, path));
         didDraw(clipBounds);
-    } else if (state().m_globalComposite == CompositeCopy) {
+    } else if (state().m_globalComposite == SkXfermode::kSrc_Mode) {
         clearCanvas();
         c->clearShadow();
         c->strokePath(path);
@@ -1242,12 +1239,12 @@ void CanvasRenderingContext2D::clearRect(float x, float y, float width, float he
         }
         context->setAlphaAsFloat(1);
     }
-    if (state().m_globalComposite != CompositeSourceOver) {
+    if (state().m_globalComposite != SkXfermode::kSrcOver_Mode) {
         if (!saved) {
             context->save();
             saved = true;
         }
-        context->setCompositeOperation(CompositeSourceOver);
+        context->setCompositeOperation(SkXfermode::kSrcOver_Mode);
     }
     context->clearRect(rect);
     if (m_hitRegionManager)
@@ -1298,7 +1295,7 @@ void CanvasRenderingContext2D::fillRect(float x, float y, float width, float hei
     } else if (isFullCanvasCompositeMode(state().m_globalComposite)) {
         fullCanvasCompositedDraw(bind(&fillRectOnContext, c, rect));
         didDraw(clipBounds);
-    } else if (state().m_globalComposite == CompositeCopy) {
+    } else if (state().m_globalComposite == SkXfermode::kSrc_Mode) {
         clearCanvas();
         c->clearShadow();
         c->fillRect(rect);
@@ -1339,7 +1336,7 @@ void CanvasRenderingContext2D::strokeRect(float x, float y, float width, float h
     if (isFullCanvasCompositeMode(state().m_globalComposite)) {
         fullCanvasCompositedDraw(bind(&strokeRectOnContext, c, rect));
         didDraw(clipBounds);
-    } else if (state().m_globalComposite == CompositeCopy) {
+    } else if (state().m_globalComposite == SkXfermode::kSrc_Mode) {
         clearCanvas();
         c->clearShadow();
         c->strokeRect(rect);
@@ -1513,14 +1510,13 @@ void CanvasRenderingContext2D::drawImageInternal(CanvasImageSource* imageSource,
     if (imageSource->isCanvasElement())
         canvas()->buffer()->willAccessPixels();
 
-    CompositeOperator op = state().m_globalComposite;
     if (rectContainsTransformedRect(dstRect, clipBounds)) {
         drawImageOnContext(c, imageSource, image.get(), srcRect, dstRect);
         didDraw(clipBounds);
-    } else if (isFullCanvasCompositeMode(op)) {
+    } else if (isFullCanvasCompositeMode(state().m_globalComposite)) {
         fullCanvasCompositedDraw(bind(&drawImageOnContext, c, imageSource, image.get(), srcRect, dstRect));
         didDraw(clipBounds);
-    } else if (op == CompositeCopy) {
+    } else if (state().m_globalComposite == SkXfermode::kSrc_Mode) {
         clearCanvas();
         drawImageOnContext(c, imageSource, image.get(), srcRect, dstRect);
         didDraw(clipBounds);
@@ -1567,22 +1563,21 @@ void CanvasRenderingContext2D::fullCanvasCompositedDraw(PassOwnPtr<Closure> draw
     GraphicsContext* c = drawingContext();
     ASSERT(c);
 
-    CompositeOperator previousOperator = c->compositeOperation();
     if (shouldDrawShadows()) {
         // unroll into two independently composited passes if drawing shadows
         c->beginLayer(1, state().m_globalComposite);
-        c->setCompositeOperation(CompositeSourceOver);
+        c->setCompositeOperation(SkXfermode::kSrcOver_Mode);
         applyShadow(DrawShadowOnly);
         (*draw)();
-        c->setCompositeOperation(previousOperator);
+        c->setCompositeOperation(state().m_globalComposite);
         c->endLayer();
     }
 
     c->beginLayer(1, state().m_globalComposite);
     c->clearShadow();
-    c->setCompositeOperation(CompositeSourceOver);
+    c->setCompositeOperation(SkXfermode::kSrcOver_Mode);
     (*draw)();
-    c->setCompositeOperation(previousOperator);
+    c->setCompositeOperation(state().m_globalComposite);
     c->endLayer();
     applyShadow(DrawShadowAndForeground); // go back to normal shadows mode
 }
@@ -2146,7 +2141,7 @@ void CanvasRenderingContext2D::drawTextInternal(const String& text, float x, flo
     if (isFullCanvasCompositeMode(state().m_globalComposite)) {
         fullCanvasCompositedDraw(bind(&GraphicsContext::drawBidiText, c, font, textRunPaintInfo, location, Font::UseFallbackIfFontNotReady));
         didDraw(clipBounds);
-    } else if (state().m_globalComposite == CompositeCopy) {
+    } else if (state().m_globalComposite == SkXfermode::kSrc_Mode) {
         clearCanvas();
         c->clearShadow();
         c->drawBidiText(font, textRunPaintInfo, location, Font::UseFallbackIfFontNotReady);
@@ -2298,7 +2293,7 @@ void CanvasRenderingContext2D::drawFocusRing(const Path& path)
     c->save();
     c->setAlphaAsFloat(1.0);
     c->clearShadow();
-    c->setCompositeOperation(CompositeSourceOver, WebBlendModeNormal);
+    c->setCompositeOperation(SkXfermode::kSrcOver_Mode);
     c->drawFocusRing(path, focusRingWidth, focusRingOutline, focusRingColor);
     c->restore();
     validateStateStack();
