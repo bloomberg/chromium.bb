@@ -23,7 +23,7 @@
    bug_9351
    Memcheck:Leak
    ...
-   fun:_ZN12HALCADClient19AddPropertyListenerEmPK26AudioObjectPropertyAddressPFlmmS2_PvES3_
+   fun:_ZN12HALCADClient19AddPropertyListenerE*26AudioObjectPropertyAddressP*
    ...
    fun:_ZN9HALSystem16CheckOutInstanceEv
    ...
@@ -104,6 +104,30 @@
    fun:setCursorFromBundle
    fun:CoreCursorSet
    fun:-[NSCursor set]
+}
+{
+   bug_379331
+   Memcheck:Uninitialized
+   fun:x_zone_size
+   fun:find_registered_purgeable_zone
+   fun:malloc_make_purgeable
+   ...
+   fun:setCursorFromBundle
+   fun:CoreCursorSet
+   fun:-[NSCursor set]
+   fun:_ZN12_GLOBAL__N_116ForceSystemLeaksEv
+}
+{
+   FIXME initImagePng leaks from an unknown module
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   fun:_CFRuntimeCreateInstance
+   fun:CFNumberCreate
+   fun:get_colorspace
+   fun:initImagePng
+   obj:*
+   obj:/System/Library/Frameworks/ApplicationServices.framework/Versions/A/Frameworks/ImageIO.framework/Versions/A/ImageIO
+   obj:/System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation
 }
 
 # 2. Intentional unit test errors, stuff that is somehow a false positive
@@ -198,9 +222,9 @@
    Memcheck:Leak
    fun:calloc
    fun:_internal_class_createInstanceFromZone
-   fun:_internal_class_createInstance
+   ...
    fun:NSAllocateObject
-   fun:+[NSObject(NSObject) alloc]
+   ...
    fun:-[VideoCaptureDeviceQTKit initWithFrameReceiver:]
    fun:_ZN5media21VideoCaptureDeviceMac4InitENS_18VideoCaptureDevice4Name14CaptureApiTypeE
    fun:_ZN5media28VideoCaptureDeviceFactoryMac6CreateERKNS_18VideoCaptureDevice4NameE
