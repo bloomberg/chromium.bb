@@ -1098,6 +1098,10 @@ void RenderGrid::layoutGridItems()
             continue;
         }
 
+        // FIXME: This logic is part of the RenderBlockFlow::layoutBlockChild, which probably
+        // should be part of the refactor to be done for RenderGrid::layoutBlock.
+        child->computeAndSetBlockDirectionMargins(this);
+
         // Because the grid area cannot be styled, we don't need to adjust
         // the grid breadth to account for 'box-sizing'.
         LayoutUnit oldOverrideContainingBlockContentLogicalWidth = child->hasOverrideContainingBlockLogicalWidth() ? child->overrideContainingBlockContentLogicalWidth() : LayoutUnit();
