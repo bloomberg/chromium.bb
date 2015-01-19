@@ -17,9 +17,9 @@ function test()
         {
             InspectorTest.takeAndOpenSnapshot(createHeapSnapshot, step1);
 
-            function step1()
+            function step0()
             {
-                InspectorTest.switchToView("Summary", step2);
+                InspectorTest.switchToView("Summary", step1);
             }
 
             var view;
@@ -28,8 +28,20 @@ function test()
                 InspectorTest.addSniffer(view, "_selectRevealedNode", checkNodeIsSelected.bind(view, constructorName, nodeId, onSuccess));
             }
 
-            function step2()
+            function step1()
             {
+                view = InspectorTest.currentProfileView();
+                InspectorTest.addSniffer(view, "_selectRevealedNode", step2);
+                view.performSearch({query: "@1", caseSensitive: false});
+            }
+
+            function step2(callback, node)
+            {
+                if (node) {
+                    InspectorTest.addResult("FAIL: hidden node @1 was found");
+                    return next();
+                }
+                InspectorTest.addResult("PASS: hidden node @1 was not found.")
                 view = InspectorTest.currentProfileView();
                 addNodeSelectSniffer("A", "101", step3);
                 view.performSearch({query:"@101", caseSensitive: false});
@@ -47,7 +59,7 @@ function test()
                 view.performSearch({query: "@999", caseSensitive: false}, step5);
             }
 
-            function step5(callback, parentNode, node)
+            function step5(callback, node)
             {
                 if (node) {
                     InspectorTest.addResult("FAIL: found node @999");
