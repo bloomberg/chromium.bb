@@ -636,18 +636,6 @@
     "extension_types": ["extension", "legacy_packaged_app"],
     "contexts": ["blessed_extension"]
   },
-  "tabs.setZoom": {
-    "channel": "dev"
-  },
-  "tabs.getZoom": {
-    "channel": "dev"
-  },
-  "tabs.setZoomSettings": {
-    "channel": "dev"
-  },
-  "tabs.getZoomSettings": {
-    "channel": "dev"
-  },
   "terminalPrivate": {
     "dependencies": ["permission:terminalPrivate"],
     "contexts": ["blessed_extension"]
