@@ -3664,7 +3664,8 @@ void PDFiumEngine::Form_Mail(IPDF_JSPLATFORM* param,
                              FPDF_WIDESTRING cc,
                              FPDF_WIDESTRING bcc,
                              FPDF_WIDESTRING message) {
-  DCHECK(length == 0);  // Don't handle attachments; no way with mailto.
+  // Note: |mail_data| and |length| are ignored. We don't handle attachments;
+  // there is no way with mailto.
   std::string to_str =
       base::UTF16ToUTF8(reinterpret_cast<const base::char16*>(to));
   std::string cc_str =
