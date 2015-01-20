@@ -3,7 +3,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-bin/cbuildbot_view_config -d -s --pretty > cbuildbot/config_dump.json
+trap 'rm -f "${temp}"' EXIT INT
+temp=$(mktemp)
+bin/cbuildbot_view_config -d -s --pretty > "${temp}"
+mv "${temp}" cbuildbot/config_dump.json
 if [ "$(git diff cbuildbot/config_dump.json)" ]; then
   echo "You have uncommitted changes to cbuildbot/config_dump.json"
   echo "This is likely because you have modified cbuildbot/cbuildbot_config.py"
@@ -13,4 +16,3 @@ if [ "$(git diff cbuildbot/config_dump.json)" ]; then
   echo "bin/cbuildbot_view_config -d -s --pretty > cbuildbot/config_dump.json"
   exit 1
 fi
-
