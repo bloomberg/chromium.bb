@@ -388,6 +388,8 @@ test.util.registerRemoteTestUtils = function() {
       request.func = '';
     }
     // Prepare arguments.
+    if (!('args' in request))
+      throw new Error('Invalid request.');
     var args = request.args.slice();  // shallow copy
     if (request.appId) {
       if (window.background.appWindows[request.appId]) {

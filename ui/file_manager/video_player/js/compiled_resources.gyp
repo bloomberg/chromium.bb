@@ -23,6 +23,7 @@
           '../../file_manager/background/js/app_window_wrapper.js',
           '../../file_manager/background/js/background_base.js',
           '../../file_manager/background/js/volume_manager.js',
+          '../../file_manager/background/js/test_util_base.js',
           'error_util.js',
           'test_util.js',
         ],
