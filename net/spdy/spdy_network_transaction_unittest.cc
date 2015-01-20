@@ -4556,6 +4556,27 @@ TEST_P(SpdyNetworkTransactionTest, CloseWithActiveStream) {
   helper.VerifyDataConsumed();
 }
 
+// HTTP_1_1_REQUIRED results in ERR_HTTP_1_1_REQUIRED.
+TEST_P(SpdyNetworkTransactionTest, HTTP11RequiredError) {
+  // HTTP_1_1_REQUIRED is only supported by SPDY4.
+  if (spdy_util_.spdy_version() < SPDY4)
+    return;
+
+  NormalSpdyTransactionHelper helper(CreateGetRequest(), DEFAULT_PRIORITY,
+                                     BoundNetLog(), GetParam(), nullptr);
+
+  scoped_ptr<SpdyFrame> go_away(spdy_util_.ConstructSpdyGoAway(
+      0, GOAWAY_HTTP_1_1_REQUIRED, "Try again using HTTP/1.1 please."));
+  MockRead reads[] = {
+      CreateMockRead(*go_away),
+  };
+  DelayedSocketData data(0, reads, arraysize(reads), nullptr, 0);
+
+  helper.RunToCompletion(&data);
+  TransactionHelperResult out = helper.output();
+  EXPECT_EQ(ERR_HTTP_1_1_REQUIRED, out.rv);
+}
+
 // Retry with HTTP/1.1 when receiving HTTP_1_1_REQUIRED.  Note that no actual
 // protocol negotiation happens, instead this test forces protocols for both
 // sockets.
