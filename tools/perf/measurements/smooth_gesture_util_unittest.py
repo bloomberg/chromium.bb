@@ -5,6 +5,7 @@ import time
 import unittest
 
 from measurements import smooth_gesture_util as sg_util
+from telemetry import decorators
 from telemetry.core.platform import tracing_category_filter
 from telemetry.core.platform import tracing_options
 from telemetry.page import page as page_module
@@ -112,6 +113,7 @@ class ScrollingPage(page_module.Page):
 
 
 class SmoothGestureTest(page_test_test_case.PageTestTestCase):
+  @decorators.Disabled('mac')  # crbug.com/450171.
   def testSmoothGestureAdjusted(self):
     ps = self.CreateEmptyPageSet()
     ps.AddUserStory(ScrollingPage(
