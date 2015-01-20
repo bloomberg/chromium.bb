@@ -29,13 +29,16 @@ declare_args() {
 
   # True means the UI is built using the "views" framework.
   toolkit_views = is_win || is_chromeos || use_aura
+
+  # Whether we should use glib, a low level C utility library.
+  use_glib = is_linux && !use_ozone
 }
 
 # Additional dependent variables -----------------------------------------------
 #
 # These variables depend on other variables and can't be set externally.
 
-if (is_linux) {
+if (is_linux && use_glib) {
   use_cairo = true
   use_pango = true
 } else {
@@ -53,8 +56,6 @@ use_default_render_theme = use_aura || is_linux
 use_x11 = is_linux && !use_ozone
 
 use_ozone_evdev = use_ozone
-
-use_glib = is_linux && !use_ozone
 
 use_clipboard_aurax11 = is_linux && use_aura && use_x11
 

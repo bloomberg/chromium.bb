@@ -909,7 +909,10 @@ component("base") {
   # Linux.
   if (is_linux) {
     # TODO(brettw) this will need to be parameterized at some point.
-    linux_configs = [ "//build/config/linux:glib" ]
+    linux_configs = []
+    if (use_glib) {
+      linux_configs += [ "//build/config/linux:glib" ]
+    }
 
     configs += linux_configs
     all_dependent_configs = linux_configs
@@ -1403,7 +1406,9 @@ test("base_unittests") {
     sources -= [ "file_version_info_unittest.cc" ]
     sources += [ "nix/xdg_util_unittest.cc" ]
     defines = [ "USE_SYMBOLIZE" ]
-    configs += [ "//build/config/linux:glib" ]
+    if (use_glib) {
+      configs += [ "//build/config/linux:glib" ]
+    }
   }
 
   if (!is_linux || use_ozone) {
