@@ -372,20 +372,24 @@ void CreateShortcutsWithInfo(
     const extensions::FileHandlersInfo& file_handlers_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  // It's possible for the extension to be deleted before we get here.
-  // For example, creating a hosted app from a website. Double check that
-  // it still exists.
-  Profile* profile = g_browser_process->profile_manager()->GetProfileByPath(
-      shortcut_info.profile_path);
-  if (!profile)
-    return;
+  // If the shortcut is for an application shortcut with the new bookmark app
+  // flow disabled, there will be no corresponding extension.
+  if (!shortcut_info.extension_id.empty()) {
+    // It's possible for the extension to be deleted before we get here.
+    // For example, creating a hosted app from a website. Double check that
+    // it still exists.
+    Profile* profile = g_browser_process->profile_manager()->GetProfileByPath(
+        shortcut_info.profile_path);
+    if (!profile)
+      return;
 
-  extensions::ExtensionRegistry* registry =
-      extensions::ExtensionRegistry::Get(profile);
-  const extensions::Extension* extension = registry->GetExtensionById(
-      shortcut_info.extension_id, extensions::ExtensionRegistry::EVERYTHING);
-  if (!extension)
-    return;
+    extensions::ExtensionRegistry* registry =
+        extensions::ExtensionRegistry::Get(profile);
+    const extensions::Extension* extension = registry->GetExtensionById(
+        shortcut_info.extension_id, extensions::ExtensionRegistry::EVERYTHING);
+    if (!extension)
+      return;
+  }
 
   ScheduleCreatePlatformShortcut(reason, locations, shortcut_info,
                                  file_handlers_info);
