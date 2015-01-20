@@ -299,9 +299,7 @@ group("root") {
   }
 
   if (is_mac || is_ios) {
-    deps -= [
-      "//ui/touch_selection",
-    ]
+    deps -= [ "//ui/touch_selection" ]
   }
 
   if (is_win) {
@@ -316,45 +314,24 @@ group("root") {
       "//chrome/test",
       "//chrome/utility",
       "//components:all_components",
-      "//cc",
       "//cc/blink",
       "//content",
       "//content/shell:content_shell",
       "//content/test:test_support",
-      "//device/bluetooth",
       "//extensions/browser",
       "//extensions/common",
-      "//extensions/common/api",
       "//extensions/renderer",
-      "//google_apis",
-      "//google_apis/gcm",
-      "//jingle:notifier",
-      "//media",
       "//media/blink",
-      "//media/cast",
-      "//media/mojo",
       "//mojo",
       "//pdf",
       "//ppapi:ppapi_c",
       "//printing",
       "//remoting/client/plugin",
-      "//storage/browser",
-      "//sync",
       "//third_party/WebKit/public:all_blink",
-      "//third_party/angle:translator",
-      "//third_party/ffmpeg",
-      "//third_party/leveldatabase",
-      "//third_party/libjingle",
-      "//third_party/usrsctp",
-      "//third_party/webrtc",
-      "//ui/accessibility",
       "//ui/app_list",
       "//ui/aura",
       "//ui/keyboard",
-      "//ui/native_theme",
       "//ui/snapshot",
-      "//ui/surface",
-      "//ui/touch_selection",
       "//ui/views",
       "//ui/views/controls/webview",
       "//ui/web_dialogs",
