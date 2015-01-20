@@ -28,14 +28,13 @@
 #include "content/public/browser/download_item.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
-#include "content/test/net/url_request_slow_download_job.h"
+#include "net/test/url_request/url_request_slow_download_job.h"
 #include "ui/base/page_transition_types.h"
 
 using content::BrowserContext;
 using content::BrowserThread;
 using content::DownloadItem;
 using content::DownloadManager;
-using content::URLRequestSlowDownloadJob;
 
 class BrowserCloseTest : public InProcessBrowserTest {
  public:
@@ -112,7 +111,7 @@ class BrowserCloseTest : public InProcessBrowserTest {
   // provide any more data) so that we can test closing the
   // browser with active downloads.
   void CreateStalledDownloads(Browser* browser, int num_downloads) {
-    GURL url(URLRequestSlowDownloadJob::kKnownSizeUrl);
+    GURL url(net::URLRequestSlowDownloadJob::kKnownSizeUrl);
 
     if (num_downloads == 0)
       return;
@@ -141,7 +140,7 @@ class BrowserCloseTest : public InProcessBrowserTest {
   // All all downloads created in CreateStalledDownloads() to
   // complete, and block in this routine until they do complete.
   void CompleteAllDownloads(Browser* browser) {
-    GURL finish_url(URLRequestSlowDownloadJob::kFinishDownloadUrl);
+    GURL finish_url(net::URLRequestSlowDownloadJob::kFinishDownloadUrl);
     ui_test_utils::NavigateToURL(browser, finish_url);
 
     // Go through and, for every single profile, wait until there are

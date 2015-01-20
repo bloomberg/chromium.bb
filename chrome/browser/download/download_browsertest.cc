@@ -85,12 +85,12 @@
 #include "content/public/test/download_test_observer.h"
 #include "content/public/test/test_file_error_injector.h"
 #include "content/public/test/test_navigation_observer.h"
-#include "content/test/net/url_request_slow_download_job.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/feature_switch.h"
 #include "net/base/filename_util.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/test/url_request/url_request_mock_http_job.h"
+#include "net/test/url_request/url_request_slow_download_job.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/page_transition_types.h"
@@ -107,7 +107,6 @@ using content::BrowserThread;
 using content::DownloadItem;
 using content::DownloadManager;
 using content::DownloadUrlParameters;
-using content::URLRequestSlowDownloadJob;
 using content::WebContents;
 using extensions::Extension;
 using extensions::FeatureSwitch;
@@ -680,7 +679,7 @@ class DownloadTest : public InProcessBrowserTest {
   DownloadItem* CreateSlowTestDownload() {
     scoped_ptr<content::DownloadTestObserver> observer(
         CreateInProgressDownloadObserver(1));
-    GURL slow_download_url(URLRequestSlowDownloadJob::kUnknownSizeUrl);
+    GURL slow_download_url(net::URLRequestSlowDownloadJob::kUnknownSizeUrl);
     DownloadManager* manager = DownloadManagerForBrowser(browser());
 
     EXPECT_EQ(0, manager->NonMaliciousInProgressCount());
@@ -716,8 +715,8 @@ class DownloadTest : public InProcessBrowserTest {
     if (type != SIZE_TEST_TYPE_KNOWN && type != SIZE_TEST_TYPE_UNKNOWN)
       return false;
     GURL url(type == SIZE_TEST_TYPE_KNOWN ?
-             URLRequestSlowDownloadJob::kKnownSizeUrl :
-             URLRequestSlowDownloadJob::kUnknownSizeUrl);
+             net::URLRequestSlowDownloadJob::kKnownSizeUrl :
+             net::URLRequestSlowDownloadJob::kUnknownSizeUrl);
 
     // TODO(ahendrickson) -- |expected_title_in_progress| and
     // |expected_title_finished| need to be checked.
@@ -746,7 +745,7 @@ class DownloadTest : public InProcessBrowserTest {
 
     // Allow the request to finish.  We do this by loading a second URL in a
     // separate tab.
-    GURL finish_url(URLRequestSlowDownloadJob::kFinishDownloadUrl);
+    GURL finish_url(net::URLRequestSlowDownloadJob::kFinishDownloadUrl);
     ui_test_utils::NavigateToURLWithDisposition(
         browser,
         finish_url,
@@ -772,8 +771,8 @@ class DownloadTest : public InProcessBrowserTest {
       return false;
 
     // Check the file contents.
-    size_t file_size = URLRequestSlowDownloadJob::kFirstDownloadSize +
-                       URLRequestSlowDownloadJob::kSecondDownloadSize;
+    size_t file_size = net::URLRequestSlowDownloadJob::kFirstDownloadSize +
+                       net::URLRequestSlowDownloadJob::kSecondDownloadSize;
     std::string expected_contents(file_size, '*');
     EXPECT_TRUE(VerifyFile(download_path, expected_contents, file_size));
 
@@ -1093,7 +1092,7 @@ class DownloadTest : public InProcessBrowserTest {
 
  private:
   static void EnsureNoPendingDownloadJobsOnIO(bool* result) {
-    if (URLRequestSlowDownloadJob::NumberOutstandingRequests())
+    if (net::URLRequestSlowDownloadJob::NumberOutstandingRequests())
       *result = false;
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE, base::MessageLoop::QuitClosure());
@@ -1739,7 +1738,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, NewWindow) {
 }
 
 IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadHistoryCheck) {
-  GURL download_url(URLRequestSlowDownloadJob::kKnownSizeUrl);
+  GURL download_url(net::URLRequestSlowDownloadJob::kKnownSizeUrl);
   base::FilePath file(net::GenerateFileName(download_url,
                                             std::string(),
                                             std::string(),
@@ -1778,9 +1777,11 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadHistoryCheck) {
   EXPECT_EQ(download_url.spec(), row.url_chain[1].spec());
   EXPECT_EQ(history::DownloadDangerType::NOT_DANGEROUS, row.danger_type);
   EXPECT_LE(start, row.start_time);
-  EXPECT_EQ(URLRequestSlowDownloadJob::kFirstDownloadSize, row.received_bytes);
-  EXPECT_EQ(URLRequestSlowDownloadJob::kFirstDownloadSize
-            + URLRequestSlowDownloadJob::kSecondDownloadSize, row.total_bytes);
+  EXPECT_EQ(net::URLRequestSlowDownloadJob::kFirstDownloadSize,
+            row.received_bytes);
+  EXPECT_EQ(net::URLRequestSlowDownloadJob::kFirstDownloadSize
+            + net::URLRequestSlowDownloadJob::kSecondDownloadSize,
+            row.total_bytes);
   EXPECT_EQ(history::DownloadState::IN_PROGRESS, row.state);
   EXPECT_FALSE(row.opened);
 
@@ -1790,7 +1791,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadHistoryCheck) {
   scoped_ptr<content::DownloadTestObserver> download_observer(
       CreateWaiter(browser(), 1));
   ui_test_utils::NavigateToURL(browser(),
-      GURL(URLRequestSlowDownloadJob::kErrorDownloadUrl));
+      GURL(net::URLRequestSlowDownloadJob::kErrorDownloadUrl));
   download_observer->WaitForFinished();
   EXPECT_EQ(1u, download_observer->NumDownloadsSeenInState(
       DownloadItem::INTERRUPTED));
@@ -1812,10 +1813,11 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadHistoryCheck) {
   EXPECT_EQ(history::DownloadDangerType::NOT_DANGEROUS, row1.danger_type);
   EXPECT_LE(start, row1.start_time);
   EXPECT_GE(end, row1.end_time);
-  EXPECT_EQ(URLRequestSlowDownloadJob::kFirstDownloadSize,
+  EXPECT_EQ(net::URLRequestSlowDownloadJob::kFirstDownloadSize,
             row1.received_bytes);
-  EXPECT_EQ(URLRequestSlowDownloadJob::kFirstDownloadSize
-            + URLRequestSlowDownloadJob::kSecondDownloadSize, row1.total_bytes);
+  EXPECT_EQ(net::URLRequestSlowDownloadJob::kFirstDownloadSize
+            + net::URLRequestSlowDownloadJob::kSecondDownloadSize,
+            row1.total_bytes);
   EXPECT_EQ(history::DownloadState::INTERRUPTED, row1.state);
   EXPECT_EQ(history::ToHistoryDownloadInterruptReason(
                 content::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED),

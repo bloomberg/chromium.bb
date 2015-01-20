@@ -39,11 +39,11 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/download_test_observer.h"
-#include "content/test/net/url_request_slow_download_job.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/notification_types.h"
 #include "net/base/data_url.h"
 #include "net/base/net_util.h"
+#include "net/test/url_request/url_request_slow_download_job.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_job.h"
@@ -58,7 +58,6 @@ using content::BrowserContext;
 using content::BrowserThread;
 using content::DownloadItem;
 using content::DownloadManager;
-using content::URLRequestSlowDownloadJob;
 
 namespace errors = download_extension_errors;
 
@@ -451,7 +450,7 @@ class DownloadExtensionTest : public ExtensionApiTest {
     for (size_t i = 0; i < count; ++i) {
       scoped_ptr<content::DownloadTestObserver> observer(
           CreateInProgressDownloadObserver(1));
-      GURL slow_download_url(URLRequestSlowDownloadJob::kUnknownSizeUrl);
+      GURL slow_download_url(net::URLRequestSlowDownloadJob::kUnknownSizeUrl);
       ui_test_utils::NavigateToURL(current_browser(), slow_download_url);
       observer->WaitForFinished();
       EXPECT_EQ(
@@ -464,7 +463,7 @@ class DownloadExtensionTest : public ExtensionApiTest {
   DownloadItem* CreateSlowTestDownload() {
     scoped_ptr<content::DownloadTestObserver> observer(
         CreateInProgressDownloadObserver(1));
-    GURL slow_download_url(URLRequestSlowDownloadJob::kUnknownSizeUrl);
+    GURL slow_download_url(net::URLRequestSlowDownloadJob::kUnknownSizeUrl);
     DownloadManager* manager = GetCurrentManager();
 
     EXPECT_EQ(0, manager->NonMaliciousInProgressCount());
@@ -495,7 +494,7 @@ class DownloadExtensionTest : public ExtensionApiTest {
   void FinishPendingSlowDownloads() {
     scoped_ptr<content::DownloadTestObserver> observer(
         CreateDownloadObserver(1));
-    GURL finish_url(URLRequestSlowDownloadJob::kFinishDownloadUrl);
+    GURL finish_url(net::URLRequestSlowDownloadJob::kFinishDownloadUrl);
     ui_test_utils::NavigateToURLWithDisposition(
         current_browser(), finish_url, NEW_FOREGROUND_TAB,
         ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
@@ -3877,7 +3876,7 @@ IN_PROC_BROWSER_TEST_F(
     // resumed. http://crbug.com/225901
     ui_test_utils::NavigateToURLWithDisposition(
         current_browser(),
-        GURL(URLRequestSlowDownloadJob::kUnknownSizeUrl),
+        GURL(net::URLRequestSlowDownloadJob::kUnknownSizeUrl),
         CURRENT_TAB,
         ui_test_utils::BROWSER_TEST_NONE);
     observer->WaitForFinished();
@@ -3917,7 +3916,7 @@ IN_PROC_BROWSER_TEST_F(
   ClearEvents();
   ui_test_utils::NavigateToURLWithDisposition(
       current_browser(),
-      GURL(URLRequestSlowDownloadJob::kErrorDownloadUrl),
+      GURL(net::URLRequestSlowDownloadJob::kErrorDownloadUrl),
       NEW_BACKGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
 

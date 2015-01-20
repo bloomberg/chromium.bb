@@ -36,7 +36,6 @@ specific_include_rules = {
     "+content/public/browser",
     "+content/public/common",
     "+content/public/test",
-    "+content/test/net",
   ],
 
   r"cloud_policy_invalidator_unittest\.cc": [

@@ -1,13 +1,12 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-// This class simulates a slow download.  This used in a UI test to test the
-// download manager.  Requests to |kUnknownSizeUrl| and |kKnownSizeUrl| start
-// downloads that pause after the first N bytes, to be completed by sending a
-// request to |kFinishDownloadUrl|.
+// This class simulates a slow download. Requests to |kUnknownSizeUrl| and
+// |kKnownSizeUrl| start downloads that pause after the first N bytes, to be
+// completed by sending a request to |kFinishDownloadUrl|.
 
-#ifndef CONTENT_TEST_NET_URL_REQUEST_SLOW_DOWNLOAD_JOB_H_
-#define CONTENT_TEST_NET_URL_REQUEST_SLOW_DOWNLOAD_JOB_H_
+#ifndef NET_TEST_URL_REQUEST_URL_REQUEST_SLOW_DOWNLOAD_JOB_H_
+#define NET_TEST_URL_REQUEST_URL_REQUEST_SLOW_DOWNLOAD_JOB_H_
 
 #include <set>
 #include <string>
@@ -16,9 +15,9 @@
 #include "base/memory/weak_ptr.h"
 #include "net/url_request/url_request_job.h"
 
-namespace content {
+namespace net {
 
-class URLRequestSlowDownloadJob : public net::URLRequestJob {
+class URLRequestSlowDownloadJob : public URLRequestJob {
  public:
   // Test URLs.
   static const char kUnknownSizeUrl[];
@@ -34,26 +33,26 @@ class URLRequestSlowDownloadJob : public net::URLRequestJob {
   // send the second chunk.
   void CheckDoneStatus();
 
-  // net::URLRequestJob methods
+  // URLRequestJob methods
   void Start() override;
   bool GetMimeType(std::string* mime_type) const override;
-  void GetResponseInfo(net::HttpResponseInfo* info) override;
-  bool ReadRawData(net::IOBuffer* buf, int buf_size, int* bytes_read) override;
+  void GetResponseInfo(HttpResponseInfo* info) override;
+  bool ReadRawData(IOBuffer* buf, int buf_size, int* bytes_read) override;
 
-  static net::URLRequestJob* Factory(net::URLRequest* request,
-                                     net::NetworkDelegate* network_delegate,
-                                     const std::string& scheme);
+  static URLRequestJob* Factory(URLRequest* request,
+                                NetworkDelegate* network_delegate,
+                                const std::string& scheme);
 
   // Returns the current number of URLRequestSlowDownloadJobs that have
   // not yet completed.
   static size_t NumberOutstandingRequests();
 
-  // Adds the testing URLs to the net::URLRequestFilter.
+  // Adds the testing URLs to the URLRequestFilter.
   static void AddUrlHandler();
 
  private:
-  URLRequestSlowDownloadJob(net::URLRequest* request,
-                            net::NetworkDelegate* network_delegate);
+  URLRequestSlowDownloadJob(URLRequest* request,
+                            NetworkDelegate* network_delegate);
   ~URLRequestSlowDownloadJob() override;
 
   // Enum indicating where we are in the read after a call to
@@ -70,12 +69,9 @@ class URLRequestSlowDownloadJob : public net::URLRequestJob {
     // all the data.
     REQUEST_COMPLETE
   };
-  ReadStatus FillBufferHelper(
-      net::IOBuffer* buf,
-      int buf_size,
-      int* bytes_written);
+  ReadStatus FillBufferHelper(IOBuffer* buf, int buf_size, int* bytes_written);
 
-  void GetResponseInfoConst(net::HttpResponseInfo* info) const;
+  void GetResponseInfoConst(HttpResponseInfo* info) const;
 
   // Mark all pending requests to be finished.  We keep track of pending
   // requests in |pending_requests_|.
@@ -92,7 +88,7 @@ class URLRequestSlowDownloadJob : public net::URLRequestJob {
   int bytes_already_sent_;
   bool should_error_download_;
   bool should_finish_download_;
-  scoped_refptr<net::IOBuffer> buffer_;
+  scoped_refptr<IOBuffer> buffer_;
   int buffer_size_;
 
   base::WeakPtrFactory<URLRequestSlowDownloadJob> weak_factory_;
@@ -100,4 +96,4 @@ class URLRequestSlowDownloadJob : public net::URLRequestJob {
 
 }  // namespace content
 
-#endif  // CONTENT_TEST_NET_URL_REQUEST_SLOW_DOWNLOAD_JOB_H_
+#endif  // NET_TEST_URL_REQUEST_URL_REQUEST_SLOW_DOWNLOAD_JOB_H_

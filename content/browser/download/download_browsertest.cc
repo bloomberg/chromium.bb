@@ -34,12 +34,12 @@
 #include "content/shell/browser/shell_browser_context.h"
 #include "content/shell/browser/shell_download_manager_delegate.h"
 #include "content/shell/browser/shell_network_delegate.h"
-#include "content/test/net/url_request_slow_download_job.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/test/url_request/url_request_mock_http_job.h"
+#include "net/test/url_request/url_request_slow_download_job.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -583,7 +583,7 @@ class DownloadContentTest : public ContentBrowserTest {
 
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&URLRequestSlowDownloadJob::AddUrlHandler));
+        base::Bind(&net::URLRequestSlowDownloadJob::AddUrlHandler));
     base::FilePath mock_base(GetTestFilePath("download", ""));
     BrowserThread::PostTask(
         BrowserThread::IO,
@@ -747,7 +747,7 @@ class DownloadContentTest : public ContentBrowserTest {
 
  private:
   static void EnsureNoPendingDownloadJobsOnIO(bool* result) {
-    if (URLRequestSlowDownloadJob::NumberOutstandingRequests())
+    if (net::URLRequestSlowDownloadJob::NumberOutstandingRequests())
       *result = false;
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE, base::MessageLoop::QuitClosure());
@@ -765,7 +765,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadCancelled) {
   // we're in the expected state.
   scoped_ptr<DownloadCreateObserver> observer(
       CreateInProgressWaiter(shell(), 1));
-  NavigateToURL(shell(), GURL(URLRequestSlowDownloadJob::kUnknownSizeUrl));
+  NavigateToURL(shell(), GURL(net::URLRequestSlowDownloadJob::kUnknownSizeUrl));
   observer->WaitForFinished();
 
   std::vector<DownloadItem*> downloads;
@@ -792,7 +792,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, MultiDownload) {
   // we're in the expected state.
   scoped_ptr<DownloadCreateObserver> observer1(
       CreateInProgressWaiter(shell(), 1));
-  NavigateToURL(shell(), GURL(URLRequestSlowDownloadJob::kUnknownSizeUrl));
+  NavigateToURL(shell(), GURL(net::URLRequestSlowDownloadJob::kUnknownSizeUrl));
   observer1->WaitForFinished();
 
   std::vector<DownloadItem*> downloads;
@@ -819,7 +819,8 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, MultiDownload) {
 
   // Allow the first request to finish.
   scoped_ptr<DownloadTestObserver> observer2(CreateWaiter(shell(), 1));
-  NavigateToURL(shell(), GURL(URLRequestSlowDownloadJob::kFinishDownloadUrl));
+  NavigateToURL(shell(),
+                GURL(net::URLRequestSlowDownloadJob::kFinishDownloadUrl));
   observer2->WaitForFinished();  // Wait for the third request.
   EXPECT_EQ(1u, observer2->NumDownloadsSeenInState(DownloadItem::COMPLETE));
 
@@ -831,8 +832,8 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, MultiDownload) {
   // |file1| should be full of '*'s, and |file2| should be the same as the
   // source file.
   base::FilePath file1(download1->GetTargetFilePath());
-  size_t file_size1 = URLRequestSlowDownloadJob::kFirstDownloadSize +
-                      URLRequestSlowDownloadJob::kSecondDownloadSize;
+  size_t file_size1 = net::URLRequestSlowDownloadJob::kFirstDownloadSize +
+                      net::URLRequestSlowDownloadJob::kSecondDownloadSize;
   std::string expected_contents(file_size1, '*');
   ASSERT_TRUE(VerifyFile(file1, expected_contents, file_size1));
 
@@ -971,7 +972,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ShutdownInProgress) {
   // Create a download that won't complete.
   scoped_ptr<DownloadCreateObserver> observer(
       CreateInProgressWaiter(shell(), 1));
-  NavigateToURL(shell(), GURL(URLRequestSlowDownloadJob::kUnknownSizeUrl));
+  NavigateToURL(shell(), GURL(net::URLRequestSlowDownloadJob::kUnknownSizeUrl));
   observer->WaitForFinished();
 
   // Get the item.

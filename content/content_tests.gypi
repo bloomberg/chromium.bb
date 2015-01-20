@@ -139,8 +139,6 @@
       'test/mock_weburlloader.h',
       'test/net/url_request_abort_on_end_job.cc',
       'test/net/url_request_abort_on_end_job.h',
-      'test/net/url_request_slow_download_job.cc',
-      'test/net/url_request_slow_download_job.h',
       'test/ppapi_unittest.cc',
       'test/ppapi_unittest.h',
       'test/render_thread_impl_browser_test_ipc_helper.cc',
