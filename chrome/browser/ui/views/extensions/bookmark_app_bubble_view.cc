@@ -293,15 +293,11 @@ void BookmarkAppBubbleView::ApplyEdits() {
   // prevent anyone trying to use it in future.
   extension = nullptr;
 
-  // Show the newly installed app in the app launcher or chrome://apps. Don't
-  // do this on ash, as the icon will have been added to the shelf.
-  chrome::HostDesktopType desktop =
-      chrome::GetHostDesktopTypeForNativeWindow(GetWidget()->GetNativeWindow());
-  if (desktop == chrome::HOST_DESKTOP_TYPE_ASH)
-    return;
-
+  // Show the newly installed app in the app launcher or chrome://apps.
   Profile* current_profile = profile_->GetOriginalProfile();
   if (IsAppLauncherEnabled()) {
+    chrome::HostDesktopType desktop = chrome::GetHostDesktopTypeForNativeWindow(
+        GetWidget()->GetNativeWindow());
     AppListService::Get(desktop)
         ->ShowForAppInstall(current_profile, extension_id_, false);
     return;
