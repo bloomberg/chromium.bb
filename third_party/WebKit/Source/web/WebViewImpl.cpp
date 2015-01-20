@@ -3956,8 +3956,13 @@ void WebViewImpl::layoutUpdated(WebLocalFrameImpl* webframe)
 
     FrameView* view = webframe->frame()->view();
 
-    if (pinchVirtualViewportEnabled())
-        view->resize(mainFrameSize());
+    if (pinchVirtualViewportEnabled()) {
+        if (webframe == mainFrame()) {
+            view->resize(mainFrameSize());
+        } else {
+            view->resize(webframe->frameView()->layoutSize());
+        }
+    }
 
     // Relayout immediately to avoid violating the rule that needsLayout()
     // isn't set at the end of a layout.
