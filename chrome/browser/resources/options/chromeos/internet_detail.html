@@ -438,7 +438,11 @@
           <label>
             <input id="automatic-dns-radio" type="radio" name="dnstype"
                 value="automatic">
-            <span i18n-content="automaticNameServers"></span>
+            <span>
+              <span i18n-content="automaticNameServers"></span>
+              <span class="controlled-setting-indicator"
+                    managed="NameServersConfigType"></span>
+            </span>
           </label>
         </div>
         <div id="automatic-dns-display" class="dns-display"></div>
@@ -454,11 +458,7 @@
           <label>
             <input id="user-dns-radio" type="radio" name="dnstype"
                 value="user">
-            <span>
-              <span i18n-content="userNameServers"></span>
-              <span class="controlled-setting-indicator"
-                    managed="NameServersConfigType"></span>
-            </span>
+            <span i18n-content="userNameServers"></span>
           </label>
         </div>
         <table id="user-dns-settings">

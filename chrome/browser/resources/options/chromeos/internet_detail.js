@@ -418,7 +418,7 @@ cr.define('options.internet', function() {
       if (nameServerType != 'automatic') {
         var userNameServers = [];
         if (nameServerType == 'google') {
-          userNameServers = GoogleNameServers.splice();
+          userNameServers = GoogleNameServers.slice();
         } else if (nameServerType == 'user') {
           for (var i = 1; i <= 4; ++i) {
             var nameServerField = $('ipconfig-dns' + i);
