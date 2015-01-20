@@ -17,8 +17,10 @@ public class UrlConstants {
     public static final String NTP_URL = "chrome-native://newtab/";
     public static final String NTP_HOST = "newtab";
     public static final String BOOKMARKS_URL = "chrome-native://bookmarks/";
-    public static final String BOOKMARKS_FOLDER_URL = "chrome-native://bookmarks/#";
-    public static final String MOBILE_BOOKMARKS_URL = "chrome-native://bookmarks/#2";
+    public static final String BOOKMARKS_FOLDER_URL = "chrome-native://bookmarks/folder/";
+    public static final String BOOKMARKS_FILTER_URL = "chrome-native://bookmarks/filter/";
+    public static final String
+            BOOKMARKS_UNCATEGORIZED_URL = "chrome-native://bookmarks/uncategorized/";
     public static final String BOOKMARKS_HOST = "bookmarks";
     public static final String RECENT_TABS_URL = "chrome-native://recent-tabs/";
     public static final String RECENT_TABS_HOST = "recent-tabs";

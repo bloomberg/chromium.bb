@@ -12,33 +12,29 @@
 #include "url/gurl.h"
 
 namespace {
-const char kLegacyBookmarksFragment[] = "bookmarks";
-const char kLegacyOpenTabsFragment[] = "open_tabs";
-const char kLegacyRecentTabsHost[] = "recent_tabs";
+const char kBookmarkFolderPath[] = "folder/";
 }
 
 namespace chrome {
 namespace android {
 
-bool HandleAndroidNewTabURL(GURL* url,
-                            content::BrowserContext* browser_context) {
+bool HandleAndroidNativePageURL(GURL* url,
+                                content::BrowserContext* browser_context) {
   if (url->SchemeIs(content::kChromeUIScheme) &&
       url->host() == chrome::kChromeUINewTabHost) {
-    std::string ref = url->ref();
-    if (StartsWithASCII(ref, kLegacyBookmarksFragment, true)) {
-      *url = GURL(chrome::kChromeUINativeBookmarksURL);
-    } else if (ref == kLegacyOpenTabsFragment) {
-      *url = GURL(chrome::kChromeUINativeRecentTabsURL);
-    } else {
-      *url = GURL(chrome::kChromeUINativeNewTabURL);
-    }
+    *url = GURL(chrome::kChromeUINativeNewTabURL);
     return true;
   }
 
   if (url->SchemeIs(chrome::kChromeNativeScheme) &&
-      url->host() == kLegacyRecentTabsHost) {
-    *url = GURL(chrome::kChromeUINativeRecentTabsURL);
-    return true;
+      url->host() == kChromeUIBookmarksHost) {
+    std::string ref = url->ref();
+    if (!ref.empty()) {
+      *url = GURL(std::string(kChromeUINativeBookmarksURL)
+                      .append(kBookmarkFolderPath)
+                      .append(ref));
+      return true;
+    }
   }
 
   return false;

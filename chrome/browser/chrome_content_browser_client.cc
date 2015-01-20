@@ -2306,7 +2306,7 @@ void ChromeContentBrowserClient::BrowserURLHandlerCreated(
 
 #if defined(OS_ANDROID)
   // Handler to rewrite chrome://newtab on Android.
-  handler->AddHandlerPair(&chrome::android::HandleAndroidNewTabURL,
+  handler->AddHandlerPair(&chrome::android::HandleAndroidNativePageURL,
                           BrowserURLHandler::null_handler());
 #else
   // Handler to rewrite chrome://newtab for InstantExtended.

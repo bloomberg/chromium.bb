@@ -14,19 +14,11 @@ class BrowserContext;
 namespace chrome {
 namespace android {
 
-// Rewrites old-style Android NTP URLs to new-style NTP URLs:
+// Rewrites old-style Android NTP URLs and legacy bookmark URLs.
 //  - chrome://newtab              -> chrome-native://newtab
-//  - chrome://newtab#most_visited -> chrome-native://newtab
-//  - chrome://newtab#incognito    -> chrome-native://newtab
-//  - chrome://newtab#bookmarks    -> chrome-native://bookmarks
-//  - chrome://newtab#bookmarks:99 -> chrome-native://bookmarks
-//  - chrome://newtab#open_tabs    -> chrome-native://recent-tabs
-//  - chrome-native://recent_tabs  -> chrome-native://recent-tabs
-//
-// TODO(newt): Once most users have upgraded past M34, simplify this down to a
-// single rule: chrome://newtab -> chrome-native://newtab
-bool HandleAndroidNewTabURL(GURL* url,
-                            content::BrowserContext* browser_context);
+//  - chrome-native://bookmarks/#  -> chrome-native://bookmarks/folder/
+bool HandleAndroidNativePageURL(GURL* url,
+                                content::BrowserContext* browser_context);
 
 }  // namespace android
 }  // namespace chrome
