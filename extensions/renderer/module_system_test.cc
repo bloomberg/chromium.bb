@@ -130,7 +130,6 @@ ModuleSystemTestEnvironment::ModuleSystemTestEnvironment(v8::Isolate* isolate)
       isolate, g_v8_extension_configurator.Get().GetConfiguration()));
   context_.reset(new ScriptContext(context_holder_->context(),
                                    NULL,  // WebFrame
-                                   -1,    // World ID
                                    NULL,  // Extension
                                    Feature::BLESSED_EXTENSION_CONTEXT,
                                    NULL,  // Effective Extension

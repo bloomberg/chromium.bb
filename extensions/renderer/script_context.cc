@@ -76,14 +76,12 @@ class ScriptContext::Runner : public gin::Runner {
 
 ScriptContext::ScriptContext(const v8::Handle<v8::Context>& v8_context,
                              blink::WebFrame* web_frame,
-                             int world_id,
                              const Extension* extension,
                              Feature::Context context_type,
                              const Extension* effective_extension,
                              Feature::Context effective_context_type)
     : v8_context_(v8_context),
       web_frame_(web_frame),
-      world_id_(world_id),
       extension_(extension),
       context_type_(context_type),
       effective_extension_(effective_extension),

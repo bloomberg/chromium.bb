@@ -107,8 +107,6 @@ class Dispatcher : public content::RenderProcessObserver,
                                 const v8::Handle<v8::Context>& context,
                                 int world_id);
 
-  void FrameDetached(blink::WebFrame* frame);
-
   void DidCreateDocumentElement(blink::WebFrame* frame);
 
   void DidMatchCSS(

@@ -51,7 +51,6 @@ scoped_ptr<NativeHandler> V8SchemaRegistry::AsNativeHandler() {
   scoped_ptr<ScriptContext> context(
       new ScriptContext(GetOrCreateContext(v8::Isolate::GetCurrent()),
                         NULL,  // no frame
-                        -1,    // no world
                         NULL,  // no extension
                         Feature::UNSPECIFIED_CONTEXT,
                         NULL,  // no effective extension
