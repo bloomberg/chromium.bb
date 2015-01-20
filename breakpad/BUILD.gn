@@ -38,6 +38,10 @@ config("handler_config") {
   include_dirs = [ "src" ]
 }
 
+config("sender_config") {
+  include_dirs = [ "src" ]
+}
+
 # {micro,mini}dump_stackwalk and minidump_dump are tool-type executables that do
 # not build on iOS.
 if (current_toolchain == host_toolchain && !is_win) {
@@ -762,5 +766,16 @@ if (is_win) {
       "src/client/windows/crash_generation/minidump_generator.h",
       "src/common/windows/string_utils-inl.h",
     ]
+  }
+
+  source_set("breakpad_sender") {
+    sources = [
+      "src/client/windows/sender/crash_report_sender.cc",
+      "src/client/windows/sender/crash_report_sender.h",
+      "src/common/windows/http_upload.cc",
+      "src/common/windows/http_upload.h",
+    ]
+    configs += [ ":sender_config" ]
+    public_configs = [ ":sender_config" ]
   }
 }
