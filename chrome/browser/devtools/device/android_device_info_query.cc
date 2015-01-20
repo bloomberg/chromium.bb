@@ -10,7 +10,7 @@
 
 namespace {
 
-#define SEPARATOR "====!@#$%^&*(output separator)*&^%$#@!===="
+#define SEPARATOR "======== output separator ========"
 
 const char kAllCommands[] = "shell:"
     "getprop ro.product.model\n"
