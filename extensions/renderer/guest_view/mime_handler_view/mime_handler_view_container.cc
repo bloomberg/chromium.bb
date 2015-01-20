@@ -195,10 +195,6 @@ void MimeHandlerViewContainer::OnCreateMimeHandlerViewGuestACK(
     int element_instance_id) {
   DCHECK_NE(this->element_instance_id(), guestview::kInstanceIDNone);
   DCHECK_EQ(this->element_instance_id(), element_instance_id);
-
-  if (!render_frame())
-    return;
-
   render_frame()->AttachGuest(element_instance_id);
 }
 
@@ -211,9 +207,6 @@ void MimeHandlerViewContainer::OnGuestAttached(int /* unused */,
 
 void MimeHandlerViewContainer::OnMimeHandlerViewGuestOnLoadCompleted(
     int /* unused */) {
-  if (!render_frame())
-    return;
-
   guest_loaded_ = true;
   if (pending_messages_.empty())
     return;
@@ -237,10 +230,6 @@ void MimeHandlerViewContainer::CreateMimeHandlerViewGuest() {
   loader_.reset();
 
   DCHECK_NE(element_instance_id(), guestview::kInstanceIDNone);
-
-  if (!render_frame())
-    return;
-
   render_frame()->Send(new ExtensionHostMsg_CreateMimeHandlerViewGuest(
       render_frame()->GetRoutingID(), view_id_, element_instance_id()));
 }

@@ -5,15 +5,11 @@
 #ifndef EXTENSIONS_RENDERER_GUEST_VIEW_GUEST_VIEW_CONTAINER_H_
 #define EXTENSIONS_RENDERER_GUEST_VIEW_GUEST_VIEW_CONTAINER_H_
 
-#include "base/memory/scoped_ptr.h"
 #include "content/public/renderer/browser_plugin_delegate.h"
+#include "content/public/renderer/render_frame_observer.h"
 #include "ipc/ipc_message.h"
 
 namespace extensions {
-
-namespace {
-class RenderFrameLifetimeObserver;
-}  // namespace
 
 class GuestViewContainer : public content::BrowserPluginDelegate {
  public:
@@ -22,8 +18,6 @@ class GuestViewContainer : public content::BrowserPluginDelegate {
 
   // Queries whether GuestViewContainer is interested in the |message|.
   static bool HandlesMessage(const IPC::Message& message);
-
-  void RenderFrameDestroyed();
 
   // BrowserPluginDelegate implementation.
   void SetElementInstanceID(int element_instance_id) override;
@@ -35,8 +29,7 @@ class GuestViewContainer : public content::BrowserPluginDelegate {
  private:
   int element_instance_id_;
   const int render_view_routing_id_;
-  content::RenderFrame* render_frame_;
-  scoped_ptr<RenderFrameLifetimeObserver> render_frame_lifetime_observer_;
+  content::RenderFrame* const render_frame_;
 
   DISALLOW_COPY_AND_ASSIGN(GuestViewContainer);
 };
