@@ -1067,6 +1067,7 @@
             'editing/WrapContentsInDummySpanCommand.h',
             'editing/htmlediting.cpp',
             'editing/markup.cpp',
+            'fetch/AccessControlStatus.h',
             'fetch/CSSStyleSheetResource.cpp',
             'fetch/CSSStyleSheetResource.h',
             'fetch/CachedMetadata.h',

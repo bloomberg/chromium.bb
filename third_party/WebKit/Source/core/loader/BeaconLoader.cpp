@@ -7,7 +7,6 @@
 
 #include "core/FetchInitiatorTypeNames.h"
 #include "core/dom/DOMArrayBufferView.h"
-#include "core/fetch/CrossOriginAccessControl.h"
 #include "core/fetch/FetchContext.h"
 #include "core/fileapi/File.h"
 #include "core/frame/LocalFrame.h"

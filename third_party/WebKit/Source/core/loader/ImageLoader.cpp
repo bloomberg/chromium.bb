@@ -29,7 +29,6 @@
 #include "core/dom/Microtask.h"
 #include "core/events/Event.h"
 #include "core/events/EventSender.h"
-#include "core/fetch/CrossOriginAccessControl.h"
 #include "core/fetch/FetchRequest.h"
 #include "core/fetch/MemoryCache.h"
 #include "core/fetch/ResourceFetcher.h"

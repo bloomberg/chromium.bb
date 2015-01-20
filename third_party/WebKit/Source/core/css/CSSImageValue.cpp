@@ -24,7 +24,6 @@
 #include "core/FetchInitiatorTypeNames.h"
 #include "core/css/CSSMarkup.h"
 #include "core/dom/Document.h"
-#include "core/fetch/CrossOriginAccessControl.h"
 #include "core/fetch/FetchRequest.h"
 #include "core/fetch/ImageResource.h"
 #include "core/rendering/style/StyleFetchedImage.h"

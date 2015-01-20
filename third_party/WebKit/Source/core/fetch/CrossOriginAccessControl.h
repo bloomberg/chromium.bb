@@ -43,11 +43,6 @@ class ResourceRequest;
 class ResourceResponse;
 class SecurityOrigin;
 
-enum AccessControlStatus {
-    NotSharableCrossOrigin,
-    SharableCrossOrigin
-};
-
 class CrossOriginAccessControl {
 public:
     static bool isLegalRedirectLocation(const KURL&, String& errorDescription);

@@ -27,7 +27,7 @@
 #define V8ScriptRunner_h
 
 #include "bindings/core/v8/V8CacheOptions.h"
-#include "core/fetch/CrossOriginAccessControl.h"
+#include "core/fetch/AccessControlStatus.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/TextPosition.h"
 #include "wtf/text/WTFString.h"
@@ -35,6 +35,7 @@
 
 namespace blink {
 
+class Resource;
 class ScriptResource;
 class ScriptSourceCode;
 class ExecutionContext;

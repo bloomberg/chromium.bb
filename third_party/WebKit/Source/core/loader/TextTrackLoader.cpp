@@ -29,7 +29,6 @@
 
 #include "core/FetchInitiatorTypeNames.h"
 #include "core/dom/Document.h"
-#include "core/fetch/CrossOriginAccessControl.h"
 #include "core/fetch/FetchRequest.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/inspector/ConsoleMessage.h"

@@ -11,6 +11,7 @@
 #include "core/dom/DOMArrayBufferView.h"
 #include "core/fileapi/Blob.h"
 #include "modules/fetch/ResponseInit.h"
+#include "platform/network/HTTPHeaderMap.h"
 #include "public/platform/WebServiceWorkerResponse.h"
 #include "wtf/RefPtr.h"
 

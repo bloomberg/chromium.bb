@@ -33,7 +33,7 @@
 
 #include "bindings/core/v8/SharedPersistent.h"
 #include "bindings/core/v8/WindowProxyManager.h"
-#include "core/fetch/CrossOriginAccessControl.h"
+#include "core/fetch/AccessControlStatus.h"
 #include "core/frame/LocalFrame.h"
 #include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"

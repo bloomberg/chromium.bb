@@ -29,7 +29,7 @@
 #define ExecutionContext_h
 
 #include "core/dom/SecurityContext.h"
-#include "core/fetch/CrossOriginAccessControl.h"
+#include "core/fetch/AccessControlStatus.h"
 #include "core/frame/ConsoleTypes.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "platform/LifecycleContext.h"
