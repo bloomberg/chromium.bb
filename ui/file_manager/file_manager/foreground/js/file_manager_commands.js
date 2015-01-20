@@ -193,7 +193,7 @@ CommandUtil.createVolumeSwitchCommand = function(index) {
      * @param {!FileManager} fileManager FileManager to use.
      */
     execute: function(event, fileManager) {
-      fileManager.directoryTree.selectByIndex(index - 1);
+      fileManager.directoryTree.activateByIndex(index - 1);
     },
     /**
      * @param {!Event} event Command event.

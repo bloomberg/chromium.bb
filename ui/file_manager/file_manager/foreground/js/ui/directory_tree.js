@@ -497,13 +497,8 @@ VolumeItem.prototype.decorateVolumeItem = function(modelItem, tree) {
  * @override
  */
 VolumeItem.prototype.handleClick = function(e) {
-  // If the currently selected volume is clicked, change current directory to
-  // the volume's root.
-  if (this.selected)
-    this.activate();
-
   cr.ui.TreeItem.prototype.handleClick.call(this, e);
-
+  this.activate();
   // Resets file selection when a volume is clicked.
   this.parentTree_.directoryModel.clearSelection();
 
@@ -749,6 +744,8 @@ ShortcutItem.prototype.decorateShortcutItem = function(modelItem, tree) {
  */
 ShortcutItem.prototype.handleClick = function(e) {
   cr.ui.TreeItem.prototype.handleClick.call(this, e);
+  this.activate();
+  // Resets file selection when a volume is clicked.
   this.parentTree_.directoryModel.clearSelection();
 };
 
@@ -958,17 +955,13 @@ DirectoryTree.prototype.searchAndSelectByEntry = function(entry) {
       continue;
 
     if (util.isSameEntry(item.entry, entry)) {
-      this.dontHandleChangeEvent_ = true;
       item.selectByEntry(entry);
-      this.dontHandleChangeEvent_ = false;
       return true;
     }
   }
   // Otherwise, search whole tree.
-  this.dontHandleChangeEvent_ = true;
   var found = DirectoryItemTreeBaseMethods.searchAndSelectByEntry.call(
       this, entry);
-  this.dontHandleChangeEvent_ = false;
   return found;
 };
 
@@ -995,12 +988,6 @@ DirectoryTree.prototype.decorateDirectoryTree = function(
 
   this.directoryModel_.addEventListener('directory-changed',
       this.onCurrentDirectoryChanged_.bind(this));
-
-  // Add a handler for directory change.
-  this.addEventListener('change', function() {
-    if (this.selectedItem && !this.dontHandleChangeEvent_)
-      this.selectedItem.activate();
-  }.bind(this));
 
   this.privateOnDirectoryChangedBound_ =
       this.onDirectoryContentChanged_.bind(this);
@@ -1044,15 +1031,16 @@ DirectoryTree.prototype.selectByEntry = function(entry) {
 };
 
 /**
- * Select the volume or the shortcut corresponding to the given index.
+ * Activates the volume or the shortcut corresponding to the given index.
  * @param {number} index 0-based index of the target top-level item.
  * @return {boolean} True if one of the volume items is selected.
  */
-DirectoryTree.prototype.selectByIndex = function(index) {
+DirectoryTree.prototype.activateByIndex = function(index) {
   if (index < 0 || index >= this.items.length)
     return false;
 
   this.items[index].selected = true;
+  this.items[index].activate();
   return true;
 };
 
@@ -1077,6 +1065,19 @@ DirectoryTree.prototype.updateSubDirectories = function(
  */
 DirectoryTree.prototype.redraw = function(recursive) {
   this.updateSubElementsFromList(recursive);
+};
+
+/**
+  * Handles keydown events on the tree and activates the selected item on Enter.
+  * @param {Event} e The click event object.
+  * @override
+  */
+DirectoryTree.prototype.handleKeyDown = function(e) {
+  cr.ui.Tree.prototype.handleKeyDown.call(this, e);
+  if (util.getKeyModifiers(e) === '' && e.keyIdentifier === 'Enter') {
+    if (this.selectedItem)
+      this.selectedItem.activate();
+  }
 };
 
 /**

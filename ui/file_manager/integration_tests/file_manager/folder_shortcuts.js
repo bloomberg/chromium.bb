@@ -294,11 +294,22 @@ testcase.traverseFolderShortcuts = function() {
     },
 
     // Press UP to select 3rd shortcut.
-    // Current directory should be C.
+    // Current directory should remain D.
     // Shortcut to C should be selected.
     function() {
       remoteCall.callRemoteTestUtil('fakeKeyDown', windowId,
           ['#directory-tree', 'Up', false], this.next);
+    },
+    function(result) {
+      chrome.test.assertTrue(result);
+      expectSelection(windowId, DIRECTORY.D, DIRECTORY.C).then(this.next);
+    },
+
+    // Press Enter to change the directory to C.
+    // Current directory should be C.
+    function() {
+      remoteCall.callRemoteTestUtil('fakeKeyDown', windowId,
+          ['#directory-tree', 'Enter', false], this.next);
     },
     function(result) {
       chrome.test.assertTrue(result);
