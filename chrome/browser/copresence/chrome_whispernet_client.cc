@@ -114,7 +114,7 @@ void ChromeWhispernetClient::DecodeSamples(copresence::AudioType type,
   DCHECK(extensions::EventRouter::Get(browser_context_));
 
   extensions::api::copresence_private::DecodeSamplesParameters params;
-  params.samples = samples;
+  params.samples.assign(samples.begin(), samples.end());
   params.decode_audible =
       type == copresence::AUDIBLE || type == copresence::BOTH;
   params.decode_inaudible =
@@ -191,7 +191,7 @@ void ChromeWhispernetClient::AudioConfiguration(
   // nacl wrapper.
   const size_t params_size = sizeof(params);
   audio_params.param_data.resize(params_size);
-  memcpy(string_as_array(&audio_params.param_data), &params, params_size);
+  memcpy(vector_as_array(&audio_params.param_data), &params, params_size);
 
   scoped_ptr<extensions::Event> event(new extensions::Event(
       extensions::api::copresence_private::OnConfigAudio::kEventName,

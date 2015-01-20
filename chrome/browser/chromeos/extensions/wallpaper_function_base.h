@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_CHROMEOS_EXTENSIONS_WALLPAPER_FUNCTION_BASE_H_
 #define CHROME_BROWSER_CHROMEOS_EXTENSIONS_WALLPAPER_FUNCTION_BASE_H_
 
+#include <string>
+#include <vector>
+
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "components/wallpaper/wallpaper_layout.h"
 #include "extensions/browser/extension_function.h"
@@ -31,7 +34,7 @@ class WallpaperFunctionBase : public AsyncExtensionFunction {
   static UnsafeWallpaperDecoder* unsafe_wallpaper_decoder_;
 
   // Starts to decode |data|. Must run on UI thread.
-  void StartDecode(const std::string& data);
+  void StartDecode(const std::vector<char>& data);
 
   // Handles cancel case. No error message should be set.
   void OnCancel();

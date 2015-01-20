@@ -6,6 +6,7 @@
 #define EXTENSIONS_BROWSER_API_SERIAL_SERIAL_EVENT_DISPATCHER_H_
 
 #include <string>
+#include <vector>
 
 #include "extensions/browser/api/api_resource_manager.h"
 #include "extensions/common/api/serial.h"
@@ -59,7 +60,7 @@ class SerialEventDispatcher : public BrowserContextKeyedAPI {
   static void StartReceive(const ReceiveParams& params);
 
   static void ReceiveCallback(const ReceiveParams& params,
-                              const std::string& data,
+                              const std::vector<char>& data,
                               serial::ReceiveError error);
 
   static void PostEvent(const ReceiveParams& params,

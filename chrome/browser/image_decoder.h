@@ -43,6 +43,10 @@ class ImageDecoder : public content::UtilityProcessHostClient {
                const std::string& image_data,
                ImageCodec image_codec);
 
+  ImageDecoder(Delegate* delegate,
+               const std::vector<char>& image_data,
+               ImageCodec image_codec);
+
   // Starts asynchronous image decoding. Once finished, the callback will be
   // posted back to |task_runner|.
   void Start(scoped_refptr<base::SequencedTaskRunner> task_runner);

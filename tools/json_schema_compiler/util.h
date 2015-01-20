@@ -22,6 +22,7 @@ bool PopulateItem(const base::Value& from, int* out);
 bool PopulateItem(const base::Value& from, bool* out);
 bool PopulateItem(const base::Value& from, double* out);
 bool PopulateItem(const base::Value& from, std::string* out);
+bool PopulateItem(const base::Value& from, std::vector<char>* out);
 bool PopulateItem(const base::Value& from, linked_ptr<base::Value>* out);
 bool PopulateItem(const base::Value& from,
                   linked_ptr<base::DictionaryValue>* out);
@@ -74,6 +75,7 @@ void AddItemToList(const int from, base::ListValue* out);
 void AddItemToList(const bool from, base::ListValue* out);
 void AddItemToList(const double from, base::ListValue* out);
 void AddItemToList(const std::string& from, base::ListValue* out);
+void AddItemToList(const std::vector<char>& from, base::ListValue* out);
 void AddItemToList(const linked_ptr<base::Value>& from, base::ListValue* out);
 void AddItemToList(const linked_ptr<base::DictionaryValue>& from,
                    base::ListValue* out);
@@ -122,4 +124,4 @@ std::string ValueTypeToString(base::Value::Type type);
 }  // namespace util
 }  // namespace json_schema_compiler
 
-#endif // TOOLS_JSON_SCHEMA_COMPILER_UTIL_H__
+#endif  // TOOLS_JSON_SCHEMA_COMPILER_UTIL_H__

@@ -52,9 +52,8 @@ void PopulateHidDeviceInfo(hid::HidDeviceInfo* output,
 
   const std::vector<uint8>& report_descriptor = input->report_descriptor();
   if (report_descriptor.size() > 0) {
-    output->report_descriptor =
-        std::string(reinterpret_cast<const char*>(&report_descriptor[0]),
-                    report_descriptor.size());
+    output->report_descriptor.assign(report_descriptor.begin(),
+                                     report_descriptor.end());
   }
 }
 

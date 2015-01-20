@@ -6,7 +6,7 @@
 #define CHROMEOS_DBUS_SHILL_THIRD_PARTY_VPN_OBSERVER_H_
 
 #include <stdint.h>
-#include <string>
+#include <vector>
 
 namespace chromeos {
 
@@ -14,7 +14,7 @@ namespace chromeos {
 // ThirdPartyVpnAdaptor in Shill.
 class ShillThirdPartyVpnObserver {
  public:
-  virtual void OnPacketReceived(const std::string& data) = 0;
+  virtual void OnPacketReceived(const std::vector<char>& data) = 0;
   virtual void OnPlatformMessage(uint32_t message) = 0;
 
  protected:

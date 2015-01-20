@@ -50,12 +50,13 @@ std::string Base64EncodeWithoutPadding(const std::string& data) {
 }
 
 // Create a message to send to another endpoint.
-std::string CreateMessage(const std::string& data,
+std::string CreateMessage(const std::vector<char>& data,
                           const std::string& local_endpoint_locator,
                           int remote_endpoint_id) {
   base::DictionaryValue dict;
   dict.SetString(kToField, base::IntToString(remote_endpoint_id));
-  dict.SetString(kDataField, Base64EncodeWithoutPadding(data));
+  dict.SetString(kDataField, Base64EncodeWithoutPadding(
+                                 std::string(data.begin(), data.end())));
   dict.SetString(kReplyToField,
                  Base64EncodeWithoutPadding(local_endpoint_locator));
 
@@ -235,7 +236,7 @@ void CopresenceEndpointFunction::DispatchOnReceiveEvent(
   core_api::copresence_endpoints::ReceiveInfo info;
   info.local_endpoint_id = local_endpoint_id;
   info.remote_endpoint_id = remote_endpoint_id;
-  info.data = data;
+  info.data.assign(data.begin(), data.end());
   // Send the data to the client app.
   scoped_ptr<Event> event(
       new Event(core_api::copresence_endpoints::OnReceive::kEventName,

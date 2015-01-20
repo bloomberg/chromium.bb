@@ -23,6 +23,16 @@ ImageDecoder::ImageDecoder(Delegate* delegate,
       shrink_to_fit_(false) {
 }
 
+ImageDecoder::ImageDecoder(Delegate* delegate,
+                           const std::vector<char>& image_data,
+                           ImageCodec image_codec)
+    : delegate_(delegate),
+      image_data_(image_data.begin(), image_data.end()),
+      image_codec_(image_codec),
+      task_runner_(NULL),
+      shrink_to_fit_(false) {
+}
+
 ImageDecoder::~ImageDecoder() {}
 
 void ImageDecoder::Start(scoped_refptr<base::SequencedTaskRunner> task_runner) {

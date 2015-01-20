@@ -5,10 +5,12 @@
 #include "extensions/browser/api/serial/serial_connection.h"
 
 #include <string>
+#include <vector>
 
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
 #include "base/message_loop/message_loop.h"
+#include "base/stl_util.h"
 #include "extensions/browser/api/api_resource_manager.h"
 #include "extensions/common/api/serial.h"
 
@@ -137,11 +139,11 @@ device::serial::StopBits ConvertStopBitsToMojo(
 class SendBuffer : public device::ReadOnlyBuffer {
  public:
   SendBuffer(
-      const std::string& data,
+      const std::vector<char>& data,
       const base::Callback<void(int, device::serial::SendError)>& callback)
       : data_(data), callback_(callback) {}
   ~SendBuffer() override {}
-  const char* GetData() override { return data_.c_str(); }
+  const char* GetData() override { return vector_as_array(&data_); }
   uint32_t GetSize() override { return static_cast<uint32_t>(data_.size()); }
   void Done(uint32_t bytes_read) override {
     callback_.Run(bytes_read, device::serial::SEND_ERROR_NONE);
@@ -151,7 +153,7 @@ class SendBuffer : public device::ReadOnlyBuffer {
   }
 
  private:
-  const std::string data_;
+  const std::vector<char> data_;
   const base::Callback<void(int, device::serial::SendError)> callback_;
 };
 
@@ -261,7 +263,7 @@ bool SerialConnection::Receive(const ReceiveCompleteCallback& callback) {
   return true;
 }
 
-bool SerialConnection::Send(const std::string& data,
+bool SerialConnection::Send(const std::vector<char>& data,
                             const SendCompleteCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!send_complete_.is_null())
@@ -363,7 +365,8 @@ void SerialConnection::OnAsyncReadComplete(int bytes_read,
   ReceiveCompleteCallback callback = receive_complete_;
   receive_complete_.Reset();
   receive_timeout_task_.reset();
-  callback.Run(std::string(receive_buffer_->data(), bytes_read),
+  callback.Run(std::vector<char>(receive_buffer_->data(),
+                                 receive_buffer_->data() + bytes_read),
                ConvertReceiveErrorFromMojo(error));
   receive_buffer_ = NULL;
 }

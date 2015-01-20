@@ -18,7 +18,7 @@ class BrailleControllerImpl : public BrailleController {
  public:
   static BrailleControllerImpl* GetInstance();
   scoped_ptr<DisplayState> GetDisplayState() override;
-  void WriteDots(const std::string& cells) override;
+  void WriteDots(const std::vector<char>& cells) override;
   void AddObserver(BrailleObserver* observer) override;
   void RemoveObserver(BrailleObserver* observer) override;
 
@@ -56,7 +56,7 @@ scoped_ptr<DisplayState> BrailleControllerImpl::GetDisplayState() {
   return scoped_ptr<DisplayState>(new DisplayState()).Pass();
 }
 
-void BrailleControllerImpl::WriteDots(const std::string& cells) {
+void BrailleControllerImpl::WriteDots(const std::vector<char>& cells) {
 }
 
 void BrailleControllerImpl::AddObserver(BrailleObserver* observer) {

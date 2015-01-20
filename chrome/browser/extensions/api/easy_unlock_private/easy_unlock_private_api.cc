@@ -349,7 +349,7 @@ void EasyUnlockPrivatePerformECDHKeyAgreementFunction::OnData(
   // TODO(tbarzic): Improve error handling.
   if (!secret_key.empty()) {
     results_ = easy_unlock_private::PerformECDHKeyAgreement::Results::Create(
-        secret_key);
+        std::vector<char>(secret_key.begin(), secret_key.end()));
   }
   SendResponse(true);
 }
@@ -373,7 +373,8 @@ void EasyUnlockPrivateGenerateEcP256KeyPairFunction::OnData(
   // TODO(tbarzic): Improve error handling.
   if (!public_key.empty() && !private_key.empty()) {
     results_ = easy_unlock_private::GenerateEcP256KeyPair::Results::Create(
-        public_key, private_key);
+        std::vector<char>(public_key.begin(), public_key.end()),
+        std::vector<char>(private_key.begin(), private_key.end()));
   }
   SendResponse(true);
 }
@@ -401,7 +402,7 @@ void EasyUnlockPrivateCreateSecureMessageFunction::OnData(
   // TODO(tbarzic): Improve error handling.
   if (!message.empty()) {
     results_ = easy_unlock_private::CreateSecureMessage::Results::Create(
-        message);
+        std::vector<char>(message.begin(), message.end()));
   }
   SendResponse(true);
 }
@@ -427,8 +428,10 @@ bool EasyUnlockPrivateUnwrapSecureMessageFunction::RunAsync() {
 void EasyUnlockPrivateUnwrapSecureMessageFunction::OnData(
     const std::string& data) {
   // TODO(tbarzic): Improve error handling.
-  if (!data.empty())
-    results_ = easy_unlock_private::UnwrapSecureMessage::Results::Create(data);
+  if (!data.empty()) {
+    results_ = easy_unlock_private::UnwrapSecureMessage::Results::Create(
+        std::vector<char>(data.begin(), data.end()));
+  }
   SendResponse(true);
 }
 
@@ -625,9 +628,8 @@ bool EasyUnlockPrivateGetSignInChallengeFunction::RunAsync() {
     }
     key_manager->SignUsingTpmKey(
         EasyUnlockService::Get(profile)->GetUserEmail(),
-        params->nonce,
-        base::Bind(&EasyUnlockPrivateGetSignInChallengeFunction::OnDone,
-                   this,
+        std::string(params->nonce.begin(), params->nonce.end()),
+        base::Bind(&EasyUnlockPrivateGetSignInChallengeFunction::OnDone, this,
                    challenge));
   } else {
     OnDone(challenge, std::string());
@@ -643,7 +645,8 @@ void EasyUnlockPrivateGetSignInChallengeFunction::OnDone(
     const std::string& challenge,
     const std::string& signed_nonce) {
   results_ = easy_unlock_private::GetSignInChallenge::Results::Create(
-      challenge, signed_nonce);
+      std::vector<char>(challenge.begin(), challenge.end()),
+      std::vector<char>(signed_nonce.begin(), signed_nonce.end()));
   SendResponse(true);
 }
 
@@ -661,7 +664,8 @@ bool EasyUnlockPrivateTrySignInSecretFunction::RunSync() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   Profile* profile = Profile::FromBrowserContext(browser_context());
-  EasyUnlockService::Get(profile)->FinalizeSignin(params->sign_in_secret);
+  EasyUnlockService::Get(profile)->FinalizeSignin(std::string(
+      params->sign_in_secret.begin(), params->sign_in_secret.end()));
   return true;
 }
 
@@ -707,12 +711,14 @@ bool EasyUnlockPrivateGetUserImageFunction::RunSync() {
       chromeos::options::UserImageSource::GetUserImage(
           service->GetUserEmail(), supported_scale_factors.back());
 
-  results_ = easy_unlock_private::GetUserImage::Results::Create(std::string(
-      reinterpret_cast<const char*>(user_image->front()), user_image->size()));
+  results_ =
+      easy_unlock_private::GetUserImage::Results::Create(std::vector<char>(
+          user_image->front(), user_image->front() + user_image->size()));
 #else
   // TODO(tengs): Find a way to get the profile picture for non-ChromeOS
   // devices.
-  results_ = easy_unlock_private::GetUserImage::Results::Create("");
+  results_ =
+      easy_unlock_private::GetUserImage::Results::Create(std::vector<char>());
   SetError("Not supported on non-ChromeOS platforms.");
 #endif
   return true;

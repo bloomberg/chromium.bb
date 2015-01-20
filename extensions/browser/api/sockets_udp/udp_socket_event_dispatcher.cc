@@ -111,7 +111,7 @@ void UDPSocketEventDispatcher::ReceiveCallback(
     // Dispatch "onReceive" event.
     sockets_udp::ReceiveInfo receive_info;
     receive_info.socket_id = params.socket_id;
-    receive_info.data = std::string(io_buffer->data(), bytes_read);
+    receive_info.data.assign(io_buffer->data(), io_buffer->data() + bytes_read);
     receive_info.remote_address = address;
     receive_info.remote_port = port;
     scoped_ptr<base::ListValue> args =

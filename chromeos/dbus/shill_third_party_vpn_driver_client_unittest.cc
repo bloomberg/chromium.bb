@@ -5,6 +5,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/stl_util.h"
 #include "chromeos/dbus/shill_client_unittest_base.h"
 #include "chromeos/dbus/shill_third_party_vpn_driver_client.h"
 #include "chromeos/dbus/shill_third_party_vpn_observer.h"
@@ -22,7 +23,7 @@ class MockShillThirdPartyVpnObserver : public ShillThirdPartyVpnObserver {
  public:
   MockShillThirdPartyVpnObserver() {}
   ~MockShillThirdPartyVpnObserver() override {}
-  MOCK_METHOD1(OnPacketReceived, void(const std::string& data));
+  MOCK_METHOD1(OnPacketReceived, void(const std::vector<char>& data));
   MOCK_METHOD1(OnPlatformMessage, void(uint32_t message));
 };
 
@@ -58,8 +59,8 @@ class ShillThirdPartyVpnDriverClientTest : public ShillClientUnittestBase {
 
 TEST_F(ShillThirdPartyVpnDriverClientTest, PlatformSignal) {
   uint32_t connected_state = 123456;
-  const int kPacketSize = 5;
-  std::string data_packet(1, kPacketSize);
+  const size_t kPacketSize = 5;
+  std::vector<char> data_packet(kPacketSize, 1);
   dbus::Signal pmessage_signal(shill::kFlimflamThirdPartyVpnInterface,
                                shill::kOnPlatformMessageFunction);
   {
@@ -72,7 +73,7 @@ TEST_F(ShillThirdPartyVpnDriverClientTest, PlatformSignal) {
   {
     dbus::MessageWriter writer(&preceived_signal);
     writer.AppendArrayOfBytes(
-        reinterpret_cast<const unsigned char*>(data_packet.data()),
+        reinterpret_cast<const uint8_t*>(vector_as_array(&data_packet)),
         data_packet.size());
   }
 
@@ -167,12 +168,14 @@ TEST_F(ShillThirdPartyVpnDriverClientTest, UpdateConnectionState) {
 TEST_F(ShillThirdPartyVpnDriverClientTest, SendPacket) {
   scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
 
-  const std::string data(5, 0);
+  const size_t kPacketSize = 5;
+  const std::vector<char> data(kPacketSize, 0);
 
   EXPECT_CALL(*this, MockSuccess()).Times(1);
 
   PrepareForMethodCall(shill::kSendPacketFunction,
-                       base::Bind(&ExpectArrayOfBytesArgument, data),
+                       base::Bind(&ExpectArrayOfBytesArgument,
+                                  std::string(data.begin(), data.end())),
                        response.get());
 
   client_->SendPacket(

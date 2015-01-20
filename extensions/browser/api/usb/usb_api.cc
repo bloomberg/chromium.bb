@@ -379,11 +379,7 @@ void ConvertEndpointDescriptor(const UsbEndpointDescriptor& input,
       ConvertSynchronizationTypeToApi(input.synchronization_type);
   output->usage = ConvertUsageTypeToApi(input.usage_type);
   output->polling_interval.reset(new int(input.polling_interval));
-  if (input.extra_data.size() > 0) {
-    output->extra_data =
-        std::string(reinterpret_cast<const char*>(&input.extra_data[0]),
-                    input.extra_data.size());
-  }
+  output->extra_data.assign(input.extra_data.begin(), input.extra_data.end());
 }
 
 void ConvertInterfaceDescriptor(const UsbInterfaceDescriptor& input,
@@ -398,11 +394,7 @@ void ConvertInterfaceDescriptor(const UsbInterfaceDescriptor& input,
     ConvertEndpointDescriptor(input_endpoint, endpoint.get());
     output->endpoints.push_back(endpoint);
   }
-  if (input.extra_data.size() > 0) {
-    output->extra_data =
-        std::string(reinterpret_cast<const char*>(&input.extra_data[0]),
-                    input.extra_data.size());
-  }
+  output->extra_data.assign(input.extra_data.begin(), input.extra_data.end());
 }
 
 void ConvertConfigDescriptor(const UsbConfigDescriptor& input,
@@ -416,11 +408,7 @@ void ConvertConfigDescriptor(const UsbConfigDescriptor& input,
     ConvertInterfaceDescriptor(input_interface, interface.get());
     output->interfaces.push_back(interface);
   }
-  if (input.extra_data.size() > 0) {
-    output->extra_data =
-        std::string(reinterpret_cast<const char*>(&input.extra_data[0]),
-                    input.extra_data.size());
-  }
+  output->extra_data.assign(input.extra_data.begin(), input.extra_data.end());
 }
 
 void ConvertDeviceFilter(const usb::DeviceFilter& input,

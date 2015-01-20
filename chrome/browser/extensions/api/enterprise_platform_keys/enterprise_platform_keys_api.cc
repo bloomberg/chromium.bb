@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/api/enterprise_platform_keys/enterprise_platform_keys_api.h"
 
 #include "base/bind.h"
+#include "base/stl_util.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/platform_keys/platform_keys.h"
 #include "chrome/browser/chromeos/platform_keys/platform_keys_service.h"
@@ -93,8 +94,8 @@ void EnterprisePlatformKeysInternalGenerateKeyFunction::OnGeneratedKey(
     const std::string& error_message) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   if (error_message.empty()) {
-    Respond(
-        ArgumentList(api_epki::GenerateKey::Results::Create(public_key_der)));
+    Respond(ArgumentList(api_epki::GenerateKey::Results::Create(
+        std::vector<char>(public_key_der.begin(), public_key_der.end()))));
   } else {
     Respond(Error(error_message));
   }
@@ -132,9 +133,8 @@ EnterprisePlatformKeysInternalSignFunction::Run() {
 
   service->Sign(
       platform_keys_token_id,
-      params->public_key,
-      hash_algorithm,
-      params->data,
+      std::string(params->public_key.begin(), params->public_key.end()),
+      hash_algorithm, std::string(params->data.begin(), params->data.end()),
       extension_id(),
       base::Bind(&EnterprisePlatformKeysInternalSignFunction::OnSigned, this));
   return RespondLater();
@@ -144,10 +144,12 @@ void EnterprisePlatformKeysInternalSignFunction::OnSigned(
     const std::string& signature,
     const std::string& error_message) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  if (error_message.empty())
-    Respond(ArgumentList(api_epki::Sign::Results::Create(signature)));
-  else
+  if (error_message.empty()) {
+    Respond(ArgumentList(api_epki::Sign::Results::Create(
+        std::vector<char>(signature.begin(), signature.end()))));
+  } else {
     Respond(Error(error_message));
+  }
 }
 
 EnterprisePlatformKeysGetCertificatesFunction::
@@ -209,9 +211,10 @@ EnterprisePlatformKeysImportCertificateFunction::Run() {
   if (!ValidateToken(params->token_id, &platform_keys_token_id))
     return RespondNow(Error(kErrorInvalidToken));
 
-  const std::string& cert_der = params->certificate;
+  const std::vector<char>& cert_der = params->certificate;
   scoped_refptr<net::X509Certificate> cert_x509 =
-      net::X509Certificate::CreateFromBytes(cert_der.data(), cert_der.size());
+      net::X509Certificate::CreateFromBytes(vector_as_array(&cert_der),
+                                            cert_der.size());
   if (!cert_x509.get())
     return RespondNow(Error(kErrorInvalidX509Cert));
 
@@ -247,9 +250,10 @@ EnterprisePlatformKeysRemoveCertificateFunction::Run() {
   if (!ValidateToken(params->token_id, &platform_keys_token_id))
     return RespondNow(Error(kErrorInvalidToken));
 
-  const std::string& cert_der = params->certificate;
+  const std::vector<char>& cert_der = params->certificate;
   scoped_refptr<net::X509Certificate> cert_x509 =
-      net::X509Certificate::CreateFromBytes(cert_der.data(), cert_der.size());
+      net::X509Certificate::CreateFromBytes(vector_as_array(&cert_der),
+                                            cert_der.size());
   if (!cert_x509.get())
     return RespondNow(Error(kErrorInvalidX509Cert));
 

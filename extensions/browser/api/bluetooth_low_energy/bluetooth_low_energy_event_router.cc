@@ -105,7 +105,7 @@ void PopulateCharacteristic(const BluetoothGattCharacteristic* characteristic,
   if (value.empty())
     return;
 
-  out->value.reset(new std::string(value.begin(), value.end()));
+  out->value.reset(new std::vector<char>(value.begin(), value.end()));
 }
 
 void PopulateDescriptor(const BluetoothGattDescriptor* descriptor,
@@ -122,7 +122,7 @@ void PopulateDescriptor(const BluetoothGattDescriptor* descriptor,
   if (value.empty())
     return;
 
-  out->value.reset(new std::string(value.begin(), value.end()));
+  out->value.reset(new std::vector<char>(value.begin(), value.end()));
 }
 
 typedef extensions::ApiResourceManager<extensions::BluetoothLowEnergyConnection>

@@ -128,7 +128,7 @@ void TCPSocketEventDispatcher::ReadCallback(
     // Dispatch "onReceive" event.
     sockets_tcp::ReceiveInfo receive_info;
     receive_info.socket_id = params.socket_id;
-    receive_info.data = std::string(io_buffer->data(), bytes_read);
+    receive_info.data.assign(io_buffer->data(), io_buffer->data() + bytes_read);
     scoped_ptr<base::ListValue> args =
         sockets_tcp::OnReceive::Create(receive_info);
     scoped_ptr<Event> event(

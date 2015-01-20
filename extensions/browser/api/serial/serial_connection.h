@@ -6,6 +6,7 @@
 #define EXTENSIONS_BROWSER_API_SERIAL_SERIAL_CONNECTION_H_
 
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
@@ -33,8 +34,8 @@ class SerialConnection : public ApiResource,
   // This is the callback type expected by Receive. Note that an error result
   // does not necessarily imply an empty |data| string, since a receive may
   // complete partially before being interrupted by an error condition.
-  typedef base::Callback<
-      void(const std::string& data, core_api::serial::ReceiveError error)>
+  typedef base::Callback<void(const std::vector<char>& data,
+                              core_api::serial::ReceiveError error)>
       ReceiveCompleteCallback;
 
   // This is the callback type expected by Send. Note that an error result
@@ -82,7 +83,8 @@ class SerialConnection : public ApiResource,
   // Begins an asynchronous send operation. Calling this while a Send
   // is already pending is a no-op and returns |false| without calling
   // |callback|.
-  bool Send(const std::string& data, const SendCompleteCallback& callback);
+  bool Send(const std::vector<char>& data,
+            const SendCompleteCallback& callback);
 
   // Flushes input and output buffers.
   bool Flush() const;

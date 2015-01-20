@@ -4,6 +4,7 @@
 
 #include "tools/json_schema_compiler/util.h"
 
+#include "base/stl_util.h"
 #include "base/values.h"
 
 namespace json_schema_compiler {
@@ -25,6 +26,14 @@ bool PopulateItem(const base::Value& from, std::string* out) {
   return from.GetAsString(out);
 }
 
+bool PopulateItem(const base::Value& from, std::vector<char>* out) {
+  const base::BinaryValue* binary = nullptr;
+  if (!from.GetAsBinary(&binary))
+    return false;
+  out->assign(binary->GetBuffer(), binary->GetBuffer() + binary->GetSize());
+  return true;
+}
+
 bool PopulateItem(const base::Value& from, linked_ptr<base::Value>* out) {
   *out = make_linked_ptr(from.DeepCopy());
   return true;
@@ -32,7 +41,7 @@ bool PopulateItem(const base::Value& from, linked_ptr<base::Value>* out) {
 
 bool PopulateItem(const base::Value& from,
                   linked_ptr<base::DictionaryValue>* out) {
-  const base::DictionaryValue* dict = NULL;
+  const base::DictionaryValue* dict = nullptr;
   if (!from.GetAsDictionary(&dict))
     return false;
   *out = make_linked_ptr(dict->DeepCopy());
@@ -53,6 +62,11 @@ void AddItemToList(const double from, base::ListValue* out) {
 
 void AddItemToList(const std::string& from, base::ListValue* out) {
   out->Append(new base::StringValue(from));
+}
+
+void AddItemToList(const std::vector<char>& from, base::ListValue* out) {
+  out->Append(base::BinaryValue::CreateWithCopiedBuffer(vector_as_array(&from),
+                                                        from.size()));
 }
 
 void AddItemToList(const linked_ptr<base::Value>& from, base::ListValue* out) {
@@ -87,5 +101,5 @@ std::string ValueTypeToString(base::Value::Type type) {
   return "";
 }
 
-}  // namespace api_util
-}  // namespace extensions
+}  // namespace util
+}  // namespace json_schema_compiler

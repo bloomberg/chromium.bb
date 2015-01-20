@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_VPN_VPN_SERVICE_H_
-#define CHROME_BROWSER_CHROMEOS_VPN_VPN_SERVICE_H_
+#ifndef EXTENSIONS_BROWSER_API_VPN_PROVIDER_VPN_SERVICE_H_
+#define EXTENSIONS_BROWSER_API_VPN_PROVIDER_VPN_SERVICE_H_
 
 #include <map>
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -119,7 +120,7 @@ class VpnService : public KeyedService,
   // after verifying that it belongs to the extension with id |extension_id|.
   // Calls |success| or |failure| based on the outcome.
   void SendPacket(const std::string& extension_id,
-                  const std::string& data,
+                  const std::vector<char>& data,
                   const SuccessCallback& success,
                   const FailureCallback& failure);
 
@@ -214,4 +215,4 @@ class VpnService : public KeyedService,
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_VPN_VPN_SERVICE_H_
+#endif  // EXTENSIONS_BROWSER_API_VPN_PROVIDER_VPN_SERVICE_H_

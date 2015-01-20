@@ -112,7 +112,7 @@ class CppTypeGenerator(object):
       item_cpp_type = self.GetCppType(type_.item_type, is_in_container=True)
       cpp_type = 'std::vector<%s>' % cpp_util.PadForGenerics(item_cpp_type)
     elif type_.property_type == PropertyType.BINARY:
-      cpp_type = 'std::string'
+      cpp_type = 'std::vector<char>'
     else:
       raise NotImplementedError('Cannot get type of %s' % type_.property_type)
 

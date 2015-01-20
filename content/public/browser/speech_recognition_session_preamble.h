@@ -5,7 +5,7 @@
 #ifndef CONTENT_PUBLIC_BROWSER_SPEECH_RECOGNITION_SESSION_PREAMBLE_H_
 #define CONTENT_PUBLIC_BROWSER_SPEECH_RECOGNITION_SESSION_PREAMBLE_H_
 
-#include <string>
+#include <vector>
 
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
@@ -26,7 +26,7 @@ struct CONTENT_EXPORT SpeechRecognitionSessionPreamble
   int sample_depth;
 
   // Audio data, in little-endian samples.
-  std::string sample_data;
+  std::vector<char> sample_data;
 
  private:
   friend class base::RefCounted<SpeechRecognitionSessionPreamble>;

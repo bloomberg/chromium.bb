@@ -5,9 +5,11 @@
 #include "chrome/browser/chromeos/file_system_provider/operations/write_file.h"
 
 #include <string>
+#include <vector>
 
 #include "base/files/file.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
@@ -87,7 +89,9 @@ TEST_F(FileSystemProviderOperationsWriteFileTest, Execute) {
   EXPECT_EQ(kRequestId, options.request_id);
   EXPECT_EQ(kFileHandle, options.open_request_id);
   EXPECT_EQ(kOffset, static_cast<double>(options.offset));
-  EXPECT_EQ(std::string(kWriteData), options.data);
+  std::string write_data(kWriteData);
+  EXPECT_EQ(std::vector<char>(write_data.begin(), write_data.end()),
+            options.data);
 }
 
 TEST_F(FileSystemProviderOperationsWriteFileTest, Execute_NoListener) {

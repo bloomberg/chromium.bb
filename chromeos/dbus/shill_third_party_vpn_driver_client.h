@@ -6,6 +6,8 @@
 #define CHROMEOS_DBUS_SHILL_THIRD_PARTY_VPN_DRIVER_CLIENT_H_
 
 #include <stdint.h>
+#include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "chromeos/chromeos_export.h"
@@ -25,7 +27,7 @@ class CHROMEOS_EXPORT ShillThirdPartyVpnDriverClient : public DBusClient {
   class TestInterface {
    public:
     virtual void OnPacketReceived(const std::string& object_path_value,
-                                  const std::string& packet) = 0;
+                                  const std::vector<char>& packet) = 0;
     virtual void OnPlatformMessage(const std::string& object_path_value,
                                    uint32_t message) = 0;
 
@@ -69,7 +71,7 @@ class CHROMEOS_EXPORT ShillThirdPartyVpnDriverClient : public DBusClient {
   // |callback| is called after the method call succeeds.
   virtual void SendPacket(
       const std::string& object_path_value,
-      const std::string& ip_packet,
+      const std::vector<char>& ip_packet,
       const base::Closure& callback,
       const ShillClientHelper::ErrorCallback& error_callback) = 0;
 

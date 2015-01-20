@@ -146,9 +146,10 @@ void CopresenceService::HandleMessages(
   for (int m = 0; m < message_count; ++m) {
     api_messages[m].reset(new api::copresence::Message);
     api_messages[m]->type = messages[m].type().type();
-    api_messages[m]->payload = messages[m].payload();
+    api_messages[m]->payload.assign(messages[m].payload().begin(),
+                                    messages[m].payload().end());
     DVLOG(2) << "Dispatching message of type " << api_messages[m]->type << ":\n"
-             << api_messages[m]->payload;
+             << messages[m].payload();
   }
 
   // Send the messages to the client app.

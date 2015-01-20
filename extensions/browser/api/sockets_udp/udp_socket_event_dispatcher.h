@@ -5,6 +5,8 @@
 #ifndef EXTENSIONS_BROWSER_API_SOCKETS_UDP_UDP_SOCKET_EVENT_DISPATCHER_H_
 #define EXTENSIONS_BROWSER_API_SOCKETS_UDP_UDP_SOCKET_EVENT_DISPATCHER_H_
 
+#include <string>
+
 #include "extensions/browser/api/api_resource_manager.h"
 #include "extensions/browser/api/sockets_udp/sockets_udp_api.h"
 

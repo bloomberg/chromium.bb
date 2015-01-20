@@ -43,7 +43,8 @@ PublishOperation* CreatePublish(const std::string& id) {
   publish->id = id;
   publish->time_to_live_millis.reset(new int(1000));
   publish->message.type = "joke";
-  publish->message.payload = "Knock Knock!";
+  std::string payload("Knock Knock!");
+  publish->message.payload.assign(payload.begin(), payload.end());
 
   return publish;
 }

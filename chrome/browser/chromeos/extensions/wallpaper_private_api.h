@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_CHROMEOS_EXTENSIONS_WALLPAPER_PRIVATE_API_H_
 #define CHROME_BROWSER_CHROMEOS_EXTENSIONS_WALLPAPER_PRIVATE_API_H_
 
+#include <string>
+#include <vector>
+
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/extensions/wallpaper_function_base.h"
 #include "chrome/common/extensions/api/wallpaper_private.h"
@@ -265,7 +268,7 @@ class WallpaperPrivateSaveThumbnailFunction : public AsyncExtensionFunction {
   void Success();
 
   // Saves thumbnail to thumbnail directory as |file_name|.
-  void Save(const std::string& data, const std::string& file_name);
+  void Save(const std::vector<char>& data, const std::string& file_name);
 
   // Sequence token associated with wallpaper operations. Shared with
   // WallpaperManager.

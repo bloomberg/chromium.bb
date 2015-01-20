@@ -43,6 +43,7 @@ class _Generator(object):
       .Append()
       .Append(self._util_cc_helper.GetIncludePath())
       .Append('#include "base/logging.h"')
+      .Append('#include "base/stl_util.h"')
       .Append('#include "base/strings/string_number_conversions.h"')
       .Append('#include "base/strings/utf_string_conversions.h"')
       .Append('#include "%s/%s.h"' %
@@ -160,7 +161,7 @@ class _Generator(object):
         items.append('%s(false)' % prop.unix_name)
       elif (t.property_type == PropertyType.ANY or
             t.property_type == PropertyType.ARRAY or
-            t.property_type == PropertyType.BINARY or  # mapped to std::string
+            t.property_type == PropertyType.BINARY or
             t.property_type == PropertyType.CHOICES or
             t.property_type == PropertyType.OBJECT or
             t.property_type == PropertyType.FUNCTION or
@@ -541,10 +542,12 @@ class _Generator(object):
     elif underlying_type.property_type == PropertyType.BINARY:
       if is_ptr:
         vardot = var + '->'
+        ref = var + '.get()'
       else:
         vardot = var + '.'
-      return ('base::BinaryValue::CreateWithCopiedBuffer(%sdata(), %ssize())' %
-              (vardot, vardot))
+        ref = '&' + var
+      return ('base::BinaryValue::CreateWithCopiedBuffer(vector_as_array(%s),'
+              ' %ssize())' % (ref, vardot))
     elif underlying_type.property_type == PropertyType.ARRAY:
       return '%s.release()' % self._util_cc_helper.CreateValueFromArray(
           var,
@@ -807,13 +810,14 @@ class _Generator(object):
         .Append('   static_cast<const base::BinaryValue*>(%(src_var)s);')
       )
       if is_ptr:
-        (c.Append('%(dst_var)s.reset(')
-          .Append('    new std::string(binary_value->GetBuffer(),')
-          .Append('                    binary_value->GetSize()));')
+        (c.Append('%(dst_var)s.reset(new std::vector<char>(')
+          .Append('    binary_value->GetBuffer(),')
+          .Append('    binary_value->GetBuffer() + binary_value->GetSize()));')
         )
       else:
-        (c.Append('%(dst_var)s.assign(binary_value->GetBuffer(),')
-          .Append('                   binary_value->GetSize());')
+        (c.Append('%(dst_var)s.assign(')
+          .Append('    binary_value->GetBuffer(),')
+          .Append('    binary_value->GetBuffer() + binary_value->GetSize());')
         )
       c.Eblock('}')
     else:

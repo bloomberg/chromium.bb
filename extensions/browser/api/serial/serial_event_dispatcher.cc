@@ -87,13 +87,13 @@ void SerialEventDispatcher::StartReceive(const ReceiveParams& params) {
 
 // static
 void SerialEventDispatcher::ReceiveCallback(const ReceiveParams& params,
-                                            const std::string& data,
+                                            const std::vector<char>& data,
                                             serial::ReceiveError error) {
   DCHECK_CURRENTLY_ON(params.thread_id);
 
   // Note that an error (e.g. timeout) does not necessarily mean that no data
   // was read, so we may fire an onReceive regardless of any error code.
-  if (data.length() > 0) {
+  if (data.size() > 0) {
     serial::ReceiveInfo receive_info;
     receive_info.connection_id = params.connection_id;
     receive_info.data = data;

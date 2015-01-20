@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/stl_util.h"
 #include "base/time/time.h"
 #include "chrome/browser/extensions/api/braille_display_private/brlapi_connection.h"
 #include "chrome/browser/extensions/api/braille_display_private/brlapi_keycode_map.h"
@@ -93,7 +94,7 @@ scoped_ptr<DisplayState> BrailleControllerImpl::GetDisplayState() {
   return display_state.Pass();
 }
 
-void BrailleControllerImpl::WriteDots(const std::string& cells) {
+void BrailleControllerImpl::WriteDots(const std::vector<char>& cells) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (connection_ && connection_->Connected()) {
     size_t size;
@@ -101,7 +102,8 @@ void BrailleControllerImpl::WriteDots(const std::string& cells) {
       Disconnect();
     }
     std::vector<unsigned char> sizedCells(size);
-    std::memcpy(&sizedCells[0], cells.data(), std::min(cells.size(), size));
+    std::memcpy(&sizedCells[0], vector_as_array(&cells),
+                std::min(cells.size(), size));
     if (size > cells.size())
       std::fill(sizedCells.begin() + cells.size(), sizedCells.end(), 0);
     if (!connection_->WriteDots(&sizedCells[0]))

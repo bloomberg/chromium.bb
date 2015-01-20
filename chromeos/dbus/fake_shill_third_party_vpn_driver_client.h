@@ -42,14 +42,14 @@ class CHROMEOS_EXPORT FakeShillThirdPartyVpnDriverClient
       const ShillClientHelper::ErrorCallback& error_callback) override;
   void SendPacket(
       const std::string& object_path_value,
-      const std::string& ip_packet,
+      const std::vector<char>& ip_packet,
       const base::Closure& callback,
       const ShillClientHelper::ErrorCallback& error_callback) override;
   ShillThirdPartyVpnDriverClient::TestInterface* GetTestInterface() override;
 
   // ShillThirdPartyVpnDriverClient::TestInterface overrides
   void OnPacketReceived(const std::string& object_path_value,
-                        const std::string& packet) override;
+                        const std::vector<char>& packet) override;
   void OnPlatformMessage(const std::string& object_path_value,
                          uint32_t message) override;
 

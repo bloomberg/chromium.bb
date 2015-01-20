@@ -15,7 +15,7 @@ scoped_ptr<DisplayState> StubBrailleController::GetDisplayState() {
   return scoped_ptr<DisplayState>(new DisplayState);
 }
 
-void StubBrailleController::WriteDots(const std::string& cells) {
+void StubBrailleController::WriteDots(const std::vector<char>& cells) {
 }
 
 void StubBrailleController::AddObserver(BrailleObserver* observer) {

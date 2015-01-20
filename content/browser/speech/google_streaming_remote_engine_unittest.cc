@@ -333,12 +333,12 @@ TEST_F(GoogleStreamingRemoteEngineTest, Stability) {
 }
 
 TEST_F(GoogleStreamingRemoteEngineTest, SendPreamble) {
-  const int kPreambleLength = 100;
+  const size_t kPreambleLength = 100;
   scoped_refptr<SpeechRecognitionSessionPreamble> preamble =
       new SpeechRecognitionSessionPreamble();
   preamble->sample_rate = 16000;
   preamble->sample_depth = 2;
-  preamble->sample_data = std::string(kPreambleLength, 0);
+  preamble->sample_data.assign(kPreambleLength, 0);
   SpeechRecognitionEngine::Config config;
   config.auth_token = "foo";
   config.auth_scope = "bar";

@@ -59,8 +59,7 @@ ExtensionFunction::ResponseAction CopresencePrivateSendSamplesFunction::Run() {
       media::AudioBusRefCounted::Create(1,
                                         params->samples.size() / sizeof(float));
 
-  memcpy(samples->channel(0),
-         string_as_array(&params->samples),
+  memcpy(samples->channel(0), vector_as_array(&params->samples),
          params->samples.size());
 
   GetWhispernetClient()->GetSamplesCallback().Run(

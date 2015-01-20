@@ -48,7 +48,7 @@ class WallpaperFunctionBase::UnsafeWallpaperDecoder
       : function_(function) {
   }
 
-  void Start(const std::string& image_data) {
+  void Start(const std::vector<char>& image_data) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
     // This function can only be called after user login. It is fine to use
@@ -108,7 +108,7 @@ WallpaperFunctionBase::WallpaperFunctionBase() {
 WallpaperFunctionBase::~WallpaperFunctionBase() {
 }
 
-void WallpaperFunctionBase::StartDecode(const std::string& data) {
+void WallpaperFunctionBase::StartDecode(const std::vector<char>& data) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (unsafe_wallpaper_decoder_)
     unsafe_wallpaper_decoder_->Cancel();

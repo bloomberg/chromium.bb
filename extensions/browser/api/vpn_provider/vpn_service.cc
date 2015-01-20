@@ -71,7 +71,7 @@ class VpnService::VpnConfiguration : public ShillThirdPartyVpnObserver {
   const std::string& object_path() const { return object_path_; }
 
   // ShillThirdPartyVpnObserver:
-  void OnPacketReceived(const std::string& data) override;
+  void OnPacketReceived(const std::vector<char>& data) override;
   void OnPlatformMessage(uint32_t message) override;
 
  private:
@@ -102,7 +102,8 @@ VpnService::VpnConfiguration::VpnConfiguration(
 VpnService::VpnConfiguration::~VpnConfiguration() {
 }
 
-void VpnService::VpnConfiguration::OnPacketReceived(const std::string& data) {
+void VpnService::VpnConfiguration::OnPacketReceived(
+    const std::vector<char>& data) {
   if (!vpn_service_) {
     return;
   }
@@ -359,7 +360,7 @@ void VpnService::SetParameters(const std::string& extension_id,
 }
 
 void VpnService::SendPacket(const std::string& extension_id,
-                            const std::string& data,
+                            const std::vector<char>& data,
                             const SuccessCallback& success,
                             const FailureCallback& failure) {
   if (!DoesActiveConfigurationExistAndIsAccessAuthorized(extension_id)) {
