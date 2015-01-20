@@ -1,26 +1,94 @@
-# Copyright 2013 The Chromium Authors. All rights reserved.
+# Copyright 2015 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 {
-  'variables': {
-    'files': [
-      'test/data/',
-    ],
-  },
   'conditions': [
-    ['OS=="android"', {
+    ['OS=="android" or OS=="linux" or OS=="mac" or OS=="win"', {
+      'variables': {
+        'files': [
+          'test/data/',
+          '<(PRODUCT_DIR)/resources.pak',
+        ],
+      },
+    }],
+    ['OS=="linux" or OS=="mac" or OS=="win"', {
+      'variables': {
+        'files': [
+          '../testing/test_env.py',
+          '<(PRODUCT_DIR)/components_unittests<(EXECUTABLE_SUFFIX)',
+        ],
+      },
+    }],
+    ['OS=="android" or OS=="linux" or OS=="win"', {
       'variables': {
         'files': [
           '<(PRODUCT_DIR)/chrome_100_percent.pak',
-          '<(PRODUCT_DIR)/content_resources.pak',
           '<(PRODUCT_DIR)/locales/en-US.pak',
-          '<(PRODUCT_DIR)/resources.pak',
+        ],
+      },
+    }],
+    ['OS=="linux"', {
+      'variables': {
+        'command': [
+          '../testing/xvfb.py',
+          '<(PRODUCT_DIR)',
+          '<(PRODUCT_DIR)/components_unittests',
+          '--brave-new-test-launcher',
+          '--test-launcher-bot-mode',
+          '--asan=<(asan)',
+          '--lsan=<(lsan)',
+        ],
+        'files': [
+          '../testing/xvfb.py',
+          '<(PRODUCT_DIR)/libffmpegsumo.so',
+          '<(PRODUCT_DIR)/libosmesa.so',
+          '<(PRODUCT_DIR)/xdisplaycheck',
+        ],
+      },
+    }],
+    ['OS=="mac"', {
+      'variables': {
+        'command': [
+          '../testing/test_env.py',
+          '<(PRODUCT_DIR)/components_unittests',
+          '--brave-new-test-launcher',
+          '--test-launcher-bot-mode',
+          '--asan=<(asan)',
+          '--lsan=<(lsan)',
+        ],
+        'files': [
+          '<(PRODUCT_DIR)/<(mac_product_name) Framework.framework/',
+          '<(PRODUCT_DIR)/ffmpegsumo.so',
+          '<(PRODUCT_DIR)/osmesa.so',
+        ],
+      },
+    }],
+    ['OS=="win"', {
+      'variables': {
+        'command': [
+          '../testing/test_env.py',
+          '<(PRODUCT_DIR)/components_unittests.exe',
+          '--brave-new-test-launcher',
+          '--test-launcher-bot-mode',
+          '--asan=<(asan)',
+          '--lsan=<(lsan)',
+        ],
+        'files': [
+          '../chrome/test/data/policy/',
+          '<(PRODUCT_DIR)/ffmpegsumo.dll',
+          '<(PRODUCT_DIR)/osmesa.dll',
+        ],
+      },
+    }],
+    ['OS=="win" and (fastbuild==0 or fastbuild==1)', {
+      'variables': {
+        'files': [
+          '<(PRODUCT_DIR)/components_unittests.exe.pdb',
         ],
       },
     }],
   ],
   'includes': [
-    '../third_party/icu/icu.isolate',
-    '../gin/v8.isolate',
+    '../base/base.isolate',
   ],
 }

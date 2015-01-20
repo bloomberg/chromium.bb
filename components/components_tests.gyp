@@ -867,12 +867,12 @@
               ],
             }],
             ['OS=="linux" and component=="shared_library" and use_allocator!="none"', {
-            'dependencies': [
+              'dependencies': [
                 '<(DEPTH)/base/allocator/allocator.gyp:allocator',
-            ],
-            'link_settings': {
+              ],
+              'link_settings': {
                 'ldflags': ['-rdynamic'],
-            },
+              },
             }],
             ['configuration_policy==1', {
               'dependencies': [
@@ -1129,6 +1129,23 @@
                 '../base/allocator/allocator.gyp:allocator',
               ],
             }],
+          ],
+        },
+      ],
+    }],
+    ['test_isolation_mode != "noop"', {
+      'targets': [
+        {
+          'target_name': 'components_unittests_run',
+          'type': 'none',
+          'dependencies': [
+            'components_unittests',
+          ],
+          'includes': [
+            '../build/isolate.gypi',
+          ],
+          'sources': [
+            'components_unittests.isolate',
           ],
         },
       ],
