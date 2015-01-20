@@ -1217,7 +1217,8 @@ def _CheckJavaStyle(input_api, output_api):
     sys.path = original_sys_path
 
   return checkstyle.RunCheckstyle(
-      input_api, output_api, 'tools/android/checkstyle/chromium-style-5.0.xml')
+      input_api, output_api, 'tools/android/checkstyle/chromium-style-5.0.xml',
+      black_list=_EXCLUDED_PATHS)
 
 
 def _CheckForCopyrightedCode(input_api, output_api):

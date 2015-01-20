@@ -16,14 +16,15 @@ CHECKSTYLE_ROOT = os.path.join(CHROMIUM_SRC, 'third_party', 'checkstyle',
                                'checkstyle-6.1-all.jar')
 
 
-def RunCheckstyle(input_api, output_api, style_file):
+def RunCheckstyle(input_api, output_api, style_file, black_list=None):
   if not os.path.exists(style_file):
     file_error = ('  Java checkstyle configuration file is missing: '
                   + style_file)
     return [output_api.PresubmitError(file_error)]
 
   # Filter out non-Java files and files that were deleted.
-  java_files = [x.LocalPath() for x in input_api.AffectedFiles(False, False)
+  java_files = [x.AbsoluteLocalPath() for x in input_api.AffectedSourceFiles(
+                lambda f: input_api.FilterSourceFile(f, black_list=black_list))
                 if os.path.splitext(x.LocalPath())[1] == '.java']
   if not java_files:
     return []
@@ -36,7 +37,7 @@ def RunCheckstyle(input_api, output_api, style_file):
                               CHECKSTYLE_ROOT,
                               'com.puppycrawl.tools.checkstyle.Main', '-c',
                               style_file, '-f', 'xml'] + java_files,
-                             stdout=subprocess.PIPE, env=checkstyle_env)
+                              stdout=subprocess.PIPE, env=checkstyle_env)
     stdout, _ = check.communicate()
   except OSError as e:
     import errno
