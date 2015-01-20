@@ -584,6 +584,16 @@ bool UserSessionManager::RestartToApplyPerSessionFlagsIfNeed(
   if (early_restart && !CanPerformEarlyRestart())
     return false;
 
+  // We can't really restart if we've already restarted as a part of
+  // user session restore after crash of in case when flags were changed inside
+  // user session.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kLoginUser))
+    return false;
+
+  // We can't restart if that's a second user sign in that is happening.
+  if (user_manager::UserManager::Get()->GetLoggedInUsers().size() > 1)
+    return false;
+
   const base::CommandLine user_flags(CreatePerSessionCommandLine(profile));
   std::set<base::CommandLine::StringType> command_line_difference;
   if (!NeedRestartToApplyPerSessionFlags(user_flags, &command_line_difference))
