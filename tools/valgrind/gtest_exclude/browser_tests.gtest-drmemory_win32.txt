@@ -6,6 +6,9 @@
 # test case if any of its tests failed.
 *FLAKY*
 
+# http://crbug.com/450221
+ProfileChooserViewExtensionsTest.LockProfileNoBlockOtherProfileExtensions
+
 # it takes too long to run all browser_tests with Dr.Memory,
 # and we only select subset to run
 # A*

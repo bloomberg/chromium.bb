@@ -1,6 +1,12 @@
 # crbug.com/389132
 WebRtcAecDumpBrowserTest.*WithAecDump*
 
+# crbug.com/448876
+ScreenOrientationBrowserTest.LockSmoke
+
+# crbug.com/450217
+DumpAccessibilityTreeTest.AccessibilityIframeCoordinates
+
 # https://github.com/DynamoRIO/drmemory/issues/1528
 # Un-analyzed test failures:
 DeviceInertialSensorBrowserTest.MotionNullTestWithAlert
