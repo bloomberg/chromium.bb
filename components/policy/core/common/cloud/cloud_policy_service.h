@@ -26,7 +26,11 @@ class POLICY_EXPORT CloudPolicyService : public CloudPolicyClient::Observer,
  public:
   // Callback invoked once the policy refresh attempt has completed. Passed
   // bool parameter is true if the refresh was successful (no error).
-  typedef base::Callback<void(bool)> RefreshPolicyCallback;
+  using RefreshPolicyCallback = base::Callback<void(bool)>;
+
+  // Callback invoked once the unregister attempt has completed. Passed bool
+  // parameter is true if unregistering was successful (no error).
+  using UnregisterCallback = base::Callback<void(bool)>;
 
   class POLICY_EXPORT Observer {
    public:
@@ -52,6 +56,11 @@ class POLICY_EXPORT CloudPolicyService : public CloudPolicyClient::Observer,
   // or aborts because of errors.
   void RefreshPolicy(const RefreshPolicyCallback& callback);
 
+  // Unregisters the device. |callback| will be invoked after the operation
+  // completes or aborts because of errors. All pending refresh policy requests
+  // will be aborted, and no further refresh policy requests will be allowed.
+  void Unregister(const UnregisterCallback& callback);
+
   // Adds/Removes an Observer for this object.
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -76,6 +85,10 @@ class POLICY_EXPORT CloudPolicyService : public CloudPolicyClient::Observer,
   // is passed through to the refresh callbacks.
   void RefreshCompleted(bool success);
 
+  // Invokes the unregister callback and clears unregister state. The |success|
+  // flag is passed through to the unregister callback.
+  void UnregisterCompleted(bool success);
+
   // The policy type that will be fetched by the |client_|, with the optional
   // |settings_entity_id_|.
   std::string policy_type_;
@@ -97,8 +110,16 @@ class POLICY_EXPORT CloudPolicyService : public CloudPolicyClient::Observer,
     REFRESH_POLICY_STORE,
   } refresh_state_;
 
+  // Tracks the state of a pending unregister operation, if any.
+  enum {
+    UNREGISTER_NONE,
+    UNREGISTER_PENDING,
+  } unregister_state_;
+
   // Callbacks to invoke upon policy refresh.
   std::vector<RefreshPolicyCallback> refresh_callbacks_;
+
+  UnregisterCallback unregister_callback_;
 
   // Set to true once the service is initialized (initial policy load/refresh
   // is complete).

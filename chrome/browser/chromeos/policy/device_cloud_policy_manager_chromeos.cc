@@ -6,7 +6,9 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/callback.h"
 #include "base/command_line.h"
+#include "base/logging.h"
 #include "base/port.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
@@ -23,6 +25,8 @@
 #include "chromeos/chromeos_constants.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/system/statistics_provider.h"
+#include "components/policy/core/common/cloud/cloud_policy_core.h"
+#include "components/policy/core/common/cloud/cloud_policy_service.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
 #include "content/public/browser/browser_thread.h"
 #include "crypto/sha2.h"
@@ -248,6 +252,24 @@ void DeviceCloudPolicyManagerChromeOS::StartConnection(
   NotifyConnected();
 }
 
+void DeviceCloudPolicyManagerChromeOS::Unregister(
+    const UnregisterCallback& callback) {
+  if (!service()) {
+    LOG(ERROR) << "Tried to unregister but DeviceCloudPolicyManagerChromeOS is "
+               << "not connected.";
+    callback.Run(false);
+    return;
+  }
+
+  service()->Unregister(callback);
+}
+
+void DeviceCloudPolicyManagerChromeOS::Disconnect() {
+  core()->Disconnect();
+
+  NotifyDisconnected();
+}
+
 void DeviceCloudPolicyManagerChromeOS::OnStateKeysUpdated() {
   if (client() && ForcedReEnrollmentEnabled())
     client()->SetStateKeysToUpload(state_keys_broker_->state_keys());
@@ -288,6 +310,11 @@ void DeviceCloudPolicyManagerChromeOS::InitializeRequisition() {
 void DeviceCloudPolicyManagerChromeOS::NotifyConnected() {
   FOR_EACH_OBSERVER(
       Observer, observers_, OnDeviceCloudPolicyManagerConnected());
+}
+
+void DeviceCloudPolicyManagerChromeOS::NotifyDisconnected() {
+  FOR_EACH_OBSERVER(
+      Observer, observers_, OnDeviceCloudPolicyManagerDisconnected());
 }
 
 }  // namespace policy

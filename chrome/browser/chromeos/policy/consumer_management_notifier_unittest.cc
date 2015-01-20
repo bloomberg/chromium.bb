@@ -64,24 +64,49 @@ class ConsumerManagementNotifierTest : public BrowserWithTestWindowTest {
         NotificationUIManager::GetProfileID(profile()));
   }
 
+  bool HasUnenrollmentNotification() {
+    return g_browser_process->notification_ui_manager()->FindById(
+        "consumer_management.unenroll",
+        NotificationUIManager::GetProfileID(profile()));
+  }
+
   FakeConsumerManagementService* fake_service_;
   scoped_ptr<TestingProfileManager> testing_profile_manager_;
   scoped_ptr<ConsumerManagementNotifier> notification_;
 };
 
-TEST_F(ConsumerManagementNotifierTest, ShowsNotificationWhenCreated) {
+TEST_F(ConsumerManagementNotifierTest,
+       ShowsEnrollmentNotificationWhenCreated) {
   fake_service_->SetStatusAndStage(
       ConsumerManagementService::STATUS_UNENROLLED,
       ConsumerManagementStage::EnrollmentCanceled());
   EXPECT_FALSE(HasEnrollmentNotification());
+  EXPECT_FALSE(HasUnenrollmentNotification());
 
   CreateConsumerManagementNotifier();
 
   EXPECT_EQ(ConsumerManagementStage::None(), fake_service_->GetStage());
   EXPECT_TRUE(HasEnrollmentNotification());
+  EXPECT_FALSE(HasUnenrollmentNotification());
 }
 
-TEST_F(ConsumerManagementNotifierTest, ShowsNotificationWhenStatusChanged) {
+TEST_F(ConsumerManagementNotifierTest,
+       ShowsUnenrollmentNotificationWhenCreated) {
+  fake_service_->SetStatusAndStage(
+      ConsumerManagementService::STATUS_UNENROLLED,
+      ConsumerManagementStage::UnenrollmentSuccess());
+  EXPECT_FALSE(HasEnrollmentNotification());
+  EXPECT_FALSE(HasUnenrollmentNotification());
+
+  CreateConsumerManagementNotifier();
+
+  EXPECT_EQ(ConsumerManagementStage::None(), fake_service_->GetStage());
+  EXPECT_FALSE(HasEnrollmentNotification());
+  EXPECT_TRUE(HasUnenrollmentNotification());
+}
+
+TEST_F(ConsumerManagementNotifierTest,
+       ShowsEnrollmentNotificationWhenStatusChanged) {
   fake_service_->SetStatusAndStage(
       ConsumerManagementService::STATUS_ENROLLING,
       ConsumerManagementStage::EnrollmentOwnerStored());
@@ -90,12 +115,38 @@ TEST_F(ConsumerManagementNotifierTest, ShowsNotificationWhenStatusChanged) {
   EXPECT_EQ(ConsumerManagementStage::EnrollmentOwnerStored(),
             fake_service_->GetStage());
   EXPECT_FALSE(HasEnrollmentNotification());
+  EXPECT_FALSE(HasUnenrollmentNotification());
 
   fake_service_->SetStatusAndStage(
       ConsumerManagementService::STATUS_ENROLLED,
       ConsumerManagementStage::EnrollmentSuccess());
   EXPECT_EQ(ConsumerManagementStage::None(), fake_service_->GetStage());
   EXPECT_TRUE(HasEnrollmentNotification());
+  EXPECT_FALSE(HasUnenrollmentNotification());
+}
+
+TEST_F(ConsumerManagementNotifierTest,
+       ShowsUnenrollmentNotificationWhenStatusChanged) {
+  fake_service_->SetStatusAndStage(
+      ConsumerManagementService::STATUS_ENROLLED,
+      ConsumerManagementStage::None());
+
+  CreateConsumerManagementNotifier();
+  EXPECT_FALSE(HasEnrollmentNotification());
+  EXPECT_FALSE(HasUnenrollmentNotification());
+
+  fake_service_->SetStatusAndStage(
+      ConsumerManagementService::STATUS_UNENROLLING,
+      ConsumerManagementStage::UnenrollmentRequested());
+  EXPECT_FALSE(HasEnrollmentNotification());
+  EXPECT_FALSE(HasUnenrollmentNotification());
+
+  fake_service_->SetStatusAndStage(
+      ConsumerManagementService::STATUS_UNENROLLED,
+      ConsumerManagementStage::UnenrollmentSuccess());
+  EXPECT_EQ(ConsumerManagementStage::None(), fake_service_->GetStage());
+  EXPECT_FALSE(HasEnrollmentNotification());
+  EXPECT_TRUE(HasUnenrollmentNotification());
 }
 
 }  // namespace policy

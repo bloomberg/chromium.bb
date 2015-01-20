@@ -10,6 +10,9 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/policy/consumer_management_service.h"
 #include "chrome/browser/chromeos/policy/consumer_management_stage.h"
+#include "chrome/browser/chromeos/policy/consumer_unenrollment_handler.h"
+#include "chrome/browser/chromeos/policy/consumer_unenrollment_handler_factory.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
@@ -91,7 +94,17 @@ void ConsumerManagementHandler::HandleEnrollConsumerManagement(
 
 void ConsumerManagementHandler::HandleUnenrollConsumerManagement(
     const base::ListValue* args) {
-  NOTIMPLEMENTED();
+  if (!user_manager::UserManager::Get()->IsCurrentUserOwner()) {
+    LOG(ERROR) << "Received unenrollConsumerManagement, but the current user "
+               << "is not the owner.";
+    return;
+  }
+
+  CHECK(management_service_);
+  management_service_->SetStage(
+      policy::ConsumerManagementStage::UnenrollmentRequested());
+  policy::ConsumerUnenrollmentHandlerFactory::GetForBrowserContext(
+      Profile::FromWebUI(web_ui()))->Start();
 }
 
 }  // namespace options

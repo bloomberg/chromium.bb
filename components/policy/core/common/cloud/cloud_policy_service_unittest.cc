@@ -5,6 +5,7 @@
 #include "components/policy/core/common/cloud/cloud_policy_service.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
@@ -36,6 +37,7 @@ class CloudPolicyServiceTest : public testing::Test {
         service_(policy_type_, std::string(), &client_, &store_) {}
 
   MOCK_METHOD1(OnPolicyRefresh, void(bool));
+  MOCK_METHOD1(OnUnregister, void(bool));
 
  protected:
   std::string policy_type_;
@@ -208,6 +210,46 @@ TEST_F(CloudPolicyServiceTest, RefreshPolicyConcurrent) {
   // Corresponding store operation finishes, all _three_ callbacks fire.
   EXPECT_CALL(*this, OnPolicyRefresh(true)).Times(3);
   store_.NotifyStoreLoaded();
+}
+
+TEST_F(CloudPolicyServiceTest, UnregisterSucceeds) {
+  EXPECT_CALL(client_, Unregister());
+  EXPECT_CALL(*this, OnUnregister(true));
+
+  service_.Unregister(base::Bind(&CloudPolicyServiceTest::OnUnregister,
+                                 base::Unretained(this)));
+  client_.NotifyRegistrationStateChanged();
+}
+
+TEST_F(CloudPolicyServiceTest, UnregisterFailsOnClientError) {
+  EXPECT_CALL(client_, Unregister());
+  EXPECT_CALL(*this, OnUnregister(false));
+
+  service_.Unregister(base::Bind(&CloudPolicyServiceTest::OnUnregister,
+                                 base::Unretained(this)));
+  client_.NotifyClientError();
+}
+
+TEST_F(CloudPolicyServiceTest, UnregisterRevokesAllOnGoingPolicyRefreshes) {
+  EXPECT_CALL(client_, Unregister());
+  EXPECT_CALL(*this, OnPolicyRefresh(false)).Times(2);
+
+  service_.RefreshPolicy(base::Bind(&CloudPolicyServiceTest::OnPolicyRefresh,
+                                    base::Unretained(this)));
+  service_.RefreshPolicy(base::Bind(&CloudPolicyServiceTest::OnPolicyRefresh,
+                                    base::Unretained(this)));
+  service_.Unregister(base::Bind(&CloudPolicyServiceTest::OnUnregister,
+                                 base::Unretained(this)));
+}
+
+TEST_F(CloudPolicyServiceTest, RefreshPolicyFailsWhenUnregistering) {
+  EXPECT_CALL(client_, Unregister());
+  EXPECT_CALL(*this, OnPolicyRefresh(false));
+
+  service_.Unregister(base::Bind(&CloudPolicyServiceTest::OnUnregister,
+                                 base::Unretained(this)));
+  service_.RefreshPolicy(base::Bind(&CloudPolicyServiceTest::OnPolicyRefresh,
+                                    base::Unretained(this)));
 }
 
 TEST_F(CloudPolicyServiceTest, StoreAlreadyInitialized) {
