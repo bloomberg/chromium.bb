@@ -14,7 +14,8 @@ BrowserSavePasswordProgressLogger::BrowserSavePasswordProgressLogger(
   DCHECK(client_);
 }
 
-BrowserSavePasswordProgressLogger::~BrowserSavePasswordProgressLogger() {}
+BrowserSavePasswordProgressLogger::~BrowserSavePasswordProgressLogger() {
+}
 
 void BrowserSavePasswordProgressLogger::SendLog(const std::string& log) {
   client_->LogSavePasswordProgress(log);

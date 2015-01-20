@@ -51,11 +51,12 @@ class MockAutofillManager : public autofill::AutofillManager {
  public:
   MockAutofillManager(autofill::AutofillDriver* driver,
                       autofill::AutofillClient* client,
-                      autofill::PersonalDataManager* data_manager) :
-      AutofillManager(driver, client, data_manager) {}
+                      autofill::PersonalDataManager* data_manager)
+      : AutofillManager(driver, client, data_manager) {}
 
-  MOCK_METHOD2(UploadPasswordForm, bool(const autofill::FormData&,
-                                        const autofill::ServerFieldType&));
+  MOCK_METHOD2(UploadPasswordForm,
+               bool(const autofill::FormData&,
+                    const autofill::ServerFieldType&));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockAutofillManager);
@@ -63,10 +64,10 @@ class MockAutofillManager : public autofill::AutofillManager {
 
 class MockPasswordManagerDriver : public StubPasswordManagerDriver {
  public:
-  MockPasswordManagerDriver():
-      mock_autofill_manager_(&test_autofill_driver_,
-                             &test_autofill_client_,
-                             &test_personal_data_manager_) {}
+  MockPasswordManagerDriver()
+      : mock_autofill_manager_(&test_autofill_driver_,
+                               &test_autofill_client_,
+                               &test_personal_data_manager_) {}
 
   ~MockPasswordManagerDriver() {}
 
@@ -1192,8 +1193,7 @@ TEST_F(PasswordFormManagerTest, UploadFormData_NewPassword) {
   EXPECT_CALL(*client_with_store.mock_driver()->mock_autofill_manager(),
               UploadPasswordForm(_, autofill::PASSWORD)).Times(1);
   form_manager.ProvisionallySave(
-      form_to_save,
-      PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+      form_to_save, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
   form_manager.Save();
   Mock::VerifyAndClearExpectations(&form_manager);
 
@@ -1260,8 +1260,7 @@ TEST_F(PasswordFormManagerTest, UploadFormData_AccountCreationPassword) {
               UploadPasswordForm(_,
                                  autofill::ACCOUNT_CREATION_PASSWORD)).Times(1);
   form_manager.ProvisionallySave(
-      form_to_save,
-      PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+      form_to_save, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
   form_manager.Save();
 }
 
@@ -1334,8 +1333,7 @@ TEST_F(PasswordFormManagerTest, DriverDeletedBeforeStoreDone) {
 
   const PasswordStore::AuthorizationPromptPolicy auth_policy =
       PasswordStore::DISALLOW_PROMPT;
-  EXPECT_CALL(*mock_store(),
-              GetLogins(*form, auth_policy, &form_manager));
+  EXPECT_CALL(*mock_store(), GetLogins(*form, auth_policy, &form_manager));
   form_manager.FetchMatchingLoginsFromPasswordStore(auth_policy);
 
   // Suddenly, the frame and its driver disappear.

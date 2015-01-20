@@ -6,6 +6,7 @@
 
 namespace password_manager {
 
-PasswordStoreSync::~PasswordStoreSync() {}
+PasswordStoreSync::~PasswordStoreSync() {
+}
 
 }  // namespace password_manager

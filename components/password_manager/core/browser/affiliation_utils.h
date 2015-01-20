@@ -100,9 +100,7 @@ class FacetURI {
 
   // Returns whether or not this instance represents a valid facet identifier
   // referring to either a Web or an Android application.
-  bool is_valid() const {
-    return is_valid_;
-  }
+  bool is_valid() const { return is_valid_; }
 
   // Returns the canonical scheme of the encapsulated facet URI, provided it is
   // valid, or the empty string otherwise.

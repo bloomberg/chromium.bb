@@ -45,7 +45,8 @@ CredentialManagerDispatcher::CredentialManagerDispatcher(
   DCHECK(web_contents);
 }
 
-CredentialManagerDispatcher::~CredentialManagerDispatcher() {}
+CredentialManagerDispatcher::~CredentialManagerDispatcher() {
+}
 
 bool CredentialManagerDispatcher::OnMessageReceived(
     const IPC::Message& message) {
@@ -64,8 +65,8 @@ bool CredentialManagerDispatcher::OnMessageReceived(
   return handled;
 }
 
-void CredentialManagerDispatcher::OnNotifyFailedSignIn(
-    int request_id, const CredentialInfo&) {
+void CredentialManagerDispatcher::OnNotifyFailedSignIn(int request_id,
+                                                       const CredentialInfo&) {
   DCHECK(request_id);
   // TODO(mkwst): This is a stub.
   web_contents()->GetRenderViewHost()->Send(
@@ -77,16 +78,14 @@ void CredentialManagerDispatcher::OnNotifySignedIn(
     int request_id,
     const password_manager::CredentialInfo& credential) {
   DCHECK(request_id);
-  scoped_ptr<autofill::PasswordForm> form(
-      CreatePasswordFormFromCredentialInfo(credential,
-          web_contents()->GetLastCommittedURL().GetOrigin()));
+  scoped_ptr<autofill::PasswordForm> form(CreatePasswordFormFromCredentialInfo(
+      credential, web_contents()->GetLastCommittedURL().GetOrigin()));
 
   // TODO(mkwst): This is a stub; we should be checking the PasswordStore to
   // determine whether or not the credential exists, and calling UpdateLogin
   // accordingly.
-  form_manager_.reset(
-      new CredentialManagerPasswordFormManager(client_, GetDriver(), *form,
-                                               this));
+  form_manager_.reset(new CredentialManagerPasswordFormManager(
+      client_, GetDriver(), *form, this));
 
   web_contents()->GetRenderViewHost()->Send(
       new CredentialManagerMsg_AcknowledgeSignedIn(
@@ -175,18 +174,17 @@ PasswordStore* CredentialManagerDispatcher::GetPasswordStore() {
   return client_ ? client_->GetPasswordStore() : nullptr;
 }
 
-base::WeakPtr<PasswordManagerDriver>
-CredentialManagerDispatcher::GetDriver() {
+base::WeakPtr<PasswordManagerDriver> CredentialManagerDispatcher::GetDriver() {
   ContentPasswordManagerDriverFactory* driver_factory =
-        ContentPasswordManagerDriverFactory::FromWebContents(web_contents());
+      ContentPasswordManagerDriverFactory::FromWebContents(web_contents());
   DCHECK(driver_factory);
   PasswordManagerDriver* driver =
       driver_factory->GetDriverForFrame(web_contents()->GetMainFrame());
   return driver->AsWeakPtr();
 }
 
-void CredentialManagerDispatcher::SendCredential(
-    int request_id, const CredentialInfo& info) {
+void CredentialManagerDispatcher::SendCredential(int request_id,
+                                                 const CredentialInfo& info) {
   DCHECK(pending_request_);
   DCHECK_EQ(pending_request_->id, request_id);
   web_contents()->GetRenderViewHost()->Send(

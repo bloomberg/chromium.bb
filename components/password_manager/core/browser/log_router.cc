@@ -21,8 +21,7 @@ void LogRouter::ProcessLog(const std::string& text) {
   // inactive), because in that case the logs cannot be displayed.
   DCHECK(receivers_.might_have_observers());
   accumulated_logs_.append(text);
-  FOR_EACH_OBSERVER(
-      LogReceiver, receivers_, LogSavePasswordProgress(text));
+  FOR_EACH_OBSERVER(LogReceiver, receivers_, LogSavePasswordProgress(text));
 }
 
 bool LogRouter::RegisterClient(PasswordManagerClient* client) {

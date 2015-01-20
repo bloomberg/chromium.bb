@@ -239,8 +239,7 @@ bool PasswordAutofillManager::GetPasswordForUsername(
   // Scan additional logins for a match.
   for (autofill::PasswordFormFillData::LoginCollection::const_iterator iter =
            fill_data.additional_logins.begin();
-       iter != fill_data.additional_logins.end();
-       ++iter) {
+       iter != fill_data.additional_logins.end(); ++iter) {
     if (CompareUsernameSuggestion(iter->first, current_username)) {
       *password = iter->second.password;
       return true;

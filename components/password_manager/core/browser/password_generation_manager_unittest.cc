@@ -71,9 +71,7 @@ class TestPasswordManagerClient : public StubPasswordManagerClient {
         is_sync_enabled_(false),
         is_off_the_record_(false) {}
 
-  ~TestPasswordManagerClient() override {
-    store_->Shutdown();
-  }
+  ~TestPasswordManagerClient() override { store_->Shutdown(); }
 
   bool IsOffTheRecord() override { return is_off_the_record_; }
   PasswordStore* GetPasswordStore() override { return store_.get(); }

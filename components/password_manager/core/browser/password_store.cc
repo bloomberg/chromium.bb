@@ -29,7 +29,7 @@ namespace {
 // Takes ownership of the elements in |result|, passing ownership to |consumer|
 // if it is still alive.
 void MaybeCallConsumerCallback(base::WeakPtr<PasswordStoreConsumer> consumer,
-                               scoped_ptr<std::vector<PasswordForm*> > result) {
+                               scoped_ptr<std::vector<PasswordForm*>> result) {
   if (consumer.get())
     consumer->OnGetPasswordStoreResults(*result);
   else
@@ -85,7 +85,8 @@ PasswordStore::PasswordStore(
     : main_thread_runner_(main_thread_runner),
       db_thread_runner_(db_thread_runner),
       observers_(new ObserverListThreadSafe<Observer>()),
-      shutdown_called_(false) {}
+      shutdown_called_(false) {
+}
 
 bool PasswordStore::Init(const syncer::SyncableService::StartSyncFlare& flare) {
 #if defined(PASSWORD_MANAGER_ENABLE_SYNC)
@@ -120,10 +121,9 @@ void PasswordStore::RemoveLoginsSyncedBetween(base::Time delete_begin,
                           this, delete_begin, delete_end));
 }
 
-void PasswordStore::GetLogins(
-    const PasswordForm& form,
-    AuthorizationPromptPolicy prompt_policy,
-    PasswordStoreConsumer* consumer) {
+void PasswordStore::GetLogins(const PasswordForm& form,
+                              AuthorizationPromptPolicy prompt_policy,
+                              PasswordStoreConsumer* consumer) {
   // Per http://crbug.com/121738, we deliberately ignore saved logins for
   // http*://www.google.com/ that were stored prior to 2012. (Google now uses
   // https://accounts.google.com/ for all login forms, so these should be
@@ -144,11 +144,10 @@ void PasswordStore::GetLogins(
   GetLoginsRequest* request = new GetLoginsRequest(consumer);
   request->set_ignore_logins_cutoff(ignore_logins_cutoff);
 
-  ConsumerCallbackRunner callback_runner =
-      base::Bind(&PasswordStore::CopyAndForwardLoginsResult,
-                 this, base::Owned(request));
-  ScheduleTask(base::Bind(&PasswordStore::GetLoginsImpl,
-                          this, form, prompt_policy, callback_runner));
+  ConsumerCallbackRunner callback_runner = base::Bind(
+      &PasswordStore::CopyAndForwardLoginsResult, this, base::Owned(request));
+  ScheduleTask(base::Bind(&PasswordStore::GetLoginsImpl, this, form,
+                          prompt_policy, callback_runner));
 }
 
 void PasswordStore::GetAutofillableLogins(PasswordStoreConsumer* consumer) {
@@ -192,14 +191,16 @@ void PasswordStore::Shutdown() {
 
 #if defined(PASSWORD_MANAGER_ENABLE_SYNC)
 base::WeakPtr<syncer::SyncableService>
-    PasswordStore::GetPasswordSyncableService() {
+PasswordStore::GetPasswordSyncableService() {
   DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
   DCHECK(syncable_service_);
   return syncable_service_->AsWeakPtr();
 }
 #endif
 
-PasswordStore::~PasswordStore() { DCHECK(shutdown_called_); }
+PasswordStore::~PasswordStore() {
+  DCHECK(shutdown_called_);
+}
 
 scoped_refptr<base::SingleThreadTaskRunner>
 PasswordStore::GetBackgroundTaskRunner() {
@@ -242,10 +243,9 @@ void PasswordStore::NotifyLoginsChanged(
   }
 }
 
-template<typename BackendFunc>
-void PasswordStore::Schedule(
-    BackendFunc func,
-    PasswordStoreConsumer* consumer) {
+template <typename BackendFunc>
+void PasswordStore::Schedule(BackendFunc func,
+                             PasswordStoreConsumer* consumer) {
   GetLoginsRequest* request = new GetLoginsRequest(consumer);
   consumer->cancelable_task_tracker()->PostTask(
       GetBackgroundTaskRunner().get(),

@@ -7,11 +7,11 @@
 namespace password_manager {
 
 MockPasswordStore::MockPasswordStore()
-    : PasswordStore(
-        base::MessageLoopProxy::current(),
-        base::MessageLoopProxy::current()) {
+    : PasswordStore(base::MessageLoopProxy::current(),
+                    base::MessageLoopProxy::current()) {
 }
 
-MockPasswordStore::~MockPasswordStore() {}
+MockPasswordStore::~MockPasswordStore() {
+}
 
 }  // namespace password_manager

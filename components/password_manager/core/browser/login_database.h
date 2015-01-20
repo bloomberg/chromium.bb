@@ -87,13 +87,11 @@ class LoginDatabase {
 
   // Loads the complete list of autofillable password forms (i.e., not blacklist
   // entries) into |forms|. The caller owns |forms| after the call.
-  bool GetAutofillableLogins(
-      std::vector<autofill::PasswordForm*>* forms) const;
+  bool GetAutofillableLogins(std::vector<autofill::PasswordForm*>* forms) const;
 
   // Loads the complete list of blacklist forms into |forms|. The caller owns
   // |forms| after the call.
-  bool GetBlacklistLogins(
-      std::vector<autofill::PasswordForm*>* forms) const;
+  bool GetBlacklistLogins(std::vector<autofill::PasswordForm*>* forms) const;
 
   // Deletes the login database file on disk, and creates a new, empty database.
   // This can be used after migrating passwords to some other store, to ensure
@@ -144,7 +142,8 @@ class LoginDatabase {
   // Loads all logins whose blacklist setting matches |blacklisted| into
   // |forms|.
   bool GetAllLoginsWithBlacklistSetting(
-      bool blacklisted, std::vector<autofill::PasswordForm*>* forms) const;
+      bool blacklisted,
+      std::vector<autofill::PasswordForm*>* forms) const;
 
   base::FilePath db_path_;
   mutable sql::Connection db_;

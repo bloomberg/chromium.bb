@@ -20,16 +20,19 @@ PasswordGenerationManager::PasswordGenerationManager(
     : client_(client), driver_(driver) {
 }
 
-PasswordGenerationManager::~PasswordGenerationManager() {}
+PasswordGenerationManager::~PasswordGenerationManager() {
+}
 
 void PasswordGenerationManager::DetectAccountCreationForms(
     const std::vector<autofill::FormStructure*>& forms) {
   std::vector<autofill::FormData> account_creation_forms;
   for (std::vector<autofill::FormStructure*>::const_iterator form_it =
-           forms.begin(); form_it != forms.end(); ++form_it) {
+           forms.begin();
+       form_it != forms.end(); ++form_it) {
     autofill::FormStructure* form = *form_it;
     for (std::vector<autofill::AutofillField*>::const_iterator field_it =
-             form->begin(); field_it != form->end(); ++field_it) {
+             form->begin();
+         field_it != form->end(); ++field_it) {
       autofill::AutofillField* field = *field_it;
       if (field->server_type() == autofill::ACCOUNT_CREATION_PASSWORD) {
         account_creation_forms.push_back(form->ToFormData());

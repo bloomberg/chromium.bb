@@ -9,16 +9,19 @@
 
 namespace password_manager {
 
-StubPasswordManagerClient::StubPasswordManagerClient() {}
+StubPasswordManagerClient::StubPasswordManagerClient() {
+}
 
-StubPasswordManagerClient::~StubPasswordManagerClient() {}
+StubPasswordManagerClient::~StubPasswordManagerClient() {
+}
 
 std::string StubPasswordManagerClient::GetSyncUsername() const {
   return std::string();
 }
 
 bool StubPasswordManagerClient::IsSyncAccountCredential(
-    const std::string& username, const std::string& origin) const {
+    const std::string& username,
+    const std::string& origin) const {
   return false;
 }
 
@@ -45,10 +48,15 @@ bool StubPasswordManagerClient::PromptUserToChooseCredentials(
 }
 
 void StubPasswordManagerClient::AutomaticPasswordSave(
-    scoped_ptr<PasswordFormManager> saved_manager) {}
+    scoped_ptr<PasswordFormManager> saved_manager) {
+}
 
-PrefService* StubPasswordManagerClient::GetPrefs() { return NULL; }
+PrefService* StubPasswordManagerClient::GetPrefs() {
+  return NULL;
+}
 
-PasswordStore* StubPasswordManagerClient::GetPasswordStore() { return NULL; }
+PasswordStore* StubPasswordManagerClient::GetPasswordStore() {
+  return NULL;
+}
 
 }  // namespace password_manager

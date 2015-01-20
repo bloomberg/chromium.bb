@@ -27,8 +27,8 @@ class StubPasswordManagerClient : public PasswordManagerClient {
   bool PromptUserToChooseCredentials(
       const std::vector<autofill::PasswordForm*>& local_forms,
       const std::vector<autofill::PasswordForm*>& federated_forms,
-      base::Callback<void(const password_manager::CredentialInfo&)>
-          callback) override;
+      base::Callback<void(const password_manager::CredentialInfo&)> callback)
+      override;
   void AutomaticPasswordSave(
       scoped_ptr<PasswordFormManager> saved_manager) override;
   PrefService* GetPrefs() override;

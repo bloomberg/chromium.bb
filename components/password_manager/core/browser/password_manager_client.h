@@ -61,8 +61,8 @@ class PasswordManagerClient {
 
   // Returns true if |username| and |origin| correspond to the account which is
   // syncing.
-  virtual bool IsSyncAccountCredential(
-      const std::string& username, const std::string& origin) const = 0;
+  virtual bool IsSyncAccountCredential(const std::string& username,
+                                       const std::string& origin) const = 0;
 
   // This should be called if the password manager encounters a problem on
   // |url|. The implementation should show the "Allow to collect URL?" bubble

@@ -50,9 +50,7 @@ class CSVParser {
   // Consumes the EOL terminator. Returns false on syntax error.
   bool ParseNextCSVRow(std::vector<std::string>* fields);
 
-  bool HasMoreRows() const {
-    return !remaining_csv_piece_.empty();
-  }
+  bool HasMoreRows() const { return !remaining_csv_piece_.empty(); }
 
  private:
   re2::StringPiece remaining_csv_piece_;

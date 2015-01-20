@@ -138,10 +138,7 @@ void LogDynamicUMAStat(const std::string& name,
                        int max,
                        int bucket_size) {
   base::HistogramBase* counter = base::Histogram::FactoryGet(
-      name,
-      min,
-      max,
-      bucket_size,
+      name, min, max, bucket_size,
       base::HistogramBase::kUmaTargetedHistogramFlag);
   counter->Add(sample);
 }
@@ -230,13 +227,13 @@ bool LoginDatabase::MigrateOldVersionsAsNeeded() {
         return false;
       }
       meta_table_.SetVersionNumber(2);
-      // Fall through.
+    // Fall through.
     case 2:
       if (!db_.Execute("ALTER TABLE logins ADD COLUMN times_used INTEGER")) {
         return false;
       }
       meta_table_.SetVersionNumber(3);
-      // Fall through.
+    // Fall through.
     case 3:
       // We need to check if the column exists because of
       // https://crbug.com/295851
@@ -245,20 +242,20 @@ bool LoginDatabase::MigrateOldVersionsAsNeeded() {
         return false;
       }
       meta_table_.SetVersionNumber(4);
-      // Fall through.
+    // Fall through.
     case 4:
       if (!db_.Execute(
-          "ALTER TABLE logins ADD COLUMN use_additional_auth INTEGER")) {
+              "ALTER TABLE logins ADD COLUMN use_additional_auth INTEGER")) {
         return false;
       }
       meta_table_.SetVersionNumber(5);
-      // Fall through.
+    // Fall through.
     case 5:
       if (!db_.Execute("ALTER TABLE logins ADD COLUMN date_synced INTEGER")) {
         return false;
       }
       meta_table_.SetVersionNumber(6);
-      // Fall through.
+    // Fall through.
     case 6:
       if (!db_.Execute("ALTER TABLE logins ADD COLUMN display_name VARCHAR") ||
           !db_.Execute("ALTER TABLE logins ADD COLUMN avatar_url VARCHAR") ||
@@ -268,7 +265,7 @@ bool LoginDatabase::MigrateOldVersionsAsNeeded() {
         return false;
       }
       meta_table_.SetVersionNumber(7);
-      // Fall through.
+    // Fall through.
     case 7: {
       // Keep version 8 around even though no changes are made. See
       // crbug.com/423716 for context.
@@ -328,33 +325,34 @@ bool LoginDatabase::MigrateOldVersionsAsNeeded() {
 
 bool LoginDatabase::InitLoginsTable() {
   if (!db_.DoesTableExist("logins")) {
-    if (!db_.Execute("CREATE TABLE logins ("
-                     "origin_url VARCHAR NOT NULL, "
-                     "action_url VARCHAR, "
-                     "username_element VARCHAR, "
-                     "username_value VARCHAR, "
-                     "password_element VARCHAR, "
-                     "password_value BLOB, "
-                     "submit_element VARCHAR, "
-                     "signon_realm VARCHAR NOT NULL,"
-                     "ssl_valid INTEGER NOT NULL,"
-                     "preferred INTEGER NOT NULL,"
-                     "date_created INTEGER NOT NULL,"
-                     "blacklisted_by_user INTEGER NOT NULL,"
-                     "scheme INTEGER NOT NULL,"
-                     "password_type INTEGER,"
-                     "possible_usernames BLOB,"
-                     "times_used INTEGER,"
-                     "form_data BLOB,"
-                     "date_synced INTEGER,"
-                     "display_name VARCHAR,"
-                     "avatar_url VARCHAR,"
-                     "federation_url VARCHAR,"
-                     "is_zero_click INTEGER,"
-                     "UNIQUE "
-                     "(origin_url, username_element, "
-                     "username_value, password_element, "
-                     "submit_element, signon_realm))")) {
+    if (!db_.Execute(
+            "CREATE TABLE logins ("
+            "origin_url VARCHAR NOT NULL, "
+            "action_url VARCHAR, "
+            "username_element VARCHAR, "
+            "username_value VARCHAR, "
+            "password_element VARCHAR, "
+            "password_value BLOB, "
+            "submit_element VARCHAR, "
+            "signon_realm VARCHAR NOT NULL,"
+            "ssl_valid INTEGER NOT NULL,"
+            "preferred INTEGER NOT NULL,"
+            "date_created INTEGER NOT NULL,"
+            "blacklisted_by_user INTEGER NOT NULL,"
+            "scheme INTEGER NOT NULL,"
+            "password_type INTEGER,"
+            "possible_usernames BLOB,"
+            "times_used INTEGER,"
+            "form_data BLOB,"
+            "date_synced INTEGER,"
+            "display_name VARCHAR,"
+            "avatar_url VARCHAR,"
+            "federation_url VARCHAR,"
+            "is_zero_click INTEGER,"
+            "UNIQUE "
+            "(origin_url, username_element, "
+            "username_value, password_element, "
+            "submit_element, signon_realm))")) {
       NOTREACHED();
       return false;
     }
@@ -420,15 +418,14 @@ void LoginDatabase::ReportMetrics(const std::string& sync_username,
                  blacklisted_sites);
 
   sql::Statement usage_statement(db_.GetCachedStatement(
-      SQL_FROM_HERE,
-      "SELECT password_type, times_used FROM logins"));
+      SQL_FROM_HERE, "SELECT password_type, times_used FROM logins"));
 
   if (!usage_statement.is_valid())
     return;
 
   while (usage_statement.Step()) {
-    PasswordForm::Type type = static_cast<PasswordForm::Type>(
-        usage_statement.ColumnInt(0));
+    PasswordForm::Type type =
+        static_cast<PasswordForm::Type>(usage_statement.ColumnInt(0));
 
     if (type == PasswordForm::TYPE_GENERATED) {
       LogTimesUsedStat(base::StringPrintf(
@@ -474,11 +471,12 @@ PasswordStoreChangeList LoginDatabase::AddLogin(const PasswordForm& form) {
     return list;
   std::string encrypted_password;
   if (EncryptedString(form.password_value, &encrypted_password) !=
-          ENCRYPTION_RESULT_SUCCESS)
+      ENCRYPTION_RESULT_SUCCESS)
     return list;
 
   // You *must* change LoginTableColumns if this query changes.
-  sql::Statement s(db_.GetCachedStatement(SQL_FROM_HERE,
+  sql::Statement s(db_.GetCachedStatement(
+      SQL_FROM_HERE,
       "INSERT INTO logins "
       "(origin_url, action_url, username_element, username_value, "
       " password_element, password_value, submit_element, "
@@ -496,7 +494,8 @@ PasswordStoreChangeList LoginDatabase::AddLogin(const PasswordForm& form) {
     return list;
   }
   // Repeat the same statement but with REPLACE semantic.
-  s.Assign(db_.GetCachedStatement(SQL_FROM_HERE,
+  s.Assign(db_.GetCachedStatement(
+      SQL_FROM_HERE,
       "INSERT OR REPLACE INTO logins "
       "(origin_url, action_url, username_element, username_value, "
       " password_element, password_value, submit_element, "
@@ -516,7 +515,7 @@ PasswordStoreChangeList LoginDatabase::AddLogin(const PasswordForm& form) {
 PasswordStoreChangeList LoginDatabase::UpdateLogin(const PasswordForm& form) {
   std::string encrypted_password;
   if (EncryptedString(form.password_value, &encrypted_password) !=
-          ENCRYPTION_RESULT_SUCCESS)
+      ENCRYPTION_RESULT_SUCCESS)
     return PasswordStoreChangeList();
 
   // Replacement is necessary to deal with updating imported credentials. See
@@ -588,13 +587,13 @@ bool LoginDatabase::RemoveLogin(const PasswordForm& form) {
   }
   // Remove a login by UNIQUE-constrained fields.
   sql::Statement s(db_.GetCachedStatement(SQL_FROM_HERE,
-      "DELETE FROM logins WHERE "
-      "origin_url = ? AND "
-      "username_element = ? AND "
-      "username_value = ? AND "
-      "password_element = ? AND "
-      "submit_element = ? AND "
-      "signon_realm = ? "));
+                                          "DELETE FROM logins WHERE "
+                                          "origin_url = ? AND "
+                                          "username_element = ? AND "
+                                          "username_value = ? AND "
+                                          "password_element = ? AND "
+                                          "submit_element = ? AND "
+                                          "signon_realm = ? "));
   s.BindString(0, form.origin.spec());
   s.BindString16(1, form.username_element);
   s.BindString16(2, form.username_value);
@@ -677,8 +676,8 @@ LoginDatabase::EncryptionResult LoginDatabase::InitPasswordFormFromStatement(
     PickleIterator form_data_iter(form_data_pickle);
     autofill::DeserializeFormData(&form_data_iter, &form->form_data);
   }
-  form->date_synced = base::Time::FromInternalValue(
-      s.ColumnInt64(COLUMN_DATE_SYNCED));
+  form->date_synced =
+      base::Time::FromInternalValue(s.ColumnInt64(COLUMN_DATE_SYNCED));
   form->display_name = s.ColumnString16(COLUMN_DISPLAY_NAME);
   form->avatar_url = GURL(s.ColumnString(COLUMN_AVATAR_URL));
   form->federation_url = GURL(s.ColumnString(COLUMN_FEDERATION_URL));
@@ -690,7 +689,8 @@ bool LoginDatabase::GetLogins(const PasswordForm& form,
                               std::vector<PasswordForm*>* forms) const {
   DCHECK(forms);
   // You *must* change LoginTableColumns if this query changes.
-  const std::string sql_query = "SELECT origin_url, action_url, "
+  const std::string sql_query =
+      "SELECT origin_url, action_url, "
       "username_element, username_value, "
       "password_element, password_value, submit_element, "
       "signon_realm, ssl_valid, preferred, date_created, blacklisted_by_user, "
@@ -785,7 +785,8 @@ bool LoginDatabase::GetLoginsCreatedBetween(
     const base::Time end,
     std::vector<autofill::PasswordForm*>* forms) const {
   DCHECK(forms);
-  sql::Statement s(db_.GetCachedStatement(SQL_FROM_HERE,
+  sql::Statement s(db_.GetCachedStatement(
+      SQL_FROM_HERE,
       "SELECT origin_url, action_url, "
       "username_element, username_value, "
       "password_element, password_value, submit_element, "
@@ -856,10 +857,12 @@ bool LoginDatabase::GetBlacklistLogins(
 }
 
 bool LoginDatabase::GetAllLoginsWithBlacklistSetting(
-    bool blacklisted, std::vector<PasswordForm*>* forms) const {
+    bool blacklisted,
+    std::vector<PasswordForm*>* forms) const {
   DCHECK(forms);
   // You *must* change LoginTableColumns if this query changes.
-  sql::Statement s(db_.GetCachedStatement(SQL_FROM_HERE,
+  sql::Statement s(db_.GetCachedStatement(
+      SQL_FROM_HERE,
       "SELECT origin_url, action_url, "
       "username_element, username_value, "
       "password_element, password_value, submit_element, "

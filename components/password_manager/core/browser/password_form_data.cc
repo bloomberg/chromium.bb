@@ -10,8 +10,7 @@ using autofill::PasswordForm;
 
 namespace password_manager {
 
-PasswordForm* CreatePasswordFormFromData(
-    const PasswordFormData& form_data) {
+PasswordForm* CreatePasswordFormFromData(const PasswordFormData& form_data) {
   PasswordForm* form = new PasswordForm();
   form->scheme = form_data.scheme;
   form->preferred = form_data.preferred;
@@ -41,9 +40,8 @@ PasswordForm* CreatePasswordFormFromData(
 
 typedef std::set<const autofill::PasswordForm*> SetOfForms;
 
-bool ContainsSamePasswordFormsPtr(
-    const std::vector<PasswordForm*>& first,
-    const std::vector<PasswordForm*>& second) {
+bool ContainsSamePasswordFormsPtr(const std::vector<PasswordForm*>& first,
+                                  const std::vector<PasswordForm*>& second) {
   if (first.size() != second.size())
     return false;
 
@@ -52,8 +50,8 @@ bool ContainsSamePasswordFormsPtr(
   // into a set rather than std::copy that is used below.
   // Need to revert this once STLport is fixed.
   SetOfForms expectations;
-  std::copy(first.begin(), first.end(), std::inserter(expectations,
-                                                      expectations.begin()));
+  std::copy(first.begin(), first.end(),
+            std::inserter(expectations, expectations.begin()));
   for (unsigned int i = 0; i < second.size(); ++i) {
     const PasswordForm* actual = second[i];
     bool found_match = false;
@@ -74,9 +72,8 @@ bool ContainsSamePasswordFormsPtr(
   return true;
 }
 
-bool ContainsSamePasswordForms(
-    std::vector<autofill::PasswordForm>& first,
-    std::vector<autofill::PasswordForm>& second) {
+bool ContainsSamePasswordForms(std::vector<autofill::PasswordForm>& first,
+                               std::vector<autofill::PasswordForm>& second) {
   std::vector<PasswordForm*> first_ptr;
   for (unsigned int i = 0; i < first.size(); ++i) {
     first_ptr.push_back(&first[i]);

@@ -127,8 +127,7 @@ TEST_F(PasswordAutofillManagerTest, FillSuggestion) {
       fill_data_id(), test_username_));
   testing::Mock::VerifyAndClearExpectations(client->mock_driver());
 
-  EXPECT_CALL(*client->mock_driver(),
-              FillSuggestion(_, _)).Times(0);
+  EXPECT_CALL(*client->mock_driver(), FillSuggestion(_, _)).Times(0);
   EXPECT_FALSE(password_autofill_manager_->FillSuggestionForTest(
       fill_data_id(), base::ASCIIToUTF16(kInvalidUsername)));
 

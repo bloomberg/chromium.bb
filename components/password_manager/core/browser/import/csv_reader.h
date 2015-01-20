@@ -36,6 +36,6 @@ bool ReadCSV(base::StringPiece csv,
              std::vector<std::string>* column_names,
              std::vector<std::map<std::string, std::string>>* records);
 
-} // namespace password_manager
+}  // namespace password_manager
 
 #endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_EXPORT_CSV_READER_H_

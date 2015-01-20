@@ -55,8 +55,7 @@ bool CanonicalizeWebFacetURI(const std::string& input_uri,
       &canonical_output, &canonical_parsed);
   canonical_output.Complete();
 
-  if (canonicalization_succeeded &&
-      canonical_parsed.host.is_nonempty() &&
+  if (canonicalization_succeeded && canonical_parsed.host.is_nonempty() &&
       !canonical_parsed.username.is_valid() &&
       !canonical_parsed.password.is_valid() &&
       ComponentString(*canonical_uri, canonical_parsed.path) == "/" &&
@@ -98,8 +97,8 @@ bool CanonicalizeHashComponent(const base::StringPiece& input_hash,
 
   if (!base64_encoded_hash.empty() &&
       CanonicalizeBase64Padding(&base64_encoded_hash) &&
-      ContainsOnlyAlphanumericAnd(
-          base64_encoded_hash, kBase64NonAlphanumericChars)) {
+      ContainsOnlyAlphanumericAnd(base64_encoded_hash,
+                                  kBase64NonAlphanumericChars)) {
     canonical_output->Append(base64_encoded_hash.data(),
                              base64_encoded_hash.size());
     canonical_output->push_back('@');
@@ -122,8 +121,8 @@ bool CanonicalizePackageNameComponent(
 
   // TODO(engedy): We might want to use a regex to check this more throughly.
   if (!package_name.empty() &&
-      ContainsOnlyAlphanumericAnd(
-          package_name, kPackageNameNonAlphanumericChars)) {
+      ContainsOnlyAlphanumericAnd(package_name,
+                                  kPackageNameNonAlphanumericChars)) {
     canonical_output->Append(package_name.data(), package_name.size());
     return true;
   }

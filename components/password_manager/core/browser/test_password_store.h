@@ -23,7 +23,7 @@ class TestPasswordStore : public PasswordStore {
   TestPasswordStore();
 
   typedef std::map<std::string /* signon_realm */,
-                   std::vector<autofill::PasswordForm> > PasswordMap;
+                   std::vector<autofill::PasswordForm>> PasswordMap;
 
   const PasswordMap& stored_passwords() const;
   void Clear();

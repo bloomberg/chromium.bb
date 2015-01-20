@@ -83,16 +83,16 @@ void CredentialManagerClient::OnSendCredential(int request_id,
   scoped_ptr<blink::WebCredential> credential = nullptr;
   switch (info.type) {
     case CredentialType::CREDENTIAL_TYPE_FEDERATED:
-    credential.reset(new blink::WebFederatedCredential(
-        info.id, info.name, info.avatar, info.federation));
-    break;
+      credential.reset(new blink::WebFederatedCredential(
+          info.id, info.name, info.avatar, info.federation));
+      break;
     case CredentialType::CREDENTIAL_TYPE_LOCAL:
-    credential.reset(new blink::WebLocalCredential(info.id, info.name,
-                                                   info.avatar, info.password));
-    break;
+      credential.reset(new blink::WebLocalCredential(
+          info.id, info.name, info.avatar, info.password));
+      break;
     case CredentialType::CREDENTIAL_TYPE_EMPTY:
-    // Intentionally empty; we'll send nullptr to the onSuccess call below.
-    break;
+      // Intentionally empty; we'll send nullptr to the onSuccess call below.
+      break;
   }
   callbacks->onSuccess(credential.get());
   request_callbacks_.Remove(request_id);

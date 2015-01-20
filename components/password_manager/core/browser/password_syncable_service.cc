@@ -65,9 +65,12 @@ bool AreLocalAndSyncPasswordsEqual(
 syncer::SyncChange::SyncChangeType GetSyncChangeType(
     PasswordStoreChange::Type type) {
   switch (type) {
-    case PasswordStoreChange::ADD: return syncer::SyncChange::ACTION_ADD;
-    case PasswordStoreChange::UPDATE: return syncer::SyncChange::ACTION_UPDATE;
-    case PasswordStoreChange::REMOVE: return syncer::SyncChange::ACTION_DELETE;
+    case PasswordStoreChange::ADD:
+      return syncer::SyncChange::ACTION_ADD;
+    case PasswordStoreChange::UPDATE:
+      return syncer::SyncChange::ACTION_UPDATE;
+    case PasswordStoreChange::REMOVE:
+      return syncer::SyncChange::ACTION_DELETE;
   }
   NOTREACHED();
   return syncer::SyncChange::ACTION_INVALID;
@@ -103,10 +106,14 @@ struct PasswordSyncableService::SyncEntries {
   ScopedVector<autofill::PasswordForm>* EntriesForChangeType(
       syncer::SyncChange::SyncChangeType type) {
     switch (type) {
-      case syncer::SyncChange::ACTION_ADD: return &new_entries;
-      case syncer::SyncChange::ACTION_UPDATE: return &updated_entries;
-      case syncer::SyncChange::ACTION_DELETE: return &deleted_entries;
-      case syncer::SyncChange::ACTION_INVALID: return NULL;
+      case syncer::SyncChange::ACTION_ADD:
+        return &new_entries;
+      case syncer::SyncChange::ACTION_UPDATE:
+        return &updated_entries;
+      case syncer::SyncChange::ACTION_DELETE:
+        return &deleted_entries;
+      case syncer::SyncChange::ACTION_INVALID:
+        return NULL;
     }
     NOTREACHED();
     return NULL;
@@ -126,11 +133,11 @@ struct PasswordSyncableService::SyncEntries {
 
 PasswordSyncableService::PasswordSyncableService(
     PasswordStoreSync* password_store)
-    : password_store_(password_store),
-      is_processing_sync_changes_(false) {
+    : password_store_(password_store), is_processing_sync_changes_(false) {
 }
 
-PasswordSyncableService::~PasswordSyncableService() {}
+PasswordSyncableService::~PasswordSyncableService() {
+}
 
 syncer::SyncMergeResult PasswordSyncableService::MergeDataAndStartSyncing(
     syncer::ModelType type,
@@ -149,8 +156,7 @@ syncer::SyncMergeResult PasswordSyncableService::MergeDataAndStartSyncing(
   PasswordEntryMap new_local_entries;
   if (!ReadFromPasswordStore(&password_entries, &new_local_entries)) {
     merge_result.set_error(sync_error_factory->CreateAndUploadError(
-        FROM_HERE,
-        "Failed to get passwords from store."));
+        FROM_HERE, "Failed to get passwords from store."));
     return merge_result;
   }
 
@@ -247,8 +253,7 @@ syncer::SyncError PasswordSyncableService::ProcessSyncChanges(
         sync_entries.EntriesForChangeType(it->change_type());
     if (!entries) {
       return sync_error_factory_->CreateAndUploadError(
-          FROM_HERE,
-          "Failed to process sync changes for passwords datatype.");
+          FROM_HERE, "Failed to process sync changes for passwords datatype.");
     }
     AppendPasswordFromSpecifics(
         specifics.password().client_only_encrypted_data(), time_now, entries);
@@ -312,8 +317,8 @@ bool PasswordSyncableService::ReadFromPasswordStore(
   PasswordEntryMap& entry_map = *passwords_entry_map;
   for (PasswordForms::iterator it = password_entries->begin();
        it != password_entries->end(); ++it) {
-     autofill::PasswordForm* password_form = *it;
-     entry_map[MakePasswordSyncTag(*password_form)] = password_form;
+    autofill::PasswordForm* password_form = *it;
+    entry_map[MakePasswordSyncTag(*password_form)] = password_form;
   }
 
   return true;
@@ -374,7 +379,7 @@ void PasswordSyncableService::CreateOrUpdateEntry(
         *existing_local_entry_iter->second;
     if (!AreLocalAndSyncPasswordsEqual(password_specifics, password_form)) {
       if (base::Time::FromInternalValue(password_specifics.date_created()) <
-              password_form.date_created) {
+          password_form.date_created) {
         updated_db_entries->push_back(
             syncer::SyncChange(FROM_HERE,
                                syncer::SyncChange::ACTION_UPDATE,
@@ -406,8 +411,8 @@ void PasswordSyncableService::WriteEntriesToDatabase(
     DatabaseOperation operation,
     const PasswordForms& entries,
     PasswordStoreChangeList* all_changes) {
-  for (PasswordForms::const_iterator it = entries.begin();
-       it != entries.end(); ++it) {
+  for (PasswordForms::const_iterator it = entries.begin(); it != entries.end();
+       ++it) {
     PasswordStoreChangeList new_changes = (password_store_->*operation)(**it);
     all_changes->insert(all_changes->end(),
                         new_changes.begin(),
@@ -420,9 +425,9 @@ syncer::SyncData SyncDataFromPassword(
   sync_pb::EntitySpecifics password_data;
   sync_pb::PasswordSpecificsData* password_specifics =
       password_data.mutable_password()->mutable_client_only_encrypted_data();
-#define CopyField(field) password_specifics->set_ ## field(password_form.field)
+#define CopyField(field) password_specifics->set_##field(password_form.field)
 #define CopyStringField(field) \
-    password_specifics->set_ ## field(base::UTF16ToUTF8(password_form.field))
+  password_specifics->set_##field(base::UTF16ToUTF8(password_form.field))
   CopyField(scheme);
   CopyField(signon_realm);
   password_specifics->set_origin(password_form.origin.spec());

@@ -64,10 +64,9 @@ void CSVFormatter::EndLine() {
 
 namespace password_manager {
 
-void WriteCSV(
-    const std::vector<std::string>& column_names,
-    const std::vector<std::map<std::string, std::string>>& records,
-    std::string* csv) {
+void WriteCSV(const std::vector<std::string>& column_names,
+              const std::vector<std::map<std::string, std::string>>& records,
+              std::string* csv) {
   DCHECK(csv);
   csv->clear();
 

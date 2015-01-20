@@ -52,8 +52,8 @@ class TestPasswordManagerClient
   bool PromptUserToChooseCredentials(
       const std::vector<autofill::PasswordForm*>& local_forms,
       const std::vector<autofill::PasswordForm*>& federated_forms,
-      base::Callback<void(const password_manager::CredentialInfo&)>
-          callback) override {
+      base::Callback<void(const password_manager::CredentialInfo&)> callback)
+      override {
     EXPECT_FALSE(local_forms.empty() && federated_forms.empty());
     did_prompt_user_to_choose_ = true;
     ScopedVector<autofill::PasswordForm> local_entries;
@@ -62,8 +62,8 @@ class TestPasswordManagerClient
     federated_entries.assign(federated_forms.begin(), federated_forms.end());
     // TODO(vasilii): Do something clever with |federated_forms|.
     password_manager::CredentialInfo info(*local_entries[0]);
-    base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(callback,
-                                                                 info));
+    base::MessageLoop::current()->PostTask(FROM_HERE,
+                                           base::Bind(callback, info));
     return true;
   }
 
@@ -128,10 +128,8 @@ class CredentialManagerDispatcherTest
     content::RenderViewHostTestHarness::SetUp();
     store_ = new TestPasswordStore;
     client_.reset(new TestPasswordManagerClient(store_.get()));
-    dispatcher_.reset(
-        new TestCredentialManagerDispatcher(web_contents(),
-                                                   client_.get(),
-                                                   &stub_driver_));
+    dispatcher_.reset(new TestCredentialManagerDispatcher(
+        web_contents(), client_.get(), &stub_driver_));
 
     NavigateAndCommit(GURL("https://example.com/test.html"));
 
@@ -169,8 +167,7 @@ class CredentialManagerDispatcherTest
   StubPasswordManagerDriver stub_driver_;
 };
 
-TEST_F(CredentialManagerDispatcherTest,
-       CredentialManagerOnNotifyFailedSignIn) {
+TEST_F(CredentialManagerDispatcherTest, CredentialManagerOnNotifyFailedSignIn) {
   CredentialInfo info;
   info.type = CredentialType::CREDENTIAL_TYPE_LOCAL;
   dispatcher()->OnNotifyFailedSignIn(kRequestId, info);
@@ -182,8 +179,7 @@ TEST_F(CredentialManagerDispatcherTest,
   process()->sink().ClearMessages();
 }
 
-TEST_F(CredentialManagerDispatcherTest,
-       CredentialManagerOnNotifySignedIn) {
+TEST_F(CredentialManagerDispatcherTest, CredentialManagerOnNotifySignedIn) {
   CredentialInfo info(form_);
   dispatcher()->OnNotifySignedIn(kRequestId, info);
 
@@ -210,8 +206,7 @@ TEST_F(CredentialManagerDispatcherTest,
   EXPECT_EQ(autofill::PasswordForm::SCHEME_HTML, new_form.scheme);
 }
 
-TEST_F(CredentialManagerDispatcherTest,
-       CredentialManagerOnNotifySignedOut) {
+TEST_F(CredentialManagerDispatcherTest, CredentialManagerOnNotifySignedOut) {
   dispatcher()->OnNotifySignedOut(kRequestId);
 
   const uint32 kMsgID = CredentialManagerMsg_AcknowledgeSignedOut::ID;

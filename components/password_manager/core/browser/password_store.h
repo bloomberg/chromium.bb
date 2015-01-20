@@ -58,10 +58,7 @@ class PasswordStore : protected PasswordStoreSync,
  public:
   // Whether or not it's acceptable for Chrome to request access to locked
   // passwords, which requires prompting the user for permission.
-  enum AuthorizationPromptPolicy {
-    ALLOW_PROMPT,
-    DISALLOW_PROMPT
-  };
+  enum AuthorizationPromptPolicy { ALLOW_PROMPT, DISALLOW_PROMPT };
 
   // PasswordForm vector elements are meant to be owned by the
   // PasswordStoreConsumer. However, if the request is canceled after the
@@ -95,7 +92,7 @@ class PasswordStore : protected PasswordStoreSync,
     // thread and consumed on the UI thread.
     // TODO(dubroy): Remove this, and instead pass the vector directly to the
     // backend methods.
-    scoped_ptr< std::vector<autofill::PasswordForm*> > result_;
+    scoped_ptr<std::vector<autofill::PasswordForm*>> result_;
 
     base::ThreadChecker thread_checker_;
     scoped_refptr<base::MessageLoopProxy> origin_loop_;
@@ -116,9 +113,8 @@ class PasswordStore : protected PasswordStoreSync,
     virtual ~Observer() {}
   };
 
-  PasswordStore(
-      scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner);
+  PasswordStore(scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner,
+                scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner);
 
   // Reimplement this to add custom initialization. Always call this too.
   virtual bool Init(const syncer::SyncableService::StartSyncFlare& flare);
@@ -147,10 +143,9 @@ class PasswordStore : protected PasswordStoreSync,
   // platforms that support prompting the user for access (such as Mac OS).
   // NOTE: This means that this method can return different results depending
   // on the value of |prompt_policy|.
-  virtual void GetLogins(
-      const autofill::PasswordForm& form,
-      AuthorizationPromptPolicy prompt_policy,
-      PasswordStoreConsumer* consumer);
+  virtual void GetLogins(const autofill::PasswordForm& form,
+                         AuthorizationPromptPolicy prompt_policy,
+                         PasswordStoreConsumer* consumer);
 
   // Gets the complete list of PasswordForms that are not blacklist entries--and
   // are thus auto-fillable. |consumer| will be notified on completion.
@@ -229,10 +224,9 @@ class PasswordStore : protected PasswordStoreSync,
   // Should find all PasswordForms with the same signon_realm. The results
   // will then be scored by the PasswordFormManager. Once they are found
   // (or not), the consumer should be notified.
-  virtual void GetLoginsImpl(
-      const autofill::PasswordForm& form,
-      AuthorizationPromptPolicy prompt_policy,
-      const ConsumerCallbackRunner& callback_runner) = 0;
+  virtual void GetLoginsImpl(const autofill::PasswordForm& form,
+                             AuthorizationPromptPolicy prompt_policy,
+                             const ConsumerCallbackRunner& callback_runner) = 0;
 
   // Finds all non-blacklist PasswordForms, and notifies the consumer.
   virtual void GetAutofillableLoginsImpl(GetLoginsRequest* request) = 0;
@@ -267,7 +261,7 @@ class PasswordStore : protected PasswordStoreSync,
  private:
   // Schedule the given |func| to be run in the PasswordStore's own thread with
   // responses delivered to |consumer| on the current thread.
-  template<typename BackendFunc>
+  template <typename BackendFunc>
   void Schedule(BackendFunc func, PasswordStoreConsumer* consumer);
 
   // Wrapper method called on the destination thread (DB for non-mac) that
@@ -304,7 +298,7 @@ class PasswordStore : protected PasswordStoreSync,
 #endif
 
   // The observers.
-  scoped_refptr<ObserverListThreadSafe<Observer> > observers_;
+  scoped_refptr<ObserverListThreadSafe<Observer>> observers_;
 
   scoped_ptr<PasswordSyncableService> syncable_service_;
 

@@ -14,8 +14,7 @@ namespace password_manager {
 
 // Collects the logs for the password manager internals page and distributes
 // them to all open tabs with the internals page.
-class PasswordManagerInternalsService : public KeyedService,
-                                        public LogRouter {
+class PasswordManagerInternalsService : public KeyedService, public LogRouter {
  public:
   // There are only two ways in which the service depends on the BrowserContext:
   // 1) There is one service per each non-incognito BrowserContext.

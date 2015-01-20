@@ -59,10 +59,9 @@ void ReportMetrics(bool password_manager_enabled,
   PasswordStore* store = client->GetPasswordStore();
   // May be NULL in tests.
   if (store) {
-    store->ReportMetrics(
-        client->GetSyncUsername(),
-        client->IsPasswordSyncEnabled(
-            password_manager::ONLY_CUSTOM_PASSPHRASE));
+    store->ReportMetrics(client->GetSyncUsername(),
+                         client->IsPasswordSyncEnabled(
+                             password_manager::ONLY_CUSTOM_PASSPHRASE));
   }
   UMA_HISTOGRAM_BOOLEAN("PasswordManager.Enabled", password_manager_enabled);
 }
@@ -156,8 +155,7 @@ void PasswordManager::SetFormHasGeneratedPassword(
 
   for (ScopedVector<PasswordFormManager>::iterator iter =
            pending_login_managers_.begin();
-       iter != pending_login_managers_.end();
-       ++iter) {
+       iter != pending_login_managers_.end(); ++iter) {
     if ((*iter)->DoesManage(form) ==
         PasswordFormManager::RESULT_COMPLETE_MATCH) {
       (*iter)->SetHasGeneratedPassword();
@@ -230,8 +228,7 @@ void PasswordManager::ProvisionallySavePassword(const PasswordForm& form) {
   bool has_found_matching_managers_which_were_not_ready = false;
   for (ScopedVector<PasswordFormManager>::iterator iter =
            pending_login_managers_.begin();
-       iter != pending_login_managers_.end();
-       ++iter) {
+       iter != pending_login_managers_.end(); ++iter) {
     PasswordFormManager::MatchResultMask result = (*iter)->DoesManage(form);
 
     if (result == PasswordFormManager::RESULT_NO_MATCH)
@@ -302,8 +299,8 @@ void PasswordManager::ProvisionallySavePassword(const PasswordForm& form) {
   // Don't save credentials for the syncing account. See crbug.com/365832 for
   // background.
   if (ShouldDropSyncCredential() &&
-      client_->IsSyncAccountCredential(
-          base::UTF16ToUTF8(form.username_value), form.signon_realm)) {
+      client_->IsSyncAccountCredential(base::UTF16ToUTF8(form.username_value),
+                                       form.signon_realm)) {
     RecordFailure(SYNC_CREDENTIAL, form.origin, logger.get());
     return;
   }
@@ -442,8 +439,7 @@ void PasswordManager::CreatePendingLoginManagers(
   std::vector<PasswordFormManager*> old_login_managers(
       pending_login_managers_.get());
   for (std::vector<PasswordForm>::const_iterator iter = forms.begin();
-       iter != forms.end();
-       ++iter) {
+       iter != forms.end(); ++iter) {
     // Don't involve the password manager if this form corresponds to
     // SpdyProxy authentication, as indicated by the realm.
     if (EndsWith(iter->signon_realm, kSpdyProxyRealm, true))
@@ -528,8 +524,8 @@ void PasswordManager::OnPasswordFormsRendered(
 
   // If we see the login form again, then the login failed.
   if (did_stop_loading) {
-    if (provisional_save_manager_->pending_credentials().scheme
-        == PasswordForm::SCHEME_HTML) {
+    if (provisional_save_manager_->pending_credentials().scheme ==
+        PasswordForm::SCHEME_HTML) {
       for (size_t i = 0; i < all_visible_forms_.size(); ++i) {
         // TODO(vabr): The similarity check is just action equality up to
         // HTTP<->HTTPS substitution for now. If it becomes more complex, it may
@@ -624,8 +620,7 @@ void PasswordManager::PossiblyInitializeUsernamesExperiment(
 
   bool other_possible_usernames_exist = false;
   for (autofill::PasswordFormMap::const_iterator it = best_matches.begin();
-       it != best_matches.end();
-       ++it) {
+       it != best_matches.end(); ++it) {
     if (!it->second->other_possible_usernames.empty()) {
       other_possible_usernames_exist = true;
       break;

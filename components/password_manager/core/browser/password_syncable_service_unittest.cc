@@ -106,8 +106,8 @@ MATCHER_P(PasswordIs, form, "") {
 
 MATCHER_P2(SyncChangeIs, change_type, password, "") {
   const SyncData& data = arg.sync_data();
-  autofill::PasswordForm form = PasswordFromSpecifics(
-      GetPasswordSpecifics(data));
+  autofill::PasswordForm form =
+      PasswordFromSpecifics(GetPasswordSpecifics(data));
   return (arg.change_type() == change_type &&
           syncer::SyncDataLocal(data).GetTag() ==
               MakePasswordSyncTag(password) &&
@@ -183,8 +183,8 @@ class PasswordSyncableServiceWrapper {
  public:
   PasswordSyncableServiceWrapper() {
     password_store_ = new testing::StrictMock<MockPasswordStore>;
-    service_.reset(new MockPasswordSyncableService(
-        password_store_->GetSyncInterface()));
+    service_.reset(
+        new MockPasswordSyncableService(password_store_->GetSyncInterface()));
     ON_CALL(*password_store_, AddLoginImpl(HasDateSynced()))
         .WillByDefault(Return(PasswordStoreChangeList()));
     ON_CALL(*password_store_, RemoveLoginImpl(_))
@@ -194,9 +194,7 @@ class PasswordSyncableServiceWrapper {
     EXPECT_CALL(*password_store(), NotifyLoginsChanged(_)).Times(AnyNumber());
   }
 
-  ~PasswordSyncableServiceWrapper() {
-    password_store_->Shutdown();
-  }
+  ~PasswordSyncableServiceWrapper() { password_store_->Shutdown(); }
 
   MockPasswordStore* password_store() { return password_store_.get(); }
 
@@ -231,7 +229,6 @@ class PasswordSyncableServiceTest : public testing::Test {
   PasswordSyncableServiceWrapper wrapper_;
 };
 
-
 // Both sync and password db have data that are not present in the other.
 TEST_F(PasswordSyncableServiceTest, AdditionsInBoth) {
   autofill::PasswordForm form;
@@ -241,13 +238,12 @@ TEST_F(PasswordSyncableServiceTest, AdditionsInBoth) {
 
   SyncDataList list;
   list.push_back(CreateSyncData(kSignonRealm2));
-  autofill::PasswordForm new_from_sync = PasswordFromSpecifics(
-      GetPasswordSpecifics(list.back()));
+  autofill::PasswordForm new_from_sync =
+      PasswordFromSpecifics(GetPasswordSpecifics(list.back()));
 
   EXPECT_CALL(*password_store(), FillAutofillableLogins(_))
       .WillOnce(AppendForm(form));
-  EXPECT_CALL(*password_store(), FillBlacklistLogins(_))
-      .WillOnce(Return(true));
+  EXPECT_CALL(*password_store(), FillBlacklistLogins(_)).WillOnce(Return(true));
   EXPECT_CALL(*password_store(), AddLoginImpl(PasswordIs(new_from_sync)));
   EXPECT_CALL(*processor_, ProcessSyncChanges(_, ElementsAre(
       SyncChangeIs(SyncChange::ACTION_ADD, form))));
@@ -262,13 +258,12 @@ TEST_F(PasswordSyncableServiceTest, AdditionsInBoth) {
 TEST_F(PasswordSyncableServiceTest, AdditionOnlyInSync) {
   SyncDataList list;
   list.push_back(CreateSyncData(kSignonRealm));
-  autofill::PasswordForm new_from_sync = PasswordFromSpecifics(
-      GetPasswordSpecifics(list.back()));
+  autofill::PasswordForm new_from_sync =
+      PasswordFromSpecifics(GetPasswordSpecifics(list.back()));
 
   EXPECT_CALL(*password_store(), FillAutofillableLogins(_))
       .WillOnce(Return(true));
-  EXPECT_CALL(*password_store(), FillBlacklistLogins(_))
-      .WillOnce(Return(true));
+  EXPECT_CALL(*password_store(), FillBlacklistLogins(_)).WillOnce(Return(true));
   EXPECT_CALL(*password_store(), AddLoginImpl(PasswordIs(new_from_sync)));
   EXPECT_CALL(*processor_, ProcessSyncChanges(_, IsEmpty()));
 
@@ -291,8 +286,7 @@ TEST_F(PasswordSyncableServiceTest, AdditionOnlyInPasswordStore) {
   form.password_value = base::ASCIIToUTF16(kPassword);
   EXPECT_CALL(*password_store(), FillAutofillableLogins(_))
       .WillOnce(AppendForm(form));
-  EXPECT_CALL(*password_store(), FillBlacklistLogins(_))
-      .WillOnce(Return(true));
+  EXPECT_CALL(*password_store(), FillBlacklistLogins(_)).WillOnce(Return(true));
 
   EXPECT_CALL(*processor_, ProcessSyncChanges(_, ElementsAre(
       SyncChangeIs(SyncChange::ACTION_ADD, form))));
@@ -313,8 +307,7 @@ TEST_F(PasswordSyncableServiceTest, BothInSync) {
   form.password_value = base::ASCIIToUTF16(kPassword);
   EXPECT_CALL(*password_store(), FillAutofillableLogins(_))
       .WillOnce(AppendForm(form));
-  EXPECT_CALL(*password_store(), FillBlacklistLogins(_))
-      .WillOnce(Return(true));
+  EXPECT_CALL(*password_store(), FillBlacklistLogins(_)).WillOnce(Return(true));
 
   EXPECT_CALL(*processor_, ProcessSyncChanges(_, IsEmpty()));
 
@@ -340,8 +333,7 @@ TEST_F(PasswordSyncableServiceTest, Merge) {
   form2.preferred = false;
   EXPECT_CALL(*password_store(), FillAutofillableLogins(_))
       .WillOnce(AppendForm(form1));
-  EXPECT_CALL(*password_store(), FillBlacklistLogins(_))
-      .WillOnce(Return(true));
+  EXPECT_CALL(*password_store(), FillBlacklistLogins(_)).WillOnce(Return(true));
   EXPECT_CALL(*password_store(), UpdateLoginImpl(PasswordIs(form2)));
   EXPECT_CALL(*processor_, ProcessSyncChanges(_, IsEmpty()));
 
@@ -404,17 +396,16 @@ TEST_F(PasswordSyncableServiceTest, ProcessSyncChanges) {
   deleted_form.blacklisted_by_user = true;
 
   SyncData add_data = CreateSyncData(kSignonRealm3);
-  autofill::PasswordForm new_from_sync = PasswordFromSpecifics(
-      GetPasswordSpecifics(add_data));
+  autofill::PasswordForm new_from_sync =
+      PasswordFromSpecifics(GetPasswordSpecifics(add_data));
 
   SyncChangeList list;
-  list.push_back(SyncChange(FROM_HERE,
-                            syncer::SyncChange::ACTION_ADD,
-                            add_data));
-  list.push_back(CreateSyncChange(updated_form,
-                                  syncer::SyncChange::ACTION_UPDATE));
-  list.push_back(CreateSyncChange(deleted_form,
-                                  syncer::SyncChange::ACTION_DELETE));
+  list.push_back(
+      SyncChange(FROM_HERE, syncer::SyncChange::ACTION_ADD, add_data));
+  list.push_back(
+      CreateSyncChange(updated_form, syncer::SyncChange::ACTION_UPDATE));
+  list.push_back(
+      CreateSyncChange(deleted_form, syncer::SyncChange::ACTION_DELETE));
   EXPECT_CALL(*password_store(), AddLoginImpl(PasswordIs(new_from_sync)));
   EXPECT_CALL(*password_store(), UpdateLoginImpl(PasswordIs(updated_form)));
   EXPECT_CALL(*password_store(), RemoveLoginImpl(PasswordIs(deleted_form)));
@@ -444,13 +435,13 @@ TEST_F(PasswordSyncableServiceTest, GetAllSyncData) {
 
   SyncDataList actual_list = service()->GetAllSyncData(syncer::PASSWORDS);
   std::vector<autofill::PasswordForm> actual_form_list;
-  for (SyncDataList::iterator it = actual_list.begin();
-       it != actual_list.end(); ++it) {
+  for (SyncDataList::iterator it = actual_list.begin(); it != actual_list.end();
+       ++it) {
     actual_form_list.push_back(
         PasswordFromSpecifics(GetPasswordSpecifics(*it)));
   }
-  EXPECT_THAT(actual_form_list, UnorderedElementsAre(PasswordIs(form1),
-                                                     PasswordIs(form2)));
+  EXPECT_THAT(actual_form_list,
+              UnorderedElementsAre(PasswordIs(form1), PasswordIs(form2)));
 }
 
 // Creates 2 PasswordSyncableService instances, merges the content of the first
@@ -470,8 +461,7 @@ TEST_F(PasswordSyncableServiceTest, MergeDataAndPushBack) {
   form2.password_value = base::ASCIIToUTF16(kPassword);
   EXPECT_CALL(*password_store(), FillAutofillableLogins(_))
       .WillOnce(AppendForm(form1));
-  EXPECT_CALL(*password_store(), FillBlacklistLogins(_))
-      .WillOnce(Return(true));
+  EXPECT_CALL(*password_store(), FillBlacklistLogins(_)).WillOnce(Return(true));
   EXPECT_CALL(*other_service_wrapper.password_store(),
               FillAutofillableLogins(_)).WillOnce(AppendForm(form2));
   EXPECT_CALL(*other_service_wrapper.password_store(),

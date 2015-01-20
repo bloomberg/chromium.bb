@@ -28,14 +28,13 @@ using ::testing::Eq;
 namespace password_manager {
 namespace {
 PasswordStoreChangeList AddChangeForForm(const PasswordForm& form) {
-  return PasswordStoreChangeList(1,
-                                 PasswordStoreChange(PasswordStoreChange::ADD,
-                                                     form));
+  return PasswordStoreChangeList(
+      1, PasswordStoreChange(PasswordStoreChange::ADD, form));
 }
 
 PasswordStoreChangeList UpdateChangeForForm(const PasswordForm& form) {
-  return PasswordStoreChangeList(1, PasswordStoreChange(
-      PasswordStoreChange::UPDATE, form));
+  return PasswordStoreChangeList(
+      1, PasswordStoreChange(PasswordStoreChange::UPDATE, form));
 }
 
 void FormsAreEqual(const PasswordForm& expected, const PasswordForm& actual) {
@@ -675,15 +674,14 @@ TEST_F(LoginDatabaseTest, ClearPrivateData_SavedPasswords) {
   base::TimeDelta one_day = base::TimeDelta::FromDays(1);
 
   // Create one with a 0 time.
-  EXPECT_TRUE(AddTimestampedLogin(&db_, "http://1.com", "foo1",
-                                  base::Time(), true));
+  EXPECT_TRUE(
+      AddTimestampedLogin(&db_, "http://1.com", "foo1", base::Time(), true));
   // Create one for now and +/- 1 day.
-  EXPECT_TRUE(AddTimestampedLogin(&db_, "http://2.com", "foo2",
-                                  now - one_day, true));
-  EXPECT_TRUE(AddTimestampedLogin(&db_, "http://3.com", "foo3",
-                                  now, true));
-  EXPECT_TRUE(AddTimestampedLogin(&db_, "http://4.com", "foo4",
-                                  now + one_day, true));
+  EXPECT_TRUE(
+      AddTimestampedLogin(&db_, "http://2.com", "foo2", now - one_day, true));
+  EXPECT_TRUE(AddTimestampedLogin(&db_, "http://3.com", "foo3", now, true));
+  EXPECT_TRUE(
+      AddTimestampedLogin(&db_, "http://4.com", "foo4", now + one_day, true));
 
   // Verify inserts worked.
   EXPECT_TRUE(db_.GetAutofillableLogins(&result));
@@ -718,15 +716,14 @@ TEST_F(LoginDatabaseTest, RemoveLoginsSyncedBetween) {
   base::TimeDelta one_day = base::TimeDelta::FromDays(1);
 
   // Create one with a 0 time.
-  EXPECT_TRUE(AddTimestampedLogin(&db_, "http://1.com", "foo1",
-                                  base::Time(), false));
+  EXPECT_TRUE(
+      AddTimestampedLogin(&db_, "http://1.com", "foo1", base::Time(), false));
   // Create one for now and +/- 1 day.
-  EXPECT_TRUE(AddTimestampedLogin(&db_, "http://2.com", "foo2",
-                                  now - one_day, false));
-  EXPECT_TRUE(AddTimestampedLogin(&db_, "http://3.com", "foo3",
-                                  now, false));
-  EXPECT_TRUE(AddTimestampedLogin(&db_, "http://4.com", "foo4",
-                                  now + one_day, false));
+  EXPECT_TRUE(
+      AddTimestampedLogin(&db_, "http://2.com", "foo2", now - one_day, false));
+  EXPECT_TRUE(AddTimestampedLogin(&db_, "http://3.com", "foo3", now, false));
+  EXPECT_TRUE(
+      AddTimestampedLogin(&db_, "http://4.com", "foo4", now + one_day, false));
 
   // Verify inserts worked.
   EXPECT_TRUE(db_.GetAutofillableLogins(&result.get()));
@@ -1121,7 +1118,6 @@ TEST_F(LoginDatabaseTest, FilePermissions) {
 
 class LoginDatabaseMigrationTest : public testing::Test {
  protected:
-
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     database_dump_location_ = database_dump_location_.AppendASCII("components")
@@ -1228,11 +1224,11 @@ TEST_F(LoginDatabaseMigrationTest, MigrationV1ToVCurrent) {
     ASSERT_EQ(13047429345000000, new_date_created[0]);
     ASSERT_EQ(13047423600000000, new_date_created[1]);
     if (table_version <= 8) {
-     // Check that the two dates match up.
-     for (size_t i = 0; i < date_created.size(); ++i) {
-       EXPECT_EQ(base::Time::FromInternalValue(new_date_created[i]),
-                 base::Time::FromTimeT(date_created[i]));
-     }
+      // Check that the two dates match up.
+      for (size_t i = 0; i < date_created.size(); ++i) {
+        EXPECT_EQ(base::Time::FromInternalValue(new_date_created[i]),
+                  base::Time::FromTimeT(date_created[i]));
+      }
     }
     DestroyDatabase();
   }

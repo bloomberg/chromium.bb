@@ -24,8 +24,8 @@ CredentialInfo::CredentialInfo(const blink::WebCredential& credential)
              : CredentialType::CREDENTIAL_TYPE_FEDERATED;
   if (type == CredentialType::CREDENTIAL_TYPE_LOCAL) {
     DCHECK(credential.isLocalCredential());
-    password = static_cast<const blink::WebLocalCredential&>(
-        credential).password();
+    password =
+        static_cast<const blink::WebLocalCredential&>(credential).password();
   } else {
     DCHECK(credential.isFederatedCredential());
     federation = static_cast<const blink::WebFederatedCredential&>(

@@ -35,8 +35,7 @@ class MockPasswordStoreConsumer : public PasswordStoreConsumer {
 
 class MockPasswordStoreObserver : public PasswordStore::Observer {
  public:
-  MOCK_METHOD1(OnLoginsChanged,
-               void(const PasswordStoreChangeList& changes));
+  MOCK_METHOD1(OnLoginsChanged, void(const PasswordStoreChangeList& changes));
 };
 
 }  // anonymous namespace
@@ -46,8 +45,8 @@ class PasswordStoreDefaultTest : public testing::Test {
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     login_db_.reset(new LoginDatabase());
-    ASSERT_TRUE(login_db_->Init(temp_dir_.path().Append(
-        FILE_PATH_LITERAL("login_test"))));
+    ASSERT_TRUE(login_db_->Init(
+        temp_dir_.path().Append(FILE_PATH_LITERAL("login_test"))));
   }
 
   void TearDown() override { ASSERT_TRUE(temp_dir_.Delete()); }
@@ -134,9 +133,8 @@ TEST_F(PasswordStoreDefaultTest, Notifications) {
     PasswordStoreChange(PasswordStoreChange::ADD, *form),
   };
 
-  EXPECT_CALL(
-      observer,
-      OnLoginsChanged(ElementsAreArray(expected_add_changes)));
+  EXPECT_CALL(observer,
+              OnLoginsChanged(ElementsAreArray(expected_add_changes)));
 
   // Adding a login should trigger a notification.
   store->AddLogin(*form);
@@ -149,9 +147,8 @@ TEST_F(PasswordStoreDefaultTest, Notifications) {
     PasswordStoreChange(PasswordStoreChange::UPDATE, *form),
   };
 
-  EXPECT_CALL(
-      observer,
-      OnLoginsChanged(ElementsAreArray(expected_update_changes)));
+  EXPECT_CALL(observer,
+              OnLoginsChanged(ElementsAreArray(expected_update_changes)));
 
   // Updating the login with the new password should trigger a notification.
   store->UpdateLogin(*form);
@@ -161,9 +158,8 @@ TEST_F(PasswordStoreDefaultTest, Notifications) {
     PasswordStoreChange(PasswordStoreChange::REMOVE, *form),
   };
 
-  EXPECT_CALL(
-      observer,
-      OnLoginsChanged(ElementsAreArray(expected_delete_changes)));
+  EXPECT_CALL(observer,
+              OnLoginsChanged(ElementsAreArray(expected_delete_changes)));
 
   // Deleting the login should trigger a notification.
   store->RemoveLogin(*form);

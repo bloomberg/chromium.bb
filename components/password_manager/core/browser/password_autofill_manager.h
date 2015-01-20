@@ -77,10 +77,9 @@ class PasswordAutofillManager : public autofill::AutofillPopupDelegate {
   // If |current_username| matches a username for one of the login mappings in
   // |fill_data|, returns true and assigns the password to |out_password|.
   // Otherwise, returns false and leaves |out_password| untouched.
-  bool GetPasswordForUsername(
-      const base::string16& current_username,
-      const autofill::PasswordFormFillData& fill_data,
-      base::string16* out_password);
+  bool GetPasswordForUsername(const base::string16& current_username,
+                              const autofill::PasswordFormFillData& fill_data,
+                              base::string16* out_password);
 
   // Finds login information for a |node| that was previously filled.
   bool FindLoginInfo(int key, autofill::PasswordFormFillData* found_password);

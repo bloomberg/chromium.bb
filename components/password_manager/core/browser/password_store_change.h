@@ -20,8 +20,7 @@ class PasswordStoreChange {
   };
 
   PasswordStoreChange(Type type, const autofill::PasswordForm& form)
-      : type_(type), form_(form) {
-  }
+      : type_(type), form_(form) {}
   virtual ~PasswordStoreChange() {}
 
   Type type() const { return type_; }

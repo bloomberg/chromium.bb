@@ -71,7 +71,7 @@ class PasswordSyncableService : public syncer::SyncableService,
 
   // The type of PasswordStoreSync::AddLoginImpl,
   // PasswordStoreSync::UpdateLoginImpl and PasswordStoreSync::RemoveLoginImpl.
-  typedef PasswordStoreChangeList(PasswordStoreSync::*DatabaseOperation)(
+  typedef PasswordStoreChangeList (PasswordStoreSync::*DatabaseOperation)(
       const autofill::PasswordForm& form);
 
   struct SyncEntries;
@@ -88,18 +88,16 @@ class PasswordSyncableService : public syncer::SyncableService,
   // Examines |data|, an entry in sync db, and updates |sync_entries| or
   // |updated_db_entries| accordingly. An element is removed from
   // |unmatched_data_from_password_db| if its tag is identical to |data|'s.
-  void CreateOrUpdateEntry(
-      const syncer::SyncData& data,
-      PasswordEntryMap* unmatched_data_from_password_db,
-      SyncEntries* sync_entries,
-      syncer::SyncChangeList* updated_db_entries);
+  void CreateOrUpdateEntry(const syncer::SyncData& data,
+                           PasswordEntryMap* unmatched_data_from_password_db,
+                           SyncEntries* sync_entries,
+                           syncer::SyncChangeList* updated_db_entries);
 
   // Calls |operation| for each element in |entries| and appends the changes to
   // |all_changes|.
-  void WriteEntriesToDatabase(
-      DatabaseOperation operation,
-      const PasswordForms& entries,
-      PasswordStoreChangeList* all_changes);
+  void WriteEntriesToDatabase(DatabaseOperation operation,
+                              const PasswordForms& entries,
+                              PasswordStoreChangeList* all_changes);
 
   // The factory that creates sync errors. |SyncError| has rich data
   // suitable for debugging.

@@ -63,8 +63,8 @@ PasswordStoreChangeList PasswordStoreDefault::RemoveLoginsCreatedBetweenImpl(
     if (login_db_->RemoveLoginsCreatedBetween(delete_begin, delete_end)) {
       for (std::vector<PasswordForm*>::const_iterator it = forms.begin();
            it != forms.end(); ++it) {
-        changes.push_back(PasswordStoreChange(PasswordStoreChange::REMOVE,
-                                              **it));
+        changes.push_back(
+            PasswordStoreChange(PasswordStoreChange::REMOVE, **it));
       }
       LogStatsForBulkDeletion(changes.size());
     }
@@ -81,8 +81,7 @@ PasswordStoreChangeList PasswordStoreDefault::RemoveLoginsSyncedBetweenImpl(
   if (login_db_->GetLoginsSyncedBetween(delete_begin, delete_end, &forms)) {
     if (login_db_->RemoveLoginsSyncedBetween(delete_begin, delete_end)) {
       for (std::vector<PasswordForm*>::const_iterator it = forms.begin();
-           it != forms.end();
-           ++it) {
+           it != forms.end(); ++it) {
         changes.push_back(
             PasswordStoreChange(PasswordStoreChange::REMOVE, **it));
       }
@@ -108,20 +107,19 @@ void PasswordStoreDefault::GetAutofillableLoginsImpl(
   ForwardLoginsResult(request);
 }
 
-void PasswordStoreDefault::GetBlacklistLoginsImpl(
-    GetLoginsRequest* request) {
+void PasswordStoreDefault::GetBlacklistLoginsImpl(GetLoginsRequest* request) {
   FillBlacklistLogins(request->result());
   ForwardLoginsResult(request);
 }
 
 bool PasswordStoreDefault::FillAutofillableLogins(
-         std::vector<PasswordForm*>* forms) {
+    std::vector<PasswordForm*>* forms) {
   DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
   return login_db_->GetAutofillableLogins(forms);
 }
 
 bool PasswordStoreDefault::FillBlacklistLogins(
-         std::vector<PasswordForm*>* forms) {
+    std::vector<PasswordForm*>* forms) {
   DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
   return login_db_->GetBlacklistLogins(forms);
 }

@@ -42,9 +42,8 @@ bool ContainsSamePasswordFormsPtr(
     const std::vector<autofill::PasswordForm*>& first,
     const std::vector<autofill::PasswordForm*>& second);
 
-bool ContainsSamePasswordForms(
-    std::vector<autofill::PasswordForm>& first,
-    std::vector<autofill::PasswordForm>& second);
+bool ContainsSamePasswordForms(std::vector<autofill::PasswordForm>& first,
+                               std::vector<autofill::PasswordForm>& second);
 
 // This gmock matcher is used to check that the |arg| contains exactly the same
 // PasswordForms as |forms|, regardless of order.

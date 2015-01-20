@@ -9,16 +9,13 @@ namespace password_manager {
 namespace switches {
 
 // Force the password manager to allow sync credentials to be autofilled.
-const char kAllowAutofillSyncCredential[] =
-    "allow-autofill-sync-credential";
+const char kAllowAutofillSyncCredential[] = "allow-autofill-sync-credential";
 
 // Disable dropping the credential used to sync passwords.
-const char kDisableDropSyncCredential[] =
-    "disable-drop-sync-credential";
+const char kDisableDropSyncCredential[] = "disable-drop-sync-credential";
 
 // Disable both saving and filling for the sync signin form.
-const char kDisableManagerForSyncSignin[] =
-    "disable-manager-for-sync-signin";
+const char kDisableManagerForSyncSignin[] = "disable-manager-for-sync-signin";
 
 // Disable the link in the password manager settings page that points to account
 // central.
@@ -39,13 +36,11 @@ const char kEnableAutomaticPasswordSaving[] =
     "enable-automatic-password-saving";
 
 // Enable dropping the credential used to sync passwords.
-const char kEnableDropSyncCredential[] =
-    "enable-drop-sync-credential";
+const char kEnableDropSyncCredential[] = "enable-drop-sync-credential";
 
 // Enable saving and filling for the sync signin form. Currently the default
 // behavior.
-const char kEnableManagerForSyncSignin[] =
-    "enable-manager-for-sync-signin";
+const char kEnableManagerForSyncSignin[] = "enable-manager-for-sync-signin";
 
 // Enable the link in the password manager settings page that points to account
 // central.

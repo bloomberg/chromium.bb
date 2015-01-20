@@ -127,7 +127,7 @@ TEST(AffiliationUtilsTest, InvalidAndroidFacetURIs) {
       // Package name with illegal characters.
       "android://hash@com.$example.android",
       "android://hash@com-example-android",
-      "android://hash@com%2Dexample.android",  // Escaped '-'.
+      "android://hash@com%2Dexample.android",             // Escaped '-'.
       "android://hash@com.example.sz\xc3\xb3t\xc3\xa1r",  // UTF-8 o' and a'.
       // Empty, non-existent and malformed hash part.
       "android://@com.example.android",

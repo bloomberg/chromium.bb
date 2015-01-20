@@ -13,7 +13,8 @@ TestPasswordStore::TestPasswordStore()
                     base::MessageLoopProxy::current()) {
 }
 
-TestPasswordStore::~TestPasswordStore() {}
+TestPasswordStore::~TestPasswordStore() {
+}
 
 const TestPasswordStore::PasswordMap& TestPasswordStore::stored_passwords()
     const {
@@ -29,8 +30,7 @@ bool TestPasswordStore::IsEmpty() const {
   // in |stored_passwords_| is 0.
   size_t number_of_passwords = 0u;
   for (PasswordMap::const_iterator it = stored_passwords_.begin();
-       !number_of_passwords && it != stored_passwords_.end();
-       ++it) {
+       !number_of_passwords && it != stored_passwords_.end(); ++it) {
     number_of_passwords += it->second.size();
   }
   return number_of_passwords == 0u;
@@ -68,11 +68,10 @@ PasswordStoreChangeList TestPasswordStore::UpdateLoginImpl(
   std::vector<autofill::PasswordForm>& forms =
       stored_passwords_[form.signon_realm];
   for (std::vector<autofill::PasswordForm>::iterator it = forms.begin();
-         it != forms.end(); ++it) {
+       it != forms.end(); ++it) {
     if (FormsAreEquivalent(form, *it)) {
       *it = form;
-      changes.push_back(
-          PasswordStoreChange(PasswordStoreChange::UPDATE, form));
+      changes.push_back(PasswordStoreChange(PasswordStoreChange::UPDATE, form));
     }
   }
   return changes;
@@ -87,8 +86,7 @@ PasswordStoreChangeList TestPasswordStore::RemoveLoginImpl(
   while (it != forms.end()) {
     if (FormsAreEquivalent(form, *it)) {
       it = forms.erase(it);
-      changes.push_back(
-          PasswordStoreChange(PasswordStoreChange::REMOVE, form));
+      changes.push_back(PasswordStoreChange(PasswordStoreChange::REMOVE, form));
     } else {
       ++it;
     }
