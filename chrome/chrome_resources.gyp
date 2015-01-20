@@ -468,12 +468,6 @@
             '<(DEPTH)/ui/chromeos/ui_chromeos.gyp:ui_chromeos_strings',
           ],
         }],
-        ['use_athena==1', {
-          'dependencies': [
-            '<(DEPTH)/athena/resources/athena_resources.gyp:athena_resources',
-            '<(DEPTH)/athena/strings/athena_strings.gyp:athena_strings',
-          ],
-        }],
         ['enable_autofill_dialog==1 and OS!="android"', {
           'dependencies': [
             '<(DEPTH)/third_party/libaddressinput/libaddressinput.gyp:libaddressinput_strings',

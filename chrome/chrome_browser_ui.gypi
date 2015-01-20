@@ -904,10 +904,14 @@
       'browser/ui/webui/chromeos/first_run/first_run_actor.h',
       'browser/ui/webui/chromeos/first_run/first_run_handler.cc',
       'browser/ui/webui/chromeos/first_run/first_run_handler.h',
+      'browser/ui/webui/chromeos/first_run/first_run_ui.cc',
+      'browser/ui/webui/chromeos/first_run/first_run_ui.h',
       'browser/ui/webui/chromeos/image_source.cc',
       'browser/ui/webui/chromeos/image_source.h',
       'browser/ui/webui/chromeos/imageburner/imageburner_ui.cc',
       'browser/ui/webui/chromeos/imageburner/imageburner_ui.h',
+      'browser/ui/webui/chromeos/keyboard_overlay_ui.cc',
+      'browser/ui/webui/chromeos/keyboard_overlay_ui.h',
       'browser/ui/webui/chromeos/login/app_launch_splash_screen_handler.cc',
       'browser/ui/webui/chromeos/login/app_launch_splash_screen_handler.h',
       'browser/ui/webui/chromeos/login/authenticated_user_email_retriever.cc',
@@ -1119,6 +1123,12 @@
       'browser/ui/ash/accessibility/ax_root_obj_wrapper.h',
       'browser/ui/ash/accessibility/ax_tree_source_ash.cc',
       'browser/ui/ash/accessibility/ax_tree_source_ash.h',
+      'browser/ui/ash/app_list/app_list_controller_ash.cc',
+      'browser/ui/ash/app_list/app_list_controller_ash.h',
+      'browser/ui/ash/app_list/app_list_service_ash.cc',
+      'browser/ui/ash/app_list/app_list_service_ash.h',
+      'browser/ui/ash/ash_init.cc',
+      'browser/ui/ash/ash_init.h',
       'browser/ui/ash/ash_keyboard_controller_proxy.cc',
       'browser/ui/ash/ash_keyboard_controller_proxy.h',
       'browser/ui/ash/app_list/app_sync_ui_state_watcher.cc',
@@ -1212,19 +1222,10 @@
       'browser/ui/ash/user_accounts_delegate_chromeos.h',
       'browser/ui/ash/volume_controller_chromeos.cc',
       'browser/ui/ash/volume_controller_chromeos.h',
-      'browser/ui/views/touch_uma/touch_uma_ash.cc',
-      'browser/ui/window_sizer/window_sizer_ash.cc',
-    ],
-    # Used when Ash is enabled but not Athena.
-    'chrome_browser_ui_ash_non_athena_sources': [
-      'browser/ui/ash/ash_init.cc',
-      'browser/ui/ash/ash_init.h',
-      'browser/ui/ash/app_list/app_list_controller_ash.cc',
-      'browser/ui/ash/app_list/app_list_controller_ash.h',
-      'browser/ui/ash/app_list/app_list_service_ash.cc',
-      'browser/ui/ash/app_list/app_list_service_ash.h',
       'browser/ui/views/ash/chrome_browser_main_extra_parts_ash.cc',
       'browser/ui/views/ash/chrome_browser_main_extra_parts_ash.h',
+      'browser/ui/views/touch_uma/touch_uma_ash.cc',
+      'browser/ui/window_sizer/window_sizer_ash.cc',
     ],
     # Used when Ash is enabled but not ChromeOS.
     'chrome_browser_ui_ash_non_chromeos': [
@@ -1251,29 +1252,6 @@
     # Used when ash is disabled.
     'chrome_browser_ui_non_ash_sources': [
       'browser/ui/views/touch_uma/touch_uma.cc',
-    ],
-    # Used when athena is enabled.
-    'chrome_browser_ui_athena_sources': [
-      #TODO(mukai): Port AppListService to Athena (crbug.com/417571)
-      'browser/ui/app_list/app_list_service_disabled.cc',
-
-      'browser/ui/athena/extensions/extension_install_ui_factory_athena.cc',
-      'browser/ui/views/athena/athena_util.cc',
-      'browser/ui/views/athena/athena_util.h',
-    ],
-    # Used when not using mobile and not using Athena.
-    'chrome_browser_ui_non_athena_non_mobile_sources': [
-      'browser/ui/extensions/extension_install_ui_factory.cc',
-      'browser/ui/webui/chromeos/keyboard_overlay_ui.cc',
-      'browser/ui/webui/chromeos/keyboard_overlay_ui.h',
-      'browser/ui/webui/chromeos/first_run/first_run_ui.cc',
-      'browser/ui/webui/chromeos/first_run/first_run_ui.h',
-      'browser/ui/webui/options/chromeos/display_options_handler.cc',
-      'browser/ui/webui/options/chromeos/display_options_handler.h',
-      'browser/ui/webui/options/chromeos/display_overscan_handler.cc',
-      'browser/ui/webui/options/chromeos/display_overscan_handler.h',
-      'browser/ui/webui/options/chromeos/power_handler.cc',
-      'browser/ui/webui/options/chromeos/power_handler.h',
     ],
     # Cross-platform aura sources.
     'chrome_browser_ui_aura_sources': [
@@ -1713,6 +1691,10 @@
       'browser/ui/webui/options/chromeos/cros_language_options_handler.h',
       'browser/ui/webui/options/chromeos/date_time_options_handler.cc',
       'browser/ui/webui/options/chromeos/date_time_options_handler.h',
+      'browser/ui/webui/options/chromeos/display_options_handler.cc',
+      'browser/ui/webui/options/chromeos/display_options_handler.h',
+      'browser/ui/webui/options/chromeos/display_overscan_handler.cc',
+      'browser/ui/webui/options/chromeos/display_overscan_handler.h',
       'browser/ui/webui/options/chromeos/internet_options_handler.cc',
       'browser/ui/webui/options/chromeos/internet_options_handler.h',
       'browser/ui/webui/options/chromeos/internet_options_handler_strings.cc',
@@ -1721,6 +1703,8 @@
       'browser/ui/webui/options/chromeos/keyboard_handler.h',
       'browser/ui/webui/options/chromeos/pointer_handler.cc',
       'browser/ui/webui/options/chromeos/pointer_handler.h',
+      'browser/ui/webui/options/chromeos/power_handler.cc',
+      'browser/ui/webui/options/chromeos/power_handler.h',
       'browser/ui/webui/options/chromeos/proxy_handler.cc',
       'browser/ui/webui/options/chromeos/proxy_handler.h',
       'browser/ui/webui/options/chromeos/stats_options_handler.cc',
@@ -2491,6 +2475,7 @@
       'browser/ui/extensions/extension_enable_flow_delegate.h',
       'browser/ui/extensions/extension_install_ui_default.cc',
       'browser/ui/extensions/extension_install_ui_default.h',
+      'browser/ui/extensions/extension_install_ui_factory.cc',
       'browser/ui/extensions/extension_install_ui_factory.h',
       'browser/ui/extensions/extension_installed_bubble.cc',
       'browser/ui/extensions/extension_installed_bubble.h',
@@ -2838,25 +2823,6 @@
           ],
         }, { # use_ash==0
           'sources': [ '<@(chrome_browser_ui_non_ash_sources)' ],
-        }],
-        ['use_athena==1', {
-          'defines': ['USE_ATHENA=1'],
-          'sources': [ '<@(chrome_browser_ui_athena_sources)' ],
-          'dependencies': [
-            '<(DEPTH)/athena/athena.gyp:athena_lib',
-            '<(DEPTH)/athena/athena.gyp:athena_chrome_lib',
-            '<(DEPTH)/athena/athena.gyp:athena_content_lib',
-            '<(DEPTH)/athena/main/athena_main.gyp:athena_main_lib',
-          ],
-        }, { # use_athena==0
-          'conditions': [
-            ['OS!="android" and OS!="ios"', {
-              'sources': [ '<@(chrome_browser_ui_non_athena_non_mobile_sources)' ],
-            }],
-            ['use_ash==1', {
-              'sources': [ '<@(chrome_browser_ui_ash_non_athena_sources)' ],
-            }],
-          ],
         }],
         ['toolkit_views==1', {
           'sources': [ '<@(chrome_browser_ui_views_sources)' ],

@@ -1199,9 +1199,6 @@
     'support_pre_M6_history_database%': '<(support_pre_M6_history_database)',
     'v8_use_external_startup_data%': '<(v8_use_external_startup_data)',
 
-    # Whether or not we are building the Athena shell.
-    'use_athena%': '0',
-
     # Use system protobuf instead of bundled one.
     'use_system_protobuf%': 0,
 

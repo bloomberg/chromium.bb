@@ -27,8 +27,7 @@ class ShellAppWindow;
 
 // DesktopController is an interface to construct the window environment in
 // extensions shell. ShellDesktopControllerAura provides a default
-// implementation for app_shell, and other embedders (such as athena) can
-// provide their own.
+// implementation for app_shell, and other embedders can provide their own.
 // TODO(jamescook|oshima): Clean up this interface now that there is only one
 // way to create an app window.
 class DesktopController {

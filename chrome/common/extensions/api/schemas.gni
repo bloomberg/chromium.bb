@@ -16,9 +16,6 @@ gypi_values = exec_script("//build/gypi_to_gn.py",
 sources = gypi_values.main_schema_files
 if (is_chromeos) {
   sources += gypi_values.chromeos_schema_files
-  if (!use_athena) {
-    sources += gypi_values.chromeos_non_athena_schema_files
-  }
 }
 if (enable_webrtc) {
   sources += gypi_values.webrtc_schema_files

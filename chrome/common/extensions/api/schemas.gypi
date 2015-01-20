@@ -119,10 +119,6 @@
       'file_system_provider_internal.idl',
       'first_run_private.json',
       'log_private.idl',
-    ],
-
-    # ChromeOS-specific schemas which have not been ported to Athena.
-    'chromeos_non_athena_schema_files': [
       'wallpaper.json',
       'wallpaper_private.json',
     ],
@@ -153,13 +149,6 @@
       ['chromeos==1', {
         'schema_files': [
           '<@(chromeos_schema_files)',
-        ],
-        'conditions': [
-          ['use_athena==0', {
-            'schema_files': [
-              '<@(chromeos_non_athena_schema_files)',
-            ],
-          }],
         ],
       }],
       ['enable_webrtc==1', {

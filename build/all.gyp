@@ -103,6 +103,7 @@
         ['OS!="ios" and OS!="android"', {
           'dependencies': [
             '../third_party/re2/re2.gyp:re2',
+            '../chrome/chrome.gyp:*',
             '../chrome/tools/profile_reset/jtl_compiler.gyp:*',
             '../cc/blink/cc_blink_tests.gyp:*',
             '../cc/cc_tests.gyp:*',
@@ -146,21 +147,6 @@
             '../tools/telemetry/telemetry.gyp:*',
             '../v8/tools/gyp/v8.gyp:*',
             '<(libjpeg_gyp_path):*',
-          ],
-          'conditions': [
-            ['use_athena==1' , {
-              'dependencies': [
-                 # Athena temporarily depends upon a subset of chrome. Since most
-                 # tests do not compile, we only include dependencies to tests we
-                 # want to build.
-                 '../chrome/chrome.gyp:chrome',
-                 '../chrome/chrome.gyp:browser_tests',
-              ]
-            }, {
-              'dependencies': [
-               '../chrome/chrome.gyp:*',
-              ],
-            }],
           ],
         }],
         ['use_openssl==0 and (OS=="mac" or OS=="ios" or OS=="win")', {
@@ -328,6 +314,9 @@
             '../chrome/chrome.gyp:browser_tests',
             '../chrome/chrome.gyp:chromedriver_tests',
             '../chrome/chrome.gyp:chromedriver_unittests',
+            '../chrome/chrome.gyp:interactive_ui_tests',
+            '../chrome/chrome.gyp:sync_integration_tests',
+            '../chrome/chrome.gyp:unit_tests',
             '../cloud_print/cloud_print.gyp:cloud_print_unittests',
             '../content/content_shell_and_tests.gyp:content_browsertests',
             '../content/content_shell_and_tests.gyp:content_shell',
@@ -352,15 +341,6 @@
             '../third_party/libaddressinput/libaddressinput.gyp:libaddressinput_unittests',
             '../third_party/libphonenumber/libphonenumber.gyp:libphonenumber_unittests',
             '../tools/telemetry/telemetry.gyp:*',
-          ],
-          'conditions': [
-            ['use_athena!=1', {
-              'dependencies' : [
-                '../chrome/chrome.gyp:interactive_ui_tests',
-                '../chrome/chrome.gyp:sync_integration_tests',
-                '../chrome/chrome.gyp:unit_tests',
-               ],
-            }],
           ],
         }],
         ['OS=="win"', {
@@ -1274,6 +1254,8 @@
             '../cc/cc_tests.gyp:cc_unittests',
             '../chrome/chrome.gyp:browser_tests',
             '../chrome/chrome.gyp:chrome',
+            '../chrome/chrome.gyp:interactive_ui_tests',
+            '../chrome/chrome.gyp:unit_tests',
             '../components/components_tests.gyp:components_unittests',
             '../content/content_shell_and_tests.gyp:content_browsertests',
             '../content/content_shell_and_tests.gyp:content_unittests',
@@ -1300,12 +1282,6 @@
             'blink_tests',
           ],
           'conditions': [
-            ['use_athena!=1', {
-              'dependencies': [
-                '../chrome/chrome.gyp:interactive_ui_tests',
-                '../chrome/chrome.gyp:unit_tests',
-              ],
-            }],
             ['OS=="win"', {
               'dependencies': [
                 '../chrome/chrome.gyp:crash_service',
@@ -1370,18 +1346,12 @@
           'dependencies': [
             '../base/base.gyp:base_unittests_run',
             '../chrome/chrome.gyp:browser_tests_run',
+            '../chrome/chrome.gyp:interactive_ui_tests_run',
+            '../chrome/chrome.gyp:sync_integration_tests_run',
+            '../chrome/chrome.gyp:unit_tests_run',
             '../content/content_shell_and_tests.gyp:content_browsertests_run',
             '../content/content_shell_and_tests.gyp:content_unittests_run',
             '../net/net.gyp:net_unittests_run',
-          ],
-          'conditions' : [
-            ['use_athena!=1', {
-              'dependencies': [
-                '../chrome/chrome.gyp:interactive_ui_tests_run',
-                '../chrome/chrome.gyp:sync_integration_tests_run',
-                '../chrome/chrome.gyp:unit_tests_run',
-              ],
-            }],
           ],
         }, # target_name: chromium_swarm_tests
       ],

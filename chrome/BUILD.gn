@@ -485,10 +485,6 @@ template("chrome_repack_percent") {
           [ "$root_gen_dir/ash/resources/ash_resources_${percent}_percent.pak" ]
       deps += [ "//ash/resources" ]
     }
-    if (use_athena) {
-      sources += [ "$root_gen_dir/athena/resources/athena_resources_${percent}_percent.pak" ]
-      deps += [ "//athena/resources" ]
-    }
     if (is_chromeos) {
       sources += [ "$root_gen_dir/ui/chromeos/resources/ui_chromeos_resources_${percent}_percent.pak" ]
       deps += [ "//ui/chromeos/resources" ]
