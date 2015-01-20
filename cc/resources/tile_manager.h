@@ -99,8 +99,9 @@ class CC_EXPORT TileManager : public TileTaskRunnerClient,
     // rasterizer.h
   };
 
-  COMPILE_ASSERT(NamedTaskSet::ALL == (kNumberOfTaskSets - 1),
-                 NamedTaskSet_ALL_not_kNumberOfTaskSets_minus_1);
+  static_assert(NamedTaskSet::ALL == (kNumberOfTaskSets - 1),
+                "NamedTaskSet::ALL should be equal to kNumberOfTaskSets"
+                "minus 1");
 
   static scoped_ptr<TileManager> Create(TileManagerClient* client,
                                         base::SequencedTaskRunner* task_runner,
