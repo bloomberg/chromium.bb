@@ -497,7 +497,7 @@ crbug.com/254332 [ XP ] fast/forms/submit/submit-focus-by-mouse.html [ ImageOnly
 
 crbug.com/265650 compositing/repaint/transform-style-change.html [ Pass ImageOnlyFailure ]
 
-crbug.com/444944 compositing/repaint/end-of-opacity-transition.html [ Failure Pass ]
+crbug.com/450271 compositing/repaint/end-of-opacity-transition.html [ Failure Pass ]
 
 crbug.com/266754 fast/ruby/ruby-svg-crash.html [ ImageOnlyFailure Pass ]
 
