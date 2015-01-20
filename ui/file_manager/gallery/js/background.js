@@ -170,7 +170,8 @@ function launch(selectedEntriesPromise) {
               // TODO(hirono): This is workaround for crbug.com/442217. Remove
               // this after fixing it.
               setTimeout(function() {
-                launch(reopenEntriesPromsie);
+                if (reopenEntriesPromsie)
+                  launch(reopenEntriesPromsie);
               }, 500);
             }
           });
