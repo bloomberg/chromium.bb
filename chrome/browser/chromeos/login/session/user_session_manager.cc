@@ -68,6 +68,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/url_constants.h"
 #include "chromeos/cert_loader.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/cryptohome/cryptohome_util.h"
@@ -88,6 +89,7 @@
 #include "components/user_manager/user_type.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/storage_partition.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "url/gurl.h"
 
@@ -1126,13 +1128,27 @@ void UserSessionManager::RestoreAuthSessionImpl(
   OAuth2LoginManager* login_manager =
       OAuth2LoginManagerFactory::GetInstance()->GetForProfile(profile);
   login_manager->AddObserver(this);
-  login_manager->RestoreSession(
-      authenticator_.get() && authenticator_->authentication_context()
-          ? authenticator_->authentication_context()->GetRequestContext()
-          : NULL,
-      session_restore_strategy_,
-      oauth2_refresh_token_,
-      user_context_.GetAuthCode());
+  net::URLRequestContextGetter* auth_request_context = NULL;
+
+  if (StartupUtils::IsWebviewSigninEnabled()) {
+    // Webview uses different partition storage than iframe. We need to get
+    // cookies from the right storage for url request to get auth token into
+    // session.
+    GURL oobe_url(chrome::kChromeUIOobeURL);
+    GURL guest_url(std::string(content::kGuestScheme) +
+                   url::kStandardSchemeSeparator + oobe_url.GetContent());
+    content::StoragePartition* partition =
+        content::BrowserContext::GetStoragePartitionForSite(
+            ProfileHelper::GetSigninProfile(), guest_url);
+    auth_request_context = partition->GetURLRequestContext();
+  } else if (authenticator_.get() && authenticator_->authentication_context()) {
+    auth_request_context =
+        authenticator_->authentication_context()->GetRequestContext();
+  }
+
+  login_manager->RestoreSession(auth_request_context, session_restore_strategy_,
+                                oauth2_refresh_token_,
+                                user_context_.GetAuthCode());
 }
 
 void UserSessionManager::InitRlzImpl(Profile* profile, bool disabled) {
