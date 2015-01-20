@@ -38,6 +38,12 @@ remoting.AppRemoting = function(app) {
    * @private
    */
   this.windowActivationMenu_ = null;
+
+   /**
+    * @type {number}
+    * @private
+    */
+   this.pingTimerId_ = 0;
 };
 
 /**
@@ -235,18 +241,7 @@ remoting.AppRemoting.prototype.handleConnected = function(clientSession) {
     clientSession.sendClientMessage('pingRequest', JSON.stringify(message));
   };
   ping();
-  var timerId = window.setInterval(ping, 10 * 1000);
-
-  // Cancel the ping when the connection closes.
-  clientSession.addEventListener(
-      remoting.ClientSession.Events.stateChanged,
-      /** @param {remoting.ClientSession.StateEvent=} state */
-      function(state) {
-        if (state.current === remoting.ClientSession.State.CLOSED ||
-            state.current === remoting.ClientSession.State.FAILED) {
-          window.clearInterval(timerId);
-        }
-      });
+  this.pingTimerId_ = window.setInterval(ping, 10 * 1000);
 };
 
 /**
@@ -255,6 +250,9 @@ remoting.AppRemoting.prototype.handleConnected = function(clientSession) {
  * @return {void} Nothing.
  */
 remoting.AppRemoting.prototype.handleDisconnected = function() {
+  // Cancel the ping when the connection closes.
+  window.clearInterval(this.pingTimerId_);
+
   chrome.app.window.current().close();
 };
 
