@@ -282,17 +282,6 @@ void ImageBuffer::flush()
     }
 }
 
-void ImageBuffer::drawPattern(GraphicsContext* context, const FloatRect& srcRect, const FloatSize& scale,
-    const FloatPoint& phase, CompositeOperator op, const FloatRect& destRect, WebBlendMode blendMode, const IntSize& repeatSpacing)
-{
-    if (!isSurfaceValid())
-        return;
-
-    const SkBitmap& bitmap = m_surface->bitmap();
-    RefPtr<Image> image = BitmapImage::create(NativeImageSkia::create(drawNeedsCopy(m_context.get(), context) ? deepSkBitmapCopy(bitmap) : bitmap));
-    image->drawPattern(context, srcRect, scale, phase, op, destRect, blendMode, repeatSpacing);
-}
-
 PassRefPtr<SkColorFilter> ImageBuffer::createColorSpaceFilter(ColorSpace srcColorSpace,
     ColorSpace dstColorSpace)
 {

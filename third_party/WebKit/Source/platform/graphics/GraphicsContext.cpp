@@ -1779,31 +1779,6 @@ void GraphicsContext::adjustLineToPixelBoundaries(FloatPoint& p1, FloatPoint& p2
     }
 }
 
-PassOwnPtr<ImageBuffer> GraphicsContext::createRasterBuffer(const IntSize& size, OpacityMode opacityMode) const
-{
-    // Make the buffer larger if the context's transform is scaling it so we need a higher
-    // resolution than one pixel per unit. Also set up a corresponding scale factor on the
-    // graphics context.
-    SkScalar ctmScaleX = 1.0;
-    SkScalar ctmScaleY = 1.0;
-    if (!RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-        AffineTransform transform = getCTM();
-        ctmScaleX = transform.xScale();
-        ctmScaleY = transform.yScale();
-    }
-    IntSize scaledSize(static_cast<int>(ceil(size.width() * ctmScaleX)), static_cast<int>(ceil(size.height() * ctmScaleY)));
-
-    OwnPtr<ImageBufferSurface> surface = adoptPtr(new UnacceleratedImageBufferSurface(scaledSize, opacityMode));
-    if (!surface->isValid())
-        return nullptr;
-    OwnPtr<ImageBuffer> buffer = adoptPtr(new ImageBuffer(surface.release()));
-
-    buffer->context()->scale(static_cast<float>(scaledSize.width()) / size.width(),
-        static_cast<float>(scaledSize.height()) / size.height());
-
-    return buffer.release();
-}
-
 void GraphicsContext::setPathFromPoints(SkPath* path, size_t numPoints, const FloatPoint* points)
 {
     path->incReserve(numPoints);

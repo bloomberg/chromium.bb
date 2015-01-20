@@ -378,10 +378,6 @@ public:
     void setURLFragmentForRect(const String& name, const IntRect&);
     void addURLTargetAtPoint(const String& name, const IntPoint&);
 
-    // Create an image buffer compatible with this context, with suitable resolution
-    // for drawing into the buffer and then into this context.
-    PassOwnPtr<ImageBuffer> createRasterBuffer(const IntSize&, OpacityMode = NonOpaque) const;
-
     static void adjustLineToPixelBoundaries(FloatPoint& p1, FloatPoint& p2, float strokeWidth, StrokeStyle);
 
     void beginAnnotation(const AnnotationList&);
