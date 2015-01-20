@@ -16,25 +16,23 @@ ClipPathRecorder::ClipPathRecorder(GraphicsContext& context, DisplayItemClient c
     : m_context(context)
     , m_client(client)
 {
-    OwnPtr<BeginClipPathDisplayItem> clipPathDisplayItem = BeginClipPathDisplayItem::create(m_client, clipPath, windRule);
-
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         ASSERT(m_context.displayItemList());
-        m_context.displayItemList()->add(clipPathDisplayItem.release());
+        m_context.displayItemList()->add(BeginClipPathDisplayItem::create(m_client, clipPath, windRule));
     } else {
-        clipPathDisplayItem->replay(&m_context);
+        BeginClipPathDisplayItem clipPathDisplayItem(m_client, clipPath, windRule);
+        clipPathDisplayItem.replay(&m_context);
     }
 }
 
 ClipPathRecorder::~ClipPathRecorder()
 {
-    OwnPtr<EndClipPathDisplayItem> endClipPathDisplayItem = EndClipPathDisplayItem::create(m_client);
-
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         ASSERT(m_context.displayItemList());
-        m_context.displayItemList()->add(endClipPathDisplayItem.release());
+        m_context.displayItemList()->add(EndClipPathDisplayItem::create(m_client));
     } else {
-        endClipPathDisplayItem->replay(&m_context);
+        EndClipPathDisplayItem endClipPathDisplayItem(m_client);
+        endClipPathDisplayItem.replay(&m_context);
     }
 }
 

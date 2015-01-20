@@ -11,11 +11,6 @@
 
 namespace blink {
 
-BeginTransformDisplayItem::BeginTransformDisplayItem(DisplayItemClient client, const AffineTransform& transform)
-    : DisplayItem(client, BeginTransform)
-    , m_transform(transform)
-{ }
-
 void BeginTransformDisplayItem::replay(GraphicsContext* context)
 {
     context->save();

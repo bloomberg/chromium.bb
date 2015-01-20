@@ -17,23 +17,23 @@ CompositingRecorder::CompositingRecorder(GraphicsContext* graphicsContext, Displ
     : m_client(client)
     , m_graphicsContext(graphicsContext)
 {
-    OwnPtr<BeginCompositingDisplayItem> beginCompositingDisplayItem = BeginCompositingDisplayItem::create(m_client, DisplayItem::BeginCompositing, preCompositeOp, preBlendMode, opacity, postCompositeOp);
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         ASSERT(m_graphicsContext->displayItemList());
-        m_graphicsContext->displayItemList()->add(beginCompositingDisplayItem.release());
+        m_graphicsContext->displayItemList()->add(BeginCompositingDisplayItem::create(m_client, DisplayItem::BeginCompositing, preCompositeOp, preBlendMode, opacity, postCompositeOp));
     } else {
-        beginCompositingDisplayItem->replay(graphicsContext);
+        BeginCompositingDisplayItem beginCompositingDisplayItem(m_client, DisplayItem::BeginCompositing, preCompositeOp, preBlendMode, opacity, postCompositeOp);
+        beginCompositingDisplayItem.replay(graphicsContext);
     }
 }
 
 CompositingRecorder::~CompositingRecorder()
 {
-    OwnPtr<EndCompositingDisplayItem> endCompositingDisplayItem = EndCompositingDisplayItem::create(m_client, DisplayItem::EndCompositing);
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         ASSERT(m_graphicsContext->displayItemList());
-        m_graphicsContext->displayItemList()->add(endCompositingDisplayItem.release());
+        m_graphicsContext->displayItemList()->add(EndCompositingDisplayItem::create(m_client, DisplayItem::EndCompositing));
     } else {
-        endCompositingDisplayItem->replay(m_graphicsContext);
+        EndCompositingDisplayItem endCompositingDisplayItem(m_client, DisplayItem::EndCompositing);
+        endCompositingDisplayItem.replay(m_graphicsContext);
     }
 }
 

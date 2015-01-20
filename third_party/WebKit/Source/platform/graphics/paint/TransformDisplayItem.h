@@ -12,14 +12,19 @@
 namespace blink {
 
 class PLATFORM_EXPORT BeginTransformDisplayItem : public DisplayItem {
+    WTF_MAKE_FAST_ALLOCATED;
 public:
-    static PassOwnPtr<BeginTransformDisplayItem> create(DisplayItemClient client, const AffineTransform& transform) { return adoptPtr(new BeginTransformDisplayItem(client, transform)); }
+    static PassOwnPtr<BeginTransformDisplayItem> create(DisplayItemClient client, const AffineTransform& transform)
+    {
+        return adoptPtr(new BeginTransformDisplayItem(client, transform));
+    }
+
+    BeginTransformDisplayItem(DisplayItemClient client, const AffineTransform& transform)
+        : DisplayItem(client, BeginTransform)
+        , m_transform(transform) { }
 
     virtual void replay(GraphicsContext*) override;
     virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
-
-protected:
-    BeginTransformDisplayItem(DisplayItemClient, const AffineTransform&);
 
 private:
 #ifndef NDEBUG
@@ -30,15 +35,18 @@ private:
 };
 
 class PLATFORM_EXPORT EndTransformDisplayItem : public DisplayItem {
+    WTF_MAKE_FAST_ALLOCATED;
 public:
-    static PassOwnPtr<EndTransformDisplayItem> create(DisplayItemClient client) { return adoptPtr(new EndTransformDisplayItem(client)); }
+    static PassOwnPtr<EndTransformDisplayItem> create(DisplayItemClient client)
+    {
+        return adoptPtr(new EndTransformDisplayItem(client));
+    }
+
+    EndTransformDisplayItem(DisplayItemClient client)
+        : DisplayItem(client, EndTransform) { }
 
     virtual void replay(GraphicsContext*) override;
     virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
-
-protected:
-    EndTransformDisplayItem(DisplayItemClient client)
-        : DisplayItem(client, EndTransform) { }
 
 private:
 #ifndef NDEBUG

@@ -15,15 +15,19 @@ namespace blink {
 class RoundedRect;
 
 class PLATFORM_EXPORT FloatClipDisplayItem : public DisplayItem {
+    WTF_MAKE_FAST_ALLOCATED;
 public:
-    static PassOwnPtr<FloatClipDisplayItem> create(DisplayItemClient client, Type type, const FloatRect& clipRect) { return adoptPtr(new FloatClipDisplayItem(client, type, clipRect)); }
+    static PassOwnPtr<FloatClipDisplayItem> create(DisplayItemClient client, Type type, const FloatRect& clipRect)
+    {
+        return adoptPtr(new FloatClipDisplayItem(client, type, clipRect));
+    }
+
+    FloatClipDisplayItem(DisplayItemClient client, Type type, const FloatRect& clipRect)
+        : DisplayItem(client, type)
+        , m_clipRect(clipRect) { }
 
     virtual void replay(GraphicsContext*) override;
     virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
-
-protected:
-    FloatClipDisplayItem(DisplayItemClient client, Type type, const FloatRect& clipRect)
-        : DisplayItem(client, type), m_clipRect(clipRect) { }
 
 private:
     FloatRect m_clipRect;
@@ -34,14 +38,18 @@ private:
 };
 
 class PLATFORM_EXPORT EndFloatClipDisplayItem : public DisplayItem {
+    WTF_MAKE_FAST_ALLOCATED;
 public:
-    static PassOwnPtr<EndFloatClipDisplayItem> create(DisplayItemClient client) { return adoptPtr(new EndFloatClipDisplayItem(client)); }
+    static PassOwnPtr<EndFloatClipDisplayItem> create(DisplayItemClient client)
+    {
+        return adoptPtr(new EndFloatClipDisplayItem(client));
+    }
+
+    EndFloatClipDisplayItem(DisplayItemClient client)
+        : DisplayItem(client, EndFloatClip) { }
 
     virtual void replay(GraphicsContext*) override;
     virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
-
-protected:
-    EndFloatClipDisplayItem(DisplayItemClient client) : DisplayItem(client, EndFloatClip) { }
 
 private:
 #ifndef NDEBUG

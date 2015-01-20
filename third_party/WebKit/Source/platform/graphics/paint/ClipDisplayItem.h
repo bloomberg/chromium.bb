@@ -16,20 +16,22 @@
 namespace blink {
 
 class PLATFORM_EXPORT ClipDisplayItem : public DisplayItem {
+    WTF_MAKE_FAST_ALLOCATED;
 public:
     static PassOwnPtr<ClipDisplayItem> create(DisplayItemClient client, Type type, const IntRect& clipRect, SkRegion::Op operation = SkRegion::kIntersect_Op)
     {
         return adoptPtr(new ClipDisplayItem(client, type, clipRect, operation));
     }
 
+    ClipDisplayItem(DisplayItemClient client, Type type, const IntRect& clipRect, SkRegion::Op operation = SkRegion::kIntersect_Op)
+        : DisplayItem(client, type)
+        , m_clipRect(clipRect)
+        , m_operation(operation) { }
+
     virtual void replay(GraphicsContext*) override;
     virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
 
     Vector<FloatRoundedRect>& roundedRectClips() { return m_roundedRectClips; }
-
-protected:
-    ClipDisplayItem(DisplayItemClient client, Type type, const IntRect& clipRect, SkRegion::Op operation)
-        : DisplayItem(client, type), m_clipRect(clipRect), m_operation(operation) { }
 
 private:
 #ifndef NDEBUG
@@ -42,14 +44,18 @@ private:
 };
 
 class PLATFORM_EXPORT EndClipDisplayItem : public DisplayItem {
+    WTF_MAKE_FAST_ALLOCATED;
 public:
-    static PassOwnPtr<EndClipDisplayItem> create(DisplayItemClient client) { return adoptPtr(new EndClipDisplayItem(client)); }
+    static PassOwnPtr<EndClipDisplayItem> create(DisplayItemClient client)
+    {
+        return adoptPtr(new EndClipDisplayItem(client));
+    }
+
+    EndClipDisplayItem(DisplayItemClient client)
+        : DisplayItem(client, EndClip) { }
 
     virtual void replay(GraphicsContext*) override;
     virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
-
-protected:
-    EndClipDisplayItem(DisplayItemClient client) : DisplayItem(client, EndClip) { }
 
 private:
 #ifndef NDEBUG

@@ -21,13 +21,12 @@ TransformRecorder::TransformRecorder(GraphicsContext& context, DisplayItemClient
     if (m_skipRecordingForIdentityTransform)
         return;
 
-    OwnPtr<BeginTransformDisplayItem> beginTransform = BeginTransformDisplayItem::create(m_client, transform);
-
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         ASSERT(m_context.displayItemList());
-        m_context.displayItemList()->add(beginTransform.release());
+        m_context.displayItemList()->add(BeginTransformDisplayItem::create(m_client, transform));
     } else {
-        beginTransform->replay(&m_context);
+        BeginTransformDisplayItem beginTransform(m_client, transform);
+        beginTransform.replay(&m_context);
     }
 }
 
@@ -36,13 +35,12 @@ TransformRecorder::~TransformRecorder()
     if (m_skipRecordingForIdentityTransform)
         return;
 
-    OwnPtr<EndTransformDisplayItem> endTransform = EndTransformDisplayItem::create(m_client);
-
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         ASSERT(m_context.displayItemList());
-        m_context.displayItemList()->add(endTransform.release());
+        m_context.displayItemList()->add(EndTransformDisplayItem::create(m_client));
     } else {
-        endTransform->replay(&m_context);
+        EndTransformDisplayItem endTransform(m_client);
+        endTransform.replay(&m_context);
     }
 }
 

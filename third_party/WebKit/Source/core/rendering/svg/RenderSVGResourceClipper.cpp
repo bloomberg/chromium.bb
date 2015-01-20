@@ -134,11 +134,12 @@ bool RenderSVGResourceClipper::tryPathOnlyClipping(const DisplayItemClient clien
     if (clipPath.isEmpty())
         clipPath.addRect(FloatRect());
 
-    OwnPtr<BeginClipPathDisplayItem> clipPathDisplayItem = BeginClipPathDisplayItem::create(client, clipPath, clipRule);
-    if (RuntimeEnabledFeatures::slimmingPaintEnabled())
-        context->displayItemList()->add(clipPathDisplayItem.release());
-    else
-        clipPathDisplayItem->replay(context);
+    if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
+        context->displayItemList()->add(BeginClipPathDisplayItem::create(client, clipPath, clipRule));
+    } else {
+        BeginClipPathDisplayItem clipPathDisplayItem(client, clipPath, clipRule);
+        clipPathDisplayItem.replay(context);
+    }
 
     return true;
 }
@@ -211,11 +212,12 @@ void RenderSVGResourceClipper::postApplyStatefulResource(RenderObject* target, G
     case ClipperAppliedPath:
         // Path-only clipping, no layers to restore but we need to emit an end to the clip path display item.
         {
-            OwnPtr<EndClipPathDisplayItem> endClipPathDisplayItem = EndClipPathDisplayItem::create(target->displayItemClient());
-            if (RuntimeEnabledFeatures::slimmingPaintEnabled())
-                context->displayItemList()->add(endClipPathDisplayItem.release());
-            else
-                endClipPathDisplayItem->replay(context);
+            if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
+                context->displayItemList()->add(EndClipPathDisplayItem::create(target->displayItemClient()));
+            } else {
+                EndClipPathDisplayItem endClipPathDisplayItem(target->displayItemClient());
+                endClipPathDisplayItem.replay(context);
+            }
         }
         break;
     case ClipperAppliedMask:

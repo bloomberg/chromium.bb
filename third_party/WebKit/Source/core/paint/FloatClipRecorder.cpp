@@ -18,24 +18,24 @@ FloatClipRecorder::FloatClipRecorder(GraphicsContext& context, DisplayItemClient
     , m_client(client)
 {
     DisplayItem::Type type = paintPhaseToFloatClipType(paintPhase);
-    OwnPtr<FloatClipDisplayItem> clipDisplayItem = FloatClipDisplayItem::create(m_client, type, clipRect);
 
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         ASSERT(m_context.displayItemList());
-        m_context.displayItemList()->add(clipDisplayItem.release());
+        m_context.displayItemList()->add(FloatClipDisplayItem::create(m_client, type, clipRect));
     } else {
-        clipDisplayItem->replay(&m_context);
+        FloatClipDisplayItem clipDisplayItem(m_client, type, clipRect);
+        clipDisplayItem.replay(&m_context);
     }
 }
 
 FloatClipRecorder::~FloatClipRecorder()
 {
-    OwnPtr<EndFloatClipDisplayItem> endClipDisplayItem = EndFloatClipDisplayItem::create(m_client);
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         ASSERT(m_context.displayItemList());
-        m_context.displayItemList()->add(endClipDisplayItem.release());
+        m_context.displayItemList()->add(EndFloatClipDisplayItem::create(m_client));
     } else {
-        endClipDisplayItem->replay(&m_context);
+        EndFloatClipDisplayItem endClipDisplayItem(m_client);
+        endClipDisplayItem.replay(&m_context);
     }
 }
 

@@ -17,15 +17,20 @@
 namespace blink {
 
 class PLATFORM_EXPORT BeginFilterDisplayItem : public DisplayItem {
+    WTF_MAKE_FAST_ALLOCATED;
 public:
-    static PassOwnPtr<BeginFilterDisplayItem> create(DisplayItemClient client, Type type, PassRefPtr<ImageFilter> imageFilter, const LayoutRect& bounds) { return adoptPtr(new BeginFilterDisplayItem(client, type, imageFilter, bounds)); }
+    static PassOwnPtr<BeginFilterDisplayItem> create(DisplayItemClient client, Type type, PassRefPtr<ImageFilter> imageFilter, const LayoutRect& bounds)
+    {
+        return adoptPtr(new BeginFilterDisplayItem(client, type, imageFilter, bounds));
+    }
+
+    BeginFilterDisplayItem(DisplayItemClient client, Type type, PassRefPtr<ImageFilter> imageFilter, const LayoutRect& bounds)
+        : DisplayItem(client, type)
+        , m_imageFilter(imageFilter)
+        , m_bounds(bounds) { }
 
     virtual void replay(GraphicsContext*) override;
     virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
-
-protected:
-    BeginFilterDisplayItem(DisplayItemClient client, Type type, PassRefPtr<ImageFilter> imageFilter, const LayoutRect& bounds)
-        : DisplayItem(client, type), m_imageFilter(imageFilter), m_bounds(bounds) { }
 
 private:
 #ifndef NDEBUG
@@ -38,15 +43,18 @@ private:
 };
 
 class PLATFORM_EXPORT EndFilterDisplayItem : public DisplayItem {
+    WTF_MAKE_FAST_ALLOCATED;
 public:
-    static PassOwnPtr<EndFilterDisplayItem> create(DisplayItemClient client) { return adoptPtr(new EndFilterDisplayItem(client)); }
+    static PassOwnPtr<EndFilterDisplayItem> create(DisplayItemClient client)
+    {
+        return adoptPtr(new EndFilterDisplayItem(client));
+    }
+
+    EndFilterDisplayItem(DisplayItemClient client)
+        : DisplayItem(client, EndFilter) { }
 
     virtual void replay(GraphicsContext*) override;
     virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
-
-protected:
-    EndFilterDisplayItem(DisplayItemClient client)
-        : DisplayItem(client, EndFilter) { }
 
 private:
 #ifndef NDEBUG
