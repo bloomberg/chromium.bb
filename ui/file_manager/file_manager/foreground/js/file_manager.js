@@ -257,10 +257,6 @@ function FileManager() {
    * @private {?boolean}
    */
   this.importEnabled_ = null;
-
-  // Object.seal() has big performance/memory overhead for now, so we use
-  // Object.preventExtensions() here. crbug.com/412239.
-  Object.preventExtensions(this);
 }
 
 FileManager.prototype = /** @struct */ {

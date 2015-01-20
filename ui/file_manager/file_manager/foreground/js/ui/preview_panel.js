@@ -289,12 +289,12 @@ PreviewPanel.prototype.updatePreviewArea_ = function() {
  * CalculatingSizeLabel.PERIOD milliseconds.
  * @param {Element} element DOM element of the label.
  * @constructor
+ * @struct
  */
 PreviewPanel.CalculatingSizeLabel = function(element) {
   this.element_ = element;
   this.count_ = 0;
   this.intervalID_ = 0;
-  Object.seal(this);
 };
 
 /**
@@ -303,7 +303,7 @@ PreviewPanel.CalculatingSizeLabel = function(element) {
  */
 PreviewPanel.CalculatingSizeLabel.PERIOD = 500;
 
-PreviewPanel.CalculatingSizeLabel.prototype = {
+PreviewPanel.CalculatingSizeLabel.prototype = /** @struct */ {
   /**
    * Set visibility of the label.
    * When it is displayed, the text is animated.

@@ -58,6 +58,7 @@ Object.freeze(ProgressItemType);
 /**
  * Item of the progress center.
  * @constructor
+ * @struct
  */
 var ProgressCenterItem = function() {
   /**
@@ -115,13 +116,9 @@ var ProgressCenterItem = function() {
    * @type {?function()}
    */
   this.cancelCallback = null;
-
-  // This object is instantiated many time. Object.seal use more memory
-  // than Object.preventExtensions (crbug.com/412307)
-  Object.preventExtensions(this);
 };
 
-ProgressCenterItem.prototype = {
+ProgressCenterItem.prototype = /** @struct */ {
   /**
    * Setter of Item ID.
    * @param {string} value New value of ID.
