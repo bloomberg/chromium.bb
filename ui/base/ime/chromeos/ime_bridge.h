@@ -6,6 +6,7 @@
 #define UI_BASE_IME_CHROMEOS_IME_BRIDGE_H_
 
 #include <string>
+#include <vector>
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/strings/string16.h"
