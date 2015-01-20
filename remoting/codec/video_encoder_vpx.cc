@@ -39,8 +39,8 @@ const int kMacroBlockSize = 16;
 const int kVp9I420ProfileNumber = 0;
 const int kVp9I444ProfileNumber = 1;
 
-void SetCommonCodecParameters(const webrtc::DesktopSize& size,
-                              vpx_codec_enc_cfg_t* config) {
+void SetCommonCodecParameters(vpx_codec_enc_cfg_t* config,
+                              const webrtc::DesktopSize& size) {
   // Use millisecond granularity time base.
   config->g_timebase.num = 1;
   config->g_timebase.den = 1000;
@@ -69,95 +69,70 @@ void SetCommonCodecParameters(const webrtc::DesktopSize& size,
   config->g_threads = (base::SysInfo::NumberOfProcessors() > 2) ? 2 : 1;
 }
 
-ScopedVpxCodec CreateVP8Codec(const webrtc::DesktopSize& size) {
-  ScopedVpxCodec codec(new vpx_codec_ctx_t);
-
-  // Configure the encoder.
-  vpx_codec_enc_cfg_t config;
-  const vpx_codec_iface_t* algo = vpx_codec_vp8_cx();
-  CHECK(algo);
-  vpx_codec_err_t ret = vpx_codec_enc_config_default(algo, &config, 0);
-  if (ret != VPX_CODEC_OK)
-    return ScopedVpxCodec();
-
-  SetCommonCodecParameters(size, &config);
+void SetVp8CodecParameters(vpx_codec_enc_cfg_t* config,
+                           const webrtc::DesktopSize& size) {
+  SetCommonCodecParameters(config, size);
 
   // Value of 2 means using the real time profile. This is basically a
   // redundant option since we explicitly select real time mode when doing
   // encoding.
-  config.g_profile = 2;
+  config->g_profile = 2;
 
   // Clamping the quantizer constrains the worst-case quality and CPU usage.
-  config.rc_min_quantizer = 20;
-  config.rc_max_quantizer = 30;
-
-  if (vpx_codec_enc_init(codec.get(), algo, &config, 0))
-    return ScopedVpxCodec();
-
-  // Value of 16 will have the smallest CPU load. This turns off subpixel
-  // motion search.
-  if (vpx_codec_control(codec.get(), VP8E_SET_CPUUSED, 16))
-    return ScopedVpxCodec();
-
-  // Use the lowest level of noise sensitivity so as to spend less time
-  // on motion estimation and inter-prediction mode.
-  if (vpx_codec_control(codec.get(), VP8E_SET_NOISE_SENSITIVITY, 0))
-    return ScopedVpxCodec();
-
-  return codec.Pass();
+  config->rc_min_quantizer = 20;
+  config->rc_max_quantizer = 30;
 }
 
-ScopedVpxCodec CreateVP9Codec(const webrtc::DesktopSize& size,
-                              bool lossless_color,
-                              bool lossless_encode) {
-  ScopedVpxCodec codec(new vpx_codec_ctx_t);
-
-  // Configure the encoder.
-  vpx_codec_enc_cfg_t config;
-  const vpx_codec_iface_t* algo = vpx_codec_vp9_cx();
-  CHECK(algo);
-  vpx_codec_err_t ret = vpx_codec_enc_config_default(algo, &config, 0);
-  if (ret != VPX_CODEC_OK)
-    return ScopedVpxCodec();
-
-  SetCommonCodecParameters(size, &config);
+void SetVp9CodecParameters(vpx_codec_enc_cfg_t* config,
+                           const webrtc::DesktopSize& size,
+                           bool lossless_color,
+                           bool lossless_encode) {
+  SetCommonCodecParameters(config, size);
 
   // Configure VP9 for I420 or I444 source frames.
-  config.g_profile =
+  config->g_profile =
       lossless_color ? kVp9I444ProfileNumber : kVp9I420ProfileNumber;
 
   if (lossless_encode) {
     // Disable quantization entirely, putting the encoder in "lossless" mode.
-    config.rc_min_quantizer = 0;
-    config.rc_max_quantizer = 0;
+    config->rc_min_quantizer = 0;
+    config->rc_max_quantizer = 0;
   } else {
     // Lossy encode using the same settings as for VP8.
-    config.rc_min_quantizer = 20;
-    config.rc_max_quantizer = 30;
+    config->rc_min_quantizer = 20;
+    config->rc_max_quantizer = 30;
   }
+}
 
-  if (vpx_codec_enc_init(codec.get(), algo, &config, 0))
-    return ScopedVpxCodec();
+void SetVp8CodecOptions(vpx_codec_ctx_t* codec) {
+  // CPUUSED of 16 will have the smallest CPU load. This turns off sub-pixel
+  // motion search.
+  vpx_codec_err_t ret = vpx_codec_control(codec, VP8E_SET_CPUUSED, 16);
+  DCHECK_EQ(VPX_CODEC_OK, ret) << "Failed to set CPUUSED";
 
+  // Use the lowest level of noise sensitivity so as to spend less time
+  // on motion estimation and inter-prediction mode.
+  ret = vpx_codec_control(codec, VP8E_SET_NOISE_SENSITIVITY, 0);
+  DCHECK_EQ(VPX_CODEC_OK, ret) << "Failed to set noise sensitivity";
+}
+
+void SetVp9CodecOptions(vpx_codec_ctx_t* codec, bool lossless_encode) {
   // Request the lowest-CPU usage that VP9 supports, which depends on whether
   // we are encoding lossy or lossless.
   // Note that this is configured via the same parameter as for VP8.
   int cpu_used = lossless_encode ? 5 : 6;
-  if (vpx_codec_control(codec.get(), VP8E_SET_CPUUSED, cpu_used))
-    return ScopedVpxCodec();
+  vpx_codec_err_t ret = vpx_codec_control(codec, VP8E_SET_CPUUSED, cpu_used);
+  DCHECK_EQ(VPX_CODEC_OK, ret) << "Failed to set CPUUSED";
 
   // Use the lowest level of noise sensitivity so as to spend less time
   // on motion estimation and inter-prediction mode.
-  if (vpx_codec_control(codec.get(), VP9E_SET_NOISE_SENSITIVITY, 0))
-    return ScopedVpxCodec();
+  ret = vpx_codec_control(codec, VP9E_SET_NOISE_SENSITIVITY, 0);
+  DCHECK_EQ(VPX_CODEC_OK, ret) << "Failed to set noise sensitivity";
 
   // Configure the codec to tune it for screen media.
-  if (vpx_codec_control(
-          codec.get(), VP9E_SET_TUNE_CONTENT, VP9E_CONTENT_SCREEN)) {
-    return ScopedVpxCodec();
-  }
-
-  return codec.Pass();
+  ret = vpx_codec_control(
+      codec, VP9E_SET_TUNE_CONTENT, VP9E_CONTENT_SCREEN);
+  DCHECK_EQ(VPX_CODEC_OK, ret) << "Failed to set screen content mode";
 }
 
 void CreateImage(bool use_i444,
@@ -198,7 +173,7 @@ void CreateImage(bool use_i444,
   // Pad the Y, U and V planes' height out to compensate.
   // Assuming macroblocks are 16x16, aligning the planes' strides above also
   // macroblock aligned them.
-  DCHECK_EQ(16, kMacroBlockSize);
+  COMPILE_ASSERT(kMacroBlockSize == 16, macroblock_size_not_16);
   const int y_rows = ((image->h - 1) & ~(kMacroBlockSize-1)) + kMacroBlockSize;
   const int uv_rows = y_rows >> image->y_chroma_shift;
 
@@ -240,14 +215,19 @@ VideoEncoderVpx::~VideoEncoderVpx() {}
 void VideoEncoderVpx::SetLosslessEncode(bool want_lossless) {
   if (use_vp9_ && (want_lossless != lossless_encode_)) {
     lossless_encode_ = want_lossless;
-    codec_.reset(); // Force encoder re-initialization.
+    if (codec_)
+      Configure(webrtc::DesktopSize(image_->w, image_->h));
   }
 }
 
 void VideoEncoderVpx::SetLosslessColor(bool want_lossless) {
   if (use_vp9_ && (want_lossless != lossless_color_)) {
     lossless_color_ = want_lossless;
-    codec_.reset(); // Force encoder re-initialization.
+    // TODO(wez): Switch to ConfigureCodec() path once libvpx supports it.
+    // See https://code.google.com/p/webm/issues/detail?id=913.
+    //if (codec_)
+    //  Configure(webrtc::DesktopSize(image_->w, image_->h));
+    codec_.reset();
   }
 }
 
@@ -258,14 +238,10 @@ scoped_ptr<VideoPacket> VideoEncoderVpx::Encode(
 
   base::TimeTicks encode_start_time = base::TimeTicks::Now();
 
+  // Create or reconfigure the codec to match the size of |frame|.
   if (!codec_ ||
       !frame.size().equals(webrtc::DesktopSize(image_->w, image_->h))) {
-    bool ret = Initialize(frame.size());
-    // TODO(hclam): Handle error better.
-    CHECK(ret) << "Initialization of encoder failed";
-
-    // Set now as the base for timestamp calculation.
-    timestamp_base_ = encode_start_time;
+    Configure(frame.size());
   }
 
   // Convert the updated capture data ready for encode.
@@ -341,28 +317,63 @@ VideoEncoderVpx::VideoEncoderVpx(bool use_vp9)
   }
 }
 
-bool VideoEncoderVpx::Initialize(const webrtc::DesktopSize& size) {
+void VideoEncoderVpx::Configure(const webrtc::DesktopSize& size) {
   DCHECK(use_vp9_ || !lossless_color_);
   DCHECK(use_vp9_ || !lossless_encode_);
-
-  codec_.reset();
 
   // (Re)Create the VPX image structure and pixel buffer.
   CreateImage(lossless_color_, size, &image_, &image_buffer_);
 
   // Initialize active map.
-  active_map_width_ = (image_->w + kMacroBlockSize - 1) / kMacroBlockSize;
-  active_map_height_ = (image_->h + kMacroBlockSize - 1) / kMacroBlockSize;
+  active_map_width_ = (size.width() + kMacroBlockSize - 1) / kMacroBlockSize;
+  active_map_height_ = (size.height() + kMacroBlockSize - 1) / kMacroBlockSize;
   active_map_.reset(new uint8[active_map_width_ * active_map_height_]);
 
-  // (Re)Initialize the codec.
-  if (use_vp9_) {
-    codec_ = CreateVP9Codec(size, lossless_color_, lossless_encode_);
-  } else {
-    codec_ = CreateVP8Codec(size);
+  // TODO(wez): Remove this hack once VPX can handle frame size reconfiguration.
+  // See https://code.google.com/p/webm/issues/detail?id=912.
+  if (codec_) {
+    // If the frame size has changed then force re-creation of the codec.
+    if (codec_->config.enc->g_w != static_cast<unsigned int>(size.width()) ||
+        codec_->config.enc->g_h != static_cast<unsigned int>(size.height())) {
+      codec_.reset();
+    }
   }
 
-  return codec_;
+  // (Re)Set the base for frame timestamps if the codec is being (re)created.
+  if (!codec_) {
+    timestamp_base_ = base::TimeTicks::Now();
+  }
+
+  // Fetch a default configuration for the desired codec.
+  const vpx_codec_iface_t* interface =
+      use_vp9_ ? vpx_codec_vp9_cx() : vpx_codec_vp8_cx();
+  vpx_codec_enc_cfg_t config;
+  vpx_codec_err_t ret = vpx_codec_enc_config_default(interface, &config, 0);
+  DCHECK_EQ(VPX_CODEC_OK, ret) << "Failed to fetch default configuration";
+
+  // Customize the default configuration to our needs.
+  if (use_vp9_) {
+    SetVp9CodecParameters(&config, size, lossless_color_, lossless_encode_);
+  } else {
+    SetVp8CodecParameters(&config, size);
+  }
+
+  // Initialize or re-configure the codec with the custom configuration.
+  if (!codec_) {
+    codec_.reset(new vpx_codec_ctx_t);
+    ret = vpx_codec_enc_init(codec_.get(), interface, &config, 0);
+    CHECK_EQ(VPX_CODEC_OK, ret) << "Failed to initialize codec";
+  } else {
+    ret = vpx_codec_enc_config_set(codec_.get(), &config);
+    CHECK_EQ(VPX_CODEC_OK, ret) << "Failed to reconfigure codec";
+  }
+
+  // Apply further customizations to the codec now it's initialized.
+  if (use_vp9_) {
+    SetVp9CodecOptions(codec_.get(), lossless_encode_);
+  } else {
+    SetVp8CodecOptions(codec_.get());
+  }
 }
 
 void VideoEncoderVpx::PrepareImage(const webrtc::DesktopFrame& frame,

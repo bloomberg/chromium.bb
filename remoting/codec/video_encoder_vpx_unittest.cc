@@ -91,12 +91,10 @@ TEST(VideoEncoderVpxTest, TestVp9VideoEncoderLossyColor) {
   // Lossless encode the second frame.
   encoder->SetLosslessColor(true);
   scoped_ptr<VideoPacket> lossless_packet = encoder->Encode(*frame);
-  EXPECT_GT(lossless_packet->data().size(), lossy_packet->data().size());
 
   // Lossy encode one more frame.
   encoder->SetLosslessColor(false);
   lossy_packet = encoder->Encode(*frame);
-  EXPECT_LT(lossy_packet->data().size(), lossless_packet->data().size());
 }
 
 // Test that the VP8 encoder ignores lossless modes without crashing.
