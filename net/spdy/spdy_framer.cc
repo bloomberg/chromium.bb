@@ -1060,7 +1060,8 @@ void SpdyFramer::ProcessControlFrameHeader(int control_frame_type_field) {
   if (current_frame_length_ >
       SpdyConstants::GetFrameMaximumSize(protocol_version()) +
           SpdyConstants::GetControlFrameHeaderSize(protocol_version())) {
-    DLOG(WARNING) << "Received control frame with way too big of a payload: "
+    DLOG(WARNING) << "Received control frame of type " << current_frame_type_
+                  << " with way too big of a payload: "
                   << current_frame_length_;
     set_error(SPDY_CONTROL_PAYLOAD_TOO_LARGE);
     return;
