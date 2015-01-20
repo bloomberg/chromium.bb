@@ -33,8 +33,9 @@ const char kAdviseOnGclientSolution[] =
 const char kTitlePageOfAppEngineAdminPage[] = "Instances";
 
 const char kIsApprtcCallUpJavascript[] =
+    "var remoteVideo = document.querySelector('#remote-video');"
     "var remoteVideoActive ="
-    "    typeof remoteVideo != undefined &&"
+    "    remoteVideo != null &&"
     "    remoteVideo.classList.contains('active');"
     "window.domAutomationController.send(remoteVideoActive.toString());";
 
