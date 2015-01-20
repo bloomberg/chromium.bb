@@ -2977,54 +2977,50 @@ void SpdyFramer::WritePayloadWithContinuation(SpdyFrameBuilder* builder,
                                               SpdyStreamId stream_id,
                                               SpdyFrameType type,
                                               int padding_payload_len) {
-    uint8 end_flag = 0;
-    uint8 flags = 0;
-    if (type == HEADERS) {
-      end_flag = HEADERS_FLAG_END_HEADERS;
-    } else if (type == PUSH_PROMISE) {
-      end_flag = PUSH_PROMISE_FLAG_END_PUSH_PROMISE;
-    } else {
-      DLOG(FATAL) << "CONTINUATION frames cannot be used with frame type "
-                  << FrameTypeToString(type);
-    }
+  uint8 end_flag = 0;
+  uint8 flags = 0;
+  if (type == HEADERS) {
+    end_flag = HEADERS_FLAG_END_HEADERS;
+  } else if (type == PUSH_PROMISE) {
+    end_flag = PUSH_PROMISE_FLAG_END_PUSH_PROMISE;
+  } else {
+    DLOG(FATAL) << "CONTINUATION frames cannot be used with frame type "
+                << FrameTypeToString(type);
+  }
 
-    // Write all the padding payload and as much of the data payload as possible
-    // into the initial frame.
-    size_t bytes_remaining = 0;
-    bytes_remaining = hpack_encoding.size() -
-                      std::min(hpack_encoding.size(),
-                               kMaxControlFrameSize - builder->length() -
-                                   padding_payload_len);
-    builder->WriteBytes(&hpack_encoding[0],
-                        hpack_encoding.size() - bytes_remaining);
-    if (padding_payload_len > 0) {
-      string padding = string(padding_payload_len, 0);
-      builder->WriteBytes(padding.data(), padding.length());
-    }
-    if (bytes_remaining > 0) {
-      builder->OverwriteLength(*this,
-          kMaxControlFrameSize - GetControlFrameHeaderSize());
-    }
+  // Write all the padding payload and as much of the data payload as possible
+  // into the initial frame.
+  size_t bytes_remaining = 0;
+  bytes_remaining =
+      hpack_encoding.size() -
+      std::min(hpack_encoding.size(),
+               kMaxControlFrameSize - builder->length() - padding_payload_len);
+  builder->WriteBytes(&hpack_encoding[0],
+                      hpack_encoding.size() - bytes_remaining);
+  if (padding_payload_len > 0) {
+    string padding = string(padding_payload_len, 0);
+    builder->WriteBytes(padding.data(), padding.length());
+  }
+  if (bytes_remaining > 0) {
+    builder->OverwriteLength(
+        *this, kMaxControlFrameSize - GetControlFrameHeaderSize());
+  }
 
-    // Tack on CONTINUATION frames for the overflow.
-    while (bytes_remaining > 0) {
-      size_t bytes_to_write = std::min(bytes_remaining,
-                                       kMaxControlFrameSize -
-                                       GetContinuationMinimumSize());
-      // Write CONTINUATION frame prefix.
-      if (bytes_remaining == bytes_to_write) {
-        flags |= end_flag;
-      }
-      builder->BeginNewFrame(*this,
-                             CONTINUATION,
-                             flags,
-                             stream_id);
-      // Write payload fragment.
-      builder->WriteBytes(&hpack_encoding[hpack_encoding.size() -
-                                          bytes_remaining],
-                          bytes_to_write);
-      bytes_remaining -= bytes_to_write;
+  // Tack on CONTINUATION frames for the overflow.
+  while (bytes_remaining > 0) {
+    size_t bytes_to_write = std::min(
+        bytes_remaining, kMaxControlFrameSize - GetContinuationMinimumSize());
+    // Write CONTINUATION frame prefix.
+    if (bytes_remaining == bytes_to_write) {
+      flags |= end_flag;
     }
+    builder->BeginNewFrame(*this, CONTINUATION, flags, stream_id);
+    // Write payload fragment.
+    builder->WriteBytes(
+        &hpack_encoding[hpack_encoding.size() - bytes_remaining],
+        bytes_to_write);
+    bytes_remaining -= bytes_to_write;
+  }
 }
 
 // The following compression setting are based on Brian Olson's analysis. See
