@@ -369,37 +369,41 @@ PDFViewer.prototype = {
         url = originalUrl + url;
     }
 
-    var inputURL = url;
     // If there's no scheme, add http.
-    if (inputURL.indexOf('://') == -1 && inputURL.indexOf('mailto:') == -1)
-      inputURL = 'http://' + inputURL;
+    if (url.indexOf('://') == -1 && url.indexOf('mailto:') == -1)
+      url = 'http://' + url;
 
-    // Make sure inputURL starts with a valid scheme.
-    if (inputURL.indexOf('http://') != 0 &&
-        inputURL.indexOf('https://') != 0 &&
-        inputURL.indexOf('ftp://') != 0 &&
-        inputURL.indexOf('file://') != 0 &&
-        inputURL.indexOf('mailto:') != 0) {
+    // Make sure url starts with a valid scheme.
+    if (url.indexOf('http://') != 0 &&
+        url.indexOf('https://') != 0 &&
+        url.indexOf('ftp://') != 0 &&
+        url.indexOf('file://') != 0 &&
+        url.indexOf('mailto:') != 0) {
       return;
     }
-    // Make sure inputURL is not only a scheme.
-    if (inputURL == 'http://' ||
-        inputURL == 'https://' ||
-        inputURL == 'ftp://' ||
-        inputURL == 'file://' ||
-        inputURL == 'mailto:') {
+    // Make sure url is not only a scheme.
+    if (url == 'http://' ||
+        url == 'https://' ||
+        url == 'ftp://' ||
+        url == 'file://' ||
+        url == 'mailto:') {
       return;
     }
 
     if (newTab) {
-      chrome.tabs.create({ url: inputURL });
+      // Prefer the tabs API because it guarantees we can just open a new tab.
+      // window.open doesn't have this guarantee.
+      if (chrome.tabs)
+        chrome.tabs.create({ url: url });
+      else
+        window.open(url);
     } else {
       var pageNumber =
-          this.paramsParser_.getViewportFromUrlParams(inputURL).page;
+          this.paramsParser_.getViewportFromUrlParams(url).page;
       if (pageNumber != undefined)
         this.viewport_.goToPage(pageNumber);
       else
-        window.location.href = inputURL;
+        window.location.href = url;
     }
   },
 
@@ -448,9 +452,11 @@ PDFViewer.prototype = {
         this.updateProgress_(message.data.progress);
         break;
       case 'navigate':
+        // If in print preview, always open a new tab.
         if (this.isPrintPreview_)
-          break;
-        this.navigate_(message.data.url, message.data.newTab);
+          this.navigate_(message.data.url, true);
+        else
+          this.navigate_(message.data.url, message.data.newTab);
         break;
       case 'setNamedDestinations':
         this.paramsParser_.namedDestinations = message.data.namedDestinations;
