@@ -429,7 +429,7 @@
                             'mvanouwerkerk+watch@chromium.org',
                             'ch.dumez@samsung.com',
                             'mlamouri+watch-blink@chromium.org' ],
-    'webp': [ 'urvang@google.com',
+    'webp': [ 'urvang@chromium.org',
               'jzern@chromium.org',
               'skal@google.com',
               'vikasa@google.com' ],
