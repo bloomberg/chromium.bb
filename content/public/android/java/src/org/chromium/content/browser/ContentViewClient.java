@@ -121,24 +121,6 @@ public class ContentViewClient {
     }
 
     /**
-     * Notification that the selection has changed.
-     * TODO(donnd): Remove this ASAP, once downstream no longer calls this. crbug.com/403001.
-     * @param selection The newly established selection.
-     */
-    @Deprecated
-    public void onSelectionChanged(String selection) {}
-
-    /**
-     * Notification that a selection or insertion-related event has occurred.
-     * TODO(donnd): Remove this ASAP, once downstream no longer calls this. crbug.com/403001.
-     * @param eventType The selection event type, see {@link SelectionEventType}.
-     * @param posXPix The x coordinate of the selection start handle.
-     * @param posYPix The y coordinate of the selection start handle.
-     */
-    @Deprecated
-    public void onSelectionEvent(int eventType, float posXPix, float posYPix) {}
-
-    /**
      * Called when a new content intent is requested to be started.
      */
     public void onStartContentIntent(Context context, String intentUrl) {

@@ -2176,10 +2176,6 @@ public class ContentViewCore
             default:
                 assert false : "Invalid selection event type.";
         }
-
-        // TODO(donnd): remove this line once downstream changes from using the ContentViewClient to
-        // using the CoontextualSearchClient.  See crbug.com/403001.
-        getContentViewClient().onSelectionEvent(eventType, x, y);
         if (mContextualSearchClient != null) {
             mContextualSearchClient.onSelectionEvent(eventType, x, y);
         }
@@ -2417,9 +2413,6 @@ public class ContentViewCore
     @CalledByNative
     private void onSelectionChanged(String text) {
         mLastSelectedText = text;
-        // TODO(donnd): remove this line once downstream changes from using the ContentViewClient to
-        // using the CoontextualSearchClient.  See crbug.com/403001.
-        getContentViewClient().onSelectionChanged(text);
         if (mContextualSearchClient != null) {
             mContextualSearchClient.onSelectionChanged(text);
         }
