@@ -28,7 +28,7 @@ class UI_BASE_EXPORT MockIMEEngineHandler : public IMEEngineHandlerInterface {
   void SetSurroundingText(const std::string& text,
                           uint32 cursor_pos,
                           uint32 anchor_pos) override;
-  void SetCompositionBounds(const gfx::Rect& bounds) override;
+  void SetCompositionBounds(const std::vector<gfx::Rect>& bounds) override;
 
   int focus_in_call_count() const { return focus_in_call_count_; }
   int focus_out_call_count() const { return focus_out_call_count_; }

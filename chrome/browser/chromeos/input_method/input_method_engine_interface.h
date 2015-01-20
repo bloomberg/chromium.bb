@@ -171,7 +171,8 @@ class InputMethodEngineInterface : public IMEEngineHandlerInterface {
                                           int anchor_pos) = 0;
 
     // Called when composition bounds are changed.
-    virtual void OnCompositionBoundsChanged(const gfx::Rect& bounds) = 0;
+    virtual void OnCompositionBoundsChanged(
+        const std::vector<gfx::Rect>& bounds) = 0;
 
     // Called when Chrome terminates on-going text input session.
     virtual void OnReset(const std::string& engine_id) = 0;

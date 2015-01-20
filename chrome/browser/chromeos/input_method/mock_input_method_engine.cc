@@ -129,7 +129,8 @@ void MockInputMethodEngine::SetSurroundingText(const std::string& text,
                                                uint32 anchor_pos) {
 }
 
-void MockInputMethodEngine::SetCompositionBounds(const gfx::Rect& bounds) {
+void MockInputMethodEngine::SetCompositionBounds(
+    const std::vector<gfx::Rect>& bounds) {
 }
 
 }  // namespace chromeos

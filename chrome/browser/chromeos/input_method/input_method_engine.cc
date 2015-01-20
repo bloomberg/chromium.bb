@@ -500,7 +500,8 @@ void InputMethodEngine::HideInputView() {
   }
 }
 
-void InputMethodEngine::SetCompositionBounds(const gfx::Rect& bounds) {
+void InputMethodEngine::SetCompositionBounds(
+    const std::vector<gfx::Rect>& bounds) {
   observer_->OnCompositionBoundsChanged(bounds);
 }
 

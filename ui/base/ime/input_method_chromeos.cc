@@ -186,21 +186,29 @@ void InputMethodChromeOS::OnCaretBoundsChanged(const TextInputClient* client) {
   // The current text input type should not be NONE if |context_| is focused.
   DCHECK(client == GetTextInputClient());
   DCHECK(!IsTextInputTypeNone());
-  const gfx::Rect rect = client->GetCaretBounds();
+  const gfx::Rect caret_rect = client->GetCaretBounds();
 
   gfx::Rect composition_head;
-  if (client->GetCompositionCharacterBounds(0, &composition_head)) {
-    if (GetEngine())
-      GetEngine()->SetCompositionBounds(composition_head);
+  if (client->HasCompositionText()) {
+    std::vector<gfx::Rect> rects;
+    uint32 i = 0;
+    gfx::Rect rect;
+    while (client->GetCompositionCharacterBounds(i++, &rect))
+      rects.push_back(rect);
+    if (rects.size() > 0) {
+      if (GetEngine())
+        GetEngine()->SetCompositionBounds(rects);
+      composition_head = rects[0];
+    }
   } else {
-    composition_head = rect;
+    composition_head = caret_rect;
   }
 
   chromeos::IMECandidateWindowHandlerInterface* candidate_window =
       chromeos::IMEBridge::Get()->GetCandidateWindowHandler();
   if (!candidate_window)
     return;
-  candidate_window->SetCursorBounds(rect, composition_head);
+  candidate_window->SetCursorBounds(caret_rect, composition_head);
 
   gfx::Range text_range;
   gfx::Range selection_range;

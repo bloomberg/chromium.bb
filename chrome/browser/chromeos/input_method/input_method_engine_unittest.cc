@@ -94,7 +94,8 @@ class TestObserver : public InputMethodEngineInterface::Observer {
                                 const std::string& text,
                                 int cursor_pos,
                                 int anchor_pos) override {}
-  void OnCompositionBoundsChanged(const gfx::Rect& bounds) override {
+  void OnCompositionBoundsChanged(
+      const std::vector<gfx::Rect>& bounds) override {
     calls_bitmap_ |= ONCOMPOSITIONBOUNDSCHANGED;
   }
   void OnReset(const std::string& engine_id) override {}
@@ -253,7 +254,9 @@ TEST_F(InputMethodEngineTest, TestHistograms) {
 TEST_F(InputMethodEngineTest, TestCompositionBoundsChanged) {
   CreateEngine(true);
   // Enable/disable with focus.
-  engine_->SetCompositionBounds(gfx::Rect());
+  std::vector<gfx::Rect> rects;
+  rects.push_back(gfx::Rect());
+  engine_->SetCompositionBounds(rects);
   EXPECT_EQ(ONCOMPOSITIONBOUNDSCHANGED,
             observer_->GetCallsBitmapAndReset());
 }

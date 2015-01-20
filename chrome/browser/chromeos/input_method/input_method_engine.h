@@ -89,7 +89,7 @@ class InputMethodEngine : public InputMethodEngineInterface {
                           uint32 cursor_pos,
                           uint32 anchor_pos) override;
   void HideInputView() override;
-  void SetCompositionBounds(const gfx::Rect& bounds) override;
+  void SetCompositionBounds(const std::vector<gfx::Rect>& bounds) override;
 
   int GetCotextIdForTesting() { return context_id_; }
 

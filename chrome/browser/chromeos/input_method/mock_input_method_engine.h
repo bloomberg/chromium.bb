@@ -80,7 +80,7 @@ class MockInputMethodEngine : public InputMethodEngineInterface {
   void SetSurroundingText(const std::string& text,
                           uint32 cursor_pos,
                           uint32 anchor_pos) override;
-  void SetCompositionBounds(const gfx::Rect& bounds) override;
+  void SetCompositionBounds(const std::vector<gfx::Rect>& bounds) override;
   void HideInputView() override;
 
   std::string last_activated_property() const {

@@ -283,19 +283,33 @@ class ImeObserver : public InputMethodEngineInterface::Observer {
                              args.Pass());
   }
 
-  void OnCompositionBoundsChanged(const gfx::Rect& bounds) override {
+  void OnCompositionBoundsChanged(
+      const std::vector<gfx::Rect>& bounds) override {
     if (extension_id_.empty() ||
         !HasListener(kOnCompositionBoundsChangedEventName))
       return;
 
     // Note: this is a private API event.
+    base::ListValue* bounds_list = new base::ListValue();
+    for (size_t i = 0; i < bounds.size(); ++i) {
+      base::DictionaryValue* bounds_value = new base::DictionaryValue();
+      bounds_value->SetInteger("x", bounds[i].x());
+      bounds_value->SetInteger("y", bounds[i].y());
+      bounds_value->SetInteger("w", bounds[i].width());
+      bounds_value->SetInteger("h", bounds[i].height());
+      bounds_list->Append(bounds_value);
+    }
+
+    if (bounds_list->GetSize() <= 0)
+      return;
     scoped_ptr<base::ListValue> args(new base::ListValue());
-    base::DictionaryValue* bounds_value = new base::DictionaryValue();
-    bounds_value->SetInteger("x", bounds.x());
-    bounds_value->SetInteger("y", bounds.y());
-    bounds_value->SetInteger("w", bounds.width());
-    bounds_value->SetInteger("h", bounds.height());
-    args->Append(bounds_value);
+
+    // The old extension code uses the first parameter to get the bounds of the
+    // first composition character, so for backward compatibility, add it here.
+    base::Value* first_value = NULL;
+    if (bounds_list->Get(0, &first_value))
+      args->Append(first_value->DeepCopy());
+    args->Append(bounds_list);
 
     DispatchEventToExtension(extension_id_,
                              kOnCompositionBoundsChangedEventName,
