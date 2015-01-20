@@ -33,7 +33,7 @@ namespace {
 // our IDs correctly in its commit response, so a new ID during GetUpdate should
 // be rare.
 //
-// The only secnarios I can think of where this might happen are:
+// The only scenarios I can think of where this might happen are:
 // - We commit a  new item to the server, but we don't persist the
 // server-returned new ID to the database before we shut down.  On the GetUpdate
 // following the next restart, we will receive an update from the server that
