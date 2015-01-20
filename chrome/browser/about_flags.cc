@@ -1267,11 +1267,18 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(chromeos::switches::kEnableNewQPInputView)
   },
   {
-    "enable-physical-keyboard-autocorrect",
-    IDS_FLAGS_ENABLE_PHYSICAL_KEYBOARD_AUTOCORRECT_NAME,
-    IDS_FLAGS_ENABLE_PHYSICAL_KEYBOARD_AUTOCORRECT_DESCRIPTION,
+    "disable-physical-keyboard-autocorrect",
+    IDS_FLAGS_DISABLE_PHYSICAL_KEYBOARD_AUTOCORRECT_NAME,
+    IDS_FLAGS_DISABLE_PHYSICAL_KEYBOARD_AUTOCORRECT_DESCRIPTION,
     kOsCrOS,
-    SINGLE_VALUE_TYPE(chromeos::switches::kEnablePhysicalKeyboardAutocorrect)
+    SINGLE_VALUE_TYPE(chromeos::switches::kDisablePhysicalKeyboardAutocorrect)
+  },
+  {
+    "disable-voice-input",
+    IDS_FLAGS_DISABLE_VOICE_INPUT_NAME,
+    IDS_FLAGS_DISABLE_VOICE_INPUT_DESCRIPTION,
+    kOsCrOS,
+    SINGLE_VALUE_TYPE(chromeos::switches::kDisableVoiceInput)
   },
   {
     "enable-experimental-input-view-features",

@@ -50385,7 +50385,6 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="370486304" label="enable-origin-chip-on-srp"/>
   <int value="401983950" label="enable-spdy4"/>
   <int value="402143634" label="enable-search-button-in-omnibox-always"/>
-  <int value="415154056" label="enable-physical-keyboard-autocorrect"/>
   <int value="423615350" label="enable-tab-audio-muting"/>
   <int value="446316019" label="enable-threaded-compositing"/>
   <int value="451196246" label="disable-impl-side-painting"/>
@@ -50419,6 +50418,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="835018878" label="disable-quic"/>
   <int value="838887742" label="manual-enhanced-bookmarks"/>
   <int value="851085848" label="enable-settings-window"/>
+  <int value="855746780" label="disable-physical-keyboard-autocorrect"/>
   <int value="857445869" label="enable-captive-portal-bypass-proxy"/>
   <int value="869531646" label="enable-session-crashed-bubble"/>
   <int value="879699575" label="disable-gesture-tap-highlight"/>
@@ -50484,6 +50484,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1465624446" label="disable-zero-copy"/>
   <int value="1466380480" label="enable-device-discovery-notifications"/>
   <int value="1469407485" label="disable-accelerated-2d-canvas"/>
+  <int value="1479248574" label="disable-voice-input"/>
   <int value="1481562816" label="disable-password-link"/>
   <int value="1486171015" label="disable-fill-on-account-select"/>
   <int value="1490043732" label="enable-fill-on-account-select"/>

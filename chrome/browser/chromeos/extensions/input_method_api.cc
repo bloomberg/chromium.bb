@@ -34,8 +34,11 @@ ExtensionFunction::ResponseAction GetInputMethodConfigFunction::Run() {
   base::DictionaryValue* output = new base::DictionaryValue();
   output->SetBoolean(
       "isPhysicalKeyboardAutocorrectEnabled",
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kEnablePhysicalKeyboardAutocorrect));
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kDisablePhysicalKeyboardAutocorrect));
+  output->SetBoolean("isVoiceInputEnabled",
+                     !base::CommandLine::ForCurrentProcess()->HasSwitch(
+                         chromeos::switches::kDisableVoiceInput));
   output->SetBoolean("isNewQPInputViewEnabled",
                      base::CommandLine::ForCurrentProcess()->HasSwitch(
                          chromeos::switches::kEnableNewQPInputView));
