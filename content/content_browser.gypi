@@ -1676,6 +1676,7 @@
         'browser/devtools/devtools.gyp:devtools_protocol_handler',
         '../cc/cc.gyp:cc',
         '../cc/cc.gyp:cc_surfaces',
+        '../device/bluetooth/bluetooth.gyp:device_bluetooth',
         '../net/net.gyp:http_server',
         '../storage/storage_browser.gyp:storage',
         '../storage/storage_common.gyp:storage_common',

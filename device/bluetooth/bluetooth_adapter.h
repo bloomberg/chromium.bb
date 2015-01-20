@@ -197,7 +197,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
   // BluetoothAdapter. After this call, the BluetoothAdapter will behave as if
   // no Bluetooth controller exists in the local system. |IsPresent| will return
   // false.
-  void Shutdown();
+  virtual void Shutdown();
 #endif
 
   // Adds and removes observers for events on this bluetooth adapter. If

@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "content/common/bluetooth/bluetooth_error.h"
 #include "content/public/browser/browser_message_filter.h"
+#include "device/bluetooth/bluetooth_adapter.h"
 
 namespace content {
 
@@ -17,20 +18,30 @@ namespace content {
 // Intended to be instantiated by the RenderProcessHost and installed as
 // a filter on the channel. BrowserMessageFilter is refcounted and typically
 // lives as long as it is installed on a channel.
-class BluetoothDispatcherHost : public BrowserMessageFilter {
+class BluetoothDispatcherHost : public BrowserMessageFilter,
+                                public device::BluetoothAdapter::Observer {
  public:
-  BluetoothDispatcherHost();
+  // Creates a BluetoothDispatcherHost.
+  static scoped_refptr<BluetoothDispatcherHost> Create();
 
   // BrowserMessageFilter:
   bool OnMessageReceived(const IPC::Message& message) override;
 
  protected:
+  BluetoothDispatcherHost();
   ~BluetoothDispatcherHost() override;
 
  private:
+  // Set |adapter_| to a BluetoothAdapter instance and register observers,
+  // releasing references to previous |adapter_|.
+  void set_adapter(scoped_refptr<device::BluetoothAdapter> adapter);
+
   // IPC Handlers, see definitions in bluetooth_messages.h.
   void OnRequestDevice(int thread_id, int request_id);
   void OnSetBluetoothMockDataSetForTesting(const std::string& name);
+
+  // A BluetoothAdapter instance representing an adapter of the system.
+  scoped_refptr<device::BluetoothAdapter> adapter_;
 
   enum class MockData { NOT_MOCKING, REJECT, RESOLVE };
   MockData bluetooth_mock_data_set_;

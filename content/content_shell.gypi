@@ -48,6 +48,7 @@
         '../cc/cc.gyp:cc',
         '../components/components.gyp:crash_component',
         '../components/components.gyp:web_cache_renderer',
+        '../device/bluetooth/bluetooth.gyp:device_bluetooth',
         '../gin/gin.gyp:gin',
         '../gpu/gpu.gyp:gpu',
         '../ipc/ipc.gyp:ipc',

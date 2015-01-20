@@ -105,6 +105,7 @@ void BluetoothDispatcher::OnRequestDeviceSuccess(
     int thread_id,
     int request_id,
     const std::string& device_instance_id) {
+  DCHECK(pending_requests_.Lookup(request_id)) << request_id;
   pending_requests_.Lookup(request_id)
       ->onSuccess(
           new WebBluetoothDevice(WebString::fromUTF8(device_instance_id)));
@@ -114,6 +115,7 @@ void BluetoothDispatcher::OnRequestDeviceSuccess(
 void BluetoothDispatcher::OnRequestDeviceError(int thread_id,
                                                int request_id,
                                                BluetoothError error_type) {
+  DCHECK(pending_requests_.Lookup(request_id)) << request_id;
   pending_requests_.Lookup(request_id)
       ->onError(new WebBluetoothError(
           WebBluetoothErrorFromBluetoothError(error_type), ""));
