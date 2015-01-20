@@ -37,6 +37,10 @@
 #include "ui/views/win/hwnd_util.h"
 #endif
 
+#if defined(OS_MACOSX)
+#include "base/mac/mac_util.h"
+#endif
+
 namespace views {
 namespace test {
 
@@ -49,6 +53,15 @@ gfx::Point ConvertPointFromWidgetToView(View* view, const gfx::Point& p) {
   gfx::Point tmp(p);
   View::ConvertPointToTarget(view->GetWidget()->GetRootView(), view, &tmp);
   return tmp;
+}
+
+// Helper function for Snow Leopard special cases to avoid #ifdef litter.
+bool IsTestingSnowLeopard() {
+#if defined(OS_MACOSX)
+  return base::mac::IsOSSnowLeopard();
+#else
+  return false;
+#endif
 }
 
 }  // namespace
@@ -1141,8 +1154,15 @@ TEST_F(WidgetTest, GetRestoredBounds) {
 
   toplevel->SetFullscreen(true);
   RunPendingMessages();
-  EXPECT_NE(toplevel->GetWindowBoundsInScreen().ToString(),
-            toplevel->GetRestoredBounds().ToString());
+
+  if (IsTestingSnowLeopard()) {
+    // Fullscreen not implemented for Snow Leopard.
+    EXPECT_EQ(toplevel->GetWindowBoundsInScreen().ToString(),
+              toplevel->GetRestoredBounds().ToString());
+  } else {
+    EXPECT_NE(toplevel->GetWindowBoundsInScreen().ToString(),
+              toplevel->GetRestoredBounds().ToString());
+  }
   EXPECT_GT(toplevel->GetRestoredBounds().width(), 0);
   EXPECT_GT(toplevel->GetRestoredBounds().height(), 0);
 }
@@ -3220,7 +3240,13 @@ TEST_F(WidgetTest, FullscreenFrameLayout) {
   widget->SetFullscreen(true);
   widget->Show();
   RunPendingMessages();
-  EXPECT_TRUE(frame->fullscreen_layout_called());
+
+  if (IsTestingSnowLeopard()) {
+    // Fullscreen is currently ignored on Snow Leopard.
+    EXPECT_FALSE(frame->fullscreen_layout_called());
+  } else {
+    EXPECT_TRUE(frame->fullscreen_layout_called());
+  }
 
   widget->CloseNow();
 }

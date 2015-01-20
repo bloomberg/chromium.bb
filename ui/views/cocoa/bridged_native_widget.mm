@@ -536,6 +536,11 @@ void BridgedNativeWidget::RemoveChildWindow(BridgedNativeWidget* child) {
   DCHECK(location != child_windows_.end());
   child_windows_.erase(location);
   child->parent_ = nullptr;
+
+  // Note the child is sometimes removed already by AppKit. This depends on OS
+  // version, and possibly some unpredictable reference counting. Removing it
+  // here should be safe regardless.
+  [window_ removeChildWindow:child->window_];
 }
 
 void BridgedNativeWidget::NotifyVisibilityChangeDown() {
@@ -642,8 +647,12 @@ void BridgedNativeWidget::AddCompositorSuperview() {
   // Size and resize automatically with |bridged_view_|.
   [compositor_superview_
       setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
-  [compositor_superview_
-      setWantsBestResolutionOpenGLSurface:YES];  // For HiDPI.
+
+  // Enable HiDPI backing when supported (only on 10.7+).
+  if ([compositor_superview_ respondsToSelector:
+      @selector(setWantsBestResolutionOpenGLSurface:)]) {
+    [compositor_superview_ setWantsBestResolutionOpenGLSurface:YES];
+  }
 
   base::scoped_nsobject<CALayer> background_layer([[CALayer alloc] init]);
   [background_layer
