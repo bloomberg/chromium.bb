@@ -52,6 +52,7 @@
             '../mojo/mojo_base.gyp:mojo_common_lib',
             '../mojo/mojo_base.gyp:mojo_common_unittests',
             '../google_apis/google_apis.gyp:google_apis_unittests',
+            '../skia/skia_tests.gyp:skia_unittests',
             '../third_party/mojo/mojo_edk.gyp:mojo_system_impl',
             '../third_party/mojo/mojo_edk_tests.gyp:mojo_public_bindings_unittests',
             '../third_party/mojo/mojo_edk_tests.gyp:mojo_public_environment_unittests',
