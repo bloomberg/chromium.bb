@@ -18,7 +18,8 @@ const int kTupleSize = 4;
 
 namespace {
 
-COMPILE_ASSERT(kTupleSize >= 4 && kTupleSize <= 8, kTupleSize_between_4_and_8);
+static_assert(kTupleSize >= 4 && kTupleSize <= 8,
+              "kTupleSize should be between 4 and 8");
 
 size_t HashTuple(const uint8* source) {
   size_t hash1 = *reinterpret_cast<const uint32*>(source);

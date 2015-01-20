@@ -700,7 +700,7 @@ struct RelocBlockPOD {
   uint16 relocs[4096];  // Allow up to one relocation per byte of a 4k page.
 };
 
-COMPILE_ASSERT(offsetof(RelocBlockPOD, relocs) == 8, reloc_block_header_size);
+static_assert(offsetof(RelocBlockPOD, relocs) == 8, "reloc block header size");
 
 class RelocBlock {
  public:

@@ -424,8 +424,8 @@ BSDiffStatus CreateBinaryPatch(SourceStream* old_stream,
 
   MBSPatchHeader header;
   // The string will have a null terminator that we don't use, hence '-1'.
-  COMPILE_ASSERT(sizeof(MBS_PATCH_HEADER_TAG) - 1 == sizeof(header.tag),
-                 MBS_PATCH_HEADER_TAG_must_match_header_field_size);
+  static_assert(sizeof(MBS_PATCH_HEADER_TAG) - 1 == sizeof(header.tag),
+                "MBS_PATCH_HEADER_TAG must match header field size");
   memcpy(header.tag, MBS_PATCH_HEADER_TAG, sizeof(header.tag));
   header.slen     = oldsize;
   header.scrc32   = CalculateCrc(old, oldsize);

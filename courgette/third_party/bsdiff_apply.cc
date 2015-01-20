@@ -49,8 +49,8 @@ BSDiffStatus MBS_ReadHeader(SourceStream* stream, MBSPatchHeader* header) {
   if (!stream->ReadVarint32(&header->dlen)) return READ_ERROR;
 
   // The string will have a NUL terminator that we don't use, hence '-1'.
-  COMPILE_ASSERT(sizeof(MBS_PATCH_HEADER_TAG) - 1 == sizeof(header->tag),
-                 MBS_PATCH_HEADER_TAG_must_match_header_field_size);
+  static_assert(sizeof(MBS_PATCH_HEADER_TAG) - 1 == sizeof(header->tag),
+                "MBS_PATCH_HEADER_TAG must match header field size");
   if (memcmp(header->tag, MBS_PATCH_HEADER_TAG, 8) != 0)
     return UNEXPECTED_ERROR;
 

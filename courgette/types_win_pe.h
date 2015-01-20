@@ -29,7 +29,7 @@ struct Section {
 };
 #pragma pack(pop)
 
-COMPILE_ASSERT(sizeof(Section) == 40, section_is_40_bytes);
+static_assert(sizeof(Section) == 40, "section size is 40 bytes");
 
 // ImageDataDirectory has same layout as IMAGE_DATA_DIRECTORY structure from
 // WINNT.H
@@ -42,8 +42,8 @@ class ImageDataDirectory {
   uint32 size_;
 };
 
-COMPILE_ASSERT(sizeof(ImageDataDirectory) == 8,
-               image_data_directory_is_8_bytes);
+static_assert(sizeof(ImageDataDirectory) == 8,
+              "image data directory size is 8 bytes");
 
 
 ////////////////////////////////////////////////////////////////////////////////
