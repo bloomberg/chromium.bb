@@ -70,7 +70,7 @@ public:
     void setFirstLetterPseudoElement(FirstLetterPseudoElement* element) { m_firstLetterPseudoElement = element; }
     FirstLetterPseudoElement* firstLetterPseudoElement() const { return m_firstLetterPseudoElement; }
 
-    void setIsRemainingTextRenderer() { m_isRemainingTextRenderer = true; }
+    void setIsRemainingTextRenderer(bool isRemainingText) { m_isRemainingTextRenderer = isRemainingText; }
     bool isRemainingTextRenderer() const { return m_isRemainingTextRenderer; }
 
 private:

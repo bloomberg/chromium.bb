@@ -1,0 +1,3 @@
+CONSOLE ERROR: line 38: Uncaught HierarchyRequestError: Failed to execute 'insertNode' on 'Range': The node to be inserted contains the insertion point; it may not be inserted into itself.
+ a
+Test passes if it does not CRASH.

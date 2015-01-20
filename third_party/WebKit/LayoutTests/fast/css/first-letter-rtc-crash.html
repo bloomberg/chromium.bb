@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+
+<style>
+textarea { visibility: hidden; }
+button:optional, textarea:optional { display: block; }
+div:first-letter { color: red; }
+form:read-only { visibility: inherit; }
+</style>
+<script>
+if (window.testRunner)
+  testRunner.dumpAsText();
+
+var aoScriptElements = document.getElementsByTagName("script");
+for(var i = 0; i < aoScriptElements.length; i++) {
+  aoScriptElements[i].parentNode.removeChild(aoScriptElements[i]);
+}
+
+function event_DOMNodeRemoved() {
+  var oSelection = window.getSelection();
+  var oRange = oSelection.getRangeAt(47 % oSelection.rangeCount);
+  oSelection.addRange(oRange.cloneRange());
+
+}
+document.addEventListener("DOMNodeRemoved", event_DOMNodeRemoved, true);
+
+var active = false;
+function event_DOMNodeInserted() {
+  var aoElements = document.getElementsByTagName("*");
+  var oSelection=window.getSelection();
+
+  if (active) return ;
+  active = true;
+
+  var oElement = event.srcElement;
+  document.execCommand('FindString', false, 'Blarg');
+  oElement.outerHTML = "";
+
+  oSelection.getRangeAt(0).insertNode(aoElements[14 % aoElements.length]);
+
+  oSelection.deleteFromDocument();
+  active = false;
+}
+document.addEventListener("DOMNodeInserted", event_DOMNodeInserted, true);
+
+window.onload = function() {
+  var oSelection = window.getSelection();
+  document.execCommand("SelectAll", false, false)
+  oSelection.collapseToStart();
+
+  oSelection.getRangeAt(0).insertNode(document.getElementById('foreignobject'));
+
+  var oElement = document.getElementById('rtc');
+  oElement.insertAdjacentHTML('beforeend', '<b></b><b></b>');
+  oElement.textContent = "text";
+
+  oSelection.getRangeAt(0).insertNode(document.getElementById('button'));
+  oSelection.getRangeAt(0).insertNode(document.createElement('b'));
+}
+</script>
+
+<form>
+  <div>a</div>
+</form>
+
+<foreignObject id='foreignobject'></foreignObject>
+<textarea></textarea>
+
+<table>
+  <caption>
+    <ruby>
+      <button id='button'>
+        <em>
+          <textarea>AxBxC</textarea>
+        </em>
+
+        <rt></rt>
+        <select></select>
+
+        <rtc id='rtc'></rtc>
+      </button>
+    </ruby>
+  </caption>
+</table>
+Test passes if it does not CRASH.

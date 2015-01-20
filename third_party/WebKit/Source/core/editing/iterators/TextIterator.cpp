@@ -718,6 +718,7 @@ bool TextIterator::hasVisibleTextNode(RenderText* renderer)
     if (!fragment->isRemainingTextRenderer())
         return false;
 
+    ASSERT(fragment->firstLetterPseudoElement());
     RenderObject* pseudoElementRenderer = fragment->firstLetterPseudoElement()->renderer();
     return pseudoElementRenderer && pseudoElementRenderer->style()->visibility() == VISIBLE;
 }

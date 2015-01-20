@@ -221,6 +221,7 @@ void FirstLetterPseudoElement::detach(const AttachContext& context)
             m_remainingTextRenderer->setTextFragment(textNode->dataImpl(), 0, textNode->dataImpl()->length());
         }
         m_remainingTextRenderer->setFirstLetterPseudoElement(nullptr);
+        m_remainingTextRenderer->setIsRemainingTextRenderer(false);
     }
     m_remainingTextRenderer = nullptr;
 
@@ -268,7 +269,7 @@ void FirstLetterPseudoElement::attachFirstLetterTextRenderers()
     RenderTextFragment* remainingText =
         new RenderTextFragment(nextRenderer->node() ? nextRenderer->node() : &nextRenderer->document(), oldText.impl(), length, oldText.length() - length);
     remainingText->setFirstLetterPseudoElement(this);
-    remainingText->setIsRemainingTextRenderer();
+    remainingText->setIsRemainingTextRenderer(true);
     remainingText->setStyle(nextRenderer->style());
 
     if (remainingText->node())
