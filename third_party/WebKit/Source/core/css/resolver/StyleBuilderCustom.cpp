@@ -182,6 +182,9 @@ void StyleBuilderFunctions::applyInheritCSSPropertyJustifyItems(StyleResolverSta
 
 void StyleBuilderFunctions::applyValueCSSPropertyJustifyItems(StyleResolverState& state, CSSValue* value)
 {
+    state.style()->setJustifyItems(RenderStyle::initialJustifyItems());
+    state.style()->setJustifyItemsOverflowAlignment(RenderStyle::initialJustifyItemsOverflowAlignment());
+    state.style()->setJustifyItemsPositionType(RenderStyle::initialJustifyItemsPositionType());
 
     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
     if (Pair* pairValue = primitiveValue->getPairValue()) {

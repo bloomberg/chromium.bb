@@ -516,6 +516,7 @@ static bool lengthTypeAndValueMatch(const BorderImageLengthBox& borderImageLengt
         state.style()->set{{alignment_type}}OverflowAlignment(*pairValue->second());
     } else {
         state.style()->set{{alignment_type}}(*primitiveValue);
+        state.style()->set{{alignment_type}}OverflowAlignment(RenderStyle::initial{{alignment_type}}OverflowAlignment());
     }
 }
 {% endmacro %}
@@ -541,6 +542,10 @@ static bool lengthTypeAndValueMatch(const BorderImageLengthBox& borderImageLengt
 
 {{declare_value_function(property_id)}}
 {
+    state.style()->set{{alignment_type}}(RenderStyle::initial{{alignment_type}}());
+    state.style()->set{{alignment_type}}OverflowAlignment(RenderStyle::initial{{alignment_type}}OverflowAlignment());
+    state.style()->set{{alignment_type}}Distribution(RenderStyle::initial{{alignment_type}}Distribution());
+
     CSSContentDistributionValue* contentValue = toCSSContentDistributionValue(value);
     if (contentValue->distribution()->getValueID() != CSSValueInvalid)
         state.style()->set{{alignment_type}}Distribution(*contentValue->distribution());
