@@ -3,17 +3,18 @@
 div
 {
 	width: 100px;
-	height: 100px;
-	margin: 10px;
+	height: 80px;
+	margin: 20px;
 
 	transform:translateZ(0);
-	border: 1px solid black;
 }
 </style>
-<!--The first cross-fade should appear as a 100% green square, 100x100px.-->
-<div style="background-image: -webkit-cross-fade(url(resources/red-10.png), url(resources/green-10.png), 100%); background-repeat: repeat;"></div>
-<!--The second cross-fade should appear as a 100% green square, 100x100px.-->
-<div style="background-image: -webkit-cross-fade(url(resources/green-100.png), url(resources/red-100.png), 0%);"></div>
-<!--The third cross-fade should appear as a blue-green square, 100x100px.-->
-<div style="background-image: -webkit-cross-fade(url(resources/blue-100.png), url(resources/green-100.png), 50%);"></div>
+<!--The 1st cross-fade should appear as a simple tartan, with the pattern clipped to fit.-->
+<div style="background-image: -webkit-cross-fade(url(resources/red-half-stripe.png), url(resources/green-half-stripe.png), 50%); background-repeat: repeat;"></div>
+<!--The 2nd cross-fade should appear as a simple tartan, not repeated.-->
+<div style="background-image: -webkit-cross-fade(url(resources/red-half-stripe.png), url(resources/green-half-stripe.png), 50%); background-repeat: no-repeat;"></div>
+<!--The 3rd cross-fade should appear as a simple tartan, with the pattern scaled to fit exactly in both dimensions.-->
+<div style="background-image: -webkit-cross-fade(url(resources/red-half-stripe.png), url(resources/green-half-stripe.png), 50%); background-repeat: round;"></div>
+<!--The 4th cross-fade should appear as a simple tartan, with the pattern spaced to fit exactly in both dimensions without scaling.-->
+<div style="background-image: -webkit-cross-fade(url(resources/red-half-stripe.png), url(resources/green-half-stripe.png), 50%); background-repeat: space;"></div>
 </html>

@@ -29,6 +29,7 @@
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 #include "platform/graphics/ImageBuffer.h"
+#include "third_party/skia/include/core/SkPicture.h"
 
 namespace blink {
 
@@ -48,13 +49,6 @@ void CrossfadeGeneratedImage::drawCrossfade(GraphicsContext* context)
     IntSize fromImageSize = m_fromImage->size();
     IntSize toImageSize = m_toImage->size();
 
-    // Draw nothing if either of the images hasn't loaded yet.
-    if (m_fromImage == Image::nullImage() || m_toImage == Image::nullImage())
-        return;
-
-    GraphicsContextStateSaver stateSaver(*context);
-
-    context->clip(IntRect(IntPoint(), m_crossfadeSize));
     context->beginTransparencyLayer(1);
 
     // Draw the image we're fading away from.
@@ -84,6 +78,10 @@ void CrossfadeGeneratedImage::drawCrossfade(GraphicsContext* context)
 
 void CrossfadeGeneratedImage::draw(GraphicsContext* context, const FloatRect& dstRect, const FloatRect& srcRect, CompositeOperator compositeOp, WebBlendMode blendMode)
 {
+    // Draw nothing if either of the images hasn't loaded yet.
+    if (m_fromImage == Image::nullImage() || m_toImage == Image::nullImage())
+        return;
+
     GraphicsContextStateSaver stateSaver(*context);
     context->setCompositeOperation(compositeOp, blendMode);
     context->clip(dstRect);
@@ -97,16 +95,32 @@ void CrossfadeGeneratedImage::draw(GraphicsContext* context, const FloatRect& ds
 
 void CrossfadeGeneratedImage::drawPattern(GraphicsContext* context, const FloatRect& srcRect, const FloatSize& scale, const FloatPoint& phase, CompositeOperator compositeOp, const FloatRect& dstRect, WebBlendMode blendMode, const IntSize& repeatSpacing)
 {
-    OwnPtr<ImageBuffer> imageBuffer = context->createRasterBuffer(m_size);
-    if (!imageBuffer)
+    // Draw nothing if either of the images hasn't loaded yet.
+    if (m_fromImage == Image::nullImage() || m_toImage == Image::nullImage())
         return;
 
-    // Fill with the cross-faded image.
-    GraphicsContext* graphicsContext = imageBuffer->context();
-    drawCrossfade(graphicsContext);
+    FloatRect tileRect = srcRect;
+    tileRect.expand(repeatSpacing);
 
-    // Tile the image buffer into the context.
-    imageBuffer->drawPattern(context, srcRect, scale, phase, compositeOp, dstRect, blendMode, repeatSpacing);
+    GraphicsContext recordingContext(nullptr, nullptr);
+    recordingContext.beginRecording(tileRect);
+    drawCrossfade(&recordingContext);
+    RefPtr<const SkPicture> tilePicture = recordingContext.endRecording();
+
+    // FIXME: Create GeneratedIMage::drawPicturePattern, move the following code to it,
+    // and use it for GradientGeneratedImage too.
+    AffineTransform patternTransform;
+    patternTransform.translate(phase.x(), phase.y());
+    patternTransform.scale(scale.width(), scale.height());
+    patternTransform.translate(tileRect.x(), tileRect.y());
+
+    RefPtr<Pattern> picturePattern = Pattern::createPicturePattern(tilePicture);
+    picturePattern->setPatternSpaceTransform(patternTransform);
+
+    GraphicsContextStateSaver saver(*context);
+    context->setCompositeOperation(compositeOp, blendMode);
+    context->setFillPattern(picturePattern);
+    context->fillRect(dstRect);
 }
 
 } // namespace blink

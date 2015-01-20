@@ -2,10 +2,12 @@ layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,10) size 784x580
-layer at (18,10) size 102x102
-  RenderBlock {DIV} at (10,0) size 102x102 [border: (1px solid #000000)]
-layer at (18,122) size 102x102
-  RenderBlock {DIV} at (10,112) size 102x102 [border: (1px solid #000000)]
-layer at (18,234) size 102x102
-  RenderBlock {DIV} at (10,224) size 102x102 [border: (1px solid #000000)]
+    RenderBody {BODY} at (8,20) size 784x560
+layer at (28,20) size 100x80
+  RenderBlock {DIV} at (20,0) size 100x80
+layer at (28,120) size 100x80
+  RenderBlock {DIV} at (20,100) size 100x80
+layer at (28,220) size 100x80
+  RenderBlock {DIV} at (20,200) size 100x80
+layer at (28,320) size 100x80
+  RenderBlock {DIV} at (20,300) size 100x80
