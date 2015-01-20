@@ -40,7 +40,8 @@ BookmarkBarBridge::BookmarkBarBridge(Profile* profile,
 }
 
 BookmarkBarBridge::~BookmarkBarBridge() {
-  model_->RemoveObserver(this);
+  if (model_)
+    model_->RemoveObserver(this);
 }
 
 void BookmarkBarBridge::BookmarkModelLoaded(BookmarkModel* model,
@@ -50,6 +51,8 @@ void BookmarkBarBridge::BookmarkModelLoaded(BookmarkModel* model,
 
 void BookmarkBarBridge::BookmarkModelBeingDeleted(BookmarkModel* model) {
   [controller_ beingDeleted:model];
+  model_->RemoveObserver(this);
+  model_ = nullptr;
 }
 
 void BookmarkBarBridge::BookmarkNodeMoved(BookmarkModel* model,
