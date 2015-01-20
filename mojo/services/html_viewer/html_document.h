@@ -22,6 +22,7 @@
 #include "mojo/services/view_manager/public/cpp/view_manager_delegate.h"
 #include "mojo/services/view_manager/public/cpp/view_observer.h"
 #include "third_party/WebKit/public/web/WebFrameClient.h"
+#include "third_party/WebKit/public/web/WebSandboxFlags.h"
 #include "third_party/WebKit/public/web/WebViewClient.h"
 
 namespace base {
@@ -83,8 +84,13 @@ class HTMLDocument : public blink::WebViewClient,
       const blink::WebURL& url,
       blink::WebMediaPlayerClient* client,
       blink::WebContentDecryptionModule* initial_cdm);
+  // TODO(alexmos): Remove once Blink is updated to pass sandboxFlags.
   virtual blink::WebFrame* createChildFrame(blink::WebLocalFrame* parent,
                                             const blink::WebString& frameName);
+  virtual blink::WebFrame* createChildFrame(
+      blink::WebLocalFrame* parent,
+      const blink::WebString& frameName,
+      blink::WebSandboxFlags sandboxFlags);
   virtual void frameDetached(blink::WebFrame*);
   virtual blink::WebCookieJar* cookieJar(blink::WebLocalFrame* frame);
   virtual blink::WebNavigationPolicy decidePolicyForNavigation(
