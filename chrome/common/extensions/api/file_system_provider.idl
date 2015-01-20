@@ -77,6 +77,18 @@ namespace fileSystemProvider {
     DOMString? lastTag;
   };
 
+  // Represents an opened file.
+  dictionary OpenedFile {
+    // A request ID to be be used by consecutive read/write and close requests.
+    long openRequestId;
+
+    // The path of the opened file.
+    DOMString filePath;
+
+    // Whether the file was opened for reading or writing.
+    OpenFileMode mode;
+  };
+
   // Represents a mounted file system.
   dictionary FileSystemInfo {
     // The identifier of the file system.
@@ -92,6 +104,9 @@ namespace fileSystemProvider {
     // The maximum number of files that can be opened at once. If 0, then not
     // limited.
     long openedFilesLimit;
+
+    // List of currently opened files.
+    OpenedFile[] openedFiles;
 
     // Whether the file system supports the <code>tag</code> field for observing
     // directories.

@@ -20,6 +20,7 @@
 #include "storage/browser/fileapi/watcher_manager.h"
 
 using chromeos::file_system_provider::MountOptions;
+using chromeos::file_system_provider::OpenedFiles;
 using chromeos::file_system_provider::ProvidedFileSystemInfo;
 using chromeos::file_system_provider::ProvidedFileSystemInterface;
 using chromeos::file_system_provider::ProvidedFileSystemObserver;
@@ -73,8 +74,10 @@ scoped_ptr<ProvidedFileSystemObserver::Changes> ParseChanges(
 // Watchers.
 void FillFileSystemInfo(const ProvidedFileSystemInfo& file_system_info,
                         const Watchers& watchers,
+                        const OpenedFiles& opened_files,
                         api::file_system_provider::FileSystemInfo* output) {
   using api::file_system_provider::Watcher;
+  using api::file_system_provider::OpenedFile;
 
   output->file_system_id = file_system_info.file_system_id();
   output->display_name = file_system_info.display_name();
@@ -90,8 +93,26 @@ void FillFileSystemInfo(const ProvidedFileSystemInfo& file_system_info,
       watcher_item->last_tag.reset(new std::string(watcher.second.last_tag));
     watcher_items.push_back(watcher_item);
   }
-
   output->watchers = watcher_items;
+
+  std::vector<linked_ptr<OpenedFile>> opened_file_items;
+  for (const auto& opened_file : opened_files) {
+    const linked_ptr<OpenedFile> opened_file_item(new OpenedFile);
+    opened_file_item->open_request_id = opened_file.first;
+    opened_file_item->file_path = opened_file.second.file_path.value();
+    switch (opened_file.second.mode) {
+      case chromeos::file_system_provider::OPEN_FILE_MODE_READ:
+        opened_file_item->mode =
+            extensions::api::file_system_provider::OPEN_FILE_MODE_READ;
+        break;
+      case chromeos::file_system_provider::OPEN_FILE_MODE_WRITE:
+        opened_file_item->mode =
+            extensions::api::file_system_provider::OPEN_FILE_MODE_WRITE;
+        break;
+    }
+    opened_file_items.push_back(opened_file_item);
+  }
+  output->opened_files = opened_file_items;
 }
 
 }  // namespace
@@ -181,7 +202,7 @@ bool FileSystemProviderGetAllFunction::RunSync() {
       DCHECK(file_system);
 
       FillFileSystemInfo(file_system_info, *file_system->GetWatchers(),
-                         item.get());
+                         file_system->GetOpenedFiles(), item.get());
       items.push_back(item);
     }
   }
@@ -210,7 +231,8 @@ bool FileSystemProviderGetFunction::RunSync() {
 
   FileSystemInfo file_system_info;
   FillFileSystemInfo(file_system->GetFileSystemInfo(),
-                     *file_system->GetWatchers(), &file_system_info);
+                     *file_system->GetWatchers(), file_system->GetOpenedFiles(),
+                     &file_system_info);
   SetResultList(
       api::file_system_provider::Get::Results::Create(file_system_info));
   return true;

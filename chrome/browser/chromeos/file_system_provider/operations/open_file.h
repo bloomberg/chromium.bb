@@ -32,7 +32,7 @@ class OpenFile : public Operation {
   OpenFile(extensions::EventRouter* event_router,
            const ProvidedFileSystemInfo& file_system_info,
            const base::FilePath& file_path,
-           ProvidedFileSystemInterface::OpenFileMode mode,
+           OpenFileMode mode,
            const ProvidedFileSystemInterface::OpenFileCallback& callback);
   ~OpenFile() override;
 
@@ -47,7 +47,7 @@ class OpenFile : public Operation {
 
  private:
   base::FilePath file_path_;
-  ProvidedFileSystemInterface::OpenFileMode mode_;
+  OpenFileMode mode_;
   const ProvidedFileSystemInterface::OpenFileCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(OpenFile);

@@ -195,7 +195,10 @@ AbortCallback ProvidedFileSystem::OpenFile(const base::FilePath& file_path,
   const int request_id = request_manager_->CreateRequest(
       OPEN_FILE,
       scoped_ptr<RequestManager::HandlerInterface>(new operations::OpenFile(
-          event_router_, file_system_info_, file_path, mode, callback)));
+          event_router_, file_system_info_, file_path, mode,
+          base::Bind(&ProvidedFileSystem::OnOpenFileCompleted,
+                     weak_ptr_factory_.GetWeakPtr(), file_path, mode,
+                     callback))));
   if (!request_id) {
     callback.Run(0 /* file_handle */, base::File::FILE_ERROR_SECURITY);
     return AbortCallback();
@@ -211,7 +214,9 @@ AbortCallback ProvidedFileSystem::CloseFile(
   const int request_id = request_manager_->CreateRequest(
       CLOSE_FILE,
       scoped_ptr<RequestManager::HandlerInterface>(new operations::CloseFile(
-          event_router_, file_system_info_, file_handle, callback)));
+          event_router_, file_system_info_, file_handle,
+          base::Bind(&ProvidedFileSystem::OnCloseFileCompleted,
+                     weak_ptr_factory_.GetWeakPtr(), file_handle, callback))));
   if (!request_id) {
     callback.Run(base::File::FILE_ERROR_SECURITY);
     return AbortCallback();
@@ -490,6 +495,10 @@ Watchers* ProvidedFileSystem::GetWatchers() {
   return &watchers_;
 }
 
+const OpenedFiles& ProvidedFileSystem::GetOpenedFiles() const {
+  return opened_files_;
+}
+
 void ProvidedFileSystem::AddObserver(ProvidedFileSystemObserver* observer) {
   DCHECK(observer);
   observers_.AddObserver(observer);
@@ -639,6 +648,30 @@ void ProvidedFileSystem::OnNotifyCompleted(
   }
 
   callback.Run(base::File::FILE_OK);
+}
+
+void ProvidedFileSystem::OnOpenFileCompleted(const base::FilePath& file_path,
+                                             OpenFileMode mode,
+                                             const OpenFileCallback& callback,
+                                             int file_handle,
+                                             base::File::Error result) {
+  if (result != base::File::FILE_OK) {
+    callback.Run(file_handle, result);
+    return;
+  }
+
+  opened_files_[file_handle] = OpenedFile(file_path, mode);
+  callback.Run(file_handle, base::File::FILE_OK);
+}
+
+void ProvidedFileSystem::OnCloseFileCompleted(
+    int file_handle,
+    const storage::AsyncFileUtil::StatusCallback& callback,
+    base::File::Error result) {
+  // Closing files is final. Even if an error happened, we remove it from the
+  // list of opened files.
+  opened_files_.erase(file_handle);
+  callback.Run(result);
 }
 
 }  // namespace file_system_provider

@@ -160,6 +160,10 @@ Watchers* ThrottledFileSystem::GetWatchers() {
   return file_system_->GetWatchers();
 }
 
+const OpenedFiles& ThrottledFileSystem::GetOpenedFiles() const {
+  return file_system_->GetOpenedFiles();
+}
+
 void ThrottledFileSystem::AddObserver(ProvidedFileSystemObserver* observer) {
   file_system_->AddObserver(observer);
 }

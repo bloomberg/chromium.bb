@@ -108,6 +108,7 @@ class ThrottledFileSystem : public ProvidedFileSystemInterface {
   const ProvidedFileSystemInfo& GetFileSystemInfo() const override;
   RequestManager* GetRequestManager() override;
   Watchers* GetWatchers() override;
+  const OpenedFiles& GetOpenedFiles() const override;
   void AddObserver(ProvidedFileSystemObserver* observer) override;
   void RemoveObserver(ProvidedFileSystemObserver* observer) override;
   void Notify(const base::FilePath& entry_path,

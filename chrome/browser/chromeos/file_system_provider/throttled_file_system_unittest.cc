@@ -67,13 +67,11 @@ TEST_F(FileSystemProviderThrottledFileSystemTest, OpenFile_LimitedToOneAtOnce) {
   SetUpFileSystem(1);
 
   OpenLog first_open_log;
-  file_system_->OpenFile(base::FilePath(kFakeFilePath),
-                         ThrottledFileSystem::OPEN_FILE_MODE_READ,
+  file_system_->OpenFile(base::FilePath(kFakeFilePath), OPEN_FILE_MODE_READ,
                          base::Bind(&LogOpen, &first_open_log));
 
   OpenLog second_open_log;
-  file_system_->OpenFile(base::FilePath(kFakeFilePath),
-                         ThrottledFileSystem::OPEN_FILE_MODE_READ,
+  file_system_->OpenFile(base::FilePath(kFakeFilePath), OPEN_FILE_MODE_READ,
                          base::Bind(&LogOpen, &second_open_log));
 
   base::RunLoop().RunUntilIdle();
@@ -102,13 +100,11 @@ TEST_F(FileSystemProviderThrottledFileSystemTest, OpenFile_NoLimit) {
   SetUpFileSystem(0);  // No limit.
 
   OpenLog first_open_log;
-  file_system_->OpenFile(base::FilePath(kFakeFilePath),
-                         ThrottledFileSystem::OPEN_FILE_MODE_READ,
+  file_system_->OpenFile(base::FilePath(kFakeFilePath), OPEN_FILE_MODE_READ,
                          base::Bind(&LogOpen, &first_open_log));
 
   OpenLog second_open_log;
-  file_system_->OpenFile(base::FilePath(kFakeFilePath),
-                         ThrottledFileSystem::OPEN_FILE_MODE_READ,
+  file_system_->OpenFile(base::FilePath(kFakeFilePath), OPEN_FILE_MODE_READ,
                          base::Bind(&LogOpen, &second_open_log));
 
   base::RunLoop().RunUntilIdle();
@@ -142,13 +138,12 @@ TEST_F(FileSystemProviderThrottledFileSystemTest, AbortAfterRun) {
   SetUpFileSystem(1);
 
   OpenLog first_open_log;
-  AbortCallback abort_callback = file_system_->OpenFile(
-      base::FilePath(kFakeFilePath), ThrottledFileSystem::OPEN_FILE_MODE_READ,
-      base::Bind(&LogOpen, &first_open_log));
+  AbortCallback abort_callback =
+      file_system_->OpenFile(base::FilePath(kFakeFilePath), OPEN_FILE_MODE_READ,
+                             base::Bind(&LogOpen, &first_open_log));
 
   OpenLog second_open_log;
-  file_system_->OpenFile(base::FilePath(kFakeFilePath),
-                         ThrottledFileSystem::OPEN_FILE_MODE_READ,
+  file_system_->OpenFile(base::FilePath(kFakeFilePath), OPEN_FILE_MODE_READ,
                          base::Bind(&LogOpen, &second_open_log));
 
   base::RunLoop().RunUntilIdle();

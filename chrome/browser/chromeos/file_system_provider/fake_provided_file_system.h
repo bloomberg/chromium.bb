@@ -145,6 +145,7 @@ class FakeProvidedFileSystem : public ProvidedFileSystemInterface {
   const ProvidedFileSystemInfo& GetFileSystemInfo() const override;
   RequestManager* GetRequestManager() override;
   Watchers* GetWatchers() override;
+  const OpenedFiles& GetOpenedFiles() const override;
   void AddObserver(ProvidedFileSystemObserver* observer) override;
   void RemoveObserver(ProvidedFileSystemObserver* observer) override;
   void Notify(const base::FilePath& entry_path,
@@ -162,8 +163,7 @@ class FakeProvidedFileSystem : public ProvidedFileSystemInterface {
       const ProvidedFileSystemInfo& file_system_info);
 
  private:
-  typedef std::map<base::FilePath, linked_ptr<FakeEntry> > Entries;
-  typedef std::map<int, base::FilePath> OpenedFilesMap;
+  typedef std::map<base::FilePath, linked_ptr<FakeEntry>> Entries;
 
   // Utility function for posting a task which can be aborted by calling the
   // returned callback.
@@ -180,7 +180,7 @@ class FakeProvidedFileSystem : public ProvidedFileSystemInterface {
 
   ProvidedFileSystemInfo file_system_info_;
   Entries entries_;
-  OpenedFilesMap opened_files_;
+  OpenedFiles opened_files_;
   int last_file_handle_;
   base::CancelableTaskTracker tracker_;
   ObserverList<ProvidedFileSystemObserver> observers_;

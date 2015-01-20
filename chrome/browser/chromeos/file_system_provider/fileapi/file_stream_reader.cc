@@ -58,10 +58,9 @@ class FileStreamReader::OperationRunner
     file_system_ = parser.file_system()->GetWeakPtr();
     file_path_ = parser.file_path();
     abort_callback_ = parser.file_system()->OpenFile(
-        file_path_,
-        ProvidedFileSystemInterface::OPEN_FILE_MODE_READ,
-        base::Bind(
-            &OperationRunner::OnOpenFileCompletedOnUIThread, this, callback));
+        file_path_, OPEN_FILE_MODE_READ,
+        base::Bind(&OperationRunner::OnOpenFileCompletedOnUIThread, this,
+                   callback));
   }
 
   // Closes a file. Ignores result, since it is called from a constructor.

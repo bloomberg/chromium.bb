@@ -144,7 +144,7 @@ AbortCallback FakeProvidedFileSystem::OpenFile(
   }
 
   const int file_handle = ++last_file_handle_;
-  opened_files_[file_handle] = entry_path;
+  opened_files_[file_handle] = OpenedFile(entry_path, mode);
   return PostAbortableTask(
       base::Bind(callback, file_handle, base::File::FILE_OK));
 }
@@ -152,8 +152,7 @@ AbortCallback FakeProvidedFileSystem::OpenFile(
 AbortCallback FakeProvidedFileSystem::CloseFile(
     int file_handle,
     const storage::AsyncFileUtil::StatusCallback& callback) {
-  const OpenedFilesMap::iterator opened_file_it =
-      opened_files_.find(file_handle);
+  const auto opened_file_it = opened_files_.find(file_handle);
 
   if (opened_file_it == opened_files_.end()) {
     return PostAbortableTask(
@@ -170,11 +169,10 @@ AbortCallback FakeProvidedFileSystem::ReadFile(
     int64 offset,
     int length,
     const ProvidedFileSystemInterface::ReadChunkReceivedCallback& callback) {
-  const OpenedFilesMap::iterator opened_file_it =
-      opened_files_.find(file_handle);
+  const auto opened_file_it = opened_files_.find(file_handle);
 
   if (opened_file_it == opened_files_.end() ||
-      opened_file_it->second.AsUTF8Unsafe() != kFakeFilePath) {
+      opened_file_it->second.file_path.AsUTF8Unsafe() != kFakeFilePath) {
     return PostAbortableTask(
         base::Bind(callback,
                    0 /* chunk_length */,
@@ -183,7 +181,7 @@ AbortCallback FakeProvidedFileSystem::ReadFile(
   }
 
   const Entries::const_iterator entry_it =
-      entries_.find(opened_file_it->second);
+      entries_.find(opened_file_it->second.file_path);
   if (entry_it == entries_.end()) {
     return PostAbortableTask(
         base::Bind(callback,
@@ -281,16 +279,16 @@ AbortCallback FakeProvidedFileSystem::WriteFile(
     int64 offset,
     int length,
     const storage::AsyncFileUtil::StatusCallback& callback) {
-  const OpenedFilesMap::iterator opened_file_it =
-      opened_files_.find(file_handle);
+  const auto opened_file_it = opened_files_.find(file_handle);
 
   if (opened_file_it == opened_files_.end() ||
-      opened_file_it->second.AsUTF8Unsafe() != kFakeFilePath) {
+      opened_file_it->second.file_path.AsUTF8Unsafe() != kFakeFilePath) {
     return PostAbortableTask(
         base::Bind(callback, base::File::FILE_ERROR_INVALID_OPERATION));
   }
 
-  const Entries::iterator entry_it = entries_.find(opened_file_it->second);
+  const Entries::iterator entry_it =
+      entries_.find(opened_file_it->second.file_path);
   if (entry_it == entries_.end()) {
     return PostAbortableTask(
         base::Bind(callback, base::File::FILE_ERROR_INVALID_OPERATION));
@@ -346,6 +344,10 @@ RequestManager* FakeProvidedFileSystem::GetRequestManager() {
 
 Watchers* FakeProvidedFileSystem::GetWatchers() {
   return &watchers_;
+}
+
+const OpenedFiles& FakeProvidedFileSystem::GetOpenedFiles() const {
+  return opened_files_;
 }
 
 void FakeProvidedFileSystem::AddObserver(ProvidedFileSystemObserver* observer) {

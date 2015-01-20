@@ -153,6 +153,7 @@ class ProvidedFileSystem : public ProvidedFileSystemInterface {
   const ProvidedFileSystemInfo& GetFileSystemInfo() const override;
   RequestManager* GetRequestManager() override;
   Watchers* GetWatchers() override;
+  const OpenedFiles& GetOpenedFiles() const override;
   void AddObserver(ProvidedFileSystemObserver* observer) override;
   void RemoveObserver(ProvidedFileSystemObserver* observer) override;
   void Notify(const base::FilePath& entry_path,
@@ -187,12 +188,26 @@ class ProvidedFileSystem : public ProvidedFileSystemInterface {
       const std::string& tag,
       const storage::AsyncFileUtil::StatusCallback& callback);
 
+  // Called when opening a file is completed with either a success or an error.
+  void OnOpenFileCompleted(const base::FilePath& file_path,
+                           OpenFileMode mode,
+                           const OpenFileCallback& callback,
+                           int file_handle,
+                           base::File::Error result);
+
+  // Called when closing a file is completed with either a success or an error.
+  void OnCloseFileCompleted(
+      int file_handle,
+      const storage::AsyncFileUtil::StatusCallback& callback,
+      base::File::Error result);
+
   Profile* profile_;                       // Not owned.
   extensions::EventRouter* event_router_;  // Not owned. May be NULL.
   ProvidedFileSystemInfo file_system_info_;
   scoped_ptr<NotificationManagerInterface> notification_manager_;
   scoped_ptr<RequestManager> request_manager_;
   Watchers watchers_;
+  OpenedFiles opened_files_;
   ObserverList<ProvidedFileSystemObserver> observers_;
 
   base::WeakPtrFactory<ProvidedFileSystem> weak_ptr_factory_;

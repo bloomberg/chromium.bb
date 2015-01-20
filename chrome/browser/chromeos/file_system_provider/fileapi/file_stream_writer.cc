@@ -51,10 +51,9 @@ class FileStreamWriter::OperationRunner
 
     file_system_ = parser.file_system()->GetWeakPtr();
     abort_callback_ = parser.file_system()->OpenFile(
-        parser.file_path(),
-        ProvidedFileSystemInterface::OPEN_FILE_MODE_WRITE,
-        base::Bind(
-            &OperationRunner::OnOpenFileCompletedOnUIThread, this, callback));
+        parser.file_path(), OPEN_FILE_MODE_WRITE,
+        base::Bind(&OperationRunner::OnOpenFileCompletedOnUIThread, this,
+                   callback));
   }
 
   // Closes a file. Ignores result, since outlives the caller. Must be called on

@@ -88,7 +88,7 @@ TEST_F(FileSystemProviderOperationsOpenFileTest, Execute) {
   CallbackLogger callback_logger;
 
   OpenFile open_file(NULL, file_system_info_, base::FilePath(kFilePath),
-                     ProvidedFileSystemInterface::OPEN_FILE_MODE_READ,
+                     OPEN_FILE_MODE_READ,
                      base::Bind(&CallbackLogger::OnOpenFile,
                                 base::Unretained(&callback_logger)));
   open_file.SetDispatchEventImplForTesting(
@@ -122,7 +122,7 @@ TEST_F(FileSystemProviderOperationsOpenFileTest, Execute_NoListener) {
   CallbackLogger callback_logger;
 
   OpenFile open_file(NULL, file_system_info_, base::FilePath(kFilePath),
-                     ProvidedFileSystemInterface::OPEN_FILE_MODE_READ,
+                     OPEN_FILE_MODE_READ,
                      base::Bind(&CallbackLogger::OnOpenFile,
                                 base::Unretained(&callback_logger)));
   open_file.SetDispatchEventImplForTesting(
@@ -144,8 +144,7 @@ TEST_F(FileSystemProviderOperationsOpenFileTest, Execute_ReadOnly) {
   // Opening for read on a read-only file system is allowed.
   {
     OpenFile open_file(NULL, read_only_file_system_info,
-                       base::FilePath(kFilePath),
-                       ProvidedFileSystemInterface::OPEN_FILE_MODE_READ,
+                       base::FilePath(kFilePath), OPEN_FILE_MODE_READ,
                        base::Bind(&CallbackLogger::OnOpenFile,
                                   base::Unretained(&callback_logger)));
     open_file.SetDispatchEventImplForTesting(
@@ -158,8 +157,7 @@ TEST_F(FileSystemProviderOperationsOpenFileTest, Execute_ReadOnly) {
   // Opening for write on a read-only file system is forbidden and must fail.
   {
     OpenFile open_file(NULL, read_only_file_system_info,
-                       base::FilePath(kFilePath),
-                       ProvidedFileSystemInterface::OPEN_FILE_MODE_WRITE,
+                       base::FilePath(kFilePath), OPEN_FILE_MODE_WRITE,
                        base::Bind(&CallbackLogger::OnOpenFile,
                                   base::Unretained(&callback_logger)));
     open_file.SetDispatchEventImplForTesting(
@@ -175,7 +173,7 @@ TEST_F(FileSystemProviderOperationsOpenFileTest, OnSuccess) {
   CallbackLogger callback_logger;
 
   OpenFile open_file(NULL, file_system_info_, base::FilePath(kFilePath),
-                     ProvidedFileSystemInterface::OPEN_FILE_MODE_READ,
+                     OPEN_FILE_MODE_READ,
                      base::Bind(&CallbackLogger::OnOpenFile,
                                 base::Unretained(&callback_logger)));
   open_file.SetDispatchEventImplForTesting(
@@ -198,7 +196,7 @@ TEST_F(FileSystemProviderOperationsOpenFileTest, OnError) {
   CallbackLogger callback_logger;
 
   OpenFile open_file(NULL, file_system_info_, base::FilePath(kFilePath),
-                     ProvidedFileSystemInterface::OPEN_FILE_MODE_READ,
+                     OPEN_FILE_MODE_READ,
                      base::Bind(&CallbackLogger::OnOpenFile,
                                 base::Unretained(&callback_logger)));
   open_file.SetDispatchEventImplForTesting(

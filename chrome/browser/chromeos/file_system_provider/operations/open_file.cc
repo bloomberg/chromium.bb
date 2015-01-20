@@ -17,7 +17,7 @@ OpenFile::OpenFile(
     extensions::EventRouter* event_router,
     const ProvidedFileSystemInfo& file_system_info,
     const base::FilePath& file_path,
-    ProvidedFileSystemInterface::OpenFileMode mode,
+    OpenFileMode mode,
     const ProvidedFileSystemInterface::OpenFileCallback& callback)
     : Operation(event_router, file_system_info),
       file_path_(file_path),
@@ -31,8 +31,7 @@ OpenFile::~OpenFile() {
 bool OpenFile::Execute(int request_id) {
   using extensions::api::file_system_provider::OpenFileRequestedOptions;
 
-  if (!file_system_info_.writable() &&
-      mode_ == ProvidedFileSystemInterface::OPEN_FILE_MODE_WRITE) {
+  if (!file_system_info_.writable() && mode_ == OPEN_FILE_MODE_WRITE) {
     return false;
   }
 
@@ -42,10 +41,10 @@ bool OpenFile::Execute(int request_id) {
   options.file_path = file_path_.AsUTF8Unsafe();
 
   switch (mode_) {
-    case ProvidedFileSystemInterface::OPEN_FILE_MODE_READ:
+    case OPEN_FILE_MODE_READ:
       options.mode = extensions::api::file_system_provider::OPEN_FILE_MODE_READ;
       break;
-    case ProvidedFileSystemInterface::OPEN_FILE_MODE_WRITE:
+    case OPEN_FILE_MODE_WRITE:
       options.mode =
           extensions::api::file_system_provider::OPEN_FILE_MODE_WRITE;
       break;

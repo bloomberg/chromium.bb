@@ -42,6 +42,8 @@ const char kFileSystemId[] = "camera-pictures";
 const char kDisplayName[] = "Camera Pictures";
 const base::FilePath::CharType kDirectoryPath[] =
     FILE_PATH_LITERAL("/hello/world");
+const base::FilePath::CharType kFilePath[] =
+    FILE_PATH_LITERAL("/welcome/to/my/world");
 
 // Fake implementation of the event router, mocking out a real extension.
 // Handles requests and replies with fake answers back to the file system via
@@ -69,7 +71,11 @@ class FakeEventRouter : public extensions::EventRouter {
     EXPECT_TRUE(event->event_name == extensions::api::file_system_provider::
                                          OnAddWatcherRequested::kEventName ||
                 event->event_name == extensions::api::file_system_provider::
-                                         OnRemoveWatcherRequested::kEventName);
+                                         OnRemoveWatcherRequested::kEventName ||
+                event->event_name == extensions::api::file_system_provider::
+                                         OnOpenFileRequested::kEventName ||
+                event->event_name == extensions::api::file_system_provider::
+                                         OnCloseFileRequested::kEventName);
 
     if (reply_result_ == base::File::FILE_OK) {
       base::ListValue value_as_list;
@@ -180,16 +186,24 @@ class StubNotificationManager : public NotificationManagerInterface {
 
 typedef std::vector<base::File::Error> Log;
 typedef std::vector<storage::WatcherManager::ChangeType> NotificationLog;
+typedef std::vector<std::pair<int, base::File::Error>> OpenFileLog;
 
 // Writes a |result| to the |log| vector.
 void LogStatus(Log* log, base::File::Error result) {
   log->push_back(result);
 }
 
-// Writes an |change_type| to the |notification_log| vector.
+// Writes a |change_type| to the |notification_log| vector.
 void LogNotification(NotificationLog* notification_log,
                      storage::WatcherManager::ChangeType change_type) {
   notification_log->push_back(change_type);
+}
+
+// Writes a |file_handle| and |result| to the |open_file_log| vector.
+void LogOpenFile(OpenFileLog* open_file_log,
+                 int file_handle,
+                 base::File::Error result) {
+  open_file_log->push_back(std::make_pair(file_handle, result));
 }
 
 }  // namespace
@@ -207,6 +221,7 @@ class FileSystemProviderProvidedFileSystemTest : public testing::Test {
     mount_options.file_system_id = kFileSystemId;
     mount_options.display_name = kDisplayName;
     mount_options.supports_notify_tag = true;
+    mount_options.writable = true;
     file_system_info_.reset(
         new ProvidedFileSystemInfo(kExtensionId, mount_options, mount_path));
     provided_file_system_.reset(
@@ -221,6 +236,12 @@ class FileSystemProviderProvidedFileSystemTest : public testing::Test {
                                         OnRemoveWatcherRequested::kEventName,
                                     NULL,
                                     kExtensionId);
+    event_router_->AddEventListener(
+        extensions::api::file_system_provider::OnOpenFileRequested::kEventName,
+        NULL, kExtensionId);
+    event_router_->AddEventListener(
+        extensions::api::file_system_provider::OnCloseFileRequested::kEventName,
+        NULL, kExtensionId);
     provided_file_system_->SetEventRouterForTesting(event_router_.get());
     provided_file_system_->SetNotificationManagerForTesting(
         make_scoped_ptr(new StubNotificationManager));
@@ -784,6 +805,95 @@ TEST_F(FileSystemProviderProvidedFileSystemTest, Notify) {
     EXPECT_EQ(2, observer.list_changed_counter());
     EXPECT_EQ(2, observer.tag_updated_counter());
   }
+
+  provided_file_system_->RemoveObserver(&observer);
+}
+
+TEST_F(FileSystemProviderProvidedFileSystemTest, OpenedFiles) {
+  Observer observer;
+  provided_file_system_->AddObserver(&observer);
+
+  OpenFileLog log;
+  provided_file_system_->OpenFile(
+      base::FilePath(kFilePath), OPEN_FILE_MODE_WRITE,
+      base::Bind(LogOpenFile, base::Unretained(&log)));
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_EQ(1u, log.size());
+  EXPECT_EQ(base::File::FILE_OK, log[0].second);
+  const int file_handle = log[0].first;
+
+  const OpenedFiles& opened_files = provided_file_system_->GetOpenedFiles();
+  const auto opened_file_it = opened_files.find(file_handle);
+  ASSERT_NE(opened_files.end(), opened_file_it);
+  EXPECT_EQ(kFilePath, opened_file_it->second.file_path.AsUTF8Unsafe());
+  EXPECT_EQ(OPEN_FILE_MODE_WRITE, opened_file_it->second.mode);
+
+  Log close_log;
+  provided_file_system_->CloseFile(
+      file_handle, base::Bind(LogStatus, base::Unretained(&close_log)));
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_EQ(1u, close_log.size());
+  EXPECT_EQ(base::File::FILE_OK, close_log[0]);
+  EXPECT_EQ(0u, opened_files.size());
+
+  provided_file_system_->RemoveObserver(&observer);
+}
+
+TEST_F(FileSystemProviderProvidedFileSystemTest, OpenedFiles_OpeningFailure) {
+  Observer observer;
+  provided_file_system_->AddObserver(&observer);
+
+  event_router_->set_reply_result(base::File::FILE_ERROR_NOT_FOUND);
+
+  OpenFileLog log;
+  provided_file_system_->OpenFile(
+      base::FilePath(kFilePath), OPEN_FILE_MODE_WRITE,
+      base::Bind(LogOpenFile, base::Unretained(&log)));
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_EQ(1u, log.size());
+  EXPECT_EQ(base::File::FILE_ERROR_NOT_FOUND, log[0].second);
+
+  const OpenedFiles& opened_files = provided_file_system_->GetOpenedFiles();
+  EXPECT_EQ(0u, opened_files.size());
+
+  provided_file_system_->RemoveObserver(&observer);
+}
+
+TEST_F(FileSystemProviderProvidedFileSystemTest, OpenedFile_ClosingFailure) {
+  Observer observer;
+  provided_file_system_->AddObserver(&observer);
+
+  OpenFileLog log;
+  provided_file_system_->OpenFile(
+      base::FilePath(kFilePath), OPEN_FILE_MODE_WRITE,
+      base::Bind(LogOpenFile, base::Unretained(&log)));
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_EQ(1u, log.size());
+  EXPECT_EQ(base::File::FILE_OK, log[0].second);
+  const int file_handle = log[0].first;
+
+  const OpenedFiles& opened_files = provided_file_system_->GetOpenedFiles();
+  const auto opened_file_it = opened_files.find(file_handle);
+  ASSERT_NE(opened_files.end(), opened_file_it);
+  EXPECT_EQ(kFilePath, opened_file_it->second.file_path.AsUTF8Unsafe());
+  EXPECT_EQ(OPEN_FILE_MODE_WRITE, opened_file_it->second.mode);
+
+  // Simulate an error for closing a file. Still, the file should be closed
+  // in the C++ layer, anyway.
+  event_router_->set_reply_result(base::File::FILE_ERROR_NOT_FOUND);
+
+  Log close_log;
+  provided_file_system_->CloseFile(
+      file_handle, base::Bind(LogStatus, base::Unretained(&close_log)));
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_EQ(1u, close_log.size());
+  EXPECT_EQ(base::File::FILE_ERROR_NOT_FOUND, close_log[0]);
+  EXPECT_EQ(0u, opened_files.size());
 
   provided_file_system_->RemoveObserver(&observer);
 }

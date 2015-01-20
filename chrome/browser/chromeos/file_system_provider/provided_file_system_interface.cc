@@ -13,5 +13,15 @@ EntryMetadata::EntryMetadata() : is_directory(false), size(0) {
 EntryMetadata::~EntryMetadata() {
 }
 
+OpenedFile::OpenedFile(const base::FilePath& file_path, OpenFileMode& mode)
+    : file_path(file_path), mode(mode) {
+}
+
+OpenedFile::OpenedFile() : mode(OPEN_FILE_MODE_READ) {
+}
+
+OpenedFile::~OpenedFile() {
+}
+
 }  // namespace file_system_provider
 }  // namespace chromeos
