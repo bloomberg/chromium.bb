@@ -54,16 +54,6 @@ ACTION_TEMPLATE(RunCallback,
   return ::std::tr1::get<k>(args).Run(p0);
 }
 
-// Create a specialization so we can mock an override for
-// scoped_ptr<content::ZoomLevelDelegate>
-// BrowserContext::CreateZoomLevelDelegate(const base::FilePath&).
-template<>
-class scoped_ptr<content::ZoomLevelDelegate> {
- public:
-  scoped_ptr() {}
-  ~scoped_ptr() {}
-};
-
 namespace content {
 class ByteStreamReader;
 
@@ -120,9 +110,8 @@ class MockDownloadItemImpl : public DownloadItemImpl {
   MOCK_METHOD0(MarkAsComplete, void());
   MOCK_METHOD1(OnAllDataSaved, void(const std::string&));
   MOCK_METHOD0(OnDownloadedFileRemoved, void());
-  virtual void Start(
-      scoped_ptr<DownloadFile> download_file,
-      scoped_ptr<DownloadRequestHandleInterface> req_handle) override {
+  void Start(scoped_ptr<DownloadFile> download_file,
+             scoped_ptr<DownloadRequestHandleInterface> req_handle) override {
     MockStart(download_file.get(), req_handle.get());
   }
 
@@ -184,7 +173,7 @@ class MockDownloadItemImpl : public DownloadItemImpl {
   MOCK_METHOD1(SetDisplayName, void(const base::FilePath&));
   MOCK_METHOD0(NotifyRemoved, void());
   // May be called when vlog is on.
-  virtual std::string DebugString(bool verbose) const override {
+  std::string DebugString(bool verbose) const override {
     return std::string();
   }
 };
@@ -412,8 +401,8 @@ class MockBrowserContext : public BrowserContext {
   ~MockBrowserContext() {}
 
   MOCK_CONST_METHOD0(GetPath, base::FilePath());
-  MOCK_METHOD1(CreateZoomLevelDelegate,
-               scoped_ptr<ZoomLevelDelegate>(const base::FilePath&));
+  MOCK_METHOD1(CreateZoomLevelDelegateMock,
+               ZoomLevelDelegate*(const base::FilePath&));
   MOCK_CONST_METHOD0(IsOffTheRecord, bool());
   MOCK_METHOD0(GetRequestContext, net::URLRequestContextGetter*());
   MOCK_METHOD1(GetRequestContextForRenderProcess,
@@ -431,6 +420,11 @@ class MockBrowserContext : public BrowserContext {
   MOCK_METHOD0(GetSpecialStoragePolicy, storage::SpecialStoragePolicy*());
   MOCK_METHOD0(GetPushMessagingService, PushMessagingService*());
   MOCK_METHOD0(GetSSLHostStateDelegate, SSLHostStateDelegate*());
+
+  scoped_ptr<ZoomLevelDelegate> CreateZoomLevelDelegate(
+      const base::FilePath& path) override {
+    return scoped_ptr<ZoomLevelDelegate>(CreateZoomLevelDelegateMock(path));
+  }
 };
 
 class MockDownloadManagerObserver : public DownloadManager::Observer {
