@@ -114,7 +114,11 @@ component("ash") {
   }
 
   if (!use_ozone) {
-    sources -= [ "host/ash_window_tree_host_ozone.cc" ]
+    sources -= [
+      "host/ash_window_tree_host_ozone.cc",
+      "wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard_ozone.cc",
+      "wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard_ozone.h",
+    ]
   }
 }
 
