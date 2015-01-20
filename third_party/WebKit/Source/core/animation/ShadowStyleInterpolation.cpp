@@ -35,10 +35,10 @@ PassOwnPtrWillBeRawPtr<InterpolableValue> ShadowStyleInterpolation::shadowToInte
 PassRefPtrWillBeRawPtr<CSSValue> ShadowStyleInterpolation::interpolableValueToShadow(InterpolableValue* value, bool styleFlag)
 {
     InterpolableList* shadow = toInterpolableList(value);
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> x = LengthStyleInterpolation::interpolableValueToLength(shadow->get(0), ValueRangeNonNegative);
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> y = LengthStyleInterpolation::interpolableValueToLength(shadow->get(1), ValueRangeNonNegative);
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> blur = LengthStyleInterpolation::interpolableValueToLength(shadow->get(2), ValueRangeNonNegative);
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> spread = LengthStyleInterpolation::interpolableValueToLength(shadow->get(3), ValueRangeNonNegative);
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> x = LengthStyleInterpolation::interpolableValueToLength(shadow->get(0), RangeNonNegative);
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> y = LengthStyleInterpolation::interpolableValueToLength(shadow->get(1), RangeNonNegative);
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> blur = LengthStyleInterpolation::interpolableValueToLength(shadow->get(2), RangeNonNegative);
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> spread = LengthStyleInterpolation::interpolableValueToLength(shadow->get(3), RangeNonNegative);
     RefPtrWillBeRawPtr<CSSPrimitiveValue> color = ColorStyleInterpolation::interpolableValueToColor(*(shadow->get(4)));
 
     RefPtrWillBeRawPtr<CSSPrimitiveValue> style = styleFlag ? CSSPrimitiveValue::createIdentifier(CSSValueInset) : CSSPrimitiveValue::createIdentifier(CSSValueNone);

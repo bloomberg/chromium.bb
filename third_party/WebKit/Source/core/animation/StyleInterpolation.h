@@ -12,6 +12,12 @@ namespace blink {
 
 class StyleResolverState;
 
+enum InterpolationRange {
+    RangeNonNegative,
+    RangeOpacityFIXME,
+    RangeAll
+};
+
 class StyleInterpolation : public Interpolation {
 public:
     // 1) convert m_cachedValue into an X

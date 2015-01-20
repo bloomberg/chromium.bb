@@ -28,19 +28,19 @@ PassOwnPtrWillBeRawPtr<InterpolableValue> DoubleStyleInterpolation::doubleToInte
     return nullptr;
 }
 
-PassRefPtrWillBeRawPtr<CSSValue> DoubleStyleInterpolation::interpolableValueToDouble(InterpolableValue* value, bool isNumber, ClampRange clamp)
+PassRefPtrWillBeRawPtr<CSSValue> DoubleStyleInterpolation::interpolableValueToDouble(InterpolableValue* value, bool isNumber, InterpolationRange clamp)
 {
     ASSERT(value->isNumber());
     double doubleValue = toInterpolableNumber(value)->value();
 
     switch (clamp) {
-    case ClampOpacity:
+    case RangeOpacityFIXME:
         doubleValue = clampTo<float>(doubleValue, 0, nextafterf(1, 0));
         break;
-    case ClampNonNegative:
+    case RangeNonNegative:
         doubleValue = clampTo<float>(doubleValue, 0);
         break;
-    case NoClamp:
+    case RangeAll:
         break;
     default:
         ASSERT_NOT_REACHED();
@@ -131,7 +131,7 @@ PassRefPtrWillBeRawPtr<DoubleStyleInterpolation> DoubleStyleInterpolation::maybe
     return adoptRefWillBeNoop(new DoubleStyleInterpolation(
         motionRotationToInterpolableValue(start),
         motionRotationToInterpolableValue(end),
-        id, true, NoClamp, startRotationType == MotionRotationAuto));
+        id, true, InterpolationRange::RangeAll, startRotationType == MotionRotationAuto));
 }
 
 }

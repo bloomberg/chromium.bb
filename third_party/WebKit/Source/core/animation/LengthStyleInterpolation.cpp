@@ -26,6 +26,7 @@ bool LengthStyleInterpolation::canCreateFrom(const CSSValue& value)
 
 PassOwnPtrWillBeRawPtr<InterpolableValue> LengthStyleInterpolation::lengthToInterpolableValue(const CSSValue& value)
 {
+    ASSERT(canCreateFrom(value));
     OwnPtrWillBeRawPtr<InterpolableList> listOfValuesAndTypes = InterpolableList::create(2);
     OwnPtrWillBeRawPtr<InterpolableList> listOfValues = InterpolableList::create(CSSPrimitiveValue::LengthUnitTypeCount);
     OwnPtrWillBeRawPtr<InterpolableList> listOfTypes = InterpolableList::create(CSSPrimitiveValue::LengthUnitTypeCount);
@@ -80,7 +81,7 @@ static PassRefPtrWillBeRawPtr<CSSCalcExpressionNode> constructCalcExpression(Pas
 
 }
 
-PassRefPtrWillBeRawPtr<CSSPrimitiveValue> LengthStyleInterpolation::interpolableValueToLength(const InterpolableValue* value, ValueRange range)
+PassRefPtrWillBeRawPtr<CSSPrimitiveValue> LengthStyleInterpolation::interpolableValueToLength(const InterpolableValue* value, InterpolationRange range)
 {
     const InterpolableList* listOfValuesAndTypes = toInterpolableList(value);
     const InterpolableList* listOfValues = toInterpolableList(listOfValuesAndTypes->get(0));
@@ -102,14 +103,15 @@ PassRefPtrWillBeRawPtr<CSSPrimitiveValue> LengthStyleInterpolation::interpolable
             const InterpolableNumber *subValueType = toInterpolableNumber(listOfTypes->get(i));
             if (subValueType->value()) {
                 double value = toInterpolableNumber(listOfValues->get(i))->value();
-                if (range == ValueRangeNonNegative && value < 0)
+                if (range == RangeNonNegative && value < 0)
                     value = 0;
                 return CSSPrimitiveValue::create(value, toUnitType(i));
             }
         }
         ASSERT_NOT_REACHED();
     default:
-        return CSSPrimitiveValue::create(CSSCalcValue::create(constructCalcExpression(nullptr, listOfValuesAndTypes, 0), range));
+        ValueRange valueRange = (range == RangeNonNegative) ? ValueRangeNonNegative : ValueRangeAll;
+        return CSSPrimitiveValue::create(CSSCalcValue::create(constructCalcExpression(nullptr, listOfValuesAndTypes, 0), valueRange));
     }
 }
 

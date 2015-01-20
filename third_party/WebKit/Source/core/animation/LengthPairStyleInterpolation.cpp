@@ -27,7 +27,7 @@ PassOwnPtrWillBeRawPtr<InterpolableValue> LengthPairStyleInterpolation::lengthPa
     return result.release();
 }
 
-PassRefPtrWillBeRawPtr<CSSValue> LengthPairStyleInterpolation::interpolableValueToLengthPair(InterpolableValue* value, ValueRange range)
+PassRefPtrWillBeRawPtr<CSSValue> LengthPairStyleInterpolation::interpolableValueToLengthPair(InterpolableValue* value, InterpolationRange range)
 {
     InterpolableList* lengthPair = toInterpolableList(value);
     RefPtrWillBeRawPtr<CSSPrimitiveValue> first = (LengthStyleInterpolation::interpolableValueToLength(lengthPair->get(0), range));

@@ -12,7 +12,7 @@ namespace blink {
 
 class LengthPairStyleInterpolation : public StyleInterpolation {
 public:
-    static PassRefPtrWillBeRawPtr<LengthPairStyleInterpolation> create(const CSSValue& start, const CSSValue& end, CSSPropertyID id, ValueRange range)
+    static PassRefPtrWillBeRawPtr<LengthPairStyleInterpolation> create(const CSSValue& start, const CSSValue& end, CSSPropertyID id, InterpolationRange range)
     {
         return adoptRefWillBeNoop(new LengthPairStyleInterpolation(lengthPairToInterpolableValue(start), lengthPairToInterpolableValue(end), id, range));
     }
@@ -22,15 +22,15 @@ public:
     virtual void apply(StyleResolverState&) const override;
 
 private:
-    LengthPairStyleInterpolation(PassOwnPtrWillBeRawPtr<InterpolableValue> start, PassOwnPtrWillBeRawPtr<InterpolableValue> end, CSSPropertyID id, ValueRange range)
+    LengthPairStyleInterpolation(PassOwnPtrWillBeRawPtr<InterpolableValue> start, PassOwnPtrWillBeRawPtr<InterpolableValue> end, CSSPropertyID id, InterpolationRange range)
         : StyleInterpolation(start, end, id), m_range(range)
     {
     }
 
     static PassOwnPtrWillBeRawPtr<InterpolableValue> lengthPairToInterpolableValue(const CSSValue&);
-    static PassRefPtrWillBeRawPtr<CSSValue> interpolableValueToLengthPair(InterpolableValue*, ValueRange);
+    static PassRefPtrWillBeRawPtr<CSSValue> interpolableValueToLengthPair(InterpolableValue*, InterpolationRange);
 
-    ValueRange m_range;
+    InterpolationRange m_range;
 
     friend class LengthPairStyleInterpolationTest;
 };

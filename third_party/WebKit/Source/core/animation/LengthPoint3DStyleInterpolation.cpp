@@ -39,14 +39,14 @@ PassOwnPtrWillBeRawPtr<InterpolableValue> LengthPoint3DStyleInterpolation::lengt
     return result.release();
 }
 
-PassRefPtrWillBeRawPtr<CSSValue> LengthPoint3DStyleInterpolation::interpolableValueToLengthPoint3D(InterpolableValue* value)
+PassRefPtrWillBeRawPtr<CSSValue> LengthPoint3DStyleInterpolation::interpolableValueToLengthPoint3D(InterpolableValue* value, InterpolationRange range)
 {
     InterpolableList* lengthPoint3D = toInterpolableList(value);
     RefPtrWillBeRawPtr<CSSValueList> result = CSSValueList::createCommaSeparated();
     const size_t sizeOfList = lengthPoint3D->length();
 
     for (size_t i = 0; i < sizeOfList; i++)
-        result->append(LengthStyleInterpolation::interpolableValueToLength(lengthPoint3D->get(i), ValueRangeAll));
+        result->append(LengthStyleInterpolation::interpolableValueToLength(lengthPoint3D->get(i), RangeAll));
 
     return result.release();
 }
@@ -62,5 +62,3 @@ void LengthPoint3DStyleInterpolation::trace(Visitor* visitor)
 }
 
 }
-
-

@@ -38,7 +38,7 @@ private:
 
     static PassOwnPtrWillBeRawPtr<InterpolableValue> lengthBoxtoInterpolableValue(const CSSValue&);
     static PassOwnPtrWillBeRawPtr<InterpolableValue> borderImageSlicetoInterpolableValue(CSSValue&);
-    static PassRefPtrWillBeRawPtr<CSSValue> interpolableValueToLengthBox(InterpolableValue*);
+    static PassRefPtrWillBeRawPtr<CSSValue> interpolableValueToLengthBox(InterpolableValue*, InterpolationRange = RangeAll);
     static PassRefPtrWillBeRawPtr<CSSValue> interpolableValueToBorderImageSlice(InterpolableValue*, bool);
 
     bool m_fill;
@@ -49,5 +49,3 @@ private:
 } // namespace blink
 
 #endif // LengthBoxStyleInterpolation_h
-
-

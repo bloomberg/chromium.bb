@@ -28,7 +28,7 @@ private:
     { }
 
     static PassOwnPtrWillBeRawPtr<InterpolableValue> lengthPoint3DtoInterpolableValue(const CSSValue&);
-    static PassRefPtrWillBeRawPtr<CSSValue> interpolableValueToLengthPoint3D(InterpolableValue*);
+    static PassRefPtrWillBeRawPtr<CSSValue> interpolableValueToLengthPoint3D(InterpolableValue*, InterpolationRange = RangeAll);
 
     friend class AnimationLengthPoint3DStyleInterpolationTest;
 };
@@ -36,5 +36,3 @@ private:
 } // namespace blink
 
 #endif // LengthPoint3DStyleInterpolation_h
-
-

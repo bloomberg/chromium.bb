@@ -79,6 +79,8 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
 {
     CSSValue* fromCSSValue = m_value.get();
     CSSValue* toCSSValue = toStringPropertySpecificKeyframe(end).value();
+    InterpolationRange range = RangeAll;
+    bool fallBackToLegacy = false;
 
     if (!CSSPropertyMetadata::isAnimatableProperty(property)) {
         // FIXME: Remove this once TimingFunction partitioning is implemented for all types.
@@ -91,17 +93,14 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
         return nullptr;
     }
 
-    ValueRange range = ValueRangeAll;
-    bool fallBackToLegacy = false;
-
     // FIXME: Generate this giant switch statement.
     switch (property) {
     case CSSPropertyLineHeight:
         if (LengthStyleInterpolation::canCreateFrom(*fromCSSValue) && LengthStyleInterpolation::canCreateFrom(*toCSSValue))
-            return LengthStyleInterpolation::create(*fromCSSValue, *toCSSValue, property, ValueRangeNonNegative);
+            return LengthStyleInterpolation::create(*fromCSSValue, *toCSSValue, property, RangeNonNegative);
 
         if (DoubleStyleInterpolation::canCreateFrom(*fromCSSValue) && DoubleStyleInterpolation::canCreateFrom(*toCSSValue))
-            return DoubleStyleInterpolation::create(*fromCSSValue, *toCSSValue, property, CSSPrimitiveValue::CSS_NUMBER, ClampNonNegative);
+            return DoubleStyleInterpolation::create(*fromCSSValue, *toCSSValue, property, CSSPrimitiveValue::CSS_NUMBER, RangeNonNegative);
 
         break;
     case CSSPropertyBorderBottomWidth:
@@ -123,7 +122,7 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
     case CSSPropertyPerspective:
     case CSSPropertyShapeMargin:
     case CSSPropertyWidth:
-        range = ValueRangeNonNegative;
+        range = RangeNonNegative;
         // Fall through
     case CSSPropertyBottom:
     case CSSPropertyLeft:
@@ -209,7 +208,7 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
     case CSSPropertyBorderBottomRightRadius:
     case CSSPropertyBorderTopLeftRadius:
     case CSSPropertyBorderTopRightRadius:
-        range = ValueRangeNonNegative;
+        range = RangeNonNegative;
         // Fall through
     case CSSPropertyObjectPosition:
         if (LengthPairStyleInterpolation::canCreateFrom(*fromCSSValue) && LengthPairStyleInterpolation::canCreateFrom(*toCSSValue))

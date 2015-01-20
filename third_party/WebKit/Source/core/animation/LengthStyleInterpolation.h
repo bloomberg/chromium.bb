@@ -13,7 +13,7 @@ namespace blink {
 
 class LengthStyleInterpolation : public StyleInterpolation {
 public:
-    static PassRefPtrWillBeRawPtr<LengthStyleInterpolation> create(const CSSValue& start, const CSSValue& end, CSSPropertyID id, ValueRange range)
+    static PassRefPtrWillBeRawPtr<LengthStyleInterpolation> create(const CSSValue& start, const CSSValue& end, CSSPropertyID id, InterpolationRange range)
     {
         return adoptRefWillBeNoop(new LengthStyleInterpolation(lengthToInterpolableValue(start), lengthToInterpolableValue(end), id, range));
     }
@@ -25,15 +25,15 @@ public:
     virtual void trace(Visitor*) override;
 
 private:
-    LengthStyleInterpolation(PassOwnPtrWillBeRawPtr<InterpolableValue> start, PassOwnPtrWillBeRawPtr<InterpolableValue> end, CSSPropertyID id,  ValueRange range)
+    LengthStyleInterpolation(PassOwnPtrWillBeRawPtr<InterpolableValue> start, PassOwnPtrWillBeRawPtr<InterpolableValue> end, CSSPropertyID id,  InterpolationRange range)
         : StyleInterpolation(start, end, id)
         , m_range(range)
         { }
 
     static PassOwnPtrWillBeRawPtr<InterpolableValue> lengthToInterpolableValue(const CSSValue&);
-    static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> interpolableValueToLength(const InterpolableValue*, ValueRange);
+    static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> interpolableValueToLength(const InterpolableValue*, InterpolationRange);
 
-    ValueRange m_range;
+    InterpolationRange m_range;
 
     friend class AnimationLengthStyleInterpolationTest;
     friend class LengthBoxStyleInterpolation;

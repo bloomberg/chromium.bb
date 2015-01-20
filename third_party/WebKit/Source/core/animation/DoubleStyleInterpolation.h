@@ -10,15 +10,9 @@
 
 namespace blink {
 
-enum ClampRange {
-    NoClamp,
-    ClampOpacity,
-    ClampNonNegative,
-};
-
 class DoubleStyleInterpolation : public StyleInterpolation {
 public:
-    static PassRefPtrWillBeRawPtr<DoubleStyleInterpolation> create(const CSSValue& start, const CSSValue& end, CSSPropertyID id, CSSPrimitiveValue::UnitType type, ClampRange clamp)
+    static PassRefPtrWillBeRawPtr<DoubleStyleInterpolation> create(const CSSValue& start, const CSSValue& end, CSSPropertyID id, CSSPrimitiveValue::UnitType type, InterpolationRange clamp)
     {
         return adoptRefWillBeNoop(new DoubleStyleInterpolation(doubleToInterpolableValue(start), doubleToInterpolableValue(end), id, type == CSSPrimitiveValue::CSS_NUMBER, clamp, false));
     }
@@ -32,7 +26,7 @@ public:
     virtual void trace(Visitor*) override;
 
 private:
-    DoubleStyleInterpolation(PassOwnPtrWillBeRawPtr<InterpolableValue> start, PassOwnPtrWillBeRawPtr<InterpolableValue> end, CSSPropertyID id, bool isNumber, ClampRange clamp, bool flag)
+    DoubleStyleInterpolation(PassOwnPtrWillBeRawPtr<InterpolableValue> start, PassOwnPtrWillBeRawPtr<InterpolableValue> end, CSSPropertyID id, bool isNumber, InterpolationRange clamp, bool flag)
         : StyleInterpolation(start, end, id)
         , m_isNumber(isNumber)
         , m_clamp(clamp)
@@ -41,11 +35,12 @@ private:
 
     static PassOwnPtrWillBeRawPtr<InterpolableValue> doubleToInterpolableValue(const CSSValue&);
     static PassOwnPtrWillBeRawPtr<InterpolableValue> motionRotationToInterpolableValue(const CSSValue&);
-    static PassRefPtrWillBeRawPtr<CSSValue> interpolableValueToDouble(InterpolableValue*, bool, ClampRange);
+
+    static PassRefPtrWillBeRawPtr<CSSValue> interpolableValueToDouble(InterpolableValue*, bool, InterpolationRange);
     static PassRefPtrWillBeRawPtr<CSSValue> interpolableValueToMotionRotation(InterpolableValue*, bool);
 
     bool m_isNumber;
-    ClampRange m_clamp;
+    InterpolationRange m_clamp;
     bool m_flag;
 
     friend class AnimationDoubleStyleInterpolationTest;
