@@ -9,9 +9,11 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/manifest_handlers/mime_types_handler.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/plugin_service.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/test/result_catcher.h"
@@ -38,15 +40,12 @@ class PDFExtensionTest : public ExtensionApiTest {
     ExtensionApiTest::TearDownOnMainThread();
   }
 
-  void RunTestsInFile(std::string filename, bool requiresPlugin) {
-    base::FilePath pdf_plugin_src;
-    PathService::Get(base::DIR_SOURCE_ROOT, &pdf_plugin_src);
-    pdf_plugin_src = pdf_plugin_src.AppendASCII("pdf");
-    if (requiresPlugin && !base::DirectoryExists(pdf_plugin_src)) {
-      LOG(WARNING) << "Not running " << filename <<
-          " because it requires the PDF plugin which is not available.";
-      return;
-    }
+  void RunTestsInFile(std::string filename) {
+    base::FilePath pdf_path;
+    ASSERT_TRUE(PathService::Get(chrome::FILE_PDF_PLUGIN, &pdf_path));
+    ASSERT_TRUE(
+        content::PluginService::GetInstance()->GetRegisteredPpapiPluginInfo(
+            pdf_path));
     ExtensionService* service = extensions::ExtensionSystem::Get(
         profile())->extension_service();
     service->component_loader()->Add(IDR_PDF_MANIFEST,
@@ -86,13 +85,13 @@ class PDFExtensionTest : public ExtensionApiTest {
 };
 
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, Basic) {
-  RunTestsInFile("basic_test.js", false);
+  RunTestsInFile("basic_test.js");
 }
 
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, BasicPlugin) {
-  RunTestsInFile("basic_plugin_test.js", true);
+  RunTestsInFile("basic_plugin_test.js");
 }
 
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, Viewport) {
-  RunTestsInFile("viewport_test.js", false);
+  RunTestsInFile("viewport_test.js");
 }
