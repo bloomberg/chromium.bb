@@ -170,7 +170,6 @@ public:
     void setContentType(const String& contentType) { m_contentType = contentType; }
 
     const BlobDataItemList& items() const { return m_items; }
-    void swapItems(BlobDataItemList&);
 
     void appendBytes(const void*, size_t length);
     void appendData(PassRefPtr<RawData>, long long offset, long long length);
