@@ -46,6 +46,7 @@
 #include "core/html/track/vtt/VTTRegionList.h"
 #include "core/html/track/vtt/VTTScanner.h"
 #include "core/rendering/RenderVTTCue.h"
+#include "platform/FloatConversion.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/text/BidiResolver.h"
 #include "platform/text/TextRunIterator.h"
@@ -54,8 +55,8 @@
 
 namespace blink {
 
-static const int undefinedPosition = -1;
-static const int undefinedSize = -1;
+static const float undefinedPosition = -1;
+static const float undefinedSize = -1;
 
 static const CSSValueID displayWritingModeMap[] = {
     CSSValueHorizontalTb, CSSValueVerticalRl, CSSValueVerticalLr
@@ -116,10 +117,11 @@ static const String& verticalGrowingRightKeyword()
     return verticallr;
 }
 
-static bool isInvalidPercentage(int value, ExceptionState& exceptionState)
+static bool isInvalidPercentage(double value, ExceptionState& exceptionState)
 {
+    ASSERT(std::isfinite(value));
     if (value < 0 || value > 100) {
-        exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::indexOutsideRange("value", value, 0, ExceptionMessages::InclusiveBound, 100, ExceptionMessages::InclusiveBound));
+        exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::indexOutsideRange<double>("value", value, 0, ExceptionMessages::InclusiveBound, 100, ExceptionMessages::InclusiveBound));
         return true;
     }
     return false;
@@ -304,7 +306,7 @@ void VTTCue::setSnapToLines(bool value)
     cueDidChange();
 }
 
-void VTTCue::setLine(int position, ExceptionState& exceptionState)
+void VTTCue::setLine(double position, ExceptionState& exceptionState)
 {
     // http://www.whatwg.org/specs/web-apps/current-work/multipage/the-video-element.html#dom-texttrackcue-line
     // On setting, if the text track cue snap-to-lines flag is not set, and the new
@@ -315,16 +317,17 @@ void VTTCue::setLine(int position, ExceptionState& exceptionState)
     }
 
     // Otherwise, set the text track cue line position to the new value.
-    if (m_linePosition == position)
+    float floatPosition = narrowPrecisionToFloat(position);
+    if (m_linePosition == floatPosition)
         return;
 
     cueWillChange();
-    m_linePosition = position;
+    m_linePosition = floatPosition;
     m_computedLinePosition = calculateComputedLinePosition();
     cueDidChange();
 }
 
-void VTTCue::setPosition(int position, ExceptionState& exceptionState)
+void VTTCue::setPosition(double position, ExceptionState& exceptionState)
 {
     // http://www.whatwg.org/specs/web-apps/current-work/multipage/the-video-element.html#dom-texttrackcue-position
     // On setting, if the new value is negative or greater than 100, then throw an IndexSizeError exception.
@@ -333,15 +336,16 @@ void VTTCue::setPosition(int position, ExceptionState& exceptionState)
         return;
 
     // Otherwise, set the text track cue line position to the new value.
-    if (m_textPosition == position)
+    float floatPosition = narrowPrecisionToFloat(position);
+    if (m_textPosition == floatPosition)
         return;
 
     cueWillChange();
-    m_textPosition = position;
+    m_textPosition = floatPosition;
     cueDidChange();
 }
 
-void VTTCue::setSize(int size, ExceptionState& exceptionState)
+void VTTCue::setSize(double size, ExceptionState& exceptionState)
 {
     // http://www.whatwg.org/specs/web-apps/current-work/multipage/the-video-element.html#dom-texttrackcue-size
     // On setting, if the new value is negative or greater than 100, then throw an IndexSizeError
@@ -350,11 +354,12 @@ void VTTCue::setSize(int size, ExceptionState& exceptionState)
         return;
 
     // Otherwise, set the text track cue line position to the new value.
-    if (m_cueSize == size)
+    float floatSize = narrowPrecisionToFloat(size);
+    if (m_cueSize == floatSize)
         return;
 
     cueWillChange();
-    m_cueSize = size;
+    m_cueSize = floatSize;
     cueDidChange();
 }
 
@@ -465,7 +470,7 @@ void VTTCue::notifyRegionWhenRemovingDisplayTree(bool notifyRegion)
     m_notifyRegion = notifyRegion;
 }
 
-int VTTCue::calculateComputedLinePosition()
+float VTTCue::calculateComputedLinePosition()
 {
     // http://www.whatwg.org/specs/web-apps/current-work/multipage/the-video-element.html#text-track-cue-computed-line-position
 
@@ -587,7 +592,7 @@ void VTTCue::calculateDisplayParameters()
 
     // 10.5 Determine the value of maximum size for cue as per the appropriate
     // rules from the following list:
-    int maximumSize = m_textPosition;
+    float maximumSize = m_textPosition;
     if ((m_writingDirection == Horizontal && m_cueAlignment == Start && m_displayDirection == CSSValueLtr)
         || (m_writingDirection == Horizontal && m_cueAlignment == End && m_displayDirection == CSSValueRtl)
         || (m_writingDirection == Horizontal && m_cueAlignment == Left)
@@ -617,7 +622,7 @@ void VTTCue::calculateDisplayParameters()
     // 10.8 Determine the value of x-position or y-position for cue as per the
     // appropriate rules from the following list:
     if (m_writingDirection == Horizontal) {
-        int visualTextPosition = m_displayDirection == CSSValueLtr ? m_textPosition : 100 - m_textPosition;
+        float visualTextPosition = m_displayDirection == CSSValueLtr ? m_textPosition : 100 - m_textPosition;
 
         switch (resolveCueAlignment(m_cueAlignment, m_displayDirection)) {
         case Left:
@@ -1052,7 +1057,7 @@ CSSValueID VTTCue::getCSSWritingMode() const
     return displayWritingModeMap[m_writingDirection];
 }
 
-int VTTCue::getCSSSize() const
+float VTTCue::getCSSSize() const
 {
     ASSERT(m_displaySize != undefinedSize);
     return m_displaySize;

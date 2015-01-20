@@ -76,14 +76,14 @@ public:
     bool snapToLines() const { return m_snapToLines; }
     void setSnapToLines(bool);
 
-    int line() const { return m_linePosition; }
-    void setLine(int, ExceptionState&);
+    double line() const { return m_linePosition; }
+    void setLine(double, ExceptionState&);
 
-    int position() const { return m_textPosition; }
-    void setPosition(int, ExceptionState&);
+    double position() const { return m_textPosition; }
+    void setPosition(double, ExceptionState&);
 
-    int size() const { return m_cueSize; }
-    void setSize(int, ExceptionState&);
+    double size() const { return m_cueSize; }
+    void setSize(double, ExceptionState&);
 
     const String& align() const;
     void setAlign(const String&);
@@ -107,12 +107,12 @@ public:
 
     void markFutureAndPastNodes(ContainerNode*, double previousTimestamp, double movieTime);
 
-    int calculateComputedLinePosition();
+    float calculateComputedLinePosition();
 
     FloatPoint getCSSPosition() const;
 
     CSSValueID getCSSAlignment() const;
-    int getCSSSize() const;
+    float getCSSSize() const;
     CSSValueID getCSSWritingDirection() const;
     CSSValueID getCSSWritingMode() const;
 
@@ -171,10 +171,10 @@ private:
     CueSetting settingName(VTTScanner&);
 
     String m_text;
-    int m_linePosition;
-    int m_computedLinePosition;
-    int m_textPosition;
-    int m_cueSize;
+    float m_linePosition;
+    float m_computedLinePosition;
+    float m_textPosition;
+    float m_cueSize;
     WritingDirection m_writingDirection;
     CueAlignment m_cueAlignment;
     String m_regionId;
@@ -184,7 +184,7 @@ private:
     RefPtrWillBeMember<VTTCueBox> m_displayTree;
 
     CSSValueID m_displayDirection;
-    int m_displaySize;
+    float m_displaySize;
     FloatPoint m_displayPosition;
 
     bool m_snapToLines : 1;
