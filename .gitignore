@@ -168,8 +168,7 @@ v8.log
 /media/cdm/ppapi/api
 /media/media_asm.xml
 /media/media_mojo_bindings.xml
-/media/test/data/content
-/media/test/data/security
+/media/test/data/internal
 /media/yuv_convert_simd_x86.xml
 /metro_driver
 /mojo/hello_world_service.xml
