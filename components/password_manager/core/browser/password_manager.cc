@@ -234,9 +234,17 @@ void PasswordManager::ProvisionallySavePassword(const PasswordForm& form) {
        ++iter) {
     PasswordFormManager::MatchResultMask result = (*iter)->DoesManage(form);
 
+    if (result == PasswordFormManager::RESULT_NO_MATCH)
+      continue;
+
+    if ((*iter)->IsIgnorableChangePasswordForm()) {
+      if (logger)
+        logger->LogMessage(Logger::STRING_CHANGE_PASSWORD_FORM);
+      continue;
+    }
+
     if (!(*iter)->HasCompletedMatching()) {
-      if (result != PasswordFormManager::RESULT_NO_MATCH)
-        has_found_matching_managers_which_were_not_ready = true;
+      has_found_matching_managers_which_were_not_ready = true;
       continue;
     }
 

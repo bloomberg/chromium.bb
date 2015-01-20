@@ -116,9 +116,7 @@ void GetPasswordForm(const WebFormElement& form,
                                     blink::WebString>* user_modified_elements) {
   WebInputElement latest_input_element;
   WebInputElement username_element;
-  // Caches whether |username_element| is marked with autocomplete='username'.
-  // Needed for performance reasons to avoid recalculating this multiple times.
-  bool has_seen_element_with_autocomplete_username_before = false;
+  password_form->username_marked_by_site = false;
   std::vector<WebInputElement> passwords;
   std::vector<base::string16> other_possible_usernames;
 
@@ -155,7 +153,7 @@ void GetPasswordForm(const WebFormElement& form,
     // Various input types such as text, url, email can be a username field.
     if (input_element->isTextField() && !input_element->isPasswordField()) {
       if (HasAutocompleteAttributeValue(*input_element, "username")) {
-        if (has_seen_element_with_autocomplete_username_before) {
+        if (password_form->username_marked_by_site) {
           // A second or subsequent element marked with autocomplete='username'.
           // This makes us less confident that we have understood the form. We
           // will stick to our choice that the first such element was the real
@@ -173,11 +171,11 @@ void GetPasswordForm(const WebFormElement& form,
           // usernames we have accrued so far: they come from fields not marked
           // with the autocomplete attribute, making them unlikely alternatives.
           username_element = *input_element;
-          has_seen_element_with_autocomplete_username_before = true;
+          password_form->username_marked_by_site = true;
           other_possible_usernames.clear();
         }
       } else {
-        if (has_seen_element_with_autocomplete_username_before) {
+        if (password_form->username_marked_by_site) {
           // Having seen elements with autocomplete='username', elements without
           // this attribute are no longer interesting. No-op.
         } else {

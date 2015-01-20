@@ -84,6 +84,16 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // the same thread!
   bool HasCompletedMatching() const;
 
+  // Returns true if the observed form has both the current and new password
+  // fields, and the username field was not explicitly marked with
+  // autocomplete=username. In these cases it is not clear whether the username
+  // field is the right guess (often such change password forms do not contain
+  // the username at all), and the user should not be bothered with saving a
+  // potentially malformed credential. Once we handle change password forms
+  // correctly, or http://crbug.com/448351 gets implemented, this method should
+  // be replaced accordingly.
+  bool IsIgnorableChangePasswordForm() const;
+
   // Determines if the user opted to 'never remember' passwords for this form.
   bool IsBlacklisted() const;
 

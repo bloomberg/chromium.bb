@@ -402,6 +402,13 @@ bool PasswordFormManager::HasCompletedMatching() const {
   return state_ == POST_MATCHING_PHASE;
 }
 
+bool PasswordFormManager::IsIgnorableChangePasswordForm() const {
+  bool is_change_password_form = !observed_form_.new_password_element.empty() &&
+                                 !observed_form_.password_element.empty();
+  bool is_username_certainly_correct = observed_form_.username_marked_by_site;
+  return is_change_password_form && !is_username_certainly_correct;
+}
+
 void PasswordFormManager::OnRequestDone(
     const std::vector<PasswordForm*>& logins_result) {
   // Note that the result gets deleted after this call completes, but we own

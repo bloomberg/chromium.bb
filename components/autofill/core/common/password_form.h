@@ -104,6 +104,10 @@ struct PasswordForm {
   // When parsing an HTML form, this must always be set.
   base::string16 username_element;
 
+  // Whether the |username_element| has an autocomplete=username attribute. This
+  // is only used in parsed HTML forms.
+  bool username_marked_by_site;
+
   // The username. Optional.
   //
   // When parsing an HTML form, this is typically empty unless the site
