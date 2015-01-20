@@ -52,10 +52,10 @@ class TestURLRequestJobFactory : public net::URLRequestJobFactory {
   explicit TestURLRequestJobFactory(void* profile_id)
       : profile_id_(profile_id) {}
 
-  virtual ~TestURLRequestJobFactory() {}
+  ~TestURLRequestJobFactory() override {}
 
   // net::URLRequestJobFactory override:
-  virtual net::URLRequestJob* MaybeCreateJobWithProtocolHandler(
+  net::URLRequestJob* MaybeCreateJobWithProtocolHandler(
       const std::string& scheme,
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const override {
@@ -76,15 +76,15 @@ class TestURLRequestJobFactory : public net::URLRequestJobFactory {
     return nullptr;
   }
 
-  virtual bool IsHandledProtocol(const std::string& scheme) const override {
+  bool IsHandledProtocol(const std::string& scheme) const override {
     return scheme == content::kExternalFileScheme;
   }
 
-  virtual bool IsHandledURL(const GURL& url) const override {
+  bool IsHandledURL(const GURL& url) const override {
     return url.is_valid() && IsHandledProtocol(url.scheme());
   }
 
-  virtual bool IsSafeRedirectTarget(const GURL& location) const override {
+  bool IsSafeRedirectTarget(const GURL& location) const override {
     return true;
   }
 
@@ -100,9 +100,9 @@ class TestDelegate : public net::TestDelegate {
   const GURL& redirect_url() const { return redirect_url_; }
 
   // net::TestDelegate override.
-  virtual void OnReceivedRedirect(net::URLRequest* request,
-                                  const net::RedirectInfo& redirect_info,
-                                  bool* defer_redirect) override {
+  void OnReceivedRedirect(net::URLRequest* request,
+                          const net::RedirectInfo& redirect_info,
+                          bool* defer_redirect) override {
     redirect_url_ = redirect_info.new_url;
     net::TestDelegate::OnReceivedRedirect(
         request, redirect_info, defer_redirect);
@@ -125,9 +125,9 @@ class ExternalFileURLRequestJobTest : public testing::Test {
             base::Unretained(this))),
         fake_file_system_(NULL) {}
 
-  virtual ~ExternalFileURLRequestJobTest() {}
+  ~ExternalFileURLRequestJobTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     // Create a testing profile.
     profile_manager_.reset(
         new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
@@ -150,7 +150,7 @@ class ExternalFileURLRequestJobTest : public testing::Test {
     test_delegate_.reset(new TestDelegate);
   }
 
-  virtual void TearDown() { profile_manager_.reset(); }
+  void TearDown() override { profile_manager_.reset(); }
 
   bool ReadDriveFileSync(const base::FilePath& file_path,
                          std::string* out_content) {

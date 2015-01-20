@@ -24,9 +24,7 @@ class ExternalFileURLUtilTest : public testing::Test {
   ExternalFileURLUtilTest()
       : testing_profile_manager_(TestingBrowserProcess::GetGlobal()) {}
 
-  virtual void SetUp() override {
-    ASSERT_TRUE(testing_profile_manager_.SetUp());
-  }
+  void SetUp() override { ASSERT_TRUE(testing_profile_manager_.SetUp()); }
 
   TestingProfileManager& testing_profile_manager() {
     return testing_profile_manager_;

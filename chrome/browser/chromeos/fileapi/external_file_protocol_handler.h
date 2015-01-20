@@ -18,10 +18,10 @@ class ExternalFileProtocolHandler
     : public net::URLRequestJobFactory::ProtocolHandler {
  public:
   explicit ExternalFileProtocolHandler(void* profile_id);
-  virtual ~ExternalFileProtocolHandler();
+  ~ExternalFileProtocolHandler() override;
 
   // Creates URLRequestJobs for drive:// URLs.
-  virtual net::URLRequestJob* MaybeCreateJob(
+  net::URLRequestJob* MaybeCreateJob(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const override;
 
