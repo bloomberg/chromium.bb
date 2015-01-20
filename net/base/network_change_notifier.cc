@@ -565,10 +565,9 @@ const char* NetworkChangeNotifier::ConnectionTypeToString(
     "CONNECTION_NONE",
     "CONNECTION_BLUETOOTH"
   };
-  COMPILE_ASSERT(
-      arraysize(kConnectionTypeNames) ==
-          NetworkChangeNotifier::CONNECTION_LAST + 1,
-      ConnectionType_name_count_mismatch);
+  static_assert(arraysize(kConnectionTypeNames) ==
+                    NetworkChangeNotifier::CONNECTION_LAST + 1,
+                "ConnectionType name count should match");
   if (type < CONNECTION_UNKNOWN || type > CONNECTION_LAST) {
     NOTREACHED();
     return "CONNECTION_INVALID";

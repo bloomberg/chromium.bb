@@ -14,7 +14,7 @@ namespace net {
 
 namespace {
 
-COMPILE_ASSERT(kMaxHSTSAgeSecs <= kuint32max, kMaxHSTSAgeSecsTooLarge);
+static_assert(kMaxHSTSAgeSecs <= kuint32max, "kMaxHSTSAgeSecs too large");
 
 // MaxAgeToInt converts a string representation of a "whole number" of
 // seconds into a uint32. The string may contain an arbitrarily large number,

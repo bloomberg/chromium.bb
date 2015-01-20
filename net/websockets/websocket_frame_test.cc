@@ -51,9 +51,9 @@ TEST(WebSocketFrameHeaderTest, FrameLengths) {
 
 TEST(WebSocketFrameHeaderTest, FrameLengthsWithMasking) {
   static const char kMaskingKey[] = "\xDE\xAD\xBE\xEF";
-  COMPILE_ASSERT(arraysize(kMaskingKey) - 1 ==
-                     WebSocketFrameHeader::kMaskingKeyLength,
-                 incorrect_masking_key_size);
+  static_assert(
+      arraysize(kMaskingKey) - 1 == WebSocketFrameHeader::kMaskingKeyLength,
+      "incorrect masking key size");
 
   struct TestCase {
     const char* frame_header;
@@ -294,8 +294,8 @@ TEST(WebSocketFrameTest, MaskPayloadAlignment) {
     "\x08\x12\x11\xcb\x73\x71\xf3\xc9\xcb\xf7\x34\x61\x1a\xb2\x46\x08"
     "\xbf\x41\x62\xba\x96\x6f\xe0\xe9\x4d\xcc\xea\x90\xd5\x2b\xbc\x16"
   };
-  COMPILE_ASSERT(arraysize(kTestInput) == arraysize(kTestOutput),
-                 output_and_input_arrays_have_the_same_length);
+  static_assert(arraysize(kTestInput) == arraysize(kTestOutput),
+                "output and input arrays should have the same length");
   scoped_ptr<char, base::AlignedFreeDeleter> scratch(
       static_cast<char*>(
           base::AlignedAlloc(kScratchBufferSize, kMaxVectorAlignment)));

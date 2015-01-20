@@ -338,9 +338,9 @@ HttpCache::Transaction::Transaction(RequestPriority priority, HttpCache* cache)
       total_received_bytes_(0),
       websocket_handshake_stream_base_create_helper_(NULL),
       weak_factory_(this) {
-  COMPILE_ASSERT(HttpCache::Transaction::kNumValidationHeaders ==
-                 arraysize(kValidationHeaders),
-                 Invalid_number_of_validation_headers);
+  static_assert(HttpCache::Transaction::kNumValidationHeaders ==
+                    arraysize(kValidationHeaders),
+                "invalid number of validation headers");
 
   io_callback_ = base::Bind(&Transaction::OnIOComplete,
                               weak_factory_.GetWeakPtr());

@@ -273,7 +273,7 @@ class CryptoServerTest : public ::testing::TestWithParam<TestParams> {
       size_t expected_count) {
     const uint32* reject_reasons;
     size_t num_reject_reasons;
-    COMPILE_ASSERT(sizeof(QuicTag) == sizeof(uint32), header_out_of_sync);
+    static_assert(sizeof(QuicTag) == sizeof(uint32), "header out of sync");
     QuicErrorCode error_code = out_.GetTaglist(kRREJ, &reject_reasons,
                                                &num_reject_reasons);
     if (!FLAGS_send_quic_crypto_reject_reason) {

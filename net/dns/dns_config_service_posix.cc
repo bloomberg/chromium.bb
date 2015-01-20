@@ -411,9 +411,9 @@ ConfigParsePosixResult ConvertResStateToDnsConfig(const struct __res_state& res,
     dns_config->nameservers.push_back(ipe);
   }
 #elif defined(OS_LINUX)
-  COMPILE_ASSERT(arraysize(res.nsaddr_list) >= MAXNS &&
-                 arraysize(res._u._ext.nsaddrs) >= MAXNS,
-                 incompatible_libresolv_res_state);
+  static_assert(arraysize(res.nsaddr_list) >= MAXNS &&
+                    arraysize(res._u._ext.nsaddrs) >= MAXNS,
+                "incompatible libresolv res_state");
   DCHECK_LE(res.nscount, MAXNS);
   // Initially, glibc stores IPv6 in |_ext.nsaddrs| and IPv4 in |nsaddr_list|.
   // In res_send.c:res_nsend, it merges |nsaddr_list| into |nsaddrs|,

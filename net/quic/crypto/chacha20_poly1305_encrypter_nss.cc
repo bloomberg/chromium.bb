@@ -48,9 +48,9 @@ void ChaCha20Poly1305Encrypter::FillAeadParams(StringPiece nonce,
 ChaCha20Poly1305Encrypter::ChaCha20Poly1305Encrypter()
     : AeadBaseEncrypter(CKM_NSS_CHACHA20_POLY1305, PK11_Encrypt, kKeySize,
                         kAuthTagSize, kNoncePrefixSize) {
-  COMPILE_ASSERT(kKeySize <= kMaxKeySize, key_size_too_big);
-  COMPILE_ASSERT(kNoncePrefixSize <= kMaxNoncePrefixSize,
-                 nonce_prefix_size_too_big);
+  static_assert(kKeySize <= kMaxKeySize, "key size too big");
+  static_assert(kNoncePrefixSize <= kMaxNoncePrefixSize,
+                "nonce prefix size too big");
 }
 
 ChaCha20Poly1305Encrypter::~ChaCha20Poly1305Encrypter() {}

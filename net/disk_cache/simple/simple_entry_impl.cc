@@ -185,14 +185,14 @@ SimpleEntryImpl::SimpleEntryImpl(net::CacheType cache_type,
       net_log_(net::BoundNetLog::Make(
           net_log, net::NetLog::SOURCE_DISK_CACHE_ENTRY)),
       stream_0_data_(new net::GrowableIOBuffer()) {
-  COMPILE_ASSERT(arraysize(data_size_) == arraysize(crc32s_end_offset_),
-                 arrays_should_be_same_size);
-  COMPILE_ASSERT(arraysize(data_size_) == arraysize(crc32s_),
-                 arrays_should_be_same_size);
-  COMPILE_ASSERT(arraysize(data_size_) == arraysize(have_written_),
-                 arrays_should_be_same_size);
-  COMPILE_ASSERT(arraysize(data_size_) == arraysize(crc_check_state_),
-                 arrays_should_be_same_size);
+  static_assert(arraysize(data_size_) == arraysize(crc32s_end_offset_),
+                "arrays should be the same size");
+  static_assert(arraysize(data_size_) == arraysize(crc32s_),
+                "arrays should be the same size");
+  static_assert(arraysize(data_size_) == arraysize(have_written_),
+                "arrays should be the same size");
+  static_assert(arraysize(data_size_) == arraysize(crc_check_state_),
+                "arrays should be the same size");
   MakeUninitialized();
   net_log_.BeginEvent(net::NetLog::TYPE_SIMPLE_CACHE_ENTRY,
       CreateNetLogSimpleEntryConstructionCallback(this));

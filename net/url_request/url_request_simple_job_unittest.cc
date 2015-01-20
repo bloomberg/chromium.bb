@@ -20,10 +20,11 @@ namespace {
 const char kTestData[] = "Huge data array";
 const int kRangeFirstPosition = 5;
 const int kRangeLastPosition = 8;
-COMPILE_ASSERT(kRangeFirstPosition > 0 &&
-    kRangeFirstPosition < kRangeLastPosition &&
-    kRangeLastPosition < static_cast<int>(arraysize(kTestData) - 1),
-    invalid_range);
+static_assert(kRangeFirstPosition > 0 &&
+                  kRangeFirstPosition < kRangeLastPosition &&
+                  kRangeLastPosition <
+                      static_cast<int>(arraysize(kTestData) - 1),
+              "invalid range");
 
 class MockSimpleJob : public URLRequestSimpleJob {
  public:

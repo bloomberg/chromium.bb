@@ -30,7 +30,7 @@ class ImmutableArray {
 
   template <size_t Index>
   const T& at() const {
-    COMPILE_ASSERT(Index < size, array_out_of_bounds);
+    static_assert(Index < size, "array out of bounds");
     return data_[Index];
   }
 

@@ -129,10 +129,10 @@ SpdyGoAwayStatus NET_EXPORT_PRIVATE MapNetErrorToGoAwayStatus(Error err);
 
 // If these compile asserts fail then SpdyProtocolErrorDetails needs
 // to be updated with new values, as do the mapping functions above.
-COMPILE_ASSERT(12 == SpdyFramer::LAST_ERROR,
-               SpdyProtocolErrorDetails_SpdyErrors_mismatch);
-COMPILE_ASSERT(17 == RST_STREAM_NUM_STATUS_CODES,
-               SpdyProtocolErrorDetails_RstStreamStatus_mismatch);
+static_assert(12 == SpdyFramer::LAST_ERROR,
+              "SpdyProtocolErrorDetails / Spdy Errors mismatch");
+static_assert(17 == RST_STREAM_NUM_STATUS_CODES,
+              "SpdyProtocolErrorDetails / RstStreamStatus mismatch");
 
 // Splits pushed |headers| into request and response parts. Request headers are
 // the headers specifying resource URL.

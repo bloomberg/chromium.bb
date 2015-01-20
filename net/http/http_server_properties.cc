@@ -27,9 +27,9 @@ const char* const kAlternateProtocolStrings[] = {
   "quic"
 };
 
-COMPILE_ASSERT(
-    arraysize(kAlternateProtocolStrings) == NUM_VALID_ALTERNATE_PROTOCOLS,
-    kAlternateProtocolStringsSize_kNumValidAlternateProtocols_not_equal);
+static_assert(arraysize(kAlternateProtocolStrings) ==
+                  NUM_VALID_ALTERNATE_PROTOCOLS,
+              "kAlternateProtocolStrings has incorrect size");
 
 }  // namespace
 

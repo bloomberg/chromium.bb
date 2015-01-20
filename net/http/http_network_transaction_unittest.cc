@@ -1854,8 +1854,8 @@ TEST_P(HttpNetworkTransactionTest, KeepAliveAfterUnreadBody) {
     "HTTP/1.1 301 Moved Permanently",
   };
 
-  COMPILE_ASSERT(kNumUnreadBodies == arraysize(kStatusLines),
-                 forgot_to_update_kStatusLines);
+  static_assert(kNumUnreadBodies == arraysize(kStatusLines),
+                "forgot to update kStatusLines");
 
   for (int i = 0; i < kNumUnreadBodies; ++i)
     EXPECT_EQ(kStatusLines[i], response_lines[i]);

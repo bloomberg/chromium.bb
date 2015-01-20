@@ -25,8 +25,8 @@ const uint8 SOCKS5ClientSocket::kSOCKS5Version = 0x05;
 const uint8 SOCKS5ClientSocket::kTunnelCommand = 0x01;
 const uint8 SOCKS5ClientSocket::kNullByte = 0x00;
 
-COMPILE_ASSERT(sizeof(struct in_addr) == 4, incorrect_system_size_of_IPv4);
-COMPILE_ASSERT(sizeof(struct in6_addr) == 16, incorrect_system_size_of_IPv6);
+static_assert(sizeof(struct in_addr) == 4, "incorrect system size of IPv4");
+static_assert(sizeof(struct in6_addr) == 16, "incorrect system size of IPv6");
 
 SOCKS5ClientSocket::SOCKS5ClientSocket(
     scoped_ptr<ClientSocketHandle> transport_socket,

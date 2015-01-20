@@ -49,8 +49,8 @@ enum {
   SSL_CONNECTION_VERSION_QUIC = 7,
   SSL_CONNECTION_VERSION_MAX,
 };
-COMPILE_ASSERT(SSL_CONNECTION_VERSION_MAX - 1 <= SSL_CONNECTION_VERSION_MASK,
-               SSL_CONNECTION_VERSION_MASK_too_small);
+static_assert(SSL_CONNECTION_VERSION_MAX - 1 <= SSL_CONNECTION_VERSION_MASK,
+              "SSL_CONNECTION_VERSION_MASK too small");
 
 inline uint16 SSLConnectionStatusToCipherSuite(int connection_status) {
   return static_cast<uint16>(connection_status);

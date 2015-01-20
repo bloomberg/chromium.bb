@@ -272,8 +272,8 @@ bool ValidatePerMessageDeflateExtension(const WebSocketExtension& extension,
   static const char kNoContextTakeover[] = "no_context_takeover";
   static const char kMaxWindowBits[] = "max_window_bits";
   const size_t kPrefixLen = arraysize(kClientPrefix) - 1;
-  COMPILE_ASSERT(kPrefixLen == arraysize(kServerPrefix) - 1,
-                 the_strings_server_and_client_must_be_the_same_length);
+  static_assert(kPrefixLen == arraysize(kServerPrefix) - 1,
+                "the strings server and client must be the same length");
   typedef std::vector<WebSocketExtension::Parameter> ParameterVector;
 
   DCHECK_EQ("permessage-deflate", extension.name());

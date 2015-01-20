@@ -1066,8 +1066,8 @@ ChannelState WebSocketChannel::SendClose(uint16 code,
     body = new IOBuffer(payload_length);
     size = payload_length;
     base::WriteBigEndian(body->data(), code);
-    COMPILE_ASSERT(sizeof(code) == kWebSocketCloseCodeLength,
-                   they_should_both_be_two);
+    static_assert(sizeof(code) == kWebSocketCloseCodeLength,
+                  "they should both be two");
     std::copy(
         reason.begin(), reason.end(), body->data() + kWebSocketCloseCodeLength);
   }
@@ -1102,8 +1102,8 @@ bool WebSocketChannel::ParseClose(const scoped_refptr<IOBuffer>& buffer,
   const char* data = buffer->data();
   uint16 unchecked_code = 0;
   base::ReadBigEndian(data, &unchecked_code);
-  COMPILE_ASSERT(sizeof(unchecked_code) == kWebSocketCloseCodeLength,
-                 they_should_both_be_two_bytes);
+  static_assert(sizeof(unchecked_code) == kWebSocketCloseCodeLength,
+                "they should both be two bytes");
 
   switch (unchecked_code) {
     case kWebSocketErrorNoStatusReceived:

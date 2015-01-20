@@ -26,9 +26,9 @@ namespace net {
 namespace {
 
 const int kMagicChunkSize = 1024;
-COMPILE_ASSERT(
-    (HttpResponseBodyDrainer::kDrainBodyBufferSize % kMagicChunkSize) == 0,
-    chunk_size_needs_to_divide_evenly_into_buffer_size);
+static_assert((HttpResponseBodyDrainer::kDrainBodyBufferSize %
+               kMagicChunkSize) == 0,
+              "chunk size needs to divide evenly into buffer size");
 
 class CloseResultWaiter {
  public:

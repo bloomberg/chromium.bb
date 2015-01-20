@@ -295,7 +295,7 @@ bool CRLSetStorage::Parse(base::StringPiece data,
   // anything by doing this.
 #if defined(__BYTE_ORDER)
   // Linux check
-  COMPILE_ASSERT(__BYTE_ORDER == __LITTLE_ENDIAN, assumes_little_endian);
+  static_assert(__BYTE_ORDER == __LITTLE_ENDIAN, "assumes little endian");
 #elif defined(__BIG_ENDIAN__)
   // Mac check
   #error assumes little endian

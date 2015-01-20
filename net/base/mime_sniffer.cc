@@ -122,7 +122,8 @@ struct MagicNumber {
 
 template <int MagicSize, int MaskSize>
 class VerifySizes {
-  COMPILE_ASSERT(MagicSize == MaskSize, sizes_must_be_equal);
+  static_assert(MagicSize == MaskSize, "sizes must be equal");
+
  public:
   enum { SIZES = MagicSize };
 };

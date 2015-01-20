@@ -160,10 +160,8 @@ void CreateSpdyHeadersFromHttpResponse(
   }
 }
 
-
-COMPILE_ASSERT(HIGHEST - LOWEST < 4 &&
-               HIGHEST - MINIMUM_PRIORITY < 5,
-               request_priority_incompatible_with_spdy);
+static_assert(HIGHEST - LOWEST < 4 && HIGHEST - MINIMUM_PRIORITY < 5,
+              "request priority incompatible with spdy");
 
 SpdyPriority ConvertRequestPriorityToSpdyPriority(
     const RequestPriority priority,

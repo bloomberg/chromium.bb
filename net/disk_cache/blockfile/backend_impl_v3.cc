@@ -91,7 +91,8 @@ int BackendImplV3::Init(const CompletionCallback& callback) {
 // ------------------------------------------------------------------------
 
 bool BackendImplV3::SetMaxSize(int max_bytes) {
-  COMPILE_ASSERT(sizeof(max_bytes) == sizeof(max_size_), unsupported_int_model);
+  static_assert(sizeof(max_bytes) == sizeof(max_size_),
+                "unsupported int model");
   if (max_bytes < 0)
     return false;
 

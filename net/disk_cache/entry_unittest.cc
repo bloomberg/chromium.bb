@@ -670,7 +670,8 @@ void DiskCacheEntryTest::StreamAccess() {
   ASSERT_TRUE(NULL != entry);
   const int kReadBufferSize = 600;
   const int kFinalReadSize = kBufferSize - kReadBufferSize;
-  COMPILE_ASSERT(kFinalReadSize < kReadBufferSize, should_be_exactly_two_reads);
+  static_assert(kFinalReadSize < kReadBufferSize,
+                "should be exactly two reads");
   scoped_refptr<net::IOBuffer> buffer2(new net::IOBuffer(kReadBufferSize));
   for (int i = 0; i < kNumStreams; i++) {
     memset(buffer2->data(), 0, kReadBufferSize);

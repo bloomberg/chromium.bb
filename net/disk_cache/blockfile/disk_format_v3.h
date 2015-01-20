@@ -97,7 +97,7 @@ struct IndexBitmap {
   IndexHeaderV3   header;
   uint32          bitmap[kBaseBitmapBytes / 4];  // First page of the bitmap.
 };
-COMPILE_ASSERT(sizeof(IndexBitmap) == 4096, bad_IndexHeader);
+static_assert(sizeof(IndexBitmap) == 4096, "bad IndexHeader");
 
 // Possible states for a given entry.
 enum EntryState {
@@ -109,7 +109,7 @@ enum EntryState {
   ENTRY_FIXING,     // Inconsistent state. The entry is being verified.
   ENTRY_USED        // The slot is in use (entry is present).
 };
-COMPILE_ASSERT(ENTRY_USED <= 7, state_uses_3_bits);
+static_assert(ENTRY_USED <= 7, "state uses 3 bits");
 
 enum EntryGroup {
   ENTRY_NO_USE = 0,   // The entry has not been reused.
@@ -118,7 +118,7 @@ enum EntryGroup {
   ENTRY_RESERVED,     // Reserved for future use.
   ENTRY_EVICTED       // The entry was deleted.
 };
-COMPILE_ASSERT(ENTRY_USED <= 7, group_uses_3_bits);
+static_assert(ENTRY_USED <= 7, "group uses 3 bits");
 
 #pragma pack(push, 1)
 struct IndexCell {
@@ -183,7 +183,7 @@ struct IndexCell {
   uint64      first_part;
   uint8       last_part;
 };
-COMPILE_ASSERT(sizeof(IndexCell) == 9, bad_IndexCell);
+static_assert(sizeof(IndexCell) == 9, "bad IndexCell");
 
 const int kCellsPerBucket = 4;
 struct IndexBucket {
@@ -191,7 +191,7 @@ struct IndexBucket {
   int32       next;
   uint32      hash;  // The high order byte is reserved (should be zero).
 };
-COMPILE_ASSERT(sizeof(IndexBucket) == 44, bad_IndexBucket);
+static_assert(sizeof(IndexBucket) == 44, "bad IndexBucket");
 const int kBytesPerCell = 44 / kCellsPerBucket;
 
 // The main cache index. Backed by a file named index_tb1.
@@ -225,7 +225,7 @@ struct EntryRecord {
   int32       pad[3];
   uint32      self_hash;
 };
-COMPILE_ASSERT(sizeof(EntryRecord) == 104, bad_EntryRecord);
+static_assert(sizeof(EntryRecord) == 104, "bad EntryRecord");
 
 struct ShortEntryRecord {
   uint32      hash;
@@ -239,7 +239,7 @@ struct ShortEntryRecord {
   uint32      long_hash[5];
   uint32      self_hash;
 };
-COMPILE_ASSERT(sizeof(ShortEntryRecord) == 48, bad_ShortEntryRecord);
+static_assert(sizeof(ShortEntryRecord) == 48, "bad ShortEntryRecord");
 
 }  // namespace disk_cache
 

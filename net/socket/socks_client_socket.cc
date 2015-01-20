@@ -44,8 +44,8 @@ struct SOCKS4ServerRequest {
   uint16 nw_port;
   uint8 ip[4];
 };
-COMPILE_ASSERT(sizeof(SOCKS4ServerRequest) == kWriteHeaderSize,
-               socks4_server_request_struct_wrong_size);
+static_assert(sizeof(SOCKS4ServerRequest) == kWriteHeaderSize,
+              "socks4 server request struct has incorrect size");
 
 // A struct holding details of the SOCKS4 Server Response.
 struct SOCKS4ServerResponse {
@@ -54,8 +54,8 @@ struct SOCKS4ServerResponse {
   uint16 port;
   uint8 ip[4];
 };
-COMPILE_ASSERT(sizeof(SOCKS4ServerResponse) == kReadHeaderSize,
-               socks4_server_response_struct_wrong_size);
+static_assert(sizeof(SOCKS4ServerResponse) == kReadHeaderSize,
+              "socks4 server response struct has incorrect size");
 
 SOCKSClientSocket::SOCKSClientSocket(
     scoped_ptr<ClientSocketHandle> transport_socket,

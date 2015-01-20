@@ -178,9 +178,9 @@ void MaskWebSocketFramePayload(const WebSocketMaskingKey& masking_key,
   typedef size_t PackedMaskType;
   PackedMaskType packed_mask_key = 0;
   static const size_t kPackedMaskKeySize = sizeof(packed_mask_key);
-  COMPILE_ASSERT((kPackedMaskKeySize >= kMaskingKeyLength &&
-                  kPackedMaskKeySize % kMaskingKeyLength == 0),
-                 word_size_is_not_multiple_of_mask_length);
+  static_assert((kPackedMaskKeySize >= kMaskingKeyLength &&
+                 kPackedMaskKeySize % kMaskingKeyLength == 0),
+                "word size is not a multiple of mask length");
   char* const end = data + data_size;
   // If the buffer is too small for the vectorised version to be useful, revert
   // to the byte-at-a-time implementation early.

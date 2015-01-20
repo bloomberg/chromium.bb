@@ -41,8 +41,7 @@ template <typename Key, typename Value>
 class OwnedPoolMap : public std::map<Key, Value> {
  public:
   OwnedPoolMap() {
-    COMPILE_ASSERT(base::is_pointer<Value>::value,
-                   value_must_be_a_pointer);
+    static_assert(base::is_pointer<Value>::value, "value must be a pointer");
   }
 
   ~OwnedPoolMap() {

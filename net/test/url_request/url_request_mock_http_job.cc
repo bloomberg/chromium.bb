@@ -133,8 +133,8 @@ GURL URLRequestMockHTTPJob::GetMockUrl(const base::FilePath& path) {
 GURL URLRequestMockHTTPJob::GetMockUrlWithFailure(const base::FilePath& path,
                                                   FailurePhase phase,
                                                   int net_error) {
-  COMPILE_ASSERT(arraysize(kFailurePhase) == MAX_FAILURE_PHASE,
-                 kFailurePhase_must_match_FailurePhase_enum);
+  static_assert(arraysize(kFailurePhase) == MAX_FAILURE_PHASE,
+                "kFailurePhase must match FailurePhase enum");
   DCHECK_GE(phase, START);
   DCHECK_LE(phase, READ_SYNC);
   std::string url(GetMockUrl(path).spec());

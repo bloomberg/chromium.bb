@@ -116,7 +116,7 @@ struct EntryStore {
   char        key[256 - 24 * 4];  // null terminated
 };
 
-COMPILE_ASSERT(sizeof(EntryStore) == 256, bad_EntyStore);
+static_assert(sizeof(EntryStore) == 256, "bad EntryStore");
 const int kMaxInternalKeyLength = 4 * sizeof(EntryStore) -
                                   offsetof(EntryStore, key) - 1;
 
@@ -146,7 +146,7 @@ struct RankingsNode {
 };
 #pragma pack(pop)
 
-COMPILE_ASSERT(sizeof(RankingsNode) == 36, bad_RankingsNode);
+static_assert(sizeof(RankingsNode) == 36, "bad RankingsNode");
 
 }  // namespace disk_cache
 

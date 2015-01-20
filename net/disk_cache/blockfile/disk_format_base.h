@@ -61,7 +61,7 @@ struct BlockFileHeader {
   AllocBitmap     allocation_map;
 };
 
-COMPILE_ASSERT(sizeof(BlockFileHeader) == kBlockHeaderSize, bad_header);
+static_assert(sizeof(BlockFileHeader) == kBlockHeaderSize, "bad header");
 
 // Sparse data support:
 // We keep a two level hierarchy to enable sparse data for an entry: the first
@@ -124,8 +124,8 @@ struct SparseData {
 
 // The number of blocks stored by a child entry.
 const int kNumSparseBits = 1024;
-COMPILE_ASSERT(sizeof(SparseData) == sizeof(SparseHeader) + kNumSparseBits / 8,
-               Invalid_SparseData_bitmap);
+static_assert(sizeof(SparseData) == sizeof(SparseHeader) + kNumSparseBits / 8,
+              "invalid SparseData bitmap");
 
 }  // namespace disk_cache
 

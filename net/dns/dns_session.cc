@@ -272,8 +272,8 @@ base::TimeDelta DnsSession::NextTimeoutFromHistogram(unsigned server_index,
                                                      int attempt) {
   DCHECK_LT(server_index, server_stats_.size());
 
-  COMPILE_ASSERT(std::numeric_limits<base::HistogramBase::Count>::is_signed,
-                 histogram_base_count_assumed_to_be_signed);
+  static_assert(std::numeric_limits<base::HistogramBase::Count>::is_signed,
+                "histogram base count assumed to be signed");
 
   // Use fixed percentile of observed samples.
   const base::SampleVector& samples =

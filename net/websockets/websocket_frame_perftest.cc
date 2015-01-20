@@ -19,9 +19,9 @@ const int kIterations = 100000;
 const int kLongPayloadSize = 1 << 16;
 const char kMaskingKey[] = "\xFE\xED\xBE\xEF";
 
-COMPILE_ASSERT(arraysize(kMaskingKey) ==
-                   WebSocketFrameHeader::kMaskingKeyLength + 1,
-               incorrect_masking_key_size);
+static_assert(arraysize(kMaskingKey) ==
+                  WebSocketFrameHeader::kMaskingKeyLength + 1,
+              "incorrect masking key size");
 
 class WebSocketFrameTestMaskBenchmark : public ::testing::Test {
  protected:

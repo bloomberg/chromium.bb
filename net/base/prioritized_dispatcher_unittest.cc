@@ -19,12 +19,10 @@ namespace {
 
 // We rely on the priority enum values being sequential having starting at 0,
 // and increasing for higher priorities.
-COMPILE_ASSERT(MINIMUM_PRIORITY == 0u &&
-               MINIMUM_PRIORITY == IDLE &&
-               IDLE < LOWEST &&
-               LOWEST < HIGHEST &&
-               HIGHEST <= MAXIMUM_PRIORITY,
-               priority_indexes_incompatible);
+static_assert(MINIMUM_PRIORITY == 0u && MINIMUM_PRIORITY == IDLE &&
+                  IDLE < LOWEST && LOWEST < HIGHEST &&
+                  HIGHEST <= MAXIMUM_PRIORITY,
+              "priority indexes incompatible");
 
 class PrioritizedDispatcherTest : public testing::Test {
  public:

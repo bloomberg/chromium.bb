@@ -16,7 +16,7 @@ PortSuggester::PortSuggester(const HostPortPair& server, uint64 seed)
   base::SHA1HashBytes(
       reinterpret_cast<const unsigned char*>(server.host().data()),
       server.host().length(), hash_bytes);
-  COMPILE_ASSERT(sizeof(seed_) < sizeof(hash_bytes), seed_larger_than_hash);
+  static_assert(sizeof(seed_) < sizeof(hash_bytes), "seed larger than hash");
   memcpy(&seed_, hash_bytes, sizeof(seed_));
   seed_ ^= seed ^ server.port();
 }

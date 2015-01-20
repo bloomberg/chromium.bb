@@ -548,7 +548,7 @@ bool BlockFiles::GrowBlockFile(MappedFile* file, BlockFileHeader* header) {
 }
 
 MappedFile* BlockFiles::FileForNewBlock(FileType block_type, int block_count) {
-  COMPILE_ASSERT(RANKINGS == 1, invalid_file_type);
+  static_assert(RANKINGS == 1, "invalid file type");
   MappedFile* file = block_files_[block_type - 1];
   BlockHeader file_header(file);
 

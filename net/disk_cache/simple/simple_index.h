@@ -69,7 +69,7 @@ class NET_EXPORT_PRIVATE EntryMetadata {
   uint32 last_used_time_seconds_since_epoch_;
   int32 entry_size_;  // Storage size in bytes.
 };
-COMPILE_ASSERT(sizeof(EntryMetadata) == 8, metadata_size);
+static_assert(sizeof(EntryMetadata) == 8, "incorrect metadata size");
 
 // This class is not Thread-safe.
 class NET_EXPORT_PRIVATE SimpleIndex
