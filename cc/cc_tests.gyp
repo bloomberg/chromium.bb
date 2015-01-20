@@ -444,6 +444,23 @@
           },
         ],
       }
-    ]
+    ],
+    ['test_isolation_mode != "noop"', {
+      'targets': [
+        {
+          'target_name': 'cc_unittests_run',
+          'type': 'none',
+          'dependencies': [
+            'cc_unittests',
+          ],
+          'includes': [
+            '../build/isolate.gypi',
+          ],
+          'sources': [
+            'cc_unittests.isolate',
+          ],
+        },
+      ],
+    }],
   ],
 }
