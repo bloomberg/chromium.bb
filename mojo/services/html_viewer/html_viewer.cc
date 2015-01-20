@@ -33,6 +33,7 @@
 
 using mojo::ApplicationConnection;
 using mojo::Array;
+using mojo::BindToRequest;
 using mojo::ContentHandler;
 using mojo::InterfaceRequest;
 using mojo::ServiceProvider;
