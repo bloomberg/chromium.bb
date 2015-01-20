@@ -1288,11 +1288,11 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(keyboard::switches::kEnableExperimentalInputViewFeatures)
   },
   {
-    "auto-virtual-keyboard",
-    IDS_FLAGS_ENABLE_AUTO_VIRTUAL_KEYBOARD_NAME,
-    IDS_FLAGS_ENABLE_AUTO_VIRTUAL_KEYBOARD_DESCRIPTION,
+    "disable-smart-virtual-keyboard",
+    IDS_FLAGS_DISABLE_SMART_VIRTUAL_KEYBOARD_NAME,
+    IDS_FLAGS_DISABLE_SMART_VIRTUAL_KEYBOARD_DESCRIPTION,
     kOsCrOS,
-    SINGLE_VALUE_TYPE(keyboard::switches::kEnableAutoVirtualKeyboard)
+    SINGLE_VALUE_TYPE(keyboard::switches::kDisableSmartVirtualKeyboard)
   },
 #endif
   {

@@ -28,8 +28,8 @@ bool IsSmartVirtualKeyboardEnabled() {
           keyboard::switches::kEnableVirtualKeyboard)) {
     return false;
   }
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      keyboard::switches::kEnableAutoVirtualKeyboard);
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
+      keyboard::switches::kDisableSmartVirtualKeyboard);
 }
 
 }  // namespace
