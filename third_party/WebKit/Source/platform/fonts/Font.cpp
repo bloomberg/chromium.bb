@@ -256,26 +256,12 @@ float Font::width(const TextRun& run, HashSet<const SimpleFontData*>* fallbackFo
     return result;
 }
 
-static bool requiresRecomputingBounds(const Font& font, const FloatRect& bounds)
-{
-    // Blobs should never have empty bounds, but see http://crbug.com/445527
-    if (bounds.isEmpty())
-        return true;
-
-    const FontDescription& fontDescription = font.fontDescription();
-    return fontDescription.letterSpacing() < 0 || fontDescription.wordSpacing() < 0;
-}
-
 PassTextBlobPtr Font::buildTextBlob(const GlyphBuffer& glyphBuffer, const FloatRect& bounds,
     bool couldUseLCD) const
 {
     ASSERT(RuntimeEnabledFeatures::textBlobEnabled());
 
     SkTextBlobBuilder builder;
-    SkRect skBounds = bounds;
-    // FIXME: Identify these cases earlier on and avoid using bounds that are
-    // not visually correct in other places.
-    const SkRect* skBoundsPtr = requiresRecomputingBounds(*this, bounds) ? nullptr : &skBounds;
     bool hasVerticalOffsets = glyphBuffer.hasVerticalOffsets();
 
     unsigned i = 0;
@@ -302,8 +288,8 @@ PassTextBlobPtr Font::buildTextBlob(const GlyphBuffer& glyphBuffer, const FloatR
         unsigned count = i - start;
 
         const SkTextBlobBuilder::RunBuffer& buffer = hasVerticalOffsets
-            ? builder.allocRunPos(paint, count, skBoundsPtr)
-            : builder.allocRunPosH(paint, count, 0, skBoundsPtr);
+            ? builder.allocRunPos(paint, count)
+            : builder.allocRunPosH(paint, count, 0);
 
         const uint16_t* glyphs = glyphBuffer.glyphs(start);
         const float* offsets = glyphBuffer.offsets(start);
