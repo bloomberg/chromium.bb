@@ -12,19 +12,17 @@ import re
 import shutil
 import urllib2
 
-from chromite.cbuildbot import commands, constants
+from chromite.cbuildbot import commands
 from chromite.cli import command
+from chromite.cli import flash
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import dev_server_wrapper
 from chromite.lib import gs
 from chromite.lib import osutils
-from chromite.lib import path_util
 from chromite.lib import remote_access
 
 
-DEVSERVER_STATIC_DIR = path_util.FromChrootPath(
-    os.path.join(constants.CHROOT_SOURCE_ROOT, 'devserver', 'static'))
 MOBLAB_STATIC_DIR = '/mnt/moblab/static'
 MOBLAB_TMP_DIR = os.path.join(MOBLAB_STATIC_DIR, 'tmp')
 BOARD_BUILD_DIR = 'usr/local/build'
@@ -193,7 +191,7 @@ NOTES:
       tempdir: Temporary Directory to store the generated payloads.
     """
     dev_server_wrapper.GetUpdatePayloadsFromLocalPath(
-        self.options.image, tempdir, static_dir=DEVSERVER_STATIC_DIR)
+        self.options.image, tempdir, static_dir=flash.DEVSERVER_STATIC_DIR)
     rootfs_payload = os.path.join(tempdir, dev_server_wrapper.ROOTFS_FILENAME)
     # Devservers will look for a file named *_full_*.
     shutil.move(rootfs_payload, os.path.join(tempdir, 'update_full_dev.bin'))
@@ -265,7 +263,7 @@ NOTES:
     logging.info('Attempting to stage: %s as Image: %s at Location: %s',
                  self.options.image, self.staged_image_name,
                  self.options.remote)
-    osutils.SafeMakedirsNonRoot(DEVSERVER_STATIC_DIR)
+    osutils.SafeMakedirsNonRoot(flash.DEVSERVER_STATIC_DIR)
 
     with osutils.TempDir() as tempdir:
       if self._remote_image:

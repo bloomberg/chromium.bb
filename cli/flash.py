@@ -25,7 +25,7 @@ from chromite.lib import path_util
 from chromite.lib import remote_access
 
 
-_DEVSERVER_STATIC_DIR = path_util.FromChrootPath(
+DEVSERVER_STATIC_DIR = path_util.FromChrootPath(
     os.path.join(constants.CHROOT_SOURCE_ROOT, 'devserver', 'static'))
 
 
@@ -238,9 +238,9 @@ class USBImager(object):
     else:
       # Translate the xbuddy path to get the exact image to use.
       translated_path, _ = ds_wrapper.GetImagePathWithXbuddy(
-          self.image, self.board, static_dir=_DEVSERVER_STATIC_DIR)
+          self.image, self.board, static_dir=DEVSERVER_STATIC_DIR)
       image_path = ds_wrapper.TranslatedPathToLocalPath(
-          translated_path, _DEVSERVER_STATIC_DIR)
+          translated_path, DEVSERVER_STATIC_DIR)
 
     logging.info('Using image %s', translated_path or image_path)
     return image_path
@@ -611,7 +611,7 @@ class RemoteDeviceUpdater(object):
           ds_wrapper.GetUpdatePayloadsFromLocalPath(
               self.image, payload_dir,
               src_image_to_delta=self.src_image_to_delta,
-              static_dir=_DEVSERVER_STATIC_DIR)
+              static_dir=DEVSERVER_STATIC_DIR)
         else:
           self.board = cros_build_lib.GetBoard(device_board=device.board,
                                                override_board=self.board,
@@ -628,7 +628,7 @@ class RemoteDeviceUpdater(object):
 
           # Translate the xbuddy path to get the exact image to use.
           translated_path, resolved_path = ds_wrapper.GetImagePathWithXbuddy(
-              self.image, self.board, static_dir=_DEVSERVER_STATIC_DIR,
+              self.image, self.board, static_dir=DEVSERVER_STATIC_DIR,
               lookup_only=True)
           logging.info('Using image %s', translated_path)
           # Convert the translated path to be used in the update request.
@@ -639,7 +639,7 @@ class RemoteDeviceUpdater(object):
           ds_wrapper.GetUpdatePayloads(
               image_path, payload_dir, board=self.board,
               src_image_to_delta=self.src_image_to_delta,
-              static_dir=_DEVSERVER_STATIC_DIR)
+              static_dir=DEVSERVER_STATIC_DIR)
 
         # Verify that all required payloads are in the payload directory.
         self._CheckPayloads(payload_dir)
@@ -753,12 +753,12 @@ def Flash(device, image, board=None, install=False, src_image_to_delta=None,
 
   if clear_cache:
     logging.info('Clearing the cache...')
-    ds_wrapper.DevServerWrapper.WipeStaticDirectory(_DEVSERVER_STATIC_DIR)
+    ds_wrapper.DevServerWrapper.WipeStaticDirectory(DEVSERVER_STATIC_DIR)
 
   try:
-    osutils.SafeMakedirsNonRoot(_DEVSERVER_STATIC_DIR)
+    osutils.SafeMakedirsNonRoot(DEVSERVER_STATIC_DIR)
   except OSError:
-    logging.error('Failed to create %s', _DEVSERVER_STATIC_DIR)
+    logging.error('Failed to create %s', DEVSERVER_STATIC_DIR)
 
   if install:
     if not device or device.scheme != commandline.DEVICE_SCHEME_USB:
