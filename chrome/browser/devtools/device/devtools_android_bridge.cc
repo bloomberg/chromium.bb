@@ -376,8 +376,9 @@ DevToolsAndroidBridge::AgentHostDelegate::~AgentHostDelegate() {
 void DevToolsAndroidBridge::AgentHostDelegate::Attach(
     content::DevToolsExternalAgentProxy* proxy) {
   proxy_ = proxy;
-  content::RecordAction(base::UserMetricsAction(is_web_view_ ?
-      "DevTools_InspectAndroidWebView" : "DevTools_InspectAndroidPage"));
+  content::RecordAction(is_web_view_ ?
+      base::UserMetricsAction("DevTools_InspectAndroidWebView") :
+      base::UserMetricsAction("DevTools_InspectAndroidPage"));
 
   // Retain the device so it's not released until AgentHost is detached.
   if (bridge_)
