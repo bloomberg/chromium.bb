@@ -80,7 +80,7 @@ class SigninErrorNotifierTest : public AshTestBase {
 #if defined(OS_WIN)
     test_screen_.reset(aura::TestScreen::Create(gfx::Size()));
     gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, test_screen_.get());
-    gfx::Screen::SetScreenTypeDelegate(new ScreenTypeDelegateDesktop);
+    gfx::Screen::SetScreenTypeDelegate(&screen_type_delegate_);
 #endif
 
     error_controller_ = SigninErrorControllerFactory::GetForProfile(
@@ -91,6 +91,8 @@ class SigninErrorNotifierTest : public AshTestBase {
 
   void TearDown() override {
 #if defined(OS_WIN)
+    gfx::Screen::SetScreenTypeDelegate(nullptr);
+    gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, nullptr);
     test_screen_.reset();
 #endif
     profile_manager_.reset();
@@ -109,6 +111,7 @@ class SigninErrorNotifierTest : public AshTestBase {
   }
 
 #if defined(OS_WIN)
+  ScreenTypeDelegateDesktop screen_type_delegate_;
   scoped_ptr<gfx::Screen> test_screen_;
 #endif
   scoped_ptr<TestingProfileManager> profile_manager_;

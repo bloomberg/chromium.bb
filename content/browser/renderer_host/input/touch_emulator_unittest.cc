@@ -62,6 +62,7 @@ class TouchEmulatorTest : public testing::Test,
 
 #if defined(USE_AURA)
     aura::Env::DeleteInstance();
+    gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, nullptr);
     screen_.reset();
 #endif
   }

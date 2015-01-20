@@ -37,6 +37,8 @@ class GFX_EXPORT Screen {
 
   // Sets the global screen for a particular screen type. Only the _NATIVE
   // ScreenType must be provided.
+  // NOTE: this does not take ownership of |screen|. Tests must be sure to
+  // reset any state they install.
   static void SetScreenInstance(ScreenType type, Screen* instance);
 
   // Returns the global screen for a particular type. Types other than _NATIVE
@@ -45,6 +47,8 @@ class GFX_EXPORT Screen {
 
   // Sets the global ScreenTypeDelegate. May be left unset if the platform
   // uses only the _NATIVE ScreenType.
+  // NOTE: this does not take ownership of |delegate|. Tests must be sure to
+  // reset any state they install.
   static void SetScreenTypeDelegate(ScreenTypeDelegate* delegate);
 
   Screen();

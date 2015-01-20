@@ -4,6 +4,7 @@
 
 #include "chrome/test/base/view_event_test_platform_part.h"
 
+#include "base/memory/scoped_ptr.h"
 #include "ui/aura/env.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/widget/desktop_aura/desktop_screen.h"
@@ -24,23 +25,25 @@ class ViewEventTestPlatformPartAsh : public ViewEventTestPlatformPart {
   }
 
  private:
+  scoped_ptr<gfx::Screen> screen_;
   wm::WMState wm_state_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewEventTestPlatformPartAsh);
 };
 
 ViewEventTestPlatformPartAsh::ViewEventTestPlatformPartAsh(
-    ui::ContextFactory* context_factory) {
+    ui::ContextFactory* context_factory)
+    : screen_(views::CreateDesktopScreen()) {
   // http://crbug.com/154081 use ash::Shell code path below on win_ash bots when
   // interactive_ui_tests is brought up on that platform.
-  gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE,
-                                 views::CreateDesktopScreen());
+  gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, screen_.get());
   aura::Env::CreateInstance(true);
   aura::Env::GetInstance()->set_context_factory(context_factory);
 }
 
 ViewEventTestPlatformPartAsh::~ViewEventTestPlatformPartAsh() {
   aura::Env::DeleteInstance();
+  gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, nullptr);
 }
 
 }  // namespace

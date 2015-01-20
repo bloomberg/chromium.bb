@@ -705,19 +705,6 @@ content.dll!base::internal::BindState<>::`scalar deleting destructor'
 base.dll!scoped_refptr<>::Release
 base.dll!base::internal::CallbackBase::~CallbackBase
 
-UNADDRESSABLE ACCESS
-name=https://crbug.com/448189
-...
-aura.dll!aura::GetDeviceScaleFactorFromDisplay
-aura.dll!aura::WindowTreeHost::InitCompositor
-aura.dll!aura::WindowTreeHost::InitHost
-ash.dll!ash::DisplayController::AddWindowTreeHostForDisplay
-ash.dll!ash::DisplayController::CreatePrimaryHost
-ash.dll!ash::Shell::Init
-ash.dll!ash::Shell::CreateInstance
-*!ash::test::AshTestHelper::SetUp
-*!ash::test::AshTestBase::SetUp
-
 HANDLE LEAK
 name=http://crbug.com/449989
 system call NtOpenProcess
