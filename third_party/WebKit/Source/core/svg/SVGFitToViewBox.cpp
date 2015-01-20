@@ -66,11 +66,19 @@ void SVGAnimatedViewBoxRect::setBaseValueAsString(const String& value, SVGParsin
     }
 }
 
-SVGFitToViewBox::SVGFitToViewBox(SVGElement* element, PropertyMapPolicy propertyMapPolicy)
-    : m_viewBox(SVGAnimatedViewBoxRect::create(element))
-    , m_preserveAspectRatio(SVGAnimatedPreserveAspectRatio::create(element, SVGNames::preserveAspectRatioAttr, SVGPreserveAspectRatio::create()))
+SVGFitToViewBox::SVGFitToViewBox()
 {
+}
+
+void SVGFitToViewBox::initialize(SVGElement* element, PropertyMapPolicy propertyMapPolicy)
+{
+    ASSERT(!m_viewBox);
+    ASSERT(!m_preserveAspectRatio);
     ASSERT(element);
+
+    m_viewBox = SVGAnimatedViewBoxRect::create(element);
+    m_preserveAspectRatio = SVGAnimatedPreserveAspectRatio::create(element, SVGNames::preserveAspectRatioAttr, SVGPreserveAspectRatio::create());
+
     if (propertyMapPolicy == PropertyMapPolicyAdd) {
         element->addToPropertyMap(m_viewBox);
         element->addToPropertyMap(m_preserveAspectRatio);

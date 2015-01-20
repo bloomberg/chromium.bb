@@ -55,10 +55,11 @@ using namespace HTMLNames;
 
 inline SVGAElement::SVGAElement(Document& document)
     : SVGGraphicsElement(SVGNames::aTag, document)
-    , SVGURIReference(this)
     , m_svgTarget(SVGAnimatedString::create(this, SVGNames::targetAttr, SVGString::create()))
     , m_wasFocusedByMouse(false)
 {
+    SVGURIReference::initialize(this);
+
     addToPropertyMap(m_svgTarget);
 }
 

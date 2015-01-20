@@ -34,9 +34,10 @@ namespace blink {
 
 SVGGraphicsElement::SVGGraphicsElement(const QualifiedName& tagName, Document& document, ConstructionType constructionType)
     : SVGElement(tagName, document, constructionType)
-    , SVGTests(this)
     , m_transform(SVGAnimatedTransformList::create(this, SVGNames::transformAttr, SVGTransformList::create()))
 {
+    SVGTests::initialize(this);
+
     addToPropertyMap(m_transform);
 }
 

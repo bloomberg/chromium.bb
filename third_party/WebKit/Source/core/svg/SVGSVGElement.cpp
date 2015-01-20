@@ -61,7 +61,6 @@ namespace blink {
 
 inline SVGSVGElement::SVGSVGElement(Document& doc)
     : SVGGraphicsElement(SVGNames::svgTag, doc)
-    , SVGFitToViewBox(this)
     , m_x(SVGAnimatedLength::create(this, SVGNames::xAttr, SVGLength::create(LengthModeWidth), AllowNegativeLengths))
     , m_y(SVGAnimatedLength::create(this, SVGNames::yAttr, SVGLength::create(LengthModeHeight), AllowNegativeLengths))
     , m_width(SVGAnimatedLength::create(this, SVGNames::widthAttr, SVGLength::create(LengthModeWidth), ForbidNegativeLengths))
@@ -70,6 +69,8 @@ inline SVGSVGElement::SVGSVGElement(Document& doc)
     , m_timeContainer(SMILTimeContainer::create(*this))
     , m_translation(SVGPoint::create())
 {
+    SVGFitToViewBox::initialize(this);
+
     m_width->setDefaultValueAsString("100%");
     m_height->setDefaultValueAsString("100%");
 
