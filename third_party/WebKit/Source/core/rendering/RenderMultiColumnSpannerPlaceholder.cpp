@@ -55,6 +55,12 @@ void RenderMultiColumnSpannerPlaceholder::layout()
     // height as well, so that we take up the correct amount of space in the multicol container.
     updateLogicalHeight();
 
+    // Take the overflow from the spanner, so that it gets
+    // propagated to the multicol container and beyond.
+    m_overflow.clear();
+    addVisualOverflow(m_rendererInFlowThread->visualOverflowRect());
+    addLayoutOverflow(m_rendererInFlowThread->layoutOverflowRect());
+
     clearNeedsLayout();
 }
 
