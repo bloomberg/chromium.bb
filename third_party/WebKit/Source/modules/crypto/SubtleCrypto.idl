@@ -37,7 +37,7 @@ typedef (ArrayBuffer or ArrayBufferView) BufferSource;
 
 [
     GarbageCollected,
-    NoInterfaceObject,
+    Exposed=(Window,Worker)
 ] interface SubtleCrypto {
     [CallWith=ScriptState] Promise encrypt(AlgorithmIdentifier algorithm, CryptoKey key, BufferSource data);
     [CallWith=ScriptState] Promise decrypt(AlgorithmIdentifier algorithm, CryptoKey key, BufferSource data);

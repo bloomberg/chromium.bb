@@ -28,7 +28,7 @@
 
 [
     GarbageCollected,
-    NoInterfaceObject
+    Exposed=(Window,Worker)
 ] interface Crypto {
     // Note that getRandomValues() is available even when the "Crypto"
     // runtime feature is disabled.

@@ -314,6 +314,9 @@ interface CredentialsContainer
     method notifySignedIn
     method notifySignedOut
     method request
+interface Crypto
+    method constructor
+    method getRandomValues
 interface CryptoKey
     method constructor
 interface CustomEvent
@@ -2177,6 +2180,20 @@ interface StyleSheet
 interface StyleSheetList
     method constructor
     method item
+interface SubtleCrypto
+    method constructor
+    method decrypt
+    method deriveBits
+    method deriveKey
+    method digest
+    method encrypt
+    method exportKey
+    method generateKey
+    method importKey
+    method sign
+    method unwrapKey
+    method verify
+    method wrapKey
 interface Symbol
     method constructor
     method toString
