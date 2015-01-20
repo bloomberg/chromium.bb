@@ -1908,7 +1908,7 @@
         },
       ],
     }],
-    ['test_isolation_mode != "noop"', {
+    ['test_isolation_mode != "noop" and archive_gpu_tests==1', {
       'targets': [
         {
           'target_name': 'media_unittests_run',

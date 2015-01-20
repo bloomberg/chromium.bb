@@ -673,22 +673,5 @@
         },
       ],
     }],
-    ['test_isolation_mode != "noop"', {
-      'targets': [
-        {
-          'target_name': 'gpu_unittests_run',
-          'type': 'none',
-          'dependencies': [
-            'gpu_unittests',
-          ],
-          'includes': [
-            '../build/isolate.gypi',
-          ],
-          'sources': [
-            'gpu_unittests.isolate',
-          ],
-        },
-      ],
-    }],
   ],
 }

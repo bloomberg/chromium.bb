@@ -52,12 +52,7 @@
           "can_use_on_swarming_builders": true
         }
       },
-      {
-        "test": "gpu_unittests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        }
-      },
+      "gpu_unittests",
       "google_apis_unittests",
       {
         "test": "interactive_ui_tests",
@@ -67,12 +62,7 @@
       },
       "ipc_tests",
       "jingle_unittests",
-      {
-        "test": "media_unittests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        }
-      },
+      "media_unittests",
       {
         "test": "message_center_unittests",
         "swarming": {
@@ -186,12 +176,7 @@
           "can_use_on_swarming_builders": true
         }
       },
-      {
-        "test": "gpu_unittests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        }
-      },
+      "gpu_unittests",
       "google_apis_unittests",
       {
         "test": "interactive_ui_tests",
@@ -201,12 +186,7 @@
       },
       "ipc_tests",
       "jingle_unittests",
-      {
-        "test": "media_unittests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        }
-      },
+      "media_unittests",
       {
         "test": "message_center_unittests",
         "swarming": {
@@ -320,12 +300,7 @@
           "can_use_on_swarming_builders": true
         }
       },
-      {
-        "test": "gpu_unittests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        }
-      },
+      "gpu_unittests",
       "google_apis_unittests",
       {
         "test": "interactive_ui_tests",
@@ -335,12 +310,7 @@
       },
       "ipc_tests",
       "jingle_unittests",
-      {
-        "test": "media_unittests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        }
-      },
+      "media_unittests",
       {
         "test": "message_center_unittests",
         "swarming": {
@@ -454,12 +424,7 @@
           "can_use_on_swarming_builders": true
         }
       },
-      {
-        "test": "gpu_unittests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        }
-      },
+      "gpu_unittests",
       "google_apis_unittests",
       {
         "test": "interactive_ui_tests",
@@ -470,12 +435,7 @@
       },
       "ipc_tests",
       "jingle_unittests",
-      {
-        "test": "media_unittests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        }
-      },
+      "media_unittests",
       {
         "test": "message_center_unittests",
         "swarming": {

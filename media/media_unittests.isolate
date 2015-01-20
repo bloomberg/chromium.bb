@@ -6,67 +6,42 @@
     '../base/base.isolate',
   ],
   'conditions': [
-    ['OS=="linux" or OS=="mac" or OS=="win"', {
+    ['OS=="android" or OS=="linux" or OS=="mac" or OS=="win"', {
       'variables': {
         'files': [
           'test/data/',
-          '../testing/test_env.py',
+        ],
+      },
+    }],
+    ['OS=="linux" or OS=="mac" or OS=="win"', {
+      'variables': {
+        'command': [
+          '<(PRODUCT_DIR)/media_unittests<(EXECUTABLE_SUFFIX)',
+        ],
+        'files': [
           '<(PRODUCT_DIR)/media_unittests<(EXECUTABLE_SUFFIX)',
         ],
       },
     }],
-    ['OS=="linux"', {
-      'variables': {
-        'command': [
-          '../testing/xvfb.py',
-          '<(PRODUCT_DIR)',
-          '<(PRODUCT_DIR)/media_unittests',
-          '--brave-new-test-launcher',
-          '--test-launcher-bot-mode',
-          '--asan=<(asan)',
-          '--lsan=<(lsan)',
-        ],
-        'files': [
-          '../testing/xvfb.py',
-          '<(PRODUCT_DIR)/libffmpegsumo.so',
-          '<(PRODUCT_DIR)/xdisplaycheck',
-        ],
-      },
-    }],
-    ['OS=="mac"', {
-      'variables': {
-        'command': [
-          '../testing/test_env.py',
-          '<(PRODUCT_DIR)/media_unittests',
-          '--brave-new-test-launcher',
-          '--test-launcher-bot-mode',
-          '--asan=<(asan)',
-          '--lsan=<(lsan)',
-        ],
-        'files': [
-          '<(PRODUCT_DIR)/ffmpegsumo.so',
-        ],
-      },
-    }],
+    # TODO(jmadill): should be automatic. http://crbug.com/418146
     ['OS=="win"', {
       'variables': {
-        'command': [
-          '../testing/test_env.py',
-          '<(PRODUCT_DIR)/media_unittests.exe',
-          '--brave-new-test-launcher',
-          '--test-launcher-bot-mode',
-          '--asan=<(asan)',
-          '--lsan=<(lsan)',
-        ],
         'files': [
           '<(PRODUCT_DIR)/ffmpegsumo.dll',
         ],
       },
     }],
-    ['OS=="win" and (fastbuild==0 or fastbuild==1)', {
+    ['OS=="mac"', {
       'variables': {
         'files': [
-          '<(PRODUCT_DIR)/media_unittests.exe.pdb',
+          '<(PRODUCT_DIR)/ffmpegsumo.so',
+        ],
+      },
+    }],
+    ['OS=="linux"', {
+      'variables': {
+        'files': [
+          '<(PRODUCT_DIR)/libffmpegsumo.so',
         ],
       },
     }],
