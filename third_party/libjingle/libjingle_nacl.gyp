@@ -83,7 +83,6 @@
         '<(webrtc_base)/checks.h',
         '<(webrtc_base)/common.cc',
         '<(webrtc_base)/common.h',
-        '<(webrtc_base)/compile_assert.h',
         '<(webrtc_base)/cpumonitor.cc',
         '<(webrtc_base)/cpumonitor.h',
         '<(webrtc_base)/crc32.cc',
