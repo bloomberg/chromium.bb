@@ -179,9 +179,9 @@ IN_PROC_BROWSER_TEST_F(ScreenOrientationBrowserTest, WindowOrientationChange) {
   }
 }
 
-// LockSmoke test seems to have become flaky on MacOS X. The cause is
-// unfortunately unknown. See https://crbug.com/448876
-#if defined(OS_MACOSX)
+// LockSmoke test seems to have become flaky on MacOS X and Android.
+// The cause is unfortunately unknown. See https://crbug.com/448876
+#if defined(OS_MACOSX) || defined(ANDROID)
 #define MAYBE_LockSmoke DISABLED_LockSmoke
 #else
 #define MAYBE_LockSmoke LockSmoke
