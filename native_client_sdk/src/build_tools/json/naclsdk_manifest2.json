@@ -34,49 +34,6 @@
       "version": 0
     },
     {
-      "archives": [
-        {
-          "checksum": {
-            "sha1": "8e3e394d7269bab454361cd2eccd44f719de7039"
-          },
-          "host_os": "all",
-          "size": 73455859,
-          "url": "https://storage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk/33.0.1750.117/naclports.tar.bz2"
-        },
-        {
-          "checksum": {
-            "sha1": "6e883b9e76cc803db5d579933de070d3b707f1eb"
-          },
-          "host_os": "linux",
-          "size": 301049823,
-          "url": "https://storage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk/33.0.1750.117/naclsdk_linux.tar.bz2"
-        },
-        {
-          "checksum": {
-            "sha1": "0e47e9b841dfb5f75bdcdd1ebf0b501ab094a806"
-          },
-          "host_os": "mac",
-          "size": 261626911,
-          "url": "https://storage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk/33.0.1750.117/naclsdk_mac.tar.bz2"
-        },
-        {
-          "checksum": {
-            "sha1": "d9a34b8b19990273f97aa22559ed82d569ef751c"
-          },
-          "host_os": "win",
-          "size": 279181683,
-          "url": "https://storage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk/33.0.1750.117/naclsdk_win.tar.bz2"
-        }
-      ],
-      "description": "Chrome 33 bundle. Chrome revision: 252094. NaCl revision: 12558",
-      "name": "pepper_33",
-      "recommended": "no",
-      "repath": "pepper_33",
-      "revision": 252094,
-      "stability": "post_stable",
-      "version": 33
-    },
-    {
       "archives": [],
       "description": "Chrome 34 bundle, revision xxxxx",
       "name": "pepper_34",
@@ -145,6 +102,16 @@
       "revision": 0,
       "stability": "post_stable",
       "version": 40
+    },
+    {
+      "archives": [],
+      "description": "Chrome 41 bundle, revision xxxxx",
+      "name": "pepper_41",
+      "recommended": "no",
+      "repath": "pepper_41",
+      "revision": 0,
+      "stability": "post_stable",
+      "version": 41
     },
     {
       "archives": [],
