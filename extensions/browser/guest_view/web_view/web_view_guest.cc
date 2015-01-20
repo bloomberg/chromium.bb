@@ -202,8 +202,7 @@ int WebViewGuest::GetOrGenerateRulesRegistryID(
   if (it != web_view_key_to_id_map.Get().end())
     return it->second;
 
-  content::RenderProcessHost* rph =
-      content::RenderProcessHost::FromID(embedder_process_id);
+  auto rph = content::RenderProcessHost::FromID(embedder_process_id);
   int rules_registry_id =
       RulesRegistryService::Get(rph->GetBrowserContext())->
           GetNextRulesRegistryID();
@@ -213,7 +212,7 @@ int WebViewGuest::GetOrGenerateRulesRegistryID(
 
 // static
 int WebViewGuest::GetViewInstanceId(WebContents* contents) {
-  WebViewGuest* guest = FromWebContents(contents);
+  auto guest = FromWebContents(contents);
   if (!guest)
     return guestview::kInstanceIDNone;
 
@@ -260,9 +259,8 @@ void WebViewGuest::CreateWebContents(
   // If we already have a webview tag in the same app using the same storage
   // partition, we should use the same SiteInstance so the existing tag and
   // the new tag can script each other.
-  GuestViewManager* guest_view_manager =
-      GuestViewManager::FromBrowserContext(
-          owner_render_process_host->GetBrowserContext());
+  auto guest_view_manager = GuestViewManager::FromBrowserContext(
+      owner_render_process_host->GetBrowserContext());
   content::SiteInstance* guest_site_instance =
       guest_view_manager->GetGuestSiteInstance(guest_site);
   if (!guest_site_instance) {
@@ -997,8 +995,7 @@ void WebViewGuest::ApplyAttributes(const base::DictionaryValue& params) {
     // the time the WebContents was created and the time it was attached.
     // We also need to do an initial navigation if a RenderView was never
     // created for the new window in cases where there is no referrer.
-    PendingWindowMap::iterator it =
-        GetOpener()->pending_new_windows_.find(this);
+    auto it = GetOpener()->pending_new_windows_.find(this);
     if (it != GetOpener()->pending_new_windows_.end()) {
       const NewWindowInfo& new_window_info = it->second;
       if (new_window_info.changed || !web_contents()->HasOpener())
@@ -1037,7 +1034,7 @@ void WebViewGuest::SetName(const std::string& name) {
 }
 
 void WebViewGuest::SetZoom(double zoom_factor) {
-  ui_zoom::ZoomController* zoom_controller =
+  auto zoom_controller =
       ui_zoom::ZoomController::FromWebContents(web_contents());
   DCHECK(zoom_controller);
   double zoom_level = content::ZoomFactorToZoomLevel(zoom_factor);
@@ -1137,8 +1134,7 @@ content::WebContents* WebViewGuest::OpenURLFromTab(
   // until attachment.
   if (!attached()) {
     WebViewGuest* opener = GetOpener();
-    PendingWindowMap::iterator it =
-        opener->pending_new_windows_.find(this);
+    auto it = opener->pending_new_windows_.find(this);
     if (it == opener->pending_new_windows_.end())
       return NULL;
     const NewWindowInfo& info = it->second;
@@ -1162,7 +1158,7 @@ void WebViewGuest::WebContentsCreated(WebContents* source_contents,
                                       const base::string16& frame_name,
                                       const GURL& target_url,
                                       content::WebContents* new_contents) {
-  WebViewGuest* guest = WebViewGuest::FromWebContents(new_contents);
+  auto guest = WebViewGuest::FromWebContents(new_contents);
   CHECK(guest);
   guest->SetOpener(this);
   std::string guest_name = base::UTF16ToUTF8(frame_name);
@@ -1191,10 +1187,10 @@ void WebViewGuest::RequestNewWindowPermission(
     const gfx::Rect& initial_bounds,
     bool user_gesture,
     content::WebContents* new_contents) {
-  WebViewGuest* guest = WebViewGuest::FromWebContents(new_contents);
+  auto guest = WebViewGuest::FromWebContents(new_contents);
   if (!guest)
     return;
-  PendingWindowMap::iterator it = pending_new_windows_.find(guest);
+  auto it = pending_new_windows_.find(guest);
   if (it == pending_new_windows_.end())
     return;
   const NewWindowInfo& new_window_info = it->second;
@@ -1242,7 +1238,7 @@ void WebViewGuest::OnWebViewNewWindowResponse(
     int new_window_instance_id,
     bool allow,
     const std::string& user_input) {
-  WebViewGuest* guest =
+  auto guest =
       WebViewGuest::From(owner_web_contents()->GetRenderProcessHost()->GetID(),
                          new_window_instance_id);
   if (!guest)

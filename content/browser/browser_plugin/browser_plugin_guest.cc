@@ -740,7 +740,7 @@ void BrowserPluginGuest::OnResizeGuest(
   // BrowserPluginGuest does not yet have a RenderViewHost.
   if (guest_device_scale_factor_ != params.scale_factor &&
       GetWebContents()->GetRenderViewHost()) {
-    RenderWidgetHostImpl* render_widget_host =
+    auto render_widget_host =
         RenderWidgetHostImpl::From(GetWebContents()->GetRenderViewHost());
     guest_device_scale_factor_ = params.scale_factor;
     render_widget_host->NotifyScreenInfoChanged();

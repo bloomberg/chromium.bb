@@ -258,8 +258,7 @@ void GuestViewBase::SetAutoSize(bool enabled,
 void GuestViewBase::RegisterGuestViewType(
     const std::string& view_type,
     const GuestCreationCallback& callback) {
-  GuestViewCreationMap::iterator it =
-      guest_view_registry.Get().find(view_type);
+  auto it = guest_view_registry.Get().find(view_type);
   DCHECK(it == guest_view_registry.Get().end());
   guest_view_registry.Get()[view_type] = callback;
 }
@@ -273,8 +272,7 @@ GuestViewBase* GuestViewBase::Create(
   if (guest_view_registry.Get().empty())
     RegisterGuestViewTypes();
 
-  GuestViewCreationMap::iterator it =
-      guest_view_registry.Get().find(view_type);
+  auto it = guest_view_registry.Get().find(view_type);
   if (it == guest_view_registry.Get().end()) {
     NOTREACHED();
     return NULL;
@@ -285,21 +283,20 @@ GuestViewBase* GuestViewBase::Create(
 // static
 GuestViewBase* GuestViewBase::FromWebContents(WebContents* web_contents) {
   WebContentsGuestViewMap* guest_map = webcontents_guestview_map.Pointer();
-  WebContentsGuestViewMap::iterator it = guest_map->find(web_contents);
+  auto it = guest_map->find(web_contents);
   return it == guest_map->end() ? NULL : it->second;
 }
 
 // static
-GuestViewBase* GuestViewBase::From(int embedder_process_id,
+GuestViewBase* GuestViewBase::From(int owner_process_id,
                                    int guest_instance_id) {
-  content::RenderProcessHost* host =
-      content::RenderProcessHost::FromID(embedder_process_id);
+  auto host = content::RenderProcessHost::FromID(owner_process_id);
   if (!host)
     return NULL;
 
   content::WebContents* guest_web_contents =
       GuestViewManager::FromBrowserContext(host->GetBrowserContext())->
-          GetGuestByInstanceIDSafely(guest_instance_id, embedder_process_id);
+          GetGuestByInstanceIDSafely(guest_instance_id, owner_process_id);
   if (!guest_web_contents)
     return NULL;
 
@@ -329,8 +326,7 @@ bool GuestViewBase::ZoomPropagatesFromEmbedderToGuest() const {
 
 content::WebContents* GuestViewBase::CreateNewGuestWindow(
     const content::WebContents::CreateParams& create_params) {
-  GuestViewManager* guest_manager =
-      GuestViewManager::FromBrowserContext(browser_context());
+  auto guest_manager = GuestViewManager::FromBrowserContext(browser_context());
   return guest_manager->CreateGuestWithWebContentsParams(
       GetViewType(),
       owner_web_contents(),
@@ -654,27 +650,28 @@ void GuestViewBase::StartTrackingEmbedderZoomLevel() {
   if (!ZoomPropagatesFromEmbedderToGuest())
     return;
 
-  ui_zoom::ZoomController* zoom_controller =
+  auto embedder_zoom_controller =
       ui_zoom::ZoomController::FromWebContents(owner_web_contents());
   // Chrome Apps do not have a ZoomController.
-  if (!zoom_controller)
+  if (!embedder_zoom_controller)
     return;
   // Listen to the embedder's zoom changes.
-  zoom_controller->AddObserver(this);
+  embedder_zoom_controller->AddObserver(this);
   // Set the guest's initial zoom level to be equal to the embedder's.
   ui_zoom::ZoomController::FromWebContents(web_contents())
-      ->SetZoomLevel(zoom_controller->GetZoomLevel());
+      ->SetZoomLevel(embedder_zoom_controller->GetZoomLevel());
 }
 
 void GuestViewBase::StopTrackingEmbedderZoomLevel() {
   if (!attached() || !ZoomPropagatesFromEmbedderToGuest())
     return;
 
-  ui_zoom::ZoomController* zoom_controller =
+  auto embedder_zoom_controller =
       ui_zoom::ZoomController::FromWebContents(owner_web_contents());
-  if (!zoom_controller)
+  // Chrome Apps do not have a ZoomController.
+  if (!embedder_zoom_controller)
     return;
-  zoom_controller->RemoveObserver(this);
+  embedder_zoom_controller->RemoveObserver(this);
 }
 
 // static

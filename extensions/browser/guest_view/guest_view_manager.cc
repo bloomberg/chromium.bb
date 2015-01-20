@@ -74,38 +74,35 @@ void GuestViewManager::AttachGuest(
   if (!guest_web_contents)
     return;
 
-  GuestViewBase* guest_view =
-      GuestViewBase::FromWebContents(guest_web_contents);
+  auto guest_view = GuestViewBase::FromWebContents(guest_web_contents);
   DCHECK(guest_view);
 
-  content::RenderViewHost* rvh =
-      content::RenderViewHost::FromID(embedder_render_process_id,
-                                      embedder_routing_id);
+  auto rvh = content::RenderViewHost::FromID(embedder_render_process_id,
+                                             embedder_routing_id);
   // We need to check that rvh is not NULL because there may be a race between
   // AttachGuest and destroying the embedder (i.e. when the embedder is
   // destroyed immediately after the guest is created).
   if (!rvh)
     return;
-  content::WebContents* owner_web_contents =
-      content::WebContents::FromRenderViewHost(rvh);
+  auto owner_web_contents = content::WebContents::FromRenderViewHost(rvh);
   if (!owner_web_contents)
     return;
   ElementInstanceKey key(owner_web_contents, element_instance_id);
 
-  GuestInstanceIDMap::iterator it = instance_id_map_.find(key);
+  auto it = instance_id_map_.find(key);
   if (it != instance_id_map_.end()) {
     int old_guest_instance_id = it->second;
     // Reattachment to the same guest is not currently supported.
     if (old_guest_instance_id == guest_instance_id)
       return;
 
-    content::WebContents* old_guest_web_contents =
+    auto old_guest_web_contents =
         GetGuestByInstanceIDSafely(old_guest_instance_id,
                                    embedder_render_process_id);
     if (!old_guest_web_contents)
       return;
 
-    GuestViewBase* old_guest_view =
+    auto old_guest_view =
         GuestViewBase::FromWebContents(old_guest_web_contents);
 
     old_guest_view->Destroy();
@@ -190,7 +187,7 @@ content::WebContents* GuestViewManager::GetGuestByInstanceID(
 int GuestViewManager::GetGuestInstanceIDForElementID(
     content::WebContents* owner_web_contents,
     int element_instance_id) {
-  GuestInstanceIDMap::iterator iter = instance_id_map_.find(
+  auto iter = instance_id_map_.find(
       ElementInstanceKey(owner_web_contents, element_instance_id));
   if (iter == instance_id_map_.end())
     return guestview::kInstanceIDNone;
@@ -199,8 +196,7 @@ int GuestViewManager::GetGuestInstanceIDForElementID(
 
 SiteInstance* GuestViewManager::GetGuestSiteInstance(
     const GURL& guest_site) {
-  for (GuestInstanceMap::const_iterator it =
-       guest_web_contents_by_instance_id_.begin();
+  for (auto it = guest_web_contents_by_instance_id_.begin();
        it != guest_web_contents_by_instance_id_.end(); ++it) {
     if (it->second->GetSiteInstance()->GetSiteURL() == guest_site)
       return it->second->GetSiteInstance();
@@ -210,11 +206,10 @@ SiteInstance* GuestViewManager::GetGuestSiteInstance(
 
 bool GuestViewManager::ForEachGuest(WebContents* owner_web_contents,
                                     const GuestCallback& callback) {
-  for (GuestInstanceMap::iterator it =
-           guest_web_contents_by_instance_id_.begin();
+  for (auto it = guest_web_contents_by_instance_id_.begin();
        it != guest_web_contents_by_instance_id_.end(); ++it) {
     WebContents* guest = it->second;
-    GuestViewBase* guest_view = GuestViewBase::FromWebContents(guest);
+    auto guest_view = GuestViewBase::FromWebContents(guest);
     if (owner_web_contents != guest_view->owner_web_contents())
       continue;
 
@@ -232,13 +227,11 @@ void GuestViewManager::AddGuest(int guest_instance_id,
 }
 
 void GuestViewManager::RemoveGuest(int guest_instance_id) {
-  GuestInstanceMap::iterator it =
-      guest_web_contents_by_instance_id_.find(guest_instance_id);
+  auto it = guest_web_contents_by_instance_id_.find(guest_instance_id);
   DCHECK(it != guest_web_contents_by_instance_id_.end());
   guest_web_contents_by_instance_id_.erase(it);
 
-  GuestInstanceIDReverseMap::iterator id_iter =
-      reverse_instance_id_map_.find(guest_instance_id);
+  auto id_iter = reverse_instance_id_map_.find(guest_instance_id);
   if (id_iter != reverse_instance_id_map_.end()) {
     const ElementInstanceKey& instance_id_key = id_iter->second;
     instance_id_map_.erase(instance_id_map_.find(instance_id_key));
@@ -253,7 +246,7 @@ void GuestViewManager::RemoveGuest(int guest_instance_id) {
   if (guest_instance_id == last_instance_id_removed_ + 1) {
     ++last_instance_id_removed_;
     // Compact.
-    std::set<int>::iterator iter = removed_instance_ids_.begin();
+    auto iter = removed_instance_ids_.begin();
     while (iter != removed_instance_ids_.end()) {
       int instance_id = *iter;
       // The sparse invalid IDs must not lie within
@@ -271,8 +264,7 @@ void GuestViewManager::RemoveGuest(int guest_instance_id) {
 
 content::WebContents* GuestViewManager::GetGuestByInstanceID(
     int guest_instance_id) {
-  GuestInstanceMap::const_iterator it =
-      guest_web_contents_by_instance_id_.find(guest_instance_id);
+  auto it = guest_web_contents_by_instance_id_.find(guest_instance_id);
   if (it == guest_web_contents_by_instance_id_.end())
     return NULL;
   return it->second;
@@ -316,12 +308,11 @@ bool GuestViewManager::CanEmbedderAccessInstanceID(
 
   // We might get some late arriving messages at tear down. Let's let the
   // embedder tear down in peace.
-  GuestInstanceMap::const_iterator it =
-      guest_web_contents_by_instance_id_.find(guest_instance_id);
+  auto it = guest_web_contents_by_instance_id_.find(guest_instance_id);
   if (it == guest_web_contents_by_instance_id_.end())
     return true;
 
-  GuestViewBase* guest_view = GuestViewBase::FromWebContents(it->second);
+  auto guest_view = GuestViewBase::FromWebContents(it->second);
   if (!guest_view)
     return false;
 

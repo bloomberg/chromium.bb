@@ -168,8 +168,7 @@ void BrowserPlugin::DidCommitCompositorFrame() {
 
 void BrowserPlugin::OnAdvanceFocus(int browser_plugin_instance_id,
                                    bool reverse) {
-  RenderViewImpl* render_view =
-      RenderViewImpl::FromRoutingID(render_view_routing_id());
+  auto render_view = RenderViewImpl::FromRoutingID(render_view_routing_id());
   if (!render_view)
     return;
   render_view->GetWebView()->advanceFocus(reverse);
@@ -231,8 +230,7 @@ void BrowserPlugin::OnSetCursor(int browser_plugin_instance_id,
 
 void BrowserPlugin::OnSetMouseLock(int browser_plugin_instance_id,
                                    bool enable) {
-  RenderViewImpl* render_view =
-      RenderViewImpl::FromRoutingID(render_view_routing_id());
+  auto render_view = RenderViewImpl::FromRoutingID(render_view_routing_id());
   if (enable) {
     if (mouse_locked_ || !render_view)
       return;
@@ -271,8 +269,7 @@ void BrowserPlugin::ShowSadGraphic() {
 }
 
 float BrowserPlugin::GetDeviceScaleFactor() const {
-  RenderViewImpl* render_view =
-      RenderViewImpl::FromRoutingID(render_view_routing_id());
+  auto render_view = RenderViewImpl::FromRoutingID(render_view_routing_id());
   if (!render_view)
     return 1.0f;
   return render_view->GetWebView()->deviceScaleFactor();
@@ -303,8 +300,7 @@ void BrowserPlugin::UpdateGuestFocusState(blink::WebFocusType focus_type) {
 
 bool BrowserPlugin::ShouldGuestBeFocused() const {
   bool embedder_focused = false;
-  RenderViewImpl* render_view =
-      RenderViewImpl::FromRoutingID(render_view_routing_id());
+  auto render_view = RenderViewImpl::FromRoutingID(render_view_routing_id());
   if (render_view)
     embedder_focused = render_view->has_focus();
   return plugin_focused_ && embedder_focused;
@@ -368,8 +364,7 @@ void BrowserPlugin::destroy() {
 
   container_ = NULL;
   // Will be a no-op if the mouse is not currently locked.
-  RenderViewImpl* render_view =
-      RenderViewImpl::FromRoutingID(render_view_routing_id());
+  auto render_view = RenderViewImpl::FromRoutingID(render_view_routing_id());
   if (render_view)
     render_view->mouse_lock_dispatcher()->OnLockTargetDestroyed(this);
   base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);

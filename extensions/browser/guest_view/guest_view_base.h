@@ -70,7 +70,7 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
 
   static GuestViewBase* FromWebContents(content::WebContents* web_contents);
 
-  static GuestViewBase* From(int embedder_process_id, int instance_id);
+  static GuestViewBase* From(int owner_process_id, int instance_id);
 
   static bool IsGuest(content::WebContents* web_contents);
 
