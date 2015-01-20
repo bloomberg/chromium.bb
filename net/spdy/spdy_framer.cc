@@ -158,16 +158,16 @@ SpdyFramer::SpdyFramer(SpdyMajorVersion version)
       visitor_(NULL),
       debug_visitor_(NULL),
       display_protocol_("SPDY"),
-      spdy_version_(version),
+      protocol_version_(version),
       syn_frame_processed_(false),
       probable_http_response_(false),
       expect_continuation_(0),
       end_stream_when_done_(false) {
-  DCHECK_GE(spdy_version_, SPDY_MIN_VERSION);
-  DCHECK_LE(spdy_version_, SPDY_MAX_VERSION);
+  DCHECK_GE(protocol_version_, SPDY_MIN_VERSION);
+  DCHECK_LE(protocol_version_, SPDY_MAX_VERSION);
   DCHECK_LE(kMaxControlFrameSize,
-            SpdyConstants::GetFrameMaximumSize(spdy_version_) +
-                SpdyConstants::GetControlFrameHeaderSize(spdy_version_));
+            SpdyConstants::GetFrameMaximumSize(protocol_version_) +
+                SpdyConstants::GetControlFrameHeaderSize(protocol_version_));
   Reset();
 }
 
@@ -1281,7 +1281,7 @@ static void WriteLengthZ(size_t n,
 void SpdyFramer::WriteHeaderBlockToZ(const SpdyHeaderBlock* headers,
                                      z_stream* z) const {
   unsigned length_length = 4;
-  if (spdy_version_ < 3)
+  if (protocol_version() < 3)
     length_length = 2;
 
   WriteLengthZ(headers->size(), length_length, kZStandardData, z);
@@ -3087,16 +3087,16 @@ z_stream* SpdyFramer::GetHeaderDecompressor() {
 }
 
 HpackEncoder* SpdyFramer::GetHpackEncoder() {
-  DCHECK_LT(SPDY3, spdy_version_);
-  if (hpack_encoder_.get() == NULL) {
+  DCHECK_LT(SPDY3, protocol_version());
+  if (hpack_encoder_.get() == nullptr) {
     hpack_encoder_.reset(new HpackEncoder(ObtainHpackHuffmanTable()));
   }
   return hpack_encoder_.get();
 }
 
 HpackDecoder* SpdyFramer::GetHpackDecoder() {
-  DCHECK_LT(SPDY3, spdy_version_);
-  if (hpack_decoder_.get() == NULL) {
+  DCHECK_LT(SPDY3, protocol_version());
+  if (hpack_decoder_.get() == nullptr) {
     hpack_decoder_.reset(new HpackDecoder(ObtainHpackHuffmanTable()));
   }
   return hpack_decoder_.get();
