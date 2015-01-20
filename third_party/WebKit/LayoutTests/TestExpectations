@@ -204,7 +204,7 @@ crbug.com/404303 imported/web-platform-tests/mediacapture-streams/obtaining-loca
 crbug.com/404303 imported/web-platform-tests/mediacapture-streams/obtaining-local-multimedia-content/navigatorusermedia/unknownkey-option-param.html [ Failure ]
 
 # V8 Allowed eval in contexts after navigation, which changed the error of the test.
-crbug.com/439458 http/tests/security/xss-eval.html [ NeedsManualRebaseline ]
+crbug.com/439458 http/tests/security/xss-eval.html [ NeedsRebaseline ]
 
 # V8 Changed error message when calling non-function
 crbug.com/259443 fast/forms/selection-wrongtype.html [ NeedsManualRebaseline ]
