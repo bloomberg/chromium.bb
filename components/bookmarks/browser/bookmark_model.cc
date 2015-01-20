@@ -285,10 +285,9 @@ void BookmarkModel::Copy(const BookmarkNode* node,
 
   SetDateFolderModified(new_parent, Time::Now());
   BookmarkNodeData drag_data(node);
-  std::vector<BookmarkNodeData::Element> elements(drag_data.elements);
   // CloneBookmarkNode will use BookmarkModel methods to do the job, so we
   // don't need to send notifications here.
-  CloneBookmarkNode(this, elements, new_parent, index, true);
+  CloneBookmarkNode(this, drag_data.elements, new_parent, index, true);
 
   if (store_.get())
     store_->ScheduleSave();
