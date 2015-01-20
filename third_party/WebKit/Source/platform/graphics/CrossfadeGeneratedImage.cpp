@@ -28,18 +28,16 @@
 
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
-#include "platform/graphics/ImageBuffer.h"
-#include "third_party/skia/include/core/SkPicture.h"
 
 namespace blink {
 
 CrossfadeGeneratedImage::CrossfadeGeneratedImage(Image* fromImage, Image* toImage, float percentage, IntSize crossfadeSize, const IntSize& size)
-    : m_fromImage(fromImage)
+    : GeneratedImage(size)
+    , m_fromImage(fromImage)
     , m_toImage(toImage)
     , m_percentage(percentage)
     , m_crossfadeSize(crossfadeSize)
 {
-    m_size = size;
 }
 
 void CrossfadeGeneratedImage::drawCrossfade(GraphicsContext* context)
@@ -93,34 +91,13 @@ void CrossfadeGeneratedImage::draw(GraphicsContext* context, const FloatRect& ds
     drawCrossfade(context);
 }
 
-void CrossfadeGeneratedImage::drawPattern(GraphicsContext* context, const FloatRect& srcRect, const FloatSize& scale, const FloatPoint& phase, CompositeOperator compositeOp, const FloatRect& dstRect, WebBlendMode blendMode, const IntSize& repeatSpacing)
+void CrossfadeGeneratedImage::drawTile(GraphicsContext* context, const FloatRect& srcRect)
 {
     // Draw nothing if either of the images hasn't loaded yet.
     if (m_fromImage == Image::nullImage() || m_toImage == Image::nullImage())
         return;
 
-    FloatRect tileRect = srcRect;
-    tileRect.expand(repeatSpacing);
-
-    GraphicsContext recordingContext(nullptr, nullptr);
-    recordingContext.beginRecording(tileRect);
-    drawCrossfade(&recordingContext);
-    RefPtr<const SkPicture> tilePicture = recordingContext.endRecording();
-
-    // FIXME: Create GeneratedIMage::drawPicturePattern, move the following code to it,
-    // and use it for GradientGeneratedImage too.
-    AffineTransform patternTransform;
-    patternTransform.translate(phase.x(), phase.y());
-    patternTransform.scale(scale.width(), scale.height());
-    patternTransform.translate(tileRect.x(), tileRect.y());
-
-    RefPtr<Pattern> picturePattern = Pattern::createPicturePattern(tilePicture);
-    picturePattern->setPatternSpaceTransform(patternTransform);
-
-    GraphicsContextStateSaver saver(*context);
-    context->setCompositeOperation(compositeOp, blendMode);
-    context->setFillPattern(picturePattern);
-    context->fillRect(dstRect);
+    drawCrossfade(context);
 }
 
 } // namespace blink

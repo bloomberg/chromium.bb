@@ -28,7 +28,6 @@
 
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
-#include "third_party/skia/include/core/SkPicture.h"
 
 namespace blink {
 
@@ -45,30 +44,10 @@ void GradientGeneratedImage::draw(GraphicsContext* destContext, const FloatRect&
     destContext->fillRect(FloatRect(FloatPoint(), m_size));
 }
 
-void GradientGeneratedImage::drawPattern(GraphicsContext* destContext, const FloatRect& srcRect, const FloatSize& scale,
-    const FloatPoint& phase, CompositeOperator compositeOp, const FloatRect& destRect, WebBlendMode blendMode, const IntSize& repeatSpacing)
+void GradientGeneratedImage::drawTile(GraphicsContext* context, const FloatRect& srcRect)
 {
-    FloatRect tileRect = srcRect;
-    tileRect.expand(repeatSpacing);
-
-    GraphicsContext recordingContext(nullptr, nullptr);
-    recordingContext.beginRecording(tileRect);
-    recordingContext.setFillGradient(m_gradient);
-    recordingContext.fillRect(srcRect);
-    RefPtr<const SkPicture> tilePicture = recordingContext.endRecording();
-
-    AffineTransform patternTransform;
-    patternTransform.translate(phase.x(), phase.y());
-    patternTransform.scale(scale.width(), scale.height());
-    patternTransform.translate(tileRect.x(), tileRect.y());
-
-    RefPtr<Pattern> picturePattern = Pattern::createPicturePattern(tilePicture);
-    picturePattern->setPatternSpaceTransform(patternTransform);
-
-    GraphicsContextStateSaver saver(*destContext);
-    destContext->setCompositeOperation(compositeOp, blendMode);
-    destContext->setFillPattern(picturePattern);
-    destContext->fillRect(destRect);
+    context->setFillGradient(m_gradient);
+    context->fillRect(srcRect);
 }
 
 } // namespace blink

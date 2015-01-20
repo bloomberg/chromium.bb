@@ -50,12 +50,14 @@ public:
 protected:
     virtual void drawPattern(GraphicsContext*, const FloatRect&,
         const FloatSize&, const FloatPoint&, CompositeOperator,
-        const FloatRect&, WebBlendMode, const IntSize& repeatSpacing) override = 0;
+        const FloatRect&, WebBlendMode, const IntSize& repeatSpacing) final;
 
     // FIXME: Implement this to be less conservative.
     virtual bool currentFrameKnownToBeOpaque() override { return false; }
 
-    GeneratedImage() { }
+    GeneratedImage(const IntSize& size) : m_size(size) { }
+
+    virtual void drawTile(GraphicsContext*, const FloatRect&) = 0;
 
     IntSize m_size;
 };

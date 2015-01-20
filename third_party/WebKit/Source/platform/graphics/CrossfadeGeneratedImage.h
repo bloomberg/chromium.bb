@@ -51,9 +51,7 @@ public:
 protected:
     virtual void draw(GraphicsContext*, const FloatRect&, const FloatRect&,
         CompositeOperator, WebBlendMode) override;
-    virtual void drawPattern(GraphicsContext*, const FloatRect&,
-        const FloatSize&, const FloatPoint&, CompositeOperator,
-        const FloatRect&, WebBlendMode, const IntSize& repeatSpacing) override;
+    virtual void drawTile(GraphicsContext*, const FloatRect&) final;
 
     CrossfadeGeneratedImage(Image* fromImage, Image* toImage, float percentage, IntSize crossfadeSize, const IntSize&);
 
