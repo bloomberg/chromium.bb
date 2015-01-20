@@ -15,7 +15,7 @@
 import os
 import sys
 
-from setuptools import setup
+from setuptools import setup, find_packages
 
 here = os.path.abspath(os.path.dirname(__file__))
 if here not in sys.path:
@@ -30,7 +30,7 @@ readme_lines = readme.splitlines()
 
 setup(
     name='typ',
-    packages=['typ'],
+    packages=find_packages(),
     package_data={'': ['../README.rst']},
     entry_points={
         'console_scripts': [

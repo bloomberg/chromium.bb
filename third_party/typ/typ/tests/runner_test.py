@@ -28,6 +28,9 @@ def _setup_process(child, context):  # pylint: disable=W0613
 def _teardown_process(child, context):  # pylint: disable=W0613
     return context
 
+def _teardown_throws(child, context):  # pylint: disable=W0613
+    raise Exception("exception in teardown")
+
 
 class RunnerTests(TestCase):
     def test_context(self):
@@ -39,6 +42,18 @@ class RunnerTests(TestCase):
         r.win_multiprocessing = WinMultiprocessing.importable
         ret, _, _ = r.run()
         self.assertEqual(ret, 0)
+
+    def test_exception_in_teardown(self):
+        r = Runner()
+        r.args.tests = ['typ.tests.runner_test.ContextTests']
+        r.context = {'foo': 'bar'}
+        r.setup_fn = _setup_process
+        r.teardown_fn = _teardown_throws
+        r.win_multiprocessing = WinMultiprocessing.importable
+        ret, _, _ = r.run()
+        self.assertEqual(ret, 0)
+        self.assertEqual(r.final_responses[0][2].message,
+                         'exception in teardown')
 
     def test_bad_default(self):
         r = Runner()

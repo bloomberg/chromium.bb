@@ -111,6 +111,7 @@ class Runner(object):
         self.teardown_fn = None
         self.top_level_dir = None
         self.win_multiprocessing = WinMultiprocessing.spawn
+        self.final_responses = []
 
         # initialize self.args to the defaults.
         parser = ArgumentParser(self.host)
@@ -453,9 +454,10 @@ class Runner(object):
                        len(test_set.isolated_tests) +
                        len(test_set.tests_to_skip))
         self._skip_tests(stats, result_set, test_set.tests_to_skip)
-        self._run_list(stats, result_set, test_set.parallel_tests,
-                       self.args.jobs)
-        self._run_list(stats, result_set, test_set.isolated_tests, 1)
+        self._run_list(stats, result_set,
+                       test_set.parallel_tests, self.args.jobs)
+        self._run_list(stats, result_set,
+                       test_set.isolated_tests, 1)
 
     def _skip_tests(self, stats, result_set, tests_to_skip):
         for test_input in tests_to_skip:
@@ -498,7 +500,7 @@ class Runner(object):
                 self._print_test_finished(stats, result)
             pool.close()
         finally:
-            pool.join()
+            self.final_responses.extend(pool.join())
 
     def _print_test_started(self, stats, test_input):
         if not self.args.quiet and self.args.overwrite:
@@ -739,16 +741,19 @@ def _setup_process(host, worker_num, child):
 
 
 def _teardown_process(child):
+    res = None
+    e = None
     if child.teardown_fn:
-        child.teardown_fn(child, child.context_after_setup)
-    # TODO: Return a more structured result, including something from
-    # the teardown function?
+        try:
+          res = child.teardown_fn(child, child.context_after_setup)
+        except Exception as e:
+          pass
 
     if child.cov:  # pragma: no cover
         child.cov.stop()
         child.cov.save()
 
-    return child.worker_num
+    return (child.worker_num, res, e)
 
 
 def _run_one_test(child, test_input):

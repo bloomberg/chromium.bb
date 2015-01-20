@@ -41,5 +41,5 @@ class ArgumentParserTest(unittest.TestCase):
 
         check(['--version'])
         check(['--coverage', '--coverage-omit', 'foo'])
-        check(['--jobs', '4'])
+        check(['--jobs', '3'])
         check(['-vv'], ['--verbose', '--verbose'])
