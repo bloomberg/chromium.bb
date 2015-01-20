@@ -239,7 +239,7 @@ if (chrome.test) {
     var script = document.createElement('script');
     script.src =
         'chrome-extension://' + window.testExtensionId +
-        '/common/test_loader.js';
+        '/gallery/test_loader.js';
     document.documentElement.appendChild(script);
   });
 }

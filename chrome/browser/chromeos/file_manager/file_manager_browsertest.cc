@@ -1284,7 +1284,6 @@ class GalleryBrowserTestBase : public FileManagerBrowserTestBase {
 
  protected:
   virtual void SetUp() override {
-    AddScript("common/test_util_common.js");
     AddScript("gallery/test_util.js");
     FileManagerBrowserTestBase::SetUp();
   }
