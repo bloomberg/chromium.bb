@@ -7,11 +7,17 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/app_list/app_list_view_delegate.h"
 #include "chrome/browser/ui/app_list/test/chrome_app_list_test_support.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "extensions/common/constants.h"
+#include "ui/app_list/app_list_item.h"
+#include "ui/app_list/app_list_model.h"
+#include "ui/base/models/menu_model.h"
 
 namespace test {
 
@@ -49,6 +55,21 @@ class AppListServiceImplBrowserTest : public InProcessBrowserTest {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AppListServiceImplBrowserTest);
+};
+
+class AppListServiceImplBrowserTestWithBookmarkAppsEnabled
+    : public AppListServiceImplBrowserTest {
+ public:
+  AppListServiceImplBrowserTestWithBookmarkAppsEnabled() {}
+
+  // Overridden from BrowserTestBase:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitch(switches::kEnableNewBookmarkApps);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(
+      AppListServiceImplBrowserTestWithBookmarkAppsEnabled);
 };
 
 // Test that showing a loaded profile for the first time is lazy and
@@ -147,4 +168,35 @@ IN_PROC_BROWSER_TEST_F(AppListServiceImplBrowserTest,
 
   EXPECT_EQ(view_delegate, test_api_->view_delegate());
   EXPECT_EQ(view_delegate->profile(), browser()->profile());
+}
+
+// Test that all the items in the context menu for a hosted app have valid
+// labels.
+IN_PROC_BROWSER_TEST_F(AppListServiceImplBrowserTestWithBookmarkAppsEnabled,
+                       ShowContextMenu) {
+  AppListService* service = test::GetAppListService();
+  EXPECT_TRUE(service);
+
+  // Show the app list to ensure it has loaded a profile.
+  service_->ShowForProfile(browser()->profile());
+  app_list::AppListModel* model = test::GetAppListModel(service);
+  EXPECT_TRUE(model);
+
+  // Get the webstore hosted app, which is always present.
+  app_list::AppListItem* item = model->FindItem(extensions::kWebStoreAppId);
+  EXPECT_TRUE(item);
+
+  ui::MenuModel* menu_model = item->GetContextMenuModel();
+  EXPECT_TRUE(menu_model);
+
+  int num_items = menu_model->GetItemCount();
+  EXPECT_LT(0, num_items);
+
+  for (int i = 0; i < num_items; i++) {
+    if (menu_model->GetTypeAt(i) == ui::MenuModel::TYPE_SEPARATOR)
+      continue;
+
+    base::string16 label = menu_model->GetLabelAt(i);
+    EXPECT_FALSE(label.empty());
+  }
 }
