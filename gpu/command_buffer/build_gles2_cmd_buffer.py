@@ -9396,7 +9396,8 @@ def main(argv):
   gen.WriteCommonUtilsImpl(
     "gpu/command_buffer/common/gles2_cmd_utils_implementation_autogen.h")
   gen.WriteGLES2Header("gpu/GLES2/gl2chromium_autogen.h")
-  mojo_gles2_prefix = "mojo/public/c/gles2/gles2_call_visitor"
+  mojo_gles2_prefix = ("third_party/mojo/src/mojo/public/c/gles2/"
+                       "gles2_call_visitor")
   gen.WriteMojoGLCallVisitor(mojo_gles2_prefix + "_autogen.h")
   gen.WriteMojoGLCallVisitorForExtension(
       mojo_gles2_prefix + "_chromium_texture_mailbox_autogen.h",
