@@ -16,8 +16,8 @@ gin::WrapperInfo g_array_buffer_wrapper_info = {gin::kEmbedderNativeGin};
 
 }  // namespace
 
-COMPILE_ASSERT(V8_ARRAY_BUFFER_INTERNAL_FIELD_COUNT == 2,
-               array_buffers_must_have_two_internal_fields);
+static_assert(V8_ARRAY_BUFFER_INTERNAL_FIELD_COUNT == 2,
+              "array buffers must have two internal fields");
 
 // ArrayBufferAllocator -------------------------------------------------------
 
