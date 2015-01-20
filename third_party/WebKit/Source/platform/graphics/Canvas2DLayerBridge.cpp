@@ -303,6 +303,14 @@ bool Canvas2DLayerBridge::checkSurfaceValid()
     if (m_contextProvider->context3d()->isContextLost()) {
         m_isSurfaceValid = false;
         m_surface.clear();
+        for (auto mailboxInfo = m_mailboxes.begin(); mailboxInfo != m_mailboxes.end(); ++mailboxInfo) {
+            if (mailboxInfo->m_image) {
+                GrTexture* texture = mailboxInfo->m_image->getTexture();
+                if (texture)
+                    texture->abandon();
+                mailboxInfo->m_image.clear();
+            }
+        }
         if (m_imageBuffer)
             m_imageBuffer->notifySurfaceInvalid();
         setRateLimitingEnabled(false);
