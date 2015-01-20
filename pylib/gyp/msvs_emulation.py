@@ -606,7 +606,8 @@ class MsvsSettings(object):
     ld('Profile', map={'true': '/PROFILE'})
     ld('LargeAddressAware',
         map={'1': ':NO', '2': ''}, prefix='/LARGEADDRESSAWARE')
-    ld('ImageHasSafeExceptionHandlers', map={'true': '/SAFESEH'})
+    ld('ImageHasSafeExceptionHandlers',
+        map={'false': ':NO', 'true': ''}, prefix='/SAFESEH', default='true')
     # TODO(scottmg): This should sort of be somewhere else (not really a flag).
     ld('AdditionalDependencies', prefix='')
 

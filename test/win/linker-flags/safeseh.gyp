@@ -8,6 +8,12 @@
       'target_name': 'test_safeseh_default',
       'type': 'executable',
       'msvs_settings': {
+        # By default, msvs passes /SAFESEH for Link, but not for MASM.  In
+        # order for test_safeseh_default to link successfully, we need to
+        # explicitly specify /SAFESEH for MASM.
+        'MASM': {
+          'UseSafeExceptionHandlers': 'true',
+        },
       },
       'sources': [
         'safeseh_hello.cc',
