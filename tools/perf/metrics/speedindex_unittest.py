@@ -9,38 +9,15 @@ import json
 import os
 import unittest
 
+from metrics import speedindex
 from telemetry.image_processing import histogram
 from telemetry.image_processing import rgba_color
-from telemetry.timeline import model
-from telemetry.timeline import trace_data as trace_data_module
-from metrics import speedindex
-
-# Sample timeline data in the json format provided by devtools.
-# The sample events will be used in several tests below.
-_TEST_DIR = os.path.join(os.path.dirname(__file__), 'unittest_data')
-_SAMPLE_DATA = json.load(open(os.path.join(_TEST_DIR, 'sample_timeline.json')))
-_SAMPLE_TRACE_BUILDER = trace_data_module.TraceDataBuilder()
-_SAMPLE_TRACE_BUILDER.AddEventsTo(
-    trace_data_module.INSPECTOR_TRACE_PART, _SAMPLE_DATA)
-_SAMPLE_EVENTS = model.TimelineModel(
-    _SAMPLE_TRACE_BUILDER.AsData()).GetAllEvents()
 
 
 class FakeImageUtil(object):
   # pylint: disable=W0613
   def GetColorHistogram(self, image, ignore_color=None, tolerance=None):
     return image.ColorHistogram()
-
-class FakeTimelineModel(object):
-  def __init__(self):
-    self._events = []
-
-  def SetAllEvents(self, events):
-    self._events = events
-
-  def GetAllEvents(self, recursive=True):
-    assert recursive == True
-    return self._events
 
 
 class FakeVideo(object):
@@ -62,13 +39,8 @@ class FakeBitmap(object):
 
 class FakeTab(object):
   def __init__(self, video_capture_result=None):
-    self._timeline_model = FakeTimelineModel()
     self._javascript_result = None
     self._video_capture_result = FakeVideo(video_capture_result)
-
-  @property
-  def timeline_model(self):
-    return self._timeline_model
 
   @property
   def video_capture_supported(self):
@@ -92,27 +64,7 @@ class FakeTab(object):
     pass
 
 
-class IncludedPaintEventsTest(unittest.TestCase):
-  def testNumberPaintEvents(self):
-    impl = speedindex.PaintRectSpeedIndexImpl()
-    # In the sample data, there's one event that occurs before the layout event,
-    # and one paint event that's not a leaf paint event.
-    events = impl._IncludedPaintEvents(_SAMPLE_EVENTS)
-    self.assertEqual(len(events), 5)
-
-
 class SpeedIndexImplTest(unittest.TestCase):
-  def testAdjustedAreaDict(self):
-    impl = speedindex.PaintRectSpeedIndexImpl()
-    paint_events = impl._IncludedPaintEvents(_SAMPLE_EVENTS)
-    viewport = 1000, 1000
-    time_area_dict = impl._TimeAreaDict(paint_events, viewport)
-    self.assertEqual(len(time_area_dict), 4)
-    # The event that ends at time 100 is a fullscreen; it's discounted by half.
-    self.assertEqual(time_area_dict[100], 500000)
-    self.assertEqual(time_area_dict[300], 100000)
-    self.assertEqual(time_area_dict[400], 200000)
-    self.assertEqual(time_area_dict[800], 200000)
 
   def testVideoCompleteness(self):
     frames = [
@@ -163,76 +115,6 @@ class SpeedIndexImplTest(unittest.TestCase):
   def assertTimeCompleteness(self, time_completeness, time, completeness):
     self.assertEqual(time_completeness[0], time)
     self.assertAlmostEqual(time_completeness[1], completeness)
-
-
-class SpeedIndexTest(unittest.TestCase):
-  def testWithSampleData(self):
-    tab = FakeTab()
-    impl = speedindex.PaintRectSpeedIndexImpl()
-    viewport = 1000, 1000
-    # Add up the parts of the speed index for each time interval.
-    # Each part is the time interval multiplied by the proportion of the
-    # total area value that is not yet painted for that interval.
-    parts = []
-    parts.append(100 * 1.0)
-    parts.append(200 * 0.5)
-    parts.append(100 * 0.4)
-    parts.append(400 * 0.2)
-    expected = sum(parts)  # 330.0
-    tab.timeline_model.SetAllEvents(_SAMPLE_EVENTS)
-    tab.SetEvaluateJavaScriptResult(viewport)
-    actual = impl.CalculateSpeedIndex(tab)
-    self.assertEqual(actual, expected)
-
-
-class WPTComparisonTest(unittest.TestCase):
-  """Compare the speed index results with results given by webpagetest.org.
-
-  Given the same timeline data, both this speedindex metric and webpagetest.org
-  should both return the same results. Fortunately, webpagetest.org also
-  provides timeline data in json format along with the speed index results.
-  """
-
-  def _TestJsonTimelineExpectation(self, filename, viewport, expected):
-    """Check whether the result for some timeline data is as expected.
-
-    Args:
-      filename: Filename of a json file which contains a
-      expected: The result expected based on the WPT result.
-    """
-    tab = FakeTab()
-    impl = speedindex.PaintRectSpeedIndexImpl()
-    file_path = os.path.join(_TEST_DIR, filename)
-    with open(file_path) as json_file:
-      raw_events = json.load(json_file)
-      trace_data_builder = trace_data_module.TraceDataBuilder()
-      trace_data_builder.AddEventsTo(
-          trace_data_module.INSPECTOR_TRACE_PART, raw_events)
-      tab.timeline_model.SetAllEvents(
-          model.TimelineModel(trace_data_builder.AsData()).GetAllEvents())
-      tab.SetEvaluateJavaScriptResult(viewport)
-      actual = impl.CalculateSpeedIndex(tab)
-      # The result might differ by 1 or more milliseconds due to rounding,
-      # so compare to the nearest 10 milliseconds.
-      self.assertAlmostEqual(actual, expected, places=-1)
-
-  def testCern(self):
-    # Page: http://info.cern.ch/hypertext/WWW/TheProject.html
-    # This page has only one paint event.
-    self._TestJsonTimelineExpectation(
-        'cern_repeat_timeline.json', (1014, 650), 379.0)
-
-  def testBaidu(self):
-    # Page: http://www.baidu.com/
-    # This page has several paint events, but no nested paint events.
-    self._TestJsonTimelineExpectation(
-        'baidu_repeat_timeline.json', (1014, 650), 1761.43)
-
-  def test2ch(self):
-    # Page: http://2ch.net/
-    # This page has several paint events, including nested paint events.
-    self._TestJsonTimelineExpectation(
-        '2ch_repeat_timeline.json', (997, 650), 674.58)
 
 
 if __name__ == "__main__":
