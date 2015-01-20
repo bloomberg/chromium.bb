@@ -2355,11 +2355,6 @@
       }, {
          'use_seccomp_bpf%': 0,
       }],
-      # Set component build with LTO until all tests pass.
-      # This also reduces link time.
-      ['use_lto==1', {
-        'component%': "shared_library",
-      }],
     ],
 
     # older history files use fts2 instead of fts3
