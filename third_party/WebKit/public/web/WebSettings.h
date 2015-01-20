@@ -65,7 +65,11 @@ public:
         V8CacheOptionsNone,
         V8CacheOptionsParseMemory,
         V8CacheOptionsHeuristics,
-        V8CacheOptionsHeuristicsMobile
+        V8CacheOptionsHeuristicsMobile,
+        V8CacheOptionsHeuristicsDefault,
+        V8CacheOptionsHeuristicsDefaultMobile,
+        V8CacheOptionsRecent,
+        V8CacheOptionsRecentSmall
     };
 
     enum V8ScriptStreamingMode {

@@ -38,6 +38,7 @@
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/TraceEvent.h"
 #include "third_party/snappy/src/snappy.h"
+#include "wtf/CurrentTime.h"
 
 #if defined(WTF_OS_WIN)
 #include <malloc.h>
@@ -156,7 +157,7 @@ enum CacheTagKind {
     CacheTagParser = 0,
     CacheTagCode = 1,
     CacheTagCodeCompressed = 2,
-
+    CacheTagTimeStamp = 3,
     CacheTagLast
 };
 
@@ -174,6 +175,29 @@ unsigned cacheTag(CacheTagKind kind, Resource* resource)
     // later load the script from the cache and interpret it with a different
     // encoding, the cached data is not valid for that encoding.
     return (v8CacheDataVersion | kind) + StringHash::hash(resource->encoding());
+}
+
+// Store a timestamp to the cache as hint.
+void setCacheTimeStamp(ScriptResource* resource)
+{
+    double now = currentTime();
+    unsigned tag = cacheTag(CacheTagTimeStamp, resource);
+    resource->setCachedMetadata(tag, reinterpret_cast<char*>(&now), sizeof(now), Resource::SendToPlatform);
+}
+
+// Check previously stored timestamp.
+bool isResourceHotForCaching(ScriptResource* resource)
+{
+    const double kCacheWithinSeconds = 36 * 60 * 60;
+    unsigned tag = cacheTag(CacheTagTimeStamp, resource);
+    CachedMetadata* cachedMetadata = resource->cachedMetadata(tag);
+    if (!cachedMetadata)
+        return false;
+    double timeStamp;
+    const int size = sizeof(timeStamp);
+    ASSERT(cachedMetadata->size() == size);
+    memcpy(&timeStamp, cachedMetadata->data(), size);
+    return (currentTime() - timeStamp) < kCacheWithinSeconds;
 }
 
 // Final compile call for a streamed compilation. Most decisions have already
@@ -256,7 +280,9 @@ PassOwnPtr<CompileFn> selectCompileFunction(V8CacheOptions cacheOptions, ScriptR
         break;
 
     case V8CacheOptionsHeuristics:
-    case V8CacheOptionsHeuristicsMobile: {
+    case V8CacheOptionsHeuristicsMobile:
+    case V8CacheOptionsHeuristicsDefault:
+    case V8CacheOptionsHeuristicsDefaultMobile: {
         // We expect compression to win on mobile devices, due to relatively
         // slow storage.
         bool compress = cacheOptions == V8CacheOptionsHeuristicsMobile;
@@ -269,10 +295,26 @@ PassOwnPtr<CompileFn> selectCompileFunction(V8CacheOptions cacheOptions, ScriptR
             return bind(compileAndConsumeCache, resource, codeCacheTag, v8::ScriptCompiler::kConsumeCodeCache, compress);
         if (code->Length() < mediumCodeLength)
             return bind(compileAndProduceCache, resource, codeCacheTag, v8::ScriptCompiler::kProduceCodeCache, compress, Resource::SendToPlatform);
-        unsigned parserCacheTag = cacheTag(CacheTagParser, resource);
-        if (resource->cachedMetadata(parserCacheTag))
-            return bind(compileAndConsumeCache, resource, parserCacheTag, v8::ScriptCompiler::kConsumeParserCache, false);
-        return bind(compileAndProduceCache, resource, parserCacheTag, v8::ScriptCompiler::kProduceParserCache, false, Resource::SendToPlatform);
+        Resource::MetadataCacheType cacheType = Resource::CacheLocally;
+        if (cacheOptions == V8CacheOptionsHeuristics || cacheOptions == V8CacheOptionsHeuristicsMobile)
+            cacheType = Resource::SendToPlatform;
+        return bind(compileAndConsumeOrProduce, resource, cacheTag(CacheTagParser, resource), v8::ScriptCompiler::kConsumeParserCache, v8::ScriptCompiler::kProduceParserCache, false, cacheType);
+        break;
+    }
+
+    case V8CacheOptionsRecent:
+    case V8CacheOptionsRecentSmall: {
+        if (cacheOptions == V8CacheOptionsRecentSmall && code->Length() >= mediumCodeLength)
+            return bind(compileAndConsumeOrProduce, resource, cacheTag(CacheTagParser, resource), v8::ScriptCompiler::kConsumeParserCache, v8::ScriptCompiler::kProduceParserCache, false, Resource::CacheLocally);
+        unsigned codeCacheTag = cacheTag(CacheTagCode, resource);
+        CachedMetadata* codeCache = resource->cachedMetadata(codeCacheTag);
+        if (codeCache)
+            return bind(compileAndConsumeCache, resource, codeCacheTag, v8::ScriptCompiler::kConsumeCodeCache, false);
+        if (!isResourceHotForCaching(resource)) {
+            setCacheTimeStamp(resource);
+            return bind(compileWithoutOptions);
+        }
+        return bind(compileAndProduceCache, resource, codeCacheTag, v8::ScriptCompiler::kProduceCodeCache, false, Resource::SendToPlatform);
         break;
     }
 

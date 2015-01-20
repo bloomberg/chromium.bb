@@ -41,7 +41,11 @@ enum V8CacheOptions {
     V8CacheOptionsNone, // V8 caching turned off.
     V8CacheOptionsParseMemory, // Use parser in-memory caching (no disk).
     V8CacheOptionsHeuristics, // Mixed strategy: Cache code if it's a likely win.
-    V8CacheOptionsHeuristicsMobile // As above, but tuned for mobile.
+    V8CacheOptionsHeuristicsMobile, // As above, but tuned for mobile.
+    V8CacheOptionsHeuristicsDefault, // Cache code or default.
+    V8CacheOptionsHeuristicsDefaultMobile, // As above, but tuned for mobile.
+    V8CacheOptionsRecent, // Cache recently compiled code.
+    V8CacheOptionsRecentSmall // Cache small recently compiled code.
 };
 
 } // namespace blink
