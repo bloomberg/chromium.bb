@@ -294,7 +294,8 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
     std::cerr << "OnStreamFrameData(" << stream_id << ", \"";
     if (len > 0) {
       for (size_t i = 0 ; i < len; ++i) {
-        std::cerr << std::hex << (0xFF & (unsigned int)data[i]) << std::dec;
+        std::cerr << std::hex << (0xFF & static_cast<unsigned int>(data[i]))
+                  << std::dec;
       }
     }
     std::cerr << "\", " << len << ")\n";
