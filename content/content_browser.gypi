@@ -1884,6 +1884,7 @@
     ['chromeos==1', {
       'dependencies': [
         '../build/linux/system.gyp:dbus',
+        '../chromeos/chromeos.gyp:chromeos',
         '../chromeos/chromeos.gyp:power_manager_proto',
       ],
       'sources!': [

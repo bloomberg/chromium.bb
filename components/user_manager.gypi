@@ -51,8 +51,10 @@
       ['chromeos == 1', {
         'dependencies': [
           '<(DEPTH)/base/base.gyp:base_prefs',
+          '<(DEPTH)/chromeos/chromeos.gyp:chromeos',
           '<(DEPTH)/components/components.gyp:session_manager_component',
           '<(DEPTH)/google_apis/google_apis.gyp:google_apis',
+          '<(DEPTH)/ui/base/ui_base.gyp:ui_base',
           '<(DEPTH)/ui/chromeos/ui_chromeos.gyp:ui_chromeos_resources',
           '<(DEPTH)/ui/chromeos/ui_chromeos.gyp:ui_chromeos_strings',
           '<(DEPTH)/url/url.gyp:url_lib',

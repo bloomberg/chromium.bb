@@ -502,6 +502,7 @@
       'type': '<(component)',
       'dependencies': [
         '../base/base.gyp:base',
+        '../base/base.gyp:base_i18n',
         '../base/base.gyp:base_prefs',
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../build/linux/system.gyp:dbus',
@@ -515,6 +516,7 @@
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/libxml/libxml.gyp:libxml',
         '../third_party/protobuf/protobuf.gyp:protobuf_lite',
+        '../ui/gfx/gfx.gyp:gfx_geometry',
         '../ui/accelerometer/ui_accelerometer.gyp:ui_accelerometer',
         '../url/url.gyp:url_lib',
         'cryptohome_proto',

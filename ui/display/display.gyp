@@ -84,6 +84,11 @@
             'display_types',
           ],
         }],
+        ['chromeos == 1 and use_x11 == 1', {
+          'dependencies': [
+            '../gfx/x/gfx_x11.gyp:gfx_x11',
+          ],
+        }],
         ['use_ozone == 1', {
           'dependencies': [
             '../../ui/ozone/ozone.gyp:ozone',

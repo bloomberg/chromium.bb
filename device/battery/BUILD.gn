@@ -36,7 +36,10 @@ component("battery") {
 
   if (is_chromeos) {
     configs += [ "//build/config/linux:dbus" ]
-    deps += [ "//chromeos:power_manager_proto" ]
+    deps += [
+      "//chromeos:chromeos",
+      "//chromeos:power_manager_proto",
+    ]
     sources -= [
       "battery_status_manager_default.cc",
       "battery_status_manager_linux.cc",

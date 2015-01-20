@@ -57,6 +57,8 @@ if (!is_linux || is_chromeos) {
       ]
 
       # TODO(GYP): Handle /analyze switch, when it will be used in GN.
+    } else if (is_linux) {
+      libs = [ "m" ]
     }
 
     configs -= [ "//build/config/compiler:chromium_code" ]

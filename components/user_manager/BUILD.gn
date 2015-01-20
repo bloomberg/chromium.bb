@@ -37,8 +37,10 @@ component("user_manager") {
       "user_type.h",
     ]
     deps += [
+      "//chromeos:chromeos",
       "//components/session_manager/core",
       "//google_apis",
+      "//ui/base",
       "//ui/chromeos/resources",
       "//ui/chromeos/strings",
       "//url",

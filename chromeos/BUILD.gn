@@ -20,6 +20,7 @@ component("chromeos") {
   ]
   deps = [
     "//base",
+    "//base:i18n",
     "//base:prefs",
     "//base/third_party/dynamic_annotations",
     "//chromeos/ime:gencode",
@@ -32,6 +33,7 @@ component("chromeos") {
     "//third_party/libxml",
     "//third_party/protobuf:protobuf_lite",
     "//ui/accelerometer",
+    "//ui/gfx/geometry",
     "//url",
     ":cryptohome_proto",
     ":power_manager_proto",

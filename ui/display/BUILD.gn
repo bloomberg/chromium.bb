@@ -55,6 +55,9 @@ component("display") {
 
   if (is_chromeos) {
     deps += [ "//ui/display/types" ]
+    if (use_x11) {
+      deps += [ "//ui/gfx/x" ]
+    }
   }
 
   if (use_ozone) {

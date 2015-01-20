@@ -14,8 +14,11 @@ component("wallpaper") {
 
   deps = [
     "//base",
+    "//base:prefs",
+    "//content",
     "//skia",
     "//ui/gfx",
+    "//url",
   ]
   if (is_chromeos) {
     sources += [

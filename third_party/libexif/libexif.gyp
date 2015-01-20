@@ -64,6 +64,7 @@
           'conditions': [
             ['os_posix==1 and OS!="mac"', {
               'cflags!': ['-fvisibility=hidden'],
+              'libraries': ['-lm'],
             }],
             ['OS=="mac"', {
               'conditions': [
