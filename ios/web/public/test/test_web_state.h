@@ -16,22 +16,21 @@ namespace web {
 class TestWebState : public WebState {
  public:
   // WebState implementation.
-  virtual BrowserState* GetBrowserState() const override;
-  virtual void OpenURL(const OpenURLParams& params) override {}
-  virtual NavigationManager* GetNavigationManager() override;
-  virtual CRWJSInjectionReceiver* GetJSInjectionReceiver() const override;
-  virtual const std::string& GetContentsMimeType() const override;
-  virtual const std::string& GetContentLanguageHeader() const override;
-  virtual bool ContentIsHTML() const override;
-  virtual const GURL& GetVisibleURL() const override;
-  virtual const GURL& GetLastCommittedURL() const override;
-  virtual void AddScriptCommandCallback(
-      const ScriptCommandCallback& callback,
-      const std::string& command_prefix) override {}
-  virtual void RemoveScriptCommandCallback(
-      const std::string& command_prefix) override {}
-  virtual void AddObserver(WebStateObserver* observer) override {}
-  virtual void RemoveObserver(WebStateObserver* observer) override {}
+  BrowserState* GetBrowserState() const override;
+  void OpenURL(const OpenURLParams& params) override {}
+  NavigationManager* GetNavigationManager() override;
+  CRWJSInjectionReceiver* GetJSInjectionReceiver() const override;
+  const std::string& GetContentsMimeType() const override;
+  const std::string& GetContentLanguageHeader() const override;
+  bool ContentIsHTML() const override;
+  const GURL& GetVisibleURL() const override;
+  const GURL& GetLastCommittedURL() const override;
+  void AddScriptCommandCallback(const ScriptCommandCallback& callback,
+                                const std::string& command_prefix) override {}
+  void RemoveScriptCommandCallback(const std::string& command_prefix) override {
+  }
+  void AddObserver(WebStateObserver* observer) override {}
+  void RemoveObserver(WebStateObserver* observer) override {}
 
  private:
   GURL url_;

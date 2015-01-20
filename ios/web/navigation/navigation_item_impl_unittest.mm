@@ -15,9 +15,7 @@ namespace {
 
 class NavigationItemTest : public PlatformTest {
  protected:
-  virtual void SetUp() {
-    item_.reset(new NavigationItemImpl());
-  }
+  void SetUp() override { item_.reset(new NavigationItemImpl()); }
 
   scoped_ptr<NavigationItemImpl> item_;
 };

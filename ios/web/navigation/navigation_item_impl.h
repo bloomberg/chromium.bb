@@ -21,30 +21,30 @@ class NavigationItemImpl : public web::NavigationItem {
  public:
   // Creates a default NavigationItemImpl.
   NavigationItemImpl();
-  virtual ~NavigationItemImpl();
+  ~NavigationItemImpl() override;
 
   // NavigationItem implementation:
-  virtual int GetUniqueID() const override;
-  virtual void SetURL(const GURL& url) override;
-  virtual const GURL& GetURL() const override;
-  virtual void SetReferrer(const web::Referrer& referrer) override;
-  virtual const web::Referrer& GetReferrer() const override;
-  virtual void SetVirtualURL(const GURL& url) override;
-  virtual const GURL& GetVirtualURL() const override;
-  virtual void SetTitle(const base::string16& title) override;
-  virtual const base::string16& GetTitle() const override;
-  virtual void SetPageID(int page_id) override;
-  virtual int32 GetPageID() const override;
-  virtual const base::string16& GetTitleForDisplay(
+  int GetUniqueID() const override;
+  void SetURL(const GURL& url) override;
+  const GURL& GetURL() const override;
+  void SetReferrer(const web::Referrer& referrer) override;
+  const web::Referrer& GetReferrer() const override;
+  void SetVirtualURL(const GURL& url) override;
+  const GURL& GetVirtualURL() const override;
+  void SetTitle(const base::string16& title) override;
+  const base::string16& GetTitle() const override;
+  void SetPageID(int page_id) override;
+  int32 GetPageID() const override;
+  const base::string16& GetTitleForDisplay(
       const std::string& languages) const override;
-  virtual void SetTransitionType(ui::PageTransition transition_type) override;
-  virtual ui::PageTransition GetTransitionType() const override;
-  virtual const FaviconStatus& GetFavicon() const override;
-  virtual FaviconStatus& GetFavicon() override;
-  virtual const SSLStatus& GetSSL() const override;
-  virtual SSLStatus& GetSSL() override;
-  virtual void SetTimestamp(base::Time timestamp) override;
-  virtual base::Time GetTimestamp() const override;
+  void SetTransitionType(ui::PageTransition transition_type) override;
+  ui::PageTransition GetTransitionType() const override;
+  const FaviconStatus& GetFavicon() const override;
+  FaviconStatus& GetFavicon() override;
+  const SSLStatus& GetSSL() const override;
+  SSLStatus& GetSSL() override;
+  void SetTimestamp(base::Time timestamp) override;
+  base::Time GetTimestamp() const override;
 
  private:
   int unique_id_;

@@ -97,7 +97,7 @@ class BASE_EXPORT MessagePumpIOSForIO : public MessagePumpNSRunLoop {
   };
 
   MessagePumpIOSForIO();
-  virtual ~MessagePumpIOSForIO();
+  ~MessagePumpIOSForIO() override;
 
   // Have the current thread's message loop watch for a a situation in which
   // reading/writing to the FD can be performed without blocking.

@@ -39,7 +39,7 @@ class UserPolicySigninService : public UserPolicySigninServiceBase {
       SigninManager* signin_manager,
       scoped_refptr<net::URLRequestContextGetter> system_request_context,
       ProfileOAuth2TokenService* token_service);
-  virtual ~UserPolicySigninService();
+  ~UserPolicySigninService() override;
 
   // Registers a CloudPolicyClient for fetching policy for |username|.
   // This requests an OAuth2 token for the services involved, and contacts
@@ -74,14 +74,14 @@ class UserPolicySigninService : public UserPolicySigninServiceBase {
                                       PolicyRegistrationCallback callback);
 
   // KeyedService implementation:
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
   // CloudPolicyService::Observer implementation:
-  virtual void OnInitializationCompleted(CloudPolicyService* service) override;
+  void OnInitializationCompleted(CloudPolicyService* service) override;
 
   // Overridden from UserPolicySigninServiceBase to cancel the pending delayed
   // registration.
-  virtual void ShutdownUserCloudPolicyManager() override;
+  void ShutdownUserCloudPolicyManager() override;
 
   // Registers for cloud policy for an already signed-in user.
   void RegisterCloudPolicyService();

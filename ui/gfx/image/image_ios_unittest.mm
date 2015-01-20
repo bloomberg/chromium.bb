@@ -46,13 +46,13 @@ UIImage* UIImageWithSizeAndScale(CGFloat width, CGFloat height, CGFloat scale) {
 class ImageIOSTest : public testing::Test {
  public:
   ImageIOSTest() {}
-  virtual ~ImageIOSTest() {}
+  ~ImageIOSTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     original_scale_factors_ = gfx::ImageSkia::GetSupportedScales();
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     gfx::ImageSkia::SetSupportedScales(original_scale_factors_);
   }
 

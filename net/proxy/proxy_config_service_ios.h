@@ -13,7 +13,7 @@ class ProxyConfigServiceIOS : public PollingProxyConfigService {
  public:
   // Constructs a ProxyConfigService that watches the iOS system proxy settings.
   explicit ProxyConfigServiceIOS();
-  virtual ~ProxyConfigServiceIOS();
+  ~ProxyConfigServiceIOS() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ProxyConfigServiceIOS);

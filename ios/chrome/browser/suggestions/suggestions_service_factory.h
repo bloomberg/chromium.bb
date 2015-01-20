@@ -33,7 +33,7 @@ class SuggestionsServiceFactory : public BrowserStateKeyedServiceFactory {
   friend struct DefaultSingletonTraits<SuggestionsServiceFactory>;
 
   SuggestionsServiceFactory();
-  ~SuggestionsServiceFactory();
+  ~SuggestionsServiceFactory() override;
 
   // BrowserStateKeyedServiceFactory:
   KeyedService* BuildServiceInstanceFor(

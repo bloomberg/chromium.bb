@@ -288,22 +288,16 @@ class ImageRepCocoaTouch : public ImageRep {
     CHECK(image);
   }
 
-  virtual ~ImageRepCocoaTouch() {
+  ~ImageRepCocoaTouch() override {
     base::mac::NSObjectRelease(image_);
     image_ = nil;
   }
 
-  virtual int Width() const override {
-    return Size().width();
-  }
+  int Width() const override { return Size().width(); }
 
-  virtual int Height() const override {
-    return Size().height();
-  }
+  int Height() const override { return Size().height(); }
 
-  virtual gfx::Size Size() const override {
-    return internal::UIImageSize(image_);
-  }
+  gfx::Size Size() const override { return internal::UIImageSize(image_); }
 
   UIImage* image() const { return image_; }
 

@@ -59,7 +59,7 @@ class WebState : public base::SupportsUserData {
     bool is_renderer_initiated;
   };
 
-  virtual ~WebState() {}
+  ~WebState() override {}
 
   // Gets the BrowserState associated with this WebState. Can never return null.
   virtual BrowserState* GetBrowserState() const = 0;

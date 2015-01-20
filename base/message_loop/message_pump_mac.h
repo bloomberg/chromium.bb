@@ -263,9 +263,9 @@ class BASE_EXPORT MessagePumpNSRunLoop : public MessagePumpCFRunLoopBase {
 class MessagePumpUIApplication : public MessagePumpCFRunLoopBase {
  public:
   MessagePumpUIApplication();
-  virtual ~MessagePumpUIApplication();
-  virtual void DoRun(Delegate* delegate) override;
-  virtual void Quit() override;
+  ~MessagePumpUIApplication() override;
+  void DoRun(Delegate* delegate) override;
+  void Quit() override;
 
   // This message pump can not spin the main message loop directly.  Instead,
   // call |Attach()| to set up a delegate.  It is an error to call |Run()|.

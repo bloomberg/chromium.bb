@@ -32,12 +32,10 @@ class AppCacheService;
 // the UI thread. It must be destructed on the IO thread.
 class CONTENT_EXPORT ResourceContext : public base::SupportsUserData {
  public:
-#if defined(OS_IOS)
-  virtual ~ResourceContext() {}
-#else
+#if !defined(OS_IOS)
   ResourceContext();
-  ~ResourceContext() override;
 #endif
+  ~ResourceContext() override;
   virtual net::HostResolver* GetHostResolver() = 0;
 
   // DEPRECATED: This is no longer a valid given isolated apps/sites and

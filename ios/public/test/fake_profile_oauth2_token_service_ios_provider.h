@@ -19,20 +19,20 @@ class FakeProfileOAuth2TokenServiceIOSProvider
     : public ProfileOAuth2TokenServiceIOSProvider {
  public:
   FakeProfileOAuth2TokenServiceIOSProvider();
-  virtual ~FakeProfileOAuth2TokenServiceIOSProvider();
+  ~FakeProfileOAuth2TokenServiceIOSProvider() override;
 
   // ProfileOAuth2TokenServiceIOSProvider
-  virtual void InitializeSharedAuthentication() override;
+  void InitializeSharedAuthentication() override;
 
-  virtual void GetAccessToken(const std::string& account_id,
-                              const std::string& client_id,
-                              const std::string& client_secret,
-                              const std::set<std::string>& scopes,
-                              const AccessTokenCallback& callback) override;
+  void GetAccessToken(const std::string& account_id,
+                      const std::string& client_id,
+                      const std::string& client_secret,
+                      const std::set<std::string>& scopes,
+                      const AccessTokenCallback& callback) override;
 
-  virtual std::vector<std::string> GetAllAccountIds() override;
+  std::vector<std::string> GetAllAccountIds() override;
 
-  virtual AuthenticationErrorCategory GetAuthenticationErrorCategory(
+  AuthenticationErrorCategory GetAuthenticationErrorCategory(
       NSError* error) const override;
 
   // Methods to configure this fake provider.

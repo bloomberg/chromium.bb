@@ -47,7 +47,7 @@ class FileBackgroundIO : public disk_cache::BackgroundIO {
   void Write();
 
  private:
-  virtual ~FileBackgroundIO() {}
+  ~FileBackgroundIO() override {}
 
   disk_cache::FileIOCallback* callback_;
 
@@ -64,7 +64,7 @@ class FileBackgroundIO : public disk_cache::BackgroundIO {
 class FileInFlightIO : public disk_cache::InFlightIO {
  public:
   FileInFlightIO() {}
-  virtual ~FileInFlightIO() {}
+  ~FileInFlightIO() override {}
 
   // These methods start an asynchronous operation. The arguments have the same
   // semantics of the File asynchronous operations, with the exception that the
@@ -79,8 +79,8 @@ class FileInFlightIO : public disk_cache::InFlightIO {
   // |cancel| is true if the actual task posted to the thread is still
   // queued (because we are inside WaitForPendingIO), and false if said task is
   // the one performing the call.
-  virtual void OnOperationComplete(disk_cache::BackgroundIO* operation,
-                                   bool cancel) override;
+  void OnOperationComplete(disk_cache::BackgroundIO* operation,
+                           bool cancel) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FileInFlightIO);

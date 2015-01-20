@@ -66,7 +66,7 @@ class TestSigninClient : public SigninClient {
   void SetURLRequestContext(net::URLRequestContextGetter* request_context);
 
 #if defined(OS_IOS)
-  virtual ios::ProfileOAuth2TokenServiceIOSProvider* GetIOSProvider() override;
+  ios::ProfileOAuth2TokenServiceIOSProvider* GetIOSProvider() override;
 #endif
 
   // Returns true.

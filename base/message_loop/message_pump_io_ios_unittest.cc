@@ -18,9 +18,9 @@ class MessagePumpIOSForIOTest : public testing::Test {
   MessagePumpIOSForIOTest()
       : ui_loop_(MessageLoop::TYPE_UI),
         io_thread_("MessagePumpIOSForIOTestIOThread") {}
-  virtual ~MessagePumpIOSForIOTest() {}
+  ~MessagePumpIOSForIOTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     Thread::Options options(MessageLoop::TYPE_IO, 0);
     ASSERT_TRUE(io_thread_.StartWithOptions(options));
     ASSERT_EQ(MessageLoop::TYPE_IO, io_thread_.message_loop()->type());
@@ -30,7 +30,7 @@ class MessagePumpIOSForIOTest : public testing::Test {
     ASSERT_EQ(0, ret);
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     if (IGNORE_EINTR(close(pipefds_[0])) < 0)
       PLOG(ERROR) << "close";
     if (IGNORE_EINTR(close(pipefds_[1])) < 0)
@@ -64,11 +64,11 @@ namespace {
 // nothing useful.
 class StupidWatcher : public MessagePumpIOSForIO::Watcher {
  public:
-  virtual ~StupidWatcher() {}
+  ~StupidWatcher() override {}
 
   // base:MessagePumpIOSForIO::Watcher interface
-  virtual void OnFileCanReadWithoutBlocking(int fd) override {}
-  virtual void OnFileCanWriteWithoutBlocking(int fd) override {}
+  void OnFileCanReadWithoutBlocking(int fd) override {}
+  void OnFileCanWriteWithoutBlocking(int fd) override {}
 };
 
 #if GTEST_HAS_DEATH_TEST && !defined(NDEBUG)
@@ -93,16 +93,12 @@ class BaseWatcher : public MessagePumpIOSForIO::Watcher {
       : controller_(controller) {
     DCHECK(controller_);
   }
-  virtual ~BaseWatcher() {}
+  ~BaseWatcher() override {}
 
   // MessagePumpIOSForIO::Watcher interface
-  virtual void OnFileCanReadWithoutBlocking(int /* fd */) override {
-    NOTREACHED();
-  }
+  void OnFileCanReadWithoutBlocking(int /* fd */) override { NOTREACHED(); }
 
-  virtual void OnFileCanWriteWithoutBlocking(int /* fd */) override {
-    NOTREACHED();
-  }
+  void OnFileCanWriteWithoutBlocking(int /* fd */) override { NOTREACHED(); }
 
  protected:
   MessagePumpIOSForIO::FileDescriptorWatcher* controller_;
@@ -114,11 +110,9 @@ class DeleteWatcher : public BaseWatcher {
       MessagePumpIOSForIO::FileDescriptorWatcher* controller)
       : BaseWatcher(controller) {}
 
-  virtual ~DeleteWatcher() {
-    DCHECK(!controller_);
-  }
+  ~DeleteWatcher() override { DCHECK(!controller_); }
 
-  virtual void OnFileCanWriteWithoutBlocking(int /* fd */) override {
+  void OnFileCanWriteWithoutBlocking(int /* fd */) override {
     DCHECK(controller_);
     delete controller_;
     controller_ = NULL;
@@ -146,9 +140,9 @@ class StopWatcher : public BaseWatcher {
         pump_(pump),
         fd_to_start_watching_(fd_to_start_watching) {}
 
-  virtual ~StopWatcher() {}
+  ~StopWatcher() override {}
 
-  virtual void OnFileCanWriteWithoutBlocking(int /* fd */) override {
+  void OnFileCanWriteWithoutBlocking(int /* fd */) override {
     controller_->StopWatchingFileDescriptor();
     if (fd_to_start_watching_ >= 0) {
       pump_->WatchFileDescriptor(fd_to_start_watching_,

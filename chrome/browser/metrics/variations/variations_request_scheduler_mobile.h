@@ -20,12 +20,12 @@ class VariationsRequestSchedulerMobile : public VariationsRequestScheduler {
   // is the PrefService that contains the time of the last fetch.
   explicit VariationsRequestSchedulerMobile(const base::Closure& task,
                                             PrefService* local_state);
-  virtual ~VariationsRequestSchedulerMobile();
+  ~VariationsRequestSchedulerMobile() override;
 
   // Base class overrides.
-  virtual void Start() override;
-  virtual void Reset() override;
-  virtual void OnAppEnterForeground() override;
+  void Start() override;
+  void Reset() override;
+  void OnAppEnterForeground() override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(VariationsRequestSchedulerMobileTest,

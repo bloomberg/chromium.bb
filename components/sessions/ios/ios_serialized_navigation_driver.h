@@ -16,7 +16,7 @@ namespace sessions {
 class IOSSerializedNavigationDriver
     : public SerializedNavigationDriver {
  public:
-  virtual ~IOSSerializedNavigationDriver();
+  ~IOSSerializedNavigationDriver() override;
 
   // Returns the singleton IOSSerializedNavigationDriver.  Almost all
   // callers should use SerializedNavigationDriver::Get() instead.

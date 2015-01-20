@@ -37,14 +37,14 @@ class OAuth2TokenServiceObserverBridge : public OAuth2TokenService::Observer {
   OAuth2TokenServiceObserverBridge(
       OAuth2TokenService* token_service,
       id<OAuth2TokenServiceObserverBridgeDelegate> delegate);
-  virtual ~OAuth2TokenServiceObserverBridge();
+  ~OAuth2TokenServiceObserverBridge() override;
 
   // OAuth2TokenService::Observer
-  virtual void OnRefreshTokenAvailable(const std::string& account_id) override;
-  virtual void OnRefreshTokenRevoked(const std::string& account_id) override;
-  virtual void OnRefreshTokensLoaded() override;
-  virtual void OnStartBatchChanges() override;
-  virtual void OnEndBatchChanges() override;
+  void OnRefreshTokenAvailable(const std::string& account_id) override;
+  void OnRefreshTokenRevoked(const std::string& account_id) override;
+  void OnRefreshTokensLoaded() override;
+  void OnStartBatchChanges() override;
+  void OnEndBatchChanges() override;
 
  private:
   OAuth2TokenService* token_service_;  // weak

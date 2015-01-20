@@ -27,9 +27,9 @@ class POLICY_EXPORT BrowserPolicyConnectorIOS : public BrowserPolicyConnector {
       const std::string& user_agent,
       scoped_refptr<base::SequencedTaskRunner> background_task_runner);
 
-  virtual ~BrowserPolicyConnectorIOS();
+  ~BrowserPolicyConnectorIOS() override;
 
-  virtual void Init(
+  void Init(
       PrefService* local_state,
       scoped_refptr<net::URLRequestContextGetter> request_context) override;
 

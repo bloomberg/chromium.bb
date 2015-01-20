@@ -61,13 +61,13 @@ class SSOAccessTokenFetcher : public OAuth2AccessTokenFetcher {
   SSOAccessTokenFetcher(OAuth2AccessTokenConsumer* consumer,
                         ios::ProfileOAuth2TokenServiceIOSProvider* provider,
                         const std::string account_id);
-  virtual ~SSOAccessTokenFetcher();
+  ~SSOAccessTokenFetcher() override;
 
-  virtual void Start(const std::string& client_id,
-                     const std::string& client_secret,
-                     const std::vector<std::string>& scopes) override;
+  void Start(const std::string& client_id,
+             const std::string& client_secret,
+             const std::vector<std::string>& scopes) override;
 
-  virtual void CancelRequest() override;
+  void CancelRequest() override;
 
   // Handles an access token response.
   void OnAccessTokenResponse(NSString* token,

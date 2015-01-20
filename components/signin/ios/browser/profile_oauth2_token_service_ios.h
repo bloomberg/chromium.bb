@@ -28,34 +28,32 @@ class ProfileOAuth2TokenServiceIOSProvider;
 class ProfileOAuth2TokenServiceIOS : public ProfileOAuth2TokenService {
  public:
   // KeyedService
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
   // OAuth2TokenService
-  virtual bool RefreshTokenIsAvailable(
-      const std::string& account_id) const override;
+  bool RefreshTokenIsAvailable(const std::string& account_id) const override;
 
-  virtual void InvalidateOAuth2Token(const std::string& account_id,
-                                     const std::string& client_id,
-                                     const ScopeSet& scopes,
-                                     const std::string& access_token) override;
+  void InvalidateOAuth2Token(const std::string& account_id,
+                             const std::string& client_id,
+                             const ScopeSet& scopes,
+                             const std::string& access_token) override;
 
   // ProfileOAuth2TokenService
-  virtual void Initialize(
-      SigninClient* client,
-      SigninErrorController* signin_error_controller) override;
-  virtual void LoadCredentials(const std::string& primary_account_id) override;
-  virtual std::vector<std::string> GetAccounts() override;
-  virtual void UpdateAuthError(const std::string& account_id,
-                               const GoogleServiceAuthError& error) override;
+  void Initialize(SigninClient* client,
+                  SigninErrorController* signin_error_controller) override;
+  void LoadCredentials(const std::string& primary_account_id) override;
+  std::vector<std::string> GetAccounts() override;
+  void UpdateAuthError(const std::string& account_id,
+                       const GoogleServiceAuthError& error) override;
 
   // This method should not be called when using shared authentication.
-  virtual void UpdateCredentials(const std::string& account_id,
-                                 const std::string& refresh_token) override;
+  void UpdateCredentials(const std::string& account_id,
+                         const std::string& refresh_token) override;
 
   // Removes all credentials from this instance of |ProfileOAuth2TokenService|,
   // however, it does not revoke the identities from the device.
   // Subsequent calls to |RefreshTokenIsAvailable| will return |false|.
-  virtual void RevokeAllCredentials() override;
+  void RevokeAllCredentials() override;
 
   // Reloads accounts from the provider. Fires |OnRefreshTokenAvailable| for
   // each new account. Fires |OnRefreshTokenRevoked| for each account that was
@@ -67,9 +65,9 @@ class ProfileOAuth2TokenServiceIOS : public ProfileOAuth2TokenService {
   friend class ProfileOAuth2TokenServiceIOSTest;
 
   ProfileOAuth2TokenServiceIOS();
-  virtual ~ProfileOAuth2TokenServiceIOS();
+  ~ProfileOAuth2TokenServiceIOS() override;
 
-  virtual OAuth2AccessTokenFetcher* CreateAccessTokenFetcher(
+  OAuth2AccessTokenFetcher* CreateAccessTokenFetcher(
       const std::string& account_id,
       net::URLRequestContextGetter* getter,
       OAuth2AccessTokenConsumer* consumer) override;
@@ -90,14 +88,14 @@ class ProfileOAuth2TokenServiceIOS : public ProfileOAuth2TokenService {
    public:
     AccountInfo(SigninErrorController* signin_error_controller,
                 const std::string& account_id);
-    virtual ~AccountInfo();
+    ~AccountInfo() override;
 
     void SetLastAuthError(const GoogleServiceAuthError& error);
 
     // SigninErrorController::AuthStatusProvider implementation.
-    virtual std::string GetAccountId() const override;
-    virtual std::string GetUsername() const override;
-    virtual GoogleServiceAuthError GetAuthStatus() const override;
+    std::string GetAccountId() const override;
+    std::string GetUsername() const override;
+    GoogleServiceAuthError GetAuthStatus() const override;
 
    private:
     SigninErrorController* signin_error_controller_;

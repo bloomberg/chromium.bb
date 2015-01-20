@@ -16,7 +16,7 @@ class FakeStringProvider;
 class TestChromeBrowserProvider : public ChromeBrowserProvider {
  public:
   TestChromeBrowserProvider();
-  virtual ~TestChromeBrowserProvider();
+  ~TestChromeBrowserProvider() override;
 
   // Returns the current provider as a |TestChromeBrowserProvider|.
   static TestChromeBrowserProvider* GetTestProvider();
