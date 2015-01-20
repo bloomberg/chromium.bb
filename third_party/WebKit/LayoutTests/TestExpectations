@@ -725,8 +725,6 @@ crbug.com/390125 media/video-frame-accurate-seek.html [ NeedsManualRebaseline ]
 
 crbug.com/245556 compositing/transitions/transform-on-large-layer.html [ ImageOnlyFailure ]
 
-crbug.com/369008 [ Mac ] fast/writing-mode/flipped-blocks-inline-map-local-to-container.html [ Crash Pass ]
-
 crbug.com/321787 [ Win ] virtual/gpu/fast/canvas/webgl/premultiplyalpha-test.html [ Pass Failure ]
 crbug.com/321793 [ Win ] fast/frames/sandboxed-iframe-navigation-windowopen.html [ Pass Timeout ]
 crbug.com/321857 [ Win7 Debug ] fast/filesystem/workers/file-writer-events-shared-worker.html [ Pass Failure ]
