@@ -16,14 +16,6 @@
 
 namespace values = extensions::manifest_values;
 
-// static
-void extensions::ExtensionKeybindingRegistry::SetShortcutHandlingSuspended(
-    bool suspended) {
-  ExtensionKeybindingRegistryCocoa::set_shortcut_handling_suspended(suspended);
-}
-
-bool ExtensionKeybindingRegistryCocoa::shortcut_handling_suspended_ = false;
-
 ExtensionKeybindingRegistryCocoa::ExtensionKeybindingRegistryCocoa(
     Profile* profile,
     gfx::NativeWindow window,
@@ -41,7 +33,7 @@ ExtensionKeybindingRegistryCocoa::~ExtensionKeybindingRegistryCocoa() {
 bool ExtensionKeybindingRegistryCocoa::ProcessKeyEvent(
     const content::NativeWebKeyboardEvent& event,
     ui::AcceleratorManager::HandlerPriority priority) {
-  if (shortcut_handling_suspended_)
+  if (shortcut_handling_suspended())
     return false;
 
   ui::Accelerator accelerator =

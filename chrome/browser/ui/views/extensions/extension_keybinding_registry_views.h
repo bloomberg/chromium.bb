@@ -47,6 +47,7 @@ class ExtensionKeybindingRegistryViews
                                const std::string& command_name) override;
   void RemoveExtensionKeybindingImpl(const ui::Accelerator& accelerator,
                                      const std::string& command_name) override;
+  void OnShortcutHandlingSuspended(bool suspended) override;
 
   // Weak pointer to the our profile. Not owned by us.
   Profile* profile_;

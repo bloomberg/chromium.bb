@@ -39,13 +39,6 @@ class ExtensionKeybindingRegistryCocoa
                                    Delegate* delegate);
   ~ExtensionKeybindingRegistryCocoa() override;
 
-  static void set_shortcut_handling_suspended(bool suspended) {
-    shortcut_handling_suspended_ = suspended;
-  }
-  static bool shortcut_handling_suspended() {
-    return shortcut_handling_suspended_;
-  }
-
   // For a given keyboard |event|, see if a known Extension Command registration
   // exists and route the event to it. Returns true if the event was handled,
   // false otherwise.
@@ -60,13 +53,6 @@ class ExtensionKeybindingRegistryCocoa
                                      const std::string& command_name) override;
 
  private:
-  // Keeps track of whether shortcut handling is currently suspended. Shortcuts
-  // are suspended briefly while capturing which shortcut to assign to an
-  // extension command in the Config UI. If handling isn't suspended while
-  // capturing then trying to assign Ctrl+F to a command would instead result
-  // in the Find box opening.
-  static bool shortcut_handling_suspended_;
-
   // Weak pointer to the our profile. Not owned by us.
   Profile* profile_;
 

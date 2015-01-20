@@ -469,6 +469,24 @@ TEST_F(FocusManagerTest, CallsSelfDeletingAcceleratorTarget) {
   EXPECT_EQ(target.accelerator_count(), 1);
 }
 
+TEST_F(FocusManagerTest, SuspendAccelerators) {
+  const ui::KeyEvent event(ui::ET_KEY_PRESSED, ui::VKEY_RETURN, ui::EF_NONE);
+  ui::Accelerator accelerator(event.key_code(), event.flags());
+  TestAcceleratorTarget target(true);
+  FocusManager* focus_manager = GetFocusManager();
+  focus_manager->RegisterAccelerator(accelerator,
+                                     ui::AcceleratorManager::kNormalPriority,
+                                     &target);
+
+  focus_manager->set_shortcut_handling_suspended(true);
+  EXPECT_TRUE(focus_manager->OnKeyEvent(event));
+  EXPECT_EQ(0, target.accelerator_count());
+
+  focus_manager->set_shortcut_handling_suspended(false);
+  EXPECT_FALSE(focus_manager->OnKeyEvent(event));
+  EXPECT_EQ(1, target.accelerator_count());
+}
+
 class FocusManagerDtorTest : public FocusManagerTest {
  protected:
   typedef std::vector<std::string> DtorTrackVector;

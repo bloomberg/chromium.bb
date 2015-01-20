@@ -44,7 +44,6 @@ static inline int CalculateModifiers(const ui::KeyEvent& event) {
 
 }  // namespace
 
-bool FocusManager::shortcut_handling_suspended_ = false;
 bool FocusManager::arrow_key_traversal_enabled_ = false;
 
 FocusManager::FocusManager(Widget* widget, FocusManagerDelegate* delegate)
@@ -52,6 +51,7 @@ FocusManager::FocusManager(Widget* widget, FocusManagerDelegate* delegate)
       delegate_(delegate),
       focused_view_(NULL),
       accelerator_manager_(new ui::AcceleratorManager),
+      shortcut_handling_suspended_(false),
       focus_change_reason_(kReasonDirectFocusChange),
       is_changing_focus_(false) {
   DCHECK(widget_);

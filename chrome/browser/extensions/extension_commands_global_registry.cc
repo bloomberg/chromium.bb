@@ -52,13 +52,6 @@ ExtensionCommandsGlobalRegistry* ExtensionCommandsGlobalRegistry::Get(
       context);
 }
 
-// static
-void ExtensionCommandsGlobalRegistry::SetShortcutHandlingSuspended(
-    bool suspended) {
-  GlobalShortcutListener::GetInstance()->SetShortcutHandlingSuspended(
-      suspended);
-}
-
 bool ExtensionCommandsGlobalRegistry::IsRegistered(
     const ui::Accelerator& accelerator) {
   return (registry_for_active_window() &&
@@ -111,6 +104,14 @@ void ExtensionCommandsGlobalRegistry::RemoveExtensionKeybindingImpl(
 
   GlobalShortcutListener::GetInstance()->UnregisterAccelerator(
       accelerator, this);
+}
+
+void ExtensionCommandsGlobalRegistry::OnShortcutHandlingSuspended(
+    bool suspended) {
+  GlobalShortcutListener::GetInstance()->SetShortcutHandlingSuspended(
+      suspended);
+  if (registry_for_active_window())
+    registry_for_active_window()->SetShortcutHandlingSuspended(suspended);
 }
 
 void ExtensionCommandsGlobalRegistry::OnKeyPressed(

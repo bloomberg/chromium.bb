@@ -57,9 +57,11 @@ class ExtensionKeybindingRegistry : public content::NotificationObserver,
 
   ~ExtensionKeybindingRegistry() override;
 
-  // Enables/Disables general shortcut handling in Chrome. Implemented in
-  // platform-specific ExtensionKeybindingsRegistry* files.
-  static void SetShortcutHandlingSuspended(bool suspended);
+  // Enables/Disables general shortcut handling in Chrome.
+  void SetShortcutHandlingSuspended(bool suspended);
+  bool shortcut_handling_suspended() const {
+    return shortcut_handling_suspended_;
+  }
 
   // Execute the command bound to |accelerator| and provided by the extension
   // with |extension_id|, if it exists.
@@ -86,6 +88,9 @@ class ExtensionKeybindingRegistry : public content::NotificationObserver,
   virtual void RemoveExtensionKeybindingImpl(
       const ui::Accelerator& accelerator,
       const std::string& command_name) = 0;
+
+  // Called when shortcut handling is suspended or resumed.
+  virtual void OnShortcutHandlingSuspended(bool suspended) {}
 
   // Make sure all extensions registered have keybindings added.
   void Init();
@@ -172,6 +177,13 @@ class ExtensionKeybindingRegistry : public content::NotificationObserver,
   // Listen to extension load, unloaded notifications.
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       extension_registry_observer_;
+
+  // Keeps track of whether shortcut handling is currently suspended. Shortcuts
+  // are suspended briefly while capturing which shortcut to assign to an
+  // extension command in the Config UI. If handling isn't suspended while
+  // capturing then trying to assign Ctrl+F to a command would instead result
+  // in the Find box opening.
+  bool shortcut_handling_suspended_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionKeybindingRegistry);
 };

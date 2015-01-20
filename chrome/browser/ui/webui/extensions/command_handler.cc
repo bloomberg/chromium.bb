@@ -127,11 +127,8 @@ void CommandHandler::HandleSetShortcutHandlingSuspended(
     const base::ListValue* args) {
   bool suspended;
   if (args->GetBoolean(0, &suspended)) {
-    // Suspend/Resume normal shortcut handling.
-    ExtensionKeybindingRegistry::SetShortcutHandlingSuspended(suspended);
-
-    // Suspend/Resume global shortcut handling.
-    ExtensionCommandsGlobalRegistry::SetShortcutHandlingSuspended(suspended);
+    ExtensionCommandsGlobalRegistry::Get(Profile::FromWebUI(web_ui()))->
+        SetShortcutHandlingSuspended(suspended);
   }
 }
 

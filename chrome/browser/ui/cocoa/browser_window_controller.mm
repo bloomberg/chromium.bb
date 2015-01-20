@@ -20,6 +20,7 @@
 #include "chrome/browser/bookmarks/chrome_bookmark_client_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/devtools/devtools_window.h"
+#include "chrome/browser/extensions/extension_commands_global_registry.h"
 #include "chrome/browser/fullscreen.h"
 #include "chrome/browser/profiles/avatar_menu.h"
 #include "chrome/browser/profiles/profile.h"
@@ -625,6 +626,9 @@ using content::WebContents;
   // TODO(viettrungluu): For some reason, the above doesn't suffice.
   if ([self isInAnyFullscreenMode])
     [floatingBarBackingView_ setNeedsDisplay:YES];  // Okay even if nil.
+
+  extensions::ExtensionCommandsGlobalRegistry::Get(browser_->profile())->
+      set_registry_for_active_window(extension_keybinding_registry_.get());
 }
 
 - (void)windowDidResignMain:(NSNotification*)notification {
@@ -635,6 +639,9 @@ using content::WebContents;
   // TODO(viettrungluu): For some reason, the above doesn't suffice.
   if ([self isInAnyFullscreenMode])
     [floatingBarBackingView_ setNeedsDisplay:YES];  // Okay even if nil.
+
+  extensions::ExtensionCommandsGlobalRegistry::Get(browser_->profile())->
+      set_registry_for_active_window(nullptr);
 }
 
 // Called when we are activated (when we gain focus).

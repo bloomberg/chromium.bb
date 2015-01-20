@@ -11,12 +11,6 @@
 #include "extensions/common/extension.h"
 #include "ui/views/focus/focus_manager.h"
 
-// static
-void extensions::ExtensionKeybindingRegistry::SetShortcutHandlingSuspended(
-    bool suspended) {
-  views::FocusManager::set_shortcut_handling_suspended(suspended);
-}
-
 ExtensionKeybindingRegistryViews::ExtensionKeybindingRegistryViews(
     Profile* profile,
     views::FocusManager* focus_manager,
@@ -68,6 +62,11 @@ void ExtensionKeybindingRegistryViews::RemoveExtensionKeybindingImpl(
     const ui::Accelerator& accelerator,
     const std::string& command_name) {
   focus_manager_->UnregisterAccelerator(accelerator, this);
+}
+
+void ExtensionKeybindingRegistryViews::OnShortcutHandlingSuspended(
+    bool suspended) {
+  focus_manager_->set_shortcut_handling_suspended(suspended);
 }
 
 bool ExtensionKeybindingRegistryViews::AcceleratorPressed(
