@@ -1047,13 +1047,54 @@ int QuicStreamFactory::CreateSession(
 
   InitializeCachedStateInCryptoConfig(server_id, server_info);
 
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
+  tracked_objects::ScopedTracker tracking_profile51(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "422516 QuicStreamFactory::CreateSession51"));
+
   QuicConfig config = config_;
+
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
+  tracked_objects::ScopedTracker tracking_profile52(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "422516 QuicStreamFactory::CreateSession52"));
+
   config.set_max_undecryptable_packets(kMaxUndecryptablePackets);
+
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
+  tracked_objects::ScopedTracker tracking_profile53(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "422516 QuicStreamFactory::CreateSession53"));
+
   config.SetInitialStreamFlowControlWindowToSend(kInitialReceiveWindowSize);
+
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
+  tracked_objects::ScopedTracker tracking_profile54(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "422516 QuicStreamFactory::CreateSession54"));
+
   config.SetInitialSessionFlowControlWindowToSend(kInitialReceiveWindowSize);
+
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
+  tracked_objects::ScopedTracker tracking_profile55(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "422516 QuicStreamFactory::CreateSession55"));
+
   int64 srtt = GetServerNetworkStatsSmoothedRttInMicroseconds(server_id);
+
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
+  tracked_objects::ScopedTracker tracking_profile56(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "422516 QuicStreamFactory::CreateSession56"));
+
   if (srtt > 0)
     config.SetInitialRoundTripTimeUsToSend(static_cast<uint32>(srtt));
+
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
+  tracked_objects::ScopedTracker tracking_profile57(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "422516 QuicStreamFactory::CreateSession57"));
+
   if (enable_truncated_connection_ids_)
     config.SetBytesForConnectionIdToSend(0);
 
