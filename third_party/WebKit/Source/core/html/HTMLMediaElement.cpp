@@ -373,7 +373,7 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document& docum
     , m_playingRemotely(false)
 #if ENABLE(OILPAN)
     , m_isFinalizing(false)
-    , m_closeMediaSourceWhenFinalizing(false)
+    , m_detachMediaSourceWhenFinalizing(false)
 #endif
     , m_lastTextTrackUpdateTime(-1)
     , m_initialPlayWithoutUserGestures(false)
@@ -434,10 +434,10 @@ HTMLMediaElement::~HTMLMediaElement()
 #endif
 
 #if ENABLE(OILPAN)
-    if (m_closeMediaSourceWhenFinalizing)
-        closeMediaSource();
+    if (m_detachMediaSourceWhenFinalizing)
+        detachMediaSource();
 #else
-    closeMediaSource();
+    detachMediaSource();
 
     removeElementFromDocumentMap(this, &document());
 #endif
@@ -492,10 +492,10 @@ HTMLMediaElement::~HTMLMediaElement()
 }
 
 #if ENABLE(OILPAN)
-void HTMLMediaElement::setCloseMediaSourceWhenFinalizing()
+void HTMLMediaElement::setDetachMediaSourceWhenFinalizing()
 {
-    ASSERT(!m_closeMediaSourceWhenFinalizing);
-    m_closeMediaSourceWhenFinalizing = true;
+    ASSERT(!m_detachMediaSourceWhenFinalizing);
+    m_detachMediaSourceWhenFinalizing = true;
 }
 #endif
 
@@ -788,6 +788,9 @@ void HTMLMediaElement::prepareForLoad()
 
     // 4 - If the media element's networkState is not set to NETWORK_EMPTY, then run these substeps
     if (m_networkState != NETWORK_EMPTY) {
+        // See https://www.w3.org/Bugs/Public/show_bug.cgi?id=27843
+        detachMediaSource();
+
         // 4.1 - Queue a task to fire a simple event named emptied at the media element.
         scheduleEvent(EventTypeNames::emptied);
 
@@ -1621,7 +1624,9 @@ void HTMLMediaElement::noneSupported()
     // 7 - Queue a task to fire a simple event named error at the media element.
     scheduleEvent(EventTypeNames::error);
 
-    closeMediaSource();
+    // Should fetch algorithm failure trigger detaching from a media element?
+    // See https://www.w3.org/Bugs/Public/show_bug.cgi?id=27854
+    detachMediaSource();
 
     // 8 - Set the element's delaying-the-load-event flag to false. This stops delaying the load event.
     setShouldDelayLoadEvent(false);
@@ -2375,12 +2380,12 @@ void HTMLMediaElement::requestRemotePlaybackControl()
     webMediaPlayer()->requestRemotePlaybackControl();
 }
 
-void HTMLMediaElement::closeMediaSource()
+void HTMLMediaElement::detachMediaSource()
 {
     if (!m_mediaSource)
         return;
 
-    m_mediaSource->close();
+    m_mediaSource->detachFromElement();
     m_mediaSource = nullptr;
 }
 
@@ -3494,13 +3499,12 @@ void HTMLMediaElement::userCancelledLoad()
     // 3 - Queue a task to fire a simple event named error at the media element.
     scheduleEvent(EventTypeNames::abort);
 
-    closeMediaSource();
-
     // 4 - If the media element's readyState attribute has a value equal to HAVE_NOTHING, set the
     // element's networkState attribute to the NETWORK_EMPTY value and queue a task to fire a
     // simple event named emptied at the element. Otherwise, set the element's networkState
     // attribute to the NETWORK_IDLE value.
     if (m_readyState == HAVE_NOTHING) {
+        detachMediaSource();
         m_networkState = NETWORK_EMPTY;
         scheduleEvent(EventTypeNames::emptied);
     } else {
@@ -3533,7 +3537,8 @@ void HTMLMediaElement::clearMediaPlayer(int flags)
 {
     forgetResourceSpecificTracks();
 
-    closeMediaSource();
+    // FIXME: non-standard invocation of https://w3c.github.io/media-source/#mediasource-detach
+    detachMediaSource();
 
     cancelDeferredLoad();
 
@@ -3860,8 +3865,6 @@ void* HTMLMediaElement::preDispatchEventHandler(Event* event)
 void HTMLMediaElement::createMediaPlayer()
 {
     AudioSourceProviderClientLockScope scope(*this);
-
-    closeMediaSource();
 
     m_player = MediaPlayer::create(this);
 

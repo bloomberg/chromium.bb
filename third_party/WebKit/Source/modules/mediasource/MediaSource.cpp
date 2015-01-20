@@ -202,15 +202,6 @@ void MediaSource::onReadyStateChange(const AtomicString& oldState, const AtomicS
     }
 
     ASSERT(isClosed());
-
-    m_activeSourceBuffers->clear();
-
-    // Clear SourceBuffer references to this object.
-    for (unsigned long i = 0; i < m_sourceBuffers->length(); ++i)
-        m_sourceBuffers->item(i)->removedFromMediaSource();
-    m_sourceBuffers->clear();
-
-    scheduleEvent(EventTypeNames::sourceclose);
 }
 
 bool MediaSource::isUpdating() const
@@ -268,9 +259,9 @@ void MediaSource::clearWeakMembers(Visitor* visitor)
 #if ENABLE(OILPAN)
     // Oilpan: If the MediaSource survived, but its attached media
     // element did not, signal the element that it can safely
-    // notify its MediaSource during finalization by calling close().
+    // notify its MediaSource during finalization by calling detachFromElement().
     if (m_attachedElement && !visitor->isAlive(m_attachedElement)) {
-        m_attachedElement->setCloseMediaSourceWhenFinalizing();
+        m_attachedElement->setDetachMediaSourceWhenFinalizing();
         m_attachedElement.clear();
     }
 #endif
@@ -452,11 +443,6 @@ void MediaSource::setReadyState(const AtomicString& state)
     AtomicString oldState = readyState();
     WTF_LOG(Media, "MediaSource::setReadyState() %p : %s -> %s", this, oldState.ascii().data(), state.ascii().data());
 
-    if (state == closedKeyword()) {
-        m_webMediaSource.clear();
-        m_attachedElement.clear();
-    }
-
     if (oldState == state)
         return;
 
@@ -535,9 +521,27 @@ bool MediaSource::isClosed() const
     return readyState() == closedKeyword();
 }
 
-void MediaSource::close()
+// https://w3c.github.io/media-source/#mediasource-detach
+void MediaSource::detachFromElement()
 {
+    WTF_LOG(Media, "MediaSource::detachFromElement() %p", this);
+    // 1. Set the readyState attribute to "closed".
     setReadyState(closedKeyword());
+    // 2. Set the duration attribute to NaN.
+    ASSERT(isClosed()); // duration() returns NaN when isClosed() is true.
+    // 3. Remove all the SourceBuffer objects from activeSourceBuffers.
+    // 4. Queue a task to fire a simple event named removesourcebuffer at activeSourceBuffers.
+    m_activeSourceBuffers->clear();
+    // 5. Remove all the SourceBuffer objects from sourceBuffers.
+    // 6. Queue a task to fire a simple event named removesourcebuffer at sourceBuffers.
+    for (unsigned long i = 0; i < m_sourceBuffers->length(); ++i)
+        m_sourceBuffers->item(i)->removedFromMediaSource();
+    m_sourceBuffers->clear();
+    // 7. Queue a task to fire a simple event named sourceclose at the MediaSource.
+    scheduleEvent(EventTypeNames::sourceclose);
+
+    m_webMediaSource.clear();
+    m_attachedElement.clear();
 }
 
 bool MediaSource::attachToElement(HTMLMediaElement* element)
@@ -572,8 +576,7 @@ void MediaSource::stop()
 {
     m_asyncEventQueue->close();
     if (!isClosed())
-        setReadyState(closedKeyword());
-    m_webMediaSource.clear();
+        detachFromElement();
 }
 
 PassOwnPtr<WebSourceBuffer> MediaSource::createWebSourceBuffer(const String& type, const Vector<String>& codecs, ExceptionState& exceptionState)

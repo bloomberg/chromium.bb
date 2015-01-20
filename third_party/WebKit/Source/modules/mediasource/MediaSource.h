@@ -75,8 +75,8 @@ public:
 
     // HTMLMediaSource
     virtual bool attachToElement(HTMLMediaElement*) override;
+    virtual void detachFromElement() override;
     virtual void setWebMediaSourceAndOpen(PassOwnPtr<WebMediaSource>) override;
-    virtual void close() override;
     virtual bool isClosed() const override;
     virtual double duration() const override;
     virtual PassRefPtrWillBeRawPtr<TimeRanges> buffered() const override;
