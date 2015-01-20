@@ -638,6 +638,14 @@ class TestCase(unittest.TestCase):
     os.chdir(self.__saved_cwd__)
     os.umask(self.__saved_umask__)
 
+  def id(self):
+    """Return a name that can be passed in via the command line."""
+    return '%s.%s' % (self.__class__.__name__, self._testMethodName)
+
+  def __str__(self):
+    """Return a pretty name that can be passed in via the command line."""
+    return '[%s] %s' % (self.__module__, self.id())
+
   def assertRaises2(self, exception, functor, *args, **kwargs):
     """Like assertRaises, just with checking of the exception.
 
