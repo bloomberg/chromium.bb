@@ -109,20 +109,6 @@ bool Region::intersects(const Region& region) const
     return Shape::compareShapes<Shape::CompareIntersectsOperation>(m_shape, region.m_shape);
 }
 
-unsigned Region::totalArea() const
-{
-    Vector<IntRect> rects = this->rects();
-    size_t size = rects.size();
-    unsigned totalArea = 0;
-
-    for (size_t i = 0; i < size; ++i) {
-        IntRect rect = rects[i];
-        totalArea += (rect.width() * rect.height());
-    }
-
-    return totalArea;
-}
-
 template<typename CompareOperation>
 bool Region::Shape::compareShapes(const Shape& aShape, const Shape& bShape)
 {
