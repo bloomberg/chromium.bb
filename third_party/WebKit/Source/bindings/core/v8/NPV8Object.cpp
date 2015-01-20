@@ -40,7 +40,6 @@
 #include "bindings/core/v8/npruntime_priv.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
-#include "platform/ScriptForbiddenScope.h"
 #include "platform/UserGestureIndicator.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/StringExtras.h"
@@ -343,9 +342,6 @@ bool _NPN_Evaluate(NPP npp, NPObject* npObject, NPString* npScript, NPVariant* r
 bool _NPN_EvaluateHelper(NPP npp, bool popupsAllowed, NPObject* npObject, NPString* npScript, NPVariant* result)
 {
     VOID_TO_NPVARIANT(*result);
-    if (ScriptForbiddenScope::isScriptForbidden())
-        return false;
-
     if (!npObject)
         return false;
 
