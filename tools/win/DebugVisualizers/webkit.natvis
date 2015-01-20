@@ -45,34 +45,34 @@
       <Item Name="Ptr">m_ptr</Item>
     </Expand>
   </Type>
-  <Type Name="WebCore::LayoutUnit">
+  <Type Name="blink::LayoutUnit">
     <DisplayString>{(float)m_value / kFixedPointDenominator}</DisplayString>
     <Expand>
       <Item Name="FloatVal">(float)m_value / kFixedPointDenominator</Item>
       <Item Name="RawVal">m_value</Item>
     </Expand>
   </Type>
-  <Type Name="WebCore::LayoutSize">
-    <AlternativeType Name="WebCore::IntSize"/>
-    <AlternativeType Name="WebCore::FloatSize"/>
+  <Type Name="blink::LayoutSize">
+    <AlternativeType Name="blink::IntSize"/>
+    <AlternativeType Name="blink::FloatSize"/>
     <DisplayString>({m_width}, {m_height})</DisplayString>
     <Expand>
       <Item Name="Width">m_width</Item>
       <Item Name="Height">m_height</Item>
     </Expand>
   </Type>
-  <Type Name="WebCore::LayoutPoint">
-    <AlternativeType Name="WebCore::IntPoint"/>
-    <AlternativeType Name="WebCore::FloatPoint"/>
+  <Type Name="blink::LayoutPoint">
+    <AlternativeType Name="blink::IntPoint"/>
+    <AlternativeType Name="blink::FloatPoint"/>
     <DisplayString>({m_x}, {m_y})</DisplayString>
     <Expand>
       <Item Name="X">m_x</Item>
       <Item Name="Y">m_y</Item>
     </Expand>
   </Type>
-  <Type Name="WebCore::LayoutRect">
-    <AlternativeType Name="WebCore::IntRect"/>
-    <AlternativeType Name="WebCore::FloatRect"/>
+  <Type Name="blink::LayoutRect">
+    <AlternativeType Name="blink::IntRect"/>
+    <AlternativeType Name="blink::FloatRect"/>
     <DisplayString>({m_location.m_x}, {m_location.m_y}) x ({m_size.m_width}, {m_size.m_height})</DisplayString>
     <Expand>
       <Item Name="Location">m_location</Item>
