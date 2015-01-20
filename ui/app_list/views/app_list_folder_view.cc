@@ -71,6 +71,10 @@ AppListFolderView::AppListFolderView(AppsContainerView* container_view,
 
 AppListFolderView::~AppListFolderView() {
   model_->RemoveObserver(this);
+
+  // This prevents the AppsGridView's destructor from calling the now-deleted
+  // AppListFolderView's methods if a drag is in progress at the time.
+  items_grid_view_->set_folder_delegate(nullptr);
 }
 
 void AppListFolderView::SetAppListFolderItem(AppListFolderItem* folder) {
