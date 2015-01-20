@@ -171,17 +171,13 @@ EventListenerVector* EventListenerMap::find(const AtomicString& eventType)
 
 static void removeFirstListenerCreatedFromMarkup(EventListenerVector* listenerVector)
 {
-    bool foundListener = false;
-
     for (size_t i = 0; i < listenerVector->size(); ++i) {
-        if (!listenerVector->at(i).listener->wasCreatedFromMarkup())
-            continue;
-        foundListener = true;
-        listenerVector->remove(i);
-        break;
+        if (listenerVector->at(i).listener->wasCreatedFromMarkup()) {
+            listenerVector->remove(i);
+            return;
+        }
     }
-
-    ASSERT_UNUSED(foundListener, foundListener);
+    ASSERT_NOT_REACHED();
 }
 
 void EventListenerMap::removeFirstEventListenerCreatedFromMarkup(const AtomicString& eventType)
