@@ -76,9 +76,6 @@ class MimeHandlerViewGuest : public GuestView<MimeHandlerViewGuest>,
       content::WebContents* source,
       const content::OpenURLParams& params) override;
   bool HandleContextMenu(const content::ContextMenuParams& params) override;
-  void HandleKeyboardEvent(
-      content::WebContents* source,
-      const content::NativeWebKeyboardEvent& event) override;
   void FindReply(content::WebContents* web_contents,
                  int request_id,
                  int number_of_matches,

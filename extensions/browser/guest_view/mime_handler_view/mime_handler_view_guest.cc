@@ -171,22 +171,6 @@ bool MimeHandlerViewGuest::HandleContextMenu(
   return false;
 }
 
-void MimeHandlerViewGuest::HandleKeyboardEvent(
-    WebContents* source,
-    const content::NativeWebKeyboardEvent& event) {
-  if (!attached())
-    return;
-
-  // Send the keyboard events back to the embedder to reprocess them.
-  // TODO(fsamuel): This introduces the possibility of out-of-order keyboard
-  // events because the guest may be arbitrarily delayed when responding to
-  // keyboard events. In that time, the embedder may have received and processed
-  // additional key events. This needs to be fixed as soon as possible.
-  // See http://crbug.com/229882.
-  embedder_web_contents()->GetDelegate()->HandleKeyboardEvent(web_contents(),
-                                                              event);
-}
-
 void MimeHandlerViewGuest::FindReply(content::WebContents* web_contents,
                                      int request_id,
                                      int number_of_matches,

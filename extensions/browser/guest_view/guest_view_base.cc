@@ -520,6 +520,17 @@ void GuestViewBase::ContentsZoomChange(bool zoom_in) {
       zoom_in ? content::PAGE_ZOOM_IN : content::PAGE_ZOOM_OUT);
 }
 
+void GuestViewBase::HandleKeyboardEvent(
+    WebContents* source,
+    const content::NativeWebKeyboardEvent& event) {
+  if (!attached())
+    return;
+
+  // Send the keyboard events back to the embedder to reprocess them.
+  embedder_web_contents()->GetDelegate()->HandleKeyboardEvent(web_contents(),
+                                                              event);
+}
+
 void GuestViewBase::RunFileChooser(WebContents* web_contents,
                                    const content::FileChooserParams& params) {
   if (!attached() || !embedder_web_contents()->GetDelegate())
