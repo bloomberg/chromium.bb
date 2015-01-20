@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_HISTORY_CORE_ANDROID_ANDROID_TIME_H_
-#define COMPONENTS_HISTORY_CORE_ANDROID_ANDROID_TIME_H_
+#ifndef COMPONENTS_HISTORY_CORE_BROWSER_ANDROID_ANDROID_TIME_H_
+#define COMPONENTS_HISTORY_CORE_BROWSER_ANDROID_ANDROID_TIME_H_
 
 #include "base/time/time.h"
 
@@ -14,7 +14,7 @@ namespace history {
 // stored in database.
 inline base::Time FromDatabaseTime(int64 milliseconds) {
   return base::TimeDelta::FromMilliseconds(milliseconds) +
-      base::Time::UnixEpoch();
+         base::Time::UnixEpoch();
 }
 
 inline int64 ToDatabaseTime(const base::Time& time) {
@@ -23,4 +23,4 @@ inline int64 ToDatabaseTime(const base::Time& time) {
 
 }  // namespace history
 
-#endif  // COMPONENTS_HISTORY_CORE_ANDROID_ANDROID_TIME_H_
+#endif  // COMPONENTS_HISTORY_CORE_BROWSER_ANDROID_ANDROID_TIME_H_

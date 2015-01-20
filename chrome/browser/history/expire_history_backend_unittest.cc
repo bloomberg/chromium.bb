@@ -16,15 +16,16 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/history/expire_history_backend.h"
-#include "chrome/browser/history/history_database.h"
 #include "chrome/browser/history/history_details.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/tools/profiles/thumbnail-inl.h"
 #include "components/history/core/browser/history_backend_notifier.h"
+#include "components/history/core/browser/history_database.h"
 #include "components/history/core/browser/thumbnail_database.h"
 #include "components/history/core/common/thumbnail_score.h"
 #include "components/history/core/test/history_client_fake_bookmarks.h"
+#include "components/history/core/test/test_history_database.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -129,7 +130,7 @@ class ExpireHistoryTest : public testing::Test,
     ASSERT_TRUE(tmp_dir_.CreateUniqueTempDir());
 
     base::FilePath history_name = path().Append(kHistoryFile);
-    main_db_.reset(new HistoryDatabase);
+    main_db_.reset(new TestHistoryDatabase);
     if (main_db_->Init(history_name) != sql::INIT_OK)
       main_db_.reset();
 

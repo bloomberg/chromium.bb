@@ -12,7 +12,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "components/bookmarks/browser/base_bookmark_model_observer.h"
-#include "components/history/core/android/android_history_types.h"
+#include "components/history/core/browser/android/android_history_types.h"
 #include "components/history/core/browser/history_service_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"

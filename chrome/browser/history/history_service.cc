@@ -47,6 +47,7 @@
 #include "components/dom_distiller/core/url_constants.h"
 #include "components/history/core/browser/download_row.h"
 #include "components/history/core/browser/history_client.h"
+#include "components/history/core/browser/history_database_params.h"
 #include "components/history/core/browser/history_service_observer.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/history/core/browser/in_memory_database.h"
@@ -991,7 +992,9 @@ void HistoryService::RebuildTable(
   ScheduleAndForget(PRIORITY_NORMAL, &HistoryBackend::IterateURLs, enumerator);
 }
 
-bool HistoryService::Init(const base::FilePath& history_dir, bool no_db) {
+bool HistoryService::Init(
+    bool no_db,
+    const history::HistoryDatabaseParams& history_database_params) {
   DCHECK(thread_) << "History service being called after cleanup";
   DCHECK(thread_checker_.CalledOnValidThread());
   base::Thread::Options options;
@@ -1001,7 +1004,7 @@ bool HistoryService::Init(const base::FilePath& history_dir, bool no_db) {
     return false;
   }
 
-  history_dir_ = history_dir;
+  history_dir_ = history_database_params.history_dir;
   no_db_ = no_db;
 
   if (profile_) {
@@ -1028,7 +1031,9 @@ bool HistoryService::Init(const base::FilePath& history_dir, bool no_db) {
     PrefService* prefs = profile_->GetPrefs();
     languages = prefs->GetString(prefs::kAcceptLanguages);
   }
-  ScheduleAndForget(PRIORITY_UI, &HistoryBackend::Init, languages, no_db_);
+
+  ScheduleAndForget(PRIORITY_UI, &HistoryBackend::Init, languages, no_db_,
+                    history_database_params);
 
   if (visitedlink_master_) {
     bool result = visitedlink_master_->Init();

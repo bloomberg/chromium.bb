@@ -24,9 +24,11 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
-#include "components/history/core/android/android_time.h"
+#include "components/history/core/browser/android/android_time.h"
 #include "components/history/core/browser/history_constants.h"
+#include "components/history/core/browser/history_database_params.h"
 #include "components/history/core/browser/keyword_search_term.h"
+#include "components/history/core/test/test_history_database.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_utils.h"
@@ -164,12 +166,10 @@ class AndroidProviderBackendTest : public testing::Test {
  public:
   AndroidProviderBackendTest()
       : thumbnail_db_(NULL),
-        profile_manager_(
-          TestingBrowserProcess::GetGlobal()),
+        profile_manager_(TestingBrowserProcess::GetGlobal()),
         bookmark_model_(NULL),
         ui_thread_(BrowserThread::UI, &message_loop_),
-        file_thread_(BrowserThread::FILE, &message_loop_) {
-  }
+        file_thread_(BrowserThread::FILE, &message_loop_) {}
   ~AndroidProviderBackendTest() override {}
 
  protected:
@@ -243,7 +243,7 @@ class AndroidProviderBackendTest : public testing::Test {
 
   AndroidProviderBackendNotifier notifier_;
   scoped_refptr<HistoryBackend> history_backend_;
-  HistoryDatabase history_db_;
+  TestHistoryDatabase history_db_;
   ThumbnailDatabase thumbnail_db_;
   base::ScopedTempDir temp_dir_;
   base::FilePath android_cache_db_name_;
@@ -292,7 +292,8 @@ TEST_F(AndroidProviderBackendTest, UpdateTables) {
   scoped_refptr<HistoryBackend> history_backend;
   history_backend = new HistoryBackend(
       temp_dir_.path(), new AndroidProviderBackendDelegate(), history_client_);
-  history_backend->Init(std::string(), false);
+  history_backend->Init(std::string(), false,
+                        TestHistoryDatabaseParamsForPath(temp_dir_.path()));
   history_backend->AddVisits(url1, visits1, history::SOURCE_SYNCED);
   history_backend->AddVisits(url2, visits2, history::SOURCE_SYNCED);
   URLRow url_row;
@@ -429,7 +430,8 @@ TEST_F(AndroidProviderBackendTest, QueryHistoryAndBookmarks) {
   scoped_refptr<HistoryBackend> history_backend;
   history_backend = new HistoryBackend(
       temp_dir_.path(), new AndroidProviderBackendDelegate(), history_client_);
-  history_backend->Init(std::string(), false);
+  history_backend->Init(std::string(), false,
+                        TestHistoryDatabaseParamsForPath(temp_dir_.path()));
   history_backend->AddVisits(url1, visits1, history::SOURCE_SYNCED);
   history_backend->AddVisits(url2, visits2, history::SOURCE_SYNCED);
 
@@ -1865,7 +1867,8 @@ TEST_F(AndroidProviderBackendTest, QueryWithoutThumbnailDB) {
   scoped_refptr<HistoryBackend> history_backend;
   history_backend = new HistoryBackend(
       temp_dir_.path(), new AndroidProviderBackendDelegate(), history_client_);
-  history_backend->Init(std::string(), false);
+  history_backend->Init(std::string(), false,
+                        TestHistoryDatabaseParamsForPath(temp_dir_.path()));
   history_backend->AddVisits(url1, visits1, history::SOURCE_SYNCED);
   history_backend->AddVisits(url2, visits2, history::SOURCE_SYNCED);
   URLRow url_row;
@@ -2029,7 +2032,7 @@ TEST_F(AndroidProviderBackendTest, DeleteWithoutThumbnailDB) {
   row2.set_favicon(base::RefCountedBytes::TakeVector(&data));
 
   {
-    HistoryDatabase history_db;
+    TestHistoryDatabase history_db;
     ThumbnailDatabase thumbnail_db(NULL);
     ASSERT_EQ(sql::INIT_OK, history_db.Init(history_db_name_));
     ASSERT_EQ(sql::INIT_OK, thumbnail_db.Init(thumbnail_db_name_));
@@ -2106,7 +2109,7 @@ TEST_F(AndroidProviderBackendTest, UpdateFaviconWithoutThumbnail) {
   row1.set_title(UTF8ToUTF16("cnn"));
 
   {
-    HistoryDatabase history_db;
+    TestHistoryDatabase history_db;
     ThumbnailDatabase thumbnail_db(NULL);
     ASSERT_EQ(sql::INIT_OK, history_db.Init(history_db_name_));
     ASSERT_EQ(sql::INIT_OK, thumbnail_db.Init(thumbnail_db_name_));

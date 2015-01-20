@@ -64,13 +64,13 @@ base::FilePath ColumnFilePath(sql::Statement& statement, int col) {
 }  // namespace
 
 DownloadDatabase::DownloadDatabase(
-    DownloadInterruptReason download_interrupt_no_reason,
-    DownloadInterruptReason download_interrupt_crash)
+    DownloadInterruptReason download_interrupt_reason_none,
+    DownloadInterruptReason download_interrupt_reason_crash)
     : owning_thread_set_(false),
       owning_thread_(0),
       in_progress_entry_cleanup_completed_(false),
-      download_interrupt_no_reason_(download_interrupt_no_reason),
-      download_interrupt_crash_(download_interrupt_crash) {
+      download_interrupt_reason_none_(download_interrupt_reason_none),
+      download_interrupt_reason_crash_(download_interrupt_reason_crash) {
 }
 
 DownloadDatabase::~DownloadDatabase() {
@@ -150,7 +150,7 @@ bool DownloadDatabase::MigrateDownloadsReasonPathsAndDangerType() {
       "       opened "
       "FROM downloads_tmp"));
   statement_populate.BindInt(
-      0, DownloadInterruptReasonToInt(download_interrupt_no_reason_));
+      0, DownloadInterruptReasonToInt(download_interrupt_reason_none_));
   statement_populate.BindInt(
       1, DownloadDangerTypeToInt(DownloadDangerType::NOT_DANGEROUS));
   if (!statement_populate.Run())
@@ -439,7 +439,8 @@ void DownloadDatabase::EnsureInProgressEntriesCleanedUp() {
   sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "UPDATE downloads SET state=?, interrupt_reason=? WHERE state=?"));
   statement.BindInt(0, DownloadStateToInt(DownloadState::INTERRUPTED));
-  statement.BindInt(1, DownloadInterruptReasonToInt(download_interrupt_crash_));
+  statement.BindInt(
+      1, DownloadInterruptReasonToInt(download_interrupt_reason_crash_));
   statement.BindInt(2, DownloadStateToInt(DownloadState::IN_PROGRESS));
 
   statement.Run();

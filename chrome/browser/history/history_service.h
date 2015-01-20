@@ -62,6 +62,7 @@ namespace history {
 class HistoryBackend;
 class HistoryClient;
 class HistoryDatabase;
+struct HistoryDatabaseParams;
 class HistoryDBTask;
 class HistoryQueryTest;
 class HistoryServiceObserver;
@@ -102,8 +103,8 @@ class HistoryService : public content::NotificationObserver,
   // Initializes the history service, returning true on success. On false, do
   // not call any other functions. The given directory will be used for storing
   // the history files.
-  bool Init(const base::FilePath& history_dir) {
-    return Init(history_dir, false);
+  bool Init(const history::HistoryDatabaseParams& history_database_params) {
+    return Init(false, history_database_params);
   }
 
   // Triggers the backend to load if it hasn't already, and then returns whether
@@ -566,7 +567,8 @@ class HistoryService : public content::NotificationObserver,
 
   // Low-level Init().  Same as the public version, but adds a |no_db| parameter
   // that is only set by unittests which causes the backend to not init its DB.
-  bool Init(const base::FilePath& history_dir, bool no_db);
+  bool Init(bool no_db,
+            const history::HistoryDatabaseParams& history_database_params);
 
   // Called by the HistoryURLProvider class to schedule an autocomplete, it
   // will be called back on the internal history thread with the history

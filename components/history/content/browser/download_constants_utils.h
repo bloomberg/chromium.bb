@@ -28,7 +28,7 @@ content::DownloadDangerType ToContentDownloadDangerType(
 DownloadDangerType ToHistoryDownloadDangerType(
     content::DownloadDangerType danger_type);
 
-// Utility functions to convert between content::DownloadInterrupReason
+// Utility functions to convert between content::DownloadInterruptReason
 // enumeration and history::DownloadInterruptReason type (value have no
 // meaning in history, but have a different type to avoid bugs due to
 // implicit conversions).

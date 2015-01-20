@@ -53,7 +53,9 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/common/bookmark_constants.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/history/content/browser/history_database_helper.h"
 #include "components/history/core/browser/history_constants.h"
+#include "components/history/core/browser/history_database_params.h"
 #include "components/history/core/browser/history_db_task.h"
 #include "components/history/core/browser/top_sites_observer.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -531,7 +533,8 @@ bool TestingProfile::CreateHistoryService(bool delete_file, bool no_db) {
   HistoryService* history_service = static_cast<HistoryService*>(
       HistoryServiceFactory::GetInstance()->SetTestingFactoryAndUse(
           this, BuildHistoryService));
-  if (!history_service->Init(this->GetPath(), no_db)) {
+  if (!history_service->Init(
+          no_db, history::HistoryDatabaseParamsForPath(this->GetPath()))) {
     HistoryServiceFactory::GetInstance()->SetTestingFactoryAndUse(this, NULL);
   }
   // Disable WebHistoryService by default, since it makes network requests.

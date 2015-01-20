@@ -28,9 +28,11 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/history/content/browser/download_constants_utils.h"
+#include "components/history/content/browser/history_database_helper.h"
 #include "components/history/core/browser/download_constants.h"
 #include "components/history/core/browser/download_row.h"
 #include "components/history/core/browser/history_constants.h"
+#include "components/history/core/browser/history_database_params.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -54,8 +56,10 @@ KeyedService* BuildHistoryService(content::BrowserContext* context) {
 
   HistoryService* history_service = new HistoryService(
       ChromeHistoryClientFactory::GetForProfile(profile), profile);
-  if (history_service->Init(profile->GetPath()))
+  if (history_service->Init(
+          history::HistoryDatabaseParamsForPath(profile->GetPath()))) {
     return history_service;
+  }
 
   ADD_FAILURE() << "failed to initialize history service";
   delete history_service;

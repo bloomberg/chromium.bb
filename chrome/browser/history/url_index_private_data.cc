@@ -19,11 +19,11 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "chrome/browser/history/history_database.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/in_memory_url_index.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/history/core/browser/history_client.h"
+#include "components/history/core/browser/history_database.h"
 #include "components/history/core/browser/history_db_task.h"
 #include "net/base/net_util.h"
 

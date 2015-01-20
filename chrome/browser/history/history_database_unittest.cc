@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/history/history_database.h"
+#include "components/history/core/browser/history_database.h"
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
 #include "chrome/common/chrome_paths.h"
+#include "components/history/core/test/test_history_database.h"
 #include "sql/init_status.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -33,7 +34,7 @@ TEST(HistoryDatabaseTest, DropBookmarks) {
   // Load the DB twice. The first time it should migrate. Make sure that the
   // migration leaves it in a state fit to load again later.
   for (int i = 0; i < 2; ++i) {
-    HistoryDatabase history_db;
+    TestHistoryDatabase history_db;
     ASSERT_EQ(sql::INIT_OK, history_db.Init(db_file));
     HistoryDatabase::URLEnumerator url_enumerator;
     ASSERT_TRUE(history_db.InitURLEnumeratorForEverything(&url_enumerator));

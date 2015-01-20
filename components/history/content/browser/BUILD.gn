@@ -8,6 +8,8 @@ static_library("browser") {
     "download_constants_utils.h",
     "history_context_helper.cc",
     "history_context_helper.h",
+    "history_database_helper.cc",
+    "history_database_helper.h",
   ]
 
   deps = [

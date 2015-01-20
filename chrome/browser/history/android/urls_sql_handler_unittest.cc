@@ -8,11 +8,12 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/history/history_database.h"
 #include "chrome/common/chrome_constants.h"
-#include "components/history/core/android/urls_sql_handler.h"
-#include "components/history/core/android/visit_sql_handler.h"
+#include "components/history/core/browser/android/urls_sql_handler.h"
+#include "components/history/core/browser/android/visit_sql_handler.h"
 #include "components/history/core/browser/history_constants.h"
+#include "components/history/core/browser/history_database.h"
+#include "components/history/core/test/test_history_database.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::Time;
@@ -39,7 +40,7 @@ class UrlsSQLHandlerTest : public testing::Test {
   virtual void TearDown() {
   }
 
-  HistoryDatabase history_db_;
+  TestHistoryDatabase history_db_;
   base::ScopedTempDir temp_dir_;
   UrlsSQLHandler urls_sql_handler_;
   VisitSQLHandler visit_sql_handler_;

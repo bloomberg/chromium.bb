@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/history/core/android/visit_sql_handler.h"
+#include "components/history/core/browser/android/visit_sql_handler.h"
 
 #include "base/logging.h"
 #include "components/history/core/browser/url_database.h"

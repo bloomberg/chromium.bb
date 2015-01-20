@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/history/core/android/android_history_types.h"
+#include "components/history/core/browser/android/android_history_types.h"
 
 namespace history {
 
@@ -27,14 +27,13 @@ const char* const kAndroidSearchColumn[] = {
     "date",
 };
 
-class BookmarkIDMapping : public std::map<std::string,
-                                          HistoryAndBookmarkRow::ColumnID> {
+class BookmarkIDMapping
+    : public std::map<std::string, HistoryAndBookmarkRow::ColumnID> {
  public:
   BookmarkIDMapping() {
-    static_assert(arraysize(kAndroidBookmarkColumn) <=
-                  HistoryAndBookmarkRow::COLUMN_END,
-                  "kAndroidBookmarkColumn should not have more than "
-                  "COLUMN_END elements");
+    static_assert(
+        arraysize(kAndroidBookmarkColumn) <= HistoryAndBookmarkRow::COLUMN_END,
+        "kAndroidBookmarkColumn should not have more than COLUMN_END elements");
     for (size_t i = 0; i < arraysize(kAndroidBookmarkColumn); ++i) {
       (*this)[kAndroidBookmarkColumn[i]] =
           static_cast<HistoryAndBookmarkRow::ColumnID>(i);
@@ -46,16 +45,14 @@ class BookmarkIDMapping : public std::map<std::string,
 // once it used.
 BookmarkIDMapping* g_bookmark_id_mapping = NULL;
 
-class SearchIDMapping : public std::map<std::string,
-                                        SearchRow::ColumnID> {
+class SearchIDMapping : public std::map<std::string, SearchRow::ColumnID> {
  public:
   SearchIDMapping() {
     static_assert(arraysize(kAndroidSearchColumn) <= SearchRow::COLUMN_END,
                   "kAndroidSearchColumn should not have more than "
                   "COLUMN_END elements");
     for (size_t i = 0; i < arraysize(kAndroidSearchColumn); ++i) {
-      (*this)[kAndroidSearchColumn[i]] =
-              static_cast<SearchRow::ColumnID>(i);
+      (*this)[kAndroidSearchColumn[i]] = static_cast<SearchRow::ColumnID>(i);
     }
   }
 };
@@ -95,9 +92,7 @@ HistoryAndBookmarkRow::ColumnID HistoryAndBookmarkRow::GetColumnID(
     return i->second;
 }
 
-SearchRow::SearchRow()
-    : id_(0),
-      keyword_id_(0) {
+SearchRow::SearchRow() : id_(0), keyword_id_(0) {
 }
 
 SearchRow::~SearchRow() {
@@ -107,36 +102,31 @@ std::string SearchRow::GetAndroidName(ColumnID id) {
   return kAndroidSearchColumn[id];
 }
 
-SearchRow::ColumnID SearchRow::GetColumnID(
-    const std::string& name) {
+SearchRow::ColumnID SearchRow::GetColumnID(const std::string& name) {
   if (!g_search_id_mapping)
     g_search_id_mapping = new SearchIDMapping();
 
   SearchIDMapping::const_iterator i = g_search_id_mapping->find(name);
   if (i == g_search_id_mapping->end())
-    return SearchRow:: COLUMN_END;
+    return SearchRow::COLUMN_END;
   else
     return i->second;
 }
 
-AndroidURLRow::AndroidURLRow()
-    : id(0),
-      url_id(0) {
+AndroidURLRow::AndroidURLRow() : id(0), url_id(0) {
 }
 
 AndroidURLRow::~AndroidURLRow() {
 }
 
-SearchTermRow::SearchTermRow()
-    : id(0) {
+SearchTermRow::SearchTermRow() : id(0) {
 }
 
 SearchTermRow::~SearchTermRow() {
 }
 
 AndroidStatement::AndroidStatement(sql::Statement* statement, int favicon_index)
-    : statement_(statement),
-      favicon_index_(favicon_index) {
+    : statement_(statement), favicon_index_(favicon_index) {
 }
 
 AndroidStatement::~AndroidStatement() {

@@ -2,14 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/history/core/android/android_cache_database.h"
+#include "components/history/core/browser/android/android_cache_database.h"
 
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/history/history_database.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/history/core/android/android_time.h"
+#include "components/history/core/browser/android/android_time.h"
+#include "components/history/core/browser/history_database.h"
+#include "components/history/core/test/test_history_database.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::Time;
@@ -19,8 +20,7 @@ namespace history {
 
 class AndroidCacheDatabaseTest : public testing::Test {
  public:
-  AndroidCacheDatabaseTest() {
-  }
+  AndroidCacheDatabaseTest() {}
   virtual ~AndroidCacheDatabaseTest() {}
 
  protected:
@@ -38,13 +38,13 @@ class AndroidCacheDatabaseTest : public testing::Test {
 
   base::ScopedTempDir temp_dir_;
   base::FilePath android_cache_db_name_;
-  HistoryDatabase history_db_;
+  TestHistoryDatabase history_db_;
 };
 
 TEST(AndroidCacheDatabaseAttachTest, AttachDatabaseInTransactionNesting) {
   base::ScopedTempDir temp_dir;
   base::FilePath android_cache_db_name;
-  HistoryDatabase history_db;
+  TestHistoryDatabase history_db;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   base::FilePath history_db_name = temp_dir.path().AppendASCII("history.db");
   android_cache_db_name = temp_dir.path().AppendASCII(

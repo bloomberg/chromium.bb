@@ -9,7 +9,7 @@
 #include "base/android/jni_string.h"
 #include "base/bind.h"
 #include "base/logging.h"
-#include "components/history/core/android/android_history_types.h"
+#include "components/history/core/browser/android/android_history_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "jni/SQLiteCursor_jni.h"
 #include "sql/statement.h"

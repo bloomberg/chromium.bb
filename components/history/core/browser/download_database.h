@@ -25,8 +25,8 @@ struct DownloadRow;
 class DownloadDatabase {
  public:
   // Must call InitDownloadTable before using any other functions.
-  DownloadDatabase(DownloadInterruptReason download_interrupt_no_reason,
-                   DownloadInterruptReason download_interrupt_crash);
+  DownloadDatabase(DownloadInterruptReason download_interrupt_reason_none,
+                   DownloadInterruptReason download_interrupt_reason_crash);
   virtual ~DownloadDatabase();
 
   uint32 GetNextDownloadId();
@@ -111,8 +111,8 @@ class DownloadDatabase {
   // Those constants are defined in the embedder and injected into the
   // database in the constructor. They represent the interrupt reason
   // to use for respectively an undefined value and in case of a crash.
-  DownloadInterruptReason download_interrupt_no_reason_;
-  DownloadInterruptReason download_interrupt_crash_;
+  DownloadInterruptReason download_interrupt_reason_none_;
+  DownloadInterruptReason download_interrupt_reason_crash_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadDatabase);
 };

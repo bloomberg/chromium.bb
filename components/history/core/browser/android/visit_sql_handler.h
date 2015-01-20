@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_HISTORY_CORE_ANDROID_VISIT_SQL_HANDLER_H_
-#define COMPONENTS_HISTORY_CORE_ANDROID_VISIT_SQL_HANDLER_H_
+#ifndef COMPONENTS_HISTORY_CORE_BROWSER_ANDROID_VISIT_SQL_HANDLER_H_
+#define COMPONENTS_HISTORY_CORE_BROWSER_ANDROID_VISIT_SQL_HANDLER_H_
 
-#include "components/history/core/android/sql_handler.h"
+#include "components/history/core/browser/android/sql_handler.h"
 
 namespace base {
 class Time;
@@ -49,4 +49,4 @@ class VisitSQLHandler : public SQLHandler {
 
 }  // namespace history.
 
-#endif  // COMPONENTS_HISTORY_CORE_ANDROID_VISIT_SQL_HANDLER_H_
+#endif  // COMPONENTS_HISTORY_CORE_BROWSER_ANDROID_VISIT_SQL_HANDLER_H_

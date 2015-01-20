@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_HISTORY_CORE_ANDROID_ANDROID_CACHE_DATABASE_H_
-#define COMPONENTS_HISTORY_CORE_ANDROID_ANDROID_CACHE_DATABASE_H_
+#ifndef COMPONENTS_HISTORY_CORE_BROWSER_ANDROID_ANDROID_CACHE_DATABASE_H_
+#define COMPONENTS_HISTORY_CORE_BROWSER_ANDROID_ANDROID_CACHE_DATABASE_H_
 
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/time/time.h"
-#include "components/history/core/android/android_history_types.h"
+#include "components/history/core/browser/android/android_history_types.h"
 #include "sql/connection.h"
 #include "sql/init_status.h"
 
@@ -117,4 +117,4 @@ class AndroidCacheDatabase {
 
 }  // namespace history
 
-#endif  // COMPONENTS_HISTORY_CORE_ANDROID_ANDROID_CACHE_DATABASE_H_
+#endif  // COMPONENTS_HISTORY_CORE_BROWSER_ANDROID_ANDROID_CACHE_DATABASE_H_

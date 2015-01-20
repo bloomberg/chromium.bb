@@ -15,6 +15,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "components/history/content/browser/history_database_helper.h"
+#include "components/history/core/browser/history_database_params.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/core/service_access_type.h"
 
@@ -76,8 +78,10 @@ KeyedService* HistoryServiceFactory::BuildServiceInstanceFor(
   Profile* profile = static_cast<Profile*>(context);
   scoped_ptr<HistoryService> history_service(new HistoryService(
       ChromeHistoryClientFactory::GetForProfile(profile), profile));
-  if (!history_service->Init(profile->GetPath()))
-    return NULL;
+  if (!history_service->Init(
+          history::HistoryDatabaseParamsForPath(profile->GetPath()))) {
+    return nullptr;
+  }
   ChromeBookmarkClientFactory::GetForProfile(profile)
       ->SetHistoryService(history_service.get());
   return history_service.release();

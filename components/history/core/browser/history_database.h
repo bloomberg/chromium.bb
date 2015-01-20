@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_HISTORY_HISTORY_DATABASE_H_
-#define CHROME_BROWSER_HISTORY_HISTORY_DATABASE_H_
+#ifndef COMPONENTS_HISTORY_CORE_BROWSER_HISTORY_DATABASE_H_
+#define COMPONENTS_HISTORY_CORE_BROWSER_HISTORY_DATABASE_H_
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -18,8 +18,8 @@
 #include "sql/meta_table.h"
 
 #if defined(OS_ANDROID)
-#include "components/history/core/android/android_cache_database.h"
-#include "components/history/core/android/android_urls_database.h"
+#include "components/history/core/browser/android/android_cache_database.h"
+#include "components/history/core/browser/android/android_urls_database.h"
 #endif
 
 namespace base {
@@ -53,9 +53,8 @@ class HistoryDatabase : public DownloadDatabase,
     explicit TransactionScoper(HistoryDatabase* db) : db_(db) {
       db_->BeginTransaction();
     }
-    ~TransactionScoper() {
-      db_->CommitTransaction();
-    }
+    ~TransactionScoper() { db_->CommitTransaction(); }
+
    private:
     HistoryDatabase* db_;
   };
@@ -63,7 +62,8 @@ class HistoryDatabase : public DownloadDatabase,
   // Must call Init() to complete construction. Although it can be created on
   // any thread, it must be destructed on the history thread for proper
   // database cleanup.
-  HistoryDatabase();
+  HistoryDatabase(DownloadInterruptReason download_interrupt_reason_none,
+                  DownloadInterruptReason download_interrupt_reason_crash);
 
   ~HistoryDatabase() override;
 
@@ -193,4 +193,4 @@ class HistoryDatabase : public DownloadDatabase,
 
 }  // namespace history
 
-#endif  // CHROME_BROWSER_HISTORY_HISTORY_DATABASE_H_
+#endif  // COMPONENTS_HISTORY_CORE_BROWSER_HISTORY_DATABASE_H_

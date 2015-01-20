@@ -43,7 +43,6 @@
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "chrome/browser/history/history_backend.h"
-#include "chrome/browser/history/history_database.h"
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/in_memory_history_backend.h"
@@ -51,14 +50,18 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/tools/profiles/thumbnail-inl.h"
 #include "components/history/content/browser/download_constants_utils.h"
+#include "components/history/content/browser/history_database_helper.h"
 #include "components/history/core/browser/download_constants.h"
 #include "components/history/core/browser/download_row.h"
 #include "components/history/core/browser/history_constants.h"
+#include "components/history/core/browser/history_database.h"
+#include "components/history/core/browser/history_database_params.h"
 #include "components/history/core/browser/history_db_task.h"
 #include "components/history/core/browser/in_memory_database.h"
 #include "components/history/core/browser/page_usage_data.h"
 #include "components/history/core/common/thumbnail_score.h"
 #include "components/history/core/test/history_unittest_base.h"
+#include "components/history/core/test/test_history_database.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -133,7 +136,8 @@ class HistoryBackendDBTest : public HistoryUnitTestBase {
   void CreateBackendAndDatabase() {
     backend_ =
         new HistoryBackend(history_dir_, new BackendDelegate(this), NULL);
-    backend_->Init(std::string(), false);
+    backend_->Init(std::string(), false,
+                   HistoryDatabaseParamsForPath(history_dir_));
     db_ = backend_->db_.get();
     DCHECK(in_mem_backend_) << "Mem backend should have been set by "
         "HistoryBackend::Init";
@@ -1004,7 +1008,7 @@ class HistoryTest : public testing::Test {
     history_dir_ = temp_dir_.path().AppendASCII("HistoryTest");
     ASSERT_TRUE(base::CreateDirectory(history_dir_));
     history_service_.reset(new HistoryService);
-    if (!history_service_->Init(history_dir_)) {
+    if (!history_service_->Init(HistoryDatabaseParamsForPath(history_dir_))) {
       history_service_.reset();
       ADD_FAILURE();
     }

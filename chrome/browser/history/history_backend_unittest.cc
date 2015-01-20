@@ -31,10 +31,12 @@
 #include "chrome/common/importer/imported_favicon_usage.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/history/core/browser/history_constants.h"
+#include "components/history/core/browser/history_database_params.h"
 #include "components/history/core/browser/in_memory_database.h"
 #include "components/history/core/browser/keyword_search_term.h"
 #include "components/history/core/browser/visit_filter.h"
 #include "components/history/core/test/history_client_fake_bookmarks.h"
+#include "components/history/core/test/test_history_database.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/test/test_browser_thread.h"
@@ -250,7 +252,8 @@ class HistoryBackendTestBase : public testing::Test {
       return;
     backend_ = new HistoryBackend(
         test_dir_, new HistoryBackendTestDelegate(this), &history_client_);
-    backend_->Init(std::string(), false);
+    backend_->Init(std::string(), false,
+                   TestHistoryDatabaseParamsForPath(test_dir_));
   }
 
   void TearDown() override {
@@ -1566,7 +1569,8 @@ TEST_F(HistoryBackendTest, MigrationVisitSource) {
 
   backend_ = new HistoryBackend(
       new_history_path, new HistoryBackendTestDelegate(this), &history_client_);
-  backend_->Init(std::string(), false);
+  backend_->Init(std::string(), false,
+                 TestHistoryDatabaseParamsForPath(new_history_path));
   backend_->Closing();
   backend_ = NULL;
 
@@ -2818,7 +2822,8 @@ TEST_F(HistoryBackendTest, MigrationVisitDuration) {
 
   backend_ = new HistoryBackend(
       new_history_path, new HistoryBackendTestDelegate(this), &history_client_);
-  backend_->Init(std::string(), false);
+  backend_->Init(std::string(), false,
+                 TestHistoryDatabaseParamsForPath(new_history_path));
   backend_->Closing();
   backend_ = NULL;
 
@@ -3042,7 +3047,8 @@ TEST_F(HistoryBackendTest, RemoveNotification) {
   history_client.AddBookmark(url);
   scoped_ptr<HistoryService> service(
       new HistoryService(&history_client, profile.get()));
-  EXPECT_TRUE(service->Init(profile->GetPath()));
+  EXPECT_TRUE(
+      service->Init(TestHistoryDatabaseParamsForPath(profile->GetPath())));
 
   service->AddPage(
       url, base::Time::Now(), NULL, 1, GURL(), RedirectList(),

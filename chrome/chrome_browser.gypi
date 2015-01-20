@@ -1493,8 +1493,6 @@
       'browser/history/history_backend.cc',
       'browser/history/history_backend.h',
       'browser/history/history_backend_android.cc',
-      'browser/history/history_database.cc',
-      'browser/history/history_database.h',
       'browser/history/history_details.h',
       'browser/history/history_notifications.cc',
       'browser/history/history_notifications.h',
@@ -3364,7 +3362,6 @@
           'dependencies': [
             '../components/components.gyp:cdm_browser',
             '../components/components.gyp:enhanced_bookmarks',
-            '../components/components.gyp:history_core_android',
             '../components/components.gyp:web_contents_delegate_android',
             '../components/components_resources.gyp:components_resources',
             '../third_party/android_opengl/etc1/etc1.gyp:etc1',

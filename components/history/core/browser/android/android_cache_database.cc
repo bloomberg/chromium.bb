@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/history/core/android/android_cache_database.h"
+#include "components/history/core/browser/android/android_cache_database.h"
 
 #include "base/files/file_util.h"
-#include "components/history/core/android/android_time.h"
+#include "components/history/core/browser/android/android_time.h"
 #include "sql/statement.h"
 
 using base::Time;
@@ -69,13 +69,12 @@ bool AndroidCacheDatabase::MarkURLsAsBookmarked(
     const std::vector<URLID>& url_ids) {
   bool has_id = false;
   std::ostringstream oss;
-  for (std::vector<URLID>::const_iterator i = url_ids.begin();
-      i != url_ids.end(); ++i) {
+  for (const auto& url_id : url_ids) {
     if (has_id)
       oss << ", ";
     else
       has_id = true;
-    oss << *i;
+    oss << url_id;
   }
 
   if (!has_id)

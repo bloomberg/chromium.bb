@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_HISTORY_CORE_ANDROID_ANDROID_URLS_DATABASE_H_
-#define COMPONENTS_HISTORY_CORE_ANDROID_ANDROID_URLS_DATABASE_H_
+#ifndef COMPONENTS_HISTORY_CORE_BROWSER_ANDROID_ANDROID_URLS_DATABASE_H_
+#define COMPONENTS_HISTORY_CORE_BROWSER_ANDROID_ANDROID_URLS_DATABASE_H_
 
-#include "components/history/core/android/android_history_types.h"
+#include "components/history/core/browser/android/android_history_types.h"
 
 namespace history {
 
@@ -49,7 +49,7 @@ class AndroidURLsDatabase {
   // Updates the row of |id| with the given |raw_url| and |url_id|. Returns true
   // on success.
   bool UpdateAndroidURLRow(AndroidURLID id,
-                           const std::string&raw_url,
+                           const std::string& raw_url,
                            URLID url_id);
 
   // Clears all the rows in android_urls table, returns true on success, false
@@ -70,4 +70,4 @@ class AndroidURLsDatabase {
 
 }  // namespace history
 
-#endif  // COMPONENTS_HISTORY_CORE_ANDROID_ANDROID_URLS_DATABASE_H_
+#endif  // COMPONENTS_HISTORY_CORE_BROWSER_ANDROID_ANDROID_URLS_DATABASE_H_

@@ -9,6 +9,8 @@ static_library("test") {
     "history_client_fake_bookmarks.h",
     "history_unittest_base.cc",
     "history_unittest_base.h",
+    "test_history_database.cc",
+    "test_history_database.h",
   ]
 
   deps = [

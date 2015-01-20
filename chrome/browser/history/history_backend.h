@@ -19,7 +19,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/history/expire_history_backend.h"
-#include "chrome/browser/history/history_database.h"
 #include "components/history/core/browser/history_backend_notifier.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/history/core/browser/keyword_id.h"
@@ -29,7 +28,7 @@
 #include "sql/init_status.h"
 
 #if defined(OS_ANDROID)
-#include "components/history/core/android/android_history_types.h"
+#include "components/history/core/browser/android/android_history_types.h"
 #endif
 
 class HistoryURLProvider;
@@ -53,6 +52,8 @@ class CommitLaterTask;
 struct DownloadRow;
 class HistoryBackendObserver;
 class HistoryClient;
+class HistoryDatabase;
+struct HistoryDatabaseParams;
 struct HistoryDetails;
 class HistoryDBTask;
 class InMemoryHistoryBackend;
@@ -184,7 +185,9 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // |languages| gives a list of language encodings with which the history
   // URLs and omnibox searches are interpreted.
   // |force_fail| can be set during unittests to unconditionally fail to init.
-  void Init(const std::string& languages, bool force_fail);
+  void Init(const std::string& languages,
+            bool force_fail,
+            const HistoryDatabaseParams& history_database_params);
 
   // Notification that the history system is shutting down. This will break
   // the refs owned by the delegate and any pending transaction so it will
@@ -609,7 +612,8 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   friend class URLQuerier;
 
   // Does the work of Init.
-  void InitImpl(const std::string& languages);
+  void InitImpl(const std::string& languages,
+                const HistoryDatabaseParams& history_database_params);
 
   // Called when the system is under memory pressure.
   void OnMemoryPressure(

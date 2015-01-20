@@ -15,9 +15,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "chrome/browser/history/history_notifications.h"
-#include "components/history/core/android/android_cache_database.h"
-#include "components/history/core/android/android_history_types.h"
-#include "components/history/core/android/sql_handler.h"
+#include "components/history/core/browser/android/android_cache_database.h"
+#include "components/history/core/browser/android/android_history_types.h"
+#include "components/history/core/browser/android/sql_handler.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
 

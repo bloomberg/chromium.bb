@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/history/history_database.h"
+#include "components/history/core/browser/history_database.h"
 
 #include <algorithm>
 #include <set>
@@ -14,11 +14,9 @@
 #include "base/rand_util.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
-#include "components/history/content/browser/download_constants_utils.h"
-#include "content/public/browser/download_interrupt_reasons.h"
 #include "sql/transaction.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) && !defined(OS_IOS)
 #include "base/mac/mac_util.h"
 #endif
 
@@ -35,11 +33,11 @@ const char kEarlyExpirationThresholdKey[] = "early_expiration_threshold";
 
 }  // namespace
 
-HistoryDatabase::HistoryDatabase()
-    : DownloadDatabase(ToHistoryDownloadInterruptReason(
-                           content::DOWNLOAD_INTERRUPT_REASON_NONE),
-                       ToHistoryDownloadInterruptReason(
-                           content::DOWNLOAD_INTERRUPT_REASON_CRASH)) {
+HistoryDatabase::HistoryDatabase(
+    DownloadInterruptReason download_interrupt_reason_none,
+    DownloadInterruptReason download_interrupt_reason_crash)
+    : DownloadDatabase(download_interrupt_reason_none,
+                       download_interrupt_reason_crash) {
 }
 
 HistoryDatabase::~HistoryDatabase() {
@@ -76,7 +74,7 @@ sql::InitStatus HistoryDatabase::Init(const base::FilePath& history_name) {
   if (!committer.Begin())
     return sql::INIT_FAILURE;
 
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) && !defined(OS_IOS)
   // Exclude the history file from backups.
   base::mac::SetFileBackupExclusion(history_name);
 #endif
@@ -109,7 +107,7 @@ sql::InitStatus HistoryDatabase::Init(const base::FilePath& history_name) {
 
 void HistoryDatabase::ComputeDatabaseMetrics(
     const base::FilePath& history_name) {
-    base::TimeTicks start_time = base::TimeTicks::Now();
+  base::TimeTicks start_time = base::TimeTicks::Now();
   int64 file_size = 0;
   if (!base::GetFileSize(history_name, &file_size))
     return;

@@ -39,6 +39,8 @@
 #include "components/history/core/browser/history_backend_observer.h"
 #include "components/history/core/browser/history_client.h"
 #include "components/history/core/browser/history_constants.h"
+#include "components/history/core/browser/history_database.h"
+#include "components/history/core/browser/history_database_params.h"
 #include "components/history/core/browser/history_db_task.h"
 #include "components/history/core/browser/keyword_search_term.h"
 #include "components/history/core/browser/page_usage_data.h"
@@ -231,9 +233,12 @@ HistoryBackend::~HistoryBackend() {
 #endif
 }
 
-void HistoryBackend::Init(const std::string& languages, bool force_fail) {
+void HistoryBackend::Init(
+    const std::string& languages,
+    bool force_fail,
+    const HistoryDatabaseParams& history_database_params) {
   if (!force_fail)
-    InitImpl(languages);
+    InitImpl(languages, history_database_params);
   delegate_->DBLoaded();
   typed_url_syncable_service_.reset(new TypedUrlSyncableService(this));
   memory_pressure_listener_.reset(new base::MemoryPressureListener(
@@ -579,7 +584,9 @@ void HistoryBackend::AddPage(const HistoryAddPageArgs& request) {
   ScheduleCommit();
 }
 
-void HistoryBackend::InitImpl(const std::string& languages) {
+void HistoryBackend::InitImpl(
+    const std::string& languages,
+    const HistoryDatabaseParams& history_database_params) {
   DCHECK(!db_) << "Initializing HistoryBackend twice";
   // In the rare case where the db fails to initialize a dialog may get shown
   // the blocks the caller, yet allows other messages through. For this reason
@@ -589,7 +596,9 @@ void HistoryBackend::InitImpl(const std::string& languages) {
   TimeTicks beginning_time = TimeTicks::Now();
 
   // Compute the file names.
-  base::FilePath history_name = history_dir_.Append(history::kHistoryFilename);
+  DCHECK(history_dir_ == history_database_params.history_dir);
+  base::FilePath history_name =
+      history_database_params.history_dir.Append(history::kHistoryFilename);
   base::FilePath thumbnail_name = GetFaviconsFileName();
   base::FilePath archived_name = GetArchivedFileName();
 
@@ -597,7 +606,9 @@ void HistoryBackend::InitImpl(const std::string& languages) {
   DeleteFTSIndexDatabases();
 
   // History database.
-  db_.reset(new HistoryDatabase());
+  db_.reset(new HistoryDatabase(
+      history_database_params.download_interrupt_reason_none,
+      history_database_params.download_interrupt_reason_crash));
 
   // Unretained to avoid a ref loop with db_.
   db_->set_error_callback(
