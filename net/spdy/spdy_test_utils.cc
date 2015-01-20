@@ -95,7 +95,6 @@ void SetFrameFlags(SpdyFrame* frame,
     case SPDY2:
     case SPDY3:
     case SPDY4:
-    case SPDY5:
       frame->data()[4] = flags;
       break;
     default:
@@ -118,7 +117,6 @@ void SetFrameLength(SpdyFrame* frame,
       }
       break;
     case SPDY4:
-    case SPDY5:
       CHECK_GT(1u<<14, length);
       {
         int32 wire_length = base::HostToNet32(length);

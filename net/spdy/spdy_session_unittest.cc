@@ -1808,10 +1808,6 @@ TEST_P(SpdySessionTest, SynCompressionHistograms) {
       histogram_tester.ExpectBucketCount(
           "Net.SpdySynStreamCompressionPercentage", 82, 1);
       break;
-    case SPDY5:
-      histogram_tester.ExpectBucketCount(
-          "Net.SpdySynStreamCompressionPercentage", 82, 1);
-      break;
     default:
       NOTREACHED();
   }
