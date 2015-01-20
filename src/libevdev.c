@@ -65,12 +65,10 @@ int EvdevRead(EvdevPtr evdev) {
 
     /* Read as many whole struct input_event objects as we can into the
        circular buffer */
-    if (evstate->debug_buf) {
-      for (i = 0; i < len / sizeof(*ev); i++) {
-        evstate->debug_buf[evstate->debug_buf_tail] = ev[i];
-        evstate->debug_buf_tail =
-            (evstate->debug_buf_tail + 1) % DEBUG_BUF_SIZE;
-      }
+    for (i = 0; i < len / sizeof(*ev); i++) {
+      evstate->debug_buf[evstate->debug_buf_tail] = ev[i];
+      evstate->debug_buf_tail =
+          (evstate->debug_buf_tail + 1) % DEBUG_BUF_SIZE;
     }
 
     /* kernel always delivers complete events, so len must be sizeof *ev */
