@@ -37,6 +37,7 @@ class RenderObject;
 struct PaintInfo;
 class RenderSVGResourceFilter;
 class RenderSVGResourceMasker;
+class SVGResources;
 
 class SubtreeContentTransformScope {
 public:
@@ -81,7 +82,6 @@ public:
     // Used by all SVG renderers who apply clip/filter/etc. resources to the renderer content.
     void prepareToRenderSVGContent(RenderObject*, PaintInfo&);
     bool isRenderingPrepared() const { return m_renderingFlags & RenderingPrepared; }
-    bool isIsolationInstalled() const;
 
     static void renderSubtree(GraphicsContext*, RenderObject*);
 
@@ -94,6 +94,19 @@ private:
         PostApplyResources = 1 << 1,
         PrepareToRenderSVGContentWasCalled = 1 << 2
     };
+
+    void applyCompositingIfNecessary();
+
+    // Return true if no clipping is necessary or if the clip is successfully applied.
+    bool applyClipIfNecessary(SVGResources*);
+
+    // Return true if no masking is necessary or if the mask is successfully applied.
+    bool applyMaskIfNecessary(SVGResources*);
+
+    // Return true if no filtering is necessary or if the filter is successfully applied.
+    bool applyFilterIfNecessary(SVGResources*);
+
+    bool isIsolationInstalled() const;
 
     int m_renderingFlags;
     RawPtrWillBeMember<RenderObject> m_object;

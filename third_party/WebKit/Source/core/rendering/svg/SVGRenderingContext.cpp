@@ -66,95 +66,119 @@ SVGRenderingContext::~SVGRenderingContext()
 
 void SVGRenderingContext::prepareToRenderSVGContent(RenderObject* object, PaintInfo& paintInfo)
 {
-    ASSERT(object);
-
 #if ENABLE(ASSERT)
     // This function must not be called twice!
     ASSERT(!(m_renderingFlags & PrepareToRenderSVGContentWasCalled));
     m_renderingFlags |= PrepareToRenderSVGContentWasCalled;
 #endif
 
+    ASSERT(object);
     m_object = object;
     m_paintInfo = &paintInfo;
 
-    RenderStyle* style = m_object->style();
-    ASSERT(style);
-
-    const SVGRenderStyle& svgStyle = style->svgStyle();
-
-    // Setup transparency layers before setting up SVG resources!
-    bool isRenderingMask = paintInfo.isRenderingClipPathAsMaskImage();
-
-    float opacity = style->opacity();
-    bool hasBlendMode = style->hasBlendMode() && object->isBlendingAllowed();
-
-    // RenderLayer takes care of root opacity and blend mode.
-    if (!isRenderingMask && !object->isSVGRoot() && (opacity < 1 || hasBlendMode)) {
-        m_clipRecorder = adoptPtr(new FloatClipRecorder(*m_paintInfo->context, m_object->displayItemClient(), m_paintInfo->phase, m_object->paintInvalidationRectInLocalCoordinates()));
-        WebBlendMode blendMode = hasBlendMode ? style->blendMode() : WebBlendModeNormal;
-        CompositeOperator compositeOp = hasBlendMode ? CompositeSourceOver : m_paintInfo->context->compositeOperation();
-        m_compositingRecorder = adoptPtr(new CompositingRecorder(m_paintInfo->context, object->displayItemClient(), compositeOp, blendMode, opacity, compositeOp));
-    }
-
     SVGResources* resources = SVGResourcesCache::cachedResourcesForRenderObject(m_object);
 
-    // Prefer a 'clipper' (non-prefixed 'clip-path') to a 'clip shape'
-    // ('-webkit-clip-path'), until these two properties end up being merged
-    // properly.
-    if (RenderSVGResourceClipper* clipper = resources ? resources->clipper() : nullptr) {
-        if (!clipper->applyStatefulResource(m_object, m_paintInfo->context, m_clipperState))
+    // When rendering clip paths as masks, only geometric operations should be included so skip
+    // non-geometric operations such as compositing, masking, and filtering.
+    if (m_paintInfo->isRenderingClipPathAsMaskImage()) {
+        if (!applyClipIfNecessary(resources))
             return;
-        m_clipper = clipper;
-        m_renderingFlags |= PostApplyResources;
-    } else {
-        ClipPathOperation* clipPathOperation = style->clipPath();
-        if (clipPathOperation && clipPathOperation->type() == ClipPathOperation::SHAPE) {
-            ShapeClipPathOperation* clipPath = toShapeClipPathOperation(clipPathOperation);
-            if (!clipPath->isValid())
-                return;
-            m_clipPathRecorder = adoptPtr(new ClipPathRecorder(*m_paintInfo->context, object->displayItemClient(), clipPath->path(object->objectBoundingBox()), clipPath->windRule()));
-        }
-    }
-
-    if (isRenderingMask) {
         m_renderingFlags |= RenderingPrepared;
         return;
     }
 
-    if (resources) {
-        if (RenderSVGResourceMasker* masker = resources->masker()) {
-            if (!masker->prepareEffect(m_object, m_paintInfo->context))
-                return;
-            m_masker = masker;
-            m_renderingFlags |= PostApplyResources;
-        }
+    applyCompositingIfNecessary();
 
-        m_filter = resources->filter();
-        if (m_filter) {
-            m_paintInfo->context->save();
-            m_savedPaintRect = m_paintInfo->rect;
-            // Return with false here may mean that we don't need to draw the content
-            // (because it was either drawn before or empty) but we still need to apply the filter.
-            m_renderingFlags |= PostApplyResources;
-            if (!m_filter->prepareEffect(m_object, m_paintInfo->context))
-                return;
+    if (!applyClipIfNecessary(resources))
+        return;
 
-            // Since we're caching the resulting bitmap and do not invalidate it on paint invalidation rect
-            // changes, we need to paint the whole filter region. Otherwise, elements not visible
-            // at the time of the initial paint (due to scrolling, window size, etc.) will never
-            // be drawn.
-            m_paintInfo->rect = LayoutRect::infiniteIntRect();
-        }
-    } else {
-        // Broken filter disables rendering.
-        if (svgStyle.hasFilter())
-            return;
-    }
+    if (!applyMaskIfNecessary(resources))
+        return;
 
-    if (!isIsolationInstalled() && SVGRenderSupport::isIsolationRequired(object))
-        m_compositingRecorder = adoptPtr(new CompositingRecorder(m_paintInfo->context, object->displayItemClient(), m_paintInfo->context->compositeOperation(), WebBlendModeNormal, 1, m_paintInfo->context->compositeOperation()));
+    if (!applyFilterIfNecessary(resources))
+        return;
+
+    if (!isIsolationInstalled() && SVGRenderSupport::isIsolationRequired(m_object))
+        m_compositingRecorder = adoptPtr(new CompositingRecorder(m_paintInfo->context, m_object->displayItemClient(), m_paintInfo->context->compositeOperation(), WebBlendModeNormal, 1, m_paintInfo->context->compositeOperation()));
 
     m_renderingFlags |= RenderingPrepared;
+}
+
+void SVGRenderingContext::applyCompositingIfNecessary()
+{
+    ASSERT(!m_paintInfo->isRenderingClipPathAsMaskImage());
+
+    // RenderLayer takes care of root opacity and blend mode.
+    if (m_object->isSVGRoot())
+        return;
+
+    RenderStyle* style = m_object->style();
+    ASSERT(style);
+    float opacity = style->opacity();
+    bool hasBlendMode = style->hasBlendMode() && m_object->isBlendingAllowed();
+    if (opacity < 1 || hasBlendMode) {
+        m_clipRecorder = adoptPtr(new FloatClipRecorder(*m_paintInfo->context, m_object->displayItemClient(), m_paintInfo->phase, m_object->paintInvalidationRectInLocalCoordinates()));
+        WebBlendMode blendMode = hasBlendMode ? style->blendMode() : WebBlendModeNormal;
+        CompositeOperator compositeOp = hasBlendMode ? CompositeSourceOver : m_paintInfo->context->compositeOperation();
+        m_compositingRecorder = adoptPtr(new CompositingRecorder(m_paintInfo->context, m_object->displayItemClient(), compositeOp, blendMode, opacity, compositeOp));
+    }
+}
+
+bool SVGRenderingContext::applyClipIfNecessary(SVGResources* resources)
+{
+    // resources->clipper() corresponds to the non-prefixed 'clip-path' whereas
+    // m_object->style()->clipPath() corresponds to '-webkit-clip-path'.
+    // FIXME: We should unify the clip-path and -webkit-clip-path codepaths.
+    if (RenderSVGResourceClipper* clipper = resources ? resources->clipper() : nullptr) {
+        if (!clipper->applyStatefulResource(m_object, m_paintInfo->context, m_clipperState))
+            return false;
+        m_clipper = clipper;
+        m_renderingFlags |= PostApplyResources;
+    } else {
+        ClipPathOperation* clipPathOperation = m_object->style()->clipPath();
+        if (clipPathOperation && clipPathOperation->type() == ClipPathOperation::SHAPE) {
+            ShapeClipPathOperation* clipPath = toShapeClipPathOperation(clipPathOperation);
+            if (!clipPath->isValid())
+                return false;
+            m_clipPathRecorder = adoptPtr(new ClipPathRecorder(*m_paintInfo->context, m_object->displayItemClient(), clipPath->path(m_object->objectBoundingBox()), clipPath->windRule()));
+        }
+    }
+    return true;
+}
+
+bool SVGRenderingContext::applyMaskIfNecessary(SVGResources* resources)
+{
+    if (RenderSVGResourceMasker* masker = resources ? resources->masker() : nullptr) {
+        if (!masker->prepareEffect(m_object, m_paintInfo->context))
+            return false;
+        m_masker = masker;
+        m_renderingFlags |= PostApplyResources;
+    }
+    return true;
+}
+
+bool SVGRenderingContext::applyFilterIfNecessary(SVGResources* resources)
+{
+    if (!resources) {
+        if (m_object->style()->svgStyle().hasFilter())
+            return false;
+    } else if (RenderSVGResourceFilter* filter = resources->filter()) {
+        // FIXME: This code should use the same pattern as clipping and masking
+        // instead of always creating m_filter. See crbug.com/449743.
+        m_filter = filter;
+        m_renderingFlags |= PostApplyResources;
+        m_savedPaintRect = m_paintInfo->rect;
+        m_paintInfo->context->save();
+
+        if (!filter->prepareEffect(m_object, m_paintInfo->context))
+            return false;
+
+        // Because we cache the filter contents and do not invalidate on paint
+        // invalidation rect changes, we need to paint the entire filter region
+        // so elements outside the initial paint (due to scrolling, etc) paint.
+        m_paintInfo->rect = LayoutRect::infiniteIntRect();
+    }
+    return true;
 }
 
 bool SVGRenderingContext::isIsolationInstalled() const
