@@ -1481,7 +1481,7 @@ void BoxPainter::paintBorder(RenderBoxModelObject& obj, const PaintInfo& info, c
         // Fast path for non-rounded, solid, uniform width and color borders.
         if (edgesToDraw == AllBorderEdges && haveAllSolidEdges && allEdgesShareWidth
             && !outerBorder.isRounded() && !innerBorder.isRounded()) {
-            drawSolidBorderRect(graphicsContext, rect, edges[firstVisibleEdge].width, edges[firstVisibleEdge].color);
+            drawSolidBorderRect(graphicsContext, outerBorder.rect(), edges[firstVisibleEdge].width, edges[firstVisibleEdge].color);
             return;
         }
 
