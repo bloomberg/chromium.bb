@@ -503,6 +503,8 @@
       'browser/device_monitor_mac.mm',
       'browser/device_monitor_udev.cc',
       'browser/device_monitor_udev.h',
+      'browser/device_sensors/ambient_light_mac.cc',
+      'browser/device_sensors/ambient_light_mac.h',
       'browser/device_sensors/data_fetcher_shared_memory.h',
       'browser/device_sensors/data_fetcher_shared_memory_android.cc',
       'browser/device_sensors/data_fetcher_shared_memory_base.cc',

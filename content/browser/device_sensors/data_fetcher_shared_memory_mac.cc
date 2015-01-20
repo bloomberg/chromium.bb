@@ -6,14 +6,54 @@
 
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
+#include "content/browser/device_sensors/ambient_light_mac.h"
 #include "third_party/sudden_motion_sensor/sudden_motion_sensor_mac.h"
 
 namespace {
 
 const double kMeanGravity = 9.80665;
 
+double LMUvalueToLux(uint64_t raw_value) {
+  // Conversion formula from regression.
+  // https://bugzilla.mozilla.org/show_bug.cgi?id=793728
+  // Let x = raw_value, then
+  // lux = -2.978303814*(10^-27)*x^4 + 2.635687683*(10^-19)*x^3 -
+  //       3.459747434*(10^-12)*x^2 + 3.905829689*(10^-5)*x - 0.1932594532
+
+  static const long double k4 = pow(10.L, -7);
+  static const long double k3 = pow(10.L, -4);
+  static const long double k2 = pow(10.L, -2);
+  static const long double k1 = pow(10.L, 5);
+  long double scaled_value = raw_value / k1;
+
+  long double lux_value =
+      (-3 * k4 * pow(scaled_value, 4)) + (2.6 * k3 * pow(scaled_value, 3)) +
+      (-3.4 * k2 * pow(scaled_value, 2)) + (3.9 * scaled_value) - 0.19;
+
+  double lux = ceil(static_cast<double>(lux_value));
+  return lux > 0 ? lux : 0;
+}
+
+void FetchLight(content::AmbientLightSensor* sensor,
+                content::DeviceLightHardwareBuffer* buffer) {
+  DCHECK(sensor);
+  DCHECK(buffer);
+  // Macbook pro has 2 lux values, left and right, we take the average.
+  // The raw sensor values are converted to lux using LMUvalueToLux(raw_value)
+  // similar to how it is done in Firefox.
+  uint64_t lux_value[2];
+  if (!sensor->ReadSensorValue(lux_value))
+    return;
+  uint64_t mean = (lux_value[0] + lux_value[1]) / 2;
+  double lux = LMUvalueToLux(mean);
+  buffer->seqlock.WriteBegin();
+  buffer->data.value = lux;
+  buffer->seqlock.WriteEnd();
+}
+
 void FetchMotion(SuddenMotionSensor* sensor,
     content::DeviceMotionHardwareBuffer* buffer) {
+  DCHECK(sensor);
   DCHECK(buffer);
 
   float axis_value[3];
@@ -33,6 +73,7 @@ void FetchMotion(SuddenMotionSensor* sensor,
 
 void FetchOrientation(SuddenMotionSensor* sensor,
     content::DeviceOrientationHardwareBuffer* buffer) {
+  DCHECK(sensor);
   DCHECK(buffer);
 
   // Retrieve per-axis calibrated values.
@@ -99,14 +140,16 @@ DataFetcherSharedMemory::~DataFetcherSharedMemory() {
 
 void DataFetcherSharedMemory::Fetch(unsigned consumer_bitmask) {
   DCHECK(base::MessageLoop::current() == GetPollingMessageLoop());
-  DCHECK(sudden_motion_sensor_);
   DCHECK(consumer_bitmask & CONSUMER_TYPE_ORIENTATION ||
-         consumer_bitmask & CONSUMER_TYPE_MOTION);
+         consumer_bitmask & CONSUMER_TYPE_MOTION ||
+         consumer_bitmask & CONSUMER_TYPE_LIGHT);
 
   if (consumer_bitmask & CONSUMER_TYPE_ORIENTATION)
     FetchOrientation(sudden_motion_sensor_.get(), orientation_buffer_);
   if (consumer_bitmask & CONSUMER_TYPE_MOTION)
     FetchMotion(sudden_motion_sensor_.get(), motion_buffer_);
+  if (consumer_bitmask & CONSUMER_TYPE_LIGHT)
+    FetchLight(ambient_light_sensor_.get(), light_buffer_);
 }
 
 DataFetcherSharedMemory::FetcherType DataFetcherSharedMemory::GetType() const {
@@ -117,12 +160,12 @@ bool DataFetcherSharedMemory::Start(ConsumerType consumer_type, void* buffer) {
   DCHECK(base::MessageLoop::current() == GetPollingMessageLoop());
   DCHECK(buffer);
 
-  if (!sudden_motion_sensor_)
-    sudden_motion_sensor_.reset(SuddenMotionSensor::Create());
-  bool sudden_motion_sensor_available = sudden_motion_sensor_.get() != NULL;
-
   switch (consumer_type) {
-    case CONSUMER_TYPE_MOTION:
+    case CONSUMER_TYPE_MOTION: {
+      if (!sudden_motion_sensor_)
+        sudden_motion_sensor_.reset(SuddenMotionSensor::Create());
+      bool sudden_motion_sensor_available = sudden_motion_sensor_.get() != NULL;
+
       motion_buffer_ = static_cast<DeviceMotionHardwareBuffer*>(buffer);
       UMA_HISTOGRAM_BOOLEAN("InertialSensor.MotionMacAvailable",
           sudden_motion_sensor_available);
@@ -133,7 +176,12 @@ bool DataFetcherSharedMemory::Start(ConsumerType consumer_type, void* buffer) {
         motion_buffer_->seqlock.WriteEnd();
       }
       return sudden_motion_sensor_available;
-    case CONSUMER_TYPE_ORIENTATION:
+    }
+    case CONSUMER_TYPE_ORIENTATION: {
+      if (!sudden_motion_sensor_)
+        sudden_motion_sensor_.reset(SuddenMotionSensor::Create());
+      bool sudden_motion_sensor_available = sudden_motion_sensor_.get() != NULL;
+
       orientation_buffer_ =
           static_cast<DeviceOrientationHardwareBuffer*>(buffer);
       UMA_HISTOGRAM_BOOLEAN("InertialSensor.OrientationMacAvailable",
@@ -151,6 +199,21 @@ bool DataFetcherSharedMemory::Start(ConsumerType consumer_type, void* buffer) {
         orientation_buffer_->seqlock.WriteEnd();
       }
       return sudden_motion_sensor_available;
+    }
+    case CONSUMER_TYPE_LIGHT: {
+      if (!ambient_light_sensor_)
+        ambient_light_sensor_ = AmbientLightSensor::Create();
+      bool ambient_light_sensor_available =
+          ambient_light_sensor_.get() != nullptr;
+
+      light_buffer_ = static_cast<DeviceLightHardwareBuffer*>(buffer);
+      if (!ambient_light_sensor_available) {
+        light_buffer_->seqlock.WriteBegin();
+        light_buffer_->data.value = std::numeric_limits<double>::infinity();
+        light_buffer_->seqlock.WriteEnd();
+      }
+      return ambient_light_sensor_available;
+    }
     default:
       NOTREACHED();
   }
@@ -175,6 +238,14 @@ bool DataFetcherSharedMemory::Stop(ConsumerType consumer_type) {
         orientation_buffer_->data.allAvailableSensorsAreActive = false;
         orientation_buffer_->seqlock.WriteEnd();
         orientation_buffer_ = NULL;
+      }
+      return true;
+    case CONSUMER_TYPE_LIGHT:
+      if (light_buffer_) {
+        light_buffer_->seqlock.WriteBegin();
+        light_buffer_->data.value = -1;
+        light_buffer_->seqlock.WriteEnd();
+        light_buffer_ = nullptr;
       }
       return true;
     default:
