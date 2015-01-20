@@ -27,7 +27,6 @@
 #ifndef ContextLifecycleNotifier_h
 #define ContextLifecycleNotifier_h
 
-#include "core/dom/ActiveDOMObject.h"
 #include "core/dom/ExecutionContext.h"
 #include "platform/LifecycleNotifier.h"
 #include "wtf/HashSet.h"

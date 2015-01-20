@@ -28,7 +28,7 @@
 #include "config.h"
 #include "core/dom/ContextLifecycleNotifier.h"
 
-#include "core/dom/ExecutionContext.h"
+#include "core/dom/ActiveDOMObject.h"
 #include "wtf/TemporaryChange.h"
 
 namespace blink {
