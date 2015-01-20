@@ -38,7 +38,7 @@ class CHROMEOS_EXPORT NetworkSmsHandler : public ShillPropertyChangedObserver {
     virtual void MessageReceived(const base::DictionaryValue& message) = 0;
   };
 
-  virtual ~NetworkSmsHandler();
+  ~NetworkSmsHandler() override;
 
   // Requests an immediate check for new messages. If |request_existing| is
   // true then also requests to be notified for any already received messages.
@@ -48,8 +48,8 @@ class CHROMEOS_EXPORT NetworkSmsHandler : public ShillPropertyChangedObserver {
   void RemoveObserver(Observer* observer);
 
   // ShillPropertyChangedObserver
-  virtual void OnPropertyChanged(const std::string& name,
-                                 const base::Value& value) override;
+  void OnPropertyChanged(const std::string& name,
+                         const base::Value& value) override;
 
  private:
   friend class NetworkHandler;

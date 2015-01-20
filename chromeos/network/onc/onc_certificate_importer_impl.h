@@ -45,12 +45,12 @@ class CHROMEOS_EXPORT CertificateImporterImpl : public CertificateImporter {
   CertificateImporterImpl(
       const scoped_refptr<base::SequencedTaskRunner>& io_task_runner,
       net::NSSCertDatabase* target_nssdb_);
-  virtual ~CertificateImporterImpl();
+  ~CertificateImporterImpl() override;
 
   // CertificateImporter overrides
-  virtual void ImportCertificates(const base::ListValue& certificates,
-                                  ::onc::ONCSource source,
-                                  const DoneCallback& done_callback) override;
+  void ImportCertificates(const base::ListValue& certificates,
+                          ::onc::ONCSource source,
+                          const DoneCallback& done_callback) override;
 
  private:
   void RunDoneCallback(const CertificateImporter::DoneCallback& callback,

@@ -77,7 +77,7 @@ class CHROMEOS_EXPORT NetworkStateHandler
     TECHNOLOGY_ENABLED
   };
 
-  virtual ~NetworkStateHandler();
+  ~NetworkStateHandler() override;
 
   // Add/remove observers.
   void AddObserver(NetworkStateHandlerObserver* observer,
@@ -239,35 +239,33 @@ class CHROMEOS_EXPORT NetworkStateHandler
 
   // This adds new entries to |network_list_| or |device_list_| and deletes any
   // entries that are no longer in the list.
-  virtual void UpdateManagedList(ManagedState::ManagedType type,
-                                 const base::ListValue& entries) override;
+  void UpdateManagedList(ManagedState::ManagedType type,
+                         const base::ListValue& entries) override;
 
   // The list of profiles changed (i.e. a user has logged in). Re-request
   // properties for all services since they may have changed.
-  virtual void ProfileListChanged() override;
+  void ProfileListChanged() override;
 
   // Parses the properties for the network service or device. Mostly calls
   // managed->PropertyChanged(key, value) for each dictionary entry.
-  virtual void UpdateManagedStateProperties(
+  void UpdateManagedStateProperties(
       ManagedState::ManagedType type,
       const std::string& path,
       const base::DictionaryValue& properties) override;
 
   // Called by ShillPropertyHandler when a watched service property changes.
-  virtual void UpdateNetworkServiceProperty(
-      const std::string& service_path,
-      const std::string& key,
-      const base::Value& value) override;
+  void UpdateNetworkServiceProperty(const std::string& service_path,
+                                    const std::string& key,
+                                    const base::Value& value) override;
 
   // Called by ShillPropertyHandler when a watched device property changes.
-  virtual void UpdateDeviceProperty(
-      const std::string& device_path,
-      const std::string& key,
-      const base::Value& value) override;
+  void UpdateDeviceProperty(const std::string& device_path,
+                            const std::string& key,
+                            const base::Value& value) override;
 
   // Called by ShillPropertyHandler when a watched network or device
   // IPConfig property changes.
-  virtual void UpdateIPConfigProperties(
+  void UpdateIPConfigProperties(
       ManagedState::ManagedType type,
       const std::string& path,
       const std::string& ip_config_path,
@@ -275,22 +273,19 @@ class CHROMEOS_EXPORT NetworkStateHandler
 
   // Called by ShillPropertyHandler when the portal check list manager property
   // changes.
-  virtual void CheckPortalListChanged(
-      const std::string& check_portal_list) override;
+  void CheckPortalListChanged(const std::string& check_portal_list) override;
 
   // Called by ShillPropertyHandler when a technology list changes.
-  virtual void TechnologyListChanged() override;
+  void TechnologyListChanged() override;
 
   // Called by |shill_property_handler_| when the service or device list has
   // changed and all entries have been updated. This updates the list and
   // notifies observers.
-  virtual void ManagedStateListChanged(
-      ManagedState::ManagedType type) override;
+  void ManagedStateListChanged(ManagedState::ManagedType type) override;
 
   // Called when the default network service changes. Sets default_network_path_
   // and notifies listeners.
-  virtual void DefaultNetworkServiceChanged(
-      const std::string& service_path) override;
+  void DefaultNetworkServiceChanged(const std::string& service_path) override;
 
   // Called after construction. Called explicitly by tests after adding
   // test observers.

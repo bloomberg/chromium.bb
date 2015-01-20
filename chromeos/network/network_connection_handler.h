@@ -104,7 +104,7 @@ class CHROMEOS_EXPORT NetworkConnectionHandler
   // Certificate load timed out.
   static const char kErrorCertLoadTimeout[];
 
-  virtual ~NetworkConnectionHandler();
+  ~NetworkConnectionHandler() override;
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -143,15 +143,15 @@ class CHROMEOS_EXPORT NetworkConnectionHandler
   bool HasPendingConnectRequest();
 
   // NetworkStateHandlerObserver
-  virtual void NetworkListChanged() override;
-  virtual void NetworkPropertiesUpdated(const NetworkState* network) override;
+  void NetworkListChanged() override;
+  void NetworkPropertiesUpdated(const NetworkState* network) override;
 
   // LoginState::Observer
-  virtual void LoggedInStateChanged() override;
+  void LoggedInStateChanged() override;
 
   // CertLoader::Observer
-  virtual void OnCertificatesLoaded(const net::CertificateList& cert_list,
-                                    bool initial_load) override;
+  void OnCertificatesLoaded(const net::CertificateList& cert_list,
+                            bool initial_load) override;
 
  private:
   friend class NetworkHandler;

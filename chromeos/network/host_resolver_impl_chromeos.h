@@ -40,15 +40,15 @@ class CHROMEOS_EXPORT HostResolverImplChromeOS : public net::HostResolverImpl {
       scoped_refptr<base::MessageLoopProxy> network_handler_message_loop,
       NetworkStateHandler* network_state_handler);
 
-  virtual ~HostResolverImplChromeOS();
+  ~HostResolverImplChromeOS() override;
 
   // HostResolverImpl
-  virtual int Resolve(const RequestInfo& info,
-                      net::RequestPriority priority,
-                      net::AddressList* addresses,
-                      const net::CompletionCallback& callback,
-                      RequestHandle* out_req,
-                      const net::BoundNetLog& source_net_log) override;
+  int Resolve(const RequestInfo& info,
+              net::RequestPriority priority,
+              net::AddressList* addresses,
+              const net::CompletionCallback& callback,
+              RequestHandle* out_req,
+              const net::BoundNetLog& source_net_log) override;
 
  private:
   friend class net::HostResolver;

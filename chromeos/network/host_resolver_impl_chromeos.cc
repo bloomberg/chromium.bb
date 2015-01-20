@@ -47,12 +47,12 @@ class HostResolverImplChromeOS::NetworkObserver
   }
 
  private:
-  virtual ~NetworkObserver() {
+  ~NetworkObserver() override {
     network_state_handler_->RemoveObserver(this, FROM_HERE);
   }
 
   // NetworkStateHandlerObserver
-  virtual void DefaultNetworkChanged(const NetworkState* network) override {
+  void DefaultNetworkChanged(const NetworkState* network) override {
     if (!network) {
       DVLOG(2) << "DefaultNetworkChanged: No Network.";
       CallResolverSetIpAddress("", "");
@@ -92,9 +92,7 @@ class HostResolverImplChromeOS::NetworkObserver
     CallResolverSetIpAddress(ipv4_address, ipv6_address);
   }
 
-  virtual void IsShuttingDown() override {
-    delete this;
-  }
+  void IsShuttingDown() override { delete this; }
 
   void CallResolverSetIpAddress(const std::string& ipv4_address,
                                 const std::string& ipv6_address) {

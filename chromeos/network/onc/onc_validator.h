@@ -69,7 +69,7 @@ class CHROMEOS_EXPORT Validator : public Mapper {
             bool error_on_missing_field,
             bool managed_onc);
 
-  virtual ~Validator();
+  ~Validator() override;
 
   // Sets the ONC source to |source|. If not set, defaults to ONC_SOURCE_NONE.
   // If the source is set to ONC_SOURCE_DEVICE_POLICY, validation additionally
@@ -102,39 +102,37 @@ class CHROMEOS_EXPORT Validator : public Mapper {
   // Overridden from Mapper:
   // Compare |onc_value|s type with |onc_type| and validate/repair according to
   // |signature|. On error returns NULL.
-  virtual scoped_ptr<base::Value> MapValue(const OncValueSignature& signature,
-                                           const base::Value& onc_value,
-                                           bool* error) override;
+  scoped_ptr<base::Value> MapValue(const OncValueSignature& signature,
+                                   const base::Value& onc_value,
+                                   bool* error) override;
 
   // Dispatch to the right validation function according to
   // |signature|. Iterates over all fields and recursively validates/repairs
   // these. All valid fields are added to the result dictionary. Returns the
   // repaired dictionary. Only on error returns NULL.
-  virtual scoped_ptr<base::DictionaryValue> MapObject(
+  scoped_ptr<base::DictionaryValue> MapObject(
       const OncValueSignature& signature,
       const base::DictionaryValue& onc_object,
       bool* error) override;
 
   // Pushes/pops the |field_name| to |path_|, otherwise like |Mapper::MapField|.
-  virtual scoped_ptr<base::Value> MapField(
-      const std::string& field_name,
-      const OncValueSignature& object_signature,
-      const base::Value& onc_value,
-      bool* found_unknown_field,
-      bool* error) override;
+  scoped_ptr<base::Value> MapField(const std::string& field_name,
+                                   const OncValueSignature& object_signature,
+                                   const base::Value& onc_value,
+                                   bool* found_unknown_field,
+                                   bool* error) override;
 
   // Ignores nested errors in NetworkConfigurations and Certificates, otherwise
   // like |Mapper::MapArray|.
-  virtual scoped_ptr<base::ListValue> MapArray(
-      const OncValueSignature& array_signature,
-      const base::ListValue& onc_array,
-      bool* nested_error) override;
+  scoped_ptr<base::ListValue> MapArray(const OncValueSignature& array_signature,
+                                       const base::ListValue& onc_array,
+                                       bool* nested_error) override;
 
   // Pushes/pops the index to |path_|, otherwise like |Mapper::MapEntry|.
-  virtual scoped_ptr<base::Value> MapEntry(int index,
-                                           const OncValueSignature& signature,
-                                           const base::Value& onc_value,
-                                           bool* error) override;
+  scoped_ptr<base::Value> MapEntry(int index,
+                                   const OncValueSignature& signature,
+                                   const base::Value& onc_value,
+                                   bool* error) override;
 
   // This is the default validation of objects/dictionaries. Validates
   // |onc_object| according to |object_signature|. |result| must point to a

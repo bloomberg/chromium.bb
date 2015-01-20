@@ -65,9 +65,9 @@ net::CertType GetCertType(net::X509Certificate::OSCertHandle cert) {
 class ONCCertificateImporterImplTest : public testing::Test {
  public:
   ONCCertificateImporterImplTest() {}
-  virtual ~ONCCertificateImporterImplTest() {}
+  ~ONCCertificateImporterImplTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ASSERT_TRUE(public_nssdb_.is_open());
     ASSERT_TRUE(private_nssdb_.is_open());
 
@@ -84,7 +84,7 @@ class ONCCertificateImporterImplTest : public testing::Test {
     EXPECT_TRUE(ListCertsInPrivateSlot().empty());
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     thread_task_runner_handle_.reset();
     task_runner_ = NULL;
   }

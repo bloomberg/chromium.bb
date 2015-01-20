@@ -215,7 +215,7 @@ class MergeSettingsAndPolicies : public MergeListOfDictionaries {
   }
 
   // MergeListOfDictionaries override.
-  virtual scoped_ptr<base::Value> MergeListOfValues(
+  scoped_ptr<base::Value> MergeListOfValues(
       const std::string& key,
       const std::vector<const base::Value*>& values) override {
     bool user_editable = !HasUserPolicy();
@@ -303,9 +303,8 @@ class MergeToEffective : public MergeSettingsAndPolicies {
   }
 
   // MergeSettingsAndPolicies override.
-  virtual scoped_ptr<base::Value> MergeValues(
-      const std::string& key,
-      const ValueParams& values) override {
+  scoped_ptr<base::Value> MergeValues(const std::string& key,
+                                      const ValueParams& values) override {
     std::string which;
     return MergeValues(key, values, &which);
   }
@@ -358,9 +357,8 @@ class MergeToAugmented : public MergeToEffective {
 
  protected:
   // MergeSettingsAndPolicies override.
-  virtual scoped_ptr<base::Value> MergeValues(
-      const std::string& key,
-      const ValueParams& values) override {
+  scoped_ptr<base::Value> MergeValues(const std::string& key,
+                                      const ValueParams& values) override {
     const OncFieldSignature* field = NULL;
     if (signature_)
       field = GetFieldSignature(*signature_, key);
@@ -447,9 +445,8 @@ class MergeToAugmented : public MergeToEffective {
   }
 
   // MergeListOfDictionaries override.
-  virtual DictionaryPtr MergeNestedDictionaries(
-      const std::string& key,
-      const DictPtrs &dicts) override {
+  DictionaryPtr MergeNestedDictionaries(const std::string& key,
+                                        const DictPtrs& dicts) override {
     DictionaryPtr result;
     if (signature_) {
       const OncValueSignature* enclosing_signature = signature_;

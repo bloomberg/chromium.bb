@@ -32,7 +32,7 @@ namespace chromeos {
 
 class CHROMEOS_EXPORT GeolocationHandler : public ShillPropertyChangedObserver {
  public:
-  virtual ~GeolocationHandler();
+  ~GeolocationHandler() override;
 
   // This sends a request for wifi access point data. If data is already
   // available, returns |true|, fills |access_points| with the latest access
@@ -42,8 +42,8 @@ class CHROMEOS_EXPORT GeolocationHandler : public ShillPropertyChangedObserver {
   bool wifi_enabled() const { return wifi_enabled_; }
 
   // ShillPropertyChangedObserver overrides
-  virtual void OnPropertyChanged(const std::string& key,
-                                 const base::Value& value) override;
+  void OnPropertyChanged(const std::string& key,
+                         const base::Value& value) override;
 
  private:
   friend class NetworkHandler;

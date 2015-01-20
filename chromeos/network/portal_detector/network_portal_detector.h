@@ -146,19 +146,19 @@ class CHROMEOS_EXPORT NetworkPortalDetectorStubImpl
     : public NetworkPortalDetector {
  public:
   NetworkPortalDetectorStubImpl();
-  virtual ~NetworkPortalDetectorStubImpl();
+  ~NetworkPortalDetectorStubImpl() override;
 
  protected:
   // NetworkPortalDetector
-  virtual void AddObserver(Observer* observer) override;
-  virtual void AddAndFireObserver(Observer* observer) override;
-  virtual void RemoveObserver(Observer* observer) override;
-  virtual CaptivePortalState GetCaptivePortalState(
+  void AddObserver(Observer* observer) override;
+  void AddAndFireObserver(Observer* observer) override;
+  void RemoveObserver(Observer* observer) override;
+  CaptivePortalState GetCaptivePortalState(
       const std::string& service_path) override;
-  virtual bool IsEnabled() override;
-  virtual void Enable(bool start_detection) override;
-  virtual bool StartDetectionIfIdle() override;
-  virtual void SetStrategy(PortalDetectorStrategy::StrategyId id) override;
+  bool IsEnabled() override;
+  void Enable(bool start_detection) override;
+  bool StartDetectionIfIdle() override;
+  void SetStrategy(PortalDetectorStrategy::StrategyId id) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NetworkPortalDetectorStubImpl);

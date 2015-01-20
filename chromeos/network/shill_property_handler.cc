@@ -73,7 +73,7 @@ class ShillPropertyObserver : public ShillPropertyChangedObserver {
     }
   }
 
-  virtual ~ShillPropertyObserver() {
+  ~ShillPropertyObserver() override {
     if (type_ == ManagedState::MANAGED_TYPE_NETWORK) {
       DBusThreadManager::Get()->GetShillServiceClient()->
           RemovePropertyChangedObserver(dbus::ObjectPath(path_), this);
@@ -86,8 +86,8 @@ class ShillPropertyObserver : public ShillPropertyChangedObserver {
   }
 
   // ShillPropertyChangedObserver overrides.
-  virtual void OnPropertyChanged(const std::string& key,
-                                 const base::Value& value) override {
+  void OnPropertyChanged(const std::string& key,
+                         const base::Value& value) override {
     handler_.Run(type_, path_, key, value);
   }
 

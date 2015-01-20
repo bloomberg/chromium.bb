@@ -174,9 +174,9 @@ class NetworkConfigurationHandlerTest : public testing::Test {
         mock_profile_client_(NULL),
         mock_service_client_(NULL),
         dictionary_value_result_(NULL) {}
-  virtual ~NetworkConfigurationHandlerTest() {}
+  ~NetworkConfigurationHandlerTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     scoped_ptr<DBusThreadManagerSetter> dbus_setter =
         DBusThreadManager::GetSetterForTesting();
     mock_manager_client_ = new MockShillManagerClient();
@@ -203,7 +203,7 @@ class NetworkConfigurationHandlerTest : public testing::Test {
     message_loop_.RunUntilIdle();
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     network_configuration_handler_.reset();
     network_state_handler_.reset();
     DBusThreadManager::Shutdown();
@@ -452,11 +452,11 @@ namespace {
 class TestObserver : public chromeos::NetworkStateHandlerObserver {
  public:
   TestObserver() : network_list_changed_count_(0) {}
-  virtual ~TestObserver() {}
+  ~TestObserver() override {}
 
-  virtual void NetworkListChanged() override { ++network_list_changed_count_; }
+  void NetworkListChanged() override { ++network_list_changed_count_; }
 
-  virtual void NetworkPropertiesUpdated(const NetworkState* network) override {
+  void NetworkPropertiesUpdated(const NetworkState* network) override {
     property_updates_[network->path()]++;
   }
 
@@ -481,9 +481,9 @@ class NetworkConfigurationHandlerStubTest : public testing::Test {
  public:
   NetworkConfigurationHandlerStubTest() {}
 
-  virtual ~NetworkConfigurationHandlerStubTest() {}
+  ~NetworkConfigurationHandlerStubTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     DBusThreadManager::Initialize();
 
     network_state_handler_.reset(NetworkStateHandler::InitializeForTest());
@@ -498,7 +498,7 @@ class NetworkConfigurationHandlerStubTest : public testing::Test {
     test_observer_->ClearPropertyUpdates();
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     network_configuration_handler_.reset();
     network_state_handler_->RemoveObserver(test_observer_.get(), FROM_HERE);
     network_state_handler_.reset();

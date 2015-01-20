@@ -26,7 +26,7 @@ class CHROMEOS_EXPORT NetworkChangeNotifierChromeos
       public chromeos::NetworkStateHandlerObserver {
  public:
   NetworkChangeNotifierChromeos();
-  virtual ~NetworkChangeNotifierChromeos();
+  ~NetworkChangeNotifierChromeos() override;
 
   // Starts observing changes from the network state handler.
   void Initialize();
@@ -35,14 +35,14 @@ class CHROMEOS_EXPORT NetworkChangeNotifierChromeos
   void Shutdown();
 
   // NetworkChangeNotifier overrides.
-  virtual net::NetworkChangeNotifier::ConnectionType
-      GetCurrentConnectionType() const override;
+  net::NetworkChangeNotifier::ConnectionType GetCurrentConnectionType()
+      const override;
 
   // PowerManagerClient::Observer overrides.
-  virtual void SuspendDone(const base::TimeDelta& sleep_duration) override;
+  void SuspendDone(const base::TimeDelta& sleep_duration) override;
 
   // NetworkStateHandlerObserver overrides.
-  virtual void DefaultNetworkChanged(
+  void DefaultNetworkChanged(
       const chromeos::NetworkState* default_network) override;
 
  private:

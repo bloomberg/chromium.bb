@@ -55,7 +55,7 @@ class ONCMergerTest : public testing::Test {
   scoped_ptr<const base::DictionaryValue> device_policy_;
   scoped_ptr<const base::DictionaryValue> active_;
 
-  virtual void SetUp() {
+  void SetUp() override {
     policy_ = test_utils::ReadTestDictionary("managed_vpn.onc");
     policy_without_recommended_ =
         test_utils::ReadTestDictionary("managed_vpn_without_recommended.onc");

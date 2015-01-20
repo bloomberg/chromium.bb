@@ -292,12 +292,11 @@ class OncMaskValues : public Mapper {
       : mask_(mask) {
   }
 
-  virtual scoped_ptr<base::Value> MapField(
-      const std::string& field_name,
-      const OncValueSignature& object_signature,
-      const base::Value& onc_value,
-      bool* found_unknown_field,
-      bool* error) override {
+  scoped_ptr<base::Value> MapField(const std::string& field_name,
+                                   const OncValueSignature& object_signature,
+                                   const base::Value& onc_value,
+                                   bool* found_unknown_field,
+                                   bool* error) override {
     if (FieldIsCredential(object_signature, field_name)) {
       return scoped_ptr<base::Value>(new base::StringValue(mask_));
     } else {

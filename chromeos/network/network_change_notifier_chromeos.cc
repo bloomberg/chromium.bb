@@ -25,10 +25,10 @@ class NetworkChangeNotifierChromeos::DnsConfigService
     : public net::internal::DnsConfigServicePosix {
  public:
   DnsConfigService();
-  virtual ~DnsConfigService();
+  ~DnsConfigService() override;
 
   // net::internal::DnsConfigService() overrides.
-  virtual bool StartWatching() override;
+  bool StartWatching() override;
 
   virtual void OnNetworkChange();
 };

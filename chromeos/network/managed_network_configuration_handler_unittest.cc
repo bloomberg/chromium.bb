@@ -172,7 +172,7 @@ class TestNetworkProfileHandler : public NetworkProfileHandler {
   TestNetworkProfileHandler() {
     Init();
   }
-  virtual ~TestNetworkProfileHandler() {}
+  ~TestNetworkProfileHandler() override {}
 
   void AddProfileForTest(const NetworkProfile& profile) {
     AddProfile(profile);
@@ -212,8 +212,7 @@ class ManagedNetworkConfigurationHandlerTest : public testing::Test {
         mock_service_client_(NULL) {
   }
 
-  virtual ~ManagedNetworkConfigurationHandlerTest() {
-  }
+  ~ManagedNetworkConfigurationHandlerTest() override {}
 
   void SetUp() override {
     scoped_ptr<DBusThreadManagerSetter> dbus_setter =
