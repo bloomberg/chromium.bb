@@ -21,6 +21,19 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/ipc/gfx_param_traits.h"
 
+// Singly-included section for typedefs.
+#ifndef CHROME_COMMON_CHROME_UTILITY_MESSAGES_H_
+#define CHROME_COMMON_CHROME_UTILITY_MESSAGES_H_
+
+#if defined(OS_WIN)
+// A vector of filters, each being a Tuple containing a display string (i.e.
+// "Text Files") and a filter pattern (i.e. "*.txt").
+typedef std::vector<Tuple<base::string16, base::string16>>
+    GetOpenFileNameFilter;
+#endif  // OS_WIN
+
+#endif  // CHROME_COMMON_CHROME_UTILITY_MESSAGES_H_
+
 #define IPC_MESSAGE_START ChromeUtilityMsgStart
 
 #if defined(FULL_SAFE_BROWSING)
@@ -32,12 +45,6 @@ IPC_STRUCT_TRAITS_END()
 #endif
 
 #if defined(OS_WIN)
-
-// A vector of filters, each being a Tuple containing a display string (i.e.
-// "Text Files") and a filter pattern (i.e. "*.txt").
-typedef std::vector<Tuple<base::string16, base::string16>>
-    GetOpenFileNameFilter;
-
 IPC_STRUCT_BEGIN(ChromeUtilityMsg_GetSaveFileName_Params)
   IPC_STRUCT_MEMBER(HWND, owner)
   IPC_STRUCT_MEMBER(DWORD, flags)
@@ -47,7 +54,6 @@ IPC_STRUCT_BEGIN(ChromeUtilityMsg_GetSaveFileName_Params)
   IPC_STRUCT_MEMBER(base::FilePath, initial_directory)
   IPC_STRUCT_MEMBER(base::string16, default_extension)
 IPC_STRUCT_END()
-
 #endif  // OS_WIN
 
 //------------------------------------------------------------------------------

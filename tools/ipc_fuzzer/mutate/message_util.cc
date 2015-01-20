@@ -102,8 +102,8 @@ int main(int argc, char** argv) {
   bool invert = cmd->HasSwitch(kInvertSwitch);
   bool perform_dump = cmd->HasSwitch(kDumpSwitch);
 
-  std::vector<std::string> input_file_names;
-  std::string output_file_name;
+  std::vector<base::FilePath::StringType> input_file_names;
+  base::FilePath::StringType output_file_name;
   base::SplitString(args[0], ',', &input_file_names);
 
   if (!perform_dump) {
@@ -115,8 +115,8 @@ int main(int argc, char** argv) {
   }
 
   ipc_fuzzer::MessageVector input_message_vector;
-  for (std::vector<std::string>::iterator it = input_file_names.begin();
-      it != input_file_names.end(); ++it) {
+  for (std::vector<base::FilePath::StringType>::iterator
+      it = input_file_names.begin(); it != input_file_names.end(); ++it) {
     ipc_fuzzer::MessageVector message_vector;
     if (!ipc_fuzzer::MessageFile::Read(base::FilePath(*it), &message_vector))
       return EXIT_FAILURE;

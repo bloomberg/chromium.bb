@@ -31,6 +31,14 @@
 #include "tools/ipc_fuzzer/message_lib/all_messages.h"
 #include "ipc/ipc_message_null_macros.h"
 
+#if defined(COMPILER_GCC)
+#define PRETTY_FUNCTION __PRETTY_FUNCTION__
+#elif defined(COMPILER_MSVC)
+#define PRETTY_FUNCTION __FUNCSIG__
+#else
+#define PRETTY_FUNCTION __FUNCTION__
+#endif
+
 namespace IPC {
 class Message;
 }  // namespace IPC
@@ -68,16 +76,16 @@ template <typename T>
 void GenerateIntegralType(T* value) {
   switch (RandInRange(16)) {
     case 0:
-      *value = 0;
+      *value = static_cast<T>(0);
       break;
     case 1:
-      *value = 1;
+      *value = static_cast<T>(1);
       break;
     case 2:
-      *value = -1;
+      *value = static_cast<T>(-1);
       break;
     case 3:
-      *value = 2;
+      *value = static_cast<T>(2);
       break;
     default:
       *value = static_cast<T>(RandU64());
@@ -105,7 +113,7 @@ class GeneratorImpl : public Generator {
   virtual ~GeneratorImpl() {}
 
   void GenerateBool(bool* value) override {
-    *value = RandInRange(2);
+    *value = RandInRange(2) ? true: false;
   }
 
   void GenerateInt(int* value) override {
@@ -173,7 +181,7 @@ struct GenerateTraits {
   static bool Generate(P* p, Generator *generator) {
     // This is the catch-all for types we don't have enough information
     // to generate.
-    std::cerr << "Can't handle " << __PRETTY_FUNCTION__ << "\n";
+    std::cerr << "Can't handle " << PRETTY_FUNCTION << "\n";
     return false;
   }
 };
@@ -425,7 +433,27 @@ struct GenerateTraits<std::pair<A, B> > {
   }
 };
 
-// Specializations to generate hand-coded tyoes
+// Specializations to generate hand-coded types.
+#if defined(OS_POSIX)
+template <>
+struct GenerateTraits<base::FileDescriptor> {
+    static bool Generate(base::FileDescriptor* p, Generator* generator) {
+        // I don't think we can generate real ones due to check on construct.
+        p->fd = -1;
+        return true;
+    }
+};
+
+template <>
+struct GenerateTraits<IPC::ChannelHandle> {
+    static bool Generate(IPC::ChannelHandle* p, Generator* generator) {
+        return
+            GenerateParam(&p->name, generator) &&
+            GenerateParam(&p->socket, generator);
+    }
+};
+#endif
+
 template <>
 struct GenerateTraits<base::NullableString16> {
   static bool Generate(base::NullableString16* p, Generator* generator) {
@@ -435,20 +463,11 @@ struct GenerateTraits<base::NullableString16> {
 };
 
 template <>
-struct GenerateTraits<base::FileDescriptor> {
-  static bool Generate(base::FileDescriptor* p, Generator* generator) {
-    // I don't think we can generate real ones due to check on construct.
-    p->fd = -1;
-    return true;
-  }
-};
-
-template <>
 struct GenerateTraits<base::FilePath> {
   static bool Generate(base::FilePath* p, Generator* generator) {
     const char path_chars[] = "ACz0/.~:";
     size_t count = RandInRange(60);
-    std::string random_path;
+    base::FilePath::StringType random_path;
     for (size_t i = 0; i < count; ++i)
       random_path += path_chars[RandInRange(sizeof(path_chars) - 1)];
     *p = base::FilePath(random_path);
@@ -644,7 +663,7 @@ struct GenerateTraits<base::DictionaryValue> {
 template <>
 struct GenerateTraits<GURL> {
   static bool Generate(GURL *p, Generator* generator) {
-    const char url_chars[] = "Ahtp0:/.?+\%&#";
+    const char url_chars[] = "Ahtp0:/.?+\\%&#";
     size_t count = RandInRange(100);
     std::string random_url;
     for (size_t i = 0; i < count; ++i)
@@ -669,15 +688,6 @@ struct GenerateTraits<SkBitmap> {
   static bool Generate(SkBitmap* p, Generator* generator) {
     *p = SkBitmap();
     return true;
-  }
-};
-
-template <>
-struct GenerateTraits<IPC::ChannelHandle> {
-  static bool Generate(IPC::ChannelHandle* p, Generator* generator) {
-    return
-        GenerateParam(&p->name, generator) &&
-        GenerateParam(&p->socket, generator);
   }
 };
 
@@ -710,16 +720,20 @@ struct GenerateTraits<content::IndexedDBKey> {
         std::vector<content::IndexedDBKey> array;
         array.resize(length);
         for (size_t i = 0; i < length; ++i) {
-          if (!GenerateParam(&array[i], generator))
-            return false;
+            if (!GenerateParam(&array[i], generator)) {
+              --g_depth;
+              return false;
+            }
         }
         *p = content::IndexedDBKey(array);
         return true;
       }
       case blink::WebIDBKeyTypeBinary: {
         std::string binary;
-        if (!GenerateParam(&binary, generator))
-          return false;
+        if (!GenerateParam(&binary, generator)) {
+            --g_depth;
+            return false;
+        }
         *p = content::IndexedDBKey(binary);
         return true;
       }
@@ -733,8 +747,10 @@ struct GenerateTraits<content::IndexedDBKey> {
       case blink::WebIDBKeyTypeDate:
       case blink::WebIDBKeyTypeNumber: {
         double number;
-        if (!GenerateParam(&number, generator))
-          return false;
+        if (!GenerateParam(&number, generator)) {
+            --g_depth;
+            return false;
+        }
         *p = content::IndexedDBKey(number, web_type);
         return true;
       }
@@ -743,12 +759,12 @@ struct GenerateTraits<content::IndexedDBKey> {
         *p = content::IndexedDBKey(web_type);
         return true;
       }
-      default:
-        NOTREACHED();
-        return false;
+      default: {
+          NOTREACHED();
+          --g_depth;
+          return false;
+      }
     }
-    --g_depth;
-    return true;
   }
 };
 
@@ -1294,7 +1310,7 @@ int GenerateMain(int argc, char** argv) {
     std::cerr << "Usage: ipc_fuzzer_generate [--help] [--count=n] outfile\n";
     return EXIT_FAILURE;
   }
-  std::string output_file_name = args[0];
+  base::FilePath::StringType output_file_name = args[0];
 
   int message_count = 1000;
   if (cmd->HasSwitch(kCountSwitch))

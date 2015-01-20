@@ -401,13 +401,15 @@ struct FuzzTraits<std::pair<A, B> > {
   }
 };
 
-// Specializations to fuzz hand-coded tyoes
+// Specializations to fuzz hand-coded types.
+#if defined(OS_POSIX)
 template <>
 struct FuzzTraits<base::FileDescriptor> {
   static void Fuzz(base::FileDescriptor* p, Fuzzer* fuzzer) {
     FuzzParam(&p->fd, fuzzer);
   }
 };
+#endif
 
 template <>
 struct FuzzTraits<GURL> {
@@ -665,8 +667,8 @@ int MutateMain(int argc, char** argv) {
     return EXIT_FAILURE;
   }
 
-  std::string input_file_name = args[0];
-  std::string output_file_name = args[1];
+  base::FilePath::StringType input_file_name = args[0];
+  base::FilePath::StringType output_file_name = args[1];
 
   bool permute = cmd->HasSwitch(kPermuteSwitch);
 
@@ -681,7 +683,7 @@ int MutateMain(int argc, char** argv) {
   std::string type_string_list = cmd->GetSwitchValueASCII(kTypeListSwitch);
   std::vector<std::string> type_string_vector;
   base::SplitString(type_string_list, ',', &type_string_vector);
-  std::set<int> type_set;
+  std::set<uint32> type_set;
   for (size_t i = 0; i < type_string_vector.size(); ++i) {
     type_set.insert(atoi(type_string_vector[i].c_str()));
   }
