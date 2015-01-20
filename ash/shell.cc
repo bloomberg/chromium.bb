@@ -419,8 +419,8 @@ void Shell::OnOverviewModeStarting() {
   FOR_EACH_OBSERVER(ShellObserver, observers_, OnOverviewModeStarting());
 }
 
-void Shell::OnOverviewModeEnding() {
-  FOR_EACH_OBSERVER(ShellObserver, observers_, OnOverviewModeEnding());
+void Shell::OnOverviewModeEnded() {
+  FOR_EACH_OBSERVER(ShellObserver, observers_, OnOverviewModeEnded());
 }
 
 void Shell::OnMaximizeModeStarted() {

@@ -53,7 +53,7 @@ class ASH_EXPORT MaximizeModeWindowManager : public aura::WindowObserver,
 
   // ShellObserver overrides:
   void OnOverviewModeStarting() override;
-  void OnOverviewModeEnding() override;
+  void OnOverviewModeEnded() override;
 
   // Overridden from WindowObserver:
   void OnWindowDestroying(aura::Window* window) override;

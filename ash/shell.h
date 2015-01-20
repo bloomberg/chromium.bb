@@ -298,9 +298,8 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   // get re-arranged).
   void OnOverviewModeStarting();
 
-  // Called before the overview mode is ending (before the windows get arranged
-  // to their final position).
-  void OnOverviewModeEnding();
+  // Called after overview mode has ended.
+  void OnOverviewModeEnded();
 
   // Called after maximize mode has started, windows might still animate though.
   void OnMaximizeModeStarted();

@@ -15,6 +15,7 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
+#include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/window_animations.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
@@ -464,6 +465,10 @@ void PanelLayoutManager::OnShelfIconPositionsChanged() {
 ////////////////////////////////////////////////////////////////////////////////
 // PanelLayoutManager, ash::ShellObserver implementation:
 
+void PanelLayoutManager::OnOverviewModeEnded() {
+  Relayout();
+}
+
 void PanelLayoutManager::OnShelfAlignmentChanged(aura::Window* root_window) {
   if (panel_container_->GetRootWindow() == root_window)
     Relayout();
@@ -599,7 +604,15 @@ void PanelLayoutManager::Relayout() {
   if (!shelf_ || !shelf_->shelf_widget())
     return;
 
-  if (in_layout_)
+  // Suppress layouts during overview mode because changing window bounds
+  // interfered with overview mode animations. However, layouts need to be done
+  // when the WindowSelectorController is restoring minimized windows so that
+  // they actually become visible.
+  WindowSelectorController* window_selector_controller =
+      Shell::GetInstance()->window_selector_controller();
+  if (in_layout_ || !window_selector_controller ||
+      (window_selector_controller->IsSelecting() &&
+          !window_selector_controller->IsRestoringMinimizedWindows()))
     return;
   base::AutoReset<bool> auto_reset_in_layout(&in_layout_, true);
 

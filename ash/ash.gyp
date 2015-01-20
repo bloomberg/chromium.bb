@@ -543,8 +543,6 @@
       'wm/overview/scoped_overview_animation_settings.cc',
       'wm/overview/scoped_transform_overview_window.cc',
       'wm/overview/scoped_transform_overview_window.h',
-      'wm/overview/scoped_window_copy.cc',
-      'wm/overview/scoped_window_copy.h',
       'wm/overview/window_grid.cc',
       'wm/overview/window_grid.h',
       'wm/overview/window_selector.cc',

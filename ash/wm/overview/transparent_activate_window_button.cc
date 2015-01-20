@@ -133,12 +133,4 @@ void TransparentActivateWindowButton::SendFocusAlert() const {
       NotifyAccessibilityEvent(ui::AX_EVENT_FOCUS, true);
 }
 
-void TransparentActivateWindowButton::StackAbove(
-    TransparentActivateWindowButton* activate_button) {
-  aura::Window* this_window = event_handler_widget_->GetNativeWindow();
-  aura::Window* other_window = activate_button->event_handler_widget_->
-      GetNativeWindow();
-  this_window->parent()->StackChildAbove(this_window, other_window);
-}
-
 }  // namespace ash

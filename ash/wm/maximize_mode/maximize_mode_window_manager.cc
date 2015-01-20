@@ -85,7 +85,7 @@ void MaximizeModeWindowManager::OnOverviewModeStarting() {
   backdrops_hidden_ = true;
 }
 
-void MaximizeModeWindowManager::OnOverviewModeEnding() {
+void MaximizeModeWindowManager::OnOverviewModeEnded() {
   if (!backdrops_hidden_)
     return;
 

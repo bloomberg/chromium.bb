@@ -49,9 +49,8 @@ class ASH_EXPORT ShellObserver {
   // get re-arranged).
   virtual void OnOverviewModeStarting() {}
 
-  // Called before the overview mode is ending (before the windows get arranged
-  // to their final position).
-  virtual void OnOverviewModeEnding() {}
+  // Called after overview mode has ended.
+  virtual void OnOverviewModeEnded() {}
 
   // Called when the always maximize mode has started. Windows might still
   // animate though.

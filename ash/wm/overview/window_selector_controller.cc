@@ -52,7 +52,9 @@ void WindowSelectorController::ToggleOverview() {
     if (windows.empty())
       return;
 
-    window_selector_.reset(new WindowSelector(windows, this));
+    Shell::GetInstance()->OnOverviewModeStarting();
+    window_selector_.reset(new WindowSelector(this));
+    window_selector_->Init(windows);
     OnSelectionStarted();
   }
 }
@@ -61,11 +63,18 @@ bool WindowSelectorController::IsSelecting() {
   return window_selector_.get() != NULL;
 }
 
+bool WindowSelectorController::IsRestoringMinimizedWindows() const {
+  return window_selector_.get() != NULL &&
+         window_selector_->restoring_minimized_windows();
+}
+
 // TODO(flackr): Make WindowSelectorController observe the activation of
 // windows, so we can remove WindowSelectorDelegate.
 void WindowSelectorController::OnSelectionEnded() {
+  window_selector_->Shutdown();
   window_selector_.reset();
   last_selection_time_ = base::Time::Now();
+  Shell::GetInstance()->OnOverviewModeEnded();
 }
 
 void WindowSelectorController::OnSelectionStarted() {

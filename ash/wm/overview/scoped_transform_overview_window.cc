@@ -10,7 +10,6 @@
 #include "ash/screen_util.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
-#include "ash/wm/overview/scoped_window_copy.h"
 #include "ash/wm/overview/window_selector_item.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
@@ -175,36 +174,37 @@ ScopedTransformOverviewWindow::ScopedTransformOverviewWindow(
       overview_started_(false),
       original_transform_(window->layer()->GetTargetTransform()),
       original_opacity_(window->layer()->GetTargetOpacity()) {
+  DCHECK(window_);
 }
 
 ScopedTransformOverviewWindow::~ScopedTransformOverviewWindow() {
-  if (window_) {
-    ScopedAnimationSettings animation_settings_list;
-    BeginScopedAnimation(
-        OverviewAnimationType::OVERVIEW_ANIMATION_RESTORE_WINDOW,
-        &animation_settings_list);
-    SetTransform(window()->GetRootWindow(), original_transform_);
+}
 
-    ScopedOverviewAnimationSettings animation_settings(
-        OverviewAnimationType::OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS,
-        window_);
-    gfx::Transform transform;
-    if (minimized_ && window_->GetProperty(aura::client::kShowStateKey) !=
-        ui::SHOW_STATE_MINIMIZED) {
-      // Setting opacity 0 and visible false ensures that the property change
-      // to SHOW_STATE_MINIMIZED will not animate the window from its original
-      // bounds to the minimized position.
-      // Hiding the window needs to be done before the target opacity is 0,
-      // otherwise the layer's visibility will not be updated
-      // (See VisibilityController::UpdateLayerVisibility).
-      window_->Hide();
-      window_->layer()->SetOpacity(0);
-      window_->SetProperty(aura::client::kShowStateKey,
-                           ui::SHOW_STATE_MINIMIZED);
-    }
-    wm::GetWindowState(window_)->set_ignored_by_shelf(ignored_by_shelf_);
-    SetOpacity(original_opacity_);
+void ScopedTransformOverviewWindow::RestoreWindow() {
+  ScopedAnimationSettings animation_settings_list;
+  BeginScopedAnimation(
+      OverviewAnimationType::OVERVIEW_ANIMATION_RESTORE_WINDOW,
+      &animation_settings_list);
+  SetTransform(window()->GetRootWindow(), original_transform_);
+
+  ScopedOverviewAnimationSettings animation_settings(
+      OverviewAnimationType::OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS,
+      window_);
+  gfx::Transform transform;
+  if (minimized_ && window_->GetProperty(aura::client::kShowStateKey) !=
+      ui::SHOW_STATE_MINIMIZED) {
+    // Setting opacity 0 and visible false ensures that the property change
+    // to SHOW_STATE_MINIMIZED will not animate the window from its original
+    // bounds to the minimized position.
+    // Hiding the window needs to be done before the target opacity is 0,
+    // otherwise the layer's visibility will not be updated
+    // (See VisibilityController::UpdateLayerVisibility).
+    window_->Hide();
+    window_->layer()->SetOpacity(0);
+    window_->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MINIMIZED);
   }
+  wm::GetWindowState(window_)->set_ignored_by_shelf(ignored_by_shelf_);
+  SetOpacity(original_opacity_);
 }
 
 void ScopedTransformOverviewWindow::BeginScopedAnimation(
@@ -233,17 +233,19 @@ gfx::Rect ScopedTransformOverviewWindow::GetTargetBoundsInScreen() const {
   return bounds;
 }
 
-void ScopedTransformOverviewWindow::RestoreWindow() {
+void ScopedTransformOverviewWindow::ShowWindowIfMinimized() {
   if (minimized_ && window_->GetProperty(aura::client::kShowStateKey) ==
       ui::SHOW_STATE_MINIMIZED) {
     window_->Show();
   }
 }
 
-void ScopedTransformOverviewWindow::RestoreWindowOnExit() {
-  minimized_ = false;
-  original_transform_ = gfx::Transform();
-  original_opacity_ = kRestoreWindowOpacity;
+void ScopedTransformOverviewWindow::ShowWindowOnExit() {
+  if (minimized_) {
+    minimized_ = false;
+    original_transform_ = gfx::Transform();
+    original_opacity_ = kRestoreWindowOpacity;
+  }
 }
 
 void ScopedTransformOverviewWindow::OnWindowDestroyed() {
@@ -315,7 +317,7 @@ void ScopedTransformOverviewWindow::PrepareForOverview() {
   DCHECK(!overview_started_);
   overview_started_ = true;
   wm::GetWindowState(window_)->set_ignored_by_shelf(true);
-  RestoreWindow();
+  ShowWindowIfMinimized();
 }
 
 }  // namespace ash

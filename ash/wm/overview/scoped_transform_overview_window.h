@@ -63,7 +63,6 @@ class ScopedTransformOverviewWindow
     return activate_button_.get();
   }
 
-
   // Starts an animation sequence which will use animation settings specified by
   // |animation_type|. The |animation_settings| container is populated with
   // scoped entities and the container should be destroyed at the end of the
@@ -89,16 +88,15 @@ class ScopedTransformOverviewWindow
   // Returns the original target bounds of all transformed windows.
   gfx::Rect GetTargetBoundsInScreen() const;
 
-  // Restores the window if it was minimized.
+  // Restores and animates the managed window to it's non overview mode state.
   void RestoreWindow();
 
-  // Restores this window on exit rather than returning it to a minimized state
-  // if it was minimized on entering overview mode.
-  void RestoreWindowOnExit();
+  // Forces the managed window to be shown (ie not hidden or minimized) when
+  // calling RestoreWindow().
+  void ShowWindowOnExit();
 
   // Informs the ScopedTransformOverviewWindow that the window being watched was
-  // destroyed. This resets the internal window pointer to avoid calling
-  // anything on the window at destruction time.
+  // destroyed. This resets the internal window pointer.
   void OnWindowDestroyed();
 
   // Prepares for overview mode by doing any necessary actions before entering.
@@ -121,6 +119,9 @@ class ScopedTransformOverviewWindow
   void Select() override;
 
  private:
+  // Shows the window if it was minimized.
+  void ShowWindowIfMinimized();
+
   // A weak pointer to the real window in the overview.
   aura::Window* window_;
 

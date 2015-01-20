@@ -44,6 +44,10 @@ class ASH_EXPORT WindowSelectorController
   // Returns true if window selection mode is active.
   bool IsSelecting();
 
+  // Returns true if overview mode is restoring minimized windows so that they
+  // are visible during overview mode.
+  bool IsRestoringMinimizedWindows() const;
+
   // WindowSelectorDelegate:
   void OnSelectionEnded() override;
 

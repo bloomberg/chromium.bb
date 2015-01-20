@@ -74,21 +74,7 @@ struct WindowSelectorItemComparator
   }
 
   bool operator()(WindowSelectorItem* window) const {
-    return window->HasSelectableWindow(target);
-  }
-
-  const aura::Window* target;
-};
-
-// A comparator for locating a WindowSelectorItem given a targeted window.
-struct WindowSelectorItemTargetComparator
-    : public std::unary_function<WindowSelectorItem*, bool> {
-  explicit WindowSelectorItemTargetComparator(const aura::Window* target_window)
-      : target(target_window) {
-  }
-
-  bool operator()(WindowSelectorItem* window) const {
-    return window->Contains(target);
+    return window->GetWindow() == target;
   }
 
   const aura::Window* target;
@@ -141,10 +127,6 @@ WindowGrid::WindowGrid(aura::Window* root_window,
                        WindowSelector* window_selector)
     : root_window_(root_window),
       window_selector_(window_selector) {
-  WindowSelectorItem* panels_item = nullptr;
-
-  std::set<aura::Window*> panels_item_windows;
-  aura::Window* panels_parent = nullptr;
 
   for (aura::Window::Windows::const_iterator iter = windows.begin();
        iter != windows.end(); ++iter) {
@@ -153,36 +135,7 @@ WindowGrid::WindowGrid(aura::Window* root_window,
     (*iter)->AddObserver(this);
     observed_windows_.insert(*iter);
 
-    if ((*iter)->type() == ui::wm::WINDOW_TYPE_PANEL &&
-        wm::GetWindowState(*iter)->panel_attached()) {
-      // Attached panel windows are grouped into a single overview item per
-      // grid.
-      if (!panels_item) {
-        panels_item = new WindowSelectorItem(root_window_);
-        window_list_.push_back(panels_item);
-      }
-      DCHECK(panels_parent == nullptr || panels_parent == (*iter)->parent());
-      panels_parent = (*iter)->parent();
-      panels_item_windows.insert(*iter);
-    } else {
-      WindowSelectorItem* selector_item = new WindowSelectorItem(root_window_);
-      window_list_.push_back(selector_item);
-      selector_item->AddWindow(*iter);
-    }
-  }
-
-  if (panels_item) {
-    // Sort and add panel windows in reverse z order to the WindowSelectorItem
-    // so that the transparent overlays are in the proper order.
-
-    CHECK_GT(panels_item_windows.size(), 0u);
-
-    const Windows& children = panels_parent->children();
-    for (Windows::const_reverse_iterator iter = children.rbegin();
-        iter != children.rend(); ++iter) {
-      if (panels_item_windows.find(*iter) != panels_item_windows.end())
-        panels_item->AddWindow(*iter);
-    }
+    window_list_.push_back(new WindowSelectorItem(*iter));
   }
 }
 
@@ -247,7 +200,7 @@ void WindowGrid::PositionWindows(bool animate) {
                             window_size.height() * row + y_offset,
                             window_size.width(),
                             window_size.height());
-    window_list_[i]->SetBounds(root_window_, target_bounds, animate ?
+    window_list_[i]->SetBounds(target_bounds, animate ?
         OverviewAnimationType::OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS :
         OverviewAnimationType::OVERVIEW_ANIMATION_NONE);
   }
@@ -333,16 +286,18 @@ WindowSelectorItem* WindowGrid::SelectedWindow() const {
 }
 
 bool WindowGrid::Contains(const aura::Window* window) const {
-  return std::find_if(window_list_.begin(), window_list_.end(),
-                      WindowSelectorItemTargetComparator(window)) !=
-                          window_list_.end();
+  for (const WindowSelectorItem* window_item : window_list_) {
+    if (window_item->Contains(window))
+      return true;
+  }
+  return false;
 }
 
 void WindowGrid::FilterItems(const base::string16& pattern) {
   base::i18n::FixedPatternStringSearchIgnoringCaseAndAccents finder(pattern);
   for (ScopedVector<WindowSelectorItem>::iterator iter = window_list_.begin();
        iter != window_list_.end(); iter++) {
-    if (finder.Search((*iter)->SelectionWindow()->title(), nullptr, nullptr)) {
+    if (finder.Search((*iter)->GetWindow()->title(), nullptr, nullptr)) {
       (*iter)->SetDimmed(false);
     } else {
       (*iter)->SetDimmed(true);
@@ -360,13 +315,6 @@ void WindowGrid::OnWindowDestroying(aura::Window* window) {
                    WindowSelectorItemComparator(window));
 
   DCHECK(iter != window_list_.end());
-
-  (*iter)->RemoveWindow(window);
-
-  // If there are still windows in this selector entry then the overview is
-  // still active and the active selection remains the same.
-  if (!(*iter)->empty())
-    return;
 
   size_t removed_index = iter - window_list_.begin();
   window_list_.erase(iter);
@@ -395,7 +343,7 @@ void WindowGrid::OnWindowBoundsChanged(aura::Window* window,
                                        const gfx::Rect& new_bounds) {
   ScopedVector<WindowSelectorItem>::const_iterator iter =
       std::find_if(window_list_.begin(), window_list_.end(),
-                   WindowSelectorItemTargetComparator(window));
+                   WindowSelectorItemComparator(window));
   DCHECK(iter != window_list_.end());
 
   // Immediately finish any active bounds animation.

@@ -42,9 +42,6 @@ class TransparentActivateWindowButton {
   // window title is read.
   void SendFocusAlert() const;
 
-  // Stacks |this| above |activate_button| in the window z-ordering.
-  void StackAbove(TransparentActivateWindowButton* activate_button);
-
  private:
   // The transparent window event handler widget itself.
   scoped_ptr<views::Widget> event_handler_widget_;

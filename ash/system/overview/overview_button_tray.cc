@@ -69,7 +69,7 @@ void OverviewButtonTray::OnMaximizeModeEnded() {
   UpdateIconVisibility();
 }
 
-void OverviewButtonTray::OnOverviewModeEnding() {
+void OverviewButtonTray::OnOverviewModeEnded() {
   SetDrawBackgroundAsActive(false);
 }
 

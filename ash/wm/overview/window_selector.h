@@ -66,15 +66,24 @@ class ASH_EXPORT WindowSelector
   typedef std::vector<aura::Window*> WindowList;
   typedef ScopedVector<WindowSelectorItem> WindowSelectorItemList;
 
-  WindowSelector(const WindowList& windows,
-                 WindowSelectorDelegate* delegate);
+  explicit WindowSelector(WindowSelectorDelegate* delegate);
   ~WindowSelector() override;
+
+  // Initialize with the windows that can be selected.
+  void Init(const WindowList& windows);
+
+  // Perform cleanup that cannot be done in the destructor.
+  void Shutdown();
 
   // Cancels window selection.
   void CancelSelection();
 
   // Called when the last window selector item from a grid is deleted.
   void OnGridEmpty(WindowGrid* grid);
+
+  bool restoring_minimized_windows() const {
+    return restoring_minimized_windows_;
+  }
 
   // gfx::DisplayObserver:
   void OnDisplayAdded(const gfx::Display& display) override;
@@ -116,6 +125,10 @@ class ASH_EXPORT WindowSelector
   // Helper function that moves the selection widget to |direction| on the
   // corresponding window grid.
   void Move(Direction direction, bool animate);
+
+  // Removes all observers that were registered during construction and/or
+  // initialization.
+  void RemoveAllObservers();
 
   // Tracks observed windows.
   std::set<aura::Window*> observed_windows_;
@@ -168,6 +181,10 @@ class ASH_EXPORT WindowSelector
   // The number of times the text filtering textfield has been cleared of text
   // during this overview mode session.
   size_t num_times_textfield_cleared_;
+
+  // Tracks whether minimized windows are currently being restored for overview
+  // mode.
+  bool restoring_minimized_windows_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowSelector);
 };

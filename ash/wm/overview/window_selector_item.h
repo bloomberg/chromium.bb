@@ -27,57 +27,38 @@ class Widget;
 
 namespace ash {
 
-// This class represents an item in overview mode. An item can have one or more
-// windows, of which only one can be activated by keyboard (i.e. alt+tab) but
-// any can be selected with a pointer (touch or mouse).
+// This class represents an item in overview mode.
 class ASH_EXPORT WindowSelectorItem
     : public views::ButtonListener,
       public aura::WindowObserver,
       public TransparentActivateWindowButtonDelegate {
  public:
-  explicit WindowSelectorItem(aura::Window* root_window);
+  explicit WindowSelectorItem(aura::Window* window);
   ~WindowSelectorItem() override;
+
+  aura::Window* GetWindow();
 
   // Returns the root window on which this item is shown.
   aura::Window* root_window() { return root_window_; }
 
-  // Adds a window to this selector item. Windows should be added in reverse
-  // visible order so that the transparent overlay ordering matches the visible
-  // ordering. Each |window| should have the same root window as |this| was
-  // instantiated with.
-  void AddWindow(aura::Window* window);
-
-  // Returns true if the window selector item has |window| as a selectable
-  // window.
-  bool HasSelectableWindow(const aura::Window* window) const;
-
   // Returns true if |target| is contained in this WindowSelectorItem.
   bool Contains(const aura::Window* target) const;
 
-  // Restores |window| on exiting window overview rather than returning it
-  // to its previous state.
-  void RestoreWindowOnExit(aura::Window* window);
+  // Restores and animates the managed window to it's non overview mode state.
+  void RestoreWindow();
 
-  // Returns the |window| to activate on selecting of this item.
-  aura::Window* SelectionWindow() const;
-
-  // Removes |window| from this item. Check empty() after calling this to see
-  // if the entire item is now empty.
-  void RemoveWindow(const aura::Window* window);
-
-  // Returns true if this item has no more selectable windows (i.e. after
-  // calling RemoveWindow for the last contained window).
-  bool empty() const;
+  // Forces the managed window to be shown (ie not hidden or minimized) when
+  // calling RestoreWindow().
+  void ShowWindowOnExit();
 
   // Dispatched before beginning window overview. This will do any necessary
   // one time actions such as restoring minimized windows.
   void PrepareForOverview();
 
   // Sets the bounds of this window selector item to |target_bounds| in the
-  // |root_window| root window. The bounds change will be animated as specified
+  // |root_window_| root window. The bounds change will be animated as specified
   // by |animation_type|.
-  void SetBounds(aura::Window* root_window,
-                 const gfx::Rect& target_bounds,
+  void SetBounds(const gfx::Rect& target_bounds,
                  OverviewAnimationType animation_type);
 
   // Recomputes the positions for the windows in this selection item. This is
@@ -99,6 +80,7 @@ class ASH_EXPORT WindowSelectorItem
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // aura::WindowObserver:
+  void OnWindowDestroying(aura::Window* window) override;
   void OnWindowTitleChanged(aura::Window* window) override;
 
   // ash::TransparentActivateWindowButtonDelegate:
@@ -107,13 +89,10 @@ class ASH_EXPORT WindowSelectorItem
  private:
   friend class WindowSelectorTest;
 
-  typedef ScopedVector<ScopedTransformOverviewWindow> TransformWindows;
-
   // Sets the bounds of this selector's items to |target_bounds| in
-  // |root_window|. The bounds change will be animated as specified
+  // |root_window_|. The bounds change will be animated as specified
   // by |animation_type|.
-  void SetItemBounds(aura::Window* root_window,
-                     const gfx::Rect& target_bounds,
+  void SetItemBounds(const gfx::Rect& target_bounds,
                      OverviewAnimationType animation_type);
 
   // Changes the opacity of all the windows the item owns.
@@ -139,15 +118,15 @@ class ASH_EXPORT WindowSelectorItem
   // Updates the close buttons accessibility name.
   void UpdateCloseButtonAccessibilityName();
 
-  // Returns the ScopedTransformOverviewWindow to activate or close.
-  ScopedTransformOverviewWindow* SelectionTransformWindow() const;
-
   // True if the item is being shown in the overview, false if it's being
   // filtered.
   bool dimmed_;
 
   // The root window this item is being displayed on.
   aura::Window* root_window_;
+
+  // The contained Window's wrapper.
+  ScopedTransformOverviewWindow transform_window_;
 
   // The target bounds this selector item is fit within.
   gfx::Rect target_bounds_;
@@ -175,9 +154,6 @@ class ASH_EXPORT WindowSelectorItem
   // Windows' own TransparentActivateWindowButton.
   scoped_ptr<TransparentActivateWindowButton>
       selector_item_activate_window_button_;
-
-  // List of all Windows added to this and their associated helper classes.
-  TransformWindows transform_windows_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowSelectorItem);
 };

@@ -55,9 +55,6 @@
 namespace ash {
 namespace {
 
-typedef std::vector<aura::Window*> WindowList;
-typedef std::map<const aura::Window*, int> WindowIndexMap;
-
 class NonActivatableActivationDelegate
     : public aura::client::ActivationDelegate {
  public:
@@ -68,17 +65,6 @@ void CancelDrag(DragDropController* controller, bool* canceled) {
   if (controller->IsDragDropInProgress()) {
     *canceled = true;
     controller->DragCancel();
-  }
-}
-
-// Fills the |index_map| with (window*, list index) entries based on each
-// windows index in the |windows| list.
-void GetWindowIndexMap(const WindowList& windows,
-                       WindowIndexMap* index_map) {
-  int index = 0;
-  for (auto window : windows) {
-    (*index_map)[window] = index;
-    ++index;
   }
 }
 
@@ -208,7 +194,7 @@ class WindowSelectorTest : public test::AshTestBase {
     WindowSelector* ws = ash::Shell::GetInstance()->
         window_selector_controller()->window_selector_.get();
     return ws->grid_list_[ws->selected_grid_index_]->
-        SelectedWindow()->SelectionWindow();
+        SelectedWindow()->GetWindow();
   }
 
   bool selection_widget_active() {
@@ -306,9 +292,7 @@ TEST_F(WindowSelectorTest, Basic) {
   EXPECT_EQ(text_filter_widget()->GetNativeWindow(), GetFocusedWindow());
   EXPECT_FALSE(WindowsOverlapping(window1.get(), window2.get()));
   EXPECT_FALSE(WindowsOverlapping(window1.get(), panel1.get()));
-  // Panels 1 and 2 should still be overlapping being in a single selector
-  // item.
-  EXPECT_TRUE(WindowsOverlapping(panel1.get(), panel2.get()));
+  EXPECT_FALSE(WindowsOverlapping(panel1.get(), panel2.get()));
 
   // Clicking window 1 should activate it.
   ClickWindow(window1.get());
@@ -834,19 +818,15 @@ TEST_F(WindowSelectorTest, MultipleDisplays) {
       GetWindowItemsForRoot(1);
 
   // Window indices are based on top-down order. The reverse of our creation.
-  IsWindowAndCloseButtonInScreen(window1.get(), primary_window_items[2]);
-  IsWindowAndCloseButtonInScreen(window2.get(), primary_window_items[1]);
-  IsWindowAndCloseButtonInScreen(window3.get(), secondary_window_items[2]);
-  IsWindowAndCloseButtonInScreen(window4.get(), secondary_window_items[1]);
+  IsWindowAndCloseButtonInScreen(window1.get(), primary_window_items[3]);
+  IsWindowAndCloseButtonInScreen(window2.get(), primary_window_items[2]);
+  IsWindowAndCloseButtonInScreen(window3.get(), secondary_window_items[3]);
+  IsWindowAndCloseButtonInScreen(window4.get(), secondary_window_items[2]);
 
-  IsWindowAndCloseButtonInScreen(panel1.get(), primary_window_items[0]);
+  IsWindowAndCloseButtonInScreen(panel1.get(), primary_window_items[1]);
   IsWindowAndCloseButtonInScreen(panel2.get(), primary_window_items[0]);
-  IsWindowAndCloseButtonInScreen(panel3.get(), secondary_window_items[0]);
+  IsWindowAndCloseButtonInScreen(panel3.get(), secondary_window_items[1]);
   IsWindowAndCloseButtonInScreen(panel4.get(), secondary_window_items[0]);
-
-  EXPECT_TRUE(WindowsOverlapping(panel1.get(), panel2.get()));
-  EXPECT_TRUE(WindowsOverlapping(panel3.get(), panel4.get()));
-  EXPECT_FALSE(WindowsOverlapping(panel1.get(), panel3.get()));
 }
 
 // Tests shutting down during overview.
@@ -952,38 +932,6 @@ TEST_F(WindowSelectorTest, CreateLabelUnderWindow) {
                                   label->GetPreferredSize().height());
   gfx::Rect real_label_bounds = label->GetWidget()->GetNativeWindow()->bounds();
   EXPECT_EQ(real_label_bounds, expected_label_bounds);
-}
-
-// Tests that a label is created for the active panel in a group of panels in
-// overview mode.
-TEST_F(WindowSelectorTest, CreateLabelUnderPanel) {
-  scoped_ptr<aura::Window> panel1(CreatePanelWindow(gfx::Rect(0, 0, 100, 100)));
-  scoped_ptr<aura::Window> panel2(CreatePanelWindow(gfx::Rect(0, 0, 100, 100)));
-  base::string16 panel1_title = base::UTF8ToUTF16("My panel");
-  base::string16 panel2_title = base::UTF8ToUTF16("Another panel");
-  base::string16 updated_panel1_title = base::UTF8ToUTF16("WebDriver Torso");
-  base::string16 updated_panel2_title = base::UTF8ToUTF16("Da panel");
-  panel1->SetTitle(panel1_title);
-  panel2->SetTitle(panel2_title);
-  wm::ActivateWindow(panel1.get());
-  ToggleOverview();
-  WindowSelectorItem* window_item = GetWindowItemsForRoot(0).back();
-  views::Label* label = GetLabelView(window_item);
-  // Has the label view been created?
-  ASSERT_TRUE(label);
-
-  // Verify the label matches the active window title.
-  EXPECT_EQ(label->text(), panel1_title);
-  // Verify that updating the title also updates the label.
-  panel1->SetTitle(updated_panel1_title);
-  EXPECT_EQ(label->text(), updated_panel1_title);
-  // After destroying the first panel, the label should match the second panel.
-  panel1.reset();
-  label = GetLabelView(window_item);
-  EXPECT_EQ(label->text(), panel2_title);
-  // Also test updating the title on the second panel.
-  panel2->SetTitle(updated_panel2_title);
-  EXPECT_EQ(label->text(), updated_panel2_title);
 }
 
 // Tests that overview updates the window positions if the display orientation
@@ -1164,53 +1112,6 @@ TEST_F(WindowSelectorTest, WindowOverviewHidesCalloutWidgets) {
       panel_manager->GetCalloutWidgetForPanel(panel2.get())->IsVisible());
 }
 
-// Tests that when panels are grouped that the close button only closes the
-// currently active panel. After the removal window selection should still be
-// active, and the label should have changed. Removing the last panel should
-// cause selection to end.
-TEST_F(WindowSelectorTest, CloseButtonOnPanels) {
-  scoped_ptr<views::Widget> widget1(CreatePanelWindowWidget(
-      gfx::Rect(0, 0, 300, 100)));
-  scoped_ptr<views::Widget> widget2(CreatePanelWindowWidget(
-      gfx::Rect(100, 0, 100, 100)));
-  aura::Window* window1 = widget1->GetNativeWindow();
-  aura::Window* window2 = widget2->GetNativeWindow();
-  base::string16 panel1_title = base::UTF8ToUTF16("Panel 1");
-  base::string16 panel2_title = base::UTF8ToUTF16("Panel 2");
-  window1->SetTitle(panel1_title);
-  window2->SetTitle(panel2_title);
-  wm::ActivateWindow(window1);
-  ToggleOverview();
-
-  gfx::RectF bounds1 = GetTransformedBoundsInRootWindow(window1);
-  gfx::Point point1(bounds1.top_right().x() - 1, bounds1.top_right().y() - 1);
-  ui::test::EventGenerator event_generator1(window1->GetRootWindow(), point1);
-
-  EXPECT_FALSE(widget1->IsClosed());
-  event_generator1.ClickLeftButton();
-  EXPECT_TRUE(widget1->IsClosed());
-  RunAllPendingInMessageLoop();
-  EXPECT_TRUE(IsSelecting());
-  WindowSelectorItem* window_item = GetWindowItemsForRoot(0).front();
-  EXPECT_FALSE(window_item->empty());
-  EXPECT_TRUE(window_item->Contains(window2));
-  EXPECT_TRUE(GetCloseButton(window_item)->IsVisible());
-
-
-  views::Label* label = GetLabelView(window_item);
-  EXPECT_EQ(label->text(), panel2_title);
-
-  gfx::RectF bounds2 = GetTransformedBoundsInRootWindow(window2);
-  gfx::Point point2(bounds2.top_right().x() - 1, bounds2.top_right().y() - 1);
-  ui::test::EventGenerator event_generator2(window2->GetRootWindow(), point2);
-
-  EXPECT_FALSE(widget2->IsClosed());
-  event_generator2.ClickLeftButton();
-  EXPECT_TRUE(widget2->IsClosed());
-  RunAllPendingInMessageLoop();
-  EXPECT_FALSE(IsSelecting());
-}
-
 // Creates three windows and tests filtering them by title.
 TEST_F(WindowSelectorTest, BasicTextFiltering) {
   gfx::Rect bounds(0, 0, 100, 100);
@@ -1347,87 +1248,6 @@ TEST_F(WindowSelectorTest, CancelOverviewOnTap) {
   // Tap should now exit overview mode.
   generator.GestureTapAt(point_in_background_page);
   EXPECT_FALSE(IsSelecting());
-}
-
-// Tests that the transparent overlays z-order matches the windows z-order.
-TEST_F(WindowSelectorTest, PanelStackOrdering) {
-  gfx::Rect bounds1(0, 0, 100, 100);
-  gfx::Rect bounds2(10, 0, 100, 100);
-  gfx::Rect bounds3(20, 0, 100, 100);
-  scoped_ptr<aura::Window> panel1(CreatePanelWindow(bounds1));
-  scoped_ptr<aura::Window> panel2(CreatePanelWindow(bounds2));
-  scoped_ptr<aura::Window> panel3(CreatePanelWindow(bounds3));
-
-  wm::ActivateWindow(panel2.get());
-  wm::ActivateWindow(panel3.get());
-  wm::ActivateWindow(panel1.get());
-
-  WindowIndexMap z_order;
-  GetWindowIndexMap(panel1->parent()->children(), &z_order);
-  ASSERT_GT(z_order[panel1.get()], z_order[panel2.get()]);
-  ASSERT_GT(z_order[panel2.get()], z_order[panel3.get()]);
-
-  WindowList mru_windows = ash::Shell::GetInstance()->mru_window_tracker()->
-      BuildMruWindowList();
-  WindowIndexMap mru_rank;
-  GetWindowIndexMap(mru_windows, &mru_rank);
-  ASSERT_LT(mru_rank[panel1.get()], mru_rank[panel3.get()]);
-  ASSERT_LT(mru_rank[panel3.get()], mru_rank[panel2.get()]);
-
-  ToggleOverview();
-
-  gfx::Rect panel1_transformed_bounds(
-      gfx::ToEnclosingRect(GetTransformedTargetBounds(panel1.get())));
-  gfx::Rect panel2_transformed_bounds(
-      gfx::ToEnclosingRect(GetTransformedTargetBounds(panel2.get())));
-  gfx::Rect panel3_transformed_bounds(
-      gfx::ToEnclosingRect(GetTransformedTargetBounds(panel3.get())));
-
-  gfx::Rect target_rect(panel2_transformed_bounds);
-  target_rect.Intersect(panel3_transformed_bounds);
-  target_rect.Subtract(panel1_transformed_bounds);
-  gfx::Point tap_target(target_rect.CenterPoint());
-
-  ASSERT_TRUE(panel3_transformed_bounds.Contains(tap_target));
-
-  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
-  generator.GestureTapAt(tap_target);
-  EXPECT_EQ(panel2.get(), GetFocusedWindow());
-}
-
-// Tests that individual panels can be selected on a secondary display.
-TEST_F(WindowSelectorTest, PanelSelectionOnSecondaryDisplay) {
-  if (!SupportsMultipleDisplays())
-    return;
-
-  UpdateDisplay("600x400,600x400");
-  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
-
-  gfx::Rect bounds1(700, 0, 100, 100);
-  gfx::Rect bounds2(710, 0, 100, 100);
-  scoped_ptr<aura::Window> panel1(CreatePanelWindow(bounds1));
-  scoped_ptr<aura::Window> panel2(CreatePanelWindow(bounds2));
-
-  wm::ActivateWindow(panel2.get());
-  wm::ActivateWindow(panel1.get());
-
-  WindowList mru_windows = ash::Shell::GetInstance()->mru_window_tracker()->
-      BuildMruWindowList();
-  WindowIndexMap mru_rank;
-  GetWindowIndexMap(mru_windows, &mru_rank);
-  ASSERT_LT(mru_rank[panel1.get()], mru_rank[panel2.get()]);
-  ASSERT_EQ(panel1.get(), GetFocusedWindow());
-
-  ToggleOverview();
-
-  gfx::Rect panel2_transformed_bounds(
-      gfx::ToEnclosingRect(GetTransformedBoundsInRootWindow(panel2.get())));
-  gfx::Point tap_target(panel2_transformed_bounds.right() - 2,
-                        panel2_transformed_bounds.bottom() - 2);
-
-  ui::test::EventGenerator generator(root_windows[1]);
-  generator.GestureTapAt(tap_target);
-  EXPECT_EQ(panel2.get(), GetFocusedWindow());
 }
 
 }  // namespace ash
