@@ -106,14 +106,6 @@ class OffDomainInclusionDetectorTest
                    base::Unretained(this))));
   }
 
-  void TearDown() override {
-    // The SafeBrowsingService held by the MockSafeBrowsingDatabaseManager in
-    // |off_domain_inclusion_detector_| is deleted asynchronously and we thus
-    // need to cleanup explicitly here or the test will leak.
-    off_domain_inclusion_detector_.reset();
-    base::RunLoop().RunUntilIdle();
-  }
-
   AnalysisEvent GetLastEventAndReset() {
     const AnalysisEvent last_event = observed_analysis_event_;
     observed_analysis_event_ = AnalysisEvent::NO_EVENT;
