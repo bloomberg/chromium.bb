@@ -12,6 +12,14 @@
 # a license agreement, so upon installation it will prompt the user. To get
 # past the curses-based dialog press TAB <ret> TAB <ret> to agree.
 
+args="$@"
+if test "$1" = "--skip-sdk-packages"; then
+  skip_inst_sdk_packages=1
+  args="${@:2}"
+else
+  skip_inst_sdk_packages=0
+fi
+
 if ! uname -m | egrep -q "i686|x86_64"; then
   echo "Only x86 architectures are currently supported" >&2
   exit
@@ -19,7 +27,7 @@ fi
 
 # Install first the default Linux build deps.
 "$(dirname "${BASH_SOURCE[0]}")/install-build-deps.sh" \
-    --no-syms --lib32 --no-arm --no-chromeos-fonts --no-nacl --no-prompt "$@"
+  --no-syms --lib32 --no-arm --no-chromeos-fonts --no-nacl --no-prompt "${args}"
 
 lsb_release=$(lsb_release --codename --short)
 
@@ -84,16 +92,21 @@ then
   fi
 fi
 
-# Get the SDK extras packages to install from the DEPS file 'sdkextras' hook.
-packages="$(python -c 'execfile("./get_sdk_extras_packages.py")')"
-for package in "${packages}"; do
-  package_num=$(../third_party/android_tools/sdk/tools/android list sdk | \
-                grep -i "$package," | \
-                awk '/^[ ]*[0-9]*- / {gsub("-",""); print $1}')
-  if [[ -n ${package_num} ]]; then
-    ../third_party/android_tools/sdk/tools/android update sdk --no-ui --filter \
-      ${package_num}
-  fi
-done
+if test "$skip_inst_sdk_packages" != 1; then
+  echo 'checking for sdk packages install'
+  # Get the SDK extras packages to install from the DEPS file 'sdkextras' hook.
+  packages="$(python -c 'execfile("./get_sdk_extras_packages.py")')"
+  # Use absolute path to call 'android' so script can be run from any directory.
+  cwd=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+  for package in "${packages}"; do
+    pkg_id=$(${cwd}/../third_party/android_tools/sdk/tools/android list sdk | \
+                  grep -i "$package," | \
+                  awk '/^[ ]*[0-9]*- / {gsub("-",""); print $1}')
+    if [[ -n ${pkg_id} ]]; then
+      ${cwd}/../third_party/android_tools/sdk/tools/android update sdk --no-ui \
+         --filter ${pkg_id}
+    fi
+  done
+fi
 
 echo "install-build-deps-android.sh complete."
