@@ -365,6 +365,8 @@ test(function() {
     assert_throws(new TypeError(), function() { new Request(req); },
                   'Request cannot be constructed with a request that has ' +
                   'been flagged as used.');
+    assert_throws(new TypeError(), function() { req.clone(); },
+                  'Request.clone: If used flag is set, throw a TypeError.');
   },
   'Request construction behavior regarding "used" body flag and exceptions.');
 
