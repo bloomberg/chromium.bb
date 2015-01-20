@@ -206,14 +206,6 @@
     [self close];
 }
 
-- (void)animationDidStop:(NSAnimation*)animation {
-  // We can arrive here if animation was stopped in [self close] call.
-  DCHECK_EQ(animation, boundsAnimation_.get());
-  [self setBoundsAnimation:nil];
-
-  [popupCollection_ onPopupAnimationEnded:[self notificationID]];
-}
-
 - (void)showWithAnimation:(NSRect)newBounds {
   bounds_ = newBounds;
   NSRect startBounds = newBounds;
