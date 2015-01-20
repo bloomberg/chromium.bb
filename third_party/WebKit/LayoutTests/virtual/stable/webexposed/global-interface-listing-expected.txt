@@ -651,6 +651,8 @@ interface GainNode
     method constructor
 interface Gamepad
     method constructor
+interface GamepadButton
+    method constructor
 interface GamepadEvent
     method constructor
 interface HTMLAllCollection
