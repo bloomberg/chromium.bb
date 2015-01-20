@@ -49,7 +49,12 @@
     },
     "ipc_tests",
     "jingle_unittests",
-    "media_unittests",
+    {
+      "test": "media_unittests",
+      "swarming": {
+        "can_use_on_swarming_builders": true
+      }
+    },
     {
       "test": "net_unittests",
       "swarming": {
