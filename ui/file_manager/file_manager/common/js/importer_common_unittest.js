@@ -76,6 +76,33 @@ function testIsMediaDirectory() {
       assertIsNotMediaDir);
 }
 
+function testResolver_Resolve(callback) {
+  var resolver = new importer.Resolver();
+  assertFalse(resolver.settled);
+  resolver.resolve(1);
+  resolver.promise.then(
+      function(value) {
+        assertTrue(resolver.settled);
+        assertEquals(1, value);
+      });
+
+  reportPromise(resolver.promise, callback);
+}
+
+function testResolver_Reject(callback) {
+  var resolver = new importer.Resolver();
+  assertFalse(resolver.settled);
+  resolver.reject('ouch');
+  resolver.promise
+      .then(callback.bind(null, true))
+      .catch(
+          function(error) {
+            assertTrue(resolver.settled);
+            assertEquals('ouch', error);
+            callback(false);
+          });
+}
+
 /** @param {string} path */
 function assertIsMediaDir(path) {
   var dir = createDirectoryEntry(sdVolume, path);

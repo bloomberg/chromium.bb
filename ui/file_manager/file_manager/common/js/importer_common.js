@@ -137,10 +137,11 @@ importer.Resolver = function() {
         this.reject_ = reject;
       }.bind(this));
 
-  this.promise_.then(
-    function() {
-      this.settled_ = true;
-    }.bind(this));
+  var settler = function() {
+    this.settled_ = true;
+  }.bind(this);
+
+  this.promise_.then(settler, settler);
 };
 
 importer.Resolver.prototype = /** @struct */ {
