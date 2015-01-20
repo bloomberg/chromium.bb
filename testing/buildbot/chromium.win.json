@@ -44,7 +44,12 @@
       "gcm_unit_tests",
       "gfx_unittests",
       "google_apis_unittests",
-      "gpu_unittests",
+      {
+        "test": "gpu_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       "installer_util_unittests",
       {
         "test": "interactive_ui_tests",
@@ -154,7 +159,12 @@
       "gcm_unit_tests",
       "gfx_unittests",
       "google_apis_unittests",
-      "gpu_unittests",
+      {
+        "test": "gpu_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       "installer_util_unittests",
       {
         "test": "interactive_ui_tests",
@@ -276,7 +286,12 @@
       "gcm_unit_tests",
       "gfx_unittests",
       "google_apis_unittests",
-      "gpu_unittests",
+      {
+        "test": "gpu_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       "installer_util_unittests",
       {
         "test": "interactive_ui_tests",
@@ -404,7 +419,12 @@
       "gcm_unit_tests",
       "gfx_unittests",
       "google_apis_unittests",
-      "gpu_unittests",
+      {
+        "test": "gpu_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       "installer_util_unittests",
       {
         "test": "interactive_ui_tests",
@@ -527,7 +547,12 @@
       "events_unittests",
       "extensions_unittests",
       "gcm_unit_tests",
-      "gpu_unittests",
+      {
+        "test": "gpu_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       "installer_util_unittests",
       {
         "test": "interactive_ui_tests",
