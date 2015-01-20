@@ -78,6 +78,8 @@ class NET_EXPORT_PRIVATE SpdyHeadersBlockParser {
   };
   ParserError get_error() const { return error_; }
 
+  SpdyMajorVersion spdy_version() const { return spdy_version_; }
+
   // Returns the size in bytes of a length field in a SPDY header.
   static size_t LengthFieldSizeForVersion(SpdyMajorVersion spdy_version);
 
@@ -138,6 +140,8 @@ class NET_EXPORT_PRIVATE SpdyHeadersBlockParser {
   SpdyStreamId stream_id_;
 
   ParserError error_;
+
+  const SpdyMajorVersion spdy_version_;
 };
 
 }  // namespace net

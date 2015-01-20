@@ -778,6 +778,14 @@ size_t SpdyConstants::GetSettingSize(SpdyMajorVersion version) {
   return version <= SPDY3 ? 8 : 6;
 }
 
+int32 SpdyConstants::GetInitialStreamWindowSize(SpdyMajorVersion version) {
+  return (version <= SPDY3) ? (64 * 1024) : (64 * 1024 - 1);
+}
+
+int32 SpdyConstants::GetInitialSessionWindowSize(SpdyMajorVersion version) {
+  return (version <= SPDY3) ? (64 * 1024) : (64 * 1024 - 1);
+}
+
 void SpdyDataIR::Visit(SpdyFrameVisitor* visitor) const {
   return visitor->VisitData(*this);
 }

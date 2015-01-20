@@ -12,14 +12,15 @@ const size_t SpdyHeadersBlockParser::kMaximumFieldLength = 16 * 1024;
 
 SpdyHeadersBlockParser::SpdyHeadersBlockParser(
     SpdyMajorVersion spdy_version,
-    SpdyHeadersHandlerInterface* handler) :
-    state_(READING_HEADER_BLOCK_LEN),
-    length_field_size_(LengthFieldSizeForVersion(spdy_version)),
-    max_headers_in_block_(MaxNumberOfHeadersForVersion(spdy_version)),
-    total_bytes_received_(0),
-    remaining_key_value_pairs_for_frame_(0),
-    handler_(handler),
-    error_(OK) {
+    SpdyHeadersHandlerInterface* handler)
+    : state_(READING_HEADER_BLOCK_LEN),
+      length_field_size_(LengthFieldSizeForVersion(spdy_version)),
+      max_headers_in_block_(MaxNumberOfHeadersForVersion(spdy_version)),
+      total_bytes_received_(0),
+      remaining_key_value_pairs_for_frame_(0),
+      handler_(handler),
+      error_(OK),
+      spdy_version_(spdy_version) {
   // The handler that we set must not be NULL.
   DCHECK(handler_ != NULL);
 }
