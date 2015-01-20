@@ -146,6 +146,8 @@ private:
     virtual void insertedIntoTree() override final;
     virtual void willBeRemovedFromTree() override final;
 
+    virtual bool isSelfCollapsingBlock() const override { return false; }
+
     virtual void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const override;
 
     virtual void paintObject(const PaintInfo&, const LayoutPoint& paintOffset) override;

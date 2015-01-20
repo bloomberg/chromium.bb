@@ -1067,7 +1067,12 @@ void RenderBlockFlow::layoutBlockChildren(bool relayoutChildren, SubtreeLayoutSc
         if (child->isColumnSpanAll()) {
             // This is not the containing block of the spanner. The spanner's placeholder will lay
             // it out in due course. For now we just need to consult our flow thread, so that the
-            // columns (if any) preceding and following the spanner are laid out correctly.
+            // columns (if any) preceding and following the spanner are laid out correctly. But
+            // first we apply the pending margin, so that it's taken into consideration and doesn't
+            // end up on the other side of the spanner.
+            setLogicalHeight(logicalHeight() + marginInfo.margin());
+            marginInfo.clearMargin();
+
             LayoutUnit adjustment = flowThreadContainingBlock()->skipColumnSpanner(child, offsetFromLogicalTopOfFirstPage() + logicalHeight());
             setLogicalHeight(logicalHeight() + adjustment);
             continue;
@@ -1477,7 +1482,7 @@ void RenderBlockFlow::marginBeforeEstimateForChild(RenderBox& child, LayoutUnit&
 
     RenderBox* grandchildBox = childBlockFlow->firstChildBox();
     for ( ; grandchildBox; grandchildBox = grandchildBox->nextSiblingBox()) {
-        if (!grandchildBox->isFloatingOrOutOfFlowPositioned())
+        if (!grandchildBox->isFloatingOrOutOfFlowPositioned() && !grandchildBox->isColumnSpanAll())
             break;
     }
 

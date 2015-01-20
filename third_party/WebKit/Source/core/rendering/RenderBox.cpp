@@ -256,6 +256,9 @@ void RenderBox::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle
     }
     updateShapeOutsideInfoAfterStyleChange(*style(), oldStyle);
     updateGridPositionAfterStyleChange(oldStyle);
+
+    if (RenderMultiColumnSpannerPlaceholder* placeholder = this->spannerPlaceholder())
+        placeholder->updateMarginProperties();
 }
 
 void RenderBox::updateShapeOutsideInfoAfterStyleChange(const RenderStyle& style, const RenderStyle* oldStyle)

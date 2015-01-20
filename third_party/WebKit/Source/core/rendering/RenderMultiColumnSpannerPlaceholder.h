@@ -24,6 +24,7 @@ public:
     RenderBox* rendererInFlowThread() const { return m_rendererInFlowThread; }
     void setRendererInFlowThread(RenderBox* renderer) { m_rendererInFlowThread = renderer; }
     void spannerWillBeRemoved();
+    void updateMarginProperties();
 
 protected:
     virtual void willBeRemovedFromTree() override;

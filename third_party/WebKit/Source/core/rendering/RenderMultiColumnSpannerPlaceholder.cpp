@@ -7,12 +7,23 @@
 
 namespace blink {
 
+static void copyMarginProperties(RenderStyle* placeholderStyle, const RenderStyle* spannerStyle)
+{
+    // We really only need the block direction margins, but there are no setters for that in
+    // RenderStyle. Just copy all margin sides. The inline ones don't matter anyway.
+    placeholderStyle->setMarginLeft(spannerStyle->marginLeft());
+    placeholderStyle->setMarginRight(spannerStyle->marginRight());
+    placeholderStyle->setMarginTop(spannerStyle->marginTop());
+    placeholderStyle->setMarginBottom(spannerStyle->marginBottom());
+}
+
 RenderMultiColumnSpannerPlaceholder* RenderMultiColumnSpannerPlaceholder::createAnonymous(RenderStyle* parentStyle, RenderBox* rendererInFlowThread)
 {
     RenderMultiColumnSpannerPlaceholder* newSpanner = new RenderMultiColumnSpannerPlaceholder(rendererInFlowThread);
     Document& document = rendererInFlowThread->document();
     newSpanner->setDocumentForAnonymous(&document);
     RefPtr<RenderStyle> newStyle = RenderStyle::createAnonymousStyleWithDisplay(parentStyle, BLOCK);
+    copyMarginProperties(newStyle.get(), rendererInFlowThread->style());
     newSpanner->setStyle(newStyle);
     return newSpanner;
 }
@@ -30,6 +41,13 @@ void RenderMultiColumnSpannerPlaceholder::spannerWillBeRemoved()
     m_rendererInFlowThread = 0;
     flowThread()->flowThreadDescendantWillBeRemoved(renderer);
     // |this| should be destroyed by now.
+}
+
+void RenderMultiColumnSpannerPlaceholder::updateMarginProperties()
+{
+    RefPtr<RenderStyle> newStyle = RenderStyle::clone(style());
+    copyMarginProperties(newStyle.get(), m_rendererInFlowThread->style());
+    setStyle(newStyle);
 }
 
 void RenderMultiColumnSpannerPlaceholder::willBeRemovedFromTree()
@@ -68,6 +86,8 @@ void RenderMultiColumnSpannerPlaceholder::computeLogicalHeight(LayoutUnit, Layou
 {
     computedValues.m_extent = m_rendererInFlowThread->logicalHeight();
     computedValues.m_position = logicalTop;
+    computedValues.m_margins.m_before = marginBefore();
+    computedValues.m_margins.m_after = marginAfter();
 }
 
 void RenderMultiColumnSpannerPlaceholder::invalidateTreeIfNeeded(const PaintInvalidationState& paintInvalidationState)
