@@ -667,7 +667,6 @@ remoting.ClientSession.prototype.disconnect = function(error) {
   this.logToServer.logClientSessionStateChange(state, error);
   this.error_ = error;
   this.setState_(state);
-  remoting.app.onDisconnected();
 };
 
 /**

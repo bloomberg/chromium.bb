@@ -55,7 +55,7 @@ remoting.disconnect = function() {
   } else {
     remoting.setMode(remoting.AppMode.CLIENT_SESSION_FINISHED_ME2ME);
   }
-  remoting.clientSession.disconnect(remoting.Error.NONE);
+  remoting.app.onDisconnected();
   remoting.clientSession = null;
   console.log('Disconnected.');
 };
@@ -79,6 +79,7 @@ function onClientStateChange_(state) {
       } else {
         remoting.setMode(remoting.AppMode.CLIENT_SESSION_FINISHED_ME2ME);
       }
+      remoting.app.onDisconnected();
       break;
 
     case remoting.ClientSession.State.FAILED:
