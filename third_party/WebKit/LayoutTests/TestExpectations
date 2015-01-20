@@ -1161,6 +1161,7 @@ crbug.com/408123 fast/multicol/span/balance-before-and-after-spanner.html [ Skip
 crbug.com/408123 fast/multicol/span/balance-before-spanner-extra-height.html [ Skip ]
 crbug.com/408123 fast/multicol/span/fill-after-spanner-exact-fit.html [ Skip ]
 crbug.com/408123 fast/multicol/span/fill-after-spanner-extra-height.html [ Skip ]
+crbug.com/408123 fast/multicol/span/multicol-with-padding.html [ Skip ]
 crbug.com/408123 fast/multicol/span/multicol-with-spanner-becomes-regular-block.html [ Skip ]
 crbug.com/408123 fast/multicol/span/pseudo-after.html [ Skip ]
 crbug.com/408123 fast/multicol/span/pseudo-after-then-content.html [ Skip ]
