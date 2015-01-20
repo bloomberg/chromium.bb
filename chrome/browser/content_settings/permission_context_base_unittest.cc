@@ -152,6 +152,32 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
     EXPECT_EQ(CONTENT_SETTING_ASK , setting);
   }
 
+  void TestRequestPermissionInvalidUrl(ContentSettingsType type) {
+    TestPermissionContext permission_context(profile(), type);
+    GURL url;
+    ASSERT_FALSE(url.is_valid());
+    content::WebContentsTester::For(web_contents())->NavigateAndCommit(url);
+
+    const PermissionRequestID id(
+        web_contents()->GetRenderProcessHost()->GetID(),
+        web_contents()->GetRenderViewHost()->GetRoutingID(),
+        -1, GURL());
+    permission_context.RequestPermission(
+        web_contents(),
+        id, url, true,
+        base::Bind(&TestPermissionContext::TrackPermissionDecision,
+                   base::Unretained(&permission_context)));
+
+    EXPECT_TRUE(permission_context.permission_set());
+    EXPECT_FALSE(permission_context.permission_granted());
+    EXPECT_TRUE(permission_context.tab_context_updated());
+
+    ContentSetting setting =
+        profile()->GetHostContentSettingsMap()->GetContentSetting(
+            url.GetOrigin(), url.GetOrigin(), type, std::string());
+    EXPECT_EQ(CONTENT_SETTING_ASK, setting);
+  }
+
  private:
   // ChromeRenderViewHostTestHarness:
   void SetUp() override {
@@ -169,7 +195,7 @@ TEST_F(PermissionContextBaseTests, TestAskAndGrant) {
   TestAskAndGrant_TestContent();
   StartUsingPermissionBubble();
   TestAskAndGrant_TestContent();
-};
+}
 
 // Simulates clicking Dismiss (X) in the infobar/bubble.
 // The permission should be denied but not saved for future use.
@@ -177,4 +203,17 @@ TEST_F(PermissionContextBaseTests, TestAskAndDismiss) {
   TestAskAndDismiss_TestContent();
   StartUsingPermissionBubble();
   TestAskAndDismiss_TestContent();
-};
+}
+
+// Simulates non-valid requesting URL.
+// The permission should be denied but not saved for future use.
+TEST_F(PermissionContextBaseTests, TestNonValidRequestingUrl) {
+  TestRequestPermissionInvalidUrl(CONTENT_SETTINGS_TYPE_GEOLOCATION);
+  TestRequestPermissionInvalidUrl(CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+  TestRequestPermissionInvalidUrl(CONTENT_SETTINGS_TYPE_MIDI_SYSEX);
+  TestRequestPermissionInvalidUrl(CONTENT_SETTINGS_TYPE_PUSH_MESSAGING);
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+  TestRequestPermissionInvalidUrl(
+      CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER);
+#endif
+}

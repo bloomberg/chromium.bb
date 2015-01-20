@@ -40,37 +40,30 @@ void ProtectedMediaIdentifierPermissionContext::RequestPermission(
     const BrowserPermissionCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  GURL embedder = web_contents->GetLastCommittedURL().GetOrigin();
-
 #if defined(ENABLE_EXTENSIONS)
   if (extensions::GetViewType(web_contents) !=
       extensions::VIEW_TYPE_TAB_CONTENTS) {
     // The tab may have gone away, or the request may not be from a tab at all.
-    LOG(WARNING)
+    DVLOG(1)
         << "Attempt to use protected media identifier in tabless renderer: "
         << id.ToString()
         << " (can't prompt user without a visible tab)";
-    NotifyPermissionSet(id, origin, embedder, callback, false, false);
-    return;
-  }
-#endif
-
-  if (!requesting_frame_origin.is_valid() || !embedder.is_valid()) {
-    LOG(WARNING)
-        << "Attempt to use protected media identifier from an invalid URL: "
-        << requesting_frame_origin << "," << embedder
-        << " (proteced media identifier is not supported in popups)";
-    NotifyPermissionSet(id, requesting_frame_origin, embedder,
+    NotifyPermissionSet(id,
+                        origin,
+                        web_contents->GetLastCommittedURL().GetOrigin(),
                         callback, false, false);
     return;
   }
+#endif
 
 #if defined(OS_ANDROID)
   // Check if the protected media identifier master switch is disabled.
   if (!profile()->GetPrefs()->GetBoolean(
         prefs::kProtectedMediaIdentifierEnabled)) {
-    NotifyPermissionSet(id, requesting_frame_origin, embedder, callback,
-                        false, false);
+    NotifyPermissionSet(id,
+                        requesting_frame_origin,
+                        web_contents->GetLastCommittedURL().GetOrigin(),
+                        callback, false, false);
     return;
   }
 #endif

@@ -29,7 +29,6 @@ void GeolocationPermissionContext::RequestPermission(
     bool user_gesture,
     const BrowserPermissionCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  GURL embedder_origin = web_contents->GetLastCommittedURL().GetOrigin();
 
   bool permission_set;
   bool new_permission;
@@ -37,18 +36,13 @@ void GeolocationPermissionContext::RequestPermission(
       web_contents, id, id.bridge_id(), requesting_frame_origin, user_gesture,
       callback, &permission_set, &new_permission)) {
     if (permission_set) {
-      NotifyPermissionSet(id, requesting_frame_origin, embedder_origin,
-                          callback, true, new_permission);
+      NotifyPermissionSet(id,
+                          requesting_frame_origin,
+                          web_contents->GetLastCommittedURL().GetOrigin(),
+                          callback,
+                          true,
+                          new_permission);
     }
-    return;
-  }
-
-  if (!requesting_frame_origin.is_valid() || !embedder_origin.is_valid()) {
-    LOG(WARNING) << "Attempt to use geolocation from an invalid URL: "
-        << requesting_frame_origin << "," << embedder_origin
-        << " (geolocation is not supported in popups)";
-    NotifyPermissionSet(id, requesting_frame_origin, embedder_origin,
-                        callback, false /* persist */, false /* allowed */);
     return;
   }
 
