@@ -89,6 +89,12 @@ void UDPSocketImpl::Bind(
   }
 }
 
+void UDPSocketImpl::Connect(
+    NetAddressPtr remote_addr,
+    const Callback<void(NetworkErrorPtr, NetAddressPtr)>& callback) {
+  // TODO(yzshen): Implement it.
+}
+
 void UDPSocketImpl::SetSendBufferSize(
     uint32_t size,
     const Callback<void(NetworkErrorPtr)>& callback) {

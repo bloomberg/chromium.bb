@@ -10,31 +10,40 @@ import "network/public/interfaces/network_error.mojom";
 // UDPSocket and UDPSocketClient represent a UDP socket and its client. The
 // typical flow of using the interfaces is:
 // - Acquire a UDPSocket interface pointer and set a UDPSocketClient instance.
-// - (optional) Set options which are allowed prior to Bind().
-// - Bind the socket.
-// - (optional) Set options which are allowed after Bind().
+// - (optional) Set options which are allowed prior to Bind()/Connect().
+// - Bind or connect the socket.
+// - (optional) Set options which are allowed after Bind()/Connect().
 // - Send / request to receive datagrams. Received datagrams will be delivered
 //   to UDPSocketClient.OnReceived().
 
+// TODO(yzshen): Get rid of [Client] annotation.
 [Client=UDPSocketClient]
 interface UDPSocket {
   // Allows the socket to share the local address to which it will be bound with
-  // other processes. Should be called before Bind().
+  // other processes. Should be called before Bind()/Connect().
   // (This is equivalent to SO_REUSEADDR of the POSIX socket API.)
   AllowAddressReuse() => (NetworkError result);
 
-  // Binds the socket to the given address.
+  // Binds the socket to the given address. The socket must not be bound or
+  // connected.
   // |bound_addr| is non-NULL on success. It might not be the same as |addr|.
   // For example, if port 0 is used in |addr|, an available port is picked and
   // returned in |bound_addr|.
   Bind(NetAddress addr) => (NetworkError result, NetAddress? bound_addr);
 
+
+  // Connects the socket to the remote address. The socket must not be bound or
+  // connected.
+  // |local_addr| is non-NULL on success.
+  Connect(NetAddress remote_addr) => (NetworkError result,
+                                      NetAddress? local_addr);
+
   // Sets the OS send buffer size (in bytes) for the socket. The socket must be
-  // bound.
+  // bound or connected.
   SetSendBufferSize(uint32 size) => (NetworkError result);
 
   // Sets the OS receive buffer size (in bytes) for the socket. The socket must
-  // be bound.
+  // be bound or connected.
   SetReceiveBufferSize(uint32 size) => (NetworkError result);
 
   // Negotiates the maximum number of pending SendTo() requests. If
@@ -87,7 +96,8 @@ interface UDPSocket {
   // round trip to the service side.
   ReceiveMore(uint32 datagram_number);
 
-  // Sends data to the specified destination. The socket must be bound.
+  // Sends data to the specified destination. The socket must be bound or
+  // connected. |dest_addr| is allowed to be NULL if the socket is connected.
   // On success, |result.code| is a non-negative number indicating how many
   // bytes have been written. Otherwise, it is a network error code, including
   // (but not limited to):
@@ -95,12 +105,13 @@ interface UDPSocket {
   //   resource to complete the operation. One possible cause is that the client
   //   tries to send too many datagrams in a short period of time.
   // TODO(yzshen): Formalize Mojo networking error codes.
-  SendTo(NetAddress dest_addr, array<uint8> data) => (NetworkError result);
+  SendTo(NetAddress? dest_addr, array<uint8> data) => (NetworkError result);
 };
 
 interface UDPSocketClient {
-  // On success, |src_addr| and |data| are non-NULL, and |result.code| is a
-  // non-negative number indicating how many bytes have been received. On
-  // failure, |result.code| is a network error code.
+  // On success, |data| is non-NULL, |src_addr| is non-NULL if the socket is
+  // not connected, |result.code| is a non-negative number indicating how many
+  // bytes have been received. On failure, |result.code| is a network error
+  // code.
   OnReceived(NetworkError result, NetAddress? src_addr, array<uint8>? data);
 };

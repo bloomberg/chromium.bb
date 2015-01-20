@@ -34,6 +34,10 @@ class UDPSocketImpl : public InterfaceImpl<UDPSocket> {
       NetAddressPtr addr,
       const Callback<void(NetworkErrorPtr, NetAddressPtr)>& callback) override;
 
+  void Connect(
+      NetAddressPtr remote_addr,
+      const Callback<void(NetworkErrorPtr, NetAddressPtr)>& callback) override;
+
   void SetSendBufferSize(
       uint32_t size,
       const Callback<void(NetworkErrorPtr)>& callback) override;

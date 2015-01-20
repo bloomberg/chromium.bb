@@ -1,11 +1,11 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package impl
+package system
 
-//#include "mojo/public/platform/native/system_thunks.h"
 //#include "mojo/public/c/system/main.h"
+//#include "mojo/public/platform/native/system_thunks.h"
 import "C"
 import (
 	"math"
@@ -80,6 +80,39 @@ const (
 	MOJO_MAP_BUFFER_FLAG_NONE                      MojoMapBufferFlags                    = 0
 )
 
+// IsReadable returns true iff the |MOJO_HANDLE_SIGNAL_READABLE| bit is set.
+func (m MojoHandleSignals) IsReadable() bool {
+	return (m & MOJO_HANDLE_SIGNAL_READABLE) != 0
+}
+
+// IsWritable returns true iff the |MOJO_HANDLE_SIGNAL_WRITABLE| bit is set.
+func (m MojoHandleSignals) IsWritable() bool {
+	return (m & MOJO_HANDLE_SIGNAL_WRITABLE) != 0
+}
+
+// IsClosed returns true iff the |MOJO_HANDLE_SIGNAL_PEER_CLOSED| bit is set.
+func (m MojoHandleSignals) IsClosed() bool {
+	return (m & MOJO_HANDLE_SIGNAL_PEER_CLOSED) != 0
+}
+
+// MojoHandleSignalsState is a struct returned by wait functions to indicate
+// the signaling state of handles.
+type MojoHandleSignalsState struct {
+	// Signals that were satisfied at some time before the call returned.
+	SatisfiedSignals MojoHandleSignals
+	// Signals that are possible to satisfy. For example, if the return value
+	// was |MOJO_RESULT_FAILED_PRECONDITION|, you can use this field to
+	// determine which, if any, of the signals can still be satisfied.
+	SatisfiableSignals MojoHandleSignals
+}
+
+func (cState *C.struct_MojoHandleSignalsState) goValue() MojoHandleSignalsState {
+	return MojoHandleSignalsState{
+		MojoHandleSignals(cState.satisfied_signals),
+		MojoHandleSignals(cState.satisfiable_signals),
+	}
+}
+
 // DataPipeOptions is used to specify creation parameters for a data pipe.
 type DataPipeOptions struct {
 	flags MojoCreateDataPipeOptionsFlags
@@ -90,30 +123,17 @@ type DataPipeOptions struct {
 	capacity uint32
 }
 
-type MojoHandleSignalsState struct {
-	SatisfiedSignals   MojoHandleSignals
-	SatisfiableSignals MojoHandleSignals
-}
-
-func NewMojoHandleSignalsState(cstate C.struct_MojoHandleSignalsState) MojoHandleSignalsState {
-	return MojoHandleSignalsState{
-		MojoHandleSignals(cstate.satisfied_signals),
-		MojoHandleSignals(cstate.satisfiable_signals),
-	}
-}
-
-func (opts *DataPipeOptions) cType() *C.struct_MojoCreateDataPipeOptions {
+func (opts *DataPipeOptions) cValue(cOpts *C.struct_MojoCreateDataPipeOptions) *C.struct_MojoCreateDataPipeOptions {
 	if opts == nil {
 		return nil
 	}
-	var cOpts C.struct_MojoCreateDataPipeOptions
-	cOpts = C.struct_MojoCreateDataPipeOptions{
-		(C.uint32_t)(unsafe.Sizeof(cOpts)),
-		opts.flags.cType(),
-		(C.uint32_t)(opts.elemSize),
-		(C.uint32_t)(opts.capacity),
+	*cOpts = C.struct_MojoCreateDataPipeOptions{
+		C.uint32_t(unsafe.Sizeof(*cOpts)),
+		opts.flags.cValue(),
+		C.uint32_t(opts.elemSize),
+		C.uint32_t(opts.capacity),
 	}
-	return &cOpts
+	return cOpts
 }
 
 // MessagePipeOptions is used to specify creation parameters for a message pipe.
@@ -121,16 +141,15 @@ type MessagePipeOptions struct {
 	flags MojoCreateMessagePipeOptionsFlags
 }
 
-func (opts *MessagePipeOptions) cType() *C.struct_MojoCreateMessagePipeOptions {
+func (opts *MessagePipeOptions) cValue(cOpts *C.struct_MojoCreateMessagePipeOptions) *C.struct_MojoCreateMessagePipeOptions {
 	if opts == nil {
 		return nil
 	}
-	var cOpts C.struct_MojoCreateMessagePipeOptions
-	cOpts = C.struct_MojoCreateMessagePipeOptions{
-		(C.uint32_t)(unsafe.Sizeof(cOpts)),
-		opts.flags.cType(),
+	*cOpts = C.struct_MojoCreateMessagePipeOptions{
+		C.uint32_t(unsafe.Sizeof(*cOpts)),
+		opts.flags.cValue(),
 	}
-	return &cOpts
+	return cOpts
 }
 
 // SharedBufferOptions is used to specify creation parameters for a
@@ -139,16 +158,15 @@ type SharedBufferOptions struct {
 	flags MojoCreateSharedBufferOptionsFlags
 }
 
-func (opts *SharedBufferOptions) cType() *C.struct_MojoCreateSharedBufferOptions {
+func (opts *SharedBufferOptions) cValue(cOpts *C.struct_MojoCreateSharedBufferOptions) *C.struct_MojoCreateSharedBufferOptions {
 	if opts == nil {
 		return nil
 	}
-	var cOpts C.struct_MojoCreateSharedBufferOptions
-	cOpts = C.struct_MojoCreateSharedBufferOptions{
-		(C.uint32_t)(unsafe.Sizeof(cOpts)),
-		opts.flags.cType(),
+	*cOpts = C.struct_MojoCreateSharedBufferOptions{
+		C.uint32_t(unsafe.Sizeof(*cOpts)),
+		opts.flags.cValue(),
 	}
-	return &cOpts
+	return cOpts
 }
 
 // DuplicateBufferHandleOptions is used to specify parameters in
@@ -157,85 +175,62 @@ type DuplicateBufferHandleOptions struct {
 	flags MojoDuplicateBufferHandleOptionsFlags
 }
 
-func (opts *DuplicateBufferHandleOptions) cType() *C.struct_MojoDuplicateBufferHandleOptions {
+func (opts *DuplicateBufferHandleOptions) cValue(cOpts *C.struct_MojoDuplicateBufferHandleOptions) *C.struct_MojoDuplicateBufferHandleOptions {
 	if opts == nil {
 		return nil
 	}
-	var cOpts C.struct_MojoDuplicateBufferHandleOptions
-	cOpts = C.struct_MojoDuplicateBufferHandleOptions{
-		(C.uint32_t)(unsafe.Sizeof(cOpts)),
-		opts.flags.cType(),
+	*cOpts = C.struct_MojoDuplicateBufferHandleOptions{
+		C.uint32_t(unsafe.Sizeof(*cOpts)),
+		opts.flags.cValue(),
 	}
-	return &cOpts
-}
-
-func (m MojoHandleSignals) IsReadable() bool {
-	return (m & MOJO_HANDLE_SIGNAL_READABLE) != 0
-}
-func (m MojoHandleSignals) IsWritable() bool {
-	return (m & MOJO_HANDLE_SIGNAL_WRITABLE) != 0
-}
-func (m MojoHandleSignals) IsClosed() bool {
-	return (m & MOJO_HANDLE_SIGNAL_PEER_CLOSED) != 0
+	return cOpts
 }
 
 // Convenience functions to convert Go types to their equivalent C types.
-func (m MojoHandle) cType() C.MojoHandle {
-	return (C.MojoHandle)(m)
-}
-func (m MojoDeadline) cType() C.MojoDeadline {
-	return (C.MojoDeadline)(m)
-}
-func (m MojoHandleSignals) cType() C.MojoHandleSignals {
-	return (C.MojoHandleSignals)(m)
-}
-func (m MojoHandleSignalsState) cType() C.struct_MojoHandleSignalsState {
-	return C.struct_MojoHandleSignalsState{m.SatisfiedSignals.cType(), m.SatisfiableSignals.cType()}
-}
-func (m MojoWriteMessageFlags) cType() C.MojoWriteMessageFlags {
-	return (C.MojoWriteMessageFlags)(m)
-}
-func (m MojoReadMessageFlags) cType() C.MojoReadMessageFlags {
-	return (C.MojoReadMessageFlags)(m)
-}
-func (m MojoWriteDataFlags) cType() C.MojoWriteDataFlags {
-	return (C.MojoWriteDataFlags)(m)
-}
-func (m MojoReadDataFlags) cType() C.MojoReadDataFlags {
-	return (C.MojoReadDataFlags)(m)
-}
-func (m MojoCreateDataPipeOptionsFlags) cType() C.MojoCreateDataPipeOptionsFlags {
-	return (C.MojoCreateDataPipeOptionsFlags)(m)
-}
-func (m MojoCreateMessagePipeOptionsFlags) cType() C.MojoCreateMessagePipeOptionsFlags {
-	return (C.MojoCreateMessagePipeOptionsFlags)(m)
-}
-func (m MojoCreateSharedBufferOptionsFlags) cType() C.MojoCreateSharedBufferOptionsFlags {
-	return (C.MojoCreateSharedBufferOptionsFlags)(m)
-}
-func (m MojoDuplicateBufferHandleOptionsFlags) cType() C.MojoDuplicateBufferHandleOptionsFlags {
-	return (C.MojoDuplicateBufferHandleOptionsFlags)(m)
-}
-func (m MojoMapBufferFlags) cType() C.MojoMapBufferFlags {
-	return (C.MojoMapBufferFlags)(m)
+func (m MojoHandle) cValue() C.MojoHandle {
+	return C.MojoHandle(m)
 }
 
-func cArrayMojoHandle(m []MojoHandle) *C.MojoHandle {
-	if len(m) == 0 {
-		return nil
-	}
-	return (*C.MojoHandle)(&m[0])
-}
-func cArrayMojoHandleSignals(m []MojoHandleSignals) *C.MojoHandleSignals {
-	if len(m) == 0 {
-		return nil
-	}
-	return (*C.MojoHandleSignals)(&m[0])
+func (m MojoDeadline) cValue() C.MojoDeadline {
+	return C.MojoDeadline(m)
 }
 
-func cArrayBytes(m []byte) unsafe.Pointer {
-	if len(m) == 0 {
-		return nil
-	}
-	return unsafe.Pointer(&m[0])
+func (m MojoHandleSignals) cValue() C.MojoHandleSignals {
+	return C.MojoHandleSignals(m)
+}
+
+func (m MojoWriteMessageFlags) cValue() C.MojoWriteMessageFlags {
+	return C.MojoWriteMessageFlags(m)
+}
+
+func (m MojoReadMessageFlags) cValue() C.MojoReadMessageFlags {
+	return C.MojoReadMessageFlags(m)
+}
+
+func (m MojoWriteDataFlags) cValue() C.MojoWriteDataFlags {
+	return C.MojoWriteDataFlags(m)
+}
+
+func (m MojoReadDataFlags) cValue() C.MojoReadDataFlags {
+	return C.MojoReadDataFlags(m)
+}
+
+func (m MojoCreateDataPipeOptionsFlags) cValue() C.MojoCreateDataPipeOptionsFlags {
+	return C.MojoCreateDataPipeOptionsFlags(m)
+}
+
+func (m MojoCreateMessagePipeOptionsFlags) cValue() C.MojoCreateMessagePipeOptionsFlags {
+	return C.MojoCreateMessagePipeOptionsFlags(m)
+}
+
+func (m MojoCreateSharedBufferOptionsFlags) cValue() C.MojoCreateSharedBufferOptionsFlags {
+	return C.MojoCreateSharedBufferOptionsFlags(m)
+}
+
+func (m MojoDuplicateBufferHandleOptionsFlags) cValue() C.MojoDuplicateBufferHandleOptionsFlags {
+	return C.MojoDuplicateBufferHandleOptionsFlags(m)
+}
+
+func (m MojoMapBufferFlags) cValue() C.MojoMapBufferFlags {
+	return C.MojoMapBufferFlags(m)
 }

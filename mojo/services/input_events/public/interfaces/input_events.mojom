@@ -56,6 +56,31 @@ struct TouchData {
   int32 pointer_id;
 };
 
+struct GestureData {
+  // A bounding box for all the input events that contributed to this gesture.
+  RectF? bounding_box;
+
+  // GESTURE_SCROLL_UPDATE
+  float scroll_x;
+  float scroll_y;
+
+  // SCROLL_FLING_START
+  float velocity_x;
+  float velocity_y;
+
+  // GESTURE_PINCH_UPDATE
+  float scale;
+
+  // GESTURE_SWIPE
+  bool swipe_left;
+  bool swipe_right;
+  bool swipe_up;
+  bool swipe_down;
+
+  // GESTURE_TAP and GESTURE_TAP_UNCONFIRMED and GESTURE_DOUBLE_TAP
+  int32 tap_count;
+};
+
 struct MouseWheelData {
   int32 x_offset;
   int32 y_offset;
@@ -68,5 +93,6 @@ struct Event {
   LocationData? location_data;
   KeyData? key_data;
   TouchData? touch_data;
+  GestureData? gesture_data;
   MouseWheelData? wheel_data;
 };

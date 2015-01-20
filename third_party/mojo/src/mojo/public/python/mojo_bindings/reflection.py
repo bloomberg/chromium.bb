@@ -182,8 +182,10 @@ class MojoInterfaceType(type):
     for method in methods:
       dictionary[method.name] = _NotImplemented
     client_class_getter = descriptor.get('client', None)
+    fully_qualified_name = descriptor['fully_qualified_name']
 
-    interface_manager = InterfaceManager(name, methods, client_class_getter)
+    interface_manager = InterfaceManager(fully_qualified_name, methods,
+        client_class_getter)
     dictionary.update({
         'client': None,
         'manager': None,
@@ -230,6 +232,9 @@ class InterfaceRequest(object):
     result = self._handle
     self._handle = None
     return result
+
+  def Bind(self, impl):
+    type(impl).manager.Bind(impl, self.PassMessagePipe())
 
 
 class InterfaceManager(object):
@@ -282,7 +287,7 @@ class InterfaceManager(object):
 
     # Give an instance manager to the implementation to allow it to close
     # the connection.
-    impl.manager = InstanceManager(router)
+    impl.manager = InstanceManager(router, error_handler)
 
     router.Start()
 
@@ -304,7 +309,7 @@ class InterfaceManager(object):
 
     proxy = self._proxy_class(router, error_handler)
     # Give an instance manager to the proxy to allow to close the connection.
-    proxy.manager = InstanceManager(router)
+    proxy.manager = InstanceManager(router, error_handler)
     return proxy
 
   def _Stub(self, impl):
@@ -327,14 +332,18 @@ class InstanceManager(object):
   Manager for the implementation of an interface or a proxy. The manager allows
   to control the connection over the pipe.
   """
-  def __init__(self, router):
-    self.router = router
+  def __init__(self, router, error_handler):
+    self._router = router
+    self._error_handler = error_handler
 
   def Close(self):
-    self.router.Close()
+    self._router.Close()
 
   def PassMessagePipe(self):
-    return self.router.PassMessagePipe()
+    return self._router.PassMessagePipe()
+
+  def AddOnErrorCallback(self, callback):
+    self._error_handler.AddCallback(lambda _: callback())
 
 
 class _MethodDescriptor(object):

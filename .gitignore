@@ -210,7 +210,6 @@ v8.log
 /mojo/mojo_wm_flow_embeddee_bindings.xml
 /mojo/mojo_wm_flow_embedder_bindings.xml
 /mojo/mojom_test.xml
-/mojo/public/tools/prebuilt/
 /mojo/sample_service.xml
 /native_client
 /net/Debug
@@ -335,6 +334,7 @@ v8.log
 /third_party/mingw-w64
 /third_party/mkl
 /third_party/mockito/src
+/third_party/mojo/src/mojo/public/tools/prebuilt/
 /third_party/nacl_sdk_binaries/
 /third_party/nss
 /third_party/omaha/src/omaha

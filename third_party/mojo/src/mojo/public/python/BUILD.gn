@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//third_party/cython/rules.gni")
+import("rules.gni")
 
 group("python") {
   deps = [
@@ -92,5 +93,16 @@ copy("bindings") {
   ]
   deps = [
     ":mojo_system",
+  ]
+}
+
+python_package("packaged_bindings") {
+  sources = [
+    "mojo_bindings/__init__.py",
+    "mojo_bindings/descriptor.py",
+    "mojo_bindings/messaging.py",
+    "mojo_bindings/promise.py",
+    "mojo_bindings/reflection.py",
+    "mojo_bindings/serialization.py",
   ]
 }
