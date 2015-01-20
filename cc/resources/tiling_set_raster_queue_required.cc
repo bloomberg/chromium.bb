@@ -25,7 +25,12 @@ TilingSetRasterQueueRequired::TilingSetRasterQueueRequired(
   // resolution is not HIGH_RESOLUTION.
   PictureLayerTiling* tiling =
       tiling_set->FindTilingWithResolution(HIGH_RESOLUTION);
-  DCHECK(tiling);
+  // If we don't have a high res tiling, then this queue will yield no tiles.
+  // See PictureLayerImpl::CanHaveTilings for examples of when a HIGH_RESOLUTION
+  // tiling would not be generated.
+  if (!tiling)
+    return;
+
   iterator_ = TilingIterator(tiling, &tiling->tiling_data_);
   while (!iterator_.done() && !IsTileRequired(*iterator_))
     ++iterator_;

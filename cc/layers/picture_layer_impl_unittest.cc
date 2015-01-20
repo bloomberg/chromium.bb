@@ -2930,6 +2930,23 @@ TEST_F(PictureLayerImplTest, TilingSetRasterQueueActiveTree) {
   EXPECT_TRUE(queue->IsEmpty());
 }
 
+TEST_F(PictureLayerImplTest, TilingSetRasterQueueRequiredNoHighRes) {
+  scoped_refptr<FakePicturePileImpl> pending_pile =
+      FakePicturePileImpl::CreateEmptyPile(gfx::Size(256, 256),
+                                           gfx::Size(1024, 1024));
+  pending_pile->set_is_solid_color(true);
+
+  SetupPendingTree(pending_pile);
+  EXPECT_FALSE(
+      pending_layer_->picture_layer_tiling_set()->FindTilingWithResolution(
+          HIGH_RESOLUTION));
+
+  scoped_ptr<TilingSetRasterQueue> queue(new TilingSetRasterQueueRequired(
+      pending_layer_->picture_layer_tiling_set(),
+      RasterTilePriorityQueue::Type::REQUIRED_FOR_ACTIVATION));
+  EXPECT_TRUE(queue->IsEmpty());
+}
+
 TEST_F(PictureLayerImplTest, TilingSetEvictionQueue) {
   gfx::Size tile_size(100, 100);
   gfx::Size layer_bounds(1000, 1000);

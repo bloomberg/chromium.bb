@@ -360,8 +360,12 @@ void TileManager::PrepareTiles(
     CleanUpReleasedTiles();
 
     TileVector tiles_that_need_to_be_rasterized;
-    AssignGpuMemoryToTiles(&tiles_that_need_to_be_rasterized,
-                           scheduled_raster_task_limit_, false);
+    RasterTilePriorityQueue raster_priority_queue;
+    client_->BuildRasterQueue(&raster_priority_queue,
+                              global_state_.tree_priority,
+                              RasterTilePriorityQueue::Type::ALL);
+    AssignGpuMemoryToTiles(&raster_priority_queue, scheduled_raster_task_limit_,
+                           &tiles_that_need_to_be_rasterized);
 
     // Schedule tile tasks.
     ScheduleTasks(tiles_that_need_to_be_rasterized);
@@ -370,10 +374,15 @@ void TileManager::PrepareTiles(
     did_notify_ready_to_draw_ = false;
   } else {
     if (global_state_.hard_memory_limit_in_bytes == 0) {
-      TileVector tiles_that_need_to_be_rasterized;
-      AssignGpuMemoryToTiles(&tiles_that_need_to_be_rasterized,
-                             scheduled_raster_task_limit_, false);
-      DCHECK(tiles_that_need_to_be_rasterized.empty());
+      // TODO(vmpstr): Add a function to unconditionally create an eviction
+      // queue and guard the rest of the calls sites with this flag, instead of
+      // clearing here and building, which is a bit awkward.
+      eviction_priority_queue_is_up_to_date_ = false;
+      resource_pool_->CheckBusyResources(false);
+      MemoryUsage memory_limit(0, 0);
+      MemoryUsage memory_usage(resource_pool_->acquired_memory_usage_bytes(),
+                               resource_pool_->acquired_resource_count());
+      FreeTileResourcesUntilUsageIsWithinLimit(memory_limit, &memory_usage);
     }
 
     did_notify_ready_to_activate_ = false;
@@ -402,9 +411,14 @@ void TileManager::SynchronouslyRasterizeTiles(
   FreeResourcesForReleasedTiles();
   CleanUpReleasedTiles();
 
+  RasterTilePriorityQueue required_for_draw_queue;
+  client_->BuildRasterQueue(&required_for_draw_queue,
+                            global_state_.tree_priority,
+                            RasterTilePriorityQueue::Type::REQUIRED_FOR_DRAW);
   TileVector tiles_that_need_to_be_rasterized;
-  AssignGpuMemoryToTiles(&tiles_that_need_to_be_rasterized,
-                         std::numeric_limits<size_t>::max(), true);
+  AssignGpuMemoryToTiles(&required_for_draw_queue,
+                         std::numeric_limits<size_t>::max(),
+                         &tiles_that_need_to_be_rasterized);
 
   // We must reduce the amount of unused resources before calling
   // RunTasks to prevent usage from rising above limits.
@@ -419,23 +433,18 @@ void TileManager::SynchronouslyRasterizeTiles(
   // assigned memory after reaching a steady memory state.
   // TODO(hendrikw): Figure out why this would improve jank on some tests - See
   // crbug.com/449288
-  client_->BuildRasterQueue(&raster_priority_queue_,
+  required_for_draw_queue.Reset();
+  client_->BuildRasterQueue(&required_for_draw_queue,
                             global_state_.tree_priority,
-                            RasterTilePriorityQueue::Type::ALL);
+                            RasterTilePriorityQueue::Type::REQUIRED_FOR_DRAW);
 
   // Use on-demand raster for any tiles that have not been been assigned
   // memory. This ensures that we draw even when OOM.
-  while (!raster_priority_queue_.IsEmpty()) {
-    Tile* tile = raster_priority_queue_.Top();
-    TileDrawInfo& draw_info = tile->draw_info();
-
-    if (tile->required_for_draw() && !draw_info.IsReadyToDraw()) {
-      draw_info.set_rasterize_on_demand();
-      client_->NotifyTileStateChanged(tile);
-    }
-    raster_priority_queue_.Pop();
+  for (; !required_for_draw_queue.IsEmpty(); required_for_draw_queue.Pop()) {
+    Tile* tile = required_for_draw_queue.Top();
+    tile->draw_info().set_rasterize_on_demand();
+    client_->NotifyTileStateChanged(tile);
   }
-  raster_priority_queue_.Reset();
 
   TRACE_EVENT_INSTANT1("cc", "DidRasterize", TRACE_EVENT_SCOPE_THREAD, "state",
                        BasicStateAsValue());
@@ -551,15 +560,14 @@ bool TileManager::TilePriorityViolatesMemoryPolicy(
 }
 
 void TileManager::AssignGpuMemoryToTiles(
-    TileVector* tiles_that_need_to_be_rasterized,
+    RasterTilePriorityQueue* raster_priority_queue,
     size_t scheduled_raster_task_limit,
-    bool required_for_draw_only) {
+    TileVector* tiles_that_need_to_be_rasterized) {
   TRACE_EVENT_BEGIN0("cc", "TileManager::AssignGpuMemoryToTiles");
 
   // Maintain the list of released resources that can potentially be re-used
-  // or deleted.
-  // If this operation becomes expensive too, only do this after some
-  // resource(s) was returned. Note that in that case, one also need to
+  // or deleted. If this operation becomes expensive too, only do this after
+  // some resource(s) was returned. Note that in that case, one also need to
   // invalidate when releasing some resource from the pool.
   resource_pool_->CheckBusyResources(false);
 
@@ -577,23 +585,8 @@ void TileManager::AssignGpuMemoryToTiles(
                            resource_pool_->acquired_resource_count());
 
   eviction_priority_queue_is_up_to_date_ = false;
-  // TODO(vmpstr): Take this as a parameter and have SynchronousRaster build a
-  // REQUIRED_FOR_DRAW queue.
-  client_->BuildRasterQueue(&raster_priority_queue_,
-                            global_state_.tree_priority,
-                            RasterTilePriorityQueue::Type::ALL);
-
-  while (!raster_priority_queue_.IsEmpty()) {
-    Tile* tile = raster_priority_queue_.Top();
-
-    // TODO(vmpstr): Remove this when the iterator returns the correct tiles
-    // to draw for GPU rasterization.
-    if (required_for_draw_only) {
-      if (!tile->required_for_draw()) {
-        raster_priority_queue_.Pop();
-        continue;
-      }
-    }
+  for (; !raster_priority_queue->IsEmpty(); raster_priority_queue->Pop()) {
+    Tile* tile = raster_priority_queue->Top();
     TilePriority priority = tile->combined_priority();
 
     if (TilePriorityViolatesMemoryPolicy(priority)) {
@@ -649,7 +642,6 @@ void TileManager::AssignGpuMemoryToTiles(
 
     memory_usage += memory_required_by_tile_to_be_scheduled;
     tiles_that_need_to_be_rasterized->push_back(tile);
-    raster_priority_queue_.Pop();
   }
 
   // Note that we should try and further reduce memory in case the above loop
@@ -666,8 +658,6 @@ void TileManager::AssignGpuMemoryToTiles(
   memory_stats_from_last_assign_.total_bytes_used = memory_usage.memory_bytes();
   memory_stats_from_last_assign_.had_enough_memory =
       had_enough_memory_to_schedule_tiles_needed_now;
-
-  raster_priority_queue_.Reset();
 
   TRACE_EVENT_END2("cc", "TileManager::AssignGpuMemoryToTiles",
                    "all_tiles_that_need_to_be_rasterized_are_scheduled",
@@ -881,7 +871,7 @@ bool TileManager::IsReadyToActivate() const {
   const std::vector<PictureLayerImpl*>& layers = client_->GetPictureLayers();
 
   // TODO(vmpstr): Replace this with building a REQUIRED_TO_ACTIVATE raster
-  // queue and checking if it's empty.
+  // queue and checking if the tiles it contains are all ready to draw.
   for (const auto& layer : layers) {
     if (!layer->AllTilesRequiredForActivationAreReadyToDraw())
       return false;
@@ -894,7 +884,7 @@ bool TileManager::IsReadyToDraw() const {
   const std::vector<PictureLayerImpl*>& layers = client_->GetPictureLayers();
 
   // TODO(vmpstr): Replace this with building a REQUIRED_TO_DRAW raster queue
-  // and checking if it's empty.
+  // and checking if the tiles it contains are all ready to draw.
   for (const auto& layer : layers) {
     if (!layer->AllTilesRequiredForDrawAreReadyToDraw())
       return false;
@@ -954,8 +944,11 @@ void TileManager::CheckIfMoreTilesNeedToBePrepared() {
   // When OOM, keep re-assigning memory until we reach a steady state
   // where top-priority tiles are initialized.
   TileVector tiles_that_need_to_be_rasterized;
-  AssignGpuMemoryToTiles(&tiles_that_need_to_be_rasterized,
-                         scheduled_raster_task_limit_, false);
+  RasterTilePriorityQueue raster_priority_queue;
+  client_->BuildRasterQueue(&raster_priority_queue, global_state_.tree_priority,
+                            RasterTilePriorityQueue::Type::ALL);
+  AssignGpuMemoryToTiles(&raster_priority_queue, scheduled_raster_task_limit_,
+                         &tiles_that_need_to_be_rasterized);
 
   // |tiles_that_need_to_be_rasterized| will be empty when we reach a
   // steady memory state. Keep scheduling tasks until we reach this state.
@@ -980,36 +973,30 @@ void TileManager::CheckIfMoreTilesNeedToBePrepared() {
 
   // Use on-demand raster for any required-for-activation tiles that have
   // not been been assigned memory after reaching a steady memory state. This
-  // ensures that we activate even when OOM. Note that we have to rebuilt the
-  // queue in case the last AssignGpuMemoryToTiles evicted some tiles that
-  // would otherwise not be picked up by the old raster queue.
-  // TODO(vmpstr): Make this use REQUIRED_FOR_ACTIVAITON queue.
-  client_->BuildRasterQueue(&raster_priority_queue_,
-                            global_state_.tree_priority,
-                            RasterTilePriorityQueue::Type::ALL);
-  bool ready_to_activate = true;
-  while (!raster_priority_queue_.IsEmpty()) {
-    Tile* tile = raster_priority_queue_.Top();
-    TileDrawInfo& draw_info = tile->draw_info();
+  // ensures that we activate even when OOM. Note that we can't reuse the queue
+  // we used for AssignGpuMemoryToTiles, since the AssignGpuMemoryToTiles call
+  // could have evicted some tiles that would not be picked up by the old raster
+  // queue.
+  RasterTilePriorityQueue required_for_activation_queue;
+  client_->BuildRasterQueue(
+      &required_for_activation_queue, global_state_.tree_priority,
+      RasterTilePriorityQueue::Type::REQUIRED_FOR_ACTIVATION);
 
-    if (tile->required_for_activation() && !draw_info.IsReadyToDraw()) {
-      // If we can't raster on demand, give up early (and don't activate).
-      if (!allow_rasterize_on_demand) {
-        ready_to_activate = false;
-        break;
-      }
+  // If we have tiles to mark as rasterize on demand, but we don't allow
+  // rasterize on demand, then skip activation and return early.
+  if (!required_for_activation_queue.IsEmpty() && !allow_rasterize_on_demand)
+    return;
 
-      draw_info.set_rasterize_on_demand();
-      client_->NotifyTileStateChanged(tile);
-    }
-    raster_priority_queue_.Pop();
+  // Mark required tiles as rasterize on demand.
+  for (; !required_for_activation_queue.IsEmpty();
+       required_for_activation_queue.Pop()) {
+    Tile* tile = required_for_activation_queue.Top();
+    tile->draw_info().set_rasterize_on_demand();
+    client_->NotifyTileStateChanged(tile);
   }
 
-  if (ready_to_activate) {
-    DCHECK(IsReadyToActivate());
-    ready_to_activate_check_notifier_.Schedule();
-  }
-  raster_priority_queue_.Reset();
+  DCHECK(IsReadyToActivate());
+  ready_to_activate_check_notifier_.Schedule();
 }
 
 TileManager::MemoryUsage::MemoryUsage() : memory_bytes_(0), resource_count_(0) {
