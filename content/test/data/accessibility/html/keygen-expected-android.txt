@@ -1,0 +1,4 @@
+android.webkit.WebView focusable focused scrollable
+    android.view.View
+        android.view.View focusable
+            android.widget.Spinner clickable focusable name='2048 (High Grade)'
