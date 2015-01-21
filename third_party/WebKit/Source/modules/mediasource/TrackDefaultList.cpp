@@ -18,6 +18,11 @@ TrackDefaultList* TrackDefaultList::create()
     return new TrackDefaultList();
 }
 
+TrackDefaultList* TrackDefaultList::create(ExceptionState& exceptionState)
+{
+    return new TrackDefaultList();
+}
+
 TrackDefaultList* TrackDefaultList::create(const HeapVector<Member<TrackDefault>>& trackDefaults, ExceptionState& exceptionState)
 {
     // Per 11 Dec 2014 Editor's Draft
