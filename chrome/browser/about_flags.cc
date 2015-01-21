@@ -1367,15 +1367,6 @@ const Experiment kExperiments[] = {
     MULTI_VALUE_TYPE(kTabCaptureDownscaleQualityChoices)
   },
 #endif
-#if defined(ENABLE_SPELLCHECK)
-  {
-    "enable-spelling-feedback-field-trial",
-    IDS_FLAGS_ENABLE_SPELLING_FEEDBACK_FIELD_TRIAL_NAME,
-    IDS_FLAGS_ENABLE_SPELLING_FEEDBACK_FIELD_TRIAL_DESCRIPTION,
-    kOsAll,
-    SINGLE_VALUE_TYPE(switches::kEnableSpellingFeedbackFieldTrial)
-  },
-#endif
   {
     "enable-webgl-draft-extensions",
     IDS_FLAGS_ENABLE_WEBGL_DRAFT_EXTENSIONS_NAME,

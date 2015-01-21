@@ -2511,12 +2511,6 @@
       'browser/signin/signin_tracker_factory.h',
     ],
     'chrome_browser_spellchecker_sources': [
-      'browser/spellchecker/feedback.cc',
-      'browser/spellchecker/feedback.h',
-      'browser/spellchecker/feedback_sender.cc',
-      'browser/spellchecker/feedback_sender.h',
-      'browser/spellchecker/misspelling.cc',
-      'browser/spellchecker/misspelling.h',
       'browser/spellchecker/spellcheck_action.cc',
       'browser/spellchecker/spellcheck_action.h',
       'browser/spellchecker/spellcheck_custom_dictionary.cc',
@@ -2538,8 +2532,6 @@
       'browser/spellchecker/spellcheck_service.h',
       'browser/spellchecker/spelling_service_client.cc',
       'browser/spellchecker/spelling_service_client.h',
-      'browser/spellchecker/word_trimmer.cc',
-      'browser/spellchecker/word_trimmer.h',
     ],
     'chrome_browser_ssl_sources': [
       'browser/ssl/chrome_ssl_host_state_delegate.cc',
