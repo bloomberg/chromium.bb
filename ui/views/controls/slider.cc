@@ -196,6 +196,7 @@ gfx::Size Slider::GetPreferredSize() const {
 }
 
 void Slider::OnPaint(gfx::Canvas* canvas) {
+  View::OnPaint(canvas);
   gfx::Rect content = GetContentsBounds();
   float value = move_animation_.get() && move_animation_->is_animating() ?
       animating_value_ : value_;
@@ -262,7 +263,6 @@ void Slider::OnPaint(gfx::Canvas* canvas) {
     int thumb_x = content.width() / 2 - thumb_->width() / 2;
     canvas->DrawImageInt(*thumb_, thumb_x, button_cy);
   }
-  View::OnPaint(canvas);
   OnPaintFocus(canvas);
 }
 
