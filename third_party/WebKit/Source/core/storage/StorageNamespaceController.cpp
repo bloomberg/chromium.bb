@@ -20,6 +20,10 @@ StorageNamespaceController::StorageNamespaceController(StorageClient* client)
 {
 }
 
+StorageNamespaceController::~StorageNamespaceController()
+{
+}
+
 StorageNamespace* StorageNamespaceController::sessionStorage(bool optionalCreate)
 {
     if (!m_sessionStorage && optionalCreate)
@@ -33,4 +37,3 @@ void StorageNamespaceController::provideStorageNamespaceTo(Page& page, StorageCl
 }
 
 } // namespace blink
-

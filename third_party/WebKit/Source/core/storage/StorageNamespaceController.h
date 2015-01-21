@@ -14,10 +14,11 @@ namespace blink {
 class StorageClient;
 class StorageNamespace;
 
-class StorageNamespaceController final : public NoBaseWillBeGarbageCollected<StorageNamespaceController>, public WillBeHeapSupplement<Page> {
+class StorageNamespaceController final : public NoBaseWillBeGarbageCollectedFinalized<StorageNamespaceController>, public WillBeHeapSupplement<Page> {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(StorageNamespaceController);
 public:
     StorageNamespace* sessionStorage(bool optionalCreate = true);
+    ~StorageNamespaceController();
 
     static void provideStorageNamespaceTo(Page&, StorageClient*);
     static StorageNamespaceController* from(Page* page) { return static_cast<StorageNamespaceController*>(WillBeHeapSupplement<Page>::from(page, supplementName())); }
@@ -34,4 +35,3 @@ private:
 } // namespace blink
 
 #endif // StorageNamespaceController_h
-
