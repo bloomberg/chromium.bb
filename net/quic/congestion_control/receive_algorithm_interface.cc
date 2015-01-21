@@ -9,13 +9,8 @@
 namespace net {
 
 // Factory for receive side congestion control algorithm.
-ReceiveAlgorithmInterface* ReceiveAlgorithmInterface::Create(
-    CongestionFeedbackType type) {
-  switch (type) {
-    case kTCP:
-      return new TcpReceiver();
-  }
-  return nullptr;
+ReceiveAlgorithmInterface* ReceiveAlgorithmInterface::Create() {
+  return new TcpReceiver();
 }
 
 }  // namespace net

@@ -41,7 +41,6 @@ class SimpleQuicFramer {
   size_t num_frames() const;
   const std::vector<QuicAckFrame>& ack_frames() const;
   const std::vector<QuicConnectionCloseFrame>& connection_close_frames() const;
-  const std::vector<QuicCongestionFeedbackFrame>& feedback_frames() const;
   const std::vector<QuicStopWaitingFrame>& stop_waiting_frames() const;
   const std::vector<QuicPingFrame>& ping_frames() const;
   const std::vector<QuicGoAwayFrame>& goaway_frames() const;

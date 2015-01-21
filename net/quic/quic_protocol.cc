@@ -158,8 +158,6 @@ QuicVersionVector QuicSupportedVersions() {
 
 QuicTag QuicVersionToQuicTag(const QuicVersion version) {
   switch (version) {
-    case QUIC_VERSION_22:
-      return MakeQuicTag('Q', '0', '2', '2');
     case QUIC_VERSION_23:
       return MakeQuicTag('Q', '0', '2', '3');
     case QUIC_VERSION_24:
@@ -190,7 +188,6 @@ return #x
 
 string QuicVersionToString(const QuicVersion version) {
   switch (version) {
-    RETURN_STRING_LITERAL(QUIC_VERSION_22);
     RETURN_STRING_LITERAL(QUIC_VERSION_23);
     RETURN_STRING_LITERAL(QUIC_VERSION_24);
     default:
@@ -260,14 +257,6 @@ QuicAckFrame::QuicAckFrame()
 
 QuicAckFrame::~QuicAckFrame() {}
 
-CongestionFeedbackMessageTCP::CongestionFeedbackMessageTCP()
-    : receive_window(0) {
-}
-
-QuicCongestionFeedbackFrame::QuicCongestionFeedbackFrame() : type(kTCP) {}
-
-QuicCongestionFeedbackFrame::~QuicCongestionFeedbackFrame() {}
-
 QuicRstStreamErrorCode AdjustErrorForVersion(
     QuicRstStreamErrorCode error_code,
     QuicVersion version) {
@@ -307,11 +296,6 @@ QuicFrame::QuicFrame(QuicStreamFrame* stream_frame)
 QuicFrame::QuicFrame(QuicAckFrame* frame)
     : type(ACK_FRAME),
       ack_frame(frame) {
-}
-
-QuicFrame::QuicFrame(QuicCongestionFeedbackFrame* frame)
-    : type(CONGESTION_FEEDBACK_FRAME),
-      congestion_feedback_frame(frame) {
 }
 
 QuicFrame::QuicFrame(QuicStopWaitingFrame* frame)
@@ -418,11 +402,6 @@ ostream& operator<<(ostream& os, const QuicFrame& frame) {
       os << "type { ACK_FRAME } " << *(frame.ack_frame);
       break;
     }
-    case CONGESTION_FEEDBACK_FRAME: {
-      os << "type { CONGESTION_FEEDBACK_FRAME } "
-         << *(frame.congestion_feedback_frame);
-      break;
-    }
     case STOP_WAITING_FRAME: {
       os << "type { STOP_WAITING_FRAME } " << *(frame.stop_waiting_frame);
       break;
@@ -479,19 +458,6 @@ ostream& operator<<(ostream& os, const QuicStreamFrame& stream_frame) {
      << "data { "
      << QuicUtils::StringToHexASCIIDump(*(stream_frame.GetDataAsString()))
      << " }\n";
-  return os;
-}
-
-ostream& operator<<(ostream& os,
-                    const QuicCongestionFeedbackFrame& congestion_frame) {
-  os << "type: " << congestion_frame.type;
-  switch (congestion_frame.type) {
-    case kTCP: {
-      const CongestionFeedbackMessageTCP& tcp = congestion_frame.tcp;
-      os << " receive_window: " << tcp.receive_window;
-      break;
-    }
-  }
   return os;
 }
 
@@ -608,9 +574,6 @@ RetransmittableFrames::~RetransmittableFrames() {
         break;
       case ACK_FRAME:
         delete it->ack_frame;
-        break;
-      case CONGESTION_FEEDBACK_FRAME:
-        delete it->congestion_feedback_frame;
         break;
       case STOP_WAITING_FRAME:
         delete it->stop_waiting_frame;

@@ -214,11 +214,10 @@ enum QuicFrameType {
   STOP_WAITING_FRAME = 6,
   PING_FRAME = 7,
 
-  // STREAM, ACK, and CONGESTION_FEEDBACK frames are special frames. They are
-  // encoded differently on the wire and their values do not need to be stable.
+  // STREAM and ACK frames are special frames. They are encoded differently on
+  // the wire and their values do not need to be stable.
   STREAM_FRAME,
   ACK_FRAME,
-  CONGESTION_FEEDBACK_FRAME,
   NUM_FRAME_TYPES
 };
 
@@ -310,7 +309,6 @@ enum QuicVersion {
   // Special case to indicate unknown/unsupported QUIC version.
   QUIC_VERSION_UNSUPPORTED = 0,
 
-  QUIC_VERSION_22 = 22,  // Send Server Config Update messages on crypto stream.
   QUIC_VERSION_23 = 23,  // Timestamp in the ack frame.
   QUIC_VERSION_24 = 24,  // SPDY/4 header compression.
 };
@@ -323,8 +321,7 @@ enum QuicVersion {
 // IMPORTANT: if you are adding to this list, follow the instructions at
 // http://sites/quic/adding-and-removing-versions
 static const QuicVersion kSupportedQuicVersions[] = {QUIC_VERSION_24,
-                                                     QUIC_VERSION_23,
-                                                     QUIC_VERSION_22};
+                                                     QUIC_VERSION_23};
 
 typedef std::vector<QuicVersion> QuicVersionVector;
 
@@ -452,8 +449,9 @@ enum QuicErrorCode {
   QUIC_INVALID_STOP_WAITING_DATA = 60,
   // ACK frame data is malformed.
   QUIC_INVALID_ACK_DATA = 9,
-  // CONGESTION_FEEDBACK frame data is malformed.
-  QUIC_INVALID_CONGESTION_FEEDBACK_DATA = 47,
+
+  // deprecated: QUIC_INVALID_CONGESTION_FEEDBACK_DATA = 47,
+
   // Version negotiation packet is malformed.
   QUIC_INVALID_VERSION_NEGOTIATION_PACKET = 10,
   // Public RST packet is malformed.
@@ -743,14 +741,6 @@ void NET_EXPORT_PRIVATE InsertMissingPacketsBetween(
     QuicPacketSequenceNumber lower,
     QuicPacketSequenceNumber higher);
 
-// Defines for all types of congestion feedback that will be negotiated in QUIC,
-// kTCP MUST be supported by all QUIC implementations to guarantee 100%
-// compatibility.
-// TODO(cyr): Remove this when removing QUIC_VERSION_22.
-enum CongestionFeedbackType {
-  kTCP,  // Used to mimic TCP.
-};
-
 // Defines for all types of congestion control algorithms that can be used in
 // QUIC. Note that this is separate from the congestion feedback type -
 // some congestion control algorithms may use the same feedback type
@@ -764,27 +754,6 @@ enum CongestionControlType {
 enum LossDetectionType {
   kNack,  // Used to mimic TCP's loss detection.
   kTime,  // Time based loss detection.
-};
-
-// TODO(cyr): Remove this when removing QUIC_VERSION_22.
-struct NET_EXPORT_PRIVATE CongestionFeedbackMessageTCP {
-  CongestionFeedbackMessageTCP();
-
-  QuicByteCount receive_window;
-};
-
-// TODO(cyr): Remove this when removing QUIC_VERSION_22.
-struct NET_EXPORT_PRIVATE QuicCongestionFeedbackFrame {
-  QuicCongestionFeedbackFrame();
-  ~QuicCongestionFeedbackFrame();
-
-  NET_EXPORT_PRIVATE friend std::ostream& operator<<(
-      std::ostream& os, const QuicCongestionFeedbackFrame& c);
-
-  CongestionFeedbackType type;
-  // This should really be a union, but since the timestamp struct
-  // is non-trivial, C++ prohibits it.
-  CongestionFeedbackMessageTCP tcp;
 };
 
 struct NET_EXPORT_PRIVATE QuicRstStreamFrame {
@@ -886,9 +855,6 @@ struct NET_EXPORT_PRIVATE QuicFrame {
   explicit QuicFrame(QuicStreamFrame* stream_frame);
   explicit QuicFrame(QuicAckFrame* frame);
 
-  // TODO(cyr): Remove this when removing QUIC_VERSION_22.
-  explicit QuicFrame(QuicCongestionFeedbackFrame* frame);
-
   explicit QuicFrame(QuicRstStreamFrame* frame);
   explicit QuicFrame(QuicConnectionCloseFrame* frame);
   explicit QuicFrame(QuicStopWaitingFrame* frame);
@@ -906,8 +872,6 @@ struct NET_EXPORT_PRIVATE QuicFrame {
     QuicStreamFrame* stream_frame;
     QuicAckFrame* ack_frame;
 
-    // TODO(cyr): Remove this when removing QUIC_VERSION_22.
-    QuicCongestionFeedbackFrame* congestion_feedback_frame;
     QuicStopWaitingFrame* stop_waiting_frame;
 
     QuicPingFrame* ping_frame;

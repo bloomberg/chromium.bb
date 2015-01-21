@@ -143,21 +143,6 @@ base::Value* NetLogQuicAckFrameCallback(const QuicAckFrame* frame,
   return dict;
 }
 
-base::Value* NetLogQuicCongestionFeedbackFrameCallback(
-    const QuicCongestionFeedbackFrame* frame,
-    NetLog::LogLevel /* log_level */) {
-  base::DictionaryValue* dict = new base::DictionaryValue();
-  switch (frame->type) {
-    case kTCP:
-      dict->SetString("type", "TCP");
-      dict->SetInteger("receive_window",
-                       static_cast<int>(frame->tcp.receive_window));
-      break;
-  }
-
-  return dict;
-}
-
 base::Value* NetLogQuicRstStreamFrameCallback(
     const QuicRstStreamFrame* frame,
     NetLog::LogLevel /* log_level */) {
@@ -428,12 +413,6 @@ void QuicConnectionLogger::OnFrameAddedToPacket(const QuicFrame& frame) {
       }
       break;
     }
-    case CONGESTION_FEEDBACK_FRAME:
-      net_log_.AddEvent(
-          NetLog::TYPE_QUIC_SESSION_CONGESTION_FEEDBACK_FRAME_SENT,
-          base::Bind(&NetLogQuicCongestionFeedbackFrameCallback,
-                     frame.congestion_feedback_frame));
-      break;
     case RST_STREAM_FRAME:
       UMA_HISTOGRAM_SPARSE_SLOWLY("Net.QuicSession.RstStreamErrorCodeClient",
                                   frame.rst_stream_frame->error_code);
@@ -631,13 +610,6 @@ void QuicConnectionLogger::OnAckFrame(const QuicAckFrame& frame) {
   }
   largest_received_missing_packet_sequence_number_ =
         *missing_packets.rbegin();
-}
-
-void QuicConnectionLogger::OnCongestionFeedbackFrame(
-    const QuicCongestionFeedbackFrame& frame) {
-  net_log_.AddEvent(
-      NetLog::TYPE_QUIC_SESSION_CONGESTION_FEEDBACK_FRAME_RECEIVED,
-      base::Bind(&NetLogQuicCongestionFeedbackFrameCallback, &frame));
 }
 
 void QuicConnectionLogger::OnStopWaitingFrame(

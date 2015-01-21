@@ -72,12 +72,6 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
     return true;
   }
 
-  bool OnCongestionFeedbackFrame(
-      const QuicCongestionFeedbackFrame& frame) override {
-    feedback_frames_.push_back(frame);
-    return true;
-  }
-
   bool OnStopWaitingFrame(const QuicStopWaitingFrame& frame) override {
     stop_waiting_frames_.push_back(frame);
     return true;
@@ -126,9 +120,6 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
   const vector<QuicConnectionCloseFrame>& connection_close_frames() const {
     return connection_close_frames_;
   }
-  const vector<QuicCongestionFeedbackFrame>& feedback_frames() const {
-    return feedback_frames_;
-  }
   const vector<QuicGoAwayFrame>& goaway_frames() const {
     return goaway_frames_;
   }
@@ -163,7 +154,6 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
   scoped_ptr<QuicPublicResetPacket> public_reset_packet_;
   string fec_redundancy_;
   vector<QuicAckFrame> ack_frames_;
-  vector<QuicCongestionFeedbackFrame> feedback_frames_;
   vector<QuicStopWaitingFrame> stop_waiting_frames_;
   vector<QuicPingFrame> ping_frames_;
   vector<QuicStreamFrame> stream_frames_;
@@ -228,7 +218,6 @@ QuicFramer* SimpleQuicFramer::framer() {
 
 size_t SimpleQuicFramer::num_frames() const {
   return ack_frames().size() +
-      feedback_frames().size() +
       goaway_frames().size() +
       rst_stream_frames().size() +
       stop_waiting_frames().size() +
@@ -256,11 +245,6 @@ const vector<QuicStreamFrame>& SimpleQuicFramer::stream_frames() const {
 
 const vector<QuicRstStreamFrame>& SimpleQuicFramer::rst_stream_frames() const {
   return visitor_->rst_stream_frames();
-}
-
-const vector<QuicCongestionFeedbackFrame>&
-SimpleQuicFramer::feedback_frames() const {
-  return visitor_->feedback_frames();
 }
 
 const vector<QuicGoAwayFrame>&

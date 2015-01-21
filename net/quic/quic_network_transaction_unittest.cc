@@ -173,8 +173,11 @@ class QuicNetworkTransactionTest
       bool should_include_version,
       bool fin,
       const SpdyHeaderBlock& headers) {
-    return maker_.MakeRequestHeadersPacket(
-        sequence_number, stream_id, should_include_version, fin, headers);
+    QuicPriority priority =
+        ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY);
+    return maker_.MakeRequestHeadersPacket(sequence_number, stream_id,
+                                           should_include_version, fin,
+                                           priority, headers);
   }
 
   scoped_ptr<QuicEncryptedPacket> ConstructResponseHeadersPacket(

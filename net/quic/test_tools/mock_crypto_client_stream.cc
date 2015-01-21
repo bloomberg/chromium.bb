@@ -88,7 +88,6 @@ void MockCryptoClientStream::SetConfigNegotiated() {
 #endif
   cgst.push_back(kQBIC);
   QuicConfig config;
-  config.SetCongestionFeedback(cgst, kQBIC);
   config.SetIdleConnectionStateLifetime(
       QuicTime::Delta::FromSeconds(2 * kMaximumIdleTimeoutSecs),
       QuicTime::Delta::FromSeconds(kMaximumIdleTimeoutSecs));

@@ -5,6 +5,7 @@
 #ifndef NET_QUIC_TEST_TOOLS_QUIC_CONFIG_PEER_H_
 #define NET_QUIC_TEST_TOOLS_QUIC_CONFIG_PEER_H_
 
+#include "net/quic/quic_config.h"
 #include "net/quic/quic_protocol.h"
 
 namespace net {
@@ -28,6 +29,8 @@ class QuicConfigPeer {
                                            const QuicTagVector& options);
 
   static void SetReceivedBytesForConnectionId(QuicConfig* config, uint32 bytes);
+
+  static QuicTag CongestionFeedback(QuicConfig* config);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicConfigPeer);

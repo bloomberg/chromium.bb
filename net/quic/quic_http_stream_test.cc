@@ -82,11 +82,6 @@ class TestQuicConnection : public QuicConnection {
 
 class TestReceiveAlgorithm : public ReceiveAlgorithmInterface {
  public:
-  virtual bool GenerateCongestionFeedback(
-      QuicCongestionFeedbackFrame* /*congestion_feedback*/) {
-    return false;
-  }
-
   MOCK_METHOD3(RecordIncomingPacket,
                void(QuicByteCount, QuicPacketSequenceNumber, QuicTime));
 };
@@ -265,15 +260,19 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
       bool fin,
       QuicStreamOffset offset,
       base::StringPiece data) {
-    return maker_.MakeDataPacket(
-        sequence_number, stream_id_, should_include_version, fin, offset, data);
+    return maker_.MakeDataPacket(sequence_number, stream_id_,
+                                 should_include_version, fin, offset, data);
   }
 
   scoped_ptr<QuicEncryptedPacket> ConstructRequestHeadersPacket(
       QuicPacketSequenceNumber sequence_number,
-      bool fin) {
-    return maker_.MakeRequestHeadersPacket(
-        sequence_number, stream_id_, kIncludeVersion, fin, request_headers_);
+      bool fin,
+      RequestPriority request_priority) {
+    QuicPriority priority =
+        ConvertRequestPriorityToQuicPriority(request_priority);
+    return maker_.MakeRequestHeadersPacket(sequence_number, stream_id_,
+                                           kIncludeVersion, fin, priority,
+                                           request_headers_);
   }
 
   scoped_ptr<QuicEncryptedPacket> ConstructResponseHeadersPacket(
@@ -361,7 +360,7 @@ TEST_P(QuicHttpStreamTest, IsConnectionReusable) {
 
 TEST_P(QuicHttpStreamTest, GetRequest) {
   SetRequest("GET", "/", DEFAULT_PRIORITY);
-  AddWrite(ConstructRequestHeadersPacket(1, kFin));
+  AddWrite(ConstructRequestHeadersPacket(1, kFin, DEFAULT_PRIORITY));
   Initialize();
 
   request_.method = "GET";
@@ -400,7 +399,7 @@ TEST_P(QuicHttpStreamTest, GetRequest) {
 // Regression test for http://crbug.com/288128
 TEST_P(QuicHttpStreamTest, GetRequestLargeResponse) {
   SetRequest("GET", "/", DEFAULT_PRIORITY);
-  AddWrite(ConstructRequestHeadersPacket(1, kFin));
+  AddWrite(ConstructRequestHeadersPacket(1, kFin, DEFAULT_PRIORITY));
   Initialize();
 
   request_.method = "GET";
@@ -463,7 +462,7 @@ TEST_P(QuicHttpStreamTest, SessionClosedBeforeSendRequest) {
 // Regression test for http://crbug.com/409871
 TEST_P(QuicHttpStreamTest, SessionClosedBeforeReadResponseHeaders) {
   SetRequest("GET", "/", DEFAULT_PRIORITY);
-  AddWrite(ConstructRequestHeadersPacket(1, kFin));
+  AddWrite(ConstructRequestHeadersPacket(1, kFin, DEFAULT_PRIORITY));
   Initialize();
 
   request_.method = "GET";
@@ -482,7 +481,7 @@ TEST_P(QuicHttpStreamTest, SessionClosedBeforeReadResponseHeaders) {
 
 TEST_P(QuicHttpStreamTest, SendPostRequest) {
   SetRequest("POST", "/", DEFAULT_PRIORITY);
-  AddWrite(ConstructRequestHeadersPacket(1, !kFin));
+  AddWrite(ConstructRequestHeadersPacket(1, !kFin, DEFAULT_PRIORITY));
   AddWrite(ConstructDataPacket(2, kIncludeVersion, kFin, 0, kUploadData));
   AddWrite(ConstructAckPacket(3, 3, 1));
 
@@ -530,7 +529,7 @@ TEST_P(QuicHttpStreamTest, SendPostRequest) {
 TEST_P(QuicHttpStreamTest, SendChunkedPostRequest) {
   SetRequest("POST", "/", DEFAULT_PRIORITY);
   size_t chunk_size = strlen(kUploadData);
-  AddWrite(ConstructRequestHeadersPacket(1, !kFin));
+  AddWrite(ConstructRequestHeadersPacket(1, !kFin, DEFAULT_PRIORITY));
   AddWrite(ConstructDataPacket(2, kIncludeVersion, !kFin, 0, kUploadData));
   AddWrite(ConstructDataPacket(3, kIncludeVersion, kFin, chunk_size,
                                kUploadData));
@@ -583,7 +582,7 @@ TEST_P(QuicHttpStreamTest, SendChunkedPostRequest) {
 TEST_P(QuicHttpStreamTest, SendChunkedPostRequestWithFinalEmptyDataPacket) {
   SetRequest("POST", "/", DEFAULT_PRIORITY);
   size_t chunk_size = strlen(kUploadData);
-  AddWrite(ConstructRequestHeadersPacket(1, !kFin));
+  AddWrite(ConstructRequestHeadersPacket(1, !kFin, DEFAULT_PRIORITY));
   AddWrite(ConstructDataPacket(2, kIncludeVersion, !kFin, 0, kUploadData));
   AddWrite(ConstructDataPacket(3, kIncludeVersion, kFin, chunk_size, ""));
   AddWrite(ConstructAckPacket(4, 3, 1));
@@ -633,7 +632,7 @@ TEST_P(QuicHttpStreamTest, SendChunkedPostRequestWithFinalEmptyDataPacket) {
 
 TEST_P(QuicHttpStreamTest, SendChunkedPostRequestWithOneEmptyDataPacket) {
   SetRequest("POST", "/", DEFAULT_PRIORITY);
-  AddWrite(ConstructRequestHeadersPacket(1, !kFin));
+  AddWrite(ConstructRequestHeadersPacket(1, !kFin, DEFAULT_PRIORITY));
   AddWrite(ConstructDataPacket(2, kIncludeVersion, kFin, 0, ""));
   AddWrite(ConstructAckPacket(3, 3, 1));
   Initialize();
@@ -681,7 +680,7 @@ TEST_P(QuicHttpStreamTest, SendChunkedPostRequestWithOneEmptyDataPacket) {
 
 TEST_P(QuicHttpStreamTest, DestroyedEarly) {
   SetRequest("GET", "/", DEFAULT_PRIORITY);
-  AddWrite(ConstructRequestHeadersPacket(1, kFin));
+  AddWrite(ConstructRequestHeadersPacket(1, kFin, DEFAULT_PRIORITY));
   AddWrite(ConstructAckAndRstStreamPacket(2));
   use_closing_stream_ = true;
   Initialize();
@@ -709,7 +708,7 @@ TEST_P(QuicHttpStreamTest, DestroyedEarly) {
 
 TEST_P(QuicHttpStreamTest, Priority) {
   SetRequest("GET", "/", MEDIUM);
-  AddWrite(ConstructRequestHeadersPacket(1, kFin));
+  AddWrite(ConstructRequestHeadersPacket(1, kFin, MEDIUM));
   AddWrite(ConstructAckAndRstStreamPacket(2));
   use_closing_stream_ = true;
   Initialize();

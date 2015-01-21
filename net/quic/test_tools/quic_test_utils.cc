@@ -108,9 +108,6 @@ MockFramerVisitor::MockFramerVisitor() {
   ON_CALL(*this, OnAckFrame(_))
       .WillByDefault(testing::Return(true));
 
-  ON_CALL(*this, OnCongestionFeedbackFrame(_))
-      .WillByDefault(testing::Return(true));
-
   ON_CALL(*this, OnStopWaitingFrame(_))
       .WillByDefault(testing::Return(true));
 
@@ -153,11 +150,6 @@ bool NoOpFramerVisitor::OnStreamFrame(const QuicStreamFrame& frame) {
 }
 
 bool NoOpFramerVisitor::OnAckFrame(const QuicAckFrame& frame) {
-  return true;
-}
-
-bool NoOpFramerVisitor::OnCongestionFeedbackFrame(
-    const QuicCongestionFeedbackFrame& frame) {
   return true;
 }
 

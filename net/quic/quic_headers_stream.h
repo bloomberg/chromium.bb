@@ -31,6 +31,7 @@ class NET_EXPORT_PRIVATE QuicHeadersStream : public ReliableQuicStream {
       QuicStreamId stream_id,
       const SpdyHeaderBlock& headers,
       bool fin,
+      QuicPriority priority,
       QuicAckNotifier::DelegateInterface* ack_notifier_delegate);
 
   // ReliableQuicStream implementation

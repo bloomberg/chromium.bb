@@ -1102,11 +1102,9 @@ void QuicCryptoServerConfig::BuildRejection(
     out->SetStringPiece(kServerNonceTag, NewServerNonce(rand, info.now));
   }
 
-  if (FLAGS_send_quic_crypto_reject_reason) {
-    // Send client the reject reason for debugging purposes.
-    DCHECK_LT(0u, info.reject_reasons.size());
-    out->SetVector(kRREJ, info.reject_reasons);
-  }
+  // Send client the reject reason for debugging purposes.
+  DCHECK_LT(0u, info.reject_reasons.size());
+  out->SetVector(kRREJ, info.reject_reasons);
 
   // The client may have requested a certificate chain.
   const QuicTag* their_proof_demands;

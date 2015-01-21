@@ -57,6 +57,7 @@ class QuicTestPacketMaker {
       QuicStreamId stream_id,
       bool should_include_version,
       bool fin,
+      QuicPriority priority,
       const SpdyHeaderBlock& headers);
   scoped_ptr<QuicEncryptedPacket> MakeResponseHeadersPacket(
       QuicPacketSequenceNumber sequence_number,

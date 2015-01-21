@@ -218,6 +218,7 @@ size_t QuicHeadersStream::WriteHeaders(
     QuicStreamId stream_id,
     const SpdyHeaderBlock& headers,
     bool fin,
+    QuicPriority priority,
     QuicAckNotifier::DelegateInterface* ack_notifier_delegate) {
   scoped_ptr<SpdySerializedFrame> frame;
   if (spdy_framer_->protocol_version() == SPDY3) {
@@ -230,6 +231,7 @@ size_t QuicHeadersStream::WriteHeaders(
       SpdySynStreamIR syn_stream(stream_id);
       syn_stream.set_name_value_block(headers);
       syn_stream.set_fin(fin);
+      syn_stream.set_priority(priority);
       frame.reset(spdy_framer_->SerializeFrame(syn_stream));
     }
   } else {
@@ -238,6 +240,7 @@ size_t QuicHeadersStream::WriteHeaders(
     headers_frame.set_fin(fin);
     if (!session()->is_server()) {
       headers_frame.set_has_priority(true);
+      headers_frame.set_priority(priority);
     }
     frame.reset(spdy_framer_->SerializeFrame(headers_frame));
   }

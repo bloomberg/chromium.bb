@@ -42,36 +42,27 @@ class QuicCryptoServerConfigPeer {
   QuicCryptoServerConfig* server_config_;
 };
 
-// Run tests with combinations of
-// {FLAGS_use_early_return_when_verifying_chlo,
-//  FLAGS_send_quic_crypto_reject_reason}.
+// Run tests with both parities of
+// FLAGS_use_early_return_when_verifying_chlo.
 struct TestParams {
-  TestParams(bool use_early_return_when_verifying_chlo,
-             bool send_quic_crypto_reject_reason)
+  explicit TestParams(bool use_early_return_when_verifying_chlo)
       : use_early_return_when_verifying_chlo(
-            use_early_return_when_verifying_chlo),
-        send_quic_crypto_reject_reason(send_quic_crypto_reject_reason) {
-  }
+            use_early_return_when_verifying_chlo) {}
 
   friend ostream& operator<<(ostream& os, const TestParams& p) {
     os << "{ use_early_return_when_verifying_chlo: "
-       << p.use_early_return_when_verifying_chlo
-       << " send_quic_crypto_reject_reason: "
-       << p.send_quic_crypto_reject_reason << " }";
+       << p.use_early_return_when_verifying_chlo << " }";
     return os;
   }
 
   bool use_early_return_when_verifying_chlo;
-  bool send_quic_crypto_reject_reason;
 };
 
 // Constructs various test permutations.
 vector<TestParams> GetTestParams() {
   vector<TestParams> params;
-  params.push_back(TestParams(false, false));
-  params.push_back(TestParams(false, true));
-  params.push_back(TestParams(true, false));
-  params.push_back(TestParams(true, true));
+  params.push_back(TestParams(false));
+  params.push_back(TestParams(true));
   return params;
 }
 
@@ -88,8 +79,6 @@ class CryptoServerTest : public ::testing::TestWithParam<TestParams> {
 
     FLAGS_use_early_return_when_verifying_chlo =
         GetParam().use_early_return_when_verifying_chlo;
-    FLAGS_send_quic_crypto_reject_reason =
-        GetParam().send_quic_crypto_reject_reason;
   }
 
   void SetUp() override {
@@ -276,10 +265,6 @@ class CryptoServerTest : public ::testing::TestWithParam<TestParams> {
     static_assert(sizeof(QuicTag) == sizeof(uint32), "header out of sync");
     QuicErrorCode error_code = out_.GetTaglist(kRREJ, &reject_reasons,
                                                &num_reject_reasons);
-    if (!FLAGS_send_quic_crypto_reject_reason) {
-      ASSERT_EQ(QUIC_CRYPTO_MESSAGE_PARAMETER_NOT_FOUND, error_code);
-      return;
-    }
     ASSERT_EQ(QUIC_NO_ERROR, error_code);
 
     if (FLAGS_use_early_return_when_verifying_chlo) {
@@ -310,9 +295,8 @@ class CryptoServerTest : public ::testing::TestWithParam<TestParams> {
   scoped_ptr<CryptoHandshakeMessage> server_config_;
 };
 
-// Run all CryptoServerTest with all combinations of
-// FLAGS_use_early_return_when_verifying_chlo and
-// FLAGS_send_quic_crypto_reject_reason.
+// Run all CryptoServerTest with both values of
+// FLAGS_use_early_return_when_verifying_chlo
 INSTANTIATE_TEST_CASE_P(CryptoServerTests,
                         CryptoServerTest,
                         ::testing::ValuesIn(GetTestParams()));

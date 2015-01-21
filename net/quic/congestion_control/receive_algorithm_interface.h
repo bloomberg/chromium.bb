@@ -17,14 +17,9 @@ namespace net {
 
 class NET_EXPORT_PRIVATE ReceiveAlgorithmInterface {
  public:
-  static ReceiveAlgorithmInterface* Create(CongestionFeedbackType type);
+  static ReceiveAlgorithmInterface* Create();
 
   virtual ~ReceiveAlgorithmInterface() {}
-
-  // Returns false if no QuicCongestionFeedbackFrame block is needed.
-  // Otherwise fills in feedback and return true.
-  virtual bool GenerateCongestionFeedback(
-      QuicCongestionFeedbackFrame* feedback) = 0;
 
   // Should be called for each incoming packet.
   // bytes: is the packet size in bytes including IP headers.

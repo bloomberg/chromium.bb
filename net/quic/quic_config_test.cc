@@ -10,6 +10,7 @@
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_time.h"
 #include "net/quic/quic_utils.h"
+#include "net/quic/test_tools/quic_config_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/test/gtest_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -69,7 +70,6 @@ TEST_F(QuicConfigTest, ProcessClientHello) {
   QuicConfig client_config;
   QuicTagVector cgst;
   cgst.push_back(kQBIC);
-  client_config.SetCongestionFeedback(cgst, kQBIC);
   client_config.SetIdleConnectionStateLifetime(
       QuicTime::Delta::FromSeconds(2 * kMaximumIdleTimeoutSecs),
       QuicTime::Delta::FromSeconds(kMaximumIdleTimeoutSecs));
@@ -93,7 +93,6 @@ TEST_F(QuicConfigTest, ProcessClientHello) {
       config_.ProcessPeerHello(msg, CLIENT, &error_details);
   EXPECT_EQ(QUIC_NO_ERROR, error);
   EXPECT_TRUE(config_.negotiated());
-  EXPECT_EQ(kQBIC, config_.CongestionFeedback());
   EXPECT_EQ(QuicTime::Delta::FromSeconds(kMaximumIdleTimeoutSecs),
             config_.IdleConnectionStateLifetime());
   EXPECT_EQ(kDefaultMaxStreamsPerConnection,
@@ -115,7 +114,6 @@ TEST_F(QuicConfigTest, ProcessServerHello) {
   QuicConfig server_config;
   QuicTagVector cgst;
   cgst.push_back(kQBIC);
-  server_config.SetCongestionFeedback(cgst, kQBIC);
   server_config.SetIdleConnectionStateLifetime(
       QuicTime::Delta::FromSeconds(kMaximumIdleTimeoutSecs / 2),
       QuicTime::Delta::FromSeconds(kMaximumIdleTimeoutSecs / 2));
@@ -135,7 +133,6 @@ TEST_F(QuicConfigTest, ProcessServerHello) {
       config_.ProcessPeerHello(msg, SERVER, &error_details);
   EXPECT_EQ(QUIC_NO_ERROR, error);
   EXPECT_TRUE(config_.negotiated());
-  EXPECT_EQ(kQBIC, config_.CongestionFeedback());
   EXPECT_EQ(QuicTime::Delta::FromSeconds(kMaximumIdleTimeoutSecs / 2),
             config_.IdleConnectionStateLifetime());
   EXPECT_EQ(kDefaultMaxStreamsPerConnection / 2,
@@ -196,9 +193,8 @@ TEST_F(QuicConfigTest, MissingValueInCHLO) {
 
 TEST_F(QuicConfigTest, MissingValueInSHLO) {
   CryptoHandshakeMessage msg;
-  msg.SetValue(kICSL, 1);
   msg.SetValue(kMSPC, 3);
-  // Missing CGST. KATO is optional.
+  // Missing ICSL. KATO is optional.
   string error_details;
   const QuicErrorCode error =
       config_.ProcessPeerHello(msg, SERVER, &error_details);
@@ -217,36 +213,6 @@ TEST_F(QuicConfigTest, OutOfBoundSHLO) {
   const QuicErrorCode error =
       config_.ProcessPeerHello(msg, SERVER, &error_details);
   EXPECT_EQ(QUIC_INVALID_NEGOTIATED_VALUE, error);
-}
-
-TEST_F(QuicConfigTest, MultipleNegotiatedValuesInVectorTag) {
-  QuicConfig server_config;
-  QuicTagVector cgst;
-  cgst.push_back(kQBIC);
-  cgst.push_back(kTBBR);
-  server_config.SetCongestionFeedback(cgst, kQBIC);
-
-  CryptoHandshakeMessage msg;
-  server_config.ToHandshakeMessage(&msg);
-  string error_details;
-  const QuicErrorCode error =
-      config_.ProcessPeerHello(msg, SERVER, &error_details);
-  EXPECT_EQ(QUIC_INVALID_NEGOTIATED_VALUE, error);
-}
-
-TEST_F(QuicConfigTest, NoOverLapInCGST) {
-  QuicConfig server_config;
-  QuicTagVector cgst;
-  cgst.push_back(kTBBR);
-  server_config.SetCongestionFeedback(cgst, kTBBR);
-
-  CryptoHandshakeMessage msg;
-  string error_details;
-  server_config.ToHandshakeMessage(&msg);
-  const QuicErrorCode error =
-      config_.ProcessPeerHello(msg, CLIENT, &error_details);
-  DVLOG(1) << QuicUtils::ErrorToString(error);
-  EXPECT_EQ(QUIC_CRYPTO_MESSAGE_PARAMETER_NO_OVERLAP, error);
 }
 
 TEST_F(QuicConfigTest, InvalidFlowControlWindow) {

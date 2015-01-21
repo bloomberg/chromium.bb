@@ -95,7 +95,6 @@ TEST_F(QuicCryptoClientStreamTest, NegotiatedParameters) {
   CompleteCryptoHandshake();
 
   const QuicConfig* config = session_->config();
-  EXPECT_EQ(kQBIC, config->CongestionFeedback());
   EXPECT_EQ(kMaximumIdleTimeoutSecs,
             config->IdleConnectionStateLifetime().ToSeconds());
   EXPECT_EQ(kDefaultMaxStreamsPerConnection,

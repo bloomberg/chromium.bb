@@ -66,25 +66,12 @@ const int kDefaultRetransmissionTimeMs = 500;
 
 class TestReceiveAlgorithm : public ReceiveAlgorithmInterface {
  public:
-  explicit TestReceiveAlgorithm(QuicCongestionFeedbackFrame* feedback)
-      : feedback_(feedback) {
-  }
-
-  bool GenerateCongestionFeedback(
-      QuicCongestionFeedbackFrame* congestion_feedback) override {
-    if (feedback_ == nullptr) {
-      return false;
-    }
-    *congestion_feedback = *feedback_;
-    return true;
-  }
+  TestReceiveAlgorithm() {}
 
   MOCK_METHOD3(RecordIncomingPacket,
                void(QuicByteCount, QuicPacketSequenceNumber, QuicTime));
 
  private:
-  QuicCongestionFeedbackFrame* feedback_;
-
   DISALLOW_COPY_AND_ASSIGN(TestReceiveAlgorithm);
 };
 
@@ -333,10 +320,6 @@ class TestPacketWriter : public QuicPacketWriter {
 
   const vector<QuicAckFrame>& ack_frames() const {
     return framer_.ack_frames();
-  }
-
-  const vector<QuicCongestionFeedbackFrame>& feedback_frames() const {
-    return framer_.feedback_frames();
   }
 
   const vector<QuicStopWaitingFrame>& stop_waiting_frames() const {
@@ -636,6 +619,7 @@ class QuicConnectionTest : public ::testing::TestWithParam<QuicVersion> {
         peer_creator_(connection_id_, &framer_, &random_generator_),
         send_algorithm_(new StrictMock<MockSendAlgorithm>),
         loss_algorithm_(new MockLossAlgorithm()),
+        receive_algorithm_(new TestReceiveAlgorithm),
         helper_(new TestConnectionHelper(&clock_, &random_generator_)),
         writer_(new TestPacketWriter(version(), &clock_)),
         factory_(writer_.get()),
@@ -656,8 +640,7 @@ class QuicConnectionTest : public ::testing::TestWithParam<QuicVersion> {
     connection_.SetSendAlgorithm(send_algorithm_);
     connection_.SetLossAlgorithm(loss_algorithm_);
     framer_.set_received_entropy_calculator(&entropy_calculator_);
-    // Simplify tests by not sending feedback unless specifically configured.
-    SetFeedback(nullptr);
+    connection_.SetReceiveAlgorithm(receive_algorithm_);
     EXPECT_CALL(
         *send_algorithm_, TimeUntilSend(_, _, _)).WillRepeatedly(Return(
             QuicTime::Delta::Zero()));
@@ -942,11 +925,6 @@ class QuicConnectionTest : public ::testing::TestWithParam<QuicVersion> {
         BuildUnsizedDataPacket(&framer_, header_, frames).packet;
     EXPECT_TRUE(packet != nullptr);
     return packet;
-  }
-
-  void SetFeedback(QuicCongestionFeedbackFrame* feedback) {
-    receive_algorithm_ = new TestReceiveAlgorithm(feedback);
-    connection_.SetReceiveAlgorithm(receive_algorithm_);
   }
 
   QuicTime::Delta DefaultRetransmissionTime() {
@@ -3036,47 +3014,6 @@ TEST_P(QuicConnectionTest, CloseFecGroup) {
   ASSERT_EQ(0u, connection_.NumFecGroups());
 }
 
-TEST_P(QuicConnectionTest, NoQuicCongestionFeedbackFrame) {
-  SendAckPacketToPeer();
-  EXPECT_TRUE(writer_->feedback_frames().empty());
-}
-
-TEST_P(QuicConnectionTest, WithQuicCongestionFeedbackFrame) {
-  QuicCongestionFeedbackFrame info;
-  info.type = kTCP;
-  info.tcp.receive_window = 0x4030;
-
-  // After QUIC_VERSION_22, do not send TCP Congestion Feedback Frames anymore.
-  if (version() > QUIC_VERSION_22) {
-    SendAckPacketToPeer();
-    ASSERT_TRUE(writer_->feedback_frames().empty());
-  } else {
-    // Only SetFeedback in this case because SetFeedback will create a receive
-    // algorithm which is how the received_packet_manager checks if it should be
-    // creating TCP Congestion Feedback Frames.
-    SetFeedback(&info);
-    SendAckPacketToPeer();
-    ASSERT_FALSE(writer_->feedback_frames().empty());
-    ASSERT_EQ(kTCP, writer_->feedback_frames()[0].type);
-  }
-}
-
-TEST_P(QuicConnectionTest, UpdateQuicCongestionFeedbackFrame) {
-  SendAckPacketToPeer();
-  EXPECT_CALL(*receive_algorithm_, RecordIncomingPacket(_, _, _));
-  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
-  ProcessPacket(1);
-}
-
-TEST_P(QuicConnectionTest, DontUpdateQuicCongestionFeedbackFrameForRevived) {
-  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
-  SendAckPacketToPeer();
-  // Process an FEC packet, and revive the missing data packet
-  // but only contact the receive_algorithm once.
-  EXPECT_CALL(*receive_algorithm_, RecordIncomingPacket(_, _, _));
-  ProcessFecPacket(2, 1, true, !kEntropyFlag, nullptr);
-}
-
 TEST_P(QuicConnectionTest, InitialTimeout) {
   EXPECT_TRUE(connection_.connected());
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(AnyNumber());
@@ -4434,9 +4371,6 @@ class MockQuicConnectionDebugVisitor
   MOCK_METHOD1(OnAckFrame,
                void(const QuicAckFrame& frame));
 
-  MOCK_METHOD1(OnCongestionFeedbackFrame,
-               void(const QuicCongestionFeedbackFrame&));
-
   MOCK_METHOD1(OnStopWaitingFrame,
                void(const QuicStopWaitingFrame&));
 
@@ -4499,7 +4433,6 @@ TEST_P(QuicConnectionTest, ControlFramesInstigateAcks) {
 }
 
 TEST_P(QuicConnectionTest, NoDataNoFin) {
-  ValueRestore<bool> old_flag(&FLAGS_quic_empty_data_no_fin_early_return, true);
   // Make sure that a call to SendStreamWithData, with no data and no FIN, does
   // not result in a QuicAckNotifier being used-after-free (fail under ASAN).
   // Regression test for b/18594622

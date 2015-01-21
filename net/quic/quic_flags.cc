@@ -13,9 +13,6 @@ bool FLAGS_quic_use_time_loss_detection = false;
 // CHLO.
 bool FLAGS_use_early_return_when_verifying_chlo = true;
 
-// If true, QUIC crypto reject message will include the reasons for rejection.
-bool FLAGS_send_quic_crypto_reject_reason = false;
-
 // If true, QUIC connections will support FEC protection of data while sending
 // packets, to reduce latency of data delivery to the application. The client
 // must also request FEC protection for the server to use FEC.
@@ -50,17 +47,9 @@ bool FLAGS_quic_allow_silent_close = true;
 // If true, use std::cbrt instead of custom cube root.
 bool FLAGS_quic_use_std_cbrt = true;
 
-// If true, the QUIC packet generator will not attempt to queue multiple ACK
-// frames.
-bool FLAGS_quic_disallow_multiple_pending_ack_frames = true;
-
 // If true, then the source address tokens generated for QUIC connects will
 // store multiple addresses.
 bool FLAGS_quic_use_multiple_address_in_source_tokens = false;
-
-// If true, an attempt to send an empty data string with no FIN will return
-// early, and not create a frame.
-bool FLAGS_quic_empty_data_no_fin_early_return = true;
 
 // If true, if min RTT and/or SRTT have not yet been set then initial RTT is
 // used to initialize them in a call to QuicConnection::GetStats.
@@ -80,3 +69,21 @@ bool FLAGS_quic_ack_notifier_informed_on_serialized = true;
 // If true, QUIC will use the new RTO that waits until an ack arrives to adjust
 // the congestion window.
 bool FLAGS_quic_use_new_rto = true;
+
+// Time period for which a given connection_id should live in the time-wait
+// state.
+int64 FLAGS_quic_time_wait_list_seconds = 5;
+
+// Currently, this number is quite conservative.  The max QPS limit for an
+// individual server silo is currently set to 1000 qps, though the actual max
+// that we see in the wild is closer to 450 qps. Regardless, this means that the
+// longest time-wait list we should see is 5 seconds * 1000 qps = 5000.  If we
+// allow for an order of magnitude leeway, we have 50000.
+//
+// Maximum number of connections on the time-wait list. A negative value implies
+// no configured limit.
+int64 FLAGS_quic_time_wait_list_max_connections = 50000;
+
+// If true, limit the number of connections on the quic time-wait list using a
+// flag.
+bool FLAGS_quic_limit_time_wait_list_size = true;

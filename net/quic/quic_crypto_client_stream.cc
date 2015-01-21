@@ -439,7 +439,9 @@ void QuicCryptoClientStream::DoVerifyProofComplete(
 
   if (!verify_ok_) {
     next_state_ = STATE_NONE;
-    client_session()->OnProofVerifyDetailsAvailable(*verify_details_);
+    if (verify_details_) {
+      client_session()->OnProofVerifyDetailsAvailable(*verify_details_);
+    }
     UMA_HISTOGRAM_BOOLEAN("Net.QuicVerifyProofFailed.HandshakeConfirmed",
                           handshake_confirmed());
     CloseConnectionWithDetails(

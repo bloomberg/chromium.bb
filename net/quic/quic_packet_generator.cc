@@ -46,7 +46,6 @@ QuicPacketGenerator::QuicPacketGenerator(QuicConnectionId connection_id,
       fec_timeout_(QuicTime::Delta::Zero()),
       should_fec_protect_(false),
       should_send_ack_(false),
-      should_send_feedback_(false),
       should_send_stop_waiting_(false) {
 }
 
@@ -62,9 +61,6 @@ QuicPacketGenerator::~QuicPacketGenerator() {
         break;
       case ACK_FRAME:
         delete it->ack_frame;
-        break;
-      case CONGESTION_FEEDBACK_FRAME:
-        delete it->congestion_feedback_frame;
         break;
       case RST_STREAM_FRAME:
         delete it->rst_stream_frame;
@@ -104,27 +100,18 @@ void QuicPacketGenerator::OnRttChange(QuicTime::Delta rtt) {
   fec_timeout_ = rtt.Multiply(kRttMultiplierForFecTimeout);
 }
 
-void QuicPacketGenerator::SetShouldSendAck(bool also_send_feedback,
-                                           bool also_send_stop_waiting) {
-  if (FLAGS_quic_disallow_multiple_pending_ack_frames) {
-    if (pending_ack_frame_ != nullptr) {
-      // Ack already queued, nothing to do.
-      return;
-    }
+void QuicPacketGenerator::SetShouldSendAck(bool also_send_stop_waiting) {
+  if (pending_ack_frame_ != nullptr) {
+    // Ack already queued, nothing to do.
+    return;
+  }
 
-    if (also_send_feedback && pending_feedback_frame_ != nullptr) {
-      LOG(DFATAL) << "Should only ever be one pending feedback frame.";
-      return;
-    }
-
-    if (also_send_stop_waiting && pending_stop_waiting_frame_ != nullptr) {
-      LOG(DFATAL) << "Should only ever be one pending stop waiting frame.";
-      return;
-    }
+  if (also_send_stop_waiting && pending_stop_waiting_frame_ != nullptr) {
+    LOG(DFATAL) << "Should only ever be one pending stop waiting frame.";
+    return;
   }
 
   should_send_ack_ = true;
-  should_send_feedback_ = also_send_feedback;
   should_send_stop_waiting_ = also_send_stop_waiting;
   SendQueuedFrames(false);
 }
@@ -146,11 +133,11 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(
     bool fin,
     FecProtection fec_protection,
     QuicAckNotifier::DelegateInterface* delegate) {
-  IsHandshake handshake = id == kCryptoStreamId ? IS_HANDSHAKE : NOT_HANDSHAKE;
+  bool has_handshake = id == kCryptoStreamId;
   // To make reasoning about crypto frames easier, we don't combine them with
   // other retransmittable frames in a single packet.
-  const bool flush = handshake == IS_HANDSHAKE &&
-      packet_creator_.HasPendingRetransmittableFrames();
+  const bool flush =
+      has_handshake && packet_creator_.HasPendingRetransmittableFrames();
   SendQueuedFrames(flush);
 
   size_t total_bytes_consumed = 0;
@@ -173,14 +160,15 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(
 
   IOVector data = data_to_write;
   size_t data_size = data.TotalBufferSize();
-  if (FLAGS_quic_empty_data_no_fin_early_return && !fin && (data_size == 0)) {
+  if (!fin && (data_size == 0)) {
     LOG(DFATAL) << "Attempt to consume empty data without FIN.";
     return QuicConsumedData(0, false);
   }
 
   int frames_created = 0;
-  while (delegate_->ShouldGeneratePacket(NOT_RETRANSMISSION,
-                                         HAS_RETRANSMITTABLE_DATA, handshake)) {
+  while (delegate_->ShouldGeneratePacket(
+      NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA,
+      has_handshake ? IS_HANDSHAKE : NOT_HANDSHAKE)) {
     QuicFrame frame;
     size_t bytes_consumed = packet_creator_.CreateStreamFrame(
         id, data, offset + total_bytes_consumed, fin, &frame);
@@ -233,7 +221,7 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(
   }
 
   // Don't allow the handshake to be bundled with other retransmittable frames.
-  if (handshake == IS_HANDSHAKE) {
+  if (has_handshake) {
     SendQueuedFrames(true);
   }
 
@@ -248,8 +236,9 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(
 bool QuicPacketGenerator::CanSendWithNextPendingFrameAddition() const {
   DCHECK(HasPendingFrames());
   HasRetransmittableData retransmittable =
-      (should_send_ack_ || should_send_feedback_ || should_send_stop_waiting_)
-      ? NO_RETRANSMITTABLE_DATA : HAS_RETRANSMITTABLE_DATA;
+      (should_send_ack_ || should_send_stop_waiting_)
+          ? NO_RETRANSMITTABLE_DATA
+          : HAS_RETRANSMITTABLE_DATA;
   if (retransmittable == HAS_RETRANSMITTABLE_DATA) {
       DCHECK(!queued_control_frames_.empty());  // These are retransmittable.
   }
@@ -365,8 +354,8 @@ bool QuicPacketGenerator::HasQueuedFrames() const {
 }
 
 bool QuicPacketGenerator::HasPendingFrames() const {
-  return should_send_ack_ || should_send_feedback_ ||
-      should_send_stop_waiting_ || !queued_control_frames_.empty();
+  return should_send_ack_ || should_send_stop_waiting_ ||
+         !queued_control_frames_.empty();
 }
 
 bool QuicPacketGenerator::AddNextPendingFrame() {
@@ -377,15 +366,6 @@ bool QuicPacketGenerator::AddNextPendingFrame() {
     // Return success if we have cleared out this flag (i.e., added the frame).
     // If we still need to send, then the frame is full, and we have failed.
     return !should_send_ack_;
-  }
-
-  if (should_send_feedback_) {
-    pending_feedback_frame_.reset(delegate_->CreateFeedbackFrame());
-    // If we can't this add the frame now, then we still need to do so later.
-    should_send_feedback_ = !AddFrame(QuicFrame(pending_feedback_frame_.get()));
-    // Return success if we have cleared out this flag (i.e., added the frame).
-    // If we still need to send, then the frame is full, and we have failed.
-    return !should_send_feedback_;
   }
 
   if (should_send_stop_waiting_) {
@@ -430,11 +410,8 @@ void QuicPacketGenerator::SerializeAndSendPacket() {
   MaybeSendFecPacketAndCloseGroup(/*flush=*/false);
 
   // The packet has now been serialized, safe to delete pending frames.
-  if (FLAGS_quic_disallow_multiple_pending_ack_frames) {
-    pending_ack_frame_.reset();
-    pending_feedback_frame_.reset();
-    pending_stop_waiting_frame_.reset();
-  }
+  pending_ack_frame_.reset();
+  pending_stop_waiting_frame_.reset();
 }
 
 void QuicPacketGenerator::StopSendingVersion() {

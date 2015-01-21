@@ -103,11 +103,6 @@ class QuicDispatcher::QuicFramerVisitor : public QuicFramerVisitorInterface {
     DCHECK(false);
     return false;
   }
-  bool OnCongestionFeedbackFrame(
-      const QuicCongestionFeedbackFrame& /*frame*/) override {
-    DCHECK(false);
-    return false;
-  }
   bool OnStopWaitingFrame(const QuicStopWaitingFrame& /*frame*/) override {
     DCHECK(false);
     return false;

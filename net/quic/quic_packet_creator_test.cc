@@ -915,12 +915,6 @@ TEST_P(QuicPacketCreatorTest, AddFrameAndSerialize) {
   EXPECT_TRUE(creator_.AddSavedFrame(QuicFrame(&ack_frame)));
   EXPECT_TRUE(creator_.HasPendingFrames());
 
-  QuicCongestionFeedbackFrame congestion_feedback;
-  congestion_feedback.type = kTCP;
-  congestion_feedback.tcp.receive_window = 0x4030;
-  EXPECT_TRUE(creator_.AddSavedFrame(QuicFrame(&congestion_feedback)));
-  EXPECT_TRUE(creator_.HasPendingFrames());
-
   QuicFrame frame;
   size_t consumed = creator_.CreateStreamFrame(
       1u, MakeIOVector("test"), 0u, false, &frame);

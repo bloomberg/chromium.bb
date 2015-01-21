@@ -48,6 +48,9 @@
 #include "base/strings/string_util.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/privacy_mode.h"
+#include "net/cert/cert_verifier.h"
+#include "net/http/transport_security_state.h"
+#include "net/quic/crypto/proof_verifier_chromium.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_server_id.h"
 #include "net/quic/quic_utils.h"
@@ -57,6 +60,9 @@
 #include "url/gurl.h"
 
 using base::StringPiece;
+using net::CertVerifier;
+using net::ProofVerifierChromium;
+using net::TransportSecurityState;
 using std::cout;
 using std::cerr;
 using std::map;
@@ -171,8 +177,9 @@ int main(int argc, char *argv[]) {
   VLOG(1) << "Resolved " << host << " to " << host_port << endl;
 
   // Build the client, and try to connect.
+  bool is_https = (FLAGS_port == 443);
   net::EpollServer epoll_server;
-  net::QuicServerId server_id(host, FLAGS_port, /*is_https=*/false,
+  net::QuicServerId server_id(host, FLAGS_port, is_https,
                               net::PRIVACY_MODE_DISABLED);
   net::QuicVersionVector versions = net::QuicSupportedVersions();
   if (FLAGS_quic_version != -1) {
@@ -181,6 +188,16 @@ int main(int argc, char *argv[]) {
   }
   net::tools::QuicClient client(net::IPEndPoint(ip_addr, FLAGS_port), server_id,
                                 versions, &epoll_server);
+  scoped_ptr<CertVerifier> cert_verifier;
+  scoped_ptr<TransportSecurityState> transport_security_state;
+  if (is_https) {
+    // For secure QUIC we need to verify the cert chain.a
+    cert_verifier.reset(CertVerifier::CreateDefault());
+    transport_security_state.reset(new TransportSecurityState);
+    // TODO(rtenneti): Fix "Proof invalid: Missing context" error.
+    client.SetProofVerifier(new ProofVerifierChromium(
+        cert_verifier.get(), transport_security_state.get()));
+  }
   if (!client.Initialize()) {
     cerr << "Failed to initialize client." << endl;
     return 1;

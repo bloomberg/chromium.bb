@@ -89,6 +89,10 @@ class QuicTimeWaitListManager : public QuicBlockedWriterInterface {
   // period.
   void CleanUpOldConnectionIds();
 
+  // If necessary, trims the oldest connections from the time-wait list until
+  // the size is under the configured maximum.
+  void TrimTimeWaitListIfNeeded();
+
   // Given a ConnectionId that exists in the time wait list, returns the
   // QuicVersion associated with it.
   QuicVersion GetQuicVersionFromConnectionId(QuicConnectionId connection_id);
@@ -128,6 +132,15 @@ class QuicTimeWaitListManager : public QuicBlockedWriterInterface {
 
   // Register the alarm with the epoll server to wake up at appropriate time.
   void SetConnectionIdCleanUpAlarm();
+
+  // Removes the oldest connection from the time-wait list if it was added prior
+  // to "expiration_time".  To unconditionally remove the oldest connection, use
+  // a QuicTime::Delta:Infinity().  This function modifies the
+  // connection_id_map_.  If you plan to call this function in a loop, any
+  // iterators that you hold before the call to this function may be invalid
+  // afterward.  Returns true if the oldest connection was expired.  Returns
+  // false if the map is empty or the oldest connection has not expired.
+  bool MaybeExpireOldestConnection(QuicTime expiration_time);
 
   // A map from a recently closed connection_id to the number of packets
   // received after the termination of the connection bound to the

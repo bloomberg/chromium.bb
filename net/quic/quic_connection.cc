@@ -358,7 +358,6 @@ void QuicConnection::MaybeSetFecAlarm(
 void QuicConnection::OnPacket() {
   DCHECK(last_stream_frames_.empty() &&
          last_ack_frames_.empty() &&
-         last_congestion_frames_.empty() &&
          last_stop_waiting_frames_.empty() &&
          last_rst_frames_.empty() &&
          last_goaway_frames_.empty() &&
@@ -657,16 +656,6 @@ void QuicConnection::ProcessStopWaitingFrame(
   CloseFecGroupsBefore(stop_waiting.least_unacked + 1);
 }
 
-bool QuicConnection::OnCongestionFeedbackFrame(
-    const QuicCongestionFeedbackFrame& feedback) {
-  DCHECK(connected_);
-  if (debug_visitor_.get() != nullptr) {
-    debug_visitor_->OnCongestionFeedbackFrame(feedback);
-  }
-  last_congestion_frames_.push_back(feedback);
-  return connected_;
-}
-
 bool QuicConnection::OnStopWaitingFrame(const QuicStopWaitingFrame& frame) {
   DCHECK(connected_);
 
@@ -858,7 +847,6 @@ void QuicConnection::OnPacketComplete() {
            << " packet " << last_header_.packet_sequence_number
            << " with " << last_stream_frames_.size()<< " stream frames "
            << last_ack_frames_.size() << " acks, "
-           << last_congestion_frames_.size() << " congestions, "
            << last_stop_waiting_frames_.size() << " stop_waiting, "
            << last_rst_frames_.size() << " rsts, "
            << last_goaway_frames_.size() << " goaways, "
@@ -911,10 +899,6 @@ void QuicConnection::OnPacketComplete() {
   for (size_t i = 0; i < last_ack_frames_.size(); ++i) {
     ProcessAckFrame(last_ack_frames_[i]);
   }
-  for (size_t i = 0; i < last_congestion_frames_.size(); ++i) {
-    sent_packet_manager_.OnIncomingQuicCongestionFeedbackFrame(
-        last_congestion_frames_[i], time_of_last_received_packet_);
-  }
   for (size_t i = 0; i < last_stop_waiting_frames_.size(); ++i) {
     ProcessStopWaitingFrame(last_stop_waiting_frames_[i]);
   }
@@ -958,7 +942,6 @@ void QuicConnection::MaybeQueueAck() {
 void QuicConnection::ClearLastFrames() {
   last_stream_frames_.clear();
   last_ack_frames_.clear();
-  last_congestion_frames_.clear();
   last_stop_waiting_frames_.clear();
   last_rst_frames_.clear();
   last_goaway_frames_.clear();
@@ -992,10 +975,6 @@ QuicAckFrame* QuicConnection::CreateAckFrame() {
       outgoing_ack, clock_->ApproximateNow());
   DVLOG(1) << ENDPOINT << "Creating ack frame: " << *outgoing_ack;
   return outgoing_ack;
-}
-
-QuicCongestionFeedbackFrame* QuicConnection::CreateFeedbackFrame() {
-  return new QuicCongestionFeedbackFrame(outgoing_congestion_feedback_);
 }
 
 QuicStopWaitingFrame* QuicConnection::CreateStopWaitingFrame() {
@@ -1099,9 +1078,7 @@ QuicConsumedData QuicConnection::SendStreamData(
     QuicAckNotifier::DelegateInterface* delegate) {
   if (!fin && data.Empty()) {
     LOG(DFATAL) << "Attempt to send empty stream frame";
-    if (FLAGS_quic_empty_data_no_fin_early_return) {
-      return QuicConsumedData(0, false);
-    }
+    return QuicConsumedData(0, false);
   }
 
   // Opportunistically bundle an ack with every outgoing packet.
@@ -1695,19 +1672,8 @@ void QuicConnection::SendAck() {
   ack_alarm_->Cancel();
   stop_waiting_count_ = 0;
   num_packets_received_since_last_ack_sent_ = 0;
-  bool send_feedback = false;
 
-  // Deprecating the Congestion Feedback Frame after QUIC_VERSION_22.
-  if (version() <= QUIC_VERSION_22) {
-    if (received_packet_manager_.GenerateCongestionFeedback(
-            &outgoing_congestion_feedback_)) {
-      DVLOG(1) << ENDPOINT << "Sending feedback: "
-               << outgoing_congestion_feedback_;
-      send_feedback = true;
-    }
-  }
-
-  packet_generator_.SetShouldSendAck(send_feedback, true);
+  packet_generator_.SetShouldSendAck(true);
 }
 
 void QuicConnection::OnRetransmissionTimeout() {

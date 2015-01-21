@@ -132,11 +132,10 @@ AdvanceFirstGapAndGarbageCollectEntropyMap() {
   }
 }
 
-QuicReceivedPacketManager::QuicReceivedPacketManager(
-    QuicConnectionStats* stats)
+QuicReceivedPacketManager::QuicReceivedPacketManager(QuicConnectionStats* stats)
     : peer_least_packet_awaiting_ack_(0),
       time_largest_observed_(QuicTime::Zero()),
-      receive_algorithm_(ReceiveAlgorithmInterface::Create(kTCP)),
+      receive_algorithm_(ReceiveAlgorithmInterface::Create()),
       stats_(stats) {
   ack_frame_.largest_observed = 0;
   ack_frame_.entropy_hash = 0;
@@ -240,11 +239,6 @@ void QuicReceivedPacketManager::UpdateReceivedPacketInfo(
 
   ack_frame->received_packet_times = received_packet_times_;
   received_packet_times_.clear();
-}
-
-bool QuicReceivedPacketManager::GenerateCongestionFeedback(
-    QuicCongestionFeedbackFrame* feedback) {
-  return receive_algorithm_->GenerateCongestionFeedback(feedback);
 }
 
 QuicPacketEntropyHash QuicReceivedPacketManager::EntropyHash(

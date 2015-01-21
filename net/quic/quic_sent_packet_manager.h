@@ -156,11 +156,6 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   // been acked by the peer.
   QuicPacketSequenceNumber GetLeastUnacked() const;
 
-  // Called when a congestion feedback frame is received from peer.
-  virtual void OnIncomingQuicCongestionFeedbackFrame(
-      const QuicCongestionFeedbackFrame& frame,
-      const QuicTime& feedback_receive_time);
-
   // Called when we have sent bytes to the peer.  This informs the manager both
   // the number of bytes sent and if they were retransmitted.  Returns true if
   // the sender should reset the retransmission timer.

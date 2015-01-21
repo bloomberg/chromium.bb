@@ -15,13 +15,6 @@ TcpReceiver::TcpReceiver()
     : receive_window_(kReceiveWindowTCP) {
 }
 
-bool TcpReceiver::GenerateCongestionFeedback(
-    QuicCongestionFeedbackFrame* feedback) {
-  feedback->type = kTCP;
-  feedback->tcp.receive_window = receive_window_;
-  return true;
-}
-
 void TcpReceiver::RecordIncomingPacket(QuicByteCount bytes,
                                        QuicPacketSequenceNumber sequence_number,
                                        QuicTime timestamp) {

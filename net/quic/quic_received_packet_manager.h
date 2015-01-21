@@ -120,13 +120,6 @@ class NET_EXPORT_PRIVATE QuicReceivedPacketManager :
   void UpdateReceivedPacketInfo(QuicAckFrame* ack_frame,
                                 QuicTime approximate_now);
 
-  // Should be called before sending an ACK packet, to decide if we need
-  // to attach a QuicCongestionFeedbackFrame block.
-  // Returns false if no QuicCongestionFeedbackFrame block is needed.
-  // Otherwise fills in feedback and returns true.
-  virtual bool GenerateCongestionFeedback(
-      QuicCongestionFeedbackFrame* feedback);
-
   // QuicReceivedEntropyHashCalculatorInterface
   // Called by QuicFramer, when the outgoing ack gets truncated, to recalculate
   // the received entropy hash for the truncated ack frame.

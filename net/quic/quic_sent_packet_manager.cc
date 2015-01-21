@@ -768,14 +768,6 @@ QuicSentPacketManager::RetransmissionTimeoutMode
   return RTO_MODE;
 }
 
-void QuicSentPacketManager::OnIncomingQuicCongestionFeedbackFrame(
-    const QuicCongestionFeedbackFrame& frame,
-    const QuicTime& feedback_receive_time) {
-  if (frame.type == kTCP) {
-    receive_buffer_bytes_ = frame.tcp.receive_window;
-  }
-}
-
 void QuicSentPacketManager::InvokeLossDetection(QuicTime time) {
   SequenceNumberSet lost_packets =
       loss_algorithm_->DetectLostPackets(unacked_packets_,
