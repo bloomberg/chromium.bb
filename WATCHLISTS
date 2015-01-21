@@ -691,6 +691,10 @@
                   '|chrome/browser/ui/webui/options/language'\
                   '|chromeos/ime/*'
     },
+    'timers': {
+      'filepath': 'base/timer/'\
+                  '|components/timers/'
+    },
     'tools': {
       'filepath': 'tools/',
     },
@@ -1008,6 +1012,7 @@
     'textinput_chromeos': ['yusukes+watch@chromium.org',
                            'nona+watch@chromium.org',
                            'yukishiino+watch@chromium.org'],
+    'timers': ['chirantan+watch@chromium.org'],
     'tools_emacs': ['dhollowa+watch@chromium.org'],
     'tracing': ['dsinclair+watch@chromium.org', 'wfh+watch@chromium.org'],
     'ui_compositor': ['cc-bugs@chromium.org'],
