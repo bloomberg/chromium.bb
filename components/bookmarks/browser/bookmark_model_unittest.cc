@@ -986,6 +986,7 @@ TEST_F(BookmarkModelTestWithProfile, CreateAndRestore) {
   }
 }
 
+#if !defined(OS_ANDROID) && !defined(OS_IOS)  // http://crbug.com/450464
 TEST_F(BookmarkModelTest, Sort) {
   // Populate the bookmark bar node with nodes for 'B', 'a', 'd' and 'C'.
   // 'C' and 'a' are folders.
@@ -1016,6 +1017,7 @@ TEST_F(BookmarkModelTest, Sort) {
   EXPECT_EQ(parent->GetChild(2)->GetTitle(), ASCIIToUTF16("B"));
   EXPECT_EQ(parent->GetChild(3)->GetTitle(), ASCIIToUTF16("d"));
 }
+#endif
 
 TEST_F(BookmarkModelTest, Reorder) {
   // Populate the bookmark bar node with nodes 'A', 'B', 'C' and 'D'.
