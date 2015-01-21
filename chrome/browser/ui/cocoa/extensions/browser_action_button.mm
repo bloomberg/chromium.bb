@@ -238,7 +238,21 @@ void ToolbarActionViewDelegateBridge::DoShowContextMenu() {
 - (void)mouseDown:(NSEvent*)theEvent {
   NSPoint location = [self convertPoint:[theEvent locationInWindow]
                                fromView:nil];
-  if (NSPointInRect(location, [self bounds])) {
+  // We don't allow dragging in the overflow container because mouse events
+  // don't work well in menus in Cocoa. Specifically, the minute the mouse
+  // leaves the view, the view stops receiving events. This is bad, because the
+  // mouse can leave the view in many ways (user moves the mouse fast, user
+  // tries to drag the icon to a non-applicable place, like outside the menu,
+  // etc). When the mouse leaves, we get no indication (no mouseUp), so we can't
+  // even handle that case - and are left in the middle of a drag. Instead, we
+  // have to simply disable dragging.
+  //
+  // NOTE(devlin): If we use a greedy event loop that consumes all incoming
+  // events (i.e. using [NSWindow nextEventMatchingMask]), we can make this
+  // work. The downside to that is that all other events are lost. Disable this
+  // for now, and revisit it at a later date.
+  if (NSPointInRect(location, [self bounds]) &&
+      ![browserActionsController_ isOverflow]) {
     [[self cell] setHighlighted:YES];
     dragCouldStart_ = YES;
     dragStartPoint_ = [self convertPoint:[theEvent locationInWindow]
