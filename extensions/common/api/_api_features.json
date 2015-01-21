@@ -162,6 +162,10 @@
     "dependencies": ["permission:hid"],
     "contexts": ["blessed_extension"]
   },
+  "idle": {
+    "dependencies": ["permission:idle"],
+    "contexts": ["blessed_extension"]
+  },
   "management": {
     "dependencies": ["permission:management"],
     "contexts": ["blessed_extension"]

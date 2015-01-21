@@ -464,10 +464,6 @@
     "dependencies": ["permission:idltest"],
     "contexts": ["blessed_extension"]
   },
-  "idle": {
-    "dependencies": ["permission:idle"],
-    "contexts": ["blessed_extension"]
-  },
   "infobars": {
     "dependencies": ["permission:infobars"],
     "contexts": ["blessed_extension"]

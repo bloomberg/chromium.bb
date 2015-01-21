@@ -53,7 +53,6 @@
       'i18n.json',
       'identity.idl',
       'identity_private.idl',
-      'idle.json',
       'image_writer_private.idl',
       'inline_install_private.idl',
       'input_ime.json',

@@ -162,7 +162,6 @@
       'browser/extensions/api/hotword_private/hotword_private_apitest.cc',
       'browser/extensions/api/i18n/i18n_apitest.cc',
       'browser/extensions/api/identity/identity_apitest.cc',
-      'browser/extensions/api/idle/idle_apitest.cc',
       'browser/extensions/api/idltest/idltest_apitest.cc',
       'browser/extensions/api/image_writer_private/image_writer_private_apitest.cc',
       'browser/extensions/api/image_writer_private/test_utils.cc',

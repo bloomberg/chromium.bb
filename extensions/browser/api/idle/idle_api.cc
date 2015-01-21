@@ -2,19 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/idle/idle_api.h"
+#include "extensions/browser/api/idle/idle_api.h"
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "chrome/browser/extensions/api/idle/idle_api_constants.h"
-#include "chrome/browser/extensions/api/idle/idle_manager.h"
-#include "chrome/browser/extensions/api/idle/idle_manager_factory.h"
+#include "base/values.h"
+#include "extensions/browser/api/idle/idle_api_constants.h"
+#include "extensions/browser/api/idle/idle_manager.h"
+#include "extensions/browser/api/idle/idle_manager_factory.h"
+
+namespace extensions {
 
 namespace {
 
-const int kMinThreshold = 15;  // In seconds.  Set >1 sec for security concerns.
-const int kMaxThreshold = 4*60*60;  // Four hours, in seconds. Not set
-                                    // arbitrarily high for security concerns.
+// In seconds. Set >1 sec for security concerns.
+const int kMinThreshold = 15;
+
+// Four hours, in seconds. Not set arbitrarily high for security concerns.
+const int kMaxThreshold = 4 * 60 * 60;
 
 int ClampThreshold(int threshold) {
   if (threshold < kMinThreshold) {
@@ -28,34 +33,30 @@ int ClampThreshold(int threshold) {
 
 }  // namespace
 
-namespace extensions {
-
-bool IdleQueryStateFunction::RunAsync() {
-  int threshold;
+ExtensionFunction::ResponseAction IdleQueryStateFunction::Run() {
+  int threshold = 0;
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &threshold));
   threshold = ClampThreshold(threshold);
 
   IdleManagerFactory::GetForBrowserContext(context_)->QueryState(
       threshold, base::Bind(&IdleQueryStateFunction::IdleStateCallback, this));
 
-  // Don't send the response, it'll be sent by our callback
-  return true;
+  return RespondLater();
 }
 
 void IdleQueryStateFunction::IdleStateCallback(ui::IdleState state) {
-  SetResult(IdleManager::CreateIdleValue(state));
-  SendResponse(true);
+  Respond(OneArgument(IdleManager::CreateIdleValue(state)));
 }
 
-bool IdleSetDetectionIntervalFunction::RunSync() {
-  int threshold;
+ExtensionFunction::ResponseAction IdleSetDetectionIntervalFunction::Run() {
+  int threshold = 0;
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &threshold));
   threshold = ClampThreshold(threshold);
 
   IdleManagerFactory::GetForBrowserContext(context_)
       ->SetThreshold(extension_id(), threshold);
 
-  return true;
+  return RespondNow(NoArguments());
 }
 
 }  // namespace extensions

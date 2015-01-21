@@ -130,7 +130,6 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
        IDS_EXTENSION_PROMPT_WARNING_HISTORY_WRITE,
        PermissionMessage::kBrowsingHistory},
       {APIPermission::kIdltest, "idltest"},
-      {APIPermission::kIdle, "idle"},
       {APIPermission::kInfobars, "infobars"},
       {APIPermission::kInput,
        "input",

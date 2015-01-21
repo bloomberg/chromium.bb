@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/idle/idle_manager_factory.h"
+#include "extensions/browser/api/idle/idle_manager_factory.h"
 
-#include "chrome/browser/extensions/api/idle/idle_manager.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "extensions/browser/api/idle/idle_manager.h"
 #include "extensions/browser/extension_system_provider.h"
 #include "extensions/browser/extensions_browser_client.h"
 
@@ -25,8 +25,8 @@ IdleManagerFactory* IdleManagerFactory::GetInstance() {
 
 IdleManagerFactory::IdleManagerFactory()
     : BrowserContextKeyedServiceFactory(
-        "IdleManager",
-        BrowserContextDependencyManager::GetInstance()) {
+          "IdleManager",
+          BrowserContextDependencyManager::GetInstance()) {
   DependsOn(ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
 }
 

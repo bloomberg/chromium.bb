@@ -28,6 +28,7 @@
       'guest_view_internal.json',
       'management.json',
       'hid.idl',
+      'idle.json',
       'mime_handler_view_guest_internal.json',
       'mojo_private.idl',
       'power.idl',

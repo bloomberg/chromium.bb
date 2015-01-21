@@ -517,10 +517,6 @@
     "channel": "trunk",
     "extension_types": ["extension"]
   },
-  "idle": {
-    "channel": "stable",
-    "extension_types": ["extension", "legacy_packaged_app", "platform_app"]
-  },
   "infobars": [
     {
       "channel": "dev",

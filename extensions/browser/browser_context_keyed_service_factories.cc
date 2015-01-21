@@ -7,6 +7,7 @@
 #include "extensions/browser/api/api_resource_manager.h"
 #include "extensions/browser/api/audio/audio_api.h"
 #include "extensions/browser/api/hid/hid_device_manager.h"
+#include "extensions/browser/api/idle/idle_manager_factory.h"
 #include "extensions/browser/api/management/management_api.h"
 #include "extensions/browser/api/runtime/runtime_api.h"
 #include "extensions/browser/api/serial/serial_connection.h"
@@ -41,6 +42,7 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   core_api::UDPSocketEventDispatcher::GetFactoryInstance();
   ExtensionPrefsFactory::GetInstance();
   HidDeviceManager::GetFactoryInstance();
+  IdleManagerFactory::GetInstance();
   ManagementAPI::GetFactoryInstance();
   ProcessManagerFactory::GetInstance();
   RendererStartupHelperFactory::GetInstance();

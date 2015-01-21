@@ -182,19 +182,23 @@
       "extension_types": ["extension"],
       "whitelist": [
         "496B6890097EB6E19809ADEADD095A8721FBB2E0",  // FIDO U2F APIs
-	"AD8ED80B705E1818AAD4684F9FF62B43D6D79620",  // FIDO U2F APIs (dev)
+        "AD8ED80B705E1818AAD4684F9FF62B43D6D79620",  // FIDO U2F APIs (dev)
         "E24F1786D842E91E74C27929B0B3715A4689A473",  // CryptoToken
         "A28C9619C4C41306FA5236FB4D94DA812F504DE8"   // CryptoToken (dev)
       ]
     }
   ],
+  "idle": {
+    "channel": "stable",
+    "extension_types": ["extension", "legacy_packaged_app", "platform_app"]
+  },
   "u2fDevices": [
     {
       "channel": "stable",
       "extension_types": ["extension", "platform_app"],
       "whitelist": [
         "496B6890097EB6E19809ADEADD095A8721FBB2E0",  // FIDO U2F APIs
-	"AD8ED80B705E1818AAD4684F9FF62B43D6D79620",  // FIDO U2F APIs (dev)
+        "AD8ED80B705E1818AAD4684F9FF62B43D6D79620",  // FIDO U2F APIs (dev)
         "E24F1786D842E91E74C27929B0B3715A4689A473",  // CryptoToken
         "A28C9619C4C41306FA5236FB4D94DA812F504DE8",  // CryptoToken (dev)
         "6F9E349A0561C78A0D3F41496FE521C5151C7F71",  // Security Key
@@ -312,7 +316,7 @@
       "extension_types": ["extension"],
       "whitelist": [
         "496B6890097EB6E19809ADEADD095A8721FBB2E0",  // FIDO U2F APIs
-	"AD8ED80B705E1818AAD4684F9FF62B43D6D79620",  // FIDO U2F APIs (dev)
+        "AD8ED80B705E1818AAD4684F9FF62B43D6D79620",  // FIDO U2F APIs (dev)
         "E24F1786D842E91E74C27929B0B3715A4689A473",  // CryptoToken
         "A28C9619C4C41306FA5236FB4D94DA812F504DE8"   // CryptoToken (dev)
       ]
@@ -328,7 +332,7 @@
       "extension_types": ["extension"],
       "whitelist": [
         "496B6890097EB6E19809ADEADD095A8721FBB2E0",  // FIDO U2F APIs
-	"AD8ED80B705E1818AAD4684F9FF62B43D6D79620",  // FIDO U2F APIs (dev)
+        "AD8ED80B705E1818AAD4684F9FF62B43D6D79620",  // FIDO U2F APIs (dev)
         "E24F1786D842E91E74C27929B0B3715A4689A473",  // CryptoToken
         "A28C9619C4C41306FA5236FB4D94DA812F504DE8"   // CryptoToken (dev)
       ]

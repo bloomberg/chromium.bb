@@ -2,21 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/idle/idle_manager.h"
+#include "extensions/browser/api/idle/idle_manager.h"
 
 #include <utility>
 
 #include "base/stl_util.h"
-#include "chrome/browser/extensions/api/idle/idle_api_constants.h"
-#include "chrome/common/extensions/api/idle.h"
-#include "chrome/common/extensions/extension_constants.h"
 #include "content/public/browser/browser_context.h"
+#include "extensions/browser/api/idle/idle_api_constants.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/common/api/idle.h"
 #include "extensions/common/extension.h"
 
 namespace keys = extensions::idle_api_constants;
-namespace idle = extensions::api::idle;
+namespace idle = extensions::core_api::idle;
 
 namespace extensions {
 
@@ -50,15 +49,14 @@ void DefaultEventDelegate::OnStateChanged(const std::string& extension_id,
                                           ui::IdleState new_state) {
   scoped_ptr<base::ListValue> args(new base::ListValue());
   args->Append(IdleManager::CreateIdleValue(new_state));
-  scoped_ptr<Event> event(new Event(idle::OnStateChanged::kEventName,
-                                    args.Pass()));
+  scoped_ptr<Event> event(
+      new Event(idle::OnStateChanged::kEventName, args.Pass()));
   event->restrict_to_browser_context = context_;
   EventRouter::Get(context_)
       ->DispatchEventToExtension(extension_id, event.Pass());
 }
 
-void DefaultEventDelegate::RegisterObserver(
-    EventRouter::Observer* observer) {
+void DefaultEventDelegate::RegisterObserver(EventRouter::Observer* observer) {
   EventRouter::Get(context_)
       ->RegisterObserver(observer, idle::OnStateChanged::kEventName);
 }
@@ -175,8 +173,7 @@ void IdleManager::QueryState(int threshold, QueryStateCallback notify) {
   idle_time_provider_->CalculateIdleState(threshold, notify);
 }
 
-void IdleManager::SetThreshold(const std::string& extension_id,
-                               int threshold) {
+void IdleManager::SetThreshold(const std::string& extension_id, int threshold) {
   DCHECK(thread_checker_.CalledOnValidThread());
   GetMonitor(extension_id)->threshold = threshold;
 }
@@ -222,10 +219,8 @@ IdleMonitor* IdleManager::GetMonitor(const std::string& extension_id) {
 void IdleManager::StartPolling() {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!poll_timer_.IsRunning()) {
-    poll_timer_.Start(FROM_HERE,
-                      base::TimeDelta::FromSeconds(kPollInterval),
-                      this,
-                      &IdleManager::UpdateIdleState);
+    poll_timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(kPollInterval),
+                      this, &IdleManager::UpdateIdleState);
   }
 }
 
@@ -236,10 +231,8 @@ void IdleManager::StopPolling() {
 
 void IdleManager::UpdateIdleState() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  idle_time_provider_->CalculateIdleTime(
-      base::Bind(
-          &IdleManager::UpdateIdleStateCallback,
-          weak_factory_.GetWeakPtr()));
+  idle_time_provider_->CalculateIdleTime(base::Bind(
+      &IdleManager::UpdateIdleStateCallback, weak_factory_.GetWeakPtr()));
 }
 
 void IdleManager::UpdateIdleStateCallback(int idle_time) {
@@ -248,12 +241,10 @@ void IdleManager::UpdateIdleStateCallback(int idle_time) {
   int listener_count = 0;
 
   // Remember this state for initializing new event listeners.
-  last_state_ = IdleTimeToIdleState(locked,
-                                    idle_time,
-                                    kDefaultIdleThreshold);
+  last_state_ = IdleTimeToIdleState(locked, idle_time, kDefaultIdleThreshold);
 
-  for (MonitorMap::iterator it = monitors_.begin();
-       it != monitors_.end(); ++it) {
+  for (MonitorMap::iterator it = monitors_.begin(); it != monitors_.end();
+       ++it) {
     IdleMonitor& monitor = it->second;
     ui::IdleState new_state =
         IdleTimeToIdleState(locked, idle_time, monitor.threshold);

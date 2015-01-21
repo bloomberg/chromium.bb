@@ -22,7 +22,6 @@
 #include "chrome/browser/extensions/api/history/history_api.h"
 #include "chrome/browser/extensions/api/hotword_private/hotword_private_api.h"
 #include "chrome/browser/extensions/api/identity/identity_api.h"
-#include "chrome/browser/extensions/api/idle/idle_manager_factory.h"
 #include "chrome/browser/extensions/api/location/location_manager.h"
 #include "chrome/browser/extensions/api/mdns/mdns_api.h"
 #include "chrome/browser/extensions/api/media_galleries_private/media_galleries_private_api.h"
@@ -109,7 +108,6 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   extensions::HistoryAPI::GetFactoryInstance();
   extensions::HotwordPrivateEventService::GetFactoryInstance();
   extensions::IdentityAPI::GetFactoryInstance();
-  extensions::IdleManagerFactory::GetInstance();
   extensions::InstallTrackerFactory::GetInstance();
 #if defined(OS_CHROMEOS)
   extensions::InputImeAPI::GetFactoryInstance();

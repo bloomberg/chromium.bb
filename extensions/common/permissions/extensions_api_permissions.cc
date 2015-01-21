@@ -68,6 +68,7 @@ std::vector<APIPermissionInfo*> ExtensionsAPIPermissions::GetAllPermissions()
       {APIPermission::kImeWindowEnabled, "app.window.ime"},
       {APIPermission::kOverrideEscFullscreen,
        "app.window.fullscreen.overrideEsc"},
+      {APIPermission::kIdle, "idle"},
       {APIPermission::kPower, "power"},
       {APIPermission::kPrinterProvider, "printerProvider"},
       {APIPermission::kSerial,

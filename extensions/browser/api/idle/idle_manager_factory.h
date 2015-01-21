@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_IDLE_IDLE_MANAGER_FACTORY_H__
-#define CHROME_BROWSER_EXTENSIONS_API_IDLE_IDLE_MANAGER_FACTORY_H__
+#ifndef EXTENSIONS_BROWSER_API_IDLE_IDLE_MANAGER_FACTORY_H__
+#define EXTENSIONS_BROWSER_API_IDLE_IDLE_MANAGER_FACTORY_H__
 
 #include "base/memory/singleton.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
@@ -38,4 +38,4 @@ class IdleManagerFactory : public BrowserContextKeyedServiceFactory {
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_IDLE_IDLE_MANAGER_FACTORY_H__
+#endif  // EXTENSIONS_BROWSER_API_IDLE_IDLE_MANAGER_FACTORY_H__
