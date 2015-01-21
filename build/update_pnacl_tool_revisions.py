@@ -356,7 +356,7 @@ def Main():
   args = ParseArgs(sys.argv[1:])
 
   new_pnacl_revision = args.hash
-  user_provided_hash = new_pnacl_revision == GitHash(DEFAULT_HASH)
+  user_provided_hash = new_pnacl_revision != GitHash(DEFAULT_HASH)
 
   tr_points_at = CLInfo('revision update points at PNaCl version')
   pnacl_changes = []
@@ -384,7 +384,7 @@ def Main():
     tr_points_at['commits since'] = len(recent_commits)
     assert len(recent_commits) > 1
 
-    if user_provided_hash:
+    if not user_provided_hash:
       # No update hash specified, take the latest commit.
       new_pnacl_revision = GitHash(recent_commits[0])
     else:
