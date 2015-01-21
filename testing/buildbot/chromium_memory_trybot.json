@@ -16,7 +16,12 @@
     },
     "cacheinvalidation_unittests",
     "cc_unittests",
-    "components_unittests",
+    {
+      "test": "components_unittests",
+      "swarming": {
+        "can_use_on_swarming_builders": true
+      }
+    },
     {
       "test": "content_browsertests",
       "swarming": {

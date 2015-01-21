@@ -33,7 +33,12 @@
       "cast_unittests",
       "cc_unittests",
       "chromedriver_unittests",
-      "components_unittests",
+      {
+        "test": "components_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       "compositor_unittests",
       {
         "test": "content_browsertests",
@@ -196,7 +201,12 @@
       "cast_unittests",
       "cc_unittests",
       "chromedriver_unittests",
-      "components_unittests",
+      {
+        "test": "components_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       "compositor_unittests",
       {
         "test": "content_browsertests",
@@ -339,7 +349,12 @@
       "cast_unittests",
       "cc_unittests",
       "chromedriver_unittests",
-      "components_unittests",
+      {
+        "test": "components_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       "compositor_unittests",
       {
         "test": "content_browsertests",
