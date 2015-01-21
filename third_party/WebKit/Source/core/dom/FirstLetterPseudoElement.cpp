@@ -181,8 +181,11 @@ void FirstLetterPseudoElement::updateTextFragments()
     String oldText =  m_remainingTextRenderer->completeText();
     ASSERT(oldText.impl());
 
+    bool forceFullLineboxLayout = false;
+
     unsigned length = FirstLetterPseudoElement::firstLetterLength(oldText);
     m_remainingTextRenderer->setTextFragment(oldText.impl()->substring(length, oldText.length()), length, oldText.length() - length);
+    m_remainingTextRenderer->dirtyLineBoxes(forceFullLineboxLayout);
 
     for (auto child = renderer()->slowFirstChild(); child; child = child->nextSibling()) {
         if (!child->isText() || !toRenderText(child)->isTextFragment())
@@ -192,6 +195,7 @@ void FirstLetterPseudoElement::updateTextFragments()
             continue;
 
         childFragment->setTextFragment(oldText.impl()->substring(0, length), 0, length);
+        childFragment->dirtyLineBoxes(forceFullLineboxLayout);
         break;
     }
 }

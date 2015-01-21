@@ -1,0 +1,3 @@
+CONSOLE WARNING: We don't execute document.execCommand() this time, because it is called recursively.
+a:ca:ce#@::l@::l
+Test passes if it does not CRASH.
