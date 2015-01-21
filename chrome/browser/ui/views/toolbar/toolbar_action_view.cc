@@ -79,20 +79,11 @@ ToolbarActionView::~ToolbarActionView() {
 void ToolbarActionView::DecorateWantsToRunBorder(
     views::LabelButtonBorder* border) {
   // Create a special border for when the action wants to run, which gives the
-  // button a "popped out" state. In practice, this is the same appearance we
-  // use for when the user hovers on the action.
-  gfx::Insets insets = border->GetInsets();
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-
+  // button a "popped out" state.
+  static const int kRaisedImages[] = IMAGE_GRID(IDR_TEXTBUTTON_RAISED);
   border->SetPainter(false,
                      views::Button::STATE_NORMAL,
-                     views::Painter::CreateImagePainter(
-                         *rb.GetImageSkiaNamed(IDR_BUTTON_HOVER), insets));
-  border->SetPainter(true,
-                     views::Button::STATE_NORMAL,
-                     views::Painter::CreateImagePainter(
-                         *rb.GetImageSkiaNamed(IDR_BUTTON_FOCUSED_HOVER),
-                         insets));
+                     views::Painter::CreateImageGridPainter(kRaisedImages));
 }
 
 void ToolbarActionView::ViewHierarchyChanged(

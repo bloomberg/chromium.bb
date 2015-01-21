@@ -361,7 +361,7 @@ void ToolbarActionViewDelegateBridge::DoShowContextMenu() {
     return;
 
   if (viewController_->WantsToRun(webContents)) {
-    [[self cell] setImageID:IDR_BROWSER_ACTION_H
+    [[self cell] setImageID:IDR_BROWSER_ACTION_R
         forButtonState:image_button_cell::kDefaultState];
   } else {
     [[self cell] setImageID:IDR_BROWSER_ACTION

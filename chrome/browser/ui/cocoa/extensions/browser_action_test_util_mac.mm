@@ -121,7 +121,7 @@ bool BrowserActionTestUtil::ActionButtonWantsToRun(size_t index) {
       [[[controller containerView] window] themeProvider];
   DCHECK(themeProvider);
   NSImage* wantsToRunImage =
-      themeProvider->GetNSImageNamed(IDR_BROWSER_ACTION_H);
+      themeProvider->GetNSImageNamed(IDR_BROWSER_ACTION_R);
   BrowserActionButton* button = [controller buttonWithIndex:index];
   BrowserActionCell* cell =
       base::mac::ObjCCastStrict<BrowserActionCell>([button cell]);
