@@ -40,8 +40,7 @@
 namespace blink {
 
 CaretBase::CaretBase(CaretVisibility visibility)
-    : m_caretRectNeedsUpdate(true)
-    , m_caretVisibility(visibility)
+    : m_caretVisibility(visibility)
 {
 }
 
@@ -69,7 +68,6 @@ void DragCaretController::setCaretPosition(const VisiblePosition& position)
     if (Node* node = m_position.deepEquivalent().deprecatedNode())
         invalidateCaretRect(node);
     m_position = position;
-    setCaretRectNeedsUpdate();
     Document* document = nullptr;
     if (Node* node = m_position.deepEquivalent().deprecatedNode()) {
         invalidateCaretRect(node);
@@ -166,8 +164,6 @@ bool CaretBase::updateCaretRect(Document* document, const PositionWithAffinity& 
 {
     m_caretLocalRect = LayoutRect();
 
-    m_caretRectNeedsUpdate = false;
-
     if (caretPosition.position().isNull())
         return false;
 
@@ -244,19 +240,6 @@ bool CaretBase::shouldRepaintCaret(const RenderView* view) const
 
 void CaretBase::invalidateCaretRect(Node* node, bool caretRectChanged)
 {
-    // EDIT FIXME: This is an unfortunate hack.
-    // Basically, we can't trust this layout position since we
-    // can't guarantee that the check to see if we are in unrendered
-    // content will work at this point. We may have to wait for
-    // a layout and re-render of the document to happen. So, resetting this
-    // flag will cause another caret layout to happen the first time
-    // that we try to paint the caret after this call. That one will work since
-    // it happens after the document has accounted for any editing
-    // changes which may have been done.
-    // And, we need to leave this layout here so the caret moves right
-    // away after clicking.
-    m_caretRectNeedsUpdate = true;
-
     if (caretRectChanged)
         return;
 

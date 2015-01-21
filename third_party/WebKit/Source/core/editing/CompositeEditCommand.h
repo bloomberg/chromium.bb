@@ -49,7 +49,6 @@ public:
     virtual void reapply() override;
     virtual EditAction editingAction() const override { return m_editAction; }
     void append(SimpleEditCommand*);
-    bool wasCreateLinkCommand() const { return m_editAction == EditActionCreateLink; }
 
     const VisibleSelection& startingSelection() const { return m_startingSelection; }
     const VisibleSelection& endingSelection() const { return m_endingSelection; }

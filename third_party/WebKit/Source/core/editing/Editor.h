@@ -75,7 +75,6 @@ public:
 
     bool canDHTMLCut();
     bool canDHTMLCopy();
-    bool canDHTMLPaste();
 
     bool canCut() const;
     bool canCopy() const;

@@ -59,7 +59,6 @@ public:
     int checkingStart() const;
     int checkingEnd() const;
     int checkingLength() const;
-    String checkingSubstring() const { return textSubstring(checkingStart(), checkingLength()); }
 
     bool checkingRangeCovers(int location, int length) const { return location < checkingEnd() && location + length > checkingStart(); }
     PassRefPtrWillBeRawPtr<Range> paragraphRange() const;

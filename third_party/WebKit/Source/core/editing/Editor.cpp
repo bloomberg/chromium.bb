@@ -202,11 +202,6 @@ bool Editor::canDHTMLCopy()
     return !frame().selection().isInPasswordField() && !dispatchCPPEvent(EventTypeNames::beforecopy, DataTransferNumb);
 }
 
-bool Editor::canDHTMLPaste()
-{
-    return !dispatchCPPEvent(EventTypeNames::beforepaste, DataTransferNumb);
-}
-
 bool Editor::canCut() const
 {
     return canCopy() && canDelete();

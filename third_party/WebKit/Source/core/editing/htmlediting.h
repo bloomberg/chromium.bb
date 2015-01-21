@@ -39,7 +39,6 @@ class Element;
 class HTMLBRElement;
 class HTMLElement;
 class HTMLLIElement;
-class HTMLOListElement;
 class HTMLSpanElement;
 class HTMLUListElement;
 class Node;
@@ -209,7 +208,6 @@ VisiblePosition visiblePositionForIndex(int index, ContainerNode* scope);
 
 PassRefPtrWillBeRawPtr<HTMLElement> createDefaultParagraphElement(Document&);
 PassRefPtrWillBeRawPtr<HTMLBRElement> createBreakElement(Document&);
-PassRefPtrWillBeRawPtr<HTMLOListElement> createOrderedListElement(Document&);
 PassRefPtrWillBeRawPtr<HTMLUListElement> createUnorderedListElement(Document&);
 PassRefPtrWillBeRawPtr<HTMLLIElement> createListItemElement(Document&);
 PassRefPtrWillBeRawPtr<HTMLElement> createHTMLElement(Document&, const QualifiedName&);

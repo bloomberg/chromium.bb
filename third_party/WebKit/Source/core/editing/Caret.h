@@ -60,9 +60,6 @@ protected:
 
     const LayoutRect& localCaretRectWithoutUpdate() const { return m_caretLocalRect; }
 
-    bool shouldUpdateCaretRect() const { return m_caretRectNeedsUpdate; }
-    void setCaretRectNeedsUpdate() { m_caretRectNeedsUpdate = true; }
-
     void setCaretVisibility(CaretVisibility visibility) { m_caretVisibility = visibility; }
     bool caretIsVisible() const { return m_caretVisibility == Visible; }
     CaretVisibility caretVisibility() const { return m_caretVisibility; }
@@ -73,7 +70,6 @@ protected:
 
 private:
     LayoutRect m_caretLocalRect; // caret rect in coords local to the renderer responsible for painting the caret
-    bool m_caretRectNeedsUpdate; // true if m_caretRect (and m_absCaretBounds in FrameSelection) need to be calculated
     CaretVisibility m_caretVisibility;
 };
 
