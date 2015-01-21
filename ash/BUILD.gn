@@ -64,7 +64,15 @@ component("ash") {
   }
 
   if (use_x11) {
-    configs += [ "//build/config/linux:xfixes" ]
+    configs += [
+      "//build/config/linux:x11",
+      "//build/config/linux:xfixes",
+    ]
+    deps += [
+      "//ui/events:gesture_detection",
+      "//ui/events/platform",
+      "//ui/gfx/x",
+    ]
   } else {
     sources -= [
       "host/ash_window_tree_host_x11.cc",

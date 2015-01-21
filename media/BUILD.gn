@@ -113,8 +113,6 @@ component("media") {
     "filters/decrypting_demuxer_stream.h",
     "filters/decrypting_video_decoder.cc",
     "filters/decrypting_video_decoder.h",
-    "filters/default_renderer_factory.cc",
-    "filters/default_renderer_factory.h",
     "filters/file_data_source.cc",
     "filters/file_data_source.h",
     "filters/frame_processor.cc",
@@ -317,6 +315,8 @@ component("media") {
 
   if (!is_android) {
     sources += [
+      "filters/default_renderer_factory.cc",
+      "filters/default_renderer_factory.h",
       "filters/opus_audio_decoder.cc",
       "filters/opus_audio_decoder.h",
     ]

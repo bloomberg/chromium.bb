@@ -26,7 +26,10 @@ component("util") {
       "x11/edid_parser_x11.cc",
       "x11/edid_parser_x11.h",
     ]
-    configs += [ "//build/config/linux:xrandr" ]
+    configs += [
+      "//build/config/linux:x11",
+      "//build/config/linux:xrandr",
+    ]
     deps += [ "//ui/gfx/x" ]
   }
   if (is_chromeos) {

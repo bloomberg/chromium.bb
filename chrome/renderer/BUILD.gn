@@ -119,6 +119,12 @@ static_library("renderer") {
       "//media/cast:sender",
       "//media/cast/logging/proto",
     ]
+    if (!enable_webrtc) {
+      sources -= [
+        "media/cast_rtp_stream.cc",
+        "media/cast_rtp_stream.h",
+      ]
+    }
   }
   if (enable_webrtc) {
     sources +=

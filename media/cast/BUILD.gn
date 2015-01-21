@@ -52,6 +52,7 @@ source_set("common") {
     "//base",
     "//crypto",
     "//net",
+    "//third_party/zlib",
   ]
 }
 

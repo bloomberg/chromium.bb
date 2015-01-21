@@ -26,6 +26,10 @@ component("x11") {
     "//ui/gfx/x",
   ]
 
+  deps = [
+    "//base",
+  ]
+
   if (is_linux) {
     sources -= [ "x11_event_source_libevent.cc" ]
 

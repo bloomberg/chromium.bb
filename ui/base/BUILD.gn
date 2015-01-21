@@ -310,6 +310,7 @@ component("base") {
     "//base:i18n",
     "//net",
     "//third_party/icu",
+    "//ui/events",
     "//ui/events/devices",
     "//ui/resources",
     "//ui/strings",
@@ -317,10 +318,6 @@ component("base") {
   ]
 
   if (build_ime) {
-    if (!is_android) {
-      deps += [ "//ui/events" ]
-    }
-
     sources += [
       "ime/candidate_window.cc",
       "ime/candidate_window.h",

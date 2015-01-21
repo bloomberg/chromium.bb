@@ -36,6 +36,6 @@ component("views") {
   ]
 
   if (use_ash) {
-    #deps += [ "//ash" ]  TODO(GYP)
+    deps += [ "//ash" ]
   }
 }

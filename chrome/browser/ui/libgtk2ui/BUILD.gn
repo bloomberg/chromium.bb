@@ -100,20 +100,33 @@ component("libgtk2ui") {
       ]
     }
   }
-  configs += [ ":libgtk2ui_warnings" ]
+  configs += [
+    ":libgtk2ui_warnings",
+    "//build/config/linux:x11",
+  ]
 
   deps = [
     "//base",
-    "//base:i18n",
     "//base/third_party/dynamic_annotations",
+    "//base:i18n",
     "//chrome/app/theme:theme_resources",
     "//chrome:extra_resources",
     "//chrome:resources",
     "//chrome:strings",
     "//components/resources",
+    "//content/public/browser",
+    "//printing",
     "//skia",
+    "//third_party/mojo/src/mojo/edk/system",
+    "//ui/aura",
     "//ui/base",
+    "//ui/events",
+    "//ui/events:events_base",
+    "//ui/gfx",
+    "//ui/gfx/x",
+    "//ui/native_theme",
     "//ui/resources",
+    "//ui/shell_dialogs",
     "//ui/strings",
     "//ui/views",
   ]

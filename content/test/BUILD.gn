@@ -221,6 +221,13 @@ if (!is_ios) {
     if (is_android) {
       deps += [ ":jni" ]
     }
+
+    if (!enable_webrtc) {
+      sources -= [
+        "test_media_stream_renderer_factory.cc",
+        "test_media_stream_renderer_factory.h",
+      ]
+    }
   }
 
   if (is_android) {
@@ -274,11 +281,11 @@ if (!is_mac) {
       "//ppapi:ppapi_ipc",
       "//ppapi:ppapi_proxy",
       "//ppapi:ppapi_shared",
-
       "//third_party/mojo/src/mojo/edk/system",
       "//third_party/mojo/src/mojo/edk/test:test_support",
       "//third_party/mojo/src/mojo/public/cpp/bindings",
       "//third_party/mojo/src/mojo/public/js",
+
       #"//ppapi:ppapi_tests",  TODO(GYP)
       #"//ppapi:ppapi_unittest_shared",  TODO(GYP)
       "//testing/gmock",

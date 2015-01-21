@@ -41,11 +41,11 @@ component("keyboard") {
     "//content/public/browser",
     "//content/public/common",
     "//mojo/environment:chromium",
+    "//skia",
     "//third_party/mojo/src/mojo/edk/js",
     "//third_party/mojo/src/mojo/edk/system",
     "//third_party/mojo/src/mojo/public/cpp/bindings",
     "//third_party/mojo/src/mojo/public/cpp/system",
-    "//url",
     "//ui/aura",
     "//ui/base",
     "//ui/compositor",
@@ -54,6 +54,7 @@ component("keyboard") {
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/wm",
+    "//url",
   ]
 }
 

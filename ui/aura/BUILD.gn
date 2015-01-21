@@ -110,7 +110,12 @@ component("aura") {
       "//build/config/linux:x11",
       "//build/config/linux:xrandr",
     ]
-    deps += [ "//ui/events/platform/x11" ]
+    deps += [
+      "//ui/events:events_base",
+      "//ui/events/devices",
+      "//ui/events/platform/x11",
+      "//ui/gfx/x",
+    ]
   } else {
     sources -= [
       "window_tree_host_x11.cc",

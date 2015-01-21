@@ -25,6 +25,7 @@ shared_library("clearkeycdm") {
 
   deps = [
     "//base",
+    "//media",  # For media::AudioTimestampHelper
     "//media:shared_memory_support",  # For media::AudioBus.
     "//url",
   ]

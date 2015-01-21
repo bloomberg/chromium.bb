@@ -193,6 +193,7 @@ component("seccomp_bpf_helpers") {
 
   deps = [
     "//base",
+    ":sandbox_services",
     ":seccomp_bpf",
   ]
 }

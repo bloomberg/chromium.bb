@@ -84,7 +84,10 @@ source_set("config") {
       "//build/config/linux:x11",
       "//build/config/linux:xext",
     ]
-    deps += [ "//third_party/libXNVCtrl" ]
+    deps += [
+      "//third_party/libXNVCtrl",
+      "//ui/gfx/x",
+    ]
   } else {
     sources -= [ "gpu_info_collector_x11.cc" ]
   }
