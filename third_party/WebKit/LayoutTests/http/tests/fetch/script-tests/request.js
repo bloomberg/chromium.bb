@@ -496,4 +496,48 @@ async_test(function(t) {
                 'bodyUsed must be true after calling text()');
   }, 'Request body test');
 
+test(function() {
+    // https://fetch.spec.whatwg.org/#dom-request
+    // Step 20:
+    // Fill r's Headers object with headers. Rethrow any exceptions.
+    var invalidNames = ['', '(', ')', '<', '>', '@', ',', ';', ':', '\\', '"',
+                        '/', '[', ']', '?', '=', '{', '}', '\u3042', 'a(b'];
+    invalidNames.forEach(function(name) {
+        assert_throws(
+          {name: 'TypeError'},
+          function() {
+            var obj = {};
+            obj[name] = 'a';
+            new Request('http://localhost/', {headers: obj});
+          },
+          'new Request with headers with an invalid name (' + name +
+          ') should throw');
+        assert_throws(
+          {name: 'TypeError'},
+          function() {
+            new Request('http://localhost/', {headers: [[name, 'a']]});
+          },
+          'new Request with headers with an invalid name (' + name +
+          ') should throw');
+      });
+
+    var invalidValues = ['test \r data', 'test \n data'];
+    invalidValues.forEach(function(value) {
+        assert_throws(
+          {name: 'TypeError'},
+          function() {
+            new Request('http://localhost/',
+                         {headers: {'X-Fetch-Test': value}});
+          },
+          'new Request with headers with an invalid value should throw');
+        assert_throws(
+          {name: 'TypeError'},
+          function() {
+            new Request('http://localhost/',
+                         {headers: [['X-Fetch-Test', value]]});
+          },
+          'new Request with headers with an invalid value should throw');
+      });
+  }, 'Request throw error test');
+
 done();
