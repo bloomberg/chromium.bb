@@ -248,8 +248,7 @@ void TabContentManager::CacheTab(JNIEnv* env,
                                  jobject tab,
                                  jobject content_view_core,
                                  jfloat thumbnail_scale) {
-  TabAndroid* tab_android =
-      static_cast<TabAndroid*>(TabAndroid::GetNativeTab(env, tab));
+  TabAndroid* tab_android = TabAndroid::GetNativeTab(env, tab);
   DCHECK(tab_android);
   int tab_id = tab_android->GetAndroidId();
   GURL url = tab_android->GetURL();
@@ -285,8 +284,7 @@ void TabContentManager::CacheTabWithBitmap(JNIEnv* env,
                                            jobject tab,
                                            jobject bitmap,
                                            jfloat thumbnail_scale) {
-  TabAndroid* tab_android =
-      static_cast<TabAndroid*>(TabAndroid::GetNativeTab(env, tab));
+  TabAndroid* tab_android = TabAndroid::GetNativeTab(env, tab);
   DCHECK(tab_android);
   int tab_id = tab_android->GetAndroidId();
   GURL url = tab_android->GetURL();
