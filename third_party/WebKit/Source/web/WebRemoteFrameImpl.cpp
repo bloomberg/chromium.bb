@@ -870,6 +870,12 @@ void WebRemoteFrameImpl::setReplicatedSandboxFlags(WebSandboxFlags flags) const
     frame()->securityContext()->enforceSandboxFlags(static_cast<SandboxFlags>(flags));
 }
 
+void WebRemoteFrameImpl::setReplicatedName(const WebString& name) const
+{
+    ASSERT(frame());
+    frame()->tree().setName(name, nullAtom);
+}
+
 void WebRemoteFrameImpl::didStartLoading()
 {
     frame()->setIsLoading(true);

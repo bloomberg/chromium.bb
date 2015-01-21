@@ -31,6 +31,9 @@ public:
     // Set sandbox flags replicated from another process.
     virtual void setReplicatedSandboxFlags(WebSandboxFlags) const = 0;
 
+    // Set frame name replicated from another process.
+    virtual void setReplicatedName(const WebString&) const = 0;
+
     virtual void didStartLoading() = 0;
     virtual void didStopLoading() = 0;
 };
