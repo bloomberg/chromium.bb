@@ -436,10 +436,12 @@ void GestureDetector::OnLongPressTimeout() {
 void GestureDetector::OnTapTimeout() {
   if (!double_tap_listener_)
     return;
-  if (!still_down_)
-    double_tap_listener_->OnSingleTapConfirmed(*current_down_event_);
-  else
+  if (!still_down_) {
+    CHECK(previous_up_event_);
+    double_tap_listener_->OnSingleTapConfirmed(*previous_up_event_);
+  } else {
     defer_confirm_single_tap_ = true;
+  }
 }
 
 void GestureDetector::Cancel() {

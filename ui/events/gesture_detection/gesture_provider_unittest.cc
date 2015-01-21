@@ -491,10 +491,13 @@ TEST_F(GestureProviderTest, GestureTapWithDelay) {
   EXPECT_EQ(1, GetMostRecentGestureEvent().details.touch_points());
   EXPECT_EQ(BoundsForSingleMockTouchAtLocation(kFakeCoordX, kFakeCoordY),
             GetMostRecentGestureEvent().details.bounding_box());
+  EXPECT_EQ(event.GetEventTime(), GetMostRecentGestureEvent().time);
 
   EXPECT_FALSE(HasReceivedGesture(ET_GESTURE_TAP));
   RunTasksAndWait(GetDoubleTapTimeout());
   EXPECT_TRUE(HasReceivedGesture(ET_GESTURE_TAP));
+  EXPECT_EQ(motion_event_id, GetMostRecentGestureEvent().motion_event_id);
+  EXPECT_EQ(event.GetEventTime(), GetMostRecentGestureEvent().time);
 }
 
 // Verify that a DOWN followed by a MOVE will trigger fling (but not LONG).
