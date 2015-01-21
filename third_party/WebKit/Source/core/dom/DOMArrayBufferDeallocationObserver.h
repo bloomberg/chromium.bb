@@ -11,7 +11,7 @@ namespace blink {
 
 class DOMArrayBufferDeallocationObserver final : public WTF::ArrayBufferDeallocationObserver {
 public:
-    static DOMArrayBufferDeallocationObserver* instance();
+    static DOMArrayBufferDeallocationObserver& instance();
 
     virtual void arrayBufferDeallocated(unsigned sizeInBytes) override;
 

@@ -165,15 +165,6 @@ void initializeWithoutV8(Platform* platform)
     DEFINE_STATIC_LOCAL(ModulesInitializer, initializer, ());
     initializer.init();
 
-    // There are some code paths (for example, running WebKit in the browser
-    // process and calling into LocalStorage before anything else) where the
-    // UTF8 string encoding tables are used on a background thread before
-    // they're set up.  This is a problem because their set up routines assert
-    // they're running on the main WebKitThread.  It might be possible to make
-    // the initialization thread-safe, but given that so many code paths use
-    // this, initializing this lazily probably doesn't buy us much.
-    WTF::UTF8Encoding();
-
     setIndexedDBClientCreateFunction(IndexedDBClientImpl::create);
 
     MediaPlayer::setMediaEngineCreateFunction(WebMediaPlayerClientImpl::create);

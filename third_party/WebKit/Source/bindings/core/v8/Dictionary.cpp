@@ -48,8 +48,8 @@ namespace blink {
 
 static ExceptionState& emptyExceptionState()
 {
-    AtomicallyInitializedStatic(WTF::ThreadSpecific<NonThrowableExceptionState>*, exceptionState = new ThreadSpecific<NonThrowableExceptionState>);
-    return **exceptionState;
+    AtomicallyInitializedStaticReference(WTF::ThreadSpecific<NonThrowableExceptionState>, exceptionState, new ThreadSpecific<NonThrowableExceptionState>);
+    return *exceptionState;
 }
 
 Dictionary::Dictionary()

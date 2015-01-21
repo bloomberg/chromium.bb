@@ -94,7 +94,7 @@ ImageFrameGenerator::ImageFrameGenerator(const SkISize& fullSize, PassRefPtr<Sha
 
 ImageFrameGenerator::~ImageFrameGenerator()
 {
-    ImageDecodingStore::instance()->removeCacheIndexedByGenerator(this);
+    ImageDecodingStore::instance().removeCacheIndexedByGenerator(this);
 }
 
 void ImageFrameGenerator::setData(PassRefPtr<SharedBuffer> data, bool allDataReceived)
@@ -194,7 +194,7 @@ SkBitmap ImageFrameGenerator::tryToResumeDecode(const SkISize& scaledSize, size_
     TRACE_EVENT1("blink", "ImageFrameGenerator::tryToResumeDecodeAndScale", "index", static_cast<int>(index));
 
     ImageDecoder* decoder = 0;
-    const bool resumeDecoding = ImageDecodingStore::instance()->lockDecoder(this, m_fullSize, &decoder);
+    const bool resumeDecoding = ImageDecodingStore::instance().lockDecoder(this, m_fullSize, &decoder);
     ASSERT(!resumeDecoding || decoder);
 
     SkBitmap fullSizeImage;
@@ -219,7 +219,7 @@ SkBitmap ImageFrameGenerator::tryToResumeDecode(const SkISize& scaledSize, size_
         m_decodeFailedAndEmpty = !m_isMultiFrame && decoder->failed();
 
         if (resumeDecoding)
-            ImageDecodingStore::instance()->unlockDecoder(this, decoder);
+            ImageDecodingStore::instance().unlockDecoder(this, decoder);
         return SkBitmap();
     }
 
@@ -241,13 +241,13 @@ SkBitmap ImageFrameGenerator::tryToResumeDecode(const SkISize& scaledSize, size_
 
     if (resumeDecoding) {
         if (removeDecoder) {
-            ImageDecodingStore::instance()->removeDecoder(this, decoder);
+            ImageDecodingStore::instance().removeDecoder(this, decoder);
             m_frameComplete.clear();
+        } else {
+            ImageDecodingStore::instance().unlockDecoder(this, decoder);
         }
-        else
-            ImageDecodingStore::instance()->unlockDecoder(this, decoder);
     } else if (!removeDecoder) {
-        ImageDecodingStore::instance()->insertDecoder(this, decoderContainer.release());
+        ImageDecodingStore::instance().insertDecoder(this, decoderContainer.release());
     }
     return fullSizeImage;
 }

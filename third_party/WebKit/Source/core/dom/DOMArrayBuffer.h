@@ -55,7 +55,7 @@ public:
     }
     bool transfer(WTF::ArrayBufferContents& result) { return buffer()->transfer(result); }
     bool isNeutered() { return buffer()->isNeutered(); }
-    void setDeallocationObserver(DOMArrayBufferDeallocationObserver* observer)
+    void setDeallocationObserver(DOMArrayBufferDeallocationObserver& observer)
     {
         buffer()->setDeallocationObserver(observer);
     }

@@ -58,17 +58,17 @@ public:
     void* data() const { return m_data; }
     unsigned sizeInBytes() const { return m_sizeInBytes; }
 
-    void setDeallocationObserver(ArrayBufferDeallocationObserver* observer)
+    void setDeallocationObserver(ArrayBufferDeallocationObserver& observer)
     {
         if (!m_deallocationObserver) {
-            m_deallocationObserver = observer;
+            m_deallocationObserver = &observer;
             m_deallocationObserver->blinkAllocatedMemory(m_sizeInBytes);
         }
     }
-    void setDeallocationObserverWithoutAllocationNotification(ArrayBufferDeallocationObserver* observer)
+    void setDeallocationObserverWithoutAllocationNotification(ArrayBufferDeallocationObserver& observer)
     {
         if (!m_deallocationObserver) {
-            m_deallocationObserver = observer;
+            m_deallocationObserver = &observer;
         }
     }
 

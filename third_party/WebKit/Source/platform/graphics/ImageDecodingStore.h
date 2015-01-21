@@ -66,7 +66,7 @@ public:
     static PassOwnPtr<ImageDecodingStore> create() { return adoptPtr(new ImageDecodingStore); }
     ~ImageDecodingStore();
 
-    static ImageDecodingStore* instance();
+    static ImageDecodingStore& instance();
 
     // Access a cached decoder object. A decoder is indexed by origin (ImageFrameGenerator)
     // and scaled size. Return true if the cached object is found.

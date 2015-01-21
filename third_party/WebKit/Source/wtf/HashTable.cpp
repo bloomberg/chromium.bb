@@ -35,7 +35,7 @@ int HashTableStats::numReinserts;
 
 static Mutex& hashTableStatsMutex()
 {
-    AtomicallyInitializedStatic(Mutex&, mutex = *new Mutex);
+    AtomicallyInitializedStaticReference(Mutex, mutex, new Mutex);
     return mutex;
 }
 

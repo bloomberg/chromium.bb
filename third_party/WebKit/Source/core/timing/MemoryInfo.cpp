@@ -58,8 +58,8 @@ public:
 
     static HeapSizeCache& forCurrentThread()
     {
-        AtomicallyInitializedStatic(ThreadSpecific<HeapSizeCache>*, heapSizeCache = new ThreadSpecific<HeapSizeCache>);
-        return **heapSizeCache;
+        AtomicallyInitializedStaticReference(ThreadSpecific<HeapSizeCache>, heapSizeCache, new ThreadSpecific<HeapSizeCache>);
+        return *heapSizeCache;
     }
 
 private:

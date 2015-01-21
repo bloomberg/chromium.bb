@@ -57,9 +57,9 @@ static PassOwnPtr<HTTPHeaderSet> createAllowedCrossOriginResponseHeadersSet()
 
 bool isOnAccessControlResponseHeaderWhitelist(const String& name)
 {
-    AtomicallyInitializedStatic(HTTPHeaderSet*, allowedCrossOriginResponseHeaders = createAllowedCrossOriginResponseHeadersSet().leakPtr());
+    AtomicallyInitializedStaticReference(HTTPHeaderSet, allowedCrossOriginResponseHeaders, (createAllowedCrossOriginResponseHeadersSet().leakPtr()));
 
-    return allowedCrossOriginResponseHeaders->contains(name);
+    return allowedCrossOriginResponseHeaders.contains(name);
 }
 
 void updateRequestForAccessControl(ResourceRequest& request, SecurityOrigin* securityOrigin, StoredCredentials allowCredentials)
@@ -118,8 +118,8 @@ static bool isInterestingStatusCode(int statusCode)
 
 bool passesAccessControlCheck(ExecutionContext* context, const ResourceResponse& response, StoredCredentials includeCredentials, SecurityOrigin* securityOrigin, String& errorDescription)
 {
-    AtomicallyInitializedStatic(AtomicString&, accessControlAllowOrigin = *new AtomicString("access-control-allow-origin", AtomicString::ConstructFromLiteral));
-    AtomicallyInitializedStatic(AtomicString&, accessControlAllowCredentials = *new AtomicString("access-control-allow-credentials", AtomicString::ConstructFromLiteral));
+    AtomicallyInitializedStaticReference(AtomicString, accessControlAllowOrigin, (new AtomicString("access-control-allow-origin", AtomicString::ConstructFromLiteral)));
+    AtomicallyInitializedStaticReference(AtomicString, accessControlAllowCredentials, (new AtomicString("access-control-allow-credentials", AtomicString::ConstructFromLiteral)));
 
     if (!response.httpStatusCode()) {
         errorDescription = "Received an invalid response. Origin '" + securityOrigin->toString() + "' is therefore not allowed access.";

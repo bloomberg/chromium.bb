@@ -72,7 +72,7 @@ class DeferredImageDecoderTest : public ::testing::Test, public MockImageDecoder
 public:
     virtual void SetUp() override
     {
-        ImageDecodingStore::instance()->setCacheLimitInBytes(1024 * 1024);
+        ImageDecodingStore::instance().setCacheLimitInBytes(1024 * 1024);
         DeferredImageDecoder::setEnabled(true);
         m_data = SharedBuffer::create(whitePNG, sizeof(whitePNG));
         m_frameCount = 1;
@@ -91,7 +91,7 @@ public:
 
     virtual void TearDown() override
     {
-        ImageDecodingStore::instance()->clear();
+        ImageDecodingStore::instance().clear();
     }
 
     virtual void decoderBeingDestroyed() override

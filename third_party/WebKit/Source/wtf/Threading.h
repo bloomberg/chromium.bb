@@ -30,14 +30,25 @@
 #ifndef Threading_h
 #define Threading_h
 
+#include "wtf/Atomics.h"
+#include "wtf/TypeTraits.h"
 #include "wtf/WTFExport.h"
 #include <stdint.h>
 
-// For portability, we do not use thread-safe statics natively supported by some compilers (e.g. gcc).
-#define AtomicallyInitializedStatic(T, name) \
-    WTF::lockAtomicallyInitializedStaticMutex(); \
-    static T name; \
-    WTF::unlockAtomicallyInitializedStaticMutex();
+// For portability, we do not make use of C++11 thread-safe statics, as supported
+// by some toolchains. Make use of double-checked locking to reduce overhead.
+#define AtomicallyInitializedStaticReference(T, name, initializer)      \
+    /* Init to nullptr is thread-safe on all implementations. */        \
+    static void* name##Pointer = nullptr;                               \
+    if (!WTF::acquireLoad(&name##Pointer)) {                            \
+        WTF::lockAtomicallyInitializedStaticMutex();                    \
+        if (!WTF::acquireLoad(&name##Pointer)) {                        \
+            WTF::RemoveConst<T>::Type* initializerResult = initializer; \
+            WTF::releaseStore(&name##Pointer, initializerResult);       \
+        }                                                               \
+        WTF::unlockAtomicallyInitializedStaticMutex();                  \
+    }                                                                   \
+    T& name = *static_cast<T*>(name##Pointer)
 
 namespace WTF {
 

@@ -66,11 +66,11 @@ public:
     bool transfer(ArrayBufferContents&);
     bool isNeutered() { return m_isNeutered; }
 
-    void setDeallocationObserver(ArrayBufferDeallocationObserver* observer)
+    void setDeallocationObserver(ArrayBufferDeallocationObserver& observer)
     {
         m_contents.setDeallocationObserver(observer);
     }
-    void setDeallocationObserverWithoutAllocationNotification(ArrayBufferDeallocationObserver* observer)
+    void setDeallocationObserverWithoutAllocationNotification(ArrayBufferDeallocationObserver& observer)
     {
         m_contents.setDeallocationObserverWithoutAllocationNotification(observer);
     }

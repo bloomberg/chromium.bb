@@ -39,7 +39,7 @@ namespace blink {
 
 QuotaTracker& QuotaTracker::instance()
 {
-    AtomicallyInitializedStatic(QuotaTracker&, tracker = *new QuotaTracker);
+    AtomicallyInitializedStaticReference(QuotaTracker, tracker, new QuotaTracker);
     return tracker;
 }
 

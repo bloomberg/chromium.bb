@@ -39,8 +39,8 @@ namespace blink {
 
 NetworkStateNotifier& networkStateNotifier()
 {
-    AtomicallyInitializedStatic(NetworkStateNotifier*, networkStateNotifier = new NetworkStateNotifier);
-    return *networkStateNotifier;
+    AtomicallyInitializedStaticReference(NetworkStateNotifier, networkStateNotifier, new NetworkStateNotifier);
+    return networkStateNotifier;
 }
 
 void NetworkStateNotifier::setOnLine(bool onLine)

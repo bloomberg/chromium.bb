@@ -53,9 +53,9 @@ ImageDecodingStore::~ImageDecodingStore()
 #endif
 }
 
-ImageDecodingStore* ImageDecodingStore::instance()
+ImageDecodingStore& ImageDecodingStore::instance()
 {
-    AtomicallyInitializedStatic(ImageDecodingStore*, store = ImageDecodingStore::create().leakPtr());
+    AtomicallyInitializedStaticReference(ImageDecodingStore, store, ImageDecodingStore::create().leakPtr());
     return store;
 }
 

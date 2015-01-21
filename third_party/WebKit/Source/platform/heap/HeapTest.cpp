@@ -4778,13 +4778,13 @@ TEST(HeapTest, IndirectStrongToWeak)
 
 static Mutex& mainThreadMutex()
 {
-    AtomicallyInitializedStatic(Mutex&, mainMutex = *new Mutex);
+    AtomicallyInitializedStaticReference(Mutex, mainMutex, new Mutex);
     return mainMutex;
 }
 
 static ThreadCondition& mainThreadCondition()
 {
-    AtomicallyInitializedStatic(ThreadCondition&, mainCondition = *new ThreadCondition);
+    AtomicallyInitializedStaticReference(ThreadCondition, mainCondition, new ThreadCondition);
     return mainCondition;
 }
 
@@ -4801,13 +4801,13 @@ static void wakeMainThread()
 
 static Mutex& workerThreadMutex()
 {
-    AtomicallyInitializedStatic(Mutex&, workerMutex = *new Mutex);
+    AtomicallyInitializedStaticReference(Mutex, workerMutex, new Mutex);
     return workerMutex;
 }
 
 static ThreadCondition& workerThreadCondition()
 {
-    AtomicallyInitializedStatic(ThreadCondition&, workerCondition = *new ThreadCondition);
+    AtomicallyInitializedStaticReference(ThreadCondition, workerCondition, new ThreadCondition);
     return workerCondition;
 }
 
@@ -5083,7 +5083,7 @@ TEST(HeapTest, GarbageCollectionDuringMixinConstruction)
 
 static RecursiveMutex& recursiveMutex()
 {
-    AtomicallyInitializedStatic(RecursiveMutex&, recursiveMutex = *new RecursiveMutex);
+    AtomicallyInitializedStaticReference(RecursiveMutex, recursiveMutex, new RecursiveMutex);
     return recursiveMutex;
 }
 

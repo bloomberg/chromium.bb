@@ -473,7 +473,7 @@ public:
 
     // List of global persistent roots not owned by any particular thread.
     // globalRootsMutex must be acquired before any modifications.
-    static PersistentNode* globalRoots();
+    static PersistentNode& globalRoots();
     static Mutex& globalRootsMutex();
 
     // Visit local thread stack and trace all pointers conservatively.

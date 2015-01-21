@@ -242,8 +242,8 @@ typedef Deque<PromiseRejectMessage> PromiseRejectMessageQueue;
 
 static PromiseRejectMessageQueue& promiseRejectMessageQueue()
 {
-    AtomicallyInitializedStatic(ThreadSpecific<PromiseRejectMessageQueue>*, queue = new ThreadSpecific<PromiseRejectMessageQueue>);
-    return **queue;
+    AtomicallyInitializedStaticReference(ThreadSpecific<PromiseRejectMessageQueue>, queue, new ThreadSpecific<PromiseRejectMessageQueue>);
+    return *queue;
 }
 
 void V8Initializer::reportRejectedPromises()

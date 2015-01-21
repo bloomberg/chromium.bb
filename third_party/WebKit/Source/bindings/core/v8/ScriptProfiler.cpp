@@ -305,8 +305,8 @@ void ScriptProfiler::visitNodeWrappers(WrappedNodeVisitor* visitor)
 
 ProfileNameIdleTimeMap* ScriptProfiler::currentProfileNameIdleTimeMap()
 {
-    AtomicallyInitializedStatic(WTF::ThreadSpecific<ProfileNameIdleTimeMap>*, map = new WTF::ThreadSpecific<ProfileNameIdleTimeMap>);
-    return *map;
+    AtomicallyInitializedStaticReference(WTF::ThreadSpecific<ProfileNameIdleTimeMap>, map, new WTF::ThreadSpecific<ProfileNameIdleTimeMap>);
+    return map;
 }
 
 void ScriptProfiler::setIdle(bool isIdle)

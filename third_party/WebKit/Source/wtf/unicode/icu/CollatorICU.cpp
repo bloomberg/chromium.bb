@@ -47,7 +47,7 @@ namespace WTF {
 static UCollator* cachedCollator;
 static Mutex& cachedCollatorMutex()
 {
-    AtomicallyInitializedStatic(Mutex&, mutex = *new Mutex);
+    AtomicallyInitializedStaticReference(Mutex, mutex, new Mutex);
     return mutex;
 }
 

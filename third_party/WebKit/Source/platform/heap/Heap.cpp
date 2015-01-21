@@ -1991,7 +1991,7 @@ public:
 
     static Mutex& objectGraphMutex()
     {
-        AtomicallyInitializedStatic(Mutex&, mutex = *new Mutex);
+        AtomicallyInitializedStaticReference(Mutex, mutex, new Mutex);
         return mutex;
     }
 
@@ -2626,7 +2626,7 @@ BaseHeapPage* Heap::lookup(Address address)
 
 static Mutex& regionTreeMutex()
 {
-    AtomicallyInitializedStatic(Mutex&, mutex = *new Mutex);
+    AtomicallyInitializedStaticReference(Mutex, mutex, new Mutex);
     return mutex;
 }
 

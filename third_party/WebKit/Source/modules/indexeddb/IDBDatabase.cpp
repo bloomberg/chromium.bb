@@ -107,7 +107,7 @@ int64_t IDBDatabase::nextTransactionId()
 {
     // Only keep a 32-bit counter to allow ports to use the other 32
     // bits of the id.
-    AtomicallyInitializedStatic(int, currentTransactionId = 0);
+    static int currentTransactionId = 0;
     return atomicIncrement(&currentTransactionId);
 }
 

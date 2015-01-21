@@ -232,9 +232,9 @@ public:
 
     static qcms_profile* qcmsOutputDeviceProfile()
     {
-        AtomicallyInitializedStatic(OutputDeviceProfile*, outputDeviceProfile = new OutputDeviceProfile());
+        AtomicallyInitializedStaticReference(OutputDeviceProfile, outputDeviceProfile, new OutputDeviceProfile);
 
-        return outputDeviceProfile->profile();
+        return outputDeviceProfile.profile();
     }
 #endif
 

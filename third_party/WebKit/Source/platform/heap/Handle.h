@@ -169,7 +169,7 @@ private:
 // passed between threads.
 class GlobalPersistents {
 public:
-    static PersistentNode* roots() { return ThreadState::globalRoots(); }
+    static PersistentNode* roots() { return &ThreadState::globalRoots(); }
 
     class Lock {
     public:

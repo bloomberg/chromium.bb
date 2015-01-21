@@ -143,6 +143,14 @@ ALWAYS_INLINE void releaseStore(volatile unsigned* ptr, unsigned value)
 {
     __tsan_atomic32_store(reinterpret_cast<volatile int*>(ptr), static_cast<int>(value), __tsan_memory_order_release);
 }
+ALWAYS_INLINE void releaseStore(void* volatile* ptr, void* value)
+{
+#if CPU(64BIT)
+    __tsan_atomic64_store(reinterpret_cast<volatile long*>(ptr), reinterpret_cast<long>(value), __tsan_memory_order_release);
+#else
+    __tsan_atomic32_store(reinterpret_cast<volatile long*>(ptr), reinterpret_cast<long>(value), __tsan_memory_order_release);
+#endif
+}
 
 ALWAYS_INLINE int acquireLoad(volatile const int* ptr)
 {
@@ -158,6 +166,14 @@ ALWAYS_INLINE unsigned long acquireLoad(volatile const unsigned long* ptr)
     return static_cast<unsigned long>(__tsan_atomic64_load(reinterpret_cast<volatile const long*>(ptr), __tsan_memory_order_acquire));
 #else
     return static_cast<unsigned long>(__tsan_atomic32_load(reinterpret_cast<volatile const long*>(ptr), __tsan_memory_order_acquire));
+#endif
+}
+ALWAYS_INLINE void* acquireLoad(void* volatile const* ptr)
+{
+#if CPU(64BIT)
+    return reinterpret_cast<void*>(__tsan_atomic64_load(reinterpret_cast<volatile const long*>(ptr), __tsan_memory_order_acquire));
+#else
+    return reinterpret_cast<void*>(__tsan_atomic32_load(reinterpret_cast<volatile const long*>(ptr), __tsan_memory_order_acquire));
 #endif
 }
 
@@ -199,6 +215,11 @@ ALWAYS_INLINE void releaseStore(volatile unsigned* ptr, unsigned value)
     MEMORY_BARRIER();
     *ptr = value;
 }
+ALWAYS_INLINE void releaseStore(void* volatile* ptr, void* value)
+{
+    MEMORY_BARRIER();
+    *ptr = value;
+}
 
 ALWAYS_INLINE int acquireLoad(volatile const int* ptr)
 {
@@ -221,6 +242,12 @@ ALWAYS_INLINE unsigned long acquireLoad(volatile const unsigned long* ptr)
 ALWAYS_INLINE unsigned long long acquireLoad(volatile const unsigned long long* ptr)
 {
     unsigned long long value = *ptr;
+    MEMORY_BARRIER();
+    return value;
+}
+ALWAYS_INLINE void* acquireLoad(void* volatile const* ptr)
+{
+    void* value = *ptr;
     MEMORY_BARRIER();
     return value;
 }

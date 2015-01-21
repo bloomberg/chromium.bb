@@ -165,8 +165,8 @@ void ARC4RandomNumberGenerator::randomValues(void* buffer, size_t length)
 
 ARC4RandomNumberGenerator& sharedRandomNumberGenerator()
 {
-    AtomicallyInitializedStatic(ARC4RandomNumberGenerator*, randomNumberGenerator = new ARC4RandomNumberGenerator);
-    return *randomNumberGenerator;
+    AtomicallyInitializedStaticReference(ARC4RandomNumberGenerator, randomNumberGenerator, new ARC4RandomNumberGenerator);
+    return randomNumberGenerator;
 }
 
 }

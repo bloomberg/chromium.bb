@@ -381,15 +381,15 @@ void EventTarget::fireEventListeners(Event* event, EventTargetData* d, EventList
 
 const EventListenerVector& EventTarget::getEventListeners(const AtomicString& eventType)
 {
-    AtomicallyInitializedStatic(EventListenerVector*, emptyVector = new EventListenerVector);
+    AtomicallyInitializedStaticReference(EventListenerVector, emptyVector, new EventListenerVector);
 
     EventTargetData* d = eventTargetData();
     if (!d)
-        return *emptyVector;
+        return emptyVector;
 
     EventListenerVector* listenerVector = d->eventListenerMap.find(eventType);
     if (!listenerVector)
-        return *emptyVector;
+        return emptyVector;
 
     return *listenerVector;
 }

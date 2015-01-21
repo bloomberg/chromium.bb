@@ -37,23 +37,22 @@ namespace blink {
 
 void WebImageCache::setCacheLimitInBytes(size_t size)
 {
-    ImageDecodingStore::instance()->setCacheLimitInBytes(size);
+    ImageDecodingStore::instance().setCacheLimitInBytes(size);
 }
 
 void WebImageCache::clear()
 {
-    if (ImageDecodingStore::instance())
-        ImageDecodingStore::instance()->clear();
+    ImageDecodingStore::instance().clear();
 }
 
 size_t WebImageCache::memoryUsageInBytes()
 {
-    return ImageDecodingStore::instance()->memoryUsageInBytes();
+    return ImageDecodingStore::instance().memoryUsageInBytes();
 }
 
 unsigned WebImageCache::cacheEntries()
 {
-    return ImageDecodingStore::instance()->cacheEntries();
+    return ImageDecodingStore::instance().cacheEntries();
 }
 
 }  // namespace blink

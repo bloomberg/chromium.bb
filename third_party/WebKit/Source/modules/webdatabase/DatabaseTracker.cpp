@@ -59,7 +59,7 @@ static void databaseClosed(Database* database)
 
 DatabaseTracker& DatabaseTracker::tracker()
 {
-    AtomicallyInitializedStatic(DatabaseTracker&, tracker = *new DatabaseTracker());
+    AtomicallyInitializedStaticReference(DatabaseTracker, tracker, new DatabaseTracker);
     return tracker;
 }
 

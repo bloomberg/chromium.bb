@@ -10,11 +10,9 @@
 
 namespace blink {
 
-DOMArrayBufferDeallocationObserver* DOMArrayBufferDeallocationObserver::instance()
+DOMArrayBufferDeallocationObserver& DOMArrayBufferDeallocationObserver::instance()
 {
-    AtomicallyInitializedStatic(
-        DOMArrayBufferDeallocationObserver*,
-        deallocationObserver = new DOMArrayBufferDeallocationObserver);
+    AtomicallyInitializedStaticReference(DOMArrayBufferDeallocationObserver, deallocationObserver, new DOMArrayBufferDeallocationObserver);
     return deallocationObserver;
 }
 

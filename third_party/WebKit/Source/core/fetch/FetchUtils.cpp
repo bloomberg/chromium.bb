@@ -26,7 +26,7 @@ public:
             || name.startsWith(m_secHeaderPrefix, false);
     }
 
-    static const ForbiddenHeaderNames* get();
+    static const ForbiddenHeaderNames& get();
 
 private:
     ForbiddenHeaderNames();
@@ -63,9 +63,9 @@ ForbiddenHeaderNames::ForbiddenHeaderNames()
     m_fixedNames.add("via");
 }
 
-const ForbiddenHeaderNames* ForbiddenHeaderNames::get()
+const ForbiddenHeaderNames& ForbiddenHeaderNames::get()
 {
-    AtomicallyInitializedStatic(const ForbiddenHeaderNames*, instance = new ForbiddenHeaderNames);
+    AtomicallyInitializedStaticReference(const ForbiddenHeaderNames, instance, new ForbiddenHeaderNames);
     return instance;
 }
 
@@ -139,7 +139,7 @@ bool FetchUtils::isForbiddenHeaderName(const String& name)
     // or starts with `Proxy-` or `Sec-` (including when it is just `Proxy-` or
     // `Sec-`)."
 
-    return ForbiddenHeaderNames::get()->has(name);
+    return ForbiddenHeaderNames::get().has(name);
 }
 
 bool FetchUtils::isForbiddenResponseHeaderName(const String& name)

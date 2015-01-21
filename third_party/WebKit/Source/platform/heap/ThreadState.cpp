@@ -142,7 +142,7 @@ SafePointBarrier* ThreadState::s_safePointBarrier = nullptr;
 
 static Mutex& threadAttachMutex()
 {
-    AtomicallyInitializedStatic(Mutex&, mutex = *new Mutex);
+    AtomicallyInitializedStaticReference(Mutex, mutex, (new Mutex));
     return mutex;
 }
 
@@ -488,7 +488,7 @@ void ThreadState::visitPersistentRoots(Visitor* visitor)
         // However we acquire the mutex to make mutation and traversal of this
         // list symmetrical.
         MutexLocker locker(globalRootsMutex());
-        globalRoots()->trace(visitor);
+        globalRoots().trace(visitor);
     }
 
     for (ThreadState* state : attachedThreads())
@@ -684,15 +684,15 @@ bool ThreadState::popAndInvokeWeakPointerCallback(Visitor* visitor)
     return false;
 }
 
-PersistentNode* ThreadState::globalRoots()
+PersistentNode& ThreadState::globalRoots()
 {
-    AtomicallyInitializedStatic(PersistentNode*, anchor = new PersistentAnchor);
+    AtomicallyInitializedStaticReference(PersistentNode, anchor, new PersistentAnchor);
     return anchor;
 }
 
 Mutex& ThreadState::globalRootsMutex()
 {
-    AtomicallyInitializedStatic(Mutex&, mutex = *new Mutex);
+    AtomicallyInitializedStaticReference(Mutex, mutex, new Mutex);
     return mutex;
 }
 
