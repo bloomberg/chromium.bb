@@ -88,9 +88,10 @@ const int64 kSecondsPerMinute = 60;
 const int64 kMsPerSecond = 1000;
 const int64 kInitialTimerDelayMs = 200;
 const int64 kMaxTimerDelayMs = 1 * kSecondsPerMinute * kMsPerSecond;
-// Heart beat message header. If a key message starts with |kHeartBeatHeader|,
-// it's a heart beat message. Otherwise, it's a key request.
-const char kHeartBeatHeader[] = "HEARTBEAT";
+// Renewal message header. For prefixed EME, if a key message starts with
+// |kRenewalHeader|, it's a renewal message. Otherwise, it's a key request.
+// FIXME(jrummell): Remove this once prefixed EME goes away.
+const char kRenewalHeader[] = "RENEWAL";
 // CDM file IO test result header.
 const char kFileIOTestResultHeader[] = "FILEIOTESTRESULT";
 
@@ -262,7 +263,7 @@ ClearKeyCdm::ClearKeyCdm(ClearKeyCdmHost* host, const std::string& key_system)
       key_system_(key_system),
       has_received_keys_change_event_for_emulated_loadsession_(false),
       timer_delay_ms_(kInitialTimerDelayMs),
-      heartbeat_timer_set_(false) {
+      renewal_timer_set_(false) {
 #if defined(CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER)
   channel_count_ = 0;
   bits_per_channel_ = 0;
@@ -357,9 +358,9 @@ void ClearKeyCdm::UpdateSession(uint32 promise_id,
   decryptor_.UpdateSession(
       web_session_str, response, response_size, promise.Pass());
 
-  if (!heartbeat_timer_set_) {
-    ScheduleNextHeartBeat();
-    heartbeat_timer_set_ = true;
+  if (!renewal_timer_set_) {
+    ScheduleNextRenewal();
+    renewal_timer_set_ = true;
   }
 }
 
@@ -423,13 +424,13 @@ void ClearKeyCdm::TimerExpired(void* context) {
     return;
   }
 
-  DCHECK(heartbeat_timer_set_);
-  std::string heartbeat_message;
-  if (!next_heartbeat_message_.empty() &&
-      context == &next_heartbeat_message_[0]) {
-    heartbeat_message = next_heartbeat_message_;
+  DCHECK(renewal_timer_set_);
+  std::string renewal_message;
+  if (!next_renewal_message_.empty() &&
+      context == &next_renewal_message_[0]) {
+    renewal_message = next_renewal_message_;
   } else {
-    heartbeat_message = "ERROR: Invalid timer context found!";
+    renewal_message = "ERROR: Invalid timer context found!";
   }
 
   // This URL is only used for testing the code path for defaultURL.
@@ -437,10 +438,10 @@ void ClearKeyCdm::TimerExpired(void* context) {
   const char url[] = "http://test.externalclearkey.chromium.org";
 
   host_->OnSessionMessage(last_session_id_.data(), last_session_id_.length(),
-                          cdm::kLicenseRenewal, heartbeat_message.data(),
-                          heartbeat_message.length(), url, arraysize(url) - 1);
+                          cdm::kLicenseRenewal, renewal_message.data(),
+                          renewal_message.length(), url, arraysize(url) - 1);
 
-  ScheduleNextHeartBeat();
+  ScheduleNextRenewal();
 }
 
 static void CopyDecryptResults(
@@ -624,14 +625,14 @@ void ClearKeyCdm::Destroy() {
   delete this;
 }
 
-void ClearKeyCdm::ScheduleNextHeartBeat() {
-  // Prepare the next heartbeat message and set timer.
+void ClearKeyCdm::ScheduleNextRenewal() {
+  // Prepare the next renewal message and set timer.
   std::ostringstream msg_stream;
-  msg_stream << kHeartBeatHeader << " from ClearKey CDM set at time "
+  msg_stream << kRenewalHeader << " from ClearKey CDM set at time "
              << host_->GetCurrentWallTime() << ".";
-  next_heartbeat_message_ = msg_stream.str();
+  next_renewal_message_ = msg_stream.str();
 
-  host_->SetTimer(timer_delay_ms_, &next_heartbeat_message_[0]);
+  host_->SetTimer(timer_delay_ms_, &next_renewal_message_[0]);
 
   // Use a smaller timer delay at start-up to facilitate testing. Increase the
   // timer delay up to a limit to avoid message spam.
@@ -753,7 +754,7 @@ void ClearKeyCdm::OnSessionClosed(const std::string& web_session_id) {
 
 void ClearKeyCdm::OnSessionCreated(uint32 promise_id,
                                    const std::string& web_session_id) {
-  // Save the latest session ID for heartbeat and file IO test messages.
+  // Save the latest session ID for renewal and file IO test messages.
   last_session_id_ = web_session_id;
 
   host_->OnResolveNewSessionPromise(
@@ -762,7 +763,7 @@ void ClearKeyCdm::OnSessionCreated(uint32 promise_id,
 
 void ClearKeyCdm::OnSessionLoaded(uint32 promise_id,
                                   const std::string& web_session_id) {
-  // Save the latest session ID for heartbeat and file IO test messages.
+  // Save the latest session ID for renewal and file IO test messages.
   last_session_id_ = web_session_id;
 
   // |decryptor_| created some session as |web_session_id|, but going forward

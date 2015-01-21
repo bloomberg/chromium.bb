@@ -6,7 +6,7 @@
 
 // Renewal message header. External Clear Key implementation returns this as
 // part of renewal messages.
-var RENEWAL_MESSAGE_HEADER = 'HEARTBEAT';
+var RENEWAL_MESSAGE_HEADER = 'RENEWAL';
 
 // Default key used to encrypt many media files used in browser tests.
 var KEY = new Uint8Array([0xeb, 0xdd, 0x62, 0xf1, 0x68, 0x14, 0xd2, 0x7b,

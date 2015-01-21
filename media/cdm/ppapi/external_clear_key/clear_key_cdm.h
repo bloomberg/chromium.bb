@@ -109,8 +109,8 @@ class ClearKeyCdm : public ClearKeyCdmInterface {
                        uint32 system_code,
                        const std::string& error_message);
 
-  // Prepares next heartbeat message and sets a timer for it.
-  void ScheduleNextHeartBeat();
+  // Prepares next renewal message and sets a timer for it.
+  void ScheduleNextRenewal();
 
   // Decrypts the |encrypted_buffer| and puts the result in |decrypted_buffer|.
   // Returns cdm::kSuccess if decryption succeeded. The decrypted result is
@@ -153,7 +153,7 @@ class ClearKeyCdm : public ClearKeyCdmInterface {
   const std::string key_system_;
 
   std::string last_session_id_;
-  std::string next_heartbeat_message_;
+  std::string next_renewal_message_;
 
   // In order to simulate LoadSession(), CreateSession() and then
   // UpdateSession() will be called to create a session with known keys.
@@ -187,9 +187,9 @@ class ClearKeyCdm : public ClearKeyCdmInterface {
   // Timer delay in milliseconds for the next host_->SetTimer() call.
   int64 timer_delay_ms_;
 
-  // Indicates whether a heartbeat timer has been set to prevent multiple timers
+  // Indicates whether a renewal timer has been set to prevent multiple timers
   // from running.
-  bool heartbeat_timer_set_;
+  bool renewal_timer_set_;
 
 #if defined(CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER)
   int channel_count_;
