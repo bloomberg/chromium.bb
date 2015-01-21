@@ -39,7 +39,6 @@
 
 namespace blink {
 
-class AsyncCallChain;
 class Event;
 class EventListener;
 class EventTarget;
@@ -62,7 +61,7 @@ public:
 
     // InspectorDebuggerAgent::AsyncCallTrackingListener implementation:
     void asyncCallTrackingStateChanged(bool tracking) override;
-    void resetAsyncCallChains() override;
+    void resetAsyncOperations() override;
 
     void didInstallTimer(ExecutionContext*, int timerId, int timeout, bool singleShot);
     void didRemoveTimer(ExecutionContext*, int timerId);
@@ -105,7 +104,8 @@ public:
 private:
     void willHandleXHREvent(XMLHttpRequest*, Event*);
 
-    void setCurrentAsyncCallChain(ExecutionContext*, int operationId);
+    bool isKnownAsyncOperationId(ExecutionContext*, int operationId) const;
+    void willFireAsyncCall(int operationId);
     void didFireAsyncCall();
 
     ExecutionContextData* createContextDataIfNeeded(ExecutionContext*);

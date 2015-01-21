@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef AsyncCallChainMap_h
-#define AsyncCallChainMap_h
+#ifndef AsyncOperationMap_h
+#define AsyncOperationMap_h
 
-#include "core/inspector/AsyncCallChain.h"
 #include "core/inspector/InspectorDebuggerAgent.h"
 #include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"
@@ -15,16 +14,16 @@
 namespace blink {
 
 template <class K>
-class AsyncCallChainMap final {
+class AsyncOperationMap final {
     ALLOW_ONLY_INLINE_ALLOCATION();
 public:
     using MapType = WillBeHeapHashMap<K, int>;
-    explicit AsyncCallChainMap(InspectorDebuggerAgent* debuggerAgent)
+    explicit AsyncOperationMap(InspectorDebuggerAgent* debuggerAgent)
         : m_debuggerAgent(debuggerAgent)
     {
     }
 
-    ~AsyncCallChainMap()
+    ~AsyncOperationMap()
     {
         // Verify that this object has been explicitly disposed.
         ASSERT(hasBeenDisposed());
@@ -46,30 +45,30 @@ public:
     void clear()
     {
         ASSERT(m_debuggerAgent);
-        for (auto it : m_asyncCallChains)
+        for (auto it : m_asyncOperations)
             m_debuggerAgent->traceAsyncOperationCompleted(it.value);
-        m_asyncCallChains.clear();
+        m_asyncOperations.clear();
     }
 
     void set(typename MapType::KeyPeekInType key, int operationId)
     {
-        m_asyncCallChains.set(key, operationId);
+        m_asyncOperations.set(key, operationId);
     }
 
     bool contains(typename MapType::KeyPeekInType key) const
     {
-        return m_asyncCallChains.contains(key);
+        return m_asyncOperations.contains(key);
     }
 
     int get(typename MapType::KeyPeekInType key) const
     {
-        return m_asyncCallChains.get(key);
+        return m_asyncOperations.get(key);
     }
 
     void remove(typename MapType::KeyPeekInType key)
     {
         ASSERT(m_debuggerAgent);
-        int operationId = m_asyncCallChains.take(key);
+        int operationId = m_asyncOperations.take(key);
         if (operationId)
             m_debuggerAgent->traceAsyncOperationCompleted(operationId);
     }
@@ -77,15 +76,15 @@ public:
     void trace(Visitor* visitor)
     {
         visitor->trace(m_debuggerAgent);
-        visitor->trace(m_asyncCallChains);
+        visitor->trace(m_asyncOperations);
     }
 
 private:
     RawPtrWillBeMember<InspectorDebuggerAgent> m_debuggerAgent;
-    MapType m_asyncCallChains;
+    MapType m_asyncOperations;
 };
 
 } // namespace blink
 
 
-#endif // AsyncCallChainMap_h
+#endif // AsyncOperationMap_h

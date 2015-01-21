@@ -1107,10 +1107,12 @@ void InspectorDebuggerAgent::traceAsyncCallbackCompleted()
     }
 }
 
-void InspectorDebuggerAgent::traceAsyncCallbackStarting(v8::Isolate* isolate, int operationId)
+void InspectorDebuggerAgent::traceAsyncCallbackStarting(int operationId)
 {
     ASSERT(operationId > 0 || operationId == unknownAsyncOperationId);
     AsyncCallChain* chain = operationId > 0 ? m_asyncOperations.get(operationId) : nullptr;
+    // FIXME: extract recursion check into a delegate.
+    v8::Isolate* isolate = scriptDebugServer().isolate();
     int recursionLevel = V8RecursionScope::recursionLevel(isolate);
     if (chain && (!recursionLevel || (recursionLevel == 1 && Microtask::performingCheckpoint(isolate)))) {
         // Current AsyncCallChain corresponds to the bottommost JS call frame.
@@ -1147,7 +1149,7 @@ void InspectorDebuggerAgent::resetAsyncCallTracker()
     m_currentAsyncCallChain.clear();
     m_nestedAsyncCallCount = 0;
     for (auto& listener: m_asyncCallTrackingListeners)
-        listener->resetAsyncCallChains();
+        listener->resetAsyncOperations();
     m_asyncOperations.clear();
 }
 

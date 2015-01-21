@@ -6,7 +6,7 @@
 #include "core/inspector/V8AsyncCallTracker.h"
 
 #include "bindings/core/v8/V8PerContextData.h"
-#include "core/inspector/AsyncCallChainMap.h"
+#include "core/inspector/AsyncOperationMap.h"
 #include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"
 #include "wtf/text/StringBuilder.h"
@@ -23,33 +23,33 @@ static const char v8AsyncTaskEventDidHandle[] = "didHandle";
 
 }
 
-class V8AsyncCallTracker::V8ContextAsyncCallChains final : public NoBaseWillBeGarbageCollectedFinalized<V8AsyncCallTracker::V8ContextAsyncCallChains> {
-    WTF_MAKE_NONCOPYABLE(V8ContextAsyncCallChains);
+class V8AsyncCallTracker::V8ContextAsyncOperations final : public NoBaseWillBeGarbageCollectedFinalized<V8AsyncCallTracker::V8ContextAsyncOperations> {
+    WTF_MAKE_NONCOPYABLE(V8ContextAsyncOperations);
 public:
-    explicit V8ContextAsyncCallChains(InspectorDebuggerAgent* debuggerAgent)
-        : m_v8AsyncCallChains(debuggerAgent)
+    explicit V8ContextAsyncOperations(InspectorDebuggerAgent* debuggerAgent)
+        : m_v8AsyncOperations(debuggerAgent)
     {
     }
 
-    ~V8ContextAsyncCallChains()
+    ~V8ContextAsyncOperations()
     {
-        ASSERT(m_v8AsyncCallChains.hasBeenDisposed());
+        ASSERT(m_v8AsyncOperations.hasBeenDisposed());
     }
 
     void dispose()
     {
-        // FIXME: get rid of the dispose method and this class altogether once AsyncCallChainMap is always allocated on C++ heap.
-        m_v8AsyncCallChains.dispose();
+        // FIXME: get rid of the dispose method and this class altogether once AsyncOperationMap is always allocated on C++ heap.
+        m_v8AsyncOperations.dispose();
     }
 
     void trace(Visitor* visitor)
     {
 #if ENABLE(OILPAN)
-        visitor->trace(m_v8AsyncCallChains);
+        visitor->trace(m_v8AsyncOperations);
 #endif
     }
 
-    AsyncCallChainMap<String> m_v8AsyncCallChains;
+    AsyncOperationMap<String> m_v8AsyncOperations;
 };
 
 static String makeV8AsyncTaskUniqueId(const String& eventName, int id)
@@ -67,13 +67,13 @@ V8AsyncCallTracker::V8AsyncCallTracker(InspectorDebuggerAgent* debuggerAgent) : 
 
 V8AsyncCallTracker::~V8AsyncCallTracker()
 {
-    ASSERT(m_contextAsyncCallChainMap.isEmpty());
+    ASSERT(m_contextAsyncOperationMap.isEmpty());
 }
 
 void V8AsyncCallTracker::trace(Visitor* visitor)
 {
 #if ENABLE(OILPAN)
-    visitor->trace(m_contextAsyncCallChainMap);
+    visitor->trace(m_contextAsyncOperationMap);
     visitor->trace(m_debuggerAgent);
 #endif
     InspectorDebuggerAgent::AsyncCallTrackingListener::trace(visitor);
@@ -83,18 +83,18 @@ void V8AsyncCallTracker::asyncCallTrackingStateChanged(bool)
 {
 }
 
-void V8AsyncCallTracker::resetAsyncCallChains()
+void V8AsyncCallTracker::resetAsyncOperations()
 {
-    for (auto& it : m_contextAsyncCallChainMap) {
+    for (auto& it : m_contextAsyncOperationMap) {
         it.key->removeObserver(this);
         it.value->dispose();
     }
-    m_contextAsyncCallChainMap.clear();
+    m_contextAsyncOperationMap.clear();
 }
 
 void V8AsyncCallTracker::willDisposeScriptState(ScriptState* state)
 {
-    m_contextAsyncCallChainMap.remove(state);
+    m_contextAsyncOperationMap.remove(state);
 }
 
 void V8AsyncCallTracker::didReceiveV8AsyncTaskEvent(ScriptState* state, const String& eventType, const String& eventName, int id)
@@ -117,22 +117,22 @@ void V8AsyncCallTracker::didEnqueueV8AsyncTask(ScriptState* state, const String&
     int operationId = m_debuggerAgent->traceAsyncOperationStarting(eventName);
     if (!operationId)
         return;
-    V8ContextAsyncCallChains* contextCallChains = m_contextAsyncCallChainMap.get(state);
+    V8ContextAsyncOperations* contextCallChains = m_contextAsyncOperationMap.get(state);
     if (!contextCallChains)
-        contextCallChains = m_contextAsyncCallChainMap.set(state, adoptPtrWillBeNoop(new V8ContextAsyncCallChains(m_debuggerAgent))).storedValue->value.get();
-    contextCallChains->m_v8AsyncCallChains.set(makeV8AsyncTaskUniqueId(eventName, id), operationId);
+        contextCallChains = m_contextAsyncOperationMap.set(state, adoptPtrWillBeNoop(new V8ContextAsyncOperations(m_debuggerAgent))).storedValue->value.get();
+    contextCallChains->m_v8AsyncOperations.set(makeV8AsyncTaskUniqueId(eventName, id), operationId);
 }
 
 void V8AsyncCallTracker::willHandleV8AsyncTask(ScriptState* state, const String& eventName, int id)
 {
     ASSERT(state);
     ASSERT(m_debuggerAgent->trackingAsyncCalls());
-    if (V8ContextAsyncCallChains* contextCallChains = m_contextAsyncCallChainMap.get(state)) {
+    if (V8ContextAsyncOperations* contextCallChains = m_contextAsyncOperationMap.get(state)) {
         String taskId = makeV8AsyncTaskUniqueId(eventName, id);
-        m_debuggerAgent->traceAsyncCallbackStarting(state->isolate(), contextCallChains->m_v8AsyncCallChains.get(taskId));
-        contextCallChains->m_v8AsyncCallChains.remove(taskId);
+        m_debuggerAgent->traceAsyncCallbackStarting(contextCallChains->m_v8AsyncOperations.get(taskId));
+        contextCallChains->m_v8AsyncOperations.remove(taskId);
     } else {
-        m_debuggerAgent->traceAsyncCallbackStarting(state->isolate(), InspectorDebuggerAgent::unknownAsyncOperationId);
+        m_debuggerAgent->traceAsyncCallbackStarting(InspectorDebuggerAgent::unknownAsyncOperationId);
     }
 }
 

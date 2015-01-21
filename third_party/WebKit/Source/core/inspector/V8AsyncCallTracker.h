@@ -31,7 +31,7 @@ public:
 
     // InspectorDebuggerAgent::AsyncCallTrackingListener implementation:
     void asyncCallTrackingStateChanged(bool tracking) override;
-    void resetAsyncCallChains() override;
+    void resetAsyncOperations() override;
 
     void didReceiveV8AsyncTaskEvent(ScriptState*, const String& eventType, const String& eventName, int id);
 
@@ -44,9 +44,8 @@ private:
     void didEnqueueV8AsyncTask(ScriptState*, const String& eventName, int id);
     void willHandleV8AsyncTask(ScriptState*, const String& eventName, int id);
 
-    class V8ContextAsyncCallChains;
-    using V8ContextAsyncChainMap = WillBeHeapHashMap<ScriptState*, OwnPtrWillBeMember<V8ContextAsyncCallChains> >;
-    V8ContextAsyncChainMap m_contextAsyncCallChainMap;
+    class V8ContextAsyncOperations;
+    WillBeHeapHashMap<ScriptState*, OwnPtrWillBeMember<V8ContextAsyncOperations> > m_contextAsyncOperationMap;
     RawPtrWillBeMember<InspectorDebuggerAgent> m_debuggerAgent;
 };
 

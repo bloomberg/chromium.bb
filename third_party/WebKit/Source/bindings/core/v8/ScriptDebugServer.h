@@ -111,6 +111,8 @@ public:
     virtual void muteWarningsAndDeprecations() { }
     virtual void unmuteWarningsAndDeprecations() { }
 
+    v8::Isolate* isolate() const { return m_isolate; }
+
 protected:
     explicit ScriptDebugServer(v8::Isolate*);
     virtual ~ScriptDebugServer();

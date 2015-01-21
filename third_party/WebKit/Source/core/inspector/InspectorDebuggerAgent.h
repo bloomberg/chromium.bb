@@ -175,7 +175,7 @@ public:
     PassRefPtrWillBeRawPtr<ScriptAsyncCallStack> currentAsyncStackTraceForConsole();
     static const int unknownAsyncOperationId;
     int traceAsyncOperationStarting(const String& description);
-    void traceAsyncCallbackStarting(v8::Isolate*, int operationId);
+    void traceAsyncCallbackStarting(int operationId);
     const AsyncCallChain* currentAsyncCallChain() const;
     void traceAsyncCallbackCompleted();
     void traceAsyncOperationCompleted(int operationId);
@@ -186,7 +186,7 @@ public:
         virtual ~AsyncCallTrackingListener() { }
         virtual void trace(Visitor*) { }
         virtual void asyncCallTrackingStateChanged(bool tracking) = 0;
-        virtual void resetAsyncCallChains() = 0;
+        virtual void resetAsyncOperations() = 0;
     };
     void addAsyncCallTrackingListener(AsyncCallTrackingListener*);
     void removeAsyncCallTrackingListener(AsyncCallTrackingListener*);
