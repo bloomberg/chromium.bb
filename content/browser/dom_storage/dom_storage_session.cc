@@ -7,32 +7,11 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
-#include "base/single_thread_task_runner.h"
-#include "base/thread_task_runner_handle.h"
 #include "base/tracked_objects.h"
 #include "content/browser/dom_storage/dom_storage_context_impl.h"
 #include "content/browser/dom_storage/dom_storage_task_runner.h"
 
 namespace content {
-
-namespace {
-
-void PostMergeTaskResult(
-    const SessionStorageNamespace::MergeResultCallback& callback,
-    SessionStorageNamespace::MergeResult result) {
-  callback.Run(result);
-}
-
-void RunMergeTaskAndPostResult(
-    const base::Callback<SessionStorageNamespace::MergeResult(void)>& task,
-    scoped_refptr<base::SingleThreadTaskRunner> result_loop,
-    const SessionStorageNamespace::MergeResultCallback& callback) {
-  SessionStorageNamespace::MergeResult result = task.Run();
-  result_loop->PostTask(
-      FROM_HERE, base::Bind(&PostMergeTaskResult, callback, result));
-}
-
-}  // namespace
 
 DOMStorageSession::DOMStorageSession(DOMStorageContextImpl* context)
     : context_(context),
@@ -55,22 +34,6 @@ DOMStorageSession::DOMStorageSession(DOMStorageContextImpl* context,
       FROM_HERE,
       base::Bind(&DOMStorageContextImpl::CreateSessionNamespace,
                  context_, namespace_id_, persistent_namespace_id_));
-}
-
-DOMStorageSession::DOMStorageSession(
-    DOMStorageSession* master_dom_storage_session)
-    : context_(master_dom_storage_session->context_),
-      namespace_id_(master_dom_storage_session->context_->AllocateSessionId()),
-      persistent_namespace_id_(
-          master_dom_storage_session->persistent_namespace_id()),
-      should_persist_(false) {
-  context_->task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&DOMStorageContextImpl::CreateAliasSessionNamespace,
-                 context_,
-                 master_dom_storage_session->namespace_id(),
-                 namespace_id_,
-                 persistent_namespace_id_));
 }
 
 void DOMStorageSession::SetShouldPersist(bool should_persist) {
@@ -116,56 +79,6 @@ DOMStorageSession::~DOMStorageSession() {
       FROM_HERE,
       base::Bind(&DOMStorageContextImpl::DeleteSessionNamespace,
                  context_, namespace_id_, should_persist_));
-}
-
-void DOMStorageSession::AddTransactionLogProcessId(int process_id) {
-  context_->task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&DOMStorageContextImpl::AddTransactionLogProcessId,
-                 context_, namespace_id_, process_id));
-}
-
-void DOMStorageSession::RemoveTransactionLogProcessId(int process_id) {
-  context_->task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&DOMStorageContextImpl::RemoveTransactionLogProcessId,
-                 context_, namespace_id_, process_id));
-}
-
-void DOMStorageSession::Merge(
-    bool actually_merge,
-    int process_id,
-    DOMStorageSession* other,
-    const SessionStorageNamespace::MergeResultCallback& callback) {
-  scoped_refptr<base::SingleThreadTaskRunner> current_loop(
-      base::ThreadTaskRunnerHandle::Get());
-  SessionStorageNamespace::MergeResultCallback cb =
-      base::Bind(&DOMStorageSession::ProcessMergeResult,
-                 this,
-                 actually_merge,
-                 callback,
-                 other->persistent_namespace_id());
-  context_->task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&RunMergeTaskAndPostResult,
-                 base::Bind(&DOMStorageContextImpl::MergeSessionStorage,
-                            context_, namespace_id_, actually_merge, process_id,
-                            other->namespace_id_),
-                 current_loop,
-                 cb));
-}
-
-void DOMStorageSession::ProcessMergeResult(
-    bool actually_merge,
-    const SessionStorageNamespace::MergeResultCallback& callback,
-    const std::string& new_persistent_namespace_id,
-    SessionStorageNamespace::MergeResult result) {
-  if (actually_merge &&
-      (result == SessionStorageNamespace::MERGE_RESULT_MERGEABLE ||
-       result == SessionStorageNamespace::MERGE_RESULT_NO_TRANSACTIONS)) {
-    persistent_namespace_id_ = new_persistent_namespace_id;
-  }
-  callback.Run(result);
 }
 
 }  // namespace content

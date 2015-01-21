@@ -42,7 +42,6 @@ class DomStorageDispatcher {
   // IPC message handlers
   void OnStorageEvent(const DOMStorageMsg_Event_Params& params);
   void OnAsyncOperationComplete(bool success);
-  void OnResetCachedValues(int64 namespace_id);
 
   scoped_refptr<ProxyImpl> proxy_;
 };

@@ -10,7 +10,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/nullable_string16.h"
 #include "base/strings/string16.h"
-#include "content/browser/dom_storage/dom_storage_namespace.h"
 #include "content/common/content_export.h"
 #include "content/common/dom_storage/dom_storage_types.h"
 
@@ -30,14 +29,13 @@ class DOMStorageArea;
 // See class comments for DOMStorageContextImpl for a larger overview.
 class CONTENT_EXPORT DOMStorageHost {
  public:
-  DOMStorageHost(DOMStorageContextImpl* context, int render_process_id);
+  explicit DOMStorageHost(DOMStorageContextImpl* context);
   ~DOMStorageHost();
 
   bool OpenStorageArea(int connection_id, int namespace_id,
                        const GURL& origin);
   void CloseStorageArea(int connection_id);
-  bool ExtractAreaValues(int connection_id, DOMStorageValuesMap* map,
-                         bool* send_log_get_messages);
+  bool ExtractAreaValues(int connection_id, DOMStorageValuesMap* map);
   unsigned GetAreaLength(int connection_id);
   base::NullableString16 GetAreaKey(int connection_id, unsigned index);
   base::NullableString16 GetAreaItem(int connection_id,
@@ -45,17 +43,11 @@ class CONTENT_EXPORT DOMStorageHost {
   bool SetAreaItem(int connection_id, const base::string16& key,
                    const base::string16& value, const GURL& page_url,
                    base::NullableString16* old_value);
-  void LogGetAreaItem(int connection_id, const base::string16& key,
-                      const base::NullableString16& value);
   bool RemoveAreaItem(int connection_id, const base::string16& key,
                   const GURL& page_url,
                   base::string16* old_value);
   bool ClearArea(int connection_id, const GURL& page_url);
-  bool HasAreaOpen(int64 namespace_id, const GURL& origin,
-                   int64* alias_namespace_id) const;
-  // Resets all open areas for the namespace provided. Returns true
-  // iff there were any areas to reset.
-  bool ResetOpenAreasForNamespace(int64 namespace_id);
+  bool HasAreaOpen(int namespace_id, const GURL& origin) const;
 
  private:
   // Struct to hold references needed for areas that are open
@@ -70,17 +62,9 @@ class CONTENT_EXPORT DOMStorageHost {
 
   DOMStorageArea* GetOpenArea(int connection_id);
   DOMStorageNamespace* GetNamespace(int connection_id);
-  void MaybeLogTransaction(
-      int connection_id,
-      DOMStorageNamespace::LogType transaction_type,
-      const GURL& origin,
-      const GURL& page_url,
-      const base::string16& key,
-      const base::NullableString16& value);
 
   scoped_refptr<DOMStorageContextImpl> context_;
   AreaMap connections_;
-  int render_process_id_;
 
   DISALLOW_COPY_AND_ASSIGN(DOMStorageHost);
 };

@@ -12,12 +12,6 @@
 
 namespace content {
 
-namespace {
-
-static const int kMaxLogGetMessagesToSend = 16 * 1024;
-
-}  // namespace
-
 DOMStorageCachedArea::DOMStorageCachedArea(int64 namespace_id,
                                            const GURL& origin,
                                            DOMStorageProxy* proxy)
@@ -25,7 +19,6 @@ DOMStorageCachedArea::DOMStorageCachedArea(int64 namespace_id,
       namespace_id_(namespace_id),
       origin_(origin),
       proxy_(proxy),
-      remaining_log_get_messages_(0),
       weak_factory_(this) {}
 
 DOMStorageCachedArea::~DOMStorageCachedArea() {}
@@ -45,12 +38,7 @@ base::NullableString16 DOMStorageCachedArea::GetItem(
     int connection_id,
     const base::string16& key) {
   PrimeIfNeeded(connection_id);
-  base::NullableString16 result = map_->GetItem(key);
-  if (remaining_log_get_messages_ > 0) {
-    remaining_log_get_messages_--;
-    proxy_->LogGetItem(connection_id, key, result);
-  }
-  return result;
+  return map_->GetItem(key);
 }
 
 bool DOMStorageCachedArea::SetItem(int connection_id,
@@ -167,11 +155,9 @@ void DOMStorageCachedArea::Prime(int connection_id) {
   // Ignore all mutations until OnLoadComplete time.
   ignore_all_mutations_ = true;
   DOMStorageValuesMap values;
-  bool send_log_get_messages = false;
   base::TimeTicks before = base::TimeTicks::Now();
   proxy_->LoadArea(connection_id,
                    &values,
-                   &send_log_get_messages,
                    base::Bind(&DOMStorageCachedArea::OnLoadComplete,
                               weak_factory_.GetWeakPtr()));
   base::TimeDelta time_to_prime = base::TimeTicks::Now() - before;
@@ -181,8 +167,6 @@ void DOMStorageCachedArea::Prime(int connection_id) {
                       time_to_prime);
   map_ = new DOMStorageMap(kPerStorageAreaQuota);
   map_->SwapValues(&values);
-  if (send_log_get_messages)
-    remaining_log_get_messages_ = kMaxLogGetMessagesToSend;
 
   size_t local_storage_size_kb = map_->bytes_used() / 1024;
   // Track localStorage size, from 0-6MB. Note that the maximum size should be

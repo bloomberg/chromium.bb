@@ -25,13 +25,11 @@ class MockProxy : public DOMStorageProxy {
 
   void LoadArea(int connection_id,
                 DOMStorageValuesMap* values,
-                bool* send_log_get_messages,
                 const CompletionCallback& callback) override {
     pending_callbacks_.push_back(callback);
     observed_load_area_ = true;
     observed_connection_id_ = connection_id;
     *values = load_area_return_values_;
-    *send_log_get_messages = false;
   }
 
   void SetItem(int connection_id,
@@ -46,10 +44,6 @@ class MockProxy : public DOMStorageProxy {
     observed_value_ = value;
     observed_page_url_ = page_url;
   }
-
-  void LogGetItem(int connection_id,
-                  const base::string16& key,
-                  const base::NullableString16& value) override {}
 
   void RemoveItem(int connection_id,
                   const base::string16& key,

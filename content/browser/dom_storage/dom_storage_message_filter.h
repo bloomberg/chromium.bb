@@ -30,8 +30,7 @@ class DOMStorageMessageFilter
     : public BrowserMessageFilter,
       public DOMStorageContextImpl::EventObserver {
  public:
-  explicit DOMStorageMessageFilter(int render_process_id,
-                                   DOMStorageContextWrapper* context);
+  explicit DOMStorageMessageFilter(DOMStorageContextWrapper* context);
 
  private:
   ~DOMStorageMessageFilter() override;
@@ -50,12 +49,9 @@ class DOMStorageMessageFilter
   void OnOpenStorageArea(int connection_id, int64 namespace_id,
                          const GURL& origin);
   void OnCloseStorageArea(int connection_id);
-  void OnLoadStorageArea(int connection_id, DOMStorageValuesMap* map,
-                         bool* send_log_get_messages);
+  void OnLoadStorageArea(int connection_id, DOMStorageValuesMap* map);
   void OnSetItem(int connection_id, const base::string16& key,
                  const base::string16& value, const GURL& page_url);
-  void OnLogGetItem(int connection_id, const base::string16& key,
-                    const base::NullableString16& value);
   void OnRemoveItem(int connection_id, const base::string16& key,
                     const GURL& page_url);
   void OnClear(int connection_id, const GURL& page_url);
@@ -74,7 +70,6 @@ class DOMStorageMessageFilter
                                const GURL& page_url) override;
   void OnDOMStorageAreaCleared(const DOMStorageArea* area,
                                const GURL& page_url) override;
-  void OnDOMSessionStorageReset(int64 namespace_id) override;
 
   void SendDOMStorageEvent(
       const DOMStorageArea* area,
@@ -83,7 +78,6 @@ class DOMStorageMessageFilter
       const base::NullableString16& new_value,
       const base::NullableString16& old_value);
 
-  int render_process_id_;
   scoped_refptr<DOMStorageContextImpl> context_;
   scoped_ptr<DOMStorageHost> host_;
   int connection_dispatching_message_for_;

@@ -763,7 +763,6 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       GetID()));
   AddFilter(new ClipboardMessageFilter);
   AddFilter(new DOMStorageMessageFilter(
-      GetID(),
       storage_partition_impl_->GetDOMStorageContext()));
   AddFilter(new IndexedDBDispatcherHost(
       GetID(),
