@@ -1,116 +1,110 @@
 <meta name="doc-family" content="apps">
-<h1>What Are Chrome Apps?</h1>
+<h1 id="what">What Are Chrome Apps?</h1>
 
-<p>
-Chrome Apps deliver an experience as capable as a native app,
-but as safe as a web page.
-Just like web apps,
-Chrome Apps are written in HTML5, JavaScript, and CSS.
-But Chrome Apps look and behave like native apps,
-and they have native-like capabilities
-that are much more powerful than those available to web apps.
-</p>
+<p>Chrome Apps let you use HTML5, CSS, and JavaScript to deliver an experience
+comparable to a native application.</p>
 
 <div class="video-container">
-  <iframe title="YouTube video player" width="610" height="380" src="//www.youtube.com/embed/lBUGTVIJVfM" frameborder="0" allowfullscreen></iframe>
+  <iframe title="YouTube video player" width="610" height="380"
+  src="//www.youtube.com/embed/lBUGTVIJVfM" frameborder="0"
+  allowfullscreen></iframe>
 </div>
 
-<p>
-Chrome Apps have access to Chrome APIs and services not available to
-traditional web sites. You can build powerful apps that interact with network
-and hardware devices, media tools, and much more. Here's a short list of
-examples:
+<h2 id="why-build">Why build a Chrome App?</h2>
+
+<p>By building a Chrome App, as opposed to going with a traditional web
+app or a native mobile app, you expand your potential audience and extend your
+development capability. 
 </p>
+
+<h3 id="expand">Expand your potential audience</h3>
+
+<p>When you write a Chrome App, as opposed to an app that runs natively on a
+particular operating system, you immediately make your app available to a much
+wider audience.</p>
+
+<strong>To any desktop</strong>
+
+<p>Instead of writing and maintaining separate applications for Windows, OS X
+and Linux, you can write a single application that runs anywhere Chrome
+runs. This includes Windows, Linux, and OS X.</p>
+
+<strong>To mobile devices [via Cordova]</strong>
+
+<p>Using <a href="apps/chrome_apps_on_mobile">Chrome
+Apps for Mobile</a> (MCA), you can deploy your applications to mobile and target
+hardware features only available on Android and IOS platforms. </p>
+
+<strong>And of course, to a Chromebook</strong>
+
+<p>Writing a Chrome App is the ONLY way to have your app installed on a
+Chromebook. Chromebooks are appealing, inexpensive, low maintenance devices
+that provide a full web experience.</p> 
+
+<h3 id="extend">Extend your development capability</h3>
+
+<p>You might be thinking, “If I write a standard web application, I can run it
+on any platform that has a web browser.” Of course, this is absolutely right,
+but remember that Chrome Apps extend your development capacity beyond what you
+can do with traditional web apps:</p>
 
 <ul>
-  <li>Shells (VMWare, Citrix, SSH, RDP or VNC clients)</li>
-  <li>Music/video streaming</li>
-  <li>Photo/video/music editing</li>
+  <li>Chrome Apps can integrate seamlessly into the desktop and look
+  more like desktop applications than traditional web apps.</li> 
+  <li>Chrome Apps for Desktop have no omnibox (address bar) and tab strip like
+  normal browser-based apps, because like native desktop apps, they don’t live
+  in a browser.</li>
+  <li>The Chrome App Launcher makes it easy for users to find and start
+  your Chrome App.</li>
+  <li>OS X users can use the integrated spotlight search to find and start your
+  app.</li>
+  <li>Chrome Apps for Desktop can access the host computer’s file system and
+  make use of hardware features (like USB, Bluetooth and attached human
+  interface devices).</li>
 </ul>
 
-<p>
-Watch the Chrome Apps<strong>
-<a href="http://www.youtube.com/watch?v=j8oFAr1YR-0">2012</a>
-and
-<a href="http://www.youtube.com/watch?v=f2tJRXDTMuY">2013</a>
-Google I/O presentations</strong> for an in-depth introduction.
-</p>
+<p>The best way to see what Chrome Apps look like is to 
+<a href="https://chrome.google.com/webstore/category/apps?_feature=chromeapp">
+install some</a>.</p>
 
-<h2 id="look">How they look</h2>
+<h2 id="who">Who should build Chrome Apps?</h2>
 
-<p>
-When a user opens a Chrome App,
-their focus is specifically on the tasks
-relating to the app.
-Chrome Apps have no traditional chrome:
-the omnibox (address bar), tab strip,
-and other browser interface elements no longer appear.
-Like native apps, they don’t live within the browser.
-When launched, Chrome Apps can open in windows
-that look like this (and you can style
-your windows in all different ways):
-</p>
+<p>Everyone! But some sectors have a special interest in Chrome Apps. </p>
 
-<img src="{{static}}/images/editor.png"
-     alt="Text editor Chrome App in a standalone window">
+<strong>Device manufacturers</strong>
 
-<h2 id="behave">How they behave</h2>
+</p>The cross platform nature of Chrome Apps makes writing device drivers less
+painful. A device manufacturer only needs to write one application for
+configuring their device and it will run on any device.</p>
 
-<p>
-Chrome App pages always load locally.
-This allows apps to be less dependent on the network.
-Once a user installs an app, they have full control over the app's lifecycle.
-Apps open and close quickly,
-and the system can shut apps down at any time to improve performance.
-Users can fully uninstall apps.
-</p>
+<strong>Educators</strong>
 
-<p>
-Without any effort on your part, your apps will launch offline.
-But you will need to put some effort into making sure user data is stored locally while offline
-and then synced back up to your data server once online
-(see <a href="offline_apps">Offline First</a>).
-</p>
-
-<h2 id="develop">How to develop them</h2>
-
-<p>
-Chrome Apps are modified web apps.
-You use the same code, frameworks, and tools of the web platform to write your apps.
-Some browser features have been removed, other web APIs have been disabled
-or changed to improve security and programming practices.
-</p>
-
-<p>
-New features have been added to help you build more native-like apps.
-The app container and programming models control how Chrome Apps look and behave.
-These models aim to provide users with a more native experience.
-Powerful APIs have been added so your apps can have native-like capabilities,
-and a serious security model is enforced to make sure these APIs are not abused.</p>
-
-<p>
-To learn more about how to develop Chrome Apps:
-</p>
+<p>Chromebooks are an inexpensive, low-maintenance option for bringing laptops
+into every classroom. Chrome Apps make teaching easy with easy to install
+applications that run natively on Chromebooks. For example:</p>
 
 <ul>
-  <li>
-    <a href="app_architecture">Understanding the Architecture</a>
-    introduces the app container, programming, and security models.
-  </li>
-  <li>
-    <a href="app_lifecycle">The Fundamentals</a>
-    shows how to use this architecture and how to build
-    for offline, manage data, and embed external content.
-  </li>
-  <li>
-    <a href="app_network">Advanced Technologies</a>
-    shows how to use the powerful network and hardware APIs.
-  </li>
-  <li>
-    <a href="app_deprecated">Disabled Features</a>
-    describes the web features that have been disabled
-    and what to use in their place, where relevant.
-  </li>
+    <li><a href="http://www.google.com/edu/classroom">Google Classroom</a></li>
+    <li><a href="http://googleenterprise.blogspot.com/2014/08/more-teaching-less-tech-ing-google.html">More
+    Teaching, Less Tech-ing</a></li>
 </ul>
+
+<strong>Health care providers</strong>
+
+<p>One pediatric service has so far 
+<a href="http://googleenterprise.blogspot.com/2013/12/pediatric-home-service-puts-patient.html">saved
+  tens of thousands of dollars</a> using Chrome Apps on Chromebooks.</p>
+
+<h2 id="more">Chrome Dev Editor</h2>
+
+<p>Use the full featured IDE in
+the <a href="https://github.com/dart-lang/chromedeveditor">Chrome Dev
+Editor</a>.</p>
+
+<div class="video-container">
+  <iframe title="YouTube video player" width="610" height="380"
+  src="//www.youtube.com/embed/NNLnTz6yIc4" frameborder="0"
+  allowfullscreen></iframe>
+</div>
 
 <p class="backtotop"><a href="#top">Back to top</a></p>
