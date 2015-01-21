@@ -44,13 +44,28 @@ bool GpuProcessLogMessageHandler(int severity,
   return false;
 }
 
+ChildThread::Options GetOptions() {
+  ChildThread::Options options;
+
+#if defined(USE_OZONE)
+  IPC::MessageFilter* message_filter = ui::OzonePlatform::GetInstance()
+                                           ->GetGpuPlatformSupport()
+                                           ->GetMessageFilter();
+  if (message_filter)
+    options.startup_filters.push_back(message_filter);
+#endif
+
+  return options;
+}
+
 }  // namespace
 
 GpuChildThread::GpuChildThread(GpuWatchdogThread* watchdog_thread,
                                bool dead_on_arrival,
                                const gpu::GPUInfo& gpu_info,
                                const DeferredMessages& deferred_messages)
-    : dead_on_arrival_(dead_on_arrival),
+    : ChildThread(GetOptions()),
+      dead_on_arrival_(dead_on_arrival),
       gpu_info_(gpu_info),
       deferred_messages_(deferred_messages),
       in_browser_process_(false) {
@@ -170,13 +185,9 @@ void GpuChildThread::OnInitialize() {
                             channel()));
 
 #if defined(USE_OZONE)
-  ui::GpuPlatformSupport* gpu_platform_support =
-      ui::OzonePlatform::GetInstance()->GetGpuPlatformSupport();
-
-  gpu_platform_support->OnChannelEstablished(this);
-  IPC::MessageFilter* message_filter = gpu_platform_support->GetMessageFilter();
-  if (message_filter)
-    channel()->AddFilter(message_filter);
+  ui::OzonePlatform::GetInstance()
+      ->GetGpuPlatformSupport()
+      ->OnChannelEstablished(this);
 #endif
 }
 
