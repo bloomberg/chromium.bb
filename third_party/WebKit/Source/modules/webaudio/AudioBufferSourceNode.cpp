@@ -28,6 +28,7 @@
 
 #include "modules/webaudio/AudioBufferSourceNode.h"
 
+#include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "platform/audio/AudioUtilities.h"
@@ -350,10 +351,18 @@ void AudioBufferSourceNode::setBuffer(AudioBuffer* buffer, ExceptionState& excep
         // Do any necesssary re-configuration to the buffer's number of channels.
         unsigned numberOfChannels = buffer->numberOfChannels();
 
+        // This should not be possible since AudioBuffers can't be created with too many channels
+        // either.
         if (numberOfChannels > AudioContext::maxNumberOfChannels()) {
-            exceptionState.throwTypeError("number of input channels (" + String::number(numberOfChannels)
-                + ") exceeds maximum ("
-                + String::number(AudioContext::maxNumberOfChannels()) + ").");
+            exceptionState.throwDOMException(
+                NotSupportedError,
+                ExceptionMessages::indexOutsideRange(
+                    "number of input channels",
+                    numberOfChannels,
+                    1u,
+                    ExceptionMessages::InclusiveBound,
+                    AudioContext::maxNumberOfChannels(),
+                    ExceptionMessages::InclusiveBound));
             return;
         }
 
