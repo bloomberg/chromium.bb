@@ -128,8 +128,8 @@ void AutoclickControllerImpl::OnMouseEvent(ui::MouseEvent* event) {
       !(event->flags() & ui::EF_IS_SYNTHESIZED)) {
     mouse_event_flags_ = event->flags();
 
-    gfx::Point mouse_location = event->root_location();
-    ::wm::ConvertPointToScreen(wm::GetRootWindowAt(mouse_location),
+    gfx::Point mouse_location = event->location();
+    ::wm::ConvertPointToScreen(static_cast<aura::Window*>(event->target()),
                                &mouse_location);
 
     // The distance between the mouse location and the anchor location
@@ -140,7 +140,7 @@ void AutoclickControllerImpl::OnMouseEvent(ui::MouseEvent* event) {
     //    arrives at the target.
     gfx::Vector2d delta = mouse_location - anchor_location_;
     if (delta.LengthSquared() >= kMovementThreshold * kMovementThreshold) {
-      anchor_location_ = event->root_location();
+      anchor_location_ = mouse_location;
       autoclick_timer_->Reset();
     }
   } else if (event->type() == ui::ET_MOUSE_PRESSED) {
@@ -185,8 +185,8 @@ void AutoclickControllerImpl::DoAutoclick() {
 
   gfx::Point click_location(screen_location);
   anchor_location_ = click_location;
-  ::wm::ConvertPointFromScreen(root_window, &click_location);
 
+  ::wm::ConvertPointFromScreen(root_window, &click_location);
   aura::WindowTreeHost* host = root_window->GetHost();
   host->ConvertPointToHost(&click_location);
 

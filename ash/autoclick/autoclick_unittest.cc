@@ -160,21 +160,31 @@ TEST_F(AutoclickTest, MouseMovement) {
 }
 
 TEST_F(AutoclickTest, MovementThreshold) {
-  GetAutoclickController()->SetEnabled(true);
-  GetEventGenerator().MoveMouseTo(0, 0);
-  EXPECT_EQ(2u, WaitForMouseEvents().size());
+  UpdateDisplay("1280x1024,800x600");
+  RunAllPendingInMessageLoop();
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  EXPECT_EQ(2u, root_windows.size());
 
-  // Small mouse movements should not trigger an autoclick.
-  GetEventGenerator().MoveMouseTo(1, 1);
-  EXPECT_EQ(0u, WaitForMouseEvents().size());
-  GetEventGenerator().MoveMouseTo(2, 2);
-  EXPECT_EQ(0u, WaitForMouseEvents().size());
-  GetEventGenerator().MoveMouseTo(0, 0);
-  EXPECT_EQ(0u, WaitForMouseEvents().size());
+  // Run test for the secondary display too to test fix for crbug.com/449870.
+  for (const auto& root_window : root_windows) {
+    gfx::Point center = root_window->GetBoundsInScreen().CenterPoint();
 
-  // A large mouse movement should trigger an autoclick.
-  GetEventGenerator().MoveMouseTo(100, 100);
-  EXPECT_EQ(2u, WaitForMouseEvents().size());
+    GetAutoclickController()->SetEnabled(true);
+    GetEventGenerator().MoveMouseTo(center);
+    EXPECT_EQ(2u, WaitForMouseEvents().size());
+
+    // Small mouse movements should not trigger an autoclick.
+    GetEventGenerator().MoveMouseTo(center + gfx::Vector2d(1, 1));
+    EXPECT_EQ(0u, WaitForMouseEvents().size());
+    GetEventGenerator().MoveMouseTo(center + gfx::Vector2d(2, 2));
+    EXPECT_EQ(0u, WaitForMouseEvents().size());
+    GetEventGenerator().MoveMouseTo(center);
+    EXPECT_EQ(0u, WaitForMouseEvents().size());
+
+    // A large mouse movement should trigger an autoclick.
+    GetEventGenerator().MoveMouseTo(center + gfx::Vector2d(100, 100));
+    EXPECT_EQ(2u, WaitForMouseEvents().size());
+  }
 }
 
 TEST_F(AutoclickTest, SingleKeyModifier) {
@@ -215,34 +225,6 @@ TEST_F(AutoclickTest, KeyModifiersReleased) {
   EXPECT_EQ(0, events[0].flags() & ui::EF_CONTROL_DOWN);
   EXPECT_EQ(0, events[0].flags() & ui::EF_SHIFT_DOWN);
   EXPECT_EQ(ui::EF_ALT_DOWN, events[0].flags() & ui::EF_ALT_DOWN);
-}
-
-TEST_F(AutoclickTest, ExtendedDisplay) {
-  UpdateDisplay("1280x1024,800x600");
-  RunAllPendingInMessageLoop();
-  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
-  EXPECT_EQ(2u, root_windows.size());
-
-  GetAutoclickController()->SetEnabled(true);
-  std::vector<ui::MouseEvent> events;
-
-  // Test first root window.
-  ui::test::EventGenerator generator1(root_windows[0]);
-  generator1.MoveMouseTo(100, 200);
-  events = WaitForMouseEvents();
-  EXPECT_EQ(2u, events.size());
-  EXPECT_EQ(100, events[0].root_location().x());
-  EXPECT_EQ(200, events[0].root_location().y());
-
-  // Test second root window.
-  ui::test::EventGenerator generator2(root_windows[1]);
-  generator2.MoveMouseTo(300, 400);
-  events = WaitForMouseEvents();
-  EXPECT_EQ(2u, events.size());
-  EXPECT_EQ(300, events[0].root_location().x());
-  EXPECT_EQ(400, events[0].root_location().y());
-
-  // Test movement threshold between displays.
 }
 
 TEST_F(AutoclickTest, UserInputCancelsAutoclick) {
