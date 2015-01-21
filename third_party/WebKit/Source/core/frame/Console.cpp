@@ -35,6 +35,7 @@
 #include "core/frame/FrameHost.h"
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/ConsoleAPITypes.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/ScriptArguments.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/page/Chrome.h"

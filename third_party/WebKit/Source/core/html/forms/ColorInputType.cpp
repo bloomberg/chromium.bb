@@ -43,6 +43,7 @@
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLOptionElement.h"
 #include "core/html/forms/ColorChooser.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "core/page/Chrome.h"
 #include "core/rendering/RenderTheme.h"
 #include "core/rendering/RenderView.h"

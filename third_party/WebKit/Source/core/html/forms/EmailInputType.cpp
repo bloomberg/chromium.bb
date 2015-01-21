@@ -28,6 +28,7 @@
 #include "core/InputTypeNames.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "platform/text/PlatformLocale.h"

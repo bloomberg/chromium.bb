@@ -28,7 +28,6 @@
 #include "config.h"
 #include "core/dom/ExecutionContext.h"
 
-#include "core/dom/AddConsoleMessageTask.h"
 #include "core/dom/ContextLifecycleNotifier.h"
 #include "core/dom/ExecutionContextTask.h"
 #include "core/events/ErrorEvent.h"

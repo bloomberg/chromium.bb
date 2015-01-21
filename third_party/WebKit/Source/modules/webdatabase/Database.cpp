@@ -29,6 +29,7 @@
 #include "core/dom/CrossThreadTask.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/html/VoidCallback.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "modules/webdatabase/ChangeVersionData.h"
 #include "modules/webdatabase/ChangeVersionWrapper.h"
 #include "modules/webdatabase/DatabaseAuthorizer.h"

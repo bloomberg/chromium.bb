@@ -46,6 +46,7 @@
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/LinkManifest.h"
 #include "core/html/imports/LinkImport.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/rendering/style/StyleInheritedData.h"

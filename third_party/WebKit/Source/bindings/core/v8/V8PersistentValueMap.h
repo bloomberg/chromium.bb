@@ -32,6 +32,7 @@
 #define V8PersistentValueMap_h
 
 #include "wtf/HashMap.h"
+#include "wtf/text/StringHash.h"
 #include <v8-util.h>
 #include <v8.h>
 

@@ -36,6 +36,7 @@
 #include "core/events/Event.h"
 #include "core/fetch/MemoryCache.h"
 #include "core/fetch/ResourceLoaderOptions.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/inspector/WorkerInspectorController.h"
 #include "core/loader/ThreadableLoader.h"

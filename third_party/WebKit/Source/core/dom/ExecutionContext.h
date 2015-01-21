@@ -30,23 +30,22 @@
 
 #include "core/dom/SecurityContext.h"
 #include "core/fetch/AccessControlStatus.h"
-#include "core/frame/ConsoleTypes.h"
-#include "core/inspector/ConsoleMessage.h"
 #include "platform/LifecycleContext.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
-#include "wtf/Functional.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
 class ActiveDOMObject;
+class ConsoleMessage;
 class ContextLifecycleNotifier;
 class DOMTimerCoordinator;
 class ErrorEvent;
 class EventQueue;
+class EventTarget;
 class ExecutionContextTask;
 class LocalDOMWindow;
 class PublicURLManager;

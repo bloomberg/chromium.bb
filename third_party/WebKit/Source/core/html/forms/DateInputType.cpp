@@ -36,6 +36,7 @@
 #include "core/dom/Document.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/forms/DateTimeFieldsState.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "platform/DateComponents.h"
 #include "platform/text/PlatformLocale.h"
 #include "wtf/PassOwnPtr.h"
