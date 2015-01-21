@@ -7914,7 +7914,8 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Was this unexpected? Tell us about it!
       </message>
       <message name="IDS_BLOCK_INTERSTITIAL_DEFAULT_FEEDBACK_TEXT" desc="The default text for feedback about a blocked site.">
-        I don't think this site should be blocked!
+        <ph name="REASON">$1<ex>This site was blocked due to the SafeSites filter.</ex></ph>
+I don't think this site should be blocked!
       </message>
 
       <!-- Content Settings dialog data -->

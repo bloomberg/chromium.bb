@@ -22,14 +22,17 @@ public final class ChildAccountFeedbackReporter {
         sExternalFeedbackReporter = reporter;
     }
 
-    public static void reportFeedback(Activity activity, String url) {
+    public static void reportFeedback(Activity activity,
+                                      String description,
+                                      String url) {
         if (sExternalFeedbackReporter != null)
-            sExternalFeedbackReporter.reportFeedback(activity, url);
+            sExternalFeedbackReporter.reportFeedback(activity, description, url);
     }
 
     @CalledByNative
     public static void reportFeedbackWithWindow(WindowAndroid window,
+                                                String description,
                                                 String url) {
-        reportFeedback(window.getActivity().get(), url);
+        reportFeedback(window.getActivity().get(), description, url);
     }
 }

@@ -226,7 +226,7 @@ std::string SupervisedUserInterstitial::GetHTMLContents() {
   strings.SetString("blockPageMessage", block_message);
   strings.SetString("blockReasonMessage", is_child_account
       ? l10n_util::GetStringUTF16(
-          SupervisedUserURLFilter::GetBlockMessageID(reason_))
+            SupervisedUserURLFilter::GetBlockMessageID(reason_))
       : base::string16());
 
   bool show_feedback = false;
@@ -313,8 +313,12 @@ void SupervisedUserInterstitial::CommandReceived(const std::string& command) {
   }
 
   if (command == "\"feedback\"") {
+    base::string16 reason = l10n_util::GetStringUTF16(
+        SupervisedUserURLFilter::GetBlockMessageID(reason_));
+    std::string message = l10n_util::GetStringFUTF8(
+        IDS_BLOCK_INTERSTITIAL_DEFAULT_FEEDBACK_TEXT, reason);
 #if defined(OS_ANDROID)
-    ReportChildAccountFeedback(web_contents_, url_);
+    ReportChildAccountFeedback(web_contents_, message, url_);
 #else
     std::string bucket;
 #if defined(OS_CHROMEOS)
@@ -324,7 +328,7 @@ void SupervisedUserInterstitial::CommandReceived(const std::string& command) {
 #endif
     chrome::ShowFeedbackPage(
         chrome::FindBrowserWithWebContents(web_contents_),
-        l10n_util::GetStringUTF8(IDS_BLOCK_INTERSTITIAL_DEFAULT_FEEDBACK_TEXT),
+        message,
         bucket);
 #endif
     return;

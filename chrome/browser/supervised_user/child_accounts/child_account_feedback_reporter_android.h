@@ -17,6 +17,7 @@ class WebContents;
 class GURL;
 
 void ReportChildAccountFeedback(content::WebContents* web_contents,
+                                const std::string& description,
                                 const GURL& url);
 
 // Register native methods

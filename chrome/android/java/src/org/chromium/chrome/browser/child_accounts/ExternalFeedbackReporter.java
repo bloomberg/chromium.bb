@@ -14,7 +14,8 @@ public interface ExternalFeedbackReporter {
      * Records feedback related to child account features.
      *
      * @param activity the activity to take a screenshot of.
+     * @param description default description text.
      * @param url the URL to report feedback for.
      */
-    void reportFeedback(Activity activity, String url);
+    void reportFeedback(Activity activity, String description, String url);
 }
