@@ -24,68 +24,45 @@ namespace {
 
 const int kDefaultRasterizeRepeatCount = 100;
 
-class BenchmarkRasterTask : public Task {
- public:
-  BenchmarkRasterTask(RasterSource* raster_source,
-                      const gfx::Rect& content_rect,
-                      float contents_scale,
-                      size_t repeat_count)
-      : raster_source_(raster_source),
-        content_rect_(content_rect),
-        contents_scale_(contents_scale),
-        repeat_count_(repeat_count),
-        is_solid_color_(false),
-        best_time_(base::TimeDelta::Max()) {}
+void RunBenchmark(RasterSource* raster_source,
+                  const gfx::Rect& content_rect,
+                  float contents_scale,
+                  size_t repeat_count,
+                  base::TimeDelta* min_time,
+                  bool* is_solid_color) {
+  // Parameters for LapTimer.
+  const int kTimeLimitMillis = 1;
+  const int kWarmupRuns = 0;
+  const int kTimeCheckInterval = 1;
 
-  // Overridden from Task:
-  void RunOnWorkerThread() override {
-    // Parameters for LapTimer.
-    const int kTimeLimitMillis = 1;
-    const int kWarmupRuns = 0;
-    const int kTimeCheckInterval = 1;
+  *min_time = base::TimeDelta::Max();
+  for (size_t i = 0; i < repeat_count; ++i) {
+    // Run for a minimum amount of time to avoid problems with timer
+    // quantization when the layer is very small.
+    LapTimer timer(kWarmupRuns,
+                   base::TimeDelta::FromMilliseconds(kTimeLimitMillis),
+                   kTimeCheckInterval);
+    do {
+      SkBitmap bitmap;
+      bitmap.allocPixels(SkImageInfo::MakeN32Premul(content_rect.width(),
+                                                    content_rect.height()));
+      SkCanvas canvas(bitmap);
+      RasterSource::SolidColorAnalysis analysis;
 
-    for (size_t i = 0; i < repeat_count_; ++i) {
-      // Run for a minimum amount of time to avoid problems with timer
-      // quantization when the layer is very small.
-      LapTimer timer(kWarmupRuns,
-                     base::TimeDelta::FromMilliseconds(kTimeLimitMillis),
-                     kTimeCheckInterval);
-      do {
-        SkBitmap bitmap;
-        bitmap.allocPixels(SkImageInfo::MakeN32Premul(content_rect_.width(),
-                                                      content_rect_.height()));
-        SkCanvas canvas(bitmap);
-        RasterSource::SolidColorAnalysis analysis;
+      raster_source->PerformSolidColorAnalysis(content_rect, contents_scale,
+                                               &analysis);
+      raster_source->PlaybackToCanvas(&canvas, content_rect, contents_scale);
 
-        raster_source_->PerformSolidColorAnalysis(content_rect_,
-                                                  contents_scale_, &analysis);
-        raster_source_->PlaybackToCanvas(&canvas, content_rect_,
-                                         contents_scale_);
+      *is_solid_color = analysis.is_solid_color;
 
-        is_solid_color_ = analysis.is_solid_color;
-
-        timer.NextLap();
-      } while (!timer.HasTimeLimitExpired());
-      base::TimeDelta duration =
-          base::TimeDelta::FromMillisecondsD(timer.MsPerLap());
-      if (duration < best_time_)
-        best_time_ = duration;
-    }
+      timer.NextLap();
+    } while (!timer.HasTimeLimitExpired());
+    base::TimeDelta duration =
+        base::TimeDelta::FromMillisecondsD(timer.MsPerLap());
+    if (duration < *min_time)
+      *min_time = duration;
   }
-
-  bool IsSolidColor() const { return is_solid_color_; }
-  base::TimeDelta GetBestTime() const { return best_time_; }
-
- private:
-  ~BenchmarkRasterTask() override {}
-
-  RasterSource* raster_source_;
-  gfx::Rect content_rect_;
-  float contents_scale_;
-  size_t repeat_count_;
-  bool is_solid_color_;
-  base::TimeDelta best_time_;
-};
+}
 
 class FixedInvalidationPictureLayerTilingClient
     : public PictureLayerTilingClient {
@@ -196,12 +173,6 @@ void RasterizeAndRecordBenchmarkImpl::RunOnLayer(PictureLayerImpl* layer) {
     return;
   }
 
-  TaskGraphRunner* task_graph_runner = TileTaskWorkerPool::GetTaskGraphRunner();
-  DCHECK(task_graph_runner);
-
-  if (!task_namespace_.IsValid())
-    task_namespace_ = task_graph_runner->GetNamespaceToken();
-
   FixedInvalidationPictureLayerTilingClient client(
       layer, gfx::Rect(layer->content_bounds()));
 
@@ -227,36 +198,17 @@ void RasterizeAndRecordBenchmarkImpl::RunOnLayer(PictureLayerImpl* layer) {
     gfx::Rect content_rect = (*it)->content_rect();
     float contents_scale = (*it)->contents_scale();
 
-    scoped_refptr<BenchmarkRasterTask> benchmark_raster_task(
-        new BenchmarkRasterTask(raster_source,
-                                content_rect,
-                                contents_scale,
-                                rasterize_repeat_count_));
-
-    TaskGraph graph;
-
-    graph.nodes.push_back(
-        TaskGraph::Node(benchmark_raster_task.get(),
-                        TileTaskWorkerPool::kBenchmarkTaskPriority, 0u));
-
-    task_graph_runner->ScheduleTasks(task_namespace_, &graph);
-    task_graph_runner->WaitForTasksToFinishRunning(task_namespace_);
-
-    Task::Vector completed_tasks;
-    task_graph_runner->CollectCompletedTasks(task_namespace_, &completed_tasks);
-    DCHECK_EQ(1u, completed_tasks.size());
-    DCHECK_EQ(completed_tasks[0], benchmark_raster_task);
+    base::TimeDelta min_time;
+    bool is_solid_color = false;
+    RunBenchmark(raster_source, content_rect, contents_scale,
+                 rasterize_repeat_count_, &min_time, &is_solid_color);
 
     int tile_size = content_rect.width() * content_rect.height();
-    base::TimeDelta min_time = benchmark_raster_task->GetBestTime();
-    bool is_solid_color = benchmark_raster_task->IsSolidColor();
-
     if (layer->contents_opaque())
       rasterize_results_.pixels_rasterized_as_opaque += tile_size;
 
-    if (!is_solid_color) {
+    if (!is_solid_color)
       rasterize_results_.pixels_rasterized_with_non_solid_color += tile_size;
-    }
 
     rasterize_results_.pixels_rasterized += tile_size;
     rasterize_results_.total_best_time += min_time;
