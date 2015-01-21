@@ -309,7 +309,7 @@ void BluetoothAdapterChromeOS::RegisterAudioSink(
   // newly-created audio sink as an observer of the adapter.
   // Add OnRegisterAudioSink(AcquiredCallback& , BluetoothAudioSink*) and pass
   // it as an argument to BluetoothAudioSinkChromeOS::Register.
-  error_callback.Run(device::BluetoothAudioSink::ERRORCODE_NOT_SUPPORTED);
+  error_callback.Run(device::BluetoothAudioSink::ERROR_UNSUPPORTED_PLATFORM);
 }
 
 void BluetoothAdapterChromeOS::RemovePairingDelegateInternal(

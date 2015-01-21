@@ -37,9 +37,9 @@ class BluetoothAudioSink : public base::RefCounted<BluetoothAudioSink> {
 
   // Possible types of error raised by Audio Sink object.
   enum ErrorCode {
-    ERRORCODE_NOT_SUPPORTED,  // A2DP sink not supported on current platform.
-    ERRORCODE_INVALID_ADAPTER,  // BluetoothAdapter not presented/powered.
-    ERRORCODE_NOT_REGISTERED,  // BluetoothAudioSink not registered.
+    ERROR_UNSUPPORTED_PLATFORM,  // A2DP sink not supported on current platform.
+    ERROR_INVALID_ADAPTER,       // BluetoothAdapter not presented/powered.
+    ERROR_NOT_REGISTERED,        // BluetoothAudioSink not registered.
   };
 
   // Options to configure an A2DP audio sink.

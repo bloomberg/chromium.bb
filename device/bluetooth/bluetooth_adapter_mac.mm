@@ -146,7 +146,7 @@ void BluetoothAdapterMac::RegisterAudioSink(
     const AcquiredCallback& callback,
     const BluetoothAudioSink::ErrorCallback& error_callback) {
   NOTIMPLEMENTED();
-  error_callback.Run(BluetoothAudioSink::ERRORCODE_NOT_SUPPORTED);
+  error_callback.Run(BluetoothAudioSink::ERROR_UNSUPPORTED_PLATFORM);
 }
 
 void BluetoothAdapterMac::DeviceFound(IOBluetoothDevice* device) {
