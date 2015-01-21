@@ -222,7 +222,7 @@ VTTCue::VTTCue(Document& document, double startTime, double endTime, const Strin
     , m_text(text)
     , m_linePosition(std::numeric_limits<float>::quiet_NaN())
     , m_computedLinePosition(std::numeric_limits<float>::quiet_NaN())
-    , m_textPosition(50)
+    , m_textPosition(std::numeric_limits<float>::quiet_NaN())
     , m_cueSize(100)
     , m_writingDirection(Horizontal)
     , m_cueAlignment(Middle)
@@ -359,18 +359,45 @@ void VTTCue::setLine(const DoubleOrAutoKeyword& position, ExceptionState& except
     cueDidChange();
 }
 
-void VTTCue::setPosition(double position, ExceptionState& exceptionState)
+bool VTTCue::textPositionIsAuto() const
 {
-    // http://www.whatwg.org/specs/web-apps/current-work/multipage/the-video-element.html#dom-texttrackcue-position
-    // On setting, if the new value is negative or greater than 100, then throw an IndexSizeError exception.
-    // Otherwise, set the text track cue text position to the new value.
-    if (isInvalidPercentage(position, exceptionState))
-        return;
+    return std::isnan(m_textPosition);
+}
 
-    // Otherwise, set the text track cue line position to the new value.
-    float floatPosition = narrowPrecisionToFloat(position);
-    if (m_textPosition == floatPosition)
+void VTTCue::position(DoubleOrAutoKeyword& result) const
+{
+    if (textPositionIsAuto())
+        result.setAutoKeyword(autoKeyword());
+    else
+        result.setDouble(m_textPosition);
+}
+
+void VTTCue::setPosition(const DoubleOrAutoKeyword& position, ExceptionState& exceptionState)
+{
+    // FIXME: Expecting bindings code to handle this case: https://crbug.com/450252.
+    if (position.isDouble() && !std::isfinite(position.getAsDouble())) {
+        exceptionState.throwTypeError("The provided double value is non-finite.");
         return;
+    }
+
+    // http://dev.w3.org/html5/webvtt/#dfn-vttcue-position
+    // On setting, if the new value is negative or greater than 100, then an
+    // IndexSizeError exception must be thrown. Otherwise, the text track cue
+    // text position must be set to the new value; if the new value is the
+    // string "auto", then it must be interpreted as the special value auto.
+    float floatPosition;
+    if (position.isAutoKeyword()) {
+        if (textPositionIsAuto())
+            return;
+        floatPosition = std::numeric_limits<float>::quiet_NaN();
+    } else {
+        ASSERT(position.isDouble());
+        if (isInvalidPercentage(position.getAsDouble(), exceptionState))
+            return;
+        floatPosition = narrowPrecisionToFloat(position.getAsDouble());
+        if (m_textPosition == floatPosition)
+            return;
+    }
 
     cueWillChange();
     m_textPosition = floatPosition;
@@ -602,6 +629,34 @@ static CSSValueID determineTextDirection(DocumentFragment* vttRoot)
     return isLeftToRightDirection(textDirection) ? CSSValueLtr : CSSValueRtl;
 }
 
+float VTTCue::calculateComputedTextPosition() const
+{
+    // http://dev.w3.org/html5/webvtt/#dfn-text-track-cue-computed-text-position
+
+    // 1. If the text track cue text position is numeric, then return the value
+    // of the text track cue text position and abort these steps. (Otherwise,
+    // the text track cue text position is the special value auto.)
+    if (!textPositionIsAuto())
+        return m_textPosition;
+
+    switch (m_cueAlignment) {
+    // 2. If the text track cue text alignment is start or left, return 0 and abort these steps.
+    case Start:
+    case Left:
+        return 0;
+    // 3. If the text track cue text alignment is end or right, return 100 and abort these steps.
+    case End:
+    case Right:
+        return 100;
+    // 4. If the text track cue text alignment is middle, return 50 and abort these steps.
+    case Middle:
+        return 50;
+    default:
+        ASSERT_NOT_REACHED();
+        return 0;
+    }
+}
+
 static inline VTTCue::CueAlignment resolveCueAlignment(VTTCue::CueAlignment specifiedCueAlignment, CSSValueID direction)
 {
     ASSERT(direction == CSSValueLtr || direction == CSSValueRtl);
@@ -635,21 +690,22 @@ void VTTCue::calculateDisplayParameters()
 
     // 10.5 Determine the value of maximum size for cue as per the appropriate
     // rules from the following list:
-    float maximumSize = m_textPosition;
+    float computedTextPosition = calculateComputedTextPosition();
+    float maximumSize = computedTextPosition;
     if ((m_writingDirection == Horizontal && m_cueAlignment == Start && m_displayDirection == CSSValueLtr)
         || (m_writingDirection == Horizontal && m_cueAlignment == End && m_displayDirection == CSSValueRtl)
         || (m_writingDirection == Horizontal && m_cueAlignment == Left)
         || (m_writingDirection == VerticalGrowingLeft && (m_cueAlignment == Start || m_cueAlignment == Left))
         || (m_writingDirection == VerticalGrowingRight && (m_cueAlignment == Start || m_cueAlignment == Left))) {
-        maximumSize = 100 - m_textPosition;
+        maximumSize = 100 - computedTextPosition;
     } else if ((m_writingDirection == Horizontal && m_cueAlignment == End && m_displayDirection == CSSValueLtr)
         || (m_writingDirection == Horizontal && m_cueAlignment == Start && m_displayDirection == CSSValueRtl)
         || (m_writingDirection == Horizontal && m_cueAlignment == Right)
         || (m_writingDirection == VerticalGrowingLeft && (m_cueAlignment == End || m_cueAlignment == Right))
         || (m_writingDirection == VerticalGrowingRight && (m_cueAlignment == End || m_cueAlignment == Right))) {
-        maximumSize = m_textPosition;
+        maximumSize = computedTextPosition;
     } else if (m_cueAlignment == Middle) {
-        maximumSize = m_textPosition <= 50 ? m_textPosition : (100 - m_textPosition);
+        maximumSize = computedTextPosition <= 50 ? computedTextPosition : (100 - computedTextPosition);
         maximumSize = maximumSize * 2;
     } else {
         ASSERT_NOT_REACHED();
@@ -665,7 +721,7 @@ void VTTCue::calculateDisplayParameters()
     // 10.8 Determine the value of x-position or y-position for cue as per the
     // appropriate rules from the following list:
     if (m_writingDirection == Horizontal) {
-        float visualTextPosition = m_displayDirection == CSSValueLtr ? m_textPosition : 100 - m_textPosition;
+        float visualTextPosition = m_displayDirection == CSSValueLtr ? computedTextPosition : 100 - computedTextPosition;
 
         switch (resolveCueAlignment(m_cueAlignment, m_displayDirection)) {
         case Left:
@@ -685,14 +741,14 @@ void VTTCue::calculateDisplayParameters()
         switch (m_cueAlignment) {
         case Start:
         case Left:
-            m_displayPosition.setY(m_textPosition);
+            m_displayPosition.setY(computedTextPosition);
             break;
         case End:
         case Right:
-            m_displayPosition.setY(m_textPosition - m_displaySize);
+            m_displayPosition.setY(computedTextPosition - m_displaySize);
             break;
         case Middle:
-            m_displayPosition.setY(m_textPosition - m_displaySize / 2);
+            m_displayPosition.setY(computedTextPosition - m_displaySize / 2);
             break;
         default:
             ASSERT_NOT_REACHED();
@@ -834,7 +890,7 @@ void VTTCue::updateDisplay(const IntSize& videoSize, HTMLDivElement& container)
     if (!lineIsAuto())
         UseCounter::count(document(), UseCounter::VTTCueRenderLineNotAuto);
 
-    if (m_textPosition != 50)
+    if (textPositionIsAuto())
         UseCounter::count(document(), UseCounter::VTTCueRenderPositionNot50);
 
     if (m_cueSize != 100)
@@ -873,18 +929,19 @@ FloatPoint VTTCue::getPositionCoordinates() const
 {
     // This method is used for setting x and y when snap to lines is not set.
     ASSERT(std::isfinite(m_computedLinePosition));
+    float computedTextPosition = calculateComputedTextPosition();
 
     if (m_writingDirection == Horizontal && m_displayDirection == CSSValueLtr)
-        return FloatPoint(m_textPosition, m_computedLinePosition);
+        return FloatPoint(computedTextPosition, m_computedLinePosition);
 
     if (m_writingDirection == Horizontal && m_displayDirection == CSSValueRtl)
-        return FloatPoint(100 - m_textPosition, m_computedLinePosition);
+        return FloatPoint(100 - computedTextPosition, m_computedLinePosition);
 
     if (m_writingDirection == VerticalGrowingLeft)
-        return FloatPoint(100 - m_computedLinePosition, m_textPosition);
+        return FloatPoint(100 - m_computedLinePosition, computedTextPosition);
 
     if (m_writingDirection == VerticalGrowingRight)
-        return FloatPoint(m_computedLinePosition, m_textPosition);
+        return FloatPoint(m_computedLinePosition, computedTextPosition);
 
     ASSERT_NOT_REACHED();
     return FloatPoint();

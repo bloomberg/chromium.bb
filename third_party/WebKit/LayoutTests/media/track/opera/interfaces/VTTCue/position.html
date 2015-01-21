@@ -1,0 +1,50 @@
+<!doctype html>
+<title>VTTCue.position</title>
+<script src=../../../../../resources/testharness.js></script>
+<script src=../../../../../resources/testharnessreport.js></script>
+<div id=log></div>
+<script>
+test(function() {
+    var video = document.createElement('video');
+    document.body.appendChild(video);
+    var cue = new VTTCue(0, 1, 'text1');
+    assert_equals(cue.position, 'auto');
+    var track = document.createElement('track');
+    var t = track.track;
+    t.addCue(cue);
+    assert_equals(cue.position, 'auto');
+    video.appendChild(track);
+    assert_equals(cue.position, 'auto');
+    t.mode = 'showing';
+    assert_equals(cue.position, 'auto');
+    cue.position = 50;
+    assert_equals(cue.position, 50);
+    assert_throws(new TypeError, function() { cue.position = 'auto\u0000'; });
+    assert_throws(new TypeError, function() { cue.position = NaN; });
+    assert_throws(new TypeError, function() { cue.position = Infinity; });
+    assert_equals(cue.position, 50);
+    cue.position = 'auto';
+    assert_equals(cue.position, 'auto');
+}, document.title+', script-created cue');
+
+var t_parsed = async_test(document.title+', parsed cue');
+t_parsed.step(function() {
+    var video = document.createElement('video');
+    document.body.appendChild(video);
+    var t = document.createElement('track');
+    t.onload = this.step_func(function() {
+        var cues = t.track.cues;
+        assert_equals(cues[0].position, 'auto');
+        assert_equals(cues[1].position, 'auto');
+        assert_equals(cues[2].position, 25);
+        assert_equals(cues[3].position, 75);
+        this.done();
+    });
+    t.src = 'data:text/vtt,'+encodeURIComponent('WEBVTT\n\n00:00:00.000 --> 00:00:00.001\ntest\n\n'+
+                                                '00:00:00.000 --> 00:00:00.001 align:start\ntest\n\n'+
+                                                '00:00:00.000 --> 00:00:00.001 position:25%\ntest\n\n'+
+                                                '00:00:00.000 --> 00:00:00.001 align:start position:75%\ntest\n\n');
+    t.track.mode = 'showing';
+    video.appendChild(t);
+});
+</script>

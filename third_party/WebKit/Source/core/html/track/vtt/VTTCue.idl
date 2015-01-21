@@ -41,7 +41,7 @@ enum AlignSetting { "start", "middle", "end", "left", "right" };
     attribute DirectionSetting vertical;
     attribute boolean snapToLines;
     [RaisesException=Setter] attribute (double or AutoKeyword) line;
-    [RaisesException=Setter] attribute double position;
+    [RaisesException=Setter] attribute (double or AutoKeyword) position;
     [RaisesException=Setter] attribute double size;
     attribute AlignSetting align;
     attribute DOMString text;

@@ -80,8 +80,8 @@ public:
     void line(DoubleOrAutoKeyword&) const;
     void setLine(const DoubleOrAutoKeyword&, ExceptionState&);
 
-    double position() const { return m_textPosition; }
-    void setPosition(double, ExceptionState&);
+    void position(DoubleOrAutoKeyword&) const;
+    void setPosition(const DoubleOrAutoKeyword&, ExceptionState&);
 
     double size() const { return m_cueSize; }
     void setSize(double, ExceptionState&);
@@ -160,6 +160,8 @@ private:
     bool lineIsAuto() const;
 
     void calculateDisplayParameters();
+    float calculateComputedTextPosition() const;
+    bool textPositionIsAuto() const;
 
     enum CueSetting {
         None,
