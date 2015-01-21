@@ -99,27 +99,24 @@ TEST(ShellIntegrationTest, GetDataWriteLocation) {
   // Test that it returns $XDG_DATA_HOME.
   {
     MockEnvironment env;
-    env.Set("HOME", "/home/user");
+    base::ScopedPathOverride home_override(base::DIR_HOME,
+                                           base::FilePath("/home/user"),
+                                           true /* absolute? */,
+                                           false /* create? */);
     env.Set("XDG_DATA_HOME", "/user/path");
-    base::FilePath path;
-    ASSERT_TRUE(GetDataWriteLocation(&env, &path));
+    base::FilePath path = GetDataWriteLocation(&env);
     EXPECT_EQ("/user/path", path.value());
   }
 
   // Test that $XDG_DATA_HOME falls back to $HOME/.local/share.
   {
     MockEnvironment env;
-    env.Set("HOME", "/home/user");
-    base::FilePath path;
-    ASSERT_TRUE(GetDataWriteLocation(&env, &path));
+    base::ScopedPathOverride home_override(base::DIR_HOME,
+                                           base::FilePath("/home/user"),
+                                           true /* absolute? */,
+                                           false /* create? */);
+    base::FilePath path = GetDataWriteLocation(&env);
     EXPECT_EQ("/home/user/.local/share", path.value());
-  }
-
-  // Test that if neither $XDG_DATA_HOME nor $HOME are specified, it fails.
-  {
-    MockEnvironment env;
-    base::FilePath path;
-    ASSERT_FALSE(GetDataWriteLocation(&env, &path));
   }
 }
 
@@ -130,7 +127,10 @@ TEST(ShellIntegrationTest, GetDataSearchLocations) {
   // Test that it returns $XDG_DATA_HOME + $XDG_DATA_DIRS.
   {
     MockEnvironment env;
-    env.Set("HOME", "/home/user");
+    base::ScopedPathOverride home_override(base::DIR_HOME,
+                                           base::FilePath("/home/user"),
+                                           true /* absolute? */,
+                                           false /* create? */);
     env.Set("XDG_DATA_HOME", "/user/path");
     env.Set("XDG_DATA_DIRS", "/system/path/1:/system/path/2");
     EXPECT_THAT(
@@ -143,7 +143,10 @@ TEST(ShellIntegrationTest, GetDataSearchLocations) {
   // Test that $XDG_DATA_HOME falls back to $HOME/.local/share.
   {
     MockEnvironment env;
-    env.Set("HOME", "/home/user");
+    base::ScopedPathOverride home_override(base::DIR_HOME,
+                                           base::FilePath("/home/user"),
+                                           true /* absolute? */,
+                                           false /* create? */);
     env.Set("XDG_DATA_DIRS", "/system/path/1:/system/path/2");
     EXPECT_THAT(
         FilePathsToStrings(GetDataSearchLocations(&env)),
@@ -157,16 +160,21 @@ TEST(ShellIntegrationTest, GetDataSearchLocations) {
   {
     MockEnvironment env;
     env.Set("XDG_DATA_DIRS", "/system/path/1:/system/path/2");
-    EXPECT_THAT(
-        FilePathsToStrings(GetDataSearchLocations(&env)),
-        ElementsAre("/system/path/1",
-                    "/system/path/2"));
+    std::vector<std::string> results =
+        FilePathsToStrings(GetDataSearchLocations(&env));
+    ASSERT_EQ(3U, results.size());
+    EXPECT_FALSE(results[0].empty());
+    EXPECT_EQ("/system/path/1", results[1]);
+    EXPECT_EQ("/system/path/2", results[2]);
   }
 
   // Test that $XDG_DATA_DIRS falls back to the two default paths.
   {
     MockEnvironment env;
-    env.Set("HOME", "/home/user");
+    base::ScopedPathOverride home_override(base::DIR_HOME,
+                                           base::FilePath("/home/user"),
+                                           true /* absolute? */,
+                                           false /* create? */);
     env.Set("XDG_DATA_HOME", "/user/path");
     EXPECT_THAT(
         FilePathsToStrings(GetDataSearchLocations(&env)),
@@ -316,7 +324,10 @@ TEST(ShellIntegrationTest, GetExistingShortcutContents) {
     ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
     MockEnvironment env;
-    env.Set("HOME", temp_dir.path().value());
+    base::ScopedPathOverride home_override(base::DIR_HOME,
+                                           temp_dir.path(),
+                                           true /* absolute? */,
+                                           false /* create? */);
     ASSERT_TRUE(base::CreateDirectory(
         temp_dir.path().Append(".local/share/applications")));
     ASSERT_TRUE(WriteString(
