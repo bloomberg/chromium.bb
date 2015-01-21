@@ -84,6 +84,8 @@
         'common/api/sockets/sockets_manifest_handler.h',
         'common/api/sockets/sockets_manifest_permission.cc',
         'common/api/sockets/sockets_manifest_permission.h',
+        'common/cast/cast_cert_validator.cc',
+        'common/cast/cast_cert_validator.h',
         'common/common_manifest_handlers.cc',
         'common/common_manifest_handlers.h',
         'common/csp_validator.cc',
@@ -279,6 +281,31 @@
           'sources': [
             'common/manifest_handlers/nacl_modules_handler.cc',
             'common/manifest_handlers/nacl_modules_handler.h',
+          ],
+        }],
+        ['use_openssl==1', {
+          'sources': [
+            'common/cast/cast_cert_validator_openssl.cc',
+          ],
+          'dependencies': [
+            '../third_party/boringssl/boringssl.gyp:boringssl',
+          ],
+        }, {
+          'sources': [
+            'common/cast/cast_cert_validator_nss.cc',
+          ],
+          'conditions': [
+            ['os_posix == 1 and OS != "mac" and OS != "ios" and OS != "android"', {
+              'dependencies': [
+                '../build/linux/system.gyp:ssl',
+              ],
+            }],
+            ['OS == "mac" or OS == "ios" or OS == "win"', {
+              'dependencies': [
+                '../third_party/nss/nss.gyp:nspr',
+                '../third_party/nss/nss.gyp:nss',
+              ],
+            }],
           ],
         }],
       ],
@@ -823,32 +850,6 @@
             'browser/api/vpn_provider/vpn_service.h',
             'browser/api/vpn_provider/vpn_service_factory.h'
           ]
-        }],
-        ['use_openssl==1', {
-          'sources': [
-            'browser/api/cast_channel/cast_auth_util_openssl.cc',
-          ],
-          'dependencies': [
-            '../third_party/boringssl/boringssl.gyp:boringssl',
-          ],
-        }, {
-          'sources': [
-            # cast_auth_util_nss.cc uses NSS functions.
-            'browser/api/cast_channel/cast_auth_util_nss.cc',
-          ],
-          'conditions': [
-            ['os_posix == 1 and OS != "mac" and OS != "ios" and OS != "android"', {
-              'dependencies': [
-                '../build/linux/system.gyp:ssl',
-              ],
-            }],
-            ['OS == "mac" or OS == "ios" or OS == "win"', {
-              'dependencies': [
-                '../third_party/nss/nss.gyp:nspr',
-                '../third_party/nss/nss.gyp:nss',
-              ],
-            }],
-          ],
         }],
         ['OS != "linux"', {
           'sources': [

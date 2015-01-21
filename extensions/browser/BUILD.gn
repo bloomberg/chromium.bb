@@ -525,12 +525,6 @@ source_set("browser") {
       "//extensions/common/api/cast_channel:cast_channel_proto",
     ]
 
-    if (use_openssl) {
-      sources += [ "api/cast_channel/cast_auth_util_openssl.cc" ]
-    } else {
-      sources += [ "api/cast_channel/cast_auth_util_nss.cc" ]
-    }
-
     if (is_chromeos) {
       deps += [ "//chromeos" ]
       sources += [
