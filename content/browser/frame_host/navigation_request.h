@@ -11,6 +11,7 @@
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/loader/navigation_url_loader_delegate.h"
 #include "content/common/content_export.h"
+#include "content/common/frame_message_enums.h"
 #include "content/common/navigation_params.h"
 
 namespace content {
@@ -50,6 +51,12 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
     // displayed. This is one of the two final states for the request.
     FAILED,
   };
+
+  static scoped_ptr<NavigationRequest> Create(
+    FrameTreeNode* frame_tree_node,
+    const NavigationEntryImpl& entry,
+    FrameMsg_Navigate_Type::Value navigation_type,
+    base::TimeTicks navigation_start);
 
   NavigationRequest(FrameTreeNode* frame_tree_node,
                     const CommonNavigationParams& common_params,

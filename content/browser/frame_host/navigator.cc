@@ -28,4 +28,8 @@ void Navigator::CommitNavigation(FrameTreeNode* frame_tree_node,
                                  scoped_ptr<StreamHandle> body) {
 }
 
+bool Navigator::IsWaitingForBeforeUnloadACK(FrameTreeNode* frame_tree_node) {
+  return false;
+}
+
 }  // namespace content

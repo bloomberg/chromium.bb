@@ -16,6 +16,24 @@
 
 namespace content {
 
+// static
+scoped_ptr<NavigationRequest> NavigationRequest::Create(
+    FrameTreeNode* frame_tree_node,
+    const NavigationEntryImpl& entry,
+    FrameMsg_Navigate_Type::Value navigation_type,
+    base::TimeTicks navigation_start) {
+  scoped_ptr<NavigationRequest> navigation_request(new NavigationRequest(
+      frame_tree_node,
+      CommonNavigationParams(entry.GetURL(), entry.GetReferrer(),
+                             entry.GetTransitionType(), navigation_type,
+                             !entry.IsViewSourceMode()),
+      CommitNavigationParams(entry.GetPageState(),
+                             entry.GetIsOverridingUserAgent(),
+                             navigation_start),
+      &entry));
+  return navigation_request.Pass();
+}
+
 NavigationRequest::NavigationRequest(
     FrameTreeNode* frame_tree_node,
     const CommonNavigationParams& common_params,

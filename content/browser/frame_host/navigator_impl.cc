@@ -833,6 +833,17 @@ NavigationRequest* NavigatorImpl::GetNavigationRequestForNodeForTesting(
   return navigation_request_map_.get(frame_tree_node->frame_tree_node_id());
 }
 
+bool NavigatorImpl::IsWaitingForBeforeUnloadACK(
+    FrameTreeNode* frame_tree_node) {
+  CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableBrowserSideNavigation));
+  NavigationRequest* request =
+      navigation_request_map_.get(frame_tree_node->frame_tree_node_id());
+  if (!request)
+    return false;
+  return request->state() == NavigationRequest::WAITING_FOR_RENDERER_RESPONSE;
+}
+
 void NavigatorImpl::LogResourceRequestTime(
     base::TimeTicks timestamp, const GURL& url) {
   if (navigation_data_ && navigation_data_->url_ == url) {
@@ -883,15 +894,8 @@ bool NavigatorImpl::RequestNavigation(
   int64 frame_tree_node_id = frame_tree_node->frame_tree_node_id();
   FrameMsg_Navigate_Type::Value navigation_type =
       GetNavigationType(controller_->GetBrowserContext(), entry, reload_type);
-  scoped_ptr<NavigationRequest> navigation_request(new NavigationRequest(
-      frame_tree_node,
-      CommonNavigationParams(entry.GetURL(), entry.GetReferrer(),
-                             entry.GetTransitionType(), navigation_type,
-                             !entry.IsViewSourceMode()),
-      CommitNavigationParams(entry.GetPageState(),
-                             entry.GetIsOverridingUserAgent(),
-                             navigation_start),
-      &entry));
+  scoped_ptr<NavigationRequest> navigation_request = NavigationRequest::Create(
+      frame_tree_node, entry, navigation_type, navigation_start);
   RequestNavigationParams request_params(entry.GetHasPostData(),
                                          entry.extra_headers(),
                                          entry.GetBrowserInitiatedPostData());

@@ -149,6 +149,11 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
       const base::TimeTicks& renderer_before_unload_start_time,
       const base::TimeTicks& renderer_before_unload_end_time) {}
 
+  // PlzNavigate
+  // Returns whether there is an ongoing navigation waiting for the BeforeUnload
+  // event to execute in the renderer process.
+  virtual bool IsWaitingForBeforeUnloadACK(FrameTreeNode* frame_tree_node);
+
  protected:
   friend class base::RefCounted<Navigator>;
   virtual ~Navigator() {}

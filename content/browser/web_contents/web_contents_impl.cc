@@ -4032,7 +4032,7 @@ void WebContentsImpl::RendererUnresponsive(RenderViewHost* render_view_host) {
   if (DevToolsAgentHost::IsDebuggerAttached(this))
     return;
 
-  if (rfhi->is_waiting_for_beforeunload_ack() ||
+  if (rfhi->IsWaitingForBeforeUnloadACK() ||
       rfhi->IsWaitingForUnloadACK()) {
     // Hang occurred while firing the beforeunload/unload handler.
     // Pretend the handler fired so tab closing continues as if it had.
@@ -4048,7 +4048,7 @@ void WebContentsImpl::RendererUnresponsive(RenderViewHost* render_view_host) {
     // close. Otherwise, pretend the unload listeners have all fired and close
     // the tab.
     bool close = true;
-    if (rfhi->is_waiting_for_beforeunload_ack() && delegate_) {
+    if (rfhi->IsWaitingForBeforeUnloadACK() && delegate_) {
       delegate_->BeforeUnloadFired(this, true, &close);
     }
     if (close)

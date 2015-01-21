@@ -245,9 +245,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // active RenderFrames, but not until WasSwappedOut is called.
   void SwapOut(RenderFrameProxyHost* proxy, bool is_loading);
 
-  bool is_waiting_for_beforeunload_ack() const {
-    return is_waiting_for_beforeunload_ack_;
-  }
+  // Whether an ongoing navigation is waiting for a BeforeUnload ACK from the
+  // RenderFrame. Currently this only happens in cross-site navigations.
+  // PlzNavigate: this happens in every browser-initiated navigation that is not
+  // same-page.
+  bool IsWaitingForBeforeUnloadACK() const;
 
   // Whether the RFH is waiting for an unload ACK from the renderer.
   bool IsWaitingForUnloadACK() const;

@@ -281,7 +281,7 @@ bool RenderFrameHostManager::ShouldCloseTabOnUnresponsiveRenderer() {
   // If the tab becomes unresponsive during beforeunload while doing a
   // cross-site navigation, proceed with the navigation.  (This assumes that
   // the pending RenderFrameHost is still responsive.)
-  if (render_frame_host_->is_waiting_for_beforeunload_ack()) {
+  if (render_frame_host_->IsWaitingForBeforeUnloadACK()) {
     // Haven't gotten around to starting the request, because we're still
     // waiting for the beforeunload handler to finish.  We'll pretend that it
     // did finish, to let the navigation proceed.  Note that there's a danger
@@ -460,7 +460,6 @@ void RenderFrameHostManager::DidNavigateFrame(
   if (render_frame_host == pending_render_frame_host_) {
     // The pending cross-site navigation completed, so show the renderer.
     CommitPending();
-    cross_navigation_pending_ = false;
   } else if (render_frame_host == render_frame_host_) {
     if (was_caused_by_user_gesture) {
       // A navigation in the original page has taken place.  Cancel the pending
@@ -737,6 +736,7 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
     }
   }
 
+  cross_navigation_pending_ = navigation_rfh != render_frame_host_.get();
   return navigation_rfh;
 }
 
@@ -1522,6 +1522,7 @@ void RenderFrameHostManager::CommitPending() {
     old_render_frame_host =
         SetRenderFrameHost(speculative_render_frame_host_.Pass());
   }
+  cross_navigation_pending_ = false;
 
   if (is_main_frame)
     render_frame_host_->render_view_host()->AttachToFrameTree();

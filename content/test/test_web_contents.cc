@@ -146,19 +146,24 @@ void TestWebContents::TestSetIsLoading(bool value) {
 }
 
 void TestWebContents::CommitPendingNavigation() {
-  // If we are doing a cross-site navigation, this simulates the current RFH
-  // notifying that it has unloaded so the pending RFH is resumed and can
-  // navigate.
-  TestRenderFrameHost* old_rfh = GetMainFrame();
   const NavigationEntry* entry = GetController().GetPendingEntry();
   DCHECK(entry);
 
-  // Simulate the BeforeUnload ACK if necessary.
+  // If we are doing a cross-site navigation, this simulates the current RFH
+  // notifying that it has unloaded so the pending RFH is resumed and can
+  // navigate.
   // PlzNavigate: the pending RFH is not created before the navigation commit,
   // so it is necessary to simulate the IO thread response here to commit in the
-  // proper renderer.
-  old_rfh->PrepareForCommit(entry->GetURL());
+  // proper renderer. It is necessary to call PrepareForCommit before getting
+  // the main and the pending frame because when we are trying to navigate to a
+  // webui from a new tab, a RenderFrameHost is created to display it that is
+  // committed immediately (since it is a new tab). Therefore the main frame is
+  // replaced without a pending frame being created, and we don't get the right
+  // values for the RFH to navigate: we try to use the old one that has been
+  // deleted in the meantime.
+  GetMainFrame()->PrepareForCommit(entry->GetURL());
 
+  TestRenderFrameHost* old_rfh = GetMainFrame();
   TestRenderFrameHost* rfh = GetPendingMainFrame();
   if (!rfh)
     rfh = old_rfh;
