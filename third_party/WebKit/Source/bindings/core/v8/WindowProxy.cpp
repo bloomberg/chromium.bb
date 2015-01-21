@@ -245,8 +245,8 @@ bool WindowProxy::initialize()
 
 void WindowProxy::createContext()
 {
-    // This can get called after a frame is already detached...
-    // FIXME: Fix the code so we don't need this check.
+    // FIXME: This should be a null check of m_frame->client(), but there are still some edge cases
+    // that this fails to catch during frame detach.
     if (m_frame->isLocalFrame() && !toLocalFrame(m_frame)->loader().documentLoader())
         return;
 
