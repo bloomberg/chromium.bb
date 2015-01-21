@@ -332,6 +332,7 @@
         '../browser/guest_view/web_view/web_view_apitest.cc',
         '../browser/guest_view/web_view/web_view_media_access_apitest.cc',
         '../browser/updater/update_service_browsertest.cc',
+        'browser/geolocation/geolocation_apitest.cc',
         'browser/shell_browsertest.cc',
         'test/shell_apitest.cc',
         'test/shell_apitest.h',

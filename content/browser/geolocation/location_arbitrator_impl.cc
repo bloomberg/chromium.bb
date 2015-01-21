@@ -53,12 +53,23 @@ void LocationArbitratorImpl::OnPermissionGranted() {
 }
 
 void LocationArbitratorImpl::StartProviders(bool use_high_accuracy) {
+  // GetAccessTokenStore() will return NULL for embedders not implementing
+  // the AccessTokenStore class, so we report an error to avoid JavaScript
+  // requests of location to wait eternally for a reply.
+  AccessTokenStore* access_token_store = GetAccessTokenStore();
+  if (!access_token_store) {
+    Geoposition position;
+    position.error_code = Geoposition::ERROR_CODE_PERMISSION_DENIED;
+    arbitrator_update_callback_.Run(position);
+    return;
+  }
+
   // Stash options as OnAccessTokenStoresLoaded has not yet been called.
   is_running_ = true;
   use_high_accuracy_ = use_high_accuracy;
   if (providers_.empty()) {
     DCHECK(DefaultNetworkProviderURL().is_valid());
-    GetAccessTokenStore()->LoadAccessTokens(
+    access_token_store->LoadAccessTokens(
         base::Bind(&LocationArbitratorImpl::OnAccessTokenStoresLoaded,
                    base::Unretained(this)));
   } else {
