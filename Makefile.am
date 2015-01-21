@@ -441,8 +441,6 @@ if BUILD_SIMPLE_EGL_CLIENTS
 demo_clients += weston-simple-egl
 weston_simple_egl_SOURCES = clients/simple-egl.c
 nodist_weston_simple_egl_SOURCES =		\
-	protocol/presentation_timing-protocol.c		\
-	protocol/presentation_timing-client-protocol.h	\
 	protocol/xdg-shell-protocol.c		\
 	protocol/xdg-shell-client-protocol.h		\
 	protocol/ivi-application-protocol.c		\

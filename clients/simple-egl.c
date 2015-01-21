@@ -46,8 +46,6 @@
 #include "protocol/ivi-application-client-protocol.h"
 #define IVI_SURFACE_ID 9000
 
-#include "presentation_timing-client-protocol.h"
-
 #ifndef EGL_EXT_swap_buffers_with_damage
 #define EGL_EXT_swap_buffers_with_damage 1
 typedef EGLBoolean (EGLAPIENTRYP PFNEGLSWAPBUFFERSWITHDAMAGEEXTPROC)(EGLDisplay dpy, EGLSurface surface, EGLint *rects, EGLint n_rects);
@@ -83,8 +81,6 @@ struct display {
 	struct ivi_application *ivi_application;
 
 	PFNEGLSWAPBUFFERSWITHDAMAGEEXTPROC swap_buffers_with_damage;
-
-	struct presentation *presentation;
 };
 
 struct geometry {
@@ -128,43 +124,6 @@ static const char *frag_shader_text =
 	"}\n";
 
 static int running = 1;
-
-static void
-feedback_sync_output(void *data,
-		     struct presentation_feedback *presentation_feedback,
-		     struct wl_output *output)
-{
-}
-
-static void
-feedback_presented(void *data,
-		   struct presentation_feedback *feedback,
-		   uint32_t tv_sec_hi,
-		   uint32_t tv_sec_lo,
-		   uint32_t tv_nsec,
-		   uint32_t refresh_nsec,
-		   uint32_t seq_hi,
-		   uint32_t seq_lo,
-		   uint32_t flags)
-{
-	printf("presented %p, flags %#x at %" PRIu64 ".%09u\n",
-		feedback, flags,
-		((uint64_t)tv_sec_hi << 32) + tv_sec_lo, tv_nsec);
-	presentation_feedback_destroy(feedback);
-}
-
-static void
-feedback_discarded(void *data, struct presentation_feedback *feedback)
-{
-	printf("discarded %p\n", feedback);
-	presentation_feedback_destroy(feedback);
-}
-
-static const struct presentation_feedback_listener feedback_listener = {
-	feedback_sync_output,
-	feedback_presented,
-	feedback_discarded
-};
 
 static void
 init_egl(struct display *display, struct window *window)
@@ -497,7 +456,6 @@ redraw(void *data, struct wl_callback *callback, uint32_t time)
 	EGLint rect[4];
 	EGLint buffer_age = 0;
 	struct timeval tv;
-	struct presentation_feedback *fback;
 
 	assert(window->callback == callback);
 	window->callback = NULL;
@@ -556,9 +514,6 @@ redraw(void *data, struct wl_callback *callback, uint32_t time)
 	} else {
 		wl_surface_set_opaque_region(window->surface, NULL);
 	}
-
-	fback = presentation_feedback(display->presentation, window->surface);
-	presentation_feedback_add_listener(fback, &feedback_listener, window);
 
 	if (display->swap_buffers_with_damage && buffer_age > 0) {
 		rect[0] = window->geometry.width / 4 - 1;
@@ -802,10 +757,6 @@ registry_handle_global(void *data, struct wl_registry *registry,
 		d->compositor =
 			wl_registry_bind(registry, name,
 					 &wl_compositor_interface, 1);
-	} else if (strcmp(interface, "presentation") == 0) {
-		d->presentation =
-			wl_registry_bind(registry,
-					 name, &presentation_interface, 1);
 	} else if (strcmp(interface, "xdg_shell") == 0) {
 		d->shell = wl_registry_bind(registry, name,
 					    &xdg_shell_interface, 1);
