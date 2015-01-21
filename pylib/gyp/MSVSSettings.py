@@ -314,14 +314,7 @@ def _MSBuildOnly(tool, name, setting_type):
     name: the name of the setting.
     setting_type: the type of this setting.
   """
-
-  def _Translate(value, msbuild_settings):
-    # Let msbuild-only properties get translated as-is from msvs_settings.
-    tool_settings = msbuild_settings.setdefault(tool.msbuild_name, {})
-    tool_settings[name] = value
-
   _msbuild_validators[tool.msbuild_name][name] = setting_type.ValidateMSBuild
-  _msvs_to_msbuild_converters[tool.msvs_name][name] = _Translate
 
 
 def _ConvertedToAdditionalOption(tool, msvs_name, flag):
@@ -538,7 +531,6 @@ _midl = _Tool('VCMIDLTool', 'Midl')
 _rc = _Tool('VCResourceCompilerTool', 'ResourceCompile')
 _lib = _Tool('VCLibrarianTool', 'Lib')
 _manifest = _Tool('VCManifestTool', 'Manifest')
-_masm = _Tool('MASM', 'MASM')
 
 
 _AddTool(_compile)
@@ -547,7 +539,6 @@ _AddTool(_midl)
 _AddTool(_rc)
 _AddTool(_lib)
 _AddTool(_manifest)
-_AddTool(_masm)
 # Add sections only found in the MSBuild settings.
 _msbuild_validators[''] = {}
 _msbuild_validators['ProjectReference'] = {}
@@ -1086,11 +1077,3 @@ _MSBuildOnly(_manifest, 'ManifestFromManagedAssembly',
 _MSBuildOnly(_manifest, 'OutputResourceManifests', _string)  # /outputresource
 _MSBuildOnly(_manifest, 'SuppressDependencyElement', _boolean)  # /nodependency
 _MSBuildOnly(_manifest, 'TrackerLogDirectory', _folder_name)
-
-
-# Directives for MASM.
-# See "$(VCTargetsPath)\BuildCustomizations\masm.xml" for the schema of the
-# MSBuild MASM settings.
-
-# Options that have the same name in MSVS and MSBuild.
-_Same(_masm, 'UseSafeExceptionHandlers', _boolean)  # /safeseh
