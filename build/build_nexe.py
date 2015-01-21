@@ -893,7 +893,7 @@ def Main(argv):
               filename = input_queue.get_nowait()
             except Queue.Empty:
               return
-            output_queue.put(build.Compile(filename))
+            output_queue.put((filename, build.Compile(filename)))
         except Exception:
           # Put current exception info to the queue.
           output_queue.put(sys.exc_info())
@@ -912,6 +912,7 @@ def Main(argv):
         build_threads.append(thr)
 
       # Wait for results.
+      src_to_obj = {}
       for _ in files:
         out = returns.get()
         # An exception raised in the thread may come through the queue.
@@ -919,8 +920,18 @@ def Main(argv):
         if (isinstance(out, tuple) and len(out) == 3 and
             isinstance(out[1], Exception)):
           raise out[0], None, out[2]
-        elif out:
-          objs.append(out)
+        elif out and len(out) == 2:
+          src_to_obj[out[0]] = out[1]
+        else:
+          raise Error('Unexpected element in CompileThread output_queue %s' %
+                      out)
+      # Keep the input files ordering consistent for link phase to ensure
+      # determinism.
+      for filename in files:
+        # If input file to build.Compile is something it cannot handle, it
+        # returns None.
+        if src_to_obj[filename]:
+          objs.append(src_to_obj[filename])
 
       assert inputs.empty()
 
