@@ -10,7 +10,7 @@ function MockWindow(width, height, sizer) {
       this.scrollCallback = f;
     if (e == 'resize')
       this.resizeCallback = f;
-  },
+  };
   this.scrollTo = function(x, y) {
     if (sizer) {
       x = Math.min(x, parseInt(sizer.style.width) - width);
@@ -91,7 +91,7 @@ var tests = [
   function testDocumentNeedsScrollbars() {
     var viewport =
         new Viewport(new MockWindow(100, 100), new MockSizer(), function() {},
-                     function() {}, function() {}, 10);
+                     function() {}, function() {}, 10, 0);
     var scrollbars;
 
     viewport.setDocumentDimensions(new MockDocumentDimensions(90, 90));
@@ -146,7 +146,7 @@ var tests = [
     var mockWindow = new MockWindow(100, 100, mockSizer);
     var mockCallback = new MockViewportChangedCallback();
     var viewport = new Viewport(mockWindow, mockSizer, mockCallback.callback,
-                                function() {}, function() {}, 0);
+                                function() {}, function() {}, 0, 0);
 
     // Test setting the zoom without the document dimensions set. The sizer
     // shouldn't change size.
@@ -200,7 +200,7 @@ var tests = [
   function testGetMostVisiblePage() {
     var mockWindow = new MockWindow(100, 100);
     var viewport = new Viewport(mockWindow, new MockSizer(), function() {},
-                                function() {}, function() {}, 0);
+                                function() {}, function() {}, 0, 0);
 
     var documentDimensions = new MockDocumentDimensions(100, 100);
     documentDimensions.addPage(50, 100);
@@ -250,7 +250,7 @@ var tests = [
     var mockSizer = new MockSizer();
     var mockCallback = new MockViewportChangedCallback();
     var viewport = new Viewport(mockWindow, mockSizer, mockCallback.callback,
-                                function() {}, function() {}, 0);
+                                function() {}, function() {}, 0, 0);
     var documentDimensions = new MockDocumentDimensions();
 
     // Test with a document width which matches the window width.
@@ -301,7 +301,7 @@ var tests = [
     // fit to width, which will cause the page height to span outside of the
     // viewport, triggering 15px scrollbars to be shown.
     viewport = new Viewport(mockWindow, mockSizer, mockCallback.callback,
-                            function() {}, function() {}, 15);
+                            function() {}, function() {}, 15, 0);
     documentDimensions.reset();
     documentDimensions.addPage(50, 100);
     viewport.setDocumentDimensions(documentDimensions);
@@ -318,7 +318,7 @@ var tests = [
     var mockSizer = new MockSizer();
     var mockCallback = new MockViewportChangedCallback();
     var viewport = new Viewport(mockWindow, mockSizer, mockCallback.callback,
-                                function() {}, function() {}, 0);
+                                function() {}, function() {}, 0, 0);
     var documentDimensions = new MockDocumentDimensions();
 
     // Test with a page size which matches the window size.
@@ -402,7 +402,7 @@ var tests = [
     var mockSizer = new MockSizer();
     var mockCallback = new MockViewportChangedCallback();
     var viewport = new Viewport(mockWindow, mockSizer, mockCallback.callback,
-                                function() {}, function() {}, 0);
+                                function() {}, function() {}, 0, 0);
     var documentDimensions = new MockDocumentDimensions();
 
     documentDimensions.addPage(100, 100);
@@ -443,7 +443,7 @@ var tests = [
     var mockSizer = new MockSizer();
     var mockCallback = new MockViewportChangedCallback();
     var viewport = new Viewport(mockWindow, mockSizer, mockCallback.callback,
-                                function() {}, function() {}, 0);
+                                function() {}, function() {}, 0, 0);
     var documentDimensions = new MockDocumentDimensions();
     documentDimensions.addPage(100, 100);
     documentDimensions.addPage(200, 200);
@@ -498,7 +498,7 @@ var tests = [
         chrome.test.assertEq(1, viewport.zoom);
     };
     viewport = new Viewport(mockWindow, mockSizer, function() {},
-                            beforeZoom, afterZoom, 0);
+                            beforeZoom, afterZoom, 0, 0);
     viewport.setZoom(0.5);
     chrome.test.succeed();
   }

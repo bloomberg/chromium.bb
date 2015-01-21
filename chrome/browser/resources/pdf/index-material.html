@@ -7,17 +7,29 @@
   <link rel="import" href="elements/viewer-error-screen/viewer-error-screen.html">
   <link rel="import" href="elements/viewer-page-indicator/viewer-page-indicator.html">
   <link rel="import" href="elements/viewer-password-screen/viewer-password-screen.html">
-  <link rel="import" href="elements/viewer-progress-bar/viewer-progress-bar.html">
   <link rel="import" href="elements/viewer-toolbar/viewer-toolbar.html">
+
+  <link rel="import" href="chrome://resources/polymer/core-toolbar/core-toolbar.html">
+  <link rel="import" href="chrome://resources/polymer/paper-icon-button/paper-icon-button.html">
+  <link rel="import" href="chrome://resources/polymer/paper-progress/paper-progress.html">
+  <link rel="import" href="chrome://resources/polymer/paper-shadow/paper-shadow.html">
+
   <link rel="stylesheet" href="chrome://resources/css/text_defaults.css">
-  <link rel="stylesheet" type="text/css" href="index.css">
+  <link rel="stylesheet" type="text/css" href="index-material.css">
 </head>
 <body>
+<paper-shadow id="toolbar-shadow" z="1">
+  <paper-progress value="0" id="progress-bar"></paper-progress>
+  <core-toolbar id="pdf-toolbar">
+    <span id="title" flex></span>
+    <paper-icon-button icon="file-download" id="save-button"></paper-icon-button>
+    <paper-icon-button icon="print" id="print-button"></paper-icon-button>
+  </core-toolbar>
+</paper-shadow>
 
 <div id="sizer"></div>
 <viewer-password-screen id="password-screen"></viewer-password-screen>
 <viewer-page-indicator id="page-indicator"></viewer-page-indicator>
-<viewer-progress-bar id="progress-bar"></viewer-progress-bar>
 
 <viewer-toolbar id="toolbar">
   <viewer-button id="fit-to-page-button"
@@ -35,14 +47,6 @@
   <viewer-button id="zoom-in-button"
       assetpath="elements/viewer-button/"
       img="button_zoom_in.png">
-  </viewer-button>
-  <viewer-button id="save-button"
-      assetpath="elements/viewer-button/"
-      img="button_save.png">
-  </viewer-button>
-  <viewer-button id="print-button"
-     assetpath="elements/viewer-button/"
-     img="button_print.png">
   </viewer-button>
 </viewer-toolbar>
 

@@ -50,6 +50,7 @@ function PDFViewer(streamDetails) {
 
   this.isPrintPreview_ =
       this.streamDetails_.originalUrl.indexOf('chrome://print') == 0;
+  this.isMaterial_ = location.pathname.substring(1) == 'index-material.html';
 
   // The sizer element is placed behind the plugin element to cause scrollbars
   // to be displayed in the window. It is sized according to the document size
@@ -62,6 +63,7 @@ function PDFViewer(streamDetails) {
   this.passwordScreen_.addEventListener('password-submitted',
                                         this.onPasswordSubmitted_.bind(this));
   this.errorScreen_ = $('error-screen');
+  this.toolbarHeight_ = this.isMaterial_ ? $('pdf-toolbar').clientHeight : 0;
 
   // Create the viewport.
   this.viewport_ = new Viewport(window,
@@ -69,7 +71,8 @@ function PDFViewer(streamDetails) {
                                 this.viewportChanged_.bind(this),
                                 this.beforeZoom_.bind(this),
                                 this.afterZoom_.bind(this),
-                                getScrollbarWidth());
+                                getScrollbarWidth(),
+                                this.toolbarHeight_);
   // Create the plugin object dynamically so we can set its src. The plugin
   // element is sized to fill the entire window and is set to be fixed
   // positioning, acting as a viewport. The plugin renders into this viewport
@@ -81,6 +84,11 @@ function PDFViewer(streamDetails) {
   this.plugin_.type = 'application/x-google-chrome-pdf';
   this.plugin_.addEventListener('message', this.handlePluginMessage_.bind(this),
                                 false);
+  if (this.isMaterial_) {
+    this.plugin_.style.height =
+        (window.innerHeight - this.toolbarHeight_) + 'px';
+    this.plugin_.style.width = window.innerWidth + 'px';
+  }
 
   // Handle scripting messages from outside the extension that wish to interact
   // with it. We also send a message indicating that extension has loaded and
@@ -89,6 +97,8 @@ function PDFViewer(streamDetails) {
                           false);
 
   document.title = getFilenameFromURL(this.streamDetails_.originalUrl);
+  if (this.isMaterial_)
+    $('title').textContent = document.title;
   this.plugin_.setAttribute('src', this.streamDetails_.originalUrl);
   this.plugin_.setAttribute('stream-url', this.streamDetails_.streamUrl);
   var headers = '';
@@ -310,7 +320,11 @@ PDFViewer.prototype = {
    * @param {number} progress the progress as a percentage.
    */
   updateProgress_: function(progress) {
-    this.progressBar_.progress = progress;
+    if (this.isMaterial_)
+      this.progressBar_.value = progress;
+    else
+      this.progressBar_.progress = progress;
+
     if (progress == -1) {
       // Document load failed.
       this.errorScreen_.style.visibility = 'visible';
@@ -542,6 +556,12 @@ PDFViewer.prototype = {
   viewportChanged_: function() {
     if (!this.documentDimensions_)
       return;
+
+    if (this.isMaterial_) {
+      this.plugin_.style.height =
+          (window.innerHeight - this.toolbarHeight_) + 'px';
+      this.plugin_.style.width = window.innerWidth + 'px';
+    }
 
     // Update the buttons selected.
     $('fit-to-page-button').classList.remove('polymer-selected');
