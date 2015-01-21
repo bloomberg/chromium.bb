@@ -311,9 +311,6 @@
           'dependencies': [
             '../base/base.gyp:base_prefs_test_support',
             '../base/base.gyp:test_support_base',
-            # TODO(blundell): Eliminate this dependency by having
-            # components_unittests have its own pakfile. crbug.com/348563
-            '../chrome/chrome_resources.gyp:packed_extra_resources',
             # TODO(blundell): Eliminate the need for this dependency in code
             # that iOS shares. crbug.com/325243
             '../content/content_shell_and_tests.gyp:test_support_content',
@@ -325,6 +322,8 @@
             '../ui/base/ui_base.gyp:ui_base',
             '../ui/gfx/gfx.gyp:gfx',
             '../ui/gfx/gfx.gyp:gfx_test_support',
+            '../ui/resources/ui_resources.gyp:ui_resources',
+            '../ui/strings/ui_strings.gyp:ui_strings',
 
             'components_resources.gyp:components_resources',
 
@@ -516,6 +515,25 @@
             'components.gyp:web_resource_test_support',
             '../base/base.gyp:base',
           ],
+          'actions': [
+            {
+              'action_name': 'repack_components_pak',
+              'variables': {
+                'pak_inputs': [
+                  '<(SHARED_INTERMEDIATE_DIR)/components/components_resources.pak',
+                  '<(SHARED_INTERMEDIATE_DIR)/components/strings/components_strings_en-US.pak',
+                  '<(SHARED_INTERMEDIATE_DIR)/ui/resources/ui_resources_100_percent.pak',
+                  '<(SHARED_INTERMEDIATE_DIR)/ui/strings/app_locale_settings_en-US.pak',
+                  '<(SHARED_INTERMEDIATE_DIR)/ui/strings/ui_strings_en-US.pak',
+                ],
+                'pak_output': '<(PRODUCT_DIR)/components_unittests_resources.pak',
+              },
+              'includes': [ '../build/repack_action.gypi' ],
+            },
+          ],
+          'mac_bundle_resources': [
+            '<(PRODUCT_DIR)/components_unittests_resources.pak',
+          ],
           'conditions': [
             ['toolkit_views == 1', {
               'sources': [
@@ -621,7 +639,6 @@
                 }],
               ],
             }, { # 'OS == "ios"'
-              'includes': ['../chrome/chrome_ios_bundle_resources.gypi'],
               'sources': [
                 'webp_transcode/webp_decoder_unittest.mm',
               ],
@@ -1063,7 +1080,7 @@
           ],
           'actions': [
             {
-              'action_name': 'repack_components_pack',
+              'action_name': 'repack_components_pak',
               'variables': {
                 'pak_inputs': [
                   '<(SHARED_INTERMEDIATE_DIR)/components/components_resources.pak',
