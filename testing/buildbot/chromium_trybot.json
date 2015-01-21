@@ -67,12 +67,7 @@
       "platforms": ["win"]
     },
     "components_browsertests",
-    {
-      "test": "components_unittests",
-      "swarming": {
-        "can_use_on_swarming_builders": true
-      }
-    },
+    "components_unittests",
     {
       "test": "compositor_unittests",
       "platforms": ["linux", "win"]
