@@ -13,7 +13,7 @@ import "network/public/interfaces/udp_socket.mojom";
 import "network/public/interfaces/url_loader.mojom";
 import "network/public/interfaces/web_socket.mojom";
 
-// TODO Darin suggfests that this should probably be two classes. One for
+// TODO Darin suggests that this should probably be two classes. One for
 // high-level origin-build requests like WebSockets and HTTP, and the other for
 // non-origin-bound low-level stuff like DNS, UDP, and TCP.
 interface NetworkService {
