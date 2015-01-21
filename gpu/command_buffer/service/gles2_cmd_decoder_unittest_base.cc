@@ -551,6 +551,39 @@ void GLES2DecoderTestBase::SetBucketAsCString(
   }
 }
 
+void GLES2DecoderTestBase::SetBucketAsCStrings(
+    uint32 bucket_id, GLsizei count, const char** str,
+    GLsizei count_in_header, char str_end) {
+  uint32_t header_size = sizeof(GLint) * (count + 1);
+  uint32_t total_size = header_size;
+  scoped_ptr<GLint[]> header(new GLint[count + 1]);
+  header[0] = static_cast<GLint>(count_in_header);
+  for (GLsizei ii = 0; ii < count; ++ii) {
+    header[ii + 1] = str && str[ii] ? strlen(str[ii]) : 0;
+    total_size += header[ii + 1] + 1;
+  }
+  cmd::SetBucketSize cmd1;
+  cmd1.Init(bucket_id, total_size);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd1));
+  memcpy(shared_memory_address_, header.get(), header_size);
+  uint32_t offset = header_size;
+  for (GLsizei ii = 0; ii < count; ++ii) {
+    if (str && str[ii]) {
+      size_t str_len = strlen(str[ii]);
+      memcpy(reinterpret_cast<char*>(shared_memory_address_) + offset,
+             str[ii], str_len);
+      offset += str_len;
+    }
+    memcpy(reinterpret_cast<char*>(shared_memory_address_) + offset,
+           &str_end, 1);
+    offset += 1;
+  }
+  cmd::SetBucketData cmd2;
+  cmd2.Init(bucket_id, 0, total_size, kSharedMemoryId, kSharedMemoryOffset);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd2));
+  ClearSharedMemory();
+}
+
 void GLES2DecoderTestBase::SetupClearTextureExpectations(
       GLuint service_id,
       GLuint old_service_id,

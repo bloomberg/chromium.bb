@@ -693,9 +693,10 @@ TEST_P(GLES2DecoderTest, CompileShaderInvalidArgs) {
 TEST_P(GLES2DecoderTest, ShaderSourceBucketAndGetShaderSourceValidArgs) {
   const uint32 kInBucketId = 123;
   const uint32 kOutBucketId = 125;
-  const char kSource[] = "hello";
-  const uint32 kSourceSize = sizeof(kSource) - 1;
-  SetBucketAsCString(kInBucketId, kSource);
+  const char kSource0[] = "hello";
+  const char* kSource[] = { kSource0 };
+  const char kValidStrEnd = 0;
+  SetBucketAsCStrings(kInBucketId, 1, kSource, 1, kValidStrEnd);
   ShaderSourceBucket cmd;
   cmd.Init(client_shader_id_, kInBucketId);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
@@ -705,27 +706,27 @@ TEST_P(GLES2DecoderTest, ShaderSourceBucketAndGetShaderSourceValidArgs) {
   EXPECT_EQ(error::kNoError, ExecuteCmd(get_cmd));
   CommonDecoder::Bucket* bucket = decoder_->GetBucket(kOutBucketId);
   ASSERT_TRUE(bucket != NULL);
-  EXPECT_EQ(kSourceSize + 1, bucket->size());
-  EXPECT_EQ(
-      0, memcmp(bucket->GetData(0, bucket->size()), kSource, bucket->size()));
+  EXPECT_EQ(sizeof(kSource0), bucket->size());
+  EXPECT_EQ(0, memcmp(bucket->GetData(0, bucket->size()),
+                      kSource0, bucket->size()));
 }
 
 TEST_P(GLES2DecoderTest, ShaderSourceBucketInvalidArgs) {
   const uint32 kBucketId = 123;
-  const char kSource[] = "hello";
-  const uint32 kSourceSize = sizeof(kSource) - 1;
-  memcpy(shared_memory_address_, kSource, kSourceSize);
+  const char kSource0[] = "hello";
+  const char* kSource[] = { kSource0 };
+  const char kValidStrEnd = 0;
   ShaderSourceBucket cmd;
   // Test no bucket.
-  cmd.Init(client_texture_id_, kBucketId);
+  cmd.Init(client_shader_id_, kBucketId);
   EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
   // Test invalid client.
-  SetBucketAsCString(kBucketId, kSource);
+  SetBucketAsCStrings(kBucketId, 1, kSource, 1, kValidStrEnd);
   cmd.Init(kInvalidClientId, kBucketId);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
 #if GLES2_TEST_SHADER_VS_PROGRAM_IDS
-  SetBucketAsCString(kBucketId, kSource);
+  SetBucketAsCStrings(kBucketId, 1, kSource);
   cmd.Init(
       client_program_id_, kBucketId);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
@@ -735,11 +736,52 @@ TEST_P(GLES2DecoderTest, ShaderSourceBucketInvalidArgs) {
 
 TEST_P(GLES2DecoderTest, ShaderSourceStripComments) {
   const uint32 kInBucketId = 123;
-  const char kSource[] = "hello/*te\ast*/world//a\ab";
-  SetBucketAsCString(kInBucketId, kSource);
+  const char kSource0[] = "hello/*te\ast*/world//a\ab";
+  const char* kSource[] = { kSource0 };
+  const char kValidStrEnd = 0;
+  SetBucketAsCStrings(kInBucketId, 1, kSource, 1, kValidStrEnd);
   ShaderSourceBucket cmd;
   cmd.Init(client_shader_id_, kInBucketId);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
+TEST_P(GLES2DecoderTest, ShaderSourceInvalidHeader) {
+  const uint32 kInBucketId = 123;
+  const char kSource0[] = "hello";
+  const char* kSource[] = { kSource0 };
+  const char kValidStrEnd = 0;
+  const GLsizei kCount = 1;
+  const GLsizei kTests[] = {
+      kCount + 1,
+      0,
+      std::numeric_limits<GLsizei>::max(),
+      -1,
+      kCount
+  };
+  size_t kTestCount = 5;
+  for (size_t ii = 0; ii < kTestCount; ++ii) {
+    SetBucketAsCStrings(kInBucketId, 1, kSource, kTests[ii], kValidStrEnd);
+    ShaderSourceBucket cmd;
+    cmd.Init(client_shader_id_, kInBucketId);
+    if (kTests[ii] == kCount) {
+      EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+    } else {
+      EXPECT_EQ(error::kInvalidArguments, ExecuteCmd(cmd));
+    }
+  }
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
+TEST_P(GLES2DecoderTest, ShaderSourceInvalidStringEnding) {
+  const uint32 kInBucketId = 123;
+  const char kSource0[] = "hello";
+  const char* kSource[] = { kSource0 };
+  const char kInvalidStrEnd = '*';
+  SetBucketAsCStrings(kInBucketId, 1, kSource, 1, kInvalidStrEnd);
+  ShaderSourceBucket cmd;
+  cmd.Init(client_shader_id_, kInBucketId);
+  EXPECT_EQ(error::kInvalidArguments, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 

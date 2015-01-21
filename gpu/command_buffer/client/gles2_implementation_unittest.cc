@@ -901,51 +901,92 @@ TEST_F(GLES2ImplementationTest, ShaderSource) {
   const GLuint kShaderId = 456;
   const char* kString1 = "foobar";
   const char* kString2 = "barfoo";
-  const size_t kString1Size = strlen(kString1);
-  const size_t kString2Size = strlen(kString2);
-  const size_t kString3Size = 1;  // Want the NULL;
-  const size_t kSourceSize = kString1Size + kString2Size + kString3Size;
+  const size_t kString1Size = strlen(kString1) + 1;
+  const size_t kString2Size = strlen(kString2) + 1;
+  const size_t kHeaderSize = sizeof(GLint) * 3;
+  const size_t kSourceSize = kHeaderSize + kString1Size + kString2Size;
+  const size_t kPaddedHeaderSize =
+      transfer_buffer_->RoundToAlignment(kHeaderSize);
   const size_t kPaddedString1Size =
       transfer_buffer_->RoundToAlignment(kString1Size);
   const size_t kPaddedString2Size =
       transfer_buffer_->RoundToAlignment(kString2Size);
-  const size_t kPaddedString3Size =
-      transfer_buffer_->RoundToAlignment(kString3Size);
   struct Cmds {
     cmd::SetBucketSize set_bucket_size;
-    cmd::SetBucketData set_bucket_data1;
+    cmd::SetBucketData set_bucket_header;
     cmd::SetToken set_token1;
-    cmd::SetBucketData set_bucket_data2;
+    cmd::SetBucketData set_bucket_data1;
     cmd::SetToken set_token2;
-    cmd::SetBucketData set_bucket_data3;
+    cmd::SetBucketData set_bucket_data2;
     cmd::SetToken set_token3;
     cmds::ShaderSourceBucket shader_source_bucket;
     cmd::SetBucketSize clear_bucket_size;
   };
 
+  ExpectedMemoryInfo mem0 = GetExpectedMemory(kPaddedHeaderSize);
   ExpectedMemoryInfo mem1 = GetExpectedMemory(kPaddedString1Size);
   ExpectedMemoryInfo mem2 = GetExpectedMemory(kPaddedString2Size);
-  ExpectedMemoryInfo mem3 = GetExpectedMemory(kPaddedString3Size);
 
   Cmds expected;
   expected.set_bucket_size.Init(kBucketId, kSourceSize);
-  expected.set_bucket_data1.Init(
-      kBucketId, 0, kString1Size, mem1.id, mem1.offset);
+  expected.set_bucket_header.Init(
+      kBucketId, 0, kHeaderSize, mem0.id, mem0.offset);
   expected.set_token1.Init(GetNextToken());
-  expected.set_bucket_data2.Init(
-      kBucketId, kString1Size, kString2Size, mem2.id, mem2.offset);
+  expected.set_bucket_data1.Init(
+      kBucketId, kHeaderSize, kString1Size, mem1.id, mem1.offset);
   expected.set_token2.Init(GetNextToken());
-  expected.set_bucket_data3.Init(
-      kBucketId, kString1Size + kString2Size,
-      kString3Size, mem3.id, mem3.offset);
+  expected.set_bucket_data2.Init(
+      kBucketId, kHeaderSize + kString1Size, kString2Size, mem2.id,
+      mem2.offset);
   expected.set_token3.Init(GetNextToken());
   expected.shader_source_bucket.Init(kShaderId, kBucketId);
   expected.clear_bucket_size.Init(kBucketId, 0);
-  const char* strings[] = {
+  const char* kStrings[] = {
     kString1,
     kString2,
   };
-  gl_->ShaderSource(kShaderId, 2, strings, NULL);
+  gl_->ShaderSource(kShaderId, 2, kStrings, NULL);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
+TEST_F(GLES2ImplementationTest, ShaderSourceWithLength) {
+  const uint32 kBucketId = GLES2Implementation::kResultBucketId;
+  const GLuint kShaderId = 456;
+  const char* kString = "foobar******";
+  const size_t kStringSize = 6;  // We only need "foobar".
+  const size_t kHeaderSize = sizeof(GLint) * 2;
+  const size_t kSourceSize = kHeaderSize + kStringSize + 1;
+  const size_t kPaddedHeaderSize =
+      transfer_buffer_->RoundToAlignment(kHeaderSize);
+  const size_t kPaddedStringSize =
+      transfer_buffer_->RoundToAlignment(kStringSize + 1);
+
+  struct Cmds {
+    cmd::SetBucketSize set_bucket_size;
+    cmd::SetBucketData set_bucket_header;
+    cmd::SetToken set_token1;
+    cmd::SetBucketData set_bucket_data;
+    cmd::SetToken set_token2;
+    cmds::ShaderSourceBucket shader_source_bucket;
+    cmd::SetBucketSize clear_bucket_size;
+  };
+
+  ExpectedMemoryInfo mem0 = GetExpectedMemory(kPaddedHeaderSize);
+  ExpectedMemoryInfo mem1 = GetExpectedMemory(kPaddedStringSize);
+
+  Cmds expected;
+  expected.set_bucket_size.Init(kBucketId, kSourceSize);
+  expected.set_bucket_header.Init(
+      kBucketId, 0, kHeaderSize, mem0.id, mem0.offset);
+  expected.set_token1.Init(GetNextToken());
+  expected.set_bucket_data.Init(
+      kBucketId, kHeaderSize, kStringSize + 1, mem1.id, mem1.offset);
+  expected.set_token2.Init(GetNextToken());
+  expected.shader_source_bucket.Init(kShaderId, kBucketId);
+  expected.clear_bucket_size.Init(kBucketId, 0);
+  const char* kStrings[] = { kString };
+  const GLint kLength[] = { kStringSize };
+  gl_->ShaderSource(kShaderId, 1, kStrings, kLength);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 

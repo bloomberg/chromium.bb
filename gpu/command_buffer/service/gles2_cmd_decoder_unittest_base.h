@@ -166,6 +166,10 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
   void DoCreateShader(GLenum shader_type, GLuint client_id, GLuint service_id);
 
   void SetBucketAsCString(uint32 bucket_id, const char* str);
+  // If we want a valid bucket, just set |count_in_header| as |count|,
+  // and set |str_end| as 0.
+  void SetBucketAsCStrings(uint32 bucket_id, GLsizei count, const char** str,
+                           GLsizei count_in_header, char str_end);
 
   void set_memory_tracker(MemoryTracker* memory_tracker) {
     memory_tracker_ = memory_tracker;

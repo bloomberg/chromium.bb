@@ -1217,11 +1217,11 @@ void ShaderBinary(GLsizei n,
   }
 }
 
-void ShaderSourceBucket(GLuint shader, uint32_t data_bucket_id) {
+void ShaderSourceBucket(GLuint shader, uint32_t str_bucket_id) {
   gles2::cmds::ShaderSourceBucket* c =
       GetCmdSpace<gles2::cmds::ShaderSourceBucket>();
   if (c) {
-    c->Init(shader, data_bucket_id);
+    c->Init(shader, str_bucket_id);
   }
 }
 

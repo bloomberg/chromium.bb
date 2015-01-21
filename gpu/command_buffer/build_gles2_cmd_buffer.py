@@ -2398,12 +2398,12 @@ _FUNCTION_INFO = {
     'client_test': False,
   },
   'ShaderSource': {
-    'type': 'Manual',
+    'type': 'PUTSTR',
+    'decoder_func': 'DoShaderSource',
     'data_transfer_methods': ['bucket'],
-    'needs_size': True,
     'client_test': False,
     'cmd_args':
-        'GLuint shader, const char* data',
+        'GLuint shader, const char** str',
     'pepper_args':
         'GLuint shader, GLsizei count, const char** str, const GLint* length',
   },
@@ -3383,17 +3383,23 @@ static_assert(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
     file.Write("  // TODO(gman): Compute correct size.\n")
     file.Write("  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);\n")
 
+  def __WriteIdMapping(self, func, file):
+    """Writes client side / service side ID mapping."""
+    if not func.IsUnsafe() or not func.GetInfo('id_mapping'):
+      return
+    for id_type in func.GetInfo('id_mapping'):
+      file.Write("  group_->Get%sServiceId(%s, &%s);\n" %
+                 (id_type, id_type.lower(), id_type.lower()))
+
   def WriteImmediateHandlerImplementation (self, func, file):
     """Writes the handler impl for the immediate version of a command."""
-    if func.IsUnsafe() and func.GetInfo('id_mapping'):
-      for id_type in func.GetInfo('id_mapping'):
-        file.Write("  group_->Get%sServiceId(%s, &%s);\n" %
-                   (id_type, id_type.lower(), id_type.lower()))
+    self.__WriteIdMapping(func, file)
     file.Write("  %s(%s);\n" %
                (func.GetGLFunctionName(), func.MakeOriginalArgString("")))
 
   def WriteBucketHandlerImplementation (self, func, file):
     """Writes the handler impl for the bucket version of a command."""
+    self.__WriteIdMapping(func, file)
     file.Write("  %s(%s);\n" %
                (func.GetGLFunctionName(), func.MakeOriginalArgString("")))
 
@@ -3449,9 +3455,7 @@ static_assert(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
     self.WriteServiceHandlerFunctionHeader(func, file)
     self.WriteHandlerExtensionCheck(func, file)
     self.WriteHandlerDeferReadWrite(func, file);
-    for arg in func.GetOriginalArgs():
-      if arg.IsPointer():
-        self.WriteGetDataSizeCode(func, file)
+    for arg in func.GetCmdArgs():
       arg.WriteGetCode(file)
     func.WriteHandlerValidation(file)
     func.WriteHandlerImplementation(file)
@@ -4249,10 +4253,6 @@ class HandWrittenHandler(CustomHandler):
     pass
 
   def WriteImmediateCmdHelper(self, func, file):
-    """Overrriden from TypeHandler."""
-    pass
-
-  def WriteBucketCmdHelper(self, func, file):
     """Overrriden from TypeHandler."""
     pass
 
@@ -6227,6 +6227,160 @@ TEST_F(GLES2ImplementationTest, %(name)sInvalidConstantArg%(invalid_index)d) {
     file.Write("}\n")
     file.Write("\n")
 
+class PUTSTRHandler(ArrayArgTypeHandler):
+  """Handler for functions that pass a string array."""
+
+  def __init__(self):
+    ArrayArgTypeHandler.__init__(self)
+
+  def __GetDataArg(self, func):
+    """Return the argument that points to the 2D char arrays"""
+    for arg in func.GetOriginalArgs():
+      if arg.IsPointer2D():
+        return arg
+    return None
+
+  def __GetLengthArg(self, func):
+    """Return the argument that holds length for each char array"""
+    for arg in func.GetOriginalArgs():
+      if arg.IsPointer() and not arg.IsPointer2D():
+        return arg
+    return None
+
+  def WriteGLES2Implementation(self, func, file):
+    """Overrriden from TypeHandler."""
+    file.Write("%s GLES2Implementation::%s(%s) {\n" %
+               (func.return_type, func.original_name,
+                func.MakeTypedOriginalArgString("")))
+    file.Write("  GPU_CLIENT_SINGLE_THREAD_CHECK();\n")
+    func.WriteDestinationInitalizationValidation(file)
+    self.WriteClientGLCallLog(func, file)
+    data_arg = self.__GetDataArg(func)
+    length_arg = self.__GetLengthArg(func)
+    log_code_block = """  GPU_CLIENT_LOG_CODE_BLOCK({
+    for (GLsizei ii = 0; ii < count; ++ii) {
+      if (%(data)s[ii]) {"""
+    if length_arg == None:
+      log_code_block += """
+        GPU_CLIENT_LOG("  " << ii << ": ---\\n" << %(data)s[ii] << "\\n---");"""
+    else:
+      log_code_block += """
+        if (%(length)s && %(length)s[ii] >= 0) {
+          const std::string my_str(%(data)s[ii], %(length)s[ii]);
+          GPU_CLIENT_LOG("  " << ii << ": ---\\n" << my_str << "\\n---");
+        } else {
+          GPU_CLIENT_LOG("  " << ii << ": ---\\n" << %(data)s[ii] << "\\n---");
+        }"""
+    log_code_block += """
+      } else {
+        GPU_CLIENT_LOG("  " << ii << ": NULL");
+      }
+    }
+  });
+"""
+    file.Write(log_code_block % {
+          'data': data_arg.name,
+          'length': length_arg.name if not length_arg == None else ''
+      })
+    for arg in func.GetOriginalArgs():
+      arg.WriteClientSideValidationCode(file, func)
+    size_code_block = """  // Compute the total size.
+  base::CheckedNumeric<size_t> total_size = count;
+  total_size += 1;
+  total_size *= sizeof(GLint);
+  if (!total_size.IsValid()) {
+    SetGLError(GL_INVALID_VALUE, "glShaderSource", "overflow");
+    return;
+  }
+  size_t header_size = total_size.ValueOrDefault(0);
+  std::vector<GLint> header(count + 1);
+  header[0] = static_cast<GLint>(count);
+  for (GLsizei ii = 0; ii < count; ++ii) {
+    GLint len = 0;
+    if (%(data)s[ii]) {"""
+    if length_arg == None:
+      size_code_block += """
+      len = base::static_cast<GLint>(strlen(%(data)s[ii]));"""
+    else:
+      size_code_block += """
+      len = (%(length)s && %(length)s[ii] >= 0) ?
+          %(length)s[ii] : base::checked_cast<GLint>(strlen(%(data)s[ii]));"""
+    size_code_block += """
+    }
+    total_size += len;
+    total_size += 1;  // NULL at the end of each char array.
+    if (!total_size.IsValid()) {
+      SetGLError(GL_INVALID_VALUE, "glShaderSource", "overflow");
+      return;
+    }
+    header[ii + 1] = len;
+}
+"""
+    file.Write(size_code_block % {
+          'data': data_arg.name,
+          'length': length_arg.name if not length_arg == None else ''
+      })
+    data_code_block = """  // Pack data into a bucket on the service.
+  helper_->SetBucketSize(kResultBucketId, total_size.ValueOrDefault(0));
+  size_t offset = 0;
+  for (GLsizei ii = 0; ii <= count; ++ii) {
+    const char* src = (ii == 0) ? reinterpret_cast<const char*>(&header[0]) :
+        %(data)s[ii - 1];
+    base::CheckedNumeric<size_t> checked_size = (ii == 0) ? header_size :
+        static_cast<size_t>(header[ii]);
+    if (ii > 0) {
+      checked_size += 1;  // NULL in the end.
+    }
+    if (!checked_size.IsValid()) {
+      SetGLError(GL_INVALID_VALUE, "glShaderSource", "overflow");
+      return;
+    }
+    size_t size = checked_size.ValueOrDefault(0);
+    while (size) {
+      ScopedTransferBufferPtr buffer(size, helper_, transfer_buffer_);
+      if (!buffer.valid() || buffer.size() == 0) {
+        SetGLError(GL_OUT_OF_MEMORY, "glShaderSource", "too large");
+        return;
+      }
+      size_t copy_size = buffer.size();
+      if (ii > 0 && buffer.size() == size)
+        --copy_size;
+      if (copy_size)
+        memcpy(buffer.address(), src, copy_size);
+      if (copy_size < buffer.size()) {
+        // Append NULL in the end.
+        DCHECK(copy_size + 1 == buffer.size());
+        char* str = reinterpret_cast<char*>(buffer.address());
+        str[copy_size] = 0;
+      }
+      helper_->SetBucketData(kResultBucketId, offset, buffer.size(),
+                             buffer.shm_id(), buffer.offset());
+      offset += buffer.size();
+      src += buffer.size();
+      size -= buffer.size();
+    }
+  }
+  DCHECK_EQ(total_size.ValueOrDefault(0), offset);
+"""
+    file.Write(data_code_block % {
+          'data': data_arg.name,
+          'length': length_arg.name if not length_arg == None else ''
+      })
+    bucket_cmd_arg_string = ""
+    for arg in func.GetCmdArgs()[0:-2]:
+      if bucket_cmd_arg_string:
+        bucket_cmd_arg_string += ", "
+      bucket_cmd_arg_string += arg.name
+    if bucket_cmd_arg_string:
+      bucket_cmd_arg_string += ", "
+    bucket_cmd_arg_string += 'kResultBucketId'
+    file.Write("  helper_->%sBucket(%s);\n" %
+               (func.name, bucket_cmd_arg_string))
+    file.Write("  helper_->SetBucketSize(kResultBucketId, 0);");
+    file.Write("  CheckGLError();\n")
+    file.Write("}\n")
+    file.Write("\n")
+
 
 class PUTXnHandler(ArrayArgTypeHandler):
   """Handler for glUniform?f functions."""
@@ -6823,6 +6977,10 @@ class Argument(object):
     """Returns true if argument is a pointer."""
     return False
 
+  def IsPointer2D(self):
+    """Returns true if argument is a 2D pointer."""
+    return False
+
   def IsConstant(self):
     """Returns true if the argument has only one valid value."""
     return False
@@ -7269,6 +7427,10 @@ class PointerArgument(Argument):
     """Returns true if argument is a pointer."""
     return True
 
+  def IsPointer2D(self):
+    """Returns true if argument is a 2D pointer."""
+    return self.type.count('*') == 2
+
   def GetPointedType(self):
     match = re.match('(const\s+)?(?P<element_type>[\w]+)\s*\*', self.type)
     assert match
@@ -7333,7 +7495,9 @@ class PointerArgument(Argument):
 
   def GetBucketVersion(self):
     """Overridden from Argument."""
-    if self.type == "const char*":
+    if self.type.find('char') >= 0:
+      if self.IsPointer2D():
+        return InputStringArrayBucketArgument(self.name, self.type)
       return InputStringBucketArgument(self.name, self.type)
     return BucketPointerArgument(self.name, self.type)
 
@@ -7343,26 +7507,68 @@ class PointerArgument(Argument):
 
 
 class InputStringBucketArgument(Argument):
-  """An string input argument where the string is passed in a bucket."""
+  """A string input argument where the string is passed in a bucket."""
 
   def __init__(self, name, type):
     Argument.__init__(self, name + "_bucket_id", "uint32_t")
 
+
+class InputStringArrayBucketArgument(Argument):
+  """A string array input argument where the strings are passed in a bucket."""
+
+  def __init__(self, name, type):
+    Argument.__init__(self, name + "_bucket_id", "uint32_t")
+    self._original_name = name
+
   def WriteGetCode(self, file):
     """Overridden from Argument."""
     code = """
-  Bucket* %(name)s_bucket = GetBucket(c.%(name)s);
-  if (!%(name)s_bucket) {
+  const size_t kMinBucketSize = sizeof(GLint);
+  // Each string has at least |length| in the header and a NUL character.
+  const size_t kMinStringSize = sizeof(GLint) + 1;
+  Bucket* bucket = GetBucket(c.%(name)s);
+  if (!bucket) {
     return error::kInvalidArguments;
   }
-  std::string %(name)s_str;
-  if (!%(name)s_bucket->GetAsString(&%(name)s_str)) {
+  const size_t bucket_size = bucket->size();
+  if (bucket_size < kMinBucketSize) {
     return error::kInvalidArguments;
   }
-  const char* %(name)s = %(name)s_str.c_str();
+  const char* bucket_data = bucket->GetDataAs<const char*>(0, bucket_size);
+  const GLint* header = reinterpret_cast<const GLint*>(bucket_data);
+  GLsizei count = static_cast<GLsizei>(header[0]);
+  if (count < 0) {
+    return error::kInvalidArguments;
+  }
+  const size_t max_count = (bucket_size - kMinBucketSize) / kMinStringSize;
+  if (max_count < static_cast<size_t>(count)) {
+    return error::kInvalidArguments;
+  }
+  const GLint* length = header + 1;
+  scoped_ptr<const char*[]> strs;
+  if (count > 0)
+    strs.reset(new const char*[count]);
+  const char** %(original_name)s = strs.get();
+  base::CheckedNumeric<size_t> total_size = sizeof(GLint);
+  total_size *= count + 1;  // Header size.
+  if (!total_size.IsValid())
+    return error::kInvalidArguments;
+  for (GLsizei ii = 0; ii < count; ++ii) {
+    %(original_name)s[ii] = bucket_data + total_size.ValueOrDefault(0);
+    total_size += length[ii];
+    total_size += 1;  // NUL char at the end of each char array.
+    if (!total_size.IsValid() || total_size.ValueOrDefault(0) > bucket_size ||
+        %(original_name)s[ii][length[ii]] != 0) {
+      return error::kInvalidArguments;
+    }
+  }
+  if (total_size.ValueOrDefault(0) != bucket_size) {
+    return error::kInvalidArguments;
+  }
 """
     file.Write(code % {
         'name': self.name,
+        'original_name': self._original_name,
       })
 
   def GetValidArg(self, func):
@@ -7462,6 +7668,7 @@ class Function(object):
     'Manual': ManualHandler(),
     'PUT': PUTHandler(),
     'PUTn': PUTnHandler(),
+    'PUTSTR': PUTSTRHandler(),
     'PUTXn': PUTXnHandler(),
     'StateSet': StateSetHandler(),
     'StateSetRGBAlpha': StateSetRGBAlphaHandler(),
@@ -7653,7 +7860,7 @@ class Function(object):
         return arg
     return None
 
-  def __MaybePrependComma(self, arg_string, add_comma):
+  def _MaybePrependComma(self, arg_string, add_comma):
     """Adds a comma if arg_string is not empty and add_comma is true."""
     comma = ""
     if add_comma and len(arg_string):
@@ -7665,14 +7872,14 @@ class Function(object):
     args = self.GetOriginalArgs()
     arg_string = ", ".join(
         ["%s %s%s" % (arg.type, prefix, arg.name) for arg in args])
-    return self.__MaybePrependComma(arg_string, add_comma)
+    return self._MaybePrependComma(arg_string, add_comma)
 
   def MakeOriginalArgString(self, prefix, add_comma = False, separator = ", "):
     """Gets the list of arguments as they are in GL."""
     args = self.GetOriginalArgs()
     arg_string = separator.join(
         ["%s%s" % (prefix, arg.name) for arg in args])
-    return self.__MaybePrependComma(arg_string, add_comma)
+    return self._MaybePrependComma(arg_string, add_comma)
 
   def MakeTypedHelperArgString(self, prefix, add_comma = False):
     """Gets a list of typed GL arguments after removing unneeded arguments."""
@@ -7683,7 +7890,7 @@ class Function(object):
           prefix,
           arg.name,
         ) for arg in args if not arg.IsConstant()])
-    return self.__MaybePrependComma(arg_string, add_comma)
+    return self._MaybePrependComma(arg_string, add_comma)
 
   def MakeHelperArgString(self, prefix, add_comma = False, separator = ", "):
     """Gets a list of GL arguments after removing unneeded arguments."""
@@ -7691,7 +7898,7 @@ class Function(object):
     arg_string = separator.join(
         ["%s%s" % (prefix, arg.name)
          for arg in args if not arg.IsConstant()])
-    return self.__MaybePrependComma(arg_string, add_comma)
+    return self._MaybePrependComma(arg_string, add_comma)
 
   def MakeTypedPepperArgString(self, prefix):
     """Gets a list of arguments as they need to be for Pepper."""
@@ -7740,28 +7947,28 @@ class Function(object):
     args = self.GetCmdArgs()
     arg_string = ", ".join(
         ["%s %s%s" % (arg.type, prefix, arg.name) for arg in args])
-    return self.__MaybePrependComma(arg_string, add_comma)
+    return self._MaybePrependComma(arg_string, add_comma)
 
   def MakeCmdArgString(self, prefix, add_comma = False):
     """Gets the list of arguments as they need to be for command buffers."""
     args = self.GetCmdArgs()
     arg_string = ", ".join(
         ["%s%s" % (prefix, arg.name) for arg in args])
-    return self.__MaybePrependComma(arg_string, add_comma)
+    return self._MaybePrependComma(arg_string, add_comma)
 
   def MakeTypedInitString(self, prefix, add_comma = False):
     """Gets a typed list of arguments as they need to be for cmd Init/Set."""
     args = self.GetInitArgs()
     arg_string = ", ".join(
         ["%s %s%s" % (arg.type, prefix, arg.name) for arg in args])
-    return self.__MaybePrependComma(arg_string, add_comma)
+    return self._MaybePrependComma(arg_string, add_comma)
 
   def MakeInitString(self, prefix, add_comma = False):
     """Gets the list of arguments as they need to be for cmd Init/Set."""
     args = self.GetInitArgs()
     arg_string = ", ".join(
         ["%s%s" % (prefix, arg.name) for arg in args])
-    return self.__MaybePrependComma(arg_string, add_comma)
+    return self._MaybePrependComma(arg_string, add_comma)
 
   def MakeLogArgString(self):
     """Makes a string of the arguments for the LOG macros"""
@@ -8069,8 +8276,16 @@ class BucketFunction(Function):
     self.type_handler.WriteBucketHandlerImplementation(self, file)
 
   def WriteServiceUnitTest(self, file, *extras):
-    """Writes the service implementation for a command."""
+    """Overridden from Function"""
     self.type_handler.WriteBucketServiceUnitTest(self, file, *extras)
+
+  def MakeOriginalArgString(self, prefix, add_comma = False, separator = ", "):
+    """Overridden from Function"""
+    args = self.GetOriginalArgs()
+    arg_string = separator.join(
+        ["%s%s" % (prefix, arg.name[0:-10] if arg.name.endswith("_bucket_id")
+                           else arg.name) for arg in args])
+    return super(BucketFunction, self)._MaybePrependComma(arg_string, add_comma)
 
 
 def CreateArg(arg_string):

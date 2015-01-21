@@ -1875,7 +1875,7 @@ TEST_F(GLES2FormatTest, ShaderSourceBucket) {
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
   EXPECT_EQ(static_cast<GLuint>(11), cmd.shader);
-  EXPECT_EQ(static_cast<uint32_t>(12), cmd.data_bucket_id);
+  EXPECT_EQ(static_cast<uint32_t>(12), cmd.str_bucket_id);
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 

@@ -5964,20 +5964,20 @@ struct ShaderSourceBucket {
 
   void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(GLuint _shader, uint32_t _data_bucket_id) {
+  void Init(GLuint _shader, uint32_t _str_bucket_id) {
     SetHeader();
     shader = _shader;
-    data_bucket_id = _data_bucket_id;
+    str_bucket_id = _str_bucket_id;
   }
 
-  void* Set(void* cmd, GLuint _shader, uint32_t _data_bucket_id) {
-    static_cast<ValueType*>(cmd)->Init(_shader, _data_bucket_id);
+  void* Set(void* cmd, GLuint _shader, uint32_t _str_bucket_id) {
+    static_cast<ValueType*>(cmd)->Init(_shader, _str_bucket_id);
     return NextCmdAddress<ValueType>(cmd);
   }
 
   gpu::CommandHeader header;
   uint32_t shader;
-  uint32_t data_bucket_id;
+  uint32_t str_bucket_id;
 };
 
 static_assert(sizeof(ShaderSourceBucket) == 12,
@@ -5986,8 +5986,8 @@ static_assert(offsetof(ShaderSourceBucket, header) == 0,
               "offset of ShaderSourceBucket header should be 0");
 static_assert(offsetof(ShaderSourceBucket, shader) == 4,
               "offset of ShaderSourceBucket shader should be 4");
-static_assert(offsetof(ShaderSourceBucket, data_bucket_id) == 8,
-              "offset of ShaderSourceBucket data_bucket_id should be 8");
+static_assert(offsetof(ShaderSourceBucket, str_bucket_id) == 8,
+              "offset of ShaderSourceBucket str_bucket_id should be 8");
 
 struct StencilFunc {
   typedef StencilFunc ValueType;

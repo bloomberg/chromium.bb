@@ -2353,6 +2353,60 @@ error::Error GLES2DecoderImpl::HandleScissor(uint32_t immediate_data_size,
   return error::kNoError;
 }
 
+error::Error GLES2DecoderImpl::HandleShaderSourceBucket(
+    uint32_t immediate_data_size,
+    const void* cmd_data) {
+  const gles2::cmds::ShaderSourceBucket& c =
+      *static_cast<const gles2::cmds::ShaderSourceBucket*>(cmd_data);
+  (void)c;
+  GLuint shader = static_cast<GLuint>(c.shader);
+
+  const size_t kMinBucketSize = sizeof(GLint);
+  // Each string has at least |length| in the header and a NUL character.
+  const size_t kMinStringSize = sizeof(GLint) + 1;
+  Bucket* bucket = GetBucket(c.str_bucket_id);
+  if (!bucket) {
+    return error::kInvalidArguments;
+  }
+  const size_t bucket_size = bucket->size();
+  if (bucket_size < kMinBucketSize) {
+    return error::kInvalidArguments;
+  }
+  const char* bucket_data = bucket->GetDataAs<const char*>(0, bucket_size);
+  const GLint* header = reinterpret_cast<const GLint*>(bucket_data);
+  GLsizei count = static_cast<GLsizei>(header[0]);
+  if (count < 0) {
+    return error::kInvalidArguments;
+  }
+  const size_t max_count = (bucket_size - kMinBucketSize) / kMinStringSize;
+  if (max_count < static_cast<size_t>(count)) {
+    return error::kInvalidArguments;
+  }
+  const GLint* length = header + 1;
+  scoped_ptr<const char* []> strs;
+  if (count > 0)
+    strs.reset(new const char* [count]);
+  const char** str = strs.get();
+  base::CheckedNumeric<size_t> total_size = sizeof(GLint);
+  total_size *= count + 1;  // Header size.
+  if (!total_size.IsValid())
+    return error::kInvalidArguments;
+  for (GLsizei ii = 0; ii < count; ++ii) {
+    str[ii] = bucket_data + total_size.ValueOrDefault(0);
+    total_size += length[ii];
+    total_size += 1;  // NUL char at the end of each char array.
+    if (!total_size.IsValid() || total_size.ValueOrDefault(0) > bucket_size ||
+        str[ii][length[ii]] != 0) {
+      return error::kInvalidArguments;
+    }
+  }
+  if (total_size.ValueOrDefault(0) != bucket_size) {
+    return error::kInvalidArguments;
+  }
+  DoShaderSource(shader, count, str, length);
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderImpl::HandleStencilFunc(uint32_t immediate_data_size,
                                                  const void* cmd_data) {
   const gles2::cmds::StencilFunc& c =
