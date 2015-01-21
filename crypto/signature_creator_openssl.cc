@@ -45,14 +45,15 @@ SignatureCreator* SignatureCreator::Create(RSAPrivateKey* key,
                                            HashAlgorithm hash_alg) {
   OpenSSLErrStackTracer err_tracer(FROM_HERE);
   scoped_ptr<SignatureCreator> result(new SignatureCreator);
-  result->key_ = key;
   const EVP_MD* const digest = ToOpenSSLDigest(hash_alg);
   DCHECK(digest);
   if (!digest) {
     return NULL;
   }
-  if (!EVP_SignInit_ex(result->sign_context_, digest, NULL))
+  if (!EVP_DigestSignInit(result->sign_context_, NULL, digest, NULL,
+                          key->key())) {
     return NULL;
+  }
   return result.release();
 }
 
@@ -87,17 +88,22 @@ SignatureCreator::~SignatureCreator() {
 
 bool SignatureCreator::Update(const uint8* data_part, int data_part_len) {
   OpenSSLErrStackTracer err_tracer(FROM_HERE);
-  return EVP_SignUpdate(sign_context_, data_part, data_part_len) == 1;
+  return !!EVP_DigestSignUpdate(sign_context_, data_part, data_part_len);
 }
 
 bool SignatureCreator::Final(std::vector<uint8>* signature) {
   OpenSSLErrStackTracer err_tracer(FROM_HERE);
-  EVP_PKEY* key = key_->key();
-  signature->resize(EVP_PKEY_size(key));
 
-  unsigned int len = 0;
-  int rv = EVP_SignFinal(sign_context_, vector_as_array(signature), &len, key);
-  if (!rv) {
+  // Determine the maximum length of the signature.
+  size_t len = 0;
+  if (!EVP_DigestSignFinal(sign_context_, NULL, &len)) {
+    signature->clear();
+    return false;
+  }
+  signature->resize(len);
+
+  // Sign it.
+  if (!EVP_DigestSignFinal(sign_context_, vector_as_array(signature), &len)) {
     signature->clear();
     return false;
   }

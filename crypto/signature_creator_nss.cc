@@ -50,8 +50,6 @@ SignatureCreator::~SignatureCreator() {
 SignatureCreator* SignatureCreator::Create(RSAPrivateKey* key,
                                            HashAlgorithm hash_alg) {
   scoped_ptr<SignatureCreator> result(new SignatureCreator);
-  result->key_ = key;
-
   result->sign_context_ = SGN_NewContext(ToNSSSigOid(hash_alg), key->key());
   if (!result->sign_context_) {
     NOTREACHED();
@@ -113,9 +111,7 @@ bool SignatureCreator::Final(std::vector<uint8>* signature) {
   return true;
 }
 
-SignatureCreator::SignatureCreator()
-    : key_(NULL),
-      sign_context_(NULL) {
+SignatureCreator::SignatureCreator() : sign_context_(NULL) {
   EnsureNSSInit();
 }
 

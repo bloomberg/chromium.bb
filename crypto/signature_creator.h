@@ -59,8 +59,6 @@ class CRYPTO_EXPORT SignatureCreator {
   // Private constructor. Use the Create() method instead.
   SignatureCreator();
 
-  RSAPrivateKey* key_;
-
 #if defined(USE_OPENSSL)
   EVP_MD_CTX* sign_context_;
 #elif defined(USE_NSS) || defined(OS_WIN) || defined(OS_MACOSX)
