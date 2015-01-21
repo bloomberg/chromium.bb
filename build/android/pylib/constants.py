@@ -88,7 +88,7 @@ PACKAGE_INFO = {
     'android_webview_shell': PackageInfo(
         'org.chromium.android_webview.shell',
         'org.chromium.android_webview.shell.AwShellActivity',
-        None,
+        '/data/local/tmp/android-webview-command-line',
         None,
         'org.chromium.android_webview.test'),
     'gtest': PackageInfo(
