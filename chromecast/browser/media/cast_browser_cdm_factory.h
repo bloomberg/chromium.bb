@@ -20,11 +20,12 @@ class CastBrowserCdmFactory : public ::media::BrowserCdmFactory {
   // ::media::BrowserCdmFactory implementation:
   scoped_ptr< ::media::BrowserCdm> CreateBrowserCdm(
       const std::string& key_system,
-      const ::media::BrowserCdm::SessionCreatedCB& session_created_cb,
-      const ::media::BrowserCdm::SessionMessageCB& session_message_cb,
-      const ::media::BrowserCdm::SessionReadyCB& session_ready_cb,
-      const ::media::BrowserCdm::SessionClosedCB& session_closed_cb,
-      const ::media::BrowserCdm::SessionErrorCB& session_error_cb) override;
+      const ::media::SessionMessageCB& session_message_cb,
+      const ::media::SessionClosedCB& session_closed_cb,
+      const ::media::SessionErrorCB& session_error_cb,
+      const ::media::SessionKeysChangeCB& session_keys_change_cb,
+      const ::media::SessionExpirationUpdateCB&
+          session_expiration_update_cb) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CastBrowserCdmFactory);
@@ -33,11 +34,11 @@ class CastBrowserCdmFactory : public ::media::BrowserCdmFactory {
 // Allow platform-specific CDMs to be provided.
 scoped_ptr< ::media::BrowserCdm> CreatePlatformBrowserCdm(
     const CastKeySystem& key_system,
-    const ::media::BrowserCdm::SessionCreatedCB& session_created_cb,
-    const ::media::BrowserCdm::SessionMessageCB& session_message_cb,
-    const ::media::BrowserCdm::SessionReadyCB& session_ready_cb,
-    const ::media::BrowserCdm::SessionClosedCB& session_closed_cb,
-    const ::media::BrowserCdm::SessionErrorCB& session_error_cb);
+    const ::media::SessionMessageCB& session_message_cb,
+    const ::media::SessionClosedCB& session_closed_cb,
+    const ::media::SessionErrorCB& session_error_cb,
+    const ::media::SessionKeysChangeCB& session_keys_change_cb,
+    const ::media::SessionExpirationUpdateCB& session_expiration_update_cb);
 
 }  // namespace media
 }  // namespace chromecast

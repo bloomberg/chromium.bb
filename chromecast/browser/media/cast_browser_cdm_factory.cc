@@ -9,22 +9,22 @@ namespace media {
 
 scoped_ptr< ::media::BrowserCdm> CastBrowserCdmFactory::CreateBrowserCdm(
     const std::string& key_system_name,
-    const ::media::BrowserCdm::SessionCreatedCB& session_created_cb,
-    const ::media::BrowserCdm::SessionMessageCB& session_message_cb,
-    const ::media::BrowserCdm::SessionReadyCB& session_ready_cb,
-    const ::media::BrowserCdm::SessionClosedCB& session_closed_cb,
-    const ::media::BrowserCdm::SessionErrorCB& session_error_cb) {
+    const ::media::SessionMessageCB& session_message_cb,
+    const ::media::SessionClosedCB& session_closed_cb,
+    const ::media::SessionErrorCB& session_error_cb,
+    const ::media::SessionKeysChangeCB& session_keys_change_cb,
+    const ::media::SessionExpirationUpdateCB& session_expiration_update_cb) {
   CastKeySystem key_system(GetKeySystemByName(key_system_name));
 
   // TODO(gunsch): handle ClearKey decryption. See crbug.com/441957
 
   scoped_ptr< ::media::BrowserCdm> platform_cdm(
       CreatePlatformBrowserCdm(key_system,
-                               session_created_cb,
                                session_message_cb,
-                               session_ready_cb,
                                session_closed_cb,
-                               session_error_cb));
+                               session_error_cb,
+                               session_keys_change_cb,
+                               session_expiration_update_cb));
   if (platform_cdm) {
     return platform_cdm.Pass();
   }
