@@ -112,7 +112,7 @@ fur{
             "rupiah indonesiane",
         }
         INR{
-            "₹",
+            "Rs.",
             "rupie indiane",
         }
         IRR{

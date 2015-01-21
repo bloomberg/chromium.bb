@@ -298,9 +298,6 @@ se{
     }
     CountriesShort{
         GB{"Stuorra-Británnia"}
-        HK{"Hongkong"}
-        MO{"Makáo"}
-        PS{"Palestina"}
         US{"USA"}
     }
     Version{"2.1.7.53"}

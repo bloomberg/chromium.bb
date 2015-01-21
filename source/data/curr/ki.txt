@@ -96,7 +96,7 @@ ki{
             "Faranga ya Gine",
         }
         INR{
-            "₹",
+            "Rs.",
             "Rubia rwa India",
         }
         JPY{

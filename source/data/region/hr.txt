@@ -141,7 +141,7 @@ hr{
         GU{"Guam"}
         GW{"Gvineja Bisau"}
         GY{"Gvajana"}
-        HK{"Hong Kong PUP Kina"}
+        HK{"Hong Kong"}
         HM{"Otoci Heard i McDonald"}
         HN{"Honduras"}
         HR{"Hrvatska"}
@@ -195,7 +195,7 @@ hr{
         ML{"Mali"}
         MM{"Mijanmar (Burma)"}
         MN{"Mongolija"}
-        MO{"Makao PUP Kina"}
+        MO{"Makao"}
         MP{"Sjeverni Marijanski Otoci"}
         MQ{"Martinique"}
         MR{"Mauritanija"}
@@ -230,7 +230,7 @@ hr{
         PM{"Sveti Petar i Mikelon"}
         PN{"Otoci Pitcairn"}
         PR{"Portoriko"}
-        PS{"Palestinsko Područje"}
+        PS{"Palestina"}
         PT{"Portugal"}
         PW{"Palau"}
         PY{"Paragvaj"}
@@ -311,9 +311,6 @@ hr{
     }
     CountriesShort{
         GB{"UK"}
-        HK{"Hong Kong"}
-        MO{"Makao"}
-        PS{"Palestina"}
         US{"SAD"}
     }
     Version{"2.1.8.9"}

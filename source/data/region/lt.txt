@@ -141,7 +141,7 @@ lt{
         GU{"Guamas"}
         GW{"Bisau Gvinėja"}
         GY{"Gajana"}
-        HK{"Ypatingasis Administracinis Kinijos Regionas Honkongas"}
+        HK{"Honkongas"}
         HM{"Herdo ir Makdonaldo Salos"}
         HN{"Hondūras"}
         HR{"Kroatija"}
@@ -195,7 +195,7 @@ lt{
         ML{"Malis"}
         MM{"Mianmaras (Birma)"}
         MN{"Mongolija"}
-        MO{"Ypatingasis Administracinis Kinijos Regionas Makao"}
+        MO{"Makao"}
         MP{"Marianos Šiaurinės Salos"}
         MQ{"Martinika"}
         MR{"Mauritanija"}
@@ -230,7 +230,7 @@ lt{
         PM{"Sen Pjeras ir Mikelonas"}
         PN{"Pitkernas"}
         PR{"Puerto Rikas"}
-        PS{"Palestinos teritorija"}
+        PS{"Palestina"}
         PT{"Portugalija"}
         PW{"Palau"}
         PY{"Paragvajus"}
@@ -310,9 +310,6 @@ lt{
     }
     CountriesShort{
         GB{"Didžioji Britanija"}
-        HK{"Honkongas"}
-        MO{"Makao"}
-        PS{"Palestina"}
         US{"JAV"}
     }
     Version{"2.1.8.9"}

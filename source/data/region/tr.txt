@@ -141,7 +141,7 @@ tr{
         GU{"Guam"}
         GW{"Gine-Bissau"}
         GY{"Guyana"}
-        HK{"Çin Hong Kong ÖYB"}
+        HK{"Hong Kong"}
         HM{"Heard Adası ve McDonald Adaları"}
         HN{"Honduras"}
         HR{"Hırvatistan"}
@@ -195,7 +195,7 @@ tr{
         ML{"Mali"}
         MM{"Myanmar (Burma)"}
         MN{"Moğolistan"}
-        MO{"Çin Makao ÖYB"}
+        MO{"Makao"}
         MP{"Kuzey Mariana Adaları"}
         MQ{"Martinik"}
         MR{"Moritanya"}
@@ -230,7 +230,7 @@ tr{
         PM{"Saint Pierre ve Miquelon"}
         PN{"Pitcairn Adaları"}
         PR{"Porto Riko"}
-        PS{"Filistin Bölgeleri"}
+        PS{"Filistin"}
         PT{"Portekiz"}
         PW{"Palau"}
         PY{"Paraguay"}
@@ -311,9 +311,6 @@ tr{
     }
     CountriesShort{
         GB{"BK"}
-        HK{"Hong Kong"}
-        MO{"Makao"}
-        PS{"Filistin"}
         US{"ABD"}
     }
     Version{"2.1.8.9"}

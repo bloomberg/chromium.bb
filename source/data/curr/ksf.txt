@@ -96,7 +96,7 @@ ksf{
             "mɔni mǝ á ginɛ́",
         }
         INR{
-            "₹",
+            "Rs.",
             "mɔni mǝ á indí",
         }
         JPY{

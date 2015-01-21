@@ -456,7 +456,7 @@ sl{
             "izraelski šekel",
         }
         INR{
-            "₹",
+            "Rs.",
             "indijska rupija",
         }
         IQD{

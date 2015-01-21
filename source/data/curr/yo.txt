@@ -96,7 +96,7 @@ yo{
             "Faransi ti Orílẹ́ède Gini",
         }
         INR{
-            "₹",
+            "Rs.",
             "Rupi ti Orílẹ́ède Indina",
         }
         JPY{

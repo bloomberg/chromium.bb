@@ -96,7 +96,7 @@ ksb{
             "falanga ya Gine",
         }
         INR{
-            "₹",
+            "Rs.",
             "lupia ya India",
         }
         JPY{

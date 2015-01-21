@@ -96,7 +96,7 @@ mg{
             "Farantsa Gineanina",
         }
         INR{
-            "₹",
+            "Rs.",
             "Ropia Indianina",
         }
         JPY{

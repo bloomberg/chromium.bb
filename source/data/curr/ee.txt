@@ -500,7 +500,7 @@ ee{
             "israelga yeyetɔ sheqel",
         }
         INR{
-            "₹",
+            "Rs.",
             "indiaga rupee",
         }
         IQD{

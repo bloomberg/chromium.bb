@@ -389,7 +389,7 @@ et{
             "Iisraeli uus seekel",
         }
         INR{
-            "₹",
+            "Rs.",
             "India ruupia",
         }
         IQD{

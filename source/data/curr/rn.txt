@@ -96,7 +96,7 @@ rn{
             "Ifaranga ryo muri Gineya",
         }
         INR{
-            "₹",
+            "Rs.",
             "Irupiya ryo mu Buhindi",
         }
         JPY{

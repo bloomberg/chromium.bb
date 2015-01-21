@@ -138,7 +138,7 @@ fur{
         GU{"Guam"}
         GW{"Guinea-Bissau"}
         GY{"Guyana"}
-        HK{"Regjon aministrative speciâl de Cine di Hong Kong"}
+        HK{"Hong Kong"}
         HM{"Isule Heard e Isulis McDonald"}
         HN{"Honduras"}
         HR{"Cravuazie"}
@@ -192,7 +192,7 @@ fur{
         ML{"Mali"}
         MM{"Birmanie"}
         MN{"Mongolie"}
-        MO{"Regjon aministrative speciâl de Cine di Macao"}
+        MO{"Macao"}
         MP{"Isulis Mariana dal Nord"}
         MQ{"Martiniche"}
         MR{"Mauritanie"}
@@ -301,10 +301,6 @@ fur{
         CG{"Congo (Republiche)"}
         FK{"Isulis Falkland (Isulis Malvinas)"}
         MK{"Macedonie (FYROM)"}
-    }
-    CountriesShort{
-        HK{"Hong Kong"}
-        MO{"Macao"}
     }
     Version{"2.1.7.53"}
 }

@@ -264,7 +264,7 @@ ksh{
             "ißraeelesche Schekel",
         }
         INR{
-            "₹",
+            "Rs.",
             "indesche Ruupije",
         }
         IQD{

@@ -353,7 +353,9 @@ TRANSLIT_SRC= $(TRANSLIT_SOURCE) $(TRANSLIT_ALIAS_SOURCE) $(TRANSLIT_SOURCE_LOCA
 TRANSLIT_SRC_FILES = $(TRANSLIT_SRC:%=$(TRANSLITSRCDIR)/%)
 INSTALLED_TRANSLIT_FILES = $(TRANSLIT_SOURCE:%.txt=%)  $(TRANSLIT_SOURCE_LOCAL:%.txt=%)
 endif
-GENRBOPTS=-k
+# Chromium : To save space, use '-R' option (exclude collation rules. just
+# include the compiled binary data.)
+GENRBOPTS=-k -R
 
 ## MISC files
 -include $(MISCSRCDIR)/miscfiles.mk

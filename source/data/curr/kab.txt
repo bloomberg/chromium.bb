@@ -96,7 +96,7 @@ kab{
             "Afrank Aɣini",
         }
         INR{
-            "₹",
+            "Rs.",
             "Arupi Ahendi",
         }
         JPY{

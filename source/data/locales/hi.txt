@@ -339,16 +339,16 @@ hi{
         }
         gregorian{
             AmPmMarkers{
-                "पूर्वाह्न",
-                "अपराह्न",
+                "am",
+                "pm",
             }
             AmPmMarkersAbbr{
                 "पूर्व",
                 "अपर",
             }
             AmPmMarkersNarrow{
-                "पू",
-                "अ",
+                "am",
+                "pm",
             }
             DateTimePatterns{
                 "h:mm:ss a zzzz",
@@ -365,8 +365,8 @@ hi{
                 "{1}, {0}",
                 "{1}, {0}",
             }
-            NoonMarker{"दोपहर"}
-            NoonMarkerNarrow{"दोप"}
+            NoonMarker{"noon"}
+            NoonMarkerNarrow{"n"}
             appendItems{
                 Timezone{"{0} {1}"}
             }

@@ -500,7 +500,7 @@ en{
             "Israeli New Sheqel",
         }
         INR{
-            "₹",
+            "Rs.",
             "Indian Rupee",
         }
         IQD{
@@ -796,7 +796,7 @@ en{
             "Papua New Guinean Kina",
         }
         PHP{
-            "PHP",
+            "Php",
             "Philippine Peso",
         }
         PKR{

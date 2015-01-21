@@ -264,7 +264,7 @@ af{
             "Israeliese nuwe sikkel",
         }
         INR{
-            "₹",
+            "Rs.",
             "Indiese roepee",
         }
         IQD{

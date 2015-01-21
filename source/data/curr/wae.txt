@@ -28,7 +28,7 @@ wae{
             "Pfund",
         }
         INR{
-            "₹",
+            "Rs.",
             "Indiši Rupie",
         }
         JPY{

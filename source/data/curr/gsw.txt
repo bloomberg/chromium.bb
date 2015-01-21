@@ -452,7 +452,7 @@ gsw{
             "Schekel",
         }
         INR{
-            "₹",
+            "Rs.",
             "Indischi Rupie",
         }
         IQD{

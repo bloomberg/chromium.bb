@@ -96,7 +96,7 @@ saq{
             "Njilingi eel Gine",
         }
         INR{
-            "₹",
+            "Rs.",
             "Njilingi eel India",
         }
         JPY{

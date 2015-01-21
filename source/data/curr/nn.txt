@@ -452,7 +452,7 @@ nn{
             "israelsk ny shekel",
         }
         INR{
-            "₹",
+            "Rs.",
             "indisk rupi",
         }
         IQD{

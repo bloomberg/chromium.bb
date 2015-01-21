@@ -96,7 +96,7 @@ agq{
             "Fàlâŋ è Ginè",
         }
         INR{
-            "₹",
+            "Rs.",
             "Lukpì è Endìa",
         }
         JPY{

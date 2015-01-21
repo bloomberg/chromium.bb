@@ -96,7 +96,7 @@ khq{
             "Ginee Fraŋ",
         }
         INR{
-            "₹",
+            "Rs.",
             "Indu Rupii",
         }
         JPY{

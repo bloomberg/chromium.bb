@@ -96,7 +96,7 @@ sbp{
             "Ihela ya Gine",
         }
         INR{
-            "₹",
+            "Rs.",
             "Ihela ya Indiya",
         }
         JPY{

@@ -96,7 +96,7 @@ mua{
             "solai Guine",
         }
         INR{
-            "₹",
+            "Rs.",
             "solai India",
         }
         JPY{

@@ -97,7 +97,7 @@ vai_Latn{
             "Gini Furaŋki",
         }
         INR{
-            "₹",
+            "Rs.",
             "Índiya Rupi",
         }
         JPY{

@@ -500,7 +500,7 @@ pt{
             "Sheqel novo israelita",
         }
         INR{
-            "₹",
+            "Rs.",
             "Rupia indiana",
         }
         IQD{

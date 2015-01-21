@@ -456,7 +456,7 @@ lb{
             "Israeleschen Neie Schekel",
         }
         INR{
-            "₹",
+            "Rs.",
             "Indesch Rupie",
         }
         IQD{

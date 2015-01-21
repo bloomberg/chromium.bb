@@ -488,7 +488,7 @@ vi{
             "Sheqel Israel mới",
         }
         INR{
-            "₹",
+            "Rs.",
             "Rupee Ấn Độ",
         }
         IQD{

@@ -492,7 +492,7 @@ rm{
             "sheqel",
         }
         INR{
-            "₹",
+            "Rs.",
             "rupia indica",
         }
         IQD{

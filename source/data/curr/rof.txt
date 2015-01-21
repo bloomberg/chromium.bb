@@ -96,7 +96,7 @@ rof{
             "heleri sa Gine",
         }
         INR{
-            "₹",
+            "Rs.",
             "heleri sa India",
         }
         JPY{

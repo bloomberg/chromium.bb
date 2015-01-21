@@ -230,7 +230,7 @@ fo{
         PM{"Saint Pierre og Miquelon"}
         PN{"Pitcairn"}
         PR{"Puerto Rico"}
-        PS{"Palestinskt territorium"}
+        PS{"Palestina"}
         PT{"Portugal"}
         PW{"Palau"}
         PY{"Paraguei"}
@@ -304,9 +304,6 @@ fo{
     }
     CountriesShort{
         GB{"Stóra Bretland"}
-        HK{"Hongkong"}
-        MO{"Makao"}
-        PS{"Palestina"}
         US{"USA"}
     }
     Version{"2.1.7.53"}

@@ -386,7 +386,7 @@ en_GB{
             "Israeli New Shekel",
         }
         INR{
-            "₹",
+            "Rs.",
             "Indian Rupee",
         }
         IQD{

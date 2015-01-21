@@ -96,7 +96,7 @@ mfe{
             "fran gineen",
         }
         INR{
-            "₹",
+            "Rs.",
             "roupi",
         }
         JPY{

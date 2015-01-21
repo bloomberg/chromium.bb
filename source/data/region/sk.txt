@@ -141,7 +141,7 @@ sk{
         GU{"Guam"}
         GW{"Guinea-Bissau"}
         GY{"Guayana"}
-        HK{"Hongkong – OAO Číny"}
+        HK{"Hongkong"}
         HM{"Heardov ostrov a McDonaldove ostrovy"}
         HN{"Honduras"}
         HR{"Chorvátsko"}
@@ -195,7 +195,7 @@ sk{
         ML{"Mali"}
         MM{"Mjanmarsko"}
         MN{"Mongolsko"}
-        MO{"Macao – OAO Číny"}
+        MO{"Macao"}
         MP{"Severné Mariány"}
         MQ{"Martinik"}
         MR{"Mauritánia"}
@@ -230,7 +230,7 @@ sk{
         PM{"Saint Pierre a Miquelon"}
         PN{"Pitcairnove ostrovy"}
         PR{"Portoriko"}
-        PS{"Palestínske územia"}
+        PS{"Palestína"}
         PT{"Portugalsko"}
         PW{"Palau"}
         PY{"Paraguaj"}
@@ -310,9 +310,6 @@ sk{
     }
     CountriesShort{
         GB{"UK"}
-        HK{"Hongkong"}
-        MO{"Macao"}
-        PS{"Palestína"}
         US{"USA"}
     }
     Version{"2.1.8.9"}

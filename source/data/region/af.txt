@@ -141,7 +141,7 @@ af{
         GU{"Guam"}
         GW{"Guinee-Bissau"}
         GY{"Guyana"}
-        HK{"Hongkong SAS Sjina"}
+        HK{"Hongkong"}
         HM{"Heard- en McDonaldeilande"}
         HN{"Honduras"}
         HR{"Kroasië"}
@@ -195,7 +195,7 @@ af{
         ML{"Mali"}
         MM{"Mianmar (Birma)"}
         MN{"Mongolië"}
-        MO{"Macau SAS Sjina"}
+        MO{"Macau"}
         MP{"Noordelike Mariana-eilande"}
         MQ{"Martinique"}
         MR{"Mauritanië"}
@@ -230,7 +230,7 @@ af{
         PM{"Sint Pierre en Miquelon"}
         PN{"Pitcairneilande"}
         PR{"Puerto Rico"}
-        PS{"Palestynse gebiede"}
+        PS{"Palestina"}
         PT{"Portugal"}
         PW{"Palau"}
         PY{"Paraguay"}
@@ -310,9 +310,6 @@ af{
     }
     CountriesShort{
         GB{"VK"}
-        HK{"Hongkong"}
-        MO{"Macau"}
-        PS{"Palestina"}
         US{"VSA"}
     }
     Version{"2.1.8.9"}

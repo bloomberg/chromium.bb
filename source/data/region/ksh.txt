@@ -311,8 +311,6 @@ ksh{
     }
     CountriesShort{
         GB{"Jruußbrettannije"}
-        HK{"Hongkong"}
-        MO{"Makau"}
         US{"USA"}
     }
     Version{"2.1.7.53"}

@@ -472,7 +472,7 @@ bs{
             "Izraelski novi šekel",
         }
         INR{
-            "₹",
+            "Rs.",
             "Indijska rupija",
         }
         IQD{

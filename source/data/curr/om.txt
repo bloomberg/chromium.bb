@@ -32,7 +32,7 @@ om{
             "British Pound Sterling",
         }
         INR{
-            "₹",
+            "Rs.",
             "Indian Rupee",
         }
         JPY{

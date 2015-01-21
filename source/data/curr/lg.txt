@@ -96,7 +96,7 @@ lg{
             "Faranga ey’eGini",
         }
         INR{
-            "₹",
+            "Rs.",
             "Rupiya ey’eBuyindi",
         }
         JPY{

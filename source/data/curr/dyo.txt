@@ -84,7 +84,7 @@ dyo{
             "sili yati Giné",
         }
         INR{
-            "₹",
+            "Rs.",
             "rupii yati End",
         }
         JPY{

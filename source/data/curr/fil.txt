@@ -268,7 +268,7 @@ fil{
             "Israeli New Sheqel",
         }
         INR{
-            "₹",
+            "Rs.",
             "Indian Rupee",
         }
         IQD{

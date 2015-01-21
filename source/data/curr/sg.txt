@@ -96,7 +96,7 @@ sg{
             "sili tî Ginëe",
         }
         INR{
-            "₹",
+            "Rs.",
             "rupïi tî Ênnde",
         }
         JPY{

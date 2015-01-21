@@ -96,7 +96,7 @@ ewo{
             "Síli yá Giné",
         }
         INR{
-            "₹",
+            "Rs.",
             "Rupí yá ɛ́ndía",
         }
         JPY{

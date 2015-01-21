@@ -96,7 +96,7 @@ mas{
             "Iropiyianí e Gine",
         }
         INR{
-            "₹",
+            "Rs.",
             "Iropiyianí e India",
         }
         JPY{

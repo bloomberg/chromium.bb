@@ -7070,6 +7070,7 @@ supplementalData:table(nofallback){
             }
         }
         parentLocales{
+            az_Cyrl{"az_Cyrl_AZ"}
             en_001{
                 "en_AG",
                 "en_AI",
@@ -7179,6 +7180,7 @@ supplementalData:table(nofallback){
                 "es_UY",
                 "es_VE",
             }
+            pa_Arab{"pa_Arab_PK"}
             pt_PT{
                 "pt_AO",
                 "pt_CV",
@@ -7203,6 +7205,19 @@ supplementalData:table(nofallback){
                 "uz_Cyrl",
                 "vai_Latn",
                 "zh_Hant",
+            }
+            shi_Tfng{"shi_Tfng_MA"}
+            sr_Latn{
+                "sr_Latn_BA",
+                "sr_Latn_ME",
+                "sr_Latn_RS",
+            }
+            uz_Arab{"uz_Arab_AF"}
+            uz_Latn{"uz_Latn_UZ"}
+            vai_Latn{"vai_Latn_LR"}
+            zh_Hant{
+                "zh_Hant_HK",
+                "zh_Hant_TW",
             }
             zh_Hant_HK{"zh_Hant_MO"}
         }

@@ -141,7 +141,7 @@ kea{
         GU{"Guam"}
         GW{"Gine-Bisau"}
         GY{"Giana"}
-        HK{"Rejiãu Administrativu Special di Ong Kong"}
+        HK{"Ong Kong"}
         HM{"Ilha Heard i Ilhas McDonald"}
         HN{"Onduras"}
         HR{"Kroasia"}
@@ -195,7 +195,7 @@ kea{
         ML{"Mali"}
         MM{"Mianmar"}
         MN{"Mongolia"}
-        MO{"Rejiãu Administrativu Special di Makau"}
+        MO{"Makau"}
         MP{"Ilhas Marianas di Norti"}
         MQ{"Martinika"}
         MR{"Mauritania"}
@@ -310,8 +310,6 @@ kea{
     }
     CountriesShort{
         GB{"R.U."}
-        HK{"Ong Kong"}
-        MO{"Makau"}
         US{"S.U."}
     }
     Version{"2.1.7.39"}

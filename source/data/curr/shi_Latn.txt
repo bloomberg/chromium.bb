@@ -97,7 +97,7 @@ shi_Latn{
             "frank n ɣinya",
         }
         INR{
-            "₹",
+            "Rs.",
             "arubi n lhind",
         }
         JPY{

@@ -96,7 +96,7 @@ lag{
             "Faráanga ya Gíine",
         }
         INR{
-            "₹",
+            "Rs.",
             "Rupía ya Índia",
         }
         JPY{

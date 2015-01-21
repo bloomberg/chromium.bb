@@ -96,7 +96,7 @@ ses{
             "Ginee Fraŋ",
         }
         INR{
-            "₹",
+            "Rs.",
             "Indu Rupii",
         }
         JPY{

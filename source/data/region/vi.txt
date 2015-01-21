@@ -141,7 +141,7 @@ vi{
         GU{"Guam"}
         GW{"Guinea-Bissau"}
         GY{"Guyana"}
-        HK{"Đặc khu hành chính Hồng Kông - Trung Quốc"}
+        HK{"Hồng Kông"}
         HM{"Đảo Heard và Quần đảo McDonald"}
         HN{"Honduras"}
         HR{"Croatia"}
@@ -195,7 +195,7 @@ vi{
         ML{"Mali"}
         MM{"Myanmar (Miến Điện)"}
         MN{"Mông Cổ"}
-        MO{"Đặc khu hành chính Macao - Trung Quốc"}
+        MO{"Macao"}
         MP{"Quần đảo Bắc Mariana"}
         MQ{"Martinique"}
         MR{"Mauritania"}
@@ -230,7 +230,7 @@ vi{
         PM{"Saint Pierre và Miquelon"}
         PN{"Quần đảo Pitcairn"}
         PR{"Puerto Rico"}
-        PS{"Lãnh thổ Palestine"}
+        PS{"Palestine"}
         PT{"Bồ Đào Nha"}
         PW{"Palau"}
         PY{"Paraguay"}
@@ -310,9 +310,6 @@ vi{
     }
     CountriesShort{
         GB{"Vương quốc Anh"}
-        HK{"Hồng Kông"}
-        MO{"Macao"}
-        PS{"Palestine"}
         US{"Hoa Kỳ"}
     }
     Version{"2.1.8.9"}

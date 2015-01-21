@@ -141,7 +141,7 @@ it{
         GU{"Guam"}
         GW{"Guinea-Bissau"}
         GY{"Guyana"}
-        HK{"RAS di Hong Kong"}
+        HK{"Hong-Kong"}
         HM{"Isole Heard ed Isole McDonald"}
         HN{"Honduras"}
         HR{"Croazia"}
@@ -195,7 +195,7 @@ it{
         ML{"Mali"}
         MM{"Myanmar (Birmania)"}
         MN{"Mongolia"}
-        MO{"RAS di Macao"}
+        MO{"Macao"}
         MP{"Isole Marianne Settentrionali"}
         MQ{"Martinica"}
         MR{"Mauritania"}
@@ -230,7 +230,7 @@ it{
         PM{"Saint Pierre e Miquelon"}
         PN{"Isole Pitcairn"}
         PR{"Portorico"}
-        PS{"Territori palestinesi"}
+        PS{"Palestina"}
         PT{"Portogallo"}
         PW{"Palau"}
         PY{"Paraguay"}
@@ -310,9 +310,6 @@ it{
     }
     CountriesShort{
         GB{"GB"}
-        HK{"Hong-Kong"}
-        MO{"Macao"}
-        PS{"Palestina"}
         US{"USA"}
     }
     Version{"2.1.8.32"}

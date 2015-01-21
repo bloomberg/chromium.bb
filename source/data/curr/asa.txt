@@ -96,7 +96,7 @@ asa{
             "faranga ya Gine",
         }
         INR{
-            "₹",
+            "Rs.",
             "rupia ya India",
         }
         JPY{

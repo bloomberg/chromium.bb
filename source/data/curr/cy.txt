@@ -260,7 +260,7 @@ cy{
             "Shegel Newydd Israel",
         }
         INR{
-            "₹",
+            "Rs.",
             "Rwpî India",
         }
         IQD{

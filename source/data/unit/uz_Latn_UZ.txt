@@ -3,12 +3,10 @@
 // * Copyright (C) 2014 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
-// * Source File: <path>/icu-locale-deprecates.xml & build.xml
+// * Source File: <path>/common/main/uz_Latn_UZ.xml
 // *
 // ***************************************************************************
-/**
- * generated alias target
- */
 uz_Latn_UZ{
-    ___{""}
+    %%Parent{"uz_Latn"}
+    Version{"2.1.6.69"}
 }

@@ -96,7 +96,7 @@ bm{
             "gine Fraŋ",
         }
         INR{
-            "₹",
+            "Rs.",
             "Ɛndu Rupi",
         }
         JPY{

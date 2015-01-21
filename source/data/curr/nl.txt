@@ -500,7 +500,7 @@ nl{
             "Israëlische nieuwe shekel",
         }
         INR{
-            "₹",
+            "Rs.",
             "Indiase roepie",
         }
         IQD{

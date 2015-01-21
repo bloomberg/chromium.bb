@@ -444,7 +444,7 @@ da{
             "Ny israelsk shekel",
         }
         INR{
-            "₹",
+            "Rs.",
             "Indisk rupee",
         }
         IQD{

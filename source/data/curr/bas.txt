@@ -96,7 +96,7 @@ bas{
             "Frǎŋ gìnê",
         }
         INR{
-            "₹",
+            "Rs.",
             "Rùpi īndìà",
         }
         JPY{

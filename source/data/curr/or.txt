@@ -12,7 +12,7 @@
 or{
     Currencies{
         INR{
-            "₹",
+            "Rs.",
             "ଟଙକା",
         }
     }

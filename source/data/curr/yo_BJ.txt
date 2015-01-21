@@ -89,7 +89,7 @@ yo_BJ{
             "Faransi ti Orílɛ́ède Gini",
         }
         INR{
-            "₹",
+            "Rs.",
             "Rupi ti Orílɛ́ède Indina",
         }
         JPY{

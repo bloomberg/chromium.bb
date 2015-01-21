@@ -96,7 +96,7 @@ tzm{
             "Frank Uɣini",
         }
         INR{
-            "₹",
+            "Rs.",
             "Rupi Uḥindi",
         }
         JPY{

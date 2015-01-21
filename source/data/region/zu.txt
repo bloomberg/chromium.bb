@@ -141,7 +141,7 @@ zu{
         GU{"i-Guam"}
         GW{"i-Guinea-Bissau"}
         GY{"i-Guyana"}
-        HK{"i-Hong Kong SAR China"}
+        HK{"i-Hong Kong"}
         HM{"i-Heard Island ne-McDonald Islands"}
         HN{"i-Honduras"}
         HR{"i-Croatia"}
@@ -195,7 +195,7 @@ zu{
         ML{"i-Mali"}
         MM{"i-Myanmar (Burma)"}
         MN{"i-Mongolia"}
-        MO{"i-Macau SAR China"}
+        MO{"i-Macau"}
         MP{"i-Northern Mariana Islands"}
         MQ{"i-Martinique"}
         MR{"i-Mauritania"}
@@ -230,7 +230,7 @@ zu{
         PM{"i-Saint Pierre kanye ne-Miquelon"}
         PN{"i-Pitcairn Islands"}
         PR{"i-Puerto Rico"}
-        PS{"i-Palestinian Territories"}
+        PS{"i-Phalestine"}
         PT{"i-Portugal"}
         PW{"i-Palau"}
         PY{"i-Paraguay"}
@@ -312,9 +312,6 @@ zu{
     }
     CountriesShort{
         GB{"i-U.K."}
-        HK{"i-Hong Kong"}
-        MO{"i-Macau"}
-        PS{"i-Phalestine"}
         US{"i-U.S"}
     }
     Version{"2.1.8.18"}

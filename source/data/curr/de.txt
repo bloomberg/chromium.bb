@@ -500,7 +500,7 @@ de{
             "Israelischer Neuer Schekel",
         }
         INR{
-            "₹",
+            "Rs.",
             "Indische Rupie",
         }
         IQD{

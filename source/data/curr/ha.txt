@@ -96,7 +96,7 @@ ha{
             "Kuɗin Gini",
         }
         INR{
-            "₹",
+            "Rs.",
             "Kuɗin Indiya",
         }
         JPY{

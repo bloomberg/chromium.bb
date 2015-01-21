@@ -480,7 +480,7 @@ ga{
             "Seiceal Nua Iosrael",
         }
         INR{
-            "₹",
+            "Rs.",
             "Rúipí na hIndia",
         }
         IQD{

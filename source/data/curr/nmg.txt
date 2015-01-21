@@ -96,7 +96,7 @@ nmg{
             "Fraŋ Guiné",
         }
         INR{
-            "₹",
+            "Rs.",
             "Mɔn India",
         }
         JPY{

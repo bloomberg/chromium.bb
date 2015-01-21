@@ -17,6 +17,7 @@ fr_CA{
         SV{"Salvador"}
         SX{"Saint-Martin (Pays-Bas)"}
         VC{"Saint-Vincent-et-les Grenadines"}
+        XK{"Kosovo"}
     }
     Version{"2.1.8.19"}
 }

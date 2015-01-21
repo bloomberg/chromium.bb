@@ -96,7 +96,7 @@ ln{
             "Falánga ya Ginɛ",
         }
         INR{
-            "₹",
+            "Rs.",
             "Rupi ya Índɛ",
         }
         JPY{

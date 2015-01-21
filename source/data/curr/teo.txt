@@ -96,7 +96,7 @@ teo{
             "Ango’otol lok’ Gine",
         }
         INR{
-            "₹",
+            "Rs.",
             "Ango’otol lok’ India",
         }
         JPY{

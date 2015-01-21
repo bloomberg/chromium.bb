@@ -501,7 +501,7 @@ ca{
             "nou xéquel israelià",
         }
         INR{
-            "₹",
+            "Rs.",
             "rupia índia",
         }
         IQD{

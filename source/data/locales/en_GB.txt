@@ -391,6 +391,7 @@ en_GB{
                     h{"h–h a"}
                 }
                 hm{
+                    a{"h:mm a – h:mm a"}
                     h{"h:mm–h:mm a"}
                     m{"h:mm–h:mm a"}
                 }

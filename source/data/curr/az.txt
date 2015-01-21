@@ -452,7 +452,7 @@ az{
             "İsrail Yeni Şekeli",
         }
         INR{
-            "₹",
+            "Rs.",
             "Hindistan Rupisi",
         }
         IQD{

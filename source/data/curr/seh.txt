@@ -96,7 +96,7 @@ seh{
             "Syli da Guiné",
         }
         INR{
-            "₹",
+            "Rs.",
             "Rúpia indiana",
         }
         JPY{

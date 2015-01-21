@@ -488,7 +488,7 @@ fy{
             "Israëlyske nieuwe shekel",
         }
         INR{
-            "₹",
+            "Rs.",
             "Indiase roepie",
         }
         IQD{

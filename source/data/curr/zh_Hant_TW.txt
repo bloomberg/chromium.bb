@@ -3,12 +3,10 @@
 // * Copyright (C) 2014 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
-// * Source File: <path>/icu-locale-deprecates.xml & build.xml
+// * Source File: <path>/common/main/zh_Hant_TW.xml
 // *
 // ***************************************************************************
-/**
- * generated alias target
- */
 zh_Hant_TW{
-    ___{""}
+    %%Parent{"zh_Hant"}
+    Version{"2.1.6.69"}
 }

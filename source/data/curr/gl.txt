@@ -357,7 +357,7 @@ gl{
             "Novo shequel israelí",
         }
         INR{
-            "₹",
+            "Rs.",
             "Rupia india",
         }
         IQD{

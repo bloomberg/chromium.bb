@@ -96,7 +96,7 @@ lu{
             "Nfalanga wa Ngina",
         }
         INR{
-            "₹",
+            "Rs.",
             "Rupi wa Inde",
         }
         JPY{

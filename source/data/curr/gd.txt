@@ -500,7 +500,7 @@ gd{
             "Sheqel ùr Iosraeleach",
         }
         INR{
-            "₹",
+            "Rs.",
             "Rupee Innseanach",
         }
         IQD{

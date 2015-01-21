@@ -265,7 +265,7 @@ eu{
             "Israeleko sheqel berria",
         }
         INR{
-            "₹",
+            "Rs.",
             "Indiako errupia",
         }
         IQD{
